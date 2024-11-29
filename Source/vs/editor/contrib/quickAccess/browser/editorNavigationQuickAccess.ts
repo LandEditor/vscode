@@ -39,6 +39,7 @@ import {
 
 interface IEditorLineDecoration {
 	readonly rangeHighlightId: string;
+
 	readonly overviewRulerDecorationId: string;
 }
 export interface IEditorNavigationQuickAccessOptions {
@@ -86,6 +87,7 @@ export abstract class AbstractEditorNavigationQuickAccessProvider
 				false;
 		// Provide based on current active editor
 		const pickerDisposable = disposables.add(new MutableDisposable());
+
 		pickerDisposable.value = this.doProvide(picker, token, runOptions);
 		// Re-create whenever the active editor changes
 		disposables.add(
@@ -99,6 +101,7 @@ export abstract class AbstractEditorNavigationQuickAccessProvider
 
 		return disposables;
 	}
+
 	private doProvide(
 		picker: IQuickPick<
 			IQuickPickItem,
@@ -126,12 +129,14 @@ export abstract class AbstractEditorNavigationQuickAccessProvider
 				// we always want to restore the current location.
 				let lastKnownEditorViewState =
 					editor.saveViewState() ?? undefined;
+
 				disposables.add(
 					codeEditor.onDidChangeCursorPosition(() => {
 						lastKnownEditorViewState =
 							editor.saveViewState() ?? undefined;
 					}),
 				);
+
 				context.restoreViewState = () => {
 					if (
 						lastKnownEditorViewState &&
@@ -140,6 +145,7 @@ export abstract class AbstractEditorNavigationQuickAccessProvider
 						editor.restoreViewState(lastKnownEditorViewState);
 					}
 				};
+
 				disposables.add(
 					createSingleCallFunction(token.onCancellationRequested)(
 						() => context.restoreViewState?.(),
@@ -157,6 +163,7 @@ export abstract class AbstractEditorNavigationQuickAccessProvider
 		else {
 			disposables.add(this.provideWithoutTextEditor(picker, token));
 		}
+
 		return disposables;
 	}
 	/**
@@ -191,28 +198,34 @@ export abstract class AbstractEditorNavigationQuickAccessProvider
 		>,
 		token: CancellationToken,
 	): IDisposable;
+
 	protected gotoLocation(
 		{ editor }: IQuickAccessTextEditorContext,
 		options: {
 			range: IRange;
+
 			keyMods: IKeyMods;
 
 			forceSideBySide?: boolean;
+
 			preserveFocus?: boolean;
 		},
 	): void {
 		editor.setSelection(options.range, TextEditorSelectionSource.JUMP);
+
 		editor.revealRangeInCenter(options.range, ScrollType.Smooth);
 
 		if (!options.preserveFocus) {
 			editor.focus();
 		}
+
 		const model = editor.getModel();
 
 		if (model && "getLineContent" in model) {
 			status(`${model.getLineContent(options.range.startLineNumber)}`);
 		}
 	}
+
 	protected getModel(editor: IEditor | IDiffEditor): ITextModel | undefined {
 		return isDiffEditor(editor)
 			? editor.getModel()?.modified
@@ -232,6 +245,7 @@ export abstract class AbstractEditorNavigationQuickAccessProvider
 	//#region Decorations Utils
 	private rangeHighlightDecorationId: IEditorLineDecoration | undefined =
 		undefined;
+
 	addDecorations(editor: IEditor, range: IRange): void {
 		editor.changeDecorations((changeAccessor) => {
 			// Reset old decorations if any
@@ -241,9 +255,11 @@ export abstract class AbstractEditorNavigationQuickAccessProvider
 				deleteDecorations.push(
 					this.rangeHighlightDecorationId.overviewRulerDecorationId,
 				);
+
 				deleteDecorations.push(
 					this.rangeHighlightDecorationId.rangeHighlightId,
 				);
+
 				this.rangeHighlightDecorationId = undefined;
 			}
 			// Add new decorations for the range
@@ -277,12 +293,14 @@ export abstract class AbstractEditorNavigationQuickAccessProvider
 					deleteDecorations,
 					newDecorations,
 				);
+
 			this.rangeHighlightDecorationId = {
 				rangeHighlightId,
 				overviewRulerDecorationId,
 			};
 		});
 	}
+
 	clearDecorations(editor: IEditor): void {
 		const rangeHighlightDecorationId = this.rangeHighlightDecorationId;
 
@@ -296,6 +314,7 @@ export abstract class AbstractEditorNavigationQuickAccessProvider
 					[],
 				);
 			});
+
 			this.rangeHighlightDecorationId = undefined;
 		}
 	}

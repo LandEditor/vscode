@@ -13,6 +13,7 @@ export class BrowserServiceConfigurationProvider extends BaseServiceConfiguratio
 	): string | null {
 		return null;
 	}
+
 	protected readLocalTsdk(
 		_configuration: vscode.WorkspaceConfiguration,
 	): string | null {
@@ -24,6 +25,7 @@ export class BrowserServiceConfigurationProvider extends BaseServiceConfiguratio
 	): string | null {
 		return null;
 	}
+
 	protected override readGlobalNodePath(
 		_configuration: vscode.WorkspaceConfiguration,
 	): string | null {

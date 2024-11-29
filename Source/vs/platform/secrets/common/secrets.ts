@@ -26,10 +26,12 @@ export interface ISecretStorageProvider {
 	get(key: string): Promise<string | undefined>;
 
 	set(key: string, value: string): Promise<void>;
+
 	delete(key: string): Promise<void>;
 }
 export interface ISecretStorageService extends ISecretStorageProvider {
 	readonly _serviceBrand: undefined;
+
 	onDidChangeSecret: Event<string>;
 }
 export class BaseSecretStorageService
@@ -37,13 +39,19 @@ export class BaseSecretStorageService
 	implements ISecretStorageService
 {
 	declare readonly _serviceBrand: undefined;
+
 	private readonly _storagePrefix = "secret://";
+
 	protected readonly onDidChangeSecretEmitter = this._register(
 		new Emitter<string>(),
 	);
+
 	onDidChangeSecret: Event<string> = this.onDidChangeSecretEmitter.event;
+
 	protected readonly _sequencer = new SequencerByKey<string>();
+
 	private _type: "in-memory" | "persisted" | "unknown" = "unknown";
+
 	private readonly _onDidChangeValueDisposable = this._register(
 		new DisposableStore(),
 	);
@@ -66,17 +74,21 @@ export class BaseSecretStorageService
 	get type() {
 		return this._type;
 	}
+
 	private _lazyStorageService: Lazy<Promise<IStorageService>> = new Lazy(() =>
 		this.initialize(),
 	);
+
 	protected get resolvedStorageService() {
 		return this._lazyStorageService.value;
 	}
+
 	get(key: string): Promise<string | undefined> {
 		return this._sequencer.queue(key, async () => {
 			const storageService = await this.resolvedStorageService;
 
 			const fullKey = this.getKey(key);
+
 			this._logService.trace(
 				"[secrets] getting secret for key:",
 				fullKey,
@@ -95,6 +107,7 @@ export class BaseSecretStorageService
 
 				return undefined;
 			}
+
 			try {
 				this._logService.trace(
 					"[secrets] decrypting gotten secret for key:",
@@ -105,6 +118,7 @@ export class BaseSecretStorageService
 					this._type === "in-memory"
 						? encrypted
 						: await this._encryptionService.decrypt(encrypted);
+
 				this._logService.trace(
 					"[secrets] decrypted secret for key:",
 					fullKey,
@@ -113,15 +127,18 @@ export class BaseSecretStorageService
 				return result;
 			} catch (e) {
 				this._logService.error(e);
+
 				this.delete(key);
 
 				return undefined;
 			}
 		});
 	}
+
 	set(key: string, value: string): Promise<void> {
 		return this._sequencer.queue(key, async () => {
 			const storageService = await this.resolvedStorageService;
+
 			this._logService.trace("[secrets] encrypting secret for key:", key);
 
 			let encrypted;
@@ -137,39 +154,48 @@ export class BaseSecretStorageService
 
 				throw e;
 			}
+
 			const fullKey = this.getKey(key);
+
 			this._logService.trace(
 				"[secrets] storing encrypted secret for key:",
 				fullKey,
 			);
+
 			storageService.store(
 				fullKey,
 				encrypted,
 				StorageScope.APPLICATION,
 				StorageTarget.MACHINE,
 			);
+
 			this._logService.trace(
 				"[secrets] stored encrypted secret for key:",
 				fullKey,
 			);
 		});
 	}
+
 	delete(key: string): Promise<void> {
 		return this._sequencer.queue(key, async () => {
 			const storageService = await this.resolvedStorageService;
 
 			const fullKey = this.getKey(key);
+
 			this._logService.trace(
 				"[secrets] deleting secret for key:",
 				fullKey,
 			);
+
 			storageService.remove(fullKey, StorageScope.APPLICATION);
+
 			this._logService.trace(
 				"[secrets] deleted secret for key:",
 				fullKey,
 			);
 		});
 	}
+
 	private async initialize(): Promise<IStorageService> {
 		let storageService;
 
@@ -180,20 +206,27 @@ export class BaseSecretStorageService
 			this._logService.trace(
 				`[SecretStorageService] Encryption is available, using persisted storage`,
 			);
+
 			this._type = "persisted";
+
 			storageService = this._storageService;
 		} else {
 			// If we already have an in-memory storage service, we don't need to recreate it
 			if (this._type === "in-memory") {
 				return this._storageService;
 			}
+
 			this._logService.trace(
 				"[SecretStorageService] Encryption is not available, falling back to in-memory storage",
 			);
+
 			this._type = "in-memory";
+
 			storageService = this._register(new InMemoryStorageService());
 		}
+
 		this._onDidChangeValueDisposable.clear();
+
 		this._onDidChangeValueDisposable.add(
 			storageService.onDidChangeValue(
 				StorageScope.APPLICATION,
@@ -206,19 +239,25 @@ export class BaseSecretStorageService
 
 		return storageService;
 	}
+
 	protected reinitialize(): void {
 		this._lazyStorageService = new Lazy(() => this.initialize());
 	}
+
 	private onDidChangeValue(key: string): void {
 		if (!key.startsWith(this._storagePrefix)) {
 			return;
 		}
+
 		const secretKey = key.slice(this._storagePrefix.length);
+
 		this._logService.trace(
 			`[SecretStorageService] Notifying change in value for secret: ${secretKey}`,
 		);
+
 		this.onDidChangeSecretEmitter.fire(secretKey);
 	}
+
 	private getKey(key: string): string {
 		return `${this._storagePrefix}${key}`;
 	}

@@ -42,6 +42,7 @@ export class NativeElevatedFileService implements IElevatedFileService {
 		@ILabelService
 		private readonly labelService: ILabelService,
 	) {}
+
 	isSupported(resource: URI): boolean {
 		// Saving elevated is currently only supported for local
 		// files for as long as we have no generic support from
@@ -49,6 +50,7 @@ export class NativeElevatedFileService implements IElevatedFileService {
 		// (https://github.com/microsoft/vscode/issues/48659)
 		return resource.scheme === Schemas.file;
 	}
+
 	async writeFileElevated(
 		resource: URI,
 		value: VSBuffer | VSBufferReadable | VSBufferReadableStream,
@@ -74,6 +76,7 @@ export class NativeElevatedFileService implements IElevatedFileService {
 				localize("fileNotTrusted", "Workspace is not trusted."),
 			);
 		}
+
 		const source = URI.file(
 			randomPath(this.environmentService.userDataPath, "code-elevated"),
 		);
@@ -91,6 +94,7 @@ export class NativeElevatedFileService implements IElevatedFileService {
 			// clean up
 			await this.fileService.del(source);
 		}
+
 		return this.fileService.resolve(resource, { resolveMetadata: true });
 	}
 }

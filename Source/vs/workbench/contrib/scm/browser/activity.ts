@@ -69,6 +69,7 @@ export class SCMActiveRepositoryController
 	private readonly _countBadgeConfig = observableConfigValue<
 		"all" | "focused" | "off"
 	>("scm.countBadge", "all", this.configurationService);
+
 	private readonly _repositories = observableFromEvent(
 		this,
 		Event.any(
@@ -77,6 +78,7 @@ export class SCMActiveRepositoryController
 		),
 		() => this.scmService.repositories,
 	);
+
 	private readonly _activeRepositoryHistoryItemRefName = derived((reader) => {
 		const repository = this.scmViewService.activeRepository.read(reader);
 
@@ -87,6 +89,7 @@ export class SCMActiveRepositoryController
 
 		return historyItemRef?.name;
 	});
+
 	private readonly _countBadgeRepositories = derived(this, (reader) => {
 		switch (this._countBadgeConfig.read(reader)) {
 			case "all": {
@@ -99,6 +102,7 @@ export class SCMActiveRepositoryController
 					})),
 				];
 			}
+
 			case "focused": {
 				const repository =
 					this.scmViewService.activeRepository.read(reader);
@@ -115,6 +119,7 @@ export class SCMActiveRepositoryController
 						]
 					: [];
 			}
+
 			case "off":
 				return [];
 
@@ -122,6 +127,7 @@ export class SCMActiveRepositoryController
 				throw new Error("Invalid countBadge setting");
 		}
 	});
+
 	private readonly _countBadge = derived(this, (reader) => {
 		let total = 0;
 
@@ -129,11 +135,15 @@ export class SCMActiveRepositoryController
 			const count = repository.provider.count?.read(reader);
 
 			const resourceCount = repository.resourceCount.read(reader);
+
 			total = total + (count ?? resourceCount);
 		}
+
 		return total;
 	});
+
 	private _activeRepositoryNameContextKey: IContextKey<string>;
+
 	private _activeRepositoryBranchNameContextKey: IContextKey<string>;
 
 	constructor(
@@ -153,14 +163,17 @@ export class SCMActiveRepositoryController
 		private readonly titleService: ITitleService,
 	) {
 		super();
+
 		this._activeRepositoryNameContextKey =
 			ActiveRepositoryContextKeys.ActiveRepositoryName.bindTo(
 				this.contextKeyService,
 			);
+
 		this._activeRepositoryBranchNameContextKey =
 			ActiveRepositoryContextKeys.ActiveRepositoryBranchName.bindTo(
 				this.contextKeyService,
 			);
+
 		this.titleService.registerVariables([
 			{
 				name: "activeRepositoryName",
@@ -173,6 +186,7 @@ export class SCMActiveRepositoryController
 					ActiveRepositoryContextKeys.ActiveRepositoryBranchName.key,
 			},
 		]);
+
 		this._register(
 			autorunWithStore((reader, store) => {
 				this._updateActivityCountBadge(
@@ -181,6 +195,7 @@ export class SCMActiveRepositoryController
 				);
 			}),
 		);
+
 		this._register(
 			autorunWithStore((reader, store) => {
 				const repository =
@@ -188,9 +203,11 @@ export class SCMActiveRepositoryController
 
 				const commands =
 					repository?.provider.statusBarCommands.read(reader);
+
 				this._updateStatusBar(repository, commands ?? [], store);
 			}),
 		);
+
 		this._register(
 			autorun((reader) => {
 				const repository =
@@ -198,6 +215,7 @@ export class SCMActiveRepositoryController
 
 				const historyItemRefName =
 					this._activeRepositoryHistoryItemRefName.read(reader);
+
 				this._updateActiveRepositoryContextKeys(
 					repository?.provider.name,
 					historyItemRefName,
@@ -205,6 +223,7 @@ export class SCMActiveRepositoryController
 			}),
 		);
 	}
+
 	private _getRepositoryResourceCount(
 		repository: ISCMRepository,
 	): IObservable<number> {
@@ -217,6 +236,7 @@ export class SCMActiveRepositoryController
 				),
 		);
 	}
+
 	private _updateActivityCountBadge(
 		count: number,
 		store: DisposableStore,
@@ -224,13 +244,16 @@ export class SCMActiveRepositoryController
 		if (count === 0) {
 			return;
 		}
+
 		const badge = new NumberBadge(count, (num) =>
 			localize("scmPendingChangesBadge", "{0} pending changes", num),
 		);
+
 		store.add(
 			this.activityService.showViewActivity(VIEW_PANE_ID, { badge }),
 		);
 	}
+
 	private _updateStatusBar(
 		repository: ISCMRepository | undefined,
 		commands: readonly Command[],
@@ -239,6 +262,7 @@ export class SCMActiveRepositoryController
 		if (!repository) {
 			return;
 		}
+
 		const label = repository.provider.rootUri
 			? `${basename(repository.provider.rootUri)} (${repository.provider.label})`
 			: repository.provider.label;
@@ -267,6 +291,7 @@ export class SCMActiveRepositoryController
 			} else {
 				repoAgnosticActionName = "";
 			}
+
 			const statusbarEntry: IStatusbarEntry = {
 				name:
 					localize("status.scm", "Source Control") +
@@ -278,6 +303,7 @@ export class SCMActiveRepositoryController
 				tooltip,
 				command: command.id ? command : undefined,
 			};
+
 			store.add(
 				index === 0
 					? this.statusbarService.addEntry(
@@ -299,11 +325,13 @@ export class SCMActiveRepositoryController
 			);
 		}
 	}
+
 	private _updateActiveRepositoryContextKeys(
 		repositoryName: string | undefined,
 		branchName: string | undefined,
 	): void {
 		this._activeRepositoryNameContextKey.set(repositoryName ?? "");
+
 		this._activeRepositoryBranchNameContextKey.set(branchName ?? "");
 	}
 }
@@ -319,6 +347,7 @@ export class SCMActiveResourceContextKeyController
 		),
 		() => this.scmService.repositories,
 	);
+
 	private readonly _onDidRepositoryChange = new Emitter<void>();
 
 	constructor(
@@ -350,6 +379,7 @@ export class SCMActiveResourceContextKeyController
 				"The active resource's repository",
 			),
 		);
+
 		this._store.add(
 			autorunWithStore((reader, store) => {
 				for (const repository of this._repositories.read(reader)) {
@@ -381,17 +411,20 @@ export class SCMActiveResourceContextKeyController
 				this._getEditorRepositoryId(group.activeEditor),
 			onDidChange: this._onDidRepositoryChange.event,
 		};
+
 		this._store.add(
 			editorGroupsService.registerContextKeyProvider(
 				hasChangesContextKeyProvider,
 			),
 		);
+
 		this._store.add(
 			editorGroupsService.registerContextKeyProvider(
 				repositoryContextKeyProvider,
 			),
 		);
 	}
+
 	private _getEditorHasChanges(activeEditor: EditorInput | null): boolean {
 		const activeResource =
 			EditorResourceAccessor.getOriginalUri(activeEditor);
@@ -399,6 +432,7 @@ export class SCMActiveResourceContextKeyController
 		if (!activeResource) {
 			return false;
 		}
+
 		const activeResourceRepository =
 			this.scmService.getRepository(activeResource);
 
@@ -415,8 +449,10 @@ export class SCMActiveResourceContextKeyController
 				return true;
 			}
 		}
+
 		return false;
 	}
+
 	private _getEditorRepositoryId(
 		activeEditor: EditorInput | null,
 	): string | undefined {
@@ -426,11 +462,13 @@ export class SCMActiveResourceContextKeyController
 		if (!activeResource) {
 			return undefined;
 		}
+
 		const activeResourceRepository =
 			this.scmService.getRepository(activeResource);
 
 		return activeResourceRepository?.id;
 	}
+
 	override dispose(): void {
 		this._onDidRepositoryChange.dispose();
 

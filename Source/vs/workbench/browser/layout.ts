@@ -154,13 +154,19 @@ import { SidebarPart } from "./parts/sidebar/sidebarPart.js";
 
 interface ILayoutRuntimeState {
 	activeContainerId: number;
+
 	mainWindowFullscreen: boolean;
+
 	readonly maximized: Set<number>;
+
 	hasFocus: boolean;
+
 	mainWindowBorder: boolean;
+
 	readonly menuBar: {
 		toggled: boolean;
 	};
+
 	readonly zenMode: {
 		readonly transitionDisposables: DisposableMap<string, IDisposable>;
 	};
@@ -168,22 +174,29 @@ interface ILayoutRuntimeState {
 
 interface IEditorToOpen {
 	readonly editor: IUntypedEditorInput;
+
 	readonly viewColumn?: number;
 }
 
 interface ILayoutInitializationState {
 	readonly views: {
 		readonly defaults: string[] | undefined;
+
 		readonly containerToRestore: {
 			sideBar?: string;
+
 			panel?: string;
+
 			auxiliaryBar?: string;
 		};
 	};
+
 	readonly editor: {
 		readonly restoreEditors: boolean;
+
 		readonly editorsToOpen: Promise<IEditorToOpen[]>;
 	};
+
 	readonly layout?: {
 		readonly editors?: EditorGroupLayout;
 	};
@@ -191,6 +204,7 @@ interface ILayoutInitializationState {
 
 interface ILayoutState {
 	readonly runtime: ILayoutRuntimeState;
+
 	readonly initialization: ILayoutInitializationState;
 }
 
@@ -211,7 +225,9 @@ interface IPathToOpen extends IPath {
 
 interface IInitialEditorsState {
 	readonly filesToOpenOrCreate?: IPathToOpen[];
+
 	readonly filesToDiff?: IPathToOpen[];
+
 	readonly filesToMerge?: IPathToOpen[];
 
 	readonly layout?: EditorGroupLayout;
@@ -239,65 +255,77 @@ export abstract class Layout
 	private readonly _onDidChangeZenMode = this._register(
 		new Emitter<boolean>(),
 	);
+
 	readonly onDidChangeZenMode = this._onDidChangeZenMode.event;
 
 	private readonly _onDidChangeMainEditorCenteredLayout = this._register(
 		new Emitter<boolean>(),
 	);
+
 	readonly onDidChangeMainEditorCenteredLayout =
 		this._onDidChangeMainEditorCenteredLayout.event;
 
 	private readonly _onDidChangePanelAlignment = this._register(
 		new Emitter<PanelAlignment>(),
 	);
+
 	readonly onDidChangePanelAlignment = this._onDidChangePanelAlignment.event;
 
 	private readonly _onDidChangeWindowMaximized = this._register(
 		new Emitter<{ windowId: number; maximized: boolean }>(),
 	);
+
 	readonly onDidChangeWindowMaximized =
 		this._onDidChangeWindowMaximized.event;
 
 	private readonly _onDidChangePanelPosition = this._register(
 		new Emitter<string>(),
 	);
+
 	readonly onDidChangePanelPosition = this._onDidChangePanelPosition.event;
 
 	private readonly _onDidChangePartVisibility = this._register(
 		new Emitter<void>(),
 	);
+
 	readonly onDidChangePartVisibility = this._onDidChangePartVisibility.event;
 
 	private readonly _onDidChangeNotificationsVisibility = this._register(
 		new Emitter<boolean>(),
 	);
+
 	readonly onDidChangeNotificationsVisibility =
 		this._onDidChangeNotificationsVisibility.event;
 
 	private readonly _onDidLayoutMainContainer = this._register(
 		new Emitter<IDimension>(),
 	);
+
 	readonly onDidLayoutMainContainer = this._onDidLayoutMainContainer.event;
 
 	private readonly _onDidLayoutActiveContainer = this._register(
 		new Emitter<IDimension>(),
 	);
+
 	readonly onDidLayoutActiveContainer =
 		this._onDidLayoutActiveContainer.event;
 
 	private readonly _onDidLayoutContainer = this._register(
 		new Emitter<{ container: HTMLElement; dimension: IDimension }>(),
 	);
+
 	readonly onDidLayoutContainer = this._onDidLayoutContainer.event;
 
 	private readonly _onDidAddContainer = this._register(
 		new Emitter<{ container: HTMLElement; disposables: DisposableStore }>(),
 	);
+
 	readonly onDidAddContainer = this._onDidAddContainer.event;
 
 	private readonly _onDidChangeActiveContainer = this._register(
 		new Emitter<void>(),
 	);
+
 	readonly onDidChangeActiveContainer =
 		this._onDidChangeActiveContainer.event;
 
@@ -310,6 +338,7 @@ export abstract class Layout
 	get activeContainer() {
 		return this.getContainerFromDocument(getActiveDocument());
 	}
+
 	get containers(): Iterable<HTMLElement> {
 		const containers: HTMLElement[] = [];
 
@@ -336,6 +365,7 @@ export abstract class Layout
 		number /* window ID */,
 		Promise<void>
 	>();
+
 	whenContainerStylesLoaded(window: CodeWindow): Promise<void> | undefined {
 		return this.containerStylesLoaded.get(window.vscodeWindowId);
 	}
@@ -373,6 +403,7 @@ export abstract class Layout
 
 		if (this.isVisible(Parts.BANNER_PART)) {
 			top = this.getPart(Parts.BANNER_PART).maximumHeight;
+
 			quickPickTop = top;
 		}
 
@@ -383,6 +414,7 @@ export abstract class Layout
 
 		if (titlebarVisible) {
 			top += this.getPart(Parts.TITLEBAR_PART).maximumHeight;
+
 			quickPickTop = top;
 		}
 
@@ -406,38 +438,65 @@ export abstract class Layout
 	private readonly parts = new Map<string, Part>();
 
 	private initialized = false;
+
 	private workbenchGrid!: SerializableGrid<ISerializableView>;
 
 	private titleBarPartView!: ISerializableView;
+
 	private bannerPartView!: ISerializableView;
+
 	private activityBarPartView!: ISerializableView;
+
 	private sideBarPartView!: ISerializableView;
+
 	private panelPartView!: ISerializableView;
+
 	private auxiliaryBarPartView!: ISerializableView;
+
 	private editorPartView!: ISerializableView;
+
 	private statusBarPartView!: ISerializableView;
 
 	private environmentService!: IBrowserWorkbenchEnvironmentService;
+
 	private extensionService!: IExtensionService;
+
 	private configurationService!: IConfigurationService;
+
 	private storageService!: IStorageService;
+
 	private hostService!: IHostService;
+
 	private editorService!: IEditorService;
+
 	private mainPartEditorService!: IEditorService;
+
 	private editorGroupService!: IEditorGroupsService;
+
 	private paneCompositeService!: IPaneCompositePartService;
+
 	private titleService!: ITitleService;
+
 	private viewDescriptorService!: IViewDescriptorService;
+
 	private contextService!: IWorkspaceContextService;
+
 	private workingCopyBackupService!: IWorkingCopyBackupService;
+
 	private notificationService!: INotificationService;
+
 	private themeService!: IThemeService;
+
 	private statusBarService!: IStatusbarService;
+
 	private logService!: ILogService;
+
 	private telemetryService!: ITelemetryService;
+
 	private auxiliaryWindowService!: IAuxiliaryWindowService;
 
 	private state!: ILayoutState;
+
 	private stateModel!: LayoutStateModel;
 
 	private disposed = false;
@@ -451,29 +510,47 @@ export abstract class Layout
 		this.environmentService = accessor.get(
 			IBrowserWorkbenchEnvironmentService,
 		);
+
 		this.configurationService = accessor.get(IConfigurationService);
+
 		this.hostService = accessor.get(IHostService);
+
 		this.contextService = accessor.get(IWorkspaceContextService);
+
 		this.storageService = accessor.get(IStorageService);
+
 		this.workingCopyBackupService = accessor.get(IWorkingCopyBackupService);
+
 		this.themeService = accessor.get(IThemeService);
+
 		this.extensionService = accessor.get(IExtensionService);
+
 		this.logService = accessor.get(ILogService);
+
 		this.telemetryService = accessor.get(ITelemetryService);
+
 		this.auxiliaryWindowService = accessor.get(IAuxiliaryWindowService);
 
 		// Parts
 		this.editorService = accessor.get(IEditorService);
+
 		this.mainPartEditorService = this.editorService.createScoped(
 			"main",
 			this._store,
 		);
+
 		this.editorGroupService = accessor.get(IEditorGroupsService);
+
 		this.paneCompositeService = accessor.get(IPaneCompositePartService);
+
 		this.viewDescriptorService = accessor.get(IViewDescriptorService);
+
 		this.titleService = accessor.get(ITitleService);
+
 		this.notificationService = accessor.get(INotificationService);
+
 		this.statusBarService = accessor.get(IStatusbarService);
+
 		accessor.get(IBannerService);
 
 		// Listeners
@@ -503,6 +580,7 @@ export abstract class Layout
 					showEditorIfHidden,
 				),
 			);
+
 			this._register(
 				this.editorGroupService.mainPart.onDidActivateGroup(
 					showEditorIfHidden,
@@ -551,6 +629,7 @@ export abstract class Layout
 							this.configurationService.getValue<ActivityBarPosition>(
 								LayoutSettings.ACTIVITY_BAR_LOCATION,
 							);
+
 						activityBarMovedToTopOrBottom =
 							activityBarPosition === ActivityBarPosition.TOP ||
 							activityBarPosition === ActivityBarPosition.BOTTOM;
@@ -594,6 +673,7 @@ export abstract class Layout
 				),
 			),
 		);
+
 		this._register(
 			this.editorGroupService.mainPart.onDidRemoveGroup(() =>
 				this.centerMainEditorLayout(
@@ -603,6 +683,7 @@ export abstract class Layout
 				),
 			),
 		);
+
 		this._register(
 			this.editorGroupService.mainPart.onDidChangeGroupMaximized(() =>
 				this.centerMainEditorLayout(
@@ -648,6 +729,7 @@ export abstract class Layout
 				this.onWindowFocusChanged(focused),
 			),
 		);
+
 		this._register(
 			this.hostService.onDidChangeActiveWindow(() =>
 				this.onActiveWindowChanged(),
@@ -673,13 +755,16 @@ export abstract class Layout
 			this.auxiliaryWindowService.onDidOpenAuxiliaryWindow(
 				({ window, disposables }) => {
 					const windowId = window.window.vscodeWindowId;
+
 					this.containerStylesLoaded.set(
 						windowId,
 						window.whenStylesHaveLoaded,
 					);
+
 					window.whenStylesHaveLoaded.then(() =>
 						this.containerStylesLoaded.delete(windowId),
 					);
+
 					disposables.add(
 						toDisposable(() =>
 							this.containerStylesLoaded.delete(windowId),
@@ -689,6 +774,7 @@ export abstract class Layout
 					const eventDisposables = disposables.add(
 						new DisposableStore(),
 					);
+
 					this._onDidAddContainer.fire({
 						container: window.container,
 						disposables: eventDisposables,
@@ -830,6 +916,7 @@ export abstract class Layout
 	private onWindowFocusChanged(hasFocus: boolean): void {
 		if (this.state.runtime.hasFocus !== hasFocus) {
 			this.state.runtime.hasFocus = hasFocus;
+
 			this.updateWindowsBorder();
 		}
 	}
@@ -888,18 +975,25 @@ export abstract class Layout
 		const auxiliaryBarContainer = assertIsDefined(
 			auxiliaryBar.getContainer(),
 		);
+
 		activityBarContainer.classList.remove(oldPositionValue);
+
 		sideBarContainer.classList.remove(oldPositionValue);
+
 		activityBarContainer.classList.add(newPositionValue);
+
 		sideBarContainer.classList.add(newPositionValue);
 
 		// Auxiliary Bar has opposite values
 		auxiliaryBarContainer.classList.remove(newPositionValue);
+
 		auxiliaryBarContainer.classList.add(oldPositionValue);
 
 		// Update Styles
 		activityBar.updateStyles();
+
 		sideBar.updateStyles();
+
 		auxiliaryBar.updateStyles();
 
 		// Move activity bar and side bars
@@ -945,6 +1039,7 @@ export abstract class Layout
 					isActiveContainer && this.state.runtime.hasFocus
 						? activeBorder
 						: (inactiveBorder ?? activeBorder);
+
 				container.style.setProperty(
 					"--window-border-color",
 					borderColor?.toString() ?? "transparent",
@@ -979,6 +1074,7 @@ export abstract class Layout
 			this.contextService,
 			this.parent,
 		);
+
 		this.stateModel.load();
 
 		// Both editor and panel should not be hidden on startup
@@ -1024,6 +1120,7 @@ export abstract class Layout
 		if (initialEditorsState) {
 			this.logService.trace("Initial editor state", initialEditorsState);
 		}
+
 		const initialLayoutState: ILayoutInitializationState = {
 			layout: {
 				editors: initialEditorsState?.layout,
@@ -1138,6 +1235,7 @@ export abstract class Layout
 				if (viewContainerToRestore === "workbench.panel.chatSidebar") {
 					viewContainerToRestore = "workbench.panel.chat"; // TODO@bpasero remove me after some months
 				}
+
 				this.state.initialization.views.containerToRestore.auxiliaryBar =
 					viewContainerToRestore;
 			} else {
@@ -1353,10 +1451,13 @@ export abstract class Layout
 	}
 
 	private readonly whenReadyPromise = new DeferredPromise<void>();
+
 	protected readonly whenReady = this.whenReadyPromise.p;
 
 	private readonly whenRestoredPromise = new DeferredPromise<void>();
+
 	readonly whenRestored = this.whenRestoredPromise.p;
+
 	private restored = false;
 
 	isRestored(): boolean {
@@ -1378,6 +1479,7 @@ export abstract class Layout
 
 				// first ensure the editor part is ready
 				await this.editorGroupService.whenReady;
+
 				mark("code/restoreEditors/editorGroupsReady");
 
 				// apply editor layout if any
@@ -1398,6 +1500,7 @@ export abstract class Layout
 
 				const editors =
 					await this.state.initialization.editor.editorsToOpen;
+
 				mark("code/restoreEditors/editorsToOpenResolved");
 
 				let openEditorsPromise: Promise<unknown> | undefined =
@@ -1428,6 +1531,7 @@ export abstract class Layout
 
 						if (!editorsByGroup) {
 							editorsByGroup = new Set<IUntypedEditorInput>();
+
 							mapEditorsToGroup.set(group.id, editorsByGroup);
 						}
 
@@ -1480,6 +1584,7 @@ export abstract class Layout
 
 				const tryOpenView = (view: {
 					id: string;
+
 					order: number;
 				}): boolean => {
 					const location =
@@ -1506,7 +1611,9 @@ export abstract class Layout
 								this.viewDescriptorService.getViewContainerModel(
 									container,
 								);
+
 							containerModel.setCollapsed(view.id, false);
+
 							containerModel.setVisible(view.id, true);
 
 							return true;
@@ -1570,6 +1677,7 @@ export abstract class Layout
 				mark("code/didOpenDefaultViews");
 			}
 		})();
+
 		layoutReadyPromises.push(restoreDefaultViewsPromise);
 
 		// Restore Sidebar
@@ -1682,6 +1790,7 @@ export abstract class Layout
 
 		if (zenModeWasActive) {
 			this.setZenModeActive(!restoreZenMode);
+
 			this.toggleZenMode(false, true);
 		}
 
@@ -1701,6 +1810,7 @@ export abstract class Layout
 
 			Promises.settled(layoutRestoredPromises).finally(() => {
 				this.restored = true;
+
 				this.whenRestoredPromise.complete();
 			});
 		});
@@ -1708,6 +1818,7 @@ export abstract class Layout
 
 	registerPart(part: Part): IDisposable {
 		const id = part.getId();
+
 		this.parts.set(id, part);
 
 		return toDisposable(() => this.parts.delete(id));
@@ -1750,7 +1861,9 @@ export abstract class Layout
 	}
 
 	focusPart(part: MULTI_WINDOW_PARTS, targetWindow: Window): void;
+
 	focusPart(part: SINGLE_WINDOW_PARTS): void;
+
 	focusPart(part: Parts, targetWindow: Window = mainWindow): void {
 		const container =
 			this.getContainer(targetWindow, part) ?? this.mainContainer;
@@ -1768,6 +1881,7 @@ export abstract class Layout
 
 				break;
 			}
+
 			case Parts.SIDEBAR_PART: {
 				this.paneCompositeService
 					.getActivePaneComposite(ViewContainerLocation.Sidebar)
@@ -1775,6 +1889,7 @@ export abstract class Layout
 
 				break;
 			}
+
 			case Parts.AUXILIARYBAR_PART: {
 				this.paneCompositeService
 					.getActivePaneComposite(ViewContainerLocation.AuxiliaryBar)
@@ -1782,6 +1897,7 @@ export abstract class Layout
 
 				break;
 			}
+
 			case Parts.ACTIVITYBAR_PART:
 				(
 					this.getPart(Parts.SIDEBAR_PART) as SidebarPart
@@ -1838,8 +1954,11 @@ export abstract class Layout
 	}
 
 	isVisible(part: MULTI_WINDOW_PARTS, targetWindow: Window): boolean;
+
 	isVisible(part: SINGLE_WINDOW_PARTS): boolean;
+
 	isVisible(part: Parts, targetWindow?: Window): boolean;
+
 	isVisible(part: Parts, targetWindow: Window = mainWindow): boolean {
 		if (targetWindow !== mainWindow && part === Parts.EDITOR_PART) {
 			return true; // cannot hide editor part in auxiliary windows
@@ -2026,6 +2145,7 @@ export abstract class Layout
 
 	toggleZenMode(skipLayout?: boolean, restoring = false): void {
 		this.setZenModeActive(!this.isZenModeActive());
+
 		this.state.runtime.zenMode.transitionDisposables.clearAndDisposeAll();
 
 		const setLineNumbers = (lineNumbers?: LineNumbersType) => {
@@ -2034,6 +2154,7 @@ export abstract class Layout
 				// To properly reset line numbers we need to read the configuration for each editor respecting it's uri.
 				if (!lineNumbers && isCodeEditor(editor) && editor.hasModel()) {
 					const model = editor.getModel();
+
 					lineNumbers = this.configurationService.getValue(
 						"editor.lineNumbers",
 						{
@@ -2042,6 +2163,7 @@ export abstract class Layout
 						},
 					);
 				}
+
 				if (!lineNumbers) {
 					lineNumbers =
 						this.configurationService.getValue(
@@ -2073,20 +2195,26 @@ export abstract class Layout
 			if (!restoring) {
 				zenModeExitInfo.transitionedToFullScreen =
 					toggleMainWindowFullScreen;
+
 				zenModeExitInfo.transitionedToCenteredEditorLayout =
 					!this.isMainEditorLayoutCentered() && config.centerLayout;
+
 				zenModeExitInfo.handleNotificationsDoNotDisturbMode =
 					this.notificationService.getFilter() ===
 					NotificationsFilter.OFF;
+
 				zenModeExitInfo.wasVisible.sideBar = this.isVisible(
 					Parts.SIDEBAR_PART,
 				);
+
 				zenModeExitInfo.wasVisible.panel = this.isVisible(
 					Parts.PANEL_PART,
 				);
+
 				zenModeExitInfo.wasVisible.auxiliaryBar = this.isVisible(
 					Parts.AUXILIARYBAR_PART,
 				);
+
 				this.stateModel.setRuntimeValue(
 					LayoutStateKeys.ZEN_MODE_EXIT_INFO,
 					zenModeExitInfo,
@@ -2094,7 +2222,9 @@ export abstract class Layout
 			}
 
 			this.setPanelHidden(true, true);
+
 			this.setAuxiliaryBarHidden(true, true);
+
 			this.setSideBarHidden(true, true);
 
 			if (config.hideActivityBar) {
@@ -2107,6 +2237,7 @@ export abstract class Layout
 
 			if (config.hideLineNumbers) {
 				setLineNumbers("off");
+
 				this.state.runtime.zenMode.transitionDisposables.set(
 					ZenModeSettings.HIDE_LINENUMBERS,
 					this.mainPartEditorService.onDidVisibleEditorsChange(() =>
@@ -2149,6 +2280,7 @@ export abstract class Layout
 							this.configurationService.getValue<boolean>(
 								ZenModeSettings.HIDE_ACTIVITYBAR,
 							);
+
 						this.setActivityBarHidden(zenModeHideActivityBar, true);
 					}
 
@@ -2160,6 +2292,7 @@ export abstract class Layout
 							this.configurationService.getValue<boolean>(
 								ZenModeSettings.HIDE_STATUSBAR,
 							);
+
 						this.setStatusBarHidden(zenModeHideStatusBar, true);
 					}
 
@@ -2169,6 +2302,7 @@ export abstract class Layout
 							this.configurationService.getValue<boolean>(
 								ZenModeSettings.CENTER_LAYOUT,
 							);
+
 						this.centerMainEditorLayout(zenModeCenterLayout, true);
 					}
 
@@ -2178,6 +2312,7 @@ export abstract class Layout
 							this.configurationService.getValue<
 								EditorTabsMode | undefined
 							>(ZenModeSettings.SHOW_TABS) ?? "multiple";
+
 						this.state.runtime.zenMode.transitionDisposables.set(
 							ZenModeSettings.SHOW_TABS,
 							this.editorGroupService.mainPart.enforcePartOptions(
@@ -2220,6 +2355,7 @@ export abstract class Layout
 								: undefined;
 
 						setLineNumbers(lineNumbersType);
+
 						this.state.runtime.zenMode.transitionDisposables.set(
 							ZenModeSettings.HIDE_LINENUMBERS,
 							this.mainPartEditorService.onDidVisibleEditorsChange(
@@ -2328,12 +2464,19 @@ export abstract class Layout
 
 		// View references for all parts
 		this.titleBarPartView = titleBar;
+
 		this.bannerPartView = bannerPart;
+
 		this.sideBarPartView = sideBar;
+
 		this.activityBarPartView = activityBar;
+
 		this.editorPartView = editorPart;
+
 		this.panelPartView = panelPart;
+
 		this.auxiliaryBarPartView = auxiliaryBarPart;
+
 		this.statusBarPartView = statusBar;
 
 		const viewMap = {
@@ -2356,8 +2499,11 @@ export abstract class Layout
 		);
 
 		this.mainContainer.prepend(workbenchGrid.element);
+
 		this.mainContainer.setAttribute("role", "application");
+
 		this.workbenchGrid = workbenchGrid;
+
 		this.workbenchGrid.edgeSnapping =
 			this.state.runtime.mainWindowFullscreen;
 
@@ -2382,7 +2528,9 @@ export abstract class Layout
 					} else if (part === editorPart) {
 						this.setEditorHidden(!visible, true);
 					}
+
 					this._onDidChangePartVisibility.fire();
+
 					this.handleContainerDidLayout(
 						this.mainContainer,
 						this._mainContainerDimension,
@@ -2402,6 +2550,7 @@ export abstract class Layout
 						)
 					: this.workbenchGrid.getViewSize(this.sideBarPartView)
 							.width;
+
 				this.stateModel.setInitializationValue(
 					LayoutStateKeys.SIDEBAR_SIZE,
 					sideBarSize as number,
@@ -2423,6 +2572,7 @@ export abstract class Layout
 								.height
 						: this.workbenchGrid.getViewSize(this.panelPartView)
 								.width;
+
 				this.stateModel.setInitializationValue(
 					LayoutStateKeys.PANEL_SIZE,
 					panelSize as number,
@@ -2437,6 +2587,7 @@ export abstract class Layout
 						)
 					: this.workbenchGrid.getViewSize(this.auxiliaryBarPartView)
 							.width;
+
 				this.stateModel.setInitializationValue(
 					LayoutStateKeys.AUXILIARYBAR_SIZE,
 					auxiliaryBarSize as number,
@@ -2454,11 +2605,13 @@ export abstract class Layout
 					? mainWindow.document.body // in fullscreen mode, make sure to use <body> element because
 					: this.parent, // in that case the workbench will span the entire site
 			);
+
 			this.logService.trace(
 				`Layout#layout, height: ${this._mainContainerDimension.height}, width: ${this._mainContainerDimension.width}`,
 			);
 
 			position(this.mainContainer, 0, 0, 0, 0, "relative");
+
 			size(
 				this.mainContainer,
 				this._mainContainerDimension.width,
@@ -2470,6 +2623,7 @@ export abstract class Layout
 				this._mainContainerDimension.width,
 				this._mainContainerDimension.height,
 			);
+
 			this.initialized = true;
 
 			// Emit as event
@@ -2560,6 +2714,7 @@ export abstract class Layout
 		switch (part) {
 			case Parts.SIDEBAR_PART:
 				viewSize = this.workbenchGrid.getViewSize(this.sideBarPartView);
+
 				this.workbenchGrid.resizeView(this.sideBarPartView, {
 					width: viewSize.width + sizeChangePxWidth,
 					height: viewSize.height,
@@ -2589,6 +2744,7 @@ export abstract class Layout
 				viewSize = this.workbenchGrid.getViewSize(
 					this.auxiliaryBarPartView,
 				);
+
 				this.workbenchGrid.resizeView(this.auxiliaryBarPartView, {
 					width: viewSize.width + sizeChangePxWidth,
 					height: viewSize.height,
@@ -2611,6 +2767,7 @@ export abstract class Layout
 
 					const { width, height } =
 						this.editorGroupService.mainPart.getSize(activeGroup);
+
 					this.editorGroupService.mainPart.setSize(activeGroup, {
 						width: width + sizeChangePxWidth,
 						height: height + sizeChangePxHeight,
@@ -2653,6 +2810,7 @@ export abstract class Layout
 			LayoutStateKeys.ACTIVITYBAR_HIDDEN,
 			hidden,
 		);
+
 		this.workbenchGrid.setViewVisible(this.activityBarPartView, !hidden);
 	}
 
@@ -2726,6 +2884,7 @@ export abstract class Layout
 			this.paneCompositeService.hideActivePaneComposite(
 				ViewContainerLocation.Sidebar,
 			);
+
 			this.focusPanelOrEditor();
 		}
 
@@ -2843,6 +3002,7 @@ export abstract class Layout
 
 		if (sideBarPosition === Position.LEFT) {
 			this.workbenchGrid.moveViewTo(this.activityBarPartView, [2, 0]);
+
 			this.workbenchGrid.moveView(
 				this.sideBarPartView,
 				preMoveSideBarSize,
@@ -2867,6 +3027,7 @@ export abstract class Layout
 			}
 		} else {
 			this.workbenchGrid.moveViewTo(this.activityBarPartView, [2, -1]);
+
 			this.workbenchGrid.moveView(
 				this.sideBarPartView,
 				preMoveSideBarSize,
@@ -2902,6 +3063,7 @@ export abstract class Layout
 					? Direction.Left
 					: Direction.Right,
 			);
+
 			this.workbenchGrid.resizeView(this.panelPartView, {
 				height: preMovePanelHeight as number,
 				width: preMovePanelWidth as number,
@@ -2986,6 +3148,7 @@ export abstract class Layout
 			this.paneCompositeService.hideActivePaneComposite(
 				ViewContainerLocation.Panel,
 			);
+
 			focusEditor = isIOS ? false : true; // Do not auto focus on ios #127832
 		}
 
@@ -3013,6 +3176,7 @@ export abstract class Layout
 
 			if (panelToOpen) {
 				const focus = !skipLayout;
+
 				this.paneCompositeService.openPaneComposite(
 					panelToOpen,
 					ViewContainerLocation.Panel,
@@ -3077,6 +3241,7 @@ export abstract class Layout
 			this.setEditorHidden(true);
 		} else {
 			this.setEditorHidden(false);
+
 			this.workbenchGrid.resizeView(this.panelPartView, {
 				width: isHorizontal(panelPosition)
 					? size.width
@@ -3148,6 +3313,7 @@ export abstract class Layout
 			this.paneCompositeService.hideActivePaneComposite(
 				ViewContainerLocation.AuxiliaryBar,
 			);
+
 			this.focusPanelOrEditor();
 		}
 
@@ -3177,6 +3343,7 @@ export abstract class Layout
 
 			if (panelToOpen) {
 				const focus = !skipLayout;
+
 				this.paneCompositeService.openPaneComposite(
 					panelToOpen,
 					ViewContainerLocation.AuxiliaryBar,
@@ -3341,7 +3508,9 @@ export abstract class Layout
 
 		// Adjust CSS
 		const panelContainer = assertIsDefined(panelPart.getContainer());
+
 		panelContainer.classList.remove(oldPositionValue);
+
 		panelContainer.classList.add(newPositionValue);
 
 		// Update Styles
@@ -3384,6 +3553,7 @@ export abstract class Layout
 			editorHidden
 		) {
 			this.toggleMaximizedPanel();
+
 			editorHidden = false;
 		}
 
@@ -3489,6 +3659,7 @@ export abstract class Layout
 		}
 
 		this.updateWindowsBorder();
+
 		this._onDidChangeWindowMaximized.fire({
 			windowId: targetWindowId,
 			maximized,
@@ -3572,7 +3743,9 @@ export abstract class Layout
 	private arrangeEditorNodes(
 		nodes: {
 			editor: ISerializedNode;
+
 			sideBar?: ISerializedNode;
+
 			auxiliaryBar?: ISerializedNode;
 		},
 		availableHeight: number,
@@ -3585,6 +3758,7 @@ export abstract class Layout
 		}
 
 		const result = [nodes.editor];
+
 		nodes.editor.size = availableWidth;
 
 		if (nodes.sideBar) {
@@ -3633,9 +3807,13 @@ export abstract class Layout
 	private arrangeMiddleSectionNodes(
 		nodes: {
 			editor: ISerializedNode;
+
 			panel: ISerializedNode;
+
 			activityBar: ISerializedNode;
+
 			sideBar: ISerializedNode;
+
 			auxiliaryBar: ISerializedNode;
 		},
 		availableWidth: number,
@@ -3677,6 +3855,7 @@ export abstract class Layout
 
 		if (!isHorizontal(panelPostion)) {
 			result.push(nodes.editor);
+
 			nodes.editor.size =
 				availableWidth -
 				activityBarSize -
@@ -3692,11 +3871,15 @@ export abstract class Layout
 
 			if (sideBarPosition === Position.LEFT) {
 				result.push(nodes.auxiliaryBar);
+
 				result.splice(0, 0, nodes.sideBar);
+
 				result.splice(0, 0, nodes.activityBar);
 			} else {
 				result.splice(0, 0, nodes.auxiliaryBar);
+
 				result.push(nodes.sideBar);
+
 				result.push(nodes.activityBar);
 			}
 		} else {
@@ -3899,50 +4082,78 @@ export abstract class Layout
 
 		type StartupLayoutEvent = {
 			activityBarVisible: boolean;
+
 			sideBarVisible: boolean;
+
 			auxiliaryBarVisible: boolean;
+
 			panelVisible: boolean;
+
 			statusbarVisible: boolean;
+
 			sideBarPosition: string;
+
 			panelPosition: string;
 		};
 
 		type StartupLayoutEventClassification = {
 			owner: "sbatten";
+
 			comment: "Information about the layout of the workbench during statup";
+
 			activityBarVisible: {
 				classification: "SystemMetaData";
+
 				purpose: "FeatureInsight";
+
 				comment: "Whether or the not the activity bar is visible";
 			};
+
 			sideBarVisible: {
 				classification: "SystemMetaData";
+
 				purpose: "FeatureInsight";
+
 				comment: "Whether or the not the primary side bar is visible";
 			};
+
 			auxiliaryBarVisible: {
 				classification: "SystemMetaData";
+
 				purpose: "FeatureInsight";
+
 				comment: "Whether or the not the secondary side bar is visible";
 			};
+
 			panelVisible: {
 				classification: "SystemMetaData";
+
 				purpose: "FeatureInsight";
+
 				comment: "Whether or the not the panel is visible";
 			};
+
 			statusbarVisible: {
 				classification: "SystemMetaData";
+
 				purpose: "FeatureInsight";
+
 				comment: "Whether or the not the status bar is visible";
 			};
+
 			sideBarPosition: {
 				classification: "SystemMetaData";
+
 				purpose: "FeatureInsight";
+
 				comment: "Whether the primary side bar is on the left or right";
 			};
+
 			panelPosition: {
 				classification: "SystemMetaData";
+
 				purpose: "FeatureInsight";
+
 				comment: "Whether the panel is on the top, bottom, left, or right";
 			};
 		};
@@ -3990,12 +4201,19 @@ export abstract class Layout
 
 type ZenModeConfiguration = {
 	centerLayout: boolean;
+
 	fullScreen: boolean;
+
 	hideActivityBar: boolean;
+
 	hideLineNumbers: boolean;
+
 	hideStatusBar: boolean;
+
 	showTabs: "multiple" | "single" | "none";
+
 	restore: boolean;
+
 	silentNotifications: boolean;
 };
 
@@ -4013,10 +4231,15 @@ function getZenModeConfiguration(
 
 interface IWorkbenchLayoutStateKey {
 	readonly name: string;
+
 	readonly runtime: boolean;
+
 	readonly defaultValue: unknown;
+
 	readonly scope: StorageScope;
+
 	readonly target: StorageTarget;
+
 	readonly zenModeIgnore?: boolean;
 }
 
@@ -4197,6 +4420,7 @@ const LayoutStateKeys = {
 
 interface ILayoutStateChangeEvent<T extends StorageKeyType> {
 	readonly key: RuntimeStateKey<T>;
+
 	readonly value: T;
 }
 
@@ -4218,6 +4442,7 @@ class LayoutStateModel extends Disposable {
 	private readonly _onDidChangeState = this._register(
 		new Emitter<ILayoutStateChangeEvent<StorageKeyType>>(),
 	);
+
 	readonly onDidChangeState = this._onDidChangeState.event;
 
 	private readonly stateCache = new Map<string, unknown>();
@@ -4330,12 +4555,14 @@ class LayoutStateModel extends Disposable {
 			LayoutStateKeys.ACTIVITYBAR_HIDDEN.name,
 			this.isActivityBarHidden(),
 		);
+
 		this.stateCache.set(
 			LayoutStateKeys.STATUSBAR_HIDDEN.name,
 			!this.configurationService.getValue(
 				LegacyWorkbenchLayoutSettings.STATUSBAR_VISIBLE,
 			),
 		);
+
 		this.stateCache.set(
 			LayoutStateKeys.SIDEBAR_POSITON.name,
 			positionFromString(
@@ -4347,28 +4574,34 @@ class LayoutStateModel extends Disposable {
 
 		// Set dynamic defaults: part sizing and side bar visibility
 		const workbenchDimensions = getClientArea(this.container);
+
 		LayoutStateKeys.PANEL_POSITION.defaultValue = positionFromString(
 			this.configurationService.getValue(
 				WorkbenchLayoutSettings.PANEL_POSITION,
 			) ?? "bottom",
 		);
+
 		LayoutStateKeys.GRID_SIZE.defaultValue = {
 			height: workbenchDimensions.height,
 			width: workbenchDimensions.width,
 		};
+
 		LayoutStateKeys.SIDEBAR_SIZE.defaultValue = Math.min(
 			300,
 			workbenchDimensions.width / 4,
 		);
+
 		LayoutStateKeys.AUXILIARYBAR_SIZE.defaultValue = Math.min(
 			300,
 			workbenchDimensions.width / 4,
 		);
+
 		LayoutStateKeys.PANEL_SIZE.defaultValue =
 			(this.stateCache.get(LayoutStateKeys.PANEL_POSITION.name) ??
 			isHorizontal(LayoutStateKeys.PANEL_POSITION.defaultValue))
 				? workbenchDimensions.height / 3
 				: workbenchDimensions.width / 4;
+
 		LayoutStateKeys.SIDEBAR_HIDDEN.defaultValue =
 			this.contextService.getWorkbenchState() === WorkbenchState.EMPTY;
 
@@ -4410,6 +4643,7 @@ class LayoutStateModel extends Disposable {
 
 							if (this.stateCache.get(stateKey.name) !== value) {
 								this.stateCache.set(stateKey.name, value);
+
 								this._onDidChangeState.fire({
 									key: stateKey,
 									value,
@@ -4509,6 +4743,7 @@ class LayoutStateModel extends Disposable {
 		if (key.scope === StorageScope.PROFILE) {
 			if (!isZenMode || !key.zenModeIgnore) {
 				this.saveKeyToStorage<T>(key);
+
 				this.updateLegacySettingsFromState(key, value);
 			}
 		}
@@ -4541,6 +4776,7 @@ class LayoutStateModel extends Disposable {
 		}
 
 		this.setRuntimeValue(key, value);
+
 		this._onDidChangeState.fire({ key, value });
 	}
 
@@ -4548,6 +4784,7 @@ class LayoutStateModel extends Disposable {
 		key: WorkbenchLayoutStateKey<T>,
 	): void {
 		const value = this.stateCache.get(key.name) as T;
+
 		this.storageService.store(
 			`${LayoutStateModel.STORAGE_PREFIX}${key.name}`,
 			typeof value === "object" ? JSON.stringify(value) : value,
@@ -4568,14 +4805,17 @@ class LayoutStateModel extends Disposable {
 			switch (typeof key.defaultValue) {
 				case "boolean":
 					value = value === "true";
+
 					break;
 
 				case "number":
 					value = parseInt(value);
+
 					break;
 
 				case "object":
 					value = JSON.parse(value);
+
 					break;
 			}
 		}

@@ -6,8 +6,11 @@ import * as vscode from "vscode";
 
 export interface IMergeRegion {
 	name: string;
+
 	header: vscode.Range;
+
 	content: vscode.Range;
+
 	decoratorContent: vscode.Range;
 }
 export const enum CommitType {
@@ -17,7 +20,9 @@ export const enum CommitType {
 }
 export interface IExtensionConfiguration {
 	enableCodeLens: boolean;
+
 	enableDecorations: boolean;
+
 	enableEditorOverview: boolean;
 }
 export interface IDocumentMergeConflict
@@ -27,6 +32,7 @@ export interface IDocumentMergeConflict
 		editor: vscode.TextEditor,
 		edit?: vscode.TextEditorEdit,
 	): Thenable<boolean>;
+
 	applyEdit(
 		type: CommitType,
 		document: vscode.TextDocument,
@@ -37,15 +43,20 @@ export interface IDocumentMergeConflict
 }
 export interface IDocumentMergeConflictDescriptor {
 	range: vscode.Range;
+
 	current: IMergeRegion;
+
 	incoming: IMergeRegion;
+
 	commonAncestors: IMergeRegion[];
+
 	splitter: vscode.Range;
 }
 export interface IDocumentMergeConflictTracker {
 	getConflicts(
 		document: vscode.TextDocument,
 	): PromiseLike<IDocumentMergeConflict[]>;
+
 	isPending(document: vscode.TextDocument): boolean;
 
 	forget(document: vscode.TextDocument): void;

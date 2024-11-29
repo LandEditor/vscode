@@ -22,7 +22,9 @@ export class IndentRangeProvider implements RangeProvider {
 		private readonly languageConfigurationService: ILanguageConfigurationService,
 		private readonly foldingRangesLimit: FoldingLimitReporter,
 	) {}
+
 	dispose() {}
+
 	compute(cancelationToken: CancellationToken): Promise<FoldingRegions> {
 		const foldingRules =
 			this.languageConfigurationService.getLanguageConfiguration(
@@ -46,18 +48,27 @@ export class IndentRangeProvider implements RangeProvider {
 // public only for testing
 export class RangesCollector {
 	private readonly _startIndexes: number[];
+
 	private readonly _endIndexes: number[];
+
 	private readonly _indentOccurrences: number[];
+
 	private _length: number;
+
 	private readonly _foldingRangesLimit: FoldingLimitReporter;
 
 	constructor(foldingRangesLimit: FoldingLimitReporter) {
 		this._startIndexes = [];
+
 		this._endIndexes = [];
+
 		this._indentOccurrences = [];
+
 		this._length = 0;
+
 		this._foldingRangesLimit = foldingRangesLimit;
 	}
+
 	public insertFirst(
 		startLineNumber: number,
 		endLineNumber: number,
@@ -69,9 +80,13 @@ export class RangesCollector {
 		) {
 			return;
 		}
+
 		const index = this._length;
+
 		this._startIndexes[index] = startLineNumber;
+
 		this._endIndexes[index] = endLineNumber;
+
 		this._length++;
 
 		if (indent < 1000) {
@@ -79,6 +94,7 @@ export class RangesCollector {
 				(this._indentOccurrences[indent] || 0) + 1;
 		}
 	}
+
 	public toIndentRanges(model: ITextModel) {
 		const limit = this._foldingRangesLimit.limit;
 
@@ -91,8 +107,10 @@ export class RangesCollector {
 
 			for (let i = this._length - 1, k = 0; i >= 0; i--, k++) {
 				startIndexes[k] = this._startIndexes[i];
+
 				endIndexes[k] = this._endIndexes[i];
 			}
+
 			return new FoldingRegions(startIndexes, endIndexes);
 		} else {
 			this._foldingRangesLimit.update(this._length, limit);
@@ -110,9 +128,11 @@ export class RangesCollector {
 
 						break;
 					}
+
 					entries += n;
 				}
 			}
+
 			const tabSize = model.getOptions().tabSize;
 			// reverse and create arrays of the exact length
 			const startIndexes = new Uint32Array(limit);
@@ -131,10 +151,13 @@ export class RangesCollector {
 					(indent === maxIndent && entries++ < limit)
 				) {
 					startIndexes[k] = startIndex;
+
 					endIndexes[k] = this._endIndexes[i];
+
 					k++;
 				}
 			}
+
 			return new FoldingRegions(startIndexes, endIndexes);
 		}
 	}
@@ -167,9 +190,11 @@ export function computeRanges(
 			`(${markers.start.source})|(?:${markers.end.source})`,
 		);
 	}
+
 	const previousRegions: PreviousRegion[] = [];
 
 	const line = model.getLineCount() + 1;
+
 	previousRegions.push({ indent: -1, endAbove: line, line }); // sentinel, to make sure there's at least one entry
 	for (let line = model.getLineCount(); line > 0; line--) {
 		const lineContent = model.getLineContent(line);
@@ -185,8 +210,10 @@ export function computeRanges(
 				// impacts the end position of the block before
 				previous.endAbove = line;
 			}
+
 			continue; // only whitespace
 		}
+
 		let m;
 
 		if (pattern && (m = lineContent.match(pattern))) {
@@ -199,13 +226,18 @@ export function computeRanges(
 				while (i > 0 && previousRegions[i].indent !== -2) {
 					i--;
 				}
+
 				if (i > 0) {
 					previousRegions.length = i + 1;
+
 					previous = previousRegions[i];
 					// new folding range from pattern, includes the end line
 					result.insertFirst(line, previous.line, indent);
+
 					previous.line = line;
+
 					previous.indent = indent;
+
 					previous.endAbove = line;
 
 					continue;
@@ -219,10 +251,12 @@ export function computeRanges(
 				continue;
 			}
 		}
+
 		if (previous.indent > indent) {
 			// discard all regions with larger indent
 			do {
 				previousRegions.pop();
+
 				previous = previousRegions[previousRegions.length - 1];
 			} while (previous.indent > indent);
 			// new folding range
@@ -233,6 +267,7 @@ export function computeRanges(
 				result.insertFirst(line, endLineNumber, indent);
 			}
 		}
+
 		if (previous.indent === indent) {
 			previous.endAbove = line;
 		} else {
@@ -241,5 +276,6 @@ export function computeRanges(
 			previousRegions.push({ indent, endAbove: line, line });
 		}
 	}
+
 	return result.toIndentRanges(model);
 }

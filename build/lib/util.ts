@@ -52,11 +52,13 @@ export function incremental(
 		const stream = !supportsCancellation
 			? streamProvider()
 			: streamProvider(isCancellable ? token : NoCancellationToken);
+
 		input
 			.pipe(stream)
 			.pipe(
 				es.through(undefined, () => {
 					state = "idle";
+
 					eventuallyRun();
 				}),
 			)
@@ -66,16 +68,21 @@ export function incremental(
 	if (initial) {
 		run(initial, false);
 	}
+
 	const eventuallyRun = _debounce(() => {
 		const paths = Object.keys(buffer);
 
 		if (paths.length === 0) {
 			return;
 		}
+
 		const data = paths.map((path) => buffer[path]);
+
 		buffer = Object.create(null);
+
 		run(es.readArray(data), true);
 	}, 500);
+
 	input.on("data", (f: any) => {
 		buffer[f.path] = f;
 
@@ -98,10 +105,12 @@ export function debounce(
 
 	const run = () => {
 		state = "running";
+
 		task()
 			.pipe(
 				es.through(undefined, () => {
 					const shouldRunAgain = state === "stale";
+
 					state = "idle";
 
 					if (shouldRunAgain) {
@@ -111,9 +120,11 @@ export function debounce(
 			)
 			.pipe(output);
 	};
+
 	run();
 
 	const eventuallyRun = _debounce(() => run(), duration);
+
 	input.on("data", () => {
 		if (state === "idle") {
 			eventuallyRun();
@@ -128,10 +139,12 @@ export function fixWin32DirectoryPermissions(): NodeJS.ReadWriteStream {
 	if (!/win32/.test(process.platform)) {
 		return es.through();
 	}
+
 	return es.mapSync<VinylFile, VinylFile>((f) => {
 		if (f.stat && f.stat.isDirectory && f.stat.isDirectory()) {
 			f.stat.mode = 16877;
 		}
+
 		return f;
 	});
 }
@@ -146,6 +159,7 @@ export function setExecutableBit(
 				},
 			} as any;
 		}
+
 		f.stat.mode = /* 100755 */ 33261;
 
 		return f;
@@ -154,6 +168,7 @@ export function setExecutableBit(
 	if (!pattern) {
 		return setBit;
 	}
+
 	const input = es.through();
 
 	const filter = _filter(pattern, { restore: true });
@@ -168,6 +183,7 @@ export function toFileUri(filePath: string): string {
 	if (match) {
 		filePath = "/" + match[1].toUpperCase() + ":" + match[2];
 	}
+
 	return "file://" + filePath.replace(/\\/g, "/");
 }
 export function skipDirectories(): NodeJS.ReadWriteStream {
@@ -215,11 +231,13 @@ export function loadSourcemaps(): NodeJS.ReadWriteStream {
 
 					return;
 				}
+
 				if (!f.contents) {
 					cb(undefined, f);
 
 					return;
 				}
+
 				const contents = (<Buffer>f.contents).toString("utf8");
 
 				const reg = /\/\/# sourceMappingURL=(.*)$/g;
@@ -231,6 +249,7 @@ export function loadSourcemaps(): NodeJS.ReadWriteStream {
 				while ((match = reg.exec(contents))) {
 					lastMatch = match;
 				}
+
 				if (!lastMatch) {
 					f.sourceMap = {
 						version: "3",
@@ -239,14 +258,17 @@ export function loadSourcemaps(): NodeJS.ReadWriteStream {
 						sources: [f.relative.replace(/\\/g, "/")],
 						sourcesContent: [contents],
 					};
+
 					cb(undefined, f);
 
 					return;
 				}
+
 				f.contents = Buffer.from(
 					contents.replace(/\/\/# sourceMappingURL=(.*)$/g, ""),
 					"utf8",
 				);
+
 				fs.readFile(
 					path.join(path.dirname(f.path), lastMatch[1]),
 					"utf8",
@@ -254,7 +276,9 @@ export function loadSourcemaps(): NodeJS.ReadWriteStream {
 						if (err) {
 							return cb(err);
 						}
+
 						f.sourceMap = JSON.parse(contents);
+
 						cb(undefined, f);
 					},
 				);
@@ -270,6 +294,7 @@ export function stripSourceMappingURL(): NodeJS.ReadWriteStream {
 	const output = input.pipe(
 		es.mapSync<VinylFile, VinylFile>((f) => {
 			const contents = (<Buffer>f.contents).toString("utf8");
+
 			f.contents = Buffer.from(
 				contents.replace(/\n\/\/# sourceMappingURL=(.*)$/gm, ""),
 				"utf8",
@@ -290,6 +315,7 @@ export function $if(
 	if (typeof test === "boolean") {
 		return test ? onTrue : onFalse;
 	}
+
 	return ternaryStream(test, onTrue, onFalse);
 }
 /** Operator that appends the js files' original path a sourceURL, so debug locations map */
@@ -301,6 +327,7 @@ export function appendOwnPathSourceURL(): NodeJS.ReadWriteStream {
 			if (!(f.contents instanceof Buffer)) {
 				throw new Error(`contents of ${f.path} are not a buffer`);
 			}
+
 			f.contents = Buffer.concat([
 				f.contents,
 				Buffer.from(`\n//# sourceURL=${pathToFileURL(f.path)}`),
@@ -322,6 +349,7 @@ export function rewriteSourceMappingURL(
 			const contents = (<Buffer>f.contents).toString("utf8");
 
 			const str = `//# sourceMappingURL=${sourceMappingURLBase}/${path.dirname(f.relative).replace(/\\/g, "/")}/$1`;
+
 			f.contents = Buffer.from(
 				contents.replace(/\n\/\/# sourceMappingURL=(.*)$/gm, str),
 			);
@@ -342,14 +370,18 @@ export function rimraf(dir: string): () => Promise<void> {
 					if (!err) {
 						return c();
 					}
+
 					if (err.code === "ENOTEMPTY" && ++retries < 5) {
 						return setTimeout(() => retry(), 10);
 					}
+
 					return e(err);
 				});
 			};
+
 			retry();
 		});
+
 	result.taskName = `clean-${path.basename(dir).toLowerCase()}`;
 
 	return result;
@@ -371,6 +403,7 @@ function _rreaddir(dirPath: string, prepend: string, result: string[]): void {
 }
 export function rreddir(dirPath: string): string[] {
 	const result: string[] = [];
+
 	_rreaddir(dirPath, "", result);
 
 	return result;
@@ -379,12 +412,15 @@ export function ensureDir(dirPath: string): void {
 	if (fs.existsSync(dirPath)) {
 		return;
 	}
+
 	ensureDir(path.dirname(dirPath));
+
 	fs.mkdirSync(dirPath);
 }
 export function rebase(count: number): NodeJS.ReadWriteStream {
 	return rename((f) => {
 		const parts = f.dirname ? f.dirname.split(/[\/\\]/) : [];
+
 		f.dirname = parts.slice(count).join(path.sep);
 	});
 }
@@ -399,6 +435,7 @@ export function filter(fn: (data: any) => boolean): FilterStream {
 			result.restore.push(data);
 		}
 	}));
+
 	result.restore = es.through();
 
 	return result;
@@ -406,6 +443,7 @@ export function filter(fn: (data: any) => boolean): FilterStream {
 export function streamToPromise(stream: NodeJS.ReadWriteStream): Promise<void> {
 	return new Promise((c, e) => {
 		stream.on("error", (err) => e(err));
+
 		stream.on("end", () => c());
 	});
 }

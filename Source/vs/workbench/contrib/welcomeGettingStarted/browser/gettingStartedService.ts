@@ -90,15 +90,25 @@ const BUILT_IN_SOURCE = localize("builtin", "Built-In");
 
 export interface IWalkthrough {
 	id: string;
+
 	title: string;
+
 	description: string;
+
 	order: number;
+
 	source: string;
+
 	isFeatured: boolean;
+
 	next?: string;
+
 	when: ContextKeyExpression;
+
 	steps: IWalkthroughStep[];
+
 	icon: { type: "icon"; icon: ThemeIcon } | { type: "image"; path: string };
+
 	walkthroughPageTitle: string;
 }
 
@@ -108,23 +118,35 @@ export type IWalkthroughLoose = Omit<IWalkthrough, "steps"> & {
 
 export interface IResolvedWalkthrough extends IWalkthrough {
 	steps: IResolvedWalkthroughStep[];
+
 	newItems: boolean;
+
 	recencyBonus: number;
+
 	newEntry: boolean;
 }
 
 export interface IWalkthroughStep {
 	id: string;
+
 	title: string;
+
 	description: LinkedText[];
+
 	category: string;
+
 	when: ContextKeyExpression;
+
 	order: number;
+
 	completionEvents: string[];
+
 	media:
 		| {
 				type: "image";
+
 				path: { hcDark: URI; hcLight: URI; light: URI; dark: URI };
+
 				altText: string;
 		  }
 		| { type: "svg"; path: URI; altText: string }
@@ -141,17 +163,23 @@ export interface IWalkthroughsService {
 	_serviceBrand: undefined;
 
 	readonly onDidAddWalkthrough: Event<IResolvedWalkthrough>;
+
 	readonly onDidRemoveWalkthrough: Event<string>;
+
 	readonly onDidChangeWalkthrough: Event<IResolvedWalkthrough>;
+
 	readonly onDidProgressStep: Event<IResolvedWalkthroughStep>;
 
 	getWalkthroughs(): IResolvedWalkthrough[];
+
 	getWalkthrough(id: string): IResolvedWalkthrough;
 
 	registerWalkthrough(descriptor: IWalkthroughLoose): void;
 
 	progressByEvent(eventName: string): void;
+
 	progressStep(id: string): void;
+
 	deprogressStep(id: string): void;
 
 	markWalkthroughOpened(id: string): void;
@@ -168,34 +196,46 @@ export class WalkthroughsService
 	declare readonly _serviceBrand: undefined;
 
 	private readonly _onDidAddWalkthrough = new Emitter<IResolvedWalkthrough>();
+
 	readonly onDidAddWalkthrough: Event<IResolvedWalkthrough> =
 		this._onDidAddWalkthrough.event;
+
 	private readonly _onDidRemoveWalkthrough = new Emitter<string>();
+
 	readonly onDidRemoveWalkthrough: Event<string> =
 		this._onDidRemoveWalkthrough.event;
+
 	private readonly _onDidChangeWalkthrough =
 		new Emitter<IResolvedWalkthrough>();
+
 	readonly onDidChangeWalkthrough: Event<IResolvedWalkthrough> =
 		this._onDidChangeWalkthrough.event;
+
 	private readonly _onDidProgressStep =
 		new Emitter<IResolvedWalkthroughStep>();
+
 	readonly onDidProgressStep: Event<IResolvedWalkthroughStep> =
 		this._onDidProgressStep.event;
 
 	private memento: Memento;
+
 	private stepProgress: Record<string, StepProgress | undefined>;
 
 	private sessionEvents = new Set<string>();
+
 	private completionListeners = new Map<string, Set<string>>();
 
 	private gettingStartedContributions = new Map<string, IWalkthrough>();
+
 	private steps = new Map<string, IWalkthroughStep>();
 
 	private sessionInstalledExtensions: Set<string> = new Set<string>();
 
 	private categoryVisibilityContextKeys = new Set<string>();
+
 	private stepCompletionContextKeyExpressions =
 		new Set<ContextKeyExpression>();
+
 	private stepCompletionContextKeys = new Set<string>();
 
 	private metadata: WalkthroughMetaDataType;
@@ -237,6 +277,7 @@ export class WalkthroughsService
 			"gettingStartedService",
 			this.storageService,
 		);
+
 		this.stepProgress = this.memento.getMemento(
 			StorageScope.PROFILE,
 			StorageTarget.USER,
@@ -245,6 +286,7 @@ export class WalkthroughsService
 		this.initCompletionEventListeners();
 
 		HasMultipleNewFileEntries.bindTo(this.contextService).set(false);
+
 		this.registerWalkthroughs();
 	}
 
@@ -318,6 +360,7 @@ export class WalkthroughsService
 			added.map((e) =>
 				this.registerExtensionWalkthroughContributions(e.description),
 			);
+
 			removed.map((e) =>
 				this.unregisterExtensionWalkthroughContributions(e.description),
 			);
@@ -358,10 +401,12 @@ export class WalkthroughsService
 						this.sessionInstalledExtensions.add(
 							e.identifier.id.toLowerCase(),
 						);
+
 						this.progressByEvent(
 							`extensionInstalled:${e.identifier.id.toLowerCase()}`,
 						);
 					});
+
 					return;
 				}
 
@@ -377,6 +422,7 @@ export class WalkthroughsService
 							e.identifier.id.toLowerCase(),
 						);
 					}
+
 					this.progressByEvent(
 						`extensionInstalled:${e.identifier.id.toLowerCase()}`,
 					);
@@ -424,6 +470,7 @@ export class WalkthroughsService
 		if (this.userDataSyncEnablementService.isEnabled()) {
 			this.progressByEvent("onEvent:sync-enabled");
 		}
+
 		this._register(
 			this.userDataSyncEnablementService.onDidChangeEnablement(() => {
 				if (this.userDataSyncEnablementService.isEnabled()) {
@@ -435,7 +482,9 @@ export class WalkthroughsService
 
 	markWalkthroughOpened(id: string) {
 		const walkthrough = this.gettingStartedContributions.get(id);
+
 		const prior = this.metadata.get(id);
+
 		if (prior && walkthrough) {
 			this.metadata.set(id, {
 				...prior,
@@ -476,6 +525,7 @@ export class WalkthroughsService
 
 			if (typeof path === "string") {
 				const converted = convertPath(path);
+
 				return {
 					hcDark: converted,
 					hcLight: converted,
@@ -497,7 +547,9 @@ export class WalkthroughsService
 		}
 
 		let sectionToOpen: string | undefined;
+
 		let sectionToOpenIndex = Math.min(); // '+Infinity';
+
 		await Promise.all(
 			extension.contributes?.walkthroughs?.map(
 				async (walkthrough, index) => {
@@ -505,6 +557,7 @@ export class WalkthroughsService
 						extension.identifier.value + "#" + walkthrough.id;
 
 					const isNewlyInstalled = !this.metadata.get(categoryID);
+
 					if (isNewlyInstalled) {
 						this.metadata.set(categoryID, {
 							firstSeen: +new Date(),
@@ -535,8 +588,10 @@ export class WalkthroughsService
 						this.sessionInstalledExtensions.delete(
 							extension.identifier.value.toLowerCase(),
 						);
+
 						if (index < sectionToOpenIndex && isNewlyInstalled) {
 							sectionToOpen = categoryID;
+
 							sectionToOpenIndex = index;
 						}
 					}
@@ -546,6 +601,7 @@ export class WalkthroughsService
 							const description = parseDescription(
 								step.description || "",
 							);
+
 							const fullyQualifiedID =
 								extension.identifier.value +
 								"#" +
@@ -566,6 +622,7 @@ export class WalkthroughsService
 
 							if (step.media.image) {
 								const altText = step.media.altText;
+
 								if (altText === undefined) {
 									console.error(
 										"Walkthrough item:",
@@ -573,6 +630,7 @@ export class WalkthroughsService
 										"is missing altText for its media element.",
 									);
 								}
+
 								media = {
 									type: "image",
 									altText,
@@ -630,12 +688,16 @@ export class WalkthroughsService
 					);
 
 					let isFeatured = false;
+
 					if (walkthrough.featuredFor) {
 						const folders = this.workspaceContextService
 							.getWorkspace()
 							.folders.map((f) => f.uri);
+
 						const token = new CancellationTokenSource();
+
 						setTimeout(() => token.cancel(), 2000);
+
 						isFeatured =
 							await this.instantiationService.invokeFunction(
 								(a) =>
@@ -649,6 +711,7 @@ export class WalkthroughsService
 					}
 
 					const iconStr = walkthrough.icon ?? extension.icon;
+
 					const walkthoughDescriptor: IWalkthrough = {
 						description: walkthrough.description,
 						title: walkthrough.title,
@@ -693,6 +756,7 @@ export class WalkthroughsService
 		);
 
 		const hadLastFoucs = await this.hostService.hadLastFocus();
+
 		if (
 			hadLastFoucs &&
 			sectionToOpen &&
@@ -702,21 +766,29 @@ export class WalkthroughsService
 		) {
 			type GettingStartedAutoOpenClassification = {
 				owner: "lramos15";
+
 				comment: "When a walkthrthrough is opened upon extension installation";
+
 				id: {
 					classification: "PublicNonPersonalData";
+
 					purpose: "FeatureInsight";
+
 					owner: "lramos15";
+
 					comment: "Used to understand what walkthroughs are consulted most frequently";
 				};
 			};
+
 			type GettingStartedAutoOpenEvent = {
 				id: string;
 			};
+
 			this.telemetryService.publicLog2<
 				GettingStartedAutoOpenEvent,
 				GettingStartedAutoOpenClassification
 			>("gettingStarted.didAutoOpenWalkthrough", { id: sectionToOpen });
+
 			this.commandService.executeCommand(
 				"workbench.action.openWalkthrough",
 				sectionToOpen,
@@ -733,6 +805,7 @@ export class WalkthroughsService
 
 		extension.contributes?.walkthroughs?.forEach((section) => {
 			const categoryID = extension.identifier.value + "#" + section.id;
+
 			section.steps.forEach((step) => {
 				const fullyQualifiedID =
 					extension.identifier.value +
@@ -740,18 +813,23 @@ export class WalkthroughsService
 					section.id +
 					"#" +
 					step.id;
+
 				this.steps.delete(fullyQualifiedID);
 			});
+
 			this.gettingStartedContributions.delete(categoryID);
+
 			this._onDidRemoveWalkthrough.fire(categoryID);
 		});
 	}
 
 	getWalkthrough(id: string): IResolvedWalkthrough {
 		const walkthrough = this.gettingStartedContributions.get(id);
+
 		if (!walkthrough) {
 			throw Error("Trying to get unknown walkthrough: " + id);
 		}
+
 		return this.resolveWalkthrough(walkthrough);
 	}
 
@@ -759,6 +837,7 @@ export class WalkthroughsService
 		const registeredCategories = [
 			...this.gettingStartedContributions.values(),
 		];
+
 		const categoriesWithCompletion = registeredCategories
 			.map((category) => {
 				return {
@@ -785,12 +864,16 @@ export class WalkthroughsService
 		);
 
 		const hasOpened = this.metadata.get(category.id)?.manaullyOpened;
+
 		const firstSeenDate = this.metadata.get(category.id)?.firstSeen;
+
 		const isNew =
 			firstSeenDate && firstSeenDate > +new Date() - NEW_WALKTHROUGH_TIME;
 
 		const lastStepIDs = this.metadata.get(category.id)?.stepIDs;
+
 		const rawCategory = this.gettingStartedContributions.get(category.id);
+
 		if (!rawCategory) {
 			throw Error("Could not find walkthrough with id " + category.id);
 		}
@@ -803,9 +886,12 @@ export class WalkthroughsService
 				currentStepIds.some((id, index) => id !== lastStepIDs[index]));
 
 		let recencyBonus = 0;
+
 		if (firstSeenDate) {
 			const currentDate = +new Date();
+
 			const timeSinceFirstSeen = currentDate - firstSeenDate;
+
 			recencyBonus = Math.max(
 				0,
 				(NEW_WALKTHROUGH_TIME - timeSinceFirstSeen) /
@@ -832,10 +918,14 @@ export class WalkthroughsService
 
 	progressStep(id: string) {
 		const oldProgress = this.stepProgress[id];
+
 		if (!oldProgress || oldProgress.done !== true) {
 			this.stepProgress[id] = { done: true };
+
 			this.memento.saveMemento();
+
 			const step = this.getStep(id);
+
 			if (!step) {
 				throw Error("Tried to progress unknown step");
 			}
@@ -846,8 +936,11 @@ export class WalkthroughsService
 
 	deprogressStep(id: string) {
 		delete this.stepProgress[id];
+
 		this.memento.saveMemento();
+
 		const step = this.getStep(id);
+
 		this._onDidProgressStep.fire(this.getStepProgress(step));
 	}
 
@@ -857,6 +950,7 @@ export class WalkthroughsService
 		}
 
 		this.sessionEvents.add(event);
+
 		this.completionListeners
 			.get(event)
 			?.forEach((id) => this.progressStep(id));
@@ -876,10 +970,12 @@ export class WalkthroughsService
 		const oldCategory = this.gettingStartedContributions.get(
 			walkthroughDescriptor.id,
 		);
+
 		if (oldCategory) {
 			console.error(
 				`Skipping attempt to overwrite walkthrough. (${walkthroughDescriptor.id})`,
 			);
+
 			return;
 		}
 
@@ -896,10 +992,13 @@ export class WalkthroughsService
 						" twice. Second is dropped.",
 				);
 			}
+
 			this.steps.set(step.id, step);
+
 			step.when
 				.keys()
 				.forEach((key) => this.categoryVisibilityContextKeys.add(key));
+
 			this.registerDoneListeners(step);
 		});
 
@@ -915,6 +1014,7 @@ export class WalkthroughsService
 				step,
 				`uses deprecated 'doneOn' property. Adopt 'completionEvents' to silence this warning`,
 			);
+
 			return;
 		}
 
@@ -940,12 +1040,14 @@ export class WalkthroughsService
 										)
 									);
 								}
+
 								if (
 									href.startsWith("https://") ||
 									href.startsWith("http://")
 								) {
 									return "onLink:" + href;
 								}
+
 								return undefined;
 							}),
 					),
@@ -964,6 +1066,7 @@ export class WalkthroughsService
 				console.error(
 					`Unknown completionEvent ${event} when registering step ${step.id}`,
 				);
+
 				continue;
 			}
 
@@ -973,18 +1076,23 @@ export class WalkthroughsService
 				case "onView":
 				case "onSettingChanged":
 					break;
+
 				case "onContext": {
 					const expression = ContextKeyExpr.deserialize(argument);
+
 					if (expression) {
 						this.stepCompletionContextKeyExpressions.add(
 							expression,
 						);
+
 						expression
 							.keys()
 							.forEach((key) =>
 								this.stepCompletionContextKeys.add(key),
 							);
+
 						event = eventType + ":" + expression.serialize();
+
 						if (
 							this.contextService.contextMatchesRules(expression)
 						) {
@@ -998,23 +1106,32 @@ export class WalkthroughsService
 							step.id,
 						);
 					}
+
 					break;
 				}
+
 				case "onStepSelected":
 				case "stepSelected":
 					event = "stepSelected:" + step.id;
+
 					break;
+
 				case "onCommand":
 					event = eventType + ":" + argument.replace(/^toSide:/, "");
+
 					break;
+
 				case "onExtensionInstalled":
 				case "extensionInstalled":
 					event = "extensionInstalled:" + argument.toLowerCase();
+
 					break;
+
 				default:
 					console.error(
 						`Unknown completionEvent ${event} when registering step ${step.id}`,
 					);
+
 					continue;
 			}
 
@@ -1026,17 +1143,20 @@ export class WalkthroughsService
 		if (!this.completionListeners.has(event)) {
 			this.completionListeners.set(event, new Set());
 		}
+
 		this.completionListeners.get(event)?.add(step.id);
 	}
 
 	private getStep(id: string): IWalkthroughStep {
 		const step = this.steps.get(id);
+
 		if (!step) {
 			throw Error(
 				"Attempting to access step which does not exist in registry " +
 					id,
 			);
 		}
+
 		return step;
 	}
 }
@@ -1067,6 +1187,7 @@ const convertInternalMediaPathsToBrowserURIs = (
 ): { hcDark: URI; hcLight: URI; dark: URI; light: URI } => {
 	if (typeof path === "string") {
 		const converted = convertInternalMediaPathToBrowserURI(path);
+
 		return {
 			hcDark: converted,
 			hcLight: converted,
@@ -1107,6 +1228,7 @@ registerAction2(
 
 		run(accessor: ServicesAccessor) {
 			const gettingStartedService = accessor.get(IWalkthroughsService);
+
 			const storageService = accessor.get(IStorageService);
 
 			storageService.store(
@@ -1127,10 +1249,12 @@ registerAction2(
 				"gettingStartedService",
 				accessor.get(IStorageService),
 			);
+
 			const record = memento.getMemento(
 				StorageScope.PROFILE,
 				StorageTarget.USER,
 			);
+
 			for (const key in record) {
 				if (Object.prototype.hasOwnProperty.call(record, key)) {
 					try {
@@ -1140,6 +1264,7 @@ registerAction2(
 					}
 				}
 			}
+
 			memento.saveMemento();
 		}
 	},

@@ -16,6 +16,7 @@ export default class ErrorTelemetry extends BaseErrorTelemetry {
 		if (typeof mainWindow.onerror === "function") {
 			oldOnError = mainWindow.onerror;
 		}
+
 		mainWindow.onerror = function (
 			message: Event | string,
 			filename?: string,
@@ -30,8 +31,10 @@ export default class ErrorTelemetry extends BaseErrorTelemetry {
 				column,
 				error,
 			);
+
 			oldOnError?.apply(this, [message, filename, line, column, error]);
 		};
+
 		this._disposables.add(
 			toDisposable(() => {
 				if (oldOnError) {
@@ -40,6 +43,7 @@ export default class ErrorTelemetry extends BaseErrorTelemetry {
 			}),
 		);
 	}
+
 	private _onUncaughtError(
 		msg: string,
 		file: string,
@@ -60,18 +64,22 @@ export default class ErrorTelemetry extends BaseErrorTelemetry {
 			if (ErrorNoTelemetry.isErrorNoTelemetry(err)) {
 				return;
 			}
+
 			const { name, message, stack } = err;
+
 			data.uncaught_error_name = name;
 
 			if (message) {
 				data.uncaught_error_msg = message;
 			}
+
 			if (stack) {
 				data.callstack = Array.isArray(err.stack)
 					? (err.stack = err.stack.join("\n"))
 					: err.stack;
 			}
 		}
+
 		this._enqueue(data);
 	}
 }

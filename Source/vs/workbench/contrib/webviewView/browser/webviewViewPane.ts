@@ -64,6 +64,7 @@ const storageKeys = {
 
 export class WebviewViewPane extends ViewPane {
 	private static _originStore?: ExtensionKeyedWebviewOriginStore;
+
 	private static getOriginStore(
 		storageService: IStorageService,
 	): ExtensionKeyedWebviewOriginStore {
@@ -74,25 +75,39 @@ export class WebviewViewPane extends ViewPane {
 
 		return this._originStore;
 	}
+
 	private readonly _webview = this._register(
 		new MutableDisposable<IOverlayWebview>(),
 	);
+
 	private readonly _webviewDisposables = this._register(
 		new DisposableStore(),
 	);
+
 	private _activated = false;
+
 	private _container?: HTMLElement;
+
 	private _rootContainer?: HTMLElement;
+
 	private _resizeObserver?: any;
+
 	private readonly defaultTitle: string;
+
 	private setTitle: string | undefined;
+
 	private badge: IViewBadge | undefined;
+
 	private readonly activity = this._register(
 		new MutableDisposable<IDisposable>(),
 	);
+
 	private readonly memento: Memento;
+
 	private readonly viewState: MementoObject;
+
 	private readonly extensionId?: ExtensionIdentifier;
+
 	private _repositionTimeout?: any;
 
 	constructor(
@@ -149,16 +164,22 @@ export class WebviewViewPane extends ViewPane {
 			telemetryService,
 			hoverService,
 		);
+
 		this.extensionId = options.fromExtensionId;
+
 		this.defaultTitle = this.title;
+
 		this.memento = new Memento(`webviewView.${this.id}`, storageService);
+
 		this.viewState = this.memento.getMemento(
 			StorageScope.WORKSPACE,
 			StorageTarget.MACHINE,
 		);
+
 		this._register(
 			this.onDidChangeBodyVisibility(() => this.updateTreeVisibility()),
 		);
+
 		this._register(
 			this.webviewViewService.onNewResolverRegistered((e) => {
 				if (e.viewType === this.id) {
@@ -167,27 +188,39 @@ export class WebviewViewPane extends ViewPane {
 				}
 			}),
 		);
+
 		this.updateTreeVisibility();
 	}
+
 	private readonly _onDidChangeVisibility = this._register(
 		new Emitter<boolean>(),
 	);
+
 	readonly onDidChangeVisibility = this._onDidChangeVisibility.event;
+
 	private readonly _onDispose = this._register(new Emitter<void>());
+
 	readonly onDispose = this._onDispose.event;
+
 	override dispose() {
 		this._onDispose.fire();
+
 		clearTimeout(this._repositionTimeout);
 
 		super.dispose();
 	}
+
 	override focus(): void {
 		super.focus();
+
 		this._webview.value?.focus();
 	}
+
 	protected override renderBody(container: HTMLElement): void {
 		super.renderBody(container);
+
 		this._container = container;
+
 		this._rootContainer = undefined;
 
 		if (!this._resizeObserver) {
@@ -196,30 +229,38 @@ export class WebviewViewPane extends ViewPane {
 					this.layoutWebview();
 				}, 0);
 			});
+
 			this._register(
 				toDisposable(() => {
 					this._resizeObserver.disconnect();
 				}),
 			);
+
 			this._resizeObserver.observe(container);
 		}
 	}
+
 	public override saveState() {
 		if (this._webview.value) {
 			this.viewState[storageKeys.webviewState] =
 				this._webview.value.state;
 		}
+
 		this.memento.saveMemento();
 
 		super.saveState();
 	}
+
 	protected override layoutBody(height: number, width: number): void {
 		super.layoutBody(height, width);
+
 		this.layoutWebview(new Dimension(width, height));
 	}
+
 	private updateTreeVisibility() {
 		if (this.isBodyVisible()) {
 			this.activate();
+
 			this._webview.value?.claim(
 				this,
 				getWindow(this.element),
@@ -229,10 +270,12 @@ export class WebviewViewPane extends ViewPane {
 			this._webview.value?.release(this);
 		}
 	}
+
 	private activate() {
 		if (this._activated) {
 			return;
 		}
+
 		this._activated = true;
 
 		const origin = this.extensionId
@@ -250,17 +293,21 @@ export class WebviewViewPane extends ViewPane {
 			contentOptions: {},
 			extension: this.extensionId ? { id: this.extensionId } : undefined,
 		});
+
 		webview.state = this.viewState[storageKeys.webviewState];
+
 		this._webview.value = webview;
 
 		if (this._container) {
 			this.layoutWebview();
 		}
+
 		this._webviewDisposables.add(
 			toDisposable(() => {
 				this._webview.value?.release(this);
 			}),
 		);
+
 		this._webviewDisposables.add(
 			webview.onDidUpdateState(() => {
 				this.viewState[storageKeys.webviewState] = webview.state;
@@ -280,7 +327,9 @@ export class WebviewViewPane extends ViewPane {
 					event,
 					(e) => {
 						e.preventDefault();
+
 						e.stopImmediatePropagation();
+
 						this.dropTargetElement.dispatchEvent(
 							new DragEvent(e.type, e),
 						);
@@ -288,6 +337,7 @@ export class WebviewViewPane extends ViewPane {
 				),
 			);
 		}
+
 		this._webviewDisposables.add(
 			new WebviewWindowDragMonitor(
 				getWindow(this.element),
@@ -298,6 +348,7 @@ export class WebviewViewPane extends ViewPane {
 		const source = this._webviewDisposables.add(
 			new CancellationTokenSource(),
 		);
+
 		this.withProgress(async () => {
 			await this.extensionService.activateByEvent(`onView:${this.id}`);
 
@@ -328,13 +379,16 @@ export class WebviewViewPane extends ViewPane {
 				dispose: () => {
 					// Only reset and clear the webview itself. Don't dispose of the view container
 					this._activated = false;
+
 					this._webview.clear();
+
 					this._webviewDisposables.clear();
 				},
 				show: (preserveFocus) => {
 					this.viewService.openView(this.id, !preserveFocus);
 				},
 			};
+
 			await this.webviewViewService.resolve(
 				this.id,
 				webviewView,
@@ -342,6 +396,7 @@ export class WebviewViewPane extends ViewPane {
 			);
 		});
 	}
+
 	protected override updateTitle(value: string | undefined) {
 		this.setTitle = value;
 
@@ -349,6 +404,7 @@ export class WebviewViewPane extends ViewPane {
 			typeof value === "string" ? value : this.defaultTitle,
 		);
 	}
+
 	protected updateBadge(badge: IViewBadge | undefined) {
 		if (
 			this.badge?.value === badge?.value &&
@@ -356,6 +412,7 @@ export class WebviewViewPane extends ViewPane {
 		) {
 			return;
 		}
+
 		this.badge = badge;
 
 		if (badge) {
@@ -363,46 +420,55 @@ export class WebviewViewPane extends ViewPane {
 				badge: new NumberBadge(badge.value, () => badge.tooltip),
 				priority: 150,
 			};
+
 			this.activity.value = this.activityService.showViewActivity(
 				this.id,
 				activity,
 			);
 		}
 	}
+
 	private async withProgress(task: () => Promise<void>): Promise<void> {
 		return this.progressService.withProgress(
 			{ location: this.id, delay: 500 },
 			task,
 		);
 	}
+
 	override onDidScrollRoot() {
 		this.layoutWebview();
 	}
+
 	private doLayoutWebview(dimension?: Dimension) {
 		const webviewEntry = this._webview.value;
 
 		if (!this._container || !webviewEntry) {
 			return;
 		}
+
 		if (!this._rootContainer || !this._rootContainer.isConnected) {
 			this._rootContainer = this.findRootContainer(this._container);
 		}
+
 		webviewEntry.layoutWebviewOverElement(
 			this._container,
 			dimension,
 			this._rootContainer,
 		);
 	}
+
 	private layoutWebview(dimension?: Dimension) {
 		this.doLayoutWebview(dimension);
 		// Temporary fix for https://github.com/microsoft/vscode/issues/110450
 		// There is an animation that lasts about 200ms, update the webview positioning once this animation is complete.
 		clearTimeout(this._repositionTimeout);
+
 		this._repositionTimeout = setTimeout(
 			() => this.doLayoutWebview(dimension),
 			200,
 		);
 	}
+
 	private findRootContainer(container: HTMLElement): HTMLElement | undefined {
 		return (
 			findParentWithClass(container, "monaco-scrollable-element") ??

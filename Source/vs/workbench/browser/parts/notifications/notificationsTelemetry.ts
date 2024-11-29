@@ -14,26 +14,38 @@ import { IWorkbenchContribution } from "../../../common/contributions.js";
 
 export interface NotificationMetrics {
 	readonly id: string;
+
 	readonly silent: boolean;
+
 	readonly source?: string;
 }
 export type NotificationMetricsClassification = {
 	id: {
 		classification: "SystemMetaData";
+
 		purpose: "FeatureInsight";
+
 		comment: "The identifier of the source of the notification.";
 	};
+
 	silent: {
 		classification: "SystemMetaData";
+
 		purpose: "FeatureInsight";
+
 		comment: "Whether the notification is silent or not.";
 	};
+
 	source?: {
 		classification: "SystemMetaData";
+
 		purpose: "FeatureInsight";
+
 		comment: "The source of the notification.";
 	};
+
 	owner: "bpasero";
+
 	comment: "Helps us gain insights to what notifications are being shown, how many, and if they are silent or not.";
 };
 
@@ -59,8 +71,10 @@ export class NotificationsTelemetry
 		private readonly notificationService: INotificationService,
 	) {
 		super();
+
 		this.registerListeners();
 	}
+
 	private registerListeners(): void {
 		this._register(
 			this.notificationService.onDidAddNotification((notification) => {
@@ -69,6 +83,7 @@ export class NotificationsTelemetry
 					typeof notification.source !== "string"
 						? notification.source.id
 						: notification.source;
+
 				this.telemetryService.publicLog2<
 					NotificationMetrics,
 					NotificationMetricsClassification
@@ -82,6 +97,7 @@ export class NotificationsTelemetry
 				);
 			}),
 		);
+
 		this._register(
 			this.notificationService.onDidRemoveNotification((notification) => {
 				const source =
@@ -89,6 +105,7 @@ export class NotificationsTelemetry
 					typeof notification.source !== "string"
 						? notification.source.id
 						: notification.source;
+
 				this.telemetryService.publicLog2<
 					NotificationMetrics,
 					NotificationMetricsClassification

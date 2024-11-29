@@ -36,7 +36,9 @@ export interface IMarkdownRenderResult extends IDisposable {
 
 export interface IMarkdownRendererOptions {
 	readonly editor?: ICodeEditor;
+
 	readonly codeBlockFontFamily?: string;
+
 	readonly codeBlockFontSize?: string;
 }
 
@@ -55,6 +57,7 @@ export class MarkdownRenderer implements IDisposable {
 	);
 
 	private readonly _onDidRenderAsync = new Emitter<void>();
+
 	readonly onDidRenderAsync = this._onDidRenderAsync.event;
 
 	constructor(
@@ -74,10 +77,12 @@ export class MarkdownRenderer implements IDisposable {
 	): IMarkdownRenderResult {
 		if (!markdown) {
 			const element = document.createElement("span");
+
 			return { element, dispose: () => {} };
 		}
 
 		const disposables = new DisposableStore();
+
 		const rendered = disposables.add(
 			renderMarkdown(
 				markdown,
@@ -88,7 +93,9 @@ export class MarkdownRenderer implements IDisposable {
 				markedOptions,
 			),
 		);
+
 		rendered.element.classList.add("rendered-markdown");
+
 		return {
 			element: rendered.element,
 			dispose: () => disposables.dispose(),
@@ -105,6 +112,7 @@ export class MarkdownRenderer implements IDisposable {
 				// it is possible that we stumble upon language aliases (e.g.js instead of javascript)
 				// it is possible no alias is given in which case we fall back to the current editor lang
 				let languageId: string | undefined | null;
+
 				if (languageAlias) {
 					languageId =
 						this._languageService.getLanguageIdByLanguageName(
@@ -115,9 +123,11 @@ export class MarkdownRenderer implements IDisposable {
 						.getModel()
 						?.getLanguageId();
 				}
+
 				if (!languageId) {
 					languageId = PLAINTEXT_LANGUAGE_ID;
 				}
+
 				const html = await tokenizeToString(
 					this._languageService,
 					value,
@@ -135,6 +145,7 @@ export class MarkdownRenderer implements IDisposable {
 					const fontInfo = this._options.editor.getOption(
 						EditorOption.fontInfo,
 					);
+
 					applyFontInfo(element, fontInfo);
 				} else if (this._options.codeBlockFontFamily) {
 					element.style.fontFamily =
@@ -177,6 +188,7 @@ export async function openLinkFromMarkdown(
 		});
 	} catch (e) {
 		onUnexpectedError(e);
+
 		return false;
 	}
 }

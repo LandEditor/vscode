@@ -28,8 +28,11 @@ import { IWorkbenchEnvironmentService } from "../../environment/common/environme
 
 export class DialogService extends Disposable implements IDialogService {
 	declare readonly _serviceBrand: undefined;
+
 	readonly model = this._register(new DialogsModel());
+
 	readonly onWillShowDialog = this.model.onWillShowDialog;
+
 	readonly onDidShowDialog = this.model.onDidShowDialog;
 
 	constructor(
@@ -40,6 +43,7 @@ export class DialogService extends Disposable implements IDialogService {
 	) {
 		super();
 	}
+
 	private skipDialogs(): boolean {
 		if (
 			this.environmentService.isExtensionDevelopment &&
@@ -47,8 +51,10 @@ export class DialogService extends Disposable implements IDialogService {
 		) {
 			return true; // integration tests
 		}
+
 		return !!this.environmentService.enableSmokeTestDriver; // smoke tests
 	}
+
 	async confirm(confirmation: IConfirmation): Promise<IConfirmationResult> {
 		if (this.skipDialogs()) {
 			this.logService.trace(
@@ -57,14 +63,18 @@ export class DialogService extends Disposable implements IDialogService {
 
 			return { confirmed: true };
 		}
+
 		const handle = this.model.show({ confirmArgs: { confirmation } });
 
 		return (await handle.result) as IConfirmationResult;
 	}
+
 	prompt<T>(
 		prompt: IPromptWithCustomCancel<T>,
 	): Promise<IPromptResultWithCancel<T>>;
+
 	prompt<T>(prompt: IPromptWithDefaultCancel<T>): Promise<IPromptResult<T>>;
+
 	prompt<T>(prompt: IPrompt<T>): Promise<IPromptResult<T>>;
 
 	async prompt<T>(
@@ -78,6 +88,7 @@ export class DialogService extends Disposable implements IDialogService {
 				`DialogService: refused to show dialog in tests. Contents: ${prompt.message}`,
 			);
 		}
+
 		const handle = this.model.show({ promptArgs: { prompt } });
 
 		const dialogResult = (await handle.result) as
@@ -89,32 +100,40 @@ export class DialogService extends Disposable implements IDialogService {
 			checkboxChecked: dialogResult.checkboxChecked,
 		};
 	}
+
 	async input(input: IInput): Promise<IInputResult> {
 		if (this.skipDialogs()) {
 			throw new Error(
 				"DialogService: refused to show input dialog in tests.",
 			);
 		}
+
 		const handle = this.model.show({ inputArgs: { input } });
 
 		return (await handle.result) as IInputResult;
 	}
+
 	async info(message: string, detail?: string): Promise<void> {
 		await this.prompt({ type: Severity.Info, message, detail });
 	}
+
 	async warn(message: string, detail?: string): Promise<void> {
 		await this.prompt({ type: Severity.Warning, message, detail });
 	}
+
 	async error(message: string, detail?: string): Promise<void> {
 		await this.prompt({ type: Severity.Error, message, detail });
 	}
+
 	async about(): Promise<void> {
 		if (this.skipDialogs()) {
 			throw new Error(
 				"DialogService: refused to show about dialog in tests.",
 			);
 		}
+
 		const handle = this.model.show({});
+
 		await handle.result;
 	}
 }

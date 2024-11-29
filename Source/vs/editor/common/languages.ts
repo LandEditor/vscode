@@ -35,6 +35,7 @@ import { ContiguousMultilineTokens } from "./tokens/contiguousMultilineTokens.js
  */
 export interface ILanguageIdCodec {
 	encodeLanguageId(languageId: string): LanguageId;
+
 	decodeLanguageId(languageId: LanguageId): string;
 }
 
@@ -91,20 +92,25 @@ export interface ITreeSitterTokenizationSupport {
 		lineNumber: number,
 		textModel: model.ITextModel,
 	): Uint32Array | undefined;
+
 	captureAtPosition(
 		lineNumber: number,
 		column: number,
 		textModel: model.ITextModel,
 	): Parser.QueryCapture[];
+
 	captureAtPositionTree(
 		lineNumber: number,
 		column: number,
 		tree: Parser.Tree,
 	): Parser.QueryCapture[];
+
 	onDidChangeTokens: Event<{
 		textModel: model.ITextModel;
+
 		changes: IModelTokensChangedEvent;
 	}>;
+
 	tokenizeEncodedInstrumented(
 		lineNumber: number,
 		textModel: model.ITextModel,
@@ -182,6 +188,7 @@ export interface IBackgroundTokenizationStore {
  */
 export interface IState {
 	clone(): IState;
+
 	equals(other: IState): boolean;
 }
 
@@ -312,6 +319,7 @@ export interface EvaluatableExpressionProvider {
  */
 export interface InlineValueContext {
 	frameId: number;
+
 	stoppedLocation: Range;
 }
 
@@ -321,7 +329,9 @@ export interface InlineValueContext {
  */
 export interface InlineValueText {
 	type: "text";
+
 	range: IRange;
+
 	text: string;
 }
 
@@ -331,6 +341,7 @@ export interface InlineValueText {
  */
 export interface InlineValueVariableLookup {
 	type: "variable";
+
 	range: IRange;
 
 	variableName?: string;
@@ -344,7 +355,9 @@ export interface InlineValueVariableLookup {
  */
 export interface InlineValueExpression {
 	type: "expression";
+
 	range: IRange;
+
 	expression?: string;
 }
 
@@ -419,34 +432,63 @@ export const enum CompletionItemKind {
  */
 export namespace CompletionItemKinds {
 	const byKind = new Map<CompletionItemKind, ThemeIcon>();
+
 	byKind.set(CompletionItemKind.Method, Codicon.symbolMethod);
+
 	byKind.set(CompletionItemKind.Function, Codicon.symbolFunction);
+
 	byKind.set(CompletionItemKind.Constructor, Codicon.symbolConstructor);
+
 	byKind.set(CompletionItemKind.Field, Codicon.symbolField);
+
 	byKind.set(CompletionItemKind.Variable, Codicon.symbolVariable);
+
 	byKind.set(CompletionItemKind.Class, Codicon.symbolClass);
+
 	byKind.set(CompletionItemKind.Struct, Codicon.symbolStruct);
+
 	byKind.set(CompletionItemKind.Interface, Codicon.symbolInterface);
+
 	byKind.set(CompletionItemKind.Module, Codicon.symbolModule);
+
 	byKind.set(CompletionItemKind.Property, Codicon.symbolProperty);
+
 	byKind.set(CompletionItemKind.Event, Codicon.symbolEvent);
+
 	byKind.set(CompletionItemKind.Operator, Codicon.symbolOperator);
+
 	byKind.set(CompletionItemKind.Unit, Codicon.symbolUnit);
+
 	byKind.set(CompletionItemKind.Value, Codicon.symbolValue);
+
 	byKind.set(CompletionItemKind.Enum, Codicon.symbolEnum);
+
 	byKind.set(CompletionItemKind.Constant, Codicon.symbolConstant);
+
 	byKind.set(CompletionItemKind.Enum, Codicon.symbolEnum);
+
 	byKind.set(CompletionItemKind.EnumMember, Codicon.symbolEnumMember);
+
 	byKind.set(CompletionItemKind.Keyword, Codicon.symbolKeyword);
+
 	byKind.set(CompletionItemKind.Snippet, Codicon.symbolSnippet);
+
 	byKind.set(CompletionItemKind.Text, Codicon.symbolText);
+
 	byKind.set(CompletionItemKind.Color, Codicon.symbolColor);
+
 	byKind.set(CompletionItemKind.File, Codicon.symbolFile);
+
 	byKind.set(CompletionItemKind.Reference, Codicon.symbolReference);
+
 	byKind.set(CompletionItemKind.Customcolor, Codicon.symbolCustomColor);
+
 	byKind.set(CompletionItemKind.Folder, Codicon.symbolFolder);
+
 	byKind.set(CompletionItemKind.TypeParameter, Codicon.symbolTypeParameter);
+
 	byKind.set(CompletionItemKind.User, Codicon.account);
+
 	byKind.set(CompletionItemKind.Issue, Codicon.issues);
 
 	/**
@@ -457,41 +499,73 @@ export namespace CompletionItemKinds {
 
 		if (!codicon) {
 			console.info("No codicon found for CompletionItemKind " + kind);
+
 			codicon = Codicon.symbolProperty;
 		}
+
 		return codicon;
 	}
 
 	const data = new Map<string, CompletionItemKind>();
+
 	data.set("method", CompletionItemKind.Method);
+
 	data.set("function", CompletionItemKind.Function);
+
 	data.set("constructor", <any>CompletionItemKind.Constructor);
+
 	data.set("field", CompletionItemKind.Field);
+
 	data.set("variable", CompletionItemKind.Variable);
+
 	data.set("class", CompletionItemKind.Class);
+
 	data.set("struct", CompletionItemKind.Struct);
+
 	data.set("interface", CompletionItemKind.Interface);
+
 	data.set("module", CompletionItemKind.Module);
+
 	data.set("property", CompletionItemKind.Property);
+
 	data.set("event", CompletionItemKind.Event);
+
 	data.set("operator", CompletionItemKind.Operator);
+
 	data.set("unit", CompletionItemKind.Unit);
+
 	data.set("value", CompletionItemKind.Value);
+
 	data.set("constant", CompletionItemKind.Constant);
+
 	data.set("enum", CompletionItemKind.Enum);
+
 	data.set("enum-member", CompletionItemKind.EnumMember);
+
 	data.set("enumMember", CompletionItemKind.EnumMember);
+
 	data.set("keyword", CompletionItemKind.Keyword);
+
 	data.set("snippet", CompletionItemKind.Snippet);
+
 	data.set("text", CompletionItemKind.Text);
+
 	data.set("color", CompletionItemKind.Color);
+
 	data.set("file", CompletionItemKind.File);
+
 	data.set("reference", CompletionItemKind.Reference);
+
 	data.set("customcolor", CompletionItemKind.Customcolor);
+
 	data.set("folder", CompletionItemKind.Folder);
+
 	data.set("type-parameter", CompletionItemKind.TypeParameter);
+
 	data.set("typeParameter", CompletionItemKind.TypeParameter);
+
 	data.set("account", CompletionItemKind.User);
+
 	data.set("issue", CompletionItemKind.Issue);
 
 	/**
@@ -517,13 +591,16 @@ export namespace CompletionItemKinds {
 		if (typeof res === "undefined" && !strict) {
 			res = CompletionItemKind.Property;
 		}
+
 		return res;
 	}
 }
 
 export interface CompletionItemLabel {
 	label: string;
+
 	detail?: string;
+
 	description?: string;
 }
 
@@ -548,6 +625,7 @@ export const enum CompletionItemInsertTextRule {
 
 export interface CompletionItemRanges {
 	insert: IRange;
+
 	replace: IRange;
 }
 
@@ -648,7 +726,9 @@ export interface CompletionItem {
 
 export interface CompletionList {
 	suggestions: CompletionItem[];
+
 	incomplete?: boolean;
+
 	dispose?(): void;
 
 	/**
@@ -762,6 +842,7 @@ export interface InlineCompletionContext {
 	 * How the completion was triggered.
 	 */
 	readonly triggerKind: InlineCompletionTriggerKind;
+
 	readonly selectedSuggestionInfo: SelectedSuggestionInfo | undefined;
 	/**
 	 * @experimental
@@ -770,6 +851,7 @@ export interface InlineCompletionContext {
 	readonly userPrompt?: string | undefined;
 
 	readonly includeInlineEdits: boolean;
+
 	readonly includeInlineCompletions: boolean;
 }
 
@@ -921,13 +1003,21 @@ export interface InlineCompletionsProvider<
 
 export interface CodeAction {
 	title: string;
+
 	command?: Command;
+
 	edit?: WorkspaceEdit;
+
 	diagnostics?: IMarkerData[];
+
 	kind?: string;
+
 	isPreferred?: boolean;
+
 	isAI?: boolean;
+
 	disabled?: string;
+
 	ranges?: IRange[];
 }
 
@@ -941,6 +1031,7 @@ export const enum CodeActionTriggerType {
  */
 export interface CodeActionContext {
 	only?: string;
+
 	trigger: CodeActionTriggerType;
 }
 
@@ -983,6 +1074,7 @@ export interface CodeActionProvider {
 
 	readonly documentation?: ReadonlyArray<{
 		readonly kind: string;
+
 		readonly command: Command;
 	}>;
 
@@ -1000,10 +1092,15 @@ export interface CodeActionProvider {
  */
 export interface DocumentPasteEdit {
 	readonly title: string;
+
 	readonly kind: HierarchicalKind;
+
 	readonly handledMimeType?: string;
+
 	readonly yieldTo?: readonly DropYieldTo[];
+
 	insertText: string | { readonly snippet: string };
+
 	additionalEdit?: WorkspaceEdit;
 }
 
@@ -1020,6 +1117,7 @@ export enum DocumentPasteTriggerKind {
  */
 export interface DocumentPasteContext {
 	readonly only?: HierarchicalKind;
+
 	readonly triggerKind: DocumentPasteTriggerKind;
 }
 
@@ -1028,6 +1126,7 @@ export interface DocumentPasteContext {
  */
 export interface DocumentPasteEditsSession {
 	edits: readonly DocumentPasteEdit[];
+
 	dispose(): void;
 }
 
@@ -1036,8 +1135,11 @@ export interface DocumentPasteEditsSession {
  */
 export interface DocumentPasteEditProvider {
 	readonly id?: string;
+
 	readonly copyMimeTypes: readonly string[];
+
 	readonly pasteMimeTypes: readonly string[];
+
 	readonly providedPasteEditKinds: readonly HierarchicalKind[];
 
 	prepareDocumentPaste?(
@@ -1136,8 +1238,11 @@ export enum SignatureHelpTriggerKind {
 
 export interface SignatureHelpContext {
 	readonly triggerKind: SignatureHelpTriggerKind;
+
 	readonly triggerCharacter?: string;
+
 	readonly isRetrigger: boolean;
+
 	readonly activeSignatureHelp?: SignatureHelp;
 }
 
@@ -1147,6 +1252,7 @@ export interface SignatureHelpContext {
  */
 export interface SignatureHelpProvider {
 	readonly signatureHelpTriggerCharacters?: ReadonlyArray<string>;
+
 	readonly signatureHelpRetriggerCharacters?: ReadonlyArray<string>;
 
 	/**
@@ -1523,31 +1629,57 @@ export const enum SymbolTag {
  */
 export namespace SymbolKinds {
 	const byKind = new Map<SymbolKind, ThemeIcon>();
+
 	byKind.set(SymbolKind.File, Codicon.symbolFile);
+
 	byKind.set(SymbolKind.Module, Codicon.symbolModule);
+
 	byKind.set(SymbolKind.Namespace, Codicon.symbolNamespace);
+
 	byKind.set(SymbolKind.Package, Codicon.symbolPackage);
+
 	byKind.set(SymbolKind.Class, Codicon.symbolClass);
+
 	byKind.set(SymbolKind.Method, Codicon.symbolMethod);
+
 	byKind.set(SymbolKind.Property, Codicon.symbolProperty);
+
 	byKind.set(SymbolKind.Field, Codicon.symbolField);
+
 	byKind.set(SymbolKind.Constructor, Codicon.symbolConstructor);
+
 	byKind.set(SymbolKind.Enum, Codicon.symbolEnum);
+
 	byKind.set(SymbolKind.Interface, Codicon.symbolInterface);
+
 	byKind.set(SymbolKind.Function, Codicon.symbolFunction);
+
 	byKind.set(SymbolKind.Variable, Codicon.symbolVariable);
+
 	byKind.set(SymbolKind.Constant, Codicon.symbolConstant);
+
 	byKind.set(SymbolKind.String, Codicon.symbolString);
+
 	byKind.set(SymbolKind.Number, Codicon.symbolNumber);
+
 	byKind.set(SymbolKind.Boolean, Codicon.symbolBoolean);
+
 	byKind.set(SymbolKind.Array, Codicon.symbolArray);
+
 	byKind.set(SymbolKind.Object, Codicon.symbolObject);
+
 	byKind.set(SymbolKind.Key, Codicon.symbolKey);
+
 	byKind.set(SymbolKind.Null, Codicon.symbolNull);
+
 	byKind.set(SymbolKind.EnumMember, Codicon.symbolEnumMember);
+
 	byKind.set(SymbolKind.Struct, Codicon.symbolStruct);
+
 	byKind.set(SymbolKind.Event, Codicon.symbolEvent);
+
 	byKind.set(SymbolKind.Operator, Codicon.symbolOperator);
+
 	byKind.set(SymbolKind.TypeParameter, Codicon.symbolTypeParameter);
 	/**
 	 * @internal
@@ -1557,20 +1689,29 @@ export namespace SymbolKinds {
 
 		if (!icon) {
 			console.info("No codicon found for SymbolKind " + kind);
+
 			icon = Codicon.symbolProperty;
 		}
+
 		return icon;
 	}
 }
 
 export interface DocumentSymbol {
 	name: string;
+
 	detail: string;
+
 	kind: SymbolKind;
+
 	tags: ReadonlyArray<SymbolTag>;
+
 	containerName?: string;
+
 	range: IRange;
+
 	selectionRange: IRange;
+
 	children?: DocumentSymbol[];
 }
 
@@ -1592,7 +1733,9 @@ export interface DocumentSymbolProvider {
 
 export interface TextEdit {
 	range: IRange;
+
 	text: string;
+
 	eol?: model.EndOfLineSequence;
 }
 
@@ -1703,6 +1846,7 @@ export interface OnTypeFormattingEditProvider {
  */
 export interface IInplaceReplaceSupportResult {
 	value: string;
+
 	range: IRange;
 }
 
@@ -1711,12 +1855,15 @@ export interface IInplaceReplaceSupportResult {
  */
 export interface ILink {
 	range: IRange;
+
 	url?: URI | string;
+
 	tooltip?: string;
 }
 
 export interface ILinksList {
 	links: ILink[];
+
 	dispose?(): void;
 }
 /**
@@ -1727,6 +1874,7 @@ export interface LinkProvider {
 		model: model.ITextModel,
 		token: CancellationToken,
 	): ProviderResult<ILinksList>;
+
 	resolveLink?: (
 		link: ILink,
 		token: CancellationToken,
@@ -1906,6 +2054,7 @@ export class FoldingRangeKind {
 			case "region":
 				return FoldingRangeKind.Region;
 		}
+
 		return new FoldingRangeKind(value);
 	}
 
@@ -1919,7 +2068,9 @@ export class FoldingRangeKind {
 
 export interface WorkspaceEditMetadata {
 	needsConfirmation: boolean;
+
 	label: string;
+
 	description?: string;
 	/**
 	 * @internal
@@ -1929,12 +2080,19 @@ export interface WorkspaceEditMetadata {
 
 export interface WorkspaceFileEditOptions {
 	overwrite?: boolean;
+
 	ignoreIfNotExists?: boolean;
+
 	ignoreIfExists?: boolean;
+
 	recursive?: boolean;
+
 	copy?: boolean;
+
 	folder?: boolean;
+
 	skipTrashBin?: boolean;
+
 	maxSize?: number;
 
 	/**
@@ -1945,15 +2103,21 @@ export interface WorkspaceFileEditOptions {
 
 export interface IWorkspaceFileEdit {
 	oldResource?: URI;
+
 	newResource?: URI;
+
 	options?: WorkspaceFileEditOptions;
+
 	metadata?: WorkspaceEditMetadata;
 }
 
 export interface IWorkspaceTextEdit {
 	resource: URI;
+
 	textEdit: TextEdit & { insertAsSnippet?: boolean };
+
 	versionId: number | undefined;
+
 	metadata?: WorkspaceEditMetadata;
 }
 
@@ -1963,8 +2127,11 @@ export interface WorkspaceEdit {
 
 export interface ICustomEdit {
 	readonly resource: URI;
+
 	readonly metadata?: WorkspaceEditMetadata;
+
 	undo(): Promise<void> | void;
+
 	redo(): Promise<void> | void;
 }
 
@@ -1973,6 +2140,7 @@ export interface Rejection {
 }
 export interface RenameLocation {
 	range: IRange;
+
 	text: string;
 }
 
@@ -1983,6 +2151,7 @@ export interface RenameProvider {
 		newName: string,
 		token: CancellationToken,
 	): ProviderResult<WorkspaceEdit & Rejection>;
+
 	resolveRenameLocation?(
 		model: model.ITextModel,
 		position: Position,
@@ -2001,11 +2170,13 @@ export enum NewSymbolNameTriggerKind {
 
 export interface NewSymbolName {
 	readonly newSymbolName: string;
+
 	readonly tags?: readonly NewSymbolNameTag[];
 }
 
 export interface NewSymbolNamesProvider {
 	supportsAutomaticNewSymbolNamesTriggerKind?: Promise<boolean | undefined>;
+
 	provideNewSymbolNames(
 		model: model.ITextModel,
 		range: IRange,
@@ -2016,8 +2187,11 @@ export interface NewSymbolNamesProvider {
 
 export interface Command {
 	id: string;
+
 	title: string;
+
 	tooltip?: string;
+
 	arguments?: any[];
 }
 
@@ -2032,6 +2206,7 @@ export namespace Command {
 		if (!obj || typeof obj !== "object") {
 			return false;
 		}
+
 		return (
 			typeof (<Command>obj).id === "string" &&
 			typeof (<Command>obj).title === "string"
@@ -2044,9 +2219,13 @@ export namespace Command {
  */
 export interface CommentThreadTemplate {
 	controllerHandle: number;
+
 	label: string;
+
 	acceptInputCommand?: Command;
+
 	additionalCommands?: Command[];
+
 	deleteCommand?: Command;
 }
 
@@ -2055,8 +2234,11 @@ export interface CommentThreadTemplate {
  */
 export interface CommentInfo<T = IRange> {
 	extensionId?: string;
+
 	threads: CommentThread<T>[];
+
 	pendingCommentThreads?: PendingCommentThread[];
+
 	commentingRanges: CommentingRanges;
 }
 
@@ -2102,8 +2284,11 @@ export enum CommentThreadApplicability {
  */
 export interface CommentWidget {
 	commentThread: CommentThread;
+
 	comment?: Comment;
+
 	input: string;
+
 	onDidChangeInput: Event<string>;
 }
 
@@ -2112,11 +2297,13 @@ export interface CommentWidget {
  */
 export interface CommentInput {
 	value: string;
+
 	uri: URI;
 }
 
 export interface CommentThreadRevealOptions {
 	preserveFocus: boolean;
+
 	focusReply: boolean;
 }
 
@@ -2125,33 +2312,57 @@ export interface CommentThreadRevealOptions {
  */
 export interface CommentThread<T = IRange> {
 	isDocumentCommentThread(): this is CommentThread<IRange>;
+
 	commentThreadHandle: number;
+
 	controllerHandle: number;
+
 	extensionId?: string;
+
 	threadId: string;
+
 	resource: string | null;
+
 	range: T | undefined;
+
 	label: string | undefined;
+
 	contextValue: string | undefined;
+
 	comments: ReadonlyArray<Comment> | undefined;
+
 	onDidChangeComments: Event<readonly Comment[] | undefined>;
+
 	collapsibleState?: CommentThreadCollapsibleState;
+
 	initialCollapsibleState?: CommentThreadCollapsibleState;
+
 	onDidChangeInitialCollapsibleState: Event<
 		CommentThreadCollapsibleState | undefined
 	>;
+
 	state?: CommentThreadState;
+
 	applicability?: CommentThreadApplicability;
+
 	canReply: boolean;
+
 	input?: CommentInput;
+
 	onDidChangeInput: Event<CommentInput | undefined>;
+
 	onDidChangeLabel: Event<string | undefined>;
+
 	onDidChangeCollapsibleState: Event<
 		CommentThreadCollapsibleState | undefined
 	>;
+
 	onDidChangeState: Event<CommentThreadState | undefined>;
+
 	onDidChangeCanReply: Event<boolean>;
+
 	isDisposed: boolean;
+
 	isTemplate: boolean;
 }
 
@@ -2168,12 +2379,15 @@ export interface AddedCommentThread<T = IRange> extends CommentThread<T> {
 
 export interface CommentingRanges {
 	readonly resource: URI;
+
 	ranges: IRange[];
+
 	fileComments: boolean;
 }
 
 export interface CommentAuthorInformation {
 	name: string;
+
 	iconPath?: UriComponents;
 }
 
@@ -2182,10 +2396,15 @@ export interface CommentAuthorInformation {
  */
 export interface CommentReaction {
 	readonly label?: string;
+
 	readonly iconPath?: UriComponents;
+
 	readonly count?: number;
+
 	readonly hasReacted?: boolean;
+
 	readonly canEdit?: boolean;
+
 	readonly reactors?: readonly string[];
 }
 
@@ -2225,26 +2444,39 @@ export enum CommentState {
  */
 export interface Comment {
 	readonly uniqueIdInThread: number;
+
 	readonly body: string | IMarkdownString;
+
 	readonly userName: string;
+
 	readonly userIconPath?: UriComponents;
+
 	readonly contextValue?: string;
+
 	readonly commentReactions?: CommentReaction[];
+
 	readonly label?: string;
+
 	readonly mode?: CommentMode;
+
 	readonly timestamp?: string;
 }
 
 export interface PendingCommentThread {
 	range: IRange | undefined;
+
 	uri: URI;
+
 	uniqueOwner: string;
+
 	isReply: boolean;
+
 	comment: PendingComment;
 }
 
 export interface PendingComment {
 	body: string;
+
 	cursor: IPosition;
 }
 
@@ -2275,21 +2507,26 @@ export interface CommentThreadChangedEvent<T> {
 
 export interface CodeLens {
 	range: IRange;
+
 	id?: string;
+
 	command?: Command;
 }
 
 export interface CodeLensList {
 	lenses: CodeLens[];
+
 	dispose(): void;
 }
 
 export interface CodeLensProvider {
 	onDidChange?: Event<this>;
+
 	provideCodeLenses(
 		model: model.ITextModel,
 		token: CancellationToken,
 	): ProviderResult<CodeLensList>;
+
 	resolveCodeLens?(
 		model: model.ITextModel,
 		codeLens: CodeLens,
@@ -2304,35 +2541,48 @@ export enum InlayHintKind {
 
 export interface InlayHintLabelPart {
 	label: string;
+
 	tooltip?: string | IMarkdownString;
 	// collapsible?: boolean;
+
 	command?: Command;
+
 	location?: Location;
 }
 
 export interface InlayHint {
 	label: string | InlayHintLabelPart[];
+
 	tooltip?: string | IMarkdownString;
+
 	textEdits?: TextEdit[];
+
 	position: IPosition;
+
 	kind?: InlayHintKind;
+
 	paddingLeft?: boolean;
+
 	paddingRight?: boolean;
 }
 
 export interface InlayHintList {
 	hints: InlayHint[];
+
 	dispose(): void;
 }
 
 export interface InlayHintsProvider {
 	displayName?: string;
+
 	onDidChangeInlayHints?: Event<void>;
+
 	provideInlayHints(
 		model: model.ITextModel,
 		range: Range,
 		token: CancellationToken,
 	): ProviderResult<InlayHintList>;
+
 	resolveInlayHint?(
 		hint: InlayHint,
 		token: CancellationToken,
@@ -2341,22 +2591,27 @@ export interface InlayHintsProvider {
 
 export interface SemanticTokensLegend {
 	readonly tokenTypes: string[];
+
 	readonly tokenModifiers: string[];
 }
 
 export interface SemanticTokens {
 	readonly resultId?: string;
+
 	readonly data: Uint32Array;
 }
 
 export interface SemanticTokensEdit {
 	readonly start: number;
+
 	readonly deleteCount: number;
+
 	readonly data?: Uint32Array;
 }
 
 export interface SemanticTokensEdits {
 	readonly resultId?: string;
+
 	readonly edits: SemanticTokensEdit[];
 }
 
@@ -2364,16 +2619,19 @@ export interface DocumentSemanticTokensProvider {
 	onDidChange?: Event<void>;
 
 	getLegend(): SemanticTokensLegend;
+
 	provideDocumentSemanticTokens(
 		model: model.ITextModel,
 		lastResultId: string | null,
 		token: CancellationToken,
 	): ProviderResult<SemanticTokens | SemanticTokensEdits>;
+
 	releaseDocumentSemanticTokens(resultId: string | undefined): void;
 }
 
 export interface DocumentRangeSemanticTokensProvider {
 	getLegend(): SemanticTokensLegend;
+
 	provideDocumentRangeSemanticTokens(
 		model: model.ITextModel,
 		range: Range,
@@ -2386,6 +2644,7 @@ export interface DocumentRangeSemanticTokensProvider {
  */
 export interface ITokenizationSupportChangedEvent {
 	changedLanguages: string[];
+
 	changedColorMap: boolean;
 }
 
@@ -2426,6 +2685,7 @@ export class LazyTokenizationSupport<TSupport = ITokenizationSupport>
 		if (!this._tokenizationSupport) {
 			this._tokenizationSupport = this.createSupport();
 		}
+
 		return this._tokenizationSupport;
 	}
 }
@@ -2521,10 +2781,15 @@ export type DropYieldTo =
  */
 export interface DocumentDropEdit {
 	readonly title: string;
+
 	readonly kind: HierarchicalKind | undefined;
+
 	readonly handledMimeType?: string;
+
 	readonly yieldTo?: readonly DropYieldTo[];
+
 	insertText: string | { readonly snippet: string };
+
 	additionalEdit?: WorkspaceEdit;
 }
 
@@ -2533,6 +2798,7 @@ export interface DocumentDropEdit {
  */
 export interface DocumentDropEditsSession {
 	edits: readonly DocumentDropEdit[];
+
 	dispose(): void;
 }
 
@@ -2541,7 +2807,9 @@ export interface DocumentDropEditsSession {
  */
 export interface DocumentDropEditProvider {
 	readonly id?: string;
+
 	readonly dropMimeTypes?: readonly string[];
+
 	readonly providedDropEditKinds?: readonly HierarchicalKind[];
 
 	provideDocumentDropEdits(
@@ -2550,6 +2818,7 @@ export interface DocumentDropEditProvider {
 		dataTransfer: IReadonlyVSDataTransfer,
 		token: CancellationToken,
 	): ProviderResult<DocumentDropEditsSession>;
+
 	resolveDocumentDropEdit?(
 		edit: DocumentDropEdit,
 		token: CancellationToken,
@@ -2558,7 +2827,9 @@ export interface DocumentDropEditProvider {
 
 export interface DocumentContextItem {
 	readonly uri: URI;
+
 	readonly version: number;
+
 	readonly ranges: IRange[];
 }
 
@@ -2576,6 +2847,7 @@ export interface MappedEditsContext {
  */
 export interface ConversationRequest {
 	readonly type: "request";
+
 	readonly message: string;
 }
 
@@ -2584,7 +2856,9 @@ export interface ConversationRequest {
  */
 export interface ConversationResponse {
 	readonly type: "response";
+
 	readonly message: string;
+
 	readonly references?: DocumentContextItem[];
 }
 
@@ -2614,10 +2888,15 @@ export interface MappedEditsProvider {
 
 export interface IInlineEdit {
 	text: string;
+
 	range: IRange;
+
 	accepted?: Command;
+
 	rejected?: Command;
+
 	shown?: Command;
+
 	commands?: Command[];
 }
 
@@ -2636,5 +2915,6 @@ export interface InlineEditProvider<T extends IInlineEdit = IInlineEdit> {
 		context: IInlineEditContext,
 		token: CancellationToken,
 	): ProviderResult<T>;
+
 	freeInlineEdit(edit: T): void;
 }

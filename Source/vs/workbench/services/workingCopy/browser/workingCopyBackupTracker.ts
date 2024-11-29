@@ -51,6 +51,7 @@ export class BrowserWorkingCopyBackupTracker
 			editorGroupService,
 		);
 	}
+
 	protected onFinalBeforeShutdown(reason: ShutdownReason): boolean {
 		// Web: we cannot perform long running in the shutdown phase
 		// As such we need to check sync if there are any modified working
@@ -62,9 +63,11 @@ export class BrowserWorkingCopyBackupTracker
 		if (!modifiedWorkingCopies.length) {
 			return false; // nothing modified: no veto
 		}
+
 		if (!this.filesConfigurationService.isHotExitEnabled) {
 			return true; // modified without backup: veto
 		}
+
 		for (const modifiedWorkingCopy of modifiedWorkingCopies) {
 			if (
 				!this.workingCopyBackupService.hasBackupSync(
@@ -77,6 +80,7 @@ export class BrowserWorkingCopyBackupTracker
 				return true; // modified without backup: veto
 			}
 		}
+
 		return false; // modified and backed up: no veto
 	}
 }

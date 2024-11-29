@@ -61,9 +61,13 @@ type ISashLayoutProvider =
 
 export interface ISashEvent {
 	readonly startX: number;
+
 	readonly currentX: number;
+
 	readonly startY: number;
+
 	readonly currentY: number;
+
 	readonly altKey: boolean;
 }
 
@@ -76,8 +80,11 @@ export enum OrthogonalEdge {
 
 export interface IBoundarySashes {
 	readonly top?: Sash;
+
 	readonly right?: Sash;
+
 	readonly bottom?: Sash;
+
 	readonly left?: Sash;
 }
 
@@ -166,6 +173,7 @@ const onDidChangeGlobalSize = new Emitter<number>();
 
 export function setGlobalSashSize(size: number): void {
 	globalSize = size;
+
 	onDidChangeGlobalSize.fire(size);
 }
 
@@ -175,20 +183,27 @@ const onDidChangeHoverDelay = new Emitter<number>();
 
 export function setGlobalHoverDelay(size: number): void {
 	globalHoverDelay = size;
+
 	onDidChangeHoverDelay.fire(size);
 }
 
 interface PointerEvent extends EventLike {
 	readonly pageX: number;
+
 	readonly pageY: number;
+
 	readonly altKey: boolean;
+
 	readonly target: EventTarget | null;
+
 	readonly initialTarget?: EventTarget | undefined;
 }
 
 interface IPointerEventFactory {
 	readonly onPointerMove: Event<PointerEvent>;
+
 	readonly onPointerUp: Event<PointerEvent>;
+
 	dispose(): void;
 }
 
@@ -273,43 +288,63 @@ const PointerEventsDisabledCssClass = "pointer-events-disabled";
  */
 export class Sash extends Disposable {
 	private el: HTMLElement;
+
 	private layoutProvider: ISashLayoutProvider;
+
 	private orientation: Orientation;
+
 	private size: number;
+
 	private hoverDelay = globalHoverDelay;
+
 	private hoverDelayer = this._register(new Delayer(this.hoverDelay));
 
 	private _state: SashState = SashState.Enabled;
+
 	private readonly onDidEnablementChange = this._register(
 		new Emitter<SashState>(),
 	);
+
 	private readonly _onDidStart = this._register(new Emitter<ISashEvent>());
+
 	private readonly _onDidChange = this._register(new Emitter<ISashEvent>());
+
 	private readonly _onDidReset = this._register(new Emitter<void>());
+
 	private readonly _onDidEnd = this._register(new Emitter<void>());
+
 	private readonly orthogonalStartSashDisposables = this._register(
 		new DisposableStore(),
 	);
+
 	private _orthogonalStartSash: Sash | undefined;
+
 	private readonly orthogonalStartDragHandleDisposables = this._register(
 		new DisposableStore(),
 	);
+
 	private _orthogonalStartDragHandle: HTMLElement | undefined;
+
 	private readonly orthogonalEndSashDisposables = this._register(
 		new DisposableStore(),
 	);
+
 	private _orthogonalEndSash: Sash | undefined;
+
 	private readonly orthogonalEndDragHandleDisposables = this._register(
 		new DisposableStore(),
 	);
+
 	private _orthogonalEndDragHandle: HTMLElement | undefined;
 
 	get state(): SashState {
 		return this._state;
 	}
+
 	get orthogonalStartSash(): Sash | undefined {
 		return this._orthogonalStartSash;
 	}
+
 	get orthogonalEndSash(): Sash | undefined {
 		return this._orthogonalEndSash;
 	}
@@ -324,10 +359,13 @@ export class Sash extends Disposable {
 		}
 
 		this.el.classList.toggle("disabled", state === SashState.Disabled);
+
 		this.el.classList.toggle("minimum", state === SashState.AtMinimum);
+
 		this.el.classList.toggle("maximum", state === SashState.AtMaximum);
 
 		this._state = state;
+
 		this.onDidEnablementChange.fire(state);
 	}
 
@@ -374,6 +412,7 @@ export class Sash extends Disposable {
 		}
 
 		this.orthogonalStartDragHandleDisposables.clear();
+
 		this.orthogonalStartSashDisposables.clear();
 
 		if (sash) {
@@ -385,11 +424,13 @@ export class Sash extends Disposable {
 						this.el,
 						$(".orthogonal-drag-handle.start"),
 					);
+
 					this.orthogonalStartDragHandleDisposables.add(
 						toDisposable(() =>
 							this._orthogonalStartDragHandle!.remove(),
 						),
 					);
+
 					this.orthogonalStartDragHandleDisposables
 						.add(
 							new DomEmitter(
@@ -402,6 +443,7 @@ export class Sash extends Disposable {
 							undefined,
 							this.orthogonalStartDragHandleDisposables,
 						);
+
 					this.orthogonalStartDragHandleDisposables
 						.add(
 							new DomEmitter(
@@ -420,6 +462,7 @@ export class Sash extends Disposable {
 			this.orthogonalStartSashDisposables.add(
 				sash.onDidEnablementChange.event(onChange, this),
 			);
+
 			onChange(sash.state);
 		}
 
@@ -441,6 +484,7 @@ export class Sash extends Disposable {
 		}
 
 		this.orthogonalEndDragHandleDisposables.clear();
+
 		this.orthogonalEndSashDisposables.clear();
 
 		if (sash) {
@@ -452,11 +496,13 @@ export class Sash extends Disposable {
 						this.el,
 						$(".orthogonal-drag-handle.end"),
 					);
+
 					this.orthogonalEndDragHandleDisposables.add(
 						toDisposable(() =>
 							this._orthogonalEndDragHandle!.remove(),
 						),
 					);
+
 					this.orthogonalEndDragHandleDisposables
 						.add(
 							new DomEmitter(
@@ -469,6 +515,7 @@ export class Sash extends Disposable {
 							undefined,
 							this.orthogonalEndDragHandleDisposables,
 						);
+
 					this.orthogonalEndDragHandleDisposables
 						.add(
 							new DomEmitter(
@@ -487,6 +534,7 @@ export class Sash extends Disposable {
 			this.orthogonalEndSashDisposables.add(
 				sash.onDidEnablementChange.event(onChange, this),
 			);
+
 			onChange(sash.state);
 		}
 
@@ -539,6 +587,7 @@ export class Sash extends Disposable {
 		const onMouseDown = this._register(
 			new DomEmitter(this.el, "mousedown"),
 		).event;
+
 		this._register(
 			onMouseDown(
 				(e) => this.onPointerStart(e, new MouseEventFactory(container)),
@@ -549,16 +598,19 @@ export class Sash extends Disposable {
 		const onMouseDoubleClick = this._register(
 			new DomEmitter(this.el, "dblclick"),
 		).event;
+
 		this._register(onMouseDoubleClick(this.onPointerDoublePress, this));
 
 		const onMouseEnter = this._register(
 			new DomEmitter(this.el, "mouseenter"),
 		).event;
+
 		this._register(onMouseEnter(() => Sash.onMouseEnter(this)));
 
 		const onMouseLeave = this._register(
 			new DomEmitter(this.el, "mouseleave"),
 		).event;
+
 		this._register(onMouseLeave(() => Sash.onMouseLeave(this)));
 
 		this._register(Gesture.addTarget(this.el));
@@ -566,6 +618,7 @@ export class Sash extends Disposable {
 		const onTouchStart = this._register(
 			new DomEmitter(this.el, EventType.Start),
 		).event;
+
 		this._register(
 			onTouchStart(
 				(e) => this.onPointerStart(e, new GestureEventFactory(this.el)),
@@ -578,12 +631,14 @@ export class Sash extends Disposable {
 		).event;
 
 		let doubleTapTimeout: any = undefined;
+
 		this._register(
 			onTap((event) => {
 				if (doubleTapTimeout) {
 					clearTimeout(doubleTapTimeout);
 
 					doubleTapTimeout = undefined;
+
 					this.onPointerDoublePress(event);
 
 					return;
@@ -608,9 +663,11 @@ export class Sash extends Disposable {
 			}
 		} else {
 			this.size = globalSize;
+
 			this._register(
 				onDidChangeGlobalSize.event((size) => {
 					this.size = size;
+
 					this.layout();
 				}),
 			);
@@ -623,15 +680,18 @@ export class Sash extends Disposable {
 		this.layoutProvider = layoutProvider;
 
 		this.orthogonalStartSash = options.orthogonalStartSash;
+
 		this.orthogonalEndSash = options.orthogonalEndSash;
 
 		this.orientation = options.orientation || Orientation.VERTICAL;
 
 		if (this.orientation === Orientation.HORIZONTAL) {
 			this.el.classList.add("horizontal");
+
 			this.el.classList.remove("vertical");
 		} else {
 			this.el.classList.remove("horizontal");
+
 			this.el.classList.add("vertical");
 		}
 
@@ -654,6 +714,7 @@ export class Sash extends Disposable {
 			if (orthogonalSash) {
 				isMultisashResize = true;
 				(event as any).__orthogonalSashEvent = true;
+
 				orthogonalSash.onPointerStart(
 					event,
 					new OrthogonalPointerEventFactory(pointerEventFactory),
@@ -663,6 +724,7 @@ export class Sash extends Disposable {
 
 		if (this.linkedSash && !(event as any).__linkedSashEvent) {
 			(event as any).__linkedSashEvent = true;
+
 			this.linkedSash.onPointerStart(
 				event,
 				new OrthogonalPointerEventFactory(pointerEventFactory),
@@ -694,6 +756,7 @@ export class Sash extends Disposable {
 		};
 
 		this.el.classList.add("active");
+
 		this._onDidStart.fire(startEvent);
 
 		// fix https://github.com/microsoft/vscode/issues/21675
@@ -753,6 +816,7 @@ export class Sash extends Disposable {
 			style.remove();
 
 			this.el.classList.remove("active");
+
 			this._onDidEnd.fire();
 
 			disposables.dispose();
@@ -763,7 +827,9 @@ export class Sash extends Disposable {
 		};
 
 		pointerEventFactory.onPointerMove(onPointerMove, null, disposables);
+
 		pointerEventFactory.onPointerUp(onPointerUp, null, disposables);
+
 		disposables.add(pointerEventFactory);
 	}
 
@@ -787,6 +853,7 @@ export class Sash extends Disposable {
 	): void {
 		if (sash.el.classList.contains("active")) {
 			sash.hoverDelayer.cancel();
+
 			sash.el.classList.add("hover");
 		} else {
 			sash.hoverDelayer
@@ -804,6 +871,7 @@ export class Sash extends Disposable {
 		fromLinkedSash: boolean = false,
 	): void {
 		sash.hoverDelayer.cancel();
+
 		sash.el.classList.remove("hover");
 
 		if (!fromLinkedSash && sash.linkedSash) {
@@ -829,6 +897,7 @@ export class Sash extends Disposable {
 			const verticalProvider = <IVerticalSashLayoutProvider>(
 				this.layoutProvider
 			);
+
 			this.el.style.left =
 				verticalProvider.getVerticalSashLeft(this) -
 				this.size / 2 +
@@ -847,6 +916,7 @@ export class Sash extends Disposable {
 			const horizontalProvider = <IHorizontalSashLayoutProvider>(
 				this.layoutProvider
 			);
+
 			this.el.style.top =
 				horizontalProvider.getHorizontalSashTop(this) -
 				this.size / 2 +
@@ -882,6 +952,7 @@ export class Sash extends Disposable {
 
 	override dispose(): void {
 		super.dispose();
+
 		this.el.remove();
 	}
 }

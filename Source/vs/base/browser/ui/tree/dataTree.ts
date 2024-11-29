@@ -30,8 +30,11 @@ export class DataTree<TInput, T, TFilterData = void> extends AbstractTree<
 	T | null
 > {
 	protected declare model: ObjectTreeModel<T, TFilterData>;
+
 	private input: TInput | undefined;
+
 	private identityProvider: IIdentityProvider<T> | undefined;
+
 	private nodesByIdentity = new Map<string, ITreeNode<T, TFilterData>>();
 
 	constructor(
@@ -49,12 +52,14 @@ export class DataTree<TInput, T, TFilterData = void> extends AbstractTree<
 			renderers,
 			options as IDataTreeOptions<T | null, TFilterData>,
 		);
+
 		this.identityProvider = options.identityProvider;
 	}
 	// Model
 	getInput(): TInput | undefined {
 		return this.input;
 	}
+
 	setInput(
 		input: TInput | undefined,
 		viewState?: AbstractTreeViewState,
@@ -65,19 +70,23 @@ export class DataTree<TInput, T, TFilterData = void> extends AbstractTree<
 				"Can't restore tree view state without an identity provider",
 			);
 		}
+
 		this.input = input;
 
 		if (!input) {
 			this.nodesByIdentity.clear();
+
 			this.model.setChildren(null, Iterable.empty());
 
 			return;
 		}
+
 		if (!viewState) {
 			this._refresh(input);
 
 			return;
 		}
+
 		const focus: T[] = [];
 
 		const selection: T[] = [];
@@ -94,22 +103,28 @@ export class DataTree<TInput, T, TFilterData = void> extends AbstractTree<
 			if (viewState.focus.has(id)) {
 				focus.push(node.element);
 			}
+
 			if (viewState.selection.has(id)) {
 				selection.push(node.element);
 			}
 		};
+
 		this._refresh(input, isCollapsed, onDidCreateNode);
+
 		this.setFocus(focus);
+
 		this.setSelection(selection);
 
 		if (viewState && typeof viewState.scrollTop === "number") {
 			this.scrollTop = viewState.scrollTop;
 		}
 	}
+
 	updateChildren(element: TInput | T = this.input!): void {
 		if (typeof this.input === "undefined") {
 			throw new TreeError(this.user, "Tree input not set");
 		}
+
 		let isCollapsed: ((el: T) => boolean | undefined) | undefined;
 
 		if (this.identityProvider) {
@@ -121,11 +136,14 @@ export class DataTree<TInput, T, TFilterData = void> extends AbstractTree<
 				if (!node) {
 					return undefined;
 				}
+
 				return node.collapsed;
 			};
 		}
+
 		this._refresh(element, isCollapsed);
 	}
+
 	resort(element: T | TInput = this.input!, recursive = true): void {
 		this.model.resort(
 			(element === this.input ? null : element) as T,
@@ -139,6 +157,7 @@ export class DataTree<TInput, T, TFilterData = void> extends AbstractTree<
 
 			return;
 		}
+
 		this.model.rerender(element);
 	}
 	// Implementation
@@ -155,14 +174,19 @@ export class DataTree<TInput, T, TFilterData = void> extends AbstractTree<
 			const insertedElements = new Set<string>();
 
 			const outerOnDidCreateNode = onDidCreateNode;
+
 			onDidCreateNode = (node: ITreeNode<T, TFilterData>) => {
 				const id = this.identityProvider!.getId(
 					node.element,
 				).toString();
+
 				insertedElements.add(id);
+
 				this.nodesByIdentity.set(id, node);
+
 				outerOnDidCreateNode?.(node);
 			};
+
 			onDidDeleteNode = (node: ITreeNode<T, TFilterData>) => {
 				const id = this.identityProvider!.getId(
 					node.element,
@@ -173,17 +197,20 @@ export class DataTree<TInput, T, TFilterData = void> extends AbstractTree<
 				}
 			};
 		}
+
 		this.model.setChildren(
 			(element === this.input ? null : element) as T,
 			this.iterate(element, isCollapsed).elements,
 			{ onDidCreateNode, onDidDeleteNode },
 		);
 	}
+
 	private iterate(
 		element: TInput | T,
 		isCollapsed?: (el: T) => boolean | undefined,
 	): {
 		elements: Iterable<ITreeElement<T>>;
+
 		size: number;
 	} {
 		const children = [...this.dataSource.getChildren(element)];
@@ -206,6 +233,7 @@ export class DataTree<TInput, T, TFilterData = void> extends AbstractTree<
 
 		return { elements, size: children.length };
 	}
+
 	protected createModel(
 		user: string,
 		options: IDataTreeOptions<T, TFilterData>,

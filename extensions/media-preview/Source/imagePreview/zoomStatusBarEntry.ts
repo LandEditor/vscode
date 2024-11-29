@@ -16,6 +16,7 @@ export class ZoomStatusBarEntry extends OwnedStatusBarEntry {
 			scale: Scale;
 		}>(),
 	);
+
 	public readonly onDidChangeScale = this._onDidChangeScale.event;
 
 	constructor() {
@@ -25,6 +26,7 @@ export class ZoomStatusBarEntry extends OwnedStatusBarEntry {
 			vscode.StatusBarAlignment.Right,
 			102 /* to the left of editor size entry (101) */,
 		);
+
 		this._register(
 			vscode.commands.registerCommand(
 				selectZoomLevelCommandId,
@@ -52,11 +54,14 @@ export class ZoomStatusBarEntry extends OwnedStatusBarEntry {
 				},
 			),
 		);
+
 		this.entry.command = selectZoomLevelCommandId;
 	}
+
 	public show(owner: unknown, scale: Scale) {
 		this.showItem(owner, this.zoomLabel(scale));
 	}
+
 	private zoomLabel(scale: Scale): string {
 		return scale === "fit"
 			? vscode.l10n.t("Whole Image")

@@ -17,11 +17,17 @@ export class SuggestAlternatives {
 		"hasOtherSuggestions",
 		false,
 	);
+
 	private readonly _ckOtherSuggestions: IContextKey<boolean>;
+
 	private _index: number = 0;
+
 	private _model: CompletionModel | undefined;
+
 	private _acceptNext: ((selected: ISelectedSuggestion) => any) | undefined;
+
 	private _listener: IDisposable | undefined;
+
 	private _ignore: boolean | undefined;
 
 	constructor(
@@ -32,16 +38,23 @@ export class SuggestAlternatives {
 		this._ckOtherSuggestions =
 			SuggestAlternatives.OtherSuggestions.bindTo(contextKeyService);
 	}
+
 	dispose(): void {
 		this.reset();
 	}
+
 	reset(): void {
 		this._ckOtherSuggestions.reset();
+
 		this._listener?.dispose();
+
 		this._model = undefined;
+
 		this._acceptNext = undefined;
+
 		this._ignore = false;
 	}
+
 	set(
 		{ model, index }: ISelectedSuggestion,
 		acceptNext: (selected: ISelectedSuggestion) => any,
@@ -60,16 +73,22 @@ export class SuggestAlternatives {
 
 			return;
 		}
+
 		this._acceptNext = acceptNext;
+
 		this._model = model;
+
 		this._index = index;
+
 		this._listener = this._editor.onDidChangeCursorPosition(() => {
 			if (!this._ignore) {
 				this.reset();
 			}
 		});
+
 		this._ckOtherSuggestions.set(true);
 	}
+
 	private static _moveIndex(
 		fwd: boolean,
 		model: CompletionModel,
@@ -85,30 +104,38 @@ export class SuggestAlternatives {
 			if (newIndex === index) {
 				break;
 			}
+
 			if (!model.items[newIndex].completion.additionalTextEdits) {
 				break;
 			}
 		}
+
 		return newIndex;
 	}
+
 	next(): void {
 		this._move(true);
 	}
+
 	prev(): void {
 		this._move(false);
 	}
+
 	private _move(fwd: boolean): void {
 		if (!this._model) {
 			// nothing to reason about
 			return;
 		}
+
 		try {
 			this._ignore = true;
+
 			this._index = SuggestAlternatives._moveIndex(
 				fwd,
 				this._model,
 				this._index,
 			);
+
 			this._acceptNext!({
 				index: this._index,
 				item: this._model.items[this._index],

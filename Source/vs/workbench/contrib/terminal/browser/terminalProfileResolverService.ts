@@ -64,13 +64,17 @@ export abstract class BaseTerminalProfileResolverService
 	implements ITerminalProfileResolverService
 {
 	declare _serviceBrand: undefined;
+
 	private _primaryBackendOs: OperatingSystem | undefined;
+
 	private readonly _iconRegistry: IIconRegistry = getIconRegistry();
+
 	private _defaultProfileName: string | undefined;
 
 	get defaultProfileName(): string | undefined {
 		return this._defaultProfileName;
 	}
+
 	constructor(
 		private readonly _context: IProfileContextProvider,
 		private readonly _configurationService: IConfigurationService,
@@ -90,6 +94,7 @@ export abstract class BaseTerminalProfileResolverService
 		} else {
 			this._primaryBackendOs = OS;
 		}
+
 		this._register(
 			this._configurationService.onDidChangeConfiguration((e) => {
 				if (
@@ -107,6 +112,7 @@ export abstract class BaseTerminalProfileResolverService
 				}
 			}),
 		);
+
 		this._register(
 			this._terminalProfileService.onDidChangeAvailableProfiles(() =>
 				this._refreshDefaultProfileName(),
@@ -126,6 +132,7 @@ export abstract class BaseTerminalProfileResolverService
 			)?.profileName;
 		}
 	}
+
 	resolveIcon(
 		shellLaunchConfig: IShellLaunchConfig,
 		os: OperatingSystem,
@@ -137,23 +144,28 @@ export abstract class BaseTerminalProfileResolverService
 
 			return;
 		}
+
 		if (shellLaunchConfig.customPtyImplementation) {
 			shellLaunchConfig.icon = this.getDefaultIcon();
 
 			return;
 		}
+
 		if (shellLaunchConfig.executable) {
 			return;
 		}
+
 		const defaultProfile = this._getUnresolvedRealDefaultProfile(os);
 
 		if (defaultProfile) {
 			shellLaunchConfig.icon = defaultProfile.icon;
 		}
+
 		if (!shellLaunchConfig.icon) {
 			shellLaunchConfig.icon = this.getDefaultIcon();
 		}
 	}
+
 	getDefaultIcon(resource?: URI): TerminalIcon & ThemeIcon {
 		return (
 			this._iconRegistry.getIcon(
@@ -164,6 +176,7 @@ export abstract class BaseTerminalProfileResolverService
 			) || Codicon.terminal
 		);
 	}
+
 	async resolveShellLaunchConfig(
 		shellLaunchConfig: IShellLaunchConfig,
 		options: IShellLaunchConfigResolveOptions,
@@ -184,7 +197,9 @@ export abstract class BaseTerminalProfileResolverService
 		} else {
 			resolvedProfile = await this.getDefaultProfile(options);
 		}
+
 		shellLaunchConfig.executable = resolvedProfile.path;
+
 		shellLaunchConfig.args = resolvedProfile.args;
 
 		if (resolvedProfile.env) {
@@ -204,6 +219,7 @@ export abstract class BaseTerminalProfileResolverService
 			typeof shellLaunchConfig.cwd === "string"
 				? undefined
 				: shellLaunchConfig.cwd;
+
 		shellLaunchConfig.icon =
 			this._getCustomIcon(shellLaunchConfig.icon) ||
 			this._getCustomIcon(resolvedProfile.icon) ||
@@ -228,16 +244,19 @@ export abstract class BaseTerminalProfileResolverService
 				);
 		}
 	}
+
 	async getDefaultShell(
 		options: IShellLaunchConfigResolveOptions,
 	): Promise<string> {
 		return (await this.getDefaultProfile(options)).path;
 	}
+
 	async getDefaultShellArgs(
 		options: IShellLaunchConfigResolveOptions,
 	): Promise<string | string[]> {
 		return (await this.getDefaultProfile(options)).args || [];
 	}
+
 	async getDefaultProfile(
 		options: IShellLaunchConfigResolveOptions,
 	): Promise<ITerminalProfile> {
@@ -246,27 +265,34 @@ export abstract class BaseTerminalProfileResolverService
 			options,
 		);
 	}
+
 	getEnvironment(
 		remoteAuthority: string | undefined,
 	): Promise<IProcessEnvironment> {
 		return this._context.getEnvironment(remoteAuthority);
 	}
+
 	private _getCustomIcon(icon?: unknown): TerminalIcon | undefined {
 		if (!icon) {
 			return undefined;
 		}
+
 		if (typeof icon === "string") {
 			return ThemeIcon.fromId(icon);
 		}
+
 		if (ThemeIcon.isThemeIcon(icon)) {
 			return icon;
 		}
+
 		if (URI.isUri(icon) || isUriComponents(icon)) {
 			return URI.revive(icon);
 		}
+
 		if (typeof icon === "object" && "light" in icon && "dark" in icon) {
 			const castedIcon = icon as {
 				light: unknown;
+
 				dark: unknown;
 			};
 
@@ -281,8 +307,10 @@ export abstract class BaseTerminalProfileResolverService
 				};
 			}
 		}
+
 		return undefined;
 	}
+
 	private async _getUnresolvedDefaultProfile(
 		options: IShellLaunchConfigResolveOptions,
 	): Promise<ITerminalProfile> {
@@ -313,23 +341,28 @@ export abstract class BaseTerminalProfileResolverService
 			await this._getUnresolvedFallbackDefaultProfile(options),
 		);
 	}
+
 	private _setIconForAutomation(
 		options: IShellLaunchConfigResolveOptions,
 		profile: ITerminalProfile,
 	): ITerminalProfile {
 		if (options.allowAutomationShell) {
 			const profileClone = deepClone(profile);
+
 			profileClone.icon = Codicon.tools;
 
 			return profileClone;
 		}
+
 		return profile;
 	}
+
 	private _getUnresolvedRealDefaultProfile(
 		os: OperatingSystem,
 	): ITerminalProfile | undefined {
 		return this._terminalProfileService.getDefaultProfile(os);
 	}
+
 	private async _getUnresolvedFallbackDefaultProfile(
 		options: IShellLaunchConfigResolveOptions,
 	): Promise<ITerminalProfile> {
@@ -350,8 +383,10 @@ export abstract class BaseTerminalProfileResolverService
 			if (existingProfile) {
 				if (options.allowAutomationShell) {
 					existingProfile = deepClone(existingProfile);
+
 					existingProfile.icon = Codicon.tools;
 				}
+
 				return existingProfile;
 			}
 		}
@@ -368,6 +403,7 @@ export abstract class BaseTerminalProfileResolverService
 			// Resolve undefined to []
 			args = [];
 		}
+
 		const icon = this._guessProfileIcon(executable);
 
 		return {
@@ -378,6 +414,7 @@ export abstract class BaseTerminalProfileResolverService
 			isDefault: false,
 		};
 	}
+
 	private _getUnresolvedAutomationShellProfile(
 		options: IShellLaunchConfigResolveOptions,
 	): ITerminalProfile | undefined {
@@ -391,8 +428,10 @@ export abstract class BaseTerminalProfileResolverService
 
 			return automationProfile;
 		}
+
 		return undefined;
 	}
+
 	private async _resolveProfile(
 		profile: ITerminalProfile,
 		options: IShellLaunchConfigResolveOptions,
@@ -440,6 +479,7 @@ export abstract class BaseTerminalProfileResolverService
 					activeWorkspaceRootUri,
 				) ?? undefined)
 			: undefined;
+
 		profile.path = await this._resolveVariables(
 			profile.path,
 			env,
@@ -461,8 +501,10 @@ export abstract class BaseTerminalProfileResolverService
 				);
 			}
 		}
+
 		return profile;
 	}
+
 	private async _resolveVariables(
 		value: string,
 		env: IProcessEnvironment,
@@ -478,8 +520,10 @@ export abstract class BaseTerminalProfileResolverService
 		} catch (e) {
 			this._logService.error(`Could not resolve shell`, e);
 		}
+
 		return value;
 	}
+
 	private _getOsKey(os: OperatingSystem): string {
 		switch (os) {
 			case OperatingSystem.Linux:
@@ -492,6 +536,7 @@ export abstract class BaseTerminalProfileResolverService
 				return "windows";
 		}
 	}
+
 	private _guessProfileIcon(shell: string): ThemeIcon | undefined {
 		const file = path.parse(shell).name;
 
@@ -513,6 +558,7 @@ export abstract class BaseTerminalProfileResolverService
 				return undefined;
 		}
 	}
+
 	private _isValidAutomationProfile(
 		profile: unknown,
 		os: OperatingSystem,
@@ -524,6 +570,7 @@ export abstract class BaseTerminalProfileResolverService
 		) {
 			return false;
 		}
+
 		if (
 			"path" in profile &&
 			typeof (
@@ -534,6 +581,7 @@ export abstract class BaseTerminalProfileResolverService
 		) {
 			return true;
 		}
+
 		return false;
 	}
 }
@@ -568,6 +616,7 @@ export class BrowserTerminalProfileResolverService extends BaseTerminalProfileRe
 						// Just return basic values, this is only for serverless web and wouldn't be used
 						return os === OperatingSystem.Windows ? "pwsh" : "bash";
 					}
+
 					return backend.getDefaultSystemShell(os);
 				},
 				getEnvironment: async (remoteAuthority) => {
@@ -579,6 +628,7 @@ export class BrowserTerminalProfileResolverService extends BaseTerminalProfileRe
 					if (!remoteAuthority || !backend) {
 						return env;
 					}
+
 					return backend.getEnvironment();
 				},
 			},

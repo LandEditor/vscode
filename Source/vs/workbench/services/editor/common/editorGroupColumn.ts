@@ -32,6 +32,7 @@ export function columnToEditorGroup(
 	if (column === ACTIVE_GROUP || column === SIDE_GROUP) {
 		return column; // return early for when column is well known
 	}
+
 	let groupInColumn = editorGroupService.getGroups(
 		GroupsOrder.GRID_APPEARANCE,
 	)[column];
@@ -50,10 +51,12 @@ export function columnToEditorGroup(
 				);
 			}
 		}
+
 		groupInColumn = editorGroupService.getGroups(
 			GroupsOrder.GRID_APPEARANCE,
 		)[column];
 	}
+
 	return groupInColumn?.id ?? SIDE_GROUP; // finally open to the side when group not found
 }
 export function editorGroupToColumn(

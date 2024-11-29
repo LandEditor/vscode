@@ -39,10 +39,13 @@ export class ExtHostNotebookDocumentSaveParticipant
 		private readonly _mainThreadBulkEdits: MainThreadBulkEditsShape,
 		private readonly _thresholds: {
 			timeout: number;
+
 			errors: number;
 		} = { timeout: 1500, errors: 3 },
 	) {}
+
 	dispose(): void {}
+
 	getOnWillSaveNotebookDocumentEvent(
 		extension: IExtensionDescription,
 	): Event<NotebookDocumentWillSaveEvent> {
@@ -51,6 +54,7 @@ export class ExtHostNotebookDocumentSaveParticipant
 				function wrapped(e) {
 					listener.call(thisArg, e);
 				};
+
 			wrappedListener.extension = extension;
 
 			return this._onWillSaveNotebookDocumentEvent.event(
@@ -60,6 +64,7 @@ export class ExtHostNotebookDocumentSaveParticipant
 			);
 		};
 	}
+
 	async $participateInSave(
 		resource: UriComponents,
 		reason: SaveReason,
@@ -73,7 +78,9 @@ export class ExtHostNotebookDocumentSaveParticipant
 		if (!document) {
 			throw new Error("Unable to resolve notebook document");
 		}
+
 		const edits: WorkspaceEdit[] = [];
+
 		await this._onWillSaveNotebookDocumentEvent.fireAsync(
 			{
 				notebook: document.apiNotebook,
@@ -93,9 +100,11 @@ export class ExtHostNotebookDocumentSaveParticipant
 						)).extension.identifier,
 					);
 				}
+
 				if (token.isCancellationRequested) {
 					return;
 				}
+
 				if (data) {
 					if (data instanceof WorkspaceEdit) {
 						edits.push(data);
@@ -110,6 +119,7 @@ export class ExtHostNotebookDocumentSaveParticipant
 						);
 					}
 				}
+
 				return;
 			},
 		);
@@ -117,15 +127,19 @@ export class ExtHostNotebookDocumentSaveParticipant
 		if (token.isCancellationRequested) {
 			return false;
 		}
+
 		if (edits.length === 0) {
 			return true;
 		}
+
 		const dto: IWorkspaceEditDto = { edits: [] };
 
 		for (const edit of edits) {
 			const { edits } = WorksapceEditConverter.from(edit);
+
 			dto.edits = dto.edits.concat(edits);
 		}
+
 		return this._mainThreadBulkEdits.$tryApplyWorkspaceEdit(
 			new SerializableObjectWithBuffers(dto),
 		);

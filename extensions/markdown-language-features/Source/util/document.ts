@@ -13,6 +13,7 @@ export function getDocumentDir(uri: vscode.Uri): vscode.Uri | undefined {
 	if (docUri.scheme === Schemes.untitled) {
 		return vscode.workspace.workspaceFolders?.[0]?.uri;
 	}
+
 	return Utils.dirname(docUri);
 }
 export function getParentDocumentUri(uri: vscode.Uri): vscode.Uri {
@@ -25,5 +26,6 @@ export function getParentDocumentUri(uri: vscode.Uri): vscode.Uri {
 			}
 		}
 	}
+
 	return uri;
 }

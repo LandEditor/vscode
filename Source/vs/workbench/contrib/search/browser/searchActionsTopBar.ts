@@ -58,6 +58,7 @@ registerAction2(
 				f1: true,
 			});
 		}
+
 		override async run(accessor: ServicesAccessor): Promise<any> {
 			clearHistoryCommand(accessor);
 		}
@@ -99,6 +100,7 @@ registerAction2(
 				],
 			});
 		}
+
 		run(accessor: ServicesAccessor) {
 			return cancelSearch(accessor);
 		}
@@ -129,6 +131,7 @@ registerAction2(
 				],
 			});
 		}
+
 		run(accessor: ServicesAccessor, ...args: any[]) {
 			return refreshSearch(accessor);
 		}
@@ -167,6 +170,7 @@ registerAction2(
 				],
 			});
 		}
+
 		run(accessor: ServicesAccessor, ...args: any[]) {
 			return collapseDeepestExpandedLevel(accessor);
 		}
@@ -199,6 +203,7 @@ registerAction2(
 				],
 			});
 		}
+
 		async run(accessor: ServicesAccessor, ...args: any[]) {
 			return expandAll(accessor);
 		}
@@ -232,6 +237,7 @@ registerAction2(
 				],
 			});
 		}
+
 		run(accessor: ServicesAccessor, ...args: any[]) {
 			return clearSearchResults(accessor);
 		}
@@ -263,6 +269,7 @@ registerAction2(
 				],
 			});
 		}
+
 		async run(accessor: ServicesAccessor, ...args: any[]) {
 			const searchView = getSearchView(accessor.get(IViewsService));
 
@@ -298,6 +305,7 @@ registerAction2(
 				],
 			});
 		}
+
 		async run(accessor: ServicesAccessor, ...args: any[]) {
 			const searchView = getSearchView(accessor.get(IViewsService));
 
@@ -311,6 +319,7 @@ registerAction2(
 //#region Helpers
 const clearHistoryCommand: ICommandHandler = (accessor) => {
 	const searchHistoryService = accessor.get(ISearchHistoryService);
+
 	searchHistoryService.clearHistory();
 };
 async function expandAll(accessor: ServicesAccessor) {
@@ -351,8 +360,10 @@ export async function forcedExpandRecursively(
 		if (!viewer.hasNode(element)) {
 			return;
 		}
+
 		await viewer.expand(element, true);
 	}
+
 	const children = viewer.getNode(element)?.children;
 
 	if (children) {
@@ -362,6 +373,7 @@ export async function forcedExpandRecursively(
 					"SearchResult should not be a child of a RenderableMatch",
 				);
 			}
+
 			forcedExpandRecursively(viewer, child.element);
 		}
 	}
@@ -370,18 +382,21 @@ function clearSearchResults(accessor: ServicesAccessor) {
 	const viewsService = accessor.get(IViewsService);
 
 	const searchView = getSearchView(viewsService);
+
 	searchView?.clearSearchResults();
 }
 function cancelSearch(accessor: ServicesAccessor) {
 	const viewsService = accessor.get(IViewsService);
 
 	const searchView = getSearchView(viewsService);
+
 	searchView?.cancelSearch();
 }
 function refreshSearch(accessor: ServicesAccessor) {
 	const viewsService = accessor.get(IViewsService);
 
 	const searchView = getSearchView(viewsService);
+
 	searchView?.triggerQueryChange({ preserveFocus: false });
 }
 function collapseDeepestExpandedLevel(accessor: ServicesAccessor) {
@@ -415,11 +430,13 @@ function collapseDeepestExpandedLevel(accessor: ServicesAccessor) {
 				if (isTextSearchHeading(node)) {
 					continue;
 				}
+
 				if (isSearchTreeMatch(node)) {
 					canCollapseFileMatchLevel = true;
 
 					break;
 				}
+
 				if (
 					searchView.isTreeLayoutViewVisible &&
 					!canCollapseFirstLevel
@@ -439,6 +456,7 @@ function collapseDeepestExpandedLevel(accessor: ServicesAccessor) {
 								? compressionStartNode
 								: node;
 					}
+
 					const immediateParent = nodeToTest.parent();
 
 					if (
@@ -456,6 +474,7 @@ function collapseDeepestExpandedLevel(accessor: ServicesAccessor) {
 				}
 			}
 		}
+
 		if (canCollapseFileMatchLevel) {
 			node = navigator.first();
 
@@ -483,6 +502,7 @@ function collapseDeepestExpandedLevel(accessor: ServicesAccessor) {
 								? compressionStartNode
 								: node;
 					}
+
 					const immediateParent = nodeToTest.parent();
 
 					if (
@@ -505,6 +525,7 @@ function collapseDeepestExpandedLevel(accessor: ServicesAccessor) {
 				if (!node) {
 					break;
 				}
+
 				if (isTextSearchHeading(viewer.getParentElement(node))) {
 					viewer.collapse(node);
 				}
@@ -512,6 +533,7 @@ function collapseDeepestExpandedLevel(accessor: ServicesAccessor) {
 		} else {
 			viewer.collapseAll();
 		}
+
 		const firstFocusParent = viewer.getFocus()[0]?.parent();
 
 		if (
@@ -522,7 +544,9 @@ function collapseDeepestExpandedLevel(accessor: ServicesAccessor) {
 			viewer.isCollapsed(firstFocusParent)
 		) {
 			viewer.domFocus();
+
 			viewer.focusFirst();
+
 			viewer.setSelection(viewer.getFocus());
 		}
 	}

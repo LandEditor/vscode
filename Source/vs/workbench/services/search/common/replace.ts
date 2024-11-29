@@ -9,8 +9,11 @@ import { IPatternInfo } from "./search.js";
 
 export class ReplacePattern {
 	private _replacePattern: string;
+
 	private _hasParameters: boolean = false;
+
 	private _regExp: RegExp;
+
 	private _caseOpsRegExp: RegExp;
 
 	constructor(replaceString: string, searchPatternInfo: IPatternInfo);
@@ -26,10 +29,13 @@ export class ReplacePattern {
 
 		if (typeof arg2 === "boolean") {
 			parseParameters = arg2;
+
 			this._regExp = arg3;
 		} else {
 			searchPatternInfo = arg2;
+
 			parseParameters = !!searchPatternInfo.isRegExp;
+
 			this._regExp = strings.createRegExp(
 				searchPatternInfo.pattern,
 				!!searchPatternInfo.isRegExp,
@@ -42,9 +48,11 @@ export class ReplacePattern {
 				},
 			);
 		}
+
 		if (parseParameters) {
 			this.parseReplaceString(replaceString);
 		}
+
 		if (this._regExp.global) {
 			this._regExp = strings.createRegExp(this._regExp.source, true, {
 				matchCase: !this._regExp.ignoreCase,
@@ -53,16 +61,20 @@ export class ReplacePattern {
 				global: false,
 			});
 		}
+
 		this._caseOpsRegExp = new RegExp(
 			/([\s\S]*?)((?:\\[uUlL])+?|)(\$[0-9]+)([\s\S]*?)/g,
 		);
 	}
+
 	get hasParameters(): boolean {
 		return this._hasParameters;
 	}
+
 	get pattern(): string {
 		return this._replacePattern;
 	}
+
 	get regExp(): RegExp {
 		return this._regExp;
 	}
@@ -86,13 +98,16 @@ export class ReplacePattern {
 				if (match[0] === text) {
 					return replaceString;
 				}
+
 				return replaceString.substr(
 					match.index,
 					match[0].length - (text.length - replaceString.length),
 				);
 			}
+
 			return this.buildReplaceString(match, preserveCase);
 		}
+
 		return null;
 	}
 	/**
@@ -119,6 +134,7 @@ export class ReplacePattern {
 		if (firstMatch === null) {
 			return text.replace(regex, replaceString);
 		}
+
 		let patMatch: RegExpExecArray | null;
 
 		let newReplaceString = "";
@@ -131,6 +147,7 @@ export class ReplacePattern {
 			lastIndex = patMatch.index;
 
 			const fullMatch = patMatch[0];
+
 			lastMatch = fullMatch;
 
 			let caseOps = patMatch[2]; // \u, \l\u, etc.
@@ -140,6 +157,7 @@ export class ReplacePattern {
 
 				continue;
 			}
+
 			const replacement = firstMatch[parseInt(money.slice(1))];
 
 			if (!replacement) {
@@ -147,7 +165,9 @@ export class ReplacePattern {
 
 				continue;
 			}
+
 			const replacementLen = replacement.length;
+
 			newReplaceString += patMatch[1]; // prefix
 			caseOps = caseOps.replace(/\\/g, "");
 
@@ -157,6 +177,7 @@ export class ReplacePattern {
 				switch (caseOps[i]) {
 					case "U":
 						newReplaceString += replacement.slice(i).toUpperCase();
+
 						i = replacementLen;
 
 						break;
@@ -168,6 +189,7 @@ export class ReplacePattern {
 
 					case "L":
 						newReplaceString += replacement.slice(i).toLowerCase();
+
 						i = replacementLen;
 
 						break;
@@ -182,6 +204,7 @@ export class ReplacePattern {
 			if (i < replacementLen) {
 				newReplaceString += replacement.slice(i);
 			}
+
 			newReplaceString += patMatch[4]; // suffix
 		}
 		// Append any remaining trailing content after the final regex match.
@@ -189,6 +212,7 @@ export class ReplacePattern {
 
 		return text.replace(regex, newReplaceString);
 	}
+
 	public buildReplaceString(
 		matches: string[] | null,
 		preserveCase?: boolean,
@@ -213,6 +237,7 @@ export class ReplacePattern {
 		if (!replaceString || replaceString.length === 0) {
 			return;
 		}
+
 		let substrFrom = 0,
 			result = "";
 
@@ -227,6 +252,7 @@ export class ReplacePattern {
 					// string ends with a \
 					break;
 				}
+
 				const nextChCode = replaceString.charCodeAt(i);
 
 				let replaceWithCharacter: string | null = null;
@@ -250,13 +276,16 @@ export class ReplacePattern {
 
 						break;
 				}
+
 				if (replaceWithCharacter) {
 					result +=
 						replaceString.substring(substrFrom, i - 1) +
 						replaceWithCharacter;
+
 					substrFrom = i + 1;
 				}
 			}
+
 			if (chCode === CharCode.DollarSign) {
 				// move to next char
 				i++;
@@ -265,6 +294,7 @@ export class ReplacePattern {
 					// string ends with a $
 					break;
 				}
+
 				const nextChCode = replaceString.charCodeAt(i);
 
 				let replaceWithCharacter: string | null = null;
@@ -273,6 +303,7 @@ export class ReplacePattern {
 					case CharCode.Digit0:
 						// $0 => $&
 						replaceWithCharacter = "$&";
+
 						this._hasParameters = true;
 
 						break;
@@ -294,11 +325,13 @@ export class ReplacePattern {
 						) {
 							break;
 						}
+
 						if (i === replaceString.length - 1) {
 							this._hasParameters = true;
 
 							break;
 						}
+
 						let charCode = replaceString.charCodeAt(++i);
 
 						if (
@@ -313,11 +346,13 @@ export class ReplacePattern {
 
 							break;
 						}
+
 						if (i === replaceString.length - 1) {
 							this._hasParameters = true;
 
 							break;
 						}
+
 						charCode = replaceString.charCodeAt(++i);
 
 						if (
@@ -332,23 +367,29 @@ export class ReplacePattern {
 
 							break;
 						}
+
 						break;
 					}
 				}
+
 				if (replaceWithCharacter) {
 					result +=
 						replaceString.substring(substrFrom, i - 1) +
 						replaceWithCharacter;
+
 					substrFrom = i + 1;
 				}
 			}
 		}
+
 		if (substrFrom === 0) {
 			// no replacement occurred
 			return;
 		}
+
 		this._replacePattern = result + replaceString.substring(substrFrom);
 	}
+
 	private between(value: number, from: number, to: number): boolean {
 		return from <= value && value <= to;
 	}

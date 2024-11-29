@@ -26,6 +26,7 @@ import { IViewsService } from "../../../services/views/common/viewsService.js";
 
 export class ExtensionAccessibilityHelpDialogContribution extends Disposable {
 	static ID = "extensionAccessibilityHelpDialogContribution";
+
 	private _viewHelpDialogMap = this._register(
 		new DisposableMap<string, IDisposable>(),
 	);
@@ -35,6 +36,7 @@ export class ExtensionAccessibilityHelpDialogContribution extends Disposable {
 		keybindingService: IKeybindingService,
 	) {
 		super();
+
 		this._register(
 			Registry.as<IViewsRegistry>(
 				Extensions.ViewsRegistry,
@@ -54,6 +56,7 @@ export class ExtensionAccessibilityHelpDialogContribution extends Disposable {
 				}
 			}),
 		);
+
 		this._register(
 			Registry.as<IViewsRegistry>(
 				Extensions.ViewsRegistry,
@@ -82,6 +85,7 @@ function registerAccessibilityHelpAction(
 			"No content provided for the accessibility help dialog",
 		);
 	}
+
 	disposableStore.add(
 		AccessibleViewRegistry.register({
 			priority: 95,
@@ -100,9 +104,11 @@ function registerAccessibilityHelpAction(
 			},
 		}),
 	);
+
 	disposableStore.add(
 		keybindingService.onDidUpdateKeybindings(() => {
 			disposableStore.clear();
+
 			disposableStore.add(
 				registerAccessibilityHelpAction(
 					keybindingService,

@@ -29,6 +29,7 @@ import {
 
 interface IExecutionItem {
 	text: string;
+
 	tooltip?: string;
 }
 export class CollapsedCodeCellExecutionIcon extends Disposable {
@@ -42,7 +43,9 @@ export class CollapsedCodeCellExecutionIcon extends Disposable {
 		private _executionStateService: INotebookExecutionStateService,
 	) {
 		super();
+
 		this._update();
+
 		this._register(
 			this._executionStateService.onDidChangeExecution((e) => {
 				if (
@@ -53,18 +56,23 @@ export class CollapsedCodeCellExecutionIcon extends Disposable {
 				}
 			}),
 		);
+
 		this._register(
 			this._cell.model.onDidChangeInternalMetadata(() => this._update()),
 		);
 	}
+
 	setVisibility(visible: boolean): void {
 		this._visible = visible;
+
 		this._update();
 	}
+
 	private _update() {
 		if (!this._visible) {
 			return;
 		}
+
 		const runState = this._executionStateService.getCellExecution(
 			this._cell.uri,
 		);
@@ -76,13 +84,17 @@ export class CollapsedCodeCellExecutionIcon extends Disposable {
 
 		if (item) {
 			this._element.style.display = "";
+
 			DOM.reset(this._element, ...renderLabelWithIcons(item.text));
+
 			this._element.title = item.tooltip ?? "";
 		} else {
 			this._element.style.display = "none";
+
 			DOM.reset(this._element);
 		}
 	}
+
 	private _getItemForState(
 		runState: INotebookCellExecution | undefined,
 		internalMetadata: NotebookCellInternalMetadata,
@@ -120,6 +132,7 @@ export class CollapsedCodeCellExecutionIcon extends Disposable {
 				),
 			};
 		}
+
 		return;
 	}
 }

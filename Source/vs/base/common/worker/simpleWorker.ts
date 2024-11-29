@@ -20,6 +20,7 @@ const INITIALIZE = "$initialize";
 
 export interface IWorker extends IDisposable {
 	getId(): number;
+
 	postMessage(message: Message, transfer: ArrayBuffer[]): void;
 }
 export interface IWorkerCallback {
@@ -34,7 +35,9 @@ export interface IWorkerFactory {
 }
 export interface IWorkerDescriptor {
 	readonly moduleId: string;
+
 	readonly esmModuleLocation: URI | undefined;
+
 	readonly label: string | undefined;
 }
 let webWorkerWarningLogged = false;
@@ -44,12 +47,15 @@ export function logOnceWebWorkerWarning(err: any): void {
 		// running tests
 		return;
 	}
+
 	if (!webWorkerWarningLogged) {
 		webWorkerWarningLogged = true;
+
 		console.warn(
 			"Could not create web worker(s). Falling back to loading web worker code in main thread, which might cause UI freezes. Please see https://github.com/microsoft/monaco-editor#faq",
 		);
 	}
+
 	console.warn(err.message);
 }
 
@@ -117,34 +123,49 @@ type Message =
 	| UnsubscribeEventMessage;
 interface IMessageReply {
 	resolve: (value?: any) => void;
+
 	reject: (error?: any) => void;
 }
 interface IMessageHandler {
 	sendMessage(msg: any, transfer?: ArrayBuffer[]): void;
+
 	handleMessage(channel: string, method: string, args: any[]): Promise<any>;
+
 	handleEvent(channel: string, eventName: string, arg: any): Event<any>;
 }
 class SimpleWorkerProtocol {
 	private _workerId: number;
+
 	private _lastSentReq: number;
+
 	private _pendingReplies: {
 		[req: string]: IMessageReply;
 	};
+
 	private _pendingEmitters: Map<string, Emitter<any>>;
+
 	private _pendingEvents: Map<string, IDisposable>;
+
 	private _handler: IMessageHandler;
 
 	constructor(handler: IMessageHandler) {
 		this._workerId = -1;
+
 		this._handler = handler;
+
 		this._lastSentReq = 0;
+
 		this._pendingReplies = Object.create(null);
+
 		this._pendingEmitters = new Map<string, Emitter<any>>();
+
 		this._pendingEvents = new Map<string, IDisposable>();
 	}
+
 	public setWorkerId(workerId: number): void {
 		this._workerId = workerId;
 	}
+
 	public sendMessage(
 		channel: string,
 		method: string,
@@ -157,18 +178,22 @@ class SimpleWorkerProtocol {
 				resolve: resolve,
 				reject: reject,
 			};
+
 			this._send(
 				new RequestMessage(this._workerId, req, channel, method, args),
 			);
 		});
 	}
+
 	public listen(channel: string, eventName: string, arg: any): Event<any> {
 		let req: string | null = null;
 
 		const emitter = new Emitter<any>({
 			onWillAddFirstListener: () => {
 				req = String(++this._lastSentReq);
+
 				this._pendingEmitters.set(req, emitter);
+
 				this._send(
 					new SubscribeEventMessage(
 						this._workerId,
@@ -181,22 +206,28 @@ class SimpleWorkerProtocol {
 			},
 			onDidRemoveLastListener: () => {
 				this._pendingEmitters.delete(req!);
+
 				this._send(new UnsubscribeEventMessage(this._workerId, req!));
+
 				req = null;
 			},
 		});
 
 		return emitter.event;
 	}
+
 	public handleMessage(message: Message): void {
 		if (!message || !message.vsWorker) {
 			return;
 		}
+
 		if (this._workerId !== -1 && message.vsWorker !== this._workerId) {
 			return;
 		}
+
 		this._handleMessage(message);
 	}
+
 	public createProxyToRemoteChannel<T extends object>(
 		channel: string,
 		sendMessageBarrier?: () => Promise<void>,
@@ -221,12 +252,14 @@ class SimpleWorkerProtocol {
 						};
 					}
 				}
+
 				return target[name];
 			},
 		};
 
 		return new Proxy(Object.create(null), handler);
 	}
+
 	private _handleMessage(msg: Message): void {
 		switch (msg.type) {
 			case MessageType.Reply:
@@ -245,13 +278,16 @@ class SimpleWorkerProtocol {
 				return this._handleUnsubscribeEventMessage(msg);
 		}
 	}
+
 	private _handleReplyMessage(replyMessage: ReplyMessage): void {
 		if (!this._pendingReplies[replyMessage.seq]) {
 			console.warn("Got reply to unknown seq");
 
 			return;
 		}
+
 		const reply = this._pendingReplies[replyMessage.seq];
+
 		delete this._pendingReplies[replyMessage.seq];
 
 		if (replyMessage.err) {
@@ -259,16 +295,22 @@ class SimpleWorkerProtocol {
 
 			if (replyMessage.err.$isError) {
 				err = new Error();
+
 				err.name = replyMessage.err.name;
+
 				err.message = replyMessage.err.message;
+
 				err.stack = replyMessage.err.stack;
 			}
+
 			reply.reject(err);
 
 			return;
 		}
+
 		reply.resolve(replyMessage.res);
 	}
+
 	private _handleRequestMessage(requestMessage: RequestMessage): void {
 		const req = requestMessage.req;
 
@@ -277,6 +319,7 @@ class SimpleWorkerProtocol {
 			requestMessage.method,
 			requestMessage.args,
 		);
+
 		result.then(
 			(r) => {
 				this._send(new ReplyMessage(this._workerId, req, r, undefined));
@@ -286,6 +329,7 @@ class SimpleWorkerProtocol {
 					// Loading errors have a detail property that points to the actual error
 					e.detail = transformErrorForSerialization(e.detail);
 				}
+
 				this._send(
 					new ReplyMessage(
 						this._workerId,
@@ -297,6 +341,7 @@ class SimpleWorkerProtocol {
 			},
 		);
 	}
+
 	private _handleSubscribeEventMessage(msg: SubscribeEventMessage): void {
 		const req = msg.req;
 
@@ -307,25 +352,32 @@ class SimpleWorkerProtocol {
 		)((event) => {
 			this._send(new EventMessage(this._workerId, req, event));
 		});
+
 		this._pendingEvents.set(req, disposable);
 	}
+
 	private _handleEventMessage(msg: EventMessage): void {
 		if (!this._pendingEmitters.has(msg.req)) {
 			console.warn("Got event for unknown req");
 
 			return;
 		}
+
 		this._pendingEmitters.get(msg.req)!.fire(msg.event);
 	}
+
 	private _handleUnsubscribeEventMessage(msg: UnsubscribeEventMessage): void {
 		if (!this._pendingEvents.has(msg.req)) {
 			console.warn("Got unsubscribe for unknown req");
 
 			return;
 		}
+
 		this._pendingEvents.get(msg.req)!.dispose();
+
 		this._pendingEvents.delete(msg.req);
 	}
+
 	private _send(msg: Message): void {
 		const transfer: ArrayBuffer[] = [];
 
@@ -340,6 +392,7 @@ class SimpleWorkerProtocol {
 				transfer.push(msg.res);
 			}
 		}
+
 		this._handler.sendMessage(msg, transfer);
 	}
 }
@@ -355,6 +408,7 @@ export type Proxied<T> = {
 
 export interface IWorkerClient<W> {
 	proxy: Proxied<W>;
+
 	dispose(): void;
 
 	setChannel<T extends object>(channel: string, handler: T): void;
@@ -374,10 +428,15 @@ export class SimpleWorkerClient<W extends object>
 	implements IWorkerClient<W>
 {
 	private readonly _worker: IWorker;
+
 	private readonly _onModuleLoaded: Promise<void>;
+
 	private readonly _protocol: SimpleWorkerProtocol;
+
 	public readonly proxy: Proxied<W>;
+
 	private readonly _localChannels: Map<string, object> = new Map();
+
 	private readonly _remoteChannels: Map<string, object> = new Map();
 
 	constructor(
@@ -385,6 +444,7 @@ export class SimpleWorkerClient<W extends object>
 		workerDescriptor: IWorkerDescriptor,
 	) {
 		super();
+
 		this._worker = this._register(
 			workerFactory.create(
 				{
@@ -402,6 +462,7 @@ export class SimpleWorkerClient<W extends object>
 				},
 			),
 		);
+
 		this._protocol = new SimpleWorkerProtocol({
 			sendMessage: (msg: any, transfer: ArrayBuffer[]): void => {
 				this._worker.postMessage(msg, transfer);
@@ -421,6 +482,7 @@ export class SimpleWorkerClient<W extends object>
 				return this._handleEvent(channel, eventName, arg);
 			},
 		});
+
 		this._protocol.setWorkerId(this._worker.getId());
 		// Gather loader configuration
 		let loaderConfiguration: any = null;
@@ -452,12 +514,14 @@ export class SimpleWorkerClient<W extends object>
 				workerDescriptor.moduleId,
 			],
 		);
+
 		this.proxy = this._protocol.createProxyToRemoteChannel(
 			DEFAULT_CHANNEL,
 			async () => {
 				await this._onModuleLoaded;
 			},
 		);
+
 		this._onModuleLoaded.catch((e) => {
 			this._onError(
 				"Worker failed to load " + workerDescriptor.moduleId,
@@ -465,6 +529,7 @@ export class SimpleWorkerClient<W extends object>
 			);
 		});
 	}
+
 	private _handleMessage(
 		channelName: string,
 		method: string,
@@ -478,6 +543,7 @@ export class SimpleWorkerClient<W extends object>
 				new Error(`Missing channel ${channelName} on main thread`),
 			);
 		}
+
 		if (typeof (channel as any)[method] !== "function") {
 			return Promise.reject(
 				new Error(
@@ -485,6 +551,7 @@ export class SimpleWorkerClient<W extends object>
 				),
 			);
 		}
+
 		try {
 			return Promise.resolve(
 				(channel as any)[method].apply(channel, args),
@@ -493,6 +560,7 @@ export class SimpleWorkerClient<W extends object>
 			return Promise.reject(e);
 		}
 	}
+
 	private _handleEvent(
 		channelName: string,
 		eventName: string,
@@ -504,6 +572,7 @@ export class SimpleWorkerClient<W extends object>
 		if (!channel) {
 			throw new Error(`Missing channel ${channelName} on main thread`);
 		}
+
 		if (propertyIsDynamicEvent(eventName)) {
 			const event = (channel as any)[eventName].call(channel, arg);
 
@@ -512,8 +581,10 @@ export class SimpleWorkerClient<W extends object>
 					`Missing dynamic event ${eventName} on main thread channel ${channelName}.`,
 				);
 			}
+
 			return event;
 		}
+
 		if (propertyIsEvent(eventName)) {
 			const event = (channel as any)[eventName];
 
@@ -522,13 +593,17 @@ export class SimpleWorkerClient<W extends object>
 					`Missing event ${eventName} on main thread channel ${channelName}.`,
 				);
 			}
+
 			return event;
 		}
+
 		throw new Error(`Malformed event name ${eventName}`);
 	}
+
 	public setChannel<T extends object>(channel: string, handler: T): void {
 		this._localChannels.set(channel, handler);
 	}
+
 	public getChannel<T extends object>(channel: string): Proxied<T> {
 		if (!this._remoteChannels.has(channel)) {
 			const inst = this._protocol.createProxyToRemoteChannel(
@@ -537,12 +612,16 @@ export class SimpleWorkerClient<W extends object>
 					await this._onModuleLoaded;
 				},
 			);
+
 			this._remoteChannels.set(channel, inst);
 		}
+
 		return this._remoteChannels.get(channel) as Proxied<T>;
 	}
+
 	private _onError(message: string, error?: any): void {
 		console.error(message);
+
 		console.info(error);
 	}
 }
@@ -573,9 +652,13 @@ export interface IRequestHandlerFactory {
  */
 export class SimpleWorkerServer implements IWorkerServer {
 	private _requestHandlerFactory: IRequestHandlerFactory | null;
+
 	private _requestHandler: IRequestHandler | null;
+
 	private _protocol: SimpleWorkerProtocol;
+
 	private readonly _localChannels: Map<string, object> = new Map();
+
 	private readonly _remoteChannels: Map<string, object> = new Map();
 
 	constructor(
@@ -583,7 +666,9 @@ export class SimpleWorkerServer implements IWorkerServer {
 		requestHandlerFactory: IRequestHandlerFactory | null,
 	) {
 		this._requestHandlerFactory = requestHandlerFactory;
+
 		this._requestHandler = null;
+
 		this._protocol = new SimpleWorkerProtocol({
 			sendMessage: (msg: any, transfer: ArrayBuffer[]): void => {
 				postMessage(msg, transfer);
@@ -600,9 +685,11 @@ export class SimpleWorkerServer implements IWorkerServer {
 			): Event<any> => this._handleEvent(channel, eventName, arg),
 		});
 	}
+
 	public onmessage(msg: any): void {
 		this._protocol.handleMessage(msg);
 	}
+
 	private _handleMessage(
 		channel: string,
 		method: string,
@@ -615,6 +702,7 @@ export class SimpleWorkerServer implements IWorkerServer {
 				<string>args[2],
 			);
 		}
+
 		const requestHandler: object | null | undefined =
 			channel === DEFAULT_CHANNEL
 				? this._requestHandler
@@ -625,6 +713,7 @@ export class SimpleWorkerServer implements IWorkerServer {
 				new Error(`Missing channel ${channel} on worker thread`),
 			);
 		}
+
 		if (typeof (requestHandler as any)[method] !== "function") {
 			return Promise.reject(
 				new Error(
@@ -632,6 +721,7 @@ export class SimpleWorkerServer implements IWorkerServer {
 				),
 			);
 		}
+
 		try {
 			return Promise.resolve(
 				(requestHandler as any)[method].apply(requestHandler, args),
@@ -640,6 +730,7 @@ export class SimpleWorkerServer implements IWorkerServer {
 			return Promise.reject(e);
 		}
 	}
+
 	private _handleEvent(
 		channel: string,
 		eventName: string,
@@ -653,6 +744,7 @@ export class SimpleWorkerServer implements IWorkerServer {
 		if (!requestHandler) {
 			throw new Error(`Missing channel ${channel} on worker thread`);
 		}
+
 		if (propertyIsDynamicEvent(eventName)) {
 			const event = (requestHandler as any)[eventName].call(
 				requestHandler,
@@ -664,8 +756,10 @@ export class SimpleWorkerServer implements IWorkerServer {
 					`Missing dynamic event ${eventName} on request handler.`,
 				);
 			}
+
 			return event;
 		}
+
 		if (propertyIsEvent(eventName)) {
 			const event = (requestHandler as any)[eventName];
 
@@ -674,20 +768,27 @@ export class SimpleWorkerServer implements IWorkerServer {
 					`Missing event ${eventName} on request handler.`,
 				);
 			}
+
 			return event;
 		}
+
 		throw new Error(`Malformed event name ${eventName}`);
 	}
+
 	public setChannel<T extends object>(channel: string, handler: T): void {
 		this._localChannels.set(channel, handler);
 	}
+
 	public getChannel<T extends object>(channel: string): Proxied<T> {
 		if (!this._remoteChannels.has(channel)) {
 			const inst = this._protocol.createProxyToRemoteChannel(channel);
+
 			this._remoteChannels.set(channel, inst);
 		}
+
 		return this._remoteChannels.get(channel) as Proxied<T>;
 	}
+
 	private async initialize(
 		workerId: number,
 		loaderConfig: any,
@@ -701,16 +802,19 @@ export class SimpleWorkerServer implements IWorkerServer {
 
 			return;
 		}
+
 		if (loaderConfig) {
 			// Remove 'baseUrl', handling it is beyond scope for now
 			if (typeof loaderConfig.baseUrl !== "undefined") {
 				delete loaderConfig["baseUrl"];
 			}
+
 			if (typeof loaderConfig.paths !== "undefined") {
 				if (typeof loaderConfig.paths.vs !== "undefined") {
 					delete loaderConfig.paths["vs"];
 				}
 			}
+
 			if (typeof loaderConfig.trustedTypesPolicy !== "undefined") {
 				// don't use, it has been destroyed during serialize
 				delete loaderConfig["trustedTypesPolicy"];
@@ -719,6 +823,7 @@ export class SimpleWorkerServer implements IWorkerServer {
 			loaderConfig.catchError = true;
 			(globalThis as any).require.config(loaderConfig);
 		}
+
 		const url = FileAccess.asBrowserUri(
 			`${moduleId}.js` as AppResourcePath,
 		).toString(true);

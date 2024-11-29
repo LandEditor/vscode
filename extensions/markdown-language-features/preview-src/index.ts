@@ -57,10 +57,12 @@ function doAfterImagesLoaded(cb: () => void) {
 			} else {
 				return new Promise<void>((resolve) => {
 					e.addEventListener("load", () => resolve());
+
 					e.addEventListener("error", () => resolve());
 				});
 			}
 		});
+
 		Promise.all(ps).then(() => setTimeout(cb, 0));
 	} else {
 		setTimeout(cb, 0);
@@ -68,6 +70,7 @@ function doAfterImagesLoaded(cb: () => void) {
 }
 onceDocumentLoaded(() => {
 	const scrollProgress = state.scrollProgress;
+
 	addImageContexts();
 
 	if (typeof scrollProgress === "number" && !settings.settings.fragment) {
@@ -78,11 +81,13 @@ onceDocumentLoaded(() => {
 				1,
 				scrollProgress * document.body.clientHeight,
 			);
+
 			window.scrollTo(0, scrollToY);
 		});
 
 		return;
 	}
+
 	if (settings.settings.scrollPreviewWithEditor) {
 		doAfterImagesLoaded(() => {
 			// Try to scroll to fragment if available
@@ -94,7 +99,9 @@ onceDocumentLoaded(() => {
 				} catch {
 					fragment = settings.settings.fragment;
 				}
+
 				state.fragment = undefined;
+
 				vscode.setState(state);
 
 				const element = getLineElementForFragment(
@@ -104,6 +111,7 @@ onceDocumentLoaded(() => {
 
 				if (element) {
 					scrollDisabledCount += 1;
+
 					scrollToRevealSourceLine(
 						element.line,
 						documentVersion,
@@ -113,6 +121,7 @@ onceDocumentLoaded(() => {
 			} else {
 				if (!isNaN(settings.settings.line!)) {
 					scrollDisabledCount += 1;
+
 					scrollToRevealSourceLine(
 						settings.settings.line!,
 						documentVersion,
@@ -122,6 +131,7 @@ onceDocumentLoaded(() => {
 			}
 		});
 	}
+
 	if (typeof settings.settings.selectedLine === "number") {
 		marker.onDidChangeTextEditorSelection(
 			settings.settings.selectedLine,
@@ -151,6 +161,7 @@ window.addEventListener(
 	"resize",
 	() => {
 		scrollDisabledCount += 1;
+
 		updateScrollProgress();
 	},
 	true,
@@ -162,7 +173,9 @@ function addImageContexts() {
 
 	for (const img of images) {
 		img.id = "image-" + idNumber;
+
 		idNumber += 1;
+
 		img.setAttribute(
 			"data-vscode-context",
 			JSON.stringify({
@@ -185,6 +198,7 @@ async function copyImage(image: HTMLImageElement, retries = 5) {
 
 		return;
 	}
+
 	try {
 		await navigator.clipboard.write([
 			new ClipboardItem({
@@ -193,15 +207,19 @@ async function copyImage(image: HTMLImageElement, retries = 5) {
 
 					if (canvas !== null) {
 						canvas.width = image.naturalWidth;
+
 						canvas.height = image.naturalHeight;
 
 						const context = canvas.getContext("2d");
+
 						context?.drawImage(image, 0, 0);
 					}
+
 					canvas.toBlob((blob) => {
 						if (blob) {
 							resolve(blob);
 						}
+
 						canvas.remove();
 					}, "image/png");
 				}),
@@ -223,8 +241,10 @@ window.addEventListener(
 				if (img instanceof HTMLImageElement) {
 					copyImage(img);
 				}
+
 				return;
 			}
+
 			case "onDidChangeTextEditorSelection":
 				if (data.source === documentResource) {
 					marker.onDidChangeTextEditorSelection(
@@ -232,12 +252,14 @@ window.addEventListener(
 						documentVersion,
 					);
 				}
+
 				return;
 
 			case "updateView":
 				if (data.source === documentResource) {
 					onUpdateView(data.line);
 				}
+
 				return;
 
 			case "updateContent": {
@@ -257,6 +279,7 @@ window.addEventListener(
 						metaElement.remove();
 					}
 				}
+
 				if (data.source !== documentResource) {
 					root.replaceWith(
 						newContent.querySelector(".markdown-body")!,
@@ -272,12 +295,14 @@ window.addEventListener(
 						if (a.isEqualNode(b)) {
 							return true;
 						}
+
 						if (
 							a.tagName !== b.tagName ||
 							a.textContent !== b.textContent
 						) {
 							return false;
 						}
+
 						const aAttrs = [...a.attributes].filter(
 							(attr) => !skippedAttrs.includes(attr.name),
 						);
@@ -289,6 +314,7 @@ window.addEventListener(
 						if (aAttrs.length !== bAttrs.length) {
 							return false;
 						}
+
 						for (let i = 0; i < aAttrs.length; ++i) {
 							const aAttr = aAttrs[i];
 
@@ -297,6 +323,7 @@ window.addEventListener(
 							if (aAttr.name !== bAttr.name) {
 								return false;
 							}
+
 							if (
 								aAttr.value !== bAttr.value &&
 								aAttr.name !== "data-line"
@@ -304,6 +331,7 @@ window.addEventListener(
 								return false;
 							}
 						}
+
 						const aChildren = Array.from(a.children);
 
 						const bChildren = Array.from(b.children);
@@ -322,7 +350,9 @@ window.addEventListener(
 					for (const style of styles) {
 						style.remove();
 					}
+
 					newRoot.prepend(...styles);
+
 					morphdom(root, newRoot, {
 						childrenOnly: true,
 						onBeforeElUpdated: (fromEl, toEl) => {
@@ -339,6 +369,7 @@ window.addEventListener(
 										"unexpected line number change",
 									);
 								}
+
 								for (let i = 0; i < fromLines.length; ++i) {
 									const fromChild = fromLines[i];
 
@@ -351,8 +382,10 @@ window.addEventListener(
 										);
 									}
 								}
+
 								return false;
 							}
+
 							if (
 								fromEl.tagName === "DETAILS" &&
 								toEl.tagName === "DETAILS"
@@ -361,14 +394,17 @@ window.addEventListener(
 									toEl.setAttribute("open", "");
 								}
 							}
+
 							return true;
 						},
 					});
 				}
 				++documentVersion;
+
 				window.dispatchEvent(
 					new CustomEvent("vscode.markdown.updateContent"),
 				);
+
 				addImageContexts();
 
 				break;
@@ -384,13 +420,16 @@ document.addEventListener("dblclick", (event) => {
 	// Ignore clicks on links
 	for (
 		let node = event.target as HTMLElement;
+
 		node;
+
 		node = node.parentNode as HTMLElement
 	) {
 		if (node.tagName === "A") {
 			return;
 		}
 	}
+
 	const offset = event.pageY;
 
 	const line = getEditorLineNumberForPageOffset(offset, documentVersion);
@@ -413,6 +452,7 @@ document.addEventListener(
 		if (!event) {
 			return;
 		}
+
 		let node: any = event.target;
 
 		while (node) {
@@ -420,6 +460,7 @@ document.addEventListener(
 				if (node.getAttribute("href").startsWith("#")) {
 					return;
 				}
+
 				let hrefText = node.getAttribute("data-href");
 
 				if (!hrefText) {
@@ -436,13 +477,17 @@ document.addEventListener(
 				// If original link doesn't look like a url, delegate back to VS Code to resolve
 				if (!/^[a-z\-]+:/i.test(hrefText)) {
 					messaging.postMessage("openLink", { href: hrefText });
+
 					event.preventDefault();
+
 					event.stopPropagation();
 
 					return;
 				}
+
 				return;
 			}
+
 			node = node.parentNode;
 		}
 	},
@@ -469,5 +514,6 @@ window.addEventListener(
 );
 function updateScrollProgress() {
 	state.scrollProgress = window.scrollY / document.body.clientHeight;
+
 	vscode.setState(state);
 }

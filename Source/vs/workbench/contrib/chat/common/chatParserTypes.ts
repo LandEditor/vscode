@@ -23,18 +23,22 @@ import { IToolData } from "./languageModelToolsService.js";
 // These are in a separate file to avoid circular dependencies with the dependencies of the parser
 export interface IParsedChatRequest {
 	readonly parts: ReadonlyArray<IParsedChatRequestPart>;
+
 	readonly text: string;
 }
 export interface IParsedChatRequestPart {
 	readonly kind: string; // for serialization
 	readonly range: IOffsetRange;
+
 	readonly editorRange: IRange;
+
 	readonly text: string;
 	/** How this part is represented in the prompt going to the agent */
 	readonly promptText: string;
 }
 export function getPromptText(request: IParsedChatRequest): {
 	message: string;
+
 	diff: number;
 } {
 	const message = request.parts
@@ -48,6 +52,7 @@ export function getPromptText(request: IParsedChatRequest): {
 }
 export class ChatRequestTextPart implements IParsedChatRequestPart {
 	static readonly Kind = "text";
+
 	readonly kind = ChatRequestTextPart.Kind;
 
 	constructor(
@@ -55,6 +60,7 @@ export class ChatRequestTextPart implements IParsedChatRequestPart {
 		readonly editorRange: IRange,
 		readonly text: string,
 	) {}
+
 	get promptText(): string {
 		return this.text;
 	}
@@ -70,6 +76,7 @@ export const chatSubcommandLeader = "/";
  */
 export class ChatRequestVariablePart implements IParsedChatRequestPart {
 	static readonly Kind = "var";
+
 	readonly kind = ChatRequestVariablePart.Kind;
 
 	constructor(
@@ -79,11 +86,13 @@ export class ChatRequestVariablePart implements IParsedChatRequestPart {
 		readonly variableArg: string,
 		readonly variableId: string,
 	) {}
+
 	get text(): string {
 		const argPart = this.variableArg ? `:${this.variableArg}` : "";
 
 		return `${chatVariableLeader}${this.variableName}${argPart}`;
 	}
+
 	get promptText(): string {
 		return this.text;
 	}
@@ -93,6 +102,7 @@ export class ChatRequestVariablePart implements IParsedChatRequestPart {
  */
 export class ChatRequestToolPart implements IParsedChatRequestPart {
 	static readonly Kind = "tool";
+
 	readonly kind = ChatRequestToolPart.Kind;
 
 	constructor(
@@ -103,9 +113,11 @@ export class ChatRequestToolPart implements IParsedChatRequestPart {
 		readonly displayName?: string,
 		readonly icon?: IToolData["icon"],
 	) {}
+
 	get text(): string {
 		return `${chatVariableLeader}${this.toolName}`;
 	}
+
 	get promptText(): string {
 		return this.text;
 	}
@@ -115,6 +127,7 @@ export class ChatRequestToolPart implements IParsedChatRequestPart {
  */
 export class ChatRequestAgentPart implements IParsedChatRequestPart {
 	static readonly Kind = "agent";
+
 	readonly kind = ChatRequestAgentPart.Kind;
 
 	constructor(
@@ -122,9 +135,11 @@ export class ChatRequestAgentPart implements IParsedChatRequestPart {
 		readonly editorRange: IRange,
 		readonly agent: IChatAgentData,
 	) {}
+
 	get text(): string {
 		return `${chatAgentLeader}${this.agent.name}`;
 	}
+
 	get promptText(): string {
 		return "";
 	}
@@ -134,6 +149,7 @@ export class ChatRequestAgentPart implements IParsedChatRequestPart {
  */
 export class ChatRequestAgentSubcommandPart implements IParsedChatRequestPart {
 	static readonly Kind = "subcommand";
+
 	readonly kind = ChatRequestAgentSubcommandPart.Kind;
 
 	constructor(
@@ -141,9 +157,11 @@ export class ChatRequestAgentSubcommandPart implements IParsedChatRequestPart {
 		readonly editorRange: IRange,
 		readonly command: IChatAgentCommand,
 	) {}
+
 	get text(): string {
 		return `${chatSubcommandLeader}${this.command.name}`;
 	}
+
 	get promptText(): string {
 		return "";
 	}
@@ -153,6 +171,7 @@ export class ChatRequestAgentSubcommandPart implements IParsedChatRequestPart {
  */
 export class ChatRequestSlashCommandPart implements IParsedChatRequestPart {
 	static readonly Kind = "slash";
+
 	readonly kind = ChatRequestSlashCommandPart.Kind;
 
 	constructor(
@@ -160,9 +179,11 @@ export class ChatRequestSlashCommandPart implements IParsedChatRequestPart {
 		readonly editorRange: IRange,
 		readonly slashCommand: IChatSlashData,
 	) {}
+
 	get text(): string {
 		return `${chatSubcommandLeader}${this.slashCommand.command}`;
 	}
+
 	get promptText(): string {
 		return `${chatSubcommandLeader}${this.slashCommand.command}`;
 	}
@@ -172,6 +193,7 @@ export class ChatRequestSlashCommandPart implements IParsedChatRequestPart {
  */
 export class ChatRequestDynamicVariablePart implements IParsedChatRequestPart {
 	static readonly Kind = "dynamic";
+
 	readonly kind = ChatRequestDynamicVariablePart.Kind;
 
 	constructor(
@@ -185,9 +207,11 @@ export class ChatRequestDynamicVariablePart implements IParsedChatRequestPart {
 		readonly icon?: ThemeIcon,
 		readonly isFile?: boolean,
 	) {}
+
 	get referenceText(): string {
 		return this.text.replace(chatVariableLeader, "");
 	}
+
 	get promptText(): string {
 		return this.text;
 	}
@@ -223,6 +247,7 @@ export function reviveParsedChatRequest(
 				);
 			} else if (part.kind === ChatRequestAgentPart.Kind) {
 				let agent = (part as ChatRequestAgentPart).agent;
+
 				agent = reviveSerializedAgent(agent);
 
 				return new ChatRequestAgentPart(
@@ -262,6 +287,7 @@ export function reviveParsedChatRequest(
 }
 export function extractAgentAndCommand(parsed: IParsedChatRequest): {
 	agentPart: ChatRequestAgentPart | undefined;
+
 	commandPart: ChatRequestAgentSubcommandPart | undefined;
 } {
 	const agentPart = parsed.parts.find(
@@ -294,11 +320,13 @@ export function formatChatQuestion(
 			// Refers to agent that doesn't exist
 			return undefined;
 		}
+
 		question += `${chatAgentLeader}${agent.name} `;
 
 		if (command) {
 			question += `${chatSubcommandLeader}${command} `;
 		}
 	}
+
 	return question + prompt;
 }

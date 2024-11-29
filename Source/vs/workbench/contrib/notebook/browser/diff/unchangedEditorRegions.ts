@@ -12,10 +12,14 @@ import { IConfigurationService } from "../../../../../platform/configuration/com
 export type UnchangedEditorRegionOptions = {
 	options: {
 		enabled: boolean;
+
 		contextLineCount: number;
+
 		minimumLineCount: number;
+
 		revealLineCount: number;
 	};
+
 	onDidChangeEnablement: Event<boolean>;
 };
 
@@ -58,6 +62,7 @@ function createHideUnchangedRegionOptions(
 		),
 		dispose: () => disposables.dispose(),
 	};
+
 	disposables.add(
 		configurationService.onDidChangeConfiguration((e) => {
 			if (
@@ -70,6 +75,7 @@ function createHideUnchangedRegionOptions(
 						"diffEditor.hideUnchangedRegions.minimumLineCount",
 					);
 			}
+
 			if (
 				e.affectsConfiguration(
 					"diffEditor.hideUnchangedRegions.contextLineCount",
@@ -80,6 +86,7 @@ function createHideUnchangedRegionOptions(
 						"diffEditor.hideUnchangedRegions.contextLineCount",
 					);
 			}
+
 			if (
 				e.affectsConfiguration(
 					"diffEditor.hideUnchangedRegions.revealLineCount",
@@ -90,6 +97,7 @@ function createHideUnchangedRegionOptions(
 						"diffEditor.hideUnchangedRegions.revealLineCount",
 					);
 			}
+
 			if (
 				e.affectsConfiguration(
 					"diffEditor.hideUnchangedRegions.enabled",
@@ -98,6 +106,7 @@ function createHideUnchangedRegionOptions(
 				result.options.enabled = configurationService.getValue(
 					"diffEditor.hideUnchangedRegions.enabled",
 				);
+
 				unchangedRegionsEnablementEmitter.fire(result.options.enabled);
 			}
 		}),

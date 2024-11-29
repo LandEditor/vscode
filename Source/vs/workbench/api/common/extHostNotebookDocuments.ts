@@ -16,9 +16,12 @@ export class ExtHostNotebookDocuments
 {
 	private readonly _onDidSaveNotebookDocument =
 		new Emitter<vscode.NotebookDocument>();
+
 	readonly onDidSaveNotebookDocument = this._onDidSaveNotebookDocument.event;
+
 	private readonly _onDidChangeNotebookDocument =
 		new Emitter<vscode.NotebookDocumentChangeEvent>();
+
 	readonly onDidChangeNotebookDocument =
 		this._onDidChangeNotebookDocument.event;
 
@@ -40,6 +43,7 @@ export class ExtHostNotebookDocuments
 			isDirty,
 			newMetadata,
 		);
+
 		this._onDidChangeNotebookDocument.fire(e);
 	}
 	$acceptDirtyStateChanged(uri: UriComponents, isDirty: boolean): void {
@@ -53,6 +57,7 @@ export class ExtHostNotebookDocuments
 		const document = this._notebooksAndEditors.getNotebookDocument(
 			URI.revive(uri),
 		);
+
 		this._onDidSaveNotebookDocument.fire(document.apiNotebook);
 	}
 }

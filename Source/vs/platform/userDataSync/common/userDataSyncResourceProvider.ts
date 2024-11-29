@@ -56,20 +56,30 @@ import { IMachinesData, IUserDataSyncMachine } from "./userDataSyncMachines.js";
 
 interface ISyncResourceUriInfo {
 	readonly remote: boolean;
+
 	readonly syncResource: SyncResource;
+
 	readonly profile: string;
+
 	readonly collection: string | undefined;
+
 	readonly ref: string | undefined;
+
 	readonly node: string | undefined;
+
 	readonly location: URI | undefined;
 }
 export class UserDataSyncResourceProviderService
 	implements IUserDataSyncResourceProviderService
 {
 	_serviceBrand: any;
+
 	private static readonly NOT_EXISTING_RESOURCE = "not-existing-resource";
+
 	private static readonly REMOTE_BACKUP_AUTHORITY = "remote-backup";
+
 	private static readonly LOCAL_BACKUP_AUTHORITY = "local-backup";
+
 	private readonly extUri: IExtUri;
 
 	constructor(
@@ -96,6 +106,7 @@ export class UserDataSyncResourceProviderService
 	) {
 		this.extUri = uriIdentityService.extUri;
 	}
+
 	async getRemoteSyncedProfiles(): Promise<ISyncUserDataProfile[]> {
 		const userData = await this.userDataSyncStoreService.readResource(
 			SyncResource.Profiles,
@@ -111,8 +122,10 @@ export class UserDataSyncResourceProviderService
 
 			return parseUserDataProfilesManifest(syncData);
 		}
+
 		return [];
 	}
+
 	async getLocalSyncedProfiles(
 		location?: URI,
 	): Promise<ISyncUserDataProfile[]> {
@@ -141,8 +154,10 @@ export class UserDataSyncResourceProviderService
 				return parseUserDataProfilesManifest(syncData);
 			}
 		}
+
 		return [];
 	}
+
 	async getLocalSyncedMachines(
 		location?: URI,
 	): Promise<IUserDataSyncMachine[]> {
@@ -171,8 +186,10 @@ export class UserDataSyncResourceProviderService
 				}));
 			}
 		}
+
 		return [];
 	}
+
 	async getRemoteSyncResourceHandles(
 		syncResource: SyncResource,
 		profile?: ISyncUserDataProfile,
@@ -197,6 +214,7 @@ export class UserDataSyncResourceProviderService
 			}),
 		}));
 	}
+
 	async getLocalSyncResourceHandles(
 		syncResource: SyncResource,
 		profile?: ISyncUserDataProfile,
@@ -224,6 +242,7 @@ export class UserDataSyncResourceProviderService
 			}),
 		}));
 	}
+
 	resolveUserDataSyncResource({
 		uri,
 	}: ISyncResourceHandle): IUserDataSyncResource | undefined {
@@ -239,9 +258,11 @@ export class UserDataSyncResourceProviderService
 			? { profile, syncResource: resolved?.syncResource }
 			: undefined;
 	}
+
 	async getAssociatedResources({ uri }: ISyncResourceHandle): Promise<
 		{
 			resource: URI;
+
 			comparableResource: URI;
 		}[]
 	> {
@@ -250,6 +271,7 @@ export class UserDataSyncResourceProviderService
 		if (!resolved) {
 			return [];
 		}
+
 		const profile = this.userDataProfilesService.profiles.find(
 			(p) => p.id === resolved.profile,
 		);
@@ -280,6 +302,7 @@ export class UserDataSyncResourceProviderService
 				return [];
 		}
 	}
+
 	async getMachineId({
 		uri,
 	}: ISyncResourceHandle): Promise<string | undefined> {
@@ -288,6 +311,7 @@ export class UserDataSyncResourceProviderService
 		if (!resolved) {
 			return undefined;
 		}
+
 		if (resolved.remote) {
 			if (resolved.ref) {
 				const { content } = await this.getUserData(
@@ -305,8 +329,10 @@ export class UserDataSyncResourceProviderService
 					return syncData?.machineId;
 				}
 			}
+
 			return undefined;
 		}
+
 		if (resolved.location) {
 			if (resolved.ref) {
 				const content =
@@ -326,26 +352,31 @@ export class UserDataSyncResourceProviderService
 					return syncData?.machineId;
 				}
 			}
+
 			return undefined;
 		}
+
 		return getServiceMachineId(
 			this.environmentService,
 			this.fileService,
 			this.storageService,
 		);
 	}
+
 	async resolveContent(uri: URI): Promise<string | null> {
 		const resolved = this.resolveUri(uri);
 
 		if (!resolved) {
 			return null;
 		}
+
 		if (
 			resolved.node ===
 			UserDataSyncResourceProviderService.NOT_EXISTING_RESOURCE
 		) {
 			return null;
 		}
+
 		if (resolved.ref) {
 			const content = await this.getContentFromStore(
 				resolved.remote,
@@ -362,16 +393,20 @@ export class UserDataSyncResourceProviderService
 					resolved.node,
 				);
 			}
+
 			return content;
 		}
+
 		if (!resolved.remote && !resolved.node) {
 			return this.resolveLatestContent(
 				resolved.syncResource,
 				resolved.profile,
 			);
 		}
+
 		return null;
 	}
+
 	private async getContentFromStore(
 		remote: boolean,
 		syncResource: SyncResource,
@@ -388,6 +423,7 @@ export class UserDataSyncResourceProviderService
 
 			return content;
 		}
+
 		return this.userDataSyncLocalStoreService.resolveResourceContent(
 			syncResource,
 			ref,
@@ -395,6 +431,7 @@ export class UserDataSyncResourceProviderService
 			location,
 		);
 	}
+
 	private resolveNodeContent(
 		syncResource: SyncResource,
 		content: string,
@@ -428,6 +465,7 @@ export class UserDataSyncResourceProviderService
 				return null;
 		}
 	}
+
 	private async resolveLatestContent(
 		syncResource: SyncResource,
 		profileId: string,
@@ -439,6 +477,7 @@ export class UserDataSyncResourceProviderService
 		if (!profile) {
 			return null;
 		}
+
 		switch (syncResource) {
 			case SyncResource.GlobalState:
 				return this.resolveLatestGlobalStateContent(profile);
@@ -465,11 +504,13 @@ export class UserDataSyncResourceProviderService
 				return null;
 		}
 	}
+
 	private getSettingsAssociatedResources(
 		uri: URI,
 		profile: IUserDataProfile | undefined,
 	): {
 		resource: URI;
+
 		comparableResource: URI;
 	}[] {
 		const resource = this.extUri.joinPath(uri, "settings.json");
@@ -483,6 +524,7 @@ export class UserDataSyncResourceProviderService
 
 		return [{ resource, comparableResource }];
 	}
+
 	private resolveSettingsNodeContent(
 		syncData: ISyncData,
 		node: string,
@@ -491,13 +533,16 @@ export class UserDataSyncResourceProviderService
 			case "settings.json":
 				return parseSettingsSyncContent(syncData.content).settings;
 		}
+
 		return null;
 	}
+
 	private getKeybindingsAssociatedResources(
 		uri: URI,
 		profile: IUserDataProfile | undefined,
 	): {
 		resource: URI;
+
 		comparableResource: URI;
 	}[] {
 		const resource = this.extUri.joinPath(uri, "keybindings.json");
@@ -511,6 +556,7 @@ export class UserDataSyncResourceProviderService
 
 		return [{ resource, comparableResource }];
 	}
+
 	private resolveKeybindingsNodeContent(
 		syncData: ISyncData,
 		node: string,
@@ -525,13 +571,16 @@ export class UserDataSyncResourceProviderService
 					this.logService,
 				);
 		}
+
 		return null;
 	}
+
 	private getTasksAssociatedResources(
 		uri: URI,
 		profile: IUserDataProfile | undefined,
 	): {
 		resource: URI;
+
 		comparableResource: URI;
 	}[] {
 		const resource = this.extUri.joinPath(uri, "tasks.json");
@@ -545,6 +594,7 @@ export class UserDataSyncResourceProviderService
 
 		return [{ resource, comparableResource }];
 	}
+
 	private resolveTasksNodeContent(
 		syncData: ISyncData,
 		node: string,
@@ -556,14 +606,17 @@ export class UserDataSyncResourceProviderService
 					this.logService,
 				);
 		}
+
 		return null;
 	}
+
 	private async getSnippetsAssociatedResources(
 		uri: URI,
 		profile: IUserDataProfile | undefined,
 	): Promise<
 		{
 			resource: URI;
+
 			comparableResource: URI;
 		}[]
 	> {
@@ -586,24 +639,30 @@ export class UserDataSyncResourceProviderService
 								uri,
 								UserDataSyncResourceProviderService.NOT_EXISTING_RESOURCE,
 							);
+
 					result.push({ resource, comparableResource });
 				}
+
 				return result;
 			}
 		}
+
 		return [];
 	}
+
 	private resolveSnippetsNodeContent(
 		syncData: ISyncData,
 		node: string,
 	): string | null {
 		return parseSnippets(syncData)[node] || null;
 	}
+
 	private getExtensionsAssociatedResources(
 		uri: URI,
 		profile: IUserDataProfile | undefined,
 	): {
 		resource: URI;
+
 		comparableResource: URI;
 	}[] {
 		const resource = this.extUri.joinPath(uri, "extensions.json");
@@ -625,6 +684,7 @@ export class UserDataSyncResourceProviderService
 
 		return [{ resource, comparableResource }];
 	}
+
 	private resolveExtensionsNodeContent(
 		syncData: ISyncData,
 		node: string,
@@ -633,8 +693,10 @@ export class UserDataSyncResourceProviderService
 			case "extensions.json":
 				return stringifyExtensions(parseExtensions(syncData), true);
 		}
+
 		return null;
 	}
+
 	private async resolveLatestExtensionsContent(
 		profile: IUserDataProfile,
 	): Promise<string | null> {
@@ -644,11 +706,13 @@ export class UserDataSyncResourceProviderService
 
 		return stringifyExtensions(localExtensions, true);
 	}
+
 	private getGlobalStateAssociatedResources(
 		uri: URI,
 		profile: IUserDataProfile | undefined,
 	): {
 		resource: URI;
+
 		comparableResource: URI;
 	}[] {
 		const resource = this.extUri.joinPath(uri, "globalState.json");
@@ -670,6 +734,7 @@ export class UserDataSyncResourceProviderService
 
 		return [{ resource, comparableResource }];
 	}
+
 	private resolveGlobalStateNodeContent(
 		syncData: ISyncData,
 		node: string,
@@ -678,8 +743,10 @@ export class UserDataSyncResourceProviderService
 			case "globalState.json":
 				return stringifyGlobalState(JSON.parse(syncData.content), true);
 		}
+
 		return null;
 	}
+
 	private async resolveLatestGlobalStateContent(
 		profile: IUserDataProfile,
 	): Promise<string | null> {
@@ -689,11 +756,13 @@ export class UserDataSyncResourceProviderService
 
 		return stringifyGlobalState(localGlobalState, true);
 	}
+
 	private getProfilesAssociatedResources(
 		uri: URI,
 		profile: IUserDataProfile | undefined,
 	): {
 		resource: URI;
+
 		comparableResource: URI;
 	}[] {
 		const resource = this.extUri.joinPath(uri, "profiles.json");
@@ -710,6 +779,7 @@ export class UserDataSyncResourceProviderService
 
 		return [{ resource, comparableResource }];
 	}
+
 	private resolveProfileNodeContent(
 		syncData: ISyncData,
 		node: string,
@@ -718,8 +788,10 @@ export class UserDataSyncResourceProviderService
 			case "profiles.json":
 				return toFormattedString(JSON.parse(syncData.content), {});
 		}
+
 		return null;
 	}
+
 	private async resolveLatestProfilesContent(
 		profile: IUserDataProfile,
 	): Promise<string | null> {
@@ -730,6 +802,7 @@ export class UserDataSyncResourceProviderService
 			true,
 		);
 	}
+
 	private toUri(syncResourceUriInfo: ISyncResourceUriInfo): URI {
 		const authority = syncResourceUriInfo.remote
 			? UserDataSyncResourceProviderService.REMOTE_BACKUP_AUTHORITY
@@ -739,21 +812,28 @@ export class UserDataSyncResourceProviderService
 
 		if (syncResourceUriInfo.location) {
 			paths.push(`scheme:${syncResourceUriInfo.location.scheme}`);
+
 			paths.push(`authority:${syncResourceUriInfo.location.authority}`);
+
 			paths.push(trim(syncResourceUriInfo.location.path, "/"));
 		}
+
 		paths.push(`syncResource:${syncResourceUriInfo.syncResource}`);
+
 		paths.push(`profile:${syncResourceUriInfo.profile}`);
 
 		if (syncResourceUriInfo.collection) {
 			paths.push(`collection:${syncResourceUriInfo.collection}`);
 		}
+
 		if (syncResourceUriInfo.ref) {
 			paths.push(`ref:${syncResourceUriInfo.ref}`);
 		}
+
 		if (syncResourceUriInfo.node) {
 			paths.push(syncResourceUriInfo.node);
 		}
+
 		return this.extUri.joinPath(
 			URI.from({
 				scheme: USER_DATA_SYNC_SCHEME,
@@ -765,19 +845,24 @@ export class UserDataSyncResourceProviderService
 			...paths,
 		);
 	}
+
 	private resolveUri(uri: URI): ISyncResourceUriInfo | undefined {
 		if (uri.scheme !== USER_DATA_SYNC_SCHEME) {
 			return undefined;
 		}
+
 		const paths: string[] = [];
 
 		while (uri.path !== "/") {
 			paths.unshift(this.extUri.basename(uri));
+
 			uri = this.extUri.dirname(uri);
 		}
+
 		if (paths.length < 2) {
 			return undefined;
 		}
+
 		const remote =
 			uri.authority ===
 			UserDataSyncResourceProviderService.REMOTE_BACKUP_AUTHORITY;
@@ -821,6 +906,7 @@ export class UserDataSyncResourceProviderService
 				node = path;
 			}
 		}
+
 		return {
 			remote,
 			syncResource: syncResource!,
@@ -843,6 +929,7 @@ export class UserDataSyncResourceProviderService
 					: undefined,
 		};
 	}
+
 	private parseSyncData(
 		content: string,
 		syncResource: SyncResource,
@@ -856,6 +943,7 @@ export class UserDataSyncResourceProviderService
 		} catch (error) {
 			this.logService.error(error);
 		}
+
 		throw new UserDataSyncError(
 			localize(
 				"incompatible sync data",
@@ -865,6 +953,7 @@ export class UserDataSyncResourceProviderService
 			syncResource,
 		);
 	}
+
 	private async getUserData(
 		syncResource: SyncResource,
 		ref: string,

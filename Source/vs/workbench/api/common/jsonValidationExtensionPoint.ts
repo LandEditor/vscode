@@ -22,6 +22,7 @@ import { ExtensionsRegistry } from "../../services/extensions/common/extensionsR
 
 interface IJSONValidationExtensionPoint {
 	fileMatch: string | string[];
+
 	url: string;
 }
 
@@ -90,6 +91,7 @@ export class JSONValidationExtensionPoint {
 
 					return;
 				}
+
 				extensionValue.forEach((extension) => {
 					if (
 						!isString(extension.fileMatch) &&
@@ -107,6 +109,7 @@ export class JSONValidationExtensionPoint {
 
 						return;
 					}
+
 					const uri = extension.url;
 
 					if (!isString(uri)) {
@@ -119,6 +122,7 @@ export class JSONValidationExtensionPoint {
 
 						return;
 					}
+
 					if (uri.startsWith("./")) {
 						try {
 							const colorThemeLocation = resources.joinPath(
@@ -171,15 +175,18 @@ class JSONValidationDataRenderer
 	implements IExtensionFeatureTableRenderer
 {
 	readonly type = "table";
+
 	shouldRender(manifest: IExtensionManifest): boolean {
 		return !!manifest.contributes?.jsonValidation;
 	}
+
 	render(manifest: IExtensionManifest): IRenderedData<ITableData> {
 		const contrib = manifest.contributes?.jsonValidation || [];
 
 		if (!contrib.length) {
 			return { data: { headers: [], rows: [] }, dispose: () => {} };
 		}
+
 		const headers = [
 			nls.localize("fileMatch", "File Match"),
 			nls.localize("schema", "Schema"),

@@ -48,23 +48,29 @@ export interface ISimpleCompletion {
 export class SimpleCompletionItem {
 	// perf
 	readonly labelLow: string;
+
 	readonly labelLowExcludeFileExt: string;
+
 	readonly fileExtLow: string = "";
 
 	// sorting, filtering
 	score: FuzzyScore = FuzzyScore.Default;
+
 	idx?: number;
+
 	word?: string;
 
 	constructor(readonly completion: ISimpleCompletion) {
 		// ensure lower-variants (perf)
 		this.labelLow = this.completion.label.toLowerCase();
+
 		this.labelLowExcludeFileExt = this.labelLow;
 
 		if (completion.isFile) {
 			if (isWindows) {
 				this.labelLow = this.labelLow.replaceAll("/", "\\");
 			}
+
 			const extIndex = this.labelLow.lastIndexOf(".");
 
 			if (extIndex !== -1) {
@@ -72,6 +78,7 @@ export class SimpleCompletionItem {
 					0,
 					extIndex,
 				);
+
 				this.fileExtLow = this.labelLow.substring(extIndex + 1);
 			}
 		}

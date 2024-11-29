@@ -47,12 +47,14 @@ const REPOSITORY_RULESETS_QUERY = `
 					rules(type: PULL_REQUEST) {
 						totalCount
 					}
+
 					conditions {
 						refName {
 							include
 							exclude
 						}
 					}
+
 					target
 				},
 				pageInfo {
@@ -66,12 +68,16 @@ const REPOSITORY_RULESETS_QUERY = `
 
 export class GithubBranchProtectionProviderManager {
 	private readonly disposables = new DisposableStore();
+
 	private readonly providerDisposables = new DisposableStore();
+
 	private _enabled = false;
+
 	private set enabled(enabled: boolean) {
 		if (this._enabled === enabled) {
 			return;
 		}
+
 		if (enabled) {
 			for (const repository of this.gitAPI.repositories) {
 				this.providerDisposables.add(
@@ -89,8 +95,10 @@ export class GithubBranchProtectionProviderManager {
 		} else {
 			this.providerDisposables.dispose();
 		}
+
 		this._enabled = enabled;
 	}
+
 	constructor(
 		private readonly gitAPI: API,
 		private readonly globalState: Memento,
@@ -114,6 +122,7 @@ export class GithubBranchProtectionProviderManager {
 				}
 			}),
 		);
+
 		this.disposables.add(
 			workspace.onDidChangeConfiguration((e) => {
 				if (e.affectsConfiguration("github.branchProtection")) {
@@ -121,14 +130,19 @@ export class GithubBranchProtectionProviderManager {
 				}
 			}),
 		);
+
 		this.updateEnablement();
 	}
+
 	private updateEnablement(): void {
 		const config = workspace.getConfiguration("github", null);
+
 		this.enabled = config.get<boolean>("branchProtection", true) === true;
 	}
+
 	dispose(): void {
 		this.enabled = false;
+
 		this.disposables.dispose();
 	}
 }
@@ -136,8 +150,11 @@ export class GithubBranchProtectionProvider
 	implements BranchProtectionProvider
 {
 	private readonly _onDidChangeBranchProtection = new EventEmitter<Uri>();
+
 	onDidChangeBranchProtection = this._onDidChangeBranchProtection.event;
+
 	private branchProtection: BranchProtection[];
+
 	private readonly globalStateKey = `branchProtection:${this.repository.rootUri.toString()}`;
 
 	constructor(
@@ -151,18 +168,22 @@ export class GithubBranchProtectionProvider
 			this.globalStateKey,
 			[],
 		);
+
 		repository.status().then(() => {
 			authentication.onDidChangeSessions((e) => {
 				if (e.provider.id === "github") {
 					this.updateRepositoryBranchProtection();
 				}
 			});
+
 			this.updateRepositoryBranchProtection();
 		});
 	}
+
 	provideBranchProtection(): BranchProtection[] {
 		return this.branchProtection;
 	}
+
 	private async getRepositoryDetails(
 		owner: string,
 		repo: string,
@@ -175,6 +196,7 @@ export class GithubBranchProtectionProvider
 
 		return repository;
 	}
+
 	private async getRepositoryRulesets(
 		owner: string,
 		repo: string,
@@ -189,6 +211,7 @@ export class GithubBranchProtectionProvider
 			const { repository } = await graphql<{
 				repository: GitHubRepository;
 			}>(REPOSITORY_RULESETS_QUERY, { owner, repo, cursor });
+
 			rulesets.push(
 				...((repository.rulesets?.nodes ?? [])
 					// Active branch ruleset that contains the pull request required rule
@@ -209,8 +232,10 @@ export class GithubBranchProtectionProvider
 				break;
 			}
 		}
+
 		return rulesets;
 	}
+
 	private async updateRepositoryBranchProtection(): Promise<void> {
 		const branchProtection: BranchProtection[] = [];
 
@@ -266,18 +291,22 @@ export class GithubBranchProtectionProvider
 						),
 					});
 				}
+
 				branchProtection.push({
 					remote: remote.name,
 					rules: branchProtectionRules,
 				});
 			}
+
 			this.branchProtection = branchProtection;
+
 			this._onDidChangeBranchProtection.fire(this.repository.rootUri);
 			// Save branch protection to global state
 			await this.globalState.update(
 				this.globalStateKey,
 				branchProtection,
 			);
+
 			this.logger.trace(
 				`Branch protection for "${this.repository.rootUri.toString()}": ${JSON.stringify(branchProtection)}.`,
 			);
@@ -303,9 +332,11 @@ export class GithubBranchProtectionProvider
 				// branch protection information we have to clear it.
 				if (this.branchProtection.length !== 0) {
 					this.branchProtection = branchProtection;
+
 					this._onDidChangeBranchProtection.fire(
 						this.repository.rootUri,
 					);
+
 					await this.globalState.update(
 						this.globalStateKey,
 						undefined,
@@ -314,6 +345,7 @@ export class GithubBranchProtectionProvider
 			}
 		}
 	}
+
 	private parseRulesetRefName(
 		repository: GitHubRepository,
 		refName: string,
@@ -321,6 +353,7 @@ export class GithubBranchProtectionProvider
 		if (refName.startsWith("refs/heads/")) {
 			return refName.substring(11);
 		}
+
 		switch (refName) {
 			case "~ALL":
 				return "**/*";

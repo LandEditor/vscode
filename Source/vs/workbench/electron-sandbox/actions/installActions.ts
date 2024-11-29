@@ -31,6 +31,7 @@ export class InstallShellScriptAction extends Action2 {
 			f1: true,
 		});
 	}
+
 	async run(accessor: ServicesAccessor): Promise<void> {
 		const nativeHostService = accessor.get(INativeHostService);
 
@@ -40,6 +41,7 @@ export class InstallShellScriptAction extends Action2 {
 
 		try {
 			await nativeHostService.installShellCommand();
+
 			dialogService.info(
 				localize(
 					"successIn",
@@ -51,6 +53,7 @@ export class InstallShellScriptAction extends Action2 {
 			if (isCancellationError(error)) {
 				return;
 			}
+
 			dialogService.error(toErrorMessage(error));
 		}
 	}
@@ -68,6 +71,7 @@ export class UninstallShellScriptAction extends Action2 {
 			f1: true,
 		});
 	}
+
 	async run(accessor: ServicesAccessor): Promise<void> {
 		const nativeHostService = accessor.get(INativeHostService);
 
@@ -77,6 +81,7 @@ export class UninstallShellScriptAction extends Action2 {
 
 		try {
 			await nativeHostService.uninstallShellCommand();
+
 			dialogService.info(
 				localize(
 					"successFrom",
@@ -88,6 +93,7 @@ export class UninstallShellScriptAction extends Action2 {
 			if (isCancellationError(error)) {
 				return;
 			}
+
 			dialogService.error(toErrorMessage(error));
 		}
 	}

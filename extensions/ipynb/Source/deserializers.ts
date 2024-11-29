@@ -44,6 +44,7 @@ function translateKernelLanguageToMonaco(language: string): string {
 	if (language.length === 2 && language.endsWith("#")) {
 		return `${language.substring(0, 1)}sharp`;
 	}
+
 	return jupyterLanguageToMonacoLanguageMapping.get(language) || language;
 }
 
@@ -72,12 +73,14 @@ function isEmptyVendoredMimeType(outputItem: NotebookCellOutputItem) {
 			);
 		} catch {}
 	}
+
 	return false;
 }
 function isMimeTypeMatch(value: string, compareWith: string) {
 	if (value.endsWith(".*")) {
 		value = value.substr(0, value.indexOf(".*"));
 	}
+
 	return compareWith.startsWith(value);
 }
 function sortOutputItemsBasedOnDisplayOrder(
@@ -94,6 +97,7 @@ function sortOutputItemsBasedOnDisplayOrder(
 			if (isEmptyVendoredMimeType(item)) {
 				index = -1;
 			}
+
 			index = index === -1 ? 100 : index;
 
 			return {
@@ -124,6 +128,7 @@ function concatMultilineString(str: string | string[], trim?: boolean): string {
 		// Just trim whitespace. Leave \n in place
 		return trim ? result.replace(nonLineFeedWhiteSpaceTrim, "") : result;
 	}
+
 	return trim
 		? str.toString().replace(nonLineFeedWhiteSpaceTrim, "")
 		: str.toString();
@@ -135,6 +140,7 @@ function convertJupyterOutputToBuffer(
 	if (!value) {
 		return NotebookCellOutputItem.text("", mime);
 	}
+
 	try {
 		if (
 			(mime.startsWith("text/") || textMimeTypes.includes(mime)) &&
@@ -198,17 +204,21 @@ function getNotebookCellMetadata(cell: nbformat.IBaseCell): {
 	) {
 		cellMetadata.execution_count = cell["execution_count"];
 	}
+
 	if (cell["metadata"]) {
 		cellMetadata["metadata"] = JSON.parse(JSON.stringify(cell["metadata"]));
 	}
+
 	if ("id" in cell && typeof cell.id === "string") {
 		cellMetadata.id = cell.id;
 	}
+
 	if (cell["attachments"]) {
 		cellMetadata.attachments = JSON.parse(
 			JSON.stringify(cell["attachments"]),
 		);
 	}
+
 	return cellMetadata;
 }
 function getOutputMetadata(output: nbformat.IOutput): CellOutputMetadata {
@@ -220,20 +230,24 @@ function getOutputMetadata(output: nbformat.IOutput): CellOutputMetadata {
 	if (output.transient) {
 		metadata.transient = output.transient;
 	}
+
 	switch (output.output_type as nbformat.OutputType) {
 		case "display_data":
 		case "execute_result":
 		case "update_display_data": {
 			metadata.executionCount = output.execution_count;
+
 			metadata.metadata = output.metadata
 				? JSON.parse(JSON.stringify(output.metadata))
 				: {};
 
 			break;
 		}
+
 		default:
 			break;
 	}
+
 	return metadata;
 }
 function translateDisplayDataOutput(
@@ -268,6 +282,7 @@ function translateDisplayDataOutput(
 			items.push(convertJupyterOutputToBuffer(key, output.data[key]));
 		}
 	}
+
 	return new NotebookCellOutput(
 		sortOutputItemsBasedOnDisplayOrder(items),
 		metadata,
@@ -348,6 +363,7 @@ export function jupyterCellOutputToCellOutput(
 	} else {
 		result = translateDisplayDataOutput(output as any);
 	}
+
 	return result;
 }
 function createNotebookCellDataFromRawCell(
@@ -358,7 +374,9 @@ function createNotebookCellDataFromRawCell(
 		concatMultilineString(cell.source),
 		"raw",
 	);
+
 	cellData.outputs = [];
+
 	cellData.metadata = getNotebookCellMetadata(cell);
 
 	return cellData;
@@ -371,7 +389,9 @@ function createNotebookCellDataFromMarkdownCell(
 		concatMultilineString(cell.source),
 		"markdown",
 	);
+
 	cellData.outputs = [];
+
 	cellData.metadata = getNotebookCellMetadata(cell);
 
 	return cellData;
@@ -411,8 +431,11 @@ function createNotebookCellDataFromCodeCell(
 		source,
 		cellLanguageId,
 	);
+
 	cellData.outputs = outputs;
+
 	cellData.metadata = getNotebookCellMetadata(cell);
+
 	cellData.executionSummary = executionSummary;
 
 	return cellData;
@@ -425,11 +448,13 @@ function createNotebookCellDataFromJupyterCell(
 		case "raw": {
 			return createNotebookCellDataFromRawCell(cell as nbformat.IRawCell);
 		}
+
 		case "markdown": {
 			return createNotebookCellDataFromMarkdownCell(
 				cell as nbformat.IMarkdownCell,
 			);
 		}
+
 		case "code": {
 			return createNotebookCellDataFromCodeCell(
 				cell as nbformat.ICodeCell,
@@ -437,6 +462,7 @@ function createNotebookCellDataFromJupyterCell(
 			);
 		}
 	}
+
 	return;
 }
 /**
@@ -451,6 +477,7 @@ export function jupyterNotebookModelToNotebookData(
 	if (!Array.isArray(notebookContent.cells)) {
 		throw new Error("Notebook content is missing cells");
 	}
+
 	const cells = notebookContent.cells
 		.map((cell) =>
 			createNotebookCellDataFromJupyterCell(preferredLanguage, cell),
@@ -458,6 +485,7 @@ export function jupyterNotebookModelToNotebookData(
 		.filter((item): item is NotebookCellData => !!item);
 
 	const notebookData = new NotebookData(cells);
+
 	notebookData.metadata = notebookContentWithoutCells;
 
 	return notebookData;

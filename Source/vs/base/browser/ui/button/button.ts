@@ -51,20 +51,32 @@ import { getBaseLayerHoverDelegate } from "../hover/hoverDelegate2.js";
 
 export interface IButtonOptions extends Partial<IButtonStyles> {
 	readonly title?: boolean | string;
+
 	readonly ariaLabel?: boolean | string;
+
 	readonly supportIcons?: boolean;
+
 	readonly supportShortLabel?: boolean;
+
 	readonly secondary?: boolean;
+
 	readonly hoverDelegate?: IHoverDelegate;
 }
 export interface IButtonStyles {
 	readonly buttonBackground: string | undefined;
+
 	readonly buttonHoverBackground: string | undefined;
+
 	readonly buttonForeground: string | undefined;
+
 	readonly buttonSeparator: string | undefined;
+
 	readonly buttonSecondaryBackground: string | undefined;
+
 	readonly buttonSecondaryHoverBackground: string | undefined;
+
 	readonly buttonSecondaryForeground: string | undefined;
+
 	readonly buttonBorder: string | undefined;
 }
 export const unthemedButtonStyles: IButtonStyles = {
@@ -80,6 +92,7 @@ export const unthemedButtonStyles: IButtonStyles = {
 
 export interface IButton extends IDisposable {
 	readonly element: HTMLElement;
+
 	readonly onDidClick: BaseEvent<Event | undefined>;
 
 	set label(value: string | IMarkdownString);
@@ -89,7 +102,9 @@ export interface IButton extends IDisposable {
 	set enabled(value: boolean);
 
 	set checked(value: boolean);
+
 	focus(): void;
+
 	hasFocus(): boolean;
 }
 export interface IButtonWithDescription extends IButton {
@@ -97,30 +112,44 @@ export interface IButtonWithDescription extends IButton {
 }
 export class Button extends Disposable implements IButton {
 	protected options: IButtonOptions;
+
 	protected _element: HTMLElement;
+
 	protected _label: string | IMarkdownString = "";
+
 	protected _labelElement: HTMLElement | undefined;
+
 	protected _labelShortElement: HTMLElement | undefined;
+
 	private _hover: IManagedHover | undefined;
+
 	private _onDidClick = this._register(new Emitter<Event>());
 
 	get onDidClick(): BaseEvent<Event> {
 		return this._onDidClick.event;
 	}
+
 	private _onDidEscape = this._register(new Emitter<Event>());
 
 	get onDidEscape(): BaseEvent<Event> {
 		return this._onDidEscape.event;
 	}
+
 	private focusTracker: IFocusTracker;
 
 	constructor(container: HTMLElement, options: IButtonOptions) {
 		super();
+
 		this.options = options;
+
 		this._element = document.createElement("a");
+
 		this._element.classList.add("monaco-button");
+
 		this._element.tabIndex = 0;
+
 		this._element.setAttribute("role", "button");
+
 		this._element.classList.toggle("secondary", !!options.secondary);
 
 		const background = options.secondary
@@ -130,25 +159,37 @@ export class Button extends Disposable implements IButton {
 		const foreground = options.secondary
 			? options.buttonSecondaryForeground
 			: options.buttonForeground;
+
 		this._element.style.color = foreground || "";
+
 		this._element.style.backgroundColor = background || "";
 
 		if (options.supportShortLabel) {
 			this._labelShortElement = document.createElement("div");
+
 			this._labelShortElement.classList.add("monaco-button-label-short");
+
 			this._element.appendChild(this._labelShortElement);
+
 			this._labelElement = document.createElement("div");
+
 			this._labelElement.classList.add("monaco-button-label");
+
 			this._element.appendChild(this._labelElement);
+
 			this._element.classList.add("monaco-text-button-with-short-label");
 		}
+
 		if (typeof options.title === "string") {
 			this.setTitle(options.title);
 		}
+
 		if (typeof options.ariaLabel === "string") {
 			this._element.setAttribute("aria-label", options.ariaLabel);
 		}
+
 		container.appendChild(this._element);
+
 		this._register(Gesture.addTarget(this._element));
 		[EventType.CLICK, TouchEventType.Tap].forEach((eventType) => {
 			this._register(
@@ -158,10 +199,12 @@ export class Button extends Disposable implements IButton {
 
 						return;
 					}
+
 					this._onDidClick.fire(e);
 				}),
 			);
 		});
+
 		this._register(
 			addDisposableListener(this._element, EventType.KEY_DOWN, (e) => {
 				const event = new StandardKeyboardEvent(e);
@@ -173,17 +216,22 @@ export class Button extends Disposable implements IButton {
 					(event.equals(KeyCode.Enter) || event.equals(KeyCode.Space))
 				) {
 					this._onDidClick.fire(e);
+
 					eventHandled = true;
 				} else if (event.equals(KeyCode.Escape)) {
 					this._onDidEscape.fire(e);
+
 					this._element.blur();
+
 					eventHandled = true;
 				}
+
 				if (eventHandled) {
 					EventHelper.stop(event, true);
 				}
 			}),
 		);
+
 		this._register(
 			addDisposableListener(this._element, EventType.MOUSE_OVER, (e) => {
 				if (!this._element.classList.contains("disabled")) {
@@ -191,6 +239,7 @@ export class Button extends Disposable implements IButton {
 				}
 			}),
 		);
+
 		this._register(
 			addDisposableListener(this._element, EventType.MOUSE_OUT, (e) => {
 				this.updateBackground(false); // restore standard styles
@@ -198,6 +247,7 @@ export class Button extends Disposable implements IButton {
 		);
 		// Also set hover background when button is focused for feedback
 		this.focusTracker = this._register(trackFocus(this._element));
+
 		this._register(
 			this.focusTracker.onDidFocus(() => {
 				if (this.enabled) {
@@ -205,6 +255,7 @@ export class Button extends Disposable implements IButton {
 				}
 			}),
 		);
+
 		this._register(
 			this.focusTracker.onDidBlur(() => {
 				if (this.enabled) {
@@ -213,10 +264,13 @@ export class Button extends Disposable implements IButton {
 			}),
 		);
 	}
+
 	public override dispose(): void {
 		super.dispose();
+
 		this._element.remove();
 	}
+
 	private getContentElements(content: string): HTMLElement[] {
 		const elements: HTMLSpanElement[] = [];
 
@@ -229,14 +283,18 @@ export class Button extends Disposable implements IButton {
 				}
 				// Convert string segments to <span> nodes
 				const node = document.createElement("span");
+
 				node.textContent = segment;
+
 				elements.push(node);
 			} else {
 				elements.push(segment);
 			}
 		}
+
 		return elements;
 	}
+
 	private updateBackground(hover: boolean): void {
 		let background;
 
@@ -249,17 +307,21 @@ export class Button extends Disposable implements IButton {
 				? this.options.buttonHoverBackground
 				: this.options.buttonBackground;
 		}
+
 		if (background) {
 			this._element.style.backgroundColor = background;
 		}
 	}
+
 	get element(): HTMLElement {
 		return this._element;
 	}
+
 	set label(value: string | IMarkdownString) {
 		if (this._label === value) {
 			return;
 		}
+
 		if (
 			isMarkdownString(this._label) &&
 			isMarkdownString(value) &&
@@ -267,6 +329,7 @@ export class Button extends Disposable implements IButton {
 		) {
 			return;
 		}
+
 		this._element.classList.add("monaco-text-button");
 
 		const labelElement = this.options.supportShortLabel
@@ -275,6 +338,7 @@ export class Button extends Disposable implements IButton {
 
 		if (isMarkdownString(value)) {
 			const rendered = renderMarkdown(value, { inline: true });
+
 			rendered.dispose();
 			// Don't include outer `<p>`
 			const root = rendered.element.querySelector("p")?.innerHTML;
@@ -286,6 +350,7 @@ export class Button extends Disposable implements IButton {
 					ALLOWED_ATTR: ["class"],
 					RETURN_TRUSTED_TYPE: true,
 				});
+
 				labelElement.innerHTML = sanitized as unknown as string;
 			} else {
 				reset(labelElement);
@@ -297,6 +362,7 @@ export class Button extends Disposable implements IButton {
 				labelElement.textContent = value;
 			}
 		}
+
 		let title: string = "";
 
 		if (typeof this.options.title === "string") {
@@ -304,6 +370,7 @@ export class Button extends Disposable implements IButton {
 		} else if (this.options.title) {
 			title = renderStringAsPlaintext(value);
 		}
+
 		this.setTitle(title);
 
 		if (typeof this.options.ariaLabel === "string") {
@@ -311,49 +378,64 @@ export class Button extends Disposable implements IButton {
 		} else if (this.options.ariaLabel) {
 			this._element.setAttribute("aria-label", title);
 		}
+
 		this._label = value;
 	}
+
 	get label(): string | IMarkdownString {
 		return this._label;
 	}
+
 	set labelShort(value: string) {
 		if (!this.options.supportShortLabel || !this._labelShortElement) {
 			return;
 		}
+
 		if (this.options.supportIcons) {
 			reset(this._labelShortElement, ...this.getContentElements(value));
 		} else {
 			this._labelShortElement.textContent = value;
 		}
 	}
+
 	set icon(icon: ThemeIcon) {
 		this._element.classList.add(...ThemeIcon.asClassNameArray(icon));
 	}
+
 	set enabled(value: boolean) {
 		if (value) {
 			this._element.classList.remove("disabled");
+
 			this._element.setAttribute("aria-disabled", String(false));
+
 			this._element.tabIndex = 0;
 		} else {
 			this._element.classList.add("disabled");
+
 			this._element.setAttribute("aria-disabled", String(true));
 		}
 	}
+
 	get enabled() {
 		return !this._element.classList.contains("disabled");
 	}
+
 	set checked(value: boolean) {
 		if (value) {
 			this._element.classList.add("checked");
+
 			this._element.setAttribute("aria-checked", "true");
 		} else {
 			this._element.classList.remove("checked");
+
 			this._element.setAttribute("aria-checked", "false");
 		}
 	}
+
 	get checked() {
 		return this._element.classList.contains("checked");
 	}
+
 	setTitle(title: string) {
 		if (!this._hover && title !== "") {
 			this._hover = this._register(
@@ -368,35 +450,50 @@ export class Button extends Disposable implements IButton {
 			this._hover.update(title);
 		}
 	}
+
 	focus(): void {
 		this._element.focus();
 	}
+
 	hasFocus(): boolean {
 		return isActiveElement(this._element);
 	}
 }
 export interface IButtonWithDropdownOptions extends IButtonOptions {
 	readonly contextMenuProvider: IContextMenuProvider;
+
 	readonly actions: readonly IAction[] | IActionProvider;
+
 	readonly actionRunner?: IActionRunner;
+
 	readonly addPrimaryActionToDropdown?: boolean;
 }
 export class ButtonWithDropdown extends Disposable implements IButton {
 	private readonly button: Button;
+
 	private readonly action: Action;
+
 	private readonly dropdownButton: Button;
+
 	private readonly separatorContainer: HTMLDivElement;
+
 	private readonly separator: HTMLDivElement;
+
 	readonly element: HTMLElement;
+
 	private readonly _onDidClick = this._register(
 		new Emitter<Event | undefined>(),
 	);
+
 	readonly onDidClick = this._onDidClick.event;
 
 	constructor(container: HTMLElement, options: IButtonWithDropdownOptions) {
 		super();
+
 		this.element = document.createElement("div");
+
 		this.element.classList.add("monaco-button-dropdown");
+
 		container.appendChild(this.element);
 
 		if (!options.hoverDelegate) {
@@ -405,8 +502,11 @@ export class ButtonWithDropdown extends Disposable implements IButton {
 				hoverDelegate: this._register(createInstantHoverDelegate()),
 			};
 		}
+
 		this.button = this._register(new Button(this.element, options));
+
 		this._register(this.button.onDidClick((e) => this._onDidClick.fire(e)));
+
 		this.action = this._register(
 			new Action(
 				"primaryAction",
@@ -416,25 +516,35 @@ export class ButtonWithDropdown extends Disposable implements IButton {
 				async () => this._onDidClick.fire(undefined),
 			),
 		);
+
 		this.separatorContainer = document.createElement("div");
+
 		this.separatorContainer.classList.add(
 			"monaco-button-dropdown-separator",
 		);
+
 		this.separator = document.createElement("div");
+
 		this.separatorContainer.appendChild(this.separator);
+
 		this.element.appendChild(this.separatorContainer);
 		// Separator styles
 		const border = options.buttonBorder;
 
 		if (border) {
 			this.separatorContainer.style.borderTop = "1px solid " + border;
+
 			this.separatorContainer.style.borderBottom = "1px solid " + border;
 		}
+
 		const buttonBackground = options.secondary
 			? options.buttonSecondaryBackground
 			: options.buttonBackground;
+
 		this.separatorContainer.style.backgroundColor = buttonBackground ?? "";
+
 		this.separator.style.backgroundColor = options.buttonSeparator ?? "";
+
 		this.dropdownButton = this._register(
 			new Button(this.element, {
 				...options,
@@ -445,15 +555,21 @@ export class ButtonWithDropdown extends Disposable implements IButton {
 				supportIcons: true,
 			}),
 		);
+
 		this.dropdownButton.element.setAttribute("aria-haspopup", "true");
+
 		this.dropdownButton.element.setAttribute("aria-expanded", "false");
+
 		this.dropdownButton.element.classList.add("monaco-dropdown-button");
+
 		this.dropdownButton.icon = Codicon.dropDownButton;
+
 		this._register(
 			this.dropdownButton.onDidClick((e) => {
 				const actions = Array.isArray(options.actions)
 					? options.actions
 					: (options.actions as IActionProvider).getActions();
+
 				options.contextMenuProvider.showContextMenu({
 					getAnchor: () => this.dropdownButton.element,
 					getActions: () =>
@@ -467,6 +583,7 @@ export class ButtonWithDropdown extends Disposable implements IButton {
 							"false",
 						),
 				});
+
 				this.dropdownButton.element.setAttribute(
 					"aria-expanded",
 					"true",
@@ -474,41 +591,56 @@ export class ButtonWithDropdown extends Disposable implements IButton {
 			}),
 		);
 	}
+
 	override dispose() {
 		super.dispose();
+
 		this.element.remove();
 	}
+
 	set label(value: string) {
 		this.button.label = value;
+
 		this.action.label = value;
 	}
+
 	set icon(icon: ThemeIcon) {
 		this.button.icon = icon;
 	}
+
 	set enabled(enabled: boolean) {
 		this.button.enabled = enabled;
+
 		this.dropdownButton.enabled = enabled;
+
 		this.element.classList.toggle("disabled", !enabled);
 	}
+
 	get enabled(): boolean {
 		return this.button.enabled;
 	}
+
 	set checked(value: boolean) {
 		this.button.checked = value;
 	}
+
 	get checked() {
 		return this.button.checked;
 	}
+
 	focus(): void {
 		this.button.focus();
 	}
+
 	hasFocus(): boolean {
 		return this.button.hasFocus() || this.dropdownButton.hasFocus();
 	}
 }
 export class ButtonWithDescription implements IButtonWithDescription {
 	private _button: Button;
+
 	private _element: HTMLElement;
+
 	private _descriptionElement: HTMLElement;
 
 	constructor(
@@ -516,46 +648,64 @@ export class ButtonWithDescription implements IButtonWithDescription {
 		private readonly options: IButtonOptions,
 	) {
 		this._element = document.createElement("div");
+
 		this._element.classList.add("monaco-description-button");
+
 		this._button = new Button(this._element, options);
+
 		this._descriptionElement = document.createElement("div");
+
 		this._descriptionElement.classList.add("monaco-button-description");
+
 		this._element.appendChild(this._descriptionElement);
+
 		container.appendChild(this._element);
 	}
+
 	get onDidClick(): BaseEvent<Event | undefined> {
 		return this._button.onDidClick;
 	}
+
 	get element(): HTMLElement {
 		return this._element;
 	}
+
 	set label(value: string) {
 		this._button.label = value;
 	}
+
 	set icon(icon: ThemeIcon) {
 		this._button.icon = icon;
 	}
+
 	get enabled(): boolean {
 		return this._button.enabled;
 	}
+
 	set enabled(enabled: boolean) {
 		this._button.enabled = enabled;
 	}
+
 	set checked(value: boolean) {
 		this._button.checked = value;
 	}
+
 	get checked(): boolean {
 		return this._button.checked;
 	}
+
 	focus(): void {
 		this._button.focus();
 	}
+
 	hasFocus(): boolean {
 		return this._button.hasFocus();
 	}
+
 	dispose(): void {
 		this._button.dispose();
 	}
+
 	set description(value: string) {
 		if (this.options.supportIcons) {
 			reset(this._descriptionElement, ...renderLabelWithIcons(value));
@@ -566,47 +716,60 @@ export class ButtonWithDescription implements IButtonWithDescription {
 }
 export class ButtonBar {
 	private readonly _buttons: IButton[] = [];
+
 	private readonly _buttonStore = new DisposableStore();
 
 	constructor(private readonly container: HTMLElement) {}
+
 	dispose(): void {
 		this._buttonStore.dispose();
 	}
+
 	get buttons(): IButton[] {
 		return this._buttons;
 	}
+
 	clear(): void {
 		this._buttonStore.clear();
+
 		this._buttons.length = 0;
 	}
+
 	addButton(options: IButtonOptions): IButton {
 		const button = this._buttonStore.add(
 			new Button(this.container, options),
 		);
+
 		this.pushButton(button);
 
 		return button;
 	}
+
 	addButtonWithDescription(options: IButtonOptions): IButtonWithDescription {
 		const button = this._buttonStore.add(
 			new ButtonWithDescription(this.container, options),
 		);
+
 		this.pushButton(button);
 
 		return button;
 	}
+
 	addButtonWithDropdown(options: IButtonWithDropdownOptions): IButton {
 		const button = this._buttonStore.add(
 			new ButtonWithDropdown(this.container, options),
 		);
+
 		this.pushButton(button);
 
 		return button;
 	}
+
 	private pushButton(button: IButton): void {
 		this._buttons.push(button);
 
 		const index = this._buttons.length - 1;
+
 		this._buttonStore.add(
 			addDisposableListener(button.element, EventType.KEY_DOWN, (e) => {
 				const event = new StandardKeyboardEvent(e);
@@ -624,8 +787,10 @@ export class ButtonBar {
 				} else {
 					eventHandled = false;
 				}
+
 				if (eventHandled && typeof buttonIndexToFocus === "number") {
 					this._buttons[buttonIndexToFocus].focus();
+
 					EventHelper.stop(e, true);
 				}
 			}),

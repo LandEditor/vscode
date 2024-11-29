@@ -30,13 +30,18 @@ export class DetachedTerminal
 	implements IDetachedTerminalInstance
 {
 	private readonly _widgets = this._register(new TerminalWidgetManager());
+
 	public readonly capabilities = new TerminalCapabilityStore();
+
 	private readonly _contributions: Map<string, ITerminalContribution> =
 		new Map();
+
 	public domElement?: HTMLElement;
+
 	public get xterm(): IDetachedXtermTerminal {
 		return this._xterm;
 	}
+
 	constructor(
 		private readonly _xterm: XtermTerminal,
 		options: IDetachedXTermOptions,
@@ -44,6 +49,7 @@ export class DetachedTerminal
 		instantiationService: IInstantiationService,
 	) {
 		super();
+
 		this._register(_xterm);
 		// Initialize contributions
 		const contributionDescs =
@@ -59,9 +65,11 @@ export class DetachedTerminal
 
 				continue;
 			}
+
 			if (desc.canRunInDetachedTerminals === false) {
 				continue;
 			}
+
 			let contribution: ITerminalContribution;
 
 			try {
@@ -70,7 +78,9 @@ export class DetachedTerminal
 					processManager: options.processInfo,
 					widgetManager: this._widgets,
 				});
+
 				this._contributions.set(desc.id, contribution);
+
 				this._register(contribution);
 			} catch (err) {
 				onUnexpectedError(err);
@@ -84,22 +94,27 @@ export class DetachedTerminal
 			}
 		});
 	}
+
 	get selection(): string | undefined {
 		return this._xterm && this.hasSelection()
 			? this._xterm.raw.getSelection()
 			: undefined;
 	}
+
 	hasSelection(): boolean {
 		return this._xterm.hasSelection();
 	}
+
 	clearSelection(): void {
 		this._xterm.clearSelection();
 	}
+
 	focus(force?: boolean): void {
 		if (force || !dom.getActiveWindow().getSelection()?.toString()) {
 			this.xterm.focus();
 		}
 	}
+
 	attachToElement(
 		container: HTMLElement,
 		options?: Partial<IXtermAttachToElementOptions> | undefined,
@@ -107,14 +122,18 @@ export class DetachedTerminal
 		this.domElement = container;
 
 		const screenElement = this._xterm.attachToElement(container, options);
+
 		this._widgets.attachToElement(screenElement);
 	}
+
 	forceScrollbarVisibility(): void {
 		this.domElement?.classList.add("force-scrollbar");
 	}
+
 	resetScrollbarVisibility(): void {
 		this.domElement?.classList.remove("force-scrollbar");
 	}
+
 	getContribution<T extends ITerminalContribution>(id: string): T | null {
 		return this._contributions.get(id) as T | null;
 	}
@@ -126,20 +145,35 @@ export class DetachedTerminal
  */
 export class DetachedProcessInfo implements ITerminalProcessInfo {
 	processState = ProcessState.Running;
+
 	ptyProcessReady = Promise.resolve();
+
 	shellProcessId: number | undefined;
+
 	remoteAuthority: string | undefined;
+
 	os: OperatingSystem | undefined;
+
 	userHome: string | undefined;
+
 	initialCwd = "";
+
 	environmentVariableInfo: IEnvironmentVariableInfo | undefined;
+
 	persistentProcessId: number | undefined;
+
 	shouldPersist = false;
+
 	hasWrittenData = false;
+
 	hasChildProcesses = false;
+
 	backend: ITerminalBackend | undefined;
+
 	capabilities = new TerminalCapabilityStore();
+
 	shellIntegrationNonce = "";
+
 	extEnvironmentVariableCollection:
 		| IMergedEnvironmentVariableCollection
 		| undefined;

@@ -14,53 +14,80 @@ import {
 
 type GettingStartedIndexListOptions<T> = {
 	title: string;
+
 	klass: string;
+
 	limit: number;
+
 	empty?: HTMLElement | undefined;
+
 	more?: HTMLElement | undefined;
+
 	footer?: HTMLElement | undefined;
+
 	renderElement: (item: T) => HTMLElement;
+
 	rankElement?: (item: T) => number | null;
+
 	contextService: IContextKeyService;
 };
 
 export class GettingStartedIndexList<
 	T extends {
 		id: string;
+
 		when?: ContextKeyExpression;
 	},
 > extends Disposable {
 	private readonly _onDidChangeEntries = new Emitter<void>();
+
 	private readonly onDidChangeEntries: Event<void> =
 		this._onDidChangeEntries.event;
+
 	private domElement: HTMLElement;
+
 	private list: HTMLUListElement;
+
 	private scrollbar: DomScrollableElement;
+
 	private entries: undefined | T[];
+
 	private lastRendered: string[] | undefined;
+
 	public itemCount: number;
+
 	private isDisposed = false;
+
 	private contextService: IContextKeyService;
+
 	private contextKeysToWatch = new Set<string>();
 
 	constructor(private options: GettingStartedIndexListOptions<T>) {
 		super();
+
 		this.contextService = options.contextService;
+
 		this.entries = undefined;
+
 		this.itemCount = 0;
+
 		this.list = $("ul");
+
 		this.scrollbar = this._register(
 			new DomScrollableElement(this.list, {}),
 		);
+
 		this._register(
 			this.onDidChangeEntries(() => this.scrollbar.scanDomNode()),
 		);
+
 		this.domElement = $(
 			".index-list." + options.klass,
 			{},
 			$("h2", {}, options.title),
 			this.scrollbar.getDomNode(),
 		);
+
 		this._register(
 			this.contextService.onDidChangeContext((e) => {
 				if (e.affectsSome(this.contextKeysToWatch)) {
@@ -69,15 +96,19 @@ export class GettingStartedIndexList<
 			}),
 		);
 	}
+
 	getDomElement() {
 		return this.domElement;
 	}
+
 	layout(size: Dimension) {
 		this.scrollbar.scanDomNode();
 	}
+
 	onDidChange(listener: () => void) {
 		this._register(this.onDidChangeEntries(listener));
 	}
+
 	register(d: IDisposable) {
 		if (this.isDisposed) {
 			d.dispose();
@@ -85,28 +116,36 @@ export class GettingStartedIndexList<
 			this._register(d);
 		}
 	}
+
 	override dispose() {
 		this.isDisposed = true;
 
 		super.dispose();
 	}
+
 	setLimit(limit: number) {
 		this.options.limit = limit;
+
 		this.setEntries(this.entries);
 	}
+
 	rerender() {
 		this.setEntries(this.entries);
 	}
+
 	setEntries(entries: undefined | T[]) {
 		let entryList = entries ?? [];
+
 		this.itemCount = 0;
 
 		const ranker = this.options.rankElement;
 
 		if (ranker) {
 			entryList = entryList.filter((e) => ranker(e) !== null);
+
 			entryList.sort((a, b) => ranker(b)! - ranker(a)!);
 		}
+
 		const activeEntries = entryList.filter(
 			(e) => !e.when || this.contextService.contextMatchesRules(e.when),
 		);
@@ -118,24 +157,33 @@ export class GettingStartedIndexList<
 		if (this.entries === entries && equals(toRender, this.lastRendered)) {
 			return;
 		}
+
 		this.entries = entries;
+
 		this.contextKeysToWatch.clear();
+
 		entryList.forEach((e) => {
 			const keys = e.when?.keys();
+
 			keys?.forEach((key) => this.contextKeysToWatch.add(key));
 		});
+
 		this.lastRendered = toRender;
+
 		this.itemCount = limitedEntries.length;
 
 		while (this.list.firstChild) {
 			this.list.firstChild.remove();
 		}
+
 		this.itemCount = limitedEntries.length;
 
 		for (const entry of limitedEntries) {
 			const rendered = this.options.renderElement(entry);
+
 			this.list.appendChild(rendered);
 		}
+
 		if (activeEntries.length > limitedEntries.length && this.options.more) {
 			this.list.appendChild(this.options.more);
 		} else if (
@@ -147,6 +195,7 @@ export class GettingStartedIndexList<
 		} else if (this.options.footer) {
 			this.list.appendChild(this.options.footer);
 		}
+
 		this._onDidChangeEntries.fire();
 	}
 }

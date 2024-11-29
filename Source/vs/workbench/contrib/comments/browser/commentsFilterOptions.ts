@@ -11,11 +11,16 @@ import * as strings from "../../../../base/common/strings.js";
 
 export class FilterOptions {
 	static readonly _filter: IFilter = matchesFuzzy2;
+
 	static readonly _messageFilter: IFilter = matchesFuzzy;
+
 	readonly showResolved: boolean = true;
+
 	readonly showUnresolved: boolean = true;
+
 	readonly textFilter: {
 		readonly text: string;
+
 		readonly negate: boolean;
 	};
 
@@ -25,10 +30,13 @@ export class FilterOptions {
 		showUnresolved: boolean,
 	) {
 		filter = filter.trim();
+
 		this.showResolved = showResolved;
+
 		this.showUnresolved = showUnresolved;
 
 		const negate = filter.startsWith("!");
+
 		this.textFilter = {
 			text: (negate ? strings.ltrim(filter, "!") : filter).trim(),
 			negate,

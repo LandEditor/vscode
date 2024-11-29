@@ -15,6 +15,7 @@ if (parentPort) {
 				const json = serializeNotebookToString(data);
 
 				const bytes = new TextEncoder().encode(json);
+
 				parentPort.postMessage({ id, data: bytes });
 			}
 		},

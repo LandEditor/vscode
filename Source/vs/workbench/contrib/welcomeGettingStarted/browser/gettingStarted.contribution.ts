@@ -103,12 +103,14 @@ registerAction2(
 				},
 			});
 		}
+
 		public run(
 			accessor: ServicesAccessor,
 			walkthroughID:
 				| string
 				| {
 						category: string;
+
 						step: string;
 				  }
 				| undefined,
@@ -156,6 +158,7 @@ registerAction2(
 					if (group.activeEditor instanceof GettingStartedInput) {
 						const activeEditor =
 							group.activeEditor as GettingStartedInput;
+
 						activeEditor.showWelcome = false;
 						(
 							group.activeEditorPane as GettingStartedPage
@@ -180,14 +183,18 @@ registerAction2(
 
 						if (!editor.selectedCategory && group) {
 							editor.selectedCategory = selectedCategory;
+
 							editor.selectedStep = selectedStep;
+
 							editor.showWelcome = false;
+
 							group.openEditor(editor, { revealIfOpened: true });
 
 							return;
 						}
 					}
 				}
+
 				const activeEditor = editorService.activeEditor;
 				// If the walkthrough is already open just reveal the step
 				if (
@@ -196,6 +203,7 @@ registerAction2(
 					activeEditor.selectedCategory === selectedCategory
 				) {
 					activeEditor.showWelcome = false;
+
 					commandService.executeCommand(
 						"walkthroughs.selectStep",
 						selectedStep,
@@ -206,6 +214,7 @@ registerAction2(
 				// If it's the extension install page then lets replace it with the getting started page
 				if (activeEditor instanceof ExtensionsInput) {
 					const activeGroup = editorGroupsService.activeGroup;
+
 					activeGroup.replaceEditors([
 						{
 							editor: activeEditor,
@@ -227,6 +236,7 @@ registerAction2(
 						showWelcome: false,
 						preserveFocus: toSide ?? false,
 					};
+
 					editorService
 						.openEditor(
 							{
@@ -293,6 +303,7 @@ registerAction2(
 				f1: true,
 			});
 		}
+
 		run(accessor: ServicesAccessor) {
 			const editorService = accessor.get(IEditorService);
 
@@ -332,10 +343,12 @@ registerAction2(
 				category,
 			});
 		}
+
 		run(accessor: ServicesAccessor, arg: string) {
 			if (!arg) {
 				return;
 			}
+
 			const gettingStartedService = accessor.get(IWalkthroughsService);
 
 			gettingStartedService.progressStep(arg);
@@ -354,10 +367,12 @@ registerAction2(
 				category,
 			});
 		}
+
 		run(accessor: ServicesAccessor, arg: string) {
 			if (!arg) {
 				return;
 			}
+
 			const gettingStartedService = accessor.get(IWalkthroughsService);
 
 			gettingStartedService.deprogressStep(arg);
@@ -377,6 +392,7 @@ registerAction2(
 				f1: true,
 			});
 		}
+
 		private async getQuickPickItems(
 			contextService: IContextKeyService,
 			gettingStartedService: IWalkthroughsService,
@@ -392,6 +408,7 @@ registerAction2(
 					description: x.source,
 				}));
 		}
+
 		async run(accessor: ServicesAccessor) {
 			const commandService = accessor.get(ICommandService);
 
@@ -408,18 +425,25 @@ registerAction2(
 			const quickPick = disposables.add(
 				quickInputService.createQuickPick(),
 			);
+
 			quickPick.canSelectMany = false;
+
 			quickPick.matchOnDescription = true;
+
 			quickPick.matchOnDetail = true;
+
 			quickPick.placeholder = localize(
 				"pickWalkthroughs",
 				"Select a walkthrough to open",
 			);
+
 			quickPick.items = await this.getQuickPickItems(
 				contextService,
 				gettingStartedService,
 			);
+
 			quickPick.busy = true;
+
 			disposables.add(
 				quickPick.onDidAccept(() => {
 					const selection = quickPick.selectedItems[0];
@@ -430,10 +454,13 @@ registerAction2(
 							selection.id,
 						);
 					}
+
 					quickPick.hide();
 				}),
 			);
+
 			disposables.add(quickPick.onDidHide(() => disposables.dispose()));
+
 			await extensionService.whenInstalledExtensionsRegistered();
 
 			gettingStartedService.onDidAddWalkthrough(async () => {
@@ -442,7 +469,9 @@ registerAction2(
 					gettingStartedService,
 				);
 			});
+
 			quickPick.show();
+
 			quickPick.busy = false;
 		}
 	},

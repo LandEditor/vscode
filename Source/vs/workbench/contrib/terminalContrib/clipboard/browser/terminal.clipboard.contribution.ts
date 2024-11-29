@@ -53,6 +53,7 @@ export class TerminalClipboardContribution
 	implements ITerminalContribution
 {
 	static readonly ID = "terminal.clipboard";
+
 	static get(
 		instance: ITerminalInstance | IDetachedTerminalInstance,
 	): TerminalClipboardContribution | null {
@@ -60,15 +61,21 @@ export class TerminalClipboardContribution
 			TerminalClipboardContribution.ID,
 		);
 	}
+
 	private _xterm:
 		| (IXtermTerminal & {
 				raw: RawXtermTerminal;
 		  })
 		| undefined;
+
 	private _overrideCopySelection: boolean | undefined = undefined;
+
 	private readonly _onWillPaste = this._register(new Emitter<string>());
+
 	readonly onWillPaste = this._onWillPaste.event;
+
 	private readonly _onDidPaste = this._register(new Emitter<string>());
+
 	readonly onDidPaste = this._onDidPaste.event;
 
 	constructor(
@@ -88,6 +95,7 @@ export class TerminalClipboardContribution
 	) {
 		super();
 	}
+
 	xtermReady(
 		xterm: IXtermTerminal & {
 			raw: RawXtermTerminal;
@@ -100,6 +108,7 @@ export class TerminalClipboardContribution
 				this.copySelection(true, e.command),
 			),
 		);
+
 		this._register(
 			xterm.raw.onSelectionChange(async () => {
 				if (
@@ -110,6 +119,7 @@ export class TerminalClipboardContribution
 					if (this._overrideCopySelection === false) {
 						return;
 					}
+
 					if (this._ctx.instance.hasSelection()) {
 						await this.copySelection();
 					}
@@ -117,6 +127,7 @@ export class TerminalClipboardContribution
 			}),
 		);
 	}
+
 	async copySelection(
 		asHtml?: boolean,
 		command?: ITerminalCommand,
@@ -136,10 +147,12 @@ export class TerminalClipboardContribution
 	async pasteSelection(): Promise<void> {
 		await this._paste(await this._clipboardService.readText("selection"));
 	}
+
 	private async _paste(value: string): Promise<void> {
 		if (!this._xterm) {
 			return;
 		}
+
 		let currentText = value;
 
 		const shouldPasteText = await this._instantiationService.invokeFunction(
@@ -151,14 +164,20 @@ export class TerminalClipboardContribution
 		if (!shouldPasteText) {
 			return;
 		}
+
 		if (typeof shouldPasteText === "object") {
 			currentText = shouldPasteText.modifiedText;
 		}
+
 		this._ctx.instance.focus();
+
 		this._onWillPaste.fire(currentText);
+
 		this._xterm.raw.paste(currentText);
+
 		this._onDidPaste.fire(currentText);
 	}
+
 	async handleMouseEvent(event: MouseEvent): Promise<{
 		handled: boolean;
 	} | void> {
@@ -173,14 +192,17 @@ export class TerminalClipboardContribution
 
 					return { handled: true };
 				}
+
 				break;
 			}
+
 			case 2: {
 				// Right click
 				// Ignore shift click as it forces the context menu
 				if (event.shiftKey) {
 					return;
 				}
+
 				const rightClickBehavior =
 					this._terminalConfigurationService.config
 						.rightClickBehavior;
@@ -191,11 +213,13 @@ export class TerminalClipboardContribution
 				) {
 					return;
 				}
+
 				if (
 					rightClickBehavior === "copyPaste" &&
 					this._ctx.instance.hasSelection()
 				) {
 					await this.copySelection();
+
 					this._ctx.instance.clearSelection();
 				} else {
 					if (BrowserFeatures.clipboard.readText) {
@@ -213,6 +237,7 @@ export class TerminalClipboardContribution
 				if (isMacintosh) {
 					setTimeout(() => this._ctx.instance.clearSelection(), 0);
 				}
+
 				return { handled: true };
 			}
 		}
@@ -227,6 +252,7 @@ export class TerminalClipboardContribution
 				"Cannot set a copy on selection override multiple times",
 			);
 		}
+
 		this._overrideCopySelection = value;
 
 		return toDisposable(() => (this._overrideCopySelection = undefined));
@@ -261,11 +287,13 @@ registerActiveInstanceAction({
 		if (!commands || commands.length === 0) {
 			return;
 		}
+
 		const command = commands[commands.length - 1];
 
 		if (!command.command) {
 			return;
 		}
+
 		await clipboardService.writeText(command.command);
 	},
 });
@@ -286,11 +314,13 @@ registerActiveInstanceAction({
 		if (!commands || commands.length === 0) {
 			return;
 		}
+
 		const command = commands[commands.length - 1];
 
 		if (!command?.hasOutput()) {
 			return;
 		}
+
 		const output = command.getOutput();
 
 		if (isString(output)) {
@@ -315,11 +345,13 @@ registerActiveInstanceAction({
 		if (!commands || commands.length === 0) {
 			return;
 		}
+
 		const command = commands[commands.length - 1];
 
 		if (!command?.hasOutput()) {
 			return;
 		}
+
 		const output = command.getOutput();
 
 		if (isString(output)) {
@@ -361,6 +393,7 @@ if (BrowserFeatures.clipboard.writeText) {
 		],
 		run: (activeInstance) => activeInstance.copySelection(),
 	});
+
 	registerActiveXtermAction({
 		id: TerminalCommandId.CopyAndClearSelection,
 		title: localize2(
@@ -389,9 +422,11 @@ if (BrowserFeatures.clipboard.writeText) {
 		],
 		run: async (xterm) => {
 			await xterm.copySelection();
+
 			xterm.clearSelection();
 		},
 	});
+
 	registerActiveXtermAction({
 		id: TerminalCommandId.CopySelectionAsHtml,
 		title: localize2(

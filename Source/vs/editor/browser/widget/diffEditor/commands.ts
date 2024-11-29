@@ -46,12 +46,14 @@ export class ToggleCollapseUnchangedRegions extends Action2 {
 			},
 		});
 	}
+
 	run(accessor: ServicesAccessor, ...args: unknown[]): void {
 		const configurationService = accessor.get(IConfigurationService);
 
 		const newValue = !configurationService.getValue<boolean>(
 			"diffEditor.hideUnchangedRegions.enabled",
 		);
+
 		configurationService.updateValue(
 			"diffEditor.hideUnchangedRegions.enabled",
 			newValue,
@@ -69,12 +71,14 @@ export class ToggleShowMovedCodeBlocks extends Action2 {
 			precondition: ContextKeyExpr.has("isInDiffEditor"),
 		});
 	}
+
 	run(accessor: ServicesAccessor, ...args: unknown[]): void {
 		const configurationService = accessor.get(IConfigurationService);
 
 		const newValue = !configurationService.getValue<boolean>(
 			"diffEditor.experimental.showMoves",
 		);
+
 		configurationService.updateValue(
 			"diffEditor.experimental.showMoves",
 			newValue,
@@ -92,12 +96,14 @@ export class ToggleUseInlineViewWhenSpaceIsLimited extends Action2 {
 			precondition: ContextKeyExpr.has("isInDiffEditor"),
 		});
 	}
+
 	run(accessor: ServicesAccessor, ...args: unknown[]): void {
 		const configurationService = accessor.get(IConfigurationService);
 
 		const newValue = !configurationService.getValue<boolean>(
 			"diffEditor.useInlineViewWhenSpaceIsLimited",
 		);
+
 		configurationService.updateValue(
 			"diffEditor.useInlineViewWhenSpaceIsLimited",
 			newValue,
@@ -121,6 +127,7 @@ export class SwitchSide extends EditorAction2 {
 			category: diffEditorCategory,
 		});
 	}
+
 	runEditorCommand(
 		accessor: ServicesAccessor,
 		editor: ICodeEditor,
@@ -140,6 +147,7 @@ export class SwitchSide extends EditorAction2 {
 				diffEditor.switchSide();
 			}
 		}
+
 		return undefined;
 	}
 }
@@ -158,6 +166,7 @@ export class ExitCompareMove extends EditorAction2 {
 			},
 		});
 	}
+
 	runEditorCommand(
 		accessor: ServicesAccessor,
 		editor: ICodeEditor,
@@ -184,6 +193,7 @@ export class CollapseAllUnchangedRegions extends EditorAction2 {
 			category: diffEditorCategory,
 		});
 	}
+
 	runEditorCommand(
 		accessor: ServicesAccessor,
 		editor: ICodeEditor,
@@ -210,6 +220,7 @@ export class ShowAllUnchangedRegions extends EditorAction2 {
 			category: diffEditorCategory,
 		});
 	}
+
 	runEditorCommand(
 		accessor: ServicesAccessor,
 		editor: ICodeEditor,
@@ -231,6 +242,7 @@ export class RevertHunkOrSelection extends Action2 {
 			category: diffEditorCategory,
 		});
 	}
+
 	run(
 		accessor: ServicesAccessor,
 		arg: DiffEditorSelectionHunkToolbarContext,
@@ -244,6 +256,7 @@ export class RevertHunkOrSelection extends Action2 {
 		if (diffEditor instanceof DiffEditorWidget) {
 			diffEditor.revertRangeMappings(arg.mapping.innerChanges ?? []);
 		}
+
 		return undefined;
 	}
 }
@@ -272,8 +285,10 @@ export class AccessibleDiffViewerNext extends Action2 {
 			f1: true,
 		});
 	}
+
 	public override run(accessor: ServicesAccessor): void {
 		const diffEditor = findFocusedDiffEditor(accessor);
+
 		diffEditor?.accessibleDiffViewerNext();
 	}
 }
@@ -296,8 +311,10 @@ export class AccessibleDiffViewerPrev extends Action2 {
 			f1: true,
 		});
 	}
+
 	public override run(accessor: ServicesAccessor): void {
 		const diffEditor = findFocusedDiffEditor(accessor);
+
 		diffEditor?.accessibleDiffViewerPrev();
 	}
 }
@@ -344,6 +361,7 @@ export function findFocusedDiffEditor(
 			}
 		}
 	}
+
 	return null;
 }
 function isElementOrParentOf(
@@ -356,7 +374,9 @@ function isElementOrParentOf(
 		if (e === elementOrParent) {
 			return true;
 		}
+
 		e = e.parentElement;
 	}
+
 	return false;
 }

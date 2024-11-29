@@ -16,40 +16,61 @@ const hardScrollableLineLimit = 8000;
  */
 function generateViewMoreElement(outputId: string) {
 	const container = document.createElement("div");
+
 	container.classList.add("truncation-message");
 
 	const first = document.createElement("span");
+
 	first.textContent = "Output is truncated. View as a ";
+
 	container.appendChild(first);
 
 	const viewAsScrollableLink = document.createElement("a");
+
 	viewAsScrollableLink.textContent = "scrollable element";
+
 	viewAsScrollableLink.href = `command:cellOutput.enableScrolling?${outputId}`;
+
 	viewAsScrollableLink.ariaLabel = "enable scrollable output";
+
 	container.appendChild(viewAsScrollableLink);
 
 	const second = document.createElement("span");
+
 	second.textContent = " or open in a ";
+
 	container.appendChild(second);
 
 	const openInTextEditorLink = document.createElement("a");
+
 	openInTextEditorLink.textContent = "text editor";
+
 	openInTextEditorLink.href = `command:workbench.action.openLargeOutput?${outputId}`;
+
 	openInTextEditorLink.ariaLabel = "open output in text editor";
+
 	container.appendChild(openInTextEditorLink);
 
 	const third = document.createElement("span");
+
 	third.textContent = ". Adjust cell output ";
+
 	container.appendChild(third);
 
 	const layoutSettingsLink = document.createElement("a");
+
 	layoutSettingsLink.textContent = "settings";
+
 	layoutSettingsLink.href = `command:workbench.action.openSettings?%5B%22%40tag%3AnotebookOutputLayout%22%5D`;
+
 	layoutSettingsLink.ariaLabel = "notebook output settings";
+
 	container.appendChild(layoutSettingsLink);
 
 	const fourth = document.createElement("span");
+
 	fourth.textContent = "...";
+
 	container.appendChild(fourth);
 
 	return container;
@@ -58,11 +79,17 @@ function generateNestedViewAllElement(outputId: string) {
 	const container = document.createElement("div");
 
 	const link = document.createElement("a");
+
 	link.textContent = "...";
+
 	link.href = `command:workbench.action.openLargeOutput?${outputId}`;
+
 	link.ariaLabel = "Open full output in text editor";
+
 	link.title = "Open full output in text editor";
+
 	link.style.setProperty("text-decoration", "none");
+
 	container.appendChild(link);
 
 	return container;
@@ -74,6 +101,7 @@ function truncatedArrayOfString(
 	linkOptions: LinkOptions,
 ) {
 	const container = document.createElement("div");
+
 	container.setAttribute(
 		"data-vscode-context",
 		JSON.stringify({
@@ -87,10 +115,12 @@ function truncatedArrayOfString(
 
 	if (lineCount <= linesLimit) {
 		const spanElement = handleANSIOutput(buffer.join("\n"), linkOptions);
+
 		container.appendChild(spanElement);
 
 		return container;
 	}
+
 	container.appendChild(
 		handleANSIOutput(
 			buffer.slice(0, linesLimit - 5).join("\n"),
@@ -99,11 +129,15 @@ function truncatedArrayOfString(
 	);
 	// truncated piece
 	const elipses = document.createElement("div");
+
 	elipses.innerText = "...";
+
 	container.appendChild(elipses);
+
 	container.appendChild(
 		handleANSIOutput(buffer.slice(lineCount - 5).join("\n"), linkOptions),
 	);
+
 	container.appendChild(generateViewMoreElement(id));
 
 	return container;
@@ -114,6 +148,7 @@ function scrollableArrayOfString(
 	linkOptions: LinkOptions,
 ) {
 	const element = document.createElement("div");
+
 	element.setAttribute(
 		"data-vscode-context",
 		JSON.stringify({
@@ -126,6 +161,7 @@ function scrollableArrayOfString(
 	if (buffer.length > softScrollableLineLimit) {
 		element.appendChild(generateNestedViewAllElement(id));
 	}
+
 	element.appendChild(
 		handleANSIOutput(
 			buffer.slice(-1 * softScrollableLineLimit).join("\n"),
@@ -146,6 +182,7 @@ function appendScrollableOutput(
 	if (!outputLengths[id]) {
 		outputLengths[id] = 0;
 	}
+
 	const buffer = appended.split(/\r\n|\r|\n/g);
 
 	const appendedLength = buffer.length + outputLengths[id];
@@ -154,8 +191,10 @@ function appendScrollableOutput(
 		return false;
 	} else {
 		element.appendChild(handleANSIOutput(buffer.join("\n"), linkOptions));
+
 		outputLengths[id] = appendedLength;
 	}
+
 	return true;
 }
 export function createOutputContent(
@@ -169,6 +208,7 @@ export function createOutputContent(
 	const linkOptions: LinkOptions = { linkifyFilePaths, trustHtml };
 
 	const buffer = outputText.split(/\r\n|\r|\n/g);
+
 	outputLengths[id] = outputLengths[id] = Math.min(
 		buffer.length,
 		softScrollableLineLimit,
@@ -186,11 +226,13 @@ export function createOutputContent(
 			linkOptions,
 		);
 	}
+
 	outputElement.setAttribute("output-item-id", id);
 
 	if (error) {
 		outputElement.classList.add("error");
 	}
+
 	return outputElement;
 }
 export function appendOutput(
@@ -217,11 +259,13 @@ export function appendOutput(
 			return;
 		}
 	}
+
 	const newContent = createOutputContent(
 		outputInfo.id,
 		outputInfo.text(),
 		options,
 	);
+
 	existingContent.replaceWith(newContent);
 
 	while (newContent.nextSibling) {

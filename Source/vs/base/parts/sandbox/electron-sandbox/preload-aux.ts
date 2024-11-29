@@ -9,8 +9,10 @@
 		if (!channel || !channel.startsWith("vscode:")) {
 			throw new Error(`Unsupported event IPC channel '${channel}'`);
 		}
+
 		return true;
 	}
+
 	const globals = {
 		/**
 		 * A minimal set of methods exposed from Electron's `ipcRenderer`

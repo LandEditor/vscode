@@ -54,6 +54,7 @@ class DefineKeybindingEditorContribution
 	private readonly _keybindingDecorationRenderer = this._register(
 		new MutableDisposable<KeybindingEditorDecorationsRenderer>(),
 	);
+
 	private readonly _defineWidget: DefineKeybindingOverlayWidget;
 
 	constructor(
@@ -64,15 +65,19 @@ class DefineKeybindingEditorContribution
 		private readonly _userDataProfileService: IUserDataProfileService,
 	) {
 		super();
+
 		this._defineWidget = this._register(
 			this._instantiationService.createInstance(
 				DefineKeybindingOverlayWidget,
 				this._editor,
 			),
 		);
+
 		this._register(this._editor.onDidChangeModel((e) => this._update()));
+
 		this._update();
 	}
+
 	private _update(): void {
 		this._keybindingDecorationRenderer.value = isInterestingEditorModel(
 			this._editor,
@@ -85,6 +90,7 @@ class DefineKeybindingEditorContribution
 				)
 			: undefined;
 	}
+
 	showDefineKeybindingWidget(): void {
 		if (
 			isInterestingEditorModel(this._editor, this._userDataProfileService)
@@ -94,6 +100,7 @@ class DefineKeybindingEditorContribution
 				.then((keybinding) => this._onAccepted(keybinding));
 		}
 	}
+
 	private _onAccepted(keybinding: string | null): void {
 		this._editor.focus();
 
@@ -105,6 +112,7 @@ class DefineKeybindingEditorContribution
 			if (backslash) {
 				keybinding = keybinding.slice(0, -1) + "\\\\";
 			}
+
 			let snippetText = [
 				"{",
 				'\t"key": ' + JSON.stringify(keybinding) + ",",
@@ -117,9 +125,12 @@ class DefineKeybindingEditorContribution
 				this._editor.getModel(),
 				this._editor.getPosition(),
 			);
+
 			snippetText =
 				smartInsertInfo.prepend + snippetText + smartInsertInfo.append;
+
 			this._editor.setPosition(smartInsertInfo.position);
+
 			SnippetController2.get(this._editor)?.insert(snippetText, {
 				overwriteBefore: 0,
 				overwriteAfter: 0,
@@ -129,6 +140,7 @@ class DefineKeybindingEditorContribution
 }
 export class KeybindingEditorDecorationsRenderer extends Disposable {
 	private _updateDecorations: RunOnceScheduler;
+
 	private readonly _dec = this._editor.createDecorationsCollection();
 
 	constructor(
@@ -137,27 +149,34 @@ export class KeybindingEditorDecorationsRenderer extends Disposable {
 		private readonly _keybindingService: IKeybindingService,
 	) {
 		super();
+
 		this._updateDecorations = this._register(
 			new RunOnceScheduler(() => this._updateDecorationsNow(), 500),
 		);
 
 		const model = assertIsDefined(this._editor.getModel());
+
 		this._register(
 			model.onDidChangeContent(() => this._updateDecorations.schedule()),
 		);
+
 		this._register(
 			this._keybindingService.onDidUpdateKeybindings(() =>
 				this._updateDecorations.schedule(),
 			),
 		);
+
 		this._register({
 			dispose: () => {
 				this._dec.clear();
+
 				this._updateDecorations.cancel();
 			},
 		});
+
 		this._updateDecorations.schedule();
 	}
+
 	private _updateDecorationsNow(): void {
 		const model = assertIsDefined(this._editor.getModel());
 
@@ -176,8 +195,10 @@ export class KeybindingEditorDecorationsRenderer extends Disposable {
 				}
 			}
 		}
+
 		this._dec.set(newDecorations);
 	}
+
 	private _getDecorationForEntry(
 		model: ITextModel,
 		entry: Node,
@@ -185,31 +206,37 @@ export class KeybindingEditorDecorationsRenderer extends Disposable {
 		if (!Array.isArray(entry.children)) {
 			return null;
 		}
+
 		for (let i = 0, len = entry.children.length; i < len; i++) {
 			const prop = entry.children[i];
 
 			if (prop.type !== "property") {
 				continue;
 			}
+
 			if (!Array.isArray(prop.children) || prop.children.length !== 2) {
 				continue;
 			}
+
 			const key = prop.children[0];
 
 			if (key.value !== "key") {
 				continue;
 			}
+
 			const value = prop.children[1];
 
 			if (value.type !== "string") {
 				continue;
 			}
+
 			const resolvedKeybindings =
 				this._keybindingService.resolveUserBinding(value.value);
 
 			if (resolvedKeybindings.length === 0) {
 				return this._createDecoration(true, null, null, model, value);
 			}
+
 			const resolvedKeybinding = resolvedKeybindings[0];
 
 			let usLabel: string | null = null;
@@ -217,6 +244,7 @@ export class KeybindingEditorDecorationsRenderer extends Disposable {
 			if (resolvedKeybinding instanceof WindowsNativeResolvedKeybinding) {
 				usLabel = resolvedKeybinding.getUSLabel();
 			}
+
 			if (!resolvedKeybinding.isWYSIWYG()) {
 				const uiLabel = resolvedKeybinding.getLabel();
 
@@ -227,6 +255,7 @@ export class KeybindingEditorDecorationsRenderer extends Disposable {
 					// coincidentally, this is actually WYSIWYG
 					return null;
 				}
+
 				return this._createDecoration(
 					false,
 					resolvedKeybinding.getLabel(),
@@ -235,6 +264,7 @@ export class KeybindingEditorDecorationsRenderer extends Disposable {
 					value,
 				);
 			}
+
 			if (/abnt_|oem_/.test(value.value)) {
 				return this._createDecoration(
 					false,
@@ -244,6 +274,7 @@ export class KeybindingEditorDecorationsRenderer extends Disposable {
 					value,
 				);
 			}
+
 			const expectedUserSettingsLabel =
 				resolvedKeybinding.getUserSettingsLabel();
 
@@ -262,17 +293,22 @@ export class KeybindingEditorDecorationsRenderer extends Disposable {
 					value,
 				);
 			}
+
 			return null;
 		}
+
 		return null;
 	}
+
 	static _userSettingsFuzzyEquals(a: string, b: string): boolean {
 		a = a.trim().toLowerCase();
+
 		b = b.trim().toLowerCase();
 
 		if (a === b) {
 			return true;
 		}
+
 		const aKeybinding = KeybindingParser.parseKeybinding(a);
 
 		const bKeybinding = KeybindingParser.parseKeybinding(b);
@@ -280,11 +316,14 @@ export class KeybindingEditorDecorationsRenderer extends Disposable {
 		if (aKeybinding === null && bKeybinding === null) {
 			return true;
 		}
+
 		if (!aKeybinding || !bKeybinding) {
 			return false;
 		}
+
 		return aKeybinding.equals(bKeybinding);
 	}
+
 	private _createDecoration(
 		isError: boolean,
 		uiLabel: string | null,
@@ -303,6 +342,7 @@ export class KeybindingEditorDecorationsRenderer extends Disposable {
 			msg = new MarkdownString().appendText(NLS_KB_LAYOUT_ERROR_MESSAGE);
 
 			className = "keybindingError";
+
 			overviewRulerColor = themeColorFromId(overviewRulerError);
 		} else {
 			// this is the info case
@@ -336,9 +376,12 @@ export class KeybindingEditorDecorationsRenderer extends Disposable {
 					),
 				);
 			}
+
 			className = "keybindingInfo";
+
 			overviewRulerColor = themeColorFromId(overviewRulerInfo);
 		}
+
 		const startPosition = model.getPositionAt(keyNode.offset);
 
 		const endPosition = model.getPositionAt(
@@ -376,6 +419,7 @@ function isInterestingEditorModel(
 	if (!model) {
 		return false;
 	}
+
 	return isEqual(
 		model.uri,
 		userDataProfileService.currentProfile.keybindingsResource,

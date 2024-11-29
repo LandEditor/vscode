@@ -27,6 +27,7 @@ export function applyTextEditorOptions(
 
 	if (isTextEditorViewState(viewState)) {
 		editor.restoreViewState(viewState);
+
 		applied = true;
 	}
 	// Restore selection if any
@@ -67,8 +68,10 @@ export function applyTextEditorOptions(
 		} else {
 			editor.revealRangeInCenter(range, scrollType);
 		}
+
 		applied = true;
 	}
+
 	return applied;
 }
 function massageEditorViewState(
@@ -95,5 +98,6 @@ function massageEditorViewState(
 	if (candidateEditorViewState.cursorState) {
 		candidateEditorViewState.cursorState = [];
 	}
+
 	return candidateEditorViewState;
 }

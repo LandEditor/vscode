@@ -9,7 +9,9 @@ import { IColor, IColorInformation } from "../languages.js";
 
 export interface IDocumentColorComputerTarget {
 	getValue(): string;
+
 	positionAt(offset: number): IPosition;
+
 	findMatches(regex: RegExp): RegExpMatchArray[];
 }
 
@@ -26,6 +28,7 @@ function _parseCaptureGroups(captureGroups: IterableIterator<string>) {
 			values.push(parsedNumber);
 		}
 	}
+
 	return values;
 }
 
@@ -49,6 +52,7 @@ function _findRange(
 	if (!index) {
 		return;
 	}
+
 	const startPosition = model.positionAt(index);
 
 	const range: IRange = {
@@ -65,11 +69,13 @@ function _findHexColorInformation(range: IRange | undefined, hexValue: string) {
 	if (!range) {
 		return;
 	}
+
 	const parsedHexColor = Color.Format.CSS.parseHex(hexValue);
 
 	if (!parsedHexColor) {
 		return;
 	}
+
 	return {
 		range: range,
 		color: _toIColor(
@@ -89,6 +95,7 @@ function _findRGBColorInformation(
 	if (!range || matches.length !== 1) {
 		return;
 	}
+
 	const match = matches[0]!;
 
 	const captureGroups = match.values();
@@ -114,6 +121,7 @@ function _findHSLColorInformation(
 	if (!range || matches.length !== 1) {
 		return;
 	}
+
 	const match = matches[0]!;
 
 	const captureGroups = match.values();
@@ -178,11 +186,13 @@ function computeColors(
 			if (!colorParameters) {
 				continue;
 			}
+
 			let colorInformation;
 
 			if (colorScheme === "rgb") {
 				const regexParameters =
 					/^\(\s*(25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9][0-9]|[0-9])\s*,\s*(25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9][0-9]|[0-9])\s*,\s*(25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9][0-9]|[0-9])\s*\)$/gm;
+
 				colorInformation = _findRGBColorInformation(
 					_findRange(model, initialMatch),
 					_findMatches(colorParameters, regexParameters),
@@ -191,6 +201,7 @@ function computeColors(
 			} else if (colorScheme === "rgba") {
 				const regexParameters =
 					/^\(\s*(25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9][0-9]|[0-9])\s*,\s*(25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9][0-9]|[0-9])\s*,\s*(25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9][0-9]|[0-9])\s*,\s*(0[.][0-9]+|[.][0-9]+|[01][.]|[01])\s*\)$/gm;
+
 				colorInformation = _findRGBColorInformation(
 					_findRange(model, initialMatch),
 					_findMatches(colorParameters, regexParameters),
@@ -199,6 +210,7 @@ function computeColors(
 			} else if (colorScheme === "hsl") {
 				const regexParameters =
 					/^\(\s*(36[0]|3[0-5][0-9]|[12][0-9][0-9]|[1-9]?[0-9])\s*,\s*(100|\d{1,2}[.]\d*|\d{1,2})%\s*,\s*(100|\d{1,2}[.]\d*|\d{1,2})%\s*\)$/gm;
+
 				colorInformation = _findHSLColorInformation(
 					_findRange(model, initialMatch),
 					_findMatches(colorParameters, regexParameters),
@@ -207,6 +219,7 @@ function computeColors(
 			} else if (colorScheme === "hsla") {
 				const regexParameters =
 					/^\(\s*(36[0]|3[0-5][0-9]|[12][0-9][0-9]|[1-9]?[0-9])\s*,\s*(100|\d{1,2}[.]\d*|\d{1,2})%\s*,\s*(100|\d{1,2}[.]\d*|\d{1,2})%\s*,\s*(0[.][0-9]+|[.][0-9]+|[01][.]|[01])\s*\)$/gm;
+
 				colorInformation = _findHSLColorInformation(
 					_findRange(model, initialMatch),
 					_findMatches(colorParameters, regexParameters),
@@ -218,11 +231,13 @@ function computeColors(
 					colorScheme + colorParameters,
 				);
 			}
+
 			if (colorInformation) {
 				result.push(colorInformation);
 			}
 		}
 	}
+
 	return result;
 }
 
@@ -240,5 +255,6 @@ export function computeDefaultDocumentColors(
 		// Unknown caller!
 		return [];
 	}
+
 	return computeColors(model);
 }

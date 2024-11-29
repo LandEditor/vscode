@@ -39,6 +39,7 @@ export function registerChatExportActions() {
 					f1: true,
 				});
 			}
+
 			async run(accessor: ServicesAccessor, ...args: any[]) {
 				const widgetService = accessor.get(IChatWidgetService);
 
@@ -53,6 +54,7 @@ export function registerChatExportActions() {
 				if (!widget || !widget.viewModel) {
 					return;
 				}
+
 				const defaultUri = joinPath(
 					await fileDialogService.defaultFilePath(),
 					defaultFileName,
@@ -66,6 +68,7 @@ export function registerChatExportActions() {
 				if (!result) {
 					return;
 				}
+
 				const model = chatService.getSession(
 					widget.viewModel.sessionId,
 				);
@@ -77,10 +80,12 @@ export function registerChatExportActions() {
 				const content = VSBuffer.fromString(
 					JSON.stringify(model.toExport(), undefined, 2),
 				);
+
 				await fileService.writeFile(result, content);
 			}
 		},
 	);
+
 	registerAction2(
 		class ImportChatAction extends Action2 {
 			constructor() {
@@ -92,6 +97,7 @@ export function registerChatExportActions() {
 					f1: true,
 				});
 			}
+
 			async run(accessor: ServicesAccessor, ...args: any[]) {
 				const fileDialogService = accessor.get(IFileDialogService);
 
@@ -113,6 +119,7 @@ export function registerChatExportActions() {
 				if (!result) {
 					return;
 				}
+
 				const content = await fileService.readFile(result[0]);
 
 				try {
@@ -121,10 +128,12 @@ export function registerChatExportActions() {
 					if (!isExportableSessionData(data)) {
 						throw new Error("Invalid chat session data");
 					}
+
 					const options: IChatEditorOptions = {
 						target: { data },
 						pinned: true,
 					};
+
 					await editorService.openEditor({
 						resource: ChatEditorInput.getNewEditorUri(),
 						options,

@@ -83,6 +83,7 @@ namespace LightBulbState {
 		Hidden,
 		Showing,
 	}
+
 	export const Hidden = { type: Type.Hidden } as const;
 
 	export class Showing {
@@ -95,10 +96,12 @@ namespace LightBulbState {
 			public readonly widgetPosition: IContentWidgetPosition,
 		) {}
 	}
+
 	export type State = typeof Hidden | Showing;
 }
 export class LightBulbWidget extends Disposable implements IContentWidget {
 	private _gutterDecorationID: string | undefined;
+
 	private static readonly GUTTER_DECORATION = ModelDecorationOptions.register(
 		{
 			description: "codicon-gutter-lightbulb-decoration",
@@ -107,21 +110,33 @@ export class LightBulbWidget extends Disposable implements IContentWidget {
 			stickiness: TrackedRangeStickiness.NeverGrowsWhenTypingAtEdges,
 		},
 	);
+
 	public static readonly ID = "editor.contrib.lightbulbWidget";
+
 	private static readonly _posPref = [ContentWidgetPositionPreference.EXACT];
+
 	private readonly _domNode: HTMLElement;
+
 	private readonly _onClick = this._register(
 		new Emitter<{
 			readonly x: number;
+
 			readonly y: number;
+
 			readonly actions: CodeActionSet;
+
 			readonly trigger: CodeActionTrigger;
 		}>(),
 	);
+
 	public readonly onClick = this._onClick.event;
+
 	private _state: LightBulbState.State = LightBulbState.Hidden;
+
 	private _gutterState: LightBulbState.State = LightBulbState.Hidden;
+
 	private _iconClasses: string[] = [];
+
 	private readonly lightbulbClasses = [
 		"codicon-" + GUTTER_LIGHTBULB_ICON.id,
 		"codicon-" + GUTTER_LIGHTBULB_AIFIX_AUTO_FIX_ICON.id,
@@ -129,8 +144,11 @@ export class LightBulbWidget extends Disposable implements IContentWidget {
 		"codicon-" + GUTTER_LIGHTBULB_AIFIX_ICON.id,
 		"codicon-" + GUTTER_SPARKLE_FILLED_ICON.id,
 	];
+
 	private _preferredKbLabel?: string;
+
 	private _quickFixKbLabel?: string;
+
 	private gutterDecoration: ModelDecorationOptions =
 		LightBulbWidget.GUTTER_DECORATION;
 
@@ -140,10 +158,15 @@ export class LightBulbWidget extends Disposable implements IContentWidget {
 		private readonly _keybindingService: IKeybindingService,
 	) {
 		super();
+
 		this._domNode = dom.$("div.lightBulbWidget");
+
 		this._domNode.role = "listbox";
+
 		this._register(Gesture.ignoreTarget(this._domNode));
+
 		this._editor.addContentWidget(this);
+
 		this._register(
 			this._editor.onDidChangeModelContent((_) => {
 				// cancel when the line in question has been removed
@@ -157,6 +180,7 @@ export class LightBulbWidget extends Disposable implements IContentWidget {
 				) {
 					this.hide();
 				}
+
 				if (
 					this.gutterState.type !== LightBulbState.Type.Showing ||
 					!editorModel ||
@@ -167,6 +191,7 @@ export class LightBulbWidget extends Disposable implements IContentWidget {
 				}
 			}),
 		);
+
 		this._register(
 			dom.addStandardDisposableGenericMouseDownListener(
 				this._domNode,
@@ -176,6 +201,7 @@ export class LightBulbWidget extends Disposable implements IContentWidget {
 					}
 					// Make sure that focus / cursor location is not lost when clicking widget icon
 					this._editor.focus();
+
 					e.preventDefault();
 					// a bit of extra work to make sure the menu
 					// doesn't cover the line-text
@@ -196,6 +222,7 @@ export class LightBulbWidget extends Disposable implements IContentWidget {
 					) {
 						pad += lineHeight;
 					}
+
 					this._onClick.fire({
 						x: e.posx,
 						y: top + height + pad,
@@ -205,6 +232,7 @@ export class LightBulbWidget extends Disposable implements IContentWidget {
 				},
 			),
 		);
+
 		this._register(
 			dom.addDisposableListener(
 				this._domNode,
@@ -219,6 +247,7 @@ export class LightBulbWidget extends Disposable implements IContentWidget {
 				},
 			),
 		);
+
 		this._register(
 			Event.runAndSubscribe(
 				this._keybindingService.onDidUpdateKeybindings,
@@ -227,14 +256,17 @@ export class LightBulbWidget extends Disposable implements IContentWidget {
 						this._keybindingService
 							.lookupKeybinding(autoFixCommandId)
 							?.getLabel() ?? undefined;
+
 					this._quickFixKbLabel =
 						this._keybindingService
 							.lookupKeybinding(quickFixCommandId)
 							?.getLabel() ?? undefined;
+
 					this._updateLightBulbTitleAndIcon();
 				},
 			),
 		);
+
 		this._register(
 			this._editor.onMouseDown(async (e: IEditorMouseEvent) => {
 				if (
@@ -247,6 +279,7 @@ export class LightBulbWidget extends Disposable implements IContentWidget {
 				) {
 					return;
 				}
+
 				if (this.gutterState.type !== LightBulbState.Type.Showing) {
 					return;
 				}
@@ -271,6 +304,7 @@ export class LightBulbWidget extends Disposable implements IContentWidget {
 				) {
 					pad += lineHeight;
 				}
+
 				this._onClick.fire({
 					x: e.event.posx,
 					y: top + height + pad,
@@ -280,25 +314,31 @@ export class LightBulbWidget extends Disposable implements IContentWidget {
 			}),
 		);
 	}
+
 	override dispose(): void {
 		super.dispose();
+
 		this._editor.removeContentWidget(this);
 
 		if (this._gutterDecorationID) {
 			this._removeGutterDecoration(this._gutterDecorationID);
 		}
 	}
+
 	getId(): string {
 		return "LightBulbWidget";
 	}
+
 	getDomNode(): HTMLElement {
 		return this._domNode;
 	}
+
 	getPosition(): IContentWidgetPosition | null {
 		return this._state.type === LightBulbState.Type.Showing
 			? this._state.widgetPosition
 			: null;
 	}
+
 	public update(
 		actions: CodeActionSet,
 		trigger: CodeActionTrigger,
@@ -309,6 +349,7 @@ export class LightBulbWidget extends Disposable implements IContentWidget {
 
 			return this.hide();
 		}
+
 		const hasTextFocus = this._editor.hasTextFocus();
 
 		if (!hasTextFocus) {
@@ -316,6 +357,7 @@ export class LightBulbWidget extends Disposable implements IContentWidget {
 
 			return this.hide();
 		}
+
 		const options = this._editor.getOptions();
 
 		if (!options.get(EditorOption.lightbulb).enabled) {
@@ -323,6 +365,7 @@ export class LightBulbWidget extends Disposable implements IContentWidget {
 
 			return this.hide();
 		}
+
 		const model = this._editor.getModel();
 
 		if (!model) {
@@ -330,6 +373,7 @@ export class LightBulbWidget extends Disposable implements IContentWidget {
 
 			return this.hide();
 		}
+
 		const { lineNumber, column } = model.validatePosition(atPosition);
 
 		const tabSize = model.getOptions().tabSize;
@@ -370,6 +414,7 @@ export class LightBulbWidget extends Disposable implements IContentWidget {
 				}
 			}
 		}
+
 		let effectiveLineNumber = lineNumber;
 
 		let effectiveColumnNumber = 1;
@@ -419,6 +464,7 @@ export class LightBulbWidget extends Disposable implements IContentWidget {
 							preference: LightBulbWidget._posPref,
 						},
 					);
+
 					this.renderGutterLightbub();
 
 					return this.hide();
@@ -471,12 +517,14 @@ export class LightBulbWidget extends Disposable implements IContentWidget {
 				// it inline would overlay the cursor...
 				return this.hide();
 			}
+
 			effectiveColumnNumber = /^\S\s*$/.test(
 				model.getLineContent(effectiveLineNumber),
 			)
 				? 2
 				: 1;
 		}
+
 		this.state = new LightBulbState.Showing(actions, trigger, atPosition, {
 			position: {
 				lineNumber: effectiveLineNumber,
@@ -487,8 +535,10 @@ export class LightBulbWidget extends Disposable implements IContentWidget {
 
 		if (this._gutterDecorationID) {
 			this._removeGutterDecoration(this._gutterDecorationID);
+
 			this.gutterHide();
 		}
+
 		const validActions = actions.validActions;
 
 		const actionKind = actions.validActions[0].action.kind;
@@ -498,45 +548,61 @@ export class LightBulbWidget extends Disposable implements IContentWidget {
 
 			return;
 		}
+
 		this._editor.layoutContentWidget(this);
 	}
+
 	public hide(): void {
 		if (this.state === LightBulbState.Hidden) {
 			return;
 		}
+
 		this.state = LightBulbState.Hidden;
+
 		this._editor.layoutContentWidget(this);
 	}
+
 	public gutterHide(): void {
 		if (this.gutterState === LightBulbState.Hidden) {
 			return;
 		}
+
 		if (this._gutterDecorationID) {
 			this._removeGutterDecoration(this._gutterDecorationID);
 		}
+
 		this.gutterState = LightBulbState.Hidden;
 	}
+
 	private get state(): LightBulbState.State {
 		return this._state;
 	}
+
 	private set state(value) {
 		this._state = value;
+
 		this._updateLightBulbTitleAndIcon();
 	}
+
 	private get gutterState(): LightBulbState.State {
 		return this._gutterState;
 	}
+
 	private set gutterState(value) {
 		this._gutterState = value;
+
 		this._updateGutterLightBulbTitleAndIcon();
 	}
+
 	private _updateLightBulbTitleAndIcon(): void {
 		this._domNode.classList.remove(...this._iconClasses);
+
 		this._iconClasses = [];
 
 		if (this.state.type !== LightBulbState.Type.Showing) {
 			return;
 		}
+
 		let icon: ThemeIcon;
 
 		let autoRun = false;
@@ -558,14 +624,19 @@ export class LightBulbWidget extends Disposable implements IContentWidget {
 		} else {
 			icon = Codicon.lightBulb;
 		}
+
 		this._updateLightbulbTitle(this.state.actions.hasAutoFix, autoRun);
+
 		this._iconClasses = ThemeIcon.asClassNameArray(icon);
+
 		this._domNode.classList.add(...this._iconClasses);
 	}
+
 	private _updateGutterLightBulbTitleAndIcon(): void {
 		if (this.gutterState.type !== LightBulbState.Type.Showing) {
 			return;
 		}
+
 		let icon: ThemeIcon;
 
 		let autoRun = false;
@@ -587,6 +658,7 @@ export class LightBulbWidget extends Disposable implements IContentWidget {
 		} else {
 			icon = GUTTER_LIGHTBULB_ICON;
 		}
+
 		this._updateLightbulbTitle(
 			this.gutterState.actions.hasAutoFix,
 			autoRun,
@@ -598,6 +670,7 @@ export class LightBulbWidget extends Disposable implements IContentWidget {
 			glyphMargin: { position: GlyphMarginLane.Left },
 			stickiness: TrackedRangeStickiness.NeverGrowsWhenTypingAtEdges,
 		});
+
 		this.gutterDecoration = GUTTER_DECORATION;
 	}
 	/* Gutter Helper Functions */
@@ -607,6 +680,7 @@ export class LightBulbWidget extends Disposable implements IContentWidget {
 		if (!selection) {
 			return;
 		}
+
 		if (this._gutterDecorationID === undefined) {
 			this._addGutterDecoration(selection.startLineNumber);
 		} else {
@@ -616,6 +690,7 @@ export class LightBulbWidget extends Disposable implements IContentWidget {
 			);
 		}
 	}
+
 	private _addGutterDecoration(lineNumber: number) {
 		this._editor.changeDecorations(
 			(accessor: IModelDecorationsChangeAccessor) => {
@@ -626,14 +701,17 @@ export class LightBulbWidget extends Disposable implements IContentWidget {
 			},
 		);
 	}
+
 	private _removeGutterDecoration(decorationId: string) {
 		this._editor.changeDecorations(
 			(accessor: IModelDecorationsChangeAccessor) => {
 				accessor.removeDecoration(decorationId);
+
 				this._gutterDecorationID = undefined;
 			},
 		);
 	}
+
 	private _updateGutterDecoration(decorationId: string, lineNumber: number) {
 		this._editor.changeDecorations(
 			(accessor: IModelDecorationsChangeAccessor) => {
@@ -641,6 +719,7 @@ export class LightBulbWidget extends Disposable implements IContentWidget {
 					decorationId,
 					new Range(lineNumber, 0, lineNumber, 0),
 				);
+
 				accessor.changeDecorationOptions(
 					decorationId,
 					this.gutterDecoration,
@@ -648,10 +727,12 @@ export class LightBulbWidget extends Disposable implements IContentWidget {
 			},
 		);
 	}
+
 	private _updateLightbulbTitle(autoFix: boolean, autoRun: boolean): void {
 		if (this.state.type !== LightBulbState.Type.Showing) {
 			return;
 		}
+
 		if (autoRun) {
 			this.title = nls.localize(
 				"codeActionAutoRun",
@@ -674,6 +755,7 @@ export class LightBulbWidget extends Disposable implements IContentWidget {
 			this.title = nls.localize("codeAction", "Show Code Actions");
 		}
 	}
+
 	private set title(value: string) {
 		this._domNode.title = value;
 	}

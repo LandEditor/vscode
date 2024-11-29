@@ -24,8 +24,11 @@ export interface ITextureAtlasOptions {
 
 export class TextureAtlas extends Disposable {
 	private _colorMap?: string[];
+
 	private readonly _warmUpTask: MutableDisposable<IdleTaskQueue> = this._register(new MutableDisposable());
+
 	private readonly _warmedUpRasterizers = new Set<number>();
+
 	private readonly _allocatorType: AllocatorType;
 
 	/**
@@ -40,6 +43,7 @@ export class TextureAtlas extends Disposable {
 	 * much less frequently so as to not drop frames.
 	 */
 	private readonly _pages: TextureAtlasPage[] = [];
+
 	get pages(): IReadableTextureAtlasPage[] { return this._pages; }
 
 	readonly pageSize: number;
@@ -53,6 +57,7 @@ export class TextureAtlas extends Disposable {
 	private readonly _glyphPageIndex: GlyphMap<number> = new FourKeyMap();
 
 	private readonly _onDidDeleteGlyphs = this._register(new Emitter<void>());
+
 	readonly onDidDeleteGlyphs = this._onDidDeleteGlyphs.event;
 
 	constructor(
@@ -70,12 +75,14 @@ export class TextureAtlas extends Disposable {
 			if (this._colorMap) {
 				this.clear();
 			}
+
 			this._colorMap = this._themeService.getColorTheme().tokenColorMap;
 		}));
 
 		const dprFactor = Math.max(1, Math.floor(getActiveWindow().devicePixelRatio));
 
 		this.pageSize = Math.min(1024 * dprFactor, this._maxTextureSize);
+
 		this._initFirstPage();
 
 		this._register(toDisposable(() => dispose(this._pages)));
@@ -83,13 +90,16 @@ export class TextureAtlas extends Disposable {
 
 	private _initFirstPage() {
 		const firstPage = this._instantiationService.createInstance(TextureAtlasPage, 0, this.pageSize, this._allocatorType);
+
 		this._pages.push(firstPage);
 
 		// IMPORTANT: The first glyph on the first page must be an empty glyph such that zeroed out
 		// cells end up rendering nothing
 		// TODO: This currently means the first slab is for 0x0 glyphs and is wasted
 		const nullRasterizer = new GlyphRasterizer(1, '', 1);
+
 		firstPage.getGlyph(nullRasterizer, '', 0, 0);
+
 		nullRasterizer.dispose();
 	}
 
@@ -98,9 +108,13 @@ export class TextureAtlas extends Disposable {
 		for (const page of this._pages) {
 			page.dispose();
 		}
+
 		this._pages.length = 0;
+
 		this._glyphPageIndex.clear();
+
 		this._warmedUpRasterizers.clear();
+
 		this._warmUpTask.clear();
 
 		// Recreate first
@@ -118,6 +132,7 @@ export class TextureAtlas extends Disposable {
 		// Warm up common glyphs
 		if (!this._warmedUpRasterizers.has(rasterizer.id)) {
 			this._warmUpAtlas(rasterizer);
+
 			this._warmedUpRasterizers.add(rasterizer.id);
 		}
 
@@ -127,6 +142,7 @@ export class TextureAtlas extends Disposable {
 
 	private _tryGetGlyph(pageIndex: number, rasterizer: IGlyphRasterizer, chars: string, tokenMetadata: number, charMetadata: number): Readonly<ITextureAtlasPageGlyph> {
 		this._glyphPageIndex.set(chars, tokenMetadata, charMetadata, rasterizer.cacheKey, pageIndex);
+
 		return (
 			this._pages[pageIndex].getGlyph(rasterizer, chars, tokenMetadata, charMetadata)
 			?? (pageIndex + 1 < this._pages.length
@@ -140,8 +156,11 @@ export class TextureAtlas extends Disposable {
 		if (this._pages.length >= TextureAtlas.maximumPageCount) {
 			throw new Error(`Attempt to create a texture atlas page past the limit ${TextureAtlas.maximumPageCount}`);
 		}
+
 		this._pages.push(this._instantiationService.createInstance(TextureAtlasPage, this._pages.length, this.pageSize, this._allocatorType));
+
 		this._glyphPageIndex.set(chars, tokenMetadata, charMetadata, rasterizer.cacheKey, this._pages.length - 1);
+
 		return this._pages[this._pages.length - 1].getGlyph(rasterizer, chars, tokenMetadata, charMetadata)!;
 	}
 
@@ -159,10 +178,13 @@ export class TextureAtlas extends Disposable {
 	 */
 	private _warmUpAtlas(rasterizer: IGlyphRasterizer): void {
 		const colorMap = this._colorMap;
+
 		if (!colorMap) {
 			throw new BugIndicatingError('Cannot warm atlas without color map');
 		}
+
 		this._warmUpTask.value?.clear();
+
 		const taskQueue = this._warmUpTask.value = new IdleTaskQueue();
 		// Warm up using roughly the larger glyphs first to help optimize atlas allocation
 		// A-Z

@@ -26,13 +26,17 @@ const enum UpdateLinksOnFileMoveSetting {
 }
 interface RenameAction {
 	readonly oldUri: vscode.Uri;
+
 	readonly newUri: vscode.Uri;
 }
 class UpdateLinksOnFileRenameHandler extends Disposable {
 	private readonly _delayer = new Delayer(50);
+
 	private readonly _pendingRenames = new Set<RenameAction>();
+
 	public constructor(private readonly _client: MdLanguageClient) {
 		super();
+
 		this._register(
 			vscode.workspace.onDidRenameFiles(async (e) => {
 				await Promise.all(
@@ -63,8 +67,10 @@ class UpdateLinksOnFileRenameHandler extends Disposable {
 			}),
 		);
 	}
+
 	private async _flushRenames(): Promise<void> {
 		const renames = Array.from(this._pendingRenames);
+
 		this._pendingRenames.clear();
 
 		const result = await this._getEditsForFileRename(renames, noopToken);
@@ -77,12 +83,14 @@ class UpdateLinksOnFileRenameHandler extends Disposable {
 			}
 		}
 	}
+
 	private async _confirmActionWithUser(
 		newResources: readonly vscode.Uri[],
 	): Promise<boolean> {
 		if (!newResources.length) {
 			return false;
 		}
+
 		const config = vscode.workspace.getConfiguration(
 			"markdown",
 			newResources[0],
@@ -104,6 +112,7 @@ class UpdateLinksOnFileRenameHandler extends Disposable {
 				return false;
 		}
 	}
+
 	private async _shouldParticipateInLinkUpdate(
 		newUri: vscode.Uri,
 	): Promise<boolean> {
@@ -116,6 +125,7 @@ class UpdateLinksOnFileRenameHandler extends Disposable {
 		if (setting === UpdateLinksOnFileMoveSetting.Never) {
 			return false;
 		}
+
 		const externalGlob = config.get<string[]>(settingNames.include);
 
 		if (externalGlob) {
@@ -125,19 +135,23 @@ class UpdateLinksOnFileRenameHandler extends Disposable {
 				}
 			}
 		}
+
 		const stat = await vscode.workspace.fs.stat(newUri);
 
 		if (stat.type === vscode.FileType.Directory) {
 			return config.get<boolean>(settingNames.enableForDirectories, true);
 		}
+
 		return false;
 	}
+
 	private async _promptUser(
 		newResources: readonly vscode.Uri[],
 	): Promise<boolean> {
 		if (!newResources.length) {
 			return false;
 		}
+
 		const rejectItem: vscode.MessageItem = {
 			title: vscode.l10n.t("No"),
 			isCloseAffordance: true,
@@ -181,14 +195,17 @@ class UpdateLinksOnFileRenameHandler extends Disposable {
 			case acceptItem: {
 				return true;
 			}
+
 			case rejectItem: {
 				return false;
 			}
+
 			case alwaysItem: {
 				const config = vscode.workspace.getConfiguration(
 					"markdown",
 					newResources[0],
 				);
+
 				config.update(
 					settingNames.enabled,
 					UpdateLinksOnFileMoveSetting.Always,
@@ -197,11 +214,13 @@ class UpdateLinksOnFileRenameHandler extends Disposable {
 
 				return true;
 			}
+
 			case neverItem: {
 				const config = vscode.workspace.getConfiguration(
 					"markdown",
 					newResources[0],
 				);
+
 				config.update(
 					settingNames.enabled,
 					UpdateLinksOnFileMoveSetting.Never,
@@ -210,17 +229,20 @@ class UpdateLinksOnFileRenameHandler extends Disposable {
 
 				return false;
 			}
+
 			default: {
 				return false;
 			}
 		}
 	}
+
 	private async _getEditsForFileRename(
 		renames: readonly RenameAction[],
 		token: vscode.CancellationToken,
 	): Promise<
 		| {
 				edit: vscode.WorkspaceEdit;
+
 				resourcesBeingRenamed: vscode.Uri[];
 		  }
 		| undefined
@@ -236,6 +258,7 @@ class UpdateLinksOnFileRenameHandler extends Disposable {
 		if (!result?.edit.documentChanges?.length) {
 			return undefined;
 		}
+
 		const workspaceEdit = new vscode.WorkspaceEdit();
 
 		for (const change of result.edit
@@ -250,6 +273,7 @@ class UpdateLinksOnFileRenameHandler extends Disposable {
 				);
 			}
 		}
+
 		return {
 			edit: workspaceEdit,
 			resourcesBeingRenamed: result.participatingRenames.map((x) =>
@@ -257,6 +281,7 @@ class UpdateLinksOnFileRenameHandler extends Disposable {
 			),
 		};
 	}
+
 	private _getConfirmMessage(
 		start: string,
 		resourcesToConfirm: readonly vscode.Uri[],
@@ -264,7 +289,9 @@ class UpdateLinksOnFileRenameHandler extends Disposable {
 		const MAX_CONFIRM_FILES = 10;
 
 		const paths = [start];
+
 		paths.push("");
+
 		paths.push(
 			...resourcesToConfirm
 				.slice(0, MAX_CONFIRM_FILES)
@@ -283,10 +310,12 @@ class UpdateLinksOnFileRenameHandler extends Disposable {
 				);
 			}
 		}
+
 		paths.push("");
 
 		return paths.join("\n");
 	}
+
 	private _getConfigTargetScope(
 		config: vscode.WorkspaceConfiguration,
 		settingsName: string,
@@ -296,9 +325,11 @@ class UpdateLinksOnFileRenameHandler extends Disposable {
 		if (inspected?.workspaceFolderValue) {
 			return vscode.ConfigurationTarget.WorkspaceFolder;
 		}
+
 		if (inspected?.workspaceValue) {
 			return vscode.ConfigurationTarget.Workspace;
 		}
+
 		return vscode.ConfigurationTarget.Global;
 	}
 }

@@ -108,16 +108,24 @@ export class UserDataSyncDataViews extends Disposable {
 		private readonly userDataSyncService: IUserDataSyncService,
 	) {
 		super();
+
 		this.registerViews(container);
 	}
+
 	private registerViews(container: ViewContainer): void {
 		this.registerConflictsView(container);
+
 		this.registerActivityView(container, true);
+
 		this.registerMachinesView(container);
+
 		this.registerActivityView(container, false);
+
 		this.registerTroubleShootView(container);
+
 		this.registerExternalActivityView(container);
 	}
+
 	private registerConflictsView(container: ViewContainer): void {
 		const viewsRegistry = Registry.as<IViewsRegistry>(
 			Extensions.ViewsRegistry,
@@ -143,8 +151,10 @@ export class UserDataSyncDataViews extends Disposable {
 			collapsed: false,
 			order: 100,
 		};
+
 		viewsRegistry.registerViews([viewDescriptor], container);
 	}
+
 	private registerMachinesView(container: ViewContainer): void {
 		const id = `workbench.views.sync.machines`;
 
@@ -160,9 +170,13 @@ export class UserDataSyncDataViews extends Disposable {
 			UserDataSyncMachinesViewDataProvider,
 			treeView,
 		);
+
 		treeView.showRefreshAction = true;
+
 		treeView.canSelectMany = true;
+
 		treeView.dataProvider = dataProvider;
+
 		this._register(
 			Event.any(
 				this.userDataSyncMachinesService.onDidChange,
@@ -189,7 +203,9 @@ export class UserDataSyncDataViews extends Disposable {
 			collapsed: false,
 			order: 300,
 		};
+
 		viewsRegistry.registerViews([viewDescriptor], container);
+
 		this._register(
 			registerAction2(
 				class extends Action2 {
@@ -210,6 +226,7 @@ export class UserDataSyncDataViews extends Disposable {
 							},
 						});
 					}
+
 					async run(
 						accessor: ServicesAccessor,
 						handle: TreeViewItemHandleArg,
@@ -225,6 +242,7 @@ export class UserDataSyncDataViews extends Disposable {
 				},
 			),
 		);
+
 		this._register(
 			registerAction2(
 				class extends Action2 {
@@ -247,6 +265,7 @@ export class UserDataSyncDataViews extends Disposable {
 							},
 						});
 					}
+
 					async run(
 						accessor: ServicesAccessor,
 						handle: TreeViewItemHandleArg,
@@ -266,6 +285,7 @@ export class UserDataSyncDataViews extends Disposable {
 			),
 		);
 	}
+
 	private registerActivityView(
 		container: ViewContainer,
 		remote: boolean,
@@ -281,8 +301,11 @@ export class UserDataSyncDataViews extends Disposable {
 			id,
 			name.value,
 		);
+
 		treeView.showCollapseAllAction = true;
+
 		treeView.showRefreshAction = true;
+
 		treeView.dataProvider = remote
 			? this.instantiationService.createInstance(
 					RemoteUserDataSyncActivityViewDataProvider,
@@ -290,6 +313,7 @@ export class UserDataSyncDataViews extends Disposable {
 			: this.instantiationService.createInstance(
 					LocalUserDataSyncActivityViewDataProvider,
 				);
+
 		this._register(
 			Event.any(
 				this.userDataSyncEnablementService
@@ -320,9 +344,12 @@ export class UserDataSyncDataViews extends Disposable {
 			order: remote ? 200 : 400,
 			hideByDefault: !remote,
 		};
+
 		viewsRegistry.registerViews([viewDescriptor], container);
+
 		this.registerDataViewActions(id);
 	}
+
 	private registerExternalActivityView(container: ViewContainer): void {
 		const id = `workbench.views.sync.externalActivity`;
 
@@ -341,8 +368,11 @@ export class UserDataSyncDataViews extends Disposable {
 			id,
 			name.value,
 		);
+
 		treeView.showCollapseAllAction = false;
+
 		treeView.showRefreshAction = false;
+
 		treeView.dataProvider = dataProvider;
 
 		const viewsRegistry = Registry.as<IViewsRegistry>(
@@ -360,7 +390,9 @@ export class UserDataSyncDataViews extends Disposable {
 			collapsed: false,
 			hideByDefault: false,
 		};
+
 		viewsRegistry.registerViews([viewDescriptor], container);
+
 		this._register(
 			registerAction2(
 				class extends Action2 {
@@ -379,6 +411,7 @@ export class UserDataSyncDataViews extends Disposable {
 							},
 						});
 					}
+
 					async run(accessor: ServicesAccessor): Promise<void> {
 						const fileDialogService =
 							accessor.get(IFileDialogService);
@@ -396,13 +429,16 @@ export class UserDataSyncDataViews extends Disposable {
 						if (!result?.[0]) {
 							return;
 						}
+
 						dataProvider.activityDataResource = result[0];
+
 						await treeView.refresh();
 					}
 				},
 			),
 		);
 	}
+
 	private registerDataViewActions(viewId: string) {
 		this._register(
 			registerAction2(
@@ -426,6 +462,7 @@ export class UserDataSyncDataViews extends Disposable {
 							},
 						});
 					}
+
 					async run(
 						accessor: ServicesAccessor,
 						handle: TreeViewItemHandleArg,
@@ -437,6 +474,7 @@ export class UserDataSyncDataViews extends Disposable {
 						>JSON.parse(handle.$treeItemHandle);
 
 						const editorService = accessor.get(IEditorService);
+
 						await editorService.openEditor({
 							resource: URI.parse(resource),
 							options: { pinned: true },
@@ -445,6 +483,7 @@ export class UserDataSyncDataViews extends Disposable {
 				},
 			),
 		);
+
 		this._register(
 			registerAction2(
 				class extends Action2 {
@@ -467,6 +506,7 @@ export class UserDataSyncDataViews extends Disposable {
 							},
 						});
 					}
+
 					async run(
 						accessor: ServicesAccessor,
 						handle: TreeViewItemHandleArg,
@@ -476,6 +516,7 @@ export class UserDataSyncDataViews extends Disposable {
 						const { resource, comparableResource } = <
 							{
 								resource: string;
+
 								comparableResource: string;
 							}
 						>JSON.parse(handle.$treeItemHandle);
@@ -514,6 +555,7 @@ export class UserDataSyncDataViews extends Disposable {
 				},
 			),
 		);
+
 		this._register(
 			registerAction2(
 				class extends Action2 {
@@ -542,6 +584,7 @@ export class UserDataSyncDataViews extends Disposable {
 							},
 						});
 					}
+
 					async run(
 						accessor: ServicesAccessor,
 						handle: TreeViewItemHandleArg,
@@ -554,6 +597,7 @@ export class UserDataSyncDataViews extends Disposable {
 						const { syncResourceHandle, syncResource } = <
 							{
 								syncResourceHandle: UriDto<ISyncResourceHandle>;
+
 								syncResource: SyncResource;
 							}
 						>JSON.parse(handle.$treeItemHandle);
@@ -584,6 +628,7 @@ export class UserDataSyncDataViews extends Disposable {
 			),
 		);
 	}
+
 	private registerTroubleShootView(container: ViewContainer): void {
 		const id = `workbench.views.sync.troubleshoot`;
 
@@ -598,7 +643,9 @@ export class UserDataSyncDataViews extends Disposable {
 		const dataProvider = this.instantiationService.createInstance(
 			UserDataSyncTroubleshootViewDataProvider,
 		);
+
 		treeView.showRefreshAction = true;
+
 		treeView.dataProvider = dataProvider;
 
 		const viewsRegistry = Registry.as<IViewsRegistry>(
@@ -617,13 +664,16 @@ export class UserDataSyncDataViews extends Disposable {
 			order: 500,
 			hideByDefault: true,
 		};
+
 		viewsRegistry.registerViews([viewDescriptor], container);
 	}
 }
 type Profile = IUserDataProfile | ISyncUserDataProfile;
 interface ISyncResourceHandle extends IResourceHandle {
 	profileId?: string;
+
 	syncResource: SyncResource;
+
 	previous?: IResourceHandle;
 }
 interface SyncResourceHandleTreeItem extends ITreeItem {
@@ -654,11 +704,13 @@ abstract class UserDataSyncActivityViewDataProvider<T = Profile>
 		@IUserDataProfilesService
 		protected readonly userDataProfilesService: IUserDataProfilesService,
 	) {}
+
 	async getChildren(element?: ITreeItem): Promise<ITreeItem[]> {
 		try {
 			if (!element) {
 				return await this.getRoots();
 			}
+
 			if (
 				(<ProfileTreeItem>element).profile ||
 				element.handle ===
@@ -676,18 +728,22 @@ abstract class UserDataSyncActivityViewDataProvider<T = Profile>
 						)),
 					);
 				}
+
 				return await promise;
 			}
+
 			if ((<SyncResourceHandleTreeItem>element).syncResourceHandle) {
 				return await this.getChildrenForSyncResourceTreeItem(
 					<SyncResourceHandleTreeItem>element,
 				);
 			}
+
 			return [];
 		} catch (error) {
 			if (!(error instanceof UserDataSyncError)) {
 				error = UserDataSyncError.toUserDataSyncError(error);
 			}
+
 			if (
 				error instanceof UserDataSyncError &&
 				error.code === UserDataSyncErrorCode.IncompatibleRemoteContent
@@ -711,9 +767,11 @@ abstract class UserDataSyncActivityViewDataProvider<T = Profile>
 			} else {
 				this.notificationService.error(error);
 			}
+
 			throw error;
 		}
 	}
+
 	private async getRoots(): Promise<ITreeItem[]> {
 		this.syncResourceHandlesByProfile.clear();
 
@@ -729,12 +787,15 @@ abstract class UserDataSyncActivityViewDataProvider<T = Profile>
 				},
 				collapsibleState: TreeItemCollapsibleState.Expanded,
 			};
+
 			roots.push(profileTreeItem);
 		} else {
 			const defaultSyncResourceHandles =
 				await this.getSyncResourceHandles();
+
 			roots.push(...defaultSyncResourceHandles);
 		}
+
 		for (const profile of profiles) {
 			const profileTreeItem: ProfileTreeItem = {
 				handle: profile.id,
@@ -742,10 +803,13 @@ abstract class UserDataSyncActivityViewDataProvider<T = Profile>
 				collapsibleState: TreeItemCollapsibleState.Collapsed,
 				profile,
 			};
+
 			roots.push(profileTreeItem);
 		}
+
 		return roots;
 	}
+
 	protected async getChildrenForSyncResourceTreeItem(
 		element: SyncResourceHandleTreeItem,
 	): Promise<ITreeItem[]> {
@@ -803,6 +867,7 @@ abstract class UserDataSyncActivityViewDataProvider<T = Profile>
 			};
 		});
 	}
+
 	private async getSyncResourceHandles(
 		profile?: T,
 	): Promise<SyncResourceHandleTreeItem[]> {
@@ -832,6 +897,7 @@ abstract class UserDataSyncActivityViewDataProvider<T = Profile>
 				syncResourceHandle,
 				syncResource: syncResourceHandle.syncResource,
 			});
+
 			treeItems.push({
 				handle,
 				collapsibleState: TreeItemCollapsibleState.Collapsed,
@@ -845,9 +911,12 @@ abstract class UserDataSyncActivityViewDataProvider<T = Profile>
 				contextValue: `sync-resource-${syncResourceHandle.syncResource}`,
 			});
 		}
+
 		return treeItems;
 	}
+
 	protected abstract getProfiles(): Promise<Profile[]>;
+
 	protected abstract getResourceHandles(
 		syncResource: SyncResource,
 		profile?: T,
@@ -863,6 +932,7 @@ class LocalUserDataSyncActivityViewDataProvider extends UserDataSyncActivityView
 			profile,
 		);
 	}
+
 	protected async getProfiles(): Promise<ISyncUserDataProfile[]> {
 		return this.userDataProfilesService.profiles
 			.filter((p) => !p.isDefault)
@@ -901,19 +971,24 @@ class RemoteUserDataSyncActivityViewDataProvider extends UserDataSyncActivityVie
 			userDataProfilesService,
 		);
 	}
+
 	override async getChildren(element?: ITreeItem): Promise<ITreeItem[]> {
 		if (!element) {
 			this.machinesPromise = undefined;
 		}
+
 		return super.getChildren(element);
 	}
+
 	private getMachines(): Promise<IUserDataSyncMachine[]> {
 		if (this.machinesPromise === undefined) {
 			this.machinesPromise =
 				this.userDataSyncMachinesService.getMachines();
 		}
+
 		return this.machinesPromise;
 	}
+
 	protected getResourceHandles(
 		syncResource: SyncResource,
 		profile?: ISyncUserDataProfile,
@@ -923,9 +998,11 @@ class RemoteUserDataSyncActivityViewDataProvider extends UserDataSyncActivityVie
 			profile,
 		);
 	}
+
 	protected getProfiles(): Promise<ISyncUserDataProfile[]> {
 		return this.userDataSyncResourceProviderService.getRemoteSyncedProfiles();
 	}
+
 	protected override async getChildrenForSyncResourceTreeItem(
 		element: SyncResourceHandleTreeItem,
 	): Promise<ITreeItem[]> {
@@ -943,6 +1020,7 @@ class RemoteUserDataSyncActivityViewDataProvider extends UserDataSyncActivityVie
 				const machines = await this.getMachines();
 
 				const machine = machines.find(({ id }) => id === machineId);
+
 				children[0].description = machine?.isCurrent
 					? localize(
 							{
@@ -954,11 +1032,13 @@ class RemoteUserDataSyncActivityViewDataProvider extends UserDataSyncActivityVie
 					: machine?.name;
 			}
 		}
+
 		return children;
 	}
 }
 class ExtractedUserDataSyncActivityViewDataProvider extends UserDataSyncActivityViewDataProvider<ISyncUserDataProfile> {
 	private machinesPromise: Promise<IUserDataSyncMachine[]> | undefined;
+
 	private activityDataLocation: URI | undefined;
 
 	constructor(
@@ -989,6 +1069,7 @@ class ExtractedUserDataSyncActivityViewDataProvider extends UserDataSyncActivity
 			userDataProfilesService,
 		);
 	}
+
 	override async getChildren(element?: ITreeItem): Promise<ITreeItem[]> {
 		if (!element) {
 			this.machinesPromise = undefined;
@@ -996,6 +1077,7 @@ class ExtractedUserDataSyncActivityViewDataProvider extends UserDataSyncActivity
 			if (!this.activityDataResource) {
 				return [];
 			}
+
 			const stat = await this.fileService.resolve(
 				this.activityDataResource,
 			);
@@ -1018,14 +1100,17 @@ class ExtractedUserDataSyncActivityViewDataProvider extends UserDataSyncActivity
 				} catch (e) {
 					/* ignore */
 				}
+
 				await this.userDataSyncService.extractActivityData(
 					this.activityDataResource,
 					this.activityDataLocation,
 				);
 			}
 		}
+
 		return super.getChildren(element);
 	}
+
 	protected getResourceHandles(
 		syncResource: SyncResource,
 		profile: ISyncUserDataProfile | undefined,
@@ -1036,11 +1121,13 @@ class ExtractedUserDataSyncActivityViewDataProvider extends UserDataSyncActivity
 			this.activityDataLocation,
 		);
 	}
+
 	protected override async getProfiles(): Promise<ISyncUserDataProfile[]> {
 		return this.userDataSyncResourceProviderService.getLocalSyncedProfiles(
 			this.activityDataLocation,
 		);
 	}
+
 	protected override async getChildrenForSyncResourceTreeItem(
 		element: SyncResourceHandleTreeItem,
 	): Promise<ITreeItem[]> {
@@ -1058,6 +1145,7 @@ class ExtractedUserDataSyncActivityViewDataProvider extends UserDataSyncActivity
 				const machines = await this.getMachines();
 
 				const machine = machines.find(({ id }) => id === machineId);
+
 				children[0].description = machine?.isCurrent
 					? localize(
 							{
@@ -1069,8 +1157,10 @@ class ExtractedUserDataSyncActivityViewDataProvider extends UserDataSyncActivity
 					: machine?.name;
 			}
 		}
+
 		return children;
 	}
+
 	private getMachines(): Promise<IUserDataSyncMachine[]> {
 		if (this.machinesPromise === undefined) {
 			this.machinesPromise =
@@ -1078,6 +1168,7 @@ class ExtractedUserDataSyncActivityViewDataProvider extends UserDataSyncActivity
 					this.activityDataLocation,
 				);
 		}
+
 		return this.machinesPromise;
 	}
 }
@@ -1097,15 +1188,19 @@ class UserDataSyncMachinesViewDataProvider implements ITreeViewDataProvider {
 		@IUserDataSyncWorkbenchService
 		private readonly userDataSyncWorkbenchService: IUserDataSyncWorkbenchService,
 	) {}
+
 	async getChildren(element?: ITreeItem): Promise<ITreeItem[]> {
 		if (!element) {
 			this.machinesPromise = undefined;
 		}
+
 		try {
 			let machines = await this.getMachines();
+
 			machines = machines
 				.filter((m) => !m.disabled)
 				.sort((m1, m2) => (m1.isCurrent ? -1 : 1));
+
 			this.treeView.message = machines.length
 				? undefined
 				: localize("no machines", "No Machines");
@@ -1132,13 +1227,16 @@ class UserDataSyncMachinesViewDataProvider implements ITreeViewDataProvider {
 			return [];
 		}
 	}
+
 	private getMachines(): Promise<IUserDataSyncMachine[]> {
 		if (this.machinesPromise === undefined) {
 			this.machinesPromise =
 				this.userDataSyncMachinesService.getMachines();
 		}
+
 		return this.machinesPromise;
 	}
+
 	async disable(machineIds: string[]): Promise<boolean> {
 		const machines = await this.getMachines();
 
@@ -1155,6 +1253,7 @@ class UserDataSyncMachinesViewDataProvider implements ITreeViewDataProvider {
 				),
 			);
 		}
+
 		const result = await this.dialogService.confirm({
 			type: "info",
 			message:
@@ -1177,9 +1276,11 @@ class UserDataSyncMachinesViewDataProvider implements ITreeViewDataProvider {
 		if (!result.confirmed) {
 			return false;
 		}
+
 		if (machinesToDisable.some((machine) => machine.isCurrent)) {
 			await this.userDataSyncWorkbenchService.turnoff(false);
 		}
+
 		const otherMachinesToDisable: [string, boolean][] = machinesToDisable
 			.filter((machine) => !machine.isCurrent)
 			.map((machine) => [machine.id, false]);
@@ -1189,19 +1290,24 @@ class UserDataSyncMachinesViewDataProvider implements ITreeViewDataProvider {
 				otherMachinesToDisable,
 			);
 		}
+
 		return true;
 	}
+
 	async rename(machineId: string): Promise<boolean> {
 		const disposableStore = new DisposableStore();
 
 		const inputBox = disposableStore.add(
 			this.quickInputService.createInputBox(),
 		);
+
 		inputBox.placeholder = localize(
 			"placeholder",
 			"Enter the name of the machine",
 		);
+
 		inputBox.busy = true;
+
 		inputBox.show();
 
 		const machines = await this.getMachines();
@@ -1210,6 +1316,7 @@ class UserDataSyncMachinesViewDataProvider implements ITreeViewDataProvider {
 
 		if (!machine) {
 			inputBox.hide();
+
 			disposableStore.dispose();
 
 			throw new Error(
@@ -1220,7 +1327,9 @@ class UserDataSyncMachinesViewDataProvider implements ITreeViewDataProvider {
 				),
 			);
 		}
+
 		inputBox.busy = false;
+
 		inputBox.value = machine.name;
 
 		const validateMachineName = (machineName: string): string | null => {
@@ -1233,6 +1342,7 @@ class UserDataSyncMachinesViewDataProvider implements ITreeViewDataProvider {
 				? machineName
 				: null;
 		};
+
 		disposableStore.add(
 			inputBox.onDidChangeValue(
 				() =>
@@ -1251,6 +1361,7 @@ class UserDataSyncMachinesViewDataProvider implements ITreeViewDataProvider {
 			disposableStore.add(
 				inputBox.onDidAccept(async () => {
 					const machineName = validateMachineName(inputBox.value);
+
 					disposableStore.dispose();
 
 					if (machineName && machineName !== machine.name) {
@@ -1259,6 +1370,7 @@ class UserDataSyncMachinesViewDataProvider implements ITreeViewDataProvider {
 								machineId,
 								machineName,
 							);
+
 							c(true);
 						} catch (error) {
 							e(error);
@@ -1284,6 +1396,7 @@ class UserDataSyncTroubleshootViewDataProvider
 		@IUriIdentityService
 		private readonly uriIdentityService: IUriIdentityService,
 	) {}
+
 	async getChildren(element?: ITreeItem): Promise<ITreeItem[]> {
 		if (!element) {
 			return [
@@ -1306,14 +1419,18 @@ class UserDataSyncTroubleshootViewDataProvider
 				},
 			];
 		}
+
 		if (element.handle === "LAST_SYNC_STATES") {
 			return this.getLastSyncStates();
 		}
+
 		if (element.handle === "SYNC_LOGS") {
 			return this.getSyncLogs();
 		}
+
 		return [];
 	}
+
 	private async getLastSyncStates(): Promise<ITreeItem[]> {
 		const result: ITreeItem[] = [];
 
@@ -1339,8 +1456,10 @@ class UserDataSyncTroubleshootViewDataProvider
 				});
 			}
 		}
+
 		return result;
 	}
+
 	private async getSyncLogs(): Promise<ITreeItem[]> {
 		const logResources =
 			await this.userDataSyncWorkbenchService.getAllLogResources();
@@ -1350,6 +1469,7 @@ class UserDataSyncTroubleshootViewDataProvider
 		for (const syncLogResource of logResources) {
 			const logFolder =
 				this.uriIdentityService.extUri.dirname(syncLogResource);
+
 			result.push({
 				handle: syncLogResource.toString(),
 				collapsibleState: TreeItemCollapsibleState.None,
@@ -1376,6 +1496,7 @@ class UserDataSyncTroubleshootViewDataProvider
 				},
 			});
 		}
+
 		return result;
 	}
 }

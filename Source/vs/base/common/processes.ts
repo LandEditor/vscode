@@ -53,7 +53,9 @@ export const enum Source {
  */
 export interface SuccessData {
 	error?: Error;
+
 	cmdCode?: number;
+
 	terminated?: boolean;
 }
 /**
@@ -61,13 +63,18 @@ export interface SuccessData {
  */
 export interface ErrorData {
 	error?: Error;
+
 	terminated?: boolean;
+
 	stdout?: string;
+
 	stderr?: string;
 }
 export interface TerminateResponse {
 	success: boolean;
+
 	code?: TerminateResponseCode;
+
 	error?: any;
 }
 export const enum TerminateResponseCode {
@@ -78,11 +85,17 @@ export const enum TerminateResponseCode {
 }
 export interface ProcessItem {
 	name: string;
+
 	cmd: string;
+
 	pid: number;
+
 	ppid: number;
+
 	load: number;
+
 	mem: number;
+
 	children?: ProcessItem[];
 }
 /**
@@ -106,6 +119,7 @@ export function sanitizeProcessEnvironment(
 	];
 
 	const envKeys = Object.keys(env);
+
 	envKeys
 		.filter((key) => !set[key])
 		.forEach((envKey) => {

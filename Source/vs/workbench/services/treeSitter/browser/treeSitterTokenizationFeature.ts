@@ -65,6 +65,7 @@ class TreeSitterTokenizationFeature
 	implements ITreeSitterTokenizationFeature
 {
 	public _serviceBrand: undefined;
+
 	private readonly _tokenizersRegistrations: DisposableMap<
 		string,
 		DisposableStore
@@ -81,6 +82,7 @@ class TreeSitterTokenizationFeature
 		super();
 
 		this._handleGrammarsExtPoint();
+
 		this._register(
 			this._configurationService.onDidChangeConfiguration((e) => {
 				if (
@@ -116,17 +118,22 @@ class TreeSitterTokenizationFeature
 				);
 
 				const disposableStore = new DisposableStore();
+
 				disposableStore.add(lazyTokenizationSupport);
+
 				disposableStore.add(
 					TreeSitterTokenizationRegistry.registerFactory(
 						languageId,
 						lazyTokenizationSupport,
 					),
 				);
+
 				this._tokenizersRegistrations.set(languageId, disposableStore);
+
 				TreeSitterTokenizationRegistry.getOrCreate(languageId);
 			}
 		}
+
 		const languagesToUnregister = [
 			...this._tokenizersRegistrations.keys(),
 		].filter((languageId) => !setting.includes(languageId));
@@ -167,15 +174,21 @@ class TreeSitterTokenizationSupport
 	implements ITreeSitterTokenizationSupport
 {
 	private _query: Parser.Query | undefined;
+
 	private readonly _onDidChangeTokens: Emitter<{
 		textModel: ITextModel;
+
 		changes: IModelTokensChangedEvent;
 	}> = new Emitter();
+
 	public readonly onDidChangeTokens: Event<{
 		textModel: ITextModel;
+
 		changes: IModelTokensChangedEvent;
 	}> = this._onDidChangeTokens.event;
+
 	private _colorThemeData!: ColorThemeData;
+
 	private _languageAddedListener: IDisposable | undefined;
 
 	constructor(
@@ -187,15 +200,18 @@ class TreeSitterTokenizationSupport
 		@IThemeService private readonly _themeService: IThemeService,
 	) {
 		super();
+
 		this._register(
 			Event.runAndSubscribe(
 				this._themeService.onDidColorThemeChange,
 				() => this.reset(),
 			),
 		);
+
 		this._register(
 			this._treeSitterService.onDidUpdateTree((e) => {
 				const maxLine = e.textModel.getLineCount();
+
 				this._onDidChangeTokens.fire({
 					textModel: e.textModel,
 					changes: {
@@ -236,10 +252,13 @@ class TreeSitterTokenizationSupport
 						}),
 					);
 				}
+
 				return;
 			}
+
 			this._query = language.query(this._queries);
 		}
+
 		return this._query;
 	}
 
@@ -348,6 +367,7 @@ class TreeSitterTokenizationSupport
 
 		const endOffsetsAndScopes: { endOffset: number; scopes: string[] }[] =
 			Array(captures.length);
+
 		endOffsetsAndScopes.fill({ endOffset: 0, scopes: [] });
 
 		let tokenIndex = 0;
@@ -367,7 +387,9 @@ class TreeSitterTokenizationSupport
 
 		for (
 			let captureIndex = 0;
+
 			captureIndex < captures.length;
+
 			captureIndex++
 		) {
 			const capture = captures[captureIndex];
@@ -395,6 +417,7 @@ class TreeSitterTokenizationSupport
 			} else {
 				previousTokenEnd = tokenStartIndex - lineStartOffset - 1;
 			}
+
 			const intermediateTokenOffset =
 				lineRelativeOffset - currentTokenLength;
 
@@ -407,6 +430,7 @@ class TreeSitterTokenizationSupport
 					endOffset: intermediateTokenOffset,
 					scopes: [],
 				};
+
 				tokenIndex++;
 
 				increaseSizeOfTokensByOneToken();
@@ -417,6 +441,7 @@ class TreeSitterTokenizationSupport
 					endOffset: lineRelativeOffset,
 					scopes: [capture.name],
 				};
+
 				tokenIndex++;
 			};
 
@@ -446,10 +471,13 @@ class TreeSitterTokenizationSupport
 					addCurrentTokenToArray();
 					// Add the rest of the previous token after the current token
 					increaseSizeOfTokensByOneToken();
+
 					endOffsetsAndScopes[tokenIndex].endOffset =
 						originalPreviousTokenEndOffset;
+
 					endOffsetsAndScopes[tokenIndex].scopes =
 						endOffsetsAndScopes[tokenIndex - 2].scopes;
+
 					tokenIndex++;
 				}
 			} else {
@@ -464,10 +492,14 @@ class TreeSitterTokenizationSupport
 			lineLength
 		) {
 			increaseSizeOfTokensByOneToken();
+
 			endOffsetsAndScopes[tokenIndex].endOffset = lineLength - 1;
+
 			tokenIndex++;
 		}
+
 		const captureTime = stopwatch.elapsed();
+
 		stopwatch.reset();
 
 		const tokens: Uint32Array = new Uint32Array(tokenIndex * 2);
@@ -478,13 +510,16 @@ class TreeSitterTokenizationSupport
 			if (token.endOffset === 0 && token.scopes.length === 0) {
 				break;
 			}
+
 			tokens[i * 2] = token.endOffset;
+
 			tokens[i * 2 + 1] = findMetadata(
 				this._colorThemeData,
 				token.scopes,
 				encodedLanguageId,
 			);
 		}
+
 		const metadataTime = stopwatch.elapsed();
 
 		return { result: tokens, captureTime, metadataTime };
@@ -492,7 +527,9 @@ class TreeSitterTokenizationSupport
 
 	override dispose() {
 		super.dispose();
+
 		this._query?.delete();
+
 		this._query = undefined;
 	}
 }

@@ -17,6 +17,7 @@ import { ResourceMap } from "../utils/resourceMap";
 
 interface FileConfiguration {
 	readonly formatOptions: Proto.FormatCodeSettings;
+
 	readonly preferences: Proto.UserPreferences;
 }
 
@@ -43,9 +44,11 @@ export default class FileConfigurationManager extends Disposable {
 		onCaseInsensitiveFileSystem: boolean,
 	) {
 		super();
+
 		this.formatOptions = new ResourceMap(undefined, {
 			onCaseInsensitiveFileSystem,
 		});
+
 		vscode.workspace.onDidCloseTextDocument(
 			(textDocument) => {
 				// When a document gets closed delete the cached formatting options.
@@ -163,6 +166,7 @@ export default class FileConfigurationManager extends Disposable {
 			file: undefined /*global*/,
 			...this.getFileOptions(document, formattingOptions),
 		};
+
 		await this.client.execute("configure", args, token);
 	}
 
@@ -455,14 +459,20 @@ function withDefaultAsUndefined<T, O extends T>(
 export class InlayHintSettingNames {
 	static readonly parameterNamesSuppressWhenArgumentMatchesName =
 		"inlayHints.parameterNames.suppressWhenArgumentMatchesName";
+
 	static readonly parameterNamesEnabled = "inlayHints.parameterTypes.enabled";
+
 	static readonly variableTypesEnabled = "inlayHints.variableTypes.enabled";
+
 	static readonly variableTypesSuppressWhenTypeMatchesName =
 		"inlayHints.variableTypes.suppressWhenTypeMatchesName";
+
 	static readonly propertyDeclarationTypesEnabled =
 		"inlayHints.propertyDeclarationTypes.enabled";
+
 	static readonly functionLikeReturnTypesEnabled =
 		"inlayHints.functionLikeReturnTypes.enabled";
+
 	static readonly enumMemberValuesEnabled =
 		"inlayHints.enumMemberValues.enabled";
 }

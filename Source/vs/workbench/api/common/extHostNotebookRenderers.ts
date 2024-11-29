@@ -20,9 +20,11 @@ export class ExtHostNotebookRenderers implements ExtHostNotebookRenderersShape {
 		string /* rendererId */,
 		Emitter<{
 			editor: vscode.NotebookEditor;
+
 			message: any;
 		}>
 	>();
+
 	private readonly proxy: MainThreadNotebookRenderersShape;
 
 	constructor(
@@ -33,16 +35,19 @@ export class ExtHostNotebookRenderers implements ExtHostNotebookRenderersShape {
 			MainContext.MainThreadNotebookRenderers,
 		);
 	}
+
 	public $postRendererMessage(
 		editorId: string,
 		rendererId: string,
 		message: unknown,
 	): void {
 		const editor = this._extHostNotebook.getEditorById(editorId);
+
 		this._rendererMessageEmitters
 			.get(rendererId)
 			?.fire({ editor: editor.apiEditor, message });
 	}
+
 	public createRendererMessaging(
 		manifest: IExtensionDescription,
 		rendererId: string,
@@ -56,6 +61,7 @@ export class ExtHostNotebookRenderers implements ExtHostNotebookRenderersShape {
 				`Extensions may only call createRendererMessaging() for renderers they contribute (got ${rendererId})`,
 			);
 		}
+
 		const messaging: vscode.NotebookRendererMessaging = {
 			onDidReceiveMessage: (listener, thisArg, disposables) => {
 				return this.getOrCreateEmitterFor(rendererId).event(
@@ -69,6 +75,7 @@ export class ExtHostNotebookRenderers implements ExtHostNotebookRenderersShape {
 					// back compat for swapped args
 					[message, editorOrAlias] = [editorOrAlias, message];
 				}
+
 				const extHostEditor =
 					editorOrAlias &&
 					ExtHostNotebookEditor.apiEditorsToExtHost.get(
@@ -85,18 +92,22 @@ export class ExtHostNotebookRenderers implements ExtHostNotebookRenderersShape {
 
 		return messaging;
 	}
+
 	private getOrCreateEmitterFor(rendererId: string) {
 		let emitter = this._rendererMessageEmitters.get(rendererId);
 
 		if (emitter) {
 			return emitter;
 		}
+
 		emitter = new Emitter({
 			onDidRemoveLastListener: () => {
 				emitter?.dispose();
+
 				this._rendererMessageEmitters.delete(rendererId);
 			},
 		});
+
 		this._rendererMessageEmitters.set(rendererId, emitter);
 
 		return emitter;

@@ -38,17 +38,21 @@ export class EncryptionMainService implements IEncryptionMainService {
 			this.logService.trace(
 				"[EncryptionMainService] setting usePlainTextEncryption to true...",
 			);
+
 			safeStorage.setUsePlainTextEncryption?.(true);
+
 			this.logService.trace(
 				"[EncryptionMainService] set usePlainTextEncryption to true",
 			);
 		}
 	}
+
 	async encrypt(value: string): Promise<string> {
 		this.logService.trace("[EncryptionMainService] Encrypting value...");
 
 		try {
 			const result = JSON.stringify(safeStorage.encryptString(value));
+
 			this.logService.trace("[EncryptionMainService] Encrypted value.");
 
 			return result;
@@ -58,6 +62,7 @@ export class EncryptionMainService implements IEncryptionMainService {
 			throw e;
 		}
 	}
+
 	async decrypt(value: string): Promise<string> {
 		let parsedValue: {
 			data: string;
@@ -71,12 +76,15 @@ export class EncryptionMainService implements IEncryptionMainService {
 					`[EncryptionMainService] Invalid encrypted value: ${value}`,
 				);
 			}
+
 			const bufferToDecrypt = Buffer.from(parsedValue.data);
+
 			this.logService.trace(
 				"[EncryptionMainService] Decrypting value...",
 			);
 
 			const result = safeStorage.decryptString(bufferToDecrypt);
+
 			this.logService.trace("[EncryptionMainService] Decrypted value.");
 
 			return result;
@@ -86,12 +94,14 @@ export class EncryptionMainService implements IEncryptionMainService {
 			throw e;
 		}
 	}
+
 	isEncryptionAvailable(): Promise<boolean> {
 		this.logService.trace(
 			"[EncryptionMainService] Checking if encryption is available...",
 		);
 
 		const result = safeStorage.isEncryptionAvailable();
+
 		this.logService.trace(
 			"[EncryptionMainService] Encryption is available: ",
 			result,
@@ -99,13 +109,16 @@ export class EncryptionMainService implements IEncryptionMainService {
 
 		return Promise.resolve(result);
 	}
+
 	getKeyStorageProvider(): Promise<KnownStorageProvider> {
 		if (isWindows) {
 			return Promise.resolve(KnownStorageProvider.dplib);
 		}
+
 		if (isMacintosh) {
 			return Promise.resolve(KnownStorageProvider.keychainAccess);
 		}
+
 		if (safeStorage.getSelectedStorageBackend) {
 			try {
 				this.logService.trace(
@@ -114,6 +127,7 @@ export class EncryptionMainService implements IEncryptionMainService {
 
 				const result =
 					safeStorage.getSelectedStorageBackend() as KnownStorageProvider;
+
 				this.logService.trace(
 					"[EncryptionMainService] Selected storage backend: ",
 					result,
@@ -124,26 +138,33 @@ export class EncryptionMainService implements IEncryptionMainService {
 				this.logService.error(e);
 			}
 		}
+
 		return Promise.resolve(KnownStorageProvider.unknown);
 	}
+
 	async setUsePlainTextEncryption(): Promise<void> {
 		if (isWindows) {
 			throw new Error(
 				"Setting plain text encryption is not supported on Windows.",
 			);
 		}
+
 		if (isMacintosh) {
 			throw new Error(
 				"Setting plain text encryption is not supported on macOS.",
 			);
 		}
+
 		if (!safeStorage.setUsePlainTextEncryption) {
 			throw new Error("Setting plain text encryption is not supported.");
 		}
+
 		this.logService.trace(
 			"[EncryptionMainService] Setting usePlainTextEncryption to true...",
 		);
+
 		safeStorage.setUsePlainTextEncryption(true);
+
 		this.logService.trace(
 			"[EncryptionMainService] Set usePlainTextEncryption to true",
 		);

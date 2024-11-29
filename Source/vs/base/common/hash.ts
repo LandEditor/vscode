@@ -23,6 +23,7 @@ export function doHash(obj: any, hashVal: number): number {
 			} else if (Array.isArray(obj)) {
 				return arrayHash(obj, hashVal);
 			}
+
 			return objectHash(obj, hashVal);
 
 		case "string":
@@ -53,6 +54,7 @@ export function stringHash(s: string, hashVal: number) {
 	for (let i = 0, length = s.length; i < length; i++) {
 		hashVal = numberHash(s.charCodeAt(i), hashVal);
 	}
+
 	return hashVal;
 }
 function arrayHash(arr: any[], initialHashVal: number): number {
@@ -79,10 +81,12 @@ export const hashAsync = (input: string | ArrayBufferView | VSBuffer) => {
 	// StringSHA1 is faster for small string input, use it since we have it:
 	if (typeof input === "string" && input.length < 250) {
 		const sha = new StringSHA1();
+
 		sha.update(input);
 
 		return Promise.resolve(sha.digest());
 	}
+
 	let buff: ArrayBufferView;
 
 	if (typeof input === "string") {
@@ -92,6 +96,7 @@ export const hashAsync = (input: string | ArrayBufferView | VSBuffer) => {
 	} else {
 		buff = input;
 	}
+
 	return crypto.subtle.digest("sha-1", buff).then(toHexString);
 };
 
@@ -122,6 +127,7 @@ function toHexString(
 			.map((b) => b.toString(16).padStart(2, "0"))
 			.join("");
 	}
+
 	return (bufferOrValue >>> 0).toString(16).padStart(bitsize / 4, "0");
 }
 /**
@@ -132,33 +138,50 @@ function toHexString(
 export class StringSHA1 {
 	private static _bigBlock32 = new DataView(new ArrayBuffer(320)); // 80 * 4 = 320
 	private _h0 = 0x67452301;
+
 	private _h1 = 0xefcdab89;
+
 	private _h2 = 0x98badcfe;
+
 	private _h3 = 0x10325476;
+
 	private _h4 = 0xc3d2e1f0;
+
 	private readonly _buff: Uint8Array;
+
 	private readonly _buffDV: DataView;
+
 	private _buffLen: number;
+
 	private _totalLen: number;
+
 	private _leftoverHighSurrogate: number;
+
 	private _finished: boolean;
 
 	constructor() {
 		this._buff = new Uint8Array(
 			SHA1Constant.BLOCK_SIZE + 3 /* to fit any utf-8 */,
 		);
+
 		this._buffDV = new DataView(this._buff.buffer);
+
 		this._buffLen = 0;
+
 		this._totalLen = 0;
+
 		this._leftoverHighSurrogate = 0;
+
 		this._finished = false;
 	}
+
 	public update(str: string): void {
 		const strLen = str.length;
 
 		if (strLen === 0) {
 			return;
 		}
+
 		const buff = this._buff;
 
 		let buffLen = this._buffLen;
@@ -171,12 +194,16 @@ export class StringSHA1 {
 
 		if (leftoverHighSurrogate !== 0) {
 			charCode = leftoverHighSurrogate;
+
 			offset = -1;
+
 			leftoverHighSurrogate = 0;
 		} else {
 			charCode = str.charCodeAt(0);
+
 			offset = 0;
 		}
+
 		while (true) {
 			let codePoint = charCode;
 
@@ -186,6 +213,7 @@ export class StringSHA1 {
 
 					if (strings.isLowSurrogate(nextCharCode)) {
 						offset++;
+
 						codePoint = strings.computeCodePoint(
 							charCode,
 							nextCharCode,
@@ -204,7 +232,9 @@ export class StringSHA1 {
 				// illegal => unicode replacement character
 				codePoint = SHA1Constant.UNICODE_REPLACEMENT;
 			}
+
 			buffLen = this._push(buff, buffLen, codePoint);
+
 			offset++;
 
 			if (offset < strLen) {
@@ -213,9 +243,12 @@ export class StringSHA1 {
 				break;
 			}
 		}
+
 		this._buffLen = buffLen;
+
 		this._leftoverHighSurrogate = leftoverHighSurrogate;
 	}
+
 	private _push(
 		buff: Uint8Array,
 		buffLen: number,
@@ -227,6 +260,7 @@ export class StringSHA1 {
 			buff[buffLen++] =
 				0b11000000 |
 				((codePoint & 0b00000000000000000000011111000000) >>> 6);
+
 			buff[buffLen++] =
 				0b10000000 |
 				((codePoint & 0b00000000000000000000000000111111) >>> 0);
@@ -234,9 +268,11 @@ export class StringSHA1 {
 			buff[buffLen++] =
 				0b11100000 |
 				((codePoint & 0b00000000000000001111000000000000) >>> 12);
+
 			buff[buffLen++] =
 				0b10000000 |
 				((codePoint & 0b00000000000000000000111111000000) >>> 6);
+
 			buff[buffLen++] =
 				0b10000000 |
 				((codePoint & 0b00000000000000000000000000111111) >>> 0);
@@ -244,27 +280,37 @@ export class StringSHA1 {
 			buff[buffLen++] =
 				0b11110000 |
 				((codePoint & 0b00000000000111000000000000000000) >>> 18);
+
 			buff[buffLen++] =
 				0b10000000 |
 				((codePoint & 0b00000000000000111111000000000000) >>> 12);
+
 			buff[buffLen++] =
 				0b10000000 |
 				((codePoint & 0b00000000000000000000111111000000) >>> 6);
+
 			buff[buffLen++] =
 				0b10000000 |
 				((codePoint & 0b00000000000000000000000000111111) >>> 0);
 		}
+
 		if (buffLen >= SHA1Constant.BLOCK_SIZE) {
 			this._step();
+
 			buffLen -= SHA1Constant.BLOCK_SIZE;
+
 			this._totalLen += SHA1Constant.BLOCK_SIZE;
 			// take last 3 in case of UTF8 overflow
 			buff[0] = buff[SHA1Constant.BLOCK_SIZE + 0];
+
 			buff[1] = buff[SHA1Constant.BLOCK_SIZE + 1];
+
 			buff[2] = buff[SHA1Constant.BLOCK_SIZE + 2];
 		}
+
 		return buffLen;
 	}
+
 	public digest(): string {
 		if (!this._finished) {
 			this._finished = true;
@@ -272,15 +318,19 @@ export class StringSHA1 {
 			if (this._leftoverHighSurrogate) {
 				// illegal => unicode replacement character
 				this._leftoverHighSurrogate = 0;
+
 				this._buffLen = this._push(
 					this._buff,
 					this._buffLen,
 					SHA1Constant.UNICODE_REPLACEMENT,
 				);
 			}
+
 			this._totalLen += this._buffLen;
+
 			this._wrapUp();
 		}
+
 		return (
 			toHexString(this._h0) +
 			toHexString(this._h1) +
@@ -289,20 +339,27 @@ export class StringSHA1 {
 			toHexString(this._h4)
 		);
 	}
+
 	private _wrapUp(): void {
 		this._buff[this._buffLen++] = 0x80;
+
 		this._buff.subarray(this._buffLen).fill(0);
 
 		if (this._buffLen > 56) {
 			this._step();
+
 			this._buff.fill(0);
 		}
 		// this will fit because the mantissa can cover up to 52 bits
 		const ml = 8 * this._totalLen;
+
 		this._buffDV.setUint32(56, Math.floor(ml / 4294967296), false);
+
 		this._buffDV.setUint32(60, ml % 4294967296, false);
+
 		this._step();
 	}
+
 	private _step(): void {
 		const bigBlock32 = StringSHA1._bigBlock32;
 
@@ -311,6 +368,7 @@ export class StringSHA1 {
 		for (let j = 0; j < 64 /* 16*4 */; j += 4) {
 			bigBlock32.setUint32(j, data.getUint32(j, false), false);
 		}
+
 		for (let j = 64; j < 320 /* 80*4 */; j += 4) {
 			bigBlock32.setUint32(
 				j,
@@ -324,6 +382,7 @@ export class StringSHA1 {
 				false,
 			);
 		}
+
 		let a = this._h0;
 
 		let b = this._h1;
@@ -341,17 +400,22 @@ export class StringSHA1 {
 		for (let j = 0; j < 80; j++) {
 			if (j < 20) {
 				f = (b & c) | (~b & d);
+
 				k = 0x5a827999;
 			} else if (j < 40) {
 				f = b ^ c ^ d;
+
 				k = 0x6ed9eba1;
 			} else if (j < 60) {
 				f = (b & c) | (b & d) | (c & d);
+
 				k = 0x8f1bbcdc;
 			} else {
 				f = b ^ c ^ d;
+
 				k = 0xca62c1d6;
 			}
+
 			temp =
 				(leftRotate(a, 5) +
 					f +
@@ -359,16 +423,26 @@ export class StringSHA1 {
 					k +
 					bigBlock32.getUint32(j * 4, false)) &
 				0xffffffff;
+
 			e = d;
+
 			d = c;
+
 			c = leftRotate(b, 30);
+
 			b = a;
+
 			a = temp;
 		}
+
 		this._h0 = (this._h0 + a) & 0xffffffff;
+
 		this._h1 = (this._h1 + b) & 0xffffffff;
+
 		this._h2 = (this._h2 + c) & 0xffffffff;
+
 		this._h3 = (this._h3 + d) & 0xffffffff;
+
 		this._h4 = (this._h4 + e) & 0xffffffff;
 	}
 }

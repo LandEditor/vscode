@@ -19,6 +19,7 @@ export class SemanticTokensStylingService
 	implements ISemanticTokensStylingService
 {
 	public _serviceBrand: undefined;
+
 	private _caches: WeakMap<
 		DocumentTokensProvider,
 		SemanticTokensProviderStyling
@@ -33,10 +34,12 @@ export class SemanticTokensStylingService
 		private readonly _languageService: ILanguageService,
 	) {
 		super();
+
 		this._caches = new WeakMap<
 			DocumentTokensProvider,
 			SemanticTokensProviderStyling
 		>();
+
 		this._register(
 			this._themeService.onDidColorThemeChange(() => {
 				this._caches = new WeakMap<
@@ -46,6 +49,7 @@ export class SemanticTokensStylingService
 			}),
 		);
 	}
+
 	public getStyling(
 		provider: DocumentTokensProvider,
 	): SemanticTokensProviderStyling {
@@ -60,6 +64,7 @@ export class SemanticTokensStylingService
 				),
 			);
 		}
+
 		return this._caches.get(provider)!;
 	}
 }

@@ -46,12 +46,14 @@ class UserDataSyncReportIssueContribution
 		private readonly hostService: IHostService,
 	) {
 		super();
+
 		this._register(
 			userDataAutoSyncService.onError((error) =>
 				this.onAutoSyncError(error),
 			),
 		);
 	}
+
 	private onAutoSyncError(error: UserDataSyncError): void {
 		switch (error.code) {
 			case UserDataSyncErrorCode.LocalTooManyRequests: {
@@ -76,6 +78,7 @@ class UserDataSyncReportIssueContribution
 							"Settings sync is suspended temporarily because the current device is making too many requests. Please restart {0} to resume.",
 							this.productService.nameLong,
 						);
+
 				this.notificationService.notify({
 					severity: Severity.Error,
 					message,
@@ -106,6 +109,7 @@ class UserDataSyncReportIssueContribution
 
 				return;
 			}
+
 			case UserDataSyncErrorCode.TooManyRequests: {
 				const operationId = error.operationId
 					? localize(
@@ -122,6 +126,7 @@ class UserDataSyncReportIssueContribution
 					},
 					"Settings sync is disabled because the current device is making too many requests. Please wait for 10 minutes and turn on sync.",
 				);
+
 				this.notificationService.notify({
 					severity: Severity.Error,
 					message: operationId

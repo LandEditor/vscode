@@ -26,6 +26,7 @@ import { IActivity, IActivityService } from "../common/activity.js";
 
 class ViewContainerActivityByView extends Disposable {
 	private activity: IActivity | undefined = undefined;
+
 	private activityDisposable: IDisposable = Disposable.None;
 
 	constructor(
@@ -36,25 +37,32 @@ class ViewContainerActivityByView extends Disposable {
 		private readonly activityService: IActivityService,
 	) {
 		super();
+
 		this._register(
 			Event.filter(this.viewDescriptorService.onDidChangeContainer, (e) =>
 				e.views.some((view) => view.id === viewId),
 			)(() => this.update()),
 		);
+
 		this._register(
 			Event.filter(this.viewDescriptorService.onDidChangeLocation, (e) =>
 				e.views.some((view) => view.id === viewId),
 			)(() => this.update()),
 		);
 	}
+
 	setActivity(activity: IActivity): void {
 		this.activity = activity;
+
 		this.update();
 	}
+
 	clearActivity(): void {
 		this.activity = undefined;
+
 		this.update();
 	}
+
 	private update(): void {
 		this.activityDisposable.dispose();
 
@@ -70,6 +78,7 @@ class ViewContainerActivityByView extends Disposable {
 				);
 		}
 	}
+
 	override dispose() {
 		this.activityDisposable.dispose();
 
@@ -78,16 +87,22 @@ class ViewContainerActivityByView extends Disposable {
 }
 interface IViewActivity {
 	id: number;
+
 	readonly activity: ViewContainerActivityByView;
 }
 export class ActivityService extends Disposable implements IActivityService {
 	public _serviceBrand: undefined;
+
 	private readonly viewActivities = new Map<string, IViewActivity>();
+
 	private readonly _onDidChangeActivity = this._register(
 		new Emitter<string | ViewContainer>(),
 	);
+
 	readonly onDidChangeActivity = this._onDidChangeActivity.event;
+
 	private readonly viewContainerActivities = new Map<string, IActivity[]>();
+
 	private readonly globalActivities = new Map<string, IActivity[]>();
 
 	constructor(
@@ -98,6 +113,7 @@ export class ActivityService extends Disposable implements IActivityService {
 	) {
 		super();
 	}
+
 	showViewContainerActivity(
 		viewContainerId: string,
 		activity: IActivity,
@@ -110,8 +126,10 @@ export class ActivityService extends Disposable implements IActivityService {
 
 			if (!activities) {
 				activities = [];
+
 				this.viewContainerActivities.set(viewContainerId, activities);
 			}
+
 			for (let i = 0; i <= activities.length; i++) {
 				if (i === activities.length || isUndefined(activity.priority)) {
 					activities.push(activity);
@@ -126,6 +144,7 @@ export class ActivityService extends Disposable implements IActivityService {
 					break;
 				}
 			}
+
 			this._onDidChangeActivity.fire(viewContainer);
 
 			return toDisposable(() => {
@@ -134,11 +153,14 @@ export class ActivityService extends Disposable implements IActivityService {
 				if (activities.length === 0) {
 					this.viewContainerActivities.delete(viewContainerId);
 				}
+
 				this._onDidChangeActivity.fire(viewContainer);
 			});
 		}
+
 		return Disposable.None;
 	}
+
 	getViewContainerActivities(viewContainerId: string): IActivity[] {
 		const viewContainer =
 			this.viewDescriptorService.getViewContainerById(viewContainerId);
@@ -146,8 +168,10 @@ export class ActivityService extends Disposable implements IActivityService {
 		if (viewContainer) {
 			return this.viewContainerActivities.get(viewContainerId) ?? [];
 		}
+
 		return [];
 	}
+
 	showViewActivity(viewId: string, activity: IActivity): IDisposable {
 		let maybeItem = this.viewActivities.get(viewId);
 
@@ -161,9 +185,12 @@ export class ActivityService extends Disposable implements IActivityService {
 					viewId,
 				),
 			};
+
 			this.viewActivities.set(viewId, maybeItem);
 		}
+
 		const id = maybeItem.id;
+
 		maybeItem.activity.setActivity(activity);
 
 		const item = maybeItem;
@@ -171,27 +198,35 @@ export class ActivityService extends Disposable implements IActivityService {
 		return toDisposable(() => {
 			if (item.id === id) {
 				item.activity.dispose();
+
 				this.viewActivities.delete(viewId);
 			}
 		});
 	}
+
 	showAccountsActivity(activity: IActivity): IDisposable {
 		return this.showActivity(ACCOUNTS_ACTIVITY_ID, activity);
 	}
+
 	showGlobalActivity(activity: IActivity): IDisposable {
 		return this.showActivity(GLOBAL_ACTIVITY_ID, activity);
 	}
+
 	getActivity(id: string): IActivity[] {
 		return this.globalActivities.get(id) ?? [];
 	}
+
 	private showActivity(id: string, activity: IActivity): IDisposable {
 		let activities = this.globalActivities.get(id);
 
 		if (!activities) {
 			activities = [];
+
 			this.globalActivities.set(id, activities);
 		}
+
 		activities.push(activity);
+
 		this._onDidChangeActivity.fire(id);
 
 		return toDisposable(() => {
@@ -200,6 +235,7 @@ export class ActivityService extends Disposable implements IActivityService {
 			if (activities.length === 0) {
 				this.globalActivities.delete(id);
 			}
+
 			this._onDidChangeActivity.fire(id);
 		});
 	}

@@ -34,6 +34,7 @@ export class RulersGpu extends ViewPart {
 		private readonly _viewGpuContext: ViewGpuContext,
 	) {
 		super(context);
+
 		this._register(autorun((reader) => this._updateEntries(reader)));
 	}
 
@@ -100,6 +101,7 @@ export class RulersGpu extends ViewPart {
 				shape.setRaw(rulerData);
 			}
 		}
+
 		while (this._gpuShapes.length > rulers.length) {
 			this._gpuShapes.splice(-1, 1)[0].dispose();
 		}

@@ -39,14 +39,17 @@ export interface IValueHoverOptions {
 	/** Commands to show in the hover footer. */
 	commands?: {
 		id: string;
+
 		args: unknown[];
 	}[];
 }
 export interface IRenderValueOptions {
 	showChanged?: boolean;
+
 	maxValueLength?: number;
 	/** If not false, a rich hover will be shown on the element. */
 	hover?: false | IValueHoverOptions;
+
 	colorize?: boolean;
 	/**
 	 * Indicates areas where VS Code implicitly always supported ANSI escape
@@ -55,11 +58,14 @@ export interface IRenderValueOptions {
 	 * @deprecated
 	 */
 	wasANSI?: boolean;
+
 	session?: IDebugSession;
+
 	locationReference?: number;
 }
 export interface IRenderVariableOptions {
 	showChanged?: boolean;
+
 	highlights?: IHighlight[];
 }
 
@@ -93,6 +99,7 @@ const allClasses: readonly Cls[] = Object.keys({
 
 export class DebugExpressionRenderer {
 	private displayType: IObservable<boolean>;
+
 	private readonly linkDetector: LinkDetector;
 
 	constructor(
@@ -106,12 +113,14 @@ export class DebugExpressionRenderer {
 		private readonly hoverService: IHoverService,
 	) {
 		this.linkDetector = instantiationService.createInstance(LinkDetector);
+
 		this.displayType = observableConfigValue(
 			"debug.showVariableTypes",
 			false,
 			configurationService,
 		);
 	}
+
 	renderVariable(
 		data: IVariableTemplateData,
 		variable: Variable,
@@ -127,20 +136,24 @@ export class DebugExpressionRenderer {
 			if (variable.value && typeof variable.name === "string") {
 				if (variable.type && displayType) {
 					text += ": ";
+
 					data.type.textContent = variable.type + " =";
 				} else {
 					text += " =";
 				}
 			}
+
 			data.label.set(
 				text,
 				options.highlights,
 				variable.type && !displayType ? variable.type : variable.name,
 			);
+
 			data.name.classList.toggle(
 				"virtual",
 				variable.presentationHint?.kind === "virtual",
 			);
+
 			data.name.classList.toggle(
 				"internal",
 				variable.presentationHint?.visibility === "internal",
@@ -152,6 +165,7 @@ export class DebugExpressionRenderer {
 		) {
 			data.label.set(":");
 		}
+
 		data.expression.classList.toggle(
 			"lazy",
 			!!variable.presentationHint?.lazy,
@@ -164,6 +178,7 @@ export class DebugExpressionRenderer {
 		if (variable.evaluateName) {
 			commands.push({ id: COPY_EVALUATE_PATH_ID, args: [{ variable }] });
 		}
+
 		return this.renderValue(data.value, variable, {
 			showChanged: options.showChanged,
 			maxValueLength: MAX_VALUE_RENDER_LENGTH_IN_VIEWLET,
@@ -172,6 +187,7 @@ export class DebugExpressionRenderer {
 			session: variable.getSession(),
 		});
 	}
+
 	renderValue(
 		container: HTMLElement,
 		expressionOrValue: IExpressionValue | string,
@@ -192,6 +208,7 @@ export class DebugExpressionRenderer {
 		for (const cls of allClasses) {
 			container.classList.remove(cls);
 		}
+
 		container.classList.add(Cls.Value);
 		// when resolving expressions we represent errors from the server as a variable with name === null.
 		if (
@@ -215,8 +232,10 @@ export class DebugExpressionRenderer {
 			) {
 				// value changed color has priority over other colors.
 				container.classList.add(Cls.Changed);
+
 				expressionOrValue.valueChanged = false;
 			}
+
 			if (options.colorize && typeof expressionOrValue !== "string") {
 				if (
 					expressionOrValue.type === "number" ||
@@ -233,6 +252,7 @@ export class DebugExpressionRenderer {
 				}
 			}
 		}
+
 		if (
 			options.maxValueLength &&
 			value &&
@@ -240,9 +260,11 @@ export class DebugExpressionRenderer {
 		) {
 			value = value.substring(0, options.maxValueLength) + "...";
 		}
+
 		if (!value) {
 			value = "";
 		}
+
 		const session =
 			options.session ??
 			(expressionOrValue instanceof ExpressionContainer
@@ -269,6 +291,7 @@ export class DebugExpressionRenderer {
 				session,
 			);
 		}
+
 		if (supportsANSI) {
 			container.appendChild(
 				handleANSIOutput(
@@ -288,8 +311,10 @@ export class DebugExpressionRenderer {
 				),
 			);
 		}
+
 		if (options.hover !== false) {
 			const { commands = [] } = options.hover || {};
+
 			store.add(
 				this.hoverService.setupManagedHover(
 					getDefaultHoverDelegate("mouse"),
@@ -322,6 +347,7 @@ export class DebugExpressionRenderer {
 						} else {
 							hoverContentsPre.textContent = value;
 						}
+
 						container.appendChild(markdownHoverElement);
 
 						return container;
@@ -351,6 +377,7 @@ export class DebugExpressionRenderer {
 				),
 			);
 		}
+
 		return store;
 	}
 }

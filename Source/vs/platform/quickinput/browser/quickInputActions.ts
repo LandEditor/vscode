@@ -46,7 +46,9 @@ function registerQuickPickCommandAndKeybindingRule(
 	rule: PartialExcept<ICommandAndKeybindingRule, "id" | "handler">,
 	options: {
 		withAltMod?: boolean;
+
 		withCtrlMod?: boolean;
+
 		withCmdMod?: boolean;
 	} = {},
 ) {
@@ -64,13 +66,16 @@ function getSecondary(
 	secondary: number[],
 	options: {
 		withAltMod?: boolean;
+
 		withCtrlMod?: boolean;
+
 		withCmdMod?: boolean;
 	} = {},
 ): number[] {
 	if (options.withAltMod) {
 		secondary.push(KeyMod.Alt + primary);
 	}
+
 	if (options.withCtrlMod) {
 		secondary.push(ctrlKeyMod + primary);
 
@@ -78,12 +83,14 @@ function getSecondary(
 			secondary.push(KeyMod.Alt + ctrlKeyMod + primary);
 		}
 	}
+
 	if (options.withCmdMod && isMacintosh) {
 		secondary.push(KeyMod.CtrlCmd + primary);
 
 		if (options.withCtrlMod) {
 			secondary.push(KeyMod.CtrlCmd + KeyMod.WinCtrl + primary);
 		}
+
 		if (options.withAltMod) {
 			secondary.push(KeyMod.CtrlCmd + KeyMod.Alt + primary);
 
@@ -94,6 +101,7 @@ function getSecondary(
 			}
 		}
 	}
+
 	return secondary;
 }
 //#region Navigation
@@ -109,9 +117,11 @@ function focusHandler(
 		if (!currentQuickPick) {
 			return;
 		}
+
 		if (focusOnQuickNatigate && currentQuickPick.quickNavigate) {
 			return currentQuickPick.focus(focusOnQuickNatigate);
 		}
+
 		return currentQuickPick.focus(focus);
 	};
 }
@@ -186,6 +196,7 @@ if (isMacintosh) {
 		),
 		metadata: { description: nextSeparatorFallbackDesc },
 	});
+
 	registerQuickPickCommandAndKeybindingRule(
 		{
 			id: "quickInput.nextSeparator",
@@ -197,6 +208,7 @@ if (isMacintosh) {
 		},
 		{ withCtrlMod: true },
 	);
+
 	registerQuickPickCommandAndKeybindingRule({
 		id: "quickInput.previousSeparatorWithQuickAccessFallback",
 		primary: KeyMod.CtrlCmd + KeyCode.UpArrow,
@@ -206,6 +218,7 @@ if (isMacintosh) {
 		),
 		metadata: { description: prevSeparatorFallbackDesc },
 	});
+
 	registerQuickPickCommandAndKeybindingRule(
 		{
 			id: "quickInput.previousSeparator",
@@ -227,11 +240,13 @@ if (isMacintosh) {
 		),
 		metadata: { description: nextSeparatorFallbackDesc },
 	});
+
 	registerQuickPickCommandAndKeybindingRule({
 		id: "quickInput.nextSeparator",
 		primary: KeyMod.CtrlCmd + KeyMod.Alt + KeyCode.DownArrow,
 		handler: focusHandler(QuickPickFocus.NextSeparator),
 	});
+
 	registerQuickPickCommandAndKeybindingRule({
 		id: "quickInput.previousSeparatorWithQuickAccessFallback",
 		primary: KeyMod.Alt + KeyCode.UpArrow,
@@ -241,6 +256,7 @@ if (isMacintosh) {
 		),
 		metadata: { description: prevSeparatorFallbackDesc },
 	});
+
 	registerQuickPickCommandAndKeybindingRule({
 		id: "quickInput.previousSeparator",
 		primary: KeyMod.CtrlCmd + KeyMod.Alt + KeyCode.UpArrow,
@@ -267,6 +283,7 @@ registerQuickPickCommandAndKeybindingRule(
 		handler: (accessor) => {
 			const currentQuickPick = accessor.get(IQuickInputService)
 				.currentQuickInput as IQuickPick<any>;
+
 			currentQuickPick?.accept(true);
 		},
 	},

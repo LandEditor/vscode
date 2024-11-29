@@ -22,11 +22,14 @@ import { InlineChatController } from "./inlineChatController.js";
 
 export class InlineChatAccessibleView implements IAccessibleViewImplentation {
 	readonly priority = 100;
+
 	readonly name = "inlineChat";
+
 	readonly when = ContextKeyExpr.or(
 		CTX_INLINE_CHAT_FOCUSED,
 		CTX_INLINE_CHAT_RESPONSE_FOCUSED,
 	);
+
 	readonly type = AccessibleViewType.View;
 
 	getProvider(accessor: ServicesAccessor) {
@@ -39,16 +42,19 @@ export class InlineChatAccessibleView implements IAccessibleViewImplentation {
 		if (!editor) {
 			return;
 		}
+
 		const controller = InlineChatController.get(editor);
 
 		if (!controller) {
 			return;
 		}
+
 		const responseContent = controller?.getMessage();
 
 		if (!responseContent) {
 			return;
 		}
+
 		return new AccessibleContentProvider(
 			AccessibleViewProviderId.InlineChat,
 			{ type: AccessibleViewType.View },

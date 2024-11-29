@@ -32,7 +32,9 @@ class ValidatedIpcMain implements Event.NodeEventEmitter {
 				listener(event, ...args);
 			}
 		};
+
 		this.mapListenerToWrapper.set(listener, wrappedListener);
+
 		electron.ipcMain.on(channel, wrappedListener);
 
 		return this;
@@ -82,6 +84,7 @@ class ValidatedIpcMain implements Event.NodeEventEmitter {
 				if (this.validateEvent(channel, event)) {
 					return listener(event, ...args);
 				}
+
 				return Promise.reject(
 					`Invalid channel '${channel}' or sender for ipcMain.handle() usage.`,
 				);
@@ -107,10 +110,13 @@ class ValidatedIpcMain implements Event.NodeEventEmitter {
 
 		if (wrappedListener) {
 			electron.ipcMain.removeListener(channel, wrappedListener);
+
 			this.mapListenerToWrapper.delete(listener);
 		}
+
 		return this;
 	}
+
 	private validateEvent(
 		channel: string,
 		event: electron.IpcMainEvent | electron.IpcMainInvokeEvent,
@@ -122,6 +128,7 @@ class ValidatedIpcMain implements Event.NodeEventEmitter {
 
 			return false; // unexpected channel
 		}
+
 		const sender = event.senderFrame;
 
 		const url = sender.url;
@@ -132,6 +139,7 @@ class ValidatedIpcMain implements Event.NodeEventEmitter {
 		if (!url || url === "about:blank") {
 			return true;
 		}
+
 		let host = "unknown";
 
 		try {
@@ -143,6 +151,7 @@ class ValidatedIpcMain implements Event.NodeEventEmitter {
 
 			return false; // unexpected URL
 		}
+
 		if (host !== VSCODE_AUTHORITY) {
 			onUnexpectedError(
 				`Refused to handle ipcMain event for channel '${channel}' because of a bad origin of '${host}'.`,
@@ -150,6 +159,7 @@ class ValidatedIpcMain implements Event.NodeEventEmitter {
 
 			return false; // unexpected sender
 		}
+
 		if (sender.parent !== null) {
 			onUnexpectedError(
 				`Refused to handle ipcMain event for channel '${channel}' because sender of origin '${host}' is not a main frame.`,
@@ -157,6 +167,7 @@ class ValidatedIpcMain implements Event.NodeEventEmitter {
 
 			return false; // unexpected frame
 		}
+
 		return true;
 	}
 }

@@ -23,9 +23,11 @@ export async function pickSnippet(
 	const snippetService = accessor.get(ISnippetsService);
 
 	const quickInputService = accessor.get(IQuickInputService);
+
 	interface ISnippetPick extends IQuickPickItem {
 		snippet: Snippet;
 	}
+
 	let snippets: Snippet[];
 
 	if (Array.isArray(languageIdOrSnippets)) {
@@ -36,6 +38,7 @@ export async function pickSnippet(
 			includeNoPrefixSnippets: true,
 		});
 	}
+
 	snippets.sort((a, b) => a.snippetSource - b.snippetSource);
 
 	const makeSnippetPicks = () => {
@@ -79,8 +82,10 @@ export async function pickSnippet(
 
 						break;
 				}
+
 				result.push({ type: "separator", label });
 			}
+
 			if (snippet.snippetSource === SnippetSource.Extension) {
 				const isEnabled = snippetService.isEnabled(snippet);
 
@@ -99,6 +104,7 @@ export async function pickSnippet(
 						"isDisabled",
 						"(hidden from IntelliSense)",
 					);
+
 					pick.buttons = [
 						{
 							iconClass: ThemeIcon.asClassName(Codicon.eye),
@@ -110,9 +116,12 @@ export async function pickSnippet(
 					];
 				}
 			}
+
 			result.push(pick);
+
 			prevSnippet = snippet;
 		}
+
 		return result;
 	};
 
@@ -123,17 +132,25 @@ export async function pickSnippet(
 			useSeparators: true,
 		}),
 	);
+
 	picker.placeholder = nls.localize("pick.placeholder", "Select a snippet");
+
 	picker.matchOnDetail = true;
+
 	picker.ignoreFocusOut = false;
+
 	picker.keepScrollPosition = true;
+
 	disposables.add(
 		picker.onDidTriggerItemButton((ctx) => {
 			const isEnabled = snippetService.isEnabled(ctx.item.snippet);
+
 			snippetService.updateEnablement(ctx.item.snippet, !isEnabled);
+
 			picker.items = makeSnippetPicks();
 		}),
 	);
+
 	picker.items = makeSnippetPicks();
 
 	if (!picker.items.length) {
@@ -142,6 +159,7 @@ export async function pickSnippet(
 			"No snippet available",
 		);
 	}
+
 	picker.show();
 	// wait for an item to be picked or the picker to become hidden
 	await Promise.race([
@@ -150,6 +168,7 @@ export async function pickSnippet(
 	]);
 
 	const result = picker.selectedItems[0]?.snippet;
+
 	disposables.dispose();
 
 	return result;

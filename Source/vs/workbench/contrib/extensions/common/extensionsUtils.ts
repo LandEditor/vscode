@@ -31,7 +31,9 @@ import { ILifecycleService } from "../../../services/lifecycle/common/lifecycle.
 
 export interface IExtensionStatus {
 	identifier: IExtensionIdentifier;
+
 	local: ILocalExtension;
+
 	globallyEnabled: boolean;
 }
 export class KeymapExtensions
@@ -51,7 +53,9 @@ export class KeymapExtensions
 		private readonly notificationService: INotificationService,
 	) {
 		super();
+
 		this._register(lifecycleService.onDidShutdown(() => this.dispose()));
+
 		this._register(
 			instantiationService.invokeFunction(onExtensionChanged)(
 				(identifiers) => {
@@ -64,6 +68,7 @@ export class KeymapExtensions
 			),
 		);
 	}
+
 	private checkForOtherKeymaps(
 		extensionIdentifier: IExtensionIdentifier,
 	): Promise<void> {
@@ -97,9 +102,11 @@ export class KeymapExtensions
 						);
 					}
 				}
+
 				return undefined;
 			});
 	}
+
 	private promptForDisablingOtherKeymaps(
 		newKeymap: IExtensionStatus,
 		oldKeymaps: IExtensionStatus[],
@@ -112,6 +119,7 @@ export class KeymapExtensions
 				);
 			}
 		};
+
 		this.notificationService.prompt(
 			Severity.Info,
 			localize(
@@ -177,6 +185,7 @@ function onExtensionChanged(
 					result.push(identifier);
 				}
 			}
+
 			return result;
 		},
 	);

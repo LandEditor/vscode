@@ -26,9 +26,11 @@ export async function downloadExplorerAppx(
 	if (await fs.existsSync(path.resolve(outDir, "resources.pri"))) {
 		return;
 	}
+
 	if (!(await fs.existsSync(outDir))) {
 		await fs.mkdirSync(outDir, { recursive: true });
 	}
+
 	d(`downloading ${fileName}`);
 
 	const artifact = await downloadArtifact({
@@ -42,7 +44,9 @@ export async function downloadExplorerAppx(
 			customFilename: fileName,
 		},
 	});
+
 	d(`unpacking from ${fileName}`);
+
 	await extract(artifact, { dir: fs.realpathSync(outDir) });
 }
 async function main(outputDir?: string): Promise<void> {
@@ -51,14 +55,17 @@ async function main(outputDir?: string): Promise<void> {
 	if (!outputDir) {
 		throw new Error("Required build env not set");
 	}
+
 	const product = JSON.parse(
 		fs.readFileSync(path.join(root, "product.json"), "utf8"),
 	);
+
 	await downloadExplorerAppx(outputDir, (product as any).quality, arch);
 }
 if (require.main === module) {
 	main(process.argv[2]).catch((err) => {
 		console.error(err);
+
 		process.exit(1);
 	});
 }

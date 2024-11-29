@@ -47,12 +47,19 @@ import { getTerminalActionBarArgs } from "./terminalMenus.js";
 
 export class TerminalEditor extends EditorPane {
 	private _editorInstanceElement: HTMLElement | undefined;
+
 	private _overflowGuardElement: HTMLElement | undefined;
+
 	private _editorInput?: TerminalEditorInput = undefined;
+
 	private _lastDimension?: dom.Dimension;
+
 	private readonly _dropdownMenu: IMenu;
+
 	private readonly _instanceMenu: IMenu;
+
 	private _cancelContextMenu: boolean = false;
+
 	private readonly _disposableStore = this._register(new DisposableStore());
 
 	constructor(
@@ -91,12 +98,14 @@ export class TerminalEditor extends EditorPane {
 			themeService,
 			storageService,
 		);
+
 		this._dropdownMenu = this._register(
 			menuService.createMenu(
 				MenuId.TerminalNewDropdownContext,
 				contextKeyService,
 			),
 		);
+
 		this._instanceMenu = this._register(
 			menuService.createMenu(
 				MenuId.TerminalInstanceContext,
@@ -104,6 +113,7 @@ export class TerminalEditor extends EditorPane {
 			),
 		);
 	}
+
 	override async setInput(
 		newInput: TerminalEditorInput,
 		options: IEditorOptions | undefined,
@@ -111,8 +121,11 @@ export class TerminalEditor extends EditorPane {
 		token: CancellationToken,
 	) {
 		this._editorInput?.terminalInstance?.detachFromElement();
+
 		this._editorInput = newInput;
+
 		await super.setInput(newInput, options, context, token);
+
 		this._editorInput.terminalInstance?.attachToElement(
 			this._overflowGuardElement!,
 		);
@@ -120,6 +133,7 @@ export class TerminalEditor extends EditorPane {
 		if (this._lastDimension) {
 			this.layout(this._lastDimension);
 		}
+
 		this._editorInput.terminalInstance?.setVisible(
 			this.isVisible() &&
 				this._workbenchLayoutService.isVisible(
@@ -137,11 +151,13 @@ export class TerminalEditor extends EditorPane {
 					this._setActiveInstance(),
 				),
 			);
+
 			this._editorInput.setCopyLaunchConfig(
 				this._editorInput.terminalInstance.shellLaunchConfig,
 			);
 		}
 	}
+
 	override clearInput(): void {
 		super.clearInput();
 
@@ -152,33 +168,43 @@ export class TerminalEditor extends EditorPane {
 		) {
 			this._editorInput.terminalInstance?.detachFromElement();
 		}
+
 		this._editorInput = undefined;
 	}
+
 	private _setActiveInstance(): void {
 		if (!this._editorInput?.terminalInstance) {
 			return;
 		}
+
 		this._terminalEditorService.setActiveInstance(
 			this._editorInput.terminalInstance,
 		);
 	}
+
 	override focus() {
 		super.focus();
+
 		this._editorInput?.terminalInstance?.focus(true);
 	}
 	// eslint-disable-next-line @typescript-eslint/naming-convention
 	protected createEditor(parent: HTMLElement): void {
 		this._editorInstanceElement = parent;
+
 		this._overflowGuardElement = dom.$(
 			".terminal-overflow-guard.terminal-editor",
 		);
+
 		this._editorInstanceElement.appendChild(this._overflowGuardElement);
+
 		this._registerListeners();
 	}
+
 	private _registerListeners(): void {
 		if (!this._editorInstanceElement) {
 			return;
 		}
+
 		this._register(
 			dom.addDisposableListener(
 				this._editorInstanceElement,
@@ -205,6 +231,7 @@ export class TerminalEditor extends EditorPane {
 				},
 			),
 		);
+
 		this._register(
 			dom.addDisposableListener(
 				this._editorInstanceElement,
@@ -216,7 +243,9 @@ export class TerminalEditor extends EditorPane {
 
 					if (rightClickBehavior === "nothing" && !event.shiftKey) {
 						event.preventDefault();
+
 						event.stopImmediatePropagation();
+
 						this._cancelContextMenu = false;
 
 						return;
@@ -234,25 +263,33 @@ export class TerminalEditor extends EditorPane {
 								this._contextMenuService,
 							);
 						}
+
 						event.preventDefault();
+
 						event.stopImmediatePropagation();
+
 						this._cancelContextMenu = false;
 					}
 				},
 			),
 		);
 	}
+
 	layout(dimension: dom.Dimension): void {
 		const instance = this._editorInput?.terminalInstance;
 
 		if (instance) {
 			instance.attachToElement(this._overflowGuardElement!);
+
 			instance.layout(dimension);
 		}
+
 		this._lastDimension = dimension;
 	}
+
 	override setVisible(visible: boolean): void {
 		super.setVisible(visible);
+
 		this._editorInput?.terminalInstance?.setVisible(
 			visible &&
 				this._workbenchLayoutService.isVisible(
@@ -261,6 +298,7 @@ export class TerminalEditor extends EditorPane {
 				),
 		);
 	}
+
 	override getActionViewItem(
 		action: IAction,
 		options: IBaseActionViewItemOptions,
@@ -278,6 +316,7 @@ export class TerminalEditor extends EditorPane {
 						this._terminalService,
 						this._dropdownMenu,
 					);
+
 					this._registerDisposableActions(
 						actions.dropdownAction,
 						actions.dropdownMenuActions,
@@ -296,6 +335,7 @@ export class TerminalEditor extends EditorPane {
 				}
 			}
 		}
+
 		return super.getActionViewItem(action, options);
 	}
 	/**
@@ -310,10 +350,12 @@ export class TerminalEditor extends EditorPane {
 		if (dropdownAction instanceof Action) {
 			this._disposableStore.add(dropdownAction);
 		}
+
 		dropdownMenuActions
 			.filter((a) => a instanceof Action)
 			.forEach((a) => this._disposableStore.add(a));
 	}
+
 	private _getDefaultProfileName(): string {
 		let defaultProfileName;
 
@@ -324,6 +366,7 @@ export class TerminalEditor extends EditorPane {
 			defaultProfileName =
 				this._terminalProfileResolverService.defaultProfileName;
 		}
+
 		return defaultProfileName!;
 	}
 }

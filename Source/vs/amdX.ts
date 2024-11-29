@@ -30,13 +30,18 @@ enum AMDModuleImporterState {
 }
 class AMDModuleImporter {
 	public static INSTANCE = new AMDModuleImporter();
+
 	private readonly _isWebWorker =
 		typeof self === "object" &&
 		self.constructor &&
 		self.constructor.name === "DedicatedWorkerGlobalScope";
+
 	private readonly _isRenderer = typeof document === "object";
+
 	private readonly _defineCalls: DefineCall[] = [];
+
 	private _state = AMDModuleImporterState.Uninitialized;
+
 	private _amdPolicy:
 		| Pick<
 				TrustedTypePolicy<{
@@ -47,6 +52,7 @@ class AMDModuleImporter {
 		| undefined;
 
 	constructor() {}
+
 	private _initialize(): void {
 		if (this._state === AMDModuleImporterState.Uninitialized) {
 			if ((globalThis as any).define) {
@@ -57,6 +63,7 @@ class AMDModuleImporter {
 		} else {
 			return;
 		}
+
 		this._state = AMDModuleImporterState.InitializedInternal;
 		(globalThis as any).define = (
 			id: any,
@@ -65,19 +72,24 @@ class AMDModuleImporter {
 		) => {
 			if (typeof id !== "string") {
 				callback = dependencies;
+
 				dependencies = id;
+
 				id = null;
 			}
+
 			if (
 				typeof dependencies !== "object" ||
 				!Array.isArray(dependencies)
 			) {
 				callback = dependencies;
+
 				dependencies = null;
 			}
 			// if (!dependencies) {
 			// 	dependencies = ['require', 'exports', 'module'];
 			// }
+
 			this._defineCalls.push(new DefineCall(id, dependencies, callback));
 		};
 		(globalThis as any).define.amd = true;
@@ -90,6 +102,7 @@ class AMDModuleImporter {
 						if (value.startsWith(window.location.origin)) {
 							return value;
 						}
+
 						if (
 							value.startsWith(
 								`${Schemas.vscodeFileResource}://${VSCODE_AUTHORITY}`,
@@ -97,6 +110,7 @@ class AMDModuleImporter {
 						) {
 							return value;
 						}
+
 						throw new Error(
 							`[trusted_script_src] Invalid script url: ${value}`,
 						);
@@ -112,6 +126,7 @@ class AMDModuleImporter {
 				});
 		}
 	}
+
 	public async load<T>(scriptSrc: string): Promise<T> {
 		this._initialize();
 
@@ -127,6 +142,7 @@ class AMDModuleImporter {
 				);
 			});
 		}
+
 		const defineCall = await (this._isWebWorker
 			? this._workerLoadScript(scriptSrc)
 			: this._isRenderer
@@ -156,40 +172,50 @@ class AMDModuleImporter {
 				}
 			}
 		}
+
 		if (dependencyModules.length > 0) {
 			throw new Error(
 				`Cannot resolve dependencies for script ${scriptSrc}. The dependencies are: ${dependencyModules.join(", ")}`,
 			);
 		}
+
 		if (typeof defineCall.callback === "function") {
 			return defineCall.callback(...dependencyObjs) ?? exports;
 		} else {
 			return defineCall.callback;
 		}
 	}
+
 	private _rendererLoadScript(
 		scriptSrc: string,
 	): Promise<DefineCall | undefined> {
 		return new Promise<DefineCall | undefined>((resolve, reject) => {
 			const scriptElement = document.createElement("script");
+
 			scriptElement.setAttribute("async", "async");
+
 			scriptElement.setAttribute("type", "text/javascript");
 
 			const unbind = () => {
 				scriptElement.removeEventListener("load", loadEventListener);
+
 				scriptElement.removeEventListener("error", errorEventListener);
 			};
 
 			const loadEventListener = (e: any) => {
 				unbind();
+
 				resolve(this._defineCalls.pop());
 			};
 
 			const errorEventListener = (e: any) => {
 				unbind();
+
 				reject(e);
 			};
+
 			scriptElement.addEventListener("load", loadEventListener);
+
 			scriptElement.addEventListener("error", errorEventListener);
 
 			if (this._amdPolicy) {
@@ -197,12 +223,15 @@ class AMDModuleImporter {
 					scriptSrc,
 				) as any as string;
 			}
+
 			scriptElement.setAttribute("src", scriptSrc);
+
 			window.document
 				.getElementsByTagName("head")[0]
 				.appendChild(scriptElement);
 		});
 	}
+
 	private async _workerLoadScript(
 		scriptSrc: string,
 	): Promise<DefineCall | undefined> {
@@ -211,10 +240,12 @@ class AMDModuleImporter {
 				scriptSrc,
 			) as any as string;
 		}
+
 		await import(scriptSrc);
 
 		return this._defineCalls.pop();
 	}
+
 	private async _nodeJSLoadScript(
 		scriptSrc: string,
 	): Promise<DefineCall | undefined> {
@@ -234,6 +265,7 @@ class AMDModuleImporter {
 			const script = new vm.Script(scriptSource);
 
 			const compileWrapper = script.runInThisContext();
+
 			compileWrapper.apply();
 
 			return this._defineCalls.pop();
@@ -258,6 +290,7 @@ export async function importAMDNodeModule<T>(
 	if (isBuilt === undefined) {
 		const product =
 			globalThis._VSCODE_PRODUCT_JSON as unknown as IProductConfiguration;
+
 		isBuilt = Boolean(
 			(
 				product ??
@@ -265,6 +298,7 @@ export async function importAMDNodeModule<T>(
 			)?.commit,
 		);
 	}
+
 	const nodeModulePath = pathInsideNodeModule
 		? `${nodeModuleName}/${pathInsideNodeModule}`
 		: nodeModuleName;
@@ -272,6 +306,7 @@ export async function importAMDNodeModule<T>(
 	if (cache.has(nodeModulePath)) {
 		return cache.get(nodeModulePath)!;
 	}
+
 	let scriptSrc: string;
 
 	if (/^\w[\w\d+.-]*:\/\//.test(nodeModulePath)) {
@@ -286,9 +321,12 @@ export async function importAMDNodeModule<T>(
 			: nodeModulesPath;
 
 		const resourcePath: AppResourcePath = `${actualNodeModulesPath}/${nodeModulePath}`;
+
 		scriptSrc = FileAccess.asBrowserUri(resourcePath).toString(true);
 	}
+
 	const result = AMDModuleImporter.INSTANCE.load<T>(scriptSrc);
+
 	cache.set(nodeModulePath, result);
 
 	return result;

@@ -474,10 +474,12 @@ function getEditorConfigurationKeys(): {
 				[key: string]: boolean;
 			}
 		>Object.create(null);
+
 		Object.keys(editorConfiguration.properties!).forEach((prop) => {
 			cachedEditorConfigurationKeys![prop] = true;
 		});
 	}
+
 	return cachedEditorConfigurationKeys;
 }
 export function isEditorConfigurationKey(key: string): boolean {

@@ -36,9 +36,11 @@ export class SettingsFileSystemProvider
 	implements IFileSystemProviderWithFileReadWriteCapability
 {
 	static readonly SCHEMA = Schemas.vscode;
+
 	protected readonly _onDidChangeFile = this._register(
 		new Emitter<readonly IFileChange[]>(),
 	);
+
 	readonly onDidChangeFile = this._onDidChangeFile.event;
 
 	constructor(
@@ -48,6 +50,7 @@ export class SettingsFileSystemProvider
 		private readonly logService: ILogService,
 	) {
 		super();
+
 		this._register(
 			schemaRegistry.onDidChangeSchema((schemaUri) => {
 				this._onDidChangeFile.fire([
@@ -58,6 +61,7 @@ export class SettingsFileSystemProvider
 				]);
 			}),
 		);
+
 		this._register(
 			preferencesService.onDidDefaultSettingsContentChanged((uri) => {
 				this._onDidChangeFile.fire([
@@ -66,6 +70,7 @@ export class SettingsFileSystemProvider
 			}),
 		);
 	}
+
 	readonly capabilities: FileSystemProviderCapabilities =
 		FileSystemProviderCapabilities.Readonly +
 		FileSystemProviderCapabilities.FileReadWrite;
@@ -74,6 +79,7 @@ export class SettingsFileSystemProvider
 		if (uri.scheme !== SettingsFileSystemProvider.SCHEMA) {
 			throw new NotSupportedError();
 		}
+
 		let content: string | undefined;
 
 		if (uri.authority === "schemas") {
@@ -81,11 +87,14 @@ export class SettingsFileSystemProvider
 		} else if (uri.authority === "defaultsettings") {
 			content = this.preferencesService.getDefaultSettingsContent(uri);
 		}
+
 		if (content) {
 			return VSBuffer.fromString(content).buffer;
 		}
+
 		throw FileSystemProviderErrorCode.FileNotFound;
 	}
+
 	async stat(uri: URI): Promise<IStat> {
 		if (
 			schemaRegistry.hasSchemaContent(uri.toString()) ||
@@ -101,25 +110,34 @@ export class SettingsFileSystemProvider
 				size: 0,
 			};
 		}
+
 		throw FileSystemProviderErrorCode.FileNotFound;
 	}
+
 	readonly onDidChangeCapabilities = Event.None;
+
 	watch(resource: URI, opts: IWatchOptions): IDisposable {
 		return Disposable.None;
 	}
+
 	async mkdir(resource: URI): Promise<void> {}
+
 	async readdir(resource: URI): Promise<[string, FileType][]> {
 		return [];
 	}
+
 	async rename(
 		from: URI,
 		to: URI,
 		opts: IFileOverwriteOptions,
 	): Promise<void> {}
+
 	async delete(resource: URI, opts: IFileDeleteOptions): Promise<void> {}
+
 	async writeFile() {
 		throw new NotSupportedError();
 	}
+
 	private getSchemaContent(uri: URI): string {
 		const startTime = Date.now();
 
@@ -135,10 +153,12 @@ export class SettingsFileSystemProvider
 			const uncompressed = JSON.stringify(
 				schemaRegistry.getSchemaContributions().schemas[uri.toString()],
 			);
+
 			this.logService.debug(
 				`${uri.toString()}: ${uncompressed.length} -> ${content.length} (${Math.round(((uncompressed.length - content.length) / uncompressed.length) * 100)}%) Took ${endTime - startTime}ms`,
 			);
 		}
+
 		return content;
 	}
 }

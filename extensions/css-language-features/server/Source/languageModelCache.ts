@@ -6,7 +6,9 @@ import { TextDocument } from "vscode-css-languageservice";
 
 export interface LanguageModelCache<T> {
 	get(document: TextDocument): T;
+
 	onDocumentRemoved(document: TextDocument): void;
+
 	dispose(): void;
 }
 export function getLanguageModelCache<T>(
@@ -17,8 +19,11 @@ export function getLanguageModelCache<T>(
 	let languageModels: {
 		[uri: string]: {
 			version: number;
+
 			languageId: string;
+
 			cTime: number;
+
 			languageModel: T;
 		};
 	} = {};
@@ -38,11 +43,13 @@ export function getLanguageModelCache<T>(
 
 				if (languageModelInfo.cTime < cutoffTime) {
 					delete languageModels[uri];
+
 					nModels--;
 				}
 			}
 		}, cleanupIntervalTimeInSec * 1000);
 	}
+
 	return {
 		get(document: TextDocument): T {
 			const version = document.version;
@@ -60,7 +67,9 @@ export function getLanguageModelCache<T>(
 
 				return languageModelInfo.languageModel;
 			}
+
 			const languageModel = parse(document);
+
 			languageModels[document.uri] = {
 				languageModel,
 				version,
@@ -71,6 +80,7 @@ export function getLanguageModelCache<T>(
 			if (!languageModelInfo) {
 				nModels++;
 			}
+
 			if (nModels === maxEntries) {
 				let oldestTime = Number.MAX_VALUE;
 
@@ -81,14 +91,18 @@ export function getLanguageModelCache<T>(
 
 					if (languageModelInfo.cTime < oldestTime) {
 						oldestUri = uri;
+
 						oldestTime = languageModelInfo.cTime;
 					}
 				}
+
 				if (oldestUri) {
 					delete languageModels[oldestUri];
+
 					nModels--;
 				}
 			}
+
 			return languageModel;
 		},
 		onDocumentRemoved(document: TextDocument) {
@@ -96,14 +110,18 @@ export function getLanguageModelCache<T>(
 
 			if (languageModels[uri]) {
 				delete languageModels[uri];
+
 				nModels--;
 			}
 		},
 		dispose() {
 			if (typeof cleanupInterval !== "undefined") {
 				clearInterval(cleanupInterval);
+
 				cleanupInterval = undefined;
+
 				languageModels = {};
+
 				nModels = 0;
 			}
 		},

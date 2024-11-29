@@ -19,6 +19,7 @@ import { CellViewModelStateChangeEvent } from "../notebookViewEvents.js";
  */
 export abstract class CellContentPart extends Disposable {
 	protected currentCell: ICellViewModel | undefined;
+
 	protected readonly cellDisposables = this._register(new DisposableStore());
 
 	constructor() {
@@ -34,14 +35,17 @@ export abstract class CellContentPart extends Disposable {
 	 */
 	renderCell(element: ICellViewModel): void {
 		this.currentCell = element;
+
 		safeInvokeNoArg(() => this.didRenderCell(element));
 	}
+
 	didRenderCell(element: ICellViewModel): void {}
 	/**
 	 * Dispose any disposables generated from `didRenderCell`
 	 */
 	unrenderCell(element: ICellViewModel): void {
 		this.currentCell = undefined;
+
 		this.cellDisposables.clear();
 	}
 	/**
@@ -75,6 +79,7 @@ export abstract class CellContentPart extends Disposable {
  */
 export abstract class CellOverlayPart extends Disposable {
 	protected currentCell: ICellViewModel | undefined;
+
 	protected readonly cellDisposables = this._register(new DisposableStore());
 
 	constructor() {
@@ -90,14 +95,17 @@ export abstract class CellOverlayPart extends Disposable {
 	 */
 	renderCell(element: ICellViewModel): void {
 		this.currentCell = element;
+
 		this.didRenderCell(element);
 	}
+
 	didRenderCell(element: ICellViewModel): void {}
 	/**
 	 * Dispose any disposables generated from `didRenderCell`
 	 */
 	unrenderCell(element: ICellViewModel): void {
 		this.currentCell = undefined;
+
 		this.cellDisposables.clear();
 	}
 	/**
@@ -134,9 +142,11 @@ export class CellPartsCollection extends Disposable {
 	private readonly _scheduledOverlayRendering = this._register(
 		new MutableDisposable(),
 	);
+
 	private readonly _scheduledOverlayUpdateState = this._register(
 		new MutableDisposable(),
 	);
+
 	private readonly _scheduledOverlayUpdateExecutionState = this._register(
 		new MutableDisposable(),
 	);
@@ -148,6 +158,7 @@ export class CellPartsCollection extends Disposable {
 	) {
 		super();
 	}
+
 	concatContentPart(
 		other: readonly CellContentPart[],
 		targetWindow: Window,
@@ -158,6 +169,7 @@ export class CellPartsCollection extends Disposable {
 			this.overlayParts,
 		);
 	}
+
 	concatOverlayPart(
 		other: readonly CellOverlayPart[],
 		targetWindow: Window,
@@ -168,11 +180,13 @@ export class CellPartsCollection extends Disposable {
 			this.overlayParts.concat(other),
 		);
 	}
+
 	scheduleRenderCell(element: ICellViewModel): void {
 		// prepare model
 		for (const part of this.contentParts) {
 			safeInvokeNoArg(() => part.prepareRenderCell(element));
 		}
+
 		for (const part of this.overlayParts) {
 			safeInvokeNoArg(() => part.prepareRenderCell(element));
 		}
@@ -180,6 +194,7 @@ export class CellPartsCollection extends Disposable {
 		for (const part of this.contentParts) {
 			safeInvokeNoArg(() => part.renderCell(element));
 		}
+
 		this._scheduledOverlayRendering.value = DOM.modify(
 			this.targetWindow,
 			() => {
@@ -189,35 +204,44 @@ export class CellPartsCollection extends Disposable {
 			},
 		);
 	}
+
 	unrenderCell(element: ICellViewModel): void {
 		for (const part of this.contentParts) {
 			safeInvokeNoArg(() => part.unrenderCell(element));
 		}
+
 		this._scheduledOverlayRendering.value = undefined;
+
 		this._scheduledOverlayUpdateState.value = undefined;
+
 		this._scheduledOverlayUpdateExecutionState.value = undefined;
 
 		for (const part of this.overlayParts) {
 			safeInvokeNoArg(() => part.unrenderCell(element));
 		}
 	}
+
 	updateInternalLayoutNow(viewCell: ICellViewModel) {
 		for (const part of this.contentParts) {
 			safeInvokeNoArg(() => part.updateInternalLayoutNow(viewCell));
 		}
+
 		for (const part of this.overlayParts) {
 			safeInvokeNoArg(() => part.updateInternalLayoutNow(viewCell));
 		}
 	}
+
 	prepareLayout() {
 		for (const part of this.contentParts) {
 			safeInvokeNoArg(() => part.prepareLayout());
 		}
 	}
+
 	updateState(viewCell: ICellViewModel, e: CellViewModelStateChangeEvent) {
 		for (const part of this.contentParts) {
 			safeInvokeNoArg(() => part.updateState(viewCell, e));
 		}
+
 		this._scheduledOverlayUpdateState.value = DOM.modify(
 			this.targetWindow,
 			() => {
@@ -227,6 +251,7 @@ export class CellPartsCollection extends Disposable {
 			},
 		);
 	}
+
 	updateForExecutionState(
 		viewCell: ICellViewModel,
 		e: ICellExecutionStateChangedEvent,
@@ -234,6 +259,7 @@ export class CellPartsCollection extends Disposable {
 		for (const part of this.contentParts) {
 			safeInvokeNoArg(() => part.updateForExecutionState(viewCell, e));
 		}
+
 		this._scheduledOverlayUpdateExecutionState.value = DOM.modify(
 			this.targetWindow,
 			() => {

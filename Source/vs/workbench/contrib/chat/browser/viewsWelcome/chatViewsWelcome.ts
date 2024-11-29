@@ -15,26 +15,35 @@ export const enum ChatViewsWelcomeExtensions {
 }
 export interface IChatViewsWelcomeDescriptor {
 	icon?: ThemeIcon;
+
 	title: string;
+
 	content: IMarkdownString | ((disposables: DisposableStore) => HTMLElement);
+
 	when: ContextKeyExpression;
 }
 export interface IChatViewsWelcomeContributionRegistry {
 	onDidChange: Event<void>;
 
 	get(): ReadonlyArray<IChatViewsWelcomeDescriptor>;
+
 	register(descriptor: IChatViewsWelcomeDescriptor): void;
 }
 class ChatViewsWelcomeContributionRegistry
 	implements IChatViewsWelcomeContributionRegistry
 {
 	private readonly descriptors: IChatViewsWelcomeDescriptor[] = [];
+
 	private readonly _onDidChange = new Emitter<void>();
+
 	public readonly onDidChange: Event<void> = this._onDidChange.event;
+
 	public register(descriptor: IChatViewsWelcomeDescriptor): void {
 		this.descriptors.push(descriptor);
+
 		this._onDidChange.fire();
 	}
+
 	public get(): ReadonlyArray<IChatViewsWelcomeDescriptor> {
 		return this.descriptors;
 	}

@@ -17,9 +17,13 @@ import * as standaloneEnums from "../standalone/standaloneEnums.js";
 
 export class KeyMod {
 	public static readonly CtrlCmd: number = ConstKeyMod.CtrlCmd;
+
 	public static readonly Shift: number = ConstKeyMod.Shift;
+
 	public static readonly Alt: number = ConstKeyMod.Alt;
+
 	public static readonly WinCtrl: number = ConstKeyMod.WinCtrl;
+
 	public static chord(firstPart: number, secondPart: number): number {
 		return KeyChord(firstPart, secondPart);
 	}

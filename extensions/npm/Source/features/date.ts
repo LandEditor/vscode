@@ -33,6 +33,7 @@ export function fromNow(
 	if (typeof date !== "number") {
 		date = date.getTime();
 	}
+
 	const seconds = Math.round((new Date().getTime() - date) / 1000);
 
 	if (seconds < -30) {
@@ -41,9 +42,11 @@ export function fromNow(
 			fromNow(new Date().getTime() + seconds * 1000, false),
 		);
 	}
+
 	if (!disallowNow && seconds < 30) {
 		return l10n.t("now");
 	}
+
 	let value: number;
 
 	if (seconds < minute) {
@@ -71,6 +74,7 @@ export function fromNow(
 			}
 		}
 	}
+
 	if (seconds < hour) {
 		value = Math.floor(seconds / minute);
 
@@ -96,6 +100,7 @@ export function fromNow(
 			}
 		}
 	}
+
 	if (seconds < day) {
 		value = Math.floor(seconds / hour);
 
@@ -121,6 +126,7 @@ export function fromNow(
 			}
 		}
 	}
+
 	if (seconds < week) {
 		value = Math.floor(seconds / day);
 
@@ -134,6 +140,7 @@ export function fromNow(
 				: l10n.t("{0} days", value);
 		}
 	}
+
 	if (seconds < month) {
 		value = Math.floor(seconds / week);
 
@@ -159,6 +166,7 @@ export function fromNow(
 			}
 		}
 	}
+
 	if (seconds < year) {
 		value = Math.floor(seconds / month);
 
@@ -184,6 +192,7 @@ export function fromNow(
 			}
 		}
 	}
+
 	value = Math.floor(seconds / year);
 
 	if (appendAgoLabel) {

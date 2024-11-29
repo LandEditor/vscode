@@ -64,18 +64,21 @@ function main(): Promise<void> {
 					),
 				),
 			);
+
 		sources.push(nodeModules);
 
 		const extensionsOut = vfs.src(
 			[".build/extensions/**/*.js.map", "!**/node_modules/**"],
 			{ base: ".build" },
 		);
+
 		sources.push(extensionsOut);
 	}
 	// specific client base/maps
 	else {
 		sources.push(src(base, maps));
 	}
+
 	return new Promise((c, e) => {
 		es.merge(...sources)
 			.pipe(
@@ -98,5 +101,6 @@ function main(): Promise<void> {
 }
 main().catch((err) => {
 	console.error(err);
+
 	process.exit(1);
 });

@@ -28,6 +28,7 @@ import { getFlatActionBarActions } from "./menuEntryActionViewItem.js";
 
 export class FloatingClickWidget extends Widget {
 	private readonly _onClick = this._register(new Emitter<void>());
+
 	readonly onClick = this._onClick.event;
 
 	private _domNode: HTMLElement;
@@ -36,9 +37,13 @@ export class FloatingClickWidget extends Widget {
 		super();
 
 		this._domNode = $(".floating-click-widget");
+
 		this._domNode.style.padding = "6px 11px";
+
 		this._domNode.style.borderRadius = "2px";
+
 		this._domNode.style.cursor = "pointer";
+
 		this._domNode.style.zIndex = "1";
 	}
 
@@ -48,14 +53,17 @@ export class FloatingClickWidget extends Widget {
 
 	render() {
 		clearNode(this._domNode);
+
 		this._domNode.style.backgroundColor = asCssVariableWithDefault(
 			buttonBackground,
 			asCssVariable(editorBackground),
 		);
+
 		this._domNode.style.color = asCssVariableWithDefault(
 			buttonForeground,
 			asCssVariable(editorForeground),
 		);
+
 		this._domNode.style.border = `1px solid ${asCssVariable(contrastBorder)}`;
 
 		append(this._domNode, $("")).textContent = this.label;
@@ -66,7 +74,9 @@ export class FloatingClickWidget extends Widget {
 
 export abstract class AbstractFloatingClickMenu extends Disposable {
 	private readonly renderEmitter = new Emitter<FloatingClickWidget>();
+
 	protected readonly onDidRender = this.renderEmitter.event;
+
 	private readonly menu: IMenu;
 
 	constructor(
@@ -75,6 +85,7 @@ export abstract class AbstractFloatingClickMenu extends Disposable {
 		@IContextKeyService contextKeyService: IContextKeyService,
 	) {
 		super();
+
 		this.menu = this._register(
 			menuService.createMenu(menuId, contextKeyService),
 		);
@@ -90,6 +101,7 @@ export abstract class AbstractFloatingClickMenu extends Disposable {
 			if (!this.isVisible()) {
 				return;
 			}
+
 			const actions = getFlatActionBarActions(
 				this.menu.getActions({
 					renderShortTitle: true,
@@ -104,13 +116,18 @@ export abstract class AbstractFloatingClickMenu extends Disposable {
 			const [first] = actions;
 
 			const widget = this.createWidget(first, menuDisposables);
+
 			menuDisposables.add(widget);
+
 			menuDisposables.add(
 				widget.onClick(() => first.run(this.getActionArg())),
 			);
+
 			widget.render();
 		};
+
 		this._register(this.menu.onDidChange(renderMenuAsFloatingClickBtn));
+
 		renderMenuAsFloatingClickBtn();
 	}
 
@@ -144,6 +161,7 @@ export class FloatingClickMenu extends AbstractFloatingClickMenu {
 		@IContextKeyService contextKeyService: IContextKeyService,
 	) {
 		super(options.menuId, menuService, contextKeyService);
+
 		this.render();
 	}
 
@@ -157,7 +175,9 @@ export class FloatingClickMenu extends AbstractFloatingClickMenu {
 		);
 
 		const node = w.getDomNode();
+
 		this.options.container.appendChild(node);
+
 		disposable.add(toDisposable(() => node.remove()));
 
 		return w;

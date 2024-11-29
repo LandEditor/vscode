@@ -17,6 +17,7 @@ import {
  */
 export class TextureAtlasShelfAllocator implements ITextureAtlasAllocator {
 	private readonly _ctx: OffscreenCanvasRenderingContext2D;
+
 	private _currentRow: ITextureAtlasShelf = {
 		x: 0,
 		y: 0,
@@ -25,6 +26,7 @@ export class TextureAtlasShelfAllocator implements ITextureAtlasAllocator {
 	/** A set of all glyphs allocated, this is only tracked to enable debug related functionality */
 	private readonly _allocatedGlyphs: Set<Readonly<ITextureAtlasPageGlyph>> =
 		new Set();
+
 	private _nextIndex = 0;
 
 	constructor(
@@ -37,6 +39,7 @@ export class TextureAtlasShelfAllocator implements ITextureAtlasAllocator {
 			}),
 		);
 	}
+
 	public allocate(
 		rasterizedGlyph: IRasterizedGlyph,
 	): ITextureAtlasPageGlyph | undefined {
@@ -67,7 +70,9 @@ export class TextureAtlasShelfAllocator implements ITextureAtlasAllocator {
 			this._canvas.width - this._currentRow.x
 		) {
 			this._currentRow.x = 0;
+
 			this._currentRow.y += this._currentRow.h;
+
 			this._currentRow.h = 1;
 		}
 		// Return undefined if there isn't any room left
@@ -109,12 +114,14 @@ export class TextureAtlasShelfAllocator implements ITextureAtlasAllocator {
 		};
 		// Shift current row
 		this._currentRow.x += glyphWidth;
+
 		this._currentRow.h = Math.max(this._currentRow.h, glyphHeight);
 		// Set the glyph
 		this._allocatedGlyphs.add(glyph);
 
 		return glyph;
 	}
+
 	public getUsagePreview(): Promise<Blob> {
 		const w = this._canvas.width;
 
@@ -123,29 +130,40 @@ export class TextureAtlasShelfAllocator implements ITextureAtlasAllocator {
 		const canvas = new OffscreenCanvas(w, h);
 
 		const ctx = ensureNonNullable(canvas.getContext("2d"));
+
 		ctx.fillStyle = UsagePreviewColors.Unused;
+
 		ctx.fillRect(0, 0, w, h);
 
 		const rowHeight: Map<number, number> = new Map(); // y -> h
 		const rowWidth: Map<number, number> = new Map(); // y -> w
 		for (const g of this._allocatedGlyphs) {
 			rowHeight.set(g.y, Math.max(rowHeight.get(g.y) ?? 0, g.h));
+
 			rowWidth.set(g.y, Math.max(rowWidth.get(g.y) ?? 0, g.x + g.w));
 		}
+
 		for (const g of this._allocatedGlyphs) {
 			ctx.fillStyle = UsagePreviewColors.Used;
+
 			ctx.fillRect(g.x, g.y, g.w, g.h);
+
 			ctx.fillStyle = UsagePreviewColors.Wasted;
+
 			ctx.fillRect(g.x, g.y + g.h, g.w, rowHeight.get(g.y)! - g.h);
 		}
+
 		for (const [rowY, rowW] of rowWidth.entries()) {
 			if (rowY !== this._currentRow.y) {
 				ctx.fillStyle = UsagePreviewColors.Wasted;
+
 				ctx.fillRect(rowW, rowY, w - rowW, rowHeight.get(rowY)!);
 			}
 		}
+
 		return canvas.convertToBlob();
 	}
+
 	getStats(): string {
 		const w = this._canvas.width;
 
@@ -161,17 +179,22 @@ export class TextureAtlasShelfAllocator implements ITextureAtlasAllocator {
 		const rowWidth: Map<number, number> = new Map(); // y -> w
 		for (const g of this._allocatedGlyphs) {
 			rowHeight.set(g.y, Math.max(rowHeight.get(g.y) ?? 0, g.h));
+
 			rowWidth.set(g.y, Math.max(rowWidth.get(g.y) ?? 0, g.x + g.w));
 		}
+
 		for (const g of this._allocatedGlyphs) {
 			usedPixels += g.w * g.h;
+
 			wastedPixels += g.w * (rowHeight.get(g.y)! - g.h);
 		}
+
 		for (const [rowY, rowW] of rowWidth.entries()) {
 			if (rowY !== this._currentRow.y) {
 				wastedPixels += (w - rowW) * rowHeight.get(rowY)!;
 			}
 		}
+
 		return [
 			`page${this._textureIndex}:`,
 			`     Total: ${totalPixels} (${w}x${h})`,
@@ -183,6 +206,8 @@ export class TextureAtlasShelfAllocator implements ITextureAtlasAllocator {
 }
 interface ITextureAtlasShelf {
 	x: number;
+
 	y: number;
+
 	h: number;
 }

@@ -64,30 +64,37 @@ import {
 
 export class SearchService extends Disposable implements ISearchService {
 	declare readonly _serviceBrand: undefined;
+
 	private readonly fileSearchProviders = new Map<
 		string,
 		ISearchResultProvider
 	>();
+
 	private readonly textSearchProviders = new Map<
 		string,
 		ISearchResultProvider
 	>();
+
 	private readonly aiTextSearchProviders = new Map<
 		string,
 		ISearchResultProvider
 	>();
+
 	private deferredFileSearchesByScheme = new Map<
 		string,
 		DeferredPromise<ISearchResultProvider>
 	>();
+
 	private deferredTextSearchesByScheme = new Map<
 		string,
 		DeferredPromise<ISearchResultProvider>
 	>();
+
 	private deferredAITextSearchesByScheme = new Map<
 		string,
 		DeferredPromise<ISearchResultProvider>
 	>();
+
 	private loggedSchemesMissingProviders = new Set<string>();
 
 	constructor(
@@ -108,6 +115,7 @@ export class SearchService extends Disposable implements ISearchService {
 	) {
 		super();
 	}
+
 	registerSearchResultProvider(
 		scheme: string,
 		type: SearchProviderType,
@@ -119,26 +127,33 @@ export class SearchService extends Disposable implements ISearchService {
 
 		if (type === SearchProviderType.file) {
 			list = this.fileSearchProviders;
+
 			deferredMap = this.deferredFileSearchesByScheme;
 		} else if (type === SearchProviderType.text) {
 			list = this.textSearchProviders;
+
 			deferredMap = this.deferredTextSearchesByScheme;
 		} else if (type === SearchProviderType.aiText) {
 			list = this.aiTextSearchProviders;
+
 			deferredMap = this.deferredAITextSearchesByScheme;
 		} else {
 			throw new Error("Unknown SearchProviderType");
 		}
+
 		list.set(scheme, provider);
 
 		if (deferredMap.has(scheme)) {
 			deferredMap.get(scheme)!.complete(provider);
+
 			deferredMap.delete(scheme);
 		}
+
 		return toDisposable(() => {
 			list.delete(scheme);
 		});
 	}
+
 	async textSearch(
 		query: ITextQuery,
 		token?: CancellationToken,
@@ -156,6 +171,7 @@ export class SearchService extends Disposable implements ISearchService {
 			messages: [...otherResults.messages, ...openEditorResults.messages],
 		};
 	}
+
 	async aiTextSearch(
 		query: IAITextQuery,
 		token?: CancellationToken,
@@ -171,6 +187,7 @@ export class SearchService extends Disposable implements ISearchService {
 					onProgress(<IProgressMessage>progress);
 				}
 			}
+
 			if (isProgressMessage(progress)) {
 				this.logService.debug("SearchService#search", progress.message);
 			}
@@ -178,6 +195,7 @@ export class SearchService extends Disposable implements ISearchService {
 
 		return this.doSearch(query, token, onProviderProgress);
 	}
+
 	async getAIName(): Promise<string | undefined> {
 		const provider = this.getSearchProvider(QueryType.aiText).get(
 			Schemas.file,
@@ -185,6 +203,7 @@ export class SearchService extends Disposable implements ISearchService {
 
 		return await provider?.getAIName();
 	}
+
 	textSearchSplitSyncAsync(
 		query: ITextQuery,
 		token?: CancellationToken | undefined,
@@ -211,6 +230,7 @@ export class SearchService extends Disposable implements ISearchService {
 				)
 				.forEach(onProgress);
 		}
+
 		const syncResults: ISearchComplete = {
 			results: arrays.coalesce([...openEditorResults.results.values()]),
 			limitHit: openEditorResults.limitHit ?? false,
@@ -238,6 +258,7 @@ export class SearchService extends Disposable implements ISearchService {
 					// Progress
 					onProgress(<IProgressMessage>progress);
 				}
+
 				if (isProgressMessage(progress)) {
 					this.logService.debug(
 						"SearchService#search",
@@ -254,15 +275,18 @@ export class SearchService extends Disposable implements ISearchService {
 			asyncResults: getAsyncResults(),
 		};
 	}
+
 	fileSearch(
 		query: IFileQuery,
 		token?: CancellationToken,
 	): Promise<ISearchComplete> {
 		return this.doSearch(query, token);
 	}
+
 	schemeHasFileSearchProvider(scheme: string): boolean {
 		return this.fileSearchProviders.has(scheme);
 	}
+
 	private doSearch(
 		query: ISearchQuery,
 		token?: CancellationToken,
@@ -273,26 +297,31 @@ export class SearchService extends Disposable implements ISearchService {
 		const schemesInQuery = this.getSchemesInQuery(query);
 
 		const providerActivations: Promise<any>[] = [Promise.resolve(null)];
+
 		schemesInQuery.forEach((scheme) =>
 			providerActivations.push(
 				this.extensionService.activateByEvent(`onSearch:${scheme}`),
 			),
 		);
+
 		providerActivations.push(
 			this.extensionService.activateByEvent("onSearch:file"),
 		);
 
 		const providerPromise = (async () => {
 			await Promise.all(providerActivations);
+
 			await this.extensionService.whenInstalledExtensionsRegistered();
 			// Cancel faster if search was canceled while waiting for extensions
 			if (token && token.isCancellationRequested) {
 				return Promise.reject(new CancellationError());
 			}
+
 			const progressCallback = (item: ISearchProgressItem) => {
 				if (token && token.isCancellationRequested) {
 					return;
 				}
+
 				onProgress?.(item);
 			};
 
@@ -301,6 +330,7 @@ export class SearchService extends Disposable implements ISearchService {
 					this.fileService.exists(query.folder),
 				),
 			);
+
 			query.folderQueries = query.folderQueries.filter(
 				(_, i) => exists[i],
 			);
@@ -310,6 +340,7 @@ export class SearchService extends Disposable implements ISearchService {
 				progressCallback,
 				token,
 			);
+
 			completes = arrays.coalesce(completes);
 
 			if (!completes.length) {
@@ -319,6 +350,7 @@ export class SearchService extends Disposable implements ISearchService {
 					messages: [],
 				};
 			}
+
 			return {
 				limitHit: completes[0] && completes[0].limitHit,
 				stats: completes[0].stats,
@@ -338,15 +370,19 @@ export class SearchService extends Disposable implements ISearchService {
 			? raceCancellationError<ISearchComplete>(providerPromise, token)
 			: providerPromise;
 	}
+
 	private getSchemesInQuery(query: ISearchQuery): Set<string> {
 		const schemes = new Set<string>();
+
 		query.folderQueries?.forEach((fq) => schemes.add(fq.folder.scheme));
+
 		query.extraFileResources?.forEach((extraFile) =>
 			schemes.add(extraFile.scheme),
 		);
 
 		return schemes;
 	}
+
 	private async waitForProvider(
 		queryType: QueryType,
 		scheme: string,
@@ -360,11 +396,13 @@ export class SearchService extends Disposable implements ISearchService {
 			return deferredMap.get(scheme)!.p;
 		} else {
 			const deferred = new DeferredPromise<ISearchResultProvider>();
+
 			deferredMap.set(scheme, deferred);
 
 			return deferred.p;
 		}
 	}
+
 	private getSearchProvider(
 		type: QueryType,
 	): Map<string, ISearchResultProvider> {
@@ -382,6 +420,7 @@ export class SearchService extends Disposable implements ISearchService {
 				throw new Error(`Unknown query type: ${type}`);
 		}
 	}
+
 	private getDeferredTextSearchesByScheme(
 		type: QueryType,
 	): Map<string, DeferredPromise<ISearchResultProvider>> {
@@ -399,6 +438,7 @@ export class SearchService extends Disposable implements ISearchService {
 				throw new Error(`Unknown query type: ${type}`);
 		}
 	}
+
 	private async searchWithProviders(
 		query: ISearchQuery,
 		onProviderProgress: (progress: ISearchProgressItem) => void,
@@ -417,11 +457,13 @@ export class SearchService extends Disposable implements ISearchService {
 		if (query.type === QueryType.aiText && !someSchemeHasProvider) {
 			return [];
 		}
+
 		await Promise.all(
 			[...fqs.keys()].map(async (scheme) => {
 				if (query.onlyFileScheme && scheme !== Schemas.file) {
 					return;
 				}
+
 				const schemeFQs = fqs.get(scheme)!;
 
 				let provider = this.getSearchProvider(query.type).get(scheme);
@@ -432,22 +474,27 @@ export class SearchService extends Disposable implements ISearchService {
 							this.logService.warn(
 								`No search provider registered for scheme: ${scheme}. Another scheme has a provider, not waiting for ${scheme}`,
 							);
+
 							this.loggedSchemesMissingProviders.add(scheme);
 						}
+
 						return;
 					} else {
 						if (!this.loggedSchemesMissingProviders.has(scheme)) {
 							this.logService.warn(
 								`No search provider registered for scheme: ${scheme}, waiting`,
 							);
+
 							this.loggedSchemesMissingProviders.add(scheme);
 						}
+
 						provider = await this.waitForProvider(
 							query.type,
 							scheme,
 						);
 					}
 				}
+
 				const oneSchemeQuery: ISearchQuery = {
 					...query,
 					...{
@@ -478,6 +525,7 @@ export class SearchService extends Disposable implements ISearchService {
 							);
 					}
 				};
+
 				searchPs.push(doProviderSearch());
 			}),
 		);
@@ -485,9 +533,11 @@ export class SearchService extends Disposable implements ISearchService {
 		return Promise.all(searchPs).then(
 			(completes) => {
 				const endToEndTime = e2eSW.elapsed();
+
 				this.logService.trace(
 					`SearchService#search: ${endToEndTime}ms`,
 				);
+
 				completes.forEach((complete) => {
 					this.sendTelemetry(query, endToEndTime, complete);
 				});
@@ -496,32 +546,40 @@ export class SearchService extends Disposable implements ISearchService {
 			},
 			(err) => {
 				const endToEndTime = e2eSW.elapsed();
+
 				this.logService.trace(
 					`SearchService#search: ${endToEndTime}ms`,
 				);
 
 				const searchError = deserializeSearchError(err);
+
 				this.logService.trace(
 					`SearchService#searchError: ${searchError.message}`,
 				);
+
 				this.sendTelemetry(query, endToEndTime, undefined, searchError);
 
 				throw searchError;
 			},
 		);
 	}
+
 	private groupFolderQueriesByScheme(
 		query: ISearchQuery,
 	): Map<string, IFolderQuery[]> {
 		const queries = new Map<string, IFolderQuery[]>();
+
 		query.folderQueries.forEach((fq) => {
 			const schemeFQs = queries.get(fq.folder.scheme) || [];
+
 			schemeFQs.push(fq);
+
 			queries.set(fq.folder.scheme, schemeFQs);
 		});
 
 		return queries;
 	}
+
 	private sendTelemetry(
 		query: ISearchQuery,
 		endToEndTime: number,
@@ -548,72 +606,115 @@ export class SearchService extends Disposable implements ISearchService {
 			if (fileSearchStats.fromCache) {
 				const cacheStats: ICachedSearchStats =
 					fileSearchStats.detailStats as ICachedSearchStats;
+
 				type CachedSearchCompleteClassifcation = {
 					owner: "roblourens";
+
 					comment: "Fired when a file search is completed from previously cached results";
+
 					reason?: {
 						classification: "SystemMetaData";
+
 						purpose: "PerformanceAndHealth";
+
 						comment: "Indicates which extension or UI feature triggered this search";
 					};
+
 					resultCount: {
 						classification: "SystemMetaData";
+
 						purpose: "PerformanceAndHealth";
+
 						comment: "The number of search results";
 					};
+
 					workspaceFolderCount: {
 						classification: "SystemMetaData";
+
 						purpose: "PerformanceAndHealth";
+
 						comment: "The number of folders in the workspace";
 					};
+
 					endToEndTime: {
 						classification: "SystemMetaData";
+
 						purpose: "PerformanceAndHealth";
+
 						comment: "The total search time";
 					};
+
 					sortingTime?: {
 						classification: "SystemMetaData";
+
 						purpose: "PerformanceAndHealth";
+
 						comment: "The amount of time spent sorting results";
 					};
+
 					cacheWasResolved: {
 						classification: "SystemMetaData";
+
 						purpose: "PerformanceAndHealth";
+
 						comment: "Whether the cache was already resolved when the search began";
 					};
+
 					cacheLookupTime: {
 						classification: "SystemMetaData";
+
 						purpose: "PerformanceAndHealth";
+
 						comment: "The amount of time spent looking up the cache to use for the search";
 					};
+
 					cacheFilterTime: {
 						classification: "SystemMetaData";
+
 						purpose: "PerformanceAndHealth";
+
 						comment: "The amount of time spent searching within the cache";
 					};
+
 					cacheEntryCount: {
 						classification: "SystemMetaData";
+
 						purpose: "PerformanceAndHealth";
+
 						comment: "The number of entries in the searched-in cache";
 					};
+
 					scheme: {
 						classification: "SystemMetaData";
+
 						purpose: "PerformanceAndHealth";
+
 						comment: "The uri scheme of the folder searched in";
 					};
 				};
+
 				type CachedSearchCompleteEvent = {
 					reason?: string;
+
 					resultCount: number;
+
 					workspaceFolderCount: number;
+
 					endToEndTime: number;
+
 					sortingTime?: number;
+
 					cacheWasResolved: boolean;
+
 					cacheLookupTime: number;
+
 					cacheFilterTime: number;
+
 					cacheEntryCount: number;
+
 					scheme: string;
 				};
+
 				this.telemetryService.publicLog2<
 					CachedSearchCompleteEvent,
 					CachedSearchCompleteClassifcation
@@ -632,78 +733,125 @@ export class SearchService extends Disposable implements ISearchService {
 			} else {
 				const searchEngineStats: ISearchEngineStats =
 					fileSearchStats.detailStats as ISearchEngineStats;
+
 				type SearchCompleteClassification = {
 					owner: "roblourens";
+
 					comment: "Fired when a file search is completed";
+
 					reason?: {
 						classification: "SystemMetaData";
+
 						purpose: "PerformanceAndHealth";
+
 						comment: "Indicates which extension or UI feature triggered this search";
 					};
+
 					resultCount: {
 						classification: "SystemMetaData";
+
 						purpose: "PerformanceAndHealth";
+
 						comment: "The number of search results";
 					};
+
 					workspaceFolderCount: {
 						classification: "SystemMetaData";
+
 						purpose: "PerformanceAndHealth";
+
 						comment: "The number of folders in the workspace";
 					};
+
 					endToEndTime: {
 						classification: "SystemMetaData";
+
 						purpose: "PerformanceAndHealth";
+
 						comment: "The total search time";
 					};
+
 					sortingTime?: {
 						classification: "SystemMetaData";
+
 						purpose: "PerformanceAndHealth";
+
 						comment: "The amount of time spent sorting results";
 					};
+
 					fileWalkTime: {
 						classification: "SystemMetaData";
+
 						purpose: "PerformanceAndHealth";
+
 						comment: "The amount of time spent walking file system";
 					};
+
 					directoriesWalked: {
 						classification: "SystemMetaData";
+
 						purpose: "PerformanceAndHealth";
+
 						comment: "The number of directories walked";
 					};
+
 					filesWalked: {
 						classification: "SystemMetaData";
+
 						purpose: "PerformanceAndHealth";
+
 						comment: "The number of files walked";
 					};
+
 					cmdTime: {
 						classification: "SystemMetaData";
+
 						purpose: "PerformanceAndHealth";
+
 						comment: "The amount of time spent running the search command";
 					};
+
 					cmdResultCount?: {
 						classification: "SystemMetaData";
+
 						purpose: "PerformanceAndHealth";
+
 						comment: "The number of results returned from the search command";
 					};
+
 					scheme: {
 						classification: "SystemMetaData";
+
 						purpose: "PerformanceAndHealth";
+
 						comment: "The uri scheme of the folder searched in";
 					};
 				};
+
 				type SearchCompleteEvent = {
 					reason?: string;
+
 					resultCount: number;
+
 					workspaceFolderCount: number;
+
 					endToEndTime: number;
+
 					sortingTime?: number;
+
 					fileWalkTime: number;
+
 					directoriesWalked: number;
+
 					filesWalked: number;
+
 					cmdTime: number;
+
 					cmdResultCount?: number;
+
 					scheme: string;
 				};
+
 				this.telemetryService.publicLog2<
 					SearchCompleteEvent,
 					SearchCompleteClassification
@@ -740,42 +888,65 @@ export class SearchService extends Disposable implements ISearchService {
 											? "canceled"
 											: "unknown";
 			}
+
 			type TextSearchCompleteClassification = {
 				owner: "roblourens";
+
 				comment: "Fired when a text search is completed";
+
 				reason?: {
 					classification: "SystemMetaData";
+
 					purpose: "PerformanceAndHealth";
+
 					comment: "Indicates which extension or UI feature triggered this search";
 				};
+
 				workspaceFolderCount: {
 					classification: "SystemMetaData";
+
 					purpose: "PerformanceAndHealth";
+
 					comment: "The number of folders in the workspace";
 				};
+
 				endToEndTime: {
 					classification: "SystemMetaData";
+
 					purpose: "PerformanceAndHealth";
+
 					comment: "The total search time";
 				};
+
 				scheme: {
 					classification: "SystemMetaData";
+
 					purpose: "PerformanceAndHealth";
+
 					comment: "The uri scheme of the folder searched in";
 				};
+
 				error?: {
 					classification: "SystemMetaData";
+
 					purpose: "PerformanceAndHealth";
+
 					comment: "The type of the error, if any";
 				};
 			};
+
 			type TextSearchCompleteEvent = {
 				reason?: string;
+
 				workspaceFolderCount: number;
+
 				endToEndTime: number;
+
 				scheme: string;
+
 				error?: string;
 			};
+
 			this.telemetryService.publicLog2<
 				TextSearchCompleteEvent,
 				TextSearchCompleteClassification
@@ -788,8 +959,10 @@ export class SearchService extends Disposable implements ISearchService {
 			});
 		}
 	}
+
 	private getOpenEditorResults(query: ITextQuery): {
 		results: ResourceMap<IFileMatch | null>;
+
 		limitHit: boolean;
 	} {
 		const openEditorResults = new ResourceMap<IFileMatch | null>((uri) =>
@@ -819,16 +992,20 @@ export class SearchService extends Disposable implements ISearchService {
 					);
 				}
 			}
+
 			const models = this.modelService.getModels();
+
 			models.forEach((model) => {
 				const resource = model.uri;
 
 				if (!resource) {
 					return;
 				}
+
 				if (limitHit) {
 					return;
 				}
+
 				const originalResource =
 					canonicalToOriginalResources.get(resource);
 
@@ -857,6 +1034,7 @@ export class SearchService extends Disposable implements ISearchService {
 				if (originalResource.scheme === "git") {
 					return;
 				}
+
 				if (!this.matches(originalResource, query)) {
 					return; // respect user filters
 				}
@@ -881,9 +1059,12 @@ export class SearchService extends Disposable implements ISearchService {
 				if (matches.length) {
 					if (askMax && matches.length >= askMax) {
 						limitHit = true;
+
 						matches = matches.slice(0, askMax - 1);
 					}
+
 					const fileMatch = new FileMatch(originalResource);
+
 					openEditorResults.set(originalResource, fileMatch);
 
 					const textSearchResults = editorMatchesToTextSearchResults(
@@ -891,6 +1072,7 @@ export class SearchService extends Disposable implements ISearchService {
 						model,
 						query.previewOptions,
 					);
+
 					fileMatch.results = getTextSearchMatchWithModelContext(
 						textSearchResults,
 						model,
@@ -901,18 +1083,22 @@ export class SearchService extends Disposable implements ISearchService {
 				}
 			});
 		}
+
 		return {
 			results: openEditorResults,
 			limitHit,
 		};
 	}
+
 	private matches(resource: uri, query: ITextQuery): boolean {
 		return pathIncludedInQuery(query, resource.fsPath);
 	}
+
 	async clearCache(cacheKey: string): Promise<void> {
 		const clearPs = Array.from(this.fileSearchProviders.values()).map(
 			(provider) => provider && provider.clearCache(cacheKey),
 		);
+
 		await Promise.all(clearPs);
 	}
 }

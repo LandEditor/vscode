@@ -34,7 +34,9 @@ const IEditorCancellationTokens = createDecorator<IEditorCancellationTokens>(
 );
 interface IEditorCancellationTokens {
 	readonly _serviceBrand: undefined;
+
 	add(editor: ICodeEditor, cts: CancellationTokenSource): () => void;
+
 	cancel(editor: ICodeEditor): void;
 }
 
@@ -50,13 +52,16 @@ registerSingleton(
 	IEditorCancellationTokens,
 	class implements IEditorCancellationTokens {
 		declare readonly _serviceBrand: undefined;
+
 		private readonly _tokens = new WeakMap<
 			ICodeEditor,
 			{
 				key: IContextKey<boolean>;
+
 				tokens: LinkedList<CancellationTokenSource>;
 			}
 		>();
+
 		add(editor: ICodeEditor, cts: CancellationTokenSource): () => void {
 			let data = this._tokens.get(editor);
 
@@ -70,21 +75,28 @@ registerSingleton(
 
 					return { key, tokens };
 				});
+
 				this._tokens.set(editor, data);
 			}
+
 			let removeFn: Function | undefined;
+
 			data.key.set(true);
+
 			removeFn = data.tokens.push(cts);
 
 			return () => {
 				// remove w/o cancellation
 				if (removeFn) {
 					removeFn();
+
 					data.key.set(!data.tokens.isEmpty());
+
 					removeFn = undefined;
 				}
 			};
 		}
+
 		cancel(editor: ICodeEditor): void {
 			const data = this._tokens.get(editor);
 
@@ -96,6 +108,7 @@ registerSingleton(
 
 			if (cts) {
 				cts.cancel();
+
 				data.key.set(!data.tokens.isEmpty());
 			}
 		}
@@ -111,10 +124,12 @@ export class EditorKeybindingCancellationTokenSource extends CancellationTokenSo
 		parent?: CancellationToken,
 	) {
 		super(parent);
+
 		this._unregister = editor.invokeWithinContext((accessor) =>
 			accessor.get(IEditorCancellationTokens).add(editor, this),
 		);
 	}
+
 	override dispose(): void {
 		this._unregister();
 
@@ -133,6 +148,7 @@ registerEditorCommand(
 				precondition: ctxCancellableOperation,
 			});
 		}
+
 		runEditorCommand(
 			accessor: ServicesAccessor,
 			editor: ICodeEditor,

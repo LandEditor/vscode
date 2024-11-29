@@ -30,6 +30,7 @@ export class EditorAccessibilityHelpContribution extends Disposable {
 
 	constructor() {
 		super();
+
 		this._register(
 			AccessibilityHelpAction.addImplementation(
 				90,
@@ -55,8 +56,10 @@ export class EditorAccessibilityHelpContribution extends Disposable {
 						await commandService.executeCommand(
 							NEW_UNTITLED_FILE_COMMAND_ID,
 						);
+
 						codeEditor = codeEditorService.getActiveCodeEditor()!;
 					}
+
 					accessibleViewService.show(
 						instantiationService.createInstance(
 							EditorAccessibilityHelpProvider,
@@ -73,13 +76,16 @@ class EditorAccessibilityHelpProvider
 	implements IAccessibleViewContentProvider
 {
 	id = AccessibleViewProviderId.Editor;
+
 	onClose() {
 		this._editor.focus();
 	}
+
 	options: IAccessibleViewOptions = {
 		type: AccessibleViewType.Help,
 		readMoreUrl: "https://go.microsoft.com/fwlink/?linkid=851010",
 	};
+
 	verbositySettingKey = AccessibilityVerbositySettingId.Editor;
 
 	constructor(
@@ -91,6 +97,7 @@ class EditorAccessibilityHelpProvider
 	) {
 		super();
 	}
+
 	provideContent(): string {
 		const options = this._editor.getOptions();
 
@@ -109,7 +116,9 @@ class EditorAccessibilityHelpProvider
 				content.push(AccessibilityHelpNLS.editableEditor);
 			}
 		}
+
 		content.push(AccessibilityHelpNLS.listSignalSounds);
+
 		content.push(AccessibilityHelpNLS.listAlerts);
 
 		const chatCommandInfo = getChatCommandInfo(
@@ -120,6 +129,7 @@ class EditorAccessibilityHelpProvider
 		if (chatCommandInfo) {
 			content.push(chatCommandInfo);
 		}
+
 		const commentCommandInfo = getCommentCommandInfo(
 			this._keybindingService,
 			this._contextKeyService,
@@ -129,21 +139,31 @@ class EditorAccessibilityHelpProvider
 		if (commentCommandInfo) {
 			content.push(commentCommandInfo);
 		}
+
 		if (options.get(EditorOption.stickyScroll).enabled) {
 			content.push(AccessibilityHelpNLS.stickScroll);
 		}
+
 		if (options.get(EditorOption.tabFocusMode)) {
 			content.push(AccessibilityHelpNLS.tabFocusModeOnMsg);
 		} else {
 			content.push(AccessibilityHelpNLS.tabFocusModeOffMsg);
 		}
+
 		content.push(AccessibilityHelpNLS.codeFolding);
+
 		content.push(AccessibilityHelpNLS.intellisense);
+
 		content.push(AccessibilityHelpNLS.showOrFocusHover);
+
 		content.push(AccessibilityHelpNLS.goToSymbol);
+
 		content.push(AccessibilityHelpNLS.startDebugging);
+
 		content.push(AccessibilityHelpNLS.setBreakpoint);
+
 		content.push(AccessibilityHelpNLS.debugExecuteSelection);
+
 		content.push(AccessibilityHelpNLS.addToWatch);
 
 		return content.join("\n");
@@ -170,6 +190,7 @@ export function getCommentCommandInfo(
 			CommentAccessibilityHelpNLS.previousRange,
 		].join("\n");
 	}
+
 	return;
 }
 export function getChatCommandInfo(
@@ -182,5 +203,6 @@ export function getChatCommandInfo(
 			AccessibilityHelpNLS.startInlineChat,
 		].join("\n");
 	}
+
 	return;
 }

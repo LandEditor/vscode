@@ -75,8 +75,10 @@ export function getRealAndSyntheticDocumentFormattersOrdered(
 			if (seen.has(formatter.extensionId)) {
 				continue;
 			}
+
 			seen.add(formatter.extensionId);
 		}
+
 		result.push({
 			displayName: formatter.displayName,
 			extensionId: formatter.extensionId,
@@ -90,6 +92,7 @@ export function getRealAndSyntheticDocumentFormattersOrdered(
 			},
 		});
 	}
+
 	return result;
 }
 export const enum FormattingKind {
@@ -115,6 +118,7 @@ export interface IFormattingEditProviderSelector {
 export abstract class FormattingConflicts {
 	private static readonly _selectors =
 		new LinkedList<IFormattingEditProviderSelector>();
+
 	static setFormatterSelector(
 		selector: IFormattingEditProviderSelector,
 	): IDisposable {
@@ -122,6 +126,7 @@ export abstract class FormattingConflicts {
 
 		return { dispose: remove };
 	}
+
 	static async select<
 		T extends
 			| DocumentFormattingEditProvider
@@ -135,11 +140,13 @@ export abstract class FormattingConflicts {
 		if (formatter.length === 0) {
 			return undefined;
 		}
+
 		const selector = Iterable.first(FormattingConflicts._selectors);
 
 		if (selector) {
 			return await selector(formatter, document, mode, kind);
 		}
+
 		return undefined;
 	}
 }
@@ -174,6 +181,7 @@ export async function formatDocumentRangesWithSelectedProvider(
 
 	if (selected) {
 		progress.report(selected);
+
 		await instaService.invokeFunction(
 			formatDocumentRangesWithProvider,
 			selected,
@@ -206,6 +214,7 @@ export async function formatDocumentRangesWithProvider(
 
 	if (isCodeEditor(editorOrModel)) {
 		model = editorOrModel.getModel();
+
 		cts = new EditorStateCancellationTokenSource(
 			editorOrModel,
 			CodeEditorStateFlag.Value | CodeEditorStateFlag.Position,
@@ -214,6 +223,7 @@ export async function formatDocumentRangesWithProvider(
 		);
 	} else {
 		model = editorOrModel;
+
 		cts = new TextModelCancellationTokenSource(editorOrModel, token);
 	}
 	// make sure that ranges don't overlap nor touch each other
@@ -236,6 +246,7 @@ export async function formatDocumentRangesWithProvider(
 			len = ranges.push(range);
 		}
 	}
+
 	const computeEdits = async (range: Range) => {
 		logService.trace(
 			`[format][provideDocumentRangeFormattingEdits] (request)`,
@@ -250,6 +261,7 @@ export async function formatDocumentRangesWithProvider(
 				model.getFormattingOptions(),
 				cts.token,
 			)) || [];
+
 		logService.trace(
 			`[format][provideDocumentRangeFormattingEdits] (response)`,
 			provider.extensionId?.value,
@@ -283,6 +295,7 @@ export async function formatDocumentRangesWithProvider(
 				}
 			}
 		}
+
 		return false;
 	};
 
@@ -307,24 +320,29 @@ export async function formatDocumentRangesWithProvider(
 					model.getFormattingOptions(),
 					cts.token,
 				)) || [];
+
 			logService.trace(
 				`[format][provideDocumentRangeFormattingEdits] (response)`,
 				provider.extensionId?.value,
 				result,
 			);
+
 			rawEditsList.push(result);
 		} else {
 			for (const range of ranges) {
 				if (cts.token.isCancellationRequested) {
 					return true;
 				}
+
 				rawEditsList.push(await computeEdits(range));
 			}
+
 			for (let i = 0; i < ranges.length; ++i) {
 				for (let j = i + 1; j < ranges.length; ++j) {
 					if (cts.token.isCancellationRequested) {
 						return true;
 					}
+
 					if (hasIntersectingEdit(rawEditsList[i], rawEditsList[j])) {
 						// Merge ranges i and j into a single range, recompute the associated edits
 						const mergedRange = Range.plusRange(
@@ -333,23 +351,32 @@ export async function formatDocumentRangesWithProvider(
 						);
 
 						const edits = await computeEdits(mergedRange);
+
 						ranges.splice(j, 1);
+
 						ranges.splice(i, 1);
+
 						ranges.push(mergedRange);
+
 						rawEditsList.splice(j, 1);
+
 						rawEditsList.splice(i, 1);
+
 						rawEditsList.push(edits);
 						// Restart scanning
 						i = 0;
+
 						j = 0;
 					}
 				}
 			}
 		}
+
 		for (const rawEdits of rawEditsList) {
 			if (cts.token.isCancellationRequested) {
 				return true;
 			}
+
 			const minimalEdits = await workerService.computeMoreMinimalEdits(
 				model.uri,
 				rawEdits,
@@ -362,12 +389,15 @@ export async function formatDocumentRangesWithProvider(
 	} finally {
 		cts.dispose();
 	}
+
 	if (allEdits.length === 0) {
 		return false;
 	}
+
 	if (isCodeEditor(editorOrModel)) {
 		// use editor to apply edits
 		FormattingEdit.execute(editorOrModel, allEdits, true);
+
 		editorOrModel.revealPositionInCenterIfOutsideViewport(
 			editorOrModel.getPosition(),
 			ScrollType.Immediate,
@@ -382,6 +412,7 @@ export async function formatDocumentRangesWithProvider(
 			range.endLineNumber,
 			range.endColumn,
 		);
+
 		model.pushEditOperations(
 			[initialSelection],
 			allEdits.map((edit) => {
@@ -406,10 +437,12 @@ export async function formatDocumentRangesWithProvider(
 						];
 					}
 				}
+
 				return null;
 			},
 		);
 	}
+
 	accessibilitySignalService.playSignal(AccessibilitySignal.format, {
 		userGesture,
 	});
@@ -447,6 +480,7 @@ export async function formatDocumentWithSelectedProvider(
 
 	if (selected) {
 		progress.report(selected);
+
 		await instaService.invokeFunction(
 			formatDocumentWithProvider,
 			selected,
@@ -477,6 +511,7 @@ export async function formatDocumentWithProvider(
 
 	if (isCodeEditor(editorOrModel)) {
 		model = editorOrModel.getModel();
+
 		cts = new EditorStateCancellationTokenSource(
 			editorOrModel,
 			CodeEditorStateFlag.Value | CodeEditorStateFlag.Position,
@@ -485,8 +520,10 @@ export async function formatDocumentWithProvider(
 		);
 	} else {
 		model = editorOrModel;
+
 		cts = new TextModelCancellationTokenSource(editorOrModel, token);
 	}
+
 	let edits: TextEdit[] | undefined;
 
 	try {
@@ -495,6 +532,7 @@ export async function formatDocumentWithProvider(
 			model.getFormattingOptions(),
 			cts.token,
 		);
+
 		edits = await workerService.computeMoreMinimalEdits(
 			model.uri,
 			rawEdits,
@@ -506,9 +544,11 @@ export async function formatDocumentWithProvider(
 	} finally {
 		cts.dispose();
 	}
+
 	if (!edits || edits.length === 0) {
 		return false;
 	}
+
 	if (isCodeEditor(editorOrModel)) {
 		// use editor to apply edits
 		FormattingEdit.execute(
@@ -533,6 +573,7 @@ export async function formatDocumentWithProvider(
 			range.endLineNumber,
 			range.endColumn,
 		);
+
 		model.pushEditOperations(
 			[initialSelection],
 			edits.map((edit) => {
@@ -557,10 +598,12 @@ export async function formatDocumentWithProvider(
 						];
 					}
 				}
+
 				return null;
 			},
 		);
 	}
+
 	accessibilitySignalService.playSignal(AccessibilitySignal.format, {
 		userGesture,
 	});
@@ -597,6 +640,7 @@ export async function getDocumentRangeFormattingEditsUntilResult(
 			);
 		}
 	}
+
 	return undefined;
 }
 export async function getDocumentFormattingEditsUntilResult(
@@ -624,6 +668,7 @@ export async function getDocumentFormattingEditsUntilResult(
 			);
 		}
 	}
+
 	return undefined;
 }
 export async function getDocumentFormattingEditsWithSelectedProvider(
@@ -661,6 +706,7 @@ export async function getDocumentFormattingEditsWithSelectedProvider(
 
 		return await workerService.computeMoreMinimalEdits(model.uri, rawEdits);
 	}
+
 	return undefined;
 }
 export function getOnTypeFormattingEdits(
@@ -678,9 +724,11 @@ export function getOnTypeFormattingEdits(
 	if (providers.length === 0) {
 		return Promise.resolve(undefined);
 	}
+
 	if (providers[0].autoFormatTriggerCharacters.indexOf(ch) < 0) {
 		return Promise.resolve(undefined);
 	}
+
 	return Promise.resolve(
 		providers[0].provideOnTypeFormattingEdits(
 			model,
@@ -699,7 +747,9 @@ CommandsRegistry.registerCommand(
 	"_executeFormatRangeProvider",
 	async function (accessor, ...args) {
 		const [resource, range, options] = args;
+
 		assertType(URI.isUri(resource));
+
 		assertType(Range.isIRange(range));
 
 		const resolverService = accessor.get(ITextModelService);
@@ -728,6 +778,7 @@ CommandsRegistry.registerCommand(
 	"_executeFormatDocumentProvider",
 	async function (accessor, ...args) {
 		const [resource, options] = args;
+
 		assertType(URI.isUri(resource));
 
 		const resolverService = accessor.get(ITextModelService);
@@ -755,8 +806,11 @@ CommandsRegistry.registerCommand(
 	"_executeFormatOnTypeProvider",
 	async function (accessor, ...args) {
 		const [resource, position, ch, options] = args;
+
 		assertType(URI.isUri(resource));
+
 		assertType(Position.isIPosition(position));
+
 		assertType(typeof ch === "string");
 
 		const resolverService = accessor.get(ITextModelService);

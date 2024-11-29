@@ -27,6 +27,7 @@ export const IOutputChannelModelService =
 
 export interface IOutputChannelModelService {
 	readonly _serviceBrand: undefined;
+
 	createOutputChannelModel(
 		id: string,
 		modelUri: URI,
@@ -36,6 +37,7 @@ export interface IOutputChannelModelService {
 }
 export class OutputChannelModelService {
 	declare readonly _serviceBrand: undefined;
+
 	private readonly outputLocation: URI;
 
 	constructor(
@@ -51,6 +53,7 @@ export class OutputChannelModelService {
 			`output_${toLocalISOString(new Date()).replace(/-|:|\.\d+Z$/g, "")}`,
 		);
 	}
+
 	createOutputChannelModel(
 		id: string,
 		modelUri: URI,
@@ -72,13 +75,16 @@ export class OutputChannelModelService {
 					this.outputDir,
 				);
 	}
+
 	private _outputDir: Promise<URI> | null = null;
+
 	private get outputDir(): Promise<URI> {
 		if (!this._outputDir) {
 			this._outputDir = this.fileService
 				.createFolder(this.outputLocation)
 				.then(() => this.outputLocation);
 		}
+
 		return this._outputDir;
 	}
 }

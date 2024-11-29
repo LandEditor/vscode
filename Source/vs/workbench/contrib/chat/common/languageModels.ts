@@ -34,12 +34,16 @@ export const enum ChatMessageRole {
 }
 export interface IChatMessageTextPart {
 	type: "text";
+
 	value: string;
 }
 export interface IChatMessageToolResultPart {
 	type: "tool_result";
+
 	toolCallId: string;
+
 	value: (IChatResponseTextPart | IChatResponsePromptTsxPart)[];
+
 	isError?: boolean;
 }
 export type IChatMessagePart =
@@ -49,21 +53,28 @@ export type IChatMessagePart =
 
 export interface IChatMessage {
 	readonly name?: string | undefined;
+
 	readonly role: ChatMessageRole;
+
 	readonly content: IChatMessagePart[];
 }
 export interface IChatResponseTextPart {
 	type: "text";
+
 	value: string;
 }
 export interface IChatResponsePromptTsxPart {
 	type: "prompt_tsx";
+
 	value: unknown;
 }
 export interface IChatResponseToolUsePart {
 	type: "tool_use";
+
 	name: string;
+
 	toolCallId: string;
+
 	parameters: any;
 }
 export type IChatResponsePart =
@@ -72,31 +83,46 @@ export type IChatResponsePart =
 
 export interface IChatResponseFragment {
 	index: number;
+
 	part: IChatResponsePart;
 }
 export interface ILanguageModelChatMetadata {
 	readonly extension: ExtensionIdentifier;
+
 	readonly name: string;
+
 	readonly id: string;
+
 	readonly vendor: string;
+
 	readonly version: string;
+
 	readonly family: string;
+
 	readonly maxInputTokens: number;
+
 	readonly maxOutputTokens: number;
+
 	readonly targetExtensions?: string[];
+
 	readonly isDefault?: boolean;
+
 	readonly isUserSelectable?: boolean;
+
 	readonly auth?: {
 		readonly providerLabel: string;
+
 		readonly accountLabel?: string;
 	};
 }
 export interface ILanguageModelChatResponse {
 	stream: AsyncIterable<IChatResponseFragment>;
+
 	result: Promise<any>;
 }
 export interface ILanguageModelChat {
 	metadata: ILanguageModelChatMetadata;
+
 	sendChatRequest(
 		messages: IChatMessage[],
 		from: ExtensionIdentifier,
@@ -105,6 +131,7 @@ export interface ILanguageModelChat {
 		},
 		token: CancellationToken,
 	): Promise<ILanguageModelChatResponse>;
+
 	provideTokenCount(
 		message: string | IChatMessage,
 		token: CancellationToken,
@@ -112,11 +139,17 @@ export interface ILanguageModelChat {
 }
 export interface ILanguageModelChatSelector {
 	readonly name?: string;
+
 	readonly identifier?: string;
+
 	readonly vendor?: string;
+
 	readonly version?: string;
+
 	readonly family?: string;
+
 	readonly tokens?: number;
+
 	readonly extension?: ExtensionIdentifier;
 }
 export const ILanguageModelsService = createDecorator<ILanguageModelsService>(
@@ -126,25 +159,32 @@ export const ILanguageModelsService = createDecorator<ILanguageModelsService>(
 export interface ILanguageModelsChangeEvent {
 	added?: {
 		identifier: string;
+
 		metadata: ILanguageModelChatMetadata;
 	}[];
+
 	removed?: string[];
 }
 export interface ILanguageModelsService {
 	readonly _serviceBrand: undefined;
+
 	onDidChangeLanguageModels: Event<ILanguageModelsChangeEvent>;
 
 	getLanguageModelIds(): string[];
+
 	lookupLanguageModel(
 		identifier: string,
 	): ILanguageModelChatMetadata | undefined;
+
 	selectLanguageModels(
 		selector: ILanguageModelChatSelector,
 	): Promise<string[]>;
+
 	registerLanguageModelChat(
 		identifier: string,
 		provider: ILanguageModelChat,
 	): IDisposable;
+
 	sendChatRequest(
 		identifier: string,
 		from: ExtensionIdentifier,
@@ -154,6 +194,7 @@ export interface ILanguageModelsService {
 		},
 		token: CancellationToken,
 	): Promise<ILanguageModelChatResponse>;
+
 	computeTokenLength(
 		identifier: string,
 		message: string | IChatMessage,
@@ -208,14 +249,20 @@ export const languageModelExtensionPoint =
 
 export class LanguageModelsService implements ILanguageModelsService {
 	readonly _serviceBrand: undefined;
+
 	private readonly _store = new DisposableStore();
+
 	private readonly _providers = new Map<string, ILanguageModelChat>();
+
 	private readonly _vendors = new Set<string>();
+
 	private readonly _onDidChangeProviders = this._store.add(
 		new Emitter<ILanguageModelsChangeEvent>(),
 	);
+
 	readonly onDidChangeLanguageModels: Event<ILanguageModelsChangeEvent> =
 		this._onDidChangeProviders.event;
+
 	private readonly _hasUserSelectableModels: IContextKey<boolean>;
 
 	constructor(
@@ -230,6 +277,7 @@ export class LanguageModelsService implements ILanguageModelsService {
 			ChatContextKeys.languageModelsAreUserSelectable.bindTo(
 				this._contextKeyService,
 			);
+
 		this._store.add(
 			languageModelExtensionPoint.setHandler((extensions) => {
 				this._vendors.clear();
@@ -250,6 +298,7 @@ export class LanguageModelsService implements ILanguageModelsService {
 
 						continue;
 					}
+
 					for (const item of Iterable.wrap(extension.value)) {
 						if (this._vendors.has(item.vendor)) {
 							extension.collector.error(
@@ -262,6 +311,7 @@ export class LanguageModelsService implements ILanguageModelsService {
 
 							continue;
 						}
+
 						if (isFalsyOrWhitespace(item.vendor)) {
 							extension.collector.error(
 								localize(
@@ -272,6 +322,7 @@ export class LanguageModelsService implements ILanguageModelsService {
 
 							continue;
 						}
+
 						if (item.vendor.trim() !== item.vendor) {
 							extension.collector.error(
 								localize(
@@ -282,35 +333,44 @@ export class LanguageModelsService implements ILanguageModelsService {
 
 							continue;
 						}
+
 						this._vendors.add(item.vendor);
 					}
 				}
+
 				const removed: string[] = [];
 
 				for (const [identifier, value] of this._providers) {
 					if (!this._vendors.has(value.metadata.vendor)) {
 						this._providers.delete(identifier);
+
 						removed.push(identifier);
 					}
 				}
+
 				if (removed.length > 0) {
 					this._onDidChangeProviders.fire({ removed });
 				}
 			}),
 		);
 	}
+
 	dispose() {
 		this._store.dispose();
+
 		this._providers.clear();
 	}
+
 	getLanguageModelIds(): string[] {
 		return Array.from(this._providers.keys());
 	}
+
 	lookupLanguageModel(
 		identifier: string,
 	): ILanguageModelChatMetadata | undefined {
 		return this._providers.get(identifier)?.metadata;
 	}
+
 	async selectLanguageModels(
 		selector: ILanguageModelChatSelector,
 	): Promise<string[]> {
@@ -326,8 +386,10 @@ export class LanguageModelsService implements ILanguageModelsService {
 					`onLanguageModelChat:${vendor}`,
 				),
 			);
+
 			await Promise.all(all);
 		}
+
 		const result: string[] = [];
 
 		for (const [identifier, model] of this._providers) {
@@ -351,6 +413,7 @@ export class LanguageModelsService implements ILanguageModelsService {
 				result.push(identifier);
 			}
 		}
+
 		this._logService.trace(
 			"[LM] selected language models",
 			selector,
@@ -359,6 +422,7 @@ export class LanguageModelsService implements ILanguageModelsService {
 
 		return result;
 	}
+
 	registerLanguageModelChat(
 		identifier: string,
 		provider: ILanguageModelChat,
@@ -374,15 +438,19 @@ export class LanguageModelsService implements ILanguageModelsService {
 				`Chat response provider uses UNKNOWN vendor ${provider.metadata.vendor}.`,
 			);
 		}
+
 		if (this._providers.has(identifier)) {
 			throw new Error(
 				`Chat response provider with identifier ${identifier} is already registered.`,
 			);
 		}
+
 		this._providers.set(identifier, provider);
+
 		this._onDidChangeProviders.fire({
 			added: [{ identifier, metadata: provider.metadata }],
 		});
+
 		this.updateUserSelectableModelsContext();
 
 		return toDisposable(() => {
@@ -390,6 +458,7 @@ export class LanguageModelsService implements ILanguageModelsService {
 
 			if (this._providers.delete(identifier)) {
 				this._onDidChangeProviders.fire({ removed: [identifier] });
+
 				this._logService.trace(
 					"[LM] UNregistered language model chat",
 					identifier,
@@ -398,6 +467,7 @@ export class LanguageModelsService implements ILanguageModelsService {
 			}
 		});
 	}
+
 	private updateUserSelectableModelsContext() {
 		// This context key to enable the picker is set when there is a default model, and there is at least one other model that is user selectable
 		const hasUserSelectableModels = Array.from(
@@ -407,10 +477,12 @@ export class LanguageModelsService implements ILanguageModelsService {
 		const hasDefaultModel = Array.from(this._providers.values()).some(
 			(p) => p.metadata.isDefault,
 		);
+
 		this._hasUserSelectableModels.set(
 			hasUserSelectableModels && hasDefaultModel,
 		);
 	}
+
 	async sendChatRequest(
 		identifier: string,
 		from: ExtensionIdentifier,
@@ -427,8 +499,10 @@ export class LanguageModelsService implements ILanguageModelsService {
 				`Chat response provider with identifier ${identifier} is not registered.`,
 			);
 		}
+
 		return provider.sendChatRequest(messages, from, options, token);
 	}
+
 	computeTokenLength(
 		identifier: string,
 		message: string | IChatMessage,
@@ -441,6 +515,7 @@ export class LanguageModelsService implements ILanguageModelsService {
 				`Chat response provider with identifier ${identifier} is not registered.`,
 			);
 		}
+
 		return provider.provideTokenCount(message, token);
 	}
 }

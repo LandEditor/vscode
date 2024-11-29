@@ -28,6 +28,7 @@ export async function applyCodeAction(
 			return false;
 		}
 	}
+
 	return applyCodeActionCommands(client, action.commands, token);
 }
 export async function applyCodeActionCommands(
@@ -40,5 +41,6 @@ export async function applyCodeActionCommands(
 			await client.execute("applyCodeActionCommand", { command }, token);
 		}
 	}
+
 	return true;
 }

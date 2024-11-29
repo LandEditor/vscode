@@ -12,9 +12,13 @@ import { ITypeScriptServiceClient } from "../typescriptService";
 
 class SourceDefinitionCommand implements Command {
 	public static readonly context = "tsSupportsSourceDefinition";
+
 	public static readonly minVersion = API.v470;
+
 	public readonly id = "typescript.goToSourceDefinition";
+
 	public constructor(private readonly client: ITypeScriptServiceClient) {}
+
 	public async execute() {
 		if (this.client.apiVersion.lt(SourceDefinitionCommand.minVersion)) {
 			vscode.window.showErrorMessage(
@@ -25,6 +29,7 @@ class SourceDefinitionCommand implements Command {
 
 			return;
 		}
+
 		const activeEditor = vscode.window.activeTextEditor;
 
 		if (!activeEditor) {
@@ -36,6 +41,7 @@ class SourceDefinitionCommand implements Command {
 
 			return;
 		}
+
 		const resource = activeEditor.document.uri;
 
 		const document = await vscode.workspace.openTextDocument(resource);
@@ -49,6 +55,7 @@ class SourceDefinitionCommand implements Command {
 
 			return;
 		}
+
 		const openedFiledPath = this.client.toOpenTsFilePath(document);
 
 		if (!openedFiledPath) {
@@ -60,6 +67,7 @@ class SourceDefinitionCommand implements Command {
 
 			return;
 		}
+
 		await vscode.window.withProgress(
 			{
 				location: vscode.ProgressLocation.Window,
@@ -104,9 +112,11 @@ class SourceDefinitionCommand implements Command {
 								locations,
 							);
 						}
+
 						return;
 					}
 				}
+
 				vscode.window.showErrorMessage(
 					vscode.l10n.t("No source definitions found."),
 				);
@@ -125,7 +135,9 @@ export function register(
 			client.apiVersion.gte(SourceDefinitionCommand.minVersion),
 		);
 	}
+
 	updateContext();
+
 	commandManager.register(new SourceDefinitionCommand(client));
 
 	return client.onTsServerStarted(() => updateContext());

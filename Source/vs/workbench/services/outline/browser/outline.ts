@@ -27,17 +27,22 @@ export const enum OutlineTarget {
 }
 export interface IOutlineService {
 	_serviceBrand: undefined;
+
 	onDidChange: Event<void>;
+
 	canCreateOutline(editor: IEditorPane): boolean;
+
 	createOutline(
 		editor: IEditorPane,
 		target: OutlineTarget,
 		token: CancellationToken,
 	): Promise<IOutline<any> | undefined>;
+
 	registerOutlineCreator(creator: IOutlineCreator<any, any>): IDisposable;
 }
 export interface IOutlineCreator<P extends IEditorPane, E> {
 	matches(candidate: IEditorPane): candidate is P;
+
 	createOutline(
 		editor: P,
 		target: OutlineTarget,
@@ -49,14 +54,20 @@ export interface IBreadcrumbsDataSource<E> {
 }
 export interface IOutlineComparator<E> {
 	compareByPosition(a: E, b: E): number;
+
 	compareByType(a: E, b: E): number;
+
 	compareByName(a: E, b: E): number;
 }
 export interface IQuickPickOutlineElement<E> {
 	readonly element: E;
+
 	readonly label: string;
+
 	readonly iconClasses?: string[];
+
 	readonly ariaLabel?: string;
+
 	readonly description?: string;
 }
 export interface IQuickPickDataSource<E> {
@@ -64,11 +75,17 @@ export interface IQuickPickDataSource<E> {
 }
 export interface IOutlineListConfig<E> {
 	readonly breadcrumbsDataSource: IBreadcrumbsDataSource<E>;
+
 	readonly treeDataSource: IDataSource<IOutline<E>, E>;
+
 	readonly delegate: IListVirtualDelegate<E>;
+
 	readonly renderers: ITreeRenderer<E, FuzzyScore, any>[];
+
 	readonly comparator: IOutlineComparator<E>;
+
 	readonly options: IWorkbenchDataTreeOptions<E, FuzzyScore>;
+
 	readonly quickPickDataSource: IQuickPickDataSource<E>;
 }
 export interface OutlineChangeEvent {
@@ -76,19 +93,28 @@ export interface OutlineChangeEvent {
 }
 export interface IOutline<E> {
 	readonly uri: URI | undefined;
+
 	readonly config: IOutlineListConfig<E>;
+
 	readonly outlineKind: string;
+
 	readonly isEmpty: boolean;
+
 	readonly activeElement: E | undefined;
+
 	readonly onDidChange: Event<OutlineChangeEvent>;
+
 	reveal(
 		entry: E,
 		options: IEditorOptions,
 		sideBySide: boolean,
 		select: boolean,
 	): Promise<void> | void;
+
 	preview(entry: E): IDisposable;
+
 	captureViewState(): IDisposable;
+
 	dispose(): void;
 }
 export const enum OutlineConfigKeys {

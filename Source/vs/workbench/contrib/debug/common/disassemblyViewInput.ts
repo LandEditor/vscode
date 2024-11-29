@@ -19,10 +19,13 @@ const DisassemblyEditorIcon = registerIcon(
 
 export class DisassemblyViewInput extends EditorInput {
 	static readonly ID = "debug.disassemblyView.input";
+
 	override get typeId(): string {
 		return DisassemblyViewInput.ID;
 	}
+
 	static _instance: DisassemblyViewInput;
+
 	static get instance() {
 		if (
 			!DisassemblyViewInput._instance ||
@@ -30,15 +33,20 @@ export class DisassemblyViewInput extends EditorInput {
 		) {
 			DisassemblyViewInput._instance = new DisassemblyViewInput();
 		}
+
 		return DisassemblyViewInput._instance;
 	}
+
 	readonly resource = undefined;
+
 	override getName(): string {
 		return localize("disassemblyInputName", "Disassembly");
 	}
+
 	override getIcon(): ThemeIcon {
 		return DisassemblyEditorIcon;
 	}
+
 	override matches(other: unknown): boolean {
 		return other instanceof DisassemblyViewInput;
 	}

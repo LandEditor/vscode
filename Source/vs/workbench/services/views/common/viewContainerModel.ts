@@ -61,11 +61,14 @@ registerAction2(
 				f1: true,
 			});
 		}
+
 		async run(servicesAccessor: ServicesAccessor): Promise<void> {
 			const loggerService = servicesAccessor.get(ILoggerService);
 
 			const outputService = servicesAccessor.get(IOutputService);
+
 			loggerService.setVisibility(VIEWS_LOG_ID, true);
+
 			outputService.showChannel(VIEWS_LOG_ID);
 		}
 	},
@@ -76,36 +79,52 @@ export function getViewsStateStorageId(viewContainerStorageId: string): string {
 }
 interface IStoredWorkspaceViewState {
 	collapsed: boolean;
+
 	isHidden: boolean;
+
 	size?: number;
+
 	order?: number;
 }
 interface IStoredGlobalViewState {
 	id: string;
+
 	isHidden: boolean;
+
 	order?: number;
 }
 interface IViewDescriptorState {
 	visibleGlobal: boolean | undefined;
+
 	visibleWorkspace: boolean | undefined;
+
 	collapsed: boolean | undefined;
+
 	active: boolean;
+
 	order?: number;
+
 	size?: number;
 }
 class ViewDescriptorsState extends Disposable {
 	private readonly workspaceViewsStateStorageId: string;
+
 	private readonly globalViewsStateStorageId: string;
+
 	private readonly state: Map<string, IViewDescriptorState>;
+
 	private _onDidChangeStoredState = this._register(
 		new Emitter<
 			{
 				id: string;
+
 				visible: boolean;
 			}[]
 		>(),
 	);
+
 	readonly onDidChangeStoredState = this._onDidChangeStoredState.event;
+
 	private readonly logger: Lazy<ILogger>;
 
 	constructor(
@@ -117,16 +136,20 @@ class ViewDescriptorsState extends Disposable {
 		loggerService: ILoggerService,
 	) {
 		super();
+
 		this.logger = new Lazy(() =>
 			loggerService.createLogger(VIEWS_LOG_ID, {
 				name: VIEWS_LOG_NAME,
 				hidden: true,
 			}),
 		);
+
 		this.globalViewsStateStorageId = getViewsStateStorageId(
 			viewContainerStorageId,
 		);
+
 		this.workspaceViewsStateStorageId = viewContainerStorageId;
+
 		this._register(
 			this.storageService.onDidChangeValue(
 				StorageScope.PROFILE,
@@ -134,18 +157,24 @@ class ViewDescriptorsState extends Disposable {
 				this._store,
 			)(() => this.onDidStorageChange()),
 		);
+
 		this.state = this.initialize();
 	}
+
 	set(id: string, state: IViewDescriptorState): void {
 		this.state.set(id, state);
 	}
+
 	get(id: string): IViewDescriptorState | undefined {
 		return this.state.get(id);
 	}
+
 	updateState(viewDescriptors: ReadonlyArray<IViewDescriptor>): void {
 		this.updateWorkspaceState(viewDescriptors);
+
 		this.updateGlobalState(viewDescriptors);
 	}
+
 	private updateWorkspaceState(
 		viewDescriptors: ReadonlyArray<IViewDescriptor>,
 	): void {
@@ -166,6 +195,7 @@ class ViewDescriptorsState extends Disposable {
 				};
 			}
 		}
+
 		if (Object.keys(storedViewsStates).length > 0) {
 			this.storageService.store(
 				this.workspaceViewsStateStorageId,
@@ -180,6 +210,7 @@ class ViewDescriptorsState extends Disposable {
 			);
 		}
 	}
+
 	private updateGlobalState(
 		viewDescriptors: ReadonlyArray<IViewDescriptor>,
 	): void {
@@ -187,6 +218,7 @@ class ViewDescriptorsState extends Disposable {
 
 		for (const viewDescriptor of viewDescriptors) {
 			const state = this.get(viewDescriptor.id);
+
 			storedGlobalState.set(viewDescriptor.id, {
 				id: viewDescriptor.id,
 				isHidden:
@@ -199,8 +231,10 @@ class ViewDescriptorsState extends Disposable {
 						: undefined,
 			});
 		}
+
 		this.setStoredGlobalState(storedGlobalState);
 	}
+
 	private onDidStorageChange(): void {
 		if (
 			this.globalViewsStatesValue !==
@@ -214,6 +248,7 @@ class ViewDescriptorsState extends Disposable {
 
 			const changedStates: {
 				id: string;
+
 				visible: boolean;
 			}[] = [];
 
@@ -228,6 +263,7 @@ class ViewDescriptorsState extends Disposable {
 								this.viewContainerName,
 							);
 						}
+
 						changedStates.push({
 							id,
 							visible: !storedState.isHidden,
@@ -237,6 +273,7 @@ class ViewDescriptorsState extends Disposable {
 					const workspaceViewState:
 						| IStoredWorkspaceViewState
 						| undefined = storedWorkspaceViewsStates[id];
+
 					this.set(id, {
 						active: false,
 						visibleGlobal: !storedState.isHidden,
@@ -251,6 +288,7 @@ class ViewDescriptorsState extends Disposable {
 					});
 				}
 			}
+
 			if (changedStates.length) {
 				this._onDidChangeStoredState.fire(changedStates);
 				// Update the in memory state after firing the event
@@ -265,6 +303,7 @@ class ViewDescriptorsState extends Disposable {
 			}
 		}
 	}
+
 	private initialize(): Map<string, IViewDescriptorState> {
 		const viewStates = new Map<string, IViewDescriptorState>();
 
@@ -272,6 +311,7 @@ class ViewDescriptorsState extends Disposable {
 
 		for (const id of Object.keys(workspaceViewsStates)) {
 			const workspaceViewState = workspaceViewsStates[id];
+
 			viewStates.set(id, {
 				active: false,
 				visibleGlobal: undefined,
@@ -310,11 +350,13 @@ class ViewDescriptorsState extends Disposable {
 					});
 				}
 			}
+
 			this.storageService.remove(
 				this.globalViewsStateStorageId,
 				StorageScope.WORKSPACE,
 			);
 		}
+
 		const { state, hasDuplicates } = this.parseStoredGlobalState(
 			this.globalViewsStatesValue,
 		);
@@ -322,6 +364,7 @@ class ViewDescriptorsState extends Disposable {
 		if (hasDuplicates) {
 			this.setStoredGlobalState(state);
 		}
+
 		for (const { id, isHidden, order } of state.values()) {
 			const viewState = viewStates.get(id);
 
@@ -341,8 +384,10 @@ class ViewDescriptorsState extends Disposable {
 				});
 			}
 		}
+
 		return viewStates;
 	}
+
 	private getStoredWorkspaceState(): IStringDictionary<IStoredWorkspaceViewState> {
 		return JSON.parse(
 			this.storageService.get(
@@ -352,9 +397,11 @@ class ViewDescriptorsState extends Disposable {
 			),
 		);
 	}
+
 	private getStoredGlobalState(): Map<string, IStoredGlobalViewState> {
 		return this.parseStoredGlobalState(this.globalViewsStatesValue).state;
 	}
+
 	private setStoredGlobalState(
 		storedGlobalState: Map<string, IStoredGlobalViewState>,
 	): void {
@@ -362,8 +409,10 @@ class ViewDescriptorsState extends Disposable {
 			...storedGlobalState.values(),
 		]);
 	}
+
 	private parseStoredGlobalState(value: string): {
 		state: Map<string, IStoredGlobalViewState>;
+
 		hasDuplicates: boolean;
 	} {
 		const storedValue: Array<string | IStoredGlobalViewState> =
@@ -374,30 +423,39 @@ class ViewDescriptorsState extends Disposable {
 		const state = storedValue.reduce((result, storedState) => {
 			if (typeof storedState === "string" /* migration */) {
 				hasDuplicates = hasDuplicates || result.has(storedState);
+
 				result.set(storedState, { id: storedState, isHidden: true });
 			} else {
 				hasDuplicates = hasDuplicates || result.has(storedState.id);
+
 				result.set(storedState.id, storedState);
 			}
+
 			return result;
 		}, new Map<string, IStoredGlobalViewState>());
 
 		return { state, hasDuplicates };
 	}
+
 	private _globalViewsStatesValue: string | undefined;
+
 	private get globalViewsStatesValue(): string {
 		if (!this._globalViewsStatesValue) {
 			this._globalViewsStatesValue =
 				this.getStoredGlobalViewsStatesValue();
 		}
+
 		return this._globalViewsStatesValue;
 	}
+
 	private set globalViewsStatesValue(globalViewsStatesValue: string) {
 		if (this.globalViewsStatesValue !== globalViewsStatesValue) {
 			this._globalViewsStatesValue = globalViewsStatesValue;
+
 			this.setStoredGlobalViewsStatesValue(globalViewsStatesValue);
 		}
 	}
+
 	private getStoredGlobalViewsStatesValue(): string {
 		return this.storageService.get(
 			this.globalViewsStateStorageId,
@@ -405,6 +463,7 @@ class ViewDescriptorsState extends Disposable {
 			"[]",
 		);
 	}
+
 	private setStoredGlobalViewsStatesValue(value: string): void {
 		this.storageService.store(
 			this.globalViewsStateStorageId,
@@ -416,6 +475,7 @@ class ViewDescriptorsState extends Disposable {
 }
 interface IViewDescriptorItem {
 	viewDescriptor: IViewDescriptor;
+
 	state: IViewDescriptorState;
 }
 export class ViewContainerModel
@@ -423,7 +483,9 @@ export class ViewContainerModel
 	implements IViewContainerModel
 {
 	private readonly contextKeys = new CounterSet<string>();
+
 	private viewDescriptorItems: IViewDescriptorItem[] = [];
+
 	private viewDescriptorsState: ViewDescriptorsState;
 	// Container Info
 	private _title!: string;
@@ -431,34 +493,43 @@ export class ViewContainerModel
 	get title(): string {
 		return this._title;
 	}
+
 	private _icon: URI | ThemeIcon | undefined;
 
 	get icon(): URI | ThemeIcon | undefined {
 		return this._icon;
 	}
+
 	private _keybindingId: string | undefined;
 
 	get keybindingId(): string | undefined {
 		return this._keybindingId;
 	}
+
 	private _onDidChangeContainerInfo = this._register(
 		new Emitter<{
 			title?: boolean;
+
 			icon?: boolean;
+
 			keybindingId?: boolean;
 		}>(),
 	);
+
 	readonly onDidChangeContainerInfo = this._onDidChangeContainerInfo.event;
 	// All View Descriptors
 	get allViewDescriptors(): ReadonlyArray<IViewDescriptor> {
 		return this.viewDescriptorItems.map((item) => item.viewDescriptor);
 	}
+
 	private _onDidChangeAllViewDescriptors = this._register(
 		new Emitter<{
 			added: ReadonlyArray<IViewDescriptor>;
+
 			removed: ReadonlyArray<IViewDescriptor>;
 		}>(),
 	);
+
 	readonly onDidChangeAllViewDescriptors =
 		this._onDidChangeAllViewDescriptors.event;
 	// Active View Descriptors
@@ -467,12 +538,15 @@ export class ViewContainerModel
 			.filter((item) => item.state.active)
 			.map((item) => item.viewDescriptor);
 	}
+
 	private _onDidChangeActiveViewDescriptors = this._register(
 		new Emitter<{
 			added: ReadonlyArray<IViewDescriptor>;
+
 			removed: ReadonlyArray<IViewDescriptor>;
 		}>(),
 	);
+
 	readonly onDidChangeActiveViewDescriptors =
 		this._onDidChangeActiveViewDescriptors.event;
 	// Visible View Descriptors
@@ -481,26 +555,35 @@ export class ViewContainerModel
 			.filter((item) => this.isViewDescriptorVisible(item))
 			.map((item) => item.viewDescriptor);
 	}
+
 	private _onDidAddVisibleViewDescriptors = this._register(
 		new Emitter<IAddedViewDescriptorRef[]>(),
 	);
+
 	readonly onDidAddVisibleViewDescriptors: Event<IAddedViewDescriptorRef[]> =
 		this._onDidAddVisibleViewDescriptors.event;
+
 	private _onDidRemoveVisibleViewDescriptors = this._register(
 		new Emitter<IViewDescriptorRef[]>(),
 	);
+
 	readonly onDidRemoveVisibleViewDescriptors: Event<IViewDescriptorRef[]> =
 		this._onDidRemoveVisibleViewDescriptors.event;
+
 	private _onDidMoveVisibleViewDescriptors = this._register(
 		new Emitter<{
 			from: IViewDescriptorRef;
+
 			to: IViewDescriptorRef;
 		}>(),
 	);
+
 	readonly onDidMoveVisibleViewDescriptors: Event<{
 		from: IViewDescriptorRef;
+
 		to: IViewDescriptorRef;
 	}> = this._onDidMoveVisibleViewDescriptors.event;
+
 	private readonly logger: Lazy<ILogger>;
 
 	constructor(
@@ -513,17 +596,20 @@ export class ViewContainerModel
 		loggerService: ILoggerService,
 	) {
 		super();
+
 		this.logger = new Lazy(() =>
 			loggerService.createLogger(VIEWS_LOG_ID, {
 				name: VIEWS_LOG_NAME,
 				hidden: true,
 			}),
 		);
+
 		this._register(
 			Event.filter(contextKeyService.onDidChangeContext, (e) =>
 				e.affectsSome(this.contextKeys),
 			)(() => this.onDidChangeContext()),
 		);
+
 		this.viewDescriptorsState = this._register(
 			instantiationService.createInstance(
 				ViewDescriptorsState,
@@ -533,13 +619,16 @@ export class ViewContainerModel
 					: viewContainer.title.original,
 			),
 		);
+
 		this._register(
 			this.viewDescriptorsState.onDidChangeStoredState((items) =>
 				this.updateVisibility(items),
 			),
 		);
+
 		this.updateContainerInfo();
 	}
+
 	private updateContainerInfo(): void {
 		/* Use default container info if one of the visible view descriptors belongs to the current container by default */
 		const useDefaultContainerInfo =
@@ -564,8 +653,10 @@ export class ViewContainerModel
 
 		if (this._title !== title) {
 			this._title = title;
+
 			titleChanged = true;
 		}
+
 		const icon = useDefaultContainerInfo
 			? this.viewContainer.icon
 			: this.visibleViewDescriptors[0]?.containerIcon || defaultViewIcon;
@@ -574,8 +665,10 @@ export class ViewContainerModel
 
 		if (!this.isEqualIcon(icon)) {
 			this._icon = icon;
+
 			iconChanged = true;
 		}
+
 		const keybindingId =
 			this.viewContainer.openCommandActionDescriptor?.id ??
 			this.activeViewDescriptors.find(
@@ -586,8 +679,10 @@ export class ViewContainerModel
 
 		if (this._keybindingId !== keybindingId) {
 			this._keybindingId = keybindingId;
+
 			keybindingIdChanged = true;
 		}
+
 		if (titleChanged || iconChanged || keybindingIdChanged) {
 			this._onDidChangeContainerInfo.fire({
 				title: titleChanged,
@@ -596,6 +691,7 @@ export class ViewContainerModel
 			});
 		}
 	}
+
 	private isEqualIcon(icon: URI | ThemeIcon | undefined): boolean {
 		if (URI.isUri(icon)) {
 			return URI.isUri(this._icon) && isEqual(icon, this._icon);
@@ -605,8 +701,10 @@ export class ViewContainerModel
 				ThemeIcon.isEqual(icon, this._icon)
 			);
 		}
+
 		return icon === this._icon;
 	}
+
 	isVisible(id: string): boolean {
 		const viewDescriptorItem = this.viewDescriptorItems.find(
 			(v) => v.viewDescriptor.id === id,
@@ -615,14 +713,18 @@ export class ViewContainerModel
 		if (!viewDescriptorItem) {
 			throw new Error(`Unknown view ${id}`);
 		}
+
 		return this.isViewDescriptorVisible(viewDescriptorItem);
 	}
+
 	setVisible(id: string, visible: boolean): void {
 		this.updateVisibility([{ id, visible }]);
 	}
+
 	private updateVisibility(
 		viewDescriptors: {
 			id: string;
+
 			visible: boolean;
 		}[],
 	): void {
@@ -651,6 +753,7 @@ export class ViewContainerModel
 				});
 			}
 		}
+
 		if (removed.length) {
 			this.broadCastRemovedVisibleViewDescriptors(removed);
 		}
@@ -661,11 +764,13 @@ export class ViewContainerModel
 			if (!visible) {
 				continue;
 			}
+
 			const foundViewDescriptor = this.findAndIgnoreIfNotFound(id);
 
 			if (!foundViewDescriptor) {
 				continue;
 			}
+
 			const { viewDescriptorItem, visibleIndex } = foundViewDescriptor;
 
 			if (
@@ -682,10 +787,12 @@ export class ViewContainerModel
 				});
 			}
 		}
+
 		if (added.length) {
 			this.broadCastAddedVisibleViewDescriptors(added);
 		}
 	}
+
 	private updateViewDescriptorItemVisibility(
 		viewDescriptorItem: IViewDescriptorItem,
 		visible: boolean,
@@ -693,6 +800,7 @@ export class ViewContainerModel
 		if (!viewDescriptorItem.viewDescriptor.canToggleVisibility) {
 			return false;
 		}
+
 		if (
 			this.isViewDescriptorVisibleWhenActive(viewDescriptorItem) ===
 			visible
@@ -714,23 +822,29 @@ export class ViewContainerModel
 		// return `true` only if visibility is changed
 		return this.isViewDescriptorVisible(viewDescriptorItem) === visible;
 	}
+
 	isCollapsed(id: string): boolean {
 		return !!this.find(id).viewDescriptorItem.state.collapsed;
 	}
+
 	setCollapsed(id: string, collapsed: boolean): void {
 		const { viewDescriptorItem } = this.find(id);
 
 		if (viewDescriptorItem.state.collapsed !== collapsed) {
 			viewDescriptorItem.state.collapsed = collapsed;
 		}
+
 		this.viewDescriptorsState.updateState(this.allViewDescriptors);
 	}
+
 	getSize(id: string): number | undefined {
 		return this.find(id).viewDescriptorItem.state.size;
 	}
+
 	setSizes(
 		newSizes: readonly {
 			id: string;
+
 			size: number;
 		}[],
 	): void {
@@ -741,8 +855,10 @@ export class ViewContainerModel
 				viewDescriptorItem.state.size = size;
 			}
 		}
+
 		this.viewDescriptorsState.updateState(this.allViewDescriptors);
 	}
+
 	move(from: string, to: string): void {
 		const fromIndex = this.viewDescriptorItems.findIndex(
 			(v) => v.viewDescriptor.id === from,
@@ -755,11 +871,13 @@ export class ViewContainerModel
 		const fromViewDescriptor = this.viewDescriptorItems[fromIndex];
 
 		const toViewDescriptor = this.viewDescriptorItems[toIndex];
+
 		move(this.viewDescriptorItems, fromIndex, toIndex);
 
 		for (let index = 0; index < this.viewDescriptorItems.length; index++) {
 			this.viewDescriptorItems[index].state.order = index;
 		}
+
 		this.broadCastMovedViewDescriptors(
 			{
 				index: fromIndex,
@@ -768,6 +886,7 @@ export class ViewContainerModel
 			{ index: toIndex, viewDescriptor: toViewDescriptor.viewDescriptor },
 		);
 	}
+
 	add(addedViewDescriptorStates: IAddedViewDescriptorState[]): void {
 		const addedItems: IViewDescriptorItem[] = [];
 
@@ -779,6 +898,7 @@ export class ViewContainerModel
 					this.contextKeys.add(key);
 				}
 			}
+
 			let state = this.viewDescriptorsState.get(viewDescriptor.id);
 
 			if (state) {
@@ -793,6 +913,7 @@ export class ViewContainerModel
 						: addedViewDescriptorState.visible;
 				} else {
 					const isVisible = state.visibleGlobal;
+
 					state.visibleGlobal = isUndefinedOrNull(
 						addedViewDescriptorState.visible,
 					)
@@ -810,6 +931,7 @@ export class ViewContainerModel
 						);
 					}
 				}
+
 				state.collapsed = isUndefinedOrNull(
 					addedViewDescriptorState.collapsed,
 				)
@@ -837,14 +959,20 @@ export class ViewContainerModel
 						: addedViewDescriptorState.collapsed,
 				};
 			}
+
 			this.viewDescriptorsState.set(viewDescriptor.id, state);
+
 			state.active = this.contextKeyService.contextMatchesRules(
 				viewDescriptor.when,
 			);
+
 			addedItems.push({ viewDescriptor, state });
 		}
+
 		this.viewDescriptorItems.push(...addedItems);
+
 		this.viewDescriptorItems.sort(this.compareViewDescriptors.bind(this));
+
 		this._onDidChangeAllViewDescriptors.fire({
 			added: addedItems.map(({ viewDescriptor }) => viewDescriptor),
 			removed: [],
@@ -852,6 +980,7 @@ export class ViewContainerModel
 
 		const addedActiveItems: {
 			viewDescriptorItem: IViewDescriptorItem;
+
 			visible: boolean;
 		}[] = [];
 
@@ -863,6 +992,7 @@ export class ViewContainerModel
 				});
 			}
 		}
+
 		if (addedActiveItems.length) {
 			this._onDidChangeActiveViewDescriptors.fire({
 				added: addedActiveItems.map(
@@ -872,6 +1002,7 @@ export class ViewContainerModel
 				removed: [],
 			});
 		}
+
 		const addedVisibleDescriptors: IAddedViewDescriptorRef[] = [];
 
 		for (const { viewDescriptorItem, visible } of addedActiveItems) {
@@ -879,6 +1010,7 @@ export class ViewContainerModel
 				const { visibleIndex } = this.find(
 					viewDescriptorItem.viewDescriptor.id,
 				);
+
 				addedVisibleDescriptors.push({
 					index: visibleIndex,
 					viewDescriptor: viewDescriptorItem.viewDescriptor,
@@ -887,8 +1019,10 @@ export class ViewContainerModel
 				});
 			}
 		}
+
 		this.broadCastAddedVisibleViewDescriptors(addedVisibleDescriptors);
 	}
+
 	remove(viewDescriptors: IViewDescriptor[]): void {
 		const removed: IViewDescriptor[] = [];
 
@@ -904,6 +1038,7 @@ export class ViewContainerModel
 					this.contextKeys.delete(key);
 				}
 			}
+
 			const index = this.viewDescriptorItems.findIndex(
 				(i) => i.viewDescriptor.id === viewDescriptor.id,
 			);
@@ -918,15 +1053,18 @@ export class ViewContainerModel
 						viewDescriptorItem.viewDescriptor,
 					);
 				}
+
 				if (this.isViewDescriptorVisible(viewDescriptorItem)) {
 					const { visibleIndex } = this.find(
 						viewDescriptorItem.viewDescriptor.id,
 					);
+
 					removedVisibleDescriptors.push({
 						index: visibleIndex,
 						viewDescriptor: viewDescriptorItem.viewDescriptor,
 					});
 				}
+
 				removedItems.push(viewDescriptorItem);
 			}
 		}
@@ -937,6 +1075,7 @@ export class ViewContainerModel
 				1,
 			),
 		);
+
 		this.broadCastRemovedVisibleViewDescriptors(removedVisibleDescriptors);
 
 		if (removedActiveDescriptors.length) {
@@ -945,13 +1084,16 @@ export class ViewContainerModel
 				removed: removedActiveDescriptors,
 			});
 		}
+
 		if (removed.length) {
 			this._onDidChangeAllViewDescriptors.fire({ added: [], removed });
 		}
 	}
+
 	private onDidChangeContext(): void {
 		const addedActiveItems: {
 			item: IViewDescriptorItem;
+
 			visibleWhenActive: boolean;
 		}[] = [];
 
@@ -976,11 +1118,13 @@ export class ViewContainerModel
 				}
 			}
 		}
+
 		const removedVisibleDescriptors: IViewDescriptorRef[] = [];
 
 		for (const item of removedActiveItems) {
 			if (this.isViewDescriptorVisible(item)) {
 				const { visibleIndex } = this.find(item.viewDescriptor.id);
+
 				removedVisibleDescriptors.push({
 					index: visibleIndex,
 					viewDescriptor: item.viewDescriptor,
@@ -989,7 +1133,9 @@ export class ViewContainerModel
 		}
 		// Update the State
 		removedActiveItems.forEach((item) => (item.state.active = false));
+
 		addedActiveItems.forEach(({ item }) => (item.state.active = true));
+
 		this.broadCastRemovedVisibleViewDescriptors(removedVisibleDescriptors);
 
 		if (addedActiveItems.length || removedActiveItems.length) {
@@ -998,11 +1144,13 @@ export class ViewContainerModel
 				removed: removedActiveItems.map((item) => item.viewDescriptor),
 			});
 		}
+
 		const addedVisibleDescriptors: IAddedViewDescriptorRef[] = [];
 
 		for (const { item, visibleWhenActive } of addedActiveItems) {
 			if (visibleWhenActive && this.isViewDescriptorVisible(item)) {
 				const { visibleIndex } = this.find(item.viewDescriptor.id);
+
 				addedVisibleDescriptors.push({
 					index: visibleIndex,
 					viewDescriptor: item.viewDescriptor,
@@ -1011,8 +1159,10 @@ export class ViewContainerModel
 				});
 			}
 		}
+
 		this.broadCastAddedVisibleViewDescriptors(addedVisibleDescriptors);
 	}
+
 	private broadCastAddedVisibleViewDescriptors(
 		added: IAddedViewDescriptorRef[],
 	): void {
@@ -1020,11 +1170,13 @@ export class ViewContainerModel
 			this._onDidAddVisibleViewDescriptors.fire(
 				added.sort((a, b) => a.index - b.index),
 			);
+
 			this.updateState(
 				`Added views:${added.map((v) => v.viewDescriptor.id).join(",")} in ${this.viewContainer.id}`,
 			);
 		}
 	}
+
 	private broadCastRemovedVisibleViewDescriptors(
 		removed: IViewDescriptorRef[],
 	): void {
@@ -1032,44 +1184,57 @@ export class ViewContainerModel
 			this._onDidRemoveVisibleViewDescriptors.fire(
 				removed.sort((a, b) => b.index - a.index),
 			);
+
 			this.updateState(
 				`Removed views:${removed.map((v) => v.viewDescriptor.id).join(",")} from ${this.viewContainer.id}`,
 			);
 		}
 	}
+
 	private broadCastMovedViewDescriptors(
 		from: IViewDescriptorRef,
 		to: IViewDescriptorRef,
 	): void {
 		this._onDidMoveVisibleViewDescriptors.fire({ from, to });
+
 		this.updateState(
 			`Moved view ${from.viewDescriptor.id} to ${to.viewDescriptor.id} in ${this.viewContainer.id}`,
 		);
 	}
+
 	private updateState(reason: string): void {
 		this.logger.value.info(reason);
+
 		this.viewDescriptorsState.updateState(this.allViewDescriptors);
+
 		this.updateContainerInfo();
 	}
+
 	private isViewDescriptorVisible(
 		viewDescriptorItem: IViewDescriptorItem,
 	): boolean {
 		if (!viewDescriptorItem.state.active) {
 			return false;
 		}
+
 		return this.isViewDescriptorVisibleWhenActive(viewDescriptorItem);
 	}
+
 	private isViewDescriptorVisibleWhenActive(
 		viewDescriptorItem: IViewDescriptorItem,
 	): boolean {
 		if (viewDescriptorItem.viewDescriptor.workspace) {
 			return !!viewDescriptorItem.state.visibleWorkspace;
 		}
+
 		return !!viewDescriptorItem.state.visibleGlobal;
 	}
+
 	private find(id: string): {
 		index: number;
+
 		visibleIndex: number;
+
 		viewDescriptorItem: IViewDescriptorItem;
 	} {
 		const result = this.findAndIgnoreIfNotFound(id);
@@ -1077,18 +1242,24 @@ export class ViewContainerModel
 		if (result) {
 			return result;
 		}
+
 		throw new Error(`view descriptor ${id} not found`);
 	}
+
 	private findAndIgnoreIfNotFound(id: string):
 		| {
 				index: number;
+
 				visibleIndex: number;
+
 				viewDescriptorItem: IViewDescriptorItem;
 		  }
 		| undefined {
 		for (
 			let i = 0, visibleIndex = 0;
+
 			i < this.viewDescriptorItems.length;
+
 			i++
 		) {
 			const viewDescriptorItem = this.viewDescriptorItems[i];
@@ -1100,12 +1271,15 @@ export class ViewContainerModel
 					viewDescriptorItem: viewDescriptorItem,
 				};
 			}
+
 			if (this.isViewDescriptorVisible(viewDescriptorItem)) {
 				visibleIndex++;
 			}
 		}
+
 		return undefined;
 	}
+
 	private compareViewDescriptors(
 		a: IViewDescriptorItem,
 		b: IViewDescriptorItem,
@@ -1113,11 +1287,13 @@ export class ViewContainerModel
 		if (a.viewDescriptor.id === b.viewDescriptor.id) {
 			return 0;
 		}
+
 		return (
 			this.getViewOrder(a) - this.getViewOrder(b) ||
 			this.getGroupOrderResult(a.viewDescriptor, b.viewDescriptor)
 		);
 	}
+
 	private getViewOrder(viewDescriptorItem: IViewDescriptorItem): number {
 		const viewOrder =
 			typeof viewDescriptorItem.state.order === "number"
@@ -1126,13 +1302,16 @@ export class ViewContainerModel
 
 		return typeof viewOrder === "number" ? viewOrder : Number.MAX_VALUE;
 	}
+
 	private getGroupOrderResult(a: IViewDescriptor, b: IViewDescriptor) {
 		if (!a.group || !b.group) {
 			return 0;
 		}
+
 		if (a.group === b.group) {
 			return 0;
 		}
+
 		return a.group < b.group ? -1 : 1;
 	}
 }

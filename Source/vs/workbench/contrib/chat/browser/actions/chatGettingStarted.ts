@@ -26,6 +26,7 @@ export class ChatGettingStartedContribution
 	implements IWorkbenchContribution
 {
 	static readonly ID = "workbench.contrib.chatGettingStarted";
+
 	private recentlyInstalled: boolean = false;
 
 	private static readonly hideWelcomeView = "workbench.chat.hideWelcomeView";
@@ -41,11 +42,13 @@ export class ChatGettingStartedContribution
 		super();
 
 		const defaultChatAgent = this.productService.defaultChatAgent;
+
 		const hideWelcomeView = this.storageService.getBoolean(
 			ChatGettingStartedContribution.hideWelcomeView,
 			StorageScope.APPLICATION,
 			false,
 		);
+
 		if (!defaultChatAgent || hideWelcomeView) {
 			return;
 		}
@@ -66,6 +69,7 @@ export class ChatGettingStartedContribution
 							e.operation === InstallOperation.Install
 						) {
 							this.recentlyInstalled = true;
+
 							return;
 						}
 					}
@@ -84,6 +88,7 @@ export class ChatGettingStartedContribution
 					) {
 						const extensionStatus =
 							this.extensionService.getExtensionsStatus();
+
 						if (
 							extensionStatus[ext.value].activationTimes &&
 							this.recentlyInstalled
@@ -91,13 +96,16 @@ export class ChatGettingStartedContribution
 							await this.commandService.executeCommand(
 								CHAT_OPEN_ACTION_ID,
 							);
+
 							this.storageService.store(
 								ChatGettingStartedContribution.hideWelcomeView,
 								true,
 								StorageScope.APPLICATION,
 								StorageTarget.MACHINE,
 							);
+
 							this.recentlyInstalled = false;
+
 							return;
 						}
 					}

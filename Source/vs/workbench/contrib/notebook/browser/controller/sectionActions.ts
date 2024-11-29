@@ -27,11 +27,13 @@ import { FoldingController } from "./foldingController.js";
 
 export type NotebookOutlineEntryArgs = {
 	notebookEditor: INotebookEditor;
+
 	outlineEntry: OutlineEntry;
 };
 
 export type NotebookCellArgs = {
 	notebookEditor: INotebookEditor;
+
 	cell: ICellViewModel;
 };
 
@@ -134,6 +136,7 @@ export class NotebookRunCellsInSection extends Action2 {
 		context: any,
 	): Promise<void> {
 		let cell: ICellViewModel;
+
 		if (checkOutlineEntryContext(context)) {
 			cell = context.outlineEntry.cell;
 		} else if (checkNotebookCellContext(context)) {
@@ -143,12 +146,15 @@ export class NotebookRunCellsInSection extends Action2 {
 		}
 
 		const idx = context.notebookEditor.getViewModel()?.getCellIndex(cell);
+
 		if (idx === undefined) {
 			return;
 		}
+
 		const length = context.notebookEditor
 			.getViewModel()
 			?.getFoldedLength(idx);
+
 		if (length === undefined) {
 			return;
 		}
@@ -157,6 +163,7 @@ export class NotebookRunCellsInSection extends Action2 {
 			start: idx,
 			end: idx + length + 1,
 		});
+
 		context.notebookEditor.executeNotebookCells(cells);
 	}
 }
@@ -218,8 +225,11 @@ export class NotebookFoldSection extends Action2 {
 			notebookEditor.getContribution<FoldingController>(
 				FoldingController.id,
 			);
+
 		const index = entry.index;
+
 		const headerLevel = entry.level;
+
 		const newFoldingState = CellFoldingState.Collapsed;
 
 		foldingController.setFoldingStateDown(
@@ -287,8 +297,11 @@ export class NotebookExpandSection extends Action2 {
 			notebookEditor.getContribution<FoldingController>(
 				FoldingController.id,
 			);
+
 		const index = entry.index;
+
 		const headerLevel = entry.level;
+
 		const newFoldingState = CellFoldingState.Expanded;
 
 		foldingController.setFoldingStateDown(

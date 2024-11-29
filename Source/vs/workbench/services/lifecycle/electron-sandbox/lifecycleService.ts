@@ -28,6 +28,7 @@ import { AbstractLifecycleService } from "../common/lifecycleService.js";
 
 export class NativeLifecycleService extends AbstractLifecycleService {
 	private static readonly BEFORE_SHUTDOWN_WARNING_DELAY = 5000;
+
 	private static readonly WILL_SHUTDOWN_WARNING_DELAY = 800;
 
 	constructor(
@@ -39,8 +40,10 @@ export class NativeLifecycleService extends AbstractLifecycleService {
 		logService: ILogService,
 	) {
 		super(logService, storageService);
+
 		this.registerListeners();
 	}
+
 	private registerListeners(): void {
 		const windowId = this.nativeHostService.windowId;
 		// Main side indicates that window is about to unload, check for vetos
@@ -50,7 +53,9 @@ export class NativeLifecycleService extends AbstractLifecycleService {
 				event: unknown,
 				reply: {
 					okChannel: string;
+
 					cancelChannel: string;
+
 					reason: ShutdownReason;
 				},
 			) => {
@@ -66,6 +71,7 @@ export class NativeLifecycleService extends AbstractLifecycleService {
 					);
 					// Indicate as event
 					this._onShutdownVeto.fire();
+
 					ipcRenderer.send(reply.cancelChannel, windowId);
 				}
 				// no veto: allow unload
@@ -73,7 +79,9 @@ export class NativeLifecycleService extends AbstractLifecycleService {
 					this.logService.trace(
 						"[lifecycle] onBeforeUnload continues without veto",
 					);
+
 					this.shutdownReason = reply.reason;
+
 					ipcRenderer.send(reply.okChannel, windowId);
 				}
 			},
@@ -85,6 +93,7 @@ export class NativeLifecycleService extends AbstractLifecycleService {
 				event: unknown,
 				reply: {
 					replyChannel: string;
+
 					reason: ShutdownReason;
 				},
 			) => {
@@ -100,6 +109,7 @@ export class NativeLifecycleService extends AbstractLifecycleService {
 			},
 		);
 	}
+
 	protected async handleBeforeShutdown(
 		reason: ShutdownReason,
 	): Promise<boolean> {
@@ -127,6 +137,7 @@ export class NativeLifecycleService extends AbstractLifecycleService {
 				// Track promise completion
 				else if (value instanceof Promise) {
 					pendingVetos.add(id);
+
 					value
 						.then((veto) => {
 							if (veto === true) {
@@ -141,6 +152,7 @@ export class NativeLifecycleService extends AbstractLifecycleService {
 			finalVeto(value, id) {
 				if (!finalVeto) {
 					finalVeto = value;
+
 					finalVetoId = id;
 				} else {
 					throw new Error(
@@ -169,6 +181,7 @@ export class NativeLifecycleService extends AbstractLifecycleService {
 			if (finalVeto) {
 				try {
 					pendingVetos.add(finalVetoId as unknown as string);
+
 					veto = await (finalVeto as () => Promise<boolean>)();
 
 					if (veto) {
@@ -181,11 +194,13 @@ export class NativeLifecycleService extends AbstractLifecycleService {
 					this.handleBeforeShutdownError(error, reason);
 				}
 			}
+
 			return veto;
 		} finally {
 			longRunningBeforeShutdownWarning.dispose();
 		}
 	}
+
 	private handleBeforeShutdownError(
 		error: Error,
 		reason: ShutdownReason,
@@ -193,8 +208,10 @@ export class NativeLifecycleService extends AbstractLifecycleService {
 		this.logService.error(
 			`[lifecycle]: Error during before-shutdown phase (error: ${toErrorMessage(error)})`,
 		);
+
 		this._onBeforeShutdownError.fire({ reason, error });
 	}
+
 	protected async handleWillShutdown(reason: ShutdownReason): Promise<void> {
 		const joiners: Promise<void>[] = [];
 
@@ -203,6 +220,7 @@ export class NativeLifecycleService extends AbstractLifecycleService {
 		const pendingJoiners = new Set<IWillShutdownEventJoiner>();
 
 		const cts = new CancellationTokenSource();
+
 		this._onWillShutdown.fire({
 			reason,
 			token: cts.token,
@@ -215,6 +233,7 @@ export class NativeLifecycleService extends AbstractLifecycleService {
 						typeof promiseOrPromiseFn === "function"
 							? promiseOrPromiseFn
 							: () => promiseOrPromiseFn;
+
 					lastJoiners.push(() =>
 						promiseFn().finally(() =>
 							pendingJoiners.delete(joiner),
@@ -225,7 +244,9 @@ export class NativeLifecycleService extends AbstractLifecycleService {
 						typeof promiseOrPromiseFn === "function"
 							? promiseOrPromiseFn()
 							: promiseOrPromiseFn;
+
 					promise.finally(() => pendingJoiners.delete(joiner));
+
 					joiners.push(promise);
 				}
 			},
@@ -251,6 +272,7 @@ export class NativeLifecycleService extends AbstractLifecycleService {
 				`[lifecycle]: Error during will-shutdown phase in default joiners (error: ${toErrorMessage(error)})`,
 			);
 		}
+
 		try {
 			await raceCancellation(
 				Promises.settled(lastJoiners.map((lastJoiner) => lastJoiner())),
@@ -261,8 +283,10 @@ export class NativeLifecycleService extends AbstractLifecycleService {
 				`[lifecycle]: Error during will-shutdown phase in last joiners (error: ${toErrorMessage(error)})`,
 			);
 		}
+
 		longRunningWillShutdownWarning.dispose();
 	}
+
 	shutdown(): Promise<void> {
 		return this.nativeHostService.closeWindow();
 	}

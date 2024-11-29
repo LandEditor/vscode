@@ -50,7 +50,9 @@ interface IEditorQuickPickItem
 export abstract class BaseEditorQuickAccessProvider extends PickerQuickAccessProvider<IEditorQuickPickItem> {
 	private readonly pickState = new (class {
 		scorerCache: FuzzyScorerCache = Object.create(null);
+
 		isQuickNavigating: boolean | undefined = undefined;
+
 		reset(isQuickNavigating: boolean): void {
 			// Caches
 			if (!isQuickNavigating) {
@@ -80,6 +82,7 @@ export abstract class BaseEditorQuickAccessProvider extends PickerQuickAccessPro
 			},
 		});
 	}
+
 	override provide(
 		picker: IQuickPick<
 			IEditorQuickPickItem,
@@ -94,6 +97,7 @@ export abstract class BaseEditorQuickAccessProvider extends PickerQuickAccessPro
 		// Start picker
 		return super.provide(picker, token);
 	}
+
 	protected _getPicks(
 		filter: string,
 	): Array<IEditorQuickPickItem | IQuickPickSeparator> {
@@ -130,6 +134,7 @@ export abstract class BaseEditorQuickAccessProvider extends PickerQuickAccessPro
 			const groups = this.editorGroupService
 				.getGroups(GroupsOrder.GRID_APPEARANCE)
 				.map((group) => group.id);
+
 			filteredEditorEntries.sort((entryA, entryB) => {
 				if (entryA.groupId !== entryB.groupId) {
 					return (
@@ -137,6 +142,7 @@ export abstract class BaseEditorQuickAccessProvider extends PickerQuickAccessPro
 						groups.indexOf(entryB.groupId)
 					); // older groups first
 				}
+
 				return compareItemsByFuzzyScore(
 					entryA,
 					entryB,
@@ -170,15 +176,19 @@ export abstract class BaseEditorQuickAccessProvider extends PickerQuickAccessPro
 							label: group.label,
 						});
 					}
+
 					lastGroupId = entry.groupId;
 				}
+
 				filteredEditorEntriesWithSeparators.push(entry);
 			}
 		} else {
 			filteredEditorEntriesWithSeparators.push(...filteredEditorEntries);
 		}
+
 		return filteredEditorEntriesWithSeparators;
 	}
+
 	private doGetEditorPickItems(): Array<IEditorQuickPickItem> {
 		const editors = this.doGetEditors();
 
@@ -193,6 +203,7 @@ export abstract class BaseEditorQuickAccessProvider extends PickerQuickAccessPro
 				}
 			}
 		}
+
 		return this.doGetEditors().map(
 			({ editor, groupId }): IEditorQuickPickItem => {
 				const resource = EditorResourceAccessor.getOriginalUri(editor, {
@@ -227,6 +238,7 @@ export abstract class BaseEditorQuickAccessProvider extends PickerQuickAccessPro
 										mapGroupIdToGroupAriaLabel.get(groupId),
 									);
 						}
+
 						return isDirty
 							? localize(
 									"entryAriaLabelDirty",
@@ -275,6 +287,7 @@ export abstract class BaseEditorQuickAccessProvider extends PickerQuickAccessPro
 								return TriggerAction.REMOVE_ITEM;
 							}
 						}
+
 						return TriggerAction.NO_ACTION;
 					},
 					accept: (keyMods, event) =>
@@ -287,6 +300,7 @@ export abstract class BaseEditorQuickAccessProvider extends PickerQuickAccessPro
 			},
 		);
 	}
+
 	protected abstract doGetEditors(): IEditorIdentifier[];
 }
 //#region Active Editor Group Editors by Most Recently Used
@@ -311,6 +325,7 @@ export class ActiveGroupEditorsByMostRecentlyUsedQuickAccess extends BaseEditorQ
 			languageService,
 		);
 	}
+
 	protected doGetEditors(): IEditorIdentifier[] {
 		const group = this.editorGroupService.activeGroup;
 
@@ -342,6 +357,7 @@ export class AllEditorsByAppearanceQuickAccess extends BaseEditorQuickAccessProv
 			languageService,
 		);
 	}
+
 	protected doGetEditors(): IEditorIdentifier[] {
 		const entries: IEditorIdentifier[] = [];
 
@@ -352,6 +368,7 @@ export class AllEditorsByAppearanceQuickAccess extends BaseEditorQuickAccessProv
 				entries.push({ editor, groupId: group.id });
 			}
 		}
+
 		return entries;
 	}
 }
@@ -378,6 +395,7 @@ export class AllEditorsByMostRecentlyUsedQuickAccess extends BaseEditorQuickAcce
 			languageService,
 		);
 	}
+
 	protected doGetEditors(): IEditorIdentifier[] {
 		const entries: IEditorIdentifier[] = [];
 
@@ -386,6 +404,7 @@ export class AllEditorsByMostRecentlyUsedQuickAccess extends BaseEditorQuickAcce
 		)) {
 			entries.push(editor);
 		}
+
 		return entries;
 	}
 }

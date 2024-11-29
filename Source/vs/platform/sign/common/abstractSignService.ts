@@ -9,21 +9,29 @@ export interface IVsdaSigner {
 }
 export interface IVsdaValidator {
 	createNewMessage(arg: string): string;
+
 	validate(arg: string): "ok" | "error";
+
 	dispose?(): void;
 }
 export abstract class AbstractSignService implements ISignService {
 	declare readonly _serviceBrand: undefined;
+
 	private static _nextId = 1;
+
 	private readonly validators = new Map<string, IVsdaValidator>();
+
 	protected abstract getValidator(): Promise<IVsdaValidator>;
+
 	protected abstract signValue(arg: string): Promise<string>;
+
 	public async createNewMessage(value: string): Promise<IMessage> {
 		try {
 			const validator = await this.getValidator();
 
 			if (validator) {
 				const id = String(AbstractSignService._nextId++);
+
 				this.validators.set(id, validator);
 
 				return {
@@ -34,17 +42,21 @@ export abstract class AbstractSignService implements ISignService {
 		} catch (e) {
 			// ignore errors silently
 		}
+
 		return { id: "", data: value };
 	}
+
 	async validate(message: IMessage, value: string): Promise<boolean> {
 		if (!message.id) {
 			return true;
 		}
+
 		const validator = this.validators.get(message.id);
 
 		if (!validator) {
 			return false;
 		}
+
 		this.validators.delete(message.id);
 
 		try {
@@ -56,12 +68,14 @@ export abstract class AbstractSignService implements ISignService {
 			validator.dispose?.();
 		}
 	}
+
 	async sign(value: string): Promise<string> {
 		try {
 			return await this.signValue(value);
 		} catch (e) {
 			// ignore errors silently
 		}
+
 		return value;
 	}
 }

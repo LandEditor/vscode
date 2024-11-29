@@ -26,7 +26,9 @@ declare module "vscode" {
 
 	export class ResolvedAuthority {
 		readonly host: string;
+
 		readonly port: number;
+
 		readonly connectionToken: string | undefined;
 
 		constructor(host: string, port: number, connectionToken?: string);
@@ -34,16 +36,21 @@ declare module "vscode" {
 
 	export interface ManagedMessagePassing {
 		onDidReceiveMessage: Event<Uint8Array>;
+
 		onDidClose: Event<Error | undefined>;
+
 		onDidEnd: Event<void>;
 
 		send: (data: Uint8Array) => void;
+
 		end: () => void;
+
 		drain?: () => Thenable<void>;
 	}
 
 	export class ManagedResolvedAuthority {
 		readonly makeConnection: () => Thenable<ManagedMessagePassing>;
+
 		readonly connectionToken: string | undefined;
 
 		constructor(
@@ -67,7 +74,9 @@ declare module "vscode" {
 
 	export interface TunnelPrivacy {
 		themeIcon: string;
+
 		id: string;
+
 		label: string;
 	}
 
@@ -82,12 +91,15 @@ declare module "vscode" {
 		remoteAddress: { port: number; host: string };
 		// The desired local port. If this port can't be used, then another will be chosen.
 		localAddressPort?: number;
+
 		label?: string;
 		/**
 		 * @deprecated Use privacy instead
 		 */
 		public?: boolean;
+
 		privacy?: string;
+
 		protocol?: string;
 	}
 
@@ -99,6 +111,7 @@ declare module "vscode" {
 		 * @deprecated Use privacy instead
 		 */
 		public?: boolean;
+
 		privacy?: string;
 		// If protocol is not provided it is assumed to be http, regardless of the localAddress.
 		protocol?: string;
@@ -107,6 +120,7 @@ declare module "vscode" {
 	interface Tunnel extends TunnelDescription {
 		// Implementers of Tunnel should fire onDidDispose when dispose is called.
 		onDidDispose: Event<void>;
+
 		dispose(): void | Thenable<void>;
 	}
 
@@ -161,6 +175,7 @@ declare module "vscode" {
 			message?: string,
 			handled?: boolean,
 		): RemoteAuthorityResolverError;
+
 		static TemporarilyNotAvailable(
 			message?: string,
 		): RemoteAuthorityResolverError;
@@ -253,18 +268,23 @@ declare module "vscode" {
 
 	export interface ExecServerSpawnOptions {
 		readonly env?: ProcessEnv;
+
 		readonly cwd?: string;
 	}
 
 	export interface SpawnedCommand {
 		readonly stdin: WriteStream;
+
 		readonly stdout: ReadStream;
+
 		readonly stderr: ReadStream;
+
 		readonly onExit: Thenable<ProcessExit>;
 	}
 
 	export interface RemoteServerConnector {
 		readonly logs: ReadStream;
+
 		readonly onExit: Thenable<ProcessExit>;
 		/**
 		 * Connect to a new code server, returning a stream that can be used to communicate with it.
@@ -276,23 +296,29 @@ declare module "vscode" {
 
 	export interface ProcessExit {
 		readonly status: number;
+
 		readonly message?: string;
 	}
 
 	export interface ReadStream {
 		readonly onDidReceiveMessage: Event<Uint8Array>;
+
 		readonly onEnd: Thenable<void>;
 	}
 
 	export interface WriteStream {
 		write(data: Uint8Array): void;
+
 		end(): void;
 	}
 
 	export interface ServeParams {
 		readonly socketId: number;
+
 		readonly commit?: string;
+
 		readonly quality: string;
+
 		readonly extensions: string[];
 		/** Whether server traffic should be compressed. */
 		readonly compress?: boolean;
@@ -304,6 +330,7 @@ declare module "vscode" {
 		readonly quality: string;
 		/** 'LinuxAlpineX64' | 'LinuxAlpineARM64', 'LinuxX64' | 'LinuxARM64' | 'LinuxARM32' | 'DarwinX64' | 'DarwinARM64' | 'WindowsX64' | 'WindowsX86' | 'WindowsARM64' */
 		readonly buildTarget: string;
+
 		readonly commit: string;
 	}
 
@@ -470,7 +497,9 @@ declare module "vscode" {
 		 */
 		tunnelFeatures?: {
 			elevation: boolean;
+
 			public: boolean;
+
 			privacyOptions: TunnelPrivacy[];
 		};
 
@@ -479,6 +508,7 @@ declare module "vscode" {
 
 	export interface ResourceLabelFormatter {
 		scheme: string;
+
 		authority?: string;
 
 		formatting: ResourceLabelFormatting;
@@ -489,11 +519,17 @@ declare module "vscode" {
 		// For historic reasons we use an or string here. Once we finalize this API we should start using enums instead and adopt it in extensions.
 		// eslint-disable-next-line local/vscode-dts-literal-or-types, local/vscode-dts-string-type-literals
 		separator: "/" | "\\" | "";
+
 		tildify?: boolean;
+
 		normalizeDriveLetter?: boolean;
+
 		workspaceSuffix?: string;
+
 		workspaceTooltip?: string;
+
 		authorityPrefix?: string;
+
 		stripPathStartingSeparator?: boolean;
 	}
 

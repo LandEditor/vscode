@@ -10,6 +10,7 @@ import { IExperimentationTelemetryReporter } from "./experimentTelemetryReporter
 interface ExperimentTypes {}
 export class ExperimentationService {
 	private readonly _experimentationServicePromise: Promise<tas.IExperimentationService>;
+
 	private readonly _telemetryReporter: IExperimentationTelemetryReporter;
 
 	constructor(
@@ -19,6 +20,7 @@ export class ExperimentationService {
 		globalState: vscode.Memento,
 	) {
 		this._telemetryReporter = telemetryReporter;
+
 		this._experimentationServicePromise = createTasExperimentationService(
 			this._telemetryReporter,
 			id,
@@ -26,6 +28,7 @@ export class ExperimentationService {
 			globalState,
 		);
 	}
+
 	public async getTreatmentVariable<K extends keyof ExperimentTypes>(
 		name: K,
 		defaultValue: ExperimentTypes[K],
@@ -81,6 +84,7 @@ export async function createTasExperimentationService(
 
 			break;
 	}
+
 	const experimentationService = tas.getExperimentationService(
 		id,
 		version,
@@ -88,6 +92,7 @@ export async function createTasExperimentationService(
 		reporter,
 		globalState,
 	);
+
 	await experimentationService.initialFetch;
 
 	return experimentationService;

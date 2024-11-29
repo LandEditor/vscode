@@ -53,8 +53,11 @@ import {
 
 interface ISyncContent {
 	mac?: string;
+
 	linux?: string;
+
 	windows?: string;
+
 	all?: string;
 }
 interface IKeybindingsResourcePreview extends IFileResourcePreview {
@@ -74,6 +77,7 @@ export function getKeybindingsContentFromSyncContent(
 		if (!platformSpecific) {
 			return isUndefined(parsed.all) ? null : parsed.all;
 		}
+
 		switch (OS) {
 			case OperatingSystem.Macintosh:
 				return isUndefined(parsed.mac) ? null : parsed.mac;
@@ -96,22 +100,27 @@ export class KeybindingsSynchroniser
 {
 	/* Version 2: Change settings from `sync.${setting}` to `settingsSync.{setting}` */
 	protected readonly version: number = 2;
+
 	private readonly previewResource: URI = this.extUri.joinPath(
 		this.syncPreviewFolder,
 		"keybindings.json",
 	);
+
 	private readonly baseResource: URI = this.previewResource.with({
 		scheme: USER_DATA_SYNC_SCHEME,
 		authority: "base",
 	});
+
 	private readonly localResource: URI = this.previewResource.with({
 		scheme: USER_DATA_SYNC_SCHEME,
 		authority: "local",
 	});
+
 	private readonly remoteResource: URI = this.previewResource.with({
 		scheme: USER_DATA_SYNC_SCHEME,
 		authority: "remote",
 	});
+
 	private readonly acceptedResource: URI = this.previewResource.with({
 		scheme: USER_DATA_SYNC_SCHEME,
 		authority: "accepted",
@@ -159,12 +168,14 @@ export class KeybindingsSynchroniser
 			configurationService,
 			uriIdentityService,
 		);
+
 		this._register(
 			Event.filter(configurationService.onDidChangeConfiguration, (e) =>
 				e.affectsConfiguration("settingsSync.keybindingsPerPlatform"),
 			)(() => this.triggerLocalChange()),
 		);
 	}
+
 	protected async generateSyncPreview(
 		remoteUserData: IRemoteUserData,
 		lastSyncUserData: ILastSyncUserData | null,
@@ -205,6 +216,7 @@ export class KeybindingsSynchroniser
 			let localContent: string = fileContent
 				? fileContent.value.toString()
 				: "[]";
+
 			localContent = localContent || "[]";
 
 			if (this.hasErrors(localContent, true)) {
@@ -217,6 +229,7 @@ export class KeybindingsSynchroniser
 					this.resource,
 				);
 			}
+
 			if (
 				!lastSyncContent || // First time sync
 				lastSyncContent !== localContent || // Local has forwarded
@@ -236,9 +249,12 @@ export class KeybindingsSynchroniser
 				// Sync only if there are changes
 				if (result.hasChanges) {
 					mergedContent = result.mergeContent;
+
 					hasConflicts = result.hasConflicts;
+
 					hasLocalChanged =
 						hasConflicts || result.mergeContent !== localContent;
+
 					hasRemoteChanged =
 						hasConflicts || result.mergeContent !== remoteContent;
 				}
@@ -249,9 +265,12 @@ export class KeybindingsSynchroniser
 			this.logService.trace(
 				`${this.syncResourceLogLabel}: Remote keybindings does not exist. Synchronizing keybindings for the first time.`,
 			);
+
 			mergedContent = fileContent.value.toString();
+
 			hasRemoteChanged = true;
 		}
+
 		const previewResult: IMergeResult = {
 			content: hasConflicts ? lastSyncContent : mergedContent,
 			localChange: hasLocalChanged
@@ -282,6 +301,7 @@ export class KeybindingsSynchroniser
 			},
 		];
 	}
+
 	protected async hasRemoteChanged(
 		lastSyncUserData: IRemoteUserData,
 	): Promise<boolean> {
@@ -291,6 +311,7 @@ export class KeybindingsSynchroniser
 		if (lastSyncContent === null) {
 			return true;
 		}
+
 		const fileContent = await this.getLocalFileContent();
 
 		const localContent: string = fileContent
@@ -309,12 +330,14 @@ export class KeybindingsSynchroniser
 
 		return result.hasConflicts || result.mergeContent !== lastSyncContent;
 	}
+
 	protected async getMergeResult(
 		resourcePreview: IKeybindingsResourcePreview,
 		token: CancellationToken,
 	): Promise<IMergeResult> {
 		return resourcePreview.previewResult;
 	}
+
 	protected async getAcceptResult(
 		resourcePreview: IKeybindingsResourcePreview,
 		resource: URI,
@@ -355,8 +378,10 @@ export class KeybindingsSynchroniser
 				};
 			}
 		}
+
 		throw new Error(`Invalid Resource: ${resource.toString()}`);
 	}
+
 	protected async applyResult(
 		remoteUserData: IRemoteUserData,
 		lastSyncUserData: IRemoteUserData | null,
@@ -372,8 +397,10 @@ export class KeybindingsSynchroniser
 				`${this.syncResourceLogLabel}: No changes found during synchronizing keybindings.`,
 			);
 		}
+
 		if (content !== null) {
 			content = content.trim();
+
 			content = content || "[]";
 
 			if (this.hasErrors(content, true)) {
@@ -387,6 +414,7 @@ export class KeybindingsSynchroniser
 				);
 			}
 		}
+
 		if (localChange !== Change.None) {
 			this.logService.trace(
 				`${this.syncResourceLogLabel}: Updating local keybindings...`,
@@ -397,15 +425,18 @@ export class KeybindingsSynchroniser
 					this.toSyncContent(fileContent.value.toString()),
 				);
 			}
+
 			await this.updateLocalFileContent(
 				content || "[]",
 				fileContent,
 				force,
 			);
+
 			this.logService.info(
 				`${this.syncResourceLogLabel}: Updated local keybindings`,
 			);
 		}
+
 		if (remoteChange !== Change.None) {
 			this.logService.trace(
 				`${this.syncResourceLogLabel}: Updating remote keybindings...`,
@@ -415,10 +446,12 @@ export class KeybindingsSynchroniser
 				content || "[]",
 				remoteUserData.syncData?.content,
 			);
+
 			remoteUserData = await this.updateRemoteUserData(
 				remoteContents,
 				force ? null : remoteUserData.ref,
 			);
+
 			this.logService.info(
 				`${this.syncResourceLogLabel}: Updated remote keybindings`,
 			);
@@ -429,18 +462,22 @@ export class KeybindingsSynchroniser
 		} catch (e) {
 			/* ignore */
 		}
+
 		if (lastSyncUserData?.ref !== remoteUserData.ref) {
 			this.logService.trace(
 				`${this.syncResourceLogLabel}: Updating last synchronized keybindings...`,
 			);
+
 			await this.updateLastSyncUserData(remoteUserData, {
 				platformSpecific: this.syncKeybindingsPerPlatform(),
 			});
+
 			this.logService.info(
 				`${this.syncResourceLogLabel}: Updated last synchronized keybindings`,
 			);
 		}
 	}
+
 	async hasLocalData(): Promise<boolean> {
 		try {
 			const localFileContent = await this.getLocalFileContent();
@@ -460,8 +497,10 @@ export class KeybindingsSynchroniser
 				return true;
 			}
 		}
+
 		return false;
 	}
+
 	async resolveContent(uri: URI): Promise<string | null> {
 		if (
 			this.extUri.isEqual(this.remoteResource, uri) ||
@@ -471,8 +510,10 @@ export class KeybindingsSynchroniser
 		) {
 			return this.resolvePreviewContent(uri);
 		}
+
 		return null;
 	}
+
 	private getKeybindingsContentFromLastSyncUserData(
 		lastSyncUserData: ILastSyncUserData,
 	): string | null {
@@ -487,12 +528,14 @@ export class KeybindingsSynchroniser
 		) {
 			return null;
 		}
+
 		return getKeybindingsContentFromSyncContent(
 			lastSyncUserData.syncData.content,
 			this.syncKeybindingsPerPlatform(),
 			this.logService,
 		);
 	}
+
 	private toSyncContent(
 		keybindingsContent: string,
 		syncContent?: string,
@@ -504,11 +547,13 @@ export class KeybindingsSynchroniser
 		} catch (e) {
 			this.logService.error(e);
 		}
+
 		if (this.syncKeybindingsPerPlatform()) {
 			delete parsed.all;
 		} else {
 			parsed.all = keybindingsContent;
 		}
+
 		switch (OS) {
 			case OperatingSystem.Macintosh:
 				parsed.mac = keybindingsContent;
@@ -525,8 +570,10 @@ export class KeybindingsSynchroniser
 
 				break;
 		}
+
 		return JSON.stringify(parsed);
 	}
+
 	private syncKeybindingsPerPlatform(): boolean {
 		return !!this.configurationService.getValue(
 			CONFIG_SYNC_KEYBINDINGS_PER_PLATFORM,
@@ -558,6 +605,7 @@ export class KeybindingsInitializer extends AbstractInitializer {
 			uriIdentityService,
 		);
 	}
+
 	protected async doInitialize(
 		remoteUserData: IRemoteUserData,
 	): Promise<void> {
@@ -574,6 +622,7 @@ export class KeybindingsInitializer extends AbstractInitializer {
 
 			return;
 		}
+
 		const isEmpty = await this.isEmpty();
 
 		if (!isEmpty) {
@@ -583,12 +632,15 @@ export class KeybindingsInitializer extends AbstractInitializer {
 
 			return;
 		}
+
 		await this.fileService.writeFile(
 			this.userDataProfilesService.defaultProfile.keybindingsResource,
 			VSBuffer.fromString(keybindingsContent),
 		);
+
 		await this.updateLastSyncUserData(remoteUserData);
 	}
+
 	private async isEmpty(): Promise<boolean> {
 		try {
 			const fileContent = await this.fileService.readFile(
@@ -605,6 +657,7 @@ export class KeybindingsInitializer extends AbstractInitializer {
 			);
 		}
 	}
+
 	private getKeybindingsContentFromSyncContent(
 		syncContent: string,
 	): string | null {

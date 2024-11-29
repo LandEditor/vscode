@@ -22,20 +22,25 @@ export const IActionViewItemService = createDecorator<IActionViewItemService>(
 
 export interface IActionViewItemService {
 	_serviceBrand: undefined;
+
 	onDidChange: Event<MenuId>;
+
 	register(
 		menu: MenuId,
 		submenu: MenuId,
 		provider: IActionViewItemProvider,
 		event?: Event<unknown>,
 	): IDisposable;
+
 	register(
 		menu: MenuId,
 		commandId: string,
 		provider: IActionViewItemProvider,
 		event?: Event<unknown>,
 	): IDisposable;
+
 	lookUp(menu: MenuId, submenu: MenuId): IActionViewItemProvider | undefined;
+
 	lookUp(
 		menu: MenuId,
 		commandId: string,
@@ -43,7 +48,9 @@ export interface IActionViewItemService {
 }
 export class NullActionViewItemService implements IActionViewItemService {
 	_serviceBrand: undefined;
+
 	onDidChange: Event<MenuId> = Event.None;
+
 	register(
 		menu: MenuId,
 		commandId: string | MenuId,
@@ -52,6 +59,7 @@ export class NullActionViewItemService implements IActionViewItemService {
 	): IDisposable {
 		return Disposable.None;
 	}
+
 	lookUp(
 		menu: MenuId,
 		commandId: string | MenuId,
@@ -61,12 +69,17 @@ export class NullActionViewItemService implements IActionViewItemService {
 }
 class ActionViewItemService implements IActionViewItemService {
 	declare _serviceBrand: undefined;
+
 	private readonly _providers = new Map<string, IActionViewItemProvider>();
+
 	private readonly _onDidChange = new Emitter<MenuId>();
+
 	readonly onDidChange: Event<MenuId> = this._onDidChange.event;
+
 	dispose(): void {
 		this._onDidChange.dispose();
 	}
+
 	register(
 		menu: MenuId,
 		commandOrSubmenuId: string | MenuId,
@@ -80,6 +93,7 @@ class ActionViewItemService implements IActionViewItemService {
 				`A provider for the command ${commandOrSubmenuId} and menu ${menu} is already registered.`,
 			);
 		}
+
 		this._providers.set(id, provider);
 
 		const listener = event?.(() => {
@@ -88,15 +102,18 @@ class ActionViewItemService implements IActionViewItemService {
 
 		return toDisposable(() => {
 			listener?.dispose();
+
 			this._providers.delete(id);
 		});
 	}
+
 	lookUp(
 		menu: MenuId,
 		commandOrMenuId: string | MenuId,
 	): IActionViewItemProvider | undefined {
 		return this._providers.get(this._makeKey(menu, commandOrMenuId));
 	}
+
 	private _makeKey(menu: MenuId, commandOrMenuId: string | MenuId) {
 		return `${menu.id}/${commandOrMenuId instanceof MenuId ? commandOrMenuId.id : commandOrMenuId}`;
 	}

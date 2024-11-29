@@ -24,21 +24,26 @@ export class ExperimentationTelemetryReporter
 	implements IExperimentationTelemetryReporter
 {
 	private _sharedProperties: Record<string, string> = {};
+
 	private readonly _reporter: VsCodeTelemetryReporter;
 
 	constructor(reporter: VsCodeTelemetryReporter) {
 		this._reporter = reporter;
 	}
+
 	setSharedProperty(name: string, value: string): void {
 		this._sharedProperties[name] = value;
 	}
+
 	postEvent(eventName: string, props: Map<string, string>): void {
 		const propsObject = {
 			...this._sharedProperties,
 			...Object.fromEntries(props),
 		};
+
 		this._reporter.sendTelemetryEvent(eventName, propsObject);
 	}
+
 	postEventObj(
 		eventName: string,
 		props: {
@@ -50,6 +55,7 @@ export class ExperimentationTelemetryReporter
 			...props,
 		});
 	}
+
 	dispose() {
 		this._reporter.dispose();
 	}

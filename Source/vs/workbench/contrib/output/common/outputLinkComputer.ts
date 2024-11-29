@@ -24,8 +24,10 @@ export interface IResourceCreator {
 }
 export class OutputLinkComputer implements IRequestHandler {
 	_requestHandlerBrand: any;
+
 	private readonly workerTextModelSyncServer =
 		new WorkerTextModelSyncServer();
+
 	private patterns = new Map<URI /* folder uri */, RegExp[]>();
 
 	constructor(workerServer: IWorkerServer) {
@@ -34,6 +36,7 @@ export class OutputLinkComputer implements IRequestHandler {
 	$setWorkspaceFolders(workspaceFolders: string[]) {
 		this.computePatterns(workspaceFolders);
 	}
+
 	private computePatterns(_workspaceFolders: string[]): void {
 		// Produce patterns for each workspace root we are configured with
 		// This means that we will be able to detect links for paths that
@@ -47,9 +50,11 @@ export class OutputLinkComputer implements IRequestHandler {
 
 		for (const workspaceFolder of workspaceFolders) {
 			const patterns = OutputLinkComputer.createPatterns(workspaceFolder);
+
 			this.patterns.set(workspaceFolder, patterns);
 		}
 	}
+
 	private getModel(uri: string): ICommonModel | undefined {
 		return this.workerTextModelSyncServer.getModel(uri);
 	}
@@ -59,6 +64,7 @@ export class OutputLinkComputer implements IRequestHandler {
 		if (!model) {
 			return [];
 		}
+
 		const links: ILink[] = [];
 
 		const lines = strings.splitLines(model.getValue());
@@ -72,6 +78,7 @@ export class OutputLinkComputer implements IRequestHandler {
 							folderRelativePath,
 						);
 					}
+
 					return null;
 				},
 			};
@@ -87,8 +94,10 @@ export class OutputLinkComputer implements IRequestHandler {
 				);
 			}
 		}
+
 		return links;
 	}
+
 	static createPatterns(workspaceFolder: URI): RegExp[] {
 		const patterns: RegExp[] = [];
 
@@ -104,6 +113,7 @@ export class OutputLinkComputer implements IRequestHandler {
 				extpath.toSlashes(workspaceFolderPath),
 			);
 		}
+
 		for (const workspaceFolderVariant of workspaceFolderVariants) {
 			const validPathCharacterPattern = "[^\\s\\(\\):<>'\"]";
 
@@ -151,6 +161,7 @@ export class OutputLinkComputer implements IRequestHandler {
 				),
 			);
 		}
+
 		return patterns;
 	}
 	/**
@@ -163,6 +174,7 @@ export class OutputLinkComputer implements IRequestHandler {
 		resourceCreator: IResourceCreator,
 	): ILink[] {
 		const links: ILink[] = [];
+
 		patterns.forEach((pattern) => {
 			pattern.lastIndex = 0; // the holy grail of software development
 			let match: RegExpExecArray | null;
@@ -192,6 +204,7 @@ export class OutputLinkComputer implements IRequestHandler {
 
 					if (match[5]) {
 						const columnNumber = match[5];
+
 						resourceString = strings.format(
 							"{0}#{1},{2}",
 							resourceString,
@@ -206,8 +219,10 @@ export class OutputLinkComputer implements IRequestHandler {
 						);
 					}
 				}
+
 				const fullMatch = strings.rtrim(match[0], "."); // remove trailing "." that likely indicate end of sentence
 				const index = line.indexOf(fullMatch, offset);
+
 				offset = index + fullMatch.length;
 
 				const linkRange = {
@@ -224,6 +239,7 @@ export class OutputLinkComputer implements IRequestHandler {
 				) {
 					return; // Do not detect duplicate links
 				}
+
 				links.push({
 					range: linkRange,
 					url: resourceString,

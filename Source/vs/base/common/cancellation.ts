@@ -47,12 +47,15 @@ export namespace CancellationToken {
 		) {
 			return true;
 		}
+
 		if (thing instanceof MutableToken) {
 			return true;
 		}
+
 		if (!thing || typeof thing !== "object") {
 			return false;
 		}
+
 		return (
 			typeof (thing as CancellationToken).isCancellationRequested ===
 				"boolean" &&
@@ -60,6 +63,7 @@ export namespace CancellationToken {
 				"function"
 		);
 	}
+
 	export const None = Object.freeze<CancellationToken>({
 		isCancellationRequested: false,
 		onCancellationRequested: Event.None,
@@ -72,52 +76,65 @@ export namespace CancellationToken {
 }
 class MutableToken implements CancellationToken {
 	private _isCancelled: boolean = false;
+
 	private _emitter: Emitter<any> | null = null;
+
 	public cancel() {
 		if (!this._isCancelled) {
 			this._isCancelled = true;
 
 			if (this._emitter) {
 				this._emitter.fire(undefined);
+
 				this.dispose();
 			}
 		}
 	}
+
 	get isCancellationRequested(): boolean {
 		return this._isCancelled;
 	}
+
 	get onCancellationRequested(): Event<any> {
 		if (this._isCancelled) {
 			return shortcutEvent;
 		}
+
 		if (!this._emitter) {
 			this._emitter = new Emitter<any>();
 		}
+
 		return this._emitter.event;
 	}
+
 	public dispose(): void {
 		if (this._emitter) {
 			this._emitter.dispose();
+
 			this._emitter = null;
 		}
 	}
 }
 export class CancellationTokenSource {
 	private _token?: CancellationToken = undefined;
+
 	private _parentListener?: IDisposable = undefined;
 
 	constructor(parent?: CancellationToken) {
 		this._parentListener =
 			parent && parent.onCancellationRequested(this.cancel, this);
 	}
+
 	get token(): CancellationToken {
 		if (!this._token) {
 			// be lazy and create the token only when
 			// actually needed
 			this._token = new MutableToken();
 		}
+
 		return this._token;
 	}
+
 	cancel(): void {
 		if (!this._token) {
 			// save an object by returning the default
@@ -129,10 +146,12 @@ export class CancellationTokenSource {
 			this._token.cancel();
 		}
 	}
+
 	dispose(cancel: boolean = false): void {
 		if (cancel) {
 			this.cancel();
 		}
+
 		this._parentListener?.dispose();
 
 		if (!this._token) {
@@ -146,6 +165,7 @@ export class CancellationTokenSource {
 }
 export function cancelOnDispose(store: DisposableStore): CancellationToken {
 	const source = new CancellationTokenSource();
+
 	store.add({
 		dispose() {
 			source.cancel();

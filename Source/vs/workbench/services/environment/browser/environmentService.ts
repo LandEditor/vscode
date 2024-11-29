@@ -72,10 +72,12 @@ export class BrowserWorkbenchEnvironmentService
 					(entry) => !EXTENSION_IDENTIFIER_WITH_LOG_REGEX.test(entry),
 				);
 		}
+
 		return this.options.developmentOptions?.logLevel !== undefined
 			? LogLevelToString(this.options.developmentOptions?.logLevel)
 			: undefined;
 	}
+
 	get extensionLogLevel(): [string, string][] | undefined {
 		const logLevelFromPayload = this.payload?.get("logLevel");
 
@@ -89,8 +91,10 @@ export class BrowserWorkbenchEnvironmentService
 					result.push([matches[1], matches[2]]);
 				}
 			}
+
 			return result.length ? result : undefined;
 		}
+
 		return this.options.developmentOptions?.extensionLogLevel !== undefined
 			? this.options.developmentOptions?.extensionLogLevel.map(
 					([extension, logLevel]) => [
@@ -100,6 +104,7 @@ export class BrowserWorkbenchEnvironmentService
 				)
 			: undefined;
 	}
+
 	get profDurationMarkers(): string[] | undefined {
 		const profDurationMarkersFromPayload = this.payload?.get(
 			"profDurationMarkers",
@@ -111,8 +116,10 @@ export class BrowserWorkbenchEnvironmentService
 			for (const entry of profDurationMarkersFromPayload.split(",")) {
 				result.push(entry);
 			}
+
 			return result.length === 2 ? result : undefined;
 		}
+
 		return undefined;
 	}
 	@memoize
@@ -182,6 +189,7 @@ export class BrowserWorkbenchEnvironmentService
 	get extHostTelemetryLogFile(): URI {
 		return joinPath(this.extHostLogsPath, "extensionTelemetry.log");
 	}
+
 	private extensionHostDebugEnvironment:
 		| IExtensionHostDebugEnvironment
 		| undefined = undefined;
@@ -191,6 +199,7 @@ export class BrowserWorkbenchEnvironmentService
 			this.extensionHostDebugEnvironment =
 				this.resolveExtensionHostDebugEnvironment();
 		}
+
 		return this.extensionHostDebugEnvironment.params;
 	}
 	@memoize
@@ -199,6 +208,7 @@ export class BrowserWorkbenchEnvironmentService
 			this.extensionHostDebugEnvironment =
 				this.resolveExtensionHostDebugEnvironment();
 		}
+
 		return this.extensionHostDebugEnvironment.isExtensionDevelopment;
 	}
 	@memoize
@@ -207,6 +217,7 @@ export class BrowserWorkbenchEnvironmentService
 			this.extensionHostDebugEnvironment =
 				this.resolveExtensionHostDebugEnvironment();
 		}
+
 		return this.extensionHostDebugEnvironment
 			.extensionDevelopmentLocationURI;
 	}
@@ -216,6 +227,7 @@ export class BrowserWorkbenchEnvironmentService
 			this.extensionHostDebugEnvironment =
 				this.resolveExtensionHostDebugEnvironment();
 		}
+
 		return this.extensionHostDebugEnvironment.extensionDevelopmentKind;
 	}
 	@memoize
@@ -224,6 +236,7 @@ export class BrowserWorkbenchEnvironmentService
 			this.extensionHostDebugEnvironment =
 				this.resolveExtensionHostDebugEnvironment();
 		}
+
 		return this.extensionHostDebugEnvironment.extensionTestsLocationURI;
 	}
 	@memoize
@@ -232,6 +245,7 @@ export class BrowserWorkbenchEnvironmentService
 			this.extensionHostDebugEnvironment =
 				this.resolveExtensionHostDebugEnvironment();
 		}
+
 		return this.extensionHostDebugEnvironment.extensionEnabledProposedApi;
 	}
 	@memoize
@@ -240,6 +254,7 @@ export class BrowserWorkbenchEnvironmentService
 			this.extensionHostDebugEnvironment =
 				this.resolveExtensionHostDebugEnvironment();
 		}
+
 		return this.extensionHostDebugEnvironment.debugRenderer;
 	}
 	@memoize
@@ -311,7 +326,9 @@ export class BrowserWorkbenchEnvironmentService
 	get profile(): string | undefined {
 		return this.payload?.get("profile");
 	}
+
 	editSessionId: string | undefined = this.options.editSessionId;
+
 	private payload: Map<string, string> | undefined;
 
 	constructor(
@@ -331,6 +348,7 @@ export class BrowserWorkbenchEnvironmentService
 			}
 		}
 	}
+
 	private resolveExtensionHostDebugEnvironment(): IExtensionHostDebugEnvironment {
 		const extensionHostDebugEnvironment: IExtensionHostDebugEnvironment = {
 			params: {
@@ -353,9 +371,11 @@ export class BrowserWorkbenchEnvironmentService
 							extensionHostDebugEnvironment.extensionDevelopmentLocationURI =
 								[];
 						}
+
 						extensionHostDebugEnvironment.extensionDevelopmentLocationURI.push(
 							URI.parse(value),
 						);
+
 						extensionHostDebugEnvironment.isExtensionDevelopment =
 							true;
 
@@ -387,6 +407,7 @@ export class BrowserWorkbenchEnvironmentService
 					case "inspect-brk-extensions":
 						extensionHostDebugEnvironment.params.port =
 							parseInt(value);
+
 						extensionHostDebugEnvironment.params.break = true;
 
 						break;
@@ -405,6 +426,7 @@ export class BrowserWorkbenchEnvironmentService
 				}
 			}
 		}
+
 		const developmentOptions = this.options.developmentOptions;
 
 		if (
@@ -414,13 +436,16 @@ export class BrowserWorkbenchEnvironmentService
 			if (developmentOptions.extensions?.length) {
 				extensionHostDebugEnvironment.extensionDevelopmentLocationURI =
 					developmentOptions.extensions.map((e) => URI.revive(e));
+
 				extensionHostDebugEnvironment.isExtensionDevelopment = true;
 			}
+
 			if (developmentOptions.extensionTestsPath) {
 				extensionHostDebugEnvironment.extensionTestsLocationURI =
 					URI.revive(developmentOptions.extensionTestsPath);
 			}
 		}
+
 		return extensionHostDebugEnvironment;
 	}
 	@memoize
@@ -454,9 +479,11 @@ export class BrowserWorkbenchEnvironmentService
 						},
 					];
 				}
+
 				return [{ fileUri }];
 			}
 		}
+
 		return undefined;
 	}
 	@memoize
@@ -473,6 +500,7 @@ export class BrowserWorkbenchEnvironmentService
 				];
 			}
 		}
+
 		return undefined;
 	}
 	@memoize
@@ -500,15 +528,22 @@ export class BrowserWorkbenchEnvironmentService
 				];
 			}
 		}
+
 		return undefined;
 	}
 }
 interface IExtensionHostDebugEnvironment {
 	params: IExtensionHostDebugParams;
+
 	debugRenderer: boolean;
+
 	isExtensionDevelopment: boolean;
+
 	extensionDevelopmentLocationURI?: URI[];
+
 	extensionDevelopmentKind?: ExtensionKind[];
+
 	extensionTestsLocationURI?: URI;
+
 	extensionEnabledProposedApi?: string[];
 }

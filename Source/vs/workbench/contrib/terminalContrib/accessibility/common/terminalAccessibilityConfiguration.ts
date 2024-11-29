@@ -12,6 +12,7 @@ export const enum TerminalAccessibilitySettingId {
 }
 export interface ITerminalAccessibilityConfiguration {
 	accessibleViewPreserveCursorPosition: boolean;
+
 	accessibleViewFocusOnCommandExecution: number;
 }
 export const terminalAccessibilityConfiguration: IStringDictionary<IConfigurationPropertySchema> =

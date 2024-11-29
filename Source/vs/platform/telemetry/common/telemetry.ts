@@ -15,17 +15,25 @@ export const ITelemetryService =
 
 export interface ITelemetryData {
 	from?: string;
+
 	target?: string;
 	[key: string]: any;
 }
 export interface ITelemetryService {
 	readonly _serviceBrand: undefined;
+
 	readonly telemetryLevel: TelemetryLevel;
+
 	readonly sessionId: string;
+
 	readonly machineId: string;
+
 	readonly sqmId: string;
+
 	readonly devDeviceId: string;
+
 	readonly firstSessionDate: string;
+
 	readonly msftInternal?: boolean;
 	/**
 	 * Whether error telemetry will get sent. If false, `publicLogError` will no-op.
@@ -50,6 +58,7 @@ export interface ITelemetryService {
 	 * @deprecated Use publicLogError2 and the typescript GDPR annotation where possible
 	 */
 	publicLogError(errorEventName: string, data?: ITelemetryData): void;
+
 	publicLogError2<
 		E extends ClassifiedEvent<OmitMetadata<T>> = never,
 		T extends IGDPRProperty = never,
@@ -62,7 +71,9 @@ export interface ITelemetryService {
 }
 export interface ITelemetryEndpoint {
 	id: string;
+
 	aiKey: string;
+
 	sendErrorTelemetry: boolean;
 }
 export const ICustomEndpointTelemetryService =
@@ -72,11 +83,13 @@ export const ICustomEndpointTelemetryService =
 
 export interface ICustomEndpointTelemetryService {
 	readonly _serviceBrand: undefined;
+
 	publicLog(
 		endpoint: ITelemetryEndpoint,
 		eventName: string,
 		data?: ITelemetryData,
 	): void;
+
 	publicLogError(
 		endpoint: ITelemetryEndpoint,
 		errorEventName: string,

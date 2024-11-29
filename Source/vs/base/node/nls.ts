@@ -50,6 +50,7 @@ export async function resolveNLSConfiguration({
 	) {
 		return defaultNLSConfiguration(userLocale, osLocale, nlsMetadataPath);
 	}
+
 	try {
 		const languagePacks = await getLanguagePackConfigurations(userDataPath);
 
@@ -60,6 +61,7 @@ export async function resolveNLSConfiguration({
 				nlsMetadataPath,
 			);
 		}
+
 		const resolvedLanguage = resolveLanguagePackLanguage(
 			languagePacks,
 			userLocale,
@@ -72,6 +74,7 @@ export async function resolveNLSConfiguration({
 				nlsMetadataPath,
 			);
 		}
+
 		const languagePack = languagePacks[resolvedLanguage];
 
 		const mainLanguagePackPath = languagePack?.translations?.["vscode"];
@@ -89,6 +92,7 @@ export async function resolveNLSConfiguration({
 				nlsMetadataPath,
 			);
 		}
+
 		const languagePackId = `${languagePack.hash}.${resolvedLanguage}`;
 
 		const globalLanguagePackCachePath = path.join(
@@ -124,6 +128,7 @@ export async function resolveNLSConfiguration({
 				maxRetries: 3,
 			}); // delete corrupted cache folder
 		}
+
 		const result: INLSConfiguration = {
 			userLocale,
 			osLocale,
@@ -154,6 +159,7 @@ export async function resolveNLSConfiguration({
 
 			return result;
 		}
+
 		const [, nlsDefaultKeys, nlsDefaultMessages, nlsPackdata]: [
 			unknown,
 			Array<[string, string[]]>,
@@ -199,9 +205,11 @@ export async function resolveNLSConfiguration({
 					moduleTranslations?.[nlsKey] ||
 						nlsDefaultMessages[nlsIndex],
 				);
+
 				nlsIndex++;
 			}
 		}
+
 		await Promise.all([
 			fs.promises.writeFile(
 				languagePackMessagesFile,
@@ -214,12 +222,14 @@ export async function resolveNLSConfiguration({
 				"utf-8",
 			),
 		]);
+
 		perf.mark("code/didGenerateNls");
 
 		return result;
 	} catch (error) {
 		console.error("Generating translation files failed.", error);
 	}
+
 	return defaultNLSConfiguration(userLocale, osLocale, nlsMetadataPath);
 }
 /**
@@ -250,6 +260,7 @@ function resolveLanguagePackLanguage(
 			if (languagePacks[locale]) {
 				return locale;
 			}
+
 			const index = locale.lastIndexOf("-");
 
 			if (index > 0) {
@@ -261,6 +272,7 @@ function resolveLanguagePackLanguage(
 	} catch (error) {
 		console.error("Resolving language pack configuration failed.", error);
 	}
+
 	return undefined;
 }
 function defaultNLSConfiguration(

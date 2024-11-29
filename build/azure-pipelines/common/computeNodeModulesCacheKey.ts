@@ -28,9 +28,11 @@ for (const dir of dirs) {
 		resolutions: packageJson.resolutions,
 		distro: packageJson.distro,
 	};
+
 	shasum.update(JSON.stringify(relevantPackageJsonSections));
 
 	const packageLockPath = path.join(ROOT, dir, "package-lock.json");
+
 	shasum.update(fs.readFileSync(packageLockPath));
 }
 // Add any other command line arguments

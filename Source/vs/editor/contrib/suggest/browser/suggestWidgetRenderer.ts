@@ -47,16 +47,19 @@ const suggestMoreInfoIcon = registerIcon(
 const _completionItemColor = new (class ColorExtractor {
 	private static _regexRelaxed =
 		/(#([\da-fA-F]{3}){1,2}|(rgb|hsl)a\(\s*(\d{1,3}%?\s*,\s*){3}(1|0?\.\d+)\)|(rgb|hsl)\(\s*\d{1,3}%?(\s*,\s*\d{1,3}%?){2}\s*\))/;
+
 	private static _regexStrict = new RegExp(
 		`^${ColorExtractor._regexRelaxed.source}$`,
 		"i",
 	);
+
 	extract(item: CompletionItem, out: string[]): boolean {
 		if (item.textLabel.match(ColorExtractor._regexStrict)) {
 			out[0] = item.textLabel;
 
 			return true;
 		}
+
 		if (
 			item.completion.detail &&
 			item.completion.detail.match(ColorExtractor._regexStrict)
@@ -65,6 +68,7 @@ const _completionItemColor = new (class ColorExtractor {
 
 			return true;
 		}
+
 		if (item.completion.documentation) {
 			const value =
 				typeof item.completion.documentation === "string"
@@ -83,6 +87,7 @@ const _completionItemColor = new (class ColorExtractor {
 				return true;
 			}
 		}
+
 		return false;
 	}
 })();
@@ -95,26 +100,38 @@ export interface ISuggestionTemplateData {
 	 * <icon><label><signature><qualifier>     <type><readmore>
 	 */
 	readonly left: HTMLElement;
+
 	readonly right: HTMLElement;
+
 	readonly icon: HTMLElement;
+
 	readonly colorspan: HTMLElement;
+
 	readonly iconLabel: IconLabel;
+
 	readonly iconContainer: HTMLElement;
+
 	readonly parametersLabel: HTMLElement;
+
 	readonly qualifierLabel: HTMLElement;
 	/**
 	 * Showing either `CompletionItem#details` or `CompletionItemLabel#type`
 	 */
 	readonly detailsLabel: HTMLElement;
+
 	readonly readMore: HTMLElement;
+
 	readonly disposables: DisposableStore;
+
 	readonly configureFont: () => void;
 }
 export class ItemRenderer
 	implements IListRenderer<CompletionItem, ISuggestionTemplateData>
 {
 	private readonly _onDidToggleDetails = new Emitter<void>();
+
 	readonly onDidToggleDetails: Event<void> = this._onDidToggleDetails.event;
+
 	readonly templateId = "suggestion";
 
 	constructor(
@@ -126,13 +143,16 @@ export class ItemRenderer
 		@IThemeService
 		private readonly _themeService: IThemeService,
 	) {}
+
 	dispose(): void {
 		this._onDidToggleDetails.dispose();
 	}
+
 	renderTemplate(container: HTMLElement): ISuggestionTemplateData {
 		const disposables = new DisposableStore();
 
 		const root = container;
+
 		root.classList.add("show-file-icons");
 
 		const icon = append(container, $(".icon"));
@@ -153,6 +173,7 @@ export class ItemRenderer
 			supportHighlights: true,
 			supportIcons: true,
 		});
+
 		disposables.add(iconLabel);
 
 		const parametersLabel = append(left, $("span.signature-label"));
@@ -165,6 +186,7 @@ export class ItemRenderer
 			right,
 			$("span.readMore" + ThemeIcon.asCSSSelector(suggestMoreInfoIcon)),
 		);
+
 		readMore.title = nls.localize("readMore", "Read More");
 
 		const configureFont = () => {
@@ -192,15 +214,25 @@ export class ItemRenderer
 			const lineHeightPx = `${lineHeight}px`;
 
 			const letterSpacingPx = `${letterSpacing}px`;
+
 			root.style.fontSize = fontSizePx;
+
 			root.style.fontWeight = fontWeight;
+
 			root.style.letterSpacing = letterSpacingPx;
+
 			main.style.fontFamily = fontFamily;
+
 			main.style.fontFeatureSettings = fontFeatureSettings;
+
 			main.style.lineHeight = lineHeightPx;
+
 			icon.style.height = lineHeightPx;
+
 			icon.style.width = lineHeightPx;
+
 			readMore.style.height = lineHeightPx;
+
 			readMore.style.width = lineHeightPx;
 		};
 
@@ -220,6 +252,7 @@ export class ItemRenderer
 			configureFont,
 		};
 	}
+
 	renderElement(
 		element: CompletionItem,
 		index: number,
@@ -228,7 +261,9 @@ export class ItemRenderer
 		data.configureFont();
 
 		const { completion } = element;
+
 		data.root.id = getAriaId(index);
+
 		data.colorspan.style.backgroundColor = "";
 
 		const labelOptions: IIconLabelValueOptions = {
@@ -244,7 +279,9 @@ export class ItemRenderer
 		) {
 			// special logic for 'color' completion items
 			data.icon.className = "icon customcolor";
+
 			data.iconContainer.className = "icon hide";
+
 			data.colorspan.style.backgroundColor = color[0];
 		} else if (
 			completion.kind === CompletionItemKind.File &&
@@ -252,6 +289,7 @@ export class ItemRenderer
 		) {
 			// special logic for 'file' completion items
 			data.icon.className = "icon hide";
+
 			data.iconContainer.className = "icon hide";
 
 			const labelClasses = getIconClasses(
@@ -267,6 +305,7 @@ export class ItemRenderer
 				URI.from({ scheme: "fake", path: completion.detail }),
 				FileKind.FILE,
 			);
+
 			labelOptions.extraClasses =
 				labelClasses.length > detailClasses.length
 					? labelClasses
@@ -277,7 +316,9 @@ export class ItemRenderer
 		) {
 			// special logic for 'folder' completion items
 			data.icon.className = "icon hide";
+
 			data.iconContainer.className = "icon hide";
+
 			labelOptions.extraClasses = [
 				getIconClasses(
 					this._modelService,
@@ -295,7 +336,9 @@ export class ItemRenderer
 		} else {
 			// normal icon
 			data.icon.className = "icon hide";
+
 			data.iconContainer.className = "";
+
 			data.iconContainer.classList.add(
 				"suggest-icon",
 				...ThemeIcon.asClassNameArray(
@@ -303,6 +346,7 @@ export class ItemRenderer
 				),
 			);
 		}
+
 		if (
 			completion.tags &&
 			completion.tags.indexOf(CompletionItemTag.Deprecated) >= 0
@@ -310,49 +354,67 @@ export class ItemRenderer
 			labelOptions.extraClasses = (
 				labelOptions.extraClasses || []
 			).concat(["deprecated"]);
+
 			labelOptions.matches = [];
 		}
+
 		data.iconLabel.setLabel(element.textLabel, undefined, labelOptions);
 
 		if (typeof completion.label === "string") {
 			data.parametersLabel.textContent = "";
+
 			data.detailsLabel.textContent = stripNewLines(
 				completion.detail || "",
 			);
+
 			data.root.classList.add("string-label");
 		} else {
 			data.parametersLabel.textContent = stripNewLines(
 				completion.label.detail || "",
 			);
+
 			data.detailsLabel.textContent = stripNewLines(
 				completion.label.description || "",
 			);
+
 			data.root.classList.remove("string-label");
 		}
+
 		if (this._editor.getOption(EditorOption.suggest).showInlineDetails) {
 			show(data.detailsLabel);
 		} else {
 			hide(data.detailsLabel);
 		}
+
 		if (canExpandCompletionItem(element)) {
 			data.right.classList.add("can-expand-details");
+
 			show(data.readMore);
+
 			data.readMore.onmousedown = (e) => {
 				e.stopPropagation();
+
 				e.preventDefault();
 			};
+
 			data.readMore.onclick = (e) => {
 				e.stopPropagation();
+
 				e.preventDefault();
+
 				this._onDidToggleDetails.fire();
 			};
 		} else {
 			data.right.classList.remove("can-expand-details");
+
 			hide(data.readMore);
+
 			data.readMore.onmousedown = null;
+
 			data.readMore.onclick = null;
 		}
 	}
+
 	disposeTemplate(templateData: ISuggestionTemplateData): void {
 		templateData.disposables.dispose();
 	}

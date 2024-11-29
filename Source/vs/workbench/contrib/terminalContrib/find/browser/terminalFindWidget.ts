@@ -36,8 +36,11 @@ const TERMINAL_FIND_WIDGET_INITIAL_WIDTH = 419;
 
 export class TerminalFindWidget extends SimpleFindWidget {
 	private _findInputFocused: IContextKey<boolean>;
+
 	private _findWidgetFocused: IContextKey<boolean>;
+
 	private _findWidgetVisible: IContextKey<boolean>;
+
 	private _overrideCopyOnSelectionDisposable: IDisposable | undefined;
 
 	constructor(
@@ -82,15 +85,19 @@ export class TerminalFindWidget extends SimpleFindWidget {
 			hoverService,
 			keybindingService,
 		);
+
 		this._register(
 			this.state.onFindReplaceStateChange(() => {
 				this.show();
 			}),
 		);
+
 		this._findInputFocused =
 			TerminalContextKeys.findInputFocus.bindTo(contextKeyService);
+
 		this._findWidgetFocused =
 			TerminalContextKeys.findFocus.bindTo(contextKeyService);
+
 		this._findWidgetVisible =
 			TerminalContextKeys.findVisible.bindTo(contextKeyService);
 
@@ -102,13 +109,16 @@ export class TerminalFindWidget extends SimpleFindWidget {
 					event.stopPropagation();
 				}),
 			);
+
 			this._register(
 				dom.addDisposableListener(innerDom, "contextmenu", (event) => {
 					event.stopPropagation();
 				}),
 			);
 		}
+
 		const findInputDomNode = this.getFindInputDomNode();
+
 		this._register(
 			dom.addDisposableListener(
 				findInputDomNode,
@@ -120,10 +130,12 @@ export class TerminalFindWidget extends SimpleFindWidget {
 						clipboardService,
 						contextMenuService,
 					);
+
 					event.stopPropagation();
 				},
 			),
 		);
+
 		this._register(
 			themeService.onDidColorThemeChange(() => {
 				if (this.isVisible()) {
@@ -131,6 +143,7 @@ export class TerminalFindWidget extends SimpleFindWidget {
 				}
 			}),
 		);
+
 		this._register(
 			configurationService.onDidChangeConfiguration((e) => {
 				if (
@@ -141,14 +154,17 @@ export class TerminalFindWidget extends SimpleFindWidget {
 				}
 			}),
 		);
+
 		this.updateResultCount();
 	}
+
 	find(previous: boolean, update?: boolean) {
 		const xterm = this._instance.xterm;
 
 		if (!xterm) {
 			return;
 		}
+
 		if (previous) {
 			this._findPreviousWithEvent(xterm, this.inputValue, {
 				regex: this._getRegexValue(),
@@ -164,6 +180,7 @@ export class TerminalFindWidget extends SimpleFindWidget {
 			});
 		}
 	}
+
 	override reveal(): void {
 		const initialInput =
 			this._instance.hasSelection() &&
@@ -184,6 +201,7 @@ export class TerminalFindWidget extends SimpleFindWidget {
 				caseSensitive: this._getCaseSensitiveValue(),
 			}).then((foundMatch) => {
 				this.updateButtons(foundMatch);
+
 				this._register(
 					Event.once(xterm.onDidChangeSelection)(() =>
 						xterm.clearActiveSearchDecoration(),
@@ -191,11 +209,14 @@ export class TerminalFindWidget extends SimpleFindWidget {
 				);
 			});
 		}
+
 		this.updateButtons(false);
 
 		super.reveal(inputValue);
+
 		this._findWidgetVisible.set(true);
 	}
+
 	override show() {
 		const initialInput =
 			this._instance.hasSelection() &&
@@ -204,23 +225,31 @@ export class TerminalFindWidget extends SimpleFindWidget {
 				: undefined;
 
 		super.show(initialInput);
+
 		this._findWidgetVisible.set(true);
 	}
+
 	override hide() {
 		super.hide();
+
 		this._findWidgetVisible.reset();
+
 		this._instance.focus(true);
+
 		this._instance.xterm?.clearSearchDecorations();
 	}
+
 	protected async _getResultCount(): Promise<
 		| {
 				resultIndex: number;
+
 				resultCount: number;
 		  }
 		| undefined
 	> {
 		return this._instance.xterm?.findResult;
 	}
+
 	protected _onInputChanged() {
 		// Ignore input changes for now
 		const xterm = this._instance.xterm;
@@ -235,8 +264,10 @@ export class TerminalFindWidget extends SimpleFindWidget {
 				this.updateButtons(foundMatch);
 			});
 		}
+
 		return false;
 	}
+
 	protected _onFocusTrackerFocus() {
 		if ("overrideCopyOnSelection" in this._instance) {
 			this._overrideCopyOnSelectionDisposable =
@@ -244,25 +275,33 @@ export class TerminalFindWidget extends SimpleFindWidget {
 					this._instance,
 				)?.overrideCopyOnSelection(false);
 		}
+
 		this._findWidgetFocused.set(true);
 	}
+
 	protected _onFocusTrackerBlur() {
 		this._overrideCopyOnSelectionDisposable?.dispose();
+
 		this._instance.xterm?.clearActiveSearchDecoration();
+
 		this._findWidgetFocused.reset();
 	}
+
 	protected _onFindInputFocusTrackerFocus() {
 		this._findInputFocused.set(true);
 	}
+
 	protected _onFindInputFocusTrackerBlur() {
 		this._findInputFocused.reset();
 	}
+
 	findFirst() {
 		const instance = this._instance;
 
 		if (instance.hasSelection()) {
 			instance.clearSelection();
 		}
+
 		const xterm = instance.xterm;
 
 		if (xterm) {
@@ -273,6 +312,7 @@ export class TerminalFindWidget extends SimpleFindWidget {
 			});
 		}
 	}
+
 	private async _findNextWithEvent(
 		xterm: IXtermTerminal,
 		term: string,
@@ -288,6 +328,7 @@ export class TerminalFindWidget extends SimpleFindWidget {
 			return foundMatch;
 		});
 	}
+
 	private async _findPreviousWithEvent(
 		xterm: IXtermTerminal,
 		term: string,

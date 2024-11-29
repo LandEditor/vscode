@@ -41,14 +41,17 @@ export class ElectronRemoteResourceLoader extends Disposable {
 					case NODE_REMOTE_RESOURCE_IPC_METHOD_NAME:
 						return this.doRequest(URI.revive(arg[0]));
 				}
+
 				throw new Error(`Call not found: ${command}`);
 			},
 		};
+
 		mainProcessService.registerChannel(
 			NODE_REMOTE_RESOURCE_CHANNEL_NAME,
 			channel,
 		);
 	}
+
 	private async doRequest(uri: URI): Promise<NodeRemoteResourceResponse> {
 		let content: IFileContent;
 
@@ -60,6 +63,7 @@ export class ElectronRemoteResourceLoader extends Disposable {
 				authority: params.get("authority")!,
 				query: "",
 			});
+
 			content = await this.fileService.readFile(actual);
 		} catch (e) {
 			const str = encodeBase64(VSBuffer.fromString(e.message));
@@ -73,10 +77,12 @@ export class ElectronRemoteResourceLoader extends Disposable {
 				return { statusCode: 500, body: str };
 			}
 		}
+
 		const mimeType = uri.path && getMediaOrTextMime(uri.path);
 
 		return { statusCode: 200, body: encodeBase64(content.value), mimeType };
 	}
+
 	public getResourceUriProvider() {
 		return (uri: URI) =>
 			uri.with({

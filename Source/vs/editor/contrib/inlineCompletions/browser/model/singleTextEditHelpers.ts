@@ -20,6 +20,7 @@ export function singleTextRemoveCommonPrefix(
 	if (!modelRange) {
 		return edit;
 	}
+
 	const normalizedText = edit.text.replaceAll("\r\n", "\n");
 
 	const valueToReplace = model.getValueInRange(

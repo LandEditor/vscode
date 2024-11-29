@@ -73,17 +73,29 @@ export class CellContextKeyPart extends CellContentPart {
 
 export class CellContextKeyManager extends Disposable {
 	private cellType!: IContextKey<"code" | "markup">;
+
 	private cellEditable!: IContextKey<boolean>;
+
 	private cellFocused!: IContextKey<boolean>;
+
 	private cellEditorFocused!: IContextKey<boolean>;
+
 	private cellRunState!: IContextKey<NotebookCellExecutionStateContext>;
+
 	private cellExecuting!: IContextKey<boolean>;
+
 	private cellHasOutputs!: IContextKey<boolean>;
+
 	private cellContentCollapsed!: IContextKey<boolean>;
+
 	private cellOutputCollapsed!: IContextKey<boolean>;
+
 	private cellLineNumbers!: IContextKey<"on" | "off" | "inherit">;
+
 	private cellResource!: IContextKey<string>;
+
 	private cellGeneratedByChat!: IContextKey<boolean>;
+
 	private cellHasErrorDiagnostics!: IContextKey<boolean>;
 
 	private markdownEditMode!: IContextKey<boolean>;
@@ -102,42 +114,55 @@ export class CellContextKeyManager extends Disposable {
 
 		this._contextKeyService.bufferChangeEvents(() => {
 			this.cellType = NOTEBOOK_CELL_TYPE.bindTo(this._contextKeyService);
+
 			this.cellEditable = NOTEBOOK_CELL_EDITABLE.bindTo(
 				this._contextKeyService,
 			);
+
 			this.cellFocused = NOTEBOOK_CELL_FOCUSED.bindTo(
 				this._contextKeyService,
 			);
+
 			this.cellEditorFocused = NOTEBOOK_CELL_EDITOR_FOCUSED.bindTo(
 				this._contextKeyService,
 			);
+
 			this.markdownEditMode = NOTEBOOK_CELL_MARKDOWN_EDIT_MODE.bindTo(
 				this._contextKeyService,
 			);
+
 			this.cellRunState = NOTEBOOK_CELL_EXECUTION_STATE.bindTo(
 				this._contextKeyService,
 			);
+
 			this.cellExecuting = NOTEBOOK_CELL_EXECUTING.bindTo(
 				this._contextKeyService,
 			);
+
 			this.cellHasOutputs = NOTEBOOK_CELL_HAS_OUTPUTS.bindTo(
 				this._contextKeyService,
 			);
+
 			this.cellContentCollapsed = NOTEBOOK_CELL_INPUT_COLLAPSED.bindTo(
 				this._contextKeyService,
 			);
+
 			this.cellOutputCollapsed = NOTEBOOK_CELL_OUTPUT_COLLAPSED.bindTo(
 				this._contextKeyService,
 			);
+
 			this.cellLineNumbers = NOTEBOOK_CELL_LINE_NUMBERS.bindTo(
 				this._contextKeyService,
 			);
+
 			this.cellGeneratedByChat = NOTEBOOK_CELL_GENERATED_BY_CHAT.bindTo(
 				this._contextKeyService,
 			);
+
 			this.cellResource = NOTEBOOK_CELL_RESOURCE.bindTo(
 				this._contextKeyService,
 			);
+
 			this.cellHasErrorDiagnostics =
 				NOTEBOOK_CELL_HAS_ERROR_DIAGNOSTICS.bindTo(
 					this._contextKeyService,
@@ -163,6 +188,7 @@ export class CellContextKeyManager extends Disposable {
 
 	public updateForElement(element: ICellViewModel | undefined) {
 		this.elementDisposables.clear();
+
 		this.element = element;
 
 		if (!element) {
@@ -175,6 +201,7 @@ export class CellContextKeyManager extends Disposable {
 
 		if (element instanceof CodeCellViewModel) {
 			this.elementDisposables.add(element.onDidChangeOutputs(() => this.updateForOutputs()));
+
 			this.elementDisposables.add(autorun(reader => {
 				this.cellHasErrorDiagnostics.set(!!reader.readObservable(element.executionErrorDiagnostic));
 			}));
@@ -194,13 +221,19 @@ export class CellContextKeyManager extends Disposable {
 
 		this._contextKeyService.bufferChangeEvents(() => {
 			this.updateForFocusState();
+
 			this.updateForExecutionState();
+
 			this.updateForEditState();
+
 			this.updateForCollapseState();
+
 			this.updateForOutputs();
+
 			this.updateForChat();
 
 			this.cellLineNumbers.set(this.element!.lineNumbers);
+
 			this.cellResource.set(this.element!.uri.toString());
 		});
 
@@ -247,6 +280,7 @@ export class CellContextKeyManager extends Disposable {
 		}
 
 		const activeCell = this.notebookEditor.getActiveCell();
+
 		this.cellFocused.set(
 			this.notebookEditor.getActiveCell() === this.element,
 		);
@@ -266,6 +300,7 @@ export class CellContextKeyManager extends Disposable {
 		}
 
 		const internalMetadata = this.element.internalMetadata;
+
 		this.cellEditable.set(!this.notebookEditor.isReadOnly);
 
 		const exeState = this._notebookExecutionStateService.getCellExecution(
@@ -274,24 +309,30 @@ export class CellContextKeyManager extends Disposable {
 
 		if (this.element instanceof MarkupCellViewModel) {
 			this.cellRunState.reset();
+
 			this.cellExecuting.reset();
 		} else if (exeState?.state === NotebookCellExecutionState.Executing) {
 			this.cellRunState.set("executing");
+
 			this.cellExecuting.set(true);
 		} else if (
 			exeState?.state === NotebookCellExecutionState.Pending ||
 			exeState?.state === NotebookCellExecutionState.Unconfirmed
 		) {
 			this.cellRunState.set("pending");
+
 			this.cellExecuting.set(true);
 		} else if (internalMetadata.lastRunSuccess === true) {
 			this.cellRunState.set("succeeded");
+
 			this.cellExecuting.set(false);
 		} else if (internalMetadata.lastRunSuccess === false) {
 			this.cellRunState.set("failed");
+
 			this.cellExecuting.set(false);
 		} else {
 			this.cellRunState.set("idle");
+
 			this.cellExecuting.set(false);
 		}
 	}
@@ -316,6 +357,7 @@ export class CellContextKeyManager extends Disposable {
 		}
 
 		this.cellContentCollapsed.set(!!this.element.isInputCollapsed);
+
 		this.cellOutputCollapsed.set(!!this.element.isOutputCollapsed);
 	}
 

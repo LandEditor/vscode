@@ -93,6 +93,7 @@ declare module vsda {
 	// eslint-disable-next-line @typescript-eslint/naming-convention
 	export class validator {
 		createNewMessage(arg: string): string;
+
 		validate(arg: string): "ok" | "error";
 	}
 }
@@ -100,14 +101,20 @@ class RemoteExtensionHostAgentServer extends Disposable implements IServerAPI {
 	private readonly _extHostConnections: {
 		[reconnectionToken: string]: ExtensionHostConnection;
 	};
+
 	private readonly _managementConnections: {
 		[reconnectionToken: string]: ManagementConnection;
 	};
+
 	private readonly _allReconnectionTokens: Set<string>;
+
 	private readonly _webClientServer: WebClientServer | null;
+
 	private readonly _webEndpointOriginChecker =
 		WebEndpointOriginChecker.create(this._productService);
+
 	private readonly _serverRootPath: string;
+
 	private shutdownTimer: NodeJS.Timeout | undefined;
 
 	constructor(
@@ -126,13 +133,18 @@ class RemoteExtensionHostAgentServer extends Disposable implements IServerAPI {
 		private readonly _instantiationService: IInstantiationService,
 	) {
 		super();
+
 		this._serverRootPath = getServerRootPath(
 			_productService,
 			serverBasePath,
 		);
+
 		this._extHostConnections = Object.create(null);
+
 		this._managementConnections = Object.create(null);
+
 		this._allReconnectionTokens = new Set<string>();
+
 		this._webClientServer = hasWebClient
 			? this._instantiationService.createInstance(
 					WebClientServer,
@@ -141,9 +153,12 @@ class RemoteExtensionHostAgentServer extends Disposable implements IServerAPI {
 					this._serverRootPath,
 				)
 			: null;
+
 		this._logService.info(`Extension host agent started.`);
+
 		this._waitThenShutdown(true);
 	}
+
 	public async handleRequest(
 		req: http.IncomingMessage,
 		res: http.ServerResponse,
@@ -157,9 +172,11 @@ class RemoteExtensionHostAgentServer extends Disposable implements IServerAPI {
 				`Unsupported method ${req.method}`,
 			);
 		}
+
 		if (!req.url) {
 			return serveError(req, res, 400, `Bad request.`);
 		}
+
 		const parsedUrl = url.parse(req.url, true);
 
 		let pathname = parsedUrl.pathname;
@@ -183,10 +200,12 @@ class RemoteExtensionHostAgentServer extends Disposable implements IServerAPI {
 		// Delay shutdown
 		if (pathname === "/delay-shutdown") {
 			this._delayShutdown();
+
 			res.writeHead(200);
 
 			return void res.end("OK");
 		}
+
 		if (
 			!httpRequestHasValidConnectionToken(
 				this._connectionToken,
@@ -197,6 +216,7 @@ class RemoteExtensionHostAgentServer extends Disposable implements IServerAPI {
 			// invalid connection token
 			return serveError(req, res, 403, `Forbidden.`);
 		}
+
 		if (pathname === "/vscode-remote-resource") {
 			// Handle HTTP requests for resources rendered in the rich client (images, fonts, etc.)
 			// These resources could be files shipped with extensions or even workspace files.
@@ -205,6 +225,7 @@ class RemoteExtensionHostAgentServer extends Disposable implements IServerAPI {
 			if (typeof desiredPath !== "string") {
 				return serveError(req, res, 400, `Bad request.`);
 			}
+
 			let filePath: string;
 
 			try {
@@ -215,6 +236,7 @@ class RemoteExtensionHostAgentServer extends Disposable implements IServerAPI {
 			} catch (err) {
 				return serveError(req, res, 400, `Bad request.`);
 			}
+
 			const responseHeaders: Record<string, string> = Object.create(null);
 
 			if (this._environmentService.isBuilt) {
@@ -245,6 +267,7 @@ class RemoteExtensionHostAgentServer extends Disposable implements IServerAPI {
 			) {
 				responseHeaders["Access-Control-Allow-Origin"] = requestOrigin;
 			}
+
 			return serveFile(
 				filePath,
 				CacheControl.ETAG,
@@ -260,10 +283,12 @@ class RemoteExtensionHostAgentServer extends Disposable implements IServerAPI {
 
 			return;
 		}
+
 		res.writeHead(404, { "Content-Type": "text/plain" });
 
 		return void res.end("Not found");
 	}
+
 	public handleUpgrade(req: http.IncomingMessage, socket: net.Socket) {
 		let reconnectionToken = generateUuid();
 
@@ -277,13 +302,16 @@ class RemoteExtensionHostAgentServer extends Disposable implements IServerAPI {
 			if (typeof query.reconnectionToken === "string") {
 				reconnectionToken = query.reconnectionToken;
 			}
+
 			if (query.reconnection === "true") {
 				isReconnection = true;
 			}
+
 			if (query.skipWebSocketFrames === "true") {
 				skipWebSocketFrames = true;
 			}
 		}
+
 		if (
 			req.headers["upgrade"] === undefined ||
 			req.headers["upgrade"].toLowerCase() !== "websocket"
@@ -329,20 +357,24 @@ class RemoteExtensionHostAgentServer extends Disposable implements IServerAPI {
 					// sorry, the server does not support zlib parameter tweaks
 					continue;
 				}
+
 				if (/\b(permessage-deflate)\b/.test(websocketExtensionOption)) {
 					permessageDeflate = true;
+
 					responseHeaders.push(
 						`Sec-WebSocket-Extensions: permessage-deflate`,
 					);
 
 					break;
 				}
+
 				if (
 					/\b(x-webkit-deflate-frame)\b/.test(
 						websocketExtensionOption,
 					)
 				) {
 					permessageDeflate = true;
+
 					responseHeaders.push(
 						`Sec-WebSocket-Extensions: x-webkit-deflate-frame`,
 					);
@@ -351,6 +383,7 @@ class RemoteExtensionHostAgentServer extends Disposable implements IServerAPI {
 				}
 			}
 		}
+
 		socket.write(responseHeaders.join("\r\n") + "\r\n\r\n");
 		// Never timeout this socket due to inactivity!
 		socket.setTimeout(0);
@@ -382,8 +415,10 @@ class RemoteExtensionHostAgentServer extends Disposable implements IServerAPI {
 			);
 		}
 	}
+
 	public handleServerError(err: Error): void {
 		this._logService.error(`Error occurred in server`);
+
 		this._logService.error(err);
 	}
 	// Eventually cleanup
@@ -397,23 +432,30 @@ class RemoteExtensionHostAgentServer extends Disposable implements IServerAPI {
 		} else {
 			_socket = socket.socket.socket;
 		}
+
 		return _socket.remoteAddress || `<unknown>`;
 	}
+
 	private async _rejectWebSocketConnection(
 		logPrefix: string,
 		protocol: PersistentProtocol,
 		reason: string,
 	): Promise<void> {
 		const socket = protocol.getSocket();
+
 		this._logService.error(`${logPrefix} ${reason}.`);
 
 		const errMessage: ErrorMessage = {
 			type: "error",
 			reason: reason,
 		};
+
 		protocol.sendControl(VSBuffer.fromString(JSON.stringify(errMessage)));
+
 		protocol.dispose();
+
 		await socket.drain();
+
 		socket.dispose();
 	}
 	/**
@@ -442,11 +484,14 @@ class RemoteExtensionHostAgentServer extends Disposable implements IServerAPI {
 			Done,
 			Error,
 		}
+
 		let state = State.WaitingForAuth;
 
 		const rejectWebSocketConnection = (msg: string) => {
 			state = State.Error;
+
 			listener.dispose();
+
 			this._rejectWebSocketConnection(logPrefix, protocol, msg);
 		};
 
@@ -459,9 +504,11 @@ class RemoteExtensionHostAgentServer extends Disposable implements IServerAPI {
 				} catch (err) {
 					return rejectWebSocketConnection(`Malformed first message`);
 				}
+
 				if (msg1.type !== "auth") {
 					return rejectWebSocketConnection(`Invalid first message`);
 				}
+
 				if (
 					this._connectionToken.type ===
 						ServerConnectionTokenType.Mandatory &&
@@ -479,6 +526,7 @@ class RemoteExtensionHostAgentServer extends Disposable implements IServerAPI {
 						signedData = signer.sign(msg1.data);
 					} catch (e) {}
 				}
+
 				let someText = generateUuid();
 
 				if (validator) {
@@ -486,14 +534,17 @@ class RemoteExtensionHostAgentServer extends Disposable implements IServerAPI {
 						someText = validator.createNewMessage(someText);
 					} catch (e) {}
 				}
+
 				const signRequest: SignRequest = {
 					type: "sign",
 					data: someText,
 					signedData: signedData,
 				};
+
 				protocol.sendControl(
 					VSBuffer.fromString(JSON.stringify(signRequest)),
 				);
+
 				state = State.WaitingForConnectionType;
 			} else if (state === State.WaitingForConnectionType) {
 				let msg2: HandshakeMessage;
@@ -505,14 +556,17 @@ class RemoteExtensionHostAgentServer extends Disposable implements IServerAPI {
 						`Malformed second message`,
 					);
 				}
+
 				if (msg2.type !== "connectionType") {
 					return rejectWebSocketConnection(`Invalid second message`);
 				}
+
 				if (typeof msg2.signedData !== "string") {
 					return rejectWebSocketConnection(
 						`Invalid second message field type`,
 					);
 				}
+
 				const rendererCommit = msg2.commit;
 
 				const myCommit = this._productService.commit;
@@ -525,6 +579,7 @@ class RemoteExtensionHostAgentServer extends Disposable implements IServerAPI {
 						);
 					}
 				}
+
 				let valid = false;
 
 				if (!validator) {
@@ -537,6 +592,7 @@ class RemoteExtensionHostAgentServer extends Disposable implements IServerAPI {
 						valid = validator.validate(msg2.signedData) === "ok";
 					} catch (e) {}
 				}
+
 				if (!valid) {
 					if (this._environmentService.isBuilt) {
 						return rejectWebSocketConnection(
@@ -554,14 +610,20 @@ class RemoteExtensionHostAgentServer extends Disposable implements IServerAPI {
 				for (const key in this._managementConnections) {
 					const managementConnection =
 						this._managementConnections[key];
+
 					managementConnection.shortenReconnectionGraceTimeIfNecessary();
 				}
+
 				for (const key in this._extHostConnections) {
 					const extHostConnection = this._extHostConnections[key];
+
 					extHostConnection.shortenReconnectionGraceTimeIfNecessary();
 				}
+
 				state = State.Done;
+
 				listener.dispose();
+
 				this._handleConnectionType(
 					remoteAddress,
 					logPrefix,
@@ -574,6 +636,7 @@ class RemoteExtensionHostAgentServer extends Disposable implements IServerAPI {
 			}
 		});
 	}
+
 	private async _handleConnectionType(
 		remoteAddress: string,
 		_logPrefix: string,
@@ -611,12 +674,15 @@ class RemoteExtensionHostAgentServer extends Disposable implements IServerAPI {
 						);
 					}
 				}
+
 				protocol.sendControl(
 					VSBuffer.fromString(JSON.stringify({ type: "ok" })),
 				);
 
 				const dataChunk = protocol.readEntireBuffer();
+
 				protocol.dispose();
+
 				this._managementConnections[
 					reconnectionToken
 				].acceptReconnection(remoteAddress, socket, dataChunk);
@@ -630,6 +696,7 @@ class RemoteExtensionHostAgentServer extends Disposable implements IServerAPI {
 						`Duplicate reconnection token`,
 					);
 				}
+
 				protocol.sendControl(
 					VSBuffer.fromString(JSON.stringify({ type: "ok" })),
 				);
@@ -640,9 +707,13 @@ class RemoteExtensionHostAgentServer extends Disposable implements IServerAPI {
 					remoteAddress,
 					protocol,
 				);
+
 				this._socketServer.acceptConnection(con.protocol, con.onClose);
+
 				this._managementConnections[reconnectionToken] = con;
+
 				this._allReconnectionTokens.add(reconnectionToken);
+
 				con.onClose(() => {
 					delete this._managementConnections[reconnectionToken];
 				});
@@ -661,9 +732,11 @@ class RemoteExtensionHostAgentServer extends Disposable implements IServerAPI {
 					`${logPrefix} - startParams debug port ${startParams.port}`,
 				);
 			}
+
 			this._logService.trace(
 				`${logPrefix} - startParams language: ${startParams.language}`,
 			);
+
 			this._logService.trace(
 				`${logPrefix} - startParams env: ${JSON.stringify(startParams.env)}`,
 			);
@@ -687,7 +760,9 @@ class RemoteExtensionHostAgentServer extends Disposable implements IServerAPI {
 						);
 					}
 				}
+
 				protocol.sendPause();
+
 				protocol.sendControl(
 					VSBuffer.fromString(
 						JSON.stringify(
@@ -699,7 +774,9 @@ class RemoteExtensionHostAgentServer extends Disposable implements IServerAPI {
 				);
 
 				const dataChunk = protocol.readEntireBuffer();
+
 				protocol.dispose();
+
 				this._extHostConnections[reconnectionToken].acceptReconnection(
 					remoteAddress,
 					socket,
@@ -715,7 +792,9 @@ class RemoteExtensionHostAgentServer extends Disposable implements IServerAPI {
 						`Duplicate reconnection token`,
 					);
 				}
+
 				protocol.sendPause();
+
 				protocol.sendControl(
 					VSBuffer.fromString(
 						JSON.stringify(
@@ -727,6 +806,7 @@ class RemoteExtensionHostAgentServer extends Disposable implements IServerAPI {
 				);
 
 				const dataChunk = protocol.readEntireBuffer();
+
 				protocol.dispose();
 
 				const con = this._instantiationService.createInstance(
@@ -736,17 +816,24 @@ class RemoteExtensionHostAgentServer extends Disposable implements IServerAPI {
 					socket,
 					dataChunk,
 				);
+
 				this._extHostConnections[reconnectionToken] = con;
+
 				this._allReconnectionTokens.add(reconnectionToken);
+
 				con.onClose(() => {
 					con.dispose();
+
 					delete this._extHostConnections[reconnectionToken];
+
 					this._onDidCloseExtHostConnection();
 				});
+
 				con.start(startParams);
 			}
 		} else if (msg.desiredConnectionType === ConnectionType.Tunnel) {
 			const tunnelStartParams = <ITunnelConnectionStartParams>msg.args;
+
 			this._createTunnel(protocol, tunnelStartParams);
 		} else {
 			return this._rejectWebSocketConnection(
@@ -756,6 +843,7 @@ class RemoteExtensionHostAgentServer extends Disposable implements IServerAPI {
 			);
 		}
 	}
+
 	private async _createTunnel(
 		protocol: PersistentProtocol,
 		tunnelStartParams: ITunnelConnectionStartParams,
@@ -763,7 +851,9 @@ class RemoteExtensionHostAgentServer extends Disposable implements IServerAPI {
 		const remoteSocket = (<NodeSocket>protocol.getSocket()).socket;
 
 		const dataChunk = protocol.readEntireBuffer();
+
 		protocol.dispose();
+
 		remoteSocket.pause();
 
 		const localSocket = await this._connectTunnelSocket(
@@ -774,15 +864,24 @@ class RemoteExtensionHostAgentServer extends Disposable implements IServerAPI {
 		if (dataChunk.byteLength > 0) {
 			localSocket.write(dataChunk.buffer);
 		}
+
 		localSocket.on("end", () => remoteSocket.end());
+
 		localSocket.on("close", () => remoteSocket.end());
+
 		localSocket.on("error", () => remoteSocket.destroy());
+
 		remoteSocket.on("end", () => localSocket.end());
+
 		remoteSocket.on("close", () => localSocket.end());
+
 		remoteSocket.on("error", () => localSocket.destroy());
+
 		localSocket.pipe(remoteSocket);
+
 		remoteSocket.pipe(localSocket);
 	}
+
 	private _connectTunnelSocket(
 		host: string,
 		port: number,
@@ -796,13 +895,17 @@ class RemoteExtensionHostAgentServer extends Disposable implements IServerAPI {
 				},
 				() => {
 					socket.removeListener("error", e);
+
 					socket.pause();
+
 					c(socket);
 				},
 			);
+
 			socket.once("error", e);
 		});
 	}
+
 	private _updateWithFreeDebugPort(
 		startParams: IRemoteExtensionHostStartParams,
 	): Thenable<IRemoteExtensionHostStartParams> {
@@ -819,15 +922,19 @@ class RemoteExtensionHostAgentServer extends Disposable implements IServerAPI {
 		}
 		// No port clear debug configuration.
 		startParams.debugId = undefined;
+
 		startParams.port = undefined;
+
 		startParams.break = undefined;
 
 		return Promise.resolve(startParams);
 	}
+
 	private async _onDidCloseExtHostConnection(): Promise<void> {
 		if (!this._environmentService.args["enable-remote-auto-shutdown"]) {
 			return;
 		}
+
 		this._cancelShutdown();
 
 		const hasActiveExtHosts = !!Object.keys(this._extHostConnections)
@@ -835,16 +942,20 @@ class RemoteExtensionHostAgentServer extends Disposable implements IServerAPI {
 
 		if (!hasActiveExtHosts) {
 			console.log("Last EH closed, waiting before shutting down");
+
 			this._logService.info(
 				"Last EH closed, waiting before shutting down",
 			);
+
 			this._waitThenShutdown();
 		}
 	}
+
 	private _waitThenShutdown(initial = false): void {
 		if (!this._environmentService.args["enable-remote-auto-shutdown"]) {
 			return;
 		}
+
 		if (
 			this._environmentService.args[
 				"remote-auto-shutdown-without-delay"
@@ -855,23 +966,29 @@ class RemoteExtensionHostAgentServer extends Disposable implements IServerAPI {
 		} else {
 			this.shutdownTimer = setTimeout(() => {
 				this.shutdownTimer = undefined;
+
 				this._shutdown();
 			}, SHUTDOWN_TIMEOUT);
 		}
 	}
+
 	private _shutdown(): void {
 		const hasActiveExtHosts = !!Object.keys(this._extHostConnections)
 			.length;
 
 		if (hasActiveExtHosts) {
 			console.log("New EH opened, aborting shutdown");
+
 			this._logService.info("New EH opened, aborting shutdown");
 
 			return;
 		} else {
 			console.log("Last EH closed, shutting down");
+
 			this._logService.info("Last EH closed, shutting down");
+
 			this.dispose();
+
 			process.exit(0);
 		}
 	}
@@ -883,18 +1000,25 @@ class RemoteExtensionHostAgentServer extends Disposable implements IServerAPI {
 			console.log(
 				"Got delay-shutdown request while in shutdown timeout, delaying",
 			);
+
 			this._logService.info(
 				"Got delay-shutdown request while in shutdown timeout, delaying",
 			);
+
 			this._cancelShutdown();
+
 			this._waitThenShutdown();
 		}
 	}
+
 	private _cancelShutdown(): void {
 		if (this.shutdownTimer) {
 			console.log("Cancelling previous shutdown timeout");
+
 			this._logService.info("Cancelling previous shutdown timeout");
+
 			clearTimeout(this.shutdownTimer);
+
 			this.shutdownTimer = undefined;
 		}
 	}
@@ -929,6 +1053,7 @@ export async function createServer(
 
 	if (connectionToken instanceof ServerConnectionTokenParseError) {
 		console.warn(connectionToken.message);
+
 		process.exit(1);
 	}
 	// setting up error handlers, first with console.error, then, once available, using the log service
@@ -945,16 +1070,21 @@ export async function createServer(
 			) {
 				return;
 			}
+
 			handler(err);
 		});
 	}
+
 	const unloggedErrors: any[] = [];
+
 	initUnexpectedErrorHandler((error: any) => {
 		unloggedErrors.push(error);
+
 		console.error(error);
 	});
 
 	let didLogAboutSIGPIPE = false;
+
 	process.on("SIGPIPE", () => {
 		// See https://github.com/microsoft/vscode-remote-release/issues/6543
 		// We would normally install a SIGPIPE listener in bootstrap-node.js
@@ -962,6 +1092,7 @@ export async function createServer(
 		// so logging SIGPIPE to the console will cause an infinite async loop
 		if (!didLogAboutSIGPIPE) {
 			didLogAboutSIGPIPE = true;
+
 			onUnexpectedError(new Error(`Unexpected SIGPIPE`));
 		}
 	});
@@ -978,8 +1109,11 @@ export async function createServer(
 	// the telemetry service overwrite our handler
 	instantiationService.invokeFunction((accessor) => {
 		const logService = accessor.get(ILogService);
+
 		unloggedErrors.forEach((error) => logService.error(error));
+
 		unloggedErrors.length = 0;
+
 		initUnexpectedErrorHandler((error: any) => logService.error(error));
 	});
 	// On Windows, configure the UNC allow list based on settings
@@ -1039,8 +1173,11 @@ export async function createServer(
 *
 
 `;
+
 				logService.warn(message);
+
 				console.warn(message);
+
 				process.exit(0);
 			}
 		}
@@ -1060,6 +1197,7 @@ export async function createServer(
 				logService.error(err);
 			}
 		}
+
 		return null;
 	});
 
@@ -1068,6 +1206,7 @@ export async function createServer(
 	if (serverBasePath && !serverBasePath.startsWith("/")) {
 		serverBasePath = `/${serverBasePath}`;
 	}
+
 	const hasWebClient = fs.existsSync(
 		FileAccess.asFileUri(`vs/code/browser/workbench/workbench.html`).fsPath,
 	);
@@ -1078,10 +1217,12 @@ export async function createServer(
 			connectionToken.type !== ServerConnectionTokenType.None
 				? `?${connectionTokenQueryName}=${connectionToken.value}`
 				: "";
+
 		console.log(
 			`Web UI available at http://localhost${address.port === 80 ? "" : `:${address.port}`}${serverBasePath ?? ""}${queryPart}`,
 		);
 	}
+
 	const remoteExtensionHostAgentServer = instantiationService.createInstance(
 		RemoteExtensionHostAgentServer,
 		socketServer,
@@ -1090,6 +1231,7 @@ export async function createServer(
 		hasWebClient,
 		serverBasePath,
 	);
+
 	perf.mark("code/server/ready");
 
 	const currentTime = performance.now();
@@ -1100,38 +1242,58 @@ export async function createServer(
 
 	const vscodeServerCodeLoadedTime: number = (<any>global)
 		.vscodeServerCodeLoadedTime;
+
 	instantiationService.invokeFunction(async (accessor) => {
 		const telemetryService = accessor.get(ITelemetryService);
+
 		type ServerStartClassification = {
 			owner: "alexdima";
+
 			comment: "The server has started up";
+
 			startTime: {
 				classification: "SystemMetaData";
+
 				purpose: "PerformanceAndHealth";
+
 				comment: "The time the server started at.";
 			};
+
 			startedTime: {
 				classification: "SystemMetaData";
+
 				purpose: "PerformanceAndHealth";
+
 				comment: "The time the server began listening for connections.";
 			};
+
 			codeLoadedTime: {
 				classification: "SystemMetaData";
+
 				purpose: "PerformanceAndHealth";
+
 				comment: "The time which the code loaded on the server";
 			};
+
 			readyTime: {
 				classification: "SystemMetaData";
+
 				purpose: "PerformanceAndHealth";
+
 				comment: "The time when the server was completely ready";
 			};
 		};
+
 		type ServerStartEvent = {
 			startTime: number;
+
 			startedTime: number;
+
 			codeLoadedTime: number;
+
 			readyTime: number;
 		};
+
 		telemetryService.publicLog2<
 			ServerStartEvent,
 			ServerStartClassification
@@ -1153,27 +1315,41 @@ export async function createServer(
 				type ServerPlatformInfoClassification = {
 					platformId: {
 						classification: "SystemMetaData";
+
 						purpose: "FeatureInsight";
+
 						comment: "A string identifying the operating system without any version information.";
 					};
+
 					platformVersionId: {
 						classification: "SystemMetaData";
+
 						purpose: "FeatureInsight";
+
 						comment: "A string identifying the operating system version excluding any name information or release code.";
 					};
+
 					platformIdLike: {
 						classification: "SystemMetaData";
+
 						purpose: "FeatureInsight";
+
 						comment: "A string identifying the operating system the current OS derivate is closely related to.";
 					};
+
 					owner: "deepak1556";
+
 					comment: "Provides insight into the distro information on Linux.";
 				};
+
 				type ServerPlatformInfoEvent = {
 					platformId: string;
+
 					platformVersionId: string | undefined;
+
 					platformIdLike: string | undefined;
 				};
+
 				telemetryService.publicLog2<
 					ServerPlatformInfoEvent,
 					ServerPlatformInfoClassification
@@ -1188,12 +1364,18 @@ export async function createServer(
 
 	if (args["print-startup-performance"]) {
 		let output = "";
+
 		output += `Start-up time: ${vscodeServerListenTime - vscodeServerStartTime}\n`;
+
 		output += `Code loading time: ${vscodeServerCodeLoadedTime - vscodeServerStartTime}\n`;
+
 		output += `Initialized time: ${currentTime - vscodeServerStartTime}\n`;
+
 		output += `\n`;
+
 		console.log(output);
 	}
+
 	return remoteExtensionHostAgentServer;
 }
 class WebEndpointOriginChecker {
@@ -1209,6 +1391,7 @@ class WebEndpointOriginChecker {
 		if (!webEndpointUrlTemplate || !commit || !quality) {
 			return new WebEndpointOriginChecker(null);
 		}
+
 		const uuid = generateUuid();
 
 		const exampleUrl = new URL(
@@ -1234,11 +1417,14 @@ class WebEndpointOriginChecker {
 			return new WebEndpointOriginChecker(null);
 		}
 	}
+
 	constructor(private readonly _originRegExp: RegExp | null) {}
+
 	public matches(origin: string): boolean {
 		if (!this._originRegExp) {
 			return false;
 		}
+
 		return this._originRegExp.test(origin);
 	}
 }

@@ -23,8 +23,10 @@ export class UniversalWatcherClient extends AbstractUniversalWatcherClient {
 		verboseLogging: boolean,
 	) {
 		super(onFileChanges, onLogMessage, verboseLogging);
+
 		this.init();
 	}
+
 	protected override createWatcher(
 		disposables: DisposableStore,
 	): IUniversalWatcher {

@@ -95,8 +95,10 @@ class CliMain extends Disposable {
 
 	async run(): Promise<void> {
 		const instantiationService = await this.initServices();
+
 		await instantiationService.invokeFunction(async (accessor) => {
 			const configurationService = accessor.get(IConfigurationService);
+
 			const logService = accessor.get(ILogService);
 
 			// On Windows, configure the UNC allow list based on settings
@@ -125,7 +127,9 @@ class CliMain extends Disposable {
 				);
 			} catch (error) {
 				logService.error(error);
+
 				console.error(getErrorMessage(error));
+
 				throw error;
 			}
 		});
@@ -135,18 +139,21 @@ class CliMain extends Disposable {
 		const services = new ServiceCollection();
 
 		const productService = { _serviceBrand: undefined, ...product };
+
 		services.set(IProductService, productService);
 
 		const environmentService = new ServerEnvironmentService(
 			this.args,
 			productService,
 		);
+
 		services.set(IServerEnvironmentService, environmentService);
 
 		const loggerService = new LoggerService(
 			getLogLevel(environmentService),
 			environmentService.logsHome,
 		);
+
 		services.set(ILoggerService, loggerService);
 
 		const logService = new LogService(
@@ -156,21 +163,27 @@ class CliMain extends Disposable {
 				}),
 			),
 		);
+
 		services.set(ILogService, logService);
+
 		logService.trace(
 			`Remote configuration data at ${this.remoteDataFolder}`,
 		);
+
 		logService.trace("process arguments:", this.args);
 
 		// Files
 		const fileService = this._register(new FileService(logService));
+
 		services.set(IFileService, fileService);
+
 		fileService.registerProvider(
 			Schemas.file,
 			this._register(new DiskFileSystemProvider(logService)),
 		);
 
 		const uriIdentityService = new UriIdentityService(fileService);
+
 		services.set(IUriIdentityService, uriIdentityService);
 
 		// User Data Profiles
@@ -182,6 +195,7 @@ class CliMain extends Disposable {
 				logService,
 			),
 		);
+
 		services.set(IUserDataProfilesService, userDataProfilesService);
 
 		// Configuration
@@ -193,6 +207,7 @@ class CliMain extends Disposable {
 				logService,
 			),
 		);
+
 		services.set(IConfigurationService, configurationService);
 
 		// Initialize
@@ -202,32 +217,41 @@ class CliMain extends Disposable {
 		]);
 
 		services.set(IRequestService, new SyncDescriptor(RequestService));
+
 		services.set(IDownloadService, new SyncDescriptor(DownloadService));
+
 		services.set(ITelemetryService, NullTelemetryService);
+
 		services.set(
 			IExtensionGalleryService,
 			new SyncDescriptor(ExtensionGalleryServiceWithNoStorageService),
 		);
+
 		services.set(
 			IExtensionsProfileScannerService,
 			new SyncDescriptor(ExtensionsProfileScannerService),
 		);
+
 		services.set(
 			IExtensionsScannerService,
 			new SyncDescriptor(ExtensionsScannerService),
 		);
+
 		services.set(
 			IExtensionSignatureVerificationService,
 			new SyncDescriptor(ExtensionSignatureVerificationService),
 		);
+
 		services.set(
 			IAllowedExtensionsService,
 			new SyncDescriptor(AllowedExtensionsService),
 		);
+
 		services.set(
 			INativeServerExtensionManagementService,
 			new SyncDescriptor(ExtensionManagementService),
 		);
+
 		services.set(
 			ILanguagePackService,
 			new SyncDescriptor(NativeLanguagePackService),
@@ -256,6 +280,7 @@ class CliMain extends Disposable {
 				isMachineScoped: !!this.args["do-not-sync"],
 				installPreReleaseVersion: !!this.args["pre-release"],
 			};
+
 			return extensionManagementCLI.installExtensions(
 				this.asExtensionIdOrVSIX(this.args["install-extension"] || []),
 				this.asExtensionIdOrVSIX(
@@ -308,6 +333,7 @@ export async function run(
 	if (args.help) {
 		const executable =
 			product.serverApplicationName + (isWindows ? ".cmd" : "");
+
 		console.log(
 			buildHelpMessage(
 				product.nameLong,
@@ -317,17 +343,21 @@ export async function run(
 				{ noInputFiles: true, noPipe: true },
 			),
 		);
+
 		return;
 	}
 	// Version Info
 	if (args.version) {
 		console.log(buildVersionMessage(product.version, product.commit));
+
 		return;
 	}
 
 	const cliMain = new CliMain(args, REMOTE_DATA_FOLDER);
+
 	try {
 		await cliMain.run();
+
 		eventuallyExit(0);
 	} catch (err) {
 		eventuallyExit(1);

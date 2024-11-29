@@ -18,45 +18,68 @@ import { IWebviewWorkbenchService } from "./webviewWorkbenchService.js";
 export type SerializedWebviewOptions = WebviewOptions & WebviewContentOptions;
 interface SerializedIconPath {
 	light: string | UriComponents;
+
 	dark: string | UriComponents;
 }
 export interface SerializedWebview {
 	readonly origin: string | undefined;
+
 	readonly viewType: string;
+
 	readonly providedId: string | undefined;
+
 	readonly title: string;
+
 	readonly options: SerializedWebviewOptions;
+
 	readonly extensionLocation: UriComponents | undefined;
+
 	readonly extensionId: string | undefined;
+
 	readonly state: any;
+
 	readonly iconPath: SerializedIconPath | undefined;
+
 	readonly group?: number;
 }
 export interface DeserializedWebview {
 	readonly origin: string | undefined;
+
 	readonly viewType: string;
+
 	readonly providedId: string | undefined;
+
 	readonly title: string;
+
 	readonly webviewOptions: WebviewOptions;
+
 	readonly contentOptions: WebviewContentOptions;
+
 	readonly extension: WebviewExtensionDescription | undefined;
+
 	readonly state: any;
+
 	readonly iconPath: WebviewIcons | undefined;
+
 	readonly group?: number;
 }
 export class WebviewEditorInputSerializer implements IEditorSerializer {
 	public static readonly ID = WebviewInput.typeId;
+
 	public constructor(
 		@IWebviewWorkbenchService
 		private readonly _webviewWorkbenchService: IWebviewWorkbenchService,
 	) {}
+
 	public canSerialize(input: WebviewInput): boolean {
 		return this._webviewWorkbenchService.shouldPersist(input);
 	}
+
 	public serialize(input: WebviewInput): string | undefined {
 		if (!this.canSerialize(input)) {
 			return undefined;
 		}
+
 		const data = this.toJson(input);
 
 		try {
@@ -65,6 +88,7 @@ export class WebviewEditorInputSerializer implements IEditorSerializer {
 			return undefined;
 		}
 	}
+
 	public deserialize(
 		_instantiationService: IInstantiationService,
 		serializedEditorInput: string,
@@ -87,6 +111,7 @@ export class WebviewEditorInputSerializer implements IEditorSerializer {
 			group: data.group,
 		});
 	}
+
 	protected fromJson(data: SerializedWebview): DeserializedWebview {
 		return {
 			...data,
@@ -100,6 +125,7 @@ export class WebviewEditorInputSerializer implements IEditorSerializer {
 			contentOptions: restoreWebviewContentOptions(data.options),
 		};
 	}
+
 	protected toJson(input: WebviewInput): SerializedWebview {
 		return {
 			origin: input.webview.origin,
@@ -127,11 +153,13 @@ export function reviveWebviewExtensionDescription(
 	if (!extensionId) {
 		return undefined;
 	}
+
 	const location = reviveUri(extensionLocation);
 
 	if (!location) {
 		return undefined;
 	}
+
 	return {
 		id: new ExtensionIdentifier(extensionId),
 		location,
@@ -141,6 +169,7 @@ function reviveIconPath(data: SerializedIconPath | undefined) {
 	if (!data) {
 		return undefined;
 	}
+
 	const light = reviveUri(data.light);
 
 	const dark = reviveUri(data.dark);
@@ -153,10 +182,12 @@ function reviveUri(data: string | UriComponents | undefined): URI | undefined {
 	if (!data) {
 		return undefined;
 	}
+
 	try {
 		if (typeof data === "string") {
 			return URI.parse(data);
 		}
+
 		return URI.from(data);
 	} catch {
 		return undefined;

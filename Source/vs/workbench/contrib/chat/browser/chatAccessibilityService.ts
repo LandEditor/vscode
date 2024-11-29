@@ -27,10 +27,12 @@ export class ChatAccessibilityService
 	implements IChatAccessibilityService
 {
 	declare readonly _serviceBrand: undefined;
+
 	private _pendingSignalMap: DisposableMap<
 		number,
 		AccessibilityProgressSignalScheduler
 	> = this._register(new DisposableMap());
+
 	private _requestId: number = 0;
 
 	constructor(
@@ -43,12 +45,15 @@ export class ChatAccessibilityService
 	) {
 		super();
 	}
+
 	acceptRequest(): number {
 		this._requestId++;
+
 		this._accessibilitySignalService.playSignal(
 			AccessibilitySignal.chatRequestSent,
 			{ allowManyInParallel: true },
 		);
+
 		this._pendingSignalMap.set(
 			this._requestId,
 			this._instantiationService.createInstance(
@@ -60,6 +65,7 @@ export class ChatAccessibilityService
 
 		return this._requestId;
 	}
+
 	acceptResponse(
 		response: IChatResponseViewModel | string | undefined,
 		requestId: number,
@@ -73,6 +79,7 @@ export class ChatAccessibilityService
 			typeof response === "string"
 				? response
 				: response?.response.toString();
+
 		this._accessibilitySignalService.playSignal(
 			AccessibilitySignal.chatResponseReceived,
 			{ allowManyInParallel: true },
@@ -81,6 +88,7 @@ export class ChatAccessibilityService
 		if (!response || !responseContent) {
 			return;
 		}
+
 		const errorDetails =
 			isPanelChat && response.errorDetails
 				? ` ${response.errorDetails.message}`

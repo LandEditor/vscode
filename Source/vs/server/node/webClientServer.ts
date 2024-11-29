@@ -61,6 +61,7 @@ export async function serveError(
 	errorMessage: string,
 ): Promise<void> {
 	res.writeHead(errorCode, { "Content-Type": "text/plain" });
+
 	res.end(errorMessage);
 }
 export const enum CacheControl {
@@ -89,26 +90,31 @@ export async function serveFile(
 
 				return void res.end();
 			}
+
 			responseHeaders["Etag"] = etag;
 		} else if (cacheControl === CacheControl.NO_EXPIRY) {
 			responseHeaders["Cache-Control"] = "public, max-age=31536000";
 		} else if (cacheControl === CacheControl.NO_CACHING) {
 			responseHeaders["Cache-Control"] = "no-store";
 		}
+
 		responseHeaders["Content-Type"] =
 			textMimeType[extname(filePath)] ||
 			getMediaMime(filePath) ||
 			"text/plain";
+
 		res.writeHead(200, responseHeaders);
 		// Data
 		createReadStream(filePath).pipe(res);
 	} catch (error) {
 		if (error.code !== "ENOENT") {
 			logService.error(error);
+
 			console.error(error.toString());
 		} else {
 			console.error(`File not found: ${filePath}`);
 		}
+
 		res.writeHead(404, { "Content-Type": "text/plain" });
 
 		return void res.end("Not found");
@@ -119,8 +125,11 @@ const APP_ROOT = dirname(FileAccess.asFileUri("").fsPath);
 
 export class WebClientServer {
 	private readonly _webExtensionResourceUrlTemplate: URI | undefined;
+
 	private readonly _staticRoute: string;
+
 	private readonly _callbackRoute: string;
+
 	private readonly _webExtensionRoute: string;
 
 	constructor(
@@ -144,8 +153,11 @@ export class WebClientServer {
 					this._productService.extensionsGallery.resourceUrlTemplate,
 				)
 			: undefined;
+
 		this._staticRoute = `${serverRootPath}/static`;
+
 		this._callbackRoute = `${serverRootPath}/callback`;
+
 		this._webExtensionRoute = `${serverRootPath}/web-extension-resource`;
 	}
 	/**
@@ -167,13 +179,16 @@ export class WebClientServer {
 			) {
 				return this._handleStatic(req, res, parsedUrl);
 			}
+
 			if (pathname === this._basePath) {
 				return this._handleRoot(req, res, parsedUrl);
 			}
+
 			if (pathname === this._callbackRoute) {
 				// callback support
 				return this._handleCallback(res);
 			}
+
 			if (
 				pathname.startsWith(this._webExtensionRoute) &&
 				pathname.charCodeAt(this._webExtensionRoute.length) ===
@@ -182,9 +197,11 @@ export class WebClientServer {
 				// extension resource support
 				return this._handleWebExtensionResource(req, res, parsedUrl);
 			}
+
 			return serveError(req, res, 404, "Not found.");
 		} catch (error) {
 			this._logService.error(error);
+
 			console.error(error.toString());
 
 			return serveError(req, res, 500, "Internal Server Error.");
@@ -209,6 +226,7 @@ export class WebClientServer {
 		if (!isEqualOrParent(filePath, APP_ROOT, !isLinux)) {
 			return serveError(req, res, 400, `Bad request.`);
 		}
+
 		return serveFile(
 			filePath,
 			this._environmentService.isBuilt
@@ -220,6 +238,7 @@ export class WebClientServer {
 			headers,
 		);
 	}
+
 	private _getResourceURLTemplateAuthority(uri: URI): string | undefined {
 		const index = uri.authority.indexOf(".");
 
@@ -260,6 +279,7 @@ export class WebClientServer {
 		) {
 			return serveError(req, res, 403, "Request Forbidden");
 		}
+
 		const headers: IHeaders = {};
 
 		const setRequestHeader = (header: string) => {
@@ -299,6 +319,7 @@ export class WebClientServer {
 			} catch (error) {
 				/* Ignore */
 			}
+
 			return serveError(
 				req,
 				res,
@@ -306,6 +327,7 @@ export class WebClientServer {
 				text || `Request failed with status ${status}`,
 			);
 		}
+
 		const responseHeaders: Record<string, string | string[]> =
 			Object.create(null);
 
@@ -322,6 +344,7 @@ export class WebClientServer {
 		setResponseHeader("Cache-Control");
 
 		setResponseHeader("Content-Type");
+
 		res.writeHead(200, responseHeaders);
 
 		const buffer = await streamToBuffer(context.stream);
@@ -342,6 +365,7 @@ export class WebClientServer {
 			// We got a connection token as a query parameter.
 			// We want to have a clean URL, so we strip it
 			const responseHeaders: Record<string, string> = Object.create(null);
+
 			responseHeaders["Set-Cookie"] = cookie.serialize(
 				connectionTokenCookieName,
 				queryConnectionToken,
@@ -358,15 +382,19 @@ export class WebClientServer {
 					newQuery[key] = parsedUrl.query[key];
 				}
 			}
+
 			const newLocation = url.format({
 				pathname: parsedUrl.pathname,
 				query: newQuery,
 			});
+
 			responseHeaders["Location"] = newLocation;
+
 			res.writeHead(302, responseHeaders);
 
 			return void res.end();
 		}
+
 		const getFirstHeader = (headerName: string) => {
 			const val = req.headers[headerName];
 
@@ -386,9 +414,11 @@ export class WebClientServer {
 		if (!remoteAuthority) {
 			return serveError(req, res, 400, `Bad request.`);
 		}
+
 		function asJSON(value: unknown): string {
 			return JSON.stringify(value).replace(/"/g, "&quot;");
 		}
+
 		let _wrapWebWorkerExtHostInIframe: undefined | false = undefined;
 
 		if (this._environmentService.args["enable-smoke-test-driver"]) {
@@ -396,6 +426,7 @@ export class WebClientServer {
 			// so we must disable the iframe wrapping because the iframe URL will give a 404
 			_wrapWebWorkerExtHostInIframe = false;
 		}
+
 		const resolveWorkspaceURI = (defaultLocation?: string) =>
 			defaultLocation &&
 			URI.file(path.resolve(defaultLocation)).with({
@@ -447,11 +478,13 @@ export class WebClientServer {
 						)
 					).toString(),
 				);
+
 				Object.assign(productConfiguration, productOverrides);
 			} catch (err) {
 				/* Ignore Error */
 			}
 		}
+
 		const workbenchWebConfiguration = {
 			remoteAuthority,
 			serverBasePath: this._basePath,
@@ -494,10 +527,12 @@ export class WebClientServer {
 
 		if (!locale.startsWith("en") && this._productService.nlsCoreBaseUrl) {
 			WORKBENCH_NLS_BASE_URL = this._productService.nlsCoreBaseUrl;
+
 			WORKBENCH_NLS_URL = `${WORKBENCH_NLS_BASE_URL}${this._productService.commit}/${this._productService.version}/${locale}/nls.messages.js`;
 		} else {
 			WORKBENCH_NLS_URL = ""; // fallback will apply
 		}
+
 		const values: {
 			[key: string]: string;
 		} = {
@@ -516,11 +551,14 @@ export class WebClientServer {
 		// DEV ---------------------------------------------------------------------------------------
 		if (this._cssDevService.isEnabled) {
 			const cssModules = await this._cssDevService.getCssModules();
+
 			values["WORKBENCH_DEV_CSS_MODULES"] = JSON.stringify(cssModules);
 		}
+
 		if (useTestResolver) {
 			const bundledExtensions: {
 				extensionPath: string;
+
 				packageJSON: IExtensionManifest;
 			}[] = [];
 
@@ -537,16 +575,20 @@ export class WebClientServer {
 						)
 					).toString(),
 				);
+
 				bundledExtensions.push({ extensionPath, packageJSON });
 			}
+
 			values["WORKBENCH_BUILTIN_EXTENSIONS"] = asJSON(bundledExtensions);
 		}
+
 		let data;
 
 		try {
 			const workbenchTemplate = (
 				await promises.readFile(filePath)
 			).toString();
+
 			data = workbenchTemplate.replace(
 				/\{\{([^}]+)\}\}/g,
 				(_, key) => values[key] ?? "undefined",
@@ -556,6 +598,7 @@ export class WebClientServer {
 
 			return void res.end("Not found");
 		}
+
 		const webWorkerExtensionHostIframeScriptSHA =
 			"sha256-2Q+j4hfT09+1+imS46J2YlkCtHWQt0/BE79PXjJ0ZJ8=";
 
@@ -591,10 +634,12 @@ export class WebClientServer {
 				},
 			);
 		}
+
 		res.writeHead(200, headers);
 
 		return void res.end(data);
 	}
+
 	private _getScriptCspHashes(content: string): string[] {
 		// Compute the CSP hashes for line scripts. Uses regex
 		// which means it isn't 100% good.
@@ -613,8 +658,10 @@ export class WebClientServer {
 				.update(Buffer.from(script))
 				.digest()
 				.toString("base64");
+
 			result.push(`'sha256-${hash}'`);
 		}
+
 		return result;
 	}
 	/**
@@ -635,6 +682,7 @@ export class WebClientServer {
 			"style-src 'self' 'unsafe-inline';",
 			"font-src 'self' blob:;",
 		].join(" ");
+
 		res.writeHead(200, {
 			"Content-Type": "text/html",
 			"Content-Security-Policy": cspDirectives,

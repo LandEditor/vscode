@@ -29,28 +29,37 @@ function getTypeScriptCompilerOptions(src: string): ts.CompilerOptions {
 	const rootDir = path.join(__dirname, `../../${src}`);
 
 	const options: ts.CompilerOptions = {};
+
 	options.verbose = false;
+
 	options.sourceMap = true;
 
 	if (process.env["VSCODE_NO_SOURCEMAP"]) {
 		// To be used by developers in a hurry
 		options.sourceMap = false;
 	}
+
 	options.rootDir = rootDir;
+
 	options.baseUrl = rootDir;
+
 	options.sourceRoot = util.toFileUri(rootDir);
+
 	options.newLine = /\r\n/.test(fs.readFileSync(__filename, "utf8")) ? 0 : 1;
 
 	return options;
 }
 interface ICompileTaskOptions {
 	readonly build: boolean;
+
 	readonly emitError: boolean;
+
 	readonly transpileOnly:
 		| boolean
 		| {
 				esbuild: boolean;
 		  };
+
 	readonly preserveEnglish: boolean;
 }
 function createCompile(
@@ -72,6 +81,7 @@ function createCompile(
 	if (!build) {
 		overrideOptions.inlineSourceMap = true;
 	}
+
 	const compilation = tsb.create(
 		projectPath,
 		overrideOptions,
@@ -139,9 +149,11 @@ function createCompile(
 
 		return es.duplex(input, output);
 	}
+
 	pipeline.tsProjectSrc = () => {
 		return compilation.src({ base: src });
 	};
+
 	pipeline.projectPath = projectPath;
 
 	return pipeline;
@@ -163,6 +175,7 @@ export function transpileTask(
 
 		return srcPipe.pipe(transpile()).pipe(gulp.dest(out));
 	};
+
 	task.taskName = `transpile-${path.basename(src)}`;
 
 	return task;
@@ -173,6 +186,7 @@ export function compileTask(
 	build: boolean,
 	options: {
 		disableMangle?: boolean;
+
 		preserveEnglish?: boolean;
 	} = {},
 ): task.StreamTask {
@@ -180,6 +194,7 @@ export function compileTask(
 		if (os.totalmem() < 4000000000) {
 			throw new Error("compilation requires 4GB of RAM");
 		}
+
 		const compile = createCompile(src, {
 			build,
 			emitError: true,
@@ -207,6 +222,7 @@ export function compileTask(
 			const newContentsByFileName = ts2tsMangler.computeNewFileContents(
 				new Set(["saveState"]),
 			);
+
 			mangleStream = es.through(
 				async function write(
 					data: File & {
@@ -227,26 +243,31 @@ export function compileTask(
 
 					if (newContents !== undefined) {
 						data.contents = Buffer.from(newContents.out);
+
 						data.sourceMap =
 							newContents.sourceMap &&
 							JSON.parse(newContents.sourceMap);
 					}
+
 					this.push(data);
 				},
 				async function end() {
 					// free resources
 					(await newContentsByFileName).clear();
+
 					this.push(null);
 					(<any>ts2tsMangler) = undefined;
 				},
 			);
 		}
+
 		return srcPipe
 			.pipe(mangleStream)
 			.pipe(generator.stream)
 			.pipe(compile())
 			.pipe(gulp.dest(out));
 	};
+
 	task.taskName = `compile-${path.basename(src)}`;
 
 	return task;
@@ -272,6 +293,7 @@ export function watchTask(
 		});
 
 		const generator = new MonacoGenerator(true);
+
 		generator.execute();
 
 		return watchSrc
@@ -279,6 +301,7 @@ export function watchTask(
 			.pipe(util.incremental(compile, src, true))
 			.pipe(gulp.dest(out));
 	};
+
 	task.taskName = `watch-${path.basename(out)}`;
 
 	return task;
@@ -287,31 +310,42 @@ export function watchTask(
 const REPO_SRC_FOLDER = path.join(__dirname, "../../src");
 class MonacoGenerator {
 	private readonly _isWatch: boolean;
+
 	public readonly stream: NodeJS.ReadWriteStream;
+
 	private readonly _watchedFiles: {
 		[filePath: string]: boolean;
 	};
+
 	private readonly _fsProvider: monacodts.FSProvider;
+
 	private readonly _declarationResolver: monacodts.DeclarationResolver;
 
 	constructor(isWatch: boolean) {
 		this._isWatch = isWatch;
+
 		this.stream = es.through();
+
 		this._watchedFiles = {};
 
 		const onWillReadFile = (moduleId: string, filePath: string) => {
 			if (!this._isWatch) {
 				return;
 			}
+
 			if (this._watchedFiles[filePath]) {
 				return;
 			}
+
 			this._watchedFiles[filePath] = true;
+
 			fs.watchFile(filePath, () => {
 				this._declarationResolver.invalidateCache(moduleId);
+
 				this._executeSoon();
 			});
 		};
+
 		this._fsProvider = new (class extends monacodts.FSProvider {
 			public readFileSync(moduleId: string, filePath: string): Buffer {
 				onWillReadFile(moduleId, filePath);
@@ -319,6 +353,7 @@ class MonacoGenerator {
 				return super.readFileSync(moduleId, filePath);
 			}
 		})();
+
 		this._declarationResolver = new monacodts.DeclarationResolver(
 			this._fsProvider,
 		);
@@ -329,17 +364,23 @@ class MonacoGenerator {
 			});
 		}
 	}
+
 	private _executeSoonTimer: NodeJS.Timeout | null = null;
+
 	private _executeSoon(): void {
 		if (this._executeSoonTimer !== null) {
 			clearTimeout(this._executeSoonTimer);
+
 			this._executeSoonTimer = null;
 		}
+
 		this._executeSoonTimer = setTimeout(() => {
 			this._executeSoonTimer = null;
+
 			this.execute();
 		}, 20);
 	}
+
 	private _run(): monacodts.IMonacoDeclarationResult | null {
 		const r = monacodts.run3(this._declarationResolver);
 
@@ -347,11 +388,14 @@ class MonacoGenerator {
 			// The build must always be able to generate the monaco.d.ts
 			throw new Error(`monaco.d.ts generation error - Cannot continue`);
 		}
+
 		return r;
 	}
+
 	private _log(message: any, ...rest: any[]): void {
 		fancyLog(ansiColors.cyan("[monaco.d.ts]"), message, ...rest);
 	}
+
 	public execute(): void {
 		const startTime = Date.now();
 
@@ -361,10 +405,13 @@ class MonacoGenerator {
 			// nothing really changed
 			return;
 		}
+
 		if (result.isTheSame) {
 			return;
 		}
+
 		fs.writeFileSync(result.filePath, result.content);
+
 		fs.writeFileSync(
 			path.join(
 				REPO_SRC_FOLDER,
@@ -372,6 +419,7 @@ class MonacoGenerator {
 			),
 			result.enums,
 		);
+
 		this._log(
 			`monaco.d.ts is changed - total time took ${Date.now() - startTime} ms`,
 		);
@@ -394,10 +442,12 @@ function generateApiProposalNames() {
 		);
 
 		const match = /\r?\n/m.exec(src);
+
 		eol = match ? match[0] : os.EOL;
 	} catch {
 		eol = os.EOL;
 	}
+
 	const pattern = /vscode\.proposed\.([a-zA-Z\d]+)\.d\.ts$/;
 
 	const versionPattern = /^\s*\/\/\s*version\s*:\s*(\d+)\s*$/im;
@@ -406,6 +456,7 @@ function generateApiProposalNames() {
 		string,
 		{
 			proposal: string;
+
 			version?: number;
 		}
 	>();
@@ -424,6 +475,7 @@ function generateApiProposalNames() {
 					if (!match) {
 						return;
 					}
+
 					const proposalName = match[1];
 
 					const contents = f.contents.toString("utf8");
@@ -431,6 +483,7 @@ function generateApiProposalNames() {
 					const versionMatch = versionPattern.exec(contents);
 
 					const version = versionMatch ? versionMatch[1] : undefined;
+
 					proposals.set(proposalName, {
 						proposal: `https://raw.githubusercontent.com/microsoft/vscode/main/src/vscode-dts/vscode.proposed.${proposalName}.d.ts`,
 						version: version ? parseInt(version) : undefined,
@@ -460,6 +513,7 @@ function generateApiProposalNames() {
 						"export type ApiProposalName = keyof typeof _allApiProposals;",
 						"",
 					].join(eol);
+
 					this.emit(
 						"data",
 						new File({
@@ -467,6 +521,7 @@ function generateApiProposalNames() {
 							contents: Buffer.from(contents),
 						}),
 					);
+
 					this.emit("end");
 				},
 			),

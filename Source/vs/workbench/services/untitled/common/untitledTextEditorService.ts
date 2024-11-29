@@ -65,8 +65,11 @@ export interface INewUntitledTextEditorWithAssociatedResourceOptions
 	 */
 	associatedResource?: {
 		authority: string;
+
 		path: string;
+
 		query: string;
+
 		fragment: string;
 	};
 }
@@ -100,9 +103,11 @@ export interface IUntitledTextEditorModelManager {
 	 * instance instead of creating a new one.
 	 */
 	create(options?: INewUntitledTextEditorOptions): IUntitledTextEditorModel;
+
 	create(
 		options?: INewUntitledTextEditorWithAssociatedResourceOptions,
 	): IUntitledTextEditorModel;
+
 	create(
 		options?: IExistingUntitledTextEditorOptions,
 	): IUntitledTextEditorModel;
@@ -124,9 +129,11 @@ export interface IUntitledTextEditorModelManager {
 	resolve(
 		options?: INewUntitledTextEditorOptions,
 	): Promise<IUntitledTextEditorModel>;
+
 	resolve(
 		options?: INewUntitledTextEditorWithAssociatedResourceOptions,
 	): Promise<IUntitledTextEditorModel>;
+
 	resolve(
 		options?: IExistingUntitledTextEditorOptions,
 	): Promise<IUntitledTextEditorModel>;
@@ -150,28 +157,40 @@ export class UntitledTextEditorService
 	implements IUntitledTextEditorService
 {
 	declare readonly _serviceBrand: undefined;
+
 	private static readonly UNTITLED_WITHOUT_ASSOCIATED_RESOURCE_REGEX =
 		/Untitled-\d+/;
+
 	private readonly _onDidChangeDirty = this._register(
 		new Emitter<IUntitledTextEditorModel>(),
 	);
+
 	readonly onDidChangeDirty = this._onDidChangeDirty.event;
+
 	private readonly _onDidChangeEncoding = this._register(
 		new Emitter<IUntitledTextEditorModel>(),
 	);
+
 	readonly onDidChangeEncoding = this._onDidChangeEncoding.event;
+
 	private readonly _onDidCreate = this._register(
 		new Emitter<IUntitledTextEditorModel>(),
 	);
+
 	readonly onDidCreate = this._onDidCreate.event;
+
 	private readonly _onWillDispose = this._register(
 		new Emitter<IUntitledTextEditorModel>(),
 	);
+
 	readonly onWillDispose = this._onWillDispose.event;
+
 	private readonly _onDidChangeLabel = this._register(
 		new Emitter<IUntitledTextEditorModel>(),
 	);
+
 	readonly onDidChangeLabel = this._onDidChangeLabel.event;
+
 	private readonly mapResourceToModel =
 		new ResourceMap<UntitledTextEditorModel>();
 
@@ -183,25 +202,31 @@ export class UntitledTextEditorService
 	) {
 		super();
 	}
+
 	get(resource: URI): UntitledTextEditorModel | undefined {
 		return this.mapResourceToModel.get(resource);
 	}
+
 	getValue(resource: URI): string | undefined {
 		return this.get(resource)?.textEditorModel?.getValue();
 	}
+
 	async resolve(
 		options?: IInternalUntitledTextEditorOptions,
 	): Promise<UntitledTextEditorModel> {
 		const model = this.doCreateOrGet(options);
+
 		await model.resolve();
 
 		return model;
 	}
+
 	create(
 		options?: IInternalUntitledTextEditorOptions,
 	): UntitledTextEditorModel {
 		return this.doCreateOrGet(options);
 	}
+
 	private doCreateOrGet(
 		options: IInternalUntitledTextEditorOptions = Object.create(null),
 	): UntitledTextEditorModel {
@@ -218,6 +243,7 @@ export class UntitledTextEditorService
 		// Create new instance otherwise
 		return this.doCreate(massagedOptions);
 	}
+
 	private massageOptions(
 		options: IInternalUntitledTextEditorOptions,
 	): IInternalUntitledTextEditorOptions {
@@ -232,6 +258,7 @@ export class UntitledTextEditorService
 				path: options.associatedResource.path,
 				query: options.associatedResource.query,
 			});
+
 			massagedOptions.associatedResource = options.associatedResource;
 		} else {
 			if (options.untitledResource?.scheme === Schemas.untitled) {
@@ -252,10 +279,12 @@ export class UntitledTextEditorService
 		}
 		// Take over encoding and initial value
 		massagedOptions.encoding = options.encoding;
+
 		massagedOptions.initialValue = options.initialValue;
 
 		return massagedOptions;
 	}
+
 	private doCreate(
 		options: IInternalUntitledTextEditorOptions,
 	): UntitledTextEditorModel {
@@ -270,6 +299,7 @@ export class UntitledTextEditorService
 					scheme: Schemas.untitled,
 					path: `Untitled-${counter}`,
 				});
+
 				counter++;
 			} while (this.mapResourceToModel.has(untitledResource));
 		}
@@ -284,24 +314,30 @@ export class UntitledTextEditorService
 				options.encoding,
 			),
 		);
+
 		this.registerModel(model);
 
 		return model;
 	}
+
 	private registerModel(model: UntitledTextEditorModel): void {
 		// Install model listeners
 		const modelListeners = new DisposableStore();
+
 		modelListeners.add(
 			model.onDidChangeDirty(() => this._onDidChangeDirty.fire(model)),
 		);
+
 		modelListeners.add(
 			model.onDidChangeName(() => this._onDidChangeLabel.fire(model)),
 		);
+
 		modelListeners.add(
 			model.onDidChangeEncoding(() =>
 				this._onDidChangeEncoding.fire(model),
 			),
 		);
+
 		modelListeners.add(
 			model.onWillDispose(() => this._onWillDispose.fire(model)),
 		);
@@ -322,6 +358,7 @@ export class UntitledTextEditorService
 			this._onDidChangeDirty.fire(model);
 		}
 	}
+
 	isUntitledWithAssociatedResource(resource: URI): boolean {
 		return (
 			resource.scheme === Schemas.untitled &&
@@ -331,6 +368,7 @@ export class UntitledTextEditorService
 			)
 		);
 	}
+
 	canDispose(model: UntitledTextEditorModel): true | Promise<true> {
 		if (model.isDisposed()) {
 			return true; // quick return if model already disposed
@@ -338,6 +376,7 @@ export class UntitledTextEditorService
 		// promise based return in all other cases
 		return this.doCanDispose(model);
 	}
+
 	private async doCanDispose(model: UntitledTextEditorModel): Promise<true> {
 		// dirty model: we do not allow to dispose dirty models to prevent
 		// data loss cases. dirty models can only be disposed when they are
@@ -347,6 +386,7 @@ export class UntitledTextEditorService
 
 			return this.canDispose(model);
 		}
+
 		return true;
 	}
 }

@@ -16,14 +16,17 @@ function countMapFrom<K>(values: Iterable<K>): Map<K, number> {
 	for (const value of values) {
 		map.set(value, (map.get(value) ?? 0) + 1);
 	}
+
 	return map;
 }
 interface DocumentChunkEntry {
 	readonly text: string;
+
 	readonly tf: TermFrequencies;
 }
 export interface TfIdfDocument {
 	readonly key: string;
+
 	readonly textChunks: readonly string[];
 }
 export interface TfIdfScore {
@@ -58,6 +61,7 @@ export class TfIdfCalculator {
 			if (token.isCancellationRequested) {
 				return [];
 			}
+
 			for (const chunk of doc.chunks) {
 				const score = this.computeSimilarityScore(
 					chunk,
@@ -70,6 +74,7 @@ export class TfIdfCalculator {
 				}
 			}
 		}
+
 		return scores;
 	}
 	/**
@@ -107,23 +112,28 @@ export class TfIdfCalculator {
 	 * Total number of chunks
 	 */
 	private chunkCount = 0;
+
 	private readonly chunkOccurrences: DocumentOccurrences = new Map<
 		/* word */ string,
 		/*documentOccurrences*/ number
 	>();
+
 	private readonly documents = new Map<
 		/* key */ string,
 		{
 			readonly chunks: ReadonlyArray<DocumentChunkEntry>;
 		}
 	>();
+
 	updateDocuments(documents: ReadonlyArray<TfIdfDocument>): this {
 		for (const { key } of documents) {
 			this.deleteDocument(key);
 		}
+
 		for (const doc of documents) {
 			const chunks: Array<{
 				text: string;
+
 				tf: TermFrequencies;
 			}> = [];
 
@@ -140,20 +150,27 @@ export class TfIdfCalculator {
 						(this.chunkOccurrences.get(term) ?? 0) + 1,
 					);
 				}
+
 				chunks.push({ text, tf });
 			}
+
 			this.chunkCount += chunks.length;
+
 			this.documents.set(doc.key, { chunks });
 		}
+
 		return this;
 	}
+
 	deleteDocument(key: string) {
 		const doc = this.documents.get(key);
 
 		if (!doc) {
 			return;
 		}
+
 		this.documents.delete(key);
+
 		this.chunkCount -= doc.chunks.length;
 		// Update term occurrences for the document
 		for (const chunk of doc.chunks) {
@@ -172,6 +189,7 @@ export class TfIdfCalculator {
 			}
 		}
 	}
+
 	private computeSimilarityScore(
 		chunk: DocumentChunkEntry,
 		queryEmbedding: SparseEmbedding,
@@ -190,22 +208,29 @@ export class TfIdfCalculator {
 				// Term does not appear in chunk so it has no contribution
 				continue;
 			}
+
 			let chunkIdf = idfCache.get(term);
 
 			if (typeof chunkIdf !== "number") {
 				chunkIdf = this.computeIdf(term);
+
 				idfCache.set(term, chunkIdf);
 			}
+
 			const chunkTfidf = chunkTf * chunkIdf;
+
 			sum += chunkTfidf * termTfidf;
 		}
+
 		return sum;
 	}
+
 	private computeEmbedding(input: string): SparseEmbedding {
 		const tf = TfIdfCalculator.termFrequencies(input);
 
 		return this.computeTfidf(tf);
 	}
+
 	private computeIdf(term: string): number {
 		const chunkOccurrences = this.chunkOccurrences.get(term) ?? 0;
 
@@ -213,6 +238,7 @@ export class TfIdfCalculator {
 			? Math.log((this.chunkCount + 1) / chunkOccurrences)
 			: 0;
 	}
+
 	private computeTfidf(termFrequencies: TermFrequencies): SparseEmbedding {
 		const embedding = Object.create(null);
 
@@ -223,6 +249,7 @@ export class TfIdfCalculator {
 				embedding[word] = occurrences * idf;
 			}
 		}
+
 		return embedding;
 	}
 }
@@ -248,5 +275,6 @@ export function normalizeTfIdfScores(
 			score.score /= max;
 		}
 	}
+
 	return result as TfIdfScore[];
 }

@@ -27,6 +27,7 @@ async function read(
 
 	try {
 		filehandle = await open(file);
+
 		await filehandle.read(buf, offset, length, position);
 	} finally {
 		await filehandle?.close();
@@ -53,6 +54,7 @@ async function checkMachOFiles(appPath: string, arch: string) {
 		if (visited.has(p)) {
 			return;
 		}
+
 		visited.add(p);
 
 		const info = await stat(p);
@@ -60,6 +62,7 @@ async function checkMachOFiles(appPath: string, arch: string) {
 		if (info.isSymbolicLink()) {
 			return;
 		}
+
 		if (info.isFile()) {
 			let fileOutput = "";
 
@@ -72,8 +75,10 @@ async function checkMachOFiles(appPath: string, arch: string) {
 					throw e;
 				}
 			}
+
 			if (fileOutput.startsWith(MACHO_PREFIX)) {
 				console.log(`Verifying architecture of ${p}`);
+
 				read(p, header, 0, 8, 0).then((_) => {
 					const header_magic = header.readUInt32LE();
 
@@ -95,12 +100,14 @@ async function checkMachOFiles(appPath: string, arch: string) {
 						}
 					} else if (header_magic === MACHO_UNIVERSAL_MAGIC_LE) {
 						const num_binaries = header.readUInt32BE(4);
+
 						assert.equal(num_binaries, 2);
 
 						const file_entries_size =
 							file_header_entry_size * num_binaries;
 
 						const file_entries = Buffer.alloc(file_entries_size);
+
 						read(p, file_entries, 0, file_entries_size, 8).then(
 							(_) => {
 								for (let i = 0; i < num_binaries; i++) {
@@ -121,12 +128,14 @@ async function checkMachOFiles(appPath: string, arch: string) {
 				});
 			}
 		}
+
 		if (info.isDirectory()) {
 			for (const child of await readdir(p)) {
 				await traverse(path.resolve(p, child));
 			}
 		}
 	};
+
 	await traverse(appPath);
 
 	return invalidFiles;
@@ -150,6 +159,7 @@ checkMachOFiles(process.env["APP_PATH"], archToCheck)
 			for (const file of invalidFiles) {
 				console.error(`\x1b[31m${file}\x1b[0m`);
 			}
+
 			process.exit(1);
 		} else {
 			console.log("\x1b[32mAll files are valid\x1b[0m");
@@ -157,5 +167,6 @@ checkMachOFiles(process.env["APP_PATH"], archToCheck)
 	})
 	.catch((err) => {
 		console.error(err);
+
 		process.exit(1);
 	});

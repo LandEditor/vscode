@@ -53,7 +53,9 @@ function agentAndCommandToKey(
 }
 class InputEditorDecorations extends Disposable {
 	public readonly id = "inputEditorDecorations";
+
 	private readonly previouslyUsedAgents = new Set<string>();
+
 	private readonly viewModelDisposables = this._register(
 		new MutableDisposable(),
 	);
@@ -68,35 +70,45 @@ class InputEditorDecorations extends Disposable {
 		private readonly chatAgentService: IChatAgentService,
 	) {
 		super();
+
 		this.codeEditorService.registerDecorationType(
 			decorationDescription,
 			placeholderDecorationType,
 			{},
 		);
+
 		this._register(
 			this.themeService.onDidColorThemeChange(() =>
 				this.updateRegisteredDecorationTypes(),
 			),
 		);
+
 		this.updateRegisteredDecorationTypes();
+
 		this.updateInputEditorDecorations();
+
 		this._register(
 			this.widget.inputEditor.onDidChangeModelContent(() =>
 				this.updateInputEditorDecorations(),
 			),
 		);
+
 		this._register(
 			this.widget.onDidChangeParsedInput(() =>
 				this.updateInputEditorDecorations(),
 			),
 		);
+
 		this._register(
 			this.widget.onDidChangeViewModel(() => {
 				this.registerViewModelListeners();
+
 				this.previouslyUsedAgents.clear();
+
 				this.updateInputEditorDecorations();
 			}),
 		);
+
 		this._register(
 			this.widget.onDidSubmitAgent((e) => {
 				this.previouslyUsedAgents.add(
@@ -104,13 +116,16 @@ class InputEditorDecorations extends Disposable {
 				);
 			}),
 		);
+
 		this._register(
 			this.chatAgentService.onDidChangeAgents(() =>
 				this.updateInputEditorDecorations(),
 			),
 		);
+
 		this.registerViewModelListeners();
 	}
+
 	private registerViewModelListeners(): void {
 		this.viewModelDisposables.value = this.widget.viewModel?.onDidChange(
 			(e) => {
@@ -123,16 +138,20 @@ class InputEditorDecorations extends Disposable {
 			},
 		);
 	}
+
 	private updateRegisteredDecorationTypes() {
 		this.codeEditorService.removeDecorationType(variableTextDecorationType);
+
 		this.codeEditorService.removeDecorationType(
 			dynamicVariableDecorationType,
 		);
+
 		this.codeEditorService.removeDecorationType(
 			slashCommandTextDecorationType,
 		);
 
 		const theme = this.themeService.getColorTheme();
+
 		this.codeEditorService.registerDecorationType(
 			decorationDescription,
 			slashCommandTextDecorationType,
@@ -144,6 +163,7 @@ class InputEditorDecorations extends Disposable {
 				borderRadius: "3px",
 			},
 		);
+
 		this.codeEditorService.registerDecorationType(
 			decorationDescription,
 			variableTextDecorationType,
@@ -155,6 +175,7 @@ class InputEditorDecorations extends Disposable {
 				borderRadius: "3px",
 			},
 		);
+
 		this.codeEditorService.registerDecorationType(
 			decorationDescription,
 			dynamicVariableDecorationType,
@@ -166,8 +187,10 @@ class InputEditorDecorations extends Disposable {
 				borderRadius: "3px",
 			},
 		);
+
 		this.updateInputEditorDecorations();
 	}
+
 	private getPlaceholderColor(): string | undefined {
 		const theme = this.themeService.getColorTheme();
 
@@ -177,6 +200,7 @@ class InputEditorDecorations extends Disposable {
 
 		return transparentForeground?.toString();
 	}
+
 	private async updateInputEditorDecorations() {
 		const inputValue = this.widget.inputEditor.getValue();
 
@@ -185,6 +209,7 @@ class InputEditorDecorations extends Disposable {
 		if (!viewModel) {
 			return;
 		}
+
 		if (!inputValue) {
 			const defaultAgent = this.chatAgentService.getDefaultAgent(
 				this.widget.location,
@@ -208,6 +233,7 @@ class InputEditorDecorations extends Disposable {
 					},
 				},
 			];
+
 			this.widget.inputEditor.setDecorationsByType(
 				decorationDescription,
 				placeholderDecorationType,
@@ -216,6 +242,7 @@ class InputEditorDecorations extends Disposable {
 
 			return;
 		}
+
 		const parsedRequest = this.widget.parsedInput.parts;
 
 		let placeholderDecoration: IDecorationOptions[] | undefined;
@@ -242,6 +269,7 @@ class InputEditorDecorations extends Disposable {
 			if (parsedRequest.length > partIdx + 2) {
 				return false;
 			}
+
 			const nextPart = parsedRequest[partIdx + 1];
 
 			return (
@@ -297,6 +325,7 @@ class InputEditorDecorations extends Disposable {
 				];
 			}
 		}
+
 		const onlyAgentAndAgentCommandAndWhitespace =
 			agentPart &&
 			agentSubcommandPart &&
@@ -341,6 +370,7 @@ class InputEditorDecorations extends Disposable {
 				];
 			}
 		}
+
 		const onlyAgentCommandAndWhitespace =
 			agentSubcommandPart &&
 			parsedRequest.every(
@@ -370,6 +400,7 @@ class InputEditorDecorations extends Disposable {
 				];
 			}
 		}
+
 		this.widget.inputEditor.setDecorationsByType(
 			decorationDescription,
 			placeholderDecorationType,
@@ -381,6 +412,7 @@ class InputEditorDecorations extends Disposable {
 		if (agentPart) {
 			textDecorations.push({ range: agentPart.editorRange });
 		}
+
 		if (agentSubcommandPart) {
 			textDecorations.push({
 				range: agentSubcommandPart.editorRange,
@@ -389,9 +421,11 @@ class InputEditorDecorations extends Disposable {
 				),
 			});
 		}
+
 		if (slashCommandPart) {
 			textDecorations.push({ range: slashCommandPart.editorRange });
 		}
+
 		this.widget.inputEditor.setDecorationsByType(
 			decorationDescription,
 			slashCommandTextDecorationType,
@@ -408,6 +442,7 @@ class InputEditorDecorations extends Disposable {
 		for (const variable of variableParts) {
 			varDecorations.push({ range: variable.editorRange });
 		}
+
 		const toolParts = parsedRequest.filter(
 			(p): p is ChatRequestToolPart => p instanceof ChatRequestToolPart,
 		);
@@ -415,6 +450,7 @@ class InputEditorDecorations extends Disposable {
 		for (const tool of toolParts) {
 			varDecorations.push({ range: tool.editorRange });
 		}
+
 		this.widget.inputEditor.setDecorationsByType(
 			decorationDescription,
 			variableTextDecorationType,
@@ -427,6 +463,7 @@ class InputEditorSlashCommandMode extends Disposable {
 
 	constructor(private readonly widget: IChatWidget) {
 		super();
+
 		this._register(
 			this.widget.onDidChangeAgent((e) => {
 				if (
@@ -437,12 +474,14 @@ class InputEditorSlashCommandMode extends Disposable {
 				}
 			}),
 		);
+
 		this._register(
 			this.widget.onDidSubmitAgent((e) => {
 				this.repopulateAgentCommand(e.agent, e.slashCommand);
 			}),
 		);
 	}
+
 	private async repopulateAgentCommand(
 		agent: IChatAgentData,
 		slashCommand: IChatAgentCommand | undefined,
@@ -451,6 +490,7 @@ class InputEditorSlashCommandMode extends Disposable {
 		if (this.widget.inputEditor.getValue().trim()) {
 			return;
 		}
+
 		let value: string | undefined;
 
 		if (slashCommand && slashCommand.isSticky) {
@@ -458,8 +498,10 @@ class InputEditorSlashCommandMode extends Disposable {
 		} else if (agent.metadata.isSticky) {
 			value = `${chatAgentLeader}${agent.name} `;
 		}
+
 		if (value) {
 			this.widget.inputEditor.setValue(value);
+
 			this.widget.inputEditor.setPosition({
 				lineNumber: 1,
 				column: value.length + 1,
@@ -492,6 +534,7 @@ class ChatTokenDeleter extends Disposable {
 			this.widget.inputEditor.onDidChangeModelContent((e) => {
 				if (!previousInputValue) {
 					previousInputValue = inputValue;
+
 					previousSelectedAgent = this.widget.lastSelectedAgent;
 				}
 				// Don't try to handle multicursor edits right now
@@ -513,6 +556,7 @@ class ChatTokenDeleter extends Disposable {
 							p instanceof ChatRequestVariablePart ||
 							p instanceof ChatRequestToolPart,
 					);
+
 					deletableTokens.forEach((token) => {
 						const deletedRangeOfToken = Range.intersectRanges(
 							token.editorRange,
@@ -537,17 +581,21 @@ class ChatTokenDeleter extends Disposable {
 								token.editorRange.endLineNumber,
 								token.editorRange.endColumn - length,
 							);
+
 							this.widget.inputEditor.executeEdits(this.id, [
 								{
 									range: rangeToDelete,
 									text: "",
 								},
 							]);
+
 							this.widget.refreshParsedInput();
 						}
 					});
 				}
+
 				previousInputValue = this.widget.inputEditor.getValue();
+
 				previousSelectedAgent = this.widget.lastSelectedAgent;
 			}),
 		);

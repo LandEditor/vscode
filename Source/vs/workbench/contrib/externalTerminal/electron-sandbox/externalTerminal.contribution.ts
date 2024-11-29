@@ -91,6 +91,7 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
 
 			return;
 		}
+
 		try {
 			if (activeFile?.scheme === Schemas.vscodeRemote) {
 				const canonicalUri =
@@ -128,6 +129,7 @@ export class ExternalTerminalContribution implements IWorkbenchContribution {
 	) {
 		this._updateConfiguration();
 	}
+
 	private async _updateConfiguration(): Promise<void> {
 		const terminals =
 			await this._externalTerminalService.getDefaultTerminalForPlatforms();
@@ -135,6 +137,7 @@ export class ExternalTerminalContribution implements IWorkbenchContribution {
 		const configurationRegistry = Registry.as<IConfigurationRegistry>(
 			Extensions.Configuration,
 		);
+
 		configurationRegistry.registerConfiguration({
 			id: "externalTerminal",
 			order: 100,

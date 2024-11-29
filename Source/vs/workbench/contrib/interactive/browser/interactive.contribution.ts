@@ -232,6 +232,7 @@ export class InteractiveDocumentContribution
 
 					if (data) {
 						cellOptions = { resource, options };
+
 						iwResource = data.notebook;
 					}
 
@@ -262,6 +263,7 @@ export class InteractiveDocumentContribution
 							"Interactive window editors must have a resource name",
 						);
 					}
+
 					const data = CellUri.parse(resource);
 
 					let cellOptions: ITextResourceEditorInput | undefined;
@@ -320,6 +322,7 @@ class InteractiveInputContentProvider implements ITextModelContentProvider {
 		if (existing) {
 			return existing;
 		}
+
 		const result: ITextModel | null = this._modelService.createModel(
 			"",
 			null,
@@ -433,8 +436,11 @@ registerWorkbenchContribution2(
 
 type interactiveEditorInputData = {
 	resource: URI;
+
 	inputResource: URI;
+
 	name: string;
+
 	language: string;
 };
 
@@ -471,6 +477,7 @@ export class InteractiveEditorSerializer implements IEditorSerializer {
 		if (!data) {
 			return undefined;
 		}
+
 		const { resource, inputResource, name, language } = data;
 
 		if (!URI.isUri(resource) || !URI.isUri(inputResource)) {
@@ -568,7 +575,9 @@ registerAction2(
 			title?: string,
 		): Promise<{
 			notebookUri: URI;
+
 			inputUri: URI;
+
 			notebookEditorId?: string;
 		}> {
 			const editorService = accessor.get(IEditorService);
@@ -646,6 +655,7 @@ registerAction2(
 			}
 
 			const existingNotebookDocument = new Set<string>();
+
 			editorService
 				.getEditors(EditorsOrder.SEQUENTIAL)
 				.forEach((editor) => {
@@ -667,6 +677,7 @@ registerAction2(
 					scheme: Schemas.untitled,
 					path: `/Interactive-${counter}.interactive`,
 				});
+
 				inputUri = URI.from({
 					scheme: Schemas.vscodeInteractiveInput,
 					path: `/InteractiveInput-${counter}`,
@@ -674,6 +685,7 @@ registerAction2(
 
 				counter++;
 			} while (existingNotebookDocument.has(notebookUri.toString()));
+
 			InteractiveEditorInput.setName(notebookUri, title);
 
 			logService.debug(
@@ -824,6 +836,7 @@ registerAction2(
 							found.editor,
 							found.groupId,
 						);
+
 						editorControl = editor?.getControl();
 
 						break;
@@ -870,7 +883,9 @@ registerAction2(
 					}
 
 					historyService.replaceLast(notebookDocument.uri, value);
+
 					historyService.addToHistory(notebookDocument.uri, "");
+
 					textModel.setValue("");
 
 					const collapseState =
@@ -903,7 +918,9 @@ registerAction2(
 
 					// reveal the cell into view first
 					const range = { start: index, end: index + 1 };
+
 					editorControl.notebookEditor.revealCellRangeInView(range);
+
 					await editorControl.notebookEditor.executeNotebookCells(
 						editorControl.notebookEditor.getCellsInRange({
 							start: index,
@@ -918,6 +935,7 @@ registerAction2(
 
 					if (editor) {
 						editor.setSelections([range]);
+
 						editor.setFocus(range);
 					}
 				}
@@ -1159,6 +1177,7 @@ registerAction2(
 				}
 
 				const len = editorControl.notebookEditor.getLength();
+
 				editorControl.notebookEditor.revealCellRangeInView({
 					start: len - 1,
 					end: len,

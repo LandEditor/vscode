@@ -67,6 +67,7 @@ async function createModel(
 	const pathValue = workspace
 		.getConfiguration("git")
 		.get<string | string[]>("path");
+
 	let pathHints = Array.isArray(pathValue)
 		? pathValue
 		: pathValue
@@ -74,6 +75,7 @@ async function createModel(
 			: [];
 
 	const { isTrusted, workspaceFolders = [] } = workspace;
+
 	const excludes = isTrusted
 		? []
 		: workspaceFolders.map((f) =>
@@ -91,17 +93,21 @@ async function createModel(
 			logger.info(
 				l10n.t('[main] Validating found git in: "{0}"', gitPath),
 			);
+
 			if (excludes.length === 0) {
 				return true;
 			}
 
 			const normalized = path.normalize(gitPath).replace(/[\r\n]+$/, "");
+
 			const skip = excludes.some((e) => normalized.startsWith(e));
+
 			if (skip) {
 				logger.info(
 					l10n.t('[main] Skipped found git in: "{0}"', gitPath),
 				);
 			}
+
 			return !skip;
 		},
 		logger,
@@ -116,9 +122,11 @@ async function createModel(
 	}
 
 	const askpass = new Askpass(ipcServer);
+
 	disposables.push(askpass);
 
 	const gitEditor = new GitEditor(ipcServer);
+
 	disposables.push(gitEditor);
 
 	const environment = {
@@ -126,11 +134,13 @@ async function createModel(
 		...gitEditor.getEnv(),
 		...ipcServer?.getEnv(),
 	};
+
 	const terminalEnvironmentManager = new TerminalEnvironmentManager(context, [
 		askpass,
 		gitEditor,
 		ipcServer,
 	]);
+
 	disposables.push(terminalEnvironmentManager);
 
 	logger.info(
@@ -143,6 +153,7 @@ async function createModel(
 		version: info.version,
 		env: environment,
 	});
+
 	const model = new Model(
 		git,
 		askpass,
@@ -151,6 +162,7 @@ async function createModel(
 		logger,
 		telemetryReporter,
 	);
+
 	disposables.push(model);
 
 	const onRepository = () =>
@@ -159,8 +171,11 @@ async function createModel(
 			"gitOpenRepositoryCount",
 			`${model.repositories.length}`,
 		);
+
 	model.onDidOpenRepository(onRepository, null, disposables);
+
 	model.onDidCloseRepository(onRepository, null, disposables);
+
 	onRepository();
 
 	const onOutput = (str: string) => {
@@ -172,7 +187,9 @@ async function createModel(
 
 		logger.appendLine(lines.join("\n"));
 	};
+
 	git.onOutput.addListener("log", onOutput);
+
 	disposables.push(
 		toDisposable(() => git.onOutput.removeListener("log", onOutput)),
 	);
@@ -184,6 +201,7 @@ async function createModel(
 		logger,
 		telemetryReporter,
 	);
+
 	disposables.push(
 		cc,
 		new GitFileSystemProvider(model),
@@ -196,14 +214,17 @@ async function createModel(
 	);
 
 	const postCommitCommandsProvider = new GitPostCommitCommandsProvider();
+
 	model.registerPostCommitCommandsProvider(postCommitCommandsProvider);
 
 	const diagnosticsManager = new GitCommitInputBoxDiagnosticsManager(model);
+
 	disposables.push(diagnosticsManager);
 
 	const codeActionsProvider = new GitCommitInputBoxCodeActionsProvider(
 		diagnosticsManager,
 	);
+
 	disposables.push(codeActionsProvider);
 
 	const gitEditorDocumentLinkProvider =
@@ -211,9 +232,11 @@ async function createModel(
 			"git-commit",
 			new GitEditorDocumentLinkProvider(model),
 		);
+
 	disposables.push(gitEditorDocumentLinkProvider);
 
 	checkGitVersion(info);
+
 	commands.executeCommand(
 		"setContext",
 		"gitVersion2.35",
@@ -234,6 +257,7 @@ async function isGitRepository(folder: WorkspaceFolder): Promise<boolean> {
 		const dotGitStat = await new Promise<fs.Stats>((c, e) =>
 			fs.stat(dotGit, (err, stat) => (err ? e(err) : c(stat))),
 		);
+
 		return dotGitStat.isDirectory();
 	} catch (err) {
 		return false;
@@ -242,6 +266,7 @@ async function isGitRepository(folder: WorkspaceFolder): Promise<boolean> {
 
 async function warnAboutMissingGit(): Promise<void> {
 	const config = workspace.getConfiguration("git");
+
 	const shouldIgnore =
 		config.get<boolean>("ignoreMissingGitWarning") === true;
 
@@ -262,7 +287,9 @@ async function warnAboutMissingGit(): Promise<void> {
 	}
 
 	const download = l10n.t("Download Git");
+
 	const neverShowAgain = l10n.t("Don't Show Again");
+
 	const choice = await window.showWarningMessage(
 		l10n.t(
 			'Git not found. Install it or configure it using the "git.path" setting.',
@@ -285,24 +312,31 @@ export async function _activate(
 	context: ExtensionContext,
 ): Promise<GitExtensionImpl> {
 	const disposables: Disposable[] = [];
+
 	context.subscriptions.push(
 		new Disposable(() => Disposable.from(...disposables).dispose()),
 	);
 
 	const logger = window.createOutputChannel("Git", { log: true });
+
 	disposables.push(logger);
 
 	const onDidChangeLogLevel = (logLevel: LogLevel) => {
 		logger.appendLine(l10n.t("[main] Log level: {0}", LogLevel[logLevel]));
 	};
+
 	disposables.push(logger.onDidChangeLogLevel(onDidChangeLogLevel));
+
 	onDidChangeLogLevel(logger.logLevel);
 
 	const { aiKey } = require("../package.json") as { aiKey: string };
+
 	const telemetryReporter = new TelemetryReporter(aiKey);
+
 	deactivateTasks.push(() => telemetryReporter.dispose());
 
 	const config = workspace.getConfiguration("git", null);
+
 	const enabled = config.get<boolean>("enabled");
 
 	if (!enabled) {
@@ -310,6 +344,7 @@ export async function _activate(
 			workspace.onDidChangeConfiguration,
 			(e) => e.affectsConfiguration("git"),
 		);
+
 		const onEnabled = filterEvent(
 			onConfigChange,
 			() =>
@@ -317,6 +352,7 @@ export async function _activate(
 					.getConfiguration("git", null)
 					.get<boolean>("enabled") === true,
 		);
+
 		const result = new GitExtensionImpl();
 
 		eventToPromise(onEnabled).then(
@@ -328,6 +364,7 @@ export async function _activate(
 					disposables,
 				)),
 		);
+
 		return result;
 	}
 
@@ -338,9 +375,11 @@ export async function _activate(
 			telemetryReporter,
 			disposables,
 		);
+
 		return new GitExtensionImpl(model);
 	} catch (err) {
 		console.warn(err.message);
+
 		logger.warn(`[main] Failed to create model: ${err}`);
 
 		if (!/Git installation not found/.test(err.message || "")) {
@@ -355,6 +394,7 @@ export async function _activate(
 		telemetryReporter.sendTelemetryEvent("git.missing");
 
 		commands.executeCommand("setContext", "git.missing", true);
+
 		warnAboutMissingGit();
 
 		return new GitExtensionImpl();
@@ -375,12 +415,15 @@ export async function activate(
 	_context = context;
 
 	const result = await _activate(context);
+
 	context.subscriptions.push(registerAPICommands(result));
+
 	return result;
 }
 
 async function checkGitv1(info: IGit): Promise<void> {
 	const config = workspace.getConfiguration("git");
+
 	const shouldIgnore = config.get<boolean>("ignoreLegacyWarning") === true;
 
 	if (shouldIgnore) {
@@ -392,6 +435,7 @@ async function checkGitv1(info: IGit): Promise<void> {
 	}
 
 	const update = l10n.t("Update Git");
+
 	const neverShowAgain = l10n.t("Don't Show Again");
 
 	const choice = await window.showWarningMessage(
@@ -419,6 +463,7 @@ async function checkGitWindows(info: IGit): Promise<void> {
 	}
 
 	const config = workspace.getConfiguration("git");
+
 	const shouldIgnore =
 		config.get<boolean>("ignoreWindowsGit27Warning") === true;
 
@@ -427,7 +472,9 @@ async function checkGitWindows(info: IGit): Promise<void> {
 	}
 
 	const update = l10n.t("Update Git");
+
 	const neverShowAgain = l10n.t("Don't Show Again");
+
 	const choice = await window.showWarningMessage(
 		l10n.t(
 			'There are known issues with the installed Git "{0}". Please update to Git >= 2.27 for the git features to work correctly.',

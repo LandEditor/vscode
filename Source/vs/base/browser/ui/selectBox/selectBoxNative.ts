@@ -19,10 +19,15 @@ import {
 
 export class SelectBoxNative extends Disposable implements ISelectBoxDelegate {
 	private selectElement: HTMLSelectElement;
+
 	private selectBoxOptions: ISelectBoxOptions;
+
 	private options: ISelectOptionItem[];
+
 	private selected = 0;
+
 	private readonly _onDidSelect: Emitter<ISelectData>;
+
 	private styles: ISelectBoxStyles;
 
 	constructor(
@@ -32,9 +37,13 @@ export class SelectBoxNative extends Disposable implements ISelectBoxDelegate {
 		selectBoxOptions?: ISelectBoxOptions,
 	) {
 		super();
+
 		this.selectBoxOptions = selectBoxOptions || Object.create(null);
+
 		this.options = [];
+
 		this.selectElement = document.createElement("select");
+
 		this.selectElement.className = "monaco-select-box";
 
 		if (typeof this.selectBoxOptions.ariaLabel === "string") {
@@ -43,17 +52,23 @@ export class SelectBoxNative extends Disposable implements ISelectBoxDelegate {
 				this.selectBoxOptions.ariaLabel,
 			);
 		}
+
 		if (typeof this.selectBoxOptions.ariaDescription === "string") {
 			this.selectElement.setAttribute(
 				"aria-description",
 				this.selectBoxOptions.ariaDescription,
 			);
 		}
+
 		this._onDidSelect = this._register(new Emitter<ISelectData>());
+
 		this.styles = styles;
+
 		this.registerListeners();
+
 		this.setOptions(options, selected);
 	}
+
 	private registerListeners() {
 		this._register(Gesture.addTarget(this.selectElement));
 		[EventType.Tap].forEach((eventType) => {
@@ -67,6 +82,7 @@ export class SelectBoxNative extends Disposable implements ISelectBoxDelegate {
 				),
 			);
 		});
+
 		this._register(
 			dom.addStandardDisposableListener(
 				this.selectElement,
@@ -76,12 +92,14 @@ export class SelectBoxNative extends Disposable implements ISelectBoxDelegate {
 				},
 			),
 		);
+
 		this._register(
 			dom.addStandardDisposableListener(
 				this.selectElement,
 				"change",
 				(e) => {
 					this.selectElement.title = e.target.value;
+
 					this._onDidSelect.fire({
 						index: e.target.selectedIndex,
 						selected: e.target.value,
@@ -89,6 +107,7 @@ export class SelectBoxNative extends Disposable implements ISelectBoxDelegate {
 				},
 			),
 		);
+
 		this._register(
 			dom.addStandardDisposableListener(
 				this.selectElement,
@@ -113,6 +132,7 @@ export class SelectBoxNative extends Disposable implements ISelectBoxDelegate {
 							showSelect = true;
 						}
 					}
+
 					if (showSelect) {
 						// Space, Enter, is used to expand select box, do not propagate it (prevent action bar action run)
 						e.stopPropagation();
@@ -121,23 +141,29 @@ export class SelectBoxNative extends Disposable implements ISelectBoxDelegate {
 			),
 		);
 	}
+
 	public get onDidSelect(): Event<ISelectData> {
 		return this._onDidSelect.event;
 	}
+
 	public setOptions(options: ISelectOptionItem[], selected?: number): void {
 		if (!this.options || !arrays.equals(this.options, options)) {
 			this.options = options;
+
 			this.selectElement.options.length = 0;
+
 			this.options.forEach((option, index) => {
 				this.selectElement.add(
 					this.createOption(option.text, index, option.isDisabled),
 				);
 			});
 		}
+
 		if (selected !== undefined) {
 			this.select(selected);
 		}
 	}
+
 	public select(index: number): void {
 		if (this.options.length === 0) {
 			this.selected = 0;
@@ -150,6 +176,7 @@ export class SelectBoxNative extends Disposable implements ISelectBoxDelegate {
 		} else if (this.selected < 0) {
 			this.selected = 0;
 		}
+
 		this.selectElement.selectedIndex = this.selected;
 
 		if (
@@ -161,56 +188,77 @@ export class SelectBoxNative extends Disposable implements ISelectBoxDelegate {
 			this.selectElement.title = "";
 		}
 	}
+
 	public setAriaLabel(label: string): void {
 		this.selectBoxOptions.ariaLabel = label;
+
 		this.selectElement.setAttribute("aria-label", label);
 	}
+
 	public focus(): void {
 		if (this.selectElement) {
 			this.selectElement.tabIndex = 0;
+
 			this.selectElement.focus();
 		}
 	}
+
 	public blur(): void {
 		if (this.selectElement) {
 			this.selectElement.tabIndex = -1;
+
 			this.selectElement.blur();
 		}
 	}
+
 	public setEnabled(enable: boolean): void {
 		this.selectElement.disabled = !enable;
 	}
+
 	public setFocusable(focusable: boolean): void {
 		this.selectElement.tabIndex = focusable ? 0 : -1;
 	}
+
 	public render(container: HTMLElement): void {
 		container.classList.add("select-container");
+
 		container.appendChild(this.selectElement);
+
 		this.setOptions(this.options, this.selected);
+
 		this.applyStyles();
 	}
+
 	public style(styles: ISelectBoxStyles): void {
 		this.styles = styles;
+
 		this.applyStyles();
 	}
+
 	public applyStyles(): void {
 		// Style native select
 		if (this.selectElement) {
 			this.selectElement.style.backgroundColor =
 				this.styles.selectBackground ?? "";
+
 			this.selectElement.style.color = this.styles.selectForeground ?? "";
+
 			this.selectElement.style.borderColor =
 				this.styles.selectBorder ?? "";
 		}
 	}
+
 	private createOption(
 		value: string,
 		index: number,
 		disabled?: boolean,
 	): HTMLOptionElement {
 		const option = document.createElement("option");
+
 		option.value = value;
+
 		option.text = value;
+
 		option.disabled = !!disabled;
 
 		return option;

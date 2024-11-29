@@ -50,25 +50,33 @@ import {
  */
 class WebviewInputStore {
 	private readonly _handlesToInputs = new Map<string, WebviewInput>();
+
 	private readonly _inputsToHandles = new Map<WebviewInput, string>();
+
 	public add(handle: string, input: WebviewInput): void {
 		this._handlesToInputs.set(handle, input);
+
 		this._inputsToHandles.set(input, handle);
 	}
+
 	public getHandleForInput(input: WebviewInput): string | undefined {
 		return this._inputsToHandles.get(input);
 	}
+
 	public getInputForHandle(handle: string): WebviewInput | undefined {
 		return this._handlesToInputs.get(handle);
 	}
+
 	public delete(handle: string): void {
 		const input = this.getInputForHandle(handle);
+
 		this._handlesToInputs.delete(handle);
 
 		if (input) {
 			this._inputsToHandles.delete(input);
 		}
 	}
+
 	public get size(): number {
 		return this._handlesToInputs.size;
 	}
@@ -78,9 +86,11 @@ class WebviewInputStore {
 }
 class WebviewViewTypeTransformer {
 	public constructor(public readonly prefix: string) {}
+
 	public fromExternal(viewType: string): string {
 		return this.prefix + viewType;
 	}
+
 	public toExternal(viewType: string): string | undefined {
 		return viewType.startsWith(this.prefix)
 			? viewType.substr(this.prefix.length)
@@ -94,9 +104,13 @@ export class MainThreadWebviewPanels
 	private readonly webviewPanelViewType = new WebviewViewTypeTransformer(
 		"mainThreadWebview-",
 	);
+
 	private readonly _proxy: extHostProtocol.ExtHostWebviewPanelsShape;
+
 	private readonly _webviewInputs = new WebviewInputStore();
+
 	private readonly _revivers = this._register(new DisposableMap<string>());
+
 	private readonly webviewOriginStore: ExtensionKeyedWebviewOriginStore;
 
 	constructor(
@@ -118,13 +132,16 @@ export class MainThreadWebviewPanels
 		private readonly _webviewWorkbenchService: IWebviewWorkbenchService,
 	) {
 		super();
+
 		this.webviewOriginStore = new ExtensionKeyedWebviewOriginStore(
 			"mainThreadWebviewPanel.origins",
 			storageService,
 		);
+
 		this._proxy = context.getProxy(
 			extHostProtocol.ExtHostContext.ExtHostWebviewPanels,
 		);
+
 		this._register(
 			Event.any(
 				_editorService.onDidActiveEditorChange,
@@ -136,6 +153,7 @@ export class MainThreadWebviewPanels
 				this.updateWebviewViewStates(this._editorService.activeEditor);
 			}),
 		);
+
 		this._register(
 			_webviewWorkbenchService.onDidChangeActiveWebviewEditor((input) => {
 				this.updateWebviewViewStates(input);
@@ -155,6 +173,7 @@ export class MainThreadWebviewPanels
 							`onWebviewPanel:${viewType}`,
 						);
 					}
+
 					return false;
 				},
 				resolveWebview: () => {
@@ -163,9 +182,11 @@ export class MainThreadWebviewPanels
 			}),
 		);
 	}
+
 	public get webviewInputs(): Iterable<WebviewInput> {
 		return this._webviewInputs;
 	}
+
 	public addWebviewInput(
 		handle: extHostProtocol.WebviewHandle,
 		input: WebviewInput,
@@ -174,13 +195,16 @@ export class MainThreadWebviewPanels
 		},
 	): void {
 		this._webviewInputs.add(handle, input);
+
 		this._mainThreadWebviews.addWebview(handle, input.webview, options);
+
 		input.webview.onDidDispose(() => {
 			this._proxy.$onDidDisposeWebviewPanel(handle).finally(() => {
 				this._webviewInputs.delete(handle);
 			});
 		});
 	}
+
 	public $createWebviewPanel(
 		extensionData: extHostProtocol.WebviewExtensionDescription,
 		handle: extHostProtocol.WebviewHandle,
@@ -219,6 +243,7 @@ export class MainThreadWebviewPanels
 			initData.title,
 			mainThreadShowOptions,
 		);
+
 		this.addWebviewInput(handle, webview, {
 			serializeBuffersForPostMessage:
 				initData.serializeBuffersForPostMessage,
@@ -228,39 +253,52 @@ export class MainThreadWebviewPanels
 			extensionId: extension.id.value,
 			viewType,
 		} as const;
+
 		type Classification = {
 			extensionId: {
 				classification: "SystemMetaData";
+
 				purpose: "FeatureInsight";
+
 				comment: "Id of the extension that created the webview panel";
 			};
+
 			viewType: {
 				classification: "SystemMetaData";
+
 				purpose: "FeatureInsight";
+
 				comment: "Id of the webview";
 			};
+
 			owner: "mjbvz";
+
 			comment: "Triggered when a webview is created. Records the type of webview and the extension which created it";
 		};
+
 		this._telemetryService.publicLog2<typeof payload, Classification>(
 			"webviews:createWebviewPanel",
 			payload,
 		);
 	}
+
 	public $disposeWebview(handle: extHostProtocol.WebviewHandle): void {
 		const webview = this.tryGetWebviewInput(handle);
 
 		if (!webview) {
 			return;
 		}
+
 		webview.dispose();
 	}
+
 	public $setTitle(
 		handle: extHostProtocol.WebviewHandle,
 		value: string,
 	): void {
 		this.tryGetWebviewInput(handle)?.setName(value);
 	}
+
 	public $setIconPath(
 		handle: extHostProtocol.WebviewHandle,
 		value: extHostProtocol.IWebviewIconPath | undefined,
@@ -271,6 +309,7 @@ export class MainThreadWebviewPanels
 			webview.iconPath = reviveWebviewIcon(value);
 		}
 	}
+
 	public $reveal(
 		handle: extHostProtocol.WebviewHandle,
 		showOptions: extHostProtocol.WebviewPanelShowOptions,
@@ -280,13 +319,16 @@ export class MainThreadWebviewPanels
 		if (!webview || webview.isDisposed()) {
 			return;
 		}
+
 		const targetGroup = this.getTargetGroupFromShowOptions(showOptions);
+
 		this._webviewWorkbenchService.revealWebview(
 			webview,
 			targetGroup,
 			!!showOptions.preserveFocus,
 		);
 	}
+
 	private getTargetGroupFromShowOptions(
 		showOptions: extHostProtocol.WebviewPanelShowOptions,
 	): PreferredGroup {
@@ -298,9 +340,11 @@ export class MainThreadWebviewPanels
 		) {
 			return ACTIVE_GROUP;
 		}
+
 		if (showOptions.viewColumn === SIDE_GROUP) {
 			return SIDE_GROUP;
 		}
+
 		if (showOptions.viewColumn >= 0) {
 			// First check to see if an existing group exists
 			const groupInColumn = this._editorGroupService.getGroups(
@@ -327,8 +371,10 @@ export class MainThreadWebviewPanels
 				return this._editorGroupService.addGroup(newGroup, direction);
 			}
 		}
+
 		return ACTIVE_GROUP;
 	}
+
 	public $registerSerializer(
 		viewType: string,
 		options: {
@@ -338,6 +384,7 @@ export class MainThreadWebviewPanels
 		if (this._revivers.has(viewType)) {
 			throw new Error(`Reviver for ${viewType} already registered`);
 		}
+
 		this._revivers.set(
 			viewType,
 			this._webviewWorkbenchService.registerResolver({
@@ -361,7 +408,9 @@ export class MainThreadWebviewPanels
 
 						return;
 					}
+
 					const handle = generateUuid();
+
 					this.addWebviewInput(handle, webviewInput, options);
 
 					let state = undefined;
@@ -377,6 +426,7 @@ export class MainThreadWebviewPanels
 							);
 						}
 					}
+
 					try {
 						await this._proxy.$deserializeWebviewPanel(
 							handle,
@@ -398,6 +448,7 @@ export class MainThreadWebviewPanels
 						);
 					} catch (error) {
 						onUnexpectedError(error);
+
 						webviewInput.webview.setHtml(
 							this._mainThreadWebviews.getWebviewResolvedFailedContent(
 								viewType,
@@ -408,18 +459,22 @@ export class MainThreadWebviewPanels
 			}),
 		);
 	}
+
 	public $unregisterSerializer(viewType: string): void {
 		if (!this._revivers.has(viewType)) {
 			throw new Error(`No reviver for ${viewType} registered`);
 		}
+
 		this._revivers.deleteAndDispose(viewType);
 	}
+
 	private updateWebviewViewStates(
 		activeEditorInput: EditorInput | undefined,
 	) {
 		if (!this._webviewInputs.size) {
 			return;
 		}
+
 		const viewStates: extHostProtocol.WebviewPanelViewStateData = {};
 
 		const updateViewStatesForInput = (
@@ -430,6 +485,7 @@ export class MainThreadWebviewPanels
 			if (!(editorInput instanceof WebviewInput)) {
 				return;
 			}
+
 			editorInput.updateGroup(group.id);
 
 			const handle = this._webviewInputs.getHandleForInput(editorInput);
@@ -450,16 +506,19 @@ export class MainThreadWebviewPanels
 			for (const input of group.editors) {
 				if (input instanceof DiffEditorInput) {
 					updateViewStatesForInput(group, input, input.primary);
+
 					updateViewStatesForInput(group, input, input.secondary);
 				} else {
 					updateViewStatesForInput(group, input, input);
 				}
 			}
 		}
+
 		if (Object.keys(viewStates).length) {
 			this._proxy.$onDidChangeWebviewPanelViewStates(viewStates);
 		}
 	}
+
 	private tryGetWebviewInput(
 		handle: extHostProtocol.WebviewHandle,
 	): WebviewInput | undefined {
@@ -472,6 +531,7 @@ function reviveWebviewIcon(
 	if (!value) {
 		return undefined;
 	}
+
 	return {
 		light: URI.revive(value.light),
 		dark: URI.revive(value.dark),

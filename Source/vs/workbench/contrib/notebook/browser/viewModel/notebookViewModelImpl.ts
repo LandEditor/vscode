@@ -200,6 +200,7 @@ function _normalizeOptions(
 	if (options instanceof ModelDecorationOptions) {
 		return options;
 	}
+
 	return ModelDecorationOptions.createDynamic(options);
 }
 
@@ -214,16 +215,19 @@ export class NotebookViewModel
 	implements EditorFoldingStateDelegate, INotebookViewModel
 {
 	private readonly _localStore = this._register(new DisposableStore());
+
 	private _handleToViewCellMapping = new Map<number, CellViewModel>();
 
 	get options(): NotebookViewModelOptions {
 		return this._options;
 	}
+
 	private readonly _onDidChangeOptions = this._register(new Emitter<void>());
 
 	get onDidChangeOptions(): Event<void> {
 		return this._onDidChangeOptions.event;
 	}
+
 	private _viewCells: CellViewModel[] = [];
 
 	get viewCells(): ICellViewModel[] {
@@ -266,6 +270,7 @@ export class NotebookViewModel
 				this._lastNotebookEditResource.length - 1
 			];
 		}
+
 		return null;
 	}
 
@@ -289,6 +294,7 @@ export class NotebookViewModel
 		const handlesSet = new Set<number>();
 
 		const handles: number[] = [];
+
 		cellRangesToIndexes(this._selectionCollection.selections)
 			.map((index) =>
 				index < this.length ? this.cellAt(index) : undefined,
@@ -306,6 +312,7 @@ export class NotebookViewModel
 		const indexes = selectionHandles.map((handle) =>
 			this._viewCells.findIndex((cell) => cell.handle === handle),
 		);
+
 		this._selectionCollection.setSelections(
 			cellIndexesToRanges(indexes),
 			true,
@@ -314,16 +321,25 @@ export class NotebookViewModel
 	}
 
 	private _decorationsTree = new DecorationsTree();
+
 	private _decorations: { [decorationId: string]: IntervalNode } =
 		Object.create(null);
+
 	private _lastDecorationId: number = 0;
+
 	private readonly _instanceId: string;
+
 	public readonly id: string;
+
 	private _foldingRanges: FoldingRegions | null = null;
+
 	private _onDidFoldingStateChanged = new Emitter<void>();
+
 	onDidFoldingStateChanged: Event<void> =
 		this._onDidFoldingStateChanged.event;
+
 	private _hiddenRanges: ICellRange[] = [];
+
 	private _focused: boolean = true;
 
 	get focused() {
@@ -331,6 +347,7 @@ export class NotebookViewModel
 	}
 
 	private _decorationIdToCellMap = new Map<string, number>();
+
 	private _statusBarItemIdToCellMap = new Map<string, number>();
 
 	constructor(
@@ -351,7 +368,9 @@ export class NotebookViewModel
 		super();
 
 		MODEL_ID++;
+
 		this.id = "$notebookViewModel" + MODEL_ID;
+
 		this._instanceId = strings.singleLetterHash(MODEL_ID);
 
 		const compute = (
@@ -386,6 +405,7 @@ export class NotebookViewModel
 					diff[2].length,
 					true,
 				);
+
 				deletedCells.forEach((cell) => {
 					this._handleToViewCellMapping.delete(cell.handle);
 					// dispose the cell to release ref to the cell text document
@@ -394,6 +414,7 @@ export class NotebookViewModel
 
 				diff[2].forEach((cell) => {
 					this._handleToViewCellMapping.set(cell.handle, cell);
+
 					this._localStore.add(cell);
 				});
 			});
@@ -413,6 +434,7 @@ export class NotebookViewModel
 				const primarySelectionIndex = this._viewCells.indexOf(
 					this.getCellByHandle(primaryHandle)!,
 				);
+
 				endSelectionHandles = [primaryHandle];
 
 				let delta = 0;
@@ -446,6 +468,7 @@ export class NotebookViewModel
 			const selectionIndexes = endSelectionHandles.map((handle) =>
 				this._viewCells.findIndex((cell) => cell.handle === handle),
 			);
+
 			this._selectionCollection.setState(
 				cellIndexesToRanges([selectionIndexes[0]])[0],
 				cellIndexesToRanges(selectionIndexes),
@@ -468,6 +491,7 @@ export class NotebookViewModel
 						change.kind === NotebookCellsChangeType.Initialize
 					) {
 						changes = change.changes;
+
 						compute(changes, synchronous);
 
 						continue;
@@ -476,6 +500,7 @@ export class NotebookViewModel
 							[[change.index, change.length, []]],
 							synchronous,
 						);
+
 						compute(
 							[[change.newIdx, 0, change.cells]],
 							synchronous,
@@ -538,6 +563,7 @@ export class NotebookViewModel
 			this._viewContext.notebookOptions.onDidChangeOptions((e) => {
 				for (let i = 0; i < this.length; i++) {
 					const cell = this._viewCells[i];
+
 					cell.updateOptions(e);
 				}
 			}),
@@ -548,6 +574,7 @@ export class NotebookViewModel
 				if (e.type !== NotebookExecutionType.cell) {
 					return;
 				}
+
 				const cell = this.getCellByHandle(e.cellHandle);
 
 				if (cell instanceof CodeCellViewModel) {
@@ -584,9 +611,11 @@ export class NotebookViewModel
 
 	updateOptions(newOptions: Partial<NotebookViewModelOptions>) {
 		this._options = { ...this._options, ...newOptions };
+
 		this._viewCells.forEach((cell) =>
 			cell.updateOptions({ readonly: this._options.isReadOnly }),
 		);
+
 		this._onDidChangeOptions.fire();
 	}
 
@@ -654,6 +683,7 @@ export class NotebookViewModel
 				)
 					.map((range) => this.validateRange(range))
 					.filter((range) => range !== null) as ICellRange[];
+
 				this._selectionCollection.setState(
 					primarySelection,
 					reduceCellRanges(selections),
@@ -666,6 +696,7 @@ export class NotebookViewModel
 				const selections = state.selections
 					.map((range) => this.validateRange(range))
 					.filter((range) => range !== null) as ICellRange[];
+
 				this._selectionCollection.setState(
 					primarySelection,
 					reduceCellRanges(selections),
@@ -758,20 +789,25 @@ export class NotebookViewModel
 			) {
 				// reuse the old ranges
 				newHiddenAreas.push(this._hiddenRanges[k]);
+
 				k++;
 			} else {
 				updateHiddenAreas = true;
+
 				newHiddenAreas.push({
 					start: startLineNumber - 1,
 					end: endLineNumber - 1,
 				});
 			}
+
 			lastCollapsedStart = startLineNumber;
+
 			lastCollapsedEnd = endLineNumber;
 		}
 
 		if (updateHiddenAreas || k < this._hiddenRanges.length) {
 			this._hiddenRanges = newHiddenAreas;
+
 			this._onDidFoldingStateChanged.fire();
 		}
 
@@ -917,11 +953,13 @@ export class NotebookViewModel
 		if (!node) {
 			return null;
 		}
+
 		const versionId = this.getVersionId();
 
 		if (node.cachedVersionId !== versionId) {
 			this._decorationsTree.resolveNode(node, versionId);
 		}
+
 		if (node.range === null) {
 			return {
 				start: node.cachedAbsoluteStart - 1,
@@ -967,19 +1005,23 @@ export class NotebookViewModel
 		if (!newRange) {
 			// node exists, the request is to delete => delete node
 			this._decorationsTree.delete(node);
+
 			delete this._decorations[node.id];
 
 			return null;
 		}
 
 		this._decorationsTree.delete(node);
+
 		node.reset(
 			this.getVersionId(),
 			newRange.start,
 			newRange.end + 1,
 			new Range(newRange.start + 1, 1, newRange.end + 1, 1),
 		);
+
 		node.setOptions(TRACKED_RANGE_OPTIONS[newStickiness]);
+
 		this._decorationsTree.insert(node);
 
 		return node.id;
@@ -1029,7 +1071,9 @@ export class NotebookViewModel
 					const internalDecorationId = ++this._lastDecorationId;
 
 					const decorationId = `${this._instanceId};${internalDecorationId}`;
+
 					node = new IntervalNode(decorationId, 0, 0);
+
 					this._decorations[decorationId] = node;
 				}
 
@@ -1041,12 +1085,14 @@ export class NotebookViewModel
 				const options = _normalizeOptions(newDecoration.options);
 
 				node.ownerId = ownerId;
+
 				node.reset(
 					versionId,
 					range.startLineNumber,
 					range.endLineNumber,
 					Range.lift(range),
 				);
+
 				node.setOptions(options);
 
 				this._decorationsTree.insert(node);
@@ -1073,7 +1119,9 @@ export class NotebookViewModel
 
 			if (handle !== undefined) {
 				const cell = this.getCellByHandle(handle);
+
 				cell?.deltaCellDecorations([id], []);
+
 				this._decorationIdToCellMap.delete(id);
 			}
 		});
@@ -1085,6 +1133,7 @@ export class NotebookViewModel
 
 			const ret =
 				cell?.deltaCellDecorations([], [decoration.options]) || [];
+
 			ret.forEach((id) => {
 				this._decorationIdToCellMap.set(id, decoration.handle);
 			});
@@ -1105,15 +1154,19 @@ export class NotebookViewModel
 		);
 
 		const result: string[] = [];
+
 		newItems.forEach((itemDelta) => {
 			const cell = this.getCellByHandle(itemDelta.handle);
 
 			const deleted = deletesByHandle[itemDelta.handle] ?? [];
+
 			delete deletesByHandle[itemDelta.handle];
+
 			deleted.forEach((id) => this._statusBarItemIdToCellMap.delete(id));
 
 			const ret =
 				cell?.deltaCellStatusBarItems(deleted, itemDelta.items) || [];
+
 			ret.forEach((id) => {
 				this._statusBarItemIdToCellMap.set(id, itemDelta.handle);
 			});
@@ -1127,7 +1180,9 @@ export class NotebookViewModel
 			const ids = deletesByHandle[handle];
 
 			const cell = this.getCellByHandle(handle);
+
 			cell?.deltaCellStatusBarItems(ids, []);
+
 			ids.forEach((id) => this._statusBarItemIdToCellMap.delete(id));
 		}
 
@@ -1150,6 +1205,7 @@ export class NotebookViewModel
 			if (nearestCellTheOtherDirection > -1) {
 				return index + 1 + nearestCellTheOtherDirection;
 			}
+
 			return -1;
 		}
 	}
@@ -1184,6 +1240,7 @@ export class NotebookViewModel
 		const editorViewStates: {
 			[key: number]: editorCommon.ICodeEditorViewState;
 		} = {};
+
 		this._viewCells
 			.map((cell) => ({
 				handle: cell.model.handle,
@@ -1226,6 +1283,7 @@ export class NotebookViewModel
 			const cellHeight = viewState.cellTotalHeights
 				? viewState.cellTotalHeights[index]
 				: undefined;
+
 			cell.restoreEditorViewState(editorViewState, cellHeight);
 
 			if (
@@ -1234,6 +1292,7 @@ export class NotebookViewModel
 			) {
 				cell.isInputCollapsed = true;
 			}
+
 			if (
 				viewState.collapsedOutputCells &&
 				viewState.collapsedOutputCells[index] &&
@@ -1241,6 +1300,7 @@ export class NotebookViewModel
 			) {
 				cell.isOutputCollapsed = true;
 			}
+
 			if (
 				viewState.cellLineNumberStates &&
 				viewState.cellLineNumberStates[index]
@@ -1290,10 +1350,13 @@ export class NotebookViewModel
 			number,
 			{
 				cell: CellViewModel;
+
 				oldDecorations: readonly string[];
+
 				newDecorations: readonly IModelDeltaDecoration[];
 			}
 		>();
+
 		oldDecorations.forEach((oldDecoration) => {
 			const ownerId = oldDecoration.ownerId;
 
@@ -1343,11 +1406,13 @@ export class NotebookViewModel
 		});
 
 		const ret: ICellModelDecorations[] = [];
+
 		mapping.forEach((value, ownerId) => {
 			const cellRet = value.cell.deltaModelDecorations(
 				value.oldDecorations,
 				value.newDecorations,
 			);
+
 			ret.push({
 				ownerId: ownerId,
 				decorations: cellRet,
@@ -1377,6 +1442,7 @@ export class NotebookViewModel
 					.filter((range) => !!range) ?? [];
 
 			const selectedIndexes = cellRangesToIndexes(selectedRanges);
+
 			findCells = selectedIndexes.map((index) => this._viewCells[index]);
 		} else {
 			findCells = this._viewCells;
@@ -1425,6 +1491,7 @@ export class NotebookViewModel
 		text: string,
 	): Promise<void> {
 		const viewCell = cell as CellViewModel;
+
 		this._lastNotebookEditResource.push(viewCell.uri);
 
 		return viewCell.resolveTextModel().then(() => {
@@ -1444,6 +1511,7 @@ export class NotebookViewModel
 		}
 
 		const textEdits: IWorkspaceTextEdit[] = [];
+
 		this._lastNotebookEditResource.push(matches[0].cell.uri);
 
 		matches.forEach((match) => {
@@ -1490,7 +1558,9 @@ export class NotebookViewModel
 				this._textModelService.createModelReference(cell.uri),
 			),
 		);
+
 		await callback();
+
 		refs.forEach((ref) => ref.dispose());
 	}
 
@@ -1550,6 +1620,7 @@ export class NotebookViewModel
 
 	override dispose() {
 		this._localStore.clear();
+
 		this._viewCells.forEach((cell) => {
 			cell.dispose();
 		});

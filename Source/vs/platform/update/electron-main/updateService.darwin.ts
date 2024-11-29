@@ -66,6 +66,7 @@ export class DarwinUpdateService
 			}),
 		);
 	}
+
 	constructor(
 		@ILifecycleMainService
 		lifecycleMainService: ILifecycleMainService,
@@ -90,41 +91,52 @@ export class DarwinUpdateService
 			logService,
 			productService,
 		);
+
 		lifecycleMainService.setRelaunchHandler(this);
 	}
+
 	handleRelaunch(options?: IRelaunchOptions): boolean {
 		if (options?.addArgs || options?.removeArgs) {
 			return false; // we cannot apply an update and restart with different args
 		}
+
 		if (this.state.type !== StateType.Ready) {
 			return false; // we only handle the relaunch when we have a pending update
 		}
+
 		this.logService.trace(
 			"update#handleRelaunch(): running raw#quitAndInstall()",
 		);
+
 		this.doQuitAndInstall();
 
 		return true;
 	}
+
 	protected override async initialize(): Promise<void> {
 		await super.initialize();
+
 		this.onRawError(this.onError, this, this.disposables);
+
 		this.onRawUpdateAvailable(
 			this.onUpdateAvailable,
 			this,
 			this.disposables,
 		);
+
 		this.onRawUpdateDownloaded(
 			this.onUpdateDownloaded,
 			this,
 			this.disposables,
 		);
+
 		this.onRawUpdateNotAvailable(
 			this.onUpdateNotAvailable,
 			this,
 			this.disposables,
 		);
 	}
+
 	private onError(err: string): void {
 		this.telemetryService.publicLog2<
 			{
@@ -132,6 +144,7 @@ export class DarwinUpdateService
 			},
 			UpdateErrorClassification
 		>("update:error", { messageHash: String(hash(String(err))) });
+
 		this.logService.error("UpdateService error:", err);
 		// only show message when explicitly checking for updates
 		const message =
@@ -139,8 +152,10 @@ export class DarwinUpdateService
 			this.state.explicit
 				? err
 				: undefined;
+
 		this.setState(State.Idle(UpdateType.Archive, message));
 	}
+
 	protected buildUpdateFeedUrl(quality: string): string | undefined {
 		let assetID: string;
 
@@ -149,6 +164,7 @@ export class DarwinUpdateService
 		} else {
 			assetID = this.productService.darwinUniversalAssetId;
 		}
+
 		const url = createUpdateURL(assetID, quality, this.productService);
 
 		try {
@@ -159,58 +175,78 @@ export class DarwinUpdateService
 
 			return undefined;
 		}
+
 		return url;
 	}
+
 	protected doCheckForUpdates(context: any): void {
 		this.setState(State.CheckingForUpdates(context));
+
 		electron.autoUpdater.checkForUpdates();
 	}
+
 	private onUpdateAvailable(): void {
 		if (this.state.type !== StateType.CheckingForUpdates) {
 			return;
 		}
+
 		this.setState(State.Downloading);
 	}
+
 	private onUpdateDownloaded(update: IUpdate): void {
 		if (this.state.type !== StateType.Downloading) {
 			return;
 		}
+
 		this.setState(State.Downloaded(update));
+
 		type UpdateDownloadedClassification = {
 			owner: "joaomoreno";
+
 			version: {
 				classification: "SystemMetaData";
+
 				purpose: "FeatureInsight";
+
 				comment: "The version number of the new VS Code that has been downloaded.";
 			};
+
 			comment: "This is used to know how often VS Code has successfully downloaded the update.";
 		};
+
 		this.telemetryService.publicLog2<
 			{
 				version: String;
 			},
 			UpdateDownloadedClassification
 		>("update:downloaded", { version: update.version });
+
 		this.setState(State.Ready(update));
 	}
+
 	private onUpdateNotAvailable(): void {
 		if (this.state.type !== StateType.CheckingForUpdates) {
 			return;
 		}
+
 		this.telemetryService.publicLog2<
 			{
 				explicit: boolean;
 			},
 			UpdateNotAvailableClassification
 		>("update:notAvailable", { explicit: this.state.explicit });
+
 		this.setState(State.Idle(UpdateType.Archive));
 	}
+
 	protected override doQuitAndInstall(): void {
 		this.logService.trace(
 			"update#quitAndInstall(): running raw#quitAndInstall()",
 		);
+
 		electron.autoUpdater.quitAndInstall();
 	}
+
 	dispose(): void {
 		this.disposables.dispose();
 	}

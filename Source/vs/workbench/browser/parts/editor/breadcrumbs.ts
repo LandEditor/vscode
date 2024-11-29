@@ -30,23 +30,28 @@ export const IBreadcrumbsService = createDecorator<IBreadcrumbsService>(
 
 export interface IBreadcrumbsService {
 	readonly _serviceBrand: undefined;
+
 	register(group: GroupIdentifier, widget: BreadcrumbsWidget): IDisposable;
 
 	getWidget(group: GroupIdentifier): BreadcrumbsWidget | undefined;
 }
 export class BreadcrumbsService implements IBreadcrumbsService {
 	declare readonly _serviceBrand: undefined;
+
 	private readonly _map = new Map<number, BreadcrumbsWidget>();
+
 	register(group: number, widget: BreadcrumbsWidget): IDisposable {
 		if (this._map.has(group)) {
 			throw new Error(`group (${group}) has already a widget`);
 		}
+
 		this._map.set(group, widget);
 
 		return {
 			dispose: () => this._map.delete(group),
 		};
 	}
+
 	getWidget(group: number): BreadcrumbsWidget | undefined {
 		return this._map.get(group);
 	}
@@ -59,38 +64,52 @@ registerSingleton(
 //#region config
 export abstract class BreadcrumbsConfig<T> {
 	abstract get name(): string;
+
 	abstract get onDidChange(): Event<void>;
+
 	abstract getValue(overrides?: IConfigurationOverrides): T;
+
 	abstract updateValue(
 		value: T,
 		overrides?: IConfigurationOverrides,
 	): Promise<void>;
+
 	abstract dispose(): void;
+
 	private constructor() {
 		// internal
 	}
+
 	static readonly IsEnabled = BreadcrumbsConfig._stub<boolean>(
 		"breadcrumbs.enabled",
 	);
+
 	static readonly UseQuickPick = BreadcrumbsConfig._stub<boolean>(
 		"breadcrumbs.useQuickPick",
 	);
+
 	static readonly FilePath = BreadcrumbsConfig._stub<"on" | "off" | "last">(
 		"breadcrumbs.filePath",
 	);
+
 	static readonly SymbolPath = BreadcrumbsConfig._stub<"on" | "off" | "last">(
 		"breadcrumbs.symbolPath",
 	);
+
 	static readonly SymbolSortOrder = BreadcrumbsConfig._stub<
 		"position" | "name" | "type"
 	>("breadcrumbs.symbolSortOrder");
+
 	static readonly Icons =
 		BreadcrumbsConfig._stub<boolean>("breadcrumbs.icons");
+
 	static readonly TitleScrollbarSizing = BreadcrumbsConfig._stub<
 		IEditorPartOptions["titleScrollbarSizing"]
 	>("workbench.editor.titleScrollbarSizing");
+
 	static readonly FileExcludes =
 		BreadcrumbsConfig._stub<glob.IExpression>("files.exclude");
+
 	private static _stub<T>(name: string): {
 		bindTo(service: IConfigurationService): BreadcrumbsConfig<T>;
 	} {
@@ -106,6 +125,7 @@ export abstract class BreadcrumbsConfig<T> {
 
 				return new (class implements BreadcrumbsConfig<T> {
 					readonly name = name;
+
 					readonly onDidChange = onDidChange.event;
 
 					getValue(overrides?: IConfigurationOverrides): T {
@@ -115,6 +135,7 @@ export abstract class BreadcrumbsConfig<T> {
 							return service.getValue(name);
 						}
 					}
+
 					updateValue(
 						newValue: T,
 						overrides?: IConfigurationOverrides,
@@ -129,8 +150,10 @@ export abstract class BreadcrumbsConfig<T> {
 							return service.updateValue(name, newValue);
 						}
 					}
+
 					dispose(): void {
 						listener.dispose();
+
 						onDidChange.dispose();
 					}
 				})();

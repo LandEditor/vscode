@@ -21,8 +21,11 @@ export class ExtensionHostStarter
 	implements IDisposable, IExtensionHostStarter
 {
 	readonly _serviceBrand: undefined;
+
 	private static _lastId: number = 0;
+
 	private readonly _extHosts = new Map<string, WindowUtilityProcess>();
+
 	private _shutdown = false;
 
 	constructor(
@@ -40,43 +43,54 @@ export class ExtensionHostStarter
 		this._register(
 			this._lifecycleMainService.onWillShutdown((e) => {
 				this._shutdown = true;
+
 				e.join("extHostStarter", this._waitForAllExit(6000));
 			}),
 		);
 	}
+
 	override dispose(): void {
 		// Intentionally not killing the extension host processes
 		super.dispose();
 	}
+
 	private _getExtHost(id: string): WindowUtilityProcess {
 		const extHostProcess = this._extHosts.get(id);
 
 		if (!extHostProcess) {
 			throw new Error(`Unknown extension host!`);
 		}
+
 		return extHostProcess;
 	}
+
 	onDynamicStdout(id: string): Event<string> {
 		return this._getExtHost(id).onStdout;
 	}
+
 	onDynamicStderr(id: string): Event<string> {
 		return this._getExtHost(id).onStderr;
 	}
+
 	onDynamicMessage(id: string): Event<any> {
 		return this._getExtHost(id).onMessage;
 	}
+
 	onDynamicExit(id: string): Event<{
 		code: number;
+
 		signal: string;
 	}> {
 		return this._getExtHost(id).onExit;
 	}
+
 	async createExtensionHost(): Promise<{
 		id: string;
 	}> {
 		if (this._shutdown) {
 			throw canceled();
 		}
+
 		const id = String(++ExtensionHostStarter._lastId);
 
 		const extHost = new WindowUtilityProcess(
@@ -85,16 +99,19 @@ export class ExtensionHostStarter
 			this._telemetryService,
 			this._lifecycleMainService,
 		);
+
 		this._extHosts.set(id, extHost);
 
 		const disposable = extHost.onExit(({ pid, code, signal }) => {
 			disposable.dispose();
+
 			this._logService.info(
 				`Extension host with pid ${pid} exited with code: ${code}, signal: ${signal}.`,
 			);
 
 			setTimeout(() => {
 				extHost.dispose();
+
 				this._extHosts.delete(id);
 			});
 			// See https://github.com/microsoft/vscode/issues/194477
@@ -108,6 +125,7 @@ export class ExtensionHostStarter
 					this._logService.error(
 						`Extension host with pid ${pid} still exists, forcefully killing it...`,
 					);
+
 					process.kill(pid);
 				} catch (er) {
 					// ignore, as the process is already gone
@@ -117,6 +135,7 @@ export class ExtensionHostStarter
 
 		return { id };
 	}
+
 	async start(
 		id: string,
 		opts: IExtensionHostProcessOptions,
@@ -126,7 +145,9 @@ export class ExtensionHostStarter
 		if (this._shutdown) {
 			throw canceled();
 		}
+
 		const extHost = this._getExtHost(id);
+
 		extHost.start({
 			...opts,
 			type: "extensionHost",
@@ -142,40 +163,49 @@ export class ExtensionHostStarter
 
 		return { pid };
 	}
+
 	async enableInspectPort(id: string): Promise<boolean> {
 		if (this._shutdown) {
 			throw canceled();
 		}
+
 		const extHostProcess = this._extHosts.get(id);
 
 		if (!extHostProcess) {
 			return false;
 		}
+
 		return extHostProcess.enableInspectPort();
 	}
+
 	async kill(id: string): Promise<void> {
 		if (this._shutdown) {
 			throw canceled();
 		}
+
 		const extHostProcess = this._extHosts.get(id);
 
 		if (!extHostProcess) {
 			// already gone!
 			return;
 		}
+
 		extHostProcess.kill();
 	}
+
 	async _killAllNow(): Promise<void> {
 		for (const [, extHost] of this._extHosts) {
 			extHost.kill();
 		}
 	}
+
 	async _waitForAllExit(maxWaitTimeMs: number): Promise<void> {
 		const exitPromises: Promise<void>[] = [];
 
 		for (const [, extHost] of this._extHosts) {
 			exitPromises.push(extHost.waitForExit(maxWaitTimeMs));
 		}
+
 		return Promises.settled(exitPromises).then(() => {});
 	}
 }

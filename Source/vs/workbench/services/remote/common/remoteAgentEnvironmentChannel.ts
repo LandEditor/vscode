@@ -21,32 +21,49 @@ import { IExtensionHostExitInfo } from "./remoteAgentService.js";
 
 export interface IGetEnvironmentDataArguments {
 	remoteAuthority: string;
+
 	profile?: string;
 }
 export interface IGetExtensionHostExitInfoArguments {
 	remoteAuthority: string;
+
 	reconnectionToken: string;
 }
 export interface IRemoteAgentEnvironmentDTO {
 	pid: number;
+
 	connectionToken: string;
+
 	appRoot: UriComponents;
 
 	settingsPath: UriComponents;
+
 	logsPath: UriComponents;
+
 	extensionHostLogsPath: UriComponents;
+
 	globalStorageHome: UriComponents;
+
 	workspaceStorageHome: UriComponents;
+
 	localHistoryHome: UriComponents;
+
 	userHome: UriComponents;
+
 	os: platform.OperatingSystem;
+
 	arch: string;
+
 	marks: performance.PerformanceMark[];
+
 	useHostProxy: boolean;
+
 	profiles: {
 		all: UriDto<IUserDataProfile[]>;
+
 		home: UriComponents;
 	};
+
 	isUnsupportedGlibc: boolean;
 }
 export class RemoteExtensionEnvironmentChannelClient {
@@ -84,6 +101,7 @@ export class RemoteExtensionEnvironmentChannelClient {
 			isUnsupportedGlibc: data.isUnsupportedGlibc,
 		};
 	}
+
 	static async getExtensionHostExitInfo(
 		channel: IChannel,
 		remoteAuthority: string,
@@ -99,18 +117,21 @@ export class RemoteExtensionEnvironmentChannelClient {
 			args,
 		);
 	}
+
 	static getDiagnosticInfo(
 		channel: IChannel,
 		options: IDiagnosticInfoOptions,
 	): Promise<IDiagnosticInfo> {
 		return channel.call<IDiagnosticInfo>("getDiagnosticInfo", options);
 	}
+
 	static updateTelemetryLevel(
 		channel: IChannel,
 		telemetryLevel: TelemetryLevel,
 	): Promise<void> {
 		return channel.call<void>("updateTelemetryLevel", { telemetryLevel });
 	}
+
 	static logTelemetry(
 		channel: IChannel,
 		eventName: string,
@@ -118,9 +139,11 @@ export class RemoteExtensionEnvironmentChannelClient {
 	): Promise<void> {
 		return channel.call<void>("logTelemetry", { eventName, data });
 	}
+
 	static flushTelemetry(channel: IChannel): Promise<void> {
 		return channel.call<void>("flushTelemetry");
 	}
+
 	static async ping(channel: IChannel): Promise<void> {
 		await channel.call<void>("ping");
 	}

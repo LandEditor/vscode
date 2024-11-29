@@ -15,6 +15,7 @@ import { ExtensionStoragePaths as CommonExtensionStoragePaths } from "../common/
 
 export class ExtensionStoragePaths extends CommonExtensionStoragePaths {
 	private _workspaceStorageLock: Lock | null = null;
+
 	protected override async _getWorkspaceStorageURI(
 		storageName: string,
 	): Promise<URI> {
@@ -25,6 +26,7 @@ export class ExtensionStoragePaths extends CommonExtensionStoragePaths {
 		if (workspaceStorageURI.scheme !== Schemas.file) {
 			return workspaceStorageURI;
 		}
+
 		if (this._environment.skipWorkspaceStorageLock) {
 			this._logService.info(
 				`Skipping acquiring lock for ${workspaceStorageURI.fsPath}.`,
@@ -32,6 +34,7 @@ export class ExtensionStoragePaths extends CommonExtensionStoragePaths {
 
 			return workspaceStorageURI;
 		}
+
 		const workspaceStorageBase = workspaceStorageURI.fsPath;
 
 		let attempt = 0;
@@ -46,6 +49,7 @@ export class ExtensionStoragePaths extends CommonExtensionStoragePaths {
 					? `${workspaceStorageBase.substr(0, workspaceStorageBase.length - 1)}-${attempt}`
 					: `${workspaceStorageBase}-${attempt}`;
 			}
+
 			await mkdir(workspaceStoragePath);
 
 			const lockfile = path.join(workspaceStoragePath, "vscode.lock");
@@ -58,17 +62,20 @@ export class ExtensionStoragePaths extends CommonExtensionStoragePaths {
 
 			if (lock) {
 				this._workspaceStorageLock = lock;
+
 				process.on("exit", () => {
 					lock.dispose();
 				});
 
 				return URI.file(workspaceStoragePath);
 			}
+
 			attempt++;
 		} while (attempt < 10);
 		// just give up
 		return workspaceStorageURI;
 	}
+
 	override onWillDeactivateAll(): void {
 		// the lock will be released soon
 		this._workspaceStorageLock?.setWillRelease(6000);
@@ -82,6 +89,7 @@ async function mkdir(dir: string): Promise<void> {
 	} catch {
 		// doesn't exist, that's OK
 	}
+
 	try {
 		await fs.promises.mkdir(dir, { recursive: true });
 	} catch {}
@@ -97,7 +105,9 @@ class Lock extends Disposable {
 		private readonly filename: string,
 	) {
 		super();
+
 		this._timer = this._register(new IntervalTimer());
+
 		this._timer.cancelAndSet(async () => {
 			const contents = await readLockfileContents(logService, filename);
 
@@ -106,16 +116,20 @@ class Lock extends Disposable {
 				logService.info(
 					`Lock '${filename}': The lock was lost unexpectedly.`,
 				);
+
 				this._timer.cancel();
 			}
+
 			try {
 				await fs.promises.utimes(filename, new Date(), new Date());
 			} catch (err) {
 				logService.error(err);
+
 				logService.info(`Lock '${filename}': Could not update mtime.`);
 			}
 		}, MTIME_UPDATE_TIME);
 	}
+
 	public override dispose(): void {
 		super.dispose();
 
@@ -123,6 +137,7 @@ class Lock extends Disposable {
 			fs.unlinkSync(this.filename);
 		} catch (err) {}
 	}
+
 	public async setWillRelease(timeUntilReleaseMs: number): Promise<void> {
 		this.logService.info(
 			`Lock '${this.filename}': Marking the lockfile as scheduled to be released in ${timeUntilReleaseMs} ms.`,
@@ -133,6 +148,7 @@ class Lock extends Disposable {
 				pid: process.pid,
 				willReleaseAt: Date.now() + timeUntilReleaseMs,
 			};
+
 			await Promises.writeFile(this.filename, JSON.stringify(contents), {
 				flag: "w",
 			});
@@ -156,6 +172,7 @@ async function tryAcquireLock(
 			pid: process.pid,
 			willReleaseAt: 0,
 		};
+
 		await Promises.writeFile(filename, JSON.stringify(contents), {
 			flag: "wx",
 		});
@@ -174,6 +191,7 @@ async function tryAcquireLock(
 
 			return null;
 		}
+
 		logService.info(
 			`Lock '${filename}': Could not acquire lock, checking if the file is stale.`,
 		);
@@ -187,6 +205,7 @@ async function tryAcquireLock(
 }
 interface ILockfileContents {
 	pid: number;
+
 	willReleaseAt: number | undefined;
 }
 /**
@@ -206,6 +225,7 @@ async function readLockfileContents(
 
 		return null;
 	}
+
 	try {
 		return JSON.parse(String(contents));
 	} catch (err) {
@@ -232,6 +252,7 @@ async function readmtime(
 
 		return 0;
 	}
+
 	return stats.mtime.getTime();
 }
 function processExists(pid: number): boolean {
@@ -255,6 +276,7 @@ async function checkStaleAndTryAcquireLock(
 
 		return tryDeleteAndAcquireLock(logService, filename);
 	}
+
 	if (contents.willReleaseAt) {
 		let timeUntilRelease = contents.willReleaseAt - Date.now();
 
@@ -268,6 +290,7 @@ async function checkStaleAndTryAcquireLock(
 					`Lock '${filename}': The lockfile is scheduled to have been released.`,
 				);
 			}
+
 			while (timeUntilRelease > 0) {
 				await timeout(Math.min(100, timeUntilRelease));
 
@@ -277,11 +300,14 @@ async function checkStaleAndTryAcquireLock(
 					// looks like the lock was released
 					return tryDeleteAndAcquireLock(logService, filename);
 				}
+
 				timeUntilRelease = contents.willReleaseAt - Date.now();
 			}
+
 			return tryDeleteAndAcquireLock(logService, filename);
 		}
 	}
+
 	if (!processExists(contents.pid)) {
 		logService.info(
 			`Lock '${filename}': The pid ${contents.pid} appears to be gone.`,
@@ -289,6 +315,7 @@ async function checkStaleAndTryAcquireLock(
 
 		return tryDeleteAndAcquireLock(logService, filename);
 	}
+
 	const mtime1 = await readmtime(logService, filename);
 
 	const elapsed1 = Date.now() - mtime1;
@@ -307,6 +334,7 @@ async function checkStaleAndTryAcquireLock(
 	logService.info(
 		`Lock '${filename}': The lock looks stale, waiting for 2s.`,
 	);
+
 	await timeout(2000);
 
 	const mtime2 = await readmtime(logService, filename);
@@ -340,5 +368,6 @@ async function tryDeleteAndAcquireLock(
 		// cannot delete the file
 		// maybe the file is already deleted
 	}
+
 	return tryAcquireLock(logService, filename, true);
 }

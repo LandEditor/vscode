@@ -102,6 +102,7 @@ registerAction2(
 				f1: false,
 			});
 		}
+
 		async runWithContext(
 			accessor: ServicesAccessor,
 			context: INotebookActionContext,
@@ -130,6 +131,7 @@ registerAction2(
 				f1: false,
 			});
 		}
+
 		async runWithContext(
 			accessor: ServicesAccessor,
 			context: INotebookCellActionContext,
@@ -143,10 +145,12 @@ registerAction2(
 			if (typeof idx !== "number") {
 				return;
 			}
+
 			if (idx < 1 || editor.getLength() === 0) {
 				// we don't do loop
 				return;
 			}
+
 			const newCell = editor.cellAt(idx - 1);
 
 			const newFocusMode =
@@ -156,6 +160,7 @@ registerAction2(
 					: "editor";
 
 			const focusEditorLine = newCell.textBuffer.getLineCount();
+
 			await editor.focusNotebookCell(newCell, newFocusMode, {
 				focusEditorLine: focusEditorLine,
 			});
@@ -182,6 +187,7 @@ registerAction2(
 				f1: false,
 			});
 		}
+
 		async runWithContext(
 			accessor: ServicesAccessor,
 			context: INotebookActionContext,
@@ -218,11 +224,13 @@ registerAction2(
 				f1: false,
 			});
 		}
+
 		async runWithContext(
 			accessor: ServicesAccessor,
 			context: INotebookCellActionContext,
 		) {
 			const index = context.notebookEditor.getCellIndex(context.cell);
+
 			await NotebookChatController.get(
 				context.notebookEditor,
 			)?.focusNearestWidget(index, "above");
@@ -265,11 +273,13 @@ registerAction2(
 				),
 			});
 		}
+
 		async runWithContext(
 			accessor: ServicesAccessor,
 			context: INotebookCellActionContext,
 		) {
 			const index = context.notebookEditor.getCellIndex(context.cell);
+
 			await NotebookChatController.get(
 				context.notebookEditor,
 			)?.focusNearestWidget(index, "below");
@@ -292,6 +302,7 @@ registerAction2(
 				f1: false,
 			});
 		}
+
 		async runWithContext(
 			accessor: ServicesAccessor,
 			context: INotebookActionContext,
@@ -317,6 +328,7 @@ registerAction2(
 				f1: false,
 			});
 		}
+
 		async runWithContext(
 			accessor: ServicesAccessor,
 			context: INotebookActionContext,
@@ -380,6 +392,7 @@ registerAction2(
 				f1: false,
 			});
 		}
+
 		async runWithContext(
 			accessor: ServicesAccessor,
 			context: INotebookActionContext,
@@ -413,6 +426,7 @@ registerAction2(
 				f1: false,
 			});
 		}
+
 		async runWithContext(
 			accessor: ServicesAccessor,
 			context: INotebookActionContext,
@@ -423,7 +437,9 @@ registerAction2(
 );
 interface IInsertCellWithChatArgs extends INotebookActionContext {
 	input?: string;
+
 	autoSend?: boolean;
+
 	source?: string;
 }
 async function startChat(
@@ -457,6 +473,7 @@ async function startChat(
 
 		if (targetCell) {
 			targetCell.enableAutoLanguageDetection();
+
 			await context.notebookEditor.revealFirstLineIfOutsideViewport(
 				targetCell,
 			);
@@ -467,6 +484,7 @@ async function startChat(
 
 			if (codeEditor) {
 				codeEditor.focus();
+
 				commandService.executeCommand("inlineChat.start");
 			}
 		}
@@ -563,6 +581,7 @@ registerAction2(
 				],
 			});
 		}
+
 		override getEditorContextFromArgsOrActive(
 			accessor: ServicesAccessor,
 			...args: any[]
@@ -575,11 +594,13 @@ registerAction2(
 				if (!notebookEditor) {
 					return undefined;
 				}
+
 				const activeCell = notebookEditor.getActiveCell();
 
 				if (!activeCell) {
 					return undefined;
 				}
+
 				return {
 					cell: activeCell,
 					notebookEditor,
@@ -587,17 +608,20 @@ registerAction2(
 					autoSend: undefined,
 				};
 			}
+
 			if (
 				typeof firstArg !== "object" ||
 				typeof firstArg.index !== "number"
 			) {
 				return undefined;
 			}
+
 			const notebookEditor = getEditorFromArgsOrActivePane(accessor);
 
 			if (!notebookEditor) {
 				return undefined;
 			}
+
 			const cell =
 				firstArg.index <= 0
 					? undefined
@@ -610,6 +634,7 @@ registerAction2(
 				autoSend: firstArg.autoSend,
 			};
 		}
+
 		async runWithContext(
 			accessor: ServicesAccessor,
 			context: IInsertCellWithChatArgs,
@@ -620,6 +645,7 @@ registerAction2(
 					? context.notebookEditor.getCellIndex(context.cell) + 1
 					: 0,
 			);
+
 			await startChat(
 				accessor,
 				context,
@@ -673,6 +699,7 @@ registerAction2(
 				],
 			});
 		}
+
 		async runWithContext(
 			accessor: ServicesAccessor,
 			context: INotebookActionContext,
@@ -749,6 +776,7 @@ registerAction2(
 				f1: false,
 			});
 		}
+
 		async runWithContext(
 			accessor: ServicesAccessor,
 			context: INotebookActionContext,
@@ -776,6 +804,7 @@ registerAction2(
 				f1: false,
 			});
 		}
+
 		async runWithContext(
 			accessor: ServicesAccessor,
 			context: INotebookActionContext,
@@ -803,6 +832,7 @@ registerAction2(
 				f1: false,
 			});
 		}
+
 		async runWithContext(
 			accessor: ServicesAccessor,
 			context: INotebookActionContext,
@@ -835,6 +865,7 @@ registerAction2(
 				f1: false,
 			});
 		}
+
 		async runWithContext(
 			accessor: ServicesAccessor,
 			context: INotebookActionContext,
@@ -869,6 +900,7 @@ registerAction2(
 				f1: false,
 			});
 		}
+
 		async runWithContext(
 			accessor: ServicesAccessor,
 			context: INotebookActionContext,
@@ -906,6 +938,7 @@ registerAction2(
 				f1: false,
 			});
 		}
+
 		async runWithContext(
 			accessor: ServicesAccessor,
 			context: INotebookCellActionContext,
@@ -915,6 +948,7 @@ registerAction2(
 			if (!cell) {
 				return;
 			}
+
 			const notebookEditor = context.notebookEditor;
 
 			const controller = NotebookChatController.get(notebookEditor);
@@ -922,6 +956,7 @@ registerAction2(
 			if (!controller) {
 				return;
 			}
+
 			const prompt = controller.getPromptFromCache(cell);
 
 			if (prompt) {
@@ -969,6 +1004,7 @@ export class AcceptChangesAndRun extends AbstractInlineChatAction {
 			],
 		});
 	}
+
 	override async runInlineChatCommand(
 		accessor: ServicesAccessor,
 		ctrl: InlineChatController,
@@ -980,6 +1016,7 @@ export class AcceptChangesAndRun extends AbstractInlineChatAction {
 		if (!editor) {
 			return;
 		}
+
 		const matchedCell = editor.notebookEditor.codeEditors.find(
 			(e) => e[1] === codeEditor,
 		);
@@ -989,6 +1026,7 @@ export class AcceptChangesAndRun extends AbstractInlineChatAction {
 		if (!cell) {
 			return;
 		}
+
 		ctrl.acceptSession();
 
 		return editor.notebookEditor.executeNotebookCells(

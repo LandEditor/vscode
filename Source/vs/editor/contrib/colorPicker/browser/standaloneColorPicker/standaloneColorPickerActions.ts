@@ -43,6 +43,7 @@ export class ShowOrFocusStandaloneColorPicker extends EditorAction2 {
 			},
 		});
 	}
+
 	runEditorCommand(_accessor: ServicesAccessor, editor: ICodeEditor) {
 		StandaloneColorPickerController.get(editor)?.showOrFocus();
 	}
@@ -73,6 +74,7 @@ export class HideStandaloneColorPicker extends EditorAction {
 			},
 		});
 	}
+
 	public run(_accessor: ServicesAccessor, editor: ICodeEditor): void {
 		StandaloneColorPickerController.get(editor)?.hide();
 	}
@@ -105,6 +107,7 @@ export class InsertColorWithStandaloneColorPicker extends EditorAction {
 			},
 		});
 	}
+
 	public run(_accessor: ServicesAccessor, editor: ICodeEditor): void {
 		StandaloneColorPickerController.get(editor)?.insertColor();
 	}

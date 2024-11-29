@@ -30,21 +30,31 @@ export interface ILabelRenderer {
 }
 interface IBaseDropdownOptions {
 	label?: string;
+
 	labelRenderer?: ILabelRenderer;
 }
 class BaseDropdown extends ActionRunner {
 	private _element: HTMLElement;
+
 	private boxContainer?: HTMLElement;
+
 	private _label?: HTMLElement;
+
 	private contents?: HTMLElement;
+
 	private visible: boolean | undefined;
+
 	private _onDidChangeVisibility = this._register(new Emitter<boolean>());
+
 	readonly onDidChangeVisibility = this._onDidChangeVisibility.event;
+
 	private hover: IManagedHover | undefined;
 
 	constructor(container: HTMLElement, options: IBaseDropdownOptions) {
 		super();
+
 		this._element = append(container, $(".monaco-dropdown"));
+
 		this._label = append(this._element, $(".dropdown-label"));
 
 		let labelRenderer = options.labelRenderer;
@@ -56,6 +66,7 @@ class BaseDropdown extends ActionRunner {
 				return null;
 			};
 		}
+
 		for (const event of [
 			EventType.CLICK,
 			EventType.MOUSE_DOWN,
@@ -67,6 +78,7 @@ class BaseDropdown extends ActionRunner {
 				),
 			); // prevent default click behaviour to trigger
 		}
+
 		for (const event of [EventType.MOUSE_DOWN, GestureEventType.Tap]) {
 			this._register(
 				addDisposableListener(this._label, event, (e) => {
@@ -75,6 +87,7 @@ class BaseDropdown extends ActionRunner {
 						// prevent multiple clicks to open multiple context menus (https://github.com/microsoft/vscode/issues/41363)
 						return;
 					}
+
 					if (this.visible) {
 						this.hide();
 					} else {
@@ -83,6 +96,7 @@ class BaseDropdown extends ActionRunner {
 				}),
 			);
 		}
+
 		this._register(
 			addDisposableListener(this._label, EventType.KEY_UP, (e) => {
 				const event = new StandardKeyboardEvent(e);
@@ -106,14 +120,18 @@ class BaseDropdown extends ActionRunner {
 		if (cleanupFn) {
 			this._register(cleanupFn);
 		}
+
 		this._register(Gesture.addTarget(this._label));
 	}
+
 	get element(): HTMLElement {
 		return this._element;
 	}
+
 	get label() {
 		return this._label;
 	}
+
 	set tooltip(tooltip: string) {
 		if (this._label) {
 			if (!this.hover && tooltip !== "") {
@@ -129,38 +147,51 @@ class BaseDropdown extends ActionRunner {
 			}
 		}
 	}
+
 	show(): void {
 		if (!this.visible) {
 			this.visible = true;
+
 			this._onDidChangeVisibility.fire(true);
 		}
 	}
+
 	hide(): void {
 		if (this.visible) {
 			this.visible = false;
+
 			this._onDidChangeVisibility.fire(false);
 		}
 	}
+
 	isVisible(): boolean {
 		return !!this.visible;
 	}
+
 	protected onEvent(_e: Event, activeElement: HTMLElement): void {
 		this.hide();
 	}
+
 	override dispose(): void {
 		super.dispose();
+
 		this.hide();
 
 		if (this.boxContainer) {
 			this.boxContainer.remove();
+
 			this.boxContainer = undefined;
 		}
+
 		if (this.contents) {
 			this.contents.remove();
+
 			this.contents = undefined;
 		}
+
 		if (this._label) {
 			this._label.remove();
+
 			this._label = undefined;
 		}
 	}
@@ -170,14 +201,19 @@ export interface IActionProvider {
 }
 export interface IDropdownMenuOptions extends IBaseDropdownOptions {
 	contextMenuProvider: IContextMenuProvider;
+
 	readonly actions?: IAction[];
+
 	readonly actionProvider?: IActionProvider;
+
 	menuClassName?: string;
+
 	menuAsChild?: boolean; // scope down for #99448
 	readonly skipTelemetry?: boolean;
 }
 export class DropdownMenu extends BaseDropdown {
 	private _menuOptions: IMenuOptions | undefined;
+
 	private _actions: readonly IAction[] = [];
 
 	constructor(
@@ -185,26 +221,35 @@ export class DropdownMenu extends BaseDropdown {
 		private readonly _options: IDropdownMenuOptions,
 	) {
 		super(container, _options);
+
 		this.actions = _options.actions || [];
 	}
+
 	set menuOptions(options: IMenuOptions | undefined) {
 		this._menuOptions = options;
 	}
+
 	get menuOptions(): IMenuOptions | undefined {
 		return this._menuOptions;
 	}
+
 	private get actions(): readonly IAction[] {
 		if (this._options.actionProvider) {
 			return this._options.actionProvider.getActions();
 		}
+
 		return this._actions;
 	}
+
 	private set actions(actions: readonly IAction[]) {
 		this._actions = actions;
 	}
+
 	override show(): void {
 		super.show();
+
 		this.element.classList.add("active");
+
 		this._options.contextMenuProvider.showContextMenu({
 			getAnchor: () => this.element,
 			getActions: () => this.actions,
@@ -232,11 +277,14 @@ export class DropdownMenu extends BaseDropdown {
 			skipTelemetry: this._options.skipTelemetry,
 		});
 	}
+
 	override hide(): void {
 		super.hide();
 	}
+
 	private onHide(): void {
 		this.hide();
+
 		this.element.classList.remove("active");
 	}
 }

@@ -15,6 +15,7 @@ class ApiV0 {
 		>,
 		private readonly _pluginManager: PluginManager,
 	) {}
+
 	configurePlugin(pluginId: string, configuration: {}): void {
 		this._pluginManager.setConfiguration(pluginId, configuration);
 	}
@@ -31,6 +32,7 @@ export function getExtensionApi(
 			if (version === 0) {
 				return new ApiV0(onCompletionAccepted, pluginManager);
 			}
+
 			return undefined;
 		},
 	};

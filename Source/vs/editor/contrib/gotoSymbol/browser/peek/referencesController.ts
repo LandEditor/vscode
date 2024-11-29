@@ -70,18 +70,27 @@ export const ctxReferenceSearchVisible = new RawContextKey<boolean>(
 
 export abstract class ReferencesController implements IEditorContribution {
 	static readonly ID = "editor.contrib.referencesController";
+
 	private readonly _disposables = new DisposableStore();
+
 	private _widget?: ReferenceWidget;
+
 	private _model?: ReferencesModel;
+
 	private _peekMode?: boolean;
+
 	private _requestIdPool = 0;
+
 	private _ignoreModelChangeEvent = false;
+
 	private readonly _referenceSearchVisible: IContextKey<boolean>;
+
 	static get(editor: ICodeEditor): ReferencesController | null {
 		return editor.getContribution<ReferencesController>(
 			ReferencesController.ID,
 		);
 	}
+
 	constructor(
 		private readonly _defaultTreeKeyboardSupport: boolean,
 		private readonly _editor: ICodeEditor,
@@ -101,14 +110,21 @@ export abstract class ReferencesController implements IEditorContribution {
 		this._referenceSearchVisible =
 			ctxReferenceSearchVisible.bindTo(contextKeyService);
 	}
+
 	dispose(): void {
 		this._referenceSearchVisible.reset();
+
 		this._disposables.dispose();
+
 		this._widget?.dispose();
+
 		this._model?.dispose();
+
 		this._widget = undefined;
+
 		this._model = undefined;
 	}
+
 	toggleWidget(
 		range: Range,
 		modelPromise: CancelablePromise<ReferencesModel>,
@@ -120,12 +136,15 @@ export abstract class ReferencesController implements IEditorContribution {
 		if (this._widget) {
 			widgetPosition = this._widget.position;
 		}
+
 		this.closeWidget();
 
 		if (!!widgetPosition && range.containsPosition(widgetPosition)) {
 			return;
 		}
+
 		this._peekMode = peekMode;
+
 		this._referenceSearchVisible.set(true);
 		// close the widget on model/mode changes
 		this._disposables.add(
@@ -133,6 +152,7 @@ export abstract class ReferencesController implements IEditorContribution {
 				this.closeWidget();
 			}),
 		);
+
 		this._disposables.add(
 			this._editor.onDidChangeModel(() => {
 				if (!this._ignoreModelChangeEvent) {
@@ -146,14 +166,18 @@ export abstract class ReferencesController implements IEditorContribution {
 		const data = LayoutData.fromJSON(
 			this._storageService.get(storageKey, StorageScope.PROFILE, "{}"),
 		);
+
 		this._widget = this._instantiationService.createInstance(
 			ReferenceWidget,
 			this._editor,
 			this._defaultTreeKeyboardSupport,
 			data,
 		);
+
 		this._widget.setTitle(nls.localize("labelLoading", "Loading..."));
+
 		this._widget.show(range);
+
 		this._disposables.add(
 			this._widget.onDidClose(() => {
 				modelPromise.cancel();
@@ -170,12 +194,14 @@ export abstract class ReferencesController implements IEditorContribution {
 						// to prevent calling this too many times, check whether it was already closing.
 						this.closeWidget();
 					}
+
 					this._widget = undefined;
 				} else {
 					this.closeWidget();
 				}
 			}),
 		);
+
 		this._disposables.add(
 			this._widget.onDidSelectReference((event) => {
 				const { element, kind } = event;
@@ -183,6 +209,7 @@ export abstract class ReferencesController implements IEditorContribution {
 				if (!element) {
 					return;
 				}
+
 				switch (kind) {
 					case "open":
 						if (
@@ -195,6 +222,7 @@ export abstract class ReferencesController implements IEditorContribution {
 							// the peek window on selecting the editor
 							this.openReference(element, false, false);
 						}
+
 						break;
 
 					case "side":
@@ -208,12 +236,14 @@ export abstract class ReferencesController implements IEditorContribution {
 						} else {
 							this.openReference(element, false, true);
 						}
+
 						break;
 				}
 			}),
 		);
 
 		const requestId = ++this._requestIdPool;
+
 		modelPromise.then(
 			(model) => {
 				// still current request? widget still open?
@@ -222,7 +252,9 @@ export abstract class ReferencesController implements IEditorContribution {
 
 					return undefined;
 				}
+
 				this._model?.dispose();
+
 				this._model = model;
 				// show widget
 				return this._widget.setModel(this._model).then(() => {
@@ -273,6 +305,7 @@ export abstract class ReferencesController implements IEditorContribution {
 								});
 						}
 					}
+
 					return undefined;
 				});
 			},
@@ -281,27 +314,32 @@ export abstract class ReferencesController implements IEditorContribution {
 			},
 		);
 	}
+
 	changeFocusBetweenPreviewAndReferences() {
 		if (!this._widget) {
 			// can be called while still resolving...
 			return;
 		}
+
 		if (this._widget.isPreviewEditorFocused()) {
 			this._widget.focusOnReferenceTree();
 		} else {
 			this._widget.focusOnPreviewEditor();
 		}
 	}
+
 	async goToNextOrPreviousReference(fwd: boolean) {
 		if (!this._editor.hasModel() || !this._model || !this._widget) {
 			// can be called while still resolving...
 			return;
 		}
+
 		const currentPosition = this._widget.position;
 
 		if (!currentPosition) {
 			return;
 		}
+
 		const source = this._model.nearestReference(
 			this._editor.getModel().uri,
 			currentPosition,
@@ -310,12 +348,15 @@ export abstract class ReferencesController implements IEditorContribution {
 		if (!source) {
 			return;
 		}
+
 		const target = this._model.nextOrPreviousReference(source, fwd);
 
 		const editorFocus = this._editor.hasTextFocus();
 
 		const previewEditorFocus = this._widget.isPreviewEditorFocused();
+
 		await this._widget.setSelection(target);
+
 		await this._gotoReference(target, false);
 
 		if (editorFocus) {
@@ -324,28 +365,39 @@ export abstract class ReferencesController implements IEditorContribution {
 			this._widget.focusOnPreviewEditor();
 		}
 	}
+
 	async revealReference(reference: OneReference): Promise<void> {
 		if (!this._editor.hasModel() || !this._model || !this._widget) {
 			// can be called while still resolving...
 			return;
 		}
+
 		await this._widget.revealReference(reference);
 	}
+
 	closeWidget(focusEditor = true): void {
 		this._widget?.dispose();
+
 		this._model?.dispose();
+
 		this._referenceSearchVisible.reset();
+
 		this._disposables.clear();
+
 		this._widget = undefined;
+
 		this._model = undefined;
 
 		if (focusEditor) {
 			this._editor.focus();
 		}
+
 		this._requestIdPool += 1; // Cancel pending requests
 	}
+
 	private _gotoReference(ref: Location, pinned: boolean): Promise<any> {
 		this._widget?.hide();
+
 		this._ignoreModelChangeEvent = true;
 
 		const range = Range.lift(ref.range).collapseToStart();
@@ -372,9 +424,11 @@ export abstract class ReferencesController implements IEditorContribution {
 
 						return;
 					}
+
 					if (this._editor === openedEditor) {
 						//
 						this._widget.show(range);
+
 						this._widget.focusOnReferenceTree();
 					} else {
 						// we opened a different editor instance which means a different controller instance.
@@ -382,8 +436,11 @@ export abstract class ReferencesController implements IEditorContribution {
 						const other = ReferencesController.get(openedEditor);
 
 						const model = this._model!.clone();
+
 						this.closeWidget();
+
 						openedEditor.focus();
+
 						other?.toggleWidget(
 							range,
 							createCancelablePromise((_) =>
@@ -395,16 +452,20 @@ export abstract class ReferencesController implements IEditorContribution {
 				},
 				(err) => {
 					this._ignoreModelChangeEvent = false;
+
 					onUnexpectedError(err);
 				},
 			);
 	}
+
 	openReference(ref: Location, sideBySide: boolean, pinned: boolean): void {
 		// clear stage
 		if (!sideBySide) {
 			this.closeWidget();
 		}
+
 		const { uri, range } = ref;
+
 		this._editorService.openCodeEditor(
 			{
 				resource: uri,
@@ -428,6 +489,7 @@ function withController(
 	if (!outerEditor) {
 		return;
 	}
+
 	const controller = ReferencesController.get(outerEditor);
 
 	if (controller) {

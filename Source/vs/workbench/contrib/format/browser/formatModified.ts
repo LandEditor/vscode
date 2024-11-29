@@ -102,6 +102,7 @@ export async function getModifiedRanges(
 		if (!workerService.canComputeDirtyDiff(original, modified.uri)) {
 			return undefined;
 		}
+
 		const changes = await workerService.computeDirtyDiff(
 			original,
 			modified.uri,
@@ -111,6 +112,7 @@ export async function getModifiedRanges(
 		if (!isNonEmptyArray(changes)) {
 			return undefined;
 		}
+
 		for (const change of changes) {
 			ranges.push(
 				modified.validateRange(

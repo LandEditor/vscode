@@ -31,6 +31,7 @@ export class ContextMenuService
 	declare readonly _serviceBrand: undefined;
 
 	private _contextMenuHandler: ContextMenuHandler | undefined = undefined;
+
 	private get contextMenuHandler(): ContextMenuHandler {
 		if (!this._contextMenuHandler) {
 			this._contextMenuHandler = new ContextMenuHandler(
@@ -47,11 +48,13 @@ export class ContextMenuService
 	private readonly _onDidShowContextMenu = this._store.add(
 		new Emitter<void>(),
 	);
+
 	readonly onDidShowContextMenu = this._onDidShowContextMenu.event;
 
 	private readonly _onDidHideContextMenu = this._store.add(
 		new Emitter<void>(),
 	);
+
 	readonly onDidHideContextMenu = this._onDidHideContextMenu.event;
 
 	constructor(
@@ -92,7 +95,9 @@ export class ContextMenuService
 				this._onDidHideContextMenu.fire();
 			},
 		});
+
 		ModifierKeyEmitter.getInstance().resetKeyStatus();
+
 		this._onDidShowContextMenu.fire();
 	}
 }
@@ -114,6 +119,7 @@ export namespace ContextMenuMenuDelegate {
 		if (!is(delegate)) {
 			return delegate;
 		}
+
 		const { menuId, menuActionOptions, contextKeyService } = delegate;
 
 		return {
@@ -127,8 +133,10 @@ export namespace ContextMenuMenuDelegate {
 						contextKeyService ?? globalContextKeyService,
 						menuActionOptions,
 					);
+
 					target = getFlatContextMenuActions(menu);
 				}
+
 				if (!delegate.getActions) {
 					return target;
 				} else {

@@ -82,6 +82,7 @@ export class InlineCompletionsController extends Disposable {
 	}
 
 	private readonly _editorObs = observableCodeEditor(this.editor);
+
 	private readonly _positions = derived(
 		this,
 		(reader) =>
@@ -123,11 +124,13 @@ export class InlineCompletionsController extends Disposable {
 		this.editor.onDidChangeConfiguration,
 		() => this.editor.getOption(EditorOption.inlineSuggest).enabled,
 	);
+
 	private readonly _isScreenReaderEnabled = observableFromEvent(
 		this,
 		this._accessibilityService.onDidChangeScreenReaderOptimized,
 		() => this._accessibilityService.isScreenReaderOptimized(),
 	);
+
 	private readonly _editorDictationInProgress = observableFromEvent(
 		this,
 		this._contextKeyService.onDidChangeContext,
@@ -136,6 +139,7 @@ export class InlineCompletionsController extends Disposable {
 				.getContext(this.editor.getDomNode())
 				.getValue("editorDictation.inProgress") === true,
 	);
+
 	private readonly _enabled = derived(
 		this,
 		(reader) =>
@@ -156,11 +160,13 @@ export class InlineCompletionsController extends Disposable {
 		if (cursorPos === null) {
 			return false;
 		}
+
 		const model = this._editorObs.model.read(reader);
 
 		if (!model) {
 			return false;
 		}
+
 		this._editorObs.versionId.read(reader);
 
 		const indentMaxColumn = model.getLineIndentColumn(cursorPos.lineNumber);
@@ -171,12 +177,15 @@ export class InlineCompletionsController extends Disposable {
 	private readonly optionPreview = this._editorObs
 		.getOption(EditorOption.suggest)
 		.map((v) => v.preview);
+
 	private readonly optionPreviewMode = this._editorObs
 		.getOption(EditorOption.suggest)
 		.map((v) => v.previewMode);
+
 	private readonly optionMode = this._editorObs
 		.getOption(EditorOption.inlineSuggest)
 		.map((v) => v.mode);
+
 	private readonly optionInlineEditsEnabled = this._editorObs
 		.getOption(EditorOption.inlineSuggest)
 		.map((v) => !!v.edits.experimental?.enabled);
@@ -187,6 +196,7 @@ export class InlineCompletionsController extends Disposable {
 		if (this._editorObs.isReadonly.read(reader)) {
 			return undefined;
 		}
+
 		const textModel = this._editorObs.model.read(reader);
 
 		if (!textModel) {
@@ -217,6 +227,7 @@ export class InlineCompletionsController extends Disposable {
 
 		return model?.ghostTexts.read(reader) ?? [];
 	});
+
 	private readonly _stablizedGhostTexts = convertItemsToStableObservables(
 		this._ghostTexts,
 		this._store,
@@ -245,16 +256,20 @@ export class InlineCompletionsController extends Disposable {
 		if (s?.kind === "inlineEdit") {
 			return s.inlineEdit;
 		}
+
 		return undefined;
 	});
+
 	private readonly _everHadInlineEdit = derivedObservableWithCache<boolean>(
 		this,
 		(reader, last) => last || !!this._inlineEdit.read(reader),
 	);
+
 	protected readonly _inlineEditWidget = derivedDisposable((reader) => {
 		if (!this._everHadInlineEdit.read(reader)) {
 			return undefined;
 		}
+
 		return this._instantiationService.createInstance(
 			InlineEditsViewAndDiffProducer.hot.read(reader),
 			this.editor,
@@ -268,6 +283,7 @@ export class InlineCompletionsController extends Disposable {
 	private readonly _fontFamily = this._editorObs
 		.getOption(EditorOption.inlineSuggest)
 		.map((val) => val.fontFamily);
+
 	private readonly _hideInlineEditOnSelectionChange = this._editorObs
 		.getOption(EditorOption.inlineSuggest)
 		.map((val) => true);
@@ -348,11 +364,13 @@ export class InlineCompletionsController extends Disposable {
 					) {
 						return;
 					}
+
 					const m = this.model.get();
 
 					if (!m) {
 						return;
 					}
+
 					if (m.inlineCompletionState.get()?.primaryGhostText) {
 						this.model.get()?.stop();
 					} else if (m.state.get()?.inlineCompletion) {
@@ -406,6 +424,7 @@ export class InlineCompletionsController extends Disposable {
 				}
 			}),
 		);
+
 		this._register(
 			toDisposable(() => {
 				this._suggestWidgetAdaptor.stopForceRenderingAbove();
@@ -422,12 +441,15 @@ export class InlineCompletionsController extends Disposable {
 			if (this._suggestWidgetSelectedItem.get()) {
 				return last;
 			}
+
 			return state?.inlineCompletion?.semanticId;
 		});
+
 		this._register(
 			runOnChangeWithStore(
 				derived((reader) => {
 					this._playAccessibilitySignal.read(reader);
+
 					currentInlineCompletionBySemanticId.read(reader);
 
 					return {};
@@ -441,11 +463,13 @@ export class InlineCompletionsController extends Disposable {
 					if (!state || !model) {
 						return;
 					}
+
 					const lineText = model.textModel.getLineContent(
 						state.primaryGhostText.lineNumber,
 					);
 
 					await timeout(50, cancelOnDispose(store));
+
 					await waitForState(
 						this._suggestWidgetSelectedItem,
 						isUndefined,
@@ -488,6 +512,7 @@ export class InlineCompletionsController extends Disposable {
 					if (fontFamily === "" || fontFamily === "default") {
 						return "";
 					}
+
 					return `
 .monaco-editor .ghost-text-decoration,
 .monaco-editor .ghost-text-decoration-preview,
@@ -515,6 +540,7 @@ export class InlineCompletionsController extends Disposable {
 				}
 			}),
 		);
+
 		this.editor.updateOptions({
 			inlineCompletionsAccessibilityVerbose:
 				this._configurationService.getValue(
@@ -532,6 +558,7 @@ export class InlineCompletionsController extends Disposable {
 				this._cursorIsInIndentation,
 			),
 		);
+
 		this._register(
 			contextKeySvcObs.bind(
 				InlineCompletionContextKeys.hasSelection,
@@ -539,6 +566,7 @@ export class InlineCompletionsController extends Disposable {
 					!this._editorObs.cursorSelection.read(reader)?.isEmpty(),
 			),
 		);
+
 		this._register(
 			contextKeySvcObs.bind(
 				InlineCompletionContextKeys.cursorAtInlineEdit,
@@ -549,6 +577,7 @@ export class InlineCompletionsController extends Disposable {
 				}),
 			),
 		);
+
 		this._register(
 			contextKeySvcObs.bind(
 				InlineCompletionContextKeys.tabShouldAcceptInlineEdit,
@@ -557,6 +586,7 @@ export class InlineCompletionsController extends Disposable {
 				),
 			),
 		);
+
 		this._register(
 			contextKeySvcObs.bind(
 				InlineCompletionContextKeys.tabShouldJumpToInlineEdit,
@@ -604,6 +634,7 @@ export class InlineCompletionsController extends Disposable {
 				accessibleViewKeybinding.getAriaLabel(),
 			);
 		}
+
 		alert(hint ? content + ", " + hint : content);
 	}
 
@@ -617,6 +648,7 @@ export class InlineCompletionsController extends Disposable {
 				),
 			);
 		}
+
 		return false;
 	}
 
@@ -635,6 +667,7 @@ export class InlineCompletionsController extends Disposable {
 
 	public jump(): void {
 		const m = this.model.get();
+
 		m?.jump();
 	}
 }

@@ -12,6 +12,7 @@ async function setupMain() {
 	if (i10lLocation) {
 		try {
 			await l10n.config({ uri: i10lLocation });
+
 			l10nLog.push(`l10n: Configured to ${i10lLocation.toString()}`);
 		} catch (e) {
 			l10nLog.push(
@@ -19,7 +20,9 @@ async function setupMain() {
 			);
 		}
 	}
+
 	await import("./jsonServerMain.js");
+
 	l10nLog.forEach(console.log);
 }
 setupMain();

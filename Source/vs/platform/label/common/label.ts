@@ -26,7 +26,9 @@ export interface ILabelService {
 		resource: URI,
 		options?: {
 			relative?: boolean;
+
 			noPrefix?: boolean;
+
 			separator?: "/" | "\\";
 		},
 	): string;
@@ -49,7 +51,9 @@ export interface ILabelService {
 	getHostTooltip(scheme: string, authority?: string): string | undefined;
 
 	getSeparator(scheme: string, authority?: string): "/" | "\\";
+
 	registerFormatter(formatter: ResourceLabelFormatter): IDisposable;
+
 	onDidChangeFormatters: Event<IFormatterChangeEvent>;
 	/**
 	 * Registers a formatter that's cached for the machine beyond the lifecycle
@@ -68,18 +72,27 @@ export interface IFormatterChangeEvent {
 }
 export interface ResourceLabelFormatter {
 	scheme: string;
+
 	authority?: string;
+
 	priority?: boolean;
 
 	formatting: ResourceLabelFormatting;
 }
 export interface ResourceLabelFormatting {
 	label: string; // myLabel:/${path}
+
 	separator: "/" | "\\" | "";
+
 	tildify?: boolean;
+
 	normalizeDriveLetter?: boolean;
+
 	workspaceSuffix?: string;
+
 	workspaceTooltip?: string;
+
 	authorityPrefix?: string;
+
 	stripPathStartingSeparator?: boolean;
 }

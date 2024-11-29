@@ -15,6 +15,7 @@ declare module "vscode" {
 
 	export interface TokenInformation {
 		type: StandardTokenType;
+
 		range: Range;
 	}
 

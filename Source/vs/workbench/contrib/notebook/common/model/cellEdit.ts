@@ -19,13 +19,16 @@ export interface ITextCellEditingDelegate {
 		cell: NotebookCellTextModel,
 		endSelections?: ISelectionState,
 	): void;
+
 	deleteCell?(index: number, endSelections?: ISelectionState): void;
+
 	replaceCell?(
 		index: number,
 		count: number,
 		cells: NotebookCellTextModel[],
 		endSelections?: ISelectionState,
 	): void;
+
 	moveCell?(
 		fromIndex: number,
 		length: number,
@@ -33,6 +36,7 @@ export interface ITextCellEditingDelegate {
 		beforeSelections: ISelectionState | undefined,
 		endSelections?: ISelectionState,
 	): void;
+
 	updateCellMetadata?(index: number, newMetadata: NotebookCellMetadata): void;
 }
 export class MoveCellEdit implements IResourceUndoRedoElement {
@@ -41,6 +45,7 @@ export class MoveCellEdit implements IResourceUndoRedoElement {
 	get label() {
 		return this.length === 1 ? "Move Cell" : "Move Cells";
 	}
+
 	code: string = "undoredo.textBufferEdit";
 
 	constructor(
@@ -52,10 +57,12 @@ export class MoveCellEdit implements IResourceUndoRedoElement {
 		private beforedSelections: ISelectionState | undefined,
 		private endSelections: ISelectionState | undefined,
 	) {}
+
 	undo(): void {
 		if (!this.editingDelegate.moveCell) {
 			throw new Error("Notebook Move Cell not implemented for Undo/Redo");
 		}
+
 		this.editingDelegate.moveCell(
 			this.toIndex,
 			this.length,
@@ -64,10 +71,12 @@ export class MoveCellEdit implements IResourceUndoRedoElement {
 			this.beforedSelections,
 		);
 	}
+
 	redo(): void {
 		if (!this.editingDelegate.moveCell) {
 			throw new Error("Notebook Move Cell not implemented for Undo/Redo");
 		}
+
 		this.editingDelegate.moveCell(
 			this.fromIndex,
 			this.length,
@@ -85,12 +94,14 @@ export class SpliceCellsEdit implements IResourceUndoRedoElement {
 		if (this.diffs.length === 1 && this.diffs[0][1].length === 0) {
 			return this.diffs[0][2].length > 1 ? "Insert Cells" : "Insert Cell";
 		}
+
 		if (this.diffs.length === 1 && this.diffs[0][2].length === 0) {
 			return this.diffs[0][1].length > 1 ? "Delete Cells" : "Delete Cell";
 		}
 		// Default to Insert Cell
 		return "Insert Cell";
 	}
+
 	code: string = "undoredo.textBufferEdit";
 
 	constructor(
@@ -104,12 +115,14 @@ export class SpliceCellsEdit implements IResourceUndoRedoElement {
 		private beforeHandles: ISelectionState | undefined,
 		private endHandles: ISelectionState | undefined,
 	) {}
+
 	undo(): void {
 		if (!this.editingDelegate.replaceCell) {
 			throw new Error(
 				"Notebook Replace Cell not implemented for Undo/Redo",
 			);
 		}
+
 		this.diffs.forEach((diff) => {
 			this.editingDelegate.replaceCell!(
 				diff[0],
@@ -119,12 +132,14 @@ export class SpliceCellsEdit implements IResourceUndoRedoElement {
 			);
 		});
 	}
+
 	redo(): void {
 		if (!this.editingDelegate.replaceCell) {
 			throw new Error(
 				"Notebook Replace Cell not implemented for Undo/Redo",
 			);
 		}
+
 		this.diffs.reverse().forEach((diff) => {
 			this.editingDelegate.replaceCell!(
 				diff[0],
@@ -137,7 +152,9 @@ export class SpliceCellsEdit implements IResourceUndoRedoElement {
 }
 export class CellMetadataEdit implements IResourceUndoRedoElement {
 	type: UndoRedoElementType.Resource = UndoRedoElementType.Resource;
+
 	label: string = "Update Cell Metadata";
+
 	code: string = "undoredo.textBufferEdit";
 
 	constructor(
@@ -147,16 +164,20 @@ export class CellMetadataEdit implements IResourceUndoRedoElement {
 		readonly newMetadata: NotebookCellMetadata,
 		private editingDelegate: ITextCellEditingDelegate,
 	) {}
+
 	undo(): void {
 		if (!this.editingDelegate.updateCellMetadata) {
 			return;
 		}
+
 		this.editingDelegate.updateCellMetadata(this.index, this.oldMetadata);
 	}
+
 	redo(): void | Promise<void> {
 		if (!this.editingDelegate.updateCellMetadata) {
 			return;
 		}
+
 		this.editingDelegate.updateCellMetadata(this.index, this.newMetadata);
 	}
 }

@@ -10,8 +10,11 @@ import { IViewLayout, IViewModel } from "../viewModel.js";
 
 export class ViewContext {
 	public readonly configuration: IEditorConfiguration;
+
 	public readonly viewModel: IViewModel;
+
 	public readonly viewLayout: IViewLayout;
+
 	public readonly theme: EditorTheme;
 
 	constructor(
@@ -20,13 +23,18 @@ export class ViewContext {
 		model: IViewModel,
 	) {
 		this.configuration = configuration;
+
 		this.theme = new EditorTheme(theme);
+
 		this.viewModel = model;
+
 		this.viewLayout = model.viewLayout;
 	}
+
 	public addEventHandler(eventHandler: ViewEventHandler): void {
 		this.viewModel.addViewEventHandler(eventHandler);
 	}
+
 	public removeEventHandler(eventHandler: ViewEventHandler): void {
 		this.viewModel.removeViewEventHandler(eventHandler);
 	}

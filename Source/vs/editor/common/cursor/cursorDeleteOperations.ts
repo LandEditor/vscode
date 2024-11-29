@@ -48,6 +48,7 @@ export class DeleteOperations {
 					model,
 					position,
 				);
+
 				deleteSelection = new Range(
 					rightOfPosition.lineNumber,
 					rightOfPosition.column,
@@ -55,22 +56,27 @@ export class DeleteOperations {
 					position.column,
 				);
 			}
+
 			if (deleteSelection.isEmpty()) {
 				// Probably at end of file => ignore
 				commands[i] = null;
 
 				continue;
 			}
+
 			if (
 				deleteSelection.startLineNumber !==
 				deleteSelection.endLineNumber
 			) {
 				shouldPushStackElementBefore = true;
 			}
+
 			commands[i] = new ReplaceCommand(deleteSelection, "");
 		}
+
 		return [shouldPushStackElementBefore, commands];
 	}
+
 	public static isAutoClosingPairDelete(
 		autoClosingDelete: EditorAutoClosingEditStrategy,
 		autoClosingBrackets: EditorAutoClosingStrategy,
@@ -83,9 +89,11 @@ export class DeleteOperations {
 		if (autoClosingBrackets === "never" && autoClosingQuotes === "never") {
 			return false;
 		}
+
 		if (autoClosingDelete === "never") {
 			return false;
 		}
+
 		for (let i = 0, len = selections.length; i < len; i++) {
 			const selection = selections[i];
 
@@ -94,11 +102,13 @@ export class DeleteOperations {
 			if (!selection.isEmpty()) {
 				return false;
 			}
+
 			const lineText = model.getLineContent(position.lineNumber);
 
 			if (position.column < 2 || position.column >= lineText.length + 1) {
 				return false;
 			}
+
 			const character = lineText.charAt(position.column - 2);
 
 			const autoClosingPairCandidates =
@@ -107,6 +117,7 @@ export class DeleteOperations {
 			if (!autoClosingPairCandidates) {
 				return false;
 			}
+
 			if (isQuote(character)) {
 				if (autoClosingQuotes === "never") {
 					return false;
@@ -116,6 +127,7 @@ export class DeleteOperations {
 					return false;
 				}
 			}
+
 			const afterCharacter = lineText.charAt(position.column - 1);
 
 			let foundAutoClosingPair = false;
@@ -128,6 +140,7 @@ export class DeleteOperations {
 					foundAutoClosingPair = true;
 				}
 			}
+
 			if (!foundAutoClosingPair) {
 				return false;
 			}
@@ -137,7 +150,9 @@ export class DeleteOperations {
 
 				for (
 					let j = 0, lenJ = autoClosedCharacters.length;
+
 					j < lenJ;
+
 					j++
 				) {
 					const autoClosedCharacter = autoClosedCharacters[j];
@@ -152,13 +167,16 @@ export class DeleteOperations {
 						break;
 					}
 				}
+
 				if (!found) {
 					return false;
 				}
 			}
 		}
+
 		return true;
 	}
+
 	private static _runAutoClosingPairDelete(
 		config: CursorConfiguration,
 		model: ICursorSimpleModel,
@@ -175,10 +193,13 @@ export class DeleteOperations {
 				position.lineNumber,
 				position.column + 1,
 			);
+
 			commands[i] = new ReplaceCommand(deleteSelection, "");
 		}
+
 		return [true, commands];
 	}
+
 	public static deleteLeft(
 		prevEditOperationType: EditOperationType,
 		config: CursorConfiguration,
@@ -199,6 +220,7 @@ export class DeleteOperations {
 		) {
 			return this._runAutoClosingPairDelete(config, model, selections);
 		}
+
 		const commands: Array<ICommand | null> = [];
 
 		let shouldPushStackElementBefore =
@@ -217,13 +239,17 @@ export class DeleteOperations {
 
 				continue;
 			}
+
 			if (deleteRange.startLineNumber !== deleteRange.endLineNumber) {
 				shouldPushStackElementBefore = true;
 			}
+
 			commands[i] = new ReplaceCommand(deleteRange, "");
 		}
+
 		return [shouldPushStackElementBefore, commands];
 	}
+
 	private static getDeleteRange(
 		selection: Selection,
 		model: ICursorSimpleModel,
@@ -232,6 +258,7 @@ export class DeleteOperations {
 		if (!selection.isEmpty()) {
 			return selection;
 		}
+
 		const position = selection.getPosition();
 		// Unintend when using tab stops and cursor is within indentation
 		if (config.useTabStops && position.column > 1) {
@@ -270,11 +297,13 @@ export class DeleteOperations {
 				);
 			}
 		}
+
 		return Range.fromPositions(
 			DeleteOperations.getPositionAfterDeleteLeft(position, model),
 			position,
 		);
 	}
+
 	private static getPositionAfterDeleteLeft(
 		position: Position,
 		model: ICursorSimpleModel,
@@ -295,6 +324,7 @@ export class DeleteOperations {
 			return position;
 		}
 	}
+
 	public static cut(
 		config: CursorConfiguration,
 		model: ICursorSimpleModel,
@@ -303,6 +333,7 @@ export class DeleteOperations {
 		const commands: Array<ICommand | null> = [];
 
 		let lastCutRange: Range | null = null;
+
 		selections.sort((a, b) =>
 			Position.compare(a.getStartPosition(), b.getEndPosition()),
 		);
@@ -323,8 +354,11 @@ export class DeleteOperations {
 					if (position.lineNumber < model.getLineCount()) {
 						// Cutting a line in the middle of the model
 						startLineNumber = position.lineNumber;
+
 						startColumn = 1;
+
 						endLineNumber = position.lineNumber + 1;
+
 						endColumn = 1;
 					} else if (
 						position.lineNumber > 1 &&
@@ -332,24 +366,32 @@ export class DeleteOperations {
 					) {
 						// Cutting the last line & there are more than 1 lines in the model & a previous cut operation does not touch the current cut operation
 						startLineNumber = position.lineNumber - 1;
+
 						startColumn = model.getLineMaxColumn(
 							position.lineNumber - 1,
 						);
+
 						endLineNumber = position.lineNumber;
+
 						endColumn = model.getLineMaxColumn(position.lineNumber);
 					} else {
 						// Cutting the single line that the model contains
 						startLineNumber = position.lineNumber;
+
 						startColumn = 1;
+
 						endLineNumber = position.lineNumber;
+
 						endColumn = model.getLineMaxColumn(position.lineNumber);
 					}
+
 					const deleteSelection = new Range(
 						startLineNumber,
 						startColumn,
 						endLineNumber,
 						endColumn,
 					);
+
 					lastCutRange = deleteSelection;
 
 					if (!deleteSelection.isEmpty()) {
@@ -365,6 +407,7 @@ export class DeleteOperations {
 				commands[i] = new ReplaceCommand(selection, "");
 			}
 		}
+
 		return new EditOperationResult(EditOperationType.Other, commands, {
 			shouldPushStackElementBefore: true,
 			shouldPushStackElementAfter: true,

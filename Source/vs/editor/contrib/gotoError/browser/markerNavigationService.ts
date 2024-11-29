@@ -36,10 +36,15 @@ export class MarkerCoordinate {
 }
 export class MarkerList {
 	private readonly _onDidChange = new Emitter<void>();
+
 	readonly onDidChange: Event<void> = this._onDidChange.event;
+
 	private readonly _resourceFilter?: (uri: URI) => boolean;
+
 	private readonly _dispoables = new DisposableStore();
+
 	private _markers: IMarker[] = [];
+
 	private _nextIdx: number = -1;
 
 	constructor(
@@ -55,6 +60,7 @@ export class MarkerList {
 		} else if (resourceFilter) {
 			this._resourceFilter = resourceFilter;
 		}
+
 		const compareOrder =
 			this._configService.getValue<string>("problems.sortOrder");
 
@@ -72,6 +78,7 @@ export class MarkerList {
 						Range.compareRangesUsingStarts(a, b);
 				}
 			}
+
 			return res;
 		};
 
@@ -91,9 +98,12 @@ export class MarkerList {
 					this._resourceFilter!(m.resource),
 				);
 			}
+
 			this._markers.sort(compareMarker);
 		};
+
 		updateMarker();
+
 		this._dispoables.add(
 			_markerService.onMarkerChanged((uris) => {
 				if (
@@ -101,25 +111,33 @@ export class MarkerList {
 					uris.some((uri) => this._resourceFilter!(uri))
 				) {
 					updateMarker();
+
 					this._nextIdx = -1;
+
 					this._onDidChange.fire();
 				}
 			}),
 		);
 	}
+
 	dispose(): void {
 		this._dispoables.dispose();
+
 		this._onDidChange.dispose();
 	}
+
 	matches(uri: URI | undefined) {
 		if (!this._resourceFilter && !uri) {
 			return true;
 		}
+
 		if (!this._resourceFilter || !uri) {
 			return false;
 		}
+
 		return this._resourceFilter(uri);
 	}
+
 	get selected(): MarkerCoordinate | undefined {
 		const marker = this._markers[this._nextIdx];
 
@@ -132,6 +150,7 @@ export class MarkerList {
 			)
 		);
 	}
+
 	private _initIdx(
 		model: ITextModel,
 		position: Position,
@@ -154,6 +173,7 @@ export class MarkerList {
 				idx = ~idx;
 			}
 		}
+
 		for (let i = idx; i < this._markers.length; i++) {
 			let range = Range.lift(this._markers[i]);
 
@@ -169,35 +189,43 @@ export class MarkerList {
 					);
 				}
 			}
+
 			if (
 				position &&
 				(range.containsPosition(position) ||
 					position.isBeforeOrEqual(range.getStartPosition()))
 			) {
 				this._nextIdx = i;
+
 				found = true;
 
 				break;
 			}
+
 			if (this._markers[i].resource.toString() !== model.uri.toString()) {
 				break;
 			}
 		}
+
 		if (!found) {
 			// after the last change
 			this._nextIdx = fwd ? 0 : this._markers.length - 1;
 		}
+
 		if (this._nextIdx < 0) {
 			this._nextIdx = this._markers.length - 1;
 		}
 	}
+
 	resetIndex() {
 		this._nextIdx = -1;
 	}
+
 	move(fwd: boolean, model: ITextModel, position: Position): boolean {
 		if (this._markers.length === 0) {
 			return false;
 		}
+
 		const oldIdx = this._nextIdx;
 
 		if (this._nextIdx === -1) {
@@ -209,11 +237,14 @@ export class MarkerList {
 				(this._nextIdx - 1 + this._markers.length) %
 				this._markers.length;
 		}
+
 		if (oldIdx !== this._nextIdx) {
 			return true;
 		}
+
 		return false;
 	}
+
 	find(uri: URI, position: Position): MarkerCoordinate | undefined {
 		let idx = this._markers.findIndex(
 			(marker) => marker.resource.toString() === uri.toString(),
@@ -222,6 +253,7 @@ export class MarkerList {
 		if (idx < 0) {
 			return undefined;
 		}
+
 		for (; idx < this._markers.length; idx++) {
 			if (Range.containsPosition(this._markers[idx], position)) {
 				return new MarkerCoordinate(
@@ -231,6 +263,7 @@ export class MarkerList {
 				);
 			}
 		}
+
 		return undefined;
 	}
 }
@@ -239,6 +272,7 @@ export const IMarkerNavigationService =
 
 export interface IMarkerNavigationService {
 	readonly _serviceBrand: undefined;
+
 	registerProvider(provider: IMarkerListProvider): IDisposable;
 
 	getMarkerList(resource: URI | undefined): MarkerList;
@@ -250,6 +284,7 @@ class MarkerNavigationService
 	implements IMarkerNavigationService, IMarkerListProvider
 {
 	readonly _serviceBrand: undefined;
+
 	private readonly _provider = new LinkedList<IMarkerListProvider>();
 
 	constructor(
@@ -258,11 +293,13 @@ class MarkerNavigationService
 		@IConfigurationService
 		private readonly _configService: IConfigurationService,
 	) {}
+
 	registerProvider(provider: IMarkerListProvider): IDisposable {
 		const remove = this._provider.unshift(provider);
 
 		return toDisposable(() => remove());
 	}
+
 	getMarkerList(resource: URI | undefined): MarkerList {
 		for (const provider of this._provider) {
 			const result = provider.getMarkerList(resource);

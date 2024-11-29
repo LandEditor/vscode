@@ -23,11 +23,14 @@ import {
 
 export class NotebookAccessibilityHelp implements IAccessibleViewImplentation {
 	readonly priority = 105;
+
 	readonly name = "notebook";
+
 	readonly when = ContextKeyExpr.and(
 		NOTEBOOK_EDITOR_FOCUSED,
 		IS_COMPOSITE_NOTEBOOK.negate(),
 	);
+
 	readonly type: AccessibleViewType = AccessibleViewType.Help;
 
 	getProvider(accessor: ServicesAccessor) {
@@ -39,6 +42,7 @@ export class NotebookAccessibilityHelp implements IAccessibleViewImplentation {
 		if (!activeEditor) {
 			return;
 		}
+
 		return getAccessibilityHelpProvider(accessor, activeEditor);
 	}
 }

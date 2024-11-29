@@ -37,33 +37,44 @@ export class ScopeData {
 
 	constructor(readonly originalScopes: readonly string[] = []) {
 		const modifiedScopes = [...originalScopes];
+
 		modifiedScopes.sort();
+
 		this.allScopes = modifiedScopes;
+
 		this.scopeStr = modifiedScopes.join(" ");
+
 		this.scopesToSend = this.getScopesToSend(modifiedScopes);
+
 		this.clientId = this.getClientId(this.allScopes);
+
 		this.tenant = this.getTenantId(this.allScopes);
 	}
+
 	private getClientId(scopes: string[]) {
 		return (
 			scopes.reduce<string | undefined>((prev, current) => {
 				if (current.startsWith("VSCODE_CLIENT_ID:")) {
 					return current.split("VSCODE_CLIENT_ID:")[1];
 				}
+
 				return prev;
 			}, undefined) ?? DEFAULT_CLIENT_ID
 		);
 	}
+
 	private getTenantId(scopes: string[]) {
 		return (
 			scopes.reduce<string | undefined>((prev, current) => {
 				if (current.startsWith("VSCODE_TENANT:")) {
 					return current.split("VSCODE_TENANT:")[1];
 				}
+
 				return prev;
 			}, undefined) ?? DEFAULT_TENANT
 		);
 	}
+
 	private getScopesToSend(scopes: string[]) {
 		const scopesToSend = scopes.filter((s) => !s.startsWith("VSCODE_"));
 
@@ -77,6 +88,7 @@ export class ScopeData {
 		if (!set.size) {
 			scopesToSend.push(GRAPH_TACK_ON_SCOPE);
 		}
+
 		return scopesToSend;
 	}
 }

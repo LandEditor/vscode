@@ -49,6 +49,7 @@ export class ToggleColumnSelectionAction extends Action2 {
 			},
 		});
 	}
+
 	override async run(accessor: ServicesAccessor): Promise<void> {
 		const configurationService = accessor.get(IConfigurationService);
 
@@ -59,6 +60,7 @@ export class ToggleColumnSelectionAction extends Action2 {
 		);
 
 		const codeEditor = this._getCodeEditor(codeEditorService);
+
 		await configurationService.updateValue(
 			"editor.columnSelection",
 			!oldValue,
@@ -78,6 +80,7 @@ export class ToggleColumnSelectionAction extends Action2 {
 		) {
 			return;
 		}
+
 		const viewModel = codeEditor._getViewModel();
 
 		if (codeEditor.getOption(EditorOption.columnSelection)) {
@@ -102,6 +105,7 @@ export class ToggleColumnSelectionAction extends Action2 {
 				viewModel.coordinatesConverter.convertModelPositionToViewPosition(
 					modelPosition,
 				);
+
 			CoreNavigationCommands.MoveTo.runCoreEditorCommand(viewModel, {
 				position: modelSelectionStart,
 				viewPosition: viewSelectionStart,
@@ -112,6 +116,7 @@ export class ToggleColumnSelectionAction extends Action2 {
 					viewModel,
 					viewPosition,
 				);
+
 			CoreNavigationCommands.ColumnSelect.runCoreEditorCommand(
 				viewModel,
 				{
@@ -152,6 +157,7 @@ export class ToggleColumnSelectionAction extends Action2 {
 						toViewColumn,
 					),
 				);
+
 			codeEditor.setSelection(
 				new Selection(
 					fromPosition.lineNumber,
@@ -162,6 +168,7 @@ export class ToggleColumnSelectionAction extends Action2 {
 			);
 		}
 	}
+
 	private _getCodeEditor(
 		codeEditorService: ICodeEditorService,
 	): ICodeEditor | null {
@@ -170,6 +177,7 @@ export class ToggleColumnSelectionAction extends Action2 {
 		if (codeEditor) {
 			return codeEditor;
 		}
+
 		return codeEditorService.getActiveCodeEditor();
 	}
 }

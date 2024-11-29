@@ -6,7 +6,9 @@ export interface IWordCountResult {
 	value: string;
 
 	returnedWordCount: number;
+
 	totalWordCount: number;
+
 	isFullString: boolean;
 }
 

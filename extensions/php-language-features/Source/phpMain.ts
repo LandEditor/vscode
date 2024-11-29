@@ -11,6 +11,7 @@ import PHPValidationProvider from "./features/validationProvider";
 
 export function activate(context: vscode.ExtensionContext): any {
 	const validator = new PHPValidationProvider();
+
 	validator.activate(context.subscriptions);
 	// add providers
 	context.subscriptions.push(
@@ -21,9 +22,11 @@ export function activate(context: vscode.ExtensionContext): any {
 			"$",
 		),
 	);
+
 	context.subscriptions.push(
 		vscode.languages.registerHoverProvider("php", new PHPHoverProvider()),
 	);
+
 	context.subscriptions.push(
 		vscode.languages.registerSignatureHelpProvider(
 			"php",

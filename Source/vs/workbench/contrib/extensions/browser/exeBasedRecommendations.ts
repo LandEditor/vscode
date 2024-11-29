@@ -15,6 +15,7 @@ import {
 
 export class ExeBasedRecommendations extends ExtensionRecommendations {
 	private _otherTips: IExecutableBasedExtensionTip[] = [];
+
 	private _importantTips: IExecutableBasedExtensionTip[] = [];
 
 	get otherRecommendations(): ReadonlyArray<ExtensionRecommendation> {
@@ -22,22 +23,27 @@ export class ExeBasedRecommendations extends ExtensionRecommendations {
 			this.toExtensionRecommendation(tip),
 		);
 	}
+
 	get importantRecommendations(): ReadonlyArray<ExtensionRecommendation> {
 		return this._importantTips.map((tip) =>
 			this.toExtensionRecommendation(tip),
 		);
 	}
+
 	get recommendations(): ReadonlyArray<ExtensionRecommendation> {
 		return [...this.importantRecommendations, ...this.otherRecommendations];
 	}
+
 	constructor(
 		@IExtensionTipsService
 		private readonly extensionTipsService: IExtensionTipsService,
 	) {
 		super();
 	}
+
 	getRecommendations(exe: string): {
 		important: ExtensionRecommendation[];
+
 		others: ExtensionRecommendation[];
 	} {
 		const important = this._importantTips
@@ -50,14 +56,18 @@ export class ExeBasedRecommendations extends ExtensionRecommendations {
 
 		return { important, others };
 	}
+
 	protected async doActivate(): Promise<void> {
 		this._otherTips =
 			await this.extensionTipsService.getOtherExecutableBasedTips();
+
 		await this.fetchImportantExeBasedRecommendations();
 	}
+
 	private _importantExeBasedRecommendations:
 		| Promise<Map<string, IExecutableBasedExtensionTip>>
 		| undefined;
+
 	private async fetchImportantExeBasedRecommendations(): Promise<
 		Map<string, IExecutableBasedExtensionTip>
 	> {
@@ -65,8 +75,10 @@ export class ExeBasedRecommendations extends ExtensionRecommendations {
 			this._importantExeBasedRecommendations =
 				this.doFetchImportantExeBasedRecommendations();
 		}
+
 		return this._importantExeBasedRecommendations;
 	}
+
 	private async doFetchImportantExeBasedRecommendations(): Promise<
 		Map<string, IExecutableBasedExtensionTip>
 	> {
@@ -74,8 +86,10 @@ export class ExeBasedRecommendations extends ExtensionRecommendations {
 			string,
 			IExecutableBasedExtensionTip
 		>();
+
 		this._importantTips =
 			await this.extensionTipsService.getImportantExecutableBasedTips();
+
 		this._importantTips.forEach((tip) =>
 			importantExeBasedRecommendations.set(
 				tip.extensionId.toLowerCase(),
@@ -85,6 +99,7 @@ export class ExeBasedRecommendations extends ExtensionRecommendations {
 
 		return importantExeBasedRecommendations;
 	}
+
 	private toExtensionRecommendation(
 		tip: IExecutableBasedExtensionTip,
 	): ExtensionRecommendation {

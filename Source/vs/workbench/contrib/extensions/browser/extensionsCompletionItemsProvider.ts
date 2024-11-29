@@ -30,6 +30,7 @@ export class ExtensionsCompletionItemsProvider
 		languageFeaturesService: ILanguageFeaturesService,
 	) {
 		super();
+
 		this._register(
 			languageFeaturesService.completionProvider.register(
 				{ language: "jsonc", pattern: "**/settings.json" },
@@ -84,6 +85,7 @@ export class ExtensionsCompletionItemsProvider
 							} catch (e) {
 								/* ignore error */
 							}
+
 							return {
 								suggestions:
 									await this.provideSupportUntrustedWorkspacesExtensionProposals(
@@ -92,12 +94,14 @@ export class ExtensionsCompletionItemsProvider
 									),
 							};
 						}
+
 						return { suggestions: [] };
 					},
 				},
 			),
 		);
 	}
+
 	private async provideSupportUntrustedWorkspacesExtensionProposals(
 		alreadyConfigured: string[],
 		range: Range,
@@ -129,6 +133,7 @@ export class ExtensionsCompletionItemsProvider
 		} else {
 			const text =
 				'"vscode.csharp": {\n\t"supported": true,\n\t"version": "0.0.0"\n},';
+
 			suggestions.push({
 				label: localize("exampleExtension", "Example"),
 				kind: CompletionItemKind.Value,
@@ -137,6 +142,7 @@ export class ExtensionsCompletionItemsProvider
 				range,
 			});
 		}
+
 		return suggestions;
 	}
 }

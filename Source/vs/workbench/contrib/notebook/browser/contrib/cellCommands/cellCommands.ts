@@ -109,6 +109,7 @@ registerAction2(
 				},
 			});
 		}
+
 		async runWithContext(
 			accessor: ServicesAccessor,
 			context: INotebookCellActionContext,
@@ -146,6 +147,7 @@ registerAction2(
 				},
 			});
 		}
+
 		async runWithContext(
 			accessor: ServicesAccessor,
 			context: INotebookCellActionContext,
@@ -170,6 +172,7 @@ registerAction2(
 				},
 			});
 		}
+
 		async runWithContext(
 			accessor: ServicesAccessor,
 			context: INotebookCellActionContext,
@@ -207,6 +210,7 @@ registerAction2(
 				},
 			});
 		}
+
 		async runWithContext(
 			accessor: ServicesAccessor,
 			context: INotebookCellActionContext,
@@ -256,6 +260,7 @@ registerAction2(
 				},
 			});
 		}
+
 		async runWithContext(
 			accessor: ServicesAccessor,
 			context: INotebookCellActionContext,
@@ -263,6 +268,7 @@ registerAction2(
 			if (context.notebookEditor.isReadOnly) {
 				return;
 			}
+
 			const bulkEditService = accessor.get(IBulkEditService);
 
 			const cell = context.cell;
@@ -280,6 +286,7 @@ registerAction2(
 				if (!cell.hasModel()) {
 					return;
 				}
+
 				const newLinesContents = computeCellLinesContents(
 					cell,
 					splitPoints,
@@ -293,6 +300,7 @@ registerAction2(
 					const mime = cell.mime;
 
 					const textModel = await cell.resolveTextModel();
+
 					await bulkEditService.apply(
 						[
 							new ResourceTextEdit(cell.uri, {
@@ -354,6 +362,7 @@ registerAction2(
 				},
 			});
 		}
+
 		async runWithContext(
 			accessor: ServicesAccessor,
 			context: INotebookCellActionContext,
@@ -389,6 +398,7 @@ registerAction2(
 				},
 			});
 		}
+
 		async runWithContext(
 			accessor: ServicesAccessor,
 			context: INotebookCellActionContext,
@@ -419,6 +429,7 @@ registerAction2(
 				},
 			});
 		}
+
 		async runWithContext(
 			accessor: ServicesAccessor,
 			context: INotebookCellActionContext,
@@ -474,6 +485,7 @@ registerAction2(
 				},
 			});
 		}
+
 		async runWithContext(
 			accessor: ServicesAccessor,
 			context:
@@ -518,6 +530,7 @@ registerAction2(
 				},
 			});
 		}
+
 		async runWithContext(
 			accessor: ServicesAccessor,
 			context:
@@ -575,12 +588,14 @@ registerAction2(
 				},
 			});
 		}
+
 		override parseArgs(
 			accessor: ServicesAccessor,
 			...args: any[]
 		): INotebookCommandContext | undefined {
 			return parseMultiCellExecutionArgs(accessor, ...args);
 		}
+
 		async runWithContext(
 			accessor: ServicesAccessor,
 			context:
@@ -619,12 +634,14 @@ registerAction2(
 				},
 			});
 		}
+
 		override parseArgs(
 			accessor: ServicesAccessor,
 			...args: any[]
 		): INotebookCommandContext | undefined {
 			return parseMultiCellExecutionArgs(accessor, ...args);
 		}
+
 		async runWithContext(
 			accessor: ServicesAccessor,
 			context:
@@ -665,6 +682,7 @@ registerAction2(
 				},
 			});
 		}
+
 		async runWithContext(
 			accessor: ServicesAccessor,
 			context:
@@ -703,6 +721,7 @@ registerAction2(
 				},
 			});
 		}
+
 		async runWithContext(
 			accessor: ServicesAccessor,
 			context:
@@ -738,12 +757,14 @@ registerAction2(
 				},
 			});
 		}
+
 		override parseArgs(
 			accessor: ServicesAccessor,
 			...args: any[]
 		): INotebookCommandContext | undefined {
 			return parseMultiCellExecutionArgs(accessor, ...args);
 		}
+
 		async runWithContext(
 			accessor: ServicesAccessor,
 			context:
@@ -757,6 +778,7 @@ registerAction2(
 			} else if (context.selectedCells) {
 				cells = context.selectedCells;
 			}
+
 			for (const cell of cells) {
 				cell.isOutputCollapsed = !cell.isOutputCollapsed;
 			}
@@ -775,6 +797,7 @@ registerAction2(
 				f1: true,
 			});
 		}
+
 		async runWithContext(
 			accessor: ServicesAccessor,
 			context:
@@ -800,6 +823,7 @@ registerAction2(
 				f1: true,
 			});
 		}
+
 		async runWithContext(
 			accessor: ServicesAccessor,
 			context:
@@ -825,6 +849,7 @@ registerAction2(
 				f1: true,
 			});
 		}
+
 		async runWithContext(
 			accessor: ServicesAccessor,
 			context:
@@ -850,6 +875,7 @@ registerAction2(
 				f1: true,
 			});
 		}
+
 		async runWithContext(
 			accessor: ServicesAccessor,
 			context:
@@ -886,6 +912,7 @@ registerAction2(
 				},
 			});
 		}
+
 		private toggleOutputScrolling(
 			viewModel: ICellOutputViewModel,
 			globalScrollSetting: boolean,
@@ -900,10 +927,13 @@ registerAction2(
 						: globalScrollSetting;
 
 				const shouldEnableScrolling = collapsed || !currentlyEnabled;
+
 				cellMetadata["scrollable"] = shouldEnableScrolling;
+
 				viewModel.resetRenderer();
 			}
 		}
+
 		async runWithContext(
 			accessor: ServicesAccessor,
 			context:
@@ -922,6 +952,7 @@ registerAction2(
 						context.cell.isOutputCollapsed,
 					);
 				});
+
 				context.cell.isOutputCollapsed = false;
 			} else {
 				context.selectedCells.forEach((cell) => {
@@ -932,6 +963,7 @@ registerAction2(
 							cell.isOutputCollapsed,
 						);
 					});
+
 					cell.isOutputCollapsed = false;
 				});
 			}
@@ -945,6 +977,7 @@ function forEachCell(
 ) {
 	for (let i = 0; i < editor.getLength(); i++) {
 		const cell = editor.cellAt(i);
+
 		callback(cell!, i);
 	}
 }

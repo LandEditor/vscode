@@ -55,28 +55,34 @@ export class TelemetryLogAppender
 			const isVisible = () =>
 				supportsTelemetry(productService, environmentService) &&
 				logService.getLevel() === LogLevel.Trace;
+
 			this.logger = this._register(
 				loggerService.createLogger(telemetryLogId, {
 					name: localize("telemetryLog", "Telemetry{0}", logSuffix),
 					hidden: !isVisible(),
 				}),
 			);
+
 			this._register(
 				logService.onDidChangeLogLevel(() =>
 					loggerService.setVisibility(telemetryLogId, isVisible()),
 				),
 			);
+
 			this.logger.info(
 				"Below are logs for every telemetry event sent from VS Code once the log level is set to trace.",
 			);
+
 			this.logger.info(
 				"===========================================================",
 			);
 		}
 	}
+
 	flush(): Promise<void> {
 		return Promise.resolve();
 	}
+
 	log(eventName: string, data: any): void {
 		this.logger.trace(
 			`${this.prefix}telemetry/${eventName}`,

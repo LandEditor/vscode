@@ -41,9 +41,11 @@ class DocumentSemanticTokensProvider
 		vscode.DocumentRangeSemanticTokensProvider
 {
 	constructor(private readonly client: ITypeScriptServiceClient) {}
+
 	public getLegend(): vscode.SemanticTokensLegend {
 		return new vscode.SemanticTokensLegend(tokenTypes, tokenModifiers);
 	}
+
 	public async provideDocumentSemanticTokens(
 		document: vscode.TextDocument,
 		token: vscode.CancellationToken,
@@ -53,12 +55,14 @@ class DocumentSemanticTokensProvider
 		if (!file || document.getText().length > CONTENT_LENGTH_LIMIT) {
 			return null;
 		}
+
 		return this.provideSemanticTokens(
 			document,
 			{ file, start: 0, length: document.getText().length },
 			token,
 		);
 	}
+
 	public async provideDocumentRangeSemanticTokens(
 		document: vscode.TextDocument,
 		range: vscode.Range,
@@ -73,6 +77,7 @@ class DocumentSemanticTokensProvider
 		) {
 			return null;
 		}
+
 		const start = document.offsetAt(range.start);
 
 		const length = document.offsetAt(range.end) - start;
@@ -83,6 +88,7 @@ class DocumentSemanticTokensProvider
 			token,
 		);
 	}
+
 	private async provideSemanticTokens(
 		document: vscode.TextDocument,
 		requestArg: Proto.EncodedSemanticClassificationsRequestArgs,
@@ -93,6 +99,7 @@ class DocumentSemanticTokensProvider
 		if (!file) {
 			return null;
 		}
+
 		const versionBeforeRequest = document.version;
 
 		const response = await this.client.execute(
@@ -107,6 +114,7 @@ class DocumentSemanticTokensProvider
 		if (response.type !== "response" || !response.body) {
 			return null;
 		}
+
 		const versionAfterRequest = document.version;
 
 		if (versionBeforeRequest !== versionAfterRequest) {
@@ -121,6 +129,7 @@ class DocumentSemanticTokensProvider
 
 			throw new vscode.CancellationError();
 		}
+
 		const tokenSpan = response.body.spans;
 
 		const builder = new vscode.SemanticTokensBuilder();
@@ -137,6 +146,7 @@ class DocumentSemanticTokensProvider
 			if (tokenType === undefined) {
 				continue;
 			}
+
 			const tokenModifiers =
 				getTokenModifierFromClassification(tsClassification);
 			// we can use the document's range conversion methods because the result is at the same version as the document
@@ -152,6 +162,7 @@ class DocumentSemanticTokensProvider
 					line === endPos.line
 						? endPos.character
 						: document.lineAt(line).text.length;
+
 				builder.push(
 					line,
 					startCharacter,
@@ -161,6 +172,7 @@ class DocumentSemanticTokensProvider
 				);
 			}
 		}
+
 		return builder.build();
 	}
 }
@@ -171,8 +183,10 @@ function waitForDocumentChangesToEnd(document: vscode.TextDocument) {
 		const iv = setInterval((_) => {
 			if (document.version === version) {
 				clearInterval(iv);
+
 				resolve();
 			}
+
 			version = document.version;
 		}, 400);
 	});
@@ -215,6 +229,7 @@ function getTokenTypeFromClassification(
 	if (tsClassification > TokenEncodingConsts.modifierMask) {
 		return (tsClassification >> TokenEncodingConsts.typeOffset) - 1;
 	}
+
 	return undefined;
 }
 function getTokenModifierFromClassification(tsClassification: number) {

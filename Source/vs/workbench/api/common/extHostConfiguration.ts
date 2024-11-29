@@ -49,6 +49,7 @@ function lookUp(tree: any, key: string) {
 		for (let i = 0; node && i < parts.length; i++) {
 			node = node[parts[i]];
 		}
+
 		return node;
 	}
 }
@@ -56,14 +57,21 @@ type ConfigurationInspect<T> = {
 	key: string;
 
 	defaultValue?: T;
+
 	globalValue?: T;
+
 	workspaceValue?: T;
+
 	workspaceFolderValue?: T;
 
 	defaultLanguageValue?: T;
+
 	globalLanguageValue?: T;
+
 	workspaceLanguageValue?: T;
+
 	workspaceFolderLanguageValue?: T;
+
 	languageIds?: string[];
 };
 function isUri(thing: any): thing is vscode.Uri {
@@ -71,6 +79,7 @@ function isUri(thing: any): thing is vscode.Uri {
 }
 function isResourceLanguage(thing: any): thing is {
 	uri: URI;
+
 	languageId: string;
 } {
 	return (
@@ -104,26 +113,36 @@ function scopeToOverrides(
 	if (isUri(scope)) {
 		return { resource: scope };
 	}
+
 	if (isResourceLanguage(scope)) {
 		return { resource: scope.uri, overrideIdentifier: scope.languageId };
 	}
+
 	if (isLanguage(scope)) {
 		return { overrideIdentifier: scope.languageId };
 	}
+
 	if (isWorkspaceFolder(scope)) {
 		return { resource: scope.uri };
 	}
+
 	if (scope === null) {
 		return { resource: null };
 	}
+
 	return undefined;
 }
 export class ExtHostConfiguration implements ExtHostConfigurationShape {
 	readonly _serviceBrand: undefined;
+
 	private readonly _proxy: MainThreadConfigurationShape;
+
 	private readonly _logService: ILogService;
+
 	private readonly _extHostWorkspace: ExtHostWorkspace;
+
 	private readonly _barrier: Barrier;
+
 	private _actual: ExtHostConfigProvider | null;
 
 	constructor(
@@ -135,11 +154,16 @@ export class ExtHostConfiguration implements ExtHostConfigurationShape {
 		logService: ILogService,
 	) {
 		this._proxy = extHostRpc.getProxy(MainContext.MainThreadConfiguration);
+
 		this._extHostWorkspace = extHostWorkspace;
+
 		this._logService = logService;
+
 		this._barrier = new Barrier();
+
 		this._actual = null;
 	}
+
 	public getConfigProvider(): Promise<ExtHostConfigProvider> {
 		return this._barrier.wait().then((_) => this._actual!);
 	}
@@ -150,6 +174,7 @@ export class ExtHostConfiguration implements ExtHostConfigurationShape {
 			data,
 			this._logService,
 		);
+
 		this._barrier.open();
 	}
 	$acceptConfigurationChanged(
@@ -164,10 +189,15 @@ export class ExtHostConfiguration implements ExtHostConfigurationShape {
 export class ExtHostConfigProvider {
 	private readonly _onDidChangeConfiguration =
 		new Emitter<vscode.ConfigurationChangeEvent>();
+
 	private readonly _proxy: MainThreadConfigurationShape;
+
 	private readonly _extHostWorkspace: ExtHostWorkspace;
+
 	private _configurationScopes: Map<string, ConfigurationScope | undefined>;
+
 	private _configuration: Configuration;
+
 	private _logService: ILogService;
 
 	constructor(
@@ -177,11 +207,16 @@ export class ExtHostConfigProvider {
 		logService: ILogService,
 	) {
 		this._proxy = proxy;
+
 		this._logService = logService;
+
 		this._extHostWorkspace = extHostWorkspace;
+
 		this._configuration = Configuration.parse(data, logService);
+
 		this._configurationScopes = this._toMap(data.configurationScopes);
 	}
+
 	get onDidChangeConfiguration(): Event<vscode.ConfigurationChangeEvent> {
 		return (
 			this._onDidChangeConfiguration &&
@@ -196,12 +231,16 @@ export class ExtHostConfigProvider {
 			data: this._configuration.toData(),
 			workspace: this._extHostWorkspace.workspace,
 		};
+
 		this._configuration = Configuration.parse(data, this._logService);
+
 		this._configurationScopes = this._toMap(data.configurationScopes);
+
 		this._onDidChangeConfiguration.fire(
 			this._toConfigurationChangeEvent(change, previous),
 		);
 	}
+
 	getConfiguration(
 		section?: string,
 		scope?: vscode.ConfigurationScope | null,
@@ -233,17 +272,20 @@ export class ExtHostConfigProvider {
 				extensionDescription?.identifier,
 			);
 		}
+
 		function parseConfigurationTarget(
 			arg: boolean | ExtHostConfigurationTarget,
 		): ConfigurationTarget | null {
 			if (arg === undefined || arg === null) {
 				return null;
 			}
+
 			if (typeof arg === "boolean") {
 				return arg
 					? ConfigurationTarget.USER
 					: ConfigurationTarget.WORKSPACE;
 			}
+
 			switch (arg) {
 				case ExtHostConfigurationTarget.Global:
 					return ConfigurationTarget.USER;
@@ -255,6 +297,7 @@ export class ExtHostConfigProvider {
 					return ConfigurationTarget.WORKSPACE_FOLDER;
 			}
 		}
+
 		const result: vscode.WorkspaceConfiguration = {
 			has(key: string): boolean {
 				return typeof lookUp(config, key) !== "undefined";
@@ -284,6 +327,7 @@ export class ExtHostConfigProvider {
 								clonedConfig = clonedConfig
 									? clonedConfig
 									: deepClone(config);
+
 								clonedTarget = clonedTarget
 									? clonedTarget
 									: lookUp(clonedConfig, accessor);
@@ -299,6 +343,7 @@ export class ExtHostConfigProvider {
 
 										return () => clonedTarget;
 									}
+
 									if (clonedConfig) {
 										clonedTarget = clonedTarget
 											? clonedTarget
@@ -306,6 +351,7 @@ export class ExtHostConfigProvider {
 
 										return clonedTarget[property];
 									}
+
 									const result = target[property];
 
 									if (typeof property === "string") {
@@ -314,6 +360,7 @@ export class ExtHostConfigProvider {
 											`${accessor}.${property}`,
 										);
 									}
+
 									return result;
 								},
 								set: (
@@ -326,6 +373,7 @@ export class ExtHostConfigProvider {
 									if (clonedTarget) {
 										clonedTarget[property] = value;
 									}
+
 									return true;
 								},
 								deleteProperty: (
@@ -337,6 +385,7 @@ export class ExtHostConfigProvider {
 									if (clonedTarget) {
 										delete clonedTarget[property];
 									}
+
 									return true;
 								},
 								defineProperty: (
@@ -353,17 +402,22 @@ export class ExtHostConfigProvider {
 											descriptor,
 										);
 									}
+
 									return true;
 								},
 							});
 						}
+
 						if (Array.isArray(target)) {
 							return deepClone(target);
 						}
+
 						return target;
 					};
+
 					result = cloneOnWriteProxy(result, key);
 				}
+
 				return result;
 			},
 			update: (
@@ -435,6 +489,7 @@ export class ExtHostConfigProvider {
 						languageIds: deepClone(config.overrideIdentifiers),
 					};
 				}
+
 				return undefined;
 			},
 		};
@@ -442,8 +497,10 @@ export class ExtHostConfigProvider {
 		if (typeof config === "object") {
 			mixin(result, config, false);
 		}
+
 		return Object.freeze(result);
 	}
+
 	private _toReadonlyValue(result: any): any {
 		const readonlyProxy = (target: any): any => {
 			return isObject(target)
@@ -488,6 +545,7 @@ export class ExtHostConfigProvider {
 
 		return readonlyProxy(result);
 	}
+
 	private _validateConfigurationAccess(
 		key: string,
 		overrides?: IConfigurationOverrides,
@@ -505,21 +563,26 @@ export class ExtHostConfigProvider {
 					`${extensionIdText}Accessing a resource scoped configuration without providing a resource is not expected. To get the effective value for '${key}', provide the URI of a resource or 'null' for any resource.`,
 				);
 			}
+
 			return;
 		}
+
 		if (ConfigurationScope.WINDOW === scope) {
 			if (overrides?.resource) {
 				this._logService.warn(
 					`${extensionIdText}Accessing a window scoped configuration for a resource is not expected. To associate '${key}' to a resource, define its scope to 'resource' in configuration contributions in 'package.json'.`,
 				);
 			}
+
 			return;
 		}
 	}
+
 	private _toConfigurationChangeEvent(
 		change: IConfigurationChange,
 		previous: {
 			data: IConfigurationData;
+
 			workspace: Workspace | undefined;
 		},
 	): vscode.ConfigurationChangeEvent {
@@ -538,11 +601,13 @@ export class ExtHostConfigProvider {
 			) => event.affectsConfiguration(section, scopeToOverrides(scope)),
 		});
 	}
+
 	private _toMap(
 		scopes: [string, ConfigurationScope | undefined][],
 	): Map<string, ConfigurationScope | undefined> {
 		return scopes.reduce((result, scope) => {
 			result.set(scope[0], scope[1]);
+
 			return result;
 		}, new Map<string, ConfigurationScope | undefined>());
 	}

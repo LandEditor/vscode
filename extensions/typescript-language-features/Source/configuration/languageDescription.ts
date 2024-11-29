@@ -18,12 +18,19 @@ export const allDiagnosticLanguages = [
 
 export interface LanguageDescription {
 	readonly id: string;
+
 	readonly diagnosticOwner: string;
+
 	readonly diagnosticSource: string;
+
 	readonly diagnosticLanguage: DiagnosticLanguage;
+
 	readonly languageIds: readonly string[];
+
 	readonly configFilePattern?: RegExp;
+
 	readonly isExternal?: boolean;
+
 	readonly standardFileExtensions: readonly string[];
 }
 export const standardLanguageDescriptions: LanguageDescription[] = [

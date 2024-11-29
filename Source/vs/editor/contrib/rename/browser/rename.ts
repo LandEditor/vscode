@@ -78,6 +78,7 @@ import {
 
 class RenameSkeleton {
 	private readonly _providers: RenameProvider[];
+
 	private _providerRenameIdx: number = 0;
 
 	constructor(
@@ -99,7 +100,9 @@ class RenameSkeleton {
 
 		for (
 			this._providerRenameIdx = 0;
+
 			this._providerRenameIdx < this._providers.length;
+
 			this._providerRenameIdx++
 		) {
 			const provider = this._providers[this._providerRenameIdx];
@@ -107,6 +110,7 @@ class RenameSkeleton {
 			if (!provider.resolveRenameLocation) {
 				break;
 			}
+
 			const res = await provider.resolveRenameLocation(
 				this.model,
 				this.position,
@@ -116,11 +120,13 @@ class RenameSkeleton {
 			if (!res) {
 				continue;
 			}
+
 			if (res.rejectReason) {
 				rejects.push(res.rejectReason);
 
 				continue;
 			}
+
 			return res;
 		}
 
@@ -138,6 +144,7 @@ class RenameSkeleton {
 					rejects.length > 0 ? rejects.join("\n") : undefined,
 			};
 		}
+
 		return {
 			range: new Range(
 				this.position.lineNumber,
@@ -199,6 +206,7 @@ class RenameSkeleton {
 				token,
 			);
 		}
+
 		return result;
 	}
 }
@@ -216,6 +224,7 @@ export async function rename(
 	if (loc?.rejectReason) {
 		return { edits: [], rejectReason: loc.rejectReason };
 	}
+
 	return skeleton.provideRenameEdits(newName, CancellationToken.None);
 }
 
@@ -229,7 +238,9 @@ class RenameController implements IEditorContribution {
 	}
 
 	private readonly _renameWidget: RenameWidget;
+
 	private readonly _disposableStore = new DisposableStore();
+
 	private _cts: CancellationTokenSource = new CancellationTokenSource();
 
 	constructor(
@@ -259,6 +270,7 @@ class RenameController implements IEditorContribution {
 
 	dispose(): void {
 		this._disposableStore.dispose();
+
 		this._cts.dispose(true);
 	}
 
@@ -268,6 +280,7 @@ class RenameController implements IEditorContribution {
 		// set up cancellation token to prevent reentrant rename, this
 		// is the parent to the resolve- and rename-tokens
 		this._cts.dispose(true);
+
 		this._cts = new CancellationTokenSource();
 
 		if (!this.editor.hasModel()) {
@@ -306,8 +319,11 @@ class RenameController implements IEditorContribution {
 			const resolveLocationOperation = skeleton.resolveRenameLocation(
 				cts1.token,
 			);
+
 			this._progressService.showWhile(resolveLocationOperation, 250);
+
 			loc = await resolveLocationOperation;
+
 			trace("resolved rename location");
 		} catch (e: unknown) {
 			if (e instanceof CancellationError) {
@@ -332,6 +348,7 @@ class RenameController implements IEditorContribution {
 					);
 				}
 			}
+
 			return undefined;
 		} finally {
 			cts1.dispose();
@@ -348,6 +365,7 @@ class RenameController implements IEditorContribution {
 				`returning early - rejected with reason: ${loc.rejectReason}`,
 				loc.rejectReason,
 			);
+
 			MessageController.get(this.editor)?.showMessage(
 				loc.rejectReason,
 				position,
@@ -421,6 +439,7 @@ class RenameController implements IEditorContribution {
 				: undefined,
 			cts2,
 		);
+
 		trace("received response from rename input field");
 
 		if (newSymbolNamesProviders.length > 0) {
@@ -441,6 +460,7 @@ class RenameController implements IEditorContribution {
 			if (inputFieldResult) {
 				this.editor.focus();
 			}
+
 			cts2.dispose();
 
 			return undefined;
@@ -461,6 +481,7 @@ class RenameController implements IEditorContribution {
 
 						return;
 					}
+
 					if (!this.editor.hasModel()) {
 						trace(
 							"returning early - no model after rename edits are provided",
@@ -473,6 +494,7 @@ class RenameController implements IEditorContribution {
 						trace(
 							`returning early - rejected with reason: ${renameResult.rejectReason}`,
 						);
+
 						this._notificationService.info(
 							renameResult.rejectReason,
 						);
@@ -527,12 +549,14 @@ class RenameController implements IEditorContribution {
 							trace(
 								`error when applying edits ${JSON.stringify(err, null, "\t")}`,
 							);
+
 							this._notificationService.error(
 								nls.localize(
 									"rename.failedApply",
 									"Rename failed to apply edits",
 								),
 							);
+
 							this._logService.error(err);
 						});
 				},
@@ -548,6 +572,7 @@ class RenameController implements IEditorContribution {
 							"Rename failed to compute edits",
 						),
 					);
+
 					this._logService.error(err);
 				},
 			)
@@ -585,7 +610,9 @@ class RenameController implements IEditorContribution {
 	) {
 		type RenameInvokedEvent = {
 			kind: "accepted" | "cancelled";
+
 			languageId: string;
+
 			nRenameSuggestionProviders: number;
 
 			/** provided only if kind = 'accepted' */
@@ -604,52 +631,78 @@ class RenameController implements IEditorContribution {
 
 		type RenameInvokedClassification = {
 			owner: "ulugbekna";
+
 			comment: "A rename operation was invoked.";
 
 			kind: {
 				classification: "SystemMetaData";
+
 				purpose: "FeatureInsight";
+
 				comment: "Whether the rename operation was cancelled or accepted.";
 			};
+
 			languageId: {
 				classification: "SystemMetaData";
+
 				purpose: "FeatureInsight";
+
 				comment: "Document language ID.";
 			};
+
 			nRenameSuggestionProviders: {
 				classification: "SystemMetaData";
+
 				purpose: "FeatureInsight";
+
 				comment: "Number of rename providers for this document.";
 			};
 
 			source?: {
 				classification: "SystemMetaData";
+
 				purpose: "FeatureInsight";
+
 				comment: "Whether the new name came from the input field or rename suggestions.";
 			};
+
 			nRenameSuggestions?: {
 				classification: "SystemMetaData";
+
 				purpose: "FeatureInsight";
+
 				comment: "Number of rename suggestions user has got";
 			};
+
 			timeBeforeFirstInputFieldEdit?: {
 				classification: "SystemMetaData";
+
 				purpose: "FeatureInsight";
+
 				comment: "Milliseconds before user edits the input field for the first time";
 			};
+
 			wantsPreview?: {
 				classification: "SystemMetaData";
+
 				purpose: "FeatureInsight";
+
 				comment: "If user wanted preview.";
 			};
+
 			nRenameSuggestionsInvocations?: {
 				classification: "SystemMetaData";
+
 				purpose: "FeatureInsight";
+
 				comment: "Number of times rename suggestions were invoked";
 			};
+
 			hadAutomaticRenameSuggestionsInvocation?: {
 				classification: "SystemMetaData";
+
 				purpose: "FeatureInsight";
+
 				comment: "Whether rename suggestions were invoked automatically";
 			};
 		};
@@ -732,7 +785,9 @@ export class RenameAction extends EditorAction {
 					if (!editor) {
 						return;
 					}
+
 					editor.setPosition(pos);
+
 					editor.invokeWithinContext((accessor) => {
 						this.reportTelemetry(accessor, editor);
 
@@ -754,6 +809,7 @@ export class RenameAction extends EditorAction {
 
 			return controller.run();
 		}
+
 		logService.trace("[RenameAction] returning early - controller missing");
 
 		return Promise.resolve();
@@ -908,6 +964,7 @@ registerModelAndPositionCommand(
 	"_executeDocumentRenameProvider",
 	function (accessor, model, position, ...args) {
 		const [newName] = args;
+
 		assertType(typeof newName === "string");
 
 		const { renameProvider } = accessor.get(ILanguageFeaturesService);
@@ -930,6 +987,7 @@ registerModelAndPositionCommand(
 		if (loc?.rejectReason) {
 			throw new Error(loc.rejectReason);
 		}
+
 		return loc;
 	},
 );

@@ -19,10 +19,12 @@ export enum RelatedInformationType {
 }
 interface RelatedInformationBaseResult {
 	type: RelatedInformationType;
+
 	weight: number;
 }
 export interface CommandInformationResult extends RelatedInformationBaseResult {
 	type: RelatedInformationType.CommandInformation;
+
 	command: string;
 }
 export interface SettingInformationResult extends RelatedInformationBaseResult {
@@ -36,6 +38,7 @@ export type RelatedInformationResult =
 
 export interface IAiRelatedInformationService {
 	readonly _serviceBrand: undefined;
+
 	isEnabled(): boolean;
 
 	getRelatedInformation(
@@ -43,6 +46,7 @@ export interface IAiRelatedInformationService {
 		types: RelatedInformationType[],
 		token: CancellationToken,
 	): Promise<RelatedInformationResult[]>;
+
 	registerAiRelatedInformationProvider(
 		type: RelatedInformationType,
 		provider: IAiRelatedInformationProvider,

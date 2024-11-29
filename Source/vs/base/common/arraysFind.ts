@@ -13,6 +13,7 @@ export function findLast<T>(
 	if (idx === -1) {
 		return undefined;
 	}
+
 	return array[idx];
 }
 export function findLastIdx<T>(
@@ -27,6 +28,7 @@ export function findLastIdx<T>(
 			return i;
 		}
 	}
+
 	return -1;
 }
 /**
@@ -68,6 +70,7 @@ export function findLastIdxMonotonous<T>(
 			j = k;
 		}
 	}
+
 	return i - 1;
 }
 /**
@@ -109,6 +112,7 @@ export function findFirstIdxMonotonousOrArrLen<T>(
 			i = k + 1;
 		}
 	}
+
 	return i;
 }
 export function findFirstIdxMonotonous<T>(
@@ -134,7 +138,9 @@ export function findFirstIdxMonotonous<T>(
  */
 export class MonotonousArray<T> {
 	public static assertInvariants = false;
+
 	private _findLastMonotonousLastIdx = 0;
+
 	private _prevFindLastPredicate: ((item: T) => boolean) | undefined;
 
 	constructor(private readonly _array: readonly T[]) {}
@@ -153,13 +159,16 @@ export class MonotonousArray<T> {
 					}
 				}
 			}
+
 			this._prevFindLastPredicate = predicate;
 		}
+
 		const idx = findLastIdxMonotonous(
 			this._array,
 			predicate,
 			this._findLastMonotonousLastIdx,
 		);
+
 		this._findLastMonotonousLastIdx = idx + 1;
 
 		return idx === -1 ? undefined : this._array[idx];
@@ -175,6 +184,7 @@ export function findFirstMax<T>(
 	if (array.length === 0) {
 		return undefined;
 	}
+
 	let max = array[0];
 
 	for (let i = 1; i < array.length; i++) {
@@ -184,6 +194,7 @@ export function findFirstMax<T>(
 			max = item;
 		}
 	}
+
 	return max;
 }
 /**
@@ -196,6 +207,7 @@ export function findLastMax<T>(
 	if (array.length === 0) {
 		return undefined;
 	}
+
 	let max = array[0];
 
 	for (let i = 1; i < array.length; i++) {
@@ -205,6 +217,7 @@ export function findLastMax<T>(
 			max = item;
 		}
 	}
+
 	return max;
 }
 /**
@@ -223,6 +236,7 @@ export function findMaxIdx<T>(
 	if (array.length === 0) {
 		return -1;
 	}
+
 	let maxIdx = 0;
 
 	for (let i = 1; i < array.length; i++) {
@@ -232,6 +246,7 @@ export function findMaxIdx<T>(
 			maxIdx = i;
 		}
 	}
+
 	return maxIdx;
 }
 /**
@@ -248,5 +263,6 @@ export function mapFindFirst<T, R>(
 			return mapped;
 		}
 	}
+
 	return undefined;
 }

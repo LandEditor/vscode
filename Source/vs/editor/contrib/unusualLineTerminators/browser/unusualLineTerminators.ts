@@ -45,7 +45,9 @@ export class UnusualLineTerminatorsDetector
 	implements IEditorContribution
 {
 	public static readonly ID = "editor.contrib.unusualLineTerminatorsDetector";
+
 	private _config: "auto" | "off" | "prompt";
+
 	private _isPresentingDialog: boolean = false;
 
 	constructor(
@@ -56,72 +58,88 @@ export class UnusualLineTerminatorsDetector
 		private readonly _codeEditorService: ICodeEditorService,
 	) {
 		super();
+
 		this._config = this._editor.getOption(
 			EditorOption.unusualLineTerminators,
 		);
+
 		this._register(
 			this._editor.onDidChangeConfiguration((e) => {
 				if (e.hasChanged(EditorOption.unusualLineTerminators)) {
 					this._config = this._editor.getOption(
 						EditorOption.unusualLineTerminators,
 					);
+
 					this._checkForUnusualLineTerminators();
 				}
 			}),
 		);
+
 		this._register(
 			this._editor.onDidChangeModel(() => {
 				this._checkForUnusualLineTerminators();
 			}),
 		);
+
 		this._register(
 			this._editor.onDidChangeModelContent((e) => {
 				if (e.isUndoing) {
 					// skip checking in case of undoing
 					return;
 				}
+
 				this._checkForUnusualLineTerminators();
 			}),
 		);
+
 		this._checkForUnusualLineTerminators();
 	}
+
 	private async _checkForUnusualLineTerminators(): Promise<void> {
 		if (this._config === "off") {
 			return;
 		}
+
 		if (!this._editor.hasModel()) {
 			return;
 		}
+
 		const model = this._editor.getModel();
 
 		if (!model.mightContainUnusualLineTerminators()) {
 			return;
 		}
+
 		const ignoreState = readIgnoreState(this._codeEditorService, model);
 
 		if (ignoreState === true) {
 			// this model should be ignored
 			return;
 		}
+
 		if (this._editor.getOption(EditorOption.readOnly)) {
 			// read only editor => sorry!
 			return;
 		}
+
 		if (this._config === "auto") {
 			// just do it!
 			model.removeUnusualLineTerminators(this._editor.getSelections());
 
 			return;
 		}
+
 		if (this._isPresentingDialog) {
 			// we're currently showing the dialog, which is async.
 			// avoid spamming the user
 			return;
 		}
+
 		let result: IConfirmationResult;
 
 		try {
 			this._isPresentingDialog = true;
+
 			result = await this._dialogService.confirm({
 				title: nls.localize(
 					"unusualLineTerminators.title",
@@ -151,12 +169,14 @@ export class UnusualLineTerminatorsDetector
 		} finally {
 			this._isPresentingDialog = false;
 		}
+
 		if (!result.confirmed) {
 			// this model should be ignored
 			writeIgnoreState(this._codeEditorService, model, true);
 
 			return;
 		}
+
 		model.removeUnusualLineTerminators(this._editor.getSelections());
 	}
 }

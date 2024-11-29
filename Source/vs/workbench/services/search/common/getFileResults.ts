@@ -14,7 +14,9 @@ export const getFileResults = (
 	pattern: RegExp,
 	options: {
 		surroundingContext: number;
+
 		previewOptions: ITextSearchPreviewOptions | undefined;
+
 		remainingResultQuota: number;
 	},
 ): ITextSearchResult[] => {
@@ -31,10 +33,12 @@ export const getFileResults = (
 			return [];
 		}
 	}
+
 	const results: ITextSearchResult[] = [];
 
 	const patternIndecies: {
 		matchStartIndex: number;
+
 		matchedText: string;
 	}[] = [];
 
@@ -47,8 +51,10 @@ export const getFileResults = (
 			matchStartIndex: patternMatch.index,
 			matchedText: patternMatch[0],
 		});
+
 		remainingResultQuota--;
 	}
+
 	if (patternIndecies.length) {
 		const contextLinesNeeded = new Set<number>();
 
@@ -56,6 +62,7 @@ export const getFileResults = (
 
 		const lineRanges: {
 			start: number;
+
 			end: number;
 		}[] = [];
 
@@ -73,23 +80,28 @@ export const getFileResults = (
 
 		while ((lineEndingMatch = lineEndRegex.exec(text))) {
 			lineRanges.push({ start: prevLineEnd, end: lineEndingMatch.index });
+
 			prevLineEnd = lineEndingMatch.index + lineEndingMatch[0].length;
 		}
+
 		if (prevLineEnd < text.length) {
 			lineRanges.push({ start: prevLineEnd, end: text.length });
 		}
+
 		let startLine = 0;
 
 		for (const { matchStartIndex, matchedText } of patternIndecies) {
 			if (remainingResultQuota < 0) {
 				break;
 			}
+
 			while (
 				Boolean(lineRanges[startLine + 1]) &&
 				matchStartIndex > lineRanges[startLine].end
 			) {
 				startLine++;
 			}
+
 			let endLine = startLine;
 
 			while (
@@ -98,18 +110,22 @@ export const getFileResults = (
 			) {
 				endLine++;
 			}
+
 			if (options.surroundingContext) {
 				for (
 					let contextLine = Math.max(
 						0,
 						startLine - options.surroundingContext,
 					);
+
 					contextLine < startLine;
+
 					contextLine++
 				) {
 					contextLinesNeeded.add(contextLine);
 				}
 			}
+
 			let previewText = "";
 
 			let offset = 0;
@@ -125,14 +141,18 @@ export const getFileResults = (
 						matchStartIndex - lineRanges[startLine].start - 20,
 						0,
 					);
+
 					previewLine = previewLine.substr(
 						offset,
 						options.previewOptions.charsPerLine,
 					);
 				}
+
 				previewText += `${previewLine}\n`;
+
 				resultLines.add(matchLine);
 			}
+
 			const fileRange = new Range(
 				startLine,
 				matchStartIndex - lineRanges[startLine].start,
@@ -161,22 +181,26 @@ export const getFileResults = (
 				],
 				previewText: previewText,
 			};
+
 			results.push(match);
 
 			if (options.surroundingContext) {
 				for (
 					let contextLine = endLine + 1;
+
 					contextLine <=
 					Math.min(
 						endLine + options.surroundingContext,
 						lineRanges.length - 1,
 					);
+
 					contextLine++
 				) {
 					contextLinesNeeded.add(contextLine);
 				}
 			}
 		}
+
 		for (const contextLine of contextLinesNeeded) {
 			if (!resultLines.has(contextLine)) {
 				results.push({
@@ -186,5 +210,6 @@ export const getFileResults = (
 			}
 		}
 	}
+
 	return results;
 };

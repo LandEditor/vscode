@@ -26,8 +26,11 @@ export class TerminalInlineChatAccessibleView
 	implements IAccessibleViewImplentation
 {
 	readonly priority = 105;
+
 	readonly name = "terminalInlineChat";
+
 	readonly type = AccessibleViewType.View;
+
 	readonly when = TerminalChatContextKeys.focused;
 
 	getProvider(accessor: ServicesAccessor) {
@@ -55,6 +58,7 @@ export class TerminalInlineChatAccessibleView
 				}
 			}
 		}
+
 		const controller: TerminalChatController | undefined =
 			terminalService.activeInstance?.getContribution(
 				TerminalChatController.ID,
@@ -63,6 +67,7 @@ export class TerminalInlineChatAccessibleView
 		if (!controller?.lastResponseContent) {
 			return;
 		}
+
 		const responseContent = controller.lastResponseContent;
 
 		return new AccessibleContentProvider(

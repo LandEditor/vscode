@@ -105,6 +105,7 @@ export class TaskStatusBarContributions
 	implements IWorkbenchContribution
 {
 	private _runningTasksStatusItem: IStatusbarEntryAccessor | undefined;
+
 	private _activeTasksCount: number = 0;
 
 	constructor(
@@ -116,17 +117,21 @@ export class TaskStatusBarContributions
 		private readonly _progressService: IProgressService,
 	) {
 		super();
+
 		this._registerListeners();
 	}
+
 	private _registerListeners(): void {
 		let promise: Promise<void> | undefined = undefined;
 
 		let resolve: (value?: void | Thenable<void>) => void;
+
 		this._register(
 			this._taskService.onDidStateChange((event) => {
 				if (event.kind === TaskEventKind.Changed) {
 					this._updateRunningTasksStatus();
 				}
+
 				if (!this._ignoreEventForUpdateRunningTasksCount(event)) {
 					switch (event.kind) {
 						case TaskEventKind.Active:
@@ -138,6 +143,7 @@ export class TaskStatusBarContributions
 										promiseWithResolvers<void>());
 								}
 							}
+
 							break;
 
 						case TaskEventKind.Inactive:
@@ -152,6 +158,7 @@ export class TaskStatusBarContributions
 									}
 								}
 							}
+
 							break;
 
 						case TaskEventKind.Terminated:
@@ -162,9 +169,11 @@ export class TaskStatusBarContributions
 									resolve!();
 								}
 							}
+
 							break;
 					}
 				}
+
 				if (
 					promise &&
 					event.kind === TaskEventKind.Active &&
@@ -194,12 +203,14 @@ export class TaskStatusBarContributions
 			}),
 		);
 	}
+
 	private async _updateRunningTasksStatus(): Promise<void> {
 		const tasks = await this._taskService.getActiveTasks();
 
 		if (tasks.length === 0) {
 			if (this._runningTasksStatusItem) {
 				this._runningTasksStatusItem.dispose();
+
 				this._runningTasksStatusItem = undefined;
 			}
 		} else {
@@ -227,6 +238,7 @@ export class TaskStatusBarContributions
 			}
 		}
 	}
+
 	private _ignoreEventForUpdateRunningTasksCount(event: ITaskEvent): boolean {
 		if (
 			!this._taskService.inTerminal() ||
@@ -234,12 +246,14 @@ export class TaskStatusBarContributions
 		) {
 			return false;
 		}
+
 		if (
 			(isString(event.group) ? event.group : event.group?._id) !==
 			TaskGroup.Build._id
 		) {
 			return true;
 		}
+
 		return (
 			event.__task.configurationProperties.problemMatchers ===
 				undefined ||
@@ -464,12 +478,15 @@ class UserTasksGlobalActionContribution
 {
 	constructor() {
 		super();
+
 		this.registerActions();
 	}
+
 	private registerActions() {
 		const id = "workbench.action.tasks.openUserTasks";
 
 		const title = nls.localize("tasks", "Tasks");
+
 		this._register(
 			MenuRegistry.appendMenuItem(MenuId.GlobalActivity, {
 				command: {
@@ -481,6 +498,7 @@ class UserTasksGlobalActionContribution
 				order: 6,
 			}),
 		);
+
 		this._register(
 			MenuRegistry.appendMenuItem(MenuId.MenubarPreferencesMenu, {
 				command: {
@@ -582,15 +600,19 @@ export class TaskRegistryContribution
 
 	constructor() {
 		super();
+
 		this._register(
 			ProblemMatcherRegistry.onMatcherChanged(() => {
 				updateProblemMatchers();
+
 				jsonRegistry.notifySchemaChanged(tasksSchemaId);
 			}),
 		);
+
 		this._register(
 			TaskDefinitionRegistry.onDefinitionsChanged(() => {
 				updateTaskDefinitions();
+
 				jsonRegistry.notifySchemaChanged(tasksSchemaId);
 			}),
 		);

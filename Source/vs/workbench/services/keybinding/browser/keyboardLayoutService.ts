@@ -66,46 +66,64 @@ import { INavigatorWithKeyboard } from "./navigatorKeyboard.js";
 export class BrowserKeyboardMapperFactoryBase extends Disposable {
 	// keyboard mapper
 	protected _initialized: boolean;
+
 	protected _keyboardMapper: IKeyboardMapper | null;
+
 	private readonly _onDidChangeKeyboardMapper = new Emitter<void>();
+
 	public readonly onDidChangeKeyboardMapper: Event<void> =
 		this._onDidChangeKeyboardMapper.event;
 	// keymap infos
 	protected _keymapInfos: KeymapInfo[];
+
 	protected _mru: KeymapInfo[];
+
 	private _activeKeymapInfo: KeymapInfo | null;
+
 	private keyboardLayoutMapAllowed: boolean =
 		(navigator as any).keyboard !== undefined;
 
 	get activeKeymap(): KeymapInfo | null {
 		return this._activeKeymapInfo;
 	}
+
 	get keymapInfos(): KeymapInfo[] {
 		return this._keymapInfos;
 	}
+
 	get activeKeyboardLayout(): IKeyboardLayoutInfo | null {
 		if (!this._initialized) {
 			return null;
 		}
+
 		return this._activeKeymapInfo?.layout ?? null;
 	}
+
 	get activeKeyMapping(): IKeyboardMapping | null {
 		if (!this._initialized) {
 			return null;
 		}
+
 		return this._activeKeymapInfo?.mapping ?? null;
 	}
+
 	get keyboardLayouts(): IKeyboardLayoutInfo[] {
 		return this._keymapInfos.map((keymapInfo) => keymapInfo.layout);
 	}
+
 	protected constructor(
 		private readonly _configurationService: IConfigurationService,
 	) {
 		super();
+
 		this._keyboardMapper = null;
+
 		this._initialized = false;
+
 		this._keymapInfos = [];
+
 		this._mru = [];
+
 		this._activeKeymapInfo = null;
 
 		if (
@@ -121,38 +139,50 @@ export class BrowserKeyboardMapperFactoryBase extends Disposable {
 							if (this.isKeyMappingActive(mapping)) {
 								return;
 							}
+
 							this.setLayoutFromBrowserAPI();
 						},
 					);
 				},
 			);
 		}
+
 		this._register(
 			this._configurationService.onDidChangeConfiguration((e) => {
 				if (e.affectsConfiguration("keyboard")) {
 					this._keyboardMapper = null;
+
 					this._onDidChangeKeyboardMapper.fire();
 				}
 			}),
 		);
 	}
+
 	registerKeyboardLayout(layout: KeymapInfo) {
 		this._keymapInfos.push(layout);
+
 		this._mru = this._keymapInfos;
 	}
+
 	removeKeyboardLayout(layout: KeymapInfo): void {
 		let index = this._mru.indexOf(layout);
+
 		this._mru.splice(index, 1);
+
 		index = this._keymapInfos.indexOf(layout);
+
 		this._keymapInfos.splice(index, 1);
 	}
+
 	getMatchedKeymapInfo(keyMapping: IKeyboardMapping | null): {
 		result: KeymapInfo;
+
 		score: number;
 	} | null {
 		if (!keyMapping) {
 			return null;
 		}
+
 		const usStandard = this.getUSStandardLayout();
 
 		if (usStandard) {
@@ -164,6 +194,7 @@ export class BrowserKeyboardMapperFactoryBase extends Disposable {
 					score: 0,
 				};
 			}
+
 			let result = usStandard;
 
 			for (let i = 0; i < this._mru.length; i++) {
@@ -176,15 +207,19 @@ export class BrowserKeyboardMapperFactoryBase extends Disposable {
 							score: 0,
 						};
 					}
+
 					maxScore = score;
+
 					result = this._mru[i];
 				}
 			}
+
 			return {
 				result,
 				score: maxScore,
 			};
 		}
+
 		for (let i = 0; i < this._mru.length; i++) {
 			if (this._mru[i].fuzzyEqual(keyMapping)) {
 				return {
@@ -193,8 +228,10 @@ export class BrowserKeyboardMapperFactoryBase extends Disposable {
 				};
 			}
 		}
+
 		return null;
 	}
+
 	getUSStandardLayout() {
 		const usStandardLayouts = this._mru.filter(
 			(layout) => layout.layout.isUSStandard,
@@ -203,8 +240,10 @@ export class BrowserKeyboardMapperFactoryBase extends Disposable {
 		if (usStandardLayouts.length) {
 			return usStandardLayouts[0];
 		}
+
 		return null;
 	}
+
 	isKeyMappingActive(keymap: IKeyboardMapping | null) {
 		return (
 			this._activeKeymapInfo &&
@@ -212,9 +251,11 @@ export class BrowserKeyboardMapperFactoryBase extends Disposable {
 			this._activeKeymapInfo.fuzzyEqual(keymap)
 		);
 	}
+
 	setUSKeyboardLayout() {
 		this._activeKeymapInfo = this.getUSStandardLayout();
 	}
+
 	setActiveKeyMapping(keymap: IKeyboardMapping | null) {
 		let keymapUpdated = false;
 
@@ -245,8 +286,10 @@ export class BrowserKeyboardMapperFactoryBase extends Disposable {
 			// console.warn('Active keymap/keyevent does not match current keyboard layout', JSON.stringify(keymap), this._activeKeymapInfo ? JSON.stringify(this._activeKeymapInfo.layout) : '');
 			// return;
 			// }
+
 			if (!this._activeKeymapInfo) {
 				this._activeKeymapInfo = matchedKeyboardLayout.result;
+
 				keymapUpdated = true;
 			} else if (keymap) {
 				if (
@@ -254,22 +297,31 @@ export class BrowserKeyboardMapperFactoryBase extends Disposable {
 					this._activeKeymapInfo.getScore(keymap)
 				) {
 					this._activeKeymapInfo = matchedKeyboardLayout.result;
+
 					keymapUpdated = true;
 				}
 			}
 		}
+
 		if (!this._activeKeymapInfo) {
 			this._activeKeymapInfo = this.getUSStandardLayout();
+
 			keymapUpdated = true;
 		}
+
 		if (!this._activeKeymapInfo || !keymapUpdated) {
 			return;
 		}
+
 		const index = this._mru.indexOf(this._activeKeymapInfo);
+
 		this._mru.splice(index, 1);
+
 		this._mru.unshift(this._activeKeymapInfo);
+
 		this._setKeyboardData(this._activeKeymapInfo);
 	}
+
 	setActiveKeymapInfo(keymapInfo: KeymapInfo) {
 		this._activeKeymapInfo = keymapInfo;
 
@@ -278,13 +330,18 @@ export class BrowserKeyboardMapperFactoryBase extends Disposable {
 		if (index === 0) {
 			return;
 		}
+
 		this._mru.splice(index, 1);
+
 		this._mru.unshift(this._activeKeymapInfo);
+
 		this._setKeyboardData(this._activeKeymapInfo);
 	}
+
 	public setLayoutFromBrowserAPI(): void {
 		this._updateKeyboardLayoutAsync(this._initialized);
 	}
+
 	private _updateKeyboardLayoutAsync(
 		initialized: boolean,
 		keyboardEvent?: IKeyboardEvent,
@@ -292,14 +349,17 @@ export class BrowserKeyboardMapperFactoryBase extends Disposable {
 		if (!initialized) {
 			return;
 		}
+
 		this._getBrowserKeyMapping(keyboardEvent).then((keyMap) => {
 			// might be false positive
 			if (this.isKeyMappingActive(keyMap)) {
 				return;
 			}
+
 			this.setActiveKeyMapping(keyMap);
 		});
 	}
+
 	public getKeyboardMapper(): IKeyboardMapper {
 		const config = readKeyboardConfig(this._configurationService);
 
@@ -311,6 +371,7 @@ export class BrowserKeyboardMapperFactoryBase extends Disposable {
 			// Forcefully set to use keyCode
 			return new FallbackKeyboardMapper(config.mapAltGrToCtrlAlt, OS);
 		}
+
 		if (!this._keyboardMapper) {
 			this._keyboardMapper = new CachedKeyboardMapper(
 				BrowserKeyboardMapperFactory._createKeyboardMapper(
@@ -319,20 +380,25 @@ export class BrowserKeyboardMapperFactoryBase extends Disposable {
 				),
 			);
 		}
+
 		return this._keyboardMapper;
 	}
+
 	public validateCurrentKeyboardMapping(keyboardEvent: IKeyboardEvent): void {
 		if (!this._initialized) {
 			return;
 		}
+
 		const isCurrentKeyboard =
 			this._validateCurrentKeyboardMapping(keyboardEvent);
 
 		if (isCurrentKeyboard) {
 			return;
 		}
+
 		this._updateKeyboardLayoutAsync(true, keyboardEvent);
 	}
+
 	public setKeyboardLayout(layoutName: string) {
 		const matchedLayouts: KeymapInfo[] = this.keymapInfos.filter(
 			(keymapInfo) =>
@@ -343,11 +409,15 @@ export class BrowserKeyboardMapperFactoryBase extends Disposable {
 			this.setActiveKeymapInfo(matchedLayouts[0]);
 		}
 	}
+
 	private _setKeyboardData(keymapInfo: KeymapInfo): void {
 		this._initialized = true;
+
 		this._keyboardMapper = null;
+
 		this._onDidChangeKeyboardMapper.fire();
 	}
+
 	private static _createKeyboardMapper(
 		keymapInfo: KeymapInfo,
 		mapAltGrToCtrlAlt: boolean,
@@ -363,10 +433,12 @@ export class BrowserKeyboardMapperFactoryBase extends Disposable {
 				mapAltGrToCtrlAlt,
 			);
 		}
+
 		if (Object.keys(rawMapping).length === 0) {
 			// Looks like reading the mappings failed (most likely Mac + Japanese/Chinese keyboard layouts)
 			return new FallbackKeyboardMapper(mapAltGrToCtrlAlt, OS);
 		}
+
 		return new MacLinuxKeyboardMapper(
 			isUSStandard,
 			<IMacLinuxKeyboardMapping>rawMapping,
@@ -381,6 +453,7 @@ export class BrowserKeyboardMapperFactoryBase extends Disposable {
 		if (!this._initialized) {
 			return true;
 		}
+
 		const standardKeyboardEvent = keyboardEvent as StandardKeyboardEvent;
 
 		const currentKeymap = this._activeKeymapInfo;
@@ -388,17 +461,20 @@ export class BrowserKeyboardMapperFactoryBase extends Disposable {
 		if (!currentKeymap) {
 			return true;
 		}
+
 		if (
 			standardKeyboardEvent.browserEvent.key === "Dead" ||
 			standardKeyboardEvent.browserEvent.isComposing
 		) {
 			return true;
 		}
+
 		const mapping = currentKeymap.mapping[standardKeyboardEvent.code];
 
 		if (!mapping) {
 			return false;
 		}
+
 		if (mapping.value === "") {
 			// The value is empty when the key is not a printable character, we skip validation.
 			if (keyboardEvent.ctrlKey || keyboardEvent.metaKey) {
@@ -408,13 +484,16 @@ export class BrowserKeyboardMapperFactoryBase extends Disposable {
 							if (this.isKeyMappingActive(keymap)) {
 								return;
 							}
+
 							this.setLayoutFromBrowserAPI();
 						},
 					);
 				}, 350);
 			}
+
 			return true;
 		}
+
 		const expectedValue =
 			standardKeyboardEvent.altKey && standardKeyboardEvent.shiftKey
 				? mapping.withShiftAltGr
@@ -442,8 +521,10 @@ export class BrowserKeyboardMapperFactoryBase extends Disposable {
 		) {
 			return false;
 		}
+
 		return true;
 	}
+
 	private async _getBrowserKeyMapping(
 		keyboardEvent?: IKeyboardEvent,
 	): Promise<IRawMixedKeyboardMapping | null> {
@@ -462,6 +543,7 @@ export class BrowserKeyboardMapperFactoryBase extends Disposable {
 								"withShiftAltGr": "",
 							};
 						}
+
 						return ret;
 						// const matchedKeyboardLayout = this.getMatchedKeymapInfo(ret);
 						// if (matchedKeyboardLayout) {
@@ -474,6 +556,7 @@ export class BrowserKeyboardMapperFactoryBase extends Disposable {
 				this.keyboardLayoutMapAllowed = false;
 			}
 		}
+
 		if (
 			keyboardEvent &&
 			!keyboardEvent.shiftKey &&
@@ -485,6 +568,7 @@ export class BrowserKeyboardMapperFactoryBase extends Disposable {
 
 			const standardKeyboardEvent =
 				keyboardEvent as StandardKeyboardEvent;
+
 			ret[standardKeyboardEvent.browserEvent.code] = {
 				"value": standardKeyboardEvent.browserEvent.key,
 				"withShift": "",
@@ -497,8 +581,10 @@ export class BrowserKeyboardMapperFactoryBase extends Disposable {
 			if (matchedKeyboardLayout) {
 				return ret;
 			}
+
 			return null;
 		}
+
 		return null;
 	}
 }
@@ -522,6 +608,7 @@ export class BrowserKeyboardMapperFactory extends BrowserKeyboardMapperFactoryBa
 		).then((m) => {
 			const keymapInfos: IKeymapInfo[] =
 				m.KeyboardLayoutContribution.INSTANCE.layoutInfos;
+
 			this._keymapInfos.push(
 				...keymapInfos.map(
 					(info) =>
@@ -533,29 +620,38 @@ export class BrowserKeyboardMapperFactory extends BrowserKeyboardMapperFactoryBa
 						),
 				),
 			);
+
 			this._mru = this._keymapInfos;
+
 			this._initialized = true;
+
 			this.setLayoutFromBrowserAPI();
 		});
 	}
 }
 class UserKeyboardLayout extends Disposable {
 	private readonly reloadConfigurationScheduler: RunOnceScheduler;
+
 	protected readonly _onDidChange: Emitter<void> = this._register(
 		new Emitter<void>(),
 	);
+
 	readonly onDidChange: Event<void> = this._onDidChange.event;
+
 	private _keyboardLayout: KeymapInfo | null;
 
 	get keyboardLayout(): KeymapInfo | null {
 		return this._keyboardLayout;
 	}
+
 	constructor(
 		private readonly keyboardLayoutResource: URI,
 		private readonly fileService: IFileService,
 	) {
 		super();
+
 		this._keyboardLayout = null;
+
 		this.reloadConfigurationScheduler = this._register(
 			new RunOnceScheduler(
 				() =>
@@ -567,15 +663,18 @@ class UserKeyboardLayout extends Disposable {
 				50,
 			),
 		);
+
 		this._register(
 			Event.filter(this.fileService.onDidFilesChange, (e) =>
 				e.contains(this.keyboardLayoutResource),
 			)(() => this.reloadConfigurationScheduler.schedule()),
 		);
 	}
+
 	async initialize(): Promise<void> {
 		await this.reload();
 	}
+
 	private async reload(): Promise<boolean> {
 		const existing = this._keyboardLayout;
 
@@ -590,6 +689,7 @@ class UserKeyboardLayout extends Disposable {
 				const layoutInfo = value.layout;
 
 				const mappings = value.rawMapping;
+
 				this._keyboardLayout =
 					KeymapInfo.createKeyboardLayoutFromDebugInfo(
 						layoutInfo,
@@ -602,6 +702,7 @@ class UserKeyboardLayout extends Disposable {
 		} catch (e) {
 			this._keyboardLayout = null;
 		}
+
 		return existing
 			? !objects.equals(existing, this._keyboardLayout)
 			: true;
@@ -612,11 +713,16 @@ export class BrowserKeyboardLayoutService
 	implements IKeyboardLayoutService
 {
 	public _serviceBrand: undefined;
+
 	private readonly _onDidChangeKeyboardLayout = new Emitter<void>();
+
 	public readonly onDidChangeKeyboardLayout: Event<void> =
 		this._onDidChangeKeyboardLayout.event;
+
 	private _userKeyboardLayout: UserKeyboardLayout;
+
 	private readonly _factory: BrowserKeyboardMapperFactory;
+
 	private _keyboardLayoutMode: string;
 
 	constructor(
@@ -640,13 +746,16 @@ export class BrowserKeyboardLayoutService
 		}>("keyboard");
 
 		const layout = keyboardConfig.layout;
+
 		this._keyboardLayoutMode = layout ?? "autodetect";
+
 		this._factory = new BrowserKeyboardMapperFactory(
 			configurationService,
 			notificationService,
 			storageService,
 			commandService,
 		);
+
 		this._register(
 			this._factory.onDidChangeKeyboardMapper(() => {
 				this._onDidChangeKeyboardLayout.fire();
@@ -657,6 +766,7 @@ export class BrowserKeyboardLayoutService
 			// set keyboard layout
 			this._factory.setKeyboardLayout(layout);
 		}
+
 		this._register(
 			configurationService.onDidChangeConfiguration((e) => {
 				if (e.affectsConfiguration("keyboard.layout")) {
@@ -665,6 +775,7 @@ export class BrowserKeyboardLayoutService
 					}>("keyboard");
 
 					const layout = keyboardConfig.layout;
+
 					this._keyboardLayoutMode = layout;
 
 					if (layout === "autodetect") {
@@ -675,18 +786,22 @@ export class BrowserKeyboardLayoutService
 				}
 			}),
 		);
+
 		this._userKeyboardLayout = new UserKeyboardLayout(
 			environmentService.keyboardLayoutResource,
 			fileService,
 		);
+
 		this._userKeyboardLayout.initialize().then(() => {
 			if (this._userKeyboardLayout.keyboardLayout) {
 				this._factory.registerKeyboardLayout(
 					this._userKeyboardLayout.keyboardLayout,
 				);
+
 				this.setUserKeyboardLayoutIfMatched();
 			}
 		});
+
 		this._register(
 			this._userKeyboardLayout.onDidChange(() => {
 				const userKeyboardLayouts = this._factory.keymapInfos.filter(
@@ -710,10 +825,12 @@ export class BrowserKeyboardLayoutService
 						);
 					}
 				}
+
 				this.setUserKeyboardLayoutIfMatched();
 			}),
 		);
 	}
+
 	setUserKeyboardLayoutIfMatched() {
 		const keyboardConfig = this.configurationService.getValue<{
 			layout: string;
@@ -740,22 +857,28 @@ export class BrowserKeyboardLayoutService
 			}
 		}
 	}
+
 	getKeyboardMapper(): IKeyboardMapper {
 		return this._factory.getKeyboardMapper();
 	}
+
 	public getCurrentKeyboardLayout(): IKeyboardLayoutInfo | null {
 		return this._factory.activeKeyboardLayout;
 	}
+
 	public getAllKeyboardLayouts(): IKeyboardLayoutInfo[] {
 		return this._factory.keyboardLayouts;
 	}
+
 	public getRawKeyboardMapping(): IKeyboardMapping | null {
 		return this._factory.activeKeyMapping;
 	}
+
 	public validateCurrentKeyboardMapping(keyboardEvent: IKeyboardEvent): void {
 		if (this._keyboardLayoutMode !== "autodetect") {
 			return;
 		}
+
 		this._factory.validateCurrentKeyboardMapping(keyboardEvent);
 	}
 }

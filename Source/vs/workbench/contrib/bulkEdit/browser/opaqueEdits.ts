@@ -71,6 +71,7 @@ export class OpaqueEdits {
 			}, this._undoRedoGroup, this._undoRedoSource);
 
 			this._progress.report(undefined);
+
 			resources.push(edit.resource);
 		}
 

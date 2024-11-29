@@ -35,15 +35,18 @@ export class ResourceNotebookCellEdit
 		if (candidate instanceof ResourceNotebookCellEdit) {
 			return true;
 		}
+
 		return (
 			URI.isUri((<IWorkspaceNotebookCellEdit>candidate).resource) &&
 			isObject((<IWorkspaceNotebookCellEdit>candidate).cellEdit)
 		);
 	}
+
 	static lift(edit: IWorkspaceNotebookCellEdit): ResourceNotebookCellEdit {
 		if (edit instanceof ResourceNotebookCellEdit) {
 			return edit;
 		}
+
 		return new ResourceNotebookCellEdit(
 			edit.resource,
 			edit.cellEdit,
@@ -51,6 +54,7 @@ export class ResourceNotebookCellEdit
 			edit.metadata,
 		);
 	}
+
 	constructor(
 		readonly resource: URI,
 		readonly cellEdit:
@@ -82,6 +86,7 @@ export class BulkCellEdits {
 				if (!uri) {
 					throw new Error(`Invalid notebook URI: ${e.resource}`);
 				}
+
 				return new ResourceNotebookCellEdit(
 					uri,
 					e.cellEdit,
@@ -93,6 +98,7 @@ export class BulkCellEdits {
 			}
 		});
 	}
+
 	async apply(): Promise<readonly URI[]> {
 		const resources: URI[] = [];
 
@@ -104,6 +110,7 @@ export class BulkCellEdits {
 			if (this._token.isCancellationRequested) {
 				break;
 			}
+
 			const [first] = group;
 
 			const ref = await this._notebookModelService.resolve(
@@ -138,6 +145,7 @@ export class BulkCellEdits {
 							selections: editor.getSelections(),
 						}
 					: undefined;
+
 			ref.object.notebook.applyEdits(
 				edits,
 				true,
@@ -146,10 +154,14 @@ export class BulkCellEdits {
 				this._undoRedoGroup,
 				computeUndo,
 			);
+
 			ref.dispose();
+
 			this._progress.report(undefined);
+
 			resources.push(first.resource);
 		}
+
 		return resources;
 	}
 }

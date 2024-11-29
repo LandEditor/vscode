@@ -18,7 +18,9 @@ import {
 @extHostNamedCustomer(MainContext.MainThreadTheming)
 export class MainThreadTheming implements MainThreadThemingShape {
 	private readonly _themeService: IThemeService;
+
 	private readonly _proxy: ExtHostThemingShape;
+
 	private readonly _themeChangeListener: IDisposable;
 
 	constructor(
@@ -27,7 +29,9 @@ export class MainThreadTheming implements MainThreadThemingShape {
 		themeService: IThemeService,
 	) {
 		this._themeService = themeService;
+
 		this._proxy = extHostContext.getProxy(ExtHostContext.ExtHostTheming);
+
 		this._themeChangeListener = this._themeService.onDidColorThemeChange(
 			(e) => {
 				this._proxy.$onColorThemeChange(
@@ -35,10 +39,12 @@ export class MainThreadTheming implements MainThreadThemingShape {
 				);
 			},
 		);
+
 		this._proxy.$onColorThemeChange(
 			this._themeService.getColorTheme().type,
 		);
 	}
+
 	dispose(): void {
 		this._themeChangeListener.dispose();
 	}

@@ -24,7 +24,9 @@ import { ITelemetryAppender, validateTelemetryData } from "./telemetryUtils.js";
 // Allows us to more easily build mock objects for testing as the interface is quite large and we only need a few properties.
 export interface IAppInsightsCore {
 	pluginVersionString: string;
+
 	track(item: ITelemetryItem | IExtendedTelemetryItem): void;
+
 	unload(
 		isAsync: boolean,
 		unloadComplete: (unloadState: ITelemetryUnloadState) => void,
@@ -77,14 +79,19 @@ async function getClient(
 			ignoreMc1Ms0CookieProcessing: true,
 			httpXHROverride: xhrOverride,
 		};
+
 		coreConfig.extensionConfig[collectorChannelPlugin.identifier] =
 			channelConfig;
 	}
+
 	appInsightsCore.initialize(coreConfig, []);
+
 	appInsightsCore.addTelemetryInitializer((envelope) => {
 		// Opt the user out of 1DS data sharing
 		envelope["ext"] = envelope["ext"] ?? {};
+
 		envelope["ext"]["web"] = envelope["ext"]["web"] ?? {};
+
 		envelope["ext"]["web"]["consentDetails"] =
 			'{"GPC_DataSharingOptIn":false}';
 
@@ -102,8 +109,11 @@ export abstract class AbstractOneDataSystemAppender
 	implements ITelemetryAppender
 {
 	protected _aiCoreOrKey: IAppInsightsCore | string | undefined;
+
 	private _asyncAiCore: Promise<IAppInsightsCore> | null;
+
 	protected readonly endPointUrl = endpointUrl;
+
 	protected readonly endPointHealthUrl = endpointHealthUrl;
 
 	constructor(
@@ -118,22 +128,27 @@ export abstract class AbstractOneDataSystemAppender
 		if (!this._defaultData) {
 			this._defaultData = {};
 		}
+
 		if (typeof iKeyOrClientFactory === "function") {
 			this._aiCoreOrKey = iKeyOrClientFactory();
 		} else {
 			this._aiCoreOrKey = iKeyOrClientFactory;
 		}
+
 		this._asyncAiCore = null;
 	}
+
 	private _withAIClient(callback: (aiCore: IAppInsightsCore) => void): void {
 		if (!this._aiCoreOrKey) {
 			return;
 		}
+
 		if (typeof this._aiCoreOrKey !== "string") {
 			callback(this._aiCoreOrKey);
 
 			return;
 		}
+
 		if (!this._asyncAiCore) {
 			this._asyncAiCore = getClient(
 				this._aiCoreOrKey,
@@ -141,21 +156,26 @@ export abstract class AbstractOneDataSystemAppender
 				this._xhrOverride,
 			);
 		}
+
 		this._asyncAiCore.then(
 			(aiClient) => {
 				callback(aiClient);
 			},
 			(err) => {
 				onUnexpectedError(err);
+
 				console.error(err);
 			},
 		);
 	}
+
 	log(eventName: string, data?: any): void {
 		if (!this._aiCoreOrKey) {
 			return;
 		}
+
 		data = mixin(data, this._defaultData);
+
 		data = validateTelemetryData(data);
 
 		const name = this._eventPrefix + "/" + eventName;
@@ -164,6 +184,7 @@ export abstract class AbstractOneDataSystemAppender
 			this._withAIClient((aiClient) => {
 				aiClient.pluginVersionString =
 					data?.properties.version ?? "Unknown";
+
 				aiClient.track({
 					name,
 					baseData: {
@@ -175,17 +196,20 @@ export abstract class AbstractOneDataSystemAppender
 			});
 		} catch {}
 	}
+
 	flush(): Promise<void> {
 		if (this._aiCoreOrKey) {
 			return new Promise((resolve) => {
 				this._withAIClient((aiClient) => {
 					aiClient.unload(true, () => {
 						this._aiCoreOrKey = undefined;
+
 						resolve(undefined);
 					});
 				});
 			});
 		}
+
 		return Promise.resolve(undefined);
 	}
 }

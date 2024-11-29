@@ -24,7 +24,9 @@ const SettingsEditorIcon = registerIcon(
 
 export class SettingsEditor2Input extends EditorInput {
 	static readonly ID: string = "workbench.input.settings2";
+
 	private readonly _settingsModel: Settings2EditorModel;
+
 	readonly resource: URI = URI.from({
 		scheme: Schemas.vscodeSettings,
 		path: `settingseditor`,
@@ -35,26 +37,33 @@ export class SettingsEditor2Input extends EditorInput {
 		_preferencesService: IPreferencesService,
 	) {
 		super();
+
 		this._settingsModel = _preferencesService.createSettings2EditorModel();
 	}
+
 	override matches(otherInput: EditorInput | IUntypedEditorInput): boolean {
 		return (
 			super.matches(otherInput) ||
 			otherInput instanceof SettingsEditor2Input
 		);
 	}
+
 	override get typeId(): string {
 		return SettingsEditor2Input.ID;
 	}
+
 	override getName(): string {
 		return nls.localize("settingsEditor2InputName", "Settings");
 	}
+
 	override getIcon(): ThemeIcon {
 		return SettingsEditorIcon;
 	}
+
 	override async resolve(): Promise<Settings2EditorModel> {
 		return this._settingsModel;
 	}
+
 	override dispose(): void {
 		this._settingsModel.dispose();
 

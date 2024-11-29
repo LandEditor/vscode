@@ -8,9 +8,13 @@ import { ICoordinatesConverter } from "../viewModel.js";
 
 export class CursorContext {
 	_cursorContextBrand: void = undefined;
+
 	public readonly model: ITextModel;
+
 	public readonly viewModel: ICursorSimpleModel;
+
 	public readonly coordinatesConverter: ICoordinatesConverter;
+
 	public readonly cursorConfig: CursorConfiguration;
 
 	constructor(
@@ -20,8 +24,11 @@ export class CursorContext {
 		cursorConfig: CursorConfiguration,
 	) {
 		this.model = model;
+
 		this.viewModel = viewModel;
+
 		this.coordinatesConverter = coordinatesConverter;
+
 		this.cursorConfig = cursorConfig;
 	}
 }

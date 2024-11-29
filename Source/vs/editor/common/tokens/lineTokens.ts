@@ -19,6 +19,7 @@ import { TokenArray, TokenArrayBuilder } from "./tokenArray.js";
 
 export interface IViewLineTokens {
 	languageIdCodec: ILanguageIdCodec;
+
 	equals(other: IViewLineTokens): boolean;
 
 	getCount(): number;
@@ -34,6 +35,7 @@ export interface IViewLineTokens {
 	getInlineStyle(tokenIndex: number, colorMap: string[]): string;
 
 	getPresentation(tokenIndex: number): ITokenPresentation;
+
 	findTokenIndexAtOffset(offset: number): number;
 
 	getLineContent(): string;
@@ -55,7 +57,9 @@ export class LineTokens implements IViewLineTokens {
 		const defaultMetadata = LineTokens.defaultTokenMetadata;
 
 		const tokens = new Uint32Array(2);
+
 		tokens[0] = lineContent.length;
+
 		tokens[1] = defaultMetadata;
 
 		return new LineTokens(tokens, lineContent, decoder);
@@ -73,9 +77,12 @@ export class LineTokens implements IViewLineTokens {
 
 		for (const { text, metadata } of data) {
 			tokens.push(offset + text.length, metadata);
+
 			offset += text.length;
+
 			fullText += text;
 		}
+
 		return new LineTokens(new Uint32Array(tokens), fullText, decoder);
 	}
 
@@ -90,6 +97,7 @@ export class LineTokens implements IViewLineTokens {
 		for (let tokenIndex = 0; tokenIndex < lastTokenIndex; tokenIndex++) {
 			tokens[tokenIndex << 1] = tokens[(tokenIndex + 1) << 1];
 		}
+
 		tokens[lastTokenIndex << 1] = lineTextLength;
 	}
 
@@ -125,7 +133,9 @@ export class LineTokens implements IViewLineTokens {
 	_lineTokensBrand: void = undefined;
 
 	private readonly _tokens: Uint32Array;
+
 	private readonly _tokensCount: number;
+
 	private readonly _text: string;
 
 	public readonly languageIdCodec: ILanguageIdCodec;
@@ -138,8 +148,11 @@ export class LineTokens implements IViewLineTokens {
 
 	constructor(tokens: Uint32Array, text: string, decoder: ILanguageIdCodec) {
 		this._tokens = tokens;
+
 		this._tokensCount = this._tokens.length >>> 1;
+
 		this._text = text;
+
 		this.languageIdCodec = decoder;
 	}
 
@@ -147,6 +160,7 @@ export class LineTokens implements IViewLineTokens {
 		if (other instanceof LineTokens) {
 			return this.slicedEquals(other, 0, this._tokensCount);
 		}
+
 		return false;
 	}
 
@@ -158,9 +172,11 @@ export class LineTokens implements IViewLineTokens {
 		if (this._text !== other._text) {
 			return false;
 		}
+
 		if (this._tokensCount !== other._tokensCount) {
 			return false;
 		}
+
 		const from = sliceFromTokenIndex << 1;
 
 		const to = from + (sliceTokenCount << 1);
@@ -170,6 +186,7 @@ export class LineTokens implements IViewLineTokens {
 				return false;
 			}
 		}
+
 		return true;
 	}
 
@@ -185,6 +202,7 @@ export class LineTokens implements IViewLineTokens {
 		if (tokenIndex > 0) {
 			return this._tokens[(tokenIndex - 1) << 1];
 		}
+
 		return 0;
 	}
 
@@ -301,8 +319,11 @@ export class LineTokens implements IViewLineTokens {
 				);
 
 				const metadata = this._tokens[(nextOriginalTokenIdx << 1) + 1];
+
 				newTokens.push(text.length, metadata);
+
 				nextOriginalTokenIdx++;
+
 				originalEndOffset = nextOriginalTokenEndOffset;
 			} else if (nextInsertToken) {
 				if (nextInsertToken.offset > originalEndOffset) {
@@ -314,12 +335,16 @@ export class LineTokens implements IViewLineTokens {
 
 					const metadata =
 						this._tokens[(nextOriginalTokenIdx << 1) + 1];
+
 					newTokens.push(text.length, metadata);
+
 					originalEndOffset = nextInsertToken.offset;
 				}
 
 				text += nextInsertToken.text;
+
 				newTokens.push(text.length, nextInsertToken.tokenMetadata);
+
 				nextInsertTokenIdx++;
 			} else {
 				break;
@@ -342,7 +367,9 @@ export class LineTokens implements IViewLineTokens {
 
 		for (
 			let tokenIndex = startTokenIndex;
+
 			tokenIndex <= endTokenIndex;
+
 			tokenIndex++
 		) {
 			const tokenRange = new OffsetRange(
@@ -380,6 +407,7 @@ export class LineTokens implements IViewLineTokens {
 
 	toString(): string {
 		let result = "";
+
 		this.forEach((i) => {
 			result += `[${this.getTokenText(i)}]{${this.getClassName(i)}}`;
 		});
@@ -390,11 +418,15 @@ export class LineTokens implements IViewLineTokens {
 
 class SliceLineTokens implements IViewLineTokens {
 	private readonly _source: LineTokens;
+
 	private readonly _startOffset: number;
+
 	private readonly _endOffset: number;
+
 	private readonly _deltaOffset: number;
 
 	private readonly _firstTokenIndex: number;
+
 	private readonly _tokensCount: number;
 
 	public readonly languageIdCodec: ILanguageIdCodec;
@@ -406,17 +438,24 @@ class SliceLineTokens implements IViewLineTokens {
 		deltaOffset: number,
 	) {
 		this._source = source;
+
 		this._startOffset = startOffset;
+
 		this._endOffset = endOffset;
+
 		this._deltaOffset = deltaOffset;
+
 		this._firstTokenIndex = source.findTokenIndexAtOffset(startOffset);
+
 		this.languageIdCodec = source.languageIdCodec;
 
 		this._tokensCount = 0;
 
 		for (
 			let i = this._firstTokenIndex, len = source.getCount();
+
 			i < len;
+
 			i++
 		) {
 			const tokenStartOffset = source.getStartOffset(i);
@@ -424,6 +463,7 @@ class SliceLineTokens implements IViewLineTokens {
 			if (tokenStartOffset >= endOffset) {
 				break;
 			}
+
 			this._tokensCount++;
 		}
 	}
@@ -455,6 +495,7 @@ class SliceLineTokens implements IViewLineTokens {
 				)
 			);
 		}
+
 		return false;
 	}
 
@@ -520,12 +561,14 @@ class SliceLineTokens implements IViewLineTokens {
 		if (tokenStartOffset < this._startOffset) {
 			text = text.substring(this._startOffset - tokenStartOffset);
 		}
+
 		if (tokenEndOffset > this._endOffset) {
 			text = text.substring(
 				0,
 				text.length - (tokenEndOffset - this._endOffset),
 			);
 		}
+
 		return text;
 	}
 
@@ -545,6 +588,7 @@ export function getStandardTokenTypeAtPosition(
 	if (!model.tokenization.isCheapToTokenize(lineNumber)) {
 		return undefined;
 	}
+
 	model.tokenization.forceTokenization(lineNumber);
 
 	const lineTokens = model.tokenization.getLineTokens(lineNumber);

@@ -17,11 +17,13 @@ export interface IExtensionHostStatusService {
 }
 export class ExtensionHostStatusService implements IExtensionHostStatusService {
 	_serviceBrand: undefined;
+
 	private readonly _exitInfo = new Map<string, IExtensionHostExitInfo>();
 
 	setExitInfo(reconnectionToken: string, info: IExtensionHostExitInfo): void {
 		this._exitInfo.set(reconnectionToken, info);
 	}
+
 	getExitInfo(reconnectionToken: string): IExtensionHostExitInfo | null {
 		return this._exitInfo.get(reconnectionToken) || null;
 	}

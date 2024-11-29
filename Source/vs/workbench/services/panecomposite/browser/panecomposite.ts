@@ -14,12 +14,16 @@ export const IPaneCompositePartService =
 
 export interface IPaneCompositePartService {
 	readonly _serviceBrand: undefined;
+
 	readonly onDidPaneCompositeOpen: Event<{
 		composite: IPaneComposite;
+
 		viewContainerLocation: ViewContainerLocation;
 	}>;
+
 	readonly onDidPaneCompositeClose: Event<{
 		composite: IPaneComposite;
+
 		viewContainerLocation: ViewContainerLocation;
 	}>;
 	/**

@@ -19,17 +19,21 @@ import { executingStateIcon } from "../notebookIcons.js";
 
 export interface IOutlineMarkerInfo {
 	readonly count: number;
+
 	readonly topSev: MarkerSeverity;
 }
 export class OutlineEntry {
 	private _children: OutlineEntry[] = [];
+
 	private _parent: OutlineEntry | undefined;
+
 	private _markerInfo: IOutlineMarkerInfo | undefined;
 
 	get icon(): ThemeIcon {
 		if (this.symbolKind) {
 			return SymbolKinds.toIcon(this.symbolKind);
 		}
+
 		return this.isExecuting && this.isPaused
 			? executingStateIcon
 			: this.isExecuting
@@ -38,6 +42,7 @@ export class OutlineEntry {
 					? Codicon.markdown
 					: Codicon.code;
 	}
+
 	constructor(
 		readonly index: number,
 		readonly level: number,
@@ -48,19 +53,25 @@ export class OutlineEntry {
 		readonly range?: IRange,
 		readonly symbolKind?: SymbolKind,
 	) {}
+
 	addChild(entry: OutlineEntry) {
 		this._children.push(entry);
+
 		entry._parent = this;
 	}
+
 	get parent(): OutlineEntry | undefined {
 		return this._parent;
 	}
+
 	get children(): Iterable<OutlineEntry> {
 		return this._children;
 	}
+
 	get markerInfo(): IOutlineMarkerInfo | undefined {
 		return this._markerInfo;
 	}
+
 	get position() {
 		if (this.range) {
 			return {
@@ -68,8 +79,10 @@ export class OutlineEntry {
 				startColumn: this.range.startColumn,
 			};
 		}
+
 		return undefined;
 	}
+
 	updateMarkers(markerService: IMarkerService): void {
 		if (this.cell.cellKind === CellKind.Code) {
 			// a code cell can have marker
@@ -84,6 +97,7 @@ export class OutlineEntry {
 				const topSev =
 					marker.find((a) => a.severity === MarkerSeverity.Error)
 						?.severity ?? MarkerSeverity.Warning;
+
 				this._markerInfo = { topSev, count: marker.length };
 			}
 		} else {
@@ -99,9 +113,11 @@ export class OutlineEntry {
 						: Math.max(child.markerInfo.topSev, topChild);
 				}
 			}
+
 			this._markerInfo = topChild && { topSev: topChild, count: 0 };
 		}
 	}
+
 	clearMarkers(): void {
 		this._markerInfo = undefined;
 
@@ -109,6 +125,7 @@ export class OutlineEntry {
 			child.clearMarkers();
 		}
 	}
+
 	find(
 		cell: ICellViewModel,
 		parents: OutlineEntry[],
@@ -116,6 +133,7 @@ export class OutlineEntry {
 		if (cell.id === this.cell.id) {
 			return this;
 		}
+
 		parents.push(this);
 
 		for (const child of this.children) {
@@ -125,10 +143,12 @@ export class OutlineEntry {
 				return result;
 			}
 		}
+
 		parents.pop();
 
 		return undefined;
 	}
+
 	asFlatList(bucket: OutlineEntry[]): void {
 		bucket.push(this);
 

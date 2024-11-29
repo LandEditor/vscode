@@ -10,9 +10,11 @@ export function getSemanticTokenLegend() {
 	if (tokenTypes.length !== TokenType._) {
 		console.warn("TokenType has added new entries.");
 	}
+
 	if (tokenModifiers.length !== TokenModifier._) {
 		console.warn("TokenModifier has added new entries.");
 	}
+
 	return { types: tokenTypes, modifiers: tokenModifiers };
 }
 export function* getSemanticTokens(
@@ -38,6 +40,7 @@ export function* getSemanticTokens(
 		if (tokenType === undefined) {
 			continue;
 		}
+
 		const tokenModifiers =
 			getTokenModifierFromClassification(tsClassification);
 
@@ -89,6 +92,7 @@ function getTokenTypeFromClassification(
 	if (tsClassification > TokenEncodingConsts.modifierMask) {
 		return (tsClassification >> TokenEncodingConsts.typeOffset) - 1;
 	}
+
 	return undefined;
 }
 function getTokenModifierFromClassification(tsClassification: number) {

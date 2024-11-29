@@ -36,6 +36,7 @@ export function registerChatCopyActions() {
 					},
 				});
 			}
+
 			run(accessor: ServicesAccessor, ...args: any[]) {
 				const clipboardService = accessor.get(IClipboardService);
 
@@ -68,6 +69,7 @@ export function registerChatCopyActions() {
 			}
 		},
 	);
+
 	registerAction2(
 		class CopyItemAction extends Action2 {
 			constructor() {
@@ -83,15 +85,18 @@ export function registerChatCopyActions() {
 					},
 				});
 			}
+
 			run(accessor: ServicesAccessor, ...args: any[]) {
 				const item = args[0];
 
 				if (!isRequestVM(item) && !isResponseVM(item)) {
 					return;
 				}
+
 				const clipboardService = accessor.get(IClipboardService);
 
 				const text = stringifyItem(item, false);
+
 				clipboardService.writeText(text);
 			}
 		},

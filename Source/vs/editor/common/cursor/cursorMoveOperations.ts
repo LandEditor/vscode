@@ -21,8 +21,11 @@ import {
 
 export class CursorPosition {
 	_cursorPositionBrand: void = undefined;
+
 	public readonly lineNumber: number;
+
 	public readonly column: number;
+
 	public readonly leftoverVisibleColumns: number;
 
 	constructor(
@@ -31,7 +34,9 @@ export class CursorPosition {
 		leftoverVisibleColumns: number,
 	) {
 		this.lineNumber = lineNumber;
+
 		this.column = column;
+
 		this.leftoverVisibleColumns = leftoverVisibleColumns;
 	}
 }
@@ -59,6 +64,7 @@ export class MoveOperations {
 			return position;
 		}
 	}
+
 	private static leftPositionAtomicSoftTabs(
 		model: ICursorSimpleModel,
 		position: Position,
@@ -80,8 +86,10 @@ export class MoveOperations {
 				return new Position(position.lineNumber, newPosition + 1);
 			}
 		}
+
 		return this.leftPosition(model, position);
 	}
+
 	private static left(
 		config: CursorConfiguration,
 		model: ICursorSimpleModel,
@@ -114,6 +122,7 @@ export class MoveOperations {
 			// If the user has a selection and does not want to extend it,
 			// put the cursor at the beginning of the selection.
 			lineNumber = cursor.selection.startLineNumber;
+
 			column = cursor.selection.startColumn;
 		} else {
 			// This has no effect if noOfColumns === 1.
@@ -127,9 +136,12 @@ export class MoveOperations {
 			);
 
 			const p = MoveOperations.left(config, model, normalizedPos);
+
 			lineNumber = p.lineNumber;
+
 			column = p.column;
 		}
+
 		return cursor.move(inSelectionMode, lineNumber, column, 0);
 	}
 	/**
@@ -148,15 +160,19 @@ export class MoveOperations {
 			),
 		);
 	}
+
 	private static clipRange(value: number, min: number, max: number): number {
 		if (value < min) {
 			return min;
 		}
+
 		if (value > max) {
 			return max;
 		}
+
 		return value;
 	}
+
 	public static rightPosition(
 		model: ICursorSimpleModel,
 		lineNumber: number,
@@ -171,10 +187,13 @@ export class MoveOperations {
 				);
 		} else if (lineNumber < model.getLineCount()) {
 			lineNumber = lineNumber + 1;
+
 			column = model.getLineMinColumn(lineNumber);
 		}
+
 		return new Position(lineNumber, column);
 	}
+
 	public static rightPositionAtomicSoftTabs(
 		model: ICursorSimpleModel,
 		lineNumber: number,
@@ -196,8 +215,10 @@ export class MoveOperations {
 				return new Position(lineNumber, newPosition + 1);
 			}
 		}
+
 		return this.rightPosition(model, lineNumber, column);
 	}
+
 	public static right(
 		config: CursorConfiguration,
 		model: ICursorSimpleModel,
@@ -219,6 +240,7 @@ export class MoveOperations {
 
 		return new CursorPosition(pos.lineNumber, pos.column, 0);
 	}
+
 	public static moveRight(
 		config: CursorConfiguration,
 		model: ICursorSimpleModel,
@@ -231,6 +253,7 @@ export class MoveOperations {
 		if (cursor.hasSelection() && !inSelectionMode) {
 			// If we are in selection mode, move right without selection cancels selection and puts cursor at the end of the selection
 			lineNumber = cursor.selection.endLineNumber;
+
 			column = cursor.selection.endColumn;
 		} else {
 			const pos = cursor.position.delta(undefined, noOfColumns - 1);
@@ -241,11 +264,15 @@ export class MoveOperations {
 			);
 
 			const r = MoveOperations.right(config, model, normalizedPos);
+
 			lineNumber = r.lineNumber;
+
 			column = r.column;
 		}
+
 		return cursor.move(inSelectionMode, lineNumber, column, 0);
 	}
+
 	public static vertical(
 		config: CursorConfiguration,
 		model: ICursorSimpleModel,
@@ -273,6 +300,7 @@ export class MoveOperations {
 
 		const wasAtEdgePosition =
 			newLineNumber < lineNumber ? wasOnFirstPosition : wasOnLastPosition;
+
 		lineNumber = newLineNumber;
 
 		if (lineNumber < 1) {
@@ -298,6 +326,7 @@ export class MoveOperations {
 				currentVisibleColumn,
 			);
 		}
+
 		if (wasAtEdgePosition) {
 			leftoverVisibleColumns = 0;
 		} else {
@@ -309,6 +338,7 @@ export class MoveOperations {
 					config.tabSize,
 				);
 		}
+
 		if (normalizationAffinity !== undefined) {
 			const position = new Position(lineNumber, column);
 
@@ -316,13 +346,18 @@ export class MoveOperations {
 				position,
 				normalizationAffinity,
 			);
+
 			leftoverVisibleColumns =
 				leftoverVisibleColumns + (column - newPosition.column);
+
 			lineNumber = newPosition.lineNumber;
+
 			column = newPosition.column;
 		}
+
 		return new CursorPosition(lineNumber, column, leftoverVisibleColumns);
 	}
+
 	public static down(
 		config: CursorConfiguration,
 		model: ICursorSimpleModel,
@@ -343,6 +378,7 @@ export class MoveOperations {
 			PositionAffinity.RightOfInjectedText,
 		);
 	}
+
 	public static moveDown(
 		config: CursorConfiguration,
 		model: ICursorSimpleModel,
@@ -355,11 +391,14 @@ export class MoveOperations {
 		if (cursor.hasSelection() && !inSelectionMode) {
 			// If we are in selection mode, move down acts relative to the end of selection
 			lineNumber = cursor.selection.endLineNumber;
+
 			column = cursor.selection.endColumn;
 		} else {
 			lineNumber = cursor.position.lineNumber;
+
 			column = cursor.position.column;
 		}
+
 		let i = 0;
 
 		let r: CursorPosition;
@@ -392,6 +431,7 @@ export class MoveOperations {
 			r.leftoverVisibleColumns,
 		);
 	}
+
 	public static translateDown(
 		config: CursorConfiguration,
 		model: ICursorSimpleModel,
@@ -432,6 +472,7 @@ export class MoveOperations {
 			position.leftoverVisibleColumns,
 		);
 	}
+
 	public static up(
 		config: CursorConfiguration,
 		model: ICursorSimpleModel,
@@ -452,6 +493,7 @@ export class MoveOperations {
 			PositionAffinity.LeftOfInjectedText,
 		);
 	}
+
 	public static moveUp(
 		config: CursorConfiguration,
 		model: ICursorSimpleModel,
@@ -464,11 +506,14 @@ export class MoveOperations {
 		if (cursor.hasSelection() && !inSelectionMode) {
 			// If we are in selection mode, move up acts relative to the beginning of selection
 			lineNumber = cursor.selection.startLineNumber;
+
 			column = cursor.selection.startColumn;
 		} else {
 			lineNumber = cursor.position.lineNumber;
+
 			column = cursor.position.column;
 		}
+
 		const r = MoveOperations.up(
 			config,
 			model,
@@ -486,6 +531,7 @@ export class MoveOperations {
 			r.leftoverVisibleColumns,
 		);
 	}
+
 	public static translateUp(
 		config: CursorConfiguration,
 		model: ICursorSimpleModel,
@@ -526,6 +572,7 @@ export class MoveOperations {
 			position.leftoverVisibleColumns,
 		);
 	}
+
 	private static _isBlankLine(
 		model: ICursorSimpleModel,
 		lineNumber: number,
@@ -534,8 +581,10 @@ export class MoveOperations {
 			// empty or contains only whitespace
 			return true;
 		}
+
 		return false;
 	}
+
 	public static moveToPrevBlankLine(
 		config: CursorConfiguration,
 		model: ICursorSimpleModel,
@@ -551,6 +600,7 @@ export class MoveOperations {
 		while (lineNumber > 1 && !this._isBlankLine(model, lineNumber)) {
 			lineNumber--;
 		}
+
 		return cursor.move(
 			inSelectionMode,
 			lineNumber,
@@ -558,6 +608,7 @@ export class MoveOperations {
 			0,
 		);
 	}
+
 	public static moveToNextBlankLine(
 		config: CursorConfiguration,
 		model: ICursorSimpleModel,
@@ -578,6 +629,7 @@ export class MoveOperations {
 		) {
 			lineNumber++;
 		}
+
 		return cursor.move(
 			inSelectionMode,
 			lineNumber,
@@ -585,6 +637,7 @@ export class MoveOperations {
 			0,
 		);
 	}
+
 	public static moveToBeginningOfLine(
 		config: CursorConfiguration,
 		model: ICursorSimpleModel,
@@ -607,8 +660,10 @@ export class MoveOperations {
 		} else {
 			column = firstNonBlankColumn;
 		}
+
 		return cursor.move(inSelectionMode, lineNumber, column, 0);
 	}
+
 	public static moveToEndOfLine(
 		config: CursorConfiguration,
 		model: ICursorSimpleModel,
@@ -627,6 +682,7 @@ export class MoveOperations {
 			sticky ? Constants.MAX_SAFE_SMALL_INTEGER - maxColumn : 0,
 		);
 	}
+
 	public static moveToBeginningOfBuffer(
 		config: CursorConfiguration,
 		model: ICursorSimpleModel,
@@ -635,6 +691,7 @@ export class MoveOperations {
 	): SingleCursorState {
 		return cursor.move(inSelectionMode, 1, 1, 0);
 	}
+
 	public static moveToEndOfBuffer(
 		config: CursorConfiguration,
 		model: ICursorSimpleModel,

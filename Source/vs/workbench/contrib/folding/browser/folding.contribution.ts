@@ -28,8 +28,11 @@ class DefaultFoldingRangeProvider
 	implements IWorkbenchContribution
 {
 	static readonly configName = "editor.defaultFoldingRangeProvider";
+
 	static extensionIds: (string | null)[] = [];
+
 	static extensionItemLabels: string[] = [];
+
 	static extensionDescriptions: string[] = [];
 
 	constructor(
@@ -39,28 +42,38 @@ class DefaultFoldingRangeProvider
 		private readonly _configurationService: IConfigurationService,
 	) {
 		super();
+
 		this._store.add(
 			this._extensionService.onDidChangeExtensions(
 				this._updateConfigValues,
 				this,
 			),
 		);
+
 		this._store.add(
 			FoldingController.setFoldingRangeProviderSelector(
 				this._selectFoldingRangeProvider.bind(this),
 			),
 		);
+
 		this._updateConfigValues();
 	}
+
 	private async _updateConfigValues(): Promise<void> {
 		await this._extensionService.whenInstalledExtensionsRegistered();
+
 		DefaultFoldingRangeProvider.extensionIds.length = 0;
+
 		DefaultFoldingRangeProvider.extensionItemLabels.length = 0;
+
 		DefaultFoldingRangeProvider.extensionDescriptions.length = 0;
+
 		DefaultFoldingRangeProvider.extensionIds.push(null);
+
 		DefaultFoldingRangeProvider.extensionItemLabels.push(
 			nls.localize("null", "All"),
 		);
+
 		DefaultFoldingRangeProvider.extensionDescriptions.push(
 			nls.localize(
 				"nullFormatterDescription",
@@ -85,6 +98,7 @@ class DefaultFoldingRangeProvider
 				}
 			}
 		}
+
 		const sorter = (a: IExtensionDescription, b: IExtensionDescription) =>
 			a.name.localeCompare(b.name);
 
@@ -92,25 +106,31 @@ class DefaultFoldingRangeProvider
 			DefaultFoldingRangeProvider.extensionIds.push(
 				extension.identifier.value,
 			);
+
 			DefaultFoldingRangeProvider.extensionItemLabels.push(
 				extension.displayName ?? "",
 			);
+
 			DefaultFoldingRangeProvider.extensionDescriptions.push(
 				extension.description ?? "",
 			);
 		}
+
 		for (const extension of otherExtensions.sort(sorter)) {
 			DefaultFoldingRangeProvider.extensionIds.push(
 				extension.identifier.value,
 			);
+
 			DefaultFoldingRangeProvider.extensionItemLabels.push(
 				extension.displayName ?? "",
 			);
+
 			DefaultFoldingRangeProvider.extensionDescriptions.push(
 				extension.description ?? "",
 			);
 		}
 	}
+
 	private _selectFoldingRangeProvider(
 		providers: FoldingRangeProvider[],
 		document: ITextModel,
@@ -123,6 +143,7 @@ class DefaultFoldingRangeProvider
 		if (value) {
 			return providers.filter((p) => p.id === value);
 		}
+
 		return undefined;
 	}
 }

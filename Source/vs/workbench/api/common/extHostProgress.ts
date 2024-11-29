@@ -23,7 +23,9 @@ import { ProgressLocation } from "./extHostTypeConverters.js";
 
 export class ExtHostProgress implements ExtHostProgressShape {
 	private _proxy: MainThreadProgressShape;
+
 	private _handles: number = 0;
+
 	private _mapHandleToCancellationSource: Map<
 		number,
 		CancellationTokenSource
@@ -32,6 +34,7 @@ export class ExtHostProgress implements ExtHostProgressShape {
 	constructor(proxy: MainThreadProgressShape) {
 		this._proxy = proxy;
 	}
+
 	async withProgress<R>(
 		extension: IExtensionDescription,
 		options: ProgressOptions,
@@ -48,6 +51,7 @@ export class ExtHostProgress implements ExtHostProgressShape {
 			label: extension.displayName || extension.name,
 			id: extension.identifier.value,
 		};
+
 		this._proxy
 			.$startProgress(
 				handle,
@@ -65,6 +69,7 @@ export class ExtHostProgress implements ExtHostProgressShape {
 
 		return this._withProgress(handle, task, !!cancellable);
 	}
+
 	private _withProgress<R>(
 		handle: number,
 		task: (
@@ -77,11 +82,15 @@ export class ExtHostProgress implements ExtHostProgressShape {
 
 		if (cancellable) {
 			source = new CancellationTokenSource();
+
 			this._mapHandleToCancellationSource.set(handle, source);
 		}
+
 		const progressEnd = (handle: number): void => {
 			this._proxy.$progressEnd(handle);
+
 			this._mapHandleToCancellationSource.delete(handle);
+
 			source?.dispose();
 		};
 
@@ -97,6 +106,7 @@ export class ExtHostProgress implements ExtHostProgressShape {
 
 			throw err;
 		}
+
 		p.then(
 			(result) => progressEnd(handle),
 			(err) => progressEnd(handle),
@@ -104,11 +114,13 @@ export class ExtHostProgress implements ExtHostProgressShape {
 
 		return p;
 	}
+
 	public $acceptProgressCanceled(handle: number): void {
 		const source = this._mapHandleToCancellationSource.get(handle);
 
 		if (source) {
 			source.cancel();
+
 			this._mapHandleToCancellationSource.delete(handle);
 		}
 	}
@@ -126,6 +138,7 @@ function mergeProgress(
 			result.increment = currentValue.increment;
 		}
 	}
+
 	return result;
 }
 class ProgressCallback extends Progress<IProgressStep> {

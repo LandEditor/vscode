@@ -18,10 +18,12 @@ import * as Constants from "../common/constants.js";
 registerAction2(
 	class ShowAllSymbolsAction extends Action2 {
 		static readonly ID = "workbench.action.showAllSymbols";
+
 		static readonly LABEL = nls.localize(
 			"showTriggerActions",
 			"Go to Symbol in Workspace...",
 		);
+
 		static readonly ALL_SYMBOLS_PREFIX = "#";
 
 		constructor() {
@@ -52,6 +54,7 @@ registerAction2(
 				},
 			});
 		}
+
 		override async run(accessor: ServicesAccessor): Promise<void> {
 			accessor
 				.get(IQuickInputService)

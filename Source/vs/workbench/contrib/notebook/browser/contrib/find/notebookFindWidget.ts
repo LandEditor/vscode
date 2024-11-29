@@ -52,11 +52,17 @@ const PROGRESS_BAR_DELAY = 200; // show progress for at least 200ms
 
 export interface IShowNotebookFindWidgetOptions {
 	isRegex?: boolean;
+
 	wholeWord?: boolean;
+
 	matchCase?: boolean;
+
 	matchIndex?: number;
+
 	focus?: boolean;
+
 	searchStringSeededFrom?: { cell: ICellViewModel; range: Range };
+
 	findScope?: INotebookFindScope;
 }
 
@@ -110,10 +116,15 @@ class NotebookFindWidget
 	implements INotebookEditorContribution
 {
 	protected _findWidgetFocused: IContextKey<boolean>;
+
 	private _isFocused: boolean = false;
+
 	private _showTimeout: number | null = null;
+
 	private _hideTimeout: number | null = null;
+
 	private _previousFocusElement?: HTMLElement;
+
 	private _findModel: FindModel;
 
 	constructor(
@@ -135,6 +146,7 @@ class NotebookFindWidget
 			new FindReplaceState<NotebookFindFilters>(),
 			_notebookEditor,
 		);
+
 		this._findModel = new FindModel(
 			this._notebookEditor,
 			this._state,
@@ -142,13 +154,16 @@ class NotebookFindWidget
 		);
 
 		DOM.append(this._notebookEditor.getDomNode(), this.getDomNode());
+
 		this._findWidgetFocused =
 			KEYBINDING_CONTEXT_NOTEBOOK_FIND_WIDGET_FOCUSED.bindTo(
 				contextKeyService,
 			);
+
 		this._register(
 			this._findInput.onKeyDown((e) => this._onFindInputKeyDown(e)),
 		);
+
 		this._register(
 			this._replaceInput.onKeyDown((e) => this._onReplaceInputKeyDown(e)),
 		);
@@ -167,10 +182,12 @@ class NotebookFindWidget
 
 				if (this._findModel.currentMatch >= 0) {
 					const currentMatch = this._findModel.getCurrentMatch();
+
 					this._replaceBtn.setEnabled(currentMatch.isModelMatch);
 				}
 
 				const matches = this._findModel.findMatches;
+
 				this._replaceAllBtn.setEnabled(
 					matches.length > 0 &&
 						matches.find(
@@ -213,11 +230,13 @@ class NotebookFindWidget
 	private _onFindInputKeyDown(e: IKeyboardEvent): void {
 		if (e.equals(KeyCode.Enter)) {
 			this.find(false);
+
 			e.preventDefault();
 
 			return;
 		} else if (e.equals(KeyMod.Shift | KeyCode.Enter)) {
 			this.find(true);
+
 			e.preventDefault();
 
 			return;
@@ -227,6 +246,7 @@ class NotebookFindWidget
 	private _onReplaceInputKeyDown(e: IKeyboardEvent): void {
 		if (e.equals(KeyCode.Enter)) {
 			this.replaceOne();
+
 			e.preventDefault();
 
 			return;
@@ -286,6 +306,7 @@ class NotebookFindWidget
 			);
 
 			const viewModel = this._notebookEditor.getViewModel();
+
 			viewModel.replaceOne(cell, match.range, replaceString).then(() => {
 				this._progressBar.stop();
 			});
@@ -307,9 +328,11 @@ class NotebookFindWidget
 		const cellFindMatches = this._findModel.findMatches;
 
 		const replaceStrings: string[] = [];
+
 		cellFindMatches.forEach((cellFindMatch) => {
 			cellFindMatch.contentMatches.forEach((match) => {
 				const matches = match.matches;
+
 				replaceStrings.push(
 					replacePattern.buildReplaceString(
 						matches,
@@ -320,6 +343,7 @@ class NotebookFindWidget
 		});
 
 		const viewModel = this._notebookEditor.getViewModel();
+
 		viewModel
 			.replaceAll(this._findModel.findMatches, replaceStrings)
 			.then(() => {
@@ -331,23 +355,28 @@ class NotebookFindWidget
 
 	protected onFocusTrackerFocus() {
 		this._findWidgetFocused.set(true);
+
 		this._isFocused = true;
 	}
 
 	protected onFocusTrackerBlur() {
 		this._previousFocusElement = undefined;
+
 		this._findWidgetFocused.reset();
+
 		this._isFocused = false;
 	}
 
 	protected onReplaceInputFocusTrackerFocus(): void {
 		// throw new Error('Method not implemented.');
 	}
+
 	protected onReplaceInputFocusTrackerBlur(): void {
 		// throw new Error('Method not implemented.');
 	}
 
 	protected onFindInputFocusTrackerFocus(): void {}
+
 	protected onFindInputFocusTrackerBlur(): void {}
 
 	override async show(
@@ -357,6 +386,7 @@ class NotebookFindWidget
 		const searchStringUpdate = this._state.searchString !== initialInput;
 
 		super.show(initialInput, options);
+
 		this._state.change(
 			{
 				searchString: initialInput ?? this._state.searchString,
@@ -369,6 +399,7 @@ class NotebookFindWidget
 			if (!this._findModel.findMatches.length) {
 				await this._findModel.research();
 			}
+
 			this.findIndex(options.matchIndex);
 		} else {
 			this._findInput.select();
@@ -383,14 +414,18 @@ class NotebookFindWidget
 				DOM.getWindow(this.getDomNode()).clearTimeout(
 					this._hideTimeout,
 				);
+
 				this._hideTimeout = null;
+
 				this._notebookEditor.removeClassName(FIND_HIDE_TRANSITION);
 			}
 
 			this._notebookEditor.addClassName(FIND_SHOW_TRANSITION);
+
 			this._showTimeout = DOM.getWindow(this.getDomNode()).setTimeout(
 				() => {
 					this._notebookEditor.removeClassName(FIND_SHOW_TRANSITION);
+
 					this._showTimeout = null;
 				},
 				200,
@@ -402,6 +437,7 @@ class NotebookFindWidget
 
 	replace(initialFindInput?: string, initialReplaceInput?: string) {
 		super.showWithReplace(initialFindInput, initialReplaceInput);
+
 		this._state.change(
 			{
 				searchString: initialFindInput ?? "",
@@ -410,6 +446,7 @@ class NotebookFindWidget
 			},
 			false,
 		);
+
 		this._replaceInput.select();
 
 		if (this._showTimeout === null) {
@@ -417,14 +454,18 @@ class NotebookFindWidget
 				DOM.getWindow(this.getDomNode()).clearTimeout(
 					this._hideTimeout,
 				);
+
 				this._hideTimeout = null;
+
 				this._notebookEditor.removeClassName(FIND_HIDE_TRANSITION);
 			}
 
 			this._notebookEditor.addClassName(FIND_SHOW_TRANSITION);
+
 			this._showTimeout = DOM.getWindow(this.getDomNode()).setTimeout(
 				() => {
 					this._notebookEditor.removeClassName(FIND_SHOW_TRANSITION);
+
 					this._showTimeout = null;
 				},
 				200,
@@ -436,9 +477,13 @@ class NotebookFindWidget
 
 	override hide() {
 		super.hide();
+
 		this._state.change({ isRevealed: false }, false);
+
 		this._findModel.clear();
+
 		this._notebookEditor.findStop();
+
 		this._progressBar.stop();
 
 		if (this._hideTimeout === null) {
@@ -446,10 +491,14 @@ class NotebookFindWidget
 				DOM.getWindow(this.getDomNode()).clearTimeout(
 					this._showTimeout,
 				);
+
 				this._showTimeout = null;
+
 				this._notebookEditor.removeClassName(FIND_SHOW_TRANSITION);
 			}
+
 			this._notebookEditor.addClassName(FIND_HIDE_TRANSITION);
+
 			this._hideTimeout = DOM.getWindow(this.getDomNode()).setTimeout(
 				() => {
 					this._notebookEditor.removeClassName(FIND_HIDE_TRANSITION);
@@ -465,6 +514,7 @@ class NotebookFindWidget
 			this._previousFocusElement.offsetParent
 		) {
 			this._previousFocusElement.focus();
+
 			this._previousFocusElement = undefined;
 		}
 
@@ -488,6 +538,7 @@ class NotebookFindWidget
 		}
 
 		this._matchesCount.style.width = MAX_MATCHES_COUNT_WIDTH + "px";
+
 		this._matchesCount.title = "";
 
 		// remove previous content
@@ -501,10 +552,12 @@ class NotebookFindWidget
 			if (this._state.matchesCount >= MATCHES_LIMIT) {
 				matchesCount += "+";
 			}
+
 			const matchesPosition: string =
 				this._findModel.currentMatch < 0
 					? "?"
 					: String(this._findModel.currentMatch + 1);
+
 			label = strings.format(
 				NLS_MATCHES_LOCATION,
 				matchesPosition,
@@ -523,6 +576,7 @@ class NotebookFindWidget
 				this._state.searchString,
 			),
 		);
+
 		MAX_MATCHES_COUNT_WIDTH = Math.max(
 			MAX_MATCHES_COUNT_WIDTH,
 			this._matchesCount.clientWidth,
@@ -553,9 +607,12 @@ class NotebookFindWidget
 			searchString,
 		);
 	}
+
 	override dispose() {
 		this._notebookEditor?.removeClassName(FIND_SHOW_TRANSITION);
+
 		this._notebookEditor?.removeClassName(FIND_HIDE_TRANSITION);
+
 		this._findModel.dispose();
 
 		super.dispose();

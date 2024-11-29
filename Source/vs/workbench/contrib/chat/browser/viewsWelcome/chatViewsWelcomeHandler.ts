@@ -16,8 +16,11 @@ import { ChatViewsWelcomeExtensions, IChatViewsWelcomeContributionRegistry, ICha
 
 interface IRawChatViewsWelcomeContribution {
 	icon: string;
+
 	title: string;
+
 	content: string;
+
 	when: string;
 }
 
@@ -65,8 +68,10 @@ export class ChatViewsWelcomeHandler implements IWorkbenchContribution {
 					checkProposedApiEnabled(extension.description, 'chatParticipantPrivate');
 
 					const when = ContextKeyExpr.deserialize(providerDescriptor.when);
+
 					if (!when) {
 						this.logService.error(`Could not deserialize 'when' clause for chatViewsWelcome contribution: ${providerDescriptor.when}`);
+
 						continue;
 					}
 
@@ -76,6 +81,7 @@ export class ChatViewsWelcomeHandler implements IWorkbenchContribution {
 						icon: ThemeIcon.fromString(providerDescriptor.icon),
 						content: new MarkdownString(providerDescriptor.content, { isTrusted: true }), // private API with command links
 					};
+
 					Registry.as<IChatViewsWelcomeContributionRegistry>(ChatViewsWelcomeExtensions.ChatViewsWelcomeRegistry).register(descriptor);
 				}
 			}

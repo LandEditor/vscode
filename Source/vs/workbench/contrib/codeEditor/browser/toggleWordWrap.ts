@@ -150,6 +150,7 @@ class ToggleWordWrapAction extends EditorAction {
 
 			const wordWrapOverride =
 				actualWrappingInfo.wrappingColumn === -1 ? "on" : "off";
+
 			newState = { wordWrapOverride };
 		}
 
@@ -177,6 +178,7 @@ class ToggleWordWrapAction extends EditorAction {
 					newState,
 					codeEditorService,
 				);
+
 				diffEditor.updateOptions({});
 			}
 		}
@@ -194,6 +196,7 @@ function findDiffEditorContainingCodeEditor(
 	if (!editor.getOption(EditorOption.inDiffEditor)) {
 		return null;
 	}
+
 	for (const diffEditor of codeEditorService.listDiffEditors()) {
 		const originalEditor = diffEditor.getOriginalEditor();
 
@@ -203,6 +206,7 @@ function findDiffEditorContainingCodeEditor(
 			return diffEditor;
 		}
 	}
+
 	return null;
 }
 
@@ -242,10 +246,13 @@ class ToggleWordWrapController
 				if (!e.hasChanged(EditorOption.wrappingInfo)) {
 					return;
 				}
+
 				const options = this._editor.getOptions();
 
 				const wrappingInfo = options.get(EditorOption.wrappingInfo);
+
 				isWordWrapMinified.set(wrappingInfo.isWordWrapMinified);
+
 				isDominatedByLongLines.set(wrappingInfo.isDominatedByLongLines);
 
 				if (!currentlyApplyingEditorConfig) {
@@ -280,6 +287,7 @@ class ToggleWordWrapController
 			// Apply the state
 			try {
 				currentlyApplyingEditorConfig = true;
+
 				this._applyWordWrapState(transientState);
 			} finally {
 				currentlyApplyingEditorConfig = false;
@@ -289,6 +297,7 @@ class ToggleWordWrapController
 
 	private _applyWordWrapState(state: IWordWrapTransientState | null): void {
 		const wordWrapOverride2 = state ? state.wordWrapOverride : "inherit";
+
 		this._editor.updateOptions({
 			wordWrapOverride2: wordWrapOverride2,
 		});
@@ -344,8 +353,10 @@ class DiffToggleWordWrapController
 				originalTransientState,
 				this._codeEditorService,
 			);
+
 			this._diffEditor.updateOptions({});
 		}
+
 		if (
 			!originalTransientState &&
 			modifiedTransientState &&
@@ -356,6 +367,7 @@ class DiffToggleWordWrapController
 				modifiedTransientState,
 				this._codeEditorService,
 			);
+
 			this._diffEditor.updateOptions({});
 		}
 	}
@@ -368,6 +380,7 @@ function canToggleWordWrap(
 	if (!editor) {
 		return false;
 	}
+
 	if (editor.isSimpleWidget) {
 		// in a simple widget...
 		return false;
@@ -378,6 +391,7 @@ function canToggleWordWrap(
 	if (!model) {
 		return false;
 	}
+
 	if (editor.getOption(EditorOption.inDiffEditor)) {
 		// this editor belongs to a diff editor
 		for (const diffEditor of codeEditorService.listDiffEditors()) {
@@ -401,8 +415,11 @@ class EditorWordWrapContextKeyTracker
 	static readonly ID = "workbench.contrib.editorWordWrapContextKeyTracker";
 
 	private readonly _canToggleWordWrap: IContextKey<boolean>;
+
 	private readonly _editorWordWrap: IContextKey<boolean>;
+
 	private _activeEditor: ICodeEditor | null;
+
 	private readonly _activeEditorListener: DisposableStore;
 
 	constructor(
@@ -413,6 +430,7 @@ class EditorWordWrapContextKeyTracker
 		private readonly _contextService: IContextKeyService,
 	) {
 		super();
+
 		this._register(
 			Event.runAndSubscribe(
 				onDidRegisterWindow,
@@ -425,6 +443,7 @@ class EditorWordWrapContextKeyTracker
 							true,
 						),
 					);
+
 					disposables.add(
 						addDisposableListener(
 							window,
@@ -437,15 +456,21 @@ class EditorWordWrapContextKeyTracker
 				{ window: mainWindow, disposables: this._store },
 			),
 		);
+
 		this._register(
 			this._editorService.onDidActiveEditorChange(() => this._update()),
 		);
+
 		this._canToggleWordWrap = CAN_TOGGLE_WORD_WRAP.bindTo(
 			this._contextService,
 		);
+
 		this._editorWordWrap = EDITOR_WORD_WRAP.bindTo(this._contextService);
+
 		this._activeEditor = null;
+
 		this._activeEditorListener = new DisposableStore();
+
 		this._update();
 	}
 
@@ -458,7 +483,9 @@ class EditorWordWrapContextKeyTracker
 			// no change
 			return;
 		}
+
 		this._activeEditorListener.clear();
+
 		this._activeEditor = activeEditor;
 
 		if (activeEditor) {
@@ -467,6 +494,7 @@ class EditorWordWrapContextKeyTracker
 					this._updateFromCodeEditor(),
 				),
 			);
+
 			this._activeEditorListener.add(
 				activeEditor.onDidChangeConfiguration((e) => {
 					if (e.hasChanged(EditorOption.wrappingInfo)) {
@@ -474,6 +502,7 @@ class EditorWordWrapContextKeyTracker
 					}
 				}),
 			);
+
 			this._updateFromCodeEditor();
 		}
 	}
@@ -485,12 +514,14 @@ class EditorWordWrapContextKeyTracker
 			const wrappingInfo = this._activeEditor.getOption(
 				EditorOption.wrappingInfo,
 			);
+
 			this._setValues(true, wrappingInfo.wrappingColumn !== -1);
 		}
 	}
 
 	private _setValues(canToggleWordWrap: boolean, isWordWrap: boolean): void {
 		this._canToggleWordWrap.set(canToggleWordWrap);
+
 		this._editorWordWrap.set(isWordWrap);
 	}
 }

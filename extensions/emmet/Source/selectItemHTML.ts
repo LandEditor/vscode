@@ -33,6 +33,7 @@ export function nextItemHTML(
 	if (!currentNode) {
 		return;
 	}
+
 	if (currentNode.type !== "comment") {
 		// If cursor is in the tag name, select tag
 		if (
@@ -79,6 +80,7 @@ export function nextItemHTML(
 			currentNode = currentNode.parent;
 		}
 	}
+
 	return nextNode && getSelectionFromNode(document, nextNode);
 }
 export function prevItemHTML(
@@ -101,6 +103,7 @@ export function prevItemHTML(
 	if (!currentNode) {
 		return;
 	}
+
 	const selectionEndOffset = document.offsetAt(selectionEnd);
 
 	if (
@@ -127,8 +130,10 @@ export function prevItemHTML(
 				if (prevNode && prevNode.type !== "comment") {
 					oldOption = prevNode;
 				}
+
 				prevNode = prevNode.nextSibling;
 			}
+
 			prevNode = <HtmlNode>(
 				getDeepestFlatNode(
 					prevNode && prevNode.type !== "comment"
@@ -152,9 +157,11 @@ export function prevItemHTML(
 			prevNode = currentNode.parent;
 		}
 	}
+
 	if (!prevNode) {
 		return undefined;
 	}
+
 	const attrSelection = getPrevAttribute(
 		document,
 		selectionStartOffset,
@@ -177,6 +184,7 @@ function getSelectionFromNode(
 
 		return offsetRangeToSelection(document, selectionStart, selectionEnd);
 	}
+
 	return undefined;
 }
 function getNextAttribute(
@@ -192,15 +200,18 @@ function getNextAttribute(
 	) {
 		return;
 	}
+
 	for (const attr of node.attributes) {
 		if (selectionEnd < attr.start) {
 			// select full attr
 			return offsetRangeToSelection(document, attr.start, attr.end);
 		}
+
 		if (!attr.value || attr.value.start === attr.value.end) {
 			// No attr value to select
 			continue;
 		}
+
 		if (
 			(selectionStart === attr.start && selectionEnd === attr.end) ||
 			selectionEnd < attr.value.start
@@ -217,6 +228,7 @@ function getNextAttribute(
 			// attr value does not have space, so no next word to find
 			continue;
 		}
+
 		let pos: number | undefined = undefined;
 
 		if (
@@ -225,6 +237,7 @@ function getNextAttribute(
 		) {
 			pos = -1;
 		}
+
 		if (pos === undefined && selectionEnd < attr.end) {
 			const selectionEndCharacter =
 				document.positionAt(selectionEnd).character;
@@ -232,8 +245,10 @@ function getNextAttribute(
 			const attrValueStartCharacter = document.positionAt(
 				attr.value.start,
 			).character;
+
 			pos = selectionEndCharacter - attrValueStartCharacter - 1;
 		}
+
 		if (pos !== undefined) {
 			const [newSelectionStartOffset, newSelectionEndOffset] =
 				findNextWord(attr.value.toString(), pos);
@@ -244,6 +259,7 @@ function getNextAttribute(
 			) {
 				return;
 			}
+
 			if (newSelectionStartOffset >= 0 && newSelectionEndOffset >= 0) {
 				const newSelectionStart =
 					attr.value.start + newSelectionStartOffset;
@@ -259,6 +275,7 @@ function getNextAttribute(
 			}
 		}
 	}
+
 	return;
 }
 function getPrevAttribute(
@@ -274,12 +291,14 @@ function getPrevAttribute(
 	) {
 		return;
 	}
+
 	for (let i = node.attributes.length - 1; i >= 0; i--) {
 		const attr = node.attributes[i];
 
 		if (selectionStart <= attr.start) {
 			continue;
 		}
+
 		if (
 			!attr.value ||
 			attr.value.start === attr.value.end ||
@@ -288,6 +307,7 @@ function getPrevAttribute(
 			// select full attr
 			return offsetRangeToSelection(document, attr.start, attr.end);
 		}
+
 		if (selectionStart === attr.value.start) {
 			if (selectionEnd >= attr.value.end) {
 				// select full attr
@@ -324,6 +344,7 @@ function getPrevAttribute(
 		) {
 			return;
 		}
+
 		if (newSelectionStartOffset >= 0 && newSelectionEndOffset >= 0) {
 			const newSelectionStart =
 				attr.value.start + newSelectionStartOffset;
@@ -337,5 +358,6 @@ function getPrevAttribute(
 			);
 		}
 	}
+
 	return;
 }

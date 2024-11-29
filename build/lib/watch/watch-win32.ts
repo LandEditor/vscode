@@ -27,6 +27,7 @@ function watch(root: string): Stream {
 	const result = es.through();
 
 	let child: cp.ChildProcess | null = cp.spawn(watcherPath, [root]);
+
 	child.stdout!.on("data", function (data) {
 		const lines: string[] = data.toString("utf8").split("\n");
 
@@ -36,6 +37,7 @@ function watch(root: string): Stream {
 			if (line.length === 0) {
 				continue;
 			}
+
 			const changeType = <"0" | "1" | "2">line[0];
 
 			const changePath = line.substr(2);
@@ -46,6 +48,7 @@ function watch(root: string): Stream {
 			) {
 				continue;
 			}
+
 			const changePathFull = path.join(root, changePath);
 
 			const file = new File({
@@ -53,22 +56,29 @@ function watch(root: string): Stream {
 				base: root,
 			});
 			(<any>file).event = toChangeType(changeType);
+
 			result.emit("data", file);
 		}
 	});
+
 	child.stderr!.on("data", function (data) {
 		result.emit("error", data);
 	});
+
 	child.on("exit", function (code) {
 		result.emit("error", "Watcher died with code " + code);
+
 		child = null;
 	});
+
 	process.once("SIGTERM", function () {
 		process.exit(0);
 	});
+
 	process.once("SIGTERM", function () {
 		process.exit(0);
 	});
+
 	process.once("exit", function () {
 		if (child) {
 			child.kill();
@@ -85,6 +95,7 @@ module.exports = function (
 	pattern: string | string[] | filter.FileFunction,
 	options?: {
 		cwd?: string;
+
 		base?: string;
 
 		dot?: boolean;
@@ -99,6 +110,7 @@ module.exports = function (
 	if (!watcher) {
 		watcher = cache[cwd] = watch(cwd);
 	}
+
 	const rebase = !options.base
 		? es.through()
 		: es.mapSync(function (f: File) {
@@ -116,21 +128,28 @@ module.exports = function (
 					if (err && err.code === "ENOENT") {
 						return cb(undefined, file);
 					}
+
 					if (err) {
 						return cb();
 					}
+
 					if (!stat.isFile()) {
 						return cb();
 					}
+
 					fs.readFile(file.path, function (err, contents) {
 						if (err && err.code === "ENOENT") {
 							return cb(undefined, file);
 						}
+
 						if (err) {
 							return cb();
 						}
+
 						file.contents = contents;
+
 						file.stat = stat;
+
 						cb(undefined, file);
 					});
 				});

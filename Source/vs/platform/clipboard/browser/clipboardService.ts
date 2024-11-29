@@ -63,6 +63,7 @@ export class BrowserClipboardService
 			),
 		);
 	}
+
 	async readImage(): Promise<Uint8Array> {
 		try {
 			const clipboardItems = await navigator.clipboard.read();
@@ -96,6 +97,7 @@ export class BrowserClipboardService
 		// Return an empty Uint8Array if no image is found or an error occurs
 		return new Uint8Array(0);
 	}
+
 	private webKitPendingClipboardWritePromise:
 		| DeferredPromise<string>
 		| undefined;
@@ -121,6 +123,7 @@ export class BrowserClipboardService
 			) {
 				this.webKitPendingClipboardWritePromise.cancel();
 			}
+
 			this.webKitPendingClipboardWritePromise = currentWritePromise;
 			// The ctor of ClipboardItem allows you to pass in a promise that will resolve to a string.
 			// This allows us to pass in a Promise that will either be cancelled by another event or
@@ -142,6 +145,7 @@ export class BrowserClipboardService
 					}
 				});
 		};
+
 		this._register(
 			Event.runAndSubscribe(
 				this.layoutService.onDidAddContainer,
@@ -149,6 +153,7 @@ export class BrowserClipboardService
 					disposables.add(
 						addDisposableListener(container, "click", handler),
 					);
+
 					disposables.add(
 						addDisposableListener(container, "keydown", handler),
 					);
@@ -160,6 +165,7 @@ export class BrowserClipboardService
 			),
 		);
 	}
+
 	private readonly mapTextToType = new Map<string, string>(); // unsupported in web (only in-memory)
 	async writeText(text: string, type?: string): Promise<void> {
 		// Clear resources given we are writing text
@@ -170,6 +176,7 @@ export class BrowserClipboardService
 
 			return;
 		}
+
 		if (this.webKitPendingClipboardWritePromise) {
 			// For Safari, we complete this Promise which allows the call to `navigator.clipboard.write()`
 			// above to resolve and successfully copy to the clipboard. If we let this continue, Safari
@@ -187,6 +194,7 @@ export class BrowserClipboardService
 		// Fallback to textarea and execCommand solution
 		this.fallbackWriteText(text);
 	}
+
 	private fallbackWriteText(text: string): void {
 		const activeDocument = getActiveDocument();
 
@@ -195,19 +203,28 @@ export class BrowserClipboardService
 		const textArea: HTMLTextAreaElement = activeDocument.body.appendChild(
 			$("textarea", { "aria-hidden": true }),
 		);
+
 		textArea.style.height = "1px";
+
 		textArea.style.width = "1px";
+
 		textArea.style.position = "absolute";
+
 		textArea.value = text;
+
 		textArea.focus();
+
 		textArea.select();
+
 		activeDocument.execCommand("copy");
 
 		if (isHTMLElement(activeElement)) {
 			activeElement.focus();
 		}
+
 		textArea.remove();
 	}
+
 	async readText(type?: string): Promise<string> {
 		// With type: only in-memory is supported
 		if (type) {
@@ -221,17 +238,22 @@ export class BrowserClipboardService
 		} catch (error) {
 			console.error(error);
 		}
+
 		return "";
 	}
+
 	private findText = ""; // unsupported in web (only in-memory)
 	async readFindText(): Promise<string> {
 		return this.findText;
 	}
+
 	async writeFindText(text: string): Promise<void> {
 		this.findText = text;
 	}
+
 	private resources: URI[] = []; // unsupported in web (only in-memory)
 	private resourcesStateHash: number | undefined = undefined;
+
 	private static readonly MAX_RESOURCE_STATE_SOURCE_LENGTH = 1000;
 
 	async writeResources(resources: URI[]): Promise<void> {
@@ -254,13 +276,16 @@ export class BrowserClipboardService
 		} catch (error) {
 			// Noop
 		}
+
 		if (resources.length === 0) {
 			this.clearResourcesState();
 		} else {
 			this.resources = resources;
+
 			this.resourcesStateHash = await this.computeResourcesStateHash();
 		}
 	}
+
 	async readResources(): Promise<URI[]> {
 		// Guard access to navigator.clipboard with try/catch
 		// as we have seen DOMExceptions in certain browsers
@@ -284,13 +309,16 @@ export class BrowserClipboardService
 		} catch (error) {
 			// Noop
 		}
+
 		const resourcesStateHash = await this.computeResourcesStateHash();
 
 		if (this.resourcesStateHash !== resourcesStateHash) {
 			this.clearResourcesState(); // state mismatch, resources no longer valid
 		}
+
 		return this.resources;
 	}
+
 	private async computeResourcesStateHash(): Promise<number | undefined> {
 		if (this.resources.length === 0) {
 			return undefined; // no resources, no hash needed
@@ -308,6 +336,7 @@ export class BrowserClipboardService
 			),
 		);
 	}
+
 	async hasResources(): Promise<boolean> {
 		// Guard access to navigator.clipboard with try/catch
 		// as we have seen DOMExceptions in certain browsers
@@ -323,13 +352,17 @@ export class BrowserClipboardService
 		} catch (error) {
 			// Noop
 		}
+
 		return this.resources.length > 0;
 	}
+
 	public clearInternalState(): void {
 		this.clearResourcesState();
 	}
+
 	private clearResourcesState(): void {
 		this.resources = [];
+
 		this.resourcesStateHash = undefined;
 	}
 }

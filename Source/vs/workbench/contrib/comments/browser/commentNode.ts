@@ -106,38 +106,68 @@ class CommentsActionRunner extends ActionRunner {
 }
 export class CommentNode<T extends IRange | ICellRange> extends Disposable {
 	private _domNode: HTMLElement;
+
 	private _body: HTMLElement;
+
 	private _avatar: HTMLElement;
+
 	private _md: HTMLElement | undefined;
+
 	private _plainText: HTMLElement | undefined;
+
 	private _clearTimeout: any;
+
 	private _editAction: Action | null = null;
+
 	private _commentEditContainer: HTMLElement | null = null;
+
 	private _commentDetailsContainer: HTMLElement;
+
 	private _actionsToolbarContainer!: HTMLElement;
+
 	private _reactionsActionBar?: ActionBar;
+
 	private _reactionActionsContainer?: HTMLElement;
+
 	private _commentEditor: SimpleCommentEditor | null = null;
+
 	private _commentEditorDisposables: IDisposable[] = [];
+
 	private _commentEditorModel: IReference<IResolvedTextEditorModel> | null =
 		null;
+
 	private _editorHeight = MIN_EDITOR_HEIGHT;
+
 	private _isPendingLabel!: HTMLElement;
+
 	private _timestamp: HTMLElement | undefined;
+
 	private _timestampWidget: TimestampWidget | undefined;
+
 	private _contextKeyService: IContextKeyService;
+
 	private _commentContextValue: IContextKey<string>;
+
 	private _commentMenus: CommentMenus;
+
 	private _scrollable!: Scrollable;
+
 	private _scrollableElement!: SmoothScrollableElement;
+
 	protected actionRunner?: IActionRunner;
+
 	protected toolbar: ToolBar | undefined;
+
 	private _commentFormActions: CommentFormActions | null = null;
+
 	private _commentEditorActions: CommentFormActions | null = null;
+
 	private readonly _onDidClick = new Emitter<CommentNode<T>>();
+
 	public get domNode(): HTMLElement {
 		return this._domNode;
 	}
+
 	public isEditing: boolean = false;
 
 	constructor(
@@ -171,10 +201,13 @@ export class CommentNode<T extends IRange | ICellRange> extends Disposable {
 		private readonly textModelService: ITextModelService,
 	) {
 		super();
+
 		this._domNode = dom.$("div.review-comment");
+
 		this._contextKeyService = this._register(
 			contextKeyService.createScoped(this._domNode),
 		);
+
 		this._commentContextValue = CommentContextKeys.commentContext.bindTo(
 			this._contextKeyService,
 		);
@@ -182,16 +215,24 @@ export class CommentNode<T extends IRange | ICellRange> extends Disposable {
 		if (this.comment.contextValue) {
 			this._commentContextValue.set(this.comment.contextValue);
 		}
+
 		this._commentMenus = this.commentService.getCommentMenus(this.owner);
+
 		this._domNode.tabIndex = -1;
+
 		this._avatar = dom.append(this._domNode, dom.$("div.avatar-container"));
+
 		this.updateCommentUserIcon(this.comment.userIconPath);
+
 		this._commentDetailsContainer = dom.append(
 			this._domNode,
 			dom.$(".review-comment-contents"),
 		);
+
 		this.createHeader(this._commentDetailsContainer);
+
 		this._body = document.createElement(`div`);
+
 		this._body.classList.add(
 			"comment-body",
 			MOUSE_CURSOR_TEXT_CSS_CLASS_NAME,
@@ -204,7 +245,9 @@ export class CommentNode<T extends IRange | ICellRange> extends Disposable {
 		) {
 			this._body.classList.add("comment-body-max-height");
 		}
+
 		this.createScroll(this._commentDetailsContainer, this._body);
+
 		this.updateCommentBody(this.comment.body);
 
 		if (
@@ -215,12 +258,16 @@ export class CommentNode<T extends IRange | ICellRange> extends Disposable {
 		) {
 			this.createReactionsContainer(this._commentDetailsContainer);
 		}
+
 		this._domNode.setAttribute(
 			"aria-label",
 			`${comment.userName}, ${this.commentBodyValue}`,
 		);
+
 		this._domNode.setAttribute("role", "treeitem");
+
 		this._clearTimeout = null;
+
 		this._register(
 			dom.addDisposableListener(
 				this._domNode,
@@ -228,6 +275,7 @@ export class CommentNode<T extends IRange | ICellRange> extends Disposable {
 				() => this.isEditing || this._onDidClick.fire(this),
 			),
 		);
+
 		this._register(
 			dom.addDisposableListener(
 				this._domNode,
@@ -241,13 +289,16 @@ export class CommentNode<T extends IRange | ICellRange> extends Disposable {
 		if (pendingEdit) {
 			this.switchToEditMode();
 		}
+
 		this._register(
 			this.accessibilityService.onDidChangeScreenReaderOptimized(() => {
 				this.toggleToolbarHidden(true);
 			}),
 		);
+
 		this.activeCommentListeners();
 	}
+
 	private activeCommentListeners() {
 		this._register(
 			dom.addDisposableListener(
@@ -263,6 +314,7 @@ export class CommentNode<T extends IRange | ICellRange> extends Disposable {
 			),
 		);
 	}
+
 	private createScroll(container: HTMLElement, body: HTMLElement) {
 		this._scrollable = new Scrollable({
 			forceIntegerValues: true,
@@ -270,6 +322,7 @@ export class CommentNode<T extends IRange | ICellRange> extends Disposable {
 			scheduleAtNextAnimationFrame: (cb) =>
 				dom.scheduleAtNextAnimationFrame(dom.getWindow(container), cb),
 		});
+
 		this._scrollableElement = this._register(
 			new SmoothScrollableElement(
 				body,
@@ -280,11 +333,13 @@ export class CommentNode<T extends IRange | ICellRange> extends Disposable {
 				this._scrollable,
 			),
 		);
+
 		this._register(
 			this._scrollableElement.onScroll((e) => {
 				if (e.scrollLeftChanged) {
 					body.scrollLeft = e.scrollLeft;
 				}
+
 				if (e.scrollTopChanged) {
 					body.scrollTop = e.scrollTop;
 				}
@@ -294,6 +349,7 @@ export class CommentNode<T extends IRange | ICellRange> extends Disposable {
 		const onDidScrollViewContainer = this._register(
 			new DomEmitter(body, "scroll"),
 		).event;
+
 		this._register(
 			onDidScrollViewContainer((_) => {
 				const position = this._scrollableElement.getScrollPosition();
@@ -316,11 +372,15 @@ export class CommentNode<T extends IRange | ICellRange> extends Disposable {
 				}
 			}),
 		);
+
 		container.appendChild(this._scrollableElement.getDomNode());
 	}
+
 	private updateCommentBody(body: string | IMarkdownString) {
 		this._body.innerText = "";
+
 		this._md = undefined;
+
 		this._plainText = undefined;
 
 		if (typeof body === "string") {
@@ -328,12 +388,15 @@ export class CommentNode<T extends IRange | ICellRange> extends Disposable {
 				this._body,
 				dom.$(".comment-body-plainstring"),
 			);
+
 			this._plainText.innerText = body;
 		} else {
 			this._md = this.markdownRenderer.render(body).element;
+
 			this._body.appendChild(this._md);
 		}
 	}
+
 	private updateCommentUserIcon(userIconPath: UriComponents | undefined) {
 		this._avatar.textContent = "";
 
@@ -341,26 +404,33 @@ export class CommentNode<T extends IRange | ICellRange> extends Disposable {
 			const img = <HTMLImageElement>(
 				dom.append(this._avatar, dom.$("img.avatar"))
 			);
+
 			img.src = FileAccess.uriToBrowserUri(
 				URI.revive(userIconPath),
 			).toString(true);
+
 			img.onerror = (_) => img.remove();
 		}
 	}
+
 	public get onDidClick(): Event<CommentNode<T>> {
 		return this._onDidClick.event;
 	}
+
 	private createTimestamp(container: HTMLElement) {
 		this._timestamp = dom.append(
 			container,
 			dom.$("span.timestamp-container"),
 		);
+
 		this.updateTimestamp(this.comment.timestamp);
 	}
+
 	private updateTimestamp(raw?: string) {
 		if (!this._timestamp) {
 			return;
 		}
+
 		const timestamp = raw !== undefined ? new Date(raw) : undefined;
 
 		if (!timestamp) {
@@ -373,12 +443,14 @@ export class CommentNode<T extends IRange | ICellRange> extends Disposable {
 					this._timestamp,
 					timestamp,
 				);
+
 				this._register(this._timestampWidget);
 			} else {
 				this._timestampWidget.setTimestamp(timestamp);
 			}
 		}
 	}
+
 	private createHeader(commentDetailsContainer: HTMLElement): void {
 		const header = dom.append(
 			commentDetailsContainer,
@@ -388,8 +460,11 @@ export class CommentNode<T extends IRange | ICellRange> extends Disposable {
 		const infoContainer = dom.append(header, dom.$("comment-header-info"));
 
 		const author = dom.append(infoContainer, dom.$("strong.author"));
+
 		author.innerText = this.comment.userName;
+
 		this.createTimestamp(infoContainer);
+
 		this._isPendingLabel = dom.append(
 			infoContainer,
 			dom.$("span.isPending"),
@@ -400,13 +475,17 @@ export class CommentNode<T extends IRange | ICellRange> extends Disposable {
 		} else {
 			this._isPendingLabel.innerText = "";
 		}
+
 		this._actionsToolbarContainer = dom.append(
 			header,
 			dom.$(".comment-actions"),
 		);
+
 		this.toggleToolbarHidden(true);
+
 		this.createActionsToolbar();
 	}
+
 	private toggleToolbarHidden(hidden: boolean) {
 		if (hidden && !this.accessibilityService.isScreenReaderOptimized()) {
 			this._actionsToolbarContainer.classList.add("hidden");
@@ -414,8 +493,10 @@ export class CommentNode<T extends IRange | ICellRange> extends Disposable {
 			this._actionsToolbarContainer.classList.remove("hidden");
 		}
 	}
+
 	private getToolbarActions(menu: IMenu): {
 		primary: IAction[];
+
 		secondary: IAction[];
 	} {
 		const contributedActions = menu.getActions({ shouldForwardArgs: true });
@@ -425,12 +506,14 @@ export class CommentNode<T extends IRange | ICellRange> extends Disposable {
 		const secondary: IAction[] = [];
 
 		const result = { primary, secondary };
+
 		fillInActions(contributedActions, result, false, (g) =>
 			/^inline/.test(g),
 		);
 
 		return result;
 	}
+
 	private get commentNodeContext(): [any, MarshalledCommentThread] {
 		return [
 			{
@@ -445,6 +528,7 @@ export class CommentNode<T extends IRange | ICellRange> extends Disposable {
 			},
 		];
 	}
+
 	private createToolbar() {
 		this.toolbar = new ToolBar(
 			this._actionsToolbarContainer,
@@ -475,6 +559,7 @@ export class CommentNode<T extends IRange | ICellRange> extends Disposable {
 							},
 						);
 					}
+
 					return this.actionViewItemProvider(
 						action as Action,
 						options,
@@ -483,11 +568,16 @@ export class CommentNode<T extends IRange | ICellRange> extends Disposable {
 				orientation: ActionsOrientation.HORIZONTAL,
 			},
 		);
+
 		this.toolbar.context = this.commentNodeContext;
+
 		this.toolbar.actionRunner = new CommentsActionRunner();
+
 		this.registerActionBarListeners(this._actionsToolbarContainer);
+
 		this._register(this.toolbar);
 	}
+
 	private createActionsToolbar() {
 		const actions: IAction[] = [];
 
@@ -499,13 +589,17 @@ export class CommentNode<T extends IRange | ICellRange> extends Disposable {
 			const toggleReactionAction = this.createReactionPicker(
 				this.comment.commentReactions || [],
 			);
+
 			actions.push(toggleReactionAction);
 		}
+
 		const menu = this._commentMenus.getCommentTitleActions(
 			this.comment,
 			this._contextKeyService,
 		);
+
 		this._register(menu);
+
 		this._register(
 			menu.onDidChange((e) => {
 				const { primary, secondary } = this.getToolbarActions(menu);
@@ -513,24 +607,29 @@ export class CommentNode<T extends IRange | ICellRange> extends Disposable {
 				if (!this.toolbar && (primary.length || secondary.length)) {
 					this.createToolbar();
 				}
+
 				this.toolbar!.setActions(primary, secondary);
 			}),
 		);
 
 		const { primary, secondary } = this.getToolbarActions(menu);
+
 		actions.push(...primary);
 
 		if (actions.length || secondary.length) {
 			this.createToolbar();
+
 			this.toolbar!.setActions(actions, secondary);
 		}
 	}
+
 	actionViewItemProvider(action: Action, options: IActionViewItemOptions) {
 		if (action.id === ToggleReactionsAction.ID) {
 			options = { label: false, icon: true };
 		} else {
 			options = { label: false, icon: true };
 		}
+
 		if (action.id === ReactionAction.ID) {
 			const item = new ReactionActionViewItem(action);
 
@@ -553,12 +652,15 @@ export class CommentNode<T extends IRange | ICellRange> extends Disposable {
 			return item;
 		}
 	}
+
 	async submitComment(): Promise<void> {
 		if (this._commentEditor && this._commentFormActions) {
 			await this._commentFormActions.triggerDefaultAction();
+
 			this.pendingEdit = undefined;
 		}
 	}
+
 	private createReactionPicker(
 		reactionGroup: languages.CommentReaction[],
 	): ToggleReactionsAction {
@@ -600,12 +702,14 @@ export class CommentNode<T extends IRange | ICellRange> extends Disposable {
 										"commentToggleReactionDefaultError",
 										"Toggling the comment reaction failed",
 									);
+
 							this.notificationService.error(error);
 						}
 					},
 				);
 			});
 		}
+
 		toggleReactionAction.menuActions = reactionMenuActions;
 
 		const toggleReactionActionViewItem: DropdownMenuActionViewItem =
@@ -618,6 +722,7 @@ export class CommentNode<T extends IRange | ICellRange> extends Disposable {
 						if (action.id === ToggleReactionsAction.ID) {
 							return toggleReactionActionViewItem;
 						}
+
 						return this.actionViewItemProvider(
 							action as Action,
 							options,
@@ -631,6 +736,7 @@ export class CommentNode<T extends IRange | ICellRange> extends Disposable {
 
 		return toggleReactionAction;
 	}
+
 	private createReactionsContainer(
 		commentDetailsContainer: HTMLElement,
 	): void {
@@ -638,6 +744,7 @@ export class CommentNode<T extends IRange | ICellRange> extends Disposable {
 			commentDetailsContainer,
 			dom.$("div.comment-reactions"),
 		);
+
 		this._reactionsActionBar = new ActionBar(
 			this._reactionActionsContainer,
 			{
@@ -665,6 +772,7 @@ export class CommentNode<T extends IRange | ICellRange> extends Disposable {
 							},
 						);
 					}
+
 					return this.actionViewItemProvider(
 						action as Action,
 						options,
@@ -672,11 +780,13 @@ export class CommentNode<T extends IRange | ICellRange> extends Disposable {
 				},
 			},
 		);
+
 		this._register(this._reactionsActionBar);
 
 		const hasReactionHandler = this.commentService.hasReactionHandler(
 			this.owner,
 		);
+
 		this.comment
 			.commentReactions!.filter((reaction) => !!reaction.count)
 			.map((reaction) => {
@@ -723,6 +833,7 @@ export class CommentNode<T extends IRange | ICellRange> extends Disposable {
 											"Deleting the comment reaction failed",
 										);
 							}
+
 							this.notificationService.error(error);
 						}
 					},
@@ -730,6 +841,7 @@ export class CommentNode<T extends IRange | ICellRange> extends Disposable {
 					reaction.iconPath,
 					reaction.count,
 				);
+
 				this._reactionsActionBar?.push(action, {
 					label: true,
 					icon: true,
@@ -740,21 +852,25 @@ export class CommentNode<T extends IRange | ICellRange> extends Disposable {
 			const toggleReactionAction = this.createReactionPicker(
 				this.comment.commentReactions || [],
 			);
+
 			this._reactionsActionBar.push(toggleReactionAction, {
 				label: false,
 				icon: true,
 			});
 		}
 	}
+
 	get commentBodyValue(): string {
 		return typeof this.comment.body === "string"
 			? this.comment.body
 			: this.comment.body.value;
 	}
+
 	private async createCommentEditor(
 		editContainer: HTMLElement,
 	): Promise<void> {
 		const container = dom.append(editContainer, dom.$(".edit-textarea"));
+
 		this._commentEditor = this.instantiationService.createInstance(
 			SimpleCommentEditor,
 			container,
@@ -770,10 +886,13 @@ export class CommentNode<T extends IRange | ICellRange> extends Disposable {
 
 		const modelRef =
 			await this.textModelService.createModelReference(resource);
+
 		this._commentEditorModel = modelRef;
+
 		this._commentEditor.setModel(
 			this._commentEditorModel.object.textEditorModel,
 		);
+
 		this._commentEditor.setValue(
 			this.pendingEdit?.body ?? this.commentBodyValue,
 		);
@@ -788,13 +907,17 @@ export class CommentNode<T extends IRange | ICellRange> extends Disposable {
 				this._commentEditorModel.object.textEditorModel.getLineLength(
 					lastLine,
 				) + 1;
+
 			this._commentEditor.setPosition(new Position(lastLine, lastColumn));
 		}
+
 		this.pendingEdit = undefined;
+
 		this._commentEditor.layout({
 			width: container.clientWidth - 14,
 			height: this._editorHeight,
 		});
+
 		this._commentEditor.focus();
 
 		dom.scheduleAtNextAnimationFrame(dom.getWindow(editContainer), () => {
@@ -802,34 +925,42 @@ export class CommentNode<T extends IRange | ICellRange> extends Disposable {
 				width: container.clientWidth - 14,
 				height: this._editorHeight,
 			});
+
 			this._commentEditor!.focus();
 		});
 
 		const commentThread = this.commentThread;
+
 		commentThread.input = {
 			uri: this._commentEditor.getModel()!.uri,
 			value: this.commentBodyValue,
 		};
+
 		this.commentService.setActiveEditingCommentThread(commentThread);
+
 		this.commentService.setActiveCommentAndThread(this.owner, {
 			thread: commentThread,
 			comment: this.comment,
 		});
+
 		this._commentEditorDisposables.push(
 			this._commentEditor.onDidFocusEditorWidget(() => {
 				commentThread.input = {
 					uri: this._commentEditor!.getModel()!.uri,
 					value: this.commentBodyValue,
 				};
+
 				this.commentService.setActiveEditingCommentThread(
 					commentThread,
 				);
+
 				this.commentService.setActiveCommentAndThread(this.owner, {
 					thread: commentThread,
 					comment: this.comment,
 				});
 			}),
 		);
+
 		this._commentEditorDisposables.push(
 			this._commentEditor.onDidChangeModelContent((e) => {
 				if (
@@ -842,11 +973,15 @@ export class CommentNode<T extends IRange | ICellRange> extends Disposable {
 
 					if (newVal !== commentThread.input.value) {
 						const input = commentThread.input;
+
 						input.value = newVal;
+
 						commentThread.input = input;
+
 						this.commentService.setActiveEditingCommentThread(
 							commentThread,
 						);
+
 						this.commentService.setActiveCommentAndThread(
 							this.owner,
 							{ thread: commentThread, comment: this.comment },
@@ -855,7 +990,9 @@ export class CommentNode<T extends IRange | ICellRange> extends Disposable {
 				}
 			}),
 		);
+
 		this.calculateEditorHeight();
+
 		this._register(
 			this._commentEditorModel.object.textEditorModel.onDidChangeContent(
 				() => {
@@ -864,14 +1001,18 @@ export class CommentNode<T extends IRange | ICellRange> extends Disposable {
 							height: this._editorHeight,
 							width: this._commentEditor.getLayoutInfo().width,
 						});
+
 						this._commentEditor.render(true);
 					}
 				},
 			),
 		);
+
 		this._register(this._commentEditor);
+
 		this._register(this._commentEditorModel);
 	}
+
 	private calculateEditorHeight(): boolean {
 		if (this._commentEditor) {
 			const newEditorHeight = calculateEditorHeight(
@@ -886,8 +1027,10 @@ export class CommentNode<T extends IRange | ICellRange> extends Disposable {
 				return true;
 			}
 		}
+
 		return false;
 	}
+
 	getPendingEdit(): languages.PendingComment | undefined {
 		const model = this._commentEditor?.getModel();
 
@@ -897,27 +1040,38 @@ export class CommentNode<T extends IRange | ICellRange> extends Disposable {
 				cursor: this._commentEditor.getPosition()!,
 			};
 		}
+
 		return undefined;
 	}
+
 	private removeCommentEditor() {
 		this.isEditing = false;
 
 		if (this._editAction) {
 			this._editAction.enabled = true;
 		}
+
 		this._body.classList.remove("hidden");
+
 		this._commentEditorModel?.dispose();
+
 		dispose(this._commentEditorDisposables);
+
 		this._commentEditorDisposables = [];
+
 		this._commentEditor?.dispose();
+
 		this._commentEditor = null;
+
 		this._commentEditContainer!.remove();
 	}
+
 	layout(widthInPixel?: number) {
 		const editorWidth =
 			widthInPixel !== undefined
 				? widthInPixel - 72 /* - margin and scrollbar*/
 				: (this._commentEditor?.getLayoutInfo().width ?? 0);
+
 		this._commentEditor?.layout({
 			width: editorWidth,
 			height: this._editorHeight,
@@ -930,6 +1084,7 @@ export class CommentNode<T extends IRange | ICellRange> extends Disposable {
 		const scrollHeight = this._body.scrollHeight;
 
 		const height = dom.getContentHeight(this._body) + 4;
+
 		this._scrollableElement.setScrollDimensions({
 			width,
 			scrollWidth,
@@ -937,16 +1092,21 @@ export class CommentNode<T extends IRange | ICellRange> extends Disposable {
 			scrollHeight,
 		});
 	}
+
 	public async switchToEditMode() {
 		if (this.isEditing) {
 			return;
 		}
+
 		this.isEditing = true;
+
 		this._body.classList.add("hidden");
+
 		this._commentEditContainer = dom.append(
 			this._commentDetailsContainer,
 			dom.$(".edit-container"),
 		);
+
 		await this.createCommentEditor(this._commentEditContainer);
 
 		const formActions = dom.append(
@@ -955,11 +1115,14 @@ export class CommentNode<T extends IRange | ICellRange> extends Disposable {
 		);
 
 		const otherActions = dom.append(formActions, dom.$(".other-actions"));
+
 		this.createCommentWidgetFormActions(otherActions);
 
 		const editorActions = dom.append(formActions, dom.$(".editor-actions"));
+
 		this.createCommentWidgetEditorActions(editorActions);
 	}
+
 	private createCommentWidgetFormActions(container: HTMLElement) {
 		const menus = this.commentService.getCommentMenus(this.owner);
 
@@ -967,12 +1130,15 @@ export class CommentNode<T extends IRange | ICellRange> extends Disposable {
 			this.comment,
 			this._contextKeyService,
 		);
+
 		this._register(menu);
+
 		this._register(
 			menu.onDidChange(() => {
 				this._commentFormActions?.setActions(menu);
 			}),
 		);
+
 		this._commentFormActions = new CommentFormActions(
 			this.keybindingService,
 			this._contextKeyService,
@@ -980,28 +1146,36 @@ export class CommentNode<T extends IRange | ICellRange> extends Disposable {
 			container,
 			(action: IAction): void => {
 				const text = this._commentEditor!.getValue();
+
 				action.run({
 					thread: this.commentThread,
 					commentUniqueId: this.comment.uniqueIdInThread,
 					text: text,
 					$mid: MarshalledId.CommentThreadNode,
 				});
+
 				this.removeCommentEditor();
 			},
 		);
+
 		this._register(this._commentFormActions);
+
 		this._commentFormActions.setActions(menu);
 	}
+
 	private createCommentWidgetEditorActions(container: HTMLElement) {
 		const menus = this.commentService.getCommentMenus(this.owner);
 
 		const menu = menus.getCommentEditorActions(this._contextKeyService);
+
 		this._register(menu);
+
 		this._register(
 			menu.onDidChange(() => {
 				this._commentEditorActions?.setActions(menu);
 			}),
 		);
+
 		this._commentEditorActions = new CommentFormActions(
 			this.keybindingService,
 			this._contextKeyService,
@@ -1009,23 +1183,31 @@ export class CommentNode<T extends IRange | ICellRange> extends Disposable {
 			container,
 			(action: IAction): void => {
 				const text = this._commentEditor!.getValue();
+
 				action.run({
 					thread: this.commentThread,
 					commentUniqueId: this.comment.uniqueIdInThread,
 					text: text,
 					$mid: MarshalledId.CommentThreadNode,
 				});
+
 				this._commentEditor?.focus();
 			},
 		);
+
 		this._register(this._commentEditorActions);
+
 		this._commentEditorActions.setActions(menu, true);
 	}
+
 	setFocus(focused: boolean, visible: boolean = false) {
 		if (focused) {
 			this._domNode.focus();
+
 			this.toggleToolbarHidden(false);
+
 			this._actionsToolbarContainer.classList.add("tabfocused");
+
 			this._domNode.tabIndex = 0;
 
 			if (this.comment.mode === languages.CommentMode.Editing) {
@@ -1039,18 +1221,23 @@ export class CommentNode<T extends IRange | ICellRange> extends Disposable {
 				!this._actionsToolbarContainer.classList.contains("mouseover")
 			) {
 				this.toggleToolbarHidden(true);
+
 				this._domNode.tabIndex = -1;
 			}
+
 			this._actionsToolbarContainer.classList.remove("tabfocused");
 		}
 	}
+
 	private registerActionBarListeners(actionsContainer: HTMLElement): void {
 		this._register(
 			dom.addDisposableListener(this._domNode, "mouseenter", () => {
 				this.toggleToolbarHidden(false);
+
 				actionsContainer.classList.add("mouseover");
 			}),
 		);
+
 		this._register(
 			dom.addDisposableListener(this._domNode, "mouseleave", () => {
 				if (
@@ -1059,14 +1246,17 @@ export class CommentNode<T extends IRange | ICellRange> extends Disposable {
 				) {
 					this.toggleToolbarHidden(true);
 				}
+
 				actionsContainer.classList.remove("mouseover");
 			}),
 		);
 	}
+
 	async update(newComment: languages.Comment) {
 		if (newComment.body !== this.comment.body) {
 			this.updateCommentBody(newComment.body);
 		}
+
 		if (
 			this.comment.userIconPath &&
 			newComment.userIconPath &&
@@ -1075,9 +1265,11 @@ export class CommentNode<T extends IRange | ICellRange> extends Disposable {
 		) {
 			this.updateCommentUserIcon(newComment.userIconPath);
 		}
+
 		const isChangingMode: boolean =
 			newComment.mode !== undefined &&
 			newComment.mode !== this.comment.mode;
+
 		this.comment = newComment;
 
 		if (isChangingMode) {
@@ -1087,6 +1279,7 @@ export class CommentNode<T extends IRange | ICellRange> extends Disposable {
 				this.removeCommentEditor();
 			}
 		}
+
 		if (newComment.label) {
 			this._isPendingLabel.innerText = newComment.label;
 		} else {
@@ -1094,6 +1287,7 @@ export class CommentNode<T extends IRange | ICellRange> extends Disposable {
 		}
 		// update comment reactions
 		this._reactionActionsContainer?.remove();
+
 		this._reactionsActionBar?.clear();
 
 		if (
@@ -1102,17 +1296,21 @@ export class CommentNode<T extends IRange | ICellRange> extends Disposable {
 		) {
 			this.createReactionsContainer(this._commentDetailsContainer);
 		}
+
 		if (this.comment.contextValue) {
 			this._commentContextValue.set(this.comment.contextValue);
 		} else {
 			this._commentContextValue.reset();
 		}
+
 		if (this.comment.timestamp) {
 			this.updateTimestamp(this.comment.timestamp);
 		}
 	}
+
 	private onContextMenu(e: MouseEvent) {
 		const event = new StandardMouseEvent(dom.getWindow(this._domNode), e);
+
 		this.contextMenuService.showContextMenu({
 			getAnchor: () => event,
 			menuId: MenuId.CommentThreadCommentContext,
@@ -1124,18 +1322,22 @@ export class CommentNode<T extends IRange | ICellRange> extends Disposable {
 			},
 		});
 	}
+
 	focus() {
 		this.domNode.focus();
 
 		if (!this._clearTimeout) {
 			this.domNode.classList.add("focus");
+
 			this._clearTimeout = setTimeout(() => {
 				this.domNode.classList.remove("focus");
 			}, 3000);
 		}
 	}
+
 	override dispose(): void {
 		super.dispose();
+
 		dispose(this._commentEditorDisposables);
 	}
 }
@@ -1145,6 +1347,7 @@ function fillInActions(
 		| IAction[]
 		| {
 				primary: IAction[];
+
 				secondary: IAction[];
 		  },
 	useAlternativeActions: boolean,
@@ -1159,8 +1362,10 @@ function fillInActions(
 				a instanceof MenuItemAction && !!a.alt ? a.alt : a,
 			);
 		}
+
 		if (isPrimaryGroup(group)) {
 			const to = Array.isArray(target) ? target : target.primary;
+
 			to.unshift(...actions);
 		} else {
 			const to = Array.isArray(target) ? target : target.secondary;
@@ -1168,6 +1373,7 @@ function fillInActions(
 			if (to.length > 0) {
 				to.push(new Separator());
 			}
+
 			to.push(...actions);
 		}
 	}

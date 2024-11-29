@@ -25,9 +25,11 @@ import { IUriIdentityService } from "./uriIdentity.js";
 
 class Entry {
 	static _clock = 0;
+
 	time: number = Entry._clock++;
 
 	constructor(readonly uri: URI) {}
+
 	touch() {
 		this.time = Entry._clock++;
 
@@ -36,9 +38,13 @@ class Entry {
 }
 export class UriIdentityService implements IUriIdentityService {
 	declare readonly _serviceBrand: undefined;
+
 	readonly extUri: IExtUri;
+
 	private readonly _dispooables = new DisposableStore();
+
 	private readonly _canonicalUris: SkipList<URI, Entry>;
+
 	private readonly _limit = 2 ** 16;
 
 	constructor(
@@ -62,10 +68,13 @@ export class UriIdentityService implements IUriIdentityService {
 						uri,
 						FileSystemProviderCapabilities.PathCaseSensitive,
 					);
+
 				schemeIgnoresPathCasingCache.set(uri.scheme, ignorePathCasing);
 			}
+
 			return ignorePathCasing;
 		};
+
 		this._dispooables.add(
 			Event.any<
 				| IFileSystemProviderCapabilitiesChangeEvent
@@ -78,16 +87,21 @@ export class UriIdentityService implements IUriIdentityService {
 				schemeIgnoresPathCasingCache.delete(e.scheme);
 			}),
 		);
+
 		this.extUri = new ExtUri(ignorePathCasing);
+
 		this._canonicalUris = new SkipList(
 			(a, b) => this.extUri.compare(a, b, true),
 			this._limit,
 		);
 	}
+
 	dispose(): void {
 		this._dispooables.dispose();
+
 		this._canonicalUris.clear();
 	}
+
 	asCanonicalUri(uri: URI): URI {
 		// (1) normalize URI
 		if (this._fileService.hasProvider(uri)) {
@@ -101,10 +115,12 @@ export class UriIdentityService implements IUriIdentityService {
 		}
 		// this uri is first and defines the canonical form
 		this._canonicalUris.set(uri, new Entry(uri));
+
 		this._checkTrim();
 
 		return uri;
 	}
+
 	private _checkTrim(): void {
 		if (this._canonicalUris.size < this._limit) {
 			return;
@@ -121,7 +137,9 @@ export class UriIdentityService implements IUriIdentityService {
 				return 0;
 			}
 		});
+
 		Entry._clock = 0;
+
 		this._canonicalUris.clear();
 
 		const newSize = this._limit * 0.5;

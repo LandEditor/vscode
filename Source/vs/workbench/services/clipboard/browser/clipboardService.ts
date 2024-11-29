@@ -36,6 +36,7 @@ export class BrowserClipboardService extends BaseBrowserClipboardService {
 	) {
 		super(layoutService, logService);
 	}
+
 	override async writeText(text: string, type?: string): Promise<void> {
 		if (
 			!!this.environmentService.extensionTestsLocationURI &&
@@ -43,8 +44,10 @@ export class BrowserClipboardService extends BaseBrowserClipboardService {
 		) {
 			type = "vscode-tests"; // force in-memory clipboard for tests to avoid permission issues
 		}
+
 		return super.writeText(text, type);
 	}
+
 	override async readText(type?: string): Promise<string> {
 		if (
 			!!this.environmentService.extensionTestsLocationURI &&
@@ -52,9 +55,11 @@ export class BrowserClipboardService extends BaseBrowserClipboardService {
 		) {
 			type = "vscode-tests"; // force in-memory clipboard for tests to avoid permission issues
 		}
+
 		if (type) {
 			return super.readText(type);
 		}
+
 		try {
 			return await getActiveWindow().navigator.clipboard.readText();
 		} catch (error) {
@@ -73,6 +78,7 @@ export class BrowserClipboardService extends BaseBrowserClipboardService {
 							label: localize("retry", "Retry"),
 							run: async () => {
 								listener.dispose();
+
 								resolve(await this.readText(type));
 							},
 						},

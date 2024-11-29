@@ -24,7 +24,9 @@ export class SharedProcessService
 	implements ISharedProcessService
 {
 	declare readonly _serviceBrand: undefined;
+
 	private readonly withSharedProcessConnection: Promise<MessagePortClient>;
+
 	private readonly restoredBarrier = new Barrier();
 
 	constructor(
@@ -33,8 +35,10 @@ export class SharedProcessService
 		private readonly logService: ILogService,
 	) {
 		super();
+
 		this.withSharedProcessConnection = this.connect();
 	}
+
 	private async connect(): Promise<MessagePortClient> {
 		this.logService.trace("Renderer->SharedProcess#connect");
 		// Our performance tests show that a connection to the shared
@@ -46,6 +50,7 @@ export class SharedProcessService
 		await Promise.race([this.restoredBarrier.wait(), timeout(2000)]);
 		// Acquire a message port connected to the shared process
 		mark("code/willConnectSharedProcess");
+
 		this.logService.trace(
 			"Renderer->SharedProcess#connect: before acquirePort",
 		);
@@ -54,7 +59,9 @@ export class SharedProcessService
 			SharedProcessChannelConnection.request,
 			SharedProcessChannelConnection.response,
 		);
+
 		mark("code/didConnectSharedProcess");
+
 		this.logService.trace(
 			"Renderer->SharedProcess#connect: connection established",
 		);
@@ -63,11 +70,13 @@ export class SharedProcessService
 			new MessagePortClient(port, `window:${this.windowId}`),
 		);
 	}
+
 	notifyRestored(): void {
 		if (!this.restoredBarrier.isOpen()) {
 			this.restoredBarrier.open();
 		}
 	}
+
 	getChannel(channelName: string): IChannel {
 		return getDelayedChannel(
 			this.withSharedProcessConnection.then((connection) =>
@@ -75,6 +84,7 @@ export class SharedProcessService
 			),
 		);
 	}
+
 	registerChannel(
 		channelName: string,
 		channel: IServerChannel<string>,
@@ -83,6 +93,7 @@ export class SharedProcessService
 			connection.registerChannel(channelName, channel),
 		);
 	}
+
 	async createRawConnection(): Promise<MessagePort> {
 		// Await initialization of the shared process
 		await this.withSharedProcessConnection;
@@ -95,6 +106,7 @@ export class SharedProcessService
 			SharedProcessRawConnection.request,
 			SharedProcessRawConnection.response,
 		);
+
 		this.logService.trace(
 			"Renderer->SharedProcess#createRawConnection: connection established",
 		);

@@ -44,11 +44,13 @@ export class TextFileSaveParticipant extends Disposable {
 	) {
 		super();
 	}
+
 	addSaveParticipant(participant: ITextFileSaveParticipant): IDisposable {
 		const remove = this.saveParticipants.push(participant);
 
 		return toDisposable(() => remove());
 	}
+
 	async participate(
 		model: ITextFileEditorModel,
 		context: ITextFileSaveParticipantContext,
@@ -83,6 +85,7 @@ export class TextFileSaveParticipant extends Disposable {
 					) {
 						break;
 					}
+
 					try {
 						const promise = saveParticipant.participate(
 							model,
@@ -90,6 +93,7 @@ export class TextFileSaveParticipant extends Disposable {
 							progress,
 							cts.token,
 						);
+
 						await raceCancellation(promise, cts.token);
 					} catch (err) {
 						if (!isCancellationError(err)) {
@@ -98,6 +102,7 @@ export class TextFileSaveParticipant extends Disposable {
 							// we see a cancellation error BUT the token didn't signal it
 							// this means the participant wants the save operation to be cancelled
 							cts.cancel();
+
 							bubbleCancel = true;
 						}
 					}
@@ -109,12 +114,14 @@ export class TextFileSaveParticipant extends Disposable {
 		);
 		// undoStop after participation
 		model.textEditorModel?.pushStackElement();
+
 		cts.dispose();
 
 		if (bubbleCancel) {
 			throw new CancellationError();
 		}
 	}
+
 	override dispose(): void {
 		this.saveParticipants.clear();
 

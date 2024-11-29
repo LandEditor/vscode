@@ -22,7 +22,9 @@ export const enum TestPosition {
 }
 type TestItemLike = {
 	id: string;
+
 	parent?: TestItemLike;
+
 	_isRoot?: boolean;
 };
 /**
@@ -41,11 +43,13 @@ export class TestId {
 		if (item._isRoot) {
 			return new TestId([rootId]);
 		}
+
 		const path = [item.id];
 
 		for (let i = parent; i && i.id !== rootId; i = i.parent) {
 			path.push(i.id);
 		}
+
 		path.push(rootId);
 
 		return new TestId(path.reverse());
@@ -118,14 +122,18 @@ export class TestId {
 		if (a === b) {
 			return TestPosition.IsSame;
 		}
+
 		if (TestId.isChild(a, b)) {
 			return TestPosition.IsChild;
 		}
+
 		if (TestId.isChild(b, a)) {
 			return TestPosition.IsParent;
 		}
+
 		return TestPosition.Disconnected;
 	}
+
 	public static getLengthOfCommonPrefix(
 		length: number,
 		getId: (i: number) => TestId,
@@ -133,6 +141,7 @@ export class TestId {
 		if (length === 0) {
 			return 0;
 		}
+
 		let commonPrefix = 0;
 
 		while (commonPrefix < length - 1) {
@@ -145,10 +154,13 @@ export class TestId {
 					return commonPrefix;
 				}
 			}
+
 			commonPrefix++;
 		}
+
 		return commonPrefix;
 	}
+
 	constructor(
 		public readonly path: readonly string[],
 		private readonly viewEnd = path.length,
@@ -214,17 +226,21 @@ export class TestId {
 		if (typeof other === "string") {
 			return TestId.compare(this.toString(), other);
 		}
+
 		for (let i = 0; i < other.viewEnd && i < this.viewEnd; i++) {
 			if (other.path[i] !== this.path[i]) {
 				return TestPosition.Disconnected;
 			}
 		}
+
 		if (other.viewEnd > this.viewEnd) {
 			return TestPosition.IsChild;
 		}
+
 		if (other.viewEnd < this.viewEnd) {
 			return TestPosition.IsParent;
 		}
+
 		return TestPosition.IsSame;
 	}
 	/**
@@ -242,9 +258,11 @@ export class TestId {
 
 			for (let i = 1; i < this.viewEnd; i++) {
 				this.stringifed += TestIdPathParts.Delimiter;
+
 				this.stringifed += this.path[i];
 			}
 		}
+
 		return this.stringifed;
 	}
 }

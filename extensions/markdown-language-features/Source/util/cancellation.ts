@@ -9,6 +9,7 @@ export const noopToken: vscode.CancellationToken = new (class
 {
 	private readonly _onCancellationRequestedEmitter =
 		new vscode.EventEmitter<void>();
+
 	onCancellationRequested = this._onCancellationRequestedEmitter.event;
 
 	get isCancellationRequested() {

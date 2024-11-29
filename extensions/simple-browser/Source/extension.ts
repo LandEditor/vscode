@@ -9,6 +9,7 @@ import { SimpleBrowserView } from "./simpleBrowserView";
 
 declare class URL {
 	constructor(input: string, base?: string | URL);
+
 	hostname: string;
 }
 
@@ -34,7 +35,9 @@ const openerId = "simpleBrowser.open";
 
 export function activate(context: vscode.ExtensionContext) {
 	const manager = new SimpleBrowserManager(context.extensionUri);
+
 	context.subscriptions.push(manager);
+
 	context.subscriptions.push(
 		vscode.window.registerWebviewPanelSerializer(
 			SimpleBrowserView.viewType,
@@ -45,6 +48,7 @@ export function activate(context: vscode.ExtensionContext) {
 			},
 		),
 	);
+
 	context.subscriptions.push(
 		vscode.commands.registerCommand(showCommand, async (url?: string) => {
 			if (!url) {
@@ -53,11 +57,13 @@ export function activate(context: vscode.ExtensionContext) {
 					prompt: vscode.l10n.t("Enter url to visit"),
 				});
 			}
+
 			if (url) {
 				manager.show(url);
 			}
 		}),
 	);
+
 	context.subscriptions.push(
 		vscode.commands.registerCommand(
 			openApiCommand,
@@ -65,6 +71,7 @@ export function activate(context: vscode.ExtensionContext) {
 				url: vscode.Uri,
 				showOptions?: {
 					preserveFocus?: boolean;
+
 					viewColumn: vscode.ViewColumn;
 				},
 			) => {
@@ -72,6 +79,7 @@ export function activate(context: vscode.ExtensionContext) {
 			},
 		),
 	);
+
 	context.subscriptions.push(
 		vscode.window.registerExternalUriOpener(
 			openerId,
@@ -85,6 +93,7 @@ export function activate(context: vscode.ExtensionContext) {
 							? vscode.ExternalUriOpenerPriority.Default
 							: vscode.ExternalUriOpenerPriority.Option;
 					}
+
 					return vscode.ExternalUriOpenerPriority.None;
 				},
 				openExternalUri(resolveUri: vscode.Uri) {

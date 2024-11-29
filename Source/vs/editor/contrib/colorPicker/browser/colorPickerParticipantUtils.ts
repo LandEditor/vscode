@@ -23,7 +23,9 @@ export const enum ColorPickerWidgetType {
 
 export interface BaseColor {
 	readonly range: Range;
+
 	readonly model: ColorPickerModel;
+
 	readonly provider: DocumentColorProvider;
 }
 
@@ -53,7 +55,9 @@ export async function createColorHover(
 	);
 
 	const model = new ColorPickerModel(color, [], 0);
+
 	model.colorPresentations = colorPresentations || [];
+
 	model.guessColorPresentation(color, originalText);
 
 	return {
@@ -75,11 +79,13 @@ export function updateEditorModel(
 		text: model.presentation.label,
 		forceMoveMarkers: false,
 	};
+
 	textEdits.push(edit);
 
 	if (model.presentation.additionalTextEdits) {
 		textEdits.push(...model.presentation.additionalTextEdits);
 	}
+
 	const replaceRange = Range.lift(edit.range);
 
 	const trackedRange = editor
@@ -89,7 +95,9 @@ export function updateEditorModel(
 			replaceRange,
 			TrackedRangeStickiness.GrowsOnlyWhenTypingAfter,
 		);
+
 	editor.executeEdits("colorpicker", textEdits);
+
 	editor.pushUndoStop();
 
 	return editor.getModel()._getTrackedRange(trackedRange) ?? replaceRange;
@@ -116,5 +124,6 @@ export async function updateColorPresentations(
 		colorHover.provider,
 		CancellationToken.None,
 	);
+
 	colorPickerModel.colorPresentations = colorPresentations || [];
 }

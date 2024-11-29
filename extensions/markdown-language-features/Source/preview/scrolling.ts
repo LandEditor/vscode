@@ -9,6 +9,7 @@ import * as vscode from "vscode";
  */
 export function scrollEditorToLine(line: number, editor: vscode.TextEditor) {
 	const revealRange = toRevealRange(line, editor);
+
 	editor.revealRange(revealRange, vscode.TextEditorRevealType.AtTop);
 }
 function toRevealRange(line: number, editor: vscode.TextEditor): vscode.Range {
@@ -24,6 +25,7 @@ function toRevealRange(line: number, editor: vscode.TextEditor): vscode.Range {
 			0,
 		);
 	}
+
 	const fraction = line - sourceLine;
 
 	const text = editor.document.lineAt(sourceLine).text;

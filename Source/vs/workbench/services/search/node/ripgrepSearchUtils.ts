@@ -36,6 +36,7 @@ export class OutputChannel implements IOutputChannel {
 		@ILogService
 		private readonly logService: ILogService,
 	) {}
+
 	appendLine(msg: string): void {
 		this.logService.debug(`${this.prefix}#search`, msg);
 	}

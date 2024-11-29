@@ -27,6 +27,7 @@ export class FoldedCellHint extends CellContentPart {
 	private readonly _runButtonListener = this._register(
 		new MutableDisposable(),
 	);
+
 	private readonly _cellExecutionListener = this._register(
 		new MutableDisposable(),
 	);
@@ -39,22 +40,28 @@ export class FoldedCellHint extends CellContentPart {
 	) {
 		super();
 	}
+
 	override didRenderCell(element: MarkupCellViewModel): void {
 		this.update(element);
 	}
+
 	private update(element: MarkupCellViewModel) {
 		if (!this._notebookEditor.hasModel()) {
 			this._cellExecutionListener.clear();
+
 			this._runButtonListener.clear();
 
 			return;
 		}
+
 		if (
 			element.isInputCollapsed ||
 			element.getEditState() === CellEditState.Editing
 		) {
 			this._cellExecutionListener.clear();
+
 			this._runButtonListener.clear();
+
 			DOM.hide(this._container);
 		} else if (element.foldingState === CellFoldingState.Collapsed) {
 			const idx = this._notebookEditor
@@ -84,16 +91,21 @@ export class FoldedCellHint extends CellContentPart {
 					this.getHiddenCellHintButton(element),
 				);
 			}
+
 			DOM.show(this._container);
 
 			const foldHintTop = element.layoutInfo.previewHeight;
+
 			this._container.style.top = `${foldHintTop}px`;
 		} else {
 			this._cellExecutionListener.clear();
+
 			this._runButtonListener.clear();
+
 			DOM.hide(this._container);
 		}
 	}
+
 	private getHiddenCellsLabel(num: number): HTMLElement {
 		const label =
 			num === 1
@@ -102,9 +114,12 @@ export class FoldedCellHint extends CellContentPart {
 
 		return DOM.$("span.notebook-folded-hint-label", undefined, label);
 	}
+
 	private getHiddenCellHintButton(element: MarkupCellViewModel): HTMLElement {
 		const expandIcon = DOM.$("span.cell-expand-part-button");
+
 		expandIcon.classList.add(...ThemeIcon.asClassNameArray(Codicon.more));
+
 		this._register(
 			DOM.addDisposableListener(expandIcon, DOM.EventType.CLICK, () => {
 				const controller =
@@ -126,6 +141,7 @@ export class FoldedCellHint extends CellContentPart {
 
 		return expandIcon;
 	}
+
 	private getRunFoldedSectionButton(
 		range: ICellRange,
 	): HTMLElement | undefined {
@@ -140,6 +156,7 @@ export class FoldedCellHint extends CellContentPart {
 		if (!hasCodeCells) {
 			return undefined;
 		}
+
 		const isRunning = cells.some((cell) => {
 			const cellExecution =
 				this._notebookExecutionStateService.getCellExecution(cell.uri);
@@ -153,9 +170,11 @@ export class FoldedCellHint extends CellContentPart {
 		const runAllIcon = isRunning
 			? ThemeIcon.modify(executingStateIcon, "spin")
 			: Codicon.play;
+
 		runAllContainer.classList.add(
 			...ThemeIcon.asClassNameArray(runAllIcon),
 		);
+
 		this._runButtonListener.value = DOM.addDisposableListener(
 			runAllContainer,
 			DOM.EventType.CLICK,
@@ -163,6 +182,7 @@ export class FoldedCellHint extends CellContentPart {
 				this._notebookEditor.executeNotebookCells(cells);
 			},
 		);
+
 		this._cellExecutionListener.value =
 			this._notebookExecutionStateService.onDidChangeExecution(() => {
 				const isRunning = cells.some((cell) => {
@@ -181,7 +201,9 @@ export class FoldedCellHint extends CellContentPart {
 				const runAllIcon = isRunning
 					? ThemeIcon.modify(executingStateIcon, "spin")
 					: Codicon.play;
+
 				runAllContainer.className = "";
+
 				runAllContainer.classList.add(
 					"folded-cell-run-section-button",
 					...ThemeIcon.asClassNameArray(runAllIcon),
@@ -190,6 +212,7 @@ export class FoldedCellHint extends CellContentPart {
 
 		return runAllContainer;
 	}
+
 	override updateInternalLayoutNow(element: MarkupCellViewModel) {
 		this.update(element);
 	}

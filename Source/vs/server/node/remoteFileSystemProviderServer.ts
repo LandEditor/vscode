@@ -29,8 +29,10 @@ export class RemoteAgentFileSystemProviderChannel extends AbstractDiskFileSystem
 		private readonly configurationService: IConfigurationService,
 	) {
 		super(new DiskFileSystemProvider(logService), logService);
+
 		this._register(this.provider);
 	}
+
 	protected override getUriTransformer(
 		ctx: RemoteAgentConnectionContext,
 	): IURITransformer {
@@ -38,10 +40,13 @@ export class RemoteAgentFileSystemProviderChannel extends AbstractDiskFileSystem
 
 		if (!transformer) {
 			transformer = createURITransformer(ctx.remoteAuthority);
+
 			this.uriTransformerCache.set(ctx.remoteAuthority, transformer);
 		}
+
 		return transformer;
 	}
+
 	protected override transformIncoming(
 		uriTransformer: IURITransformer,
 		_resource: UriComponents,
@@ -58,6 +63,7 @@ export class RemoteAgentFileSystemProviderChannel extends AbstractDiskFileSystem
 
 			return URI.from({ scheme: "file", path: requestResourcePath });
 		}
+
 		return URI.revive(uriTransformer.transformIncoming(_resource));
 	}
 	//#region File Watching
@@ -84,6 +90,7 @@ class SessionFileWatcher extends AbstractSessionFileWatcher {
 	) {
 		super(uriTransformer, sessionEmitter, logService, environmentService);
 	}
+
 	protected override getRecursiveWatcherOptions(
 		environmentService: IServerEnvironmentService,
 	): IRecursiveWatcherOptions | undefined {
@@ -102,8 +109,10 @@ class SessionFileWatcher extends AbstractSessionFileWatcher {
 				return { usePolling, pollingInterval };
 			}
 		}
+
 		return undefined;
 	}
+
 	protected override getExtraExcludes(
 		environmentService: IServerEnvironmentService,
 	): string[] | undefined {
@@ -112,6 +121,7 @@ class SessionFileWatcher extends AbstractSessionFileWatcher {
 			// so simply exclude watching the extensions folder
 			return [posix.join(environmentService.extensionsPath, "**")];
 		}
+
 		return undefined;
 	}
 }

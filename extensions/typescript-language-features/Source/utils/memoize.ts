@@ -9,14 +9,18 @@ export function memoize(_target: any, key: string, descriptor: any) {
 
 	if (typeof descriptor.value === "function") {
 		fnKey = "value";
+
 		fn = descriptor.value;
 	} else if (typeof descriptor.get === "function") {
 		fnKey = "get";
+
 		fn = descriptor.get;
 	} else {
 		throw new Error("not supported");
 	}
+
 	const memoizeKey = `$memoize$${key}`;
+
 	descriptor[fnKey] = function (...args: any[]) {
 		if (!this.hasOwnProperty(memoizeKey)) {
 			Object.defineProperty(this, memoizeKey, {
@@ -26,6 +30,7 @@ export function memoize(_target: any, key: string, descriptor: any) {
 				value: fn!.apply(this, args),
 			});
 		}
+
 		return this[memoizeKey];
 	};
 }

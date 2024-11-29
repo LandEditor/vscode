@@ -9,11 +9,13 @@ import {
 
 export abstract class EditorWorkerHost {
 	public static CHANNEL_NAME = "editorWorkerHost";
+
 	public static getChannel(workerServer: IWorkerServer): EditorWorkerHost {
 		return workerServer.getChannel<EditorWorkerHost>(
 			EditorWorkerHost.CHANNEL_NAME,
 		);
 	}
+
 	public static setChannel(
 		workerClient: IWorkerClient<any>,
 		obj: EditorWorkerHost,

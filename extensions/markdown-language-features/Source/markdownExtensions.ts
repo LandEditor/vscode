@@ -29,8 +29,11 @@ function* resolveExtensionResources(
 }
 export interface MarkdownContributions {
 	readonly previewScripts: readonly vscode.Uri[];
+
 	readonly previewStyles: readonly vscode.Uri[];
+
 	readonly previewResourceRoots: readonly vscode.Uri[];
+
 	readonly markdownItPlugins: ReadonlyMap<string, Thenable<(md: any) => any>>;
 }
 export namespace MarkdownContributions {
@@ -58,9 +61,11 @@ export namespace MarkdownContributions {
 			]),
 		};
 	}
+
 	function uriEqual(a: vscode.Uri, b: vscode.Uri): boolean {
 		return a.toString() === b.toString();
 	}
+
 	export function equal(
 		a: MarkdownContributions,
 		b: MarkdownContributions,
@@ -79,6 +84,7 @@ export namespace MarkdownContributions {
 			)
 		);
 	}
+
 	export function fromExtension(
 		extension: vscode.Extension<any>,
 	): MarkdownContributions {
@@ -87,6 +93,7 @@ export namespace MarkdownContributions {
 		if (!contributions) {
 			return MarkdownContributions.Empty;
 		}
+
 		const previewStyles = Array.from(
 			getContributedStyles(contributions, extension),
 		);
@@ -112,6 +119,7 @@ export namespace MarkdownContributions {
 			markdownItPlugins,
 		};
 	}
+
 	function getContributedMarkdownItPlugins(
 		contributes: any,
 		extension: vscode.Extension<any>,
@@ -129,12 +137,15 @@ export namespace MarkdownContributions {
 						return (md: any) =>
 							extension.exports.extendMarkdownIt(md);
 					}
+
 					return (md: any) => md;
 				}),
 			);
 		}
+
 		return map;
 	}
+
 	function getContributedScripts(
 		contributes: any,
 		extension: vscode.Extension<any>,
@@ -144,6 +155,7 @@ export namespace MarkdownContributions {
 			contributes["markdown.previewScripts"],
 		);
 	}
+
 	function getContributedStyles(
 		contributes: any,
 		extension: vscode.Extension<any>,
@@ -156,8 +168,11 @@ export namespace MarkdownContributions {
 }
 export interface MarkdownContributionProvider {
 	readonly extensionUri: vscode.Uri;
+
 	readonly contributions: MarkdownContributions;
+
 	readonly onContributionsChanged: vscode.Event<this>;
+
 	dispose(): void;
 }
 class VSCodeExtensionMarkdownContributionProvider
@@ -165,10 +180,12 @@ class VSCodeExtensionMarkdownContributionProvider
 	implements MarkdownContributionProvider
 {
 	private _contributions?: MarkdownContributions;
+
 	public constructor(
 		private readonly _extensionContext: vscode.ExtensionContext,
 	) {
 		super();
+
 		this._register(
 			vscode.extensions.onDidChange(() => {
 				const currentContributions = this._getCurrentContributions();
@@ -183,23 +200,29 @@ class VSCodeExtensionMarkdownContributionProvider
 					)
 				) {
 					this._contributions = currentContributions;
+
 					this._onContributionsChanged.fire(this);
 				}
 			}),
 		);
 	}
+
 	public get extensionUri() {
 		return this._extensionContext.extensionUri;
 	}
+
 	private readonly _onContributionsChanged = this._register(
 		new vscode.EventEmitter<this>(),
 	);
+
 	public readonly onContributionsChanged = this._onContributionsChanged.event;
+
 	public get contributions(): MarkdownContributions {
 		this._contributions ??= this._getCurrentContributions();
 
 		return this._contributions;
 	}
+
 	private _getCurrentContributions(): MarkdownContributions {
 		return vscode.extensions.all
 			.map(MarkdownContributions.fromExtension)

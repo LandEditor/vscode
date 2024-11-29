@@ -49,6 +49,7 @@ class UserDataSyncServicesContribution
 		sharedProcessService: ISharedProcessService,
 	) {
 		super();
+
 		sharedProcessService.registerChannel(
 			"userDataSyncUtil",
 			ProxyChannel.fromService(userDataSyncUtilService, this._store),
@@ -78,6 +79,7 @@ registerAction2(
 				},
 			});
 		}
+
 		async run(accessor: ServicesAccessor): Promise<void> {
 			const syncHome = accessor.get(IEnvironmentService).userDataSyncHome;
 
@@ -114,6 +116,7 @@ registerAction2(
 		constructor() {
 			super(DOWNLOAD_ACTIVITY_ACTION_DESCRIPTOR);
 		}
+
 		async run(accessor: ServicesAccessor): Promise<void> {
 			const userDataSyncWorkbenchService = accessor.get(
 				IUserDataSyncWorkbenchService,

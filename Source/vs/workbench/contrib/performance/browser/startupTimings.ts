@@ -36,6 +36,7 @@ export abstract class StartupTimings {
 		@IWorkspaceTrustManagementService
 		private readonly _workspaceTrustService: IWorkspaceTrustManagementService,
 	) {}
+
 	protected async _isStandardStartup(): Promise<string | undefined> {
 		// check for standard startup:
 		// * new window (no reload)
@@ -47,9 +48,11 @@ export abstract class StartupTimings {
 		if (this._lifecycleService.startupKind !== StartupKind.NewWindow) {
 			return StartupKindToString(this._lifecycleService.startupKind);
 		}
+
 		if (!this._workspaceTrustService.isWorkspaceTrusted()) {
 			return "Workspace not trusted";
 		}
+
 		const activeViewlet = this._paneCompositeService.getActivePaneComposite(
 			ViewContainerLocation.Sidebar,
 		);
@@ -57,14 +60,17 @@ export abstract class StartupTimings {
 		if (!activeViewlet || activeViewlet.getId() !== files.VIEWLET_ID) {
 			return "Explorer viewlet not visible";
 		}
+
 		const visibleEditorPanes = this._editorService.visibleEditorPanes;
 
 		if (visibleEditorPanes.length !== 1) {
 			return `Expected text editor count : 1, Actual : ${visibleEditorPanes.length}`;
 		}
+
 		if (!isCodeEditor(visibleEditorPanes[0].getControl())) {
 			return "Active editor is not a text editor";
 		}
+
 		const activePanel = this._paneCompositeService.getActivePaneComposite(
 			ViewContainerLocation.Panel,
 		);
@@ -72,11 +78,13 @@ export abstract class StartupTimings {
 		if (activePanel) {
 			return `Current active panel : ${this._paneCompositeService.getPaneComposite(activePanel.getId(), ViewContainerLocation.Panel)?.name}`;
 		}
+
 		const isLatestVersion = await this._updateService.isLatestVersion();
 
 		if (isLatestVersion === false) {
 			return "Not on latest version, updates available";
 		}
+
 		return undefined;
 	}
 }
@@ -113,12 +121,15 @@ export class BrowserStartupTimings
 			updateService,
 			workspaceTrustService,
 		);
+
 		this.logPerfMarks();
 	}
+
 	private async logPerfMarks(): Promise<void> {
 		if (!this.environmentService.profDurationMarkers) {
 			return;
 		}
+
 		await this.timerService.whenReady();
 
 		const standardStartupError = await this._isStandardStartup();
@@ -128,6 +139,7 @@ export class BrowserStartupTimings
 		const [from, to] = this.environmentService.profDurationMarkers;
 
 		const content = `${this.timerService.getDuration(from, to)}\t${this.productService.nameShort}\t${(this.productService.commit || "").slice(0, 10) || "0000000000"}\t${this.telemetryService.sessionId}\t${standardStartupError === undefined ? "standard_start" : "NO_standard_start : " + standardStartupError}\t${String(perfBaseline).padStart(4, "0")}ms\n`;
+
 		this.logService.info(`[prof-timers] ${content}`);
 	}
 }
@@ -138,25 +150,38 @@ export class BrowserResourcePerformanceMarks {
 	) {
 		type Entry = {
 			hosthash: string;
+
 			name: string;
+
 			duration: number;
 		};
+
 		type EntryClassifify = {
 			owner: "jrieken";
+
 			comment: "Resource performance numbers";
+
 			hosthash: {
 				classification: "SystemMetaData";
+
 				purpose: "PerformanceAndHealth";
+
 				comment: "Hash of the hostname";
 			};
+
 			name: {
 				classification: "SystemMetaData";
+
 				purpose: "PerformanceAndHealth";
+
 				comment: "Resource basename";
 			};
+
 			duration: {
 				classification: "SystemMetaData";
+
 				purpose: "PerformanceAndHealth";
+
 				comment: "Resource duration";
 			};
 		};
@@ -166,6 +191,7 @@ export class BrowserResourcePerformanceMarks {
 				const url = new URL(item.name);
 
 				const name = posix.basename(url.pathname);
+
 				telemetryService.publicLog2<Entry, EntryClassifify>(
 					"startup.resource.perf",
 					{

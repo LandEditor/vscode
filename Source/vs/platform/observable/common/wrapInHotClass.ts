@@ -17,6 +17,7 @@ export function hotClassGetOriginalInstance<T>(value: T): T {
 	if (value instanceof BaseClass) {
 		return value._instance as any;
 	}
+
 	return value;
 }
 /**
@@ -36,6 +37,7 @@ class BaseClass {
 	public _instance: unknown;
 
 	constructor(public readonly instantiationService: IInstantiationService) {}
+
 	public init(...params: any[]): void {}
 }
 function createWrapper<T extends any[]>(
@@ -44,9 +46,11 @@ function createWrapper<T extends any[]>(
 ) {
 	return class ReloadableWrapper extends B {
 		private _autorun: IDisposable | undefined = undefined;
+
 		override init(...params: any[]) {
 			this._autorun = autorunWithStore((reader, store) => {
 				const clazz_ = clazz.read(reader);
+
 				this._instance = store.add(
 					this.instantiationService.createInstance(
 						clazz_,
@@ -55,6 +59,7 @@ function createWrapper<T extends any[]>(
 				);
 			});
 		}
+
 		dispose(): void {
 			this._autorun?.dispose();
 		}
@@ -66,6 +71,7 @@ class BaseClass0 extends BaseClass {
 		i: IInstantiationService,
 	) {
 		super(i);
+
 		this.init();
 	}
 }
@@ -88,6 +94,7 @@ class BaseClass1 extends BaseClass {
 		i: IInstantiationService,
 	) {
 		super(i);
+
 		this.init(param1);
 	}
 }

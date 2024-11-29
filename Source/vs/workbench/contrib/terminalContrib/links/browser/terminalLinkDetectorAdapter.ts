@@ -24,12 +24,16 @@ import { XtermLinkMatcherHandler } from "./terminalLinkManager.js";
 
 export interface IActivateLinkEvent {
 	link: ITerminalSimpleLink;
+
 	event?: MouseEvent;
 }
 export interface IShowHoverEvent {
 	link: TerminalLink;
+
 	viewportRange: IViewportRange;
+
 	modifierDownCallback?: () => void;
+
 	modifierUpCallback?: () => void;
 }
 /**
@@ -40,13 +44,17 @@ export class TerminalLinkDetectorAdapter
 	implements ILinkProvider
 {
 	private _activeLinks: TerminalLink[] | undefined;
+
 	private readonly _onDidActivateLink = this._register(
 		new Emitter<IActivateLinkEvent>(),
 	);
+
 	readonly onDidActivateLink = this._onDidActivateLink.event;
+
 	private readonly _onDidShowHover = this._register(
 		new Emitter<IShowHoverEvent>(),
 	);
+
 	readonly onDidShowHover = this._onDidShowHover.event;
 
 	constructor(
@@ -56,6 +64,7 @@ export class TerminalLinkDetectorAdapter
 	) {
 		super();
 	}
+
 	private _activeProvideLinkRequests: Map<number, Promise<TerminalLink[]>> =
 		new Map();
 
@@ -68,21 +77,29 @@ export class TerminalLinkDetectorAdapter
 
 		if (activeRequest) {
 			await activeRequest;
+
 			callback(this._activeLinks);
 
 			return;
 		}
+
 		if (this._activeLinks) {
 			for (const link of this._activeLinks) {
 				link.dispose();
 			}
 		}
+
 		activeRequest = this._provideLinks(bufferLineNumber);
+
 		this._activeProvideLinkRequests.set(bufferLineNumber, activeRequest);
+
 		this._activeLinks = await activeRequest;
+
 		this._activeProvideLinkRequests.delete(bufferLineNumber);
+
 		callback(this._activeLinks);
 	}
+
 	private async _provideLinks(
 		bufferLineNumber: number,
 	): Promise<TerminalLink[]> {
@@ -122,8 +139,10 @@ export class TerminalLinkDetectorAdapter
 			lines.unshift(
 				this._detector.xterm.buffer.active.getLine(startLine - 1)!,
 			);
+
 			startLine--;
 		}
+
 		while (
 			endLine < maxEndLine &&
 			this._detector.xterm.buffer.active.getLine(endLine + 1)?.isWrapped
@@ -131,8 +150,10 @@ export class TerminalLinkDetectorAdapter
 			lines.push(
 				this._detector.xterm.buffer.active.getLine(endLine + 1)!,
 			);
+
 			endLine++;
 		}
+
 		const detectedLinks = await this._detector.detect(
 			lines,
 			startLine,
@@ -146,8 +167,10 @@ export class TerminalLinkDetectorAdapter
 				),
 			);
 		}
+
 		return links;
 	}
+
 	private _createTerminalLink(
 		l: ITerminalSimpleLink,
 		activateCallback: XtermLinkMatcherHandler,
@@ -159,8 +182,10 @@ export class TerminalLinkDetectorAdapter
 			l.text.charAt(l.text.length - 1) === ":"
 		) {
 			l.text = l.text.slice(0, -1);
+
 			l.bufferRange.end.x--;
 		}
+
 		return this._instantiationService.createInstance(
 			TerminalLink,
 			this._detector.xterm,
@@ -183,6 +208,7 @@ export class TerminalLinkDetectorAdapter
 			l.type,
 		);
 	}
+
 	private _getLabel(type: TerminalLinkType): string {
 		switch (type) {
 			case TerminalBuiltinLinkType.Search:

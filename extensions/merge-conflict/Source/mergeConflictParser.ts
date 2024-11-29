@@ -17,8 +17,11 @@ const splitterMarker = "=======";
 const endFooterMarker = ">>>>>>>";
 interface IScanMergedConflict {
 	startHeader: vscode.TextLine;
+
 	commonAncestors: vscode.TextLine[];
+
 	splitter?: vscode.TextLine;
+
 	endFooter?: vscode.TextLine;
 }
 export class MergeConflictParser {
@@ -89,6 +92,7 @@ export class MergeConflictParser {
 				currentConflict = null;
 			}
 		}
+
 		return conflictDescriptors
 			.filter(Boolean)
 			.map(
@@ -96,6 +100,7 @@ export class MergeConflictParser {
 					new DocumentMergeConflict(descriptor, telemetryReporter),
 			);
 	}
+
 	private static scanItemTolMergeConflictDescriptor(
 		document: vscode.TextDocument,
 		scanned: IScanMergedConflict,
@@ -104,6 +109,7 @@ export class MergeConflictParser {
 		if (!scanned.startHeader || !scanned.splitter || !scanned.endFooter) {
 			return null;
 		}
+
 		const tokenAfterCurrentBlock: vscode.TextLine =
 			scanned.commonAncestors[0] || scanned.splitter;
 		// Assume that descriptor.current.header, descriptor.incoming.header and descriptor.splitter
@@ -185,16 +191,19 @@ export class MergeConflictParser {
 			),
 		};
 	}
+
 	static containsConflict(document: vscode.TextDocument): boolean {
 		if (!document) {
 			return false;
 		}
+
 		const text = document.getText();
 
 		return (
 			text.includes(startHeaderMarker) && text.includes(endFooterMarker)
 		);
 	}
+
 	private static shiftBackOneCharacter(
 		document: vscode.TextDocument,
 		range: vscode.Position,
@@ -203,14 +212,17 @@ export class MergeConflictParser {
 		if (range.isEqual(unlessEqual)) {
 			return range;
 		}
+
 		let line = range.line;
 
 		let character = range.character - 1;
 
 		if (character < 0) {
 			line--;
+
 			character = document.lineAt(line).range.end.character;
 		}
+
 		return new vscode.Position(line, character);
 	}
 }

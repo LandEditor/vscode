@@ -22,6 +22,7 @@ export const allCharCodes: ReadonlyArray<number> = (() => {
 	for (let i = Constants.START_CH_CODE; i <= Constants.END_CH_CODE; i++) {
 		v.push(i);
 	}
+
 	v.push(Constants.UNKNOWN_CODE);
 
 	return v;
@@ -35,7 +36,9 @@ export const getCharIndex = (chCode: number, fontScale: number) => {
 			// for smaller scales, we can get away with using any ASCII character...
 			return (chCode + Constants.CHAR_COUNT) % Constants.CHAR_COUNT;
 		}
+
 		return Constants.CHAR_COUNT - 1; // unknown symbol
 	}
+
 	return chCode;
 };

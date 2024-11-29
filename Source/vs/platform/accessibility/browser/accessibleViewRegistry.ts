@@ -13,7 +13,9 @@ import {
 
 export interface IAccessibleViewImplentation {
 	type: AccessibleViewType;
+
 	priority: number;
+
 	name: string;
 	/**
 	 * @returns the provider or undefined if the view should not be shown
@@ -21,10 +23,12 @@ export interface IAccessibleViewImplentation {
 	getProvider: (
 		accessor: ServicesAccessor,
 	) => AccessibleContentProvider | ExtensionContentProvider | undefined;
+
 	when?: ContextKeyExpression | undefined;
 }
 export const AccessibleViewRegistry = new (class AccessibleViewRegistry {
 	_implementations: IAccessibleViewImplentation[] = [];
+
 	register(implementation: IAccessibleViewImplentation): IDisposable {
 		this._implementations.push(implementation);
 
@@ -38,6 +42,7 @@ export const AccessibleViewRegistry = new (class AccessibleViewRegistry {
 			},
 		};
 	}
+
 	getImplementations(): IAccessibleViewImplentation[] {
 		return this._implementations;
 	}

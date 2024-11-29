@@ -12,6 +12,7 @@ export function evaluateMathExpression(): Thenable<boolean> {
 
 		return Promise.resolve(false);
 	}
+
 	const editor = vscode.window.activeTextEditor;
 
 	return editor.edit((editBuilder) => {
@@ -33,6 +34,7 @@ export function evaluateMathExpression(): Thenable<boolean> {
 				if (selectionText) {
 					// respect selections
 					const result = String(evaluate(selectionText));
+
 					editBuilder.replace(
 						new vscode.Range(startpos, endpos),
 						result,
@@ -51,6 +53,7 @@ export function evaluateMathExpression(): Thenable<boolean> {
 					if (!extractedIndices) {
 						throw new Error("Invalid extracted indices");
 					}
+
 					const result = String(
 						evaluate(
 							lineToSelectionEnd.substr(
@@ -70,6 +73,7 @@ export function evaluateMathExpression(): Thenable<boolean> {
 							extractedIndices[1],
 						),
 					);
+
 					editBuilder.replace(rangeToReplace, result);
 				}
 			} catch (err) {

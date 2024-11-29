@@ -26,18 +26,23 @@ export function renderLabelWithIcons(
 		if (textStart < textStop) {
 			elements.push(text.substring(textStart, textStop));
 		}
+
 		textStart = (match.index || 0) + match[0].length;
 
 		const [, escaped, codicon] = match;
+
 		elements.push(escaped ? `$(${codicon})` : renderIcon({ id: codicon }));
 	}
+
 	if (textStart < text.length) {
 		elements.push(text.substring(textStart));
 	}
+
 	return elements;
 }
 export function renderIcon(icon: ThemeIcon): HTMLSpanElement {
 	const node = dom.$(`span`);
+
 	node.classList.add(...ThemeIcon.asClassNameArray(icon));
 
 	return node;

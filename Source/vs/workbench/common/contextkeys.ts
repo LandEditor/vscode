@@ -573,6 +573,7 @@ export class ResourceContextKey {
 			),
 		},
 	);
+
 	static readonly Filename = new RawContextKey<string>(
 		"resourceFilename",
 		undefined,
@@ -584,6 +585,7 @@ export class ResourceContextKey {
 			),
 		},
 	);
+
 	static readonly Dirname = new RawContextKey<string>(
 		"resourceDirname",
 		undefined,
@@ -595,6 +597,7 @@ export class ResourceContextKey {
 			),
 		},
 	);
+
 	static readonly Path = new RawContextKey<string>(
 		"resourcePath",
 		undefined,
@@ -606,6 +609,7 @@ export class ResourceContextKey {
 			),
 		},
 	);
+
 	static readonly LangId = new RawContextKey<string>(
 		"resourceLangId",
 		undefined,
@@ -617,6 +621,7 @@ export class ResourceContextKey {
 			),
 		},
 	);
+
 	static readonly Resource = new RawContextKey<string>(
 		"resource",
 		undefined,
@@ -628,6 +633,7 @@ export class ResourceContextKey {
 			),
 		},
 	);
+
 	static readonly Extension = new RawContextKey<string>(
 		"resourceExtname",
 		undefined,
@@ -639,6 +645,7 @@ export class ResourceContextKey {
 			),
 		},
 	);
+
 	static readonly HasResource = new RawContextKey<boolean>(
 		"resourceSet",
 		undefined,
@@ -650,6 +657,7 @@ export class ResourceContextKey {
 			),
 		},
 	);
+
 	static readonly IsFileSystemResource = new RawContextKey<boolean>(
 		"isFileSystemResource",
 		undefined,
@@ -661,16 +669,27 @@ export class ResourceContextKey {
 			),
 		},
 	);
+
 	private readonly _disposables = new DisposableStore();
+
 	private _value: URI | undefined;
+
 	private readonly _resourceKey: IContextKey<string | null>;
+
 	private readonly _schemeKey: IContextKey<string | null>;
+
 	private readonly _filenameKey: IContextKey<string | null>;
+
 	private readonly _dirnameKey: IContextKey<string | null>;
+
 	private readonly _pathKey: IContextKey<string | null>;
+
 	private readonly _langIdKey: IContextKey<string | null>;
+
 	private readonly _extensionKey: IContextKey<string | null>;
+
 	private readonly _hasResource: IContextKey<boolean>;
+
 	private readonly _isFileSystemResource: IContextKey<boolean>;
 
 	constructor(
@@ -686,37 +705,48 @@ export class ResourceContextKey {
 		this._schemeKey = ResourceContextKey.Scheme.bindTo(
 			this._contextKeyService,
 		);
+
 		this._filenameKey = ResourceContextKey.Filename.bindTo(
 			this._contextKeyService,
 		);
+
 		this._dirnameKey = ResourceContextKey.Dirname.bindTo(
 			this._contextKeyService,
 		);
+
 		this._pathKey = ResourceContextKey.Path.bindTo(this._contextKeyService);
+
 		this._langIdKey = ResourceContextKey.LangId.bindTo(
 			this._contextKeyService,
 		);
+
 		this._resourceKey = ResourceContextKey.Resource.bindTo(
 			this._contextKeyService,
 		);
+
 		this._extensionKey = ResourceContextKey.Extension.bindTo(
 			this._contextKeyService,
 		);
+
 		this._hasResource = ResourceContextKey.HasResource.bindTo(
 			this._contextKeyService,
 		);
+
 		this._isFileSystemResource =
 			ResourceContextKey.IsFileSystemResource.bindTo(
 				this._contextKeyService,
 			);
+
 		this._disposables.add(
 			_fileService.onDidChangeFileSystemProviderRegistrations(() => {
 				const resource = this.get();
+
 				this._isFileSystemResource.set(
 					Boolean(resource && _fileService.hasProvider(resource)),
 				);
 			}),
 		);
+
 		this._disposables.add(
 			_modelService.onModelAdded((model) => {
 				if (isEqual(model.uri, this.get())) {
@@ -724,6 +754,7 @@ export class ResourceContextKey {
 				}
 			}),
 		);
+
 		this._disposables.add(
 			_modelService.onModelLanguageChanged((e) => {
 				if (isEqual(e.model.uri, this.get())) {
@@ -732,9 +763,11 @@ export class ResourceContextKey {
 			}),
 		);
 	}
+
 	dispose(): void {
 		this._disposables.dispose();
 	}
+
 	private _setLangId(): void {
 		const value = this.get();
 
@@ -743,52 +776,78 @@ export class ResourceContextKey {
 
 			return;
 		}
+
 		const langId =
 			this._modelService.getModel(value)?.getLanguageId() ??
 			this._languageService.guessLanguageIdByFilepathOrFirstLine(value);
+
 		this._langIdKey.set(langId);
 	}
+
 	set(value: URI | null | undefined) {
 		value = value ?? undefined;
 
 		if (isEqual(this._value, value)) {
 			return;
 		}
+
 		this._value = value;
+
 		this._contextKeyService.bufferChangeEvents(() => {
 			this._resourceKey.set(value ? value.toString() : null);
+
 			this._schemeKey.set(value ? value.scheme : null);
+
 			this._filenameKey.set(value ? basename(value) : null);
+
 			this._dirnameKey.set(value ? this.uriToPath(dirname(value)) : null);
+
 			this._pathKey.set(value ? this.uriToPath(value) : null);
+
 			this._setLangId();
+
 			this._extensionKey.set(value ? extname(value) : null);
+
 			this._hasResource.set(Boolean(value));
+
 			this._isFileSystemResource.set(
 				value ? this._fileService.hasProvider(value) : false,
 			);
 		});
 	}
+
 	private uriToPath(uri: URI): string {
 		if (uri.scheme === Schemas.file) {
 			return uri.fsPath;
 		}
+
 		return uri.path;
 	}
+
 	reset(): void {
 		this._value = undefined;
+
 		this._contextKeyService.bufferChangeEvents(() => {
 			this._resourceKey.reset();
+
 			this._schemeKey.reset();
+
 			this._filenameKey.reset();
+
 			this._dirnameKey.reset();
+
 			this._pathKey.reset();
+
 			this._langIdKey.reset();
+
 			this._extensionKey.reset();
+
 			this._hasResource.reset();
+
 			this._isFileSystemResource.reset();
 		});
 	}
+
 	get(): URI | undefined {
 		return this._value;
 	}
@@ -804,6 +863,7 @@ export function applyAvailableEditorIds(
 
 		return;
 	}
+
 	const editorResource = editor.resource;
 
 	if (
@@ -819,6 +879,7 @@ export function applyAvailableEditorIds(
 					.getEditors(editorResource)
 					.map((editor) => editor.id)
 			: [];
+
 		contextKey.set(editors.join(","));
 	}
 }

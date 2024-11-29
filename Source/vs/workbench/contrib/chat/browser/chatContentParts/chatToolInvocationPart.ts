@@ -36,6 +36,7 @@ export class ChatToolInvocationPart
 	public readonly domNode: HTMLElement;
 
 	private _onDidChangeHeight = this._register(new Emitter<void>());
+
 	public readonly onDidChangeHeight = this._onDidChangeHeight.event;
 
 	constructor(
@@ -64,14 +65,18 @@ export class ChatToolInvocationPart
 					renderer,
 				),
 			);
+
 			this.domNode.appendChild(subPart.domNode);
+
 			partStore.add(
 				subPart.onNeedsRerender(() => {
 					render();
+
 					this._onDidChangeHeight.fire();
 				}),
 			);
 		};
+
 		render();
 	}
 
@@ -95,6 +100,7 @@ class ChatToolInvocationSubPart extends Disposable {
 	public readonly domNode: HTMLElement;
 
 	private _onNeedsRerender = this._register(new Emitter<void>());
+
 	public readonly onNeedsRerender = this._onNeedsRerender.event;
 
 	constructor(
@@ -128,12 +134,15 @@ class ChatToolInvocationSubPart extends Disposable {
 					],
 				),
 			);
+
 			this.domNode = confirmWidget.domNode;
+
 			this._register(
 				confirmWidget.onDidClick((button) => {
 					toolInvocation.confirmed.complete(button.data);
 				}),
 			);
+
 			toolInvocation.confirmed.p.then(() => this._onNeedsRerender.fire());
 		} else {
 			const content =
@@ -168,6 +177,7 @@ class ChatToolInvocationSubPart extends Disposable {
 					iconOverride,
 				),
 			);
+
 			this.domNode = progressPart.domNode;
 		}
 

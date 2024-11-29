@@ -37,6 +37,7 @@ class OpenProcessExplorer extends Action2 {
 			f1: true,
 		});
 	}
+
 	override async run(accessor: ServicesAccessor): Promise<void> {
 		const processService = accessor.get(IWorkbenchProcessService);
 
@@ -69,6 +70,7 @@ class StopTracing extends Action2 {
 			f1: true,
 		});
 	}
+
 	override async run(accessor: ServicesAccessor): Promise<void> {
 		const processService = accessor.get(IProcessMainService);
 
@@ -99,6 +101,7 @@ class StopTracing extends Action2 {
 				return nativeHostService.relaunch({ addArgs: ["--trace"] });
 			}
 		}
+
 		await progressService.withProgress(
 			{
 				location: ProgressLocation.Dialog,

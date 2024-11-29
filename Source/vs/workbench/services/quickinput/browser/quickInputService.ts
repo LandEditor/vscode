@@ -43,12 +43,16 @@ export class QuickInputService extends BaseQuickInputService {
 			layoutService,
 			configurationService,
 		);
+
 		this.registerListeners();
 	}
+
 	private registerListeners(): void {
 		this._register(this.onShow(() => this.inQuickInputContext.set(true)));
+
 		this._register(this.onHide(() => this.inQuickInputContext.set(false)));
 	}
+
 	protected override createController(): QuickInputController {
 		return super.createController(this.layoutService, {
 			ignoreFocusOut: () =>

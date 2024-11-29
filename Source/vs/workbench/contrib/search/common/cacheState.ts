@@ -23,8 +23,10 @@ export class FileQueryCacheState {
 		) {
 			return this._cacheKey;
 		}
+
 		return this.previousCacheState.cacheKey;
 	}
+
 	get isLoaded(): boolean {
 		const isLoaded = this.loadingPhase === LoadingPhase.Loaded;
 
@@ -32,6 +34,7 @@ export class FileQueryCacheState {
 			? isLoaded
 			: this.previousCacheState.isLoaded;
 	}
+
 	get isUpdating(): boolean {
 		const isUpdating = this.loadingPhase === LoadingPhase.Loading;
 
@@ -39,8 +42,11 @@ export class FileQueryCacheState {
 			? isUpdating
 			: this.previousCacheState.isUpdating;
 	}
+
 	private readonly query = this.cacheQuery(this._cacheKey);
+
 	private loadingPhase = LoadingPhase.Created;
+
 	private loadPromise: Promise<void> | undefined;
 
 	constructor(
@@ -58,22 +64,28 @@ export class FileQueryCacheState {
 
 			if (!equals(current, previous)) {
 				this.previousCacheState.dispose();
+
 				this.previousCacheState = undefined;
 			}
 		}
 	}
+
 	load(): FileQueryCacheState {
 		if (this.isUpdating) {
 			return this;
 		}
+
 		this.loadingPhase = LoadingPhase.Loading;
+
 		this.loadPromise = (async () => {
 			try {
 				await this.loadFn(this.query);
+
 				this.loadingPhase = LoadingPhase.Loaded;
 
 				if (this.previousCacheState) {
 					this.previousCacheState.dispose();
+
 					this.previousCacheState = undefined;
 				}
 			} catch (error) {
@@ -85,6 +97,7 @@ export class FileQueryCacheState {
 
 		return this;
 	}
+
 	dispose(): void {
 		if (this.loadPromise) {
 			(async () => {
@@ -93,14 +106,18 @@ export class FileQueryCacheState {
 				} catch (error) {
 					// ignore
 				}
+
 				this.loadingPhase = LoadingPhase.Disposed;
+
 				this.disposeFn(this._cacheKey);
 			})();
 		} else {
 			this.loadingPhase = LoadingPhase.Disposed;
 		}
+
 		if (this.previousCacheState) {
 			this.previousCacheState.dispose();
+
 			this.previousCacheState = undefined;
 		}
 	}

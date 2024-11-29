@@ -29,17 +29,23 @@ export interface IUpdateProvider {
 }
 export class BrowserUpdateService extends Disposable implements IUpdateService {
 	declare readonly _serviceBrand: undefined;
+
 	private _onStateChange = this._register(new Emitter<State>());
+
 	readonly onStateChange: Event<State> = this._onStateChange.event;
+
 	private _state: State = State.Uninitialized;
 
 	get state(): State {
 		return this._state;
 	}
+
 	set state(state: State) {
 		this._state = state;
+
 		this._onStateChange.fire(state);
 	}
+
 	constructor(
 		@IBrowserWorkbenchEnvironmentService
 		private readonly environmentService: IBrowserWorkbenchEnvironmentService,
@@ -47,19 +53,24 @@ export class BrowserUpdateService extends Disposable implements IUpdateService {
 		private readonly hostService: IHostService,
 	) {
 		super();
+
 		this.checkForUpdates(false);
 	}
+
 	async isLatestVersion(): Promise<boolean | undefined> {
 		const update = await this.doCheckForUpdates(false);
 
 		if (update === undefined) {
 			return undefined; // no update provider
 		}
+
 		return !!update;
 	}
+
 	async checkForUpdates(explicit: boolean): Promise<void> {
 		await this.doCheckForUpdates(explicit);
 	}
+
 	private async doCheckForUpdates(
 		explicit: boolean,
 	): Promise<
@@ -88,19 +99,25 @@ export class BrowserUpdateService extends Disposable implements IUpdateService {
 				// State -> Idle
 				this.state = State.Idle(UpdateType.Archive);
 			}
+
 			return update;
 		}
+
 		return undefined; // no update provider to ask
 	}
+
 	async downloadUpdate(): Promise<void> {
 		// no-op
 	}
+
 	async applyUpdate(): Promise<void> {
 		this.hostService.reload();
 	}
+
 	async quitAndInstall(): Promise<void> {
 		this.hostService.reload();
 	}
+
 	async _applySpecificUpdate(packagePath: string): Promise<void> {
 		// noop
 	}

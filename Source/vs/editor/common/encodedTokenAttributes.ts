@@ -94,33 +94,39 @@ export class TokenMetadata {
 			MetadataConsts.LANGUAGEID_OFFSET
 		);
 	}
+
 	public static getTokenType(metadata: number): StandardTokenType {
 		return (
 			(metadata & MetadataConsts.TOKEN_TYPE_MASK) >>>
 			MetadataConsts.TOKEN_TYPE_OFFSET
 		);
 	}
+
 	public static containsBalancedBrackets(metadata: number): boolean {
 		return (metadata & MetadataConsts.BALANCED_BRACKETS_MASK) !== 0;
 	}
+
 	public static getFontStyle(metadata: number): FontStyle {
 		return (
 			(metadata & MetadataConsts.FONT_STYLE_MASK) >>>
 			MetadataConsts.FONT_STYLE_OFFSET
 		);
 	}
+
 	public static getForeground(metadata: number): ColorId {
 		return (
 			(metadata & MetadataConsts.FOREGROUND_MASK) >>>
 			MetadataConsts.FOREGROUND_OFFSET
 		);
 	}
+
 	public static getBackground(metadata: number): ColorId {
 		return (
 			(metadata & MetadataConsts.BACKGROUND_MASK) >>>
 			MetadataConsts.BACKGROUND_OFFSET
 		);
 	}
+
 	public static getClassNameFromMetadata(metadata: number): string {
 		const foreground = this.getForeground(metadata);
 
@@ -131,17 +137,22 @@ export class TokenMetadata {
 		if (fontStyle & FontStyle.Italic) {
 			className += " mtki";
 		}
+
 		if (fontStyle & FontStyle.Bold) {
 			className += " mtkb";
 		}
+
 		if (fontStyle & FontStyle.Underline) {
 			className += " mtku";
 		}
+
 		if (fontStyle & FontStyle.Strikethrough) {
 			className += " mtks";
 		}
+
 		return className;
 	}
+
 	public static getInlineStyleFromMetadata(
 		metadata: number,
 		colorMap: string[],
@@ -155,22 +166,28 @@ export class TokenMetadata {
 		if (fontStyle & FontStyle.Italic) {
 			result += "font-style: italic;";
 		}
+
 		if (fontStyle & FontStyle.Bold) {
 			result += "font-weight: bold;";
 		}
+
 		let textDecoration = "";
 
 		if (fontStyle & FontStyle.Underline) {
 			textDecoration += " underline";
 		}
+
 		if (fontStyle & FontStyle.Strikethrough) {
 			textDecoration += " line-through";
 		}
+
 		if (textDecoration) {
 			result += `text-decoration:${textDecoration};`;
 		}
+
 		return result;
 	}
+
 	public static getPresentationFromMetadata(
 		metadata: number,
 	): ITokenPresentation {
@@ -191,8 +208,12 @@ export class TokenMetadata {
  */
 export interface ITokenPresentation {
 	foreground: ColorId;
+
 	italic: boolean;
+
 	bold: boolean;
+
 	underline: boolean;
+
 	strikethrough: boolean;
 }

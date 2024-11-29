@@ -30,6 +30,7 @@ function createRawURITransformer(remoteAuthority: string): IRawURITransformer {
 					fragment: uri.fragment,
 				};
 			}
+
 			if (uri.scheme === "file") {
 				return {
 					scheme: "vscode-local",
@@ -38,6 +39,7 @@ function createRawURITransformer(remoteAuthority: string): IRawURITransformer {
 					fragment: uri.fragment,
 				};
 			}
+
 			return uri;
 		},
 		transformOutgoing: (uri: UriParts): UriParts => {
@@ -50,6 +52,7 @@ function createRawURITransformer(remoteAuthority: string): IRawURITransformer {
 					fragment: uri.fragment,
 				};
 			}
+
 			if (uri.scheme === "vscode-local") {
 				return {
 					scheme: "file",
@@ -58,6 +61,7 @@ function createRawURITransformer(remoteAuthority: string): IRawURITransformer {
 					fragment: uri.fragment,
 				};
 			}
+
 			return uri;
 		},
 		transformOutgoingScheme: (scheme: string): string => {
@@ -66,6 +70,7 @@ function createRawURITransformer(remoteAuthority: string): IRawURITransformer {
 			} else if (scheme === "vscode-local") {
 				return "file";
 			}
+
 			return scheme;
 		},
 	};

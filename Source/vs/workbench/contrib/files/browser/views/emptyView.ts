@@ -32,10 +32,12 @@ import { IViewDescriptorService } from "../../../../common/views.js";
 
 export class EmptyView extends ViewPane {
 	static readonly ID: string = "workbench.explorer.emptyView";
+
 	static readonly NAME: ILocalizedString = nls.localize2(
 		"noWorkspace",
 		"No Folder Opened",
 	);
+
 	private _disposed: boolean = false;
 
 	constructor(
@@ -78,20 +80,25 @@ export class EmptyView extends ViewPane {
 			telemetryService,
 			hoverService,
 		);
+
 		this._register(
 			this.contextService.onDidChangeWorkbenchState(() =>
 				this.refreshTitle(),
 			),
 		);
+
 		this._register(
 			this.labelService.onDidChangeFormatters(() => this.refreshTitle()),
 		);
 	}
+
 	override shouldShowWelcome(): boolean {
 		return true;
 	}
+
 	protected override renderBody(container: HTMLElement): void {
 		super.renderBody(container);
+
 		this._register(
 			new DragAndDropObserver(container, {
 				onDrop: (e) => {
@@ -108,12 +115,14 @@ export class EmptyView extends ViewPane {
 									),
 							},
 						);
+
 					dropHandler.handleDrop(e, getWindow(container));
 				},
 				onDragEnter: () => {
 					const color = this.themeService
 						.getColorTheme()
 						.getColor(listDropOverBackground);
+
 					container.style.backgroundColor = color
 						? color.toString()
 						: "";
@@ -131,12 +140,15 @@ export class EmptyView extends ViewPane {
 				},
 			}),
 		);
+
 		this.refreshTitle();
 	}
+
 	private refreshTitle(): void {
 		if (this._disposed) {
 			return;
 		}
+
 		if (
 			this.contextService.getWorkbenchState() === WorkbenchState.WORKSPACE
 		) {
@@ -145,6 +157,7 @@ export class EmptyView extends ViewPane {
 			this.updateTitle(this.title);
 		}
 	}
+
 	override dispose(): void {
 		this._disposed = true;
 

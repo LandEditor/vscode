@@ -37,7 +37,9 @@ export class MainThreadWebviews
 		Schemas.vscode,
 		"vscode-insider",
 	]);
+
 	private readonly _proxy: extHostProtocol.ExtHostWebviewsShape;
+
 	private readonly _webviews = new Map<string, IWebview>();
 
 	constructor(
@@ -48,10 +50,12 @@ export class MainThreadWebviews
 		private readonly _productService: IProductService,
 	) {
 		super();
+
 		this._proxy = context.getProxy(
 			extHostProtocol.ExtHostContext.ExtHostWebviews,
 		);
 	}
+
 	public addWebview(
 		handle: extHostProtocol.WebviewHandle,
 		webview: IOverlayWebview,
@@ -62,15 +66,19 @@ export class MainThreadWebviews
 		if (this._webviews.has(handle)) {
 			throw new Error("Webview already registered");
 		}
+
 		this._webviews.set(handle, webview);
+
 		this.hookupWebviewEventDelegate(handle, webview, options);
 	}
+
 	public $setHtml(
 		handle: extHostProtocol.WebviewHandle,
 		value: string,
 	): void {
 		this.tryGetWebview(handle)?.setHtml(value);
 	}
+
 	public $setOptions(
 		handle: extHostProtocol.WebviewHandle,
 		options: extHostProtocol.IWebviewContentOptions,
@@ -81,6 +89,7 @@ export class MainThreadWebviews
 			webview.contentOptions = reviveWebviewContentOptions(options);
 		}
 	}
+
 	public async $postMessage(
 		handle: extHostProtocol.WebviewHandle,
 		jsonMessage: string,
@@ -91,6 +100,7 @@ export class MainThreadWebviews
 		if (!webview) {
 			return false;
 		}
+
 		const { message, arrayBuffers } = deserializeWebviewMessage(
 			jsonMessage,
 			buffers,
@@ -98,6 +108,7 @@ export class MainThreadWebviews
 
 		return webview.postMessage(message, arrayBuffers);
 	}
+
 	private hookupWebviewEventDelegate(
 		handle: extHostProtocol.WebviewHandle,
 		webview: IOverlayWebview,
@@ -106,15 +117,18 @@ export class MainThreadWebviews
 		},
 	) {
 		const disposables = new DisposableStore();
+
 		disposables.add(
 			webview.onDidClickLink((uri) => this.onDidClickLink(handle, uri)),
 		);
+
 		disposables.add(
 			webview.onMessage((message) => {
 				const serialized = serializeWebviewMessage(
 					message.message,
 					options,
 				);
+
 				this._proxy.$onMessage(
 					handle,
 					serialized.message,
@@ -122,18 +136,22 @@ export class MainThreadWebviews
 				);
 			}),
 		);
+
 		disposables.add(
 			webview.onMissingCsp((extension: ExtensionIdentifier) =>
 				this._proxy.$onMissingCsp(handle, extension.value),
 			),
 		);
+
 		disposables.add(
 			webview.onDidDispose(() => {
 				disposables.dispose();
+
 				this._webviews.delete(handle);
 			}),
 		);
 	}
+
 	private onDidClickLink(
 		handle: extHostProtocol.WebviewHandle,
 		link: string,
@@ -151,36 +169,45 @@ export class MainThreadWebviews
 			});
 		}
 	}
+
 	private isSupportedLink(webview: IWebview, link: URI): boolean {
 		if (MainThreadWebviews.standardSupportedLinkSchemes.has(link.scheme)) {
 			return true;
 		}
+
 		if (!isWeb && this._productService.urlProtocol === link.scheme) {
 			return true;
 		}
+
 		if (link.scheme === Schemas.command) {
 			if (Array.isArray(webview.contentOptions.enableCommandUris)) {
 				return webview.contentOptions.enableCommandUris.includes(
 					link.path,
 				);
 			}
+
 			return webview.contentOptions.enableCommandUris === true;
 		}
+
 		return false;
 	}
+
 	private tryGetWebview(
 		handle: extHostProtocol.WebviewHandle,
 	): IWebview | undefined {
 		return this._webviews.get(handle);
 	}
+
 	private getWebview(handle: extHostProtocol.WebviewHandle): IWebview {
 		const webview = this.tryGetWebview(handle);
 
 		if (!webview) {
 			throw new Error(`Unknown webview handle:${handle}`);
 		}
+
 		return webview;
 	}
+
 	public getWebviewResolvedFailedContent(viewType: string) {
 		return `<!DOCTYPE html>
 		<html>

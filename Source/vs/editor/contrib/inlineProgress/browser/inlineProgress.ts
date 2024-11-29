@@ -40,8 +40,11 @@ const inlineProgressDecoration = ModelDecorationOptions.register({
 });
 class InlineProgressWidget extends Disposable implements IContentWidget {
 	private static readonly baseId = "editor.widget.inlineProgressWidget";
+
 	allowEditorOverflow = false;
+
 	suppressMouseDown = true;
+
 	private domNode!: HTMLElement;
 
 	constructor(
@@ -52,17 +55,25 @@ class InlineProgressWidget extends Disposable implements IContentWidget {
 		private readonly delegate: InlineProgressDelegate,
 	) {
 		super();
+
 		this.create(title);
+
 		this.editor.addContentWidget(this);
+
 		this.editor.layoutContentWidget(this);
 	}
+
 	private create(title: string): void {
 		this.domNode = dom.$(".inline-progress-widget");
+
 		this.domNode.role = "button";
+
 		this.domNode.title = title;
 
 		const iconElement = dom.$("span.icon");
+
 		this.domNode.append(iconElement);
+
 		iconElement.classList.add(
 			...ThemeIcon.asClassNameArray(Codicon.loading),
 			"codicon-modifier-spin",
@@ -70,10 +81,14 @@ class InlineProgressWidget extends Disposable implements IContentWidget {
 
 		const updateSize = () => {
 			const lineHeight = this.editor.getOption(EditorOption.lineHeight);
+
 			this.domNode.style.height = `${lineHeight}px`;
+
 			this.domNode.style.width = `${Math.ceil(0.8 * lineHeight)}px`;
 		};
+
 		updateSize();
+
 		this._register(
 			this.editor.onDidChangeConfiguration((c) => {
 				if (
@@ -84,6 +99,7 @@ class InlineProgressWidget extends Disposable implements IContentWidget {
 				}
 			}),
 		);
+
 		this._register(
 			dom.addDisposableListener(
 				this.domNode,
@@ -94,12 +110,15 @@ class InlineProgressWidget extends Disposable implements IContentWidget {
 			),
 		);
 	}
+
 	getId(): string {
 		return InlineProgressWidget.baseId + "." + this.typeId;
 	}
+
 	getDomNode(): HTMLElement {
 		return this.domNode;
 	}
+
 	getPosition(): IContentWidgetPosition | null {
 		return {
 			position: {
@@ -109,8 +128,10 @@ class InlineProgressWidget extends Disposable implements IContentWidget {
 			preference: [ContentWidgetPositionPreference.EXACT],
 		};
 	}
+
 	override dispose(): void {
 		super.dispose();
+
 		this.editor.removeContentWidget(this);
 	}
 }
@@ -121,11 +142,15 @@ export class InlineProgressManager extends Disposable {
 	/** Delay before showing the progress widget */
 	private readonly _showDelay = 500; // ms
 	private readonly _showPromise = this._register(new MutableDisposable());
+
 	private readonly _currentDecorations: IEditorDecorationsCollection;
+
 	private readonly _currentWidget = this._register(
 		new MutableDisposable<InlineProgressWidget>(),
 	);
+
 	private _operationIdPool = 0;
+
 	private _currentOperation?: number;
 
 	constructor(
@@ -135,12 +160,16 @@ export class InlineProgressManager extends Disposable {
 		private readonly _instantiationService: IInstantiationService,
 	) {
 		super();
+
 		this._currentDecorations = _editor.createDecorationsCollection();
 	}
+
 	public override dispose(): void {
 		super.dispose();
+
 		this._currentDecorations.clear();
 	}
+
 	public async showWhile<R>(
 		position: IPosition,
 		title: string,
@@ -149,8 +178,11 @@ export class InlineProgressManager extends Disposable {
 		delayOverride?: number,
 	): Promise<R> {
 		const operationId = this._operationIdPool++;
+
 		this._currentOperation = operationId;
+
 		this.clear();
+
 		this._showPromise.value = disposableTimeout(() => {
 			const range = Range.fromPositions(position);
 
@@ -179,13 +211,17 @@ export class InlineProgressManager extends Disposable {
 		} finally {
 			if (this._currentOperation === operationId) {
 				this.clear();
+
 				this._currentOperation = undefined;
 			}
 		}
 	}
+
 	private clear() {
 		this._showPromise.clear();
+
 		this._currentDecorations.clear();
+
 		this._currentWidget.clear();
 	}
 }

@@ -29,8 +29,11 @@ export class DialogHandlerContribution
 	implements IWorkbenchContribution
 {
 	static readonly ID = "workbench.contrib.dialogHandler";
+
 	private readonly model: IDialogsModel;
+
 	private readonly impl: Lazy<IDialogHandler>;
+
 	private currentDialog: IDialogViewItem | undefined;
 
 	constructor(
@@ -50,6 +53,7 @@ export class DialogHandlerContribution
 		clipboardService: IClipboardService,
 	) {
 		super();
+
 		this.impl = new Lazy(
 			() =>
 				new BrowserDialogHandler(
@@ -61,7 +65,9 @@ export class DialogHandlerContribution
 					clipboardService,
 				),
 		);
+
 		this.model = (this.dialogService as DialogService).model;
+
 		this._register(
 			this.model.onWillShowDialog(() => {
 				if (!this.currentDialog) {
@@ -69,8 +75,10 @@ export class DialogHandlerContribution
 				}
 			}),
 		);
+
 		this.processDialogs();
 	}
+
 	private async processDialogs(): Promise<void> {
 		while (this.model.dialogs.length) {
 			this.currentDialog = this.model.dialogs[0];
@@ -80,12 +88,15 @@ export class DialogHandlerContribution
 			try {
 				if (this.currentDialog.args.confirmArgs) {
 					const args = this.currentDialog.args.confirmArgs;
+
 					result = await this.impl.value.confirm(args.confirmation);
 				} else if (this.currentDialog.args.inputArgs) {
 					const args = this.currentDialog.args.inputArgs;
+
 					result = await this.impl.value.input(args.input);
 				} else if (this.currentDialog.args.promptArgs) {
 					const args = this.currentDialog.args.promptArgs;
+
 					result = await this.impl.value.prompt(args.prompt);
 				} else {
 					await this.impl.value.about();
@@ -93,7 +104,9 @@ export class DialogHandlerContribution
 			} catch (error) {
 				result = error;
 			}
+
 			this.currentDialog.close(result);
+
 			this.currentDialog = undefined;
 		}
 	}

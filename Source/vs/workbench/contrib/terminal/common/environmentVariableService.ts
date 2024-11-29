@@ -31,7 +31,9 @@ import { TerminalStorageKeys } from "./terminalStorageKeys.js";
 
 interface ISerializableExtensionEnvironmentVariableCollection {
 	extensionIdentifier: string;
+
 	collection: ISerializableEnvironmentVariableCollection;
+
 	description?: ISerializableEnvironmentDescriptionMap;
 }
 /**
@@ -42,9 +44,12 @@ export class EnvironmentVariableService
 	implements IEnvironmentVariableService
 {
 	declare readonly _serviceBrand: undefined;
+
 	collections: Map<string, IEnvironmentVariableCollectionWithPersistence> =
 		new Map();
+
 	mergedCollection: IMergedEnvironmentVariableCollection;
+
 	private readonly _onDidChangeCollections = this._register(
 		new Emitter<IMergedEnvironmentVariableCollection>(),
 	);
@@ -52,6 +57,7 @@ export class EnvironmentVariableService
 	get onDidChangeCollections(): Event<IMergedEnvironmentVariableCollection> {
 		return this._onDidChangeCollections.event;
 	}
+
 	constructor(
 		@IExtensionService
 		private readonly _extensionService: IExtensionService,
@@ -59,6 +65,7 @@ export class EnvironmentVariableService
 		private readonly _storageService: IStorageService,
 	) {
 		super();
+
 		this._storageService.remove(
 			TerminalStorageKeys.DeprecatedEnvironmentVariableCollections,
 			StorageScope.WORKSPACE,
@@ -72,6 +79,7 @@ export class EnvironmentVariableService
 		if (serializedPersistedCollections) {
 			const collectionsJson: ISerializableExtensionEnvironmentVariableCollection[] =
 				JSON.parse(serializedPersistedCollections);
+
 			collectionsJson.forEach((c) =>
 				this.collections.set(c.extensionIdentifier, {
 					persistent: true,
@@ -86,6 +94,7 @@ export class EnvironmentVariableService
 			// being uninstalled is rare.
 			this._invalidateExtensionCollections();
 		}
+
 		this.mergedCollection = this._resolveMergedCollection();
 		// Listen for uninstalled/disabled extensions
 		this._register(
@@ -94,29 +103,38 @@ export class EnvironmentVariableService
 			),
 		);
 	}
+
 	set(
 		extensionIdentifier: string,
 		collection: IEnvironmentVariableCollectionWithPersistence,
 	): void {
 		this.collections.set(extensionIdentifier, collection);
+
 		this._updateCollections();
 	}
+
 	delete(extensionIdentifier: string): void {
 		this.collections.delete(extensionIdentifier);
+
 		this._updateCollections();
 	}
+
 	private _updateCollections(): void {
 		this._persistCollectionsEventually();
+
 		this.mergedCollection = this._resolveMergedCollection();
+
 		this._notifyCollectionUpdatesEventually();
 	}
 	@throttle(1000)
 	private _persistCollectionsEventually(): void {
 		this._persistCollections();
 	}
+
 	protected _persistCollections(): void {
 		const collectionsJson: ISerializableExtensionEnvironmentVariableCollection[] =
 			[];
+
 		this.collections.forEach((collection, extensionIdentifier) => {
 			if (collection.persistent) {
 				collectionsJson.push({
@@ -132,6 +150,7 @@ export class EnvironmentVariableService
 		});
 
 		const stringifiedJson = JSON.stringify(collectionsJson);
+
 		this._storageService.store(
 			TerminalStorageKeys.EnvironmentVariableCollections,
 			stringifiedJson,
@@ -143,18 +162,22 @@ export class EnvironmentVariableService
 	private _notifyCollectionUpdatesEventually(): void {
 		this._notifyCollectionUpdates();
 	}
+
 	protected _notifyCollectionUpdates(): void {
 		this._onDidChangeCollections.fire(this.mergedCollection);
 	}
+
 	private _resolveMergedCollection(): IMergedEnvironmentVariableCollection {
 		return new MergedEnvironmentVariableCollection(this.collections);
 	}
+
 	private async _invalidateExtensionCollections(): Promise<void> {
 		await this._extensionService.whenInstalledExtensionsRegistered();
 
 		const registeredExtensions = this._extensionService.extensions;
 
 		let changes = false;
+
 		this.collections.forEach((_, extensionIdentifier) => {
 			const isExtensionRegistered = registeredExtensions.some(
 				(r) => r.identifier.value === extensionIdentifier,
@@ -162,6 +185,7 @@ export class EnvironmentVariableService
 
 			if (!isExtensionRegistered) {
 				this.collections.delete(extensionIdentifier);
+
 				changes = true;
 			}
 		});

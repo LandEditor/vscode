@@ -48,10 +48,12 @@ export function getColorPresentations(
 }
 export interface IColorData {
 	colorInfo: IColorInformation;
+
 	provider: DocumentColorProvider;
 }
 export interface IExtColorData {
 	range: IRange;
+
 	color: [number, number, number, number];
 }
 interface DataCollector<T> {
@@ -64,6 +66,7 @@ interface DataCollector<T> {
 }
 class ColorDataCollector implements DataCollector<IColorData> {
 	constructor() {}
+
 	async compute(
 		provider: DocumentColorProvider,
 		model: ITextModel,
@@ -80,11 +83,13 @@ class ColorDataCollector implements DataCollector<IColorData> {
 				colors.push({ colorInfo, provider });
 			}
 		}
+
 		return Array.isArray(documentColors);
 	}
 }
 export class ExtColorDataCollector implements DataCollector<IExtColorData> {
 	constructor() {}
+
 	async compute(
 		provider: DocumentColorProvider,
 		model: ITextModel,
@@ -109,6 +114,7 @@ export class ExtColorDataCollector implements DataCollector<IExtColorData> {
 				});
 			}
 		}
+
 		return Array.isArray(documentColors);
 	}
 }
@@ -116,6 +122,7 @@ export class ColorPresentationsCollector
 	implements DataCollector<IColorPresentation>
 {
 	constructor(private colorInfo: IColorInformation) {}
+
 	async compute(
 		provider: DocumentColorProvider,
 		model: ITextModel,
@@ -131,6 +138,7 @@ export class ColorPresentationsCollector
 		if (Array.isArray(documentColors)) {
 			colors.push(...documentColors);
 		}
+
 		return Array.isArray(documentColors);
 	}
 }
@@ -168,14 +176,17 @@ export async function _findColorData<
 			}
 		}
 	}
+
 	if (validDocumentColorProviderFound) {
 		return colorData;
 	}
+
 	if (defaultProvider && isDefaultColorDecoratorsEnabled) {
 		await collector.compute(defaultProvider, model, token, colorData);
 
 		return colorData;
 	}
+
 	return [];
 }
 export function _setupColorCommand(
@@ -183,7 +194,9 @@ export function _setupColorCommand(
 	resource: URI,
 ): {
 	model: ITextModel;
+
 	colorProviderRegistry: LanguageFeatureRegistry<DocumentColorProvider>;
+
 	isDefaultColorDecoratorsEnabled: boolean;
 } {
 	const { colorProvider: colorProviderRegistry } = accessor.get(
@@ -195,6 +208,7 @@ export function _setupColorCommand(
 	if (!model) {
 		throw illegalArgument();
 	}
+
 	const isDefaultColorDecoratorsEnabled = accessor
 		.get(IConfigurationService)
 		.getValue<boolean>("editor.defaultColorDecorators", { resource });

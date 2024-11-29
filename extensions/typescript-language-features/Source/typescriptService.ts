@@ -188,8 +188,11 @@ export type TypeScriptRequests = StandardTsServerRequests &
 
 export type ExecConfig = {
 	readonly lowPriority?: boolean;
+
 	readonly nonRecoverable?: boolean;
+
 	readonly cancelOnResourceChange?: vscode.Uri;
+
 	readonly executionTarget?: ExecutionTarget;
 };
 
@@ -257,14 +260,20 @@ export interface ITypeScriptServiceClient {
 
 	readonly onTsServerStarted: vscode.Event<{
 		version: TypeScriptVersion;
+
 		usedApiVersion: API;
 	}>;
+
 	readonly onProjectLanguageServiceStateChanged: vscode.Event<Proto.ProjectLanguageServiceStateEventBody>;
+
 	readonly onDidBeginInstallTypings: vscode.Event<Proto.BeginInstallTypesEventBody>;
+
 	readonly onDidEndInstallTypings: vscode.Event<Proto.EndInstallTypesEventBody>;
+
 	readonly onTypesInstallerInitializationFailed: vscode.Event<Proto.TypesInstallerInitializationFailedEventBody>;
 
 	readonly capabilities: ClientCapabilities;
+
 	readonly onDidChangeCapabilities: vscode.Event<void>;
 
 	onReady(f: () => void): Promise<void>;
@@ -274,8 +283,11 @@ export interface ITypeScriptServiceClient {
 	readonly apiVersion: API;
 
 	readonly pluginManager: PluginManager;
+
 	readonly configuration: TypeScriptServiceConfiguration;
+
 	readonly bufferSyncSupport: BufferSyncSupport;
+
 	readonly telemetryReporter: TelemetryReporter;
 
 	execute<K extends keyof StandardTsServerRequests>(

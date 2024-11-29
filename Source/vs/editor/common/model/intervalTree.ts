@@ -148,53 +148,83 @@ export class IntervalNode {
 	 * contains binary encoded information for color, visited, isForValidation and stickiness.
 	 */
 	public metadata: number;
+
 	public parent: IntervalNode;
+
 	public left: IntervalNode;
+
 	public right: IntervalNode;
+
 	public start: number;
+
 	public end: number;
+
 	public delta: number;
+
 	public maxEnd: number;
+
 	public id: string;
+
 	public ownerId: number;
+
 	public options: ModelDecorationOptions;
+
 	public cachedVersionId: number;
+
 	public cachedAbsoluteStart: number;
+
 	public cachedAbsoluteEnd: number;
+
 	public range: Range | null;
 
 	constructor(id: string, start: number, end: number) {
 		this.metadata = 0;
+
 		this.parent = this;
+
 		this.left = this;
+
 		this.right = this;
 
 		setNodeColor(this, NodeColor.Red);
+
 		this.start = start;
+
 		this.end = end;
 		// FORCE_OVERFLOWING_TEST: this.delta = start;
+
 		this.delta = 0;
+
 		this.maxEnd = end;
+
 		this.id = id;
+
 		this.ownerId = 0;
+
 		this.options = null!;
 
 		setNodeIsForValidation(this, false);
 
 		setNodeIsInGlyphMargin(this, false);
+
 		_setNodeStickiness(
 			this,
 			TrackedRangeStickiness.NeverGrowsWhenTypingAtEdges,
 		);
 
 		setCollapseOnReplaceEdit(this, false);
+
 		this.cachedVersionId = 0;
+
 		this.cachedAbsoluteStart = start;
+
 		this.cachedAbsoluteEnd = end;
+
 		this.range = null;
 
 		setNodeIsVisited(this, false);
 	}
+
 	public reset(
 		versionId: number,
 		start: number,
@@ -202,13 +232,20 @@ export class IntervalNode {
 		range: Range,
 	): void {
 		this.start = start;
+
 		this.end = end;
+
 		this.maxEnd = end;
+
 		this.cachedVersionId = versionId;
+
 		this.cachedAbsoluteStart = start;
+
 		this.cachedAbsoluteEnd = end;
+
 		this.range = range;
 	}
+
 	public setOptions(options: ModelDecorationOptions) {
 		this.options = options;
 
@@ -225,10 +262,12 @@ export class IntervalNode {
 			this,
 			this.options.glyphMarginClassName !== null,
 		);
+
 		_setNodeStickiness(this, <number>this.options.stickiness);
 
 		setCollapseOnReplaceEdit(this, this.options.collapseOnReplaceEdit);
 	}
+
 	public setCachedOffsets(
 		absoluteStart: number,
 		absoluteEnd: number,
@@ -237,13 +276,19 @@ export class IntervalNode {
 		if (this.cachedVersionId !== cachedVersionId) {
 			this.range = null;
 		}
+
 		this.cachedVersionId = cachedVersionId;
+
 		this.cachedAbsoluteStart = absoluteStart;
+
 		this.cachedAbsoluteEnd = absoluteEnd;
 	}
+
 	public detach(): void {
 		this.parent = null!;
+
 		this.left = null!;
+
 		this.right = null!;
 	}
 }
@@ -255,12 +300,15 @@ setNodeColor(SENTINEL, NodeColor.Black);
 
 export class IntervalTree {
 	public root: IntervalNode;
+
 	public requestNormalizeDelta: boolean;
 
 	constructor() {
 		this.root = SENTINEL;
+
 		this.requestNormalizeDelta = false;
 	}
+
 	public intervalSearch(
 		start: number,
 		end: number,
@@ -272,6 +320,7 @@ export class IntervalTree {
 		if (this.root === SENTINEL) {
 			return [];
 		}
+
 		return intervalSearch(
 			this,
 			start,
@@ -282,6 +331,7 @@ export class IntervalTree {
 			onlyMarginDecorations,
 		);
 	}
+
 	public search(
 		filterOwnerId: number,
 		filterOutValidation: boolean,
@@ -291,6 +341,7 @@ export class IntervalTree {
 		if (this.root === SENTINEL) {
 			return [];
 		}
+
 		return search(
 			this,
 			filterOwnerId,
@@ -311,14 +362,19 @@ export class IntervalTree {
 	public collectNodesPostOrder(): IntervalNode[] {
 		return collectNodesPostOrder(this);
 	}
+
 	public insert(node: IntervalNode): void {
 		rbTreeInsert(this, node);
+
 		this._normalizeDeltaIfNecessary();
 	}
+
 	public delete(node: IntervalNode): void {
 		rbTreeDelete(this, node);
+
 		this._normalizeDeltaIfNecessary();
 	}
+
 	public resolveNode(node: IntervalNode, cachedVersionId: number): void {
 		const initialNode = node;
 
@@ -328,13 +384,17 @@ export class IntervalTree {
 			if (node === node.parent.right) {
 				delta += node.parent.delta;
 			}
+
 			node = node.parent;
 		}
+
 		const nodeStart = initialNode.start + delta;
 
 		const nodeEnd = initialNode.end + delta;
+
 		initialNode.setCachedOffsets(nodeStart, nodeEnd, cachedVersionId);
 	}
+
 	public acceptReplace(
 		offset: number,
 		length: number,
@@ -347,17 +407,23 @@ export class IntervalTree {
 		// (2) remove all nodes that are intersecting this edit
 		for (let i = 0, len = nodesOfInterest.length; i < len; i++) {
 			const node = nodesOfInterest[i];
+
 			rbTreeDelete(this, node);
 		}
+
 		this._normalizeDeltaIfNecessary();
 		// (3) edit all tree nodes except the nodes of interest
 		noOverlapReplace(this, offset, offset + length, textLength);
+
 		this._normalizeDeltaIfNecessary();
 		// (4) edit the nodes of interest and insert them back in the tree
 		for (let i = 0, len = nodesOfInterest.length; i < len; i++) {
 			const node = nodesOfInterest[i];
+
 			node.start = node.cachedAbsoluteStart;
+
 			node.end = node.cachedAbsoluteEnd;
+
 			nodeAcceptEdit(
 				node,
 				offset,
@@ -365,19 +431,26 @@ export class IntervalTree {
 				textLength,
 				forceMoveMarkers,
 			);
+
 			node.maxEnd = node.end;
+
 			rbTreeInsert(this, node);
 		}
+
 		this._normalizeDeltaIfNecessary();
 	}
+
 	public getAllInOrder(): IntervalNode[] {
 		return search(this, 0, false, 0, false);
 	}
+
 	private _normalizeDeltaIfNecessary(): void {
 		if (!this.requestNormalizeDelta) {
 			return;
 		}
+
 		this.requestNormalizeDelta = false;
+
 		normalizeDelta(this);
 	}
 }
@@ -394,17 +467,22 @@ function normalizeDelta(T: IntervalTree): void {
 
 			continue;
 		}
+
 		if (node.right !== SENTINEL && !getNodeIsVisited(node.right)) {
 			// go right
 			delta += node.delta;
+
 			node = node.right;
 
 			continue;
 		}
 		// handle current node
 		node.start = delta + node.start;
+
 		node.end = delta + node.end;
+
 		node.delta = 0;
+
 		recomputeMaxEnd(node);
 
 		setNodeIsVisited(node, true);
@@ -416,8 +494,10 @@ function normalizeDelta(T: IntervalTree): void {
 		if (node === node.parent.right) {
 			delta -= node.parent.delta;
 		}
+
 		node = node.parent;
 	}
+
 	setNodeIsVisited(T.root, false);
 }
 //#endregion
@@ -436,15 +516,19 @@ function adjustMarkerBeforeColumn(
 	if (markerOffset < checkOffset) {
 		return true;
 	}
+
 	if (markerOffset > checkOffset) {
 		return false;
 	}
+
 	if (moveSemantics === MarkerMoveSemantics.ForceMove) {
 		return false;
 	}
+
 	if (moveSemantics === MarkerMoveSemantics.ForceStay) {
 		return true;
 	}
+
 	return markerStickToPreviousCharacter;
 }
 /**
@@ -491,8 +575,11 @@ export function nodeAcceptEdit(
 		// This edit encompasses the entire decoration range
 		// and the decoration has asked to become collapsed
 		node.start = start;
+
 		startDone = true;
+
 		node.end = start;
+
 		endDone = true;
 	}
 	{
@@ -513,6 +600,7 @@ export function nodeAcceptEdit(
 		) {
 			startDone = true;
 		}
+
 		if (
 			!endDone &&
 			adjustMarkerBeforeColumn(
@@ -525,6 +613,7 @@ export function nodeAcceptEdit(
 			endDone = true;
 		}
 	}
+
 	if (commonLength > 0 && !forceMoveMarkers) {
 		const moveSemantics =
 			deletingCnt > insertingCnt
@@ -542,6 +631,7 @@ export function nodeAcceptEdit(
 		) {
 			startDone = true;
 		}
+
 		if (
 			!endDone &&
 			adjustMarkerBeforeColumn(
@@ -569,8 +659,10 @@ export function nodeAcceptEdit(
 			)
 		) {
 			node.start = start + insertingCnt;
+
 			startDone = true;
 		}
+
 		if (
 			!endDone &&
 			adjustMarkerBeforeColumn(
@@ -581,6 +673,7 @@ export function nodeAcceptEdit(
 			)
 		) {
 			node.end = start + insertingCnt;
+
 			endDone = true;
 		}
 	}
@@ -590,9 +683,11 @@ export function nodeAcceptEdit(
 	if (!startDone) {
 		node.start = Math.max(0, nodeStart + deltaColumn);
 	}
+
 	if (!endDone) {
 		node.end = Math.max(0, nodeEnd + deltaColumn);
 	}
+
 	if (node.start > node.end) {
 		node.end = node.start;
 	}
@@ -632,10 +727,12 @@ function searchForEditing(
 			if (node === node.parent.right) {
 				delta -= node.parent.delta;
 			}
+
 			node = node.parent;
 
 			continue;
 		}
+
 		if (!getNodeIsVisited(node.left)) {
 			// first time seeing this node
 			nodeMaxEnd = delta + node.maxEnd;
@@ -647,6 +744,7 @@ function searchForEditing(
 
 				continue;
 			}
+
 			if (node.left !== SENTINEL) {
 				// go left
 				node = node.left;
@@ -664,22 +762,27 @@ function searchForEditing(
 
 			continue;
 		}
+
 		nodeEnd = delta + node.end;
 
 		if (nodeEnd >= start) {
 			node.setCachedOffsets(nodeStart, nodeEnd, 0);
+
 			result[resultLen++] = node;
 		}
+
 		setNodeIsVisited(node, true);
 
 		if (node.right !== SENTINEL && !getNodeIsVisited(node.right)) {
 			// go right
 			delta += node.delta;
+
 			node = node.right;
 
 			continue;
 		}
 	}
+
 	setNodeIsVisited(T.root, false);
 
 	return result;
@@ -716,11 +819,14 @@ function noOverlapReplace(
 			if (node === node.parent.right) {
 				delta -= node.parent.delta;
 			}
+
 			recomputeMaxEnd(node);
+
 			node = node.parent;
 
 			continue;
 		}
+
 		if (!getNodeIsVisited(node.left)) {
 			// first time seeing this node
 			nodeMaxEnd = delta + node.maxEnd;
@@ -732,6 +838,7 @@ function noOverlapReplace(
 
 				continue;
 			}
+
 			if (node.left !== SENTINEL) {
 				// go left
 				node = node.left;
@@ -744,7 +851,9 @@ function noOverlapReplace(
 
 		if (nodeStart > end) {
 			node.start += editDelta;
+
 			node.end += editDelta;
+
 			node.delta += editDelta;
 
 			if (
@@ -759,16 +868,19 @@ function noOverlapReplace(
 
 			continue;
 		}
+
 		setNodeIsVisited(node, true);
 
 		if (node.right !== SENTINEL && !getNodeIsVisited(node.right)) {
 			// go right
 			delta += node.delta;
+
 			node = node.right;
 
 			continue;
 		}
 	}
+
 	setNodeIsVisited(T.root, false);
 }
 //#endregion
@@ -789,10 +901,12 @@ function collectNodesFromOwner(
 			setNodeIsVisited(node.left, false);
 
 			setNodeIsVisited(node.right, false);
+
 			node = node.parent;
 
 			continue;
 		}
+
 		if (node.left !== SENTINEL && !getNodeIsVisited(node.left)) {
 			// go left
 			node = node.left;
@@ -803,6 +917,7 @@ function collectNodesFromOwner(
 		if (node.ownerId === ownerId) {
 			result[resultLen++] = node;
 		}
+
 		setNodeIsVisited(node, true);
 
 		if (node.right !== SENTINEL && !getNodeIsVisited(node.right)) {
@@ -812,6 +927,7 @@ function collectNodesFromOwner(
 			continue;
 		}
 	}
+
 	setNodeIsVisited(T.root, false);
 
 	return result;
@@ -829,16 +945,19 @@ function collectNodesPostOrder(T: IntervalTree): IntervalNode[] {
 			setNodeIsVisited(node.left, false);
 
 			setNodeIsVisited(node.right, false);
+
 			node = node.parent;
 
 			continue;
 		}
+
 		if (node.left !== SENTINEL && !getNodeIsVisited(node.left)) {
 			// go left
 			node = node.left;
 
 			continue;
 		}
+
 		if (node.right !== SENTINEL && !getNodeIsVisited(node.right)) {
 			// go right
 			node = node.right;
@@ -850,6 +969,7 @@ function collectNodesPostOrder(T: IntervalTree): IntervalNode[] {
 
 		setNodeIsVisited(node, true);
 	}
+
 	setNodeIsVisited(T.root, false);
 
 	return result;
@@ -883,10 +1003,12 @@ function search(
 			if (node === node.parent.right) {
 				delta -= node.parent.delta;
 			}
+
 			node = node.parent;
 
 			continue;
 		}
+
 		if (node.left !== SENTINEL && !getNodeIsVisited(node.left)) {
 			// go left
 			node = node.left;
@@ -895,7 +1017,9 @@ function search(
 		}
 		// handle current node
 		nodeStart = delta + node.start;
+
 		nodeEnd = delta + node.end;
+
 		node.setCachedOffsets(nodeStart, nodeEnd, cachedVersionId);
 
 		let include = true;
@@ -903,25 +1027,31 @@ function search(
 		if (filterOwnerId && node.ownerId && node.ownerId !== filterOwnerId) {
 			include = false;
 		}
+
 		if (filterOutValidation && getNodeIsForValidation(node)) {
 			include = false;
 		}
+
 		if (onlyMarginDecorations && !getNodeIsInGlyphMargin(node)) {
 			include = false;
 		}
+
 		if (include) {
 			result[resultLen++] = node;
 		}
+
 		setNodeIsVisited(node, true);
 
 		if (node.right !== SENTINEL && !getNodeIsVisited(node.right)) {
 			// go right
 			delta += node.delta;
+
 			node = node.right;
 
 			continue;
 		}
 	}
+
 	setNodeIsVisited(T.root, false);
 
 	return result;
@@ -965,10 +1095,12 @@ function intervalSearch(
 			if (node === node.parent.right) {
 				delta -= node.parent.delta;
 			}
+
 			node = node.parent;
 
 			continue;
 		}
+
 		if (!getNodeIsVisited(node.left)) {
 			// first time seeing this node
 			nodeMaxEnd = delta + node.maxEnd;
@@ -980,6 +1112,7 @@ function intervalSearch(
 
 				continue;
 			}
+
 			if (node.left !== SENTINEL) {
 				// go left
 				node = node.left;
@@ -997,6 +1130,7 @@ function intervalSearch(
 
 			continue;
 		}
+
 		nodeEnd = delta + node.end;
 
 		if (nodeEnd >= intervalStart) {
@@ -1012,26 +1146,32 @@ function intervalSearch(
 			) {
 				include = false;
 			}
+
 			if (filterOutValidation && getNodeIsForValidation(node)) {
 				include = false;
 			}
+
 			if (onlyMarginDecorations && !getNodeIsInGlyphMargin(node)) {
 				include = false;
 			}
+
 			if (include) {
 				result[resultLen++] = node;
 			}
 		}
+
 		setNodeIsVisited(node, true);
 
 		if (node.right !== SENTINEL && !getNodeIsVisited(node.right)) {
 			// go right
 			delta += node.delta;
+
 			node = node.right;
 
 			continue;
 		}
 	}
+
 	setNodeIsVisited(T.root, false);
 
 	return result;
@@ -1041,15 +1181,20 @@ function intervalSearch(
 function rbTreeInsert(T: IntervalTree, newNode: IntervalNode): IntervalNode {
 	if (T.root === SENTINEL) {
 		newNode.parent = SENTINEL;
+
 		newNode.left = SENTINEL;
+
 		newNode.right = SENTINEL;
 
 		setNodeColor(newNode, NodeColor.Black);
+
 		T.root = newNode;
 
 		return T.root;
 	}
+
 	treeInsert(T, newNode);
+
 	recomputeMaxEndWalkToRoot(newNode.parent);
 	// repair tree
 	let x = newNode;
@@ -1064,15 +1209,19 @@ function rbTreeInsert(T: IntervalTree, newNode: IntervalNode): IntervalNode {
 				setNodeColor(y, NodeColor.Black);
 
 				setNodeColor(x.parent.parent, NodeColor.Red);
+
 				x = x.parent.parent;
 			} else {
 				if (x === x.parent.right) {
 					x = x.parent;
+
 					leftRotate(T, x);
 				}
+
 				setNodeColor(x.parent, NodeColor.Black);
 
 				setNodeColor(x.parent.parent, NodeColor.Red);
+
 				rightRotate(T, x.parent.parent);
 			}
 		} else {
@@ -1084,19 +1233,24 @@ function rbTreeInsert(T: IntervalTree, newNode: IntervalNode): IntervalNode {
 				setNodeColor(y, NodeColor.Black);
 
 				setNodeColor(x.parent.parent, NodeColor.Red);
+
 				x = x.parent.parent;
 			} else {
 				if (x === x.parent.left) {
 					x = x.parent;
+
 					rightRotate(T, x);
 				}
+
 				setNodeColor(x.parent, NodeColor.Black);
 
 				setNodeColor(x.parent.parent, NodeColor.Red);
+
 				leftRotate(T, x.parent.parent);
 			}
 		}
 	}
+
 	setNodeColor(T.root, NodeColor.Black);
 
 	return newNode;
@@ -1123,8 +1277,11 @@ function treeInsert(T: IntervalTree, z: IntervalNode): void {
 			// => it is not affected by the node's delta
 			if (x.left === SENTINEL) {
 				z.start -= delta;
+
 				z.end -= delta;
+
 				z.maxEnd -= delta;
+
 				x.left = z;
 
 				break;
@@ -1136,19 +1293,26 @@ function treeInsert(T: IntervalTree, z: IntervalNode): void {
 			// => it is not affected by the node's delta
 			if (x.right === SENTINEL) {
 				z.start -= delta + x.delta;
+
 				z.end -= delta + x.delta;
+
 				z.maxEnd -= delta + x.delta;
+
 				x.right = z;
 
 				break;
 			} else {
 				delta += x.delta;
+
 				x = x.right;
 			}
 		}
 	}
+
 	z.parent = x;
+
 	z.left = SENTINEL;
+
 	z.right = SENTINEL;
 
 	setNodeColor(z, NodeColor.Red);
@@ -1163,6 +1327,7 @@ function rbTreeDelete(T: IntervalTree, z: IntervalNode): void {
 	// i.e. we always delete what's pointed at by z.
 	if (z.left === SENTINEL) {
 		x = z.right;
+
 		y = z;
 		// x's delta is no longer influenced by z's delta
 		x.delta += z.delta;
@@ -1173,19 +1338,25 @@ function rbTreeDelete(T: IntervalTree, z: IntervalNode): void {
 		) {
 			T.requestNormalizeDelta = true;
 		}
+
 		x.start += z.delta;
+
 		x.end += z.delta;
 	} else if (z.right === SENTINEL) {
 		x = z.left;
+
 		y = z;
 	} else {
 		y = leftest(z.right);
+
 		x = y.right;
 		// y's delta is no longer influenced by z's delta,
 		// but we don't want to walk the entire right-hand-side subtree of x.
 		// we therefore maintain z's delta in y, and adjust only x
 		x.start += y.delta;
+
 		x.end += y.delta;
+
 		x.delta += y.delta;
 
 		if (
@@ -1194,8 +1365,11 @@ function rbTreeDelete(T: IntervalTree, z: IntervalNode): void {
 		) {
 			T.requestNormalizeDelta = true;
 		}
+
 		y.start += z.delta;
+
 		y.end += z.delta;
+
 		y.delta = z.delta;
 
 		if (
@@ -1205,17 +1379,23 @@ function rbTreeDelete(T: IntervalTree, z: IntervalNode): void {
 			T.requestNormalizeDelta = true;
 		}
 	}
+
 	if (y === T.root) {
 		T.root = x;
 
 		setNodeColor(x, NodeColor.Black);
+
 		z.detach();
+
 		resetSentinel();
+
 		recomputeMaxEnd(x);
+
 		T.root.parent = SENTINEL;
 
 		return;
 	}
+
 	const yWasRed = getNodeColor(y) === NodeColor.Red;
 
 	if (y === y.parent.left) {
@@ -1223,6 +1403,7 @@ function rbTreeDelete(T: IntervalTree, z: IntervalNode): void {
 	} else {
 		y.parent.right = x;
 	}
+
 	if (y === z) {
 		x.parent = y.parent;
 	} else {
@@ -1231,8 +1412,11 @@ function rbTreeDelete(T: IntervalTree, z: IntervalNode): void {
 		} else {
 			x.parent = y.parent;
 		}
+
 		y.left = z.left;
+
 		y.right = z.right;
+
 		y.parent = z.parent;
 
 		setNodeColor(y, getNodeColor(z));
@@ -1246,13 +1430,16 @@ function rbTreeDelete(T: IntervalTree, z: IntervalNode): void {
 				z.parent.right = y;
 			}
 		}
+
 		if (y.left !== SENTINEL) {
 			y.left.parent = y;
 		}
+
 		if (y.right !== SENTINEL) {
 			y.right.parent = y;
 		}
 	}
+
 	z.detach();
 
 	if (yWasRed) {
@@ -1260,17 +1447,22 @@ function rbTreeDelete(T: IntervalTree, z: IntervalNode): void {
 
 		if (y !== z) {
 			recomputeMaxEndWalkToRoot(y);
+
 			recomputeMaxEndWalkToRoot(y.parent);
 		}
+
 		resetSentinel();
 
 		return;
 	}
+
 	recomputeMaxEndWalkToRoot(x);
+
 	recomputeMaxEndWalkToRoot(x.parent);
 
 	if (y !== z) {
 		recomputeMaxEndWalkToRoot(y);
+
 		recomputeMaxEndWalkToRoot(y.parent);
 	}
 	// RB-DELETE-FIXUP
@@ -1284,29 +1476,38 @@ function rbTreeDelete(T: IntervalTree, z: IntervalNode): void {
 				setNodeColor(w, NodeColor.Black);
 
 				setNodeColor(x.parent, NodeColor.Red);
+
 				leftRotate(T, x.parent);
+
 				w = x.parent.right;
 			}
+
 			if (
 				getNodeColor(w.left) === NodeColor.Black &&
 				getNodeColor(w.right) === NodeColor.Black
 			) {
 				setNodeColor(w, NodeColor.Red);
+
 				x = x.parent;
 			} else {
 				if (getNodeColor(w.right) === NodeColor.Black) {
 					setNodeColor(w.left, NodeColor.Black);
 
 					setNodeColor(w, NodeColor.Red);
+
 					rightRotate(T, w);
+
 					w = x.parent.right;
 				}
+
 				setNodeColor(w, getNodeColor(x.parent));
 
 				setNodeColor(x.parent, NodeColor.Black);
 
 				setNodeColor(w.right, NodeColor.Black);
+
 				leftRotate(T, x.parent);
+
 				x = T.root;
 			}
 		} else {
@@ -1316,44 +1517,57 @@ function rbTreeDelete(T: IntervalTree, z: IntervalNode): void {
 				setNodeColor(w, NodeColor.Black);
 
 				setNodeColor(x.parent, NodeColor.Red);
+
 				rightRotate(T, x.parent);
+
 				w = x.parent.left;
 			}
+
 			if (
 				getNodeColor(w.left) === NodeColor.Black &&
 				getNodeColor(w.right) === NodeColor.Black
 			) {
 				setNodeColor(w, NodeColor.Red);
+
 				x = x.parent;
 			} else {
 				if (getNodeColor(w.left) === NodeColor.Black) {
 					setNodeColor(w.right, NodeColor.Black);
 
 					setNodeColor(w, NodeColor.Red);
+
 					leftRotate(T, w);
+
 					w = x.parent.left;
 				}
+
 				setNodeColor(w, getNodeColor(x.parent));
 
 				setNodeColor(x.parent, NodeColor.Black);
 
 				setNodeColor(w.left, NodeColor.Black);
+
 				rightRotate(T, x.parent);
+
 				x = T.root;
 			}
 		}
 	}
+
 	setNodeColor(x, NodeColor.Black);
+
 	resetSentinel();
 }
 function leftest(node: IntervalNode): IntervalNode {
 	while (node.left !== SENTINEL) {
 		node = node.left;
 	}
+
 	return node;
 }
 function resetSentinel(): void {
 	SENTINEL.parent = SENTINEL;
+
 	SENTINEL.delta = 0; // optional
 	SENTINEL.start = 0; // optional
 	SENTINEL.end = 0; // optional
@@ -1369,12 +1583,16 @@ function leftRotate(T: IntervalTree, x: IntervalNode): void {
 	) {
 		T.requestNormalizeDelta = true;
 	}
+
 	y.start += x.delta;
+
 	y.end += x.delta;
+
 	x.right = y.left; // turn y's left subtree into x's right subtree.
 	if (y.left !== SENTINEL) {
 		y.left.parent = x;
 	}
+
 	y.parent = x.parent; // link x's parent to y.
 	if (x.parent === SENTINEL) {
 		T.root = y;
@@ -1383,13 +1601,17 @@ function leftRotate(T: IntervalTree, x: IntervalNode): void {
 	} else {
 		x.parent.right = y;
 	}
+
 	y.left = x; // put x on y's left.
 	x.parent = y;
+
 	recomputeMaxEnd(x);
+
 	recomputeMaxEnd(y);
 }
 function rightRotate(T: IntervalTree, y: IntervalNode): void {
 	const x = y.left;
+
 	y.delta -= x.delta;
 
 	if (
@@ -1398,13 +1620,17 @@ function rightRotate(T: IntervalTree, y: IntervalNode): void {
 	) {
 		T.requestNormalizeDelta = true;
 	}
+
 	y.start -= x.delta;
+
 	y.end -= x.delta;
+
 	y.left = x.right;
 
 	if (x.right !== SENTINEL) {
 		x.right.parent = y;
 	}
+
 	x.parent = y.parent;
 
 	if (y.parent === SENTINEL) {
@@ -1414,9 +1640,13 @@ function rightRotate(T: IntervalTree, y: IntervalNode): void {
 	} else {
 		y.parent.left = x;
 	}
+
 	x.right = y;
+
 	y.parent = x;
+
 	recomputeMaxEnd(y);
+
 	recomputeMaxEnd(x);
 }
 //#endregion
@@ -1431,6 +1661,7 @@ function computeMaxEnd(node: IntervalNode): number {
 			maxEnd = leftMaxEnd;
 		}
 	}
+
 	if (node.right !== SENTINEL) {
 		const rightMaxEnd = node.right.maxEnd + node.delta;
 
@@ -1438,6 +1669,7 @@ function computeMaxEnd(node: IntervalNode): number {
 			maxEnd = rightMaxEnd;
 		}
 	}
+
 	return maxEnd;
 }
 export function recomputeMaxEnd(node: IntervalNode): void {
@@ -1451,7 +1683,9 @@ function recomputeMaxEndWalkToRoot(node: IntervalNode): void {
 			// no need to go further
 			return;
 		}
+
 		node.maxEnd = maxEnd;
+
 		node = node.parent;
 	}
 }
@@ -1466,6 +1700,7 @@ export function intervalCompare(
 	if (aStart === bStart) {
 		return aEnd - bEnd;
 	}
+
 	return aStart - bStart;
 }
 //#endregion

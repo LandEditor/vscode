@@ -186,19 +186,30 @@ class OutputContribution extends Disposable implements IWorkbenchContribution {
 		private readonly fileConfigurationService: IFilesConfigurationService,
 	) {
 		super();
+
 		this.registerActions();
 	}
+
 	private registerActions(): void {
 		this.registerSwitchOutputAction();
+
 		this.registerShowOutputChannelsAction();
+
 		this.registerClearOutputAction();
+
 		this.registerToggleAutoScrollAction();
+
 		this.registerOpenActiveOutputFileAction();
+
 		this.registerOpenActiveOutputFileInAuxWindowAction();
+
 		this.registerShowLogsAction();
+
 		this.registerOpenLogFileAction();
+
 		this.registerConfigureActiveOutputLogLevelAction();
 	}
+
 	private registerSwitchOutputAction(): void {
 		this._register(
 			registerAction2(
@@ -212,6 +223,7 @@ class OutputContribution extends Disposable implements IWorkbenchContribution {
 							),
 						});
 					}
+
 					async run(
 						accessor: ServicesAccessor,
 						channelId: string,
@@ -229,6 +241,7 @@ class OutputContribution extends Disposable implements IWorkbenchContribution {
 		const switchOutputMenu = new MenuId(
 			"workbench.output.menu.switchOutput",
 		);
+
 		this._register(
 			MenuRegistry.appendMenuItem(MenuId.ViewTitle, {
 				submenu: switchOutputMenu,
@@ -241,6 +254,7 @@ class OutputContribution extends Disposable implements IWorkbenchContribution {
 		);
 
 		const registeredChannels = new Map<string, IDisposable>();
+
 		this._register(
 			toDisposable(() => dispose(registeredChannels.values())),
 		);
@@ -254,6 +268,7 @@ class OutputContribution extends Disposable implements IWorkbenchContribution {
 				const group = channel.extensionId
 					? "0_ext_outputchannels"
 					: "1_core_outputchannels";
+
 				registeredChannels.set(
 					channel.id,
 					registerAction2(
@@ -272,6 +287,7 @@ class OutputContribution extends Disposable implements IWorkbenchContribution {
 									},
 								});
 							}
+
 							async run(
 								accessor: ServicesAccessor,
 							): Promise<void> {
@@ -284,11 +300,13 @@ class OutputContribution extends Disposable implements IWorkbenchContribution {
 				);
 			}
 		};
+
 		registerOutputChannels(this.outputService.getChannelDescriptors());
 
 		const outputChannelRegistry = Registry.as<IOutputChannelRegistry>(
 			Extensions.OutputChannels,
 		);
+
 		this._register(
 			outputChannelRegistry.onDidRegisterChannel((e) => {
 				const channel = this.outputService.getChannelDescriptor(e);
@@ -298,13 +316,16 @@ class OutputContribution extends Disposable implements IWorkbenchContribution {
 				}
 			}),
 		);
+
 		this._register(
 			outputChannelRegistry.onDidRemoveChannel((e) => {
 				registeredChannels.get(e)?.dispose();
+
 				registeredChannels.delete(e);
 			}),
 		);
 	}
+
 	private registerShowOutputChannelsAction(): void {
 		this._register(
 			registerAction2(
@@ -320,6 +341,7 @@ class OutputContribution extends Disposable implements IWorkbenchContribution {
 							f1: true,
 						});
 					}
+
 					async run(accessor: ServicesAccessor): Promise<void> {
 						const outputService = accessor.get(IOutputService);
 
@@ -336,9 +358,11 @@ class OutputContribution extends Disposable implements IWorkbenchContribution {
 								coreChannels.push(channel);
 							}
 						}
+
 						const entries: (
 							| {
 									id: string;
+
 									label: string;
 							  }
 							| IQuickPickSeparator
@@ -347,12 +371,15 @@ class OutputContribution extends Disposable implements IWorkbenchContribution {
 						for (const { id, label } of extensionChannels) {
 							entries.push({ id, label });
 						}
+
 						if (extensionChannels.length && coreChannels.length) {
 							entries.push({ type: "separator" });
 						}
+
 						for (const { id, label } of coreChannels) {
 							entries.push({ id, label });
 						}
+
 						const entry = await quickInputService.pick(entries, {
 							placeHolder: nls.localize(
 								"selectOutput",
@@ -368,6 +395,7 @@ class OutputContribution extends Disposable implements IWorkbenchContribution {
 			),
 		);
 	}
+
 	private registerClearOutputAction(): void {
 		this._register(
 			registerAction2(
@@ -401,6 +429,7 @@ class OutputContribution extends Disposable implements IWorkbenchContribution {
 							icon: Codicon.clearAll,
 						});
 					}
+
 					async run(accessor: ServicesAccessor): Promise<void> {
 						const outputService = accessor.get(IOutputService);
 
@@ -412,6 +441,7 @@ class OutputContribution extends Disposable implements IWorkbenchContribution {
 
 						if (activeChannel) {
 							activeChannel.clear();
+
 							accessibilitySignalService.playSignal(
 								AccessibilitySignal.clear,
 							);
@@ -421,6 +451,7 @@ class OutputContribution extends Disposable implements IWorkbenchContribution {
 			),
 		);
 	}
+
 	private registerToggleAutoScrollAction(): void {
 		this._register(
 			registerAction2(
@@ -458,20 +489,24 @@ class OutputContribution extends Disposable implements IWorkbenchContribution {
 							},
 						});
 					}
+
 					async run(accessor: ServicesAccessor): Promise<void> {
 						const outputView = accessor
 							.get(IViewsService)
 							.getActiveViewWithId<OutputViewPane>(
 								OUTPUT_VIEW_ID,
 							)!;
+
 						outputView.scrollLock = !outputView.scrollLock;
 					}
 				},
 			),
 		);
 	}
+
 	private registerOpenActiveOutputFileAction(): void {
 		const that = this;
+
 		this._register(
 			registerAction2(
 				class extends Action2 {
@@ -498,6 +533,7 @@ class OutputContribution extends Disposable implements IWorkbenchContribution {
 							precondition: CONTEXT_ACTIVE_FILE_OUTPUT,
 						});
 					}
+
 					async run(): Promise<void> {
 						that.openActiveOutoutFile();
 					}
@@ -505,8 +541,10 @@ class OutputContribution extends Disposable implements IWorkbenchContribution {
 			),
 		);
 	}
+
 	private registerOpenActiveOutputFileInAuxWindowAction(): void {
 		const that = this;
+
 		this._register(
 			registerAction2(
 				class extends Action2 {
@@ -533,6 +571,7 @@ class OutputContribution extends Disposable implements IWorkbenchContribution {
 							precondition: CONTEXT_ACTIVE_FILE_OUTPUT,
 						});
 					}
+
 					async run(): Promise<void> {
 						that.openActiveOutoutFile(AUX_WINDOW_GROUP);
 					}
@@ -540,6 +579,7 @@ class OutputContribution extends Disposable implements IWorkbenchContribution {
 			),
 		);
 	}
+
 	private async openActiveOutoutFile(
 		group?: AUX_WINDOW_GROUP_TYPE,
 	): Promise<void> {
@@ -551,6 +591,7 @@ class OutputContribution extends Disposable implements IWorkbenchContribution {
 				fileOutputChannelDescriptor.file,
 				true,
 			);
+
 			await this.editorService.openEditor(
 				{
 					resource: fileOutputChannelDescriptor.file,
@@ -562,6 +603,7 @@ class OutputContribution extends Disposable implements IWorkbenchContribution {
 			);
 		}
 	}
+
 	private getFileOutputChannelDescriptor(): IFileOutputChannelDescriptor | null {
 		const channel = this.outputService.getActiveChannel();
 
@@ -574,12 +616,15 @@ class OutputContribution extends Disposable implements IWorkbenchContribution {
 				return <IFileOutputChannelDescriptor>descriptor;
 			}
 		}
+
 		return null;
 	}
+
 	private registerConfigureActiveOutputLogLevelAction(): void {
 		const that = this;
 
 		const logLevelMenu = new MenuId("workbench.output.menu.logLevel");
+
 		this._register(
 			MenuRegistry.appendMenuItem(MenuId.ViewTitle, {
 				submenu: logLevelMenu,
@@ -615,6 +660,7 @@ class OutputContribution extends Disposable implements IWorkbenchContribution {
 								},
 							});
 						}
+
 						async run(accessor: ServicesAccessor): Promise<void> {
 							const channel =
 								that.outputService.getActiveChannel();
@@ -642,12 +688,19 @@ class OutputContribution extends Disposable implements IWorkbenchContribution {
 				),
 			);
 		};
+
 		registerLogLevel(LogLevel.Trace);
+
 		registerLogLevel(LogLevel.Debug);
+
 		registerLogLevel(LogLevel.Info);
+
 		registerLogLevel(LogLevel.Warning);
+
 		registerLogLevel(LogLevel.Error);
+
 		registerLogLevel(LogLevel.Off);
+
 		this._register(
 			registerAction2(
 				class extends Action2 {
@@ -667,6 +720,7 @@ class OutputContribution extends Disposable implements IWorkbenchContribution {
 								CONTEXT_ACTIVE_OUTPUT_LEVEL_IS_DEFAULT.negate(),
 						});
 					}
+
 					async run(accessor: ServicesAccessor): Promise<void> {
 						const channel = that.outputService.getActiveChannel();
 
@@ -697,6 +751,7 @@ class OutputContribution extends Disposable implements IWorkbenchContribution {
 			),
 		);
 	}
+
 	private registerShowLogsAction(): void {
 		this._register(
 			registerAction2(
@@ -711,6 +766,7 @@ class OutputContribution extends Disposable implements IWorkbenchContribution {
 							},
 						});
 					}
+
 					async run(accessor: ServicesAccessor): Promise<void> {
 						const outputService = accessor.get(IOutputService);
 
@@ -729,9 +785,11 @@ class OutputContribution extends Disposable implements IWorkbenchContribution {
 								}
 							}
 						}
+
 						const entries: (
 							| {
 									id: string;
+
 									label: string;
 							  }
 							| IQuickPickSeparator
@@ -740,6 +798,7 @@ class OutputContribution extends Disposable implements IWorkbenchContribution {
 						for (const { id, label } of logs) {
 							entries.push({ id, label });
 						}
+
 						if (extensionLogs.length && logs.length) {
 							entries.push({
 								type: "separator",
@@ -749,9 +808,11 @@ class OutputContribution extends Disposable implements IWorkbenchContribution {
 								),
 							});
 						}
+
 						for (const { id, label } of extensionLogs) {
 							entries.push({ id, label });
 						}
+
 						const entry = await quickInputService.pick(entries, {
 							placeHolder: nls.localize(
 								"selectlog",
@@ -767,10 +828,12 @@ class OutputContribution extends Disposable implements IWorkbenchContribution {
 			),
 		);
 	}
+
 	private registerOpenLogFileAction(): void {
 		interface IOutputChannelQuickPickItem extends IQuickPickItem {
 			channel: IOutputChannelDescriptor;
 		}
+
 		this._register(
 			registerAction2(
 				class extends Action2 {
@@ -802,6 +865,7 @@ class OutputContribution extends Disposable implements IWorkbenchContribution {
 							},
 						});
 					}
+
 					async run(
 						accessor: ServicesAccessor,
 						args?: unknown,
@@ -840,11 +904,13 @@ class OutputContribution extends Disposable implements IWorkbenchContribution {
 								} else {
 									coreChannels.push(e);
 								}
+
 								if (e.id === argName) {
 									entry = e;
 								}
 							}
 						}
+
 						if (!entry) {
 							const entries: QuickPickInput[] = [
 								...extensionChannels.sort((a, b) =>
@@ -854,12 +920,14 @@ class OutputContribution extends Disposable implements IWorkbenchContribution {
 
 							if (entries.length && coreChannels.length) {
 								entries.push({ type: "separator" });
+
 								entries.push(
 									...coreChannels.sort((a, b) =>
 										a.label.localeCompare(b.label),
 									),
 								);
 							}
+
 							entry = <IOutputChannelQuickPickItem | undefined>(
 								await quickInputService.pick(entries, {
 									placeHolder: nls.localize(
@@ -869,14 +937,17 @@ class OutputContribution extends Disposable implements IWorkbenchContribution {
 								})
 							);
 						}
+
 						if (entry) {
 							const resource = assertIsDefined(
 								entry.channel.file,
 							);
+
 							await fileConfigurationService.updateReadonly(
 								resource,
 								true,
 							);
+
 							await editorService.openEditor({
 								resource,
 								options: {

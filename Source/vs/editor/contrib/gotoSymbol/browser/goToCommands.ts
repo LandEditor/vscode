@@ -88,7 +88,9 @@ MenuRegistry.appendMenuItem(MenuId.EditorContext, {
 
 export interface SymbolNavigationActionConfig {
 	openToSide: boolean;
+
 	openInPeek: boolean;
+
 	muteMessage: boolean;
 }
 export class SymbolNavigationAnchor {
@@ -96,9 +98,11 @@ export class SymbolNavigationAnchor {
 		if (!thing || typeof thing !== "object") {
 			return false;
 		}
+
 		if (thing instanceof SymbolNavigationAnchor) {
 			return true;
 		}
+
 		if (
 			corePosition.Position.isIPosition(
 				(<SymbolNavigationAnchor>thing).position,
@@ -107,8 +111,10 @@ export class SymbolNavigationAnchor {
 		) {
 			return true;
 		}
+
 		return false;
 	}
+
 	constructor(
 		readonly model: ITextModel,
 		readonly position: corePosition.Position,
@@ -119,10 +125,13 @@ export abstract class SymbolNavigationAction extends EditorAction2 {
 		string,
 		SymbolNavigationAction
 	>();
+
 	private static _activeAlternativeCommands = new Set<string>();
+
 	static all(): IterableIterator<SymbolNavigationAction> {
 		return SymbolNavigationAction._allSymbolNavigationCommands.values();
 	}
+
 	private static _patchConfig(
 		opts: IAction2Options & IAction2F1RequiredOptions,
 	): IAction2Options {
@@ -141,8 +150,10 @@ export abstract class SymbolNavigationAction extends EditorAction2 {
 				}
 			}
 		}
+
 		return <typeof opts>result;
 	}
+
 	readonly configuration: SymbolNavigationActionConfig;
 
 	constructor(
@@ -150,9 +161,12 @@ export abstract class SymbolNavigationAction extends EditorAction2 {
 		opts: IAction2Options & IAction2F1RequiredOptions,
 	) {
 		super(SymbolNavigationAction._patchConfig(opts));
+
 		this.configuration = configuration;
+
 		SymbolNavigationAction._allSymbolNavigationCommands.set(opts.id, this);
 	}
+
 	override runEditorCommand(
 		accessor: ServicesAccessor,
 		editor: ICodeEditor,
@@ -162,6 +176,7 @@ export abstract class SymbolNavigationAction extends EditorAction2 {
 		if (!editor.hasModel()) {
 			return Promise.resolve(undefined);
 		}
+
 		const notificationService = accessor.get(INotificationService);
 
 		const editorService = accessor.get(ICodeEditorService);
@@ -201,6 +216,7 @@ export abstract class SymbolNavigationAction extends EditorAction2 {
 					if (!references || cts.token.isCancellationRequested) {
 						return;
 					}
+
 					alert(references.ariaMessage);
 
 					let altAction: SymbolNavigationAction | null | undefined;
@@ -222,12 +238,14 @@ export abstract class SymbolNavigationAction extends EditorAction2 {
 								)!;
 						}
 					}
+
 					const referenceCount = references.references.length;
 
 					if (referenceCount === 0) {
 						// no result -> show message
 						if (!this.configuration.muteMessage) {
 							const info = model.getWordAtPosition(position);
+
 							MessageController.get(editor)?.showMessage(
 								this._getNoResultFoundMessage(info),
 								position,
@@ -238,6 +256,7 @@ export abstract class SymbolNavigationAction extends EditorAction2 {
 						SymbolNavigationAction._activeAlternativeCommands.add(
 							this.desc.id,
 						);
+
 						instaService.invokeFunction((accessor) =>
 							altAction
 								.runEditorCommand(accessor, editor, arg, range)
@@ -266,25 +285,31 @@ export abstract class SymbolNavigationAction extends EditorAction2 {
 			.finally(() => {
 				cts.dispose();
 			});
+
 		progressService.showWhile(promise, 250);
 
 		return promise;
 	}
+
 	protected abstract _getLocationModel(
 		languageFeaturesService: ILanguageFeaturesService,
 		model: ITextModel,
 		position: corePosition.Position,
 		token: CancellationToken,
 	): Promise<ReferencesModel | undefined>;
+
 	protected abstract _getNoResultFoundMessage(
 		info: IWordAtPosition | null,
 	): string;
+
 	protected abstract _getAlternativeCommand(
 		editor: IActiveCodeEditor,
 	): string;
+
 	protected abstract _getGoToPreference(
 		editor: IActiveCodeEditor,
 	): GoToLocationValues;
+
 	private async _onResult(
 		editorService: ICodeEditorService,
 		symbolNavService: ISymbolNavigationService,
@@ -326,6 +351,7 @@ export abstract class SymbolNavigationAction extends EditorAction2 {
 			}
 		}
 	}
+
 	private async _openReference(
 		editor: ICodeEditor,
 		editorService: ICodeEditorService,
@@ -340,12 +366,15 @@ export abstract class SymbolNavigationAction extends EditorAction2 {
 		if (isLocationLink(reference)) {
 			range = reference.targetSelectionRange;
 		}
+
 		if (!range) {
 			range = reference.range;
 		}
+
 		if (!range) {
 			return undefined;
 		}
+
 		const targetEditor = await editorService.openCodeEditor(
 			{
 				resource: reference.uri,
@@ -363,6 +392,7 @@ export abstract class SymbolNavigationAction extends EditorAction2 {
 		if (!targetEditor) {
 			return undefined;
 		}
+
 		if (highlight) {
 			const modelNow = targetEditor.getModel();
 
@@ -382,8 +412,10 @@ export abstract class SymbolNavigationAction extends EditorAction2 {
 				}
 			}, 350);
 		}
+
 		return targetEditor;
 	}
+
 	private _openInPeek(
 		target: ICodeEditor,
 		model: ReferencesModel,
@@ -421,6 +453,7 @@ export class DefinitionAction extends SymbolNavigationAction {
 			nls.localize("def.title", "Definitions"),
 		);
 	}
+
 	protected _getNoResultFoundMessage(info: IWordAtPosition | null): string {
 		return info && info.word
 			? nls.localize(
@@ -430,10 +463,12 @@ export class DefinitionAction extends SymbolNavigationAction {
 				)
 			: nls.localize("generic.noResults", "No definition found");
 	}
+
 	protected _getAlternativeCommand(editor: IActiveCodeEditor): string {
 		return editor.getOption(EditorOption.gotoLocation)
 			.alternativeDefinitionCommand;
 	}
+
 	protected _getGoToPreference(
 		editor: IActiveCodeEditor,
 	): GoToLocationValues {
@@ -497,6 +532,7 @@ registerAction2(
 					],
 				},
 			);
+
 			CommandsRegistry.registerCommandAlias(
 				"editor.action.goToDeclaration",
 				GoToDefinitionAction.id,
@@ -548,6 +584,7 @@ registerAction2(
 					],
 				},
 			);
+
 			CommandsRegistry.registerCommandAlias(
 				"editor.action.openDeclarationToTheSide",
 				OpenDefinitionToSideAction.id,
@@ -593,6 +630,7 @@ registerAction2(
 					},
 				},
 			);
+
 			CommandsRegistry.registerCommandAlias(
 				"editor.action.previewDeclaration",
 				PeekDefinitionAction.id,
@@ -620,6 +658,7 @@ class DeclarationAction extends SymbolNavigationAction {
 			nls.localize("decl.title", "Declarations"),
 		);
 	}
+
 	protected _getNoResultFoundMessage(info: IWordAtPosition | null): string {
 		return info && info.word
 			? nls.localize(
@@ -629,10 +668,12 @@ class DeclarationAction extends SymbolNavigationAction {
 				)
 			: nls.localize("decl.generic.noResults", "No declaration found");
 	}
+
 	protected _getAlternativeCommand(editor: IActiveCodeEditor): string {
 		return editor.getOption(EditorOption.gotoLocation)
 			.alternativeDeclarationCommand;
 	}
+
 	protected _getGoToPreference(
 		editor: IActiveCodeEditor,
 	): GoToLocationValues {
@@ -685,6 +726,7 @@ registerAction2(
 				},
 			);
 		}
+
 		protected override _getNoResultFoundMessage(
 			info: IWordAtPosition | null,
 		): string {
@@ -751,6 +793,7 @@ class TypeDefinitionAction extends SymbolNavigationAction {
 			nls.localize("typedef.title", "Type Definitions"),
 		);
 	}
+
 	protected _getNoResultFoundMessage(info: IWordAtPosition | null): string {
 		return info && info.word
 			? nls.localize(
@@ -763,10 +806,12 @@ class TypeDefinitionAction extends SymbolNavigationAction {
 					"No type definition found",
 				);
 	}
+
 	protected _getAlternativeCommand(editor: IActiveCodeEditor): string {
 		return editor.getOption(EditorOption.gotoLocation)
 			.alternativeTypeDefinitionCommand;
 	}
+
 	protected _getGoToPreference(
 		editor: IActiveCodeEditor,
 	): GoToLocationValues {
@@ -876,6 +921,7 @@ class ImplementationAction extends SymbolNavigationAction {
 			nls.localize("impl.title", "Implementations"),
 		);
 	}
+
 	protected _getNoResultFoundMessage(info: IWordAtPosition | null): string {
 		return info && info.word
 			? nls.localize(
@@ -888,10 +934,12 @@ class ImplementationAction extends SymbolNavigationAction {
 					"No implementation found",
 				);
 	}
+
 	protected _getAlternativeCommand(editor: IActiveCodeEditor): string {
 		return editor.getOption(EditorOption.gotoLocation)
 			.alternativeImplementationCommand;
 	}
+
 	protected _getGoToPreference(
 		editor: IActiveCodeEditor,
 	): GoToLocationValues {
@@ -998,10 +1046,12 @@ abstract class ReferencesAction extends SymbolNavigationAction {
 				)
 			: nls.localize("references.noGeneric", "No references found");
 	}
+
 	protected _getAlternativeCommand(editor: IActiveCodeEditor): string {
 		return editor.getOption(EditorOption.gotoLocation)
 			.alternativeReferenceCommand;
 	}
+
 	protected _getGoToPreference(
 		editor: IActiveCodeEditor,
 	): GoToLocationValues {
@@ -1058,6 +1108,7 @@ registerAction2(
 				},
 			);
 		}
+
 		protected async _getLocationModel(
 			languageFeaturesService: ILanguageFeaturesService,
 			model: ITextModel,
@@ -1106,6 +1157,7 @@ registerAction2(
 				},
 			);
 		}
+
 		protected async _getLocationModel(
 			languageFeaturesService: ILanguageFeaturesService,
 			model: ITextModel,
@@ -1143,6 +1195,7 @@ class GenericGoToLocationAction extends SymbolNavigationAction {
 			),
 		});
 	}
+
 	protected async _getLocationModel(
 		languageFeaturesService: ILanguageFeaturesService,
 		_model: ITextModel,
@@ -1154,6 +1207,7 @@ class GenericGoToLocationAction extends SymbolNavigationAction {
 			nls.localize("generic.title", "Locations"),
 		);
 	}
+
 	protected _getNoResultFoundMessage(info: IWordAtPosition | null): string {
 		return (
 			(info &&
@@ -1165,6 +1219,7 @@ class GenericGoToLocationAction extends SymbolNavigationAction {
 			""
 		);
 	}
+
 	protected _getGoToPreference(
 		editor: IActiveCodeEditor,
 	): GoToLocationValues {
@@ -1173,6 +1228,7 @@ class GenericGoToLocationAction extends SymbolNavigationAction {
 			editor.getOption(EditorOption.gotoLocation).multipleReferences
 		);
 	}
+
 	protected _getAlternativeCommand() {
 		return "";
 	}
@@ -1219,11 +1275,15 @@ CommandsRegistry.registerCommand({
 		openInPeek?: boolean,
 	) => {
 		assertType(URI.isUri(resource));
+
 		assertType(corePosition.Position.isIPosition(position));
+
 		assertType(Array.isArray(references));
+
 		assertType(
 			typeof multiple === "undefined" || typeof multiple === "string",
 		);
+
 		assertType(
 			typeof openInPeek === "undefined" ||
 				typeof openInPeek === "boolean",
@@ -1238,6 +1298,7 @@ CommandsRegistry.registerCommand({
 
 		if (isCodeEditor(editor)) {
 			editor.setPosition(position);
+
 			editor.revealPositionInCenterIfOutsideViewport(
 				position,
 				ScrollType.Smooth,
@@ -1262,6 +1323,7 @@ CommandsRegistry.registerCommand({
 					references,
 					multiple as GoToLocationValues,
 				);
+
 				accessor
 					.get(IInstantiationService)
 					.invokeFunction(command.run.bind(command), editor);
@@ -1322,6 +1384,7 @@ CommandsRegistry.registerCommand({
 	id: "editor.action.findReferences",
 	handler: (accessor: ServicesAccessor, resource: any, position: any) => {
 		assertType(URI.isUri(resource));
+
 		assertType(corePosition.Position.isIPosition(position));
 
 		const languageFeaturesService = accessor.get(ILanguageFeaturesService);
@@ -1337,11 +1400,13 @@ CommandsRegistry.registerCommand({
 				if (!isCodeEditor(control) || !control.hasModel()) {
 					return undefined;
 				}
+
 				const controller = ReferencesController.get(control);
 
 				if (!controller) {
 					return undefined;
 				}
+
 				const references = createCancelablePromise((token) =>
 					getReferencesAtPosition(
 						languageFeaturesService.referenceProvider,

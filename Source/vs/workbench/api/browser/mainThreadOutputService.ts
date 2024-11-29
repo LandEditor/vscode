@@ -33,8 +33,11 @@ export class MainThreadOutputService
 	implements MainThreadOutputServiceShape
 {
 	private static _extensionIdPool = new Map<string, number>();
+
 	private readonly _proxy: ExtHostOutputServiceShape;
+
 	private readonly _outputService: IOutputService;
+
 	private readonly _viewsService: IViewsService;
 
 	constructor(
@@ -45,8 +48,11 @@ export class MainThreadOutputService
 		viewsService: IViewsService,
 	) {
 		super();
+
 		this._outputService = outputService;
+
 		this._viewsService = viewsService;
+
 		this._proxy = extHostContext.getProxy(
 			ExtHostContext.ExtHostOutputService,
 		);
@@ -57,10 +63,12 @@ export class MainThreadOutputService
 			)
 				? this._outputService.getActiveChannel()
 				: undefined;
+
 			this._proxy.$setVisibleChannel(
 				visibleChannel ? visibleChannel.id : null,
 			);
 		};
+
 		this._register(
 			Event.any<any>(
 				this._outputService.onActiveOutputChannel,
@@ -73,6 +81,7 @@ export class MainThreadOutputService
 
 		setVisibleChannel();
 	}
+
 	public async $register(
 		label: string,
 		file: UriComponents,
@@ -82,11 +91,13 @@ export class MainThreadOutputService
 		const idCounter =
 			(MainThreadOutputService._extensionIdPool.get(extensionId) || 0) +
 			1;
+
 		MainThreadOutputService._extensionIdPool.set(extensionId, idCounter);
 
 		const id = `extension-output-${extensionId}-#${idCounter}-${label}`;
 
 		const resource = URI.revive(file);
+
 		Registry.as<IOutputChannelRegistry>(
 			Extensions.OutputChannels,
 		).registerChannel({
@@ -97,10 +108,12 @@ export class MainThreadOutputService
 			languageId,
 			extensionId,
 		});
+
 		this._register(toDisposable(() => this.$dispose(id)));
 
 		return id;
 	}
+
 	public async $update(
 		channelId: string,
 		mode: OutputChannelUpdateMode,
@@ -116,6 +129,7 @@ export class MainThreadOutputService
 			}
 		}
 	}
+
 	public async $reveal(
 		channelId: string,
 		preserveFocus: boolean,
@@ -126,6 +140,7 @@ export class MainThreadOutputService
 			this._outputService.showChannel(channel.id, preserveFocus);
 		}
 	}
+
 	public async $close(channelId: string): Promise<void> {
 		if (this._viewsService.isViewVisible(OUTPUT_VIEW_ID)) {
 			const activeChannel = this._outputService.getActiveChannel();
@@ -135,10 +150,13 @@ export class MainThreadOutputService
 			}
 		}
 	}
+
 	public async $dispose(channelId: string): Promise<void> {
 		const channel = this._getChannel(channelId);
+
 		channel?.dispose();
 	}
+
 	private _getChannel(channelId: string): IOutputChannel | undefined {
 		return this._outputService.getChannel(channelId);
 	}

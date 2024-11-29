@@ -7,6 +7,7 @@ import { IInplaceReplaceSupportResult } from "../../languages.js";
 
 export class BasicInplaceReplace {
 	public static readonly INSTANCE = new BasicInplaceReplace();
+
 	public navigateValueSet(
 		range1: IRange,
 		text1: string,
@@ -24,6 +25,7 @@ export class BasicInplaceReplace {
 				};
 			}
 		}
+
 		if (range2 && text2) {
 			const result = this.doNavigateValueSet(text2, up);
 
@@ -34,16 +36,20 @@ export class BasicInplaceReplace {
 				};
 			}
 		}
+
 		return null;
 	}
+
 	private doNavigateValueSet(text: string, up: boolean): string | null {
 		const numberResult = this.numberReplace(text, up);
 
 		if (numberResult !== null) {
 			return numberResult;
 		}
+
 		return this.textReplace(text, up);
 	}
+
 	private numberReplace(value: string, up: boolean): string | null {
 		const precision = Math.pow(
 			10,
@@ -61,13 +67,16 @@ export class BasicInplaceReplace {
 				//				return null; // don't insert 10 into a number
 			} else {
 				n1 = Math.floor(n1 * precision);
+
 				n1 += up ? precision : -precision;
 
 				return String(n1 / precision);
 			}
 		}
+
 		return null;
 	}
+
 	private readonly _defaultValueSet: string[][] = [
 		["true", "false"],
 		["True", "False"],
@@ -82,9 +91,11 @@ export class BasicInplaceReplace {
 		],
 		["public", "protected", "private"],
 	];
+
 	private textReplace(value: string, up: boolean): string | null {
 		return this.valueSetsReplace(this._defaultValueSet, value, up);
 	}
+
 	private valueSetsReplace(
 		valueSets: string[][],
 		value: string,
@@ -94,13 +105,17 @@ export class BasicInplaceReplace {
 
 		for (
 			let i = 0, len = valueSets.length;
+
 			result === null && i < len;
+
 			i++
 		) {
 			result = this.valueSetReplace(valueSets[i], value, up);
 		}
+
 		return result;
 	}
+
 	private valueSetReplace(
 		valueSet: string[],
 		value: string,
@@ -116,8 +131,10 @@ export class BasicInplaceReplace {
 			} else {
 				idx %= valueSet.length;
 			}
+
 			return valueSet[idx];
 		}
+
 		return null;
 	}
 }

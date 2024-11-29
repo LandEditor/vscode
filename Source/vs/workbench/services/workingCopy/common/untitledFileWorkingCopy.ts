@@ -101,6 +101,7 @@ export class UntitledFileWorkingCopy<M extends IUntitledFileWorkingCopyModel>
 	readonly capabilities = this.isScratchpad
 		? WorkingCopyCapabilities.Untitled | WorkingCopyCapabilities.Scratchpad
 		: WorkingCopyCapabilities.Untitled;
+
 	private _model: M | undefined = undefined;
 
 	get model(): M | undefined {
@@ -108,16 +109,25 @@ export class UntitledFileWorkingCopy<M extends IUntitledFileWorkingCopyModel>
 	}
 	//#region Events
 	private readonly _onDidChangeContent = this._register(new Emitter<void>());
+
 	readonly onDidChangeContent = this._onDidChangeContent.event;
+
 	private readonly _onDidChangeDirty = this._register(new Emitter<void>());
+
 	readonly onDidChangeDirty = this._onDidChangeDirty.event;
+
 	private readonly _onDidSave = this._register(
 		new Emitter<IWorkingCopySaveEvent>(),
 	);
+
 	readonly onDidSave = this._onDidSave.event;
+
 	private readonly _onDidRevert = this._register(new Emitter<void>());
+
 	readonly onDidRevert = this._onDidRevert.event;
+
 	private readonly _onWillDispose = this._register(new Emitter<void>());
+
 	readonly onWillDispose = this._onWillDispose.event;
 	//#endregion
 	constructor(
@@ -148,16 +158,20 @@ export class UntitledFileWorkingCopy<M extends IUntitledFileWorkingCopyModel>
 		Boolean(
 			this.initialContents && this.initialContents.markModified !== false,
 		);
+
 	isDirty(): boolean {
 		return this.modified && !this.isScratchpad; // Scratchpad working copies are never dirty
 	}
+
 	isModified(): boolean {
 		return this.modified;
 	}
+
 	private setModified(modified: boolean): void {
 		if (this.modified === modified) {
 			return;
 		}
+
 		this.modified = modified;
 
 		if (!this.isScratchpad) {
@@ -176,18 +190,22 @@ export class UntitledFileWorkingCopy<M extends IUntitledFileWorkingCopyModel>
 			// in the underlying model. we only resolve untitled once.
 			return;
 		}
+
 		let untitledContents: VSBufferReadableStream;
 		// Check for backups or use initial value or empty
 		const backup = await this.workingCopyBackupService.resolve(this);
 
 		if (backup) {
 			this.trace("resolve() - with backup");
+
 			untitledContents = backup.value;
 		} else if (this.initialContents?.value) {
 			this.trace("resolve() - with initial contents");
+
 			untitledContents = this.initialContents.value;
 		} else {
 			this.trace("resolve() - empty");
+
 			untitledContents = emptyStream();
 		}
 		// Create model
@@ -207,6 +225,7 @@ export class UntitledFileWorkingCopy<M extends IUntitledFileWorkingCopyModel>
 			this._onDidChangeContent.fire();
 		}
 	}
+
 	private async doCreateModel(
 		contents: VSBufferReadableStream,
 	): Promise<void> {
@@ -222,6 +241,7 @@ export class UntitledFileWorkingCopy<M extends IUntitledFileWorkingCopyModel>
 		// Model listeners
 		this.installModelListeners(this._model);
 	}
+
 	private installModelListeners(model: M): void {
 		// Content Change
 		this._register(
@@ -230,6 +250,7 @@ export class UntitledFileWorkingCopy<M extends IUntitledFileWorkingCopyModel>
 		// Lifecycle
 		this._register(model.onWillDispose(() => this.dispose()));
 	}
+
 	private onModelContentChanged(
 		e: IUntitledFileWorkingCopyModelContentChangedEvent,
 	): void {
@@ -246,6 +267,7 @@ export class UntitledFileWorkingCopy<M extends IUntitledFileWorkingCopyModel>
 		// Emit as general content change event
 		this._onDidChangeContent.fire();
 	}
+
 	isResolved(): this is IResolvedUntitledFileWorkingCopy<M> {
 		return !!this.model;
 	}
@@ -254,6 +276,7 @@ export class UntitledFileWorkingCopy<M extends IUntitledFileWorkingCopyModel>
 	get backupDelay(): number | undefined {
 		return this.model?.configuration?.backupDelay;
 	}
+
 	async backup(token: CancellationToken): Promise<IWorkingCopyBackup> {
 		let content: VSBufferReadableStream | undefined = undefined;
 		// Make sure to check whether this working copy has been
@@ -268,6 +291,7 @@ export class UntitledFileWorkingCopy<M extends IUntitledFileWorkingCopyModel>
 		} else if (this.initialContents) {
 			content = this.initialContents.value;
 		}
+
 		return { content };
 	}
 	//#endregion
@@ -283,6 +307,7 @@ export class UntitledFileWorkingCopy<M extends IUntitledFileWorkingCopyModel>
 				source: options?.source,
 			});
 		}
+
 		return result;
 	}
 	//#endregion
@@ -301,10 +326,12 @@ export class UntitledFileWorkingCopy<M extends IUntitledFileWorkingCopyModel>
 	//#endregion
 	override dispose(): void {
 		this.trace("dispose()");
+
 		this._onWillDispose.fire();
 
 		super.dispose();
 	}
+
 	private trace(msg: string): void {
 		this.logService.trace(
 			`[untitled file working copy] ${msg}`,

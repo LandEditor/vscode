@@ -38,27 +38,40 @@ const EditorOpenPositioning = {
 
 export interface IEditorOpenOptions {
 	readonly pinned?: boolean;
+
 	readonly sticky?: boolean;
+
 	readonly transient?: boolean;
+
 	active?: boolean;
+
 	readonly inactiveSelection?: EditorInput[];
+
 	readonly index?: number;
+
 	readonly supportSideBySide?: SideBySideEditor.ANY | SideBySideEditor.BOTH;
 }
 export interface IEditorOpenResult {
 	readonly editor: EditorInput;
+
 	readonly isNew: boolean;
 }
 export interface ISerializedEditorInput {
 	readonly id: string;
+
 	readonly value: string;
 }
 export interface ISerializedEditorGroupModel {
 	readonly id: number;
+
 	readonly locked?: boolean;
+
 	readonly editors: ISerializedEditorInput[];
+
 	readonly mru: number[];
+
 	readonly preview?: number;
+
 	sticky?: number;
 }
 export function isSerializedEditorGroupModel(
@@ -106,6 +119,7 @@ export interface IGroupModelChangeEvent {
 }
 export interface IGroupEditorChangeEvent extends IGroupModelChangeEvent {
 	readonly editor: EditorInput;
+
 	readonly editorIndex: number;
 }
 export function isGroupEditorChangeEvent(
@@ -177,18 +191,28 @@ export function isGroupEditorCloseEvent(
 }
 interface IEditorCloseResult {
 	readonly editor: EditorInput;
+
 	readonly context: EditorCloseContext;
+
 	readonly editorIndex: number;
+
 	readonly sticky: boolean;
 }
 export interface IReadonlyEditorGroupModel {
 	readonly onDidModelChange: Event<IGroupModelChangeEvent>;
+
 	readonly id: GroupIdentifier;
+
 	readonly count: number;
+
 	readonly stickyCount: number;
+
 	readonly isLocked: boolean;
+
 	readonly activeEditor: EditorInput | null;
+
 	readonly previewEditor: EditorInput | null;
+
 	readonly selectedEditors: EditorInput[];
 
 	getEditors(
@@ -199,22 +223,32 @@ export interface IReadonlyEditorGroupModel {
 	): EditorInput[];
 
 	getEditorByIndex(index: number): EditorInput | undefined;
+
 	indexOf(
 		editor: EditorInput | IUntypedEditorInput | null,
 		editors?: EditorInput[],
 		options?: IMatchEditorOptions,
 	): number;
+
 	isActive(editor: EditorInput | IUntypedEditorInput): boolean;
+
 	isPinned(editorOrIndex: EditorInput | number): boolean;
+
 	isSticky(editorOrIndex: EditorInput | number): boolean;
+
 	isSelected(editorOrIndex: EditorInput | number): boolean;
+
 	isTransient(editorOrIndex: EditorInput | number): boolean;
+
 	isFirst(editor: EditorInput, editors?: EditorInput[]): boolean;
+
 	isLast(editor: EditorInput, editors?: EditorInput[]): boolean;
+
 	findEditor(
 		editor: EditorInput | null,
 		options?: IMatchEditorOptions,
 	): [EditorInput, number /* index */] | undefined;
+
 	contains(
 		editor: EditorInput | IUntypedEditorInput,
 		options?: IMatchEditorOptions,
@@ -225,11 +259,13 @@ interface IEditorGroupModel extends IReadonlyEditorGroupModel {
 		editor: EditorInput,
 		options?: IEditorOpenOptions,
 	): IEditorOpenResult;
+
 	closeEditor(
 		editor: EditorInput,
 		context?: EditorCloseContext,
 		openNext?: boolean,
 	): IEditorCloseResult | undefined;
+
 	moveEditor(editor: EditorInput, toIndex: number): EditorInput | undefined;
 
 	setActive(editor: EditorInput | undefined): EditorInput | undefined;
@@ -247,6 +283,7 @@ export class EditorGroupModel extends Disposable implements IEditorGroupModel {
 			leakWarningThreshold: 500 /* increased for users with hundreds of inputs opened */,
 		}),
 	);
+
 	readonly onDidModelChange = this._onDidModelChange.event;
 	//#endregion
 	private _id: GroupIdentifier;
@@ -254,20 +291,27 @@ export class EditorGroupModel extends Disposable implements IEditorGroupModel {
 	get id(): GroupIdentifier {
 		return this._id;
 	}
+
 	private editors: EditorInput[] = [];
+
 	private mru: EditorInput[] = [];
+
 	private readonly editorListeners = new Set<DisposableStore>();
+
 	private locked = false;
+
 	private selection: EditorInput[] = []; // editors in selected state, first one is active
 	private get active(): EditorInput | null {
 		return this.selection[0] ?? null;
 	}
+
 	private preview: EditorInput | null = null; // editor in preview state
 	private sticky = -1; // index of first editor in sticky state
 	private readonly transient = new Set<EditorInput>(); // editors in transient state
 	private editorOpenPositioning:
 		| ("left" | "right" | "first" | "last")
 		| undefined;
+
 	private focusRecentEditorAfterClose: boolean | undefined;
 
 	constructor(
@@ -284,9 +328,12 @@ export class EditorGroupModel extends Disposable implements IEditorGroupModel {
 		} else {
 			this._id = EditorGroupModel.IDS++;
 		}
+
 		this.onConfigurationUpdated();
+
 		this.registerListeners();
 	}
+
 	private registerListeners(): void {
 		this._register(
 			this.configurationService.onDidChangeConfiguration((e) =>
@@ -294,6 +341,7 @@ export class EditorGroupModel extends Disposable implements IEditorGroupModel {
 			),
 		);
 	}
+
 	private onConfigurationUpdated(e?: IConfigurationChangeEvent): void {
 		if (
 			e &&
@@ -304,19 +352,24 @@ export class EditorGroupModel extends Disposable implements IEditorGroupModel {
 		) {
 			return;
 		}
+
 		this.editorOpenPositioning = this.configurationService.getValue(
 			"workbench.editor.openPositioning",
 		);
+
 		this.focusRecentEditorAfterClose = this.configurationService.getValue(
 			"workbench.editor.focusRecentEditorAfterClose",
 		);
 	}
+
 	get count(): number {
 		return this.editors.length;
 	}
+
 	get stickyCount(): number {
 		return this.sticky + 1;
 	}
+
 	getEditors(
 		order: EditorsOrder,
 		options?: {
@@ -336,20 +389,26 @@ export class EditorGroupModel extends Disposable implements IEditorGroupModel {
 			// Sequential: simply start after sticky index
 			return editors.slice(this.sticky + 1);
 		}
+
 		return editors;
 	}
+
 	getEditorByIndex(index: number): EditorInput | undefined {
 		return this.editors[index];
 	}
+
 	get activeEditor(): EditorInput | null {
 		return this.active;
 	}
+
 	isActive(candidate: EditorInput | IUntypedEditorInput): boolean {
 		return this.matches(this.active, candidate);
 	}
+
 	get previewEditor(): EditorInput | null {
 		return this.preview;
 	}
+
 	openEditor(
 		candidate: EditorInput,
 		options?: IEditorOpenOptions,
@@ -443,6 +502,7 @@ export class EditorGroupModel extends Disposable implements IEditorGroupModel {
 					if (targetIndex > indexOfPreview) {
 						targetIndex--; // accomodate for the fact that the preview editor closes
 					}
+
 					this.replaceEditor(
 						this.preview,
 						newEditor,
@@ -450,6 +510,7 @@ export class EditorGroupModel extends Disposable implements IEditorGroupModel {
 						!makeActive,
 					);
 				}
+
 				this.preview = newEditor;
 			}
 			// Listeners
@@ -460,6 +521,7 @@ export class EditorGroupModel extends Disposable implements IEditorGroupModel {
 				editor: newEditor,
 				editorIndex: targetIndex,
 			};
+
 			this._onDidModelChange.fire(event);
 			// Handle active editor / selected editors
 			this.setSelection(
@@ -502,14 +564,17 @@ export class EditorGroupModel extends Disposable implements IEditorGroupModel {
 			if (makeSticky) {
 				this.doStick(existingEditor, this.indexOf(existingEditor));
 			}
+
 			return {
 				editor: existingEditor,
 				isNew: false,
 			};
 		}
 	}
+
 	private registerEditorListeners(editor: EditorInput): void {
 		const listeners = new DisposableStore();
+
 		this.editorListeners.add(listeners);
 		// Re-emit disposal of editor input as our own event
 		listeners.add(
@@ -522,6 +587,7 @@ export class EditorGroupModel extends Disposable implements IEditorGroupModel {
 						editor,
 						editorIndex,
 					};
+
 					this._onDidModelChange.fire(event);
 				}
 			}),
@@ -534,6 +600,7 @@ export class EditorGroupModel extends Disposable implements IEditorGroupModel {
 					editor,
 					editorIndex: this.editors.indexOf(editor),
 				};
+
 				this._onDidModelChange.fire(event);
 			}),
 		);
@@ -545,6 +612,7 @@ export class EditorGroupModel extends Disposable implements IEditorGroupModel {
 					editor,
 					editorIndex: this.editors.indexOf(editor),
 				};
+
 				this._onDidModelChange.fire(event);
 			}),
 		);
@@ -556,6 +624,7 @@ export class EditorGroupModel extends Disposable implements IEditorGroupModel {
 					editor,
 					editorIndex: this.editors.indexOf(editor),
 				};
+
 				this._onDidModelChange.fire(event);
 			}),
 		);
@@ -567,11 +636,13 @@ export class EditorGroupModel extends Disposable implements IEditorGroupModel {
 					event.editor?.matches(editor)
 				) {
 					dispose(listeners);
+
 					this.editorListeners.delete(listeners);
 				}
 			}),
 		);
 	}
+
 	private replaceEditor(
 		toReplace: EditorInput,
 		replaceWith: EditorInput,
@@ -593,9 +664,11 @@ export class EditorGroupModel extends Disposable implements IEditorGroupModel {
 				kind: GroupModelChangeKind.EDITOR_CLOSE,
 				...closeResult,
 			};
+
 			this._onDidModelChange.fire(event);
 		}
 	}
+
 	closeEditor(
 		candidate: EditorInput,
 		context = EditorCloseContext.UNKNOWN,
@@ -608,12 +681,15 @@ export class EditorGroupModel extends Disposable implements IEditorGroupModel {
 				kind: GroupModelChangeKind.EDITOR_CLOSE,
 				...closeResult,
 			};
+
 			this._onDidModelChange.fire(event);
 
 			return closeResult;
 		}
+
 		return undefined;
 	}
+
 	private doCloseEditor(
 		candidate: EditorInput,
 		context: EditorCloseContext,
@@ -624,6 +700,7 @@ export class EditorGroupModel extends Disposable implements IEditorGroupModel {
 		if (index === -1) {
 			return undefined; // not found
 		}
+
 		const editor = this.editors[index];
 
 		const sticky = this.isSticky(index);
@@ -648,6 +725,7 @@ export class EditorGroupModel extends Disposable implements IEditorGroupModel {
 				const newInactiveSelectedEditors = this.selection.filter(
 					(selected) => selected !== editor && selected !== newActive,
 				);
+
 				this.doSetSelection(
 					newActive,
 					this.editors.indexOf(newActive),
@@ -667,6 +745,7 @@ export class EditorGroupModel extends Disposable implements IEditorGroupModel {
 					(selected) =>
 						selected !== editor && selected !== this.activeEditor,
 				);
+
 				this.doSetSelection(
 					this.activeEditor,
 					this.indexOf(this.activeEditor),
@@ -685,6 +764,7 @@ export class EditorGroupModel extends Disposable implements IEditorGroupModel {
 		// Event
 		return { editor, sticky, editorIndex: index, context };
 	}
+
 	moveEditor(
 		candidate: EditorInput,
 		toIndex: number,
@@ -695,11 +775,13 @@ export class EditorGroupModel extends Disposable implements IEditorGroupModel {
 		} else if (toIndex < 0) {
 			toIndex = 0;
 		}
+
 		const index = this.indexOf(candidate);
 
 		if (index < 0 || toIndex === index) {
 			return;
 		}
+
 		const editor = this.editors[index];
 
 		const sticky = this.sticky;
@@ -713,6 +795,7 @@ export class EditorGroupModel extends Disposable implements IEditorGroupModel {
 		}
 		// Move
 		this.editors.splice(index, 1);
+
 		this.editors.splice(toIndex, 0, editor);
 		// Move Event
 		const event: IGroupEditorMoveEvent = {
@@ -721,6 +804,7 @@ export class EditorGroupModel extends Disposable implements IEditorGroupModel {
 			oldEditorIndex: index,
 			editorIndex: toIndex,
 		};
+
 		this._onDidModelChange.fire(event);
 		// Sticky Event (if sticky changed as part of the move)
 		if (sticky !== this.sticky) {
@@ -729,10 +813,13 @@ export class EditorGroupModel extends Disposable implements IEditorGroupModel {
 				editor,
 				editorIndex: toIndex,
 			};
+
 			this._onDidModelChange.fire(event);
 		}
+
 		return editor;
 	}
+
 	setActive(candidate: EditorInput | undefined): EditorInput | undefined {
 		let result: EditorInput | undefined = undefined;
 
@@ -741,8 +828,10 @@ export class EditorGroupModel extends Disposable implements IEditorGroupModel {
 		} else {
 			result = this.setEditorActive(candidate);
 		}
+
 		return result;
 	}
+
 	private setGroupActive(): void {
 		// We do not really keep the `active` state in our model because
 		// it has no special meaning to us here. But for consistency
@@ -752,20 +841,25 @@ export class EditorGroupModel extends Disposable implements IEditorGroupModel {
 			kind: GroupModelChangeKind.GROUP_ACTIVE,
 		});
 	}
+
 	private setEditorActive(candidate: EditorInput): EditorInput | undefined {
 		const res = this.findEditor(candidate);
 
 		if (!res) {
 			return; // not found
 		}
+
 		const [editor, editorIndex] = res;
+
 		this.doSetSelection(editor, editorIndex, []);
 
 		return editor;
 	}
+
 	get selectedEditors(): EditorInput[] {
 		return this.editors.filter((editor) => this.doIsSelected(editor)); // return in sequential order
 	}
+
 	isSelected(editorCandidateOrIndex: EditorInput | number): boolean {
 		let editor: EditorInput | undefined;
 
@@ -774,11 +868,14 @@ export class EditorGroupModel extends Disposable implements IEditorGroupModel {
 		} else {
 			editor = this.findEditor(editorCandidateOrIndex)?.[0];
 		}
+
 		return !!editor && this.doIsSelected(editor);
 	}
+
 	private doIsSelected(editor: EditorInput): boolean {
 		return this.selection.includes(editor);
 	}
+
 	setSelection(
 		activeSelectedEditorCandidate: EditorInput,
 		inactiveSelectedEditorCandidates: EditorInput[],
@@ -788,6 +885,7 @@ export class EditorGroupModel extends Disposable implements IEditorGroupModel {
 		if (!res) {
 			return; // not found
 		}
+
 		const [activeSelectedEditor, activeSelectedEditorIndex] = res;
 
 		const inactiveSelectedEditors = new Set<EditorInput>();
@@ -798,19 +896,23 @@ export class EditorGroupModel extends Disposable implements IEditorGroupModel {
 			if (!res) {
 				return; // not found
 			}
+
 			const [inactiveSelectedEditor] = res;
 
 			if (inactiveSelectedEditor === activeSelectedEditor) {
 				continue; // already selected
 			}
+
 			inactiveSelectedEditors.add(inactiveSelectedEditor);
 		}
+
 		this.doSetSelection(
 			activeSelectedEditor,
 			activeSelectedEditorIndex,
 			Array.from(inactiveSelectedEditors),
 		);
 	}
+
 	private doSetSelection(
 		activeSelectedEditor: EditorInput | null,
 		activeSelectedEditorIndex: number | undefined,
@@ -838,7 +940,9 @@ export class EditorGroupModel extends Disposable implements IEditorGroupModel {
 		if (activeEditorChanged) {
 			// Bring to front in MRU list
 			const mruIndex = this.indexOf(activeSelectedEditor, this.mru);
+
 			this.mru.splice(mruIndex, 1);
+
 			this.mru.unshift(activeSelectedEditor);
 			// Event
 			const event: IGroupEditorChangeEvent = {
@@ -846,6 +950,7 @@ export class EditorGroupModel extends Disposable implements IEditorGroupModel {
 				editor: activeSelectedEditor,
 				editorIndex: activeSelectedEditorIndex,
 			};
+
 			this._onDidModelChange.fire(event);
 		}
 		// Fire event if the selection has changed
@@ -857,9 +962,11 @@ export class EditorGroupModel extends Disposable implements IEditorGroupModel {
 			const event: IGroupModelChangeEvent = {
 				kind: GroupModelChangeKind.EDITORS_SELECTION,
 			};
+
 			this._onDidModelChange.fire(event);
 		}
 	}
+
 	setIndex(index: number) {
 		// We do not really keep the `index` in our model because
 		// it has no special meaning to us here. But for consistency
@@ -867,6 +974,7 @@ export class EditorGroupModel extends Disposable implements IEditorGroupModel {
 		// react.
 		this._onDidModelChange.fire({ kind: GroupModelChangeKind.GROUP_INDEX });
 	}
+
 	setLabel(label: string) {
 		// We do not really keep the `label` in our model because
 		// it has no special meaning to us here. But for consistency
@@ -874,17 +982,21 @@ export class EditorGroupModel extends Disposable implements IEditorGroupModel {
 		// react.
 		this._onDidModelChange.fire({ kind: GroupModelChangeKind.GROUP_LABEL });
 	}
+
 	pin(candidate: EditorInput): EditorInput | undefined {
 		const res = this.findEditor(candidate);
 
 		if (!res) {
 			return; // not found
 		}
+
 		const [editor, editorIndex] = res;
+
 		this.doPin(editor, editorIndex);
 
 		return editor;
 	}
+
 	private doPin(editor: EditorInput, editorIndex: number): void {
 		if (this.isPinned(editor)) {
 			return; // can only pin a preview editor
@@ -899,25 +1011,31 @@ export class EditorGroupModel extends Disposable implements IEditorGroupModel {
 			editor,
 			editorIndex,
 		};
+
 		this._onDidModelChange.fire(event);
 	}
+
 	unpin(candidate: EditorInput): EditorInput | undefined {
 		const res = this.findEditor(candidate);
 
 		if (!res) {
 			return; // not found
 		}
+
 		const [editor, editorIndex] = res;
+
 		this.doUnpin(editor, editorIndex);
 
 		return editor;
 	}
+
 	private doUnpin(editor: EditorInput, editorIndex: number): void {
 		if (!this.isPinned(editor)) {
 			return; // can only unpin a pinned editor
 		}
 		// Set new
 		const oldPreview = this.preview;
+
 		this.preview = editor;
 		// Event
 		const event: IGroupEditorChangeEvent = {
@@ -925,12 +1043,14 @@ export class EditorGroupModel extends Disposable implements IEditorGroupModel {
 			editor,
 			editorIndex,
 		};
+
 		this._onDidModelChange.fire(event);
 		// Close old preview editor if any
 		if (oldPreview) {
 			this.closeEditor(oldPreview, EditorCloseContext.UNPIN);
 		}
 	}
+
 	isPinned(editorCandidateOrIndex: EditorInput | number): boolean {
 		let editor: EditorInput;
 
@@ -939,19 +1059,24 @@ export class EditorGroupModel extends Disposable implements IEditorGroupModel {
 		} else {
 			editor = editorCandidateOrIndex;
 		}
+
 		return !this.matches(this.preview, editor);
 	}
+
 	stick(candidate: EditorInput): EditorInput | undefined {
 		const res = this.findEditor(candidate);
 
 		if (!res) {
 			return; // not found
 		}
+
 		const [editor, editorIndex] = res;
+
 		this.doStick(editor, editorIndex);
 
 		return editor;
 	}
+
 	private doStick(editor: EditorInput, editorIndex: number): void {
 		if (this.isSticky(editorIndex)) {
 			return; // can only stick a non-sticky editor
@@ -960,6 +1085,7 @@ export class EditorGroupModel extends Disposable implements IEditorGroupModel {
 		this.pin(editor);
 		// Move editor to be the last sticky editor
 		const newEditorIndex = this.sticky + 1;
+
 		this.moveEditor(editor, newEditorIndex);
 		// Adjust sticky index
 		this.sticky++;
@@ -969,25 +1095,31 @@ export class EditorGroupModel extends Disposable implements IEditorGroupModel {
 			editor,
 			editorIndex: newEditorIndex,
 		};
+
 		this._onDidModelChange.fire(event);
 	}
+
 	unstick(candidate: EditorInput): EditorInput | undefined {
 		const res = this.findEditor(candidate);
 
 		if (!res) {
 			return; // not found
 		}
+
 		const [editor, editorIndex] = res;
+
 		this.doUnstick(editor, editorIndex);
 
 		return editor;
 	}
+
 	private doUnstick(editor: EditorInput, editorIndex: number): void {
 		if (!this.isSticky(editorIndex)) {
 			return; // can only unstick a sticky editor
 		}
 		// Move editor to be the first non-sticky editor
 		const newEditorIndex = this.sticky;
+
 		this.moveEditor(editor, newEditorIndex);
 		// Adjust sticky index
 		this.sticky--;
@@ -997,12 +1129,15 @@ export class EditorGroupModel extends Disposable implements IEditorGroupModel {
 			editor,
 			editorIndex: newEditorIndex,
 		};
+
 		this._onDidModelChange.fire(event);
 	}
+
 	isSticky(candidateOrIndex: EditorInput | number): boolean {
 		if (this.sticky < 0) {
 			return false; // no sticky editor
 		}
+
 		let index: number;
 
 		if (typeof candidateOrIndex === "number") {
@@ -1010,11 +1145,14 @@ export class EditorGroupModel extends Disposable implements IEditorGroupModel {
 		} else {
 			index = this.indexOf(candidateOrIndex);
 		}
+
 		if (index < 0) {
 			return false;
 		}
+
 		return index <= this.sticky;
 	}
+
 	setTransient(
 		candidate: EditorInput,
 		transient: boolean,
@@ -1022,16 +1160,20 @@ export class EditorGroupModel extends Disposable implements IEditorGroupModel {
 		if (!transient && this.transient.size === 0) {
 			return; // no transient editor
 		}
+
 		const res = this.findEditor(candidate);
 
 		if (!res) {
 			return; // not found
 		}
+
 		const [editor, editorIndex] = res;
+
 		this.doSetTransient(editor, editorIndex, transient);
 
 		return editor;
 	}
+
 	private doSetTransient(
 		editor: EditorInput,
 		editorIndex: number,
@@ -1041,11 +1183,13 @@ export class EditorGroupModel extends Disposable implements IEditorGroupModel {
 			if (this.transient.has(editor)) {
 				return;
 			}
+
 			this.transient.add(editor);
 		} else {
 			if (!this.transient.has(editor)) {
 				return;
 			}
+
 			this.transient.delete(editor);
 		}
 		// Event
@@ -1054,12 +1198,15 @@ export class EditorGroupModel extends Disposable implements IEditorGroupModel {
 			editor,
 			editorIndex,
 		};
+
 		this._onDidModelChange.fire(event);
 	}
+
 	isTransient(editorCandidateOrIndex: EditorInput | number): boolean {
 		if (this.transient.size === 0) {
 			return false; // no transient editor
 		}
+
 		let editor: EditorInput | undefined;
 
 		if (typeof editorCandidateOrIndex === "number") {
@@ -1067,8 +1214,10 @@ export class EditorGroupModel extends Disposable implements IEditorGroupModel {
 		} else {
 			editor = this.findEditor(editorCandidateOrIndex)?.[0];
 		}
+
 		return !!editor && this.transient.has(editor);
 	}
+
 	private splice(index: number, del: boolean, editor?: EditorInput): void {
 		const editorToDeleteOrReplace = this.editors[index];
 		// Perform on sticky index
@@ -1116,6 +1265,7 @@ export class EditorGroupModel extends Disposable implements IEditorGroupModel {
 			}
 		}
 	}
+
 	indexOf(
 		candidate: EditorInput | IUntypedEditorInput | null,
 		editors = this.editors,
@@ -1126,6 +1276,7 @@ export class EditorGroupModel extends Disposable implements IEditorGroupModel {
 		if (!candidate) {
 			return index;
 		}
+
 		for (let i = 0; i < editors.length; i++) {
 			const editor = editors[i];
 
@@ -1146,8 +1297,10 @@ export class EditorGroupModel extends Disposable implements IEditorGroupModel {
 				}
 			}
 		}
+
 		return index;
 	}
+
 	findEditor(
 		candidate: EditorInput | null,
 		options?: IMatchEditorOptions,
@@ -1157,20 +1310,25 @@ export class EditorGroupModel extends Disposable implements IEditorGroupModel {
 		if (index === -1) {
 			return undefined;
 		}
+
 		return [this.editors[index], index];
 	}
+
 	isFirst(candidate: EditorInput | null, editors = this.editors): boolean {
 		return this.matches(editors[0], candidate);
 	}
+
 	isLast(candidate: EditorInput | null, editors = this.editors): boolean {
 		return this.matches(editors[editors.length - 1], candidate);
 	}
+
 	contains(
 		candidate: EditorInput | IUntypedEditorInput,
 		options?: IMatchEditorOptions,
 	): boolean {
 		return this.indexOf(candidate, this.editors, options) !== -1;
 	}
+
 	private matches(
 		editor: EditorInput | null | undefined,
 		candidate: EditorInput | IUntypedEditorInput | null,
@@ -1179,6 +1337,7 @@ export class EditorGroupModel extends Disposable implements IEditorGroupModel {
 		if (!editor || !candidate) {
 			return false;
 		}
+
 		if (
 			options?.supportSideBySide &&
 			editor instanceof SideBySideEditorInput &&
@@ -1192,6 +1351,7 @@ export class EditorGroupModel extends Disposable implements IEditorGroupModel {
 					) {
 						return true;
 					}
+
 					break;
 
 				case SideBySideEditor.BOTH:
@@ -1201,27 +1361,34 @@ export class EditorGroupModel extends Disposable implements IEditorGroupModel {
 					) {
 						return true;
 					}
+
 					break;
 			}
 		}
+
 		const strictEquals = editor === candidate;
 
 		if (options?.strictEquals) {
 			return strictEquals;
 		}
+
 		return strictEquals || editor.matches(candidate);
 	}
+
 	get isLocked(): boolean {
 		return this.locked;
 	}
+
 	lock(locked: boolean): void {
 		if (this.isLocked !== locked) {
 			this.locked = locked;
+
 			this._onDidModelChange.fire({
 				kind: GroupModelChangeKind.GROUP_LOCKED,
 			});
 		}
 	}
+
 	clone(): EditorGroupModel {
 		const clone = this.instantiationService.createInstance(
 			EditorGroupModel,
@@ -1229,16 +1396,22 @@ export class EditorGroupModel extends Disposable implements IEditorGroupModel {
 		);
 		// Copy over group properties
 		clone.editors = this.editors.slice(0);
+
 		clone.mru = this.mru.slice(0);
+
 		clone.preview = this.preview;
+
 		clone.selection = this.selection.slice(0);
+
 		clone.sticky = this.sticky;
 		// Ensure to register listeners for each editor
 		for (const editor of clone.editors) {
 			clone.registerEditorListeners(editor);
 		}
+
 		return clone;
 	}
+
 	serialize(): ISerializedEditorGroupModel {
 		const registry = Registry.as<IEditorFactoryRegistry>(
 			EditorExtensions.EditorFactory,
@@ -1268,7 +1441,9 @@ export class EditorGroupModel extends Disposable implements IEditorGroupModel {
 				// Editor can be serialized
 				if (typeof value === "string") {
 					canSerializeEditor = true;
+
 					serializedEditors.push({ id: editor.typeId, value });
+
 					serializableEditors.push(editor);
 
 					if (this.preview === editor) {
@@ -1286,6 +1461,7 @@ export class EditorGroupModel extends Disposable implements IEditorGroupModel {
 				serializableSticky--;
 			}
 		}
+
 		const serializableMru = this.mru
 			.map((editor) => this.indexOf(editor, serializableEditors))
 			.filter((i) => i >= 0);
@@ -1299,6 +1475,7 @@ export class EditorGroupModel extends Disposable implements IEditorGroupModel {
 			sticky: serializableSticky >= 0 ? serializableSticky : undefined,
 		};
 	}
+
 	private deserialize(data: ISerializedEditorGroupModel): number {
 		const registry = Registry.as<IEditorFactoryRegistry>(
 			EditorExtensions.EditorFactory,
@@ -1306,13 +1483,16 @@ export class EditorGroupModel extends Disposable implements IEditorGroupModel {
 
 		if (typeof data.id === "number") {
 			this._id = data.id;
+
 			EditorGroupModel.IDS = Math.max(data.id + 1, EditorGroupModel.IDS); // make sure our ID generator is always larger
 		} else {
 			this._id = EditorGroupModel.IDS++; // backwards compatibility
 		}
+
 		if (data.locked) {
 			this.locked = true;
 		}
+
 		this.editors = coalesce(
 			data.editors.map((e, index) => {
 				let editor: EditorInput | undefined = undefined;
@@ -1327,9 +1507,11 @@ export class EditorGroupModel extends Disposable implements IEditorGroupModel {
 
 					if (deserializedEditor instanceof EditorInput) {
 						editor = deserializedEditor;
+
 						this.registerEditorListeners(editor);
 					}
 				}
+
 				if (
 					!editor &&
 					typeof data.sticky === "number" &&
@@ -1337,23 +1519,31 @@ export class EditorGroupModel extends Disposable implements IEditorGroupModel {
 				) {
 					data.sticky--; // if editor cannot be deserialized but was sticky, we need to decrease sticky index
 				}
+
 				return editor;
 			}),
 		);
+
 		this.mru = coalesce(data.mru.map((i) => this.editors[i]));
+
 		this.selection = this.mru.length > 0 ? [this.mru[0]] : [];
 
 		if (typeof data.preview === "number") {
 			this.preview = this.editors[data.preview];
 		}
+
 		if (typeof data.sticky === "number") {
 			this.sticky = data.sticky;
 		}
+
 		return this._id;
 	}
+
 	override dispose(): void {
 		dispose(Array.from(this.editorListeners));
+
 		this.editorListeners.clear();
+
 		this.transient.clear();
 
 		super.dispose();

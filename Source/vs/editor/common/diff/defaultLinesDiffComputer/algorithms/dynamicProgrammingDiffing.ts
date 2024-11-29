@@ -50,6 +50,7 @@ export class DynamicProgrammingDiffing implements IDiffAlgorithm {
 						sequence2,
 					);
 				}
+
 				const horizontalLen = s1 === 0 ? 0 : lcsLengths.get(s1 - 1, s2);
 
 				const verticalLen = s2 === 0 ? 0 : lcsLengths.get(s1, s2 - 1);
@@ -62,6 +63,7 @@ export class DynamicProgrammingDiffing implements IDiffAlgorithm {
 					} else {
 						extendedSeqScore = lcsLengths.get(s1 - 1, s2 - 1);
 					}
+
 					if (
 						s1 > 0 &&
 						s2 > 0 &&
@@ -70,12 +72,14 @@ export class DynamicProgrammingDiffing implements IDiffAlgorithm {
 						// Prefer consecutive diagonals
 						extendedSeqScore += lengths.get(s1 - 1, s2 - 1);
 					}
+
 					extendedSeqScore += equalityScore
 						? equalityScore(s1, s2)
 						: 1;
 				} else {
 					extendedSeqScore = -1;
 				}
+
 				const newValue = Math.max(
 					horizontalLen,
 					verticalLen,
@@ -86,15 +90,20 @@ export class DynamicProgrammingDiffing implements IDiffAlgorithm {
 					// Prefer diagonals
 					const prevLen =
 						s1 > 0 && s2 > 0 ? lengths.get(s1 - 1, s2 - 1) : 0;
+
 					lengths.set(s1, s2, prevLen + 1);
+
 					directions.set(s1, s2, 3);
 				} else if (newValue === horizontalLen) {
 					lengths.set(s1, s2, 0);
+
 					directions.set(s1, s2, 1);
 				} else if (newValue === verticalLen) {
 					lengths.set(s1, s2, 0);
+
 					directions.set(s1, s2, 2);
 				}
+
 				lcsLengths.set(s1, s2, newValue);
 			}
 		}
@@ -117,9 +126,12 @@ export class DynamicProgrammingDiffing implements IDiffAlgorithm {
 					),
 				);
 			}
+
 			lastAligningPosS1 = s1;
+
 			lastAligningPosS2 = s2;
 		}
+
 		let s1 = sequence1.length - 1;
 
 		let s2 = sequence2.length - 1;
@@ -127,7 +139,9 @@ export class DynamicProgrammingDiffing implements IDiffAlgorithm {
 		while (s1 >= 0 && s2 >= 0) {
 			if (directions.get(s1, s2) === 3) {
 				reportDecreasingAligningPositions(s1, s2);
+
 				s1--;
+
 				s2--;
 			} else {
 				if (directions.get(s1, s2) === 1) {
@@ -137,7 +151,9 @@ export class DynamicProgrammingDiffing implements IDiffAlgorithm {
 				}
 			}
 		}
+
 		reportDecreasingAligningPositions(-1, -1);
+
 		result.reverse();
 
 		return new DiffAlgorithmResult(result, false);

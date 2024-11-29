@@ -36,9 +36,11 @@ export class MultiDiffEditorWidget extends Disposable {
 		this,
 		undefined,
 	);
+
 	private readonly _viewModel = observableValue<
 		MultiDiffEditorViewModel | undefined
 	>(this, undefined);
+
 	private readonly _widgetImpl = derivedWithStore(this, (reader, store) => {
 		readHotReloadableExport(DiffEditorItemTemplate, reader);
 
@@ -60,53 +62,67 @@ export class MultiDiffEditorWidget extends Disposable {
 		private readonly _instantiationService: IInstantiationService,
 	) {
 		super();
+
 		this._register(recomputeInitiallyAndOnChange(this._widgetImpl));
 	}
+
 	public reveal(
 		resource: IMultiDiffResourceId,
 		options?: RevealOptions,
 	): void {
 		this._widgetImpl.get().reveal(resource, options);
 	}
+
 	public createViewModel(
 		model: IMultiDiffEditorModel,
 	): MultiDiffEditorViewModel {
 		return new MultiDiffEditorViewModel(model, this._instantiationService);
 	}
+
 	public setViewModel(viewModel: MultiDiffEditorViewModel | undefined): void {
 		this._viewModel.set(viewModel, undefined);
 	}
+
 	public layout(dimension: Dimension): void {
 		this._dimension.set(dimension, undefined);
 	}
+
 	private readonly _activeControl = derived(this, (reader) =>
 		this._widgetImpl.read(reader).activeControl.read(reader),
 	);
+
 	public getActiveControl(): DiffEditorWidget | undefined {
 		return this._activeControl.get();
 	}
+
 	public readonly onDidChangeActiveControl = Event.fromObservableLight(
 		this._activeControl,
 	);
+
 	public getViewState(): IMultiDiffEditorViewState {
 		return this._widgetImpl.get().getViewState();
 	}
+
 	public setViewState(viewState: IMultiDiffEditorViewState): void {
 		this._widgetImpl.get().setViewState(viewState);
 	}
+
 	public tryGetCodeEditor(resource: URI):
 		| {
 				diffEditor: IDiffEditor;
+
 				editor: ICodeEditor;
 		  }
 		| undefined {
 		return this._widgetImpl.get().tryGetCodeEditor(resource);
 	}
+
 	public findDocumentDiffItem(resource: URI): IDocumentDiffItem | undefined {
 		return this._widgetImpl.get().findDocumentDiffItem(resource);
 	}
 }
 export interface RevealOptions {
 	range?: Range;
+
 	highlight: boolean;
 }

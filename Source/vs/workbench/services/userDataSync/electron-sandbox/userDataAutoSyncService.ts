@@ -16,6 +16,7 @@ import {
 
 class UserDataAutoSyncService implements IUserDataAutoSyncService {
 	declare readonly _serviceBrand: undefined;
+
 	private readonly channel: IChannel;
 
 	get onError(): Event<UserDataSyncError> {
@@ -23,12 +24,14 @@ class UserDataAutoSyncService implements IUserDataAutoSyncService {
 			UserDataSyncError.toUserDataSyncError(e),
 		);
 	}
+
 	constructor(
 		@ISharedProcessService
 		sharedProcessService: ISharedProcessService,
 	) {
 		this.channel = sharedProcessService.getChannel("userDataAutoSync");
 	}
+
 	triggerSync(
 		sources: string[],
 		hasToLimitSync: boolean,
@@ -40,9 +43,11 @@ class UserDataAutoSyncService implements IUserDataAutoSyncService {
 			disableCache,
 		]);
 	}
+
 	turnOn(): Promise<void> {
 		return this.channel.call("turnOn");
 	}
+
 	turnOff(everywhere: boolean): Promise<void> {
 		return this.channel.call("turnOff", [everywhere]);
 	}

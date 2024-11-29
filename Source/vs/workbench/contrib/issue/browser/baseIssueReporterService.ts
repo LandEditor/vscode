@@ -47,7 +47,9 @@ const MAX_URL_LENGTH = 7500;
 
 interface SearchResult {
 	html_url: string;
+
 	title: string;
+
 	state?: string;
 }
 
@@ -60,16 +62,27 @@ enum IssueSource {
 
 export class BaseIssueReporterService extends Disposable {
 	public issueReporterModel: IssueReporterModel;
+
 	public receivedSystemInfo = false;
+
 	public numberOfSearchResultsDisplayed = 0;
+
 	public receivedPerformanceInfo = false;
+
 	public shouldQueueSearch = false;
+
 	public hasBeenSubmitted = false;
+
 	public openReporter = false;
+
 	public loadingExtensionData = false;
+
 	public selectedExtension = "";
+
 	public delayedSubmit = new Delayer<void>(300);
+
 	public previewButton!: Button;
+
 	public nonGitHubIssueUrl = false;
 
 	constructor(
@@ -77,7 +90,9 @@ export class BaseIssueReporterService extends Disposable {
 		public data: IssueReporterData,
 		public os: {
 			type: string;
+
 			arch: string;
+
 			release: string;
 		},
 		public product: IProductConfiguration,
@@ -95,6 +110,7 @@ export class BaseIssueReporterService extends Disposable {
 						data.extensionId?.toLocaleLowerCase(),
 				)
 			: undefined;
+
 		this.issueReporterModel = new IssueReporterModel({
 			...data,
 			issueType: data.issueType || IssueType.Bug,
@@ -112,6 +128,7 @@ export class BaseIssueReporterService extends Disposable {
 		const fileOnMarketplace = data.issueSource === IssueSource.Marketplace;
 
 		const fileOnProduct = data.issueSource === IssueSource.VSCode;
+
 		this.issueReporterModel.update({ fileOnMarketplace, fileOnProduct });
 
 		//TODO: Handle case where extension is not activated
@@ -124,9 +141,13 @@ export class BaseIssueReporterService extends Disposable {
 			);
 
 			const issueRepoName = document.createElement("a");
+
 			issueReporterElement.appendChild(issueRepoName);
+
 			issueRepoName.id = "show-repo-name";
+
 			issueRepoName.classList.add("hidden");
+
 			this.updatePreviewButtonState();
 		}
 
@@ -149,6 +170,7 @@ export class BaseIssueReporterService extends Disposable {
 
 			if (description) {
 				description.value = issueBody;
+
 				this.issueReporterModel.update({ issueDescription: issueBody });
 			}
 		}
@@ -158,6 +180,7 @@ export class BaseIssueReporterService extends Disposable {
 		}
 
 		const codiconStyleSheet = createStyleSheet();
+
 		codiconStyleSheet.id = "codiconStyles";
 
 		const iconsStyleSheet = this._register(
@@ -169,11 +192,15 @@ export class BaseIssueReporterService extends Disposable {
 		}
 
 		const delayer = new RunOnceScheduler(updateAll, 0);
+
 		iconsStyleSheet.onDidChange(() => delayer.schedule());
+
 		delayer.schedule();
 
 		this.handleExtensionData(data.enabledExtensions);
+
 		this.setUpTypes();
+
 		this.applyStyles(data.styles);
 
 		// Handle case where extension is pre-selected through the command
@@ -192,9 +219,11 @@ export class BaseIssueReporterService extends Disposable {
 		if (fileOnExtension) {
 			const issueTitle =
 				this.window.document.getElementById("issue-title");
+
 			issueTitle?.focus();
 		} else {
 			const issueType = this.window.document.getElementById("issue-type");
+
 			issueType?.focus();
 		}
 	}
@@ -215,6 +244,7 @@ export class BaseIssueReporterService extends Disposable {
 			content.push(
 				`.monaco-workbench { background-color: ${styles.backgroundColor} !important; }`,
 			);
+
 			content.push(
 				`.issue-reporter-body::-webkit-scrollbar-track { background-color: ${styles.backgroundColor}; }`,
 			);
@@ -240,6 +270,7 @@ export class BaseIssueReporterService extends Disposable {
 			content.push(
 				`.invalid-input, .invalid-input:focus, .validation-error { border: 1px solid ${styles.inputErrorBorder} !important; }`,
 			);
+
 			content.push(
 				`.required-input { color: ${styles.inputErrorBorder}; }`,
 			);
@@ -289,6 +320,7 @@ export class BaseIssueReporterService extends Disposable {
 			content.push(
 				`.issue-reporter-body::-webkit-scrollbar-thumb { background-color: ${styles.sliderHoverColor}; }`,
 			);
+
 			content.push(
 				`.issue-reporter-body::--webkit-scrollbar-thumb:hover { background-color: ${styles.sliderHoverColor}; }`,
 			);
@@ -313,7 +345,9 @@ export class BaseIssueReporterService extends Disposable {
 		}
 
 		styleTag.textContent = content.join("\n");
+
 		this.window.document.head.appendChild(styleTag);
+
 		this.window.document.body.style.color = styles.color || "";
 	}
 
@@ -323,6 +357,7 @@ export class BaseIssueReporterService extends Disposable {
 		try {
 			if (extension.uri) {
 				const uri = URI.revive(extension.uri);
+
 				extension.bugsUrl = uri.toString();
 			}
 		} catch (e) {
@@ -338,11 +373,13 @@ export class BaseIssueReporterService extends Disposable {
 		});
 
 		const numberOfThemeExtesions = themes && themes.length;
+
 		this.issueReporterModel.update({
 			numberOfThemeExtesions,
 			enabledNonThemeExtesions: nonThemes,
 			allExtensions: installedExtensions,
 		});
+
 		this.updateExtensionTable(nonThemes, numberOfThemeExtesions);
 
 		if (this.disableExtensions || installedExtensions.length === 0) {
@@ -359,6 +396,7 @@ export class BaseIssueReporterService extends Disposable {
 	): void {
 		interface IOption {
 			name: string;
+
 			id: string;
 		}
 
@@ -408,6 +446,7 @@ export class BaseIssueReporterService extends Disposable {
 
 		if (extensionsSelector) {
 			const { selectedExtension } = this.issueReporterModel.getData();
+
 			reset(
 				extensionsSelector,
 				this.makeOption(
@@ -432,6 +471,7 @@ export class BaseIssueReporterService extends Disposable {
 
 					const selectedExtensionId = (<HTMLInputElement>e.target)
 						.value;
+
 					this.selectedExtension = selectedExtensionId;
 
 					const extensions =
@@ -451,10 +491,12 @@ export class BaseIssueReporterService extends Disposable {
 
 						if (selectedExtension) {
 							const iconElement = document.createElement("span");
+
 							iconElement.classList.add(
 								...ThemeIcon.asClassNameArray(Codicon.loading),
 								"codicon-modifier-spin",
 							);
+
 							this.setLoading(iconElement);
 
 							const openReporterData =
@@ -467,6 +509,7 @@ export class BaseIssueReporterService extends Disposable {
 								) {
 									this.removeLoading(iconElement, true);
 									// this.configuration.data = openReporterData;
+
 									this.data = openReporterData;
 								}
 								// else if (this.selectedExtension !== selectedExtensionId) {
@@ -480,28 +523,36 @@ export class BaseIssueReporterService extends Disposable {
 										"codicon-modifier-spin",
 									);
 								}
+
 								this.removeLoading(iconElement);
 								// if not using command, should have no configuration data in fields we care about and check later.
 								this.clearExtensionData();
 
 								// case when previous extension was opened from normal openIssueReporter command
 								selectedExtension.data = undefined;
+
 								selectedExtension.uri = undefined;
 							}
+
 							if (
 								this.selectedExtension === selectedExtensionId
 							) {
 								// repopulates the fields with the new data given the selected extension.
 								this.updateExtensionStatus(matches[0]);
+
 								this.openReporter = false;
 							}
 						} else {
 							this.issueReporterModel.update({
 								selectedExtension: undefined,
 							});
+
 							this.clearSearchResults();
+
 							this.clearExtensionData();
+
 							this.validateSelectedExtension();
+
 							this.updateExtensionStatus(matches[0]);
 						}
 					}
@@ -511,6 +562,7 @@ export class BaseIssueReporterService extends Disposable {
 
 		this.addEventListener("problem-source", "change", (_) => {
 			this.clearExtensionData();
+
 			this.validateSelectedExtension();
 		});
 	}
@@ -544,6 +596,7 @@ export class BaseIssueReporterService extends Disposable {
 		).forEach((elementId) => {
 			this.addEventListener(elementId, "click", (event: Event) => {
 				event.stopPropagation();
+
 				this.issueReporterModel.update({
 					[elementId]: !this.issueReporterModel.getData()[elementId],
 				});
@@ -573,9 +626,11 @@ export class BaseIssueReporterService extends Disposable {
 
 						if (info && info.classList.contains("hidden")) {
 							show(info);
+
 							label.textContent = localize("hide", "hide");
 						} else {
 							hide(info);
+
 							label.textContent = localize("show", "show");
 						}
 					}
@@ -592,8 +647,11 @@ export class BaseIssueReporterService extends Disposable {
 
 			if (value === "") {
 				this.issueReporterModel.update({ fileOnExtension: undefined });
+
 				show(problemSourceHelpText);
+
 				this.clearSearchResults();
+
 				this.render();
 
 				return;
@@ -640,15 +698,18 @@ export class BaseIssueReporterService extends Disposable {
 				fileOnExtension,
 				fileOnMarketplace,
 			});
+
 			this.render();
 
 			const title = (<HTMLInputElement>this.getElementById("issue-title"))
 				.value;
+
 			this.searchIssues(title, fileOnExtension, fileOnMarketplace);
 		});
 
 		this.addEventListener("description", "input", (e: Event) => {
 			const issueDescription = (<HTMLInputElement>e.target).value;
+
 			this.issueReporterModel.update({ issueDescription });
 
 			// Only search for extension issues on title change
@@ -656,6 +717,7 @@ export class BaseIssueReporterService extends Disposable {
 				const title = (<HTMLInputElement>(
 					this.getElementById("issue-title")
 				)).value;
+
 				this.searchVSCodeIssues(title, issueDescription);
 			}
 		});
@@ -667,6 +729,7 @@ export class BaseIssueReporterService extends Disposable {
 
 			if (titleElement) {
 				const title = titleElement.value;
+
 				this.issueReporterModel.update({ issueTitle: title });
 			}
 		});
@@ -689,6 +752,7 @@ export class BaseIssueReporterService extends Disposable {
 			} else {
 				hide(lengthValidationMessage);
 			}
+
 			const issueSource =
 				this.getElementById<HTMLSelectElement>("issue-source");
 
@@ -698,6 +762,7 @@ export class BaseIssueReporterService extends Disposable {
 
 			const { fileOnExtension, fileOnMarketplace } =
 				this.issueReporterModel.getData();
+
 			this.searchIssues(title, fileOnExtension, fileOnMarketplace);
 		});
 
@@ -713,6 +778,7 @@ export class BaseIssueReporterService extends Disposable {
 
 		this.addEventListener("extensionBugsLink", "click", (e: Event) => {
 			const url = (<HTMLElement>e.target).innerText;
+
 			windowOpenNoOpener(url);
 		});
 
@@ -741,6 +807,7 @@ export class BaseIssueReporterService extends Disposable {
 			// Cmd/Ctrl + w closes issue window
 			if (cmdOrCtrlKey && e.key === "w") {
 				e.stopPropagation();
+
 				e.preventDefault();
 
 				const issueTitle = (<HTMLInputElement>(
@@ -777,11 +844,15 @@ export class BaseIssueReporterService extends Disposable {
 
 	public updatePerformanceInfo(info: Partial<IssueReporterData>) {
 		this.issueReporterModel.update(info);
+
 		this.receivedPerformanceInfo = true;
 
 		const state = this.issueReporterModel.getData();
+
 		this.updateProcessInfo(state);
+
 		this.updateWorkspaceInfo(state);
+
 		this.updatePreviewButtonState();
 	}
 
@@ -798,9 +869,11 @@ export class BaseIssueReporterService extends Disposable {
 					"Preview on GitHub",
 				);
 			}
+
 			this.previewButton.enabled = true;
 		} else {
 			this.previewButton.enabled = false;
+
 			this.previewButton.label = localize(
 				"loadingData",
 				"Loading data...",
@@ -816,16 +889,21 @@ export class BaseIssueReporterService extends Disposable {
 
 		if (selectedExtension && selectedExtension.uri) {
 			const urlString = URI.revive(selectedExtension.uri).toString();
+
 			issueRepoName.href = urlString;
+
 			issueRepoName.addEventListener("click", (e) => this.openLink(e));
+
 			issueRepoName.addEventListener("auxclick", (e) =>
 				this.openLink(<MouseEvent>e),
 			);
 
 			const gitHubInfo = this.parseGitHubUrl(urlString);
+
 			issueRepoName.textContent = gitHubInfo
 				? gitHubInfo.owner + "/" + gitHubInfo.repositoryName
 				: urlString;
+
 			Object.assign(issueRepoName.style, {
 				alignSelf: "flex-end",
 				display: "block",
@@ -835,10 +913,12 @@ export class BaseIssueReporterService extends Disposable {
 				textDecoration: "none",
 				width: "auto",
 			});
+
 			show(issueRepoName);
 		} else {
 			// clear styles
 			issueRepoName.removeAttribute("style");
+
 			hide(issueRepoName);
 		}
 
@@ -918,6 +998,7 @@ export class BaseIssueReporterService extends Disposable {
 		}
 
 		const description = this.issueReporterModel.getData().issueDescription;
+
 		this.searchVSCodeIssues(title, description);
 	}
 
@@ -965,7 +1046,9 @@ export class BaseIssueReporterService extends Disposable {
 
 	public clearSearchResults(): void {
 		const similarIssues = this.getElementById("similar-issues")!;
+
 		similarIssues.innerText = "";
+
 		this.numberOfSearchResultsDisplayed = 0;
 	}
 
@@ -987,10 +1070,12 @@ export class BaseIssueReporterService extends Disposable {
 						} else {
 							// If the items property isn't present, the rate limit has been hit
 							const message = $("div.list-title");
+
 							message.textContent = localize(
 								"rateLimited",
 								"GitHub query limit exceeded. Please wait.",
 							);
+
 							similarIssues.appendChild(message);
 
 							const resetTime =
@@ -1006,6 +1091,7 @@ export class BaseIssueReporterService extends Disposable {
 
 								setTimeout(() => {
 									this.searchGitHub(repo, title);
+
 									this.shouldQueueSearch = true;
 								}, timeToWait * 1000);
 							}
@@ -1067,6 +1153,7 @@ export class BaseIssueReporterService extends Disposable {
 			const issues = $("div.issues-container");
 
 			const issuesText = $("div.list-title");
+
 			issuesText.textContent = localize(
 				"similarIssues",
 				"Similar issues",
@@ -1079,9 +1166,13 @@ export class BaseIssueReporterService extends Disposable {
 				const issue = results[i];
 
 				const link = $("a.issue-link", { href: issue.html_url });
+
 				link.textContent = issue.title;
+
 				link.title = issue.title;
+
 				link.addEventListener("click", (e) => this.openLink(e));
+
 				link.addEventListener("auxclick", (e) =>
 					this.openLink(<MouseEvent>e),
 				);
@@ -1094,6 +1185,7 @@ export class BaseIssueReporterService extends Disposable {
 					issueState = $("span.issue-state");
 
 					const issueIcon = $("span.issue-icon");
+
 					issueIcon.appendChild(
 						renderIcon(
 							issue.state === "open"
@@ -1103,6 +1195,7 @@ export class BaseIssueReporterService extends Disposable {
 					);
 
 					const issueStateLabel = $("span.issue-state.label");
+
 					issueStateLabel.textContent =
 						issue.state === "open"
 							? localize("open", "Open")
@@ -1112,7 +1205,9 @@ export class BaseIssueReporterService extends Disposable {
 						issue.state === "open"
 							? localize("open", "Open")
 							: localize("closed", "Closed");
+
 					issueState.appendChild(issueIcon);
+
 					issueState.appendChild(issueStateLabel);
 
 					item = $("div.issue", undefined, issueState, link);
@@ -1124,13 +1219,16 @@ export class BaseIssueReporterService extends Disposable {
 			}
 
 			similarIssues.appendChild(issuesText);
+
 			similarIssues.appendChild(issues);
 		} else {
 			const message = $("div.list-title");
+
 			message.textContent = localize(
 				"noSimilarIssues",
 				"No similar issues found",
 			);
+
 			similarIssues.appendChild(message);
 		}
 	}
@@ -1144,6 +1242,7 @@ export class BaseIssueReporterService extends Disposable {
 		)! as HTMLSelectElement;
 
 		const { issueType } = this.issueReporterModel.getData();
+
 		reset(
 			typeSelect,
 			makeOption(IssueType.Bug, localize("bugReporter", "Bug Report")),
@@ -1171,8 +1270,11 @@ export class BaseIssueReporterService extends Disposable {
 		disabled: boolean,
 	): HTMLOptionElement {
 		const option: HTMLOptionElement = document.createElement("option");
+
 		option.disabled = disabled;
+
 		option.value = value;
+
 		option.textContent = description;
 
 		return option;
@@ -1206,6 +1308,7 @@ export class BaseIssueReporterService extends Disposable {
 		}
 
 		sourceSelect.innerText = "";
+
 		sourceSelect.append(
 			this.makeOption(
 				"",
@@ -1213,6 +1316,7 @@ export class BaseIssueReporterService extends Disposable {
 				true,
 			),
 		);
+
 		sourceSelect.append(
 			this.makeOption(
 				IssueSource.VSCode,
@@ -1220,6 +1324,7 @@ export class BaseIssueReporterService extends Disposable {
 				false,
 			),
 		);
+
 		sourceSelect.append(
 			this.makeOption(
 				IssueSource.Extension,
@@ -1252,6 +1357,7 @@ export class BaseIssueReporterService extends Disposable {
 			sourceSelect.selectedIndex = selected;
 		} else {
 			sourceSelect.selectedIndex = 0;
+
 			hide(this.getElementById("problem-source-help-text"));
 		}
 	}
@@ -1305,17 +1411,27 @@ export class BaseIssueReporterService extends Disposable {
 
 		// Hide all by default
 		hide(blockContainer);
+
 		hide(systemBlock);
+
 		hide(processBlock);
+
 		hide(workspaceBlock);
+
 		hide(extensionsBlock);
+
 		hide(experimentsBlock);
+
 		hide(extensionSelector);
+
 		hide(extensionDataTextArea);
+
 		hide(extensionDataBlock);
 
 		show(problemSource);
+
 		show(titleTextArea);
+
 		show(descriptionTextArea);
 
 		if (fileOnExtension) {
@@ -1324,7 +1440,9 @@ export class BaseIssueReporterService extends Disposable {
 
 		if (selectedExtension && this.nonGitHubIssueUrl) {
 			hide(titleTextArea);
+
 			hide(descriptionTextArea);
+
 			reset(
 				descriptionTitle,
 				localize(
@@ -1332,6 +1450,7 @@ export class BaseIssueReporterService extends Disposable {
 					"This extension handles issues outside of VS Code",
 				),
 			);
+
 			reset(
 				descriptionSubtitle,
 				localize(
@@ -1340,6 +1459,7 @@ export class BaseIssueReporterService extends Disposable {
 					selectedExtension.displayName,
 				),
 			);
+
 			this.previewButton.label = localize(
 				"openIssueReporter",
 				"Open External Issue Reporter",
@@ -1352,6 +1472,7 @@ export class BaseIssueReporterService extends Disposable {
 			const data = selectedExtension?.data;
 			(extensionDataTextArea as HTMLElement).innerText = data.toString();
 			(extensionDataTextArea as HTMLTextAreaElement).readOnly = true;
+
 			show(extensionDataBlock);
 		}
 
@@ -1365,13 +1486,16 @@ export class BaseIssueReporterService extends Disposable {
 					show(extensionDataBlock);
 				}
 			}, 100);
+
 			show(extensionDataBlock);
 		}
 
 		if (issueType === IssueType.Bug) {
 			if (!fileOnMarketplace) {
 				show(blockContainer);
+
 				show(systemBlock);
+
 				show(experimentsBlock);
 
 				if (!fileOnExtension) {
@@ -1384,6 +1508,7 @@ export class BaseIssueReporterService extends Disposable {
 				localize("stepsToReproduce", "Steps to Reproduce") + " ",
 				$("span.required-input", undefined, "*"),
 			);
+
 			reset(
 				descriptionSubtitle,
 				localize(
@@ -1394,9 +1519,13 @@ export class BaseIssueReporterService extends Disposable {
 		} else if (issueType === IssueType.PerformanceIssue) {
 			if (!fileOnMarketplace) {
 				show(blockContainer);
+
 				show(systemBlock);
+
 				show(processBlock);
+
 				show(workspaceBlock);
+
 				show(experimentsBlock);
 			}
 
@@ -1411,6 +1540,7 @@ export class BaseIssueReporterService extends Disposable {
 				localize("stepsToReproduce", "Steps to Reproduce") + " ",
 				$("span.required-input", undefined, "*"),
 			);
+
 			reset(
 				descriptionSubtitle,
 				localize(
@@ -1424,6 +1554,7 @@ export class BaseIssueReporterService extends Disposable {
 				localize("description", "Description") + " ",
 				$("span.required-input", undefined, "*"),
 			);
+
 			reset(
 				descriptionSubtitle,
 				localize(
@@ -1453,7 +1584,9 @@ export class BaseIssueReporterService extends Disposable {
 			return true;
 		} else if (!inputElement.value) {
 			inputElement.classList.add("invalid-input");
+
 			inputValidationMessage?.classList.remove("hidden");
+
 			descriptionShortMessage?.classList.add("hidden");
 
 			return false;
@@ -1462,17 +1595,21 @@ export class BaseIssueReporterService extends Disposable {
 			inputElement.value.length < 10
 		) {
 			inputElement.classList.add("invalid-input");
+
 			descriptionShortMessage?.classList.remove("hidden");
+
 			inputValidationMessage?.classList.add("hidden");
 
 			return false;
 		} else {
 			inputElement.classList.remove("invalid-input");
+
 			inputValidationMessage?.classList.add("hidden");
 
 			if (inputId === "description") {
 				descriptionShortMessage?.classList.add("hidden");
 			}
+
 			return true;
 		}
 	}
@@ -1517,8 +1654,11 @@ export class BaseIssueReporterService extends Disposable {
 
 			return false;
 		}
+
 		const result = await response.json();
+
 		mainWindow.open(result.html_url, "_blank");
+
 		this.close();
 
 		return true;
@@ -1589,6 +1729,7 @@ export class BaseIssueReporterService extends Disposable {
 
 		if (selectedExtension?.uri) {
 			const uri = URI.revive(selectedExtension.uri);
+
 			issueUrl = uri.toString();
 		}
 
@@ -1686,6 +1827,7 @@ export class BaseIssueReporterService extends Disposable {
 			repositoryUrl = normalizeGitHubUrl(extensionUrl);
 		} else {
 			this.nonGitHubIssueUrl = true;
+
 			repositoryUrl = bugsUrl || extensionUrl || "";
 		}
 
@@ -1707,9 +1849,13 @@ export class BaseIssueReporterService extends Disposable {
 
 	public clearExtensionData(): void {
 		this.nonGitHubIssueUrl = false;
+
 		this.issueReporterModel.update({ extensionData: undefined });
+
 		this.data.issueBody = this.data.issueBody || "";
+
 		this.data.data = undefined;
+
 		this.data.uri = undefined;
 	}
 
@@ -1735,6 +1881,7 @@ export class BaseIssueReporterService extends Disposable {
 					template.toString();
 				(descriptionTextArea as HTMLTextAreaElement).value =
 					fullTextArea;
+
 				this.issueReporterModel.update({
 					issueDescription: fullTextArea,
 				});
@@ -1745,12 +1892,15 @@ export class BaseIssueReporterService extends Disposable {
 
 		if (data) {
 			this.issueReporterModel.update({ extensionData: data });
+
 			extension.data = data;
 
 			const extensionDataBlock = this.window.document.querySelector(
 				".block-extension-data",
 			)!;
+
 			show(extensionDataBlock);
+
 			this.renderBlocks();
 		}
 
@@ -1758,6 +1908,7 @@ export class BaseIssueReporterService extends Disposable {
 
 		if (uri) {
 			extension.uri = uri;
+
 			this.updateIssueReporterUri(extension);
 		}
 
@@ -1765,9 +1916,11 @@ export class BaseIssueReporterService extends Disposable {
 
 		const title = (<HTMLInputElement>this.getElementById("issue-title"))
 			.value;
+
 		this.searchExtensionIssues(title);
 
 		this.updatePreviewButtonState();
+
 		this.renderBlocks();
 	}
 
@@ -1779,7 +1932,9 @@ export class BaseIssueReporterService extends Disposable {
 		const extensionValidationNoUrlsMessage = this.getElementById(
 			"extension-selection-validation-error-no-url",
 		)!;
+
 		hide(extensionValidationMessage);
+
 		hide(extensionValidationNoUrlsMessage);
 
 		const extension = this.issueReporterModel.getData().selectedExtension;
@@ -1800,6 +1955,7 @@ export class BaseIssueReporterService extends Disposable {
 			this.previewButton.enabled = true;
 		} else {
 			this.setExtensionValidationMessage();
+
 			this.previewButton.enabled = false;
 		}
 	}
@@ -1807,25 +1963,31 @@ export class BaseIssueReporterService extends Disposable {
 	public setLoading(element: HTMLElement) {
 		// Show loading
 		this.openReporter = true;
+
 		this.loadingExtensionData = true;
+
 		this.updatePreviewButtonState();
 
 		const extensionDataCaption = this.getElementById("extension-id")!;
+
 		hide(extensionDataCaption);
 
 		const extensionDataCaption2 = Array.from(
 			this.window.document.querySelectorAll(".ext-parens"),
 		);
+
 		extensionDataCaption2.forEach((extensionDataCaption2) =>
 			hide(extensionDataCaption2),
 		);
 
 		const showLoading = this.getElementById("ext-loading")!;
+
 		show(showLoading);
 
 		while (showLoading.firstChild) {
 			showLoading.firstChild.remove();
 		}
+
 		showLoading.append(element);
 
 		this.renderBlocks();
@@ -1833,25 +1995,31 @@ export class BaseIssueReporterService extends Disposable {
 
 	public removeLoading(element: HTMLElement, fromReporter: boolean = false) {
 		this.openReporter = fromReporter;
+
 		this.loadingExtensionData = false;
+
 		this.updatePreviewButtonState();
 
 		const extensionDataCaption = this.getElementById("extension-id")!;
+
 		show(extensionDataCaption);
 
 		const extensionDataCaption2 = Array.from(
 			this.window.document.querySelectorAll(".ext-parens"),
 		);
+
 		extensionDataCaption2.forEach((extensionDataCaption2) =>
 			show(extensionDataCaption2),
 		);
 
 		const hideLoading = this.getElementById("ext-loading")!;
+
 		hide(hideLoading);
 
 		if (hideLoading.firstChild) {
 			element.remove();
 		}
+
 		this.renderBlocks();
 	}
 
@@ -1870,6 +2038,7 @@ export class BaseIssueReporterService extends Disposable {
 			show(extensionValidationMessage);
 
 			const link = this.getElementById("extensionBugsLink")!;
+
 			link.textContent = bugsUrl;
 
 			return;
@@ -1881,6 +2050,7 @@ export class BaseIssueReporterService extends Disposable {
 			show(extensionValidationMessage);
 
 			const link = this.getElementById("extensionBugsLink");
+
 			link!.textContent = extensionUrl;
 
 			return;
@@ -1926,6 +2096,7 @@ export class BaseIssueReporterService extends Disposable {
 			const themeExclusionStr = numThemeExtensions
 				? `\n(${numThemeExtensions} theme extensions excluded)`
 				: "";
+
 			extensions = extensions || [];
 
 			if (!extensions.length) {
@@ -1973,6 +2144,7 @@ export class BaseIssueReporterService extends Disposable {
 
 	private openLink(event: MouseEvent): void {
 		event.preventDefault();
+
 		event.stopPropagation();
 		// Exclude right click
 		if (event.which < 3) {
@@ -2000,6 +2172,7 @@ export class BaseIssueReporterService extends Disposable {
 		handler: (event: Event) => void,
 	): void {
 		const element = this.getElementById(elementId);
+
 		element?.addEventListener(eventType, handler);
 	}
 }

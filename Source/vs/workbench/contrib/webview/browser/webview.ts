@@ -72,10 +72,15 @@ export interface IWebviewService {
 }
 export interface WebviewInitInfo {
 	readonly providedViewType?: string;
+
 	readonly origin?: string;
+
 	readonly title: string | undefined;
+
 	readonly options: WebviewOptions;
+
 	readonly contentOptions: WebviewContentOptions;
+
 	readonly extension: WebviewExtensionDescription | undefined;
 }
 export const enum WebviewContentPurpose {
@@ -92,14 +97,19 @@ export interface WebviewOptions {
 	 * The purpose of the webview; this is (currently) only used for filtering in js-debug
 	 */
 	readonly purpose?: WebviewContentPurpose;
+
 	readonly customClasses?: string;
+
 	readonly enableFindWidget?: boolean;
 	/**
 	 * Disable the service worker used for loading local resources in the webview.
 	 */
 	readonly disableServiceWorker?: boolean;
+
 	readonly tryRestoreScrollPosition?: boolean;
+
 	readonly retainContextWhenHidden?: boolean;
+
 	transformCssVariables?(styles: WebviewStyles): WebviewStyles;
 }
 export interface WebviewContentOptions {
@@ -159,20 +169,24 @@ function areEnableCommandUrisEqual(
 	if (a.enableCommandUris === b.enableCommandUris) {
 		return true;
 	}
+
 	if (
 		Array.isArray(a.enableCommandUris) &&
 		Array.isArray(b.enableCommandUris)
 	) {
 		return equals(a.enableCommandUris, b.enableCommandUris);
 	}
+
 	return false;
 }
 export interface WebviewExtensionDescription {
 	readonly location?: URI;
+
 	readonly id: ExtensionIdentifier;
 }
 export interface WebviewMessageReceivedEvent {
 	readonly message: any;
+
 	readonly transfer?: readonly ArrayBuffer[];
 }
 export interface IWebview extends IDisposable {
@@ -206,21 +220,31 @@ export interface IWebview extends IDisposable {
 	 * The extension that created/owns this webview.
 	 */
 	extension: WebviewExtensionDescription | undefined;
+
 	initialScrollProgress: number;
+
 	state: string | undefined;
+
 	readonly isFocused: boolean;
+
 	readonly onDidFocus: Event<void>;
+
 	readonly onDidBlur: Event<void>;
 	/**
 	 * Fired when the webview is disposed of.
 	 */
 	readonly onDidDispose: Event<void>;
+
 	readonly onDidClickLink: Event<string>;
+
 	readonly onDidScroll: Event<{
 		readonly scrollYPercentage: number;
 	}>;
+
 	readonly onDidWheel: Event<IMouseWheelEvent>;
+
 	readonly onDidUpdateState: Event<string | undefined>;
+
 	readonly onDidReload: Event<void>;
 	/**
 	 * Fired when the webview cannot be loaded or is now in a non-functional state.
@@ -228,24 +252,40 @@ export interface IWebview extends IDisposable {
 	readonly onFatalError: Event<{
 		readonly message: string;
 	}>;
+
 	readonly onMissingCsp: Event<ExtensionIdentifier>;
+
 	readonly onMessage: Event<WebviewMessageReceivedEvent>;
+
 	postMessage(
 		message: any,
 		transfer?: readonly ArrayBuffer[],
 	): Promise<boolean>;
+
 	focus(): void;
+
 	reload(): void;
+
 	showFind(animated?: boolean): void;
+
 	hideFind(animated?: boolean): void;
+
 	runFindAction(previous: boolean): void;
+
 	selectAll(): void;
+
 	copy(): void;
+
 	paste(): void;
+
 	cut(): void;
+
 	undo(): void;
+
 	redo(): void;
+
 	windowDidDragStart(): void;
+
 	windowDidDragEnd(): void;
 
 	setContextKeyService(scopedContextKeyService: IContextKeyService): void;
@@ -278,7 +318,9 @@ export interface IOverlayWebview extends IWebview {
 	 * The HTML element that holds the webview.
 	 */
 	readonly container: HTMLElement;
+
 	origin: string;
+
 	options: WebviewOptions;
 	/**
 	 * Take ownership of the webview.
@@ -324,6 +366,7 @@ export interface IOverlayWebview extends IWebview {
  */
 export class WebviewOriginStore {
 	private readonly _memento: Memento;
+
 	private readonly _state: MementoObject;
 
 	constructor(
@@ -332,11 +375,13 @@ export class WebviewOriginStore {
 		storageService: IStorageService,
 	) {
 		this._memento = new Memento(rootStorageKey, storageService);
+
 		this._state = this._memento.getMemento(
 			StorageScope.APPLICATION,
 			StorageTarget.MACHINE,
 		);
 	}
+
 	public getOrigin(
 		viewType: string,
 		additionalKey: string | undefined,
@@ -348,12 +393,16 @@ export class WebviewOriginStore {
 		if (existing && typeof existing === "string") {
 			return existing;
 		}
+
 		const newOrigin = generateUuid();
+
 		this._state[key] = newOrigin;
+
 		this._memento.saveMemento();
 
 		return newOrigin;
 	}
+
 	private _getKey(
 		viewType: string,
 		additionalKey: string | undefined,
@@ -376,6 +425,7 @@ export class ExtensionKeyedWebviewOriginStore {
 	) {
 		this._store = new WebviewOriginStore(rootStorageKey, storageService);
 	}
+
 	public getOrigin(viewType: string, extId: ExtensionIdentifier): string {
 		return this._store.getOrigin(viewType, extId.value);
 	}

@@ -17,9 +17,11 @@ export class ArrayEdit {
 			.slice()
 			.sort(compareBy((c) => c.offset, numberComparator));
 	}
+
 	applyToArray(array: any[]): void {
 		for (let i = this.edits.length - 1; i >= 0; i--) {
 			const c = this.edits[i];
+
 			array.splice(c.offset, c.length, ...new Array(c.newLength));
 		}
 	}
@@ -30,6 +32,7 @@ export class SingleArrayEdit {
 		public readonly length: number,
 		public readonly newLength: number,
 	) {}
+
 	toString() {
 		return `[${this.offset}, +${this.length}) -> +${this.newLength}}`;
 	}
@@ -49,7 +52,9 @@ export class MonotonousIndexTransformer implements IIndexTransformer {
 
 		return new CombinedIndexTransformer(transformers);
 	}
+
 	private idx = 0;
+
 	private offset = 0;
 
 	constructor(private readonly transformation: ArrayEdit) {}
@@ -63,7 +68,9 @@ export class MonotonousIndexTransformer implements IIndexTransformer {
 
 		while (nextChange && nextChange.offset + nextChange.length <= index) {
 			this.offset += nextChange.newLength - nextChange.length;
+
 			this.idx++;
+
 			nextChange = this.transformation.edits[this.idx];
 		}
 		// assert nextChange === undefined || index < nextChange.offset + nextChange.length
@@ -71,11 +78,13 @@ export class MonotonousIndexTransformer implements IIndexTransformer {
 			// Offset is touched by the change
 			return undefined;
 		}
+
 		return index + this.offset;
 	}
 }
 export class CombinedIndexTransformer implements IIndexTransformer {
 	constructor(private readonly transformers: IIndexTransformer[]) {}
+
 	transform(index: number): number | undefined {
 		for (const transformer of this.transformers) {
 			const result = transformer.transform(index);
@@ -83,8 +92,10 @@ export class CombinedIndexTransformer implements IIndexTransformer {
 			if (result === undefined) {
 				return undefined;
 			}
+
 			index = result;
 		}
+
 		return index;
 	}
 }

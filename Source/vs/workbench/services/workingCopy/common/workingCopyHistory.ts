@@ -27,6 +27,7 @@ export interface IWorkingCopyHistoryEntry {
 	 */
 	readonly workingCopy: {
 		readonly resource: URI;
+
 		readonly name: string;
 	};
 	/**

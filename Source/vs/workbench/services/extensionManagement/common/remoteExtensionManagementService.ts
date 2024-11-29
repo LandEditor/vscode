@@ -51,16 +51,19 @@ export class RemoteExtensionManagementService
 		if (applicationScoped) {
 			return true;
 		}
+
 		if (
 			!profileLocation &&
 			this.userDataProfileService.currentProfile.isDefault
 		) {
 			return true;
 		}
+
 		const currentRemoteProfile =
 			await this.remoteUserDataProfilesService.getRemoteProfile(
 				this.userDataProfileService.currentProfile,
 			);
+
 		if (
 			this.uriIdentityService.extUri.isEqual(
 				currentRemoteProfile.extensionsResource,
@@ -69,13 +72,16 @@ export class RemoteExtensionManagementService
 		) {
 			return true;
 		}
+
 		return false;
 	}
 
 	protected override getProfileLocation(profileLocation: URI): Promise<URI>;
+
 	protected override getProfileLocation(
 		profileLocation?: URI,
 	): Promise<URI | undefined>;
+
 	protected override async getProfileLocation(
 		profileLocation?: URI,
 	): Promise<URI | undefined> {
@@ -85,13 +91,16 @@ export class RemoteExtensionManagementService
 		) {
 			return undefined;
 		}
+
 		profileLocation = await super.getProfileLocation(profileLocation);
+
 		let profile = this.userDataProfilesService.profiles.find((p) =>
 			this.uriIdentityService.extUri.isEqual(
 				p.extensionsResource,
 				profileLocation,
 			),
 		);
+
 		if (profile) {
 			profile =
 				await this.remoteUserDataProfilesService.getRemoteProfile(
@@ -107,6 +116,7 @@ export class RemoteExtensionManagementService
 				),
 			);
 		}
+
 		return profile?.extensionsResource;
 	}
 
@@ -117,21 +127,25 @@ export class RemoteExtensionManagementService
 	): Promise<DidChangeProfileEvent> {
 		const remoteProfiles =
 			await this.remoteUserDataProfilesService.getRemoteProfiles();
+
 		const previousProfile = remoteProfiles.find((p) =>
 			this.uriIdentityService.extUri.isEqual(
 				p.extensionsResource,
 				previousProfileLocation,
 			),
 		);
+
 		const currentProfile = remoteProfiles.find((p) =>
 			this.uriIdentityService.extUri.isEqual(
 				p.extensionsResource,
 				currentProfileLocation,
 			),
 		);
+
 		if (previousProfile?.id === currentProfile?.id) {
 			return { added: [], removed: [] };
 		}
+
 		return super.switchExtensionsProfile(
 			previousProfileLocation,
 			currentProfileLocation,

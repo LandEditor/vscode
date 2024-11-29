@@ -116,15 +116,22 @@ export class TypeHierarchyTreePeekWidget extends peekView.PeekViewWidget {
 	static readonly TitleMenu = new MenuId("typehierarchy/title");
 
 	private _parent!: HTMLElement;
+
 	private _message!: HTMLElement;
+
 	private _splitView!: SplitView;
+
 	private _tree!: TypeHierarchyTree;
+
 	private _treeViewStates = new Map<
 		TypeHierarchyDirection,
 		IAsyncDataTreeViewState
 	>();
+
 	private _editor!: EmbeddedCodeEditorWidget;
+
 	private _dim!: Dimension;
+
 	private _layoutInfo!: LayoutInfo;
 
 	private readonly _previewDisposable = new DisposableStore();
@@ -156,19 +163,27 @@ export class TypeHierarchyTreePeekWidget extends peekView.PeekViewWidget {
 			},
 			_instantiationService,
 		);
+
 		this.create();
+
 		this._peekViewService.addExclusiveWidget(editor, this);
+
 		this._applyTheme(themeService.getColorTheme());
+
 		this._disposables.add(
 			themeService.onDidColorThemeChange(this._applyTheme, this),
 		);
+
 		this._disposables.add(this._previewDisposable);
 	}
 
 	override dispose(): void {
 		LayoutInfo.store(this._layoutInfo, this._storageService);
+
 		this._splitView.dispose();
+
 		this._tree.dispose();
+
 		this._editor.dispose();
 
 		super.dispose();
@@ -181,6 +196,7 @@ export class TypeHierarchyTreePeekWidget extends peekView.PeekViewWidget {
 	private _applyTheme(theme: IColorTheme) {
 		const borderColor =
 			theme.getColor(peekView.peekViewBorder) || Color.transparent;
+
 		this.style({
 			arrowColor: borderColor,
 			frameColor: borderColor,
@@ -206,29 +222,42 @@ export class TypeHierarchyTreePeekWidget extends peekView.PeekViewWidget {
 
 		const updateToolbar = () => {
 			const actions = getFlatActionBarActions(menu.getActions());
+
 			this._actionbarWidget!.clear();
+
 			this._actionbarWidget!.push(actions, { label: false, icon: true });
 		};
+
 		this._disposables.add(menu);
+
 		this._disposables.add(menu.onDidChange(updateToolbar));
+
 		updateToolbar();
 	}
 
 	protected _fillBody(parent: HTMLElement): void {
 		this._layoutInfo = LayoutInfo.retrieve(this._storageService);
+
 		this._dim = new Dimension(0, 0);
 
 		this._parent = parent;
+
 		parent.classList.add("type-hierarchy");
 
 		const message = document.createElement("div");
+
 		message.classList.add("message");
+
 		parent.appendChild(message);
+
 		this._message = message;
+
 		this._message.tabIndex = 0;
 
 		const container = document.createElement("div");
+
 		container.classList.add("results");
+
 		parent.appendChild(container);
 
 		this._splitView = new SplitView(container, {
@@ -237,7 +266,9 @@ export class TypeHierarchyTreePeekWidget extends peekView.PeekViewWidget {
 
 		// editor stuff
 		const editorContainer = document.createElement("div");
+
 		editorContainer.classList.add("editor");
+
 		container.appendChild(editorContainer);
 
 		const editorOptions: IEditorOptions = {
@@ -256,6 +287,7 @@ export class TypeHierarchyTreePeekWidget extends peekView.PeekViewWidget {
 				enabled: false,
 			},
 		};
+
 		this._editor = this._instantiationService.createInstance(
 			EmbeddedCodeEditorWidget,
 			editorContainer,
@@ -266,7 +298,9 @@ export class TypeHierarchyTreePeekWidget extends peekView.PeekViewWidget {
 
 		// tree stuff
 		const treeContainer = document.createElement("div");
+
 		treeContainer.classList.add("tree");
+
 		container.appendChild(treeContainer);
 
 		const options: IWorkbenchAsyncDataTreeOptions<
@@ -285,6 +319,7 @@ export class TypeHierarchyTreePeekWidget extends peekView.PeekViewWidget {
 				listBackground: peekView.peekViewResultsBackground,
 			},
 		};
+
 		this._tree = this._instantiationService.createInstance(
 			TypeHierarchyTree,
 			"TypeHierarchyPeek",
@@ -353,12 +388,15 @@ export class TypeHierarchyTreePeekWidget extends peekView.PeekViewWidget {
 				if (event.detail !== 2) {
 					return;
 				}
+
 				const [focus] = this._tree.getFocus();
 
 				if (!focus) {
 					return;
 				}
+
 				this.dispose();
+
 				this._editorService.openEditor({
 					resource: focus.item.uri,
 					options: { selection: target.range! },
@@ -374,6 +412,7 @@ export class TypeHierarchyTreePeekWidget extends peekView.PeekViewWidget {
 
 				if (e.element) {
 					this.dispose();
+
 					this._editorService.openEditor({
 						resource: e.element.item.uri,
 						options: {
@@ -391,6 +430,7 @@ export class TypeHierarchyTreePeekWidget extends peekView.PeekViewWidget {
 				// don't close on click
 				if (element && isKeyboardEvent(e.browserEvent)) {
 					this.dispose();
+
 					this._editorService.openEditor({
 						resource: element.item.uri,
 						options: {
@@ -437,6 +477,7 @@ export class TypeHierarchyTreePeekWidget extends peekView.PeekViewWidget {
 
 		const value =
 			await this._textModelService.createModelReference(previewUri);
+
 		this._editor.setModel(value.object.textEditorModel);
 
 		// set decorations for type ranges
@@ -451,19 +492,23 @@ export class TypeHierarchyTreePeekWidget extends peekView.PeekViewWidget {
 
 		if (loc.uri.toString() === previewUri.toString()) {
 			decorations.push({ range: loc.range, options });
+
 			fullRange = !fullRange
 				? loc.range
 				: Range.plusRange(loc.range, fullRange);
 		}
+
 		if (fullRange) {
 			this._editor.revealRangeInCenter(fullRange, ScrollType.Immediate);
 
 			const decorationsCollection =
 				this._editor.createDecorationsCollection(decorations);
+
 			this._previewDisposable.add(
 				toDisposable(() => decorationsCollection.clear()),
 			);
 		}
+
 		this._previewDisposable.add(value);
 
 		// update: title
@@ -479,21 +524,29 @@ export class TypeHierarchyTreePeekWidget extends peekView.PeekViewWidget {
 						"Subtypes of '{0}'",
 						element.model.root.name,
 					);
+
 		this.setTitle(title);
 	}
 
 	showLoading(): void {
 		this._parent.dataset["state"] = State.Loading;
+
 		this.setTitle(localize("title.loading", "Loading..."));
+
 		this._show();
 	}
 
 	showMessage(message: string): void {
 		this._parent.dataset["state"] = State.Message;
+
 		this.setTitle("");
+
 		this.setMetaTitle("");
+
 		this._message.innerText = message;
+
 		this._show();
+
 		this._message.focus();
 	}
 
@@ -507,6 +560,7 @@ export class TypeHierarchyTreePeekWidget extends peekView.PeekViewWidget {
 		const root = <ITreeNode<typeHTree.Type, FuzzyScore>>(
 			this._tree.getNode(model).children[0]
 		);
+
 		await this._tree.expand(root.element);
 
 		if (root.children.length === 0) {
@@ -529,7 +583,9 @@ export class TypeHierarchyTreePeekWidget extends peekView.PeekViewWidget {
 			if (!viewState || this._tree.getFocus().length === 0) {
 				this._tree.setFocus([root.children[0].element]);
 			}
+
 			this._tree.domFocus();
+
 			this._updatePreview();
 		}
 	}
@@ -550,7 +606,9 @@ export class TypeHierarchyTreePeekWidget extends peekView.PeekViewWidget {
 				this._direction,
 				this._tree.getViewState(),
 			);
+
 			this._direction = newDirection;
+
 			await this.showModel(model);
 		}
 	}
@@ -578,11 +636,15 @@ export class TypeHierarchyTreePeekWidget extends peekView.PeekViewWidget {
 	protected override _doLayoutBody(height: number, width: number): void {
 		if (this._dim.height !== height || this._dim.width !== width) {
 			super._doLayoutBody(height, width);
+
 			this._dim = new Dimension(width, height);
+
 			this._layoutInfo.height = this._viewZone
 				? this._viewZone.heightInLines
 				: this._layoutInfo.height;
+
 			this._splitView.layout(width);
+
 			this._splitView.resizeView(0, width * this._layoutInfo.ratio);
 		}
 	}

@@ -75,6 +75,7 @@ const SETTINGS_CAUSE_REFRESH = new Set(
 
 let currentState: Promise<{
 	context: vscode.ExtensionContext;
+
 	state: State | null;
 }>;
 
@@ -83,12 +84,14 @@ let server: Promise<Server | undefined> | undefined; // auto attach server
 let isTemporarilyDisabled = false; // whether the auto attach server is disabled temporarily, reset whenever the state changes
 export function activate(context: vscode.ExtensionContext): void {
 	currentState = Promise.resolve({ context, state: null });
+
 	context.subscriptions.push(
 		vscode.commands.registerCommand(
 			TOGGLE_COMMAND,
 			toggleAutoAttachSetting.bind(null, context),
 		),
 	);
+
 	context.subscriptions.push(
 		vscode.workspace.onDidChangeConfiguration((e) => {
 			// Whenever a setting is changed, disable auto attach, and re-enable
@@ -103,6 +106,7 @@ export function activate(context: vscode.ExtensionContext): void {
 			}
 		}),
 	);
+
 	updateAutoAttach(readCurrentState());
 }
 export async function deactivate(): Promise<void> {
@@ -110,6 +114,7 @@ export async function deactivate(): Promise<void> {
 }
 function refreshAutoAttachVars() {
 	updateAutoAttach(State.Disabled);
+
 	updateAutoAttach(readCurrentState());
 }
 function getDefaultScope(
@@ -124,6 +129,7 @@ function getDefaultScope(
 	} else if (info.globalValue) {
 		return vscode.ConfigurationTarget.Global;
 	}
+
 	return vscode.ConfigurationTarget.Global;
 }
 type PickResult =
@@ -151,6 +157,7 @@ async function toggleAutoAttachSetting(
 	scope?: vscode.ConfigurationTarget,
 ): Promise<void> {
 	const section = vscode.workspace.getConfiguration(SETTING_SECTION);
+
 	scope = scope || getDefaultScope(section.inspect(SETTING_STATE));
 
 	const isGlobalScope = scope === vscode.ConfigurationTarget.Global;
@@ -178,24 +185,31 @@ async function toggleAutoAttachSetting(
 			alwaysShow: true,
 		});
 	}
+
 	quickPick.items = items;
+
 	quickPick.activeItems = isTemporarilyDisabled
 		? [items[0]]
 		: quickPick.items.filter((i) => "state" in i && i.state === current);
+
 	quickPick.title = isGlobalScope
 		? TEXT_TOGGLE_GLOBAL
 		: TEXT_TOGGLE_WORKSPACE;
+
 	quickPick.buttons = [
 		{
 			iconPath: new vscode.ThemeIcon(isGlobalScope ? "folder" : "globe"),
 			tooltip: isGlobalScope ? TEXT_TOGGLE_WORKSPACE : TEXT_TOGGLE_GLOBAL,
 		},
 	];
+
 	quickPick.show();
 
 	let result = await new Promise<PickResult>((resolve) => {
 		quickPick.onDidAccept(() => resolve(quickPick.selectedItems[0]));
+
 		quickPick.onDidHide(() => resolve(undefined));
+
 		quickPick.onDidTriggerButton(() => {
 			resolve({
 				scope: isGlobalScope
@@ -204,14 +218,17 @@ async function toggleAutoAttachSetting(
 			});
 		});
 	});
+
 	quickPick.dispose();
 
 	if (!result) {
 		return;
 	}
+
 	if ("scope" in result) {
 		return await toggleAutoAttachSetting(context, result.scope);
 	}
+
 	if ("state" in result) {
 		if (result.state !== current) {
 			section.update(SETTING_STATE, result.state, scope);
@@ -219,8 +236,10 @@ async function toggleAutoAttachSetting(
 			result = { setTempDisabled: false };
 		}
 	}
+
 	if ("setTempDisabled" in result) {
 		updateStatusBar(context, current, true);
+
 		isTemporarilyDisabled = result.setTempDisabled;
 
 		if (result.setTempDisabled) {
@@ -228,6 +247,7 @@ async function toggleAutoAttachSetting(
 		} else {
 			await createAttachServer(context); // unsets temp disabled var internally
 		}
+
 		updateStatusBar(context, current, false);
 	}
 }
@@ -239,9 +259,11 @@ function readCurrentState(): State {
 async function clearJsDebugAttachState(context: vscode.ExtensionContext) {
 	if (server || (await context.workspaceState.get(STORAGE_IPC))) {
 		await context.workspaceState.update(STORAGE_IPC, undefined);
+
 		await vscode.commands.executeCommand(
 			"extension.js-debug.clearAutoAttachVariables",
 		);
+
 		await destroyAttachServer();
 	}
 }
@@ -255,6 +277,7 @@ async function createAttachServer(context: vscode.ExtensionContext) {
 	if (!ipcAddress) {
 		return undefined;
 	}
+
 	server = createServerInner(ipcAddress).catch(async (err) => {
 		console.error(
 			"[debug-auto-launch] Error creating auto attach server: ",
@@ -271,11 +294,13 @@ async function createAttachServer(context: vscode.ExtensionContext) {
 				console.error(
 					"[debug-auto-launch] Refreshing variables from error",
 				);
+
 				refreshAutoAttachVars();
 
 				return undefined;
 			}
 		}
+
 		return undefined;
 	});
 
@@ -298,6 +323,7 @@ const createServerInstance = (ipcAddress: string) =>
 	new Promise<Server>((resolve, reject) => {
 		const s = createServer((socket) => {
 			const data: Buffer[] = [];
+
 			socket.on("data", async (chunk) => {
 				if (chunk[chunk.length - 1] !== 0) {
 					// terminated with NUL byte
@@ -305,6 +331,7 @@ const createServerInstance = (ipcAddress: string) =>
 
 					return;
 				}
+
 				data.push(chunk.slice(0, -1));
 
 				try {
@@ -312,9 +339,11 @@ const createServerInstance = (ipcAddress: string) =>
 						"extension.js-debug.autoAttachToProcess",
 						JSON.parse(Buffer.concat(data).toString()),
 					);
+
 					socket.write(Buffer.from([0]));
 				} catch (err) {
 					socket.write(Buffer.from([1]));
+
 					console.error(err);
 				}
 			});
@@ -334,6 +363,7 @@ async function destroyAttachServer() {
 }
 interface CachedIpcState {
 	ipcAddress: string;
+
 	jsDebugPath: string | undefined;
 
 	settingsValue: string;
@@ -371,23 +401,32 @@ function updateStatusBar(
 
 		return;
 	}
+
 	if (!statusItem) {
 		statusItem = vscode.window.createStatusBarItem(
 			"status.debug.autoAttach",
 			vscode.StatusBarAlignment.Left,
 		);
+
 		statusItem.name = vscode.l10n.t("Debug Auto Attach");
+
 		statusItem.command = TOGGLE_COMMAND;
+
 		statusItem.tooltip = vscode.l10n.t(
 			"Automatically attach to node.js processes in debug mode",
 		);
+
 		context.subscriptions.push(statusItem);
 	}
+
 	let text = busy ? "$(loading) " : "";
+
 	text += isTemporarilyDisabled
 		? TEXT_TEMP_DISABLE_LABEL
 		: TEXT_STATUSBAR_LABEL[state];
+
 	statusItem.text = text;
+
 	statusItem.show();
 }
 /**
@@ -398,11 +437,15 @@ function updateAutoAttach(newState: State) {
 		if (newState === oldState) {
 			return { context, state: oldState };
 		}
+
 		if (oldState !== null) {
 			updateStatusBar(context, oldState, true);
 		}
+
 		await transitions[newState](context);
+
 		isTemporarilyDisabled = false;
+
 		updateStatusBar(context, newState, false);
 
 		return { context, state: newState };
@@ -434,6 +477,7 @@ async function getIpcAddress(context: vscode.ExtensionContext) {
 	) {
 		return cachedIpc.ipcAddress;
 	}
+
 	const result = await vscode.commands.executeCommand<{
 		ipcAddress: string;
 	}>("extension.js-debug.setAutoAttachVariables", cachedIpc?.ipcAddress);
@@ -441,7 +485,9 @@ async function getIpcAddress(context: vscode.ExtensionContext) {
 	if (!result) {
 		return;
 	}
+
 	const ipcAddress = result.ipcAddress;
+
 	await context.workspaceState.update(STORAGE_IPC, {
 		ipcAddress,
 		jsDebugPath,
@@ -460,5 +506,6 @@ function getJsDebugSettingKey() {
 	for (const setting of SETTINGS_CAUSE_REFRESH) {
 		o[setting] = config.get(setting);
 	}
+
 	return JSON.stringify(o);
 }

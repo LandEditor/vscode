@@ -48,14 +48,17 @@ export function registerRemoteContributions() {
 					}
 				}
 			} catch {}
+
 			if (!cwd) {
 				cwd = nativeEnvironmentService.userHome;
 			}
+
 			const instance = await c.service.createTerminal({ cwd });
 
 			if (!instance) {
 				return Promise.resolve(undefined);
 			}
+
 			c.service.setActiveInstance(instance);
 
 			return c.groupService.showPanel(true);

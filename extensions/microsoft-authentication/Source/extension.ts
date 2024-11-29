@@ -24,22 +24,28 @@ function shouldUseMsal(expService: IExperimentationService): boolean {
 	const inspect = workspace
 		.getConfiguration("microsoft-authentication")
 		.inspect<"msal" | "classic">("implementation");
+
 	if (inspect?.workspaceFolderValue !== undefined) {
 		Logger.info(
 			`Acquired MSAL enablement value from 'workspaceFolderValue'. Value: ${inspect.workspaceFolderValue}`,
 		);
+
 		return inspect.workspaceFolderValue === "msal";
 	}
+
 	if (inspect?.workspaceValue !== undefined) {
 		Logger.info(
 			`Acquired MSAL enablement value from 'workspaceValue'. Value: ${inspect.workspaceValue}`,
 		);
+
 		return inspect.workspaceValue === "msal";
 	}
+
 	if (inspect?.globalValue !== undefined) {
 		Logger.info(
 			`Acquired MSAL enablement value from 'globalValue'. Value: ${inspect.globalValue}`,
 		);
+
 		return inspect.globalValue === "msal";
 	}
 
@@ -48,10 +54,12 @@ function shouldUseMsal(expService: IExperimentationService): boolean {
 		"vscode",
 		"microsoft.useMsal",
 	);
+
 	if (expValue !== undefined) {
 		Logger.info(
 			`Acquired MSAL enablement value from 'exp'. Value: ${expValue}`,
 		);
+
 		return expValue;
 	}
 
@@ -65,11 +73,13 @@ export async function activate(context: ExtensionContext) {
 	const mainTelemetryReporter = new MicrosoftAuthenticationTelemetryReporter(
 		context.extension.packageJSON.aiKey,
 	);
+
 	const expService = await createExperimentationService(
 		context,
 		mainTelemetryReporter,
 		env.uriScheme !== "vscode", // isPreRelease
 	);
+
 	useMsal = shouldUseMsal(expService);
 
 	context.subscriptions.push(
@@ -84,6 +94,7 @@ export async function activate(context: ExtensionContext) {
 			}
 
 			const reload = l10n.t("Reload");
+
 			const result = await window.showInformationMessage(
 				"Reload required",
 				{

@@ -80,11 +80,14 @@ export const COMMAND_CENTER_DEBUGGING_BACKGROUND = registerColor(
 
 export class StatusBarColorProvider implements IWorkbenchContribution {
 	private readonly disposables = new DisposableStore();
+
 	private disposable: IDisposable | undefined;
+
 	private set enabled(enabled: boolean) {
 		if (enabled === !!this.disposable) {
 			return;
 		}
+
 		if (enabled) {
 			this.disposable = this.statusbarService.overrideStyle({
 				priority: 10,
@@ -94,9 +97,11 @@ export class StatusBarColorProvider implements IWorkbenchContribution {
 			});
 		} else {
 			this.disposable!.dispose();
+
 			this.disposable = undefined;
 		}
 	}
+
 	constructor(
 		@IDebugService
 		private readonly debugService: IDebugService,
@@ -110,11 +115,13 @@ export class StatusBarColorProvider implements IWorkbenchContribution {
 		private readonly configurationService: IConfigurationService,
 	) {
 		this.debugService.onDidChangeState(this.update, this, this.disposables);
+
 		this.contextService.onDidChangeWorkbenchState(
 			this.update,
 			this,
 			this.disposables,
 		);
+
 		this.configurationService.onDidChangeConfiguration(
 			(e) => {
 				if (
@@ -127,8 +134,10 @@ export class StatusBarColorProvider implements IWorkbenchContribution {
 			undefined,
 			this.disposables,
 		);
+
 		this.update();
 	}
+
 	protected update(): void {
 		const debugConfig =
 			this.configurationService.getValue<IDebugConfiguration>("debug");
@@ -143,8 +152,10 @@ export class StatusBarColorProvider implements IWorkbenchContribution {
 		} else {
 			this.enabled = isInDebugMode;
 		}
+
 		const isInCommandCenter =
 			debugConfig.toolBarLocation === "commandCenter";
+
 		this.layoutService.mainContainer.style.setProperty(
 			asCssVariableName(COMMAND_CENTER_BACKGROUND),
 			isInCommandCenter && isInDebugMode
@@ -152,8 +163,10 @@ export class StatusBarColorProvider implements IWorkbenchContribution {
 				: "",
 		);
 	}
+
 	dispose(): void {
 		this.disposable?.dispose();
+
 		this.disposables.dispose();
 	}
 }
@@ -170,5 +183,6 @@ export function isStatusbarInDebugMode(
 	) {
 		return false;
 	}
+
 	return true;
 }

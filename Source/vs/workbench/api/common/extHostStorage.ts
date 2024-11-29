@@ -15,13 +15,18 @@ import { IExtHostRpcService } from "./extHostRpcService.js";
 
 export interface IStorageChangeEvent {
 	shared: boolean;
+
 	key: string;
+
 	value: object;
 }
 export class ExtHostStorage implements ExtHostStorageShape {
 	readonly _serviceBrand: undefined;
+
 	private _proxy: MainThreadStorageShape;
+
 	private readonly _onDidChangeStorage = new Emitter<IStorageChangeEvent>();
+
 	readonly onDidChangeStorage = this._onDidChangeStorage.event;
 
 	constructor(
@@ -30,12 +35,14 @@ export class ExtHostStorage implements ExtHostStorageShape {
 	) {
 		this._proxy = mainContext.getProxy(MainContext.MainThreadStorage);
 	}
+
 	registerExtensionStorageKeysToSync(
 		extension: IExtensionIdWithVersion,
 		keys: string[],
 	): void {
 		this._proxy.$registerExtensionStorageKeysToSync(extension, keys);
 	}
+
 	async initializeExtensionStorage(
 		shared: boolean,
 		key: string,
@@ -51,8 +58,10 @@ export class ExtHostStorage implements ExtHostStorageShape {
 		if (value) {
 			parsedValue = this.safeParseValue(shared, key, value);
 		}
+
 		return parsedValue || defaultValue;
 	}
+
 	setValue(shared: boolean, key: string, value: object): Promise<void> {
 		return this._proxy.$setValue(shared, key, value);
 	}
@@ -63,6 +72,7 @@ export class ExtHostStorage implements ExtHostStorageShape {
 			this._onDidChangeStorage.fire({ shared, key, value: parsedValue });
 		}
 	}
+
 	private safeParseValue(
 		shared: boolean,
 		key: string,
@@ -77,6 +87,7 @@ export class ExtHostStorage implements ExtHostStorageShape {
 				`[extHostStorage] unexpected error parsing storage contents (extensionId: ${key}, global: ${shared}): ${error}`,
 			);
 		}
+
 		return undefined;
 	}
 }

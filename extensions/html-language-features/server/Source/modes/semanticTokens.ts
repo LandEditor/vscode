@@ -13,11 +13,13 @@ import {
 
 interface LegendMapping {
 	types: number[] | undefined;
+
 	modifiers: number[] | undefined;
 }
 export interface SemanticTokenProvider {
 	readonly legend: {
 		types: string[];
+
 		modifiers: string[];
 	};
 
@@ -32,6 +34,7 @@ export function newSemanticTokenProvider(
 	// combined legend across modes
 	const legend: {
 		types: string[];
+
 		modifiers: string[];
 	} = { types: [], modifiers: [] };
 
@@ -42,6 +45,7 @@ export function newSemanticTokenProvider(
 	for (const mode of languageModes.getAllModes()) {
 		if (mode.getSemanticTokenLegend && mode.getSemanticTokens) {
 			const modeLegend = mode.getSemanticTokenLegend();
+
 			legendMappings[mode.getId()] = {
 				types: createMapping(modeLegend.types, legend.types),
 				modifiers: createMapping(
@@ -51,6 +55,7 @@ export function newSemanticTokenProvider(
 			};
 		}
 	}
+
 	return {
 		legend,
 		async getSemanticTokens(
@@ -64,7 +69,9 @@ export function newSemanticTokenProvider(
 					const mapping = legendMappings[mode.getId()];
 
 					const tokens = await mode.getSemanticTokens(document);
+
 					applyTypesMapping(tokens, mapping.types);
+
 					applyModifiersMapping(tokens, mapping.modifiers);
 
 					for (const token of tokens) {
@@ -72,6 +79,7 @@ export function newSemanticTokenProvider(
 					}
 				}
 			}
+
 			return encodeTokens(allTokens, ranges, document);
 		},
 	};
@@ -91,11 +99,15 @@ function createMapping(
 
 		if (newIndex === -1) {
 			newIndex = newLegend.length;
+
 			newLegend.push(entry);
 		}
+
 		mapping.push(newIndex);
+
 		needsMapping = needsMapping || newIndex !== origIndex;
 	}
+
 	return needsMapping ? mapping : undefined;
 }
 function applyTypesMapping(
@@ -125,9 +137,12 @@ function applyModifiersMapping(
 					if ((modifierSet & 1) !== 0) {
 						result = result + (1 << modifiersMapping[index]);
 					}
+
 					index++;
+
 					modifierSet = modifierSet >> 1;
 				}
+
 				token.modifierSet = result;
 			}
 		}
@@ -158,6 +173,7 @@ function encodeTokens(
 			),
 		];
 	}
+
 	let rangeIndex = 0;
 
 	let currRange = ranges[rangeIndex++];
@@ -176,6 +192,7 @@ function encodeTokens(
 		while (currRange && beforeOrSame(currRange.end, start)) {
 			currRange = ranges[rangeIndex++];
 		}
+
 		if (
 			currRange &&
 			beforeOrSame(currRange.start, start) &&
@@ -188,14 +205,17 @@ function encodeTokens(
 			if (prefLine !== start.line) {
 				prevChar = 0;
 			}
+
 			encodedResult.push(start.line - prefLine); // line delta
 			encodedResult.push(start.character - prevChar); // line delta
 			encodedResult.push(curr.length); // length
 			encodedResult.push(curr.typeIdx); // tokenType
 			encodedResult.push(curr.modifierSet); // tokenModifier
 			prefLine = start.line;
+
 			prevChar = start.character;
 		}
 	}
+
 	return encodedResult;
 }

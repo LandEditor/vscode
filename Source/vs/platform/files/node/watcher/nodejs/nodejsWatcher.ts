@@ -26,6 +26,7 @@ export interface INodeJSWatcherInstance {
 }
 export class NodeJSWatcher extends BaseWatcher implements INonRecursiveWatcher {
 	readonly onDidError = Event.None;
+
 	readonly watchers = new Set<INodeJSWatcherInstance>();
 
 	constructor(
@@ -35,6 +36,7 @@ export class NodeJSWatcher extends BaseWatcher implements INonRecursiveWatcher {
 	) {
 		super();
 	}
+
 	protected override async doWatch(
 		requests: INonRecursiveWatchRequest[],
 	): Promise<void> {
@@ -64,6 +66,7 @@ export class NodeJSWatcher extends BaseWatcher implements INonRecursiveWatcher {
 				`Request to start watching: ${requestsToStart.map((request) => this.requestToString(request)).join(",")}`,
 			);
 		}
+
 		if (watchersToStop.size) {
 			this.trace(
 				`Request to stop watching: ${Array.from(watchersToStop)
@@ -80,6 +83,7 @@ export class NodeJSWatcher extends BaseWatcher implements INonRecursiveWatcher {
 			this.startWatching(request);
 		}
 	}
+
 	private findWatcher(
 		request: INonRecursiveWatchRequest,
 	): INodeJSWatcherInstance | undefined {
@@ -106,8 +110,10 @@ export class NodeJSWatcher extends BaseWatcher implements INonRecursiveWatcher {
 				}
 			}
 		}
+
 		return undefined;
 	}
+
 	private startWatching(request: INonRecursiveWatchRequest): void {
 		// Start via node.js lib
 		const instance = new NodeJSFileWatcherLibrary(
@@ -120,8 +126,10 @@ export class NodeJSWatcher extends BaseWatcher implements INonRecursiveWatcher {
 		);
 		// Remember as watcher instance
 		const watcher: INodeJSWatcherInstance = { request, instance };
+
 		this.watchers.add(watcher);
 	}
+
 	override async stop(): Promise<void> {
 		await super.stop();
 
@@ -129,11 +137,15 @@ export class NodeJSWatcher extends BaseWatcher implements INonRecursiveWatcher {
 			this.stopWatching(watcher);
 		}
 	}
+
 	private stopWatching(watcher: INodeJSWatcherInstance): void {
 		this.trace(`stopping file watcher`, watcher);
+
 		this.watchers.delete(watcher);
+
 		watcher.instance.dispose();
 	}
+
 	private removeDuplicateRequests(
 		requests: INonRecursiveWatchRequest[],
 	): INonRecursiveWatchRequest[] {
@@ -153,22 +165,27 @@ export class NodeJSWatcher extends BaseWatcher implements INonRecursiveWatcher {
 					string,
 					INonRecursiveWatchRequest
 				>();
+
 				mapCorrelationtoRequests.set(
 					request.correlationId,
 					requestsForCorrelation,
 				);
 			}
+
 			if (requestsForCorrelation.has(path)) {
 				this.trace(
 					`ignoring a request for watching who's path is already watched: ${this.requestToString(request)}`,
 				);
 			}
+
 			requestsForCorrelation.set(path, request);
 		}
+
 		return Array.from(mapCorrelationtoRequests.values())
 			.map((requests) => Array.from(requests.values()))
 			.flat();
 	}
+
 	override async setVerboseLogging(enabled: boolean): Promise<void> {
 		super.setVerboseLogging(enabled);
 
@@ -176,6 +193,7 @@ export class NodeJSWatcher extends BaseWatcher implements INonRecursiveWatcher {
 			watcher.instance.setVerboseLogging(enabled);
 		}
 	}
+
 	protected trace(message: string, watcher?: INodeJSWatcherInstance): void {
 		if (this.verboseLogging) {
 			this._onDidLogMessage.fire({
@@ -184,12 +202,14 @@ export class NodeJSWatcher extends BaseWatcher implements INonRecursiveWatcher {
 			});
 		}
 	}
+
 	protected warn(message: string): void {
 		this._onDidLogMessage.fire({
 			type: "warn",
 			message: this.toMessage(message),
 		});
 	}
+
 	private toMessage(
 		message: string,
 		watcher?: INodeJSWatcherInstance,

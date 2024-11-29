@@ -29,6 +29,7 @@ export class MainThreadLocalization
 	) {
 		super();
 	}
+
 	async $fetchBuiltInBundleUri(
 		id: string,
 		language: string,
@@ -45,6 +46,7 @@ export class MainThreadLocalization
 			return undefined;
 		}
 	}
+
 	async $fetchBundleContents(uriComponents: UriComponents): Promise<string> {
 		const contents = await this.fileService.readFile(
 			URI.revive(uriComponents),

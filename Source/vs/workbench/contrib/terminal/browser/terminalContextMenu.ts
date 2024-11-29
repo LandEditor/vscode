@@ -24,6 +24,7 @@ export class InstanceContext {
 		// Only store the instance to avoid contexts holding on to disposed instances.
 		this.instanceId = instance.instanceId;
 	}
+
 	toJSON(): ISerializedTerminalInstanceContext {
 		return {
 			$mid: MarshalledId.TerminalContext,
@@ -47,6 +48,7 @@ export class TerminalContextActionRunner extends ActionRunner {
 
 			return;
 		}
+
 		return super.runAction(action, context);
 	}
 }

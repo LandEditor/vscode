@@ -34,6 +34,7 @@ export class NotebookIndentUsingTabs extends Action2 {
 			precondition: undefined,
 		});
 	}
+
 	override run(accessor: ServicesAccessor, ...args: any[]): void {
 		changeNotebookIndentation(accessor, false, false);
 	}
@@ -48,6 +49,7 @@ export class NotebookIndentUsingSpaces extends Action2 {
 			precondition: undefined,
 		});
 	}
+
 	override run(accessor: ServicesAccessor, ...args: any[]): void {
 		changeNotebookIndentation(accessor, true, false);
 	}
@@ -65,6 +67,7 @@ export class NotebookChangeTabDisplaySize extends Action2 {
 			precondition: undefined,
 		});
 	}
+
 	override run(accessor: ServicesAccessor, ...args: any[]): void {
 		changeNotebookIndentation(accessor, true, true);
 	}
@@ -82,6 +85,7 @@ export class NotebookIndentationToSpacesAction extends Action2 {
 			precondition: undefined,
 		});
 	}
+
 	override run(accessor: ServicesAccessor, ...args: any[]): void {
 		convertNotebookIndentation(accessor, true);
 	}
@@ -99,6 +103,7 @@ export class NotebookIndentationToTabsAction extends Action2 {
 			precondition: undefined,
 		});
 	}
+
 	override run(accessor: ServicesAccessor, ...args: any[]): void {
 		convertNotebookIndentation(accessor, false);
 	}
@@ -131,6 +136,7 @@ function changeNotebookIndentation(
 	if (!notebookEditor) {
 		return;
 	}
+
 	const picks = [1, 2, 3, 4, 5, 6, 7, 8].map((n) => ({
 		id: n.toString(),
 		label: n.toString(),
@@ -143,7 +149,9 @@ function changeNotebookIndentation(
 	const initialInsertSpaces = initialConfig["editor.insertSpaces"];
 	// remove the initial values from the configuration
 	delete initialConfig["editor.indentSize"];
+
 	delete initialConfig["editor.tabSize"];
+
 	delete initialConfig["editor.insertSpaces"];
 
 	setTimeout(() => {
@@ -218,6 +226,7 @@ function convertNotebookIndentation(
 	if (!notebookTextModel) {
 		return;
 	}
+
 	const disposable = new DisposableStore();
 
 	try {
@@ -226,6 +235,7 @@ function convertNotebookIndentation(
 				const ref = await textModelService.createModelReference(
 					cell.uri,
 				);
+
 				disposable.add(ref);
 
 				const textEditorModel = ref.object.textEditorModel;
@@ -235,11 +245,13 @@ function convertNotebookIndentation(
 				if (!modelOpts) {
 					return;
 				}
+
 				const edits = getIndentationEditOperations(
 					textEditorModel,
 					modelOpts.tabSize,
 					tabsToSpaces,
 				);
+
 				bulkEditService.apply(edits, {
 					label: nls.localize(
 						"convertIndentation",
@@ -259,8 +271,11 @@ function convertNotebookIndentation(
 			const initialTabSize = initialConfig["editor.tabSize"];
 			// remove the initial values from the configuration
 			delete initialConfig["editor.indentSize"];
+
 			delete initialConfig["editor.tabSize"];
+
 			delete initialConfig["editor.insertSpaces"];
+
 			configurationService.updateValue(
 				NotebookSetting.cellEditorOptionsCustomizations,
 				{
@@ -270,6 +285,7 @@ function convertNotebookIndentation(
 					"editor.insertSpaces": tabsToSpaces,
 				},
 			);
+
 			disposable.dispose();
 		});
 	} catch {
@@ -287,18 +303,22 @@ function getIndentationEditOperations(
 		// Model is empty
 		return [];
 	}
+
 	let spaces = "";
 
 	for (let i = 0; i < tabSize; i++) {
 		spaces += " ";
 	}
+
 	const spacesRegExp = new RegExp(spaces, "gi");
 
 	const edits: ResourceTextEdit[] = [];
 
 	for (
 		let lineNumber = 1, lineCount = model.getLineCount();
+
 		lineNumber <= lineCount;
+
 		lineNumber++
 	) {
 		let lastIndentationColumn =
@@ -307,9 +327,11 @@ function getIndentationEditOperations(
 		if (lastIndentationColumn === 0) {
 			lastIndentationColumn = model.getLineMaxColumn(lineNumber);
 		}
+
 		if (lastIndentationColumn === 1) {
 			continue;
 		}
+
 		const originalIndentationRange = new Range(
 			lineNumber,
 			1,
@@ -324,6 +346,7 @@ function getIndentationEditOperations(
 		const newIndentation = tabsToSpaces
 			? originalIndentation.replace(/\t/gi, spaces)
 			: originalIndentation.replace(spacesRegExp, "\t");
+
 		edits.push(
 			new ResourceTextEdit(model.uri, {
 				range: originalIndentationRange,
@@ -331,6 +354,7 @@ function getIndentationEditOperations(
 			}),
 		);
 	}
+
 	return edits;
 }
 registerAction2(NotebookIndentUsingSpaces);

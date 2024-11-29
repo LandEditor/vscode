@@ -32,6 +32,7 @@ import {
 
 type executionUpdate = {
 	cellHandle: number;
+
 	state: NotebookCellExecutionState | undefined;
 };
 
@@ -40,6 +41,7 @@ export class NotebookAccessibilityProvider
 	implements IListAccessibilityProvider<CellViewModel>
 {
 	private readonly _onDidAriaLabelChange = new Emitter<CellViewModel>();
+
 	private readonly onDidAriaLabelChange = this._onDidAriaLabelChange.event;
 
 	constructor(
@@ -55,6 +57,7 @@ export class NotebookAccessibilityProvider
 		private readonly accessibilityService: IAccessibilityService,
 	) {
 		super();
+
 		this._register(
 			Event.debounce<
 				ICellExecutionStateChangedEvent | IExecutionStateChangedEvent,
@@ -72,6 +75,7 @@ export class NotebookAccessibilityProvider
 				if (!updates.length) {
 					return;
 				}
+
 				const viewModel = this.viewModel();
 
 				if (viewModel) {
@@ -100,6 +104,7 @@ export class NotebookAccessibilityProvider
 								cell,
 								true,
 							);
+
 							alert(text);
 						}
 					}
@@ -139,6 +144,7 @@ export class NotebookAccessibilityProvider
 			if (!viewModel) {
 				return "";
 			}
+
 			const index = viewModel.getCellIndex(element);
 
 			if (index >= 0) {
@@ -196,6 +202,7 @@ export class NotebookAccessibilityProvider
 						this.widgetAriaLabelName,
 					);
 		}
+
 		return this.widgetAriaLabelName;
 	}
 
@@ -219,8 +226,10 @@ export class NotebookAccessibilityProvider
 			if (index >= 0) {
 				result.splice(index, 1);
 			}
+
 			result.push({ cellHandle: e.cellHandle, state: e.changed?.state });
 		}
+
 		return result;
 	}
 }

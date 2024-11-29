@@ -19,6 +19,7 @@ export class ServerTelemetryChannel
 	) {
 		super();
 	}
+
 	async call(_: any, command: string, arg?: any): Promise<any> {
 		switch (command) {
 			case "updateTelemetryLevel": {
@@ -28,6 +29,7 @@ export class ServerTelemetryChannel
 					telemetryLevel,
 				);
 			}
+
 			case "logTelemetry": {
 				const { eventName, data } = arg;
 				// Logging is done directly to the appender instead of through the telemetry service
@@ -36,14 +38,18 @@ export class ServerTelemetryChannel
 				if (this.telemetryAppender) {
 					return this.telemetryAppender.log(eventName, data);
 				}
+
 				return Promise.resolve();
 			}
+
 			case "flushTelemetry": {
 				if (this.telemetryAppender) {
 					return this.telemetryAppender.flush();
 				}
+
 				return Promise.resolve();
 			}
+
 			case "ping": {
 				return;
 			}
@@ -51,6 +57,7 @@ export class ServerTelemetryChannel
 		// Command we cannot handle so we throw an error
 		throw new Error(`IPC Command ${command} not found`);
 	}
+
 	listen(_: any, event: string, arg: any): Event<any> {
 		throw new Error("Not supported");
 	}

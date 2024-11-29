@@ -30,6 +30,7 @@ export function nextItemStylesheet(
 	if (!currentNode) {
 		currentNode = <CssNode>rootNode;
 	}
+
 	if (!currentNode) {
 		return;
 	}
@@ -85,8 +86,10 @@ export function nextItemStylesheet(
 	// Get next sibling of current node or the parent
 	while (!nextNode && currentNode) {
 		nextNode = currentNode.nextSibling;
+
 		currentNode = currentNode.parent;
 	}
+
 	return nextNode ? getSelectionFromNode(document, nextNode) : undefined;
 }
 export function prevItemStylesheet(
@@ -104,6 +107,7 @@ export function prevItemStylesheet(
 	if (!currentNode) {
 		currentNode = rootNode;
 	}
+
 	if (!currentNode) {
 		return;
 	}
@@ -134,6 +138,7 @@ export function prevItemStylesheet(
 			return singlePropertyValue;
 		}
 	}
+
 	if (
 		currentNode.type === "property" ||
 		!currentNode.firstChild ||
@@ -148,6 +153,7 @@ export function prevItemStylesheet(
 	while (prevNode.nextSibling && startOffset >= prevNode.nextSibling.end) {
 		prevNode = prevNode.nextSibling;
 	}
+
 	prevNode = <CssNode | undefined>getDeepestFlatNode(prevNode);
 
 	return getSelectionFromProperty(
@@ -166,6 +172,7 @@ function getSelectionFromNode(
 	if (!node) {
 		return;
 	}
+
 	const nodeToSelect =
 		node.type === "rule" ? (<Rule>node).selectorToken : node;
 
@@ -186,12 +193,14 @@ function getSelectionFromProperty(
 	if (!node || node.type !== "property") {
 		return;
 	}
+
 	const propertyNode = <Property>node;
 
 	const propertyValue = propertyNode.valueToken.stream.substring(
 		propertyNode.valueToken.start,
 		propertyNode.valueToken.end,
 	);
+
 	selectFullValue =
 		selectFullValue ||
 		(direction === "prev" &&
@@ -205,18 +214,21 @@ function getSelectionFromProperty(
 			propertyNode.valueToken.end,
 		);
 	}
+
 	let pos: number = -1;
 
 	if (direction === "prev") {
 		if (selectionStart === propertyNode.valueToken.start) {
 			return;
 		}
+
 		const selectionStartChar =
 			document.positionAt(selectionStart).character;
 
 		const tokenStartChar = document.positionAt(
 			propertyNode.valueToken.start,
 		).character;
+
 		pos =
 			selectionStart > propertyNode.valueToken.end
 				? propertyValue.length
@@ -229,16 +241,19 @@ function getSelectionFromProperty(
 		) {
 			return;
 		}
+
 		const selectionEndChar = document.positionAt(selectionEnd).character;
 
 		const tokenStartChar = document.positionAt(
 			propertyNode.valueToken.start,
 		).character;
+
 		pos =
 			selectionEnd === propertyNode.valueToken.end
 				? -1
 				: selectionEndChar - tokenStartChar - 1;
 	}
+
 	const [newSelectionStartOffset, newSelectionEndOffset] =
 		direction === "prev"
 			? findPrevWord(propertyValue, pos)
@@ -247,6 +262,7 @@ function getSelectionFromProperty(
 	if (!newSelectionStartOffset && !newSelectionEndOffset) {
 		return;
 	}
+
 	const tokenStart = document.positionAt(propertyNode.valueToken.start);
 
 	const newSelectionStart = tokenStart.translate(0, newSelectionStartOffset);

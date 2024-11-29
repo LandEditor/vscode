@@ -43,13 +43,18 @@ export function getThemeTypeSelector(type: ColorScheme): string {
 }
 export interface ITokenStyle {
 	readonly foreground: number | undefined;
+
 	readonly bold: boolean | undefined;
+
 	readonly underline: boolean | undefined;
+
 	readonly strikethrough: boolean | undefined;
+
 	readonly italic: boolean | undefined;
 }
 export interface IColorTheme {
 	readonly type: ColorScheme;
+
 	readonly label: string;
 	/**
 	 * Resolves the color of the given color identifier. If the theme does not
@@ -82,7 +87,9 @@ export interface IColorTheme {
 }
 export interface IFileIconTheme {
 	readonly hasFileIcons: boolean;
+
 	readonly hasFolderIcons: boolean;
+
 	readonly hidesExplorerArrows: boolean;
 }
 export interface IProductIconTheme {
@@ -107,12 +114,15 @@ export interface IThemeService {
 	readonly _serviceBrand: undefined;
 
 	getColorTheme(): IColorTheme;
+
 	readonly onDidColorThemeChange: Event<IColorTheme>;
 
 	getFileIconTheme(): IFileIconTheme;
+
 	readonly onDidFileIconThemeChange: Event<IFileIconTheme>;
 
 	getProductIconTheme(): IProductIconTheme;
+
 	readonly onDidProductIconThemeChange: Event<IProductIconTheme>;
 }
 // static theming participant
@@ -127,29 +137,37 @@ export interface IThemingRegistry {
 	onColorThemeChange(participant: IThemingParticipant): IDisposable;
 
 	getThemingParticipants(): IThemingParticipant[];
+
 	readonly onThemingParticipantAdded: Event<IThemingParticipant>;
 }
 class ThemingRegistry implements IThemingRegistry {
 	private themingParticipants: IThemingParticipant[] = [];
+
 	private readonly onThemingParticipantAddedEmitter: Emitter<IThemingParticipant>;
 
 	constructor() {
 		this.themingParticipants = [];
+
 		this.onThemingParticipantAddedEmitter =
 			new Emitter<IThemingParticipant>();
 	}
+
 	public onColorThemeChange(participant: IThemingParticipant): IDisposable {
 		this.themingParticipants.push(participant);
+
 		this.onThemingParticipantAddedEmitter.fire(participant);
 
 		return toDisposable(() => {
 			const idx = this.themingParticipants.indexOf(participant);
+
 			this.themingParticipants.splice(idx, 1);
 		});
 	}
+
 	public get onThemingParticipantAdded(): Event<IThemingParticipant> {
 		return this.onThemingParticipantAddedEmitter.event;
 	}
+
 	public getThemingParticipants(): IThemingParticipant[] {
 		return this.themingParticipants;
 	}
@@ -171,6 +189,7 @@ export class Themable extends Disposable {
 
 	constructor(protected themeService: IThemeService) {
 		super();
+
 		this.theme = themeService.getColorTheme();
 		// Hook up to theme changes
 		this._register(
@@ -179,13 +198,17 @@ export class Themable extends Disposable {
 			),
 		);
 	}
+
 	protected onThemeChange(theme: IColorTheme): void {
 		this.theme = theme;
+
 		this.updateStyles();
 	}
+
 	updateStyles(): void {
 		// Subclasses to override
 	}
+
 	protected getColor(
 		id: string,
 		modify?: (color: Color, theme: IColorTheme) => Color,
@@ -195,37 +218,59 @@ export class Themable extends Disposable {
 		if (color && modify) {
 			color = modify(color, this.theme);
 		}
+
 		return color ? color.toString() : null;
 	}
 }
 export interface IPartsSplash {
 	zoomLevel: number | undefined;
+
 	baseTheme: string;
+
 	colorInfo: {
 		background: string;
 
 		foreground: string | undefined;
+
 		editorBackground: string | undefined;
+
 		titleBarBackground: string | undefined;
+
 		titleBarBorder: string | undefined;
+
 		activityBarBackground: string | undefined;
+
 		activityBarBorder: string | undefined;
+
 		sideBarBackground: string | undefined;
+
 		sideBarBorder: string | undefined;
+
 		statusBarBackground: string | undefined;
+
 		statusBarBorder: string | undefined;
+
 		statusBarNoFolderBackground: string | undefined;
+
 		windowBorder: string | undefined;
 	};
+
 	layoutInfo:
 		| {
 				sideBarSide: string;
+
 				editorPartMinWidth: number;
+
 				titleBarHeight: number;
+
 				activityBarWidth: number;
+
 				sideBarWidth: number;
+
 				statusBarHeight: number;
+
 				windowBorder: boolean;
+
 				windowBorderRadius: string | undefined;
 		  }
 		| undefined;

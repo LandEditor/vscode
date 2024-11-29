@@ -33,6 +33,7 @@ export class ProtocolMainService
 	declare readonly _serviceBrand: undefined;
 
 	private readonly validRoots = TernarySearchTree.forPaths<boolean>(!isLinux);
+
 	private readonly validExtensions = new Set([
 		".svg",
 		".png",
@@ -60,12 +61,15 @@ export class ProtocolMainService
 		// - extensions : all files shipped from extensions
 		// - storage    : all files in global and workspace storage (https://github.com/microsoft/vscode/issues/116735)
 		this.addValidFileRoot(environmentService.appRoot);
+
 		this.addValidFileRoot(environmentService.extensionsPath);
+
 		this.addValidFileRoot(
 			userDataProfilesService.defaultProfile.globalStorageHome.with({
 				scheme: Schemas.file,
 			}).fsPath,
 		);
+
 		this.addValidFileRoot(
 			environmentService.workspaceStorageHome.with({
 				scheme: Schemas.file,
@@ -209,6 +213,7 @@ export class ProtocolMainService
 		const channel = resource.toString();
 
 		const handler = async (): Promise<T | undefined> => obj;
+
 		validatedIpcMain.handle(channel, handler);
 
 		this.logService.trace(

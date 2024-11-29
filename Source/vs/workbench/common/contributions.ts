@@ -152,6 +152,7 @@ export interface IWorkbenchContributionsRegistry {
 }
 interface IWorkbenchContributionRegistration {
 	readonly id: string | undefined;
+
 	readonly ctor: IConstructorSignature<IWorkbenchContribution>;
 }
 export class WorkbenchContributionsRegistry
@@ -159,29 +160,42 @@ export class WorkbenchContributionsRegistry
 	implements IWorkbenchContributionsRegistry
 {
 	static readonly INSTANCE = new WorkbenchContributionsRegistry();
+
 	private static readonly BLOCK_BEFORE_RESTORE_WARN_THRESHOLD = 20;
+
 	private static readonly BLOCK_AFTER_RESTORE_WARN_THRESHOLD = 100;
+
 	private instantiationService: IInstantiationService | undefined;
+
 	private lifecycleService: ILifecycleService | undefined;
+
 	private logService: ILogService | undefined;
+
 	private environmentService: IEnvironmentService | undefined;
+
 	private editorPaneService: IEditorPaneService | undefined;
+
 	private readonly contributionsByPhase = new Map<
 		LifecyclePhase,
 		IWorkbenchContributionRegistration[]
 	>();
+
 	private readonly contributionsByEditor = new Map<
 		string,
 		IWorkbenchContributionRegistration[]
 	>();
+
 	private readonly contributionsById = new Map<
 		string,
 		IWorkbenchContributionRegistration
 	>();
+
 	private readonly instancesById = new Map<string, IWorkbenchContribution>();
+
 	private readonly instanceDisposables = this._register(
 		new DisposableStore(),
 	);
+
 	private readonly timingsByPhase = new Map<
 		LifecyclePhase,
 		Array<[string /* ID */, number /* Creation Time */]>
@@ -190,28 +204,35 @@ export class WorkbenchContributionsRegistry
 	get timings() {
 		return this.timingsByPhase;
 	}
+
 	private readonly pendingRestoredContributions = new DeferredPromise<void>();
+
 	readonly whenRestored = this.pendingRestoredContributions.p;
+
 	registerWorkbenchContribution2(
 		id: string,
 		ctor: IConstructorSignature<IWorkbenchContribution>,
 		phase: WorkbenchPhase.BlockStartup | WorkbenchPhase.BlockRestore,
 	): void;
+
 	registerWorkbenchContribution2(
 		id: string | undefined,
 		ctor: IConstructorSignature<IWorkbenchContribution>,
 		phase: WorkbenchPhase.AfterRestored | WorkbenchPhase.Eventually,
 	): void;
+
 	registerWorkbenchContribution2(
 		id: string,
 		ctor: IConstructorSignature<IWorkbenchContribution>,
 		lazy: ILazyWorkbenchContributionInstantiation,
 	): void;
+
 	registerWorkbenchContribution2(
 		id: string,
 		ctor: IConstructorSignature<IWorkbenchContribution>,
 		onEditor: IOnEditorWorkbenchContributionInstantiation,
 	): void;
+
 	registerWorkbenchContribution2(
 		id: string | undefined,
 		ctor: IConstructorSignature<IWorkbenchContribution>,
@@ -255,6 +276,7 @@ export class WorkbenchContributionsRegistry
 					[],
 				).push(contribution);
 			}
+
 			if (typeof id === "string") {
 				// by id
 				if (!this.contributionsById.has(id)) {
@@ -277,6 +299,7 @@ export class WorkbenchContributionsRegistry
 			}
 		}
 	}
+
 	registerWorkbenchContribution(
 		ctor: IConstructorSignature<IWorkbenchContribution>,
 		phase: LifecyclePhase.Restored | LifecyclePhase.Eventually,
@@ -287,10 +310,12 @@ export class WorkbenchContributionsRegistry
 			toWorkbenchPhase(phase),
 		);
 	}
+
 	getWorkbenchContribution<T extends IWorkbenchContribution>(id: string): T {
 		if (this.instancesById.has(id)) {
 			return this.instancesById.get(id) as T;
 		}
+
 		const instantiationService = this.instantiationService;
 
 		const lifecycleService = this.lifecycleService;
@@ -309,6 +334,7 @@ export class WorkbenchContributionsRegistry
 				`IWorkbenchContributionsRegistry#getContribution('${id}'): cannot be called before registry started`,
 			);
 		}
+
 		const contribution = this.contributionsById.get(id);
 
 		if (!contribution) {
@@ -316,11 +342,13 @@ export class WorkbenchContributionsRegistry
 				`IWorkbenchContributionsRegistry#getContribution('${id}'): contribution with that identifier is unknown.`,
 			);
 		}
+
 		if (lifecycleService.phase < LifecyclePhase.Restored) {
 			logService.warn(
 				`IWorkbenchContributionsRegistry#getContribution('${id}'): contribution instantiated before LifecyclePhase.Restored!`,
 			);
 		}
+
 		this.safeCreateContribution(
 			instantiationService,
 			logService,
@@ -336,8 +364,10 @@ export class WorkbenchContributionsRegistry
 				`IWorkbenchContributionsRegistry#getContribution('${id}'): failed to create contribution.`,
 			);
 		}
+
 		return instance as T;
 	}
+
 	start(accessor: ServicesAccessor): void {
 		const instantiationService = (this.instantiationService = accessor.get(
 			IInstantiationService,
@@ -386,6 +416,7 @@ export class WorkbenchContributionsRegistry
 				);
 			}
 		}
+
 		this._register(
 			editorPaneService.onWillInstantiateEditorPane((e) =>
 				this.onEditor(
@@ -398,6 +429,7 @@ export class WorkbenchContributionsRegistry
 			),
 		);
 	}
+
 	private onEditor(
 		editorTypeId: string,
 		instantiationService: IInstantiationService,
@@ -421,6 +453,7 @@ export class WorkbenchContributionsRegistry
 			}
 		}
 	}
+
 	private instantiateByPhase(
 		instantiationService: IInstantiationService,
 		lifecycleService: ILifecycleService,
@@ -451,6 +484,7 @@ export class WorkbenchContributionsRegistry
 				);
 		}
 	}
+
 	private async doInstantiateByPhase(
 		instantiationService: IInstantiationService,
 		logService: ILogService,
@@ -478,10 +512,12 @@ export class WorkbenchContributionsRegistry
 							phase,
 						);
 					}
+
 					mark(`code/didCreateWorkbenchContributions/${phase}`);
 
 					break;
 				}
+
 				case LifecyclePhase.Restored:
 				case LifecyclePhase.Eventually: {
 					// for the Restored/Eventually-phase we instantiate contributions
@@ -492,6 +528,7 @@ export class WorkbenchContributionsRegistry
 					if (phase === LifecyclePhase.Eventually) {
 						await this.pendingRestoredContributions.p;
 					}
+
 					this.doInstantiateWhenIdle(
 						contributions,
 						instantiationService,
@@ -505,6 +542,7 @@ export class WorkbenchContributionsRegistry
 			}
 		}
 	}
+
 	private doInstantiateWhenIdle(
 		contributions: IWorkbenchContributionRegistration[],
 		instantiationService: IInstantiationService,
@@ -521,6 +559,7 @@ export class WorkbenchContributionsRegistry
 		const instantiateSome = (idle: IdleDeadline) => {
 			while (i < contributions.length) {
 				const contribution = contributions[i++];
+
 				this.safeCreateContribution(
 					instantiationService,
 					logService,
@@ -536,6 +575,7 @@ export class WorkbenchContributionsRegistry
 					break;
 				}
 			}
+
 			if (i === contributions.length) {
 				mark(`code/didCreateWorkbenchContributions/${phase}`);
 
@@ -544,8 +584,10 @@ export class WorkbenchContributionsRegistry
 				}
 			}
 		};
+
 		runWhenGlobalIdle(instantiateSome, forcedTimeout);
 	}
+
 	private safeCreateContribution(
 		instantiationService: IInstantiationService,
 		logService: ILogService,
@@ -559,6 +601,7 @@ export class WorkbenchContributionsRegistry
 		) {
 			return;
 		}
+
 		const now = Date.now();
 
 		try {
@@ -567,14 +610,17 @@ export class WorkbenchContributionsRegistry
 					`code/willCreateWorkbenchContribution/${phase}/${contribution.id}`,
 				);
 			}
+
 			const instance = instantiationService.createInstance(
 				contribution.ctor,
 			);
 
 			if (typeof contribution.id === "string") {
 				this.instancesById.set(contribution.id, instance);
+
 				this.contributionsById.delete(contribution.id);
 			}
+
 			if (isDisposable(instance)) {
 				this.instanceDisposables.add(instance);
 			}
@@ -590,6 +636,7 @@ export class WorkbenchContributionsRegistry
 				);
 			}
 		}
+
 		if (
 			typeof contribution.id === "string" ||
 			!environmentService.isBuilt /* only log out of sources where we have good ctor names */
@@ -606,13 +653,16 @@ export class WorkbenchContributionsRegistry
 					`Creation of workbench contribution '${contribution.id ?? contribution.ctor.name}' took ${time}ms.`,
 				);
 			}
+
 			if (typeof contribution.id === "string") {
 				let timingsForPhase = this.timingsByPhase.get(phase);
 
 				if (!timingsForPhase) {
 					timingsForPhase = [];
+
 					this.timingsByPhase.set(phase, timingsForPhase);
 				}
+
 				timingsForPhase.push([contribution.id, time]);
 			}
 		}

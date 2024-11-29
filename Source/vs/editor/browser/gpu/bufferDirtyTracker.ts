@@ -25,17 +25,21 @@ export interface IBufferDirtyTrackerReader {
  */
 export class BufferDirtyTracker implements IBufferDirtyTrackerReader {
 	private _startIndex: number | undefined;
+
 	private _endIndex: number | undefined;
 
 	get dataOffset(): number | undefined {
 		return this._startIndex;
 	}
+
 	get dirtySize(): number | undefined {
 		if (this._startIndex === undefined || this._endIndex === undefined) {
 			return undefined;
 		}
+
 		return this._endIndex - this._startIndex + 1;
 	}
+
 	get isDirty(): boolean {
 		return this._startIndex !== undefined;
 	}
@@ -50,18 +54,23 @@ export class BufferDirtyTracker implements IBufferDirtyTrackerReader {
 		if (length > 1) {
 			this._flag(index + length - 1);
 		}
+
 		return index;
 	}
+
 	private _flag(index: number) {
 		if (this._startIndex === undefined || index < this._startIndex) {
 			this._startIndex = index;
 		}
+
 		if (this._endIndex === undefined || index > this._endIndex) {
 			this._endIndex = index;
 		}
 	}
+
 	clear() {
 		this._startIndex = undefined;
+
 		this._endIndex = undefined;
 	}
 }

@@ -29,6 +29,7 @@ export class ApplyFileSnippetAction extends SnippetsAction {
 			f1: true,
 		});
 	}
+
 	async run(accessor: ServicesAccessor): Promise<void> {
 		const snippetService = accessor.get(ISnippetsService);
 
@@ -43,6 +44,7 @@ export class ApplyFileSnippetAction extends SnippetsAction {
 		if (!editor || !editor.hasModel()) {
 			return;
 		}
+
 		const snippets = await snippetService.getSnippets(undefined, {
 			fileTemplateSnippets: true,
 			noRecencySort: true,
@@ -52,6 +54,7 @@ export class ApplyFileSnippetAction extends SnippetsAction {
 		if (snippets.length === 0) {
 			return;
 		}
+
 		const selection = await this._pick(
 			quickInputService,
 			langService,
@@ -61,6 +64,7 @@ export class ApplyFileSnippetAction extends SnippetsAction {
 		if (!selection) {
 			return;
 		}
+
 		if (editor.hasModel()) {
 			// apply snippet edit -> replaces everything
 			SnippetController2.get(editor)?.apply([
@@ -76,9 +80,11 @@ export class ApplyFileSnippetAction extends SnippetsAction {
 					langService.createById(selection.langId),
 					ApplyFileSnippetAction.Id,
 				);
+
 			editor.focus();
 		}
 	}
+
 	private async _pick(
 		quickInputService: IQuickInputService,
 		langService: ILanguageService,
@@ -87,6 +93,7 @@ export class ApplyFileSnippetAction extends SnippetsAction {
 		// spread snippet onto each language it supports
 		type SnippetAndLanguage = {
 			langId: string;
+
 			snippet: Snippet;
 		};
 
@@ -101,6 +108,7 @@ export class ApplyFileSnippetAction extends SnippetsAction {
 				}
 			}
 		}
+
 		type SnippetAndLanguagePick = IQuickPickItem & {
 			snippet: SnippetAndLanguage;
 		};
@@ -120,8 +128,10 @@ export class ApplyFileSnippetAction extends SnippetsAction {
 							langService.getLanguageName(item.langId) ??
 							item.langId,
 					});
+
 					first = false;
 				}
+
 				picks.push({
 					snippet: item,
 					label: item.snippet.prefix || item.snippet.name,
@@ -129,6 +139,7 @@ export class ApplyFileSnippetAction extends SnippetsAction {
 				});
 			}
 		}
+
 		const pick = await quickInputService.pick(picks, {
 			placeHolder: localize("placeholder", "Select a snippet"),
 			matchOnDetail: true,

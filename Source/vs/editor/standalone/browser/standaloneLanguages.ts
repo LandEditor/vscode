@@ -44,6 +44,7 @@ export function register(language: ILanguageExtensionPoint): void {
  */
 export function getLanguages(): ILanguageExtensionPoint[] {
 	let result: ILanguageExtensionPoint[] = [];
+
 	result = result.concat(ModesRegistry.getLanguages());
 
 	return result;
@@ -118,6 +119,7 @@ export function setLanguageConfiguration(
 			`Cannot set configuration for unknown language ${languageId}`,
 		);
 	}
+
 	const languageConfigurationService = StandaloneServices.get(
 		ILanguageConfigurationService,
 	);
@@ -135,18 +137,23 @@ export class EncodedTokenizationSupportAdapter
 	implements languages.ITokenizationSupport, IDisposable
 {
 	private readonly _languageId: string;
+
 	private readonly _actual: EncodedTokensProvider;
 
 	constructor(languageId: string, actual: EncodedTokensProvider) {
 		this._languageId = languageId;
+
 		this._actual = actual;
 	}
+
 	dispose(): void {
 		// NOOP
 	}
+
 	public getInitialState(): languages.IState {
 		return this._actual.getInitialState();
 	}
+
 	public tokenize(
 		line: string,
 		hasEOL: boolean,
@@ -167,8 +174,10 @@ export class EncodedTokenizationSupportAdapter
 				state,
 			);
 		}
+
 		throw new Error("Not supported!");
 	}
+
 	public tokenizeEncoded(
 		line: string,
 		hasEOL: boolean,
@@ -194,12 +203,15 @@ export class TokenizationSupportAdapter
 		private readonly _languageService: ILanguageService,
 		private readonly _standaloneThemeService: IStandaloneThemeService,
 	) {}
+
 	dispose(): void {
 		// NOOP
 	}
+
 	public getInitialState(): languages.IState {
 		return this._actual.getInitialState();
 	}
+
 	private static _toClassicTokens(
 		tokens: IToken[],
 		language: string,
@@ -220,11 +232,15 @@ export class TokenizationSupportAdapter
 				// Force tokens to be after one another!
 				startIndex = previousStartIndex;
 			}
+
 			result[i] = new languages.Token(startIndex, t.scopes, language);
+
 			previousStartIndex = startIndex;
 		}
+
 		return result;
 	}
+
 	public static adaptTokenize(
 		language: string,
 		actual: {
@@ -247,8 +263,10 @@ export class TokenizationSupportAdapter
 		} else {
 			endState = actualResult.endState;
 		}
+
 		return new languages.TokenizationResult(tokens, endState);
 	}
+
 	public tokenize(
 		line: string,
 		hasEOL: boolean,
@@ -261,6 +279,7 @@ export class TokenizationSupportAdapter
 			state,
 		);
 	}
+
 	private _toBinaryTokens(
 		languageIdCodec: languages.ILanguageIdCodec,
 		tokens: IToken[],
@@ -287,6 +306,7 @@ export class TokenizationSupportAdapter
 				// same metadata
 				continue;
 			}
+
 			let startIndex = t.startIndex;
 			// Prevent issues stemming from a buggy external tokenizer.
 			if (i === 0) {
@@ -296,17 +316,23 @@ export class TokenizationSupportAdapter
 				// Force tokens to be after one another!
 				startIndex = previousStartIndex;
 			}
+
 			result[resultLen++] = startIndex;
+
 			result[resultLen++] = metadata;
+
 			previousStartIndex = startIndex;
 		}
+
 		const actualResult = new Uint32Array(resultLen);
 
 		for (let i = 0; i < resultLen; i++) {
 			actualResult[i] = result[i];
 		}
+
 		return actualResult;
 	}
+
 	public tokenizeEncoded(
 		line: string,
 		hasEOL: boolean,
@@ -326,6 +352,7 @@ export class TokenizationSupportAdapter
 		} else {
 			endState = actualResult.endState;
 		}
+
 		return new languages.EncodedTokenizationResult(tokens, endState);
 	}
 }
@@ -334,6 +361,7 @@ export class TokenizationSupportAdapter
  */
 export interface IToken {
 	startIndex: number;
+
 	scopes: string;
 }
 /**
@@ -447,6 +475,7 @@ export function setColorMap(colorMap: string[] | null): void {
 		for (let i = 1, len = colorMap.length; i < len; i++) {
 			result[i] = Color.fromHex(colorMap[i]);
 		}
+
 		standaloneThemeService.setColorMapOverride(result);
 	} else {
 		standaloneThemeService.setColorMapOverride(null);
@@ -485,9 +514,11 @@ export function registerTokensProviderFactory(
 		if (!result) {
 			return null;
 		}
+
 		if (isATokensProvider(result)) {
 			return createTokenizationSupportAdapter(languageId, result);
 		}
+
 		return new MonarchTokenizer(
 			StandaloneServices.get(ILanguageService),
 			StandaloneServices.get(IStandaloneThemeService),
@@ -522,11 +553,13 @@ export function setTokensProvider(
 			`Cannot set tokens provider for unknown language ${languageId}`,
 		);
 	}
+
 	if (isThenable<TokensProvider | EncodedTokensProvider>(provider)) {
 		return registerTokensProviderFactory(languageId, {
 			create: () => provider,
 		});
 	}
+
 	return languages.TokenizationRegistry.register(
 		languageId,
 		createTokenizationSupportAdapter(languageId, provider),
@@ -557,6 +590,7 @@ export function setMonarchTokensProvider(
 			create: () => languageDef,
 		});
 	}
+
 	return languages.TokenizationRegistry.register(
 		languageId,
 		create(languageDef),
@@ -652,6 +686,7 @@ export function registerHoverProvider(
 				if (!value) {
 					return undefined;
 				}
+
 				if (!value.range && word) {
 					value.range = new Range(
 						position.lineNumber,
@@ -660,6 +695,7 @@ export function registerHoverProvider(
 						word.endColumn,
 					);
 				}
+
 				if (!value.range) {
 					value.range = new Range(
 						position.lineNumber,
@@ -668,6 +704,7 @@ export function registerHoverProvider(
 						position.column,
 					);
 				}
+
 				return value;
 			});
 		},
@@ -1109,8 +1146,10 @@ export interface CodeActionProviderMetadata {
 	 * such as `["quickfix.removeLine", "source.fixAll" ...]`.
 	 */
 	readonly providedCodeActionKinds?: readonly string[];
+
 	readonly documentation?: ReadonlyArray<{
 		readonly kind: string;
+
 		readonly command: languages.Command;
 	}>;
 }

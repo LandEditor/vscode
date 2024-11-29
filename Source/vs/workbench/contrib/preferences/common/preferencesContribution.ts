@@ -48,6 +48,7 @@ export class PreferencesContribution
 	implements IWorkbenchContribution
 {
 	static readonly ID = "workbench.contrib.preferences";
+
 	private editorOpeningListener: IDisposable | undefined;
 
 	constructor(
@@ -69,6 +70,7 @@ export class PreferencesContribution
 		private readonly textEditorService: ITextEditorService,
 	) {
 		super();
+
 		this._register(
 			this.configurationService.onDidChangeConfiguration((e) => {
 				if (
@@ -79,6 +81,7 @@ export class PreferencesContribution
 				}
 			}),
 		);
+
 		this.handleSettingsEditorRegistration();
 
 		const fileSystemProvider = this._register(
@@ -86,6 +89,7 @@ export class PreferencesContribution
 				SettingsFileSystemProvider,
 			),
 		);
+
 		this._register(
 			fileService.registerProvider(
 				SettingsFileSystemProvider.SCHEMA,
@@ -93,6 +97,7 @@ export class PreferencesContribution
 			),
 		);
 	}
+
 	private handleSettingsEditorRegistration(): void {
 		// dispose any old listener we had
 		dispose(this.editorOpeningListener);
@@ -187,6 +192,7 @@ export class PreferencesContribution
 									}
 								}
 							}
+
 							return {
 								editor: this.textEditorService.createTextEditor(
 									{ resource },
@@ -198,6 +204,7 @@ export class PreferencesContribution
 				);
 		}
 	}
+
 	override dispose(): void {
 		dispose(this.editorOpeningListener);
 

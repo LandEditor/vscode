@@ -181,9 +181,11 @@ export class CodeActionsContribution
 				() => {
 					this._allProvidedCodeActionKinds =
 						this.getAllProvidedCodeActionKinds();
+
 					this.updateConfigurationSchema(
 						this._allProvidedCodeActionKinds,
 					);
+
 					this._onDidChangeSchemaContributions.fire();
 				},
 			),
@@ -203,6 +205,7 @@ export class CodeActionsContribution
 				out.set(kind, new HierarchicalKind(kind));
 			}
 		}
+
 		return Array.from(out.values());
 	}
 
@@ -229,6 +232,7 @@ export class CodeActionsContribution
 						codeActionKind.value,
 					),
 				);
+
 				notebookProperties[codeActionKind.value] =
 					createNotebookCodeActionsAutoSave(
 						nls.localize(
@@ -239,7 +243,9 @@ export class CodeActionsContribution
 					);
 			}
 		}
+
 		codeActionsOnSaveSchema.properties = properties;
+
 		notebookCodeActionsOnSaveSchema.properties = notebookProperties;
 
 		Registry.as<IConfigurationRegistry>(
@@ -285,6 +291,7 @@ export class CodeActionsContribution
 					out.add(providedKind.value);
 				}
 			}
+
 			return Array.from(out);
 		};
 

@@ -28,11 +28,13 @@ export class TextModelChangeRecorder extends Disposable {
 		@ILogService private readonly _logService: ILogService,
 	) {
 		super();
+
 		this._register(
 			autorunWithStore((reader, store) => {
 				if (!(this._editor instanceof CodeEditorWidget)) {
 					return;
 				}
+
 				if (!this._recordingLoggingEnabled.read(reader)) {
 					return;
 				}
@@ -54,6 +56,7 @@ export class TextModelChangeRecorder extends Disposable {
 						if (!tm) {
 							return;
 						}
+
 						for (const source of sources) {
 							this._logService.info(
 								formatRecordableLogEntry<
@@ -68,6 +71,7 @@ export class TextModelChangeRecorder extends Disposable {
 								}),
 							);
 						}
+
 						sources.length = 0;
 					}),
 				);

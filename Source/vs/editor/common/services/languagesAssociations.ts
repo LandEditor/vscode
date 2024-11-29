@@ -13,17 +13,26 @@ import { PLAINTEXT_LANGUAGE_ID } from "../languages/modesRegistry.js";
 
 export interface ILanguageAssociation {
 	readonly id: string;
+
 	readonly mime: string;
+
 	readonly filename?: string;
+
 	readonly extension?: string;
+
 	readonly filepattern?: string;
+
 	readonly firstline?: RegExp;
 }
 interface ILanguageAssociationItem extends ILanguageAssociation {
 	readonly userConfigured: boolean;
+
 	readonly filenameLowercase?: string;
+
 	readonly extensionLowercase?: string;
+
 	readonly filepatternLowercase?: ParsedPattern;
+
 	readonly filepatternOnPath?: boolean;
 }
 let registeredAssociations: ILanguageAssociationItem[] = [];
@@ -62,6 +71,7 @@ function _registerLanguageAssociation(
 		association,
 		userConfigured,
 	);
+
 	registeredAssociations.push(associationItem);
 
 	if (!associationItem.userConfigured) {
@@ -75,6 +85,7 @@ function _registerLanguageAssociation(
 			if (a.mime === associationItem.mime || a.userConfigured) {
 				return; // same mime or userConfigured is ok
 			}
+
 			if (
 				associationItem.extension &&
 				a.extension === associationItem.extension
@@ -83,6 +94,7 @@ function _registerLanguageAssociation(
 					`Overwriting extension <<${associationItem.extension}>> to now point to mime <<${associationItem.mime}>>`,
 				);
 			}
+
 			if (
 				associationItem.filename &&
 				a.filename === associationItem.filename
@@ -91,6 +103,7 @@ function _registerLanguageAssociation(
 					`Overwriting filename <<${associationItem.filename}>> to now point to mime <<${associationItem.mime}>>`,
 				);
 			}
+
 			if (
 				associationItem.filepattern &&
 				a.filepattern === associationItem.filepattern
@@ -99,6 +112,7 @@ function _registerLanguageAssociation(
 					`Overwriting filepattern <<${associationItem.filepattern}>> to now point to mime <<${associationItem.mime}>>`,
 				);
 			}
+
 			if (
 				associationItem.firstline &&
 				a.firstline === associationItem.firstline
@@ -143,6 +157,7 @@ export function clearPlatformLanguageAssociations(): void {
 	registeredAssociations = registeredAssociations.filter(
 		(a) => a.userConfigured,
 	);
+
 	nonUserRegisteredAssociations = [];
 }
 /**
@@ -152,10 +167,12 @@ export function clearConfiguredLanguageAssociations(): void {
 	registeredAssociations = registeredAssociations.filter(
 		(a) => !a.userConfigured,
 	);
+
 	userRegisteredAssociations = [];
 }
 interface IdAndMime {
 	id: string;
+
 	mime: string;
 }
 /**
@@ -192,10 +209,12 @@ function getAssociations(
 
 			case Schemas.data: {
 				const metadata = DataUri.parseMetaData(resource);
+
 				path = metadata.get(DataUri.META_DATA_LABEL);
 
 				break;
 			}
+
 			case Schemas.vscodeNotebookCell:
 				// File path not relevant for language detection of cell
 				path = undefined;
@@ -206,9 +225,11 @@ function getAssociations(
 				path = resource.path;
 		}
 	}
+
 	if (!path) {
 		return [{ id: "unknown", mime: Mimes.unknown }];
 	}
+
 	path = path.toLowerCase();
 
 	const filename = basename(path);
@@ -249,6 +270,7 @@ function getAssociations(
 			];
 		}
 	}
+
 	return [{ id: "unknown", mime: Mimes.unknown }];
 }
 function getAssociationByPath(
@@ -308,6 +330,7 @@ function getAssociationByPath(
 	if (extensionMatch) {
 		return extensionMatch;
 	}
+
 	return undefined;
 }
 function getAssociationByFirstline(
@@ -316,6 +339,7 @@ function getAssociationByFirstline(
 	if (startsWithUTF8BOM(firstLine)) {
 		firstLine = firstLine.substr(1);
 	}
+
 	if (firstLine.length > 0) {
 		// We want to prioritize associations based on the order they are registered so that the last registered
 		// association wins over all other. This is for https://github.com/microsoft/vscode/issues/20074
@@ -325,6 +349,7 @@ function getAssociationByFirstline(
 			if (!association.firstline) {
 				continue;
 			}
+
 			const matches = firstLine.match(association.firstline);
 
 			if (matches && matches.length > 0) {
@@ -332,5 +357,6 @@ function getAssociationByFirstline(
 			}
 		}
 	}
+
 	return undefined;
 }

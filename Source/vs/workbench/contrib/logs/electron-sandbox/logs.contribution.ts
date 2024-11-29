@@ -24,6 +24,7 @@ registerAction2(
 				f1: true,
 			});
 		}
+
 		run(servicesAccessor: ServicesAccessor): Promise<void> {
 			return servicesAccessor
 				.get(IInstantiationService)
@@ -46,6 +47,7 @@ registerAction2(
 				f1: true,
 			});
 		}
+
 		run(servicesAccessor: ServicesAccessor): Promise<void> {
 			return servicesAccessor
 				.get(IInstantiationService)

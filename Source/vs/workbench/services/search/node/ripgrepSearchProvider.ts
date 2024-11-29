@@ -28,6 +28,7 @@ export class RipgrepSearchProvider implements TextSearchProvider2 {
 	) {
 		process.once("exit", () => this.dispose());
 	}
+
 	async provideTextSearchResults(
 		query: TextSearchQuery2,
 		options: TextSearchProviderOptions,
@@ -100,24 +101,29 @@ export class RipgrepSearchProvider implements TextSearchProvider2 {
 			return complete;
 		});
 	}
+
 	private async withToken<T>(
 		token: CancellationToken,
 		fn: (token: CancellationToken) => Promise<T>,
 	): Promise<T> {
 		const merged = mergedTokenSource(token);
+
 		this.inProgress.add(merged);
 
 		const result = await fn(merged.token);
+
 		this.inProgress.delete(merged);
 
 		return result;
 	}
+
 	private dispose() {
 		this.inProgress.forEach((engine) => engine.cancel());
 	}
 }
 function mergedTokenSource(token: CancellationToken): CancellationTokenSource {
 	const tokenSource = new CancellationTokenSource();
+
 	token.onCancellationRequested(() => tokenSource.cancel());
 
 	return tokenSource;

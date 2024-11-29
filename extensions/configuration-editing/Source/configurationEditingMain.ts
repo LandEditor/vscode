@@ -65,6 +65,7 @@ function registerVariableCompletions(pattern: string): vscode.Disposable {
 					) {
 						return [];
 					}
+
 					let range = document.getWordRangeAtPosition(
 						position,
 						/\$\{[^"\}]*\}?/,
@@ -78,6 +79,7 @@ function registerVariableCompletions(pattern: string): vscode.Disposable {
 					) {
 						range = new vscode.Range(position, position);
 					}
+
 					return [
 						{
 							label: "workspaceFolder",
@@ -185,6 +187,7 @@ function registerVariableCompletions(pattern: string): vscode.Disposable {
 						detail: variable.detail,
 					}));
 				}
+
 				return [];
 			},
 		},
@@ -198,6 +201,7 @@ function isCompletingInsidePropertyStringValue(
 	if (location.isAtPropertyKey) {
 		return false;
 	}
+
 	const previousNode = location.previousNode;
 
 	if (previousNode && previousNode.type === "string") {
@@ -208,6 +212,7 @@ function isCompletingInsidePropertyStringValue(
 			offset < previousNode.offset + previousNode.length
 		);
 	}
+
 	return false;
 }
 function isLocationInsideTopLevelProperty(
@@ -251,6 +256,7 @@ function registerExtensionsCompletionsInExtensionsDocument(): vscode.Disposable 
 						false,
 					);
 				}
+
 				return [];
 			},
 		},
@@ -285,6 +291,7 @@ function registerExtensionsCompletionsInWorkspaceConfigurationDocument(): vscode
 						false,
 					);
 				}
+
 				return [];
 			},
 		},
@@ -308,6 +315,7 @@ function getReplaceRange(
 			return new vscode.Range(nodeStart, nodeEnd);
 		}
 	}
+
 	return new vscode.Range(position, position);
 }
 vscode.languages.registerDocumentSymbolProvider(
@@ -326,6 +334,7 @@ vscode.languages.registerDocumentSymbolProvider(
 			let startOffset = 0;
 
 			let depthInObjects = 0;
+
 			visit(document.getText(), {
 				onObjectProperty: (property, _offset, _length) => {
 					lastProperty = property;
@@ -359,6 +368,7 @@ vscode.languages.registerDocumentSymbolProvider(
 							),
 						);
 					}
+
 					depthInObjects--;
 				},
 			});
@@ -371,7 +381,9 @@ vscode.languages.registerDocumentSymbolProvider(
 function registerContextKeyCompletions(): vscode.Disposable {
 	type ContextKeyInfo = {
 		key: string;
+
 		type?: string;
+
 		description?: string;
 	};
 
@@ -406,6 +418,7 @@ function registerContextKeyCompletions(): vscode.Disposable {
 			if (location.isAtPropertyKey) {
 				return;
 			}
+
 			let isValidLocation = false;
 
 			for (const [key, value] of paths) {
@@ -417,6 +430,7 @@ function registerContextKeyCompletions(): vscode.Disposable {
 					}
 				}
 			}
+
 			if (
 				!isValidLocation ||
 				!isCompletingInsidePropertyStringValue(
@@ -427,6 +441,7 @@ function registerContextKeyCompletions(): vscode.Disposable {
 			) {
 				return;
 			}
+
 			const replacing =
 				document.getWordRangeAtPosition(position, /[a-zA-Z.]+/) ||
 				new vscode.Range(position, position);
@@ -441,6 +456,7 @@ function registerContextKeyCompletions(): vscode.Disposable {
 			if (token.isCancellationRequested || !data) {
 				return;
 			}
+
 			const result = new vscode.CompletionList();
 
 			for (const item of data) {
@@ -448,11 +464,16 @@ function registerContextKeyCompletions(): vscode.Disposable {
 					item.key,
 					vscode.CompletionItemKind.Constant,
 				);
+
 				completion.detail = item.type;
+
 				completion.range = { replacing, inserting };
+
 				completion.documentation = item.description;
+
 				result.items.push(completion);
 			}
+
 			return result;
 		},
 	});

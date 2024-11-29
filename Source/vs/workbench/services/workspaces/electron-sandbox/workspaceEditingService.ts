@@ -119,22 +119,27 @@ export class NativeWorkspaceEditingService extends AbstractWorkspaceEditingServi
 			userDataProfilesService,
 			userDataProfileService,
 		);
+
 		this.registerListeners();
 	}
+
 	private registerListeners(): void {
 		this._register(
 			this.lifecycleService.onBeforeShutdown((e) => {
 				const saveOperation = this.saveUntitledBeforeShutdown(e.reason);
+
 				e.veto(saveOperation, "veto.untitledWorkspace");
 			}),
 		);
 	}
+
 	private async saveUntitledBeforeShutdown(
 		reason: ShutdownReason,
 	): Promise<boolean> {
 		if (reason !== ShutdownReason.LOAD && reason !== ShutdownReason.CLOSE) {
 			return false; // only interested when window is closing or loading
 		}
+
 		const workspaceIdentifier = this.getCurrentWorkspaceIdentifier();
 
 		if (
@@ -146,6 +151,7 @@ export class NativeWorkspaceEditingService extends AbstractWorkspaceEditingServi
 		) {
 			return false; // only care about untitled workspaces to ask for saving
 		}
+
 		const windowCount = await this.nativeHostService.getWindowCount();
 
 		if (
@@ -155,6 +161,7 @@ export class NativeWorkspaceEditingService extends AbstractWorkspaceEditingServi
 		) {
 			return false; // Windows/Linux: quits when last window is closed, so do not ask then
 		}
+
 		const confirmSaveUntitledWorkspace =
 			this.configurationService.getValue<boolean>(
 				"window.confirmSaveUntitledWorkspace",
@@ -167,6 +174,7 @@ export class NativeWorkspaceEditingService extends AbstractWorkspaceEditingServi
 
 			return false; // no confirmation configured
 		}
+
 		let canceled = false;
 
 		const { result, checkboxChecked } =
@@ -196,6 +204,7 @@ export class NativeWorkspaceEditingService extends AbstractWorkspaceEditingServi
 							) {
 								return true; // keep veto if no target was provided
 							}
+
 							try {
 								await this.saveWorkspaceAs(
 									workspaceIdentifier,
@@ -206,6 +215,7 @@ export class NativeWorkspaceEditingService extends AbstractWorkspaceEditingServi
 									await this.workspacesService.getWorkspaceIdentifier(
 										newWorkspacePath,
 									);
+
 								await this.workspacesService.addRecentlyOpened([
 									{
 										label: this.labelService.getWorkspaceLabel(
@@ -225,6 +235,7 @@ export class NativeWorkspaceEditingService extends AbstractWorkspaceEditingServi
 							} catch (error) {
 								// ignore
 							}
+
 							return false;
 						},
 					},
@@ -267,8 +278,10 @@ export class NativeWorkspaceEditingService extends AbstractWorkspaceEditingServi
 				ConfigurationTarget.USER,
 			);
 		}
+
 		return result;
 	}
+
 	override async isValidTargetWorkspacePath(
 		workspaceUri: URI,
 	): Promise<boolean> {
@@ -300,8 +313,10 @@ export class NativeWorkspaceEditingService extends AbstractWorkspaceEditingServi
 
 			return false;
 		}
+
 		return true; // OK
 	}
+
 	async enterWorkspace(workspaceUri: URI): Promise<void> {
 		const stopped = await this.extensionService.stopExtensionHosts(
 			localize(
@@ -313,6 +328,7 @@ export class NativeWorkspaceEditingService extends AbstractWorkspaceEditingServi
 		if (!stopped) {
 			return;
 		}
+
 		const result = await this.doEnterWorkspace(workspaceUri);
 
 		if (result) {
@@ -332,6 +348,7 @@ export class NativeWorkspaceEditingService extends AbstractWorkspaceEditingServi
 								.scheme,
 						})
 					: undefined;
+
 				this.workingCopyBackupService.reinitialize(
 					newBackupWorkspaceHome,
 				);

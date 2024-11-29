@@ -49,39 +49,53 @@ export class CellEditorOptions
 	implements ITextModelUpdateOptions
 {
 	private _lineNumbers: "on" | "off" | "inherit" = "inherit";
+
 	private _tabSize?: number;
+
 	private _indentSize?: number | "tabSize";
+
 	private _insertSpaces?: boolean;
 
 	set tabSize(value: number | undefined) {
 		if (this._tabSize !== value) {
 			this._tabSize = value;
+
 			this._onDidChange.fire();
 		}
 	}
+
 	get tabSize() {
 		return this._tabSize;
 	}
+
 	set indentSize(value: number | "tabSize" | undefined) {
 		if (this._indentSize !== value) {
 			this._indentSize = value;
+
 			this._onDidChange.fire();
 		}
 	}
+
 	get indentSize() {
 		return this._indentSize;
 	}
+
 	set insertSpaces(value: boolean | undefined) {
 		if (this._insertSpaces !== value) {
 			this._insertSpaces = value;
+
 			this._onDidChange.fire();
 		}
 	}
+
 	get insertSpaces() {
 		return this._insertSpaces;
 	}
+
 	private readonly _onDidChange = this._register(new Emitter<void>());
+
 	readonly onDidChange: Event<void> = this._onDidChange.event;
+
 	private _value: IEditorOptions;
 
 	constructor(
@@ -90,13 +104,16 @@ export class CellEditorOptions
 		readonly configurationService: IConfigurationService,
 	) {
 		super();
+
 		this._register(
 			base.onDidChange(() => {
 				this._recomputeOptions();
 			}),
 		);
+
 		this._value = this._computeEditorOptions();
 	}
+
 	override updateState(
 		element: ICellViewModel,
 		e: CellViewModelStateChangeEvent,
@@ -105,10 +122,13 @@ export class CellEditorOptions
 			this.setLineNumbers(element.lineNumbers);
 		}
 	}
+
 	private _recomputeOptions(): void {
 		this._value = this._computeEditorOptions();
+
 		this._onDidChange.fire();
 	}
+
 	private _computeEditorOptions() {
 		const value = this.base.value; // base IEditorOptions
 		// TODO @Yoyokrazy find a different way to get the editor overrides, this is not the right way
@@ -121,16 +141,19 @@ export class CellEditorOptions
 		if (indentSize !== undefined) {
 			this.indentSize = indentSize;
 		}
+
 		const insertSpaces = cellEditorOverridesRaw?.["editor.insertSpaces"];
 
 		if (insertSpaces !== undefined) {
 			this.insertSpaces = insertSpaces;
 		}
+
 		const tabSize = cellEditorOverridesRaw?.["editor.tabSize"];
 
 		if (tabSize !== undefined) {
 			this.tabSize = tabSize;
 		}
+
 		let cellRenderLineNumber = value.lineNumbers;
 
 		switch (this._lineNumbers) {
@@ -147,6 +170,7 @@ export class CellEditorOptions
 				} else {
 					cellRenderLineNumber = "off";
 				}
+
 				break;
 
 			case "on":
@@ -161,6 +185,7 @@ export class CellEditorOptions
 
 				break;
 		}
+
 		if (value.lineNumbers !== cellRenderLineNumber) {
 			return {
 				...value,
@@ -170,14 +195,17 @@ export class CellEditorOptions
 			return Object.assign({}, value);
 		}
 	}
+
 	getUpdatedValue(
 		internalMetadata: NotebookCellInternalMetadata,
 		cellUri: URI,
 	): IEditorOptions {
 		const options = this.getValue(internalMetadata, cellUri);
+
 		delete options.hover; // This is toggled by a debug editor contribution
 		return options;
 	}
+
 	getValue(
 		internalMetadata: NotebookCellInternalMetadata,
 		cellUri: URI,
@@ -192,6 +220,7 @@ export class CellEditorOptions
 			},
 		};
 	}
+
 	getDefaultValue(): IEditorOptions {
 		return {
 			...this._value,
@@ -200,8 +229,10 @@ export class CellEditorOptions
 			},
 		};
 	}
+
 	setLineNumbers(lineNumbers: "on" | "off" | "inherit"): void {
 		this._lineNumbers = lineNumbers;
+
 		this._recomputeOptions();
 	}
 }
@@ -258,6 +289,7 @@ registerAction2(
 				},
 			});
 		}
+
 		async run(accessor: ServicesAccessor): Promise<void> {
 			const configurationService = accessor.get(IConfigurationService);
 
@@ -303,6 +335,7 @@ registerAction2(
 				),
 			});
 		}
+
 		async runWithContext(
 			accessor: ServicesAccessor,
 			context:
@@ -318,11 +351,13 @@ registerAction2(
 				const configurationService = accessor.get(
 					IConfigurationService,
 				);
+
 				context.selectedCells.forEach((cell) => {
 					this.updateCell(configurationService, cell);
 				});
 			}
 		}
+
 		private updateCell(
 			configurationService: IConfigurationService,
 			cell: ICellViewModel,

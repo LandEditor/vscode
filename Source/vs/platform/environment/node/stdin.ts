@@ -15,6 +15,7 @@ export function hasStdinWithoutTty() {
 	} catch (error) {
 		// Windows workaround for https://github.com/nodejs/node/issues/11656
 	}
+
 	return false;
 }
 export function stdinDataListener(durationinMs: number): Promise<boolean> {
@@ -23,6 +24,7 @@ export function stdinDataListener(durationinMs: number): Promise<boolean> {
 		// wait for 1s maximum...
 		setTimeout(() => {
 			process.stdin.removeListener("data", dataListener);
+
 			resolve(false);
 		}, durationinMs);
 		// ...but finish early if we detect data
@@ -47,6 +49,7 @@ export async function readFromStdin(
 		console.log(
 			`Unsupported terminal encoding: ${encoding}, falling back to UTF-8.`,
 		);
+
 		encoding = "utf8";
 	}
 	// Use a `Queue` to be able to use `appendFile`
@@ -57,14 +60,18 @@ export async function readFromStdin(
 	const appendFileQueue = new Queue();
 
 	const decoder = iconv.default.getDecoder(encoding);
+
 	process.stdin.on("data", (chunk) => {
 		const chunkStr = decoder.write(chunk);
+
 		appendFileQueue.queue(() =>
 			fs.promises.appendFile(targetPath, chunkStr),
 		);
 	});
+
 	process.stdin.on("end", () => {
 		const end = decoder.end();
+
 		appendFileQueue.queue(async () => {
 			try {
 				if (typeof end === "string") {

@@ -16,6 +16,7 @@ import {
 
 class TsMappedEditsProvider implements vscode.MappedEditsProvider {
 	constructor(private readonly client: ITypeScriptServiceClient) {}
+
 	async provideMappedEdits(
 		document: vscode.TextDocument,
 		codeBlocks: string[],
@@ -25,11 +26,13 @@ class TsMappedEditsProvider implements vscode.MappedEditsProvider {
 		if (!this.isEnabled()) {
 			return;
 		}
+
 		const file = this.client.toOpenTsFilePath(document);
 
 		if (!file) {
 			return;
 		}
+
 		const response = await this.client.execute(
 			"mapCode",
 			{
@@ -45,6 +48,7 @@ class TsMappedEditsProvider implements vscode.MappedEditsProvider {
 							if (!file) {
 								return [];
 							}
+
 							return contextItem.ranges.map(
 								(range): FileSpan => ({
 									file,
@@ -61,8 +65,10 @@ class TsMappedEditsProvider implements vscode.MappedEditsProvider {
 		if (response.type !== "response" || !response.body) {
 			return;
 		}
+
 		return WorkspaceEdit.fromFileCodeEdits(this.client, response.body);
 	}
+
 	private isEnabled(): boolean {
 		return vscode.workspace
 			.getConfiguration("typescript")

@@ -92,21 +92,26 @@ export class BowerJSONContribution implements IJSONContribution {
 		"sails",
 		"codeigniter2",
 	];
+
 	private xhr: XHRRequest;
+
 	public constructor(xhr: XHRRequest) {
 		this.xhr = xhr;
 	}
+
 	public getDocumentSelector(): DocumentSelector {
 		return [
 			{ language: "json", scheme: "*", pattern: "**/bower.json" },
 			{ language: "json", scheme: "*", pattern: "**/.bower.json" },
 		];
 	}
+
 	private isEnabled() {
 		return !!workspace
 			.getConfiguration("npm")
 			.get("fetchOnlinePackageInfo");
 	}
+
 	public collectDefaultSuggestions(
 		_resource: Uri,
 		collector: ISuggestionsCollector,
@@ -121,14 +126,18 @@ export class BowerJSONContribution implements IJSONContribution {
 		};
 
 		const proposal = new CompletionItem(l10n.t("Default bower.json"));
+
 		proposal.kind = CompletionItemKind.Class;
+
 		proposal.insertText = new SnippetString(
 			JSON.stringify(defaultValue, null, "\t"),
 		);
+
 		collector.add(proposal);
 
 		return Promise.resolve(null);
 	}
+
 	public collectPropertySuggestions(
 		_resource: Uri,
 		location: Location,
@@ -140,6 +149,7 @@ export class BowerJSONContribution implements IJSONContribution {
 		if (!this.isEnabled()) {
 			return null;
 		}
+
 		if (
 			location.matches(["dependencies"]) ||
 			location.matches(["devDependencies"])
@@ -162,6 +172,7 @@ export class BowerJSONContribution implements IJSONContribution {
 									const results = <
 										{
 											name: string;
+
 											description: string;
 										}[]
 									>obj;
@@ -186,17 +197,24 @@ export class BowerJSONContribution implements IJSONContribution {
 												insertText.appendText(",");
 											}
 										}
+
 										const proposal = new CompletionItem(
 											name,
 										);
+
 										proposal.kind =
 											CompletionItemKind.Property;
+
 										proposal.insertText = insertText;
+
 										proposal.filterText =
 											JSON.stringify(name);
+
 										proposal.documentation = description;
+
 										collector.add(proposal);
 									}
+
 									collector.setAsIncomplete();
 								}
 							} catch (e) {
@@ -212,6 +230,7 @@ export class BowerJSONContribution implements IJSONContribution {
 
 							return 0;
 						}
+
 						return undefined;
 					},
 					(error) => {
@@ -238,20 +257,29 @@ export class BowerJSONContribution implements IJSONContribution {
 							insertText.appendText(",");
 						}
 					}
+
 					const proposal = new CompletionItem(name);
+
 					proposal.kind = CompletionItemKind.Property;
+
 					proposal.insertText = insertText;
+
 					proposal.filterText = JSON.stringify(name);
+
 					proposal.documentation = "";
+
 					collector.add(proposal);
 				});
+
 				collector.setAsIncomplete();
 
 				return Promise.resolve(null);
 			}
 		}
+
 		return null;
 	}
+
 	public collectValueSuggestions(
 		_resource: Uri,
 		location: Location,
@@ -260,20 +288,28 @@ export class BowerJSONContribution implements IJSONContribution {
 		if (!this.isEnabled()) {
 			return null;
 		}
+
 		if (
 			location.matches(["dependencies", "*"]) ||
 			location.matches(["devDependencies", "*"])
 		) {
 			// not implemented. Could be do done calling the bower command. Waiting for web API: https://github.com/bower/registry/issues/26
 			const proposal = new CompletionItem(l10n.t("latest"));
+
 			proposal.insertText = new SnippetString('"${1:latest}"');
+
 			proposal.filterText = '""';
+
 			proposal.kind = CompletionItemKind.Value;
+
 			proposal.documentation = "The latest version of the package";
+
 			collector.add(proposal);
 		}
+
 		return null;
 	}
+
 	public resolveSuggestion(
 		_resource: Uri | undefined,
 		item: CompletionItem,
@@ -287,17 +323,21 @@ export class BowerJSONContribution implements IJSONContribution {
 			if (typeof label !== "string") {
 				label = label.label;
 			}
+
 			return this.getInfo(label).then((documentation) => {
 				if (documentation) {
 					item.documentation = documentation;
 
 					return item;
 				}
+
 				return null;
 			});
 		}
+
 		return null;
 	}
+
 	private getInfo(pack: string): Thenable<string | undefined> {
 		const queryUrl =
 			"https://registry.bower.io/packages/" + encodeURIComponent(pack);
@@ -316,17 +356,20 @@ export class BowerJSONContribution implements IJSONContribution {
 						if (url.indexOf("git://") === 0) {
 							url = url.substring(6);
 						}
+
 						if (
 							url.length >= 4 &&
 							url.substr(url.length - 4) === ".git"
 						) {
 							url = url.substring(0, url.length - 4);
 						}
+
 						return url;
 					}
 				} catch (e) {
 					// ignore
 				}
+
 				return undefined;
 			},
 			() => {
@@ -334,6 +377,7 @@ export class BowerJSONContribution implements IJSONContribution {
 			},
 		);
 	}
+
 	public getInfoContribution(
 		_resource: Uri,
 		location: Location,
@@ -341,6 +385,7 @@ export class BowerJSONContribution implements IJSONContribution {
 		if (!this.isEnabled()) {
 			return null;
 		}
+
 		if (
 			location.matches(["dependencies", "*"]) ||
 			location.matches(["devDependencies", "*"])
@@ -351,14 +396,17 @@ export class BowerJSONContribution implements IJSONContribution {
 				return this.getInfo(pack).then((documentation) => {
 					if (documentation) {
 						const str = new MarkdownString();
+
 						str.appendText(documentation);
 
 						return [str];
 					}
+
 					return null;
 				});
 			}
 		}
+
 		return null;
 	}
 }

@@ -77,18 +77,22 @@ export class UserDataSyncTrigger
 			);
 		}
 	}
+
 	private getUserDataEditorInputSource(
 		editorInput: EditorInput | undefined,
 	): string | undefined {
 		if (!editorInput) {
 			return undefined;
 		}
+
 		if (editorInput instanceof SettingsEditor2Input) {
 			return "settingsEditor";
 		}
+
 		if (editorInput instanceof KeybindingsEditorInput) {
 			return "keybindingsEditor";
 		}
+
 		const resource = editorInput.resource;
 
 		if (
@@ -99,6 +103,7 @@ export class UserDataSyncTrigger
 		) {
 			return "settingsEditor";
 		}
+
 		if (
 			isEqual(
 				resource,
@@ -107,6 +112,7 @@ export class UserDataSyncTrigger
 		) {
 			return "keybindingsEditor";
 		}
+
 		return undefined;
 	}
 }

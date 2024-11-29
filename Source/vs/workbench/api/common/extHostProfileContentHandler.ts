@@ -22,6 +22,7 @@ export class ExtHostProfileContentHandlers
 	implements ExtHostProfileContentHandlersShape
 {
 	private readonly proxy: MainThreadProfileContentHandlersShape;
+
 	private readonly handlers = new Map<string, vscode.ProfileContentHandler>();
 
 	constructor(mainContext: IMainContext) {
@@ -29,6 +30,7 @@ export class ExtHostProfileContentHandlers
 			MainContext.MainThreadProfileContentHandlers,
 		);
 	}
+
 	registerProfileContentHandler(
 		extension: IExtensionDescription,
 		id: string,
@@ -39,7 +41,9 @@ export class ExtHostProfileContentHandlers
 		if (this.handlers.has(id)) {
 			throw new Error(`Handler with id '${id}' already registered`);
 		}
+
 		this.handlers.set(id, handler);
+
 		this.proxy.$registerProfileContentHandler(
 			id,
 			handler.name,
@@ -49,9 +53,11 @@ export class ExtHostProfileContentHandlers
 
 		return toDisposable(() => {
 			this.handlers.delete(id);
+
 			this.proxy.$unregisterProfileContentHandler(id);
 		});
 	}
+
 	async $saveProfile(
 		id: string,
 		name: string,
@@ -63,8 +69,10 @@ export class ExtHostProfileContentHandlers
 		if (!handler) {
 			throw new Error(`Unknown handler with id: ${id}`);
 		}
+
 		return handler.saveProfile(name, content, token);
 	}
+
 	async $readProfile(
 		id: string,
 		idOrUri: string | UriComponents,
@@ -75,6 +83,7 @@ export class ExtHostProfileContentHandlers
 		if (!handler) {
 			throw new Error(`Unknown handler with id: ${id}`);
 		}
+
 		return handler.readProfile(
 			isString(idOrUri) ? idOrUri : URI.revive(idOrUri),
 			token,

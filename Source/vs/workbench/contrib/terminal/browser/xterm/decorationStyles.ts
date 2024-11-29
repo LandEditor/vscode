@@ -30,6 +30,7 @@ export function getTerminalDecorationHoverContent(
 	hoverMessage?: string,
 ): string {
 	let hoverContent = `${localize("terminalPromptContextMenu", "Show Command Actions")}`;
+
 	hoverContent += "\n\n---\n\n";
 
 	if (!command) {
@@ -99,6 +100,7 @@ export function getTerminalDecorationHoverContent(
 			}
 		}
 	}
+
 	return hoverContent;
 }
 
@@ -109,6 +111,7 @@ export function updateLayout(
 	if (!element) {
 		return;
 	}
+
 	const fontSize = configurationService.inspect(
 		TerminalSettingId.FontSize,
 	).value;
@@ -130,8 +133,11 @@ export function updateLayout(
 			fontSize / defaultFontSize <= 1 ? fontSize / defaultFontSize : 1;
 		// must be inlined to override the inlined styles from xterm
 		element.style.width = `${scalar * DecorationStyles.DefaultDimension}px`;
+
 		element.style.height = `${scalar * DecorationStyles.DefaultDimension * lineHeight}px`;
+
 		element.style.fontSize = `${scalar * DecorationStyles.DefaultDimension}px`;
+
 		element.style.marginLeft = `${scalar * DecorationStyles.MarginLeft}px`;
 	}
 }

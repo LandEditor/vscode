@@ -35,7 +35,9 @@ export class RemoteStartEntry
 {
 	private static readonly REMOTE_WEB_START_ENTRY_ACTIONS_COMMAND_ID =
 		"workbench.action.remote.showWebStartEntryActions";
+
 	private readonly remoteExtensionId: string;
+
 	private readonly startCommand: string;
 
 	constructor(
@@ -56,16 +58,23 @@ export class RemoteStartEntry
 
 		const remoteExtensionTips =
 			this.productService.remoteExtensionTips?.["tunnel"];
+
 		this.startCommand = remoteExtensionTips?.startEntry?.startCommand ?? "";
+
 		this.remoteExtensionId = remoteExtensionTips?.extensionId ?? "";
+
 		this._init();
+
 		this.registerActions();
+
 		this.registerListeners();
 	}
+
 	private registerActions(): void {
 		const category = nls.localize2("remote.category", "Remote");
 		// Show Remote Start Action
 		const startEntry = this;
+
 		this._register(
 			registerAction2(
 				class extends Action2 {
@@ -80,6 +89,7 @@ export class RemoteStartEntry
 							f1: false,
 						});
 					}
+
 					async run(): Promise<void> {
 						await startEntry.showWebRemoteStartActions();
 					}
@@ -87,6 +97,7 @@ export class RemoteStartEntry
 			),
 		);
 	}
+
 	private registerListeners(): void {
 		this._register(
 			this.extensionEnablementService.onEnablementChanged(
@@ -115,6 +126,7 @@ export class RemoteStartEntry
 			),
 		);
 	}
+
 	private async _init(): Promise<void> {
 		// Check if installed and enabled
 		const installed = (
@@ -132,8 +144,10 @@ export class RemoteStartEntry
 			}
 		}
 	}
+
 	private async showWebRemoteStartActions() {
 		this.commandService.executeCommand(this.startCommand);
+
 		this.telemetryService.publicLog2<
 			WorkbenchActionExecutedEvent,
 			WorkbenchActionExecutedClassification

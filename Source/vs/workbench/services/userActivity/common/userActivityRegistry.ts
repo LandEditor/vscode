@@ -9,18 +9,22 @@ class UserActivityRegistry {
 	private todo: {
 		new (s: IUserActivityService, ...args: any[]): unknown;
 	}[] = [];
+
 	public add = (ctor: {
 		new (s: IUserActivityService, ...args: any[]): unknown;
 	}) => {
 		this.todo.push(ctor);
 	};
+
 	public take(
 		userActivityService: IUserActivityService,
 		instantiation: IInstantiationService,
 	) {
 		this.add = (ctor) =>
 			instantiation.createInstance(ctor, userActivityService);
+
 		this.todo.forEach(this.add);
+
 		this.todo = [];
 	}
 }

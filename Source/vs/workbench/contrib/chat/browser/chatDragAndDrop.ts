@@ -40,7 +40,9 @@ export class ChatDragAndDrop extends Themable {
 		HTMLElement,
 		{ overlay: HTMLElement; disposable: IDisposable }
 	> = new Map();
+
 	private overlayText?: HTMLElement;
+
 	private overlayTextBackground: string = "";
 
 	constructor(
@@ -63,6 +65,7 @@ export class ChatDragAndDrop extends Themable {
 			target,
 			overlayContainer,
 		);
+
 		this.overlays.set(target, { overlay, disposable });
 	}
 
@@ -75,24 +78,31 @@ export class ChatDragAndDrop extends Themable {
 
 		if (existingOverlay) {
 			existingOverlay.overlay.remove();
+
 			existingOverlay.disposable.dispose();
+
 			this.overlays.delete(target);
 		}
 	}
 
 	private currentActiveTarget: HTMLElement | undefined = undefined;
+
 	private createOverlay(
 		target: HTMLElement,
 		overlayContainer: HTMLElement,
 	): { overlay: HTMLElement; disposable: IDisposable } {
 		const overlay = document.createElement("div");
+
 		overlay.classList.add("chat-dnd-overlay");
+
 		this.updateOverlayStyles(overlay);
+
 		overlayContainer.appendChild(overlay);
 
 		const disposable = new DragAndDropObserver(target, {
 			onDragOver: (e) => {
 				e.stopPropagation();
+
 				e.preventDefault();
 
 				if (target === this.currentActiveTarget) {
@@ -116,6 +126,7 @@ export class ChatDragAndDrop extends Themable {
 			},
 			onDrop: (e) => {
 				e.stopPropagation();
+
 				e.preventDefault();
 
 				if (target !== this.currentActiveTarget) {
@@ -123,6 +134,7 @@ export class ChatDragAndDrop extends Themable {
 				}
 
 				this.currentActiveTarget = undefined;
+
 				this.onDrop(e, target);
 			},
 		});
@@ -132,6 +144,7 @@ export class ChatDragAndDrop extends Themable {
 
 	private onDragEnter(e: DragEvent, target: HTMLElement): void {
 		const estimatedDropType = this.guessDropType(e);
+
 		this.updateDropFeedback(e, target, estimatedDropType);
 	}
 
@@ -141,6 +154,7 @@ export class ChatDragAndDrop extends Themable {
 
 	private onDrop(e: DragEvent, target: HTMLElement): void {
 		this.updateDropFeedback(e, target, undefined);
+
 		this.drop(e);
 	}
 
@@ -204,12 +218,16 @@ export class ChatDragAndDrop extends Themable {
 		switch (type) {
 			case ChatDragAndDropType.FILE_INTERNAL:
 				return localize("file", "File");
+
 			case ChatDragAndDropType.FILE_EXTERNAL:
 				return localize("file", "File");
+
 			case ChatDragAndDropType.FOLDER:
 				return localize("folder", "Folder");
+
 			case ChatDragAndDropType.IMAGE:
 				return localize("image", "Image");
+
 			case ChatDragAndDropType.SYMBOL:
 				return localize("symbol", "Symbol");
 		}
@@ -251,6 +269,7 @@ export class ChatDragAndDrop extends Themable {
 
 		if (containsDragType(e, CodeDataTransfers.SYMBOLS)) {
 			const data = extractSymbolDropData(e);
+
 			return this.resolveSymbolsAttachContext(data);
 		}
 
@@ -317,9 +336,12 @@ export class ChatDragAndDrop extends Themable {
 
 		// Otherwise, we need to check if the contents are already open in another editor
 		const openUntitledEditors = this.editorService.editors.filter(editor => editor instanceof UntitledTextEditorInput) as UntitledTextEditorInput[];
+
 		for (const canidate of openUntitledEditors) {
 			const model = await canidate.resolve();
+
 			const contents = model.textEditorModel?.getValue();
+
 			if (contents === editor.contents) {
 				return getResourceAttachContext(canidate.resource, false);
 			}
@@ -331,6 +353,7 @@ export class ChatDragAndDrop extends Themable {
 	private resolveSymbolsAttachContext(symbols: DocumentSymbolTransferData[]): IChatRequestVariableEntry[] {
 		return symbols.map(symbol => {
 			const resource = URI.file(symbol.fsPath);
+
 			return {
 				kind: "symbol",
 				id: symbolId(resource, symbol.range),
@@ -348,6 +371,7 @@ export class ChatDragAndDrop extends Themable {
 	): void {
 		// Remove any previous overlay text
 		this.overlayText?.remove();
+
 		this.overlayText = undefined;
 
 		const { overlay } = this.overlays.get(target)!;
@@ -363,6 +387,7 @@ export class ChatDragAndDrop extends Themable {
 				if (typeof element === "string") {
 					return $("span.overlay-text", undefined, element);
 				}
+
 				return element;
 			});
 
@@ -371,7 +396,9 @@ export class ChatDragAndDrop extends Themable {
 				undefined,
 				...htmlElements,
 			);
+
 			this.overlayText.style.backgroundColor = this.overlayTextBackground;
+
 			overlay.appendChild(this.overlayText);
 		}
 
@@ -387,6 +414,7 @@ export class ChatDragAndDrop extends Themable {
 	private updateOverlayStyles(overlay: HTMLElement): void {
 		overlay.style.backgroundColor =
 			this.getColor(this.styles.overlayBackground) || "";
+
 		overlay.style.color = this.getColor(this.styles.listForeground) || "";
 	}
 
@@ -394,6 +422,7 @@ export class ChatDragAndDrop extends Themable {
 		this.overlays.forEach((overlay) =>
 			this.updateOverlayStyles(overlay.overlay),
 		);
+
 		this.overlayTextBackground =
 			this.getColor(this.styles.listBackground) || "";
 	}
@@ -446,6 +475,7 @@ export class EditsDragAndDrop extends ChatDragAndDrop {
 			const resolvedFileContext = resolvedFiles
 				.map((file) => getResourceAttachContext(file, false))
 				.filter((context) => !!context);
+
 			nonDirectoryContext.push(...resolvedFileContext);
 		}
 
@@ -548,11 +578,14 @@ function getImageAttachContext(
 
 function symbolId(resource: URI, range?: IRange): string {
 	let rangePart = "";
+
 	if (range) {
 		rangePart = `:${range.startLineNumber}`;
+
 		if (range.startLineNumber !== range.endLineNumber) {
 			rangePart += `-${range.endLineNumber}`;
 		}
 	}
+
 	return resource.fsPath + rangePart;
 }

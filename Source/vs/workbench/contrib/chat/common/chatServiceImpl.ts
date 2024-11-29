@@ -93,8 +93,11 @@ const serializedChatKey = "interactive.sessions";
 const globalChatKey = "chat.workspaceTransfer";
 interface IChatTransfer {
 	toWorkspace: UriComponents;
+
 	timestampInMilliseconds: number;
+
 	chat: ISerializableChatData;
+
 	inputValue: string;
 }
 
@@ -102,93 +105,149 @@ const SESSION_TRANSFER_EXPIRATION_IN_MILLISECONDS = 1000 * 60;
 
 type ChatProviderInvokedEvent = {
 	timeToFirstProgress: number | undefined;
+
 	totalTime: number | undefined;
+
 	result: "success" | "error" | "errorWithOutput" | "cancelled" | "filtered";
+
 	requestType: "string" | "followup" | "slashCommand";
+
 	chatSessionId: string;
+
 	agent: string;
+
 	agentExtensionId: string | undefined;
+
 	slashCommand: string | undefined;
+
 	location: ChatAgentLocation;
+
 	citations: number;
+
 	numCodeBlocks: number;
+
 	isParticipantDetected: boolean;
+
 	enableCommandDetection: boolean;
+
 	attachmentKinds: string[];
 };
 
 type ChatProviderInvokedClassification = {
 	timeToFirstProgress: {
 		classification: "SystemMetaData";
+
 		purpose: "PerformanceAndHealth";
+
 		comment: "The time in milliseconds from invoking the provider to getting the first data.";
 	};
+
 	totalTime: {
 		classification: "SystemMetaData";
+
 		purpose: "PerformanceAndHealth";
+
 		comment: "The total time it took to run the provider's `provideResponseWithProgress`.";
 	};
+
 	result: {
 		classification: "SystemMetaData";
+
 		purpose: "FeatureInsight";
+
 		comment: "Whether invoking the ChatProvider resulted in an error.";
 	};
+
 	requestType: {
 		classification: "SystemMetaData";
+
 		purpose: "FeatureInsight";
+
 		comment: "The type of request that the user made.";
 	};
+
 	chatSessionId: {
 		classification: "SystemMetaData";
+
 		purpose: "FeatureInsight";
+
 		comment: "A random ID for the session.";
 	};
+
 	agent: {
 		classification: "SystemMetaData";
+
 		purpose: "FeatureInsight";
+
 		comment: "The type of agent used.";
 	};
+
 	agentExtensionId: {
 		classification: "SystemMetaData";
+
 		purpose: "FeatureInsight";
+
 		comment: "The extension that contributed the agent.";
 	};
+
 	slashCommand?: {
 		classification: "SystemMetaData";
+
 		purpose: "FeatureInsight";
+
 		comment: "The type of slashCommand used.";
 	};
+
 	location: {
 		classification: "SystemMetaData";
+
 		purpose: "FeatureInsight";
+
 		comment: "The location at which chat request was made.";
 	};
+
 	citations: {
 		classification: "SystemMetaData";
+
 		purpose: "FeatureInsight";
+
 		comment: "The number of public code citations that were returned with the response.";
 	};
+
 	numCodeBlocks: {
 		classification: "SystemMetaData";
+
 		purpose: "FeatureInsight";
+
 		comment: "The number of code blocks in the response.";
 	};
+
 	isParticipantDetected: {
 		classification: "SystemMetaData";
+
 		purpose: "FeatureInsight";
+
 		comment: "Whether the participant was automatically detected.";
 	};
+
 	enableCommandDetection: {
 		classification: "SystemMetaData";
+
 		purpose: "FeatureInsight";
+
 		comment: "Whether participation detection was disabled for this invocation.";
 	};
+
 	attachmentKinds: {
 		classification: "SystemMetaData";
+
 		purpose: "FeatureInsight";
+
 		comment: "The types of variables/attachments that the user included with their query.";
 	};
+
 	owner: "roblourens";
+
 	comment: "Provides insight into the performance of Chat agents.";
 };
 
@@ -215,15 +274,18 @@ export class ChatService extends Disposable implements IChatService {
 	private readonly _sessionModels = this._register(
 		new DisposableMap<string, ChatModel>(),
 	);
+
 	private readonly _pendingRequests = this._register(
 		new DisposableMap<string, CancellableRequest>(),
 	);
+
 	private _persistedSessions: ISerializableChatsData;
 
 	/** Just for empty windows, need to enforce that a chat was deleted, even though other windows still have it */
 	private _deletedChatIds = new Set<string>();
 
 	private _transferredSessionData: IChatTransferredSessionData | undefined;
+
 	public get transferredSessionData():
 		| IChatTransferredSessionData
 		| undefined {
@@ -233,20 +295,24 @@ export class ChatService extends Disposable implements IChatService {
 	private readonly _onDidPerformUserAction = this._register(
 		new Emitter<IChatUserActionEvent>(),
 	);
+
 	public readonly onDidPerformUserAction: Event<IChatUserActionEvent> =
 		this._onDidPerformUserAction.event;
 
 	private readonly _onDidDisposeSession = this._register(
 		new Emitter<{
 			sessionId: string;
+
 			reason: "initializationFailed" | "cleared";
 		}>(),
 	);
+
 	public readonly onDidDisposeSession = this._onDidDisposeSession.event;
 
 	private readonly _sessionFollowupCancelTokens = this._register(
 		new DisposableMap<string, CancellationTokenSource>(),
 	);
+
 	private readonly _chatServiceTelemetry: ChatServiceTelemetry;
 
 	constructor(
@@ -304,8 +370,10 @@ export class ChatService extends Disposable implements IChatService {
 				"constructor",
 				`Transferred session ${transferredChat.sessionId}`,
 			);
+
 			this._persistedSessions[transferredChat.sessionId] =
 				transferredChat;
+
 			this._transferredSessionData = {
 				sessionId: transferredChat.sessionId,
 				inputValue: transferredData.inputValue,
@@ -339,6 +407,7 @@ export class ChatService extends Disposable implements IChatService {
 			this.syncEmptyWindowChats(liveChats);
 		} else {
 			let allSessions: (ChatModel | ISerializableChatData)[] = liveChats;
+
 			allSessions = allSessions.concat(
 				Object.values(this._persistedSessions)
 					.filter(
@@ -347,9 +416,11 @@ export class ChatService extends Disposable implements IChatService {
 					)
 					.filter((session) => session.requests.length),
 			);
+
 			allSessions.sort(
 				(a, b) => (b.creationDate ?? 0) - (a.creationDate ?? 0),
 			);
+
 			allSessions = allSessions.slice(0, maxPersistedSessions);
 
 			if (allSessions.length) {
@@ -424,6 +495,7 @@ export class ChatService extends Disposable implements IChatService {
 			} else if (!persistedSession && session.isNew) {
 				// This session was created in this window, and hasn't been persisted yet
 				session.isNew = false;
+
 				persistedSessions[session.sessionId] = session;
 			}
 		});
@@ -441,12 +513,15 @@ export class ChatService extends Disposable implements IChatService {
 		}
 
 		let sessionsList = Object.values(allSessions);
+
 		sessionsList.sort(
 			(a, b) => (b.creationDate ?? 0) - (a.creationDate ?? 0),
 		);
+
 		sessionsList = sessionsList.slice(0, maxPersistedSessions);
 
 		const data = JSON.stringify(sessionsList);
+
 		this.storageService.store(
 			serializedChatKey,
 			data,
@@ -457,6 +532,7 @@ export class ChatService extends Disposable implements IChatService {
 
 	notifyUserAction(action: IChatUserActionEvent): void {
 		this._chatServiceTelemetry.notifyUserAction(action);
+
 		this._onDidPerformUserAction.fire(action);
 	}
 
@@ -507,6 +583,7 @@ export class ChatService extends Disposable implements IChatService {
 									if (typeof response === "string") {
 										return new MarkdownString(response);
 									}
+
 									return response;
 								},
 							);
@@ -567,6 +644,7 @@ export class ChatService extends Disposable implements IChatService {
 				currentTime - item.timestampInMilliseconds <
 					SESSION_TRANSFER_EXPIRATION_IN_MILLISECONDS,
 		);
+
 		this.storageService.store(
 			globalChatKey,
 			JSON.stringify(filtered),
@@ -632,7 +710,9 @@ export class ChatService extends Disposable implements IChatService {
 	removeHistoryEntry(sessionId: string): void {
 		if (this._persistedSessions[sessionId]) {
 			this._deletedChatIds.add(sessionId);
+
 			delete this._persistedSessions[sessionId];
+
 			this.saveState();
 		}
 	}
@@ -641,7 +721,9 @@ export class ChatService extends Disposable implements IChatService {
 		Object.values(this._persistedSessions).forEach((session) =>
 			this._deletedChatIds.add(session.sessionId),
 		);
+
 		this._persistedSessions = {};
+
 		this.saveState();
 	}
 
@@ -667,7 +749,9 @@ export class ChatService extends Disposable implements IChatService {
 			someSessionHistory,
 			location,
 		);
+
 		this._sessionModels.set(model.sessionId, model);
+
 		this.initializeSession(model, token);
 
 		return model;
@@ -682,6 +766,7 @@ export class ChatService extends Disposable implements IChatService {
 				"initializeSession",
 				`Initialize session ${model.sessionId}`,
 			);
+
 			model.startInitialize();
 
 			await this.extensionService.whenInstalledExtensionsRegistered();
@@ -719,11 +804,15 @@ export class ChatService extends Disposable implements IChatService {
 					model.initialLocation,
 					token,
 				)) ?? undefined;
+
 			model.initialize(welcomeMessage, sampleQuestions);
 		} catch (err) {
 			this.trace("startSession", `initializeSession failed: ${err}`);
+
 			model.setInitializationError(err);
+
 			this._sessionModels.deleteAndDispose(model.sessionId);
+
 			this._onDidDisposeSession.fire({
 				sessionId: model.sessionId,
 				reason: "initializationFailed",
@@ -792,6 +881,7 @@ export class ChatService extends Disposable implements IChatService {
 				"resendRequest",
 				`Session ${request.session.sessionId} already has a pending request, cancelling...`,
 			);
+
 			cts.cancel();
 		}
 
@@ -811,6 +901,7 @@ export class ChatService extends Disposable implements IChatService {
 			attachedContext: request.attachedContext,
 			workingSet: request.workingSet,
 		};
+
 		await this._sendRequestAsync(
 			model,
 			model.sessionId,
@@ -911,11 +1002,13 @@ export class ChatService extends Disposable implements IChatService {
 			if (!agent) {
 				throw new Error(`Unknown agent: ${options.agentId}`);
 			}
+
 			parserContext = { selectedAgent: agent };
 
 			const commandPart = options.slashCommand
 				? ` ${chatSubcommandLeader}${options.slashCommand}`
 				: "";
+
 			request = `${chatAgentLeader}${agent.name}${commandPart} ${request}`;
 		}
 
@@ -932,6 +1025,7 @@ export class ChatService extends Disposable implements IChatService {
 		this._sessionFollowupCancelTokens.get(sessionId)?.cancel();
 
 		const newTokenSource = new CancellationTokenSource();
+
 		this._sessionFollowupCancelTokens.set(sessionId, newTokenSource);
 
 		return newTokenSource.token;
@@ -989,6 +1083,7 @@ export class ChatService extends Disposable implements IChatService {
 		function completeResponseCreated(): void {
 			if (!responseCreatedComplete && request?.response) {
 				responseCreated.complete(request.response);
+
 				responseCreatedComplete = true;
 			}
 		}
@@ -1018,6 +1113,7 @@ export class ChatService extends Disposable implements IChatService {
 				}
 
 				model.acceptResponseProgress(request, progress);
+
 				completeResponseCreated();
 			};
 
@@ -1032,6 +1128,7 @@ export class ChatService extends Disposable implements IChatService {
 					"sendRequest",
 					`Request for session ${model.sessionId} was cancelled`,
 				);
+
 				this.telemetryService.publicLog2<
 					ChatProviderInvokedEvent,
 					ChatProviderInvokedClassification
@@ -1085,6 +1182,7 @@ export class ChatService extends Disposable implements IChatService {
 						const initVariableData: IChatRequestVariableData = {
 							variables: [],
 						};
+
 						request =
 							chatRequest ??
 							model.addRequest(
@@ -1105,6 +1203,7 @@ export class ChatService extends Disposable implements IChatService {
 
 						if (chatRequest) {
 							variableData = chatRequest.variableData;
+
 							message = getPromptText(request.message).message;
 						} else {
 							variableData =
@@ -1125,6 +1224,7 @@ export class ChatService extends Disposable implements IChatService {
 									request.workingSet.push(variable.value);
 								}
 							}
+
 							model.updateRequest(request, variableData);
 
 							const promptTextResult = getPromptText(
@@ -1204,7 +1304,9 @@ export class ChatService extends Disposable implements IChatService {
 								result.agent,
 								result.command,
 							);
+
 							detectedAgent = result.agent;
+
 							detectedCommand = result.command;
 						}
 					}
@@ -1215,6 +1317,7 @@ export class ChatService extends Disposable implements IChatService {
 
 					const command =
 						detectedCommand ?? agentSlashCommandPart?.command;
+
 					await this.extensionService.activateByEvent(
 						`onChatParticipant:${agent.id}`,
 					);
@@ -1240,6 +1343,7 @@ export class ChatService extends Disposable implements IChatService {
 					if (pendingRequest && !pendingRequest.requestId) {
 						pendingRequest.requestId = requestProps.requestId;
 					}
+
 					completeResponseCreated();
 
 					const agentResult = await this.chatAgentService.invokeAgent(
@@ -1249,7 +1353,9 @@ export class ChatService extends Disposable implements IChatService {
 						history,
 						token,
 					);
+
 					rawResult = agentResult;
+
 					agentOrCommandFollowups =
 						this.chatAgentService.getFollowups(
 							agent.id,
@@ -1258,6 +1364,7 @@ export class ChatService extends Disposable implements IChatService {
 							history,
 							followupsCancelToken,
 						);
+
 					chatTitlePromise =
 						model.getRequests().length === 1 && !model.customTitle
 							? this.chatAgentService.getChatTitle(
@@ -1282,6 +1389,7 @@ export class ChatService extends Disposable implements IChatService {
 						{ variables: [] },
 						attempt,
 					);
+
 					completeResponseCreated();
 					// contributed slash commands
 					// TODO: spell this out in the UI
@@ -1291,12 +1399,14 @@ export class ChatService extends Disposable implements IChatService {
 						if (!request.response) {
 							continue;
 						}
+
 						history.push({
 							role: ChatMessageRole.User,
 							content: [
 								{ type: "text", value: request.message.text },
 							],
 						});
+
 						history.push({
 							role: ChatMessageRole.Assistant,
 							content: [
@@ -1307,6 +1417,7 @@ export class ChatService extends Disposable implements IChatService {
 							],
 						});
 					}
+
 					const message = parsedRequest.text;
 
 					const commandResult =
@@ -1324,9 +1435,11 @@ export class ChatService extends Disposable implements IChatService {
 							location,
 							token,
 						);
+
 					agentOrCommandFollowups = Promise.resolve(
 						commandResult?.followUp,
 					);
+
 					rawResult = {};
 				} else {
 					throw new Error(`Cannot handle request`);
@@ -1340,6 +1453,7 @@ export class ChatService extends Disposable implements IChatService {
 							"sendRequest",
 							`Provider returned no response for session ${model.sessionId}`,
 						);
+
 						rawResult = {
 							errorDetails: {
 								message: localize(
@@ -1361,6 +1475,7 @@ export class ChatService extends Disposable implements IChatService {
 					const commandForTelemetry = agentSlashCommandPart
 						? agentSlashCommandPart.command.name
 						: commandPart?.slashCommand.command;
+
 					this.telemetryService.publicLog2<
 						ChatProviderInvokedEvent,
 						ChatProviderInvokedClassification
@@ -1387,8 +1502,11 @@ export class ChatService extends Disposable implements IChatService {
 							request.variableData,
 						),
 					});
+
 					model.setResponse(request, rawResult);
+
 					completeResponseCreated();
+
 					this.trace(
 						"sendRequest",
 						`Provider returned response for session ${model.sessionId}`,
@@ -1399,6 +1517,7 @@ export class ChatService extends Disposable implements IChatService {
 					if (agentOrCommandFollowups) {
 						agentOrCommandFollowups.then((followups) => {
 							model.setFollowups(request, followups);
+
 							this._chatServiceTelemetry.retrievedFollowups(
 								agentPart?.agent.id ?? "",
 								commandForTelemetry,
@@ -1406,6 +1525,7 @@ export class ChatService extends Disposable implements IChatService {
 							);
 						});
 					}
+
 					chatTitlePromise?.then((title) => {
 						if (title) {
 							model.setCustomTitle(title);
@@ -1414,6 +1534,7 @@ export class ChatService extends Disposable implements IChatService {
 				}
 			} catch (err) {
 				const result = "error";
+
 				this.telemetryService.publicLog2<
 					ChatProviderInvokedEvent,
 					ChatProviderInvokedClassification
@@ -1440,6 +1561,7 @@ export class ChatService extends Disposable implements IChatService {
 						request.variableData,
 					),
 				});
+
 				this.logService.error(
 					`Error while handling chat request: ${toErrorMessage(err, true)}`,
 				);
@@ -1448,8 +1570,11 @@ export class ChatService extends Disposable implements IChatService {
 					const rawResult: IChatAgentResult = {
 						errorDetails: { message: err.message },
 					};
+
 					model.setResponse(request, rawResult);
+
 					completeResponseCreated();
+
 					model.completeResponse(request);
 				}
 			} finally {
@@ -1458,10 +1583,12 @@ export class ChatService extends Disposable implements IChatService {
 		};
 
 		const rawResponsePromise = sendRequestInternal();
+
 		this._pendingRequests.set(
 			model.sessionId,
 			new CancellableRequest(source),
 		);
+
 		rawResponsePromise.finally(() => {
 			this._pendingRequests.deleteAndDispose(model.sessionId);
 		});
@@ -1551,6 +1678,7 @@ export class ChatService extends Disposable implements IChatService {
 				), // TODO bit of a hack
 				location: ChatAgentLocation.Panel,
 			};
+
 			history.push({
 				request: historyRequest,
 				response: toChatHistoryContent(request.response.response.value),
@@ -1574,6 +1702,7 @@ export class ChatService extends Disposable implements IChatService {
 
 		if (pendingRequest?.requestId === requestId) {
 			pendingRequest.cancel();
+
 			this._pendingRequests.deleteAndDispose(sessionId);
 		}
 
@@ -1586,6 +1715,7 @@ export class ChatService extends Disposable implements IChatService {
 				"Can only adopt requests of type ChatRequestModel",
 			);
 		}
+
 		const target = this._sessionModels.get(sessionId);
 
 		if (!target) {
@@ -1595,6 +1725,7 @@ export class ChatService extends Disposable implements IChatService {
 		await target.waitForInitialization();
 
 		const oldOwner = request.session;
+
 		target.adoptRequest(request);
 
 		if (request.response && !request.response.isComplete) {
@@ -1602,6 +1733,7 @@ export class ChatService extends Disposable implements IChatService {
 
 			if (cts) {
 				cts.requestId = request.id;
+
 				this._pendingRequests.set(target.sessionId, cts);
 			}
 		}
@@ -1655,17 +1787,21 @@ export class ChatService extends Disposable implements IChatService {
 				model.acceptResponseProgress(request, part, true);
 			}
 		}
+
 		model.setResponse(request, response.result || {});
 
 		if (response.followups !== undefined) {
 			model.setFollowups(request, response.followups);
 		}
+
 		model.completeResponse(request);
 	}
 
 	cancelCurrentRequestForSession(sessionId: string): void {
 		this.trace("cancelCurrentRequestForSession", `sessionId: ${sessionId}`);
+
 		this._pendingRequests.get(sessionId)?.cancel();
+
 		this._pendingRequests.deleteAndDispose(sessionId);
 	}
 
@@ -1684,13 +1820,18 @@ export class ChatService extends Disposable implements IChatService {
 			const sessionData: ISerializableChatData = JSON.parse(
 				JSON.stringify(model),
 			);
+
 			sessionData.isNew = true;
+
 			this._persistedSessions[sessionId] = sessionData;
 		}
 
 		this._sessionModels.deleteAndDispose(sessionId);
+
 		this._pendingRequests.get(sessionId)?.cancel();
+
 		this._pendingRequests.deleteAndDispose(sessionId);
+
 		this._onDidDisposeSession.fire({ sessionId, reason: "cleared" });
 	}
 
@@ -1718,6 +1859,7 @@ export class ChatService extends Disposable implements IChatService {
 			StorageScope.PROFILE,
 			[],
 		);
+
 		existingRaw.push({
 			chat: model.toJSON(),
 			timestampInMilliseconds: Date.now(),
@@ -1731,6 +1873,7 @@ export class ChatService extends Disposable implements IChatService {
 			StorageScope.PROFILE,
 			StorageTarget.MACHINE,
 		);
+
 		this.trace(
 			"transferChatSession",
 			`Transferred session ${model.sessionId} to workspace ${toWorkspace.toString()}`,
@@ -1755,6 +1898,7 @@ function getCodeBlocks(text: string): string[] {
 				new RegExp(`^\\s*${codeBlockState.delimiter}\\s*$`).test(line)
 			) {
 				codeBlockLanguages.push(codeBlockState.languageId);
+
 				codeBlockState = undefined;
 			}
 		} else {
@@ -1765,5 +1909,6 @@ function getCodeBlocks(text: string): string[] {
 			}
 		}
 	}
+
 	return codeBlockLanguages;
 }

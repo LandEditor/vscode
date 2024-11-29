@@ -57,26 +57,36 @@ export interface IRemoteAgentService {
 	getDiagnosticInfo(
 		options: IDiagnosticInfoOptions,
 	): Promise<IDiagnosticInfo | undefined>;
+
 	updateTelemetryLevel(telemetryLevel: TelemetryLevel): Promise<void>;
+
 	logTelemetry(eventName: string, data?: ITelemetryData): Promise<void>;
+
 	flushTelemetry(): Promise<void>;
 }
 export interface IExtensionHostExitInfo {
 	code: number;
+
 	signal: string;
 }
 export interface IRemoteAgentConnection {
 	readonly remoteAuthority: string;
+
 	readonly onReconnecting: Event<void>;
+
 	readonly onDidStateChange: Event<PersistentConnectionEvent>;
+
 	end(): Promise<void>;
+
 	dispose(): void;
 
 	getChannel<T extends IChannel>(channelName: string): T;
+
 	withChannel<T extends IChannel, R>(
 		channelName: string,
 		callback: (channel: T) => Promise<R>,
 	): Promise<R>;
+
 	registerChannel<T extends IServerChannel<RemoteAgentConnectionContext>>(
 		channelName: string,
 		channel: T,
@@ -86,26 +96,39 @@ export interface IRemoteAgentConnection {
 }
 export interface IRemoteConnectionLatencyMeasurement {
 	readonly initial: number | undefined;
+
 	readonly current: number;
+
 	readonly average: number;
+
 	readonly high: boolean;
 }
 export const remoteConnectionLatencyMeasurer = new (class {
 	readonly maxSampleCount = 5;
+
 	readonly sampleDelay = 2000;
+
 	readonly initial: number[] = [];
+
 	readonly maxInitialCount = 3;
+
 	readonly average: number[] = [];
+
 	readonly maxAverageCount = 100;
+
 	readonly highLatencyMultiple = 2;
+
 	readonly highLatencyMinThreshold = 500;
+
 	readonly highLatencyMaxThreshold = 1500;
+
 	lastMeasurement: IRemoteConnectionLatencyMeasurement | undefined =
 		undefined;
 
 	get latency() {
 		return this.lastMeasurement;
 	}
+
 	async measure(
 		remoteAgentService: IRemoteAgentService,
 	): Promise<IRemoteConnectionLatencyMeasurement | undefined> {
@@ -117,10 +140,12 @@ export const remoteConnectionLatencyMeasurer = new (class {
 			if (rtt === undefined) {
 				return undefined;
 			}
+
 			currentLatency = Math.min(
 				currentLatency,
 				rtt / 2 /* we want just one way, not round trip time */,
 			);
+
 			await timeout(this.sampleDelay);
 		}
 		// Keep track of average latency
@@ -157,15 +182,18 @@ export const remoteConnectionLatencyMeasurer = new (class {
 				if (typeof initialLatency === "undefined") {
 					return false;
 				}
+
 				if (currentLatency > this.highLatencyMaxThreshold) {
 					return true;
 				}
+
 				if (
 					currentLatency > this.highLatencyMinThreshold &&
 					currentLatency > initialLatency * this.highLatencyMultiple
 				) {
 					return true;
 				}
+
 				return false;
 			})(),
 		};

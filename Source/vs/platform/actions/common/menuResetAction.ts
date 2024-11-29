@@ -17,8 +17,10 @@ export class MenuHiddenStatesReset extends Action2 {
 			f1: true,
 		});
 	}
+
 	run(accessor: ServicesAccessor): void {
 		accessor.get(IMenuService).resetHiddenStates();
+
 		accessor.get(ILogService).info("did RESET all menu hidden states");
 	}
 }

@@ -24,6 +24,7 @@ export class NewFilePathGenerator {
 	): Promise<
 		| {
 				readonly uri: vscode.Uri;
+
 				readonly overwrite: boolean;
 		  }
 		| undefined
@@ -37,12 +38,14 @@ export class NewFilePathGenerator {
 		const ext = Utils.extname(desiredPath);
 
 		let baseName = Utils.basename(desiredPath);
+
 		baseName = baseName.slice(0, baseName.length - ext.length);
 
 		for (let i = 0; ; ++i) {
 			if (token.isCancellationRequested) {
 				return undefined;
 			}
+
 			const name = i === 0 ? baseName : `${baseName}-${i}`;
 
 			const uri = vscode.Uri.joinPath(root, name + ext);
@@ -69,6 +72,7 @@ export class NewFilePathGenerator {
 			}
 		}
 	}
+
 	private _wasPathAlreadyUsed(uri: vscode.Uri) {
 		return this._usedPaths.has(uri.toString());
 	}

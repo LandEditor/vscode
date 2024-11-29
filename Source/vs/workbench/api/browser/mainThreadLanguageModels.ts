@@ -57,15 +57,20 @@ import {
 @extHostNamedCustomer(MainContext.MainThreadLanguageModels)
 export class MainThreadLanguageModels implements MainThreadLanguageModelsShape {
 	private readonly _proxy: ExtHostLanguageModelsShape;
+
 	private readonly _store = new DisposableStore();
+
 	private readonly _providerRegistrations = new DisposableMap<number>();
+
 	private readonly _pendingProgress = new Map<
 		number,
 		{
 			defer: DeferredPromise<any>;
+
 			stream: AsyncIterableSource<IChatResponseFragment>;
 		}
 	>();
+
 	private readonly _ignoredFileProviderRegistrations =
 		new DisposableMap<number>();
 
@@ -89,12 +94,14 @@ export class MainThreadLanguageModels implements MainThreadLanguageModelsShape {
 		this._proxy = extHostContext.getProxy(
 			ExtHostContext.ExtHostChatProvider,
 		);
+
 		this._proxy.$acceptChatModelMetadata({
 			added: _chatProviderService.getLanguageModelIds().map((id) => ({
 				identifier: id,
 				metadata: _chatProviderService.lookupLanguageModel(id)!,
 			})),
 		});
+
 		this._store.add(
 			_chatProviderService.onDidChangeLanguageModels(
 				this._proxy.$acceptChatModelMetadata,
@@ -102,9 +109,12 @@ export class MainThreadLanguageModels implements MainThreadLanguageModelsShape {
 			),
 		);
 	}
+
 	dispose(): void {
 		this._providerRegistrations.dispose();
+
 		this._ignoredFileProviderRegistrations.dispose();
+
 		this._store.dispose();
 	}
 	$registerLanguageModelProvider(
@@ -113,6 +123,7 @@ export class MainThreadLanguageModels implements MainThreadLanguageModelsShape {
 		metadata: ILanguageModelChatMetadata,
 	): void {
 		const dipsosables = new DisposableStore();
+
 		dipsosables.add(
 			this._chatProviderService.registerLanguageModelChat(identifier, {
 				metadata,
@@ -126,6 +137,7 @@ export class MainThreadLanguageModels implements MainThreadLanguageModelsShape {
 
 					try {
 						this._pendingProgress.set(requestId, { defer, stream });
+
 						await this._proxy.$startChatRequest(
 							handle,
 							requestId,
@@ -139,6 +151,7 @@ export class MainThreadLanguageModels implements MainThreadLanguageModelsShape {
 
 						throw err;
 					}
+
 					return {
 						result: defer.p,
 						stream: stream.asyncIterable,
@@ -158,13 +171,16 @@ export class MainThreadLanguageModels implements MainThreadLanguageModelsShape {
 				),
 			);
 		}
+
 		this._providerRegistrations.set(handle, dipsosables);
 	}
+
 	async $reportResponsePart(
 		requestId: number,
 		chunk: IChatResponseFragment,
 	): Promise<void> {
 		const data = this._pendingProgress.get(requestId);
+
 		this._logService.trace(
 			"[LM] report response PART",
 			Boolean(data),
@@ -176,11 +192,13 @@ export class MainThreadLanguageModels implements MainThreadLanguageModelsShape {
 			data.stream.emitOne(chunk);
 		}
 	}
+
 	async $reportResponseDone(
 		requestId: number,
 		err: SerializedError | undefined,
 	): Promise<void> {
 		const data = this._pendingProgress.get(requestId);
+
 		this._logService.trace(
 			"[LM] report response DONE",
 			Boolean(data),
@@ -193,10 +211,13 @@ export class MainThreadLanguageModels implements MainThreadLanguageModelsShape {
 
 			if (err) {
 				const error = transformErrorFromSerialization(err);
+
 				data.stream.reject(error);
+
 				data.defer.error(error);
 			} else {
 				data.stream.resolve();
+
 				data.defer.complete(undefined);
 			}
 		}
@@ -220,6 +241,7 @@ export class MainThreadLanguageModels implements MainThreadLanguageModelsShape {
 			tokenCount,
 		);
 	}
+
 	async $tryStartChatRequest(
 		extension: ExtensionIdentifier,
 		providerId: string,
@@ -254,8 +276,10 @@ export class MainThreadLanguageModels implements MainThreadLanguageModelsShape {
 						requestId,
 						part,
 					);
+
 					await this._proxy.$acceptResponsePart(requestId, part);
 				}
+
 				this._logService.trace(
 					"[CHAT] request DONE",
 					extension.value,
@@ -268,6 +292,7 @@ export class MainThreadLanguageModels implements MainThreadLanguageModelsShape {
 					extension.value,
 					requestId,
 				);
+
 				this._proxy.$acceptResponseDone(
 					requestId,
 					transformErrorForSerialization(err),
@@ -282,6 +307,7 @@ export class MainThreadLanguageModels implements MainThreadLanguageModelsShape {
 					extension.value,
 					requestId,
 				);
+
 				this._proxy.$acceptResponseDone(requestId, undefined);
 			},
 			(err) => {
@@ -291,6 +317,7 @@ export class MainThreadLanguageModels implements MainThreadLanguageModelsShape {
 					extension.value,
 					requestId,
 				);
+
 				this._proxy.$acceptResponseDone(
 					requestId,
 					transformErrorForSerialization(err),
@@ -309,10 +336,12 @@ export class MainThreadLanguageModels implements MainThreadLanguageModelsShape {
 			token,
 		);
 	}
+
 	private _registerAuthenticationProvider(
 		extension: ExtensionIdentifier,
 		auth: {
 			providerLabel: string;
+
 			accountLabel?: string | undefined;
 		},
 	): IDisposable {
@@ -326,11 +355,13 @@ export class MainThreadLanguageModels implements MainThreadLanguageModelsShape {
 		) {
 			return Disposable.None;
 		}
+
 		const accountLabel =
 			auth.accountLabel ??
 			localize("languageModelsAccountId", "Language Models");
 
 		const disposables = new DisposableStore();
+
 		this._authenticationService.registerAuthenticationProvider(
 			authProviderId,
 			new LanguageModelAccessAuthProvider(
@@ -339,6 +370,7 @@ export class MainThreadLanguageModels implements MainThreadLanguageModelsShape {
 				accountLabel,
 			),
 		);
+
 		disposables.add(
 			toDisposable(() => {
 				this._authenticationService.unregisterAuthenticationProvider(
@@ -346,6 +378,7 @@ export class MainThreadLanguageModels implements MainThreadLanguageModelsShape {
 				);
 			}),
 		);
+
 		disposables.add(
 			this._authenticationAccessService.onDidChangeExtensionSessionAccess(
 				async (e) => {
@@ -370,6 +403,7 @@ export class MainThreadLanguageModels implements MainThreadLanguageModelsShape {
 							});
 						}
 					}
+
 					this._proxy.$updateModelAccesslist(accessList);
 				},
 			),
@@ -402,8 +436,10 @@ class LanguageModelAccessAuthProvider implements IAuthenticationProvider {
 	// Important for updating the UI
 	private _onDidChangeSessions: Emitter<AuthenticationSessionsChangeEvent> =
 		new Emitter<AuthenticationSessionsChangeEvent>();
+
 	onDidChangeSessions: Event<AuthenticationSessionsChangeEvent> =
 		this._onDidChangeSessions.event;
+
 	private _session: AuthenticationSession | undefined;
 
 	constructor(
@@ -411,6 +447,7 @@ class LanguageModelAccessAuthProvider implements IAuthenticationProvider {
 		readonly label: string,
 		private readonly _accountLabel: string,
 	) {}
+
 	async getSessions(
 		scopes?: string[] | undefined,
 	): Promise<readonly AuthenticationSession[]> {
@@ -419,13 +456,17 @@ class LanguageModelAccessAuthProvider implements IAuthenticationProvider {
 		if (scopes === undefined && !this._session) {
 			return [];
 		}
+
 		if (this._session) {
 			return [this._session];
 		}
+
 		return [await this.createSession(scopes || [])];
 	}
+
 	async createSession(scopes: string[]): Promise<AuthenticationSession> {
 		this._session = this._createFakeSession(scopes);
+
 		this._onDidChangeSessions.fire({
 			added: [this._session],
 			changed: [],
@@ -434,6 +475,7 @@ class LanguageModelAccessAuthProvider implements IAuthenticationProvider {
 
 		return this._session;
 	}
+
 	removeSession(sessionId: string): Promise<void> {
 		if (this._session) {
 			this._onDidChangeSessions.fire({
@@ -441,10 +483,13 @@ class LanguageModelAccessAuthProvider implements IAuthenticationProvider {
 				changed: [],
 				removed: [this._session!],
 			});
+
 			this._session = undefined;
 		}
+
 		return Promise.resolve();
 	}
+
 	private _createFakeSession(scopes: string[]): AuthenticationSession {
 		return {
 			id: "fake-session",

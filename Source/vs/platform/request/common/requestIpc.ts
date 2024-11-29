@@ -23,6 +23,7 @@ import { AuthInfo, Credentials, IRequestService } from "./request.js";
 type RequestResponse = [
 	{
 		headers: IHeaders;
+
 		statusCode?: number;
 	},
 	VSBuffer,
@@ -30,9 +31,11 @@ type RequestResponse = [
 
 export class RequestChannel implements IServerChannel {
 	constructor(private readonly service: IRequestService) {}
+
 	listen(context: any, event: string): Event<any> {
 		throw new Error("Invalid listen");
 	}
+
 	call(
 		context: any,
 		command: string,
@@ -67,6 +70,7 @@ export class RequestChannel implements IServerChannel {
 			case "loadCertificates":
 				return this.service.loadCertificates();
 		}
+
 		throw new Error("Invalid call");
 	}
 }
@@ -74,6 +78,7 @@ export class RequestChannelClient implements IRequestService {
 	declare readonly _serviceBrand: undefined;
 
 	constructor(private readonly channel: IChannel) {}
+
 	async request(
 		options: IRequestOptions,
 		token: CancellationToken,
@@ -86,20 +91,24 @@ export class RequestChannelClient implements IRequestService {
 
 		return { res, stream: bufferToStream(buffer) };
 	}
+
 	async resolveProxy(url: string): Promise<string | undefined> {
 		return this.channel.call<string | undefined>("resolveProxy", [url]);
 	}
+
 	async lookupAuthorization(
 		authInfo: AuthInfo,
 	): Promise<Credentials | undefined> {
 		return this.channel.call<
 			| {
 					username: string;
+
 					password: string;
 			  }
 			| undefined
 		>("lookupAuthorization", [authInfo]);
 	}
+
 	async lookupKerberosAuthorization(
 		url: string,
 	): Promise<string | undefined> {
@@ -108,6 +117,7 @@ export class RequestChannelClient implements IRequestService {
 			[url],
 		);
 	}
+
 	async loadCertificates(): Promise<string[]> {
 		return this.channel.call<string[]>("loadCertificates");
 	}

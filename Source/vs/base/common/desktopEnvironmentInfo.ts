@@ -45,8 +45,10 @@ export function getDesktopEnvironment(): DesktopEnvironment {
 					) {
 						return DesktopEnvironment.GNOME;
 					}
+
 					return DesktopEnvironment.UNITY;
 				}
+
 				case "Deepin":
 					return DesktopEnvironment.DEEPIN;
 
@@ -62,11 +64,14 @@ export function getDesktopEnvironment(): DesktopEnvironment {
 					if (kdeSession === "5") {
 						return DesktopEnvironment.KDE5;
 					}
+
 					if (kdeSession === "6") {
 						return DesktopEnvironment.KDE6;
 					}
+
 					return DesktopEnvironment.KDE4;
 				}
+
 				case "Pantheon":
 					return DesktopEnvironment.PANTHEON;
 
@@ -81,6 +86,7 @@ export function getDesktopEnvironment(): DesktopEnvironment {
 			}
 		}
 	}
+
 	const desktopSession = env["DESKTOP_SESSION"];
 
 	if (desktopSession) {
@@ -100,6 +106,7 @@ export function getDesktopEnvironment(): DesktopEnvironment {
 				if (kKDESessionEnvVar in env) {
 					return DesktopEnvironment.KDE4;
 				}
+
 				return DesktopEnvironment.KDE3;
 
 			case "xfce":
@@ -110,14 +117,18 @@ export function getDesktopEnvironment(): DesktopEnvironment {
 				return DesktopEnvironment.UKUI;
 		}
 	}
+
 	if ("GNOME_DESKTOP_SESSION_ID" in env) {
 		return DesktopEnvironment.GNOME;
 	}
+
 	if ("KDE_FULL_SESSION" in env) {
 		if (kKDESessionEnvVar in env) {
 			return DesktopEnvironment.KDE4;
 		}
+
 		return DesktopEnvironment.KDE3;
 	}
+
 	return DesktopEnvironment.UNKNOWN;
 }

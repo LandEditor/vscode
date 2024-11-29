@@ -19,9 +19,12 @@ export class ExtHostConsoleForwarder extends AbstractExtHostConsoleForwarder {
 		initData: IExtHostInitDataService,
 	) {
 		super(extHostRpc, initData);
+
 		this._wrapStream("stderr", "error");
+
 		this._wrapStream("stdout", "log");
 	}
+
 	protected override _nativeConsoleLogMessage(
 		method: "log" | "info" | "warn" | "error" | "debug",
 		original: (...args: any[]) => void,
@@ -31,10 +34,15 @@ export class ExtHostConsoleForwarder extends AbstractExtHostConsoleForwarder {
 			method === "error" || method === "warn"
 				? process.stderr
 				: process.stdout;
+
 		this._isMakingConsoleCall = true;
+
 		stream.write(`\n${NativeLogMarkers.Start}\n`);
+
 		original.apply(console, args as any);
+
 		stream.write(`\n${NativeLogMarkers.End}\n`);
+
 		this._isMakingConsoleCall = false;
 	}
 	/**
@@ -52,6 +60,7 @@ export class ExtHostConsoleForwarder extends AbstractExtHostConsoleForwarder {
 		const original = stream.write;
 
 		let buf = "";
+
 		Object.defineProperty(stream, "write", {
 			set: () => {},
 			get:
@@ -71,9 +80,11 @@ export class ExtHostConsoleForwarder extends AbstractExtHostConsoleForwarder {
 
 						if (eol !== -1) {
 							console[severity](buf.slice(0, eol));
+
 							buf = buf.slice(eol + 1);
 						}
 					}
+
 					original.call(stream, chunk, encoding, callback);
 				},
 		});

@@ -34,6 +34,7 @@ async function initMicrosoftSovereignCloudAuthProvider(
 	if (!environment) {
 		return undefined;
 	}
+
 	if (environment === "custom") {
 		const customEnv = workspace
 			.getConfiguration("microsoft-sovereign-cloud")
@@ -53,8 +54,10 @@ async function initMicrosoftSovereignCloudAuthProvider(
 					"microsoft-sovereign-cloud.customEnvironment",
 				);
 			}
+
 			return undefined;
 		}
+
 		try {
 			Environment.add(customEnv);
 		} catch (e) {
@@ -72,12 +75,15 @@ async function initMicrosoftSovereignCloudAuthProvider(
 					"microsoft-sovereign-cloud.customEnvironment",
 				);
 			}
+
 			return undefined;
 		}
+
 		authProviderName = customEnv.name;
 	} else {
 		authProviderName = environment;
 	}
+
 	const env = Environment.get(authProviderName);
 
 	if (!env) {
@@ -91,6 +97,7 @@ async function initMicrosoftSovereignCloudAuthProvider(
 
 		return undefined;
 	}
+
 	const authProvider = new MsalAuthProvider(
 		context,
 		new MicrosoftSovereignCloudAuthenticationTelemetryReporter(
@@ -103,6 +110,7 @@ async function initMicrosoftSovereignCloudAuthProvider(
 		uriHandler,
 		env,
 	);
+
 	await authProvider.initialize();
 
 	const disposable = authentication.registerAuthenticationProvider(
@@ -111,6 +119,7 @@ async function initMicrosoftSovereignCloudAuthProvider(
 		authProvider,
 		{ supportsMultipleAccounts: true },
 	);
+
 	context.subscriptions.push(disposable);
 
 	return disposable;
@@ -120,6 +129,7 @@ export async function activate(
 	mainTelemetryReporter: MicrosoftAuthenticationTelemetryReporter,
 ) {
 	const uriHandler = new UriEventHandler();
+
 	context.subscriptions.push(uriHandler);
 
 	const authProvider = new MsalAuthProvider(
@@ -128,7 +138,9 @@ export async function activate(
 		Logger,
 		uriHandler,
 	);
+
 	await authProvider.initialize();
+
 	context.subscriptions.push(
 		authentication.registerAuthenticationProvider(
 			"microsoft",
@@ -140,10 +152,12 @@ export async function activate(
 
 	let microsoftSovereignCloudAuthProviderDisposable =
 		await initMicrosoftSovereignCloudAuthProvider(context, uriHandler);
+
 	context.subscriptions.push(
 		workspace.onDidChangeConfiguration(async (e) => {
 			if (e.affectsConfiguration("microsoft-sovereign-cloud")) {
 				microsoftSovereignCloudAuthProviderDisposable?.dispose();
+
 				microsoftSovereignCloudAuthProviderDisposable =
 					await initMicrosoftSovereignCloudAuthProvider(
 						context,

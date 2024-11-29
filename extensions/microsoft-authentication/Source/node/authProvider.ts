@@ -38,7 +38,9 @@ const MSA_PASSTHRU_TID = "f8cdef31-a31e-4b4a-93e4-5f571e91255a";
 
 export class MsalAuthProvider implements AuthenticationProvider {
 	private readonly _disposables: { dispose(): void }[];
+
 	private readonly _publicClientManager: CachedPublicClientApplicationManager;
+
 	private readonly _eventBufferer = new EventBufferer();
 
 	/**
@@ -68,6 +70,7 @@ export class MsalAuthProvider implements AuthenticationProvider {
 		private readonly _env: Environment = Environment.AzureCloud,
 	) {
 		this._disposables = _context.subscriptions;
+
 		this._publicClientManager = new CachedPublicClientApplicationManager(
 			_context.globalState,
 			_context.secrets,
@@ -81,6 +84,7 @@ export class MsalAuthProvider implements AuthenticationProvider {
 				if (!last) {
 					return newEvent;
 				}
+
 				const mergedEvent = {
 					added: [...(last.added ?? []), ...(newEvent.added ?? [])],
 					deleted: [
@@ -128,6 +132,7 @@ export class MsalAuthProvider implements AuthenticationProvider {
 				changed: new Array<AccountInfo>(),
 			},
 		)((e) => this._handleAccountChange(e));
+
 		this._disposables.push(
 			this._onDidChangeSessionsEmitter,
 			this._publicClientManager,
@@ -150,6 +155,7 @@ export class MsalAuthProvider implements AuthenticationProvider {
 
 			return item.endpoint === this._env.activeDirectoryEndpointUrl;
 		});
+
 		this._context.globalState.update("msalMigration", true);
 
 		const clientTenantMap = new Map<
@@ -169,6 +175,7 @@ export class MsalAuthProvider implements AuthenticationProvider {
 					refreshTokens: [],
 				});
 			}
+
 			clientTenantMap.get(key)!.refreshTokens.push(session.refreshToken);
 		}
 
@@ -200,12 +207,14 @@ export class MsalAuthProvider implements AuthenticationProvider {
 				if (!account.idTokenClaims?.tid) {
 					continue;
 				}
+
 				const tid = account.idTokenClaims.tid;
 
 				const type =
 					tid === MSA_TID || tid === MSA_PASSTHRU_TID
 						? MicrosoftAccountType.MSA
 						: MicrosoftAccountType.AAD;
+
 				this._telemetryReporter.sendAccountEvent([], type);
 			}
 		}
@@ -221,12 +230,15 @@ export class MsalAuthProvider implements AuthenticationProvider {
 		deleted,
 	}: {
 		added: AccountInfo[];
+
 		changed: AccountInfo[];
+
 		deleted: AccountInfo[];
 	}) {
 		this._logger.debug(
 			`[_handleAccountChange] added: ${added.length}, changed: ${changed.length}, deleted: ${deleted.length}`,
 		);
+
 		this._onDidChangeSessionsEmitter.fire({
 			added: added.map(this.sessionFromAccountInfo),
 			changed: changed.map(this.sessionFromAccountInfo),
@@ -264,13 +276,16 @@ export class MsalAuthProvider implements AuthenticationProvider {
 					if (allSessionsForAccounts.has(account.homeAccountId)) {
 						continue;
 					}
+
 					allSessionsForAccounts.set(
 						account.homeAccountId,
 						this.sessionFromAccountInfo(account),
 					);
 				}
 			}
+
 			const allSessions = Array.from(allSessionsForAccounts.values());
+
 			this._logger.info(
 				"[getSessions] [all]",
 				`returned ${allSessions.length} session(s)`,
@@ -290,6 +305,7 @@ export class MsalAuthProvider implements AuthenticationProvider {
 			scopeData.scopesToSend,
 			options?.account,
 		);
+
 		this._logger.info(
 			`[getSessions] [${scopeData.scopeStr}] returned ${sessions.length} session(s)`,
 		);
@@ -319,6 +335,7 @@ export class MsalAuthProvider implements AuthenticationProvider {
 
 		try {
 			const windowHandle = window.nativeHandle ? Buffer.from(window.nativeHandle) : undefined;
+
 			result = await cachedPca.acquireTokenInteractive({
 				openBrowser: async (url: string) => {
 					await env.openExternal(Uri.parse(url));
@@ -375,6 +392,7 @@ export class MsalAuthProvider implements AuthenticationProvider {
 
 			try {
 				const windowHandle = window.nativeHandle ? Buffer.from(window.nativeHandle) : undefined;
+
 				result = await cachedPca.acquireTokenInteractive({
 					openBrowser: (url: string) =>
 						loopbackClient.openBrowser(url),
@@ -403,7 +421,9 @@ export class MsalAuthProvider implements AuthenticationProvider {
 			result,
 			scopeData.originalScopes,
 		);
+
 		this._telemetryReporter.sendLoginEvent(session.scopes);
+
 		this._logger.info(
 			"[createSession]",
 			`[${scopeData.scopeStr}]`,
@@ -433,13 +453,16 @@ export class MsalAuthProvider implements AuthenticationProvider {
 			for (const account of accounts) {
 				if (account.homeAccountId === sessionId) {
 					this._telemetryReporter.sendLogoutEvent();
+
 					promises.push(cachedPca.removeAccount(account));
+
 					this._logger.info(
 						`[removeSession] [${sessionId}] [${cachedPca.clientId}] [${cachedPca.authority}] removing session...`,
 					);
 				}
 			}
 		}
+
 		if (!promises.length) {
 			this._logger.info(
 				"[removeSession]",
@@ -449,11 +472,13 @@ export class MsalAuthProvider implements AuthenticationProvider {
 
 			return;
 		}
+
 		const results = await Promise.allSettled(promises);
 
 		for (const result of results) {
 			if (result.status === "rejected") {
 				this._telemetryReporter.sendLogoutFailedEvent();
+
 				this._logger.error(
 					"[removeSession]",
 					sessionId,
@@ -511,6 +536,7 @@ export class MsalAuthProvider implements AuthenticationProvider {
 						scopes: scopesToSend,
 						redirectUri,
 					});
+
 					sessions.push(
 						this.sessionFromAuthenticationResult(
 							result,
@@ -523,6 +549,7 @@ export class MsalAuthProvider implements AuthenticationProvider {
 					continue;
 				}
 			}
+
 			return sessions;
 		});
 	}

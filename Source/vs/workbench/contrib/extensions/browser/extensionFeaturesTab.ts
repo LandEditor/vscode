@@ -82,6 +82,7 @@ class RuntimeStatusMarkdownRenderer
 	implements IExtensionFeatureMarkdownRenderer
 {
 	static readonly ID = "runtimeStatus";
+
 	readonly type = "markdown";
 
 	constructor(
@@ -92,6 +93,7 @@ class RuntimeStatusMarkdownRenderer
 	) {
 		super();
 	}
+
 	shouldRender(manifest: IExtensionManifest): boolean {
 		const extensionId = new ExtensionIdentifier(
 			getExtensionId(manifest.publisher, manifest.name),
@@ -104,8 +106,10 @@ class RuntimeStatusMarkdownRenderer
 		) {
 			return false;
 		}
+
 		return !!manifest.main || !!manifest.browser;
 	}
+
 	render(manifest: IExtensionManifest): IRenderedData<IMarkdownString> {
 		const disposables = new DisposableStore();
 
@@ -114,6 +118,7 @@ class RuntimeStatusMarkdownRenderer
 		);
 
 		const emitter = disposables.add(new Emitter<IMarkdownString>());
+
 		disposables.add(
 			this.extensionService.onDidChangeExtensionsStatus((e) => {
 				if (
@@ -125,6 +130,7 @@ class RuntimeStatusMarkdownRenderer
 				}
 			}),
 		);
+
 		disposables.add(
 			this.extensionFeaturesManagementService.onDidChangeAccessData((e) =>
 				emitter.fire(this.getRuntimeStatusData(manifest)),
@@ -137,6 +143,7 @@ class RuntimeStatusMarkdownRenderer
 			dispose: () => disposables.dispose(),
 		};
 	}
+
 	private getRuntimeStatusData(
 		manifest: IExtensionManifest,
 	): IMarkdownString {
@@ -171,6 +178,7 @@ class RuntimeStatusMarkdownRenderer
 			} else {
 				data.appendMarkdown("Not yet activated");
 			}
+
 			if (status.runtimeErrors.length) {
 				data.appendMarkdown(
 					`\n ### ${localize("uncaught errors", "Uncaught Errors ({0})", status.runtimeErrors.length)}\n`,
@@ -182,6 +190,7 @@ class RuntimeStatusMarkdownRenderer
 					);
 				}
 			}
+
 			if (status.messages.length) {
 				data.appendMarkdown(
 					`\n ### ${localize("messaages", "Messages ({0})", status.messages.length)}\n`,
@@ -194,6 +203,7 @@ class RuntimeStatusMarkdownRenderer
 				}
 			}
 		}
+
 		const features = Registry.as<IExtensionFeaturesRegistry>(
 			Extensions.ExtensionFeaturesRegistry,
 		).getExtensionFeatures();
@@ -216,27 +226,32 @@ class RuntimeStatusMarkdownRenderer
 							`$(${errorIcon.id}) ${status.message}\n\n`,
 						);
 					}
+
 					if (status?.severity === Severity.Warning) {
 						data.appendMarkdown(
 							`$(${warningIcon.id}) ${status.message}\n\n`,
 						);
 					}
 				}
+
 				if (accessData?.totalCount) {
 					if (accessData.current) {
 						data.appendMarkdown(
 							`${localize("last request", "Last Request: `{0}`", fromNow(accessData.current.lastAccessed, true, true))}\n\n`,
 						);
+
 						data.appendMarkdown(
 							`${localize("requests count session", "Requests (Session) : `{0}`", accessData.current.count)}\n\n`,
 						);
 					}
+
 					data.appendMarkdown(
 						`${localize("requests count total", "Requests (Overall): `{0}`", accessData.totalCount)}\n\n`,
 					);
 				}
 			}
 		}
+
 		return data;
 	}
 }
@@ -255,14 +270,19 @@ const runtimeStatusFeature = {
 
 export class ExtensionFeaturesTab extends Themable {
 	readonly domNode: HTMLElement;
+
 	private readonly featureView = this._register(
 		new MutableDisposable<ExtensionFeatureView>(),
 	);
+
 	private featureViewDimension?: {
 		height?: number;
+
 		width?: number;
 	};
+
 	private readonly layoutParticipants: ILayoutParticipant[] = [];
+
 	private readonly extensionId: ExtensionIdentifier;
 
 	constructor(
@@ -274,17 +294,22 @@ export class ExtensionFeaturesTab extends Themable {
 		private readonly instantiationService: IInstantiationService,
 	) {
 		super(themeService);
+
 		this.extensionId = new ExtensionIdentifier(
 			getExtensionId(manifest.publisher, manifest.name),
 		);
+
 		this.domNode = $("div.subcontent.feature-contributions");
+
 		this.create();
 	}
+
 	layout(height?: number, width?: number): void {
 		this.layoutParticipants.forEach((participant) =>
 			participant.layout(height, width),
 		);
 	}
+
 	private create(): void {
 		const features = this.getFeatures();
 
@@ -296,15 +321,18 @@ export class ExtensionFeaturesTab extends Themable {
 
 			return;
 		}
+
 		const splitView = this._register(
 			new SplitView<number>(this.domNode, {
 				orientation: Orientation.HORIZONTAL,
 				proportionalLayout: true,
 			}),
 		);
+
 		this.layoutParticipants.push({
 			layout: (height: number, width: number) => {
 				splitView.el.style.height = `${height - 14}px`;
+
 				splitView.layout(width);
 			},
 		});
@@ -314,9 +342,11 @@ export class ExtensionFeaturesTab extends Themable {
 		const list = this._register(
 			this.createFeaturesList(featuresListContainer),
 		);
+
 		list.splice(0, list.length, features);
 
 		const featureViewContainer = $(".feature-view-container");
+
 		this._register(
 			list.onDidChangeSelection((e) => {
 				const feature = e.elements[0];
@@ -330,7 +360,9 @@ export class ExtensionFeaturesTab extends Themable {
 		const index = this.feature
 			? features.findIndex((f) => f.id === this.feature)
 			: 0;
+
 		list.setSelection([index === -1 ? 0 : index]);
+
 		splitView.addView(
 			{
 				onDidChange: Event.None,
@@ -339,6 +371,7 @@ export class ExtensionFeaturesTab extends Themable {
 				maximumSize: Number.POSITIVE_INFINITY,
 				layout: (width, _, height) => {
 					featuresListContainer.style.width = `${width}px`;
+
 					list.layout(height, width);
 				},
 			},
@@ -346,6 +379,7 @@ export class ExtensionFeaturesTab extends Themable {
 			undefined,
 			true,
 		);
+
 		splitView.addView(
 			{
 				onDidChange: Event.None,
@@ -354,7 +388,9 @@ export class ExtensionFeaturesTab extends Themable {
 				maximumSize: Number.POSITIVE_INFINITY,
 				layout: (width, _, height) => {
 					featureViewContainer.style.width = `${width}px`;
+
 					this.featureViewDimension = { height, width };
+
 					this.layoutFeatureView();
 				},
 			},
@@ -362,10 +398,12 @@ export class ExtensionFeaturesTab extends Themable {
 			undefined,
 			true,
 		);
+
 		splitView.style({
 			separatorBorder: this.theme.getColor(PANEL_SECTION_BORDER)!,
 		});
 	}
+
 	private createFeaturesList(
 		container: HTMLElement,
 	): WorkbenchList<IExtensionFeatureDescriptor> {
@@ -405,12 +443,14 @@ export class ExtensionFeaturesTab extends Themable {
 
 		return list;
 	}
+
 	private layoutFeatureView(): void {
 		this.featureView.value?.layout(
 			this.featureViewDimension?.height,
 			this.featureViewDimension?.width,
 		);
 	}
+
 	private showFeatureView(
 		feature: IExtensionFeatureDescriptor,
 		container: HTMLElement,
@@ -418,16 +458,21 @@ export class ExtensionFeaturesTab extends Themable {
 		if (this.featureView.value?.feature.id === feature.id) {
 			return;
 		}
+
 		clearNode(container);
+
 		this.featureView.value = this.instantiationService.createInstance(
 			ExtensionFeatureView,
 			this.extensionId,
 			this.manifest,
 			feature,
 		);
+
 		container.appendChild(this.featureView.value.domNode);
+
 		this.layoutFeatureView();
 	}
+
 	private getFeatures(): IExtensionFeatureDescriptor[] {
 		const features = Registry.as<IExtensionFeaturesRegistry>(
 			Extensions.ExtensionFeaturesRegistry,
@@ -437,6 +482,7 @@ export class ExtensionFeaturesTab extends Themable {
 				const renderer = this.getRenderer(feature);
 
 				const shouldRender = renderer?.shouldRender(this.manifest);
+
 				renderer?.dispose();
 
 				return shouldRender;
@@ -448,10 +494,12 @@ export class ExtensionFeaturesTab extends Themable {
 		if (renderer?.shouldRender(this.manifest)) {
 			features.splice(0, 0, runtimeStatusFeature);
 		}
+
 		renderer?.dispose();
 
 		return features;
 	}
+
 	private getRenderer(
 		feature: IExtensionFeatureDescriptor,
 	): IExtensionFeatureRenderer | undefined {
@@ -462,8 +510,11 @@ export class ExtensionFeaturesTab extends Themable {
 }
 interface IExtensionFeatureItemTemplateData {
 	readonly label: HTMLElement;
+
 	readonly disabledElement: HTMLElement;
+
 	readonly statusElement: HTMLElement;
+
 	readonly disposables: DisposableStore;
 }
 class ExtensionFeatureItemDelegate
@@ -472,6 +523,7 @@ class ExtensionFeatureItemDelegate
 	getHeight() {
 		return 22;
 	}
+
 	getTemplateId() {
 		return "extensionFeatureDescriptor";
 	}
@@ -490,6 +542,7 @@ class ExtensionFeatureItemRenderer
 		@IExtensionFeaturesManagementService
 		private readonly extensionFeaturesManagementService: IExtensionFeaturesManagementService,
 	) {}
+
 	renderTemplate(container: HTMLElement): IExtensionFeatureItemTemplateData {
 		container.classList.add("extension-feature-list-item");
 
@@ -499,6 +552,7 @@ class ExtensionFeatureItemRenderer
 			container,
 			$(".extension-feature-disabled-label"),
 		);
+
 		disabledElement.textContent = localize("revoked", "No Access");
 
 		const statusElement = append(container, $(".extension-feature-status"));
@@ -510,13 +564,16 @@ class ExtensionFeatureItemRenderer
 			disposables: new DisposableStore(),
 		};
 	}
+
 	renderElement(
 		element: IExtensionFeatureDescriptor,
 		index: number,
 		templateData: IExtensionFeatureItemTemplateData,
 	) {
 		templateData.disposables.clear();
+
 		templateData.label.textContent = element.label;
+
 		templateData.disabledElement.style.display =
 			element.id === runtimeStatusFeature.id ||
 			this.extensionFeaturesManagementService.isEnabled(
@@ -525,6 +582,7 @@ class ExtensionFeatureItemRenderer
 			)
 				? "none"
 				: "inherit";
+
 		templateData.disposables.add(
 			this.extensionFeaturesManagementService.onDidChangeEnablement(
 				({ extension, featureId, enabled }) => {
@@ -554,12 +612,15 @@ class ExtensionFeatureItemRenderer
 
 			if (accessData?.current?.status) {
 				templateData.statusElement.style.display = "inherit";
+
 				templateData.statusElement.className = `${statusElementClassName} ${SeverityIcon.className(accessData.current.status.severity)}`;
 			} else {
 				templateData.statusElement.style.display = "none";
 			}
 		};
+
 		updateStatus();
+
 		templateData.disposables.add(
 			this.extensionFeaturesManagementService.onDidChangeAccessData(
 				({ extension, featureId }) => {
@@ -576,6 +637,7 @@ class ExtensionFeatureItemRenderer
 			),
 		);
 	}
+
 	disposeElement(
 		element: IExtensionFeatureDescriptor,
 		index: number,
@@ -584,12 +646,14 @@ class ExtensionFeatureItemRenderer
 	): void {
 		templateData.disposables.dispose();
 	}
+
 	disposeTemplate(templateData: IExtensionFeatureItemTemplateData) {
 		templateData.disposables.dispose();
 	}
 }
 class ExtensionFeatureView extends Disposable {
 	readonly domNode: HTMLElement;
+
 	private readonly layoutParticipants: ILayoutParticipant[] = [];
 
 	constructor(
@@ -606,20 +670,26 @@ class ExtensionFeatureView extends Disposable {
 		private readonly dialogService: IDialogService,
 	) {
 		super();
+
 		this.domNode = $(".extension-feature-content");
+
 		this.create(this.domNode);
 	}
+
 	private create(content: HTMLElement): void {
 		const header = append(content, $(".feature-header"));
 
 		const title = append(header, $(".feature-title"));
+
 		title.textContent = this.feature.label;
 
 		if (this.feature.access.canToggle) {
 			const actionsContainer = append(header, $(".feature-actions"));
 
 			const button = new Button(actionsContainer, defaultButtonStyles);
+
 			this.updateButtonLabel(button);
+
 			this._register(
 				this.extensionFeaturesManagementService.onDidChangeEnablement(
 					({ extension, featureId }) => {
@@ -635,6 +705,7 @@ class ExtensionFeatureView extends Disposable {
 					},
 				),
 			);
+
 			this._register(
 				button.onDidClick(async () => {
 					const enabled =
@@ -683,6 +754,7 @@ class ExtensionFeatureView extends Disposable {
 				}),
 			);
 		}
+
 		const body = append(content, $(".feature-body"));
 
 		const bodyContent = $(".feature-body-content");
@@ -690,16 +762,21 @@ class ExtensionFeatureView extends Disposable {
 		const scrollableContent = this._register(
 			new DomScrollableElement(bodyContent, {}),
 		);
+
 		append(body, scrollableContent.getDomNode());
+
 		this.layoutParticipants.push({
 			layout: () => scrollableContent.scanDomNode(),
 		});
+
 		scrollableContent.scanDomNode();
 
 		if (this.feature.description) {
 			const description = append(bodyContent, $(".feature-description"));
+
 			description.textContent = this.feature.description;
 		}
+
 		const accessData =
 			this.extensionFeaturesManagementService.getAccessData(
 				this.extensionId,
@@ -720,6 +797,7 @@ class ExtensionFeatureView extends Disposable {
 				),
 			);
 		}
+
 		const featureContentElement = append(
 			bodyContent,
 			$(".feature-content"),
@@ -749,6 +827,7 @@ class ExtensionFeatureView extends Disposable {
 			}
 		}
 	}
+
 	private updateButtonLabel(button: Button): void {
 		button.label = this.extensionFeaturesManagementService.isEnabled(
 			this.extensionId,
@@ -757,6 +836,7 @@ class ExtensionFeatureView extends Disposable {
 			? localize("revoke", "Revoke Access")
 			: localize("enable", "Allow Access");
 	}
+
 	private renderTableData(
 		container: HTMLElement,
 		renderer: IExtensionFeatureTableRenderer,
@@ -769,17 +849,21 @@ class ExtensionFeatureView extends Disposable {
 			this._register(
 				tableData.onDidChange((data) => {
 					clearNode(container);
+
 					tableDisposable.value = this.renderTable(data, container);
 				}),
 			);
 		}
+
 		tableDisposable.value = this.renderTable(tableData.data, container);
 	}
+
 	private renderTable(
 		tableData: ITableData,
 		container: HTMLElement,
 	): IDisposable {
 		const disposables = new DisposableStore();
+
 		append(
 			container,
 			$(
@@ -804,6 +888,7 @@ class ExtensionFeatureView extends Disposable {
 									$("p", undefined, rowData),
 								);
 							}
+
 							const data = Array.isArray(rowData)
 								? rowData
 								: [rowData];
@@ -817,10 +902,12 @@ class ExtensionFeatureView extends Disposable {
 
 										if (isMarkdownString(rowData)) {
 											const element = $("", undefined);
+
 											this.renderMarkdown(
 												rowData,
 												element,
 											);
+
 											result.push(element);
 										} else if (
 											item instanceof ResolvedKeybinding
@@ -834,7 +921,9 @@ class ExtensionFeatureView extends Disposable {
 													defaultKeybindingLabelStyles,
 												),
 											);
+
 											kbl.set(item);
+
 											result.push(element);
 										} else if (item instanceof Color) {
 											result.push(
@@ -851,6 +940,7 @@ class ExtensionFeatureView extends Disposable {
 													"",
 												),
 											);
+
 											result.push(
 												$(
 													"code",
@@ -861,6 +951,7 @@ class ExtensionFeatureView extends Disposable {
 												),
 											);
 										}
+
 										return result;
 									})
 									.flat(),
@@ -873,6 +964,7 @@ class ExtensionFeatureView extends Disposable {
 
 		return disposables;
 	}
+
 	private renderMarkdownAndTableData(
 		container: HTMLElement,
 		renderer: IExtensionFeatureMarkdownAndTableRenderer,
@@ -885,12 +977,15 @@ class ExtensionFeatureView extends Disposable {
 			this._register(
 				markdownAndTableData.onDidChange((data) => {
 					clearNode(container);
+
 					this.renderMarkdownAndTable(data, container);
 				}),
 			);
 		}
+
 		this.renderMarkdownAndTable(markdownAndTableData.data, container);
 	}
+
 	private renderMarkdownData(
 		container: HTMLElement,
 		renderer: IExtensionFeatureMarkdownRenderer,
@@ -903,12 +998,15 @@ class ExtensionFeatureView extends Disposable {
 			this._register(
 				markdownData.onDidChange((data) => {
 					clearNode(container);
+
 					this.renderMarkdown(data, container);
 				}),
 			);
 		}
+
 		this.renderMarkdown(markdownData.data, container);
 	}
+
 	private renderMarkdown(
 		markdown: IMarkdownString,
 		container: HTMLElement,
@@ -931,9 +1029,12 @@ class ExtensionFeatureView extends Disposable {
 				},
 			},
 		);
+
 		this._register(toDisposable(dispose));
+
 		append(container, element);
 	}
+
 	private renderMarkdownAndTable(
 		data: Array<IMarkdownString | ITableData>,
 		container: HTMLElement,
@@ -941,14 +1042,18 @@ class ExtensionFeatureView extends Disposable {
 		for (const markdownOrTable of data) {
 			if (isMarkdownString(markdownOrTable)) {
 				const element = $("", undefined);
+
 				this.renderMarkdown(markdownOrTable, element);
+
 				append(container, element);
 			} else {
 				const tableElement = append(container, $("table"));
+
 				this.renderTable(markdownOrTable, tableElement);
 			}
 		}
 	}
+
 	layout(height?: number, width?: number): void {
 		this.layoutParticipants.forEach((p) => p.layout(height, width));
 	}

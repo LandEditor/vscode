@@ -28,6 +28,7 @@ import { Point } from "./utils.js";
 
 export interface IInlineEditsIndicatorState {
 	editTopLeft: Point;
+
 	showAlways: boolean;
 }
 
@@ -109,23 +110,28 @@ export class InlineEditsIndicator extends Disposable {
 				const range = new OffsetRange(0, i.height - 30);
 
 				const topEdit = state.editTopLeft;
+
 				this._indicator.root.classList.toggle(
 					"top",
 					topEdit.y < range.start,
 				);
+
 				this._indicator.root.classList.toggle(
 					"bottom",
 					topEdit.y > range.endExclusive,
 				);
 
 				const showAnyway = state.showAlways;
+
 				this._indicator.root.classList.toggle("visible", showAnyway);
+
 				this._indicator.root.classList.toggle(
 					"contained",
 					range.contains(topEdit.y),
 				);
 
 				this._indicator.root.style.top = `${range.clip(topEdit.y)}px`;
+
 				this._indicator.root.style.right = `${i.minimap.minimapWidth + i.verticalScrollbarWidth}px`;
 			}),
 		);

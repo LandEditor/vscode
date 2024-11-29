@@ -77,26 +77,39 @@ const EXTENSION_LIST_ELEMENT_HEIGHT = 72;
 
 export interface IExtensionsViewState {
 	onFocus: Event<IExtension>;
+
 	onBlur: Event<IExtension>;
 }
 export interface ITemplateData {
 	root: HTMLElement;
+
 	element: HTMLElement;
+
 	icon: HTMLImageElement;
+
 	name: HTMLElement;
+
 	publisherDisplayName: HTMLElement;
+
 	description: HTMLElement;
+
 	installCount: HTMLElement;
+
 	ratings: HTMLElement;
+
 	extension: IExtension | null;
+
 	disposables: IDisposable[];
+
 	extensionDisposables: IDisposable[];
+
 	actionbar: ActionBar;
 }
 export class Delegate implements IListVirtualDelegate<IExtension> {
 	getHeight() {
 		return EXTENSION_LIST_ELEMENT_HEIGHT;
 	}
+
 	getTemplateId() {
 		return "extension";
 	}
@@ -124,9 +137,11 @@ export class Renderer implements IPagedRenderer<IExtension, ITemplateData> {
 		@IContextMenuService
 		private readonly contextMenuService: IContextMenuService,
 	) {}
+
 	get templateId() {
 		return "extension";
 	}
+
 	renderTemplate(root: HTMLElement): ITemplateData {
 		const recommendationWidget = this.instantiationService.createInstance(
 			RecommendationWidget,
@@ -220,14 +235,18 @@ export class Renderer implements IPagedRenderer<IExtension, ITemplateData> {
 						this.contextMenuService,
 					);
 				}
+
 				if (action instanceof DropDownExtensionAction) {
 					return action.createActionViewItem(options);
 				}
+
 				return undefined;
 			},
 			focusOnlyEnabledItems: true,
 		});
+
 		actionbar.setFocusable(false);
+
 		actionbar.onDidRun(
 			({ error }) => error && this.notificationService.error(error),
 		);
@@ -301,6 +320,7 @@ export class Renderer implements IPagedRenderer<IExtension, ITemplateData> {
 				...actions,
 				...widgets,
 			]);
+
 		actionbar.push(actions, { icon: true, label: true });
 
 		const disposable = combinedDisposable(
@@ -327,25 +347,38 @@ export class Renderer implements IPagedRenderer<IExtension, ITemplateData> {
 			},
 		};
 	}
+
 	renderPlaceholder(index: number, data: ITemplateData): void {
 		data.element.classList.add("loading");
+
 		data.root.removeAttribute("aria-label");
+
 		data.root.removeAttribute("data-extension-id");
+
 		data.extensionDisposables = dispose(data.extensionDisposables);
+
 		data.icon.src = "";
+
 		data.name.textContent = "";
+
 		data.description.textContent = "";
+
 		data.publisherDisplayName.textContent = "";
+
 		data.installCount.style.display = "none";
+
 		data.ratings.style.display = "none";
+
 		data.extension = null;
 	}
+
 	renderElement(
 		extension: IExtension,
 		index: number,
 		data: ITemplateData,
 	): void {
 		data.element.classList.remove("loading");
+
 		data.root.setAttribute("data-extension-id", extension.identifier.id);
 
 		if (
@@ -360,6 +393,7 @@ export class Renderer implements IPagedRenderer<IExtension, ITemplateData> {
 						areSameExtensions(e.identifier, extension.identifier),
 				)[0] || extension;
 		}
+
 		data.extensionDisposables = dispose(data.extensionDisposables);
 
 		const updateEnablement = () => {
@@ -369,15 +403,20 @@ export class Renderer implements IPagedRenderer<IExtension, ITemplateData> {
 				!this.extensionEnablementService.isEnabled(extension.local);
 
 			const deprecated = !!extension.deprecationInfo;
+
 			data.element.classList.toggle("deprecated", deprecated);
+
 			data.root.classList.toggle("disabled", disabled);
 		};
+
 		updateEnablement();
+
 		this.extensionService.onDidChangeExtensions(
 			() => updateEnablement(),
 			this,
 			data.extensionDisposables,
 		);
+
 		data.extensionDisposables.push(
 			addDisposableListener(
 				data.icon,
@@ -386,15 +425,19 @@ export class Renderer implements IPagedRenderer<IExtension, ITemplateData> {
 				{ once: true },
 			),
 		);
+
 		data.icon.src = extension.iconUrl;
 
 		if (!data.icon.complete) {
 			data.icon.style.visibility = "hidden";
+
 			data.icon.onload = () => (data.icon.style.visibility = "inherit");
 		} else {
 			data.icon.style.visibility = "inherit";
 		}
+
 		data.name.textContent = extension.displayName;
+
 		data.description.textContent = extension.description;
 
 		const updatePublisher = () => {
@@ -404,13 +447,18 @@ export class Renderer implements IPagedRenderer<IExtension, ITemplateData> {
 					? extension.publisherDisplayName
 					: "";
 		};
+
 		updatePublisher();
+
 		Event.filter(
 			this.extensionsWorkbenchService.onChange,
 			(e) => !!e && areSameExtensions(e.identifier, extension.identifier),
 		)(() => updatePublisher(), this, data.extensionDisposables);
+
 		data.installCount.style.display = "";
+
 		data.ratings.style.display = "";
+
 		data.extension = extension;
 
 		if (
@@ -424,6 +472,7 @@ export class Renderer implements IPagedRenderer<IExtension, ITemplateData> {
 					.map((name) => name[0].toLocaleUpperCase() + name.slice(1))
 					.join(", ");
 		}
+
 		this.extensionViewState.onFocus(
 			(e) => {
 				if (areSameExtensions(extension.identifier, e.identifier)) {
@@ -433,6 +482,7 @@ export class Renderer implements IPagedRenderer<IExtension, ITemplateData> {
 			this,
 			data.extensionDisposables,
 		);
+
 		this.extensionViewState.onBlur(
 			(e) => {
 				if (areSameExtensions(extension.identifier, e.identifier)) {
@@ -443,6 +493,7 @@ export class Renderer implements IPagedRenderer<IExtension, ITemplateData> {
 			data.extensionDisposables,
 		);
 	}
+
 	disposeElement(
 		extension: IExtension,
 		index: number,
@@ -450,8 +501,10 @@ export class Renderer implements IPagedRenderer<IExtension, ITemplateData> {
 	): void {
 		data.extensionDisposables = dispose(data.extensionDisposables);
 	}
+
 	disposeTemplate(data: ITemplateData): void {
 		data.extensionDisposables = dispose(data.extensionDisposables);
+
 		data.disposables = dispose(data.disposables);
 	}
 }
@@ -466,6 +519,7 @@ registerThemingParticipant(
 				verifiedPublisherIconColor
 					.transparent(0.5)
 					.makeOpaque(WORKBENCH_BACKGROUND(theme));
+
 			collector.addRule(
 				`.extensions-list .monaco-list .monaco-list-row.disabled:not(.selected) .author .verified-publisher ${ThemeIcon.asCSSSelector(verifiedPublisherThemeIcon)} { color: ${disabledVerifiedPublisherIconColor}; }`,
 			);

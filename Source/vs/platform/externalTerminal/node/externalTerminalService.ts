@@ -37,7 +37,9 @@ export class WindowsExternalTerminalService
 	implements IExternalTerminalService
 {
 	private static readonly CMD = "cmd.exe";
+
 	private static _DEFAULT_TERMINAL_WINDOWS: string;
+
 	public openTerminal(
 		configuration: IExternalTerminalSettings,
 		cwd?: string,
@@ -49,6 +51,7 @@ export class WindowsExternalTerminalService
 			cwd,
 		);
 	}
+
 	public spawnTerminal(
 		spawner: typeof cp,
 		configuration: IExternalTerminalSettings,
@@ -71,6 +74,7 @@ export class WindowsExternalTerminalService
 
 			return Promise.resolve(undefined);
 		}
+
 		const cmdArgs = ["/c", "start", "/wait"];
 
 		if (exec.indexOf(" ") >= 0) {
@@ -79,11 +83,13 @@ export class WindowsExternalTerminalService
 			// Title is Execution Path. #220129
 			cmdArgs.push(exec);
 		}
+
 		cmdArgs.push(exec);
 		// Add starting directory parameter for Windows Terminal (see #90734)
 		if (basename === "wt") {
 			cmdArgs.push("-d .");
 		}
+
 		return new Promise<void>((c, e) => {
 			const env = getSanitizedEnvironment(process);
 
@@ -92,10 +98,13 @@ export class WindowsExternalTerminalService
 				env,
 				detached: true,
 			});
+
 			child.on("error", e);
+
 			child.on("exit", () => c());
 		});
 	}
+
 	public async runInTerminal(
 		title: string,
 		dir: string,
@@ -139,6 +148,7 @@ export class WindowsExternalTerminalService
 				// Handle Windows Terminal specially; -d to set the cwd and run a cmd.exe instance
 				// inside it
 				spawnExec = exec;
+
 				cmdArgs = [
 					"-d",
 					".",
@@ -150,9 +160,11 @@ export class WindowsExternalTerminalService
 				// prefer to use the window terminal to spawn if it's available instead
 				// of start, since that allows ctrl+c handling (#81322)
 				spawnExec = wt;
+
 				cmdArgs = ["-d", ".", exec, "/c", command];
 			} else {
 				spawnExec = WindowsExternalTerminalService.CMD;
+
 				cmdArgs = [
 					"/c",
 					"start",
@@ -163,20 +175,26 @@ export class WindowsExternalTerminalService
 					`"${command}"`,
 				];
 			}
+
 			const cmd = cp.spawn(spawnExec, cmdArgs, options);
+
 			cmd.on("error", (err) => {
 				reject(improveError(err));
 			});
+
 			resolve(undefined);
 		});
 	}
+
 	public static getDefaultTerminalWindows(): string {
 		if (!WindowsExternalTerminalService._DEFAULT_TERMINAL_WINDOWS) {
 			const isWoW64 = !!process.env.hasOwnProperty(
 				"PROCESSOR_ARCHITEW6432",
 			);
+
 			WindowsExternalTerminalService._DEFAULT_TERMINAL_WINDOWS = `${process.env.windir ? process.env.windir : "C:\\Windows"}\\${isWoW64 ? "Sysnative" : "System32"}\\cmd.exe`;
 		}
+
 		return WindowsExternalTerminalService._DEFAULT_TERMINAL_WINDOWS;
 	}
 	@memoize
@@ -201,6 +219,7 @@ export class MacExternalTerminalService
 	): Promise<void> {
 		return this.spawnTerminal(cp, configuration, cwd);
 	}
+
 	public runInTerminal(
 		title: string,
 		dir: string,
@@ -236,8 +255,10 @@ export class MacExternalTerminalService
 
 				for (const a of args) {
 					osaArgs.push("-a");
+
 					osaArgs.push(a);
 				}
+
 				if (envVars) {
 					// merge environment variables into a copy of the process.env
 					const env = Object.assign(
@@ -251,25 +272,31 @@ export class MacExternalTerminalService
 
 						if (value === null) {
 							osaArgs.push("-u");
+
 							osaArgs.push(key);
 						} else {
 							osaArgs.push("-e");
+
 							osaArgs.push(`${key}=${value}`);
 						}
 					}
 				}
+
 				let stderr = "";
 
 				const osa = cp.spawn(
 					MacExternalTerminalService.OSASCRIPT,
 					osaArgs,
 				);
+
 				osa.on("error", (err) => {
 					reject(improveError(err));
 				});
+
 				osa.stderr.on("data", (data) => {
 					stderr += data.toString();
 				});
+
 				osa.on("exit", (code: number) => {
 					if (code === 0) {
 						// OK
@@ -277,6 +304,7 @@ export class MacExternalTerminalService
 					} else {
 						if (stderr) {
 							const lines = stderr.split("\n", 1);
+
 							reject(new Error(lines[0]));
 						} else {
 							reject(
@@ -305,6 +333,7 @@ export class MacExternalTerminalService
 			}
 		});
 	}
+
 	spawnTerminal(
 		spawner: typeof cp,
 		configuration: IExternalTerminalSettings,
@@ -318,10 +347,13 @@ export class MacExternalTerminalService
 			if (cwd) {
 				args.push(cwd);
 			}
+
 			const env = getSanitizedEnvironment(process);
 
 			const child = spawner.spawn("/usr/bin/open", args, { cwd, env });
+
 			child.on("error", e);
+
 			child.on("exit", () => c());
 		});
 	}
@@ -334,12 +366,14 @@ export class LinuxExternalTerminalService
 		"press.any.key",
 		"Press any key to continue...",
 	);
+
 	public openTerminal(
 		configuration: IExternalTerminalSettings,
 		cwd?: string,
 	): Promise<void> {
 		return this.spawnTerminal(cp, configuration, cwd);
 	}
+
 	public runInTerminal(
 		title: string,
 		dir: string,
@@ -355,16 +389,20 @@ export class LinuxExternalTerminalService
 			const termArgs: string[] = [];
 			//termArgs.push('--title');
 			//termArgs.push(`"${TERMINAL_TITLE}"`);
+
 			execPromise.then((exec) => {
 				if (exec.indexOf("gnome-terminal") >= 0) {
 					termArgs.push("-x");
 				} else {
 					termArgs.push("-e");
 				}
+
 				termArgs.push("bash");
+
 				termArgs.push("-c");
 
 				const bashCommand = `${quote(args)}; echo; read -p "${LinuxExternalTerminalService.WAIT_MESSAGE}" -n1;`;
+
 				termArgs.push(`''${bashCommand}''`); // wrapping argument in two sets of ' because node is so "friendly" that it removes one set...
 				// merge environment variables into a copy of the process.env
 				const env = Object.assign(
@@ -385,12 +423,15 @@ export class LinuxExternalTerminalService
 				let stderr = "";
 
 				const cmd = cp.spawn(exec, termArgs, options);
+
 				cmd.on("error", (err) => {
 					reject(improveError(err));
 				});
+
 				cmd.stderr.on("data", (data) => {
 					stderr += data.toString();
 				});
+
 				cmd.on("exit", (code: number) => {
 					if (code === 0) {
 						// OK
@@ -398,6 +439,7 @@ export class LinuxExternalTerminalService
 					} else {
 						if (stderr) {
 							const lines = stderr.split("\n", 1);
+
 							reject(new Error(lines[0]));
 						} else {
 							reject(
@@ -416,7 +458,9 @@ export class LinuxExternalTerminalService
 			});
 		});
 	}
+
 	private static _DEFAULT_TERMINAL_LINUX_READY: Promise<string>;
+
 	public static async getDefaultTerminalLinuxReady(): Promise<string> {
 		if (!LinuxExternalTerminalService._DEFAULT_TERMINAL_LINUX_READY) {
 			if (!env.isLinux) {
@@ -426,6 +470,7 @@ export class LinuxExternalTerminalService
 				const isDebian = await pfs.Promises.exists(
 					"/etc/debian_version",
 				);
+
 				LinuxExternalTerminalService._DEFAULT_TERMINAL_LINUX_READY =
 					new Promise<string>((r) => {
 						if (isDebian) {
@@ -449,8 +494,10 @@ export class LinuxExternalTerminalService
 					});
 			}
 		}
+
 		return LinuxExternalTerminalService._DEFAULT_TERMINAL_LINUX_READY;
 	}
+
 	spawnTerminal(
 		spawner: typeof cp,
 		configuration: IExternalTerminalSettings,
@@ -465,7 +512,9 @@ export class LinuxExternalTerminalService
 				const env = getSanitizedEnvironment(process);
 
 				const child = spawner.spawn(exec, [], { cwd, env });
+
 				child.on("error", e);
+
 				child.on("exit", () => c());
 			});
 		});
@@ -473,6 +522,7 @@ export class LinuxExternalTerminalService
 }
 function getSanitizedEnvironment(process: NodeJS.Process) {
 	const env = { ...process.env };
+
 	sanitizeProcessEnvironment(env);
 
 	return env;
@@ -483,6 +533,7 @@ function getSanitizedEnvironment(process: NodeJS.Process) {
 function improveError(
 	err: Error & {
 		errno?: string;
+
 		path?: string;
 	},
 ): Error {
@@ -500,6 +551,7 @@ function improveError(
 			),
 		);
 	}
+
 	return err;
 }
 /**
@@ -514,7 +566,9 @@ function quote(args: string[]): string {
 		} else {
 			r += a;
 		}
+
 		r += " ";
 	}
+
 	return r;
 }

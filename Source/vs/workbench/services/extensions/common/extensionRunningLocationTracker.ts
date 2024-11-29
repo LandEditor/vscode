@@ -31,14 +31,19 @@ import {
 export class ExtensionRunningLocationTracker {
 	private _runningLocation =
 		new ExtensionIdentifierMap<ExtensionRunningLocation | null>();
+
 	private _maxLocalProcessAffinity: number = 0;
+
 	private _maxLocalWebWorkerAffinity: number = 0;
+
 	public get maxLocalProcessAffinity(): number {
 		return this._maxLocalProcessAffinity;
 	}
+
 	public get maxLocalWebWorkerAffinity(): number {
 		return this._maxLocalWebWorkerAffinity;
 	}
+
 	constructor(
 		private readonly _registry: IReadOnlyExtensionDescriptionRegistry,
 		private readonly _extensionHostKindPicker: IExtensionHostKindPicker,
@@ -51,12 +56,14 @@ export class ExtensionRunningLocationTracker {
 		@IExtensionManifestPropertiesService
 		private readonly _extensionManifestPropertiesService: IExtensionManifestPropertiesService,
 	) {}
+
 	public set(
 		extensionId: ExtensionIdentifier,
 		runningLocation: ExtensionRunningLocation,
 	) {
 		this._runningLocation.set(extensionId, runningLocation);
 	}
+
 	public readExtensionKinds(
 		extensionDescription: IExtensionDescription,
 	): ExtensionKind[] {
@@ -66,15 +73,18 @@ export class ExtensionRunningLocationTracker {
 		) {
 			return this._environmentService.extensionDevelopmentKind;
 		}
+
 		return this._extensionManifestPropertiesService.getExtensionKind(
 			extensionDescription,
 		);
 	}
+
 	public getRunningLocation(
 		extensionId: ExtensionIdentifier,
 	): ExtensionRunningLocation | null {
 		return this._runningLocation.get(extensionId) || null;
 	}
+
 	public filterByRunningLocation(
 		extensions: readonly IExtensionDescription[],
 		desiredRunningLocation: ExtensionRunningLocation,
@@ -86,6 +96,7 @@ export class ExtensionRunningLocationTracker {
 				desiredRunningLocation.equals(extRunningLocation),
 		);
 	}
+
 	public filterByExtensionHostKind(
 		extensions: readonly IExtensionDescription[],
 		desiredExtensionHostKind: ExtensionHostKind,
@@ -97,6 +108,7 @@ export class ExtensionRunningLocationTracker {
 				extRunningLocation.kind === desiredExtensionHostKind,
 		);
 	}
+
 	public filterByExtensionHostManager(
 		extensions: readonly IExtensionDescription[],
 		extensionHostManager: IExtensionHostManager,
@@ -110,12 +122,14 @@ export class ExtensionRunningLocationTracker {
 				),
 		);
 	}
+
 	private _computeAffinity(
 		inputExtensions: IExtensionDescription[],
 		extensionHostKind: ExtensionHostKind,
 		isInitialAllocation: boolean,
 	): {
 		affinities: ExtensionIdentifierMap<number>;
+
 		maxAffinity: number;
 	} {
 		// Only analyze extensions that can execute
@@ -149,6 +163,7 @@ export class ExtensionRunningLocationTracker {
 		for (const [_, extension] of extensions) {
 			groups.set(extension.identifier, ++groupNumber);
 		}
+
 		const changeGroup = (from: number, to: number) => {
 			for (const [key, group] of groups) {
 				if (group === from) {
@@ -161,6 +176,7 @@ export class ExtensionRunningLocationTracker {
 			if (!extension.extensionDependencies) {
 				continue;
 			}
+
 			const myGroup = groups.get(extension.identifier)!;
 
 			for (const depId of extension.extensionDependencies) {
@@ -170,10 +186,12 @@ export class ExtensionRunningLocationTracker {
 					// probably can't execute, so it has no impact
 					continue;
 				}
+
 				if (depGroup === myGroup) {
 					// already in the same group
 					continue;
 				}
+
 				changeGroup(depGroup, myGroup);
 			}
 		}
@@ -189,7 +207,9 @@ export class ExtensionRunningLocationTracker {
 
 			if (runningLocation) {
 				const group = groups.get(extension.identifier)!;
+
 				resultingAffinities.set(group, runningLocation.affinity);
+
 				lastAffinity = Math.max(lastAffinity, runningLocation.affinity);
 			}
 		}
@@ -226,12 +246,14 @@ export class ExtensionRunningLocationTracker {
 
 					continue;
 				}
+
 				const group = groups.get(extensionId);
 
 				if (!group) {
 					// The extension is not known or cannot execute for this extension host kind
 					continue;
 				}
+
 				const affinity1 = resultingAffinities.get(group);
 
 				if (affinity1) {
@@ -243,6 +265,7 @@ export class ExtensionRunningLocationTracker {
 
 					continue;
 				}
+
 				const affinity2 =
 					configuredAffinityToResultingAffinity.get(
 						configuredAffinity,
@@ -254,6 +277,7 @@ export class ExtensionRunningLocationTracker {
 
 					continue;
 				}
+
 				if (!isInitialAllocation) {
 					this._logService.info(
 						`Ignoring configured affinity for '${extensionId}' because extension host(s) are already running. Reload window.`,
@@ -261,22 +285,28 @@ export class ExtensionRunningLocationTracker {
 
 					continue;
 				}
+
 				const affinity3 = ++lastAffinity;
+
 				configuredAffinityToResultingAffinity.set(
 					configuredAffinity,
 					affinity3,
 				);
+
 				resultingAffinities.set(group, affinity3);
 			}
 		}
+
 		const result = new ExtensionIdentifierMap<number>();
 
 		for (const extension of inputExtensions) {
 			const group = groups.get(extension.identifier) || 0;
 
 			const affinity = resultingAffinities.get(group) || 0;
+
 			result.set(extension.identifier, affinity);
 		}
+
 		if (lastAffinity > 0 && isInitialAllocation) {
 			for (let affinity = 1; affinity <= lastAffinity; affinity++) {
 				const extensionIds: ExtensionIdentifier[] = [];
@@ -286,13 +316,16 @@ export class ExtensionRunningLocationTracker {
 						extensionIds.push(extension.identifier);
 					}
 				}
+
 				this._logService.info(
 					`Placing extension(s) ${extensionIds.map((e) => e.value).join(", ")} on a separate extension host.`,
 				);
 			}
 		}
+
 		return { affinities: result, maxAffinity: lastAffinity };
 	}
+
 	public computeRunningLocation(
 		localExtensions: IExtensionDescription[],
 		remoteExtensions: IExtensionDescription[],
@@ -305,6 +338,7 @@ export class ExtensionRunningLocationTracker {
 			isInitialAllocation,
 		).runningLocation;
 	}
+
 	private _doComputeRunningLocation(
 		existingRunningLocation: ExtensionIdentifierMap<ExtensionRunningLocation | null>,
 		localExtensions: IExtensionDescription[],
@@ -312,13 +346,16 @@ export class ExtensionRunningLocationTracker {
 		isInitialAllocation: boolean,
 	): {
 		runningLocation: ExtensionIdentifierMap<ExtensionRunningLocation | null>;
+
 		maxLocalProcessAffinity: number;
+
 		maxLocalWebWorkerAffinity: number;
 	} {
 		// Skip extensions that have an existing running location
 		localExtensions = localExtensions.filter(
 			(extension) => !existingRunningLocation.has(extension.identifier),
 		);
+
 		remoteExtensions = remoteExtensions.filter(
 			(extension) => !existingRunningLocation.has(extension.identifier),
 		);
@@ -348,9 +385,11 @@ export class ExtensionRunningLocationTracker {
 		for (const extension of localExtensions) {
 			extensions.set(extension.identifier, extension);
 		}
+
 		for (const extension of remoteExtensions) {
 			extensions.set(extension.identifier, extension);
 		}
+
 		const result =
 			new ExtensionIdentifierMap<ExtensionRunningLocation | null>();
 
@@ -376,8 +415,10 @@ export class ExtensionRunningLocationTracker {
 			} else if (extensionHostKind === ExtensionHostKind.Remote) {
 				runningLocation = new RemoteRunningLocation();
 			}
+
 			result.set(extensionIdKey, runningLocation);
 		}
+
 		const { affinities, maxAffinity } = this._computeAffinity(
 			localProcessExtensions,
 			ExtensionHostKind.LocalProcess,
@@ -386,11 +427,13 @@ export class ExtensionRunningLocationTracker {
 
 		for (const extension of localProcessExtensions) {
 			const affinity = affinities.get(extension.identifier) || 0;
+
 			result.set(
 				extension.identifier,
 				new LocalProcessRunningLocation(affinity),
 			);
 		}
+
 		const {
 			affinities: localWebWorkerAffinities,
 			maxAffinity: maxLocalWebWorkerAffinity,
@@ -403,6 +446,7 @@ export class ExtensionRunningLocationTracker {
 		for (const extension of localWebWorkerExtensions) {
 			const affinity =
 				localWebWorkerAffinities.get(extension.identifier) || 0;
+
 			result.set(
 				extension.identifier,
 				new LocalWebWorkerRunningLocation(affinity),
@@ -417,12 +461,14 @@ export class ExtensionRunningLocationTracker {
 				result.set(extensionIdKey, runningLocation);
 			}
 		}
+
 		return {
 			runningLocation: result,
 			maxLocalProcessAffinity: maxAffinity,
 			maxLocalWebWorkerAffinity: maxLocalWebWorkerAffinity,
 		};
 	}
+
 	public initializeRunningLocation(
 		localExtensions: IExtensionDescription[],
 		remoteExtensions: IExtensionDescription[],
@@ -437,8 +483,11 @@ export class ExtensionRunningLocationTracker {
 			remoteExtensions,
 			true,
 		);
+
 		this._runningLocation = runningLocation;
+
 		this._maxLocalProcessAffinity = maxLocalProcessAffinity;
+
 		this._maxLocalWebWorkerAffinity = maxLocalWebWorkerAffinity;
 	}
 	/**
@@ -454,10 +503,12 @@ export class ExtensionRunningLocationTracker {
 
 		for (const extensionId of toRemove) {
 			const extensionKey = extensionId;
+
 			removedRunningLocation.set(
 				extensionKey,
 				this._runningLocation.get(extensionKey) || null,
 			);
+
 			this._runningLocation.delete(extensionKey);
 		}
 		// Determine new running location
@@ -500,8 +551,10 @@ export class ExtensionRunningLocationTracker {
 			} else if (extensionHostKind === ExtensionHostKind.Remote) {
 				runningLocation = new RemoteRunningLocation();
 			}
+
 			this._runningLocation.set(extension.identifier, runningLocation);
 		}
+
 		const { affinities } = this._computeAffinity(
 			localProcessExtensions,
 			ExtensionHostKind.LocalProcess,
@@ -510,11 +563,13 @@ export class ExtensionRunningLocationTracker {
 
 		for (const extension of localProcessExtensions) {
 			const affinity = affinities.get(extension.identifier) || 0;
+
 			this._runningLocation.set(
 				extension.identifier,
 				new LocalProcessRunningLocation(affinity),
 			);
 		}
+
 		const { affinities: webWorkerExtensionsAffinities } =
 			this._computeAffinity(
 				localWebWorkerExtensions,
@@ -525,6 +580,7 @@ export class ExtensionRunningLocationTracker {
 		for (const extension of localWebWorkerExtensions) {
 			const affinity =
 				webWorkerExtensionsAffinities.get(extension.identifier) || 0;
+
 			this._runningLocation.set(
 				extension.identifier,
 				new LocalWebWorkerRunningLocation(affinity),

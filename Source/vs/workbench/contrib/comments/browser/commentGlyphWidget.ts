@@ -87,21 +87,32 @@ registerColor(
 
 export class CommentGlyphWidget extends Disposable {
 	public static description = "comment-glyph-widget";
+
 	private _lineNumber!: number;
+
 	private _editor: ICodeEditor;
+
 	private _threadState: CommentThreadState | undefined;
+
 	private readonly _commentsDecorations: IEditorDecorationsCollection;
+
 	private _commentsOptions: ModelDecorationOptions;
+
 	private readonly _onDidChangeLineNumber = this._register(
 		new Emitter<number>(),
 	);
+
 	public readonly onDidChangeLineNumber = this._onDidChangeLineNumber.event;
 
 	constructor(editor: ICodeEditor, lineNumber: number) {
 		super();
+
 		this._commentsOptions = this.createDecorationOptions();
+
 		this._editor = editor;
+
 		this._commentsDecorations = this._editor.createDecorationsCollection();
+
 		this._register(
 			this._commentsDecorations.onDidChange((e) => {
 				const range =
@@ -111,13 +122,17 @@ export class CommentGlyphWidget extends Disposable {
 
 				if (range && range.endLineNumber !== this._lineNumber) {
 					this._lineNumber = range.endLineNumber;
+
 					this._onDidChangeLineNumber.fire(this._lineNumber);
 				}
 			}),
 		);
+
 		this._register(toDisposable(() => this._commentsDecorations.clear()));
+
 		this.setLineNumber(lineNumber);
 	}
+
 	private createDecorationOptions(): ModelDecorationOptions {
 		const unresolved = this._threadState === CommentThreadState.Unresolved;
 
@@ -138,13 +153,17 @@ export class CommentGlyphWidget extends Disposable {
 
 		return ModelDecorationOptions.createDynamic(decorationOptions);
 	}
+
 	setThreadState(state: CommentThreadState | undefined): void {
 		if (this._threadState !== state) {
 			this._threadState = state;
+
 			this._commentsOptions = this.createDecorationOptions();
+
 			this._updateDecorations();
 		}
 	}
+
 	private _updateDecorations(): void {
 		const commentsDecorations = [
 			{
@@ -157,12 +176,16 @@ export class CommentGlyphWidget extends Disposable {
 				options: this._commentsOptions,
 			},
 		];
+
 		this._commentsDecorations.set(commentsDecorations);
 	}
+
 	setLineNumber(lineNumber: number): void {
 		this._lineNumber = lineNumber;
+
 		this._updateDecorations();
 	}
+
 	getPosition(): IContentWidgetPosition {
 		const range =
 			this._commentsDecorations.length > 0

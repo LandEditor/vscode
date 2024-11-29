@@ -68,6 +68,7 @@ export class WebExtensionManagementService
 	get onProfileAwareInstallExtension() {
 		return super.onInstallExtension;
 	}
+
 	override get onInstallExtension() {
 		return Event.filter(
 			this.onProfileAwareInstallExtension,
@@ -79,6 +80,7 @@ export class WebExtensionManagementService
 	get onProfileAwareDidInstallExtensions() {
 		return super.onDidInstallExtensions;
 	}
+
 	override get onDidInstallExtensions() {
 		return Event.filter(
 			Event.map(
@@ -94,6 +96,7 @@ export class WebExtensionManagementService
 	get onProfileAwareUninstallExtension() {
 		return super.onUninstallExtension;
 	}
+
 	override get onUninstallExtension() {
 		return Event.filter(
 			this.onProfileAwareUninstallExtension,
@@ -105,6 +108,7 @@ export class WebExtensionManagementService
 	get onProfileAwareDidUninstallExtension() {
 		return super.onDidUninstallExtension;
 	}
+
 	override get onDidUninstallExtension() {
 		return Event.filter(
 			this.onProfileAwareDidUninstallExtension,
@@ -116,9 +120,11 @@ export class WebExtensionManagementService
 	private readonly _onDidChangeProfile = this._register(
 		new Emitter<{
 			readonly added: ILocalExtension[];
+
 			readonly removed: ILocalExtension[];
 		}>(),
 	);
+
 	readonly onDidChangeProfile = this._onDidChangeProfile.event;
 
 	get onProfileAwareDidUpdateExtensionMetadata() {
@@ -152,6 +158,7 @@ export class WebExtensionManagementService
 			allowedExtensionsService,
 			userDataProfilesService,
 		);
+
 		this._register(
 			userDataProfileService.onDidChangeCurrentProfile((e) => {
 				if (
@@ -171,11 +178,13 @@ export class WebExtensionManagementService
 		applicationScoped,
 	}: {
 		profileLocation?: URI;
+
 		applicationScoped?: boolean;
 	}): boolean {
 		profileLocation =
 			profileLocation ??
 			this.userDataProfileService.currentProfile.extensionsResource;
+
 		return (
 			applicationScoped ||
 			this.uriIdentityService.extUri.isEqual(
@@ -195,6 +204,7 @@ export class WebExtensionManagementService
 		if (this.isConfiguredToExecuteOnWeb(extension)) {
 			return true;
 		}
+
 		return super.isExtensionPlatformCompatible(extension);
 	}
 
@@ -203,11 +213,14 @@ export class WebExtensionManagementService
 		profileLocation?: URI,
 	): Promise<ILocalExtension[]> {
 		const extensions = [];
+
 		if (type === undefined || type === ExtensionType.System) {
 			const systemExtensions =
 				await this.webExtensionsScannerService.scanSystemExtensions();
+
 			extensions.push(...systemExtensions);
 		}
+
 		if (type === undefined || type === ExtensionType.User) {
 			const userExtensions =
 				await this.webExtensionsScannerService.scanUserExtensions(
@@ -215,8 +228,10 @@ export class WebExtensionManagementService
 						this.userDataProfileService.currentProfile
 							.extensionsResource,
 				);
+
 			extensions.push(...userExtensions);
 		}
+
 		return extensions.map((e) => toLocalExtension(e));
 	}
 
@@ -228,24 +243,30 @@ export class WebExtensionManagementService
 			"ExtensionManagementService#install",
 			location.toString(),
 		);
+
 		const manifest =
 			await this.webExtensionsScannerService.scanExtensionManifest(
 				location,
 			);
+
 		if (!manifest || !manifest.name || !manifest.version) {
 			throw new Error(
 				`Cannot find a valid extension from the location ${location.toString()}`,
 			);
 		}
+
 		const result = await this.installExtensions([
 			{ manifest, extension: location, options },
 		]);
+
 		if (result[0]?.local) {
 			return result[0]?.local;
 		}
+
 		if (result[0]?.error) {
 			throw result[0].error;
 		}
+
 		throw toExtensionManagementError(
 			new Error(
 				`Unknown error while installing extension ${getGalleryExtensionId(manifest.publisher, manifest.name)}`,
@@ -272,15 +293,18 @@ export class WebExtensionManagementService
 				extension.type,
 				toProfileLocation,
 			);
+
 		const source =
 			await this.webExtensionsScannerService.scanExistingExtension(
 				extension.location,
 				extension.type,
 				fromProfileLocation,
 			);
+
 		metadata = { ...source?.metadata, ...metadata };
 
 		let scanned;
+
 		if (target) {
 			scanned = await this.webExtensionsScannerService.updateMetadata(
 				extension,
@@ -294,6 +318,7 @@ export class WebExtensionManagementService
 				toProfileLocation,
 			);
 		}
+
 		return toLocalExtension(scanned);
 	}
 
@@ -303,6 +328,7 @@ export class WebExtensionManagementService
 		toProfileLocation: URI,
 	): Promise<ILocalExtension[]> {
 		const result: ILocalExtension[] = [];
+
 		const extensionsToInstall = (
 			await this.webExtensionsScannerService.scanUserExtensions(
 				fromProfileLocation,
@@ -310,6 +336,7 @@ export class WebExtensionManagementService
 		).filter((e) =>
 			extensions.some((id) => areSameExtensions(id, e.identifier)),
 		);
+
 		if (extensionsToInstall.length) {
 			await Promise.allSettled(
 				extensionsToInstall.map(async (e) => {
@@ -317,6 +344,7 @@ export class WebExtensionManagementService
 						e.location,
 						toProfileLocation,
 					);
+
 					if (e.metadata) {
 						local = await this.updateMetadata(
 							local,
@@ -324,10 +352,12 @@ export class WebExtensionManagementService
 							fromProfileLocation,
 						);
 					}
+
 					result.push(local);
 				}),
 			);
 		}
+
 		return result;
 	}
 
@@ -340,23 +370,29 @@ export class WebExtensionManagementService
 		if (metadata.isMachineScoped === false) {
 			metadata.isMachineScoped = undefined;
 		}
+
 		if (metadata.isBuiltin === false) {
 			metadata.isBuiltin = undefined;
 		}
+
 		if (metadata.pinned === false) {
 			metadata.pinned = undefined;
 		}
+
 		const updatedExtension =
 			await this.webExtensionsScannerService.updateMetadata(
 				local,
 				metadata,
 				profileLocation,
 			);
+
 		const updatedLocalExtension = toLocalExtension(updatedExtension);
+
 		this._onDidUpdateExtensionMetadata.fire({
 			local: updatedLocalExtension,
 			profileLocation,
 		});
+
 		return updatedLocalExtension;
 	}
 
@@ -383,12 +419,15 @@ export class WebExtensionManagementService
 			includePreRelease,
 			productVersion,
 		);
+
 		if (compatibleExtension) {
 			return compatibleExtension;
 		}
+
 		if (this.isConfiguredToExecuteOnWeb(extension)) {
 			return extension;
 		}
+
 		return null;
 	}
 
@@ -397,6 +436,7 @@ export class WebExtensionManagementService
 			this.extensionManifestPropertiesService.getUserConfiguredExtensionKind(
 				gallery.identifier,
 			);
+
 		return (
 			!!configuredExtensionKind && configuredExtensionKind.includes("web")
 		);
@@ -434,12 +474,15 @@ export class WebExtensionManagementService
 	zip(extension: ILocalExtension): Promise<URI> {
 		throw new Error("unsupported");
 	}
+
 	getManifest(vsix: URI): Promise<IExtensionManifest> {
 		throw new Error("unsupported");
 	}
+
 	download(): Promise<URI> {
 		throw new Error("unsupported");
 	}
+
 	reinstallFromGallery(): Promise<ILocalExtension> {
 		throw new Error("unsupported");
 	}
@@ -450,24 +493,30 @@ export class WebExtensionManagementService
 		e: DidChangeUserDataProfileEvent,
 	): Promise<void> {
 		const previousProfileLocation = e.previous.extensionsResource;
+
 		const currentProfileLocation = e.profile.extensionsResource;
+
 		if (!previousProfileLocation || !currentProfileLocation) {
 			throw new Error("This should not happen");
 		}
+
 		const oldExtensions =
 			await this.webExtensionsScannerService.scanUserExtensions(
 				previousProfileLocation,
 			);
+
 		const newExtensions =
 			await this.webExtensionsScannerService.scanUserExtensions(
 				currentProfileLocation,
 			);
+
 		const { added, removed } = delta(oldExtensions, newExtensions, (a, b) =>
 			compare(
 				`${ExtensionIdentifier.toKey(a.identifier.id)}@${a.manifest.version}`,
 				`${ExtensionIdentifier.toKey(b.identifier.id)}@${b.manifest.version}`,
 			),
 		);
+
 		this._onDidChangeProfile.fire({
 			added: added.map((e) => toLocalExtension(e)),
 			removed: removed.map((e) => toLocalExtension(e)),
@@ -477,6 +526,7 @@ export class WebExtensionManagementService
 
 function toLocalExtension(extension: IExtension): ILocalExtension {
 	const metadata = getMetadata(undefined, extension);
+
 	return {
 		...extension,
 		identifier: {
@@ -509,8 +559,10 @@ function getMetadata(
 	const metadata: Metadata = {
 		...((<IScannedExtension>existingExtension)?.metadata || {}),
 	};
+
 	metadata.isMachineScoped =
 		options?.isMachineScoped || metadata.isMachineScoped;
+
 	return metadata;
 }
 
@@ -519,14 +571,17 @@ class InstallExtensionTask
 	implements IInstallExtensionTask
 {
 	readonly identifier: IExtensionIdentifier;
+
 	readonly source: URI | IGalleryExtension;
 
 	private _profileLocation = this.options.profileLocation;
+
 	get profileLocation() {
 		return this._profileLocation;
 	}
 
 	private _operation = InstallOperation.Install;
+
 	get operation() {
 		return isUndefined(this.options.operation)
 			? this._operation
@@ -541,9 +596,11 @@ class InstallExtensionTask
 		private readonly userDataProfilesService: IUserDataProfilesService,
 	) {
 		super();
+
 		this.identifier = URI.isUri(extension)
 			? { id: getGalleryExtensionId(manifest.publisher, manifest.name) }
 			: extension.identifier;
+
 		this.source = extension;
 	}
 
@@ -552,43 +609,58 @@ class InstallExtensionTask
 			await this.webExtensionsScannerService.scanUserExtensions(
 				this.options.profileLocation,
 			);
+
 		const existingExtension = userExtensions.find((e) =>
 			areSameExtensions(e.identifier, this.identifier),
 		);
+
 		if (existingExtension) {
 			this._operation = InstallOperation.Update;
 		}
 
 		const metadata = getMetadata(this.options, existingExtension);
+
 		if (!URI.isUri(this.extension)) {
 			metadata.id = this.extension.identifier.uuid;
+
 			metadata.publisherDisplayName = this.extension.publisherDisplayName;
+
 			metadata.publisherId = this.extension.publisherId;
+
 			metadata.installedTimestamp = Date.now();
+
 			metadata.isPreReleaseVersion =
 				this.extension.properties.isPreReleaseVersion;
+
 			metadata.hasPreReleaseVersion =
 				metadata.hasPreReleaseVersion ||
 				this.extension.properties.isPreReleaseVersion;
+
 			metadata.isBuiltin =
 				this.options.isBuiltin || existingExtension?.isBuiltin;
+
 			metadata.isSystem =
 				existingExtension?.type === ExtensionType.System
 					? true
 					: undefined;
+
 			metadata.updated = !!existingExtension;
+
 			metadata.isApplicationScoped =
 				this.options.isApplicationScoped ||
 				metadata.isApplicationScoped;
+
 			metadata.preRelease = isBoolean(this.options.preRelease)
 				? this.options.preRelease
 				: this.options.installPreReleaseVersion ||
 					this.extension.properties.isPreReleaseVersion ||
 					metadata.preRelease;
+
 			metadata.source = URI.isUri(this.extension)
 				? "resource"
 				: "gallery";
 		}
+
 		metadata.pinned = this.options.installGivenVersion
 			? true
 			: (this.options.pinned ?? metadata.pinned);
@@ -596,6 +668,7 @@ class InstallExtensionTask
 		this._profileLocation = metadata.isApplicationScoped
 			? this.userDataProfilesService.defaultProfile.extensionsResource
 			: this.options.profileLocation;
+
 		const scannedExtension = URI.isUri(this.extension)
 			? await this.webExtensionsScannerService.addExtension(
 					this.extension,
@@ -607,6 +680,7 @@ class InstallExtensionTask
 					metadata,
 					this.profileLocation,
 				);
+
 		return toLocalExtension(scannedExtension);
 	}
 }

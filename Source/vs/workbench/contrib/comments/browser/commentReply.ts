@@ -52,14 +52,23 @@ export class CommentReply<T extends IRange | ICellRange> extends Disposable {
 	commentEditor: ICodeEditor;
 
 	form: HTMLElement;
+
 	commentEditorIsEmpty: IContextKey<boolean>;
+
 	private _error!: HTMLElement;
+
 	private _formActions!: HTMLElement;
+
 	private _editorActions!: HTMLElement;
+
 	private _commentThreadDisposables: IDisposable[] = [];
+
 	private _commentFormActions!: CommentFormActions;
+
 	private _commentEditorActions!: CommentFormActions;
+
 	private _reviewThreadReplyButton!: HTMLElement;
+
 	private _editorHeight = MIN_EDITOR_HEIGHT;
 
 	constructor(
@@ -89,7 +98,9 @@ export class CommentReply<T extends IRange | ICellRange> extends Disposable {
 		private readonly textModelService: ITextModelService,
 	) {
 		super();
+
 		this.form = dom.append(container, dom.$(".comment-form"));
+
 		this.commentEditor = this._register(
 			this._scopedInstatiationService.createInstance(
 				SimpleCommentEditor,
@@ -99,12 +110,16 @@ export class CommentReply<T extends IRange | ICellRange> extends Disposable {
 				this._parentThread,
 			),
 		);
+
 		this.commentEditorIsEmpty = CommentContextKeys.commentIsEmpty.bindTo(
 			this._contextKeyService,
 		);
+
 		this.commentEditorIsEmpty.set(!this._pendingComment);
+
 		this.initialize(focus);
 	}
+
 	async initialize(focus: boolean) {
 		const hasExistingComments =
 			this._commentThread.comments &&
@@ -134,19 +149,26 @@ export class CommentReply<T extends IRange | ICellRange> extends Disposable {
 		if (commentController) {
 			resource = resource.with({ authority: commentController.id });
 		}
+
 		const model =
 			await this.textModelService.createModelReference(resource);
+
 		model.object.textEditorModel.setValue(this._pendingComment?.body || "");
+
 		this._register(model);
+
 		this.commentEditor.setModel(model.object.textEditorModel);
 
 		if (this._pendingComment) {
 			this.commentEditor.setPosition(this._pendingComment.cursor);
 		}
+
 		this.calculateEditorHeight();
+
 		this._register(
 			model.object.textEditorModel.onDidChangeContent(() => {
 				this.setCommentEditorDecorations();
+
 				this.commentEditorIsEmpty?.set(!this.commentEditor.getValue());
 
 				if (this.calculateEditorHeight()) {
@@ -154,11 +176,14 @@ export class CommentReply<T extends IRange | ICellRange> extends Disposable {
 						height: this._editorHeight,
 						width: this.commentEditor.getLayoutInfo().width,
 					});
+
 					this.commentEditor.render(true);
 				}
 			}),
 		);
+
 		this.createTextModelListener(this.commentEditor, this.form);
+
 		this.setCommentEditorDecorations();
 		// Only add the additional step of clicking a reply button to expand the textarea when there are existing comments
 		if (this._pendingComment) {
@@ -172,20 +197,26 @@ export class CommentReply<T extends IRange | ICellRange> extends Disposable {
 		) {
 			this.expandReplyArea();
 		}
+
 		this._error = dom.append(this.form, dom.$(".validation-error.hidden"));
 
 		const formActions = dom.append(this.form, dom.$(".form-actions"));
+
 		this._formActions = dom.append(formActions, dom.$(".other-actions"));
+
 		this.createCommentWidgetFormActions(
 			this._formActions,
 			model.object.textEditorModel,
 		);
+
 		this._editorActions = dom.append(formActions, dom.$(".editor-actions"));
+
 		this.createCommentWidgetEditorActions(
 			this._editorActions,
 			model.object.textEditorModel,
 		);
 	}
+
 	private calculateEditorHeight(): boolean {
 		const newEditorHeight = calculateEditorHeight(
 			this._parentEditor,
@@ -198,8 +229,10 @@ export class CommentReply<T extends IRange | ICellRange> extends Disposable {
 
 			return true;
 		}
+
 		return false;
 	}
+
 	public updateCommentThread(
 		commentThread: languages.CommentThread<IRange | ICellRange>,
 	) {
@@ -212,6 +245,7 @@ export class CommentReply<T extends IRange | ICellRange> extends Disposable {
 		if (!this._reviewThreadReplyButton) {
 			this.createReplyButton(this.commentEditor, this.form);
 		}
+
 		if (
 			this._commentThread.comments &&
 			this._commentThread.comments.length === 0 &&
@@ -219,10 +253,12 @@ export class CommentReply<T extends IRange | ICellRange> extends Disposable {
 		) {
 			this.expandReplyArea();
 		}
+
 		if (isReplying) {
 			this.commentEditor.focus();
 		}
 	}
+
 	public getPendingComment(): languages.PendingComment | undefined {
 		const model = this.commentEditor.getModel();
 
@@ -233,20 +269,27 @@ export class CommentReply<T extends IRange | ICellRange> extends Disposable {
 				cursor: this.commentEditor.getPosition() ?? new Position(1, 1),
 			};
 		}
+
 		return undefined;
 	}
+
 	public setPendingComment(pending: languages.PendingComment) {
 		this._pendingComment = pending;
+
 		this.expandReplyArea();
+
 		this.commentEditor.setValue(pending.body);
+
 		this.commentEditor.setPosition(pending.cursor);
 	}
+
 	public layout(widthInPixel: number) {
 		this.commentEditor.layout({
 			height: this._editorHeight,
 			width: widthInPixel - 54 /* margin 20px * 10 + scrollbar 14px*/,
 		});
 	}
+
 	public focusIfNeeded() {
 		if (
 			!this._commentThread.comments ||
@@ -257,16 +300,21 @@ export class CommentReply<T extends IRange | ICellRange> extends Disposable {
 			this.expandReplyArea();
 		}
 	}
+
 	public focusCommentEditor() {
 		this.commentEditor.focus();
 	}
+
 	public expandReplyAreaAndFocusCommentEditor() {
 		this.expandReplyArea();
+
 		this.commentEditor.focus();
 	}
+
 	public isCommentEditorFocused(): boolean {
 		return this.commentEditor.hasWidgetFocus();
 	}
+
 	public updateCanReply() {
 		if (!this._commentThread.canReply) {
 			this.form.style.display = "none";
@@ -274,10 +322,13 @@ export class CommentReply<T extends IRange | ICellRange> extends Disposable {
 			this.form.style.display = "block";
 		}
 	}
+
 	async submitComment(): Promise<void> {
 		await this._commentFormActions?.triggerDefaultAction();
+
 		this._pendingComment = undefined;
 	}
+
 	setCommentEditorDecorations() {
 		const hasExistingComments =
 			this._commentThread.comments &&
@@ -288,8 +339,10 @@ export class CommentReply<T extends IRange | ICellRange> extends Disposable {
 				nls.localize("reply", "Reply...")
 			: this._commentOptions?.placeHolder ||
 				nls.localize("newComment", "Type a new comment");
+
 		this.commentEditor.updateOptions({ placeholder });
 	}
+
 	private createTextModelListener(
 		commentEditor: ICodeEditor,
 		commentForm: HTMLElement,
@@ -300,14 +353,17 @@ export class CommentReply<T extends IRange | ICellRange> extends Disposable {
 					uri: commentEditor.getModel()!.uri,
 					value: commentEditor.getValue(),
 				};
+
 				this.commentService.setActiveEditingCommentThread(
 					this._commentThread,
 				);
+
 				this.commentService.setActiveCommentAndThread(this.owner, {
 					thread: this._commentThread,
 				});
 			}),
 		);
+
 		this._commentThreadDisposables.push(
 			commentEditor.getModel()!.onDidChangeContent(() => {
 				const modelContent = commentEditor.getValue();
@@ -320,14 +376,18 @@ export class CommentReply<T extends IRange | ICellRange> extends Disposable {
 				) {
 					const newInput: languages.CommentInput =
 						this._commentThread.input;
+
 					newInput.value = modelContent;
+
 					this._commentThread.input = newInput;
 				}
+
 				this.commentService.setActiveEditingCommentThread(
 					this._commentThread,
 				);
 			}),
 		);
+
 		this._commentThreadDisposables.push(
 			this._commentThread.onDidChangeInput((input) => {
 				const thread = this._commentThread;
@@ -337,9 +397,11 @@ export class CommentReply<T extends IRange | ICellRange> extends Disposable {
 				if (thread.input && model && thread.input.uri !== model.uri) {
 					return;
 				}
+
 				if (!input) {
 					return;
 				}
+
 				if (commentEditor.getValue() !== input.value) {
 					commentEditor.setValue(input.value);
 
@@ -348,9 +410,13 @@ export class CommentReply<T extends IRange | ICellRange> extends Disposable {
 							body: "",
 							cursor: new Position(1, 1),
 						};
+
 						commentForm.classList.remove("expand");
+
 						commentEditor.getDomNode()!.style.outline = "";
+
 						this._error.textContent = "";
+
 						this._error.classList.add("hidden");
 					}
 				}
@@ -367,12 +433,15 @@ export class CommentReply<T extends IRange | ICellRange> extends Disposable {
 		const menu = this._commentMenus.getCommentThreadActions(
 			this._contextKeyService,
 		);
+
 		this._register(menu);
+
 		this._register(
 			menu.onDidChange(() => {
 				this._commentFormActions.setActions(menu);
 			}),
 		);
+
 		this._commentFormActions = new CommentFormActions(
 			this.keybindingService,
 			this._contextKeyService,
@@ -380,17 +449,22 @@ export class CommentReply<T extends IRange | ICellRange> extends Disposable {
 			container,
 			async (action: IAction) => {
 				await this._actionRunDelegate?.();
+
 				await action.run({
 					thread: this._commentThread,
 					text: this.commentEditor.getValue(),
 					$mid: MarshalledId.CommentThreadReply,
 				});
+
 				this.hideReplyArea();
 			},
 		);
+
 		this._register(this._commentFormActions);
+
 		this._commentFormActions.setActions(menu);
 	}
+
 	private createCommentWidgetEditorActions(
 		container: HTMLElement,
 		model: ITextModel,
@@ -398,12 +472,15 @@ export class CommentReply<T extends IRange | ICellRange> extends Disposable {
 		const editorMenu = this._commentMenus.getCommentEditorActions(
 			this._contextKeyService,
 		);
+
 		this._register(editorMenu);
+
 		this._register(
 			editorMenu.onDidChange(() => {
 				this._commentEditorActions.setActions(editorMenu);
 			}),
 		);
+
 		this._commentEditorActions = new CommentFormActions(
 			this.keybindingService,
 			this._contextKeyService,
@@ -411,45 +488,62 @@ export class CommentReply<T extends IRange | ICellRange> extends Disposable {
 			container,
 			async (action: IAction) => {
 				this._actionRunDelegate?.();
+
 				action.run({
 					thread: this._commentThread,
 					text: this.commentEditor.getValue(),
 					$mid: MarshalledId.CommentThreadReply,
 				});
+
 				this.focusCommentEditor();
 			},
 		);
+
 		this._register(this._commentEditorActions);
+
 		this._commentEditorActions.setActions(editorMenu, true);
 	}
+
 	private get isReplyExpanded(): boolean {
 		return this.form.classList.contains("expand");
 	}
+
 	private expandReplyArea() {
 		if (!this.isReplyExpanded) {
 			this.form.classList.add("expand");
+
 			this.commentEditor.focus();
+
 			this.commentEditor.layout();
 		}
 	}
+
 	private clearAndExpandReplyArea() {
 		if (!this.isReplyExpanded) {
 			this.commentEditor.setValue("");
+
 			this.expandReplyArea();
 		}
 	}
+
 	private hideReplyArea() {
 		const domNode = this.commentEditor.getDomNode();
 
 		if (domNode) {
 			domNode.style.outline = "";
 		}
+
 		this.commentEditor.setValue("");
+
 		this._pendingComment = { body: "", cursor: new Position(1, 1) };
+
 		this.form.classList.remove("expand");
+
 		this._error.textContent = "";
+
 		this._error.classList.add("hidden");
 	}
+
 	private createReplyButton(
 		commentEditor: ICodeEditor,
 		commentForm: HTMLElement,
@@ -462,6 +556,7 @@ export class CommentReply<T extends IRange | ICellRange> extends Disposable {
 				),
 			)
 		);
+
 		this._register(
 			this.hoverService.setupManagedHover(
 				getDefaultHoverDelegate("mouse"),
@@ -470,6 +565,7 @@ export class CommentReply<T extends IRange | ICellRange> extends Disposable {
 					nls.localize("reply", "Reply..."),
 			),
 		);
+
 		this._reviewThreadReplyButton.textContent =
 			this._commentOptions?.prompt || nls.localize("reply", "Reply...");
 		// bind click/escape actions for reviewThreadReplyButton and textArea
@@ -480,6 +576,7 @@ export class CommentReply<T extends IRange | ICellRange> extends Disposable {
 				(_) => this.clearAndExpandReplyArea(),
 			),
 		);
+
 		this._register(
 			dom.addDisposableListener(
 				this._reviewThreadReplyButton,
@@ -487,6 +584,7 @@ export class CommentReply<T extends IRange | ICellRange> extends Disposable {
 				(_) => this.clearAndExpandReplyArea(),
 			),
 		);
+
 		commentEditor.onDidBlurEditorWidget(() => {
 			if (
 				commentEditor.getModel()!.getValueLength() === 0 &&
@@ -496,8 +594,10 @@ export class CommentReply<T extends IRange | ICellRange> extends Disposable {
 			}
 		});
 	}
+
 	override dispose(): void {
 		super.dispose();
+
 		dispose(this._commentThreadDisposables);
 	}
 }

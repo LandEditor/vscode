@@ -16,7 +16,9 @@ type PackageNameValidationResult =
 	| ScopedPackageNameValidationResult;
 interface ScopedPackageNameValidationResult {
 	readonly name: string;
+
 	readonly isScopeName: boolean;
+
 	readonly result: NameValidationResult;
 }
 enum CharacterCodes {
@@ -44,12 +46,15 @@ export function validatePackageNameWorker(
 	if (!packageName) {
 		return NameValidationResult.EmptyName;
 	}
+
 	if (packageName.length > maxPackageNameLength) {
 		return NameValidationResult.NameTooLong;
 	}
+
 	if (packageName.charCodeAt(0) === CharacterCodes.dot) {
 		return NameValidationResult.NameStartsWithDot;
 	}
+
 	if (packageName.charCodeAt(0) === CharacterCodes._) {
 		return NameValidationResult.NameStartsWithUnderscore;
 	}
@@ -71,6 +76,7 @@ export function validatePackageNameWorker(
 					result: scopeResult,
 				};
 			}
+
 			const packageResult = validatePackageNameWorker(
 				matches[2],
 				/*supportScopedPackage*/ false,
@@ -83,18 +89,24 @@ export function validatePackageNameWorker(
 					result: packageResult,
 				};
 			}
+
 			return NameValidationResult.Ok;
 		}
 	}
+
 	if (encodeURIComponent(packageName) !== packageName) {
 		return NameValidationResult.NameContainsNonURISafeCharacters;
 	}
+
 	return NameValidationResult.Ok;
 }
 export interface TypingResolutionHost {
 	directoryExists(path: string): boolean;
+
 	fileExists(fileName: string): boolean;
+
 	readFile(path: string, encoding?: string): string | undefined;
+
 	readDirectory(
 		rootDir: string,
 		extensions: readonly string[],

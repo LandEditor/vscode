@@ -72,6 +72,7 @@ const doNotDisturbIcon = registerIcon(
 
 export class ClearNotificationAction extends Action {
 	static readonly ID = CLEAR_NOTIFICATION;
+
 	static readonly LABEL = localize("clearNotification", "Clear Notification");
 
 	constructor(
@@ -82,12 +83,14 @@ export class ClearNotificationAction extends Action {
 	) {
 		super(id, label, ThemeIcon.asClassName(clearIcon));
 	}
+
 	override async run(notification: INotificationViewItem): Promise<void> {
 		this.commandService.executeCommand(CLEAR_NOTIFICATION, notification);
 	}
 }
 export class ClearAllNotificationsAction extends Action {
 	static readonly ID = CLEAR_ALL_NOTIFICATIONS;
+
 	static readonly LABEL = localize(
 		"clearNotifications",
 		"Clear All Notifications",
@@ -101,12 +104,14 @@ export class ClearAllNotificationsAction extends Action {
 	) {
 		super(id, label, ThemeIcon.asClassName(clearAllIcon));
 	}
+
 	override async run(): Promise<void> {
 		this.commandService.executeCommand(CLEAR_ALL_NOTIFICATIONS);
 	}
 }
 export class ToggleDoNotDisturbAction extends Action {
 	static readonly ID = TOGGLE_DO_NOT_DISTURB_MODE;
+
 	static readonly LABEL = localize(
 		"toggleDoNotDisturbMode",
 		"Toggle Do Not Disturb Mode",
@@ -120,12 +125,14 @@ export class ToggleDoNotDisturbAction extends Action {
 	) {
 		super(id, label, ThemeIcon.asClassName(doNotDisturbIcon));
 	}
+
 	override async run(): Promise<void> {
 		this.commandService.executeCommand(TOGGLE_DO_NOT_DISTURB_MODE);
 	}
 }
 export class ToggleDoNotDisturbBySourceAction extends Action {
 	static readonly ID = TOGGLE_DO_NOT_DISTURB_MODE_BY_SOURCE;
+
 	static readonly LABEL = localize(
 		"toggleDoNotDisturbModeBySource",
 		"Toggle Do Not Disturb Mode By Source...",
@@ -139,6 +146,7 @@ export class ToggleDoNotDisturbBySourceAction extends Action {
 	) {
 		super(id, label);
 	}
+
 	override async run(): Promise<void> {
 		this.commandService.executeCommand(
 			TOGGLE_DO_NOT_DISTURB_MODE_BY_SOURCE,
@@ -147,6 +155,7 @@ export class ToggleDoNotDisturbBySourceAction extends Action {
 }
 export class ConfigureDoNotDisturbAction extends Action {
 	static readonly ID = "workbench.action.configureDoNotDisturbMode";
+
 	static readonly LABEL = localize(
 		"configureDoNotDisturbMode",
 		"Configure Do Not Disturb...",
@@ -158,6 +167,7 @@ export class ConfigureDoNotDisturbAction extends Action {
 }
 export class HideNotificationsCenterAction extends Action {
 	static readonly ID = HIDE_NOTIFICATIONS_CENTER;
+
 	static readonly LABEL = localize(
 		"hideNotificationsCenter",
 		"Hide Notifications",
@@ -171,12 +181,14 @@ export class HideNotificationsCenterAction extends Action {
 	) {
 		super(id, label, ThemeIcon.asClassName(hideIcon));
 	}
+
 	override async run(): Promise<void> {
 		this.commandService.executeCommand(HIDE_NOTIFICATIONS_CENTER);
 	}
 }
 export class ExpandNotificationAction extends Action {
 	static readonly ID = EXPAND_NOTIFICATION;
+
 	static readonly LABEL = localize(
 		"expandNotification",
 		"Expand Notification",
@@ -190,12 +202,14 @@ export class ExpandNotificationAction extends Action {
 	) {
 		super(id, label, ThemeIcon.asClassName(expandIcon));
 	}
+
 	override async run(notification: INotificationViewItem): Promise<void> {
 		this.commandService.executeCommand(EXPAND_NOTIFICATION, notification);
 	}
 }
 export class CollapseNotificationAction extends Action {
 	static readonly ID = COLLAPSE_NOTIFICATION;
+
 	static readonly LABEL = localize(
 		"collapseNotification",
 		"Collapse Notification",
@@ -209,12 +223,14 @@ export class CollapseNotificationAction extends Action {
 	) {
 		super(id, label, ThemeIcon.asClassName(collapseIcon));
 	}
+
 	override async run(notification: INotificationViewItem): Promise<void> {
 		this.commandService.executeCommand(COLLAPSE_NOTIFICATION, notification);
 	}
 }
 export class ConfigureNotificationAction extends Action {
 	static readonly ID = "workbench.action.configureNotification";
+
 	static readonly LABEL = localize(
 		"configureNotification",
 		"More Actions...",
@@ -230,6 +246,7 @@ export class ConfigureNotificationAction extends Action {
 }
 export class CopyNotificationMessageAction extends Action {
 	static readonly ID = "workbench.action.copyNotificationMessage";
+
 	static readonly LABEL = localize("copyNotification", "Copy Text");
 
 	constructor(
@@ -240,6 +257,7 @@ export class CopyNotificationMessageAction extends Action {
 	) {
 		super(id, label);
 	}
+
 	override run(notification: INotificationViewItem): Promise<void> {
 		return this.clipboardService.writeText(notification.message.raw);
 	}

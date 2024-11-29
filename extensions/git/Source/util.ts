@@ -147,6 +147,7 @@ export function debounceEvent<T>(event: Event<T>, delay: number): Event<T> {
 		return event(
 			(e) => {
 				clearTimeout(timer);
+
 				timer = setTimeout(() => listener.call(thisArgs, e), delay);
 			},
 			null,
@@ -203,6 +204,7 @@ export function groupBy<T>(
 ): { [key: string]: T[] } {
 	return arr.reduce((result, el) => {
 		const key = fn(el);
+
 		result[key] = [...(result[key] || []), el];
 
 		return result;
@@ -241,6 +243,7 @@ export async function mkdirp(path: string, mode?: number): Promise<boolean> {
 		}
 
 		await mkdirp(dirname(path), mode);
+
 		await mkdir();
 	}
 
@@ -287,14 +290,17 @@ export async function grep(
 		const fileStream = createReadStream(filename, { encoding: "utf8" });
 
 		const stream = byline(fileStream);
+
 		stream.on("data", (line: string) => {
 			if (pattern.test(line)) {
 				fileStream.close();
+
 				c(true);
 			}
 		});
 
 		stream.on("error", e);
+
 		stream.on("end", () => c(false));
 	});
 }
@@ -309,7 +315,9 @@ export function readBytes(stream: Readable, bytes: number): Promise<Buffer> {
 
 		stream.on("data", (data: Buffer) => {
 			const bytesToRead = Math.min(bytes - bytesRead, data.length);
+
 			data.copy(buffer, bytesRead, 0, bytesToRead);
+
 			bytesRead += bytesToRead;
 
 			if (bytesRead === bytes) {
@@ -320,6 +328,7 @@ export function readBytes(stream: Readable, bytes: number): Promise<Buffer> {
 		stream.on("error", (e: Error) => {
 			if (!done) {
 				done = true;
+
 				error(e);
 			}
 		});
@@ -327,6 +336,7 @@ export function readBytes(stream: Readable, bytes: number): Promise<Buffer> {
 		stream.on("close", () => {
 			if (!done) {
 				done = true;
+
 				complete(buffer.slice(0, bytesRead));
 			}
 		});
@@ -431,11 +441,14 @@ export function* splitInChunks(
 
 		if (newLength > maxChunkLength && current.length > 0) {
 			yield current;
+
 			current = [];
+
 			newLength = value.length;
 		}
 
 		current.push(value);
+
 		length = newLength;
 	}
 
@@ -467,24 +480,31 @@ export function isUndefined(obj: unknown): obj is undefined {
 
 interface ILimitedTaskFactory<T> {
 	factory: () => Promise<T>;
+
 	c: (value: T | Promise<T>) => void;
+
 	e: (error?: any) => void;
 }
 
 export class Limiter<T> {
 	private runningPromises: number;
+
 	private maxDegreeOfParalellism: number;
+
 	private outstandingPromises: ILimitedTaskFactory<T>[];
 
 	constructor(maxDegreeOfParalellism: number) {
 		this.maxDegreeOfParalellism = maxDegreeOfParalellism;
+
 		this.outstandingPromises = [];
+
 		this.runningPromises = 0;
 	}
 
 	queue(factory: () => Promise<T>): Promise<T> {
 		return new Promise<T>((c, e) => {
 			this.outstandingPromises.push({ factory, c, e });
+
 			this.consume();
 		});
 	}
@@ -495,10 +515,13 @@ export class Limiter<T> {
 			this.runningPromises < this.maxDegreeOfParalellism
 		) {
 			const iLimitedTask = this.outstandingPromises.shift()!;
+
 			this.runningPromises++;
 
 			const promise = iLimitedTask.factory();
+
 			promise.then(iLimitedTask.c, iLimitedTask.e);
+
 			promise.then(
 				() => this.consumed(),
 				() => this.consumed(),
@@ -539,6 +562,7 @@ export class PromiseSource<T> {
 	resolve(value: T): void {
 		if (!this._promise) {
 			this._promise = Promise.resolve(value);
+
 			this._onDidComplete.fire({ success: true, value });
 		}
 	}
@@ -546,6 +570,7 @@ export class PromiseSource<T> {
 	reject(err: any): void {
 		if (!this._promise) {
 			this._promise = Promise.reject(err);
+
 			this._onDidComplete.fire({ success: false, err });
 		}
 	}
@@ -556,8 +581,11 @@ export namespace Versions {
 
 	export interface Version {
 		major: number;
+
 		minor: number;
+
 		patch: number;
+
 		pre?: string;
 	}
 
@@ -568,6 +596,7 @@ export namespace Versions {
 		if (typeof v1 === "string") {
 			v1 = fromString(v1);
 		}
+
 		if (typeof v2 === "string") {
 			v2 = fromString(v2);
 		}
@@ -575,6 +604,7 @@ export namespace Versions {
 		if (v1.major > v2.major) {
 			return 1;
 		}
+
 		if (v1.major < v2.major) {
 			return -1;
 		}
@@ -582,6 +612,7 @@ export namespace Versions {
 		if (v1.minor > v2.minor) {
 			return 1;
 		}
+
 		if (v1.minor < v2.minor) {
 			return -1;
 		}
@@ -589,6 +620,7 @@ export namespace Versions {
 		if (v1.patch > v2.patch) {
 			return 1;
 		}
+
 		if (v1.patch < v2.patch) {
 			return -1;
 		}
@@ -596,6 +628,7 @@ export namespace Versions {
 		if (v1.pre === undefined && v2.pre !== undefined) {
 			return 1;
 		}
+
 		if (v1.pre !== undefined && v2.pre === undefined) {
 			return -1;
 		}
@@ -640,7 +673,9 @@ export function deltaHistoryItemRefs(
 	after: SourceControlHistoryItemRef[],
 ): {
 	added: SourceControlHistoryItemRef[];
+
 	modified: SourceControlHistoryItemRef[];
+
 	removed: SourceControlHistoryItemRef[];
 } {
 	if (before.length === 0) {
@@ -663,6 +698,7 @@ export function deltaHistoryItemRefs(
 
 			break;
 		}
+
 		if (afterIdx === after.length) {
 			removed.push(...before.slice(beforeIdx));
 
@@ -682,6 +718,7 @@ export function deltaHistoryItemRefs(
 			}
 
 			beforeIdx += 1;
+
 			afterIdx += 1;
 		} else if (result < 0) {
 			// beforeElement is smaller -> before element removed

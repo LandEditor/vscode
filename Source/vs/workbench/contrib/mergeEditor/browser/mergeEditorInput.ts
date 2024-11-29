@@ -54,7 +54,9 @@ export class MergeEditorInput
 	implements ILanguageSupport
 {
 	static readonly ID = "mergeEditor.Input";
+
 	private _inputModel?: IMergeEditorInputModel;
+
 	override closeHandler: IEditorCloseHandler = {
 		showConfirm: () => this._inputModel?.shouldConfirmClose() ?? false,
 		confirm: async (editors) => {
@@ -69,12 +71,14 @@ export class MergeEditorInput
 			return await this._inputModel!.confirmClose(inputModels);
 		},
 	};
+
 	private get useWorkingCopy() {
 		return (
 			this.configurationService.getValue("mergeEditor.useWorkingCopy") ??
 			false
 		);
 	}
+
 	constructor(
 		public readonly base: URI,
 		public readonly input1: MergeEditorInputData,
@@ -111,15 +115,19 @@ export class MergeEditorInput
 			customEditorLabelService,
 		);
 	}
+
 	override dispose(): void {
 		super.dispose();
 	}
+
 	override get typeId(): string {
 		return MergeEditorInput.ID;
 	}
+
 	override get editorId(): string {
 		return DEFAULT_EDITOR_ASSOCIATION.id;
 	}
+
 	override get capabilities(): EditorInputCapabilities {
 		let capabilities =
 			super.capabilities | EditorInputCapabilities.MultipleEditors;
@@ -127,17 +135,21 @@ export class MergeEditorInput
 		if (this.useWorkingCopy) {
 			capabilities |= EditorInputCapabilities.Untitled;
 		}
+
 		return capabilities;
 	}
+
 	override getName(): string {
 		return localize("name", "Merging: {0}", super.getName());
 	}
+
 	private readonly mergeEditorModeFactory = this._instaService.createInstance(
 		this.useWorkingCopy
 			? TempFileMergeEditorModeFactory
 			: WorkspaceMergeEditorModeFactory,
 		this._instaService.createInstance(MergeEditorTelemetry),
 	);
+
 	override async resolve(): Promise<IMergeEditorInputModel> {
 		if (!this._inputModel) {
 			const inputModel = this._register(
@@ -148,21 +160,28 @@ export class MergeEditorInput
 					result: this.result,
 				}),
 			);
+
 			this._inputModel = inputModel;
+
 			this._register(
 				autorun((reader) => {
 					/** @description fire dirty event */
 					inputModel.isDirty.read(reader);
+
 					this._onDidChangeDirty.fire();
 				}),
 			);
+
 			await this._inputModel.model.onInitialized;
 		}
+
 		return this._inputModel;
 	}
+
 	public async accept(): Promise<void> {
 		await this._inputModel?.accept();
 	}
+
 	override async save(
 		group: number,
 		options?: ITextFileSaveOptions | undefined,
@@ -171,6 +190,7 @@ export class MergeEditorInput
 
 		return undefined;
 	}
+
 	override toUntyped(): IResourceMergeEditorInput {
 		return {
 			input1: {
@@ -192,10 +212,12 @@ export class MergeEditorInput
 			},
 		};
 	}
+
 	override matches(otherInput: EditorInput | IUntypedEditorInput): boolean {
 		if (this === otherInput) {
 			return true;
 		}
+
 		if (otherInput instanceof MergeEditorInput) {
 			return (
 				isEqual(this.base, otherInput.base) &&
@@ -204,6 +226,7 @@ export class MergeEditorInput
 				isEqual(this.result, otherInput.result)
 			);
 		}
+
 		if (isResourceMergeEditorInput(otherInput)) {
 			return (
 				(this.editorId === otherInput.options?.override ||
@@ -214,8 +237,10 @@ export class MergeEditorInput
 				isEqual(this.result, otherInput.result.resource)
 			);
 		}
+
 		return false;
 	}
+
 	override async revert(
 		group: number,
 		options?: IRevertOptions,
@@ -226,6 +251,7 @@ export class MergeEditorInput
 	override isDirty(): boolean {
 		return this._inputModel?.isDirty.get() ?? false;
 	}
+
 	setLanguageId(languageId: string, source?: string): void {
 		this._inputModel?.model.setLanguageId(languageId, source);
 	}

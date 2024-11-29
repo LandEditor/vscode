@@ -8,9 +8,13 @@ import { OperatingSystem } from "./platform.js";
 
 export interface ModifierLabels {
 	readonly ctrlKey: string;
+
 	readonly shiftKey: string;
+
 	readonly altKey: string;
+
 	readonly metaKey: string;
+
 	readonly separator: string;
 }
 export interface KeyLabelProvider<T extends Modifiers> {
@@ -26,9 +30,12 @@ export class ModifierLabelProvider {
 	) {
 		this.modifierLabels = [null!]; // index 0 will never me accessed.
 		this.modifierLabels[OperatingSystem.Macintosh] = mac;
+
 		this.modifierLabels[OperatingSystem.Windows] = windows;
+
 		this.modifierLabels[OperatingSystem.Linux] = linux;
 	}
+
 	public toLabel<T extends Modifiers>(
 		OS: OperatingSystem,
 		chords: readonly T[],
@@ -37,6 +44,7 @@ export class ModifierLabelProvider {
 		if (chords.length === 0) {
 			return null;
 		}
+
 		const result: string[] = [];
 
 		for (let i = 0, len = chords.length; i < len; i++) {
@@ -48,12 +56,14 @@ export class ModifierLabelProvider {
 				// this keybinding cannot be expressed...
 				return null;
 			}
+
 			result[i] = _simpleAsString(
 				chord,
 				keyLabel,
 				this.modifierLabels[OS],
 			);
 		}
+
 		return result.join(" ");
 	}
 }
@@ -323,17 +333,21 @@ function _simpleAsString(
 	if (key === null) {
 		return "";
 	}
+
 	const result: string[] = [];
 	// translate modifier keys: Ctrl-Shift-Alt-Meta
 	if (modifiers.ctrlKey) {
 		result.push(labels.ctrlKey);
 	}
+
 	if (modifiers.shiftKey) {
 		result.push(labels.shiftKey);
 	}
+
 	if (modifiers.altKey) {
 		result.push(labels.altKey);
 	}
+
 	if (modifiers.metaKey) {
 		result.push(labels.metaKey);
 	}
@@ -341,5 +355,6 @@ function _simpleAsString(
 	if (key !== "") {
 		result.push(key);
 	}
+
 	return result.join(labels.separator);
 }

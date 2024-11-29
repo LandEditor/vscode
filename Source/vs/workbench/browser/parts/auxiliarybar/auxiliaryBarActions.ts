@@ -67,6 +67,7 @@ const auxiliaryBarLeftOffIcon = registerIcon(
 
 export class ToggleAuxiliaryBarAction extends Action2 {
 	static readonly ID = "workbench.action.toggleAuxiliaryBar";
+
 	static readonly LABEL = localize2(
 		"toggleAuxiliaryBar",
 		"Toggle Secondary Side Bar Visibility",
@@ -111,6 +112,7 @@ export class ToggleAuxiliaryBarAction extends Action2 {
 
 	override async run(accessor: ServicesAccessor): Promise<void> {
 		const layoutService = accessor.get(IWorkbenchLayoutService);
+
 		layoutService.setPartHidden(
 			layoutService.isVisible(Parts.AUXILIARYBAR_PART),
 			Parts.AUXILIARYBAR_PART,
@@ -123,6 +125,7 @@ registerAction2(ToggleAuxiliaryBarAction);
 registerAction2(
 	class FocusAuxiliaryBarAction extends Action2 {
 		static readonly ID = "workbench.action.focusAuxiliaryBar";
+
 		static readonly LABEL = localize2(
 			"focusAuxiliaryBar",
 			"Focus into Secondary Side Bar",
@@ -153,6 +156,7 @@ registerAction2(
 			const composite = paneCompositeService.getActivePaneComposite(
 				ViewContainerLocation.AuxiliaryBar,
 			);
+
 			composite?.focus();
 		}
 	},

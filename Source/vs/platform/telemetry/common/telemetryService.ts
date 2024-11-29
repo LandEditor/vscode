@@ -41,29 +41,48 @@ import {
 
 export interface ITelemetryServiceConfig {
 	appenders: ITelemetryAppender[];
+
 	sendErrorTelemetry?: boolean;
+
 	commonProperties?: ICommonProperties;
+
 	piiPaths?: string[];
 }
 export class TelemetryService implements ITelemetryService {
 	static readonly IDLE_START_EVENT_NAME = "UserIdleStart";
+
 	static readonly IDLE_STOP_EVENT_NAME = "UserIdleStop";
+
 	declare readonly _serviceBrand: undefined;
+
 	readonly sessionId: string;
+
 	readonly machineId: string;
+
 	readonly sqmId: string;
+
 	readonly devDeviceId: string;
+
 	readonly firstSessionDate: string;
+
 	readonly msftInternal: boolean | undefined;
+
 	private _appenders: ITelemetryAppender[];
+
 	private _commonProperties: ICommonProperties;
+
 	private _experimentProperties: {
 		[name: string]: string;
 	} = {};
+
 	private _piiPaths: string[];
+
 	private _telemetryLevel: TelemetryLevel;
+
 	private _sendErrorTelemetry: boolean;
+
 	private readonly _disposables = new DisposableStore();
+
 	private _cleanupPatterns: RegExp[] = [];
 
 	constructor(
@@ -74,21 +93,31 @@ export class TelemetryService implements ITelemetryService {
 		private _productService: IProductService,
 	) {
 		this._appenders = config.appenders;
+
 		this._commonProperties = config.commonProperties ?? Object.create(null);
+
 		this.sessionId = this._commonProperties["sessionID"] as string;
+
 		this.machineId = this._commonProperties["common.machineId"] as string;
+
 		this.sqmId = this._commonProperties["common.sqmId"] as string;
+
 		this.devDeviceId = this._commonProperties[
 			"common.devDeviceId"
 		] as string;
+
 		this.firstSessionDate = this._commonProperties[
 			"common.firstSessionDate"
 		] as string;
+
 		this.msftInternal = this._commonProperties["common.msftInternal"] as
 			| boolean
 			| undefined;
+
 		this._piiPaths = config.piiPaths || [];
+
 		this._telemetryLevel = TelemetryLevel.USAGE;
+
 		this._sendErrorTelemetry = !!config.sendErrorTelemetry;
 		// static cleanup pattern for: `vscode-file:///DANGEROUS/PATH/resources/app/Useful/Information`
 		this._cleanupPatterns = [
@@ -109,7 +138,9 @@ export class TelemetryService implements ITelemetryService {
 				);
 			}
 		}
+
 		this._updateTelemetryLevel();
+
 		this._disposables.add(
 			this._configurationService.onDidChangeConfiguration((e) => {
 				// Check on the telemetry settings and update the state if changed
@@ -124,9 +155,11 @@ export class TelemetryService implements ITelemetryService {
 			}),
 		);
 	}
+
 	setExperimentProperty(name: string, value: string): void {
 		this._experimentProperties[name] = value;
 	}
+
 	private _updateTelemetryLevel(): void {
 		let level = getTelemetryLevel(this._configurationService);
 
@@ -143,19 +176,25 @@ export class TelemetryService implements ITelemetryService {
 				: collectableTelemetry.error
 					? TelemetryLevel.ERROR
 					: TelemetryLevel.NONE;
+
 			level = Math.min(level, maxCollectableTelemetryLevel);
 		}
+
 		this._telemetryLevel = level;
 	}
+
 	get sendErrorTelemetry(): boolean {
 		return this._sendErrorTelemetry;
 	}
+
 	get telemetryLevel(): TelemetryLevel {
 		return this._telemetryLevel;
 	}
+
 	dispose(): void {
 		this._disposables.dispose();
 	}
+
 	private _log(
 		eventName: string,
 		eventLevel: TelemetryLevel,
@@ -174,15 +213,18 @@ export class TelemetryService implements ITelemetryService {
 		// Log to the appenders of sufficient level
 		this._appenders.forEach((a) => a.log(eventName, data));
 	}
+
 	publicLog(eventName: string, data?: ITelemetryData) {
 		this._log(eventName, TelemetryLevel.USAGE, data);
 	}
+
 	publicLog2<
 		E extends ClassifiedEvent<OmitMetadata<T>> = never,
 		T extends IGDPRProperty = never,
 	>(eventName: string, data?: StrictPropertyCheck<T, E>) {
 		this.publicLog(eventName, data as ITelemetryData);
 	}
+
 	publicLogError(errorEventName: string, data?: ITelemetryData) {
 		if (!this._sendErrorTelemetry) {
 			return;
@@ -190,6 +232,7 @@ export class TelemetryService implements ITelemetryService {
 		// Send error event and anonymize paths
 		this._log(errorEventName, TelemetryLevel.ERROR, data);
 	}
+
 	publicLogError2<
 		E extends ClassifiedEvent<OmitMetadata<T>> = never,
 		T extends IGDPRProperty = never,

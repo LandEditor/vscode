@@ -97,9 +97,11 @@ registerActiveXtermAction({
 		if (isDetachedTerminalInstance(activeInstance)) {
 			return;
 		}
+
 		const contr =
 			TerminalChatController.activeChatController ||
 			TerminalChatController.get(activeInstance);
+
 		contr?.terminalChatWidget?.clear();
 	},
 });
@@ -138,9 +140,11 @@ registerActiveXtermAction({
 		if (isDetachedTerminalInstance(activeInstance)) {
 			return;
 		}
+
 		const contr =
 			TerminalChatController.activeChatController ||
 			TerminalChatController.get(activeInstance);
+
 		contr?.terminalChatWidget?.acceptCommand(true);
 	},
 });
@@ -177,9 +181,11 @@ registerActiveXtermAction({
 		if (isDetachedTerminalInstance(activeInstance)) {
 			return;
 		}
+
 		const contr =
 			TerminalChatController.activeChatController ||
 			TerminalChatController.get(activeInstance);
+
 		contr?.terminalChatWidget?.acceptCommand(true);
 	},
 });
@@ -219,9 +225,11 @@ registerActiveXtermAction({
 		if (isDetachedTerminalInstance(activeInstance)) {
 			return;
 		}
+
 		const contr =
 			TerminalChatController.activeChatController ||
 			TerminalChatController.get(activeInstance);
+
 		contr?.terminalChatWidget?.acceptCommand(false);
 	},
 });
@@ -258,9 +266,11 @@ registerActiveXtermAction({
 		if (isDetachedTerminalInstance(activeInstance)) {
 			return;
 		}
+
 		const contr =
 			TerminalChatController.activeChatController ||
 			TerminalChatController.get(activeInstance);
+
 		contr?.terminalChatWidget?.acceptCommand(false);
 	},
 });
@@ -293,9 +303,11 @@ registerActiveXtermAction({
 		if (isDetachedTerminalInstance(activeInstance)) {
 			return;
 		}
+
 		const contr =
 			TerminalChatController.activeChatController ||
 			TerminalChatController.get(activeInstance);
+
 		contr?.viewInChat();
 	},
 });

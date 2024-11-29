@@ -42,6 +42,7 @@ import {
 @extHostNamedCustomer(MainContext.MainThreadSearch)
 export class MainThreadSearch implements MainThreadSearchShape {
 	private readonly _proxy: ExtHostSearchShape;
+
 	private readonly _searchProvider = new Map<number, RemoteSearchProvider>();
 
 	constructor(
@@ -56,10 +57,13 @@ export class MainThreadSearch implements MainThreadSearchShape {
 		protected contextKeyService: IContextKeyService,
 	) {
 		this._proxy = extHostContext.getProxy(ExtHostContext.ExtHostSearch);
+
 		this._proxy.$enableExtensionHostSearch();
 	}
+
 	dispose(): void {
 		this._searchProvider.forEach((value) => value.dispose());
+
 		this._searchProvider.clear();
 	}
 	$registerTextSearchProvider(handle: number, scheme: string): void {
@@ -78,6 +82,7 @@ export class MainThreadSearch implements MainThreadSearchShape {
 		Constants.SearchContext.hasAIResultProvider
 			.bindTo(this.contextKeyService)
 			.set(true);
+
 		this._searchProvider.set(
 			handle,
 			new RemoteSearchProvider(
@@ -103,6 +108,7 @@ export class MainThreadSearch implements MainThreadSearchShape {
 	}
 	$unregisterProvider(handle: number): void {
 		dispose(this._searchProvider.get(handle));
+
 		this._searchProvider.delete(handle);
 	}
 	$handleFileMatch(
@@ -115,6 +121,7 @@ export class MainThreadSearch implements MainThreadSearchShape {
 		if (!provider) {
 			throw new Error("Got result for unknown provider");
 		}
+
 		provider.handleFindMatch(session, data);
 	}
 	$handleTextMatch(
@@ -127,6 +134,7 @@ export class MainThreadSearch implements MainThreadSearchShape {
 		if (!provider) {
 			throw new Error("Got result for unknown provider");
 		}
+
 		provider.handleFindMatch(session, data);
 	}
 	$handleTelemetry(eventName: string, data: any): void {
@@ -143,6 +151,7 @@ class SearchOperation {
 	) {
 		//
 	}
+
 	addMatch(match: IFileMatch): void {
 		const existingMatch = this.matches.get(match.resource.toString());
 
@@ -156,12 +165,15 @@ class SearchOperation {
 		} else {
 			this.matches.set(match.resource.toString(), match);
 		}
+
 		this.progress?.(match);
 	}
 }
 class RemoteSearchProvider implements ISearchResultProvider, IDisposable {
 	private readonly _registrations = new DisposableStore();
+
 	private readonly _searches = new Map<number, SearchOperation>();
+
 	private cachedAIName: string | undefined;
 
 	constructor(
@@ -179,21 +191,26 @@ class RemoteSearchProvider implements ISearchResultProvider, IDisposable {
 			),
 		);
 	}
+
 	async getAIName(): Promise<string | undefined> {
 		if (this.cachedAIName === undefined) {
 			this.cachedAIName = await this._proxy.$getAIName(this._handle);
 		}
+
 		return this.cachedAIName;
 	}
+
 	dispose(): void {
 		this._registrations.dispose();
 	}
+
 	fileSearch(
 		query: IFileQuery,
 		token: CancellationToken = CancellationToken.None,
 	): Promise<ISearchComplete> {
 		return this.doSearch(query, undefined, token);
 	}
+
 	textSearch(
 		query: ITextQuery,
 		onProgress?: (p: ISearchProgressItem) => void,
@@ -201,6 +218,7 @@ class RemoteSearchProvider implements ISearchResultProvider, IDisposable {
 	): Promise<ISearchComplete> {
 		return this.doSearch(query, onProgress, token);
 	}
+
 	doSearch(
 		query: ISearchQuery,
 		onProgress?: (p: ISearchProgressItem) => void,
@@ -209,7 +227,9 @@ class RemoteSearchProvider implements ISearchResultProvider, IDisposable {
 		if (!query.folderQueries.length) {
 			throw new Error("Empty folderQueries");
 		}
+
 		const search = new SearchOperation(onProgress);
+
 		this._searches.set(search.id, search);
 
 		const searchP = this._provideSearchResults(query, search.id, token);
@@ -232,9 +252,11 @@ class RemoteSearchProvider implements ISearchResultProvider, IDisposable {
 			},
 		);
 	}
+
 	clearCache(cacheKey: string): Promise<void> {
 		return Promise.resolve(this._proxy.$clearCache(cacheKey));
 	}
+
 	handleFindMatch(
 		session: number,
 		dataOrUri: Array<UriComponents | IRawFileMatch2>,
@@ -245,6 +267,7 @@ class RemoteSearchProvider implements ISearchResultProvider, IDisposable {
 			// ignore...
 			return;
 		}
+
 		dataOrUri.forEach((result) => {
 			if ((<IRawFileMatch2>result).results) {
 				searchOp.addMatch(revive(<IRawFileMatch2>result));
@@ -255,6 +278,7 @@ class RemoteSearchProvider implements ISearchResultProvider, IDisposable {
 			}
 		});
 	}
+
 	private _provideSearchResults(
 		query: ISearchQuery,
 		session: number,

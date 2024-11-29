@@ -102,24 +102,32 @@ export class LinkedEditingContribution
 	private _debounceDuration: number | undefined;
 
 	private readonly _editor: ICodeEditor;
+
 	private readonly _providers: LanguageFeatureRegistry<LinkedEditingRangeProvider>;
+
 	private _enabled: boolean;
 
 	private readonly _visibleContextKey: IContextKey<boolean>;
+
 	private readonly _debounceInformation: IFeatureDebounceInformation;
 
 	private _rangeUpdateTriggerPromise: Promise<any> | null;
+
 	private _rangeSyncTriggerPromise: Promise<any> | null;
 
 	private _currentRequestCts: CancellationTokenSource | null;
+
 	private _currentRequestPosition: Position | null;
+
 	private _currentRequestModelVersion: number | null;
 
 	private _currentDecorations: IEditorDecorationsCollection; // The one at index 0 is the reference one
 	private _syncRangesToken: number = 0;
 
 	private _languageWordPattern: RegExp | null;
+
 	private _currentWordPattern: RegExp | null;
+
 	private _ignoreChangeEvent: boolean;
 
 	private readonly _localToDispose = this._register(new DisposableStore());
@@ -135,11 +143,16 @@ export class LinkedEditingContribution
 		languageFeatureDebounceService: ILanguageFeatureDebounceService,
 	) {
 		super();
+
 		this._editor = editor;
+
 		this._providers = languageFeaturesService.linkedEditingRangeProvider;
+
 		this._enabled = false;
+
 		this._visibleContextKey =
 			CONTEXT_ONTYPE_RENAME_INPUT_VISIBLE.bindTo(contextKeyService);
+
 		this._debounceInformation = languageFeatureDebounceService.for(
 			this._providers,
 			"Linked Editing",
@@ -147,16 +160,23 @@ export class LinkedEditingContribution
 		);
 
 		this._currentDecorations = this._editor.createDecorationsCollection();
+
 		this._languageWordPattern = null;
+
 		this._currentWordPattern = null;
+
 		this._ignoreChangeEvent = false;
+
 		this._localToDispose = this._register(new DisposableStore());
 
 		this._rangeUpdateTriggerPromise = null;
+
 		this._rangeSyncTriggerPromise = null;
 
 		this._currentRequestCts = null;
+
 		this._currentRequestPosition = null;
+
 		this._currentRequestModelVersion = null;
 
 		this._register(
@@ -173,9 +193,11 @@ export class LinkedEditingContribution
 				}
 			}),
 		);
+
 		this._register(
 			this._providers.onDidChange(() => this.reinitialize(false)),
 		);
+
 		this._register(
 			this._editor.onDidChangeModelLanguage(() =>
 				this.reinitialize(true),
@@ -201,6 +223,7 @@ export class LinkedEditingContribution
 		this._enabled = isEnabled;
 
 		this.clearRanges();
+
 		this._localToDispose.clear();
 
 		if (!isEnabled || model === null) {
@@ -237,11 +260,13 @@ export class LinkedEditingContribution
 				this._syncRanges(token),
 			);
 		};
+
 		this._localToDispose.add(
 			this._editor.onDidChangeCursorPosition(() => {
 				triggerRangeUpdate();
 			}),
 		);
+
 		this._localToDispose.add(
 			this._editor.onDidChangeModelContent((e) => {
 				if (!this._ignoreChangeEvent) {
@@ -261,15 +286,19 @@ export class LinkedEditingContribution
 						}
 					}
 				}
+
 				triggerRangeUpdate();
 			}),
 		);
+
 		this._localToDispose.add({
 			dispose: () => {
 				rangeUpdateScheduler.dispose();
+
 				rangeSyncScheduler.dispose();
 			},
 		});
+
 		this.updateRanges();
 	}
 
@@ -315,6 +344,7 @@ export class LinkedEditingContribution
 			if (!mirrorRange) {
 				continue;
 			}
+
 			if (mirrorRange.startLineNumber !== mirrorRange.endLineNumber) {
 				edits.push({
 					range: mirrorRange,
@@ -333,19 +363,25 @@ export class LinkedEditingContribution
 					oldValue,
 					newValue,
 				);
+
 				rangeStartColumn += commonPrefixLength;
+
 				oldValue = oldValue.substr(commonPrefixLength);
+
 				newValue = newValue.substr(commonPrefixLength);
 
 				const commonSuffixLength = strings.commonSuffixLength(
 					oldValue,
 					newValue,
 				);
+
 				rangeEndColumn -= commonSuffixLength;
+
 				oldValue = oldValue.substr(
 					0,
 					oldValue.length - commonSuffixLength,
 				);
+
 				newValue = newValue.substr(
 					0,
 					newValue.length - commonSuffixLength,
@@ -374,12 +410,15 @@ export class LinkedEditingContribution
 
 		try {
 			this._editor.popUndoStop();
+
 			this._ignoreChangeEvent = true;
 
 			const prevEditOperationType = this._editor
 				._getViewModel()
 				.getPrevEditOperationType();
+
 			this._editor.executeEdits("linkedEditing", edits);
+
 			this._editor
 				._getViewModel()
 				.setPrevEditOperationType(prevEditOperationType);
@@ -396,11 +435,14 @@ export class LinkedEditingContribution
 
 	public clearRanges(): void {
 		this._visibleContextKey.set(false);
+
 		this._currentDecorations.clear();
 
 		if (this._currentRequestCts) {
 			this._currentRequestCts.cancel();
+
 			this._currentRequestCts = null;
+
 			this._currentRequestPosition = null;
 		}
 	}
@@ -443,6 +485,7 @@ export class LinkedEditingContribution
 			if (position.equals(this._currentRequestPosition)) {
 				return; // same position
 			}
+
 			if (this._currentDecorations.length > 0) {
 				const range = this._currentDecorations.getRange(0);
 
@@ -456,6 +499,7 @@ export class LinkedEditingContribution
 		this.clearRanges();
 
 		this._currentRequestPosition = position;
+
 		this._currentRequestModelVersion = modelVersionId;
 
 		const currentRequestCts = (this._currentRequestCts =
@@ -470,11 +514,13 @@ export class LinkedEditingContribution
 				position,
 				currentRequestCts.token,
 			);
+
 			this._debounceInformation.update(model, sw.elapsed());
 
 			if (currentRequestCts !== this._currentRequestCts) {
 				return;
 			}
+
 			this._currentRequestCts = null;
 
 			if (modelVersionId !== model.getVersionId()) {
@@ -498,9 +544,12 @@ export class LinkedEditingContribution
 
 					if (i !== 0) {
 						const referenceRange = ranges[i];
+
 						ranges.splice(i, 1);
+
 						ranges.unshift(referenceRange);
 					}
+
 					break;
 				}
 			}
@@ -518,13 +567,17 @@ export class LinkedEditingContribution
 					options: LinkedEditingContribution.DECORATION,
 				}),
 			);
+
 			this._visibleContextKey.set(true);
+
 			this._currentDecorations.set(decorations);
+
 			this._syncRangesToken++; // cancel any pending syncRanges call
 		} catch (err) {
 			if (!isCancellationError(err)) {
 				onUnexpectedError(err);
 			}
+
 			if (
 				this._currentRequestCts === currentRequestCts ||
 				!this._currentRequestCts
@@ -600,7 +653,9 @@ export class LinkedEditingAction extends EditorAction {
 					if (!editor) {
 						return;
 					}
+
 					editor.setPosition(pos);
+
 					editor.invokeWithinContext((accessor) => {
 						this.reportTelemetry(accessor, editor);
 
@@ -618,6 +673,7 @@ export class LinkedEditingAction extends EditorAction {
 		if (controller) {
 			return Promise.resolve(controller.updateRanges(true));
 		}
+
 		return Promise.resolve();
 	}
 }

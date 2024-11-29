@@ -13,9 +13,13 @@ import {
 
 export interface ISearchHistoryService {
 	readonly _serviceBrand: undefined;
+
 	onDidClearHistory: Event<void>;
+
 	clearHistory(): void;
+
 	load(): ISearchHistoryValues;
+
 	save(history: ISearchHistoryValues): void;
 }
 export const ISearchHistoryService = createDecorator<ISearchHistoryService>(
@@ -24,27 +28,36 @@ export const ISearchHistoryService = createDecorator<ISearchHistoryService>(
 
 export interface ISearchHistoryValues {
 	search?: string[];
+
 	replace?: string[];
+
 	include?: string[];
+
 	exclude?: string[];
 }
 export class SearchHistoryService implements ISearchHistoryService {
 	declare readonly _serviceBrand: undefined;
+
 	public static readonly SEARCH_HISTORY_KEY = "workbench.search.history";
+
 	private readonly _onDidClearHistory = new Emitter<void>();
+
 	readonly onDidClearHistory: Event<void> = this._onDidClearHistory.event;
 
 	constructor(
 		@IStorageService
 		private readonly storageService: IStorageService,
 	) {}
+
 	clearHistory(): void {
 		this.storageService.remove(
 			SearchHistoryService.SEARCH_HISTORY_KEY,
 			StorageScope.WORKSPACE,
 		);
+
 		this._onDidClearHistory.fire();
 	}
+
 	load(): ISearchHistoryValues {
 		let result: ISearchHistoryValues | undefined;
 
@@ -60,8 +73,10 @@ export class SearchHistoryService implements ISearchHistoryService {
 				// Invalid data
 			}
 		}
+
 		return result || {};
 	}
+
 	save(history: ISearchHistoryValues): void {
 		if (isEmptyObject(history)) {
 			this.storageService.remove(

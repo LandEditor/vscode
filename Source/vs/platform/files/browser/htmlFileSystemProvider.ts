@@ -61,6 +61,7 @@ export class HTMLFileSystemProvider
 	//#endregion
 	//#region File Capabilities
 	private extUri = isLinux ? extUri : extUriIgnorePathCase;
+
 	private _capabilities: FileSystemProviderCapabilities | undefined;
 
 	get capabilities(): FileSystemProviderCapabilities {
@@ -74,6 +75,7 @@ export class HTMLFileSystemProvider
 					FileSystemProviderCapabilities.PathCaseSensitive;
 			}
 		}
+
 		return this._capabilities;
 	}
 	//#endregion
@@ -96,6 +98,7 @@ export class HTMLFileSystemProvider
 					FileSystemProviderErrorCode.FileNotFound,
 				);
 			}
+
 			if (WebFileSystemAccess.isFileSystemFileHandle(handle)) {
 				const file = await handle.getFile();
 
@@ -106,6 +109,7 @@ export class HTMLFileSystemProvider
 					size: file.size,
 				};
 			}
+
 			return {
 				type: FileType.Directory,
 				mtime: 0,
@@ -116,6 +120,7 @@ export class HTMLFileSystemProvider
 			throw this.toFileSystemProviderError(error);
 		}
 	}
+
 	async readdir(resource: URI): Promise<[string, FileType][]> {
 		try {
 			const handle = await this.getDirectoryHandle(resource);
@@ -127,6 +132,7 @@ export class HTMLFileSystemProvider
 					FileSystemProviderErrorCode.FileNotFound,
 				);
 			}
+
 			const result: [string, FileType][] = [];
 
 			for await (const [name, child] of handle) {
@@ -137,6 +143,7 @@ export class HTMLFileSystemProvider
 						: FileType.Directory,
 				]);
 			}
+
 			return result;
 		} catch (error) {
 			throw this.toFileSystemProviderError(error);
@@ -170,6 +177,7 @@ export class HTMLFileSystemProvider
 						FileSystemProviderErrorCode.FileNotFound,
 					);
 				}
+
 				const file = await handle.getFile();
 				// Partial file: implemented simply via `readFile`
 				if (
@@ -181,9 +189,11 @@ export class HTMLFileSystemProvider
 					if (typeof opts?.position === "number") {
 						buffer = buffer.slice(opts.position);
 					}
+
 					if (typeof opts?.length === "number") {
 						buffer = buffer.slice(0, opts.length);
 					}
+
 					stream.end(buffer);
 				}
 				// Entire file
@@ -205,18 +215,22 @@ export class HTMLFileSystemProvider
 						if (token.isCancellationRequested) {
 							break;
 						}
+
 						res = await reader.read();
 					}
+
 					stream.end(undefined);
 				}
 			} catch (error) {
 				stream.error(this.toFileSystemProviderError(error));
+
 				stream.end();
 			}
 		})();
 
 		return stream;
 	}
+
 	async readFile(resource: URI): Promise<Uint8Array> {
 		try {
 			const handle = await this.getFileHandle(resource);
@@ -228,6 +242,7 @@ export class HTMLFileSystemProvider
 					FileSystemProviderErrorCode.FileNotFound,
 				);
 			}
+
 			const file = await handle.getFile();
 
 			return new Uint8Array(await file.arrayBuffer());
@@ -235,6 +250,7 @@ export class HTMLFileSystemProvider
 			throw this.toFileSystemProviderError(error);
 		}
 	}
+
 	async writeFile(
 		resource: URI,
 		content: Uint8Array,
@@ -243,6 +259,7 @@ export class HTMLFileSystemProvider
 		try {
 			let handle = await this.getFileHandle(resource);
 			// Validate target unless { create: true, overwrite: true }
+
 			if (!opts.create || !opts.overwrite) {
 				if (handle) {
 					if (!opts.overwrite) {
@@ -275,6 +292,7 @@ export class HTMLFileSystemProvider
 						FileSystemProviderErrorCode.FileNotFound,
 					);
 				}
+
 				handle = await parent.getFileHandle(
 					this.extUri.basename(resource),
 					{ create: true },
@@ -290,7 +308,9 @@ export class HTMLFileSystemProvider
 			}
 			// Write to target overwriting any existing contents
 			const writable = await handle.createWritable();
+
 			await writable.write(content);
+
 			await writable.close();
 		} catch (error) {
 			throw this.toFileSystemProviderError(error);
@@ -311,6 +331,7 @@ export class HTMLFileSystemProvider
 					FileSystemProviderErrorCode.FileNotFound,
 				);
 			}
+
 			await parent.getDirectoryHandle(this.extUri.basename(resource), {
 				create: true,
 			});
@@ -318,6 +339,7 @@ export class HTMLFileSystemProvider
 			throw this.toFileSystemProviderError(error);
 		}
 	}
+
 	async delete(resource: URI, opts: IFileDeleteOptions): Promise<void> {
 		try {
 			const parent = await this.getDirectoryHandle(
@@ -331,6 +353,7 @@ export class HTMLFileSystemProvider
 					FileSystemProviderErrorCode.FileNotFound,
 				);
 			}
+
 			return parent.removeEntry(this.extUri.basename(resource), {
 				recursive: opts.recursive,
 			});
@@ -338,6 +361,7 @@ export class HTMLFileSystemProvider
 			throw this.toFileSystemProviderError(error);
 		}
 	}
+
 	async rename(
 		from: URI,
 		to: URI,
@@ -354,12 +378,14 @@ export class HTMLFileSystemProvider
 				const file = await fileHandle.getFile();
 
 				const contents = new Uint8Array(await file.arrayBuffer());
+
 				await this.writeFile(to, contents, {
 					create: true,
 					overwrite: opts.overwrite,
 					unlock: false,
 					atomic: false,
 				});
+
 				await this.delete(from, {
 					recursive: false,
 					useTrash: false,
@@ -386,9 +412,12 @@ export class HTMLFileSystemProvider
 	private readonly _onDidChangeFileEmitter = this._register(
 		new Emitter<readonly IFileChange[]>(),
 	);
+
 	readonly onDidChangeFile = this._onDidChangeFileEmitter.event;
+
 	watch(resource: URI, opts: IWatchOptions): IDisposable {
 		const disposables = new DisposableStore();
+
 		this.doWatch(resource, opts, disposables).catch((error) =>
 			this.logService.error(
 				`[File Watcher ('FileSystemObserver')] Error: ${error} (${resource})`,
@@ -397,6 +426,7 @@ export class HTMLFileSystemProvider
 
 		return disposables;
 	}
+
 	private async doWatch(
 		resource: URI,
 		opts: IWatchOptions,
@@ -405,16 +435,19 @@ export class HTMLFileSystemProvider
 		if (!WebFileSystemObserver.supported(globalThis)) {
 			return;
 		}
+
 		const handle = await this.getHandle(resource);
 
 		if (!handle || disposables.isDisposed) {
 			return;
 		}
+
 		const observer = new (globalThis as any).FileSystemObserver(
 			(records: FileSystemObserverRecord[]) => {
 				if (disposables.isDisposed) {
 					return;
 				}
+
 				const events: IFileChange[] = [];
 
 				for (const record of records) {
@@ -423,6 +456,7 @@ export class HTMLFileSystemProvider
 							`[File Watcher ('FileSystemObserver')] [${record.type}] ${joinPath(resource, ...record.relativePathComponents)}`,
 						);
 					}
+
 					switch (record.type) {
 						case "appeared":
 							events.push({
@@ -461,9 +495,11 @@ export class HTMLFileSystemProvider
 							this.logService.trace(
 								`[File Watcher ('FileSystemObserver')] errored, disposing observer (${resource})`,
 							);
+
 							disposables.dispose();
 					}
 				}
+
 				if (events.length) {
 					this._onDidChangeFileEmitter.fire(events);
 				}
@@ -486,19 +522,24 @@ export class HTMLFileSystemProvider
 	//#endregion
 	//#region File/Directoy Handle Registry
 	private readonly _files = new Map<string, FileSystemFileHandle>();
+
 	private readonly _directories = new Map<
 		string,
 		FileSystemDirectoryHandle
 	>();
+
 	registerFileHandle(handle: FileSystemFileHandle): Promise<URI> {
 		return this.registerHandle(handle, this._files);
 	}
+
 	registerDirectoryHandle(handle: FileSystemDirectoryHandle): Promise<URI> {
 		return this.registerHandle(handle, this._directories);
 	}
+
 	get directories(): Iterable<FileSystemDirectoryHandle> {
 		return this._directories.values();
 	}
+
 	private async registerHandle(
 		handle: FileSystemHandle,
 		map: Map<string, FileSystemHandle>,
@@ -522,6 +563,7 @@ export class HTMLFileSystemProvider
 				!(await map.get(handleId)?.isSameEntry(handle))
 			);
 		}
+
 		map.set(handleId, handle);
 		// Remember in IndexDB for future lookup
 		try {
@@ -533,8 +575,10 @@ export class HTMLFileSystemProvider
 		} catch (error) {
 			this.logService.error(error);
 		}
+
 		return URI.from({ scheme: Schemas.file, path: handleId });
 	}
+
 	async getHandle(resource: URI): Promise<FileSystemHandle | undefined> {
 		// First: try to find a well known handle first
 		let handle = await this.doGetHandle(resource);
@@ -558,8 +602,10 @@ export class HTMLFileSystemProvider
 				}
 			}
 		}
+
 		return handle;
 	}
+
 	private async getFileHandle(
 		resource: URI,
 	): Promise<FileSystemFileHandle | undefined> {
@@ -568,6 +614,7 @@ export class HTMLFileSystemProvider
 		if (handle instanceof FileSystemFileHandle) {
 			return handle;
 		}
+
 		const parent = await this.getDirectoryHandle(
 			this.extUri.dirname(resource),
 		);
@@ -578,6 +625,7 @@ export class HTMLFileSystemProvider
 			return undefined; // guard against possible DOMException
 		}
 	}
+
 	private async getDirectoryHandle(
 		resource: URI,
 	): Promise<FileSystemDirectoryHandle | undefined> {
@@ -586,11 +634,13 @@ export class HTMLFileSystemProvider
 		if (handle instanceof FileSystemDirectoryHandle) {
 			return handle;
 		}
+
 		const parentUri = this.extUri.dirname(resource);
 
 		if (this.extUri.isEqual(parentUri, resource)) {
 			return undefined; // return when root is reached to prevent infinite recursion
 		}
+
 		const parent = await this.getDirectoryHandle(parentUri);
 
 		try {
@@ -599,6 +649,7 @@ export class HTMLFileSystemProvider
 			return undefined; // guard against possible DOMException
 		}
 	}
+
 	private async doGetHandle(
 		resource: URI,
 	): Promise<FileSystemHandle | undefined> {
@@ -607,6 +658,7 @@ export class HTMLFileSystemProvider
 		if (this.extUri.dirname(resource).path !== "/") {
 			return undefined;
 		}
+
 		const handleId = resource.path.replace(/\/$/, ""); // remove potential slash from the end of the path
 		// First: check if we have a known handle stored in memory
 		const inMemoryHandle =
@@ -635,6 +687,7 @@ export class HTMLFileSystemProvider
 			} catch (error) {
 				this.logService.error(error); // this can fail with a DOMException
 			}
+
 			if (hasPermissions) {
 				if (
 					WebFileSystemAccess.isFileSystemFileHandle(persistedHandle)
@@ -647,6 +700,7 @@ export class HTMLFileSystemProvider
 				) {
 					this._directories.set(handleId, persistedHandle);
 				}
+
 				return persistedHandle;
 			}
 		}
@@ -662,6 +716,7 @@ export class HTMLFileSystemProvider
 		if (error instanceof FileSystemProviderError) {
 			return error; // avoid double conversion
 		}
+
 		let code = FileSystemProviderErrorCode.Unknown;
 
 		if (error.name === "NotAllowedError") {
@@ -671,10 +726,13 @@ export class HTMLFileSystemProvider
 					"Insufficient permissions. Please retry and allow the operation.",
 				),
 			);
+
 			code = FileSystemProviderErrorCode.Unavailable;
 		}
+
 		return createFileSystemProviderError(error, code);
 	}
+
 	private createFileSystemProviderError(
 		resource: URI,
 		msg: string,

@@ -13,6 +13,7 @@ export const enum TerminalStickyScrollSettingId {
 }
 export interface ITerminalStickyScrollConfiguration {
 	enabled: boolean;
+
 	maxLineCount: number;
 }
 export const terminalStickyScrollConfiguration: IStringDictionary<IConfigurationPropertySchema> =

@@ -66,10 +66,13 @@ class MonacoWebWorkerImpl<T extends object>
 	implements MonacoWebWorker<T>
 {
 	private readonly _foreignModuleId: string;
+
 	private readonly _foreignModuleHost: {
 		[method: string]: Function;
 	} | null;
+
 	private _foreignModuleCreateData: any | null;
+
 	private _foreignProxy: Promise<T> | null;
 
 	constructor(modelService: IModelService, opts: IWebWorkerOptions) {
@@ -81,9 +84,13 @@ class MonacoWebWorkerImpl<T extends object>
 		};
 
 		super(workerDescriptor, opts.keepIdleModels || false, modelService);
+
 		this._foreignModuleId = opts.moduleId;
+
 		this._foreignModuleCreateData = opts.createData || null;
+
 		this._foreignModuleHost = opts.host || null;
+
 		this._foreignProxy = null;
 	}
 	// foreign host request
@@ -100,6 +107,7 @@ class MonacoWebWorkerImpl<T extends object>
 				),
 			);
 		}
+
 		try {
 			return Promise.resolve(
 				this._foreignModuleHost[method].apply(
@@ -111,6 +119,7 @@ class MonacoWebWorkerImpl<T extends object>
 			return Promise.reject(e);
 		}
 	}
+
 	private _getForeignProxy(): Promise<T> {
 		if (!this._foreignProxy) {
 			this._foreignProxy = this._getProxy().then((proxy) => {
@@ -160,15 +169,19 @@ class MonacoWebWorkerImpl<T extends object>
 									proxyMethodRequest,
 								);
 						}
+
 						return foreignProxy;
 					});
 			});
 		}
+
 		return this._foreignProxy;
 	}
+
 	public getProxy(): Promise<T> {
 		return this._getForeignProxy();
 	}
+
 	public withSyncedResources(resources: URI[]): Promise<T> {
 		return this.workerWithSyncedResources(resources).then((_) =>
 			this.getProxy(),

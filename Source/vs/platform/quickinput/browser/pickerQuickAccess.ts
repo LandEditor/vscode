@@ -107,6 +107,7 @@ export type Pick<T> = T | IQuickPickSeparator;
 
 export type PicksWithActive<T> = {
 	items: readonly Pick<T>[];
+
 	active?: T;
 };
 
@@ -151,6 +152,7 @@ export abstract class PickerQuickAccessProvider<
 	) {
 		super();
 	}
+
 	provide(
 		picker: IQuickPick<
 			T,
@@ -180,6 +182,7 @@ export abstract class PickerQuickAccessProvider<
 				new DisposableStore());
 			// Cancel any previous ask for picks and busy
 			picksCts?.dispose(true);
+
 			picker.busy = false;
 			// Create new cancellation source for this run
 			picksCts = new CancellationTokenSource(token);
@@ -191,6 +194,7 @@ export abstract class PickerQuickAccessProvider<
 			if (!this.options?.shouldSkipTrimPickFilter) {
 				picksFilter = picksFilter.trim();
 			}
+
 			const providedPicks = this._getPicks(
 				picksFilter,
 				picksDisposables,
@@ -208,10 +212,12 @@ export abstract class PickerQuickAccessProvider<
 
 				if (isPicksWithActive(picks)) {
 					items = picks.items;
+
 					activeItem = picks.active;
 				} else {
 					items = picks;
 				}
+
 				if (items.length === 0) {
 					if (skipEmpty) {
 						return false;
@@ -228,11 +234,13 @@ export abstract class PickerQuickAccessProvider<
 						}
 					}
 				}
+
 				picker.items = items;
 
 				if (activeItem) {
 					picker.activeItems = [activeItem];
 				}
+
 				return true;
 			};
 
@@ -242,6 +250,7 @@ export abstract class PickerQuickAccessProvider<
 				let fastPicksApplied = false;
 
 				let slowPicksApplied = false;
+
 				await Promise.all([
 					// Fast Picks: if `mergeDelay` is configured, in order to reduce
 					// amount of flicker, we race against the slow picks over some delay
@@ -256,6 +265,7 @@ export abstract class PickerQuickAccessProvider<
 								return;
 							}
 						}
+
 						if (!slowPicksApplied) {
 							fastPicksApplied = applyPicks(
 								fastAndSlowPicks.picks,
@@ -276,16 +286,19 @@ export abstract class PickerQuickAccessProvider<
 							if (picksToken.isCancellationRequested) {
 								return;
 							}
+
 							let picks: readonly Pick<T>[];
 
 							let activePick: Pick<T> | undefined = undefined;
 
 							if (isPicksWithActive(fastAndSlowPicks.picks)) {
 								picks = fastAndSlowPicks.picks.items;
+
 								activePick = fastAndSlowPicks.picks.active;
 							} else {
 								picks = fastAndSlowPicks.picks;
 							}
+
 							let additionalPicks: readonly Pick<T>[];
 
 							let additionalActivePick: Pick<T> | undefined =
@@ -293,11 +306,13 @@ export abstract class PickerQuickAccessProvider<
 
 							if (isPicksWithActive(awaitedAdditionalPicks)) {
 								additionalPicks = awaitedAdditionalPicks.items;
+
 								additionalActivePick =
 									awaitedAdditionalPicks.active;
 							} else {
 								additionalPicks = awaitedAdditionalPicks;
 							}
+
 							if (
 								additionalPicks.length > 0 ||
 								!fastPicksApplied
@@ -325,6 +340,7 @@ export abstract class PickerQuickAccessProvider<
 											fallbackActivePickCandidate;
 									}
 								}
+
 								applyPicks({
 									items: [...picks, ...additionalPicks],
 									active:
@@ -337,6 +353,7 @@ export abstract class PickerQuickAccessProvider<
 							if (!picksToken.isCancellationRequested) {
 								picker.busy = false;
 							}
+
 							slowPicksApplied = true;
 						}
 					})(),
@@ -364,6 +381,7 @@ export abstract class PickerQuickAccessProvider<
 					if (picksToken.isCancellationRequested) {
 						return;
 					}
+
 					if (isFastAndSlowPicks(awaitedPicks)) {
 						await applyFastAndSlowPicks(awaitedPicks);
 					} else {
@@ -376,7 +394,9 @@ export abstract class PickerQuickAccessProvider<
 				}
 			}
 		};
+
 		disposables.add(picker.onDidChangeValue(() => updatePickerItems()));
+
 		updatePickerItems();
 		// Accept the pick on accept and hide picker
 		disposables.add(
@@ -385,6 +405,7 @@ export abstract class PickerQuickAccessProvider<
 					if (!event.inBackground) {
 						picker.hide(); // hide picker unless we accept in background
 					}
+
 					runOptions.handleAccept?.(
 						picker.activeItems[0],
 						event.inBackground,
@@ -392,12 +413,14 @@ export abstract class PickerQuickAccessProvider<
 
 					return;
 				}
+
 				const [item] = picker.selectedItems;
 
 				if (typeof item?.accept === "function") {
 					if (!event.inBackground) {
 						picker.hide(); // hide picker unless we accept in background
 					}
+
 					item.accept(picker.keyMods, event);
 				}
 			}),
@@ -410,6 +433,7 @@ export abstract class PickerQuickAccessProvider<
 			if (typeof item.trigger !== "function") {
 				return;
 			}
+
 			const buttonIndex = item.buttons?.indexOf(button) ?? -1;
 
 			if (buttonIndex >= 0) {
@@ -421,6 +445,7 @@ export abstract class PickerQuickAccessProvider<
 				if (token.isCancellationRequested) {
 					return;
 				}
+
 				switch (action) {
 					case TriggerAction.NO_ACTION:
 						break;
@@ -449,15 +474,19 @@ export abstract class PickerQuickAccessProvider<
 
 							const keepScrollPositionBefore =
 								picker.keepScrollPosition;
+
 							picker.keepScrollPosition = true;
+
 							picker.items = items;
 
 							if (activeItems) {
 								picker.activeItems = activeItems;
 							}
+
 							picker.keepScrollPosition =
 								keepScrollPositionBefore;
 						}
+
 						break;
 					}
 				}
@@ -469,6 +498,7 @@ export abstract class PickerQuickAccessProvider<
 				buttonTrigger(button, item),
 			),
 		);
+
 		disposables.add(
 			picker.onDidTriggerSeparatorButton(({ button, separator }) =>
 				buttonTrigger(button, separator),

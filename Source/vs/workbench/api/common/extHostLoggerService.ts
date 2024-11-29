@@ -24,6 +24,7 @@ export class ExtHostLoggerService
 	implements ExtHostLogLevelServiceShape
 {
 	declare readonly _serviceBrand: undefined;
+
 	protected readonly _proxy: MainThreadLoggerShape;
 
 	constructor(
@@ -37,6 +38,7 @@ export class ExtHostLoggerService
 			initData.logsLocation,
 			initData.loggers.map((logger) => revive(logger)),
 		);
+
 		this._proxy = rpc.getProxy(MainContext.MainThreadLogger);
 	}
 	$setLogLevel(logLevel: LogLevel, resource?: UriComponents): void {
@@ -46,10 +48,13 @@ export class ExtHostLoggerService
 			this.setLogLevel(logLevel);
 		}
 	}
+
 	override setVisibility(resource: URI, visibility: boolean): void {
 		super.setVisibility(resource, visibility);
+
 		this._proxy.$setVisibility(resource, visibility);
 	}
+
 	protected doCreateLogger(
 		resource: URI,
 		logLevel: LogLevel,
@@ -60,6 +65,7 @@ export class ExtHostLoggerService
 }
 class Logger extends AbstractMessageLogger {
 	private isLoggerCreated: boolean = false;
+
 	private buffer: [LogLevel, string][] = [];
 
 	constructor(
@@ -69,12 +75,16 @@ class Logger extends AbstractMessageLogger {
 		loggerOptions?: ILoggerOptions,
 	) {
 		super(loggerOptions?.logLevel === "always");
+
 		this.setLevel(logLevel);
+
 		this.proxy.$createLogger(file, loggerOptions).then(() => {
 			this.doLog(this.buffer);
+
 			this.isLoggerCreated = true;
 		});
 	}
+
 	protected log(level: LogLevel, message: string) {
 		const messages: [LogLevel, string][] = [[level, message]];
 
@@ -84,9 +94,11 @@ class Logger extends AbstractMessageLogger {
 			this.buffer.push(...messages);
 		}
 	}
+
 	private doLog(messages: [LogLevel, string][]) {
 		this.proxy.$log(this.file, messages);
 	}
+
 	override flush(): void {
 		this.proxy.$flush(this.file);
 	}

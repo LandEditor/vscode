@@ -27,6 +27,7 @@ class NativeWindowDriver extends BrowserWindowDriver {
 	) {
 		super(fileService, environmentService, lifecycleService, logService);
 	}
+
 	override exitApplication(): Promise<void> {
 		return this.helper.exitApplication();
 	}

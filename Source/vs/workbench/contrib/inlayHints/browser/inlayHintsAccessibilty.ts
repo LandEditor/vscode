@@ -49,7 +49,9 @@ export class InlayHintsAccessibility implements IEditorContribution {
 			),
 		},
 	);
+
 	static readonly ID: string = "editor.contrib.InlayHintsAccessibility";
+
 	static get(editor: ICodeEditor): InlayHintsAccessibility | undefined {
 		return (
 			editor.getContribution<InlayHintsAccessibility>(
@@ -57,8 +59,11 @@ export class InlayHintsAccessibility implements IEditorContribution {
 			) ?? undefined
 		);
 	}
+
 	private readonly _ariaElement: HTMLSpanElement;
+
 	private readonly _ctxIsReading: IContextKey<boolean>;
+
 	private readonly _sessionDispoosables = new DisposableStore();
 
 	constructor(
@@ -71,46 +76,63 @@ export class InlayHintsAccessibility implements IEditorContribution {
 		private readonly _instaService: IInstantiationService,
 	) {
 		this._ariaElement = document.createElement("span");
+
 		this._ariaElement.style.position = "fixed";
+
 		this._ariaElement.className = "inlayhint-accessibility-element";
+
 		this._ariaElement.tabIndex = 0;
+
 		this._ariaElement.setAttribute(
 			"aria-description",
 			localize("description", "Code with Inlay Hint Information"),
 		);
+
 		this._ctxIsReading =
 			InlayHintsAccessibility.IsReading.bindTo(contextKeyService);
 	}
+
 	dispose(): void {
 		this._sessionDispoosables.dispose();
+
 		this._ctxIsReading.reset();
+
 		this._ariaElement.remove();
 	}
+
 	private _reset(): void {
 		dom.clearNode(this._ariaElement);
+
 		this._sessionDispoosables.clear();
+
 		this._ctxIsReading.reset();
 	}
+
 	private async _read(line: number, hints: InlayHintItem[]) {
 		this._sessionDispoosables.clear();
 
 		if (!this._ariaElement.isConnected) {
 			this._editor.getDomNode()?.appendChild(this._ariaElement);
 		}
+
 		if (!this._editor.hasModel() || !this._ariaElement.isConnected) {
 			this._ctxIsReading.set(false);
 
 			return;
 		}
+
 		const cts = new CancellationTokenSource();
+
 		this._sessionDispoosables.add(cts);
 
 		for (const hint of hints) {
 			await hint.resolve(cts.token);
 		}
+
 		if (cts.token.isCancellationRequested) {
 			return;
 		}
+
 		const model = this._editor.getModel();
 		// const text = this._editor.getModel().getLineContent(line);
 
@@ -131,11 +153,13 @@ export class InlayHintsAccessibility implements IEditorContribution {
 
 			if (part.length > 0) {
 				newChildren.push(part);
+
 				start = item.hint.position.column - 1;
 			}
 			// check length
 			if (start > 750) {
 				newChildren.push("…");
+
 				tooLongToRead = true;
 
 				break;
@@ -160,12 +184,14 @@ export class InlayHintsAccessibility implements IEditorContribution {
 							},
 							undefined,
 						);
+
 						this._sessionDispoosables.add(link);
 					} else {
 						em.innerText += part.label;
 					}
 				}
 			}
+
 			newChildren.push(em);
 		}
 		// trailing text
@@ -179,8 +205,11 @@ export class InlayHintsAccessibility implements IEditorContribution {
 				}),
 			);
 		}
+
 		dom.reset(this._ariaElement, ...newChildren);
+
 		this._ariaElement.focus();
+
 		this._ctxIsReading.set(true);
 		// reset on blur
 		this._sessionDispoosables.add(
@@ -189,10 +218,12 @@ export class InlayHintsAccessibility implements IEditorContribution {
 			}),
 		);
 	}
+
 	startInlayHintsReading(): void {
 		if (!this._editor.hasModel()) {
 			return;
 		}
+
 		const line = this._editor.getPosition().lineNumber;
 
 		const hints = InlayHintsController.get(
@@ -207,8 +238,10 @@ export class InlayHintsAccessibility implements IEditorContribution {
 			this._read(line, hints);
 		}
 	}
+
 	stopInlayHintsReading(): void {
 		this._reset();
+
 		this._editor.focus();
 	}
 }
@@ -222,8 +255,10 @@ registerAction2(
 				f1: true,
 			});
 		}
+
 		runEditorCommand(_accessor: ServicesAccessor, editor: ICodeEditor) {
 			const ctrl = InlayHintsAccessibility.get(editor);
+
 			ctrl?.startInlayHintsReading();
 		}
 	},
@@ -242,8 +277,10 @@ registerAction2(
 				},
 			});
 		}
+
 		runEditorCommand(_accessor: ServicesAccessor, editor: ICodeEditor) {
 			const ctrl = InlayHintsAccessibility.get(editor);
+
 			ctrl?.stopInlayHintsReading();
 		}
 	},

@@ -84,20 +84,29 @@ export class TextMateTokenizationFeature
 	implements ITextMateTokenizationService
 {
 	private static reportTokenizationTimeCounter = { sync: 0, async: 0 };
+
 	public _serviceBrand: undefined;
 
 	private readonly _styleElement: HTMLStyleElement;
+
 	private readonly _createdModes: string[] = [];
+
 	private readonly _encounteredLanguages: boolean[] = [];
 
 	private _debugMode: boolean = false;
+
 	private _debugModePrintFunc: (str: string) => void = () => {};
 
 	private _grammarDefinitions: IValidGrammarDefinition[] | null = null;
+
 	private _grammarFactory: TMGrammarFactory | null = null;
+
 	private readonly _tokenizersRegistrations = new DisposableStore();
+
 	private _currentTheme: IRawTheme | null = null;
+
 	private _currentTokenColorMap: string[] | null = null;
+
 	private readonly _threadedBackgroundTokenizerFactory =
 		this._instantiationService.createInstance(
 			ThreadedBackgroundTokenizerFactory,
@@ -141,6 +150,7 @@ export class TextMateTokenizationFeature
 		super();
 
 		this._styleElement = domStylesheets.createStyleSheet();
+
 		this._styleElement.className = "vscode-tokens-styles";
 
 		grammarsExtPoint.setHandler((extensions) =>
@@ -148,6 +158,7 @@ export class TextMateTokenizationFeature
 		);
 
 		this._updateTheme(this._themeService.getColorTheme(), true);
+
 		this._register(
 			this._themeService.onDidColorThemeChange(() => {
 				this._updateTheme(this._themeService.getColorTheme(), false);
@@ -182,8 +193,10 @@ export class TextMateTokenizationFeature
 
 		if (this._grammarFactory) {
 			this._grammarFactory.dispose();
+
 			this._grammarFactory = null;
 		}
+
 		this._tokenizersRegistrations.clear();
 
 		this._grammarDefinitions = [];
@@ -207,9 +220,11 @@ export class TextMateTokenizationFeature
 									validatedGrammar.language!,
 								),
 							);
+
 						this._tokenizersRegistrations.add(
 							lazyTokenizationSupport,
 						);
+
 						this._tokenizersRegistrations.add(
 							TokenizationRegistry.registerFactory(
 								validatedGrammar.language,
@@ -265,6 +280,7 @@ export class TextMateTokenizationFeature
 					// never hurts to be too careful
 					continue;
 				}
+
 				if (this._languageService.isRegisteredLanguageId(language)) {
 					embeddedLanguages[scope] =
 						this._languageService.languageIdCodec.encodeLanguageId(
@@ -314,9 +330,11 @@ export class TextMateTokenizationFeature
 			if (!Array.isArray(array)) {
 				return defaultValue;
 			}
+
 			if (!array.every((e) => typeof e === "string")) {
 				return defaultValue;
 			}
+
 			return array;
 		}
 
@@ -352,6 +370,7 @@ export class TextMateTokenizationFeature
 		}
 
 		this._debugModePrintFunc = printFn;
+
 		this._debugMode = true;
 
 		if (this._debugMode) {
@@ -371,6 +390,7 @@ export class TextMateTokenizationFeature
 					return this._getVSCodeOniguruma().then(
 						(vscodeOniguruma) => {
 							vscodeOniguruma.setDefaultDebugCall(true);
+
 							progress.report({
 								message: nls.localize(
 									"progress2",
@@ -385,8 +405,11 @@ export class TextMateTokenizationFeature
 				(choice) => {
 					this._getVSCodeOniguruma().then((vscodeOniguruma) => {
 						this._debugModePrintFunc = () => {};
+
 						this._debugMode = false;
+
 						vscodeOniguruma.setDefaultDebugCall(false);
+
 						onStop();
 					});
 				},
@@ -398,6 +421,7 @@ export class TextMateTokenizationFeature
 		// Check if extension point is ready
 		return !!this._grammarDefinitions;
 	}
+
 	private async _getOrCreateGrammarFactory(): Promise<TMGrammarFactory> {
 		if (this._grammarFactory) {
 			return this._grammarFactory;
@@ -449,6 +473,7 @@ export class TextMateTokenizationFeature
 		if (!this._languageService.isRegisteredLanguageId(languageId)) {
 			return null;
 		}
+
 		if (!this._canCreateGrammarFactory()) {
 			return null;
 		}
@@ -459,6 +484,7 @@ export class TextMateTokenizationFeature
 			if (!grammarFactory.has(languageId)) {
 				return null;
 			}
+
 			const encodedLanguageId =
 				this._languageService.languageIdCodec.encodeLanguageId(
 					languageId,
@@ -472,6 +498,7 @@ export class TextMateTokenizationFeature
 			if (!r.grammar) {
 				return null;
 			}
+
 			const maxTokenizationLineLength = observableConfigValue<number>(
 				"editor.maxTokenizationLineLength",
 				languageId,
@@ -510,7 +537,9 @@ export class TextMateTokenizationFeature
 							this._languageService.languageIdCodec.decodeLanguageId(
 								encodedLanguageId,
 							);
+
 						this._encounteredLanguages[encodedLanguageId] = true;
+
 						this._languageService.requestBasicLanguageFeatures(
 							languageId,
 						);
@@ -529,6 +558,7 @@ export class TextMateTokenizationFeature
 				// Don't log this error message
 				return null;
 			}
+
 			onUnexpectedError(err);
 
 			return null;
@@ -551,10 +581,12 @@ export class TextMateTokenizationFeature
 		) {
 			return;
 		}
+
 		this._currentTheme = {
 			name: colorTheme.label,
 			settings: colorTheme.tokenColors,
 		};
+
 		this._currentTokenColorMap = colorTheme.tokenColorMap;
 
 		this._grammarFactory?.setTheme(
@@ -565,7 +597,9 @@ export class TextMateTokenizationFeature
 		const colorMap = toColorMap(this._currentTokenColorMap);
 
 		const cssRules = generateTokensCSSForColorMap(colorMap);
+
 		this._styleElement.textContent = cssRules;
+
 		TokenizationRegistry.setColorMap(colorMap);
 
 		if (this._currentTheme && this._currentTokenColorMap) {
@@ -580,11 +614,13 @@ export class TextMateTokenizationFeature
 		if (!this._languageService.isRegisteredLanguageId(languageId)) {
 			return null;
 		}
+
 		const grammarFactory = await this._getOrCreateGrammarFactory();
 
 		if (!grammarFactory.has(languageId)) {
 			return null;
 		}
+
 		const encodedLanguageId =
 			this._languageService.languageIdCodec.encodeLanguageId(languageId);
 
@@ -599,6 +635,7 @@ export class TextMateTokenizationFeature
 	private _vscodeOniguruma: Promise<
 		typeof import("vscode-oniguruma")
 	> | null = null;
+
 	private _getVSCodeOniguruma(): Promise<typeof import("vscode-oniguruma")> {
 		if (!this._vscodeOniguruma) {
 			this._vscodeOniguruma = (async () => {
@@ -609,6 +646,7 @@ export class TextMateTokenizationFeature
 					),
 					this._loadVSCodeOnigurumaWASM(),
 				]);
+
 				await vscodeOniguruma.loadWASM({
 					data: wasm,
 					print: (str: string) => {
@@ -619,6 +657,7 @@ export class TextMateTokenizationFeature
 				return vscodeOniguruma;
 			})();
 		}
+
 		return this._vscodeOniguruma;
 	}
 
@@ -666,6 +705,7 @@ export class TextMateTokenizationFeature
 			// Don't flood telemetry with too many events
 			return;
 		}
+
 		if (
 			TextMateTokenizationFeature.reportTokenizationTimeCounter[key] === 0
 		) {
@@ -678,16 +718,23 @@ export class TextMateTokenizationFeature
 				1000 * 60 * 60,
 			);
 		}
+
 		TextMateTokenizationFeature.reportTokenizationTimeCounter[key]++;
 
 		this._telemetryService.publicLog2<
 			{
 				timeMs: number;
+
 				languageId: string;
+
 				lineLength: number;
+
 				fromWorker: boolean;
+
 				sourceExtensionId: string | undefined;
+
 				isRandomSample: boolean;
+
 				tokenizationSetting: number;
 			},
 			{
@@ -695,37 +742,57 @@ export class TextMateTokenizationFeature
 
 				timeMs: {
 					classification: "SystemMetaData";
+
 					purpose: "FeatureInsight";
+
 					comment: "To understand how long it took to tokenize a random line";
 				};
+
 				languageId: {
 					classification: "SystemMetaData";
+
 					purpose: "FeatureInsight";
+
 					comment: "To relate the performance to the language";
 				};
+
 				lineLength: {
 					classification: "SystemMetaData";
+
 					purpose: "FeatureInsight";
+
 					comment: "To relate the performance to the line length";
 				};
+
 				fromWorker: {
 					classification: "SystemMetaData";
+
 					purpose: "FeatureInsight";
+
 					comment: "To figure out if this line was tokenized sync or async";
 				};
+
 				sourceExtensionId: {
 					classification: "SystemMetaData";
+
 					purpose: "FeatureInsight";
+
 					comment: "To figure out which extension contributed the grammar";
 				};
+
 				isRandomSample: {
 					classification: "SystemMetaData";
+
 					purpose: "FeatureInsight";
+
 					comment: "To figure out if this is a random sample or measured because of some other condition.";
 				};
+
 				tokenizationSetting: {
 					classification: "SystemMetaData";
+
 					purpose: "FeatureInsight";
+
 					comment: "To understand if the user has async tokenization enabled. 0=sync, 1=async, 2=verification";
 				};
 
@@ -753,6 +820,7 @@ function toColorMap(colorMap: string[]): Color[] {
 	for (let i = 1, len = colorMap.length; i < len; i++) {
 		result[i] = Color.fromHex(colorMap[i]);
 	}
+
 	return result;
 }
 
@@ -763,6 +831,7 @@ function equalsTokenRules(
 	if (!b || !a || b.length !== a.length) {
 		return false;
 	}
+
 	for (let i = b.length - 1; i >= 0; i--) {
 		const r1 = b[i];
 
@@ -771,6 +840,7 @@ function equalsTokenRules(
 		if (r1.scope !== r2.scope) {
 			return false;
 		}
+
 		const s1 = r1.settings;
 
 		const s2 = r2.settings;
@@ -787,6 +857,7 @@ function equalsTokenRules(
 			return false;
 		}
 	}
+
 	return true;
 }
 
@@ -812,6 +883,7 @@ function validateGrammarExtensionPoint(
 
 		return false;
 	}
+
 	if (!syntax.scopeName || typeof syntax.scopeName !== "string") {
 		collector.error(
 			nls.localize(
@@ -824,6 +896,7 @@ function validateGrammarExtensionPoint(
 
 		return false;
 	}
+
 	if (!syntax.path || typeof syntax.path !== "string") {
 		collector.error(
 			nls.localize(
@@ -836,6 +909,7 @@ function validateGrammarExtensionPoint(
 
 		return false;
 	}
+
 	if (
 		syntax.injectTo &&
 		(!Array.isArray(syntax.injectTo) ||
@@ -852,6 +926,7 @@ function validateGrammarExtensionPoint(
 
 		return false;
 	}
+
 	if (syntax.embeddedLanguages && !types.isObject(syntax.embeddedLanguages)) {
 		collector.error(
 			nls.localize(
@@ -891,6 +966,7 @@ function validateGrammarExtensionPoint(
 			),
 		);
 	}
+
 	return true;
 }
 

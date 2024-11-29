@@ -37,6 +37,7 @@ class ProfileAnalysisWorker implements IRequestHandler, IProfileAnalysisWorker {
 		if (!Utils.isValidProfile(profile)) {
 			return { kind: ProfilingOutput.Irrelevant, samples: [] };
 		}
+
 		const model = buildModel(profile);
 
 		const samples = bottomUp(model, 5).filter((s) => !s.isSpecial);
@@ -46,6 +47,7 @@ class ProfileAnalysisWorker implements IRequestHandler, IProfileAnalysisWorker {
 			// like idle, GC, or program
 			return { kind: ProfilingOutput.Irrelevant, samples: [] };
 		}
+
 		return { kind: ProfilingOutput.Interesting, samples };
 	}
 	$analyseByUrlCategory(
@@ -54,6 +56,7 @@ class ProfileAnalysisWorker implements IRequestHandler, IProfileAnalysisWorker {
 	): [category: string, aggregated: number][] {
 		// build search tree
 		const searchTree = TernarySearchTree.forUris<string>();
+
 		searchTree.fill(categories);
 		// cost by categories
 		const model = buildModel(profile);
@@ -70,19 +73,24 @@ class ProfileAnalysisWorker implements IRequestHandler, IProfileAnalysisWorker {
 			} catch {
 				// ignore
 			}
+
 			if (!category) {
 				category = printCallFrameShort(loc.callFrame);
 			}
+
 			const value = aggegrateByCategory.get(category) ?? 0;
 
 			const newValue = value + node.selfTime;
+
 			aggegrateByCategory.set(category, newValue);
 		}
+
 		const result: [string, number][] = [];
 
 		for (const [key, value] of aggegrateByCategory) {
 			result.push([key, value]);
 		}
+
 		return result;
 	}
 }
@@ -94,17 +102,22 @@ function printCallFrameShort(frame: CdpCallFrame): string {
 
 	if (frame.url) {
 		result += "#";
+
 		result += basename(frame.url);
 
 		if (frame.lineNumber >= 0) {
 			result += ":";
+
 			result += frame.lineNumber + 1;
 		}
+
 		if (frame.columnNumber >= 0) {
 			result += ":";
+
 			result += frame.columnNumber + 1;
 		}
 	}
+
 	return result;
 }
 function printCallFrameStackLike(frame: CdpCallFrame): string {
@@ -112,18 +125,24 @@ function printCallFrameStackLike(frame: CdpCallFrame): string {
 
 	if (frame.url) {
 		result += " (";
+
 		result += frame.url;
 
 		if (frame.lineNumber >= 0) {
 			result += ":";
+
 			result += frame.lineNumber + 1;
 		}
+
 		if (frame.columnNumber >= 0) {
 			result += ":";
+
 			result += frame.columnNumber + 1;
 		}
+
 		result += ")";
 	}
+
 	return result;
 }
 function getHeaviestLocationIds(model: IProfileModel, topN: number) {
@@ -135,6 +154,7 @@ function getHeaviestLocationIds(model: IProfileModel, topN: number) {
 		stackSelfTime[node.locationId] =
 			(stackSelfTime[node.locationId] || 0) + node.selfTime;
 	}
+
 	const locationIds = Object.entries(stackSelfTime)
 		.sort(([, a], [, b]) => b - a)
 		.slice(0, topN)
@@ -150,9 +170,11 @@ function bottomUp(model: IProfileModel, topN: number) {
 	for (const node of model.nodes) {
 		if (locationIds.has(node.locationId)) {
 			processNode(root, node, model);
+
 			root.addNode(node);
 		}
 	}
+
 	const result = Object.values(root.children)
 		.sort((a, b) => b.selfTime - a.selfTime)
 		.slice(0, topN);
@@ -183,19 +205,24 @@ function bottomUp(model: IProfileModel, topN: number) {
 					top = candidate;
 				}
 			}
+
 			if (top) {
 				const percentage = Math.round(
 					top.selfTime / (node.selfTime / 100),
 				);
+
 				sample.caller.push({
 					percentage,
 					location: printCallFrameShort(top.callFrame),
 					absLocation: printCallFrameStackLike(top.callFrame),
 				});
+
 				stack.push(top);
 			}
 		}
+
 		samples.push(sample);
 	}
+
 	return samples;
 }

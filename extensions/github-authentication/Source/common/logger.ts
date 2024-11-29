@@ -14,20 +14,25 @@ export class Log {
 			this.type === AuthProviderType.github
 				? "GitHub"
 				: "GitHub Enterprise";
+
 		this.output = vscode.window.createOutputChannel(
 			`${friendlyName} Authentication`,
 			{ log: true },
 		);
 	}
+
 	public trace(message: string): void {
 		this.output.trace(message);
 	}
+
 	public info(message: string): void {
 		this.output.info(message);
 	}
+
 	public error(message: string): void {
 		this.output.error(message);
 	}
+
 	public warn(message: string): void {
 		this.output.warn(message);
 	}

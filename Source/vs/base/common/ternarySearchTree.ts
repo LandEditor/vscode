@@ -14,28 +14,38 @@ import { URI } from "./uri.js";
 
 export interface IKeyIterator<K> {
 	reset(key: K): this;
+
 	next(): this;
+
 	hasNext(): boolean;
+
 	cmp(a: string): number;
+
 	value(): string;
 }
 export class StringIterator implements IKeyIterator<string> {
 	private _value: string = "";
+
 	private _pos: number = 0;
+
 	reset(key: string): this {
 		this._value = key;
+
 		this._pos = 0;
 
 		return this;
 	}
+
 	next(): this {
 		this._pos += 1;
 
 		return this;
 	}
+
 	hasNext(): boolean {
 		return this._pos < this._value.length - 1;
 	}
+
 	cmp(a: string): number {
 		const aCode = a.charCodeAt(0);
 
@@ -43,28 +53,37 @@ export class StringIterator implements IKeyIterator<string> {
 
 		return aCode - thisCode;
 	}
+
 	value(): string {
 		return this._value[this._pos];
 	}
 }
 export class ConfigKeysIterator implements IKeyIterator<string> {
 	private _value!: string;
+
 	private _from!: number;
+
 	private _to!: number;
 
 	constructor(private readonly _caseSensitive: boolean = true) {}
+
 	reset(key: string): this {
 		this._value = key;
+
 		this._from = 0;
+
 		this._to = 0;
 
 		return this.next();
 	}
+
 	hasNext(): boolean {
 		return this._to < this._value.length;
 	}
+
 	next(): this {
 		// this._data = key.split(/[\\/]/).filter(s => !!s);
+
 		this._from = this._to;
 
 		let justSeps = true;
@@ -82,8 +101,10 @@ export class ConfigKeysIterator implements IKeyIterator<string> {
 				justSeps = false;
 			}
 		}
+
 		return this;
 	}
+
 	cmp(a: string): number {
 		return this._caseSensitive
 			? compareSubstring(
@@ -103,24 +124,32 @@ export class ConfigKeysIterator implements IKeyIterator<string> {
 					this._to,
 				);
 	}
+
 	value(): string {
 		return this._value.substring(this._from, this._to);
 	}
 }
 export class PathIterator implements IKeyIterator<string> {
 	private _value!: string;
+
 	private _valueLen!: number;
+
 	private _from!: number;
+
 	private _to!: number;
 
 	constructor(
 		private readonly _splitOnBackslash: boolean = true,
 		private readonly _caseSensitive: boolean = true,
 	) {}
+
 	reset(key: string): this {
 		this._from = 0;
+
 		this._to = 0;
+
 		this._value = key;
+
 		this._valueLen = key.length;
 
 		for (let pos = key.length - 1; pos >= 0; pos--, this._valueLen--) {
@@ -135,13 +164,17 @@ export class PathIterator implements IKeyIterator<string> {
 				break;
 			}
 		}
+
 		return this.next();
 	}
+
 	hasNext(): boolean {
 		return this._to < this._valueLen;
 	}
+
 	next(): this {
 		// this._data = key.split(/[\\/]/).filter(s => !!s);
+
 		this._from = this._to;
 
 		let justSeps = true;
@@ -162,8 +195,10 @@ export class PathIterator implements IKeyIterator<string> {
 				justSeps = false;
 			}
 		}
+
 		return this;
 	}
+
 	cmp(a: string): number {
 		return this._caseSensitive
 			? compareSubstring(
@@ -183,6 +218,7 @@ export class PathIterator implements IKeyIterator<string> {
 					this._to,
 				);
 	}
+
 	value(): string {
 		return this._value.substring(this._from, this._to);
 	}
@@ -197,47 +233,59 @@ const enum UriIteratorState {
 }
 export class UriIterator implements IKeyIterator<URI> {
 	private _pathIterator!: PathIterator;
+
 	private _value!: URI;
+
 	private _states: UriIteratorState[] = [];
+
 	private _stateIdx: number = 0;
 
 	constructor(
 		private readonly _ignorePathCasing: (uri: URI) => boolean,
 		private readonly _ignoreQueryAndFragment: (uri: URI) => boolean,
 	) {}
+
 	reset(key: URI): this {
 		this._value = key;
+
 		this._states = [];
 
 		if (this._value.scheme) {
 			this._states.push(UriIteratorState.Scheme);
 		}
+
 		if (this._value.authority) {
 			this._states.push(UriIteratorState.Authority);
 		}
+
 		if (this._value.path) {
 			this._pathIterator = new PathIterator(
 				false,
 				!this._ignorePathCasing(key),
 			);
+
 			this._pathIterator.reset(key.path);
 
 			if (this._pathIterator.value()) {
 				this._states.push(UriIteratorState.Path);
 			}
 		}
+
 		if (!this._ignoreQueryAndFragment(key)) {
 			if (this._value.query) {
 				this._states.push(UriIteratorState.Query);
 			}
+
 			if (this._value.fragment) {
 				this._states.push(UriIteratorState.Fragment);
 			}
 		}
+
 		this._stateIdx = 0;
 
 		return this;
 	}
+
 	next(): this {
 		if (
 			this._states[this._stateIdx] === UriIteratorState.Path &&
@@ -247,8 +295,10 @@ export class UriIterator implements IKeyIterator<URI> {
 		} else {
 			this._stateIdx += 1;
 		}
+
 		return this;
 	}
+
 	hasNext(): boolean {
 		return (
 			(this._states[this._stateIdx] === UriIteratorState.Path &&
@@ -256,6 +306,7 @@ export class UriIterator implements IKeyIterator<URI> {
 			this._stateIdx < this._states.length - 1
 		);
 	}
+
 	cmp(a: string): number {
 		if (this._states[this._stateIdx] === UriIteratorState.Scheme) {
 			return compareIgnoreCase(a, this._value.scheme);
@@ -270,8 +321,10 @@ export class UriIterator implements IKeyIterator<URI> {
 		} else if (this._states[this._stateIdx] === UriIteratorState.Fragment) {
 			return compare(a, this._value.fragment);
 		}
+
 		throw new Error();
 	}
+
 	value(): string {
 		if (this._states[this._stateIdx] === UriIteratorState.Scheme) {
 			return this._value.scheme;
@@ -286,47 +339,69 @@ export class UriIterator implements IKeyIterator<URI> {
 		} else if (this._states[this._stateIdx] === UriIteratorState.Fragment) {
 			return this._value.fragment;
 		}
+
 		throw new Error();
 	}
 }
 class TernarySearchTreeNode<K, V> {
 	height: number = 1;
+
 	segment!: string;
+
 	value: V | undefined;
+
 	key: K | undefined;
+
 	left: TernarySearchTreeNode<K, V> | undefined;
+
 	mid: TernarySearchTreeNode<K, V> | undefined;
+
 	right: TernarySearchTreeNode<K, V> | undefined;
+
 	isEmpty(): boolean {
 		return !this.left && !this.mid && !this.right && !this.value;
 	}
+
 	rotateLeft() {
 		const tmp = this.right!;
+
 		this.right = tmp.left;
+
 		tmp.left = this;
+
 		this.updateHeight();
+
 		tmp.updateHeight();
 
 		return tmp;
 	}
+
 	rotateRight() {
 		const tmp = this.left!;
+
 		this.left = tmp.right;
+
 		tmp.right = this;
+
 		this.updateHeight();
+
 		tmp.updateHeight();
 
 		return tmp;
 	}
+
 	updateHeight() {
 		this.height = 1 + Math.max(this.heightLeft, this.heightRight);
 	}
+
 	balanceFactor() {
 		return this.heightRight - this.heightLeft;
 	}
+
 	get heightLeft() {
 		return this.left?.height ?? 0;
 	}
+
 	get heightRight() {
 		return this.right?.height ?? 0;
 	}
@@ -346,23 +421,29 @@ export class TernarySearchTree<K, V> {
 			new UriIterator(ignorePathCasing, ignoreQueryAndFragment),
 		);
 	}
+
 	static forPaths<E>(ignorePathCasing = false): TernarySearchTree<string, E> {
 		return new TernarySearchTree<string, E>(
 			new PathIterator(undefined, !ignorePathCasing),
 		);
 	}
+
 	static forStrings<E>(): TernarySearchTree<string, E> {
 		return new TernarySearchTree<string, E>(new StringIterator());
 	}
+
 	static forConfigKeys<E>(): TernarySearchTree<string, E> {
 		return new TernarySearchTree<string, E>(new ConfigKeysIterator());
 	}
+
 	private _iter: IKeyIterator<K>;
+
 	private _root: TernarySearchTreeNode<K, V> | undefined;
 
 	constructor(segments: IKeyIterator<K>) {
 		this._iter = segments;
 	}
+
 	clear(): void {
 		this._root = undefined;
 	}
@@ -374,9 +455,11 @@ export class TernarySearchTree<K, V> {
 	 * Fill the tree with given [key,value]-tuples
 	 */
 	fill(values: readonly [K, V][]): void;
+
 	fill(values: readonly [K, V][] | V, keys?: readonly K[]): void {
 		if (keys) {
 			const arr = keys.slice(0);
+
 			shuffle(arr);
 
 			for (const k of arr) {
@@ -384,6 +467,7 @@ export class TernarySearchTree<K, V> {
 			}
 		} else {
 			const arr = (<[K, V][]>values).slice(0);
+
 			shuffle(arr);
 
 			for (const entry of arr) {
@@ -391,6 +475,7 @@ export class TernarySearchTree<K, V> {
 			}
 		}
 	}
+
 	set(key: K, element: V): V | undefined {
 		const iter = this._iter.reset(key);
 
@@ -398,8 +483,10 @@ export class TernarySearchTree<K, V> {
 
 		if (!this._root) {
 			this._root = new TernarySearchTreeNode<K, V>();
+
 			this._root.segment = iter.value();
 		}
+
 		const stack: [Dir, TernarySearchTreeNode<K, V>][] = [];
 		// find insert_node
 		node = this._root;
@@ -411,17 +498,23 @@ export class TernarySearchTree<K, V> {
 				// left
 				if (!node.left) {
 					node.left = new TernarySearchTreeNode<K, V>();
+
 					node.left.segment = iter.value();
 				}
+
 				stack.push([Dir.Left, node]);
+
 				node = node.left;
 			} else if (val < 0) {
 				// right
 				if (!node.right) {
 					node.right = new TernarySearchTreeNode<K, V>();
+
 					node.right.segment = iter.value();
 				}
+
 				stack.push([Dir.Right, node]);
+
 				node = node.right;
 			} else if (iter.hasNext()) {
 				// mid
@@ -429,9 +522,12 @@ export class TernarySearchTree<K, V> {
 
 				if (!node.mid) {
 					node.mid = new TernarySearchTreeNode<K, V>();
+
 					node.mid.segment = iter.value();
 				}
+
 				stack.push([Dir.Mid, node]);
+
 				node = node.mid;
 			} else {
 				break;
@@ -439,11 +535,14 @@ export class TernarySearchTree<K, V> {
 		}
 		// set value
 		const oldElement = node.value;
+
 		node.value = element;
+
 		node.key = key;
 		// balance
 		for (let i = stack.length - 1; i >= 0; i--) {
 			const node = stack[i][1];
+
 			node.updateHeight();
 
 			const bf = node.balanceFactor();
@@ -464,10 +563,12 @@ export class TernarySearchTree<K, V> {
 					// right, left -> double rotate right, left
 					node.right = stack[i + 1][1] =
 						stack[i + 1][1].rotateRight();
+
 					stack[i][1] = node.rotateLeft();
 				} else if (d1 === Dir.Left && d2 === Dir.Right) {
 					// left, right -> double rotate left, right
 					node.left = stack[i + 1][1] = stack[i + 1][1].rotateLeft();
+
 					stack[i][1] = node.rotateRight();
 				} else {
 					throw new Error();
@@ -495,11 +596,14 @@ export class TernarySearchTree<K, V> {
 				}
 			}
 		}
+
 		return oldElement;
 	}
+
 	get(key: K): V | undefined {
 		return this._getNode(key)?.value;
 	}
+
 	private _getNode(key: K) {
 		const iter = this._iter.reset(key);
 
@@ -517,24 +621,30 @@ export class TernarySearchTree<K, V> {
 			} else if (iter.hasNext()) {
 				// mid
 				iter.next();
+
 				node = node.mid;
 			} else {
 				break;
 			}
 		}
+
 		return node;
 	}
+
 	has(key: K): boolean {
 		const node = this._getNode(key);
 
 		return !(node?.value === undefined && node?.mid === undefined);
 	}
+
 	delete(key: K): void {
 		return this._delete(key, false);
 	}
+
 	deleteSuperstr(key: K): void {
 		return this._delete(key, true);
 	}
+
 	private _delete(key: K, superStr: boolean): void {
 		const iter = this._iter.reset(key);
 
@@ -548,33 +658,43 @@ export class TernarySearchTree<K, V> {
 			if (val > 0) {
 				// left
 				stack.push([Dir.Left, node]);
+
 				node = node.left;
 			} else if (val < 0) {
 				// right
 				stack.push([Dir.Right, node]);
+
 				node = node.right;
 			} else if (iter.hasNext()) {
 				// mid
 				iter.next();
+
 				stack.push([Dir.Mid, node]);
+
 				node = node.mid;
 			} else {
 				break;
 			}
 		}
+
 		if (!node) {
 			// node not found
 			return;
 		}
+
 		if (superStr) {
 			// removing children, reset height
 			node.left = undefined;
+
 			node.mid = undefined;
+
 			node.right = undefined;
+
 			node.height = 1;
 		} else {
 			// removing element
 			node.key = undefined;
+
 			node.value = undefined;
 		}
 		// BST node removal
@@ -587,9 +707,13 @@ export class TernarySearchTree<K, V> {
 
 				if (min.key) {
 					const { key, value, segment } = min;
+
 					this._delete(min.key, false);
+
 					node.key = key;
+
 					node.value = value;
+
 					node.segment = segment;
 				}
 			} else {
@@ -623,6 +747,7 @@ export class TernarySearchTree<K, V> {
 		// AVL balance
 		for (let i = stack.length - 1; i >= 0; i--) {
 			const node = stack[i][1];
+
 			node.updateHeight();
 
 			const bf = node.balanceFactor();
@@ -635,6 +760,7 @@ export class TernarySearchTree<K, V> {
 				} else {
 					// right, left -> double rotate
 					node.right = node.right!.rotateRight();
+
 					stack[i][1] = node.rotateLeft();
 				}
 			} else if (bf < -1) {
@@ -645,6 +771,7 @@ export class TernarySearchTree<K, V> {
 				} else {
 					// left, right -> double rotate
 					node.left = node.left!.rotateLeft();
+
 					stack[i][1] = node.rotateRight();
 				}
 			}
@@ -671,14 +798,17 @@ export class TernarySearchTree<K, V> {
 			}
 		}
 	}
+
 	private _min(
 		node: TernarySearchTreeNode<K, V>,
 	): TernarySearchTreeNode<K, V> {
 		while (node.left) {
 			node = node.left;
 		}
+
 		return node;
 	}
+
 	findSubstr(key: K): V | undefined {
 		const iter = this._iter.reset(key);
 
@@ -698,25 +828,32 @@ export class TernarySearchTree<K, V> {
 			} else if (iter.hasNext()) {
 				// mid
 				iter.next();
+
 				candidate = node.value || candidate;
+
 				node = node.mid;
 			} else {
 				break;
 			}
 		}
+
 		return (node && node.value) || candidate;
 	}
+
 	findSuperstr(key: K): IterableIterator<[K, V]> | undefined {
 		return this._findSuperstrOrElement(key, false);
 	}
+
 	private _findSuperstrOrElement(
 		key: K,
 		allowValue: true,
 	): IterableIterator<[K, V]> | V | undefined;
+
 	private _findSuperstrOrElement(
 		key: K,
 		allowValue: false,
 	): IterableIterator<[K, V]> | undefined;
+
 	private _findSuperstrOrElement(
 		key: K,
 		allowValue: boolean,
@@ -737,6 +874,7 @@ export class TernarySearchTree<K, V> {
 			} else if (iter.hasNext()) {
 				// mid
 				iter.next();
+
 				node = node.mid;
 			} else {
 				// collect
@@ -751,11 +889,14 @@ export class TernarySearchTree<K, V> {
 				}
 			}
 		}
+
 		return undefined;
 	}
+
 	hasElementOrSubtree(key: K): boolean {
 		return this._findSuperstrOrElement(key, true) !== undefined;
 	}
+
 	forEach(callback: (value: V, index: K) => unknown): void {
 		for (const [key, value] of this) {
 			callback(value, key);
@@ -764,14 +905,17 @@ export class TernarySearchTree<K, V> {
 	*[Symbol.iterator](): IterableIterator<[K, V]> {
 		yield* this._entries(this._root);
 	}
+
 	private _entries(
 		node: TernarySearchTreeNode<K, V> | undefined,
 	): IterableIterator<[K, V]> {
 		const result: [K, V][] = [];
+
 		this._dfsEntries(node, result);
 
 		return result[Symbol.iterator]();
 	}
+
 	private _dfsEntries(
 		node: TernarySearchTreeNode<K, V> | undefined,
 		bucket: [K, V][],
@@ -780,15 +924,19 @@ export class TernarySearchTree<K, V> {
 		if (!node) {
 			return;
 		}
+
 		if (node.left) {
 			this._dfsEntries(node.left, bucket);
 		}
+
 		if (node.value) {
 			bucket.push([node.key!, node.value]);
 		}
+
 		if (node.mid) {
 			this._dfsEntries(node.mid, bucket);
 		}
+
 		if (node.right) {
 			this._dfsEntries(node.right, bucket);
 		}
@@ -801,11 +949,13 @@ export class TernarySearchTree<K, V> {
 			if (!node) {
 				return true;
 			}
+
 			const bf = node.balanceFactor();
 
 			if (bf < -1 || bf > 1) {
 				return false;
 			}
+
 			return nodeIsBalanced(node.left) && nodeIsBalanced(node.right);
 		};
 

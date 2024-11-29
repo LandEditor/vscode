@@ -51,34 +51,53 @@ import { ISearchViewModelWorkbenchService } from "./searchViewModelWorkbenchServ
 
 export class SearchModelImpl extends Disposable implements ISearchModel {
 	private _searchResult: ISearchResult;
+
 	private _searchQuery: ITextQuery | null = null;
+
 	private _replaceActive: boolean = false;
+
 	private _replaceString: string | null = null;
+
 	private _replacePattern: ReplacePattern | null = null;
+
 	private _preserveCase: boolean = false;
+
 	private _startStreamDelay: Promise<void> = Promise.resolve();
+
 	private readonly _resultQueue: IFileMatch[] = [];
+
 	private readonly _aiResultQueue: IFileMatch[] = [];
+
 	private readonly _onReplaceTermChanged: Emitter<void> = this._register(
 		new Emitter<void>(),
 	);
+
 	readonly onReplaceTermChanged: Event<void> =
 		this._onReplaceTermChanged.event;
+
 	private readonly _onSearchResultChanged = this._register(
 		new PauseableEmitter<IChangeEvent>({
 			merge: mergeSearchResultEvents,
 		}),
 	);
+
 	readonly onSearchResultChanged: Event<IChangeEvent> =
 		this._onSearchResultChanged.event;
+
 	private currentCancelTokenSource: CancellationTokenSource | null = null;
+
 	private currentAICancelTokenSource: CancellationTokenSource | null = null;
+
 	private searchCancelledForNewSearch: boolean = false;
+
 	private aiSearchCancelledForNewSearch: boolean = false;
+
 	public location: SearchModelLocation = SearchModelLocation.PANEL;
+
 	private readonly _aiTextResultProviderName: Lazy<
 		Promise<string | undefined>
 	>;
+
 	private readonly _id: string;
 
 	constructor(
@@ -96,49 +115,63 @@ export class SearchModelImpl extends Disposable implements ISearchModel {
 		private readonly notebookSearchService: INotebookSearchService,
 	) {
 		super();
+
 		this._searchResult = this.instantiationService.createInstance(
 			SearchResultImpl,
 			this,
 		);
+
 		this._register(
 			this._searchResult.onChange((e) =>
 				this._onSearchResultChanged.fire(e),
 			),
 		);
+
 		this._aiTextResultProviderName = new Lazy(async () =>
 			this.searchService.getAIName(),
 		);
+
 		this._id = SEARCH_MODEL_PREFIX + Date.now().toString();
 	}
+
 	id(): string {
 		return this._id;
 	}
+
 	async getAITextResultProviderName(): Promise<string> {
 		const result = await this._aiTextResultProviderName.value;
 
 		if (!result) {
 			throw Error("Fetching AI name when no provider present.");
 		}
+
 		return result;
 	}
+
 	isReplaceActive(): boolean {
 		return this._replaceActive;
 	}
+
 	set replaceActive(replaceActive: boolean) {
 		this._replaceActive = replaceActive;
 	}
+
 	get replacePattern(): ReplacePattern | null {
 		return this._replacePattern;
 	}
+
 	get replaceString(): string {
 		return this._replaceString || "";
 	}
+
 	set preserveCase(value: boolean) {
 		this._preserveCase = value;
 	}
+
 	get preserveCase(): boolean {
 		return this._preserveCase;
 	}
+
 	set replaceString(replaceString: string) {
 		this._replaceString = replaceString;
 
@@ -148,11 +181,14 @@ export class SearchModelImpl extends Disposable implements ISearchModel {
 				this._searchQuery.contentPattern,
 			);
 		}
+
 		this._onReplaceTermChanged.fire();
 	}
+
 	get searchResult(): ISearchResult {
 		return this._searchResult;
 	}
+
 	async addAIResults(
 		onProgress?: (result: ISearchProgressItem) => void,
 	): Promise<ISearchComplete> {
@@ -175,6 +211,7 @@ export class SearchModelImpl extends Disposable implements ISearchModel {
 			}
 		}
 	}
+
 	aiSearch(
 		query: IAITextQuery,
 		onProgress?: (result: ISearchProgressItem) => void,
@@ -182,6 +219,7 @@ export class SearchModelImpl extends Disposable implements ISearchModel {
 		const searchInstanceID = Date.now().toString();
 
 		const tokenSource = new CancellationTokenSource();
+
 		this.currentAICancelTokenSource = tokenSource;
 
 		const start = Date.now();
@@ -192,6 +230,7 @@ export class SearchModelImpl extends Disposable implements ISearchModel {
 				tokenSource.token,
 				async (p: ISearchProgressItem) => {
 					this.onSearchProgress(p, searchInstanceID, false, true);
+
 					onProgress?.(p);
 				},
 			)
@@ -218,6 +257,7 @@ export class SearchModelImpl extends Disposable implements ISearchModel {
 
 		return asyncAIResults;
 	}
+
 	private doSearch(
 		query: ITextQuery,
 		progressEmitter: Emitter<void>,
@@ -227,17 +267,22 @@ export class SearchModelImpl extends Disposable implements ISearchModel {
 		callerToken?: CancellationToken,
 	): {
 		asyncResults: Promise<ISearchComplete>;
+
 		syncResults: IFileMatch<URI>[];
 	} {
 		const asyncGenerateOnProgress = async (p: ISearchProgressItem) => {
 			progressEmitter.fire();
+
 			this.onSearchProgress(p, searchInstanceID, false, false);
+
 			onProgress?.(p);
 		};
 
 		const syncGenerateOnProgress = (p: ISearchProgressItem) => {
 			progressEmitter.fire();
+
 			this.onSearchProgress(p, searchInstanceID, true);
+
 			onProgress?.(p);
 		};
 
@@ -260,6 +305,7 @@ export class SearchModelImpl extends Disposable implements ISearchModel {
 		);
 
 		const syncResults = textResult.syncResults.results;
+
 		syncResults.forEach((p) => {
 			if (p) {
 				syncGenerateOnProgress(p);
@@ -290,6 +336,7 @@ export class SearchModelImpl extends Disposable implements ISearchModel {
 				exit: allClosedEditorResults.exit,
 				stats: allClosedEditorResults.stats,
 			};
+
 			this.logService.trace(`whole search time | ${searchLength}ms`);
 
 			return resolvedResult;
@@ -302,6 +349,7 @@ export class SearchModelImpl extends Disposable implements ISearchModel {
 			syncResults,
 		};
 	}
+
 	get hasAIResults(): boolean {
 		return (
 			!!this.searchResult.getCachedSearchComplete(true) ||
@@ -309,6 +357,7 @@ export class SearchModelImpl extends Disposable implements ISearchModel {
 				!this.currentAICancelTokenSource.token.isCancellationRequested)
 		);
 	}
+
 	get hasPlainResults(): boolean {
 		return (
 			!!this.searchResult.getCachedSearchComplete(false) ||
@@ -316,24 +365,30 @@ export class SearchModelImpl extends Disposable implements ISearchModel {
 				!this.currentCancelTokenSource.token.isCancellationRequested)
 		);
 	}
+
 	search(
 		query: ITextQuery,
 		onProgress?: (result: ISearchProgressItem) => void,
 		callerToken?: CancellationToken,
 	): {
 		asyncResults: Promise<ISearchComplete>;
+
 		syncResults: IFileMatch<URI>[];
 	} {
 		this.cancelSearch(true);
+
 		this._searchQuery = query;
 
 		if (!this.searchConfig.searchOnType) {
 			this.searchResult.clear();
 		}
+
 		const searchInstanceID = Date.now().toString();
+
 		this._searchResult.query = this._searchQuery;
 
 		const progressEmitter = this._register(new Emitter<void>());
+
 		this._replacePattern = new ReplacePattern(
 			this.replaceString,
 			this._searchQuery.contentPattern,
@@ -363,6 +418,7 @@ export class SearchModelImpl extends Disposable implements ISearchModel {
 				}
 			});
 		}
+
 		const start = Date.now();
 
 		let event: IDisposable | undefined;
@@ -372,6 +428,7 @@ export class SearchModelImpl extends Disposable implements ISearchModel {
 
 			return event;
 		});
+
 		Promise.race([asyncResults, progressEmitterPromise]).finally(() => {
 			/* __GDPR__
                 "searchResultsFirstRender" : {
@@ -380,6 +437,7 @@ export class SearchModelImpl extends Disposable implements ISearchModel {
                 }
             */
 			event?.dispose();
+
 			this.telemetryService.publicLog("searchResultsFirstRender", {
 				duration: Date.now() - start,
 			});
@@ -418,6 +476,7 @@ export class SearchModelImpl extends Disposable implements ISearchModel {
 			});
 		}
 	}
+
 	private onSearchCompleted(
 		completed: ISearchComplete | undefined,
 		duration: number,
@@ -429,19 +488,24 @@ export class SearchModelImpl extends Disposable implements ISearchModel {
 				"onSearchCompleted must be called after a search is started",
 			);
 		}
+
 		if (ai) {
 			this._searchResult.add(this._aiResultQueue, searchInstanceID, true);
+
 			this._aiResultQueue.length = 0;
 		} else {
 			this._searchResult.add(this._resultQueue, searchInstanceID, false);
+
 			this._resultQueue.length = 0;
 		}
+
 		this.searchResult.setCachedSearchComplete(completed, ai);
 
 		const options: IPatternInfo = Object.assign(
 			{},
 			this._searchQuery.contentPattern,
 		);
+
 		delete (options as any).pattern;
 
 		const stats = completed && (completed.stats as ITextSearchStats);
@@ -483,6 +547,7 @@ export class SearchModelImpl extends Disposable implements ISearchModel {
 
 		return completed;
 	}
+
 	private onSearchError(e: any, duration: number, ai: boolean): void {
 		if (errors.isCancellationError(e)) {
 			this.onSearchCompleted(
@@ -509,6 +574,7 @@ export class SearchModelImpl extends Disposable implements ISearchModel {
 			}
 		}
 	}
+
 	private onSearchProgress(
 		p: ISearchProgressItem,
 		searchInstanceID: string,
@@ -528,6 +594,7 @@ export class SearchModelImpl extends Disposable implements ISearchModel {
 						false,
 						true,
 					);
+
 					targetQueue.length = 0;
 				}
 			} else {
@@ -539,38 +606,49 @@ export class SearchModelImpl extends Disposable implements ISearchModel {
 							ai,
 							true,
 						);
+
 						targetQueue.length = 0;
 					}
 				});
 			}
 		}
 	}
+
 	private get searchConfig() {
 		return this.configurationService.getValue<ISearchConfigurationProperties>(
 			"search",
 		);
 	}
+
 	cancelSearch(cancelledForNewSearch = false): boolean {
 		if (this.currentCancelTokenSource) {
 			this.searchCancelledForNewSearch = cancelledForNewSearch;
+
 			this.currentCancelTokenSource.cancel();
 
 			return true;
 		}
+
 		return false;
 	}
+
 	cancelAISearch(cancelledForNewSearch = false): boolean {
 		if (this.currentAICancelTokenSource) {
 			this.aiSearchCancelledForNewSearch = cancelledForNewSearch;
+
 			this.currentAICancelTokenSource.cancel();
 
 			return true;
 		}
+
 		return false;
 	}
+
 	override dispose(): void {
 		this.cancelSearch();
+
 		this.cancelAISearch();
+
 		this.searchResult.dispose();
 
 		super.dispose();
@@ -580,21 +658,26 @@ export class SearchViewModelWorkbenchService
 	implements ISearchViewModelWorkbenchService
 {
 	declare readonly _serviceBrand: undefined;
+
 	private _searchModel: SearchModelImpl | null = null;
 
 	constructor(
 		@IInstantiationService
 		private readonly instantiationService: IInstantiationService,
 	) {}
+
 	get searchModel(): SearchModelImpl {
 		if (!this._searchModel) {
 			this._searchModel =
 				this.instantiationService.createInstance(SearchModelImpl);
 		}
+
 		return this._searchModel;
 	}
+
 	set searchModel(searchModel: SearchModelImpl) {
 		this._searchModel?.dispose();
+
 		this._searchModel = searchModel;
 	}
 }

@@ -19,15 +19,20 @@ import { IExtHostRpcService } from "./extHostRpcService.js";
 
 export class ExtHostLocalizationService implements ExtHostLocalizationShape {
 	readonly _serviceBrand: undefined;
+
 	private readonly _proxy: MainThreadLocalizationShape;
+
 	private readonly currentLanguage: string;
+
 	private readonly isDefaultLanguage: boolean;
+
 	private readonly bundleCache: Map<
 		string,
 		{
 			contents: {
 				[key: string]: string;
 			};
+
 			uri: URI;
 		}
 	> = new Map();
@@ -41,20 +46,25 @@ export class ExtHostLocalizationService implements ExtHostLocalizationShape {
 		private readonly logService: ILogService,
 	) {
 		this._proxy = rpc.getProxy(MainContext.MainThreadLocalization);
+
 		this.currentLanguage = initData.environment.appLanguage;
+
 		this.isDefaultLanguage = this.currentLanguage === LANGUAGE_DEFAULT;
 	}
+
 	getMessage(extensionId: string, details: IStringDetails): string {
 		const { message, args, comment } = details;
 
 		if (this.isDefaultLanguage) {
 			return format2(message, args ?? {});
 		}
+
 		let key = message;
 
 		if (comment && comment.length > 0) {
 			key += `/${Array.isArray(comment) ? comment.join("") : comment}`;
 		}
+
 		const str = this.bundleCache.get(extensionId)?.contents[key];
 
 		if (!str) {
@@ -62,8 +72,10 @@ export class ExtHostLocalizationService implements ExtHostLocalizationShape {
 				`Using default string since no string found in i18n bundle that has the key: ${key}`,
 			);
 		}
+
 		return format2(str ?? message, args ?? {});
 	}
+
 	getBundle(extensionId: string):
 		| {
 				[key: string]: string;
@@ -71,9 +83,11 @@ export class ExtHostLocalizationService implements ExtHostLocalizationShape {
 		| undefined {
 		return this.bundleCache.get(extensionId)?.contents;
 	}
+
 	getBundleUri(extensionId: string): URI | undefined {
 		return this.bundleCache.get(extensionId)?.uri;
 	}
+
 	async initializeLocalizedMessages(
 		extension: IExtensionDescription,
 	): Promise<void> {
@@ -83,9 +97,11 @@ export class ExtHostLocalizationService implements ExtHostLocalizationShape {
 		) {
 			return;
 		}
+
 		if (this.bundleCache.has(extension.identifier.value)) {
 			return;
 		}
+
 		let contents:
 			| {
 					[key: string]: string;
@@ -101,6 +117,7 @@ export class ExtHostLocalizationService implements ExtHostLocalizationShape {
 
 			return;
 		}
+
 		try {
 			const response = await this._proxy.$fetchBundleContents(bundleUri);
 
@@ -114,6 +131,7 @@ export class ExtHostLocalizationService implements ExtHostLocalizationShape {
 
 			return;
 		}
+
 		if (contents) {
 			this.bundleCache.set(extension.identifier.value, {
 				contents,
@@ -121,6 +139,7 @@ export class ExtHostLocalizationService implements ExtHostLocalizationShape {
 			});
 		}
 	}
+
 	private async getBundleLocation(
 		extension: IExtensionDescription,
 	): Promise<URI | undefined> {
@@ -132,6 +151,7 @@ export class ExtHostLocalizationService implements ExtHostLocalizationShape {
 
 			return URI.revive(uri);
 		}
+
 		return extension.l10n
 			? URI.joinPath(
 					extension.extensionLocation,

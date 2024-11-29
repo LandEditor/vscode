@@ -339,6 +339,7 @@ registerAction2(MoveSidebarLeftAction);
 
 export class ToggleSidebarPositionAction extends Action2 {
 	static readonly ID = "workbench.action.toggleSidebarPosition";
+
 	static readonly LABEL = localize(
 		"toggleSidebarPosition",
 		"Toggle Primary Side Bar Position",
@@ -1272,6 +1273,7 @@ export class ConfigureEditorTabsAction extends Action2 {
 
 	run(accessor: ServicesAccessor) {
 		const preferencesService = accessor.get(IPreferencesService);
+
 		preferencesService.openSettings({
 			jsonEditor: false,
 			query: "workbench.editor tab",
@@ -1295,6 +1297,7 @@ export class ConfigureEditorAction extends Action2 {
 
 	run(accessor: ServicesAccessor) {
 		const preferencesService = accessor.get(IPreferencesService);
+
 		preferencesService.openSettings({
 			jsonEditor: false,
 			query: "workbench.editor",
@@ -1567,6 +1570,7 @@ registerAction2(
 				}
 
 				const moveFocusedViewAction = new MoveFocusedViewAction();
+
 				instantiationService.invokeFunction((accessor) =>
 					moveFocusedViewAction.run(accessor, viewId),
 				);
@@ -1583,6 +1587,7 @@ registerAction2(
 				paneCompositePartService.getVisiblePaneCompositeIds(
 					ViewContainerLocation.Sidebar,
 				);
+
 			viewlets.forEach((viewletId) => {
 				const container =
 					viewDescriptorService.getViewContainerById(viewletId)!;
@@ -1591,6 +1596,7 @@ registerAction2(
 					viewDescriptorService.getViewContainerModel(container);
 
 				let hasAddedView = false;
+
 				containerModel.visibleViewDescriptors.forEach(
 					(viewDescriptor) => {
 						if (viewDescriptor.canMoveView) {
@@ -1603,6 +1609,7 @@ registerAction2(
 										containerModel.title,
 									),
 								});
+
 								hasAddedView = true;
 							}
 
@@ -1618,6 +1625,7 @@ registerAction2(
 			const panels = paneCompositePartService.getPinnedPaneCompositeIds(
 				ViewContainerLocation.Panel,
 			);
+
 			panels.forEach((panel) => {
 				const container =
 					viewDescriptorService.getViewContainerById(panel)!;
@@ -1626,6 +1634,7 @@ registerAction2(
 					viewDescriptorService.getViewContainerModel(container);
 
 				let hasAddedView = false;
+
 				containerModel.visibleViewDescriptors.forEach(
 					(viewDescriptor) => {
 						if (viewDescriptor.canMoveView) {
@@ -1638,6 +1647,7 @@ registerAction2(
 										containerModel.title,
 									),
 								});
+
 								hasAddedView = true;
 							}
 
@@ -1654,6 +1664,7 @@ registerAction2(
 				paneCompositePartService.getPinnedPaneCompositeIds(
 					ViewContainerLocation.AuxiliaryBar,
 				);
+
 			sidePanels.forEach((panel) => {
 				const container =
 					viewDescriptorService.getViewContainerById(panel)!;
@@ -1662,6 +1673,7 @@ registerAction2(
 					viewDescriptorService.getViewContainerModel(container);
 
 				let hasAddedView = false;
+
 				containerModel.visibleViewDescriptors.forEach(
 					(viewDescriptor) => {
 						if (viewDescriptor.canMoveView) {
@@ -1674,6 +1686,7 @@ registerAction2(
 										containerModel.title,
 									),
 								});
+
 								hasAddedView = true;
 							}
 
@@ -1700,14 +1713,17 @@ registerAction2(
 			const quickPick = disposables.add(
 				quickInputService.createQuickPick({ useSeparators: true }),
 			);
+
 			quickPick.placeholder = localize(
 				"moveFocusedView.selectView",
 				"Select a View to Move",
 			);
+
 			quickPick.items = this.getViewItems(
 				viewDescriptorService,
 				paneCompositePartService,
 			);
+
 			quickPick.selectedItems = quickPick.items.filter(
 				(item) => (item as IQuickPickItem).id === viewId,
 			) as IQuickPickItem[];
@@ -1730,6 +1746,7 @@ registerAction2(
 				disposables.add(
 					quickPick.onDidHide(() => {
 						disposables.dispose();
+
 						reject();
 					}),
 				);
@@ -1801,10 +1818,12 @@ class MoveFocusedViewAction extends Action2 {
 		const quickPick = disposables.add(
 			quickInputService.createQuickPick({ useSeparators: true }),
 		);
+
 		quickPick.placeholder = localize(
 			"moveFocusedView.selectDestination",
 			"Select a Destination for the View",
 		);
+
 		quickPick.title = localize(
 			{
 				key: "moveFocusedView.title",
@@ -1877,6 +1896,7 @@ class MoveFocusedViewAction extends Action2 {
 			paneCompositePartService.getVisiblePaneCompositeIds(
 				ViewContainerLocation.Sidebar,
 			);
+
 		items.push(
 			...pinnedViewlets
 				.filter((viewletId) => {
@@ -1913,6 +1933,7 @@ class MoveFocusedViewAction extends Action2 {
 		const pinnedPanels = paneCompositePartService.getPinnedPaneCompositeIds(
 			ViewContainerLocation.Panel,
 		);
+
 		items.push(
 			...pinnedPanels
 				.filter((panel) => {
@@ -1947,6 +1968,7 @@ class MoveFocusedViewAction extends Action2 {
 			paneCompositePartService.getPinnedPaneCompositeIds(
 				ViewContainerLocation.AuxiliaryBar,
 			);
+
 		items.push(
 			...pinnedAuxPanels
 				.filter((panel) => {
@@ -1984,6 +2006,7 @@ class MoveFocusedViewAction extends Action2 {
 						ViewContainerLocation.Panel,
 						this.desc.id,
 					);
+
 					viewsService.openView(focusedViewId, true);
 				} else if (destination.id === "_.sidebar.newcontainer") {
 					viewDescriptorService.moveViewToLocation(
@@ -1991,6 +2014,7 @@ class MoveFocusedViewAction extends Action2 {
 						ViewContainerLocation.Sidebar,
 						this.desc.id,
 					);
+
 					viewsService.openView(focusedViewId, true);
 				} else if (destination.id === "_.auxiliarybar.newcontainer") {
 					viewDescriptorService.moveViewToLocation(
@@ -1998,6 +2022,7 @@ class MoveFocusedViewAction extends Action2 {
 						ViewContainerLocation.AuxiliaryBar,
 						this.desc.id,
 					);
+
 					viewsService.openView(focusedViewId, true);
 				} else if (destination.id) {
 					viewDescriptorService.moveViewsToContainer(
@@ -2008,6 +2033,7 @@ class MoveFocusedViewAction extends Action2 {
 						undefined,
 						this.desc.id,
 					);
+
 					viewsService.openView(focusedViewId, true);
 				}
 
@@ -2091,6 +2117,7 @@ registerAction2(
 				undefined,
 				this.desc.id,
 			);
+
 			viewsService.openView(viewDescriptor.id, true);
 		}
 	},
@@ -2267,7 +2294,9 @@ registerAction2(DecreaseViewHeightAction);
 
 type ContextualLayoutVisualIcon = {
 	iconA: ThemeIcon;
+
 	iconB: ThemeIcon;
+
 	whenA: ContextKeyExpression;
 };
 type LayoutVisualIcon = ThemeIcon | ContextualLayoutVisualIcon;
@@ -2280,13 +2309,21 @@ function isContextualLayoutVisualIcon(
 
 interface CustomizeLayoutItem {
 	id: string;
+
 	active: ContextKeyExpression;
+
 	label: string;
+
 	activeIcon: ThemeIcon;
+
 	visualIcon?: LayoutVisualIcon;
+
 	activeAriaLabel: string;
+
 	inactiveIcon?: ThemeIcon;
+
 	inactiveAriaLabel?: string;
+
 	useButtons: boolean;
 }
 
@@ -2544,6 +2581,7 @@ registerAction2(
 						const useIconA = icon.whenA.evaluate(
 							contextKeyService.getContext(null),
 						);
+
 						icon = useIconA ? icon.iconA : icon.iconB;
 					}
 
@@ -2626,12 +2664,16 @@ registerAction2(
 			);
 
 			this._currentQuickPick = quickPick;
+
 			quickPick.items = this.getItems(
 				contextKeyService,
 				keybindingService,
 			);
+
 			quickPick.ignoreFocusOut = true;
+
 			quickPick.hideInput = true;
+
 			quickPick.title = localize(
 				"customizeLayoutQuickPickTitle",
 				"Customize Layout",
@@ -2652,6 +2694,7 @@ registerAction2(
 			quickPick.buttons = [resetButton, closeButton];
 
 			let selectedItem: CustomizeLayoutItem | undefined = undefined;
+
 			disposables.add(
 				contextKeyService.onDidChangeContext((changeEvent) => {
 					if (changeEvent.affectsSome(LayoutContextKeySet)) {
@@ -2678,6 +2721,7 @@ registerAction2(
 					if (quickPick.selectedItems.length) {
 						selectedItem = quickPick
 							.selectedItems[0] as CustomizeLayoutItem;
+
 						commandService.executeCommand(selectedItem.id);
 					}
 				}),
@@ -2687,6 +2731,7 @@ registerAction2(
 				quickPick.onDidTriggerItemButton((event) => {
 					if (event.item) {
 						selectedItem = event.item as CustomizeLayoutItem;
+
 						commandService.executeCommand(selectedItem.id);
 					}
 				}),
@@ -2699,6 +2744,7 @@ registerAction2(
 					} else if (button === resetButton) {
 						const resetSetting = (id: string) => {
 							const config = configurationService.inspect(id);
+
 							configurationService.updateValue(
 								id,
 								config.defaultValue,
@@ -2707,8 +2753,11 @@ registerAction2(
 
 						// Reset all layout options
 						resetSetting("workbench.activityBar.location");
+
 						resetSetting("workbench.sideBar.location");
+
 						resetSetting("workbench.statusBar.visible");
+
 						resetSetting("workbench.panel.defaultLocation");
 
 						if (!isMacintosh || !isNative) {
@@ -2731,6 +2780,7 @@ registerAction2(
 			disposables.add(
 				quickPick.onDispose(() => {
 					this._currentQuickPick = undefined;
+
 					disposables.dispose();
 				}),
 			);

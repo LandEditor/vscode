@@ -19,14 +19,17 @@ export class ChatInputBoxContentProvider extends Disposable implements ITextMode
 		@ILanguageService private readonly languageService: ILanguageService
 	) {
 		super();
+
 		this._register(textModelService.registerTextModelContentProvider(ChatInputPart.INPUT_SCHEME, this));
 	}
 
 	async provideTextContent(resource: URI): Promise<ITextModel | null> {
 		const existing = this.modelService.getModel(resource);
+
 		if (existing) {
 			return existing;
 		}
+
 		return this.modelService.createModel('', this.languageService.createById('chatinput'), resource);
 	}
 }

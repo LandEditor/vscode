@@ -13,7 +13,9 @@ import { ITextModel } from "../../../../editor/common/model.js";
 
 export interface InsertSnippetResult {
 	position: Position;
+
 	prepend: string;
+
 	append: string;
 }
 export class SmartSnippetInserter {
@@ -25,8 +27,10 @@ export class SmartSnippetInserter {
 				return true;
 			}
 		}
+
 		return false;
 	}
+
 	private static offsetToPosition(
 		model: ITextModel,
 		offset: number,
@@ -45,10 +49,13 @@ export class SmartSnippetInserter {
 			if (offsetAfterLine > offset) {
 				return new Position(lineNumber, offset - offsetBeforeLine + 1);
 			}
+
 			offsetBeforeLine = offsetAfterLine;
 		}
+
 		return new Position(lineCount, model.getLineMaxColumn(lineCount));
 	}
+
 	static insertSnippet(
 		model: ITextModel,
 		_position: Position,
@@ -62,6 +69,7 @@ export class SmartSnippetInserter {
 			AFTER_OBJECT = 1,
 			BEFORE_OBJECT = 2,
 		}
+
 		let currentState = State.INVALID;
 
 		let lastValidPos = -1;
@@ -77,11 +85,14 @@ export class SmartSnippetInserter {
 		const checkRangeStatus = (pos: number, state: State) => {
 			if (state !== State.INVALID && arrayLevel === 1 && objLevel === 0) {
 				currentState = state;
+
 				lastValidPos = pos;
+
 				lastValidState = state;
 			} else {
 				if (currentState !== State.INVALID) {
 					currentState = State.INVALID;
+
 					lastValidPos = scanner.getTokenOffset();
 				}
 			}
@@ -97,34 +108,43 @@ export class SmartSnippetInserter {
 			switch (kind) {
 				case JSONSyntaxKind.OpenBracketToken:
 					goodKind = true;
+
 					arrayLevel++;
+
 					checkRangeStatus(currentPos, State.BEFORE_OBJECT);
 
 					break;
 
 				case JSONSyntaxKind.CloseBracketToken:
 					goodKind = true;
+
 					arrayLevel--;
+
 					checkRangeStatus(currentPos, State.INVALID);
 
 					break;
 
 				case JSONSyntaxKind.CommaToken:
 					goodKind = true;
+
 					checkRangeStatus(currentPos, State.BEFORE_OBJECT);
 
 					break;
 
 				case JSONSyntaxKind.OpenBraceToken:
 					goodKind = true;
+
 					objLevel++;
+
 					checkRangeStatus(currentPos, State.INVALID);
 
 					break;
 
 				case JSONSyntaxKind.CloseBraceToken:
 					goodKind = true;
+
 					objLevel--;
+
 					checkRangeStatus(currentPos, State.AFTER_OBJECT);
 
 					break;
@@ -133,6 +153,7 @@ export class SmartSnippetInserter {
 				case JSONSyntaxKind.LineBreakTrivia:
 					goodKind = true;
 			}
+
 			if (
 				currentPos >= desiredPosition &&
 				(currentState !== State.INVALID || lastValidPos !== -1)
@@ -145,11 +166,14 @@ export class SmartSnippetInserter {
 					acceptPosition = goodKind
 						? currentPos
 						: scanner.getTokenOffset();
+
 					acceptState = currentState;
 				} else {
 					acceptPosition = lastValidPos;
+
 					acceptState = lastValidState;
 				}
+
 				if ((acceptState as State) === State.AFTER_OBJECT) {
 					return {
 						position: this.offsetToPosition(model, acceptPosition),

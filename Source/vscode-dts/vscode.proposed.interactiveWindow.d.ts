@@ -16,6 +16,7 @@ declare module "vscode" {
 		 * The uri of the input box in the interactive window.
 		 */
 		readonly inputBoxUri: Uri;
+
 		private constructor(uri: Uri, inputBoxUri: Uri);
 	}
 

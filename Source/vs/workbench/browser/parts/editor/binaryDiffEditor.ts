@@ -55,6 +55,7 @@ export class BinaryResourceDiffEditor extends SideBySideEditor {
 			editorGroupService,
 		);
 	}
+
 	getMetadata(): string | undefined {
 		const primary = this.getPrimaryEditorPane();
 
@@ -71,6 +72,7 @@ export class BinaryResourceDiffEditor extends SideBySideEditor {
 				primary.getMetadata(),
 			);
 		}
+
 		return undefined;
 	}
 }

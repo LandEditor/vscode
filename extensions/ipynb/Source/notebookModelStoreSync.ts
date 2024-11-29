@@ -50,6 +50,7 @@ export function activate(context: ExtensionContext) {
 		undefined,
 		context.subscriptions,
 	);
+
 	workspace.onWillSaveNotebookDocument(
 		waitForPendingModelUpdates,
 		undefined,
@@ -68,11 +69,15 @@ function triggerDebouncedNotebookDocumentChangeEvent() {
 	if (timer) {
 		clearTimeout(timer);
 	}
+
 	if (!mergedEvents) {
 		return;
 	}
+
 	const args = mergedEvents;
+
 	mergedEvents = undefined;
+
 	onDidChangeNotebookCells(args);
 }
 export function debounceOnDidChangeNotebookDocument() {
@@ -80,6 +85,7 @@ export function debounceOnDidChangeNotebookDocument() {
 		if (!isSupportedNotebook(e.notebook)) {
 			return;
 		}
+
 		if (!mergedEvents) {
 			mergedEvents = e;
 		} else if (mergedEvents.notebook === e.notebook) {
@@ -98,9 +104,11 @@ export function debounceOnDidChangeNotebookDocument() {
 			// Start a new timer for the new notebook.
 			mergedEvents = e;
 		}
+
 		if (timer) {
 			clearTimeout(timer);
 		}
+
 		timer = setTimeout(triggerDebouncedNotebookDocumentChangeEvent, 200);
 	});
 
@@ -118,6 +126,7 @@ function waitForPendingModelUpdates(e: NotebookDocumentWillSaveEvent) {
 	if (!isSupportedNotebook(e.notebook)) {
 		return;
 	}
+
 	triggerDebouncedNotebookDocumentChangeEvent();
 
 	const promises = pendingNotebookCellModelUpdates.get(e.notebook);
@@ -125,6 +134,7 @@ function waitForPendingModelUpdates(e: NotebookDocumentWillSaveEvent) {
 	if (!promises) {
 		return;
 	}
+
 	e.waitUntil(Promise.all(promises));
 }
 function cleanup(notebook: NotebookDocument, promise: PromiseLike<void>) {
@@ -142,6 +152,7 @@ function trackAndUpdateCellMetadata(
 	notebook: NotebookDocument,
 	updates: {
 		cell: NotebookCell;
+
 		metadata: CellMetadata & {
 			vscode?: {
 				languageId: string;
@@ -152,18 +163,22 @@ function trackAndUpdateCellMetadata(
 	const pendingUpdates =
 		pendingNotebookCellModelUpdates.get(notebook) ??
 		new Set<Thenable<void>>();
+
 	pendingNotebookCellModelUpdates.set(notebook, pendingUpdates);
 
 	const edit = new WorkspaceEdit();
+
 	updates.forEach(({ cell, metadata }) => {
 		const newMetadata = { ...cell.metadata, ...metadata };
 
 		if (!metadata.execution_count && newMetadata.execution_count) {
 			newMetadata.execution_count = null;
 		}
+
 		if (!metadata.attachments && newMetadata.attachments) {
 			delete newMetadata.attachments;
 		}
+
 		edit.set(cell.notebook.uri, [
 			NotebookEdit.updateCellMetadata(
 				cell.index,
@@ -173,15 +188,18 @@ function trackAndUpdateCellMetadata(
 	});
 
 	const promise = workspace.applyEdit(edit).then(noop, noop);
+
 	pendingUpdates.add(promise);
 
 	const clean = () => cleanup(notebook, promise);
+
 	promise.then(clean, clean);
 }
 function onDidChangeNotebookCells(e: NotebookDocumentChangeEventEx) {
 	if (!isSupportedNotebook(e.notebook)) {
 		return;
 	}
+
 	const notebook = e.notebook;
 
 	const notebookMetadata = getNotebookMetadata(e.notebook);
@@ -191,6 +209,7 @@ function onDidChangeNotebookCells(e: NotebookDocumentChangeEventEx) {
 
 	const updates: {
 		cell: NotebookCell;
+
 		metadata: CellMetadata & {
 			vscode?: {
 				languageId: string;
@@ -204,6 +223,7 @@ function onDidChangeNotebookCells(e: NotebookDocumentChangeEventEx) {
 		if (!preferredCellLanguage || e.cell.kind !== NotebookCellKind.Code) {
 			return;
 		}
+
 		const currentMetadata = e.metadata
 			? getCellMetadata({ metadata: e.metadata })
 			: getCellMetadata({ cell: e.cell });
@@ -213,6 +233,7 @@ function onDidChangeNotebookCells(e: NotebookDocumentChangeEventEx) {
 		const metadata: CellMetadata = JSON.parse(
 			JSON.stringify(currentMetadata),
 		);
+
 		metadata.metadata = metadata.metadata || {};
 
 		let metadataUpdated = false;
@@ -224,6 +245,7 @@ function onDidChangeNotebookCells(e: NotebookDocumentChangeEventEx) {
 				e.executionSummary?.executionOrder
 		) {
 			metadata.execution_count = e.executionSummary.executionOrder;
+
 			metadataUpdated = true;
 		} else if (
 			!e.executionSummary &&
@@ -235,6 +257,7 @@ function onDidChangeNotebookCells(e: NotebookDocumentChangeEventEx) {
 			// NOTE: At this point we're updating the `execution_count` in metadata to `null`.
 			// Thus this is a change in metadata, which we will need to update in the model.
 			metadata.execution_count = null;
+
 			metadataUpdated = true;
 		} else if (
 			(!e.executionSummary ||
@@ -247,14 +270,17 @@ function onDidChangeNotebookCells(e: NotebookDocumentChangeEventEx) {
 		) {
 			// This is a result of the previous cell being cleared.
 			metadata.execution_count = null;
+
 			metadataUpdated = true;
 		}
+
 		if (
 			e.document?.languageId &&
 			e.document?.languageId !== preferredCellLanguage &&
 			e.document?.languageId !== languageIdInMetadata
 		) {
 			setVSCodeCellLanguageId(metadata, e.document.languageId);
+
 			metadataUpdated = true;
 		} else if (
 			e.document?.languageId &&
@@ -262,6 +288,7 @@ function onDidChangeNotebookCells(e: NotebookDocumentChangeEventEx) {
 			languageIdInMetadata
 		) {
 			removeVSCodeCellLanguageId(metadata);
+
 			metadataUpdated = true;
 		} else if (
 			e.document?.languageId &&
@@ -269,8 +296,10 @@ function onDidChangeNotebookCells(e: NotebookDocumentChangeEventEx) {
 			e.document.languageId === languageIdInMetadata
 		) {
 			removeVSCodeCellLanguageId(metadata);
+
 			metadataUpdated = true;
 		}
+
 		if (metadataUpdated) {
 			updates.push({ cell: e.cell, metadata });
 		}
@@ -287,6 +316,7 @@ function onDidChangeNotebookCells(e: NotebookDocumentChangeEventEx) {
 				if (!isCellIdRequired(notebookMetadata)) {
 					return;
 				}
+
 				if (isCellIdRequired(notebookMetadata) && cellMetadata?.id) {
 					return;
 				}
@@ -295,11 +325,13 @@ function onDidChangeNotebookCells(e: NotebookDocumentChangeEventEx) {
 			const metadata: CellMetadata = {
 				...JSON.parse(JSON.stringify(cellMetadata || {})),
 			};
+
 			metadata.metadata = metadata.metadata || {};
 
 			if (isCellIdRequired(notebookMetadata) && !cellMetadata?.id) {
 				metadata.id = generateCellId(e.notebook);
 			}
+
 			updates.push({ cell, metadata });
 		});
 	});
@@ -320,9 +352,11 @@ function isCellIdRequired(
 	if ((metadata.nbformat || 0) >= 5) {
 		return true;
 	}
+
 	if ((metadata.nbformat || 0) === 4 && (metadata.nbformat_minor || 0) >= 5) {
 		return true;
 	}
+
 	return false;
 }
 function generateCellId(notebook: NotebookDocument) {
@@ -341,12 +375,14 @@ function generateCellId(notebook: NotebookDocument) {
 			if (!existingId) {
 				continue;
 			}
+
 			if (existingId === id) {
 				duplicate = true;
 
 				break;
 			}
 		}
+
 		if (!duplicate) {
 			return id;
 		}

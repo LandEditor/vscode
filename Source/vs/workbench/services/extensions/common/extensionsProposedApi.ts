@@ -33,7 +33,9 @@ import {
 
 export class ExtensionsProposedApi {
 	private readonly _envEnablesProposedApiForAll: boolean;
+
 	private readonly _envEnabledExtensions: Set<string>;
+
 	private readonly _productEnabledExtensions: Map<string, string[]>;
 
 	constructor(
@@ -49,6 +51,7 @@ export class ExtensionsProposedApi {
 				ExtensionIdentifier.toKey(id),
 			),
 		);
+
 		this._envEnablesProposedApiForAll =
 			!_environmentService.isBuilt || // always allow proposed API when running out of sources
 			(_environmentService.isExtensionDevelopment &&
@@ -71,17 +74,21 @@ export class ExtensionsProposedApi {
 
 						return false;
 					}
+
 					return true;
 				});
+
 				this._productEnabledExtensions.set(key, proposalNames);
 			}
 		}
 	}
+
 	updateEnabledApiProposals(extensions: IExtensionDescription[]): void {
 		for (const extension of extensions) {
 			this.doUpdateEnabledApiProposals(extension);
 		}
 	}
+
 	private doUpdateEnabledApiProposals(
 		extension: Mutable<IExtensionDescription>,
 	): void {
@@ -99,9 +106,11 @@ export class ExtensionsProposedApi {
 							`Extension '${key}' wants API proposal '${name}' but that proposal DOES NOT EXIST. Likely, the proposal has been finalized (check 'vscode.d.ts') or was abandoned.`,
 						);
 					}
+
 					return result;
 				});
 		}
+
 		if (this._productEnabledExtensions.has(key)) {
 			// NOTE that proposals that are listed in product.json override whatever is declared in the extension
 			// itself. This is needed for us to know what proposals are used "in the wild". Merging product.json-proposals
@@ -126,13 +135,16 @@ export class ExtensionsProposedApi {
 					this._logService.error(
 						`Proceeding with EXTRA proposals (${[...diff].join(", ")}) because extension is in development mode. Still, this EXTENSION WILL BE BROKEN unless product.json is updated.`,
 					);
+
 					productEnabledProposals.push(...diff);
 				}
 			}
+
 			extension.enabledApiProposals = productEnabledProposals;
 
 			return;
 		}
+
 		if (
 			this._envEnablesProposedApiForAll ||
 			this._envEnabledExtensions.has(key)
@@ -141,6 +153,7 @@ export class ExtensionsProposedApi {
 			// has declared it
 			return;
 		}
+
 		if (
 			!extension.isBuiltin &&
 			isNonEmptyArray(extension.enabledApiProposals)
@@ -149,6 +162,7 @@ export class ExtensionsProposedApi {
 			this._logService.error(
 				`Extension '${extension.identifier.value} CANNOT USE these API proposals '${extension.enabledApiProposals?.join(", ") || "*"}'. You MUST start in extension development mode or use the --enable-proposed-api command line flag`,
 			);
+
 			extension.enabledApiProposals = [];
 		}
 	}
@@ -158,12 +172,14 @@ class ApiProposalsMarkdowneRenderer
 	implements IExtensionFeatureMarkdownRenderer
 {
 	readonly type = "markdown";
+
 	shouldRender(manifest: IExtensionManifest): boolean {
 		return (
 			!!manifest.originalEnabledApiProposals?.length ||
 			!!manifest.enabledApiProposals?.length
 		);
 	}
+
 	render(manifest: IExtensionManifest): IRenderedData<IMarkdownString> {
 		const enabledApiProposals =
 			manifest.originalEnabledApiProposals ??
@@ -177,6 +193,7 @@ class ApiProposalsMarkdowneRenderer
 				data.appendMarkdown(`- \`${proposal}\`\n`);
 			}
 		}
+
 		return {
 			data,
 			dispose: () => {},

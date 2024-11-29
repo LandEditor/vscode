@@ -42,9 +42,13 @@ import { isDebuggerMainContribution } from "./debugUtils.js";
 
 export class Debugger implements IDebugger, IDebuggerMetadata {
 	private debuggerContribution: IDebuggerContribution;
+
 	private mergedExtensionDescriptions: IExtensionDescription[] = [];
+
 	private mainExtensionDescription: IExtensionDescription | undefined;
+
 	private debuggerWhen: ContextKeyExpression | undefined;
+
 	private debuggerHiddenWhen: ContextKeyExpression | undefined;
 
 	constructor(
@@ -65,11 +69,14 @@ export class Debugger implements IDebugger, IDebuggerMetadata {
 		private readonly contextKeyService: IContextKeyService,
 	) {
 		this.debuggerContribution = { type: dbgContribution.type };
+
 		this.merge(dbgContribution, extensionDescription);
+
 		this.debuggerWhen =
 			typeof this.debuggerContribution.when === "string"
 				? ContextKeyExpr.deserialize(this.debuggerContribution.when)
 				: undefined;
+
 		this.debuggerHiddenWhen =
 			typeof this.debuggerContribution.hiddenWhen === "string"
 				? ContextKeyExpr.deserialize(
@@ -77,6 +84,7 @@ export class Debugger implements IDebugger, IDebuggerMetadata {
 					)
 				: undefined;
 	}
+
 	merge(
 		otherDebuggerContribution: IDebuggerContribution,
 		extensionDescription: IExtensionDescription,
@@ -94,6 +102,7 @@ export class Debugger implements IDebugger, IDebuggerMetadata {
 			if (!isObject(destination)) {
 				return source;
 			}
+
 			if (isObject(source)) {
 				Object.keys(source).forEach((key) => {
 					if (key !== "__proto__") {
@@ -123,6 +132,7 @@ export class Debugger implements IDebugger, IDebuggerMetadata {
 					}
 				});
 			}
+
 			return destination;
 		}
 		// only if not already merged
@@ -143,6 +153,7 @@ export class Debugger implements IDebugger, IDebuggerMetadata {
 			}
 		}
 	}
+
 	async startDebugging(
 		configuration: IConfig,
 		parentSessionId: string,
@@ -158,6 +169,7 @@ export class Debugger implements IDebugger, IDebuggerMetadata {
 			undefined,
 		);
 	}
+
 	async createDebugAdapter(session: IDebugSession): Promise<IDebugAdapter> {
 		await this.adapterManager.activateDebuggers(
 			"onDebugAdapterProtocolTracker",
@@ -169,6 +181,7 @@ export class Debugger implements IDebugger, IDebuggerMetadata {
 		if (da) {
 			return Promise.resolve(da);
 		}
+
 		throw new Error(
 			nls.localize(
 				"cannot.find.da",
@@ -177,6 +190,7 @@ export class Debugger implements IDebugger, IDebuggerMetadata {
 			),
 		);
 	}
+
 	async substituteVariables(
 		folder: IWorkspaceFolder | undefined,
 		config: IConfig,
@@ -195,20 +209,24 @@ export class Debugger implements IDebugger, IDebuggerMetadata {
 			substitutedConfig.__configurationTarget,
 		);
 	}
+
 	runInTerminal(
 		args: DebugProtocol.RunInTerminalRequestArguments,
 		sessionId: string,
 	): Promise<number | undefined> {
 		return this.adapterManager.runInTerminal(this.type, args, sessionId);
 	}
+
 	get label(): string {
 		return (
 			this.debuggerContribution.label || this.debuggerContribution.type
 		);
 	}
+
 	get type(): string {
 		return this.debuggerContribution.type;
 	}
+
 	get variables():
 		| {
 				[key: string]: string;
@@ -216,44 +234,55 @@ export class Debugger implements IDebugger, IDebuggerMetadata {
 		| undefined {
 		return this.debuggerContribution.variables;
 	}
+
 	get configurationSnippets(): IJSONSchemaSnippet[] | undefined {
 		return this.debuggerContribution.configurationSnippets;
 	}
+
 	get languages(): string[] | undefined {
 		return this.debuggerContribution.languages;
 	}
+
 	get when(): ContextKeyExpression | undefined {
 		return this.debuggerWhen;
 	}
+
 	get hiddenWhen(): ContextKeyExpression | undefined {
 		return this.debuggerHiddenWhen;
 	}
+
 	get enabled() {
 		return (
 			!this.debuggerWhen ||
 			this.contextKeyService.contextMatchesRules(this.debuggerWhen)
 		);
 	}
+
 	get isHiddenFromDropdown() {
 		if (!this.debuggerHiddenWhen) {
 			return false;
 		}
+
 		return this.contextKeyService.contextMatchesRules(
 			this.debuggerHiddenWhen,
 		);
 	}
+
 	get strings() {
 		return (
 			this.debuggerContribution.strings ??
 			(this.debuggerContribution as any).uiMessages
 		);
 	}
+
 	interestedInLanguage(languageId: string): boolean {
 		return !!(this.languages && this.languages.indexOf(languageId) >= 0);
 	}
+
 	hasInitialConfiguration(): boolean {
 		return !!this.debuggerContribution.initialConfigurations;
 	}
+
 	hasDynamicConfigurationProviders(): boolean {
 		return this.debugService
 			.getConfigurationManager()
@@ -262,11 +291,13 @@ export class Debugger implements IDebugger, IDebuggerMetadata {
 				DebugConfigurationProviderTriggerKind.Dynamic,
 			);
 	}
+
 	hasConfigurationProvider(): boolean {
 		return this.debugService
 			.getConfigurationManager()
 			.hasDebugConfigurationProvider(this.type);
 	}
+
 	getInitialConfigurationContent(
 		initialConfigs?: IConfig[],
 	): Promise<string> {
@@ -278,6 +309,7 @@ export class Debugger implements IDebugger, IDebuggerMetadata {
 			initialConfigurations =
 				initialConfigurations.concat(initialConfigs);
 		}
+
 		const eol =
 			this.resourcePropertiesService.getEOL(
 				URI.from({ scheme: Schemas.untitled, path: "1" }),
@@ -325,19 +357,23 @@ export class Debugger implements IDebugger, IDebuggerMetadata {
 				" ".repeat(editorConfig.editor.tabSize),
 			);
 		}
+
 		return Promise.resolve(content);
 	}
+
 	getMainExtensionDescriptor(): IExtensionDescription {
 		return (
 			this.mainExtensionDescription || this.mergedExtensionDescriptions[0]
 		);
 	}
+
 	getCustomTelemetryEndpoint(): ITelemetryEndpoint | undefined {
 		const aiKey = this.debuggerContribution.aiKey;
 
 		if (!aiKey) {
 			return undefined;
 		}
+
 		const sendErrorTelemtry =
 			cleanRemoteAuthority(this.environmentService.remoteAuthority) !==
 			"other";
@@ -348,6 +384,7 @@ export class Debugger implements IDebugger, IDebuggerMetadata {
 			sendErrorTelemetry: sendErrorTelemtry,
 		};
 	}
+
 	getSchemaAttributes(definitions: IJSONSchemaMap): IJSONSchema[] | null {
 		if (!this.debuggerContribution.configurationAttributes) {
 			return null;
@@ -364,17 +401,22 @@ export class Debugger implements IDebugger, IDebuggerMetadata {
 				this.debuggerContribution.configurationAttributes[request];
 
 			const defaultRequired = ["name", "type", "request"];
+
 			attributes.required =
 				attributes.required && attributes.required.length
 					? defaultRequired.concat(attributes.required)
 					: defaultRequired;
+
 			attributes.additionalProperties = false;
+
 			attributes.type = "object";
 
 			if (!attributes.properties) {
 				attributes.properties = {};
 			}
+
 			const properties = attributes.properties;
+
 			properties["type"] = {
 				enum: [this.type],
 				enumDescriptions: [this.label],
@@ -398,6 +440,7 @@ export class Debugger implements IDebugger, IDebuggerMetadata {
 					'"node2" is no longer supported, use "node" instead and set the "protocol" attribute to "inspector".',
 				),
 			};
+
 			properties["request"] = {
 				enum: [request],
 				description: nls.localize(
@@ -411,13 +454,16 @@ export class Debugger implements IDebugger, IDebuggerMetadata {
 					$ref: `#/definitions/common/properties/${prop}`,
 				};
 			}
+
 			Object.keys(properties).forEach((name) => {
 				// Use schema allOf property to get independent error reporting #21113
 				ConfigurationResolverUtils.applyDeprecatedVariableMessage(
 					properties[name],
 				);
 			});
+
 			definitions[definitionId] = { ...attributes };
+
 			definitions[platformSpecificDefinitionId] = {
 				type: "object",
 				additionalProperties: false,
@@ -429,6 +475,7 @@ export class Debugger implements IDebugger, IDebuggerMetadata {
 			};
 			// Don't add the OS props to the real attributes object so they don't show up in 'definitions'
 			const attributesCopy = { ...attributes };
+
 			attributesCopy.properties = {
 				...properties,
 				...{

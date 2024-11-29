@@ -36,50 +36,68 @@ export class MarkupCellViewModel
 	implements ICellViewModel
 {
 	readonly cellKind = CellKind.Markup;
+
 	private _layoutInfo: MarkupCellLayoutInfo;
+
 	private _renderedHtml?: string;
+
 	public get renderedHtml(): string | undefined {
 		return this._renderedHtml;
 	}
+
 	public set renderedHtml(value: string | undefined) {
 		if (this._renderedHtml !== value) {
 			this._renderedHtml = value;
+
 			this._onDidChangeState.fire({ contentChanged: true });
 		}
 	}
+
 	get layoutInfo() {
 		return this._layoutInfo;
 	}
+
 	private _previewHeight = 0;
 
 	set renderedMarkdownHeight(newHeight: number) {
 		this._previewHeight = newHeight;
+
 		this._updateTotalHeight(this._computeTotalHeight());
 	}
+
 	private _chatHeight = 0;
 
 	set chatHeight(newHeight: number) {
 		this._chatHeight = newHeight;
+
 		this._updateTotalHeight(this._computeTotalHeight());
 	}
+
 	get chatHeight() {
 		return this._chatHeight;
 	}
+
 	private _editorHeight = 0;
+
 	private _statusBarHeight = 0;
 
 	set editorHeight(newHeight: number) {
 		this._editorHeight = newHeight;
+
 		this._statusBarHeight =
 			this.viewContext.notebookOptions.computeStatusBarHeight();
+
 		this._updateTotalHeight(this._computeTotalHeight());
 	}
+
 	get editorHeight() {
 		throw new Error("MarkdownCellViewModel.editorHeight is write only");
 	}
+
 	protected readonly _onDidChangeLayout = this._register(
 		new Emitter<MarkupCellLayoutChangeEvent>(),
 	);
+
 	readonly onDidChangeLayout = this._onDidChangeLayout.event;
 
 	get foldingState() {
@@ -87,34 +105,47 @@ export class MarkupCellViewModel
 			this.foldingDelegate.getCellIndex(this),
 		);
 	}
+
 	private _hoveringOutput: boolean = false;
+
 	public get outputIsHovered(): boolean {
 		return this._hoveringOutput;
 	}
+
 	public set outputIsHovered(v: boolean) {
 		this._hoveringOutput = v;
 	}
+
 	private _focusOnOutput: boolean = false;
+
 	public get outputIsFocused(): boolean {
 		return this._focusOnOutput;
 	}
+
 	public set outputIsFocused(v: boolean) {
 		this._focusOnOutput = v;
 	}
+
 	public get inputInOutputIsFocused(): boolean {
 		return false;
 	}
+
 	public set inputInOutputIsFocused(_: boolean) {
 		//
 	}
+
 	private _hoveringCell = false;
+
 	public get cellIsHovered(): boolean {
 		return this._hoveringCell;
 	}
+
 	public set cellIsHovered(v: boolean) {
 		this._hoveringCell = v;
+
 		this._onDidChangeState.fire({ cellIsHoveredChanged: true });
 	}
+
 	constructor(
 		viewType: string,
 		model: NotebookCellTextModel,
@@ -145,6 +176,7 @@ export class MarkupCellViewModel
 			this.viewContext.notebookOptions.computeBottomToolbarDimensions(
 				this.viewType,
 			);
+
 		this._layoutInfo = {
 			chatHeight: 0,
 			editorHeight: 0,
@@ -163,6 +195,7 @@ export class MarkupCellViewModel
 			foldHintHeight: 0,
 			statusBarHeight: 0,
 		};
+
 		this._register(
 			this.onDidChangeState((e) => {
 				this.viewContext.eventDispatcher.emit([
@@ -178,6 +211,7 @@ export class MarkupCellViewModel
 			}),
 		);
 	}
+
 	private _computeTotalHeight(): number {
 		const layoutConfiguration =
 			this.viewContext.notebookOptions.getLayoutConfiguration();
@@ -212,6 +246,7 @@ export class MarkupCellViewModel
 			);
 		}
 	}
+
 	private _computeFoldHintHeight(): number {
 		return this.getEditState() === CellEditState.Editing ||
 			this.foldingState !== CellFoldingState.Collapsed
@@ -219,6 +254,7 @@ export class MarkupCellViewModel
 			: this.viewContext.notebookOptions.getLayoutConfiguration()
 					.markdownFoldHintHeight;
 	}
+
 	override updateOptions(e: NotebookOptionsChangeEvent) {
 		super.updateOptions(e);
 
@@ -240,17 +276,21 @@ export class MarkupCellViewModel
 
 		return -1;
 	}
+
 	updateOutputHeight(index: number, height: number): void {
 		// throw new Error('Method not implemented.');
 	}
+
 	triggerFoldingStateChange() {
 		this._onDidChangeState.fire({ foldingStateChanged: true });
 	}
+
 	private _updateTotalHeight(newHeight: number, context?: CellLayoutContext) {
 		if (newHeight !== this.layoutInfo.totalHeight) {
 			this.layoutChange({ totalHeight: newHeight, context });
 		}
 	}
+
 	layoutChange(state: MarkupCellLayoutChangeEvent) {
 		let totalHeight: number;
 
@@ -271,14 +311,18 @@ export class MarkupCellViewModel
 				this.viewContext.notebookOptions.computeCollapsedMarkdownCellHeight(
 					this.viewType,
 				);
+
 			state.totalHeight = totalHeight;
+
 			foldHintHeight = 0;
 		}
+
 		let commentOffset: number;
 
 		if (this.getEditState() === CellEditState.Editing) {
 			const notebookLayoutConfiguration =
 				this.viewContext.notebookOptions.getLayoutConfiguration();
+
 			commentOffset =
 				notebookLayoutConfiguration.editorToolbarHeight +
 				notebookLayoutConfiguration.cellTopMargin + // CELL_TOP_MARGIN
@@ -288,6 +332,7 @@ export class MarkupCellViewModel
 		} else {
 			commentOffset = this._previewHeight;
 		}
+
 		this._layoutInfo = {
 			fontInfo: state.font || this._layoutInfo.fontInfo,
 			editorWidth:
@@ -313,8 +358,10 @@ export class MarkupCellViewModel
 				? this._commentHeight
 				: this._layoutInfo.commentHeight,
 		};
+
 		this._onDidChangeLayout.fire(state);
 	}
+
 	override restoreEditorViewState(
 		editorViewStates: editorCommon.ICodeEditorViewState | null,
 		totalHeight?: number,
@@ -333,12 +380,15 @@ export class MarkupCellViewModel
 				statusBarHeight: this._statusBarHeight,
 				layoutState: CellLayoutState.FromCache,
 			};
+
 			this.layoutChange({});
 		}
 	}
+
 	getDynamicHeight() {
 		return null;
 	}
+
 	getHeight(lineHeight: number) {
 		if (this._layoutInfo.layoutState === CellLayoutState.Uninitialized) {
 			return 100;
@@ -346,12 +396,17 @@ export class MarkupCellViewModel
 			return this._layoutInfo.totalHeight;
 		}
 	}
+
 	protected onDidChangeTextModelContent(): void {
 		this._onDidChangeState.fire({ contentChanged: true });
 	}
+
 	onDeselect() {}
+
 	private readonly _hasFindResult = this._register(new Emitter<boolean>());
+
 	public readonly hasFindResult: Event<boolean> = this._hasFindResult.event;
+
 	startFind(
 		value: string,
 		options: INotebookFindOptions,
@@ -361,11 +416,13 @@ export class MarkupCellViewModel
 		if (matches === null) {
 			return null;
 		}
+
 		return {
 			cell: this,
 			contentMatches: matches,
 		};
 	}
+
 	override dispose() {
 		super.dispose();
 		(this.foldingDelegate as any) = null;

@@ -306,6 +306,7 @@ export interface IEditorService {
 			| ACTIVE_GROUP_TYPE
 			| AUX_WINDOW_GROUP_TYPE,
 	): Promise<IEditorPane | undefined>;
+
 	openEditor(
 		editor: ITextResourceEditorInput | IUntitledTextResourceEditorInput,
 		group?:
@@ -315,6 +316,7 @@ export interface IEditorService {
 			| ACTIVE_GROUP_TYPE
 			| AUX_WINDOW_GROUP_TYPE,
 	): Promise<IEditorPane | undefined>;
+
 	openEditor(
 		editor: IResourceDiffEditorInput,
 		group?:
@@ -324,6 +326,7 @@ export interface IEditorService {
 			| ACTIVE_GROUP_TYPE
 			| AUX_WINDOW_GROUP_TYPE,
 	): Promise<ITextDiffEditorPane | undefined>;
+
 	openEditor(
 		editor: IUntypedEditorInput,
 		group?:
@@ -437,6 +440,7 @@ export interface IEditorService {
 		resource: URI,
 		options?: IFindEditorOptions,
 	): readonly IEditorIdentifier[];
+
 	findEditors(
 		editor: IResourceEditorInputIdentifier,
 		options?: IFindEditorOptions,

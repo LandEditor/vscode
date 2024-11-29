@@ -55,6 +55,7 @@ export class MainThreadTreeViews
 	implements MainThreadTreeViewsShape
 {
 	private readonly _proxy: ExtHostTreeViewsShape;
+
 	private readonly _dataProviders: DisposableMap<
 		string,
 		{ dataProvider: TreeViewDataProvider; dispose: () => void }
@@ -64,6 +65,7 @@ export class MainThreadTreeViews
 			{ dataProvider: TreeViewDataProvider; dispose: () => void }
 		>(),
 	);
+
 	private readonly _dndControllers = new Map<
 		string,
 		TreeViewDragAndDropController
@@ -78,6 +80,7 @@ export class MainThreadTreeViews
 		@ILogService private readonly logService: ILogService,
 	) {
 		super();
+
 		this._proxy = extHostContext.getProxy(ExtHostContext.ExtHostTreeViews);
 	}
 
@@ -85,11 +88,17 @@ export class MainThreadTreeViews
 		treeViewId: string,
 		options: {
 			showCollapseAll: boolean;
+
 			canSelectMany: boolean;
+
 			dropMimeTypes: string[];
+
 			dragMimeTypes: string[];
+
 			hasHandleDrag: boolean;
+
 			hasHandleDrop: boolean;
+
 			manuallyManageCheckboxes: boolean;
 		},
 	): Promise<void> {
@@ -107,6 +116,7 @@ export class MainThreadTreeViews
 			);
 
 			const disposables = new DisposableStore();
+
 			this._dataProviders.set(treeViewId, {
 				dataProvider,
 				dispose: () => disposables.dispose(),
@@ -129,16 +139,22 @@ export class MainThreadTreeViews
 				// Order is important here. The internal tree isn't created until the dataProvider is set.
 				// Set all other properties first!
 				viewer.showCollapseAllAction = options.showCollapseAll;
+
 				viewer.canSelectMany = options.canSelectMany;
+
 				viewer.manuallyManageCheckboxes =
 					options.manuallyManageCheckboxes;
+
 				viewer.dragAndDropController = dndController;
 
 				if (dndController) {
 					this._dndControllers.set(treeViewId, dndController);
 				}
+
 				viewer.dataProvider = dataProvider;
+
 				this.registerListeners(treeViewId, viewer, disposables);
+
 				this._proxy.$setVisible(treeViewId, viewer.visible);
 			} else {
 				this.notificationService.error(
@@ -175,6 +191,7 @@ export class MainThreadTreeViews
 						options,
 					);
 				}
+
 				return undefined;
 			});
 	}
@@ -205,6 +222,7 @@ export class MainThreadTreeViews
 					: undefined,
 			);
 		}
+
 		return Promise.resolve();
 	}
 
@@ -238,6 +256,7 @@ export class MainThreadTreeViews
 
 		if (viewer) {
 			viewer.title = title;
+
 			viewer.description = description;
 		}
 	}
@@ -267,6 +286,7 @@ export class MainThreadTreeViews
 		if (!controller) {
 			throw new Error("Unknown tree");
 		}
+
 		return controller.resolveDropFileData(requestId, dataItemId);
 	}
 
@@ -308,6 +328,7 @@ export class MainThreadTreeViews
 			// Refresh if empty
 			await treeView.refresh();
 		}
+
 		for (const parent of parentChain) {
 			const parentItem = dataProvider.getItem(parent.handle);
 
@@ -315,6 +336,7 @@ export class MainThreadTreeViews
 				await treeView.expand(parentItem);
 			}
 		}
+
 		const item = dataProvider.getItem(itemIn.handle);
 
 		if (item) {
@@ -323,21 +345,25 @@ export class MainThreadTreeViews
 			if (select) {
 				treeView.setSelection([item]);
 			}
+
 			if (focus === false) {
 				treeView.setFocus();
 			} else if (focus) {
 				treeView.setFocus(item);
 			}
+
 			let itemsToExpand = [item];
 
 			for (; itemsToExpand.length > 0 && expand > 0; expand--) {
 				await treeView.expand(itemsToExpand);
+
 				itemsToExpand = itemsToExpand.reduce((result, itemValue) => {
 					const item = dataProvider.getItem(itemValue.handle);
 
 					if (item && item.children && item.children.length) {
 						result.push(...item.children);
 					}
+
 					return result;
 				}, [] as ITreeItem[]);
 			}
@@ -354,11 +380,13 @@ export class MainThreadTreeViews
 				this._proxy.$setExpanded(treeViewId, item.handle, true),
 			),
 		);
+
 		disposables.add(
 			treeView.onDidCollapseItem((item) =>
 				this._proxy.$setExpanded(treeViewId, item.handle, false),
 			),
 		);
+
 		disposables.add(
 			treeView.onDidChangeSelectionAndFocus((items) =>
 				this._proxy.$setSelectionAndFocus(
@@ -368,11 +396,13 @@ export class MainThreadTreeViews
 				),
 			),
 		);
+
 		disposables.add(
 			treeView.onDidChangeVisibility((isVisible) =>
 				this._proxy.$setVisible(treeViewId, isVisible),
 			),
 		);
+
 		disposables.add(
 			treeView.onDidChangeCheckboxState((items) => {
 				this._proxy.$changeCheckboxState(
@@ -406,6 +436,7 @@ export class MainThreadTreeViews
 				treeView.dataProvider = undefined;
 			}
 		}
+
 		this._dataProviders.dispose();
 
 		this._dndControllers.clear();
@@ -444,6 +475,7 @@ class TreeViewDragAndDropController implements ITreeViewDragAndDropController {
 			if (token.isCancellationRequested) {
 				return;
 			}
+
 			return await this._proxy.$handleDrop(
 				this.treeViewId,
 				request.id,
@@ -467,6 +499,7 @@ class TreeViewDragAndDropController implements ITreeViewDragAndDropController {
 		if (!this.hasWillDrop) {
 			return;
 		}
+
 		const additionalDataTransferDTO = await this._proxy.$handleDrag(
 			this.treeViewId,
 			sourceTreeItemHandles,
@@ -479,6 +512,7 @@ class TreeViewDragAndDropController implements ITreeViewDragAndDropController {
 		}
 
 		const additionalDataTransfer = new VSDataTransfer();
+
 		additionalDataTransferDTO.items.forEach(([type, item]) => {
 			additionalDataTransfer.replace(
 				type,
@@ -502,6 +536,7 @@ class TreeViewDataProvider implements ITreeViewDataProvider {
 		TreeItemHandle,
 		ITreeItem
 	>();
+
 	private hasResolve: Promise<boolean>;
 
 	constructor(
@@ -526,6 +561,7 @@ class TreeViewDataProvider implements ITreeViewDataProvider {
 		if (!treeItems) {
 			this.itemsMap.clear();
 		}
+
 		return this._proxy
 			.$getChildren(
 				this.treeViewId,
@@ -546,6 +582,7 @@ class TreeViewDataProvider implements ITreeViewDataProvider {
 					if (!NoTreeViewError.is(err)) {
 						this.notificationService.error(err);
 					}
+
 					return [];
 				},
 			);
@@ -560,11 +597,13 @@ class TreeViewDataProvider implements ITreeViewDataProvider {
 		if (children) {
 			for (const childGroup of children) {
 				const childGroupIndex = childGroup[0] as number;
+
 				convertedChildren[childGroupIndex] = childGroup.slice(
 					1,
 				) as ITreeItem[];
 			}
 		}
+
 		return convertedChildren;
 	}
 
@@ -600,6 +639,7 @@ class TreeViewDataProvider implements ITreeViewDataProvider {
 					} else {
 						// Update maps when handle is changed and refresh parent
 						this.itemsMap.delete(newTreeItemHandle);
+
 						this.itemsMap.set(
 							currentTreeItem.handle,
 							currentTreeItem,
@@ -616,6 +656,7 @@ class TreeViewDataProvider implements ITreeViewDataProvider {
 				}
 			}
 		}
+
 		return { items: itemsToRefresh, checkboxes: checkboxesToRefresh };
 	}
 
@@ -633,6 +674,7 @@ class TreeViewDataProvider implements ITreeViewDataProvider {
 		if (elementGroups === undefined) {
 			return undefined;
 		}
+
 		const resultGroups: ResolvableTreeItem[][] = [];
 
 		const hasResolve = await this.hasResolve;
@@ -640,6 +682,7 @@ class TreeViewDataProvider implements ITreeViewDataProvider {
 		if (elementGroups) {
 			for (const elements of elementGroups) {
 				const result: ResolvableTreeItem[] = [];
+
 				resultGroups.push(result);
 
 				for (const element of elements) {
@@ -655,11 +698,14 @@ class TreeViewDataProvider implements ITreeViewDataProvider {
 								}
 							: undefined,
 					);
+
 					this.itemsMap.set(element.handle, resolvable);
+
 					result.push(resolvable);
 				}
 			}
 		}
+
 		return resultGroups;
 	}
 
@@ -679,6 +725,7 @@ class TreeViewDataProvider implements ITreeViewDataProvider {
 			for (const property of properties) {
 				(<any>current)[property] = (<any>treeItem)[property];
 			}
+
 			if (current instanceof ResolvableTreeItem) {
 				current.resetResolve();
 			}

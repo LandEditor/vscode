@@ -34,15 +34,20 @@ export class WorkspaceRecommendations extends ExtensionRecommendations {
 	get recommendations(): ReadonlyArray<ExtensionRecommendation> {
 		return this._recommendations;
 	}
+
 	private _onDidChangeRecommendations = this._register(new Emitter<void>());
+
 	readonly onDidChangeRecommendations =
 		this._onDidChangeRecommendations.event;
+
 	private _ignoredRecommendations: string[] = [];
 
 	get ignoredRecommendations(): ReadonlyArray<string> {
 		return this._ignoredRecommendations;
 	}
+
 	private workspaceExtensions: URI[] = [];
+
 	private readonly onDidChangeWorkspaceExtensionsScheduler: RunOnceScheduler;
 
 	constructor(
@@ -60,6 +65,7 @@ export class WorkspaceRecommendations extends ExtensionRecommendations {
 		private readonly notificationService: INotificationService,
 	) {
 		super();
+
 		this.onDidChangeWorkspaceExtensionsScheduler = this._register(
 			new RunOnceScheduler(
 				() => this.onDidChangeWorkspaceExtensionsFolders(),
@@ -67,9 +73,12 @@ export class WorkspaceRecommendations extends ExtensionRecommendations {
 			),
 		);
 	}
+
 	protected async doActivate(): Promise<void> {
 		this.workspaceExtensions = await this.fetchWorkspaceExtensions();
+
 		await this.fetch();
+
 		this._register(
 			this.workspaceExtensionsConfigService.onDidChangeExtensionsConfigs(
 				() => this.onDidChangeExtensionsConfigs(),
@@ -86,11 +95,13 @@ export class WorkspaceRecommendations extends ExtensionRecommendations {
 				),
 			);
 		}
+
 		this._register(
 			this.contextService.onDidChangeWorkspaceFolders(() =>
 				this.onDidChangeWorkspaceExtensionsScheduler.schedule(),
 			),
 		);
+
 		this._register(
 			this.fileService.onDidFilesChange((e) => {
 				if (
@@ -112,8 +123,10 @@ export class WorkspaceRecommendations extends ExtensionRecommendations {
 			}),
 		);
 	}
+
 	private async onDidChangeWorkspaceExtensionsFolders(): Promise<void> {
 		const existing = this.workspaceExtensions;
+
 		this.workspaceExtensions = await this.fetchWorkspaceExtensions();
 
 		if (
@@ -124,6 +137,7 @@ export class WorkspaceRecommendations extends ExtensionRecommendations {
 			this.onDidChangeExtensionsConfigs();
 		}
 	}
+
 	private async fetchWorkspaceExtensions(): Promise<URI[]> {
 		const workspaceExtensions: URI[] = [];
 
@@ -141,12 +155,14 @@ export class WorkspaceRecommendations extends ExtensionRecommendations {
 					if (!extension.isDirectory) {
 						continue;
 					}
+
 					workspaceExtensions.push(extension.resource);
 				}
 			} catch (error) {
 				// ignore
 			}
 		}
+
 		if (workspaceExtensions.length) {
 			const resourceExtensions =
 				await this.workbenchExtensionManagementService.getExtensions(
@@ -155,6 +171,7 @@ export class WorkspaceRecommendations extends ExtensionRecommendations {
 
 			return resourceExtensions.map((extension) => extension.location);
 		}
+
 		return [];
 	}
 	/**
@@ -172,7 +189,9 @@ export class WorkspaceRecommendations extends ExtensionRecommendations {
 				`The ${invalidRecommendations.length} extension(s) below, in workspace recommendations have issues:\n${message}`,
 			);
 		}
+
 		this._recommendations = [];
+
 		this._ignoredRecommendations = [];
 
 		for (const extensionsConfig of extensionsConfigs) {
@@ -189,6 +208,7 @@ export class WorkspaceRecommendations extends ExtensionRecommendations {
 					}
 				}
 			}
+
 			if (extensionsConfig.recommendations) {
 				for (const extensionId of extensionsConfig.recommendations) {
 					if (invalidRecommendations.indexOf(extensionId) === -1) {
@@ -207,6 +227,7 @@ export class WorkspaceRecommendations extends ExtensionRecommendations {
 				}
 			}
 		}
+
 		for (const extension of this.workspaceExtensions) {
 			this._recommendations.push({
 				extension,
@@ -220,11 +241,14 @@ export class WorkspaceRecommendations extends ExtensionRecommendations {
 			});
 		}
 	}
+
 	private async validateExtensions(
 		contents: IExtensionsConfigContent[],
 	): Promise<{
 		validRecommendations: string[];
+
 		invalidRecommendations: string[];
+
 		message: string;
 	}> {
 		const validExtensions: string[] = [];
@@ -244,17 +268,21 @@ export class WorkspaceRecommendations extends ExtensionRecommendations {
 				validExtensions.push(extensionId);
 			} else {
 				invalidExtensions.push(extensionId);
+
 				message += `${extensionId} (bad format) Expected: <provider>.<name>\n`;
 			}
 		}
+
 		return {
 			validRecommendations: validExtensions,
 			invalidRecommendations: invalidExtensions,
 			message,
 		};
 	}
+
 	private async onDidChangeExtensionsConfigs(): Promise<void> {
 		await this.fetch();
+
 		this._onDidChangeRecommendations.fire();
 	}
 }

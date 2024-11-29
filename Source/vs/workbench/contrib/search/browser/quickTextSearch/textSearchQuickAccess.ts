@@ -113,12 +113,16 @@ interface ITextSearchQuickAccessItem extends IPickerQuickAccessItem {
 }
 export class TextSearchQuickAccess extends PickerQuickAccessProvider<ITextSearchQuickAccessItem> {
 	private editorSequencer: Sequencer;
+
 	private queryBuilder: QueryBuilder;
+
 	private searchModel: SearchModelImpl;
+
 	private currentAsyncSearch: Promise<ISearchComplete> = Promise.resolve({
 		results: [],
 		messages: [],
 	});
+
 	private readonly editorViewState: PickerEditorState;
 
 	private _getTextQueryBuilderOptions(
@@ -159,13 +163,17 @@ export class TextSearchQuickAccess extends PickerQuickAccessProvider<ITextSearch
 
 		this.queryBuilder =
 			this._instantiationService.createInstance(QueryBuilder);
+
 		this.searchModel = this._register(
 			this._instantiationService.createInstance(SearchModelImpl),
 		);
+
 		this.editorViewState = this._register(
 			this._instantiationService.createInstance(PickerEditorState),
 		);
+
 		this.searchModel.location = SearchModelLocation.QUICK_ACCESS;
+
 		this.editorSequencer = new Sequencer();
 	}
 
@@ -188,6 +196,7 @@ export class TextSearchQuickAccess extends PickerQuickAccessProvider<ITextSearch
 				picker.value.length,
 			];
 		}
+
 		picker.buttons = [
 			{
 				location: QuickInputButtonLocation.Inline,
@@ -195,7 +204,9 @@ export class TextSearchQuickAccess extends PickerQuickAccessProvider<ITextSearch
 				tooltip: localize("goToSearch", "Open in Search View"),
 			},
 		];
+
 		this.editorViewState.reset();
+
 		disposables.add(
 			picker.onDidTriggerButton(async () => {
 				if (this.searchModel.searchResult.count() > 0) {
@@ -203,6 +214,7 @@ export class TextSearchQuickAccess extends PickerQuickAccessProvider<ITextSearch
 				} else {
 					this._viewsService.openView(VIEW_ID, true);
 				}
+
 				picker.hide();
 			}),
 		);
@@ -215,6 +227,7 @@ export class TextSearchQuickAccess extends PickerQuickAccessProvider<ITextSearch
 				this.editorViewState.set();
 
 				const itemMatch = item.match;
+
 				this.editorSequencer.queue(async () => {
 					await this.editorViewState.openTransientEditor({
 						resource: itemMatch.parent().resource,
@@ -237,6 +250,7 @@ export class TextSearchQuickAccess extends PickerQuickAccessProvider<ITextSearch
 				true,
 			)(onDidChangeActive),
 		);
+
 		disposables.add(
 			Event.once(picker.onWillHide)(({ reason }) => {
 				// Restore view state upon cancellation if we changed it
@@ -256,6 +270,7 @@ export class TextSearchQuickAccess extends PickerQuickAccessProvider<ITextSearch
 		);
 
 		disposables.add(super.provide(picker, token, runOptions));
+
 		disposables.add(
 			picker.onDidAccept(() =>
 				this.searchModel.searchResult.toggleHighlights(false),
@@ -313,6 +328,7 @@ export class TextSearchQuickAccess extends PickerQuickAccessProvider<ITextSearch
 		const content: IPatternInfo = {
 			pattern: contentPattern,
 		};
+
 		this.searchModel.searchResult.toggleHighlights(false);
 
 		const charsPerLine = content.isRegExp ? 10000 : 1000; // from https://github.com/microsoft/vscode/blob/e7ad5651ac26fa00a40aa1e4010e81b92f655569/src/vs/workbench/contrib/search/browser/searchView.ts#L1508
@@ -327,6 +343,7 @@ export class TextSearchQuickAccess extends PickerQuickAccessProvider<ITextSearch
 
 		const getAsyncResults = async () => {
 			this.currentAsyncSearch = result.asyncResults;
+
 			await result.asyncResults;
 
 			const syncResultURIs = new ResourceSet(
@@ -353,6 +370,7 @@ export class TextSearchQuickAccess extends PickerQuickAccessProvider<ITextSearch
 
 		const viewlet: SearchView | undefined =
 			this._viewsService.getActiveViewWithId(VIEW_ID) as SearchView;
+
 		await viewlet.replaceSearchModel(
 			this.searchModel,
 			this.currentAsyncSearch,
@@ -360,6 +378,7 @@ export class TextSearchQuickAccess extends PickerQuickAccessProvider<ITextSearch
 
 		this.searchModel =
 			this._instantiationService.createInstance(SearchModelImpl);
+
 		this.searchModel.location = SearchModelLocation.QUICK_ACCESS;
 
 		const viewer:
@@ -368,7 +387,9 @@ export class TextSearchQuickAccess extends PickerQuickAccessProvider<ITextSearch
 
 		if (currentElem) {
 			viewer.setFocus([currentElem], getSelectionKeyboardEvent());
+
 			viewer.setSelection([currentElem], getSelectionKeyboardEvent());
+
 			viewer.reveal(currentElem);
 		} else {
 			viewlet.searchAndReplaceWidget.focus();
@@ -388,6 +409,7 @@ export class TextSearchQuickAccess extends PickerQuickAccessProvider<ITextSearch
 					return 1;
 				}
 			}
+
 			return searchComparer(a, b, this.configuration.sortOrder);
 		});
 
@@ -449,7 +471,9 @@ export class TextSearchQuickAccess extends PickerQuickAccessProvider<ITextSearch
 
 			for (
 				let matchIndex = 0;
+
 				matchIndex < results.length;
+
 				matchIndex++
 			) {
 				const element = results[matchIndex];
@@ -482,6 +506,7 @@ export class TextSearchQuickAccess extends PickerQuickAccessProvider<ITextSearch
 						end: preview.before.length + preview.inside.length,
 					},
 				];
+
 				picks.push({
 					label: `${previewText}`,
 					highlights: {
@@ -519,6 +544,7 @@ export class TextSearchQuickAccess extends PickerQuickAccessProvider<ITextSearch
 				});
 			}
 		}
+
 		return picks;
 	}
 
@@ -526,10 +552,15 @@ export class TextSearchQuickAccess extends PickerQuickAccessProvider<ITextSearch
 		iFileInstanceMatch: ISearchTreeFileMatch,
 		options: {
 			keyMods?: IKeyMods;
+
 			selection?: ITextEditorSelection;
+
 			preserveFocus?: boolean;
+
 			range?: IRange;
+
 			forcePinned?: boolean;
+
 			forceOpenSideBySide?: boolean;
 		},
 	): Promise<void> {
@@ -607,6 +638,7 @@ export class TextSearchQuickAccess extends PickerQuickAccessProvider<ITextSearch
 		if (!allMatches) {
 			return null;
 		}
+
 		const matches = allMatches.syncResults;
 
 		const syncResult = this._getPicksFromMatches(
@@ -645,6 +677,7 @@ export class TextSearchQuickAccess extends PickerQuickAccessProvider<ITextSearch
 					if (picks.length > 0) {
 						this.searchModel.searchResult.toggleHighlights(true);
 					}
+
 					return picks;
 				}),
 		};

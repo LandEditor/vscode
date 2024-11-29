@@ -27,9 +27,11 @@ import { dedupExtensions } from "../common/extensionsUtil.js";
 
 export class CachedExtensionScanner {
 	public readonly scannedExtensions: Promise<IExtensionDescription[]>;
+
 	private _scannedExtensionsResolve!: (
 		result: IExtensionDescription[],
 	) => void;
+
 	private _scannedExtensionsReject!: (err: any) => void;
 
 	constructor(
@@ -51,18 +53,22 @@ export class CachedExtensionScanner {
 		this.scannedExtensions = new Promise<IExtensionDescription[]>(
 			(resolve, reject) => {
 				this._scannedExtensionsResolve = resolve;
+
 				this._scannedExtensionsReject = reject;
 			},
 		);
 	}
+
 	public async startScanningExtensions(): Promise<void> {
 		try {
 			const extensions = await this._scanInstalledExtensions();
+
 			this._scannedExtensionsResolve(extensions);
 		} catch (err) {
 			this._scannedExtensionsReject(err);
 		}
 	}
+
 	private async _scanInstalledExtensions(): Promise<IExtensionDescription[]> {
 		try {
 			const language = platform.language;
@@ -97,29 +103,35 @@ export class CachedExtensionScanner {
 				scannedSystemExtensions = result[0].value;
 			} else {
 				hasErrors = true;
+
 				this._logService.error(
 					`Error scanning system extensions:`,
 					getErrorMessage(result[0].reason),
 				);
 			}
+
 			if (result[1].status === "fulfilled") {
 				scannedUserExtensions = result[1].value;
 			} else {
 				hasErrors = true;
+
 				this._logService.error(
 					`Error scanning user extensions:`,
 					getErrorMessage(result[1].reason),
 				);
 			}
+
 			if (result[2].status === "fulfilled") {
 				workspaceExtensions = result[2].value;
 			} else {
 				hasErrors = true;
+
 				this._logService.error(
 					`Error scanning workspace extensions:`,
 					getErrorMessage(result[2].reason),
 				);
 			}
+
 			try {
 				scannedDevelopedExtensions =
 					await this._extensionsScannerService.scanExtensionsUnderDevelopment(
@@ -129,6 +141,7 @@ export class CachedExtensionScanner {
 			} catch (error) {
 				this._logService.error(error);
 			}
+
 			const system = scannedSystemExtensions.map((e) =>
 				toExtensionDescriptionFromScannedExtension(e, false),
 			);
@@ -157,6 +170,7 @@ export class CachedExtensionScanner {
 				const disposable =
 					this._extensionsScannerService.onDidChangeCache(() => {
 						disposable.dispose();
+
 						this._notificationService.prompt(
 							Severity.Error,
 							localize(
@@ -174,11 +188,14 @@ export class CachedExtensionScanner {
 							],
 						);
 					});
+
 				timeout(5000).then(() => disposable.dispose());
 			}
+
 			return r;
 		} catch (err) {
 			this._logService.error(`Error scanning installed extensions:`);
+
 			this._logService.error(err);
 
 			return [];

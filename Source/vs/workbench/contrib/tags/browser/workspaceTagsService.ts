@@ -19,12 +19,14 @@ export class NoOpWorkspaceTagsService implements IWorkspaceTagsService {
 	getTags(): Promise<Tags> {
 		return Promise.resolve({});
 	}
+
 	async getTelemetryWorkspaceId(
 		workspace: IWorkspace,
 		state: WorkbenchState,
 	): Promise<string | undefined> {
 		return undefined;
 	}
+
 	getHashedRemotesFromUri(
 		workspaceUri: URI,
 		stripEndingDotGit?: boolean,

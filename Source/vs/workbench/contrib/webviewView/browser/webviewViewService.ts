@@ -96,26 +96,34 @@ export class WebviewViewService
 	implements IWebviewViewService
 {
 	readonly _serviceBrand: undefined;
+
 	private readonly _resolvers = new Map<string, IWebviewViewResolver>();
+
 	private readonly _awaitingRevival = new Map<
 		string,
 		{
 			readonly webview: WebviewView;
+
 			readonly resolve: () => void;
 		}
 	>();
+
 	private readonly _onNewResolverRegistered = this._register(
 		new Emitter<{
 			readonly viewType: string;
 		}>(),
 	);
+
 	public readonly onNewResolverRegistered =
 		this._onNewResolverRegistered.event;
+
 	register(viewType: string, resolver: IWebviewViewResolver): IDisposable {
 		if (this._resolvers.has(viewType)) {
 			throw new Error(`View resolver already registered for ${viewType}`);
 		}
+
 		this._resolvers.set(viewType, resolver);
+
 		this._onNewResolverRegistered.fire({ viewType: viewType });
 
 		const pending = this._awaitingRevival.get(viewType);
@@ -125,13 +133,16 @@ export class WebviewViewService
 				.resolve(pending.webview, CancellationToken.None)
 				.then(() => {
 					this._awaitingRevival.delete(viewType);
+
 					pending.resolve();
 				});
 		}
+
 		return toDisposable(() => {
 			this._resolvers.delete(viewType);
 		});
 	}
+
 	resolve(
 		viewType: string,
 		webview: WebviewView,
@@ -143,11 +154,14 @@ export class WebviewViewService
 			if (this._awaitingRevival.has(viewType)) {
 				throw new Error("View already awaiting revival");
 			}
+
 			const { promise, resolve } = promiseWithResolvers<void>();
+
 			this._awaitingRevival.set(viewType, { webview, resolve });
 
 			return promise;
 		}
+
 		return resolver.resolve(webview, cancellation);
 	}
 }

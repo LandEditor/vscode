@@ -38,12 +38,16 @@ function findBase(z: number) {
 
 class ZIndexRegistry {
 	private styleSheet: HTMLStyleElement;
+
 	private zIndexMap: Map<string, number>;
+
 	private scheduler: RunOnceScheduler;
 
 	constructor() {
 		this.styleSheet = createStyleSheet();
+
 		this.zIndexMap = new Map<string, number>();
+
 		this.scheduler = new RunOnceScheduler(
 			() => this.updateStyleElement(),
 			200,
@@ -66,6 +70,7 @@ class ZIndexRegistry {
 		}
 
 		this.zIndexMap.set(name, proposedZValue);
+
 		this.scheduler.schedule();
 
 		return this.getVarName(name);
@@ -79,9 +84,11 @@ class ZIndexRegistry {
 		clearNode(this.styleSheet);
 
 		let ruleBuilder = "";
+
 		this.zIndexMap.forEach((zIndex, name) => {
 			ruleBuilder += `${this.getVarName(name)}: ${zIndex};\n`;
 		});
+
 		createCSSRule(":root", ruleBuilder, this.styleSheet);
 	}
 }

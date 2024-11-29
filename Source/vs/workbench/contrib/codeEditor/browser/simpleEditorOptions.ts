@@ -98,6 +98,7 @@ export function setupSimpleEditorSelectionStyling(
 				collector.addRule(
 					`${editorContainerSelector} .monaco-editor-background { background-color: ${inputBackgroundColor}; } `,
 				);
+
 				collector.addRule(
 					`${editorContainerSelector} .monaco-editor .selected-text { background-color: ${inputBackgroundColor.transparent(0.4)}; }`,
 				);

@@ -14,28 +14,38 @@ import { SparseMultilineTokens } from "./sparseMultilineTokens.js";
  */
 export class SparseTokensStore {
 	private _pieces: SparseMultilineTokens[];
+
 	private _isComplete: boolean;
+
 	private readonly _languageIdCodec: ILanguageIdCodec;
 
 	constructor(languageIdCodec: ILanguageIdCodec) {
 		this._pieces = [];
+
 		this._isComplete = false;
+
 		this._languageIdCodec = languageIdCodec;
 	}
+
 	public flush(): void {
 		this._pieces = [];
+
 		this._isComplete = false;
 	}
+
 	public isEmpty(): boolean {
 		return this._pieces.length === 0;
 	}
+
 	public set(
 		pieces: SparseMultilineTokens[] | null,
 		isComplete: boolean,
 	): void {
 		this._pieces = pieces || [];
+
 		this._isComplete = isComplete;
 	}
+
 	public setPartial(_range: Range, pieces: SparseMultilineTokens[]): Range {
 		// console.log(`setPartial ${_range} ${pieces.map(p => p.toString()).join(', ')}`);
 
@@ -49,8 +59,10 @@ export class SparseTokensStore {
 			if (!_firstRange || !_lastRange) {
 				return _range;
 			}
+
 			range = _range.plusRange(_firstRange).plusRange(_lastRange);
 		}
+
 		let insertPosition: {
 			index: number;
 		} | null = null;
@@ -62,6 +74,7 @@ export class SparseTokensStore {
 				// this piece is before the range
 				continue;
 			}
+
 			if (piece.startLineNumber > range.endLineNumber) {
 				// this piece is after the range, so mark the spot before this piece
 				// as a good insertion position and stop looping
@@ -75,15 +88,19 @@ export class SparseTokensStore {
 			if (piece.isEmpty()) {
 				// remove the piece if it became empty
 				this._pieces.splice(i, 1);
+
 				i--;
+
 				len--;
 
 				continue;
 			}
+
 			if (piece.endLineNumber < range.startLineNumber) {
 				// after removal, this piece is before the range
 				continue;
 			}
+
 			if (piece.startLineNumber > range.endLineNumber) {
 				// after removal, this piece is after the range
 				insertPosition = insertPosition || { index: i };
@@ -99,15 +116,21 @@ export class SparseTokensStore {
 
 				continue;
 			}
+
 			if (b.isEmpty()) {
 				// this piece is actually before the range
 				continue;
 			}
+
 			this._pieces.splice(i, 1, a, b);
+
 			i++;
+
 			len++;
+
 			insertPosition = insertPosition || { index: i };
 		}
+
 		insertPosition = insertPosition || { index: this._pieces.length };
 
 		if (pieces.length > 0) {
@@ -122,9 +145,11 @@ export class SparseTokensStore {
 
 		return range;
 	}
+
 	public isComplete(): boolean {
 		return this._isComplete;
 	}
+
 	public addSparseTokens(
 		lineNumber: number,
 		aTokens: LineTokens,
@@ -133,11 +158,13 @@ export class SparseTokensStore {
 			// Don't do anything for empty lines
 			return aTokens;
 		}
+
 		const pieces = this._pieces;
 
 		if (pieces.length === 0) {
 			return aTokens;
 		}
+
 		const pieceIndex = SparseTokensStore._findFirstPieceWithLine(
 			pieces,
 			lineNumber,
@@ -148,6 +175,7 @@ export class SparseTokensStore {
 		if (!bTokens) {
 			return aTokens;
 		}
+
 		const aLen = aTokens.getCount();
 
 		const bLen = bTokens.getCount();
@@ -164,8 +192,11 @@ export class SparseTokensStore {
 			if (endOffset === lastEndOffset) {
 				return;
 			}
+
 			lastEndOffset = endOffset;
+
 			result[resultLen++] = endOffset;
+
 			result[resultLen++] = metadata;
 		};
 
@@ -207,6 +238,7 @@ export class SparseTokensStore {
 					aTokens.getEndOffset(aIndex),
 					aTokens.getMetadata(aIndex),
 				);
+
 				aIndex++;
 			}
 			// push the token from `a` if it intersects the token from `b`
@@ -225,8 +257,10 @@ export class SparseTokensStore {
 					aTokens.getEndOffset(aIndex),
 					(aTokens.getMetadata(aIndex) & aMask) | (bMetadata & bMask),
 				);
+
 				aIndex++;
 			}
+
 			if (aIndex < aLen) {
 				emitToken(
 					bEndCharacter,
@@ -253,14 +287,17 @@ export class SparseTokensStore {
 				aTokens.getEndOffset(aIndex),
 				aTokens.getMetadata(aIndex),
 			);
+
 			aIndex++;
 		}
+
 		return new LineTokens(
 			new Uint32Array(result),
 			aTokens.getLineContent(),
 			this._languageIdCodec,
 		);
 	}
+
 	private static _findFirstPieceWithLine(
 		pieces: SparseMultilineTokens[],
 		lineNumber: number,
@@ -284,11 +321,14 @@ export class SparseTokensStore {
 				) {
 					mid--;
 				}
+
 				return mid;
 			}
 		}
+
 		return low;
 	}
+
 	public acceptEdit(
 		range: IRange,
 		eolCount: number,

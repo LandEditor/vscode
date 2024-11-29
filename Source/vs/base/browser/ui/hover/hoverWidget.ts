@@ -24,19 +24,26 @@ export const enum HoverPosition {
 
 export class HoverWidget extends Disposable {
 	public readonly containerDomNode: HTMLElement;
+
 	public readonly contentsDomNode: HTMLElement;
+
 	public readonly scrollbar: DomScrollableElement;
 
 	constructor(fadeIn: boolean) {
 		super();
 
 		this.containerDomNode = document.createElement("div");
+
 		this.containerDomNode.className = "monaco-hover";
+
 		this.containerDomNode.classList.toggle("fade-in", !!fadeIn);
+
 		this.containerDomNode.tabIndex = 0;
+
 		this.containerDomNode.setAttribute("role", "tooltip");
 
 		this.contentsDomNode = document.createElement("div");
+
 		this.contentsDomNode.className = "monaco-hover-content";
 
 		this.scrollbar = this._register(
@@ -44,6 +51,7 @@ export class HoverWidget extends Disposable {
 				consumeMouseWheelIfScrollbarIsNeeded: true,
 			}),
 		);
+
 		this.containerDomNode.appendChild(this.scrollbar.getDomNode());
 	}
 
@@ -57,8 +65,11 @@ export class HoverAction extends Disposable {
 		parent: HTMLElement,
 		actionOptions: {
 			label: string;
+
 			iconClass?: string;
+
 			run: (target: HTMLElement) => void;
+
 			commandId: string;
 		},
 		keybindingLabel: string | null,
@@ -67,9 +78,11 @@ export class HoverAction extends Disposable {
 	}
 
 	public readonly actionLabel: string;
+
 	public readonly actionKeybindingLabel: string | null;
 
 	public readonly actionRenderedLabel: string;
+
 	public readonly actionContainer: HTMLElement;
 
 	private readonly action: HTMLElement;
@@ -78,8 +91,11 @@ export class HoverAction extends Disposable {
 		parent: HTMLElement,
 		actionOptions: {
 			label: string;
+
 			iconClass?: string;
+
 			run: (target: HTMLElement) => void;
+
 			commandId: string;
 		},
 		keybindingLabel: string | null,
@@ -87,42 +103,51 @@ export class HoverAction extends Disposable {
 		super();
 
 		this.actionLabel = actionOptions.label;
+
 		this.actionKeybindingLabel = keybindingLabel;
 
 		this.actionContainer = dom.append(parent, $("div.action-container"));
+
 		this.actionContainer.setAttribute("tabindex", "0");
 
 		this.action = dom.append(this.actionContainer, $("a.action"));
+
 		this.action.setAttribute("role", "button");
 
 		if (actionOptions.iconClass) {
 			dom.append(this.action, $(`span.icon.${actionOptions.iconClass}`));
 		}
+
 		this.actionRenderedLabel = keybindingLabel
 			? `${actionOptions.label} (${keybindingLabel})`
 			: actionOptions.label;
 
 		const label = dom.append(this.action, $("span"));
+
 		label.textContent = this.actionRenderedLabel;
 
 		this._store.add(
 			new ClickAction(this.actionContainer, actionOptions.run),
 		);
+
 		this._store.add(
 			new KeyDownAction(this.actionContainer, actionOptions.run, [
 				KeyCode.Enter,
 				KeyCode.Space,
 			]),
 		);
+
 		this.setEnabled(true);
 	}
 
 	public setEnabled(enabled: boolean): void {
 		if (enabled) {
 			this.actionContainer.classList.remove("disabled");
+
 			this.actionContainer.removeAttribute("aria-disabled");
 		} else {
 			this.actionContainer.classList.add("disabled");
+
 			this.actionContainer.setAttribute("aria-disabled", "true");
 		}
 	}
@@ -149,10 +174,13 @@ export function getHoverAccessibleViewHint(
 export class ClickAction extends Disposable {
 	constructor(container: HTMLElement, run: (container: HTMLElement) => void) {
 		super();
+
 		this._register(
 			dom.addDisposableListener(container, dom.EventType.CLICK, (e) => {
 				e.stopPropagation();
+
 				e.preventDefault();
+
 				run(container);
 			}),
 		);
@@ -166,6 +194,7 @@ export class KeyDownAction extends Disposable {
 		keyCodes: KeyCode[],
 	) {
 		super();
+
 		this._register(
 			dom.addDisposableListener(
 				container,
@@ -175,7 +204,9 @@ export class KeyDownAction extends Disposable {
 
 					if (keyCodes.some((keyCode) => event.equals(keyCode))) {
 						e.stopPropagation();
+
 						e.preventDefault();
+
 						run(container);
 					}
 				},

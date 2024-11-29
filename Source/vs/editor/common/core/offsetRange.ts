@@ -6,6 +6,7 @@ import { BugIndicatingError } from "../../../base/common/errors.js";
 
 export interface IOffsetRange {
 	readonly start: number;
+
 	readonly endExclusive: number;
 }
 /**
@@ -24,6 +25,7 @@ export class OffsetRange implements IOffsetRange {
 		) {
 			i++;
 		}
+
 		let j = i;
 
 		while (
@@ -32,6 +34,7 @@ export class OffsetRange implements IOffsetRange {
 		) {
 			j++;
 		}
+
 		if (i === j) {
 			sortedRanges.splice(i, 0, range);
 		} else {
@@ -41,9 +44,11 @@ export class OffsetRange implements IOffsetRange {
 				range.endExclusive,
 				sortedRanges[j - 1].endExclusive,
 			);
+
 			sortedRanges.splice(i, j - i, new OffsetRange(start, end));
 		}
 	}
+
 	public static tryCreate(
 		start: number,
 		endExclusive: number,
@@ -51,17 +56,22 @@ export class OffsetRange implements IOffsetRange {
 		if (start > endExclusive) {
 			return undefined;
 		}
+
 		return new OffsetRange(start, endExclusive);
 	}
+
 	public static ofLength(length: number): OffsetRange {
 		return new OffsetRange(0, length);
 	}
+
 	public static ofStartAndLength(start: number, length: number): OffsetRange {
 		return new OffsetRange(start, start + length);
 	}
+
 	public static emptyAt(offset: number): OffsetRange {
 		return new OffsetRange(offset, offset);
 	}
+
 	constructor(
 		public readonly start: number,
 		public readonly endExclusive: number,
@@ -70,35 +80,44 @@ export class OffsetRange implements IOffsetRange {
 			throw new BugIndicatingError(`Invalid range: ${this.toString()}`);
 		}
 	}
+
 	get isEmpty(): boolean {
 		return this.start === this.endExclusive;
 	}
+
 	public delta(offset: number): OffsetRange {
 		return new OffsetRange(this.start + offset, this.endExclusive + offset);
 	}
+
 	public deltaStart(offset: number): OffsetRange {
 		return new OffsetRange(this.start + offset, this.endExclusive);
 	}
+
 	public deltaEnd(offset: number): OffsetRange {
 		return new OffsetRange(this.start, this.endExclusive + offset);
 	}
+
 	public get length(): number {
 		return this.endExclusive - this.start;
 	}
+
 	public toString() {
 		return `[${this.start}, ${this.endExclusive})`;
 	}
+
 	public equals(other: OffsetRange): boolean {
 		return (
 			this.start === other.start &&
 			this.endExclusive === other.endExclusive
 		);
 	}
+
 	public containsRange(other: OffsetRange): boolean {
 		return (
 			this.start <= other.start && other.endExclusive <= this.endExclusive
 		);
 	}
+
 	public contains(offset: number): boolean {
 		return this.start <= offset && offset < this.endExclusive;
 	}
@@ -126,8 +145,10 @@ export class OffsetRange implements IOffsetRange {
 		if (start <= end) {
 			return new OffsetRange(start, end);
 		}
+
 		return undefined;
 	}
+
 	public intersectionLength(range: OffsetRange): number {
 		const start = Math.max(this.start, range.start);
 
@@ -135,6 +156,7 @@ export class OffsetRange implements IOffsetRange {
 
 		return Math.max(0, end - start);
 	}
+
 	public intersects(other: OffsetRange): boolean {
 		const start = Math.max(this.start, other.start);
 
@@ -142,6 +164,7 @@ export class OffsetRange implements IOffsetRange {
 
 		return start < end;
 	}
+
 	public intersectsOrTouches(other: OffsetRange): boolean {
 		const start = Math.max(this.start, other.start);
 
@@ -149,15 +172,19 @@ export class OffsetRange implements IOffsetRange {
 
 		return start <= end;
 	}
+
 	public isBefore(other: OffsetRange): boolean {
 		return this.endExclusive <= other.start;
 	}
+
 	public isAfter(other: OffsetRange): boolean {
 		return this.start >= other.endExclusive;
 	}
+
 	public slice<T>(arr: T[]): T[] {
 		return arr.slice(this.start, this.endExclusive);
 	}
+
 	public substring(str: string): string {
 		return str.substring(this.start, this.endExclusive);
 	}
@@ -171,6 +198,7 @@ export class OffsetRange implements IOffsetRange {
 				`Invalid clipping range: ${this.toString()}`,
 			);
 		}
+
 		return Math.max(this.start, Math.min(this.endExclusive - 1, value));
 	}
 	/**
@@ -185,22 +213,28 @@ export class OffsetRange implements IOffsetRange {
 				`Invalid clipping range: ${this.toString()}`,
 			);
 		}
+
 		if (value < this.start) {
 			return this.endExclusive - ((this.start - value) % this.length);
 		}
+
 		if (value >= this.endExclusive) {
 			return this.start + ((value - this.start) % this.length);
 		}
+
 		return value;
 	}
+
 	public map<T>(f: (offset: number) => T): T[] {
 		const result: T[] = [];
 
 		for (let i = this.start; i < this.endExclusive; i++) {
 			result.push(f(i));
 		}
+
 		return result;
 	}
+
 	public forEach(f: (offset: number) => void): void {
 		for (let i = this.start; i < this.endExclusive; i++) {
 			f(i);
@@ -209,6 +243,7 @@ export class OffsetRange implements IOffsetRange {
 }
 export class OffsetRangeSet {
 	private readonly _sortedRanges: OffsetRange[] = [];
+
 	public addRange(range: OffsetRange): void {
 		let i = 0;
 
@@ -218,6 +253,7 @@ export class OffsetRangeSet {
 		) {
 			i++;
 		}
+
 		let j = i;
 
 		while (
@@ -226,6 +262,7 @@ export class OffsetRangeSet {
 		) {
 			j++;
 		}
+
 		if (i === j) {
 			this._sortedRanges.splice(i, 0, range);
 		} else {
@@ -235,9 +272,11 @@ export class OffsetRangeSet {
 				range.endExclusive,
 				this._sortedRanges[j - 1].endExclusive,
 			);
+
 			this._sortedRanges.splice(i, j - i, new OffsetRange(start, end));
 		}
 	}
+
 	public toString(): string {
 		return this._sortedRanges.map((r) => r.toString()).join(", ");
 	}
@@ -254,11 +293,13 @@ export class OffsetRangeSet {
 		) {
 			i++;
 		}
+
 		return (
 			i < this._sortedRanges.length &&
 			this._sortedRanges[i].start < other.endExclusive
 		);
 	}
+
 	public intersectWithRange(other: OffsetRange): OffsetRangeSet {
 		// TODO use binary search + slice
 		const result = new OffsetRangeSet();
@@ -270,11 +311,14 @@ export class OffsetRangeSet {
 				result.addRange(intersection);
 			}
 		}
+
 		return result;
 	}
+
 	public intersectWithRangeLength(other: OffsetRange): number {
 		return this.intersectWithRange(other).length;
 	}
+
 	public get length(): number {
 		return this._sortedRanges.reduce((prev, cur) => prev + cur.length, 0);
 	}

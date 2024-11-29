@@ -37,9 +37,13 @@ export function textSearchResultToMatches(
 }
 export class MatchImpl implements ISearchTreeMatch {
 	private static readonly MAX_PREVIEW_CHARS = 250;
+
 	protected _id: string;
+
 	protected _range: Range;
+
 	private _oneLinePreviewText: string;
+
 	private _rangeInPreviewText: ISearchRange;
 	// For replace
 	private _fullPreviewRange: ISearchRange;
@@ -59,18 +63,22 @@ export class MatchImpl implements ISearchTreeMatch {
 			_fullPreviewRange.endLineNumber
 				? _fullPreviewRange.endColumn
 				: this._oneLinePreviewText.length;
+
 		this._rangeInPreviewText = new OneLineRange(
 			1,
 			_fullPreviewRange.startColumn + 1,
 			adjustedEndCol + 1,
 		);
+
 		this._range = new Range(
 			_documentRange.startLineNumber + 1,
 			_documentRange.startColumn + 1,
 			_documentRange.endLineNumber + 1,
 			_documentRange.endColumn + 1,
 		);
+
 		this._fullPreviewRange = _fullPreviewRange;
+
 		this._id =
 			MATCH_PREFIX +
 			this._parent.resource.toString() +
@@ -78,23 +86,30 @@ export class MatchImpl implements ISearchTreeMatch {
 			this._range +
 			this.getMatchString();
 	}
+
 	id(): string {
 		return this._id;
 	}
+
 	parent(): ISearchTreeFileMatch {
 		return this._parent;
 	}
+
 	text(): string {
 		return this._oneLinePreviewText;
 	}
+
 	range(): Range {
 		return this._range;
 	}
 	@memoize
 	preview(): {
 		before: string;
+
 		fullBefore: string;
+
 		inside: string;
+
 		after: string;
 	} {
 		const fullBefore = this._oneLinePreviewText.substring(
@@ -109,8 +124,11 @@ export class MatchImpl implements ISearchTreeMatch {
 			);
 
 		let charsRemaining = MatchImpl.MAX_PREVIEW_CHARS - before.length;
+
 		inside = inside.substr(0, charsRemaining);
+
 		charsRemaining -= inside.length;
+
 		after = after.substr(0, charsRemaining);
 
 		return {
@@ -120,6 +138,7 @@ export class MatchImpl implements ISearchTreeMatch {
 			after,
 		};
 	}
+
 	get replaceString(): string {
 		const searchModel = this.parent().parent().searchModel;
 
@@ -128,6 +147,7 @@ export class MatchImpl implements ISearchTreeMatch {
 				"searchModel.replacePattern must be set before accessing replaceString",
 			);
 		}
+
 		const fullMatchText = this.fullMatchText();
 
 		let replaceString = searchModel.replacePattern.getReplaceString(
@@ -153,6 +173,7 @@ export class MatchImpl implements ISearchTreeMatch {
 		}
 		// If match string is not matching then regex pattern has a lookahead expression
 		const contextMatchTextWithSurroundingContent = this.fullMatchText(true);
+
 		replaceString = searchModel.replacePattern.getReplaceString(
 			contextMatchTextWithSurroundingContent,
 			searchModel.preserveCase,
@@ -180,6 +201,7 @@ export class MatchImpl implements ISearchTreeMatch {
 		// Match string is still not matching. Could be unsupported matches (multi-line).
 		return searchModel.replacePattern.pattern;
 	}
+
 	fullMatchText(includeSurrounding = false): string {
 		let thisMatchPreviewLines: string[];
 
@@ -190,17 +212,21 @@ export class MatchImpl implements ISearchTreeMatch {
 				this._fullPreviewRange.startLineNumber,
 				this._fullPreviewRange.endLineNumber + 1,
 			);
+
 			thisMatchPreviewLines[thisMatchPreviewLines.length - 1] =
 				thisMatchPreviewLines[thisMatchPreviewLines.length - 1].slice(
 					0,
 					this._fullPreviewRange.endColumn,
 				);
+
 			thisMatchPreviewLines[0] = thisMatchPreviewLines[0].slice(
 				this._fullPreviewRange.startColumn,
 			);
 		}
+
 		return thisMatchPreviewLines.join("\n");
 	}
+
 	rangeInPreview() {
 		// convert to editor's base 1 positions.
 		return {
@@ -209,18 +235,21 @@ export class MatchImpl implements ISearchTreeMatch {
 			endColumn: this._fullPreviewRange.endColumn + 1,
 		};
 	}
+
 	fullPreviewLines(): string[] {
 		return this._fullPreviewLines.slice(
 			this._fullPreviewRange.startLineNumber,
 			this._fullPreviewRange.endLineNumber + 1,
 		);
 	}
+
 	getMatchString(): string {
 		return this._oneLinePreviewText.substring(
 			this._rangeInPreviewText.startColumn - 1,
 			this._rangeInPreviewText.endColumn - 1,
 		);
 	}
+
 	get isReadonly() {
 		return this._isReadonly;
 	}

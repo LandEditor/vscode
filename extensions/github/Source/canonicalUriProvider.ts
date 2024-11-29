@@ -26,9 +26,11 @@ export class GitHubCanonicalUriProvider implements CanonicalUriProvider {
 			),
 		);
 	}
+
 	dispose() {
 		this.disposables.forEach((disposable) => disposable.dispose());
 	}
+
 	provideCanonicalUri(
 		uri: Uri,
 		options: CanonicalUriRequestOptions,
@@ -37,6 +39,7 @@ export class GitHubCanonicalUriProvider implements CanonicalUriProvider {
 		if (options.targetScheme !== "https") {
 			return;
 		}
+
 		switch (uri.scheme) {
 			case "file": {
 				const repository = this.gitApi.getRepository(uri);
@@ -52,6 +55,7 @@ export class GitHubCanonicalUriProvider implements CanonicalUriProvider {
 					return toHttpsGitHubRemote(uri);
 				}
 			}
+
 			default:
 				return toHttpsGitHubRemote(uri);
 		}
@@ -68,8 +72,10 @@ function toHttpsGitHubRemote(uri: Uri) {
 
 		return Uri.parse(`https://github.com/${owner}/${repo}`);
 	}
+
 	if (uri.scheme === "https" && uri.authority === "github.com") {
 		return uri;
 	}
+
 	return undefined;
 }

@@ -59,13 +59,17 @@ export class NotebookEditorWidgetService implements INotebookEditorService {
 	private _tokenPool = 1;
 
 	private readonly _disposables = new DisposableStore();
+
 	private readonly _notebookEditors = new Map<string, INotebookEditor>();
 
 	private readonly groupListener = new Map<number, IDisposable[]>();
 
 	private readonly _onNotebookEditorAdd = new Emitter<INotebookEditor>();
+
 	private readonly _onNotebookEditorsRemove = new Emitter<INotebookEditor>();
+
 	readonly onDidAddNotebookEditor = this._onNotebookEditorAdd.event;
+
 	readonly onDidRemoveNotebookEditor = this._onNotebookEditorsRemove.event;
 
 	private readonly _mostRecentRepl: IContextKey<string | undefined>;
@@ -75,8 +79,11 @@ export class NotebookEditorWidgetService implements INotebookEditorService {
 		ResourceMap<
 			{
 				widget: NotebookEditorWidget;
+
 				editorType: string;
+
 				token: number | undefined;
+
 				disposableStore: DisposableStore;
 			}[]
 		>
@@ -94,6 +101,7 @@ export class NotebookEditorWidgetService implements INotebookEditorService {
 			const { id } = group;
 
 			const listeners: IDisposable[] = [];
+
 			listeners.push(
 				group.onDidCloseEditor((e) => {
 					const widgetMap = this._borrowableEditors.get(group.id);
@@ -108,6 +116,7 @@ export class NotebookEditorWidgetService implements INotebookEditorService {
 							: isCompositeNotebookEditorInput(e.editor)
 								? e.editor.editorInputs
 								: [];
+
 					inputs.forEach((input) => {
 						const widgets = widgetMap.get(input.resource);
 
@@ -118,14 +127,20 @@ export class NotebookEditorWidgetService implements INotebookEditorService {
 						if (!widgets || index === undefined || index === -1) {
 							return;
 						}
+
 						const value = widgets.splice(index, 1)[0];
+
 						value.token = undefined;
+
 						this._disposeWidget(value.widget);
+
 						value.disposableStore.dispose();
+
 						value.widget = <any>undefined; // unset the widget so that others that still hold a reference don't harm us
 					});
 				}),
 			);
+
 			listeners.push(
 				group.onWillMoveEditor((e) => {
 					if (isNotebookEditorInput(e.editor)) {
@@ -139,9 +154,12 @@ export class NotebookEditorWidgetService implements INotebookEditorService {
 					}
 				}),
 			);
+
 			this.groupListener.set(id, listeners);
 		};
+
 		this._disposables.add(editorGroupService.onDidAddGroup(onNewGroup));
+
 		editorGroupService.whenReady.then(() =>
 			editorGroupService.groups.forEach(onNewGroup),
 		);
@@ -153,16 +171,21 @@ export class NotebookEditorWidgetService implements INotebookEditorService {
 
 				if (listeners) {
 					listeners.forEach((listener) => listener.dispose());
+
 					this.groupListener.delete(group.id);
 				}
+
 				const widgets = this._borrowableEditors.get(group.id);
+
 				this._borrowableEditors.delete(group.id);
 
 				if (widgets) {
 					for (const values of widgets.values()) {
 						for (const value of values) {
 							value.token = undefined;
+
 							this._disposeWidget(value.widget);
+
 							value.disposableStore.dispose();
 						}
 					}
@@ -175,6 +198,7 @@ export class NotebookEditorWidgetService implements INotebookEditorService {
 
 		const interactiveWindowOpen =
 			InteractiveWindowOpen.bindTo(contextKeyService);
+
 		this._disposables.add(
 			editorService.onDidEditorsChange((e) => {
 				if (
@@ -206,12 +230,17 @@ export class NotebookEditorWidgetService implements INotebookEditorService {
 
 	dispose() {
 		this._disposables.dispose();
+
 		this._onNotebookEditorAdd.dispose();
+
 		this._onNotebookEditorsRemove.dispose();
+
 		this.groupListener.forEach((listeners) => {
 			listeners.forEach((listener) => listener.dispose());
 		});
+
 		this.groupListener.clear();
+
 		this._borrowableEditors.forEach((widgetMap) => {
 			widgetMap.forEach((widgets) => {
 				widgets.forEach((widget) => widget.disposableStore.dispose());
@@ -225,6 +254,7 @@ export class NotebookEditorWidgetService implements INotebookEditorService {
 		widget.onWillHide();
 
 		const domNode = widget.getDomNode();
+
 		widget.dispose();
 
 		domNode.remove();
@@ -282,10 +312,14 @@ export class NotebookEditorWidgetService implements INotebookEditorService {
 
 		if (!targetMap) {
 			targetMap = new ResourceMap();
+
 			this._borrowableEditors.set(targetID, targetMap);
 		}
+
 		const widgetsAtTarget = targetMap.get(input.resource) ?? [];
+
 		widgetsAtTarget?.push(widget);
+
 		targetMap.set(input.resource, widgetsAtTarget);
 	}
 
@@ -299,6 +333,7 @@ export class NotebookEditorWidgetService implements INotebookEditorService {
 				return this._createBorrowValue(widgets[0].token!, widgets[0]);
 			}
 		}
+
 		return undefined;
 	}
 
@@ -312,6 +347,7 @@ export class NotebookEditorWidgetService implements INotebookEditorService {
 				}
 			}
 		}
+
 		return ret;
 	}
 
@@ -349,6 +385,7 @@ export class NotebookEditorWidgetService implements INotebookEditorService {
 			);
 
 			const token = this._tokenPool++;
+
 			value = {
 				widget,
 				editorType: input.typeId,
@@ -360,10 +397,14 @@ export class NotebookEditorWidgetService implements INotebookEditorService {
 
 			if (!map) {
 				map = new ResourceMap();
+
 				this._borrowableEditors.set(groupId, map);
 			}
+
 			const values = map.get(input.resource) ?? [];
+
 			values.push(value);
+
 			map.set(input.resource, values);
 		} else {
 			// reuse a widget which was either free'ed before or which
@@ -422,6 +463,7 @@ export class NotebookEditorWidgetService implements INotebookEditorService {
 
 	addNotebookEditor(editor: INotebookEditor): void {
 		this._notebookEditors.set(editor.getId(), editor);
+
 		this._onNotebookEditorAdd.fire(editor);
 	}
 
@@ -430,8 +472,10 @@ export class NotebookEditorWidgetService implements INotebookEditorService {
 
 		if (this._notebookEditors.has(editor.getId())) {
 			this._notebookEditors.delete(editor.getId());
+
 			this._onNotebookEditorsRemove.fire(editor);
 		}
+
 		if (this._mostRecentRepl.get() === notebookUri?.toString()) {
 			this._mostRecentRepl.reset();
 		}

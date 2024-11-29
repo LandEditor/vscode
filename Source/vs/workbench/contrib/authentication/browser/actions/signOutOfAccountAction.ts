@@ -19,6 +19,7 @@ export class SignOutOfAccountAction extends Action2 {
 			f1: false,
 		});
 	}
+
 	override async run(
 		accessor: ServicesAccessor,
 		{
@@ -26,6 +27,7 @@ export class SignOutOfAccountAction extends Action2 {
 			accountLabel,
 		}: {
 			providerId: string;
+
 			accountLabel: string;
 		},
 	): Promise<void> {
@@ -46,6 +48,7 @@ export class SignOutOfAccountAction extends Action2 {
 				"Invalid arguments. Expected: { providerId: string; accountLabel: string }",
 			);
 		}
+
 		const allSessions = await authenticationService.getSessions(providerId);
 
 		const sessions = allSessions.filter(
@@ -83,11 +86,14 @@ export class SignOutOfAccountAction extends Action2 {
 			const removeSessionPromises = sessions.map((session) =>
 				authenticationService.removeSession(providerId, session.id),
 			);
+
 			await Promise.all(removeSessionPromises);
+
 			authenticationUsageService.removeAccountUsage(
 				providerId,
 				accountLabel,
 			);
+
 			authenticationAccessService.removeAllowedExtensions(
 				providerId,
 				accountLabel,

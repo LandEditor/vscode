@@ -34,37 +34,54 @@ import {
 
 interface IInternalFileMatch {
 	base: URI;
+
 	original?: URI;
+
 	relativePath?: string; // Not present for extraFiles or absolute path matches
 	basename: string;
+
 	size?: number;
 }
 interface IDirectoryEntry {
 	base: URI;
+
 	relativePath: string;
+
 	basename: string;
 }
 interface FolderQueryInfo {
 	queryTester: QueryGlobTester;
+
 	noSiblingsClauses: boolean;
+
 	folder: URI;
+
 	tree: IDirectoryTree;
 }
 interface IDirectoryTree {
 	rootEntries: IDirectoryEntry[];
+
 	pathToEntries: {
 		[relativePath: string]: IDirectoryEntry[];
 	};
 }
 class FileSearchEngine {
 	private filePattern?: string;
+
 	private includePattern?: glob.ParsedExpression;
+
 	private maxResults?: number;
+
 	private exists?: boolean;
+
 	private isLimitHit = false;
+
 	private resultCount = 0;
+
 	private isCanceled = false;
+
 	private activeCancellationTokens: Set<CancellationTokenSource>;
+
 	private globalExcludePattern?: glob.ParsedExpression;
 
 	constructor(
@@ -73,19 +90,28 @@ class FileSearchEngine {
 		private sessionLifecycle?: SessionLifecycle,
 	) {
 		this.filePattern = config.filePattern;
+
 		this.includePattern =
 			config.includePattern && glob.parse(config.includePattern);
+
 		this.maxResults = config.maxResults || undefined;
+
 		this.exists = config.exists;
+
 		this.activeCancellationTokens = new Set<CancellationTokenSource>();
+
 		this.globalExcludePattern =
 			config.excludePattern && glob.parse(config.excludePattern);
 	}
+
 	cancel(): void {
 		this.isCanceled = true;
+
 		this.activeCancellationTokens.forEach((t) => t.cancel());
+
 		this.activeCancellationTokens = new Set();
 	}
+
 	search(
 		_onResult: (match: IInternalFileMatch) => void,
 	): Promise<IInternalSearchComplete> {
@@ -94,6 +120,7 @@ class FileSearchEngine {
 		return new Promise((resolve, reject) => {
 			const onResult = (match: IInternalFileMatch) => {
 				this.resultCount++;
+
 				_onResult(match);
 			};
 			// Support that the file pattern is a full path to a file that exists
@@ -131,6 +158,7 @@ class FileSearchEngine {
 			);
 		});
 	}
+
 	private async doSearch(
 		fqs: IFolderQuery<URI>[],
 		onResult: (match: IInternalFileMatch) => void,
@@ -172,6 +200,7 @@ class FileSearchEngine {
 
 		try {
 			this.activeCancellationTokens.add(cancellation);
+
 			providerSW = StopWatch.create();
 
 			const results = await this.provider.provideFileSearchResults(
@@ -187,6 +216,7 @@ class FileSearchEngine {
 			if (this.isCanceled && !this.isLimitHit) {
 				return null;
 			}
+
 			if (results) {
 				results.forEach((result) => {
 					const fqFolderInfo =
@@ -199,6 +229,7 @@ class FileSearchEngine {
 
 					if (fqFolderInfo.noSiblingsClauses) {
 						const basename = path.basename(result.path);
+
 						this.matchFile(onResult, {
 							base: fqFolderInfo.folder,
 							relativePath,
@@ -216,9 +247,11 @@ class FileSearchEngine {
 					);
 				});
 			}
+
 			if (this.isCanceled && !this.isLimitHit) {
 				return null;
 			}
+
 			folderMappings.forEachFolderQueryInfo((e) => {
 				this.matchDirectoryTree(e.tree, e.queryTester, onResult);
 			});
@@ -229,9 +262,11 @@ class FileSearchEngine {
 			};
 		} finally {
 			cancellation.dispose();
+
 			this.activeCancellationTokens.delete(cancellation);
 		}
 	}
+
 	private getSearchOptionsForFolder(
 		fq: IFolderQuery<URI>,
 	): FileSearchProviderFolderOptions {
@@ -259,6 +294,7 @@ class FileSearchEngine {
 				},
 			];
 		}
+
 		const excludes = excludeToGlobPattern(excludePattern);
 
 		return {
@@ -273,15 +309,18 @@ class FileSearchEngine {
 			followSymlinks: !fq.ignoreSymlinks,
 		};
 	}
+
 	private initDirectoryTree(): IDirectoryTree {
 		const tree: IDirectoryTree = {
 			rootEntries: [],
 			pathToEntries: Object.create(null),
 		};
+
 		tree.pathToEntries["."] = tree.rootEntries;
 
 		return tree;
 	}
+
 	private addDirectoryEntries(
 		{ pathToEntries }: IDirectoryTree,
 		base: URI,
@@ -291,12 +330,14 @@ class FileSearchEngine {
 		// Support relative paths to files from a root resource (ignores excludes)
 		if (relativeFile === this.filePattern) {
 			const basename = path.basename(this.filePattern);
+
 			this.matchFile(onResult, {
 				base: base,
 				relativePath: this.filePattern,
 				basename,
 			});
 		}
+
 		function add(relativePath: string) {
 			const basename = path.basename(relativePath);
 
@@ -306,16 +347,20 @@ class FileSearchEngine {
 
 			if (!entries) {
 				entries = pathToEntries[dirname] = [];
+
 				add(dirname);
 			}
+
 			entries.push({
 				base,
 				relativePath,
 				basename,
 			});
 		}
+
 		add(relativeFile);
 	}
+
 	private matchDirectoryTree(
 		{ rootEntries, pathToEntries }: IDirectoryTree,
 		queryTester: QueryGlobTester,
@@ -347,6 +392,7 @@ class FileSearchEngine {
 				) {
 					continue;
 				}
+
 				const sub = pathToEntries[relativePath];
 
 				if (sub) {
@@ -355,15 +401,19 @@ class FileSearchEngine {
 					if (relativePath === filePattern) {
 						continue; // ignore file if its path matches with the file pattern because that is already matched above
 					}
+
 					self.matchFile(onResult, entry);
 				}
+
 				if (self.isLimitHit) {
 					break;
 				}
 			}
 		}
+
 		matchDirectory(rootEntries);
 	}
+
 	private matchFile(
 		onResult: (result: IInternalFileMatch) => void,
 		candidate: IInternalFileMatch,
@@ -378,8 +428,10 @@ class FileSearchEngine {
 				(this.maxResults && this.resultCount >= this.maxResults)
 			) {
 				this.isLimitHit = true;
+
 				this.cancel();
 			}
+
 			if (!this.isLimitHit) {
 				onResult(candidate);
 			}
@@ -388,6 +440,7 @@ class FileSearchEngine {
 }
 interface IInternalSearchComplete {
 	limitHit: boolean;
+
 	stats?: IFileSearchProviderStats;
 }
 /**
@@ -395,26 +448,34 @@ interface IInternalSearchComplete {
  */
 class SessionLifecycle {
 	private _obj: object | undefined;
+
 	public readonly tokenSource: CancellationTokenSource;
 
 	constructor() {
 		this._obj = new Object();
+
 		this.tokenSource = new CancellationTokenSource();
 	}
+
 	public get obj() {
 		if (this._obj) {
 			return this._obj;
 		}
+
 		throw new Error("Session object has been dereferenced.");
 	}
+
 	cancel() {
 		this.tokenSource.cancel();
+
 		this._obj = undefined; // dereference
 	}
 }
 export class FileSearchManager {
 	private static readonly BATCH_SIZE = 512;
+
 	private readonly sessions = new Map<string, SessionLifecycle>();
+
 	fileSearch(
 		config: IFileQuery,
 		provider: FileSearchProvider2,
@@ -433,6 +494,7 @@ export class FileSearchManager {
 
 		const onInternalResult = (batch: IInternalFileMatch[]) => {
 			resultCount += batch.length;
+
 			onBatch(batch.map((m) => this.rawMatchToSearchItem(m)));
 		};
 
@@ -456,23 +518,28 @@ export class FileSearchManager {
 			};
 		});
 	}
+
 	clearCache(cacheKey: string): void {
 		// cancel the token
 		this.sessions.get(cacheKey)?.cancel();
 		// with no reference to this, it will be removed from WeakMaps
 		this.sessions.delete(cacheKey);
 	}
+
 	private getSessionTokenSource(
 		cacheKey: string | undefined,
 	): SessionLifecycle | undefined {
 		if (!cacheKey) {
 			return undefined;
 		}
+
 		if (!this.sessions.has(cacheKey)) {
 			this.sessions.set(cacheKey, new SessionLifecycle());
 		}
+
 		return this.sessions.get(cacheKey);
 	}
+
 	private rawMatchToSearchItem(match: IInternalFileMatch): IFileMatch {
 		if (match.relativePath) {
 			return {
@@ -485,6 +552,7 @@ export class FileSearchManager {
 			};
 		}
 	}
+
 	private doSearch(
 		engine: FileSearchEngine,
 		batchSize: number,
@@ -501,6 +569,7 @@ export class FileSearchManager {
 
 				if (batchSize > 0 && batch.length >= batchSize) {
 					onResultBatch(batch);
+
 					batch = [];
 				}
 			}
@@ -513,6 +582,7 @@ export class FileSearchManager {
 				if (batch.length) {
 					onResultBatch(batch);
 				}
+
 				listener.dispose();
 
 				return result;
@@ -521,6 +591,7 @@ export class FileSearchManager {
 				if (batch.length) {
 					onResultBatch(batch);
 				}
+
 				listener.dispose();
 
 				return Promise.reject(error);

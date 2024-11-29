@@ -93,9 +93,13 @@ class ResourcePasteOrDropProvider
 		}
 
 		const dropEdit = new vscode.DocumentDropEdit(edit.snippet);
+
 		dropEdit.title = edit.label;
+
 		dropEdit.kind = edit.kind;
+
 		dropEdit.additionalEdit = edit.additionalEdits;
+
 		dropEdit.yieldTo = [...this._yieldTo, ...edit.yieldTo];
 
 		return dropEdit;
@@ -134,7 +138,9 @@ class ResourcePasteOrDropProvider
 			edit.label,
 			edit.kind,
 		);
+
 		pasteEdit.additionalEdit = edit.additionalEdits;
+
 		pasteEdit.yieldTo = [...this._yieldTo, ...edit.yieldTo];
 
 		return [pasteEdit];
@@ -163,6 +169,7 @@ class ResourcePasteOrDropProvider
 		dataTransfer: vscode.DataTransfer,
 		settings: Readonly<{
 			insert: InsertMarkdownLink;
+
 			copyIntoWorkspace: CopyFilesSettings;
 		}>,
 		context: vscode.DocumentPasteEditContext | undefined,
@@ -256,11 +263,13 @@ class ResourcePasteOrDropProvider
 		}
 
 		const edit = createInsertUriListEdit(document, ranges, uriList, { linkKindHint: context?.only });
+
 		if (!edit) {
 			return;
 		}
 
 		const additionalEdits = new vscode.WorkspaceEdit();
+
 		additionalEdits.set(document.uri, edit.edits);
 
 		return {
@@ -292,8 +301,10 @@ class ResourcePasteOrDropProvider
 
 		interface FileEntry {
 			readonly uri: vscode.Uri;
+
 			readonly newFile?: {
 				readonly contents: vscode.DataTransferFile;
+
 				readonly overwrite: boolean;
 			};
 		}
@@ -334,6 +345,7 @@ class ResourcePasteOrDropProvider
 						if (!newFile) {
 							return;
 						}
+
 						return {
 							uri: newFile.uri,
 							newFile: {

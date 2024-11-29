@@ -61,15 +61,18 @@ import {
 const telemetryFrom = "menu";
 interface IMenuItemClickHandler {
 	inDevTools: (contents: WebContents) => void;
+
 	inNoWindow: () => void;
 }
 type IMenuItemInvocation =
 	| {
 			type: "commandId";
+
 			commandId: string;
 	  }
 	| {
 			type: "keybinding";
+
 			userSettingsLabel: string;
 	  };
 interface IMenuItemWithKeybinding {
@@ -77,21 +80,30 @@ interface IMenuItemWithKeybinding {
 }
 export class Menubar extends Disposable {
 	private static readonly lastKnownMenubarStorageKey = "lastKnownMenubarData";
+
 	private willShutdown: boolean | undefined;
+
 	private appMenuInstalled: boolean | undefined;
+
 	private closedLastWindow: boolean;
+
 	private noActiveMainWindow: boolean;
+
 	private menuUpdater: RunOnceScheduler;
+
 	private menuGC: RunOnceScheduler;
 	// Array to keep menus around so that GC doesn't cause crash as explained in #55347
 	// TODO@sbatten Remove this when fixed upstream by Electron
 	private oldMenus: Menu[];
+
 	private menubarMenus: {
 		[id: string]: IMenubarMenu;
 	};
+
 	private keybindings: {
 		[commandId: string]: IMenubarKeybinding;
 	};
+
 	private readonly fallbackMenuHandlers: {
 		[id: string]: (
 			menuItem: MenuItem,
@@ -127,23 +139,34 @@ export class Menubar extends Disposable {
 		private readonly auxiliaryWindowsMainService: IAuxiliaryWindowsMainService,
 	) {
 		super();
+
 		this.menuUpdater = new RunOnceScheduler(() => this.doUpdateMenu(), 0);
+
 		this.menuGC = new RunOnceScheduler(() => {
 			this.oldMenus = [];
 		}, 10000);
+
 		this.menubarMenus = Object.create(null);
+
 		this.keybindings = Object.create(null);
 
 		if (isMacintosh || hasNativeTitlebar(configurationService)) {
 			this.restoreCachedMenubarData();
 		}
+
 		this.addFallbackHandlers();
+
 		this.closedLastWindow = false;
+
 		this.noActiveMainWindow = false;
+
 		this.oldMenus = [];
+
 		this.install();
+
 		this.registerListeners();
 	}
+
 	private restoreCachedMenubarData() {
 		const menubarData = this.stateService.getItem<IMenubarData>(
 			Menubar.lastKnownMenubarStorageKey,
@@ -153,11 +176,13 @@ export class Menubar extends Disposable {
 			if (menubarData.menus) {
 				this.menubarMenus = menubarData.menus;
 			}
+
 			if (menubarData.keybindings) {
 				this.keybindings = menubarData.keybindings;
 			}
 		}
 	}
+
 	private addFallbackHandlers(): void {
 		// File Menu Items
 		this.fallbackMenuHandlers["workbench.action.files.newUntitledFile"] = (
@@ -178,6 +203,7 @@ export class Menubar extends Disposable {
 				});
 			}
 		};
+
 		this.fallbackMenuHandlers["workbench.action.newWindow"] = (
 			menuItem,
 			win,
@@ -187,6 +213,7 @@ export class Menubar extends Disposable {
 				context: OpenContext.MENU,
 				contextWindowId: win?.id,
 			});
+
 		this.fallbackMenuHandlers["workbench.action.files.openFileFolder"] = (
 			menuItem,
 			win,
@@ -196,6 +223,7 @@ export class Menubar extends Disposable {
 				forceNewWindow: this.isOptionClick(event),
 				telemetryExtraData: { from: telemetryFrom },
 			});
+
 		this.fallbackMenuHandlers["workbench.action.files.openFolder"] = (
 			menuItem,
 			win,
@@ -205,6 +233,7 @@ export class Menubar extends Disposable {
 				forceNewWindow: this.isOptionClick(event),
 				telemetryExtraData: { from: telemetryFrom },
 			});
+
 		this.fallbackMenuHandlers["workbench.action.openWorkspace"] = (
 			menuItem,
 			win,
@@ -226,6 +255,7 @@ export class Menubar extends Disposable {
 			this.fallbackMenuHandlers["workbench.action.openYouTubeUrl"] = () =>
 				this.openUrl(youTubeUrl, "openYouTubeUrl");
 		}
+
 		const requestFeatureUrl = this.productService.requestFeatureUrl;
 
 		if (requestFeatureUrl) {
@@ -233,12 +263,14 @@ export class Menubar extends Disposable {
 				"workbench.action.openRequestFeatureUrl"
 			] = () => this.openUrl(requestFeatureUrl, "openUserVoiceUrl");
 		}
+
 		const reportIssueUrl = this.productService.reportIssueUrl;
 
 		if (reportIssueUrl) {
 			this.fallbackMenuHandlers["workbench.action.openIssueReporter"] =
 				() => this.openUrl(reportIssueUrl, "openReportIssues");
 		}
+
 		const licenseUrl = this.productService.licenseUrl;
 
 		if (licenseUrl) {
@@ -247,6 +279,7 @@ export class Menubar extends Disposable {
 					if (language) {
 						const queryArgChar =
 							licenseUrl.indexOf("?") > 0 ? "&" : "?";
+
 						this.openUrl(
 							`${licenseUrl}${queryArgChar}lang=${language}`,
 							"openLicenseUrl",
@@ -256,6 +289,7 @@ export class Menubar extends Disposable {
 					}
 				};
 		}
+
 		const privacyStatementUrl = this.productService.privacyStatementUrl;
 
 		if (privacyStatementUrl && licenseUrl) {
@@ -266,6 +300,7 @@ export class Menubar extends Disposable {
 			};
 		}
 	}
+
 	private registerListeners(): void {
 		// Keep flag when app quits
 		this._register(
@@ -279,17 +314,20 @@ export class Menubar extends Disposable {
 				this.onDidChangeWindowsCount(e),
 			),
 		);
+
 		this._register(
 			this.nativeHostMainService.onDidBlurMainWindow(() =>
 				this.onDidChangeWindowFocus(),
 			),
 		);
+
 		this._register(
 			this.nativeHostMainService.onDidFocusMainWindow(() =>
 				this.onDidChangeWindowFocus(),
 			),
 		);
 	}
+
 	private get currentEnableMenuBarMnemonics(): boolean {
 		const enableMenuBarMnemonics = this.configurationService.getValue(
 			"window.enableMenuBarMnemonics",
@@ -298,33 +336,42 @@ export class Menubar extends Disposable {
 		if (typeof enableMenuBarMnemonics !== "boolean") {
 			return true;
 		}
+
 		return enableMenuBarMnemonics;
 	}
+
 	private get currentEnableNativeTabs(): boolean {
 		if (!isMacintosh) {
 			return false;
 		}
+
 		const enableNativeTabs =
 			this.configurationService.getValue("window.nativeTabs");
 
 		if (typeof enableNativeTabs !== "boolean") {
 			return false;
 		}
+
 		return enableNativeTabs;
 	}
+
 	updateMenu(menubarData: IMenubarData, windowId: number) {
 		this.menubarMenus = menubarData.menus;
+
 		this.keybindings = menubarData.keybindings;
 		// Save off new menu and keybindings
 		this.stateService.setItem(
 			Menubar.lastKnownMenubarStorageKey,
 			menubarData,
 		);
+
 		this.scheduleUpdateMenu();
 	}
+
 	private scheduleUpdateMenu(): void {
 		this.menuUpdater.schedule(); // buffer multiple attempts to update the menu
 	}
+
 	private doUpdateMenu(): void {
 		// Due to limitations in Electron, it is not possible to update menu items dynamically. The suggested
 		// workaround from Electron is to set the application menu again.
@@ -339,6 +386,7 @@ export class Menubar extends Disposable {
 			}, 10 /* delay this because there is an issue with updating a menu when it is open */);
 		}
 	}
+
 	private onDidChangeWindowsCount(e: IWindowsCountChangedEvent): void {
 		if (!isMacintosh) {
 			return;
@@ -349,21 +397,27 @@ export class Menubar extends Disposable {
 			(e.oldCount > 0 && e.newCount === 0)
 		) {
 			this.closedLastWindow = e.newCount === 0;
+
 			this.scheduleUpdateMenu();
 		}
 	}
+
 	private onDidChangeWindowFocus(): void {
 		if (!isMacintosh) {
 			return;
 		}
+
 		const focusedWindow = BrowserWindow.getFocusedWindow();
+
 		this.noActiveMainWindow =
 			!focusedWindow ||
 			!!this.auxiliaryWindowsMainService.getWindowByWebContents(
 				focusedWindow.webContents,
 			);
+
 		this.scheduleUpdateMenu();
 	}
+
 	private install(): void {
 		// Store old menu in our array to avoid GC to collect the menu and crash. See #55347
 		// TODO@sbatten Remove this when fixed upstream by Electron
@@ -386,11 +440,14 @@ export class Menubar extends Disposable {
 
 		if (isMacintosh) {
 			const applicationMenu = new Menu();
+
 			macApplicationMenuItem = new MenuItem({
 				label: this.productService.nameShort,
 				submenu: applicationMenu,
 			});
+
 			this.setMacApplicationMenu(applicationMenu);
+
 			menubar.append(macApplicationMenuItem);
 		}
 		// Mac: Dock
@@ -416,6 +473,7 @@ export class Menubar extends Disposable {
 						}),
 				}),
 			);
+
 			app.dock.setMenu(dockMenu);
 		}
 		// File
@@ -431,7 +489,9 @@ export class Menubar extends Disposable {
 				),
 				submenu: fileMenu,
 			});
+
 			this.setMenuById(fileMenu, "File");
+
 			menubar.append(fileMenuItem);
 		}
 		// Edit
@@ -447,7 +507,9 @@ export class Menubar extends Disposable {
 				),
 				submenu: editMenu,
 			});
+
 			this.setMenuById(editMenu, "Edit");
+
 			menubar.append(editMenuItem);
 		}
 		// Selection
@@ -466,7 +528,9 @@ export class Menubar extends Disposable {
 				),
 				submenu: selectionMenu,
 			});
+
 			this.setMenuById(selectionMenu, "Selection");
+
 			menubar.append(selectionMenuItem);
 		}
 		// View
@@ -482,7 +546,9 @@ export class Menubar extends Disposable {
 				),
 				submenu: viewMenu,
 			});
+
 			this.setMenuById(viewMenu, "View");
+
 			menubar.append(viewMenuItem);
 		}
 		// Go
@@ -498,7 +564,9 @@ export class Menubar extends Disposable {
 				),
 				submenu: gotoMenu,
 			});
+
 			this.setMenuById(gotoMenu, "Go");
+
 			menubar.append(gotoMenuItem);
 		}
 		// Debug
@@ -514,7 +582,9 @@ export class Menubar extends Disposable {
 				),
 				submenu: debugMenu,
 			});
+
 			this.setMenuById(debugMenu, "Run");
+
 			menubar.append(debugMenuItem);
 		}
 		// Terminal
@@ -533,7 +603,9 @@ export class Menubar extends Disposable {
 				),
 				submenu: terminalMenu,
 			});
+
 			this.setMenuById(terminalMenu, "Terminal");
+
 			menubar.append(terminalMenuItem);
 		}
 		// Mac: Window
@@ -541,13 +613,16 @@ export class Menubar extends Disposable {
 
 		if (this.shouldDrawMenu("Window")) {
 			const windowMenu = new Menu();
+
 			macWindowMenuItem = new MenuItem({
 				label: this.mnemonicLabel(nls.localize("mWindow", "Window")),
 				submenu: windowMenu,
 				role: "window",
 			});
+
 			this.setMacWindowMenu(windowMenu);
 		}
+
 		if (macWindowMenuItem) {
 			menubar.append(macWindowMenuItem);
 		}
@@ -565,9 +640,12 @@ export class Menubar extends Disposable {
 				submenu: helpMenu,
 				role: "help",
 			});
+
 			this.setMenuById(helpMenu, "Help");
+
 			menubar.append(helpMenuItem);
 		}
+
 		if (menubar.items && menubar.items.length > 0) {
 			this.doSetApplicationMenu(menubar);
 		} else {
@@ -576,6 +654,7 @@ export class Menubar extends Disposable {
 		// Dispose of older menus after some time
 		this.menuGC.schedule();
 	}
+
 	private doSetApplicationMenu(menu: Menu | null): void {
 		// Setting the application menu sets it to all opened windows,
 		// but we currently do not support a menu in auxiliary windows,
@@ -595,6 +674,7 @@ export class Menubar extends Disposable {
 			}
 		}
 	}
+
 	private setMacApplicationMenu(macApplicationMenu: Menu): void {
 		const about = this.createMenuItem(
 			nls.localize("mAbout", "About {0}", this.productService.nameLong),
@@ -607,7 +687,9 @@ export class Menubar extends Disposable {
 
 		if (this.shouldDrawMenu("Preferences")) {
 			const preferencesMenu = new Menu();
+
 			this.setMenuById(preferencesMenu, "Preferences");
+
 			preferences = new MenuItem({
 				label: this.mnemonicLabel(
 					nls.localize(
@@ -621,6 +703,7 @@ export class Menubar extends Disposable {
 				submenu: preferencesMenu,
 			});
 		}
+
 		const servicesMenu = new Menu();
 
 		const services = new MenuItem({
@@ -677,11 +760,13 @@ export class Menubar extends Disposable {
 		);
 
 		const actions = [about];
+
 		actions.push(...checkForUpdates);
 
 		if (preferences) {
 			actions.push(...[__separator__(), preferences]);
 		}
+
 		actions.push(
 			...[
 				__separator__(),
@@ -694,12 +779,15 @@ export class Menubar extends Disposable {
 				quit,
 			],
 		);
+
 		actions.forEach((i) => macApplicationMenu.append(i));
 	}
+
 	private async confirmBeforeQuit(event: KeyboardEvent): Promise<boolean> {
 		if (this.windowsMainService.getWindowCount() === 0) {
 			return true; // never confirm when no windows are opened
 		}
+
 		const confirmBeforeClose = this.configurationService.getValue<
 			"always" | "never" | "keyboardOnly"
 		>("window.confirmBeforeClose");
@@ -733,13 +821,16 @@ export class Menubar extends Disposable {
 
 			return response === 0;
 		}
+
 		return true;
 	}
+
 	private shouldDrawMenu(menuId: string): boolean {
 		// We need to draw an empty menu to override the electron default
 		if (!isMacintosh && !hasNativeTitlebar(this.configurationService)) {
 			return false;
 		}
+
 		switch (menuId) {
 			case "File":
 			case "Help":
@@ -752,6 +843,7 @@ export class Menubar extends Disposable {
 						(!!this.menubarMenus && !!this.menubarMenus[menuId])
 					);
 				}
+
 			case "Window":
 				if (isMacintosh) {
 					return (
@@ -762,6 +854,7 @@ export class Menubar extends Disposable {
 						!!this.menubarMenus
 					);
 				}
+
 			default:
 				return (
 					this.windowsMainService.getWindowCount() > 0 &&
@@ -770,6 +863,7 @@ export class Menubar extends Disposable {
 				);
 		}
 	}
+
 	private setMenu(menu: Menu, items: Array<MenubarMenuItem>) {
 		items.forEach((item: MenubarMenuItem) => {
 			if (isMenubarMenuItemSeparator(item)) {
@@ -781,7 +875,9 @@ export class Menubar extends Disposable {
 					label: this.mnemonicLabel(item.label),
 					submenu,
 				});
+
 				this.setMenu(submenu, item.submenu.items);
+
 				menu.append(submenuItem);
 			} else if (isMenubarMenuItemRecentAction(item)) {
 				menu.append(this.createOpenRecentMenuItem(item));
@@ -789,6 +885,7 @@ export class Menubar extends Disposable {
 				if (item.id === "workbench.action.showAboutDialog") {
 					this.insertCheckForUpdatesItems(menu);
 				}
+
 				if (isMacintosh) {
 					if (
 						(this.windowsMainService.getWindowCount() === 0 &&
@@ -841,19 +938,23 @@ export class Menubar extends Disposable {
 			}
 		});
 	}
+
 	private setMenuById(menu: Menu, menuId: string): void {
 		if (this.menubarMenus && this.menubarMenus[menuId]) {
 			this.setMenu(menu, this.menubarMenus[menuId].items);
 		}
 	}
+
 	private insertCheckForUpdatesItems(menu: Menu) {
 		const updateItems = this.getUpdateMenuItems();
 
 		if (updateItems.length) {
 			updateItems.forEach((i) => menu.append(i));
+
 			menu.append(__separator__());
 		}
 	}
+
 	private createOpenRecentMenuItem(
 		item: IMenubarMenuRecentItemAction,
 	): MenuItem {
@@ -899,6 +1000,7 @@ export class Menubar extends Disposable {
 			),
 		);
 	}
+
 	private isOptionClick(event: KeyboardEvent): boolean {
 		return !!(
 			event &&
@@ -906,6 +1008,7 @@ export class Menubar extends Disposable {
 				(isMacintosh && (event.metaKey || event.altKey)))
 		);
 	}
+
 	private isKeyboardEvent(event: KeyboardEvent): boolean {
 		return !!(
 			event.triggeredByAccelerator ||
@@ -915,6 +1018,7 @@ export class Menubar extends Disposable {
 			event.shiftKey
 		);
 	}
+
 	private createRoleMenuItem(
 		label: string,
 		commandId: string,
@@ -928,6 +1032,7 @@ export class Menubar extends Disposable {
 
 		return new MenuItem(this.withKeybinding(commandId, options));
 	}
+
 	private setMacWindowMenu(macWindowMenu: Menu): void {
 		const minimize = new MenuItem({
 			label: nls.localize("mMinimize", "Minimize"),
@@ -960,12 +1065,14 @@ export class Menubar extends Disposable {
 
 		if (this.currentEnableNativeTabs) {
 			nativeTabMenuItems.push(__separator__());
+
 			nativeTabMenuItems.push(
 				this.createMenuItem(
 					nls.localize("mNewTab", "New Tab"),
 					"workbench.action.newWindowTab",
 				),
 			);
+
 			nativeTabMenuItems.push(
 				this.createRoleMenuItem(
 					nls.localize("mShowPreviousTab", "Show Previous Tab"),
@@ -973,6 +1080,7 @@ export class Menubar extends Disposable {
 					"selectPreviousTab",
 				),
 			);
+
 			nativeTabMenuItems.push(
 				this.createRoleMenuItem(
 					nls.localize("mShowNextTab", "Show Next Tab"),
@@ -980,6 +1088,7 @@ export class Menubar extends Disposable {
 					"selectNextTab",
 				),
 			);
+
 			nativeTabMenuItems.push(
 				this.createRoleMenuItem(
 					nls.localize(
@@ -990,6 +1099,7 @@ export class Menubar extends Disposable {
 					"moveTabToNewWindow",
 				),
 			);
+
 			nativeTabMenuItems.push(
 				this.createRoleMenuItem(
 					nls.localize("mMergeAllWindows", "Merge All Windows"),
@@ -1008,6 +1118,7 @@ export class Menubar extends Disposable {
 			bringAllToFront,
 		].forEach((item) => macWindowMenu.append(item));
 	}
+
 	private getUpdateMenuItems(): MenuItem[] {
 		const state = this.updateService.state;
 
@@ -1026,6 +1137,7 @@ export class Menubar extends Disposable {
 								this.reportMenuActionTelemetry(
 									"CheckForUpdate",
 								);
+
 								this.updateService.checkForUpdates(true);
 							}, 0),
 					}),
@@ -1083,6 +1195,7 @@ export class Menubar extends Disposable {
 									this.reportMenuActionTelemetry(
 										"InstallUpdate",
 									);
+
 									this.updateService.applyUpdate();
 								},
 							}),
@@ -1110,6 +1223,7 @@ export class Menubar extends Disposable {
 						),
 						click: () => {
 							this.reportMenuActionTelemetry("RestartToUpdate");
+
 							this.updateService.quitAndInstall();
 						},
 					}),
@@ -1119,18 +1233,21 @@ export class Menubar extends Disposable {
 				return [];
 		}
 	}
+
 	private createMenuItem(
 		label: string,
 		commandId: string | string[],
 		enabled?: boolean,
 		checked?: boolean,
 	): MenuItem;
+
 	private createMenuItem(
 		label: string,
 		click: () => void,
 		enabled?: boolean,
 		checked?: boolean,
 	): MenuItem;
+
 	private createMenuItem(
 		arg1: string,
 		arg2: any,
@@ -1158,6 +1275,7 @@ export class Menubar extends Disposable {
 								? arg2[1]
 								: arg2[0]; // support alternative action if we got multiple action Ids and the option key was pressed while invoking
 						}
+
 						if (userSettingsLabel && event.triggeredByAccelerator) {
 							this.runActionInRenderer({
 								type: "keybinding",
@@ -1186,8 +1304,10 @@ export class Menubar extends Disposable {
 
 		if (checked) {
 			options.type = "checkbox";
+
 			options.checked = checked;
 		}
+
 		let commandId: string | undefined;
 
 		if (typeof arg2 === "string") {
@@ -1195,6 +1315,7 @@ export class Menubar extends Disposable {
 		} else if (Array.isArray(arg2)) {
 			commandId = arg2[0];
 		}
+
 		if (isMacintosh) {
 			// Add role for special case menu items
 			if (commandId === "editor.action.clipboardCutAction") {
@@ -1223,8 +1344,10 @@ export class Menubar extends Disposable {
 				});
 			}
 		}
+
 		return new MenuItem(this.withKeybinding(commandId, options));
 	}
+
 	private makeContextAwareClickHandler(
 		click: (
 			menuItem: MenuItem,
@@ -1261,6 +1384,7 @@ export class Menubar extends Disposable {
 			click(menuItem, win || activeWindow, event);
 		};
 	}
+
 	private runActionInRenderer(invocation: IMenuItemInvocation): boolean {
 		// We want to support auxililary windows that may have focus by
 		// returning their parent windows as target to support running
@@ -1293,6 +1417,7 @@ export class Menubar extends Disposable {
 				activeBrowserWindow = lastActiveWindow.win;
 			}
 		}
+
 		const activeWindow = activeBrowserWindow
 			? this.windowsMainService.getWindowById(activeBrowserWindow.id)
 			: undefined;
@@ -1318,11 +1443,13 @@ export class Menubar extends Disposable {
 					return false;
 				}
 			}
+
 			if (invocation.type === "commandId") {
 				const runActionPayload: INativeRunActionInWindowRequest = {
 					id: invocation.commandId,
 					from: "menu",
 				};
+
 				activeWindow.sendWhenReady(
 					"vscode:runAction",
 					CancellationToken.None,
@@ -1331,12 +1458,14 @@ export class Menubar extends Disposable {
 			} else {
 				const runKeybindingPayload: INativeRunKeybindingInWindowRequest =
 					{ userSettingsLabel: invocation.userSettingsLabel };
+
 				activeWindow.sendWhenReady(
 					"vscode:runKeybinding",
 					CancellationToken.None,
 					runKeybindingPayload,
 				);
 			}
+
 			return true;
 		} else {
 			this.logService.trace(
@@ -1347,6 +1476,7 @@ export class Menubar extends Disposable {
 			return false;
 		}
 	}
+
 	private withKeybinding(
 		commandId: string | undefined,
 		options: MenuItemConstructorOptions & IMenuItemWithKeybinding,
@@ -1360,6 +1490,7 @@ export class Menubar extends Disposable {
 			// if the binding is native, we can just apply it
 			if (binding.isNative !== false) {
 				options.accelerator = binding.label;
+
 				options.userSettingsLabel = binding.userSettingsLabel;
 			}
 			// the keybinding is not native so we cannot show it as part of the accelerator of
@@ -1378,8 +1509,10 @@ export class Menubar extends Disposable {
 		else {
 			options.accelerator = undefined;
 		}
+
 		return options;
 	}
+
 	private likeAction(
 		commandId: string,
 		options: MenuItemConstructorOptions,
@@ -1388,24 +1521,31 @@ export class Menubar extends Disposable {
 		if (setAccelerator) {
 			options = this.withKeybinding(commandId, options);
 		}
+
 		const originalClick = options.click;
+
 		options.click = (item, window, event) => {
 			this.reportMenuActionTelemetry(commandId);
+
 			originalClick?.(item, window, event);
 		};
 
 		return options;
 	}
+
 	private openUrl(url: string, id: string): void {
 		this.nativeHostMainService.openExternal(undefined, url);
+
 		this.reportMenuActionTelemetry(id);
 	}
+
 	private reportMenuActionTelemetry(id: string): void {
 		this.telemetryService.publicLog2<
 			WorkbenchActionExecutedEvent,
 			WorkbenchActionExecutedClassification
 		>("workbenchActionExecuted", { id, from: telemetryFrom });
 	}
+
 	private mnemonicLabel(label: string): string {
 		return mnemonicMenuLabel(label, !this.currentEnableMenuBarMnemonics);
 	}

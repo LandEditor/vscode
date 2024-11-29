@@ -43,20 +43,29 @@ CommandsRegistry.registerCommand(markSnippetAsUsed, (accessor, ...args) => {
 
 export class SnippetCompletion implements CompletionItem {
 	label: CompletionItemLabel;
+
 	detail: string;
+
 	insertText: string;
 
 	documentation?: MarkdownString;
+
 	range:
 		| IRange
 		| {
 				insert: IRange;
+
 				replace: IRange;
 		  };
+
 	sortText: string;
+
 	kind: CompletionItemKind;
+
 	insertTextRules: CompletionItemInsertTextRule;
+
 	extensionId?: ExtensionIdentifier;
+
 	command?: Command;
 
 	constructor(
@@ -65,28 +74,38 @@ export class SnippetCompletion implements CompletionItem {
 			| IRange
 			| {
 					insert: IRange;
+
 					replace: IRange;
 			  },
 	) {
 		this.label = { label: snippet.prefix, description: snippet.name };
+
 		this.detail = localize(
 			"detail.snippet",
 			"{0} ({1})",
 			snippet.description || snippet.name,
 			snippet.source,
 		);
+
 		this.insertText = snippet.codeSnippet;
+
 		this.extensionId = snippet.extensionId;
+
 		this.range = range;
+
 		this.sortText = `${snippet.snippetSource === SnippetSource.Extension ? "z" : "a"}-${snippet.prefix}`;
+
 		this.kind = CompletionItemKind.Snippet;
+
 		this.insertTextRules = CompletionItemInsertTextRule.InsertAsSnippet;
+
 		this.command = {
 			id: markSnippetAsUsed,
 			title: "",
 			arguments: [snippet],
 		};
 	}
+
 	resolve(): this {
 		this.documentation = new MarkdownString().appendCodeblock(
 			"",
@@ -95,13 +114,16 @@ export class SnippetCompletion implements CompletionItem {
 
 		return this;
 	}
+
 	static compareByLabel(a: SnippetCompletion, b: SnippetCompletion): number {
 		return compare(a.label.label, b.label.label);
 	}
 }
 interface ISnippetPosition {
 	startColumn: number;
+
 	prefixLow: string;
+
 	isWord: boolean;
 }
 export class SnippetCompletionProvider implements CompletionItemProvider {
@@ -117,6 +139,7 @@ export class SnippetCompletionProvider implements CompletionItemProvider {
 	) {
 		//
 	}
+
 	async provideCompletionItems(
 		model: ITextModel,
 		position: Position,
@@ -173,6 +196,7 @@ export class SnippetCompletionProvider implements CompletionItemProvider {
 				// strict -> when having trigger characters they must prefix-match
 				continue;
 			}
+
 			let candidate: ISnippetPosition | undefined;
 
 			for (const anchor of anchors) {
@@ -183,6 +207,7 @@ export class SnippetCompletionProvider implements CompletionItemProvider {
 					// only allow whitespace anchor when snippet prefix starts with whitespace too
 					continue;
 				}
+
 				if (
 					isPatternInWord(
 						anchor.prefixLow,
@@ -198,9 +223,11 @@ export class SnippetCompletionProvider implements CompletionItemProvider {
 					break;
 				}
 			}
+
 			if (!candidate) {
 				continue;
 			}
+
 			const pos = candidate.startColumn - 1;
 
 			const prefixRestLen =
@@ -245,15 +272,18 @@ export class SnippetCompletionProvider implements CompletionItemProvider {
 					endColumn++;
 				}
 			}
+
 			const replace = Range.fromPositions(
 				{ lineNumber: line, column: candidate.startColumn },
 				{ lineNumber: line, column: endColumn },
 			);
 
 			const insert = replace.setEndPosition(line, position.column);
+
 			suggestions.push(
 				new SnippetCompletion(snippet, { replace, insert }),
 			);
+
 			snippets.delete(snippet);
 		}
 		// add remaing snippets when the current prefix ends in whitespace or when line is empty
@@ -276,6 +306,7 @@ export class SnippetCompletionProvider implements CompletionItemProvider {
 								position.column + snippet.prefixLow.length,
 							)
 						: insert;
+
 				suggestions.push(
 					new SnippetCompletion(snippet, { replace, insert }),
 				);
@@ -289,6 +320,7 @@ export class SnippetCompletionProvider implements CompletionItemProvider {
 			duration: sw.elapsed(),
 		};
 	}
+
 	private _disambiguateSnippets(suggestions: SnippetCompletion[]) {
 		suggestions.sort(SnippetCompletion.compareByLabel);
 
@@ -299,7 +331,9 @@ export class SnippetCompletionProvider implements CompletionItemProvider {
 
 			for (
 				;
+
 				to < suggestions.length && item.label === suggestions[to].label;
+
 				to++
 			) {
 				suggestions[to].label.label = localize(
@@ -309,6 +343,7 @@ export class SnippetCompletionProvider implements CompletionItemProvider {
 					suggestions[to].snippet.name,
 				);
 			}
+
 			if (to > i + 1) {
 				suggestions[i].label.label = localize(
 					"snippetSuggest.longLabel",
@@ -316,13 +351,16 @@ export class SnippetCompletionProvider implements CompletionItemProvider {
 					suggestions[i].label.label,
 					suggestions[i].snippet.name,
 				);
+
 				i = to;
 			}
 		}
 	}
+
 	resolveCompletionItem(item: CompletionItem): CompletionItem {
 		return item instanceof SnippetCompletion ? item.resolve() : item;
 	}
+
 	private _computeSnippetPositions(
 		model: ITextModel,
 		line: number,
@@ -335,6 +373,7 @@ export class SnippetCompletionProvider implements CompletionItemProvider {
 			const wordInfo = model.getWordAtPosition(
 				new Position(line, column),
 			);
+
 			result.push({
 				startColumn: column,
 				prefixLow: lineContentWithWordLow.substring(column - 1),
@@ -353,6 +392,7 @@ export class SnippetCompletionProvider implements CompletionItemProvider {
 				});
 			}
 		}
+
 		if (word.word.length > 0 || result.length === 0) {
 			result.push({
 				startColumn: word.startColumn,
@@ -362,8 +402,10 @@ export class SnippetCompletionProvider implements CompletionItemProvider {
 				isWord: true,
 			});
 		}
+
 		return result;
 	}
+
 	private _getLanguageIdAtPosition(
 		model: ITextModel,
 		position: Position,
@@ -381,6 +423,7 @@ export class SnippetCompletionProvider implements CompletionItemProvider {
 		if (!this._languageService.getLanguageName(languageId)) {
 			languageId = model.getLanguageId();
 		}
+
 		return languageId;
 	}
 }

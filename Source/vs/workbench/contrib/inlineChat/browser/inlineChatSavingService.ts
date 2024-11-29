@@ -10,5 +10,6 @@ export const IInlineChatSavingService =
 
 export interface IInlineChatSavingService {
 	_serviceBrand: undefined;
+
 	markChanged(session: Session): void;
 }

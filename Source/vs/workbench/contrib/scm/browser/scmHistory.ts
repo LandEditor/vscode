@@ -174,13 +174,18 @@ function getLabelColorIdentifier(
 			return colorIdentifier;
 		}
 	}
+
 	return undefined;
 }
 function createPath(colorIdentifier: string): SVGPathElement {
 	const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+
 	path.setAttribute("fill", "none");
+
 	path.setAttribute("stroke-width", "1px");
+
 	path.setAttribute("stroke-linecap", "round");
+
 	path.style.stroke = asCssVariable(colorIdentifier);
 
 	return path;
@@ -195,14 +200,19 @@ function drawCircle(
 		"http://www.w3.org/2000/svg",
 		"circle",
 	);
+
 	circle.setAttribute("cx", `${SWIMLANE_WIDTH * (index + 1)}`);
+
 	circle.setAttribute("cy", `${SWIMLANE_WIDTH}`);
+
 	circle.setAttribute("r", `${radius}`);
+
 	circle.style.strokeWidth = `${strokeWidth}px`;
 
 	if (colorIdentifier) {
 		circle.style.fill = asCssVariable(colorIdentifier);
 	}
+
 	return circle;
 }
 function drawVerticalLine(
@@ -212,6 +222,7 @@ function drawVerticalLine(
 	color: string,
 ): SVGPathElement {
 	const path = createPath(color);
+
 	path.setAttribute("d", `M ${x1} ${y1} V ${y2}`);
 
 	return path;
@@ -222,12 +233,14 @@ function findLastIndex(nodes: ISCMHistoryItemGraphNode[], id: string): number {
 			return i;
 		}
 	}
+
 	return -1;
 }
 export function renderSCMHistoryItemGraph(
 	historyItemViewModel: ISCMHistoryItemViewModel,
 ): SVGElement {
 	const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+
 	svg.classList.add("graph");
 
 	const historyItem = historyItemViewModel.historyItem;
@@ -262,12 +275,15 @@ export function renderSCMHistoryItemGraph(
 				const path = createPath(color);
 				// Draw /
 				d.push(`M ${SWIMLANE_WIDTH * (index + 1)} 0`);
+
 				d.push(
 					`A ${SWIMLANE_WIDTH} ${SWIMLANE_WIDTH} 0 0 1 ${SWIMLANE_WIDTH * index} ${SWIMLANE_WIDTH}`,
 				);
 				// Draw -
 				d.push(`H ${SWIMLANE_WIDTH * (circleIndex + 1)}`);
+
 				path.setAttribute("d", d.join(" "));
+
 				svg.append(path);
 			} else {
 				outputSwimlaneIndex++;
@@ -287,6 +303,7 @@ export function renderSCMHistoryItemGraph(
 						SWIMLANE_HEIGHT,
 						color,
 					);
+
 					svg.append(path);
 				} else {
 					const d: string[] = [];
@@ -294,6 +311,7 @@ export function renderSCMHistoryItemGraph(
 					const path = createPath(color);
 					// Draw |
 					d.push(`M ${SWIMLANE_WIDTH * (index + 1)} 0`);
+
 					d.push(`V 6`);
 					// Draw /
 					d.push(
@@ -309,9 +327,12 @@ export function renderSCMHistoryItemGraph(
 					);
 					// Draw |
 					d.push(`V ${SWIMLANE_HEIGHT}`);
+
 					path.setAttribute("d", d.join(" "));
+
 					svg.append(path);
 				}
+
 				outputSwimlaneIndex++;
 			}
 		}
@@ -334,6 +355,7 @@ export function renderSCMHistoryItemGraph(
 		d.push(
 			`M ${SWIMLANE_WIDTH * parentOutputIndex} ${SWIMLANE_HEIGHT / 2}`,
 		);
+
 		d.push(
 			`A ${SWIMLANE_WIDTH} ${SWIMLANE_WIDTH} 0 0 1 ${SWIMLANE_WIDTH * (parentOutputIndex + 1)} ${SWIMLANE_HEIGHT}`,
 		);
@@ -341,8 +363,11 @@ export function renderSCMHistoryItemGraph(
 		d.push(
 			`M ${SWIMLANE_WIDTH * parentOutputIndex} ${SWIMLANE_HEIGHT / 2}`,
 		);
+
 		d.push(`H ${SWIMLANE_WIDTH * (circleIndex + 1)} `);
+
 		path.setAttribute("d", d.join(" "));
+
 		svg.append(path);
 	}
 	// Draw | to *
@@ -353,6 +378,7 @@ export function renderSCMHistoryItemGraph(
 			SWIMLANE_HEIGHT / 2,
 			inputSwimlanes[inputIndex].color,
 		);
+
 		svg.append(path);
 	}
 	// Draw | from *
@@ -363,6 +389,7 @@ export function renderSCMHistoryItemGraph(
 			SWIMLANE_HEIGHT,
 			circleColor,
 		);
+
 		svg.append(path);
 	}
 	// Draw *
@@ -374,6 +401,7 @@ export function renderSCMHistoryItemGraph(
 			CIRCLE_STROKE_WIDTH,
 			circleColor,
 		);
+
 		svg.append(outerCircle);
 
 		const innerCircle = drawCircle(
@@ -381,6 +409,7 @@ export function renderSCMHistoryItemGraph(
 			CIRCLE_STROKE_WIDTH,
 			CIRCLE_RADIUS,
 		);
+
 		svg.append(innerCircle);
 	} else {
 		if (historyItem.parentIds.length > 1) {
@@ -391,6 +420,7 @@ export function renderSCMHistoryItemGraph(
 				CIRCLE_STROKE_WIDTH,
 				circleColor,
 			);
+
 			svg.append(circleOuter);
 
 			const circleInner = drawCircle(
@@ -399,6 +429,7 @@ export function renderSCMHistoryItemGraph(
 				CIRCLE_STROKE_WIDTH,
 				circleColor,
 			);
+
 			svg.append(circleInner);
 		} else {
 			// Node
@@ -408,11 +439,13 @@ export function renderSCMHistoryItemGraph(
 				CIRCLE_STROKE_WIDTH,
 				circleColor,
 			);
+
 			svg.append(circle);
 		}
 	}
 	// Set dimensions
 	svg.style.height = `${SWIMLANE_HEIGHT}px`;
+
 	svg.style.width = `${SWIMLANE_WIDTH * (Math.max(inputSwimlanes.length, outputSwimlanes.length, 1) + 1)}px`;
 
 	return svg;
@@ -434,8 +467,10 @@ export function renderSCMHistoryGraphPlaceholder(
 			SWIMLANE_HEIGHT,
 			columns[index].color,
 		);
+
 		elements.root.append(path);
 	}
+
 	return elements.root;
 }
 export function toISCMHistoryItemViewModelArray(
@@ -477,17 +512,22 @@ export function toISCMHistoryItemViewModelArray(
 									colorMap,
 								) ?? node.color,
 						});
+
 						firstParentAdded = true;
 					}
+
 					continue;
 				}
+
 				outputSwimlanes.push(deepClone(node));
 			}
 		}
 		// Add unprocessed parent(s) to the output
 		for (
 			let i = firstParentAdded ? 1 : 0;
+
 			i < historyItem.parentIds.length;
+
 			i++
 		) {
 			// Color index (label -> next color)
@@ -502,14 +542,18 @@ export function toISCMHistoryItemViewModelArray(
 				const historyItemParent = historyItems.find(
 					(h) => h.id === historyItem.parentIds[i],
 				);
+
 				colorIdentifier = historyItemParent
 					? getLabelColorIdentifier(historyItemParent, colorMap)
 					: undefined;
 			}
+
 			if (!colorIdentifier) {
 				colorIndex = rot(colorIndex + 1, colorRegistry.length);
+
 				colorIdentifier = colorRegistry[colorIndex];
 			}
+
 			outputSwimlanes.push({
 				id: historyItem.parentIds[i],
 				color: colorIdentifier,
@@ -535,6 +579,7 @@ export function toISCMHistoryItemViewModelArray(
 							? inputSwimlanes[circleIndex].color
 							: historyItemRefColor;
 			}
+
 			return { ...ref, color };
 		});
 		// Sort references
@@ -547,6 +592,7 @@ export function toISCMHistoryItemViewModelArray(
 				currentHistoryItemBaseRef,
 			),
 		);
+
 		viewModels.push({
 			historyItem: {
 				...historyItem,
@@ -557,5 +603,6 @@ export function toISCMHistoryItemViewModelArray(
 			outputSwimlanes,
 		});
 	}
+
 	return viewModels;
 }

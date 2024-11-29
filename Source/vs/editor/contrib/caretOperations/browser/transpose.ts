@@ -98,6 +98,7 @@ class TransposeLettersAction extends EditorAction {
 				beginPosition,
 				endPosition,
 			);
+
 			commands.push(
 				new ReplaceCommand(replaceRange, rightChar + leftChar),
 			);
@@ -105,7 +106,9 @@ class TransposeLettersAction extends EditorAction {
 
 		if (commands.length > 0) {
 			editor.pushUndoStop();
+
 			editor.executeCommands(this.id, commands);
+
 			editor.pushUndoStop();
 		}
 	}

@@ -102,11 +102,15 @@ export class TestResultService
 	implements ITestResultService
 {
 	declare _serviceBrand: undefined;
+
 	private changeResultEmitter = this._register(
 		new Emitter<ResultChangeEvent>(),
 	);
+
 	private _results: ITestResult[] = [];
+
 	private readonly _resultsDisposables: DisposableStore[] = [];
+
 	private testChangeEmitter = this._register(
 		new Emitter<TestResultItemChange>(),
 	);
@@ -126,8 +130,11 @@ export class TestResultService
 	 * @inheritdoc
 	 */
 	public readonly onTestChanged = this.testChangeEmitter.event;
+
 	private readonly isRunning: IContextKey<boolean>;
+
 	private readonly hasAnyResults: IContextKey<boolean>;
+
 	private readonly loadResults = createSingleCallFunction(() =>
 		this.storage.read().then((loaded) => {
 			for (let i = loaded.length - 1; i >= 0; i--) {
@@ -135,6 +142,7 @@ export class TestResultService
 			}
 		}),
 	);
+
 	protected readonly persistScheduler = new RunOnceScheduler(
 		() => this.persistImmediately(),
 		500,
@@ -151,8 +159,11 @@ export class TestResultService
 		private readonly telemetryService: ITelemetryService,
 	) {
 		super();
+
 		this._register(toDisposable(() => dispose(this._resultsDisposables)));
+
 		this.isRunning = TestingContextKeys.isRunning.bindTo(contextKeyService);
+
 		this.hasAnyResults =
 			TestingContextKeys.hasAnyResults.bindTo(contextKeyService);
 	}
@@ -169,6 +180,7 @@ export class TestResultService
 				return [result, lookup];
 			}
 		}
+
 		return undefined;
 	}
 	/**
@@ -184,14 +196,17 @@ export class TestResultService
 				new LiveTestResult(id, true, req, this.telemetryService),
 			);
 		}
+
 		let profile: ITestRunProfile | undefined;
 
 		if (req.profile) {
 			const profiles = this.testProfiles.getControllerProfiles(
 				req.controllerId,
 			);
+
 			profile = profiles.find((c) => c.profileId === req.profile!.id);
 		}
+
 		const resolved: ResolvedTestRunRequest = {
 			preserveFocus: req.preserveFocus,
 			targets: [],
@@ -207,6 +222,7 @@ export class TestResultService
 				testIds: req.include,
 			});
 		}
+
 		return this.push(
 			new LiveTestResult(
 				req.id,
@@ -229,28 +245,38 @@ export class TestResultService
 					r.completedAt !== undefined &&
 					r.completedAt <= result.completedAt!,
 			);
+
 			this.results.splice(index, 0, result);
+
 			this.persistScheduler.schedule();
 		}
+
 		this.hasAnyResults.set(true);
 
 		if (this.results.length > RETAIN_MAX_RESULTS) {
 			this.results.pop();
+
 			this._resultsDisposables.pop()?.dispose();
 		}
+
 		const ds = new DisposableStore();
+
 		this._resultsDisposables.push(ds);
 
 		if (result instanceof LiveTestResult) {
 			ds.add(result);
+
 			ds.add(result.onComplete(() => this.onComplete(result)));
+
 			ds.add(
 				result.onChange(
 					this.testChangeEmitter.fire,
 					this.testChangeEmitter,
 				),
 			);
+
 			this.isRunning.set(true);
+
 			this.changeResultEmitter.fire({ started: result });
 		} else {
 			this.changeResultEmitter.fire({ inserted: result });
@@ -275,6 +301,7 @@ export class TestResultService
 				}
 			}
 		}
+
 		return result;
 	}
 	/**
@@ -298,20 +325,28 @@ export class TestResultService
 				keep.push(result);
 			}
 		}
+
 		this._results = keep;
+
 		this.persistScheduler.schedule();
 
 		if (keep.length === 0) {
 			this.hasAnyResults.set(false);
 		}
+
 		this.changeResultEmitter.fire({ removed });
 	}
+
 	private onComplete(result: LiveTestResult) {
 		this.resort();
+
 		this.updateIsRunning();
+
 		this.persistScheduler.schedule();
+
 		this.changeResultEmitter.fire({ completed: result });
 	}
+
 	private resort() {
 		this.results.sort(
 			(a, b) =>
@@ -319,13 +354,16 @@ export class TestResultService
 				(a.completedAt ?? Number.MAX_SAFE_INTEGER),
 		);
 	}
+
 	private updateIsRunning() {
 		this.isRunning.set(isRunningTests(this));
 	}
+
 	protected async persistImmediately() {
 		// ensure results are loaded before persisting to avoid deleting once
 		// that we don't have yet.
 		await this.loadResults();
+
 		this.storage.persist(this.results);
 	}
 }

@@ -28,13 +28,16 @@ import { ISortOrderConfiguration, OpenEditor } from "../common/files.js";
 
 export interface IExplorerService {
 	readonly _serviceBrand: undefined;
+
 	readonly roots: ExplorerItem[];
+
 	readonly sortOrderConfiguration: ISortOrderConfiguration;
 
 	getContext(
 		respectMultiSelection: boolean,
 		ignoreNestedChildren?: boolean,
 	): ExplorerItem[];
+
 	hasViewFocus(): boolean;
 
 	setEditable(stat: ExplorerItem, data: IEditableData | null): Promise<void>;
@@ -44,18 +47,26 @@ export interface IExplorerService {
 	getEditableData(stat: ExplorerItem): IEditableData | undefined;
 	// If undefined is passed checks if any element is currently being edited.
 	isEditable(stat: ExplorerItem | undefined): boolean;
+
 	findClosest(resource: URI): ExplorerItem | null;
+
 	findClosestRoot(resource: URI): ExplorerItem | null;
+
 	refresh(): Promise<void>;
 
 	setToCopy(stats: ExplorerItem[], cut: boolean): Promise<void>;
+
 	isCut(stat: ExplorerItem): boolean;
+
 	applyBulkEdit(
 		edit: ResourceFileEdit[],
 		options: {
 			undoLabel: string;
+
 			progressLabel: string;
+
 			confirmBeforeUndo?: boolean;
+
 			progressLocation?:
 				| ProgressLocation.Explorer
 				| ProgressLocation.Window;
@@ -78,11 +89,13 @@ export interface IExplorerView {
 	autoReveal: boolean | "force" | "focusNoScroll";
 
 	getContext(respectMultiSelection: boolean): ExplorerItem[];
+
 	refresh(
 		recursive: boolean,
 		item?: ExplorerItem,
 		cancelEditing?: boolean,
 	): Promise<void>;
+
 	selectResource(
 		resource: URI | undefined,
 		reveal?: boolean | string,
@@ -90,6 +103,7 @@ export interface IExplorerView {
 	): Promise<void>;
 
 	setTreeInput(): Promise<void>;
+
 	itemsCopied(
 		tats: ExplorerItem[],
 		cut: boolean,
@@ -97,13 +111,19 @@ export interface IExplorerView {
 	): void;
 
 	setEditable(stat: ExplorerItem, isEditing: boolean): Promise<void>;
+
 	isItemVisible(item: ExplorerItem): boolean;
+
 	isItemCollapsed(item: ExplorerItem): boolean;
+
 	hasFocus(): boolean;
 
 	getFocus(): ExplorerItem[];
+
 	focusNext(): void;
+
 	focusLast(): void;
+
 	hasPhantomElements(): boolean;
 }
 
@@ -205,6 +225,7 @@ export function getMultiSelectedResources(
 				mainUriStr = commandArg.toString();
 			} else if (focus instanceof OpenEditor) {
 				const focusedResource = focus.getResource();
+
 				mainUriStr = focusedResource
 					? focusedResource.toString()
 					: undefined;
@@ -217,7 +238,9 @@ export function getMultiSelectedResources(
 			if (mainIndex !== -1) {
 				// Move the main resource to the front of the selection.
 				const mainResource = selection[mainIndex];
+
 				selection.splice(mainIndex, 1);
+
 				selection.unshift(mainResource);
 
 				return selection;
@@ -239,7 +262,9 @@ export function getMultiSelectedResources(
 
 		if (mainEditorSelectionIndex !== -1) {
 			const mainEditor = selection[mainEditorSelectionIndex];
+
 			selection.splice(mainEditorSelectionIndex, 1);
+
 			selection.unshift(mainEditor);
 
 			return selection
@@ -284,6 +309,7 @@ export function getOpenEditorsViewMultiSelection(
 			if (selection.some((s) => s === mainEditor)) {
 				return selection;
 			}
+
 			return mainEditor ? [mainEditor] : undefined;
 		}
 	}

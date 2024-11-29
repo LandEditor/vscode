@@ -30,18 +30,25 @@ export class RemoteAuthorityResolverService
 	implements IRemoteAuthorityResolverService
 {
 	declare readonly _serviceBrand: undefined;
+
 	private readonly _onDidChangeConnectionData = this._register(
 		new Emitter<void>(),
 	);
+
 	public readonly onDidChangeConnectionData =
 		this._onDidChangeConnectionData.event;
+
 	private readonly _resolveAuthorityRequests = new Map<
 		string,
 		DeferredPromise<ResolverResult>
 	>();
+
 	private readonly _cache = new Map<string, ResolverResult>();
+
 	private readonly _connectionToken: Promise<string> | string | undefined;
+
 	private readonly _connectionTokens: Map<string, string>;
+
 	private readonly _isWorkbenchOptionsBasedResolution: boolean;
 
 	constructor(
@@ -55,21 +62,27 @@ export class RemoteAuthorityResolverService
 		private readonly _logService: ILogService,
 	) {
 		super();
+
 		this._connectionToken = connectionToken;
+
 		this._connectionTokens = new Map<string, string>();
+
 		this._isWorkbenchOptionsBasedResolution =
 			isWorkbenchOptionsBasedResolution;
 
 		if (resourceUriProvider) {
 			RemoteAuthorities.setDelegate(resourceUriProvider);
 		}
+
 		RemoteAuthorities.setServerRootPath(productService, serverBasePath);
 	}
+
 	async resolveAuthority(authority: string): Promise<ResolverResult> {
 		let result = this._resolveAuthorityRequests.get(authority);
 
 		if (!result) {
 			result = new DeferredPromise<ResolverResult>();
+
 			this._resolveAuthorityRequests.set(authority, result);
 
 			if (this._isWorkbenchOptionsBasedResolution) {
@@ -79,16 +92,20 @@ export class RemoteAuthorityResolverService
 				);
 			}
 		}
+
 		return result.p;
 	}
+
 	async getCanonicalURI(uri: URI): Promise<URI> {
 		// todo@connor4312 make this work for web
 		return uri;
 	}
+
 	getConnectionData(authority: string): IRemoteConnectionData | null {
 		if (!this._cache.has(authority)) {
 			return null;
 		}
+
 		const resolverResult = this._cache.get(authority)!;
 
 		const connectionToken =
@@ -100,21 +117,26 @@ export class RemoteAuthorityResolverService
 			connectionToken: connectionToken,
 		};
 	}
+
 	private async _doResolveAuthority(
 		authority: string,
 	): Promise<ResolverResult> {
 		const authorityPrefix = getRemoteAuthorityPrefix(authority);
 
 		const sw = StopWatch.create(false);
+
 		this._logService.info(
 			`Resolving connection token (${authorityPrefix})...`,
 		);
+
 		performance.mark(`code/willResolveConnectionToken/${authorityPrefix}`);
 
 		const connectionToken = await Promise.resolve(
 			this._connectionTokens.get(authority) || this._connectionToken,
 		);
+
 		performance.mark(`code/didResolveConnectionToken/${authorityPrefix}`);
+
 		this._logService.info(
 			`Resolved connection token (${authorityPrefix}) after ${sw.elapsed()} ms`,
 		);
@@ -133,18 +155,24 @@ export class RemoteAuthorityResolverService
 				connectionToken,
 			},
 		};
+
 		RemoteAuthorities.set(authority, host, port);
+
 		this._cache.set(authority, result);
+
 		this._onDidChangeConnectionData.fire();
 
 		return result;
 	}
+
 	_clearResolvedAuthority(authority: string): void {
 		if (this._resolveAuthorityRequests.has(authority)) {
 			this._resolveAuthorityRequests.get(authority)!.cancel();
+
 			this._resolveAuthorityRequests.delete(authority);
 		}
 	}
+
 	_setResolvedAuthority(
 		resolvedAuthority: ResolvedAuthority,
 		options?: ResolvedOptions,
@@ -165,16 +193,20 @@ export class RemoteAuthorityResolverService
 					resolvedAuthority.connectTo.port,
 				);
 			}
+
 			if (resolvedAuthority.connectionToken) {
 				RemoteAuthorities.setConnectionToken(
 					resolvedAuthority.authority,
 					resolvedAuthority.connectionToken,
 				);
 			}
+
 			request.complete({ authority: resolvedAuthority, options });
+
 			this._onDidChangeConnectionData.fire();
 		}
 	}
+
 	_setResolvedAuthorityError(authority: string, err: any): void {
 		if (this._resolveAuthorityRequests.has(authority)) {
 			const request = this._resolveAuthorityRequests.get(authority)!;
@@ -182,13 +214,17 @@ export class RemoteAuthorityResolverService
 			request.error(errors.ErrorNoTelemetry.fromError(err));
 		}
 	}
+
 	_setAuthorityConnectionToken(
 		authority: string,
 		connectionToken: string,
 	): void {
 		this._connectionTokens.set(authority, connectionToken);
+
 		RemoteAuthorities.setConnectionToken(authority, connectionToken);
+
 		this._onDidChangeConnectionData.fire();
 	}
+
 	_setCanonicalURIProvider(provider: (uri: URI) => Promise<URI>): void {}
 }

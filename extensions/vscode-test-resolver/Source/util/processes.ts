@@ -7,6 +7,7 @@ import * as path from "path";
 
 export interface TerminateResponse {
 	success: boolean;
+
 	error?: any;
 }
 export function terminateProcess(
@@ -18,6 +19,7 @@ export function terminateProcess(
 			const options: any = {
 				stdio: ["pipe", "pipe", "ignore"],
 			};
+
 			cp.execFileSync(
 				"taskkill",
 				["/T", "/F", "/PID", p.pid!.toString()],
@@ -45,5 +47,6 @@ export function terminateProcess(
 	} else {
 		p.kill("SIGKILL");
 	}
+
 	return { success: true };
 }

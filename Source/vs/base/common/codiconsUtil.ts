@@ -21,8 +21,10 @@ export function register(
 				`${id} references an unknown codicon: ${fontCharacter}`,
 			);
 		}
+
 		fontCharacter = val;
 	}
+
 	_codiconFontCharacters[id] = fontCharacter;
 
 	return { id };

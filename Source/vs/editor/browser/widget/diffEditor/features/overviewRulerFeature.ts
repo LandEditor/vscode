@@ -44,8 +44,10 @@ import { appendRemoveOnDispose } from "../utils.js";
 
 export class OverviewRulerFeature extends Disposable {
 	private static readonly ONE_OVERVIEW_WIDTH = 15;
+
 	public static readonly ENTIRE_DIFF_OVERVIEW_WIDTH =
 		this.ONE_OVERVIEW_WIDTH * 2;
+
 	public readonly width = OverviewRulerFeature.ENTIRE_DIFF_OVERVIEW_WIDTH;
 
 	constructor(
@@ -89,7 +91,9 @@ export class OverviewRulerFeature extends Disposable {
 		const viewportDomElement = createFastDomNode(
 			document.createElement("div"),
 		);
+
 		viewportDomElement.setClassName("diffViewport");
+
 		viewportDomElement.setPosition("absolute");
 
 		const diffOverviewRoot = h("div.diffOverview", {
@@ -99,9 +103,11 @@ export class OverviewRulerFeature extends Disposable {
 				width: OverviewRulerFeature.ENTIRE_DIFF_OVERVIEW_WIDTH + "px",
 			},
 		}).root;
+
 		this._register(
 			appendRemoveOnDispose(diffOverviewRoot, viewportDomElement.domNode),
 		);
+
 		this._register(
 			addStandardDisposableListener(
 				diffOverviewRoot,
@@ -113,6 +119,7 @@ export class OverviewRulerFeature extends Disposable {
 				},
 			),
 		);
+
 		this._register(
 			addDisposableListener(
 				diffOverviewRoot,
@@ -123,9 +130,11 @@ export class OverviewRulerFeature extends Disposable {
 				{ passive: false },
 			),
 		);
+
 		this._register(
 			appendRemoveOnDispose(this._rootElement, diffOverviewRoot),
 		);
+
 		this._register(
 			autorunWithStore((reader, store) => {
 				/** @description recreate overview rules when model changes */
@@ -138,6 +147,7 @@ export class OverviewRulerFeature extends Disposable {
 
 				if (originalOverviewRuler) {
 					store.add(originalOverviewRuler);
+
 					store.add(
 						appendRemoveOnDispose(
 							diffOverviewRoot,
@@ -145,6 +155,7 @@ export class OverviewRulerFeature extends Disposable {
 						),
 					);
 				}
+
 				const modifiedOverviewRuler =
 					this._editors.modified.createOverviewRuler(
 						"modified diffOverviewRuler",
@@ -152,6 +163,7 @@ export class OverviewRulerFeature extends Disposable {
 
 				if (modifiedOverviewRuler) {
 					store.add(modifiedOverviewRuler);
+
 					store.add(
 						appendRemoveOnDispose(
 							diffOverviewRoot,
@@ -159,10 +171,12 @@ export class OverviewRulerFeature extends Disposable {
 						),
 					);
 				}
+
 				if (!originalOverviewRuler || !modifiedOverviewRuler) {
 					// probably no model
 					return;
 				}
+
 				const origViewZonesChanged = observableSignalFromEvent(
 					"viewZoneChanged",
 					this._editors.original.onDidChangeViewZones,
@@ -182,12 +196,16 @@ export class OverviewRulerFeature extends Disposable {
 					"hiddenRangesChanged",
 					this._editors.modified.onDidChangeHiddenAreas,
 				);
+
 				store.add(
 					autorun((reader) => {
 						/** @description set overview ruler zones */
 						origViewZonesChanged.read(reader);
+
 						modViewZonesChanged.read(reader);
+
 						origHiddenRangesChanged.read(reader);
+
 						modHiddenRangesChanged.read(reader);
 
 						const colors = currentColors.read(reader);
@@ -204,6 +222,7 @@ export class OverviewRulerFeature extends Disposable {
 							if (!vm) {
 								return [];
 							}
+
 							return ranges
 								.filter((d) => d.length > 0)
 								.map((r) => {
@@ -233,6 +252,7 @@ export class OverviewRulerFeature extends Disposable {
 									);
 								});
 						}
+
 						const originalZones = createZones(
 							(diff || []).map(
 								(d) => d.lineRangeMapping.original,
@@ -248,10 +268,13 @@ export class OverviewRulerFeature extends Disposable {
 							colors.insertColor,
 							this._editors.modified,
 						);
+
 						originalOverviewRuler?.setZones(originalZones);
+
 						modifiedOverviewRuler?.setZones(modifiedZones);
 					}),
 				);
+
 				store.add(
 					autorun((reader) => {
 						/** @description layout overview ruler */
@@ -266,6 +289,7 @@ export class OverviewRulerFeature extends Disposable {
 							const freeSpace =
 								OverviewRulerFeature.ENTIRE_DIFF_OVERVIEW_WIDTH -
 								2 * OverviewRulerFeature.ONE_OVERVIEW_WIDTH;
+
 							originalOverviewRuler.setLayout({
 								top: 0,
 								height: height,
@@ -274,6 +298,7 @@ export class OverviewRulerFeature extends Disposable {
 									OverviewRulerFeature.ONE_OVERVIEW_WIDTH,
 								width: OverviewRulerFeature.ONE_OVERVIEW_WIDTH,
 							});
+
 							modifiedOverviewRuler.setLayout({
 								top: 0,
 								height: height,
@@ -302,19 +327,25 @@ export class OverviewRulerFeature extends Disposable {
 								scrollHeight,
 								scrollTop,
 							);
+
 							viewportDomElement.setTop(
 								state.getSliderPosition(),
 							);
+
 							viewportDomElement.setHeight(state.getSliderSize());
 						} else {
 							viewportDomElement.setTop(0);
+
 							viewportDomElement.setHeight(0);
 						}
+
 						diffOverviewRoot.style.height = height + "px";
+
 						diffOverviewRoot.style.left =
 							width -
 							OverviewRulerFeature.ENTIRE_DIFF_OVERVIEW_WIDTH +
 							"px";
+
 						viewportDomElement.setWidth(
 							OverviewRulerFeature.ENTIRE_DIFF_OVERVIEW_WIDTH,
 						);

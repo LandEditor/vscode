@@ -18,6 +18,7 @@ declare module "vscode" {
 
 	export interface SpeechToTextEvent {
 		readonly status: SpeechToTextStatus;
+
 		readonly text?: string;
 	}
 
@@ -37,6 +38,7 @@ declare module "vscode" {
 
 	export interface TextToSpeechEvent {
 		readonly status: TextToSpeechStatus;
+
 		readonly text?: string;
 	}
 
@@ -53,6 +55,7 @@ declare module "vscode" {
 
 	export interface KeywordRecognitionEvent {
 		readonly status: KeywordRecognitionStatus;
+
 		readonly text?: string;
 	}
 
@@ -65,10 +68,12 @@ declare module "vscode" {
 			token: CancellationToken,
 			options?: SpeechToTextOptions,
 		): ProviderResult<SpeechToTextSession>;
+
 		provideTextToSpeechSession(
 			token: CancellationToken,
 			options?: TextToSpeechOptions,
 		): ProviderResult<TextToSpeechSession>;
+
 		provideKeywordRecognitionSession(
 			token: CancellationToken,
 		): ProviderResult<KeywordRecognitionSession>;

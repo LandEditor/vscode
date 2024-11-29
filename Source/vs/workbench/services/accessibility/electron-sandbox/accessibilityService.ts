@@ -30,10 +30,14 @@ interface AccessibilityMetrics {
 }
 type AccessibilityMetricsClassification = {
 	owner: "isidorn";
+
 	comment: "Helps gain an understanding of when accessibility features are being used";
+
 	enabled: {
 		classification: "SystemMetaData";
+
 		purpose: "FeatureInsight";
+
 		comment: "Whether or not accessibility features are enabled";
 	};
 };
@@ -43,6 +47,7 @@ export class NativeAccessibilityService
 	implements IAccessibilityService
 {
 	private didSendTelemetry = false;
+
 	private shouldAlwaysUnderlineAccessKeys: boolean | undefined = undefined;
 
 	constructor(
@@ -60,16 +65,19 @@ export class NativeAccessibilityService
 		private readonly nativeHostService: INativeHostService,
 	) {
 		super(contextKeyService, _layoutService, configurationService);
+
 		this.setAccessibilitySupport(
 			environmentService.window.accessibilitySupport
 				? AccessibilitySupport.Enabled
 				: AccessibilitySupport.Disabled,
 		);
 	}
+
 	override async alwaysUnderlineAccessKeys(): Promise<boolean> {
 		if (!isWindows) {
 			return false;
 		}
+
 		if (typeof this.shouldAlwaysUnderlineAccessKeys !== "boolean") {
 			const windowsKeyboardAccessibility =
 				await this.nativeHostService.windowsGetStringRegKey(
@@ -77,11 +85,14 @@ export class NativeAccessibilityService
 					"Control Panel\\Accessibility\\Keyboard Preference",
 					"On",
 				);
+
 			this.shouldAlwaysUnderlineAccessKeys =
 				windowsKeyboardAccessibility === "1";
 		}
+
 		return this.shouldAlwaysUnderlineAccessKeys;
 	}
+
 	override setAccessibilitySupport(
 		accessibilitySupport: AccessibilitySupport,
 	): void {
@@ -95,6 +106,7 @@ export class NativeAccessibilityService
 				AccessibilityMetrics,
 				AccessibilityMetricsClassification
 			>("accessibility", { enabled: true });
+
 			this.didSendTelemetry = true;
 		}
 	}
@@ -127,6 +139,7 @@ class LinuxAccessibilityContribution implements IWorkbenchContribution {
 		};
 
 		forceRendererAccessibility();
+
 		accessibilityService.onDidChangeScreenReaderOptimized(
 			forceRendererAccessibility,
 		);

@@ -260,6 +260,7 @@ registerThemingParticipant((theme, collector) => {
 		if (!color) {
 			continue;
 		}
+
 		collector.addRule(`.monaco-workbench ${ThemeIcon.asCSSSelector(icon)} {
 			color: ${theme.getColor(color)} !important;
 		}`);
@@ -267,6 +268,7 @@ registerThemingParticipant((theme, collector) => {
 		if (!retiredColor) {
 			continue;
 		}
+
 		collector.addRule(`
 			.test-explorer .computed-state.retired${ThemeIcon.asCSSSelector(icon)},
 			.testing-run-glyph.retired${ThemeIcon.asCSSSelector(icon)}{
@@ -274,6 +276,7 @@ registerThemingParticipant((theme, collector) => {
 			}
 		`);
 	}
+
 	collector.addRule(`
 		.monaco-editor .glyph-margin-widgets ${ThemeIcon.asCSSSelector(testingRunIcon)},
 		.monaco-editor .glyph-margin-widgets ${ThemeIcon.asCSSSelector(testingRunAllIcon)},

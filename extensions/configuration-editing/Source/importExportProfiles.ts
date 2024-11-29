@@ -10,8 +10,11 @@ import { agent } from "./node/net";
 
 class GitHubGistProfileContentHandler implements vscode.ProfileContentHandler {
 	readonly name = vscode.l10n.t("GitHub");
+
 	readonly description = vscode.l10n.t("gist");
+
 	private _octokit: Promise<Octokit> | undefined;
+
 	private getOctokit(): Promise<Octokit> {
 		if (!this._octokit) {
 			this._octokit = (async () => {
@@ -32,13 +35,16 @@ class GitHubGistProfileContentHandler implements vscode.ProfileContentHandler {
 				});
 			})();
 		}
+
 		return this._octokit;
 	}
+
 	async saveProfile(
 		name: string,
 		content: string,
 	): Promise<{
 		readonly id: string;
+
 		readonly link: vscode.Uri;
 	} | null> {
 		const octokit = await this.getOctokit();
@@ -57,9 +63,12 @@ class GitHubGistProfileContentHandler implements vscode.ProfileContentHandler {
 
 			return { id: result.data.id, link };
 		}
+
 		return null;
 	}
+
 	private _public_octokit: Promise<Octokit> | undefined;
+
 	private getPublicOctokit(): Promise<Octokit> {
 		if (!this._public_octokit) {
 			this._public_octokit = (async () => {
@@ -71,8 +80,10 @@ class GitHubGistProfileContentHandler implements vscode.ProfileContentHandler {
 				});
 			})();
 		}
+
 		return this._public_octokit;
 	}
+
 	async readProfile(id: string): Promise<string | null>;
 
 	async readProfile(uri: vscode.Uri): Promise<string | null>;
@@ -94,6 +105,7 @@ class GitHubGistProfileContentHandler implements vscode.ProfileContentHandler {
 		} catch (error) {
 			// ignore
 		}
+
 		return null;
 	}
 }

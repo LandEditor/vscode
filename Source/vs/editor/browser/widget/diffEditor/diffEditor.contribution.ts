@@ -88,6 +88,7 @@ for (const ctx of [
 		order: 5,
 		group: "primary",
 	});
+
 	MenuRegistry.appendMenuItem(MenuId.DiffEditorSelectionToolbar, {
 		command: {
 			id: new RevertHunkOrSelection().desc.id,

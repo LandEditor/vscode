@@ -42,6 +42,7 @@ export class StandaloneGotoSymbolQuickAccessProvider extends AbstractGotoSymbolQ
 	) {
 		super(languageFeaturesService, outlineModelService);
 	}
+
 	protected get activeTextEditorControl() {
 		return this.editorService.getFocusedCodeEditor() ?? undefined;
 	}
@@ -66,6 +67,7 @@ export class GotoSymbolAction extends EditorAction {
 			},
 		});
 	}
+
 	run(accessor: ServicesAccessor): void {
 		accessor
 			.get(IQuickInputService)

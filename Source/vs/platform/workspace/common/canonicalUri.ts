@@ -9,6 +9,7 @@ import { createDecorator } from "../../instantiation/common/instantiation.js";
 
 export interface ICanonicalUriProvider {
 	readonly scheme: string;
+
 	provideCanonicalUri(
 		uri: UriComponents,
 		targetScheme: string,
@@ -21,5 +22,6 @@ export const ICanonicalUriService = createDecorator<ICanonicalUriService>(
 
 export interface ICanonicalUriService {
 	readonly _serviceBrand: undefined;
+
 	registerCanonicalUriProvider(provider: ICanonicalUriProvider): IDisposable;
 }

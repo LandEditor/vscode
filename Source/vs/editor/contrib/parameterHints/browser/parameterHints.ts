@@ -41,7 +41,9 @@ export class ParameterHintsController
 	}
 
 	private readonly editor: ICodeEditor;
+
 	private readonly model: ParameterHintsModel;
+
 	private readonly widget: Lazy<ParameterHintsWidget>;
 
 	constructor(
@@ -65,6 +67,7 @@ export class ParameterHintsController
 			this.model.onChangedHints((newParameterHints) => {
 				if (newParameterHints) {
 					this.widget.value.show();
+
 					this.widget.value.render(newParameterHints);
 				} else {
 					this.widget.rawValue?.hide();
@@ -119,6 +122,7 @@ export class TriggerParameterHintsAction extends EditorAction {
 
 	public run(accessor: ServicesAccessor, editor: ICodeEditor): void {
 		const controller = ParameterHintsController.get(editor);
+
 		controller?.trigger({
 			triggerKind: languages.SignatureHelpTriggerKind.Invoke,
 		});

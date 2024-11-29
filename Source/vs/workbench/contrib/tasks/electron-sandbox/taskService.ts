@@ -65,7 +65,9 @@ import { ITaskSystem } from "../common/taskSystem.js";
 
 interface IWorkspaceFolderConfigurationResult {
 	workspaceFolder: IWorkspaceFolder;
+
 	config: TaskConfig.IExternalTaskRunnerConfiguration | undefined;
+
 	hasErrors: boolean;
 }
 export class TaskService extends AbstractTaskService {
@@ -183,27 +185,34 @@ export class TaskService extends AbstractTaskService {
 			remoteAgentService,
 			instantiationService,
 		);
+
 		this._register(
 			lifecycleService.onBeforeShutdown((event) =>
 				event.veto(this.beforeShutdown(), "veto.tasks"),
 			),
 		);
 	}
+
 	protected _getTaskSystem(): ITaskSystem {
 		if (this._taskSystem) {
 			return this._taskSystem;
 		}
+
 		const taskSystem = this._createTerminalTaskSystem();
+
 		this._taskSystem = taskSystem;
+
 		this._taskSystemListeners = [
 			this._taskSystem.onDidStateChange((event) => {
 				this._taskRunningState.set(this._taskSystem!.isActiveSync());
+
 				this._onDidStateChange.fire(event);
 			}),
 		];
 
 		return this._taskSystem;
 	}
+
 	protected _computeLegacyConfiguration(
 		workspaceFolder: IWorkspaceFolder,
 	): Promise<IWorkspaceFolderConfigurationResult> {
@@ -217,6 +226,7 @@ export class TaskService extends AbstractTaskService {
 				config: undefined,
 			});
 		}
+
 		if (config) {
 			return Promise.resolve({
 				workspaceFolder,
@@ -231,6 +241,7 @@ export class TaskService extends AbstractTaskService {
 			});
 		}
 	}
+
 	protected _versionAndEngineCompatible(filter?: ITaskFilter): boolean {
 		const range = filter && filter.version ? filter.version : undefined;
 
@@ -244,10 +255,12 @@ export class TaskService extends AbstractTaskService {
 				engine === ExecutionEngine.Terminal)
 		);
 	}
+
 	public beforeShutdown(): boolean | Promise<boolean> {
 		if (!this._taskSystem) {
 			return false;
 		}
+
 		if (!this._taskSystem.isActiveSync()) {
 			return false;
 		}
@@ -256,6 +269,7 @@ export class TaskService extends AbstractTaskService {
 		if (this._taskSystem instanceof TerminalTaskSystem) {
 			return false;
 		}
+
 		let terminatePromise: Promise<IConfirmationResult>;
 
 		if (this._taskSystem.canAutoTerminate()) {
@@ -275,6 +289,7 @@ export class TaskService extends AbstractTaskService {
 				),
 			});
 		}
+
 		return terminatePromise.then((res) => {
 			if (res.confirmed) {
 				return this._taskSystem!.terminateAll().then(
@@ -294,8 +309,10 @@ export class TaskService extends AbstractTaskService {
 								code = response.code;
 							}
 						}
+
 						if (success) {
 							this._taskSystem = undefined;
+
 							this._disposeTaskSystemListeners();
 
 							return false; // no veto
@@ -320,6 +337,7 @@ export class TaskService extends AbstractTaskService {
 								})
 								.then((res) => !res.confirmed);
 						}
+
 						return true; // veto
 					},
 					(err) => {
@@ -327,6 +345,7 @@ export class TaskService extends AbstractTaskService {
 					},
 				);
 			}
+
 			return true; // veto
 		});
 	}

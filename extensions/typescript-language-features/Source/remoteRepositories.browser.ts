@@ -12,6 +12,7 @@ export interface RemoteHubApi {
 	getVirtualUri(uri: Uri): Uri;
 
 	getVirtualWorkspaceUri(uri: Uri): Uri | undefined;
+
 	loadWorkspaceContents?(workspaceUri: Uri): Promise<boolean>;
 }
 namespace RemoteRepositories {
@@ -21,6 +22,7 @@ namespace RemoteRepositories {
 		if (remoteHub !== undefined) {
 			return remoteHub;
 		}
+
 		remoteHub =
 			extensions.getExtension<RemoteHubApi>(
 				"ms-vscode.remote-repositories",
@@ -31,8 +33,10 @@ namespace RemoteRepositories {
 		if (remoteHub === undefined) {
 			throw new Error(`No Remote repository extension found.`);
 		}
+
 		return remoteHub;
 	}
+
 	export function getApi(): Thenable<RemoteHubApi> {
 		return getRemoteExtension().activate();
 	}

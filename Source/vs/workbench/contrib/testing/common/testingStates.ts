@@ -7,7 +7,9 @@ import { TestResultState } from "./testTypes.js";
 
 export type TreeStateNode = {
 	statusNode: true;
+
 	state: TestResultState;
+
 	priority: number;
 };
 /**
@@ -67,6 +69,7 @@ export const maxPriority = (...states: TestResultState[]) => {
 					max = states[i];
 				}
 			}
+
 			return max;
 		}
 	}

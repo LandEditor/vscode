@@ -15,17 +15,20 @@ export function resolveSnippet(
 			if (groups?.["escape"]) {
 				return "$";
 			}
+
 			const entry = vars.get(name);
 
 			if (typeof entry !== "string") {
 				return match;
 			}
+
 			if (pattern && replacement) {
 				return entry.replace(
 					new RegExp(replaceTransformEscapes(pattern)),
 					replaceTransformEscapes(replacement),
 				);
 			}
+
 			return entry;
 		},
 	);

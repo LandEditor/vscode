@@ -41,6 +41,7 @@ export function parseServerMode(
 	if (!mode) {
 		return undefined;
 	}
+
 	switch (mode.toLowerCase()) {
 		case "semantic":
 			return LanguageServiceMode.Semantic;

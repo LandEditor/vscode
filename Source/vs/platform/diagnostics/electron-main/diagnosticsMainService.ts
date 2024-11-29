@@ -35,6 +35,7 @@ export const IDiagnosticsMainService =
 
 export interface IRemoteDiagnosticOptions {
 	includeProcesses?: boolean;
+
 	includeWorkspaceMetadata?: boolean;
 }
 export interface IDiagnosticsMainService {
@@ -57,6 +58,7 @@ export class DiagnosticsMainService implements IDiagnosticsMainService {
 		@ILogService
 		private readonly logService: ILogService,
 	) {}
+
 	async getRemoteDiagnostics(
 		options: IRemoteDiagnosticOptions,
 	): Promise<(IRemoteDiagnosticInfo | IRemoteDiagnosticError)[]> {
@@ -71,6 +73,7 @@ export class DiagnosticsMainService implements IDiagnosticsMainService {
 				if (!remoteAuthority) {
 					return undefined;
 				}
+
 				const replyChannel = `vscode:getDiagnosticInfoResponse${window.id}`;
 
 				const args: IDiagnosticInfoOptions = {
@@ -87,6 +90,7 @@ export class DiagnosticsMainService implements IDiagnosticsMainService {
 							CancellationToken.None,
 							{ replyChannel, args },
 						);
+
 						validatedIpcMain.once(
 							replyChannel,
 							(_: IpcEvent, data: IRemoteDiagnosticInfo) => {
@@ -97,6 +101,7 @@ export class DiagnosticsMainService implements IDiagnosticsMainService {
 										errorMessage: `Unable to resolve connection to '${remoteAuthority}'.`,
 									});
 								}
+
 								resolve(data);
 							},
 						);
@@ -116,6 +121,7 @@ export class DiagnosticsMainService implements IDiagnosticsMainService {
 			(x): x is IRemoteDiagnosticInfo | IRemoteDiagnosticError => !!x,
 		);
 	}
+
 	async getMainDiagnostics(): Promise<IMainProcessDiagnostics> {
 		this.logService.trace(
 			"Received request for main process info from other instance.",
@@ -132,11 +138,13 @@ export class DiagnosticsMainService implements IDiagnosticsMainService {
 				windows.push(this.browserWindowToInfo(window));
 			}
 		}
+
 		const pidToNames: IProcessDiagnostics[] = [];
 
 		for (const { pid, name } of UtilityProcess.getAll()) {
 			pidToNames.push({ pid, name });
 		}
+
 		return {
 			mainPID: process.pid,
 			mainArguments: process.argv.slice(1),
@@ -146,6 +154,7 @@ export class DiagnosticsMainService implements IDiagnosticsMainService {
 			gpuFeatureStatus: app.getGPUFeatureStatus(),
 		};
 	}
+
 	private async codeWindowToInfo(
 		window: ICodeWindow,
 	): Promise<IWindowDiagnostics> {
@@ -159,6 +168,7 @@ export class DiagnosticsMainService implements IDiagnosticsMainService {
 			window.remoteAuthority,
 		);
 	}
+
 	private browserWindowToInfo(
 		window: BrowserWindow,
 		folderURIs: URI[] = [],
@@ -172,6 +182,7 @@ export class DiagnosticsMainService implements IDiagnosticsMainService {
 			remoteAuthority,
 		};
 	}
+
 	private async getFolderURIs(window: ICodeWindow): Promise<URI[]> {
 		const folderURIs: URI[] = [];
 
@@ -186,11 +197,13 @@ export class DiagnosticsMainService implements IDiagnosticsMainService {
 				); // workspace folders can only be shown for local (resolved) workspaces
 			if (resolvedWorkspace) {
 				const rootFolders = resolvedWorkspace.folders;
+
 				rootFolders.forEach((root) => {
 					folderURIs.push(root.uri);
 				});
 			}
 		}
+
 		return folderURIs;
 	}
 }

@@ -41,13 +41,16 @@ class ManageExtensionAction extends Action {
 @extHostNamedCustomer(MainContext.MainThreadProgress)
 export class MainThreadProgress implements MainThreadProgressShape {
 	private readonly _progressService: IProgressService;
+
 	private _progress = new Map<
 		number,
 		{
 			resolve: () => void;
+
 			progress: IProgress<IProgressStep>;
 		}
 	>();
+
 	private readonly _proxy: ExtHostProgressShape;
 
 	constructor(
@@ -58,12 +61,16 @@ export class MainThreadProgress implements MainThreadProgressShape {
 		private readonly _commandService: ICommandService,
 	) {
 		this._proxy = extHostContext.getProxy(ExtHostContext.ExtHostProgress);
+
 		this._progressService = progressService;
 	}
+
 	dispose(): void {
 		this._progress.forEach((handle) => handle.resolve());
+
 		this._progress.clear();
 	}
+
 	async $startProgress(
 		handle: number,
 		options: IProgressOptions,
@@ -83,14 +90,17 @@ export class MainThreadProgress implements MainThreadProgressShape {
 					),
 				],
 			};
+
 			options = notificationOptions;
 		}
+
 		this._progressService.withProgress(options, task, () =>
 			this._proxy.$acceptProgressCanceled(handle),
 		);
 	}
 	$progressReport(handle: number, message: IProgressStep): void {
 		const entry = this._progress.get(handle);
+
 		entry?.progress.report(message);
 	}
 	$progressEnd(handle: number): void {
@@ -98,9 +108,11 @@ export class MainThreadProgress implements MainThreadProgressShape {
 
 		if (entry) {
 			entry.resolve();
+
 			this._progress.delete(handle);
 		}
 	}
+
 	private _createTask(handle: number) {
 		return (progress: IProgress<IProgressStep>) => {
 			return new Promise<void>((resolve) => {

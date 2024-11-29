@@ -43,6 +43,7 @@ import { ResolvedKeybindingItem } from "./resolvedKeybindingItem.js";
 
 interface CurrentChord {
 	keypress: string;
+
 	label: string | null;
 }
 
@@ -54,6 +55,7 @@ export abstract class AbstractKeybindingService
 	implements IKeybindingService
 {
 	public _serviceBrand: undefined;
+
 	protected readonly _onDidUpdateKeybindings: Emitter<void> = this._register(
 		new Emitter<void>(),
 	);
@@ -71,16 +73,25 @@ export abstract class AbstractKeybindingService
 	 * would invoke the command bound by the keybinding
 	 */
 	private _currentChords: CurrentChord[];
+
 	private _currentChordChecker: IntervalTimer;
+
 	private _currentChordStatusMessage: IDisposable | null;
+
 	private _ignoreSingleModifiers: KeybindingModifierSet;
+
 	private _currentSingleModifier: SingleModifierChord | null;
+
 	private _currentSingleModifierClearTimeout: TimeoutTimer;
+
 	protected _currentlyDispatchingCommandId: string | null;
+
 	protected _logging: boolean;
+
 	public get inChordMode(): boolean {
 		return this._currentChords.length > 0;
 	}
+
 	constructor(
 		private _contextKeyService: IContextKeyService,
 		protected _commandService: ICommandService,
@@ -89,56 +100,80 @@ export abstract class AbstractKeybindingService
 		protected _logService: ILogService,
 	) {
 		super();
+
 		this._currentChords = [];
+
 		this._currentChordChecker = new IntervalTimer();
+
 		this._currentChordStatusMessage = null;
+
 		this._ignoreSingleModifiers = KeybindingModifierSet.EMPTY;
+
 		this._currentSingleModifier = null;
+
 		this._currentSingleModifierClearTimeout = new TimeoutTimer();
+
 		this._currentlyDispatchingCommandId = null;
+
 		this._logging = false;
 	}
+
 	public override dispose(): void {
 		super.dispose();
 	}
+
 	protected abstract _getResolver(): KeybindingResolver;
+
 	protected abstract _documentHasFocus(): boolean;
+
 	public abstract resolveKeybinding(
 		keybinding: Keybinding,
 	): ResolvedKeybinding[];
+
 	public abstract resolveKeyboardEvent(
 		keyboardEvent: IKeyboardEvent,
 	): ResolvedKeybinding;
+
 	public abstract resolveUserBinding(
 		userBinding: string,
 	): ResolvedKeybinding[];
+
 	public abstract registerSchemaContribution(
 		contribution: KeybindingsSchemaContribution,
 	): void;
+
 	public abstract _dumpDebugInfo(): string;
+
 	public abstract _dumpDebugInfoJSON(): string;
+
 	public getDefaultKeybindingsContent(): string {
 		return "";
 	}
+
 	public toggleLogging(): boolean {
 		this._logging = !this._logging;
 
 		return this._logging;
 	}
+
 	protected _log(str: string): void {
 		if (this._logging) {
 			this._logService.info(`[KeybindingService]: ${str}`);
 		}
 	}
+
 	public getDefaultKeybindings(): readonly ResolvedKeybindingItem[] {
 		return this._getResolver().getDefaultKeybindings();
 	}
+
 	public getKeybindings(): readonly ResolvedKeybindingItem[] {
 		return this._getResolver().getKeybindings();
 	}
+
 	public customKeybindingsCount(): number {
 		return 0;
 	}
+
 	public lookupKeybindings(commandId: string): ResolvedKeybinding[] {
 		return arrays.coalesce(
 			this._getResolver()
@@ -146,6 +181,7 @@ export abstract class AbstractKeybindingService
 				.map((item) => item.resolvedKeybinding),
 		);
 	}
+
 	public lookupKeybinding(
 		commandId: string,
 		context?: IContextKeyService,
@@ -158,8 +194,10 @@ export abstract class AbstractKeybindingService
 		if (!result) {
 			return undefined;
 		}
+
 		return result.resolvedKeybinding;
 	}
+
 	public dispatchEvent(
 		e: IKeyboardEvent,
 		target: IContextKeyServiceTarget,
@@ -183,6 +221,7 @@ export abstract class AbstractKeybindingService
 
 			return NoMatchingKb;
 		}
+
 		const [firstChord] = keybinding.getDispatchChords();
 
 		if (firstChord === null) {
@@ -191,6 +230,7 @@ export abstract class AbstractKeybindingService
 
 			return NoMatchingKb;
 		}
+
 		const contextValue = this._contextKeyService.getContext(target);
 
 		const currentChords = this._currentChords.map(
@@ -203,8 +243,10 @@ export abstract class AbstractKeybindingService
 			firstChord,
 		);
 	}
+
 	private _scheduleLeaveChordMode(): void {
 		const chordLastInteractedTime = Date.now();
+
 		this._currentChordChecker.cancelAndSet(() => {
 			if (!this._documentHasFocus()) {
 				// Focus has been lost => leave chord mode
@@ -212,12 +254,14 @@ export abstract class AbstractKeybindingService
 
 				return;
 			}
+
 			if (Date.now() - chordLastInteractedTime > 5000) {
 				// 5 seconds elapsed => leave chord mode
 				this._leaveChordMode();
 			}
 		}, 500);
 	}
+
 	private _expectAnotherChord(
 		firstChord: string,
 		keypressLabel: string | null,
@@ -248,6 +292,7 @@ export abstract class AbstractKeybindingService
 				const fullKeypressLabel = this._currentChords
 					.map(({ label }) => label)
 					.join(", ");
+
 				this._currentChordStatusMessage =
 					this._notificationService.status(
 						nls.localize(
@@ -258,21 +303,28 @@ export abstract class AbstractKeybindingService
 					);
 			}
 		}
+
 		this._scheduleLeaveChordMode();
 
 		if (IME.enabled) {
 			IME.disable();
 		}
 	}
+
 	private _leaveChordMode(): void {
 		if (this._currentChordStatusMessage) {
 			this._currentChordStatusMessage.dispose();
+
 			this._currentChordStatusMessage = null;
 		}
+
 		this._currentChordChecker.cancel();
+
 		this._currentChords = [];
+
 		IME.enable();
 	}
+
 	public dispatchByUserSettingsLabel(
 		userSettingsLabel: string,
 		target: IContextKeyServiceTarget,
@@ -293,6 +345,7 @@ export abstract class AbstractKeybindingService
 			);
 		}
 	}
+
 	protected _dispatch(
 		e: IKeyboardEvent,
 		target: IContextKeyServiceTarget,
@@ -303,6 +356,7 @@ export abstract class AbstractKeybindingService
 			/*isSingleModiferChord*/ false,
 		);
 	}
+
 	protected _singleModifierDispatch(
 		e: IKeyboardEvent,
 		target: IContextKeyServiceTarget,
@@ -316,12 +370,16 @@ export abstract class AbstractKeybindingService
 				this._log(
 					`+ Ignoring single modifier ${singleModifier} due to it being pressed together with other keys.`,
 				);
+
 				this._ignoreSingleModifiers = KeybindingModifierSet.EMPTY;
+
 				this._currentSingleModifierClearTimeout.cancel();
+
 				this._currentSingleModifier = null;
 
 				return false;
 			}
+
 			this._ignoreSingleModifiers = KeybindingModifierSet.EMPTY;
 
 			if (this._currentSingleModifier === null) {
@@ -329,22 +387,28 @@ export abstract class AbstractKeybindingService
 				this._log(
 					`+ Storing single modifier for possible chord ${singleModifier}.`,
 				);
+
 				this._currentSingleModifier = singleModifier;
+
 				this._currentSingleModifierClearTimeout.cancelAndSet(() => {
 					this._log(
 						`+ Clearing single modifier due to 300ms elapsed.`,
 					);
+
 					this._currentSingleModifier = null;
 				}, 300);
 
 				return false;
 			}
+
 			if (singleModifier === this._currentSingleModifier) {
 				// bingo!
 				this._log(
 					`/ Dispatching single modifier chord ${singleModifier} ${singleModifier}`,
 				);
+
 				this._currentSingleModifierClearTimeout.cancel();
+
 				this._currentSingleModifier = null;
 
 				return this._doDispatch(
@@ -353,10 +417,13 @@ export abstract class AbstractKeybindingService
 					/*isSingleModiferChord*/ true,
 				);
 			}
+
 			this._log(
 				`+ Clearing single modifier due to modifier mismatch: ${this._currentSingleModifier} ${singleModifier}`,
 			);
+
 			this._currentSingleModifierClearTimeout.cancel();
+
 			this._currentSingleModifier = null;
 
 			return false;
@@ -364,16 +431,20 @@ export abstract class AbstractKeybindingService
 		// When pressing a modifier and holding it pressed with any other modifier or key combination,
 		// the pressed modifiers should no longer be considered for single modifier dispatch.
 		const [firstChord] = keybinding.getChords();
+
 		this._ignoreSingleModifiers = new KeybindingModifierSet(firstChord);
 
 		if (this._currentSingleModifier !== null) {
 			this._log(`+ Clearing single modifier due to other key up.`);
 		}
+
 		this._currentSingleModifierClearTimeout.cancel();
+
 		this._currentSingleModifier = null;
 
 		return false;
 	}
+
 	private _doDispatch(
 		userKeypress: ResolvedKeybinding,
 		target: IContextKeyServiceTarget,
@@ -387,6 +458,7 @@ export abstract class AbstractKeybindingService
 
 			return false;
 		}
+
 		let userPressedChord: string | null = null;
 
 		let currentChords: string[] | null = null;
@@ -397,12 +469,16 @@ export abstract class AbstractKeybindingService
 			// hence we disregard `_currentChord` and use the same modifier instead.
 			const [dispatchKeyname] =
 				userKeypress.getSingleModifierDispatchChords();
+
 			userPressedChord = dispatchKeyname;
+
 			currentChords = dispatchKeyname ? [dispatchKeyname] : []; // TODO@ulugbekna: in the `else` case we assign an empty array - make sure `resolve` can handle an empty array well
 		} else {
 			[userPressedChord] = userKeypress.getDispatchChords();
+
 			currentChords = this._currentChords.map(({ keypress }) => keypress);
 		}
+
 		if (userPressedChord === null) {
 			this._log(
 				`\\ Keyboard event cannot be dispatched in keydown phase.`,
@@ -410,6 +486,7 @@ export abstract class AbstractKeybindingService
 			// cannot be dispatched, probably only modifier keys
 			return shouldPreventDefault;
 		}
+
 		const contextValue = this._contextKeyService.getContext(target);
 
 		const keypressLabel = userKeypress.getLabel();
@@ -432,9 +509,11 @@ export abstract class AbstractKeybindingService
 					const currentChordsLabel = this._currentChords
 						.map(({ label }) => label)
 						.join(", ");
+
 					this._log(
 						`+ Leaving multi-chord mode: Nothing bound to "${currentChordsLabel}, ${keypressLabel}".`,
 					);
+
 					this._notificationService.status(
 						nls.localize(
 							"missing.chord",
@@ -444,19 +523,26 @@ export abstract class AbstractKeybindingService
 						),
 						{ hideAfter: 10 * 1000 /* 10s */ },
 					);
+
 					this._leaveChordMode();
+
 					shouldPreventDefault = true;
 				}
+
 				return shouldPreventDefault;
 			}
+
 			case ResultKind.MoreChordsNeeded: {
 				this._logService.trace(
 					"KeybindingService#dispatch",
 					keypressLabel,
 					`[ Several keybindings match - more chords needed ]`,
 				);
+
 				shouldPreventDefault = true;
+
 				this._expectAnotherChord(userPressedChord, keypressLabel);
+
 				this._log(
 					this._currentChords.length === 1
 						? `+ Entering multi-chord mode...`
@@ -465,6 +551,7 @@ export abstract class AbstractKeybindingService
 
 				return shouldPreventDefault;
 			}
+
 			case ResultKind.KbFound: {
 				this._logService.trace(
 					"KeybindingService#dispatch",
@@ -480,9 +567,11 @@ export abstract class AbstractKeybindingService
 						const currentChordsLabel = this._currentChords
 							.map(({ label }) => label)
 							.join(", ");
+
 						this._log(
 							`+ Leaving chord mode: Nothing bound to "${currentChordsLabel}, ${keypressLabel}".`,
 						);
+
 						this._notificationService.status(
 							nls.localize(
 								"missing.chord",
@@ -492,17 +581,22 @@ export abstract class AbstractKeybindingService
 							),
 							{ hideAfter: 10 * 1000 /* 10s */ },
 						);
+
 						this._leaveChordMode();
+
 						shouldPreventDefault = true;
 					}
 				} else {
 					if (this.inChordMode) {
 						this._leaveChordMode();
 					}
+
 					if (!resolveResult.isBubble) {
 						shouldPreventDefault = true;
 					}
+
 					this._log(`+ Invoking command ${resolveResult.commandId}.`);
+
 					this._currentlyDispatchingCommandId =
 						resolveResult.commandId;
 
@@ -526,6 +620,7 @@ export abstract class AbstractKeybindingService
 					} finally {
 						this._currentlyDispatchingCommandId = null;
 					}
+
 					if (!HIGH_FREQ_COMMANDS.test(resolveResult.commandId)) {
 						this._telemetryService.publicLog2<
 							WorkbenchActionExecutedEvent,
@@ -539,13 +634,16 @@ export abstract class AbstractKeybindingService
 						});
 					}
 				}
+
 				return shouldPreventDefault;
 			}
 		}
 	}
+
 	abstract enableKeybindingHoldMode(
 		commandId: string,
 	): Promise<void> | undefined;
+
 	mightProducePrintableCharacter(event: IKeyboardEvent): boolean {
 		if (event.ctrlKey || event.metaKey) {
 			// ignore ctrl/cmd-combination but not shift/alt-combinatios
@@ -559,22 +657,31 @@ export abstract class AbstractKeybindingService
 		) {
 			return true;
 		}
+
 		return false;
 	}
 }
 class KeybindingModifierSet {
 	public static EMPTY = new KeybindingModifierSet(null);
+
 	private readonly _ctrlKey: boolean;
+
 	private readonly _shiftKey: boolean;
+
 	private readonly _altKey: boolean;
+
 	private readonly _metaKey: boolean;
 
 	constructor(source: ResolvedChord | null) {
 		this._ctrlKey = source ? source.ctrlKey : false;
+
 		this._shiftKey = source ? source.shiftKey : false;
+
 		this._altKey = source ? source.altKey : false;
+
 		this._metaKey = source ? source.metaKey : false;
 	}
+
 	has(modifier: SingleModifierChord) {
 		switch (modifier) {
 			case "ctrl":

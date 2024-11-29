@@ -26,9 +26,12 @@ export class MainThreadNotebookDocuments
 	implements MainThreadNotebookDocumentsShape
 {
 	private readonly _disposables = new DisposableStore();
+
 	private readonly _proxy: ExtHostNotebookDocumentsShape;
+
 	private readonly _documentEventListenersMapping =
 		new ResourceMap<DisposableStore>();
+
 	private readonly _modelReferenceCollection: BoundModelReferenceCollection;
 
 	constructor(
@@ -41,6 +44,7 @@ export class MainThreadNotebookDocuments
 		this._proxy = extHostContext.getProxy(
 			ExtHostContext.ExtHostNotebookDocuments,
 		);
+
 		this._modelReferenceCollection = new BoundModelReferenceCollection(
 			this._uriIdentityService.extUri,
 		);
@@ -53,6 +57,7 @@ export class MainThreadNotebookDocuments
 				),
 			),
 		);
+
 		this._disposables.add(
 			this._notebookEditorModelResolverService.onDidSaveNotebook((e) =>
 				this._proxy.$acceptModelSaved(e),
@@ -65,14 +70,19 @@ export class MainThreadNotebookDocuments
 			}),
 		);
 	}
+
 	dispose(): void {
 		this._disposables.dispose();
+
 		this._modelReferenceCollection.dispose();
+
 		dispose(this._documentEventListenersMapping.values());
 	}
+
 	handleNotebooksAdded(notebooks: readonly NotebookTextModel[]): void {
 		for (const textModel of notebooks) {
 			const disposableStore = new DisposableStore();
+
 			disposableStore.add(
 				textModel.onDidChangeContent((event) => {
 					const eventDto: NotebookCellsChangedEventDto = {
@@ -148,6 +158,7 @@ export class MainThreadNotebookDocuments
 								break;
 						}
 					}
+
 					const hasDocumentMetadataChangeEvent = event.rawEvents.find(
 						(e) =>
 							e.kind ===
@@ -168,20 +179,25 @@ export class MainThreadNotebookDocuments
 					);
 				}),
 			);
+
 			this._documentEventListenersMapping.set(
 				textModel.uri,
 				disposableStore,
 			);
 		}
 	}
+
 	handleNotebooksRemoved(uris: URI[]): void {
 		for (const uri of uris) {
 			this._documentEventListenersMapping.get(uri)?.dispose();
+
 			this._documentEventListenersMapping.delete(uri);
 		}
 	}
+
 	async $tryCreateNotebook(options: {
 		viewType: string;
+
 		content?: NotebookDataDto;
 	}): Promise<UriComponents> {
 		if (options.content) {
@@ -199,12 +215,14 @@ export class MainThreadNotebookDocuments
 			// apply content changes... slightly HACKY -> this triggers a change event
 			if (options.content) {
 				const data = NotebookDto.fromNotebookDataDto(options.content);
+
 				ref.object.notebook.reset(
 					data.cells,
 					data.metadata,
 					ref.object.notebook.transientOptions,
 				);
 			}
+
 			return ref.object.notebook.uri;
 		} else {
 			// If we aren't adding content, we don't need to resolve the full editor model yet.
@@ -217,6 +235,7 @@ export class MainThreadNotebookDocuments
 			return notebook.uri;
 		}
 	}
+
 	async $tryOpenNotebook(uriComponents: UriComponents): Promise<URI> {
 		const uri = URI.revive(uriComponents);
 
@@ -232,16 +251,19 @@ export class MainThreadNotebookDocuments
 				ref.dispose();
 			});
 		}
+
 		this._modelReferenceCollection.add(uri, ref);
 
 		return uri;
 	}
+
 	async $trySaveNotebook(uriComponents: UriComponents) {
 		const uri = URI.revive(uriComponents);
 
 		const ref = await this._notebookEditorModelResolverService.resolve(uri);
 
 		const saveResult = await ref.object.save();
+
 		ref.dispose();
 
 		return saveResult;

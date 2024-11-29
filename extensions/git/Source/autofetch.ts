@@ -22,18 +22,25 @@ import { eventToPromise, filterEvent, onceEvent } from "./util";
 
 export class AutoFetcher {
 	private static DidInformUser = "autofetch.didInformUser";
+
 	private _onDidChange = new EventEmitter<boolean>();
+
 	private onDidChange = this._onDidChange.event;
+
 	private _enabled: boolean = false;
+
 	private _fetchAll: boolean = false;
 
 	get enabled(): boolean {
 		return this._enabled;
 	}
+
 	set enabled(enabled: boolean) {
 		this._enabled = enabled;
+
 		this._onDidChange.fire(enabled);
 	}
+
 	private disposables: Disposable[] = [];
 
 	constructor(
@@ -45,6 +52,7 @@ export class AutoFetcher {
 			this,
 			this.disposables,
 		);
+
 		this.onConfiguration();
 
 		const onGoodRemoteOperation = filterEvent(
@@ -53,12 +61,14 @@ export class AutoFetcher {
 		);
 
 		const onFirstGoodRemoteOperation = onceEvent(onGoodRemoteOperation);
+
 		onFirstGoodRemoteOperation(
 			this.onFirstGoodRemoteOperation,
 			this,
 			this.disposables,
 		);
 	}
+
 	private async onFirstGoodRemoteOperation(): Promise<void> {
 		const didInformUser = !this.globalState.get<boolean>(
 			AutoFetcher.DidInformUser,
@@ -67,11 +77,13 @@ export class AutoFetcher {
 		if (this.enabled && !didInformUser) {
 			this.globalState.update(AutoFetcher.DidInformUser, true);
 		}
+
 		const shouldInformUser = !this.enabled && didInformUser;
 
 		if (!shouldInformUser) {
 			return;
 		}
+
 		const yes: MessageItem = { title: l10n.t("Yes") };
 
 		const no: MessageItem = {
@@ -95,19 +107,24 @@ export class AutoFetcher {
 		if (result === askLater) {
 			return;
 		}
+
 		if (result === yes) {
 			const gitConfig = workspace.getConfiguration(
 				"git",
 				Uri.file(this.repository.root),
 			);
+
 			gitConfig.update("autofetch", true, ConfigurationTarget.Global);
 		}
+
 		this.globalState.update(AutoFetcher.DidInformUser, true);
 	}
+
 	private onConfiguration(e?: ConfigurationChangeEvent): void {
 		if (e !== undefined && !e.affectsConfiguration("git.autofetch")) {
 			return;
 		}
+
 		const gitConfig = workspace.getConfiguration(
 			"git",
 			Uri.file(this.repository.root),
@@ -116,12 +133,14 @@ export class AutoFetcher {
 		switch (gitConfig.get<boolean | "all">("autofetch")) {
 			case true:
 				this._fetchAll = false;
+
 				this.enable();
 
 				break;
 
 			case "all":
 				this._fetchAll = true;
+
 				this.enable();
 
 				break;
@@ -129,21 +148,27 @@ export class AutoFetcher {
 			case false:
 			default:
 				this._fetchAll = false;
+
 				this.disable();
 
 				break;
 		}
 	}
+
 	enable(): void {
 		if (this.enabled) {
 			return;
 		}
+
 		this.enabled = true;
+
 		this.run();
 	}
+
 	disable(): void {
 		this.enabled = false;
 	}
+
 	private async run(): Promise<void> {
 		while (this.enabled) {
 			await this.repository.whenIdleAndFocused();
@@ -151,6 +176,7 @@ export class AutoFetcher {
 			if (!this.enabled) {
 				return;
 			}
+
 			try {
 				if (this._fetchAll) {
 					await this.repository.fetchAll({ silent: true });
@@ -162,9 +188,11 @@ export class AutoFetcher {
 					this.disable();
 				}
 			}
+
 			if (!this.enabled) {
 				return;
 			}
+
 			const period =
 				workspace
 					.getConfiguration("git", Uri.file(this.repository.root))
@@ -175,11 +203,14 @@ export class AutoFetcher {
 			const whenDisabled = eventToPromise(
 				filterEvent(this.onDidChange, (enabled) => !enabled),
 			);
+
 			await Promise.race([timeout, whenDisabled]);
 		}
 	}
+
 	dispose(): void {
 		this.disable();
+
 		this.disposables.forEach((d) => d.dispose());
 	}
 }

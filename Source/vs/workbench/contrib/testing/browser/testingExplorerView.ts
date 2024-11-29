@@ -191,19 +191,27 @@ const enum LastFocusState {
 
 export class TestingExplorerView extends ViewPane {
 	public viewModel!: TestingExplorerViewModel;
+
 	private readonly filterActionBar = this._register(new MutableDisposable());
+
 	private container!: HTMLElement;
+
 	private treeHeader!: HTMLElement;
+
 	private readonly discoveryProgress = this._register(
 		new MutableDisposable<UnmanagedProgress>(),
 	);
+
 	private readonly filter = this._register(
 		new MutableDisposable<TestingExplorerFilter>(),
 	);
+
 	private readonly filterFocusListener = this._register(
 		new MutableDisposable(),
 	);
+
 	private readonly dimensions = { width: 0, height: 0 };
+
 	private lastFocusState = LastFocusState.Input;
 
 	public get focusedTreeElements() {
@@ -245,6 +253,7 @@ export class TestingExplorerView extends ViewPane {
 		const relayout = this._register(
 			new RunOnceScheduler(() => this.layoutBody(), 1),
 		);
+
 		this._register(
 			this.onDidChangeViewWelcomeState(() => {
 				if (!this.shouldShowWelcome()) {
@@ -319,8 +328,10 @@ export class TestingExplorerView extends ViewPane {
 								item,
 							)
 						: canUseProfileWithTest(profileOrBitset, item);
+
 				runnableWithProfileOrBitset.set(item, value);
 			}
+
 			return value;
 		};
 
@@ -344,6 +355,7 @@ export class TestingExplorerView extends ViewPane {
 				if (alreadyIncluded) {
 					exclude.push(element.test);
 				}
+
 				return;
 			}
 
@@ -370,6 +382,7 @@ export class TestingExplorerView extends ViewPane {
 				visibleRunnableChildren !== 1
 			) {
 				include.add(element.test);
+
 				alreadyIncluded = true;
 			}
 
@@ -388,7 +401,9 @@ export class TestingExplorerView extends ViewPane {
 						// avoid adding an item if its parent is already included
 						for (
 							let i: TestItemTreeElement | null = node;
+
 							i;
+
 							i = i.parent
 						) {
 							if (include.has(i.test)) {
@@ -397,6 +412,7 @@ export class TestingExplorerView extends ViewPane {
 						}
 
 						include.add(node.test);
+
 						node.children.forEach((c) => attempt(c, true));
 					}
 				}
@@ -438,6 +454,7 @@ export class TestingExplorerView extends ViewPane {
 					visibleChildren * 2 >= element.children.size
 				) {
 					include.add(element.test);
+
 					element.children.forEach((c) => attempt(c, true));
 				} else {
 					element.children.forEach((c) => attempt(c, false));
@@ -452,6 +469,7 @@ export class TestingExplorerView extends ViewPane {
 
 	override render(): void {
 		super.render();
+
 		this._register(
 			registerNavigableContainer({
 				name: "testingExplorerView",
@@ -477,16 +495,19 @@ export class TestingExplorerView extends ViewPane {
 		super.renderBody(container);
 
 		this.container = dom.append(container, dom.$(".test-explorer"));
+
 		this.treeHeader = dom.append(
 			this.container,
 			dom.$(".test-explorer-header"),
 		);
+
 		this.filterActionBar.value = this.createFilterActionBar();
 
 		const messagesContainer = dom.append(
 			this.treeHeader,
 			dom.$(".result-summary-container"),
 		);
+
 		this._register(
 			this.instantiationService.createInstance(
 				ResultSummaryView,
@@ -498,22 +519,27 @@ export class TestingExplorerView extends ViewPane {
 			this.container,
 			dom.$(".test-explorer-tree"),
 		);
+
 		this.viewModel = this.instantiationService.createInstance(
 			TestingExplorerViewModel,
 			listContainer,
 			this.onDidChangeBodyVisibility,
 		);
+
 		this._register(
 			this.viewModel.tree.onDidFocus(
 				() => (this.lastFocusState = LastFocusState.Tree),
 			),
 		);
+
 		this._register(
 			this.viewModel.onChangeWelcomeVisibility(() =>
 				this._onDidChangeViewWelcomeState.fire(),
 			),
 		);
+
 		this._register(this.viewModel);
+
 		this._onDidChangeViewWelcomeState.fire();
 	}
 
@@ -529,6 +555,7 @@ export class TestingExplorerView extends ViewPane {
 					action,
 					options,
 				);
+
 				this.filterFocusListener.value = this.filter.value.onDidFocus(
 					() => (this.lastFocusState = LastFocusState.Input),
 				);
@@ -574,7 +601,9 @@ export class TestingExplorerView extends ViewPane {
 
 				if (!hasAdded) {
 					hasAdded = true;
+
 					participatingGroups++;
+
 					profileActions.push(
 						new Action(
 							`${controller.id}.$root`,
@@ -587,6 +616,7 @@ export class TestingExplorerView extends ViewPane {
 
 				hasConfigurable =
 					hasConfigurable || profile.hasConfigurationHandler;
+
 				profileActions.push(
 					new Action(
 						`${controller.id}.${profile.profileId}`,
@@ -602,6 +632,7 @@ export class TestingExplorerView extends ViewPane {
 						() => {
 							const { include, exclude } =
 								this.getTreeIncludeExclude(profile);
+
 							this.testService.runResolvedTests({
 								exclude: exclude.map((e) => e.item.extId),
 								group: profile.group,
@@ -626,12 +657,15 @@ export class TestingExplorerView extends ViewPane {
 		if (group === TestRunProfileBitset.Run) {
 			contextKeys.push(["testing.profile.context.group", "run"]);
 		}
+
 		if (group === TestRunProfileBitset.Debug) {
 			contextKeys.push(["testing.profile.context.group", "debug"]);
 		}
+
 		if (group === TestRunProfileBitset.Coverage) {
 			contextKeys.push(["testing.profile.context.group", "coverage"]);
 		}
+
 		const key = this.contextKeyService.createOverlay(contextKeys);
 
 		const menu = this.menuService.getMenuActions(
@@ -744,7 +778,9 @@ export class TestingExplorerView extends ViewPane {
 				this.getActionViewItem(action, options),
 			triggerKeys: { keyDown: false, keys: [] },
 		});
+
 		bar.push(new Action(TestCommandId.FilterAction));
+
 		bar.getContainer().classList.add("testing-filter-action-bar");
 
 		return bar;
@@ -769,10 +805,15 @@ export class TestingExplorerView extends ViewPane {
 		width = this.dimensions.width,
 	): void {
 		super.layoutBody(height, width);
+
 		this.dimensions.height = height;
+
 		this.dimensions.width = width;
+
 		this.container.style.height = `${height}px`;
+
 		this.viewModel?.layout(height - this.treeHeader.clientHeight, width);
+
 		this.filter.value?.layout(width);
 	}
 }
@@ -781,13 +822,19 @@ const SUMMARY_RENDER_INTERVAL = 200;
 
 class ResultSummaryView extends Disposable {
 	private elementsWereAttached = false;
+
 	private badgeType: TestingCountBadge;
+
 	private lastBadge?: NumberBadge | IconBadge;
+
 	private countHover: IManagedHover;
+
 	private readonly badgeDisposable = this._register(new MutableDisposable());
+
 	private readonly renderLoop = this._register(
 		new RunOnceScheduler(() => this.render(), SUMMARY_RENDER_INTERVAL),
 	);
+
 	private readonly elements = dom.h("div.result-summary", [
 		dom.h("div@status"),
 		dom.h("div@count"),
@@ -812,13 +859,16 @@ class ResultSummaryView extends Disposable {
 		this.badgeType = configurationService.getValue<TestingCountBadge>(
 			TestingConfigKeys.CountBadge,
 		);
+
 		this._register(resultService.onResultsChanged(this.render, this));
+
 		this._register(
 			configurationService.onDidChangeConfiguration((e) => {
 				if (e.affectsConfiguration(TestingConfigKeys.CountBadge)) {
 					this.badgeType = configurationService.getValue(
 						TestingConfigKeys.CountBadge,
 					);
+
 					this.render();
 				}
 			}),
@@ -838,6 +888,7 @@ class ResultSummaryView extends Disposable {
 					createActionViewItem(instantiationService, action, options),
 			}),
 		);
+
 		ab.push(
 			instantiationService.createInstance(
 				MenuItemAction,
@@ -861,12 +912,15 @@ class ResultSummaryView extends Disposable {
 		if (!results.length) {
 			if (this.elementsWereAttached) {
 				root.remove();
+
 				this.elementsWereAttached = false;
 			}
+
 			this.container.innerText = localize(
 				"noResults",
 				"No test results yet.",
 			);
+
 			this.badgeDisposable.clear();
 
 			return;
@@ -878,11 +932,15 @@ class ResultSummaryView extends Disposable {
 
 		if (live.length) {
 			status.className = ThemeIcon.asClassName(spinningLoading);
+
 			counts = collectTestStateCounts(true, live);
+
 			this.renderLoop.schedule();
 
 			const last = live[live.length - 1];
+
 			duration.textContent = formatDuration(Date.now() - last.startedAt);
+
 			rerun.style.display = "none";
 		} else {
 			const last = results[0];
@@ -890,26 +948,34 @@ class ResultSummaryView extends Disposable {
 			const dominantState = mapFindFirst(statesInOrder, (s) =>
 				last.counts[s] > 0 ? s : undefined,
 			);
+
 			status.className = ThemeIcon.asClassName(
 				icons.testingStatesToIcons.get(
 					dominantState ?? TestResultState.Unset,
 				)!,
 			);
+
 			counts = collectTestStateCounts(false, [last]);
+
 			duration.textContent =
 				last instanceof LiveTestResult
 					? formatDuration(last.completedAt! - last.startedAt)
 					: "";
+
 			rerun.style.display = "block";
 		}
 
 		count.textContent = `${counts.passed}/${counts.totalWillBeRun}`;
+
 		this.countHover.update(getTestProgressText(counts));
+
 		this.renderActivityBadge(counts);
 
 		if (!this.elementsWereAttached) {
 			dom.clearNode(this.container);
+
 			this.container.appendChild(root);
+
 			this.elementsWereAttached = true;
 		}
 	}
@@ -997,23 +1063,30 @@ const enum WelcomeExperience {
 
 class TestingExplorerViewModel extends Disposable {
 	public tree: TestingObjectTree<FuzzyScore>;
+
 	private filter: TestsFilter;
+
 	public readonly projection = this._register(
 		new MutableDisposable<ITestTreeProjection>(),
 	);
 
 	private readonly revealTimeout = new MutableDisposable();
+
 	private readonly _viewMode = TestingContextKeys.viewMode.bindTo(
 		this.contextKeyService,
 	);
+
 	private readonly _viewSorting = TestingContextKeys.viewSorting.bindTo(
 		this.contextKeyService,
 	);
+
 	private readonly welcomeVisibilityEmitter =
 		new Emitter<WelcomeExperience>();
+
 	private readonly actionRunner = new TestExplorerActionRunner(() =>
 		this.tree.getSelection().filter(isDefined),
 	);
+
 	private readonly lastViewState = this._register(
 		new StoredValue<ISerializedTestTreeCollapseState>(
 			{
@@ -1024,6 +1097,7 @@ class TestingExplorerViewModel extends Disposable {
 			this.storageService,
 		),
 	);
+
 	private readonly noTestForDocumentWidget: NoTestsForDocumentWidget;
 
 	/**
@@ -1054,7 +1128,9 @@ class TestingExplorerViewModel extends Disposable {
 		}
 
 		this._viewMode.set(newMode);
+
 		this.updatePreferredProjection();
+
 		this.storageService.store(
 			"testing.viewMode",
 			newMode,
@@ -1073,7 +1149,9 @@ class TestingExplorerViewModel extends Disposable {
 		}
 
 		this._viewSorting.set(newSorting);
+
 		this.tree.resort(null);
+
 		this.storageService.store(
 			"testing.viewSorting",
 			newSorting,
@@ -1110,12 +1188,14 @@ class TestingExplorerViewModel extends Disposable {
 		super();
 
 		this.hasPendingReveal = !!filterState.reveal.get();
+
 		this.noTestForDocumentWidget = this._register(
 			instantiationService.createInstance(
 				NoTestsForDocumentWidget,
 				listContainer,
 			),
 		);
+
 		this._viewMode.set(
 			this.storageService.get(
 				"testing.viewMode",
@@ -1123,6 +1203,7 @@ class TestingExplorerViewModel extends Disposable {
 				TestExplorerViewMode.Tree,
 			) as TestExplorerViewMode,
 		);
+
 		this._viewSorting.set(
 			this.storageService.get(
 				"testing.viewSorting",
@@ -1132,10 +1213,12 @@ class TestingExplorerViewModel extends Disposable {
 		);
 
 		this.reevaluateWelcomeState();
+
 		this.filter = this.instantiationService.createInstance(
 			TestsFilter,
 			testService.collection,
 		);
+
 		this.tree = instantiationService.createInstance(
 			TestingObjectTree,
 			"Test Explorer List",
@@ -1191,6 +1274,7 @@ class TestingExplorerViewModel extends Disposable {
 							evt.deep ? Infinity : 0,
 						);
 					}
+
 					collapseStateSaver.schedule();
 				}
 			}),
@@ -1202,6 +1286,7 @@ class TestingExplorerViewModel extends Disposable {
 					// a continuous run test will sort to the top:
 					const elem =
 						this.projection.value?.getElementByTestId(testId);
+
 					this.tree.resort(
 						elem?.parent && this.tree.hasElement(elem.parent)
 							? elem.parent
@@ -1233,7 +1318,9 @@ class TestingExplorerViewModel extends Disposable {
 				}
 
 				const items = (this.filter.lastIncludedTests = new Set());
+
 				this.tree.refilter();
+
 				this.filter.lastIncludedTests = undefined;
 
 				for (const test of items) {
@@ -1288,6 +1375,7 @@ class TestingExplorerViewModel extends Disposable {
 						)
 					) {
 						filterState.text.value = evt.browserEvent.key;
+
 						filterState.focusInput();
 					}
 				},
@@ -1316,6 +1404,7 @@ class TestingExplorerViewModel extends Disposable {
 			configurationService,
 			TestingConfigKeys.FollowRunningTest,
 		);
+
 		this._register(
 			configurationService.onDidChangeConfiguration((e) => {
 				if (
@@ -1333,6 +1422,7 @@ class TestingExplorerViewModel extends Disposable {
 			configurationService,
 			TestingConfigKeys.AlwaysRevealTestOnStateChange,
 		);
+
 		this._register(
 			configurationService.onDidChangeConfiguration((e) => {
 				if (
@@ -1422,6 +1512,7 @@ class TestingExplorerViewModel extends Disposable {
 			this.filterState.text.onDidChange,
 			() => this.filterState.text,
 		);
+
 		this._register(
 			autorun((reader) => {
 				filterText.read(reader);
@@ -1497,6 +1588,7 @@ class TestingExplorerViewModel extends Disposable {
 			if (i < idPath.length - 1) {
 				if (expand) {
 					this.tree.expand(element);
+
 					expandToLevel = i + 1; // avoid an infinite loop if the test does not exist
 					i = idPath.length - 1; // restart the loop since new children may now be visible
 					continue;
@@ -1513,7 +1605,9 @@ class TestingExplorerViewModel extends Disposable {
 
 			for (
 				let n: TestItemTreeElement | null = element;
+
 				n instanceof TestItemTreeElement;
+
 				n = n.parent
 			) {
 				if (n.test && this.testService.excluded.contains(n.test)) {
@@ -1535,6 +1629,7 @@ class TestingExplorerViewModel extends Disposable {
 			}
 
 			this.filterState.reveal.set(undefined, undefined);
+
 			this.hasPendingReveal = false;
 
 			if (focus) {
@@ -1547,6 +1642,7 @@ class TestingExplorerViewModel extends Disposable {
 
 			this.revealTimeout.value = disposableTimeout(() => {
 				this.tree.setFocus([focusTarget]);
+
 				this.tree.setSelection([focusTarget]);
 			}, 1);
 
@@ -1596,6 +1692,7 @@ class TestingExplorerViewModel extends Disposable {
 			this.testProfileService,
 			element,
 		);
+
 		this.contextMenuService.showContextMenu({
 			getAnchor: () => evt.anchor,
 			getActions: () => actions.secondary,
@@ -1613,6 +1710,7 @@ class TestingExplorerViewModel extends Disposable {
 
 		if (focused.length === 1 && selected.includes(focused[0])) {
 			evt.browserEvent?.preventDefault();
+
 			targeted = selected;
 		} else {
 			targeted = focused;
@@ -1643,6 +1741,7 @@ class TestingExplorerViewModel extends Disposable {
 
 		if (welcomeExperience !== this.welcomeExperience) {
 			this.welcomeExperience = welcomeExperience;
+
 			this.welcomeVisibilityEmitter.fire(welcomeExperience);
 		}
 	}
@@ -1671,6 +1770,7 @@ class TestingExplorerViewModel extends Disposable {
 		const scheduler = this._register(
 			new RunOnceScheduler(() => this.applyProjectionChanges(), 200),
 		);
+
 		this.projection.value.onUpdate(() => {
 			if (!scheduler.isScheduled()) {
 				scheduler.schedule();
@@ -1684,6 +1784,7 @@ class TestingExplorerViewModel extends Disposable {
 
 	private applyProjectionChanges() {
 		this.reevaluateWelcomeState();
+
 		this.projection.value?.applyTo(this.tree);
 
 		this.tree.refilter();
@@ -1977,6 +2078,7 @@ class NoTestsForDocumentWidget extends Disposable {
 		));
 
 		const emptyParagraph = dom.append(el, dom.$("p"));
+
 		emptyParagraph.innerText = localize(
 			"testingNoTest",
 			"No tests were found in this file.",
@@ -1990,7 +2092,9 @@ class NoTestsForDocumentWidget extends Disposable {
 		const button = this._register(
 			new Button(el, { title: buttonLabel, ...defaultButtonStyles }),
 		);
+
 		button.label = buttonLabel;
+
 		this._register(
 			button.onDidClick(() =>
 				filterState.toggleFilteringFor(
@@ -2030,6 +2134,7 @@ class TestExplorerActionRunner extends ActionRunner {
 		const actionable = actualContext.filter(
 			(t): t is TestItemTreeElement => t instanceof TestItemTreeElement,
 		);
+
 		await action.run(...actionable);
 	}
 }
@@ -2118,6 +2223,7 @@ class IdentityProvider implements IIdentityProvider<TestExplorerTreeElement> {
 
 interface IErrorTemplateData {
 	label: HTMLElement;
+
 	disposable: DisposableStore;
 }
 
@@ -2159,8 +2265,10 @@ class ErrorRenderer
 			const result = this.renderer.render(element.message, {
 				inline: true,
 			});
+
 			data.label.appendChild(result.element);
 		}
+
 		data.disposable.add(
 			this.hoverService.setupManagedHover(
 				getDefaultHoverDelegate("mouse"),
@@ -2177,11 +2285,17 @@ class ErrorRenderer
 
 interface ITestElementTemplateData {
 	current?: TestItemTreeElement;
+
 	label: HTMLElement;
+
 	icon: HTMLElement;
+
 	wrapper: HTMLElement;
+
 	actionBar: ActionBar;
+
 	elementDisposable: DisposableStore;
+
 	templateDisposable: DisposableStore;
 }
 
@@ -2311,12 +2425,16 @@ class TestItemRenderer
 		const crChild =
 			!crSelf &&
 			this.crService.isEnabledForAChildOf(element.test.item.extId);
+
 		data.actionBar.domNode.classList.toggle(
 			"testing-is-continuous-run",
 			crSelf || crChild,
 		);
+
 		data.actionBar.clear();
+
 		data.actionBar.context = element;
+
 		data.actionBar.push(actions.primary, { icon: true, label: false });
 	}
 
@@ -2329,11 +2447,13 @@ class TestItemRenderer
 		data: ITestElementTemplateData,
 	): void {
 		data.elementDisposable.clear();
+
 		data.current = node.element;
 
 		data.elementDisposable.add(
 			node.element.onChange(() => this._renderElement(node, data)),
 		);
+
 		this._renderElement(node, data);
 	}
 
@@ -2346,6 +2466,7 @@ class TestItemRenderer
 		const testHidden = this.testService.excluded.contains(
 			node.element.test,
 		);
+
 		data.wrapper.classList.toggle("test-is-hidden", testHidden);
 
 		const icon = icons.testingStatesToIcons.get(
@@ -2423,6 +2544,7 @@ const getActionableElementActions = (
 		test,
 		test ? profiles.capabilitiesForTest(test.item) : 0,
 	);
+
 	contextKeys.push(["view", Testing.ExplorerViewId]);
 
 	if (test) {
@@ -2437,6 +2559,7 @@ const getActionableElementActions = (
 						p.supportsContinuousRun &&
 						canUseProfileWithTest(p, test),
 				);
+
 		contextKeys.push(
 			[
 				TestingContextKeys.canRefreshTests.key,
@@ -2493,6 +2616,7 @@ registerThemingParticipant((theme, collector) => {
 					0.65,
 				),
 			);
+
 			collector.addRule(
 				`.test-explorer .test-explorer-messages { color: ${fgWithOpacity}; }`,
 			);

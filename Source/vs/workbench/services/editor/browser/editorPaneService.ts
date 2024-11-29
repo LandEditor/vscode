@@ -11,8 +11,10 @@ import { IEditorPaneService } from "../common/editorPaneService.js";
 
 export class EditorPaneService implements IEditorPaneService {
 	declare readonly _serviceBrand: undefined;
+
 	readonly onWillInstantiateEditorPane =
 		EditorPaneDescriptor.onWillInstantiateEditorPane;
+
 	didInstantiateEditorPane(typeId: string): boolean {
 		return EditorPaneDescriptor.didInstantiateEditorPane(typeId);
 	}

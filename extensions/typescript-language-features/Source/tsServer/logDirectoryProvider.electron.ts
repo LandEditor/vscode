@@ -11,6 +11,7 @@ import { ILogDirectoryProvider } from "./logDirectoryProvider";
 
 export class NodeLogDirectoryProvider implements ILogDirectoryProvider {
 	public constructor(private readonly context: vscode.ExtensionContext) {}
+
 	public getNewLogDirectory(): vscode.Uri | undefined {
 		const root = this.logDirectory();
 
@@ -23,6 +24,7 @@ export class NodeLogDirectoryProvider implements ILogDirectoryProvider {
 				return undefined;
 			}
 		}
+
 		return undefined;
 	}
 	@memoize
@@ -33,6 +35,7 @@ export class NodeLogDirectoryProvider implements ILogDirectoryProvider {
 			if (!fs.existsSync(path)) {
 				fs.mkdirSync(path);
 			}
+
 			return this.context.logPath;
 		} catch {
 			return undefined;

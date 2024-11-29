@@ -24,6 +24,7 @@ export class BrowserRemoteResourceLoader extends Disposable {
 		private readonly provider: IRemoteResourceProvider,
 	) {
 		super();
+
 		this._register(
 			provider.onDidReceiveRequest(async (request) => {
 				let uri: UriComponents;
@@ -33,6 +34,7 @@ export class BrowserRemoteResourceLoader extends Disposable {
 				} catch {
 					return request.respondWith(404, new Uint8Array(), {});
 				}
+
 				let content: IFileContent;
 
 				try {
@@ -50,7 +52,9 @@ export class BrowserRemoteResourceLoader extends Disposable {
 						return request.respondWith(500, str, {});
 					}
 				}
+
 				const mime = uri.path && getMediaOrTextMime(uri.path);
+
 				request.respondWith(
 					200,
 					content.value.buffer,
@@ -59,6 +63,7 @@ export class BrowserRemoteResourceLoader extends Disposable {
 			}),
 		);
 	}
+
 	public getResourceUriProvider(): IResourceUriProvider {
 		const baseUri = URI.parse(document.location.href);
 

@@ -55,10 +55,12 @@ export class StartupProfiler implements IWorkbenchContribution {
 			this._stopProfiling();
 		});
 	}
+
 	private _stopProfiling(): void {
 		if (!this._environmentService.args["prof-startup-prefix"]) {
 			return;
 		}
+
 		const profileFilenamePrefix = URI.file(
 			this._environmentService.args["prof-startup-prefix"],
 		);
@@ -91,6 +93,7 @@ export class StartupProfiler implements IWorkbenchContribution {
 									}
 								});
 						};
+
 						check();
 					}),
 			)
@@ -188,12 +191,14 @@ export class StartupProfiler implements IWorkbenchContribution {
 					});
 			});
 	}
+
 	private async _createPerfIssue(files: string[]): Promise<void> {
 		const reportIssueUrl = this._productService.reportIssueUrl;
 
 		if (!reportIssueUrl) {
 			return;
 		}
+
 		const contrib = PerfviewContrib.get();
 
 		const ref = await this._textModelResolverService.createModelReference(
@@ -207,6 +212,7 @@ export class StartupProfiler implements IWorkbenchContribution {
 		} finally {
 			ref.dispose();
 		}
+
 		const body = `
 1. :warning: We have copied additional data to your clipboard. Make sure to **paste** here. :warning:
 1. :warning: Make sure to **attach** these files from your *home*-directory: :warning:\n${files.map((file) => `-\`${file}\``).join("\n")}
@@ -215,6 +221,7 @@ export class StartupProfiler implements IWorkbenchContribution {
 		const baseUrl = reportIssueUrl;
 
 		const queryStringPrefix = baseUrl.indexOf("?") === -1 ? "?" : "&";
+
 		this._openerService.open(
 			URI.parse(
 				`${baseUrl}${queryStringPrefix}body=${encodeURIComponent(body)}`,

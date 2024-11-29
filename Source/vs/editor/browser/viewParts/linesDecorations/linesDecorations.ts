@@ -15,24 +15,34 @@ import {
 
 export class LinesDecorationsOverlay extends DedupOverlay {
 	private readonly _context: ViewContext;
+
 	private _decorationsLeft: number;
+
 	private _decorationsWidth: number;
+
 	private _renderResult: string[] | null;
 
 	constructor(context: ViewContext) {
 		super();
+
 		this._context = context;
 
 		const options = this._context.configuration.options;
 
 		const layoutInfo = options.get(EditorOption.layoutInfo);
+
 		this._decorationsLeft = layoutInfo.decorationsLeft;
+
 		this._decorationsWidth = layoutInfo.decorationsWidth;
+
 		this._renderResult = null;
+
 		this._context.addEventHandler(this);
 	}
+
 	public override dispose(): void {
 		this._context.removeEventHandler(this);
+
 		this._renderResult = null;
 
 		super.dispose();
@@ -44,39 +54,48 @@ export class LinesDecorationsOverlay extends DedupOverlay {
 		const options = this._context.configuration.options;
 
 		const layoutInfo = options.get(EditorOption.layoutInfo);
+
 		this._decorationsLeft = layoutInfo.decorationsLeft;
+
 		this._decorationsWidth = layoutInfo.decorationsWidth;
 
 		return true;
 	}
+
 	public override onDecorationsChanged(
 		e: viewEvents.ViewDecorationsChangedEvent,
 	): boolean {
 		return true;
 	}
+
 	public override onFlushed(e: viewEvents.ViewFlushedEvent): boolean {
 		return true;
 	}
+
 	public override onLinesChanged(
 		e: viewEvents.ViewLinesChangedEvent,
 	): boolean {
 		return true;
 	}
+
 	public override onLinesDeleted(
 		e: viewEvents.ViewLinesDeletedEvent,
 	): boolean {
 		return true;
 	}
+
 	public override onLinesInserted(
 		e: viewEvents.ViewLinesInsertedEvent,
 	): boolean {
 		return true;
 	}
+
 	public override onScrollChanged(
 		e: viewEvents.ViewScrollChangedEvent,
 	): boolean {
 		return e.scrollTopChanged;
 	}
+
 	public override onZonesChanged(
 		e: viewEvents.ViewZonesChangedEvent,
 	): boolean {
@@ -107,6 +126,7 @@ export class LinesDecorationsOverlay extends DedupOverlay {
 					zIndex,
 				);
 			}
+
 			const firstLineDecorationClassName =
 				d.options.firstLineDecorationClassName;
 
@@ -120,8 +140,10 @@ export class LinesDecorationsOverlay extends DedupOverlay {
 				);
 			}
 		}
+
 		return r;
 	}
+
 	public prepareRender(ctx: RenderingContext): void {
 		const visibleStartLineNumber = ctx.visibleRange.startLineNumber;
 
@@ -144,7 +166,9 @@ export class LinesDecorationsOverlay extends DedupOverlay {
 
 		for (
 			let lineNumber = visibleStartLineNumber;
+
 			lineNumber <= visibleEndLineNumber;
+
 			lineNumber++
 		) {
 			const lineIndex = lineNumber - visibleStartLineNumber;
@@ -159,17 +183,23 @@ export class LinesDecorationsOverlay extends DedupOverlay {
 				if (decoration.tooltip !== null) {
 					addition += '" title="' + decoration.tooltip; // The tooltip is already escaped.
 				}
+
 				addition += common;
+
 				lineOutput += addition;
 			}
+
 			output[lineIndex] = lineOutput;
 		}
+
 		this._renderResult = output;
 	}
+
 	public render(startLineNumber: number, lineNumber: number): string {
 		if (!this._renderResult) {
 			return "";
 		}
+
 		return this._renderResult[lineNumber - startLineNumber];
 	}
 }

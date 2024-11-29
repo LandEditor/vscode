@@ -58,11 +58,14 @@ import { EditorPane } from "./editorPane.js";
 
 export interface IEditorPlaceholderContents {
 	icon: string;
+
 	label: string;
+
 	actions: IEditorPlaceholderContentsAction[];
 }
 export interface IEditorPlaceholderContentsAction {
 	label: string;
+
 	run: () => unknown;
 }
 export interface IErrorEditorPlaceholderOptions extends IEditorOptions {
@@ -70,8 +73,11 @@ export interface IErrorEditorPlaceholderOptions extends IEditorOptions {
 }
 export abstract class EditorPlaceholder extends EditorPane {
 	protected static readonly PLACEHOLDER_LABEL_MAX_LENGTH = 1024;
+
 	private container: HTMLElement | undefined;
+
 	private scrollbar: DomScrollableElement | undefined;
+
 	private readonly inputDisposable = this._register(new MutableDisposable());
 
 	constructor(
@@ -86,11 +92,15 @@ export abstract class EditorPlaceholder extends EditorPane {
 	) {
 		super(id, group, telemetryService, themeService, storageService);
 	}
+
 	protected createEditor(parent: HTMLElement): void {
 		// Container
 		this.container = document.createElement("div");
+
 		this.container.className = "monaco-editor-pane-placeholder";
+
 		this.container.style.outline = "none";
+
 		this.container.tabIndex = 0; // enable focus support from the editor part (do not remove)
 		// Custom Scrollbars
 		this.scrollbar = this._register(
@@ -99,8 +109,10 @@ export abstract class EditorPlaceholder extends EditorPane {
 				vertical: ScrollbarVisibility.Auto,
 			}),
 		);
+
 		parent.appendChild(this.scrollbar.getDomNode());
 	}
+
 	override async setInput(
 		input: EditorInput,
 		options: IEditorOptions | undefined,
@@ -115,6 +127,7 @@ export abstract class EditorPlaceholder extends EditorPane {
 		// Render Input
 		this.inputDisposable.value = await this.renderInput(input, options);
 	}
+
 	private async renderInput(
 		input: EditorInput,
 		options: IEditorOptions | undefined,
@@ -144,6 +157,7 @@ export abstract class EditorPlaceholder extends EditorPane {
 		);
 
 		const iconWidget = disposables.add(new SimpleIconLabel(iconContainer));
+
 		iconWidget.text = icon;
 		// Label
 		const labelContainer = container.appendChild(
@@ -151,7 +165,9 @@ export abstract class EditorPlaceholder extends EditorPane {
 		);
 
 		const labelWidget = document.createElement("span");
+
 		labelWidget.textContent = truncatedLabel;
+
 		labelContainer.appendChild(labelWidget);
 		// ARIA label
 		container.setAttribute(
@@ -173,12 +189,15 @@ export abstract class EditorPlaceholder extends EditorPane {
 						secondary: i !== 0,
 					}),
 				);
+
 				button.label = actions[i].label;
+
 				disposables.add(
 					button.onDidClick((e) => {
 						if (e) {
 							EventHelper.stop(e, true);
 						}
+
 						actions[i].run();
 					}),
 				);
@@ -189,19 +208,23 @@ export abstract class EditorPlaceholder extends EditorPane {
 
 		return disposables;
 	}
+
 	protected abstract getContents(
 		input: EditorInput,
 		options: IEditorOptions | undefined,
 		disposables: DisposableStore,
 	): Promise<IEditorPlaceholderContents>;
+
 	override clearInput(): void {
 		if (this.container) {
 			clearNode(this.container);
 		}
+
 		this.inputDisposable.clear();
 
 		super.clearInput();
 	}
+
 	layout(dimension: Dimension): void {
 		const [container, scrollbar] = assertAllDefined(
 			this.container,
@@ -214,10 +237,13 @@ export abstract class EditorPlaceholder extends EditorPane {
 		// Toggle responsive class
 		container.classList.toggle("max-height-200px", dimension.height <= 200);
 	}
+
 	override focus(): void {
 		super.focus();
+
 		this.container?.focus();
 	}
+
 	override dispose(): void {
 		this.container?.remove();
 
@@ -226,10 +252,12 @@ export abstract class EditorPlaceholder extends EditorPane {
 }
 export class WorkspaceTrustRequiredPlaceholderEditor extends EditorPlaceholder {
 	static readonly ID = "workbench.editors.workspaceTrustRequiredEditor";
+
 	private static readonly LABEL = localize(
 		"trustRequiredEditor",
 		"Workspace Trust Required",
 	);
+
 	static readonly DESCRIPTOR = EditorPaneDescriptor.create(
 		WorkspaceTrustRequiredPlaceholderEditor,
 		this.ID,
@@ -257,9 +285,11 @@ export class WorkspaceTrustRequiredPlaceholderEditor extends EditorPlaceholder {
 			storageService,
 		);
 	}
+
 	override getTitle(): string {
 		return WorkspaceTrustRequiredPlaceholderEditor.LABEL;
 	}
+
 	protected async getContents(): Promise<IEditorPlaceholderContents> {
 		return {
 			icon: "$(workspace-untrusted)",
@@ -288,7 +318,9 @@ export class WorkspaceTrustRequiredPlaceholderEditor extends EditorPlaceholder {
 }
 export class ErrorPlaceholderEditor extends EditorPlaceholder {
 	private static readonly ID = "workbench.editors.errorEditor";
+
 	private static readonly LABEL = localize("errorEditor", "Error Editor");
+
 	static readonly DESCRIPTOR = EditorPaneDescriptor.create(
 		ErrorPlaceholderEditor,
 		this.ID,
@@ -316,6 +348,7 @@ export class ErrorPlaceholderEditor extends EditorPlaceholder {
 			storageService,
 		);
 	}
+
 	protected async getContents(
 		input: EditorInput,
 		options: IErrorEditorPlaceholderOptions,
@@ -413,6 +446,7 @@ export class ErrorPlaceholderEditor extends EditorPlaceholder {
 				}),
 			);
 		}
+
 		return { icon, label, actions: actions ?? [] };
 	}
 }

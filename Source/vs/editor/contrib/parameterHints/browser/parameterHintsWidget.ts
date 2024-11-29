@@ -72,18 +72,29 @@ const parameterHintsPreviousIcon = registerIcon(
 
 export class ParameterHintsWidget extends Disposable implements IContentWidget {
 	private static readonly ID = "editor.widget.parameterHintsWidget";
+
 	private readonly markdownRenderer: MarkdownRenderer;
+
 	private readonly renderDisposeables = this._register(new DisposableStore());
+
 	private readonly keyVisible: IContextKey<boolean>;
+
 	private readonly keyMultipleSignatures: IContextKey<boolean>;
+
 	private domNodes?: {
 		readonly element: HTMLElement;
+
 		readonly signature: HTMLElement;
+
 		readonly docs: HTMLElement;
+
 		readonly overloads: HTMLElement;
+
 		readonly scrollbar: DomScrollableElement;
 	};
+
 	private visible: boolean = false;
+
 	private announcedLabel: string | null = null;
 	// Editor.IContentWidget.allowEditorOverflow
 	allowEditorOverflow = true;
@@ -101,17 +112,22 @@ export class ParameterHintsWidget extends Disposable implements IContentWidget {
 		private readonly telemetryService: ITelemetryService,
 	) {
 		super();
+
 		this.markdownRenderer = this._register(
 			new MarkdownRenderer({ editor }, languageService, openerService),
 		);
+
 		this.keyVisible = Context.Visible.bindTo(contextKeyService);
+
 		this.keyMultipleSignatures =
 			Context.MultipleSignatures.bindTo(contextKeyService);
 	}
+
 	private createParameterHintDOMNodes() {
 		const element = $(".editor-widget.parameter-hints-widget");
 
 		const wrapper = dom.append(element, $(".phwrapper"));
+
 		wrapper.tabIndex = -1;
 
 		const controls = dom.append(wrapper, $(".controls"));
@@ -127,15 +143,19 @@ export class ParameterHintsWidget extends Disposable implements IContentWidget {
 			controls,
 			$(".button" + ThemeIcon.asCSSSelector(parameterHintsNextIcon)),
 		);
+
 		this._register(
 			dom.addDisposableListener(previous, "click", (e) => {
 				dom.EventHelper.stop(e);
+
 				this.previous();
 			}),
 		);
+
 		this._register(
 			dom.addDisposableListener(next, "click", (e) => {
 				dom.EventHelper.stop(e);
+
 				this.next();
 			}),
 		);
@@ -145,13 +165,17 @@ export class ParameterHintsWidget extends Disposable implements IContentWidget {
 		const scrollbar = new DomScrollableElement(body, {
 			alwaysConsumeMouseWheel: true,
 		});
+
 		this._register(scrollbar);
+
 		wrapper.appendChild(scrollbar.getDomNode());
 
 		const signature = dom.append(body, $(".signature"));
 
 		const docs = dom.append(body, $(".docs"));
+
 		element.style.userSelect = "text";
+
 		this.domNodes = {
 			element,
 			signature,
@@ -159,8 +183,11 @@ export class ParameterHintsWidget extends Disposable implements IContentWidget {
 			docs,
 			scrollbar,
 		};
+
 		this.editor.addContentWidget(this);
+
 		this.hide();
+
 		this._register(
 			this.editor.onDidChangeCursorSelection((e) => {
 				if (this.visible) {
@@ -173,59 +200,80 @@ export class ParameterHintsWidget extends Disposable implements IContentWidget {
 			if (!this.domNodes) {
 				return;
 			}
+
 			const fontInfo = this.editor.getOption(EditorOption.fontInfo);
 
 			const element = this.domNodes.element;
+
 			element.style.fontSize = `${fontInfo.fontSize}px`;
+
 			element.style.lineHeight = `${fontInfo.lineHeight / fontInfo.fontSize}`;
+
 			element.style.setProperty(
 				"--vscode-parameterHintsWidget-editorFontFamily",
 				fontInfo.fontFamily,
 			);
+
 			element.style.setProperty(
 				"--vscode-parameterHintsWidget-editorFontFamilyDefault",
 				EDITOR_FONT_DEFAULTS.fontFamily,
 			);
 		};
+
 		updateFont();
+
 		this._register(
 			Event.chain(
 				this.editor.onDidChangeConfiguration.bind(this.editor),
 				($) => $.filter((e) => e.hasChanged(EditorOption.fontInfo)),
 			)(updateFont),
 		);
+
 		this._register(
 			this.editor.onDidLayoutChange((e) => this.updateMaxHeight()),
 		);
+
 		this.updateMaxHeight();
 	}
+
 	public show(): void {
 		if (this.visible) {
 			return;
 		}
+
 		if (!this.domNodes) {
 			this.createParameterHintDOMNodes();
 		}
+
 		this.keyVisible.set(true);
+
 		this.visible = true;
 
 		setTimeout(() => {
 			this.domNodes?.element.classList.add("visible");
 		}, 100);
+
 		this.editor.layoutContentWidget(this);
 	}
+
 	public hide(): void {
 		this.renderDisposeables.clear();
 
 		if (!this.visible) {
 			return;
 		}
+
 		this.keyVisible.reset();
+
 		this.visible = false;
+
 		this.announcedLabel = null;
+
 		this.domNodes?.element.classList.remove("visible");
+
 		this.editor.layoutContentWidget(this);
 	}
+
 	getPosition(): IContentWidgetPosition | null {
 		if (this.visible) {
 			return {
@@ -236,18 +284,25 @@ export class ParameterHintsWidget extends Disposable implements IContentWidget {
 				],
 			};
 		}
+
 		return null;
 	}
+
 	public render(hints: languages.SignatureHelp): void {
 		this.renderDisposeables.clear();
 
 		if (!this.domNodes) {
 			return;
 		}
+
 		const multiple = hints.signatures.length > 1;
+
 		this.domNodes.element.classList.toggle("multiple", multiple);
+
 		this.keyMultipleSignatures.set(multiple);
+
 		this.domNodes.signature.innerText = "";
+
 		this.domNodes.docs.innerText = "";
 
 		const signature = hints.signatures[hints.activeSignature];
@@ -255,6 +310,7 @@ export class ParameterHintsWidget extends Disposable implements IContentWidget {
 		if (!signature) {
 			return;
 		}
+
 		const code = dom.append(this.domNodes.signature, $(".code"));
 
 		const hasParameters = signature.parameters.length > 0;
@@ -264,10 +320,12 @@ export class ParameterHintsWidget extends Disposable implements IContentWidget {
 
 		if (!hasParameters) {
 			const label = dom.append(code, $("span"));
+
 			label.textContent = signature.label;
 		} else {
 			this.renderParameters(code, signature, activeParameterIndex);
 		}
+
 		const activeParameter: languages.ParameterInformation | undefined =
 			signature.parameters[activeParameterIndex];
 
@@ -283,8 +341,10 @@ export class ParameterHintsWidget extends Disposable implements IContentWidget {
 
 				documentation.appendChild(renderedContents.element);
 			}
+
 			dom.append(this.domNodes.docs, $("p", {}, documentation));
 		}
+
 		if (signature.documentation === undefined) {
 			/** no op */
 		} else if (typeof signature.documentation === "string") {
@@ -296,9 +356,13 @@ export class ParameterHintsWidget extends Disposable implements IContentWidget {
 
 			dom.append(this.domNodes.docs, renderedContents.element);
 		}
+
 		const hasDocs = this.hasDocs(signature, activeParameter);
+
 		this.domNodes.signature.classList.toggle("has-docs", hasDocs);
+
 		this.domNodes.docs.classList.toggle("empty", !hasDocs);
+
 		this.domNodes.overloads.textContent =
 			String(hints.activeSignature + 1).padStart(
 				hints.signatures.length.toString().length,
@@ -320,12 +384,14 @@ export class ParameterHintsWidget extends Disposable implements IContentWidget {
 			} else {
 				labelToAnnounce = param.label;
 			}
+
 			if (param.documentation) {
 				labelToAnnounce +=
 					typeof param.documentation === "string"
 						? `, ${param.documentation}`
 						: `, ${param.documentation.value}`;
 			}
+
 			if (signature.documentation) {
 				labelToAnnounce +=
 					typeof signature.documentation === "string"
@@ -336,12 +402,16 @@ export class ParameterHintsWidget extends Disposable implements IContentWidget {
 			// We do not want to spam the user with same announcements, so we only announce if the current parameter changed.
 			if (this.announcedLabel !== labelToAnnounce) {
 				aria.alert(nls.localize("hint", "{0}, hint", labelToAnnounce));
+
 				this.announcedLabel = labelToAnnounce;
 			}
 		}
+
 		this.editor.layoutContentWidget(this);
+
 		this.domNodes.scrollbar.scanDomNode();
 	}
+
 	private renderMarkdownDocs(
 		markdown: IMarkdownString | undefined,
 	): IMarkdownRenderResult {
@@ -354,16 +424,23 @@ export class ParameterHintsWidget extends Disposable implements IContentWidget {
 				},
 			}),
 		);
+
 		renderedContents.element.classList.add("markdown-docs");
+
 		type RenderMarkdownPerformanceClassification = {
 			owner: "donjayamanne";
+
 			comment: "Measure the time taken to render markdown for parameter hints";
+
 			renderDuration: {
 				classification: "SystemMetaData";
+
 				purpose: "FeatureInsight";
+
 				comment: "Time in ms to render the markdown";
 			};
 		};
+
 		type RenderMarkdownPerformanceEvent = {
 			renderDuration: number;
 		};
@@ -378,8 +455,10 @@ export class ParameterHintsWidget extends Disposable implements IContentWidget {
 				renderDuration,
 			});
 		}
+
 		return renderedContents;
 	}
+
 	private hasDocs(
 		signature: languages.SignatureInformation,
 		activeParameter: languages.ParameterInformation | undefined,
@@ -391,6 +470,7 @@ export class ParameterHintsWidget extends Disposable implements IContentWidget {
 		) {
 			return true;
 		}
+
 		if (
 			activeParameter &&
 			typeof activeParameter.documentation === "object" &&
@@ -398,6 +478,7 @@ export class ParameterHintsWidget extends Disposable implements IContentWidget {
 		) {
 			return true;
 		}
+
 		if (
 			signature.documentation &&
 			typeof signature.documentation === "string" &&
@@ -405,6 +486,7 @@ export class ParameterHintsWidget extends Disposable implements IContentWidget {
 		) {
 			return true;
 		}
+
 		if (
 			signature.documentation &&
 			typeof signature.documentation === "object" &&
@@ -412,8 +494,10 @@ export class ParameterHintsWidget extends Disposable implements IContentWidget {
 		) {
 			return true;
 		}
+
 		return false;
 	}
+
 	private renderParameters(
 		parent: HTMLElement,
 		signature: languages.SignatureInformation,
@@ -425,17 +509,22 @@ export class ParameterHintsWidget extends Disposable implements IContentWidget {
 		);
 
 		const beforeSpan = document.createElement("span");
+
 		beforeSpan.textContent = signature.label.substring(0, start);
 
 		const paramSpan = document.createElement("span");
+
 		paramSpan.textContent = signature.label.substring(start, end);
+
 		paramSpan.className = "parameter active";
 
 		const afterSpan = document.createElement("span");
+
 		afterSpan.textContent = signature.label.substring(end);
 
 		dom.append(parent, beforeSpan, paramSpan, afterSpan);
 	}
+
 	private getParameterLabelOffsets(
 		signature: languages.SignatureInformation,
 		paramIdx: number,
@@ -453,6 +542,7 @@ export class ParameterHintsWidget extends Disposable implements IContentWidget {
 				`(\\W|^)${escapeRegExpCharacters(param.label)}(?=\\W|$)`,
 				"g",
 			);
+
 			regex.test(signature.label);
 
 			const idx = regex.lastIndex - param.label.length;
@@ -460,30 +550,40 @@ export class ParameterHintsWidget extends Disposable implements IContentWidget {
 			return idx >= 0 ? [idx, regex.lastIndex] : [0, 0];
 		}
 	}
+
 	next(): void {
 		this.editor.focus();
+
 		this.model.next();
 	}
+
 	previous(): void {
 		this.editor.focus();
+
 		this.model.previous();
 	}
+
 	getDomNode(): HTMLElement {
 		if (!this.domNodes) {
 			this.createParameterHintDOMNodes();
 		}
+
 		return this.domNodes!.element;
 	}
+
 	getId(): string {
 		return ParameterHintsWidget.ID;
 	}
+
 	private updateMaxHeight(): void {
 		if (!this.domNodes) {
 			return;
 		}
+
 		const height = Math.max(this.editor.getLayoutInfo().height / 4, 250);
 
 		const maxHeight = `${height}px`;
+
 		this.domNodes.element.style.maxHeight = maxHeight;
 
 		const wrapper = this.domNodes.element.getElementsByClassName(

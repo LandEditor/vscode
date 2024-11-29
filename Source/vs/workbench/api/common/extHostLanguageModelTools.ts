@@ -36,10 +36,13 @@ export class ExtHostLanguageModelTools
 		string,
 		{
 			extension: IExtensionDescription;
+
 			tool: vscode.LanguageModelTool<Object>;
 		}
 	>();
+
 	private readonly _proxy: MainThreadLanguageModelToolsShape;
+
 	private readonly _tokenCountFuncs = new Map<
 		/* call ID */ string,
 		(text: string, token?: vscode.CancellationToken) => Thenable<number>
@@ -228,10 +231,12 @@ export class ExtHostLanguageModelTools
 		tool: vscode.LanguageModelTool<any>,
 	): IDisposable {
 		this._registeredTools.set(id, { extension, tool });
+
 		this._proxy.$registerTool(id);
 
 		return toDisposable(() => {
 			this._registeredTools.delete(id);
+
 			this._proxy.$unregisterTool(id);
 		});
 	}

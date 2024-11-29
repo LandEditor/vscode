@@ -26,13 +26,18 @@ import { Disposable, FileDecoration } from "./extHostTypes.js";
 
 interface ProviderData {
 	provider: vscode.FileDecorationProvider;
+
 	extensionDescription: IExtensionDescription;
 }
 export class ExtHostDecorations implements ExtHostDecorationsShape {
 	private static _handlePool = 0;
+
 	private static _maxEventSize = 250;
+
 	readonly _serviceBrand: undefined;
+
 	private readonly _provider = new Map<number, ProviderData>();
+
 	private readonly _proxy: MainThreadDecorationsShape;
 
 	constructor(
@@ -43,12 +48,15 @@ export class ExtHostDecorations implements ExtHostDecorationsShape {
 	) {
 		this._proxy = extHostRpc.getProxy(MainContext.MainThreadDecorations);
 	}
+
 	registerFileDecorationProvider(
 		provider: vscode.FileDecorationProvider,
 		extensionDescription: IExtensionDescription,
 	): vscode.Disposable {
 		const handle = ExtHostDecorations._handlePool++;
+
 		this._provider.set(handle, { provider, extensionDescription });
+
 		this._proxy.$registerDecorationProvider(
 			handle,
 			extensionDescription.identifier.value,
@@ -62,6 +70,7 @@ export class ExtHostDecorations implements ExtHostDecorationsShape {
 
 					return;
 				}
+
 				const array = asArray(e);
 
 				if (array.length <= ExtHostDecorations._maxEventSize) {
@@ -89,6 +98,7 @@ export class ExtHostDecorations implements ExtHostDecorationsShape {
 				);
 
 				const picked: URI[] = [];
+
 				outer: for (const uris of groups) {
 					let lastDirname: string | undefined;
 
@@ -107,15 +117,19 @@ export class ExtHostDecorations implements ExtHostDecorationsShape {
 						}
 					}
 				}
+
 				this._proxy.$onDidChange(handle, picked);
 			});
 
 		return new Disposable(() => {
 			listener?.dispose();
+
 			this._proxy.$unregisterDecorationProvider(handle);
+
 			this._provider.delete(handle);
 		});
 	}
+
 	async $provideDecorations(
 		handle: number,
 		requests: DecorationRequest[],
@@ -125,10 +139,12 @@ export class ExtHostDecorations implements ExtHostDecorationsShape {
 			// might have been unregistered in the meantime
 			return Object.create(null);
 		}
+
 		const result: DecorationReply = Object.create(null);
 
 		const { provider, extensionDescription: extensionId } =
 			this._provider.get(handle)!;
+
 		await Promise.all(
 			requests.map(async (request) => {
 				try {
@@ -141,6 +157,7 @@ export class ExtHostDecorations implements ExtHostDecorationsShape {
 					if (!data) {
 						return;
 					}
+
 					try {
 						FileDecoration.validate(data);
 
@@ -150,6 +167,7 @@ export class ExtHostDecorations implements ExtHostDecorationsShape {
 								"codiconDecoration",
 							);
 						}
+
 						result[id] = <DecorationData>[
 							data.propagate,
 							data.tooltip,

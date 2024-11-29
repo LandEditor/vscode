@@ -30,6 +30,7 @@ export class HoverColorPickerContribution
 
 	constructor(private readonly _editor: ICodeEditor) {
 		super();
+
 		this._register(_editor.onMouseDown((e) => this.onMouseDown(e)));
 	}
 
@@ -48,9 +49,11 @@ export class HoverColorPickerContribution
 		) {
 			return;
 		}
+
 		if (!isOnColorDecorator(mouseEvent)) {
 			return;
 		}
+
 		const hoverController =
 			this._editor.getContribution<ContentHoverController>(
 				ContentHoverController.ID,
@@ -59,20 +62,24 @@ export class HoverColorPickerContribution
 		if (!hoverController) {
 			return;
 		}
+
 		if (hoverController.isColorPickerVisible) {
 			return;
 		}
+
 		const targetRange = mouseEvent.target.range;
 
 		if (!targetRange) {
 			return;
 		}
+
 		const range = new Range(
 			targetRange.startLineNumber,
 			targetRange.startColumn + 1,
 			targetRange.endLineNumber,
 			targetRange.endColumn + 1,
 		);
+
 		hoverController.showContentHover(
 			range,
 			HoverStartMode.Immediate,

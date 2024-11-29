@@ -33,8 +33,10 @@ function getNpmProductionDependencies(folder: string): string[] {
 				throw err;
 			}
 		}
+
 		raw = err.stdout;
 	}
+
 	return raw.split(/\r?\n/).filter((line) => {
 		return (
 			!!line.trim() &&
@@ -54,6 +56,7 @@ export function getProductionDependencies(folderPath: string): string[] {
 	if (fs.existsSync(distroFolderPath)) {
 		result.push(...getNpmProductionDependencies(distroFolderPath));
 	}
+
 	return [...new Set(result)];
 }
 if (require.main === module) {

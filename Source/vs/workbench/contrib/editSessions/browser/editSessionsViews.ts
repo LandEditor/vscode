@@ -68,8 +68,10 @@ export class EditSessionsDataViews extends Disposable {
 		private readonly instantiationService: IInstantiationService,
 	) {
 		super();
+
 		this.registerViews(container);
 	}
+
 	private registerViews(container: ViewContainer): void {
 		const viewId = EDIT_SESSIONS_DATA_VIEW_ID;
 
@@ -78,8 +80,11 @@ export class EditSessionsDataViews extends Disposable {
 			viewId,
 			EDIT_SESSIONS_TITLE.value,
 		);
+
 		treeView.showCollapseAllAction = true;
+
 		treeView.showRefreshAction = true;
+
 		treeView.dataProvider = this.instantiationService.createInstance(
 			EditSessionDataViewDataProvider,
 		);
@@ -105,6 +110,7 @@ export class EditSessionsDataViews extends Disposable {
 			],
 			container,
 		);
+
 		viewsRegistry.registerViewWelcomeContent(viewId, {
 			content: localize(
 				"noStoredChanges",
@@ -114,6 +120,7 @@ export class EditSessionsDataViews extends Disposable {
 			when: ContextKeyExpr.equals(EDIT_SESSIONS_COUNT_KEY, 0),
 			order: 1,
 		});
+
 		this._register(
 			registerAction2(
 				class extends Action2 {
@@ -138,6 +145,7 @@ export class EditSessionsDataViews extends Disposable {
 							},
 						});
 					}
+
 					async run(
 						accessor: ServicesAccessor,
 						handle: TreeViewItemHandleArg,
@@ -147,16 +155,19 @@ export class EditSessionsDataViews extends Disposable {
 						).path.substring(1);
 
 						const commandService = accessor.get(ICommandService);
+
 						await commandService.executeCommand(
 							"workbench.editSessions.actions.resumeLatest",
 							editSessionId,
 							true,
 						);
+
 						await treeView.refresh();
 					}
 				},
 			),
 		);
+
 		this._register(
 			registerAction2(
 				class extends Action2 {
@@ -170,19 +181,23 @@ export class EditSessionsDataViews extends Disposable {
 							icon: Codicon.cloudUpload,
 						});
 					}
+
 					async run(
 						accessor: ServicesAccessor,
 						handle: TreeViewItemHandleArg,
 					): Promise<void> {
 						const commandService = accessor.get(ICommandService);
+
 						await commandService.executeCommand(
 							"workbench.editSessions.actions.storeCurrent",
 						);
+
 						await treeView.refresh();
 					}
 				},
 			),
 		);
+
 		this._register(
 			registerAction2(
 				class extends Action2 {
@@ -207,6 +222,7 @@ export class EditSessionsDataViews extends Disposable {
 							},
 						});
 					}
+
 					async run(
 						accessor: ServicesAccessor,
 						handle: TreeViewItemHandleArg,
@@ -240,12 +256,14 @@ export class EditSessionsDataViews extends Disposable {
 								"editSessions",
 								editSessionId,
 							);
+
 							await treeView.refresh();
 						}
 					}
 				},
 			),
 		);
+
 		this._register(
 			registerAction2(
 				class extends Action2 {
@@ -269,6 +287,7 @@ export class EditSessionsDataViews extends Disposable {
 							},
 						});
 					}
+
 					async run(accessor: ServicesAccessor): Promise<void> {
 						const dialogService = accessor.get(IDialogService);
 
@@ -294,6 +313,7 @@ export class EditSessionsDataViews extends Disposable {
 								"editSessions",
 								null,
 							);
+
 							await treeView.refresh();
 						}
 					}
@@ -319,10 +339,12 @@ class EditSessionDataViewDataProvider implements ITreeViewDataProvider {
 			this.contextKeyService,
 		);
 	}
+
 	async getChildren(element?: ITreeItem): Promise<ITreeItem[]> {
 		if (!element) {
 			return this.getAllEditSessions();
 		}
+
 		const [ref, folderName, filePath] = URI.parse(element.handle)
 			.path.substring(1)
 			.split("/");
@@ -332,11 +354,14 @@ class EditSessionDataViewDataProvider implements ITreeViewDataProvider {
 		} else if (ref && folderName && !filePath) {
 			return this.getEditSessionFolderContents(ref, folderName);
 		}
+
 		return [];
 	}
+
 	private async getAllEditSessions(): Promise<ITreeItem[]> {
 		const allEditSessions =
 			await this.editSessionsStorageService.list("editSessions");
+
 		this.editSessionsCount.set(allEditSessions.length);
 
 		const editSessions = [];
@@ -356,6 +381,7 @@ class EditSessionDataViewDataProvider implements ITreeViewDataProvider {
 			if (!sessionData) {
 				continue;
 			}
+
 			const content: EditSession = JSON.parse(sessionData.content);
 
 			const label =
@@ -374,6 +400,7 @@ class EditSessionDataViewDataProvider implements ITreeViewDataProvider {
 				machineName === undefined
 					? fromNow(session.created, true)
 					: `${fromNow(session.created, true)}\u00a0\u00a0\u2022\u00a0\u00a0${machineName}`;
+
 			editSessions.push({
 				handle: resource.toString(),
 				collapsibleState: TreeItemCollapsibleState.Collapsed,
@@ -383,8 +410,10 @@ class EditSessionDataViewDataProvider implements ITreeViewDataProvider {
 				contextValue: `edit-session`,
 			});
 		}
+
 		return editSessions;
 	}
+
 	private async getEditSession(ref: string): Promise<ITreeItem[]> {
 		const data = await this.editSessionsStorageService.read(
 			"editSessions",
@@ -394,6 +423,7 @@ class EditSessionDataViewDataProvider implements ITreeViewDataProvider {
 		if (!data) {
 			return [];
 		}
+
 		const content: EditSession = JSON.parse(data.content);
 
 		if (content.folders.length === 1) {
@@ -401,6 +431,7 @@ class EditSessionDataViewDataProvider implements ITreeViewDataProvider {
 
 			return this.getEditSessionFolderContents(ref, folder.name);
 		}
+
 		return content.folders.map((folder) => {
 			const resource = URI.from({
 				scheme: EDIT_SESSIONS_SCHEME,
@@ -416,6 +447,7 @@ class EditSessionDataViewDataProvider implements ITreeViewDataProvider {
 			};
 		});
 	}
+
 	private async getEditSessionFolderContents(
 		ref: string,
 		folderName: string,
@@ -428,6 +460,7 @@ class EditSessionDataViewDataProvider implements ITreeViewDataProvider {
 		if (!data) {
 			return [];
 		}
+
 		const content: EditSession = JSON.parse(data.content);
 
 		const currentWorkspaceFolder = this.workspaceContextService
@@ -441,6 +474,7 @@ class EditSessionDataViewDataProvider implements ITreeViewDataProvider {
 		if (!editSessionFolder) {
 			return [];
 		}
+
 		return Promise.all(
 			editSessionFolder.workingChanges.map(async (change) => {
 				const cloudChangeUri = URI.from({
@@ -482,6 +516,7 @@ class EditSessionDataViewDataProvider implements ITreeViewDataProvider {
 						};
 					}
 				}
+
 				return {
 					handle: cloudChangeUri.toString(),
 					resourceUri: cloudChangeUri,

@@ -137,15 +137,18 @@ class CommandErrorOutputTextDocumentContentProvider
 	set(uri: Uri, contents: string): void {
 		this.items.set(uri.path, contents);
 	}
+
 	delete(uri: Uri): void {
 		this.items.delete(uri.path);
 	}
+
 	provideTextDocumentContent(uri: Uri): string | undefined {
 		return this.items.get(uri.path);
 	}
 }
 export class GithubPushErrorHandler implements PushErrorHandler {
 	private disposables: Disposable[] = [];
+
 	private commandErrors = new CommandErrorOutputTextDocumentContentProvider();
 
 	constructor(private readonly telemetryReporter: TelemetryReporter) {
@@ -156,12 +159,14 @@ export class GithubPushErrorHandler implements PushErrorHandler {
 			),
 		);
 	}
+
 	async handlePushError(
 		repository: Repository,
 		remote: Remote,
 		refspec: string,
 		error: Error & {
 			stderr: string;
+
 			gitErrorCode: GitErrorCodes;
 		},
 	): Promise<boolean> {
@@ -171,12 +176,14 @@ export class GithubPushErrorHandler implements PushErrorHandler {
 		) {
 			return false;
 		}
+
 		const remoteUrl =
 			remote.pushUrl || (isInCodespaces() ? remote.fetchUrl : undefined);
 
 		if (!remoteUrl) {
 			return false;
 		}
+
 		const match =
 			/^(?:https:\/\/github\.com\/|git@github\.com:)([^\/]+)\/([^\/.]+)/i.exec(
 				remoteUrl,
@@ -185,9 +192,11 @@ export class GithubPushErrorHandler implements PushErrorHandler {
 		if (!match) {
 			return false;
 		}
+
 		if (/^:/.test(refspec)) {
 			return false;
 		}
+
 		const [, owner, repo] = match;
 
 		if (error.gitErrorCode === GitErrorCodes.PermissionDenied) {
@@ -237,6 +246,7 @@ export class GithubPushErrorHandler implements PushErrorHandler {
 
 		return false;
 	}
+
 	private async handlePermissionDeniedError(
 		repository: Repository,
 		remote: Remote,
@@ -264,6 +274,7 @@ export class GithubPushErrorHandler implements PushErrorHandler {
 		if (answer !== yes) {
 			return;
 		}
+
 		const match = /^([^:]*):([^:]*)$/.exec(refspec);
 
 		const localName = match ? match[1] : refspec;
@@ -283,6 +294,7 @@ export class GithubPushErrorHandler implements PushErrorHandler {
 				});
 
 				const octokit = await getOctokit();
+
 				type CreateForkResponseData = Awaited<
 					ReturnType<typeof octokit.repos.createFork>
 				>["data"];
@@ -294,12 +306,14 @@ export class GithubPushErrorHandler implements PushErrorHandler {
 						// Call into the codespaces extension to fork the repository
 						const resp = await commands.executeCommand<{
 							repository: CreateForkResponseData;
+
 							ref: string;
 						}>("github.codespaces.forkRepository");
 
 						if (!resp) {
 							throw new Error("Unable to fork respository");
 						}
+
 						ghRepository = resp.repository;
 
 						if (resp.ref) {
@@ -308,6 +322,7 @@ export class GithubPushErrorHandler implements PushErrorHandler {
 							if (ref.startsWith("refs/heads/")) {
 								ref = ref.substr(11);
 							}
+
 							remoteName = ref;
 						}
 					} else {
@@ -315,6 +330,7 @@ export class GithubPushErrorHandler implements PushErrorHandler {
 							owner,
 							repo,
 						});
+
 						ghRepository = resp.data;
 					}
 				} catch (ex) {
@@ -322,6 +338,7 @@ export class GithubPushErrorHandler implements PushErrorHandler {
 
 					throw ex;
 				}
+
 				progress.report({
 					message: l10n.t("Pushing changes..."),
 					increment: 33,
@@ -337,10 +354,12 @@ export class GithubPushErrorHandler implements PushErrorHandler {
 					protocol === "https"
 						? ghRepository.clone_url
 						: ghRepository.ssh_url;
+
 				await repository.addRemote("origin", remoteUrl);
 
 				try {
 					await repository.fetch("origin", remoteName);
+
 					await repository.setBranchUpstream(
 						localName,
 						`origin/${remoteName}`,
@@ -348,6 +367,7 @@ export class GithubPushErrorHandler implements PushErrorHandler {
 				} catch {
 					// noop
 				}
+
 				await repository.push("origin", localName, true);
 
 				return [octokit, ghRepository] as const;
@@ -389,11 +409,14 @@ export class GithubPushErrorHandler implements PushErrorHandler {
 
 						if (head) {
 							const commit = await repository.getCommit(head);
+
 							title = commit.message.split("\n")[0];
+
 							body = commit.message
 								.slice(title.length + 1)
 								.trim();
 						}
+
 						const templates = await findPullRequestTemplates(
 							repository.rootUri,
 						);
@@ -414,6 +437,7 @@ export class GithubPushErrorHandler implements PushErrorHandler {
 								);
 							}
 						}
+
 						const { data: pr } = await octokit.pulls.create({
 							owner,
 							repo,
@@ -422,14 +446,17 @@ export class GithubPushErrorHandler implements PushErrorHandler {
 							head: `${ghRepository.owner.login}:${remoteName}`,
 							base: ghRepository.default_branch,
 						});
+
 						await repository.setConfig(
 							`branch.${localName}.remote`,
 							"upstream",
 						);
+
 						await repository.setConfig(
 							`branch.${localName}.merge`,
 							`refs/heads/${remoteName}`,
 						);
+
 						await repository.setConfig(
 							`branch.${localName}.github-pr-owner-number`,
 							`${owner}#${repo}#${pr.number}`,
@@ -460,6 +487,7 @@ export class GithubPushErrorHandler implements PushErrorHandler {
 			}
 		})();
 	}
+
 	private async handlePushProtectionError(
 		owner: string,
 		repo: string,
@@ -469,10 +497,12 @@ export class GithubPushErrorHandler implements PushErrorHandler {
 		const timestamp = new Date().getTime();
 
 		const uri = Uri.parse(`github-output:/github-error-${timestamp}`);
+
 		this.commandErrors.set(uri, stderr);
 
 		try {
 			const doc = await workspace.openTextDocument(uri);
+
 			await window.showTextDocument(doc);
 		} finally {
 			this.commandErrors.set(uri, stderr);
@@ -499,6 +529,7 @@ export class GithubPushErrorHandler implements PushErrorHandler {
 			);
 		}
 	}
+
 	dispose() {
 		this.disposables.forEach((d) => d.dispose());
 	}

@@ -68,21 +68,26 @@ export class DiffEditorGutter extends Disposable {
 			this._contextKeyService,
 		),
 	);
+
 	private readonly _actions = observableFromEvent(
 		this,
 		this._menu.onDidChange,
 		() => this._menu.getActions(),
 	);
+
 	private readonly _hasActions = this._actions.map((a) => a.length > 0);
+
 	private readonly _showSash = derived(
 		this,
 		(reader) =>
 			this._options.renderSideBySide.read(reader) &&
 			this._hasActions.read(reader),
 	);
+
 	public readonly width = derived(this, (reader) =>
 		this._hasActions.read(reader) ? width : 0,
 	);
+
 	private readonly elements = h(
 		"div.gutter@gutter",
 		{
@@ -115,19 +120,23 @@ export class DiffEditorGutter extends Disposable {
 		private readonly _menuService: IMenuService,
 	) {
 		super();
+
 		this._register(
 			prependRemoveOnDispose(diffEditorRoot, this.elements.root),
 		);
+
 		this._register(
 			addDisposableListener(this.elements.root, "click", () => {
 				this._editors.modified.focus();
 			}),
 		);
+
 		this._register(
 			applyStyle(this.elements.root, {
 				display: this._hasActions.map((a) => (a ? "block" : "none")),
 			}),
 		);
+
 		derivedDisposable(this, (reader) => {
 			const showSash = this._showSash.read(reader);
 
@@ -155,11 +164,13 @@ export class DiffEditorGutter extends Disposable {
 			if (!model) {
 				return [];
 			}
+
 			const diffs = model.diff.read(reader);
 
 			if (!diffs) {
 				return [];
 			}
+
 			const selection = this._selectedDiffs.read(reader);
 
 			if (selection.length > 0) {
@@ -178,6 +189,7 @@ export class DiffEditorGutter extends Disposable {
 					),
 				];
 			}
+
 			const currentDiff = this._currentDiff.read(reader);
 
 			return diffs.mappings.map(
@@ -192,6 +204,7 @@ export class DiffEditorGutter extends Disposable {
 					),
 			);
 		});
+
 		this._register(
 			new EditorGutter<DiffGutterItem>(
 				this._editors.modified,
@@ -210,6 +223,7 @@ export class DiffEditorGutter extends Disposable {
 				},
 			),
 		);
+
 		this._register(
 			addDisposableListener(
 				this.elements.gutter,
@@ -228,6 +242,7 @@ export class DiffEditorGutter extends Disposable {
 			),
 		);
 	}
+
 	public computeStagedValue(mapping: DetailedLineRangeMapping): string {
 		const c = mapping.innerChanges ?? [];
 
@@ -241,12 +256,14 @@ export class DiffEditorGutter extends Disposable {
 
 		return value;
 	}
+
 	private readonly _currentDiff = derived(this, (reader) => {
 		const model = this._diffModel.read(reader);
 
 		if (!model) {
 			return undefined;
 		}
+
 		const mappings = model.diff.read(reader)?.mappings;
 
 		const cursorPosition = this._editors.modifiedCursor.read(reader);
@@ -254,10 +271,12 @@ export class DiffEditorGutter extends Disposable {
 		if (!cursorPosition) {
 			return undefined;
 		}
+
 		return mappings?.find((m) =>
 			m.lineRangeMapping.modified.contains(cursorPosition.lineNumber),
 		);
 	});
+
 	private readonly _selectedDiffs = derived(this, (reader) => {
 		/** @description selectedDiffs */
 		const model = this._diffModel.read(reader);
@@ -267,11 +286,13 @@ export class DiffEditorGutter extends Disposable {
 		if (!diff) {
 			return emptyArr;
 		}
+
 		const selections = this._editors.modifiedSelections.read(reader);
 
 		if (selections.every((s) => s.isEmpty())) {
 			return emptyArr;
 		}
+
 		const selectedLineNumbers = new LineRangeSet(
 			selections.map((s) => LineRange.fromRangeInclusive(s)),
 		);
@@ -297,8 +318,10 @@ export class DiffEditorGutter extends Disposable {
 		) {
 			return emptyArr;
 		}
+
 		return result;
 	});
+
 	layout(left: number) {
 		this.elements.gutter.style.left = left + "px";
 	}
@@ -312,9 +335,11 @@ class DiffGutterItem implements IGutterItemInfo {
 		public readonly originalUri: URI,
 		public readonly modifiedUri: URI,
 	) {}
+
 	get id(): string {
 		return this.mapping.modified.toString();
 	}
+
 	get range(): LineRange {
 		return this.rangeOverride ?? this.mapping.modified;
 	}
@@ -328,11 +353,14 @@ class DiffToolBar extends Disposable implements IGutterItemView {
 			h("div.buttons@buttons", {}, []),
 		],
 	);
+
 	private readonly _showAlways = this._item.map(
 		this,
 		(item) => item.showAlways,
 	);
+
 	private readonly _menuId = this._item.map(this, (item) => item.menuId);
+
 	private readonly _isSmall = observableValue(this, false);
 
 	constructor(
@@ -352,12 +380,16 @@ class DiffToolBar extends Disposable implements IGutterItemView {
 				{ position: { hoverPosition: HoverPosition.RIGHT } },
 			),
 		);
+
 		this._register(appendRemoveOnDispose(target, this._elements.root));
+
 		this._register(
 			autorun((reader) => {
 				/** @description update showAlways */
 				const showAlways = this._showAlways.read(reader);
+
 				this._elements.root.classList.toggle("noTransition", true);
+
 				this._elements.root.classList.toggle("showAlways", showAlways);
 
 				setTimeout(() => {
@@ -365,6 +397,7 @@ class DiffToolBar extends Disposable implements IGutterItemView {
 				}, 0);
 			}),
 		);
+
 		this._register(
 			autorunWithStore((reader, store) => {
 				this._elements.buttons.replaceChildren();
@@ -403,6 +436,7 @@ class DiffToolBar extends Disposable implements IGutterItemView {
 						},
 					),
 				);
+
 				store.add(
 					i.onDidChangeMenuItems(() => {
 						if (this._lastItemRange) {
@@ -416,13 +450,18 @@ class DiffToolBar extends Disposable implements IGutterItemView {
 			}),
 		);
 	}
+
 	private _lastItemRange: OffsetRange | undefined = undefined;
+
 	private _lastViewRange: OffsetRange | undefined = undefined;
+
 	layout(itemRange: OffsetRange, viewRange: OffsetRange): void {
 		this._lastItemRange = itemRange;
+
 		this._lastViewRange = viewRange;
 
 		let itemHeight = this._elements.buttons.clientHeight;
+
 		this._isSmall.set(
 			this._item.get().mapping.original.startLineNumber === 1 &&
 				itemRange.length < 30,
@@ -454,9 +493,11 @@ class DiffToolBar extends Disposable implements IGutterItemView {
 		) {
 			effectiveCheckboxTop =
 				preferredViewPortRange!.clip(effectiveCheckboxTop);
+
 			effectiveCheckboxTop =
 				preferredParentRange!.clip(effectiveCheckboxTop);
 		}
+
 		this._elements.buttons.style.top = `${effectiveCheckboxTop - itemRange.start}px`;
 	}
 }
@@ -466,6 +507,8 @@ export interface DiffEditorSelectionHunkToolbarContext {
 	 * The original text with the selected modified changes applied.
 	 */
 	originalWithModifiedChanges: string;
+
 	modifiedUri: URI;
+
 	originalUri: URI;
 }

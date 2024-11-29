@@ -16,6 +16,7 @@ function getAgent(url: string | undefined = process.env.HTTPS_PROXY): Agent {
 	if (!url) {
 		return globalAgent;
 	}
+
 	try {
 		const { hostname, port, username, password } = new URL(url);
 

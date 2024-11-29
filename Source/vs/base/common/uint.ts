@@ -35,17 +35,21 @@ export function toUint8(v: number): number {
 	if (v < 0) {
 		return 0;
 	}
+
 	if (v > Constants.MAX_UINT_8) {
 		return Constants.MAX_UINT_8;
 	}
+
 	return v | 0;
 }
 export function toUint32(v: number): number {
 	if (v < 0) {
 		return 0;
 	}
+
 	if (v > Constants.MAX_UINT_32) {
 		return Constants.MAX_UINT_32;
 	}
+
 	return v | 0;
 }

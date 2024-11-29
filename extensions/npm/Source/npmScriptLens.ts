@@ -30,7 +30,9 @@ const getFreshLensLocation = () =>
  */
 export class NpmScriptLensProvider implements CodeLensProvider, Disposable {
 	private lensLocation = getFreshLensLocation();
+
 	private readonly changeEmitter = new EventEmitter<void>();
+
 	private subscriptions: Disposable[] = [];
 	/**
 	 * @inheritdoc
@@ -43,6 +45,7 @@ export class NpmScriptLensProvider implements CodeLensProvider, Disposable {
 			workspace.onDidChangeConfiguration((evt) => {
 				if (evt.affectsConfiguration(Constants.ConfigKey)) {
 					this.lensLocation = getFreshLensLocation();
+
 					this.changeEmitter.fire();
 				}
 			}),
@@ -64,11 +67,13 @@ export class NpmScriptLensProvider implements CodeLensProvider, Disposable {
 		if (this.lensLocation === "never") {
 			return [];
 		}
+
 		const tokens = readScripts(document);
 
 		if (!tokens) {
 			return [];
 		}
+
 		const title = "$(debug-start) " + l10n.t("Debug");
 
 		const cwd = path.dirname(document.uri.fsPath);
@@ -82,6 +87,7 @@ export class NpmScriptLensProvider implements CodeLensProvider, Disposable {
 				}),
 			];
 		}
+
 		if (this.lensLocation === "all") {
 			const packageManager = await findPreferredPM(
 				Uri.joinPath(document.uri, "..").fsPath,
@@ -100,6 +106,7 @@ export class NpmScriptLensProvider implements CodeLensProvider, Disposable {
 					}),
 			);
 		}
+
 		return [];
 	}
 	/**

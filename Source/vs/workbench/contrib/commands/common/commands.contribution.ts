@@ -17,6 +17,7 @@ type RunnableCommand =
 	| string
 	| {
 			command: string;
+
 			args: any[];
 	  };
 type CommandArgs = {
@@ -99,6 +100,7 @@ class RunCommands extends Action2 {
 
 			return;
 		}
+
 		if (args.commands.length === 0) {
 			notificationService.warn(
 				nls.localize(
@@ -109,6 +111,7 @@ class RunCommands extends Action2 {
 
 			return;
 		}
+
 		const commandService = accessor.get(ICommandService);
 
 		const logService = accessor.get(ILogService);
@@ -118,37 +121,48 @@ class RunCommands extends Action2 {
 		try {
 			for (; i < args.commands.length; ++i) {
 				const cmd = args.commands[i];
+
 				logService.debug(
 					`runCommands: executing ${i}-th command: ${safeStringify(cmd)}`,
 				);
+
 				await this._runCommand(commandService, cmd);
+
 				logService.debug(`runCommands: executed ${i}-th command`);
 			}
 		} catch (err) {
 			logService.debug(
 				`runCommands: executing ${i}-th command resulted in an error: ${err instanceof Error ? err.message : safeStringify(err)}`,
 			);
+
 			notificationService.error(err);
 		}
 	}
+
 	private _isCommandArgs(args: unknown): args is CommandArgs {
 		if (!args || typeof args !== "object") {
 			return false;
 		}
+
 		if (!("commands" in args) || !Array.isArray(args.commands)) {
 			return false;
 		}
+
 		for (const cmd of args.commands) {
 			if (typeof cmd === "string") {
 				continue;
 			}
+
 			if (typeof cmd === "object" && typeof cmd.command === "string") {
 				continue;
 			}
+
 			return false;
 		}
+
 		return true;
 	}
+
 	private _runCommand(commandService: ICommandService, cmd: RunnableCommand) {
 		let commandID: string, commandArgs;
 
@@ -156,8 +170,10 @@ class RunCommands extends Action2 {
 			commandID = cmd;
 		} else {
 			commandID = cmd.command;
+
 			commandArgs = cmd.args;
 		}
+
 		if (commandArgs === undefined) {
 			return commandService.executeCommand(commandID);
 		} else {

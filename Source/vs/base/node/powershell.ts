@@ -77,6 +77,7 @@ if (process.env["PROCESSOR_ARCHITEW6432"]) {
 }
 export interface IPowerShellExeDetails {
 	readonly displayName: string;
+
 	readonly exePath: string;
 }
 interface IPossiblePowerShellExe extends IPowerShellExeDetails {
@@ -88,12 +89,14 @@ class PossiblePowerShellExe implements IPossiblePowerShellExe {
 		public readonly displayName: string,
 		private knownToExist?: boolean,
 	) {}
+
 	public async exists(): Promise<boolean> {
 		if (this.knownToExist === undefined) {
 			this.knownToExist = await pfs.SymlinkSupport.existsFile(
 				this.exePath,
 			);
 		}
+
 		return this.knownToExist;
 	}
 }
@@ -122,6 +125,7 @@ async function findPSCoreWindowsInstallation({
 	findPreview = false,
 }: {
 	useAlternateBitness?: boolean;
+
 	findPreview?: boolean;
 } = {}): Promise<IPossiblePowerShellExe | null> {
 	const programFilesPath = getProgramFilesPath({ useAlternateBitness });
@@ -129,11 +133,13 @@ async function findPSCoreWindowsInstallation({
 	if (!programFilesPath) {
 		return null;
 	}
+
 	const powerShellInstallBaseDir = path.join(programFilesPath, "PowerShell");
 	// Ensure the base directory exists
 	if (!(await pfs.SymlinkSupport.existsDirectory(powerShellInstallBaseDir))) {
 		return null;
 	}
+
 	let highestSeenVersion: number = -1;
 
 	let pwshExePath: string | null = null;
@@ -159,12 +165,14 @@ async function findPSCoreWindowsInstallation({
 			) {
 				continue;
 			}
+
 			currentVersion = parseInt(intPart, 10);
 		} else {
 			// Search for a directory like "6" or "7"
 			if (!IntRegex.test(item)) {
 				continue;
 			}
+
 			currentVersion = parseInt(item, 10);
 		}
 		// Ensure we haven't already seen a higher version
@@ -177,12 +185,16 @@ async function findPSCoreWindowsInstallation({
 		if (!(await pfs.SymlinkSupport.existsFile(exePath))) {
 			continue;
 		}
+
 		pwshExePath = exePath;
+
 		highestSeenVersion = currentVersion;
 	}
+
 	if (!pwshExePath) {
 		return null;
 	}
+
 	const bitness: string = programFilesPath.includes("x86") ? " (x86)" : "";
 
 	const preview: string = findPreview ? " Preview" : "";
@@ -342,5 +354,6 @@ export async function getFirstAvailablePowerShellInstallation(): Promise<IPowerS
 	for await (const pwsh of enumeratePowerShellInstallations()) {
 		return pwsh;
 	}
+
 	return null;
 }

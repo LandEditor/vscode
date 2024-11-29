@@ -15,12 +15,14 @@ export class KeymapRecommendations extends ExtensionRecommendations {
 	get recommendations(): ReadonlyArray<ExtensionRecommendation> {
 		return this._recommendations;
 	}
+
 	constructor(
 		@IProductService
 		private readonly productService: IProductService,
 	) {
 		super();
 	}
+
 	protected async doActivate(): Promise<void> {
 		if (this.productService.keymapExtensionTips) {
 			this._recommendations = this.productService.keymapExtensionTips.map(

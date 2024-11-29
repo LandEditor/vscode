@@ -19,18 +19,28 @@ import { ResolvedKeybindingItem } from "./resolvedKeybindingItem.js";
 
 export interface IUserFriendlyKeybinding {
 	key: string;
+
 	command: string;
+
 	args?: any;
+
 	when?: string;
 }
 export interface IKeyboardEvent {
 	readonly _standardKeyboardEventBrand: true;
+
 	readonly ctrlKey: boolean;
+
 	readonly shiftKey: boolean;
+
 	readonly altKey: boolean;
+
 	readonly metaKey: boolean;
+
 	readonly altGraphKey: boolean;
+
 	readonly keyCode: KeyCode;
+
 	readonly code: string;
 }
 export interface KeybindingsSchemaContribution {
@@ -43,13 +53,17 @@ export const IKeybindingService =
 
 export interface IKeybindingService {
 	readonly _serviceBrand: undefined;
+
 	readonly inChordMode: boolean;
+
 	onDidUpdateKeybindings: Event<void>;
 	/**
 	 * Returns none, one or many (depending on keyboard layout)!
 	 */
 	resolveKeybinding(keybinding: Keybinding): ResolvedKeybinding[];
+
 	resolveKeyboardEvent(keyboardEvent: IKeyboardEvent): ResolvedKeybinding;
+
 	resolveUserBinding(userBinding: string): ResolvedKeybinding[];
 	/**
 	 * Resolve and dispatch `keyboardEvent` and invoke the command.
@@ -69,6 +83,7 @@ export interface IKeybindingService {
 	 * @returns A promise that resolves when hold stops, returns undefined if hold mode could not be enabled.
 	 */
 	enableKeybindingHoldMode(commandId: string): Promise<void> | undefined;
+
 	dispatchByUserSettingsLabel(
 		userSettingsLabel: string,
 		target: IContextKeyServiceTarget,
@@ -92,16 +107,21 @@ export interface IKeybindingService {
 	getDefaultKeybindings(): readonly ResolvedKeybindingItem[];
 
 	getKeybindings(): readonly ResolvedKeybindingItem[];
+
 	customKeybindingsCount(): number;
 	/**
 	 * Will the given key event produce a character that's rendered on screen, e.g. in a
 	 * text box. *Note* that the results of this function can be incorrect.
 	 */
 	mightProducePrintableCharacter(event: IKeyboardEvent): boolean;
+
 	registerSchemaContribution(
 		contribution: KeybindingsSchemaContribution,
 	): void;
+
 	toggleLogging(): boolean;
+
 	_dumpDebugInfo(): string;
+
 	_dumpDebugInfoJSON(): string;
 }

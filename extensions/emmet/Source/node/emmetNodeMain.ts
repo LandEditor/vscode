@@ -21,5 +21,6 @@ export function activate(context: vscode.ExtensionContext) {
 	);
 
 	setHomeDir(vscode.Uri.file(homedir()));
+
 	activateEmmetExtension(context);
 }

@@ -26,9 +26,11 @@ export class ViewZoneComputer {
 	private readonly conflictActionsFactoryInput1 = new ConflictActionsFactory(
 		this.input1Editor,
 	);
+
 	private readonly conflictActionsFactoryInput2 = new ConflictActionsFactory(
 		this.input2Editor,
 	);
+
 	private readonly conflictActionsFactoryResult = new ConflictActionsFactory(
 		this.resultEditor,
 	);
@@ -38,13 +40,17 @@ export class ViewZoneComputer {
 		private readonly input2Editor: ICodeEditor,
 		private readonly resultEditor: ICodeEditor,
 	) {}
+
 	public computeViewZones(
 		reader: IReader,
 		viewModel: MergeEditorViewModel,
 		options: {
 			shouldAlignResult: boolean;
+
 			shouldAlignBase: boolean;
+
 			codeLensesVisible: boolean;
+
 			showNonConflictingChanges: boolean;
 		},
 	): MergeEditorViewZones {
@@ -110,6 +116,7 @@ export class ViewZoneComputer {
 							actions.itemsInput1,
 						),
 					);
+
 					input2ViewZones.push(
 						new CommandViewZone(
 							this.conflictActionsFactoryInput2,
@@ -127,11 +134,13 @@ export class ViewZoneComputer {
 						);
 					}
 				}
+
 				const afterLineNumber =
 					m.left.baseRange.startLineNumber +
 					(lastBaseResultDiff?.resultingDeltaFromOriginalToModified ??
 						0) -
 					1;
+
 				resultViewZones.push(
 					new CommandViewZone(
 						this.conflictActionsFactoryResult,
@@ -140,11 +149,13 @@ export class ViewZoneComputer {
 					),
 				);
 			}
+
 			const lastResultDiff = m.rights.at(-1)!;
 
 			if (lastResultDiff) {
 				lastBaseResultDiff = lastResultDiff;
 			}
+
 			let alignedLines: LineAlignment[];
 
 			if (m.left) {
@@ -154,6 +165,7 @@ export class ViewZoneComputer {
 					input2Line: a[2],
 					resultLine: undefined,
 				}));
+
 				lastModifiedBaseRange = m.left;
 				// This is a total hack.
 				alignedLines[alignedLines.length - 1].resultLine =
@@ -187,6 +199,7 @@ export class ViewZoneComputer {
 					},
 				];
 			}
+
 			for (const {
 				input1Line,
 				baseLine,
@@ -199,6 +212,7 @@ export class ViewZoneComputer {
 				) {
 					continue;
 				}
+
 				const input1Line_ =
 					input1Line !== undefined
 						? input1Line + input1LinesAdded
@@ -230,9 +244,11 @@ export class ViewZoneComputer {
 						input1ViewZones.push(
 							new Spacer(input1Line - 1, diffInput1),
 						);
+
 						input1LinesAdded += diffInput1;
 					}
 				}
+
 				if (input2Line !== undefined) {
 					const diffInput2 = max - input2Line_;
 
@@ -240,17 +256,21 @@ export class ViewZoneComputer {
 						input2ViewZones.push(
 							new Spacer(input2Line - 1, diffInput2),
 						);
+
 						input2LinesAdded += diffInput2;
 					}
 				}
+
 				if (options.shouldAlignBase) {
 					const diffBase = max - baseLine_;
 
 					if (diffBase > 0) {
 						baseViewZones.push(new Spacer(baseLine - 1, diffBase));
+
 						baseLinesAdded += diffBase;
 					}
 				}
+
 				if (options.shouldAlignResult && resultLine !== undefined) {
 					const diffResult = max - resultLine_;
 
@@ -258,11 +278,13 @@ export class ViewZoneComputer {
 						resultViewZones.push(
 							new Spacer(resultLine - 1, diffResult),
 						);
+
 						resultLinesAdded += diffResult;
 					}
 				}
 			}
 		}
+
 		return new MergeEditorViewZones(
 			input1ViewZones,
 			input2ViewZones,
@@ -273,8 +295,11 @@ export class ViewZoneComputer {
 }
 interface LineAlignment {
 	baseLine: number;
+
 	input1Line?: number;
+
 	input2Line?: number;
+
 	resultLine?: number;
 }
 export class MergeEditorViewZones {
@@ -302,6 +327,7 @@ class Spacer extends MergeEditorViewZone {
 	) {
 		super();
 	}
+
 	override create(
 		viewZoneChangeAccessor: IViewZoneChangeAccessor,
 		viewZoneIdsToCleanUp: string[],
@@ -323,6 +349,7 @@ class Placeholder extends MergeEditorViewZone {
 	) {
 		super();
 	}
+
 	override create(
 		viewZoneChangeAccessor: IViewZoneChangeAccessor,
 		viewZoneIdsToCleanUp: string[],
@@ -345,6 +372,7 @@ class CommandViewZone extends MergeEditorViewZone {
 	) {
 		super();
 	}
+
 	override create(
 		viewZoneChangeAccessor: IViewZoneChangeAccessor,
 		viewZoneIdsToCleanUp: string[],

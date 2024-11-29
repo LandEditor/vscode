@@ -46,6 +46,7 @@ export class BrowserWorkingCopyHistoryService extends WorkingCopyHistoryService 
 			configurationService,
 		);
 	}
+
 	protected getModelOptions(): IWorkingCopyHistoryModelOptions {
 		return {
 			flushOnChange:

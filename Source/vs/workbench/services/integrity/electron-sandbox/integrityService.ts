@@ -38,15 +38,18 @@ import {
 
 interface IStorageData {
 	readonly dontShowPrompt: boolean;
+
 	readonly commit: string | undefined;
 }
 class IntegrityStorage {
 	private static readonly KEY = "integrityService";
+
 	private value: IStorageData | null;
 
 	constructor(private readonly storageService: IStorageService) {
 		this.value = this._read();
 	}
+
 	private _read(): IStorageData | null {
 		const jsonValue = this.storageService.get(
 			IntegrityStorage.KEY,
@@ -56,17 +59,21 @@ class IntegrityStorage {
 		if (!jsonValue) {
 			return null;
 		}
+
 		try {
 			return JSON.parse(jsonValue);
 		} catch (err) {
 			return null;
 		}
 	}
+
 	get(): IStorageData | null {
 		return this.value;
 	}
+
 	set(data: IStorageData | null): void {
 		this.value = data;
+
 		this.storageService.store(
 			IntegrityStorage.KEY,
 			JSON.stringify(this.value),
@@ -77,11 +84,15 @@ class IntegrityStorage {
 }
 export class IntegrityService implements IIntegrityService {
 	declare readonly _serviceBrand: undefined;
+
 	private readonly _storage = new IntegrityStorage(this.storageService);
+
 	private readonly _isPurePromise = this._isPure();
+
 	isPure(): Promise<IntegrityTestResult> {
 		return this._isPurePromise;
 	}
+
 	constructor(
 		@INotificationService
 		private readonly notificationService: INotificationService,
@@ -100,12 +111,14 @@ export class IntegrityService implements IIntegrityService {
 	) {
 		this._compute();
 	}
+
 	private async _compute(): Promise<void> {
 		const { isPure } = await this.isPure();
 
 		if (isPure) {
 			return; // all is good
 		}
+
 		this.logService.warn(`
 
 ----------------------------------------------
@@ -122,10 +135,13 @@ export class IntegrityService implements IIntegrityService {
 		) {
 			return; // Do not prompt
 		}
+
 		this._showNotification();
 	}
+
 	private async _isPure(): Promise<IntegrityTestResult> {
 		const expectedChecksums = this.productService.checksums || {};
+
 		await this.lifecycleService.when(LifecyclePhase.Eventually);
 
 		const allResults = await Promise.all(
@@ -146,11 +162,13 @@ export class IntegrityService implements IIntegrityService {
 				break;
 			}
 		}
+
 		return {
 			isPure,
 			proof: allResults,
 		};
 	}
+
 	private async _resolve(
 		filename: AppResourcePath,
 		expected: string,
@@ -169,6 +187,7 @@ export class IntegrityService implements IIntegrityService {
 			return IntegrityService._createChecksumPair(fileUri, "", expected);
 		}
 	}
+
 	private static _createChecksumPair(
 		uri: URI,
 		actual: string,
@@ -181,6 +200,7 @@ export class IntegrityService implements IIntegrityService {
 			isPure: actual === expected,
 		};
 	}
+
 	private _showNotification(): void {
 		const checksumFailMoreInfoUrl =
 			this.productService.checksumFailMoreInfoUrl;

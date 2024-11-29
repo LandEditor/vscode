@@ -10,6 +10,7 @@ export default class MergeConflictContentProvider
 	static scheme = "merge-conflict.conflict-diff";
 
 	constructor(private context: vscode.ExtensionContext) {}
+
 	begin() {
 		this.context.subscriptions.push(
 			vscode.workspace.registerTextDocumentContentProvider(
@@ -18,18 +19,23 @@ export default class MergeConflictContentProvider
 			),
 		);
 	}
+
 	dispose() {}
+
 	async provideTextDocumentContent(uri: vscode.Uri): Promise<string | null> {
 		try {
 			const { scheme, ranges } = JSON.parse(uri.query) as {
 				scheme: string;
+
 				ranges: [
 					{
 						line: number;
+
 						character: number;
 					}[],
 					{
 						line: number;
+
 						character: number;
 					}[],
 				][];
@@ -42,12 +48,14 @@ export default class MergeConflictContentProvider
 			let text = "";
 
 			let lastPosition = new vscode.Position(0, 0);
+
 			ranges.forEach((rangeObj) => {
 				const [conflictRange, fullRange] = rangeObj;
 
 				const [start, end] = conflictRange;
 
 				const [fullStart, fullEnd] = fullRange;
+
 				text += document.getText(
 					new vscode.Range(
 						lastPosition.line,
@@ -56,6 +64,7 @@ export default class MergeConflictContentProvider
 						fullStart.character,
 					),
 				);
+
 				text += document.getText(
 					new vscode.Range(
 						start.line,
@@ -64,6 +73,7 @@ export default class MergeConflictContentProvider
 						end.character,
 					),
 				);
+
 				lastPosition = new vscode.Position(
 					fullEnd.line,
 					fullEnd.character,
@@ -72,6 +82,7 @@ export default class MergeConflictContentProvider
 
 			const documentEnd = document.lineAt(document.lineCount - 1).range
 				.end;
+
 			text += document.getText(
 				new vscode.Range(
 					lastPosition.line,

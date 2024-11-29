@@ -20,6 +20,7 @@ export class MarkerDecorationsContribution implements IEditorContribution {
 	) {
 		// Doesn't do anything, just requires `IMarkerDecorationsService` to make sure it gets instantiated
 	}
+
 	dispose(): void {}
 }
 registerEditorContribution(

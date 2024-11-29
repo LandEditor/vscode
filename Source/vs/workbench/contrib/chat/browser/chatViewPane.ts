@@ -55,10 +55,15 @@ export class ChatViewPane extends ViewPane implements IViewWelcomeDelegate {
 	get widget(): ChatWidget {
 		return this._widget;
 	}
+
 	private readonly modelDisposables = this._register(new DisposableStore());
+
 	private memento: Memento;
+
 	private readonly viewState: IViewPaneState;
+
 	private defaultParticipantRegistrationFailed = false;
+
 	private didUnregisterProvider = false;
 
 	constructor(
@@ -119,10 +124,12 @@ export class ChatViewPane extends ViewPane implements IViewWelcomeDelegate {
 					: ""),
 			this.storageService,
 		);
+
 		this.viewState = this.memento.getMemento(
 			StorageScope.WORKSPACE,
 			StorageTarget.MACHINE,
 		) as IViewPaneState;
+
 		this._register(
 			this.chatAgentService.onDidChangeAgents(() => {
 				if (
@@ -143,9 +150,13 @@ export class ChatViewPane extends ViewPane implements IViewWelcomeDelegate {
 
 						try {
 							this._widget.setVisible(false);
+
 							this.updateModel(model);
+
 							this.defaultParticipantRegistrationFailed = false;
+
 							this.didUnregisterProvider = false;
+
 							this._onDidChangeViewWelcomeState.fire();
 						} finally {
 							this.widget.setVisible(wasVisible);
@@ -158,10 +169,12 @@ export class ChatViewPane extends ViewPane implements IViewWelcomeDelegate {
 					// Model is initialized, and the default agent disappeared, so show welcome view
 					this.didUnregisterProvider = true;
 				}
+
 				this._onDidChangeViewWelcomeState.fire();
 			}),
 		);
 	}
+
 	override getActionsContext(): IChatViewTitleActionContext | undefined {
 		return this.widget?.viewModel
 			? {
@@ -170,11 +183,13 @@ export class ChatViewPane extends ViewPane implements IViewWelcomeDelegate {
 				}
 			: undefined;
 	}
+
 	private updateModel(
 		model?: IChatModel | undefined,
 		viewState?: IChatViewState,
 	): void {
 		this.modelDisposables.clear();
+
 		model =
 			model ??
 			(this.chatService.transferredSessionData?.sessionId
@@ -189,14 +204,18 @@ export class ChatViewPane extends ViewPane implements IViewWelcomeDelegate {
 		if (!model) {
 			throw new Error("Could not start chat session");
 		}
+
 		if (viewState) {
 			this.updateViewState(viewState);
 		}
+
 		this.viewState.sessionId = model.sessionId;
+
 		this._widget.setModel(model, { ...this.viewState });
 		// Update the toolbar context with new sessionId
 		this.updateActions();
 	}
+
 	override shouldShowWelcome(): boolean {
 		const noPersistedSessions = !this.chatService.hasSessions();
 
@@ -204,27 +223,33 @@ export class ChatViewPane extends ViewPane implements IViewWelcomeDelegate {
 			this.didUnregisterProvider ||
 			(!this._widget?.viewModel && noPersistedSessions) ||
 			this.defaultParticipantRegistrationFailed;
+
 		this.logService.trace(
 			`ChatViewPane#shouldShowWelcome(${this.chatOptions.location}) = ${shouldShow}: didUnregister=${this.didUnregisterProvider} || noViewModel:${!this._widget?.viewModel} && noPersistedSessions=${noPersistedSessions} || defaultParticipantRegistrationFailed=${this.defaultParticipantRegistrationFailed}`,
 		);
 
 		return shouldShow;
 	}
+
 	private getSessionId() {
 		let sessionId: string | undefined;
 
 		if (this.chatService.transferredSessionData) {
 			sessionId = this.chatService.transferredSessionData.sessionId;
+
 			this.viewState.inputValue =
 				this.chatService.transferredSessionData.inputValue;
 		} else {
 			sessionId = this.viewState.sessionId;
 		}
+
 		return sessionId;
 	}
+
 	protected override renderBody(parent: HTMLElement): void {
 		try {
 			super.renderBody(parent);
+
 			this._register(
 				this.instantiationService.createInstance(
 					ChatViewWelcomeController,
@@ -244,6 +269,7 @@ export class ChatViewPane extends ViewPane implements IViewWelcomeDelegate {
 			);
 
 			const locationBasedColors = this.getLocationBasedColors();
+
 			this._widget = this._register(
 				scopedInstantiationService.createInstance(
 					ChatWidget,
@@ -285,12 +311,15 @@ export class ChatViewPane extends ViewPane implements IViewWelcomeDelegate {
 					},
 				),
 			);
+
 			this._register(
 				this.onDidChangeBodyVisibility((visible) => {
 					this._widget.setVisible(visible);
 				}),
 			);
+
 			this._register(this._widget.onDidClear(() => this.clear()));
+
 			this._widget.render(parent);
 
 			const sessionId = this.getSessionId();
@@ -300,7 +329,9 @@ export class ChatViewPane extends ViewPane implements IViewWelcomeDelegate {
 					// Render the welcome view if provider registration fails, eg when signed out. This activates for any session, but the problem is the same regardless
 					if (e.reason === "initializationFailed") {
 						this.defaultParticipantRegistrationFailed = true;
+
 						disposeListener?.dispose();
+
 						this._onDidChangeViewWelcomeState.fire();
 					}
 				}),
@@ -309,6 +340,7 @@ export class ChatViewPane extends ViewPane implements IViewWelcomeDelegate {
 			const model = sessionId
 				? this.chatService.getOrRestoreSession(sessionId)
 				: undefined;
+
 			this.updateModel(model);
 		} catch (e) {
 			this.logService.error(e);
@@ -316,47 +348,63 @@ export class ChatViewPane extends ViewPane implements IViewWelcomeDelegate {
 			throw e;
 		}
 	}
+
 	acceptInput(query?: string): void {
 		this._widget.acceptInput(query);
 	}
+
 	private clear(): void {
 		if (this.widget.viewModel) {
 			this.chatService.clearSession(this.widget.viewModel.sessionId);
 		}
 		// Grab the widget's latest view state because it will be loaded back into the widget
 		this.updateViewState();
+
 		this.updateModel(undefined);
 		// Update the toolbar context with new sessionId
 		this.updateActions();
 	}
+
 	loadSession(sessionId: string, viewState?: IChatViewState): void {
 		if (this.widget.viewModel) {
 			this.chatService.clearSession(this.widget.viewModel.sessionId);
 		}
+
 		const newModel = this.chatService.getOrRestoreSession(sessionId);
+
 		this.updateModel(newModel, viewState);
 	}
+
 	focusInput(): void {
 		this._widget.focusInput();
 	}
+
 	override focus(): void {
 		super.focus();
+
 		this._widget.focusInput();
 	}
+
 	protected override layoutBody(height: number, width: number): void {
 		super.layoutBody(height, width);
+
 		this._widget.layout(height, width);
 	}
+
 	override saveState(): void {
 		if (this._widget) {
 			// Since input history is per-provider, this is handled by a separate service and not the memento here.
 			// TODO multiple chat views will overwrite each other
 			this._widget.saveState();
+
 			this.updateViewState();
+
 			this.memento.saveMemento();
 		}
+
 		super.saveState();
 	}
+
 	private updateViewState(viewState?: IChatViewState): void {
 		const newViewState = viewState ?? this._widget.getViewState();
 

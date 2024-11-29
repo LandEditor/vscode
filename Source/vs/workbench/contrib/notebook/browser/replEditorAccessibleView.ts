@@ -25,8 +25,11 @@ import { getAllOutputsText } from "./viewModel/cellOutputTextHelper.js";
  */
 export class ReplEditorAccessibleView implements IAccessibleViewImplentation {
 	readonly priority = 100;
+
 	readonly name = "replEditorInput";
+
 	readonly type = AccessibleViewType.View;
+
 	readonly when = ContextKeyExpr.and(
 		IS_COMPOSITE_NOTEBOOK,
 		NOTEBOOK_CELL_LIST_FOCUSED.negate(),

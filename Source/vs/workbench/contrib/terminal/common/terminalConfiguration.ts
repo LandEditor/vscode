@@ -1121,6 +1121,7 @@ export function registerTerminalConfiguration() {
 	const configurationRegistry = Registry.as<IConfigurationRegistry>(
 		Extensions.Configuration,
 	);
+
 	configurationRegistry.registerConfiguration(terminalConfiguration);
 }
 
@@ -1142,14 +1143,17 @@ Registry.as<IConfigurationMigrationRegistry>(
 			) {
 				announcement = announcement ? "auto" : "off";
 			}
+
 			configurationKeyValuePairs.push([
 				"accessibility.signals.terminalBell",
 				{ value: { sound: enableBell ? "on" : "off", announcement } },
 			]);
+
 			configurationKeyValuePairs.push([
 				TerminalSettingId.EnableBell,
 				{ value: undefined },
 			]);
+
 			configurationKeyValuePairs.push([
 				TerminalSettingId.EnableVisualBell,
 				{ value: enableBell },

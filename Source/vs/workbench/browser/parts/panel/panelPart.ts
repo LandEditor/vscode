@@ -66,8 +66,11 @@ export class PanelPart extends AbstractPaneCompositePart {
 	//#region IView
 
 	readonly minimumWidth: number = 300;
+
 	readonly maximumWidth: number = Number.POSITIVE_INFINITY;
+
 	readonly minimumHeight: number = 77;
+
 	readonly maximumHeight: number = Number.POSITIVE_INFINITY;
 
 	get preferredHeight(): number | undefined {
@@ -150,12 +153,16 @@ export class PanelPart extends AbstractPaneCompositePart {
 		super.updateStyles();
 
 		const container = assertIsDefined(this.getContainer());
+
 		container.style.backgroundColor = this.getColor(PANEL_BACKGROUND) || "";
 
 		const borderColor =
 			this.getColor(PANEL_BORDER) || this.getColor(contrastBorder) || "";
+
 		container.style.borderLeftColor = borderColor;
+
 		container.style.borderRightColor = borderColor;
+
 		container.style.borderBottomColor = borderColor;
 
 		const title = this.getTitleArea();
@@ -219,6 +226,7 @@ export class PanelPart extends AbstractPaneCompositePart {
 
 			if (viewsSubmenuAction) {
 				actions.push(new Separator());
+
 				actions.push(viewsSubmenuAction);
 			}
 		}

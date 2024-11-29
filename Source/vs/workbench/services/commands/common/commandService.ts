@@ -20,14 +20,20 @@ import { IExtensionService } from "../../extensions/common/extensions.js";
 
 export class CommandService extends Disposable implements ICommandService {
 	declare readonly _serviceBrand: undefined;
+
 	private _extensionHostIsReady: boolean = false;
+
 	private _starActivation: Promise<void> | null;
+
 	private readonly _onWillExecuteCommand: Emitter<ICommandEvent> =
 		this._register(new Emitter<ICommandEvent>());
+
 	public readonly onWillExecuteCommand: Event<ICommandEvent> =
 		this._onWillExecuteCommand.event;
+
 	private readonly _onDidExecuteCommand: Emitter<ICommandEvent> =
 		new Emitter<ICommandEvent>();
+
 	public readonly onDidExecuteCommand: Event<ICommandEvent> =
 		this._onDidExecuteCommand.event;
 
@@ -40,11 +46,14 @@ export class CommandService extends Disposable implements ICommandService {
 		private readonly _logService: ILogService,
 	) {
 		super();
+
 		this._extensionService
 			.whenInstalledExtensionsRegistered()
 			.then((value) => (this._extensionHostIsReady = value));
+
 		this._starActivation = null;
 	}
+
 	private _activateStar(): Promise<void> {
 		if (!this._starActivation) {
 			// wait for * activation, limited to at most 30s
@@ -53,8 +62,10 @@ export class CommandService extends Disposable implements ICommandService {
 				timeout(30000),
 			]);
 		}
+
 		return this._starActivation;
 	}
+
 	async executeCommand<T>(id: string, ...args: any[]): Promise<T> {
 		this._logService.trace("CommandService#executeCommand", id);
 
@@ -97,12 +108,14 @@ export class CommandService extends Disposable implements ICommandService {
 
 		return this._tryExecuteCommand(id, args);
 	}
+
 	private _tryExecuteCommand(id: string, args: any[]): Promise<any> {
 		const command = CommandsRegistry.getCommand(id);
 
 		if (!command) {
 			return Promise.reject(new Error(`command '${id}' not found`));
 		}
+
 		try {
 			this._onWillExecuteCommand.fire({ commandId: id, args });
 
@@ -110,6 +123,7 @@ export class CommandService extends Disposable implements ICommandService {
 				command.handler,
 				...args,
 			);
+
 			this._onDidExecuteCommand.fire({ commandId: id, args });
 
 			return Promise.resolve(result);

@@ -33,6 +33,7 @@ export class UnicodeTextModelHighlighter {
 				"g",
 			);
 		}
+
 		const searcher = new Searcher(null, regex);
 
 		const ranges: Range[] = [];
@@ -49,7 +50,9 @@ export class UnicodeTextModelHighlighter {
 
 		forLoop: for (
 			let lineNumber = startLine, lineCount = endLine;
+
 			lineNumber <= lineCount;
+
 			lineNumber++
 		) {
 			const lineContent = model.getLineContent(lineNumber);
@@ -75,6 +78,7 @@ export class UnicodeTextModelHighlighter {
 							startIndex--;
 						}
 					}
+
 					if (endIndex + 1 < lineLength) {
 						const charCodeBefore = lineContent.charCodeAt(
 							endIndex - 1,
@@ -84,6 +88,7 @@ export class UnicodeTextModelHighlighter {
 							endIndex++;
 						}
 					}
+
 					const str = lineContent.substring(startIndex, endIndex);
 
 					let word = getWordAtText(
@@ -97,6 +102,7 @@ export class UnicodeTextModelHighlighter {
 						// The word does not include the problematic character, ignore the word
 						word = null;
 					}
+
 					const highlightReason =
 						codePointHighlighter.shouldHighlightNonBasicASCII(
 							str,
@@ -120,6 +126,7 @@ export class UnicodeTextModelHighlighter {
 						} else {
 							assertNever(highlightReason);
 						}
+
 						const MAX_RESULT_LENGTH = 1000;
 
 						if (ranges.length >= MAX_RESULT_LENGTH) {
@@ -127,6 +134,7 @@ export class UnicodeTextModelHighlighter {
 
 							break forLoop;
 						}
+
 						ranges.push(
 							new Range(
 								lineNumber,
@@ -139,6 +147,7 @@ export class UnicodeTextModelHighlighter {
 				}
 			} while (m);
 		}
+
 		return {
 			ranges,
 			hasMore,
@@ -147,6 +156,7 @@ export class UnicodeTextModelHighlighter {
 			nonBasicAsciiCharacterCount,
 		};
 	}
+
 	public static computeUnicodeHighlightReason(
 		char: string,
 		options: UnicodeHighlighterOptions,
@@ -187,6 +197,7 @@ export class UnicodeTextModelHighlighter {
 					notAmbiguousInLocales,
 				};
 			}
+
 			case SimpleHighlightReason.NonBasicASCII:
 				return { kind: UnicodeHighlighterReasonKind.NonBasicAscii };
 		}
@@ -208,7 +219,9 @@ export const enum UnicodeHighlighterReasonKind {
 export type UnicodeHighlighterReason =
 	| {
 			kind: UnicodeHighlighterReasonKind.Ambiguous;
+
 			confusableWith: string;
+
 			notAmbiguousInLocales: string[];
 	  }
 	| {
@@ -219,18 +232,22 @@ export type UnicodeHighlighterReason =
 	  };
 class CodePointHighlighter {
 	private readonly allowedCodePoints: Set<number>;
+
 	public readonly ambiguousCharacters: strings.AmbiguousCharacters;
 
 	constructor(private readonly options: UnicodeHighlighterOptions) {
 		this.allowedCodePoints = new Set(options.allowedCodePoints);
+
 		this.ambiguousCharacters = strings.AmbiguousCharacters.getInstance(
 			new Set(options.allowedLocales),
 		);
 	}
+
 	public getCandidateCodePoints(): Set<number> | "allNonBasicAscii" {
 		if (this.options.nonBasicASCII) {
 			return "allNonBasicAscii";
 		}
+
 		const set = new Set<number>();
 
 		if (this.options.invisibleCharacters) {
@@ -240,16 +257,20 @@ class CodePointHighlighter {
 				}
 			}
 		}
+
 		if (this.options.ambiguousCharacters) {
 			for (const cp of this.ambiguousCharacters.getConfusableCodePoints()) {
 				set.add(cp);
 			}
 		}
+
 		for (const cp of this.allowedCodePoints) {
 			set.delete(cp);
 		}
+
 		return set;
 	}
+
 	public shouldHighlightNonBasicASCII(
 		character: string,
 		wordContext: string | null,
@@ -259,9 +280,11 @@ class CodePointHighlighter {
 		if (this.allowedCodePoints.has(codePoint)) {
 			return SimpleHighlightReason.None;
 		}
+
 		if (this.options.nonBasicASCII) {
 			return SimpleHighlightReason.NonBasicASCII;
 		}
+
 		let hasBasicASCIICharacters = false;
 
 		let hasNonConfusableNonBasicAsciiCharacter = false;
@@ -271,6 +294,7 @@ class CodePointHighlighter {
 				const codePoint = char.codePointAt(0)!;
 
 				const isBasicASCII = strings.isBasicASCII(char);
+
 				hasBasicASCIICharacters =
 					hasBasicASCIICharacters || isBasicASCII;
 
@@ -283,12 +307,14 @@ class CodePointHighlighter {
 				}
 			}
 		}
+
 		if (
 			/* Don't allow mixing weird looking characters with ASCII */ !hasBasicASCIICharacters &&
 			/* Is there an obviously weird looking character? */ hasNonConfusableNonBasicAsciiCharacter
 		) {
 			return SimpleHighlightReason.None;
 		}
+
 		if (this.options.invisibleCharacters) {
 			// TODO check for emojis
 			if (
@@ -298,11 +324,13 @@ class CodePointHighlighter {
 				return SimpleHighlightReason.Invisible;
 			}
 		}
+
 		if (this.options.ambiguousCharacters) {
 			if (this.ambiguousCharacters.isAmbiguous(codePoint)) {
 				return SimpleHighlightReason.Ambiguous;
 			}
 		}
+
 		return SimpleHighlightReason.None;
 	}
 }
@@ -323,10 +351,16 @@ export interface IUnicodeCharacterSearcherTarget {
 }
 export interface UnicodeHighlighterOptions {
 	nonBasicASCII: boolean;
+
 	ambiguousCharacters: boolean;
+
 	invisibleCharacters: boolean;
+
 	includeComments: boolean;
+
 	includeStrings: boolean;
+
 	allowedCodePoints: number[];
+
 	allowedLocales: string[];
 }

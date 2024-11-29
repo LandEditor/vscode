@@ -18,10 +18,12 @@ export function optimizeSequenceDiffs(
 	sequenceDiffs: SequenceDiff[],
 ): SequenceDiff[] {
 	let result = sequenceDiffs;
+
 	result = joinSequenceDiffsByShifting(sequence1, sequence2, result);
 	// Sometimes, calling this function twice improves the result.
 	// Uncomment the second invocation and run the tests to see the difference.
 	result = joinSequenceDiffsByShifting(sequence1, sequence2, result);
+
 	result = shiftSequenceDiffs(sequence1, sequence2, result);
 
 	return result;
@@ -46,7 +48,9 @@ function joinSequenceDiffsByShifting(
 	if (sequenceDiffs.length === 0) {
 		return sequenceDiffs;
 	}
+
 	const result: SequenceDiff[] = [];
+
 	result.push(sequenceDiffs[0]);
 	// First move them all to the left as much as possible and join them if possible
 	for (let i = 1; i < sequenceDiffs.length; i++) {
@@ -70,6 +74,7 @@ function joinSequenceDiffsByShifting(
 					break;
 				}
 			}
+
 			d--;
 
 			if (d === length) {
@@ -87,10 +92,13 @@ function joinSequenceDiffsByShifting(
 
 				continue;
 			}
+
 			cur = cur.delta(-d);
 		}
+
 		result.push(cur);
 	}
+
 	const result2: SequenceDiff[] = [];
 	// Then move them all to the right and join them again if possible
 	for (let i = 0; i < result.length - 1; i++) {
@@ -118,6 +126,7 @@ function joinSequenceDiffsByShifting(
 					break;
 				}
 			}
+
 			if (d === length) {
 				// Merge previous and current diff, write to result!
 				result[i + 1] = new SequenceDiff(
@@ -133,15 +142,19 @@ function joinSequenceDiffsByShifting(
 
 				continue;
 			}
+
 			if (d > 0) {
 				cur = cur.delta(d);
 			}
 		}
+
 		result2.push(cur);
 	}
+
 	if (result.length > 0) {
 		result2.push(result[result.length - 1]);
 	}
+
 	return result2;
 }
 // align character level diffs at whitespace characters
@@ -165,6 +178,7 @@ function shiftSequenceDiffs(
 	if (!sequence1.getBoundaryScore || !sequence2.getBoundaryScore) {
 		return sequenceDiffs;
 	}
+
 	for (let i = 0; i < sequenceDiffs.length; i++) {
 		const prevDiff = i > 0 ? sequenceDiffs[i - 1] : undefined;
 
@@ -201,6 +215,7 @@ function shiftSequenceDiffs(
 			).swap();
 		}
 	}
+
 	return sequenceDiffs;
 }
 function shiftDiffToBetterPosition(
@@ -225,6 +240,7 @@ function shiftDiffToBetterPosition(
 	) {
 		deltaBefore++;
 	}
+
 	deltaBefore--;
 
 	let deltaAfter = 0;
@@ -241,6 +257,7 @@ function shiftDiffToBetterPosition(
 	) {
 		deltaAfter++;
 	}
+
 	if (deltaBefore === 0 && deltaAfter === 0) {
 		return diff;
 	}
@@ -264,9 +281,11 @@ function shiftDiffToBetterPosition(
 
 		if (score > bestScore) {
 			bestScore = score;
+
 			bestDelta = delta;
 		}
 	}
+
 	return diff.delta(bestDelta);
 }
 export function removeShortMatches(
@@ -284,6 +303,7 @@ export function removeShortMatches(
 
 			continue;
 		}
+
 		if (
 			s.seq1Range.start - last.seq1Range.endExclusive <= 2 ||
 			s.seq2Range.start - last.seq2Range.endExclusive <= 2
@@ -296,6 +316,7 @@ export function removeShortMatches(
 			result.push(s);
 		}
 	}
+
 	return result;
 }
 export function extendDiffsToEntireWordIfAppropriate(
@@ -316,6 +337,7 @@ export function extendDiffsToEntireWordIfAppropriate(
 		) {
 			return;
 		}
+
 		const w1 = sequence1.findWordContaining(pair.offset1);
 
 		const w2 = sequence2.findWordContaining(pair.offset2);
@@ -323,6 +345,7 @@ export function extendDiffsToEntireWordIfAppropriate(
 		if (!w1 || !w2) {
 			return;
 		}
+
 		let w = new SequenceDiff(w1, w2);
 
 		const equalPart = w.intersect(equalMapping)!;
@@ -342,6 +365,7 @@ export function extendDiffsToEntireWordIfAppropriate(
 			if (!intersects) {
 				break;
 			}
+
 			const v1 = sequence1.findWordContaining(next.seq1Range.start);
 
 			const v2 = sequence2.findWordContaining(next.seq2Range.start);
@@ -349,8 +373,11 @@ export function extendDiffsToEntireWordIfAppropriate(
 			const v = new SequenceDiff(v1!, v2!);
 
 			const equalPart = v.intersect(next)!;
+
 			equalChars1 += equalPart.seq1Range.length;
+
 			equalChars2 += equalPart.seq2Range.length;
+
 			w = w.join(v);
 
 			if (w.seq1Range.endExclusive >= next.seq1Range.endExclusive) {
@@ -360,24 +387,29 @@ export function extendDiffsToEntireWordIfAppropriate(
 				break;
 			}
 		}
+
 		if (
 			equalChars1 + equalChars2 <
 			((w.seq1Range.length + w.seq2Range.length) * 2) / 3
 		) {
 			additional.push(w);
 		}
+
 		lastPoint = w.getEndExclusives();
 	}
+
 	while (equalMappings.length > 0) {
 		const next = equalMappings.shift()!;
 
 		if (next.seq1Range.isEmpty) {
 			continue;
 		}
+
 		scanWord(next.getStarts(), next);
 		// The equal parts are not empty, so -1 gives us a character that is equal in both parts.
 		scanWord(next.getEndExclusives().delta(-1), next);
 	}
+
 	const merged = mergeSequenceDiffs(sequenceDiffs, additional);
 
 	return merged;
@@ -400,6 +432,7 @@ function mergeSequenceDiffs(
 		} else {
 			next = sequenceDiffs2.shift()!;
 		}
+
 		if (
 			result.length > 0 &&
 			result[result.length - 1].seq1Range.endExclusive >=
@@ -410,6 +443,7 @@ function mergeSequenceDiffs(
 			result.push(next);
 		}
 	}
+
 	return result;
 }
 export function removeVeryShortMatchingLinesBetweenDiffs(
@@ -422,6 +456,7 @@ export function removeVeryShortMatchingLinesBetweenDiffs(
 	if (diffs.length === 0) {
 		return diffs;
 	}
+
 	let counter = 0;
 
 	let shouldRepeat: boolean;
@@ -456,17 +491,21 @@ export function removeVeryShortMatchingLinesBetweenDiffs(
 				) {
 					return true;
 				}
+
 				return false;
 			}
+
 			const shouldJoin = shouldJoinDiffs(lastResult, cur);
 
 			if (shouldJoin) {
 				shouldRepeat = true;
+
 				result[result.length - 1] = result[result.length - 1].join(cur);
 			} else {
 				result.push(cur);
 			}
 		}
+
 		diffs = result;
 	} while (counter++ < 10 && shouldRepeat);
 
@@ -482,6 +521,7 @@ export function removeVeryShortMatchingTextBetweenLongDiffs(
 	if (diffs.length === 0) {
 		return diffs;
 	}
+
 	let counter = 0;
 
 	let shouldRepeat: boolean;
@@ -511,6 +551,7 @@ export function removeVeryShortMatchingTextBetweenLongDiffs(
 				if (unchangedLineCount > 5 || unchangedRange.length > 500) {
 					return false;
 				}
+
 				const unchangedText = sequence1.getText(unchangedRange).trim();
 
 				if (
@@ -519,6 +560,7 @@ export function removeVeryShortMatchingTextBetweenLongDiffs(
 				) {
 					return false;
 				}
+
 				const beforeLineCount1 = sequence1.countLinesIn(
 					before.seq1Range,
 				);
@@ -544,6 +586,7 @@ export function removeVeryShortMatchingTextBetweenLongDiffs(
 				function cap(v: number): number {
 					return Math.min(v, max);
 				}
+
 				if (
 					Math.pow(
 						Math.pow(
@@ -571,17 +614,21 @@ export function removeVeryShortMatchingTextBetweenLongDiffs(
 				) {
 					return true;
 				}
+
 				return false;
 			}
+
 			const shouldJoin = shouldJoinDiffs(lastResult, cur);
 
 			if (shouldJoin) {
 				shouldRepeat = true;
+
 				result[result.length - 1] = result[result.length - 1].join(cur);
 			} else {
 				result.push(cur);
 			}
 		}
+
 		diffs = result;
 	} while (counter++ < 10 && shouldRepeat);
 
@@ -597,6 +644,7 @@ export function removeVeryShortMatchingTextBetweenLongDiffs(
 				cur.seq1Range.length + cur.seq2Range.length > 100
 			);
 		}
+
 		const fullRange1 = sequence1.extendToFullLines(cur.seq1Range);
 
 		const prefix = sequence1.getText(
@@ -606,6 +654,7 @@ export function removeVeryShortMatchingTextBetweenLongDiffs(
 		if (shouldMarkAsChanged(prefix)) {
 			newDiff = newDiff.deltaStart(-prefix.length);
 		}
+
 		const suffix = sequence1.getText(
 			new OffsetRange(
 				cur.seq1Range.endExclusive,
@@ -616,6 +665,7 @@ export function removeVeryShortMatchingTextBetweenLongDiffs(
 		if (shouldMarkAsChanged(suffix)) {
 			newDiff = newDiff.deltaEnd(suffix.length);
 		}
+
 		const availableSpace = SequenceDiff.fromOffsetPairs(
 			prev ? prev.getEndExclusives() : OffsetPair.zero,
 			next ? next.getStarts() : OffsetPair.max,

@@ -79,6 +79,7 @@ export class NotebookChatActionsOverlayController extends Disposable {
 
 					const previousEntry =
 						entries[(idx - 1 + entries.length) % entries.length];
+
 					store.add(
 						instantiationService.createInstance(
 							NotebookChatActionsOverlay,
@@ -109,7 +110,9 @@ export class NotebookChatActionsOverlay extends Disposable {
 		super();
 
 		const toolbarNode = $("div");
+
 		toolbarNode.classList.add("notebook-chat-editor-overlay-widget");
+
 		notebookEditor.getDomNode().appendChild(toolbarNode);
 
 		this._register(
@@ -150,6 +153,7 @@ export class NotebookChatActionsOverlay extends Disposable {
 									keybindingNotRenderedWithLabel: true,
 								});
 							}
+
 							override set actionRunner(
 								actionRunner: IActionRunner,
 							) {
@@ -162,14 +166,17 @@ export class NotebookChatActionsOverlay extends Disposable {
 										notebookEditor.focus();
 									}),
 								);
+
 								store.add(
 									actionRunner.onDidRun((e) => {
 										if (e.action !== this.action) {
 											return;
 										}
+
 										if (entry === nextEntry) {
 											return;
 										}
+
 										const change = nextEntry.diffInfo
 											.get()
 											.changes.at(0);
@@ -197,6 +204,7 @@ export class NotebookChatActionsOverlay extends Disposable {
 
 								this._reveal.value = store;
 							}
+
 							override get actionRunner(): IActionRunner {
 								return super.actionRunner;
 							}
@@ -216,6 +224,7 @@ export class NotebookChatActionsOverlay extends Disposable {
 									keybindingNotRenderedWithLabel: true,
 								});
 							}
+
 							override set actionRunner(_: IActionRunner) {
 								const next =
 									action.id ===
@@ -239,11 +248,13 @@ export class NotebookChatActionsOverlay extends Disposable {
 										_editorService,
 									);
 							}
+
 							override get actionRunner(): IActionRunner {
 								return super.actionRunner;
 							}
 						})();
 					}
+
 					return undefined;
 				},
 			},
@@ -267,6 +278,7 @@ class NextPreviousChangeActionRunner extends ActionRunner {
 	) {
 		super();
 	}
+
 	protected override async runAction(
 		_action: IAction,
 		_context?: unknown,
@@ -358,6 +370,7 @@ class NextPreviousChangeActionRunner extends ActionRunner {
 		}
 		// For now just go to next/previous file.
 		const change = this.next.diffInfo.get().changes.at(0);
+
 		await this._editorService.openEditor(
 			{
 				resource: this.next.modifiedURI,

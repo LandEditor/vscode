@@ -30,11 +30,13 @@ class LogChatInputHistoryAction extends Action2 {
 			f1: true,
 		});
 	}
+
 	override async run(
 		accessor: ServicesAccessor,
 		...args: any[]
 	): Promise<void> {
 		const chatWidgetService = accessor.get(IChatWidgetService);
+
 		chatWidgetService.lastFocusedWidget?.logInputHistory();
 	}
 }

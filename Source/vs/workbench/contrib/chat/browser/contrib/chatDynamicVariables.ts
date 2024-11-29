@@ -43,20 +43,24 @@ export class ChatDynamicVariableModel
 	implements IChatWidgetContrib
 {
 	public static readonly ID = "chatDynamicVariableModel";
+
 	private _variables: IDynamicVariable[] = [];
 
 	get variables(): ReadonlyArray<IDynamicVariable> {
 		return [...this._variables];
 	}
+
 	get id() {
 		return ChatDynamicVariableModel.ID;
 	}
+
 	constructor(
 		private readonly widget: IChatWidget,
 		@ILabelService
 		private readonly labelService: ILabelService,
 	) {
 		super();
+
 		this._register(
 			widget.inputEditor.onDidChangeModelContent((e) => {
 				e.changes.forEach((c) => {
@@ -78,6 +82,7 @@ export class ChatDynamicVariableModel
 										ref.range.endLineNumber,
 										ref.range.endColumn - 1,
 									);
+
 									this.widget.inputEditor.executeEdits(
 										this.id,
 										[
@@ -87,8 +92,10 @@ export class ChatDynamicVariableModel
 											},
 										],
 									);
+
 									this.widget.refreshParsedInput();
 								}
+
 								return null;
 							} else if (
 								Range.compareRangesUsingStarts(
@@ -110,29 +117,39 @@ export class ChatDynamicVariableModel
 									},
 								};
 							}
+
 							return ref;
 						}),
 					);
 				});
+
 				this.updateDecorations();
 			}),
 		);
 	}
+
 	getInputState(): any {
 		return this.variables;
 	}
+
 	setInputState(s: any): void {
 		if (!Array.isArray(s)) {
 			s = [];
 		}
+
 		this._variables = s;
+
 		this.updateDecorations();
 	}
+
 	addReference(ref: IDynamicVariable): void {
 		this._variables.push(ref);
+
 		this.updateDecorations();
+
 		this.widget.refreshParsedInput();
 	}
+
 	private updateDecorations(): void {
 		this.widget.inputEditor.setDecorationsByType(
 			"chat",
@@ -145,6 +162,7 @@ export class ChatDynamicVariableModel
 			),
 		);
 	}
+
 	private getHoverForReference(
 		ref: IDynamicVariable,
 	): IMarkdownString | undefined {
@@ -162,6 +180,7 @@ export class ChatDynamicVariableModel
 ChatWidget.CONTRIBS.push(ChatDynamicVariableModel);
 interface SelectAndInsertFileActionContext {
 	widget: IChatWidget;
+
 	range: IRange;
 }
 function isSelectAndInsertFileActionContext(
@@ -171,6 +190,7 @@ function isSelectAndInsertFileActionContext(
 }
 export class SelectAndInsertFileAction extends Action2 {
 	static readonly Name = "files";
+
 	static readonly Item = {
 		label: localize("allFiles", "All Files"),
 		description: localize(
@@ -178,6 +198,7 @@ export class SelectAndInsertFileAction extends Action2 {
 			"Search for relevant files in the workspace and provide context from them",
 		),
 	};
+
 	static readonly ID = "workbench.action.chat.selectAndInsertFile";
 
 	constructor() {
@@ -186,6 +207,7 @@ export class SelectAndInsertFileAction extends Action2 {
 			title: "", // not displayed
 		});
 	}
+
 	async run(accessor: ServicesAccessor, ...args: any[]) {
 		const textModelService = accessor.get(ITextModelService);
 
@@ -200,6 +222,7 @@ export class SelectAndInsertFileAction extends Action2 {
 		if (!isSelectAndInsertFileActionContext(context)) {
 			return;
 		}
+
 		const doCleanup = () => {
 			// Failed, remove the dangling `file`
 			context.widget.inputEditor.executeEdits("chatInsertFile", [
@@ -218,6 +241,7 @@ export class SelectAndInsertFileAction extends Action2 {
 					{ type: "separator" },
 				],
 			};
+
 			options = { providerOptions };
 		}
 		// TODO: have dedicated UX for this instead of using the quick access picker
@@ -230,6 +254,7 @@ export class SelectAndInsertFileAction extends Action2 {
 
 			return;
 		}
+
 		const editor = context.widget.inputEditor;
 
 		const range = context.range;
@@ -248,6 +273,7 @@ export class SelectAndInsertFileAction extends Action2 {
 
 				doCleanup();
 			}
+
 			return;
 		}
 		// Handle the case of selecting a specific file
@@ -266,6 +292,7 @@ export class SelectAndInsertFileAction extends Action2 {
 
 			return;
 		}
+
 		const fileName = basename(resource);
 
 		const text = `#file:${fileName}`;
@@ -283,6 +310,7 @@ export class SelectAndInsertFileAction extends Action2 {
 
 			return;
 		}
+
 		context.widget
 			.getContrib<ChatDynamicVariableModel>(ChatDynamicVariableModel.ID)
 			?.addReference({
@@ -303,10 +331,13 @@ registerAction2(SelectAndInsertFileAction);
 
 export interface IAddDynamicVariableContext {
 	id: string;
+
 	widget: IChatWidget;
+
 	range: IRange;
 
 	variableData: IChatRequestVariableValue;
+
 	command?: Command;
 }
 function isAddDynamicVariableContext(
@@ -325,12 +356,14 @@ export class AddDynamicVariableAction extends Action2 {
 			title: "", // not displayed
 		});
 	}
+
 	async run(accessor: ServicesAccessor, ...args: any[]) {
 		const context = args[0];
 
 		if (!isAddDynamicVariableContext(context)) {
 			return;
 		}
+
 		let range = context.range;
 
 		const variableData = context.variableData;
@@ -367,6 +400,7 @@ export class AddDynamicVariableAction extends Action2 {
 				range.endLineNumber,
 				range.endColumn + insertText.length,
 			);
+
 			range = new Range(
 				range.startLineNumber,
 				range.startColumn,
@@ -387,6 +421,7 @@ export class AddDynamicVariableAction extends Action2 {
 				return;
 			}
 		}
+
 		context.widget
 			.getContrib<ChatDynamicVariableModel>(ChatDynamicVariableModel.ID)
 			?.addReference({

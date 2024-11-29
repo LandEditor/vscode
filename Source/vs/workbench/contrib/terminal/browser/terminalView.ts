@@ -116,17 +116,24 @@ import { getInstanceHoverInfo } from "./terminalTooltip.js";
 
 export class TerminalViewPane extends ViewPane {
 	private _parentDomElement: HTMLElement | undefined;
+
 	private _terminalTabbedView?: TerminalTabbedView;
 
 	get terminalTabbedView(): TerminalTabbedView | undefined {
 		return this._terminalTabbedView;
 	}
+
 	private _isInitialized: boolean = false;
+
 	private readonly _newDropdown: MutableDisposable<DropdownWithPrimaryActionViewItem> =
 		this._register(new MutableDisposable());
+
 	private readonly _dropdownMenu: IMenu;
+
 	private readonly _singleTabMenu: IMenu;
+
 	private _viewShowing: IContextKey<boolean>;
+
 	private readonly _disposableStore = this._register(new DisposableStore());
 
 	constructor(
@@ -176,6 +183,7 @@ export class TerminalViewPane extends ViewPane {
 			telemetryService,
 			hoverService,
 		);
+
 		this._register(
 			this._terminalService.onDidRegisterProcessSupport(() => {
 				this._onDidChangeViewWelcomeState.fire();
@@ -192,6 +200,7 @@ export class TerminalViewPane extends ViewPane {
 				) {
 					this._onDidChangeViewWelcomeState.fire();
 				}
+
 				if (!this._parentDomElement) {
 					return;
 				}
@@ -208,26 +217,31 @@ export class TerminalViewPane extends ViewPane {
 				}
 			}),
 		);
+
 		this._dropdownMenu = this._register(
 			this._menuService.createMenu(
 				MenuId.TerminalNewDropdownContext,
 				this._contextKeyService,
 			),
 		);
+
 		this._singleTabMenu = this._register(
 			this._menuService.createMenu(
 				MenuId.TerminalTabContext,
 				this._contextKeyService,
 			),
 		);
+
 		this._register(
 			this._terminalProfileService.onDidChangeAvailableProfiles(
 				(profiles) => this._updateTabActionBar(profiles),
 			),
 		);
+
 		this._viewShowing = TerminalContextKeys.viewShowing.bindTo(
 			this._contextKeyService,
 		);
+
 		this._register(
 			this.onDidChangeBodyVisibility((e) => {
 				if (e) {
@@ -235,6 +249,7 @@ export class TerminalViewPane extends ViewPane {
 				}
 			}),
 		);
+
 		this._register(
 			this._configurationService.onDidChangeConfiguration((e) => {
 				if (
@@ -250,6 +265,7 @@ export class TerminalViewPane extends ViewPane {
 				}
 			}),
 		);
+
 		this._register(
 			this._terminalService.onDidCreateInstance((i) => {
 				i.capabilities.onDidAddCapabilityType((c) => {
@@ -295,6 +311,7 @@ export class TerminalViewPane extends ViewPane {
 				TerminalConnectionState.Connected
 		) {
 			const wasInitialized = this._isInitialized;
+
 			this._isInitialized = true;
 
 			let hideOnStartup: "never" | "whenEmpty" | "always" = "never";
@@ -315,9 +332,11 @@ export class TerminalViewPane extends ViewPane {
 			if (checkRestoredTerminals) {
 				shouldCreate &&= this._terminalService.restoredGroupCount === 0;
 			}
+
 			if (!shouldCreate) {
 				return;
 			}
+
 			if (!wasInitialized) {
 				switch (hideOnStartup) {
 					case "never":
@@ -331,8 +350,10 @@ export class TerminalViewPane extends ViewPane {
 						if (this._terminalService.restoredGroupCount === 0) {
 							this._terminalGroupService.hidePanel();
 						}
+
 						break;
 				}
+
 				return;
 			}
 
@@ -349,10 +370,13 @@ export class TerminalViewPane extends ViewPane {
 		if (!this._parentDomElement) {
 			this._updateForShellIntegration(container);
 		}
+
 		this._parentDomElement = container;
+
 		this._parentDomElement.classList.add("integrated-terminal");
 
 		domStylesheetsJs.createStyleSheet(this._parentDomElement);
+
 		this._instantiationService.createInstance(
 			TerminalThemeIconStyle,
 			this._parentDomElement,
@@ -384,6 +408,7 @@ export class TerminalViewPane extends ViewPane {
 									),
 							},
 						];
+
 						this._notificationService.prompt(
 							Severity.Warning,
 							nls.localize(
@@ -396,6 +421,7 @@ export class TerminalViewPane extends ViewPane {
 				}
 			}),
 		);
+
 		this._register(
 			this.onDidChangeBodyVisibility(async (visible) => {
 				this._viewShowing.set(visible);
@@ -404,6 +430,7 @@ export class TerminalViewPane extends ViewPane {
 					if (this._hasWelcomeScreen()) {
 						this._onDidChangeViewWelcomeState.fire();
 					}
+
 					this._initializeTerminal(false);
 					// we don't know here whether or not it should be focused, so
 					// defer focusing the panel to the focus() call
@@ -415,14 +442,17 @@ export class TerminalViewPane extends ViewPane {
 						instance.resetFocusContextKey();
 					}
 				}
+
 				this._terminalGroupService.updateVisibility();
 			}),
 		);
+
 		this._register(
 			this._terminalService.onDidChangeConnectionState(() =>
 				this._initializeTerminal(true),
 			),
 		);
+
 		this.layoutBody(
 			this._parentDomElement.offsetHeight,
 			this._parentDomElement.offsetWidth,
@@ -433,6 +463,7 @@ export class TerminalViewPane extends ViewPane {
 		if (!this._parentDomElement) {
 			return;
 		}
+
 		this._terminalTabbedView = this._register(
 			this.instantiationService.createInstance(
 				TerminalTabbedView,
@@ -444,6 +475,7 @@ export class TerminalViewPane extends ViewPane {
 	// eslint-disable-next-line @typescript-eslint/naming-convention
 	protected override layoutBody(height: number, width: number): void {
 		super.layoutBody(height, width);
+
 		this._terminalTabbedView?.layout(width, height);
 	}
 
@@ -464,10 +496,14 @@ export class TerminalViewPane extends ViewPane {
 							action.class,
 							action.enabled,
 						);
+
 						this.checked = action.checked;
+
 						this.tooltip = action.tooltip;
+
 						this._register(action);
 					}
+
 					override async run() {
 						const instance =
 							that._terminalGroupService.activeInstance;
@@ -480,6 +516,7 @@ export class TerminalViewPane extends ViewPane {
 
 							return newInstance?.focusWhenReady();
 						}
+
 						return;
 					}
 				})();
@@ -491,12 +528,14 @@ export class TerminalViewPane extends ViewPane {
 					keybinding: this._getKeybindingLabel(action),
 				});
 			}
+
 			case TerminalCommandId.SwitchTerminal: {
 				return this._instantiationService.createInstance(
 					SwitchTerminalActionViewItem,
 					action,
 				);
 			}
+
 			case TerminalCommandId.Focus: {
 				if (action instanceof MenuItemAction) {
 					const actions = getFlatContextMenuActions(
@@ -512,6 +551,7 @@ export class TerminalViewPane extends ViewPane {
 					);
 				}
 			}
+
 			case TerminalCommandId.New: {
 				if (action instanceof MenuItemAction) {
 					const actions = getTerminalActionBarArgs(
@@ -522,10 +562,12 @@ export class TerminalViewPane extends ViewPane {
 						this._terminalService,
 						this._dropdownMenu,
 					);
+
 					this._registerDisposableActions(
 						actions.dropdownAction,
 						actions.dropdownMenuActions,
 					);
+
 					this._newDropdown.value =
 						new DropdownWithPrimaryActionViewItem(
 							action,
@@ -540,6 +582,7 @@ export class TerminalViewPane extends ViewPane {
 							this._themeService,
 							this._accessibilityService,
 						);
+
 					this._newDropdown.value?.update(
 						actions.dropdownAction,
 						actions.dropdownMenuActions,
@@ -549,6 +592,7 @@ export class TerminalViewPane extends ViewPane {
 				}
 			}
 		}
+
 		return super.getActionViewItem(action, options);
 	}
 
@@ -564,6 +608,7 @@ export class TerminalViewPane extends ViewPane {
 		if (dropdownAction instanceof Action) {
 			this._disposableStore.add(dropdownAction);
 		}
+
 		dropdownMenuActions
 			.filter((a) => a instanceof Action)
 			.forEach((a) => this._disposableStore.add(a));
@@ -579,6 +624,7 @@ export class TerminalViewPane extends ViewPane {
 			defaultProfileName =
 				this._terminalProfileResolverService.defaultProfileName;
 		}
+
 		return defaultProfileName!;
 	}
 
@@ -598,10 +644,12 @@ export class TerminalViewPane extends ViewPane {
 			this._terminalService,
 			this._dropdownMenu,
 		);
+
 		this._registerDisposableActions(
 			actions.dropdownAction,
 			actions.dropdownMenuActions,
 		);
+
 		this._newDropdown.value?.update(
 			actions.dropdownAction,
 			actions.dropdownMenuActions,
@@ -675,48 +723,56 @@ class SwitchTerminalActionViewItem extends SelectActionViewItem {
 				optionsAsChildren: true,
 			},
 		);
+
 		this._register(
 			_terminalService.onDidChangeInstances(
 				() => this._updateItems(),
 				this,
 			),
 		);
+
 		this._register(
 			_terminalService.onDidChangeActiveGroup(
 				() => this._updateItems(),
 				this,
 			),
 		);
+
 		this._register(
 			_terminalService.onDidChangeActiveInstance(
 				() => this._updateItems(),
 				this,
 			),
 		);
+
 		this._register(
 			_terminalService.onAnyInstanceTitleChange(
 				() => this._updateItems(),
 				this,
 			),
 		);
+
 		this._register(
 			_terminalGroupService.onDidChangeGroups(
 				() => this._updateItems(),
 				this,
 			),
 		);
+
 		this._register(
 			_terminalService.onDidChangeConnectionState(
 				() => this._updateItems(),
 				this,
 			),
 		);
+
 		this._register(
 			terminalProfileService.onDidChangeAvailableProfiles(
 				() => this._updateItems(),
 				this,
 			),
 		);
+
 		this._register(
 			_terminalService.onAnyInstancePrimaryStatusChange(
 				() => this._updateItems(),
@@ -727,7 +783,9 @@ class SwitchTerminalActionViewItem extends SelectActionViewItem {
 
 	override render(container: HTMLElement): void {
 		super.render(container);
+
 		container.classList.add("switch-terminal");
+
 		container.style.borderColor = asCssVariable(selectBorder);
 	}
 
@@ -736,6 +794,7 @@ class SwitchTerminalActionViewItem extends SelectActionViewItem {
 			this._terminalService,
 			this._terminalGroupService,
 		);
+
 		this.setOptions(options, this._terminalGroupService.activeGroupIndex);
 	}
 }
@@ -755,10 +814,12 @@ function getTerminalSelectOpenItems(
 			{ text: nls.localize("terminalConnectingLabel", "Starting...") },
 		];
 	}
+
 	items.push({
 		text: switchTerminalActionViewItemSeparator,
 		isDisabled: true,
 	});
+
 	items.push({ text: switchTerminalShowTabsTitle });
 
 	return items;
@@ -766,8 +827,11 @@ function getTerminalSelectOpenItems(
 
 class SingleTerminalTabActionViewItem extends MenuEntryActionViewItem {
 	private _color: string | undefined;
+
 	private _altCommand: string | undefined;
+
 	private _class: string | undefined;
+
 	private readonly _elementDisposables: IDisposable[] = [];
 
 	constructor(
@@ -824,9 +888,11 @@ class SingleTerminalTabActionViewItem extends MenuEntryActionViewItem {
 					if (!last) {
 						last = new Set();
 					}
+
 					if (e) {
 						last.add(e);
 					}
+
 					return last;
 				},
 				MicrotaskDelay,
@@ -873,6 +939,7 @@ class SingleTerminalTabActionViewItem extends MenuEntryActionViewItem {
 					(e) => {
 						if (e.button === 2) {
 							this._openContextMenu();
+
 							e.preventDefault();
 						}
 					},
@@ -893,6 +960,7 @@ class SingleTerminalTabActionViewItem extends MenuEntryActionViewItem {
 									instance,
 								);
 							}
+
 							e.preventDefault();
 						}
 					},
@@ -917,6 +985,7 @@ class SingleTerminalTabActionViewItem extends MenuEntryActionViewItem {
 				),
 			);
 		}
+
 		if (this.label) {
 			const label = this.label;
 
@@ -927,6 +996,7 @@ class SingleTerminalTabActionViewItem extends MenuEntryActionViewItem {
 
 				return;
 			}
+
 			label.classList.add("single-terminal-tab");
 
 			let colorStyle = "";
@@ -935,6 +1005,7 @@ class SingleTerminalTabActionViewItem extends MenuEntryActionViewItem {
 
 			if (primaryStatus) {
 				const colorKey = getColorForSeverity(primaryStatus.severity);
+
 				this._themeService.getColorTheme();
 
 				const foundColor = this._themeService
@@ -945,6 +1016,7 @@ class SingleTerminalTabActionViewItem extends MenuEntryActionViewItem {
 					colorStyle = foundColor.toString();
 				}
 			}
+
 			label.style.color = colorStyle;
 
 			dom.reset(
@@ -963,23 +1035,32 @@ class SingleTerminalTabActionViewItem extends MenuEntryActionViewItem {
 
 			if (this._altCommand) {
 				label.classList.remove(this._altCommand);
+
 				this._altCommand = undefined;
 			}
+
 			if (this._color) {
 				label.classList.remove(this._color);
+
 				this._color = undefined;
 			}
+
 			if (this._class) {
 				label.classList.remove(this._class);
+
 				label.classList.remove("terminal-uri-icon");
+
 				this._class = undefined;
 			}
+
 			const colorClass = getColorClass(instance);
 
 			if (colorClass) {
 				this._color = colorClass;
+
 				label.classList.add(colorClass);
 			}
+
 			const uriClasses = getUriClasses(
 				instance,
 				this._themeService.getColorTheme().type,
@@ -987,12 +1068,16 @@ class SingleTerminalTabActionViewItem extends MenuEntryActionViewItem {
 
 			if (uriClasses) {
 				this._class = uriClasses?.[0];
+
 				label.classList.add(...uriClasses);
 			}
+
 			if (this._commandAction.item.icon) {
 				this._altCommand = `alt-command`;
+
 				label.classList.add(this._altCommand);
 			}
+
 			this.updateTooltip();
 		}
 	}
@@ -1023,6 +1108,7 @@ function getSingleTabLabel(
 	if (!instance || !instance.title) {
 		return "";
 	}
+
 	const iconId = ThemeIcon.isThemeIcon(instance.icon)
 		? instance.icon.id
 		: accessor.get(ITerminalProfileResolverService).getDefaultIcon().id;
@@ -1034,6 +1120,7 @@ function getSingleTabLabel(
 	if (!primaryStatus?.icon) {
 		return label;
 	}
+
 	return `${label} $(${primaryStatus.icon.id})`;
 }
 
@@ -1044,6 +1131,7 @@ function getSingleTabTitle(
 	if (!instance) {
 		return "";
 	}
+
 	return !instance.description
 		? instance.title
 		: `${instance.title} ${separator} ${instance.description}`;
@@ -1060,9 +1148,13 @@ class TerminalThemeIconStyle extends Themable {
 		private readonly _terminalGroupService: ITerminalGroupService,
 	) {
 		super(_themeService);
+
 		this._registerListeners();
+
 		this._styleElement = domStylesheetsJs.createStyleSheet(container);
+
 		this._register(toDisposable(() => this._styleElement.remove()));
+
 		this.updateStyles();
 	}
 
@@ -1072,11 +1164,13 @@ class TerminalThemeIconStyle extends Themable {
 				this.updateStyles(),
 			),
 		);
+
 		this._register(
 			this._terminalService.onDidChangeInstances(() =>
 				this.updateStyles(),
 			),
 		);
+
 		this._register(
 			this._terminalGroupService.onDidChangeGroups(() =>
 				this.updateStyles(),
@@ -1099,6 +1193,7 @@ class TerminalThemeIconStyle extends Themable {
 			if (!icon) {
 				continue;
 			}
+
 			let uri = undefined;
 
 			if (icon instanceof URI) {
@@ -1113,6 +1208,7 @@ class TerminalThemeIconStyle extends Themable {
 						? icon.light
 						: icon.dark;
 			}
+
 			const iconClasses = getUriClasses(instance, colorTheme.type);
 
 			if (uri instanceof URI && iconClasses && iconClasses.length > 1) {
@@ -1129,6 +1225,7 @@ class TerminalThemeIconStyle extends Themable {
 			if (!colorClass || !instance.color) {
 				continue;
 			}
+
 			const color = colorTheme.getColor(instance.color);
 
 			if (color) {
@@ -1170,6 +1267,7 @@ class SingleTabHoverDelegate implements IHoverDelegate {
 		if (!instance) {
 			return;
 		}
+
 		const hoverInfo = getInstanceHoverInfo(instance);
 
 		return this._hoverService.showHover(

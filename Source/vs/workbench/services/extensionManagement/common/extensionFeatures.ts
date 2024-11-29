@@ -23,16 +23,20 @@ export namespace Extensions {
 }
 export interface IExtensionFeatureRenderer extends IDisposable {
 	type: string;
+
 	shouldRender(manifest: IExtensionManifest): boolean;
+
 	render(manifest: IExtensionManifest): IDisposable;
 }
 export interface IRenderedData<T> extends IDisposable {
 	readonly data: T;
+
 	readonly onDidChange?: Event<T>;
 }
 export interface IExtensionFeatureMarkdownRenderer
 	extends IExtensionFeatureRenderer {
 	type: "markdown";
+
 	render(manifest: IExtensionManifest): IRenderedData<IMarkdownString>;
 }
 export type IRowData =
@@ -44,29 +48,38 @@ export type IRowData =
 
 export interface ITableData {
 	headers: string[];
+
 	rows: IRowData[][];
 }
 export interface IExtensionFeatureTableRenderer
 	extends IExtensionFeatureRenderer {
 	type: "table";
+
 	render(manifest: IExtensionManifest): IRenderedData<ITableData>;
 }
 export interface IExtensionFeatureMarkdownAndTableRenderer
 	extends IExtensionFeatureRenderer {
 	type: "markdown+table";
+
 	render(
 		manifest: IExtensionManifest,
 	): IRenderedData<Array<IMarkdownString | ITableData>>;
 }
 export interface IExtensionFeatureDescriptor {
 	readonly id: string;
+
 	readonly label: string;
+
 	readonly description?: string;
+
 	readonly access: {
 		readonly canToggle?: boolean;
+
 		readonly requireUserConsent?: boolean;
+
 		readonly extensionsList?: IStringDictionary<boolean>;
 	};
+
 	readonly renderer?: SyncDescriptor<IExtensionFeatureRenderer>;
 }
 export interface IExtensionFeaturesRegistry {
@@ -81,12 +94,16 @@ export interface IExtensionFeaturesRegistry {
 export interface IExtensionFeatureAccessData {
 	readonly current?: {
 		readonly count: number;
+
 		readonly lastAccessed: number;
+
 		readonly status?: {
 			readonly severity: Severity;
+
 			readonly message: string;
 		};
 	};
+
 	readonly totalCount: number;
 }
 export const IExtensionFeaturesManagementService =
@@ -96,11 +113,15 @@ export const IExtensionFeaturesManagementService =
 
 export interface IExtensionFeaturesManagementService {
 	readonly _serviceBrand: undefined;
+
 	readonly onDidChangeEnablement: Event<{
 		readonly extension: ExtensionIdentifier;
+
 		readonly featureId: string;
+
 		readonly enabled: boolean;
 	}>;
+
 	isEnabled(extension: ExtensionIdentifier, featureId: string): boolean;
 
 	setEnablement(
@@ -111,6 +132,7 @@ export interface IExtensionFeaturesManagementService {
 
 	getEnablementData(featureId: string): {
 		readonly extension: ExtensionIdentifier;
+
 		readonly enabled: boolean;
 	}[];
 
@@ -119,9 +141,12 @@ export interface IExtensionFeaturesManagementService {
 		featureId: string,
 		justification?: string,
 	): Promise<boolean>;
+
 	readonly onDidChangeAccessData: Event<{
 		readonly extension: ExtensionIdentifier;
+
 		readonly featureId: string;
+
 		readonly accessData: IExtensionFeatureAccessData;
 	}>;
 
@@ -136,6 +161,7 @@ export interface IExtensionFeaturesManagementService {
 		status:
 			| {
 					readonly severity: Severity;
+
 					readonly message: string;
 			  }
 			| undefined,
@@ -146,6 +172,7 @@ class ExtensionFeaturesRegistry implements IExtensionFeaturesRegistry {
 		string,
 		IExtensionFeatureDescriptor
 	>();
+
 	registerExtensionFeature(
 		descriptor: IExtensionFeatureDescriptor,
 	): IDisposable {
@@ -154,15 +181,18 @@ class ExtensionFeaturesRegistry implements IExtensionFeaturesRegistry {
 				`Extension feature with id '${descriptor.id}' already exists`,
 			);
 		}
+
 		this.extensionFeatures.set(descriptor.id, descriptor);
 
 		return {
 			dispose: () => this.extensionFeatures.delete(descriptor.id),
 		};
 	}
+
 	getExtensionFeature(id: string): IExtensionFeatureDescriptor | undefined {
 		return this.extensionFeatures.get(id);
 	}
+
 	getExtensionFeatures(): ReadonlyArray<IExtensionFeatureDescriptor> {
 		return Array.from(this.extensionFeatures.values());
 	}

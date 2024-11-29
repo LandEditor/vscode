@@ -28,6 +28,7 @@ import { IUntitledTextEditorService } from "./untitledTextEditorService.js";
 
 interface ISerializedUntitledTextEditorInput {
 	readonly resourceJSON: UriComponents;
+
 	readonly modeId: string | undefined; // should be `languageId` but is kept for backwards compatibility
 	readonly encoding: string | undefined;
 }
@@ -40,16 +41,19 @@ export class UntitledTextEditorInputSerializer implements IEditorSerializer {
 		@IPathService
 		private readonly pathService: IPathService,
 	) {}
+
 	canSerialize(editorInput: EditorInput): boolean {
 		return (
 			this.filesConfigurationService.isHotExitEnabled &&
 			!editorInput.isDisposed()
 		);
 	}
+
 	serialize(editorInput: EditorInput): string | undefined {
 		if (!this.canSerialize(editorInput)) {
 			return undefined;
 		}
+
 		const untitledTextEditorInput = editorInput as UntitledTextEditorInput;
 
 		let resource = untitledTextEditorInput.resource;
@@ -74,6 +78,7 @@ export class UntitledTextEditorInputSerializer implements IEditorSerializer {
 		} else if (untitledTextEditorInput.hasLanguageSetExplicitly) {
 			languageId = languageIdCandidate;
 		}
+
 		const serialized: ISerializedUntitledTextEditorInput = {
 			resourceJSON: resource.toJSON(),
 			modeId: languageId,
@@ -82,6 +87,7 @@ export class UntitledTextEditorInputSerializer implements IEditorSerializer {
 
 		return JSON.stringify(serialized);
 	}
+
 	deserialize(
 		instantiationService: IInstantiationService,
 		serializedEditorInput: string,
@@ -126,23 +132,28 @@ export class UntitledTextEditorWorkingCopyEditorHandler
 		private readonly untitledTextEditorService: IUntitledTextEditorService,
 	) {
 		super();
+
 		this._register(workingCopyEditorService.registerHandler(this));
 	}
+
 	handles(workingCopy: IWorkingCopyIdentifier): boolean {
 		return (
 			workingCopy.resource.scheme === Schemas.untitled &&
 			workingCopy.typeId === NO_TYPE_ID
 		);
 	}
+
 	isOpen(workingCopy: IWorkingCopyIdentifier, editor: EditorInput): boolean {
 		if (!this.handles(workingCopy)) {
 			return false;
 		}
+
 		return (
 			editor instanceof UntitledTextEditorInput &&
 			isEqual(workingCopy.resource, editor.resource)
 		);
 	}
+
 	createEditor(workingCopy: IWorkingCopyIdentifier): EditorInput {
 		let editorInputResource: URI;
 		// If the untitled has an associated resource,
@@ -160,6 +171,7 @@ export class UntitledTextEditorWorkingCopyEditorHandler
 		} else {
 			editorInputResource = workingCopy.resource;
 		}
+
 		return this.textEditorService.createTextEditor({
 			resource: editorInputResource,
 			forceUntitled: true,

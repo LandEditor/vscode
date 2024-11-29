@@ -20,14 +20,17 @@ export function getVersion(repo: string): string | undefined {
 	} catch (e) {
 		return undefined;
 	}
+
 	if (/^[0-9a-f]{40}$/i.test(head)) {
 		return head;
 	}
+
 	const refMatch = /^ref: (.*)$/.exec(head);
 
 	if (!refMatch) {
 		return undefined;
 	}
+
 	const ref = refMatch[1];
 
 	const refPath = path.join(git, ref);
@@ -37,6 +40,7 @@ export function getVersion(repo: string): string | undefined {
 	} catch (e) {
 		// noop
 	}
+
 	const packedRefsPath = path.join(git, "packed-refs");
 
 	let refsRaw: string;
@@ -46,6 +50,7 @@ export function getVersion(repo: string): string | undefined {
 	} catch (e) {
 		return undefined;
 	}
+
 	const refsRegex = /^([0-9a-f]{40})\s+(.+)$/gm;
 
 	let refsMatch: RegExpExecArray | null;
@@ -57,5 +62,6 @@ export function getVersion(repo: string): string | undefined {
 	while ((refsMatch = refsRegex.exec(refsRaw))) {
 		refs[refsMatch[2]] = refsMatch[1];
 	}
+
 	return refs[ref];
 }

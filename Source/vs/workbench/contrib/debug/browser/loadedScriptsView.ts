@@ -55,7 +55,9 @@ type LoadedScriptsItem = BaseTreeItem;
 class BaseTreeItem {
 
 	private _showedMoreThanOne: boolean;
+
 	private _children = new Map<string, BaseTreeItem>();
+
 	private _source: Source | undefined;
 
 	constructor(private _parent: BaseTreeItem | undefined, private _label: string, public readonly isIncompressible = false) {
@@ -74,18 +76,24 @@ class BaseTreeItem {
 		if (this._parent) {
 			return this._parent.getSession();
 		}
+
 		return undefined;
 	}
 
 	setSource(session: IDebugSession, source: Source): void {
 		this._source = source;
+
 		this._children.clear();
+
 		if (source.raw && source.raw.sources) {
 			for (const src of source.raw.sources) {
 				if (src.name && src.path) {
 					const s = new BaseTreeItem(this, src.name);
+
 					this._children.set(src.path, s);
+
 					const ss = session.getSource(src);
+
 					s.setSource(session, ss);
 				}
 			}
@@ -94,10 +102,13 @@ class BaseTreeItem {
 
 	createIfNeeded<T extends BaseTreeItem>(key: string, factory: (parent: BaseTreeItem, label: string) => T): T {
 		let child = <T>this._children.get(key);
+
 		if (!child) {
 			child = factory(this, key);
+
 			this._children.set(key, child);
 		}
+
 		return child;
 	}
 
@@ -112,6 +123,7 @@ class BaseTreeItem {
 	removeFromParent(): void {
 		if (this._parent) {
 			this._parent.remove(this._label);
+
 			if (this._parent._children.size === 0) {
 				this._parent.removeFromParent();
 			}
@@ -125,6 +137,7 @@ class BaseTreeItem {
 	// a dynamic ID based on the parent chain; required for reparenting (see #55448)
 	getId(): string {
 		const parent = this.getParent();
+
 		return parent ? `${parent.getId()}/${this.getInternalId()}` : this.getInternalId();
 	}
 
@@ -138,8 +151,10 @@ class BaseTreeItem {
 			if (this._parent.isSkipped()) {
 				return this._parent.getParent();
 			}
+
 			return this._parent;
 		}
+
 		return undefined;
 	}
 
@@ -148,40 +163,51 @@ class BaseTreeItem {
 			if (this._parent.oneChild()) {
 				return true;	// skipped if I'm the only child of my parents
 			}
+
 			return false;
 		}
+
 		return true;	// roots are never skipped
 	}
 
 	// skips intermediate single-child nodes
 	hasChildren(): boolean {
 		const child = this.oneChild();
+
 		if (child) {
 			return child.hasChildren();
 		}
+
 		return this._children.size > 0;
 	}
 
 	// skips intermediate single-child nodes
 	getChildren(): BaseTreeItem[] {
 		const child = this.oneChild();
+
 		if (child) {
 			return child.getChildren();
 		}
+
 		const array: BaseTreeItem[] = [];
+
 		for (const child of this._children.values()) {
 			array.push(child);
 		}
+
 		return array.sort((a, b) => this.compare(a, b));
 	}
 
 	// skips intermediate single-child nodes
 	getLabel(separateRootFolder = true): string {
 		const child = this.oneChild();
+
 		if (child) {
 			const sep = (this instanceof RootFolderTreeItem && separateRootFolder) ? ' • ' : posix.sep;
+
 			return `${this._label}${sep}${child.getLabel()}`;
 		}
+
 		return this._label;
 	}
 
@@ -190,23 +216,30 @@ class BaseTreeItem {
 		if (this._source && this._parent && this._parent._source) {
 			return this._source.raw.path || this._source.raw.name;
 		}
+
 		const label = this.getLabel(false);
+
 		const parent = this.getParent();
+
 		if (parent) {
 			const hover = parent.getHoverLabel();
+
 			if (hover) {
 				return `${hover}/${label}`;
 			}
 		}
+
 		return label;
 	}
 
 	// skips intermediate single-child nodes
 	getSource(): Source | undefined {
 		const child = this.oneChild();
+
 		if (child) {
 			return child.getSource();
 		}
+
 		return this._source;
 	}
 
@@ -214,6 +247,7 @@ class BaseTreeItem {
 		if (a._label && b._label) {
 			return a._label.localeCompare(b._label);
 		}
+
 		return 0;
 	}
 
@@ -227,6 +261,7 @@ class BaseTreeItem {
 				this._showedMoreThanOne = true;
 			}
 		}
+
 		return undefined;
 	}
 
@@ -267,12 +302,16 @@ class SessionTreeItem extends BaseTreeItem {
 	private static readonly URL_REGEXP = /^(https?:\/\/[^/]+)(\/.*)$/;
 
 	private _session: IDebugSession;
+
 	private _map = new Map<string, BaseTreeItem>();
+
 	private _labelService: ILabelService;
 
 	constructor(labelService: ILabelService, parent: BaseTreeItem, session: IDebugSession, private _pathService: IPathService, private rootProvider: IWorkspaceContextService) {
 		super(parent, session.getLabel(), true);
+
 		this._labelService = labelService;
+
 		this._session = session;
 	}
 
@@ -294,10 +333,13 @@ class SessionTreeItem extends BaseTreeItem {
 
 	protected override compare(a: BaseTreeItem, b: BaseTreeItem): number {
 		const acat = this.category(a);
+
 		const bcat = this.category(b);
+
 		if (acat !== bcat) {
 			return acat - bcat;
 		}
+
 		return super.compare(a, b);
 	}
 
@@ -310,6 +352,7 @@ class SessionTreeItem extends BaseTreeItem {
 
 		// <...> come at the very end
 		const l = item.getLabel();
+
 		if (l && /^<.+>$/.test(l)) {
 			return 1000;
 		}
@@ -321,9 +364,11 @@ class SessionTreeItem extends BaseTreeItem {
 	async addPath(source: Source): Promise<void> {
 
 		let folder: IWorkspaceFolder | null;
+
 		let url: string;
 
 		let path = source.raw.path;
+
 		if (!path) {
 			return;
 		}
@@ -333,8 +378,10 @@ class SessionTreeItem extends BaseTreeItem {
 		}
 
 		const match = SessionTreeItem.URL_REGEXP.exec(path);
+
 		if (match && match.length === 3) {
 			url = match[1];
+
 			path = decodeURI(match[2]);
 		} else {
 			if (isAbsolute(path)) {
@@ -342,10 +389,13 @@ class SessionTreeItem extends BaseTreeItem {
 
 				// return early if we can resolve a relative path label from the root folder
 				folder = this.rootProvider ? this.rootProvider.getWorkspaceFolder(resource) : null;
+
 				if (folder) {
 					// strip off the root folder path
 					path = normalize(ltrim(resource.path.substring(folder.uri.path.length), posix.sep));
+
 					const hasMultipleRoots = this.rootProvider.getWorkspace().folders.length > 1;
+
 					if (hasMultipleRoots) {
 						path = posix.sep + path;
 					} else {
@@ -355,6 +405,7 @@ class SessionTreeItem extends BaseTreeItem {
 				} else {
 					// on unix try to tildify absolute paths
 					path = normalize(path);
+
 					if (isWindows) {
 						path = normalizeDriveLetter(path);
 					} else {
@@ -365,9 +416,11 @@ class SessionTreeItem extends BaseTreeItem {
 		}
 
 		let leaf: BaseTreeItem = this;
+
 		path.split(/[\/\\]/).forEach((segment, i) => {
 			if (i === 0 && folder) {
 				const f = folder;
+
 				leaf = leaf.createIfNeeded(folder.name, parent => new RootFolderTreeItem(parent, f));
 			} else if (i === 0 && url) {
 				leaf = leaf.createIfNeeded(url, parent => new BaseTreeItem(parent, url));
@@ -377,6 +430,7 @@ class SessionTreeItem extends BaseTreeItem {
 		});
 
 		leaf.setSource(this._session, source);
+
 		if (source.raw.path) {
 			this._map.set(source.raw.path, leaf);
 		}
@@ -385,11 +439,14 @@ class SessionTreeItem extends BaseTreeItem {
 	removePath(source: Source): boolean {
 		if (source.raw.path) {
 			const leaf = this._map.get(source.raw.path);
+
 			if (leaf) {
 				leaf.removeFromParent();
+
 				return true;
 			}
 		}
+
 		return false;
 	}
 }
@@ -403,6 +460,7 @@ interface IViewState {
  */
 function asTreeElement(item: BaseTreeItem, viewState?: IViewState): ITreeElement<LoadedScriptsItem> {
 	const children = item.getChildren();
+
 	const collapsed = viewState ? !viewState.expanded.has(item.getId()) : !(item instanceof SessionTreeItem);
 
 	return {
@@ -416,11 +474,17 @@ function asTreeElement(item: BaseTreeItem, viewState?: IViewState): ITreeElement
 export class LoadedScriptsView extends ViewPane {
 
 	private treeContainer!: HTMLElement;
+
 	private loadedScriptsItemType: IContextKey<string>;
+
 	private tree!: WorkbenchCompressibleObjectTree<LoadedScriptsItem, FuzzyScore>;
+
 	private treeLabels!: ResourceLabels;
+
 	private changeScheduler!: RunOnceScheduler;
+
 	private treeNeedsRefreshOnVisible = false;
+
 	private filter!: LoadedScriptsFilter;
 
 	constructor(
@@ -442,6 +506,7 @@ export class LoadedScriptsView extends ViewPane {
 		@IHoverService hoverService: IHoverService
 	) {
 		super(options, keybindingService, contextMenuService, configurationService, contextKeyService, viewDescriptorService, instantiationService, openerService, themeService, telemetryService, hoverService);
+
 		this.loadedScriptsItemType = CONTEXT_LOADED_SCRIPTS_ITEM_TYPE.bindTo(contextKeyService);
 	}
 
@@ -449,7 +514,9 @@ export class LoadedScriptsView extends ViewPane {
 		super.renderBody(container);
 
 		this.element.classList.add('debug-pane');
+
 		container.classList.add('debug-loaded-scripts');
+
 		container.classList.add('show-file-icons');
 
 		this.treeContainer = renderViewTree(container);
@@ -459,6 +526,7 @@ export class LoadedScriptsView extends ViewPane {
 		const root = new RootTreeItem(this.pathService, this.contextService, this.labelService);
 
 		this.treeLabels = this.instantiationService.createInstance(ResourceLabels, { onDidChangeVisibility: this.onDidChangeBodyVisibility });
+
 		this._register(this.treeLabels);
 
 		this.tree = this.instantiationService.createInstance(WorkbenchCompressibleObjectTree<LoadedScriptsItem, FuzzyScore>,
@@ -493,17 +561,21 @@ export class LoadedScriptsView extends ViewPane {
 
 		this.changeScheduler = new RunOnceScheduler(() => {
 			this.treeNeedsRefreshOnVisible = false;
+
 			if (this.tree) {
 				updateView();
 			}
 		}, 300);
+
 		this._register(this.changeScheduler);
 
 		this._register(this.tree.onDidOpen(e => {
 			if (e.element instanceof BaseTreeItem) {
 				const source = e.element.getSource();
+
 				if (source && source.available) {
 					const nullRange = { startLineNumber: 0, startColumn: 0, endLineNumber: 0, endColumn: 0 };
+
 					source.openInEditor(this.editorService, nullRange, e.editorOptions.preserveFocus, e.sideBySide, e.editorOptions.pinned);
 				}
 			}
@@ -511,6 +583,7 @@ export class LoadedScriptsView extends ViewPane {
 
 		this._register(this.tree.onDidChangeFocus(() => {
 			const focus = this.tree.getFocus();
+
 			if (focus instanceof SessionTreeItem) {
 				this.loadedScriptsItemType.set('session');
 			} else {
@@ -529,10 +602,13 @@ export class LoadedScriptsView extends ViewPane {
 		const addSourcePathsToSession = async (session: IDebugSession) => {
 			if (session.capabilities.supportsLoadedSourcesRequest) {
 				const sessionNode = root.add(session);
+
 				const paths = await session.getLoadedSources();
+
 				for (const path of paths) {
 					await sessionNode.addPath(path);
 				}
+
 				scheduleRefreshOnVisible();
 			}
 		};
@@ -540,42 +616,58 @@ export class LoadedScriptsView extends ViewPane {
 		const registerSessionListeners = (session: IDebugSession) => {
 			this._register(session.onDidChangeName(async () => {
 				const sessionRoot = root.find(session);
+
 				if (sessionRoot) {
 					sessionRoot.updateLabel(session.getLabel());
+
 					scheduleRefreshOnVisible();
 				}
 			}));
+
 			this._register(session.onDidLoadedSource(async event => {
 				let sessionRoot: SessionTreeItem;
+
 				switch (event.reason) {
 					case 'new':
 					case 'changed':
 						sessionRoot = root.add(session);
+
 						await sessionRoot.addPath(event.source);
+
 						scheduleRefreshOnVisible();
+
 						if (event.reason === 'changed') {
 							DebugContentProvider.refreshDebugContent(event.source.uri);
 						}
+
 						break;
+
 					case 'removed':
 						sessionRoot = root.find(session);
+
 						if (sessionRoot && sessionRoot.removePath(event.source)) {
 							scheduleRefreshOnVisible();
 						}
+
 						break;
+
 					default:
 						this.filter.setFilter(event.source.name);
+
 						this.tree.refilter();
+
 						break;
 				}
 			}));
 		};
 
 		this._register(this.debugService.onDidNewSession(registerSessionListeners));
+
 		this.debugService.getModel().getSessions().forEach(registerSessionListeners);
 
 		this._register(this.debugService.onDidEndSession(({ session }) => {
 			root.remove(session.getId());
+
 			this.changeScheduler.schedule();
 		}));
 
@@ -589,6 +681,7 @@ export class LoadedScriptsView extends ViewPane {
 
 		// feature: expand all nodes when filtering (not when finding)
 		let viewState: IViewState | undefined;
+
 		this._register(this.tree.onDidChangeFindPattern(pattern => {
 			if (this.tree.findMode === TreeFindMode.Highlight) {
 				return;
@@ -596,6 +689,7 @@ export class LoadedScriptsView extends ViewPane {
 
 			if (!viewState && pattern) {
 				const expanded = new Set<string>();
+
 				const visit = (node: ITreeNode<BaseTreeItem | null, FuzzyScore>) => {
 					if (node.element && !node.collapsed) {
 						expanded.add(node.element.getId());
@@ -607,11 +701,15 @@ export class LoadedScriptsView extends ViewPane {
 				};
 
 				visit(this.tree.getNode());
+
 				viewState = { expanded };
+
 				this.tree.expandAll();
 			} else if (!pattern && viewState) {
 				this.tree.setFocus([]);
+
 				updateView(viewState);
+
 				viewState = undefined;
 			}
 		}));
@@ -622,6 +720,7 @@ export class LoadedScriptsView extends ViewPane {
 
 	protected override layoutBody(height: number, width: number): void {
 		super.layoutBody(height, width);
+
 		this.tree.layout(height, width);
 	}
 
@@ -631,7 +730,9 @@ export class LoadedScriptsView extends ViewPane {
 
 	override dispose(): void {
 		dispose(this.tree);
+
 		dispose(this.treeLabels);
+
 		super.dispose();
 	}
 }
@@ -666,12 +767,14 @@ class LoadedScriptsRenderer implements ICompressibleTreeRenderer<BaseTreeItem, F
 
 	renderTemplate(container: HTMLElement): ILoadedScriptsItemTemplateData {
 		const label = this.labels.create(container, { supportHighlights: true });
+
 		return { label };
 	}
 
 	renderElement(node: ITreeNode<BaseTreeItem, FuzzyScore>, index: number, data: ILoadedScriptsItemTemplateData): void {
 
 		const element = node.element;
+
 		const label = element.getLabel();
 
 		this.render(element, label, data, node.filterData);
@@ -680,6 +783,7 @@ class LoadedScriptsRenderer implements ICompressibleTreeRenderer<BaseTreeItem, F
 	renderCompressedElements(node: ITreeNode<ICompressedTreeNode<BaseTreeItem>, FuzzyScore>, index: number, data: ILoadedScriptsItemTemplateData, height: number | undefined): void {
 
 		const element = node.element.elements[node.element.elements.length - 1];
+
 		const labels = node.element.elements.map(e => e.getLabel());
 
 		this.render(element, labels, data, node.filterData);
@@ -690,6 +794,7 @@ class LoadedScriptsRenderer implements ICompressibleTreeRenderer<BaseTreeItem, F
 		const label: IResourceLabelProps = {
 			name: labels
 		};
+
 		const options: IResourceLabelOptions = {
 			title: element.getHoverLabel()
 		};
@@ -701,18 +806,22 @@ class LoadedScriptsRenderer implements ICompressibleTreeRenderer<BaseTreeItem, F
 		} else if (element instanceof SessionTreeItem) {
 
 			options.title = nls.localize('loadedScriptsSession', "Debug Session");
+
 			options.hideIcon = true;
 
 		} else if (element instanceof BaseTreeItem) {
 
 			const src = element.getSource();
+
 			if (src && src.uri) {
 				label.resource = src.uri;
+
 				options.fileKind = FileKind.FILE;
 			} else {
 				options.fileKind = FileKind.FOLDER;
 			}
 		}
+
 		options.matches = createMatches(filterData);
 
 		data.label.setResource(label, options);
@@ -763,11 +872,14 @@ class LoadedScriptsFilter implements ITreeFilter<BaseTreeItem, FuzzyScore> {
 
 		if (element.isLeaf()) {
 			const name = element.getLabel();
+
 			if (name.indexOf(this.filterText) >= 0) {
 				return TreeVisibility.Visible;
 			}
+
 			return TreeVisibility.Hidden;
 		}
+
 		return TreeVisibility.Recurse;
 	}
 }

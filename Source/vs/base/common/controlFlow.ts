@@ -20,6 +20,7 @@ export class ReentrancyBarrier {
 		if (this._isOccupied) {
 			return;
 		}
+
 		this._isOccupied = true;
 
 		try {
@@ -38,6 +39,7 @@ export class ReentrancyBarrier {
 				`ReentrancyBarrier: reentrant call detected!`,
 			);
 		}
+
 		this._isOccupied = true;
 
 		try {
@@ -52,6 +54,7 @@ export class ReentrancyBarrier {
 	public get isOccupied() {
 		return this._isOccupied;
 	}
+
 	public makeExclusiveOrSkip<TFunction extends Function>(
 		fn: TFunction,
 	): TFunction {
@@ -59,6 +62,7 @@ export class ReentrancyBarrier {
 			if (this._isOccupied) {
 				return;
 			}
+
 			this._isOccupied = true;
 
 			try {

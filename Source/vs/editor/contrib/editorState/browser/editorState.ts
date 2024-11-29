@@ -28,10 +28,15 @@ export const enum CodeEditorStateFlag {
 }
 export class EditorState {
 	private readonly flags: number;
+
 	private readonly position: Position | null;
+
 	private readonly selection: Range | null;
+
 	private readonly modelVersionId: string | null;
+
 	private readonly scrollLeft: number;
+
 	private readonly scrollTop: number;
 
 	constructor(editor: ICodeEditor, flags: number) {
@@ -39,6 +44,7 @@ export class EditorState {
 
 		if ((this.flags & CodeEditorStateFlag.Value) !== 0) {
 			const model = editor.getModel();
+
 			this.modelVersionId = model
 				? strings.format(
 						"{0}#{1}",
@@ -49,39 +55,48 @@ export class EditorState {
 		} else {
 			this.modelVersionId = null;
 		}
+
 		if ((this.flags & CodeEditorStateFlag.Position) !== 0) {
 			this.position = editor.getPosition();
 		} else {
 			this.position = null;
 		}
+
 		if ((this.flags & CodeEditorStateFlag.Selection) !== 0) {
 			this.selection = editor.getSelection();
 		} else {
 			this.selection = null;
 		}
+
 		if ((this.flags & CodeEditorStateFlag.Scroll) !== 0) {
 			this.scrollLeft = editor.getScrollLeft();
+
 			this.scrollTop = editor.getScrollTop();
 		} else {
 			this.scrollLeft = -1;
+
 			this.scrollTop = -1;
 		}
 	}
+
 	private _equals(other: any): boolean {
 		if (!(other instanceof EditorState)) {
 			return false;
 		}
+
 		const state = <EditorState>other;
 
 		if (this.modelVersionId !== state.modelVersionId) {
 			return false;
 		}
+
 		if (
 			this.scrollLeft !== state.scrollLeft ||
 			this.scrollTop !== state.scrollTop
 		) {
 			return false;
 		}
+
 		if (
 			(!this.position && state.position) ||
 			(this.position && !state.position) ||
@@ -91,6 +106,7 @@ export class EditorState {
 		) {
 			return false;
 		}
+
 		if (
 			(!this.selection && state.selection) ||
 			(this.selection && !state.selection) ||
@@ -100,8 +116,10 @@ export class EditorState {
 		) {
 			return false;
 		}
+
 		return true;
 	}
+
 	public validate(editor: ICodeEditor): boolean {
 		return this._equals(new EditorState(editor, this.flags));
 	}
@@ -134,6 +152,7 @@ export class EditorStateCancellationTokenSource
 				}),
 			);
 		}
+
 		if (flags & CodeEditorStateFlag.Selection) {
 			this._listener.add(
 				editor.onDidChangeCursorSelection((e) => {
@@ -143,16 +162,20 @@ export class EditorStateCancellationTokenSource
 				}),
 			);
 		}
+
 		if (flags & CodeEditorStateFlag.Scroll) {
 			this._listener.add(editor.onDidScrollChange((_) => this.cancel()));
 		}
+
 		if (flags & CodeEditorStateFlag.Value) {
 			this._listener.add(editor.onDidChangeModel((_) => this.cancel()));
+
 			this._listener.add(
 				editor.onDidChangeModelContent((_) => this.cancel()),
 			);
 		}
 	}
+
 	override dispose() {
 		this._listener.dispose();
 
@@ -170,8 +193,10 @@ export class TextModelCancellationTokenSource
 
 	constructor(model: ITextModel, parent?: CancellationToken) {
 		super(parent);
+
 		this._listener = model.onDidChangeContent(() => this.cancel());
 	}
+
 	override dispose() {
 		this._listener.dispose();
 

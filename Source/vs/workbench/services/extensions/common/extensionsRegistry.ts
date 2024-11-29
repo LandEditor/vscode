@@ -34,7 +34,9 @@ const schemaRegistry = Registry.as<IJSONContributionRegistry>(
 
 export class ExtensionMessageCollector {
 	private readonly _messageHandler: (msg: IMessage) => void;
+
 	private readonly _extension: IExtensionDescription;
+
 	private readonly _extensionPointId: string;
 
 	constructor(
@@ -43,7 +45,9 @@ export class ExtensionMessageCollector {
 		extensionPointId: string,
 	) {
 		this._messageHandler = messageHandler;
+
 		this._extension = extension;
+
 		this._extensionPointId = extensionPointId;
 	}
 
@@ -71,7 +75,9 @@ export class ExtensionMessageCollector {
 
 export interface IExtensionPointUser<T> {
 	description: IExtensionDescription;
+
 	value: T;
+
 	collector: ExtensionMessageCollector;
 }
 
@@ -84,7 +90,9 @@ export interface IExtensionPoint<T> {
 	readonly name: string;
 
 	setHandler(handler: IExtensionPointHandler<T>): IDisposable;
+
 	readonly defaultExtensionKind: ExtensionKind[] | undefined;
+
 	readonly canHandleResolver?: boolean;
 }
 
@@ -97,6 +105,7 @@ export class ExtensionPointUserDelta<T> {
 		for (let i = 0, len = arr.length; i < len; i++) {
 			result.add(arr[i].description.identifier);
 		}
+
 		return result;
 	}
 
@@ -107,6 +116,7 @@ export class ExtensionPointUserDelta<T> {
 		if (!previous || !previous.length) {
 			return new ExtensionPointUserDelta<T>(current, []);
 		}
+
 		if (!current || !current.length) {
 			return new ExtensionPointUserDelta<T>([], previous);
 		}
@@ -134,11 +144,15 @@ export class ExtensionPointUserDelta<T> {
 
 export class ExtensionPoint<T> implements IExtensionPoint<T> {
 	public readonly name: string;
+
 	public readonly defaultExtensionKind: ExtensionKind[] | undefined;
+
 	public readonly canHandleResolver?: boolean;
 
 	private _handler: IExtensionPointHandler<T> | null;
+
 	private _users: IExtensionPointUser<T>[] | null;
+
 	private _delta: ExtensionPointUserDelta<T> | null;
 
 	constructor(
@@ -147,10 +161,15 @@ export class ExtensionPoint<T> implements IExtensionPoint<T> {
 		canHandleResolver?: boolean,
 	) {
 		this.name = name;
+
 		this.defaultExtensionKind = defaultExtensionKind;
+
 		this.canHandleResolver = canHandleResolver;
+
 		this._handler = null;
+
 		this._users = null;
+
 		this._delta = null;
 	}
 
@@ -158,7 +177,9 @@ export class ExtensionPoint<T> implements IExtensionPoint<T> {
 		if (this._handler !== null) {
 			throw new Error("Handler already set!");
 		}
+
 		this._handler = handler;
+
 		this._handle();
 
 		return {
@@ -170,7 +191,9 @@ export class ExtensionPoint<T> implements IExtensionPoint<T> {
 
 	acceptUsers(users: IExtensionPointUser<T>[]): void {
 		this._delta = ExtensionPointUserDelta.compute(this._users, users);
+
 		this._users = users;
+
 		this._handle();
 	}
 
@@ -908,10 +931,13 @@ export type removeArray<T> = T extends Array<infer X> ? X : T;
 
 export interface IExtensionPointDescriptor<T> {
 	extensionPoint: string;
+
 	deps?: IExtensionPoint<any>[];
+
 	jsonSchema: IJSONSchema;
 
 	defaultExtensionKind?: ExtensionKind[];
+
 	canHandleResolver?: boolean;
 	/**
 	 * A function which runs before the extension point has been validated and which
@@ -931,11 +957,13 @@ export class ExtensionsRegistryImpl {
 				"Duplicate extension point: " + desc.extensionPoint,
 			);
 		}
+
 		const result = new ExtensionPoint<T>(
 			desc.extensionPoint,
 			desc.defaultExtensionKind,
 			desc.canHandleResolver,
 		);
+
 		this._extensionPoints.set(desc.extensionPoint, result);
 
 		if (desc.activationEventsGenerator) {
@@ -947,6 +975,7 @@ export class ExtensionsRegistryImpl {
 
 		schema.properties!["contributes"].properties![desc.extensionPoint] =
 			desc.jsonSchema;
+
 		schemaRegistry.registerSchema(schemaId, schema);
 
 		return result;

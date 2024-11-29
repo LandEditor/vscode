@@ -29,13 +29,16 @@ export class GitEditor implements IIPCHandler, ITerminalEnvironmentProvider {
 	private env: {
 		[key: string]: string;
 	};
+
 	private disposable: IDisposable = EmptyDisposable;
+
 	readonly featureDescription = "git editor";
 
 	constructor(ipc?: IIPCServer) {
 		if (ipc) {
 			this.disposable = ipc.registerHandler("git-editor", this);
 		}
+
 		this.env = {
 			GIT_EDITOR: `"${path.join(__dirname, ipc ? "git-editor.sh" : "git-editor-empty.sh")}"`,
 			VSCODE_GIT_EDITOR_NODE: process.execPath,
@@ -43,11 +46,13 @@ export class GitEditor implements IIPCHandler, ITerminalEnvironmentProvider {
 			VSCODE_GIT_EDITOR_MAIN: path.join(__dirname, "git-editor-main.js"),
 		};
 	}
+
 	async handle({ commitMessagePath }: GitEditorRequest): Promise<any> {
 		if (commitMessagePath) {
 			const uri = Uri.file(commitMessagePath);
 
 			const doc = await workspace.openTextDocument(uri);
+
 			await window.showTextDocument(doc, { preview: false });
 
 			return new Promise((c) => {
@@ -69,6 +74,7 @@ export class GitEditor implements IIPCHandler, ITerminalEnvironmentProvider {
 			});
 		}
 	}
+
 	getEnv(): {
 		[key: string]: string;
 	} {
@@ -76,6 +82,7 @@ export class GitEditor implements IIPCHandler, ITerminalEnvironmentProvider {
 
 		return config.get<boolean>("useEditorAsCommitInput") ? this.env : {};
 	}
+
 	getTerminalEnv(): {
 		[key: string]: string;
 	} {
@@ -86,6 +93,7 @@ export class GitEditor implements IIPCHandler, ITerminalEnvironmentProvider {
 			? this.env
 			: {};
 	}
+
 	dispose(): void {
 		this.disposable.dispose();
 	}
@@ -95,6 +103,7 @@ export class GitEditorDocumentLinkProvider implements DocumentLinkProvider {
 		/^#\s+(modified|new file|deleted|renamed|copied|type change):\s+(?<file1>.*?)(?:\s+->\s+(?<file2>.*))*$/gm;
 
 	constructor(private readonly _model: Model) {}
+
 	provideDocumentLinks(
 		document: TextDocument,
 		token: CancellationToken,
@@ -102,17 +111,20 @@ export class GitEditorDocumentLinkProvider implements DocumentLinkProvider {
 		if (token.isCancellationRequested) {
 			return [];
 		}
+
 		const repository = this._model.getRepository(document.uri);
 
 		if (!repository) {
 			return [];
 		}
+
 		const links: DocumentLink[] = [];
 
 		for (const match of document.getText().matchAll(this._regex)) {
 			if (!match.groups) {
 				continue;
 			}
+
 			const { file1, file2 } = match.groups;
 
 			if (file1) {
@@ -125,6 +137,7 @@ export class GitEditorDocumentLinkProvider implements DocumentLinkProvider {
 					),
 				);
 			}
+
 			if (file2) {
 				links.push(
 					this._createDocumentLink(
@@ -136,8 +149,10 @@ export class GitEditorDocumentLinkProvider implements DocumentLinkProvider {
 				);
 			}
 		}
+
 		return links;
 	}
+
 	private _createDocumentLink(
 		repository: Repository,
 		document: TextDocument,

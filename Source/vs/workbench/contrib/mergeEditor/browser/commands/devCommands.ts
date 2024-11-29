@@ -42,6 +42,7 @@ export class MergeEditorCopyContentsToJSON extends Action2 {
 			precondition: ctxIsMergeEditor,
 		});
 	}
+
 	run(accessor: ServicesAccessor): void {
 		const { activeEditorPane } = accessor.get(IEditorService);
 
@@ -60,11 +61,13 @@ export class MergeEditorCopyContentsToJSON extends Action2 {
 
 			return;
 		}
+
 		const model = activeEditorPane.model;
 
 		if (!model) {
 			return;
 		}
+
 		const contents: MergeEditorContents = {
 			languageId: model.resultTextModel.getLanguageId(),
 			base: model.base.getValue(),
@@ -75,7 +78,9 @@ export class MergeEditorCopyContentsToJSON extends Action2 {
 		};
 
 		const jsonStr = JSON.stringify(contents, undefined, 4);
+
 		clipboardService.writeText(jsonStr);
+
 		notificationService.info({
 			name: localize("mergeEditor.name", "Merge Editor"),
 			message: localize(
@@ -99,6 +104,7 @@ export class MergeEditorSaveContentsToFolder extends Action2 {
 			precondition: ctxIsMergeEditor,
 		});
 	}
+
 	async run(accessor: ServicesAccessor) {
 		const { activeEditorPane } = accessor.get(IEditorService);
 
@@ -121,11 +127,13 @@ export class MergeEditorSaveContentsToFolder extends Action2 {
 
 			return;
 		}
+
 		const model = activeEditorPane.model;
 
 		if (!model) {
 			return;
 		}
+
 		const result = await dialogService.showOpenDialog({
 			canSelectFiles: false,
 			canSelectFolders: true,
@@ -139,6 +147,7 @@ export class MergeEditorSaveContentsToFolder extends Action2 {
 		if (!result) {
 			return;
 		}
+
 		const targetDir = result[0];
 
 		const extension =
@@ -153,6 +162,7 @@ export class MergeEditorSaveContentsToFolder extends Action2 {
 				{},
 			);
 		}
+
 		await Promise.all([
 			write("base", model.base.getValue()),
 			write("input1", model.input1.textModel.getValue()),
@@ -160,6 +170,7 @@ export class MergeEditorSaveContentsToFolder extends Action2 {
 			write("result", model.resultTextModel.getValue()),
 			write("initialResult", model.getInitialResultValue()),
 		]);
+
 		notificationService.info({
 			name: localize("mergeEditor.name", "Merge Editor"),
 			message: localize(
@@ -182,10 +193,12 @@ export class MergeEditorLoadContentsFromFolder extends Action2 {
 			f1: true,
 		});
 	}
+
 	async run(
 		accessor: ServicesAccessor,
 		args?: {
 			folderUri?: URI;
+
 			resultState?: "initial" | "current";
 		},
 	) {
@@ -200,6 +213,7 @@ export class MergeEditorLoadContentsFromFolder extends Action2 {
 		if (!args) {
 			args = {};
 		}
+
 		let targetDir: URI;
 
 		if (!args.folderUri) {
@@ -216,16 +230,19 @@ export class MergeEditorLoadContentsFromFolder extends Action2 {
 			if (!result) {
 				return;
 			}
+
 			targetDir = result[0];
 		} else {
 			targetDir = args.folderUri;
 		}
+
 		const targetDirInfo = await fileService.resolve(targetDir);
 
 		function findFile(name: string) {
 			return targetDirInfo.children!.find((c) => c.name.startsWith(name))
 				?.resource!;
 		}
+
 		const shouldOpenInitial = await promptOpenInitial(
 			quickInputService,
 			args.resultState,
@@ -257,6 +274,7 @@ export class MergeEditorLoadContentsFromFolder extends Action2 {
 			},
 			result: { resource: resultUri },
 		};
+
 		editorService.openEditor(input);
 	}
 }
@@ -267,6 +285,7 @@ async function promptOpenInitial(
 	if (resultStateOverride) {
 		return resultStateOverride === "initial";
 	}
+
 	const result = await quickInputService.pick(
 		[
 			{ label: "result", result: false },

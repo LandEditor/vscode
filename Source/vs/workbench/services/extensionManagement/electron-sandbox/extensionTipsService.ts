@@ -34,8 +34,10 @@ class NativeExtensionTipsService
 		sharedProcessService: ISharedProcessService,
 	) {
 		super(fileService, productService);
+
 		this.channel = sharedProcessService.getChannel("extensionTipsService");
 	}
+
 	override getConfigBasedTips(
 		folder: URI,
 	): Promise<IConfigBasedExtensionTip[]> {
@@ -45,8 +47,10 @@ class NativeExtensionTipsService
 				[folder],
 			);
 		}
+
 		return super.getConfigBasedTips(folder);
 	}
+
 	override getImportantExecutableBasedTips(): Promise<
 		IExecutableBasedExtensionTip[]
 	> {
@@ -54,6 +58,7 @@ class NativeExtensionTipsService
 			"getImportantExecutableBasedTips",
 		);
 	}
+
 	override getOtherExecutableBasedTips(): Promise<
 		IExecutableBasedExtensionTip[]
 	> {

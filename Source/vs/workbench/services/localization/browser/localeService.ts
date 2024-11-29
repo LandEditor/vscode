@@ -25,34 +25,43 @@ import {
 
 const localeStorage = new (class LocaleStorage {
 	private static readonly LOCAL_STORAGE_LOCALE_KEY = "vscode.nls.locale";
+
 	private static readonly LOCAL_STORAGE_EXTENSION_ID_KEY =
 		"vscode.nls.languagePackExtensionId";
 
 	setLocale(locale: string): void {
 		localStorage.setItem(LocaleStorage.LOCAL_STORAGE_LOCALE_KEY, locale);
+
 		this.doSetLocaleToCookie(locale);
 	}
+
 	private doSetLocaleToCookie(locale: string): void {
 		document.cookie = `${LocaleStorage.LOCAL_STORAGE_LOCALE_KEY}=${locale};path=/;max-age=3153600000`;
 	}
+
 	clearLocale(): void {
 		localStorage.removeItem(LocaleStorage.LOCAL_STORAGE_LOCALE_KEY);
+
 		this.doClearLocaleToCookie();
 	}
+
 	private doClearLocaleToCookie(): void {
 		document.cookie = `${LocaleStorage.LOCAL_STORAGE_LOCALE_KEY}=;path=/;max-age=0`;
 	}
+
 	setExtensionId(extensionId: string): void {
 		localStorage.setItem(
 			LocaleStorage.LOCAL_STORAGE_EXTENSION_ID_KEY,
 			extensionId,
 		);
 	}
+
 	getExtensionId(): string | null {
 		return localStorage.getItem(
 			LocaleStorage.LOCAL_STORAGE_EXTENSION_ID_KEY,
 		);
 	}
+
 	clearExtensionId(): void {
 		localStorage.removeItem(LocaleStorage.LOCAL_STORAGE_EXTENSION_ID_KEY);
 	}
@@ -69,6 +78,7 @@ export class WebLocaleService implements ILocaleService {
 		@IProductService
 		private readonly productService: IProductService,
 	) {}
+
 	async setLocale(
 		languagePackItem: ILanguagePackItem,
 		_skipDialog = false,
@@ -81,6 +91,7 @@ export class WebLocaleService implements ILocaleService {
 		) {
 			return;
 		}
+
 		if (locale) {
 			localeStorage.setLocale(locale);
 
@@ -89,8 +100,10 @@ export class WebLocaleService implements ILocaleService {
 			}
 		} else {
 			localeStorage.clearLocale();
+
 			localeStorage.clearExtensionId();
 		}
+
 		const restartDialog = await this.dialogService.confirm({
 			type: "info",
 			message: localize(
@@ -113,13 +126,16 @@ export class WebLocaleService implements ILocaleService {
 			this.hostService.restart();
 		}
 	}
+
 	async clearLocalePreference(): Promise<void> {
 		localeStorage.clearLocale();
+
 		localeStorage.clearExtensionId();
 
 		if (Language.value() === navigator.language.toLowerCase()) {
 			return;
 		}
+
 		const restartDialog = await this.dialogService.confirm({
 			type: "info",
 			message: localize(
@@ -151,20 +167,24 @@ class WebActiveLanguagePackService implements IActiveLanguagePackService {
 		@ILogService
 		private readonly logService: ILogService,
 	) {}
+
 	async getExtensionIdProvidingCurrentLocale(): Promise<string | undefined> {
 		const language = Language.value();
 
 		if (language === LANGUAGE_DEFAULT) {
 			return undefined;
 		}
+
 		const extensionId = localeStorage.getExtensionId();
 
 		if (extensionId) {
 			return extensionId;
 		}
+
 		if (!this.galleryService.isEnabled()) {
 			return undefined;
 		}
+
 		try {
 			const tagResult = await this.galleryService.query(
 				{ text: `tag:lp-${language}` },
@@ -188,6 +208,7 @@ class WebActiveLanguagePackService implements IActiveLanguagePackService {
 			// Best effort
 			this.logService.error(e);
 		}
+
 		return undefined;
 	}
 }

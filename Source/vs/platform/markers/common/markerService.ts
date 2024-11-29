@@ -30,6 +30,7 @@ export const unsupportedSchemas = new Set([
 ]);
 class DoubleResourceMap<V> {
 	private _byResource = new ResourceMap<Map<string, V>>();
+
 	private _byOwner = new Map<string, ResourceMap<V>>();
 
 	set(resource: URI, owner: string, value: V) {
@@ -37,23 +38,29 @@ class DoubleResourceMap<V> {
 
 		if (!ownerMap) {
 			ownerMap = new Map();
+
 			this._byResource.set(resource, ownerMap);
 		}
+
 		ownerMap.set(owner, value);
 
 		let resourceMap = this._byOwner.get(owner);
 
 		if (!resourceMap) {
 			resourceMap = new ResourceMap();
+
 			this._byOwner.set(owner, resourceMap);
 		}
+
 		resourceMap.set(resource, value);
 	}
+
 	get(resource: URI, owner: string): V | undefined {
 		const ownerMap = this._byResource.get(resource);
 
 		return ownerMap?.get(owner);
 	}
+
 	delete(resource: URI, owner: string): boolean {
 		let removedA = false;
 
@@ -64,23 +71,29 @@ class DoubleResourceMap<V> {
 		if (ownerMap) {
 			removedA = ownerMap.delete(owner);
 		}
+
 		const resourceMap = this._byOwner.get(owner);
 
 		if (resourceMap) {
 			removedB = resourceMap.delete(resource);
 		}
+
 		if (removedA !== removedB) {
 			throw new Error("illegal state");
 		}
+
 		return removedA && removedB;
 	}
+
 	values(key?: URI | string): Iterable<V> {
 		if (typeof key === "string") {
 			return this._byOwner.get(key)?.values() ?? Iterable.empty();
 		}
+
 		if (URI.isUri(key)) {
 			return this._byResource.get(key)?.values() ?? Iterable.empty();
 		}
+
 		return Iterable.map(
 			Iterable.concat(...this._byOwner.values()),
 			(map) => map[1],
@@ -89,20 +102,29 @@ class DoubleResourceMap<V> {
 }
 class MarkerStats implements MarkerStatistics {
 	errors: number = 0;
+
 	infos: number = 0;
+
 	warnings: number = 0;
+
 	unknowns: number = 0;
+
 	private readonly _data = new ResourceMap<MarkerStatistics>();
+
 	private readonly _service: IMarkerService;
+
 	private readonly _subscription: IDisposable;
 
 	constructor(service: IMarkerService) {
 		this._service = service;
+
 		this._subscription = service.onMarkerChanged(this._update, this);
 	}
+
 	dispose(): void {
 		this._subscription.dispose();
 	}
+
 	private _update(resources: readonly URI[]): void {
 		for (const resource of resources) {
 			const oldStats = this._data.get(resource);
@@ -110,11 +132,15 @@ class MarkerStats implements MarkerStatistics {
 			if (oldStats) {
 				this._substract(oldStats);
 			}
+
 			const newStats = this._resourceStats(resource);
+
 			this._add(newStats);
+
 			this._data.set(resource, newStats);
 		}
 	}
+
 	private _resourceStats(resource: URI): MarkerStatistics {
 		const result: MarkerStatistics = {
 			errors: 0,
@@ -126,6 +152,7 @@ class MarkerStats implements MarkerStatistics {
 		if (unsupportedSchemas.has(resource.scheme)) {
 			return result;
 		}
+
 		for (const { severity } of this._service.read({ resource })) {
 			if (severity === MarkerSeverity.Error) {
 				result.errors += 1;
@@ -137,42 +164,60 @@ class MarkerStats implements MarkerStatistics {
 				result.unknowns += 1;
 			}
 		}
+
 		return result;
 	}
+
 	private _substract(op: MarkerStatistics) {
 		this.errors -= op.errors;
+
 		this.warnings -= op.warnings;
+
 		this.infos -= op.infos;
+
 		this.unknowns -= op.unknowns;
 	}
+
 	private _add(op: MarkerStatistics) {
 		this.errors += op.errors;
+
 		this.warnings += op.warnings;
+
 		this.infos += op.infos;
+
 		this.unknowns += op.unknowns;
 	}
 }
 export class MarkerService implements IMarkerService {
 	declare readonly _serviceBrand: undefined;
+
 	private readonly _onMarkerChanged = new DebounceEmitter<readonly URI[]>({
 		delay: 0,
 		merge: MarkerService._merge,
 	});
+
 	readonly onMarkerChanged = this._onMarkerChanged.event;
+
 	private readonly _data = new DoubleResourceMap<IMarker[]>();
+
 	private readonly _stats = new MarkerStats(this);
+
 	dispose(): void {
 		this._stats.dispose();
+
 		this._onMarkerChanged.dispose();
 	}
+
 	getStatistics(): MarkerStatistics {
 		return this._stats;
 	}
+
 	remove(owner: string, resources: URI[]): void {
 		for (const resource of resources || []) {
 			this.changeOne(owner, resource, []);
 		}
 	}
+
 	changeOne(owner: string, resource: URI, markerData: IMarkerData[]): void {
 		if (isFalsyOrEmpty(markerData)) {
 			// remove marker for this (owner,resource)-tuple
@@ -192,10 +237,13 @@ export class MarkerService implements IMarkerService {
 					markers.push(marker);
 				}
 			}
+
 			this._data.set(resource, owner, markers);
+
 			this._onMarkerChanged.fire([resource]);
 		}
 	}
+
 	private static _toMarker(
 		owner: string,
 		resource: URI,
@@ -219,9 +267,12 @@ export class MarkerService implements IMarkerService {
 		}
 		// santize data
 		startLineNumber = startLineNumber > 0 ? startLineNumber : 1;
+
 		startColumn = startColumn > 0 ? startColumn : 1;
+
 		endLineNumber =
 			endLineNumber >= startLineNumber ? endLineNumber : startLineNumber;
+
 		endColumn = endColumn > 0 ? endColumn : startColumn;
 
 		return {
@@ -239,6 +290,7 @@ export class MarkerService implements IMarkerService {
 			tags,
 		};
 	}
+
 	changeAll(owner: string, data: IResourceMarker[]): void {
 		const changes: URI[] = [];
 		// remove old marker
@@ -250,6 +302,7 @@ export class MarkerService implements IMarkerService {
 
 				if (first) {
 					changes.push(first.resource);
+
 					this._data.delete(first.resource, owner);
 				}
 			}
@@ -270,10 +323,12 @@ export class MarkerService implements IMarkerService {
 					// filter bad markers
 					continue;
 				}
+
 				const array = groups.get(resource);
 
 				if (!array) {
 					groups.set(resource, [marker]);
+
 					changes.push(resource);
 				} else {
 					array.push(marker);
@@ -284,15 +339,20 @@ export class MarkerService implements IMarkerService {
 				this._data.set(resource, owner, value);
 			}
 		}
+
 		if (changes.length > 0) {
 			this._onMarkerChanged.fire(changes);
 		}
 	}
+
 	read(
 		filter: {
 			owner?: string;
+
 			resource?: URI;
+
 			severities?: number;
+
 			take?: number;
 		} = Object.create(null),
 	): IMarker[] {
@@ -301,6 +361,7 @@ export class MarkerService implements IMarkerService {
 		if (!take || take < 0) {
 			take = -1;
 		}
+
 		if (owner && resource) {
 			// exactly one owner AND resource
 			const data = this._data.get(resource, owner);
@@ -319,6 +380,7 @@ export class MarkerService implements IMarkerService {
 						}
 					}
 				}
+
 				return result;
 			}
 		} else if (!owner && !resource) {
@@ -336,6 +398,7 @@ export class MarkerService implements IMarkerService {
 					}
 				}
 			}
+
 			return result;
 		} else {
 			// of one resource OR owner
@@ -354,9 +417,11 @@ export class MarkerService implements IMarkerService {
 					}
 				}
 			}
+
 			return result;
 		}
 	}
+
 	private static _accept(marker: IMarker, severities?: number): boolean {
 		return (
 			severities === undefined ||
@@ -372,6 +437,7 @@ export class MarkerService implements IMarkerService {
 				set.set(item, true);
 			}
 		}
+
 		return Array.from(set.keys());
 	}
 }

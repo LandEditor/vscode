@@ -59,18 +59,22 @@ class NativeLocalizationWorkbenchContribution extends BaseLocalizationWorkbenchC
 		private readonly telemetryService: ITelemetryService,
 	) {
 		super();
+
 		this.checkAndInstall();
+
 		this._register(
 			this.extensionManagementService.onDidInstallExtensions((e) =>
 				this.onDidInstallExtensions(e),
 			),
 		);
+
 		this._register(
 			this.extensionManagementService.onDidUninstallExtension((e) =>
 				this.onDidUninstallExtension(e),
 			),
 		);
 	}
+
 	private async onDidInstallExtensions(
 		results: readonly InstallExtensionResult[],
 	): Promise<void> {
@@ -83,6 +87,7 @@ class NativeLocalizationWorkbenchContribution extends BaseLocalizationWorkbenchC
 			}
 		}
 	}
+
 	private async onDidInstallExtension(
 		localExtension: ILocalExtension,
 		fromSettingsSync: boolean,
@@ -93,7 +98,9 @@ class NativeLocalizationWorkbenchContribution extends BaseLocalizationWorkbenchC
 		if (!localization || platform.language === localization.languageId) {
 			return;
 		}
+
 		const { languageId, languageName } = localization;
+
 		this.notificationService.prompt(
 			Severity.Info,
 			localize(
@@ -132,6 +139,7 @@ class NativeLocalizationWorkbenchContribution extends BaseLocalizationWorkbenchC
 			},
 		);
 	}
+
 	private async onDidUninstallExtension(
 		_event: DidUninstallExtensionEvent,
 	): Promise<void> {
@@ -142,6 +150,7 @@ class NativeLocalizationWorkbenchContribution extends BaseLocalizationWorkbenchC
 			});
 		}
 	}
+
 	private async checkAndInstall(): Promise<void> {
 		const language = platform.language;
 
@@ -158,20 +167,24 @@ class NativeLocalizationWorkbenchContribution extends BaseLocalizationWorkbenchC
 		if (!this.galleryService.isEnabled()) {
 			return;
 		}
+
 		if (!language || !locale || platform.Language.isDefaultVariant()) {
 			return;
 		}
+
 		if (
 			locale.startsWith(language) ||
 			languagePackSuggestionIgnoreList.includes(locale)
 		) {
 			return;
 		}
+
 		const installed = await this.isLocaleInstalled(locale);
 
 		if (installed) {
 			return;
 		}
+
 		const fullLocale = locale;
 
 		let tagResult = await this.galleryService.query(
@@ -182,6 +195,7 @@ class NativeLocalizationWorkbenchContribution extends BaseLocalizationWorkbenchC
 		if (tagResult.total === 0) {
 			// Trim the locale and try again.
 			locale = locale.split("-")[0];
+
 			tagResult = await this.galleryService.query(
 				{ text: `tag:lp-${locale}` },
 				CancellationToken.None,
@@ -191,6 +205,7 @@ class NativeLocalizationWorkbenchContribution extends BaseLocalizationWorkbenchC
 				return;
 			}
 		}
+
 		const extensionToInstall =
 			tagResult.total === 1
 				? tagResult.firstPage[0]
@@ -206,6 +221,7 @@ class NativeLocalizationWorkbenchContribution extends BaseLocalizationWorkbenchC
 		if (!extensionToFetchTranslationsFrom.assets.manifest) {
 			return;
 		}
+
 		const [manifest, translation] = await Promise.all([
 			this.galleryService.getManifest(
 				extensionToFetchTranslationsFrom,
@@ -243,6 +259,7 @@ class NativeLocalizationWorkbenchContribution extends BaseLocalizationWorkbenchC
 		const translations: {
 			[key: string]: string;
 		} = {};
+
 		Object.keys(minimumTranslatedStrings).forEach((key) => {
 			if (!translationsFromPack[key] || useEnglish) {
 				translations[key] = minimumTranslatedStrings[key].replace(
@@ -273,6 +290,7 @@ class NativeLocalizationWorkbenchContribution extends BaseLocalizationWorkbenchC
 			label: translations["searchMarketplace"],
 			run: async () => {
 				logUserReaction("search");
+
 				await this.extensionsWorkbenchService.openSearch(
 					`tag:lp-${locale}`,
 				);
@@ -283,6 +301,7 @@ class NativeLocalizationWorkbenchContribution extends BaseLocalizationWorkbenchC
 			label: translations["installAndRestart"],
 			run: async () => {
 				logUserReaction("installAndRestart");
+
 				await this.localeService.setLocale(
 					{
 						id: locale,
@@ -297,6 +316,7 @@ class NativeLocalizationWorkbenchContribution extends BaseLocalizationWorkbenchC
 		};
 
 		const promptMessage = translations[promptMessageKey];
+
 		this.notificationService.prompt(
 			Severity.Info,
 			promptMessage,
@@ -307,12 +327,14 @@ class NativeLocalizationWorkbenchContribution extends BaseLocalizationWorkbenchC
 					isSecondary: true,
 					run: () => {
 						languagePackSuggestionIgnoreList.push(fullLocale);
+
 						this.storageService.store(
 							NativeLocalizationWorkbenchContribution.LANGUAGEPACK_SUGGESTION_IGNORE_STORAGE_KEY,
 							JSON.stringify(languagePackSuggestionIgnoreList),
 							StorageScope.APPLICATION,
 							StorageTarget.USER,
 						);
+
 						logUserReaction("neverShowAgain");
 					},
 				},
@@ -324,6 +346,7 @@ class NativeLocalizationWorkbenchContribution extends BaseLocalizationWorkbenchC
 			},
 		);
 	}
+
 	private async isLocaleInstalled(locale: string): Promise<boolean> {
 		const installed = await this.extensionManagementService.getInstalled();
 

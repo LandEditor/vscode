@@ -18,6 +18,7 @@ export function registerHotReloadHandler(
 		return { dispose() {} };
 	} else {
 		const handlers = registerGlobalHotReloadHandler();
+
 		handlers.add(handler);
 
 		return {
@@ -35,7 +36,9 @@ export function registerHotReloadHandler(
  */
 export type HotReloadHandler = (args: {
 	oldExports: Record<string, unknown>;
+
 	newSrc: string;
+
 	config: IHotReloadConfig;
 }) => AcceptNewExportsHandler | undefined;
 
@@ -48,6 +51,7 @@ function registerGlobalHotReloadHandler() {
 	if (!hotReloadHandlers) {
 		hotReloadHandlers = new Set();
 	}
+
 	const g = globalThis as unknown as GlobalThisAddition;
 
 	if (!g.$hotReload_applyNewExports) {
@@ -63,6 +67,7 @@ function registerGlobalHotReloadHandler() {
 					results.push(result);
 				}
 			}
+
 			if (results.length > 0) {
 				return (newExports) => {
 					let result = false;
@@ -72,19 +77,24 @@ function registerGlobalHotReloadHandler() {
 							result = true;
 						}
 					}
+
 					return result;
 				};
 			}
+
 			return undefined;
 		};
 	}
+
 	return hotReloadHandlers;
 }
 let hotReloadHandlers:
 	| Set<
 			(args: {
 				oldExports: Record<string, unknown>;
+
 				newSrc: string;
+
 				config: HotReloadConfig;
 			}) => AcceptNewExportsFn | undefined
 	  >
@@ -95,7 +105,9 @@ interface HotReloadConfig {
 interface GlobalThisAddition {
 	$hotReload_applyNewExports?(args: {
 		oldExports: Record<string, unknown>;
+
 		newSrc: string;
+
 		config?: HotReloadConfig;
 	}): AcceptNewExportsFn | undefined;
 }
@@ -106,9 +118,11 @@ if (isHotReloadEnabled()) {
 		if (config.mode !== "patch-prototype") {
 			return undefined;
 		}
+
 		return (newExports) => {
 			for (const key in newExports) {
 				const exportedItem = newExports[key];
+
 				console.log(
 					`[hot-reload] Patching prototype methods of '${key}'`,
 					{ exportedItem },
@@ -143,16 +157,19 @@ if (isHotReloadEnabled()) {
 									`[hot-reload] Patching prototype method '${key}.${prop}'`,
 								);
 							}
+
 							Object.defineProperty(
 								(oldExportedItem as any).prototype,
 								prop,
 								descriptor,
 							);
 						}
+
 						newExports[key] = oldExportedItem;
 					}
 				}
 			}
+
 			return true;
 		};
 	});

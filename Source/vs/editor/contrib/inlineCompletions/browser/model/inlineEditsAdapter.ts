@@ -27,6 +27,7 @@ import { ILanguageFeaturesService } from "../../../../common/services/languageFe
 
 export class InlineEditsAdapterContribution extends Disposable {
 	public static ID = "editor.contrib.inlineEditsAdapter";
+
 	public static isFirst = true;
 
 	constructor(
@@ -38,6 +39,7 @@ export class InlineEditsAdapterContribution extends Disposable {
 
 		if (InlineEditsAdapterContribution.isFirst) {
 			InlineEditsAdapterContribution.isFirst = false;
+
 			this.instantiationService.createInstance(InlineEditsAdapter);
 		}
 	}
@@ -65,6 +67,7 @@ export class InlineEditsAdapter extends Disposable {
 				> & {
 					edits: {
 						result: IInlineEdit;
+
 						provider: InlineEditProvider<IInlineEdit>;
 					}[];
 				};
@@ -104,6 +107,7 @@ export class InlineEditsAdapter extends Disposable {
 											if (!result) {
 												return undefined;
 											}
+
 											return { result, provider };
 										},
 									),

@@ -62,6 +62,7 @@ export class RemoteExtensionsInitializerContribution
 	) {
 		this.initializeRemoteExtensions();
 	}
+
 	private async initializeRemoteExtensions(): Promise<void> {
 		const connection = this.remoteAgentService.getConnection();
 
@@ -84,6 +85,7 @@ export class RemoteExtensionsInitializerContribution
 		if (!this.userDataSyncStoreManagementService.userDataSyncStore) {
 			return;
 		}
+
 		const newRemoteConnectionKey = `${IS_NEW_KEY}.${connection.remoteAuthority}`;
 		// Skip: Not a new remote connection
 		if (
@@ -99,6 +101,7 @@ export class RemoteExtensionsInitializerContribution
 
 			return;
 		}
+
 		this.storageService.store(
 			newRemoteConnectionKey,
 			false,
@@ -126,6 +129,7 @@ export class RemoteExtensionsInitializerContribution
 		if (!resolvedAuthority.options?.authenticationSession) {
 			return;
 		}
+
 		const sessions = await this.authenticationService.getSessions(
 			resolvedAuthority.options?.authenticationSession.providerId,
 		);
@@ -143,11 +147,13 @@ export class RemoteExtensionsInitializerContribution
 
 			return;
 		}
+
 		const userDataSyncStoreClient =
 			this.instantiationService.createInstance(
 				UserDataSyncStoreClient,
 				this.userDataSyncStoreManagementService.userDataSyncStore.url,
 			);
+
 		userDataSyncStoreClient.setAuthToken(
 			session.accessToken,
 			resolvedAuthority.options.authenticationSession.providerId,
@@ -159,6 +165,7 @@ export class RemoteExtensionsInitializerContribution
 		);
 
 		const serviceCollection = new ServiceCollection();
+
 		serviceCollection.set(
 			IExtensionManagementService,
 			remoteExtensionManagementServer.extensionManagementService,
@@ -169,6 +176,7 @@ export class RemoteExtensionsInitializerContribution
 
 		const extensionsToInstallInitializer =
 			instantiationService.createInstance(RemoteExtensionsInitializer);
+
 		await extensionsToInstallInitializer.initialize(userData);
 	}
 }
@@ -206,6 +214,7 @@ class RemoteExtensionsInitializer extends AbstractExtensionsInitializer {
 			uriIdentityService,
 		);
 	}
+
 	protected override async doInitialize(
 		remoteUserData: IRemoteUserData,
 	): Promise<void> {
@@ -218,6 +227,7 @@ class RemoteExtensionsInitializer extends AbstractExtensionsInitializer {
 
 			return;
 		}
+
 		const installedExtensions =
 			await this.extensionManagementService.getInstalled();
 
@@ -231,6 +241,7 @@ class RemoteExtensionsInitializer extends AbstractExtensionsInitializer {
 
 			return;
 		}
+
 		const targetPlatform =
 			await this.extensionManagementService.getTargetPlatform();
 
@@ -259,6 +270,7 @@ class RemoteExtensionsInitializer extends AbstractExtensionsInitializer {
 						const syncedExtension = remoteExtensions.find((e) =>
 							areSameExtensions(e.identifier, e.identifier),
 						);
+
 						await this.extensionManagementService.installFromGallery(
 							e,
 							{

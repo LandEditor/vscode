@@ -26,13 +26,17 @@ export interface IAuxiliaryWindow extends IBaseWindow {
 }
 export class AuxiliaryWindow extends BaseWindow implements IAuxiliaryWindow {
 	readonly id = this.webContents.id;
+
 	parentId = -1;
+
 	override get win() {
 		if (!super.win) {
 			this.tryClaimWindow();
 		}
+
 		return super.win;
 	}
+
 	private stateApplied = false;
 
 	constructor(
@@ -57,14 +61,17 @@ export class AuxiliaryWindow extends BaseWindow implements IAuxiliaryWindow {
 		// Try to claim window
 		this.tryClaimWindow();
 	}
+
 	tryClaimWindow(options?: BrowserWindowConstructorOptions): void {
 		if (this._store.isDisposed || this.webContents.isDestroyed()) {
 			return; // already disposed
 		}
+
 		this.doTryClaimWindow(options);
 
 		if (options && !this.stateApplied) {
 			this.stateApplied = true;
+
 			this.applyState({
 				x: options.x,
 				y: options.y,
@@ -82,10 +89,12 @@ export class AuxiliaryWindow extends BaseWindow implements IAuxiliaryWindow {
 			});
 		}
 	}
+
 	private doTryClaimWindow(options?: BrowserWindowConstructorOptions): void {
 		if (this._win) {
 			return; // already claimed
 		}
+
 		const window = BrowserWindow.fromWebContents(this.webContents);
 
 		if (window) {
@@ -112,6 +121,7 @@ export class AuxiliaryWindow extends BaseWindow implements IAuxiliaryWindow {
 			this.lifecycleMainService.registerAuxWindow(this);
 		}
 	}
+
 	matches(webContents: WebContents): boolean {
 		return this.webContents.id === webContents.id;
 	}

@@ -47,28 +47,40 @@ import { IExtHostWorkspace } from "./extHostWorkspace.js";
 
 export interface FileSystemWatcherCreateOptions {
 	readonly correlate: boolean;
+
 	readonly ignoreCreateEvents?: boolean;
+
 	readonly ignoreChangeEvents?: boolean;
+
 	readonly ignoreDeleteEvents?: boolean;
+
 	readonly excludes?: string[];
 }
 class FileSystemWatcher implements vscode.FileSystemWatcher {
 	private readonly session = Math.random();
+
 	private readonly _onDidCreate = new Emitter<vscode.Uri>();
+
 	private readonly _onDidChange = new Emitter<vscode.Uri>();
+
 	private readonly _onDidDelete = new Emitter<vscode.Uri>();
+
 	private _disposable: Disposable;
+
 	private _config: number;
 
 	get ignoreCreateEvents(): boolean {
 		return Boolean(this._config & 0b001);
 	}
+
 	get ignoreChangeEvents(): boolean {
 		return Boolean(this._config & 0b010);
 	}
+
 	get ignoreDeleteEvents(): boolean {
 		return Boolean(this._config & 0b100);
 	}
+
 	constructor(
 		mainContext: IMainContext,
 		configuration: ExtHostConfigProvider,
@@ -83,12 +95,15 @@ class FileSystemWatcher implements vscode.FileSystemWatcher {
 		if (options.ignoreCreateEvents) {
 			this._config += 0b001;
 		}
+
 		if (options.ignoreChangeEvents) {
 			this._config += 0b010;
 		}
+
 		if (options.ignoreDeleteEvents) {
 			this._config += 0b100;
 		}
+
 		const parsedPattern = parse(globPattern);
 		// 1.64.x behaviour change: given the new support to watch any folder
 		// we start to ignore events outside the workspace when only a string
@@ -108,12 +123,14 @@ class FileSystemWatcher implements vscode.FileSystemWatcher {
 			) {
 				return; // ignore events from other file watchers that are in correlation mode
 			}
+
 			if (
 				excludeUncorrelatedEvents &&
 				typeof events.session === "undefined"
 			) {
 				return; // ignore events from other non-correlating file watcher when we are in correlation mode
 			}
+
 			if (!options.ignoreCreateEvents) {
 				for (const created of events.created) {
 					const uri = URI.revive(created);
@@ -127,6 +144,7 @@ class FileSystemWatcher implements vscode.FileSystemWatcher {
 					}
 				}
 			}
+
 			if (!options.ignoreChangeEvents) {
 				for (const changed of events.changed) {
 					const uri = URI.revive(changed);
@@ -140,6 +158,7 @@ class FileSystemWatcher implements vscode.FileSystemWatcher {
 					}
 				}
 			}
+
 			if (!options.ignoreDeleteEvents) {
 				for (const deleted of events.deleted) {
 					const uri = URI.revive(deleted);
@@ -154,6 +173,7 @@ class FileSystemWatcher implements vscode.FileSystemWatcher {
 				}
 			}
 		});
+
 		this._disposable = Disposable.from(
 			this.ensureWatching(
 				mainContext,
@@ -170,6 +190,7 @@ class FileSystemWatcher implements vscode.FileSystemWatcher {
 			subscription,
 		);
 	}
+
 	private ensureWatching(
 		mainContext: IMainContext,
 		workspace: IExtHostWorkspace,
@@ -184,6 +205,7 @@ class FileSystemWatcher implements vscode.FileSystemWatcher {
 		if (typeof globPattern === "string") {
 			return disposable; // workspace is already watched by default, no need to watch again!
 		}
+
 		if (
 			options.ignoreChangeEvents &&
 			options.ignoreCreateEvents &&
@@ -191,6 +213,7 @@ class FileSystemWatcher implements vscode.FileSystemWatcher {
 		) {
 			return disposable; // no need to watch if we ignore all events
 		}
+
 		const proxy = mainContext.getProxy(
 			MainContext.MainThreadFileSystemEventService,
 		);
@@ -203,6 +226,7 @@ class FileSystemWatcher implements vscode.FileSystemWatcher {
 		) {
 			recursive = true; // only watch recursively if pattern indicates the need for it
 		}
+
 		const excludes = options.excludes ?? [];
 
 		let includes: Array<string | IRelativePattern> | undefined = undefined;
@@ -223,9 +247,11 @@ class FileSystemWatcher implements vscode.FileSystemWatcher {
 				if (options.ignoreChangeEvents) {
 					filter &= ~FileChangeFilter.UPDATED;
 				}
+
 				if (options.ignoreCreateEvents) {
 					filter &= ~FileChangeFilter.ADDED;
 				}
+
 				if (options.ignoreDeleteEvents) {
 					filter &= ~FileChangeFilter.DELETED;
 				}
@@ -282,6 +308,7 @@ class FileSystemWatcher implements vscode.FileSystemWatcher {
 								if (!includes) {
 									includes = [];
 								}
+
 								includes.push(
 									normalizeWatcherPattern(
 										workspaceFolder.uri.fsPath,
@@ -300,6 +327,7 @@ class FileSystemWatcher implements vscode.FileSystemWatcher {
 				}
 			}
 		}
+
 		proxy.$watch(
 			extension.identifier.value,
 			this.session,
@@ -310,15 +338,19 @@ class FileSystemWatcher implements vscode.FileSystemWatcher {
 
 		return Disposable.from({ dispose: () => proxy.$unwatch(this.session) });
 	}
+
 	dispose() {
 		this._disposable.dispose();
 	}
+
 	get onDidCreate(): Event<vscode.Uri> {
 		return this._onDidCreate.event;
 	}
+
 	get onDidChange(): Event<vscode.Uri> {
 		return this._onDidChange.event;
 	}
+
 	get onDidDelete(): Event<vscode.Uri> {
 		return this._onDidDelete.event;
 	}
@@ -329,7 +361,9 @@ interface IExtensionListener<E> {
 }
 class LazyRevivedFileSystemEvents implements FileSystemEvents {
 	constructor(private readonly _events: FileSystemEvents) {}
+
 	readonly session = this._events.session;
+
 	private _created = new Lazy(
 		() => this._events.created.map(URI.revive) as URI[],
 	);
@@ -337,6 +371,7 @@ class LazyRevivedFileSystemEvents implements FileSystemEvents {
 	get created(): URI[] {
 		return this._created.value;
 	}
+
 	private _changed = new Lazy(
 		() => this._events.changed.map(URI.revive) as URI[],
 	);
@@ -344,6 +379,7 @@ class LazyRevivedFileSystemEvents implements FileSystemEvents {
 	get changed(): URI[] {
 		return this._changed.value;
 	}
+
 	private _deleted = new Lazy(
 		() => this._events.deleted.map(URI.revive) as URI[],
 	);
@@ -356,19 +392,28 @@ export class ExtHostFileSystemEventService
 	implements ExtHostFileSystemEventServiceShape
 {
 	private readonly _onFileSystemEvent = new Emitter<FileSystemEvents>();
+
 	private readonly _onDidRenameFile = new Emitter<vscode.FileRenameEvent>();
+
 	private readonly _onDidCreateFile = new Emitter<vscode.FileCreateEvent>();
+
 	private readonly _onDidDeleteFile = new Emitter<vscode.FileDeleteEvent>();
+
 	private readonly _onWillRenameFile =
 		new AsyncEmitter<vscode.FileWillRenameEvent>();
+
 	private readonly _onWillCreateFile =
 		new AsyncEmitter<vscode.FileWillCreateEvent>();
+
 	private readonly _onWillDeleteFile =
 		new AsyncEmitter<vscode.FileWillDeleteEvent>();
+
 	readonly onDidRenameFile: Event<vscode.FileRenameEvent> =
 		this._onDidRenameFile.event;
+
 	readonly onDidCreateFile: Event<vscode.FileCreateEvent> =
 		this._onDidCreateFile.event;
+
 	readonly onDidDeleteFile: Event<vscode.FileDeleteEvent> =
 		this._onDidDeleteFile.event;
 
@@ -441,21 +486,25 @@ export class ExtHostFileSystemEventService
 			//ignore, dont send
 		}
 	}
+
 	getOnWillRenameFileEvent(
 		extension: IExtensionDescription,
 	): Event<vscode.FileWillRenameEvent> {
 		return this._createWillExecuteEvent(extension, this._onWillRenameFile);
 	}
+
 	getOnWillCreateFileEvent(
 		extension: IExtensionDescription,
 	): Event<vscode.FileWillCreateEvent> {
 		return this._createWillExecuteEvent(extension, this._onWillCreateFile);
 	}
+
 	getOnWillDeleteFileEvent(
 		extension: IExtensionDescription,
 	): Event<vscode.FileWillDeleteEvent> {
 		return this._createWillExecuteEvent(extension, this._onWillDeleteFile);
 	}
+
 	private _createWillExecuteEvent<E extends IWaitUntil>(
 		extension: IExtensionDescription,
 		emitter: AsyncEmitter<E>,
@@ -466,11 +515,13 @@ export class ExtHostFileSystemEventService
 			) {
 				listener.call(thisArg, e);
 			};
+
 			wrappedListener.extension = extension;
 
 			return emitter.event(wrappedListener, undefined, disposables);
 		};
 	}
+
 	async $onWillRunFileOperation(
 		operation: FileOperation,
 		files: SourceTargetPair[],
@@ -508,8 +559,10 @@ export class ExtHostFileSystemEventService
 					token,
 				);
 		}
+
 		return undefined;
 	}
+
 	private async _fireWillEvent<E extends IWaitUntil>(
 		emitter: AsyncEmitter<E>,
 		data: IWaitUntilData<E>,
@@ -519,6 +572,7 @@ export class ExtHostFileSystemEventService
 		const extensionNames = new Set<string>();
 
 		const edits: [IExtensionDescription, WorkspaceEdit][] = [];
+
 		await emitter.fireAsync(
 			data,
 			token,
@@ -533,6 +587,7 @@ export class ExtHostFileSystemEventService
 						(<IExtensionListener<E>>listener).extension,
 						result,
 					]);
+
 					extensionNames.add(
 						(<IExtensionListener<E>>listener).extension
 							.displayName ??
@@ -540,6 +595,7 @@ export class ExtHostFileSystemEventService
 								.identifier.value,
 					);
 				}
+
 				if (Date.now() - now > timeout) {
 					this._logService.warn(
 						"SLOW file-participant",
@@ -552,6 +608,7 @@ export class ExtHostFileSystemEventService
 		if (token.isCancellationRequested) {
 			return undefined;
 		}
+
 		if (edits.length === 0) {
 			return undefined;
 		}
@@ -564,8 +621,10 @@ export class ExtHostFileSystemEventService
 					this._extHostDocumentsAndEditors.getDocument(uri)?.version,
 				getNotebookDocumentVersion: () => undefined,
 			});
+
 			dto.edits = dto.edits.concat(edits);
 		}
+
 		return { edit: dto, extensionNames: Array.from(extensionNames) };
 	}
 }

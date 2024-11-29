@@ -6,7 +6,9 @@ import { memoize } from "./decorators.js";
 
 export interface ILink {
 	readonly label: string;
+
 	readonly href: string;
+
 	readonly title?: string;
 }
 export type LinkedTextNode = string | ILink;
@@ -35,6 +37,7 @@ export function parseLinkedText(text: string): LinkedText {
 		if (match.index - index > 0) {
 			result.push(text.substring(index, match.index));
 		}
+
 		const [, label, href, , title] = match;
 
 		if (title) {
@@ -42,10 +45,13 @@ export function parseLinkedText(text: string): LinkedText {
 		} else {
 			result.push({ label, href });
 		}
+
 		index = match.index + match[0].length;
 	}
+
 	if (index < text.length) {
 		result.push(text.substring(index));
 	}
+
 	return new LinkedText(result);
 }

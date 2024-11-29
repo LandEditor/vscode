@@ -23,14 +23,20 @@ import { ITelemetryData } from "../../telemetry/common/telemetry.js";
 
 export interface IDialogArgs {
 	readonly confirmArgs?: IConfirmDialogArgs;
+
 	readonly inputArgs?: IInputDialogArgs;
+
 	readonly promptArgs?: IPromptDialogArgs;
 }
 export interface IBaseDialogOptions {
 	readonly type?: Severity | DialogType;
+
 	readonly title?: string;
+
 	readonly message: string;
+
 	readonly detail?: string;
+
 	readonly checkbox?: ICheckbox;
 	/**
 	 * Allows to enforce use of custom dialog even in native environments.
@@ -68,7 +74,9 @@ export interface IInput extends IConfirmation {
 }
 export interface IInputElement {
 	readonly type?: "text" | "password";
+
 	readonly value?: string;
+
 	readonly placeholder?: string;
 }
 export interface IInputResult extends IConfirmationResult {
@@ -142,6 +150,7 @@ export type DialogType = "none" | "info" | "error" | "question" | "warning";
 
 export interface ICheckbox {
 	readonly label: string;
+
 	readonly checked?: boolean;
 }
 export interface ICheckboxResult {
@@ -155,12 +164,16 @@ export interface IPickAndOpenOptions {
 	readonly forceNewWindow?: boolean;
 
 	defaultUri?: URI;
+
 	readonly telemetryExtraData?: ITelemetryData;
+
 	availableFileSystems?: string[];
+
 	remoteAuthority?: string | null;
 }
 export interface FileFilter {
 	readonly extensions: string[];
+
 	readonly name: string;
 }
 export interface ISaveDialogOptions {
@@ -227,13 +240,18 @@ export const IDialogService = createDecorator<IDialogService>("dialogService");
 
 export interface ICustomDialogOptions {
 	readonly buttonDetails?: string[];
+
 	readonly markdownDetails?: ICustomDialogMarkdown[];
+
 	readonly classes?: string[];
+
 	readonly icon?: ThemeIcon;
+
 	readonly disableCloseAction?: boolean;
 }
 export interface ICustomDialogMarkdown {
 	readonly markdown: IMarkdownString;
+
 	readonly classes?: string[];
 }
 /**
@@ -266,21 +284,27 @@ export abstract class AbstractDialogHandler implements IDialogHandler {
 	protected getConfirmationButtons(dialog: IConfirmation): string[] {
 		return this.getButtons(dialog, DialogKind.Confirmation);
 	}
+
 	protected getPromptButtons(dialog: IPrompt<unknown>): string[] {
 		return this.getButtons(dialog, DialogKind.Prompt);
 	}
+
 	protected getInputButtons(dialog: IInput): string[] {
 		return this.getButtons(dialog, DialogKind.Input);
 	}
+
 	private getButtons(
 		dialog: IConfirmation,
 		kind: DialogKind.Confirmation,
 	): string[];
+
 	private getButtons(
 		dialog: IPrompt<unknown>,
 		kind: DialogKind.Prompt,
 	): string[];
+
 	private getButtons(dialog: IInput, kind: DialogKind.Input): string[];
+
 	private getButtons(
 		dialog: IConfirmation | IInput | IPrompt<unknown>,
 		kind: DialogKind,
@@ -307,13 +331,16 @@ export abstract class AbstractDialogHandler implements IDialogHandler {
 						),
 					);
 				}
+
 				if (confirmationDialog.cancelButton) {
 					buttons.push(confirmationDialog.cancelButton);
 				} else {
 					buttons.push(localize("cancelButton", "Cancel"));
 				}
+
 				break;
 			}
+
 			case DialogKind.Prompt: {
 				const promptDialog = dialog as IPrompt<unknown>;
 
@@ -325,6 +352,7 @@ export abstract class AbstractDialogHandler implements IDialogHandler {
 						...promptDialog.buttons.map((button) => button.label),
 					);
 				}
+
 				if (promptDialog.cancelButton) {
 					if (promptDialog.cancelButton === true) {
 						buttons.push(localize("cancelButton", "Cancel"));
@@ -338,6 +366,7 @@ export abstract class AbstractDialogHandler implements IDialogHandler {
 						}
 					}
 				}
+
 				if (buttons.length === 0) {
 					buttons.push(
 						localize(
@@ -349,8 +378,10 @@ export abstract class AbstractDialogHandler implements IDialogHandler {
 						),
 					);
 				}
+
 				break;
 			}
+
 			case DialogKind.Input: {
 				const inputDialog = dialog as IInput;
 
@@ -367,22 +398,27 @@ export abstract class AbstractDialogHandler implements IDialogHandler {
 						),
 					);
 				}
+
 				if (inputDialog.cancelButton) {
 					buttons.push(inputDialog.cancelButton);
 				} else {
 					buttons.push(localize("cancelButton", "Cancel"));
 				}
+
 				break;
 			}
 		}
+
 		return buttons;
 	}
+
 	protected getDialogType(
 		type: Severity | DialogType | undefined,
 	): DialogType | undefined {
 		if (typeof type === "string") {
 			return type;
 		}
+
 		if (typeof type === "number") {
 			return type === Severity.Info
 				? "info"
@@ -392,8 +428,10 @@ export abstract class AbstractDialogHandler implements IDialogHandler {
 						? "warning"
 						: "none";
 		}
+
 		return undefined;
 	}
+
 	protected getPromptResult<T>(
 		prompt: IPrompt<T>,
 		buttonIndex: number,
@@ -410,16 +448,22 @@ export abstract class AbstractDialogHandler implements IDialogHandler {
 		) {
 			promptButtons.push(prompt.cancelButton);
 		}
+
 		let result = promptButtons[buttonIndex]?.run({ checkboxChecked });
 
 		if (!(result instanceof Promise)) {
 			result = Promise.resolve(result);
 		}
+
 		return { result, checkboxChecked };
 	}
+
 	abstract confirm(confirmation: IConfirmation): Promise<IConfirmationResult>;
+
 	abstract input(input: IInput): Promise<IInputResult>;
+
 	abstract prompt<T>(prompt: IPrompt<T>): Promise<IAsyncPromptResult<T>>;
+
 	abstract about(): Promise<void>;
 }
 /**
@@ -455,7 +499,9 @@ export interface IDialogService {
 	prompt<T>(
 		prompt: IPromptWithCustomCancel<T>,
 	): Promise<IPromptResultWithCancel<T>>;
+
 	prompt<T>(prompt: IPromptWithDefaultCancel<T>): Promise<IPromptResult<T>>;
+
 	prompt<T>(prompt: IPrompt<T>): Promise<IPromptResult<T>>;
 	/**
 	 * Present a modal dialog to the user asking for input.
@@ -559,6 +605,7 @@ export function getFileNamesMessage(
 	fileNamesOrResources: readonly (string | URI)[],
 ): string {
 	const message: string[] = [];
+
 	message.push(
 		...fileNamesOrResources
 			.slice(0, MAX_CONFIRM_FILES)
@@ -584,14 +631,18 @@ export function getFileNamesMessage(
 			);
 		}
 	}
+
 	message.push("");
 
 	return message.join("\n");
 }
 export interface INativeOpenDialogOptions {
 	readonly forceNewWindow?: boolean;
+
 	readonly defaultPath?: string;
+
 	readonly telemetryEventName?: string;
+
 	readonly telemetryExtraData?: ITelemetryData;
 }
 export interface IMassagedMessageBoxOptions {
@@ -656,15 +707,21 @@ export function massageMessageBoxOptions(
 				cancelId !== 1
 			) {
 				buttons.splice(cancelId, 1);
+
 				buttons.splice(1, 0, cancelButton);
 
 				const cancelButtonIndex = buttonIndeces[cancelId];
+
 				buttonIndeces.splice(cancelId, 1);
+
 				buttonIndeces.splice(1, 0, cancelButtonIndex);
+
 				cancelId = 1;
 			}
+
 			if (isLinux && buttons.length > 1) {
 				buttons = buttons.reverse();
+
 				buttonIndeces = buttonIndeces.reverse();
 
 				defaultId = buttons.length - 1;
@@ -687,19 +744,28 @@ export function massageMessageBoxOptions(
 				cancelId !== buttons.length - 1 /* last action */
 			) {
 				buttons.splice(cancelId, 1);
+
 				buttons.push(cancelButton);
 
 				const buttonIndex = buttonIndeces[cancelId];
+
 				buttonIndeces.splice(cancelId, 1);
+
 				buttonIndeces.push(buttonIndex);
+
 				cancelId = buttons.length - 1;
 			}
 		}
 	}
+
 	massagedOptions.buttons = buttons;
+
 	massagedOptions.defaultId = defaultId;
+
 	massagedOptions.cancelId = cancelId;
+
 	massagedOptions.noLink = true;
+
 	massagedOptions.title = massagedOptions.title || productService.nameLong;
 
 	return {

@@ -31,17 +31,20 @@ export class ExtensionsManifestCache extends Disposable {
 		private readonly logService: ILogService,
 	) {
 		super();
+
 		this._register(
 			extensionsManagementService.onDidInstallExtensions((e) =>
 				this.onDidInstallExtensions(e),
 			),
 		);
+
 		this._register(
 			extensionsManagementService.onDidUninstallExtension((e) =>
 				this.onDidUnInstallExtension(e),
 			),
 		);
 	}
+
 	private onDidInstallExtensions(
 		results: readonly InstallExtensionResult[],
 	): void {
@@ -51,11 +54,13 @@ export class ExtensionsManifestCache extends Disposable {
 			}
 		}
 	}
+
 	private onDidUnInstallExtension(e: DidUninstallExtensionEvent): void {
 		if (!e.error) {
 			this.invalidate(e.profileLocation);
 		}
 	}
+
 	async invalidate(
 		extensionsManifestLocation: URI | undefined,
 	): Promise<void> {
@@ -76,6 +81,7 @@ export class ExtensionsManifestCache extends Disposable {
 			);
 		}
 	}
+
 	private async deleteUserCacheFile(
 		profile: IUserDataProfile,
 	): Promise<void> {

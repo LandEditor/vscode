@@ -8,12 +8,19 @@ import type { WebviewStyles } from "vs/workbench/contrib/webview/browser/webview
 
 type KeyEvent = {
 	key: string;
+
 	keyCode: number;
+
 	code: string;
+
 	shiftKey: boolean;
+
 	altKey: boolean;
+
 	ctrlKey: boolean;
+
 	metaKey: boolean;
+
 	repeat: boolean;
 };
 
@@ -33,10 +40,15 @@ export type FromWebviewMessage = {
 	"do-reload": void;
 	"load-resource": {
 		id: number;
+
 		path: string;
+
 		query: string;
+
 		scheme: string;
+
 		authority: string;
+
 		ifNoneMatch?: string;
 	};
 	"load-localhost": { id: string; origin: string };
@@ -47,7 +59,9 @@ export type FromWebviewMessage = {
 	"did-keyup": KeyEvent;
 	"did-context-menu": {
 		clientX: number;
+
 		clientY: number;
+
 		context: { [key: string]: unknown };
 	};
 	"drag-start": void;
@@ -56,14 +70,21 @@ export type FromWebviewMessage = {
 
 interface UpdateContentEvent {
 	contents: string;
+
 	title: string | undefined;
+
 	options: {
 		allowMultipleAPIAcquire: boolean;
+
 		allowScripts: boolean;
+
 		allowForms: boolean;
 	};
+
 	state: any;
+
 	cspSource: string;
+
 	confirmBeforeClose: string;
 }
 
@@ -75,23 +96,35 @@ export type ToWebviewMessage = {
 		| { id: number; status: 401 | 404; path: string }
 		| {
 				id: number;
+
 				status: 304;
+
 				path: string;
+
 				mime: string;
+
 				mtime: number | undefined;
 		  }
 		| {
 				id: number;
+
 				status: 200;
+
 				path: string;
+
 				mime: string;
+
 				data: any;
+
 				etag: string | undefined;
+
 				mtime: number | undefined;
 		  };
 	"did-load-localhost": {
 		id: string;
+
 		origin: string;
+
 		location: string | undefined;
 	};
 	"set-confirm-before-close": string;
@@ -101,10 +134,15 @@ export type ToWebviewMessage = {
 	"set-title": string | undefined;
 	"styles": {
 		styles: WebviewStyles;
+
 		activeTheme: string;
+
 		themeId: string;
+
 		themeLabel: string;
+
 		reduceMotion: boolean;
+
 		screenReader: boolean;
 	};
 	"find": { value: string; previous?: boolean };

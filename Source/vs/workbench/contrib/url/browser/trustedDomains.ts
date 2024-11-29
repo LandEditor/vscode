@@ -37,6 +37,7 @@ export const manageTrustedDomainSettingsCommand = {
 	},
 	handler: async (accessor: ServicesAccessor) => {
 		const editorService = accessor.get(IEditorService);
+
 		editorService.openEditor({
 			resource: TRUSTED_DOMAINS_URI,
 			languageId: "jsonc",
@@ -53,6 +54,7 @@ type ConfigureTrustedDomainsQuickPickItem = IQuickPickItem &
 		  }
 		| {
 				id: "trust";
+
 				toTrust: string;
 		  }
 	);
@@ -78,6 +80,7 @@ export async function configureOpenerTrustedDomainsHandler(
 	const topLevelDomain = "*." + domainEnd;
 
 	const options: ConfigureTrustedDomainsQuickPickItem[] = [];
+
 	options.push({
 		type: "item",
 		label: localize(
@@ -101,6 +104,7 @@ export async function configureOpenerTrustedDomainsHandler(
 	if (isIP) {
 		if (parsedDomainToConfigure.authority.includes(":")) {
 			const base = parsedDomainToConfigure.authority.split(":")[0];
+
 			options.push({
 				type: "item",
 				label: localize(
@@ -124,6 +128,7 @@ export async function configureOpenerTrustedDomainsHandler(
 			id: "trust",
 		});
 	}
+
 	options.push({
 		type: "item",
 		label: localize(
@@ -133,6 +138,7 @@ export async function configureOpenerTrustedDomainsHandler(
 		toTrust: "*",
 		id: "trust",
 	});
+
 	options.push({
 		type: "item",
 		label: localize(
@@ -169,6 +175,7 @@ export async function configureOpenerTrustedDomainsHandler(
 						TRUSTED_DOMAINS_CONTENT_STORAGE_KEY,
 						StorageScope.APPLICATION,
 					);
+
 					storageService.store(
 						TRUSTED_DOMAINS_STORAGE_KEY,
 						JSON.stringify([...trustedDomains, itemToTrust]),
@@ -181,10 +188,12 @@ export async function configureOpenerTrustedDomainsHandler(
 			}
 		}
 	}
+
 	return [];
 }
 export interface IStaticTrustedDomains {
 	readonly defaultTrustedDomains: string[];
+
 	readonly trustedDomains: string[];
 }
 export async function readTrustedDomains(
@@ -226,6 +235,7 @@ export function readStaticTrustedDomains(
 			trustedDomains = JSON.parse(trustedDomainsSrc);
 		}
 	} catch (err) {}
+
 	return {
 		defaultTrustedDomains,
 		trustedDomains,

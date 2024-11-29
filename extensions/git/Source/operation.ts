@@ -123,10 +123,15 @@ export type Operation =
 
 type BaseOperation = {
 	kind: OperationKind;
+
 	blocking: boolean;
+
 	readOnly: boolean;
+
 	remote: boolean;
+
 	retry: boolean;
+
 	showProgress: boolean;
 };
 
@@ -148,11 +153,13 @@ export type CherryPickOperation = BaseOperation & {
 
 export type CheckoutOperation = BaseOperation & {
 	kind: OperationKind.Checkout;
+
 	refLabel: string;
 };
 
 export type CheckoutTrackingOperation = BaseOperation & {
 	kind: OperationKind.CheckoutTracking;
+
 	refLabel: string;
 };
 
@@ -749,14 +756,19 @@ export const Operation = {
 
 export interface OperationResult {
 	operation: Operation;
+
 	error: any;
 }
 
 interface IOperationManager {
 	getOperations(operationKind: OperationKind): Operation[];
+
 	isIdle(): boolean;
+
 	isRunning(operationKind: OperationKind): boolean;
+
 	shouldDisableCommands(): boolean;
+
 	shouldShowProgress(): boolean;
 }
 

@@ -137,6 +137,7 @@ export class NativeMenubarControl extends MenubarControl {
 				const menuActions = getFlatContextMenuActions(
 					menu.getActions({ shouldForwardArgs: true }),
 				);
+
 				this.populateMenuItems(
 					menuActions,
 					menubarMenu,
@@ -146,6 +147,7 @@ export class NativeMenubarControl extends MenubarControl {
 				if (menubarMenu.items.length === 0) {
 					return false; // Menus are incomplete
 				}
+
 				menubarData.menus[topLevelMenuName] = menubarMenu;
 			}
 		}
@@ -195,6 +197,7 @@ export class NativeMenubarControl extends MenubarControl {
 						const actions = this.getOpenRecentActions().map(
 							this.transformOpenRecentAction,
 						);
+
 						menuToPopulate.items.push(...actions);
 					}
 
@@ -221,6 +224,7 @@ export class NativeMenubarControl extends MenubarControl {
 					keybindings[menuItem.id] = this.getMenubarKeybinding(
 						menuItem.id,
 					);
+
 					menuToPopulate.items.push(menubarMenuItem);
 				}
 			}

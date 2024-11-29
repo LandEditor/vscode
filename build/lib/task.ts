@@ -7,7 +7,9 @@ import * as fancyLog from "fancy-log";
 
 export interface BaseTask {
 	displayName?: string;
+
 	taskName?: string;
+
 	_tasks?: Task[];
 }
 export interface PromiseTask extends BaseTask {
@@ -26,6 +28,7 @@ function _isPromise(
 	if (typeof (<any>p).then === "function") {
 		return true;
 	}
+
 	return false;
 }
 function _renderTime(time: number): string {
@@ -37,7 +40,9 @@ async function _execute(task: Task): Promise<void> {
 	if (!task._tasks) {
 		fancyLog("Starting", ansiColors.cyan(name), "...");
 	}
+
 	const startTime = process.hrtime();
+
 	await _doExecute(task);
 
 	const elapsedArr = process.hrtime(startTime);
@@ -62,11 +67,13 @@ async function _doExecute(task: Task): Promise<void> {
 				if (err) {
 					return reject(err);
 				}
+
 				resolve();
 			});
 
 			return;
 		}
+
 		const taskResult = task();
 
 		if (typeof taskResult === "undefined") {
@@ -75,6 +82,7 @@ async function _doExecute(task: Task): Promise<void> {
 
 			return;
 		}
+
 		if (_isPromise(taskResult)) {
 			// this is a promise returning task
 			taskResult.then(resolve, reject);
@@ -83,6 +91,7 @@ async function _doExecute(task: Task): Promise<void> {
 		}
 		// this is a stream returning task
 		taskResult.on("end", (_) => resolve());
+
 		taskResult.on("error", (err) => reject(err));
 	});
 }
@@ -92,6 +101,7 @@ export function series(...tasks: Task[]): PromiseTask {
 			await _execute(tasks[i]);
 		}
 	};
+
 	result._tasks = tasks;
 
 	return result;
@@ -100,6 +110,7 @@ export function parallel(...tasks: Task[]): PromiseTask {
 	const result = async () => {
 		await Promise.all(tasks.map((t) => _execute(t)));
 	};
+
 	result._tasks = tasks;
 
 	return result;
@@ -117,13 +128,16 @@ export function define(name: string, task: Task): Task {
 				series(task, () => Promise.resolve()),
 			);
 		}
+
 		lastTask.taskName = name;
+
 		task.displayName = name;
 
 		return task;
 	}
 	// This is a simple task
 	task.taskName = name;
+
 	task.displayName = name;
 
 	return task;

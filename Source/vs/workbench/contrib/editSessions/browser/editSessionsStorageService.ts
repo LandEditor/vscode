@@ -79,37 +79,49 @@ export class EditSessionsWorkbenchService
 	implements IEditSessionsStorageService
 {
 	declare _serviceBrand: undefined;
+
 	public readonly SIZE_LIMIT = Math.floor(1024 * 1024 * 1.9); // 2 MB
 	private serverConfiguration = this.productService["editSessions.store"];
+
 	private machineClient: IUserDataSyncMachinesService | undefined;
+
 	private authenticationInfo:
 		| {
 				sessionId: string;
+
 				token: string;
+
 				providerId: string;
 		  }
 		| undefined;
+
 	private static CACHED_SESSION_STORAGE_KEY = "editSessionAccountPreference";
+
 	private initialized = false;
+
 	private readonly signedInContext: IContextKey<boolean>;
 
 	get isSignedIn() {
 		return this.existingSessionId !== undefined;
 	}
+
 	private _didSignIn = new Emitter<void>();
 
 	get onDidSignIn() {
 		return this._didSignIn.event;
 	}
+
 	private _didSignOut = new Emitter<void>();
 
 	get onDidSignOut() {
 		return this._didSignOut.event;
 	}
+
 	private _lastWrittenResources = new Map<
 		SyncResource,
 		{
 			ref: string;
+
 			content: string;
 		}
 	>();
@@ -117,10 +129,12 @@ export class EditSessionsWorkbenchService
 	get lastWrittenResources() {
 		return this._lastWrittenResources;
 	}
+
 	private _lastReadResources = new Map<
 		SyncResource,
 		{
 			ref: string;
+
 			content: string;
 		}
 	>();
@@ -128,6 +142,7 @@ export class EditSessionsWorkbenchService
 	get lastReadResources() {
 		return this._lastReadResources;
 	}
+
 	storeClient: EditSessionsStoreClient | undefined; // TODO@joyceerhl lifecycle hack
 	constructor(
 		@IFileService
@@ -168,11 +183,15 @@ export class EditSessionsWorkbenchService
 				this._store,
 			)(() => this.onDidChangeStorage()),
 		);
+
 		this.registerSignInAction();
+
 		this.registerResetAuthenticationAction();
+
 		this.signedInContext = EDIT_SESSIONS_SIGNED_IN.bindTo(
 			this.contextKeyService,
 		);
+
 		this.signedInContext.set(this.existingSessionId !== undefined);
 	}
 	/**
@@ -189,9 +208,11 @@ export class EditSessionsWorkbenchService
 		if (!this.initialized) {
 			throw new Error("Please sign in to store your edit session.");
 		}
+
 		if (typeof content !== "string" && content.machine === undefined) {
 			content.machine = await this.getOrCreateCurrentMachineId();
 		}
+
 		content =
 			typeof content === "string" ? content : JSON.stringify(content);
 
@@ -202,6 +223,7 @@ export class EditSessionsWorkbenchService
 			undefined,
 			createSyncHeaders(generateUuid()),
 		);
+
 		this._lastWrittenResources.set(resource, { ref, content });
 
 		return ref;
@@ -219,6 +241,7 @@ export class EditSessionsWorkbenchService
 	): Promise<
 		| {
 				ref: string;
+
 				content: string;
 		  }
 		| undefined
@@ -230,6 +253,7 @@ export class EditSessionsWorkbenchService
 				"Please sign in to apply your latest edit session.",
 			);
 		}
+
 		let content: string | undefined | null;
 
 		const headers = createSyncHeaders(generateUuid());
@@ -249,7 +273,9 @@ export class EditSessionsWorkbenchService
 					undefined,
 					headers,
 				);
+
 				content = result?.content;
+
 				ref = result?.ref;
 			}
 		} catch (ex) {
@@ -261,43 +287,53 @@ export class EditSessionsWorkbenchService
 
 			return { ref, content };
 		}
+
 		return undefined;
 	}
+
 	async delete(resource: SyncResource, ref: string | null) {
 		await this.initialize("write", false);
 
 		if (!this.initialized) {
 			throw new Error(`Unable to delete edit session with ref ${ref}.`);
 		}
+
 		try {
 			await this.storeClient?.deleteResource(resource, ref);
 		} catch (ex) {
 			this.logService.error(ex);
 		}
 	}
+
 	async list(resource: SyncResource): Promise<IResourceRefHandle[]> {
 		await this.initialize("read", false);
 
 		if (!this.initialized) {
 			throw new Error(`Unable to list edit sessions.`);
 		}
+
 		try {
 			return this.storeClient?.getAllResourceRefs(resource) ?? [];
 		} catch (ex) {
 			this.logService.error(ex);
 		}
+
 		return [];
 	}
+
 	public async initialize(reason: "read" | "write", silent: boolean = false) {
 		if (this.initialized) {
 			return true;
 		}
+
 		this.initialized = await this.doInitialize(reason, silent);
+
 		this.signedInContext.set(this.initialized);
 
 		if (this.initialized) {
 			this._didSignIn.fire();
 		}
+
 		return this.initialized;
 	}
 	/**
@@ -318,14 +354,17 @@ export class EditSessionsWorkbenchService
 				"Unable to initialize sessions sync as session sync preference is not configured in product.json.",
 			);
 		}
+
 		if (this.storeClient === undefined) {
 			return false;
 		}
+
 		this._register(
 			this.storeClient.onTokenFailed(() => {
 				this.logService.info(
 					"Clearing edit sessions authentication preference because of successive token failures.",
 				);
+
 				this.clearAuthenticationPreference();
 			}),
 		);
@@ -344,6 +383,7 @@ export class EditSessionsWorkbenchService
 		if (this.authenticationInfo !== undefined) {
 			return true;
 		}
+
 		const authenticationSession = await this.getAuthenticationSession(
 			reason,
 			silent,
@@ -351,13 +391,16 @@ export class EditSessionsWorkbenchService
 
 		if (authenticationSession !== undefined) {
 			this.authenticationInfo = authenticationSession;
+
 			this.storeClient.setAuthToken(
 				authenticationSession.token,
 				authenticationSession.providerId,
 			);
 		}
+
 		return authenticationSession !== undefined;
 	}
+
 	private cachedMachines: Map<string, string> | undefined;
 
 	async getMachineById(machineId: string) {
@@ -365,13 +408,16 @@ export class EditSessionsWorkbenchService
 
 		if (!this.cachedMachines) {
 			const machines = await this.machineClient!.getMachines();
+
 			this.cachedMachines = machines.reduce(
 				(map, machine) => map.set(machine.id, machine.name),
 				new Map<string, string>(),
 			);
 		}
+
 		return this.cachedMachines.get(machineId);
 	}
+
 	private async getOrCreateCurrentMachineId(): Promise<string> {
 		const currentMachineId = await this.machineClient!.getMachines().then(
 			(machines) => machines.find((m) => m.isCurrent)?.id,
@@ -384,8 +430,10 @@ export class EditSessionsWorkbenchService
 				(machines) => machines.find((m) => m.isCurrent)!.id,
 			);
 		}
+
 		return currentMachineId;
 	}
+
 	private async getAuthenticationSession(
 		reason: "read" | "write",
 		silent: boolean,
@@ -428,6 +476,7 @@ export class EditSessionsWorkbenchService
 				this.logService.info(
 					`Using current authentication session with ID ${authenticationSessionInfo.id}`,
 				);
+
 				this.existingSessionId = authenticationSessionInfo.id;
 
 				return {
@@ -456,8 +505,10 @@ export class EditSessionsWorkbenchService
 				providerId: authenticationSession.providerId,
 			};
 		}
+
 		return undefined;
 	}
+
 	private shouldAttemptEditSessionInit(): boolean {
 		return (
 			isWeb &&
@@ -482,7 +533,9 @@ export class EditSessionsWorkbenchService
 				ExistingSession | AuthenticationProviderOption | IQuickPickItem
 			>({ useSeparators: true }),
 		);
+
 		quickpick.ok = false;
+
 		quickpick.placeholder =
 			reason === "read"
 				? localize(
@@ -493,16 +546,20 @@ export class EditSessionsWorkbenchService
 						"choose account placeholder",
 						"Select an account to store your working changes in the cloud",
 					);
+
 		quickpick.ignoreFocusOut = true;
+
 		quickpick.items = await this.createQuickpickItems();
 
 		return new Promise((resolve, reject) => {
 			disposables.add(
 				quickpick.onDidHide((e) => {
 					reject(new CancellationError());
+
 					disposables.dispose();
 				}),
 			);
+
 			disposables.add(
 				quickpick.onDidAccept(async (e) => {
 					const selection = quickpick.selectedItems[0];
@@ -519,13 +576,17 @@ export class EditSessionsWorkbenchService
 							: "session" in selection
 								? selection.session
 								: undefined;
+
 					resolve(session);
+
 					quickpick.hide();
 				}),
 			);
+
 			quickpick.show();
 		});
 	}
+
 	private async createQuickpickItems(): Promise<
 		(
 			| ExistingSession
@@ -544,13 +605,16 @@ export class EditSessionsWorkbenchService
 					canceledAuthentication: boolean;
 			  })
 		)[] = [];
+
 		options.push({
 			type: "separator",
 			label: localize("signed in", "Signed In"),
 		});
 
 		const sessions = await this.getAllSessions();
+
 		options.push(...sessions);
+
 		options.push({
 			type: "separator",
 			label: localize("others", "Others"),
@@ -571,6 +635,7 @@ export class EditSessionsWorkbenchService
 				const providerName = this.authenticationService.getProvider(
 					authenticationProvider.id,
 				).label;
+
 				options.push({
 					label: localize(
 						"sign in using account",
@@ -581,6 +646,7 @@ export class EditSessionsWorkbenchService
 				});
 			}
 		}
+
 		return options;
 	}
 	/**
@@ -608,6 +674,7 @@ export class EditSessionsWorkbenchService
 					).label,
 					session: { ...session, providerId: provider.id },
 				};
+
 				accounts.set(item.session.account.id, item);
 
 				if (this.existingSessionId === session.id) {
@@ -615,9 +682,11 @@ export class EditSessionsWorkbenchService
 				}
 			}
 		}
+
 		if (currentSession !== undefined) {
 			accounts.set(currentSession.session.account.id, currentSession);
 		}
+
 		return [...accounts.values()].sort((a, b) =>
 			a.label.localeCompare(b.label),
 		);
@@ -655,12 +724,14 @@ export class EditSessionsWorkbenchService
 			),
 		);
 	}
+
 	private get existingSessionId() {
 		return this.storageService.get(
 			EditSessionsWorkbenchService.CACHED_SESSION_STORAGE_KEY,
 			StorageScope.APPLICATION,
 		);
 	}
+
 	private set existingSessionId(sessionId: string | undefined) {
 		this.logService.trace(
 			`Saving authentication session preference for ID ${sessionId}.`,
@@ -680,6 +751,7 @@ export class EditSessionsWorkbenchService
 			);
 		}
 	}
+
 	private async getExistingSession() {
 		const accounts = await this.getAllSessions();
 
@@ -687,6 +759,7 @@ export class EditSessionsWorkbenchService
 			(account) => account.session.id === this.existingSessionId,
 		);
 	}
+
 	private async onDidChangeStorage(): Promise<void> {
 		const newSessionId = this.existingSessionId;
 
@@ -696,16 +769,23 @@ export class EditSessionsWorkbenchService
 			this.logService.trace(
 				`Resetting authentication state because authentication session ID preference changed from ${previousSessionId} to ${newSessionId}.`,
 			);
+
 			this.authenticationInfo = undefined;
+
 			this.initialized = false;
 		}
 	}
+
 	private clearAuthenticationPreference(): void {
 		this.authenticationInfo = undefined;
+
 		this.initialized = false;
+
 		this.existingSessionId = undefined;
+
 		this.signedInContext.set(false);
 	}
+
 	private onDidChangeSessions(e: AuthenticationSessionsChangeEvent): void {
 		if (
 			this.authenticationInfo?.sessionId &&
@@ -716,6 +796,7 @@ export class EditSessionsWorkbenchService
 			this.clearAuthenticationPreference();
 		}
 	}
+
 	private registerSignInAction() {
 		const that = this;
 
@@ -725,6 +806,7 @@ export class EditSessionsWorkbenchService
 			ContextKeyExpr.equals(EDIT_SESSIONS_PENDING_KEY, false),
 			ContextKeyExpr.equals(EDIT_SESSIONS_SIGNED_IN_KEY, false),
 		);
+
 		this._register(
 			registerAction2(
 				class ResetEditSessionAuthenticationAction extends Action2 {
@@ -749,12 +831,14 @@ export class EditSessionsWorkbenchService
 							],
 						});
 					}
+
 					async run() {
 						return await that.initialize("write", false);
 					}
 				},
 			),
 		);
+
 		this._register(
 			MenuRegistry.appendMenuItem(MenuId.AccountsContext, {
 				group: "2_editSessions",
@@ -772,8 +856,10 @@ export class EditSessionsWorkbenchService
 			}),
 		);
 	}
+
 	private registerResetAuthenticationAction() {
 		const that = this;
+
 		this._register(
 			registerAction2(
 				class ResetEditSessionAuthenticationAction extends Action2 {
@@ -804,6 +890,7 @@ export class EditSessionsWorkbenchService
 							],
 						});
 					}
+
 					async run() {
 						const result = await that.dialogService.confirm({
 							message: localize(
@@ -825,6 +912,7 @@ export class EditSessionsWorkbenchService
 									null,
 								);
 							}
+
 							that.clearAuthenticationPreference();
 						}
 					}

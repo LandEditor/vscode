@@ -32,6 +32,7 @@ export class RemoteFileSystemProviderClient extends DiskFileSystemProviderClient
 		if (!connection) {
 			return Disposable.None;
 		}
+
 		const disposables = new DisposableStore();
 
 		const environmentPromise = (async () => {
@@ -64,6 +65,7 @@ export class RemoteFileSystemProviderClient extends DiskFileSystemProviderClient
 				);
 			}
 		})();
+
 		disposables.add(
 			fileService.onWillActivateFileSystemProvider((e) => {
 				if (e.scheme === Schemas.vscodeRemote) {
@@ -74,6 +76,7 @@ export class RemoteFileSystemProviderClient extends DiskFileSystemProviderClient
 
 		return disposables;
 	}
+
 	private constructor(
 		remoteAgentEnvironment: IRemoteAgentEnvironment,
 		connection: IRemoteAgentConnection,

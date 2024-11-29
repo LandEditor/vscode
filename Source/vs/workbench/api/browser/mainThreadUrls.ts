@@ -31,10 +31,12 @@ class ExtensionUrlHandler implements IExtensionContributedURLHandler {
 		readonly extensionId: ExtensionIdentifier,
 		readonly extensionDisplayName: string,
 	) {}
+
 	handleURL(uri: URI, options?: IOpenURLOptions): Promise<boolean> {
 		if (!ExtensionIdentifier.equals(this.extensionId, uri.authority)) {
 			return Promise.resolve(false);
 		}
+
 		return Promise.resolve(
 			this.proxy.$handleExternalUri(this.handle, uri),
 		).then(() => true);
@@ -43,10 +45,12 @@ class ExtensionUrlHandler implements IExtensionContributedURLHandler {
 @extHostNamedCustomer(MainContext.MainThreadUrls)
 export class MainThreadUrls implements MainThreadUrlsShape {
 	private readonly proxy: ExtHostUrlsShape;
+
 	private handlers = new Map<
 		number,
 		{
 			extensionId: ExtensionIdentifier;
+
 			disposable: IDisposable;
 		}
 	>();
@@ -73,7 +77,9 @@ export class MainThreadUrls implements MainThreadUrlsShape {
 		);
 
 		const disposable = this.urlService.registerHandler(handler);
+
 		this.handlers.set(handle, { extensionId, disposable });
+
 		this.extensionUrlHandler.registerExtensionHandler(extensionId, handler);
 
 		return Promise.resolve(undefined);
@@ -84,18 +90,25 @@ export class MainThreadUrls implements MainThreadUrlsShape {
 		if (!tuple) {
 			return Promise.resolve(undefined);
 		}
+
 		const { extensionId, disposable } = tuple;
+
 		this.extensionUrlHandler.unregisterExtensionHandler(extensionId);
+
 		this.handlers.delete(handle);
+
 		disposable.dispose();
 
 		return Promise.resolve(undefined);
 	}
+
 	async $createAppUri(uri: UriComponents): Promise<URI> {
 		return this.urlService.create(uri);
 	}
+
 	dispose(): void {
 		this.handlers.forEach(({ disposable }) => disposable.dispose());
+
 		this.handlers.clear();
 	}
 }

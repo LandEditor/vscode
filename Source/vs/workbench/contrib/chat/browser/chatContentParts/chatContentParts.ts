@@ -21,7 +21,10 @@ export interface IChatContentPart extends IDisposable {
 }
 export interface IChatContentPartRenderContext {
 	element: ChatTreeItem;
+
 	content: ReadonlyArray<IChatRendererContent>;
+
 	contentIndex: number;
+
 	preceedingContentParts: ReadonlyArray<IChatContentPart>;
 }

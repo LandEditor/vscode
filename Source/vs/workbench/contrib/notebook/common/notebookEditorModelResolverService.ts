@@ -24,6 +24,7 @@ export const INotebookEditorModelResolverService =
  */
 export interface INotebookConflictEvent extends IWaitUntil {
 	resource: URI;
+
 	viewType: string;
 }
 export interface IUntitledNotebookResource {
@@ -44,18 +45,25 @@ export interface IUntitledNotebookResource {
 }
 export interface INotebookEditorModelResolverService {
 	readonly _serviceBrand: undefined;
+
 	readonly onDidSaveNotebook: Event<URI>;
+
 	readonly onDidChangeDirty: Event<IResolvedNotebookEditorModel>;
+
 	readonly onWillFailWithConflict: Event<INotebookConflictEvent>;
+
 	isDirty(resource: URI): boolean;
+
 	createUntitledNotebookTextModel(
 		viewType: string,
 	): Promise<NotebookTextModel>;
+
 	resolve(
 		resource: URI,
 		viewType?: string,
 		creationOptions?: NotebookEditorModelCreationOptions,
 	): Promise<IReference<IResolvedNotebookEditorModel>>;
+
 	resolve(
 		resource: IUntitledNotebookResource,
 		viewType: string,

@@ -19,8 +19,11 @@ import { ResourceNotebookCellEdit } from "./bulkCellEdits.js";
 
 export class ConflictDetector {
 	private readonly _conflicts = new ResourceMap<boolean>();
+
 	private readonly _disposables = new DisposableStore();
+
 	private readonly _onDidConflict = new Emitter<this>();
+
 	readonly onDidConflict: Event<this> = this._onDidConflict.event;
 
 	constructor(
@@ -43,6 +46,7 @@ export class ConflictDetector {
 
 					if (model && model.getVersionId() !== edit.versionId) {
 						this._conflicts.set(edit.resource, true);
+
 						this._onDidConflict.fire(this);
 					}
 				}
@@ -67,6 +71,7 @@ export class ConflictDetector {
 					// exists because we have a better check for models
 					if (!modelService.getModel(uri) && e.contains(uri)) {
 						this._conflicts.set(uri, true);
+
 						this._onDidConflict.fire(this);
 
 						break;
@@ -79,6 +84,7 @@ export class ConflictDetector {
 			// conflict
 			if (_workspaceEditResources.has(model.uri)) {
 				this._conflicts.set(model.uri, true);
+
 				this._onDidConflict.fire(this);
 			}
 		};
@@ -89,13 +95,17 @@ export class ConflictDetector {
 			);
 		}
 	}
+
 	dispose(): void {
 		this._disposables.dispose();
+
 		this._onDidConflict.dispose();
 	}
+
 	list(): URI[] {
 		return [...this._conflicts.keys()];
 	}
+
 	hasConflicts(): boolean {
 		return this._conflicts.size > 0;
 	}

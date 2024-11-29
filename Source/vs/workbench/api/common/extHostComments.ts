@@ -51,10 +51,12 @@ export function createExtHostComments(
 
 	class ExtHostCommentsImpl implements ExtHostCommentsShape, ExtHostComments {
 		private static handlePool = 0;
+
 		private _commentControllers: Map<
 			ProviderHandle,
 			ExtHostCommentController
 		> = new Map<ProviderHandle, ExtHostCommentController>();
+
 		private _commentControllersByExtension: ExtensionIdentifierMap<
 			ExtHostCommentController[]
 		> = new ExtensionIdentifierMap<ExtHostCommentController[]>();
@@ -70,6 +72,7 @@ export function createExtHostComments(
 						if (!commentController) {
 							return arg;
 						}
+
 						return commentController.value;
 					} else if (arg && arg.$mid === MarshalledId.CommentThread) {
 						const marshalledCommentThread: MarshalledCommentThread =
@@ -82,6 +85,7 @@ export function createExtHostComments(
 						if (!commentController) {
 							return marshalledCommentThread;
 						}
+
 						const commentThread =
 							commentController.getCommentThread(
 								marshalledCommentThread.commentThreadHandle,
@@ -90,6 +94,7 @@ export function createExtHostComments(
 						if (!commentThread) {
 							return marshalledCommentThread;
 						}
+
 						return commentThread.value;
 					} else if (
 						arg &&
@@ -103,6 +108,7 @@ export function createExtHostComments(
 						if (!commentController) {
 							return arg;
 						}
+
 						const commentThread =
 							commentController.getCommentThread(
 								arg.thread.commentThreadHandle,
@@ -111,9 +117,11 @@ export function createExtHostComments(
 						if (!commentThread) {
 							return arg;
 						}
+
 						if (arg.$mid === MarshalledId.CommentThreadInstance) {
 							return commentThread.value;
 						}
+
 						return {
 							thread: commentThread.value,
 							text: arg.text,
@@ -126,6 +134,7 @@ export function createExtHostComments(
 						if (!commentController) {
 							return arg;
 						}
+
 						const commentThread =
 							commentController.getCommentThread(
 								arg.thread.commentThreadHandle,
@@ -134,6 +143,7 @@ export function createExtHostComments(
 						if (!commentThread) {
 							return arg;
 						}
+
 						const commentUniqueId = arg.commentUniqueId;
 
 						const comment =
@@ -142,6 +152,7 @@ export function createExtHostComments(
 						if (!comment) {
 							return arg;
 						}
+
 						return comment;
 					} else if (
 						arg &&
@@ -154,6 +165,7 @@ export function createExtHostComments(
 						if (!commentController) {
 							return arg;
 						}
+
 						const commentThread =
 							commentController.getCommentThread(
 								arg.thread.commentThreadHandle,
@@ -162,6 +174,7 @@ export function createExtHostComments(
 						if (!commentThread) {
 							return arg;
 						}
+
 						const body: string = arg.text;
 
 						const commentUniqueId = arg.commentUniqueId;
@@ -178,12 +191,15 @@ export function createExtHostComments(
 						} else {
 							comment.body = new types.MarkdownString(body);
 						}
+
 						return comment;
 					}
+
 					return arg;
 				},
 			});
 		}
+
 		createCommentController(
 			extension: IExtensionDescription,
 			id: string,
@@ -197,6 +213,7 @@ export function createExtHostComments(
 				id,
 				label,
 			);
+
 			this._commentControllers.set(
 				commentController.handle,
 				commentController,
@@ -205,7 +222,9 @@ export function createExtHostComments(
 			const commentControllers =
 				this._commentControllersByExtension.get(extension.identifier) ||
 				[];
+
 			commentControllers.push(commentController);
+
 			this._commentControllersByExtension.set(
 				extension.identifier,
 				commentControllers,
@@ -213,6 +232,7 @@ export function createExtHostComments(
 
 			return commentController.value;
 		}
+
 		async $createCommentThreadTemplate(
 			commentControllerHandle: number,
 			uriComponents: UriComponents,
@@ -226,16 +246,19 @@ export function createExtHostComments(
 			if (!commentController) {
 				return;
 			}
+
 			commentController.$createCommentThreadTemplate(
 				uriComponents,
 				range,
 				editorId,
 			);
 		}
+
 		async $setActiveComment(
 			controllerHandle: number,
 			commentInfo: {
 				commentThreadHandle: number;
+
 				uniqueIdInThread?: number;
 			},
 		): Promise<void> {
@@ -245,8 +268,10 @@ export function createExtHostComments(
 			if (!commentController) {
 				return;
 			}
+
 			commentController.$setActiveComment(commentInfo ?? undefined);
 		}
+
 		async $updateCommentThreadTemplate(
 			commentControllerHandle: number,
 			threadHandle: number,
@@ -259,6 +284,7 @@ export function createExtHostComments(
 			if (!commentController) {
 				return;
 			}
+
 			commentController.$updateCommentThreadTemplate(threadHandle, range);
 		}
 		$deleteCommentThread(
@@ -268,8 +294,10 @@ export function createExtHostComments(
 			const commentController = this._commentControllers.get(
 				commentControllerHandle,
 			);
+
 			commentController?.$deleteCommentThread(commentThreadHandle);
 		}
+
 		async $updateCommentThread(
 			commentControllerHandle: number,
 			commentThreadHandle: number,
@@ -278,11 +306,13 @@ export function createExtHostComments(
 			const commentController = this._commentControllers.get(
 				commentControllerHandle,
 			);
+
 			commentController?.$updateCommentThread(
 				commentThreadHandle,
 				changes,
 			);
 		}
+
 		async $provideCommentingRanges(
 			commentControllerHandle: number,
 			uriComponents: UriComponents,
@@ -290,6 +320,7 @@ export function createExtHostComments(
 		): Promise<
 			| {
 					ranges: IRange[];
+
 					fileComments: boolean;
 			  }
 			| undefined
@@ -304,6 +335,7 @@ export function createExtHostComments(
 			) {
 				return Promise.resolve(undefined);
 			}
+
 			const document = await documents.ensureDocumentData(
 				URI.revive(uriComponents),
 			);
@@ -316,6 +348,7 @@ export function createExtHostComments(
 				let ranges:
 					| {
 							ranges: vscode.Range[];
+
 							fileComments: boolean;
 					  }
 					| undefined;
@@ -333,11 +366,13 @@ export function createExtHostComments(
 				} else {
 					ranges = rangesResult ?? undefined;
 				}
+
 				return ranges;
 			}).then((ranges) => {
 				let convertedResult:
 					| {
 							ranges: IRange[];
+
 							fileComments: boolean;
 					  }
 					| undefined = undefined;
@@ -350,6 +385,7 @@ export function createExtHostComments(
 						fileComments: ranges.fileComments,
 					};
 				}
+
 				return convertedResult;
 			});
 		}
@@ -367,6 +403,7 @@ export function createExtHostComments(
 			if (!commentController || !commentController.reactionHandler) {
 				return Promise.resolve(undefined);
 			}
+
 			return asPromise(() => {
 				const commentThread =
 					commentController.getCommentThread(threadHandle);
@@ -385,44 +422,63 @@ export function createExtHostComments(
 						}
 					}
 				}
+
 				return Promise.resolve(undefined);
 			});
 		}
 	}
+
 	type CommentThreadModification = Partial<{
 		range: vscode.Range;
+
 		label: string | undefined;
+
 		contextValue: string | undefined;
+
 		comments: vscode.Comment[];
+
 		collapsibleState: vscode.CommentThreadCollapsibleState;
+
 		canReply: boolean;
+
 		state: vscode.CommentThreadState;
+
 		isTemplate: boolean;
+
 		applicability: vscode.CommentThreadApplicability;
 	}>;
 
 	class ExtHostCommentThread implements vscode.CommentThread2 {
 		private static _handlePool: number = 0;
+
 		readonly handle = ExtHostCommentThread._handlePool++;
+
 		public commentHandle: number = 0;
+
 		private modifications: CommentThreadModification = Object.create(null);
 
 		set threadId(id: string) {
 			this._id = id;
 		}
+
 		get threadId(): string {
 			return this._id!;
 		}
+
 		get id(): string {
 			return this._id!;
 		}
+
 		get resource(): vscode.Uri {
 			return this._uri;
 		}
+
 		get uri(): vscode.Uri {
 			return this._uri;
 		}
+
 		private readonly _onDidUpdateCommentThread = new Emitter<void>();
+
 		readonly onDidUpdateCommentThread =
 			this._onDidUpdateCommentThread.event;
 
@@ -434,67 +490,92 @@ export function createExtHostComments(
 				!range.isEqual(this._range)
 			) {
 				this._range = range;
+
 				this.modifications.range = range;
+
 				this._onDidUpdateCommentThread.fire();
 			}
 		}
+
 		get range(): vscode.Range | undefined {
 			return this._range;
 		}
+
 		private _canReply: boolean = true;
 
 		set canReply(state: boolean) {
 			if (this._canReply !== state) {
 				this._canReply = state;
+
 				this.modifications.canReply = state;
+
 				this._onDidUpdateCommentThread.fire();
 			}
 		}
+
 		get canReply() {
 			return this._canReply;
 		}
+
 		private _label: string | undefined;
 
 		get label(): string | undefined {
 			return this._label;
 		}
+
 		set label(label: string | undefined) {
 			this._label = label;
+
 			this.modifications.label = label;
+
 			this._onDidUpdateCommentThread.fire();
 		}
+
 		private _contextValue: string | undefined;
 
 		get contextValue(): string | undefined {
 			return this._contextValue;
 		}
+
 		set contextValue(context: string | undefined) {
 			this._contextValue = context;
+
 			this.modifications.contextValue = context;
+
 			this._onDidUpdateCommentThread.fire();
 		}
+
 		get comments(): vscode.Comment[] {
 			return this._comments;
 		}
+
 		set comments(newComments: vscode.Comment[]) {
 			this._comments = newComments;
+
 			this.modifications.comments = newComments;
+
 			this._onDidUpdateCommentThread.fire();
 		}
+
 		private _collapseState?: vscode.CommentThreadCollapsibleState;
 
 		get collapsibleState(): vscode.CommentThreadCollapsibleState {
 			return this._collapseState!;
 		}
+
 		set collapsibleState(newState: vscode.CommentThreadCollapsibleState) {
 			this._collapseState = newState;
+
 			this.modifications.collapsibleState = newState;
+
 			this._onDidUpdateCommentThread.fire();
 		}
+
 		private _state?:
 			| vscode.CommentThreadState
 			| {
 					resolved?: vscode.CommentThreadState;
+
 					applicability?: vscode.CommentThreadApplicability;
 			  };
 
@@ -502,16 +583,19 @@ export function createExtHostComments(
 			| vscode.CommentThreadState
 			| {
 					resolved?: vscode.CommentThreadState;
+
 					applicability?: vscode.CommentThreadApplicability;
 			  }
 			| undefined {
 			return this._state!;
 		}
+
 		set state(
 			newState:
 				| vscode.CommentThreadState
 				| {
 						resolved?: vscode.CommentThreadState;
+
 						applicability?: vscode.CommentThreadApplicability;
 				  },
 		) {
@@ -522,24 +606,33 @@ export function createExtHostComments(
 					this.extensionDescription,
 					"commentThreadApplicability",
 				);
+
 				this.modifications.state = newState.resolved;
+
 				this.modifications.applicability = newState.applicability;
 			} else {
 				this.modifications.state = newState;
 			}
+
 			this._onDidUpdateCommentThread.fire();
 		}
+
 		private _localDisposables: types.Disposable[];
+
 		private _isDiposed: boolean;
+
 		public get isDisposed(): boolean {
 			return this._isDiposed;
 		}
+
 		private _commentsMap: Map<vscode.Comment, number> = new Map<
 			vscode.Comment,
 			number
 		>();
+
 		private readonly _acceptInputDisposables =
 			new MutableDisposable<DisposableStore>();
+
 		readonly value: vscode.CommentThread2;
 
 		constructor(
@@ -558,6 +651,7 @@ export function createExtHostComments(
 			if (this._id === undefined) {
 				this._id = `${commentControllerId}.${this.handle}`;
 			}
+
 			proxy.$createCommentThread(
 				_commentControllerHandle,
 				this.handle,
@@ -576,13 +670,17 @@ export function createExtHostComments(
 				this._isTemplate,
 				editorId,
 			);
+
 			this._localDisposables = [];
+
 			this._isDiposed = false;
+
 			this._localDisposables.push(
 				this.onDidUpdateCommentThread(() => {
 					this.eventuallyUpdateCommentThread();
 				}),
 			);
+
 			this._localDisposables.push({
 				dispose: () => {
 					proxy.$deleteCommentThread(
@@ -593,6 +691,7 @@ export function createExtHostComments(
 			});
 
 			const that = this;
+
 			this.value = {
 				get uri() {
 					return that.uri;
@@ -639,6 +738,7 @@ export function createExtHostComments(
 					| vscode.CommentThreadState
 					| {
 							resolved?: vscode.CommentThreadState;
+
 							applicability?: vscode.CommentThreadApplicability;
 					  }
 					| undefined {
@@ -649,6 +749,7 @@ export function createExtHostComments(
 						| vscode.CommentThreadState
 						| {
 								resolved?: vscode.CommentThreadState;
+
 								applicability?: vscode.CommentThreadApplicability;
 						  },
 				) {
@@ -666,9 +767,11 @@ export function createExtHostComments(
 				},
 			};
 		}
+
 		private updateIsTemplate() {
 			if (this._isTemplate) {
 				this._isTemplate = false;
+
 				this.modifications.isTemplate = false;
 			}
 		}
@@ -677,11 +780,13 @@ export function createExtHostComments(
 			if (this._isDiposed) {
 				return;
 			}
+
 			this.updateIsTemplate();
 
 			if (!this._acceptInputDisposables.value) {
 				this._acceptInputDisposables.value = new DisposableStore();
 			}
+
 			const modified = (
 				value: keyof CommentThreadModification,
 			): boolean =>
@@ -694,9 +799,11 @@ export function createExtHostComments(
 					this._range,
 				);
 			}
+
 			if (modified("label")) {
 				formattedModifications.label = this.label;
 			}
+
 			if (modified("contextValue")) {
 				/*
 				 * null -> cleared contextValue
@@ -704,6 +811,7 @@ export function createExtHostComments(
 				 */
 				formattedModifications.contextValue = this.contextValue ?? null;
 			}
+
 			if (modified("comments")) {
 				formattedModifications.comments = this._comments.map((cmt) =>
 					convertToDTOComment(
@@ -714,25 +822,32 @@ export function createExtHostComments(
 					),
 				);
 			}
+
 			if (modified("collapsibleState")) {
 				formattedModifications.collapseState =
 					convertToCollapsibleState(this._collapseState);
 			}
+
 			if (modified("canReply")) {
 				formattedModifications.canReply = this.canReply;
 			}
+
 			if (modified("state")) {
 				formattedModifications.state = convertToState(this._state);
 			}
+
 			if (modified("applicability")) {
 				formattedModifications.applicability = convertToRelevance(
 					this._state,
 				);
 			}
+
 			if (modified("isTemplate")) {
 				formattedModifications.isTemplate = this._isTemplate;
 			}
+
 			this.modifications = {};
+
 			proxy.$updateCommentThread(
 				this._commentControllerHandle,
 				this.handle,
@@ -741,6 +856,7 @@ export function createExtHostComments(
 				formattedModifications,
 			);
 		}
+
 		getCommentByUniqueId(uniqueId: number): vscode.Comment | undefined {
 			for (const key of this._commentsMap) {
 				const comment = key[0];
@@ -751,8 +867,10 @@ export function createExtHostComments(
 					return comment;
 				}
 			}
+
 			return;
 		}
+
 		async reveal(
 			commentOrOptions?:
 				| vscode.Comment
@@ -773,9 +891,11 @@ export function createExtHostComments(
 					options ??
 					(commentOrOptions as vscode.CommentThreadRevealOptions);
 			}
+
 			let commentToReveal = comment
 				? this._commentsMap.get(comment)
 				: undefined;
+
 			commentToReveal ??= this._commentsMap.get(this._comments[0])!;
 
 			let preserveFocus: boolean = true;
@@ -784,10 +904,12 @@ export function createExtHostComments(
 
 			if (options?.focus === types.CommentThreadFocus.Reply) {
 				focusReply = true;
+
 				preserveFocus = false;
 			} else if (options?.focus === types.CommentThreadFocus.Comment) {
 				preserveFocus = false;
 			}
+
 			return proxy.$revealCommentThread(
 				this._commentControllerHandle,
 				this.handle,
@@ -795,20 +917,25 @@ export function createExtHostComments(
 				{ preserveFocus, focusReply },
 			);
 		}
+
 		async hide(): Promise<void> {
 			return proxy.$hideCommentThread(
 				this._commentControllerHandle,
 				this.handle,
 			);
 		}
+
 		dispose() {
 			this._isDiposed = true;
+
 			this._acceptInputDisposables.dispose();
+
 			this._localDisposables.forEach((disposable) =>
 				disposable.dispose(),
 			);
 		}
 	}
+
 	type ReactionHandler = (
 		comment: vscode.Comment,
 		reaction: vscode.CommentReaction,
@@ -818,16 +945,20 @@ export function createExtHostComments(
 		get id(): string {
 			return this._id;
 		}
+
 		get label(): string {
 			return this._label;
 		}
+
 		public get handle(): number {
 			return this._handle;
 		}
+
 		private _threads: Map<number, ExtHostCommentThread> = new Map<
 			number,
 			ExtHostCommentThread
 		>();
+
 		private _commentingRangeProvider?: vscode.CommentingRangeProvider;
 
 		get commentingRangeProvider():
@@ -835,6 +966,7 @@ export function createExtHostComments(
 			| undefined {
 			return this._commentingRangeProvider;
 		}
+
 		set commentingRangeProvider(
 			provider: vscode.CommentingRangeProvider | undefined,
 		) {
@@ -843,30 +975,38 @@ export function createExtHostComments(
 			if (provider?.resourceHints) {
 				checkProposedApiEnabled(this._extension, "commentingRangeHint");
 			}
+
 			proxy.$updateCommentingRanges(this.handle, provider?.resourceHints);
 		}
+
 		private _reactionHandler?: ReactionHandler;
 
 		get reactionHandler(): ReactionHandler | undefined {
 			return this._reactionHandler;
 		}
+
 		set reactionHandler(handler: ReactionHandler | undefined) {
 			this._reactionHandler = handler;
+
 			proxy.$updateCommentControllerFeatures(this.handle, {
 				reactionHandler: !!handler,
 			});
 		}
+
 		private _options: languages.CommentOptions | undefined;
 
 		get options() {
 			return this._options;
 		}
+
 		set options(options: languages.CommentOptions | undefined) {
 			this._options = options;
+
 			proxy.$updateCommentControllerFeatures(this.handle, {
 				options: this._options,
 			});
 		}
+
 		private _activeComment: vscode.Comment | undefined;
 
 		get activeComment(): vscode.Comment | undefined {
@@ -874,6 +1014,7 @@ export function createExtHostComments(
 
 			return this._activeComment;
 		}
+
 		private _activeThread: ExtHostCommentThread | undefined;
 
 		get activeCommentThread(): vscode.CommentThread2 | undefined {
@@ -881,7 +1022,9 @@ export function createExtHostComments(
 
 			return this._activeThread?.value;
 		}
+
 		private _localDisposables: types.Disposable[];
+
 		readonly value: vscode.CommentController;
 
 		constructor(
@@ -898,6 +1041,7 @@ export function createExtHostComments(
 			);
 
 			const that = this;
+
 			this.value = Object.freeze({
 				id: that.id,
 				label: that.label,
@@ -941,12 +1085,14 @@ export function createExtHostComments(
 				},
 			}) as any; // TODO @alexr00 remove this cast when the proposed API is stable
 			this._localDisposables = [];
+
 			this._localDisposables.push({
 				dispose: () => {
 					proxy.$unregisterCommentController(this.handle);
 				},
 			});
 		}
+
 		createCommentThread(
 			resource: vscode.Uri,
 			range: vscode.Range | undefined,
@@ -955,6 +1101,7 @@ export function createExtHostComments(
 			if (range === undefined) {
 				checkProposedApiEnabled(this._extension, "fileComments");
 			}
+
 			const commentThread = new ExtHostCommentThread(
 				this.id,
 				this.handle,
@@ -965,6 +1112,7 @@ export function createExtHostComments(
 				this._extension,
 				false,
 			);
+
 			this._threads.set(commentThread.handle, commentThread);
 
 			return commentThread;
@@ -973,22 +1121,26 @@ export function createExtHostComments(
 			commentInfo:
 				| {
 						commentThreadHandle: number;
+
 						uniqueIdInThread?: number;
 				  }
 				| undefined,
 		) {
 			if (!commentInfo) {
 				this._activeComment = undefined;
+
 				this._activeThread = undefined;
 
 				return;
 			}
+
 			const thread = this._threads.get(commentInfo.commentThreadHandle);
 
 			if (thread) {
 				this._activeComment = commentInfo.uniqueIdInThread
 					? thread.getCommentByUniqueId(commentInfo.uniqueIdInThread)
 					: undefined;
+
 				this._activeThread = thread;
 			}
 		}
@@ -1008,8 +1160,10 @@ export function createExtHostComments(
 				true,
 				editorId,
 			);
+
 			commentThread.collapsibleState =
 				languages.CommentThreadCollapsibleState.Expanded;
+
 			this._threads.set(commentThread.handle, commentThread);
 
 			return commentThread;
@@ -1033,6 +1187,7 @@ export function createExtHostComments(
 			if (!thread) {
 				return;
 			}
+
 			const modified = (value: keyof CommentThreadChanges): boolean =>
 				Object.prototype.hasOwnProperty.call(changes, value);
 
@@ -1044,21 +1199,27 @@ export function createExtHostComments(
 		}
 		$deleteCommentThread(threadHandle: number): void {
 			const thread = this._threads.get(threadHandle);
+
 			thread?.dispose();
+
 			this._threads.delete(threadHandle);
 		}
+
 		getCommentThread(handle: number): ExtHostCommentThread | undefined {
 			return this._threads.get(handle);
 		}
+
 		dispose(): void {
 			this._threads.forEach((value) => {
 				value.dispose();
 			});
+
 			this._localDisposables.forEach((disposable) =>
 				disposable.dispose(),
 			);
 		}
 	}
+
 	function convertToDTOComment(
 		thread: ExtHostCommentThread,
 		vscodeComment: vscode.Comment,
@@ -1069,11 +1230,14 @@ export function createExtHostComments(
 
 		if (!commentUniqueId) {
 			commentUniqueId = ++thread.commentHandle;
+
 			commentsMap.set(vscodeComment, commentUniqueId);
 		}
+
 		if (vscodeComment.state !== undefined) {
 			checkProposedApiEnabled(extension, "commentsDraftState");
 		}
+
 		if (
 			vscodeComment.reactions?.some(
 				(reaction) => reaction.reactors !== undefined,
@@ -1081,6 +1245,7 @@ export function createExtHostComments(
 		) {
 			checkProposedApiEnabled(extension, "commentReactor");
 		}
+
 		return {
 			mode: vscodeComment.mode,
 			contextValue: vscodeComment.contextValue,
@@ -1103,6 +1268,7 @@ export function createExtHostComments(
 			timestamp: vscodeComment.timestamp?.toJSON(),
 		};
 	}
+
 	function convertToReaction(
 		reaction: vscode.CommentReaction,
 	): languages.CommentReaction {
@@ -1122,6 +1288,7 @@ export function createExtHostComments(
 				: reaction.reactors) as string[],
 		};
 	}
+
 	function convertFromReaction(
 		reaction: languages.CommentReaction,
 	): vscode.CommentReaction {
@@ -1133,6 +1300,7 @@ export function createExtHostComments(
 			reactors: reaction.reactors?.map((reactor) => ({ name: reactor })),
 		};
 	}
+
 	function convertToCollapsibleState(
 		kind: vscode.CommentThreadCollapsibleState | undefined,
 	): languages.CommentThreadCollapsibleState {
@@ -1145,13 +1313,16 @@ export function createExtHostComments(
 					return languages.CommentThreadCollapsibleState.Collapsed;
 			}
 		}
+
 		return languages.CommentThreadCollapsibleState.Collapsed;
 	}
+
 	function convertToState(
 		kind:
 			| vscode.CommentThreadState
 			| {
 					resolved?: vscode.CommentThreadState;
+
 					applicability?: vscode.CommentThreadApplicability;
 			  }
 			| undefined,
@@ -1163,6 +1334,7 @@ export function createExtHostComments(
 		} else {
 			resolvedKind = kind;
 		}
+
 		if (resolvedKind !== undefined) {
 			switch (resolvedKind) {
 				case types.CommentThreadState.Unresolved:
@@ -1172,13 +1344,16 @@ export function createExtHostComments(
 					return languages.CommentThreadState.Resolved;
 			}
 		}
+
 		return languages.CommentThreadState.Unresolved;
 	}
+
 	function convertToRelevance(
 		kind:
 			| vscode.CommentThreadState
 			| {
 					resolved?: vscode.CommentThreadState;
+
 					applicability?: vscode.CommentThreadApplicability;
 			  }
 			| undefined,
@@ -1189,6 +1364,7 @@ export function createExtHostComments(
 		if (typeof kind === "object") {
 			applicabilityKind = kind.applicability;
 		}
+
 		if (applicabilityKind !== undefined) {
 			switch (applicabilityKind) {
 				case types.CommentThreadApplicability.Current:
@@ -1198,7 +1374,9 @@ export function createExtHostComments(
 					return languages.CommentThreadApplicability.Outdated;
 			}
 		}
+
 		return languages.CommentThreadApplicability.Current;
 	}
+
 	return new ExtHostCommentsImpl();
 }

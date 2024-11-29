@@ -70,6 +70,7 @@ registerAction2(
 				},
 			});
 		}
+
 		async run(accessor: ServicesAccessor): Promise<void> {
 			const editorService = accessor.get(IEditorService);
 
@@ -80,10 +81,13 @@ registerAction2(
 			if (!editor) {
 				return;
 			}
+
 			const controller = editor.getContribution<NotebookFindContrib>(
 				NotebookFindContrib.id,
 			);
+
 			controller.hide();
+
 			editor.focus();
 		}
 	},
@@ -111,6 +115,7 @@ registerAction2(
 				},
 			});
 		}
+
 		async runWithContext(
 			accessor: ServicesAccessor,
 			context: INotebookCommandContext,
@@ -124,9 +129,11 @@ registerAction2(
 			if (!editor) {
 				return;
 			}
+
 			const controller = editor.getContribution<NotebookFindContrib>(
 				NotebookFindContrib.id,
 			);
+
 			controller.show(undefined, {
 				findScope: { findScopeType: NotebookFindScopeType.None },
 			});
@@ -141,6 +148,7 @@ function notebookContainsTextModel(uri: URI, textModel: ITextModel) {
 			return true;
 		}
 	}
+
 	return false;
 }
 function getSearchStringOptions(editor: ICodeEditor, opts: IFindStartOptions) {
@@ -174,6 +182,7 @@ function getSearchStringOptions(editor: ICodeEditor, opts: IFindStartOptions) {
 			};
 		}
 	}
+
 	return undefined;
 }
 StartFindAction.addImplementation(
@@ -188,9 +197,11 @@ StartFindAction.addImplementation(
 		if (!editor) {
 			return false;
 		}
+
 		if (!codeEditor.hasModel()) {
 			return false;
 		}
+
 		if (!editor.hasEditorFocus() && !editor.hasWebviewFocus()) {
 			const codeEditorService = accessor.get(ICodeEditorService);
 			// check if the active pane contains the active text editor
@@ -212,6 +223,7 @@ StartFindAction.addImplementation(
 				return false;
 			}
 		}
+
 		const controller = editor.getContribution<NotebookFindContrib>(
 			NotebookFindContrib.id,
 		);
@@ -253,6 +265,7 @@ StartFindAction.addImplementation(
 				};
 			}
 		}
+
 		controller.show(searchStringOptions?.searchString, options);
 
 		return true;
@@ -270,9 +283,11 @@ StartFindReplaceAction.addImplementation(
 		if (!editor) {
 			return false;
 		}
+
 		if (!codeEditor.hasModel()) {
 			return false;
 		}
+
 		const controller = editor.getContribution<NotebookFindContrib>(
 			NotebookFindContrib.id,
 		);
@@ -301,6 +316,7 @@ StartFindReplaceAction.addImplementation(
 
 			return true;
 		}
+
 		return false;
 	},
 );

@@ -578,6 +578,7 @@ if (isMacintosh) {
 		group: "navigation",
 		order: 0,
 	});
+
 	MenuRegistry.appendMenuItem(MenuId.TouchBarContext, {
 		command: {
 			id: NavigateForwardAction.ID,
@@ -1136,6 +1137,7 @@ function appendEditorToolItem(
 			icon: alternative.icon,
 		};
 	}
+
 	MenuRegistry.appendMenuItem(MenuId.EditorTitle, item);
 }
 

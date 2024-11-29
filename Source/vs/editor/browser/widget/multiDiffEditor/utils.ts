@@ -8,6 +8,7 @@ export class ActionRunnerWithContext extends ActionRunner {
 	constructor(private readonly _getContext: () => unknown) {
 		super();
 	}
+
 	protected override runAction(
 		action: IAction,
 		_context?: unknown,

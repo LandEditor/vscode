@@ -79,7 +79,9 @@ export class InputCodeEditorView extends CodeEditorView {
 		configurationService: IConfigurationService,
 	) {
 		super(instantiationService, viewModel, configurationService);
+
 		this.htmlElements.root.classList.add(`input`);
+
 		this._register(
 			new EditorGutter(this.editor, this.htmlElements.gutterDiv, {
 				getIntersectingGutterItems: (range, reader) => {
@@ -99,6 +101,7 @@ export class InputCodeEditorView extends CodeEditorView {
 					),
 			}),
 		);
+
 		this._register(
 			createSelectionsAutorun(this, (baseRange, viewModel) =>
 				viewModel.model.translateBaseRangeToInput(
@@ -107,6 +110,7 @@ export class InputCodeEditorView extends CodeEditorView {
 				),
 			),
 		);
+
 		this._register(
 			instantiationService.createInstance(
 				TitleMenu,
@@ -116,6 +120,7 @@ export class InputCodeEditorView extends CodeEditorView {
 				this.htmlElements.toolbar,
 			),
 		);
+
 		this._register(
 			autorunOpts(
 				{
@@ -127,6 +132,7 @@ export class InputCodeEditorView extends CodeEditorView {
 					if (!vm) {
 						return;
 					}
+
 					this.editor.setModel(
 						this.inputNumber === 1
 							? vm.model.input1.textModel
@@ -149,16 +155,19 @@ export class InputCodeEditorView extends CodeEditorView {
 						this.inputNumber === 1
 							? vm.model.input1.detail
 							: vm.model.input2.detail;
+
 					reset(
 						this.htmlElements.title,
 						...renderLabelWithIcons(title),
 					);
+
 					reset(
 						this.htmlElements.description,
 						...(description
 							? renderLabelWithIcons(description)
 							: []),
 					);
+
 					reset(
 						this.htmlElements.detail,
 						...(detail ? renderLabelWithIcons(detail) : []),
@@ -166,10 +175,12 @@ export class InputCodeEditorView extends CodeEditorView {
 				},
 			),
 		);
+
 		this._register(
 			applyObservableDecorations(this.editor, this.decorations),
 		);
 	}
+
 	private readonly modifiedBaseRangeGutterItemInfos = derivedOpts(
 		{
 			debugName: `input${this.inputNumber}.modifiedBaseRangeGutterItemInfos`,
@@ -180,6 +191,7 @@ export class InputCodeEditorView extends CodeEditorView {
 			if (!viewModel) {
 				return [];
 			}
+
 			const model = viewModel.model;
 
 			const inputNumber = this.inputNumber;
@@ -207,6 +219,7 @@ export class InputCodeEditorView extends CodeEditorView {
 				);
 		},
 	);
+
 	private readonly decorations = derivedOpts(
 		{ debugName: `input${this.inputNumber}.decorations` },
 		(reader) => {
@@ -215,6 +228,7 @@ export class InputCodeEditorView extends CodeEditorView {
 			if (!viewModel) {
 				return [];
 			}
+
 			const model = viewModel.model;
 
 			const textModel = (
@@ -246,6 +260,7 @@ export class InputCodeEditorView extends CodeEditorView {
 				if (!range) {
 					continue;
 				}
+
 				const blockClassNames = ["merge-editor-block"];
 
 				let blockPadding: [
@@ -262,15 +277,20 @@ export class InputCodeEditorView extends CodeEditorView {
 				if (isHandled) {
 					blockClassNames.push("handled");
 				}
+
 				if (modifiedBaseRange === activeModifiedBaseRange) {
 					blockClassNames.push("focused");
+
 					blockPadding = [0, 2, 0, 2];
 				}
+
 				if (modifiedBaseRange.isConflicting) {
 					blockClassNames.push("conflicting");
 				}
+
 				const inputClassName =
 					this.inputNumber === 1 ? "input i1" : "input i2";
+
 				blockClassNames.push(inputClassName);
 
 				if (
@@ -280,9 +300,11 @@ export class InputCodeEditorView extends CodeEditorView {
 				) {
 					continue;
 				}
+
 				if (useSimplifiedDecorations && !isHandled) {
 					blockClassNames.push("use-simplified-decorations");
 				}
+
 				result.push({
 					range: range.toInclusiveRangeOrEmpty(),
 					options: {
@@ -335,6 +357,7 @@ export class InputCodeEditorView extends CodeEditorView {
 								},
 							});
 						}
+
 						if (diff.rangeMappings) {
 							for (const d of diff.rangeMappings) {
 								if (
@@ -357,12 +380,14 @@ export class InputCodeEditorView extends CodeEditorView {
 					}
 				}
 			}
+
 			return result;
 		},
 	);
 }
 export class ModifiedBaseRangeGutterItemModel implements IGutterItemInfo {
 	private readonly model = this.viewModel.model;
+
 	public readonly range = this.baseRange.getInputRange(this.inputNumber);
 
 	constructor(
@@ -371,7 +396,9 @@ export class ModifiedBaseRangeGutterItemModel implements IGutterItemInfo {
 		private readonly inputNumber: 1 | 2,
 		private readonly viewModel: MergeEditorViewModel,
 	) {}
+
 	public readonly enabled = this.model.isUpToDate;
+
 	public readonly toggleState: IObservable<InputState> = derived(
 		this,
 		(reader) => {
@@ -386,8 +413,10 @@ export class ModifiedBaseRangeGutterItemModel implements IGutterItemInfo {
 				: input;
 		},
 	);
+
 	public readonly state: IObservable<{
 		handled: boolean;
+
 		focused: boolean;
 	}> = derived(this, (reader) => {
 		const active = this.viewModel.activeModifiedBaseRange.read(reader);
@@ -395,11 +424,13 @@ export class ModifiedBaseRangeGutterItemModel implements IGutterItemInfo {
 		if (!this.model.hasBaseRange(this.baseRange)) {
 			return { handled: false, focused: false }; // Invalid state, should only be observed temporarily
 		}
+
 		return {
 			handled: this.model.isHandled(this.baseRange).read(reader),
 			focused: this.baseRange === active,
 		};
 	});
+
 	public setState(value: boolean, tx: ITransaction): void {
 		this.viewModel.setState(
 			this.baseRange,
@@ -411,10 +442,12 @@ export class ModifiedBaseRangeGutterItemModel implements IGutterItemInfo {
 			this.inputNumber,
 		);
 	}
+
 	public toggleBothSides(): void {
 		transaction((tx) => {
 			/** @description Context Menu: toggle both sides */
 			const state = this.model.getState(this.baseRange).get();
+
 			this.model.setState(
 				this.baseRange,
 				state
@@ -425,6 +458,7 @@ export class ModifiedBaseRangeGutterItemModel implements IGutterItemInfo {
 			);
 		});
 	}
+
 	public getContextMenuActions(): readonly IAction[] {
 		const state = this.model.getState(this.baseRange).get();
 
@@ -451,10 +485,12 @@ export class ModifiedBaseRangeGutterItemModel implements IGutterItemInfo {
 			const action = new Action(id, label, undefined, true, () => {
 				update(targetState);
 			});
+
 			action.checked = checked;
 
 			return action;
 		}
+
 		const both = state.includesInput1 && state.includesInput2;
 
 		return [
@@ -534,7 +570,9 @@ export class MergeConflictGutterItemView
 	implements IGutterItemView<ModifiedBaseRangeGutterItemModel>
 {
 	private readonly item: ISettableObservable<ModifiedBaseRangeGutterItemModel>;
+
 	private readonly checkboxDiv: HTMLDivElement;
+
 	private readonly isMultiLine = observableValue(this, false);
 
 	constructor(
@@ -543,6 +581,7 @@ export class MergeConflictGutterItemView
 		contextMenuService: IContextMenuService,
 	) {
 		super();
+
 		this.item = observableValue(this, item);
 
 		const checkBox = new Toggle({
@@ -551,7 +590,9 @@ export class MergeConflictGutterItemView
 			icon: Codicon.check,
 			...defaultToggleStyles,
 		});
+
 		checkBox.domNode.classList.add("accept-conflict-group");
+
 		this._register(
 			addDisposableListener(
 				checkBox.domNode,
@@ -562,21 +603,27 @@ export class MergeConflictGutterItemView
 					if (!item) {
 						return;
 					}
+
 					if (e.button === /* Right */ 2) {
 						e.stopPropagation();
+
 						e.preventDefault();
+
 						contextMenuService.showContextMenu({
 							getAnchor: () => checkBox.domNode,
 							getActions: () => item.getContextMenuActions(),
 						});
 					} else if (e.button === /* Middle */ 1) {
 						e.stopPropagation();
+
 						e.preventDefault();
+
 						item.toggleBothSides();
 					}
 				},
 			),
 		);
+
 		this._register(
 			autorun((reader) => {
 				/** @description Update Checkbox */
@@ -588,7 +635,9 @@ export class MergeConflictGutterItemView
 					InputState,
 					{
 						icon: ThemeIcon | undefined;
+
 						checked: boolean;
+
 						title: string;
 					}
 				> = {
@@ -621,8 +670,11 @@ export class MergeConflictGutterItemView
 				};
 
 				const state = iconMap[value];
+
 				checkBox.setIcon(state.icon);
+
 				checkBox.checked = state.checked;
+
 				checkBox.setTitle(state.title);
 
 				if (!item.enabled.read(reader)) {
@@ -632,6 +684,7 @@ export class MergeConflictGutterItemView
 				}
 			}),
 		);
+
 		this._register(
 			autorun((reader) => {
 				/** @description Update Checkbox CSS ClassNames */
@@ -645,11 +698,13 @@ export class MergeConflictGutterItemView
 						? "multi-line"
 						: "single-line",
 				];
+
 				target.className = classNames
 					.filter((c) => typeof c === "string")
 					.join(" ");
 			}),
 		);
+
 		this._register(
 			checkBox.onChange(() => {
 				transaction((tx) => {
@@ -658,13 +713,16 @@ export class MergeConflictGutterItemView
 				});
 			}),
 		);
+
 		target.appendChild(h("div.background", [noBreakWhitespace]).root);
+
 		target.appendChild(
 			(this.checkboxDiv = h("div.checkbox", [
 				h("div.checkbox-background", [checkBox.domNode]),
 			]).root),
 		);
 	}
+
 	layout(
 		top: number,
 		height: number,
@@ -695,18 +753,22 @@ export class MergeConflictGutterItemView
 				preferredViewPortRange[0],
 				preferredViewPortRange[1],
 			);
+
 			effectiveCheckboxTop = clamp(
 				effectiveCheckboxTop,
 				preferredParentRange[0],
 				preferredParentRange[1],
 			);
 		}
+
 		this.checkboxDiv.style.top = `${effectiveCheckboxTop - top}px`;
+
 		transaction((tx) => {
 			/** @description MergeConflictGutterItemView: Update Is Multi Line */
 			this.isMultiLine.set(height > 30, tx);
 		});
 	}
+
 	update(baseRange: ModifiedBaseRangeGutterItemModel): void {
 		transaction((tx) => {
 			/** @description MergeConflictGutterItemView: Updating new base range */

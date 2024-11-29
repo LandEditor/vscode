@@ -65,6 +65,7 @@ export function format(
 
 	if (range) {
 		rangeStart = range.offset;
+
 		rangeEnd = rangeStart + range.length;
 
 		formatTextStart = rangeStart;
@@ -75,6 +76,7 @@ export function format(
 		) {
 			formatTextStart--;
 		}
+
 		let endOffset = rangeEnd;
 
 		while (
@@ -83,16 +85,22 @@ export function format(
 		) {
 			endOffset++;
 		}
+
 		formatText = documentText.substring(formatTextStart, endOffset);
+
 		initialIndentLevel = computeIndentLevel(formatText, options);
 	} else {
 		formatText = documentText;
+
 		initialIndentLevel = 0;
 
 		formatTextStart = 0;
+
 		rangeStart = 0;
+
 		rangeEnd = documentText.length;
 	}
+
 	const eol = getEOL(options, documentText);
 
 	let lineBreak = false;
@@ -106,6 +114,7 @@ export function format(
 	} else {
 		indentValue = "\t";
 	}
+
 	const scanner = createScanner(formatText, false);
 
 	let hasError = false;
@@ -113,8 +122,10 @@ export function format(
 	function newLineAndIndent(): string {
 		return eol + repeat(indentValue, initialIndentLevel + indentLevel);
 	}
+
 	function scanNext(): SyntaxKind {
 		let token = scanner.scan();
+
 		lineBreak = false;
 
 		while (
@@ -122,14 +133,17 @@ export function format(
 			token === SyntaxKind.LineBreakTrivia
 		) {
 			lineBreak = lineBreak || token === SyntaxKind.LineBreakTrivia;
+
 			token = scanner.scan();
 		}
+
 		hasError =
 			token === SyntaxKind.Unknown ||
 			scanner.getTokenError() !== ScanError.None;
 
 		return token;
 	}
+
 	const editOperations: Edit[] = [];
 
 	function addEdit(text: string, startOffset: number, endOffset: number) {
@@ -146,14 +160,17 @@ export function format(
 			});
 		}
 	}
+
 	let firstToken = scanNext();
 
 	if (firstToken !== SyntaxKind.EOF) {
 		const firstTokenStart = scanner.getTokenOffset() + formatTextStart;
 
 		const initialIndent = repeat(indentValue, initialIndentLevel);
+
 		addEdit(initialIndent, formatTextStart, firstTokenStart);
 	}
+
 	while (firstToken !== SyntaxKind.EOF) {
 		let firstTokenEnd =
 			scanner.getTokenOffset() +
@@ -172,25 +189,32 @@ export function format(
 			// comments on the same line: keep them on the same line, but ignore them otherwise
 			const commentTokenStart =
 				scanner.getTokenOffset() + formatTextStart;
+
 			addEdit(" ", firstTokenEnd, commentTokenStart);
+
 			firstTokenEnd =
 				scanner.getTokenOffset() +
 				scanner.getTokenLength() +
 				formatTextStart;
+
 			replaceContent =
 				secondToken === SyntaxKind.LineCommentTrivia
 					? newLineAndIndent()
 					: "";
+
 			secondToken = scanNext();
 		}
+
 		if (secondToken === SyntaxKind.CloseBraceToken) {
 			if (firstToken !== SyntaxKind.OpenBraceToken) {
 				indentLevel--;
+
 				replaceContent = newLineAndIndent();
 			}
 		} else if (secondToken === SyntaxKind.CloseBracketToken) {
 			if (firstToken !== SyntaxKind.OpenBracketToken) {
 				indentLevel--;
+
 				replaceContent = newLineAndIndent();
 			}
 		} else {
@@ -198,6 +222,7 @@ export function format(
 				case SyntaxKind.OpenBracketToken:
 				case SyntaxKind.OpenBraceToken:
 					indentLevel++;
+
 					replaceContent = newLineAndIndent();
 
 					break;
@@ -215,6 +240,7 @@ export function format(
 						// symbol following comment on the same line: keep on same line, separate with ' '
 						replaceContent = " ";
 					}
+
 					break;
 
 				case SyntaxKind.ColonToken:
@@ -246,6 +272,7 @@ export function format(
 					) {
 						hasError = true;
 					}
+
 					break;
 
 				case SyntaxKind.Unknown:
@@ -253,6 +280,7 @@ export function format(
 
 					break;
 			}
+
 			if (
 				lineBreak &&
 				(secondToken === SyntaxKind.LineCommentTrivia ||
@@ -261,10 +289,14 @@ export function format(
 				replaceContent = newLineAndIndent();
 			}
 		}
+
 		const secondTokenStart = scanner.getTokenOffset() + formatTextStart;
+
 		addEdit(replaceContent, firstTokenEnd, secondTokenStart);
+
 		firstToken = secondToken;
 	}
+
 	return editOperations;
 }
 /**
@@ -282,6 +314,7 @@ export function toFormattedString(obj: any, options: FormattingOptions) {
 	if (options.eol !== undefined) {
 		return content.replace(/\r\n|\r|\n/g, options.eol);
 	}
+
 	return content;
 }
 function repeat(s: string, count: number): string {
@@ -290,6 +323,7 @@ function repeat(s: string, count: number): string {
 	for (let i = 0; i < count; i++) {
 		result += s;
 	}
+
 	return result;
 }
 function computeIndentLevel(
@@ -312,8 +346,10 @@ function computeIndentLevel(
 		} else {
 			break;
 		}
+
 		i++;
 	}
+
 	return Math.floor(nChars / tabSize);
 }
 export function getEOL(options: FormattingOptions, text: string): string {
@@ -324,11 +360,13 @@ export function getEOL(options: FormattingOptions, text: string): string {
 			if (i + 1 < text.length && text.charAt(i + 1) === "\n") {
 				return "\r\n";
 			}
+
 			return "\r";
 		} else if (ch === "\n") {
 			return "\n";
 		}
 	}
+
 	return (options && options.eol) || "\n";
 }
 export function isEOL(text: string, offset: number) {

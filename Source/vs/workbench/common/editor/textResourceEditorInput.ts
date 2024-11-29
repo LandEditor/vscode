@@ -65,6 +65,7 @@ export abstract class AbstractTextResourceEditorInput extends AbstractResourceEd
 			customEditorLabelService,
 		);
 	}
+
 	override save(
 		group: GroupIdentifier,
 		options?: ITextFileSaveOptions,
@@ -80,12 +81,14 @@ export abstract class AbstractTextResourceEditorInput extends AbstractResourceEd
 		// Normal save
 		return this.doSave(options, false, group);
 	}
+
 	override saveAs(
 		group: GroupIdentifier,
 		options?: ITextFileSaveOptions,
 	): Promise<IUntypedEditorInput | undefined> {
 		return this.doSave(options, true, group);
 	}
+
 	private async doSave(
 		options: ITextFileSaveOptions | undefined,
 		saveAs: boolean,
@@ -103,11 +106,14 @@ export abstract class AbstractTextResourceEditorInput extends AbstractResourceEd
 		} else {
 			target = await this.textFileService.save(this.resource, options);
 		}
+
 		if (!target) {
 			return undefined; // save cancelled
 		}
+
 		return { resource: target };
 	}
+
 	override async revert(
 		group: GroupIdentifier,
 		options?: IRevertOptions,
@@ -124,13 +130,17 @@ export class TextResourceEditorInput
 	implements ILanguageSupport
 {
 	static readonly ID: string = "workbench.editors.resourceEditorInput";
+
 	override get typeId(): string {
 		return TextResourceEditorInput.ID;
 	}
+
 	override get editorId(): string | undefined {
 		return DEFAULT_EDITOR_ASSOCIATION.id;
 	}
+
 	private cachedModel: TextResourceEditorModel | undefined = undefined;
+
 	private modelReference: Promise<IReference<ITextEditorModel>> | undefined =
 		undefined;
 
@@ -169,34 +179,45 @@ export class TextResourceEditorInput
 			customEditorLabelService,
 		);
 	}
+
 	override getName(): string {
 		return this.name || super.getName();
 	}
+
 	setName(name: string): void {
 		if (this.name !== name) {
 			this.name = name;
+
 			this._onDidChangeLabel.fire();
 		}
 	}
+
 	override getDescription(): string | undefined {
 		return this.description;
 	}
+
 	setDescription(description: string): void {
 		if (this.description !== description) {
 			this.description = description;
+
 			this._onDidChangeLabel.fire();
 		}
 	}
+
 	setLanguageId(languageId: string, source?: string): void {
 		this.setPreferredLanguageId(languageId);
+
 		this.cachedModel?.setLanguageId(languageId, source);
 	}
+
 	setPreferredLanguageId(languageId: string): void {
 		this.preferredLanguageId = languageId;
 	}
+
 	setPreferredContents(contents: string): void {
 		this.preferredContents = contents;
 	}
+
 	override async resolve(): Promise<ITextEditorModel> {
 		// Unset preferred contents and language after resolving
 		// once to prevent these properties to stick. We still
@@ -206,7 +227,9 @@ export class TextResourceEditorInput
 		const preferredContents = this.preferredContents;
 
 		const preferredLanguageId = this.preferredLanguageId;
+
 		this.preferredContents = undefined;
+
 		this.preferredLanguageId = undefined;
 
 		if (!this.modelReference) {
@@ -214,18 +237,21 @@ export class TextResourceEditorInput
 				this.resource,
 			);
 		}
+
 		const ref = await this.modelReference;
 		// Ensure the resolved model is of expected type
 		const model = ref.object;
 
 		if (!(model instanceof TextResourceEditorModel)) {
 			ref.dispose();
+
 			this.modelReference = undefined;
 
 			throw new Error(
 				`Unexpected model for TextResourceEditorInput: ${this.resource}`,
 			);
 		}
+
 		this.cachedModel = model;
 		// Set contents and language if preferred
 		if (
@@ -239,25 +265,33 @@ export class TextResourceEditorInput
 				preferredLanguageId,
 			);
 		}
+
 		return model;
 	}
+
 	override matches(otherInput: EditorInput | IUntypedEditorInput): boolean {
 		if (this === otherInput) {
 			return true;
 		}
+
 		if (otherInput instanceof TextResourceEditorInput) {
 			return isEqual(otherInput.resource, this.resource);
 		}
+
 		if (isResourceEditorInput(otherInput)) {
 			return super.matches(otherInput);
 		}
+
 		return false;
 	}
+
 	override dispose(): void {
 		if (this.modelReference) {
 			this.modelReference.then((ref) => ref.dispose());
+
 			this.modelReference = undefined;
 		}
+
 		this.cachedModel = undefined;
 
 		super.dispose();

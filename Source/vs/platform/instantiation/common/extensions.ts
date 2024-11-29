@@ -46,6 +46,7 @@ export function registerSingleton<T, Services extends BrandedService[]>(
 			Boolean(supportsDelayedInstantiation),
 		);
 	}
+
 	_registry.push([id, ctorOrDescriptor]);
 }
 export function getSingletonServiceDescriptors(): [

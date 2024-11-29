@@ -72,6 +72,7 @@ export class HoverOperation<TArgs, TResult> extends Disposable {
 	private readonly _onResult = this._register(
 		new Emitter<HoverResult<TArgs, TResult>>(),
 	);
+
 	public readonly onResult = this._onResult.event;
 
 	private readonly _asyncComputationScheduler = this._register(
@@ -80,12 +81,14 @@ export class HoverOperation<TArgs, TResult> extends Disposable {
 			0,
 		),
 	);
+
 	private readonly _syncComputationScheduler = this._register(
 		new Debouncer(
 			(options: TArgs) => this._triggerSyncComputation(options),
 			0,
 		),
 	);
+
 	private readonly _loadingMessageScheduler = this._register(
 		new Debouncer(
 			(options: TArgs) => this._triggerLoadingMessage(options),
@@ -94,10 +97,14 @@ export class HoverOperation<TArgs, TResult> extends Disposable {
 	);
 
 	private _state = HoverOperationState.Idle;
+
 	private _asyncIterable: CancelableAsyncIterableObject<TResult> | null =
 		null;
+
 	private _asyncIterableDone: boolean = false;
+
 	private _result: TResult[] = [];
+
 	private _options: TArgs | undefined;
 
 	constructor(
@@ -110,8 +117,10 @@ export class HoverOperation<TArgs, TResult> extends Disposable {
 	public override dispose(): void {
 		if (this._asyncIterable) {
 			this._asyncIterable.cancel();
+
 			this._asyncIterable = null;
 		}
+
 		this._options = undefined;
 
 		super.dispose();
@@ -135,15 +144,18 @@ export class HoverOperation<TArgs, TResult> extends Disposable {
 
 	private _setState(state: HoverOperationState, options: TArgs): void {
 		this._state = state;
+
 		this._fireResult(options);
 	}
 
 	private _triggerAsyncComputation(options: TArgs): void {
 		this._setState(HoverOperationState.SecondWait, options);
+
 		this._syncComputationScheduler.schedule(options, this._secondWaitTime);
 
 		if (this._computer.computeAsync) {
 			this._asyncIterableDone = false;
+
 			this._asyncIterable = createCancelableAsyncIterable((token) =>
 				this._computer.computeAsync!(options, token),
 			);
@@ -153,9 +165,11 @@ export class HoverOperation<TArgs, TResult> extends Disposable {
 					for await (const item of this._asyncIterable!) {
 						if (item) {
 							this._result.push(item);
+
 							this._fireResult(options);
 						}
 					}
+
 					this._asyncIterableDone = true;
 
 					if (
@@ -180,6 +194,7 @@ export class HoverOperation<TArgs, TResult> extends Disposable {
 				this._computer.computeSync(options),
 			);
 		}
+
 		this._setState(
 			this._asyncIterableDone
 				? HoverOperationState.Idle
@@ -205,10 +220,12 @@ export class HoverOperation<TArgs, TResult> extends Disposable {
 			// Do not send out results before the hover time
 			return;
 		}
+
 		const isComplete = this._state === HoverOperationState.Idle;
 
 		const hasLoadingMessage =
 			this._state === HoverOperationState.WaitingForAsyncShowingLoading;
+
 		this._onResult.fire(
 			new HoverResult(
 				this._result.slice(0),
@@ -223,10 +240,12 @@ export class HoverOperation<TArgs, TResult> extends Disposable {
 		if (mode === HoverStartMode.Delayed) {
 			if (this._state === HoverOperationState.Idle) {
 				this._setState(HoverOperationState.FirstWait, options);
+
 				this._asyncComputationScheduler.schedule(
 					options,
 					this._firstWaitTime,
 				);
+
 				this._loadingMessageScheduler.schedule(
 					options,
 					this._loadingMessageTime,
@@ -236,13 +255,16 @@ export class HoverOperation<TArgs, TResult> extends Disposable {
 			switch (this._state) {
 				case HoverOperationState.Idle:
 					this._triggerAsyncComputation(options);
+
 					this._syncComputationScheduler.cancel();
+
 					this._triggerSyncComputation(options);
 
 					break;
 
 				case HoverOperationState.SecondWait:
 					this._syncComputationScheduler.cancel();
+
 					this._triggerSyncComputation(options);
 
 					break;
@@ -252,15 +274,21 @@ export class HoverOperation<TArgs, TResult> extends Disposable {
 
 	public cancel(): void {
 		this._asyncComputationScheduler.cancel();
+
 		this._syncComputationScheduler.cancel();
+
 		this._loadingMessageScheduler.cancel();
 
 		if (this._asyncIterable) {
 			this._asyncIterable.cancel();
+
 			this._asyncIterable = null;
 		}
+
 		this._result = [];
+
 		this._options = undefined;
+
 		this._state = HoverOperationState.Idle;
 	}
 
@@ -276,6 +304,7 @@ class Debouncer<TArgs> extends Disposable {
 
 	constructor(runner: (options: TArgs) => void, debounceTimeMs: number) {
 		super();
+
 		this._scheduler = this._register(
 			new RunOnceScheduler(() => runner(this._options!), debounceTimeMs),
 		);
@@ -283,6 +312,7 @@ class Debouncer<TArgs> extends Disposable {
 
 	schedule(options: TArgs, debounceTimeMs: number): void {
 		this._options = options;
+
 		this._scheduler.schedule(debounceTimeMs);
 	}
 

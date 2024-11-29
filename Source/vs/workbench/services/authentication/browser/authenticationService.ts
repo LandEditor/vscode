@@ -47,8 +47,11 @@ export function getAuthenticationProviderActivationEvent(id: string): string {
 // TODO: pull this out into its own service
 export type AuthenticationSessionInfo = {
 	readonly id: string;
+
 	readonly accessToken: string;
+
 	readonly providerId: string;
+
 	readonly canSignOut?: boolean;
 };
 
@@ -78,6 +81,7 @@ export async function getCurrentAuthenticationSessionInfo(
 			console.error(`Failed parsing current auth session value: ${e}`);
 		}
 	}
+
 	return undefined;
 }
 
@@ -136,39 +140,50 @@ export class AuthenticationService
 
 	private _onDidRegisterAuthenticationProvider: Emitter<AuthenticationProviderInformation> =
 		this._register(new Emitter<AuthenticationProviderInformation>());
+
 	readonly onDidRegisterAuthenticationProvider: Event<AuthenticationProviderInformation> =
 		this._onDidRegisterAuthenticationProvider.event;
 
 	private _onDidUnregisterAuthenticationProvider: Emitter<AuthenticationProviderInformation> =
 		this._register(new Emitter<AuthenticationProviderInformation>());
+
 	readonly onDidUnregisterAuthenticationProvider: Event<AuthenticationProviderInformation> =
 		this._onDidUnregisterAuthenticationProvider.event;
 
 	private _onDidChangeSessions: Emitter<{
 		providerId: string;
+
 		label: string;
+
 		event: AuthenticationSessionsChangeEvent;
 	}> = this._register(
 		new Emitter<{
 			providerId: string;
+
 			label: string;
+
 			event: AuthenticationSessionsChangeEvent;
 		}>(),
 	);
+
 	readonly onDidChangeSessions: Event<{
 		providerId: string;
+
 		label: string;
+
 		event: AuthenticationSessionsChangeEvent;
 	}> = this._onDidChangeSessions.event;
 
 	private _onDidChangeDeclaredProviders: Emitter<void> = this._register(
 		new Emitter<void>(),
 	);
+
 	readonly onDidChangeDeclaredProviders: Event<void> =
 		this._onDidChangeDeclaredProviders.event;
 
 	private _authenticationProviders: Map<string, IAuthenticationProvider> =
 		new Map<string, IAuthenticationProvider>();
+
 	private _authenticationProviderDisposables: DisposableMap<
 		string,
 		IDisposable
@@ -204,6 +219,7 @@ export class AuthenticationService
 		);
 
 		this._registerEnvContributedAuthenticationProviders();
+
 		this._registerAuthenticationExtentionPointHandler();
 	}
 
@@ -219,9 +235,11 @@ export class AuthenticationService
 		) {
 			return;
 		}
+
 		for (const provider of this._environmentService.options
 			.authenticationProviders) {
 			this.registerDeclaredAuthenticationProvider(provider);
+
 			this.registerAuthenticationProvider(provider.id, provider);
 		}
 	}
@@ -233,6 +251,7 @@ export class AuthenticationService
 					this._logService.debug(
 						`Found authentication providers. added: ${added.length}, removed: ${removed.length}`,
 					);
+
 					added.forEach((point) => {
 						for (const provider of point.value) {
 							if (isFalsyOrWhitespace(provider.id)) {
@@ -265,6 +284,7 @@ export class AuthenticationService
 								this.registerDeclaredAuthenticationProvider(
 									provider,
 								);
+
 								this._logService.debug(
 									`Declared authentication provider: ${provider.id}`,
 								);
@@ -281,6 +301,7 @@ export class AuthenticationService
 					});
 
 					const removedExtPoints = removed.flatMap((r) => r.value);
+
 					removedExtPoints.forEach((point) => {
 						const provider = this.declaredProviders.find(
 							(provider) => provider.id === point.id,
@@ -290,6 +311,7 @@ export class AuthenticationService
 							this.unregisterDeclaredAuthenticationProvider(
 								provider.id,
 							);
+
 							this._logService.debug(
 								`Undeclared authentication provider: ${provider.id}`,
 							);
@@ -311,6 +333,7 @@ export class AuthenticationService
 				),
 			);
 		}
+
 		if (isFalsyOrWhitespace(provider.label)) {
 			throw new Error(
 				localize(
@@ -319,6 +342,7 @@ export class AuthenticationService
 				),
 			);
 		}
+
 		if (this.declaredProviders.some((p) => p.id === provider.id)) {
 			throw new Error(
 				localize(
@@ -328,7 +352,9 @@ export class AuthenticationService
 				),
 			);
 		}
+
 		this._declaredProviders.push(provider);
+
 		this._onDidChangeDeclaredProviders.fire();
 	}
 
@@ -340,6 +366,7 @@ export class AuthenticationService
 		if (index > -1) {
 			this.declaredProviders.splice(index, 1);
 		}
+
 		this._onDidChangeDeclaredProviders.fire();
 	}
 
@@ -354,6 +381,7 @@ export class AuthenticationService
 		this._authenticationProviders.set(id, authenticationProvider);
 
 		const disposableStore = new DisposableStore();
+
 		disposableStore.add(
 			authenticationProvider.onDidChangeSessions((e) =>
 				this._onDidChangeSessions.fire({
@@ -367,7 +395,9 @@ export class AuthenticationService
 		if (isDisposable(authenticationProvider)) {
 			disposableStore.add(authenticationProvider);
 		}
+
 		this._authenticationProviderDisposables.set(id, disposableStore);
+
 		this._onDidRegisterAuthenticationProvider.fire({
 			id,
 			label: authenticationProvider.label,
@@ -379,16 +409,19 @@ export class AuthenticationService
 
 		if (provider) {
 			this._authenticationProviders.delete(id);
+
 			this._onDidUnregisterAuthenticationProvider.fire({
 				id,
 				label: provider.label,
 			});
 		}
+
 		this._authenticationProviderDisposables.deleteAndDispose(id);
 	}
 
 	getProviderIds(): string[] {
 		const providerIds: string[] = [];
+
 		this._authenticationProviders.forEach((provider) => {
 			providerIds.push(provider.id);
 		});
@@ -400,6 +433,7 @@ export class AuthenticationService
 		if (this._authenticationProviders.has(id)) {
 			return this._authenticationProviders.get(id)!;
 		}
+
 		throw new Error(
 			`No authentication provider '${id}' is currently registered.`,
 		);
@@ -418,9 +452,11 @@ export class AuthenticationService
 		for (const session of sessions) {
 			if (!seenAccounts.has(session.account.label)) {
 				seenAccounts.add(session.account.label);
+
 				accounts.push(session.account);
 			}
 		}
+
 		return accounts;
 	}
 

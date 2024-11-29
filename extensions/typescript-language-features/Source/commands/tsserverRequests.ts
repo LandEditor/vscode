@@ -38,6 +38,7 @@ export class TSServerRequestCommand implements Command {
 		if (!isCancellationToken(token)) {
 			token = nulToken;
 		}
+
 		if (args && typeof args === "object" && !Array.isArray(args)) {
 			const requestArgs = args as RequestArgs;
 
@@ -47,7 +48,9 @@ export class TSServerRequestCommand implements Command {
 				newArgs = { ...args };
 
 				const client = this.lazyClientHost.value.serviceClient;
+
 				newArgs.file = client.toOpenTsFilePath(requestArgs.file);
+
 				args = newArgs;
 			}
 		}
@@ -76,6 +79,7 @@ export class TSServerRequestCommand implements Command {
 				config,
 			);
 		}
+
 		return undefined;
 	}
 }

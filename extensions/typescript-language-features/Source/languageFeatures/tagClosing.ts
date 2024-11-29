@@ -17,31 +17,41 @@ import {
 
 class TagClosing extends Disposable {
 	private _disposed = false;
+
 	private _timeout: NodeJS.Timeout | undefined = undefined;
+
 	private _cancel: vscode.CancellationTokenSource | undefined = undefined;
 
 	constructor(private readonly client: ITypeScriptServiceClient) {
 		super();
+
 		vscode.workspace.onDidChangeTextDocument(
 			(event) => this.onDidChangeTextDocument(event),
 			null,
 			this._disposables,
 		);
 	}
+
 	public override dispose() {
 		super.dispose();
+
 		this._disposed = true;
 
 		if (this._timeout) {
 			clearTimeout(this._timeout);
+
 			this._timeout = undefined;
 		}
+
 		if (this._cancel) {
 			this._cancel.cancel();
+
 			this._cancel.dispose();
+
 			this._cancel = undefined;
 		}
 	}
+
 	private onDidChangeTextDocument({
 		document,
 		contentChanges,
@@ -54,24 +64,31 @@ class TagClosing extends Disposable {
 		) {
 			return;
 		}
+
 		const activeDocument = vscode.window.activeTextEditor?.document;
 
 		if (document !== activeDocument) {
 			return;
 		}
+
 		const filepath = this.client.toOpenTsFilePath(document);
 
 		if (!filepath) {
 			return;
 		}
+
 		if (typeof this._timeout !== "undefined") {
 			clearTimeout(this._timeout);
 		}
+
 		if (this._cancel) {
 			this._cancel.cancel();
+
 			this._cancel.dispose();
+
 			this._cancel = undefined;
 		}
+
 		const lastChange = contentChanges[contentChanges.length - 1];
 
 		const lastCharacter = lastChange.text[lastChange.text.length - 1];
@@ -82,6 +99,7 @@ class TagClosing extends Disposable {
 		) {
 			return;
 		}
+
 		const priorCharacter =
 			lastChange.range.start.character > 0
 				? document.getText(
@@ -97,13 +115,16 @@ class TagClosing extends Disposable {
 		if (priorCharacter === ">") {
 			return;
 		}
+
 		const version = document.version;
+
 		this._timeout = setTimeout(async () => {
 			this._timeout = undefined;
 
 			if (this._disposed) {
 				return;
 			}
+
 			const addedLines = lastChange.text.split(/\r\n|\n/g);
 
 			const position =
@@ -121,6 +142,7 @@ class TagClosing extends Disposable {
 					filepath,
 					position,
 				);
+
 			this._cancel = new vscode.CancellationTokenSource();
 
 			const response = await this.client.execute(
@@ -132,14 +154,17 @@ class TagClosing extends Disposable {
 			if (response.type !== "response" || !response.body) {
 				return;
 			}
+
 			if (this._disposed) {
 				return;
 			}
+
 			const activeEditor = vscode.window.activeTextEditor;
 
 			if (!activeEditor) {
 				return;
 			}
+
 			const insertion = response.body;
 
 			const activeDocument = activeEditor.document;
@@ -155,15 +180,19 @@ class TagClosing extends Disposable {
 			}
 		}, 100);
 	}
+
 	private getTagSnippet(
 		closingTag: Proto.TextInsertion,
 	): vscode.SnippetString {
 		const snippet = new vscode.SnippetString();
+
 		snippet.appendPlaceholder("", 0);
+
 		snippet.appendText(closingTag.newText);
 
 		return snippet;
 	}
+
 	private getInsertionPositions(
 		editor: vscode.TextEditor,
 		position: vscode.Position,
@@ -186,6 +215,7 @@ function requireActiveDocumentSetting(
 			if (!editor || !vscode.languages.match(selector, editor.document)) {
 				return false;
 			}
+
 			return !!vscode.workspace
 				.getConfiguration(language.id, editor.document)
 				.get("autoClosingTags");

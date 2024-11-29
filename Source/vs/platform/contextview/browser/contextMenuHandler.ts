@@ -37,9 +37,13 @@ export interface IContextMenuHandlerOptions {
 }
 export class ContextMenuHandler {
 	private focusToReturn: HTMLElement | null = null;
+
 	private lastContainer: HTMLElement | null = null;
+
 	private block: HTMLElement | null = null;
+
 	private blockDisposable: IDisposable | null = null;
+
 	private options: IContextMenuHandlerOptions = { blockMouse: true };
 
 	constructor(
@@ -48,15 +52,18 @@ export class ContextMenuHandler {
 		private notificationService: INotificationService,
 		private keybindingService: IKeybindingService,
 	) {}
+
 	configure(options: IContextMenuHandlerOptions): void {
 		this.options = options;
 	}
+
 	showContextMenu(delegate: IContextMenuDelegate): void {
 		const actions = delegate.getActions();
 
 		if (!actions.length) {
 			return; // Don't render an empty context menu
 		}
+
 		this.focusToReturn = getActiveElement() as HTMLElement;
 
 		let menu: Menu | undefined;
@@ -64,6 +71,7 @@ export class ContextMenuHandler {
 		const shadowRootElement = isHTMLElement(delegate.domForShadowRoot)
 			? delegate.domForShadowRoot
 			: undefined;
+
 		this.contextViewService.showContextView(
 			{
 				getAnchor: () => delegate.getAnchor(),
@@ -85,34 +93,47 @@ export class ContextMenuHandler {
 						this.block = container.appendChild(
 							$(".context-view-block"),
 						);
+
 						this.block.style.position = "fixed";
+
 						this.block.style.cursor = "initial";
+
 						this.block.style.left = "0";
+
 						this.block.style.top = "0";
+
 						this.block.style.width = "100%";
+
 						this.block.style.height = "100%";
+
 						this.block.style.zIndex = "-1";
+
 						this.blockDisposable?.dispose();
+
 						this.blockDisposable = addDisposableListener(
 							this.block,
 							EventType.MOUSE_DOWN,
 							(e) => e.stopPropagation(),
 						);
 					}
+
 					const menuDisposables = new DisposableStore();
 
 					const actionRunner =
 						delegate.actionRunner || new ActionRunner();
+
 					actionRunner.onWillRun(
 						(evt) => this.onActionRun(evt, !delegate.skipTelemetry),
 						this,
 						menuDisposables,
 					);
+
 					actionRunner.onDidRun(
 						this.onDidActionRun,
 						this,
 						menuDisposables,
 					);
+
 					menu = new Menu(
 						container,
 						actions,
@@ -131,11 +152,13 @@ export class ContextMenuHandler {
 						},
 						defaultMenuStyles,
 					);
+
 					menu.onDidCancel(
 						() => this.contextViewService.hideContextView(true),
 						null,
 						menuDisposables,
 					);
+
 					menu.onDidBlur(
 						() => this.contextViewService.hideContextView(true),
 						null,
@@ -143,6 +166,7 @@ export class ContextMenuHandler {
 					);
 
 					const targetWindow = getWindow(container);
+
 					menuDisposables.add(
 						addDisposableListener(
 							targetWindow,
@@ -150,6 +174,7 @@ export class ContextMenuHandler {
 							() => this.contextViewService.hideContextView(true),
 						),
 					);
+
 					menuDisposables.add(
 						addDisposableListener(
 							targetWindow,
@@ -158,6 +183,7 @@ export class ContextMenuHandler {
 								if (e.defaultPrevented) {
 									return;
 								}
+
 								const event = new StandardMouseEvent(
 									targetWindow,
 									e,
@@ -168,12 +194,15 @@ export class ContextMenuHandler {
 								if (event.rightButton) {
 									return;
 								}
+
 								while (element) {
 									if (element === container) {
 										return;
 									}
+
 									element = element.parentElement;
 								}
+
 								this.contextViewService.hideContextView(true);
 							},
 						),
@@ -189,9 +218,12 @@ export class ContextMenuHandler {
 
 					if (this.block) {
 						this.block.remove();
+
 						this.block = null;
 					}
+
 					this.blockDisposable?.dispose();
+
 					this.blockDisposable = null;
 
 					if (
@@ -201,6 +233,7 @@ export class ContextMenuHandler {
 					) {
 						this.focusToReturn?.focus();
 					}
+
 					this.lastContainer = null;
 				},
 			},
@@ -208,6 +241,7 @@ export class ContextMenuHandler {
 			!!shadowRootElement,
 		);
 	}
+
 	private onActionRun(e: IRunEvent, logTelemetry: boolean): void {
 		if (logTelemetry) {
 			this.telemetryService.publicLog2<
@@ -218,8 +252,10 @@ export class ContextMenuHandler {
 				from: "contextMenu",
 			});
 		}
+
 		this.contextViewService.hideContextView(false);
 	}
+
 	private onDidActionRun(e: IRunEvent): void {
 		if (e.error && !isCancellationError(e.error)) {
 			this.notificationService.error(e.error);

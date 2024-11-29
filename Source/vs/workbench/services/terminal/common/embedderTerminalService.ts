@@ -27,7 +27,9 @@ export const IEmbedderTerminalService =
  */
 export interface IEmbedderTerminalService {
 	readonly _serviceBrand: undefined;
+
 	readonly onDidCreateTerminal: Event<IShellLaunchConfig>;
+
 	createTerminal(options: IEmbedderTerminalOptions): void;
 }
 export type EmbedderTerminal = IShellLaunchConfig &
@@ -35,6 +37,7 @@ export type EmbedderTerminal = IShellLaunchConfig &
 
 export interface IEmbedderTerminalOptions {
 	name: string;
+
 	pty: IEmbedderTerminalPty;
 }
 /**
@@ -42,17 +45,24 @@ export interface IEmbedderTerminalOptions {
  */
 export interface IEmbedderTerminalPty {
 	onDidWrite: Event<string>;
+
 	onDidClose?: Event<void | number>;
+
 	onDidChangeName?: Event<string>;
+
 	open(): void;
+
 	close(): void;
 }
 class EmbedderTerminalService implements IEmbedderTerminalService {
 	declare _serviceBrand: undefined;
+
 	private readonly _onDidCreateTerminal = new Emitter<IShellLaunchConfig>();
+
 	readonly onDidCreateTerminal = Event.buffer(
 		this._onDidCreateTerminal.event,
 	);
+
 	createTerminal(options: IEmbedderTerminalOptions): void {
 		const slc: EmbedderTerminal = {
 			name: options.name,
@@ -61,6 +71,7 @@ class EmbedderTerminalService implements IEmbedderTerminalService {
 				return new EmbedderTerminalProcess(terminalId, options.pty);
 			},
 		};
+
 		this._onDidCreateTerminal.fire(slc);
 	}
 }
@@ -69,19 +80,27 @@ class EmbedderTerminalProcess
 	implements ITerminalChildProcess
 {
 	private readonly _pty: IEmbedderTerminalPty;
+
 	readonly shouldPersist = false;
+
 	readonly onProcessData: Event<IProcessDataEvent | string>;
+
 	private readonly _onProcessReady = this._register(
 		new Emitter<IProcessReadyEvent>(),
 	);
+
 	readonly onProcessReady = this._onProcessReady.event;
+
 	private readonly _onDidChangeProperty = this._register(
 		new Emitter<IProcessProperty<any>>(),
 	);
+
 	readonly onDidChangeProperty = this._onDidChangeProperty.event;
+
 	private readonly _onProcessExit = this._register(
 		new Emitter<number | undefined>(),
 	);
+
 	readonly onProcessExit = this._onProcessExit.event;
 
 	constructor(
@@ -89,7 +108,9 @@ class EmbedderTerminalProcess
 		pty: IEmbedderTerminalPty,
 	) {
 		super();
+
 		this._pty = pty;
+
 		this.onProcessData = this._pty.onDidWrite;
 
 		if (this._pty.onDidClose) {
@@ -99,6 +120,7 @@ class EmbedderTerminalProcess
 				),
 			);
 		}
+
 		if (this._pty.onDidChangeName) {
 			this._register(
 				this._pty.onDidChangeName((e) =>
@@ -110,12 +132,15 @@ class EmbedderTerminalProcess
 			);
 		}
 	}
+
 	async start(): Promise<ITerminalLaunchError | undefined> {
 		this._onProcessReady.fire({ pid: -1, cwd: "", windowsPty: undefined });
+
 		this._pty.open();
 
 		return undefined;
 	}
+
 	shutdown(): void {
 		this._pty.close();
 	}
@@ -124,27 +149,35 @@ class EmbedderTerminalProcess
 	input(): void {
 		// not supported
 	}
+
 	async processBinary(): Promise<void> {
 		// not supported
 	}
+
 	resize(): void {
 		// no-op
 	}
+
 	clearBuffer(): void | Promise<void> {
 		// no-op
 	}
+
 	acknowledgeDataEvent(): void {
 		// no-op, flow control not currently implemented
 	}
+
 	async setUnicodeVersion(): Promise<void> {
 		// no-op
 	}
+
 	async getInitialCwd(): Promise<string> {
 		return "";
 	}
+
 	async getCwd(): Promise<string> {
 		return "";
 	}
+
 	refreshProperty<T extends ProcessPropertyType>(
 		property: ProcessPropertyType,
 	): Promise<IProcessPropertyMap[T]> {
@@ -152,6 +185,7 @@ class EmbedderTerminalProcess
 			`refreshProperty is not suppported in EmbedderTerminalProcess. property: ${property}`,
 		);
 	}
+
 	updateProperty(property: ProcessPropertyType, value: any): Promise<void> {
 		throw new Error(
 			`updateProperty is not suppported in EmbedderTerminalProcess. property: ${property}, value: ${value}`,

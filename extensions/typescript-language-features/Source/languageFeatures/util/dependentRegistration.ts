@@ -19,26 +19,33 @@ export class Condition extends Disposable {
 		onUpdate: (handler: () => void) => void,
 	) {
 		super();
+
 		this._value = this.getValue();
+
 		onUpdate(() => {
 			const newValue = this.getValue();
 
 			if (newValue !== this._value) {
 				this._value = newValue;
+
 				this._onDidChange.fire();
 			}
 		});
 	}
+
 	public get value(): boolean {
 		return this._value;
 	}
+
 	private readonly _onDidChange = this._register(
 		new vscode.EventEmitter<void>(),
 	);
+
 	public readonly onDidChange = this._onDidChange.event;
 }
 class ConditionalRegistration {
 	private registration: vscode.Disposable | undefined = undefined;
+
 	public constructor(
 		private readonly conditions: readonly Condition[],
 		private readonly doRegister: () => vscode.Disposable,
@@ -46,12 +53,16 @@ class ConditionalRegistration {
 		for (const condition of conditions) {
 			condition.onDidChange(() => this.update());
 		}
+
 		this.update();
 	}
+
 	public dispose() {
 		this.registration?.dispose();
+
 		this.registration = undefined;
 	}
+
 	private update() {
 		const enabled = this.conditions.every((condition) => condition.value);
 
@@ -59,6 +70,7 @@ class ConditionalRegistration {
 			this.registration ??= this.doRegister();
 		} else {
 			this.registration?.dispose();
+
 			this.registration = undefined;
 		}
 	}

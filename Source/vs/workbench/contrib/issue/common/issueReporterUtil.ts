@@ -15,8 +15,10 @@ export function normalizeGitHubUrl(url: string): string {
 	if (url.endsWith("/new")) {
 		url = rtrim(url, "/new");
 	}
+
 	if (url.endsWith("/issues")) {
 		url = rtrim(url, "/issues");
 	}
+
 	return url;
 }

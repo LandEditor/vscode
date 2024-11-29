@@ -172,13 +172,16 @@ export interface IModelDecorationOptions {
 	 * Indicates whether the decoration should span across the entire line when it continues onto the next line.
 	 */
 	shouldFillLineOnLineBreak?: boolean | null;
+
 	blockClassName?: string | null;
 	/**
 	 * Indicates if this block should be rendered after the last line.
 	 * In this case, the range must be empty and set to the last line.
 	 */
 	blockIsAfterEnd?: boolean | null;
+
 	blockDoesNotCollapse?: boolean | null;
+
 	blockPadding?:
 		| [top: number, right: number, bottom: number, left: number]
 		| null;
@@ -536,11 +539,17 @@ export class TextModelResolvedOptions {
 	_textModelResolvedOptionsBrand: void = undefined;
 
 	readonly tabSize: number;
+
 	readonly indentSize: number;
+
 	private readonly _indentSizeIsTabSize: boolean;
+
 	readonly insertSpaces: boolean;
+
 	readonly defaultEOL: DefaultEndOfLine;
+
 	readonly trimAutoWhitespace: boolean;
+
 	readonly bracketPairColorizationOptions: BracketPairColorizationOptions;
 
 	public get originalIndentSize(): number | "tabSize" {
@@ -552,25 +561,35 @@ export class TextModelResolvedOptions {
 	 */
 	constructor(src: {
 		tabSize: number;
+
 		indentSize: number | "tabSize";
+
 		insertSpaces: boolean;
 
 		defaultEOL: DefaultEndOfLine;
+
 		trimAutoWhitespace: boolean;
+
 		bracketPairColorizationOptions: BracketPairColorizationOptions;
 	}) {
 		this.tabSize = Math.max(1, src.tabSize | 0);
 
 		if (src.indentSize === "tabSize") {
 			this.indentSize = this.tabSize;
+
 			this._indentSizeIsTabSize = true;
 		} else {
 			this.indentSize = Math.max(1, src.indentSize | 0);
+
 			this._indentSizeIsTabSize = false;
 		}
+
 		this.insertSpaces = Boolean(src.insertSpaces);
+
 		this.defaultEOL = src.defaultEOL | 0;
+
 		this.trimAutoWhitespace = Boolean(src.trimAutoWhitespace);
+
 		this.bracketPairColorizationOptions =
 			src.bracketPairColorizationOptions;
 	}
@@ -614,27 +633,39 @@ export class TextModelResolvedOptions {
  */
 export interface ITextModelCreationOptions {
 	tabSize: number;
+
 	indentSize: number | "tabSize";
+
 	insertSpaces: boolean;
+
 	detectIndentation: boolean;
+
 	trimAutoWhitespace: boolean;
 
 	defaultEOL: DefaultEndOfLine;
+
 	isForSimpleWidget: boolean;
+
 	largeFileOptimizations: boolean;
+
 	bracketPairColorizationOptions: BracketPairColorizationOptions;
 }
 
 export interface BracketPairColorizationOptions {
 	enabled: boolean;
+
 	independentColorPoolPerBracketType: boolean;
 }
 
 export interface ITextModelUpdateOptions {
 	tabSize?: number;
+
 	indentSize?: number | "tabSize";
+
 	insertSpaces?: boolean;
+
 	trimAutoWhitespace?: boolean;
+
 	bracketColorizationOptions?: BracketPairColorizationOptions;
 }
 
@@ -642,6 +673,7 @@ export class FindMatch {
 	_findMatchBrand: void = undefined;
 
 	public readonly range: Range;
+
 	public readonly matches: string[] | null;
 
 	/**
@@ -649,6 +681,7 @@ export class FindMatch {
 	 */
 	constructor(range: Range, matches: string[] | null) {
 		this.range = range;
+
 		this.matches = matches;
 	}
 }
@@ -1276,10 +1309,12 @@ export interface ITextModel {
 	 * @return If desired, the inverse edit operations, that, when applied, will bring the model back to the previous state.
 	 */
 	applyEdits(operations: IIdentifiedSingleEditOperation[]): void;
+
 	applyEdits(
 		operations: IIdentifiedSingleEditOperation[],
 		computeUndoEdits: false,
 	): void;
+
 	applyEdits(
 		operations: IIdentifiedSingleEditOperation[],
 		computeUndoEdits: true,
@@ -1508,6 +1543,7 @@ export const enum PositionAffinity {
  */
 export interface ITextBufferBuilder {
 	acceptChunk(chunk: string): void;
+
 	finish(): ITextBufferFactory;
 }
 
@@ -1517,6 +1553,7 @@ export interface ITextBufferBuilder {
 export interface ITextBufferFactory {
 	create(defaultEOL: DefaultEndOfLine): {
 		textBuffer: ITextBuffer;
+
 		disposable: IDisposable;
 	};
 
@@ -1553,10 +1590,15 @@ export class ValidAnnotatedEditOperation
  */
 export interface IReadonlyTextBuffer {
 	onDidChangeContent: Event<void>;
+
 	equals(other: ITextBuffer): boolean;
+
 	mightContainRTL(): boolean;
+
 	mightContainUnusualLineTerminators(): boolean;
+
 	resetMightContainUnusualLineTerminators(): void;
+
 	mightContainNonBasicASCII(): boolean;
 
 	getBOM(): string;
@@ -1570,6 +1612,7 @@ export interface IReadonlyTextBuffer {
 	getRangeAt(offset: number, length: number): Range;
 
 	getValueInRange(range: Range, eol: EndOfLinePreference): string;
+
 	createSnapshot(preserveBOM: boolean): ITextSnapshot;
 
 	getValueLengthInRange(range: Range, eol: EndOfLinePreference): number;
@@ -1597,6 +1640,7 @@ export interface IReadonlyTextBuffer {
 	getLineFirstNonWhitespaceColumn(lineNumber: number): number;
 
 	getLineLastNonWhitespaceColumn(lineNumber: number): number;
+
 	findMatchesLineByLine(
 		searchRange: Range,
 		searchData: SearchData,
@@ -1633,7 +1677,9 @@ export class SearchData {
 		simpleSearch: string | null,
 	) {
 		this.regex = regex;
+
 		this.wordSeparators = wordSeparators;
+
 		this.simpleSearch = simpleSearch;
 	}
 }
@@ -1643,6 +1689,7 @@ export class SearchData {
  */
 export interface ITextBuffer extends IReadonlyTextBuffer, IDisposable {
 	setEOL(newEOL: "\r\n" | "\n"): void;
+
 	applyEdits(
 		rawOperations: ValidAnnotatedEditOperation[],
 		recordTrimAutoWhitespace: boolean,

@@ -39,14 +39,20 @@ export interface IDiffCellInfo extends ICommonCellInfo {
 }
 export interface INotebookTextDiffEditor {
 	notebookOptions: NotebookOptions;
+
 	readonly textModel?: NotebookTextModel;
+
 	onMouseUp: Event<{
 		readonly event: MouseEvent;
+
 		readonly target: IDiffElementViewModelBase;
 	}>;
+
 	onDidScroll: Event<void>;
+
 	onDidDynamicOutputRendered: Event<{
 		cell: IGenericCellViewModel;
+
 		output: ICellOutputViewModel;
 	}>;
 
@@ -57,7 +63,9 @@ export interface INotebookTextDiffEditor {
 	getScrollTop(): number;
 
 	getScrollHeight(): number;
+
 	layoutNotebookCell(cell: IDiffElementViewModelBase, height: number): void;
+
 	createOutput(
 		cellDiffViewModel: DiffElementCellViewModelBase,
 		cellViewModel: IDiffNestedCellViewModel,
@@ -65,18 +73,21 @@ export interface INotebookTextDiffEditor {
 		getOffset: () => number,
 		diffSide: DiffSide,
 	): void;
+
 	showInset(
 		cellDiffViewModel: DiffElementCellViewModelBase,
 		cellViewModel: IDiffNestedCellViewModel,
 		displayOutput: ICellOutputViewModel,
 		diffSide: DiffSide,
 	): void;
+
 	removeInset(
 		cellDiffViewModel: DiffElementCellViewModelBase,
 		cellViewModel: IDiffNestedCellViewModel,
 		output: ICellOutputViewModel,
 		diffSide: DiffSide,
 	): void;
+
 	hideInset(
 		cellDiffViewModel: DiffElementCellViewModelBase,
 		cellViewModel: IDiffNestedCellViewModel,
@@ -86,109 +97,170 @@ export interface INotebookTextDiffEditor {
 	 * Trigger the editor to scroll from scroll event programmatically
 	 */
 	triggerScroll(event: IMouseWheelEvent): void;
+
 	delegateVerticalScrollbarPointerDown(browserEvent: PointerEvent): void;
 
 	getCellByInfo(cellInfo: ICommonCellInfo): IGenericCellViewModel;
+
 	focusNotebookCell(
 		cell: IGenericCellViewModel,
 		focus: "editor" | "container" | "output",
 	): Promise<void>;
+
 	focusNextNotebookCell(
 		cell: IGenericCellViewModel,
 		focus: "editor" | "container" | "output",
 	): Promise<void>;
+
 	updateOutputHeight(
 		cellInfo: ICommonCellInfo,
 		output: ICellOutputViewModel,
 		height: number,
 		isInit: boolean,
 	): void;
+
 	deltaCellOutputContainerClassNames(
 		diffSide: DiffSide,
 		cellId: string,
 		added: string[],
 		removed: string[],
 	): void;
+
 	previousChange(): void;
+
 	nextChange(): void;
 }
 export interface IDiffNestedCellViewModel {}
 export interface CellDiffCommonRenderTemplate {
 	readonly leftBorder: HTMLElement;
+
 	readonly rightBorder: HTMLElement;
+
 	readonly topBorder: HTMLElement;
+
 	readonly bottomBorder: HTMLElement;
 }
 export interface CellDiffPlaceholderRenderTemplate {
 	readonly container: HTMLElement;
+
 	readonly placeholder: HTMLElement;
+
 	readonly body: HTMLElement;
+
 	readonly marginOverlay: IDiffCellMarginOverlay;
+
 	readonly elementDisposables: DisposableStore;
 }
 export interface CellDiffSingleSideRenderTemplate
 	extends CellDiffCommonRenderTemplate {
 	readonly container: HTMLElement;
+
 	readonly body: HTMLElement;
+
 	readonly diffEditorContainer: HTMLElement;
+
 	readonly diagonalFill: HTMLElement;
+
 	readonly elementDisposables: DisposableStore;
+
 	readonly cellHeaderContainer: HTMLElement;
+
 	readonly editorContainer: HTMLElement;
+
 	readonly sourceEditor: CodeEditorWidget;
+
 	readonly metadataHeaderContainer: HTMLElement;
+
 	readonly metadataInfoContainer: HTMLElement;
+
 	readonly outputHeaderContainer: HTMLElement;
+
 	readonly outputInfoContainer: HTMLElement;
 }
 export interface NotebookDocumentDiffElementRenderTemplate
 	extends CellDiffCommonRenderTemplate {
 	readonly container: HTMLElement;
+
 	readonly body: HTMLElement;
+
 	readonly diffEditorContainer: HTMLElement;
+
 	readonly elementDisposables: DisposableStore;
+
 	readonly cellHeaderContainer: HTMLElement;
+
 	readonly sourceEditor: DiffEditorWidget;
+
 	readonly editorContainer: HTMLElement;
+
 	readonly inputToolbarContainer: HTMLElement;
+
 	readonly toolbar: WorkbenchToolBar;
+
 	readonly marginOverlay: IDiffCellMarginOverlay;
 }
 export interface IDiffCellMarginOverlay extends IDisposable {
 	onAction: Event<void>;
+
 	show(): void;
+
 	hide(): void;
 }
 export interface CellDiffSideBySideRenderTemplate
 	extends CellDiffCommonRenderTemplate {
 	readonly container: HTMLElement;
+
 	readonly body: HTMLElement;
+
 	readonly diffEditorContainer: HTMLElement;
+
 	readonly elementDisposables: DisposableStore;
+
 	readonly cellHeaderContainer: HTMLElement;
+
 	readonly sourceEditor: DiffEditorWidget;
+
 	readonly editorContainer: HTMLElement;
+
 	readonly inputToolbarContainer: HTMLElement;
+
 	readonly toolbar: WorkbenchToolBar;
+
 	readonly metadataHeaderContainer: HTMLElement;
+
 	readonly metadataInfoContainer: HTMLElement;
+
 	readonly outputHeaderContainer: HTMLElement;
+
 	readonly outputInfoContainer: HTMLElement;
+
 	readonly marginOverlay: IDiffCellMarginOverlay;
 }
 export interface IDiffElementLayoutInfo {
 	totalHeight: number;
+
 	width: number;
+
 	editorHeight: number;
+
 	editorMargin: number;
+
 	metadataHeight: number;
+
 	cellStatusHeight: number;
+
 	metadataStatusHeight: number;
+
 	rawOutputHeight: number;
+
 	outputMetadataHeight: number;
+
 	outputTotalHeight: number;
+
 	outputStatusHeight: number;
+
 	bodyMargin: number;
+
 	layoutState: CellLayoutState;
 }
 type IDiffElementSelfLayoutChangeEvent = {
@@ -198,9 +270,13 @@ type IDiffElementSelfLayoutChangeEvent = {
 export interface CellDiffViewModelLayoutChangeEvent
 	extends IDiffElementSelfLayoutChangeEvent {
 	font?: BareFontInfo;
+
 	outerWidth?: boolean;
+
 	metadataEditor?: boolean;
+
 	outputEditor?: boolean;
+
 	outputView?: boolean;
 }
 export const DIFF_CELL_MARGIN = 16;
@@ -280,8 +356,11 @@ export const NOTEBOOK_DIFF_ITEM_DIFF_STATE = new RawContextKey<boolean>(
 
 export interface INotebookDiffViewModelUpdateEvent {
 	readonly start: number;
+
 	readonly deleteCount: number;
+
 	readonly elements: readonly IDiffElementViewModelBase[];
+
 	readonly firstChangeIndex?: number;
 }
 export interface INotebookDiffViewModel extends IDisposable {

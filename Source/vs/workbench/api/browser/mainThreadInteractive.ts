@@ -19,6 +19,7 @@ import {
 @extHostNamedCustomer(MainContext.MainThreadInteractive)
 export class MainThreadInteractive implements MainThreadInteractiveShape {
 	private readonly _proxy: ExtHostInteractiveShape;
+
 	private readonly _disposables = new DisposableStore();
 
 	constructor(
@@ -29,6 +30,7 @@ export class MainThreadInteractive implements MainThreadInteractiveShape {
 		this._proxy = extHostContext.getProxy(
 			ExtHostContext.ExtHostInteractive,
 		);
+
 		this._disposables.add(
 			interactiveDocumentService.onWillAddInteractiveDocument((e) => {
 				this._proxy.$willAddInteractiveDocument(
@@ -39,6 +41,7 @@ export class MainThreadInteractive implements MainThreadInteractiveShape {
 				);
 			}),
 		);
+
 		this._disposables.add(
 			interactiveDocumentService.onWillRemoveInteractiveDocument((e) => {
 				this._proxy.$willRemoveInteractiveDocument(
@@ -48,6 +51,7 @@ export class MainThreadInteractive implements MainThreadInteractiveShape {
 			}),
 		);
 	}
+
 	dispose(): void {
 		this._disposables.dispose();
 	}

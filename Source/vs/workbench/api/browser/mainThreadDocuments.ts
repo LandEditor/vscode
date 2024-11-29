@@ -43,9 +43,12 @@ import {
 export class BoundModelReferenceCollection {
 	private _data = new Array<{
 		uri: URI;
+
 		length: number;
+
 		dispose(): void;
 	}>();
+
 	private _length = 0;
 
 	constructor(
@@ -56,9 +59,11 @@ export class BoundModelReferenceCollection {
 	) {
 		//
 	}
+
 	dispose(): void {
 		this._data = dispose(this._data);
 	}
+
 	remove(uri: URI): void {
 		for (const entry of [
 			...this._data,
@@ -68,6 +73,7 @@ export class BoundModelReferenceCollection {
 			}
 		}
 	}
+
 	add(uri: URI, ref: IReference<any>, length: number = 0): void {
 		// const length = ref.object.textEditorModel.getValueLength();
 
@@ -76,8 +82,11 @@ export class BoundModelReferenceCollection {
 
 			if (idx >= 0) {
 				this._length -= length;
+
 				ref.dispose();
+
 				clearTimeout(handle);
+
 				this._data.splice(idx, 1);
 			}
 		};
@@ -85,10 +94,14 @@ export class BoundModelReferenceCollection {
 		const handle = setTimeout(dispose, this._maxAge);
 
 		const entry = { uri, length, dispose };
+
 		this._data.push(entry);
+
 		this._length += length;
+
 		this._cleanup();
 	}
+
 	private _cleanup(): void {
 		// clean-up wrt total length
 		while (this._length > this._maxLength) {
@@ -112,10 +125,13 @@ class ModelTracker extends Disposable {
 		private readonly _textFileService: ITextFileService,
 	) {
 		super();
+
 		this._knownVersionId = this._model.getVersionId();
+
 		this._store.add(
 			this._model.onDidChangeContent((e) => {
 				this._knownVersionId = e.versionId;
+
 				this._proxy.$acceptModelChanged(
 					this._model.uri,
 					e,
@@ -128,6 +144,7 @@ class ModelTracker extends Disposable {
 			}),
 		);
 	}
+
 	isCaughtUpWithContentChanges(): boolean {
 		return this._model.getVersionId() === this._knownVersionId;
 	}
@@ -139,10 +156,14 @@ export class MainThreadDocuments
 	private _onIsCaughtUpWithContentChanges = this._store.add(
 		new Emitter<URI>(),
 	);
+
 	readonly onIsCaughtUpWithContentChanges =
 		this._onIsCaughtUpWithContentChanges.event;
+
 	private readonly _proxy: ExtHostDocumentsShape;
+
 	private readonly _modelTrackers = new ResourceMap<ModelTracker>();
+
 	private readonly _modelReferenceCollection: BoundModelReferenceCollection;
 
 	constructor(
@@ -165,16 +186,20 @@ export class MainThreadDocuments
 		private readonly _pathService: IPathService,
 	) {
 		super();
+
 		this._modelReferenceCollection = this._store.add(
 			new BoundModelReferenceCollection(_uriIdentityService.extUri),
 		);
+
 		this._proxy = extHostContext.getProxy(ExtHostContext.ExtHostDocuments);
+
 		this._store.add(
 			_modelService.onModelLanguageChanged(
 				this._onModelModeChanged,
 				this,
 			),
 		);
+
 		this._store.add(
 			_textFileService.files.onDidSave((e) => {
 				if (this._shouldHandleFileEvent(e.model.resource)) {
@@ -182,6 +207,7 @@ export class MainThreadDocuments
 				}
 			}),
 		);
+
 		this._store.add(
 			_textFileService.files.onDidChangeDirty((m) => {
 				if (this._shouldHandleFileEvent(m.resource)) {
@@ -192,6 +218,7 @@ export class MainThreadDocuments
 				}
 			}),
 		);
+
 		this._store.add(
 			workingCopyFileService.onDidRunWorkingCopyFileOperation((e) => {
 				const isMove = e.operation === FileOperation.MOVE;
@@ -208,31 +235,38 @@ export class MainThreadDocuments
 			}),
 		);
 	}
+
 	override dispose(): void {
 		dispose(this._modelTrackers.values());
+
 		this._modelTrackers.clear();
 
 		super.dispose();
 	}
+
 	isCaughtUpWithContentChanges(resource: URI): boolean {
 		const tracker = this._modelTrackers.get(resource);
 
 		if (tracker) {
 			return tracker.isCaughtUpWithContentChanges();
 		}
+
 		return true;
 	}
+
 	private _shouldHandleFileEvent(resource: URI): boolean {
 		const model = this._modelService.getModel(resource);
 
 		return !!model && shouldSynchronizeModel(model);
 	}
+
 	handleModelAdded(model: ITextModel): void {
 		// Same filter as in mainThreadEditorsTracker
 		if (!shouldSynchronizeModel(model)) {
 			// don't synchronize too large models
 			return;
 		}
+
 		this._modelTrackers.set(
 			model.uri,
 			new ModelTracker(
@@ -243,8 +277,10 @@ export class MainThreadDocuments
 			),
 		);
 	}
+
 	private _onModelModeChanged(event: {
 		model: ITextModel;
+
 		oldLanguageId: string;
 	}): void {
 		const { model } = event;
@@ -252,16 +288,20 @@ export class MainThreadDocuments
 		if (!this._modelTrackers.has(model.uri)) {
 			return;
 		}
+
 		this._proxy.$acceptModelLanguageChanged(
 			model.uri,
 			model.getLanguageId(),
 		);
 	}
+
 	handleModelRemoved(modelUrl: URI): void {
 		if (!this._modelTrackers.has(modelUrl)) {
 			return;
 		}
+
 		this._modelTrackers.get(modelUrl)!.dispose();
+
 		this._modelTrackers.delete(modelUrl);
 	}
 	// --- from extension host process
@@ -270,6 +310,7 @@ export class MainThreadDocuments
 
 		return Boolean(target);
 	}
+
 	async $tryOpenDocument(uriData: UriComponents): Promise<URI> {
 		const inputUri = URI.revive(uriData);
 
@@ -278,6 +319,7 @@ export class MainThreadDocuments
 				`Invalid uri. Scheme and authority or path must be set.`,
 			);
 		}
+
 		const canonicalUri = this._uriIdentityService.asCanonicalUri(inputUri);
 
 		let promise: Promise<URI>;
@@ -294,6 +336,7 @@ export class MainThreadDocuments
 
 				break;
 		}
+
 		let documentUri: URI | undefined;
 
 		try {
@@ -303,6 +346,7 @@ export class MainThreadDocuments
 				`cannot open ${canonicalUri.toString()}. Detail: ${toErrorMessage(err)}`,
 			);
 		}
+
 		if (!documentUri) {
 			throw new ErrorNoTelemetry(
 				`cannot open ${canonicalUri.toString()}`,
@@ -321,6 +365,7 @@ export class MainThreadDocuments
 	}
 	$tryCreateDocument(options?: {
 		language?: string;
+
 		content?: string;
 	}): Promise<URI> {
 		return this._doCreateUntitled(
@@ -329,9 +374,11 @@ export class MainThreadDocuments
 			options ? options.content : undefined,
 		);
 	}
+
 	private async _handleAsResourceInput(uri: URI): Promise<URI> {
 		const ref =
 			await this._textModelResolverService.createModelReference(uri);
+
 		this._modelReferenceCollection.add(
 			uri,
 			ref,
@@ -340,6 +387,7 @@ export class MainThreadDocuments
 
 		return ref.object.textEditorModel.uri;
 	}
+
 	private async _handleUntitledScheme(uri: URI): Promise<URI> {
 		const asLocalUri = toLocalResource(
 			uri,
@@ -353,10 +401,12 @@ export class MainThreadDocuments
 			// don't create a new file ontop of an existing file
 			return Promise.reject(new Error("file already exists"));
 		}
+
 		return await this._doCreateUntitled(
 			Boolean(uri.path) ? uri : undefined,
 		);
 	}
+
 	private async _doCreateUntitled(
 		associatedResource?: URI,
 		languageId?: string,
@@ -380,14 +430,17 @@ export class MainThreadDocuments
 				`expected URI ${resource.toString()} to have come to LIFE`,
 			);
 		}
+
 		this._modelReferenceCollection.add(
 			resource,
 			ref,
 			ref.object.textEditorModel.getValueLength(),
 		);
+
 		Event.once(model.onDidRevert)(() =>
 			this._modelReferenceCollection.remove(resource),
 		);
+
 		this._proxy.$acceptDirtyStateChanged(resource, true); // mark as dirty
 		return resource;
 	}

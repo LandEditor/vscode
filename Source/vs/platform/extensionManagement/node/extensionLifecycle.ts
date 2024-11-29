@@ -25,6 +25,7 @@ export class ExtensionsLifecycle extends Disposable {
 	) {
 		super();
 	}
+
 	async postUninstall(extension: ILocalExtension): Promise<void> {
 		const script = this.parseScript(extension, "uninstall");
 
@@ -34,6 +35,7 @@ export class ExtensionsLifecycle extends Disposable {
 				extension.manifest.version,
 				`Running post uninstall script`,
 			);
+
 			await this.processesLimiter.queue(async () => {
 				try {
 					await this.runLifecycleHook(
@@ -43,6 +45,7 @@ export class ExtensionsLifecycle extends Disposable {
 						true,
 						extension,
 					);
+
 					this.logService.info(
 						`Finished running post uninstall script`,
 						extension.identifier.id,
@@ -54,10 +57,12 @@ export class ExtensionsLifecycle extends Disposable {
 						extension.identifier.id,
 						extension.manifest.version,
 					);
+
 					this.logService.error(error);
 				}
 			});
 		}
+
 		try {
 			await Promises.rm(this.getExtensionStoragePath(extension));
 		} catch (error) {
@@ -65,14 +70,17 @@ export class ExtensionsLifecycle extends Disposable {
 				"Error while removing extension storage path",
 				extension.identifier.id,
 			);
+
 			this.logService.error(error);
 		}
 	}
+
 	private parseScript(
 		extension: ILocalExtension,
 		type: string,
 	): {
 		script: string;
+
 		args: string[];
 	} | null {
 		const scriptKey = `vscode:${type}`;
@@ -96,13 +104,16 @@ export class ExtensionsLifecycle extends Disposable {
 
 				return null;
 			}
+
 			return {
 				script: join(extension.location.fsPath, script[1]),
 				args: script.slice(2) || [],
 			};
 		}
+
 		return null;
 	}
+
 	private runLifecycleHook(
 		lifecycleHook: string,
 		lifecycleType: string,
@@ -123,8 +134,10 @@ export class ExtensionsLifecycle extends Disposable {
 			const onexit = (error?: string) => {
 				if (timeoutHandler) {
 					clearTimeout(timeoutHandler);
+
 					timeoutHandler = null;
 				}
+
 				if (error) {
 					e(error);
 				} else {
@@ -151,12 +164,15 @@ export class ExtensionsLifecycle extends Disposable {
 				// timeout: kill process after waiting for 5s
 				timeoutHandler = setTimeout(() => {
 					timeoutHandler = null;
+
 					extensionLifecycleProcess.kill();
+
 					e("timed out");
 				}, 5000);
 			}
 		});
 	}
+
 	private start(
 		uninstallHook: string,
 		lifecycleType: string,
@@ -179,7 +195,9 @@ export class ExtensionsLifecycle extends Disposable {
 
 			format: string[];
 		};
+
 		extensionUninstallProcess.stdout!.setEncoding("utf8");
+
 		extensionUninstallProcess.stderr!.setEncoding("utf8");
 
 		const onStdout = Event.fromNodeEventEmitter<string>(
@@ -202,6 +220,7 @@ export class ExtensionsLifecycle extends Disposable {
 				),
 			),
 		);
+
 		this._register(
 			onStderr((data) =>
 				this.logService.error(
@@ -245,12 +264,15 @@ export class ExtensionsLifecycle extends Disposable {
 		// Print out output
 		onDebouncedOutput((data) => {
 			console.group(extension.identifier.id);
+
 			console.log(data.data, ...data.format);
+
 			console.groupEnd();
 		});
 
 		return extensionUninstallProcess;
 	}
+
 	private getExtensionStoragePath(extension: ILocalExtension): string {
 		return join(
 			this.userDataProfilesService.defaultProfile.globalStorageHome

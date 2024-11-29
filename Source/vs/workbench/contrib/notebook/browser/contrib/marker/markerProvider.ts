@@ -38,6 +38,7 @@ import { registerNotebookContribution } from "../../notebookEditorExtensions.js"
 
 class MarkerListProvider implements IMarkerListProvider {
 	static readonly ID = "workbench.contrib.markerListProvider";
+
 	private readonly _dispoables: IDisposable;
 
 	constructor(
@@ -50,18 +51,22 @@ class MarkerListProvider implements IMarkerListProvider {
 	) {
 		this._dispoables = markerNavigation.registerProvider(this);
 	}
+
 	dispose() {
 		this._dispoables.dispose();
 	}
+
 	getMarkerList(resource: URI | undefined): MarkerList | undefined {
 		if (!resource) {
 			return undefined;
 		}
+
 		const data = CellUri.parse(resource);
 
 		if (!data) {
 			return undefined;
 		}
+
 		return new MarkerList(
 			(uri) => {
 				const otherData = CellUri.parse(uri);
@@ -80,6 +85,7 @@ class NotebookMarkerDecorationContribution
 	implements INotebookEditorContribution
 {
 	static id: string = "workbench.notebook.markerDecoration";
+
 	private _markersOverviewRulerDecorations: string[] = [];
 
 	constructor(
@@ -88,10 +94,13 @@ class NotebookMarkerDecorationContribution
 		private readonly _markerService: IMarkerService,
 	) {
 		super();
+
 		this._update();
+
 		this._register(
 			this._notebookEditor.onDidChangeModel(() => this._update()),
 		);
+
 		this._register(
 			this._markerService.onMarkerChanged((e) => {
 				if (
@@ -111,12 +120,15 @@ class NotebookMarkerDecorationContribution
 		if (!this._notebookEditor.hasModel()) {
 			return;
 		}
+
 		const cellDecorations: INotebookDeltaDecoration[] = [];
+
 		this._notebookEditor.getCellsInRange().forEach((cell) => {
 			const marker = this._markerService.read({
 				resource: cell.uri,
 				severities: MarkerSeverity.Error | MarkerSeverity.Warning,
 			});
+
 			marker.forEach((m) => {
 				const color =
 					m.severity === MarkerSeverity.Error
@@ -129,6 +141,7 @@ class NotebookMarkerDecorationContribution
 					endLineNumber: m.endLineNumber,
 					endColumn: m.endColumn,
 				};
+
 				cellDecorations.push({
 					handle: cell.handle,
 					options: {
@@ -142,6 +155,7 @@ class NotebookMarkerDecorationContribution
 				});
 			});
 		});
+
 		this._markersOverviewRulerDecorations =
 			this._notebookEditor.deltaCellDecorations(
 				this._markersOverviewRulerDecorations,

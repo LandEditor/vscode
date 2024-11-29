@@ -74,19 +74,24 @@ function buildPicker(
 				if (profiles[0].group !== onlyGroup) {
 					continue;
 				}
+
 				addedHeader = true; // showing one group, no need for label
 			}
+
 			for (const profile of profiles) {
 				if (onlyConfigurable && !profile.hasConfigurationHandler) {
 					continue;
 				}
+
 				if (!addedHeader) {
 					items.push({
 						type: "separator",
 						label: testConfigurationGroupNames[profiles[0].group],
 					});
+
 					addedHeader = true;
 				}
+
 				items.push({
 					type: "item",
 					profile,
@@ -123,12 +128,15 @@ function buildPicker(
 			pushItems(profiles, controller.label.get());
 		}
 	}
+
 	const quickpick = accessor.get(IQuickInputService).createQuickPick<
 		IQuickPickItem & {
 			profile: ITestRunProfile;
 		}
 	>({ useSeparators: true });
+
 	quickpick.items = items;
+
 	quickpick.placeholder = placeholder;
 
 	return quickpick;
@@ -145,6 +153,7 @@ const triggerButtonHandler =
 
 		if (profile) {
 			service.configure(profile.controllerId, profile.profileId);
+
 			resolve(undefined);
 		}
 	};
@@ -163,8 +172,11 @@ CommandsRegistry.registerCommand({
 		if (!quickpick) {
 			return;
 		}
+
 		const disposables = new DisposableStore();
+
 		disposables.add(quickpick);
+
 		quickpick.canSelectMany = true;
 
 		if (options.selected) {
@@ -184,6 +196,7 @@ CommandsRegistry.registerCommand({
 					),
 				);
 		}
+
 		const pick = await new Promise<ITestRunProfile[] | undefined>(
 			(resolve) => {
 				disposables.add(
@@ -191,20 +204,25 @@ CommandsRegistry.registerCommand({
 						const selected = quickpick.selectedItems as readonly {
 							profile?: ITestRunProfile;
 						}[];
+
 						resolve(
 							selected.map((s) => s.profile).filter(isDefined),
 						);
 					}),
 				);
+
 				disposables.add(quickpick.onDidHide(() => resolve(undefined)));
+
 				disposables.add(
 					quickpick.onDidTriggerItemButton(
 						triggerButtonHandler(profileService, resolve),
 					),
 				);
+
 				quickpick.show();
 			},
 		);
+
 		disposables.dispose();
 
 		return pick;
@@ -223,7 +241,9 @@ CommandsRegistry.registerCommand({
 		if (!quickpick) {
 			return;
 		}
+
 		const disposables = new DisposableStore();
+
 		disposables.add(quickpick);
 
 		const pick = await new Promise<ITestRunProfile | undefined>(
@@ -239,15 +259,19 @@ CommandsRegistry.registerCommand({
 						),
 					),
 				);
+
 				disposables.add(quickpick.onDidHide(() => resolve(undefined)));
+
 				disposables.add(
 					quickpick.onDidTriggerItemButton(
 						triggerButtonHandler(profileService, resolve),
 					),
 				);
+
 				quickpick.show();
 			},
 		);
+
 		disposables.dispose();
 
 		return pick;

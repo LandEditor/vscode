@@ -30,6 +30,7 @@ class PieceTreeTextBufferFactory implements ITextBufferFactory {
 		private readonly _isBasicASCII: boolean,
 		private readonly _normalizeEOL: boolean,
 	) {}
+
 	private _getEOL(defaultEOL: DefaultEndOfLine): "\r\n" | "\n" {
 		const totalEOLCount = this._cr + this._lf + this._crlf;
 
@@ -39,6 +40,7 @@ class PieceTreeTextBufferFactory implements ITextBufferFactory {
 			// This is an empty file or a file with precisely one line
 			return defaultEOL === DefaultEndOfLine.LF ? "\n" : "\r\n";
 		}
+
 		if (totalCRCount > totalEOLCount / 2) {
 			// More than half of the file contains \r\n ending lines
 			return "\r\n";
@@ -46,8 +48,10 @@ class PieceTreeTextBufferFactory implements ITextBufferFactory {
 		// At least one line more ends in \n
 		return "\n";
 	}
+
 	public create(defaultEOL: DefaultEndOfLine): {
 		textBuffer: ITextBuffer;
+
 		disposable: IDisposable;
 	} {
 		const eol = this._getEOL(defaultEOL);
@@ -64,9 +68,11 @@ class PieceTreeTextBufferFactory implements ITextBufferFactory {
 				const str = chunks[i].buffer.replace(/\r\n|\r|\n/g, eol);
 
 				const newLineStart = createLineStartsFast(str);
+
 				chunks[i] = new StringBuffer(str, newLineStart);
 			}
 		}
+
 		const textBuffer = new PieceTreeTextBuffer(
 			chunks,
 			this._bom,
@@ -79,6 +85,7 @@ class PieceTreeTextBufferFactory implements ITextBufferFactory {
 
 		return { textBuffer: textBuffer, disposable: textBuffer };
 	}
+
 	public getFirstLineText(lengthLimit: number): string {
 		return this._chunks[0].buffer
 			.substr(0, lengthLimit)
@@ -87,40 +94,64 @@ class PieceTreeTextBufferFactory implements ITextBufferFactory {
 }
 export class PieceTreeTextBufferBuilder implements ITextBufferBuilder {
 	private readonly chunks: StringBuffer[];
+
 	private BOM: string;
+
 	private _hasPreviousChar: boolean;
+
 	private _previousChar: number;
+
 	private readonly _tmpLineStarts: number[];
+
 	private cr: number;
+
 	private lf: number;
+
 	private crlf: number;
+
 	private containsRTL: boolean;
+
 	private containsUnusualLineTerminators: boolean;
+
 	private isBasicASCII: boolean;
 
 	constructor() {
 		this.chunks = [];
+
 		this.BOM = "";
+
 		this._hasPreviousChar = false;
+
 		this._previousChar = 0;
+
 		this._tmpLineStarts = [];
+
 		this.cr = 0;
+
 		this.lf = 0;
+
 		this.crlf = 0;
+
 		this.containsRTL = false;
+
 		this.containsUnusualLineTerminators = false;
+
 		this.isBasicASCII = true;
 	}
+
 	public acceptChunk(chunk: string): void {
 		if (chunk.length === 0) {
 			return;
 		}
+
 		if (this.chunks.length === 0) {
 			if (strings.startsWithUTF8BOM(chunk)) {
 				this.BOM = strings.UTF8_BOM_CHARACTER;
+
 				chunk = chunk.substr(1);
 			}
 		}
+
 		const lastChar = chunk.charCodeAt(chunk.length - 1);
 
 		if (
@@ -129,30 +160,41 @@ export class PieceTreeTextBufferBuilder implements ITextBufferBuilder {
 		) {
 			// last character is \r or a high surrogate => keep it back
 			this._acceptChunk1(chunk.substr(0, chunk.length - 1), false);
+
 			this._hasPreviousChar = true;
+
 			this._previousChar = lastChar;
 		} else {
 			this._acceptChunk1(chunk, false);
+
 			this._hasPreviousChar = false;
+
 			this._previousChar = lastChar;
 		}
 	}
+
 	private _acceptChunk1(chunk: string, allowEmptyStrings: boolean): void {
 		if (!allowEmptyStrings && chunk.length === 0) {
 			// Nothing to do
 			return;
 		}
+
 		if (this._hasPreviousChar) {
 			this._acceptChunk2(String.fromCharCode(this._previousChar) + chunk);
 		} else {
 			this._acceptChunk2(chunk);
 		}
 	}
+
 	private _acceptChunk2(chunk: string): void {
 		const lineStarts = createLineStarts(this._tmpLineStarts, chunk);
+
 		this.chunks.push(new StringBuffer(chunk, lineStarts.lineStarts));
+
 		this.cr += lineStarts.cr;
+
 		this.lf += lineStarts.lf;
+
 		this.crlf += lineStarts.crlf;
 
 		if (!lineStarts.isBasicASCII) {
@@ -162,12 +204,14 @@ export class PieceTreeTextBufferBuilder implements ITextBufferBuilder {
 			if (!this.containsRTL) {
 				this.containsRTL = strings.containsRTL(chunk);
 			}
+
 			if (!this.containsUnusualLineTerminators) {
 				this.containsUnusualLineTerminators =
 					strings.containsUnusualLineTerminators(chunk);
 			}
 		}
 	}
+
 	public finish(normalizeEOL: boolean = true): PieceTreeTextBufferFactory {
 		this._finish();
 
@@ -183,17 +227,21 @@ export class PieceTreeTextBufferBuilder implements ITextBufferBuilder {
 			normalizeEOL,
 		);
 	}
+
 	private _finish(): void {
 		if (this.chunks.length === 0) {
 			this._acceptChunk1("", true);
 		}
+
 		if (this._hasPreviousChar) {
 			this._hasPreviousChar = false;
 			// recreate last chunk
 			const lastChunk = this.chunks[this.chunks.length - 1];
+
 			lastChunk.buffer += String.fromCharCode(this._previousChar);
 
 			const newLineStarts = createLineStartsFast(lastChunk.buffer);
+
 			lastChunk.lineStarts = newLineStarts;
 
 			if (this._previousChar === CharCode.CarriageReturn) {

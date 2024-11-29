@@ -25,22 +25,27 @@ export abstract class TypeScriptBaseCodeLensProvider
 	implements vscode.CodeLensProvider<ReferencesCodeLens>
 {
 	protected changeEmitter = this._register(new vscode.EventEmitter<void>());
+
 	public onDidChangeCodeLenses = this.changeEmitter.event;
+
 	public static readonly cancelledCommand: vscode.Command = {
 		// Cancellation is not an error. Just show nothing until we can properly re-compute the code lens
 		title: "",
 		command: "",
 	};
+
 	public static readonly errorCommand: vscode.Command = {
 		title: vscode.l10n.t("Could not determine references"),
 		command: "",
 	};
+
 	public constructor(
 		protected client: ITypeScriptServiceClient,
 		private readonly cachedResponse: CachedResponse<Proto.NavTreeResponse>,
 	) {
 		super();
 	}
+
 	async provideCodeLenses(
 		document: vscode.TextDocument,
 		token: vscode.CancellationToken,
@@ -50,6 +55,7 @@ export abstract class TypeScriptBaseCodeLensProvider
 		if (!filepath) {
 			return [];
 		}
+
 		const response = await this.cachedResponse.execute(document, () =>
 			this.client.execute("navtree", { file: filepath }, token),
 		);
@@ -57,7 +63,9 @@ export abstract class TypeScriptBaseCodeLensProvider
 		if (response.type !== "response") {
 			return [];
 		}
+
 		const referenceableSpans: vscode.Range[] = [];
+
 		response.body?.childItems?.forEach((item) =>
 			this.walkNavTree(document, item, undefined, referenceableSpans),
 		);
@@ -66,11 +74,13 @@ export abstract class TypeScriptBaseCodeLensProvider
 			(span) => new ReferencesCodeLens(document.uri, filepath, span),
 		);
 	}
+
 	protected abstract extractSymbol(
 		document: vscode.TextDocument,
 		item: Proto.NavigationTree,
 		parent: Proto.NavigationTree | undefined,
 	): vscode.Range | undefined;
+
 	private walkNavTree(
 		document: vscode.TextDocument,
 		item: Proto.NavigationTree,
@@ -82,6 +92,7 @@ export abstract class TypeScriptBaseCodeLensProvider
 		if (range) {
 			results.push(range);
 		}
+
 		item.childItems?.forEach((child) =>
 			this.walkNavTree(document, child, item, results),
 		);
@@ -100,6 +111,7 @@ export function getSymbolRange(
 	if (!span) {
 		return undefined;
 	}
+
 	const range = typeConverters.Range.fromTextSpan(span);
 
 	const text = document.getText(range);

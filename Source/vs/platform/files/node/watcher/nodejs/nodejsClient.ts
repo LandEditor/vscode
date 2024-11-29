@@ -18,8 +18,10 @@ export class NodeJSWatcherClient extends AbstractNonRecursiveWatcherClient {
 		verboseLogging: boolean,
 	) {
 		super(onFileChanges, onLogMessage, verboseLogging);
+
 		this.init();
 	}
+
 	protected override createWatcher(
 		disposables: DisposableStore,
 	): INonRecursiveWatcher {

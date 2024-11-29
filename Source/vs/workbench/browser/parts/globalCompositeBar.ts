@@ -109,6 +109,7 @@ import {
 
 export class GlobalCompositeBar extends Disposable {
 	private static readonly ACCOUNTS_ACTION_INDEX = 0;
+
 	static readonly ACCOUNTS_ICON = registerIcon(
 		"accounts-view-bar-icon",
 		Codicon.account,
@@ -120,9 +121,11 @@ export class GlobalCompositeBar extends Disposable {
 	private readonly globalActivityAction = this._register(
 		new Action(GLOBAL_ACTIVITY_ID),
 	);
+
 	private readonly accountAction = this._register(
 		new Action(ACCOUNTS_ACTIVITY_ID),
 	);
+
 	private readonly globalActivityActionBar: ActionBar;
 
 	constructor(
@@ -147,6 +150,7 @@ export class GlobalCompositeBar extends Disposable {
 					: AnchorAlignment.LEFT,
 			anchorAxisAlignment: AnchorAxisAlignment.HORIZONTAL,
 		});
+
 		this.globalActivityActionBar = this._register(
 			new ActionBar(this.element, {
 				actionViewItemProvider: (action, options) => {
@@ -260,6 +264,7 @@ export class GlobalCompositeBar extends Disposable {
 		) {
 			return;
 		}
+
 		if (this.globalActivityActionBar.length() === 2) {
 			this.globalActivityActionBar.pull(
 				GlobalCompositeBar.ACCOUNTS_ACTION_INDEX,
@@ -289,6 +294,7 @@ abstract class AbstractGlobalActivityActionViewItem extends CompositeBarActionVi
 		private readonly contextMenuAlignmentOptions: () =>
 			| Readonly<{
 					anchorAlignment: AnchorAlignment;
+
 					anchorAxisAlignment: AnchorAxisAlignment;
 			  }>
 			| undefined,
@@ -314,6 +320,7 @@ abstract class AbstractGlobalActivityActionViewItem extends CompositeBarActionVi
 		);
 
 		this.updateItemActivity();
+
 		this._register(
 			this.activityService.onDidChangeActivity(
 				(viewContainerOrAction) => {
@@ -343,6 +350,7 @@ abstract class AbstractGlobalActivityActionViewItem extends CompositeBarActionVi
 					activities,
 					priority ?? 0,
 				);
+
 				activity = { badge: cumulativeNumberBadge };
 			}
 		}
@@ -438,6 +446,7 @@ abstract class AbstractGlobalActivityActionViewItem extends CompositeBarActionVi
 						event.equals(KeyCode.Space)
 					) {
 						EventHelper.stop(e, true);
+
 						this.run();
 					}
 				},
@@ -450,6 +459,7 @@ abstract class AbstractGlobalActivityActionViewItem extends CompositeBarActionVi
 				TouchEventType.Tap,
 				(e: GestureEvent) => {
 					EventHelper.stop(e, true);
+
 					this.run();
 				},
 			),
@@ -504,9 +514,11 @@ export class AccountsActivityActionViewItem extends AbstractGlobalActivityAction
 		string,
 		(AuthenticationSessionAccount & { canSignOut: boolean })[]
 	> = new Map();
+
 	private readonly problematicProviders: Set<string> = new Set();
 
 	private initialized = false;
+
 	private sessionFromEmbedder = new Lazy<
 		Promise<AuthenticationSessionInfo | undefined>
 	>(() =>
@@ -522,6 +534,7 @@ export class AccountsActivityActionViewItem extends AbstractGlobalActivityAction
 		contextMenuAlignmentOptions: () =>
 			| Readonly<{
 					anchorAlignment: AnchorAlignment;
+
 					anchorAxisAlignment: AnchorAxisAlignment;
 			  }>
 			| undefined,
@@ -569,8 +582,11 @@ export class AccountsActivityActionViewItem extends AbstractGlobalActivityAction
 			keybindingService,
 			activityService,
 		);
+
 		this._register(action);
+
 		this.registerListeners();
+
 		this.initialize();
 	}
 
@@ -587,6 +603,7 @@ export class AccountsActivityActionViewItem extends AbstractGlobalActivityAction
 			this.authenticationService.onDidUnregisterAuthenticationProvider(
 				(e) => {
 					this.groupedAccounts.delete(e.id);
+
 					this.problematicProviders.delete(e.id);
 				},
 			),
@@ -599,6 +616,7 @@ export class AccountsActivityActionViewItem extends AbstractGlobalActivityAction
 						this.removeAccount(e.providerId, removed.account);
 					}
 				}
+
 				for (const changed of [
 					...(e.event.changed ?? []),
 					...(e.event.added ?? []),
@@ -626,9 +644,11 @@ export class AccountsActivityActionViewItem extends AbstractGlobalActivityAction
 		if (this._store.isDisposed) {
 			return;
 		}
+
 		const disposable = this._register(
 			runWhenWindowIdle(getWindow(this.element), async () => {
 				await this.doInitialize();
+
 				disposable.dispose();
 			}),
 		);
@@ -677,10 +697,12 @@ export class AccountsActivityActionViewItem extends AbstractGlobalActivityAction
 						false,
 					),
 				);
+
 				menus.push(noAccountsAvailableAction);
 
 				break;
 			}
+
 			const providerLabel =
 				this.authenticationService.getProvider(providerId).label;
 
@@ -700,6 +722,7 @@ export class AccountsActivityActionViewItem extends AbstractGlobalActivityAction
 							false,
 						),
 					);
+
 					menus.push(providerUnavailableAction);
 					// try again in the background so that if the failure was intermittent, we can resolve it on the next showing of the menu
 					try {
@@ -708,6 +731,7 @@ export class AccountsActivityActionViewItem extends AbstractGlobalActivityAction
 						this.logService.error(e);
 					}
 				}
+
 				continue;
 			}
 
@@ -750,6 +774,7 @@ export class AccountsActivityActionViewItem extends AbstractGlobalActivityAction
 					`${account.label} (${providerLabel})`,
 					providerSubMenuActions,
 				);
+
 				menus.push(providerSubMenu);
 			}
 		}
@@ -766,6 +791,7 @@ export class AccountsActivityActionViewItem extends AbstractGlobalActivityAction
 					false,
 				),
 			);
+
 			menus.push(noAccountsAvailableAction);
 		}
 
@@ -775,6 +801,7 @@ export class AccountsActivityActionViewItem extends AbstractGlobalActivityAction
 
 		otherCommands.forEach((group, i) => {
 			const actions = group[1];
+
 			menus = menus.concat(actions);
 
 			if (i !== otherCommands.length - 1) {
@@ -789,6 +816,7 @@ export class AccountsActivityActionViewItem extends AbstractGlobalActivityAction
 		disposables: DisposableStore,
 	): Promise<IAction[]> {
 		const actions = await super.resolveContextMenuActions(disposables);
+
 		this.fillContextMenuActions(actions);
 
 		return actions;
@@ -806,6 +834,7 @@ export class AccountsActivityActionViewItem extends AbstractGlobalActivityAction
 
 		if (!accounts) {
 			accounts = [];
+
 			this.groupedAccounts.set(providerId, accounts);
 		}
 
@@ -866,6 +895,7 @@ export class AccountsActivityActionViewItem extends AbstractGlobalActivityAction
 		try {
 			const sessions =
 				await this.authenticationService.getSessions(providerId);
+
 			this.problematicProviders.delete(providerId);
 
 			for (const session of sessions) {
@@ -877,6 +907,7 @@ export class AccountsActivityActionViewItem extends AbstractGlobalActivityAction
 			}
 		} catch (e) {
 			this.logService.error(e);
+
 			this.problematicProviders.add(providerId);
 		}
 	}
@@ -886,6 +917,7 @@ export class AccountsActivityActionViewItem extends AbstractGlobalActivityAction
 
 export class GlobalActivityActionViewItem extends AbstractGlobalActivityActionViewItem {
 	private profileBadge: HTMLElement | undefined;
+
 	private profileBadgeContent: HTMLElement | undefined;
 
 	constructor(
@@ -894,6 +926,7 @@ export class GlobalActivityActionViewItem extends AbstractGlobalActivityActionVi
 		contextMenuAlignmentOptions: () =>
 			| Readonly<{
 					anchorAlignment: AnchorAlignment;
+
 					anchorAxisAlignment: AnchorAxisAlignment;
 			  }>
 			| undefined,
@@ -938,7 +971,9 @@ export class GlobalActivityActionViewItem extends AbstractGlobalActivityActionVi
 			keybindingService,
 			activityService,
 		);
+
 		this._register(action);
+
 		this._register(
 			this.userDataProfileService.onDidChangeCurrentProfile((e) => {
 				action.compositeBarActionItem = {
@@ -959,10 +994,12 @@ export class GlobalActivityActionViewItem extends AbstractGlobalActivityActionVi
 		super.render(container);
 
 		this.profileBadge = append(container, $(".profile-badge"));
+
 		this.profileBadgeContent = append(
 			this.profileBadge,
 			$(".profile-badge-content"),
 		);
+
 		this.updateProfileBadge();
 	}
 
@@ -972,6 +1009,7 @@ export class GlobalActivityActionViewItem extends AbstractGlobalActivityActionVi
 		}
 
 		clearNode(this.profileBadgeContent);
+
 		hide(this.profileBadge);
 
 		if (this.userDataProfileService.currentProfile.isDefault) {
@@ -990,7 +1028,9 @@ export class GlobalActivityActionViewItem extends AbstractGlobalActivityActionVi
 		}
 
 		show(this.profileBadge);
+
 		this.profileBadgeContent.classList.add("profile-text-overlay");
+
 		this.profileBadgeContent.textContent =
 			this.userDataProfileService.currentProfile.name
 				.substring(0, 2)
@@ -999,6 +1039,7 @@ export class GlobalActivityActionViewItem extends AbstractGlobalActivityActionVi
 
 	protected override updateActivity(): void {
 		super.updateActivity();
+
 		this.updateProfileBadge();
 	}
 
@@ -1139,6 +1180,7 @@ function simpleActivityContextMenuActions(
 			new Separator(),
 		);
 	}
+
 	return [
 		...currentElementContextMenuActions,
 		toAction({

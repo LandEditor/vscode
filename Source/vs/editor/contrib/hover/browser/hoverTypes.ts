@@ -59,12 +59,14 @@ export class HoverRangeAnchor {
 		public readonly initialMousePosX: number | undefined,
 		public readonly initialMousePosY: number | undefined,
 	) {}
+
 	public equals(other: HoverAnchor) {
 		return (
 			other.type === HoverAnchorType.Range &&
 			this.range.equalsRange(other.range)
 		);
 	}
+
 	public canAdoptVisibleHover(
 		lastAnchor: HoverAnchor,
 		showAtPosition: Position,
@@ -87,12 +89,14 @@ export class HoverForeignElementAnchor {
 		public readonly initialMousePosY: number | undefined,
 		public readonly supportsMarkerHover: boolean | undefined,
 	) {}
+
 	public equals(other: HoverAnchor) {
 		return (
 			other.type === HoverAnchorType.ForeignElement &&
 			this.owner === other.owner
 		);
 	}
+
 	public canAdoptVisibleHover(
 		lastAnchor: HoverAnchor,
 		showAtPosition: Position,
@@ -109,10 +113,14 @@ export type HoverAnchor = HoverRangeAnchor | HoverForeignElementAnchor;
 export interface IEditorHoverStatusBar {
 	addAction(actionOptions: {
 		label: string;
+
 		iconClass?: string;
+
 		run: (target: HTMLElement) => void;
+
 		commandId: string;
 	}): IEditorHoverAction;
+
 	append(element: HTMLElement): HTMLElement;
 }
 
@@ -185,26 +193,33 @@ export class RenderedHoverParts<T extends IHoverPart>
 
 export interface IEditorHoverParticipant<T extends IHoverPart = IHoverPart> {
 	readonly hoverOrdinal: number;
+
 	suggestHoverAnchor?(mouseEvent: IEditorMouseEvent): HoverAnchor | null;
+
 	computeSync(
 		anchor: HoverAnchor,
 		lineDecorations: IModelDecoration[],
 		source: HoverStartSource,
 	): T[];
+
 	computeAsync?(
 		anchor: HoverAnchor,
 		lineDecorations: IModelDecoration[],
 		source: HoverStartSource,
 		token: CancellationToken,
 	): AsyncIterableObject<T>;
+
 	createLoadingMessage?(anchor: HoverAnchor): T | null;
+
 	renderHoverParts(
 		context: IEditorHoverRenderContext,
 		hoverParts: T[],
 	): IRenderedHoverParts<T>;
 
 	getAccessibleContent(hoverPart: T): string;
+
 	handleResize?(): void;
+
 	handleHide?(): void;
 }
 

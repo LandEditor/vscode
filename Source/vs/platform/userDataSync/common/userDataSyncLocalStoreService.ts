@@ -44,8 +44,10 @@ export class UserDataSyncLocalStoreService
 		private readonly userDataProfilesService: IUserDataProfilesService,
 	) {
 		super();
+
 		this.cleanUp();
 	}
+
 	private async cleanUp(): Promise<void> {
 		for (const profile of this.userDataProfilesService.profiles) {
 			for (const resource of ALL_SYNC_RESOURCES) {
@@ -61,6 +63,7 @@ export class UserDataSyncLocalStoreService
 				}
 			}
 		}
+
 		let stat: IFileStat;
 
 		try {
@@ -74,8 +77,10 @@ export class UserDataSyncLocalStoreService
 			) {
 				this.logService.error(error);
 			}
+
 			return;
 		}
+
 		if (stat.children) {
 			for (const child of stat.children) {
 				if (
@@ -90,6 +95,7 @@ export class UserDataSyncLocalStoreService
 							"Deleting non existing profile from backup",
 							child.resource.path,
 						);
+
 						await this.fileService.del(child.resource, {
 							recursive: true,
 						});
@@ -100,6 +106,7 @@ export class UserDataSyncLocalStoreService
 			}
 		}
 	}
+
 	async getAllResourceRefs(
 		resource: SyncResource,
 		collection?: string,
@@ -132,8 +139,10 @@ export class UserDataSyncLocalStoreService
 				throw error;
 			}
 		}
+
 		return [];
 	}
+
 	async resolveResourceContent(
 		resourceKey: SyncResource,
 		ref: string,
@@ -158,6 +167,7 @@ export class UserDataSyncLocalStoreService
 			return null;
 		}
 	}
+
 	async writeResource(
 		resourceKey: SyncResource,
 		content: string,
@@ -185,6 +195,7 @@ export class UserDataSyncLocalStoreService
 			this.logService.error(e);
 		}
 	}
+
 	private getResourceBackupHome(
 		resource: SyncResource,
 		collection?: string,
@@ -195,6 +206,7 @@ export class UserDataSyncLocalStoreService
 			...(collection ? [collection, resource] : [resource]),
 		);
 	}
+
 	private async cleanUpBackup(folder: URI): Promise<void> {
 		try {
 			try {
@@ -204,6 +216,7 @@ export class UserDataSyncLocalStoreService
 			} catch (e) {
 				return;
 			}
+
 			const stat = await this.fileService.resolve(folder);
 
 			if (stat.children) {
@@ -234,12 +247,14 @@ export class UserDataSyncLocalStoreService
 				if (remaining < 10) {
 					toDelete = toDelete.slice(10 - remaining);
 				}
+
 				await Promises.settled(
 					toDelete.map(async (stat) => {
 						this.logService.info(
 							"Deleting from backup",
 							stat.resource.path,
 						);
+
 						await this.fileService.del(stat.resource);
 					}),
 				);
@@ -248,6 +263,7 @@ export class UserDataSyncLocalStoreService
 			this.logService.error(e);
 		}
 	}
+
 	private getCreationTime(stat: IFileStat) {
 		return new Date(
 			parseInt(stat.name.substring(0, 4)),

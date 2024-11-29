@@ -22,6 +22,7 @@ export async function activate(context: ExtensionContext) {
 
 	try {
 		const worker = new Worker(serverMain.toString());
+
 		worker.postMessage({ i10lLocation: l10n.uri?.toString(false) ?? "" });
 
 		const newLanguageClient: LanguageClientConstructor = (
@@ -43,6 +44,7 @@ export async function activate(context: ExtensionContext) {
 				return { dispose: () => clearTimeout(handle) };
 			},
 		};
+
 		client = await startClient(context, newLanguageClient, {
 			TextDecoder,
 			timer,
@@ -54,6 +56,7 @@ export async function activate(context: ExtensionContext) {
 export async function deactivate(): Promise<void> {
 	if (client) {
 		await client.dispose();
+
 		client = undefined;
 	}
 }

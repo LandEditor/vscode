@@ -54,18 +54,21 @@ export interface ExtHostQuickOpen {
 		options: QuickPickOptions & { canPickMany: true },
 		token?: CancellationToken,
 	): Promise<QuickPickItem[] | undefined>;
+
 	showQuickPick(
 		extension: IExtensionDescription,
 		itemsOrItemsPromise: string[] | Promise<string[]>,
 		options?: QuickPickOptions,
 		token?: CancellationToken,
 	): Promise<string | undefined>;
+
 	showQuickPick(
 		extension: IExtensionDescription,
 		itemsOrItemsPromise: QuickPickItem[] | Promise<QuickPickItem[]>,
 		options?: QuickPickOptions,
 		token?: CancellationToken,
 	): Promise<QuickPickItem | undefined>;
+
 	showQuickPick(
 		extension: IExtensionDescription,
 		itemsOrItemsPromise: Item[] | Promise<Item[]>,
@@ -99,9 +102,11 @@ export function createExtHostQuickOpen(
 
 	class ExtHostQuickOpenImpl implements ExtHostQuickOpenShape {
 		private _workspace: IExtHostWorkspaceProvider;
+
 		private _commands: ExtHostCommands;
 
 		private _onDidSelectItem?: (handle: number) => void;
+
 		private _validateInput?: (
 			input: string,
 		) =>
@@ -120,6 +125,7 @@ export function createExtHostQuickOpen(
 			commands: ExtHostCommands,
 		) {
 			this._workspace = workspace;
+
 			this._commands = commands;
 		}
 
@@ -129,18 +135,21 @@ export function createExtHostQuickOpen(
 			options: QuickPickOptions & { canPickMany: true },
 			token?: CancellationToken,
 		): Promise<QuickPickItem[] | undefined>;
+
 		showQuickPick(
 			extension: IExtensionDescription,
 			itemsOrItemsPromise: string[] | Promise<string[]>,
 			options?: QuickPickOptions,
 			token?: CancellationToken,
 		): Promise<string | undefined>;
+
 		showQuickPick(
 			extension: IExtensionDescription,
 			itemsOrItemsPromise: QuickPickItem[] | Promise<QuickPickItem[]>,
 			options?: QuickPickOptions,
 			token?: CancellationToken,
 		): Promise<QuickPickItem | undefined>;
+
 		showQuickPick(
 			extension: IExtensionDescription,
 			itemsOrItemsPromise: Item[] | Promise<Item[]>,
@@ -210,6 +219,7 @@ export function createExtHostQuickOpen(
 								const icon = item.iconPath
 									? getIconPathOrClass(item.iconPath)
 									: undefined;
+
 								pickItems.push({
 									label: item.label,
 									iconPath: icon?.iconPath,
@@ -247,6 +257,7 @@ export function createExtHostQuickOpen(
 							} else if (Array.isArray(handle)) {
 								return handle.map((h) => items[h]);
 							}
+
 							return undefined;
 						});
 					});
@@ -352,12 +363,14 @@ export function createExtHostQuickOpen(
 			if (!selectedFolder) {
 				return undefined;
 			}
+
 			const workspaceFolders =
 				await this._workspace.getWorkspaceFolders2();
 
 			if (!workspaceFolders) {
 				return undefined;
 			}
+
 			return workspaceFolders.find(
 				(folder) =>
 					folder.uri.toString() === selectedFolder.uri.toString(),
@@ -373,6 +386,7 @@ export function createExtHostQuickOpen(
 				extension,
 				() => this._sessions.delete(session._id),
 			);
+
 			this._sessions.set(session._id, session);
 
 			return session;
@@ -383,6 +397,7 @@ export function createExtHostQuickOpen(
 				extension,
 				() => this._sessions.delete(session._id),
 			);
+
 			this._sessions.set(session._id, session);
 
 			return session;
@@ -390,11 +405,13 @@ export function createExtHostQuickOpen(
 
 		$onDidChangeValue(sessionId: number, value: string): void {
 			const session = this._sessions.get(sessionId);
+
 			session?._fireDidChangeValue(value);
 		}
 
 		$onDidAccept(sessionId: number): void {
 			const session = this._sessions.get(sessionId);
+
 			session?._fireDidAccept();
 		}
 
@@ -416,6 +433,7 @@ export function createExtHostQuickOpen(
 
 		$onDidTriggerButton(sessionId: number, handle: number): void {
 			const session = this._sessions.get(sessionId);
+
 			session?._fireDidTriggerButton(handle);
 		}
 
@@ -433,37 +451,58 @@ export function createExtHostQuickOpen(
 
 		$onDidHide(sessionId: number): void {
 			const session = this._sessions.get(sessionId);
+
 			session?._fireDidHide();
 		}
 	}
 
 	class ExtHostQuickInput implements QuickInput {
 		private static _nextId = 1;
+
 		_id = ExtHostQuickPick._nextId++;
 
 		private _title: string | undefined;
+
 		private _steps: number | undefined;
+
 		private _totalSteps: number | undefined;
+
 		private _visible = false;
+
 		private _expectingHide = false;
+
 		private _enabled = true;
+
 		private _busy = false;
+
 		private _ignoreFocusOut = true;
+
 		private _value = "";
+
 		private _valueSelection: readonly [number, number] | undefined =
 			undefined;
+
 		private _placeholder: string | undefined;
+
 		private _buttons: QuickInputButton[] = [];
+
 		private _handlesToButtons = new Map<number, QuickInputButton>();
+
 		private readonly _onDidAcceptEmitter = new Emitter<void>();
+
 		private readonly _onDidChangeValueEmitter = new Emitter<string>();
+
 		private readonly _onDidTriggerButtonEmitter =
 			new Emitter<QuickInputButton>();
+
 		private readonly _onDidHideEmitter = new Emitter<void>();
+
 		private _updateTimeout: any;
+
 		private _pendingUpdate: TransferQuickInput = { id: this._id };
 
 		private _disposed = false;
+
 		protected _disposables: IDisposable[] = [
 			this._onDidTriggerButtonEmitter,
 			this._onDidHideEmitter,
@@ -482,6 +521,7 @@ export function createExtHostQuickOpen(
 
 		set title(title: string | undefined) {
 			this._title = title;
+
 			this.update({ title });
 		}
 
@@ -491,6 +531,7 @@ export function createExtHostQuickOpen(
 
 		set step(step: number | undefined) {
 			this._steps = step;
+
 			this.update({ step });
 		}
 
@@ -500,6 +541,7 @@ export function createExtHostQuickOpen(
 
 		set totalSteps(totalSteps: number | undefined) {
 			this._totalSteps = totalSteps;
+
 			this.update({ totalSteps });
 		}
 
@@ -509,6 +551,7 @@ export function createExtHostQuickOpen(
 
 		set enabled(enabled: boolean) {
 			this._enabled = enabled;
+
 			this.update({ enabled });
 		}
 
@@ -518,6 +561,7 @@ export function createExtHostQuickOpen(
 
 		set busy(busy: boolean) {
 			this._busy = busy;
+
 			this.update({ busy });
 		}
 
@@ -527,6 +571,7 @@ export function createExtHostQuickOpen(
 
 		set ignoreFocusOut(ignoreFocusOut: boolean) {
 			this._ignoreFocusOut = ignoreFocusOut;
+
 			this.update({ ignoreFocusOut });
 		}
 
@@ -536,6 +581,7 @@ export function createExtHostQuickOpen(
 
 		set value(value: string) {
 			this._value = value;
+
 			this.update({ value });
 		}
 
@@ -547,6 +593,7 @@ export function createExtHostQuickOpen(
 			valueSelection: readonly [number, number] | undefined,
 		) {
 			this._valueSelection = valueSelection;
+
 			this.update({ valueSelection });
 		}
 
@@ -556,6 +603,7 @@ export function createExtHostQuickOpen(
 
 		set placeholder(placeholder: string | undefined) {
 			this._placeholder = placeholder;
+
 			this.update({ placeholder });
 		}
 
@@ -581,12 +629,17 @@ export function createExtHostQuickOpen(
 					`Extension '${this._extension.identifier.value}' uses a button location which is proposed API that is only available when running out of dev or with the following command line switch: --enable-proposed-api ${this._extension.identifier.value}`,
 				);
 			}
+
 			this._buttons = buttons.slice();
+
 			this._handlesToButtons.clear();
+
 			buttons.forEach((button, i) => {
 				const handle = button === QuickInputButtons.Back ? -1 : i;
+
 				this._handlesToButtons.set(handle, button);
 			});
+
 			this.update({
 				buttons: buttons.map<TransferQuickInputButton>((button, i) => {
 					return {
@@ -605,12 +658,15 @@ export function createExtHostQuickOpen(
 
 		show(): void {
 			this._visible = true;
+
 			this._expectingHide = true;
+
 			this.update({ visible: true });
 		}
 
 		hide(): void {
 			this._visible = false;
+
 			this.update({ visible: false });
 		}
 
@@ -622,6 +678,7 @@ export function createExtHostQuickOpen(
 
 		_fireDidChangeValue(value: string) {
 			this._value = value;
+
 			this._onDidChangeValueEmitter.fire(value);
 		}
 
@@ -644,6 +701,7 @@ export function createExtHostQuickOpen(
 				// .show() -> .hide() -> .hide() should emit 1 onDidHide event.
 				// Fixes #135747
 				this._expectingHide = this._visible;
+
 				this._onDidHideEmitter.fire();
 			}
 		}
@@ -652,15 +710,21 @@ export function createExtHostQuickOpen(
 			if (this._disposed) {
 				return;
 			}
+
 			this._disposed = true;
+
 			this._fireDidHide();
+
 			this._disposables = dispose(this._disposables);
 
 			if (this._updateTimeout) {
 				clearTimeout(this._updateTimeout);
+
 				this._updateTimeout = undefined;
 			}
+
 			this._onDidDispose();
+
 			proxy.$dispose(this._id);
 		}
 
@@ -668,21 +732,26 @@ export function createExtHostQuickOpen(
 			if (this._disposed) {
 				return;
 			}
+
 			for (const key of Object.keys(properties)) {
 				const value = properties[key];
+
 				this._pendingUpdate[key] = value === undefined ? null : value;
 			}
 
 			if ("visible" in this._pendingUpdate) {
 				if (this._updateTimeout) {
 					clearTimeout(this._updateTimeout);
+
 					this._updateTimeout = undefined;
 				}
+
 				this.dispatchUpdate();
 			} else if (this._visible && !this._updateTimeout) {
 				// Defer the update so that multiple changes to setters dont cause a redraw each
 				this._updateTimeout = setTimeout(() => {
 					this._updateTimeout = undefined;
+
 					this.dispatchUpdate();
 				}, 0);
 			}
@@ -690,6 +759,7 @@ export function createExtHostQuickOpen(
 
 		private dispatchUpdate() {
 			proxy.$createOrUpdate(this._pendingUpdate);
+
 			this._pendingUpdate = { id: this._id };
 		}
 	}
@@ -700,6 +770,7 @@ export function createExtHostQuickOpen(
 		if (iconPath instanceof ThemeIcon) {
 			return { id: iconPath.id };
 		}
+
 		const dark = getDarkIconUri(
 			iconPath as URI | { light: URI; dark: URI },
 		);
@@ -750,28 +821,42 @@ export function createExtHostQuickOpen(
 		implements QuickPick<T>
 	{
 		private _items: T[] = [];
+
 		private _handlesToItems = new Map<number, T>();
+
 		private _itemsToHandles = new Map<T, number>();
+
 		private _canSelectMany = false;
+
 		private _matchOnDescription = true;
+
 		private _matchOnDetail = true;
+
 		private _sortByLabel = true;
+
 		private _keepScrollPosition = false;
+
 		private _activeItems: T[] = [];
+
 		private readonly _onDidChangeActiveEmitter = new Emitter<T[]>();
+
 		private _selectedItems: T[] = [];
+
 		private readonly _onDidChangeSelectionEmitter = new Emitter<T[]>();
+
 		private readonly _onDidTriggerItemButtonEmitter = new Emitter<
 			QuickPickItemButtonEvent<T>
 		>();
 
 		constructor(extension: IExtensionDescription, onDispose: () => void) {
 			super(extension, onDispose);
+
 			this._disposables.push(
 				this._onDidChangeActiveEmitter,
 				this._onDidChangeSelectionEmitter,
 				this._onDidTriggerItemButtonEmitter,
 			);
+
 			this.update({ type: "quickPick" });
 		}
 
@@ -781,10 +866,14 @@ export function createExtHostQuickOpen(
 
 		set items(items: T[]) {
 			this._items = items.slice();
+
 			this._handlesToItems.clear();
+
 			this._itemsToHandles.clear();
+
 			items.forEach((item, i) => {
 				this._handlesToItems.set(i, item);
+
 				this._itemsToHandles.set(item, i);
 			});
 
@@ -810,6 +899,7 @@ export function createExtHostQuickOpen(
 					const icon = item.iconPath
 						? getIconPathOrClass(item.iconPath)
 						: undefined;
+
 					pickItems.push({
 						handle,
 						label: item.label,
@@ -846,6 +936,7 @@ export function createExtHostQuickOpen(
 
 		set canSelectMany(canSelectMany: boolean) {
 			this._canSelectMany = canSelectMany;
+
 			this.update({ canSelectMany });
 		}
 
@@ -855,6 +946,7 @@ export function createExtHostQuickOpen(
 
 		set matchOnDescription(matchOnDescription: boolean) {
 			this._matchOnDescription = matchOnDescription;
+
 			this.update({ matchOnDescription });
 		}
 
@@ -864,6 +956,7 @@ export function createExtHostQuickOpen(
 
 		set matchOnDetail(matchOnDetail: boolean) {
 			this._matchOnDetail = matchOnDetail;
+
 			this.update({ matchOnDetail });
 		}
 
@@ -873,6 +966,7 @@ export function createExtHostQuickOpen(
 
 		set sortByLabel(sortByLabel: boolean) {
 			this._sortByLabel = sortByLabel;
+
 			this.update({ sortByLabel });
 		}
 
@@ -882,6 +976,7 @@ export function createExtHostQuickOpen(
 
 		set keepScrollPosition(keepScrollPosition: boolean) {
 			this._keepScrollPosition = keepScrollPosition;
+
 			this.update({ keepScrollPosition });
 		}
 
@@ -893,6 +988,7 @@ export function createExtHostQuickOpen(
 			this._activeItems = activeItems.filter((item) =>
 				this._itemsToHandles.has(item),
 			);
+
 			this.update({
 				activeItems: this._activeItems.map((item) =>
 					this._itemsToHandles.get(item),
@@ -910,6 +1006,7 @@ export function createExtHostQuickOpen(
 			this._selectedItems = selectedItems.filter((item) =>
 				this._itemsToHandles.has(item),
 			);
+
 			this.update({
 				selectedItems: this._selectedItems.map((item) =>
 					this._itemsToHandles.get(item),
@@ -923,7 +1020,9 @@ export function createExtHostQuickOpen(
 			const items = coalesce(
 				handles.map((handle) => this._handlesToItems.get(handle)),
 			);
+
 			this._activeItems = items;
+
 			this._onDidChangeActiveEmitter.fire(items);
 		}
 
@@ -931,7 +1030,9 @@ export function createExtHostQuickOpen(
 			const items = coalesce(
 				handles.map((handle) => this._handlesToItems.get(handle)),
 			);
+
 			this._selectedItems = items;
+
 			this._onDidChangeSelectionEmitter.fire(items);
 		}
 
@@ -943,6 +1044,7 @@ export function createExtHostQuickOpen(
 			if (!item || !item.buttons || !item.buttons.length) {
 				return;
 			}
+
 			const button = item.buttons[buttonHandle];
 
 			if (button) {
@@ -956,7 +1058,9 @@ export function createExtHostQuickOpen(
 
 	class ExtHostInputBox extends ExtHostQuickInput implements InputBox {
 		private _password = false;
+
 		private _prompt: string | undefined;
+
 		private _validationMessage:
 			| string
 			| InputBoxValidationMessage
@@ -964,6 +1068,7 @@ export function createExtHostQuickOpen(
 
 		constructor(extension: IExtensionDescription, onDispose: () => void) {
 			super(extension, onDispose);
+
 			this.update({ type: "inputBox" });
 		}
 
@@ -973,6 +1078,7 @@ export function createExtHostQuickOpen(
 
 		set password(password: boolean) {
 			this._password = password;
+
 			this.update({ password });
 		}
 
@@ -982,6 +1088,7 @@ export function createExtHostQuickOpen(
 
 		set prompt(prompt: string | undefined) {
 			this._prompt = prompt;
+
 			this.update({ prompt });
 		}
 

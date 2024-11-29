@@ -29,6 +29,7 @@ export class IndexTree<T, TFilterData = void> extends AbstractTree<
 	) {
 		super(user, container, delegate, renderers, options);
 	}
+
 	splice(
 		location: number[],
 		deleteCount: number,
@@ -36,14 +37,17 @@ export class IndexTree<T, TFilterData = void> extends AbstractTree<
 	): void {
 		this.model.splice(location, deleteCount, toInsert);
 	}
+
 	rerender(location?: number[]): void {
 		if (location === undefined) {
 			this.view.rerender();
 
 			return;
 		}
+
 		this.model.rerender(location);
 	}
+
 	updateElementHeight(location: number[], height: number): void {
 		if (location.length === 0) {
 			throw new TreeError(
@@ -51,13 +55,16 @@ export class IndexTree<T, TFilterData = void> extends AbstractTree<
 				`Update element height failed: invalid location`,
 			);
 		}
+
 		const elementIndex = this.model.getListIndex(location);
 
 		if (elementIndex === -1) {
 			return;
 		}
+
 		this.view.updateElementHeight(elementIndex, height);
 	}
+
 	protected createModel(
 		user: string,
 		options: IIndexTreeOptions<T, TFilterData>,

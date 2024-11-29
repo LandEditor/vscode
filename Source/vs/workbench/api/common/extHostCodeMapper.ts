@@ -19,7 +19,9 @@ export class ExtHostCodeMapper
 	implements extHostProtocol.ExtHostCodeMapperShape
 {
 	private static _providerHandlePool: number = 0;
+
 	private readonly _proxy: extHostProtocol.MainThreadCodeMapperShape;
+
 	private readonly providers = new Map<number, vscode.MappedEditsProvider2>();
 
 	constructor(mainContext: extHostProtocol.IMainContext) {
@@ -27,6 +29,7 @@ export class ExtHostCodeMapper
 			extHostProtocol.MainContext.MainThreadCodeMapper,
 		);
 	}
+
 	async $mapCode(
 		handle: number,
 		internalRequest: extHostProtocol.ICodeMapperRequestDto,
@@ -47,6 +50,7 @@ export class ExtHostCodeMapper
 				edits: vscode.TextEdit | vscode.TextEdit[],
 			) => {
 				edits = Array.isArray(edits) ? edits : [edits];
+
 				this._proxy.$handleProgress(internalRequest.requestId, {
 					uri: target,
 					edits: edits.map(TextEdit.from),
@@ -91,12 +95,15 @@ export class ExtHostCodeMapper
 
 		return result ?? null;
 	}
+
 	registerMappedEditsProvider(
 		extension: IExtensionDescription,
 		provider: vscode.MappedEditsProvider2,
 	): vscode.Disposable {
 		const handle = ExtHostCodeMapper._providerHandlePool++;
+
 		this._proxy.$registerCodeMapperProvider(handle);
+
 		this.providers.set(handle, provider);
 
 		return {

@@ -12,22 +12,30 @@ export const INTERNAL_AUTH_PROVIDER_PREFIX = "__";
 
 export interface AuthenticationSessionAccount {
 	label: string;
+
 	id: string;
 }
 export interface AuthenticationSession {
 	id: string;
+
 	accessToken: string;
+
 	account: AuthenticationSessionAccount;
+
 	scopes: ReadonlyArray<string>;
+
 	idToken?: string;
 }
 export interface AuthenticationSessionsChangeEvent {
 	added: ReadonlyArray<AuthenticationSession> | undefined;
+
 	removed: ReadonlyArray<AuthenticationSession> | undefined;
+
 	changed: ReadonlyArray<AuthenticationSession> | undefined;
 }
 export interface AuthenticationProviderInformation {
 	id: string;
+
 	label: string;
 }
 export interface IAuthenticationCreateSessionOptions {
@@ -40,6 +48,7 @@ export interface IAuthenticationCreateSessionOptions {
 }
 export interface AllowedExtension {
 	id: string;
+
 	name: string;
 	/**
 	 * If true or undefined, the extension is allowed to use the account
@@ -47,6 +56,7 @@ export interface AllowedExtension {
 	 * TODO: undefined shouldn't be a valid value, but it is for now
 	 */
 	allowed?: boolean;
+
 	lastUsed?: number;
 	// If true, this comes from the product.json
 	trusted?: boolean;
@@ -70,7 +80,9 @@ export interface IAuthenticationService {
 	 */
 	readonly onDidChangeSessions: Event<{
 		providerId: string;
+
 		label: string;
+
 		event: AuthenticationSessionsChangeEvent;
 	}>;
 	/**
@@ -176,6 +188,7 @@ export interface IAuthenticationExtensionsService {
 	 */
 	onDidChangeAccountPreference: Event<{
 		extensionIds: string[];
+
 		providerId: string;
 	}>;
 	/**
@@ -238,6 +251,7 @@ export interface IAuthenticationExtensionsService {
 		extensionId: string,
 		scopes: string[],
 	): void;
+
 	selectSession(
 		providerId: string,
 		extensionId: string,
@@ -245,6 +259,7 @@ export interface IAuthenticationExtensionsService {
 		scopes: string[],
 		possibleSessions: readonly AuthenticationSession[],
 	): Promise<AuthenticationSession>;
+
 	requestSessionAccess(
 		providerId: string,
 		extensionId: string,
@@ -252,6 +267,7 @@ export interface IAuthenticationExtensionsService {
 		scopes: string[],
 		possibleSessions: readonly AuthenticationSession[],
 	): void;
+
 	requestNewSession(
 		providerId: string,
 		scopes: string[],

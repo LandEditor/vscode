@@ -58,8 +58,11 @@ const OpenIssueReporterCommandMetadata: ICommandMetadata = {
 };
 interface OpenIssueReporterArgs {
 	readonly extensionId?: string;
+
 	readonly issueTitle?: string;
+
 	readonly issueBody?: string;
+
 	readonly extensionData?: string;
 }
 export class BaseIssueContribution
@@ -77,6 +80,7 @@ export class BaseIssueContribution
 		if (!productService.reportIssueUrl) {
 			return;
 		}
+
 		this._register(
 			CommandsRegistry.registerCommand({
 				id: OpenIssueReporterActionId,
@@ -98,6 +102,7 @@ export class BaseIssueContribution
 				metadata: OpenIssueReporterCommandMetadata,
 			}),
 		);
+
 		this._register(
 			CommandsRegistry.registerCommand({
 				id: OpenIssueReporterApiId,
@@ -133,11 +138,13 @@ export class BaseIssueContribution
 			),
 			category: Categories.Help,
 		};
+
 		this._register(
 			MenuRegistry.appendMenuItem(MenuId.CommandPalette, {
 				command: reportIssue,
 			}),
 		);
+
 		this._register(
 			MenuRegistry.appendMenuItem(MenuId.MenubarHelpMenu, {
 				group: "3_feedback",

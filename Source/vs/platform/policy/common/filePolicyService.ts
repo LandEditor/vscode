@@ -28,6 +28,7 @@ function keysDiff<T>(a: Map<string, T>, b: Map<string, T>): string[] {
 			result.push(key);
 		}
 	}
+
 	return result;
 }
 export class FilePolicyService
@@ -51,16 +52,20 @@ export class FilePolicyService
 			fileService.onDidFilesChange,
 			(e) => e.affects(file),
 		);
+
 		this._register(fileService.watch(file));
+
 		this._register(
 			onDidChangePolicyFile(() =>
 				this.throttledDelayer.trigger(() => this.refresh()),
 			),
 		);
 	}
+
 	protected async _updatePolicyDefinitions(): Promise<void> {
 		await this.refresh();
 	}
+
 	private async read(): Promise<Map<PolicyName, PolicyValue>> {
 		const policies = new Map<PolicyName, PolicyValue>();
 
@@ -72,6 +77,7 @@ export class FilePolicyService
 			if (!isObject(raw)) {
 				throw new Error("Policy file isn't a JSON object");
 			}
+
 			for (const key of Object.keys(raw)) {
 				if (this.policyDefinitions[key]) {
 					policies.set(key, raw[key]);
@@ -88,12 +94,15 @@ export class FilePolicyService
 				);
 			}
 		}
+
 		return policies;
 	}
+
 	private async refresh(): Promise<void> {
 		const policies = await this.read();
 
 		const diff = keysDiff(this.policies, policies);
+
 		this.policies = policies;
 
 		if (diff.length > 0) {

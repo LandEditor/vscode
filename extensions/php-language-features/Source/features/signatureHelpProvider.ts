@@ -56,33 +56,46 @@ const _9 = "9".charCodeAt(0);
 const BOF = 0;
 class BackwardIterator {
 	private lineNumber: number;
+
 	private offset: number;
+
 	private line: string;
+
 	private model: TextDocument;
 
 	constructor(model: TextDocument, offset: number, lineNumber: number) {
 		this.lineNumber = lineNumber;
+
 		this.offset = offset;
+
 		this.line = model.lineAt(this.lineNumber).text;
+
 		this.model = model;
 	}
+
 	public hasNext(): boolean {
 		return this.lineNumber >= 0;
 	}
+
 	public next(): number {
 		if (this.offset < 0) {
 			if (this.lineNumber > 0) {
 				this.lineNumber--;
+
 				this.line = this.model.lineAt(this.lineNumber).text;
+
 				this.offset = this.line.length - 1;
 
 				return _NL;
 			}
+
 			this.lineNumber = -1;
 
 			return BOF;
 		}
+
 		const ch = this.line.charCodeAt(this.offset);
+
 		this.offset--;
 
 		return ch;
@@ -101,6 +114,7 @@ export default class PHPSignatureHelpProvider implements SignatureHelpProvider {
 		if (!enable) {
 			return null;
 		}
+
 		const iterator = new BackwardIterator(
 			document,
 			position.character - 1,
@@ -112,11 +126,13 @@ export default class PHPSignatureHelpProvider implements SignatureHelpProvider {
 		if (paramCount < 0) {
 			return null;
 		}
+
 		const ident = this.readIdent(iterator);
 
 		if (!ident) {
 			return null;
 		}
+
 		const entry =
 			phpGlobalFunctions.globalfunctions[ident] ||
 			phpGlobals.keywords[ident];
@@ -124,6 +140,7 @@ export default class PHPSignatureHelpProvider implements SignatureHelpProvider {
 		if (!entry || !entry.signature) {
 			return null;
 		}
+
 		const paramsString = entry.signature.substring(
 			0,
 			entry.signature.lastIndexOf(")") + 1,
@@ -144,9 +161,13 @@ export default class PHPSignatureHelpProvider implements SignatureHelpProvider {
 				documentation: "",
 			});
 		}
+
 		const ret = new SignatureHelp();
+
 		ret.signatures.push(signatureInfo);
+
 		ret.activeSignature = 0;
+
 		ret.activeParameter = Math.min(
 			paramCount,
 			signatureInfo.parameters.length - 1,
@@ -154,6 +175,7 @@ export default class PHPSignatureHelpProvider implements SignatureHelpProvider {
 
 		return Promise.resolve(ret);
 	}
+
 	private readArguments(iterator: BackwardIterator): number {
 		let parentNesting = 0;
 
@@ -173,6 +195,7 @@ export default class PHPSignatureHelpProvider implements SignatureHelpProvider {
 					if (parentNesting < 0) {
 						return paramCount;
 					}
+
 					break;
 
 				case _RParent:
@@ -205,17 +228,21 @@ export default class PHPSignatureHelpProvider implements SignatureHelpProvider {
 					while (iterator.hasNext() && ch !== iterator.next()) {
 						// find the closing quote or double quote
 					}
+
 					break;
 
 				case _Comma:
 					if (!parentNesting && !bracketNesting && !curlyNesting) {
 						paramCount++;
 					}
+
 					break;
 			}
 		}
+
 		return -1;
 	}
+
 	private isIdentPart(ch: number): boolean {
 		if (
 			ch === _USC || // _
@@ -227,8 +254,10 @@ export default class PHPSignatureHelpProvider implements SignatureHelpProvider {
 			// nonascii
 			return true;
 		}
+
 		return false;
 	}
+
 	private readIdent(iterator: BackwardIterator): string {
 		let identStarted = false;
 
@@ -240,13 +269,16 @@ export default class PHPSignatureHelpProvider implements SignatureHelpProvider {
 			if (!identStarted && (ch === _WSB || ch === _TAB || ch === _NL)) {
 				continue;
 			}
+
 			if (this.isIdentPart(ch)) {
 				identStarted = true;
+
 				ident = String.fromCharCode(ch) + ident;
 			} else if (identStarted) {
 				return ident;
 			}
 		}
+
 		return ident;
 	}
 }

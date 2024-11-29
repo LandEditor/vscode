@@ -65,14 +65,17 @@ export class DiskFileSystemProviderClient
 		private readonly channel: IChannel,
 		private readonly extraCapabilities: {
 			trash?: boolean;
+
 			pathCaseSensitive?: boolean;
 		},
 	) {
 		super();
+
 		this.registerFileChangeListeners();
 	}
 	//#region File Capabilities
 	readonly onDidChangeCapabilities: Event<void> = Event.None;
+
 	private _capabilities: FileSystemProviderCapabilities | undefined;
 
 	get capabilities(): FileSystemProviderCapabilities {
@@ -92,10 +95,12 @@ export class DiskFileSystemProviderClient
 				this._capabilities |=
 					FileSystemProviderCapabilities.PathCaseSensitive;
 			}
+
 			if (this.extraCapabilities.trash) {
 				this._capabilities |= FileSystemProviderCapabilities.Trash;
 			}
 		}
+
 		return this._capabilities;
 	}
 	//#endregion
@@ -103,6 +108,7 @@ export class DiskFileSystemProviderClient
 	stat(resource: URI): Promise<IStat> {
 		return this.channel.call("stat", [resource]);
 	}
+
 	readdir(resource: URI): Promise<[string, FileType][]> {
 		return this.channel.call("readdir", [resource]);
 	}
@@ -119,6 +125,7 @@ export class DiskFileSystemProviderClient
 
 		return buffer;
 	}
+
 	readFileStream(
 		resource: URI,
 		opts: IFileReadStreamOptions,
@@ -156,6 +163,7 @@ export class DiskFileSystemProviderClient
 						else {
 							const errorCandidate =
 								dataOrErrorOrEnd as IFileSystemProviderError;
+
 							error = createFileSystemProviderError(
 								errorCandidate.message ??
 									toErrorMessage(errorCandidate),
@@ -163,7 +171,9 @@ export class DiskFileSystemProviderClient
 									FileSystemProviderErrorCode.Unknown,
 							);
 						}
+
 						stream.error(error);
+
 						stream.end();
 					}
 					// Signal to the remote side that we no longer listen
@@ -177,6 +187,7 @@ export class DiskFileSystemProviderClient
 				// Ensure to end the stream properly with an error
 				// to indicate the cancellation.
 				stream.error(canceled());
+
 				stream.end();
 				// Ensure to dispose the listener upon cancellation. This will
 				// bubble through the remote side as event and allows to stop
@@ -187,6 +198,7 @@ export class DiskFileSystemProviderClient
 
 		return stream;
 	}
+
 	writeFile(
 		resource: URI,
 		content: Uint8Array,
@@ -198,12 +210,15 @@ export class DiskFileSystemProviderClient
 			opts,
 		]);
 	}
+
 	open(resource: URI, opts: IFileOpenOptions): Promise<number> {
 		return this.channel.call("open", [resource, opts]);
 	}
+
 	close(fd: number): Promise<void> {
 		return this.channel.call("close", [fd]);
 	}
+
 	async read(
 		fd: number,
 		pos: number,
@@ -223,6 +238,7 @@ export class DiskFileSystemProviderClient
 
 		return bytesRead;
 	}
+
 	write(
 		fd: number,
 		pos: number,
@@ -243,9 +259,11 @@ export class DiskFileSystemProviderClient
 	mkdir(resource: URI): Promise<void> {
 		return this.channel.call("mkdir", [resource]);
 	}
+
 	delete(resource: URI, opts: IFileDeleteOptions): Promise<void> {
 		return this.channel.call("delete", [resource, opts]);
 	}
+
 	rename(
 		resource: URI,
 		target: URI,
@@ -253,6 +271,7 @@ export class DiskFileSystemProviderClient
 	): Promise<void> {
 		return this.channel.call("rename", [resource, target, opts]);
 	}
+
 	copy(
 		resource: URI,
 		target: URI,
@@ -270,8 +289,11 @@ export class DiskFileSystemProviderClient
 	private readonly _onDidChange = this._register(
 		new Emitter<readonly IFileChange[]>(),
 	);
+
 	readonly onDidChangeFile = this._onDidChange.event;
+
 	private readonly _onDidWatchError = this._register(new Emitter<string>());
+
 	readonly onDidWatchError = this._onDidWatchError.event;
 	// The contract for file watching via remote is to identify us
 	// via a unique but readonly session ID. Since the remote is
@@ -279,6 +301,7 @@ export class DiskFileSystemProviderClient
 	// this helps the server to properly partition events to the right
 	// clients.
 	private readonly sessionId = generateUuid();
+
 	private registerFileChangeListeners(): void {
 		// The contract for file changes is that there is one listener
 		// for both events and errors from the watcher. So we need to
@@ -290,18 +313,22 @@ export class DiskFileSystemProviderClient
 			])((eventsOrError) => {
 				if (Array.isArray(eventsOrError)) {
 					const events = eventsOrError;
+
 					this._onDidChange.fire(reviveFileChanges(events));
 				} else {
 					const error = eventsOrError;
+
 					this._onDidWatchError.fire(error);
 				}
 			}),
 		);
 	}
+
 	watch(resource: URI, opts: IWatchOptions): IDisposable {
 		// Generate a request UUID to correlate the watcher
 		// back to us when we ask to dispose the watcher later.
 		const req = generateUuid();
+
 		this.channel.call("watch", [this.sessionId, req, resource, opts]);
 
 		return toDisposable(() =>

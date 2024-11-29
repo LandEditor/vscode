@@ -21,12 +21,16 @@ export const enum TestUriType {
 }
 interface IAllOutputReference {
 	type: TestUriType.TaskOutput;
+
 	resultId: string;
+
 	taskIndex: number;
 }
 interface IResultTestUri {
 	resultId: string;
+
 	taskIndex: number;
+
 	testExtId: string;
 }
 interface ITestOutputReference extends IResultTestUri {
@@ -34,10 +38,12 @@ interface ITestOutputReference extends IResultTestUri {
 }
 interface IResultTestMessageReference extends IResultTestUri {
 	type: TestUriType.ResultMessage;
+
 	messageIndex: number;
 }
 interface ITestDiffOutputReference extends IResultTestUri {
 	type: TestUriType.ResultActualOutput | TestUriType.ResultExpectedOutput;
+
 	messageIndex: number;
 }
 export type ParsedTestUri =
@@ -101,6 +107,7 @@ export const parseTestUri = (uri: URI): ParsedTestUri | undefined => {
 			}
 		}
 	}
+
 	if (request[0] === TestUriParts.AllOutput) {
 		const testExtId = uri.query;
 
@@ -110,6 +117,7 @@ export const parseTestUri = (uri: URI): ParsedTestUri | undefined => {
 			? { resultId, taskIndex, testExtId, type: TestUriType.TestOutput }
 			: { resultId, taskIndex, type: TestUriType.TaskOutput };
 	}
+
 	return undefined;
 };
 
@@ -130,6 +138,7 @@ export const buildTestUri = (parsed: ParsedTestUri): URI => {
 			].join("/"),
 		});
 	}
+
 	const msgRef = (resultId: string, ...remaining: (string | number)[]) =>
 		URI.from({
 			...uriParts,

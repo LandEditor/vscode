@@ -44,21 +44,26 @@ const MAX_LENGTH = 2000;
 type LinkKind = "web" | "path" | "html" | "text";
 type LinkPart = {
 	kind: LinkKind;
+
 	value: string;
+
 	captures: string[];
 };
 
 export type LinkOptions = {
 	trustHtml?: boolean;
+
 	linkifyFilePaths: boolean;
 };
 
 export class LinkDetector {
 	// used by unit tests
 	static injectedHtmlCreator: (value: string) => string;
+
 	private shouldGenerateHtml(trustHtml: boolean) {
 		return trustHtml && (!!LinkDetector.injectedHtmlCreator || !!ttPolicy);
 	}
+
 	private createHtml(value: string) {
 		if (LinkDetector.injectedHtmlCreator) {
 			return LinkDetector.injectedHtmlCreator(value);
@@ -84,10 +89,12 @@ export class LinkDetector {
 			for (let i = 0; i < lines.length - 1; i++) {
 				lines[i] = lines[i] + "\n";
 			}
+
 			if (!lines[lines.length - 1]) {
 				// Remove the last element ('') that split added.
 				lines.pop();
 			}
+
 			const elements = lines.map((line) =>
 				this.linkify(line, options, false),
 			);
@@ -96,11 +103,14 @@ export class LinkDetector {
 				// Do not wrap single line with extra span.
 				return elements[0];
 			}
+
 			const container = document.createElement("span");
+
 			elements.forEach((e) => container.appendChild(e));
 
 			return container;
 		}
+
 		const container = document.createElement("span");
 
 		for (const part of this.detectLinks(
@@ -127,7 +137,9 @@ export class LinkDetector {
 
 					case "html":
 						span = document.createElement("span");
+
 						span.innerHTML = this.createHtml(part.value)!;
+
 						container.appendChild(span);
 
 						break;
@@ -136,10 +148,13 @@ export class LinkDetector {
 				container.appendChild(document.createTextNode(part.value));
 			}
 		}
+
 		return container;
 	}
+
 	private createWebLink(url: string): Node {
 		const link = this.createLink(url);
+
 		link.href = url;
 
 		return link;
@@ -178,12 +193,15 @@ export class LinkDetector {
 	// 	});
 	// 	return link;
 	// }
+
 	private createLink(text: string): HTMLAnchorElement {
 		const link = document.createElement("a");
+
 		link.textContent = text;
 
 		return link;
 	}
+
 	private detectLinks(
 		text: string,
 		trustHtml: boolean,
@@ -192,6 +210,7 @@ export class LinkDetector {
 		if (text.length > MAX_LENGTH) {
 			return [{ kind: "text", value: text, captures: [] }];
 		}
+
 		const regexes: RegExp[] = [];
 
 		const kinds: LinkKind[] = [];
@@ -200,26 +219,33 @@ export class LinkDetector {
 
 		if (this.shouldGenerateHtml(trustHtml)) {
 			regexes.push(HTML_LINK_REGEX);
+
 			kinds.push("html");
 		}
+
 		regexes.push(WEB_LINK_REGEX);
+
 		kinds.push("web");
 
 		if (detectFilepaths) {
 			regexes.push(PATH_LINK_REGEX);
+
 			kinds.push("path");
 		}
+
 		const splitOne = (text: string, regexIndex: number) => {
 			if (regexIndex >= regexes.length) {
 				result.push({ value: text, kind: "text", captures: [] });
 
 				return;
 			}
+
 			const regex = regexes[regexIndex];
 
 			let currentIndex = 0;
 
 			let match;
+
 			regex.lastIndex = 0;
 
 			while ((match = regex.exec(text)) !== null) {
@@ -231,20 +257,25 @@ export class LinkDetector {
 				if (stringBeforeMatch) {
 					splitOne(stringBeforeMatch, regexIndex + 1);
 				}
+
 				const value = match[0];
+
 				result.push({
 					value: value,
 					kind: kinds[regexIndex],
 					captures: match.slice(1),
 				});
+
 				currentIndex = match.index + value.length;
 			}
+
 			const stringAfterMatches = text.substring(currentIndex);
 
 			if (stringAfterMatches) {
 				splitOne(stringAfterMatches, regexIndex + 1);
 			}
 		};
+
 		splitOne(text, 0);
 
 		return result;

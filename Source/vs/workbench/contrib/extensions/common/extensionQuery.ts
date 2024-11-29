@@ -11,6 +11,7 @@ export class Query {
 	) {
 		this.value = value.trim();
 	}
+
 	static suggestions(query: string): string[] {
 		const commands = [
 			"installed",
@@ -62,6 +63,7 @@ export class Query {
 			) {
 				return [];
 			}
+
 			if (command in subcommands) {
 				return (subcommands as Record<string, readonly string[]>)[
 					command
@@ -74,8 +76,10 @@ export class Query {
 			}
 		});
 	}
+
 	static parse(value: string): Query {
 		let sortBy = "";
+
 		value = value.replace(
 			/@sort:(\w+)(-\w*)?/g,
 			(match, by: string, order: string) => {
@@ -87,17 +91,21 @@ export class Query {
 
 		return new Query(value, sortBy);
 	}
+
 	toString(): string {
 		let result = this.value;
 
 		if (this.sortBy) {
 			result = `${result}${result ? " " : ""}@sort:${this.sortBy}`;
 		}
+
 		return result;
 	}
+
 	isValid(): boolean {
 		return !/@outdated/.test(this.value);
 	}
+
 	equals(other: Query): boolean {
 		return this.value === other.value && this.sortBy === other.sortBy;
 	}

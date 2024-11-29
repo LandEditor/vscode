@@ -24,6 +24,7 @@ export const ASK_QUICK_QUESTION_ACTION_ID = "workbench.action.quickchat.toggle";
 
 export function registerQuickChatActions() {
 	registerAction2(QuickChatGlobalAction);
+
 	registerAction2(AskQuickChatAction);
 
 	registerAction2(
@@ -48,6 +49,7 @@ export function registerQuickChatActions() {
 
 			run(accessor: ServicesAccessor) {
 				const quickChatService = accessor.get(IQuickChatService);
+
 				quickChatService.openInChatView();
 			}
 		},
@@ -75,6 +77,7 @@ export function registerQuickChatActions() {
 
 			run(accessor: ServicesAccessor) {
 				const quickChatService = accessor.get(IQuickChatService);
+
 				quickChatService.close();
 			}
 		},
@@ -102,6 +105,7 @@ export function registerQuickChatActions() {
 				if (quickChatService.focused) {
 					quickChatService.close();
 				}
+
 				const codeEditor = codeEditorService.getActiveCodeEditor();
 
 				if (!codeEditor) {
@@ -115,6 +119,7 @@ export function registerQuickChatActions() {
 				}
 
 				await controller.run();
+
 				controller.focus();
 			}
 		},
@@ -193,12 +198,15 @@ class QuickChatGlobalAction extends Action2 {
 		switch (typeof query) {
 			case "string":
 				options = { query };
+
 				break;
 
 			case "object":
 				options = query;
+
 				break;
 		}
+
 		if (options?.query) {
 			options.selection = new Selection(
 				1,
@@ -207,6 +215,7 @@ class QuickChatGlobalAction extends Action2 {
 				options.query.length + 1,
 			);
 		}
+
 		quickChatService.toggle(options);
 	}
 }
@@ -223,6 +232,7 @@ class AskQuickChatAction extends Action2 {
 
 	override run(accessor: ServicesAccessor, query?: string): void {
 		const quickChatService = accessor.get(IQuickChatService);
+
 		quickChatService.toggle(
 			query
 				? {

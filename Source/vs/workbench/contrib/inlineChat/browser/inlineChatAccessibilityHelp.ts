@@ -15,8 +15,11 @@ export class InlineChatAccessibilityHelp
 	implements IAccessibleViewImplentation
 {
 	readonly priority = 106;
+
 	readonly name = "inlineChat";
+
 	readonly type = AccessibleViewType.Help;
+
 	readonly when = ContextKeyExpr.or(
 		CTX_INLINE_CHAT_RESPONSE_FOCUSED,
 		ChatContextKeys.inputHasFocus,
@@ -30,6 +33,7 @@ export class InlineChatAccessibilityHelp
 		if (!codeEditor) {
 			return;
 		}
+
 		return getChatAccessibilityHelpProvider(
 			accessor,
 			codeEditor,

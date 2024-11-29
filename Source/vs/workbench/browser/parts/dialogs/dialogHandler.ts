@@ -49,6 +49,7 @@ export class BrowserDialogHandler extends AbstractDialogHandler {
 		"editor.action.clipboardCutAction",
 		"editor.action.clipboardPasteAction",
 	];
+
 	private readonly markdownRenderer =
 		this.instantiationService.createInstance(MarkdownRenderer, {});
 
@@ -68,6 +69,7 @@ export class BrowserDialogHandler extends AbstractDialogHandler {
 	) {
 		super();
 	}
+
 	async prompt<T>(prompt: IPrompt<T>): Promise<IAsyncPromptResult<T>> {
 		this.logService.trace("DialogService#prompt", prompt.message);
 
@@ -86,6 +88,7 @@ export class BrowserDialogHandler extends AbstractDialogHandler {
 
 		return this.getPromptResult(prompt, button, checkboxChecked);
 	}
+
 	async confirm(confirmation: IConfirmation): Promise<IConfirmationResult> {
 		this.logService.trace("DialogService#confirm", confirmation.message);
 
@@ -106,6 +109,7 @@ export class BrowserDialogHandler extends AbstractDialogHandler {
 
 		return { confirmed: button === 0, checkboxChecked };
 	}
+
 	async input(input: IInput): Promise<IInputResult> {
 		this.logService.trace("DialogService#input", input.message);
 
@@ -124,6 +128,7 @@ export class BrowserDialogHandler extends AbstractDialogHandler {
 
 		return { confirmed: button === 0, checkboxChecked, values };
 	}
+
 	async about(): Promise<void> {
 		const detailString = (useAgo: boolean): string => {
 			return localize(
@@ -160,6 +165,7 @@ export class BrowserDialogHandler extends AbstractDialogHandler {
 			this.clipboardService.writeText(detailToCopy);
 		}
 	}
+
 	private async doShow(
 		type: Severity | DialogType | undefined,
 		message: string,
@@ -175,14 +181,18 @@ export class BrowserDialogHandler extends AbstractDialogHandler {
 		const renderBody = customOptions
 			? (parent: HTMLElement) => {
 					parent.classList.add(...(customOptions.classes || []));
+
 					customOptions.markdownDetails?.forEach((markdownDetail) => {
 						const result = this.markdownRenderer.render(
 							markdownDetail.markdown,
 						);
+
 						parent.appendChild(result.element);
+
 						result.element.classList.add(
 							...(markdownDetail.classes || []),
 						);
+
 						dialogDisposables.add(result);
 					});
 				}
@@ -228,9 +238,11 @@ export class BrowserDialogHandler extends AbstractDialogHandler {
 				dialogStyles: defaultDialogStyles,
 			},
 		);
+
 		dialogDisposables.add(dialog);
 
 		const result = await dialog.show();
+
 		dialogDisposables.dispose();
 
 		return result;

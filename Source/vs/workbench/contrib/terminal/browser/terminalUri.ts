@@ -14,6 +14,7 @@ export function parseTerminalUri(resource: URI): ITerminalIdentifier {
 			`Could not parse terminal uri for resource ${resource}`,
 		);
 	}
+
 	return { workspaceId, instanceId: Number.parseInt(instanceId) };
 }
 export function getTerminalUri(
@@ -29,6 +30,7 @@ export function getTerminalUri(
 }
 export interface ITerminalIdentifier {
 	workspaceId: string;
+
 	instanceId: number | undefined;
 }
 export interface IPartialDragEvent {
@@ -49,8 +51,10 @@ export function getTerminalResourcesFromDragEvent(
 		for (const entry of json) {
 			result.push(URI.parse(entry));
 		}
+
 		return result.length === 0 ? undefined : result;
 	}
+
 	return undefined;
 }
 export function getInstanceFromResource<
@@ -65,5 +69,6 @@ export function getInstanceFromResource<
 			}
 		}
 	}
+
 	return undefined;
 }

@@ -8,12 +8,16 @@ import { IListRenderer } from "./list.js";
 
 export interface IRow {
 	domNode: HTMLElement;
+
 	templateId: string;
+
 	templateData: any;
 }
 export class RowCache<T> implements IDisposable {
 	private cache = new Map<string, IRow[]>();
+
 	private readonly transactionNodesPendingRemoval = new Set<HTMLElement>();
+
 	private inTransaction = false;
 
 	constructor(private renderers: Map<string, IListRenderer<T, any>>) {}
@@ -25,6 +29,7 @@ export class RowCache<T> implements IDisposable {
 	 */
 	alloc(templateId: string): {
 		row: IRow;
+
 		isReusingConnectedDomNode: boolean;
 	} {
 		let result = this.getTemplateCache(templateId).pop();
@@ -43,8 +48,10 @@ export class RowCache<T> implements IDisposable {
 			const renderer = this.getRenderer(templateId);
 
 			const templateData = renderer.renderTemplate(domNode);
+
 			result = { domNode, templateId, templateData };
 		}
+
 		return { row: result, isReusingConnectedDomNode: isStale };
 	}
 	/**
@@ -54,6 +61,7 @@ export class RowCache<T> implements IDisposable {
 		if (!row) {
 			return;
 		}
+
 		this.releaseRow(row);
 	}
 	/**
@@ -63,6 +71,7 @@ export class RowCache<T> implements IDisposable {
 		if (this.inTransaction) {
 			throw new Error("Already in transaction");
 		}
+
 		this.inTransaction = true;
 
 		try {
@@ -71,10 +80,13 @@ export class RowCache<T> implements IDisposable {
 			for (const domNode of this.transactionNodesPendingRemoval) {
 				this.doRemoveNode(domNode);
 			}
+
 			this.transactionNodesPendingRemoval.clear();
+
 			this.inTransaction = false;
 		}
 	}
+
 	private releaseRow(row: IRow): void {
 		const { domNode, templateId } = row;
 
@@ -85,40 +97,53 @@ export class RowCache<T> implements IDisposable {
 				this.doRemoveNode(domNode);
 			}
 		}
+
 		const cache = this.getTemplateCache(templateId);
+
 		cache.push(row);
 	}
+
 	private doRemoveNode(domNode: HTMLElement) {
 		domNode.classList.remove("scrolling");
 
 		domNode.remove();
 	}
+
 	private getTemplateCache(templateId: string): IRow[] {
 		let result = this.cache.get(templateId);
 
 		if (!result) {
 			result = [];
+
 			this.cache.set(templateId, result);
 		}
+
 		return result;
 	}
+
 	dispose(): void {
 		this.cache.forEach((cachedRows, templateId) => {
 			for (const cachedRow of cachedRows) {
 				const renderer = this.getRenderer(templateId);
+
 				renderer.disposeTemplate(cachedRow.templateData);
+
 				cachedRow.templateData = null;
 			}
 		});
+
 		this.cache.clear();
+
 		this.transactionNodesPendingRemoval.clear();
 	}
+
 	private getRenderer(templateId: string): IListRenderer<T, any> {
 		const renderer = this.renderers.get(templateId);
 
 		if (!renderer) {
 			throw new Error(`No renderer found for ${templateId}`);
 		}
+
 		return renderer;
 	}
 }

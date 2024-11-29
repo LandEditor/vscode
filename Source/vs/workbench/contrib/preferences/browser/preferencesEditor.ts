@@ -20,7 +20,9 @@ import {
 
 export class SettingsEditorContribution extends Disposable {
 	static readonly ID: string = "editor.contrib.settings";
+
 	private currentRenderer: IPreferencesRenderer | undefined;
+
 	private readonly disposables = this._register(new DisposableStore());
 
 	constructor(
@@ -33,20 +35,25 @@ export class SettingsEditorContribution extends Disposable {
 		private readonly workspaceContextService: IWorkspaceContextService,
 	) {
 		super();
+
 		this._createPreferencesRenderer();
+
 		this._register(
 			this.editor.onDidChangeModel((e) =>
 				this._createPreferencesRenderer(),
 			),
 		);
+
 		this._register(
 			this.workspaceContextService.onDidChangeWorkbenchState(() =>
 				this._createPreferencesRenderer(),
 			),
 		);
 	}
+
 	private async _createPreferencesRenderer(): Promise<void> {
 		this.disposables.clear();
+
 		this.currentRenderer = undefined;
 
 		const model = this.editor.getModel();
@@ -89,6 +96,7 @@ export class SettingsEditorContribution extends Disposable {
 						break;
 				}
 			}
+
 			this.currentRenderer?.render();
 		}
 	}

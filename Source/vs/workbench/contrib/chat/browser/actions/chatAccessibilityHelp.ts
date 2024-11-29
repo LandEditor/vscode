@@ -24,8 +24,11 @@ import { IChatWidgetService } from "../chat.js";
 
 export class PanelChatAccessibilityHelp implements IAccessibleViewImplentation {
 	readonly priority = 107;
+
 	readonly name = "panelChat";
+
 	readonly type = AccessibleViewType.Help;
+
 	readonly when = ContextKeyExpr.and(
 		ChatContextKeys.location.isEqualTo(ChatAgentLocation.Panel),
 		ChatContextKeys.inQuickChat.negate(),
@@ -51,8 +54,11 @@ export class PanelChatAccessibilityHelp implements IAccessibleViewImplentation {
 
 export class QuickChatAccessibilityHelp implements IAccessibleViewImplentation {
 	readonly priority = 107;
+
 	readonly name = "quickChat";
+
 	readonly type = AccessibleViewType.Help;
+
 	readonly when = ContextKeyExpr.and(
 		ChatContextKeys.inQuickChat,
 		ContextKeyExpr.or(
@@ -89,6 +95,7 @@ export function getAccessibilityHelpText(
 					"The quick chat view is comprised of an input box and a request/response list. The input box is used to make requests and the list is used to display responses.",
 				),
 			);
+
 			content.push(
 				localize(
 					"chat.differenceQuick",
@@ -96,6 +103,7 @@ export function getAccessibilityHelpText(
 				),
 			);
 		}
+
 		if (type === "panelChat") {
 			content.push(
 				localize(
@@ -103,6 +111,7 @@ export function getAccessibilityHelpText(
 					"The panel chat view is a persistent interface that also supports navigating suggested follow-up questions, while the quick chat view is a transient interface for making and viewing requests.",
 				),
 			);
+
 			content.push(
 				localize(
 					"chat.followUp",
@@ -110,12 +119,14 @@ export function getAccessibilityHelpText(
 				),
 			);
 		}
+
 		content.push(
 			localize(
 				"chat.requestHistory",
 				"In the input box, use up and down arrows to navigate your request history. Edit input and use enter or the submit button to run a new request.",
 			),
 		);
+
 		content.push(
 			localize(
 				"chat.inspectResponse",
@@ -123,12 +134,14 @@ export function getAccessibilityHelpText(
 				"<keybinding:editor.action.accessibleView>",
 			),
 		);
+
 		content.push(
 			localize(
 				"chat.announcement",
 				"Chat responses will be announced as they come in. A response will indicate the number of code blocks, if any, and then the rest of the response.",
 			),
 		);
+
 		content.push(
 			localize(
 				"workbench.action.chat.focus",
@@ -136,6 +149,7 @@ export function getAccessibilityHelpText(
 				getChatFocusKeybindingLabel(keybindingService, type, false),
 			),
 		);
+
 		content.push(
 			localize(
 				"workbench.action.chat.focusInput",
@@ -143,6 +157,7 @@ export function getAccessibilityHelpText(
 				getChatFocusKeybindingLabel(keybindingService, type, true),
 			),
 		);
+
 		content.push(
 			localize(
 				"workbench.action.chat.nextCodeBlock",
@@ -167,6 +182,7 @@ export function getAccessibilityHelpText(
 				"Inline chat occurs within a code editor and takes into account the current selection. It is useful for making changes to the current editor. For example, fixing diagnostics, documenting or refactoring code. Keep in mind that AI generated code may be incorrect.",
 			),
 		);
+
 		content.push(
 			localize(
 				"inlineChat.access",
@@ -174,6 +190,7 @@ export function getAccessibilityHelpText(
 				"<keybinding:inlineChat.start>",
 			),
 		);
+
 		content.push(
 			localize(
 				"inlineChat.requestHistory",
@@ -182,6 +199,7 @@ export function getAccessibilityHelpText(
 				"<keybinding:history.showNext>",
 			),
 		);
+
 		content.push(
 			localize(
 				"inlineChat.inspectResponse",
@@ -189,18 +207,21 @@ export function getAccessibilityHelpText(
 				"<keybinding:editor.action.accessibleView>",
 			),
 		);
+
 		content.push(
 			localize(
 				"inlineChat.contextActions",
 				"Context menu actions may run a request prefixed with a /. Type / to discover such ready-made commands.",
 			),
 		);
+
 		content.push(
 			localize(
 				"inlineChat.fix",
 				"If a fix action is invoked, a response will indicate the problem with the current code. A diff editor will be rendered and can be reached by tabbing.",
 			),
 		);
+
 		content.push(
 			localize(
 				"inlineChat.diff",
@@ -208,6 +229,7 @@ export function getAccessibilityHelpText(
 				AccessibleDiffViewerNext.id,
 			),
 		);
+
 		content.push(
 			localize(
 				"inlineChat.toolbar",
@@ -215,6 +237,7 @@ export function getAccessibilityHelpText(
 			),
 		);
 	}
+
 	content.push(
 		localize(
 			"chat.signals",
@@ -242,6 +265,7 @@ export function getChatAccessibilityHelpProvider(
 	if (!inputEditor) {
 		return;
 	}
+
 	const domNode = inputEditor.getDomNode() ?? undefined;
 
 	if (!domNode) {
@@ -249,6 +273,7 @@ export function getChatAccessibilityHelpProvider(
 	}
 
 	const cachedPosition = inputEditor.getPosition();
+
 	inputEditor.getSupportedActions();
 
 	const helpText = getAccessibilityHelpText(type, keybindingService);
@@ -264,12 +289,14 @@ export function getChatAccessibilityHelpProvider(
 		() => {
 			if (type === "panelChat" && cachedPosition) {
 				inputEditor.setPosition(cachedPosition);
+
 				inputEditor.focus();
 			} else if (type === "inlineChat") {
 				// TODO@jrieken find a better way for this
 				const ctrl = <{ focus(): void } | undefined>(
 					editor?.getContribution(INLINE_CHAT_ID)
 				);
+
 				ctrl?.focus();
 			}
 		},
@@ -297,9 +324,11 @@ function getChatFocusKeybindingLabel(
 	} else {
 		kbs = keybindingService.lookupKeybindings("chat.action.focus");
 	}
+
 	if (!kbs?.length) {
 		return fallback;
 	}
+
 	let kb;
 
 	if (type === "panelChat") {
@@ -324,5 +353,6 @@ function getChatFocusKeybindingLabel(
 				?.getAriaLabel();
 		}
 	}
+
 	return !!kb ? ` (${kb})` : fallback;
 }

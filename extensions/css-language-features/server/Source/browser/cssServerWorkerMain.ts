@@ -11,6 +11,7 @@ const pendingMessages: any[] = [];
 const messageHandler = async (e: any) => {
 	if (!initialized) {
 		const l10nLog: string[] = [];
+
 		initialized = true;
 
 		const i10lLocation = e.data.i10lLocation;
@@ -18,6 +19,7 @@ const messageHandler = async (e: any) => {
 		if (i10lLocation) {
 			try {
 				await l10n.config({ uri: i10lLocation });
+
 				l10nLog.push(`l10n: Configured to ${i10lLocation.toString()}.`);
 			} catch (e) {
 				l10nLog.push(
@@ -27,12 +29,15 @@ const messageHandler = async (e: any) => {
 		} else {
 			l10nLog.push(`l10n: No bundle configured.`);
 		}
+
 		await import("./cssServerMain.js");
 
 		if (self.onmessage !== messageHandler) {
 			pendingMessages.forEach((msg) => self.onmessage?.(msg));
+
 			pendingMessages.length = 0;
 		}
+
 		l10nLog.forEach(console.log);
 	} else {
 		pendingMessages.push(e);

@@ -39,10 +39,12 @@ const excludeRegex = new RegExp("^(node_modules|.vscode-test)$", "i");
 
 export interface INpmTaskDefinition extends TaskDefinition {
 	script: string;
+
 	path?: string;
 }
 export interface IFolderTaskItem extends QuickPickItem {
 	label: string;
+
 	task: Task;
 }
 type AutoDetect = "on" | "off";
@@ -53,22 +55,27 @@ export const INSTALL_SCRIPT = "install";
 
 export interface ITaskLocation {
 	document: Uri;
+
 	line: Position;
 }
 export interface ITaskWithLocation {
 	task: Task;
+
 	location?: Location;
 }
 export class NpmTaskProvider implements TaskProvider {
 	constructor(private context: ExtensionContext) {}
+
 	get tasksWithLocation(): Promise<ITaskWithLocation[]> {
 		return provideNpmScripts(this.context, false);
 	}
+
 	public async provideTasks() {
 		const tasks = await provideNpmScripts(this.context, true);
 
 		return tasks.map((task) => task.task);
 	}
+
 	public async resolveTask(_task: Task): Promise<Task | undefined> {
 		const npmTask = (<any>_task.definition).script;
 
@@ -85,6 +92,7 @@ export class NpmTaskProvider implements TaskProvider {
 				// scope is required to be a WorkspaceFolder for resolveTask
 				return undefined;
 			}
+
 			if (kind.path) {
 				packageJsonUri = _task.scope.uri.with({
 					path:
@@ -99,11 +107,13 @@ export class NpmTaskProvider implements TaskProvider {
 					path: _task.scope.uri.path + "/package.json",
 				});
 			}
+
 			const cmd = [kind.script];
 
 			if (kind.script !== INSTALL_SCRIPT) {
 				cmd.unshift("run");
 			}
+
 			return createTask(
 				await getPackageManager(this.context, _task.scope.uri),
 				kind,
@@ -112,6 +122,7 @@ export class NpmTaskProvider implements TaskProvider {
 				packageJsonUri,
 			);
 		}
+
 		return undefined;
 	}
 }
@@ -126,6 +137,7 @@ function isBuildTask(name: string): boolean {
 			return true;
 		}
 	}
+
 	return false;
 }
 
@@ -136,6 +148,7 @@ function isTestTask(name: string): boolean {
 			return true;
 		}
 	}
+
 	return false;
 }
 function isPrePostScript(name: string): boolean {
@@ -170,6 +183,7 @@ function isPrePostScript(name: string): boolean {
 			return true;
 		}
 	}
+
 	return false;
 }
 export function isWorkspaceFolder(value: any): value is WorkspaceFolder {
@@ -187,6 +201,7 @@ export async function getPackageManager(
 	if (packageManagerName === "auto") {
 		const { name, multipleLockFilesDetected: multiplePMDetected } =
 			await findPreferredPM(folder.fsPath);
+
 		packageManagerName = name;
 
 		const neverShowWarning = "npm.multiplePMWarning.neverShow";
@@ -205,6 +220,7 @@ export async function getPackageManager(
 			const neverShowAgain = l10n.t("Do not show again");
 
 			const learnMore = l10n.t("Learn more");
+
 			window
 				.showInformationMessage(
 					multiplePMWarning,
@@ -231,6 +247,7 @@ export async function getPackageManager(
 				});
 		}
 	}
+
 	return packageManagerName;
 }
 export async function hasNpmScripts(): Promise<boolean> {
@@ -239,6 +256,7 @@ export async function hasNpmScripts(): Promise<boolean> {
 	if (!folders) {
 		return false;
 	}
+
 	try {
 		for (const folder of folders) {
 			if (
@@ -260,6 +278,7 @@ export async function hasNpmScripts(): Promise<boolean> {
 				}
 			}
 		}
+
 		return false;
 	} catch (error) {
 		return Promise.reject(error);
@@ -280,6 +299,7 @@ async function detectNpmScripts(
 	if (!folders) {
 		return emptyTasks;
 	}
+
 	try {
 		for (const folder of folders) {
 			if (
@@ -306,12 +326,15 @@ async function detectNpmScripts(
 							path,
 							showWarning,
 						);
+
 						visitedPackageJsonFiles.add(path.fsPath);
+
 						allTasks.push(...tasks);
 					}
 				}
 			}
 		}
+
 		return allTasks;
 	} catch (error) {
 		return Promise.reject(error);
@@ -327,6 +350,7 @@ export async function detectNpmScriptsForFolder(
 		if (excludeRegex.test(Utils.basename(folder))) {
 			return folderTasks;
 		}
+
 		const relativePattern = new RelativePattern(
 			folder.fsPath,
 			"**/package.json",
@@ -346,12 +370,15 @@ export async function detectNpmScriptsForFolder(
 					path,
 					true,
 				);
+
 				visitedPackageJsonFiles.add(path.fsPath);
+
 				folderTasks.push(
 					...tasks.map((t) => ({ label: t.task.name, task: t.task })),
 				);
 			}
 		}
+
 		return folderTasks;
 	} catch (error) {
 		return Promise.reject(error);
@@ -364,6 +391,7 @@ export async function provideNpmScripts(
 	if (!cachedTasks) {
 		cachedTasks = await detectNpmScripts(context, showWarning);
 	}
+
 	return cachedTasks;
 }
 export function isAutoDetectionEnabled(folder?: WorkspaceFolder): boolean {
@@ -377,6 +405,7 @@ function isExcluded(folder: WorkspaceFolder, packageJsonUri: Uri) {
 	function testForExclusionPattern(path: string, pattern: string): boolean {
 		return minimatch(path, pattern, { dot: true });
 	}
+
 	const exclude = workspace
 		.getConfiguration("npm", folder.uri)
 		.get<string | string[]>("exclude");
@@ -394,6 +423,7 @@ function isExcluded(folder: WorkspaceFolder, packageJsonUri: Uri) {
 			return true;
 		}
 	}
+
 	return false;
 }
 function isDebugScript(script: string): boolean {
@@ -415,11 +445,13 @@ async function provideNpmScriptsForFolder(
 	if (!folder) {
 		return emptyTasks;
 	}
+
 	const scripts = await getScripts(packageJsonUri);
 
 	if (!scripts) {
 		return emptyTasks;
 	}
+
 	const result: ITaskWithLocation[] = [];
 
 	const packageManager = await getPackageManager(
@@ -438,11 +470,13 @@ async function provideNpmScriptsForFolder(
 			value,
 			undefined,
 		);
+
 		result.push({
 			task,
 			location: new Location(packageJsonUri, nameRange),
 		});
 	}
+
 	if (
 		!workspace
 			.getConfiguration("npm", folder)
@@ -461,12 +495,14 @@ async function provideNpmScriptsForFolder(
 			),
 		});
 	}
+
 	return result;
 }
 export function getTaskName(script: string, relativePath: string | undefined) {
 	if (relativePath && relativePath.length) {
 		return `${script} - ${relativePath.substring(0, relativePath.length - 1)}`;
 	}
+
 	return script;
 }
 export async function createTask(
@@ -485,6 +521,7 @@ export async function createTask(
 	} else {
 		kind = script;
 	}
+
 	function getCommandLine(cmd: string[]): (string | ShellQuotedString)[] {
 		const result: (string | ShellQuotedString)[] = new Array(cmd.length);
 
@@ -500,6 +537,7 @@ export async function createTask(
 				result[i] = cmd[i];
 			}
 		}
+
 		if (
 			workspace
 				.getConfiguration("npm", folder.uri)
@@ -507,8 +545,10 @@ export async function createTask(
 		) {
 			result.unshift("--silent");
 		}
+
 		return result;
 	}
+
 	function getRelativePath(packageJsonUri: Uri): string {
 		const rootUri = folder.uri;
 
@@ -519,6 +559,7 @@ export async function createTask(
 
 		return absolutePath.substring(rootUri.path.length + 1);
 	}
+
 	const relativePackageJson = getRelativePath(packageJsonUri);
 
 	if (relativePackageJson.length && !kind.path) {
@@ -527,6 +568,7 @@ export async function createTask(
 			relativePackageJson.length - 1,
 		);
 	}
+
 	const taskName = getTaskName(kind.script, relativePackageJson);
 
 	const cwd = path.dirname(packageJsonUri.fsPath);
@@ -539,6 +581,7 @@ export async function createTask(
 		new ShellExecution(packageManager, getCommandLine(cmd), { cwd: cwd }),
 		matcher,
 	);
+
 	task.detail = scriptValue;
 
 	const lowerCaseTaskName = kind.script.toLowerCase();
@@ -553,6 +596,7 @@ export async function createTask(
 		// todo@connor4312: all scripts are now debuggable, what is a 'debug script'?
 		task.group = TaskGroup.Rebuild; // hack: use Rebuild group to tag debug scripts
 	}
+
 	return task;
 }
 export function getPackageJsonUriFromTask(task: Task): Uri | null {
@@ -569,6 +613,7 @@ export function getPackageJsonUriFromTask(task: Task): Uri | null {
 			return Uri.file(path.join(task.scope.uri.fsPath, "package.json"));
 		}
 	}
+
 	return null;
 }
 export async function hasPackageJson(): Promise<boolean> {
@@ -576,6 +621,7 @@ export async function hasPackageJson(): Promise<boolean> {
 	if (await hasRootPackageJson()) {
 		return true;
 	}
+
 	const token = new CancellationTokenSource();
 	// Search for files for max 1 second.
 	const timeout = setTimeout(() => token.cancel(), 1000);
@@ -586,6 +632,7 @@ export async function hasPackageJson(): Promise<boolean> {
 		1,
 		token.token,
 	);
+
 	clearTimeout(timeout);
 
 	return files.length > 0;
@@ -596,6 +643,7 @@ async function hasRootPackageJson(): Promise<boolean> {
 	if (!folders) {
 		return false;
 	}
+
 	for (const folder of folders) {
 		if (folder.uri.scheme === "file") {
 			const packageJson = path.join(folder.uri.fsPath, "package.json");
@@ -605,6 +653,7 @@ async function hasRootPackageJson(): Promise<boolean> {
 			}
 		}
 	}
+
 	return false;
 }
 async function exists(file: string): Promise<boolean> {
@@ -631,6 +680,7 @@ export async function runScript(
 			folder,
 			uri,
 		);
+
 		tasks.executeTask(task);
 	}
 }
@@ -661,6 +711,7 @@ export function findScriptAtPosition(
 	if (!read) {
 		return undefined;
 	}
+
 	for (const script of read.scripts) {
 		if (
 			script.nameRange.start.isBeforeOrEqual(position) &&
@@ -669,17 +720,20 @@ export function findScriptAtPosition(
 			return script.name;
 		}
 	}
+
 	return undefined;
 }
 export async function getScripts(packageJsonUri: Uri) {
 	if (packageJsonUri.scheme !== "file") {
 		return undefined;
 	}
+
 	const packageJson = packageJsonUri.fsPath;
 
 	if (!(await exists(packageJson))) {
 		return undefined;
 	}
+
 	try {
 		const document: TextDocument =
 			await workspace.openTextDocument(packageJsonUri);

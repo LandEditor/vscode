@@ -8,9 +8,11 @@ export function activate(_context: vscode.ExtensionContext) {
 	vscode.workspace.registerRemoteAuthorityResolver("test", {
 		async resolve(_authority: string): Promise<vscode.ResolverResult> {
 			console.log(`Resolving ${_authority}`);
+
 			console.log(
 				`Activating vscode.github-authentication to simulate auth`,
 			);
+
 			await vscode.extensions
 				.getExtension("vscode.github-authentication")
 				?.activate();
@@ -28,15 +30,23 @@ export function activate(_context: vscode.ExtensionContext) {
  */
 class InitialManagedMessagePassing implements vscode.ManagedMessagePassing {
 	private readonly dataEmitter = new vscode.EventEmitter<Uint8Array>();
+
 	private readonly closeEmitter = new vscode.EventEmitter<
 		Error | undefined
 	>();
+
 	private readonly endEmitter = new vscode.EventEmitter<void>();
+
 	public readonly onDidReceiveMessage = this.dataEmitter.event;
+
 	public readonly onDidClose = this.closeEmitter.event;
+
 	public readonly onDidEnd = this.endEmitter.event;
+
 	private _actual: OpeningManagedMessagePassing | null = null;
+
 	private _isDisposed = false;
+
 	public send(d: Uint8Array): void {
 		if (this._actual) {
 			// we already got the HTTP headers
@@ -44,6 +54,7 @@ class InitialManagedMessagePassing implements vscode.ManagedMessagePassing {
 
 			return;
 		}
+
 		if (this._isDisposed) {
 			// got disposed in the meantime, ignore
 			return;
@@ -57,6 +68,7 @@ class InitialManagedMessagePassing implements vscode.ManagedMessagePassing {
 
 		if (!match) {
 			console.error(`Coult not parse ${str}`);
+
 			this.closeEmitter.fire(new Error(`Coult not parse ${str}`));
 
 			return;
@@ -65,6 +77,7 @@ class InitialManagedMessagePassing implements vscode.ManagedMessagePassing {
 		const url = new URL(match[1]);
 		// extract path and query from url using browser's URL
 		const parsedUrl = new URL(url);
+
 		this._actual = new OpeningManagedMessagePassing(
 			parsedUrl,
 			this.dataEmitter,
@@ -72,18 +85,22 @@ class InitialManagedMessagePassing implements vscode.ManagedMessagePassing {
 			this.endEmitter,
 		);
 	}
+
 	public end(): void {
 		if (this._actual) {
 			this._actual.end();
 
 			return;
 		}
+
 		this._isDisposed = true;
 	}
 }
 class OpeningManagedMessagePassing {
 	private readonly socket: WebSocket;
+
 	private isOpen = false;
+
 	private bufferedData: Uint8Array[] = [];
 
 	constructor(
@@ -95,21 +112,28 @@ class OpeningManagedMessagePassing {
 		this.socket = new WebSocket(
 			`ws://localhost:9888${url.pathname}${url.search.replace(/skipWebSocketFrames=true/, "skipWebSocketFrames=false")}`,
 		);
+
 		this.socket.addEventListener("close", () =>
 			closeEmitter.fire(undefined),
 		);
+
 		this.socket.addEventListener("error", (e) =>
 			closeEmitter.fire(new Error(String(e))),
 		);
+
 		this.socket.addEventListener("message", async (e) => {
 			const arrayBuffer = await e.data.arrayBuffer();
+
 			dataEmitter.fire(new Uint8Array(arrayBuffer));
 		});
+
 		this.socket.addEventListener("open", () => {
 			while (this.bufferedData.length > 0) {
 				const first = this.bufferedData.shift()!;
+
 				this.socket.send(first);
 			}
+
 			this.isOpen = true;
 			// https://tools.ietf.org/html/rfc6455#section-4
 			// const requestNonce = req.headers['sec-websocket-key'];
@@ -125,20 +149,25 @@ class OpeningManagedMessagePassing {
 			];
 
 			const textEncoder = new TextEncoder();
+
 			textEncoder.encode(responseHeaders.join("\r\n") + "\r\n\r\n");
+
 			dataEmitter.fire(
 				textEncoder.encode(responseHeaders.join("\r\n") + "\r\n\r\n"),
 			);
 		});
 	}
+
 	public send(d: Uint8Array): void {
 		if (!this.isOpen) {
 			this.bufferedData.push(d);
 
 			return;
 		}
+
 		this.socket.send(d);
 	}
+
 	public end(): void {
 		this.socket.close();
 	}

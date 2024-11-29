@@ -18,6 +18,7 @@ import {
 
 export interface IWindowsShellHelper extends IDisposable {
 	readonly onShellNameChanged: Event<string>;
+
 	readonly onShellTypeChanged: Event<TerminalShellType | undefined>;
 
 	getShellType(title: string): TerminalShellType | undefined;
@@ -51,21 +52,25 @@ export class WindowsShellHelper
 	implements IWindowsShellHelper
 {
 	private _currentRequest: Promise<string> | undefined;
+
 	private _shellType: TerminalShellType | undefined;
 
 	get shellType(): TerminalShellType | undefined {
 		return this._shellType;
 	}
+
 	private _shellTitle: string = "";
 
 	get shellTitle(): string {
 		return this._shellTitle;
 	}
+
 	private readonly _onShellNameChanged = new Emitter<string>();
 
 	get onShellNameChanged(): Event<string> {
 		return this._onShellNameChanged.event;
 	}
+
 	private readonly _onShellTypeChanged = new Emitter<
 		TerminalShellType | undefined
 	>();
@@ -90,6 +95,7 @@ export class WindowsShellHelper
 		if (this._store.isDisposed) {
 			return;
 		}
+
 		this.checkShell();
 	}
 
@@ -100,13 +106,17 @@ export class WindowsShellHelper
 			// could lead to a race condition but it would be recovered from when
 			// data stops and should cover the majority of cases
 			await timeout(300);
+
 			this.getShellName().then((title) => {
 				const type = this.getShellType(title);
 
 				if (type !== this._shellType) {
 					this._onShellTypeChanged.fire(type);
+
 					this._onShellNameChanged.fire(title);
+
 					this._shellType = type;
+
 					this._shellTitle = title;
 				}
 			});
@@ -117,17 +127,21 @@ export class WindowsShellHelper
 		if (!tree) {
 			return "";
 		}
+
 		if (SHELL_EXECUTABLES.indexOf(tree.name) === -1) {
 			return tree.name;
 		}
+
 		for (const regex of SHELL_EXECUTABLE_REGEXES) {
 			if (tree.name.match(regex)) {
 				return tree.name;
 			}
 		}
+
 		if (!tree.children || tree.children.length === 0) {
 			return tree.name;
 		}
+
 		let favouriteChild = 0;
 
 		for (; favouriteChild < tree.children.length; favouriteChild++) {
@@ -136,13 +150,16 @@ export class WindowsShellHelper
 			if (!child.children || child.children.length === 0) {
 				break;
 			}
+
 			if (child.children[0].name !== "conhost.exe") {
 				break;
 			}
 		}
+
 		if (favouriteChild >= tree.children.length) {
 			return tree.name;
 		}
+
 		return this.traverseTree(tree.children[favouriteChild]);
 	}
 
@@ -157,13 +174,17 @@ export class WindowsShellHelper
 		if (this._currentRequest) {
 			return this._currentRequest;
 		}
+
 		if (!windowsProcessTree) {
 			windowsProcessTree = await import("@vscode/windows-process-tree");
 		}
+
 		this._currentRequest = new Promise<string>((resolve) => {
 			windowsProcessTree.getProcessTree(this._rootProcessId, (tree) => {
 				const name = this.traverseTree(tree);
+
 				this._currentRequest = undefined;
+
 				resolve(name);
 			});
 		});
@@ -203,6 +224,7 @@ export class WindowsShellHelper
 				if (executable.match(/python(\d(\.\d{0,2})?)?\.exe/)) {
 					return GeneralShellType.Python;
 				}
+
 				return undefined;
 		}
 	}

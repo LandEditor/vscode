@@ -47,72 +47,99 @@ export class DragAndDropController
 	implements IEditorContribution
 {
 	public static readonly ID = "editor.contrib.dragAndDrop";
+
 	private readonly _editor: ICodeEditor;
+
 	private _dragSelection: Selection | null;
+
 	private readonly _dndDecorationIds: IEditorDecorationsCollection;
+
 	private _mouseDown: boolean;
+
 	private _modifierPressed: boolean;
+
 	static readonly TRIGGER_KEY_VALUE = isMacintosh
 		? KeyCode.Alt
 		: KeyCode.Ctrl;
+
 	static get(editor: ICodeEditor): DragAndDropController | null {
 		return editor.getContribution<DragAndDropController>(
 			DragAndDropController.ID,
 		);
 	}
+
 	constructor(editor: ICodeEditor) {
 		super();
+
 		this._editor = editor;
+
 		this._dndDecorationIds = this._editor.createDecorationsCollection();
+
 		this._register(
 			this._editor.onMouseDown((e: IEditorMouseEvent) =>
 				this._onEditorMouseDown(e),
 			),
 		);
+
 		this._register(
 			this._editor.onMouseUp((e: IEditorMouseEvent) =>
 				this._onEditorMouseUp(e),
 			),
 		);
+
 		this._register(
 			this._editor.onMouseDrag((e: IEditorMouseEvent) =>
 				this._onEditorMouseDrag(e),
 			),
 		);
+
 		this._register(
 			this._editor.onMouseDrop((e: IPartialEditorMouseEvent) =>
 				this._onEditorMouseDrop(e),
 			),
 		);
+
 		this._register(
 			this._editor.onMouseDropCanceled(() =>
 				this._onEditorMouseDropCanceled(),
 			),
 		);
+
 		this._register(
 			this._editor.onKeyDown((e: IKeyboardEvent) =>
 				this.onEditorKeyDown(e),
 			),
 		);
+
 		this._register(
 			this._editor.onKeyUp((e: IKeyboardEvent) => this.onEditorKeyUp(e)),
 		);
+
 		this._register(
 			this._editor.onDidBlurEditorWidget(() => this.onEditorBlur()),
 		);
+
 		this._register(
 			this._editor.onDidBlurEditorText(() => this.onEditorBlur()),
 		);
+
 		this._mouseDown = false;
+
 		this._modifierPressed = false;
+
 		this._dragSelection = null;
 	}
+
 	private onEditorBlur() {
 		this._removeDecoration();
+
 		this._dragSelection = null;
+
 		this._mouseDown = false;
+
 		this._modifierPressed = false;
 	}
+
 	private onEditorKeyDown(e: IKeyboardEvent): void {
 		if (
 			!this._editor.getOption(EditorOption.dragAndDrop) ||
@@ -120,15 +147,18 @@ export class DragAndDropController
 		) {
 			return;
 		}
+
 		if (hasTriggerModifier(e)) {
 			this._modifierPressed = true;
 		}
+
 		if (this._mouseDown && hasTriggerModifier(e)) {
 			this._editor.updateOptions({
 				mouseStyle: "copy",
 			});
 		}
 	}
+
 	private onEditorKeyUp(e: IKeyboardEvent): void {
 		if (
 			!this._editor.getOption(EditorOption.dragAndDrop) ||
@@ -136,9 +166,11 @@ export class DragAndDropController
 		) {
 			return;
 		}
+
 		if (hasTriggerModifier(e)) {
 			this._modifierPressed = false;
 		}
+
 		if (
 			this._mouseDown &&
 			e.keyCode === DragAndDropController.TRIGGER_KEY_VALUE
@@ -148,9 +180,11 @@ export class DragAndDropController
 			});
 		}
 	}
+
 	private _onEditorMouseDown(mouseEvent: IEditorMouseEvent): void {
 		this._mouseDown = true;
 	}
+
 	private _onEditorMouseUp(mouseEvent: IEditorMouseEvent): void {
 		this._mouseDown = false;
 		// Whenever users release the mouse, the drag and drop operation should finish and the cursor should revert to text.
@@ -158,6 +192,7 @@ export class DragAndDropController
 			mouseStyle: "text",
 		});
 	}
+
 	private _onEditorMouseDrag(mouseEvent: IEditorMouseEvent): void {
 		const target = mouseEvent.target;
 
@@ -176,6 +211,7 @@ export class DragAndDropController
 				return;
 			}
 		}
+
 		if (hasTriggerModifier(mouseEvent.event)) {
 			this._editor.updateOptions({
 				mouseStyle: "copy",
@@ -185,6 +221,7 @@ export class DragAndDropController
 				mouseStyle: "default",
 			});
 		}
+
 		if (target.position) {
 			if (this._dragSelection.containsPosition(target.position)) {
 				this._removeDecoration();
@@ -193,14 +230,19 @@ export class DragAndDropController
 			}
 		}
 	}
+
 	private _onEditorMouseDropCanceled() {
 		this._editor.updateOptions({
 			mouseStyle: "text",
 		});
+
 		this._removeDecoration();
+
 		this._dragSelection = null;
+
 		this._mouseDown = false;
 	}
+
 	private _onEditorMouseDrop(mouseEvent: IPartialEditorMouseEvent): void {
 		if (
 			mouseEvent.target &&
@@ -224,6 +266,7 @@ export class DragAndDropController
 							selectionStartLineNumber,
 							selectionStartColumn,
 						} = primarySelection;
+
 						newSelections = [
 							new Selection(
 								selectionStartLineNumber,
@@ -267,6 +310,7 @@ export class DragAndDropController
 							.equals(newCursorPosition))) // we allow users to paste content beside the selection
 			) {
 				this._editor.pushUndoStop();
+
 				this._editor.executeCommand(
 					DragAndDropController.ID,
 					new DragAndDropCommand(
@@ -276,21 +320,28 @@ export class DragAndDropController
 							this._modifierPressed,
 					),
 				);
+
 				this._editor.pushUndoStop();
 			}
 		}
+
 		this._editor.updateOptions({
 			mouseStyle: "text",
 		});
+
 		this._removeDecoration();
+
 		this._dragSelection = null;
+
 		this._mouseDown = false;
 	}
+
 	private static readonly _DECORATION_OPTIONS =
 		ModelDecorationOptions.register({
 			description: "dnd-target",
 			className: "dnd-target",
 		});
+
 	public showAt(position: Position): void {
 		this._dndDecorationIds.set([
 			{
@@ -303,17 +354,21 @@ export class DragAndDropController
 				options: DragAndDropController._DECORATION_OPTIONS,
 			},
 		]);
+
 		this._editor.revealPosition(position, ScrollType.Immediate);
 	}
+
 	private _removeDecoration(): void {
 		this._dndDecorationIds.clear();
 	}
+
 	private _hitContent(target: IMouseTarget): boolean {
 		return (
 			target.type === MouseTargetType.CONTENT_TEXT ||
 			target.type === MouseTargetType.CONTENT_EMPTY
 		);
 	}
+
 	private _hitMargin(target: IMouseTarget): boolean {
 		return (
 			target.type === MouseTargetType.GUTTER_GLYPH_MARGIN ||
@@ -321,10 +376,14 @@ export class DragAndDropController
 			target.type === MouseTargetType.GUTTER_LINE_DECORATIONS
 		);
 	}
+
 	public override dispose(): void {
 		this._removeDecoration();
+
 		this._dragSelection = null;
+
 		this._mouseDown = false;
+
 		this._modifierPressed = false;
 
 		super.dispose();

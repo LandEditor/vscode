@@ -37,6 +37,7 @@ export class ShowSignalSoundHelp extends Action2 {
 			},
 		});
 	}
+
 	override async run(accessor: ServicesAccessor): Promise<void> {
 		const accessibilitySignalService = accessor.get(
 			IAccessibilitySignalService,
@@ -89,7 +90,9 @@ export class ShowSignalSoundHelp extends Action2 {
 				}
 			>(),
 		);
+
 		qp.items = items;
+
 		qp.selectedItems = items.filter(
 			(i) =>
 				accessibilitySignalService.isSoundEnabled(i.signal) ||
@@ -98,6 +101,7 @@ export class ShowSignalSoundHelp extends Action2 {
 						i.signal.settingsKey + ".sound",
 					) !== "never"),
 		);
+
 		disposables.add(
 			qp.onDidAccept(() => {
 				const enabledSounds = qp.selectedItems.map((i) => i.signal);
@@ -110,8 +114,10 @@ export class ShowSignalSoundHelp extends Action2 {
 					let { sound, announcement } =
 						configurationService.getValue<{
 							sound: string;
+
 							announcement?: string;
 						}>(signal.settingsKey);
+
 					sound = userGestureSignals.includes(signal)
 						? "userGesture"
 						: accessibilityService.isScreenReaderOptimized()
@@ -129,6 +135,7 @@ export class ShowSignalSoundHelp extends Action2 {
 						});
 					}
 				}
+
 				for (const signal of disabledSounds) {
 					const announcement = configurationService.getValue(
 						signal.settingsKey + ".announcement",
@@ -142,11 +149,14 @@ export class ShowSignalSoundHelp extends Action2 {
 					const value = announcement
 						? { sound, announcement }
 						: { sound };
+
 					configurationService.updateValue(signal.settingsKey, value);
 				}
+
 				qp.hide();
 			}),
 		);
+
 		disposables.add(
 			qp.onDidTriggerItemButton((e) => {
 				preferencesService.openUserSettings({
@@ -158,6 +168,7 @@ export class ShowSignalSoundHelp extends Action2 {
 				});
 			}),
 		);
+
 		disposables.add(
 			qp.onDidChangeActive(() => {
 				accessibilitySignalService.playSound(
@@ -167,12 +178,16 @@ export class ShowSignalSoundHelp extends Action2 {
 				);
 			}),
 		);
+
 		disposables.add(qp.onDidHide(() => disposables.dispose()));
+
 		qp.placeholder = localize(
 			"sounds.help.placeholder",
 			"Select a sound to play and configure",
 		);
+
 		qp.canSelectMany = true;
+
 		await qp.show();
 	}
 }
@@ -207,6 +222,7 @@ export class ShowAccessibilityAnnouncementHelp extends Action2 {
 			},
 		});
 	}
+
 	override async run(accessor: ServicesAccessor): Promise<void> {
 		const accessibilitySignalService = accessor.get(
 			IAccessibilitySignalService,
@@ -260,7 +276,9 @@ export class ShowAccessibilityAnnouncementHelp extends Action2 {
 				}
 			>(),
 		);
+
 		qp.items = items;
+
 		qp.selectedItems = items.filter(
 			(i) =>
 				accessibilitySignalService.isAnnouncementEnabled(i.signal) ||
@@ -272,6 +290,7 @@ export class ShowAccessibilityAnnouncementHelp extends Action2 {
 
 		const screenReaderOptimized =
 			accessibilityService.isScreenReaderOptimized();
+
 		disposables.add(
 			qp.onDidAccept(() => {
 				if (!screenReaderOptimized) {
@@ -280,6 +299,7 @@ export class ShowAccessibilityAnnouncementHelp extends Action2 {
 
 					return;
 				}
+
 				const enabledAnnouncements = qp.selectedItems.map(
 					(i) => i.signal,
 				);
@@ -295,19 +315,23 @@ export class ShowAccessibilityAnnouncementHelp extends Action2 {
 					let { sound, announcement } =
 						configurationService.getValue<{
 							sound: string;
+
 							announcement?: string;
 						}>(signal.settingsKey);
+
 					announcement = userGestureSignals.includes(signal)
 						? "userGesture"
 						: signal.announcementMessage &&
 							  accessibilityService.isScreenReaderOptimized()
 							? "auto"
 							: undefined;
+
 					configurationService.updateValue(signal.settingsKey, {
 						sound,
 						announcement,
 					});
 				}
+
 				for (const signal of disabledAnnouncements) {
 					const announcement = getDisabledSettingValue(
 						userGestureSignals.includes(signal),
@@ -321,11 +345,14 @@ export class ShowAccessibilityAnnouncementHelp extends Action2 {
 					const value = announcement
 						? { sound, announcement }
 						: { sound };
+
 					configurationService.updateValue(signal.settingsKey, value);
 				}
+
 				qp.hide();
 			}),
 		);
+
 		disposables.add(
 			qp.onDidTriggerItemButton((e) => {
 				preferencesService.openUserSettings({
@@ -337,7 +364,9 @@ export class ShowAccessibilityAnnouncementHelp extends Action2 {
 				});
 			}),
 		);
+
 		disposables.add(qp.onDidHide(() => disposables.dispose()));
+
 		qp.placeholder = screenReaderOptimized
 			? localize(
 					"announcement.help.placeholder",
@@ -347,7 +376,9 @@ export class ShowAccessibilityAnnouncementHelp extends Action2 {
 					"announcement.help.placeholder.disabled",
 					"Screen reader is not active, announcements are disabled by default.",
 				);
+
 		qp.canSelectMany = true;
+
 		await qp.show();
 	}
 }

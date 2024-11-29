@@ -105,6 +105,7 @@ class RemoteConnectionFailureNotificationContribution
 							}),
 					});
 				}
+
 				notificationService.prompt(
 					Severity.Error,
 					nls.localize(
@@ -117,12 +118,14 @@ class RemoteConnectionFailureNotificationContribution
 			}
 		});
 	}
+
 	private _getTroubleshootingURL(): URI | null {
 		const remoteAgentConnection = this._remoteAgentService.getConnection();
 
 		if (!remoteAgentConnection) {
 			return null;
 		}
+
 		const connectionData =
 			this._remoteAuthorityResolverService.getConnectionData(
 				remoteAgentConnection.remoteAuthority,
@@ -134,6 +137,7 @@ class RemoteConnectionFailureNotificationContribution
 		) {
 			return null;
 		}
+
 		return URI.from({
 			scheme: "http",
 			authority: `${connectionData.connectTo.host}:${connectionData.connectTo.port}`,

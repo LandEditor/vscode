@@ -48,7 +48,9 @@ export class TerminalAccessibilityHelpProvider
 	implements IAccessibleViewContentProvider
 {
 	id = AccessibleViewProviderId.TerminalHelp;
+
 	private readonly _hasShellIntegration: boolean = false;
+
 	onClose() {
 		const expr = ContextKeyExpr.and(
 			accessibleViewIsShown,
@@ -65,13 +67,16 @@ export class TerminalAccessibilityHelpProvider
 		} else {
 			this._instance.focus();
 		}
+
 		this.dispose();
 	}
+
 	options: IAccessibleViewOptions = {
 		type: AccessibleViewType.Help,
 		readMoreUrl:
 			"https://code.visualstudio.com/docs/editor/accessibility#_terminal-accessibility",
 	};
+
 	verbositySettingKey = AccessibilityVerbositySettingId.Terminal;
 
 	constructor(
@@ -94,9 +99,11 @@ export class TerminalAccessibilityHelpProvider
 		private readonly _contextKeyService: IContextKeyService,
 	) {
 		super();
+
 		this._hasShellIntegration =
 			_xterm.shellIntegration.status === ShellIntegrationStatus.VSCode;
 	}
+
 	provideContent(): string {
 		const content = [
 			localize(
@@ -137,6 +144,7 @@ export class TerminalAccessibilityHelpProvider
 				),
 			);
 		}
+
 		if (this._instance.shellType === WindowsShellType.CommandPrompt) {
 			content.push(
 				localize(
@@ -145,6 +153,7 @@ export class TerminalAccessibilityHelpProvider
 				),
 			);
 		}
+
 		if (this._hasShellIntegration) {
 			content.push(
 				localize(
@@ -152,6 +161,7 @@ export class TerminalAccessibilityHelpProvider
 					"The terminal has a feature called shell integration that offers an enhanced experience and provides useful commands for screen readers such as:",
 				),
 			);
+
 			content.push(
 				"- " +
 					localize(
@@ -160,6 +170,7 @@ export class TerminalAccessibilityHelpProvider
 						TerminalAccessibilityCommandId.AccessibleBufferGoToNextCommand,
 					),
 			);
+
 			content.push(
 				"- " +
 					localize(
@@ -168,6 +179,7 @@ export class TerminalAccessibilityHelpProvider
 						TerminalAccessibilityCommandId.AccessibleBufferGoToPreviousCommand,
 					),
 			);
+
 			content.push(
 				"- " +
 					localize(
@@ -176,6 +188,7 @@ export class TerminalAccessibilityHelpProvider
 						AccessibilityCommandId.GoToSymbol,
 					),
 			);
+
 			content.push(
 				"- " +
 					localize(
@@ -184,6 +197,7 @@ export class TerminalAccessibilityHelpProvider
 						TerminalHistoryCommandId.RunRecentCommand,
 					),
 			);
+
 			content.push(
 				"- " +
 					localize(
@@ -200,6 +214,7 @@ export class TerminalAccessibilityHelpProvider
 				),
 			);
 		}
+
 		return content.join("\n");
 	}
 }

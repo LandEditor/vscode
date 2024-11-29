@@ -51,6 +51,7 @@ const HistoryNavigationBackwardsEnablementContext =
 
 export interface IHistoryNavigationContext extends IDisposable {
 	historyNavigationForwardsEnablement: IContextKey<boolean>;
+
 	historyNavigationBackwardsEnablement: IContextKey<boolean>;
 }
 let lastFocusedWidget: IHistoryNavigationWidget | undefined = undefined;
@@ -64,6 +65,7 @@ export function registerAndCreateHistoryNavigationContext(
 	if (widgets.includes(widget)) {
 		throw new Error("Cannot register the same widget multiple times");
 	}
+
 	widgets.push(widget);
 
 	const disposableStore = new DisposableStore();
@@ -85,6 +87,7 @@ export function registerAndCreateHistoryNavigationContext(
 
 	const onDidFocus = () => {
 		historyNavigationWidgetFocus.set(true);
+
 		lastFocusedWidget = widget;
 	};
 
@@ -99,11 +102,15 @@ export function registerAndCreateHistoryNavigationContext(
 	if (isActiveElement(widget.element)) {
 		onDidFocus();
 	}
+
 	disposableStore.add(widget.onDidFocus(() => onDidFocus()));
+
 	disposableStore.add(widget.onDidBlur(() => onDidBlur()));
+
 	disposableStore.add(
 		toDisposable(() => {
 			widgets.splice(widgets.indexOf(widget), 1);
+
 			onDidBlur();
 		}),
 	);
@@ -129,6 +136,7 @@ export class ContextScopedHistoryInputBox extends HistoryInputBox {
 		const scopedContextKeyService = this._register(
 			contextKeyService.createScoped(this.element),
 		);
+
 		this._register(
 			registerAndCreateHistoryNavigationContext(
 				scopedContextKeyService,
@@ -150,6 +158,7 @@ export class ContextScopedFindInput extends FindInput {
 		const scopedContextKeyService = this._register(
 			contextKeyService.createScoped(this.inputBox.element),
 		);
+
 		this._register(
 			registerAndCreateHistoryNavigationContext(
 				scopedContextKeyService,
@@ -172,6 +181,7 @@ export class ContextScopedReplaceInput extends ReplaceInput {
 		const scopedContextKeyService = this._register(
 			contextKeyService.createScoped(this.inputBox.element),
 		);
+
 		this._register(
 			registerAndCreateHistoryNavigationContext(
 				scopedContextKeyService,

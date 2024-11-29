@@ -63,15 +63,21 @@ export class NotebookDiffEditorInput extends DiffEditorInput {
 			viewType,
 		);
 	}
+
 	static override readonly ID: string = "workbench.input.diffNotebookInput";
+
 	private _modifiedTextModel: IResolvedNotebookEditorModel | null = null;
+
 	private _originalTextModel: IResolvedNotebookEditorModel | null = null;
+
 	override get resource() {
 		return this.modified.resource;
 	}
+
 	override get editorId() {
 		return this.viewType;
 	}
+
 	private _cachedModel: NotebookDiffEditorModel | undefined = undefined;
 
 	constructor(
@@ -85,14 +91,17 @@ export class NotebookDiffEditorInput extends DiffEditorInput {
 	) {
 		super(name, description, original, modified, undefined, editorService);
 	}
+
 	override get typeId(): string {
 		return NotebookDiffEditorInput.ID;
 	}
+
 	override async resolve(): Promise<NotebookDiffEditorModel> {
 		const [originalEditorModel, modifiedEditorModel] = await Promise.all([
 			this.original.resolve(),
 			this.modified.resolve(),
 		]);
+
 		this._cachedModel?.dispose();
 		// TODO@rebornix check how we restore the editor in text diff editor
 		if (!modifiedEditorModel) {
@@ -100,13 +109,17 @@ export class NotebookDiffEditorInput extends DiffEditorInput {
 				`Fail to resolve modified editor model for resource ${this.modified.resource} with notebookType ${this.viewType}`,
 			);
 		}
+
 		if (!originalEditorModel) {
 			throw new Error(
 				`Fail to resolve original editor model for resource ${this.original.resource} with notebookType ${this.viewType}`,
 			);
 		}
+
 		this._originalTextModel = originalEditorModel;
+
 		this._modifiedTextModel = modifiedEditorModel;
+
 		this._cachedModel = new NotebookDiffEditorModel(
 			this._originalTextModel,
 			this._modifiedTextModel,
@@ -114,6 +127,7 @@ export class NotebookDiffEditorInput extends DiffEditorInput {
 
 		return this._cachedModel;
 	}
+
 	override toUntyped(): IResourceDiffEditorInput &
 		IResourceSideBySideEditorInput {
 		const original = { resource: this.original.resource };
@@ -130,10 +144,12 @@ export class NotebookDiffEditorInput extends DiffEditorInput {
 			},
 		};
 	}
+
 	override matches(otherInput: EditorInput | IUntypedEditorInput): boolean {
 		if (this === otherInput) {
 			return true;
 		}
+
 		if (otherInput instanceof NotebookDiffEditorInput) {
 			return (
 				this.modified.matches(otherInput.modified) &&
@@ -141,6 +157,7 @@ export class NotebookDiffEditorInput extends DiffEditorInput {
 				this.viewType === otherInput.viewType
 			);
 		}
+
 		if (isResourceDiffEditorInput(otherInput)) {
 			return (
 				this.modified.matches(otherInput.modified) &&
@@ -150,15 +167,23 @@ export class NotebookDiffEditorInput extends DiffEditorInput {
 					otherInput.options?.override === undefined)
 			);
 		}
+
 		return false;
 	}
+
 	override dispose() {
 		super.dispose();
+
 		this._cachedModel?.dispose();
+
 		this._cachedModel = undefined;
+
 		this.original.dispose();
+
 		this.modified.dispose();
+
 		this._originalTextModel = null;
+
 		this._modifiedTextModel = null;
 	}
 }

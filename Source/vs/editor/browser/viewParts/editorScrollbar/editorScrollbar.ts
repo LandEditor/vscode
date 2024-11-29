@@ -40,6 +40,7 @@ import {
  */
 export class EditorScrollbar extends ViewPart {
 	private readonly scrollbar: SmoothScrollableElement;
+
 	private readonly scrollbarDomNode: FastDomNode<HTMLElement>;
 
 	constructor(
@@ -90,6 +91,7 @@ export class EditorScrollbar extends ViewPart {
 			scrollPredominantAxis: scrollPredominantAxis,
 			scrollByPage: scrollbar.scrollByPage,
 		};
+
 		this.scrollbar = this._register(
 			new SmoothScrollableElement(
 				linesContent.domNode,
@@ -97,12 +99,16 @@ export class EditorScrollbar extends ViewPart {
 				this._context.viewLayout.getScrollable(),
 			),
 		);
+
 		PartFingerprints.write(
 			this.scrollbar.getDomNode(),
 			PartFingerprint.ScrollableElement,
 		);
+
 		this.scrollbarDomNode = createFastDomNode(this.scrollbar.getDomNode());
+
 		this.scrollbarDomNode.setPosition("absolute");
+
 		this._setLayout();
 		// When having a zone widget that calls .focus() on one of its dom elements,
 		// the browser will try desperately to reveal that dom node, unexpectedly
@@ -125,6 +131,7 @@ export class EditorScrollbar extends ViewPart {
 					domNode.scrollTop = 0;
 				}
 			}
+
 			if (lookAtScrollLeft) {
 				const deltaLeft = domNode.scrollLeft;
 
@@ -136,6 +143,7 @@ export class EditorScrollbar extends ViewPart {
 					domNode.scrollLeft = 0;
 				}
 			}
+
 			this._context.viewModel.viewLayout.setScrollPosition(
 				newScrollPosition,
 				ScrollType.Immediate,
@@ -150,6 +158,7 @@ export class EditorScrollbar extends ViewPart {
 					onBrowserDesperateReveal(viewDomNode.domNode, true, true),
 			),
 		);
+
 		this._register(
 			dom.addDisposableListener(
 				linesContent.domNode,
@@ -158,6 +167,7 @@ export class EditorScrollbar extends ViewPart {
 					onBrowserDesperateReveal(linesContent.domNode, true, false),
 			),
 		);
+
 		this._register(
 			dom.addDisposableListener(
 				overflowGuardDomNode.domNode,
@@ -170,6 +180,7 @@ export class EditorScrollbar extends ViewPart {
 					),
 			),
 		);
+
 		this._register(
 			dom.addDisposableListener(
 				this.scrollbarDomNode.domNode,
@@ -183,13 +194,16 @@ export class EditorScrollbar extends ViewPart {
 			),
 		);
 	}
+
 	public override dispose(): void {
 		super.dispose();
 	}
+
 	private _setLayout(): void {
 		const options = this._context.configuration.options;
 
 		const layoutInfo = options.get(EditorOption.layoutInfo);
+
 		this.scrollbarDomNode.setLeft(layoutInfo.contentLeft);
 
 		const minimap = options.get(EditorOption.minimap);
@@ -203,19 +217,24 @@ export class EditorScrollbar extends ViewPart {
 		} else {
 			this.scrollbarDomNode.setWidth(layoutInfo.contentWidth);
 		}
+
 		this.scrollbarDomNode.setHeight(layoutInfo.height);
 	}
+
 	public getOverviewRulerLayoutInfo(): IOverviewRulerLayoutInfo {
 		return this.scrollbar.getOverviewRulerLayoutInfo();
 	}
+
 	public getDomNode(): FastDomNode<HTMLElement> {
 		return this.scrollbarDomNode;
 	}
+
 	public delegateVerticalScrollbarPointerDown(
 		browserEvent: PointerEvent,
 	): void {
 		this.scrollbar.delegateVerticalScrollbarPointerDown(browserEvent);
 	}
+
 	public delegateScrollFromMouseWheelEvent(browserEvent: IMouseWheelEvent) {
 		this.scrollbar.delegateScrollFromMouseWheelEvent(browserEvent);
 	}
@@ -255,18 +274,23 @@ export class EditorScrollbar extends ViewPart {
 				fastScrollSensitivity: fastScrollSensitivity,
 				scrollPredominantAxis: scrollPredominantAxis,
 			};
+
 			this.scrollbar.updateOptions(newOpts);
 		}
+
 		if (e.hasChanged(EditorOption.layoutInfo)) {
 			this._setLayout();
 		}
+
 		return true;
 	}
+
 	public override onScrollChanged(
 		e: viewEvents.ViewScrollChangedEvent,
 	): boolean {
 		return true;
 	}
+
 	public override onThemeChanged(
 		e: viewEvents.ViewThemeChangedEvent,
 	): boolean {
@@ -282,6 +306,7 @@ export class EditorScrollbar extends ViewPart {
 	public prepareRender(ctx: RenderingContext): void {
 		// Nothing to do
 	}
+
 	public render(ctx: RestrictedRenderingContext): void {
 		this.scrollbar.renderNow();
 	}

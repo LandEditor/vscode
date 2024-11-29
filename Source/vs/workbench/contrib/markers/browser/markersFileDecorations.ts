@@ -35,11 +35,13 @@ import { LifecyclePhase } from "../../../services/lifecycle/common/lifecycle.js"
 
 class MarkersDecorationsProvider implements IDecorationsProvider {
 	readonly label: string = localize("label", "Problems");
+
 	readonly onDidChange: Event<readonly URI[]>;
 
 	constructor(private readonly _markerService: IMarkerService) {
 		this.onDidChange = _markerService.onMarkerChanged;
 	}
+
 	provideDecorations(resource: URI): IDecorationData | undefined {
 		const markers = this._markerService.read({
 			resource,
@@ -53,9 +55,11 @@ class MarkersDecorationsProvider implements IDecorationsProvider {
 				first = marker;
 			}
 		}
+
 		if (!first) {
 			return undefined;
 		}
+
 		return {
 			weight: 100 * first.severity,
 			bubble: true,
@@ -77,7 +81,9 @@ class MarkersDecorationsProvider implements IDecorationsProvider {
 }
 class MarkersFileDecorations implements IWorkbenchContribution {
 	private readonly _disposables: IDisposable[];
+
 	private _provider?: IDisposable;
+
 	private _enabled?: boolean;
 
 	constructor(
@@ -95,12 +101,16 @@ class MarkersFileDecorations implements IWorkbenchContribution {
 				}
 			}),
 		];
+
 		this._updateEnablement();
 	}
+
 	dispose(): void {
 		dispose(this._provider);
+
 		dispose(this._disposables);
 	}
+
 	private _updateEnablement(): void {
 		const problem = this._configurationService.getValue(
 			"problems.visibility",
@@ -109,6 +119,7 @@ class MarkersFileDecorations implements IWorkbenchContribution {
 		if (problem === undefined) {
 			return;
 		}
+
 		const value = this._configurationService.getValue<{
 			decorations: {
 				enabled: boolean;
@@ -120,16 +131,20 @@ class MarkersFileDecorations implements IWorkbenchContribution {
 		if (shouldEnable === this._enabled) {
 			if (!problem || !value.decorations.enabled) {
 				this._provider?.dispose();
+
 				this._provider = undefined;
 			}
+
 			return;
 		}
+
 		this._enabled = shouldEnable as boolean;
 
 		if (this._enabled) {
 			const provider = new MarkersDecorationsProvider(
 				this._markerService,
 			);
+
 			this._provider =
 				this._decorationsService.registerDecorationsProvider(provider);
 		} else if (this._provider) {

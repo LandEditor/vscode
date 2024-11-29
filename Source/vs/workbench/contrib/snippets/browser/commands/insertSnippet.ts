@@ -20,20 +20,26 @@ class Args {
 		if (!arg || typeof arg !== "object") {
 			return Args._empty;
 		}
+
 		let { snippet, name, langId } = arg;
 
 		if (typeof snippet !== "string") {
 			snippet = undefined;
 		}
+
 		if (typeof name !== "string") {
 			name = undefined;
 		}
+
 		if (typeof langId !== "string") {
 			langId = undefined;
 		}
+
 		return new Args(snippet, name, langId);
 	}
+
 	private static readonly _empty = new Args(undefined, undefined, undefined);
+
 	private constructor(
 		public readonly snippet: string | undefined,
 		public readonly name: string | undefined,
@@ -71,6 +77,7 @@ export class InsertSnippetAction extends SnippetEditorAction {
 			},
 		});
 	}
+
 	async runEditorCommand(
 		accessor: ServicesAccessor,
 		editor: ICodeEditor,
@@ -83,6 +90,7 @@ export class InsertSnippetAction extends SnippetEditorAction {
 		if (!editor.hasModel()) {
 			return;
 		}
+
 		const clipboardService = accessor.get(IClipboardService);
 
 		const instaService = accessor.get(IInstantiationService);
@@ -108,15 +116,18 @@ export class InsertSnippetAction extends SnippetEditorAction {
 						),
 					);
 				}
+
 				let languageId: string;
 
 				if (langId) {
 					if (!languageService.isRegisteredLanguageId(langId)) {
 						return resolve(undefined);
 					}
+
 					languageId = langId;
 				} else {
 					editor.getModel().tokenization.tokenizeIfCheap(lineNumber);
+
 					languageId = editor
 						.getModel()
 						.getLanguageIdAtPosition(lineNumber, column);
@@ -127,6 +138,7 @@ export class InsertSnippetAction extends SnippetEditorAction {
 						languageId = editor.getModel().getLanguageId();
 					}
 				}
+
 				if (name) {
 					// take selected snippet
 					snippetService
@@ -149,15 +161,19 @@ export class InsertSnippetAction extends SnippetEditorAction {
 		if (!snippet) {
 			return;
 		}
+
 		let clipboardText: string | undefined;
 
 		if (snippet.needsClipboard) {
 			clipboardText = await clipboardService.readText();
 		}
+
 		editor.focus();
+
 		SnippetController2.get(editor)?.insert(snippet.codeSnippet, {
 			clipboardText,
 		});
+
 		snippetService.updateUsageTimestamp(snippet);
 	}
 }

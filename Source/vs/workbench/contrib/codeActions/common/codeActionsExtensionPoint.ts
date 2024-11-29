@@ -28,11 +28,14 @@ enum CodeActionExtensionPointFields {
 }
 export interface ContributedCodeAction {
 	readonly [CodeActionExtensionPointFields.kind]: string;
+
 	readonly [CodeActionExtensionPointFields.title]: string;
+
 	readonly [CodeActionExtensionPointFields.description]?: string;
 }
 export interface CodeActionsExtensionPoint {
 	readonly [CodeActionExtensionPointFields.languages]: readonly string[];
+
 	readonly [CodeActionExtensionPointFields.actions]: readonly ContributedCodeAction[];
 }
 
@@ -102,15 +105,18 @@ class CodeActionsTableRenderer
 	implements IExtensionFeatureTableRenderer
 {
 	readonly type = "table";
+
 	shouldRender(manifest: IExtensionManifest): boolean {
 		return !!manifest.contributes?.codeActions;
 	}
+
 	render(manifest: IExtensionManifest): IRenderedData<ITableData> {
 		const codeActions = manifest.contributes?.codeActions || [];
 
 		if (!codeActions.length) {
 			return { data: { headers: [], rows: [] }, dispose: () => {} };
 		}
+
 		const flatActions = codeActions
 			.map((contribution) =>
 				contribution.actions.map((action) => ({

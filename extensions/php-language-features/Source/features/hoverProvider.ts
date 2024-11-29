@@ -29,11 +29,13 @@ export default class PHPHoverProvider implements HoverProvider {
 		if (!enable) {
 			return undefined;
 		}
+
 		const wordRange = document.getWordRangeAtPosition(position);
 
 		if (!wordRange) {
 			return undefined;
 		}
+
 		const name = document.getText(wordRange);
 
 		const entry =
@@ -52,6 +54,7 @@ export default class PHPHoverProvider implements HoverProvider {
 
 			return new Hover(contents, wordRange);
 		}
+
 		return undefined;
 	}
 }

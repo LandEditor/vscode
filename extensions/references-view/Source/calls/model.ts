@@ -14,6 +14,7 @@ import { asResourceUrl, del, getThemeIcon, tail } from "../utils";
 
 export class CallsTreeInput implements SymbolTreeInput<CallItem> {
 	readonly title: string;
+
 	readonly contextValue: string = "callHierarchy";
 
 	constructor(
@@ -25,6 +26,7 @@ export class CallsTreeInput implements SymbolTreeInput<CallItem> {
 				? vscode.l10n.t("Callers Of")
 				: vscode.l10n.t("Calls From");
 	}
+
 	async resolve() {
 		const items = await Promise.resolve(
 			vscode.commands.executeCommand<vscode.CallHierarchyItem[]>(
@@ -41,6 +43,7 @@ export class CallsTreeInput implements SymbolTreeInput<CallItem> {
 		if (model.roots.length === 0) {
 			return;
 		}
+
 		return {
 			provider,
 			get message() {
@@ -56,6 +59,7 @@ export class CallsTreeInput implements SymbolTreeInput<CallItem> {
 			},
 		};
 	}
+
 	with(location: vscode.Location): CallsTreeInput {
 		return new CallsTreeInput(location, this.direction);
 	}
@@ -73,6 +77,7 @@ export class CallItem {
 		readonly parent: CallItem | undefined,
 		readonly locations: vscode.Location[] | undefined,
 	) {}
+
 	remove(): void {
 		this.model.remove(this);
 	}
@@ -84,7 +89,9 @@ class CallsModel
 		SymbolItemDragAndDrop<CallItem>
 {
 	readonly roots: CallItem[] = [];
+
 	private readonly _onDidChange = new vscode.EventEmitter<CallsModel>();
+
 	readonly onDidChange = this._onDidChange.event;
 
 	constructor(
@@ -95,6 +102,7 @@ class CallsModel
 			(item) => new CallItem(this, item, undefined, undefined),
 		);
 	}
+
 	private async _resolveCalls(call: CallItem): Promise<CallItem[]> {
 		if (this.direction === CallsDirection.Incoming) {
 			const calls = await vscode.commands.executeCommand<
@@ -142,16 +150,19 @@ class CallsModel
 				: [];
 		}
 	}
+
 	async getCallChildren(call: CallItem): Promise<CallItem[]> {
 		if (!call.children) {
 			call.children = await this._resolveCalls(call);
 		}
+
 		return call.children;
 	}
 	// -- navigation
 	location(item: CallItem) {
 		return new vscode.Location(item.item.uri, item.item.range);
 	}
+
 	nearest(uri: vscode.Uri, _position: vscode.Position): CallItem | undefined {
 		return (
 			this.roots.find(
@@ -159,16 +170,20 @@ class CallsModel
 			) ?? this.roots[0]
 		);
 	}
+
 	next(from: CallItem): CallItem {
 		return this._move(from, true) ?? from;
 	}
+
 	previous(from: CallItem): CallItem {
 		return this._move(from, false) ?? from;
 	}
+
 	private _move(item: CallItem, fwd: boolean): CallItem | void {
 		if (item.children?.length) {
 			return fwd ? item.children[0] : tail(item.children);
 		}
+
 		const array = this.roots.includes(item)
 			? this.roots
 			: item.parent?.children;
@@ -195,10 +210,12 @@ class CallsModel
 				? [item.item.selectionRange]
 				: undefined;
 		}
+
 		return item.locations
 			.filter((loc) => loc.uri.toString() === uri.toString())
 			.map((loc) => loc.range);
 	}
+
 	remove(item: CallItem) {
 		const isInRoot = this.roots.includes(item);
 
@@ -206,13 +223,16 @@ class CallsModel
 
 		if (siblings) {
 			del(siblings, item);
+
 			this._onDidChange.fire(this);
 		}
 	}
 }
 class CallItemDataProvider implements vscode.TreeDataProvider<CallItem> {
 	private readonly _emitter = new vscode.EventEmitter<CallItem | undefined>();
+
 	readonly onDidChangeTreeData = this._emitter.event;
+
 	private readonly _modelListener: vscode.Disposable;
 
 	constructor(private _model: CallsModel) {
@@ -220,21 +240,29 @@ class CallItemDataProvider implements vscode.TreeDataProvider<CallItem> {
 			this._emitter.fire(e instanceof CallItem ? e : undefined),
 		);
 	}
+
 	dispose(): void {
 		this._emitter.dispose();
+
 		this._modelListener.dispose();
 	}
+
 	getTreeItem(element: CallItem): vscode.TreeItem {
 		const item = new vscode.TreeItem(element.item.name);
+
 		item.description = element.item.detail;
+
 		item.tooltip =
 			item.label && element.item.detail
 				? `${item.label} - ${element.item.detail}`
 				: item.label
 					? `${item.label}`
 					: element.item.detail;
+
 		item.contextValue = "call-item";
+
 		item.iconPath = getThemeIcon(element.item.kind);
+
 		type OpenArgs = [vscode.Uri, vscode.TextDocumentShowOptions];
 
 		let openArgs: OpenArgs;
@@ -263,9 +291,11 @@ class CallItemDataProvider implements vscode.TreeDataProvider<CallItem> {
 					}
 				}
 			}
+
 			if (!firstLoctionStart) {
 				firstLoctionStart = element.item.selectionRange.start;
 			}
+
 			openArgs = [
 				element.item.uri,
 				{
@@ -276,20 +306,24 @@ class CallItemDataProvider implements vscode.TreeDataProvider<CallItem> {
 				},
 			];
 		}
+
 		item.command = {
 			command: "vscode.open",
 			title: vscode.l10n.t("Open Call"),
 			arguments: openArgs,
 		};
+
 		item.collapsibleState = vscode.TreeItemCollapsibleState.Collapsed;
 
 		return item;
 	}
+
 	getChildren(element?: CallItem | undefined) {
 		return element
 			? this._model.getCallChildren(element)
 			: this._model.roots;
 	}
+
 	getParent(element: CallItem) {
 		return element.parent;
 	}

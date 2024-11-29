@@ -22,6 +22,7 @@
 		(dependencies: string[], callback: (...args: any[]) => any): any;
 		(dependencies: string[], definition: any): any;
 	};
+
 	interface ILoaderPlugin {
 		load: (
 			pluginParam: string,
@@ -29,11 +30,13 @@
 			loadCallback: IPluginLoadCallback,
 			options: IConfigurationOptions,
 		) => void;
+
 		write?: (
 			pluginName: string,
 			moduleName: string,
 			write: IPluginWriteCallback,
 		) => void;
+
 		writeFile?: (
 			pluginName: string,
 			moduleName: string,
@@ -41,36 +44,46 @@
 			write: IPluginWriteFileCallback,
 			config: IConfigurationOptions,
 		) => void;
+
 		finishBuild?: (
 			write: (filename: string, contents: string) => void,
 		) => void;
 	}
+
 	interface IRelativeRequire {
 		(
 			dependencies: string[],
 			callback: Function,
 			errorback?: (error: Error) => void,
 		): void;
+
 		toUrl(id: string): string;
 	}
+
 	interface IPluginLoadCallback {
 		(value: any): void;
+
 		error(err: any): void;
 	}
+
 	interface IConfigurationOptions {
 		isBuild: boolean | undefined;
 		[key: string]: any;
 	}
+
 	interface IPluginWriteCallback {
 		(contents: string): void;
 
 		getEntryPoint(): string;
+
 		asModule(moduleId: string, contents: string): void;
 	}
+
 	interface IPluginWriteFileCallback {
 		(filename: string, contents: string): void;
 
 		getEntryPoint(): string;
+
 		asModule(moduleId: string, contents: string): void;
 	}
 	//#endregion
@@ -87,6 +100,7 @@
 			"Expected global define() and require() functions. Please only load this module in an AMD context!",
 		);
 	}
+
 	let baseUrl = require?.getConfig().baseUrl;
 
 	if (!baseUrl) {
@@ -94,9 +108,11 @@
 			"Failed to determine baseUrl for loading AMD modules (tried require.getConfig().baseUrl)",
 		);
 	}
+
 	if (!baseUrl.endsWith("/")) {
 		baseUrl = baseUrl + "/";
 	}
+
 	globalThis._VSCODE_FILE_ROOT = baseUrl;
 
 	const trustedTypesPolicy:
@@ -111,14 +127,18 @@
 	if (trustedTypesPolicy) {
 		globalThis._VSCODE_WEB_PACKAGE_TTP = trustedTypesPolicy;
 	}
+
 	const promise = new Promise((resolve) => {
 		(globalThis as any).__VSCODE_WEB_ESM_PROMISE = resolve;
 	});
+
 	define("vs/web-api", [], (): ILoaderPlugin => {
 		return {
 			load: (_name, _req, _load, _config) => {
 				const script: any = document.createElement("script");
+
 				script.type = "module";
+
 				script.src = trustedTypesPolicy
 					? (trustedTypesPolicy.createScriptURL(
 							`${baseUrl}vs/workbench/workbench.web.main.internal.js`,
@@ -131,6 +151,7 @@
 			},
 		};
 	});
+
 	define("vs/workbench/workbench.web.main", [
 		"require",
 		"exports",

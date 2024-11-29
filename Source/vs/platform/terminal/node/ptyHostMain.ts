@@ -41,9 +41,13 @@ async function startPtyHost() {
 	};
 	// Sanitize environment
 	delete process.env.VSCODE_RECONNECT_GRACE_TIME;
+
 	delete process.env.VSCODE_RECONNECT_SHORT_GRACE_TIME;
+
 	delete process.env.VSCODE_RECONNECT_SCROLLBACK;
+
 	delete process.env.VSCODE_LATENCY;
+
 	delete process.env.VSCODE_STARTUP_DELAY;
 	// Delay startup if needed, this must occur before RPC is setup to avoid the channel from timing
 	// out.
@@ -75,6 +79,7 @@ async function startPtyHost() {
 		getLogLevel(environmentService),
 		environmentService.logsHome,
 	);
+
 	server.registerChannel(
 		TerminalIpcChannels.Logger,
 		new LoggerChannel(loggerService, () => DefaultURITransformer),
@@ -89,12 +94,15 @@ async function startPtyHost() {
 	if (startupDelay) {
 		logService.warn(`Pty Host startup is delayed ${startupDelay}ms`);
 	}
+
 	if (simulatedLatency) {
 		logService.warn(`Pty host is simulating ${simulatedLatency}ms latency`);
 	}
+
 	const disposables = new DisposableStore();
 	// Heartbeat responsiveness tracking
 	const heartbeatService = new HeartbeatService();
+
 	server.registerChannel(
 		TerminalIpcChannels.Heartbeat,
 		ProxyChannel.fromService(heartbeatService, disposables),
@@ -108,6 +116,7 @@ async function startPtyHost() {
 	);
 
 	const ptyServiceChannel = ProxyChannel.fromService(ptyService, disposables);
+
 	server.registerChannel(TerminalIpcChannels.PtyHost, ptyServiceChannel);
 	// Register a channel for direct communication via Message Port
 	if (_isUtilityProcess) {
@@ -119,8 +128,11 @@ async function startPtyHost() {
 	// Clean up
 	process.once("exit", () => {
 		logService.trace("Pty host exiting");
+
 		logService.dispose();
+
 		heartbeatService.dispose();
+
 		ptyService.dispose();
 	});
 }

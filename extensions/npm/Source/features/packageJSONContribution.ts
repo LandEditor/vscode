@@ -101,6 +101,7 @@ export class PackageJSONContribution implements IJSONContribution {
 		"Thenable",
 		"wrench",
 	];
+
 	private knownScopes = [
 		"@types",
 		"@angular",
@@ -109,13 +110,16 @@ export class PackageJSONContribution implements IJSONContribution {
 		"@vue",
 		"@bazel",
 	];
+
 	public getDocumentSelector(): DocumentSelector {
 		return [{ language: "json", scheme: "*", pattern: "**/package.json" }];
 	}
+
 	public constructor(
 		private xhr: XHRRequest,
 		private npmCommandPath: string | undefined,
 	) {}
+
 	public collectDefaultSuggestions(
 		_resource: Uri,
 		result: ISuggestionsCollector,
@@ -130,22 +134,28 @@ export class PackageJSONContribution implements IJSONContribution {
 		};
 
 		const proposal = new CompletionItem(l10n.t("Default package.json"));
+
 		proposal.kind = CompletionItemKind.Module;
+
 		proposal.insertText = new SnippetString(
 			JSON.stringify(defaultValue, null, "\t"),
 		);
+
 		result.add(proposal);
 
 		return Promise.resolve(null);
 	}
+
 	private isEnabled() {
 		return this.npmCommandPath || this.onlineEnabled();
 	}
+
 	private onlineEnabled() {
 		return !!workspace
 			.getConfiguration("npm")
 			.get("fetchOnlinePackageInfo");
 	}
+
 	public collectPropertySuggestions(
 		_resource: Uri,
 		location: Location,
@@ -157,6 +167,7 @@ export class PackageJSONContribution implements IJSONContribution {
 		if (!this.isEnabled()) {
 			return null;
 		}
+
 		if (
 			location.matches(["dependencies"]) ||
 			location.matches(["devDependencies"]) ||
@@ -175,23 +186,32 @@ export class PackageJSONContribution implements IJSONContribution {
 							collector,
 						);
 					}
+
 					for (const scope of this.knownScopes) {
 						const proposal = new CompletionItem(scope);
+
 						proposal.kind = CompletionItemKind.Property;
+
 						proposal.insertText = new SnippetString()
 							.appendText(`"${scope}/`)
 							.appendTabstop()
 							.appendText('"');
+
 						proposal.filterText = JSON.stringify(scope);
+
 						proposal.documentation = "";
+
 						proposal.command = {
 							title: "",
 							command: "editor.action.triggerSuggest",
 						};
+
 						collector.add(proposal);
 					}
+
 					collector.setAsIncomplete();
 				}
+
 				queryUrl = `https://registry.npmjs.org/-/v1/search?size=${LIMIT}&text=${encodeURIComponent(currentWord)}`;
 
 				return this.xhr({
@@ -226,6 +246,7 @@ export class PackageJSONContribution implements IJSONContribution {
 							} catch (e) {
 								// ignore
 							}
+
 							collector.setAsIncomplete();
 						} else {
 							collector.error(
@@ -237,6 +258,7 @@ export class PackageJSONContribution implements IJSONContribution {
 
 							return 0;
 						}
+
 						return undefined;
 					},
 					(error) => {
@@ -266,26 +288,36 @@ export class PackageJSONContribution implements IJSONContribution {
 							insertText.appendText(",");
 						}
 					}
+
 					const proposal = new CompletionItem(name);
+
 					proposal.kind = CompletionItemKind.Property;
+
 					proposal.insertText = insertText;
+
 					proposal.filterText = JSON.stringify(name);
+
 					proposal.documentation = "";
+
 					collector.add(proposal);
 				});
+
 				this.collectScopedPackages(
 					currentWord,
 					addValue,
 					isLast,
 					collector,
 				);
+
 				collector.setAsIncomplete();
 
 				return Promise.resolve(null);
 			}
 		}
+
 		return null;
 	}
+
 	private collectScopedPackages(
 		currentWord: string,
 		addValue: boolean,
@@ -302,6 +334,7 @@ export class PackageJSONContribution implements IJSONContribution {
 			if (name.length < 4) {
 				name = "";
 			}
+
 			const queryUrl = `https://registry.npmjs.com/-/v1/search?text=scope:${scope}%20${name}&size=250`;
 
 			return this.xhr({
@@ -331,6 +364,7 @@ export class PackageJSONContribution implements IJSONContribution {
 					} catch (e) {
 						// ignore
 					}
+
 					collector.setAsIncomplete();
 				} else {
 					collector.error(
@@ -340,11 +374,14 @@ export class PackageJSONContribution implements IJSONContribution {
 						),
 					);
 				}
+
 				return null;
 			});
 		}
+
 		return Promise.resolve(null);
 	}
+
 	public async collectValueSuggestions(
 		resource: Uri,
 		location: Location,
@@ -353,6 +390,7 @@ export class PackageJSONContribution implements IJSONContribution {
 		if (!this.isEnabled()) {
 			return null;
 		}
+
 		if (
 			location.matches(["dependencies", "*"]) ||
 			location.matches(["devDependencies", "*"]) ||
@@ -368,33 +406,51 @@ export class PackageJSONContribution implements IJSONContribution {
 					let name = JSON.stringify(info.version);
 
 					let proposal = new CompletionItem(name);
+
 					proposal.kind = CompletionItemKind.Property;
+
 					proposal.insertText = name;
+
 					proposal.documentation = l10n.t(
 						"The currently latest version of the package",
 					);
+
 					result.add(proposal);
+
 					name = JSON.stringify("^" + info.version);
+
 					proposal = new CompletionItem(name);
+
 					proposal.kind = CompletionItemKind.Property;
+
 					proposal.insertText = name;
+
 					proposal.documentation = l10n.t(
 						"Matches the most recent major version (1.x.x)",
 					);
+
 					result.add(proposal);
+
 					name = JSON.stringify("~" + info.version);
+
 					proposal = new CompletionItem(name);
+
 					proposal.kind = CompletionItemKind.Property;
+
 					proposal.insertText = name;
+
 					proposal.documentation = l10n.t(
 						"Matches the most recent minor version (1.2.x)",
 					);
+
 					result.add(proposal);
 				}
 			}
 		}
+
 		return null;
 	}
+
 	private getDocumentation(
 		description: string | undefined,
 		version: string | undefined,
@@ -406,8 +462,10 @@ export class PackageJSONContribution implements IJSONContribution {
 		if (description) {
 			str.appendText(description);
 		}
+
 		if (version) {
 			str.appendText("\n\n");
+
 			str.appendText(
 				time
 					? l10n.t(
@@ -418,12 +476,16 @@ export class PackageJSONContribution implements IJSONContribution {
 					: l10n.t("Latest version: {0}", version),
 			);
 		}
+
 		if (homepage) {
 			str.appendText("\n\n");
+
 			str.appendText(homepage);
 		}
+
 		return str;
 	}
+
 	public resolveSuggestion(
 		resource: Uri | undefined,
 		item: CompletionItem,
@@ -434,6 +496,7 @@ export class PackageJSONContribution implements IJSONContribution {
 			if (typeof name !== "string") {
 				name = name.label;
 			}
+
 			return this.fetchPackageInfo(name, resource).then((info) => {
 				if (info) {
 					item.documentation = this.getDocumentation(
@@ -445,17 +508,21 @@ export class PackageJSONContribution implements IJSONContribution {
 
 					return item;
 				}
+
 				return null;
 			});
 		}
+
 		return null;
 	}
+
 	private isValidNPMName(name: string): boolean {
 		// following rules from https://github.com/npm/validate-npm-package-name,
 		// leading slash added as additional security measure
 		if (!name || name.length > 214 || name.match(/^[-_.\s]/)) {
 			return false;
 		}
+
 		const match = name.match(/^(?:@([^/~\s)('!*]+?)[/])?([^/~)('!*\s]+?)$/);
 
 		if (match) {
@@ -464,12 +531,15 @@ export class PackageJSONContribution implements IJSONContribution {
 			if (scope && encodeURIComponent(scope) !== scope) {
 				return false;
 			}
+
 			const name = match[2];
 
 			return encodeURIComponent(name) === name;
 		}
+
 		return false;
 	}
+
 	private async fetchPackageInfo(
 		pack: string,
 		resource: Uri | undefined,
@@ -477,16 +547,20 @@ export class PackageJSONContribution implements IJSONContribution {
 		if (!this.isValidNPMName(pack)) {
 			return undefined; // avoid unnecessary lookups
 		}
+
 		let info: ViewPackageInfo | undefined;
 
 		if (this.npmCommandPath) {
 			info = await this.npmView(this.npmCommandPath, pack, resource);
 		}
+
 		if (!info && this.onlineEnabled()) {
 			info = await this.npmjsView(pack);
 		}
+
 		return info;
 	}
+
 	private npmView(
 		npmCommandPath: string,
 		pack: string,
@@ -525,8 +599,10 @@ export class PackageJSONContribution implements IJSONContribution {
 
 			if (process.platform === "win32") {
 				options = { cwd, env, shell: true };
+
 				commandPath = `"${npmCommandPath}"`;
 			}
+
 			cp.execFile(commandPath, args, options, (error, stdout) => {
 				if (!error) {
 					try {
@@ -534,6 +610,7 @@ export class PackageJSONContribution implements IJSONContribution {
 
 						const version =
 							content["dist-tags.latest"] || content["version"];
+
 						resolve({
 							description: content["description"],
 							version,
@@ -546,10 +623,12 @@ export class PackageJSONContribution implements IJSONContribution {
 						// ignore
 					}
 				}
+
 				resolve(undefined);
 			});
 		});
 	}
+
 	private async npmjsView(
 		pack: string,
 	): Promise<ViewPackageInfo | undefined> {
@@ -578,8 +657,10 @@ export class PackageJSONContribution implements IJSONContribution {
 		} catch (e) {
 			//ignore
 		}
+
 		return undefined;
 	}
+
 	public getInfoContribution(
 		resource: Uri,
 		location: Location,
@@ -587,6 +668,7 @@ export class PackageJSONContribution implements IJSONContribution {
 		if (!this.isEnabled()) {
 			return null;
 		}
+
 		if (
 			location.matches(["dependencies", "*"]) ||
 			location.matches(["devDependencies", "*"]) ||
@@ -607,12 +689,15 @@ export class PackageJSONContribution implements IJSONContribution {
 							),
 						];
 					}
+
 					return null;
 				});
 			}
 		}
+
 		return null;
 	}
+
 	private processPackage(
 		pack: SearchPackageInfo,
 		addValue: boolean,
@@ -634,37 +719,50 @@ export class PackageJSONContribution implements IJSONContribution {
 				} else {
 					insertText.appendTabstop();
 				}
+
 				insertText.appendText('"');
 
 				if (!isLast) {
 					insertText.appendText(",");
 				}
 			}
+
 			const proposal = new CompletionItem(name);
+
 			proposal.kind = CompletionItemKind.Property;
+
 			proposal.insertText = insertText;
+
 			proposal.filterText = JSON.stringify(name);
+
 			proposal.documentation = this.getDocumentation(
 				pack.description,
 				pack.version,
 				undefined,
 				pack?.links?.homepage,
 			);
+
 			collector.add(proposal);
 		}
 	}
 }
 interface SearchPackageInfo {
 	name: string;
+
 	description?: string;
+
 	version?: string;
+
 	links?: {
 		homepage?: string;
 	};
 }
 interface ViewPackageInfo {
 	description: string;
+
 	version?: string;
+
 	time?: string;
+
 	homepage?: string;
 }

@@ -12,7 +12,9 @@ export interface ISectionHeaderFinderTarget {
 }
 export interface FindSectionHeaderOptions {
 	foldingRules?: FoldingRules;
+
 	findRegionSectionHeaders: boolean;
+
 	findMarkSectionHeaders: boolean;
 }
 export interface SectionHeader {
@@ -52,12 +54,16 @@ export function findSectionHeaders(
 
 	if (options.findRegionSectionHeaders && options.foldingRules?.markers) {
 		const regionHeaders = collectRegionHeaders(model, options);
+
 		headers = headers.concat(regionHeaders);
 	}
+
 	if (options.findMarkSectionHeaders) {
 		const markHeaders = collectMarkHeaders(model);
+
 		headers = headers.concat(markHeaders);
 	}
+
 	return headers;
 }
 function collectRegionHeaders(
@@ -94,6 +100,7 @@ function collectRegionHeaders(
 			}
 		}
 	}
+
 	return regionHeaders;
 }
 function collectMarkHeaders(
@@ -105,8 +112,10 @@ function collectMarkHeaders(
 
 	for (let lineNumber = 1; lineNumber <= endLineNumber; lineNumber++) {
 		const lineContent = model.getLineContent(lineNumber);
+
 		addMarkHeaderIfFound(lineContent, lineNumber, markHeaders);
 	}
+
 	return markHeaders;
 }
 function addMarkHeaderIfFound(
@@ -145,11 +154,13 @@ function addMarkHeaderIfFound(
 }
 function getHeaderText(text: string): {
 	text: string;
+
 	hasSeparatorLine: boolean;
 } {
 	text = text.trim();
 
 	const hasSeparatorLine = text.startsWith("-");
+
 	text = text.replace(trimDashesRegex, "");
 
 	return { text, hasSeparatorLine };

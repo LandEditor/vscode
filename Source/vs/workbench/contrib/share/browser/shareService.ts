@@ -36,17 +36,23 @@ type ShareEvent = {
 };
 type ShareClassification = {
 	owner: "joyceerhl";
+
 	comment: "Reporting which share provider is invoked.";
+
 	providerId: {
 		classification: "SystemMetaData";
+
 		purpose: "FeatureInsight";
+
 		comment: "The id of the selected share provider.";
 	};
 };
 
 export class ShareService implements IShareService {
 	readonly _serviceBrand: undefined;
+
 	readonly providerCount: IContextKey<number>;
+
 	private readonly _providers = new Set<IShareProvider>();
 
 	constructor(
@@ -65,21 +71,26 @@ export class ShareService implements IShareService {
 			this.contextKeyService,
 		);
 	}
+
 	registerShareProvider(provider: IShareProvider): IDisposable {
 		this._providers.add(provider);
+
 		this.providerCount.set(this._providers.size);
 
 		return {
 			dispose: () => {
 				this._providers.delete(provider);
+
 				this.providerCount.set(this._providers.size);
 			},
 		};
 	}
+
 	getShareActions(): ISubmenuItem[] {
 		// todo@joyceerhl return share actions
 		return [];
 	}
+
 	async provideShare(
 		item: IShareableItem,
 		token: CancellationToken,
@@ -107,6 +118,7 @@ export class ShareService implements IShareService {
 		if (providers.length === 0) {
 			return undefined;
 		}
+
 		if (providers.length === 1) {
 			this.telemetryService.publicLog2<ShareEvent, ShareClassification>(
 				"shareService.share",
@@ -115,6 +127,7 @@ export class ShareService implements IShareService {
 
 			return providers[0].provideShare(item, token);
 		}
+
 		const items: (IQuickPickItem & {
 			provider: IShareProvider;
 		})[] = providers.map((p) => ({ label: p.label, provider: p }));
@@ -140,6 +153,7 @@ export class ShareService implements IShareService {
 
 			return selected.provider.provideShare(item, token);
 		}
+
 		return;
 	}
 }

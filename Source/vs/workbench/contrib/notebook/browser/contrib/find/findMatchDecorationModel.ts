@@ -23,15 +23,20 @@ import {
 
 export class FindMatchDecorationModel extends Disposable {
 	private _allMatchesDecorations: ICellModelDecorations[] = [];
+
 	private _currentMatchCellDecorations: string[] = [];
+
 	private _allMatchesCellDecorations: string[] = [];
+
 	private _currentMatchDecorations:
 		| {
 				kind: "input";
+
 				decorations: ICellModelDecorations[];
 		  }
 		| {
 				kind: "output";
+
 				index: number;
 		  }
 		| null = null;
@@ -42,13 +47,17 @@ export class FindMatchDecorationModel extends Disposable {
 	) {
 		super();
 	}
+
 	public get currentMatchDecorations() {
 		return this._currentMatchDecorations;
 	}
+
 	private clearDecorations() {
 		this.clearCurrentFindMatchDecoration();
+
 		this.setAllFindMatchesDecorations([]);
 	}
+
 	public async highlightCurrentFindMatchDecorationInCell(
 		cell: ICellViewModel,
 		cellRange: Range,
@@ -68,6 +77,7 @@ export class FindMatchDecorationModel extends Disposable {
 				ownerId: cell.handle,
 				decorations: decorations,
 			};
+
 			this._currentMatchDecorations = {
 				kind: "input",
 				decorations: accessor.deltaDecorations(
@@ -78,6 +88,7 @@ export class FindMatchDecorationModel extends Disposable {
 				),
 			};
 		});
+
 		this._currentMatchCellDecorations =
 			this._notebookEditor.deltaCellDecorations(
 				this._currentMatchCellDecorations,
@@ -98,6 +109,7 @@ export class FindMatchDecorationModel extends Disposable {
 
 		return null;
 	}
+
 	public async highlightCurrentFindMatchDecorationInWebview(
 		cell: ICellViewModel,
 		index: number,
@@ -108,7 +120,9 @@ export class FindMatchDecorationModel extends Disposable {
 			index,
 			this.ownerID,
 		);
+
 		this._currentMatchDecorations = { kind: "output", index: index };
+
 		this._currentMatchCellDecorations =
 			this._notebookEditor.deltaCellDecorations(
 				this._currentMatchCellDecorations,
@@ -129,6 +143,7 @@ export class FindMatchDecorationModel extends Disposable {
 
 		return offset;
 	}
+
 	public clearCurrentFindMatchDecoration() {
 		if (this._currentMatchDecorations?.kind === "input") {
 			this._notebookEditor.changeModelDecorations((accessor) => {
@@ -138,6 +153,7 @@ export class FindMatchDecorationModel extends Disposable {
 						: [],
 					[],
 				);
+
 				this._currentMatchDecorations = null;
 			});
 		} else if (this._currentMatchDecorations?.kind === "output") {
@@ -146,12 +162,14 @@ export class FindMatchDecorationModel extends Disposable {
 				this.ownerID,
 			);
 		}
+
 		this._currentMatchCellDecorations =
 			this._notebookEditor.deltaCellDecorations(
 				this._currentMatchCellDecorations,
 				[],
 			);
 	}
+
 	public setAllFindMatchesDecorations(
 		cellFindMatches: CellFindMatchWithIndex[],
 	) {
@@ -169,7 +187,9 @@ export class FindMatchDecorationModel extends Disposable {
 
 					for (
 						let i = 0;
+
 						i < cellFindMatch.contentMatches.length;
+
 						i++
 					) {
 						newFindMatchesDecorations[i] = {
@@ -177,16 +197,19 @@ export class FindMatchDecorationModel extends Disposable {
 							options: findMatchesOptions,
 						};
 					}
+
 					return {
 						ownerId: cellFindMatch.cell.handle,
 						decorations: newFindMatchesDecorations,
 					};
 				});
+
 			this._allMatchesDecorations = accessor.deltaDecorations(
 				this._allMatchesDecorations,
 				deltaDecorations,
 			);
 		});
+
 		this._allMatchesCellDecorations =
 			this._notebookEditor.deltaCellDecorations(
 				this._allMatchesCellDecorations,
@@ -209,9 +232,11 @@ export class FindMatchDecorationModel extends Disposable {
 				}),
 			);
 	}
+
 	stopWebviewFind() {
 		this._notebookEditor.findStop(this.ownerID);
 	}
+
 	override dispose() {
 		this.clearDecorations();
 

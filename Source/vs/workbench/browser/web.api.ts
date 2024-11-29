@@ -47,6 +47,7 @@ export interface IWorkbench {
 		 */
 		executeCommand(command: string, ...args: any[]): Promise<unknown>;
 	};
+
 	logger: {
 		/**
 		 * Logging for embedder.
@@ -56,6 +57,7 @@ export interface IWorkbench {
 		 */
 		log(level: LogLevel, message: string): void;
 	};
+
 	env: {
 		/**
 		 * @returns the scheme to use for opening the associated desktop
@@ -82,6 +84,7 @@ export interface IWorkbench {
 		 */
 		openUri(target: URI): Promise<boolean>;
 	};
+
 	window: {
 		/**
 		 * Show progress in the editor. Progress is shown while running the given callback
@@ -122,6 +125,7 @@ export interface IWorkbench {
 			...items: T[]
 		): Promise<T | undefined>;
 	};
+
 	workspace: {
 		/**
 		 * Resolves once the remote authority has been resolved.
@@ -285,6 +289,7 @@ export interface IWorkbenchConstructionOptions {
 	 */
 	readonly profile?: {
 		readonly name: string;
+
 		readonly contents?: string | UriComponents;
 	};
 	/**
@@ -383,6 +388,7 @@ export interface IWorkspaceProvider {
 		workspace: IWorkspace,
 		options?: {
 			reuse?: boolean;
+
 			payload?: object;
 		},
 	): Promise<boolean>;
@@ -399,7 +405,9 @@ export type MarketplaceExtension =
 	| ExtensionId
 	| {
 			readonly id: ExtensionId;
+
 			preRelease?: boolean;
+
 			migrateStorageFrom?: ExtensionId;
 	  };
 
@@ -444,14 +452,18 @@ export interface ITunnelFactory {
 export interface ITunnelOptions {
 	remoteAddress: {
 		port: number;
+
 		host: string;
 	};
 	/**
 	 * The desired local port. If this port can't be used, then another will be chosen.
 	 */
 	localAddressPort?: number;
+
 	label?: string;
+
 	privacy?: string;
+
 	protocol?: string;
 }
 export interface TunnelCreationOptions {
@@ -463,12 +475,14 @@ export interface TunnelCreationOptions {
 export interface ITunnel {
 	remoteAddress: {
 		port: number;
+
 		host: string;
 	};
 	/**
 	 * The complete local address(ex. localhost:1234)
 	 */
 	localAddress: string;
+
 	privacy?: string;
 	/**
 	 * If protocol is not provided, it is assumed to be http, regardless of the localAddress
@@ -478,6 +492,7 @@ export interface ITunnel {
 	 * Implementers of Tunnel should fire onDidDispose when dispose is called.
 	 */
 	onDidDispose: Event<void>;
+
 	dispose(): Promise<void> | void;
 }
 export interface IShowPortCandidate {
@@ -626,6 +641,7 @@ export interface IWelcomeDialog {
 	 */
 	media: {
 		altText: string;
+
 		path: string;
 	};
 }

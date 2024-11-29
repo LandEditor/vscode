@@ -20,19 +20,29 @@ import { createDecorator } from "../../../../platform/instantiation/common/insta
 
 export interface ILanguageStatus {
 	readonly id: string;
+
 	readonly name: string;
+
 	readonly selector: LanguageSelector;
+
 	readonly severity: Severity;
+
 	readonly label:
 		| string
 		| {
 				value: string;
+
 				shortValue: string;
 		  };
+
 	readonly detail: string;
+
 	readonly busy: boolean;
+
 	readonly source: string;
+
 	readonly command: Command | undefined;
+
 	readonly accessibilityInfo: IAccessibilityInformation | undefined;
 }
 export interface ILanguageStatusProvider {
@@ -47,18 +57,24 @@ export const ILanguageStatusService = createDecorator<ILanguageStatusService>(
 
 export interface ILanguageStatusService {
 	_serviceBrand: undefined;
+
 	onDidChange: Event<void>;
+
 	addStatus(status: ILanguageStatus): IDisposable;
 
 	getLanguageStatus(model: ITextModel): ILanguageStatus[];
 }
 class LanguageStatusServiceImpl implements ILanguageStatusService {
 	declare _serviceBrand: undefined;
+
 	private readonly _provider = new LanguageFeatureRegistry<ILanguageStatus>();
+
 	readonly onDidChange: Event<any> = this._provider.onDidChange;
+
 	addStatus(status: ILanguageStatus): IDisposable {
 		return this._provider.register(status.selector, status);
 	}
+
 	getLanguageStatus(model: ITextModel): ILanguageStatus[] {
 		return this._provider.ordered(model).sort((a, b) => {
 			let res = b.severity - a.severity;
@@ -66,9 +82,11 @@ class LanguageStatusServiceImpl implements ILanguageStatusService {
 			if (res === 0) {
 				res = compare(a.source, b.source);
 			}
+
 			if (res === 0) {
 				res = compare(a.id, b.id);
 			}
+
 			return res;
 		});
 	}

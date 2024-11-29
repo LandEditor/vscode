@@ -30,6 +30,7 @@ export class DebugLifecycle implements IWorkbenchContribution {
 			e.veto(this.shouldVetoShutdown(e.reason), "veto.debug"),
 		);
 	}
+
 	private shouldVetoShutdown(
 		_reason: ShutdownReason,
 	): boolean | Promise<boolean> {
@@ -41,6 +42,7 @@ export class DebugLifecycle implements IWorkbenchContribution {
 		if (rootSessions.length === 0) {
 			return false;
 		}
+
 		const shouldConfirmOnExit =
 			this.configurationService.getValue<IDebugConfiguration>(
 				"debug",
@@ -49,11 +51,14 @@ export class DebugLifecycle implements IWorkbenchContribution {
 		if (shouldConfirmOnExit === "never") {
 			return false;
 		}
+
 		return this.showWindowCloseConfirmation(rootSessions.length);
 	}
+
 	public dispose() {
 		return this.disposable.dispose();
 	}
+
 	private async showWindowCloseConfirmation(
 		numSessions: number,
 	): Promise<boolean> {
@@ -70,6 +75,7 @@ export class DebugLifecycle implements IWorkbenchContribution {
 				"There are active debug sessions, are you sure you want to stop them?",
 			);
 		}
+
 		const res = await this.dialogService.confirm({
 			message,
 			type: "warning",

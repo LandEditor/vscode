@@ -39,6 +39,7 @@ export class ToggleMinimapAction extends Action2 {
 			},
 		});
 	}
+
 	override async run(accessor: ServicesAccessor): Promise<void> {
 		const configurationService = accessor.get(IConfigurationService);
 

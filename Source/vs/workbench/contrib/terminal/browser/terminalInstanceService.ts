@@ -34,14 +34,18 @@ export class TerminalInstanceService
 	implements ITerminalInstanceService
 {
 	declare _serviceBrand: undefined;
+
 	private _terminalShellTypeContextKey: IContextKey<string>;
+
 	private _backendRegistration = new Map<
 		string | undefined,
 		{
 			promise: Promise<void>;
+
 			resolve: () => void;
 		}
 	>();
+
 	private readonly _onDidCreateInstance = this._register(
 		new Emitter<ITerminalInstance>(),
 	);
@@ -49,6 +53,7 @@ export class TerminalInstanceService
 	get onDidCreateInstance(): Event<ITerminalInstance> {
 		return this._onDidCreateInstance.event;
 	}
+
 	private readonly _onDidRegisterBackend = this._register(
 		new Emitter<ITerminalBackend>(),
 	);
@@ -56,6 +61,7 @@ export class TerminalInstanceService
 	get onDidRegisterBackend(): Event<ITerminalBackend> {
 		return this._onDidRegisterBackend.event;
 	}
+
 	constructor(
 		@IInstantiationService
 		private readonly _instantiationService: IInstantiationService,
@@ -65,6 +71,7 @@ export class TerminalInstanceService
 		environmentService: IWorkbenchEnvironmentService,
 	) {
 		super();
+
 		this._terminalShellTypeContextKey =
 			TerminalContextKeys.shellType.bindTo(this._contextKeyService);
 
@@ -73,20 +80,24 @@ export class TerminalInstanceService
 			environmentService.remoteAuthority,
 		]) {
 			const { promise, resolve } = promiseWithResolvers<void>();
+
 			this._backendRegistration.set(remoteAuthority, {
 				promise,
 				resolve,
 			});
 		}
 	}
+
 	createInstance(
 		profile: ITerminalProfile,
 		target: TerminalLocation,
 	): ITerminalInstance;
+
 	createInstance(
 		shellLaunchConfig: IShellLaunchConfig,
 		target: TerminalLocation,
 	): ITerminalInstance;
+
 	createInstance(
 		config: IShellLaunchConfig | ITerminalProfile,
 		target: TerminalLocation,
@@ -99,11 +110,14 @@ export class TerminalInstanceService
 			this._terminalShellTypeContextKey,
 			shellLaunchConfig,
 		);
+
 		instance.target = target;
+
 		this._onDidCreateInstance.fire(instance);
 
 		return instance;
 	}
+
 	convertProfileToShellLaunchConfig(
 		shellLaunchConfigOrProfile?: IShellLaunchConfig | ITerminalProfile,
 		cwd?: string | URI,
@@ -118,6 +132,7 @@ export class TerminalInstanceService
 			if (!profile.path) {
 				return shellLaunchConfigOrProfile;
 			}
+
 			return {
 				executable: profile.path,
 				args: profile.args,
@@ -133,11 +148,13 @@ export class TerminalInstanceService
 			if (cwd) {
 				shellLaunchConfigOrProfile.cwd = cwd;
 			}
+
 			return shellLaunchConfigOrProfile;
 		}
 		// Return empty shell launch config
 		return {};
 	}
+
 	async getBackend(
 		remoteAuthority?: string,
 	): Promise<ITerminalBackend | undefined> {
@@ -148,19 +165,24 @@ export class TerminalInstanceService
 		if (!backend) {
 			// Ensure backend is initialized and try again
 			await this._backendRegistration.get(remoteAuthority)?.promise;
+
 			backend = Registry.as<ITerminalBackendRegistry>(
 				TerminalExtensions.Backend,
 			).getTerminalBackend(remoteAuthority);
 		}
+
 		return backend;
 	}
+
 	getRegisteredBackends(): IterableIterator<ITerminalBackend> {
 		return Registry.as<ITerminalBackendRegistry>(
 			TerminalExtensions.Backend,
 		).backends.values();
 	}
+
 	didRegisterBackend(backend: ITerminalBackend) {
 		this._backendRegistration.get(backend.remoteAuthority)?.resolve();
+
 		this._onDidRegisterBackend.fire(backend);
 	}
 }

@@ -76,6 +76,7 @@ class AccessibleViewNextAction extends Action2 {
 			),
 		});
 	}
+
 	run(accessor: ServicesAccessor): void {
 		accessor.get(IAccessibleViewService).next();
 	}
@@ -123,6 +124,7 @@ class AccessibleViewNextCodeBlockAction extends Action2 {
 			),
 		});
 	}
+
 	run(accessor: ServicesAccessor): void {
 		accessor.get(IAccessibleViewService).navigateToCodeBlock("next");
 	}
@@ -168,6 +170,7 @@ class AccessibleViewPreviousCodeBlockAction extends Action2 {
 			),
 		});
 	}
+
 	run(accessor: ServicesAccessor): void {
 		accessor.get(IAccessibleViewService).navigateToCodeBlock("previous");
 	}
@@ -202,6 +205,7 @@ class AccessibleViewPreviousAction extends Action2 {
 			),
 		});
 	}
+
 	run(accessor: ServicesAccessor): void {
 		accessor.get(IAccessibleViewService).previous();
 	}
@@ -243,6 +247,7 @@ class AccessibleViewGoToSymbolAction extends Action2 {
 			),
 		});
 	}
+
 	run(accessor: ServicesAccessor): void {
 		accessor.get(IAccessibleViewService).goToSymbol();
 	}
@@ -341,6 +346,7 @@ class AccessibleViewDisableHintAction extends Action2 {
 			),
 		});
 	}
+
 	run(accessor: ServicesAccessor): void {
 		accessor.get(IAccessibleViewService).disableHint();
 	}
@@ -373,6 +379,7 @@ class AccessibilityHelpConfigureKeybindingsAction extends Action2 {
 			),
 		});
 	}
+
 	async run(accessor: ServicesAccessor): Promise<void> {
 		await accessor.get(IAccessibleViewService).configureKeybindings(true);
 	}
@@ -405,6 +412,7 @@ class AccessibilityHelpConfigureAssignedKeybindingsAction extends Action2 {
 			),
 		});
 	}
+
 	async run(accessor: ServicesAccessor): Promise<void> {
 		await accessor.get(IAccessibleViewService).configureKeybindings(false);
 	}
@@ -425,6 +433,7 @@ class AccessibilityHelpOpenHelpLinkAction extends Action2 {
 			),
 		});
 	}
+
 	run(accessor: ServicesAccessor): void {
 		accessor.get(IAccessibleViewService).openHelpLink();
 	}
@@ -468,6 +477,7 @@ class AccessibleViewAcceptInlineCompletionAction extends Action2 {
 			),
 		});
 	}
+
 	async run(accessor: ServicesAccessor): Promise<void> {
 		const codeEditorService = accessor.get(ICodeEditorService);
 
@@ -478,6 +488,7 @@ class AccessibleViewAcceptInlineCompletionAction extends Action2 {
 		if (!editor) {
 			return;
 		}
+
 		const model = InlineCompletionsController.get(editor)?.model.get();
 
 		const state = model?.inlineCompletionState.get();
@@ -485,8 +496,11 @@ class AccessibleViewAcceptInlineCompletionAction extends Action2 {
 		if (!model || !state) {
 			return;
 		}
+
 		await model.accept(editor);
+
 		model.stop();
+
 		editor.focus();
 	}
 }

@@ -15,31 +15,38 @@ export class DiffEditorModel extends EditorModel {
 	get originalModel(): IResolvableEditorModel | undefined {
 		return this._originalModel;
 	}
+
 	protected readonly _modifiedModel: IResolvableEditorModel | undefined;
 
 	get modifiedModel(): IResolvableEditorModel | undefined {
 		return this._modifiedModel;
 	}
+
 	constructor(
 		originalModel: IResolvableEditorModel | undefined,
 		modifiedModel: IResolvableEditorModel | undefined,
 	) {
 		super();
+
 		this._originalModel = originalModel;
+
 		this._modifiedModel = modifiedModel;
 	}
+
 	override async resolve(): Promise<void> {
 		await Promise.all([
 			this._originalModel?.resolve(),
 			this._modifiedModel?.resolve(),
 		]);
 	}
+
 	override isResolved(): boolean {
 		return !!(
 			this._originalModel?.isResolved() &&
 			this._modifiedModel?.isResolved()
 		);
 	}
+
 	override dispose(): void {
 		// Do not propagate the dispose() call to the two models inside. We never created the two models
 		// (original and modified) so we can not dispose them without sideeffects. Rather rely on the

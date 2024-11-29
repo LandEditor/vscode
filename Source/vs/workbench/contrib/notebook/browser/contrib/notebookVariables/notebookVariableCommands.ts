@@ -34,6 +34,7 @@ registerAction2(
 				f1: false,
 			});
 		}
+
 		run(accessor: ServicesAccessor, context: contextMenuArg): void {
 			const clipboardService = accessor.get(IClipboardService);
 
@@ -55,6 +56,7 @@ registerAction2(
 				f1: false,
 			});
 		}
+
 		async run(
 			accessor: ServicesAccessor,
 			resource: UriComponents | undefined,
@@ -62,6 +64,7 @@ registerAction2(
 			if (!resource) {
 				return [];
 			}
+
 			const uri = URI.revive(resource);
 
 			const notebookKernelService = accessor.get(INotebookKernelService);
@@ -73,6 +76,7 @@ registerAction2(
 			if (!notebookTextModel) {
 				return [];
 			}
+
 			const selectedKernel =
 				notebookKernelService.getMatchingKernel(
 					notebookTextModel,
@@ -93,6 +97,7 @@ registerAction2(
 					})
 					.toPromise();
 			}
+
 			return [];
 		}
 	},

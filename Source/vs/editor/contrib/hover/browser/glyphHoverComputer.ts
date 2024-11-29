@@ -18,12 +18,14 @@ export interface IHoverMessage {
 }
 export interface GlyphHoverComputerOptions {
 	lineNumber: number;
+
 	laneOrLine: LaneOrLineNumber;
 }
 export class GlyphHoverComputer
 	implements IHoverComputer<GlyphHoverComputerOptions, IHoverMessage>
 {
 	constructor(private readonly _editor: ICodeEditor) {}
+
 	public computeSync(opts: GlyphHoverComputerOptions): IHoverMessage[] {
 		const toHoverMessage = (contents: IMarkdownString): IHoverMessage => {
 			return {
@@ -42,6 +44,7 @@ export class GlyphHoverComputer
 		if (!lineDecorations) {
 			return result;
 		}
+
 		for (const d of lineDecorations) {
 			const lane =
 				d.options.glyphMargin?.position ?? GlyphMarginLane.Center;
@@ -49,6 +52,7 @@ export class GlyphHoverComputer
 			if (!isLineHover && lane !== opts.laneOrLine) {
 				continue;
 			}
+
 			const hoverMessage = isLineHover
 				? d.options.lineNumberHoverMessage
 				: d.options.glyphMarginHoverMessage;
@@ -56,8 +60,10 @@ export class GlyphHoverComputer
 			if (!hoverMessage || isEmptyMarkdownString(hoverMessage)) {
 				continue;
 			}
+
 			result.push(...asArray(hoverMessage).map(toHoverMessage));
 		}
+
 		return result;
 	}
 }

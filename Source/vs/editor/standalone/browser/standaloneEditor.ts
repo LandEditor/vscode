@@ -206,6 +206,7 @@ export function addCommand(descriptor: ICommandDescriptor): IDisposable {
 			"Invalid command descriptor, `id` and `run` are required properties!",
 		);
 	}
+
 	return CommandsRegistry.registerCommand(descriptor.id, descriptor.run);
 }
 /**
@@ -221,6 +222,7 @@ export function addEditorAction(descriptor: IActionDescriptor): IDisposable {
 			"Invalid action descriptor, `id`, `label` and `run` are required properties!",
 		);
 	}
+
 	const precondition = ContextKeyExpr.deserialize(descriptor.precondition);
 
 	const run = (
@@ -250,6 +252,7 @@ export function addEditorAction(descriptor: IActionDescriptor): IDisposable {
 			group: descriptor.contextMenuGroupId,
 			order: descriptor.contextMenuOrder || 0,
 		};
+
 		toDispose.add(
 			MenuRegistry.appendMenuItem(MenuId.EditorContext, menuItem),
 		);
@@ -267,6 +270,7 @@ export function addEditorAction(descriptor: IActionDescriptor): IDisposable {
 				precondition,
 				ContextKeyExpr.deserialize(descriptor.keybindingContext),
 			);
+
 			toDispose.add(
 				keybindingService.addDynamicKeybindings(
 					descriptor.keybindings.map((keybinding) => {
@@ -280,6 +284,7 @@ export function addEditorAction(descriptor: IActionDescriptor): IDisposable {
 			);
 		}
 	}
+
 	return toDispose;
 }
 /**
@@ -287,8 +292,11 @@ export function addEditorAction(descriptor: IActionDescriptor): IDisposable {
  */
 export interface IKeybindingRule {
 	keybinding: number;
+
 	command?: string | null;
+
 	commandArgs?: any;
+
 	when?: string | null;
 }
 /**
@@ -310,6 +318,7 @@ export function addKeybindingRules(rules: IKeybindingRule[]): IDisposable {
 
 		return Disposable.None;
 	}
+
 	return keybindingService.addDynamicKeybindings(
 		rules.map((rule) => {
 			return {
@@ -356,6 +365,7 @@ export function setModelLanguage(
 		languageService.getLanguageIdByMimeType(mimeTypeOrLanguageId) ||
 		mimeTypeOrLanguageId ||
 		PLAINTEXT_LANGUAGE_ID;
+
 	model.setLanguage(languageService.createById(languageId));
 }
 /**
@@ -368,6 +378,7 @@ export function setModelMarkers(
 ): void {
 	if (model) {
 		const markerService = StandaloneServices.get(IMarkerService);
+
 		markerService.changeOne(owner, model.uri, markers);
 	}
 }
@@ -376,6 +387,7 @@ export function setModelMarkers(
  */
 export function removeAllMarkers(owner: string) {
 	const markerService = StandaloneServices.get(IMarkerService);
+
 	markerService.changeAll(owner, []);
 }
 /**
@@ -385,7 +397,9 @@ export function removeAllMarkers(owner: string) {
  */
 export function getModelMarkers(filter: {
 	owner?: string;
+
 	resource?: URI;
+
 	take?: number;
 }): IMarker[] {
 	const markerService = StandaloneServices.get(IMarkerService);
@@ -448,6 +462,7 @@ export function onWillDisposeModel(
 export function onDidChangeModelLanguage(
 	listener: (e: {
 		readonly model: ITextModel;
+
 		readonly oldLanguage: string;
 	}) => void,
 ): IDisposable {
@@ -507,6 +522,7 @@ export function colorize(
 	const themeService = <StandaloneThemeService>(
 		StandaloneServices.get(IStandaloneThemeService)
 	);
+
 	themeService.registerEditorContainer(mainWindow.document.body);
 
 	return Colorizer.colorize(languageService, text, languageId, options);
@@ -522,6 +538,7 @@ export function colorizeModelLine(
 	const themeService = <StandaloneThemeService>(
 		StandaloneServices.get(IStandaloneThemeService)
 	);
+
 	themeService.registerEditorContainer(mainWindow.document.body);
 
 	return Colorizer.colorizeModelLine(model, lineNumber, tabSize);
@@ -537,6 +554,7 @@ function getSafeTokenizationSupport(
 	if (tokenizationSupport) {
 		return tokenizationSupport;
 	}
+
 	return {
 		getInitialState: () => NullState,
 		tokenize: (line: string, hasEOL: boolean, state: languages.IState) =>
@@ -569,9 +587,12 @@ export function tokenize(
 			true,
 			state,
 		);
+
 		result[i] = tokenizationResult.tokens;
+
 		state = tokenizationResult.endState;
 	}
+
 	return result;
 }
 /**
@@ -584,6 +605,7 @@ export function defineTheme(
 	const standaloneThemeService = StandaloneServices.get(
 		IStandaloneThemeService,
 	);
+
 	standaloneThemeService.defineTheme(themeName, themeData);
 }
 /**
@@ -593,6 +615,7 @@ export function setTheme(themeName: string): void {
 	const standaloneThemeService = StandaloneServices.get(
 		IStandaloneThemeService,
 	);
+
 	standaloneThemeService.setTheme(themeName);
 }
 /**
@@ -627,6 +650,7 @@ export function registerLinkOpener(opener: ILinkOpener): IDisposable {
 			if (typeof resource === "string") {
 				resource = URI.parse(resource);
 			}
+
 			return opener.open(resource);
 		},
 	});
@@ -669,6 +693,7 @@ export function registerEditorOpener(opener: ICodeEditorOpener): IDisposable {
 			if (!source) {
 				return null;
 			}
+
 			const selection = input.options?.selection;
 
 			let selectionOrPosition: IRange | IPosition | undefined;
@@ -685,6 +710,7 @@ export function registerEditorOpener(opener: ICodeEditorOpener): IDisposable {
 					column: selection.startColumn,
 				};
 			}
+
 			if (
 				await opener.openCodeEditor(
 					source,
@@ -694,6 +720,7 @@ export function registerEditorOpener(opener: ICodeEditorOpener): IDisposable {
 			) {
 				return source; // return source editor to indicate that this handler has successfully handled the opening
 			}
+
 			return null; // fallback to other registered handlers
 		},
 	);

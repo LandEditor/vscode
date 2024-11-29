@@ -19,8 +19,10 @@ export class LogsDataCleaner extends Disposable {
 		private readonly lifecycleService: ILifecycleService,
 	) {
 		super();
+
 		this.cleanUpOldLogsSoon();
 	}
+
 	private cleanUpOldLogsSoon(): void {
 		let handle: any = setTimeout(async () => {
 			handle = undefined;
@@ -45,6 +47,7 @@ export class LogsDataCleaner extends Disposable {
 					0,
 					Math.max(0, oldSessions.length - 49),
 				);
+
 				Promises.settled(
 					toDelete.map((stat) =>
 						this.fileService.del(stat.resource, {
@@ -54,9 +57,11 @@ export class LogsDataCleaner extends Disposable {
 				);
 			}
 		}, 10 * 1000);
+
 		this.lifecycleService.onWillShutdown(() => {
 			if (handle) {
 				clearTimeout(handle);
+
 				handle = undefined;
 			}
 		});

@@ -25,11 +25,13 @@ class ExtHostEditSessionIdentityCreateParticipant
 	implements IEditSessionIdentityCreateParticipant
 {
 	private readonly _proxy: ExtHostWorkspaceShape;
+
 	private readonly timeout = 10000;
 
 	constructor(extHostContext: IExtHostContext) {
 		this._proxy = extHostContext.getProxy(ExtHostContext.ExtHostWorkspace);
 	}
+
 	async participate(
 		workspaceFolder: WorkspaceFolder,
 		token: CancellationToken,
@@ -47,6 +49,7 @@ class ExtHostEditSessionIdentityCreateParticipant
 					),
 				this.timeout,
 			);
+
 			this._proxy
 				.$onWillCreateEditSessionIdentity(
 					workspaceFolder.uri,
@@ -78,6 +81,7 @@ export class EditSessionIdentityCreateParticipant {
 				),
 			);
 	}
+
 	dispose(): void {
 		this._saveParticipantDisposable.dispose();
 	}

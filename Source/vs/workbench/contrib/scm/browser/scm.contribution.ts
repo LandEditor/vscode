@@ -180,6 +180,7 @@ viewsRegistry.registerViews(
 				ContextKeyExpr.notEquals("scm.providerCount", 0),
 			),
 			// readonly when = ContextKeyExpr.or(ContextKeyExpr.equals('config.scm.alwaysShowProviders', true), ContextKeyExpr.and(ContextKeyExpr.notEquals('scm.providerCount', 0), ContextKeyExpr.notEquals('scm.providerCount', 1)));
+
 			containerIcon: sourceControlViewIcon,
 		},
 	],
@@ -690,6 +691,7 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
 		if (!repositoryId) {
 			return Promise.resolve(null);
 		}
+
 		const scmService = accessor.get(ISCMService);
 
 		const repository = scmService.getRepository(repositoryId);
@@ -697,6 +699,7 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
 		if (!repository?.provider.acceptInputCommand) {
 			return Promise.resolve(null);
 		}
+
 		const id = repository.provider.acceptInputCommand.id;
 
 		const args = repository.provider.acceptInputCommand.arguments;
@@ -728,6 +731,7 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
 		const repository = repositoryId
 			? scmService.getRepository(repositoryId)
 			: undefined;
+
 		repository?.input.setValue("", true);
 	},
 });
@@ -755,6 +759,7 @@ const viewNextCommitCommand = {
 		const repository = repositoryId
 			? scmService.getRepository(repositoryId)
 			: undefined;
+
 		repository?.input.showNextHistoryValue();
 	},
 };
@@ -782,6 +787,7 @@ const viewPreviousCommitCommand = {
 		const repository = repositoryId
 			? scmService.getRepository(repositoryId)
 			: undefined;
+
 		repository?.input.showPreviousHistoryValue();
 	},
 };
@@ -823,6 +829,7 @@ CommandsRegistry.registerCommand(
 		if (!providers || providers.length === 0) {
 			return;
 		}
+
 		const commandService = accessor.get(ICommandService);
 
 		const listService = accessor.get(IListService);
@@ -848,9 +855,11 @@ CommandsRegistry.registerCommand(
 				}
 			}
 		}
+
 		if (!provider?.rootUri) {
 			return;
 		}
+
 		await commandService.executeCommand(
 			"openInIntegratedTerminal",
 			provider.rootUri,
@@ -863,7 +872,9 @@ CommandsRegistry.registerCommand(
 		if (!provider || !provider.rootUri) {
 			return;
 		}
+
 		const commandService = accessor.get(ICommandService);
+
 		await commandService.executeCommand("openInTerminal", provider.rootUri);
 	},
 );

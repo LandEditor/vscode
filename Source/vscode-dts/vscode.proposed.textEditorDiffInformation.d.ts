@@ -15,25 +15,34 @@ declare module "vscode" {
 	export interface TextEditorChange {
 		readonly original: {
 			readonly startLineNumber: number;
+
 			readonly endLineNumberExclusive: number;
 		};
+
 		readonly modified: {
 			readonly startLineNumber: number;
+
 			readonly endLineNumberExclusive: number;
 		};
+
 		readonly kind: TextEditorChangeKind;
 	}
 
 	export interface TextEditorDiffInformation {
 		readonly documentVersion: number;
+
 		readonly original: Uri | undefined;
+
 		readonly modified: Uri;
+
 		readonly changes: readonly TextEditorChange[];
+
 		readonly isStale: boolean;
 	}
 
 	export interface TextEditorDiffInformationChangeEvent {
 		readonly textEditor: TextEditor;
+
 		readonly diffInformation: TextEditorDiffInformation[] | undefined;
 	}
 

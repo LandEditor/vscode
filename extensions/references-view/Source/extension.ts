@@ -12,15 +12,20 @@ import * as types from "./types";
 
 export function activate(context: vscode.ExtensionContext): SymbolTree {
 	const tree = new SymbolsTree();
+
 	references.register(tree, context);
+
 	calls.register(tree, context);
+
 	types.register(tree, context);
 
 	function setInput(input: SymbolTreeInput<unknown>) {
 		tree.setInput(input);
 	}
+
 	function getInput(): SymbolTreeInput<unknown> | undefined {
 		return tree.getInput();
 	}
+
 	return { setInput, getInput };
 }

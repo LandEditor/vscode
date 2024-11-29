@@ -34,6 +34,7 @@ export interface IColorizerOptions {
 }
 export interface IColorizerElementOptions extends IColorizerOptions {
 	theme?: string;
+
 	mimeType?: string;
 }
 export class Colorizer {
@@ -57,8 +58,10 @@ export class Colorizer {
 
 			return Promise.resolve();
 		}
+
 		const languageId =
 			languageService.getLanguageIdByMimeType(mimeType) || mimeType;
+
 		themeService.setTheme(theme);
 
 		const text = domNode.firstChild ? domNode.firstChild.nodeValue : "";
@@ -78,6 +81,7 @@ export class Colorizer {
 			options,
 		).then(render, (err) => console.error(err));
 	}
+
 	public static async colorize(
 		languageService: ILanguageService,
 		text: string,
@@ -91,14 +95,17 @@ export class Colorizer {
 		if (options && typeof options.tabSize === "number") {
 			tabSize = options.tabSize;
 		}
+
 		if (strings.startsWithUTF8BOM(text)) {
 			text = text.substr(1);
 		}
+
 		const lines = strings.splitLines(text);
 
 		if (!languageService.isRegisteredLanguageId(languageId)) {
 			return _fakeColorize(lines, tabSize, languageIdCodec);
 		}
+
 		const tokenizationSupport =
 			await TokenizationRegistry.getOrCreate(languageId);
 
@@ -110,8 +117,10 @@ export class Colorizer {
 				languageIdCodec,
 			);
 		}
+
 		return _fakeColorize(lines, tabSize, languageIdCodec);
 	}
+
 	public static colorizeLine(
 		line: string,
 		mightContainNonBasicASCII: boolean,
@@ -156,12 +165,14 @@ export class Colorizer {
 
 		return renderResult.html;
 	}
+
 	public static colorizeModelLine(
 		model: ITextModel,
 		lineNumber: number,
 		tabSize: number = 4,
 	): string {
 		const content = model.getLineContent(lineNumber);
+
 		model.tokenization.forceTokenization(lineNumber);
 
 		const tokens = model.tokenization.getLineTokens(lineNumber);
@@ -201,8 +212,10 @@ function _colorize(
 					return;
 				}
 			}
+
 			c(result);
 		};
+
 		execute();
 	});
 }
@@ -220,11 +233,14 @@ function _fakeColorize(
 		0;
 
 	const tokens = new Uint32Array(2);
+
 	tokens[0] = 0;
+
 	tokens[1] = defaultMetadata;
 
 	for (let i = 0, length = lines.length; i < length; i++) {
 		const line = lines[i];
+
 		tokens[0] = line.length;
 
 		const lineTokens = new LineTokens(tokens, line, languageIdCodec);
@@ -263,9 +279,12 @@ function _fakeColorize(
 				null,
 			),
 		);
+
 		html = html.concat(renderResult.html);
+
 		html.push("<br/>");
 	}
+
 	return html.join("");
 }
 function _actualColorize(
@@ -286,6 +305,7 @@ function _actualColorize(
 			true,
 			state,
 		);
+
 		LineTokens.convertToEndOffset(tokenizeResult.tokens, line.length);
 
 		const lineTokens = new LineTokens(
@@ -328,9 +348,13 @@ function _actualColorize(
 				null,
 			),
 		);
+
 		html = html.concat(renderResult.html);
+
 		html.push("<br/>");
+
 		state = tokenizeResult.endState;
 	}
+
 	return html.join("");
 }

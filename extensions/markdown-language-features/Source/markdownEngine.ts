@@ -24,7 +24,9 @@ const pluginSourceMap: MarkdownIt.PluginSimple = (md): void => {
 		for (const token of state.tokens) {
 			if (token.map && token.type !== "inline") {
 				token.attrSet("data-line", String(token.map[0]));
+
 				token.attrJoin("class", "code-line");
+
 				token.attrJoin("dir", "auto");
 			}
 		}
@@ -47,10 +49,14 @@ type MarkdownItConfig = Readonly<
 class TokenCache {
 	private _cachedDocument?: {
 		readonly uri: vscode.Uri;
+
 		readonly version: number;
+
 		readonly config: MarkdownItConfig;
 	};
+
 	private _tokens?: Token[];
+
 	public tryGetCached(
 		document: ITextDocument,
 		config: MarkdownItConfig,
@@ -65,8 +71,10 @@ class TokenCache {
 		) {
 			return this._tokens;
 		}
+
 		return undefined;
 	}
+
 	public update(
 		document: ITextDocument,
 		config: MarkdownItConfig,
@@ -77,43 +85,57 @@ class TokenCache {
 			version: document.version,
 			config,
 		};
+
 		this._tokens = tokens;
 	}
+
 	public clean(): void {
 		this._cachedDocument = undefined;
+
 		this._tokens = undefined;
 	}
 }
 export interface RenderOutput {
 	html: string;
+
 	containingImages: Set<string>;
 }
 interface RenderEnv {
 	containingImages: Set<string>;
+
 	currentDocument: vscode.Uri | undefined;
+
 	resourceProvider: WebviewResourceProvider | undefined;
 }
 export interface IMdParser {
 	readonly slugifier: Slugifier;
+
 	tokenize(document: ITextDocument): Promise<Token[]>;
 }
 export class MarkdownItEngine implements IMdParser {
 	private _md?: Promise<MarkdownIt>;
+
 	private _slugCount = new Map<string, number>();
+
 	private _tokenCache = new TokenCache();
+
 	public readonly slugifier: Slugifier;
+
 	public constructor(
 		private readonly _contributionProvider: MarkdownContributionProvider,
 		slugifier: Slugifier,
 		private readonly _logger: ILogger,
 	) {
 		this.slugifier = slugifier;
+
 		_contributionProvider.onContributionsChanged(() => {
 			// Markdown plugin contributions may have changed
 			this._md = undefined;
+
 			this._tokenCache.clean();
 		});
 	}
+
 	public async getEngine(
 		resource: vscode.Uri | undefined,
 	): Promise<MarkdownIt> {
@@ -121,6 +143,7 @@ export class MarkdownItEngine implements IMdParser {
 
 		return this._getEngine(config);
 	}
+
 	private async _getEngine(config: MarkdownItConfig): Promise<MarkdownIt> {
 		if (!this._md) {
 			this._md = (async () => {
@@ -129,6 +152,7 @@ export class MarkdownItEngine implements IMdParser {
 				let md: MarkdownIt = markdownIt.default(
 					await getMarkdownOptions(() => md),
 				);
+
 				md.linkify.set({ fuzzyLink: false });
 
 				for (const plugin of this._contributionProvider.contributions.markdownItPlugins.values()) {
@@ -138,11 +162,13 @@ export class MarkdownItEngine implements IMdParser {
 						console.error("Could not load markdown it plugin", e);
 					}
 				}
+
 				const frontMatterPlugin = await import(
 					"markdown-it-front-matter"
 				);
 				// Extract rules from front matter plugin and apply at a lower precedence
 				let fontMatterRule: any;
+
 				frontMatterPlugin.default(
 					<any>{
 						block: {
@@ -155,28 +181,40 @@ export class MarkdownItEngine implements IMdParser {
 					},
 					() => {},
 				);
+
 				md.block.ruler.before("fence", "front_matter", fontMatterRule, {
 					alt: ["paragraph", "reference", "blockquote", "list"],
 				});
+
 				this._addImageRenderer(md);
+
 				this._addFencedRenderer(md);
+
 				this._addLinkNormalizer(md);
+
 				this._addLinkValidator(md);
+
 				this._addNamedHeaders(md);
+
 				this._addLinkRenderer(md);
+
 				md.use(pluginSourceMap);
 
 				return md;
 			})();
 		}
+
 		const md = await this._md!;
+
 		md.set(config);
 
 		return md;
 	}
+
 	public reloadPlugins() {
 		this._md = undefined;
 	}
+
 	private _tokenizeDocument(
 		document: ITextDocument,
 		config: MarkdownItConfig,
@@ -189,24 +227,29 @@ export class MarkdownItEngine implements IMdParser {
 
 			return cached;
 		}
+
 		this._logger.verbose(
 			"MarkdownItEngine",
 			`tokenizeDocument - ${document.uri}`,
 		);
 
 		const tokens = this._tokenizeString(document.getText(), engine);
+
 		this._tokenCache.update(document, config, tokens);
 
 		return tokens;
 	}
+
 	private _tokenizeString(text: string, engine: MarkdownIt) {
 		this._resetSlugCount();
 
 		return engine.parse(text, {});
 	}
+
 	private _resetSlugCount(): void {
 		this._slugCount = new Map<string, number>();
 	}
+
 	public async render(
 		input: ITextDocument | string,
 		resourceProvider?: WebviewResourceProvider,
@@ -242,6 +285,7 @@ export class MarkdownItEngine implements IMdParser {
 			containingImages: env.containingImages,
 		};
 	}
+
 	public async tokenize(document: ITextDocument): Promise<Token[]> {
 		const config = this._getConfig(document.uri);
 
@@ -249,9 +293,11 @@ export class MarkdownItEngine implements IMdParser {
 
 		return this._tokenizeDocument(document, config, engine);
 	}
+
 	public cleanCache(): void {
 		this._tokenCache.clean();
 	}
+
 	private _getConfig(resource?: vscode.Uri): MarkdownItConfig {
 		const config = MarkdownPreviewConfiguration.getForResource(
 			resource ?? null,
@@ -263,8 +309,10 @@ export class MarkdownItEngine implements IMdParser {
 			typographer: config.previewTypographer,
 		};
 	}
+
 	private _addImageRenderer(md: MarkdownIt): void {
 		const original = md.renderer.rules.image;
+
 		md.renderer.rules.image = (
 			tokens: Token[],
 			idx: number,
@@ -288,9 +336,11 @@ export class MarkdownItEngine implements IMdParser {
 							env.resourceProvider,
 						),
 					);
+
 					token.attrSet("data-src", src);
 				}
 			}
+
 			if (original) {
 				return original(tokens, idx, options, env, self);
 			} else {
@@ -298,8 +348,10 @@ export class MarkdownItEngine implements IMdParser {
 			}
 		};
 	}
+
 	private _addFencedRenderer(md: MarkdownIt): void {
 		const original = md.renderer.rules["fenced"];
+
 		md.renderer.rules["fenced"] = (
 			tokens: Token[],
 			idx: number,
@@ -312,6 +364,7 @@ export class MarkdownItEngine implements IMdParser {
 			if (token.map?.length) {
 				token.attrJoin("class", "hljs");
 			}
+
 			if (original) {
 				return original(tokens, idx, options, env, self);
 			} else {
@@ -319,8 +372,10 @@ export class MarkdownItEngine implements IMdParser {
 			}
 		};
 	}
+
 	private _addLinkNormalizer(md: MarkdownIt): void {
 		const normalizeLink = md.normalizeLink;
+
 		md.normalizeLink = (link: string) => {
 			try {
 				// Normalize VS Code schemes to target the current version
@@ -337,11 +392,14 @@ export class MarkdownItEngine implements IMdParser {
 			} catch (e) {
 				// noop
 			}
+
 			return normalizeLink(link);
 		};
 	}
+
 	private _addLinkValidator(md: MarkdownIt): void {
 		const validateLink = md.validateLink;
+
 		md.validateLink = (link: string) => {
 			return (
 				validateLink(link) ||
@@ -351,8 +409,10 @@ export class MarkdownItEngine implements IMdParser {
 			);
 		};
 	}
+
 	private _addNamedHeaders(md: MarkdownIt): void {
 		const original = md.renderer.rules.heading_open;
+
 		md.renderer.rules.heading_open = (
 			tokens: Token[],
 			idx: number,
@@ -366,13 +426,16 @@ export class MarkdownItEngine implements IMdParser {
 
 			if (this._slugCount.has(slug.value)) {
 				const count = this._slugCount.get(slug.value)!;
+
 				this._slugCount.set(slug.value, count + 1);
+
 				slug = this.slugifier.fromHeading(
 					slug.value + "-" + (count + 1),
 				);
 			} else {
 				this._slugCount.set(slug.value, 0);
 			}
+
 			tokens[idx].attrSet("id", slug.value);
 
 			if (original) {
@@ -382,12 +445,14 @@ export class MarkdownItEngine implements IMdParser {
 			}
 		};
 	}
+
 	private _tokenToPlainText(token: Token): string {
 		if (token.children) {
 			return token.children
 				.map((x) => this._tokenToPlainText(x))
 				.join("");
 		}
+
 		switch (token.type) {
 			case "text":
 			case "emoji":
@@ -398,8 +463,10 @@ export class MarkdownItEngine implements IMdParser {
 				return "";
 		}
 	}
+
 	private _addLinkRenderer(md: MarkdownIt): void {
 		const original = md.renderer.rules.link_open;
+
 		md.renderer.rules.link_open = (
 			tokens: Token[],
 			idx: number,
@@ -414,6 +481,7 @@ export class MarkdownItEngine implements IMdParser {
 			if (typeof href === "string") {
 				token.attrSet("data-href", href);
 			}
+
 			if (original) {
 				return original(tokens, idx, options, env, self);
 			} else {
@@ -421,6 +489,7 @@ export class MarkdownItEngine implements IMdParser {
 			}
 		};
 	}
+
 	private _toResourceUri(
 		href: string,
 		currentDocument: vscode.Uri | undefined,
@@ -462,8 +531,10 @@ export class MarkdownItEngine implements IMdParser {
 						}
 					}
 				}
+
 				return uri.toString(true).replace(/^markdown-link:/, "");
 			}
+
 			return href;
 		} catch {
 			return href;
@@ -488,6 +559,7 @@ async function getMarkdownOptions(
 					}).value;
 				} catch (error) {}
 			}
+
 			return md().utils.escapeHtml(str);
 		},
 	};

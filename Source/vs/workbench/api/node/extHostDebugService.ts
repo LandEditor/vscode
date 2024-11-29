@@ -62,7 +62,9 @@ import { IExtHostWorkspace } from "../common/extHostWorkspace.js";
 
 export class ExtHostDebugService extends ExtHostDebugServiceBase {
 	override readonly _serviceBrand: undefined;
+
 	private _integratedTerminalInstances = new DebugTerminalCollection();
+
 	private _terminalDisposedListener: IDisposable | undefined;
 
 	constructor(
@@ -98,6 +100,7 @@ export class ExtHostDebugService extends ExtHostDebugServiceBase {
 			testing,
 		);
 	}
+
 	protected override createDebugAdapter(
 		adapter: vscode.DebugAdapterDescriptor,
 		session: ExtHostDebugSession,
@@ -117,6 +120,7 @@ export class ExtHostDebugService extends ExtHostDebugServiceBase {
 			return super.createDebugAdapter(adapter, session);
 		}
 	}
+
 	protected override daExecutableFromPackage(
 		session: ExtHostDebugSession,
 		extensionRegistry: ExtensionDescriptionRegistry,
@@ -133,11 +137,14 @@ export class ExtHostDebugService extends ExtHostDebugServiceBase {
 				dae.options,
 			);
 		}
+
 		return undefined;
 	}
+
 	protected override createSignService(): ISignService | undefined {
 		return new SignService();
 	}
+
 	public override async $runInTerminal(
 		args: DebugProtocol.RunInTerminalRequestArguments,
 		sessionId: string,
@@ -153,6 +160,7 @@ export class ExtHostDebugService extends ExtHostDebugServiceBase {
 					}),
 				);
 			}
+
 			const configProvider =
 				await this._configurationService.getConfigProvider();
 
@@ -183,7 +191,9 @@ export class ExtHostDebugService extends ExtHostDebugServiceBase {
 					name: terminalName,
 					iconPath: new ThemeIcon("debug"),
 				};
+
 				giveShellTimeToInitialize = true;
+
 				terminal = this._terminalService.createTerminalFromOptions(
 					options,
 					{
@@ -194,10 +204,12 @@ export class ExtHostDebugService extends ExtHostDebugServiceBase {
 						useShellEnvironment: true,
 					},
 				);
+
 				this._integratedTerminalInstances.insert(terminal, shellConfig);
 			} else {
 				cwdForPrepareCommand = args.cwd;
 			}
+
 			terminal.show(true);
 
 			const shellProcessId = await terminal.processId;
@@ -211,11 +223,14 @@ export class ExtHostDebugService extends ExtHostDebugServiceBase {
 					DataDebounce = 500,
 					MaxDelay = 5000,
 				}
+
 				const ds = new DisposableStore();
+
 				await new Promise<void>((resolve) => {
 					const scheduler = ds.add(
 						new RunOnceScheduler(resolve, Timing.DataDebounce),
 					);
+
 					ds.add(
 						this._terminalService.onDidWriteTerminalData((e) => {
 							if (e.terminal === terminal) {
@@ -223,6 +238,7 @@ export class ExtHostDebugService extends ExtHostDebugServiceBase {
 							}
 						}),
 					);
+
 					ds.add(
 						this._terminalShellIntegrationService.onDidChangeTerminalShellIntegration(
 							(e) => {
@@ -232,8 +248,10 @@ export class ExtHostDebugService extends ExtHostDebugServiceBase {
 							},
 						),
 					);
+
 					ds.add(disposableTimeout(resolve, Timing.MaxDelay));
 				});
+
 				ds.dispose();
 			} else {
 				if (
@@ -243,6 +261,7 @@ export class ExtHostDebugService extends ExtHostDebugServiceBase {
 					terminal.sendText("\u0003"); // Ctrl+C for #106743. Not part of the same command for #107969
 					await timeout(200); // mirroring https://github.com/microsoft/vscode/blob/c67ccc70ece5f472ec25464d3eeb874cfccee9f1/src/vs/workbench/contrib/terminal/browser/terminalInstance.ts#L852-L857
 				}
+
 				if (
 					configProvider
 						.getConfiguration("debug.terminal")
@@ -264,6 +283,7 @@ export class ExtHostDebugService extends ExtHostDebugServiceBase {
 					}
 				}
 			}
+
 			const command = prepareCommand(
 				shell,
 				args.args,
@@ -281,6 +301,7 @@ export class ExtHostDebugService extends ExtHostDebugServiceBase {
 			const sessionListener = this.onDidTerminateDebugSession((s) => {
 				if (s.id === sessionId) {
 					this._integratedTerminalInstances.free(terminal);
+
 					sessionListener.dispose();
 				}
 			});
@@ -292,6 +313,7 @@ export class ExtHostDebugService extends ExtHostDebugServiceBase {
 				await this._configurationService.getConfigProvider(),
 			);
 		}
+
 		return super.$runInTerminal(args, sessionId);
 	}
 }
@@ -313,6 +335,7 @@ function runInExternalTerminal(
 			);
 		}
 	}
+
 	const config = configProvider.getConfiguration("terminal");
 
 	return externalTerminalService.runInTerminal(
@@ -328,13 +351,16 @@ class DebugTerminalCollection {
 	 * Delay before a new terminal is a candidate for reuse. See #71850
 	 */
 	private static minUseDelay = 1000;
+
 	private _terminalInstances = new Map<
 		vscode.Terminal,
 		{
 			lastUsedAt: number;
+
 			config: string;
 		}
 	>();
+
 	public async checkout(
 		config: string,
 		name: string,
@@ -348,6 +374,7 @@ class DebugTerminalCollection {
 				if (terminal.name !== name) {
 					return null;
 				}
+
 				if (
 					termInfo.lastUsedAt !== -1 &&
 					(await hasChildProcesses(await terminal.processId))
@@ -364,12 +391,15 @@ class DebugTerminalCollection {
 				) {
 					return null;
 				}
+
 				if (termInfo.config !== config) {
 					if (cleanupOthersByName) {
 						terminal.dispose();
 					}
+
 					return null;
 				}
+
 				termInfo.lastUsedAt = now;
 
 				return terminal;
@@ -378,12 +408,14 @@ class DebugTerminalCollection {
 
 		return await firstParallel(promises, (t): t is vscode.Terminal => !!t);
 	}
+
 	public insert(terminal: vscode.Terminal, termConfig: string) {
 		this._terminalInstances.set(terminal, {
 			lastUsedAt: Date.now(),
 			config: termConfig,
 		});
 	}
+
 	public free(terminal: vscode.Terminal) {
 		const info = this._terminalInstances.get(terminal);
 
@@ -391,6 +423,7 @@ class DebugTerminalCollection {
 			info.lastUsedAt = -1;
 		}
 	}
+
 	public onTerminalClosed(terminal: vscode.Terminal) {
 		this._terminalInstances.delete(terminal);
 	}

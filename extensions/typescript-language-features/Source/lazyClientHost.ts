@@ -25,16 +25,25 @@ export function createLazyClientHost(
 	onCaseInsensitiveFileSystem: boolean,
 	services: {
 		pluginManager: PluginManager;
+
 		commandManager: CommandManager;
+
 		logDirectoryProvider: ILogDirectoryProvider;
+
 		cancellerFactory: OngoingRequestCancellerFactory;
+
 		versionProvider: ITypeScriptVersionProvider;
+
 		processFactory: TsServerProcessFactory;
+
 		activeJsTsEditorTracker: ActiveJsTsEditorTracker;
+
 		serviceConfigurationProvider: ServiceConfigurationProvider;
+
 		experimentTelemetryReporter:
 			| IExperimentationTelemetryReporter
 			| undefined;
+
 		logger: Logger;
 	},
 	onCompletionAccepted: (item: vscode.CompletionItem) => void,
@@ -47,6 +56,7 @@ export function createLazyClientHost(
 			services,
 			onCompletionAccepted,
 		);
+
 		context.subscriptions.push(clientHost);
 
 		return clientHost;
@@ -73,9 +83,11 @@ export function lazilyActivateClient(
 			isSupportedDocument(supportedLanguage, textDocument)
 		) {
 			hasActivated = true;
+
 			onActivate().then(() => {
 				// Force activation
 				void lazyClientHost.value;
+
 				disposables.push(
 					new ManagedFileContextManager(activeJsTsEditorTracker),
 				);
@@ -83,6 +95,7 @@ export function lazilyActivateClient(
 
 			return true;
 		}
+
 		return false;
 	};
 
@@ -99,6 +112,7 @@ export function lazilyActivateClient(
 			disposables,
 		);
 	}
+
 	return vscode.Disposable.from(...disposables);
 }
 function isSupportedDocument(

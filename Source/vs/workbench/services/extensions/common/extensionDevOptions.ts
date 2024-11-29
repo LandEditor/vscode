@@ -7,8 +7,11 @@ import { IEnvironmentService } from "../../../../platform/environment/common/env
 
 export interface IExtensionDevOptions {
 	readonly isExtensionDevHost: boolean;
+
 	readonly isExtensionDevDebug: boolean;
+
 	readonly isExtensionDevDebugBrk: boolean;
+
 	readonly isExtensionDevTestFromCli: boolean;
 }
 export function parseExtensionDevOptions(
@@ -28,6 +31,7 @@ export function parseExtensionDevOptions(
 			}
 		}
 	}
+
 	const isExtensionDevDebug =
 		debugOk &&
 		typeof environmentService.debugExtensionHost.port === "number";

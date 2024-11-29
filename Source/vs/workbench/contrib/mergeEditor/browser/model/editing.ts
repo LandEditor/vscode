@@ -16,12 +16,14 @@ export class LineRangeEdit {
 		public readonly range: LineRange,
 		public readonly newLines: string[],
 	) {}
+
 	public equals(other: LineRangeEdit): boolean {
 		return (
 			this.range.equals(other.range) &&
 			equals(this.newLines, other.newLines)
 		);
 	}
+
 	public toEdits(modelLineCount: number): IIdentifiedSingleEditOperation[] {
 		return new LineEdits([this]).toEdits(modelLineCount);
 	}
@@ -31,6 +33,7 @@ export class RangeEdit {
 		public readonly range: Range,
 		public readonly newText: string,
 	) {}
+
 	public equals(other: RangeEdit): boolean {
 		return (
 			Range.equalsRange(this.range, other.range) &&
@@ -40,6 +43,7 @@ export class RangeEdit {
 }
 export class LineEdits {
 	constructor(public readonly edits: readonly LineRangeEdit[]) {}
+
 	public toEdits(modelLineCount: number): IIdentifiedSingleEditOperation[] {
 		return this.edits.map((e) => {
 			if (e.range.endLineNumberExclusive <= modelLineCount) {
@@ -53,6 +57,7 @@ export class LineEdits {
 					text: e.newLines.map((s) => s + "\n").join(""),
 				};
 			}
+
 			if (e.range.startLineNumber === 1) {
 				return {
 					range: new Range(
@@ -64,6 +69,7 @@ export class LineEdits {
 					text: e.newLines.join("\n"),
 				};
 			}
+
 			return {
 				range: new Range(
 					e.range.startLineNumber - 1,

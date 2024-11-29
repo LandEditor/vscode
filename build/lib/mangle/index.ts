@@ -56,15 +56,19 @@ class ShortIdent {
 		"with",
 		"yield",
 	]);
+
 	private static _alphabet =
 		"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890$_".split(
 			"",
 		);
+
 	private _value = 0;
 
 	constructor(private readonly prefix: string) {}
+
 	next(isNameTaken?: (name: string) => boolean): string {
 		const candidate = this.prefix + ShortIdent.convert(this._value);
+
 		this._value++;
 
 		if (
@@ -75,8 +79,10 @@ class ShortIdent {
 			// try again
 			return this.next(isNameTaken);
 		}
+
 		return candidate;
 	}
+
 	private static convert(n: number): string {
 		const base = this._alphabet.length;
 
@@ -84,7 +90,9 @@ class ShortIdent {
 
 		do {
 			const rest = n % base;
+
 			result += this._alphabet[rest];
+
 			n = (n / base) | 0;
 		} while (n > 0);
 
@@ -102,11 +110,15 @@ class ClassData {
 		string,
 		{
 			type: FieldType;
+
 			pos: number;
 		}
 	>();
+
 	private replacements: Map<string, string> | undefined;
+
 	parent: ClassData | undefined;
+
 	children: ClassData[] | undefined;
 
 	constructor(
@@ -144,22 +156,27 @@ class ClassData {
 				}
 			}
 		}
+
 		for (const member of candidates) {
 			const ident = ClassData._getMemberName(member);
 
 			if (!ident) {
 				continue;
 			}
+
 			const type = ClassData._getFieldType(member);
+
 			this.fields.set(ident, { type, pos: member.name!.getStart() });
 		}
 	}
+
 	private static _getMemberName(
 		node: ts.NamedDeclaration,
 	): string | undefined {
 		if (!node.name) {
 			return undefined;
 		}
+
 		const { name } = node;
 
 		let ident = name.getText();
@@ -172,8 +189,10 @@ class ClassData {
 			// ['foo']
 			ident = name.expression.getText().slice(1, -1);
 		}
+
 		return ident;
 	}
+
 	private static _getFieldType(node: ts.Node): FieldType {
 		if (hasModifier(node, ts.SyntaxKind.PrivateKeyword)) {
 			return FieldType.Private;
@@ -183,9 +202,11 @@ class ClassData {
 			return FieldType.Public;
 		}
 	}
+
 	static _shouldMangle(type: FieldType): boolean {
 		return type === FieldType.Private || type === FieldType.Protected;
 	}
+
 	static makeImplicitPublicActuallyPublic(
 		data: ClassData,
 		reportViolation: (name: string, what: string, why: string) => void,
@@ -197,6 +218,7 @@ class ClassData {
 			if (info.type !== FieldType.Public) {
 				continue;
 			}
+
 			let parent: ClassData | undefined = data.parent;
 
 			while (parent) {
@@ -210,17 +232,21 @@ class ClassData {
 					const infoPos = data.node
 						.getSourceFile()
 						.getLineAndCharacterOfPosition(info.pos);
+
 					reportViolation(
 						name,
 						`'${name}' from ${parent.fileName}:${parentPos.line + 1}`,
 						`${data.fileName}:${infoPos.line + 1}`,
 					);
+
 					parent.fields.get(name)!.type = FieldType.Public;
 				}
+
 				parent = parent.parent;
 			}
 		}
 	}
+
 	static fillInReplacement(data: ClassData) {
 		if (data.replacements) {
 			// already done
@@ -230,6 +256,7 @@ class ClassData {
 		if (data.parent) {
 			ClassData.fillInReplacement(data.parent);
 		}
+
 		data.replacements = new Map();
 
 		const isNameTaken = (name: string) => {
@@ -244,6 +271,7 @@ class ClassData {
 				if (parent._isNameTaken(name)) {
 					return true;
 				}
+
 				parent = parent.parent;
 			}
 			// children
@@ -256,11 +284,13 @@ class ClassData {
 					if (node._isNameTaken(name)) {
 						return true;
 					}
+
 					if (node.children) {
 						stack.push(...node.children);
 					}
 				}
 			}
+
 			return false;
 		};
 
@@ -269,6 +299,7 @@ class ClassData {
 		for (const [name, info] of data.fields) {
 			if (ClassData._shouldMangle(info.type)) {
 				const shortName = identPool.next(isNameTaken);
+
 				data.replacements.set(name, shortName);
 			}
 		}
@@ -283,6 +314,7 @@ class ClassData {
 			// public field
 			return true;
 		}
+
 		if (this.replacements) {
 			for (const shortName of this.replacements.values()) {
 				if (shortName === name) {
@@ -291,11 +323,14 @@ class ClassData {
 				}
 			}
 		}
+
 		if (isNameTakenInFile(this.node, name)) {
 			return true;
 		}
+
 		return false;
 	}
+
 	lookupShortName(name: string): string {
 		let value = this.replacements!.get(name)!;
 
@@ -308,14 +343,18 @@ class ClassData {
 			) {
 				value = parent.replacements!.get(name)! ?? value;
 			}
+
 			parent = parent.parent;
 		}
+
 		return value;
 	}
 	// --- parent chaining
 	addChild(child: ClassData) {
 		this.children ??= [];
+
 		this.children.push(child);
+
 		child.parent = this;
 	}
 }
@@ -327,6 +366,7 @@ function isNameTakenInFile(node: ts.Node, name: string): boolean {
 			return true;
 		}
 	}
+
 	return false;
 }
 
@@ -393,8 +433,10 @@ class DeclarationData {
 		// Todo: generate replacement names based on usage count, with more used names getting shorter identifiers
 		this.replacementName = fileIdents.next();
 	}
+
 	getLocations(service: ts.LanguageService): Iterable<{
 		fileName: string;
+
 		offset: number;
 	}> {
 		if (ts.isVariableDeclaration(this.node)) {
@@ -414,6 +456,7 @@ class DeclarationData {
 				}));
 			}
 		}
+
 		return [
 			{
 				fileName: this.fileName,
@@ -421,6 +464,7 @@ class DeclarationData {
 			},
 		];
 	}
+
 	shouldMangle(newName: string): boolean {
 		const currentName = this.node.name!.getText();
 
@@ -438,11 +482,13 @@ class DeclarationData {
 		if (this.node.getFullText().includes("@skipMangle")) {
 			return false;
 		}
+
 		return true;
 	}
 }
 export interface MangleOutput {
 	out: string;
+
 	sourceMap?: string;
 }
 /**
@@ -456,7 +502,9 @@ export interface MangleOutput {
  */
 export class Mangler {
 	private readonly allClassDataByKey = new Map<string, ClassData>();
+
 	private readonly allExportedSymbols = new Set<DeclarationData>();
+
 	private readonly renameWorkerPool: workerpool.WorkerPool;
 
 	constructor(
@@ -464,6 +512,7 @@ export class Mangler {
 		private readonly log: typeof console.log = () => {},
 		private readonly config: {
 			readonly manglePrivateFields: boolean;
+
 			readonly mangleExports: boolean;
 		},
 	) {
@@ -475,6 +524,7 @@ export class Mangler {
 			},
 		);
 	}
+
 	async computeNewFileContents(
 		strictImplicitPublicHandling?: Set<string>,
 	): Promise<Map<string, MangleOutput>> {
@@ -496,12 +546,14 @@ export class Mangler {
 					if (this.allClassDataByKey.has(key)) {
 						throw new Error("DUPE?");
 					}
+
 					this.allClassDataByKey.set(
 						key,
 						new ClassData(node.getSourceFile().fileName, node),
 					);
 				}
 			}
+
 			if (this.config.mangleExports) {
 				// Find exported classes, functions, and vars
 				if (
@@ -536,6 +588,7 @@ export class Mangler {
 					if (isInAmbientContext(node)) {
 						return;
 					}
+
 					this.allExportedSymbols.add(
 						new DeclarationData(
 							node.getSourceFile().fileName,
@@ -545,6 +598,7 @@ export class Mangler {
 					);
 				}
 			}
+
 			ts.forEachChild(node, visit);
 		};
 
@@ -553,6 +607,7 @@ export class Mangler {
 				ts.forEachChild(file, visit);
 			}
 		}
+
 		this.log(
 			`Done collecting. Classes: ${this.allClassDataByKey.size}. Exported symbols: ${this.allExportedSymbols.size}`,
 		);
@@ -566,6 +621,7 @@ export class Mangler {
 				// no EXTENDS-clause
 				return;
 			}
+
 			const info = service.getDefinitionAtPosition(
 				data.fileName,
 				extendsClause.types[0].expression.getEnd(),
@@ -576,10 +632,12 @@ export class Mangler {
 
 				return;
 			}
+
 			if (info.length !== 1) {
 				// inherits from declared/library type
 				return;
 			}
+
 			const [definition] = info;
 
 			const key = `${definition.fileName}|${definition.textSpan.start}`;
@@ -591,6 +649,7 @@ export class Mangler {
 
 				return;
 			}
+
 			parent.addChild(data);
 		};
 
@@ -613,6 +672,7 @@ export class Mangler {
 					} else {
 						violations.set(what, [why]);
 					}
+
 					if (
 						strictImplicitPublicHandling &&
 						!strictImplicitPublicHandling.has(name)
@@ -622,14 +682,17 @@ export class Mangler {
 				},
 			);
 		}
+
 		for (const [why, whys] of violations) {
 			this.log(
 				`WARN: ${why} became PUBLIC because of: ${whys.join(" , ")}`,
 			);
 		}
+
 		if (violationsCauseFailure) {
 			const message =
 				"Protected fields have been made PUBLIC. This hurts minification and is therefore not allowed. Review the WARN messages further above";
+
 			this.log(`ERROR: ${message}`);
 
 			throw new Error(message);
@@ -638,12 +701,16 @@ export class Mangler {
 		for (const data of this.allClassDataByKey.values()) {
 			ClassData.fillInReplacement(data);
 		}
+
 		this.log(`Done creating class replacements`);
 		// STEP: prepare rename edits
 		this.log(`Starting prepare rename edits`);
+
 		type Edit = {
 			newText: string;
+
 			offset: number;
+
 			length: number;
 		};
 
@@ -667,6 +734,7 @@ export class Mangler {
 				length: loc.textSpan.length,
 			});
 		};
+
 		type RenameFn = (
 			projectName: string,
 			fileName: string,
@@ -676,6 +744,7 @@ export class Mangler {
 		const renameResults: Array<
 			Promise<{
 				readonly newName: string;
+
 				readonly locations: readonly ts.RenameLocation[];
 			}>
 		> = [];
@@ -699,6 +768,7 @@ export class Mangler {
 			if (hasModifier(data.node, ts.SyntaxKind.DeclareKeyword)) {
 				continue;
 			}
+
 			fields: for (const [name, info] of data.fields) {
 				if (!ClassData._shouldMangle(info.type)) {
 					continue fields;
@@ -711,12 +781,16 @@ export class Mangler {
 					if (parent.fields.get(name)?.type === FieldType.Public) {
 						continue fields;
 					}
+
 					parent = parent.parent;
 				}
+
 				const newName = data.lookupShortName(name);
+
 				queueRename(data.fileName, info.pos, newName);
 			}
 		}
+
 		for (const data of this.allExportedSymbols.values()) {
 			if (
 				data.fileName.endsWith(".d.ts") ||
@@ -729,15 +803,18 @@ export class Mangler {
 			) {
 				continue;
 			}
+
 			if (!data.shouldMangle(data.replacementName)) {
 				continue;
 			}
+
 			const newText = data.replacementName;
 
 			for (const { fileName, offset } of data.getLocations(service)) {
 				queueRename(fileName, offset, newText);
 			}
 		}
+
 		await Promise.all(renameResults).then((result) => {
 			for (const { newName, locations } of result) {
 				for (const loc of locations) {
@@ -745,7 +822,9 @@ export class Mangler {
 				}
 			}
 		});
+
 		await this.renameWorkerPool.terminate();
+
 		this.log(`Done preparing edits: ${editsByFile.size} files`);
 		// STEP: apply all rename edits (per file)
 		const result = new Map<string, MangleOutput>();
@@ -804,11 +883,13 @@ export class Mangler {
 							continue;
 						}
 					}
+
 					lastEdit = edit;
 
 					const mangledName = characters
 						.splice(edit.offset, edit.length, edit.newText)
 						.join("");
+
 					savedBytes += mangledName.length - edit.newText.length;
 					// source maps
 					const pos = item.getLineAndCharacterOfPosition(edit.offset);
@@ -817,8 +898,10 @@ export class Mangler {
 
 					if (!mappings) {
 						mappings = [];
+
 						mappingsByLine.set(pos.line, mappings);
 					}
+
 					mappings.unshift(
 						{
 							source: relativeFileName,
@@ -850,6 +933,7 @@ export class Mangler {
 					file: path.basename(item.fileName),
 					sourceRoot: sourceMapRoot,
 				});
+
 				generator.setSourceContent(
 					relativeFileName,
 					item.getFullText(),
@@ -866,19 +950,25 @@ export class Mangler {
 								column: mapping.generated.column - lineDelta,
 							},
 						});
+
 						lineDelta +=
 							mapping.original.column - mapping.generated.column;
 					}
 				}
+
 				newFullText = characters.join("");
 			}
+
 			result.set(item.fileName, {
 				out: newFullText,
 				sourceMap: generator?.toString(),
 			});
 		}
+
 		service.dispose();
+
 		this.renameWorkerPool.terminate();
+
 		this.log(
 			`Done: ${savedBytes / 1000}kb saved, memory-usage: ${JSON.stringify(v8.getHeapStatistics())}`,
 		);
@@ -900,6 +990,7 @@ function isInAmbientContext(node: ts.Node): boolean {
 			return true;
 		}
 	}
+
 	return false;
 }
 function normalize(path: string): string {
@@ -916,6 +1007,7 @@ async function _run() {
 		path.dirname(projectBase),
 		path.basename(projectBase) + "2",
 	);
+
 	fs.cpSync(projectBase, newProjectBase, { recursive: true });
 
 	const mangler = new Mangler(projectPath, console.log, {
@@ -930,7 +1022,9 @@ async function _run() {
 			newProjectBase,
 			path.relative(projectBase, fileName),
 		);
+
 		await fs.promises.mkdir(path.dirname(newFilePath), { recursive: true });
+
 		await fs.promises.writeFile(newFilePath, contents.out);
 
 		if (contents.sourceMap) {

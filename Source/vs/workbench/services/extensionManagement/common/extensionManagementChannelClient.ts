@@ -48,14 +48,17 @@ export abstract class ProfileAwareExtensionManagementChannelClient
 	private readonly _onDidChangeProfile = this._register(
 		new Emitter<{
 			readonly added: ILocalExtension[];
+
 			readonly removed: ILocalExtension[];
 		}>(),
 	);
+
 	readonly onDidChangeProfile = this._onDidChangeProfile.event;
 
 	private readonly _onDidProfileAwareInstallExtensions = this._register(
 		new Emitter<readonly InstallExtensionResult[]>(),
 	);
+
 	get onProfileAwareDidInstallExtensions() {
 		return this._onDidProfileAwareInstallExtensions.event;
 	}
@@ -63,6 +66,7 @@ export abstract class ProfileAwareExtensionManagementChannelClient
 	private readonly _onDidProfileAwareUninstallExtension = this._register(
 		new Emitter<DidUninstallExtensionEvent>(),
 	);
+
 	get onProfileAwareDidUninstallExtension() {
 		return this._onDidProfileAwareUninstallExtension.event;
 	}
@@ -70,6 +74,7 @@ export abstract class ProfileAwareExtensionManagementChannelClient
 	private readonly _onDidProfileAwareUpdateExtensionMetadata = this._register(
 		new Emitter<DidUpdateExtensionMetadata>(),
 	);
+
 	get onProfileAwareDidUpdateExtensionMetadata() {
 		return this._onDidProfileAwareUpdateExtensionMetadata.event;
 	}
@@ -82,6 +87,7 @@ export abstract class ProfileAwareExtensionManagementChannelClient
 		protected readonly uriIdentityService: IUriIdentityService,
 	) {
 		super(channel, productService, allowedExtensionsService);
+
 		this._register(
 			userDataProfileService.onDidChangeCurrentProfile((e) => {
 				if (
@@ -103,6 +109,7 @@ export abstract class ProfileAwareExtensionManagementChannelClient
 			data.profileLocation,
 			data.applicationScoped ?? false,
 		);
+
 		if (result instanceof Promise ? await result : result) {
 			this._onInstallExtension.fire(data);
 		}
@@ -112,18 +119,22 @@ export abstract class ProfileAwareExtensionManagementChannelClient
 		results: readonly InstallExtensionResult[],
 	): Promise<void> {
 		const filtered = [];
+
 		for (const e of results) {
 			const result = this.filterEvent(
 				e.profileLocation,
 				e.applicationScoped ?? e.local?.isApplicationScoped ?? false,
 			);
+
 			if (result instanceof Promise ? await result : result) {
 				filtered.push(e);
 			}
 		}
+
 		if (filtered.length) {
 			this._onDidInstallExtensions.fire(filtered);
 		}
+
 		this._onDidProfileAwareInstallExtensions.fire(results);
 	}
 
@@ -134,6 +145,7 @@ export abstract class ProfileAwareExtensionManagementChannelClient
 			data.profileLocation,
 			data.applicationScoped ?? false,
 		);
+
 		if (result instanceof Promise ? await result : result) {
 			this._onUninstallExtension.fire(data);
 		}
@@ -146,9 +158,11 @@ export abstract class ProfileAwareExtensionManagementChannelClient
 			data.profileLocation,
 			data.applicationScoped ?? false,
 		);
+
 		if (result instanceof Promise ? await result : result) {
 			this._onDidUninstallExtension.fire(data);
 		}
+
 		this._onDidProfileAwareUninstallExtension.fire(data);
 	}
 
@@ -159,9 +173,11 @@ export abstract class ProfileAwareExtensionManagementChannelClient
 			data.profileLocation,
 			data.local?.isApplicationScoped ?? false,
 		);
+
 		if (result instanceof Promise ? await result : result) {
 			this._onDidUpdateExtensionMetadata.fire(data);
 		}
+
 		this._onDidProfileAwareUpdateExtensionMetadata.fire(data);
 	}
 
@@ -175,6 +191,7 @@ export abstract class ProfileAwareExtensionManagementChannelClient
 				installOptions?.profileLocation,
 			),
 		};
+
 		return super.install(vsix, installOptions);
 	}
 
@@ -198,6 +215,7 @@ export abstract class ProfileAwareExtensionManagementChannelClient
 				installOptions?.profileLocation,
 			),
 		};
+
 		return super.installFromGallery(extension, installOptions);
 	}
 
@@ -205,6 +223,7 @@ export abstract class ProfileAwareExtensionManagementChannelClient
 		extensions: InstallExtensionInfo[],
 	): Promise<InstallExtensionResult[]> {
 		const infos: InstallExtensionInfo[] = [];
+
 		for (const extension of extensions) {
 			infos.push({
 				...extension,
@@ -216,6 +235,7 @@ export abstract class ProfileAwareExtensionManagementChannelClient
 				},
 			});
 		}
+
 		return super.installGalleryExtensions(infos);
 	}
 
@@ -229,6 +249,7 @@ export abstract class ProfileAwareExtensionManagementChannelClient
 				options?.profileLocation,
 			),
 		};
+
 		return super.uninstall(extension, options);
 	}
 
@@ -236,6 +257,7 @@ export abstract class ProfileAwareExtensionManagementChannelClient
 		extensions: UninstallExtensionInfo[],
 	): Promise<void> {
 		const infos: UninstallExtensionInfo[] = [];
+
 		for (const { extension, options } of extensions) {
 			infos.push({
 				extension,
@@ -247,6 +269,7 @@ export abstract class ProfileAwareExtensionManagementChannelClient
 				},
 			});
 		}
+
 		return super.uninstallExtensions(infos);
 	}
 
@@ -300,6 +323,7 @@ export abstract class ProfileAwareExtensionManagementChannelClient
 		const previousProfileLocation = await this.getProfileLocation(
 			e.previous.extensionsResource,
 		);
+
 		const currentProfileLocation = await this.getProfileLocation(
 			e.profile.extensionsResource,
 		);
@@ -317,6 +341,7 @@ export abstract class ProfileAwareExtensionManagementChannelClient
 			previousProfileLocation,
 			currentProfileLocation,
 		);
+
 		this._onDidChangeProfile.fire(eventData);
 	}
 
@@ -329,12 +354,15 @@ export abstract class ProfileAwareExtensionManagementChannelClient
 			ExtensionType.User,
 			previousProfileLocation,
 		);
+
 		const newExtensions = await this.getInstalled(
 			ExtensionType.User,
 			currentProfileLocation,
 		);
+
 		if (preserveExtensions?.length) {
 			const extensionsToInstall: IExtensionIdentifier[] = [];
+
 			for (const extension of oldExtensions) {
 				if (
 					preserveExtensions.some((id) =>
@@ -350,6 +378,7 @@ export abstract class ProfileAwareExtensionManagementChannelClient
 					extensionsToInstall.push(extension.identifier);
 				}
 			}
+
 			if (extensionsToInstall.length) {
 				await this.installExtensionsFromProfile(
 					extensionsToInstall,
@@ -358,6 +387,7 @@ export abstract class ProfileAwareExtensionManagementChannelClient
 				);
 			}
 		}
+
 		return delta(oldExtensions, newExtensions, (a, b) =>
 			compare(
 				`${ExtensionIdentifier.toKey(a.identifier.id)}@${a.manifest.version}`,
@@ -367,9 +397,11 @@ export abstract class ProfileAwareExtensionManagementChannelClient
 	}
 
 	protected getProfileLocation(profileLocation: URI): Promise<URI>;
+
 	protected getProfileLocation(
 		profileLocation?: URI,
 	): Promise<URI | undefined>;
+
 	protected async getProfileLocation(
 		profileLocation?: URI,
 	): Promise<URI | undefined> {

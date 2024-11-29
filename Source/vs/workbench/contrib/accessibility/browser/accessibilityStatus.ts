@@ -32,8 +32,11 @@ export class AccessibilityStatus
 	implements IWorkbenchContribution
 {
 	static readonly ID = "workbench.contrib.accessibilityStatus";
+
 	private screenReaderNotification: INotificationHandle | null = null;
+
 	private promptedScreenReader: boolean = false;
+
 	private readonly screenReaderModeElement = this._register(
 		new MutableDisposable<IStatusbarEntryAccessor>(),
 	);
@@ -49,23 +52,28 @@ export class AccessibilityStatus
 		private readonly statusbarService: IStatusbarService,
 	) {
 		super();
+
 		this._register(
 			CommandsRegistry.registerCommand({
 				id: "showEditorScreenReaderNotification",
 				handler: () => this.showScreenReaderNotification(),
 			}),
 		);
+
 		this.updateScreenReaderModeElement(
 			this.accessibilityService.isScreenReaderOptimized(),
 		);
+
 		this.registerListeners();
 	}
+
 	private registerListeners(): void {
 		this._register(
 			this.accessibilityService.onDidChangeScreenReaderOptimized(() =>
 				this.onScreenReaderModeChange(),
 			),
 		);
+
 		this._register(
 			this.configurationService.onDidChangeConfiguration((c) => {
 				if (c.affectsConfiguration("editor.accessibilitySupport")) {
@@ -74,6 +82,7 @@ export class AccessibilityStatus
 			}),
 		);
 	}
+
 	private showScreenReaderNotification(): void {
 		this.screenReaderNotification = this.notificationService.prompt(
 			Severity.Info,
@@ -114,10 +123,12 @@ export class AccessibilityStatus
 				priority: NotificationPriority.URGENT,
 			},
 		);
+
 		Event.once(this.screenReaderNotification.onDidClose)(
 			() => (this.screenReaderNotification = null),
 		);
 	}
+
 	private updateScreenReaderModeElement(visible: boolean): void {
 		if (visible) {
 			if (!this.screenReaderModeElement.value) {
@@ -125,6 +136,7 @@ export class AccessibilityStatus
 					"screenReaderDetected",
 					"Screen Reader Optimized",
 				);
+
 				this.screenReaderModeElement.value =
 					this.statusbarService.addEntry(
 						{
@@ -147,6 +159,7 @@ export class AccessibilityStatus
 			this.screenReaderModeElement.clear();
 		}
 	}
+
 	private onScreenReaderModeChange(): void {
 		// We only support text based editors
 		const screenReaderDetected =
@@ -166,9 +179,11 @@ export class AccessibilityStatus
 				}
 			}
 		}
+
 		if (this.screenReaderNotification) {
 			this.screenReaderNotification.close();
 		}
+
 		this.updateScreenReaderModeElement(
 			this.accessibilityService.isScreenReaderOptimized(),
 		);

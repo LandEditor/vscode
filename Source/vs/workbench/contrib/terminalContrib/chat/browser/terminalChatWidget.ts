@@ -100,9 +100,11 @@ export class TerminalChatWidget extends Disposable {
 	private readonly _container: HTMLElement;
 
 	private readonly _onDidHide = this._register(new Emitter<void>());
+
 	readonly onDidHide = this._onDidHide.event;
 
 	private readonly _inlineChatWidget: InlineChatWidget;
+
 	public get inlineChatWidget(): InlineChatWidget {
 		return this._inlineChatWidget;
 	}
@@ -110,10 +112,13 @@ export class TerminalChatWidget extends Disposable {
 	private readonly _focusTracker: IFocusTracker;
 
 	private readonly _focusedContextKey: IContextKey<boolean>;
+
 	private readonly _visibleContextKey: IContextKey<boolean>;
 
 	private readonly _requestActiveContextKey: IContextKey<boolean>;
+
 	private readonly _responseContainsCodeBlockContextKey: IContextKey<boolean>;
+
 	private readonly _responseContainsMulitpleCodeBlocksContextKey: IContextKey<boolean>;
 
 	private _messages = this._store.add(new Emitter<Message>());
@@ -135,9 +140,11 @@ export class TerminalChatWidget extends Disposable {
 	private _sessionCtor: CancelablePromise<void> | undefined;
 
 	private _currentRequestId: string | undefined;
+
 	private _activeRequestCts?: CancellationTokenSource;
 
 	private readonly _requestInProgress = observableValue(this, false);
+
 	readonly requestInProgress: IObservable<boolean> = this._requestInProgress;
 
 	constructor(
@@ -154,21 +161,27 @@ export class TerminalChatWidget extends Disposable {
 
 		this._focusedContextKey =
 			TerminalChatContextKeys.focused.bindTo(contextKeyService);
+
 		this._visibleContextKey =
 			TerminalChatContextKeys.visible.bindTo(contextKeyService);
+
 		this._requestActiveContextKey =
 			TerminalChatContextKeys.requestActive.bindTo(contextKeyService);
+
 		this._responseContainsCodeBlockContextKey =
 			TerminalChatContextKeys.responseContainsCodeBlock.bindTo(
 				contextKeyService,
 			);
+
 		this._responseContainsMulitpleCodeBlocksContextKey =
 			TerminalChatContextKeys.responseContainsMultipleCodeBlocks.bindTo(
 				contextKeyService,
 			);
 
 		this._container = document.createElement("div");
+
 		this._container.classList.add("terminal-inline-chat");
+
 		this._terminalElement.appendChild(this._container);
 
 		this._inlineChatWidget = instantiationService.createInstance(
@@ -204,11 +217,13 @@ export class TerminalChatWidget extends Disposable {
 				},
 			},
 		);
+
 		this._register(
 			this._inlineChatWidget.chatWidget.onDidChangeViewModel(() =>
 				this._saveViewState(),
 			),
 		);
+
 		this._register(
 			Event.any(
 				this._inlineChatWidget.onDidChangeHeight,
@@ -223,18 +238,23 @@ export class TerminalChatWidget extends Disposable {
 		);
 
 		const observer = new ResizeObserver(() => this._relayout());
+
 		observer.observe(this._terminalElement);
+
 		this._register(toDisposable(() => observer.disconnect()));
 
 		this._resetPlaceholder();
+
 		this._container.appendChild(this._inlineChatWidget.domNode);
 
 		this._focusTracker = this._register(trackFocus(this._container));
+
 		this._register(
 			this._focusTracker.onDidFocus(() =>
 				this._focusedContextKey.set(true),
 			),
 		);
+
 		this._register(
 			this._focusTracker.onDidBlur(() =>
 				this._focusedContextKey.set(false),
@@ -244,6 +264,7 @@ export class TerminalChatWidget extends Disposable {
 		this._register(
 			autorun((r) => {
 				const isBusy = this._inlineChatWidget.requestInProgress.read(r);
+
 				this._container.classList.toggle("busy", isBusy);
 
 				this._inlineChatWidget.toggleStatus(
@@ -252,6 +273,7 @@ export class TerminalChatWidget extends Disposable {
 
 				if (isBusy || !this._inlineChatWidget.responseContent) {
 					this._responseContainsCodeBlockContextKey.set(false);
+
 					this._responseContainsMulitpleCodeBlocksContextKey.set(
 						false,
 					);
@@ -263,9 +285,11 @@ export class TerminalChatWidget extends Disposable {
 						this._responseContainsCodeBlockContextKey.set(
 							!!firstCodeBlock,
 						);
+
 						this._responseContainsMulitpleCodeBlocksContextKey.set(
 							!!secondCodeBlock,
 						);
+
 						this._inlineChatWidget.updateToolbar(true);
 					});
 				}
@@ -326,8 +350,11 @@ export class TerminalChatWidget extends Disposable {
 
 		// Layout
 		this._dimension = new Dimension(width, height);
+
 		this._inlineChatWidget.layout(this._dimension);
+
 		this._inlineChatWidget.domNode.style.paddingLeft = `${xtermLeftPadding}px`;
+
 		this._updateXtermViewportPosition();
 	}
 
@@ -339,11 +366,17 @@ export class TerminalChatWidget extends Disposable {
 
 	async reveal(viewState?: IChatViewState): Promise<void> {
 		await this._createSession(viewState);
+
 		this._doLayout();
+
 		this._container.classList.remove("hide");
+
 		this._visibleContextKey.set(true);
+
 		this._resetPlaceholder();
+
 		this._inlineChatWidget.focus();
+
 		this._instance.scrollToBottom();
 	}
 
@@ -353,6 +386,7 @@ export class TerminalChatWidget extends Disposable {
 		if (!font?.charHeight) {
 			return;
 		}
+
 		const terminalWrapperHeight = this._getTerminalViewportHeight() ?? 0;
 
 		const cellHeight = font.charHeight * font.lineHeight;
@@ -372,6 +406,7 @@ export class TerminalChatWidget extends Disposable {
 		if (!top) {
 			return;
 		}
+
 		this._container.style.top = `${top}px`;
 
 		const terminalViewportHeight = this._getTerminalViewportHeight();
@@ -410,32 +445,47 @@ export class TerminalChatWidget extends Disposable {
 
 	hide(): void {
 		this._container.classList.add("hide");
+
 		this._inlineChatWidget.reset();
+
 		this._resetPlaceholder();
+
 		this._inlineChatWidget.updateToolbar(false);
+
 		this._visibleContextKey.set(false);
+
 		this._inlineChatWidget.value = "";
+
 		this._instance.focus();
+
 		this._setTerminalViewportOffset(undefined);
+
 		this._onDidHide.fire();
 	}
+
 	private _setTerminalViewportOffset(offset: number | undefined) {
 		if (
 			offset === undefined ||
 			this._container.classList.contains("hide")
 		) {
 			this._terminalElement.style.position = "";
+
 			this._terminalElement.style.bottom = "";
+
 			TerminalStickyScrollContribution.get(this._instance)?.hideUnlock();
 		} else {
 			this._terminalElement.style.position = "relative";
+
 			this._terminalElement.style.bottom = `${offset}px`;
+
 			TerminalStickyScrollContribution.get(this._instance)?.hideLock();
 		}
 	}
+
 	focus(): void {
 		this.inlineChatWidget.focus();
 	}
+
 	hasFocus(): boolean {
 		return this._inlineChatWidget.hasFocus();
 	}
@@ -450,8 +500,11 @@ export class TerminalChatWidget extends Disposable {
 		if (!code) {
 			return;
 		}
+
 		const value = code.getValue();
+
 		this._instance.runCommand(value, shouldExecute);
+
 		this.clear();
 	}
 
@@ -475,11 +528,13 @@ export class TerminalChatWidget extends Disposable {
 						this._loadViewState(),
 					);
 				}
+
 				if (!this._model.value) {
 					throw new Error("Failed to start chat session");
 				}
 			}
 		});
+
 		this._register(toDisposable(() => this._sessionCtor?.cancel()));
 	}
 
@@ -499,6 +554,7 @@ export class TerminalChatWidget extends Disposable {
 				viewState = undefined;
 			}
 		}
+
 		return viewState;
 	}
 
@@ -513,10 +569,15 @@ export class TerminalChatWidget extends Disposable {
 
 	clear(): void {
 		this.cancel();
+
 		this._model.clear();
+
 		this._responseContainsCodeBlockContextKey.reset();
+
 		this._requestActiveContextKey.reset();
+
 		this.hide();
+
 		this.setValue(undefined);
 	}
 
@@ -527,6 +588,7 @@ export class TerminalChatWidget extends Disposable {
 		if (!this._model.value) {
 			await this.reveal();
 		}
+
 		this._messages.fire(Message.AcceptInput);
 
 		const lastInput = this._inlineChatWidget.value;
@@ -534,10 +596,13 @@ export class TerminalChatWidget extends Disposable {
 		if (!lastInput) {
 			return;
 		}
+
 		this._activeRequestCts?.cancel();
+
 		this._activeRequestCts = new CancellationTokenSource();
 
 		const store = new DisposableStore();
+
 		this._requestActiveContextKey.set(true);
 
 		let responseContent = "";
@@ -546,6 +611,7 @@ export class TerminalChatWidget extends Disposable {
 			lastInput,
 			{ isVoiceInput: options?.isVoiceInput },
 		);
+
 		this._currentRequestId = response?.requestId;
 
 		const responsePromise = new DeferredPromise<
@@ -562,12 +628,15 @@ export class TerminalChatWidget extends Disposable {
 
 						if (response.isCanceled) {
 							this._requestActiveContextKey.set(false);
+
 							responsePromise.complete(undefined);
 
 							return;
 						}
+
 						if (response.isComplete) {
 							this._requestActiveContextKey.set(false);
+
 							this._requestActiveContextKey.set(false);
 
 							const firstCodeBlock =
@@ -579,19 +648,25 @@ export class TerminalChatWidget extends Disposable {
 								await this._inlineChatWidget.getCodeBlockInfo(
 									1,
 								);
+
 							this._responseContainsCodeBlockContextKey.set(
 								!!firstCodeBlock,
 							);
+
 							this._responseContainsMulitpleCodeBlocksContextKey.set(
 								!!secondCodeBlock,
 							);
+
 							this._inlineChatWidget.updateToolbar(true);
+
 							responsePromise.complete(response);
 						}
 					}),
 				);
 			}
+
 			await responsePromise.p;
+
 			this._lastResponseContent = response?.response.getMarkdown();
 
 			return response;
@@ -606,8 +681,11 @@ export class TerminalChatWidget extends Disposable {
 
 	cancel(): void {
 		this._sessionCtor?.cancel();
+
 		this._sessionCtor = undefined;
+
 		this._activeRequestCts?.cancel();
+
 		this._requestActiveContextKey.set(false);
 
 		const model = this._inlineChatWidget.getChatModel();
@@ -615,6 +693,7 @@ export class TerminalChatWidget extends Disposable {
 		if (!model?.sessionId) {
 			return;
 		}
+
 		this._chatService.cancelCurrentRequestForSession(model?.sessionId);
 	}
 
@@ -657,7 +736,9 @@ export class TerminalChatWidget extends Disposable {
 				followups: currentRequest.response!.followups,
 			},
 		);
+
 		widget.focusLastMessage();
+
 		this.hide();
 	}
 }

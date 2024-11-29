@@ -30,6 +30,7 @@ export interface ILayoutService {
 	 */
 	readonly onDidLayoutContainer: Event<{
 		readonly container: HTMLElement;
+
 		readonly dimension: IDimension;
 	}>;
 	/**
@@ -42,6 +43,7 @@ export interface ILayoutService {
 	 */
 	readonly onDidAddContainer: Event<{
 		readonly container: HTMLElement;
+
 		readonly disposables: DisposableStore;
 	}>;
 	/**

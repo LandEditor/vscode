@@ -34,16 +34,21 @@ export class EnvironmentVariableInfoStale implements IEnvironmentVariableInfo {
 		@IExtensionService
 		private readonly _extensionService: IExtensionService,
 	) {}
+
 	private _getInfo(scope: EnvironmentVariableScope | undefined): string {
 		const extSet: Set<string> = new Set();
+
 		addExtensionIdentifiers(extSet, this._diff.added.values());
+
 		addExtensionIdentifiers(extSet, this._diff.removed.values());
+
 		addExtensionIdentifiers(extSet, this._diff.changed.values());
 
 		let message = localize(
 			"extensionEnvironmentContributionInfoStale",
 			"The following extensions want to relaunch the terminal to contribute to its environment:",
 		);
+
 		message += getMergedDescription(
 			this._collection,
 			scope,
@@ -53,6 +58,7 @@ export class EnvironmentVariableInfoStale implements IEnvironmentVariableInfo {
 
 		return message;
 	}
+
 	private _getActions(): ITerminalStatusHoverAction[] {
 		return [
 			{
@@ -65,6 +71,7 @@ export class EnvironmentVariableInfoStale implements IEnvironmentVariableInfo {
 			},
 		];
 	}
+
 	getStatus(scope: EnvironmentVariableScope | undefined): ITerminalStatus {
 		return {
 			id: TerminalStatus.RelaunchNeeded,
@@ -87,8 +94,10 @@ export class EnvironmentVariableInfoChangesActive
 		@IExtensionService
 		private readonly _extensionService: IExtensionService,
 	) {}
+
 	private _getInfo(scope: EnvironmentVariableScope | undefined): string {
 		const extSet: Set<string> = new Set();
+
 		addExtensionIdentifiers(
 			extSet,
 			this._collection.getVariableMap(scope).values(),
@@ -98,6 +107,7 @@ export class EnvironmentVariableInfoChangesActive
 			"extensionEnvironmentContributionInfoActive",
 			"The following extensions have contributed to this terminal's environment:",
 		);
+
 		message += getMergedDescription(
 			this._collection,
 			scope,
@@ -107,6 +117,7 @@ export class EnvironmentVariableInfoChangesActive
 
 		return message;
 	}
+
 	private _getActions(
 		scope: EnvironmentVariableScope | undefined,
 	): ITerminalStatusHoverAction[] {
@@ -125,6 +136,7 @@ export class EnvironmentVariableInfoChangesActive
 			},
 		];
 	}
+
 	getStatus(scope: EnvironmentVariableScope | undefined): ITerminalStatus {
 		return {
 			id: TerminalStatus.EnvironmentVariableInfoChangesActive,
@@ -151,8 +163,10 @@ function getMergedDescription(
 
 		if (globalDescription) {
 			message.push(`\n- \`${getExtensionName(ext, extensionService)}\``);
+
 			message.push(`: ${globalDescription}`);
 		}
+
 		const workspaceDescription = workspaceDescriptions.get(ext);
 
 		if (workspaceDescription) {
@@ -160,15 +174,19 @@ function getMergedDescription(
 			const workspaceSuffix = globalDescription
 				? ` (${localize("ScopedEnvironmentContributionInfo", "workspace")})`
 				: "";
+
 			message.push(
 				`\n- \`${getExtensionName(ext, extensionService)}${workspaceSuffix}\``,
 			);
+
 			message.push(`: ${workspaceDescription}`);
 		}
+
 		if (!globalDescription && !workspaceDescription) {
 			message.push(`\n- \`${getExtensionName(ext, extensionService)}\``);
 		}
 	}
+
 	return message.join("");
 }
 function addExtensionIdentifiers(

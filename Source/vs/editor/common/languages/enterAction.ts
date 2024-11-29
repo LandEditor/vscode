@@ -31,6 +31,7 @@ export function getEnterAction(
 	if (!richEditSupport) {
 		return null;
 	}
+
 	const indentationContextProcessor = new IndentationContextProcessor(
 		model,
 		languageConfigurationService,
@@ -58,6 +59,7 @@ export function getEnterAction(
 	if (!enterResult) {
 		return null;
 	}
+
 	const indentAction = enterResult.indentAction;
 
 	let appendText = enterResult.appendText;
@@ -76,6 +78,7 @@ export function getEnterAction(
 	} else if (indentAction === IndentAction.Indent) {
 		appendText = "\t" + appendText;
 	}
+
 	let indentation = getIndentationAtPosition(
 		model,
 		range.startLineNumber,
@@ -85,6 +88,7 @@ export function getEnterAction(
 	if (removeText) {
 		indentation = indentation.substring(0, indentation.length - removeText);
 	}
+
 	return {
 		indentAction: indentAction,
 		appendText: appendText,

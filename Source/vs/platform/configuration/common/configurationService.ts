@@ -60,15 +60,23 @@ export class ConfigurationService
 	implements IConfigurationService, IDisposable
 {
 	declare readonly _serviceBrand: undefined;
+
 	private configuration: Configuration;
+
 	private readonly defaultConfiguration: DefaultConfiguration;
+
 	private readonly policyConfiguration: IPolicyConfiguration;
+
 	private readonly userConfiguration: UserSettings;
+
 	private readonly reloadConfigurationScheduler: RunOnceScheduler;
+
 	private readonly _onDidChangeConfiguration: Emitter<IConfigurationChangeEvent> =
 		this._register(new Emitter<IConfigurationChangeEvent>());
+
 	readonly onDidChangeConfiguration: Event<IConfigurationChangeEvent> =
 		this._onDidChangeConfiguration.event;
+
 	private readonly configurationEditing: ConfigurationEditing;
 
 	constructor(
@@ -78,9 +86,11 @@ export class ConfigurationService
 		private readonly logService: ILogService,
 	) {
 		super();
+
 		this.defaultConfiguration = this._register(
 			new DefaultConfiguration(logService),
 		);
+
 		this.policyConfiguration =
 			policyService instanceof NullPolicyService
 				? new NullPolicyConfiguration()
@@ -91,6 +101,7 @@ export class ConfigurationService
 							logService,
 						),
 					);
+
 		this.userConfiguration = this._register(
 			new UserSettings(
 				this.settingsResource,
@@ -100,6 +111,7 @@ export class ConfigurationService
 				logService,
 			),
 		);
+
 		this.configuration = new Configuration(
 			this.defaultConfiguration.configurationModel,
 			this.policyConfiguration.configurationModel,
@@ -112,37 +124,44 @@ export class ConfigurationService
 			new ResourceMap<ConfigurationModel>(),
 			logService,
 		);
+
 		this.configurationEditing = new ConfigurationEditing(
 			settingsResource,
 			fileService,
 			this,
 		);
+
 		this.reloadConfigurationScheduler = this._register(
 			new RunOnceScheduler(() => this.reloadConfiguration(), 50),
 		);
+
 		this._register(
 			this.defaultConfiguration.onDidChangeConfiguration(
 				({ defaults, properties }) =>
 					this.onDidDefaultConfigurationChange(defaults, properties),
 			),
 		);
+
 		this._register(
 			this.policyConfiguration.onDidChangeConfiguration((model) =>
 				this.onDidPolicyConfigurationChange(model),
 			),
 		);
+
 		this._register(
 			this.userConfiguration.onDidChange(() =>
 				this.reloadConfigurationScheduler.schedule(),
 			),
 		);
 	}
+
 	async initialize(): Promise<void> {
 		const [defaultModel, policyModel, userModel] = await Promise.all([
 			this.defaultConfiguration.initialize(),
 			this.policyConfiguration.initialize(),
 			this.userConfiguration.loadConfiguration(),
 		]);
+
 		this.configuration = new Configuration(
 			defaultModel,
 			policyModel,
@@ -156,9 +175,11 @@ export class ConfigurationService
 			this.logService,
 		);
 	}
+
 	getConfigurationData(): IConfigurationData {
 		return this.configuration.toData();
 	}
+
 	getValue<T>(): T;
 
 	getValue<T>(section: string): T;
@@ -178,17 +199,21 @@ export class ConfigurationService
 
 		return this.configuration.getValue(section, overrides, undefined);
 	}
+
 	updateValue(key: string, value: any): Promise<void>;
+
 	updateValue(
 		key: string,
 		value: any,
 		overrides: IConfigurationOverrides | IConfigurationUpdateOverrides,
 	): Promise<void>;
+
 	updateValue(
 		key: string,
 		value: any,
 		target: ConfigurationTarget,
 	): Promise<void>;
+
 	updateValue(
 		key: string,
 		value: any,
@@ -226,14 +251,17 @@ export class ConfigurationService
 				throw new Error(`Unable to write ${key} to target ${target}.`);
 			}
 		}
+
 		if (overrides?.overrideIdentifiers) {
 			overrides.overrideIdentifiers = distinct(
 				overrides.overrideIdentifiers,
 			);
+
 			overrides.overrideIdentifiers = overrides.overrideIdentifiers.length
 				? overrides.overrideIdentifiers
 				: undefined;
 		}
+
 		const inspect = this.inspect(key, {
 			resource: overrides?.resource,
 			overrideIdentifier: overrides?.overrideIdentifiers
@@ -250,6 +278,7 @@ export class ConfigurationService
 		if (equals(value, inspect.defaultValue)) {
 			value = undefined;
 		}
+
 		if (
 			overrides?.overrideIdentifiers?.length &&
 			overrides.overrideIdentifiers.length > 1
@@ -269,31 +298,42 @@ export class ConfigurationService
 				overrides.overrideIdentifiers = existingOverrides.identifiers;
 			}
 		}
+
 		const path = overrides?.overrideIdentifiers?.length
 			? [keyFromOverrideIdentifiers(overrides.overrideIdentifiers), key]
 			: [key];
+
 		await this.configurationEditing.write(path, value);
+
 		await this.reloadConfiguration();
 	}
+
 	inspect<T>(
 		key: string,
 		overrides: IConfigurationOverrides = {},
 	): IConfigurationValue<T> {
 		return this.configuration.inspect<T>(key, overrides, undefined);
 	}
+
 	keys(): {
 		default: string[];
+
 		user: string[];
+
 		workspace: string[];
+
 		workspaceFolder: string[];
 	} {
 		return this.configuration.keys(undefined);
 	}
+
 	async reloadConfiguration(): Promise<void> {
 		const configurationModel =
 			await this.userConfiguration.loadConfiguration();
+
 		this.onDidChangeUserConfiguration(configurationModel);
 	}
+
 	private onDidChangeUserConfiguration(
 		userConfigurationModel: ConfigurationModel,
 	): void {
@@ -303,8 +343,10 @@ export class ConfigurationService
 			this.configuration.compareAndUpdateLocalUserConfiguration(
 				userConfigurationModel,
 			);
+
 		this.trigger(change, previous, ConfigurationTarget.USER);
 	}
+
 	private onDidDefaultConfigurationChange(
 		defaultConfigurationModel: ConfigurationModel,
 		properties: string[],
@@ -315,8 +357,10 @@ export class ConfigurationService
 			defaultConfigurationModel,
 			properties,
 		);
+
 		this.trigger(change, previous, ConfigurationTarget.DEFAULT);
 	}
+
 	private onDidPolicyConfigurationChange(
 		policyConfiguration: ConfigurationModel,
 	): void {
@@ -326,8 +370,10 @@ export class ConfigurationService
 			this.configuration.compareAndUpdatePolicyConfiguration(
 				policyConfiguration,
 			);
+
 		this.trigger(change, previous, ConfigurationTarget.DEFAULT);
 	}
+
 	private trigger(
 		configurationChange: IConfigurationChange,
 		previous: IConfigurationData,
@@ -340,7 +386,9 @@ export class ConfigurationService
 			undefined,
 			this.logService,
 		);
+
 		event.source = source;
+
 		this._onDidChangeConfiguration.fire(event);
 	}
 }
@@ -354,9 +402,11 @@ class ConfigurationEditing {
 	) {
 		this.queue = new Queue<void>();
 	}
+
 	write(path: JSONPath, value: any): Promise<void> {
 		return this.queue.queue(() => this.doWriteConfiguration(path, value)); // queue up writes to prevent race conditions
 	}
+
 	private async doWriteConfiguration(
 		path: JSONPath,
 		value: any,
@@ -367,6 +417,7 @@ class ConfigurationEditing {
 			const fileContent = await this.fileService.readFile(
 				this.settingsResource,
 			);
+
 			content = fileContent.value.toString();
 		} catch (error) {
 			if (
@@ -378,7 +429,9 @@ class ConfigurationEditing {
 				throw error;
 			}
 		}
+
 		const parseErrors: ParseError[] = [];
+
 		parse(content, parseErrors, {
 			allowTrailingComma: true,
 			allowEmptyContent: true,
@@ -389,13 +442,17 @@ class ConfigurationEditing {
 				"Unable to write into the settings file. Please open the file to correct errors/warnings in the file and try again.",
 			);
 		}
+
 		const edits = this.getEdits(content, path, value);
+
 		content = applyEdits(content, edits);
+
 		await this.fileService.writeFile(
 			this.settingsResource,
 			VSBuffer.fromString(content),
 		);
 	}
+
 	private getEdits(content: string, path: JSONPath, value: any): Edit[] {
 		const { tabSize, insertSpaces, eol } = this.formattingOptions;
 		// With empty path the entire file is being replaced, so we just use JSON.stringify
@@ -414,13 +471,16 @@ class ConfigurationEditing {
 				},
 			];
 		}
+
 		return setProperty(content, path, value, {
 			tabSize,
 			insertSpaces,
 			eol,
 		});
 	}
+
 	private _formattingOptions: Required<FormattingOptions> | undefined;
+
 	private get formattingOptions(): Required<FormattingOptions> {
 		if (!this._formattingOptions) {
 			let eol =
@@ -440,6 +500,7 @@ class ConfigurationEditing {
 			) {
 				eol = configuredEol;
 			}
+
 			this._formattingOptions = {
 				eol,
 				insertSpaces: !!this.configurationService.getValue(
@@ -451,6 +512,7 @@ class ConfigurationEditing {
 				}),
 			};
 		}
+
 		return this._formattingOptions;
 	}
 }

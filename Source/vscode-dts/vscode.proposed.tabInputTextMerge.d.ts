@@ -8,8 +8,11 @@
 declare module "vscode" {
 	export class TabInputTextMerge {
 		readonly base: Uri;
+
 		readonly input1: Uri;
+
 		readonly input2: Uri;
+
 		readonly result: Uri;
 
 		constructor(base: Uri, input1: Uri, input2: Uri, result: Uri);

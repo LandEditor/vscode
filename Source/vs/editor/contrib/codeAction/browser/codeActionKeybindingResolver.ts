@@ -22,7 +22,9 @@ import {
 
 interface ResolveCodeActionKeybinding {
 	readonly kind: HierarchicalKind;
+
 	readonly preferred: boolean;
+
 	readonly resolvedKeybinding: ResolvedKeybinding;
 }
 export class CodeActionKeybindingResolver {
@@ -38,6 +40,7 @@ export class CodeActionKeybindingResolver {
 		@IKeybindingService
 		private readonly keybindingService: IKeybindingService,
 	) {}
+
 	public getResolver(): (
 		action: CodeAction,
 	) => ResolvedKeybinding | undefined {
@@ -67,6 +70,7 @@ export class CodeActionKeybindingResolver {
 							kind: CodeActionKind.SourceFixAll.value,
 						};
 					}
+
 					return {
 						resolvedKeybinding: item.resolvedKeybinding!,
 						...CodeActionCommandArgs.fromUser(commandArgs, {
@@ -86,9 +90,11 @@ export class CodeActionKeybindingResolver {
 
 				return binding?.resolvedKeybinding;
 			}
+
 			return undefined;
 		};
 	}
+
 	private bestKeybindingForCodeAction(
 		action: CodeAction,
 		candidates: readonly ResolveCodeActionKeybinding[],
@@ -96,6 +102,7 @@ export class CodeActionKeybindingResolver {
 		if (!action.kind) {
 			return undefined;
 		}
+
 		const kind = new HierarchicalKind(action.kind);
 
 		return candidates
@@ -105,6 +112,7 @@ export class CodeActionKeybindingResolver {
 					// If the candidate keybinding only applies to preferred actions, the this action must also be preferred
 					return action.isPreferred;
 				}
+
 				return true;
 			})
 			.reduceRight(

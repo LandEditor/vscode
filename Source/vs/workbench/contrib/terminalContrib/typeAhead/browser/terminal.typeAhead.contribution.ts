@@ -31,6 +31,7 @@ class TerminalTypeAheadContribution
 	implements ITerminalContribution
 {
 	static readonly ID = "terminal.typeAhead";
+
 	static get(
 		instance: ITerminalInstance,
 	): TerminalTypeAheadContribution | null {
@@ -38,6 +39,7 @@ class TerminalTypeAheadContribution
 			TerminalTypeAheadContribution.ID,
 		);
 	}
+
 	private _addon: TypeAheadAddon | undefined;
 
 	constructor(
@@ -48,14 +50,17 @@ class TerminalTypeAheadContribution
 		private readonly _instantiationService: IInstantiationService,
 	) {
 		super();
+
 		this.add(toDisposable(() => this._addon?.dispose()));
 	}
+
 	xtermReady(
 		xterm: IXtermTerminal & {
 			raw: RawXtermTerminal;
 		},
 	): void {
 		this._loadTypeAheadAddon(xterm.raw);
+
 		this.add(
 			this._configurationService.onDidChangeConfiguration((e) => {
 				if (
@@ -74,6 +79,7 @@ class TerminalTypeAheadContribution
 			}),
 		);
 	}
+
 	private _loadTypeAheadAddon(xterm: RawXtermTerminal): void {
 		const enabled =
 			this._configurationService.getValue<ITerminalTypeAheadConfiguration>(
@@ -84,18 +90,22 @@ class TerminalTypeAheadContribution
 
 		if (enabled === "off" || (enabled === "auto" && !isRemote)) {
 			this._addon?.dispose();
+
 			this._addon = undefined;
 
 			return;
 		}
+
 		if (this._addon) {
 			return;
 		}
+
 		if (enabled === "on" || (enabled === "auto" && isRemote)) {
 			this._addon = this._instantiationService.createInstance(
 				TypeAheadAddon,
 				this._ctx.processManager,
 			);
+
 			xterm.loadAddon(this._addon);
 		}
 	}

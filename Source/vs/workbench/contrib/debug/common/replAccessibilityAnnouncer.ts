@@ -25,19 +25,24 @@ export class ReplAccessibilityAnnouncer
 		super();
 
 		const viewModel = debugService.getViewModel();
+
 		this._register(
 			viewModel.onDidFocusSession((session) => {
 				if (!session) {
 					return;
 				}
+
 				this._register(
 					session.onDidChangeReplElements((element) => {
 						if (!element || !("originalExpression" in element)) {
 							// element was removed or hasn't been resolved yet
 							return;
 						}
+
 						const value = element.toString();
+
 						accessibilityService.status(value);
+
 						logService.trace(
 							"ReplAccessibilityAnnouncer#onDidChangeReplElements",
 							element.originalExpression + ": " + value,

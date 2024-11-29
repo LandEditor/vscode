@@ -14,6 +14,7 @@ function resetGlobalRegex(reg: RegExp) {
 	if (reg.global) {
 		reg.lastIndex = 0;
 	}
+
 	return true;
 }
 export class IndentRulesSupport {
@@ -22,6 +23,7 @@ export class IndentRulesSupport {
 	constructor(indentationRules: IndentationRule) {
 		this._indentationRules = indentationRules;
 	}
+
 	public shouldIncrease(text: string): boolean {
 		if (this._indentationRules) {
 			if (
@@ -37,8 +39,10 @@ export class IndentRulesSupport {
 			// 	return true;
 			// }
 		}
+
 		return false;
 	}
+
 	public shouldDecrease(text: string): boolean {
 		if (
 			this._indentationRules &&
@@ -48,8 +52,10 @@ export class IndentRulesSupport {
 		) {
 			return true;
 		}
+
 		return false;
 	}
+
 	public shouldIndentNextLine(text: string): boolean {
 		if (
 			this._indentationRules &&
@@ -59,8 +65,10 @@ export class IndentRulesSupport {
 		) {
 			return true;
 		}
+
 		return false;
 	}
+
 	public shouldIgnore(text: string): boolean {
 		// the text matches `unIndentedLinePattern`
 		if (
@@ -71,23 +79,29 @@ export class IndentRulesSupport {
 		) {
 			return true;
 		}
+
 		return false;
 	}
+
 	public getIndentMetadata(text: string): number {
 		let ret = 0;
 
 		if (this.shouldIncrease(text)) {
 			ret += IndentConsts.INCREASE_MASK;
 		}
+
 		if (this.shouldDecrease(text)) {
 			ret += IndentConsts.DECREASE_MASK;
 		}
+
 		if (this.shouldIndentNextLine(text)) {
 			ret += IndentConsts.INDENT_NEXTLINE_MASK;
 		}
+
 		if (this.shouldIgnore(text)) {
 			ret += IndentConsts.UNINDENT_MASK;
 		}
+
 		return ret;
 	}
 }

@@ -12,6 +12,7 @@ export const MicrotaskDelay = Symbol("MicrotaskDelay");
 
 export class SequencerByKey<TKey> {
 	private promiseMap = new Map<TKey, Promise<unknown>>();
+
 	queue<T>(key: TKey, promiseTask: () => Promise<T>): Promise<T> {
 		const runningPromise = this.promiseMap.get(key) ?? Promise.resolve();
 
@@ -23,6 +24,7 @@ export class SequencerByKey<TKey> {
 					this.promiseMap.delete(key);
 				}
 			});
+
 		this.promiseMap.set(key, newPromise);
 
 		return newPromise;
@@ -33,16 +35,21 @@ export class IntervalTimer extends Disposable {
 
 	constructor() {
 		super(() => this.cancel());
+
 		this._token = -1;
 	}
+
 	cancel(): void {
 		if (this._token !== -1) {
 			clearInterval(this._token);
+
 			this._token = -1;
 		}
 	}
+
 	cancelAndSet(runner: () => void, interval: number): void {
 		this.cancel();
+
 		this._token = setInterval(() => {
 			runner();
 		}, interval);
@@ -59,8 +66,10 @@ export function raceCancellationError<T>(
 	return new Promise((resolve, reject) => {
 		const ref = token.onCancellationRequested(() => {
 			ref.dispose();
+
 			reject(new CancellationError());
 		});
+
 		promise.then(resolve, reject).finally(() => ref.dispose());
 	});
 }
@@ -70,6 +79,7 @@ export function raceTimeoutError<T>(promise: Promise<T>, timeout: number): Promi
 		const ref = setTimeout(() => {
 			reject(new CancellationError());
 		}, timeout);
+
 		promise.then(resolve, reject).finally(() => clearTimeout(ref));
 	});
 }
@@ -90,6 +100,7 @@ const timeoutDeferred = (timeout: number, fn: () => void): IScheduledLater => {
 
 	const handle = setTimeout(() => {
 		scheduled = false;
+
 		fn();
 	}, timeout);
 
@@ -97,6 +108,7 @@ const timeoutDeferred = (timeout: number, fn: () => void): IScheduledLater => {
 		isTriggered: () => scheduled,
 		dispose: () => {
 			clearTimeout(handle);
+
 			scheduled = false;
 		},
 	};
@@ -104,9 +116,11 @@ const timeoutDeferred = (timeout: number, fn: () => void): IScheduledLater => {
 
 const microtaskDeferred = (fn: () => void): IScheduledLater => {
 	let scheduled = true;
+
 	queueMicrotask(() => {
 		if (scheduled) {
 			scheduled = false;
+
 			fn();
 		}
 	});
@@ -143,43 +157,60 @@ const microtaskDeferred = (fn: () => void): IScheduledLater => {
  */
 export class Delayer<T> implements Disposable {
 	private deferred: IScheduledLater | null;
+
 	private completionPromise: Promise<any> | null;
+
 	private doResolve: ((value?: any | Promise<any>) => void) | null;
+
 	private doReject: ((err: any) => void) | null;
+
 	private task: (() => T | Promise<T>) | null;
 
 	constructor(public defaultDelay: number | typeof MicrotaskDelay) {
 		this.deferred = null;
+
 		this.completionPromise = null;
+
 		this.doResolve = null;
+
 		this.doReject = null;
+
 		this.task = null;
 	}
+
 	trigger(task: () => T | Promise<T>, delay = this.defaultDelay): Promise<T> {
 		this.task = task;
+
 		this.cancelTimeout();
 
 		if (!this.completionPromise) {
 			this.completionPromise = new Promise((resolve, reject) => {
 				this.doResolve = resolve;
+
 				this.doReject = reject;
 			}).then(() => {
 				this.completionPromise = null;
+
 				this.doResolve = null;
 
 				if (this.task) {
 					const task = this.task;
+
 					this.task = null;
 
 					return task();
 				}
+
 				return undefined;
 			});
 		}
+
 		const fn = () => {
 			this.deferred = null;
+
 			this.doResolve?.(null);
 		};
+
 		this.deferred =
 			delay === MicrotaskDelay
 				? microtaskDeferred(fn)
@@ -187,21 +218,27 @@ export class Delayer<T> implements Disposable {
 
 		return this.completionPromise;
 	}
+
 	isTriggered(): boolean {
 		return !!this.deferred?.isTriggered();
 	}
+
 	cancel(): void {
 		this.cancelTimeout();
 
 		if (this.completionPromise) {
 			this.doReject?.(new CancellationError());
+
 			this.completionPromise = null;
 		}
 	}
+
 	private cancelTimeout(): void {
 		this.deferred?.dispose();
+
 		this.deferred = null;
 	}
+
 	dispose(): void {
 		this.cancel();
 	}
@@ -217,6 +254,7 @@ export function once<T>(event: Event<T>): Event<T> {
 		let didFire = false;
 
 		let result: Disposable | undefined = undefined;
+
 		result = event(
 			(e) => {
 				if (didFire) {
@@ -226,6 +264,7 @@ export function once<T>(event: Event<T>): Event<T> {
 				} else {
 					didFire = true;
 				}
+
 				return listener.call(thisArgs, e);
 			},
 			null,
@@ -235,6 +274,7 @@ export function once<T>(event: Event<T>): Event<T> {
 		if (didFire) {
 			result.dispose();
 		}
+
 		return result;
 	};
 }

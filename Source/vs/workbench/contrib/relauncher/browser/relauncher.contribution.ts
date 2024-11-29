@@ -55,29 +55,37 @@ interface IConfiguration extends IWindowsConfiguration {
 	update?: {
 		mode?: string;
 	};
+
 	debug?: {
 		console?: {
 			wordWrap?: boolean;
 		};
 	};
+
 	editor?: {
 		accessibilitySupport?: "on" | "off" | "auto";
 	};
+
 	security?: {
 		workspace?: {
 			trust?: {
 				enabled?: boolean;
 			};
 		};
+
 		restrictUNCAccess?: boolean;
 	};
+
 	window: IWindowSettings;
+
 	workbench?: {
 		enableExperiments?: boolean;
 	};
+
 	_extensionsGallery?: {
 		enablePPE?: boolean;
 	};
+
 	accessibility?: {
 		verbosity?: {
 			debug?: boolean;
@@ -102,19 +110,31 @@ export class SettingsChangeRelauncher
 		"security.restrictUNCAccess",
 		"accessibility.verbosity.debug",
 	];
+
 	private readonly titleBarStyle = new ChangeObserver<TitlebarStyle>(
 		"string",
 	);
+
 	private readonly nativeTabs = new ChangeObserver("boolean");
+
 	private readonly nativeFullScreen = new ChangeObserver("boolean");
+
 	private readonly clickThroughInactive = new ChangeObserver("boolean");
+
 	private readonly linuxWindowControlOverlay = new ChangeObserver("boolean");
+
 	private readonly updateMode = new ChangeObserver("string");
+
 	private accessibilitySupport: "on" | "off" | "auto" | undefined;
+
 	private readonly workspaceTrustEnabled = new ChangeObserver("boolean");
+
 	private readonly experimentsEnabled = new ChangeObserver("boolean");
+
 	private readonly enablePPEExtensionsGallery = new ChangeObserver("boolean");
+
 	private readonly restrictUNCAccess = new ChangeObserver("boolean");
+
 	private readonly accessibilityVerbosityDebug = new ChangeObserver(
 		"boolean",
 	);
@@ -136,18 +156,22 @@ export class SettingsChangeRelauncher
 		private readonly dialogService: IDialogService,
 	) {
 		super();
+
 		this.update(false);
+
 		this._register(
 			this.configurationService.onDidChangeConfiguration((e) =>
 				this.onConfigurationChange(e),
 			),
 		);
+
 		this._register(
 			userDataSyncWorkbenchService.onDidTurnOnSync((e) =>
 				this.update(true),
 			),
 		);
 	}
+
 	private onConfigurationChange(e: IConfigurationChangeEvent): void {
 		if (
 			e &&
@@ -161,23 +185,27 @@ export class SettingsChangeRelauncher
 		if (this.isTurningOnSyncInProgress()) {
 			return;
 		}
+
 		this.update(
 			e.source !==
 				ConfigurationTarget.DEFAULT /* do not ask to relaunch if defaults changed */,
 		);
 	}
+
 	private isTurningOnSyncInProgress(): boolean {
 		return (
 			!this.userDataSyncEnablementService.isEnabled() &&
 			this.userDataSyncService.status === SyncStatus.Syncing
 		);
 	}
+
 	private update(askToRelaunch: boolean): void {
 		let changed = false;
 
 		function processChanged(didChange: boolean) {
 			changed = changed || didChange;
 		}
+
 		const config = this.configurationService.getValue<IConfiguration>();
 
 		if (isNative) {
@@ -303,6 +331,7 @@ export class SettingsChangeRelauncher
 			);
 		}
 	}
+
 	private async doConfirm(
 		message: string,
 		detail: string,
@@ -322,6 +351,7 @@ export class SettingsChangeRelauncher
 }
 interface TypeNameToType {
 	readonly boolean: boolean;
+
 	readonly string: string;
 }
 class ChangeObserver<T> {
@@ -330,7 +360,9 @@ class ChangeObserver<T> {
 	): ChangeObserver<TypeNameToType[TTypeName]> {
 		return new ChangeObserver(typeName);
 	}
+
 	constructor(private readonly typeName: string) {}
+
 	private lastValue: T | undefined = undefined;
 	/**
 	 * Returns if there was a change compared to the last value
@@ -341,6 +373,7 @@ class ChangeObserver<T> {
 
 			return true;
 		}
+
 		return false;
 	}
 }
@@ -349,7 +382,9 @@ export class WorkspaceChangeExtHostRelauncher
 	implements IWorkbenchContribution
 {
 	private firstFolderResource?: URI;
+
 	private extensionHostRestarter: RunOnceScheduler;
+
 	private onDidChangeWorkspaceFoldersUnbind: IDisposable | undefined;
 
 	constructor(
@@ -363,11 +398,13 @@ export class WorkspaceChangeExtHostRelauncher
 		environmentService: IWorkbenchEnvironmentService,
 	) {
 		super();
+
 		this.extensionHostRestarter = this._register(
 			new RunOnceScheduler(async () => {
 				if (!!environmentService.extensionTestsLocationURI) {
 					return; // no restart when in tests: see https://github.com/microsoft/vscode/issues/66936
 				}
+
 				if (environmentService.remoteAuthority) {
 					hostService.reload(); // TODO@aeschli, workaround
 				} else if (isNative) {
@@ -384,24 +421,29 @@ export class WorkspaceChangeExtHostRelauncher
 				}
 			}, 10),
 		);
+
 		this.contextService.getCompleteWorkspace().then((workspace) => {
 			this.firstFolderResource =
 				workspace.folders.length > 0
 					? workspace.folders[0].uri
 					: undefined;
+
 			this.handleWorkbenchState();
+
 			this._register(
 				this.contextService.onDidChangeWorkbenchState(() =>
 					setTimeout(() => this.handleWorkbenchState()),
 				),
 			);
 		});
+
 		this._register(
 			toDisposable(() => {
 				this.onDidChangeWorkspaceFoldersUnbind?.dispose();
 			}),
 		);
 	}
+
 	private handleWorkbenchState(): void {
 		// React to folder changes when we are in workspace state
 		if (
@@ -409,6 +451,7 @@ export class WorkspaceChangeExtHostRelauncher
 		) {
 			// Update our known first folder path if we entered workspace
 			const workspace = this.contextService.getWorkspace();
+
 			this.firstFolderResource =
 				workspace.folders.length > 0
 					? workspace.folders[0].uri
@@ -424,9 +467,11 @@ export class WorkspaceChangeExtHostRelauncher
 		// Ignore the workspace folder changes in EMPTY or FOLDER state
 		else {
 			dispose(this.onDidChangeWorkspaceFoldersUnbind);
+
 			this.onDidChangeWorkspaceFoldersUnbind = undefined;
 		}
 	}
+
 	private onDidChangeWorkspaceFolders(): void {
 		const workspace = this.contextService.getWorkspace();
 		// Restart extension host if first root folder changed (impact on deprecated workspace.rootPath API)
@@ -435,6 +480,7 @@ export class WorkspaceChangeExtHostRelauncher
 
 		if (!isEqual(this.firstFolderResource, newFirstFolderResource)) {
 			this.firstFolderResource = newFirstFolderResource;
+
 			this.extensionHostRestarter.schedule(); // buffer calls to extension host restart
 		}
 	}

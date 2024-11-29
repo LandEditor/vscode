@@ -56,6 +56,7 @@ export class OriginalNotebookModelReferenceCollection extends ReferenceCollectio
 		if (model) {
 			return model;
 		}
+
 		const bytes = VSBuffer.fromString(fileEntry.originalModel.getValue());
 
 		const stream = bufferToStream(bytes);
@@ -66,6 +67,7 @@ export class OriginalNotebookModelReferenceCollection extends ReferenceCollectio
 			stream,
 		);
 	}
+
 	protected override destroyReferencedObject(
 		key: string,
 		modelPromise: Promise<NotebookTextModel>,
@@ -96,10 +98,12 @@ export class NotebookOriginalModelReferenceFactory
 	implements INotebookOriginalModelReferenceFactory
 {
 	readonly _serviceBrand: undefined;
+
 	private _resourceModelCollection:
 		| (OriginalNotebookModelReferenceCollection &
 				ReferenceCollection<Promise<NotebookTextModel>>) /* TS Fail */
 		| undefined = undefined;
+
 	private get resourceModelCollection() {
 		if (!this._resourceModelCollection) {
 			this._resourceModelCollection =
@@ -114,6 +118,7 @@ export class NotebookOriginalModelReferenceFactory
 	private _asyncModelCollection:
 		| AsyncReferenceCollection<NotebookTextModel>
 		| undefined = undefined;
+
 	private get asyncModelCollection() {
 		if (!this._asyncModelCollection) {
 			this._asyncModelCollection = new AsyncReferenceCollection(

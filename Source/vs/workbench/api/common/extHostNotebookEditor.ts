@@ -15,7 +15,9 @@ export class ExtHostNotebookEditor {
 		vscode.NotebookEditor,
 		ExtHostNotebookEditor
 	>();
+
 	private _visible: boolean = false;
+
 	private _editor?: vscode.NotebookEditor;
 
 	constructor(
@@ -27,9 +29,11 @@ export class ExtHostNotebookEditor {
 		private _viewColumn: vscode.ViewColumn | undefined,
 		private readonly viewType: string,
 	) {}
+
 	get apiEditor(): vscode.NotebookEditor {
 		if (!this._editor) {
 			const that = this;
+
 			this._editor = {
 				get notebook() {
 					return that.notebookData.apiNotebook;
@@ -50,7 +54,9 @@ export class ExtHostNotebookEditor {
 					) {
 						throw illegalArgument("selections");
 					}
+
 					that._selections = value;
+
 					that._trySetSelections(value);
 				},
 				get visibleRanges() {
@@ -71,34 +77,43 @@ export class ExtHostNotebookEditor {
 					if (that.viewType === "repl") {
 						return { appendIndex: this.notebook.cellCount - 1 };
 					}
+
 					return undefined;
 				},
 				[Symbol.for("debug.description")]() {
 					return `NotebookEditor(${this.notebook.uri.toString()})`;
 				},
 			};
+
 			ExtHostNotebookEditor.apiEditorsToExtHost.set(this._editor, this);
 		}
+
 		return this._editor;
 	}
+
 	get visible(): boolean {
 		return this._visible;
 	}
+
 	_acceptVisibility(value: boolean) {
 		this._visible = value;
 	}
+
 	_acceptVisibleRanges(value: vscode.NotebookRange[]): void {
 		this._visibleRanges = value;
 	}
+
 	_acceptSelections(selections: vscode.NotebookRange[]): void {
 		this._selections = selections;
 	}
+
 	private _trySetSelections(value: vscode.NotebookRange[]): void {
 		this._proxy.$trySetSelections(
 			this.id,
 			value.map(extHostConverter.NotebookRange.from),
 		);
 	}
+
 	_acceptViewColumn(value: vscode.ViewColumn | undefined) {
 		this._viewColumn = value;
 	}

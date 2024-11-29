@@ -27,11 +27,15 @@ export class KeyboardLayoutMainService
 	implements INativeKeyboardLayoutService
 {
 	declare readonly _serviceBrand: undefined;
+
 	private readonly _onDidChangeKeyboardLayout = this._register(
 		new Emitter<IKeyboardLayoutData>(),
 	);
+
 	readonly onDidChangeKeyboardLayout = this._onDidChangeKeyboardLayout.event;
+
 	private _initPromise: Promise<void> | null;
+
 	private _keyboardLayoutData: IKeyboardLayoutData | null;
 
 	constructor(
@@ -39,7 +43,9 @@ export class KeyboardLayoutMainService
 		lifecycleMainService: ILifecycleMainService,
 	) {
 		super();
+
 		this._initPromise = null;
+
 		this._keyboardLayoutData = null;
 		// perf: automatically trigger initialize after windows
 		// have opened so that we can do this work in parallel
@@ -48,14 +54,18 @@ export class KeyboardLayoutMainService
 			.when(LifecycleMainPhase.AfterWindowOpen)
 			.then(() => this._initialize());
 	}
+
 	private _initialize(): Promise<void> {
 		if (!this._initPromise) {
 			this._initPromise = this._doInitialize();
 		}
+
 		return this._initPromise;
 	}
+
 	private async _doInitialize(): Promise<void> {
 		const nativeKeymapMod = await import("native-keymap");
+
 		this._keyboardLayoutData = readKeyboardLayoutData(nativeKeymapMod);
 
 		if (!platform.isCI) {
@@ -65,10 +75,12 @@ export class KeyboardLayoutMainService
 			nativeKeymapMod.onDidChangeKeyboardLayout(() => {
 				this._keyboardLayoutData =
 					readKeyboardLayoutData(nativeKeymapMod);
+
 				this._onDidChangeKeyboardLayout.fire(this._keyboardLayoutData);
 			});
 		}
 	}
+
 	public async getKeyboardLayoutData(): Promise<IKeyboardLayoutData> {
 		await this._initialize();
 

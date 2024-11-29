@@ -21,22 +21,28 @@ import { IModelService } from "../../../../../editor/common/services/model.js";
  */
 export class RangeHighlightDecorations implements IDisposable {
 	private _decorationId: string | null = null;
+
 	private _model: ITextModel | null = null;
+
 	private readonly _modelDisposables = new DisposableStore();
 
 	constructor(
 		@IModelService
 		private readonly _modelService: IModelService,
 	) {}
+
 	removeHighlightRange() {
 		if (this._model && this._decorationId) {
 			const decorationId = this._decorationId;
+
 			this._model.changeDecorations((accessor) => {
 				accessor.removeDecoration(decorationId);
 			});
 		}
+
 		this._decorationId = null;
 	}
+
 	highlightRange(
 		resource: URI | ITextModel,
 		range: Range,
@@ -49,50 +55,67 @@ export class RangeHighlightDecorations implements IDisposable {
 		} else {
 			model = resource;
 		}
+
 		if (model) {
 			this.doHighlightRange(model, range);
 		}
 	}
+
 	private doHighlightRange(model: ITextModel, range: Range) {
 		this.removeHighlightRange();
+
 		model.changeDecorations((accessor) => {
 			this._decorationId = accessor.addDecoration(
 				range,
 				RangeHighlightDecorations._RANGE_HIGHLIGHT_DECORATION,
 			);
 		});
+
 		this.setModel(model);
 	}
+
 	private setModel(model: ITextModel) {
 		if (this._model !== model) {
 			this.clearModelListeners();
+
 			this._model = model;
+
 			this._modelDisposables.add(
 				this._model.onDidChangeDecorations((e) => {
 					this.clearModelListeners();
+
 					this.removeHighlightRange();
+
 					this._model = null;
 				}),
 			);
+
 			this._modelDisposables.add(
 				this._model.onWillDispose(() => {
 					this.clearModelListeners();
+
 					this.removeHighlightRange();
+
 					this._model = null;
 				}),
 			);
 		}
 	}
+
 	private clearModelListeners() {
 		this._modelDisposables.clear();
 	}
+
 	dispose() {
 		if (this._model) {
 			this.removeHighlightRange();
+
 			this._model = null;
 		}
+
 		this._modelDisposables.dispose();
 	}
+
 	private static readonly _RANGE_HIGHLIGHT_DECORATION =
 		ModelDecorationOptions.register({
 			description: "search-range-highlight",

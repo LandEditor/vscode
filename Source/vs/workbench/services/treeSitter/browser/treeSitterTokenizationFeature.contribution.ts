@@ -52,7 +52,9 @@ CommandsRegistry.registerCommand(
 		resource?: URI,
 	): Promise<{
 		parseTime: number;
+
 		captureTime: number;
+
 		metadataTime: number;
 	}> => {
 		const treeSitterParserService = accessor.get(ITreeSitterParserService);
@@ -87,8 +89,11 @@ CommandsRegistry.registerCommand(
 				`Cannot resolve tree sitter parser for language ${textModel.getLanguageId()}`,
 			);
 		}
+
 		const stopwatch = new StopWatch();
+
 		await textModelTreeSitter.parse();
+
 		stopwatch.stop();
 
 		let captureTime = 0;
@@ -100,10 +105,13 @@ CommandsRegistry.registerCommand(
 
 			if (result) {
 				captureTime += result.captureTime;
+
 				metadataTime += result.metadataTime;
 			}
 		}
+
 		textModelTreeSitter.dispose();
+
 		textModel.dispose();
 
 		return { parseTime: stopwatch.elapsed(), captureTime, metadataTime };

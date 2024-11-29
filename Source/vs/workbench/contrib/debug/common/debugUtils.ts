@@ -36,6 +36,7 @@ export function formatPII(
 		if (excludePII && group.length > 0 && group[0] !== "_") {
 			return match;
 		}
+
 		return args && args.hasOwnProperty(group) ? args[group] : match;
 	});
 }
@@ -55,6 +56,7 @@ export function filterExceptionsFromTelemetry<
 			output[key] = data[key];
 		}
 	}
+
 	return output;
 }
 export function isSessionAttach(session: IDebugSession): boolean {
@@ -76,15 +78,18 @@ export function getExtensionHostDebugSession(
 	if (!type) {
 		return;
 	}
+
 	if (type === "vslsShare") {
 		type = (<any>session.configuration).adapterProxy.configuration.type;
 	}
+
 	if (
 		equalsIgnoreCase(type, "extensionhost") ||
 		equalsIgnoreCase(type, "pwa-extensionhost")
 	) {
 		return session;
 	}
+
 	return session.parentSession
 		? getExtensionHostDebugSession(session.parentSession)
 		: undefined;
@@ -99,6 +104,7 @@ export function getExactExpressionStartAndEnd(
 	looseEnd: number,
 ): {
 	start: number;
+
 	end: number;
 } {
 	let matchingExpression: string | undefined = undefined;
@@ -117,6 +123,7 @@ export function getExactExpressionStartAndEnd(
 
 		if (start <= looseStart && end >= looseEnd) {
 			matchingExpression = result[0];
+
 			startOffset = start;
 
 			break;
@@ -140,6 +147,7 @@ export function getExactExpressionStartAndEnd(
 				break;
 			}
 		}
+
 		if (subExpressionResult) {
 			matchingExpression = matchingExpression.substring(
 				0,
@@ -147,6 +155,7 @@ export function getExactExpressionStartAndEnd(
 			);
 		}
 	}
+
 	return matchingExpression
 		? {
 				start: startOffset,
@@ -161,6 +170,7 @@ export async function getEvaluatableExpressionAtPosition(
 	token?: CancellationToken,
 ): Promise<{
 	range: IRange;
+
 	matchingExpression: string;
 } | null> {
 	if (languageFeaturesService.evaluatableExpressionProvider.has(model)) {
@@ -192,11 +202,13 @@ export async function getEvaluatableExpressionAtPosition(
 
 			if (!matchingExpression) {
 				const lineContent = model.getLineContent(position.lineNumber);
+
 				matchingExpression = lineContent.substring(
 					range.startColumn - 1,
 					range.endColumn - 1,
 				);
 			}
+
 			return { range, matchingExpression };
 		}
 	} else {
@@ -221,6 +233,7 @@ export async function getEvaluatableExpressionAtPosition(
 			),
 		};
 	}
+
 	return null;
 }
 // RFC 2396, Appendix A: https://www.ietf.org/rfc/rfc2396.txt
@@ -251,6 +264,7 @@ function stringToUri(source: PathContainer): string | undefined {
 			}
 		}
 	}
+
 	return source.path;
 }
 function uriToString(source: PathContainer): string | undefined {
@@ -265,11 +279,13 @@ function uriToString(source: PathContainer): string | undefined {
 			}
 		}
 	}
+
 	return source.path;
 }
 // path hooks helpers
 interface PathContainer {
 	path?: string;
+
 	sourceReference?: number;
 }
 export function convertToDAPaths(
@@ -279,6 +295,7 @@ export function convertToDAPaths(
 	const fixPath = toUri ? stringToUri : uriToString;
 	// since we modify Source.paths in the message in place, we need to make a copy of it (see #61129)
 	const msg = deepClone(message);
+
 	convertPaths(msg, (toDA: boolean, source: PathContainer | undefined) => {
 		if (toDA && source) {
 			source.path = fixPath(source);
@@ -294,6 +311,7 @@ export function convertToVSCPaths(
 	const fixPath = toUri ? stringToUri : uriToString;
 	// since we modify Source.paths in the message in place, we need to make a copy of it (see #61129)
 	const msg = deepClone(message);
+
 	convertPaths(msg, (toDA: boolean, source: PathContainer | undefined) => {
 		if (!toDA && source) {
 			source.path = fixPath(source);
@@ -339,8 +357,10 @@ function convertPaths(
 				default:
 					break;
 			}
+
 			break;
 		}
+
 		case "request": {
 			const request = <DebugProtocol.Request>msg;
 
@@ -394,8 +414,10 @@ function convertPaths(
 				default:
 					break;
 			}
+
 			break;
 		}
+
 		case "response": {
 			const response = <DebugProtocol.Response>msg;
 
@@ -451,10 +473,12 @@ function convertPaths(
 							const di = <DebugProtocol.DisassembleResponse>(
 								response
 							);
+
 							di.body?.instructions.forEach((di) =>
 								fixSourcePath(false, di.location),
 							);
 						}
+
 						break;
 
 					case "locations":
@@ -470,6 +494,7 @@ function convertPaths(
 						break;
 				}
 			}
+
 			break;
 		}
 	}
@@ -486,11 +511,14 @@ export function getVisibleAndSorted<
 				if (!second.presentation) {
 					return 0;
 				}
+
 				return 1;
 			}
+
 			if (!second.presentation) {
 				return -1;
 			}
+
 			if (!first.presentation.group) {
 				if (!second.presentation.group) {
 					return compareOrders(
@@ -498,16 +526,20 @@ export function getVisibleAndSorted<
 						second.presentation.order,
 					);
 				}
+
 				return 1;
 			}
+
 			if (!second.presentation.group) {
 				return -1;
 			}
+
 			if (first.presentation.group !== second.presentation.group) {
 				return first.presentation.group.localeCompare(
 					second.presentation.group,
 				);
 			}
+
 			return compareOrders(
 				first.presentation.order,
 				second.presentation.order,
@@ -522,11 +554,14 @@ function compareOrders(
 		if (typeof second !== "number") {
 			return 0;
 		}
+
 		return 1;
 	}
+
 	if (typeof second !== "number") {
 		return -1;
 	}
+
 	return first - second;
 }
 export async function saveAllBeforeDebugStart(
@@ -556,6 +591,7 @@ export async function saveAllBeforeDebugStart(
 			}
 		}
 	}
+
 	await configurationService.reloadConfiguration();
 }
 export const sourcesEqual = (

@@ -25,9 +25,13 @@ import {
 
 interface OrganizeImportsCommandMetadata {
 	readonly commandIds: readonly string[];
+
 	readonly title: string;
+
 	readonly minVersion?: API;
+
 	readonly kind: vscode.CodeActionKind;
+
 	readonly mode: OrganizeImportsMode;
 }
 
@@ -58,9 +62,11 @@ const removeUnusedImportsCommand: OrganizeImportsCommandMetadata = {
 };
 class DidOrganizeImportsCommand implements Command {
 	public static readonly ID = "_typescript.didOrganizeImports";
+
 	public readonly id = DidOrganizeImportsCommand.ID;
 
 	constructor(private readonly telemetryReporter: TelemetryReporter) {}
+
 	public async execute(): Promise<any> {
 		/* __GDPR__
             "organizeImports.execute" : {
@@ -96,6 +102,7 @@ class ImportsCodeActionProvider
 			new DidOrganizeImportsCommand(telemetryReporter),
 		);
 	}
+
 	public provideCodeActions(
 		document: vscode.TextDocument,
 		_range: vscode.Range,
@@ -105,11 +112,13 @@ class ImportsCodeActionProvider
 		if (!context.only?.contains(this.commandMetadata.kind)) {
 			return [];
 		}
+
 		const file = this.client.toOpenTsFilePath(document);
 
 		if (!file) {
 			return [];
 		}
+
 		return [
 			new ImportCodeAction(
 				this.commandMetadata.title,
@@ -118,6 +127,7 @@ class ImportsCodeActionProvider
 			),
 		];
 	}
+
 	async resolveCodeAction(
 		codeAction: ImportCodeAction,
 		token: vscode.CancellationToken,
@@ -131,11 +141,13 @@ class ImportsCodeActionProvider
 			if (token.isCancellationRequested) {
 				return;
 			}
+
 			const file = this.client.toOpenTsFilePath(codeAction.document);
 
 			if (!file) {
 				return;
 			}
+
 			const args: Proto.OrganizeImportsRequestArgs = {
 				scope: {
 					type: "file",
@@ -160,12 +172,14 @@ class ImportsCodeActionProvider
 		) {
 			return;
 		}
+
 		if (response.body.length) {
 			codeAction.edit = typeConverters.WorkspaceEdit.fromFileCodeEdits(
 				this.client,
 				response.body,
 			);
 		}
+
 		codeAction.command = {
 			command: DidOrganizeImportsCommand.ID,
 			title: "",
@@ -235,5 +249,6 @@ export function register(
 			),
 		);
 	}
+
 	return vscode.Disposable.from(...disposables);
 }

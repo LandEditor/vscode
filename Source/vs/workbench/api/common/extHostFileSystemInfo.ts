@@ -11,8 +11,11 @@ import { ExtHostFileSystemInfoShape } from "./extHost.protocol.js";
 
 export class ExtHostFileSystemInfo implements ExtHostFileSystemInfoShape {
 	declare readonly _serviceBrand: undefined;
+
 	private readonly _systemSchemes = new Set(Object.keys(Schemas));
+
 	private readonly _providerInfo = new Map<string, number>();
+
 	readonly extUri: IExtUri;
 
 	constructor() {
@@ -23,12 +26,14 @@ export class ExtHostFileSystemInfo implements ExtHostFileSystemInfoShape {
 				// default: not ignore
 				return false;
 			}
+
 			if (
 				capabilities & FileSystemProviderCapabilities.PathCaseSensitive
 			) {
 				// configured as case sensitive
 				return false;
 			}
+
 			return true;
 		});
 	}
@@ -42,11 +47,13 @@ export class ExtHostFileSystemInfo implements ExtHostFileSystemInfoShape {
 			this._providerInfo.set(uri.scheme, capabilities);
 		}
 	}
+
 	isFreeScheme(scheme: string): boolean {
 		return (
 			!this._providerInfo.has(scheme) && !this._systemSchemes.has(scheme)
 		);
 	}
+
 	getCapabilities(scheme: string): number | undefined {
 		return this._providerInfo.get(scheme);
 	}

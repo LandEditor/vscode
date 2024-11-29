@@ -43,6 +43,7 @@ export class TypeOperations {
 		if (model === null || selections === null) {
 			return [];
 		}
+
 		const commands: ICommand[] = [];
 
 		for (let i = 0, len = selections.length; i < len; i++) {
@@ -59,8 +60,10 @@ export class TypeOperations {
 				config.languageConfigurationService,
 			);
 		}
+
 		return commands;
 	}
+
 	public static outdent(
 		config: CursorConfiguration,
 		model: ICursorSimpleModel,
@@ -82,8 +85,10 @@ export class TypeOperations {
 				config.languageConfigurationService,
 			);
 		}
+
 		return commands;
 	}
+
 	public static shiftIndent(
 		config: CursorConfiguration,
 		indentation: string,
@@ -91,6 +96,7 @@ export class TypeOperations {
 	): string {
 		return shiftIndent(config, indentation, count);
 	}
+
 	public static unshiftIndent(
 		config: CursorConfiguration,
 		indentation: string,
@@ -98,6 +104,7 @@ export class TypeOperations {
 	): string {
 		return unshiftIndent(config, indentation, count);
 	}
+
 	public static paste(
 		config: CursorConfiguration,
 		model: ICursorSimpleModel,
@@ -115,6 +122,7 @@ export class TypeOperations {
 			multicursorText,
 		);
 	}
+
 	public static tab(
 		config: CursorConfiguration,
 		model: ITextModel,
@@ -122,6 +130,7 @@ export class TypeOperations {
 	): ICommand[] {
 		return TabOperation.getCommands(config, model, selections);
 	}
+
 	public static compositionType(
 		prevEditOperationType: EditOperationType,
 		config: CursorConfiguration,
@@ -158,6 +167,7 @@ export class TypeOperations {
 			// could not deduce what the composition did
 			return null;
 		}
+
 		let insertedText: string | null = null;
 
 		for (const composition of compositions) {
@@ -168,10 +178,12 @@ export class TypeOperations {
 				return null;
 			}
 		}
+
 		if (!insertedText || insertedText.length !== 1) {
 			// we're only interested in the case where a single character was inserted
 			return null;
 		}
+
 		const ch = insertedText;
 
 		let hasDeletion = false;
@@ -183,6 +195,7 @@ export class TypeOperations {
 				break;
 			}
 		}
+
 		if (hasDeletion) {
 			// Check if this could have been a surround selection
 			if (
@@ -191,6 +204,7 @@ export class TypeOperations {
 			) {
 				return null;
 			}
+
 			const isTypingAQuoteCharacter = isQuote(ch);
 
 			for (const composition of compositions) {
@@ -202,10 +216,12 @@ export class TypeOperations {
 					// more text was deleted than was selected, so this could not have been a surround selection
 					return null;
 				}
+
 				if (/^[ \t]+$/.test(composition.deletedText)) {
 					// deleted text was only whitespace
 					return null;
 				}
+
 				if (
 					isTypingAQuoteCharacter &&
 					isQuote(composition.deletedText)
@@ -214,17 +230,21 @@ export class TypeOperations {
 					return null;
 				}
 			}
+
 			const positions: Position[] = [];
 
 			for (const selection of selections) {
 				if (!selection.isEmpty()) {
 					return null;
 				}
+
 				positions.push(selection.getPosition());
 			}
+
 			if (positions.length !== compositions.length) {
 				return null;
 			}
+
 			const commands: ICommand[] = [];
 
 			for (let i = 0, len = positions.length; i < len; i++) {
@@ -236,6 +256,7 @@ export class TypeOperations {
 					),
 				);
 			}
+
 			return new EditOperationResult(
 				EditOperationType.TypingOther,
 				commands,
@@ -245,6 +266,7 @@ export class TypeOperations {
 				},
 			);
 		}
+
 		const autoClosingOvertypeEdits =
 			AutoClosingOvertypeWithInterceptorsOperation.getEdits(
 				config,
@@ -257,6 +279,7 @@ export class TypeOperations {
 		if (autoClosingOvertypeEdits !== undefined) {
 			return autoClosingOvertypeEdits;
 		}
+
 		const autoClosingOpenCharEdits =
 			AutoClosingOpenCharTypeOperation.getEdits(
 				config,
@@ -270,8 +293,10 @@ export class TypeOperations {
 		if (autoClosingOpenCharEdits !== undefined) {
 			return autoClosingOpenCharEdits;
 		}
+
 		return null;
 	}
+
 	public static typeWithInterceptors(
 		isDoingComposition: boolean,
 		prevEditOperationType: EditOperationType,
@@ -292,6 +317,7 @@ export class TypeOperations {
 		if (enterEdits !== undefined) {
 			return enterEdits;
 		}
+
 		const autoIndentEdits = AutoIndentOperation.getEdits(
 			config,
 			model,
@@ -303,6 +329,7 @@ export class TypeOperations {
 		if (autoIndentEdits !== undefined) {
 			return autoIndentEdits;
 		}
+
 		const autoClosingOverTypeEdits = AutoClosingOvertypeOperation.getEdits(
 			prevEditOperationType,
 			config,
@@ -315,6 +342,7 @@ export class TypeOperations {
 		if (autoClosingOverTypeEdits !== undefined) {
 			return autoClosingOverTypeEdits;
 		}
+
 		const autoClosingOpenCharEdits =
 			AutoClosingOpenCharTypeOperation.getEdits(
 				config,
@@ -328,6 +356,7 @@ export class TypeOperations {
 		if (autoClosingOpenCharEdits !== undefined) {
 			return autoClosingOpenCharEdits;
 		}
+
 		const surroundSelectionEdits = SurroundSelectionOperation.getEdits(
 			config,
 			model,
@@ -339,6 +368,7 @@ export class TypeOperations {
 		if (surroundSelectionEdits !== undefined) {
 			return surroundSelectionEdits;
 		}
+
 		const interceptorElectricCharOperation =
 			InterceptorElectricCharOperation.getEdits(
 				prevEditOperationType,
@@ -352,12 +382,14 @@ export class TypeOperations {
 		if (interceptorElectricCharOperation !== undefined) {
 			return interceptorElectricCharOperation;
 		}
+
 		return SimpleCharacterTypeOperation.getEdits(
 			prevEditOperationType,
 			selections,
 			ch,
 		);
 	}
+
 	public static typeWithoutInterceptors(
 		prevEditOperationType: EditOperationType,
 		config: CursorConfiguration,

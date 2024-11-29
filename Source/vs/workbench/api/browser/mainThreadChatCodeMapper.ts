@@ -36,8 +36,11 @@ export class MainThreadChatCodemapper
 	private providers = this._register(
 		new DisposableMap<number, IDisposable>(),
 	);
+
 	private readonly _proxy: ExtHostCodeMapperShape;
+
 	private static _requestHandlePool: number = 0;
+
 	private _responseMap = new Map<string, ICodeMapperResponse>();
 
 	constructor(
@@ -46,6 +49,7 @@ export class MainThreadChatCodemapper
 		private readonly codeMapperService: ICodeMapperService,
 	) {
 		super();
+
 		this._proxy = extHostContext.getProxy(ExtHostContext.ExtHostCodeMapper);
 	}
 	$registerCodeMapperProvider(handle: number): void {
@@ -58,6 +62,7 @@ export class MainThreadChatCodemapper
 				const requestId = String(
 					MainThreadChatCodemapper._requestHandlePool++,
 				);
+
 				this._responseMap.set(requestId, response);
 
 				const extHostRequest: ICodeMapperRequestDto = {
@@ -80,6 +85,7 @@ export class MainThreadChatCodemapper
 			handle,
 			impl,
 		);
+
 		this.providers.set(handle, disposable);
 	}
 	$unregisterCodeMapperProvider(handle: number): void {
@@ -93,8 +99,10 @@ export class MainThreadChatCodemapper
 
 		if (response) {
 			const resource = URI.revive(data.uri);
+
 			response.textEdit(resource, data.edits);
 		}
+
 		return Promise.resolve();
 	}
 }

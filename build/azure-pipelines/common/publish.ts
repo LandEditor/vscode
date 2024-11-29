@@ -29,6 +29,7 @@ function e(name: string): string {
 	if (typeof result !== "string") {
 		throw new Error(`Missing env: ${name}`);
 	}
+
 	return result;
 }
 
@@ -45,33 +46,49 @@ function hashStream(hashName: string, stream: Readable): Promise<Buffer> {
 
 interface ReleaseSubmitResponse {
 	operationId: string;
+
 	esrpCorrelationId: string;
+
 	code?: string;
+
 	message?: string;
+
 	target?: string;
+
 	innerError?: any;
 }
 
 interface ReleaseActivityInfo {
 	activityId: string;
+
 	activityType: string;
+
 	name: string;
+
 	status: string;
+
 	errorCode: number;
+
 	errorMessages: string[];
+
 	beginTime?: Date;
+
 	endTime?: Date;
+
 	lastModifiedAt?: Date;
 }
 
 interface InnerServiceError {
 	code: string;
+
 	details: { [key: string]: string };
+
 	innerError?: InnerServiceError;
 }
 
 interface ReleaseError {
 	errorCode: number;
+
 	errorMessages: string[];
 }
 
@@ -86,43 +103,77 @@ const enum StatusCode {
 
 interface ReleaseResultMessage {
 	activities: ReleaseActivityInfo[];
+
 	childWorkflowType: string;
+
 	clientId: string;
+
 	customerCorrelationId: string;
+
 	errorInfo: InnerServiceError;
+
 	groupId: string;
+
 	lastModifiedAt: Date;
+
 	operationId: string;
+
 	releaseError: ReleaseError;
+
 	requestSubmittedAt: Date;
+
 	routedRegion: string;
+
 	status: StatusCode;
+
 	totalFileCount: number;
+
 	totalReleaseSize: number;
+
 	version: string;
 }
 
 interface ReleaseFileInfo {
 	name?: string;
+
 	hash?: number[];
+
 	sourceLocation?: FileLocation;
+
 	sizeInBytes?: number;
+
 	hashType?: FileHashType;
+
 	fileId?: any;
+
 	distributionRelativePath?: string;
+
 	partNumber?: string;
+
 	friendlyFileName?: string;
+
 	tenantFileLocationType?: string;
+
 	tenantFileLocation?: string;
+
 	signedEngineeringCopyLocation?: string;
+
 	encryptedDistributionBlobLocation?: string;
+
 	preEncryptedDistributionBlobLocation?: string;
+
 	secondaryDistributionHashRequired?: boolean;
+
 	secondaryDistributionHashType?: FileHashType;
+
 	lastModifiedAt?: Date;
+
 	cultureCodes?: string[];
+
 	displayFileInDownloadCenter?: boolean;
+
 	isPrimaryFileInDownloadCenter?: boolean;
+
 	fileDownloadDetails?: FileDownloadDetails[];
 }
 
@@ -130,15 +181,25 @@ interface ReleaseDetailsFileInfo extends ReleaseFileInfo {}
 
 interface ReleaseDetailsMessage extends ReleaseResultMessage {
 	clusterRegion: string;
+
 	correlationVector: string;
+
 	releaseCompletedAt?: Date;
+
 	releaseInfo: ReleaseInfo;
+
 	productInfo: ProductInfo;
+
 	createdBy: UserInfo;
+
 	owners: OwnerInfo[];
+
 	accessPermissionsInfo: AccessPermissionsInfo;
+
 	files: ReleaseDetailsFileInfo[];
+
 	comments: string[];
+
 	cancellationReason: string;
 
 	downloadCenterInfo: DownloadCenterInfo;
@@ -146,15 +207,21 @@ interface ReleaseDetailsMessage extends ReleaseResultMessage {
 
 interface ProductInfo {
 	name?: string;
+
 	version?: string;
+
 	description?: string;
 }
 
 interface ReleaseInfo {
 	title?: string;
+
 	minimumNumberOfApprovers: number;
+
 	properties?: { [key: string]: string };
+
 	isRevision?: boolean;
+
 	revisionNumber?: string;
 }
 
@@ -162,8 +229,11 @@ type FileLocationType = "azureBlob";
 
 interface FileLocation {
 	type: FileLocationType;
+
 	blobUrl: string;
+
 	uncPath?: string;
+
 	url?: string;
 }
 
@@ -177,33 +247,57 @@ interface FileDownloadDetails {
 
 interface RoutingInfo {
 	intent?: string;
+
 	contentType?: string;
+
 	contentOrigin?: string;
+
 	productState?: string;
+
 	audience?: string;
 }
 
 interface ReleaseFileInfo {
 	name?: string;
+
 	hash?: number[];
+
 	sourceLocation?: FileLocation;
+
 	sizeInBytes?: number;
+
 	hashType?: FileHashType;
+
 	fileId?: any;
+
 	distributionRelativePath?: string;
+
 	partNumber?: string;
+
 	friendlyFileName?: string;
+
 	tenantFileLocationType?: string;
+
 	tenantFileLocation?: string;
+
 	signedEngineeringCopyLocation?: string;
+
 	encryptedDistributionBlobLocation?: string;
+
 	preEncryptedDistributionBlobLocation?: string;
+
 	secondaryDistributionHashRequired?: boolean;
+
 	secondaryDistributionHashType?: FileHashType;
+
 	lastModifiedAt?: Date;
+
 	cultureCodes?: string[];
+
 	displayFileInDownloadCenter?: boolean;
+
 	isPrimaryFileInDownloadCenter?: boolean;
+
 	fileDownloadDetails?: FileDownloadDetails[];
 }
 
@@ -217,13 +311,17 @@ interface OwnerInfo {
 
 interface ApproverInfo {
 	approver: UserInfo;
+
 	isAutoApproved: boolean;
+
 	isMandatory: boolean;
 }
 
 interface AccessPermissionsInfo {
 	mainPublisher?: string;
+
 	releasePublishers?: string[];
+
 	channelDownloadEntityDetails?: { [key: string]: string[] };
 }
 
@@ -231,43 +329,73 @@ interface DownloadCenterLocaleInfo {
 	cultureCode?: string;
 
 	downloadTitle?: string;
+
 	shortName?: string;
+
 	shortDescription?: string;
+
 	longDescription?: string;
+
 	instructions?: string;
+
 	additionalInfo?: string;
+
 	keywords?: string[];
+
 	version?: string;
+
 	relatedLinks?: { [key: string]: URL };
 }
 
 interface DownloadCenterInfo {
 	downloadCenterId: number;
+
 	publishToDownloadCenter?: boolean;
+
 	publishingGroup?: string;
+
 	operatingSystems?: string[];
+
 	relatedReleases?: string[];
+
 	kbNumbers?: string[];
+
 	sbNumbers?: string[];
+
 	locales?: DownloadCenterLocaleInfo[];
+
 	additionalProperties?: { [key: string]: string };
 }
 
 interface ReleaseRequestMessage {
 	driEmail: string[];
+
 	groupId?: string;
+
 	customerCorrelationId: string;
+
 	esrpCorrelationId: string;
+
 	contextData?: { [key: string]: string };
+
 	releaseInfo: ReleaseInfo;
+
 	productInfo: ProductInfo;
+
 	files: ReleaseFileInfo[];
+
 	routingInfo?: RoutingInfo;
+
 	createdBy: UserInfo;
+
 	owners: OwnerInfo[];
+
 	approvers: ApproverInfo[];
+
 	accessPermissionsInfo: AccessPermissionsInfo;
+
 	jwsToken?: string;
+
 	publisherId?: string;
 
 	downloadCenterInfo?: DownloadCenterInfo;
@@ -296,7 +424,9 @@ function getKeyFromPFX(pfx: string): string {
 
 	try {
 		const pfxCertificate = Buffer.from(pfx, "base64");
+
 		fs.writeFileSync(pfxCertificatePath, pfxCertificate);
+
 		cp.execSync(
 			`openssl pkcs12 -in "${pfxCertificatePath}" -nocerts -nodes -out "${pemKeyPath}" -passin pass:`,
 		);
@@ -310,6 +440,7 @@ function getKeyFromPFX(pfx: string): string {
 		return result;
 	} finally {
 		fs.rmSync(pfxCertificatePath, { force: true });
+
 		fs.rmSync(pemKeyPath, { force: true });
 	}
 }
@@ -321,7 +452,9 @@ function getCertificatesFromPFX(pfx: string): string[] {
 
 	try {
 		const pfxCertificate = Buffer.from(pfx, "base64");
+
 		fs.writeFileSync(pfxCertificatePath, pfxCertificate);
+
 		cp.execSync(
 			`openssl pkcs12 -in "${pfxCertificatePath}" -nokeys -out "${pemCertificatePath}" -passin pass:`,
 		);
@@ -335,6 +468,7 @@ function getCertificatesFromPFX(pfx: string): string[] {
 		return matches ? matches.reverse() : [];
 	} finally {
 		fs.rmSync(pfxCertificatePath, { force: true });
+
 		fs.rmSync(pemCertificatePath, { force: true });
 	}
 }
@@ -410,7 +544,9 @@ class ESRPReleaseService {
 			this.containerClient.getBlockBlobClient(correlationId);
 
 		this.log(`Uploading ${filePath} to ${blobClient.url}`);
+
 		await blobClient.uploadFile(filePath);
+
 		this.log("Uploaded blob successfully");
 
 		try {
@@ -463,7 +599,9 @@ class ESRPReleaseService {
 			return releaseDetails.files[0].fileDownloadDetails![0].downloadUrl;
 		} finally {
 			this.log(`Deleting blob ${blobClient.url}`);
+
 			await blobClient.delete();
+
 			this.log("Deleted blob successfully");
 		}
 	}
@@ -625,6 +763,7 @@ class ESRPReleaseService {
 }
 class State {
 	private statePath: string;
+
 	private set = new Set<string>();
 
 	constructor() {
@@ -643,31 +782,40 @@ class State {
 				previousState.name,
 				previousState.name + ".txt",
 			);
+
 			fs.readFileSync(previousStatePath, "utf8")
 				.split(/\n/)
 				.filter((name) => !!name)
 				.forEach((name) => this.set.add(name));
 		}
+
 		const stageAttempt = e("SYSTEM_STAGEATTEMPT");
+
 		this.statePath = path.join(
 			pipelineWorkspacePath,
 			`artifacts_processed_${stageAttempt}`,
 			`artifacts_processed_${stageAttempt}.txt`,
 		);
+
 		fs.mkdirSync(path.dirname(this.statePath), { recursive: true });
+
 		fs.writeFileSync(
 			this.statePath,
 			[...this.set.values()].map((name) => `${name}\n`).join(""),
 		);
 	}
+
 	get size(): number {
 		return this.set.size;
 	}
+
 	has(name: string): boolean {
 		return this.set.has(name);
 	}
+
 	add(name: string): void {
 		this.set.add(name);
+
 		fs.appendFileSync(this.statePath, `${name}\n`);
 	}
 	[Symbol.iterator](): IterableIterator<string> {
@@ -702,6 +850,7 @@ async function requestAZDOAPI<T>(path: string): Promise<T> {
 		if (!res.ok) {
 			throw new Error(`Unexpected status code: ${res.status}`);
 		}
+
 		return await res.json();
 	} finally {
 		clearTimeout(timeout);
@@ -709,8 +858,10 @@ async function requestAZDOAPI<T>(path: string): Promise<T> {
 }
 interface Artifact {
 	readonly name: string;
+
 	readonly resource: {
 		readonly downloadUrl: string;
+
 		readonly properties: {
 			readonly artifactsize: number;
 		};
@@ -728,7 +879,9 @@ async function getPipelineArtifacts(): Promise<Artifact[]> {
 interface Timeline {
 	readonly records: {
 		readonly name: string;
+
 		readonly type: string;
+
 		readonly state: string;
 	}[];
 }
@@ -752,6 +905,7 @@ async function downloadArtifact(
 		if (!res.ok) {
 			throw new Error(`Unexpected status code: ${res.status}`);
 		}
+
 		await pipeline(
 			Readable.fromWeb(res.body as ReadableStream),
 			fs.createWriteStream(downloadPath),
@@ -772,7 +926,9 @@ async function unzip(
 				if (err) {
 					return reject(err);
 				}
+
 				const result: string[] = [];
+
 				zipfile!.on("entry", (entry) => {
 					if (/\/$/.test(entry.fileName)) {
 						zipfile!.readEntry();
@@ -781,25 +937,33 @@ async function unzip(
 							if (err) {
 								return reject(err);
 							}
+
 							const filePath = path.join(
 								outputPath,
 								entry.fileName,
 							);
+
 							fs.mkdirSync(path.dirname(filePath), {
 								recursive: true,
 							});
 
 							const ostream = fs.createWriteStream(filePath);
+
 							ostream.on("finish", () => {
 								result.push(filePath);
+
 								zipfile!.readEntry();
 							});
+
 							istream?.on("error", (err) => reject(err));
+
 							istream!.pipe(ostream);
 						});
 					}
 				});
+
 				zipfile!.on("close", () => resolve(result));
+
 				zipfile!.readEntry();
 			},
 		);
@@ -807,13 +971,21 @@ async function unzip(
 }
 interface Asset {
 	platform: string;
+
 	type: string;
+
 	url: string;
+
 	mooncakeUrl?: string;
+
 	prssUrl?: string;
+
 	hash: string;
+
 	sha256hash: string;
+
 	size: number;
+
 	supportsFastUpdate?: boolean;
 }
 // Contains all of the logic for mapping details to our actual product names in CosmosDB
@@ -844,6 +1016,7 @@ function getPlatform(
 							);
 					}
 				}
+
 				case "server":
 					return `server-win32-${arch}`;
 
@@ -858,6 +1031,7 @@ function getPlatform(
 						`Unrecognized: ${product} ${os} ${arch} ${type}`,
 					);
 			}
+
 		case "alpine":
 			switch (product) {
 				case "server":
@@ -874,6 +1048,7 @@ function getPlatform(
 						`Unrecognized: ${product} ${os} ${arch} ${type}`,
 					);
 			}
+
 		case "linux":
 			switch (type) {
 				case "snap":
@@ -893,6 +1068,7 @@ function getPlatform(
 							if (arch === "standalone") {
 								return "web-standalone";
 							}
+
 							return isLegacy
 								? `server-linux-legacy-${arch}-web`
 								: `server-linux-${arch}-web`;
@@ -902,6 +1078,7 @@ function getPlatform(
 								`Unrecognized: ${product} ${os} ${arch} ${type}`,
 							);
 					}
+
 				case "deb-package":
 					return `linux-deb-${arch}`;
 
@@ -916,24 +1093,28 @@ function getPlatform(
 						`Unrecognized: ${product} ${os} ${arch} ${type}`,
 					);
 			}
+
 		case "darwin":
 			switch (product) {
 				case "client":
 					if (arch === "x64") {
 						return "darwin";
 					}
+
 					return `darwin-${arch}`;
 
 				case "server":
 					if (arch === "x64") {
 						return "server-darwin";
 					}
+
 					return `server-darwin-${arch}`;
 
 				case "web":
 					if (arch === "x64") {
 						return "server-darwin-web";
 					}
+
 					return `server-darwin-${arch}-web`;
 
 				case "cli":
@@ -944,6 +1125,7 @@ function getPlatform(
 						`Unrecognized: ${product} ${os} ${arch} ${type}`,
 					);
 			}
+
 		default:
 			throw new Error(`Unrecognized: ${product} ${os} ${arch} ${type}`);
 	}
@@ -1038,6 +1220,7 @@ async function processArtifact(artifact: Artifact, filePath: string) {
 		size,
 		supportsFastUpdate: true,
 	};
+
 	log("Creating asset...", JSON.stringify(asset, undefined, 2));
 
 	await retry(async (attempt) => {
@@ -1052,6 +1235,7 @@ async function processArtifact(artifact: Artifact, filePath: string) {
 		});
 
 		const scripts = client.database("builds").container(quality).scripts;
+
 		await scripts
 			.storedProcedure("createAsset")
 			.execute("", [version, asset, true]);
@@ -1068,6 +1252,7 @@ async function processArtifact(artifact: Artifact, filePath: string) {
 async function main() {
 	if (!isMainThread) {
 		const { artifact, artifactFilePath } = workerData;
+
 		await processArtifact(artifact, artifactFilePath);
 
 		return;
@@ -1086,18 +1271,23 @@ async function main() {
 	if (e("VSCODE_BUILD_STAGE_WINDOWS") === "True") {
 		stages.add("Windows");
 	}
+
 	if (e("VSCODE_BUILD_STAGE_LINUX") === "True") {
 		stages.add("Linux");
 	}
+
 	if (e("VSCODE_BUILD_STAGE_LINUX_LEGACY_SERVER") === "True") {
 		stages.add("LinuxLegacyServer");
 	}
+
 	if (e("VSCODE_BUILD_STAGE_ALPINE") === "True") {
 		stages.add("Alpine");
 	}
+
 	if (e("VSCODE_BUILD_STAGE_MACOS") === "True") {
 		stages.add("macOS");
 	}
+
 	if (e("VSCODE_BUILD_STAGE_WEB") === "True") {
 		stages.add("Web");
 	}
@@ -1163,9 +1353,11 @@ async function main() {
 
 			await retry(async (attempt) => {
 				const start = Date.now();
+
 				console.log(
 					`[${artifact.name}] Downloading (attempt ${attempt})...`,
 				);
+
 				await downloadArtifact(artifact, artifactZipPath);
 
 				const archiveSize = fs.statSync(artifactZipPath).size;
@@ -1175,6 +1367,7 @@ async function main() {
 				const downloadSpeedKBS = Math.round(
 					archiveSize / 1024 / downloadDurationS,
 				);
+
 				console.log(
 					`[${artifact.name}] Successfully downloaded after ${Math.floor(downloadDurationS)} seconds(${downloadSpeedKBS} KB/s).`,
 				);
@@ -1195,7 +1388,9 @@ async function main() {
 				const worker = new Worker(__filename, {
 					workerData: { artifact, artifactFilePath },
 				});
+
 				worker.on("error", reject);
+
 				worker.on("exit", (code) => {
 					if (code === 0) {
 						resolve();
@@ -1213,10 +1408,12 @@ async function main() {
 				processing.delete(artifact.name);
 
 				done.add(artifact.name);
+
 				console.log(`\u2705 ${artifact.name} `);
 			});
 
 			operations.push({ name: artifact.name, operation });
+
 			resultPromise = Promise.allSettled(
 				operations.map((o) => o.operation),
 			);
@@ -1263,6 +1460,7 @@ if (require.main === module) {
 		},
 		(err) => {
 			console.error(err);
+
 			process.exit(1);
 		},
 	);

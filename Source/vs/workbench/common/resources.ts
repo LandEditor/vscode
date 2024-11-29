@@ -24,16 +24,21 @@ import { IWorkspaceContextService } from "../../platform/workspace/common/worksp
 
 interface IConfiguredExpression {
 	readonly expression: IExpression;
+
 	readonly hasAbsolutePath: boolean;
 }
 export class ResourceGlobMatcher extends Disposable {
 	private static readonly NO_FOLDER = null;
+
 	private readonly _onExpressionChange = this._register(new Emitter<void>());
+
 	readonly onExpressionChange = this._onExpressionChange.event;
+
 	private readonly mapFolderToParsedExpression = new Map<
 		string | null,
 		ParsedExpression
 	>();
+
 	private readonly mapFolderToConfiguredExpression = new Map<
 		string | null,
 		IConfiguredExpression
@@ -48,9 +53,12 @@ export class ResourceGlobMatcher extends Disposable {
 		private readonly configurationService: IConfigurationService,
 	) {
 		super();
+
 		this.updateExpressions(false);
+
 		this.registerListeners();
 	}
+
 	private registerListeners(): void {
 		this._register(
 			this.configurationService.onDidChangeConfiguration((e) => {
@@ -59,12 +67,14 @@ export class ResourceGlobMatcher extends Disposable {
 				}
 			}),
 		);
+
 		this._register(
 			this.contextService.onDidChangeWorkspaceFolders(() =>
 				this.updateExpressions(true),
 			),
 		);
 	}
+
 	private updateExpressions(fromEvent: boolean): void {
 		let changed = false;
 		// Add expressions per workspaces that got added
@@ -85,10 +95,12 @@ export class ResourceGlobMatcher extends Disposable {
 					)
 				) {
 					changed = true;
+
 					this.mapFolderToParsedExpression.set(
 						folderUriStr,
 						parse(newExpression.expression),
 					);
+
 					this.mapFolderToConfiguredExpression.set(
 						folderUriStr,
 						newExpression,
@@ -97,7 +109,9 @@ export class ResourceGlobMatcher extends Disposable {
 			} else {
 				if (currentExpression) {
 					changed = true;
+
 					this.mapFolderToParsedExpression.delete(folderUriStr);
+
 					this.mapFolderToConfiguredExpression.delete(folderUriStr);
 				}
 			}
@@ -113,9 +127,12 @@ export class ResourceGlobMatcher extends Disposable {
 			if (folder === ResourceGlobMatcher.NO_FOLDER) {
 				continue; // always keep this one
 			}
+
 			if (!foldersMap.has(URI.parse(folder))) {
 				this.mapFolderToParsedExpression.delete(folder);
+
 				this.mapFolderToConfiguredExpression.delete(folder);
+
 				changed = true;
 			}
 		}
@@ -136,10 +153,12 @@ export class ResourceGlobMatcher extends Disposable {
 				)
 			) {
 				changed = true;
+
 				this.mapFolderToParsedExpression.set(
 					ResourceGlobMatcher.NO_FOLDER,
 					parse(globalNewExpression.expression),
 				);
+
 				this.mapFolderToConfiguredExpression.set(
 					ResourceGlobMatcher.NO_FOLDER,
 					globalNewExpression,
@@ -148,18 +167,22 @@ export class ResourceGlobMatcher extends Disposable {
 		} else {
 			if (globalCurrentExpression) {
 				changed = true;
+
 				this.mapFolderToParsedExpression.delete(
 					ResourceGlobMatcher.NO_FOLDER,
 				);
+
 				this.mapFolderToConfiguredExpression.delete(
 					ResourceGlobMatcher.NO_FOLDER,
 				);
 			}
 		}
+
 		if (fromEvent && changed) {
 			this._onExpressionChange.fire();
 		}
 	}
+
 	private doGetExpression(
 		resource: URI | undefined,
 	): IConfiguredExpression | undefined {
@@ -168,11 +191,13 @@ export class ResourceGlobMatcher extends Disposable {
 		if (!expression) {
 			return undefined;
 		}
+
 		const keys = Object.keys(expression);
 
 		if (keys.length === 0) {
 			return undefined;
 		}
+
 		let hasAbsolutePath = false;
 		// Check the expression for absolute paths/globs
 		// and specifically for Windows, make sure the
@@ -185,6 +210,7 @@ export class ResourceGlobMatcher extends Disposable {
 			if (!hasAbsolutePath) {
 				hasAbsolutePath = isAbsolute(key);
 			}
+
 			let massagedKey = key;
 
 			const driveLetter = getDriveLetter(
@@ -199,17 +225,21 @@ export class ResourceGlobMatcher extends Disposable {
 					massagedKey = `${driveLetterLower}${massagedKey.substring(1)}`;
 				}
 			}
+
 			massagedExpression[massagedKey] = expression[key];
 		}
+
 		return {
 			expression: massagedExpression,
 			hasAbsolutePath,
 		};
 	}
+
 	matches(resource: URI, hasSibling?: (name: string) => boolean): boolean {
 		if (this.mapFolderToParsedExpression.size === 0) {
 			return false; // return early: no expression for this matcher
 		}
+
 		const folder = this.contextService.getWorkspaceFolder(resource);
 
 		let expressionForFolder: ParsedExpression | undefined;
@@ -223,17 +253,20 @@ export class ResourceGlobMatcher extends Disposable {
 			expressionForFolder = this.mapFolderToParsedExpression.get(
 				folder.uri.toString(),
 			);
+
 			expressionConfigForFolder =
 				this.mapFolderToConfiguredExpression.get(folder.uri.toString());
 		} else {
 			expressionForFolder = this.mapFolderToParsedExpression.get(
 				ResourceGlobMatcher.NO_FOLDER,
 			);
+
 			expressionConfigForFolder =
 				this.mapFolderToConfiguredExpression.get(
 					ResourceGlobMatcher.NO_FOLDER,
 				);
 		}
+
 		if (!expressionForFolder) {
 			return false; // return early: no expression for this resource
 		}
@@ -248,6 +281,7 @@ export class ResourceGlobMatcher extends Disposable {
 		} else {
 			resourcePathToMatch = this.uriToPath(resource);
 		}
+
 		if (
 			typeof resourcePathToMatch === "string" &&
 			!!expressionForFolder(resourcePathToMatch, undefined, hasSibling)
@@ -267,12 +301,15 @@ export class ResourceGlobMatcher extends Disposable {
 				hasSibling,
 			);
 		}
+
 		return false;
 	}
+
 	private uriToPath(uri: URI): string {
 		if (uri.scheme === Schemas.file) {
 			return uri.fsPath;
 		}
+
 		return uri.path;
 	}
 }

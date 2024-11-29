@@ -23,6 +23,7 @@ export class Logger {
 				: (message: string) => {
 						postMessage({ type: "log", body: message });
 					};
+
 		this.tsLogger = {
 			close: () => {},
 			hasLevel: (level) =>
@@ -36,6 +37,7 @@ export class Logger {
 			getLogFileName: () => undefined,
 		};
 	}
+
 	log(level: LogLevel, message: string, data?: any) {
 		if (this.tsLogger.hasLevel(level)) {
 			this.tsLogger.info(
@@ -43,9 +45,11 @@ export class Logger {
 			);
 		}
 	}
+
 	logNormal(message: string, data?: any) {
 		this.log(LogLevel.normal, message, data);
 	}
+
 	logVerbose(message: string, data?: any) {
 		this.log(LogLevel.verbose, message, data);
 	}

@@ -17,18 +17,28 @@ import * as ext from "./extensions";
 
 export interface IExtensionDefinition {
 	name: string;
+
 	version: string;
+
 	sha256: string;
+
 	repo: string;
+
 	platforms?: string[];
+
 	metadata: {
 		id: string;
+
 		publisherId: {
 			publisherId: string;
+
 			publisherName: string;
+
 			displayName: string;
+
 			flags: string;
 		};
+
 		publisherDisplayName: string;
 	};
 }
@@ -68,6 +78,7 @@ function isUpToDate(extension: IExtensionDefinition): boolean {
 	if (!fs.existsSync(packagePath)) {
 		return false;
 	}
+
 	const packageContents = fs.readFileSync(packagePath, { encoding: "utf8" });
 
 	try {
@@ -102,6 +113,7 @@ export function getExtensionStream(extension: IExtensionDefinition) {
 				rename((p) => (p.dirname = `${extension.name}/${p.dirname}`)),
 			);
 	}
+
 	return getExtensionDownloadStream(extension);
 }
 function syncMarketplaceExtension(extension: IExtensionDefinition): Stream {
@@ -120,6 +132,7 @@ function syncMarketplaceExtension(extension: IExtensionDefinition): Stream {
 
 		return es.readArray([]);
 	}
+
 	rimraf.sync(getExtensionPath(extension));
 
 	return getExtensionDownloadStream(extension)
@@ -143,6 +156,7 @@ function syncExtension(
 			return es.readArray([]);
 		}
 	}
+
 	switch (controlState) {
 		case "disabled":
 			log(ansiColors.blue("[disabled]"), ansiColors.gray(extension.name));
@@ -172,6 +186,7 @@ function syncExtension(
 
 				return es.readArray([]);
 			}
+
 			log(
 				ansiColors.blue("[local]"),
 				`${extension.name}: ${ansiColors.cyan(controlState)}`,
@@ -193,10 +208,12 @@ function readControlFile(): IControlFile {
 }
 function writeControlFile(control: IControlFile): void {
 	fs.mkdirSync(path.dirname(controlFilePath), { recursive: true });
+
 	fs.writeFileSync(controlFilePath, JSON.stringify(control, null, 2));
 }
 export function getBuiltInExtensions(): Promise<void> {
 	log("Synchronizing built-in extensions...");
+
 	log(
 		`You can manage built-in extensions with the ${ansiColors.cyan("--builtin")} flag`,
 	);
@@ -207,9 +224,12 @@ export function getBuiltInExtensions(): Promise<void> {
 
 	for (const extension of [...builtInExtensions, ...webBuiltInExtensions]) {
 		const controlState = control[extension.name] || "marketplace";
+
 		control[extension.name] = controlState;
+
 		streams.push(syncExtension(extension, controlState));
 	}
+
 	writeControlFile(control);
 
 	return new Promise((resolve, reject) => {
@@ -221,6 +241,7 @@ if (require.main === module) {
 		.then(() => process.exit(0))
 		.catch((err) => {
 			console.error(err);
+
 			process.exit(1);
 		});
 }

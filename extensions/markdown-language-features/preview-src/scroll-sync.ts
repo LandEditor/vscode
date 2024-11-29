@@ -18,6 +18,7 @@ export class CodeLineElement {
 			getParentsWithTagName<HTMLDetailsElement>(element, "DETAILS"),
 		);
 	}
+
 	get isVisible(): boolean {
 		return !this._detailParentElements.some((x) => !x.open);
 	}
@@ -31,6 +32,7 @@ const getCodeLineElements = (() => {
 	return (documentVersion: number) => {
 		if (!cachedElements || documentVersion !== cachedVersion) {
 			cachedVersion = documentVersion;
+
 			cachedElements = [new CodeLineElement(document.body, -1)];
 
 			for (const element of document.getElementsByClassName(
@@ -39,11 +41,13 @@ const getCodeLineElements = (() => {
 				if (!(element instanceof HTMLElement)) {
 					continue;
 				}
+
 				const line = +element.getAttribute("data-line")!;
 
 				if (isNaN(line)) {
 					continue;
 				}
+
 				if (
 					element.tagName === "CODE" &&
 					element.parentElement &&
@@ -68,6 +72,7 @@ const getCodeLineElements = (() => {
 				}
 			}
 		}
+
 		return cachedElements;
 	};
 })();
@@ -82,6 +87,7 @@ export function getElementsForSourceLine(
 	documentVersion: number,
 ): {
 	previous: CodeLineElement;
+
 	next?: CodeLineElement;
 } {
 	const lineNumber = Math.floor(targetLine);
@@ -96,8 +102,10 @@ export function getElementsForSourceLine(
 		} else if (entry.line > lineNumber) {
 			return { previous, next: entry };
 		}
+
 		previous = entry;
 	}
+
 	return { previous };
 }
 /**
@@ -108,6 +116,7 @@ export function getLineElementsAtPageOffset(
 	documentVersion: number,
 ): {
 	previous: CodeLineElement;
+
 	next?: CodeLineElement;
 } {
 	const lines = getCodeLineElements(documentVersion).filter(
@@ -131,6 +140,7 @@ export function getLineElementsAtPageOffset(
 			lo = mid;
 		}
 	}
+
 	const hiElement = lines[hi];
 
 	const hiBounds = getElementBounds(hiElement);
@@ -140,6 +150,7 @@ export function getLineElementsAtPageOffset(
 
 		return { previous: loElement, next: hiElement };
 	}
+
 	if (
 		hi > 1 &&
 		hi < lines.length &&
@@ -147,10 +158,12 @@ export function getLineElementsAtPageOffset(
 	) {
 		return { previous: hiElement, next: lines[hi + 1] };
 	}
+
 	return { previous: hiElement };
 }
 function getElementBounds({ element }: CodeLineElement): {
 	top: number;
+
 	height: number;
 } {
 	const myBounds = element.getBoundingClientRect();
@@ -168,6 +181,7 @@ function getElementBounds({ element }: CodeLineElement): {
 			height: height,
 		};
 	}
+
 	return myBounds;
 }
 /**
@@ -181,16 +195,19 @@ export function scrollToRevealSourceLine(
 	if (!settingsManager.settings?.scrollPreviewWithEditor) {
 		return;
 	}
+
 	if (line <= 0) {
 		window.scroll(window.scrollX, 0);
 
 		return;
 	}
+
 	const { previous, next } = getElementsForSourceLine(line, documentVersion);
 
 	if (!previous) {
 		return;
 	}
+
 	let scrollTo = 0;
 
 	const rect = getElementBounds(previous);
@@ -206,12 +223,16 @@ export function scrollToRevealSourceLine(
 
 		const betweenHeight =
 			next.element.getBoundingClientRect().top - previousEnd;
+
 		scrollTo = previousEnd + betweenProgress * betweenHeight;
 	} else {
 		const progressInElement = line - Math.floor(line);
+
 		scrollTo = previousTop + rect.height * progressInElement;
 	}
+
 	scrollTo = Math.abs(scrollTo) < 1 ? Math.sign(scrollTo) : scrollTo;
+
 	window.scroll(window.scrollX, Math.max(1, window.scrollY + scrollTo));
 }
 export function getEditorLineNumberForPageOffset(
@@ -227,6 +248,7 @@ export function getEditorLineNumberForPageOffset(
 		if (previous.line < 0) {
 			return 0;
 		}
+
 		const previousBounds = getElementBounds(previous);
 
 		const offsetFromPrevious = offset - window.scrollY - previousBounds.top;
@@ -247,6 +269,7 @@ export function getEditorLineNumberForPageOffset(
 			return previous.line + progressWithinElement;
 		}
 	}
+
 	return null;
 }
 /**
@@ -266,7 +289,9 @@ function* getParentsWithTagName<T extends HTMLElement>(
 ): Iterable<T> {
 	for (
 		let parent = element.parentElement;
+
 		parent;
+
 		parent = parent.parentElement
 	) {
 		if (parent.tagName === tagName) {

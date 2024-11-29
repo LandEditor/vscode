@@ -34,11 +34,13 @@ export function activate(context: vscode.ExtensionContext) {
 	const connectionSlowedDownEvent = new vscode.EventEmitter<boolean>();
 
 	const slowedDownConnections = new Set<Function>();
+
 	connectionSlowedDownEvent.event((slowed) => {
 		if (!slowed) {
 			for (const cb of slowedDownConnections) {
 				cb();
 			}
+
 			slowedDownConnections.clear();
 		}
 	});
@@ -69,24 +71,30 @@ export function activate(context: vscode.ExtensionContext) {
 				: [],
 		};
 	}
+
 	function maybeSlowdown(): Promise<void> | void {
 		if (connectionSlowedDown) {
 			return new Promise((resolve) => {
 				const handle = setTimeout(() => {
 					resolve();
+
 					slowedDownConnections.delete(resolve);
 				}, SLOWED_DOWN_CONNECTION_DELAY);
+
 				slowedDownConnections.add(() => {
 					resolve();
+
 					clearTimeout(handle);
 				});
 			});
 		}
 	}
+
 	function doResolve(
 		authority: string,
 		progress: vscode.Progress<{
 			message?: string;
+
 			increment?: number;
 		}>,
 	): Promise<vscode.ResolverResult> {
@@ -95,11 +103,13 @@ export function activate(context: vscode.ExtensionContext) {
 				"Not available right now",
 			);
 		}
+
 		const connectionToken = String(crypto.randomInt(0xffffffffff));
 		// eslint-disable-next-line no-async-promise-executor
 		const serverPromise = new Promise<vscode.ResolvedAuthority>(
 			async (res, rej) => {
 				progress.report({ message: "Starting Test Resolver" });
+
 				outputChannel =
 					vscode.window.createOutputChannel("TestResolver");
 
@@ -110,6 +120,7 @@ export function activate(context: vscode.ExtensionContext) {
 
 					if (!isResolved) {
 						isResolved = true;
+
 						outputChannel.show();
 
 						const result = await vscode.window.showErrorMessage(
@@ -121,6 +132,7 @@ export function activate(context: vscode.ExtensionContext) {
 						if (result) {
 							await result.execute();
 						}
+
 						rej(
 							vscode.RemoteAuthorityResolverError.NotAvailable(
 								message,
@@ -129,6 +141,7 @@ export function activate(context: vscode.ExtensionContext) {
 						);
 					}
 				}
+
 				let lastProgressLine = "";
 
 				function processOutput(output: string) {
@@ -144,6 +157,7 @@ export function activate(context: vscode.ExtensionContext) {
 
 							if (match) {
 								isResolved = true;
+
 								res(
 									new vscode.ResolvedAuthority(
 										"127.0.0.1",
@@ -152,6 +166,7 @@ export function activate(context: vscode.ExtensionContext) {
 									),
 								); // success!
 							}
+
 							lastProgressLine = "";
 						} else if (chr === CharCode.Backspace) {
 							lastProgressLine = lastProgressLine.substr(
@@ -163,10 +178,12 @@ export function activate(context: vscode.ExtensionContext) {
 						}
 					}
 				}
+
 				const delay = getConfiguration("startupDelay");
 
 				if (typeof delay === "number") {
 					let remaining = Math.ceil(delay);
+
 					outputChannel.append(
 						`Delaying startup by ${remaining} seconds (configured by "testresolver.startupDelay").`,
 					);
@@ -175,10 +192,13 @@ export function activate(context: vscode.ExtensionContext) {
 						progress.report({
 							message: `Delayed resolving: Remaining ${remaining}s`,
 						});
+
 						await sleep(1000);
+
 						remaining--;
 					}
 				}
+
 				if (getConfiguration("startupError") === true) {
 					processError(
 						'Test Resolver failed for testing purposes (configured by "testresolver.startupError").',
@@ -186,6 +206,7 @@ export function activate(context: vscode.ExtensionContext) {
 
 					return;
 				}
+
 				const {
 					updateUrl,
 					commit,
@@ -217,15 +238,19 @@ export function activate(context: vscode.ExtensionContext) {
 				if (logsDir) {
 					commandArgs.push("--logsPath", logsDir);
 				}
+
 				const logLevel = process.env["TESTRESOLVER_LOG_LEVEL"];
 
 				if (logLevel) {
 					commandArgs.push("--log", logLevel);
 				}
+
 				outputChannel.appendLine(
 					`Using data folder at ${remoteDataDir}`,
 				);
+
 				commandArgs.push("--server-data-dir", remoteDataDir);
+
 				commandArgs.push("--connection-token", connectionToken);
 
 				if (!commit) {
@@ -244,11 +269,13 @@ export function activate(context: vscode.ExtensionContext) {
 						"scripts",
 						serverCommand,
 					);
+
 					outputChannel.appendLine(
 						`Launching server: "${serverCommandPath}" ${commandArgs.join(" ")}`,
 					);
 
 					const shell = process.platform === "win32";
+
 					extHostProcess = cp.spawn(serverCommandPath, commandArgs, {
 						env,
 						cwd: vscodePath,
@@ -263,16 +290,20 @@ export function activate(context: vscode.ExtensionContext) {
 							"--install-builtin-extension",
 							extensionToInstall,
 						);
+
 						commandArgs.push("--start-server");
 					}
+
 					const serverCommand = `${serverApplicationName}${process.platform === "win32" ? ".cmd" : ""}`;
 
 					let serverLocation = env["VSCODE_REMOTE_SERVER_PATH"]; // support environment variable to specify location of server on disk
 					if (!serverLocation) {
 						const serverBin = path.join(remoteDataDir, "bin");
+
 						progress.report({
 							message: "Installing VSCode Server",
 						});
+
 						serverLocation = await downloadAndUnzipVSCodeServer(
 							updateUrl,
 							commit,
@@ -281,36 +312,46 @@ export function activate(context: vscode.ExtensionContext) {
 							(m) => outputChannel.appendLine(m),
 						);
 					}
+
 					outputChannel.appendLine(
 						`Using server build at ${serverLocation}`,
 					);
+
 					outputChannel.appendLine(
 						`Server arguments ${commandArgs.join(" ")}`,
 					);
 
 					const shell = process.platform === "win32";
+
 					extHostProcess = cp.spawn(
 						path.join(serverLocation, "bin", serverCommand),
 						commandArgs,
 						{ env, cwd: serverLocation, shell },
 					);
 				}
+
 				extHostProcess.stdout!.on("data", (data: Buffer) =>
 					processOutput(data.toString()),
 				);
+
 				extHostProcess.stderr!.on("data", (data: Buffer) =>
 					processOutput(data.toString()),
 				);
+
 				extHostProcess.on("error", (error: Error) => {
 					processError(`server failed with error:\n${error.message}`);
+
 					extHostProcess = undefined;
 				});
+
 				extHostProcess.on("close", (code: number) => {
 					processError(
 						`server closed unexpectedly.\nError code: ${code}`,
 					);
+
 					extHostProcess = undefined;
 				});
+
 				context.subscriptions.push({
 					dispose: () => {
 						if (extHostProcess) {
@@ -343,11 +384,13 @@ export function activate(context: vscode.ExtensionContext) {
 							>();
 
 							const endEmitter = new vscode.EventEmitter<void>();
+
 							await new Promise((res, rej) => {
 								remoteSocket
 									.on("data", (d) => dataEmitter.fire(d))
 									.on("error", (err) => {
 										rej();
+
 										closeEmitter.fire(err);
 									})
 									.on("close", () => endEmitter.fire())
@@ -365,6 +408,7 @@ export function activate(context: vscode.ExtensionContext) {
 						}, connectionToken),
 					);
 				}
+
 				return new Promise<vscode.ResolvedAuthority>((res, _rej) => {
 					const proxyServer = net.createServer((proxySocket) => {
 						outputChannel.appendLine(`Proxy connection accepted`);
@@ -385,6 +429,7 @@ export function activate(context: vscode.ExtensionContext) {
 								outputChannel.appendLine(
 									`Connection state: ${newIsDisconnected ? "open" : "paused"}`,
 								);
+
 								isDisconnected = newIsDisconnected;
 
 								if (!isDisconnected) {
@@ -395,6 +440,7 @@ export function activate(context: vscode.ExtensionContext) {
 									if (remoteSocket.isPaused() && localReady) {
 										remoteSocket.resume();
 									}
+
 									if (proxySocket.isPaused() && remoteReady) {
 										proxySocket.resume();
 									}
@@ -406,32 +452,40 @@ export function activate(context: vscode.ExtensionContext) {
 									if (!remoteSocket.isPaused()) {
 										remoteSocket.pause();
 									}
+
 									if (!proxySocket.isPaused()) {
 										proxySocket.pause();
 									}
 								}
 							}
 						};
+
 						connectionPausedEvent.event((_) =>
 							handleConnectionPause(),
 						);
+
 						handleConnectionPause();
+
 						proxySocket.on("data", async (data) => {
 							await maybeSlowdown();
+
 							remoteReady = remoteSocket.write(data);
 
 							if (!remoteReady) {
 								proxySocket.pause();
 							}
 						});
+
 						remoteSocket.on("data", async (data) => {
 							await maybeSlowdown();
+
 							localReady = proxySocket.write(data);
 
 							if (!localReady) {
 								remoteSocket.pause();
 							}
 						});
+
 						proxySocket.on("drain", () => {
 							localReady = true;
 
@@ -439,6 +493,7 @@ export function activate(context: vscode.ExtensionContext) {
 								remoteSocket.resume();
 							}
 						});
+
 						remoteSocket.on("drain", () => {
 							remoteReady = true;
 
@@ -446,31 +501,40 @@ export function activate(context: vscode.ExtensionContext) {
 								proxySocket.resume();
 							}
 						});
+
 						proxySocket.on("close", () => {
 							outputChannel.appendLine(
 								`Proxy socket closed, closing remote socket.`,
 							);
+
 							remoteSocket.end();
 						});
+
 						remoteSocket.on("close", () => {
 							outputChannel.appendLine(
 								`Remote socket closed, closing proxy socket.`,
 							);
+
 							proxySocket.end();
 						});
+
 						context.subscriptions.push({
 							dispose: () => {
 								proxySocket.end();
+
 								remoteSocket.end();
 							},
 						});
 					});
+
 					proxyServer.listen(0, "127.0.0.1", () => {
 						const port = (<net.AddressInfo>proxyServer.address())
 							.port;
+
 						outputChannel.appendLine(
 							`Going through proxy at port ${port}`,
 						);
+
 						res(
 							new vscode.ResolvedAuthority(
 								"127.0.0.1",
@@ -479,6 +543,7 @@ export function activate(context: vscode.ExtensionContext) {
 							),
 						);
 					});
+
 					context.subscriptions.push({
 						dispose: () => {
 							proxyServer.close();
@@ -488,6 +553,7 @@ export function activate(context: vscode.ExtensionContext) {
 			},
 		);
 	}
+
 	const authorityResolverDisposable =
 		vscode.workspace.registerRemoteAuthorityResolver("test", {
 			async getCanonicalURI(uri: vscode.Uri): Promise<vscode.Uri> {
@@ -502,6 +568,7 @@ export function activate(context: vscode.ExtensionContext) {
 					},
 					async (progress) => {
 						const rr = await doResolve(_authority, progress);
+
 						rr.tunnelFeatures = getTunnelFeatures();
 
 						return rr;
@@ -511,7 +578,9 @@ export function activate(context: vscode.ExtensionContext) {
 			tunnelFactory,
 			showCandidatePort,
 		});
+
 	context.subscriptions.push(authorityResolverDisposable);
+
 	context.subscriptions.push(
 		vscode.commands.registerCommand("vscode-testresolver.newWindow", () => {
 			return vscode.commands.executeCommand("vscode.newWindow", {
@@ -519,6 +588,7 @@ export function activate(context: vscode.ExtensionContext) {
 			});
 		}),
 	);
+
 	context.subscriptions.push(
 		vscode.commands.registerCommand(
 			"vscode-testresolver.currentWindow",
@@ -530,6 +600,7 @@ export function activate(context: vscode.ExtensionContext) {
 			},
 		),
 	);
+
 	context.subscriptions.push(
 		vscode.commands.registerCommand(
 			"vscode-testresolver.currentWindowManaged",
@@ -541,6 +612,7 @@ export function activate(context: vscode.ExtensionContext) {
 			},
 		),
 	);
+
 	context.subscriptions.push(
 		vscode.commands.registerCommand(
 			"vscode-testresolver.newWindowWithError",
@@ -551,6 +623,7 @@ export function activate(context: vscode.ExtensionContext) {
 			},
 		),
 	);
+
 	context.subscriptions.push(
 		vscode.commands.registerCommand(
 			"vscode-testresolver.killServerAndTriggerHandledError",
@@ -560,6 +633,7 @@ export function activate(context: vscode.ExtensionContext) {
 				if (extHostProcess) {
 					terminateProcess(extHostProcess, context.extensionPath);
 				}
+
 				vscode.workspace.registerRemoteAuthorityResolver("test", {
 					async resolve(
 						_authority: string,
@@ -582,6 +656,7 @@ export function activate(context: vscode.ExtensionContext) {
 			},
 		),
 	);
+
 	context.subscriptions.push(
 		vscode.commands.registerCommand("vscode-testresolver.showLog", () => {
 			if (outputChannel) {
@@ -593,22 +668,29 @@ export function activate(context: vscode.ExtensionContext) {
 	const pauseStatusBarEntry = vscode.window.createStatusBarItem(
 		vscode.StatusBarAlignment.Left,
 	);
+
 	pauseStatusBarEntry.text = "Remote connection paused. Click to undo";
+
 	pauseStatusBarEntry.command = "vscode-testresolver.toggleConnectionPause";
+
 	pauseStatusBarEntry.backgroundColor = new vscode.ThemeColor(
 		"statusBarItem.errorBackground",
 	);
+
 	context.subscriptions.push(
 		vscode.commands.registerCommand(
 			"vscode-testresolver.toggleConnectionPause",
 			() => {
 				if (!connectionPaused) {
 					connectionPaused = true;
+
 					pauseStatusBarEntry.show();
 				} else {
 					connectionPaused = false;
+
 					pauseStatusBarEntry.hide();
 				}
+
 				connectionPausedEvent.fire(connectionPaused);
 			},
 		),
@@ -617,28 +699,36 @@ export function activate(context: vscode.ExtensionContext) {
 	const slowdownStatusBarEntry = vscode.window.createStatusBarItem(
 		vscode.StatusBarAlignment.Left,
 	);
+
 	slowdownStatusBarEntry.text =
 		"Remote connection slowed down. Click to undo";
+
 	slowdownStatusBarEntry.command =
 		"vscode-testresolver.toggleConnectionSlowdown";
+
 	slowdownStatusBarEntry.backgroundColor = new vscode.ThemeColor(
 		"statusBarItem.errorBackground",
 	);
+
 	context.subscriptions.push(
 		vscode.commands.registerCommand(
 			"vscode-testresolver.toggleConnectionSlowdown",
 			() => {
 				if (!connectionSlowedDown) {
 					connectionSlowedDown = true;
+
 					slowdownStatusBarEntry.show();
 				} else {
 					connectionSlowedDown = false;
+
 					slowdownStatusBarEntry.hide();
 				}
+
 				connectionSlowedDownEvent.fire(connectionSlowedDown);
 			},
 		),
 	);
+
 	context.subscriptions.push(
 		vscode.commands.registerCommand(
 			"vscode-testresolver.openTunnel",
@@ -654,6 +744,7 @@ export function activate(context: vscode.ExtensionContext) {
 
 				if (result) {
 					const port = Number.parseInt(result);
+
 					vscode.workspace.openTunnel({
 						remoteAddress: {
 							host: "127.0.0.1",
@@ -665,6 +756,7 @@ export function activate(context: vscode.ExtensionContext) {
 			},
 		),
 	);
+
 	context.subscriptions.push(
 		vscode.commands.registerCommand(
 			"vscode-testresolver.startRemoteServer",
@@ -684,6 +776,7 @@ export function activate(context: vscode.ExtensionContext) {
 			},
 		),
 	);
+
 	vscode.commands.executeCommand(
 		"setContext",
 		"forwardedPortsViewEnabled",
@@ -700,6 +793,7 @@ function getActions(): ActionItem[] {
 		vscode.workspace.textDocuments.some((d) => d.isDirty) ||
 		(vscode.workspace.workspaceFile &&
 			vscode.workspace.workspaceFile.scheme === "untitled");
+
 	actions.push({
 		title: "Retry",
 		execute: async () => {
@@ -720,6 +814,7 @@ function getActions(): ActionItem[] {
 			},
 		});
 	}
+
 	actions.push({
 		title: "Ignore",
 		isCloseAffordance: true,
@@ -732,10 +827,15 @@ function getActions(): ActionItem[] {
 }
 export interface IProductConfiguration {
 	updateUrl: string;
+
 	commit: string;
+
 	quality: string;
+
 	dataFolderName: string;
+
 	serverApplicationName?: string;
+
 	serverDataFolderName?: string;
 }
 function getProductConfiguration(): IProductConfiguration {
@@ -749,6 +849,7 @@ function getNewEnv(): {
 	[x: string]: string | undefined;
 } {
 	const env = { ...process.env };
+
 	delete env["ELECTRON_RUN_AS_NODE"];
 
 	return env;
@@ -785,10 +886,12 @@ async function tunnelFactory(
 			"Ok",
 		);
 	}
+
 	return createTunnelService();
 
 	function newTunnel(localAddress: {
 		host: string;
+
 		port: number;
 	}): vscode.Tunnel {
 		const onDidDispose: vscode.EventEmitter<void> =
@@ -809,11 +912,13 @@ async function tunnelFactory(
 			dispose: () => {
 				if (!isDisposed) {
 					isDisposed = true;
+
 					onDidDispose.fire();
 				}
 			},
 		};
 	}
+
 	function createTunnelService(): Promise<vscode.Tunnel> {
 		return new Promise<vscode.Tunnel>((res, _rej) => {
 			const proxyServer = net.createServer((proxySocket) => {
@@ -821,7 +926,9 @@ async function tunnelFactory(
 					host: tunnelOptions.remoteAddress.host,
 					port: tunnelOptions.remoteAddress.port,
 				});
+
 				remoteSocket.pipe(proxySocket);
+
 				proxySocket.pipe(remoteSocket);
 			});
 
@@ -835,6 +942,7 @@ async function tunnelFactory(
 			} else {
 				localPort = tunnelOptions.remoteAddress.port;
 			}
+
 			if (localPort === tunnelOptions.remoteAddress.port) {
 				localPort += 1;
 			}
@@ -842,8 +950,10 @@ async function tunnelFactory(
 			if (localPort < 1024 && process.platform !== "win32") {
 				localPort = 0;
 			}
+
 			proxyServer.listen(localPort, "127.0.0.1", () => {
 				const localPort = (<net.AddressInfo>proxyServer.address()).port;
+
 				outputChannel.appendLine(
 					`New test resolver tunnel service: Remote ${tunnelOptions.remoteAddress.port} -> local ${localPort}`,
 				);
@@ -852,7 +962,9 @@ async function tunnelFactory(
 					host: "127.0.0.1",
 					port: localPort,
 				});
+
 				tunnel.onDidDispose(() => proxyServer.close());
+
 				res(tunnel);
 			});
 		});
@@ -861,13 +973,18 @@ async function tunnelFactory(
 function runHTTPTestServer(port: number): vscode.Disposable {
 	const server = http.createServer((_req, res) => {
 		res.writeHead(200);
+
 		res.end(`Hello, World from test server running on port ${port}!`);
 	});
+
 	remoteServers.push(port);
+
 	server.listen(port, "127.0.0.1");
 
 	const message = `Opened HTTP server on http://127.0.0.1:${port}`;
+
 	console.log(message);
+
 	outputChannel.appendLine(message);
 
 	return {

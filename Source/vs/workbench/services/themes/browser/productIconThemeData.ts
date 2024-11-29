@@ -45,24 +45,34 @@ export class ProductIconThemeData implements IWorkbenchProductIconTheme {
 	static readonly STORAGE_KEY = "productIconThemeData";
 
 	id: string;
+
 	label: string;
 
 	settingsId: string;
+
 	description?: string;
+
 	isLoaded: boolean;
+
 	location?: URI;
+
 	extensionData?: ExtensionData;
+
 	watch?: boolean;
 
 	iconThemeDocument: ProductIconThemeDocument = {
 		iconDefinitions: new Map(),
 	};
+
 	styleSheetContent?: string;
 
 	private constructor(id: string, label: string, settingsId: string) {
 		this.id = id;
+
 		this.label = label;
+
 		this.settingsId = settingsId;
+
 		this.isLoaded = false;
 	}
 
@@ -97,12 +107,15 @@ export class ProductIconThemeData implements IWorkbenchProductIconTheme {
 		if (!location) {
 			return Promise.resolve(this.styleSheetContent);
 		}
+
 		const warnings: string[] = [];
+
 		this.iconThemeDocument = await _loadProductIconThemeDocument(
 			fileService,
 			location,
 			warnings,
 		);
+
 		this.isLoaded = true;
 
 		if (warnings.length) {
@@ -115,6 +128,7 @@ export class ProductIconThemeData implements IWorkbenchProductIconTheme {
 				),
 			);
 		}
+
 		return this.styleSheetContent;
 	}
 
@@ -132,9 +146,13 @@ export class ProductIconThemeData implements IWorkbenchProductIconTheme {
 		const themeData = new ProductIconThemeData(id, label, settingsId);
 
 		themeData.description = iconTheme.description;
+
 		themeData.location = iconThemeLocation;
+
 		themeData.extensionData = extensionData;
+
 		themeData.watch = iconTheme._watch;
+
 		themeData.isLoaded = false;
 
 		return themeData;
@@ -142,8 +160,11 @@ export class ProductIconThemeData implements IWorkbenchProductIconTheme {
 
 	static createUnloadedTheme(id: string): ProductIconThemeData {
 		const themeData = new ProductIconThemeData(id, "", "__" + id);
+
 		themeData.isLoaded = false;
+
 		themeData.extensionData = undefined;
+
 		themeData.watch = false;
 
 		return themeData;
@@ -161,10 +182,14 @@ export class ProductIconThemeData implements IWorkbenchProductIconTheme {
 					nls.localize("defaultTheme", "Default"),
 					ThemeSettingDefaults.PRODUCT_ICON_THEME,
 				);
+
 			themeData.isLoaded = true;
+
 			themeData.extensionData = undefined;
+
 			themeData.watch = false;
 		}
+
 		return themeData;
 	}
 
@@ -179,6 +204,7 @@ export class ProductIconThemeData implements IWorkbenchProductIconTheme {
 		if (!input) {
 			return undefined;
 		}
+
 		try {
 			const data = JSON.parse(input);
 
@@ -208,6 +234,7 @@ export class ProductIconThemeData implements IWorkbenchProductIconTheme {
 						break;
 				}
 			}
+
 			const { iconDefinitions, iconFontDefinitions } = data;
 
 			if (
@@ -243,10 +270,12 @@ export class ProductIconThemeData implements IWorkbenchProductIconTheme {
 						}
 					}
 				}
+
 				theme.iconThemeDocument = {
 					iconDefinitions: restoredIconDefinitions,
 				};
 			}
+
 			return theme;
 		} catch (e) {
 			return undefined;
@@ -260,6 +289,7 @@ export class ProductIconThemeData implements IWorkbenchProductIconTheme {
 
 		for (const entry of this.iconThemeDocument.iconDefinitions.entries()) {
 			const font = entry[1].font;
+
 			iconDefinitions.push({
 				id: entry[0],
 				fontCharacter: entry[1].fontCharacter,
@@ -272,6 +302,7 @@ export class ProductIconThemeData implements IWorkbenchProductIconTheme {
 				);
 			}
 		}
+
 		const data = JSON.stringify({
 			id: this.id,
 			label: this.label,
@@ -283,6 +314,7 @@ export class ProductIconThemeData implements IWorkbenchProductIconTheme {
 			iconDefinitions,
 			iconFontDefinitions,
 		});
+
 		storageService.store(
 			ProductIconThemeData.STORAGE_KEY,
 			data,
@@ -394,6 +426,7 @@ function _loadProductIconThemeDocument(
 								iconThemeDocumentLocationDirname,
 								s.path,
 							);
+
 							sanitizedSrc.push({
 								location: iconFontLocation,
 								format: s.format,
@@ -409,6 +442,7 @@ function _loadProductIconThemeDocument(
 						}
 					}
 				}
+
 				if (sanitizedSrc.length) {
 					sanitizedFonts.set(fontId, {
 						weight: fontWeight,
@@ -455,6 +489,7 @@ function _loadProductIconThemeDocument(
 						id: `pi-${fontId}`,
 						definition: fontDefinition,
 					};
+
 					iconDefinitions.set(iconId, {
 						fontCharacter: definition.fontCharacter,
 						font,
@@ -478,6 +513,7 @@ function _loadProductIconThemeDocument(
 				);
 			}
 		}
+
 		return { iconDefinitions };
 	});
 }
@@ -508,11 +544,14 @@ function _resolveIconDefinition(
 			return undefined;
 		}
 	}
+
 	if (definition) {
 		return definition;
 	}
+
 	if (!ThemeIcon.isThemeIcon(defaults)) {
 		return defaults;
 	}
+
 	return undefined;
 }

@@ -63,17 +63,21 @@ export class TestCoverageService
 	implements ITestCoverageService
 {
 	declare readonly _serviceBrand: undefined;
+
 	private readonly lastOpenCts = this._register(
 		new MutableDisposable<CancellationTokenSource>(),
 	);
+
 	public readonly selected = observableValue<TestCoverage | undefined>(
 		"testCoverage",
 		undefined,
 	);
+
 	public readonly filterToTest = observableValue<TestId | undefined>(
 		"filterToTest",
 		undefined,
 	);
+
 	public readonly showInline = observableValue("inlineCoverage", false);
 
 	constructor(
@@ -93,6 +97,7 @@ export class TestCoverageService
 			true,
 			configService,
 		);
+
 		this._register(
 			bindContextKey(
 				TestingContextKeys.coverageToolbarEnabled,
@@ -100,6 +105,7 @@ export class TestCoverageService
 				(reader) => toolbarConfig.read(reader),
 			),
 		);
+
 		this._register(
 			bindContextKey(
 				TestingContextKeys.inlineCoverageEnabled,
@@ -107,6 +113,7 @@ export class TestCoverageService
 				(reader) => this.showInline.read(reader),
 			),
 		);
+
 		this._register(
 			bindContextKey(
 				TestingContextKeys.isTestCoverageOpen,
@@ -114,6 +121,7 @@ export class TestCoverageService
 				(reader) => !!this.selected.read(reader),
 			),
 		);
+
 		this._register(
 			bindContextKey(
 				TestingContextKeys.hasPerTestCoverage,
@@ -124,6 +132,7 @@ export class TestCoverageService
 					),
 			),
 		);
+
 		this._register(
 			bindContextKey(
 				TestingContextKeys.isCoverageFilteredToTest,
@@ -131,6 +140,7 @@ export class TestCoverageService
 				(reader) => !!this.filterToTest.read(reader),
 			),
 		);
+
 		this._register(
 			resultService.onResultsChanged((evt) => {
 				if ("completed" in evt) {
@@ -168,9 +178,11 @@ export class TestCoverageService
 		if (!coverage) {
 			return;
 		}
+
 		transaction((tx) => {
 			// todo: may want to preserve this if coverage for that test in the new run?
 			this.filterToTest.set(undefined, tx);
+
 			this.selected.set(coverage, tx);
 		});
 

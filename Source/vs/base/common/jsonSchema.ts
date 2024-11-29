@@ -16,62 +16,101 @@ export interface IJSONSchema {
 	id?: string;
 	$id?: string;
 	$schema?: string;
+
 	type?: JSONSchemaType | JSONSchemaType[];
+
 	title?: string;
 
 	default?: any;
+
 	definitions?: IJSONSchemaMap;
+
 	description?: string;
+
 	properties?: IJSONSchemaMap;
+
 	patternProperties?: IJSONSchemaMap;
+
 	additionalProperties?: boolean | IJSONSchema;
+
 	minProperties?: number;
+
 	maxProperties?: number;
+
 	dependencies?: IJSONSchemaMap | { [prop: string]: string[] };
+
 	items?: IJSONSchema | IJSONSchema[];
+
 	minItems?: number;
+
 	maxItems?: number;
+
 	uniqueItems?: boolean;
+
 	additionalItems?: boolean | IJSONSchema;
+
 	pattern?: string;
+
 	minLength?: number;
+
 	maxLength?: number;
+
 	minimum?: number;
+
 	maximum?: number;
+
 	exclusiveMinimum?: boolean | number;
+
 	exclusiveMaximum?: boolean | number;
+
 	multipleOf?: number;
+
 	required?: string[];
 	$ref?: string;
+
 	anyOf?: IJSONSchema[];
+
 	allOf?: IJSONSchema[];
+
 	oneOf?: IJSONSchema[];
+
 	not?: IJSONSchema;
+
 	enum?: any[];
 
 	format?: string;
 
 	// schema draft 06
 	const?: any;
+
 	contains?: IJSONSchema;
+
 	propertyNames?: IJSONSchema;
+
 	examples?: any[];
 
 	// schema draft 07
 	$comment?: string;
 
 	if?: IJSONSchema;
+
 	then?: IJSONSchema;
 
 	else?: IJSONSchema;
 
 	// schema 2019-09
 	unevaluatedProperties?: boolean | IJSONSchema;
+
 	unevaluatedItems?: boolean | IJSONSchema;
+
 	minContains?: number;
+
 	maxContains?: number;
+
 	deprecated?: boolean;
+
 	dependentRequired?: { [prop: string]: string[] };
+
 	dependentSchemas?: IJSONSchemaMap;
 	$defs?: { [name: string]: IJSONSchema };
 	$anchor?: string;
@@ -87,17 +126,27 @@ export interface IJSONSchema {
 	// VSCode extensions
 
 	defaultSnippets?: IJSONSchemaSnippet[];
+
 	errorMessage?: string;
+
 	patternErrorMessage?: string;
+
 	deprecationMessage?: string;
+
 	markdownDeprecationMessage?: string;
+
 	enumDescriptions?: string[];
+
 	markdownEnumDescriptions?: string[];
+
 	markdownDescription?: string;
 
 	doNotSuggest?: boolean;
+
 	suggestSortText?: string;
+
 	allowComments?: boolean;
+
 	allowTrailingCommas?: boolean;
 }
 
@@ -107,7 +156,9 @@ export interface IJSONSchemaMap {
 
 export interface IJSONSchemaSnippet {
 	label?: string;
+
 	description?: string;
+
 	body?: any; // a object that will be JSON stringified
 	bodyText?: string; // an already stringified JSON object that can contain new lines (\n) and tabs (\t)
 }
@@ -143,6 +194,7 @@ type MapSchemaToType<T> = T extends [infer First, ...infer Rest]
 
 interface Equals {
 	schemas: IJSONSchema[];
+
 	id?: string;
 }
 
@@ -158,28 +210,37 @@ export function getCompressedContent(schema: IJSONSchema): string {
 		if (schema === next) {
 			return true;
 		}
+
 		const val = JSON.stringify(next);
 
 		if (val.length < 30) {
 			// the $ref takes around 25 chars, so we don't save anything
 			return true;
 		}
+
 		const eq = equalsByString.get(val);
 
 		if (!eq) {
 			const newEq = { schemas: [next] };
+
 			equalsByString.set(val, newEq);
+
 			nodeToEquals.set(next, newEq);
 
 			return true;
 		}
+
 		eq.schemas.push(next);
+
 		nodeToEquals.set(next, eq);
+
 		hasDups = true;
 
 		return false;
 	};
+
 	traverseNodes(schema, visitSchemas);
+
 	equalsByString.clear();
 
 	if (!hasDups) {
@@ -203,11 +264,14 @@ export function getCompressedContent(schema: IJSONSchema): string {
 				if (eq && eq.schemas.length > 1) {
 					if (!eq.id) {
 						eq.id = `_${definitions.length}`;
+
 						definitions.push(eq.schemas[0]);
 					}
+
 					return { $ref: `#/${defNodeName}/${eq.id}` };
 				}
 			}
+
 			return value;
 		});
 	}
@@ -222,9 +286,11 @@ export function getCompressedContent(schema: IJSONSchema): string {
 	for (let i = 0; i < definitions.length; i++) {
 		defStrings.push(`"_${i}":${stringify(definitions[i])}`);
 	}
+
 	if (defStrings.length) {
 		return `${str.substring(0, str.length - 1)},"${defNodeName}":{${defStrings.join(",")}}}`;
 	}
+
 	return str;
 }
 
@@ -244,6 +310,7 @@ function traverseNodes(
 	if (!root || typeof root !== "object") {
 		return;
 	}
+
 	const collectEntries = (...entries: (IJSONSchemaRef | undefined)[]) => {
 		for (const entry of entries) {
 			if (isObject(entry)) {
@@ -314,6 +381,7 @@ function traverseNodes(
 				next.unevaluatedItems,
 				next.unevaluatedProperties,
 			);
+
 			collectMapEntries(
 				next.definitions,
 				next.$defs,
@@ -322,14 +390,17 @@ function traverseNodes(
 				<IJSONSchemaMap>next.dependencies,
 				next.dependentSchemas,
 			);
+
 			collectArrayEntries(
 				next.anyOf,
 				next.allOf,
 				next.oneOf,
 				next.prefixItems,
 			);
+
 			collectEntryOrArrayEntries(next.items);
 		}
+
 		next = toWalk.pop();
 	}
 }

@@ -35,8 +35,11 @@ export class CommentsAccessibleView
 	implements IAccessibleViewImplentation
 {
 	readonly priority = 90;
+
 	readonly name = "comment";
+
 	readonly when = CONTEXT_KEY_COMMENT_FOCUSED;
+
 	readonly type = AccessibleViewType.View;
 
 	getProvider(accessor: ServicesAccessor) {
@@ -54,7 +57,9 @@ export class CommentsAccessibleView
 		if (!commentsView || !focusedCommentNode) {
 			return;
 		}
+
 		const menus = this._register(new CommentsMenus(menuService));
+
 		menus.setContextKeyService(contextKeyService);
 
 		return new CommentsAccessibleContentProvider(
@@ -63,6 +68,7 @@ export class CommentsAccessibleView
 			menus,
 		);
 	}
+
 	constructor() {
 		super();
 	}
@@ -72,8 +78,11 @@ export class CommentThreadAccessibleView
 	implements IAccessibleViewImplentation
 {
 	readonly priority = 85;
+
 	readonly name = "commentThread";
+
 	readonly when = CommentContextKeys.commentFocused;
+
 	readonly type = AccessibleViewType.View;
 
 	getProvider(accessor: ServicesAccessor) {
@@ -88,12 +97,14 @@ export class CommentThreadAccessibleView
 		if (!threads) {
 			return;
 		}
+
 		return new CommentsThreadWidgetAccessibleContentProvider(
 			commentService,
 			editorService,
 			uriIdentityService,
 		);
 	}
+
 	constructor() {
 		super();
 	}
@@ -109,9 +120,13 @@ class CommentsAccessibleContentProvider
 	) {
 		super();
 	}
+
 	readonly id = AccessibleViewProviderId.Comments;
+
 	readonly verbositySettingKey = AccessibilityVerbositySettingId.Comments;
+
 	readonly options = { type: AccessibleViewType.View };
+
 	public actions = [
 		...this._menus.getResourceContextActions(this._focusedCommentNode),
 	]
@@ -121,6 +136,7 @@ class CommentsAccessibleContentProvider
 				...action,
 				run: () => {
 					this._commentsView.focus();
+
 					action.run({
 						thread: this._focusedCommentNode.thread,
 						$mid: MarshalledId.CommentThread,
@@ -132,6 +148,7 @@ class CommentsAccessibleContentProvider
 				},
 			};
 		});
+
 	provideContent(): string {
 		const commentNode = this._commentsView.focusedCommentNode;
 
@@ -142,16 +159,20 @@ class CommentsAccessibleContentProvider
 				"Comment tree is focused but no comment is selected",
 			);
 		}
+
 		return content;
 	}
+
 	onClose(): void {
 		this._commentsView.focus();
 	}
+
 	provideNextContent(): string | undefined {
 		this._commentsView.focusNextNode();
 
 		return this.provideContent();
 	}
+
 	providePreviousContent(): string | undefined {
 		this._commentsView.focusPreviousNode();
 
@@ -163,11 +184,15 @@ class CommentsThreadWidgetAccessibleContentProvider
 	implements IAccessibleViewContentProvider
 {
 	readonly id = AccessibleViewProviderId.CommentThread;
+
 	readonly verbositySettingKey = AccessibilityVerbositySettingId.Comments;
+
 	readonly options = { type: AccessibleViewType.View };
+
 	private _activeCommentInfo:
 		| {
 				thread: CommentThread<IRange>;
+
 				comment?: Comment;
 		  }
 		| undefined;
@@ -182,9 +207,11 @@ class CommentsThreadWidgetAccessibleContentProvider
 	) {
 		super();
 	}
+
 	private get activeCommentInfo():
 		| {
 				thread: CommentThread<IRange>;
+
 				comment?: Comment;
 		  }
 		| undefined {
@@ -195,12 +222,15 @@ class CommentsThreadWidgetAccessibleContentProvider
 			this._activeCommentInfo =
 				this._commentService.lastActiveCommentcontroller.activeComment;
 		}
+
 		return this._activeCommentInfo;
 	}
+
 	provideContent(): string {
 		if (!this.activeCommentInfo) {
 			throw new Error("No current comment thread");
 		}
+
 		const comment = this.activeCommentInfo.comment?.body;
 
 		const commentLabel =
@@ -227,10 +257,13 @@ class CommentsThreadWidgetAccessibleContentProvider
 				}
 			}
 		}
+
 		return commentLabel + contentLabel;
 	}
+
 	onClose(): void {
 		const lastComment = this._activeCommentInfo;
+
 		this._activeCommentInfo = undefined;
 
 		if (lastComment) {
@@ -243,6 +276,7 @@ class CommentsThreadWidgetAccessibleContentProvider
 			);
 		}
 	}
+
 	provideNextContent(): string | undefined {
 		const newCommentInfo = findNextCommentInThread(
 			this._activeCommentInfo,
@@ -254,8 +288,10 @@ class CommentsThreadWidgetAccessibleContentProvider
 
 			return this.provideContent();
 		}
+
 		return undefined;
 	}
+
 	providePreviousContent(): string | undefined {
 		const newCommentInfo = findNextCommentInThread(
 			this._activeCommentInfo,
@@ -267,6 +303,7 @@ class CommentsThreadWidgetAccessibleContentProvider
 
 			return this.provideContent();
 		}
+
 		return undefined;
 	}
 }

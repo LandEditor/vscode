@@ -20,14 +20,20 @@ import {
 
 interface ITMGrammarFactoryHost {
 	logTrace(msg: string): void;
+
 	logError(msg: string, err: any): void;
+
 	readFile(resource: URI): Promise<string>;
 }
 export interface ICreateGrammarResult {
 	languageId: string;
+
 	grammar: IGrammar | null;
+
 	initialState: StateStack;
+
 	containsEmbeddedLanguages: boolean;
+
 	sourceExtensionId?: string;
 }
 export const missingTMGrammarErrorMessage =
@@ -35,15 +41,21 @@ export const missingTMGrammarErrorMessage =
 
 export class TMGrammarFactory extends Disposable {
 	private readonly _host: ITMGrammarFactoryHost;
+
 	private readonly _initialState: StateStack;
+
 	private readonly _scopeRegistry: TMScopeRegistry;
+
 	private readonly _injections: {
 		[scopeName: string]: string[];
 	};
+
 	private readonly _injectedEmbeddedLanguages: {
 		[scopeName: string]: IValidEmbeddedLanguagesMap[];
 	};
+
 	private readonly _languageToScope: Map<string, string>;
+
 	private readonly _grammarRegistry: Registry;
 
 	constructor(
@@ -53,12 +65,19 @@ export class TMGrammarFactory extends Disposable {
 		onigLib: Promise<IOnigLib>,
 	) {
 		super();
+
 		this._host = host;
+
 		this._initialState = vscodeTextmate.INITIAL;
+
 		this._scopeRegistry = new TMScopeRegistry();
+
 		this._injections = {};
+
 		this._injectedEmbeddedLanguages = {};
+
 		this._languageToScope = new Map<string, string>();
+
 		this._grammarRegistry = this._register(
 			new vscodeTextmate.Registry({
 				onigLib: onigLib,
@@ -73,6 +92,7 @@ export class TMGrammarFactory extends Disposable {
 
 						return null;
 					}
+
 					const location = grammarDefinition.location;
 
 					try {
@@ -98,11 +118,13 @@ export class TMGrammarFactory extends Disposable {
 
 					for (let i = 1; i <= scopeParts.length; i++) {
 						const subScopeName = scopeParts.slice(0, i).join(".");
+
 						injections = [
 							...injections,
 							...(this._injections[subScopeName] || []),
 						];
 					}
+
 					return injections;
 				},
 			}),
@@ -118,8 +140,10 @@ export class TMGrammarFactory extends Disposable {
 					if (!injections) {
 						this._injections[injectScope] = injections = [];
 					}
+
 					injections.push(validGrammar.scopeName);
 				}
+
 				if (validGrammar.embeddedLanguages) {
 					for (const injectScope of validGrammar.injectTo) {
 						let injectedEmbeddedLanguages =
@@ -129,12 +153,14 @@ export class TMGrammarFactory extends Disposable {
 							this._injectedEmbeddedLanguages[injectScope] =
 								injectedEmbeddedLanguages = [];
 						}
+
 						injectedEmbeddedLanguages.push(
 							validGrammar.embeddedLanguages,
 						);
 					}
 				}
 			}
+
 			if (validGrammar.language) {
 				this._languageToScope.set(
 					validGrammar.language,
@@ -143,15 +169,19 @@ export class TMGrammarFactory extends Disposable {
 			}
 		}
 	}
+
 	public has(languageId: string): boolean {
 		return this._languageToScope.has(languageId);
 	}
+
 	public setTheme(theme: IRawTheme, colorMap: string[]): void {
 		this._grammarRegistry.setTheme(theme, colorMap);
 	}
+
 	public getColorMap(): string[] {
 		return this._grammarRegistry.getColorMap();
 	}
+
 	public async createGrammar(
 		languageId: string,
 		encodedLanguageId: number,
@@ -162,6 +192,7 @@ export class TMGrammarFactory extends Disposable {
 			// No TM grammar defined
 			throw new Error(missingTMGrammarErrorMessage);
 		}
+
 		const grammarDefinition =
 			this._scopeRegistry.getGrammarDefinition(scopeName);
 
@@ -169,6 +200,7 @@ export class TMGrammarFactory extends Disposable {
 			// No TM grammar defined
 			throw new Error(missingTMGrammarErrorMessage);
 		}
+
 		const embeddedLanguages = grammarDefinition.embeddedLanguages;
 
 		if (this._injectedEmbeddedLanguages[scopeName]) {
@@ -181,6 +213,7 @@ export class TMGrammarFactory extends Disposable {
 				}
 			}
 		}
+
 		const containsEmbeddedLanguages =
 			Object.keys(embeddedLanguages).length > 0;
 
@@ -207,8 +240,10 @@ export class TMGrammarFactory extends Disposable {
 				// No TM grammar defined
 				throw new Error(missingTMGrammarErrorMessage);
 			}
+
 			throw err;
 		}
+
 		return {
 			languageId: languageId,
 			grammar: grammar,

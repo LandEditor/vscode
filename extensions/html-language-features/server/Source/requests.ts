@@ -54,6 +54,7 @@ export interface FileStat {
 }
 export interface FileSystemProvider {
 	stat(uri: string): Promise<FileStat>;
+
 	readDirectory(uri: string): Promise<[string, FileType][]>;
 }
 export function getFileSystemProvider(
@@ -71,6 +72,7 @@ export function getFileSystemProvider(
 			if (fileFs && uri.startsWith("file:")) {
 				return fileFs.stat(uri);
 			}
+
 			const res = await connection.sendRequest(
 				FsStatRequest.type,
 				uri.toString(),
@@ -82,6 +84,7 @@ export function getFileSystemProvider(
 			if (fileFs && uri.startsWith("file:")) {
 				return fileFs.readDirectory(uri);
 			}
+
 			return connection.sendRequest(
 				FsReadDirRequest.type,
 				uri.toString(),

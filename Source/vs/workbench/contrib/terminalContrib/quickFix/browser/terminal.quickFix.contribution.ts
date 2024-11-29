@@ -89,6 +89,7 @@ class TerminalQuickFixContribution
 			undefined,
 			this._ctx.instance.capabilities,
 		);
+
 		xterm.raw.loadAddon(this._addon);
 
 		// Hook up listeners
@@ -100,6 +101,7 @@ class TerminalQuickFixContribution
 				),
 			),
 		);
+
 		this.add(
 			this._addon.onDidUpdateQuickFixes((e) => {
 				// Only track the latest command's quick fixes

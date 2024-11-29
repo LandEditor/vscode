@@ -12,6 +12,7 @@ import {
 
 export class FindWidgetSearchHistory implements IHistory<string> {
 	public static readonly FIND_HISTORY_KEY = "workbench.find.history";
+
 	private inMemoryValues: Set<string> = new Set();
 
 	constructor(
@@ -22,6 +23,7 @@ export class FindWidgetSearchHistory implements IHistory<string> {
 
 	delete(t: string): boolean {
 		const result = this.inMemoryValues.delete(t);
+
 		this.save();
 
 		return result;
@@ -29,6 +31,7 @@ export class FindWidgetSearchHistory implements IHistory<string> {
 
 	add(t: string): this {
 		this.inMemoryValues.add(t);
+
 		this.save();
 
 		return this;
@@ -40,6 +43,7 @@ export class FindWidgetSearchHistory implements IHistory<string> {
 
 	clear(): void {
 		this.inMemoryValues.clear();
+
 		this.save();
 	}
 
@@ -52,8 +56,10 @@ export class FindWidgetSearchHistory implements IHistory<string> {
 
 		return this.inMemoryValues.forEach(callbackfn);
 	}
+
 	replace?(t: string[]): void {
 		this.inMemoryValues = new Set(t);
+
 		this.save();
 	}
 
@@ -79,6 +85,7 @@ export class FindWidgetSearchHistory implements IHistory<string> {
 	// Run saves async
 	save(): Promise<void> {
 		const elements: string[] = [];
+
 		this.inMemoryValues.forEach((e) => elements.push(e));
 
 		return new Promise<void>((resolve) => {
@@ -88,6 +95,7 @@ export class FindWidgetSearchHistory implements IHistory<string> {
 				StorageScope.WORKSPACE,
 				StorageTarget.USER,
 			);
+
 			resolve();
 		});
 	}

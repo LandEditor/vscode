@@ -26,17 +26,22 @@ export class PartialCommandDetectionCapability
 	implements IPartialCommandDetectionCapability
 {
 	readonly type = TerminalCapability.PartialCommandDetection;
+
 	private readonly _commands: IMarker[] = [];
 
 	get commands(): readonly IMarker[] {
 		return this._commands;
 	}
+
 	private readonly _onCommandFinished = this.add(new Emitter<IMarker>());
+
 	readonly onCommandFinished = this._onCommandFinished.event;
 
 	constructor(private readonly _terminal: Terminal) {
 		super();
+
 		this.add(this._terminal.onData((e) => this._onData(e)));
+
 		this.add(
 			this._terminal.parser.registerCsiHandler(
 				{ final: "J" },
@@ -53,15 +58,18 @@ export class PartialCommandDetectionCapability
 			),
 		);
 	}
+
 	private _onData(data: string): void {
 		if (data === "\x0d") {
 			this._onEnter();
 		}
 	}
+
 	private _onEnter(): void {
 		if (!this._terminal) {
 			return;
 		}
+
 		if (
 			this._terminal.buffer.active.cursorX >=
 			Constants.MinimumPromptLength
@@ -70,10 +78,12 @@ export class PartialCommandDetectionCapability
 
 			if (marker) {
 				this._commands.push(marker);
+
 				this._onCommandFinished.fire(marker);
 			}
 		}
 	}
+
 	private _clearCommandsInViewport(): void {
 		// Find the number of commands on the tail end of the array that are within the viewport
 		let count = 0;
@@ -82,6 +92,7 @@ export class PartialCommandDetectionCapability
 			if (this._commands[i].line < this._terminal.buffer.active.baseY) {
 				break;
 			}
+
 			count++;
 		}
 		// Remove them

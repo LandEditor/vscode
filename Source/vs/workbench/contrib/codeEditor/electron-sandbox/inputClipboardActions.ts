@@ -18,6 +18,7 @@ if (platform.isMacintosh) {
 		weight: 0,
 		when: undefined,
 	});
+
 	KeybindingsRegistry.registerCommandAndKeybindingRule({
 		id: "execCopy",
 		primary: KeyMod.CtrlCmd | KeyCode.KeyC,
@@ -25,6 +26,7 @@ if (platform.isMacintosh) {
 		weight: 0,
 		when: undefined,
 	});
+
 	KeybindingsRegistry.registerCommandAndKeybindingRule({
 		id: "execPaste",
 		primary: KeyMod.CtrlCmd | KeyCode.KeyV,

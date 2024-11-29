@@ -9,11 +9,13 @@ import { serializeNotebookToString } from "./serializers";
 onmessage = (e) => {
 	const data = e.data as {
 		id: string;
+
 		data: NotebookData;
 	};
 
 	const json = serializeNotebookToString(data.data);
 
 	const bytes = new TextEncoder().encode(json);
+
 	postMessage({ id: data.id, data: bytes });
 };

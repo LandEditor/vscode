@@ -14,16 +14,23 @@ import { ITextModel } from "../../../common/model.js";
 
 export class DragAndDropCommand implements ICommand {
 	private readonly selection: Selection;
+
 	private readonly targetPosition: Position;
+
 	private targetSelection: Selection | null;
+
 	private readonly copy: boolean;
 
 	constructor(selection: Selection, targetPosition: Position, copy: boolean) {
 		this.selection = selection;
+
 		this.targetPosition = targetPosition;
+
 		this.copy = copy;
+
 		this.targetSelection = null;
 	}
+
 	public getEditOperations(
 		model: ITextModel,
 		builder: IEditOperationBuilder,
@@ -33,6 +40,7 @@ export class DragAndDropCommand implements ICommand {
 		if (!this.copy) {
 			builder.addEditOperation(this.selection, null);
 		}
+
 		builder.addEditOperation(
 			new Range(
 				this.targetPosition.lineNumber,
@@ -61,6 +69,7 @@ export class DragAndDropCommand implements ICommand {
 
 			return;
 		}
+
 		if (this.copy) {
 			this.targetSelection = new Selection(
 				this.targetPosition.lineNumber,
@@ -77,6 +86,7 @@ export class DragAndDropCommand implements ICommand {
 
 			return;
 		}
+
 		if (this.targetPosition.lineNumber > this.selection.endLineNumber) {
 			// Drag the selection downwards
 			this.targetSelection = new Selection(
@@ -94,6 +104,7 @@ export class DragAndDropCommand implements ICommand {
 
 			return;
 		}
+
 		if (this.targetPosition.lineNumber < this.selection.endLineNumber) {
 			// Drag the selection upwards
 			this.targetSelection = new Selection(
@@ -144,6 +155,7 @@ export class DragAndDropCommand implements ICommand {
 			);
 		}
 	}
+
 	public computeCursorState(
 		model: ITextModel,
 		helper: ICursorStateComputerData,

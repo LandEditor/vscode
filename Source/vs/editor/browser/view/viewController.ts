@@ -26,16 +26,27 @@ export interface IMouseDispatchData {
 	 * Desired mouse column (e.g. when position.column gets clamped to text length -- clicking after text on a line).
 	 */
 	mouseColumn: number;
+
 	revealType: NavigationCommandRevealType;
+
 	startedOnLineNumbers: boolean;
+
 	inSelectionMode: boolean;
+
 	mouseDownCount: number;
+
 	altKey: boolean;
+
 	ctrlKey: boolean;
+
 	metaKey: boolean;
+
 	shiftKey: boolean;
+
 	leftButton: boolean;
+
 	middleButton: boolean;
+
 	onInjectedText: boolean;
 }
 export interface ICommandDelegate {
@@ -45,21 +56,29 @@ export interface ICommandDelegate {
 		multicursorText: string[] | null,
 		mode: string | null,
 	): void;
+
 	type(text: string): void;
+
 	compositionType(
 		text: string,
 		replacePrevCharCnt: number,
 		replaceNextCharCnt: number,
 		positionDelta: number,
 	): void;
+
 	startComposition(): void;
+
 	endComposition(): void;
+
 	cut(): void;
 }
 export class ViewController {
 	private readonly configuration: IEditorConfiguration;
+
 	private readonly viewModel: IViewModel;
+
 	private readonly userInputEvents: ViewUserInputEvents;
+
 	private readonly commandDelegate: ICommandDelegate;
 
 	constructor(
@@ -69,10 +88,14 @@ export class ViewController {
 		commandDelegate: ICommandDelegate,
 	) {
 		this.configuration = configuration;
+
 		this.viewModel = viewModel;
+
 		this.userInputEvents = userInputEvents;
+
 		this.commandDelegate = commandDelegate;
 	}
+
 	public paste(
 		text: string,
 		pasteOnNewLine: boolean,
@@ -81,9 +104,11 @@ export class ViewController {
 	): void {
 		this.commandDelegate.paste(text, pasteOnNewLine, multicursorText, mode);
 	}
+
 	public type(text: string): void {
 		this.commandDelegate.type(text);
 	}
+
 	public compositionType(
 		text: string,
 		replacePrevCharCnt: number,
@@ -97,15 +122,19 @@ export class ViewController {
 			positionDelta,
 		);
 	}
+
 	public compositionStart(): void {
 		this.commandDelegate.startComposition();
 	}
+
 	public compositionEnd(): void {
 		this.commandDelegate.endComposition();
 	}
+
 	public cut(): void {
 		this.commandDelegate.cut();
 	}
+
 	public setSelection(modelSelection: Selection): void {
 		CoreNavigationCommands.SetSelection.runCoreEditorCommand(
 			this.viewModel,
@@ -115,6 +144,7 @@ export class ViewController {
 			},
 		);
 	}
+
 	private _validateViewColumn(viewPosition: Position): Position {
 		const minColumn = this.viewModel.getLineMinColumn(
 			viewPosition.lineNumber,
@@ -123,8 +153,10 @@ export class ViewController {
 		if (viewPosition.column < minColumn) {
 			return new Position(viewPosition.lineNumber, minColumn);
 		}
+
 		return viewPosition;
 	}
+
 	private _hasMulticursorModifier(data: IMouseDispatchData): boolean {
 		switch (
 			this.configuration.options.get(EditorOption.multiCursorModifier)
@@ -142,6 +174,7 @@ export class ViewController {
 				return false;
 		}
 	}
+
 	private _hasNonMulticursorModifier(data: IMouseDispatchData): boolean {
 		switch (
 			this.configuration.options.get(EditorOption.multiCursorModifier)
@@ -159,6 +192,7 @@ export class ViewController {
 				return false;
 		}
 	}
+
 	public dispatchMouse(data: IMouseDispatchData): void {
 		const options = this.configuration.options;
 
@@ -265,6 +299,7 @@ export class ViewController {
 			}
 		}
 	}
+
 	private _usualArgs(
 		viewPosition: Position,
 		revealType: NavigationCommandRevealType,
@@ -278,6 +313,7 @@ export class ViewController {
 			revealType,
 		};
 	}
+
 	public moveTo(
 		viewPosition: Position,
 		revealType: NavigationCommandRevealType,
@@ -287,6 +323,7 @@ export class ViewController {
 			this._usualArgs(viewPosition, revealType),
 		);
 	}
+
 	private _moveToSelect(
 		viewPosition: Position,
 		revealType: NavigationCommandRevealType,
@@ -296,12 +333,14 @@ export class ViewController {
 			this._usualArgs(viewPosition, revealType),
 		);
 	}
+
 	private _columnSelect(
 		viewPosition: Position,
 		mouseColumn: number,
 		doColumnSelect: boolean,
 	): void {
 		viewPosition = this._validateViewColumn(viewPosition);
+
 		CoreNavigationCommands.ColumnSelect.runCoreEditorCommand(
 			this.viewModel,
 			{
@@ -313,8 +352,10 @@ export class ViewController {
 			},
 		);
 	}
+
 	private _createCursor(viewPosition: Position, wholeLine: boolean): void {
 		viewPosition = this._validateViewColumn(viewPosition);
+
 		CoreNavigationCommands.CreateCursor.runCoreEditorCommand(
 			this.viewModel,
 			{
@@ -325,6 +366,7 @@ export class ViewController {
 			},
 		);
 	}
+
 	private _lastCursorMoveToSelect(
 		viewPosition: Position,
 		revealType: NavigationCommandRevealType,
@@ -334,6 +376,7 @@ export class ViewController {
 			this._usualArgs(viewPosition, revealType),
 		);
 	}
+
 	private _wordSelect(
 		viewPosition: Position,
 		revealType: NavigationCommandRevealType,
@@ -343,6 +386,7 @@ export class ViewController {
 			this._usualArgs(viewPosition, revealType),
 		);
 	}
+
 	private _wordSelectDrag(
 		viewPosition: Position,
 		revealType: NavigationCommandRevealType,
@@ -352,6 +396,7 @@ export class ViewController {
 			this._usualArgs(viewPosition, revealType),
 		);
 	}
+
 	private _lastCursorWordSelect(
 		viewPosition: Position,
 		revealType: NavigationCommandRevealType,
@@ -361,6 +406,7 @@ export class ViewController {
 			this._usualArgs(viewPosition, revealType),
 		);
 	}
+
 	private _lineSelect(
 		viewPosition: Position,
 		revealType: NavigationCommandRevealType,
@@ -370,6 +416,7 @@ export class ViewController {
 			this._usualArgs(viewPosition, revealType),
 		);
 	}
+
 	private _lineSelectDrag(
 		viewPosition: Position,
 		revealType: NavigationCommandRevealType,
@@ -379,6 +426,7 @@ export class ViewController {
 			this._usualArgs(viewPosition, revealType),
 		);
 	}
+
 	private _lastCursorLineSelect(
 		viewPosition: Position,
 		revealType: NavigationCommandRevealType,
@@ -388,6 +436,7 @@ export class ViewController {
 			this._usualArgs(viewPosition, revealType),
 		);
 	}
+
 	private _lastCursorLineSelectDrag(
 		viewPosition: Position,
 		revealType: NavigationCommandRevealType,
@@ -397,6 +446,7 @@ export class ViewController {
 			this._usualArgs(viewPosition, revealType),
 		);
 	}
+
 	private _selectAll(): void {
 		CoreNavigationCommands.SelectAll.runCoreEditorCommand(this.viewModel, {
 			source: "mouse",
@@ -408,36 +458,47 @@ export class ViewController {
 			viewPosition,
 		);
 	}
+
 	public emitKeyDown(e: IKeyboardEvent): void {
 		this.userInputEvents.emitKeyDown(e);
 	}
+
 	public emitKeyUp(e: IKeyboardEvent): void {
 		this.userInputEvents.emitKeyUp(e);
 	}
+
 	public emitContextMenu(e: IEditorMouseEvent): void {
 		this.userInputEvents.emitContextMenu(e);
 	}
+
 	public emitMouseMove(e: IEditorMouseEvent): void {
 		this.userInputEvents.emitMouseMove(e);
 	}
+
 	public emitMouseLeave(e: IPartialEditorMouseEvent): void {
 		this.userInputEvents.emitMouseLeave(e);
 	}
+
 	public emitMouseUp(e: IEditorMouseEvent): void {
 		this.userInputEvents.emitMouseUp(e);
 	}
+
 	public emitMouseDown(e: IEditorMouseEvent): void {
 		this.userInputEvents.emitMouseDown(e);
 	}
+
 	public emitMouseDrag(e: IEditorMouseEvent): void {
 		this.userInputEvents.emitMouseDrag(e);
 	}
+
 	public emitMouseDrop(e: IPartialEditorMouseEvent): void {
 		this.userInputEvents.emitMouseDrop(e);
 	}
+
 	public emitMouseDropCanceled(): void {
 		this.userInputEvents.emitMouseDropCanceled();
 	}
+
 	public emitMouseWheel(e: IMouseWheelEvent): void {
 		this.userInputEvents.emitMouseWheel(e);
 	}

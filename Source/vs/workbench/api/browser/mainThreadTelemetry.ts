@@ -36,6 +36,7 @@ export class MainThreadTelemetry
 	implements MainThreadTelemetryShape
 {
 	private readonly _proxy: ExtHostTelemetryShape;
+
 	private static readonly _name = "pluginHostTelemetry";
 
 	constructor(
@@ -50,6 +51,7 @@ export class MainThreadTelemetry
 		private readonly _productService: IProductService,
 	) {
 		super();
+
 		this._proxy = extHostContext.getProxy(ExtHostContext.ExtHostTelemetry);
 
 		if (supportsTelemetry(this._productService, this._environmentService)) {
@@ -66,23 +68,28 @@ export class MainThreadTelemetry
 				}),
 			);
 		}
+
 		this._proxy.$initializeTelemetryLevel(
 			this.telemetryLevel,
 			supportsTelemetry(this._productService, this._environmentService),
 			this._productService.enabledTelemetryLevels,
 		);
 	}
+
 	private get telemetryLevel(): TelemetryLevel {
 		if (
 			!supportsTelemetry(this._productService, this._environmentService)
 		) {
 			return TelemetryLevel.NONE;
 		}
+
 		return this._telemetryService.telemetryLevel;
 	}
 	$publicLog(eventName: string, data: any = Object.create(null)): void {
 		// __GDPR__COMMON__ "pluginHostTelemetry" : { "classification": "SystemMetaData", "purpose": "FeatureInsight", "isMeasurement": true }
+
 		data[MainThreadTelemetry._name] = true;
+
 		this._telemetryService.publicLog(eventName, data);
 	}
 	$publicLog2<

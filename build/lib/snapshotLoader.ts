@@ -27,6 +27,7 @@ namespace snaps {
 	switch (process.platform) {
 		case "darwin":
 			loaderFilepath = `VSCode-darwin/${product.nameLong}.app/Contents/Resources/app/out/vs/loader.js`;
+
 			startupBlobFilepath = `VSCode-darwin/${product.nameLong}.app/Contents/Frameworks/Electron Framework.framework/Resources/snapshot_blob.bin`;
 
 			break;
@@ -34,6 +35,7 @@ namespace snaps {
 		case "win32":
 		case "linux":
 			loaderFilepath = `VSCode-${process.platform}-${arch}/resources/app/out/vs/loader.js`;
+
 			startupBlobFilepath = `VSCode-${process.platform}-${arch}/snapshot_blob.bin`;
 
 			break;
@@ -41,12 +43,15 @@ namespace snaps {
 		default:
 			throw new Error("Unknown platform");
 	}
+
 	loaderFilepath = path.join(__dirname, "../../../", loaderFilepath);
+
 	startupBlobFilepath = path.join(
 		__dirname,
 		"../../../",
 		startupBlobFilepath,
 	);
+
 	snapshotLoader(loaderFilepath, startupBlobFilepath);
 
 	function snapshotLoader(
@@ -60,9 +65,12 @@ namespace snaps {
 		(function() {
 			var doNotInitLoader = true;
 			${inputFile.toString()};
+
 			Monaco_Loader_Init = function() {
 				AMDLoader.init();
+
 				CSSLoaderPlugin.init();
+
 				NLSLoaderPlugin.init();
 
 				return { define, require };
@@ -74,8 +82,11 @@ namespace snaps {
 			os.tmpdir(),
 			"wrapped-loader.js",
 		);
+
 		console.log(wrappedInputFilepath);
+
 		fs.writeFileSync(wrappedInputFilepath, wrappedInputFile);
+
 		cp.execFileSync(mksnapshot, [
 			wrappedInputFilepath,
 			`--startup_blob`,

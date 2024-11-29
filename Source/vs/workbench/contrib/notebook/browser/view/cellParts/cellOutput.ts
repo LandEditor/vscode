@@ -91,10 +91,13 @@ class CellOutputElement extends Disposable {
 	private readonly toolbarDisposables = this._register(new DisposableStore());
 
 	innerContainer?: HTMLElement;
+
 	renderedOutputContainer!: HTMLElement;
+
 	renderResult?: IInsetRenderOutput;
 
 	private readonly contextKeyService: IContextKeyService;
+
 	private toolbarAttached = false;
 
 	constructor(
@@ -186,6 +189,7 @@ class CellOutputElement extends Disposable {
 				const index = this.viewCell.outputsViewModels.indexOf(
 					this.output,
 				);
+
 				this.notebookEditor.updateOutput(
 					this.viewCell,
 					this.renderResult,
@@ -212,16 +216,19 @@ class CellOutputElement extends Disposable {
 							currOutputIndex - 1
 						].element.innerContainer
 					: undefined;
+
 			this.render(previousSibling);
 		} else {
 			// Another mimetype or renderer is picked, we need to clear the current output and re-render
 			const nextElement = this.innerContainer.nextElementSibling;
+
 			this.toolbarDisposables.clear();
 
 			const element = this.innerContainer;
 
 			if (element) {
 				element.remove();
+
 				this.notebookEditor.removeInset(this.output);
 			}
 
@@ -336,9 +343,11 @@ class CellOutputElement extends Disposable {
 					} else if (!visible) {
 						this.toolbarDisposables.clear();
 					}
+
 					this.cellOutputContainer.checkForHiddenOutputs();
 				}),
 			);
+
 			this.cellOutputContainer.hasHiddenOutputs.set(true, undefined);
 		}
 
@@ -377,6 +386,7 @@ class CellOutputElement extends Disposable {
 			this.viewCell.getOutputOffset(index),
 			false,
 		);
+
 		innerContainer.classList.add("background");
 
 		return { initRenderIsSynchronous: false };
@@ -517,6 +527,7 @@ class CellOutputElement extends Disposable {
 				},
 			),
 		);
+
 		toolbar.context = {
 			ui: true,
 			cell: this.output.cellViewModel as ICellViewModel,
@@ -553,7 +564,9 @@ class CellOutputElement extends Disposable {
 		const isFirstCellOutput = NOTEBOOK_CELL_IS_FIRST_OUTPUT.bindTo(
 			menuContextKeyService,
 		);
+
 		isFirstCellOutput.set(index === 0);
+
 		this.toolbarDisposables.add(
 			autorun((reader) => {
 				hasHiddenOutputs.set(
@@ -582,13 +595,16 @@ class CellOutputElement extends Disposable {
 					(action) => action.id !== COPY_OUTPUT_COMMAND_ID,
 				);
 			}
+
 			if (hasMultipleMimeTypes) {
 				secondary = [pickAction, ...secondary];
 			}
 
 			toolbar.setActions([], secondary);
 		};
+
 		updateMenuToolbar();
+
 		this.toolbarDisposables.add(menu.onDidChange(updateMenuToolbar));
 	}
 
@@ -606,12 +622,14 @@ class CellOutputElement extends Disposable {
 		const items: IMimeTypeRenderer[] = [];
 
 		const unsupportedItems: IMimeTypeRenderer[] = [];
+
 		mimeTypes.forEach((mimeType, index) => {
 			if (mimeType.isTrusted) {
 				const arr =
 					mimeType.rendererId === RENDERER_NOT_AVAILABLE
 						? unsupportedItems
 						: items;
+
 				arr.push({
 					label: mimeType.mimeType,
 					id: mimeType.mimeType,
@@ -649,8 +667,11 @@ class CellOutputElement extends Disposable {
 		const picker = disposables.add(
 			this.quickInputService.createQuickPick({ useSeparators: true }),
 		);
+
 		picker.items = [...items, { type: "separator" }, ...unsupportedItems];
+
 		picker.activeItems = items.filter((item) => !!item.picked);
+
 		picker.placeholder =
 			items.length !== mimeTypes.length
 				? nls.localize(
@@ -671,9 +692,11 @@ class CellOutputElement extends Disposable {
 								? (picker.selectedItems[0] as IMimeTypeRenderer)
 								: undefined,
 						);
+
 						disposables.dispose();
 					}),
 				);
+
 				picker.show();
 			},
 		);
@@ -690,29 +713,36 @@ class CellOutputElement extends Disposable {
 
 		// user chooses another mimetype
 		const nextElement = outputItemDiv.nextElementSibling;
+
 		this.toolbarDisposables.clear();
 
 		const element = this.innerContainer;
 
 		if (element) {
 			element.remove();
+
 			this.notebookEditor.removeInset(viewModel);
 		}
 
 		viewModel.pickedMimeType = mimeTypes[pick.index];
+
 		this.viewCell.updateOutputMinHeight(
 			this.viewCell.layoutInfo.outputTotalHeight,
 		);
 
 		const { mimeType, rendererId } = mimeTypes[pick.index];
+
 		this.notebookService.updateMimePreferredRenderer(
 			notebookTextModel.viewType,
 			mimeType,
 			rendererId,
 			mimeTypes.map((m) => m.mimeType),
 		);
+
 		this.render(nextElement as HTMLElement);
+
 		this._validateFinalOutputHeight(false);
+
 		this._relayoutCell();
 	}
 
@@ -763,6 +793,7 @@ class CellOutputElement extends Disposable {
 	override dispose() {
 		if (this._outputHeightTimer) {
 			this.viewCell.unlockOutputHeight();
+
 			clearTimeout(this._outputHeightTimer);
 		}
 
@@ -784,9 +815,11 @@ const enum CellOutputUpdateContext {
 
 export class CellOutputContainer extends CellContentPart {
 	private _outputEntries: OutputEntryViewHandler[] = [];
+
 	private _hasStaleOutputs: boolean = false;
 
 	hasHiddenOutputs = observableValue<boolean>("hasHiddenOutputs", false);
+
 	checkForHiddenOutputs() {
 		if (
 			this._outputEntries.find((entry) => {
@@ -840,6 +873,7 @@ export class CellOutputContainer extends CellContentPart {
 				const context = executionState
 					? CellOutputUpdateContext.Execution
 					: CellOutputUpdateContext.Other;
+
 				this._updateOutputs(splice, context);
 			}),
 		);
@@ -855,6 +889,7 @@ export class CellOutputContainer extends CellContentPart {
 		this.templateData.outputContainer.setTop(
 			viewCell.layoutInfo.outputContainerOffset,
 		);
+
 		this.templateData.outputShowMoreContainer.setTop(
 			viewCell.layoutInfo.outputShowMoreContainerOffset,
 		);
@@ -864,6 +899,7 @@ export class CellOutputContainer extends CellContentPart {
 
 			if (index >= 0) {
 				const top = this.viewCell.getOutputOffsetInContainer(index);
+
 				entry.element.updateDOMTop(top);
 			}
 		});
@@ -897,11 +933,13 @@ export class CellOutputContainer extends CellContentPart {
 
 			for (
 				let index = 0;
+
 				index <
 				Math.min(
 					this.options.limit,
 					this.viewCell.outputsViewModels.length,
 				);
+
 				index++
 			) {
 				const currOutput = this.viewCell.outputsViewModels[index];
@@ -914,14 +952,17 @@ export class CellOutputContainer extends CellContentPart {
 					this.templateData.outputContainer,
 					currOutput,
 				);
+
 				this._outputEntries.push(
 					new OutputEntryViewHandler(currOutput, entry),
 				);
+
 				entry.render(undefined);
 			}
 
 			if (this.viewCell.outputsViewModels.length > this.options.limit) {
 				DOM.show(this.templateData.outputShowMoreContainer.domNode);
+
 				this.viewCell.updateOutputShowMoreContainerHeight(46);
 			}
 
@@ -941,6 +982,7 @@ export class CellOutputContainer extends CellContentPart {
 			);
 		} else {
 			DOM.hide(this.templateData.outputShowMoreContainer.domNode);
+
 			this.viewCell.updateOutputShowMoreContainerHeight(0);
 		}
 	}
@@ -948,6 +990,7 @@ export class CellOutputContainer extends CellContentPart {
 	viewUpdateShowOutputs(initRendering: boolean): void {
 		if (this._hasStaleOutputs) {
 			this._hasStaleOutputs = false;
+
 			this._outputEntries.forEach((entry) => {
 				entry.element.rerender();
 			});
@@ -1022,6 +1065,7 @@ export class CellOutputContainer extends CellContentPart {
 			splice.deleteCount,
 			splice.newOutputs.map((_) => 0),
 		);
+
 		this._renderNow(splice, context);
 	}
 
@@ -1065,6 +1109,7 @@ export class CellOutputContainer extends CellContentPart {
 			) {
 				[...deletedEntries, ...secondGroupEntries].forEach((entry) => {
 					entry.element.detach();
+
 					entry.element.dispose();
 				});
 
@@ -1095,7 +1140,9 @@ export class CellOutputContainer extends CellContentPart {
 				// render newly inserted outputs
 				for (
 					let i = firstGroupEntries.length;
+
 					i < this._outputEntries.length;
+
 					i++
 				) {
 					this._outputEntries[i].element.render(undefined);
@@ -1111,6 +1158,7 @@ export class CellOutputContainer extends CellContentPart {
 				[...deletedEntries, ...elementsPushedOutOfView].forEach(
 					(entry) => {
 						entry.element.detach();
+
 						entry.element.dispose();
 					},
 				);
@@ -1146,7 +1194,9 @@ export class CellOutputContainer extends CellContentPart {
 
 				for (
 					let i = firstGroupEntries.length;
+
 					i < reRenderRightBoundary;
+
 					i++
 				) {
 					const previousSibling =
@@ -1156,6 +1206,7 @@ export class CellOutputContainer extends CellContentPart {
 							?.parentElement
 							? this._outputEntries[i - 1].element.innerContainer
 							: undefined;
+
 					this._outputEntries[i].element.render(previousSibling);
 				}
 			}
@@ -1163,6 +1214,7 @@ export class CellOutputContainer extends CellContentPart {
 			// after splice, it doesn't exceed
 			deletedEntries.forEach((entry) => {
 				entry.element.detach();
+
 				entry.element.dispose();
 			});
 
@@ -1195,6 +1247,7 @@ export class CellOutputContainer extends CellContentPart {
 					this.options.limit,
 					this.viewCell.outputsViewModels.length,
 				);
+
 				outputsNewlyAvailable = this.viewCell.outputsViewModels
 					.slice(
 						firstGroupEntries.length +
@@ -1226,7 +1279,9 @@ export class CellOutputContainer extends CellContentPart {
 
 			for (
 				let i = firstGroupEntries.length;
+
 				i < reRenderRightBoundary;
+
 				i++
 			) {
 				const previousSibling =
@@ -1236,6 +1291,7 @@ export class CellOutputContainer extends CellContentPart {
 						?.parentElement
 						? this._outputEntries[i - 1].element.innerContainer
 						: undefined;
+
 				this._outputEntries[i].element.render(previousSibling);
 			}
 
@@ -1261,6 +1317,7 @@ export class CellOutputContainer extends CellContentPart {
 					),
 				);
 			}
+
 			this.viewCell.updateOutputShowMoreContainerHeight(46);
 		} else {
 			DOM.hide(this.templateData.outputShowMoreContainer.domNode);
@@ -1303,6 +1360,7 @@ export class CellOutputContainer extends CellContentPart {
 				disposables,
 			},
 		});
+
 		disposables.add(rendered);
 
 		rendered.element.classList.add("output-show-more");

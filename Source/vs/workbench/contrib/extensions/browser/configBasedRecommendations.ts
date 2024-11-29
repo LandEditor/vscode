@@ -24,24 +24,31 @@ type ConfigBasedExtensionRecommendation = ExtensionRecommendation & {
 
 export class ConfigBasedRecommendations extends ExtensionRecommendations {
 	private importantTips: IConfigBasedExtensionTip[] = [];
+
 	private otherTips: IConfigBasedExtensionTip[] = [];
+
 	private _onDidChangeRecommendations = this._register(new Emitter<void>());
+
 	readonly onDidChangeRecommendations =
 		this._onDidChangeRecommendations.event;
+
 	private _otherRecommendations: ConfigBasedExtensionRecommendation[] = [];
 
 	get otherRecommendations(): ReadonlyArray<ConfigBasedExtensionRecommendation> {
 		return this._otherRecommendations;
 	}
+
 	private _importantRecommendations: ConfigBasedExtensionRecommendation[] =
 		[];
 
 	get importantRecommendations(): ReadonlyArray<ConfigBasedExtensionRecommendation> {
 		return this._importantRecommendations;
 	}
+
 	get recommendations(): ReadonlyArray<ConfigBasedExtensionRecommendation> {
 		return [...this.importantRecommendations, ...this.otherRecommendations];
 	}
+
 	constructor(
 		@IExtensionTipsService
 		private readonly extensionTipsService: IExtensionTipsService,
@@ -50,14 +57,17 @@ export class ConfigBasedRecommendations extends ExtensionRecommendations {
 	) {
 		super();
 	}
+
 	protected async doActivate(): Promise<void> {
 		await this.fetch();
+
 		this._register(
 			this.workspaceContextService.onDidChangeWorkspaceFolders((e) =>
 				this.onWorkspaceFoldersChanged(e),
 			),
 		);
 	}
+
 	private async fetch(): Promise<void> {
 		const workspace = this.workspaceContextService.getWorkspace();
 
@@ -83,22 +93,28 @@ export class ConfigBasedRecommendations extends ExtensionRecommendations {
 				}
 			}
 		}
+
 		this.importantTips = [...importantTips.values()];
+
 		this.otherTips = [...otherTips.values()].filter(
 			(tip) => !importantTips.has(tip.extensionId),
 		);
+
 		this._otherRecommendations = this.otherTips.map((tip) =>
 			this.toExtensionRecommendation(tip),
 		);
+
 		this._importantRecommendations = this.importantTips.map((tip) =>
 			this.toExtensionRecommendation(tip),
 		);
 	}
+
 	private async onWorkspaceFoldersChanged(
 		event: IWorkspaceFoldersChangeEvent,
 	): Promise<void> {
 		if (event.added.length) {
 			const oldImportantRecommended = this.importantTips;
+
 			await this.fetch();
 			// Suggest only if at least one of the newly added recommendations was not suggested before
 			if (
@@ -112,6 +128,7 @@ export class ConfigBasedRecommendations extends ExtensionRecommendations {
 			}
 		}
 	}
+
 	private toExtensionRecommendation(
 		tip: IConfigBasedExtensionTip,
 	): ConfigBasedExtensionRecommendation {

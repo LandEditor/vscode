@@ -14,6 +14,7 @@ type MessageEvent = {
 };
 declare const globalThis: {
 	postMessage: (message: any) => void;
+
 	onmessage: (event: MessageEvent) => void;
 };
 
@@ -23,6 +24,7 @@ export function initialize(factory: any) {
 	if (initialized) {
 		return;
 	}
+
 	initialized = true;
 
 	const simpleWorker = new SimpleWorkerServer(
@@ -35,6 +37,7 @@ export function initialize(factory: any) {
 				null,
 			),
 	);
+
 	globalThis.onmessage = (e: MessageEvent) => {
 		simpleWorker.onmessage(e.data);
 	};

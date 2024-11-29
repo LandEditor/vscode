@@ -26,7 +26,9 @@ export const enum SaveStrategy {
 }
 export class FileStorage extends Disposable {
 	private storage: StorageDatabase = Object.create(null);
+
 	private lastSavedStorageContents = "";
+
 	private readonly flushDelayer = this._register(
 		new ThrottledDelayer<void>(
 			this.saveStrategy === SaveStrategy.IMMEDIATE
@@ -34,7 +36,9 @@ export class FileStorage extends Disposable {
 				: 100 /* buffer saves over a short time */,
 		),
 	);
+
 	private initializing: Promise<void> | undefined = undefined;
+
 	private closing: Promise<void> | undefined = undefined;
 
 	constructor(
@@ -45,17 +49,21 @@ export class FileStorage extends Disposable {
 	) {
 		super();
 	}
+
 	init(): Promise<void> {
 		if (!this.initializing) {
 			this.initializing = this.doInit();
 		}
+
 		return this.initializing;
 	}
+
 	private async doInit(): Promise<void> {
 		try {
 			this.lastSavedStorageContents = (
 				await this.fileService.readFile(this.storagePath)
 			).value.toString();
+
 			this.storage = JSON.parse(this.lastSavedStorageContents);
 		} catch (error) {
 			if (
@@ -66,6 +74,7 @@ export class FileStorage extends Disposable {
 			}
 		}
 	}
+
 	getItem<T>(key: string, defaultValue: T): T;
 
 	getItem<T>(key: string, defaultValue?: T): T | undefined;
@@ -76,17 +85,21 @@ export class FileStorage extends Disposable {
 		if (isUndefinedOrNull(res)) {
 			return defaultValue;
 		}
+
 		return res as T;
 	}
+
 	setItem(
 		key: string,
 		data?: object | string | number | boolean | undefined | null,
 	): void {
 		this.setItems([{ key, data }]);
 	}
+
 	setItems(
 		items: readonly {
 			key: string;
+
 			data?: object | string | number | boolean | undefined | null;
 		}[],
 	): void {
@@ -101,32 +114,40 @@ export class FileStorage extends Disposable {
 			if (isUndefinedOrNull(data)) {
 				if (!isUndefined(this.storage[key])) {
 					this.storage[key] = undefined;
+
 					save = true;
 				}
 			}
 			// Otherwise add an item
 			else {
 				this.storage[key] = data;
+
 				save = true;
 			}
 		}
+
 		if (save) {
 			this.save();
 		}
 	}
+
 	removeItem(key: string): void {
 		// Only update if the key is actually present (not undefined)
 		if (!isUndefined(this.storage[key])) {
 			this.storage[key] = undefined;
+
 			this.save();
 		}
 	}
+
 	private async save(): Promise<void> {
 		if (this.closing) {
 			return; // already about to close
 		}
+
 		return this.flushDelayer.trigger(() => this.doSave());
 	}
+
 	private async doSave(): Promise<void> {
 		if (!this.initializing) {
 			return; // if we never initialized, we should not save our state
@@ -146,11 +167,13 @@ export class FileStorage extends Disposable {
 				VSBuffer.fromString(serializedDatabase),
 				{ atomic: { postfix: ".vsctmp" } },
 			);
+
 			this.lastSavedStorageContents = serializedDatabase;
 		} catch (error) {
 			this.logService.error(error);
 		}
 	}
+
 	async close(): Promise<void> {
 		if (!this.closing) {
 			this.closing = this.flushDelayer.trigger(
@@ -158,6 +181,7 @@ export class FileStorage extends Disposable {
 				0 /* as soon as possible */,
 			);
 		}
+
 		return this.closing;
 	}
 }
@@ -166,6 +190,7 @@ export class StateReadonlyService
 	implements IStateReadService
 {
 	declare readonly _serviceBrand: undefined;
+
 	protected readonly fileStorage: FileStorage;
 
 	constructor(
@@ -178,6 +203,7 @@ export class StateReadonlyService
 		fileService: IFileService,
 	) {
 		super();
+
 		this.fileStorage = this._register(
 			new FileStorage(
 				environmentService.stateResource,
@@ -187,9 +213,11 @@ export class StateReadonlyService
 			),
 		);
 	}
+
 	async init(): Promise<void> {
 		await this.fileStorage.init();
 	}
+
 	getItem<T>(key: string, defaultValue: T): T;
 
 	getItem<T>(key: string, defaultValue?: T): T | undefined;
@@ -210,17 +238,21 @@ export class StateService
 	): void {
 		this.fileStorage.setItem(key, data);
 	}
+
 	setItems(
 		items: readonly {
 			key: string;
+
 			data?: object | string | number | boolean | undefined | null;
 		}[],
 	): void {
 		this.fileStorage.setItems(items);
 	}
+
 	removeItem(key: string): void {
 		this.fileStorage.removeItem(key);
 	}
+
 	close(): Promise<void> {
 		return this.fileStorage.close();
 	}

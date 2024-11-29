@@ -32,20 +32,25 @@ export class SashLayout {
 		},
 		(value, tx) => {
 			const contentWidth = this.dimensions.width.get();
+
 			this._sashRatio.set(value / contentWidth, tx);
 		},
 	);
+
 	private readonly _sashRatio = observableValue<number | undefined>(
 		this,
 		undefined,
 	);
+
 	public resetSash(): void {
 		this._sashRatio.set(undefined, undefined);
 	}
+
 	constructor(
 		private readonly _options: DiffEditorOptions,
 		public readonly dimensions: {
 			height: IObservable<number>;
+
 			width: IObservable<number>;
 		},
 	) {}
@@ -69,12 +74,15 @@ export class SashLayout {
 		if (contentWidth <= MINIMUM_EDITOR_WIDTH * 2) {
 			return midPoint;
 		}
+
 		if (sashLeft < MINIMUM_EDITOR_WIDTH) {
 			return MINIMUM_EDITOR_WIDTH;
 		}
+
 		if (sashLeft > contentWidth - MINIMUM_EDITOR_WIDTH) {
 			return contentWidth - MINIMUM_EDITOR_WIDTH;
 		}
+
 		return sashLeft;
 	}
 }
@@ -92,12 +100,14 @@ export class DiffEditorSash extends Disposable {
 			{ orientation: Orientation.VERTICAL },
 		),
 	);
+
 	private _startSashPosition: number | undefined = undefined;
 
 	constructor(
 		private readonly _domNode: HTMLElement,
 		private readonly _dimensions: {
 			height: IObservable<number>;
+
 			width: IObservable<number>;
 		},
 		private readonly _enabled: IObservable<boolean>,
@@ -109,11 +119,13 @@ export class DiffEditorSash extends Disposable {
 		private readonly _resetSash: () => void,
 	) {
 		super();
+
 		this._register(
 			this._sash.onDidStart(() => {
 				this._startSashPosition = this.sashLeft.get();
 			}),
 		);
+
 		this._register(
 			this._sash.onDidChange((e: ISashEvent) => {
 				this.sashLeft.set(
@@ -122,8 +134,11 @@ export class DiffEditorSash extends Disposable {
 				);
 			}),
 		);
+
 		this._register(this._sash.onDidEnd(() => this._sash.layout()));
+
 		this._register(this._sash.onDidReset(() => this._resetSash()));
+
 		this._register(
 			autorun((reader) => {
 				const sashes = this._boundarySashes.read(reader);
@@ -133,15 +148,20 @@ export class DiffEditorSash extends Disposable {
 				}
 			}),
 		);
+
 		this._register(
 			autorun((reader) => {
 				/** @description DiffEditorSash.layoutSash */
 				const enabled = this._enabled.read(reader);
+
 				this._sash.state = enabled
 					? SashState.Enabled
 					: SashState.Disabled;
+
 				this.sashLeft.read(reader);
+
 				this._dimensions.height.read(reader);
+
 				this._sash.layout();
 			}),
 		);

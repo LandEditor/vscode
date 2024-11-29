@@ -22,8 +22,11 @@ export const ITerminalLinkProviderService =
 
 export interface ITerminalLinkProviderService {
 	readonly _serviceBrand: undefined;
+
 	readonly linkProviders: ReadonlySet<ITerminalExternalLinkProvider>;
+
 	readonly onDidAddLinkProvider: Event<ITerminalExternalLinkProvider>;
+
 	readonly onDidRemoveLinkProvider: Event<ITerminalExternalLinkProvider>;
 	// TODO: Currently only a single link provider is supported; the one registered by the ext host
 	registerLinkProvider(provider: ITerminalExternalLinkProvider): IDisposable;
@@ -74,6 +77,7 @@ export interface ITerminalSimpleLink {
 	 * The text of the link.
 	 */
 	text: string;
+
 	parsedLink?: IParsedLink;
 	/**
 	 * The buffer range of the link.
@@ -152,7 +156,9 @@ export type ResolvedLink = IResolvedValidLink | null;
 
 export interface IResolvedValidLink {
 	uri: URI;
+
 	link: string;
+
 	isDirectory: boolean;
 }
 export type OmitFirstArg<F> = F extends (x: any, ...args: infer P) => infer R

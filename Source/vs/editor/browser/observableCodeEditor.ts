@@ -59,6 +59,7 @@ export class ObservableCodeEditor extends Disposable {
 
 		if (!result) {
 			result = new ObservableCodeEditor(editor);
+
 			ObservableCodeEditor._map.set(editor, result);
 
 			const d = editor.onDidDispose(() => {
@@ -66,15 +67,19 @@ export class ObservableCodeEditor extends Disposable {
 
 				if (item) {
 					ObservableCodeEditor._map.delete(editor);
+
 					item.dispose();
+
 					d.dispose();
 				}
 			});
 		}
+
 		return result;
 	}
 
 	private _updateCounter = 0;
+
 	private _currentTransaction: TransactionImpl | undefined = undefined;
 
 	private _beginUpdate(): void {
@@ -92,7 +97,9 @@ export class ObservableCodeEditor extends Disposable {
 
 		if (this._updateCounter === 0) {
 			const t = this._currentTransaction!;
+
 			this._currentTransaction = undefined;
+
 			t.finish();
 		}
 	}
@@ -101,6 +108,7 @@ export class ObservableCodeEditor extends Disposable {
 		super();
 
 		this._register(this.editor.onBeginUpdate(() => this._beginUpdate()));
+
 		this._register(this.editor.onEndUpdate(() => this._endUpdate()));
 
 		this._register(
@@ -112,6 +120,7 @@ export class ObservableCodeEditor extends Disposable {
 						this.editor.getModel(),
 						this._currentTransaction,
 					);
+
 					this._forceUpdate();
 				} finally {
 					this._endUpdate();
@@ -125,6 +134,7 @@ export class ObservableCodeEditor extends Disposable {
 
 				try {
 					this._forceUpdate();
+
 					this.onDidType.trigger(this._currentTransaction, e);
 				} finally {
 					this._endUpdate();
@@ -142,6 +152,7 @@ export class ObservableCodeEditor extends Disposable {
 						this._currentTransaction,
 						e,
 					);
+
 					this._forceUpdate();
 				} finally {
 					this._endUpdate();
@@ -159,6 +170,7 @@ export class ObservableCodeEditor extends Disposable {
 						this._currentTransaction,
 						e,
 					);
+
 					this._forceUpdate();
 				} finally {
 					this._endUpdate();
@@ -168,7 +180,9 @@ export class ObservableCodeEditor extends Disposable {
 	}
 
 	public forceUpdate(): void;
+
 	public forceUpdate<T>(cb: (tx: ITransaction) => T): T;
+
 	public forceUpdate<T>(cb?: (tx: ITransaction) => T): T {
 		this._beginUpdate();
 
@@ -178,6 +192,7 @@ export class ObservableCodeEditor extends Disposable {
 			if (!cb) {
 				return undefined as T;
 			}
+
 			return cb(this._currentTransaction!);
 		} finally {
 			this._endUpdate();
@@ -189,11 +204,13 @@ export class ObservableCodeEditor extends Disposable {
 
 		try {
 			this._model.set(this.editor.getModel(), this._currentTransaction);
+
 			this._versionId.set(
 				this.editor.getModel()?.getVersionId() ?? null,
 				this._currentTransaction,
 				undefined,
 			);
+
 			this._selections.set(
 				this.editor.getSelections(),
 				this._currentTransaction,
@@ -205,6 +222,7 @@ export class ObservableCodeEditor extends Disposable {
 	}
 
 	private readonly _model = observableValue(this, this.editor.getModel());
+
 	public readonly model: IObservable<ITextModel | null> = this._model;
 
 	public readonly isReadonly = observableFromEvent(
@@ -220,6 +238,7 @@ export class ObservableCodeEditor extends Disposable {
 		{ owner: this, lazy: true },
 		this.editor.getModel()?.getVersionId() ?? null,
 	);
+
 	public readonly versionId: IObservable<
 		number | null,
 		IModelContentChangedEvent | undefined
@@ -236,6 +255,7 @@ export class ObservableCodeEditor extends Disposable {
 		},
 		this.editor.getSelections() ?? null,
 	);
+
 	public readonly selections: IObservable<
 		Selection[] | null,
 		ICursorSelectionChangedEvent | undefined
@@ -261,6 +281,7 @@ export class ObservableCodeEditor extends Disposable {
 			return {
 				dispose() {
 					d1.dispose();
+
 					d2.dispose();
 				},
 			};
@@ -269,22 +290,26 @@ export class ObservableCodeEditor extends Disposable {
 	);
 
 	private _inComposition = false;
+
 	public readonly inComposition = observableFromEvent(
 		this,
 		(e) => {
 			const d1 = this.editor.onDidCompositionStart(() => {
 				this._inComposition = true;
+
 				e(undefined);
 			});
 
 			const d2 = this.editor.onDidCompositionEnd(() => {
 				this._inComposition = false;
+
 				e(undefined);
 			});
 
 			return {
 				dispose() {
 					d1.dispose();
+
 					d2.dispose();
 				},
 			};
@@ -296,6 +321,7 @@ export class ObservableCodeEditor extends Disposable {
 		this,
 		(reader) => {
 			this.versionId.read(reader);
+
 			return this.model.read(reader)?.getValue() ?? "";
 		},
 		(value, tx) => {
@@ -308,18 +334,23 @@ export class ObservableCodeEditor extends Disposable {
 			}
 		},
 	);
+
 	public readonly valueIsEmpty = derived(this, (reader) => {
 		this.versionId.read(reader);
+
 		return this.editor.getModel()?.getValueLength() === 0;
 	});
+
 	public readonly cursorSelection = derivedOpts(
 		{ owner: this, equalsFn: equalsIfDefined(Selection.selectionsEqual) },
 		(reader) => this.selections.read(reader)?.[0] ?? null,
 	);
+
 	public readonly cursorPosition = derivedOpts(
 		{ owner: this, equalsFn: Position.equals },
 		(reader) => this.selections.read(reader)?.[0]?.getPosition() ?? null,
 	);
+
 	public readonly cursorLineNumber = derived<number | null>(
 		this,
 		(reader) => this.cursorPosition.read(reader)?.lineNumber ?? null,
@@ -331,6 +362,7 @@ export class ObservableCodeEditor extends Disposable {
 		this.editor.onDidScrollChange,
 		() => this.editor.getScrollTop(),
 	);
+
 	public readonly scrollLeft = observableFromEvent(
 		this.editor.onDidScrollChange,
 		() => this.editor.getScrollLeft(),
@@ -340,9 +372,11 @@ export class ObservableCodeEditor extends Disposable {
 		this.editor.onDidLayoutChange,
 		() => this.editor.getLayoutInfo(),
 	);
+
 	public readonly layoutInfoContentLeft = this.layoutInfo.map(
 		(l) => l.contentLeft,
 	);
+
 	public readonly layoutInfoDecorationsLeft = this.layoutInfo.map(
 		(l) => l.decorationsLeft,
 	);
@@ -373,6 +407,7 @@ export class ObservableCodeEditor extends Disposable {
 		const d = new DisposableStore();
 
 		const decorationsCollection = this.editor.createDecorationsCollection();
+
 		d.add(
 			autorunOpts(
 				{
@@ -382,10 +417,12 @@ export class ObservableCodeEditor extends Disposable {
 				},
 				(reader) => {
 					const d = decorations.read(reader);
+
 					decorationsCollection.set(d);
 				},
 			),
 		);
+
 		d.add({
 			dispose: () => {
 				decorationsCollection.clear();
@@ -408,16 +445,20 @@ export class ObservableCodeEditor extends Disposable {
 			allowEditorOverflow: widget.allowEditorOverflow,
 			getMinContentWidthInPx: () => widget.minContentWidthInPx.get(),
 		};
+
 		this.editor.addOverlayWidget(w);
 
 		const d = autorun((reader) => {
 			widget.position.read(reader);
+
 			widget.minContentWidthInPx.read(reader);
+
 			this.editor.layoutOverlayWidget(w);
 		});
 
 		return toDisposable(() => {
 			d.dispose();
+
 			this.editor.removeOverlayWidget(w);
 		});
 	}
@@ -425,7 +466,9 @@ export class ObservableCodeEditor extends Disposable {
 
 interface IObservableOverlayWidget {
 	get domNode(): HTMLElement;
+
 	readonly position: IObservable<IOverlayWidgetPosition | null>;
+
 	readonly minContentWidthInPx: IObservable<number>;
 
 	get allowEditorOverflow(): boolean;

@@ -10,6 +10,7 @@ export namespace FsContentRequest {
 	export const type: RequestType<
 		{
 			uri: string;
+
 			encoding?: string;
 		},
 		string,
@@ -64,7 +65,9 @@ export interface FileStat {
 }
 export interface RequestService {
 	getContent(uri: string, encoding?: string): Promise<string>;
+
 	stat(uri: string): Promise<FileStat>;
+
 	readDirectory(uri: string): Promise<[string, FileType][]>;
 }
 export function getRequestService(
@@ -83,6 +86,7 @@ export function getRequestService(
 			builtInHandlers[protocol] = runtime.http;
 		}
 	}
+
 	return {
 		async stat(uri: string): Promise<FileStat> {
 			const handler = builtInHandlers[getScheme(uri)];
@@ -90,6 +94,7 @@ export function getRequestService(
 			if (handler) {
 				return handler.stat(uri);
 			}
+
 			const res = await connection.sendRequest(
 				FsStatRequest.type,
 				uri.toString(),
@@ -103,6 +108,7 @@ export function getRequestService(
 			if (handler) {
 				return handler.readDirectory(uri);
 			}
+
 			return connection.sendRequest(
 				FsReadDirRequest.type,
 				uri.toString(),
@@ -114,6 +120,7 @@ export function getRequestService(
 			if (handler) {
 				return handler.getContent(uri, encoding);
 			}
+
 			return connection.sendRequest(FsContentRequest.type, {
 				uri: uri.toString(),
 				encoding,

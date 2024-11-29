@@ -10,11 +10,14 @@ import { TextLength } from "./textLength.js";
 
 export class PositionOffsetTransformer {
 	private readonly lineStartOffsetByLineIdx: number[];
+
 	private readonly lineEndOffsetByLineIdx: number[];
 
 	constructor(public readonly text: string) {
 		this.lineStartOffsetByLineIdx = [];
+
 		this.lineEndOffsetByLineIdx = [];
+
 		this.lineStartOffsetByLineIdx.push(0);
 
 		for (let i = 0; i < text.length; i++) {
@@ -28,8 +31,10 @@ export class PositionOffsetTransformer {
 				}
 			}
 		}
+
 		this.lineEndOffsetByLineIdx.push(text.length);
 	}
+
 	getOffset(position: Position): number {
 		return (
 			this.lineStartOffsetByLineIdx[position.lineNumber - 1] +
@@ -37,12 +42,14 @@ export class PositionOffsetTransformer {
 			1
 		);
 	}
+
 	getOffsetRange(range: Range): OffsetRange {
 		return new OffsetRange(
 			this.getOffset(range.getStartPosition()),
 			this.getOffset(range.getEndPosition()),
 		);
 	}
+
 	getPosition(offset: number): Position {
 		const idx = findLastIdxMonotonous(
 			this.lineStartOffsetByLineIdx,
@@ -55,15 +62,18 @@ export class PositionOffsetTransformer {
 
 		return new Position(lineNumber, column);
 	}
+
 	getRange(offsetRange: OffsetRange): Range {
 		return Range.fromPositions(
 			this.getPosition(offsetRange.start),
 			this.getPosition(offsetRange.endExclusive),
 		);
 	}
+
 	getTextLength(offsetRange: OffsetRange): TextLength {
 		return TextLength.ofRange(this.getRange(offsetRange));
 	}
+
 	get textLength(): TextLength {
 		const lineIdx = this.lineStartOffsetByLineIdx.length - 1;
 
@@ -72,6 +82,7 @@ export class PositionOffsetTransformer {
 			this.text.length - this.lineStartOffsetByLineIdx[lineIdx],
 		);
 	}
+
 	getLineLength(lineNumber: number): number {
 		return (
 			this.lineEndOffsetByLineIdx[lineNumber - 1] -

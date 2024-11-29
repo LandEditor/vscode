@@ -12,7 +12,9 @@ import { Disposable } from "../../../base/common/lifecycle.js";
  */
 export class EditorModel extends Disposable {
 	private readonly _onWillDispose = this._register(new Emitter<void>());
+
 	readonly onWillDispose = this._onWillDispose.event;
+
 	private resolved = false;
 	/**
 	 * Causes this model to resolve returning a promise when loading is completed.

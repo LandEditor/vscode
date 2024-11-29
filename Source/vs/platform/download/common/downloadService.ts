@@ -21,6 +21,7 @@ export class DownloadService implements IDownloadService {
 		@IFileService
 		private readonly fileService: IFileService,
 	) {}
+
 	async download(
 		resource: URI,
 		target: URI,
@@ -35,6 +36,7 @@ export class DownloadService implements IDownloadService {
 
 			return;
 		}
+
 		const options = { type: "GET", url: resource.toString(true) };
 
 		const context = await this.requestService.request(

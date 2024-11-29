@@ -102,10 +102,12 @@ export abstract class TestItemTreeElement {
 		 */
 		public readonly parent: TestItemTreeElement | null = null,
 	) {}
+
 	public toJSON() {
 		if (this.depth === 0) {
 			return { controllerId: this.test.controllerId };
 		}
+
 		const context: ITestItemContext = {
 			$mid: MarshalledId.TestItemContext,
 			tests: [InternalTestItem.serialize(this.test)],
@@ -114,17 +116,21 @@ export abstract class TestItemTreeElement {
 		for (let p = this.parent; p && p.depth > 0; p = p.parent) {
 			context.tests.unshift(InternalTestItem.serialize(p.test));
 		}
+
 		return context;
 	}
 }
 export class TestTreeErrorMessage {
 	public readonly treeId = getId();
+
 	public readonly children = new Set<never>();
+
 	public get description() {
 		return typeof this.message === "string"
 			? this.message
 			: this.message.value;
 	}
+
 	constructor(
 		public readonly message: string | IMarkdownString,
 		public readonly parent: TestExplorerTreeElement,
@@ -168,10 +174,12 @@ export const getChildrenForParent = (
 				rootsWithChildrenArr[0],
 			);
 		}
+
 		it = rootsWithChildrenArr;
 	} else {
 		it = node.children;
 	}
+
 	return Iterable.map(it, (element) =>
 		element instanceof TestTreeErrorMessage
 			? { element }

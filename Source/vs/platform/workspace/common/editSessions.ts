@@ -14,6 +14,7 @@ export interface IEditSessionIdentityProvider {
 		workspaceFolder: IWorkspaceFolder,
 		token: CancellationToken,
 	): Promise<string | undefined>;
+
 	provideEditSessionIdentityMatch(
 		workspaceFolder: IWorkspaceFolder,
 		identity1: string,
@@ -26,6 +27,7 @@ export const IEditSessionIdentityService =
 
 export interface IEditSessionIdentityService {
 	readonly _serviceBrand: undefined;
+
 	registerEditSessionIdentityProvider(
 		provider: IEditSessionIdentityProvider,
 	): IDisposable;
@@ -34,15 +36,18 @@ export interface IEditSessionIdentityService {
 		workspaceFolder: IWorkspaceFolder,
 		cancellationToken: CancellationToken,
 	): Promise<string | undefined>;
+
 	provideEditSessionIdentityMatch(
 		workspaceFolder: IWorkspaceFolder,
 		identity1: string,
 		identity2: string,
 		cancellationToken: CancellationToken,
 	): Promise<EditSessionIdentityMatch | undefined>;
+
 	addEditSessionIdentityCreateParticipant(
 		participants: IEditSessionIdentityCreateParticipant,
 	): IDisposable;
+
 	onWillCreateEditSessionIdentity(
 		workspaceFolder: IWorkspaceFolder,
 		cancellationToken: CancellationToken,

@@ -17,6 +17,7 @@ export class Temp {
 			os.tmpdir(),
 			crypto.randomBytes(20).toString("hex"),
 		);
+
 		this._files.push(file);
 
 		return file;
@@ -35,12 +36,17 @@ export class Temp {
 
 interface Params {
 	readonly keyCode: string;
+
 	readonly operationSetCode: string;
+
 	readonly parameters: {
 		readonly parameterName: string;
+
 		readonly parameterValue: string;
 	}[];
+
 	readonly toolName: string;
+
 	readonly toolVersion: string;
 }
 
@@ -242,11 +248,15 @@ function getParams(type: string): Params[] {
 
 export function main([esrpCliPath, type, folderPath, pattern]: string[]) {
 	const tmp = new Temp();
+
 	process.on("exit", () => tmp.dispose());
 
 	const key = crypto.randomBytes(32);
+
 	const iv = crypto.randomBytes(16);
+
 	const cipher = crypto.createCipheriv("aes-256-cbc", key, iv);
+
 	const encryptedToken =
 		cipher.update(
 			process.env["SYSTEM_ACCESSTOKEN"]!.trim(),
@@ -255,18 +265,22 @@ export function main([esrpCliPath, type, folderPath, pattern]: string[]) {
 		) + cipher.final("hex");
 
 	const encryptionDetailsPath = tmp.tmpNameSync();
+
 	fs.writeFileSync(
 		encryptionDetailsPath,
 		JSON.stringify({ key: key.toString("hex"), iv: iv.toString("hex") }),
 	);
 
 	const encryptedTokenPath = tmp.tmpNameSync();
+
 	fs.writeFileSync(encryptedTokenPath, encryptedToken);
 
 	const patternPath = tmp.tmpNameSync();
+
 	fs.writeFileSync(patternPath, pattern);
 
 	const paramsPath = tmp.tmpNameSync();
+
 	fs.writeFileSync(paramsPath, JSON.stringify(getParams(type)));
 
 	const dotnetVersion = cp
@@ -360,12 +374,15 @@ export function main([esrpCliPath, type, folderPath, pattern]: string[]) {
 		cp.execFileSync("dotnet", args, { stdio: "inherit" });
 	} catch (err) {
 		console.error("ESRP failed");
+
 		console.error(err);
+
 		process.exit(1);
 	}
 }
 
 if (require.main === module) {
 	main(process.argv.slice(2));
+
 	process.exit(0);
 }

@@ -86,9 +86,13 @@ export class DefaultFormatter
 	implements IWorkbenchContribution
 {
 	static readonly configName = "editor.defaultFormatter";
+
 	static extensionIds: (string | null)[] = [];
+
 	static extensionItemLabels: string[] = [];
+
 	static extensionDescriptions: string[] = [];
+
 	private readonly _languageStatusStore = this._store.add(
 		new DisposableStore(),
 	);
@@ -116,33 +120,39 @@ export class DefaultFormatter
 		private readonly _editorService: IEditorService,
 	) {
 		super();
+
 		this._store.add(
 			this._extensionService.onDidChangeExtensions(
 				this._updateConfigValues,
 				this,
 			),
 		);
+
 		this._store.add(
 			FormattingConflicts.setFormatterSelector(
 				(formatter, document, mode, kind) =>
 					this._selectFormatter(formatter, document, mode, kind),
 			),
 		);
+
 		this._store.add(
 			_editorService.onDidActiveEditorChange(this._updateStatus, this),
 		);
+
 		this._store.add(
 			_languageFeaturesService.documentFormattingEditProvider.onDidChange(
 				this._updateStatus,
 				this,
 			),
 		);
+
 		this._store.add(
 			_languageFeaturesService.documentRangeFormattingEditProvider.onDidChange(
 				this._updateStatus,
 				this,
 			),
 		);
+
 		this._store.add(
 			_configService.onDidChangeConfiguration(
 				(e) =>
@@ -150,12 +160,15 @@ export class DefaultFormatter
 					this._updateStatus(),
 			),
 		);
+
 		this._updateConfigValues();
 	}
+
 	private async _updateConfigValues(): Promise<void> {
 		await this._extensionService.whenInstalledExtensionsRegistered();
 
 		let extensions = [...this._extensionService.extensions];
+
 		extensions = extensions.sort((a, b) => {
 			const boostA = a.categories?.find(
 				(cat) =>
@@ -175,11 +188,17 @@ export class DefaultFormatter
 				return a.name.localeCompare(b.name);
 			}
 		});
+
 		DefaultFormatter.extensionIds.length = 0;
+
 		DefaultFormatter.extensionItemLabels.length = 0;
+
 		DefaultFormatter.extensionDescriptions.length = 0;
+
 		DefaultFormatter.extensionIds.push(null);
+
 		DefaultFormatter.extensionItemLabels.push(nls.localize("null", "None"));
+
 		DefaultFormatter.extensionDescriptions.push(
 			nls.localize("nullFormatterDescription", "None"),
 		);
@@ -187,18 +206,22 @@ export class DefaultFormatter
 		for (const extension of extensions) {
 			if (extension.main || extension.browser) {
 				DefaultFormatter.extensionIds.push(extension.identifier.value);
+
 				DefaultFormatter.extensionItemLabels.push(
 					extension.displayName ?? "",
 				);
+
 				DefaultFormatter.extensionDescriptions.push(
 					extension.description ?? "",
 				);
 			}
 		}
 	}
+
 	static _maybeQuotes(s: string): string {
 		return s.match(/\s/) ? `'${s}'` : s;
 	}
+
 	private async _analyzeFormatter<T extends FormattingEditProvider>(
 		kind: FormattingKind,
 		formatter: T[],
@@ -262,6 +285,7 @@ export class DefaultFormatter
 			// ok -> nothing configured but only one formatter available
 			return formatter[0];
 		}
+
 		const langName =
 			this._languageService.getLanguageName(document.getLanguageId()) ||
 			document.getLanguageId();
@@ -280,6 +304,7 @@ export class DefaultFormatter
 
 		return message;
 	}
+
 	private async _selectFormatter<T extends FormattingEditProvider>(
 		formatter: T[],
 		document: ITextModel,
@@ -295,6 +320,7 @@ export class DefaultFormatter
 		if (typeof formatterOrMessage !== "string") {
 			return formatterOrMessage;
 		}
+
 		if (mode !== FormattingMode.Silent) {
 			// running from a user action -> show modal dialog so that users configure
 			// a default formatter
@@ -334,8 +360,10 @@ export class DefaultFormatter
 				{ priority: NotificationPriority.SILENT },
 			);
 		}
+
 		return undefined;
 	}
+
 	private async _pickAndPersistDefaultFormatter<
 		T extends FormattingEditProvider,
 	>(formatter: T[], document: ITextModel): Promise<T | undefined> {
@@ -365,6 +393,7 @@ export class DefaultFormatter
 		if (!pick || !formatter[pick.index].extensionId) {
 			return undefined;
 		}
+
 		this._configService.updateValue(
 			DefaultFormatter.configName,
 			formatter[pick.index].extensionId!.value,
@@ -387,6 +416,7 @@ export class DefaultFormatter
 		if (!editor || !editor.hasModel()) {
 			return;
 		}
+
 		const document = editor.getModel();
 
 		const formatter = getRealAndSyntheticDocumentFormattersOrdered(
@@ -398,20 +428,26 @@ export class DefaultFormatter
 		if (formatter.length === 0) {
 			return;
 		}
+
 		const cts = new CancellationTokenSource();
+
 		this._languageStatusStore.add(toDisposable(() => cts.dispose(true)));
+
 		this._analyzeFormatter(FormattingKind.File, formatter, document).then(
 			(result) => {
 				if (cts.token.isCancellationRequested) {
 					return;
 				}
+
 				if (typeof result !== "string") {
 					return;
 				}
+
 				const command = {
 					id: `formatter/configure/dfl/${generateUuid()}`,
 					title: nls.localize("do.config.command", "Configure..."),
 				};
+
 				this._languageStatusStore.add(
 					CommandsRegistry.registerCommand(command.id, () =>
 						this._pickAndPersistDefaultFormatter(
@@ -420,6 +456,7 @@ export class DefaultFormatter
 						),
 					),
 				);
+
 				this._languageStatusStore.add(
 					this._languageStatusService.addStatus({
 						id: "formatter.conflict",
@@ -477,25 +514,38 @@ function logFormatterTelemetry<
 ) {
 	type FormatterPicks = {
 		mode: "document" | "range";
+
 		extensions: string[];
+
 		pick: string;
 	};
+
 	type FormatterPicksClassification = {
 		owner: "jrieken";
+
 		comment: "Information about resolving formatter conflicts";
+
 		mode: {
 			classification: "SystemMetaData";
+
 			purpose: "FeatureInsight";
+
 			comment: "Formatting mode: whole document or a range/selection";
 		};
+
 		extensions: {
 			classification: "SystemMetaData";
+
 			purpose: "FeatureInsight";
+
 			comment: "The extension that got picked";
 		};
+
 		pick: {
 			classification: "SystemMetaData";
+
 			purpose: "FeatureInsight";
+
 			comment: "The possible extensions to pick";
 		};
 	};
@@ -505,6 +555,7 @@ function logFormatterTelemetry<
 			? ExtensionIdentifier.toKey(obj.extensionId)
 			: "unknown";
 	}
+
 	telemetryService.publicLog2<FormatterPicks, FormatterPicksClassification>(
 		"formatterpick",
 		{
@@ -555,6 +606,7 @@ async function showFormatterPick(
 			// autofocus default pick
 			defaultFormatterPick = pick;
 		}
+
 		return pick;
 	});
 
@@ -597,6 +649,7 @@ async function showFormatterPick(
 				overrides,
 			);
 		}
+
 		return undefined;
 	} else {
 		// picked one
@@ -623,6 +676,7 @@ registerEditorAction(
 				},
 			});
 		}
+
 		async run(
 			accessor: ServicesAccessor,
 			editor: ICodeEditor,
@@ -631,6 +685,7 @@ registerEditorAction(
 			if (!editor.hasModel()) {
 				return;
 			}
+
 			const instaService = accessor.get(IInstantiationService);
 
 			const telemetryService = accessor.get(ITelemetryService);
@@ -662,6 +717,7 @@ registerEditorAction(
 					CancellationToken.None,
 				);
 			}
+
 			logFormatterTelemetry(
 				telemetryService,
 				"document",
@@ -694,6 +750,7 @@ registerEditorAction(
 				},
 			});
 		}
+
 		async run(
 			accessor: ServicesAccessor,
 			editor: ICodeEditor,
@@ -701,6 +758,7 @@ registerEditorAction(
 			if (!editor.hasModel()) {
 				return;
 			}
+
 			const instaService = accessor.get(IInstantiationService);
 
 			const languageFeaturesService = accessor.get(
@@ -721,6 +779,7 @@ registerEditorAction(
 					model.getLineMaxColumn(range.startLineNumber),
 				);
 			}
+
 			const provider =
 				languageFeaturesService.documentRangeFormattingEditProvider.ordered(
 					model,
@@ -742,6 +801,7 @@ registerEditorAction(
 					true,
 				);
 			}
+
 			logFormatterTelemetry(
 				telemetryService,
 				"range",

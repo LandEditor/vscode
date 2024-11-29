@@ -15,14 +15,18 @@ import { crypto } from "./node/crypto";
 
 interface SessionData {
 	id: string;
+
 	account?: {
 		label?: string;
+
 		displayName?: string;
 		// Unfortunately, for some time the id was a number, so we need to support both.
 		// This can be removed once we are confident that all users have migrated to the new id.
 		id: string | number;
 	};
+
 	scopes: string[];
+
 	accessToken: string;
 }
 export enum AuthProviderType {
@@ -34,16 +38,20 @@ export class UriEventHandler
 	implements vscode.UriHandler
 {
 	private readonly _pendingNonces = new Map<string, string[]>();
+
 	private readonly _codeExchangePromises = new Map<
 		string,
 		{
 			promise: Promise<string>;
+
 			cancel: vscode.EventEmitter<void>;
 		}
 	>();
+
 	public handleUri(uri: vscode.Uri) {
 		this.fire(uri);
 	}
+
 	public async waitForCode(
 		logger: Log,
 		scopes: string,
@@ -51,6 +59,7 @@ export class UriEventHandler
 		token: vscode.CancellationToken,
 	) {
 		const existingNonces = this._pendingNonces.get(scopes) || [];
+
 		this._pendingNonces.set(scopes, [...existingNonces, nonce]);
 
 		let codeExchangePromise = this._codeExchangePromises.get(scopes);
@@ -60,8 +69,10 @@ export class UriEventHandler
 				this.event,
 				this.handleEvent(logger, scopes),
 			);
+
 			this._codeExchangePromises.set(scopes, codeExchangePromise);
 		}
+
 		try {
 			return await Promise.race([
 				codeExchangePromise.promise,
@@ -77,10 +88,13 @@ export class UriEventHandler
 			]);
 		} finally {
 			this._pendingNonces.delete(scopes);
+
 			codeExchangePromise?.cancel.fire();
+
 			this._codeExchangePromises.delete(scopes);
 		}
 	}
+
 	private handleEvent: (
 		logger: Log,
 		scopes: string,
@@ -97,11 +111,13 @@ export class UriEventHandler
 
 				return;
 			}
+
 			if (!nonce) {
 				reject(new Error("No nonce"));
 
 				return;
 			}
+
 			const acceptedNonces = this._pendingNonces.get(scopes) || [];
 
 			if (!acceptedNonces.includes(nonce)) {
@@ -116,6 +132,7 @@ export class UriEventHandler
 
 				return;
 			}
+
 			resolve(code);
 		};
 }
@@ -124,12 +141,19 @@ export class GitHubAuthenticationProvider
 {
 	private readonly _sessionChangeEmitter =
 		new vscode.EventEmitter<vscode.AuthenticationProviderAuthenticationSessionsChangeEvent>();
+
 	private readonly _logger: Log;
+
 	private readonly _githubServer: IGitHubServer;
+
 	private readonly _telemetryReporter: ExperimentationTelemetry;
+
 	private readonly _keychain: Keychain;
+
 	private readonly _accountsSeen = new Set<string>();
+
 	private readonly _disposable: vscode.Disposable | undefined;
+
 	private _sessionsPromise: Promise<vscode.AuthenticationSession[]>;
 
 	constructor(
@@ -139,9 +163,12 @@ export class GitHubAuthenticationProvider
 	) {
 		const { aiKey } = context.extension.packageJSON as {
 			name: string;
+
 			version: string;
+
 			aiKey: string;
 		};
+
 		this._telemetryReporter = new ExperimentationTelemetry(
 			context,
 			new TelemetryReporter(aiKey),
@@ -150,7 +177,9 @@ export class GitHubAuthenticationProvider
 		const type = ghesUri
 			? AuthProviderType.githubEnterprise
 			: AuthProviderType.github;
+
 		this._logger = new Log(type);
+
 		this._keychain = new Keychain(
 			this.context,
 			type === AuthProviderType.github
@@ -158,6 +187,7 @@ export class GitHubAuthenticationProvider
 				: `${ghesUri?.authority}${ghesUri?.path}.ghes.auth`,
 			this._logger,
 		);
+
 		this._githubServer = new GitHubServer(
 			this._logger,
 			this._telemetryReporter,
@@ -175,6 +205,7 @@ export class GitHubAuthenticationProvider
 
 			return sessions;
 		});
+
 		this._disposable = vscode.Disposable.from(
 			this._telemetryReporter,
 			vscode.authentication.registerAuthenticationProvider(
@@ -186,18 +217,22 @@ export class GitHubAuthenticationProvider
 			this.context.secrets.onDidChange(() => this.checkForUpdates()),
 		);
 	}
+
 	dispose() {
 		this._disposable?.dispose();
 	}
+
 	get onDidChangeSessions() {
 		return this._sessionChangeEmitter.event;
 	}
+
 	async getSessions(
 		scopes: string[] | undefined,
 		options?: vscode.AuthenticationProviderSessionOptions,
 	): Promise<vscode.AuthenticationSession[]> {
 		// For GitHub scope list, order doesn't matter so we immediately sort the scopes
 		const sortedScopes = scopes?.sort() || [];
+
 		this._logger.info(
 			`Getting sessions for ${sortedScopes.length ? sortedScopes.join(",") : "all scopes"}...`,
 		);
@@ -216,23 +251,28 @@ export class GitHubAuthenticationProvider
 					arrayEquals([...session.scopes].sort(), sortedScopes),
 				)
 			: accountFilteredSessions;
+
 		this._logger.info(
 			`Got ${finalSessions.length} sessions for ${sortedScopes?.join(",") ?? "all scopes"}...`,
 		);
 
 		return finalSessions;
 	}
+
 	private async afterSessionLoad(
 		session: vscode.AuthenticationSession,
 	): Promise<void> {
 		// We only want to fire a telemetry if we haven't seen this account yet in this session.
 		if (!this._accountsSeen.has(session.account.id)) {
 			this._accountsSeen.add(session.account.id);
+
 			this._githubServer.sendAdditionalTelemetryInfo(session);
 		}
 	}
+
 	private async checkForUpdates() {
 		const previousSessions = await this._sessionsPromise;
+
 		this._sessionsPromise = this.readSessions();
 
 		const storedSessions = await this._sessionsPromise;
@@ -240,6 +280,7 @@ export class GitHubAuthenticationProvider
 		const added: vscode.AuthenticationSession[] = [];
 
 		const removed: vscode.AuthenticationSession[] = [];
+
 		storedSessions.forEach((session) => {
 			const matchesExisting = previousSessions.some(
 				(s) => s.id === session.id,
@@ -247,9 +288,11 @@ export class GitHubAuthenticationProvider
 			// Another window added a session to the keychain, add it to our state as well
 			if (!matchesExisting) {
 				this._logger.info("Adding session found in keychain");
+
 				added.push(session);
 			}
 		});
+
 		previousSessions.forEach((session) => {
 			const matchesExisting = storedSessions.some(
 				(s) => s.id === session.id,
@@ -259,6 +302,7 @@ export class GitHubAuthenticationProvider
 				this._logger.info(
 					"Removing session no longer found in keychain",
 				);
+
 				removed.push(session);
 			}
 		});
@@ -267,6 +311,7 @@ export class GitHubAuthenticationProvider
 			this._sessionChangeEmitter.fire({ added, removed, changed: [] });
 		}
 	}
+
 	private async readSessions(): Promise<vscode.AuthenticationSession[]> {
 		let sessionData: SessionData[];
 
@@ -278,6 +323,7 @@ export class GitHubAuthenticationProvider
 			if (!storedSessions) {
 				return [];
 			}
+
 			this._logger.info("Got stored sessions!");
 
 			try {
@@ -310,6 +356,7 @@ export class GitHubAuthenticationProvider
 				let userInfo:
 					| {
 							id: string;
+
 							accountName: string;
 					  }
 					| undefined;
@@ -319,6 +366,7 @@ export class GitHubAuthenticationProvider
 						userInfo = await this._githubServer.getUserInfo(
 							session.accessToken,
 						);
+
 						this._logger.info(
 							`Verified session with the following scopes: ${scopesStr}`,
 						);
@@ -329,9 +377,11 @@ export class GitHubAuthenticationProvider
 						}
 					}
 				}
+
 				this._logger.trace(
 					`Read the following session from the keychain with the following scopes: ${scopesStr}`,
 				);
+
 				scopesSeen.add(scopesStr);
 
 				let accountId: string;
@@ -340,10 +390,12 @@ export class GitHubAuthenticationProvider
 					if (typeof session.account.id === "number") {
 						seenNumberAccountId = true;
 					}
+
 					accountId = `${session.account.id}`;
 				} else {
 					accountId = userInfo?.id ?? "<unknown>";
 				}
+
 				return {
 					id: session.id,
 					account: {
@@ -373,6 +425,7 @@ export class GitHubAuthenticationProvider
 					).value,
 			)
 			.filter(<T>(p?: T): p is T => Boolean(p));
+
 		this._logger.info(`Got ${verifiedSessions.length} verified sessions.`);
 
 		if (
@@ -381,16 +434,22 @@ export class GitHubAuthenticationProvider
 		) {
 			await this.storeSessions(verifiedSessions);
 		}
+
 		return verifiedSessions;
 	}
+
 	private async storeSessions(
 		sessions: vscode.AuthenticationSession[],
 	): Promise<void> {
 		this._logger.info(`Storing ${sessions.length} sessions...`);
+
 		this._sessionsPromise = Promise.resolve(sessions);
+
 		await this._keychain.setToken(JSON.stringify(sessions));
+
 		this._logger.info(`Stored ${sessions.length} sessions!`);
 	}
+
 	public async createSession(
 		scopes: string[],
 		options?: vscode.AuthenticationProviderSessionOptions,
@@ -413,6 +472,7 @@ export class GitHubAuthenticationProvider
 			const sessions = await this._sessionsPromise;
 
 			const loginWith = options?.account?.label;
+
 			this._logger.info(
 				`Logging in with '${loginWith ? loginWith : "any"}' account...`,
 			);
@@ -425,6 +485,7 @@ export class GitHubAuthenticationProvider
 			);
 
 			const session = await this.tokenToSession(token, scopes);
+
 			this.afterSessionLoad(session);
 
 			const sessionIndex = sessions.findIndex(
@@ -440,12 +501,15 @@ export class GitHubAuthenticationProvider
 			} else {
 				sessions.push(session);
 			}
+
 			await this.storeSessions(sessions);
+
 			this._sessionChangeEmitter.fire({
 				added: [session],
 				removed,
 				changed: [],
 			});
+
 			this._logger.info("Login success!");
 
 			return session;
@@ -463,14 +527,17 @@ export class GitHubAuthenticationProvider
                 "loginFailed" : { "owner": "TylerLeonhardt", "comment": "Used to determine how often users run into an error login flow." }
             */
 			this._telemetryReporter?.sendTelemetryEvent("loginFailed");
+
 			vscode.window.showErrorMessage(
 				vscode.l10n.t("Sign in failed: {0}", `${e}`),
 			);
+
 			this._logger.error(e);
 
 			throw e;
 		}
 	}
+
 	private async tokenToSession(
 		token: string,
 		scopes: string[],
@@ -486,12 +553,14 @@ export class GitHubAuthenticationProvider
 			scopes,
 		};
 	}
+
 	public async removeSession(id: string) {
 		try {
 			/* __GDPR__
                 "logout" : { "owner": "TylerLeonhardt", "comment": "Used to determine how often users log out of an account." }
             */
 			this._telemetryReporter?.sendTelemetryEvent("logout");
+
 			this._logger.info(`Logging out of ${id}`);
 
 			const sessions = await this._sessionsPromise;
@@ -502,9 +571,13 @@ export class GitHubAuthenticationProvider
 
 			if (sessionIndex > -1) {
 				const session = sessions[sessionIndex];
+
 				sessions.splice(sessionIndex, 1);
+
 				await this.storeSessions(sessions);
+
 				await this._githubServer.logout(session);
+
 				this._sessionChangeEmitter.fire({
 					added: [],
 					removed: [session],
@@ -518,9 +591,11 @@ export class GitHubAuthenticationProvider
                 "logoutFailed" : { "owner": "TylerLeonhardt", "comment": "Used to determine how often logging out of an account fails." }
             */
 			this._telemetryReporter?.sendTelemetryEvent("logoutFailed");
+
 			vscode.window.showErrorMessage(
 				vscode.l10n.t("Sign out failed: {0}", `${e}`),
 			);
+
 			this._logger.error(e);
 
 			throw e;

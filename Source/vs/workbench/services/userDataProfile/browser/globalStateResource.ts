@@ -41,6 +41,7 @@ export class GlobalStateResourceInitializer
 		@IStorageService
 		private readonly storageService: IStorageService,
 	) {}
+
 	async initialize(content: string): Promise<void> {
 		const globalState: IGlobalState = JSON.parse(content);
 
@@ -57,6 +58,7 @@ export class GlobalStateResourceInitializer
 					target: StorageTarget.USER,
 				});
 			}
+
 			this.storageService.storeAll(storageEntries, true);
 		}
 	}
@@ -70,15 +72,19 @@ export class GlobalStateResource implements IProfileResource {
 		@ILogService
 		private readonly logService: ILogService,
 	) {}
+
 	async getContent(profile: IUserDataProfile): Promise<string> {
 		const globalState = await this.getGlobalState(profile);
 
 		return JSON.stringify(globalState);
 	}
+
 	async apply(content: string, profile: IUserDataProfile): Promise<void> {
 		const globalState: IGlobalState = JSON.parse(content);
+
 		await this.writeGlobalState(globalState, profile);
 	}
+
 	async getGlobalState(profile: IUserDataProfile): Promise<IGlobalState> {
 		const storage: IStringDictionary<string> = {};
 
@@ -93,8 +99,10 @@ export class GlobalStateResource implements IProfileResource {
 				storage[key] = value.value;
 			}
 		}
+
 		return { storage };
 	}
+
 	private async writeGlobalState(
 		globalState: IGlobalState,
 		profile: IUserDataProfile,
@@ -129,6 +137,7 @@ export class GlobalStateResource implements IProfileResource {
 					updatedStorage.set(key, globalState.storage[key]);
 				}
 			}
+
 			await this.userDataProfileStorageService.updateStorageData(
 				profile,
 				updatedStorage,
@@ -141,15 +150,20 @@ export abstract class GlobalStateResourceTreeItem
 	implements IProfileResourceTreeItem
 {
 	readonly type = ProfileResourceType.GlobalState;
+
 	readonly handle = ProfileResourceType.GlobalState;
+
 	readonly label = { label: localize("globalState", "UI State") };
+
 	readonly collapsibleState = TreeItemCollapsibleState.Collapsed;
+
 	checkbox: ITreeItemCheckboxState | undefined;
 
 	constructor(
 		private readonly resource: URI,
 		private readonly uriIdentityService: IUriIdentityService,
 	) {}
+
 	async getChildren(): Promise<IProfileResourceChildTreeItem[]> {
 		return [
 			{
@@ -170,7 +184,9 @@ export abstract class GlobalStateResourceTreeItem
 			},
 		];
 	}
+
 	abstract getContent(): Promise<string>;
+
 	abstract isFromDefaultProfile(): boolean;
 }
 export class GlobalStateResourceExportTreeItem extends GlobalStateResourceTreeItem {
@@ -184,6 +200,7 @@ export class GlobalStateResourceExportTreeItem extends GlobalStateResourceTreeIt
 	) {
 		super(resource, uriIdentityService);
 	}
+
 	async hasContent(): Promise<boolean> {
 		const globalState = await this.instantiationService
 			.createInstance(GlobalStateResource)
@@ -191,11 +208,13 @@ export class GlobalStateResourceExportTreeItem extends GlobalStateResourceTreeIt
 
 		return Object.keys(globalState.storage).length > 0;
 	}
+
 	async getContent(): Promise<string> {
 		return this.instantiationService
 			.createInstance(GlobalStateResource)
 			.getContent(this.profile);
 	}
+
 	isFromDefaultProfile(): boolean {
 		return (
 			!this.profile.isDefault &&
@@ -212,9 +231,11 @@ export class GlobalStateResourceImportTreeItem extends GlobalStateResourceTreeIt
 	) {
 		super(resource, uriIdentityService);
 	}
+
 	async getContent(): Promise<string> {
 		return this.content;
 	}
+
 	isFromDefaultProfile(): boolean {
 		return false;
 	}

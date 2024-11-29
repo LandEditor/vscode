@@ -19,7 +19,9 @@ import {
 
 class LinkedEditingSupport implements vscode.LinkedEditingRangeProvider {
 	public static readonly minVersion = API.v510;
+
 	public constructor(private readonly client: ITypeScriptServiceClient) {}
+
 	async provideLinkedEditingRanges(
 		document: vscode.TextDocument,
 		position: vscode.Position,
@@ -30,6 +32,7 @@ class LinkedEditingSupport implements vscode.LinkedEditingRangeProvider {
 		if (!filepath) {
 			return undefined;
 		}
+
 		const args = typeConverters.Position.toFileLocationRequestArgs(
 			filepath,
 			position,
@@ -44,6 +47,7 @@ class LinkedEditingSupport implements vscode.LinkedEditingRangeProvider {
 		if (response.type !== "response" || !response.body) {
 			return undefined;
 		}
+
 		const wordPattern = response.body.wordPattern
 			? new RegExp(response.body.wordPattern)
 			: undefined;

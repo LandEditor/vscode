@@ -14,6 +14,7 @@ interface AttachmentCleanRequest {
 	notebook: vscode.NotebookDocument;
 
 	document: vscode.TextDocument;
+
 	cell: vscode.NotebookCell;
 }
 interface IAttachmentData {
@@ -21,6 +22,7 @@ interface IAttachmentData {
 }
 interface IAttachmentDiagnostic {
 	name: string;
+
 	ranges: vscode.Range[];
 }
 export enum DiagnosticCode {
@@ -34,27 +36,36 @@ export class AttachmentCleaner implements vscode.CodeActionProvider {
 			Map<string /** attachment filename */, IAttachmentData>
 		>
 	> = new Map();
+
 	private _disposables: vscode.Disposable[];
+
 	private _imageDiagnosticCollection: vscode.DiagnosticCollection;
+
 	private readonly _delayer = new Delayer(750);
 
 	constructor() {
 		this._disposables = [];
+
 		this._imageDiagnosticCollection =
 			vscode.languages.createDiagnosticCollection(
 				"Notebook Image Attachment",
 			);
+
 		this._disposables.push(this._imageDiagnosticCollection);
+
 		this._disposables.push(
 			vscode.commands.registerCommand(
 				ATTACHMENT_CLEANUP_COMMANDID,
 				async (document: vscode.Uri, range: vscode.Range) => {
 					const workspaceEdit = new vscode.WorkspaceEdit();
+
 					workspaceEdit.delete(document, range);
+
 					await vscode.workspace.applyEdit(workspaceEdit);
 				},
 			),
 		);
+
 		this._disposables.push(
 			vscode.languages.registerCodeActionsProvider(
 				JUPYTER_NOTEBOOK_MARKDOWN_SELECTOR,
@@ -64,6 +75,7 @@ export class AttachmentCleaner implements vscode.CodeActionProvider {
 				},
 			),
 		);
+
 		this._disposables.push(
 			vscode.workspace.onDidChangeNotebookDocument((e) => {
 				this._delayer.trigger(() => {
@@ -71,11 +83,13 @@ export class AttachmentCleaner implements vscode.CodeActionProvider {
 						if (!change.document) {
 							return;
 						}
+
 						if (
 							change.cell.kind !== vscode.NotebookCellKind.Markup
 						) {
 							return;
 						}
+
 						const metadataEdit = this.cleanNotebookAttachments({
 							notebook: e.notebook,
 							cell: change.cell,
@@ -84,13 +98,16 @@ export class AttachmentCleaner implements vscode.CodeActionProvider {
 
 						if (metadataEdit) {
 							const workspaceEdit = new vscode.WorkspaceEdit();
+
 							workspaceEdit.set(e.notebook.uri, [metadataEdit]);
+
 							vscode.workspace.applyEdit(workspaceEdit);
 						}
 					});
 				});
 			}),
 		);
+
 		this._disposables.push(
 			vscode.workspace.onWillSaveNotebookDocument((e) => {
 				if (e.reason === vscode.TextDocumentSaveReason.Manual) {
@@ -99,12 +116,14 @@ export class AttachmentCleaner implements vscode.CodeActionProvider {
 					if (e.notebook.getCells().length === 0) {
 						return;
 					}
+
 					const notebookEdits: vscode.NotebookEdit[] = [];
 
 					for (const cell of e.notebook.getCells()) {
 						if (cell.kind !== vscode.NotebookCellKind.Markup) {
 							continue;
 						}
+
 						const metadataEdit = this.cleanNotebookAttachments({
 							notebook: e.notebook,
 							cell: cell,
@@ -115,20 +134,26 @@ export class AttachmentCleaner implements vscode.CodeActionProvider {
 							notebookEdits.push(metadataEdit);
 						}
 					}
+
 					if (!notebookEdits.length) {
 						return;
 					}
+
 					const workspaceEdit = new vscode.WorkspaceEdit();
+
 					workspaceEdit.set(e.notebook.uri, notebookEdits);
+
 					e.waitUntil(Promise.resolve(workspaceEdit));
 				}
 			}),
 		);
+
 		this._disposables.push(
 			vscode.workspace.onDidCloseNotebookDocument((e) => {
 				this._attachmentCache.delete(e.uri.toString());
 			}),
 		);
+
 		this._disposables.push(
 			vscode.workspace.onWillRenameFiles((e) => {
 				const re = /\.ipynb$/;
@@ -143,25 +168,30 @@ export class AttachmentCleaner implements vscode.CodeActionProvider {
 							file.newUri.toString(),
 							this._attachmentCache.get(file.oldUri.toString())!,
 						);
+
 						this._attachmentCache.delete(file.oldUri.toString());
 					}
 				}
 			}),
 		);
+
 		this._disposables.push(
 			vscode.workspace.onDidOpenTextDocument((e) => {
 				this.analyzeMissingAttachments(e);
 			}),
 		);
+
 		this._disposables.push(
 			vscode.workspace.onDidCloseTextDocument((e) => {
 				this.analyzeMissingAttachments(e);
 			}),
 		);
+
 		vscode.workspace.textDocuments.forEach((document) => {
 			this.analyzeMissingAttachments(document);
 		});
 	}
+
 	provideCodeActions(
 		document: vscode.TextDocument,
 		_range: vscode.Range | vscode.Selection,
@@ -178,16 +208,20 @@ export class AttachmentCleaner implements vscode.CodeActionProvider {
 							"Remove invalid image attachment reference",
 							vscode.CodeActionKind.QuickFix,
 						);
+
 						fix.command = {
 							command: ATTACHMENT_CLEANUP_COMMANDID,
 							title: "Remove invalid image attachment reference",
 							arguments: [document.uri, diagnostic.range],
 						};
+
 						fixes.push(fix);
 					}
+
 					break;
 			}
 		}
+
 		return fixes;
 	}
 	/**
@@ -201,6 +235,7 @@ export class AttachmentCleaner implements vscode.CodeActionProvider {
 		if (e.notebook.isClosed) {
 			return;
 		}
+
 		const document = e.document;
 
 		const cell = e.cell;
@@ -226,6 +261,7 @@ export class AttachmentCleaner implements vscode.CodeActionProvider {
 				cellFragment,
 			);
 		}
+
 		if (this.checkMetadataHasAttachmentsField(cell.metadata)) {
 			// the cell metadata contains attachments, check if any are used in the markdown source
 			for (const [currFilename, attachment] of Object.entries(
@@ -237,6 +273,7 @@ export class AttachmentCleaner implements vscode.CodeActionProvider {
 					// attachment reference is present in the markdown source, no need to cache it
 					markdownAttachmentsRefedInCell.get(currFilename)!.valid =
 						true;
+
 					markdownAttachmentsInUse[currFilename] =
 						attachment as IAttachmentData;
 				} else {
@@ -250,6 +287,7 @@ export class AttachmentCleaner implements vscode.CodeActionProvider {
 				}
 			}
 		}
+
 		for (const [
 			currFilename,
 			attachment,
@@ -266,6 +304,7 @@ export class AttachmentCleaner implements vscode.CodeActionProvider {
 
 			if (cachedImageAttachment) {
 				markdownAttachmentsInUse[currFilename] = cachedImageAttachment;
+
 				this._attachmentCache
 					.get(notebookUri)
 					?.get(cellFragment)
@@ -278,6 +317,7 @@ export class AttachmentCleaner implements vscode.CodeActionProvider {
 				});
 			}
 		}
+
 		this.updateDiagnostics(cell.document.uri, diagnostics);
 
 		if (
@@ -296,6 +336,7 @@ export class AttachmentCleaner implements vscode.CodeActionProvider {
 			} else {
 				updateMetadata.attachments = markdownAttachmentsInUse;
 			}
+
 			const metadataEdit = vscode.NotebookEdit.updateCellMetadata(
 				cell.index,
 				updateMetadata,
@@ -303,18 +344,22 @@ export class AttachmentCleaner implements vscode.CodeActionProvider {
 
 			return metadataEdit;
 		}
+
 		return;
 	}
+
 	private analyzeMissingAttachments(document: vscode.TextDocument): void {
 		if (document.uri.scheme !== "vscode-notebook-cell") {
 			// not notebook
 			return;
 		}
+
 		if (document.isClosed) {
 			this.updateDiagnostics(document.uri, []);
 
 			return;
 		}
+
 		let notebook: vscode.NotebookDocument | undefined;
 
 		let activeCell: vscode.NotebookCell | undefined;
@@ -326,14 +371,17 @@ export class AttachmentCleaner implements vscode.CodeActionProvider {
 
 			if (cell) {
 				notebook = notebookDocument;
+
 				activeCell = cell;
 
 				break;
 			}
 		}
+
 		if (!notebook || !activeCell) {
 			return;
 		}
+
 		const diagnostics: IAttachmentDiagnostic[] = [];
 
 		const markdownAttachments = this.getAttachmentNames(document);
@@ -349,8 +397,10 @@ export class AttachmentCleaner implements vscode.CodeActionProvider {
 				}
 			}
 		}
+
 		this.updateDiagnostics(activeCell.document.uri, diagnostics);
 	}
+
 	private updateDiagnostics(
 		cellUri: vscode.Uri,
 		diagnostics: IAttachmentDiagnostic[],
@@ -364,10 +414,13 @@ export class AttachmentCleaner implements vscode.CodeActionProvider {
 					`The image named: '${currDiagnostic.name}' is not present in cell metadata.`,
 					vscode.DiagnosticSeverity.Warning,
 				);
+
 				diagnostic.code = DiagnosticCode.missing_attachment;
+
 				vscodeDiagnostics.push(diagnostic);
 			});
 		}
+
 		this._imageDiagnosticCollection.set(cellUri, vscodeDiagnostics);
 	}
 	/**
@@ -390,6 +443,7 @@ export class AttachmentCleaner implements vscode.CodeActionProvider {
 		if (!documentCache) {
 			// no cache for this notebook yet
 			const cellCache = new Map<string, IAttachmentData>();
+
 			cellCache.set(
 				currFilename,
 				this.getMetadataAttachment(metadata, currFilename),
@@ -398,10 +452,12 @@ export class AttachmentCleaner implements vscode.CodeActionProvider {
 			const documentCache = new Map();
 
 			documentCache.set(cellFragment, cellCache);
+
 			this._attachmentCache.set(notebookUri, documentCache);
 		} else if (!documentCache.has(cellFragment)) {
 			// no cache for this cell yet
 			const cellCache = new Map<string, IAttachmentData>();
+
 			cellCache.set(
 				currFilename,
 				this.getMetadataAttachment(metadata, currFilename),
@@ -464,6 +520,7 @@ export class AttachmentCleaner implements vscode.CodeActionProvider {
 	): void {
 		const documentCache =
 			this._attachmentCache.get(notebookUri) ?? new Map();
+
 		this._attachmentCache.set(notebookUri, documentCache);
 
 		const cellCache =
@@ -491,6 +548,7 @@ export class AttachmentCleaner implements vscode.CodeActionProvider {
 			string,
 			{
 				valid: boolean;
+
 				ranges: vscode.Range[];
 			}
 		> = new Map();
@@ -515,14 +573,19 @@ export class AttachmentCleaner implements vscode.CodeActionProvider {
 					valid: false,
 					ranges: [],
 				};
+
 				filenames.set(match.groups.filename, filename);
+
 				filename.ranges.push(range);
 			}
 		}
+
 		return filenames;
 	}
+
 	dispose() {
 		this._disposables.forEach((d) => d.dispose());
+
 		this._delayer.dispose();
 	}
 }

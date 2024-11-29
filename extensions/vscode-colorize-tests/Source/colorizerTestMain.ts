@@ -61,6 +61,7 @@ export function activate(context: vscode.ExtensionContext): any {
 							return;
 						}
 					}
+
 					let tokenModifiers = 0;
 
 					for (const modifier of modifiers) {
@@ -68,14 +69,17 @@ export function activate(context: vscode.ExtensionContext): any {
 
 						if (index !== -1) {
 							tokenModifiers = tokenModifiers | (1 << index);
+
 							selectedModifiers.push(modifier);
 						} else if (modifier === "notInLegend") {
 							tokenModifiers =
 								tokenModifiers |
 								(1 << (legend.tokenModifiers.length + 2));
+
 							selectedModifiers.push(modifier);
 						}
 					}
+
 					builder.push(
 						startLine,
 						startCharacter,
@@ -83,10 +87,12 @@ export function activate(context: vscode.ExtensionContext): any {
 						tokenType,
 						tokenModifiers,
 					);
+
 					outputChannel.appendLine(
 						`line: ${startLine}, character: ${startCharacter}, length ${length}, ${type} (${tokenType}), ${selectedModifiers} ${tokenModifiers.toString(2)}`,
 					);
 				}
+
 				outputChannel.appendLine("---");
 
 				const visitor: jsoncParser.JSONVisitor = {
@@ -116,11 +122,13 @@ export function activate(context: vscode.ExtensionContext): any {
 						}
 					},
 				};
+
 				jsoncParser.visit(document.getText(), visitor);
 
 				return builder.build();
 			},
 		};
+
 	context.subscriptions.push(
 		vscode.languages.registerDocumentSemanticTokensProvider(
 			{ pattern: "**/*semantic-test.json" },

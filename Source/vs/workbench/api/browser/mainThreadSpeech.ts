@@ -40,15 +40,19 @@ type KeywordRecognitionSession = {
 @extHostNamedCustomer(MainContext.MainThreadSpeech)
 export class MainThreadSpeech implements MainThreadSpeechShape {
 	private readonly proxy: ExtHostSpeechShape;
+
 	private readonly providerRegistrations = new Map<number, IDisposable>();
+
 	private readonly speechToTextSessions = new Map<
 		number,
 		SpeechToTextSession
 	>();
+
 	private readonly textToSpeechSessions = new Map<
 		number,
 		TextToSpeechSession
 	>();
+
 	private readonly keywordRecognitionSessions = new Map<
 		number,
 		KeywordRecognitionSession
@@ -83,9 +87,11 @@ export class MainThreadSpeech implements MainThreadSpeechShape {
 							onDidChange: Event.None,
 						};
 					}
+
 					const disposables = new DisposableStore();
 
 					const session = Math.random();
+
 					this.proxy.$createSpeechToTextSession(
 						handle,
 						session,
@@ -95,11 +101,15 @@ export class MainThreadSpeech implements MainThreadSpeechShape {
 					const onDidChange = disposables.add(
 						new Emitter<ISpeechToTextEvent>(),
 					);
+
 					this.speechToTextSessions.set(session, { onDidChange });
+
 					disposables.add(
 						token.onCancellationRequested(() => {
 							this.proxy.$cancelSpeechToTextSession(session);
+
 							this.speechToTextSessions.delete(session);
+
 							disposables.dispose();
 						}),
 					);
@@ -115,9 +125,11 @@ export class MainThreadSpeech implements MainThreadSpeechShape {
 							synthesize: async () => {},
 						};
 					}
+
 					const disposables = new DisposableStore();
 
 					const session = Math.random();
+
 					this.proxy.$createTextToSpeechSession(
 						handle,
 						session,
@@ -127,11 +139,15 @@ export class MainThreadSpeech implements MainThreadSpeechShape {
 					const onDidChange = disposables.add(
 						new Emitter<ITextToSpeechEvent>(),
 					);
+
 					this.textToSpeechSessions.set(session, { onDidChange });
+
 					disposables.add(
 						token.onCancellationRequested(() => {
 							this.proxy.$cancelTextToSpeechSession(session);
+
 							this.textToSpeechSessions.delete(session);
+
 							disposables.dispose();
 						}),
 					);
@@ -140,6 +156,7 @@ export class MainThreadSpeech implements MainThreadSpeechShape {
 						onDidChange: onDidChange.event,
 						synthesize: async (text) => {
 							await this.proxy.$synthesizeSpeech(session, text);
+
 							await raceCancellation(
 								Event.toPromise(
 									Event.filter(
@@ -160,9 +177,11 @@ export class MainThreadSpeech implements MainThreadSpeechShape {
 							onDidChange: Event.None,
 						};
 					}
+
 					const disposables = new DisposableStore();
 
 					const session = Math.random();
+
 					this.proxy.$createKeywordRecognitionSession(
 						handle,
 						session,
@@ -171,15 +190,19 @@ export class MainThreadSpeech implements MainThreadSpeechShape {
 					const onDidChange = disposables.add(
 						new Emitter<IKeywordRecognitionEvent>(),
 					);
+
 					this.keywordRecognitionSessions.set(session, {
 						onDidChange,
 					});
+
 					disposables.add(
 						token.onCancellationRequested(() => {
 							this.proxy.$cancelKeywordRecognitionSession(
 								session,
 							);
+
 							this.keywordRecognitionSessions.delete(session);
+
 							disposables.dispose();
 						}),
 					);
@@ -190,6 +213,7 @@ export class MainThreadSpeech implements MainThreadSpeechShape {
 				},
 			},
 		);
+
 		this.providerRegistrations.set(handle, {
 			dispose: () => {
 				registration.dispose();
@@ -201,15 +225,18 @@ export class MainThreadSpeech implements MainThreadSpeechShape {
 
 		if (registration) {
 			registration.dispose();
+
 			this.providerRegistrations.delete(handle);
 		}
 	}
 	$emitSpeechToTextEvent(session: number, event: ISpeechToTextEvent): void {
 		const providerSession = this.speechToTextSessions.get(session);
+
 		providerSession?.onDidChange.fire(event);
 	}
 	$emitTextToSpeechEvent(session: number, event: ITextToSpeechEvent): void {
 		const providerSession = this.textToSpeechSessions.get(session);
+
 		providerSession?.onDidChange.fire(event);
 	}
 	$emitKeywordRecognitionEvent(
@@ -217,24 +244,33 @@ export class MainThreadSpeech implements MainThreadSpeechShape {
 		event: IKeywordRecognitionEvent,
 	): void {
 		const providerSession = this.keywordRecognitionSessions.get(session);
+
 		providerSession?.onDidChange.fire(event);
 	}
+
 	dispose(): void {
 		this.providerRegistrations.forEach((disposable) =>
 			disposable.dispose(),
 		);
+
 		this.providerRegistrations.clear();
+
 		this.speechToTextSessions.forEach((session) =>
 			session.onDidChange.dispose(),
 		);
+
 		this.speechToTextSessions.clear();
+
 		this.textToSpeechSessions.forEach((session) =>
 			session.onDidChange.dispose(),
 		);
+
 		this.textToSpeechSessions.clear();
+
 		this.keywordRecognitionSessions.forEach((session) =>
 			session.onDidChange.dispose(),
 		);
+
 		this.keywordRecognitionSessions.clear();
 	}
 }

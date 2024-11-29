@@ -30,6 +30,7 @@ export async function getNLSConfiguration(
 			availableLanguages: {},
 		};
 	}
+
 	const cacheKey = `${language}||${userDataPath}`;
 
 	let result = nlsConfigurationCache.get(cacheKey);
@@ -42,7 +43,9 @@ export async function getNLSConfiguration(
 			userDataPath,
 			nlsMetadataPath,
 		});
+
 		nlsConfigurationCache.set(cacheKey, result);
 	}
+
 	return result;
 }

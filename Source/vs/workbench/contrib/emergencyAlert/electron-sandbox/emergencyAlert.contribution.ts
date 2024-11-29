@@ -20,12 +20,17 @@ import { IBannerService } from "../../../services/banner/browser/bannerService.j
 
 interface IEmergencyAlert {
 	readonly commit: string;
+
 	readonly platform?: string;
+
 	readonly arch?: string;
+
 	readonly message: string;
+
 	readonly actions?: [
 		{
 			readonly label: string;
+
 			readonly href: string;
 		},
 	];
@@ -49,13 +54,16 @@ export class EmergencyAlert implements IWorkbenchContribution {
 		if (productService.quality !== "insider") {
 			return; // only enabled in insiders for now
 		}
+
 		const emergencyAlertUrl = productService.emergencyAlertUrl;
 
 		if (!emergencyAlertUrl) {
 			return; // no emergency alert configured
 		}
+
 		this.fetchAlerts(emergencyAlertUrl);
 	}
+
 	private async fetchAlerts(url: string): Promise<void> {
 		try {
 			await this.doFetchAlerts(url);
@@ -63,6 +71,7 @@ export class EmergencyAlert implements IWorkbenchContribution {
 			this.logService.error(e);
 		}
 	}
+
 	private async doFetchAlerts(url: string): Promise<void> {
 		const requestResult = await this.requestService.request(
 			{ type: "GET", url },
@@ -74,11 +83,13 @@ export class EmergencyAlert implements IWorkbenchContribution {
 				`Failed to fetch emergency alerts: HTTP ${requestResult.res.statusCode}`,
 			);
 		}
+
 		const emergencyAlerts = await asJson<IEmergencyAlerts>(requestResult);
 
 		if (!emergencyAlerts) {
 			return;
 		}
+
 		for (const emergencyAlert of emergencyAlerts.alerts) {
 			if (
 				emergencyAlert.commit !== this.productService.commit || // version mismatch
@@ -88,6 +99,7 @@ export class EmergencyAlert implements IWorkbenchContribution {
 			) {
 				return;
 			}
+
 			this.bannerService.show({
 				id: "emergencyAlert.banner",
 				icon: Codicon.warning,

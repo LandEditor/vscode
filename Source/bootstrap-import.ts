@@ -37,19 +37,24 @@ export async function initialize(injectPath: string): Promise<void> {
 			if (!main) {
 				main = "index.js";
 			}
+
 			if (!main.endsWith(".js")) {
 				main += ".js";
 			}
+
 			const mainPath = join(
 				injectPackageJSONPath,
 				`../node_modules/${name}/${main}`,
 			);
+
 			_specifierToUrl[name] = pathToFileURL(mainPath).href;
 		} catch (err) {
 			console.error(name);
+
 			console.error(err);
 		}
 	}
+
 	console.log(
 		`[bootstrap-import] Initialized node_modules redirector for: ${injectPath}`,
 	);

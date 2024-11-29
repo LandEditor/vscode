@@ -32,11 +32,15 @@ const NotebookEditorContribution = Object.freeze({
 
 export interface INotebookEditorContribution {
 	readonly [NotebookEditorContribution.type]: string;
+
 	readonly [NotebookEditorContribution.displayName]: string;
+
 	readonly [NotebookEditorContribution.selector]?: readonly {
 		filenamePattern?: string;
+
 		excludeFileNamePattern?: string;
 	}[];
+
 	readonly [NotebookEditorContribution.priority]?: string;
 }
 
@@ -52,11 +56,17 @@ const NotebookRendererContribution = Object.freeze({
 
 export interface INotebookRendererContribution {
 	readonly [NotebookRendererContribution.id]?: string;
+
 	readonly [NotebookRendererContribution.displayName]: string;
+
 	readonly [NotebookRendererContribution.mimeTypes]?: readonly string[];
+
 	readonly [NotebookRendererContribution.entrypoint]: ContributedNotebookRendererEntrypoint;
+
 	readonly [NotebookRendererContribution.hardDependencies]: readonly string[];
+
 	readonly [NotebookRendererContribution.optionalDependencies]: readonly string[];
+
 	readonly [NotebookRendererContribution.requiresMessaging]: RendererMessagingSpec;
 }
 
@@ -67,7 +77,9 @@ const NotebookPreloadContribution = Object.freeze({
 });
 interface INotebookPreloadContribution {
 	readonly [NotebookPreloadContribution.type]: string;
+
 	readonly [NotebookPreloadContribution.entrypoint]: string;
+
 	readonly [NotebookPreloadContribution.localResourceRoots]: readonly string[];
 }
 
@@ -390,15 +402,18 @@ class NotebooksDataRenderer
 	implements IExtensionFeatureTableRenderer
 {
 	readonly type = "table";
+
 	shouldRender(manifest: IExtensionManifest): boolean {
 		return !!manifest.contributes?.notebooks;
 	}
+
 	render(manifest: IExtensionManifest): IRenderedData<ITableData> {
 		const contrib = manifest.contributes?.notebooks || [];
 
 		if (!contrib.length) {
 			return { data: { headers: [], rows: [] }, dispose: () => {} };
 		}
+
 		const headers = [
 			nls.localize("Notebook id", "ID"),
 			nls.localize("Notebook name", "Name"),
@@ -424,15 +439,18 @@ class NotebookRenderersDataRenderer
 	implements IExtensionFeatureTableRenderer
 {
 	readonly type = "table";
+
 	shouldRender(manifest: IExtensionManifest): boolean {
 		return !!manifest.contributes?.notebookRenderer;
 	}
+
 	render(manifest: IExtensionManifest): IRenderedData<ITableData> {
 		const contrib = manifest.contributes?.notebookRenderer || [];
 
 		if (!contrib.length) {
 			return { data: { headers: [], rows: [] }, dispose: () => {} };
 		}
+
 		const headers = [
 			nls.localize("Notebook renderer name", "Name"),
 			nls.localize("Notebook mimetypes", "Mimetypes"),

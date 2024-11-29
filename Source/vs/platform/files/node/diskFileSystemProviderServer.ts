@@ -51,6 +51,7 @@ export abstract class AbstractDiskFileSystemProviderChannel<T>
 	) {
 		super();
 	}
+
 	call(ctx: T, command: string, arg?: any): Promise<any> {
 		const uriTransformer = this.getUriTransformer(ctx);
 
@@ -106,8 +107,10 @@ export abstract class AbstractDiskFileSystemProviderChannel<T>
 			case "unwatch":
 				return this.unwatch(arg[0], arg[1]);
 		}
+
 		throw new Error(`IPC Command ${command} not found`);
 	}
+
 	listen(ctx: T, event: string, arg: any): Event<any> {
 		const uriTransformer = this.getUriTransformer(ctx);
 
@@ -118,9 +121,12 @@ export abstract class AbstractDiskFileSystemProviderChannel<T>
 			case "readFileStream":
 				return this.onReadFileStream(uriTransformer, arg[0], arg[1]);
 		}
+
 		throw new Error(`Unknown event ${event}`);
 	}
+
 	protected abstract getUriTransformer(ctx: T): IURITransformer;
+
 	protected abstract transformIncoming(
 		uriTransformer: IURITransformer,
 		_resource: UriComponents,
@@ -139,6 +145,7 @@ export abstract class AbstractDiskFileSystemProviderChannel<T>
 
 		return this.provider.stat(resource);
 	}
+
 	private readdir(
 		uriTransformer: IURITransformer,
 		_resource: UriComponents,
@@ -164,6 +171,7 @@ export abstract class AbstractDiskFileSystemProviderChannel<T>
 
 		return VSBuffer.wrap(buffer);
 	}
+
 	private onReadFileStream(
 		uriTransformer: IURITransformer,
 		_resource: URI,
@@ -190,6 +198,7 @@ export abstract class AbstractDiskFileSystemProviderChannel<T>
 			opts,
 			cts.token,
 		);
+
 		listenStream(fileStream, {
 			onData: (chunk) => emitter.fire(VSBuffer.wrap(chunk)),
 			onError: (error) => emitter.fire(error),
@@ -198,12 +207,14 @@ export abstract class AbstractDiskFileSystemProviderChannel<T>
 				emitter.fire("end");
 				// Cleanup
 				emitter.dispose();
+
 				cts.dispose();
 			},
 		});
 
 		return emitter.event;
 	}
+
 	private writeFile(
 		uriTransformer: IURITransformer,
 		_resource: UriComponents,
@@ -214,6 +225,7 @@ export abstract class AbstractDiskFileSystemProviderChannel<T>
 
 		return this.provider.writeFile(resource, content.buffer, opts);
 	}
+
 	private open(
 		uriTransformer: IURITransformer,
 		_resource: UriComponents,
@@ -227,9 +239,11 @@ export abstract class AbstractDiskFileSystemProviderChannel<T>
 
 		return this.provider.open(resource, opts);
 	}
+
 	private close(fd: number): Promise<void> {
 		return this.provider.close(fd);
 	}
+
 	private async read(
 		fd: number,
 		pos: number,
@@ -248,6 +262,7 @@ export abstract class AbstractDiskFileSystemProviderChannel<T>
 
 		return [buffer, bytesRead];
 	}
+
 	private write(
 		fd: number,
 		pos: number,
@@ -267,6 +282,7 @@ export abstract class AbstractDiskFileSystemProviderChannel<T>
 
 		return this.provider.mkdir(resource);
 	}
+
 	protected delete(
 		uriTransformer: IURITransformer,
 		_resource: UriComponents,
@@ -276,6 +292,7 @@ export abstract class AbstractDiskFileSystemProviderChannel<T>
 
 		return this.provider.delete(resource, opts);
 	}
+
 	private rename(
 		uriTransformer: IURITransformer,
 		_source: UriComponents,
@@ -288,6 +305,7 @@ export abstract class AbstractDiskFileSystemProviderChannel<T>
 
 		return this.provider.rename(source, target, opts);
 	}
+
 	private copy(
 		uriTransformer: IURITransformer,
 		_source: UriComponents,
@@ -319,10 +337,12 @@ export abstract class AbstractDiskFileSystemProviderChannel<T>
 		string /* session ID */,
 		ISessionFileWatcher
 	>();
+
 	private readonly watchRequests = new Map<
 		string /* session ID + request ID */,
 		IDisposable
 	>();
+
 	private onFileChange(
 		uriTransformer: IURITransformer,
 		sessionId: string,
@@ -339,12 +359,14 @@ export abstract class AbstractDiskFileSystemProviderChannel<T>
 			},
 			onDidRemoveLastListener: () => {
 				dispose(this.sessionToWatcher.get(sessionId));
+
 				this.sessionToWatcher.delete(sessionId);
 			},
 		});
 
 		return emitter.event;
 	}
+
 	private async watch(
 		uriTransformer: IURITransformer,
 		sessionId: string,
@@ -358,9 +380,11 @@ export abstract class AbstractDiskFileSystemProviderChannel<T>
 			const resource = this.transformIncoming(uriTransformer, _resource);
 
 			const disposable = watcher.watch(req, resource, opts);
+
 			this.watchRequests.set(sessionId + req, disposable);
 		}
 	}
+
 	private async unwatch(sessionId: string, req: number): Promise<void> {
 		const id = sessionId + req;
 
@@ -368,9 +392,11 @@ export abstract class AbstractDiskFileSystemProviderChannel<T>
 
 		if (disposable) {
 			dispose(disposable);
+
 			this.watchRequests.delete(id);
 		}
 	}
+
 	protected abstract createSessionFileWatcher(
 		uriTransformer: IURITransformer,
 		emitter: Emitter<IFileChange[] | string>,
@@ -382,11 +408,13 @@ export abstract class AbstractDiskFileSystemProviderChannel<T>
 		for (const [, disposable] of this.watchRequests) {
 			disposable.dispose();
 		}
+
 		this.watchRequests.clear();
 
 		for (const [, disposable] of this.sessionToWatcher) {
 			disposable.dispose();
 		}
+
 		this.sessionToWatcher.clear();
 	}
 }
@@ -414,14 +442,17 @@ export abstract class AbstractSessionFileWatcher
 		private readonly environmentService: IEnvironmentService,
 	) {
 		super();
+
 		this.registerListeners(sessionEmitter);
 	}
+
 	private registerListeners(
 		sessionEmitter: Emitter<IFileChange[] | string>,
 	): void {
 		const localChangeEmitter = this._register(
 			new Emitter<readonly IFileChange[]>(),
 		);
+
 		this._register(
 			localChangeEmitter.event((events) => {
 				sessionEmitter.fire(
@@ -435,44 +466,53 @@ export abstract class AbstractSessionFileWatcher
 				);
 			}),
 		);
+
 		this._register(
 			this.fileWatcher.onDidChangeFile((events) =>
 				localChangeEmitter.fire(events),
 			),
 		);
+
 		this._register(
 			this.fileWatcher.onDidWatchError((error) =>
 				sessionEmitter.fire(error),
 			),
 		);
 	}
+
 	protected getRecursiveWatcherOptions(
 		environmentService: IEnvironmentService,
 	): IRecursiveWatcherOptions | undefined {
 		return undefined; // subclasses can override
 	}
+
 	protected getExtraExcludes(
 		environmentService: IEnvironmentService,
 	): string[] | undefined {
 		return undefined; // subclasses can override
 	}
+
 	watch(req: number, resource: URI, opts: IWatchOptions): IDisposable {
 		const extraExcludes = this.getExtraExcludes(this.environmentService);
 
 		if (Array.isArray(extraExcludes)) {
 			opts.excludes = [...opts.excludes, ...extraExcludes];
 		}
+
 		this.watcherRequests.set(req, this.fileWatcher.watch(resource, opts));
 
 		return toDisposable(() => {
 			dispose(this.watcherRequests.get(req));
+
 			this.watcherRequests.delete(req);
 		});
 	}
+
 	override dispose(): void {
 		for (const [, disposable] of this.watcherRequests) {
 			disposable.dispose();
 		}
+
 		this.watcherRequests.clear();
 
 		super.dispose();

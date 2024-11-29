@@ -42,9 +42,12 @@ export class LineRangeMapping {
 			if (!r.modified.isEmpty) {
 				result.push(r);
 			}
+
 			lastOriginalEndLineNumber = m.original.endLineNumberExclusive;
+
 			lastModifiedEndLineNumber = m.modified.endLineNumberExclusive;
 		}
+
 		const r = new LineRangeMapping(
 			new LineRange(lastOriginalEndLineNumber, originalLineCount + 1),
 			new LineRange(lastModifiedEndLineNumber, modifiedLineCount + 1),
@@ -53,8 +56,10 @@ export class LineRangeMapping {
 		if (!r.modified.isEmpty) {
 			result.push(r);
 		}
+
 		return result;
 	}
+
 	public static clip(
 		mapping: readonly LineRangeMapping[],
 		originalRange: LineRange,
@@ -76,6 +81,7 @@ export class LineRangeMapping {
 				result.push(new LineRangeMapping(original, modified));
 			}
 		}
+
 		return result;
 	}
 	/**
@@ -89,20 +95,25 @@ export class LineRangeMapping {
 
 	constructor(originalRange: LineRange, modifiedRange: LineRange) {
 		this.original = originalRange;
+
 		this.modified = modifiedRange;
 	}
+
 	public toString(): string {
 		return `{${this.original.toString()}->${this.modified.toString()}}`;
 	}
+
 	public flip(): LineRangeMapping {
 		return new LineRangeMapping(this.modified, this.original);
 	}
+
 	public join(other: LineRangeMapping): LineRangeMapping {
 		return new LineRangeMapping(
 			this.original.join(other.original),
 			this.modified.join(other.modified),
 		);
 	}
+
 	public get changedLineCount() {
 		return Math.max(this.original.length, this.modified.length);
 	}
@@ -193,6 +204,7 @@ export class LineRangeMapping {
 				),
 			);
 		}
+
 		if (!this.original.isEmpty && !this.modified.isEmpty) {
 			return new RangeMapping(
 				Range.fromPositions(
@@ -217,6 +229,7 @@ export class LineRangeMapping {
 				),
 			);
 		}
+
 		if (
 			this.original.startLineNumber > 1 &&
 			this.modified.startLineNumber > 1
@@ -265,17 +278,20 @@ function normalizePosition(position: Position, content: string[]): Position {
 	if (position.lineNumber < 1) {
 		return new Position(1, 1);
 	}
+
 	if (position.lineNumber > content.length) {
 		return new Position(
 			content.length,
 			content[content.length - 1].length + 1,
 		);
 	}
+
 	const line = content[position.lineNumber - 1];
 
 	if (position.column > line.length + 1) {
 		return new Position(position.lineNumber, line.length + 1);
 	}
+
 	return position;
 }
 function isValidLineNumber(lineNumber: number, lines: string[]): boolean {
@@ -321,8 +337,10 @@ export class DetailedLineRangeMapping extends LineRangeMapping {
 		innerChanges: RangeMapping[] | undefined,
 	) {
 		super(originalRange, modifiedRange);
+
 		this.innerChanges = innerChanges;
 	}
+
 	public override flip(): DetailedLineRangeMapping {
 		return new DetailedLineRangeMapping(
 			this.modified,
@@ -330,6 +348,7 @@ export class DetailedLineRangeMapping extends LineRangeMapping {
 			this.innerChanges?.map((c) => c.flip()),
 		);
 	}
+
 	public withInnerChangesFromLineRanges(): DetailedLineRangeMapping {
 		return new DetailedLineRangeMapping(this.original, this.modified, [
 			this.toRangeMapping(),
@@ -349,6 +368,7 @@ export class RangeMapping {
 
 		return result;
 	}
+
 	public static fromEditJoin(edit: TextEdit): RangeMapping {
 		const newRanges = edit.getNewRanges();
 
@@ -358,19 +378,23 @@ export class RangeMapping {
 
 		return RangeMapping.join(result);
 	}
+
 	public static join(rangeMappings: RangeMapping[]): RangeMapping {
 		if (rangeMappings.length === 0) {
 			throw new BugIndicatingError(
 				"Cannot join an empty list of range mappings",
 			);
 		}
+
 		let result = rangeMappings[0];
 
 		for (let i = 1; i < rangeMappings.length; i++) {
 			result = result.join(rangeMappings[i]);
 		}
+
 		return result;
 	}
+
 	public static assertSorted(rangeMappings: RangeMapping[]): void {
 		for (let i = 1; i < rangeMappings.length; i++) {
 			const previous = rangeMappings[i - 1];
@@ -406,11 +430,14 @@ export class RangeMapping {
 
 	constructor(originalRange: Range, modifiedRange: Range) {
 		this.originalRange = originalRange;
+
 		this.modifiedRange = modifiedRange;
 	}
+
 	public toString(): string {
 		return `{${this.originalRange.toString()}->${this.modifiedRange.toString()}}`;
 	}
+
 	public flip(): RangeMapping {
 		return new RangeMapping(this.modifiedRange, this.originalRange);
 	}
@@ -422,6 +449,7 @@ export class RangeMapping {
 
 		return new SingleTextEdit(this.originalRange, newText);
 	}
+
 	public join(other: RangeMapping): RangeMapping {
 		return new RangeMapping(
 			this.originalRange.plusRange(other.originalRange),
@@ -448,6 +476,7 @@ export function lineRangeMappingFromRangeMappings(
 		const first = g[0];
 
 		const last = g[g.length - 1];
+
 		changes.push(
 			new DetailedLineRangeMapping(
 				first.original.join(last.original),
@@ -456,6 +485,7 @@ export function lineRangeMappingFromRangeMappings(
 			),
 		);
 	}
+
 	assertFn(() => {
 		if (!dontAssertStartLine && changes.length > 0) {
 			if (
@@ -464,6 +494,7 @@ export function lineRangeMappingFromRangeMappings(
 			) {
 				return false;
 			}
+
 			if (
 				modifiedLines.length.lineCount -
 					changes[changes.length - 1].modified
@@ -474,6 +505,7 @@ export function lineRangeMappingFromRangeMappings(
 				return false;
 			}
 		}
+
 		return checkAdjacentItems(
 			changes,
 			(m1, m2) =>
@@ -532,6 +564,7 @@ export function getLineRangeMapping(
 		// We can only do this if the range is not empty yet
 		lineStartDelta = 1;
 	}
+
 	const originalLineRange = new LineRange(
 		rangeMapping.originalRange.startLineNumber + lineStartDelta,
 		rangeMapping.originalRange.endLineNumber + 1 + lineEndDelta,
@@ -554,6 +587,7 @@ export function lineRangeMappingFromChanges(
 
 	for (const change of changes) {
 		let originalRange: LineRange;
+
 		if (change.originalEndLineNumber === 0) {
 			// Insertion
 			originalRange = new LineRange(
@@ -568,6 +602,7 @@ export function lineRangeMappingFromChanges(
 		}
 
 		let modifiedRange: LineRange;
+
 		if (change.modifiedEndLineNumber === 0) {
 			// Deletion
 			modifiedRange = new LineRange(

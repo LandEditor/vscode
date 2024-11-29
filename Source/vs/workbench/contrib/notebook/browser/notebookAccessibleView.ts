@@ -19,8 +19,11 @@ import { getAllOutputsText } from "./viewModel/cellOutputTextHelper.js";
 
 export class NotebookAccessibleView implements IAccessibleViewImplentation {
 	readonly priority = 100;
+
 	readonly name = "notebook";
+
 	readonly type = AccessibleViewType.View;
+
 	readonly when = ContextKeyExpr.and(
 		NOTEBOOK_CELL_LIST_FOCUSED,
 		InputFocusedContext.toNegated(),
@@ -64,6 +67,7 @@ export function getAccessibleOutputProvider(editorService: IEditorService) {
 		},
 		() => {
 			notebookEditor?.setFocus(selections[0]);
+
 			notebookEditor.focus();
 		},
 		AccessibilityVerbositySettingId.Notebook,

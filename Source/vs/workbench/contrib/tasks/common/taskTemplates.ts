@@ -7,7 +7,9 @@ import { IQuickPickItem } from "../../../../platform/quickinput/common/quickInpu
 
 export interface ITaskEntry extends IQuickPickItem {
 	sort?: string;
+
 	autoDetect: boolean;
+
 	content: string;
 }
 
@@ -140,8 +142,10 @@ export function getTemplates(): ITaskEntry[] {
 		_templates = [dotnetBuild, msbuild, maven].sort((a, b) => {
 			return (a.sort || a.label).localeCompare(b.sort || b.label);
 		});
+
 		_templates.push(command);
 	}
+
 	return _templates;
 }
 /** Version 1.0 templates

@@ -29,8 +29,11 @@ export class DiffEditorAccessibilityHelp
 	implements IAccessibleViewImplentation
 {
 	readonly priority = 105;
+
 	readonly name = "diff-editor";
+
 	readonly when = ContextKeyEqualsExpr.create("isInDiffEditor", true);
+
 	readonly type = AccessibleViewType.Help;
 
 	getProvider(accessor: ServicesAccessor) {
@@ -47,6 +50,7 @@ export class DiffEditorAccessibilityHelp
 		) {
 			return;
 		}
+
 		const codeEditor =
 			codeEditorService.getActiveCodeEditor() ||
 			codeEditorService.getFocusedCodeEditor();
@@ -54,6 +58,7 @@ export class DiffEditorAccessibilityHelp
 		if (!codeEditor) {
 			return;
 		}
+
 		const switchSides = localize(
 			"msg3",
 			"Run the command Diff Editor: Switch Side{0} to toggle between the original and modified editors.",
@@ -97,6 +102,7 @@ export class DiffEditorAccessibilityHelp
 		if (commentCommandInfo) {
 			content.push(commentCommandInfo);
 		}
+
 		return new AccessibleContentProvider(
 			AccessibleViewProviderId.DiffEditor,
 			{ type: AccessibleViewType.Help },

@@ -46,7 +46,9 @@ import {
 // duplicate of IExtensionsViewPaneContainer in contrib
 interface IExtensionsViewPaneContainer extends IViewPaneContainer {
 	readonly searchValue: string | undefined;
+
 	search(text: string): void;
+
 	refresh(): Promise<void>;
 }
 // duplicate of VIEWLET_ID in contrib/extensions
@@ -80,6 +82,7 @@ class NativeLocaleService implements ILocaleService {
 		@IProductService
 		private readonly productService: IProductService,
 	) {}
+
 	private async validateLocaleFile(): Promise<boolean> {
 		try {
 			const content = await this.textFileService.read(
@@ -116,14 +119,17 @@ class NativeLocaleService implements ILocaleService {
 
 			return false;
 		}
+
 		return true;
 	}
+
 	private async writeLocaleValue(
 		locale: string | undefined,
 	): Promise<boolean> {
 		if (!(await this.validateLocaleFile())) {
 			return false;
 		}
+
 		await this.jsonEditingService.write(
 			this.environmentService.argvResource,
 			[{ path: ["locale"], value: locale }],
@@ -132,6 +138,7 @@ class NativeLocaleService implements ILocaleService {
 
 		return true;
 	}
+
 	async setLocale(
 		languagePackItem: ILanguagePackItem,
 		skipDialog = false,
@@ -144,6 +151,7 @@ class NativeLocaleService implements ILocaleService {
 		) {
 			return;
 		}
+
 		const installedLanguages =
 			await this.languagePackService.getInstalledLanguages();
 
@@ -174,6 +182,7 @@ class NativeLocaleService implements ILocaleService {
 
 					return;
 				}
+
 				await this.progressService.withProgress(
 					{
 						location: ProgressLocation.Notification,
@@ -193,18 +202,22 @@ class NativeLocaleService implements ILocaleService {
 						),
 				);
 			}
+
 			if (
 				!skipDialog &&
 				!(await this.showRestartDialog(languagePackItem.label))
 			) {
 				return;
 			}
+
 			await this.writeLocaleValue(locale);
+
 			await this.hostService.restart();
 		} catch (err) {
 			this.notificationService.error(err);
 		}
 	}
+
 	async clearLocalePreference(): Promise<void> {
 		try {
 			await this.writeLocaleValue(undefined);
@@ -216,6 +229,7 @@ class NativeLocaleService implements ILocaleService {
 			this.notificationService.error(err);
 		}
 	}
+
 	private async showRestartDialog(languageName: string): Promise<boolean> {
 		const { confirmed } = await this.dialogService.confirm({
 			message: localize(
@@ -251,12 +265,14 @@ class NativeActiveLanguagePackService implements IActiveLanguagePackService {
 		@ILanguagePackService
 		private readonly languagePackService: ILanguagePackService,
 	) {}
+
 	async getExtensionIdProvidingCurrentLocale(): Promise<string | undefined> {
 		const language = Language.value();
 
 		if (language === LANGUAGE_DEFAULT) {
 			return undefined;
 		}
+
 		const languages =
 			await this.languagePackService.getInstalledLanguages();
 

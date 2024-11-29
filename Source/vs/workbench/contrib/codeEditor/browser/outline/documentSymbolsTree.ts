@@ -52,6 +52,7 @@ export class DocumentSymbolAccessibilityProvider implements IListAccessibilityPr
 	getWidgetAriaLabel(): string {
 		return this._ariaLabel;
 	}
+
 	getAriaLabel(element: DocumentSymbolItem): string | null {
 		if (element instanceof OutlineGroup) {
 			return element.label;
@@ -75,12 +76,14 @@ export class DocumentSymbolDragAndDrop implements ITreeDragAndDrop<DocumentSymbo
 
 	getDragURI(element: DocumentSymbolItem): string | null {
 		const resource = OutlineModel.get(element)?.uri;
+
 		if (!resource) {
 			return null;
 		}
 
 		if (element instanceof OutlineElement) {
 			const symbolUri = symbolRangeUri(resource, element.symbol);
+
 			return symbolUri.fsPath + (symbolUri.fragment ? '#' + symbolUri.fragment : '');
 		} else {
 			return resource.fsPath;
@@ -94,17 +97,21 @@ export class DocumentSymbolDragAndDrop implements ITreeDragAndDrop<DocumentSymbo
 		}
 
 		const element = elements[0];
+
 		return element instanceof OutlineElement ? element.symbol.name : element.label;
 	}
 
 	onDragStart(data: IDragAndDropData, originalEvent: DragEvent): void {
 		const elements = (data as ElementsDragAndDropData<DocumentSymbolItem, DocumentSymbolItem[]>).elements;
+
 		const item = elements[0];
+
 		if (!item || !originalEvent.dataTransfer) {
 			return;
 		}
 
 		const resource = OutlineModel.get(item)?.uri;
+
 		if (!resource) {
 			return;
 		}
@@ -125,7 +132,9 @@ export class DocumentSymbolDragAndDrop implements ITreeDragAndDrop<DocumentSymbo
 	}
 
 	onDragOver(): boolean | ITreeDragOverReaction { return false; }
+
 	drop(): void { }
+
 	dispose(): void { }
 }
 
@@ -135,6 +144,7 @@ function symbolRangeUri(resource: URI, symbol: DocumentSymbol): URI {
 
 class DocumentSymbolGroupTemplate {
 	static readonly id = 'DocumentSymbolGroupTemplate';
+
 	constructor(
 		readonly labelContainer: HTMLElement,
 		readonly label: HighlightedLabel,
@@ -147,6 +157,7 @@ class DocumentSymbolGroupTemplate {
 
 class DocumentSymbolTemplate {
 	static readonly id = 'DocumentSymbolTemplate';
+
 	constructor(
 		readonly container: HTMLElement,
 		readonly iconLabel: IconLabel,
@@ -174,8 +185,11 @@ export class DocumentSymbolGroupRenderer implements ITreeRenderer<OutlineGroup, 
 
 	renderTemplate(container: HTMLElement): DocumentSymbolGroupTemplate {
 		const labelContainer = dom.$('.outline-element-label');
+
 		container.classList.add('outline-element');
+
 		dom.append(container, labelContainer);
+
 		return new DocumentSymbolGroupTemplate(labelContainer, new HighlightedLabel(labelContainer));
 	}
 
@@ -201,32 +215,45 @@ export class DocumentSymbolRenderer implements ITreeRenderer<OutlineElement, Fuz
 
 	renderTemplate(container: HTMLElement): DocumentSymbolTemplate {
 		container.classList.add('outline-element');
+
 		const iconLabel = new IconLabel(container, { supportHighlights: true });
+
 		const iconClass = dom.$('.outline-element-icon');
+
 		const decoration = dom.$('.outline-element-decoration');
+
 		container.prepend(iconClass);
+
 		container.appendChild(decoration);
+
 		return new DocumentSymbolTemplate(container, iconLabel, iconClass, decoration);
 	}
 
 	renderElement(node: ITreeNode<OutlineElement, FuzzyScore>, _index: number, template: DocumentSymbolTemplate): void {
 		const { element } = node;
+
 		const extraClasses = ['nowrap'];
+
 		const options: IIconLabelValueOptions = {
 			matches: createMatches(node.filterData),
 			labelEscapeNewLines: true,
 			extraClasses,
 			title: localize('title.template', "{0} ({1})", element.symbol.name, symbolKindNames[element.symbol.kind])
 		};
+
 		if (this._configurationService.getValue(OutlineConfigKeys.icons)) {
 			// add styles for the icons
 			template.iconClass.className = '';
+
 			template.iconClass.classList.add('outline-element-icon', 'inline', ...ThemeIcon.asClassNameArray(SymbolKinds.toIcon(element.symbol.kind)));
 		}
+
 		if (element.symbol.tags.indexOf(SymbolTag.Deprecated) >= 0) {
 			extraClasses.push(`deprecated`);
+
 			options.matches = [];
 		}
+
 		template.iconLabel.setLabel(element.symbol.name, element.symbol.detail, options);
 
 		if (this._renderMarker) {
@@ -238,16 +265,21 @@ export class DocumentSymbolRenderer implements ITreeRenderer<OutlineElement, Fuz
 
 		if (!element.marker) {
 			dom.hide(template.decoration);
+
 			template.container.style.removeProperty('--outline-element-color');
+
 			return;
 		}
 
 		const { count, topSev } = element.marker;
+
 		const color = this._themeService.getColorTheme().getColor(topSev === MarkerSeverity.Error ? listErrorForeground : listWarningForeground);
+
 		const cssColor = color ? color.toString() : 'inherit';
 
 		// color of the label
 		const problem = this._configurationService.getValue('problems.visibility');
+
 		const configProblems = this._configurationService.getValue(OutlineConfigKeys.problemsColors);
 
 		if (!problem || !configProblems) {
@@ -262,20 +294,29 @@ export class DocumentSymbolRenderer implements ITreeRenderer<OutlineElement, Fuz
 		}
 
 		const configBadges = this._configurationService.getValue(OutlineConfigKeys.problemsBadges);
+
 		if (!configBadges || !problem) {
 			dom.hide(template.decoration);
 		} else if (count > 0) {
 			dom.show(template.decoration);
+
 			template.decoration.classList.remove('bubble');
+
 			template.decoration.innerText = count < 10 ? count.toString() : '+9';
+
 			template.decoration.title = count === 1 ? localize('1.problem', "1 problem in this element") : localize('N.problem', "{0} problems in this element", count);
+
 			template.decoration.style.setProperty('--outline-element-color', cssColor);
 
 		} else {
 			dom.show(template.decoration);
+
 			template.decoration.classList.add('bubble');
+
 			template.decoration.innerText = '\uea71';
+
 			template.decoration.title = localize('deep.problem', "Contains elements with problems");
+
 			template.decoration.style.setProperty('--outline-element-color', cssColor);
 		}
 	}
@@ -323,11 +364,15 @@ export class DocumentSymbolFilter implements ITreeFilter<DocumentSymbolItem> {
 
 	filter(element: DocumentSymbolItem): boolean {
 		const outline = OutlineModel.get(element);
+
 		if (!(element instanceof OutlineElement)) {
 			return true;
 		}
+
 		const configName = DocumentSymbolFilter.kindToConfigName[element.symbol.kind];
+
 		const configKey = `${this._prefix}.${configName}`;
+
 		return this._textResourceConfigService.getValue(outline?.uri, configKey);
 	}
 }
@@ -342,22 +387,27 @@ export class DocumentSymbolComparator implements IOutlineComparator<DocumentSymb
 		} else if (a instanceof OutlineElement && b instanceof OutlineElement) {
 			return Range.compareRangesUsingStarts(a.symbol.range, b.symbol.range) || this._collator.value.compare(a.symbol.name, b.symbol.name);
 		}
+
 		return 0;
 	}
+
 	compareByType(a: DocumentSymbolItem, b: DocumentSymbolItem): number {
 		if (a instanceof OutlineGroup && b instanceof OutlineGroup) {
 			return a.order - b.order;
 		} else if (a instanceof OutlineElement && b instanceof OutlineElement) {
 			return a.symbol.kind - b.symbol.kind || this._collator.value.compare(a.symbol.name, b.symbol.name);
 		}
+
 		return 0;
 	}
+
 	compareByName(a: DocumentSymbolItem, b: DocumentSymbolItem): number {
 		if (a instanceof OutlineGroup && b instanceof OutlineGroup) {
 			return a.order - b.order;
 		} else if (a instanceof OutlineElement && b instanceof OutlineElement) {
 			return this._collator.value.compare(a.symbol.name, b.symbol.name) || Range.compareRangesUsingStarts(a.symbol.range, b.symbol.range);
 		}
+
 		return 0;
 	}
 }

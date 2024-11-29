@@ -21,9 +21,11 @@ export class WebviewMainService
 	implements IWebviewManagerService
 {
 	declare readonly _serviceBrand: undefined;
+
 	private readonly _onFoundInFrame = this._register(
 		new Emitter<FoundInFrameResult>(),
 	);
+
 	public onFoundInFrame = this._onFoundInFrame.event;
 
 	constructor(
@@ -31,8 +33,10 @@ export class WebviewMainService
 		private readonly windowsMainService: IWindowsMainService,
 	) {
 		super();
+
 		this._register(new WebviewProtocolProvider());
 	}
+
 	public async setIgnoreMenuShortcuts(
 		id: WebviewWebContentsId | WebviewWindowId,
 		enabled: boolean,
@@ -47,19 +51,23 @@ export class WebviewMainService
 			if (!window?.win) {
 				throw new Error(`Invalid windowId: ${windowId}`);
 			}
+
 			contents = window.win.webContents;
 		} else {
 			const { webContentsId } = id as WebviewWebContentsId;
+
 			contents = webContents.fromId(webContentsId);
 
 			if (!contents) {
 				throw new Error(`Invalid webContentsId: ${webContentsId}`);
 			}
 		}
+
 		if (!contents.isDestroyed()) {
 			contents.setIgnoreMenuShortcuts(enabled);
 		}
 	}
+
 	public async findInFrame(
 		windowId: WebviewWindowId,
 		frameName: string,
@@ -71,9 +79,12 @@ export class WebviewMainService
 		},
 	): Promise<void> {
 		const initialFrame = this.getFrameByName(windowId, frameName);
+
 		type WebFrameMainWithFindSupport = WebFrameMain & {
 			findInFrame?(text: string, findOptions: FindInFrameOptions): void;
+
 			on(event: "found-in-frame", listener: Function): WebFrameMain;
+
 			removeListener(
 				event: "found-in-frame",
 				listener: Function,
@@ -94,12 +105,15 @@ export class WebviewMainService
 			) => {
 				if (result.finalUpdate) {
 					this._onFoundInFrame.fire(result);
+
 					frame.removeListener("found-in-frame", foundInFrameHandler);
 				}
 			};
+
 			frame.on("found-in-frame", foundInFrameHandler);
 		}
 	}
+
 	public async stopFindInFrame(
 		windowId: WebviewWindowId,
 		frameName: string,
@@ -108,6 +122,7 @@ export class WebviewMainService
 		},
 	): Promise<void> {
 		const initialFrame = this.getFrameByName(windowId, frameName);
+
 		type WebFrameMainWithFindSupport = WebFrameMain & {
 			stopFindInFrame?(
 				stopOption: "keepSelection" | "clearSelection",
@@ -122,6 +137,7 @@ export class WebviewMainService
 			);
 		}
 	}
+
 	private getFrameByName(
 		windowId: WebviewWindowId,
 		frameName: string,
@@ -131,6 +147,7 @@ export class WebviewMainService
 		if (!window?.win) {
 			throw new Error(`Invalid windowId: ${windowId}`);
 		}
+
 		const frame = window.win.webContents.mainFrame.framesInSubtree.find(
 			(frame) => {
 				return frame.name === frameName;
@@ -140,6 +157,7 @@ export class WebviewMainService
 		if (!frame) {
 			throw new Error(`Unknown frame: ${frameName}`);
 		}
+
 		return frame;
 	}
 }

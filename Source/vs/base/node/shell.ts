@@ -24,6 +24,7 @@ export async function getSystemShell(
 		// Don't detect Windows shell when not on Windows
 		return processes.getWindowsShell(env);
 	}
+
 	return getSystemShellUnixLike(os, env);
 }
 let _TERMINAL_DEFAULT_SHELL_UNIX_LIKE: string | null = null;
@@ -38,6 +39,7 @@ function getSystemShellUnixLike(
 	) {
 		return "/bin/bash";
 	}
+
 	if (!_TERMINAL_DEFAULT_SHELL_UNIX_LIKE) {
 		let unixLikeTerminal: string | undefined | null;
 
@@ -53,6 +55,7 @@ function getSystemShellUnixLike(
 					unixLikeTerminal = userInfo().shell;
 				} catch (err) {}
 			}
+
 			if (!unixLikeTerminal) {
 				unixLikeTerminal = "sh";
 			}
@@ -61,8 +64,10 @@ function getSystemShellUnixLike(
 				unixLikeTerminal = "/bin/bash";
 			}
 		}
+
 		_TERMINAL_DEFAULT_SHELL_UNIX_LIKE = unixLikeTerminal;
 	}
+
 	return _TERMINAL_DEFAULT_SHELL_UNIX_LIKE;
 }
 let _TERMINAL_DEFAULT_SHELL_WINDOWS: string | null = null;
@@ -71,5 +76,6 @@ async function getSystemShellWindows(): Promise<string> {
 		_TERMINAL_DEFAULT_SHELL_WINDOWS =
 			(await getFirstAvailablePowerShellInstallation())!.exePath;
 	}
+
 	return _TERMINAL_DEFAULT_SHELL_WINDOWS;
 }

@@ -25,6 +25,7 @@ export class UrlFinder extends Disposable {
 	 */
 	private static readonly localUrlRegex =
 		/\b\w{0,20}(?::\/\/)?(?:localhost|127\.0\.0\.1|0\.0\.0\.0|:\d{2,5})[\w\-\.\~:\/\?\#[\]\@!\$&\(\)\*\+\,\;\=]*/gim;
+
 	private static readonly extractPortRegex =
 		/(localhost|127\.0\.0\.1|0\.0\.0\.0):(\d{1,5})/;
 	/**
@@ -32,12 +33,17 @@ export class UrlFinder extends Disposable {
 	 */
 	private static readonly localPythonServerRegex =
 		/HTTP\son\s(127\.0\.0\.1|0\.0\.0\.0)\sport\s(\d+)/;
+
 	private static readonly excludeTerminals = ["Dev Containers"];
+
 	private _onDidMatchLocalUrl: Emitter<{
 		host: string;
+
 		port: number;
 	}> = new Emitter();
+
 	public readonly onDidMatchLocalUrl = this._onDidMatchLocalUrl.event;
+
 	private listeners: Map<ITerminalInstance | string, IDisposable> = new Map();
 
 	constructor(
@@ -49,14 +55,17 @@ export class UrlFinder extends Disposable {
 		terminalService.instances.forEach((instance) => {
 			this.registerTerminalInstance(instance);
 		});
+
 		this._register(
 			terminalService.onDidCreateInstance((instance) => {
 				this.registerTerminalInstance(instance);
 			}),
 		);
+
 		this._register(
 			terminalService.onDidDisposeInstance((instance) => {
 				this.listeners.get(instance)?.dispose();
+
 				this.listeners.delete(instance);
 			}),
 		);
@@ -76,15 +85,18 @@ export class UrlFinder extends Disposable {
 				}
 			}),
 		);
+
 		this._register(
 			debugService.onDidEndSession(({ session }) => {
 				if (this.listeners.has(session.getId())) {
 					this.listeners.get(session.getId())?.dispose();
+
 					this.listeners.delete(session.getId());
 				}
 			}),
 		);
 	}
+
 	private registerTerminalInstance(instance: ITerminalInstance) {
 		if (!UrlFinder.excludeTerminals.includes(instance.title)) {
 			this.listeners.set(
@@ -95,17 +107,21 @@ export class UrlFinder extends Disposable {
 			);
 		}
 	}
+
 	private replPositions: Map<
 		string,
 		{
 			position: number;
+
 			tail: IReplElement;
 		}
 	> = new Map();
+
 	private processNewReplElements(session: IDebugSession) {
 		const oldReplPosition = this.replPositions.get(session.getId());
 
 		const replElements = session.getReplElements();
+
 		this.replPositions.set(session.getId(), {
 			position: replElements.length - 1,
 			tail: replElements[replElements.length - 1],
@@ -131,6 +147,7 @@ export class UrlFinder extends Disposable {
 			}
 		}
 	}
+
 	override dispose() {
 		super.dispose();
 
@@ -140,6 +157,7 @@ export class UrlFinder extends Disposable {
 			listener.dispose();
 		}
 	}
+
 	private processData(data: string) {
 		// strip ANSI terminal codes
 		data = removeAnsiEscapeCodes(data);
@@ -156,6 +174,7 @@ export class UrlFinder extends Disposable {
 				} catch (e) {
 					// Not a valid URL
 				}
+
 				if (serverUrl) {
 					// check if the port is a valid integer value
 					const portMatch = match.match(UrlFinder.extractPortRegex);
@@ -187,6 +206,7 @@ export class UrlFinder extends Disposable {
 						) {
 							return;
 						}
+
 						this._onDidMatchLocalUrl.fire({ port, host });
 					}
 				}

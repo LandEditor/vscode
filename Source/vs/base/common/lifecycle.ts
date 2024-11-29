@@ -41,14 +41,20 @@ export interface IDisposableTracker {
 }
 export interface DisposableInfo {
 	value: IDisposable;
+
 	source: string | null;
+
 	parent: IDisposable | null;
+
 	isSingleton: boolean;
+
 	idx: number;
 }
 export class DisposableTracker implements IDisposableTracker {
 	private static idx = 0;
+
 	private readonly livingDisposables = new Map<IDisposable, DisposableInfo>();
+
 	private getDisposableData(d: IDisposable): DisposableInfo {
 		let val = this.livingDisposables.get(d);
 
@@ -60,10 +66,13 @@ export class DisposableTracker implements IDisposableTracker {
 				value: d,
 				idx: DisposableTracker.idx++,
 			};
+
 			this.livingDisposables.set(d, val);
 		}
+
 		return val;
 	}
+
 	trackDisposable(d: IDisposable): void {
 		const data = this.getDisposableData(d);
 
@@ -71,16 +80,21 @@ export class DisposableTracker implements IDisposableTracker {
 			data.source = new Error().stack!;
 		}
 	}
+
 	setParent(child: IDisposable, parent: IDisposable | null): void {
 		const data = this.getDisposableData(child);
+
 		data.parent = parent;
 	}
+
 	markAsDisposed(x: IDisposable): void {
 		this.livingDisposables.delete(x);
 	}
+
 	markAsSingleton(disposable: IDisposable): void {
 		this.getDisposableData(disposable).isSingleton = true;
 	}
+
 	private getRootParent(
 		data: DisposableInfo,
 		cache: Map<DisposableInfo, DisposableInfo>,
@@ -90,13 +104,16 @@ export class DisposableTracker implements IDisposableTracker {
 		if (cacheValue) {
 			return cacheValue;
 		}
+
 		const result = data.parent
 			? this.getRootParent(this.getDisposableData(data.parent), cache)
 			: data;
+
 		cache.set(data, result);
 
 		return result;
 	}
+
 	getTrackedDisposables(): IDisposable[] {
 		const rootParentCache = new Map<DisposableInfo, DisposableInfo>();
 
@@ -110,12 +127,14 @@ export class DisposableTracker implements IDisposableTracker {
 
 		return leaking;
 	}
+
 	computeLeakingDisposables(
 		maxReported = 10,
 		preComputedLeaks?: DisposableInfo[],
 	):
 		| {
 				leaks: DisposableInfo[];
+
 				details: string;
 		  }
 		| undefined {
@@ -135,6 +154,7 @@ export class DisposableTracker implements IDisposableTracker {
 			if (leakingObjects.length === 0) {
 				return;
 			}
+
 			const leakingObjsSet = new Set(leakingObjects.map((o) => o.value));
 			// Remove all objects that are a child of other leaking objects. Assumes there are no cycles.
 			uncoveredLeakingObjs = leakingObjects.filter((l) => {
@@ -145,9 +165,11 @@ export class DisposableTracker implements IDisposableTracker {
 				throw new Error("There are cyclic diposable chains!");
 			}
 		}
+
 		if (!uncoveredLeakingObjs) {
 			return undefined;
 		}
+
 		function getStackTracePath(leaking: DisposableInfo): string[] {
 			function removePrefix(
 				array: string[],
@@ -164,10 +186,12 @@ export class DisposableTracker implements IDisposableTracker {
 					array.shift();
 				}
 			}
+
 			const lines = leaking
 				.source!.split("\n")
 				.map((p) => p.trim().replace("at ", ""))
 				.filter((l) => l !== "");
+
 			removePrefix(lines, [
 				"Error",
 				/^trackDisposable \(.*\)$/,
@@ -176,6 +200,7 @@ export class DisposableTracker implements IDisposableTracker {
 
 			return lines.reverse();
 		}
+
 		const stackTraceStarts = new SetMap<string, DisposableInfo>();
 
 		for (const leaking of uncoveredLeakingObjs) {
@@ -208,6 +233,7 @@ export class DisposableTracker implements IDisposableTracker {
 				const starts = stackTraceStarts.get(
 					stackTracePath.slice(0, i + 1).join("\n"),
 				);
+
 				line = `(shared with ${starts.size}/${uncoveredLeakingObjs.length} leaks) at ${line}`;
 
 				const prevStarts = stackTraceStarts.get(
@@ -218,6 +244,7 @@ export class DisposableTracker implements IDisposableTracker {
 					[...prevStarts].map((d) => getStackTracePath(d)[i]),
 					(v) => v,
 				);
+
 				delete continuations[stackTracePath[i]];
 
 				for (const [cont, set] of Object.entries(continuations)) {
@@ -225,13 +252,17 @@ export class DisposableTracker implements IDisposableTracker {
 						`    - stacktraces of ${set.length} other leaks continue with ${cont}`,
 					);
 				}
+
 				stackTraceFormattedLines.unshift(line);
 			}
+
 			message += `\n\n\n==================== Leaking disposable ${i}/${uncoveredLeakingObjs.length}: ${leaking.value.constructor.name} ====================\n${stackTraceFormattedLines.join("\n")}\n============================================================\n\n`;
 		}
+
 		if (uncoveredLeakingObjs.length > maxReported) {
 			message += `\n\n\n... and ${uncoveredLeakingObjs.length - maxReported} more leaking disposables\n\n`;
 		}
+
 		return { leaks: uncoveredLeakingObjs, details: message };
 	}
 }
@@ -252,6 +283,7 @@ if (TRACK_DISPOSABLES) {
 					}
 				}, 3000);
 			}
+
 			setParent(child: IDisposable, parent: IDisposable | null): void {
 				if (child && child !== Disposable.None) {
 					try {
@@ -261,6 +293,7 @@ if (TRACK_DISPOSABLES) {
 					}
 				}
 			}
+
 			markAsDisposed(disposable: IDisposable): void {
 				if (disposable && disposable !== Disposable.None) {
 					try {
@@ -270,6 +303,7 @@ if (TRACK_DISPOSABLES) {
 					}
 				}
 			}
+
 			markAsSingleton(disposable: IDisposable): void {}
 		})(),
 	);
@@ -295,6 +329,7 @@ function setParentOfDisposables(
 	if (!disposableTracker) {
 		return;
 	}
+
 	for (const child of children) {
 		disposableTracker.setParent(child, parent);
 	}
@@ -368,6 +403,7 @@ export function dispose<T extends IDisposable>(
 				}
 			}
 		}
+
 		if (errors.length === 1) {
 			throw errors[0];
 		} else if (errors.length > 1) {
@@ -376,6 +412,7 @@ export function dispose<T extends IDisposable>(
 				"Encountered errors while disposing of store",
 			);
 		}
+
 		return Array.isArray(arg) ? [] : arg;
 	} else if (arg) {
 		arg.dispose();
@@ -391,6 +428,7 @@ export function disposeIfDisposable<T extends IDisposable | object>(
 			d.dispose();
 		}
 	}
+
 	return [];
 }
 /**
@@ -412,6 +450,7 @@ export function toDisposable(fn: () => void): IDisposable {
 	const self = trackDisposable({
 		dispose: createSingleCallFunction(() => {
 			markAsDisposed(self);
+
 			fn();
 		}),
 	});
@@ -427,7 +466,9 @@ export function toDisposable(fn: () => void): IDisposable {
  */
 export class DisposableStore implements IDisposable {
 	static DISABLE_DISPOSED_WARNING = false;
+
 	private readonly _toDispose = new Set<IDisposable>();
+
 	private _isDisposed = false;
 
 	constructor() {
@@ -442,8 +483,11 @@ export class DisposableStore implements IDisposable {
 		if (this._isDisposed) {
 			return;
 		}
+
 		markAsDisposed(this);
+
 		this._isDisposed = true;
+
 		this.clear();
 	}
 	/**
@@ -459,6 +503,7 @@ export class DisposableStore implements IDisposable {
 		if (this._toDispose.size === 0) {
 			return;
 		}
+
 		try {
 			dispose(this._toDispose);
 		} finally {
@@ -472,9 +517,11 @@ export class DisposableStore implements IDisposable {
 		if (!o) {
 			return o;
 		}
+
 		if ((o as unknown as DisposableStore) === this) {
 			throw new Error("Cannot register a disposable on itself!");
 		}
+
 		setParentOfDisposable(o, this);
 
 		if (this._isDisposed) {
@@ -488,6 +535,7 @@ export class DisposableStore implements IDisposable {
 		} else {
 			this._toDispose.add(o);
 		}
+
 		return o;
 	}
 	/**
@@ -498,10 +546,13 @@ export class DisposableStore implements IDisposable {
 		if (!o) {
 			return;
 		}
+
 		if ((o as unknown as DisposableStore) === this) {
 			throw new Error("Cannot dispose a disposable on itself!");
 		}
+
 		this._toDispose.delete(o);
+
 		o.dispose();
 	}
 	/**
@@ -511,6 +562,7 @@ export class DisposableStore implements IDisposable {
 		if (!o) {
 			return;
 		}
+
 		if (this._toDispose.has(o)) {
 			this._toDispose.delete(o);
 
@@ -530,6 +582,7 @@ export abstract class Disposable implements IDisposable {
 	 * TODO: This should not be a static property.
 	 */
 	static readonly None = Object.freeze<IDisposable>({ dispose() {} });
+
 	protected readonly _store = new DisposableStore();
 
 	constructor() {
@@ -537,8 +590,10 @@ export abstract class Disposable implements IDisposable {
 
 		setParentOfDisposable(this._store, this);
 	}
+
 	public dispose(): void {
 		markAsDisposed(this);
+
 		this._store.dispose();
 	}
 	/**
@@ -548,6 +603,7 @@ export abstract class Disposable implements IDisposable {
 		if ((o as unknown as Disposable) === this) {
 			throw new Error("Cannot register a disposable on itself!");
 		}
+
 		return this._store.add(o);
 	}
 }
@@ -559,23 +615,28 @@ export abstract class Disposable implements IDisposable {
  */
 export class MutableDisposable<T extends IDisposable> implements IDisposable {
 	private _value?: T;
+
 	private _isDisposed = false;
 
 	constructor() {
 		trackDisposable(this);
 	}
+
 	get value(): T | undefined {
 		return this._isDisposed ? undefined : this._value;
 	}
+
 	set value(value: T | undefined) {
 		if (this._isDisposed || value === this._value) {
 			return;
 		}
+
 		this._value?.dispose();
 
 		if (value) {
 			setParentOfDisposable(value, this);
 		}
+
 		this._value = value;
 	}
 	/**
@@ -584,10 +645,14 @@ export class MutableDisposable<T extends IDisposable> implements IDisposable {
 	clear(): void {
 		this.value = undefined;
 	}
+
 	dispose(): void {
 		this._isDisposed = true;
+
 		markAsDisposed(this);
+
 		this._value?.dispose();
+
 		this._value = undefined;
 	}
 	/**
@@ -596,11 +661,13 @@ export class MutableDisposable<T extends IDisposable> implements IDisposable {
 	 */
 	clearAndLeak(): T | undefined {
 		const oldValue = this._value;
+
 		this._value = undefined;
 
 		if (oldValue) {
 			setParentOfDisposable(oldValue, null);
 		}
+
 		return oldValue;
 	}
 }
@@ -612,22 +679,28 @@ export class MandatoryMutableDisposable<T extends IDisposable>
 	implements IDisposable
 {
 	private readonly _disposable = new MutableDisposable<T>();
+
 	private _isDisposed = false;
 
 	constructor(initialValue: T) {
 		this._disposable.value = initialValue;
 	}
+
 	get value(): T {
 		return this._disposable.value!;
 	}
+
 	set value(value: T) {
 		if (this._isDisposed || value === this._disposable.value) {
 			return;
 		}
+
 		this._disposable.value = value;
 	}
+
 	dispose() {
 		this._isDisposed = true;
+
 		this._disposable.dispose();
 	}
 }
@@ -635,15 +708,18 @@ export class RefCountedDisposable {
 	private _counter: number = 1;
 
 	constructor(private readonly _disposable: IDisposable) {}
+
 	acquire() {
 		this._counter++;
 
 		return this;
 	}
+
 	release() {
 		if (--this._counter === 0) {
 			this._disposable.dispose();
 		}
+
 		return this;
 	}
 }
@@ -653,20 +729,28 @@ export class RefCountedDisposable {
  */
 export class SafeDisposable implements IDisposable {
 	dispose: () => void = () => {};
+
 	unset: () => void = () => {};
+
 	isset: () => boolean = () => false;
 
 	constructor() {
 		trackDisposable(this);
 	}
+
 	set(fn: Function) {
 		let callback: Function | undefined = fn;
+
 		this.unset = () => (callback = undefined);
+
 		this.isset = () => callback !== undefined;
+
 		this.dispose = () => {
 			if (callback) {
 				callback();
+
 				callback = undefined;
+
 				markAsDisposed(this);
 			}
 		};
@@ -682,9 +766,11 @@ export abstract class ReferenceCollection<T> {
 		string,
 		{
 			readonly object: T;
+
 			counter: number;
 		}
 	> = new Map();
+
 	acquire(key: string, ...args: any[]): IReference<T> {
 		let reference = this.references.get(key);
 
@@ -693,21 +779,27 @@ export abstract class ReferenceCollection<T> {
 				counter: 0,
 				object: this.createReferencedObject(key, ...args),
 			};
+
 			this.references.set(key, reference);
 		}
+
 		const { object } = reference;
 
 		const dispose = createSingleCallFunction(() => {
 			if (--reference.counter === 0) {
 				this.destroyReferencedObject(key, reference.object);
+
 				this.references.delete(key);
 			}
 		});
+
 		reference.counter++;
 
 		return { object, dispose };
 	}
+
 	protected abstract createReferencedObject(key: string, ...args: any[]): T;
+
 	protected abstract destroyReferencedObject(key: string, object: T): void;
 }
 /**
@@ -716,6 +808,7 @@ export abstract class ReferenceCollection<T> {
  */
 export class AsyncReferenceCollection<T> {
 	constructor(private referenceCollection: ReferenceCollection<Promise<T>>) {}
+
 	async acquire(key: string, ...args: any[]): Promise<IReference<T>> {
 		const ref = this.referenceCollection.acquire(key, ...args);
 
@@ -735,6 +828,7 @@ export class AsyncReferenceCollection<T> {
 }
 export class ImmortalReference<T> implements IReference<T> {
 	constructor(public object: T) {}
+
 	dispose(): void {}
 }
 export function disposeOnReturn(fn: (store: DisposableStore) => void): void {
@@ -753,6 +847,7 @@ export class DisposableMap<K, V extends IDisposable = IDisposable>
 	implements IDisposable
 {
 	private readonly _store = new Map<K, V>();
+
 	private _isDisposed = false;
 
 	constructor() {
@@ -765,7 +860,9 @@ export class DisposableMap<K, V extends IDisposable = IDisposable>
 	 */
 	dispose(): void {
 		markAsDisposed(this);
+
 		this._isDisposed = true;
+
 		this.clearAndDisposeAll();
 	}
 	/**
@@ -775,21 +872,26 @@ export class DisposableMap<K, V extends IDisposable = IDisposable>
 		if (!this._store.size) {
 			return;
 		}
+
 		try {
 			dispose(this._store.values());
 		} finally {
 			this._store.clear();
 		}
 	}
+
 	has(key: K): boolean {
 		return this._store.has(key);
 	}
+
 	get size(): number {
 		return this._store.size;
 	}
+
 	get(key: K): V | undefined {
 		return this._store.get(key);
 	}
+
 	set(key: K, value: V, skipDisposeOnOverwrite = false): void {
 		if (this._isDisposed) {
 			console.warn(
@@ -798,9 +900,11 @@ export class DisposableMap<K, V extends IDisposable = IDisposable>
 				).stack,
 			);
 		}
+
 		if (!skipDisposeOnOverwrite) {
 			this._store.get(key)?.dispose();
 		}
+
 		this._store.set(key, value);
 	}
 	/**
@@ -808,6 +912,7 @@ export class DisposableMap<K, V extends IDisposable = IDisposable>
 	 */
 	deleteAndDispose(key: K): void {
 		this._store.get(key)?.dispose();
+
 		this._store.delete(key);
 	}
 	/**
@@ -816,13 +921,16 @@ export class DisposableMap<K, V extends IDisposable = IDisposable>
 	 */
 	deleteAndLeak(key: K): V | undefined {
 		const value = this._store.get(key);
+
 		this._store.delete(key);
 
 		return value;
 	}
+
 	keys(): IterableIterator<K> {
 		return this._store.keys();
 	}
+
 	values(): IterableIterator<V> {
 		return this._store.values();
 	}

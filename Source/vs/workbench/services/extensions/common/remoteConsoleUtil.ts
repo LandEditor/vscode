@@ -17,18 +17,23 @@ export function logRemoteEntry(
 	if (typeof firstArg !== "string") {
 		return;
 	}
+
 	if (!entry.severity) {
 		entry.severity = "info";
 	}
+
 	if (label) {
 		if (!/^\[/.test(label)) {
 			label = `[${label}]`;
 		}
+
 		if (!/ $/.test(label)) {
 			label = `${label} `;
 		}
+
 		firstArg = label + firstArg;
 	}
+
 	switch (entry.severity) {
 		case "log":
 		case "info":
@@ -59,11 +64,14 @@ export function logRemoteEntryIfError(
 	if (typeof firstArg !== "string" || entry.severity !== "error") {
 		return;
 	}
+
 	if (!/^\[/.test(label)) {
 		label = `[${label}]`;
 	}
+
 	if (!/ $/.test(label)) {
 		label = `${label} `;
 	}
+
 	logService.error(label + firstArg, ...args);
 }

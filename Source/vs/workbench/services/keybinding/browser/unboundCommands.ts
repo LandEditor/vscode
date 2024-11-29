@@ -25,15 +25,18 @@ export function getAllUnboundCommands(
 		if (seenMap.has(id)) {
 			return;
 		}
+
 		seenMap.set(id, true);
 
 		if (id[0] === "_" || id.indexOf("vscode.") === 0) {
 			// private command
 			return;
 		}
+
 		if (boundCommands.get(id) === true) {
 			return;
 		}
+
 		if (!includeCommandWithArgs) {
 			const command = CommandsRegistry.getCommand(id);
 
@@ -46,6 +49,7 @@ export function getAllUnboundCommands(
 				return;
 			}
 		}
+
 		unboundCommands.push(id);
 	};
 	// Add all commands from Command Palette
@@ -58,8 +62,10 @@ export function getAllUnboundCommands(
 	for (const editorAction of EditorExtensionsRegistry.getEditorActions()) {
 		addCommand(editorAction.id, true);
 	}
+
 	for (const id of CommandsRegistry.getCommands().keys()) {
 		addCommand(id, false);
 	}
+
 	return unboundCommands;
 }

@@ -16,14 +16,20 @@ import { IEditorContribution } from "../../../../editor/common/editorCommon.js";
  */
 export class MenuPreventer extends Disposable implements IEditorContribution {
 	public static readonly ID = "editor.contrib.menuPreventer";
+
 	private _editor: ICodeEditor;
+
 	private _altListeningMouse: boolean;
+
 	private _altMouseTriggered: boolean;
 
 	constructor(editor: ICodeEditor) {
 		super();
+
 		this._editor = editor;
+
 		this._altListeningMouse = false;
+
 		this._altMouseTriggered = false;
 		// A global crossover handler to prevent menu bar from showing up
 		// When <alt> is hold, we will listen to mouse events and prevent
@@ -35,23 +41,28 @@ export class MenuPreventer extends Disposable implements IEditorContribution {
 				}
 			}),
 		);
+
 		this._register(
 			this._editor.onKeyDown((e) => {
 				if (e.equals(KeyMod.Alt)) {
 					if (!this._altListeningMouse) {
 						this._altMouseTriggered = false;
 					}
+
 					this._altListeningMouse = true;
 				}
 			}),
 		);
+
 		this._register(
 			this._editor.onKeyUp((e) => {
 				if (e.equals(KeyMod.Alt)) {
 					if (this._altMouseTriggered) {
 						e.preventDefault();
 					}
+
 					this._altListeningMouse = false;
+
 					this._altMouseTriggered = false;
 				}
 			}),

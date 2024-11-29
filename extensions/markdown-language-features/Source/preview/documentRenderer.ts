@@ -37,11 +37,14 @@ const previewStrings = {
 
 export interface MarkdownContentProviderOutput {
 	html: string;
+
 	containingImages: Set<string>;
 }
 export interface ImageInfo {
 	readonly id: string;
+
 	readonly width: number;
+
 	readonly height: number;
 }
 export class MdDocumentRenderer {
@@ -65,10 +68,13 @@ export class MdDocumentRenderer {
 			),
 		};
 	}
+
 	public readonly iconPath: {
 		light: vscode.Uri;
+
 		dark: vscode.Uri;
 	};
+
 	public async renderDocument(
 		markdownDocument: vscode.TextDocument,
 		resourceProvider: WebviewResourceProvider,
@@ -99,6 +105,7 @@ export class MdDocumentRenderer {
 				.asWebviewUri(markdownDocument.uri)
 				.toString(),
 		};
+
 		this._logger.verbose(
 			"DocumentRenderer",
 			`provideTextDocumentContent - ${markdownDocument.uri}`,
@@ -114,6 +121,7 @@ export class MdDocumentRenderer {
 		if (token.isCancellationRequested) {
 			return { html: "", containingImages: new Set() };
 		}
+
 		const html = `<!DOCTYPE html>
 			<html style="${escapeAttribute(this._getSettingsOverrideStyles(config))}">
 			<head>
@@ -138,6 +146,7 @@ export class MdDocumentRenderer {
 			containingImages: body.containingImages,
 		};
 	}
+
 	public async renderBody(
 		markdownDocument: vscode.TextDocument,
 		resourceProvider: WebviewResourceProvider,
@@ -154,6 +163,7 @@ export class MdDocumentRenderer {
 			containingImages: rendered.containingImages,
 		};
 	}
+
 	public renderFileNotFoundDocument(resource: vscode.Uri): string {
 		const resourcePath = uri.Utils.basename(resource);
 
@@ -166,6 +176,7 @@ export class MdDocumentRenderer {
 			</body>
 			</html>`;
 	}
+
 	private _extensionResourcePath(
 		resourceProvider: WebviewResourceProvider,
 		mediaFile: string,
@@ -176,6 +187,7 @@ export class MdDocumentRenderer {
 
 		return webviewResource.toString();
 	}
+
 	private _fixHref(
 		resourceProvider: WebviewResourceProvider,
 		resource: vscode.Uri,
@@ -184,6 +196,7 @@ export class MdDocumentRenderer {
 		if (!href) {
 			return href;
 		}
+
 		if (
 			href.startsWith("http:") ||
 			href.startsWith("https:") ||
@@ -212,6 +225,7 @@ export class MdDocumentRenderer {
 			)
 			.toString();
 	}
+
 	private _computeCustomStyleSheetIncludes(
 		resourceProvider: WebviewResourceProvider,
 		resource: vscode.Uri,
@@ -220,6 +234,7 @@ export class MdDocumentRenderer {
 		if (!Array.isArray(config.styles)) {
 			return "";
 		}
+
 		const out: string[] = [];
 
 		for (const style of config.styles) {
@@ -227,8 +242,10 @@ export class MdDocumentRenderer {
 				`<link rel="stylesheet" class="code-user-style" data-source="${escapeAttribute(style)}" href="${escapeAttribute(this._fixHref(resourceProvider, resource, style))}" type="text/css" media="screen">`,
 			);
 		}
+
 		return out.join("\n");
 	}
+
 	private _getSettingsOverrideStyles(
 		config: MarkdownPreviewConfiguration,
 	): string {
@@ -244,22 +261,27 @@ export class MdDocumentRenderer {
 				: `--markdown-line-height: ${config.lineHeight};`,
 		].join(" ");
 	}
+
 	private _getImageStabilizerStyles(imageInfo: readonly ImageInfo[]): string {
 		if (!imageInfo.length) {
 			return "";
 		}
+
 		let ret = "<style>\n";
 
 		for (const imgInfo of imageInfo) {
 			ret += `#${imgInfo.id}.loading {
 					height: ${imgInfo.height}px;
+
 					width: ${imgInfo.width}px;
 				}\n`;
 		}
+
 		ret += "</style>\n";
 
 		return ret;
 	}
+
 	private _getStyles(
 		resourceProvider: WebviewResourceProvider,
 		resource: vscode.Uri,
@@ -274,10 +296,12 @@ export class MdDocumentRenderer {
 				`<link rel="stylesheet" type="text/css" href="${escapeAttribute(resourceProvider.asWebviewUri(resource))}">`,
 			);
 		}
+
 		return `${baseStyles.join("\n")}
 			${this._computeCustomStyleSheetIncludes(resourceProvider, resource, config)}
 			${this._getImageStabilizerStyles(imageInfo)}`;
 	}
+
 	private _getScripts(
 		resourceProvider: WebviewResourceProvider,
 		nonce: string,
@@ -291,8 +315,10 @@ export class MdDocumentRenderer {
 				nonce="${nonce}"
 				charset="UTF-8"></script>`);
 		}
+
 		return out.join("\n");
 	}
+
 	private _getCsp(
 		provider: WebviewResourceProvider,
 		resource: vscode.Uri,

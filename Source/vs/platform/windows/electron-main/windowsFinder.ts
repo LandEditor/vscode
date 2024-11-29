@@ -75,6 +75,7 @@ export async function findWindowOnFile(
 				),
 		)[0];
 	}
+
 	return undefined;
 }
 export function findWindowOnWorkspaceOrFolder(
@@ -103,6 +104,7 @@ export function findWindowOnWorkspaceOrFolder(
 			return window;
 		}
 	}
+
 	return undefined;
 }
 export function findWindowOnExtensionDevelopmentPath(
@@ -129,5 +131,6 @@ export function findWindowOnExtensionDevelopmentPath(
 			return window;
 		}
 	}
+
 	return undefined;
 }

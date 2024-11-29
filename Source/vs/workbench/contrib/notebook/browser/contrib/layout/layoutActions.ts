@@ -37,6 +37,7 @@ export class ToggleCellToolbarPositionAction extends Action2 {
 			f1: false,
 		});
 	}
+
 	async run(accessor: ServicesAccessor, context: any): Promise<void> {
 		const editor =
 			context && context.ui
@@ -57,12 +58,14 @@ export class ToggleCellToolbarPositionAction extends Action2 {
 			>(NotebookSetting.cellToolbarLocation);
 
 			const newConfig = this.togglePosition(viewType, toolbarPosition);
+
 			await configurationService.updateValue(
 				NotebookSetting.cellToolbarLocation,
 				newConfig,
 			);
 		}
 	}
+
 	togglePosition(
 		viewType: string,
 		toolbarPosition:
@@ -85,6 +88,7 @@ export class ToggleCellToolbarPositionAction extends Action2 {
 				} = {
 					default: toolbarPosition,
 				};
+
 				config[viewType] = newViewValue;
 
 				return config;
@@ -95,6 +99,7 @@ export class ToggleCellToolbarPositionAction extends Action2 {
 				} = {
 					default: "right",
 				};
+
 				config[viewType] = "left";
 
 				return config;
@@ -110,6 +115,7 @@ export class ToggleCellToolbarPositionAction extends Action2 {
 			const newConfig = {
 				...toolbarPosition,
 			};
+
 			newConfig[viewType] = newViewValue;
 
 			return newConfig;

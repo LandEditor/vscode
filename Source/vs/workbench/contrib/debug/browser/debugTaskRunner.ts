@@ -97,13 +97,17 @@ export class DebugTaskRunner implements IDisposable {
 		@IProgressService
 		private readonly progressService: IProgressService,
 	) {}
+
 	cancel(): void {
 		this.globalCancellation.dispose(true);
+
 		this.globalCancellation = new CancellationTokenSource();
 	}
+
 	public dispose(): void {
 		this.globalCancellation.dispose(true);
 	}
+
 	async runTaskAndCheckErrors(
 		root: IWorkspaceFolder | IWorkspace | undefined,
 		taskId: string | ITaskIdentifier | undefined,
@@ -122,6 +126,7 @@ export class DebugTaskRunner implements IDisposable {
 				// User canceled, either debugging, or the prelaunch task
 				return TaskRunResult.Failure;
 			}
+
 			const errorCount = taskId
 				? this.markerService.read({
 						severities: MarkerSeverity.Error,
@@ -145,14 +150,17 @@ export class DebugTaskRunner implements IDisposable {
 			) {
 				return TaskRunResult.Success;
 			}
+
 			if (onTaskErrors === "showErrors") {
 				await this.viewsService.openView(Markers.MARKERS_VIEW_ID, true);
 
 				return Promise.resolve(TaskRunResult.Failure);
 			}
+
 			if (onTaskErrors === "abort") {
 				return Promise.resolve(TaskRunResult.Failure);
 			}
+
 			const taskLabel =
 				typeof taskId === "string" ? taskId : taskId ? taskId.name : "";
 
@@ -182,11 +190,13 @@ export class DebugTaskRunner implements IDisposable {
 									"The preLaunchTask '{0}' terminated.",
 									taskLabel,
 								);
+
 			enum DebugChoice {
 				DebugAnyway = 1,
 				ShowErrors = 2,
 				Cancel = 0,
 			}
+
 			const { result, checkboxChecked } =
 				await this.dialogService.prompt<DebugChoice>({
 					type: severity.Warning,
@@ -233,12 +243,15 @@ export class DebugTaskRunner implements IDisposable {
 							: "showErrors",
 				);
 			}
+
 			if (abort) {
 				return Promise.resolve(TaskRunResult.Failure);
 			}
+
 			if (debugAnyway) {
 				return TaskRunResult.Success;
 			}
+
 			await this.viewsService.openView(Markers.MARKERS_VIEW_ID, true);
 
 			return Promise.resolve(TaskRunResult.Failure);
@@ -256,11 +269,13 @@ export class DebugTaskRunner implements IDisposable {
 			);
 
 			let choice = -1;
+
 			enum DebugChoice {
 				DebugAnyway = 0,
 				ConfigureTask = 1,
 				Cancel = 2,
 			}
+
 			if (choiceMap[err.message] !== undefined) {
 				choice = choiceMap[err.message];
 			} else {
@@ -294,10 +309,12 @@ export class DebugTaskRunner implements IDisposable {
 							),
 						},
 					});
+
 				choice = result;
 
 				if (checkboxChecked) {
 					choiceMap[err.message] = choice;
+
 					this.storageService.store(
 						DEBUG_TASK_ERROR_CHOICE_KEY,
 						JSON.stringify(choiceMap),
@@ -306,14 +323,17 @@ export class DebugTaskRunner implements IDisposable {
 					);
 				}
 			}
+
 			if (choice === DebugChoice.ConfigureTask) {
 				await taskConfigureAction.run();
 			}
+
 			return choice === DebugChoice.DebugAnyway
 				? TaskRunResult.Success
 				: TaskRunResult.Failure;
 		}
 	}
+
 	async runTask(
 		root: IWorkspace | IWorkspaceFolder | undefined,
 		taskId: string | ITaskIdentifier | undefined,
@@ -322,6 +342,7 @@ export class DebugTaskRunner implements IDisposable {
 		if (!taskId) {
 			return Promise.resolve(null);
 		}
+
 		if (!root) {
 			return Promise.reject(
 				new Error(
@@ -389,6 +410,7 @@ export class DebugTaskRunner implements IDisposable {
 						);
 					})((e) => {
 						taskStarted = true;
+
 						resolve(
 							e.kind === TaskEventKind.ProcessEnded
 								? { exitCode: e.exitCode }
@@ -397,6 +419,7 @@ export class DebugTaskRunner implements IDisposable {
 					}),
 				),
 		);
+
 		store.add(
 			onceFilter(
 				this.taskService.onDidStateChange,
@@ -412,6 +435,7 @@ export class DebugTaskRunner implements IDisposable {
 		);
 
 		const didAcquireInput = store.add(new Emitter<void>());
+
 		store.add(
 			onceFilter(
 				this.taskService.onDidStateChange,
@@ -437,11 +461,13 @@ export class DebugTaskRunner implements IDisposable {
 					// task is already running and isn't busy - nothing to do.
 					return Promise.resolve(null);
 				}
+
 				const taskPromise = this.taskService.run(task);
 
 				if (task.configurationProperties.isBackground) {
 					return inactivePromise;
 				}
+
 				return taskPromise.then((x) => x ?? null);
 			});
 
@@ -450,13 +476,16 @@ export class DebugTaskRunner implements IDisposable {
 				taskDonePromise.then(
 					(result) => {
 						taskStarted = true;
+
 						resolve(result);
 					},
 					(error) => reject(error),
 				);
+
 				store.add(
 					token.onCancellationRequested(() => {
 						resolve({ exitCode: undefined, cancelled: true });
+
 						this.taskService.terminate(task).catch(() => {});
 					}),
 				);
@@ -478,6 +507,7 @@ export class DebugTaskRunner implements IDisposable {
 											? taskId
 											: JSON.stringify(taskId),
 									);
+
 									reject({
 										severity: severity.Error,
 										message: errorMessage,
@@ -520,6 +550,7 @@ export class DebugTaskRunner implements IDisposable {
 											),
 										);
 									}
+
 									this.progressService.withProgress(
 										{
 											location:
@@ -540,6 +571,7 @@ export class DebugTaskRunner implements IDisposable {
 													exitCode: undefined,
 													cancelled: true,
 												});
+
 												this.taskService
 													.terminate(task)
 													.catch(() => {});

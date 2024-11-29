@@ -51,18 +51,23 @@ export class StandaloneColorPickerWidget
 	implements IContentWidget
 {
 	static readonly ID = "editor.contrib.standaloneColorPickerWidget";
+
 	readonly allowEditorOverflow = true;
 
 	private readonly _position: Position | undefined = undefined;
+
 	private readonly _standaloneColorPickerParticipant: StandaloneColorPickerParticipant;
 
 	private _body: HTMLElement = document.createElement("div");
+
 	private _colorHover: StandaloneColorPickerHover | null = null;
+
 	private _selectionSetInEditor: boolean = false;
 
 	private readonly _onResult = this._register(
 		new Emitter<StandaloneColorPickerResult>(),
 	);
+
 	public readonly onResult = this._onResult.event;
 
 	constructor(
@@ -79,12 +84,15 @@ export class StandaloneColorPickerWidget
 		@IHoverService private readonly _hoverService: IHoverService,
 	) {
 		super();
+
 		this._standaloneColorPickerVisible.set(true);
+
 		this._standaloneColorPickerParticipant =
 			_instantiationService.createInstance(
 				StandaloneColorPickerParticipant,
 				this._editor,
 			);
+
 		this._position = this._editor
 			._getViewModel()
 			?.getPrimaryCursorState().modelState.position;
@@ -106,11 +114,13 @@ export class StandaloneColorPickerWidget
 				};
 
 		const focusTracker = this._register(dom.trackFocus(this._body));
+
 		this._register(
 			focusTracker.onDidBlur((_) => {
 				this.hide();
 			}),
 		);
+
 		this._register(
 			focusTracker.onDidFocus((_) => {
 				this.focus();
@@ -127,6 +137,7 @@ export class StandaloneColorPickerWidget
 				}
 			}),
 		);
+
 		this._register(
 			this._editor.onMouseMove((e) => {
 				const classList = e.target.element?.classList;
@@ -139,13 +150,17 @@ export class StandaloneColorPickerWidget
 				}
 			}),
 		);
+
 		this._register(
 			this.onResult((result) => {
 				this._render(result.value, result.foundInEditor);
 			}),
 		);
+
 		this._start(selection);
+
 		this._body.style.zIndex = "50";
+
 		this._editor.addContentWidget(this);
 	}
 
@@ -169,6 +184,7 @@ export class StandaloneColorPickerWidget
 		if (!this._position) {
 			return null;
 		}
+
 		const positionPreference = this._editor.getOption(
 			EditorOption.hover,
 		).above;
@@ -191,14 +207,19 @@ export class StandaloneColorPickerWidget
 
 	public hide(): void {
 		this.dispose();
+
 		this._standaloneColorPickerVisible.set(false);
+
 		this._standaloneColorPickerFocused.set(false);
+
 		this._editor.removeContentWidget(this);
+
 		this._editor.focus();
 	}
 
 	public focus(): void {
 		this._standaloneColorPickerFocused.set(true);
+
 		this._body.focus();
 	}
 
@@ -208,6 +229,7 @@ export class StandaloneColorPickerWidget
 		if (!computeAsyncResult) {
 			return;
 		}
+
 		this._onResult.fire(
 			new StandaloneColorPickerResult(
 				computeAsyncResult.result,
@@ -218,11 +240,13 @@ export class StandaloneColorPickerWidget
 
 	private async _computeAsync(range: IRange): Promise<{
 		result: StandaloneColorPickerHover;
+
 		foundInEditor: boolean;
 	} | null> {
 		if (!this._editor.hasModel()) {
 			return null;
 		}
+
 		const colorInfo: IColorInformation = {
 			range: range,
 			color: { red: 0, green: 0, blue: 0, alpha: 1 },
@@ -230,6 +254,7 @@ export class StandaloneColorPickerWidget
 
 		const colorHoverResult: {
 			colorHover: StandaloneColorPickerHover;
+
 			foundInEditor: boolean;
 		} | null =
 			await this._standaloneColorPickerParticipant.createColorHover(
@@ -241,6 +266,7 @@ export class StandaloneColorPickerWidget
 		if (!colorHoverResult) {
 			return null;
 		}
+
 		return {
 			result: colorHoverResult.colorHover,
 			foundInEditor: colorHoverResult.foundInEditor,
@@ -277,16 +303,23 @@ export class StandaloneColorPickerWidget
 		if (!renderedHoverPart) {
 			return;
 		}
+
 		this._register(renderedHoverPart.disposables);
 
 		const colorPicker = renderedHoverPart.colorPicker;
+
 		this._body.classList.add("standalone-colorpicker-body");
+
 		this._body.style.maxHeight =
 			Math.max(this._editor.getLayoutInfo().height / 4, 250) + "px";
+
 		this._body.style.maxWidth =
 			Math.max(this._editor.getLayoutInfo().width * 0.66, 500) + "px";
+
 		this._body.tabIndex = 0;
+
 		this._body.appendChild(fragment);
+
 		colorPicker.layout();
 
 		const colorPickerBody = colorPicker.body;
@@ -301,20 +334,25 @@ export class StandaloneColorPickerWidget
 			PADDING;
 
 		const enterButton: InsertButton | null = colorPicker.body.enterButton;
+
 		enterButton?.onClicked(() => {
 			this.updateEditor();
+
 			this.hide();
 		});
 
 		const colorPickerHeader = colorPicker.header;
 
 		const pickedColorNode = colorPickerHeader.pickedColorNode;
+
 		pickedColorNode.style.width = saturationBoxWidth + PADDING + "px";
 
 		const originalColorNode = colorPickerHeader.originalColorNode;
+
 		originalColorNode.style.width = widthOfOriginalColorBox + "px";
 
 		const closeButton = colorPicker.header.closeButton;
+
 		closeButton?.onClicked(() => {
 			this.hide();
 		});
@@ -323,9 +361,12 @@ export class StandaloneColorPickerWidget
 			if (enterButton) {
 				enterButton.button.textContent = "Replace";
 			}
+
 			this._selectionSetInEditor = true;
+
 			this._editor.setSelection(colorHover.range);
 		}
+
 		this._editor.layoutContentWidget(this);
 	}
 }

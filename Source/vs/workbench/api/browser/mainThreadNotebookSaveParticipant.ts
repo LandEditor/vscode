@@ -40,6 +40,7 @@ class ExtHostNotebookDocumentSaveParticipant
 			ExtHostContext.ExtHostNotebookDocumentSaveParticipant,
 		);
 	}
+
 	async participate(
 		workingCopy: IStoredFileWorkingCopy<IStoredFileWorkingCopyModel>,
 		context: IStoredFileWorkingCopySaveParticipantContext,
@@ -52,6 +53,7 @@ class ExtHostNotebookDocumentSaveParticipant
 		) {
 			return undefined;
 		}
+
 		let _warningTimeout: any;
 
 		const p = new Promise<any>((resolve, reject) => {
@@ -67,6 +69,7 @@ class ExtHostNotebookDocumentSaveParticipant
 					),
 				1750,
 			);
+
 			this._proxy
 				.$participateInSave(workingCopy.resource, context.reason, token)
 				.then((_) => {
@@ -99,6 +102,7 @@ export class SaveParticipant {
 				),
 			);
 	}
+
 	dispose(): void {
 		this._saveParticipantDisposable.dispose();
 	}

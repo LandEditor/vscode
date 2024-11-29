@@ -13,6 +13,7 @@ import {
 
 export class ExperimentationTelemetry implements IExperimentationTelemetry {
 	private sharedProperties: Record<string, string> = {};
+
 	private experimentationServicePromise:
 		| Promise<IExperimentationService>
 		| undefined;
@@ -21,6 +22,7 @@ export class ExperimentationTelemetry implements IExperimentationTelemetry {
 		private readonly context: vscode.ExtensionContext,
 		private baseReporter: TelemetryReporter,
 	) {}
+
 	private async createExperimentationService(): Promise<IExperimentationService> {
 		let targetPopulation: TargetPopulation;
 
@@ -50,6 +52,7 @@ export class ExperimentationTelemetry implements IExperimentationTelemetry {
 
 				break;
 		}
+
 		const id = this.context.extension.id;
 
 		const version = this.context.extension.packageJSON.version;
@@ -61,6 +64,7 @@ export class ExperimentationTelemetry implements IExperimentationTelemetry {
 			this,
 			this.context.globalState,
 		);
+
 		await experimentationService.initialFetch;
 
 		return experimentationService;
@@ -77,7 +81,9 @@ export class ExperimentationTelemetry implements IExperimentationTelemetry {
 			this.experimentationServicePromise =
 				this.createExperimentationService();
 		}
+
 		await this.experimentationServicePromise;
+
 		this.baseReporter.sendTelemetryEvent(
 			eventName,
 			{
@@ -99,23 +105,29 @@ export class ExperimentationTelemetry implements IExperimentationTelemetry {
 			this.experimentationServicePromise =
 				this.createExperimentationService();
 		}
+
 		await this.experimentationServicePromise;
+
 		this.baseReporter.sendTelemetryErrorEvent(eventName, {
 			...this.sharedProperties,
 			...properties,
 		});
 	}
+
 	setSharedProperty(name: string, value: string): void {
 		this.sharedProperties[name] = value;
 	}
+
 	postEvent(eventName: string, props: Map<string, string>): void {
 		const event: Record<string, string> = {};
 
 		for (const [key, value] of props) {
 			event[key] = value;
 		}
+
 		this.sendTelemetryEvent(eventName, event);
 	}
+
 	dispose(): Promise<any> {
 		return this.baseReporter.dispose();
 	}

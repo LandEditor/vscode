@@ -35,13 +35,16 @@ export class ViewsWelcomeContribution
 
 	constructor(extensionPoint: IExtensionPoint<ViewsWelcomeExtensionPoint>) {
 		super();
+
 		extensionPoint.setHandler((_, { added, removed }) => {
 			for (const contribution of removed) {
 				for (const welcome of contribution.value) {
 					const disposable = this.viewWelcomeContents.get(welcome);
+
 					disposable?.dispose();
 				}
 			}
+
 			const welcomesByViewId = new Map<
 				string,
 				Map<ViewWelcome, IViewContentDescriptor>
@@ -64,8 +67,10 @@ export class ViewsWelcomeContribution
 
 					if (!viewContentMap) {
 						viewContentMap = new Map();
+
 						welcomesByViewId.set(id, viewContentMap);
 					}
+
 					viewContentMap.set(welcome, {
 						content: welcome.contents,
 						when: ContextKeyExpr.deserialize(welcome.when),
@@ -75,6 +80,7 @@ export class ViewsWelcomeContribution
 					});
 				}
 			}
+
 			for (const [id, viewContentMap] of welcomesByViewId) {
 				const disposables = viewsRegistry.registerViewWelcomeContent2(
 					id,
@@ -93,6 +99,7 @@ function parseGroupAndOrder(
 	contribution: IExtensionPointUser<ViewsWelcomeExtensionPoint>,
 ): {
 	group: string | undefined;
+
 	order: number | undefined;
 } {
 	let group: string | undefined;
@@ -116,14 +123,17 @@ function parseGroupAndOrder(
 
 			return { group, order };
 		}
+
 		const idx = welcome.group.lastIndexOf("@");
 
 		if (idx > 0) {
 			group = welcome.group.substr(0, idx);
+
 			order = Number(welcome.group.substr(idx + 1)) || undefined;
 		} else {
 			group = welcome.group;
 		}
 	}
+
 	return { group, order };
 }

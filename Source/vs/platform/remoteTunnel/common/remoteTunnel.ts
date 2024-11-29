@@ -8,8 +8,11 @@ import { createDecorator } from "../../instantiation/common/instantiation.js";
 
 export interface IRemoteTunnelSession {
 	readonly providerId: string;
+
 	readonly sessionId: string;
+
 	readonly accountLabel: string;
+
 	readonly token?: string;
 }
 export const IRemoteTunnelService = createDecorator<IRemoteTunnelService>(
@@ -18,22 +21,30 @@ export const IRemoteTunnelService = createDecorator<IRemoteTunnelService>(
 
 export interface IRemoteTunnelService {
 	readonly _serviceBrand: undefined;
+
 	readonly onDidChangeTunnelStatus: Event<TunnelStatus>;
 
 	getTunnelStatus(): Promise<TunnelStatus>;
 
 	getMode(): Promise<TunnelMode>;
+
 	readonly onDidChangeMode: Event<TunnelMode>;
+
 	readonly onDidTokenFailed: Event<IRemoteTunnelSession | undefined>;
+
 	initialize(mode: TunnelMode): Promise<TunnelStatus>;
+
 	startTunnel(mode: ActiveTunnelMode): Promise<TunnelStatus>;
+
 	stopTunnel(): Promise<void>;
 
 	getTunnelName(): Promise<string | undefined>;
 }
 export interface ActiveTunnelMode {
 	readonly active: true;
+
 	readonly session: IRemoteTunnelSession;
+
 	readonly asService: boolean;
 }
 export interface InactiveTunnelMode {
@@ -53,19 +64,27 @@ export namespace TunnelStates {
 	export interface Uninitialized {
 		readonly type: "uninitialized";
 	}
+
 	export interface Connecting {
 		readonly type: "connecting";
+
 		readonly progress?: string;
 	}
+
 	export interface Connected {
 		readonly type: "connected";
+
 		readonly info: ConnectionInfo;
+
 		readonly serviceInstallFailed: boolean;
 	}
+
 	export interface Disconnected {
 		readonly type: "disconnected";
+
 		readonly onTokenFailed?: IRemoteTunnelSession;
 	}
+
 	export const disconnected = (
 		onTokenFailed?: IRemoteTunnelSession,
 	): Disconnected => ({ type: "disconnected", onTokenFailed });
@@ -86,7 +105,9 @@ export interface ConnectionInfo {
 	link: string;
 
 	domain: string;
+
 	tunnelName: string;
+
 	isAttached: boolean;
 }
 export const CONFIGURATION_KEY_PREFIX = "remote.tunnels.access";

@@ -16,7 +16,9 @@ import {
 
 export class CanonicalUriService implements ICanonicalUriService {
 	declare readonly _serviceBrand: undefined;
+
 	private readonly _providers = new Map<string, ICanonicalUriProvider>();
+
 	registerCanonicalUriProvider(provider: ICanonicalUriProvider): IDisposable {
 		this._providers.set(provider.scheme, provider);
 
@@ -24,6 +26,7 @@ export class CanonicalUriService implements ICanonicalUriService {
 			dispose: () => this._providers.delete(provider.scheme),
 		};
 	}
+
 	async provideCanonicalUri(
 		uri: URI,
 		targetScheme: string,
@@ -34,6 +37,7 @@ export class CanonicalUriService implements ICanonicalUriService {
 		if (provider) {
 			return provider.provideCanonicalUri(uri, targetScheme, token);
 		}
+
 		return undefined;
 	}
 }

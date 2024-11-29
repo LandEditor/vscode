@@ -29,7 +29,9 @@ import {
 @extHostNamedCustomer(MainContext.MainThreadCommands)
 export class MainThreadCommands implements MainThreadCommandsShape {
 	private readonly _commandRegistrations = new DisposableMap<string>();
+
 	private readonly _generateCommandsDocumentationRegistration: IDisposable;
+
 	private readonly _proxy: ExtHostCommandsShape;
 
 	constructor(
@@ -40,16 +42,20 @@ export class MainThreadCommands implements MainThreadCommandsShape {
 		private readonly _extensionService: IExtensionService,
 	) {
 		this._proxy = extHostContext.getProxy(ExtHostContext.ExtHostCommands);
+
 		this._generateCommandsDocumentationRegistration =
 			CommandsRegistry.registerCommand(
 				"_generateCommandsDocumentation",
 				() => this._generateCommandsDocumentation(),
 			);
 	}
+
 	dispose() {
 		this._commandRegistrations.dispose();
+
 		this._generateCommandsDocumentationRegistration.dispose();
 	}
+
 	private async _generateCommandsDocumentation(): Promise<void> {
 		const result = await this._proxy.$getContributedCommandMetadata();
 		// add local commands
@@ -66,6 +72,7 @@ export class MainThreadCommands implements MainThreadCommandsShape {
 		for (const id in result) {
 			all.push("`" + id + "` - " + _generateMarkdown(result[id]));
 		}
+
 		console.log(all.join("\n"));
 	}
 	$registerCommand(id: string): void {
@@ -92,6 +99,7 @@ export class MainThreadCommands implements MainThreadCommandsShape {
 			this._extensionService.activateByEvent(activationEvent);
 		}
 	}
+
 	async $executeCommand<T>(
 		id: string,
 		args: any[] | SerializableObjectWithBuffers<any[]>,
@@ -100,14 +108,17 @@ export class MainThreadCommands implements MainThreadCommandsShape {
 		if (args instanceof SerializableObjectWithBuffers) {
 			args = args.value;
 		}
+
 		for (let i = 0; i < args.length; i++) {
 			args[i] = revive(args[i]);
 		}
+
 		if (retry && args.length > 0 && !CommandsRegistry.getCommand(id)) {
 			await this._extensionService.activateByEvent(`onCommand:${id}`);
 
 			throw new Error("$executeCommand:retry");
 		}
+
 		return this._commandService.executeCommand<T>(id, ...args);
 	}
 	$getCommands(): Promise<string[]> {
@@ -127,6 +138,7 @@ function _generateMarkdown(
 				description.description.original;
 
 		const parts = [descriptionString];
+
 		parts.push("\n\n");
 
 		if (description.args) {
@@ -134,9 +146,11 @@ function _generateMarkdown(
 				parts.push(`* _${arg.name}_ - ${arg.description || ""}\n`);
 			}
 		}
+
 		if (description.returns) {
 			parts.push(`* _(returns)_ - ${description.returns}`);
 		}
+
 		parts.push("\n\n");
 
 		return parts.join("");

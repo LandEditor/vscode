@@ -38,26 +38,31 @@ export class Call {
 		readonly model: CallHierarchyModel,
 		readonly parent: Call | undefined,
 	) {}
+
 	static compare(a: Call, b: Call): number {
 		let res = compare(a.item.uri.toString(), b.item.uri.toString());
 
 		if (res === 0) {
 			res = Range.compareRangesUsingStarts(a.item.range, b.item.range);
 		}
+
 		return res;
 	}
 }
 export class DataSource implements IAsyncDataSource<CallHierarchyModel, Call> {
 	constructor(public getDirection: () => CallHierarchyDirection) {}
+
 	hasChildren(): boolean {
 		return true;
 	}
+
 	async getChildren(element: CallHierarchyModel | Call): Promise<Call[]> {
 		if (element instanceof CallHierarchyModel) {
 			return element.roots.map(
 				(root) => new Call(root, undefined, element, undefined),
 			);
 		}
+
 		const { model, item } = element;
 
 		if (this.getDirection() === CallHierarchyDirection.CallsFrom) {
@@ -95,6 +100,7 @@ export class Sorter implements ITreeSorter<Call> {
 }
 export class IdentityProvider implements IIdentityProvider<Call> {
 	constructor(public getDirection: () => CallHierarchyDirection) {}
+
 	getId(element: Call): {
 		toString(): string;
 	} {
@@ -106,6 +112,7 @@ export class IdentityProvider implements IIdentityProvider<Call> {
 		if (element.parent) {
 			res += this.getId(element.parent);
 		}
+
 		return res;
 	}
 }
@@ -119,17 +126,21 @@ export class CallRenderer
 	implements ITreeRenderer<Call, FuzzyScore, CallRenderingTemplate>
 {
 	static readonly id = "CallRenderer";
+
 	templateId: string = CallRenderer.id;
+
 	renderTemplate(container: HTMLElement): CallRenderingTemplate {
 		container.classList.add("callhierarchy-element");
 
 		const icon = document.createElement("div");
+
 		container.appendChild(icon);
 
 		const label = new IconLabel(container, { supportHighlights: true });
 
 		return new CallRenderingTemplate(icon, label);
 	}
+
 	renderElement(
 		node: ITreeNode<Call, FuzzyScore>,
 		_index: number,
@@ -138,19 +149,23 @@ export class CallRenderer
 		const { element, filterData } = node;
 
 		const deprecated = element.item.tags?.includes(SymbolTag.Deprecated);
+
 		template.icon.className = "";
+
 		template.icon.classList.add(
 			"inline",
 			...ThemeIcon.asClassNameArray(
 				SymbolKinds.toIcon(element.item.kind),
 			),
 		);
+
 		template.label.setLabel(element.item.name, element.item.detail, {
 			labelEscapeNewLines: true,
 			matches: createMatches(filterData),
 			strikethrough: deprecated,
 		});
 	}
+
 	disposeTemplate(template: CallRenderingTemplate): void {
 		template.label.dispose();
 	}
@@ -159,15 +174,18 @@ export class VirtualDelegate implements IListVirtualDelegate<Call> {
 	getHeight(_element: Call): number {
 		return 22;
 	}
+
 	getTemplateId(_element: Call): string {
 		return CallRenderer.id;
 	}
 }
 export class AccessibilityProvider implements IListAccessibilityProvider<Call> {
 	constructor(public getDirection: () => CallHierarchyDirection) {}
+
 	getWidgetAriaLabel(): string {
 		return localize("tree.aria", "Call Hierarchy");
 	}
+
 	getAriaLabel(element: Call): string | null {
 		if (this.getDirection() === CallHierarchyDirection.CallsFrom) {
 			return localize("from", "calls from {0}", element.item.name);

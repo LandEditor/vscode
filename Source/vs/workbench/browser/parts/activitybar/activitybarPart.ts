@@ -104,16 +104,21 @@ export class ActivitybarPart extends Part {
 
 	static readonly pinnedViewContainersKey =
 		"workbench.activity.pinnedViewlets2";
+
 	static readonly placeholderViewContainersKey =
 		"workbench.activity.placeholderViewlets";
+
 	static readonly viewContainersWorkspaceStateKey =
 		"workbench.activity.viewletsWorkspaceState";
 
 	//#region IView
 
 	readonly minimumWidth: number = 48;
+
 	readonly maximumWidth: number = 48;
+
 	readonly minimumHeight: number = 0;
+
 	readonly maximumHeight: number = Number.POSITIVE_INFINITY;
 
 	//#endregion
@@ -121,6 +126,7 @@ export class ActivitybarPart extends Part {
 	private readonly compositeBar = this._register(
 		new MutableDisposable<PaneCompositeBar>(),
 	);
+
 	private content: HTMLElement | undefined;
 
 	constructor(
@@ -204,6 +210,7 @@ export class ActivitybarPart extends Part {
 
 	protected override createContentArea(parent: HTMLElement): HTMLElement {
 		this.element = parent;
+
 		this.content = append(this.element, $(".content"));
 
 		if (this.layoutService.isVisible(Parts.ACTIVITYBAR_PART)) {
@@ -235,13 +242,16 @@ export class ActivitybarPart extends Part {
 		const container = assertIsDefined(this.getContainer());
 
 		const background = this.getColor(ACTIVITY_BAR_BACKGROUND) || "";
+
 		container.style.backgroundColor = background;
 
 		const borderColor =
 			this.getColor(ACTIVITY_BAR_BORDER) ||
 			this.getColor(contrastBorder) ||
 			"";
+
 		container.classList.toggle("bordered", !!borderColor);
+
 		container.style.borderColor = borderColor ? borderColor : "";
 	}
 
@@ -252,6 +262,7 @@ export class ActivitybarPart extends Part {
 
 		if (!this.compositeBar.value) {
 			this.compositeBar.value = this.createCompositeBar();
+
 			this.compositeBar.value.create(this.content);
 
 			if (this.dimension) {
@@ -301,8 +312,11 @@ export class ActivityBarCompositeBar extends PaneCompositeBar {
 	private element: HTMLElement | undefined;
 
 	private menuBar: CustomMenubarControl | undefined;
+
 	private menuBarContainer: HTMLElement | undefined;
+
 	private compositeBarContainer: HTMLElement | undefined;
+
 	private readonly globalCompositeBar: GlobalCompositeBar | undefined;
 
 	private readonly keyboardNavigationDisposables = this._register(
@@ -332,6 +346,7 @@ export class ActivityBarCompositeBar extends PaneCompositeBar {
 				...options,
 				fillExtraContextMenuActions: (actions, e) => {
 					options.fillExtraContextMenuActions(actions, e);
+
 					this.fillContextMenuActions(actions, e);
 				},
 			},
@@ -434,20 +449,25 @@ export class ActivityBarCompositeBar extends PaneCompositeBar {
 		// Global Composite Bar
 		if (this.globalCompositeBar) {
 			actions.push(new Separator());
+
 			actions.push(...this.globalCompositeBar.getContextMenuActions());
 		}
+
 		actions.push(new Separator());
+
 		actions.push(...this.getActivityBarContextMenuActions());
 	}
 
 	private uninstallMenubar() {
 		if (this.menuBar) {
 			this.menuBar.dispose();
+
 			this.menuBar = undefined;
 		}
 
 		if (this.menuBarContainer) {
 			this.menuBarContainer.remove();
+
 			this.menuBarContainer = undefined;
 		}
 	}
@@ -458,15 +478,18 @@ export class ActivityBarCompositeBar extends PaneCompositeBar {
 		}
 
 		this.menuBarContainer = document.createElement("div");
+
 		this.menuBarContainer.classList.add("menubar");
 
 		const content = assertIsDefined(this.element);
+
 		content.prepend(this.menuBarContainer);
 
 		// Menubar: install a custom menu bar depending on configuration
 		this.menuBar = this._register(
 			this.instantiationService.createInstance(CustomMenubarControl),
 		);
+
 		this.menuBar.create(this.menuBarContainer);
 	}
 
@@ -571,6 +594,7 @@ export class ActivityBarCompositeBar extends PaneCompositeBar {
 				width -= this.menuBarContainer.clientWidth;
 			}
 		}
+
 		if (this.globalCompositeBar) {
 			if (this.options.orientation === ActionsOrientation.VERTICAL) {
 				height -=
@@ -580,6 +604,7 @@ export class ActivityBarCompositeBar extends PaneCompositeBar {
 				width -= this.globalCompositeBar.element.clientWidth;
 			}
 		}
+
 		super.layout(width, height);
 	}
 
@@ -651,8 +676,10 @@ registerAction2(
 				],
 			});
 		}
+
 		run(accessor: ServicesAccessor): void {
 			const configurationService = accessor.get(IConfigurationService);
+
 			configurationService.updateValue(
 				LayoutSettings.ACTIVITY_BAR_LOCATION,
 				ActivityBarPosition.DEFAULT,
@@ -700,8 +727,10 @@ registerAction2(
 				],
 			});
 		}
+
 		run(accessor: ServicesAccessor): void {
 			const configurationService = accessor.get(IConfigurationService);
+
 			configurationService.updateValue(
 				LayoutSettings.ACTIVITY_BAR_LOCATION,
 				ActivityBarPosition.TOP,
@@ -749,8 +778,10 @@ registerAction2(
 				],
 			});
 		}
+
 		run(accessor: ServicesAccessor): void {
 			const configurationService = accessor.get(IConfigurationService);
+
 			configurationService.updateValue(
 				LayoutSettings.ACTIVITY_BAR_LOCATION,
 				ActivityBarPosition.BOTTOM,
@@ -795,8 +826,10 @@ registerAction2(
 				],
 			});
 		}
+
 		run(accessor: ServicesAccessor): void {
 			const configurationService = accessor.get(IConfigurationService);
+
 			configurationService.updateValue(
 				LayoutSettings.ACTIVITY_BAR_LOCATION,
 				ActivityBarPosition.HIDDEN,
@@ -887,6 +920,7 @@ registerAction2(
 
 		async run(accessor: ServicesAccessor): Promise<void> {
 			const layoutService = accessor.get(IWorkbenchLayoutService);
+
 			layoutService.focusPart(Parts.ACTIVITYBAR_PART);
 		}
 	},
@@ -917,6 +951,7 @@ registerThemingParticipant((theme, collector) => {
 
 			.monaco-workbench .activitybar > .content :not(.monaco-menu) > .monaco-action-bar .action-item.checked:focus .active-item-indicator:before {
 				visibility: visible;
+
 				border-left-color: ${activityBarActiveFocusBorderColor};
 			}
 		`);
@@ -930,6 +965,7 @@ registerThemingParticipant((theme, collector) => {
 		collector.addRule(`
 			.monaco-workbench .activitybar > .content :not(.monaco-menu) > .monaco-action-bar .action-item.checked .active-item-indicator {
 				z-index: 0;
+
 				background-color: ${activityBarActiveBackgroundColor};
 			}
 		`);

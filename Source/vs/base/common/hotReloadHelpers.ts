@@ -34,6 +34,7 @@ export function observeHotReloadableExports(
 				) {
 					return undefined;
 				}
+
 				return (_newExports) => {
 					event(undefined);
 
@@ -41,6 +42,7 @@ export function observeHotReloadableExports(
 				};
 			}),
 		);
+
 		o.read(reader);
 	}
 }
@@ -51,6 +53,7 @@ export function createHotClass<T>(clazz: T): IObservable<T> {
 	if (!isHotReloadEnabled()) {
 		return constObservable(clazz);
 	}
+
 	const id = (clazz as any).name;
 
 	let existing = classes.get(id);
@@ -64,5 +67,6 @@ export function createHotClass<T>(clazz: T): IObservable<T> {
 			existing!.set(clazz, undefined);
 		}, 0);
 	}
+
 	return existing as IObservable<T>;
 }

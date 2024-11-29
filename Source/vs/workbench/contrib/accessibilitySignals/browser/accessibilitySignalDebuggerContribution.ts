@@ -41,22 +41,27 @@ export class AccessibilitySignalLineDebuggerContribution
 					AccessibilitySignal.onDebugBreak,
 				),
 		);
+
 		this._register(
 			autorunWithStore((reader, store) => {
 				/** @description subscribe to debug sessions */
 				if (!isEnabled.read(reader)) {
 					return;
 				}
+
 				const sessionDisposables = new Map<
 					IDebugSession,
 					IDisposable
 				>();
+
 				store.add(
 					toDisposable(() => {
 						sessionDisposables.forEach((d) => d.dispose());
+
 						sessionDisposables.clear();
 					}),
 				);
+
 				store.add(
 					debugService.onDidNewSession((session) =>
 						sessionDisposables.set(
@@ -65,12 +70,15 @@ export class AccessibilitySignalLineDebuggerContribution
 						),
 					),
 				);
+
 				store.add(
 					debugService.onDidEndSession(({ session }) => {
 						sessionDisposables.get(session)?.dispose();
+
 						sessionDisposables.delete(session);
 					}),
 				);
+
 				debugService
 					.getModel()
 					.getSessions()
@@ -83,6 +91,7 @@ export class AccessibilitySignalLineDebuggerContribution
 			}),
 		);
 	}
+
 	private handleSession(session: IDebugSession): IDisposable {
 		return session.onDidChangeState((e) => {
 			const stoppedDetails = session.getStoppedDetails();

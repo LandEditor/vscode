@@ -26,6 +26,7 @@ export class MainThreadWebviewManager extends Disposable {
 		const webviews = this._register(
 			instantiationService.createInstance(MainThreadWebviews, context),
 		);
+
 		context.set(extHostProtocol.MainContext.MainThreadWebviews, webviews);
 
 		const webviewPanels = this._register(
@@ -35,6 +36,7 @@ export class MainThreadWebviewManager extends Disposable {
 				webviews,
 			),
 		);
+
 		context.set(
 			extHostProtocol.MainContext.MainThreadWebviewPanels,
 			webviewPanels,
@@ -48,6 +50,7 @@ export class MainThreadWebviewManager extends Disposable {
 				webviewPanels,
 			),
 		);
+
 		context.set(
 			extHostProtocol.MainContext.MainThreadCustomEditors,
 			customEditors,
@@ -60,6 +63,7 @@ export class MainThreadWebviewManager extends Disposable {
 				webviews,
 			),
 		);
+
 		context.set(
 			extHostProtocol.MainContext.MainThreadWebviewViews,
 			webviewViews,

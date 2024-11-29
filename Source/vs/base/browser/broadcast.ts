@@ -9,7 +9,9 @@ import { mainWindow } from "./window.js";
 
 export class BroadcastDataChannel<T> extends Disposable {
 	private broadcastChannel: BroadcastChannel | undefined;
+
 	private readonly _onDidReceiveData = this._register(new Emitter<T>());
+
 	readonly onDidReceiveData = this._onDidReceiveData.event;
 
 	constructor(private readonly channelName: string) {
@@ -22,7 +24,9 @@ export class BroadcastDataChannel<T> extends Disposable {
 				const listener = (event: MessageEvent) => {
 					this._onDidReceiveData.fire(event.data);
 				};
+
 				this.broadcastChannel.addEventListener("message", listener);
+
 				this._register(
 					toDisposable(() => {
 						if (this.broadcastChannel) {
@@ -30,6 +34,7 @@ export class BroadcastDataChannel<T> extends Disposable {
 								"message",
 								listener,
 							);
+
 							this.broadcastChannel.close();
 						}
 					}),
@@ -44,16 +49,20 @@ export class BroadcastDataChannel<T> extends Disposable {
 		// BroadcastChannel is not supported. Use storage.
 		if (!this.broadcastChannel) {
 			this.channelName = `BroadcastDataChannel.${channelName}`;
+
 			this.createBroadcastChannel();
 		}
 	}
+
 	private createBroadcastChannel(): void {
 		const listener = (event: StorageEvent) => {
 			if (event.key === this.channelName && event.newValue) {
 				this._onDidReceiveData.fire(JSON.parse(event.newValue));
 			}
 		};
+
 		mainWindow.addEventListener("storage", listener);
+
 		this._register(
 			toDisposable(() =>
 				mainWindow.removeEventListener("storage", listener),
@@ -70,6 +79,7 @@ export class BroadcastDataChannel<T> extends Disposable {
 		} else {
 			// remove previous changes so that event is triggered even if new changes are same as old changes
 			localStorage.removeItem(this.channelName);
+
 			localStorage.setItem(this.channelName, JSON.stringify(data));
 		}
 	}

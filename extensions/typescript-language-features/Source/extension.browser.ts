@@ -35,31 +35,41 @@ import { isWebAndHasSharedArrayBuffers } from "./utils/platform";
 
 class StaticVersionProvider implements ITypeScriptVersionProvider {
 	constructor(private readonly _version: TypeScriptVersion) {}
+
 	updateConfiguration(_configuration: TypeScriptServiceConfiguration): void {
 		// noop
 	}
+
 	get defaultVersion() {
 		return this._version;
 	}
+
 	get bundledVersion() {
 		return this._version;
 	}
+
 	readonly globalVersion = undefined;
+
 	readonly localVersion = undefined;
+
 	readonly localVersions = [];
 }
 export async function activate(context: vscode.ExtensionContext): Promise<Api> {
 	const pluginManager = new PluginManager();
+
 	context.subscriptions.push(pluginManager);
 
 	const commandManager = new CommandManager();
+
 	context.subscriptions.push(commandManager);
 
 	const onCompletionAccepted =
 		new vscode.EventEmitter<vscode.CompletionItem>();
+
 	context.subscriptions.push(onCompletionAccepted);
 
 	const activeJsTsEditorTracker = new ActiveJsTsEditorTracker();
+
 	context.subscriptions.push(activeJsTsEditorTracker);
 
 	const versionProvider = new StaticVersionProvider(
@@ -83,11 +93,14 @@ export async function activate(context: vscode.ExtensionContext): Promise<Api> {
 		const { aiKey } = packageInfo;
 
 		const vscTelemetryReporter = new VsCodeTelemetryReporter(aiKey);
+
 		experimentTelemetryReporter = new ExperimentationTelemetryReporter(
 			vscTelemetryReporter,
 		);
+
 		context.subscriptions.push(experimentTelemetryReporter);
 	}
+
 	const logger = new Logger();
 
 	const lazyClientHost = createLazyClientHost(
@@ -113,6 +126,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<Api> {
 			onCompletionAccepted.fire(item);
 		},
 	);
+
 	registerBaseCommands(
 		commandManager,
 		lazyClientHost,
@@ -124,6 +138,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<Api> {
 	import("./languageFeatures/tsconfig").then((module) => {
 		context.subscriptions.push(module.register());
 	});
+
 	context.subscriptions.push(
 		lazilyActivateClient(
 			lazyClientHost,
@@ -134,6 +149,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<Api> {
 			},
 		),
 	);
+
 	context.subscriptions.push(registerAtaSupport(logger));
 
 	return getExtensionApi(onCompletionAccepted.event, pluginManager);
@@ -145,9 +161,11 @@ async function startPreloadWorkspaceContentsIfNeeded(
 	if (!isWebAndHasSharedArrayBuffers()) {
 		return;
 	}
+
 	if (!vscode.workspace.workspaceFolders) {
 		return;
 	}
+
 	await Promise.all(
 		vscode.workspace.workspaceFolders.map(async (folder) => {
 			const workspaceUri = folder.uri;
@@ -162,10 +180,12 @@ async function startPreloadWorkspaceContentsIfNeeded(
 
 				return;
 			}
+
 			const loader = new RemoteWorkspaceContentsPreloader(
 				workspaceUri,
 				logger,
 			);
+
 			context.subscriptions.push(loader);
 
 			try {
@@ -190,20 +210,24 @@ class RemoteWorkspaceContentsPreloader extends Disposable {
 				new vscode.RelativePattern(workspaceUri, "*"),
 			),
 		);
+
 		this._register(
 			fsWatcher.onDidChange((uri) => {
 				if (uri.toString() === workspaceUri.toString()) {
 					this._preload = undefined;
+
 					this.triggerPreload();
 				}
 			}),
 		);
 	}
+
 	async triggerPreload() {
 		this._preload ??= this.doPreload();
 
 		return this._preload;
 	}
+
 	private async doPreload(): Promise<void> {
 		try {
 			const remoteHubApi = await RemoteRepositories.getApi();
@@ -221,6 +245,7 @@ class RemoteWorkspaceContentsPreloader extends Disposable {
 			this.logger.info(
 				`Loading workspace content for repository ${this.workspaceUri.toString()} failed: ${error instanceof Error ? error.toString() : "Unknown reason"}`,
 			);
+
 			console.error(error);
 		}
 	}

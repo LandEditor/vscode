@@ -11,16 +11,26 @@ import * as languages from "../../../common/languages.js";
 
 export const CodeActionKind = new (class {
 	public readonly QuickFix = new HierarchicalKind("quickfix");
+
 	public readonly Refactor = new HierarchicalKind("refactor");
+
 	public readonly RefactorExtract = this.Refactor.append("extract");
+
 	public readonly RefactorInline = this.Refactor.append("inline");
+
 	public readonly RefactorMove = this.Refactor.append("move");
+
 	public readonly RefactorRewrite = this.Refactor.append("rewrite");
+
 	public readonly Notebook = new HierarchicalKind("notebook");
+
 	public readonly Source = new HierarchicalKind("source");
+
 	public readonly SourceOrganizeImports =
 		this.Source.append("organizeImports");
+
 	public readonly SourceFixAll = this.Source.append("fixAll");
+
 	public readonly SurroundWith = this.Refactor.append("surround");
 })();
 
@@ -45,8 +55,11 @@ export enum CodeActionTriggerSource {
 }
 export interface CodeActionFilter {
 	readonly include?: HierarchicalKind;
+
 	readonly excludes?: readonly HierarchicalKind[];
+
 	readonly includeSourceActions?: boolean;
+
 	readonly onlyIncludePreferredActions?: boolean;
 }
 export function mayIncludeActionsOfKind(
@@ -57,6 +70,7 @@ export function mayIncludeActionsOfKind(
 	if (filter.include && !filter.include.intersects(providedKind)) {
 		return false;
 	}
+
 	if (filter.excludes) {
 		if (
 			filter.excludes.some((exclude) =>
@@ -73,6 +87,7 @@ export function mayIncludeActionsOfKind(
 	) {
 		return false;
 	}
+
 	return true;
 }
 export function filtersAction(
@@ -88,6 +103,7 @@ export function filtersAction(
 			return false;
 		}
 	}
+
 	if (filter.excludes) {
 		if (
 			actionKind &&
@@ -104,11 +120,13 @@ export function filtersAction(
 			return false;
 		}
 	}
+
 	if (filter.onlyIncludePreferredActions) {
 		if (!action.isPreferred) {
 			return false;
 		}
 	}
+
 	return true;
 }
 function excludesAction(
@@ -119,19 +137,26 @@ function excludesAction(
 	if (!exclude.contains(providedKind)) {
 		return false;
 	}
+
 	if (include && exclude.contains(include)) {
 		// The include is more specific, don't filter out
 		return false;
 	}
+
 	return true;
 }
 export interface CodeActionTrigger {
 	readonly type: languages.CodeActionTriggerType;
+
 	readonly triggerAction: CodeActionTriggerSource;
+
 	readonly filter?: CodeActionFilter;
+
 	readonly autoApply?: CodeActionAutoApply;
+
 	readonly context?: {
 		readonly notAvailableMessage: string;
+
 		readonly position: Position;
 	};
 }
@@ -140,6 +165,7 @@ export class CodeActionCommandArgs {
 		arg: any,
 		defaults: {
 			kind: HierarchicalKind;
+
 			apply: CodeActionAutoApply;
 		},
 	): CodeActionCommandArgs {
@@ -150,12 +176,14 @@ export class CodeActionCommandArgs {
 				false,
 			);
 		}
+
 		return new CodeActionCommandArgs(
 			CodeActionCommandArgs.getKindFromUser(arg, defaults.kind),
 			CodeActionCommandArgs.getApplyFromUser(arg, defaults.apply),
 			CodeActionCommandArgs.getPreferredUser(arg),
 		);
 	}
+
 	private static getApplyFromUser(
 		arg: any,
 		defaultAutoApply: CodeActionAutoApply,
@@ -174,14 +202,17 @@ export class CodeActionCommandArgs {
 				return defaultAutoApply;
 		}
 	}
+
 	private static getKindFromUser(arg: any, defaultKind: HierarchicalKind) {
 		return typeof arg.kind === "string"
 			? new HierarchicalKind(arg.kind)
 			: defaultKind;
 	}
+
 	private static getPreferredUser(arg: any): boolean {
 		return typeof arg.preferred === "boolean" ? arg.preferred : false;
 	}
+
 	private constructor(
 		public readonly kind: HierarchicalKind,
 		public readonly apply: CodeActionAutoApply,
@@ -194,6 +225,7 @@ export class CodeActionItem {
 		public readonly provider: languages.CodeActionProvider | undefined,
 		public highlightRange?: boolean,
 	) {}
+
 	async resolve(token: CancellationToken): Promise<this> {
 		if (this.provider?.resolveCodeAction && !this.action.edit) {
 			let action: languages.CodeAction | undefined | null;
@@ -206,15 +238,19 @@ export class CodeActionItem {
 			} catch (err) {
 				onUnexpectedExternalError(err);
 			}
+
 			if (action) {
 				this.action.edit = action.edit;
 			}
 		}
+
 		return this;
 	}
 }
 export interface CodeActionSet extends ActionSet<CodeActionItem> {
 	readonly validActions: readonly CodeActionItem[];
+
 	readonly allActions: readonly CodeActionItem[];
+
 	readonly documentation: readonly languages.Command[];
 }

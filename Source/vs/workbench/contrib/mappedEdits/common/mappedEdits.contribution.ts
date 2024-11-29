@@ -35,6 +35,7 @@ CommandsRegistry.registerCommand(
 				const mostRelevantProvider = providers[0];
 
 				const cancellationTokenSource = new CancellationTokenSource();
+
 				result = await mostRelevantProvider.provideMappedEdits(
 					document.object.textEditorModel,
 					codeBlocks,
@@ -45,6 +46,7 @@ CommandsRegistry.registerCommand(
 		} finally {
 			document.dispose();
 		}
+
 		return result;
 	},
 );

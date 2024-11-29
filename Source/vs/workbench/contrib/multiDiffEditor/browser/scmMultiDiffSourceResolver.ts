@@ -36,6 +36,7 @@ import {
 
 export class ScmMultiDiffSourceResolver implements IMultiDiffSourceResolver {
 	private static readonly _scheme = "scm-multi-diff-source";
+
 	public static getMultiDiffSourceUri(
 		repositoryUri: string,
 		groupId: string,
@@ -48,15 +49,18 @@ export class ScmMultiDiffSourceResolver implements IMultiDiffSourceResolver {
 			} satisfies UriFields),
 		});
 	}
+
 	private static parseUri(uri: URI):
 		| {
 				repositoryUri: URI;
+
 				groupId: string;
 		  }
 		| undefined {
 		if (uri.scheme !== ScmMultiDiffSourceResolver._scheme) {
 			return undefined;
 		}
+
 		let query: UriFields;
 
 		try {
@@ -64,25 +68,31 @@ export class ScmMultiDiffSourceResolver implements IMultiDiffSourceResolver {
 		} catch (e) {
 			return undefined;
 		}
+
 		if (typeof query !== "object" || query === null) {
 			return undefined;
 		}
+
 		const { repositoryUri, groupId } = query;
 
 		if (typeof repositoryUri !== "string" || typeof groupId !== "string") {
 			return undefined;
 		}
+
 		return { repositoryUri: URI.parse(repositoryUri), groupId };
 	}
+
 	constructor(
 		@ISCMService
 		private readonly _scmService: ISCMService,
 		@IActivityService
 		private readonly _activityService: IActivityService,
 	) {}
+
 	canHandleUri(uri: URI): boolean {
 		return ScmMultiDiffSourceResolver.parseUri(uri) !== undefined;
 	}
+
 	async resolveDiffSource(uri: URI): Promise<IResolvedMultiDiffSource> {
 		const { repositoryUri, groupId } =
 			ScmMultiDiffSourceResolver.parseUri(uri)!;
@@ -118,6 +128,7 @@ export class ScmMultiDiffSourceResolver implements IMultiDiffSourceResolver {
 			(activities) =>
 				!activities.some((a) => a.badge instanceof ProgressBadge),
 		);
+
 		await waitForState(scmViewHasNoProgressBadge, (v) => v);
 
 		return new ScmResolvedMultiDiffSource(group, repository);
@@ -136,9 +147,11 @@ class ScmResolvedMultiDiffSource implements IResolvedMultiDiffSource {
 					),
 			),
 	);
+
 	readonly resources = new ValueWithChangeEventFromObservable(
 		this._resources,
 	);
+
 	public readonly contextKeys: Record<string, ContextKeyValue> = {
 		scmResourceGroup: this._group.id,
 		scmProvider: this._repository.provider.contextValue,
@@ -151,6 +164,7 @@ class ScmResolvedMultiDiffSource implements IResolvedMultiDiffSource {
 }
 interface UriFields {
 	repositoryUri: string;
+
 	groupId: string;
 }
 export class ScmMultiDiffSourceResolverContribution extends Disposable {
@@ -163,6 +177,7 @@ export class ScmMultiDiffSourceResolverContribution extends Disposable {
 		multiDiffSourceResolverService: IMultiDiffSourceResolverService,
 	) {
 		super();
+
 		this._register(
 			multiDiffSourceResolverService.registerResolver(
 				instantiationService.createInstance(ScmMultiDiffSourceResolver),
@@ -172,7 +187,9 @@ export class ScmMultiDiffSourceResolverContribution extends Disposable {
 }
 interface OpenScmGroupActionOptions {
 	title: string;
+
 	repositoryUri: UriComponents;
+
 	resourceGroupId: string;
 }
 export class OpenScmGroupAction extends Action2 {
@@ -186,6 +203,7 @@ export class OpenScmGroupAction extends Action2 {
 		if (!repositoryRootUri) {
 			return;
 		}
+
 		const multiDiffSource =
 			ScmMultiDiffSourceResolver.getMultiDiffSourceUri(
 				repositoryRootUri.toString(),
@@ -198,6 +216,7 @@ export class OpenScmGroupAction extends Action2 {
 			options,
 		});
 	}
+
 	constructor() {
 		super({
 			id: "_workbench.openScmMultiDiffEditor",
@@ -205,11 +224,13 @@ export class OpenScmGroupAction extends Action2 {
 			f1: false,
 		});
 	}
+
 	async run(
 		accessor: ServicesAccessor,
 		options: OpenScmGroupActionOptions,
 	): Promise<void> {
 		const editorService = accessor.get(IEditorService);
+
 		await OpenScmGroupAction.openMultiFileDiffEditor(
 			editorService,
 			options.title,

@@ -106,14 +106,17 @@ export class HoverColorPickerParticipant
 		if (!this._editor.hasModel()) {
 			return [];
 		}
+
 		if (!this._isValidRequest(source)) {
 			return [];
 		}
+
 		const colorDetector = ColorDetector.get(this._editor);
 
 		if (!colorDetector) {
 			return [];
 		}
+
 		for (const d of lineDecorations) {
 			if (!colorDetector.isColorDecoration(d)) {
 				continue;
@@ -136,6 +139,7 @@ export class HoverColorPickerParticipant
 				return [colorHover];
 			}
 		}
+
 		return [];
 	}
 
@@ -171,8 +175,10 @@ export class HoverColorPickerParticipant
 		if (hoverParts.length === 0 || !editor.hasModel()) {
 			return new RenderedHoverParts([]);
 		}
+
 		if (context.setMinimumDimensions) {
 			const minimumHeight = editor.getOption(EditorOption.lineHeight) + 8;
+
 			context.setMinimumDimensions(new Dimension(302, minimumHeight));
 		}
 
@@ -183,6 +189,7 @@ export class HoverColorPickerParticipant
 		const editorModel = editor.getModel();
 
 		const model = colorHover.model;
+
 		this._colorPicker = disposables.add(
 			new ColorPickerWidget(
 				context.fragment,
@@ -211,10 +218,13 @@ export class HoverColorPickerParticipant
 					range,
 					colorHover,
 				);
+
 				editorUpdatedByColorPicker = true;
+
 				range = updateEditorModel(editor, range, model);
 			}),
 		);
+
 		disposables.add(
 			model.onDidChangeColor((color: Color) => {
 				updateColorPresentations(
@@ -226,12 +236,14 @@ export class HoverColorPickerParticipant
 				);
 			}),
 		);
+
 		disposables.add(
 			editor.onDidChangeModelContent((e) => {
 				if (editorUpdatedByColorPicker) {
 					editorUpdatedByColorPicker = false;
 				} else {
 					context.hide();
+
 					editor.focus();
 				}
 			}),
@@ -261,6 +273,7 @@ export class HoverColorPickerParticipant
 
 	public handleHide(): void {
 		this._colorPicker?.dispose();
+
 		this._colorPicker = undefined;
 	}
 

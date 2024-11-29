@@ -118,5 +118,6 @@ export const transformWebviewThemeVars = (
 	for (const [target, src] of mapping) {
 		result[target] = s[src];
 	}
+
 	return result;
 };

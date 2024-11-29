@@ -12,6 +12,7 @@ import { HeightOfHiddenLinesRegionInDiffEditor } from "./diffElementViewModel.js
 
 export interface IDiffEditorHeightCalculatorService {
 	diffAndComputeHeight(original: URI, modified: URI): Promise<number>;
+
 	computeHeightFromLines(lineCount: number): number;
 }
 export class DiffEditorHeightCalculatorService {
@@ -24,6 +25,7 @@ export class DiffEditorHeightCalculatorService {
 		@IConfigurationService
 		private readonly configurationService: IConfigurationService,
 	) {}
+
 	public async diffAndComputeHeight(
 		original: URI,
 		modified: URI,
@@ -80,6 +82,7 @@ export class DiffEditorHeightCalculatorService {
 				if (curr.original.isEmpty && !curr.modified.isEmpty) {
 					return prev + curr.modified.length;
 				}
+
 				if (
 					!curr.original.isEmpty &&
 					!curr.modified.isEmpty &&
@@ -87,6 +90,7 @@ export class DiffEditorHeightCalculatorService {
 				) {
 					return prev + curr.modified.length - curr.original.length;
 				}
+
 				return prev;
 			}, 0);
 
@@ -115,9 +119,11 @@ export class DiffEditorHeightCalculatorService {
 			);
 		} finally {
 			originalModel.dispose();
+
 			modifiedModel.dispose();
 		}
 	}
+
 	public computeHeightFromLines(lineCount: number): number {
 		return (
 			lineCount * this.lineHeight +

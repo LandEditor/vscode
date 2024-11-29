@@ -45,8 +45,10 @@ export class TextFileEditorTracker
 		private readonly workingCopyEditorService: IWorkingCopyEditorService,
 	) {
 		super();
+
 		this.registerListeners();
 	}
+
 	private registerListeners(): void {
 		// Ensure dirty text file and untitled models are always opened as editors
 		this._register(
@@ -54,11 +56,13 @@ export class TextFileEditorTracker
 				this.ensureDirtyFilesAreOpenedWorker.work(model.resource),
 			),
 		);
+
 		this._register(
 			this.textFileService.files.onDidSaveError((model) =>
 				this.ensureDirtyFilesAreOpenedWorker.work(model.resource),
 			),
 		);
+
 		this._register(
 			this.textFileService.untitled.onDidChangeDirty((model) =>
 				this.ensureDirtyFilesAreOpenedWorker.work(model.resource),
@@ -82,9 +86,11 @@ export class TextFileEditorTracker
 			this.getDirtyTextFileTrackerDelay(),
 		),
 	);
+
 	protected getDirtyTextFileTrackerDelay(): number {
 		return 800; // encapsulated in a method for tests to override
 	}
+
 	private ensureDirtyTextFilesAreOpened(resources: URI[]): void {
 		this.doEnsureDirtyTextFilesAreOpened(
 			distinct(
@@ -92,6 +98,7 @@ export class TextFileEditorTracker
 					if (!this.textFileService.isDirty(resource)) {
 						return false; // resource must be dirty
 					}
+
 					const fileModel = this.textFileService.files.get(resource);
 
 					if (
@@ -101,6 +108,7 @@ export class TextFileEditorTracker
 					) {
 						return false; // resource must not be pending to save
 					}
+
 					if (
 						resource.scheme !== Schemas.untitled &&
 						!fileModel?.hasState(TextFileEditorModelState.ERROR) &&
@@ -113,6 +121,7 @@ export class TextFileEditorTracker
 						// that are not auto-saved anyway
 						return false;
 					}
+
 					if (
 						this.editorService.isOpened({
 							resource,
@@ -125,6 +134,7 @@ export class TextFileEditorTracker
 					) {
 						return false; // model must not be opened already as file (fast check via editor type)
 					}
+
 					const model =
 						fileModel ??
 						this.textFileService.untitled.get(resource);
@@ -135,16 +145,19 @@ export class TextFileEditorTracker
 					) {
 						return false; // model must not be opened already as file (slower check via working copy)
 					}
+
 					return true;
 				}),
 				(resource) => resource.toString(),
 			),
 		);
 	}
+
 	private doEnsureDirtyTextFilesAreOpened(resources: URI[]): void {
 		if (!resources.length) {
 			return;
 		}
+
 		this.editorService.openEditors(
 			resources.map((resource) => ({
 				resource,
@@ -167,11 +180,13 @@ export class TextFileEditorTracker
 					if (!resource) {
 						return undefined;
 					}
+
 					const model = this.textFileService.files.get(resource);
 
 					if (!model || model.isDirty() || !model.isResolved()) {
 						return undefined;
 					}
+
 					return model;
 				}),
 			),

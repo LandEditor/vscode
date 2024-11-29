@@ -48,14 +48,19 @@ export class NotificationService
 	implements INotificationService
 {
 	declare readonly _serviceBrand: undefined;
+
 	readonly model = this._register(new NotificationsModel());
+
 	private readonly _onDidAddNotification = this._register(
 		new Emitter<INotification>(),
 	);
+
 	readonly onDidAddNotification = this._onDidAddNotification.event;
+
 	private readonly _onDidRemoveNotification = this._register(
 		new Emitter<INotification>(),
 	);
+
 	readonly onDidRemoveNotification = this._onDidRemoveNotification.event;
 
 	constructor(
@@ -63,9 +68,12 @@ export class NotificationService
 		private readonly storageService: IStorageService,
 	) {
 		super();
+
 		this.updateFilters();
+
 		this.registerListeners();
 	}
+
 	private registerListeners(): void {
 		this._register(
 			this.model.onDidChangeNotification((e) => {
@@ -98,11 +106,14 @@ export class NotificationService
 									this.updateSourceFilter(source);
 								}
 							}
+
 							this._onDidAddNotification.fire(notification);
 						}
+
 						if (e.kind === NotificationChangeType.REMOVE) {
 							this._onDidRemoveNotification.fire(notification);
 						}
+
 						break;
 					}
 				}
@@ -112,15 +123,20 @@ export class NotificationService
 	//#region Filters
 	private static readonly GLOBAL_FILTER_SETTINGS_KEY =
 		"notifications.doNotDisturbMode";
+
 	private static readonly PER_SOURCE_FILTER_SETTINGS_KEY =
 		"notifications.perSourceDoNotDisturbMode";
+
 	private readonly _onDidChangeFilter = this._register(new Emitter<void>());
+
 	readonly onDidChangeFilter = this._onDidChangeFilter.event;
+
 	private globalFilterEnabled = this.storageService.getBoolean(
 		NotificationService.GLOBAL_FILTER_SETTINGS_KEY,
 		StorageScope.APPLICATION,
 		false,
 	);
+
 	private readonly mapSourceToFilter: Map<
 		string /** source id */,
 		INotificationSourceFilter
@@ -136,6 +152,7 @@ export class NotificationService
 		)) {
 			map.set(sourceFilter.id, sourceFilter);
 		}
+
 		return map;
 	})();
 
@@ -149,6 +166,7 @@ export class NotificationService
 			}
 			// Store into model and persist
 			this.globalFilterEnabled = filter === NotificationsFilter.ERROR;
+
 			this.storageService.store(
 				NotificationService.GLOBAL_FILTER_SETTINGS_KEY,
 				this.globalFilterEnabled,
@@ -174,11 +192,13 @@ export class NotificationService
 				label: filter.label,
 				filter: filter.filter,
 			});
+
 			this.saveSourceFilters();
 			// Update model
 			this.updateFilters();
 		}
 	}
+
 	getFilter(source?: INotificationSource): NotificationsFilter {
 		if (source) {
 			return (
@@ -186,10 +206,12 @@ export class NotificationService
 				NotificationsFilter.OFF
 			);
 		}
+
 		return this.globalFilterEnabled
 			? NotificationsFilter.ERROR
 			: NotificationsFilter.OFF;
 	}
+
 	private updateSourceFilter(source: INotificationSource): void {
 		const existing = this.mapSourceToFilter.get(source.id);
 
@@ -203,9 +225,11 @@ export class NotificationService
 				label: source.label,
 				filter: existing.filter,
 			});
+
 			this.saveSourceFilters();
 		}
 	}
+
 	private saveSourceFilters(): void {
 		this.storageService.store(
 			NotificationService.PER_SOURCE_FILTER_SETTINGS_KEY,
@@ -214,9 +238,11 @@ export class NotificationService
 			StorageTarget.MACHINE,
 		);
 	}
+
 	getFilters(): INotificationSourceFilter[] {
 		return [...this.mapSourceToFilter.values()];
 	}
+
 	private updateFilters(): void {
 		this.model.setFilter({
 			global: this.globalFilterEnabled
@@ -230,6 +256,7 @@ export class NotificationService
 			),
 		});
 	}
+
 	removeFilter(sourceId: string): void {
 		if (this.mapSourceToFilter.delete(sourceId)) {
 			// Persist
@@ -244,28 +271,37 @@ export class NotificationService
 			for (const messageEntry of message) {
 				this.info(messageEntry);
 			}
+
 			return;
 		}
+
 		this.model.addNotification({ severity: Severity.Info, message });
 	}
+
 	warn(message: NotificationMessage | NotificationMessage[]): void {
 		if (Array.isArray(message)) {
 			for (const messageEntry of message) {
 				this.warn(messageEntry);
 			}
+
 			return;
 		}
+
 		this.model.addNotification({ severity: Severity.Warning, message });
 	}
+
 	error(message: NotificationMessage | NotificationMessage[]): void {
 		if (Array.isArray(message)) {
 			for (const messageEntry of message) {
 				this.error(messageEntry);
 			}
+
 			return;
 		}
+
 		this.model.addNotification({ severity: Severity.Error, message });
 	}
+
 	notify(notification: INotification): INotificationHandle {
 		const toDispose = new DisposableStore();
 		// Handle neverShowAgain option accordingly
@@ -278,6 +314,7 @@ export class NotificationService
 			if (this.storageService.getBoolean(id, scope)) {
 				return new NoOpNotification();
 			}
+
 			const neverShowAgainAction = toDispose.add(
 				new Action(
 					"workbench.notification.neverShowAgain",
@@ -311,6 +348,7 @@ export class NotificationService
 					neverShowAgainAction,
 				]; // actions comes last
 			}
+
 			notification.actions = actions;
 		}
 		// Show notification
@@ -320,6 +358,7 @@ export class NotificationService
 
 		return handle;
 	}
+
 	private toStorageScope(options: INeverShowAgainOptions): StorageScope {
 		switch (options.scope) {
 			case NeverShowAgainScope.APPLICATION:
@@ -335,6 +374,7 @@ export class NotificationService
 				return StorageScope.APPLICATION;
 		}
 	}
+
 	prompt(
 		severity: Severity,
 		message: string,
@@ -352,6 +392,7 @@ export class NotificationService
 			if (this.storageService.getBoolean(id, scope)) {
 				return new NoOpNotification();
 			}
+
 			const neverShowAgainChoice = {
 				label: localize("neverShowAgain", "Don't Show Again"),
 				run: () =>
@@ -370,11 +411,13 @@ export class NotificationService
 				choices = [...choices, neverShowAgainChoice]; // actions comes last
 			}
 		}
+
 		let choiceClicked = false;
 		// Convert choices into primary/secondary actions
 		const primaryActions: IAction[] = [];
 
 		const secondaryActions: IAction[] = [];
+
 		choices.forEach((choice, index) => {
 			const action = new ChoiceAction(
 				`workbench.dialog.choice.${index}`,
@@ -396,6 +439,7 @@ export class NotificationService
 					}
 				}),
 			);
+
 			toDispose.add(action);
 		});
 		// Show notification with actions
@@ -411,6 +455,7 @@ export class NotificationService
 			sticky: options?.sticky,
 			priority: options?.priority,
 		});
+
 		Event.once(handle.onDidClose)(() => {
 			// Cleanup when notification gets disposed
 			toDispose.dispose();
@@ -426,6 +471,7 @@ export class NotificationService
 
 		return handle;
 	}
+
 	status(
 		message: NotificationMessage,
 		options?: IStatusMessageOptions,

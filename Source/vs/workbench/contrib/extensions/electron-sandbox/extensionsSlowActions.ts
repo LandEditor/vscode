@@ -29,8 +29,11 @@ import { IExtensionHostProfile } from "../../../services/extensions/common/exten
 
 abstract class RepoInfo {
 	abstract get base(): string;
+
 	abstract get owner(): string;
+
 	abstract get repo(): string;
+
 	static fromExtension(desc: IExtensionDescription): RepoInfo | undefined {
 		let result: RepoInfo | undefined;
 		// scheme:auth/OWNER/REPO/issues/
@@ -75,6 +78,7 @@ abstract class RepoInfo {
 		if (result && result.base.indexOf("github") === -1) {
 			result = undefined;
 		}
+
 		return result;
 	}
 }
@@ -90,8 +94,10 @@ export class SlowExtensionAction extends Action {
 			localize("cmd.reportOrShow", "Performance Issue"),
 			"extension-action report-issue",
 		);
+
 		this.enabled = Boolean(RepoInfo.fromExtension(extension));
 	}
+
 	override async run(): Promise<void> {
 		const action = await this._instantiationService.invokeFunction(
 			createSlowExtensionAction,
@@ -114,6 +120,7 @@ export async function createSlowExtensionAction(
 	if (!info) {
 		return undefined;
 	}
+
 	const requestService = accessor.get(IRequestService);
 
 	const instaService = accessor.get(IInstantiationService);
@@ -127,11 +134,13 @@ export async function createSlowExtensionAction(
 	} catch {
 		return undefined;
 	}
+
 	const rawText = await asText(res);
 
 	if (!rawText) {
 		return undefined;
 	}
+
 	const data = <
 		{
 			total_count: number;
@@ -176,6 +185,7 @@ class ReportExtensionSlowAction extends Action {
 	) {
 		super("report.slow", localize("cmd.report", "Report Issue"));
 	}
+
 	override async run(): Promise<void> {
 		// rewrite pii (paths) and store on disk
 		const data = Utils.rewriteAbsolutePaths(
@@ -187,6 +197,7 @@ class ReportExtensionSlowAction extends Action {
 			this._environmentService.tmpDir,
 			`${this.extension.identifier.value}-unresponsive.cpuprofile.txt`,
 		);
+
 		await this._fileService.writeFile(
 			path,
 			VSBuffer.fromString(JSON.stringify(data, undefined, 4)),
@@ -207,7 +218,9 @@ class ReportExtensionSlowAction extends Action {
 - VS Code version: \`${this._productService.version}\`\n\n${message}`);
 
 		const url = `${this.repoInfo.base}/${this.repoInfo.owner}/${this.repoInfo.repo}/issues/new/?body=${body}&title=${title}`;
+
 		this._openerService.open(URI.parse(url));
+
 		this._dialogService.info(
 			localize("attach.title", "Did you attach the CPU-Profile?"),
 			localize(
@@ -234,6 +247,7 @@ class ShowExtensionSlowAction extends Action {
 	) {
 		super("show.slow", localize("cmd.show", "Show Issues"));
 	}
+
 	override async run(): Promise<void> {
 		// rewrite pii (paths) and store on disk
 		const data = Utils.rewriteAbsolutePaths(
@@ -245,13 +259,16 @@ class ShowExtensionSlowAction extends Action {
 			this._environmentService.tmpDir,
 			`${this.extension.identifier.value}-unresponsive.cpuprofile.txt`,
 		);
+
 		await this._fileService.writeFile(
 			path,
 			VSBuffer.fromString(JSON.stringify(data, undefined, 4)),
 		);
 		// show issues
 		const url = `${this.repoInfo.base}/${this.repoInfo.owner}/${this.repoInfo.repo}/issues?utf8=✓&q=is%3Aissue+state%3Aopen+%22Extension+causes+high+cpu+load%22`;
+
 		this._openerService.open(URI.parse(url));
+
 		this._dialogService.info(
 			localize("attach.title", "Did you attach the CPU-Profile?"),
 			localize(

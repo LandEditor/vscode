@@ -94,8 +94,11 @@ export interface INewUntitledFileWorkingCopyWithAssociatedResourceOptions
 	 */
 	associatedResource: {
 		authority?: string;
+
 		path?: string;
+
 		query?: string;
+
 		fragment?: string;
 	};
 }
@@ -129,10 +132,13 @@ export class UntitledFileWorkingCopyManager<
 	private readonly _onDidChangeDirty = this._register(
 		new Emitter<IUntitledFileWorkingCopy<M>>(),
 	);
+
 	readonly onDidChangeDirty = this._onDidChangeDirty.event;
+
 	private readonly _onWillDispose = this._register(
 		new Emitter<IUntitledFileWorkingCopy<M>>(),
 	);
+
 	readonly onWillDispose = this._onWillDispose.event;
 	//#endregion
 	private readonly mapResourceToWorkingCopyListeners =
@@ -159,9 +165,11 @@ export class UntitledFileWorkingCopyManager<
 	resolve(
 		options?: INewUntitledFileWorkingCopyOptions,
 	): Promise<IUntitledFileWorkingCopy<M>>;
+
 	resolve(
 		options?: INewUntitledFileWorkingCopyWithAssociatedResourceOptions,
 	): Promise<IUntitledFileWorkingCopy<M>>;
+
 	resolve(
 		options?: INewOrExistingUntitledFileWorkingCopyOptions,
 	): Promise<IUntitledFileWorkingCopy<M>>;
@@ -170,10 +178,12 @@ export class UntitledFileWorkingCopyManager<
 		options?: IInternalUntitledFileWorkingCopyOptions,
 	): Promise<IUntitledFileWorkingCopy<M>> {
 		const workingCopy = this.doCreateOrGet(options);
+
 		await workingCopy.resolve();
 
 		return workingCopy;
 	}
+
 	private doCreateOrGet(
 		options: IInternalUntitledFileWorkingCopyOptions = Object.create(null),
 	): IUntitledFileWorkingCopy<M> {
@@ -191,6 +201,7 @@ export class UntitledFileWorkingCopyManager<
 		// Create new instance otherwise
 		return this.doCreate(massagedOptions);
 	}
+
 	private massageOptions(
 		options: IInternalUntitledFileWorkingCopyOptions,
 	): IInternalUntitledFileWorkingCopyOptions {
@@ -205,6 +216,7 @@ export class UntitledFileWorkingCopyManager<
 				path: options.associatedResource.path,
 				query: options.associatedResource.query,
 			});
+
 			massagedOptions.associatedResource = options.associatedResource;
 		}
 		// Handle untitled resource
@@ -212,6 +224,7 @@ export class UntitledFileWorkingCopyManager<
 			if (options.untitledResource?.scheme === Schemas.untitled) {
 				massagedOptions.untitledResource = options.untitledResource;
 			}
+
 			massagedOptions.isScratchpad = options.isScratchpad;
 		}
 		// Take over initial value
@@ -219,6 +232,7 @@ export class UntitledFileWorkingCopyManager<
 
 		return massagedOptions;
 	}
+
 	private doCreate(
 		options: IInternalUntitledFileWorkingCopyOptions,
 	): IUntitledFileWorkingCopy<M> {
@@ -238,6 +252,7 @@ export class UntitledFileWorkingCopyManager<
 						? `typeId=${this.workingCopyTypeId}` // distinguish untitled resources among others by encoding the `typeId` as query param
 						: undefined, // keep untitled resources for text files as they are (when `typeId === ''`)
 				});
+
 				counter++;
 			} while (this.has(untitledResource));
 		}
@@ -260,16 +275,19 @@ export class UntitledFileWorkingCopyManager<
 
 		return workingCopy;
 	}
+
 	private registerWorkingCopy(
 		workingCopy: IUntitledFileWorkingCopy<M>,
 	): void {
 		// Install working copy listeners
 		const workingCopyListeners = new DisposableStore();
+
 		workingCopyListeners.add(
 			workingCopy.onDidChangeDirty(() =>
 				this._onDidChangeDirty.fire(workingCopy),
 			),
 		);
+
 		workingCopyListeners.add(
 			workingCopy.onWillDispose(() =>
 				this._onWillDispose.fire(workingCopy),
@@ -288,6 +306,7 @@ export class UntitledFileWorkingCopyManager<
 			this._onDidChangeDirty.fire(workingCopy);
 		}
 	}
+
 	protected override remove(resource: URI): boolean {
 		const removed = super.remove(resource);
 		// Dispose any existing working copy listeners
@@ -296,8 +315,10 @@ export class UntitledFileWorkingCopyManager<
 
 		if (workingCopyListener) {
 			dispose(workingCopyListener);
+
 			this.mapResourceToWorkingCopyListeners.delete(resource);
 		}
+
 		return removed;
 	}
 	//#endregion
@@ -306,6 +327,7 @@ export class UntitledFileWorkingCopyManager<
 		super.dispose();
 		// Dispose the working copy change listeners
 		dispose(this.mapResourceToWorkingCopyListeners.values());
+
 		this.mapResourceToWorkingCopyListeners.clear();
 	}
 }

@@ -30,22 +30,30 @@ export async function provideInstalledExtensionProposals(
 				const item = new vscode.CompletionItem(e.id);
 
 				const insertText = `"${e.id}"${additionalText}`;
+
 				item.kind = vscode.CompletionItemKind.Value;
+
 				item.insertText = insertText;
+
 				item.range = range;
+
 				item.filterText = insertText;
 
 				return item;
 			});
 		} else {
 			const example = new vscode.CompletionItem(vscode.l10n.t("Example"));
+
 			example.insertText = '"vscode.csharp"';
+
 			example.kind = vscode.CompletionItemKind.Value;
+
 			example.range = range;
 
 			return [example];
 		}
 	}
+
 	return [];
 }
 export async function provideWorkspaceTrustExtensionProposals(
@@ -66,22 +74,30 @@ export async function provideWorkspaceTrustExtensionProposals(
 				const item = new vscode.CompletionItem(e.id);
 
 				const insertText = `"${e.id}": {\n\t"supported": false,\n\t"version": "${e.packageJSON.version}"\n}`;
+
 				item.kind = vscode.CompletionItemKind.Value;
+
 				item.insertText = insertText;
+
 				item.range = range;
+
 				item.filterText = insertText;
 
 				return item;
 			});
 		} else {
 			const example = new vscode.CompletionItem(vscode.l10n.t("Example"));
+
 			example.insertText =
 				'"vscode.csharp: {\n\t"supported": false,\n\t"version": "0.0.0"\n}`;"';
+
 			example.kind = vscode.CompletionItemKind.Value;
+
 			example.range = range;
 
 			return [example];
 		}
 	}
+
 	return [];
 }

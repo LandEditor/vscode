@@ -67,10 +67,13 @@ export interface IUntypedEditorOptions {
  */
 export abstract class EditorInput extends AbstractEditorInput {
 	protected readonly _onDidChangeDirty = this._register(new Emitter<void>());
+
 	protected readonly _onDidChangeLabel = this._register(new Emitter<void>());
+
 	protected readonly _onDidChangeCapabilities = this._register(
 		new Emitter<void>(),
 	);
+
 	private readonly _onWillDispose = this._register(new Emitter<void>());
 	/**
 	 * Triggered when this input changes its dirty state.
@@ -133,8 +136,10 @@ export abstract class EditorInput extends AbstractEditorInput {
 		if (capability === EditorInputCapabilities.None) {
 			return this.capabilities === EditorInputCapabilities.None;
 		}
+
 		return (this.capabilities & capability) !== 0;
 	}
+
 	isReadonly(): boolean | IMarkdownString {
 		return this.hasCapability(EditorInputCapabilities.Readonly);
 	}
@@ -312,6 +317,7 @@ export abstract class EditorInput extends AbstractEditorInput {
 		) {
 			return false;
 		}
+
 		return isEqual(
 			this.resource,
 			EditorResourceAccessor.getCanonicalUri(otherInput),
@@ -347,10 +353,12 @@ export abstract class EditorInput extends AbstractEditorInput {
 	isDisposed(): boolean {
 		return this._store.isDisposed;
 	}
+
 	override dispose(): void {
 		if (!this.isDisposed()) {
 			this._onWillDispose.fire();
 		}
+
 		super.dispose();
 	}
 }

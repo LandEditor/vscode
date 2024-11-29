@@ -48,16 +48,21 @@ import {
 
 interface AuthenticationForceNewSessionOptions {
 	detail?: string;
+
 	learnMore?: UriComponents;
+
 	sessionToRecreate?: AuthenticationSession;
 }
 
 interface AuthenticationGetSessionOptions {
 	clearSessionPreference?: boolean;
+
 	createIfNone?: boolean;
 
 	forceNewSession?: boolean | AuthenticationForceNewSessionOptions;
+
 	silent?: boolean;
+
 	account?: AuthenticationSessionAccount;
 }
 
@@ -76,6 +81,7 @@ export class MainThreadAuthenticationProvider
 		onDidChangeSessionsEmitter: Emitter<AuthenticationSessionsChangeEvent>,
 	) {
 		super();
+
 		this.onDidChangeSessions = onDidChangeSessionsEmitter.event;
 	}
 
@@ -95,6 +101,7 @@ export class MainThreadAuthenticationProvider
 
 	async removeSession(sessionId: string): Promise<void> {
 		await this._proxy.$removeSession(this.id, sessionId);
+
 		this.notificationService.info(
 			nls.localize("signedOut", "Successfully signed out."),
 		);
@@ -111,6 +118,7 @@ export class MainThreadAuthentication
 	private readonly _registrations = this._register(
 		new DisposableMap<string>(),
 	);
+
 	private _sentProviderUsageEvents = new Set<string>();
 
 	constructor(
@@ -132,6 +140,7 @@ export class MainThreadAuthentication
 		@ILogService private readonly logService: ILogService,
 	) {
 		super();
+
 		this._proxy = extHostContext.getProxy(
 			ExtHostContext.ExtHostAuthentication,
 		);
@@ -144,12 +153,14 @@ export class MainThreadAuthentication
 				);
 			}),
 		);
+
 		this._register(
 			this.authenticationExtensionsService.onDidChangeAccountPreference(
 				(e) => {
 					const providerInfo = this.authenticationService.getProvider(
 						e.providerId,
 					);
+
 					this._proxy.$onDidChangeAuthenticationSessions(
 						providerInfo.id,
 						providerInfo.label,
@@ -174,21 +185,29 @@ export class MainThreadAuthentication
 			this.logService.warn(
 				`Authentication provider ${id} was not declared in the Extension Manifest.`,
 			);
+
 			type AuthProviderNotDeclaredClassification = {
 				owner: "TylerLeonhardt";
+
 				comment: "An authentication provider was not declared in the Extension Manifest.";
+
 				id: {
 					classification: "SystemMetaData";
+
 					purpose: "FeatureInsight";
+
 					comment: "The provider id.";
 				};
 			};
+
 			this.telemetryService.publicLog2<
 				{ id: string },
 				AuthProviderNotDeclaredClassification
 			>("authentication.providerNotDeclared", { id });
 		}
+
 		const emitter = new Emitter<AuthenticationSessionsChangeEvent>();
+
 		this._registrations.set(id, emitter);
 
 		const provider = new MainThreadAuthenticationProvider(
@@ -199,11 +218,13 @@ export class MainThreadAuthentication
 			this.notificationService,
 			emitter,
 		);
+
 		this.authenticationService.registerAuthenticationProvider(id, provider);
 	}
 
 	$unregisterAuthenticationProvider(id: string): void {
 		this._registrations.deleteAndDispose(id);
+
 		this.authenticationService.unregisterAuthenticationProvider(id);
 	}
 
@@ -232,6 +253,7 @@ export class MainThreadAuthentication
 	$removeSession(providerId: string, sessionId: string): Promise<void> {
 		return this.authenticationService.removeSession(providerId, sessionId);
 	}
+
 	private async loginPrompt(
 		provider: IAuthenticationProvider,
 		extensionName: string,
@@ -286,6 +308,7 @@ export class MainThreadAuthentication
 						recreatingSession,
 						options,
 					);
+
 					await this.openerService.open(
 						URI.revive(options.learnMore!),
 						{ allowCommands: true },
@@ -295,6 +318,7 @@ export class MainThreadAuthentication
 				},
 			});
 		}
+
 		const { result } = await this.dialogService.prompt({
 			type: Severity.Info,
 			message,
@@ -368,11 +392,13 @@ export class MainThreadAuthentication
 				"Invalid combination of options. Please remove one of the following: forceNewSession, createIfNone",
 			);
 		}
+
 		if (options.forceNewSession && options.silent) {
 			throw new Error(
 				"Invalid combination of options. Please remove one of the following: forceNewSession, silent",
 			);
 		}
+
 		if (options.createIfNone && options.silent) {
 			throw new Error(
 				"Invalid combination of options. Please remove one of the following: createIfNone, silent",
@@ -490,6 +516,7 @@ export class MainThreadAuthentication
 				session.account.label,
 				[{ id: extensionId, name: extensionName, allowed: true }],
 			);
+
 			this._updateAccountPreference(extensionId, providerId, session);
 
 			return session;
@@ -535,6 +562,7 @@ export class MainThreadAuthentication
 						extensionName,
 					);
 		}
+
 		return undefined;
 	}
 
@@ -557,6 +585,7 @@ export class MainThreadAuthentication
 
 		if (session) {
 			this.sendProviderUsageTelemetry(extensionId, providerId);
+
 			this.authenticationUsageService.addAccountUsage(
 				providerId,
 				session.account.label,
@@ -583,6 +612,7 @@ export class MainThreadAuthentication
 	// due to the adoption of the Microsoft broker.
 	// Remove this in a few iterations.
 	private _sentClientIdUsageEvents = new Set<string>();
+
 	private sendClientIdUsageTelemetry(
 		extensionId: string,
 		providerId: string,
@@ -597,18 +627,24 @@ export class MainThreadAuthentication
 		if (this._sentClientIdUsageEvents.has(key)) {
 			return;
 		}
+
 		this._sentClientIdUsageEvents.add(key);
 
 		if (containsVSCodeClientIdScope) {
 			type ClientIdUsageClassification = {
 				owner: "TylerLeonhardt";
+
 				comment: "Used to see which extensions are using the VSCode client id override";
+
 				extensionId: {
 					classification: "SystemMetaData";
+
 					purpose: "FeatureInsight";
+
 					comment: "The extension id.";
 				};
 			};
+
 			this.telemetryService.publicLog2<
 				{ extensionId: string },
 				ClientIdUsageClassification
@@ -625,21 +661,31 @@ export class MainThreadAuthentication
 		if (this._sentProviderUsageEvents.has(key)) {
 			return;
 		}
+
 		this._sentProviderUsageEvents.add(key);
+
 		type AuthProviderUsageClassification = {
 			owner: "TylerLeonhardt";
+
 			comment: "Used to see which extensions are using which providers";
+
 			extensionId: {
 				classification: "SystemMetaData";
+
 				purpose: "FeatureInsight";
+
 				comment: "The extension id.";
 			};
+
 			providerId: {
 				classification: "SystemMetaData";
+
 				purpose: "FeatureInsight";
+
 				comment: "The provider id.";
 			};
 		};
+
 		this.telemetryService.publicLog2<
 			{ extensionId: string; providerId: string },
 			AuthProviderUsageClassification
@@ -658,6 +704,7 @@ export class MainThreadAuthentication
 		if (sessions.length === 0) {
 			return undefined;
 		}
+
 		const accountNamePreference =
 			this.authenticationExtensionsService.getAccountPreference(
 				extensionId,
@@ -695,6 +742,7 @@ export class MainThreadAuthentication
 				return session;
 			}
 		}
+
 		return undefined;
 	}
 
@@ -708,6 +756,7 @@ export class MainThreadAuthentication
 			providerId,
 			session.account,
 		);
+
 		this.authenticationExtensionsService.updateSessionPreference(
 			providerId,
 			extensionId,
@@ -724,6 +773,7 @@ export class MainThreadAuthentication
 			extensionId,
 			providerId,
 		);
+
 		this.authenticationExtensionsService.removeSessionPreference(
 			providerId,
 			extensionId,

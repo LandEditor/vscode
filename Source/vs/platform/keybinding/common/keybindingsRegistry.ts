@@ -24,33 +24,49 @@ import { Registry } from "../../registry/common/platform.js";
 
 export interface IKeybindingItem {
 	keybinding: Keybinding | null;
+
 	command: string | null;
+
 	commandArgs?: any;
+
 	when: ContextKeyExpression | null | undefined;
+
 	weight1: number;
+
 	weight2: number;
+
 	extensionId: string | null;
+
 	isBuiltinExtension: boolean;
 }
 export interface IKeybindings {
 	primary?: number;
+
 	secondary?: number[];
+
 	win?: {
 		primary: number;
+
 		secondary?: number[];
 	};
+
 	linux?: {
 		primary: number;
+
 		secondary?: number[];
 	};
+
 	mac?: {
 		primary: number;
+
 		secondary?: number[];
 	};
 }
 export interface IKeybindingRule extends IKeybindings {
 	id: string;
+
 	weight: number;
+
 	args?: any;
 	/**
 	 * Keybinding is disabled if expression returns false.
@@ -59,11 +75,17 @@ export interface IKeybindingRule extends IKeybindings {
 }
 export interface IExtensionKeybindingRule {
 	keybinding: Keybinding | null;
+
 	id: string;
+
 	args?: any;
+
 	weight: number;
+
 	when: ContextKeyExpression | undefined;
+
 	extensionId?: string;
+
 	isBuiltinExtension?: boolean;
 }
 export const enum KeybindingWeight {
@@ -75,12 +97,14 @@ export const enum KeybindingWeight {
 }
 export interface ICommandAndKeybindingRule extends IKeybindingRule {
 	handler: ICommandHandler;
+
 	metadata?: ICommandMetadata | null;
 }
 export interface IKeybindingsRegistry {
 	registerKeybindingRule(rule: IKeybindingRule): IDisposable;
 
 	setExtensionKeybindings(rules: IExtensionKeybindingRule[]): void;
+
 	registerCommandAndKeybindingRule(
 		desc: ICommandAndKeybindingRule,
 	): IDisposable;
@@ -92,12 +116,16 @@ export interface IKeybindingsRegistry {
  */
 class KeybindingsRegistryImpl implements IKeybindingsRegistry {
 	private _coreKeybindings: LinkedList<IKeybindingItem>;
+
 	private _extensionKeybindings: IKeybindingItem[];
+
 	private _cachedMergedKeybindings: IKeybindingItem[] | null;
 
 	constructor() {
 		this._coreKeybindings = new LinkedList();
+
 		this._extensionKeybindings = [];
+
 		this._cachedMergedKeybindings = null;
 	}
 	/**
@@ -105,6 +133,7 @@ class KeybindingsRegistryImpl implements IKeybindingsRegistry {
 	 */
 	private static bindToCurrentPlatform(kb: IKeybindings): {
 		primary?: number;
+
 		secondary?: number[];
 	} {
 		if (OS === OperatingSystem.Windows) {
@@ -120,8 +149,10 @@ class KeybindingsRegistryImpl implements IKeybindingsRegistry {
 				return kb.linux;
 			}
 		}
+
 		return kb;
 	}
+
 	public registerKeybindingRule(rule: IKeybindingRule): IDisposable {
 		const actualKb = KeybindingsRegistryImpl.bindToCurrentPlatform(rule);
 
@@ -143,6 +174,7 @@ class KeybindingsRegistryImpl implements IKeybindingsRegistry {
 				);
 			}
 		}
+
 		if (actualKb && Array.isArray(actualKb.secondary)) {
 			for (let i = 0, len = actualKb.secondary.length; i < len; i++) {
 				const k = actualKb.secondary[i];
@@ -163,8 +195,10 @@ class KeybindingsRegistryImpl implements IKeybindingsRegistry {
 				}
 			}
 		}
+
 		return result;
 	}
+
 	public setExtensionKeybindings(rules: IExtensionKeybindingRule[]): void {
 		const result: IKeybindingItem[] = [];
 
@@ -184,9 +218,12 @@ class KeybindingsRegistryImpl implements IKeybindingsRegistry {
 				};
 			}
 		}
+
 		this._extensionKeybindings = result;
+
 		this._cachedMergedKeybindings = null;
 	}
+
 	public registerCommandAndKeybindingRule(
 		desc: ICommandAndKeybindingRule,
 	): IDisposable {
@@ -195,6 +232,7 @@ class KeybindingsRegistryImpl implements IKeybindingsRegistry {
 			CommandsRegistry.registerCommand(desc),
 		);
 	}
+
 	private _registerDefaultKeybinding(
 		keybinding: Keybinding,
 		commandId: string,
@@ -213,20 +251,25 @@ class KeybindingsRegistryImpl implements IKeybindingsRegistry {
 			extensionId: null,
 			isBuiltinExtension: false,
 		});
+
 		this._cachedMergedKeybindings = null;
 
 		return toDisposable(() => {
 			remove();
+
 			this._cachedMergedKeybindings = null;
 		});
 	}
+
 	public getDefaultKeybindings(): IKeybindingItem[] {
 		if (!this._cachedMergedKeybindings) {
 			this._cachedMergedKeybindings = Array.from(
 				this._coreKeybindings,
 			).concat(this._extensionKeybindings);
+
 			this._cachedMergedKeybindings.sort(sorter);
 		}
+
 		return this._cachedMergedKeybindings.slice(0);
 	}
 }
@@ -241,13 +284,16 @@ function sorter(a: IKeybindingItem, b: IKeybindingItem): number {
 	if (a.weight1 !== b.weight1) {
 		return a.weight1 - b.weight1;
 	}
+
 	if (a.command && b.command) {
 		if (a.command < b.command) {
 			return -1;
 		}
+
 		if (a.command > b.command) {
 			return 1;
 		}
 	}
+
 	return a.weight2 - b.weight2;
 }

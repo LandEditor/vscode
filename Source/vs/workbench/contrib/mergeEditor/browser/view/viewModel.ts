@@ -35,8 +35,10 @@ import { ResultCodeEditorView } from "./editors/resultCodeEditorView.js";
 export class MergeEditorViewModel extends Disposable {
 	private readonly manuallySetActiveModifiedBaseRange = observableValue<{
 		range: ModifiedBaseRange | undefined;
+
 		counter: number;
 	}>(this, { range: undefined, counter: 0 });
+
 	private readonly attachedHistory = this._register(
 		new AttachedHistory(this.model.resultTextModel),
 	);
@@ -56,6 +58,7 @@ export class MergeEditorViewModel extends Disposable {
 		private readonly notificationService: INotificationService,
 	) {
 		super();
+
 		this._register(
 			resultCodeEditorView.editor.onDidChangeModelContent((e) => {
 				if (
@@ -65,6 +68,7 @@ export class MergeEditorViewModel extends Disposable {
 				) {
 					return;
 				}
+
 				const baseRangeStates: ModifiedBaseRange[] = [];
 
 				for (const change of e.changes) {
@@ -90,9 +94,11 @@ export class MergeEditorViewModel extends Disposable {
 						}
 					}
 				}
+
 				if (baseRangeStates.length === 0) {
 					return;
 				}
+
 				const element = {
 					model: this.model,
 					redo() {
@@ -112,20 +118,26 @@ export class MergeEditorViewModel extends Disposable {
 						});
 					},
 				};
+
 				this.attachedHistory.pushAttachedHistoryElement(element);
+
 				element.redo();
 			}),
 		);
 	}
+
 	public readonly shouldUseAppendInsteadOfAccept =
 		observableConfigValue<boolean>(
 			"mergeEditor.shouldUseAppendInsteadOfAccept",
 			false,
 			this.configurationService,
 		);
+
 	private counter = 0;
+
 	private readonly lastFocusedEditor = derivedObservableWithWritableCache<{
 		view: CodeEditorView | undefined;
+
 		counter: number;
 	}>(this, (reader, lastValue) => {
 		const editors = [
@@ -141,6 +153,7 @@ export class MergeEditorViewModel extends Disposable {
 			? { view, counter: this.counter++ }
 			: lastValue || { view: undefined, counter: this.counter++ };
 	});
+
 	public readonly baseShowDiffAgainst = derived<1 | 2 | undefined>(
 		this,
 		(reader) => {
@@ -151,15 +164,18 @@ export class MergeEditorViewModel extends Disposable {
 			} else if (lastFocusedEditor.view === this.inputCodeEditorView2) {
 				return 2;
 			}
+
 			return undefined;
 		},
 	);
+
 	public readonly selectionInBase = derived(this, (reader) => {
 		const sourceEditor = this.lastFocusedEditor.read(reader).view;
 
 		if (!sourceEditor) {
 			return undefined;
 		}
+
 		const selections = sourceEditor.selection.read(reader) || [];
 
 		const rangesInBase = selections.map((selection) => {
@@ -181,6 +197,7 @@ export class MergeEditorViewModel extends Disposable {
 			sourceEditor,
 		};
 	});
+
 	private getRangeOfModifiedBaseRange(
 		editor: CodeEditorView,
 		modifiedBaseRange: ModifiedBaseRange,
@@ -199,6 +216,7 @@ export class MergeEditorViewModel extends Disposable {
 			return modifiedBaseRange.getInputRange(input);
 		}
 	}
+
 	public readonly activeModifiedBaseRange = derived(this, (reader) => {
 		/** @description activeModifiedBaseRange */
 		const focusedEditor = this.lastFocusedEditor.read(reader);
@@ -209,15 +227,18 @@ export class MergeEditorViewModel extends Disposable {
 		if (manualRange.counter > focusedEditor.counter) {
 			return manualRange.range;
 		}
+
 		if (!focusedEditor.view) {
 			return;
 		}
+
 		const cursorLineNumber =
 			focusedEditor.view.cursorLineNumber.read(reader);
 
 		if (!cursorLineNumber) {
 			return undefined;
 		}
+
 		const modifiedBaseRanges = this.model.modifiedBaseRanges.read(reader);
 
 		return modifiedBaseRanges.find((r) => {
@@ -232,6 +253,7 @@ export class MergeEditorViewModel extends Disposable {
 				: range.contains(cursorLineNumber);
 		});
 	});
+
 	public setActiveModifiedBaseRange(
 		range: ModifiedBaseRange | undefined,
 		tx: ITransaction,
@@ -241,6 +263,7 @@ export class MergeEditorViewModel extends Disposable {
 			tx,
 		);
 	}
+
 	public setState(
 		baseRange: ModifiedBaseRange,
 		state: ModifiedBaseRangeState,
@@ -251,9 +274,12 @@ export class MergeEditorViewModel extends Disposable {
 			{ range: baseRange, counter: this.counter++ },
 			tx,
 		);
+
 		this.model.setState(baseRange, state, inputNumber, tx);
+
 		this.lastFocusedEditor.clearCache(tx);
 	}
+
 	private goToConflict(
 		getModifiedBaseRange: (
 			editor: CodeEditorView,
@@ -265,11 +291,13 @@ export class MergeEditorViewModel extends Disposable {
 		if (!editor) {
 			editor = this.resultCodeEditorView;
 		}
+
 		const curLineNumber = editor.editor.getPosition()?.lineNumber;
 
 		if (curLineNumber === undefined) {
 			return;
 		}
+
 		const modifiedBaseRange = getModifiedBaseRange(editor, curLineNumber);
 
 		if (modifiedBaseRange) {
@@ -278,6 +306,7 @@ export class MergeEditorViewModel extends Disposable {
 				modifiedBaseRange,
 				undefined,
 			);
+
 			editor.editor.focus();
 
 			let startLineNumber = range.startLineNumber;
@@ -290,16 +319,19 @@ export class MergeEditorViewModel extends Disposable {
 				transaction((tx) => {
 					this.setActiveModifiedBaseRange(modifiedBaseRange, tx);
 				});
+
 				startLineNumber = endLineNumberExclusive = editor.editor
 					.getModel()!
 					.getLineCount();
 			}
+
 			editor.editor.setPosition({
 				lineNumber: startLineNumber,
 				column: editor.editor
 					.getModel()!
 					.getLineFirstNonWhitespaceColumn(startLineNumber),
 			});
+
 			editor.editor.revealLinesNearTop(
 				startLineNumber,
 				endLineNumberExclusive,
@@ -307,6 +339,7 @@ export class MergeEditorViewModel extends Disposable {
 			);
 		}
 	}
+
 	public goToNextModifiedBaseRange(
 		predicate: (m: ModifiedBaseRange) => boolean,
 	): void {
@@ -323,6 +356,7 @@ export class MergeEditorViewModel extends Disposable {
 				this.model.modifiedBaseRanges.get().find((r) => predicate(r)),
 		);
 	}
+
 	public goToPreviousModifiedBaseRange(
 		predicate: (m: ModifiedBaseRange) => boolean,
 	): void {
@@ -340,6 +374,7 @@ export class MergeEditorViewModel extends Disposable {
 				),
 		);
 	}
+
 	public toggleActiveConflict(inputNumber: 1 | 2): void {
 		const activeModifiedBaseRange = this.activeModifiedBaseRange.get();
 
@@ -353,6 +388,7 @@ export class MergeEditorViewModel extends Disposable {
 
 			return;
 		}
+
 		transaction((tx) => {
 			/** @description Toggle Active Conflict */
 			this.setState(
@@ -366,6 +402,7 @@ export class MergeEditorViewModel extends Disposable {
 			);
 		});
 	}
+
 	public acceptAll(inputNumber: 1 | 2): void {
 		transaction((tx) => {
 			/** @description Toggle Active Conflict */
@@ -386,12 +423,15 @@ export class MergeEditorViewModel extends Disposable {
 class AttachedHistory extends Disposable {
 	private readonly attachedHistory: {
 		element: IAttachedHistoryElement;
+
 		altId: number;
 	}[] = [];
+
 	private previousAltId: number = this.model.getAlternativeVersionId();
 
 	constructor(private readonly model: ITextModel) {
 		super();
+
 		this._register(
 			model.onDidChangeContent((e) => {
 				const currentAltId = model.getAlternativeVersionId();
@@ -427,6 +467,7 @@ class AttachedHistory extends Disposable {
 						this.attachedHistory.pop();
 					}
 				}
+
 				this.previousAltId = currentAltId;
 			}),
 		);
@@ -444,5 +485,6 @@ class AttachedHistory extends Disposable {
 }
 interface IAttachedHistoryElement {
 	undo(): void;
+
 	redo(): void;
 }

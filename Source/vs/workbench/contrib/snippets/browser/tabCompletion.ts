@@ -38,20 +38,28 @@ import { getNonWhitespacePrefix } from "./snippetsService.js";
 
 export class TabCompletionController implements IEditorContribution {
 	static readonly ID = "editor.tabCompletionController";
+
 	static readonly ContextKey = new RawContextKey<boolean>(
 		"hasSnippetCompletions",
 		undefined,
 	);
+
 	static get(editor: ICodeEditor): TabCompletionController | null {
 		return editor.getContribution<TabCompletionController>(
 			TabCompletionController.ID,
 		);
 	}
+
 	private readonly _hasSnippets: IContextKey<boolean>;
+
 	private readonly _configListener: IDisposable;
+
 	private _enabled?: boolean;
+
 	private _selectionListener?: IDisposable;
+
 	private _activeSnippets: Snippet[] = [];
+
 	private _completionProvider?: IDisposable & CompletionItemProvider;
 
 	constructor(
@@ -67,17 +75,22 @@ export class TabCompletionController implements IEditorContribution {
 	) {
 		this._hasSnippets =
 			TabCompletionController.ContextKey.bindTo(contextKeyService);
+
 		this._configListener = this._editor.onDidChangeConfiguration((e) => {
 			if (e.hasChanged(EditorOption.tabCompletion)) {
 				this._update();
 			}
 		});
+
 		this._update();
 	}
+
 	dispose(): void {
 		this._configListener.dispose();
+
 		this._selectionListener?.dispose();
 	}
+
 	private _update(): void {
 		const enabled =
 			this._editor.getOption(EditorOption.tabCompletion) ===
@@ -100,9 +113,11 @@ export class TabCompletionController implements IEditorContribution {
 			}
 		}
 	}
+
 	private _updateSnippets(): void {
 		// reset first
 		this._activeSnippets = [];
+
 		this._completionProvider?.dispose();
 
 		if (!this._editor.hasModel()) {
@@ -112,6 +127,7 @@ export class TabCompletionController implements IEditorContribution {
 		const selection = this._editor.getSelection();
 
 		const model = this._editor.getModel();
+
 		model.tokenization.tokenizeIfCheap(selection.positionLineNumber);
 
 		const id = model.getLanguageIdAtPosition(
@@ -127,6 +143,7 @@ export class TabCompletionController implements IEditorContribution {
 
 			return;
 		}
+
 		if (Range.isEmpty(selection)) {
 			// empty selection -> real text (no whitespace) left of cursor
 			const prefix = getNonWhitespacePrefix(
@@ -156,6 +173,7 @@ export class TabCompletionController implements IEditorContribution {
 				}
 			}
 		}
+
 		const len = this._activeSnippets.length;
 
 		if (len === 0) {
@@ -164,6 +182,7 @@ export class TabCompletionController implements IEditorContribution {
 			this._hasSnippets.set(true);
 		} else {
 			this._hasSnippets.set(true);
+
 			this._completionProvider = {
 				_debugDisplayName: "tabCompletion",
 				dispose: () => {
@@ -176,6 +195,7 @@ export class TabCompletionController implements IEditorContribution {
 					) {
 						return;
 					}
+
 					const suggestions = this._activeSnippets.map((snippet) => {
 						const range = Range.fromPositions(
 							position.delta(0, -snippet.prefix.length),
@@ -200,10 +220,12 @@ export class TabCompletionController implements IEditorContribution {
 				);
 		}
 	}
+
 	async performSnippetCompletions() {
 		if (!this._editor.hasModel()) {
 			return;
 		}
+
 		if (this._activeSnippets.length === 1) {
 			// one -> just insert
 			const [snippet] = this._activeSnippets;
@@ -217,12 +239,14 @@ export class TabCompletionController implements IEditorContribution {
 					this._editor,
 					CodeEditorStateFlag.Value | CodeEditorStateFlag.Position,
 				);
+
 				clipboardText = await this._clipboardService.readText();
 
 				if (!state.validate(this._editor)) {
 					return;
 				}
 			}
+
 			SnippetController2.get(this._editor)?.insert(snippet.codeSnippet, {
 				overwriteBefore: snippet.prefix.length,
 				overwriteAfter: 0,

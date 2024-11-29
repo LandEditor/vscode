@@ -79,11 +79,13 @@ registerAction2(
 				],
 			});
 		}
+
 		override async runWithContext(
 			accessor: ServicesAccessor,
 			context: INotebookActionContext,
 		) {
 			const variableViewId = "workbench.notebook.variables";
+
 			accessor.get(IViewsService).openView(variableViewId, true);
 		}
 	},

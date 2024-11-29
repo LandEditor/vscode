@@ -28,17 +28,21 @@ import { DisposableStore, repositoryHasGitHubRemote } from "./util";
 
 export function activate(context: ExtensionContext): void {
 	const disposables: Disposable[] = [];
+
 	context.subscriptions.push(
 		new Disposable(() => Disposable.from(...disposables).dispose()),
 	);
 
 	const logger = window.createOutputChannel("GitHub", { log: true });
+
 	disposables.push(logger);
 
 	const onDidChangeLogLevel = (logLevel: LogLevel) => {
 		logger.appendLine(l10n.t("Log level: {0}", LogLevel[logLevel]));
 	};
+
 	disposables.push(logger.onDidChangeLogLevel(onDidChangeLogLevel));
+
 	onDidChangeLogLevel(logger.logLevel);
 
 	const { aiKey } = require("../package.json") as {
@@ -46,8 +50,11 @@ export function activate(context: ExtensionContext): void {
 	};
 
 	const telemetryReporter = new TelemetryReporter(aiKey);
+
 	disposables.push(telemetryReporter);
+
 	disposables.push(initializeGitBaseExtension());
+
 	disposables.push(
 		initializeGitExtension(context, telemetryReporter, logger),
 	);
@@ -58,6 +65,7 @@ function initializeGitBaseExtension(): Disposable {
 	const initialize = () => {
 		try {
 			const gitBaseAPI = gitBaseExtension.getAPI(1);
+
 			disposables.add(
 				gitBaseAPI.registerRemoteSourceProvider(
 					new GithubRemoteSourceProvider(),
@@ -65,6 +73,7 @@ function initializeGitBaseExtension(): Disposable {
 			);
 		} catch (err) {
 			console.error("Could not initialize GitHub extension");
+
 			console.warn(err);
 		}
 	};
@@ -79,11 +88,13 @@ function initializeGitBaseExtension(): Disposable {
 
 	const gitBaseExtension =
 		extensions.getExtension<GitBaseExtension>("vscode.git-base")!.exports;
+
 	disposables.add(
 		gitBaseExtension.onDidChangeEnablement(
 			onDidChangeGitBaseExtensionEnablement,
 		),
 	);
+
 	onDidChangeGitBaseExtensionEnablement(gitBaseExtension.enabled);
 
 	return disposables;
@@ -101,9 +112,11 @@ function setGitHubContext(gitAPI: API, disposables: DisposableStore) {
 					"github.hasGitHubRepo",
 					true,
 				);
+
 				openRepoDisposable.dispose();
 			}
 		});
+
 		disposables.add(openRepoDisposable);
 	}
 }
@@ -121,10 +134,13 @@ function initializeGitExtension(
 			const onDidChangeGitExtensionEnablement = (enabled: boolean) => {
 				if (enabled) {
 					const gitAPI = extension.getAPI(1);
+
 					disposables.add(registerCommands(gitAPI));
+
 					disposables.add(
 						new GithubCredentialProviderManager(gitAPI),
 					);
+
 					disposables.add(
 						new GithubBranchProtectionProviderManager(
 							gitAPI,
@@ -133,20 +149,25 @@ function initializeGitExtension(
 							telemetryReporter,
 						),
 					);
+
 					disposables.add(
 						gitAPI.registerPushErrorHandler(
 							new GithubPushErrorHandler(telemetryReporter),
 						),
 					);
+
 					disposables.add(
 						gitAPI.registerRemoteSourcePublisher(
 							new GithubRemoteSourcePublisher(gitAPI),
 						),
 					);
+
 					disposables.add(new GitHubCanonicalUriProvider(gitAPI));
+
 					disposables.add(new VscodeDevShareProvider(gitAPI));
 
 					setGitHubContext(gitAPI, disposables);
+
 					commands.executeCommand(
 						"setContext",
 						"git-base.gitEnabled",
@@ -156,11 +177,13 @@ function initializeGitExtension(
 					disposables.dispose();
 				}
 			};
+
 			disposables.add(
 				extension.onDidChangeEnablement(
 					onDidChangeGitExtensionEnablement,
 				),
 			);
+
 			onDidChangeGitExtensionEnablement(extension.enabled);
 		});
 	};
@@ -175,11 +198,15 @@ function initializeGitExtension(
 			) {
 				gitExtension =
 					extensions.getExtension<GitExtension>("vscode.git");
+
 				initialize();
+
 				listener.dispose();
 			}
 		});
+
 		disposables.add(listener);
 	}
+
 	return disposables;
 }

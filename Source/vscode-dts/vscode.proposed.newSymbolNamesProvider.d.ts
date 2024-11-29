@@ -17,6 +17,7 @@ declare module "vscode" {
 
 	export class NewSymbolName {
 		readonly newSymbolName: string;
+
 		readonly tags?: readonly NewSymbolNameTag[];
 
 		constructor(newSymbolName: string, tags?: readonly NewSymbolNameTag[]);

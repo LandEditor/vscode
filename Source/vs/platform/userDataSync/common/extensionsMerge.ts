@@ -16,13 +16,19 @@ import {
 export interface IMergeResult {
 	readonly local: {
 		added: ISyncExtension[];
+
 		removed: IExtensionIdentifier[];
+
 		updated: ISyncExtension[];
 	};
+
 	readonly remote: {
 		added: ISyncExtension[];
+
 		removed: ISyncExtension[];
+
 		updated: ISyncExtension[];
+
 		all: ISyncExtension[];
 	} | null;
 }
@@ -64,10 +70,13 @@ export function merge(
 					: null,
 		};
 	}
+
 	localExtensions = localExtensions.map(
 		massageIncomingExtension,
 	) as ILocalSyncExtension[];
+
 	remoteExtensions = remoteExtensions.map(massageIncomingExtension);
+
 	lastSyncExtensions = lastSyncExtensions
 		? lastSyncExtensions.map(massageIncomingExtension)
 		: null;
@@ -79,10 +88,15 @@ export function merge(
 			uuids.set(identifier.id.toLowerCase(), identifier.uuid);
 		}
 	};
+
 	localExtensions.forEach(({ identifier }) => addUUID(identifier));
+
 	remoteExtensions.forEach(({ identifier }) => addUUID(identifier));
+
 	lastSyncExtensions?.forEach(({ identifier }) => addUUID(identifier));
+
 	skippedExtensions?.forEach(({ identifier }) => addUUID(identifier));
+
 	lastSyncBuiltinExtensions?.forEach((identifier) => addUUID(identifier));
 
 	const getKey = (extension: ISyncExtension): string => {
@@ -187,6 +201,7 @@ export function merge(
 
 			if (localExtension.installed) {
 				pinned = preferred.pinned;
+
 				preRelease = preferred.preRelease;
 
 				if (pinned) {
@@ -194,12 +209,14 @@ export function merge(
 				}
 			} else {
 				pinned = remoteExtension.pinned;
+
 				preRelease = remoteExtension.preRelease;
 
 				if (pinned) {
 					version = remoteExtension.version;
 				}
 			}
+
 			if (pinned === undefined /* from older client*/) {
 				pinned = localExtension.pinned;
 
@@ -207,9 +224,11 @@ export function merge(
 					version = localExtension.version;
 				}
 			}
+
 			if (preRelease === undefined /* from older client*/) {
 				preRelease = localExtension.preRelease;
 			}
+
 			return {
 				...preferred,
 				installed:
@@ -240,6 +259,7 @@ export function merge(
 			if (!localExtension) {
 				continue;
 			}
+
 			const baseExtension = assertIsDefined(
 				lastSyncExtensionsMap?.get(key),
 			);
@@ -285,6 +305,7 @@ export function merge(
 							massageOutgoingExtension(mergedExtension, key),
 						);
 					}
+
 					newRemoteExtensionsMap.set(key, mergedExtension);
 				}
 			} else {
@@ -327,9 +348,11 @@ export function merge(
 						remoteExtension,
 						remoteExtension,
 					);
+
 					updated.push(
 						massageOutgoingExtension(mergedExtension, key),
 					);
+
 					newRemoteExtensionsMap.set(key, mergedExtension);
 				}
 			}
@@ -344,6 +367,7 @@ export function merge(
 			if (baseToRemote.added.has(key)) {
 				continue;
 			}
+
 			newRemoteExtensionsMap.set(
 				key,
 				assertIsDefined(localExtensionsMap.get(key)),
@@ -359,6 +383,7 @@ export function merge(
 			if (baseToRemote.updated.has(key)) {
 				continue;
 			}
+
 			const localExtension = assertIsDefined(localExtensionsMap.get(key));
 
 			const remoteExtension = assertIsDefined(
@@ -399,9 +424,11 @@ export function merge(
 			) {
 				continue;
 			}
+
 			newRemoteExtensionsMap.delete(key);
 		}
 	}
+
 	const remote: ISyncExtension[] = [];
 
 	const remoteChanges = compare(
@@ -421,6 +448,7 @@ export function merge(
 			remote.push(massageOutgoingExtension(value, key)),
 		);
 	}
+
 	return {
 		local: { added, removed, updated },
 		remote: hasRemoteChanges
@@ -446,7 +474,9 @@ function compare(
 	checkVersionProperty: boolean,
 ): {
 	added: Set<string>;
+
 	removed: Set<string>;
+
 	updated: Set<string>;
 } {
 	const fromKeys = from
@@ -459,6 +489,7 @@ function compare(
 		.filter((key) => !fromKeys.includes(key))
 		.reduce((r, key) => {
 			r.add(key);
+
 			return r;
 		}, new Set<string>());
 
@@ -466,6 +497,7 @@ function compare(
 		.filter((key) => !toKeys.includes(key))
 		.reduce((r, key) => {
 			r.add(key);
+
 			return r;
 		}, new Set<string>());
 
@@ -475,6 +507,7 @@ function compare(
 		if (removed.has(key)) {
 			continue;
 		}
+
 		const fromExtension = from!.get(key)!;
 
 		const toExtension = to.get(key);
@@ -486,6 +519,7 @@ function compare(
 			updated.add(key);
 		}
 	}
+
 	return { added, removed, updated };
 }
 function areSame(
@@ -498,6 +532,7 @@ function areSame(
 		/* extension enablement changed */
 		return false;
 	}
+
 	if (
 		!!fromExtension.isApplicationScoped !==
 		!!toExtension.isApplicationScoped
@@ -505,6 +540,7 @@ function areSame(
 		/* extension application scope has changed */
 		return false;
 	}
+
 	if (
 		checkInstalledProperty &&
 		fromExtension.installed !== toExtension.installed
@@ -512,15 +548,18 @@ function areSame(
 		/* extension installed property changed */
 		return false;
 	}
+
 	if (fromExtension.installed && toExtension.installed) {
 		if (fromExtension.preRelease !== toExtension.preRelease) {
 			/* installed extension's pre-release version changed */
 			return false;
 		}
+
 		if (fromExtension.pinned !== toExtension.pinned) {
 			/* installed extension's pinning changed */
 			return false;
 		}
+
 		if (
 			toExtension.pinned &&
 			fromExtension.version !== toExtension.version
@@ -529,14 +568,17 @@ function areSame(
 			return false;
 		}
 	}
+
 	if (!isSameExtensionState(fromExtension.state, toExtension.state)) {
 		/* extension state changed */
 		return false;
 	}
+
 	if (checkVersionProperty && fromExtension.version !== toExtension.version) {
 		/* extension version changed */
 		return false;
 	}
+
 	return true;
 }
 function mergeExtensionState(
@@ -576,6 +618,7 @@ function mergeExtensionState(
 	if (!remoteState) {
 		return localState;
 	}
+
 	const mergedState: IStringDictionary<any> = deepClone(localState);
 
 	const baseToRemote = baseState
@@ -583,6 +626,7 @@ function mergeExtensionState(
 		: {
 				added: Object.keys(remoteState).reduce((r, k) => {
 					r.add(k);
+
 					return r;
 				}, new Set<string>()),
 				removed: new Set<string>(),
@@ -594,6 +638,7 @@ function mergeExtensionState(
 		: {
 				added: Object.keys(localState).reduce((r, k) => {
 					r.add(k);
+
 					return r;
 				}, new Set<string>()),
 				removed: new Set<string>(),
@@ -613,6 +658,7 @@ function mergeExtensionState(
 			delete mergedState[key];
 		}
 	}
+
 	return mergedState;
 }
 function compareExtensionState(
@@ -620,7 +666,9 @@ function compareExtensionState(
 	to: IStringDictionary<any>,
 ): {
 	added: Set<string>;
+
 	removed: Set<string>;
+
 	updated: Set<string>;
 } {
 	const fromKeys = Object.keys(from);
@@ -631,6 +679,7 @@ function compareExtensionState(
 		.filter((key) => !fromKeys.includes(key))
 		.reduce((r, key) => {
 			r.add(key);
+
 			return r;
 		}, new Set<string>());
 
@@ -638,6 +687,7 @@ function compareExtensionState(
 		.filter((key) => !toKeys.includes(key))
 		.reduce((r, key) => {
 			r.add(key);
+
 			return r;
 		}, new Set<string>());
 
@@ -647,6 +697,7 @@ function compareExtensionState(
 		if (removed.has(key)) {
 			continue;
 		}
+
 		const value1 = from[key];
 
 		const value2 = to[key];
@@ -655,6 +706,7 @@ function compareExtensionState(
 			updated.add(key);
 		}
 	}
+
 	return { added, removed, updated };
 }
 function isSameExtensionState(
@@ -693,14 +745,18 @@ function massageOutgoingExtension(
 	if (!extension.disabled) {
 		delete massagedExtension.disabled;
 	}
+
 	if (!extension.installed) {
 		delete massagedExtension.installed;
 	}
+
 	if (!extension.state) {
 		delete massagedExtension.state;
 	}
+
 	if (!extension.isApplicationScoped) {
 		delete massagedExtension.isApplicationScoped;
 	}
+
 	return massagedExtension;
 }

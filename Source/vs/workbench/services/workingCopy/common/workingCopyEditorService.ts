@@ -58,10 +58,13 @@ export class WorkingCopyEditorService
 	implements IWorkingCopyEditorService
 {
 	declare readonly _serviceBrand: undefined;
+
 	private readonly _onDidRegisterHandler = this._register(
 		new Emitter<IWorkingCopyEditorHandler>(),
 	);
+
 	readonly onDidRegisterHandler = this._onDidRegisterHandler.event;
+
 	private readonly handlers = new Set<IWorkingCopyEditorHandler>();
 
 	constructor(
@@ -70,13 +73,16 @@ export class WorkingCopyEditorService
 	) {
 		super();
 	}
+
 	registerHandler(handler: IWorkingCopyEditorHandler): IDisposable {
 		// Add to registry and emit as event
 		this.handlers.add(handler);
+
 		this._onDidRegisterHandler.fire(handler);
 
 		return toDisposable(() => this.handlers.delete(handler));
 	}
+
 	findEditor(workingCopy: IWorkingCopy): IEditorIdentifier | undefined {
 		for (const editorIdentifier of this.editorService.getEditors(
 			EditorsOrder.MOST_RECENTLY_ACTIVE,
@@ -85,14 +91,17 @@ export class WorkingCopyEditorService
 				return editorIdentifier;
 			}
 		}
+
 		return undefined;
 	}
+
 	private isOpen(workingCopy: IWorkingCopy, editor: EditorInput): boolean {
 		for (const handler of this.handlers) {
 			if (handler.isOpen(workingCopy, editor)) {
 				return true;
 			}
 		}
+
 		return false;
 	}
 }

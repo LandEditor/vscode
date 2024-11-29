@@ -43,21 +43,29 @@ export const ITestService = createDecorator<ITestService>("testService");
 
 export interface IMainThreadTestController {
 	readonly id: string;
+
 	readonly label: IObservable<string>;
+
 	readonly capabilities: IObservable<TestControllerCapability>;
+
 	syncTests(token: CancellationToken): Promise<void>;
+
 	refreshTests(token: CancellationToken): Promise<void>;
+
 	configureRunProfile(profileId: number): void;
+
 	expandTest(id: string, levels: number): Promise<void>;
 
 	getRelatedCode(
 		testId: string,
 		token: CancellationToken,
 	): Promise<Location[]>;
+
 	startContinuousRun(
 		request: ICallProfileRunHandler[],
 		token: CancellationToken,
 	): Promise<IStartControllerTestsResult[]>;
+
 	runTests(
 		request: IStartControllerTests[],
 		token: CancellationToken,
@@ -74,7 +82,9 @@ export interface IMainThreadTestHostProxy {
 		position: Position,
 		token: CancellationToken,
 	): Promise<string[]>;
+
 	executeTestFollowup(id: number): Promise<void>;
+
 	disposeTestFollowups(ids: number[]): void;
 }
 export interface IMainThreadTestCollection
@@ -127,9 +137,11 @@ export const getContextForTestItem = (
 	if (typeof id === "string") {
 		id = TestId.fromString(id);
 	}
+
 	if (id.isRoot) {
 		return { controller: id.toString() };
 	}
+
 	const context: ITestItemContext = {
 		$mid: MarshalledId.TestItemContext,
 		tests: [],
@@ -144,6 +156,7 @@ export const getContextForTestItem = (
 			}
 		}
 	}
+
 	return context;
 };
 /**
@@ -174,6 +187,7 @@ export const expandAndGetTestById = async (
 
 			continue;
 		}
+
 		if (i === idPath.length - 1) {
 			return existing;
 		}
@@ -181,9 +195,11 @@ export const expandAndGetTestById = async (
 		if (!existing.children.has(idPath[i + 1].toString())) {
 			await collection.expand(id, 0);
 		}
+
 		expandToLevel = i + 1; // avoid an infinite loop if the test does not exist
 		i = idPath.length - 1;
 	}
+
 	return undefined;
 };
 /**
@@ -196,6 +212,7 @@ const waitForTestToBeIdle = (
 	if (!test.item.busy) {
 		return;
 	}
+
 	return new Promise<void>((resolve) => {
 		const l = testService.onDidProcessDiff(() => {
 			if (
@@ -222,13 +239,16 @@ export const testsInFile = async function* (
 		if (!test.item.uri) {
 			continue;
 		}
+
 		if (ident.extUri.isEqual(uri, test.item.uri)) {
 			yield test;
 		}
+
 		if (ident.extUri.isEqualOrParent(uri, test.item.uri)) {
 			if (test.expand === TestItemExpandState.Expandable) {
 				await testService.collection.expand(test.item.extId, 1);
 			}
+
 			if (waitForIdle) {
 				await waitForTestToBeIdle(testService, test);
 			}
@@ -267,9 +287,11 @@ export const testsUnderUri = async function* (
 				if (test.expand === TestItemExpandState.Expandable) {
 					await testService.collection.expand(test.item.extId, 1);
 				}
+
 				if (waitForIdle) {
 					await waitForTestToBeIdle(testService, test);
 				}
+
 				queue.push(test.children.values());
 			}
 		}
@@ -286,11 +308,13 @@ export const simplifyTestsToExecute = (
 	if (tests.length < 2) {
 		return tests;
 	}
+
 	const tree = new WellDefinedPrefixTree<IncrementalTestCollectionItem>();
 
 	for (const test of tests) {
 		tree.insert(TestId.fromString(test.item.extId).path, test);
 	}
+
 	const out: IncrementalTestCollectionItem[] = [];
 	// Returns the node if it and any children should be included. Otherwise
 	// pushes into the `out` any individual children that should be included.
@@ -302,6 +326,7 @@ export const simplifyTestsToExecute = (
 		if (node.value) {
 			return node.value;
 		}
+
 		assert(!!node.children, "expect to have children");
 
 		const thisChildren: IncrementalTestCollectionItem[] = [];
@@ -314,8 +339,10 @@ export const simplifyTestsToExecute = (
 			if (c) {
 				thisChildren.push(c);
 			}
+
 			currentId.pop();
 		}
+
 		if (!thisChildren.length) {
 			return;
 		}
@@ -328,6 +355,7 @@ export const simplifyTestsToExecute = (
 		if (test?.children.size === thisChildren.length) {
 			return test;
 		}
+
 		out.push(...thisChildren);
 
 		return;
@@ -340,6 +368,7 @@ export const simplifyTestsToExecute = (
 			out.push(n);
 		}
 	}
+
 	return out;
 };
 /**
@@ -358,6 +387,7 @@ export interface AmbiguousRunTestsRequest {
 }
 export interface ITestFollowup {
 	message: string;
+
 	execute(): Promise<void>;
 }
 export interface ITestFollowups extends IDisposable {
@@ -371,6 +401,7 @@ export interface ITestService {
 	 */
 	readonly onDidCancelTestRun: Event<{
 		runId: string | undefined;
+
 		taskId: string | undefined;
 	}>;
 	/**

@@ -10,10 +10,12 @@ import * as Vinyl from "vinyl";
 
 interface TranspileReq {
 	readonly tsSrcs: string[];
+
 	readonly options: ts.TranspileOptions;
 }
 interface TranspileRes {
 	readonly jsSrcs: string[];
+
 	readonly diagnostics: ts.Diagnostic[][];
 }
 function transpile(
@@ -21,6 +23,7 @@ function transpile(
 	options: ts.TranspileOptions,
 ): {
 	jsSrc: string;
+
 	diag: ts.Diagnostic[];
 } {
 	const isAmd = /\n(import|export)/m.test(tsSrc);
@@ -37,6 +40,7 @@ function transpile(
 			},
 		};
 	}
+
 	const out = ts.transpileModule(tsSrc, options);
 
 	return {
@@ -54,9 +58,12 @@ if (!threads.isMainThread) {
 
 		for (const tsSrc of req.tsSrcs) {
 			const out = transpile(tsSrc, req.options);
+
 			res.jsSrcs.push(out.jsSrc);
+
 			res.diagnostics.push(out.diag);
 		}
+
 		threads.parentPort!.postMessage(res);
 	});
 }
@@ -75,6 +82,7 @@ class OutputFileNameOracle {
 				ignoreCase: boolean,
 			): readonly string[];
 		};
+
 		this.getOutputFileName = (file) => {
 			try {
 				// windows: path-sep normalizing
@@ -84,12 +92,15 @@ class OutputFileNameOracle {
 					// this is needed for the INTERNAL getOutputFileNames-call below...
 					cmdLine.options.configFilePath = configFilePath;
 				}
+
 				const isDts = file.endsWith(".d.ts");
 
 				if (isDts) {
 					file = file.slice(0, -5) + ".ts";
+
 					cmdLine.fileNames.push(file);
 				}
+
 				const outfile = (<InternalTsApi>ts).getOutputFileNames(
 					cmdLine,
 					file,
@@ -99,9 +110,11 @@ class OutputFileNameOracle {
 				if (isDts) {
 					cmdLine.fileNames.pop();
 				}
+
 				return outfile;
 			} catch (err) {
 				console.error(file, cmdLine.fileNames);
+
 				console.error(err);
 
 				throw err;
@@ -111,8 +124,11 @@ class OutputFileNameOracle {
 }
 class TranspileWorker {
 	private static pool = 1;
+
 	readonly id = TranspileWorker.pool++;
+
 	private _worker = new threads.Worker(__filename);
+
 	private _pending?: [
 		resolve: Function,
 		reject: Function,
@@ -120,6 +136,7 @@ class TranspileWorker {
 		options: ts.TranspileOptions,
 		t1: number,
 	];
+
 	private _durations: number[] = [];
 
 	constructor(outFileFn: (fileName: string) => string) {
@@ -129,6 +146,7 @@ class TranspileWorker {
 
 				return;
 			}
+
 			const [resolve, reject, files, options, t1] = this._pending;
 
 			const outFiles: Vinyl[] = [];
@@ -148,11 +166,13 @@ class TranspileWorker {
 
 					continue;
 				}
+
 				const enum SuffixTypes {
 					Dts = 5,
 					Ts = 3,
 					Unknown = 0,
 				}
+
 				const suffixLen = file.path.endsWith(".d.ts")
 					? SuffixTypes.Dts
 					: file.path.endsWith(".ts")
@@ -163,9 +183,11 @@ class TranspileWorker {
 				if (suffixLen === SuffixTypes.Dts && _isDefaultEmpty(jsSrc)) {
 					continue;
 				}
+
 				const outBase = options.compilerOptions?.outDir ?? file.base;
 
 				const outPath = outFileFn(file.path);
+
 				outFiles.push(
 					new Vinyl({
 						path: outPath,
@@ -174,7 +196,9 @@ class TranspileWorker {
 					}),
 				);
 			}
+
 			this._pending = undefined;
+
 			this._durations.push(Date.now() - t1);
 
 			if (diag.length > 0) {
@@ -184,17 +208,22 @@ class TranspileWorker {
 			}
 		});
 	}
+
 	terminate() {
 		// console.log(`Worker#${this.id} ENDS after ${this._durations.length} jobs (total: ${this._durations.reduce((p, c) => p + c, 0)}, avg: ${this._durations.reduce((p, c) => p + c, 0) / this._durations.length})`);
+
 		this._worker.terminate();
 	}
+
 	get isBusy() {
 		return this._pending !== undefined;
 	}
+
 	next(files: Vinyl[], options: ts.TranspileOptions) {
 		if (this._pending !== undefined) {
 			throw new Error("BUSY");
 		}
+
 		return new Promise<Vinyl[]>((resolve, reject) => {
 			this._pending = [resolve, reject, files, options, Date.now()];
 
@@ -202,21 +231,29 @@ class TranspileWorker {
 				options,
 				tsSrcs: files.map((file) => String(file.contents)),
 			};
+
 			this._worker.postMessage(req);
 		});
 	}
 }
 export interface ITranspiler {
 	onOutfile?: (file: Vinyl) => void;
+
 	join(): Promise<void>;
+
 	transpile(file: Vinyl): void;
 }
 export class TscTranspiler implements ITranspiler {
 	static P = Math.floor(cpus().length * 0.5);
+
 	private readonly _outputFileNames: OutputFileNameOracle;
+
 	public onOutfile?: (file: Vinyl) => void;
+
 	private _workerPool: TranspileWorker[] = [];
+
 	private _queue: Vinyl[] = [];
+
 	private _allJobs: Promise<any>[] = [];
 
 	constructor(
@@ -226,31 +263,39 @@ export class TscTranspiler implements ITranspiler {
 		private readonly _cmdLine: ts.ParsedCommandLine,
 	) {
 		logFn("Transpile", `will use ${TscTranspiler.P} transpile worker`);
+
 		this._outputFileNames = new OutputFileNameOracle(
 			_cmdLine,
 			configFilePath,
 		);
 	}
+
 	async join() {
 		// wait for all penindg jobs
 		this._consumeQueue();
+
 		await Promise.allSettled(this._allJobs);
+
 		this._allJobs.length = 0;
 		// terminate all worker
 		this._workerPool.forEach((w) => w.terminate());
+
 		this._workerPool.length = 0;
 	}
+
 	transpile(file: Vinyl) {
 		if (this._cmdLine.options.noEmit) {
 			// not doing ANYTHING here
 			return;
 		}
+
 		const newLen = this._queue.push(file);
 
 		if (newLen > TscTranspiler.P ** 2) {
 			this._consumeQueue();
 		}
 	}
+
 	private _consumeQueue(): void {
 		if (this._queue.length === 0) {
 			// no work...
@@ -266,16 +311,19 @@ export class TscTranspiler implements ITranspiler {
 				);
 			}
 		}
+
 		const freeWorker = this._workerPool.filter((w) => !w.isBusy);
 
 		if (freeWorker.length === 0) {
 			// OK, they will pick up work themselves
 			return;
 		}
+
 		for (const worker of freeWorker) {
 			if (this._queue.length === 0) {
 				break;
 			}
+
 			const job = new Promise((resolve) => {
 				const consume = () => {
 					const files = this._queue.splice(0, TscTranspiler.P);
@@ -288,28 +336,35 @@ export class TscTranspiler implements ITranspiler {
 					}
 					// work on the NEXT file
 					// const [inFile, outFn] = req;
+
 					worker
 						.next(files, { compilerOptions: this._cmdLine.options })
 						.then((outFiles) => {
 							if (this.onOutfile) {
 								outFiles.map(this.onOutfile, this);
 							}
+
 							consume();
 						})
 						.catch((err) => {
 							this._onError(err);
 						});
 				};
+
 				consume();
 			});
+
 			this._allJobs.push(job);
 		}
 	}
 }
 export class ESBuildTranspiler implements ITranspiler {
 	private readonly _outputFileNames: OutputFileNameOracle;
+
 	private _jobs: Promise<any>[] = [];
+
 	onOutfile?: ((file: Vinyl) => void) | undefined;
+
 	private readonly _transformOpts: esbuild.TransformOptions;
 
 	constructor(
@@ -319,12 +374,14 @@ export class ESBuildTranspiler implements ITranspiler {
 		private readonly _cmdLine: ts.ParsedCommandLine,
 	) {
 		_logFn("Transpile", `will use ESBuild to transpile source files`);
+
 		this._outputFileNames = new OutputFileNameOracle(
 			_cmdLine,
 			configFilePath,
 		);
 
 		const isExtension = configFilePath.includes("extensions");
+
 		this._transformOpts = {
 			target: ["es2022"],
 			format: isExtension ? "cjs" : "esm",
@@ -348,16 +405,22 @@ export class ESBuildTranspiler implements ITranspiler {
 			},
 		};
 	}
+
 	async join(): Promise<void> {
 		const jobs = this._jobs.slice();
+
 		this._jobs.length = 0;
+
 		await Promise.allSettled(jobs);
 	}
+
 	transpile(file: Vinyl): void {
 		if (!(file.contents instanceof Buffer)) {
 			throw Error("file.contents must be a Buffer");
 		}
+
 		const t1 = Date.now();
+
 		this._jobs.push(
 			esbuild
 				.transform(file.contents, {
@@ -373,11 +436,13 @@ export class ESBuildTranspiler implements ITranspiler {
 					) {
 						return;
 					}
+
 					const outBase = this._cmdLine.options.outDir ?? file.base;
 
 					const outPath = this._outputFileNames.getOutputFileName(
 						file.path,
 					);
+
 					this.onOutfile!(
 						new Vinyl({
 							path: outPath,
@@ -385,6 +450,7 @@ export class ESBuildTranspiler implements ITranspiler {
 							contents: Buffer.from(result.code),
 						}),
 					);
+
 					this._logFn(
 						"Transpile",
 						`esbuild took ${Date.now() - t1}ms for ${file.path}`,

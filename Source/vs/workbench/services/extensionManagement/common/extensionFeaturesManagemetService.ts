@@ -33,6 +33,7 @@ import {
 
 interface IExtensionFeatureState {
 	disabled?: boolean;
+
 	accessData: Mutable<IExtensionFeatureAccessData>;
 }
 
@@ -42,23 +43,33 @@ class ExtensionFeaturesManagementService
 	implements IExtensionFeaturesManagementService
 {
 	declare readonly _serviceBrand: undefined;
+
 	private readonly _onDidChangeEnablement = this._register(
 		new Emitter<{
 			extension: ExtensionIdentifier;
+
 			featureId: string;
+
 			enabled: boolean;
 		}>(),
 	);
+
 	readonly onDidChangeEnablement = this._onDidChangeEnablement.event;
+
 	private readonly _onDidChangeAccessData = this._register(
 		new Emitter<{
 			extension: ExtensionIdentifier;
+
 			featureId: string;
+
 			accessData: IExtensionFeatureAccessData;
 		}>(),
 	);
+
 	readonly onDidChangeAccessData = this._onDidChangeAccessData.event;
+
 	private readonly registry: IExtensionFeaturesRegistry;
+
 	private extensionFeaturesState = new Map<
 		string,
 		Map<string, IExtensionFeatureState>
@@ -73,10 +84,13 @@ class ExtensionFeaturesManagementService
 		private readonly extensionService: IExtensionService,
 	) {
 		super();
+
 		this.registry = Registry.as<IExtensionFeaturesRegistry>(
 			Extensions.ExtensionFeaturesRegistry,
 		);
+
 		this.extensionFeaturesState = this.loadState();
+
 		this._register(
 			storageService.onDidChangeValue(
 				StorageScope.PROFILE,
@@ -85,12 +99,14 @@ class ExtensionFeaturesManagementService
 			)((e) => this.onDidStorageChange(e)),
 		);
 	}
+
 	isEnabled(extension: ExtensionIdentifier, featureId: string): boolean {
 		const feature = this.registry.getExtensionFeature(featureId);
 
 		if (!feature) {
 			return false;
 		}
+
 		const isDisabled = this.getExtensionFeatureState(
 			extension,
 			featureId,
@@ -99,14 +115,17 @@ class ExtensionFeaturesManagementService
 		if (isBoolean(isDisabled)) {
 			return !isDisabled;
 		}
+
 		const defaultExtensionAccess =
 			feature.access.extensionsList?.[extension.value];
 
 		if (isBoolean(defaultExtensionAccess)) {
 			return defaultExtensionAccess;
 		}
+
 		return !feature.access.requireUserConsent;
 	}
+
 	setEnablement(
 		extension: ExtensionIdentifier,
 		featureId: string,
@@ -117,6 +136,7 @@ class ExtensionFeaturesManagementService
 		if (!feature) {
 			throw new Error(`No feature with id '${featureId}'`);
 		}
+
 		const featureState = this.getAndSetIfNotExistsExtensionFeatureState(
 			extension,
 			featureId,
@@ -124,16 +144,21 @@ class ExtensionFeaturesManagementService
 
 		if (featureState.disabled !== !enabled) {
 			featureState.disabled = !enabled;
+
 			this._onDidChangeEnablement.fire({ extension, featureId, enabled });
+
 			this.saveState();
 		}
 	}
+
 	getEnablementData(featureId: string): {
 		readonly extension: ExtensionIdentifier;
+
 		readonly enabled: boolean;
 	}[] {
 		const result: {
 			readonly extension: ExtensionIdentifier;
+
 			readonly enabled: boolean;
 		}[] = [];
 
@@ -152,8 +177,10 @@ class ExtensionFeaturesManagementService
 				}
 			}
 		}
+
 		return result;
 	}
+
 	async getAccess(
 		extension: ExtensionIdentifier,
 		featureId: string,
@@ -164,6 +191,7 @@ class ExtensionFeaturesManagementService
 		if (!feature) {
 			return false;
 		}
+
 		const featureState = this.getAndSetIfNotExistsExtensionFeatureState(
 			extension,
 			featureId,
@@ -172,6 +200,7 @@ class ExtensionFeaturesManagementService
 		if (featureState.disabled) {
 			return false;
 		}
+
 		if (featureState.disabled === undefined) {
 			let enabled = true;
 
@@ -198,14 +227,17 @@ class ExtensionFeaturesManagementService
 					primaryButton: localize("allow", "Allow"),
 					cancelButton: localize("disallow", "Don't Allow"),
 				});
+
 				enabled = confirmationResult.confirmed;
 			}
+
 			this.setEnablement(extension, featureId, enabled);
 
 			if (!enabled) {
 				return false;
 			}
 		}
+
 		featureState.accessData.current = {
 			count: featureState.accessData.current?.count
 				? featureState.accessData.current?.count + 1
@@ -213,9 +245,12 @@ class ExtensionFeaturesManagementService
 			lastAccessed: Date.now(),
 			status: featureState.accessData.current?.status,
 		};
+
 		featureState.accessData.totalCount =
 			featureState.accessData.totalCount + 1;
+
 		this.saveState();
+
 		this._onDidChangeAccessData.fire({
 			extension,
 			featureId,
@@ -224,6 +259,7 @@ class ExtensionFeaturesManagementService
 
 		return true;
 	}
+
 	getAccessData(
 		extension: ExtensionIdentifier,
 		featureId: string,
@@ -233,14 +269,17 @@ class ExtensionFeaturesManagementService
 		if (!feature) {
 			return;
 		}
+
 		return this.getExtensionFeatureState(extension, featureId)?.accessData;
 	}
+
 	setStatus(
 		extension: ExtensionIdentifier,
 		featureId: string,
 		status:
 			| {
 					readonly severity: Severity;
+
 					readonly message: string;
 			  }
 			| undefined,
@@ -250,27 +289,32 @@ class ExtensionFeaturesManagementService
 		if (!feature) {
 			throw new Error(`No feature with id '${featureId}'`);
 		}
+
 		const featureState = this.getAndSetIfNotExistsExtensionFeatureState(
 			extension,
 			featureId,
 		);
+
 		featureState.accessData.current = {
 			count: featureState.accessData.current?.count ?? 0,
 			lastAccessed: featureState.accessData.current?.lastAccessed ?? 0,
 			status,
 		};
+
 		this._onDidChangeAccessData.fire({
 			extension,
 			featureId,
 			accessData: this.getAccessData(extension, featureId)!,
 		});
 	}
+
 	private getExtensionFeatureState(
 		extension: ExtensionIdentifier,
 		featureId: string,
 	): IExtensionFeatureState | undefined {
 		return this.extensionFeaturesState.get(extension.value)?.get(featureId);
 	}
+
 	private getAndSetIfNotExistsExtensionFeatureState(
 		extension: ExtensionIdentifier,
 		featureId: string,
@@ -279,19 +323,25 @@ class ExtensionFeaturesManagementService
 
 		if (!extensionState) {
 			extensionState = new Map<string, IExtensionFeatureState>();
+
 			this.extensionFeaturesState.set(extension.value, extensionState);
 		}
+
 		let featureState = extensionState.get(featureId);
 
 		if (!featureState) {
 			featureState = { accessData: { totalCount: 0 } };
+
 			extensionState.set(featureId, featureState);
 		}
+
 		return featureState;
 	}
+
 	private onDidStorageChange(e: IStorageChangeEvent): void {
 		if (e.external) {
 			const oldState = this.extensionFeaturesState;
+
 			this.extensionFeaturesState = this.loadState();
 
 			for (const extensionId of distinct([
@@ -321,6 +371,7 @@ class ExtensionFeaturesManagementService
 							enabled: isEnabled,
 						});
 					}
+
 					const newAccessData = this.getAccessData(
 						extension,
 						featureId,
@@ -340,10 +391,12 @@ class ExtensionFeaturesManagementService
 			}
 		}
 	}
+
 	private loadState(): Map<string, Map<string, IExtensionFeatureState>> {
 		let data: IStringDictionary<
 			IStringDictionary<{
 				disabled?: boolean;
+
 				accessCount: number;
 			}>
 		> = {};
@@ -359,6 +412,7 @@ class ExtensionFeaturesManagementService
 		} catch (e) {
 			// ignore
 		}
+
 		const result = new Map<string, Map<string, IExtensionFeatureState>>();
 
 		for (const extensionId in data) {
@@ -371,6 +425,7 @@ class ExtensionFeaturesManagementService
 
 			for (const featureId in extensionFeatures) {
 				const extensionFeature = extensionFeatures[featureId];
+
 				extensionFeatureState.set(featureId, {
 					disabled: extensionFeature.disabled,
 					accessData: {
@@ -378,30 +433,39 @@ class ExtensionFeaturesManagementService
 					},
 				});
 			}
+
 			result.set(extensionId, extensionFeatureState);
 		}
+
 		return result;
 	}
+
 	private saveState(): void {
 		const data: IStringDictionary<
 			IStringDictionary<{
 				disabled?: boolean;
+
 				accessCount: number;
 			}>
 		> = {};
+
 		this.extensionFeaturesState.forEach((extensionState, extensionId) => {
 			const extensionFeatures: IStringDictionary<{
 				disabled?: boolean;
+
 				accessCount: number;
 			}> = {};
+
 			extensionState.forEach((featureState, featureId) => {
 				extensionFeatures[featureId] = {
 					disabled: featureState.disabled,
 					accessCount: featureState.accessData.totalCount,
 				};
 			});
+
 			data[extensionId] = extensionFeatures;
 		});
+
 		this.storageService.store(
 			FEATURES_STATE_KEY,
 			JSON.stringify(data),

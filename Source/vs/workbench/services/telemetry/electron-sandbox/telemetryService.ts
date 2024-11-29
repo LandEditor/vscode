@@ -39,27 +39,35 @@ import { resolveWorkbenchCommonProperties } from "../common/workbenchCommonPrope
 
 export class TelemetryService extends Disposable implements ITelemetryService {
 	declare readonly _serviceBrand: undefined;
+
 	private impl: ITelemetryService;
+
 	public readonly sendErrorTelemetry: boolean;
 
 	get sessionId(): string {
 		return this.impl.sessionId;
 	}
+
 	get machineId(): string {
 		return this.impl.machineId;
 	}
+
 	get sqmId(): string {
 		return this.impl.sqmId;
 	}
+
 	get devDeviceId(): string {
 		return this.impl.devDeviceId;
 	}
+
 	get firstSessionDate(): string {
 		return this.impl.firstSessionDate;
 	}
+
 	get msftInternal(): boolean | undefined {
 		return this.impl.msftInternal;
 	}
+
 	constructor(
 		@INativeWorkbenchEnvironmentService
 		environmentService: INativeWorkbenchEnvironmentService,
@@ -101,6 +109,7 @@ export class TelemetryService extends Disposable implements ITelemetryService {
 				piiPaths: getPiiPathsFromEnvironment(environmentService),
 				sendErrorTelemetry: true,
 			};
+
 			this.impl = this._register(
 				new BaseTelemetryService(
 					config,
@@ -111,26 +120,33 @@ export class TelemetryService extends Disposable implements ITelemetryService {
 		} else {
 			this.impl = NullTelemetryService;
 		}
+
 		this.sendErrorTelemetry = this.impl.sendErrorTelemetry;
 	}
+
 	setExperimentProperty(name: string, value: string): void {
 		return this.impl.setExperimentProperty(name, value);
 	}
+
 	get telemetryLevel(): TelemetryLevel {
 		return this.impl.telemetryLevel;
 	}
+
 	publicLog(eventName: string, data?: ITelemetryData) {
 		this.impl.publicLog(eventName, data);
 	}
+
 	publicLog2<
 		E extends ClassifiedEvent<OmitMetadata<T>> = never,
 		T extends IGDPRProperty = never,
 	>(eventName: string, data?: StrictPropertyCheck<T, E>) {
 		this.publicLog(eventName, data as ITelemetryData);
 	}
+
 	publicLogError(errorEventName: string, data?: ITelemetryData) {
 		this.impl.publicLogError(errorEventName, data);
 	}
+
 	publicLogError2<
 		E extends ClassifiedEvent<OmitMetadata<T>> = never,
 		T extends IGDPRProperty = never,

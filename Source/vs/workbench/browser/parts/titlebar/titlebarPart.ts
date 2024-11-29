@@ -151,12 +151,15 @@ import { WindowTitle } from "./windowTitle.js";
 
 export interface ITitleVariable {
 	readonly name: string;
+
 	readonly contextKey: string;
 }
 
 export interface ITitleProperties {
 	isPure?: boolean;
+
 	isAdmin?: boolean;
+
 	prefix?: string;
 }
 
@@ -196,6 +199,7 @@ export class BrowserTitleService
 		this._register(this.registerPart(this.mainPart));
 
 		this.registerActions();
+
 		this.registerAPICommands();
 	}
 
@@ -208,6 +212,7 @@ export class BrowserTitleService
 	private registerActions(): void {
 		// Focus action
 		const that = this;
+
 		this._register(
 			registerAction2(
 				class FocusTitleBar extends Action2 {
@@ -269,9 +274,13 @@ export class BrowserTitleService
 		editorGroupsContainer: IEditorGroupsContainer,
 	): IAuxiliaryTitlebarPart {
 		const titlebarPartContainer = document.createElement("div");
+
 		titlebarPartContainer.classList.add("part", "titlebar");
+
 		titlebarPartContainer.setAttribute("role", "none");
+
 		titlebarPartContainer.style.position = "relative";
+
 		container.insertBefore(titlebarPartContainer, container.firstChild); // ensure we are first element
 
 		const disposables = new DisposableStore();
@@ -280,6 +289,7 @@ export class BrowserTitleService
 			titlebarPartContainer,
 			editorGroupsContainer,
 		);
+
 		disposables.add(this.registerPart(titlebarPart));
 
 		disposables.add(
@@ -289,6 +299,7 @@ export class BrowserTitleService
 					(titlebarPartContainer.style.height = `${titlebarPart.height}px`),
 			),
 		);
+
 		titlebarPart.create(titlebarPartContainer);
 
 		if (this.properties) {
@@ -341,6 +352,7 @@ export class BrowserTitleService
 		for (const variable of variables) {
 			if (!this.variables.has(variable.name)) {
 				this.variables.set(variable.name, variable);
+
 				newVariables.push(variable);
 			}
 		}
@@ -357,6 +369,7 @@ export class BrowserTitlebarPart extends Part implements ITitlebarPart {
 	//#region IView
 
 	readonly minimumWidth: number = 0;
+
 	readonly maximumWidth: number = Number.POSITIVE_INFINITY;
 
 	get minimumHeight(): number {
@@ -389,44 +402,61 @@ export class BrowserTitlebarPart extends Part implements ITitlebarPart {
 	//#region Events
 
 	private _onMenubarVisibilityChange = this._register(new Emitter<boolean>());
+
 	readonly onMenubarVisibilityChange = this._onMenubarVisibilityChange.event;
 
 	private readonly _onWillDispose = this._register(new Emitter<void>());
+
 	readonly onWillDispose = this._onWillDispose.event;
 
 	//#endregion
 
 	protected rootContainer!: HTMLElement;
+
 	protected windowControlsContainer: HTMLElement | undefined;
+
 	protected dragRegion: HTMLElement | undefined;
+
 	private title!: HTMLElement;
 
 	private leftContent!: HTMLElement;
+
 	private centerContent!: HTMLElement;
+
 	private rightContent!: HTMLElement;
 
 	protected customMenubar: CustomMenubarControl | undefined;
+
 	protected appIcon: HTMLElement | undefined;
+
 	private appIconBadge: HTMLElement | undefined;
+
 	protected menubar?: HTMLElement;
+
 	private lastLayoutDimensions: Dimension | undefined;
 
 	private actionToolBar!: WorkbenchToolBar;
+
 	private readonly actionToolBarDisposable = this._register(
 		new DisposableStore(),
 	);
+
 	private readonly editorActionsChangeDisposable = this._register(
 		new DisposableStore(),
 	);
+
 	private actionToolBarElement!: HTMLElement;
 
 	private layoutToolbarMenu: IMenu | undefined;
+
 	private readonly editorToolbarMenuDisposables = this._register(
 		new DisposableStore(),
 	);
+
 	private readonly layoutToolbarMenuDisposables = this._register(
 		new DisposableStore(),
 	);
+
 	private readonly activityToolbarDisposables = this._register(
 		new DisposableStore(),
 	);
@@ -434,16 +464,19 @@ export class BrowserTitlebarPart extends Part implements ITitlebarPart {
 	private readonly hoverDelegate: IHoverDelegate;
 
 	private readonly titleDisposables = this._register(new DisposableStore());
+
 	private titleBarStyle: TitlebarStyle = getTitleBarStyle(
 		this.configurationService,
 	);
 
 	private isInactive: boolean = false;
+
 	private readonly isAuxiliary: boolean;
 
 	private readonly windowTitle: WindowTitle;
 
 	private readonly editorService: IEditorService;
+
 	private readonly editorGroupsContainer: IEditorGroupsContainer;
 
 	constructor(
@@ -480,10 +513,12 @@ export class BrowserTitlebarPart extends Part implements ITitlebarPart {
 		);
 
 		this.isAuxiliary = editorGroupsContainer !== "main";
+
 		this.editorService = editorService.createScoped(
 			editorGroupsContainer,
 			this._store,
 		);
+
 		this.editorGroupsContainer =
 			editorGroupsContainer === "main"
 				? editorGroupService.mainPart
@@ -508,16 +543,19 @@ export class BrowserTitlebarPart extends Part implements ITitlebarPart {
 				focused ? this.onFocus() : this.onBlur(),
 			),
 		);
+
 		this._register(
 			this.hostService.onDidChangeActiveWindow((windowId) =>
 				windowId === targetWindowId ? this.onFocus() : this.onBlur(),
 			),
 		);
+
 		this._register(
 			this.configurationService.onDidChangeConfiguration((e) =>
 				this.onConfigurationChanged(e),
 			),
 		);
+
 		this._register(
 			this.editorGroupService.onDidChangeEditorPartOptions((e) =>
 				this.onEditorPartConfigurationChange(e),
@@ -554,7 +592,9 @@ export class BrowserTitlebarPart extends Part implements ITitlebarPart {
 				this.actionToolBar
 			) {
 				this.createActionToolBar();
+
 				this.createActionToolBarMenus({ editorActions: true });
+
 				this._onDidChange.fire(undefined);
 			}
 		}
@@ -617,6 +657,7 @@ export class BrowserTitlebarPart extends Part implements ITitlebarPart {
 		);
 
 		this.menubar = append(this.leftContent, $("div.menubar"));
+
 		this.menubar.setAttribute("role", "menubar");
 
 		this._register(
@@ -630,9 +671,11 @@ export class BrowserTitlebarPart extends Part implements ITitlebarPart {
 
 	private uninstallMenubar(): void {
 		this.customMenubar?.dispose();
+
 		this.customMenubar = undefined;
 
 		this.menubar?.remove();
+
 		this.menubar = undefined;
 
 		this.onMenubarVisibilityChanged(false);
@@ -661,10 +704,13 @@ export class BrowserTitlebarPart extends Part implements ITitlebarPart {
 
 	protected override createContentArea(parent: HTMLElement): HTMLElement {
 		this.element = parent;
+
 		this.rootContainer = append(parent, $(".titlebar-container"));
 
 		this.leftContent = append(this.rootContainer, $(".titlebar-left"));
+
 		this.centerContent = append(this.rootContainer, $(".titlebar-center"));
+
 		this.rightContent = append(this.rootContainer, $(".titlebar-right"));
 
 		// App Icon (Native Windows/Linux and Web)
@@ -688,11 +734,15 @@ export class BrowserTitlebarPart extends Part implements ITitlebarPart {
 						: Codicon.code;
 
 					this.appIcon.setAttribute("href", homeIndicator.href);
+
 					this.appIcon.classList.add(
 						...ThemeIcon.asClassNameArray(icon),
 					);
+
 					this.appIconBadge = document.createElement("div");
+
 					this.appIconBadge.classList.add("home-bar-icon-badge");
+
 					this.appIcon.appendChild(this.appIconBadge);
 				}
 			}
@@ -716,6 +766,7 @@ export class BrowserTitlebarPart extends Part implements ITitlebarPart {
 
 		// Title
 		this.title = append(this.centerContent, $("div.window-title"));
+
 		this.createTitle();
 
 		// Create Toolbar Actions
@@ -724,7 +775,9 @@ export class BrowserTitlebarPart extends Part implements ITitlebarPart {
 				this.rightContent,
 				$("div.action-toolbar-container"),
 			);
+
 			this.createActionToolBar();
+
 			this.createActionToolBarMenus();
 		}
 
@@ -842,6 +895,7 @@ export class BrowserTitlebarPart extends Part implements ITitlebarPart {
 		// Text Title
 		if (!this.isCommandCenterVisible) {
 			this.title.innerText = this.windowTitle.value;
+
 			this.titleDisposables.add(
 				this.windowTitle.onDidChange(() => {
 					this.title.innerText = this.windowTitle.value;
@@ -856,7 +910,9 @@ export class BrowserTitlebarPart extends Part implements ITitlebarPart {
 				this.windowTitle,
 				this.hoverDelegate,
 			);
+
 			reset(this.title, commandCenter.element);
+
 			this.titleDisposables.add(commandCenter);
 		}
 	}
@@ -874,6 +930,7 @@ export class BrowserTitlebarPart extends Part implements ITitlebarPart {
 					options,
 				);
 			}
+
 			if (action.id === ACCOUNTS_ACTIVITY_ID) {
 				return this.instantiationService.createInstance(
 					SimpleAccountActivityActionViewItem,
@@ -963,7 +1020,9 @@ export class BrowserTitlebarPart extends Part implements ITitlebarPart {
 			| true
 			| {
 					editorActions?: boolean;
+
 					layoutActions?: boolean;
+
 					activityActions?: boolean;
 			  } = true,
 	) {
@@ -990,6 +1049,7 @@ export class BrowserTitlebarPart extends Part implements ITitlebarPart {
 					);
 
 					actions.primary.push(...editorActions.actions.primary);
+
 					actions.secondary.push(...editorActions.actions.secondary);
 
 					this.editorActionsChangeDisposable.add(
@@ -1003,6 +1063,7 @@ export class BrowserTitlebarPart extends Part implements ITitlebarPart {
 				if (isAccountsActionVisible(this.storageService)) {
 					actions.primary.push(ACCOUNTS_ACTIVITY_TILE_ACTION);
 				}
+
 				actions.primary.push(GLOBAL_ACTIVITY_TITLE_ACTION);
 			}
 
@@ -1038,12 +1099,15 @@ export class BrowserTitlebarPart extends Part implements ITitlebarPart {
 
 				this.actionToolBar.actionRunner =
 					new EditorCommandsContextActionRunner(context);
+
 				this.actionToolBar.context = context;
+
 				this.editorToolbarMenuDisposables.add(
 					this.actionToolBar.actionRunner,
 				);
 			} else {
 				this.actionToolBar.actionRunner = new ActionRunner();
+
 				this.actionToolBar.context = undefined;
 
 				this.editorToolbarMenuDisposables.add(
@@ -1062,6 +1126,7 @@ export class BrowserTitlebarPart extends Part implements ITitlebarPart {
 				);
 
 				this.layoutToolbarMenuDisposables.add(this.layoutToolbarMenu);
+
 				this.layoutToolbarMenuDisposables.add(
 					this.layoutToolbarMenu.onDidChange(() =>
 						updateToolBarActions(),
@@ -1115,6 +1180,7 @@ export class BrowserTitlebarPart extends Part implements ITitlebarPart {
 							: color.makeOpaque(WORKBENCH_BACKGROUND(theme));
 					},
 				) || "";
+
 			this.element.style.backgroundColor = titleBackground;
 
 			if (this.appIconBadge) {
@@ -1132,9 +1198,11 @@ export class BrowserTitlebarPart extends Part implements ITitlebarPart {
 					? TITLE_BAR_INACTIVE_FOREGROUND
 					: TITLE_BAR_ACTIVE_FOREGROUND,
 			);
+
 			this.element.style.color = titleForeground || "";
 
 			const titleBorder = this.getColor(TITLE_BAR_BORDER);
+
 			this.element.style.borderBottom = titleBorder
 				? `1px solid ${titleBorder}`
 				: "";
@@ -1247,6 +1315,7 @@ export class BrowserTitlebarPart extends Part implements ITitlebarPart {
 				"--zoom-factor",
 				zoomFactor.toString(),
 			);
+
 			this.rootContainer.classList.toggle(
 				"counter-zoom",
 				this.preventZoom,
@@ -1254,6 +1323,7 @@ export class BrowserTitlebarPart extends Part implements ITitlebarPart {
 
 			if (this.customMenubar) {
 				const menubarDimension = new Dimension(0, dimension.height);
+
 				this.customMenubar.layout(menubarDimension);
 			}
 		}
@@ -1324,6 +1394,7 @@ export class MainBrowserTitlebarPart extends BrowserTitlebarPart {
 
 export interface IAuxiliaryTitlebarPart extends ITitlebarPart, IView {
 	readonly container: HTMLElement;
+
 	readonly height: number;
 }
 

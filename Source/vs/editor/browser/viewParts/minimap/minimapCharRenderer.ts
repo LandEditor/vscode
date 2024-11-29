@@ -8,7 +8,9 @@ import { Constants, getCharIndex } from "./minimapCharSheet.js";
 
 export class MinimapCharRenderer {
 	_minimapCharRendererBrand: void = undefined;
+
 	private readonly charDataNormal: Uint8ClampedArray;
+
 	private readonly charDataLight: Uint8ClampedArray;
 
 	constructor(
@@ -16,8 +18,10 @@ export class MinimapCharRenderer {
 		public readonly scale: number,
 	) {
 		this.charDataNormal = MinimapCharRenderer.soften(charData, 12 / 15);
+
 		this.charDataLight = MinimapCharRenderer.soften(charData, 50 / 60);
 	}
+
 	private static soften(
 		input: Uint8ClampedArray,
 		ratio: number,
@@ -27,8 +31,10 @@ export class MinimapCharRenderer {
 		for (let i = 0, len = input.length; i < len; i++) {
 			result[i] = toUint8(input[i] * ratio);
 		}
+
 		return result;
 	}
+
 	public renderChar(
 		target: ImageData,
 		dx: number,
@@ -56,6 +62,7 @@ export class MinimapCharRenderer {
 
 			return;
 		}
+
 		const charData = useLighterFont
 			? this.charDataLight
 			: this.charDataNormal;
@@ -90,14 +97,20 @@ export class MinimapCharRenderer {
 			for (let x = 0; x < charWidth; x++) {
 				const c =
 					(charData[sourceOffset++] / 255) * (foregroundAlpha / 255);
+
 				dest[column++] = backgroundR + deltaR * c;
+
 				dest[column++] = backgroundG + deltaG * c;
+
 				dest[column++] = backgroundB + deltaB * c;
+
 				dest[column++] = destAlpha;
 			}
+
 			row += destWidth;
 		}
 	}
+
 	public blockRenderChar(
 		target: ImageData,
 		dx: number,
@@ -122,6 +135,7 @@ export class MinimapCharRenderer {
 
 			return;
 		}
+
 		const destWidth = target.width * Constants.RGBA_CHANNELS_CNT;
 
 		const c = 0.5 * (foregroundAlpha / 255);
@@ -155,10 +169,14 @@ export class MinimapCharRenderer {
 
 			for (let x = 0; x < charWidth; x++) {
 				dest[column++] = colorR;
+
 				dest[column++] = colorG;
+
 				dest[column++] = colorB;
+
 				dest[column++] = destAlpha;
 			}
+
 			row += destWidth;
 		}
 	}

@@ -302,10 +302,15 @@ const RULES: IRule[] = [
 const TS_CONFIG_PATH = join(__dirname, "../../", "src", "tsconfig.json");
 interface IRule {
 	target: string;
+
 	skip?: boolean;
+
 	allowedTypes?: string[];
+
 	allowedDefinitions?: string[];
+
 	disallowedDefinitions?: string[];
+
 	disallowedTypes?: string[];
 }
 let hasErrors = false;
@@ -320,6 +325,7 @@ function checkFile(
 		if (node.kind !== ts.SyntaxKind.Identifier) {
 			return ts.forEachChild(node, checkNode); // recurse down
 		}
+
 		const checker = program.getTypeChecker();
 
 		const symbol = checker.getSymbolAtLocation(node);
@@ -327,11 +333,13 @@ function checkFile(
 		if (!symbol) {
 			return;
 		}
+
 		let _parentSymbol: any = symbol;
 
 		while (_parentSymbol.parent) {
 			_parentSymbol = _parentSymbol.parent;
 		}
+
 		const parentSymbol = _parentSymbol as ts.Symbol;
 
 		const text = parentSymbol.getName();
@@ -339,16 +347,20 @@ function checkFile(
 		if (rule.allowedTypes?.some((allowed) => allowed === text)) {
 			return; // override
 		}
+
 		if (rule.disallowedTypes?.some((disallowed) => disallowed === text)) {
 			const { line, character } =
 				sourceFile.getLineAndCharacterOfPosition(node.getStart());
+
 			console.log(
 				`[build/lib/layersChecker.ts]: Reference to type '${text}' violates layer '${rule.target}' (${sourceFile.fileName} (${line + 1},${character + 1}). Learn more about our source code organization at https://github.com/microsoft/vscode/wiki/Source-Code-Organization.`,
 			);
+
 			hasErrors = true;
 
 			return;
 		}
+
 		const declarations = symbol.declarations;
 
 		if (Array.isArray(declarations)) {
@@ -374,6 +386,7 @@ function checkFile(
 									}
 								}
 							}
+
 							if (rule.disallowedDefinitions) {
 								for (const disallowedDefinition of rule.disallowedDefinitions) {
 									if (
@@ -385,9 +398,11 @@ function checkFile(
 											sourceFile.getLineAndCharacterOfPosition(
 												node.getStart(),
 											);
+
 										console.log(
 											`[build/lib/layersChecker.ts]: Reference to symbol '${text}' from '${disallowedDefinition}' violates layer '${rule.target}' (${sourceFile.fileName} (${line + 1},${character + 1}) Learn more about our source code organization at https://github.com/microsoft/vscode/wiki/Source-Code-Organization.`,
 										);
+
 										hasErrors = true;
 
 										return;
@@ -436,6 +451,7 @@ for (const sourceFile of program.getSourceFiles()) {
 			if (!rule.skip) {
 				checkFile(program, sourceFile, rule);
 			}
+
 			break;
 		}
 	}

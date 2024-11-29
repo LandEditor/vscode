@@ -78,10 +78,13 @@ import {
 @extHostNamedCustomer(MainContext.MainThreadWorkspace)
 export class MainThreadWorkspace implements MainThreadWorkspaceShape {
 	private readonly _toDispose = new DisposableStore();
+
 	private readonly _activeCancelTokens: {
 		[id: number]: CancellationTokenSource;
 	} = Object.create(null);
+
 	private readonly _proxy: ExtHostWorkspaceShape;
+
 	private readonly _queryBuilder =
 		this._instantiationService.createInstance(QueryBuilder);
 
@@ -140,27 +143,32 @@ export class MainThreadWorkspace implements MainThreadWorkspaceShape {
 					),
 				);
 		}
+
 		this._contextService.onDidChangeWorkspaceFolders(
 			this._onDidChangeWorkspace,
 			this,
 			this._toDispose,
 		);
+
 		this._contextService.onDidChangeWorkbenchState(
 			this._onDidChangeWorkspace,
 			this,
 			this._toDispose,
 		);
+
 		this._workspaceTrustManagementService.onDidChangeTrust(
 			this._onDidGrantWorkspaceTrust,
 			this,
 			this._toDispose,
 		);
 	}
+
 	dispose(): void {
 		this._toDispose.dispose();
 
 		for (const requestId in this._activeCancelTokens) {
 			const tokenSource = this._activeCancelTokens[requestId];
+
 			tokenSource.cancel();
 		}
 	}
@@ -171,6 +179,7 @@ export class MainThreadWorkspace implements MainThreadWorkspaceShape {
 		deleteCount: number,
 		foldersToAdd: {
 			uri: UriComponents;
+
 			name?: string;
 		}[],
 	): Promise<void> {
@@ -195,6 +204,7 @@ export class MainThreadWorkspace implements MainThreadWorkspaceShape {
 			true,
 		);
 	}
+
 	private getStatusMessage(
 		extensionName: string,
 		addCount: number,
@@ -247,17 +257,21 @@ export class MainThreadWorkspace implements MainThreadWorkspaceShape {
 				extensionName,
 			);
 		}
+
 		return message;
 	}
+
 	private _onDidChangeWorkspace(): void {
 		this._proxy.$acceptWorkspaceData(
 			this.getWorkspaceData(this._contextService.getWorkspace()),
 		);
 	}
+
 	private getWorkspaceData(workspace: IWorkspace): IWorkspaceData | null {
 		if (this._contextService.getWorkbenchState() === WorkbenchState.EMPTY) {
 			return null;
 		}
+
 		return {
 			configuration: workspace.configuration || undefined,
 			isUntitled: workspace.configuration
@@ -295,6 +309,7 @@ export class MainThreadWorkspace implements MainThreadWorkspaceShape {
 				if (!isCancellationError(err)) {
 					return Promise.reject(err);
 				}
+
 				return null;
 			},
 		);
@@ -319,6 +334,7 @@ export class MainThreadWorkspace implements MainThreadWorkspaceShape {
 			folders,
 			revive(options),
 		);
+
 		query._reason = "startTextSearch";
 
 		const onProgress = (p: ISearchProgressItem) => {
@@ -337,6 +353,7 @@ export class MainThreadWorkspace implements MainThreadWorkspaceShape {
 					if (!isCancellationError(err)) {
 						return Promise.reject(err);
 					}
+
 					return null;
 				},
 			);
@@ -375,10 +392,12 @@ export class MainThreadWorkspace implements MainThreadWorkspaceShape {
 
 		return this._saveResultToUris(result).at(0);
 	}
+
 	private _saveResultToUris(result: ISaveEditorsResult): URI[] {
 		if (!result.success) {
 			return [];
 		}
+
 		return coalesce(
 			result.editors.map((editor) =>
 				EditorResourceAccessor.getCanonicalUri(editor, {
@@ -412,9 +431,11 @@ export class MainThreadWorkspace implements MainThreadWorkspaceShape {
 			options,
 		);
 	}
+
 	private isWorkspaceTrusted(): boolean {
 		return this._workspaceTrustManagementService.isWorkspaceTrusted();
 	}
+
 	private _onDidGrantWorkspaceTrust(): void {
 		this._proxy.$onDidGrantWorkspaceTrust();
 	}
@@ -449,12 +470,16 @@ export class MainThreadWorkspace implements MainThreadWorkspaceShape {
 					},
 				},
 			);
+
 		this.registeredEditSessionProviders.set(handle, disposable);
+
 		this._toDispose.add(disposable);
 	}
 	$unregisterEditSessionIdentityProvider(handle: number) {
 		const disposable = this.registeredEditSessionProviders.get(handle);
+
 		disposable?.dispose();
+
 		this.registeredEditSessionProviders.delete(handle);
 	}
 	// --- canonical uri identities ---
@@ -477,15 +502,20 @@ export class MainThreadWorkspace implements MainThreadWorkspaceShape {
 					if (result) {
 						return URI.revive(result);
 					}
+
 					return result;
 				},
 			});
+
 		this.registeredCanonicalUriProviders.set(handle, disposable);
+
 		this._toDispose.add(disposable);
 	}
 	$unregisterCanonicalUriProvider(handle: number) {
 		const disposable = this.registeredCanonicalUriProviders.get(handle);
+
 		disposable?.dispose();
+
 		this.registeredCanonicalUriProviders.delete(handle);
 	}
 }

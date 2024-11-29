@@ -50,6 +50,7 @@ abstract class AbstractCopyLinesAction extends EditorAction {
 
 	constructor(down: boolean, opts: IActionOptions) {
 		super(opts);
+
 		this.down = down;
 	}
 
@@ -61,6 +62,7 @@ abstract class AbstractCopyLinesAction extends EditorAction {
 		const selections = editor
 			.getSelections()
 			.map((selection, index) => ({ selection, index, ignore: false }));
+
 		selections.sort((a, b) =>
 			Range.compareRangesUsingStarts(a.selection, b.selection),
 		);
@@ -81,6 +83,7 @@ abstract class AbstractCopyLinesAction extends EditorAction {
 				} else {
 					// curr wins
 					prev.ignore = true;
+
 					prev = curr;
 				}
 			}
@@ -99,7 +102,9 @@ abstract class AbstractCopyLinesAction extends EditorAction {
 		}
 
 		editor.pushUndoStop();
+
 		editor.executeCommands(this.id, commands);
+
 		editor.pushUndoStop();
 	}
 }
@@ -218,6 +223,7 @@ export class DuplicateSelectionAction extends EditorAction {
 					selection.endLineNumber,
 					selection.endColumn,
 				);
+
 				commands.push(
 					new ReplaceCommandThatSelectsText(
 						insertSelection,
@@ -228,7 +234,9 @@ export class DuplicateSelectionAction extends EditorAction {
 		}
 
 		editor.pushUndoStop();
+
 		editor.executeCommands(this.id, commands);
+
 		editor.pushUndoStop();
 	}
 }
@@ -240,6 +248,7 @@ abstract class AbstractMoveLinesAction extends EditorAction {
 
 	constructor(down: boolean, opts: IActionOptions) {
 		super(opts);
+
 		this.down = down;
 	}
 
@@ -266,7 +275,9 @@ abstract class AbstractMoveLinesAction extends EditorAction {
 		}
 
 		editor.pushUndoStop();
+
 		editor.executeCommands(this.id, commands);
+
 		editor.pushUndoStop();
 	}
 }
@@ -332,6 +343,7 @@ export abstract class AbstractSortLinesAction extends EditorAction {
 
 	constructor(descending: boolean, opts: IActionOptions) {
 		super(opts);
+
 		this.descending = descending;
 	}
 
@@ -375,7 +387,9 @@ export abstract class AbstractSortLinesAction extends EditorAction {
 		}
 
 		editor.pushUndoStop();
+
 		editor.executeCommands(this.id, commands);
+
 		editor.pushUndoStop();
 	}
 }
@@ -446,6 +460,7 @@ export class DeleteDuplicateLinesAction extends EditorAction {
 					model.getLineMaxColumn(model.getLineCount()),
 				),
 			];
+
 			updateSelection = false;
 		}
 
@@ -456,7 +471,9 @@ export class DeleteDuplicateLinesAction extends EditorAction {
 
 			for (
 				let i = selection.startLineNumber;
+
 				i <= selection.endLineNumber;
+
 				i++
 			) {
 				const line = model.getLineContent(i);
@@ -466,6 +483,7 @@ export class DeleteDuplicateLinesAction extends EditorAction {
 				}
 
 				lines.push(line);
+
 				uniqueLines.add(line);
 			}
 
@@ -489,6 +507,7 @@ export class DeleteDuplicateLinesAction extends EditorAction {
 			edits.push(
 				EditOperation.replace(selectionToReplace, lines.join("\n")),
 			);
+
 			endCursorState.push(finalSelection);
 
 			linesDeleted +=
@@ -499,11 +518,13 @@ export class DeleteDuplicateLinesAction extends EditorAction {
 		}
 
 		editor.pushUndoStop();
+
 		editor.executeEdits(
 			this.id,
 			edits,
 			updateSelection ? endCursorState : undefined,
 		);
+
 		editor.pushUndoStop();
 	}
 }
@@ -571,7 +592,9 @@ export class TrimTrailingWhitespaceAction extends EditorAction {
 		);
 
 		editor.pushUndoStop();
+
 		editor.executeCommands(this.id, [command]);
+
 		editor.pushUndoStop();
 	}
 }
@@ -580,8 +603,11 @@ export class TrimTrailingWhitespaceAction extends EditorAction {
 
 interface IDeleteLinesOperation {
 	startLineNumber: number;
+
 	selectionStartColumn: number;
+
 	endLineNumber: number;
+
 	positionColumn: number;
 }
 
@@ -632,9 +658,11 @@ export class DeleteLinesAction extends EditorAction {
 
 			if (endLineNumber < model.getLineCount()) {
 				endLineNumber += 1;
+
 				endColumn = 1;
 			} else if (startLineNumber > 1) {
 				startLineNumber -= 1;
+
 				startColumn = model.getLineMaxColumn(startLineNumber);
 			}
 
@@ -649,6 +677,7 @@ export class DeleteLinesAction extends EditorAction {
 					"",
 				),
 			);
+
 			cursorState.push(
 				new Selection(
 					startLineNumber - linesDeleted,
@@ -657,11 +686,14 @@ export class DeleteLinesAction extends EditorAction {
 					op.positionColumn,
 				),
 			);
+
 			linesDeleted += op.endLineNumber - op.startLineNumber + 1;
 		}
 
 		editor.pushUndoStop();
+
 		editor.executeEdits(this.id, edits, cursorState);
+
 		editor.pushUndoStop();
 	}
 
@@ -691,6 +723,7 @@ export class DeleteLinesAction extends EditorAction {
 			if (a.startLineNumber === b.startLineNumber) {
 				return a.endLineNumber - b.endLineNumber;
 			}
+
 			return a.startLineNumber - b.startLineNumber;
 		});
 
@@ -709,6 +742,7 @@ export class DeleteLinesAction extends EditorAction {
 			} else {
 				// Push previous operation
 				mergedOperations.push(previousOperation);
+
 				previousOperation = operations[i];
 			}
 		}
@@ -739,7 +773,9 @@ export class IndentLinesAction extends EditorAction {
 		if (!viewModel) {
 			return;
 		}
+
 		editor.pushUndoStop();
+
 		editor.executeCommands(
 			this.id,
 			TypeOperations.indent(
@@ -748,6 +784,7 @@ export class IndentLinesAction extends EditorAction {
 				editor.getSelections(),
 			),
 		);
+
 		editor.pushUndoStop();
 	}
 }
@@ -791,7 +828,9 @@ export class InsertLineBeforeAction extends EditorAction {
 		if (!viewModel) {
 			return;
 		}
+
 		editor.pushUndoStop();
+
 		editor.executeCommands(
 			this.id,
 			EnterOperation.lineInsertBefore(
@@ -823,7 +862,9 @@ export class InsertLineAfterAction extends EditorAction {
 		if (!viewModel) {
 			return;
 		}
+
 		editor.pushUndoStop();
+
 		editor.executeCommands(
 			this.id,
 			EnterOperation.lineInsertAfter(
@@ -840,6 +881,7 @@ export abstract class AbstractDeleteAllToBoundaryAction extends EditorAction {
 		if (!editor.hasModel()) {
 			return;
 		}
+
 		const primaryCursor = editor.getSelection();
 
 		const rangesToDelete = this._getRangesToDelete(editor);
@@ -870,7 +912,9 @@ export abstract class AbstractDeleteAllToBoundaryAction extends EditorAction {
 		});
 
 		editor.pushUndoStop();
+
 		editor.executeEdits(this.id, edits, endCursorState);
+
 		editor.pushUndoStop();
 	}
 
@@ -915,6 +959,7 @@ export class DeleteAllLeftAction extends AbstractDeleteAllToBoundaryAction {
 
 			if (range.endColumn === 1 && deletedLines > 0) {
 				const newStartLine = range.startLineNumber - deletedLines;
+
 				endCursor = new Selection(
 					newStartLine,
 					range.startColumn,
@@ -962,6 +1007,7 @@ export class DeleteAllLeftAction extends AbstractDeleteAllToBoundaryAction {
 		}
 
 		rangesToDelete.sort(Range.compareRangesUsingStarts);
+
 		rangesToDelete = rangesToDelete.map((selection) => {
 			if (selection.isEmpty()) {
 				if (selection.startColumn === 1) {
@@ -1086,6 +1132,7 @@ export class DeleteAllRightAction extends AbstractDeleteAllToBoundaryAction {
 					);
 				}
 			}
+
 			return sel;
 		});
 
@@ -1137,6 +1184,7 @@ export class JoinLinesAction extends EditorAction {
 						if (primaryCursor!.equalsSelection(previousValue)) {
 							primaryCursor = currentValue;
 						}
+
 						return currentValue;
 					}
 
@@ -1214,13 +1262,16 @@ export class JoinLinesAction extends EditorAction {
 
 				if (position.lineNumber < model.getLineCount()) {
 					endLineNumber = startLineNumber + 1;
+
 					endColumn = model.getLineMaxColumn(endLineNumber);
 				} else {
 					endLineNumber = position.lineNumber;
+
 					endColumn = model.getLineMaxColumn(position.lineNumber);
 				}
 			} else {
 				endLineNumber = selection.endLineNumber;
+
 				endColumn = model.getLineMaxColumn(endLineNumber);
 			}
 
@@ -1249,6 +1300,7 @@ export class JoinLinesAction extends EditorAction {
 							) === "\t")
 					) {
 						insertSpace = false;
+
 						trimmedLinesContent = trimmedLinesContent.replace(
 							/[\s\uFEFF\xA0]+$/g,
 							" ",
@@ -1289,6 +1341,7 @@ export class JoinLinesAction extends EditorAction {
 							trimmedLinesContent,
 						),
 					);
+
 					resultSelection = new Selection(
 						deleteSelection.startLineNumber - lineOffset,
 						trimmedLinesContent.length - columnDeltaOffset + 1,
@@ -1303,6 +1356,7 @@ export class JoinLinesAction extends EditorAction {
 								trimmedLinesContent,
 							),
 						);
+
 						resultSelection = new Selection(
 							selection.startLineNumber - lineOffset,
 							selection.startColumn,
@@ -1316,6 +1370,7 @@ export class JoinLinesAction extends EditorAction {
 								trimmedLinesContent,
 							),
 						);
+
 						resultSelection = new Selection(
 							selection.startLineNumber - lineOffset,
 							selection.startColumn,
@@ -1341,8 +1396,11 @@ export class JoinLinesAction extends EditorAction {
 		}
 
 		endCursorState.unshift(endPrimaryCursor);
+
 		editor.pushUndoStop();
+
 		editor.executeEdits(this.id, edits, endCursorState);
+
 		editor.pushUndoStop();
 	}
 }
@@ -1429,6 +1487,7 @@ export class TransposeAction extends EditorAction {
 					.split("")
 					.reverse()
 					.join("");
+
 				commands.push(
 					new ReplaceCommandThatPreservesSelection(
 						deleteSelection,
@@ -1445,7 +1504,9 @@ export class TransposeAction extends EditorAction {
 		}
 
 		editor.pushUndoStop();
+
 		editor.executeCommands(this.id, commands);
+
 		editor.pushUndoStop();
 	}
 }
@@ -1486,6 +1547,7 @@ export abstract class AbstractCaseAction extends EditorAction {
 				);
 
 				const text = model.getValueInRange(wordRange);
+
 				textEdits.push(
 					EditOperation.replace(
 						wordRange,
@@ -1494,6 +1556,7 @@ export abstract class AbstractCaseAction extends EditorAction {
 				);
 			} else {
 				const text = model.getValueInRange(selection);
+
 				textEdits.push(
 					EditOperation.replace(
 						selection,
@@ -1504,7 +1567,9 @@ export abstract class AbstractCaseAction extends EditorAction {
 		}
 
 		editor.pushUndoStop();
+
 		editor.executeEdits(this.id, textEdits);
+
 		editor.pushUndoStop();
 	}
 
@@ -1550,6 +1615,7 @@ export class LowerCaseAction extends AbstractCaseAction {
 
 class BackwardsCompatibleRegExp {
 	private _actual: RegExp | null;
+
 	private _evaluated: boolean;
 
 	constructor(
@@ -1557,6 +1623,7 @@ class BackwardsCompatibleRegExp {
 		private readonly _flags: string,
 	) {
 		this._actual = null;
+
 		this._evaluated = false;
 	}
 
@@ -1570,6 +1637,7 @@ class BackwardsCompatibleRegExp {
 				// this browser does not support this regular expression
 			}
 		}
+
 		return this._actual;
 	}
 
@@ -1602,6 +1670,7 @@ export class TitleCaseAction extends AbstractCaseAction {
 			// cannot support this
 			return text;
 		}
+
 		return text
 			.toLocaleLowerCase()
 			.replace(titleBoundary, (b) => b.toLocaleUpperCase());
@@ -1613,6 +1682,7 @@ export class SnakeCaseAction extends AbstractCaseAction {
 		"(\\p{Ll})(\\p{Lu})",
 		"gmu",
 	);
+
 	public static singleLetters = new BackwardsCompatibleRegExp(
 		"(\\p{Lu}|\\p{N})(\\p{Lu})(\\p{Ll})",
 		"gmu",
@@ -1638,6 +1708,7 @@ export class SnakeCaseAction extends AbstractCaseAction {
 			// cannot support this
 			return text;
 		}
+
 		return text
 			.replace(caseBoundary, "$1_$2")
 			.replace(singleLetters, "$1_$2$3")
@@ -1666,6 +1737,7 @@ export class CamelCaseAction extends AbstractCaseAction {
 			// cannot support this
 			return text;
 		}
+
 		const words = text.split(wordBoundary);
 
 		const firstWord = words.shift();
@@ -1685,6 +1757,7 @@ export class CamelCaseAction extends AbstractCaseAction {
 
 export class PascalCaseAction extends AbstractCaseAction {
 	public static wordBoundary = new BackwardsCompatibleRegExp("[_\\s-]", "gm");
+
 	public static wordBoundaryToMaintain = new BackwardsCompatibleRegExp(
 		"(?<=\\.)",
 		"gm",
@@ -1743,10 +1816,12 @@ export class KebabCaseAction extends AbstractCaseAction {
 		"(\\p{Ll})(\\p{Lu})",
 		"gmu",
 	);
+
 	private static singleLetters = new BackwardsCompatibleRegExp(
 		"(\\p{Lu}|\\p{N})(\\p{Lu}\\p{Ll})",
 		"gmu",
 	);
+
 	private static underscoreBoundary = new BackwardsCompatibleRegExp(
 		"(\\S)(_)(\\S)",
 		"gm",

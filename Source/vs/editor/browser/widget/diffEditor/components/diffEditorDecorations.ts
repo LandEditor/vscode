@@ -35,12 +35,14 @@ export class DiffEditorDecorations extends Disposable {
 		widget: DiffEditorWidget,
 	) {
 		super();
+
 		this._register(
 			applyObservableDecorations(
 				this._editors.original,
 				this._decorations.map((d) => d?.originalDecorations || []),
 			),
 		);
+
 		this._register(
 			applyObservableDecorations(
 				this._editors.modified,
@@ -48,6 +50,7 @@ export class DiffEditorDecorations extends Disposable {
 			),
 		);
 	}
+
 	private readonly _decorations = derived(this, (reader) => {
 		const diffModel = this._diffModel.read(reader);
 
@@ -56,6 +59,7 @@ export class DiffEditorDecorations extends Disposable {
 		if (!diff) {
 			return null;
 		}
+
 		const movedTextToCompare = this._diffModel
 			.read(reader)!
 			.movedTextToCompare.read(reader);
@@ -79,6 +83,7 @@ export class DiffEditorDecorations extends Disposable {
 							: diffLineDeleteDecorationBackground,
 					});
 				}
+
 				if (!m.lineRangeMapping.modified.isEmpty) {
 					modifiedDecorations.push({
 						range: m.lineRangeMapping.modified.toInclusiveRange()!,
@@ -87,6 +92,7 @@ export class DiffEditorDecorations extends Disposable {
 							: diffLineAddDecorationBackground,
 					});
 				}
+
 				if (
 					m.lineRangeMapping.modified.isEmpty ||
 					m.lineRangeMapping.original.isEmpty
@@ -97,6 +103,7 @@ export class DiffEditorDecorations extends Disposable {
 							options: diffWholeLineDeleteDecoration,
 						});
 					}
+
 					if (!m.lineRangeMapping.modified.isEmpty) {
 						modifiedDecorations.push({
 							range: m.lineRangeMapping.modified.toInclusiveRange()!,
@@ -124,6 +131,7 @@ export class DiffEditorDecorations extends Disposable {
 										: diffDeleteDecoration,
 							});
 						}
+
 						if (
 							m.lineRangeMapping.modified.contains(
 								i.modifiedRange.startLineNumber,
@@ -139,11 +147,13 @@ export class DiffEditorDecorations extends Disposable {
 										: diffAddDecoration,
 							});
 						}
+
 						if (useInlineDiff) {
 							const deletedText =
 								diffModel!.model.original.getValueInRange(
 									i.originalRange,
 								);
+
 							modifiedDecorations.push({
 								range: i.modifiedRange,
 								options: {
@@ -161,6 +171,7 @@ export class DiffEditorDecorations extends Disposable {
 				}
 			}
 		}
+
 		if (movedTextToCompare) {
 			for (const m of movedTextToCompare.changes) {
 				const fullRangeOriginal = m.original.toInclusiveRange();
@@ -173,6 +184,7 @@ export class DiffEditorDecorations extends Disposable {
 							: diffLineDeleteDecorationBackground,
 					});
 				}
+
 				const fullRangeModified = m.modified.toInclusiveRange();
 
 				if (fullRangeModified) {
@@ -183,11 +195,13 @@ export class DiffEditorDecorations extends Disposable {
 							: diffLineAddDecorationBackground,
 					});
 				}
+
 				for (const i of m.innerChanges || []) {
 					originalDecorations.push({
 						range: i.originalRange,
 						options: diffDeleteDecoration,
 					});
+
 					modifiedDecorations.push({
 						range: i.modifiedRange,
 						options: diffAddDecoration,
@@ -195,6 +209,7 @@ export class DiffEditorDecorations extends Disposable {
 				}
 			}
 		}
+
 		const activeMovedText = this._diffModel
 			.read(reader)!
 			.activeMovedText.read(reader);
@@ -215,6 +230,7 @@ export class DiffEditorDecorations extends Disposable {
 					],
 				},
 			});
+
 			modifiedDecorations.push({
 				range: m.lineRangeMapping.modified.toInclusiveRange()!,
 				options: {
@@ -226,6 +242,7 @@ export class DiffEditorDecorations extends Disposable {
 				},
 			});
 		}
+
 		return { originalDecorations, modifiedDecorations };
 	});
 }

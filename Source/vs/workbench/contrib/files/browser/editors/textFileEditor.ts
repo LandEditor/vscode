@@ -138,11 +138,13 @@ export class TextFileEditor extends AbstractTextCodeEditor<ICodeEditorViewState>
 			),
 		);
 	}
+
 	private onDidFilesChange(e: FileChangesEvent): void {
 		for (const resource of e.rawDeleted) {
 			this.clearEditorViewState(resource);
 		}
 	}
+
 	private onDidRunOperation(e: FileOperationEvent): void {
 		if (e.operation === FileOperation.MOVE && e.target) {
 			this.moveEditorViewState(
@@ -152,15 +154,19 @@ export class TextFileEditor extends AbstractTextCodeEditor<ICodeEditorViewState>
 			);
 		}
 	}
+
 	override getTitle(): string {
 		if (this.input) {
 			return this.input.getName();
 		}
+
 		return localize("textFileEditor", "Text File Editor");
 	}
+
 	override get input(): FileEditorInput | undefined {
 		return this._input as FileEditorInput;
 	}
+
 	override async setInput(
 		input: FileEditorInput,
 		options: IFileEditorInputOptions | undefined,
@@ -185,9 +191,11 @@ export class TextFileEditor extends AbstractTextCodeEditor<ICodeEditorViewState>
 			if (resolvedModel instanceof BinaryEditorModel) {
 				return this.openAsBinary(input, options);
 			}
+
 			const textFileModel = resolvedModel;
 			// Editor
 			const control = assertIsDefined(this.editorControl);
+
 			control.setModel(textFileModel.textEditorModel);
 			// Restore view state (unless provided by options)
 			if (!isTextEditorViewState(options?.viewState)) {
@@ -200,6 +208,7 @@ export class TextFileEditor extends AbstractTextCodeEditor<ICodeEditorViewState>
 					if (options?.selection) {
 						editorViewState.cursorState = []; // prevent duplicate selections via options
 					}
+
 					control.restoreViewState(editorViewState);
 				}
 			}
@@ -222,8 +231,10 @@ export class TextFileEditor extends AbstractTextCodeEditor<ICodeEditorViewState>
 		} catch (error) {
 			await this.handleSetInputError(error, input, options);
 		}
+
 		mark("code/didSetInputToTextFileEditor");
 	}
+
 	protected async handleSetInputError(
 		error: Error,
 		input: FileEditorInput,
@@ -242,6 +253,7 @@ export class TextFileEditor extends AbstractTextCodeEditor<ICodeEditorViewState>
 			FileOperationResult.FILE_IS_DIRECTORY
 		) {
 			const actions: IAction[] = [];
+
 			actions.push(
 				toAction({
 					id: "workbench.files.action.openFolder",
@@ -277,6 +289,7 @@ export class TextFileEditor extends AbstractTextCodeEditor<ICodeEditorViewState>
 					}),
 				);
 			}
+
 			throw createEditorOpenError(
 				localize(
 					"fileIsDirectory",
@@ -305,6 +318,7 @@ export class TextFileEditor extends AbstractTextCodeEditor<ICodeEditorViewState>
 					"The file is not displayed in the text editor because it is very large.",
 				);
 			}
+
 			throw createTooLargeFileError(
 				this.group,
 				input,
@@ -361,6 +375,7 @@ export class TextFileEditor extends AbstractTextCodeEditor<ICodeEditorViewState>
 		// Otherwise make sure the error bubbles up
 		throw error;
 	}
+
 	private openAsBinary(
 		input: FileEditorInput,
 		options: ITextEditorOptions | undefined,
@@ -403,6 +418,7 @@ export class TextFileEditor extends AbstractTextCodeEditor<ICodeEditorViewState>
 			);
 		}
 	}
+
 	private doOpenAsBinaryInDifferentEditor(
 		group: IEditorGroup,
 		editorId: string | undefined,
@@ -422,6 +438,7 @@ export class TextFileEditor extends AbstractTextCodeEditor<ICodeEditorViewState>
 			group,
 		);
 	}
+
 	private doOpenAsBinaryInSameEditor(
 		group: IEditorGroup,
 		editorId: string | undefined,
@@ -431,6 +448,7 @@ export class TextFileEditor extends AbstractTextCodeEditor<ICodeEditorViewState>
 		// Open binary as text
 		if (editorId === DEFAULT_EDITOR_ASSOCIATION.id) {
 			editor.setForceOpenAsText();
+
 			editor.setPreferredLanguageId(BINARY_TEXT_FILE_MODE); // https://github.com/microsoft/vscode/issues/131076
 			editorOptions = { ...editorOptions, forceReload: true }; // Same pane and same input, must force reload to clear cached state
 		}
@@ -438,13 +456,16 @@ export class TextFileEditor extends AbstractTextCodeEditor<ICodeEditorViewState>
 		else {
 			editor.setForceOpenAsBinary();
 		}
+
 		group.openEditor(editor, editorOptions);
 	}
+
 	override clearInput(): void {
 		super.clearInput();
 		// Clear Model
 		this.editorControl?.setModel(null);
 	}
+
 	protected override createEditorControl(
 		parent: HTMLElement,
 		initialOptions: ICodeEditorOptions,
@@ -452,11 +473,14 @@ export class TextFileEditor extends AbstractTextCodeEditor<ICodeEditorViewState>
 		mark("code/willCreateTextFileEditorControl");
 
 		super.createEditorControl(parent, initialOptions);
+
 		mark("code/didCreateTextFileEditorControl");
 	}
+
 	protected override tracksEditorViewState(input: EditorInput): boolean {
 		return input instanceof FileEditorInput;
 	}
+
 	protected override tracksDisposedEditorViewState(): boolean {
 		return true; // track view state even for disposed editors
 	}

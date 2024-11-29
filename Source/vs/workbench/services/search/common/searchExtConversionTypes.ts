@@ -426,6 +426,7 @@ function newToOldFileProviderOptions(
 }
 export class OldFileSearchProviderConverter implements FileSearchProvider2 {
 	constructor(private provider: FileSearchProvider) {}
+
 	provideFileSearchResults(
 		pattern: string,
 		options: FileSearchProviderOptions,
@@ -476,11 +477,13 @@ export function newToOldPreviewOptions(
 	options:
 		| {
 				matchLines?: number;
+
 				charsPerLine?: number;
 		  }
 		| undefined,
 ): {
 	matchLines: number;
+
 	charsPerLine: number;
 } {
 	return {
@@ -515,6 +518,7 @@ export function oldToNewTextSearchResult(
 }
 export class OldTextSearchProviderConverter implements TextSearchProvider2 {
 	constructor(private provider: TextSearchProvider) {}
+
 	provideTextSearchResults(
 		query: TextSearchQuery2,
 		options: TextSearchProviderOptions,
@@ -525,6 +529,7 @@ export class OldTextSearchProviderConverter implements TextSearchProvider2 {
 			if (!validateProviderResult(oldResult)) {
 				return;
 			}
+
 			progress.report(oldToNewTextSearchResult(oldResult));
 		};
 
@@ -566,6 +571,7 @@ function validateProviderResult(result: TextSearchResult): boolean {
 
 				return false;
 			}
+
 			if (
 				(<Range[]>result.preview.matches).length !==
 				result.ranges.length
@@ -586,6 +592,7 @@ function validateProviderResult(result: TextSearchResult): boolean {
 			}
 		}
 	}
+
 	return true;
 }
 export function extensionResultIsMatch(

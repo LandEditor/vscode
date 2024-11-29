@@ -19,6 +19,7 @@ export async function resolveMachineId(
 ): Promise<string> {
 	// Call the node layers implementation to avoid code duplication
 	const machineId = await resolveNodeMachineId(stateService, logService);
+
 	stateService.setItem(machineIdKey, machineId);
 
 	return machineId;
@@ -28,6 +29,7 @@ export async function resolveSqmId(
 	logService: ILogService,
 ): Promise<string> {
 	const sqmId = await resolveNodeSqmId(stateService, logService);
+
 	stateService.setItem(sqmIdKey, sqmId);
 
 	return sqmId;
@@ -37,6 +39,7 @@ export async function resolvedevDeviceId(
 	logService: ILogService,
 ): Promise<string> {
 	const devDeviceId = await resolveNodedevDeviceId(stateService, logService);
+
 	stateService.setItem(devDeviceIdKey, devDeviceId);
 
 	return devDeviceId;

@@ -10,6 +10,7 @@ type OverwriteBehavior = "overwrite" | "nameIncrementally";
 
 export interface CopyFileConfiguration {
 	readonly destination: Record<string, string>;
+
 	readonly overwriteBehavior: OverwriteBehavior;
 }
 export function getCopyFileConfiguration(
@@ -45,6 +46,7 @@ export function parseGlob(rawGlob: string): Iterable<string> {
 	if (!rawGlob.startsWith("**")) {
 		return ["**/" + rawGlob];
 	}
+
 	return [rawGlob];
 }
 type GetWorkspaceFolder = (documentUri: vscode.Uri) => vscode.Uri | undefined;
@@ -90,6 +92,7 @@ function resolveCopyDestinationSetting(
 	if (outDest.endsWith("/")) {
 		outDest += "${fileName}";
 	}
+
 	const documentDirName = Utils.dirname(documentUri);
 
 	const documentBaseName = Utils.basename(documentUri);
@@ -139,11 +142,13 @@ function resolveCopyDestinationSetting(
 			if (groups?.["escape"]) {
 				return "$";
 			}
+
 			const entry = vars.get(name);
 
 			if (typeof entry !== "string") {
 				return match;
 			}
+
 			if (pattern && replacement) {
 				try {
 					return entry.replace(
@@ -156,6 +161,7 @@ function resolveCopyDestinationSetting(
 					);
 				}
 			}
+
 			return entry;
 		},
 	);

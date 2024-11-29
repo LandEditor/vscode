@@ -23,11 +23,13 @@ function normalize(
 	if (!str) {
 		return str;
 	}
+
 	const cached = normalizedCache.get(str);
 
 	if (cached) {
 		return cached;
 	}
+
 	let res: string;
 
 	if (nonAsciiCharactersPattern.test(str)) {

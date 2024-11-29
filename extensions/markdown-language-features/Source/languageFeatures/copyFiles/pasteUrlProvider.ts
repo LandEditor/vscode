@@ -65,6 +65,7 @@ class PasteUrlEditProvider implements vscode.DocumentPasteEditProvider {
 			linkKindHint: context.only,
 			preserveAbsoluteUris: true
 		});
+
 		if (!edit) {
 			return;
 		}
@@ -76,7 +77,9 @@ class PasteUrlEditProvider implements vscode.DocumentPasteEditProvider {
 		);
 
 		const workspaceEdit = new vscode.WorkspaceEdit();
+
 		workspaceEdit.set(document.uri, edit.edits);
+
 		pasteEdit.additionalEdit = workspaceEdit;
 
 		if (

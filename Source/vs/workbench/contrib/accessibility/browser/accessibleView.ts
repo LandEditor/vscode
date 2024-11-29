@@ -121,8 +121,11 @@ export type AccesibleViewContentProvider =
 
 interface ICodeBlock {
 	startLine: number;
+
 	endLine: number;
+
 	code: string;
+
 	languageId?: string;
 }
 
@@ -133,28 +136,43 @@ export class AccessibleView
 	private _editorWidget: CodeEditorWidget;
 
 	private _accessiblityHelpIsShown: IContextKey<boolean>;
+
 	private _onLastLine: IContextKey<boolean>;
+
 	private _accessibleViewIsShown: IContextKey<boolean>;
+
 	private _accessibleViewSupportsNavigation: IContextKey<boolean>;
+
 	private _accessibleViewVerbosityEnabled: IContextKey<boolean>;
+
 	private _accessibleViewGoToSymbolSupported: IContextKey<boolean>;
+
 	private _accessibleViewCurrentProviderId: IContextKey<string>;
+
 	private _accessibleViewInCodeBlock: IContextKey<boolean>;
+
 	private _accessibleViewContainsCodeBlocks: IContextKey<boolean>;
+
 	private _hasUnassignedKeybindings: IContextKey<boolean>;
+
 	private _hasAssignedKeybindings: IContextKey<boolean>;
 
 	private _codeBlocks?: ICodeBlock[];
+
 	private _inQuickPick: boolean = false;
 
 	get editorWidget() {
 		return this._editorWidget;
 	}
+
 	private _container: HTMLElement;
+
 	private _title: HTMLElement;
+
 	private readonly _toolbar: WorkbenchToolBar;
 
 	private _currentProvider: AccesibleViewContentProvider | undefined;
+
 	private _currentContent: string | undefined;
 
 	private _lastProvider: AccesibleViewContentProvider | undefined;
@@ -192,35 +210,46 @@ export class AccessibleView
 		this._accessiblityHelpIsShown = accessibilityHelpIsShown.bindTo(
 			this._contextKeyService,
 		);
+
 		this._accessibleViewIsShown = accessibleViewIsShown.bindTo(
 			this._contextKeyService,
 		);
+
 		this._accessibleViewSupportsNavigation =
 			accessibleViewSupportsNavigation.bindTo(this._contextKeyService);
+
 		this._accessibleViewVerbosityEnabled =
 			accessibleViewVerbosityEnabled.bindTo(this._contextKeyService);
+
 		this._accessibleViewGoToSymbolSupported =
 			accessibleViewGoToSymbolSupported.bindTo(this._contextKeyService);
+
 		this._accessibleViewCurrentProviderId =
 			accessibleViewCurrentProviderId.bindTo(this._contextKeyService);
+
 		this._accessibleViewInCodeBlock = accessibleViewInCodeBlock.bindTo(
 			this._contextKeyService,
 		);
+
 		this._accessibleViewContainsCodeBlocks =
 			accessibleViewContainsCodeBlocks.bindTo(this._contextKeyService);
+
 		this._onLastLine = accessibleViewOnLastLine.bindTo(
 			this._contextKeyService,
 		);
+
 		this._hasUnassignedKeybindings =
 			accessibleViewHasUnassignedKeybindings.bindTo(
 				this._contextKeyService,
 			);
+
 		this._hasAssignedKeybindings =
 			accessibleViewHasAssignedKeybindings.bindTo(
 				this._contextKeyService,
 			);
 
 		this._container = document.createElement("div");
+
 		this._container.classList.add("accessible-view");
 
 		if (
@@ -230,6 +259,7 @@ export class AccessibleView
 		) {
 			this._container.classList.add("hide");
 		}
+
 		const codeEditorWidgetOptions: ICodeEditorWidgetOptions = {
 			contributions:
 				EditorExtensionsRegistry.getEditorContributions().filter(
@@ -238,23 +268,33 @@ export class AccessibleView
 		};
 
 		const titleBar = document.createElement("div");
+
 		titleBar.classList.add("accessible-view-title-bar");
+
 		this._title = document.createElement("div");
+
 		this._title.classList.add("accessible-view-title");
+
 		titleBar.appendChild(this._title);
 
 		const actionBar = document.createElement("div");
+
 		actionBar.classList.add("accessible-view-action-bar");
+
 		titleBar.appendChild(actionBar);
+
 		this._container.appendChild(titleBar);
+
 		this._toolbar = this._register(
 			_instantiationService.createInstance(WorkbenchToolBar, actionBar, {
 				orientation: ActionsOrientation.HORIZONTAL,
 			}),
 		);
+
 		this._toolbar.context = { viewId: "accessibleView" };
 
 		const toolbarElt = this._toolbar.getElement();
+
 		toolbarElt.tabIndex = 0;
 
 		const editorOptions: IEditorConstructionOptions = {
@@ -272,6 +312,7 @@ export class AccessibleView
 			readOnly: true,
 			fontFamily: "var(--monaco-monospace-font)",
 		};
+
 		this.textModelResolverService.registerTextModelContentProvider(
 			Schemas.accessibleView,
 			this,
@@ -285,6 +326,7 @@ export class AccessibleView
 				codeEditorWidgetOptions,
 			),
 		);
+
 		this._register(
 			this._accessibilityService.onDidChangeScreenReaderOptimized(() => {
 				if (
@@ -295,6 +337,7 @@ export class AccessibleView
 				}
 			}),
 		);
+
 		this._register(
 			this._configurationService.onDidChangeConfiguration((e) => {
 				if (
@@ -307,16 +350,19 @@ export class AccessibleView
 					if (this._accessiblityHelpIsShown.get()) {
 						this.show(this._currentProvider);
 					}
+
 					this._accessibleViewVerbosityEnabled.set(
 						this._configurationService.getValue(
 							this._currentProvider.verbositySettingKey,
 						),
 					);
+
 					this._updateToolbar(
 						this._currentProvider.actions,
 						this._currentProvider.options.type,
 					);
 				}
+
 				if (
 					e.affectsConfiguration(
 						AccessibilityWorkbenchSettingId.HideAccessibleView,
@@ -331,9 +377,11 @@ export class AccessibleView
 				}
 			}),
 		);
+
 		this._register(
 			this._editorWidget.onDidDispose(() => this._resetContextKeys()),
 		);
+
 		this._register(
 			this._editorWidget.onDidChangeCursorPosition(() => {
 				this._onLastLine.set(
@@ -342,6 +390,7 @@ export class AccessibleView
 				);
 			}),
 		);
+
 		this._register(
 			this._editorWidget.onDidChangeCursorPosition(() => {
 				const cursorPosition =
@@ -354,23 +403,32 @@ export class AccessibleView
 								c.startLine <= cursorPosition &&
 								c.endLine >= cursorPosition,
 						) !== undefined;
+
 					this._accessibleViewInCodeBlock.set(inCodeBlock);
 				}
 			}),
 		);
 	}
+
 	provideTextContent(resource: URI): Promise<ITextModel | null> | null {
 		return this._getTextModel(resource);
 	}
 
 	private _resetContextKeys(): void {
 		this._accessiblityHelpIsShown.reset();
+
 		this._accessibleViewIsShown.reset();
+
 		this._accessibleViewSupportsNavigation.reset();
+
 		this._accessibleViewVerbosityEnabled.reset();
+
 		this._accessibleViewGoToSymbolSupported.reset();
+
 		this._accessibleViewCurrentProviderId.reset();
+
 		this._hasAssignedKeybindings.reset();
+
 		this._hasUnassignedKeybindings.reset();
 	}
 
@@ -378,6 +436,7 @@ export class AccessibleView
 		if (!id || !this._lastProvider || this._lastProvider.id !== id) {
 			return undefined;
 		}
+
 		return this._editorWidget.getPosition() || undefined;
 	}
 
@@ -387,6 +446,7 @@ export class AccessibleView
 		if (reveal) {
 			this._editorWidget.revealPosition(position);
 		}
+
 		if (select) {
 			const lineLength =
 				this._editorWidget
@@ -410,6 +470,7 @@ export class AccessibleView
 		if (!this._codeBlocks?.length || !position) {
 			return;
 		}
+
 		const codeBlockIndex = this._codeBlocks?.findIndex(
 			(c) =>
 				c.startLine <= position?.lineNumber &&
@@ -424,6 +485,7 @@ export class AccessibleView
 		if (!codeBlock || codeBlockIndex === undefined) {
 			return;
 		}
+
 		return {
 			code: codeBlock.code,
 			languageId: codeBlock.languageId,
@@ -438,6 +500,7 @@ export class AccessibleView
 		if (!this._codeBlocks?.length || !position) {
 			return;
 		}
+
 		let codeBlock;
 
 		const codeBlocks = this._codeBlocks.slice();
@@ -451,9 +514,11 @@ export class AccessibleView
 				(c) => c.startLine > position.lineNumber,
 			);
 		}
+
 		if (!codeBlock) {
 			return;
 		}
+
 		this.setPosition(new Position(codeBlock.startLine, 1), true);
 	}
 
@@ -461,6 +526,7 @@ export class AccessibleView
 		if (!this._lastProvider || this._lastProvider.options.id !== id) {
 			return;
 		}
+
 		this.show(this._lastProvider);
 	}
 
@@ -475,6 +541,7 @@ export class AccessibleView
 		if (!provider) {
 			return;
 		}
+
 		provider.onOpen?.();
 
 		const delegate: IContextViewDelegate = {
@@ -493,6 +560,7 @@ export class AccessibleView
 			},
 			render: (container) => {
 				this._viewContainer = container;
+
 				this._viewContainer.classList.add("accessible-view-container");
 
 				return this._render(
@@ -504,18 +572,23 @@ export class AccessibleView
 			onHide: () => {
 				if (!showAccessibleViewHelp) {
 					this._updateLastProvider();
+
 					this._currentProvider?.dispose();
+
 					this._currentProvider = undefined;
+
 					this._resetContextKeys();
 				}
 			},
 		};
+
 		this._contextViewService.showContextView(delegate);
 
 		if (position) {
 			// Context view takes time to show up, so we need to wait for it to show up before we can set the position
 			queueMicrotask(() => {
 				this._editorWidget.revealLine(position.lineNumber);
+
 				this._editorWidget.setSelection({
 					startLineNumber: position.lineNumber,
 					startColumn: position.column,
@@ -528,6 +601,7 @@ export class AccessibleView
 		if (symbol && this._currentProvider) {
 			this.showSymbol(this._currentProvider, symbol);
 		}
+
 		if (
 			provider instanceof AccessibleContentProvider &&
 			provider.onDidRequestClearLastProvider
@@ -540,10 +614,12 @@ export class AccessibleView
 				}),
 			);
 		}
+
 		if (provider.options.id) {
 			// only cache a provider with an ID so that it will eventually be cleared.
 			this._lastProvider = provider;
 		}
+
 		if (
 			provider.id === AccessibleViewProviderId.PanelChat ||
 			provider.id === AccessibleViewProviderId.QuickChat
@@ -555,6 +631,7 @@ export class AccessibleView
 				),
 			);
 		}
+
 		if (provider instanceof ExtensionContentProvider) {
 			this._storageService.store(
 				`${ACCESSIBLE_VIEW_SHOWN_STORAGE_PREFIX}${provider.id}`,
@@ -563,6 +640,7 @@ export class AccessibleView
 				StorageTarget.USER,
 			);
 		}
+
 		if (provider.onDidChangeContent) {
 			this._register(
 				provider.onDidChangeContent(() => {
@@ -584,6 +662,7 @@ export class AccessibleView
 		if (!this._currentProvider || !this._viewContainer || !newContent) {
 			return;
 		}
+
 		this._render(
 			this._currentProvider,
 			this._viewContainer,
@@ -598,6 +677,7 @@ export class AccessibleView
 		if (!this._currentProvider || !this._viewContainer || !newContent) {
 			return;
 		}
+
 		this._render(
 			this._currentProvider,
 			this._viewContainer,
@@ -610,6 +690,7 @@ export class AccessibleView
 		if (!this._currentProvider) {
 			return false;
 		}
+
 		return this._currentProvider instanceof AccessibleContentProvider
 			? this._configurationService.getValue(
 					this._currentProvider.verbositySettingKey,
@@ -625,6 +706,7 @@ export class AccessibleView
 		if (!this._currentProvider) {
 			return;
 		}
+
 		this._instantiationService
 			.createInstance(AccessibleViewSymbolQuickPick, this)
 			.show(this._currentProvider);
@@ -634,12 +716,14 @@ export class AccessibleView
 		if (!markdown) {
 			return;
 		}
+
 		if (
 			this._currentProvider?.id !== AccessibleViewProviderId.PanelChat &&
 			this._currentProvider?.id !== AccessibleViewProviderId.QuickChat
 		) {
 			return;
 		}
+
 		if (
 			this._currentProvider.options.language &&
 			this._currentProvider.options.language !== "markdown"
@@ -647,7 +731,9 @@ export class AccessibleView
 			// Symbols haven't been provided and we cannot parse this language
 			return;
 		}
+
 		const lines = markdown.split("\n");
+
 		this._codeBlocks = [];
 
 		let inBlock = false;
@@ -655,10 +741,13 @@ export class AccessibleView
 		let startLine = 0;
 
 		let languageId: string | undefined;
+
 		lines.forEach((line, i) => {
 			if (!inBlock && line.startsWith("```")) {
 				inBlock = true;
+
 				startLine = i + 1;
+
 				languageId = line.substring(3).trim();
 			} else if (inBlock && line.endsWith("```")) {
 				inBlock = false;
@@ -666,6 +755,7 @@ export class AccessibleView
 				const endLine = i;
 
 				const code = lines.slice(startLine, endLine).join("\n");
+
 				this._codeBlocks?.push({
 					startLine,
 					endLine,
@@ -674,6 +764,7 @@ export class AccessibleView
 				});
 			}
 		});
+
 		this._accessibleViewContainsCodeBlocks.set(this._codeBlocks.length > 0);
 	}
 
@@ -686,11 +777,13 @@ export class AccessibleView
 		if (!this._currentContent || !provider) {
 			return;
 		}
+
 		const symbols: IAccessibleViewSymbol[] = provider.getSymbols?.() || [];
 
 		if (symbols?.length) {
 			return symbols;
 		}
+
 		if (
 			provider.options.language &&
 			provider.options.language !== "markdown"
@@ -698,12 +791,14 @@ export class AccessibleView
 			// Symbols haven't been provided and we cannot parse this language
 			return;
 		}
+
 		const markdownTokens: marked.TokensList | undefined =
 			marked.marked.lexer(this._currentContent);
 
 		if (!markdownTokens) {
 			return;
 		}
+
 		this._convertTokensToSymbols(markdownTokens, symbols);
 
 		return symbols.length ? symbols : undefined;
@@ -713,6 +808,7 @@ export class AccessibleView
 		if (!this._currentProvider?.options.readMoreUrl) {
 			return;
 		}
+
 		this._openerService.open(
 			URI.parse(this._currentProvider.options.readMoreUrl),
 		);
@@ -730,18 +826,24 @@ export class AccessibleView
 		if (!items) {
 			return;
 		}
+
 		const disposables = this._register(new DisposableStore());
 
 		const quickPick: IQuickPick<IQuickPickItem> = disposables.add(
 			this._quickInputService.createQuickPick(),
 		);
+
 		quickPick.items = items;
+
 		quickPick.title = localize("keybindings", "Configure keybindings");
+
 		quickPick.placeholder = localize(
 			"selectKeybinding",
 			"Select a command ID to configure a keybinding for it",
 		);
+
 		quickPick.show();
+
 		disposables.add(
 			quickPick.onDidAccept(async () => {
 				const item = quickPick.selectedItems[0];
@@ -752,15 +854,19 @@ export class AccessibleView
 						item.id,
 					);
 				}
+
 				quickPick.dispose();
 			}),
 		);
+
 		disposables.add(
 			quickPick.onDidHide(() => {
 				if (!quickPick.selectedItems.length && provider) {
 					this.show(provider);
 				}
+
 				disposables.dispose();
+
 				this._inQuickPick = false;
 			}),
 		);
@@ -791,7 +897,9 @@ export class AccessibleView
 						if (!firstItem) {
 							break;
 						}
+
 						firstListItem = `- ${firstItem.text}`;
+
 						label = (token as marked.Tokens.List).items
 							.map((i) => i.text)
 							.join(", ");
@@ -800,6 +908,7 @@ export class AccessibleView
 					}
 				}
 			}
+
 			if (label) {
 				symbols.push({
 					markdownToParse: label,
@@ -817,6 +926,7 @@ export class AccessibleView
 					),
 					firstListItem,
 				});
+
 				firstListItem = undefined;
 			}
 		}
@@ -829,6 +939,7 @@ export class AccessibleView
 		if (!this._currentContent) {
 			return;
 		}
+
 		let lineNumber: number | undefined = symbol.lineNumber;
 
 		const markdownToParse = symbol.markdownToParse;
@@ -855,10 +966,13 @@ export class AccessibleView
 				lineNumber = index + 1;
 			}
 		}
+
 		if (lineNumber === undefined) {
 			return;
 		}
+
 		this.show(provider, undefined, undefined, { lineNumber, column: 1 });
+
 		this._updateContextKeys(provider, true);
 	}
 
@@ -866,10 +980,12 @@ export class AccessibleView
 		if (!(this._currentProvider instanceof AccessibleContentProvider)) {
 			return;
 		}
+
 		this._configurationService.updateValue(
 			this._currentProvider?.verbositySettingKey,
 			false,
 		);
+
 		alert(
 			localize(
 				"disableAccessibilityHelp",
@@ -885,16 +1001,21 @@ export class AccessibleView
 	): void {
 		if (provider.options.type === AccessibleViewType.Help) {
 			this._accessiblityHelpIsShown.set(shown);
+
 			this._accessibleViewIsShown.reset();
 		} else {
 			this._accessibleViewIsShown.set(shown);
+
 			this._accessiblityHelpIsShown.reset();
 		}
+
 		this._accessibleViewSupportsNavigation.set(
 			provider.provideNextContent !== undefined ||
 				provider.providePreviousContent !== undefined,
 		);
+
 		this._accessibleViewVerbosityEnabled.set(this._verbosityEnabled());
+
 		this._accessibleViewGoToSymbolSupported.set(
 			this._goToSymbolsSupported()
 				? this.getSymbols()?.length! > 0
@@ -910,11 +1031,14 @@ export class AccessibleView
 
 		if (provider.options.type === AccessibleViewType.View) {
 			this._currentContent = content;
+
 			this._hasUnassignedKeybindings.reset();
+
 			this._hasAssignedKeybindings.reset();
 
 			return;
 		}
+
 		const readMoreLinkHint = this._readMoreHint(provider);
 
 		const disableHelpHint = this._disableVerbosityHint(provider);
@@ -942,20 +1066,26 @@ export class AccessibleView
 			if (resolvedContent.configureKeybindingItems) {
 				provider.options.configureKeybindingItems =
 					resolvedContent.configureKeybindingItems;
+
 				this._hasUnassignedKeybindings.set(true);
+
 				configureKbHint = this._configureUnassignedKbHint();
 			} else {
 				this._hasAssignedKeybindings.reset();
 			}
+
 			if (resolvedContent.configuredKeybindingItems) {
 				provider.options.configuredKeybindingItems =
 					resolvedContent.configuredKeybindingItems;
+
 				this._hasAssignedKeybindings.set(true);
+
 				configureAssignedKbHint = this._configureAssignedKbHint();
 			} else {
 				this._hasAssignedKeybindings.reset();
 			}
 		}
+
 		this._currentContent =
 			content + configureKbHint + configureAssignedKbHint;
 	}
@@ -967,16 +1097,21 @@ export class AccessibleView
 		updatedContent?: string,
 	): IDisposable {
 		this._currentProvider = provider;
+
 		this._accessibleViewCurrentProviderId.set(provider.id);
 
 		const verbose = this._verbosityEnabled();
+
 		this._updateContent(provider, updatedContent);
+
 		this.calculateCodeBlocks(this._currentContent);
+
 		this._updateContextKeys(provider, true);
 
 		const widgetIsFocused =
 			this._editorWidget.hasTextFocus() ||
 			this._editorWidget.hasWidgetFocus();
+
 		this._getTextModel(
 			URI.from({
 				path: `accessible-view-${provider.id}`,
@@ -987,6 +1122,7 @@ export class AccessibleView
 			if (!model) {
 				return;
 			}
+
 			this._editorWidget.setModel(model);
 
 			const domNode = this._editorWidget.getDomNode();
@@ -994,7 +1130,9 @@ export class AccessibleView
 			if (!domNode) {
 				return;
 			}
+
 			model.setLanguage(provider.options.language ?? "markdown");
+
 			container.appendChild(this._container);
 
 			let actionsHint = "";
@@ -1016,10 +1154,12 @@ export class AccessibleView
 							"Explore actions such as disabling this hint (Shift+Tab).",
 						);
 			}
+
 			let ariaLabel =
 				provider.options.type === AccessibleViewType.Help
 					? localize("accessibility-help", "Accessibility Help")
 					: localize("accessible-view", "Accessible View");
+
 			this._title.textContent = ariaLabel;
 
 			if (
@@ -1038,12 +1178,15 @@ export class AccessibleView
 					actionsHint,
 				);
 			}
+
 			if (isWindows && widgetIsFocused) {
 				// prevent the screen reader on windows from reading
 				// the aria label again when it's refocused
 				ariaLabel = "";
 			}
+
 			this._editorWidget.updateOptions({ ariaLabel });
+
 			this._editorWidget.focus();
 
 			if (this._currentProvider?.options.position) {
@@ -1069,11 +1212,13 @@ export class AccessibleView
 
 					if (position) {
 						this._editorWidget.setPosition(position);
+
 						this._editorWidget.revealLine(position.lineNumber);
 					}
 				}
 			}
 		});
+
 		this._updateToolbar(
 			this._currentProvider.actions,
 			provider.options.type,
@@ -1083,16 +1228,24 @@ export class AccessibleView
 			if (!this._inQuickPick) {
 				provider.onClose();
 			}
+
 			e?.stopPropagation();
+
 			this._contextViewService.hideContextView();
+
 			this._updateContextKeys(provider, false);
+
 			this._lastProvider = undefined;
+
 			this._currentContent = undefined;
+
 			this._currentProvider?.dispose();
+
 			this._currentProvider = undefined;
 		};
 
 		const disposableStore = new DisposableStore();
+
 		disposableStore.add(
 			this._editorWidget.onKeyDown((e) => {
 				if (e.keyCode === KeyCode.Enter) {
@@ -1113,16 +1266,22 @@ export class AccessibleView
 					provider.options.readMoreUrl
 				) {
 					const url: string = provider.options.readMoreUrl;
+
 					alert(AccessibilityHelpNLS.openingDocs);
+
 					this._openerService.open(URI.parse(url));
+
 					e.preventDefault();
+
 					e.stopPropagation();
 				}
+
 				if (provider instanceof AccessibleContentProvider) {
 					provider.onKeyDown?.(e);
 				}
 			}),
 		);
+
 		disposableStore.add(
 			addDisposableListener(
 				this._toolbar.getElement(),
@@ -1136,6 +1295,7 @@ export class AccessibleView
 				},
 			),
 		);
+
 		disposableStore.add(
 			this._editorWidget.onDidBlurEditorWidget(() => {
 				if (!isActiveElement(this._toolbar.getElement())) {
@@ -1143,9 +1303,11 @@ export class AccessibleView
 				}
 			}),
 		);
+
 		disposableStore.add(
 			this._editorWidget.onDidContentSizeChange(() => this._layout()),
 		);
+
 		disposableStore.add(
 			this._layoutService.onDidLayoutActiveContainer(() =>
 				this._layout(),
@@ -1179,8 +1341,10 @@ export class AccessibleView
 				providedAction.class =
 					providedAction.class ||
 					ThemeIcon.asClassName(Codicon.primitiveSquare);
+
 				providedAction.checked = undefined;
 			}
+
 			this._toolbar.setActions([...providedActions, ...menuActions]);
 		} else {
 			this._toolbar.setActions(menuActions);
@@ -1201,6 +1365,7 @@ export class AccessibleView
 			dimension.width * 0.62 /* golden cut */,
 			DIMENSIONS.MAX_WIDTH,
 		);
+
 		this._editorWidget.layout({ width, height });
 	}
 
@@ -1210,6 +1375,7 @@ export class AccessibleView
 		if (existing && !existing.isDisposed()) {
 			return existing;
 		}
+
 		return this._modelService.createModel(
 			resource.fragment,
 			null,
@@ -1222,6 +1388,7 @@ export class AccessibleView
 		if (!this._currentProvider) {
 			return false;
 		}
+
 		return (
 			this._currentProvider.options.type === AccessibleViewType.Help ||
 			this._currentProvider.options.language === "markdown" ||
@@ -1237,6 +1404,7 @@ export class AccessibleView
 		if (!provider) {
 			return;
 		}
+
 		const lastProvider =
 			provider instanceof AccessibleContentProvider
 				? new AccessibleContentProvider(
@@ -1274,6 +1442,7 @@ export class AccessibleView
 		if (!lastProvider) {
 			return;
 		}
+
 		let accessibleViewHelpProvider;
 
 		if (lastProvider instanceof AccessibleContentProvider) {
@@ -1310,6 +1479,7 @@ export class AccessibleView
 				},
 			);
 		}
+
 		this._contextViewService.hideContextView();
 		// HACK: Delay to allow the context view to hide #186514
 		if (accessibleViewHelpProvider) {
@@ -1338,15 +1508,19 @@ export class AccessibleView
 		if (navigationHint) {
 			hint += " - " + navigationHint + "\n";
 		}
+
 		if (goToSymbolHint) {
 			hint += " - " + goToSymbolHint + "\n";
 		}
+
 		if (toolbarHint) {
 			hint += " - " + toolbarHint + "\n";
 		}
+
 		if (chatHints) {
 			hint += chatHints;
 		}
+
 		return hint;
 	}
 
@@ -1357,6 +1531,7 @@ export class AccessibleView
 		) {
 			return;
 		}
+
 		return [
 			localize(
 				"insertAtCursor",
@@ -1398,6 +1573,7 @@ export class AccessibleView
 				`<keybinding:${AccessibilityCommandId.DisableVerbosityHint}>`,
 			);
 		}
+
 		return "";
 	}
 
@@ -1405,6 +1581,7 @@ export class AccessibleView
 		if (!providerHasSymbols) {
 			return;
 		}
+
 		return localize(
 			"goToSymbolHint",
 			"Go to a symbol{0}.",
@@ -1465,12 +1642,15 @@ export class AccessibleView
 			provider.id === AccessibleViewProviderId.Editor
 		) {
 			screenReaderModeHint = AccessibilityHelpNLS.auto_on;
+
 			screenReaderModeHint += "\n";
 		} else if (!accessibilitySupport) {
 			screenReaderModeHint =
 				AccessibilityHelpNLS.auto_off + "\n" + turnOnMessage;
+
 			screenReaderModeHint += "\n";
 		}
+
 		return screenReaderModeHint;
 	}
 
@@ -1496,6 +1676,7 @@ export class AccessibleViewService
 	implements IAccessibleViewService
 {
 	declare readonly _serviceBrand: undefined;
+
 	private _accessibleView: AccessibleView | undefined;
 
 	constructor(
@@ -1515,32 +1696,41 @@ export class AccessibleViewService
 				this._instantiationService.createInstance(AccessibleView),
 			);
 		}
+
 		this._accessibleView.show(provider, undefined, undefined, position);
 	}
+
 	configureKeybindings(unassigned: boolean): void {
 		this._accessibleView?.configureKeybindings(unassigned);
 	}
+
 	openHelpLink(): void {
 		this._accessibleView?.openHelpLink();
 	}
+
 	showLastProvider(id: AccessibleViewProviderId): void {
 		this._accessibleView?.showLastProvider(id);
 	}
+
 	next(): void {
 		this._accessibleView?.next();
 	}
+
 	previous(): void {
 		this._accessibleView?.previous();
 	}
+
 	goToSymbol(): void {
 		this._accessibleView?.goToSymbol();
 	}
+
 	getOpenAriaHint(
 		verbositySettingKey: AccessibilityVerbositySettingId,
 	): string | null {
 		if (!this._configurationService.getValue(verbositySettingKey)) {
 			return null;
 		}
+
 		const keybinding = this._keybindingService
 			.lookupKeybinding(AccessibilityCommandId.OpenAccessibleView)
 			?.getAriaLabel();
@@ -1559,17 +1749,22 @@ export class AccessibleViewService
 				"Inspect this in the accessible view via the command Open Accessible View which is currently not triggerable via keybinding.",
 			);
 		}
+
 		return hint;
 	}
+
 	disableHint(): void {
 		this._accessibleView?.disableHint();
 	}
+
 	showAccessibleViewHelp(): void {
 		this._accessibleView?.showAccessibleViewHelp();
 	}
+
 	getPosition(id: AccessibleViewProviderId): Position | undefined {
 		return this._accessibleView?.getPosition(id) ?? undefined;
 	}
+
 	getLastPosition(): Position | undefined {
 		const lastLine = this._accessibleView?.editorWidget
 			.getModel()
@@ -1579,12 +1774,15 @@ export class AccessibleViewService
 			? new Position(lastLine, 1)
 			: undefined;
 	}
+
 	setPosition(position: Position, reveal?: boolean, select?: boolean): void {
 		this._accessibleView?.setPosition(position, reveal, select);
 	}
+
 	getCodeBlockContext(): ICodeBlockActionContext | undefined {
 		return this._accessibleView?.getCodeBlockContext();
 	}
+
 	navigateToCodeBlock(type: "next" | "previous"): void {
 		this._accessibleView?.navigateToCodeBlock(type);
 	}
@@ -1596,16 +1794,19 @@ class AccessibleViewSymbolQuickPick {
 		@IQuickInputService
 		private readonly _quickInputService: IQuickInputService,
 	) {}
+
 	show(provider: AccesibleViewContentProvider): void {
 		const disposables = new DisposableStore();
 
 		const quickPick = disposables.add(
 			this._quickInputService.createQuickPick<IAccessibleViewSymbol>(),
 		);
+
 		quickPick.placeholder = localize(
 			"accessibleViewSymbolQuickPickPlaceholder",
 			"Type to search symbols",
 		);
+
 		quickPick.title = localize(
 			"accessibleViewSymbolQuickPickTitle",
 			"Go to Symbol Accessible View",
@@ -1618,30 +1819,38 @@ class AccessibleViewSymbolQuickPick {
 		if (!symbols) {
 			return;
 		}
+
 		for (const symbol of symbols) {
 			picks.push({
 				label: symbol.label,
 				ariaLabel: symbol.ariaLabel,
 			});
 		}
+
 		quickPick.canSelectMany = false;
+
 		quickPick.items = symbols;
+
 		quickPick.show();
+
 		disposables.add(
 			quickPick.onDidAccept(() => {
 				this._accessibleView.showSymbol(
 					provider,
 					quickPick.selectedItems[0],
 				);
+
 				quickPick.hide();
 			}),
 		);
+
 		disposables.add(
 			quickPick.onDidHide(() => {
 				if (quickPick.selectedItems.length === 0) {
 					// this was escaped, so refocus the accessible view
 					this._accessibleView.show(provider);
 				}
+
 				disposables.dispose();
 			}),
 		);
@@ -1660,6 +1869,7 @@ function shouldHide(
 	) {
 		return false;
 	}
+
 	const standardKeyboardEvent = new StandardKeyboardEvent(event);
 
 	const resolveResult = keybindingService.softDispatch(
@@ -1672,6 +1882,7 @@ function shouldHide(
 	if (keybindingService.inChordMode || isValidChord) {
 		return false;
 	}
+
 	return (
 		shouldHandleKey(event) &&
 		!event.ctrlKey &&

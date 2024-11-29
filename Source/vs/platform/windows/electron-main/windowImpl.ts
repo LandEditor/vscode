@@ -94,7 +94,9 @@ import {
 
 export interface IWindowCreationOptions {
 	readonly state: IWindowState;
+
 	readonly extensionDevelopmentPath?: string[];
+
 	readonly isExtensionTestHost?: boolean;
 }
 
@@ -104,6 +106,7 @@ interface ITouchBarSegment extends electron.SegmentedControlSegment {
 
 interface ILoadOptions {
 	readonly isReload?: boolean;
+
 	readonly disableExtensions?: boolean;
 }
 
@@ -132,28 +135,34 @@ export abstract class BaseWindow extends Disposable implements IBaseWindow {
 	//#region Events
 
 	private readonly _onDidClose = this._register(new Emitter<void>());
+
 	readonly onDidClose = this._onDidClose.event;
 
 	private readonly _onDidMaximize = this._register(new Emitter<void>());
+
 	readonly onDidMaximize = this._onDidMaximize.event;
 
 	private readonly _onDidUnmaximize = this._register(new Emitter<void>());
+
 	readonly onDidUnmaximize = this._onDidUnmaximize.event;
 
 	private readonly _onDidTriggerSystemContextMenu = this._register(
 		new Emitter<{ x: number; y: number }>(),
 	);
+
 	readonly onDidTriggerSystemContextMenu =
 		this._onDidTriggerSystemContextMenu.event;
 
 	private readonly _onDidEnterFullScreen = this._register(
 		new Emitter<void>(),
 	);
+
 	readonly onDidEnterFullScreen = this._onDidEnterFullScreen.event;
 
 	private readonly _onDidLeaveFullScreen = this._register(
 		new Emitter<void>(),
 	);
+
 	readonly onDidLeaveFullScreen = this._onDidLeaveFullScreen.event;
 
 	//#endregion
@@ -170,6 +179,7 @@ export abstract class BaseWindow extends Disposable implements IBaseWindow {
 	get win() {
 		return this._win;
 	}
+
 	protected setWin(
 		win: electron.BrowserWindow,
 		options?: BrowserWindowConstructorOptions,
@@ -183,12 +193,14 @@ export abstract class BaseWindow extends Disposable implements IBaseWindow {
 				"maximize",
 			)(() => this._onDidMaximize.fire()),
 		);
+
 		this._register(
 			Event.fromNodeEventEmitter(
 				win,
 				"unmaximize",
 			)(() => this._onDidUnmaximize.fire()),
 		);
+
 		this._register(
 			Event.fromNodeEventEmitter(
 				win,
@@ -199,6 +211,7 @@ export abstract class BaseWindow extends Disposable implements IBaseWindow {
 				this.dispose();
 			}),
 		);
+
 		this._register(
 			Event.fromNodeEventEmitter(
 				win,
@@ -207,12 +220,14 @@ export abstract class BaseWindow extends Disposable implements IBaseWindow {
 				this._lastFocusTime = Date.now();
 			}),
 		);
+
 		this._register(
 			Event.fromNodeEventEmitter(
 				this._win,
 				"enter-full-screen",
 			)(() => this._onDidEnterFullScreen.fire()),
 		);
+
 		this._register(
 			Event.fromNodeEventEmitter(
 				this._win,
@@ -295,6 +310,7 @@ export abstract class BaseWindow extends Disposable implements IBaseWindow {
 				if (!shouldTriggerDefaultSystemContextMenu()) {
 					// This is necessary to make sure the native system context menu does not show up.
 					win.setEnabled(false);
+
 					win.setEnabled(true);
 
 					this._onDidTriggerSystemContextMenu.fire({ x: cx, y: cy });
@@ -503,7 +519,9 @@ export abstract class BaseWindow extends Disposable implements IBaseWindow {
 
 	updateWindowControls(options: {
 		height?: number;
+
 		backgroundColor?: string;
+
 		foregroundColor?: string;
 	}): void {
 		const win = this.win;
@@ -554,6 +572,7 @@ export abstract class BaseWindow extends Disposable implements IBaseWindow {
 	//#region Fullscreen
 
 	private transientIsNativeFullScreen: boolean | undefined = undefined;
+
 	private joinNativeFullScreenTransition:
 		| DeferredPromise<boolean>
 		| undefined = undefined;
@@ -631,6 +650,7 @@ export abstract class BaseWindow extends Disposable implements IBaseWindow {
 				}
 
 				this.transientIsNativeFullScreen = undefined;
+
 				this.joinNativeFullScreenTransition = undefined;
 
 				// There is one interesting gotcha on macOS: when you are opening a new
@@ -666,6 +686,7 @@ export abstract class BaseWindow extends Disposable implements IBaseWindow {
 		}
 
 		const win = this.win;
+
 		win?.setFullScreen(fullscreen);
 	}
 
@@ -677,6 +698,7 @@ export abstract class BaseWindow extends Disposable implements IBaseWindow {
 		}
 
 		win?.setSimpleFullScreen(fullscreen);
+
 		win?.webContents.focus(); // workaround issue where focus is not going into window
 	}
 
@@ -695,12 +717,15 @@ export class CodeWindow extends BaseWindow implements ICodeWindow {
 	//#region Events
 
 	private readonly _onWillLoad = this._register(new Emitter<ILoadEvent>());
+
 	readonly onWillLoad = this._onWillLoad.event;
 
 	private readonly _onDidSignalReady = this._register(new Emitter<void>());
+
 	readonly onDidSignalReady = this._onDidSignalReady.event;
 
 	private readonly _onDidDestroy = this._register(new Emitter<void>());
+
 	readonly onDidDestroy = this._onDidDestroy.event;
 
 	//#endregion
@@ -779,6 +804,7 @@ export class CodeWindow extends BaseWindow implements ICodeWindow {
 	//#endregion
 
 	private readonly windowState: IWindowState;
+
 	private currentMenuBarVisibility: MenuBarVisibility | undefined;
 
 	private readonly whenReadyCallbacks: { (window: ICodeWindow): void }[] = [];
@@ -786,6 +812,7 @@ export class CodeWindow extends BaseWindow implements ICodeWindow {
 	private readonly touchBarGroups: electron.TouchBarSegmentedControl[] = [];
 
 	private currentHttpProxy: string | undefined = undefined;
+
 	private currentNoProxy: string | undefined = undefined;
 
 	private customZoomLevel: number | undefined = undefined;
@@ -793,7 +820,9 @@ export class CodeWindow extends BaseWindow implements ICodeWindow {
 	private readonly configObjectUrl = this._register(
 		this.protocolMainService.createIPCObjectUrl<INativeWindowConfiguration>(),
 	);
+
 	private pendingLoadConfig: INativeWindowConfiguration | undefined;
+
 	private wasLoaded = false;
 
 	constructor(
@@ -843,7 +872,9 @@ export class CodeWindow extends BaseWindow implements ICodeWindow {
 			const [state, hasMultipleDisplays] = this.restoreWindowState(
 				config.state,
 			);
+
 			this.windowState = state;
+
 			this.logService.trace("window#ctor: using window state", state);
 
 			const options = instantiationService.invokeFunction(
@@ -865,10 +896,13 @@ export class CodeWindow extends BaseWindow implements ICodeWindow {
 
 			// Create the browser window
 			mark("code/willCreateCodeBrowserWindow");
+
 			this._win = new electron.BrowserWindow(options);
+
 			mark("code/didCreateCodeBrowserWindow");
 
 			this._id = this._win.id;
+
 			this.setWin(this._win, options);
 
 			// Apply some state after window creation
@@ -925,6 +959,7 @@ export class CodeWindow extends BaseWindow implements ICodeWindow {
 		return new Promise<void>((resolve) => {
 			function handle() {
 				closeListener.dispose();
+
 				loadListener.dispose();
 
 				resolve();
@@ -944,6 +979,7 @@ export class CodeWindow extends BaseWindow implements ICodeWindow {
 				"unresponsive",
 			)(() => this.onWindowError(WindowError.UNRESPONSIVE)),
 		);
+
 		this._register(
 			Event.fromNodeEventEmitter(
 				this._win.webContents,
@@ -953,6 +989,7 @@ export class CodeWindow extends BaseWindow implements ICodeWindow {
 				this.onWindowError(WindowError.PROCESS_GONE, { ...details }),
 			),
 		);
+
 		this._register(
 			Event.fromNodeEventEmitter(
 				this._win.webContents,
@@ -1045,6 +1082,7 @@ export class CodeWindow extends BaseWindow implements ICodeWindow {
 			"https://marketplace.visualstudio.com/*",
 			"https://*.vsassets.io/*",
 		];
+
 		this._win.webContents.session.webRequest.onBeforeSendHeaders(
 			{ urls },
 			async (details, cb) => {
@@ -1062,6 +1100,7 @@ export class CodeWindow extends BaseWindow implements ICodeWindow {
 	}
 
 	private marketplaceHeadersPromise: Promise<object> | undefined;
+
 	private getMarketplaceHeaders(): Promise<object> {
 		if (!this.marketplaceHeadersPromise) {
 			this.marketplaceHeadersPromise = resolveMarketplaceHeaders(
@@ -1079,14 +1118,17 @@ export class CodeWindow extends BaseWindow implements ICodeWindow {
 	}
 
 	private async onWindowError(error: WindowError.UNRESPONSIVE): Promise<void>;
+
 	private async onWindowError(
 		error: WindowError.PROCESS_GONE,
 		details: { reason: string; exitCode: number },
 	): Promise<void>;
+
 	private async onWindowError(
 		error: WindowError.LOAD,
 		details: { reason: string; exitCode: number },
 	): Promise<void>;
+
 	private async onWindowError(
 		type: WindowError,
 		details?: { reason?: string; exitCode?: number },
@@ -1116,27 +1158,41 @@ export class CodeWindow extends BaseWindow implements ICodeWindow {
 		type WindowErrorClassification = {
 			type: {
 				classification: "SystemMetaData";
+
 				purpose: "PerformanceAndHealth";
+
 				comment: "The type of window error to understand the nature of the error better.";
 			};
+
 			reason: {
 				classification: "SystemMetaData";
+
 				purpose: "PerformanceAndHealth";
+
 				comment: "The reason of the window error to understand the nature of the error better.";
 			};
+
 			code: {
 				classification: "SystemMetaData";
+
 				purpose: "PerformanceAndHealth";
+
 				comment: "The exit code of the window process to understand the nature of the error better";
 			};
+
 			owner: "bpasero";
+
 			comment: "Provides insight into reasons the vscode window had an error.";
 		};
+
 		type WindowErrorEvent = {
 			type: WindowError;
+
 			reason: string | undefined;
+
 			code: number | undefined;
 		};
+
 		this.telemetryService.publicLog2<
 			WindowErrorEvent,
 			WindowErrorClassification
@@ -1166,6 +1222,7 @@ export class CodeWindow extends BaseWindow implements ICodeWindow {
 					this.environmentMainService.args["enable-smoke-test-driver"]
 				) {
 					await this.destroyWindow(false, false);
+
 					this.lifecycleMainService.quit(); // still allow for an orderly shutdown
 					return;
 				}
@@ -1237,6 +1294,7 @@ export class CodeWindow extends BaseWindow implements ICodeWindow {
 					// Handle choice
 					if (response !== 2 /* keep waiting */) {
 						const reopen = response === 0;
+
 						await this.destroyWindow(reopen, checkboxChecked);
 					}
 				}
@@ -1314,8 +1372,10 @@ export class CodeWindow extends BaseWindow implements ICodeWindow {
 
 					// Handle choice
 					const reopen = response === 0;
+
 					await this.destroyWindow(reopen, checkboxChecked);
 				}
+
 				break;
 		}
 	}
@@ -1331,8 +1391,11 @@ export class CodeWindow extends BaseWindow implements ICodeWindow {
 			try {
 				const workspaceStorage =
 					this.storageMainService.workspaceStorage(workspace);
+
 				await workspaceStorage.init();
+
 				workspaceStorage.delete("memento/workbench.parts.editor");
+
 				await workspaceStorage.close();
 			} catch (error) {
 				this.logService.error(error);
@@ -1374,6 +1437,7 @@ export class CodeWindow extends BaseWindow implements ICodeWindow {
 						remoteAuthority: this.remoteAuthority,
 					})
 				).at(0);
+
 				window?.focus();
 			}
 		} finally {
@@ -1401,6 +1465,7 @@ export class CodeWindow extends BaseWindow implements ICodeWindow {
 
 			if (newMenuBarVisibility !== this.currentMenuBarVisibility) {
 				this.currentMenuBarVisibility = newMenuBarVisibility;
+
 				this.setMenuBarVisibility(newMenuBarVisibility);
 			}
 		}
@@ -1436,6 +1501,7 @@ export class CodeWindow extends BaseWindow implements ICodeWindow {
 						.toString();
 				}
 			}
+
 			if (newHttpProxy?.endsWith("/")) {
 				newHttpProxy = newHttpProxy.substr(0, newHttpProxy.length - 1);
 			}
@@ -1460,6 +1526,7 @@ export class CodeWindow extends BaseWindow implements ICodeWindow {
 					newNoProxy !== this.currentNoProxy)
 			) {
 				this.currentHttpProxy = newHttpProxy;
+
 				this.currentNoProxy = newNoProxy;
 
 				const proxyRules = newHttpProxy || "";
@@ -1467,14 +1534,17 @@ export class CodeWindow extends BaseWindow implements ICodeWindow {
 				const proxyBypassRules = newNoProxy
 					? `${newNoProxy},<local>`
 					: "<local>";
+
 				this.logService.trace(
 					`Setting proxy to '${proxyRules}', bypassing '${proxyBypassRules}'`,
 				);
+
 				this._win.webContents.session.setProxy({
 					proxyRules,
 					proxyBypassRules,
 					pacScript: "",
 				});
+
 				electron.app.setProxy({
 					proxyRules,
 					proxyBypassRules,
@@ -1547,6 +1617,7 @@ export class CodeWindow extends BaseWindow implements ICodeWindow {
 
 		// Remember that we did load
 		const wasLoaded = this.wasLoaded;
+
 		this.wasLoaded = true;
 
 		// Make window visible if it did not open in N seconds because this indicates an error
@@ -1563,7 +1634,9 @@ export class CodeWindow extends BaseWindow implements ICodeWindow {
 						!this._win.isMinimized()
 					) {
 						this._win.show();
+
 						this.focus({ force: true });
+
 						this._win.webContents.openDevTools();
 					}
 				}, 10000),
@@ -1641,10 +1714,15 @@ export class CodeWindow extends BaseWindow implements ICodeWindow {
 				`Error getting native window handle: ${error}`,
 			);
 		}
+
 		configuration.fullscreen = this.isFullScreen;
+
 		configuration.maximized = this._win.isMaximized();
+
 		configuration.partsSplash = this.themeMainService.getWindowSplash();
+
 		configuration.zoomLevel = this.getZoomLevel();
+
 		configuration.isCustomZoomLevel =
 			typeof this.customZoomLevel === "number";
 
@@ -1654,6 +1732,7 @@ export class CodeWindow extends BaseWindow implements ICodeWindow {
 
 		// Update with latest perf marks
 		mark("code/willOpenNewWindow");
+
 		configuration.perfMarks = getMarks();
 
 		// Update in config object URL for usage in renderer
@@ -1670,34 +1749,46 @@ export class CodeWindow extends BaseWindow implements ICodeWindow {
 
 		// Delete some properties we do not want during reload
 		delete configuration.filesToOpenOrCreate;
+
 		delete configuration.filesToDiff;
+
 		delete configuration.filesToMerge;
+
 		delete configuration.filesToWait;
 
 		// Some configuration things get inherited if the window is being reloaded and we are
 		// in extension development mode. These options are all development related.
 		if (this.isExtensionDevelopmentHost && cli) {
 			configuration.verbose = cli.verbose;
+
 			configuration.debugId = cli.debugId;
+
 			configuration.extensionEnvironment = cli.extensionEnvironment;
+
 			configuration["inspect-extensions"] = cli["inspect-extensions"];
+
 			configuration["inspect-brk-extensions"] =
 				cli["inspect-brk-extensions"];
+
 			configuration["extensions-dir"] = cli["extensions-dir"];
 		}
 
 		configuration.accessibilitySupport =
 			electron.app.isAccessibilitySupportEnabled();
+
 		configuration.isInitialStartup = false; // since this is a reload
 		configuration.policiesData = this.policyService.serialize(); // set policies data again
 		configuration.continueOn = this.environmentMainService.continueOn;
+
 		configuration.profiles = {
 			all: this.userDataProfilesService.profiles,
 			profile:
 				this.profile || this.userDataProfilesService.defaultProfile,
 			home: this.userDataProfilesService.profilesHome,
 		};
+
 		configuration.logLevel = this.loggerMainService.getLogLevel();
+
 		configuration.loggers = {
 			window: this.loggerMainService.getRegisteredLoggers(this.id),
 			global: this.loggerMainService.getRegisteredLoggers(),
@@ -1811,8 +1902,11 @@ export class CodeWindow extends BaseWindow implements ICodeWindow {
 			}
 
 			state.x = bounds.x;
+
 			state.y = bounds.y;
+
 			state.width = bounds.width;
+
 			state.height = bounds.height;
 		}
 
@@ -1835,6 +1929,7 @@ export class CodeWindow extends BaseWindow implements ICodeWindow {
 			// Window dimensions
 			try {
 				const displays = electron.screen.getAllDisplays();
+
 				hasMultipleDisplays = displays.length > 1;
 
 				state = WindowStateValidator.validateWindowState(
@@ -1930,24 +2025,28 @@ export class CodeWindow extends BaseWindow implements ICodeWindow {
 		switch (visibility) {
 			case "classic":
 				this._win.setMenuBarVisibility(!isFullscreen);
+
 				this._win.autoHideMenuBar = isFullscreen;
 
 				break;
 
 			case "visible":
 				this._win.setMenuBarVisibility(true);
+
 				this._win.autoHideMenuBar = false;
 
 				break;
 
 			case "toggle":
 				this._win.setMenuBarVisibility(false);
+
 				this._win.autoHideMenuBar = true;
 
 				break;
 
 			case "hidden":
 				this._win.setMenuBarVisibility(false);
+
 				this._win.autoHideMenuBar = false;
 
 				break;
@@ -2022,6 +2121,7 @@ export class CodeWindow extends BaseWindow implements ICodeWindow {
 		// of the group directly prevents ugly flickering from happening
 		this.touchBarGroups.forEach((touchBarGroup, index) => {
 			const commands = groups[index];
+
 			touchBarGroup.segments = this.createTouchBarGroupSegments(commands);
 		});
 	}
@@ -2036,6 +2136,7 @@ export class CodeWindow extends BaseWindow implements ICodeWindow {
 		// for reusing later.
 		for (let i = 0; i < 10; i++) {
 			const groupTouchBar = this.createTouchBarGroup();
+
 			this.touchBarGroups.push(groupTouchBar);
 		}
 

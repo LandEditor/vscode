@@ -71,6 +71,7 @@ export class NotebookGettingStarted
 		if (storedValue[hasOpenedNotebookKey]) {
 			hasOpenedNotebook.set(true);
 		}
+
 		const needToShowGettingStarted =
 			_configurationService.getValue(
 				NotebookSetting.openGettingStarted,
@@ -79,6 +80,7 @@ export class NotebookGettingStarted
 		if (!storedValue[hasOpenedNotebookKey] || needToShowGettingStarted) {
 			const onDidOpenNotebook = () => {
 				hasOpenedNotebook.set(true);
+
 				storedValue[hasOpenedNotebookKey] = true;
 
 				if (needToShowGettingStarted) {
@@ -87,8 +89,10 @@ export class NotebookGettingStarted
 						{ category: "notebooks", step: "notebookProfile" },
 						true,
 					);
+
 					storedValue[hasShownGettingStartedKey] = true;
 				}
+
 				memento.saveMemento();
 			};
 
@@ -100,6 +104,7 @@ export class NotebookGettingStarted
 
 				return;
 			}
+
 			const listener = this._register(
 				_editorService.onDidActiveEditorChange(() => {
 					if (
@@ -107,6 +112,7 @@ export class NotebookGettingStarted
 						NotebookEditorInput.ID
 					) {
 						listener.dispose();
+
 						onDidOpenNotebook();
 					}
 				}),
@@ -137,6 +143,7 @@ registerAction2(
 				category: Categories.Developer,
 			});
 		}
+
 		run(accessor: ServicesAccessor): void {
 			const storageService = accessor.get(IStorageService);
 
@@ -149,7 +156,9 @@ registerAction2(
 				StorageScope.PROFILE,
 				StorageTarget.USER,
 			);
+
 			storedValue[hasOpenedNotebookKey] = undefined;
+
 			memento.saveMemento();
 		}
 	},

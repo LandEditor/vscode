@@ -25,10 +25,12 @@ class InspectKeyMap extends Action2 {
 			f1: true,
 		});
 	}
+
 	run(accessor: ServicesAccessor, editor: ICodeEditor): void {
 		const keybindingService = accessor.get(IKeybindingService);
 
 		const editorService = accessor.get(IEditorService);
+
 		editorService.openEditor({
 			resource: undefined,
 			contents: keybindingService._dumpDebugInfo(),
@@ -49,10 +51,12 @@ class InspectKeyMapJSON extends Action2 {
 			f1: true,
 		});
 	}
+
 	override async run(accessor: ServicesAccessor): Promise<void> {
 		const editorService = accessor.get(IEditorService);
 
 		const keybindingService = accessor.get(IKeybindingService);
+
 		await editorService.openEditor({
 			resource: undefined,
 			contents: keybindingService._dumpDebugInfoJSON(),

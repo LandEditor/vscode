@@ -82,13 +82,16 @@ export function agentToMarkdown(
 	if (isDupe) {
 		name += ` (${agent.publisherDisplayName})`;
 	}
+
 	const args: IAgentWidgetArgs = { agentId: agent.id, name, isClickable };
 
 	return `[${agent.name}](${agentRefUrl}?${encodeURIComponent(JSON.stringify(args))})`;
 }
 interface IAgentWidgetArgs {
 	agentId: string;
+
 	name: string;
+
 	isClickable?: boolean;
 }
 export function agentSlashCommandToMarkdown(
@@ -106,6 +109,7 @@ export function agentSlashCommandToMarkdown(
 }
 interface ISlashCommandWidgetArgs {
 	agentId: string;
+
 	command: string;
 }
 export interface IDecorationWidgetArgs {
@@ -138,6 +142,7 @@ export class ChatMarkdownDecorationsRenderer {
 		@IChatMarkdownAnchorService
 		private readonly chatMarkdownAnchorService: IChatMarkdownAnchorService,
 	) {}
+
 	convertParsedRequestToMarkdown(parsedRequest: IParsedChatRequest): string {
 		let result = "";
 
@@ -152,8 +157,10 @@ export class ChatMarkdownDecorationsRenderer {
 				result += this.genericDecorationToMarkdown(part);
 			}
 		}
+
 		return result;
 	}
+
 	private genericDecorationToMarkdown(part: IParsedChatRequestPart): string {
 		const uri =
 			part instanceof ChatRequestDynamicVariablePart &&
@@ -182,11 +189,13 @@ export class ChatMarkdownDecorationsRenderer {
 
 		return `[${text}](${decorationRefUrl}?${encodeURIComponent(JSON.stringify(args))})`;
 	}
+
 	walkTreeAndAnnotateReferenceLinks(
 		content: IChatMarkdownContent,
 		element: HTMLElement,
 	): IDisposable {
 		const store = new DisposableStore();
+
 		element.querySelectorAll("a").forEach((a) => {
 			const href = a.getAttribute("data-href");
 
@@ -206,6 +215,7 @@ export class ChatMarkdownDecorationsRenderer {
 							toErrorMessage(e),
 						);
 					}
+
 					if (args) {
 						a.parentElement!.replaceChild(
 							this.renderAgentWidget(args, store),
@@ -227,6 +237,7 @@ export class ChatMarkdownDecorationsRenderer {
 							toErrorMessage(e),
 						);
 					}
+
 					if (args) {
 						a.parentElement!.replaceChild(
 							this.renderSlashCommandWidget(
@@ -247,6 +258,7 @@ export class ChatMarkdownDecorationsRenderer {
 							),
 						);
 					} catch (e) {}
+
 					a.parentElement!.replaceChild(
 						this.renderResourceWidget(a.textContent!, args, store),
 						a,
@@ -261,6 +273,7 @@ export class ChatMarkdownDecorationsRenderer {
 
 		return store;
 	}
+
 	private renderAgentWidget(
 		args: IAgentWidgetArgs,
 		store: DisposableStore,
@@ -279,7 +292,9 @@ export class ChatMarkdownDecorationsRenderer {
 					buttonHoverBackground: undefined,
 				}),
 			);
+
 			button.label = nameWithLeader;
+
 			store.add(
 				button.onDidClick(() => {
 					const agent = this.chatAgentService.getAgent(args.agentId);
@@ -289,6 +304,7 @@ export class ChatMarkdownDecorationsRenderer {
 					if (!widget || !agent) {
 						return;
 					}
+
 					this.chatService.sendRequest(
 						widget.viewModel!.sessionId,
 						agent.metadata.sampleRequest ?? "",
@@ -308,11 +324,13 @@ export class ChatMarkdownDecorationsRenderer {
 				store,
 			);
 		}
+
 		const agent = this.chatAgentService.getAgent(args.agentId);
 
 		const hover: Lazy<ChatAgentHover> = new Lazy(() =>
 			store.add(this.instantiationService.createInstance(ChatAgentHover)),
 		);
+
 		store.add(
 			this.hoverService.setupManagedHover(
 				getDefaultHoverDelegate("element"),
@@ -329,6 +347,7 @@ export class ChatMarkdownDecorationsRenderer {
 
 		return container;
 	}
+
 	private renderSlashCommandWidget(
 		name: string,
 		args: ISlashCommandWidgetArgs,
@@ -345,7 +364,9 @@ export class ChatMarkdownDecorationsRenderer {
 				buttonHoverBackground: undefined,
 			}),
 		);
+
 		button.label = name;
+
 		store.add(
 			button.onDidClick(() => {
 				const widget = this.chatWidgetService.lastFocusedWidget;
@@ -353,9 +374,11 @@ export class ChatMarkdownDecorationsRenderer {
 				if (!widget || !agent) {
 					return;
 				}
+
 				const command = agent.slashCommands.find(
 					(c) => c.name === args.command,
 				);
+
 				this.chatService.sendRequest(
 					widget.viewModel!.sessionId,
 					command?.sampleRequest ?? "",
@@ -371,6 +394,7 @@ export class ChatMarkdownDecorationsRenderer {
 
 		return container;
 	}
+
 	private renderFileWidget(
 		content: IChatMarkdownContent,
 		href: string,
@@ -387,6 +411,7 @@ export class ChatMarkdownDecorationsRenderer {
 
 			return;
 		}
+
 		const inlineAnchor = store.add(
 			this.instantiationService.createInstance(
 				InlineAnchorWidget,
@@ -394,8 +419,10 @@ export class ChatMarkdownDecorationsRenderer {
 				data,
 			),
 		);
+
 		this.chatMarkdownAnchorService.register(inlineAnchor);
 	}
+
 	private renderResourceWidget(
 		name: string,
 		args: IDecorationWidgetArgs | undefined,
@@ -414,10 +441,12 @@ export class ChatMarkdownDecorationsRenderer {
 				),
 			);
 		}
+
 		container.appendChild(alias);
 
 		return container;
 	}
+
 	private injectKeybindingHint(
 		a: HTMLAnchorElement,
 		href: string,

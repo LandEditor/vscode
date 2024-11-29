@@ -34,9 +34,13 @@ import { IWorkbenchEnvironmentService } from "../../environment/common/environme
 
 interface IBundledExtension {
 	extensionPath: string;
+
 	packageJSON: IExtensionManifest;
+
 	packageNLS?: any;
+
 	readmePath?: string;
+
 	changelogPath?: string;
 }
 
@@ -77,6 +81,7 @@ export class BuiltinExtensionsScannerService
 			const builtinExtensionsServiceUrl = FileAccess.asBrowserUri(
 				builtinExtensionsPath,
 			);
+
 			if (builtinExtensionsServiceUrl) {
 				let bundledExtensions: IBundledExtension[] = [];
 
@@ -91,12 +96,14 @@ export class BuiltinExtensionsScannerService
 						mainWindow.document.getElementById(
 							"vscode-workbench-builtin-extensions",
 						);
+
 					const builtinExtensionsElementAttribute =
 						builtinExtensionsElement
 							? builtinExtensionsElement.getAttribute(
 									"data-settings",
 								)
 							: undefined;
+
 					if (builtinExtensionsElementAttribute) {
 						try {
 							bundledExtensions = JSON.parse(
@@ -114,6 +121,7 @@ export class BuiltinExtensionsScannerService
 							e.packageJSON.publisher,
 							e.packageJSON.name,
 						);
+
 						return {
 							identifier: { id },
 							location: uriIdentityService.extUri.joinPath(
@@ -170,12 +178,15 @@ export class BuiltinExtensionsScannerService
 		}
 		// the `package` endpoint returns the translations in a key-value format similar to the package.nls.json file.
 		const uri = URI.joinPath(this.nlsUrl, extensionId, "package");
+
 		try {
 			const res =
 				await this.extensionResourceLoaderService.readExtensionResource(
 					uri,
 				);
+
 			const json = JSON.parse(res.toString());
+
 			return localizeManifest(
 				this.logService,
 				manifest,
@@ -184,6 +195,7 @@ export class BuiltinExtensionsScannerService
 			);
 		} catch (e) {
 			this.logService.error(e);
+
 			return localizeManifest(
 				this.logService,
 				manifest,

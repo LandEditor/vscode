@@ -100,6 +100,7 @@ new Book("The Martian", "Andy Weir");
  */
 function Book(title, author) {
 	this.title = title;
+
 	this.author = author;
 }
 |||

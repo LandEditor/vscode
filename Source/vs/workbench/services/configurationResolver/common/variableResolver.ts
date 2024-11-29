@@ -56,6 +56,7 @@ interface IVariableResolveContext {
 }
 type Environment = {
 	env: IProcessEnvironment | undefined;
+
 	userHome: string | undefined;
 };
 
@@ -63,12 +64,19 @@ export class AbstractVariableResolverService
 	implements IConfigurationResolverService
 {
 	static readonly VARIABLE_LHS = "${";
+
 	static readonly VARIABLE_REGEXP = /\$\{(.*?)\}/g;
+
 	declare readonly _serviceBrand: undefined;
+
 	private _context: IVariableResolveContext;
+
 	private _labelService?: ILabelService;
+
 	private _envVariablesPromise?: Promise<IProcessEnvironment>;
+
 	private _userHomePromise?: Promise<string>;
+
 	protected _contributedVariables: Map<
 		string,
 		() => Promise<string | undefined>
@@ -81,7 +89,9 @@ export class AbstractVariableResolverService
 		_envVariablesPromise?: Promise<IProcessEnvironment>,
 	) {
 		this._context = _context;
+
 		this._labelService = _labelService;
+
 		this._userHomePromise = _userHomePromise;
 
 		if (_envVariablesPromise) {
@@ -92,18 +102,22 @@ export class AbstractVariableResolverService
 			);
 		}
 	}
+
 	private prepareEnv(envVariables: IProcessEnvironment): IProcessEnvironment {
 		// windows env variables are case insensitive
 		if (isWindows) {
 			const ev: IProcessEnvironment = Object.create(null);
+
 			Object.keys(envVariables).forEach((key) => {
 				ev[key.toLowerCase()] = envVariables[key];
 			});
 
 			return ev;
 		}
+
 		return envVariables;
 	}
+
 	public resolveWithEnvironment(
 		environment: IProcessEnvironment,
 		root: IWorkspaceFolder | undefined,
@@ -115,18 +129,22 @@ export class AbstractVariableResolverService
 			value,
 		);
 	}
+
 	public async resolveAsync(
 		root: IWorkspaceFolder | undefined,
 		value: string,
 	): Promise<string>;
+
 	public async resolveAsync(
 		root: IWorkspaceFolder | undefined,
 		value: string[],
 	): Promise<string[]>;
+
 	public async resolveAsync(
 		root: IWorkspaceFolder | undefined,
 		value: IStringDictionary<string>,
 	): Promise<IStringDictionary<string>>;
+
 	public async resolveAsync(
 		root: IWorkspaceFolder | undefined,
 		value: any,
@@ -142,6 +160,7 @@ export class AbstractVariableResolverService
 			value,
 		);
 	}
+
 	private async resolveAnyBase(
 		workspaceFolder: IWorkspaceFolder | undefined,
 		config: any,
@@ -165,7 +184,9 @@ export class AbstractVariableResolverService
 		}
 		// delete all platform specific sections
 		delete result.windows;
+
 		delete result.osx;
+
 		delete result.linux;
 		// substitute all variables recursively in string values
 		const environmentPromises: Environment = {
@@ -181,6 +202,7 @@ export class AbstractVariableResolverService
 			resolvedVariables,
 		);
 	}
+
 	public async resolveAnyAsync(
 		workspaceFolder: IWorkspaceFolder | undefined,
 		config: any,
@@ -192,12 +214,14 @@ export class AbstractVariableResolverService
 			commandValueMapping,
 		);
 	}
+
 	public async resolveAnyMap(
 		workspaceFolder: IWorkspaceFolder | undefined,
 		config: any,
 		commandValueMapping?: IStringDictionary<string>,
 	): Promise<{
 		newConfig: any;
+
 		resolvedVariables: Map<string, string>;
 	}> {
 		const resolvedVariables = new Map<string, string>();
@@ -211,6 +235,7 @@ export class AbstractVariableResolverService
 
 		return { newConfig, resolvedVariables };
 	}
+
 	public resolveWithInteractionReplace(
 		folder: IWorkspaceFolder | undefined,
 		config: any,
@@ -219,6 +244,7 @@ export class AbstractVariableResolverService
 	): Promise<any> {
 		throw new Error("resolveWithInteractionReplace not implemented.");
 	}
+
 	public resolveWithInteraction(
 		folder: IWorkspaceFolder | undefined,
 		config: any,
@@ -227,6 +253,7 @@ export class AbstractVariableResolverService
 	): Promise<Map<string, string> | undefined> {
 		throw new Error("resolveWithInteraction not implemented.");
 	}
+
 	public contributeVariable(
 		variable: string,
 		resolution: () => Promise<string | undefined>,
@@ -237,6 +264,7 @@ export class AbstractVariableResolverService
 			this._contributedVariables.set(variable, resolution);
 		}
 	}
+
 	private async recursiveResolve(
 		environment: Environment,
 		folderUri: uri | undefined,
@@ -295,10 +323,13 @@ export class AbstractVariableResolverService
 			for (const [key, value] of replaced) {
 				result[key] = value;
 			}
+
 			return result;
 		}
+
 		return value;
 	}
+
 	private resolveString(
 		environment: Environment,
 		folderUri: uri | undefined,
@@ -319,6 +350,7 @@ export class AbstractVariableResolverService
 				) {
 					return match;
 				}
+
 				let resolvedValue = await this.evaluateSingleVariable(
 					environment,
 					match,
@@ -326,6 +358,7 @@ export class AbstractVariableResolverService
 					folderUri,
 					commandValueMapping,
 				);
+
 				resolvedVariables?.set(variable, resolvedValue);
 
 				if (
@@ -343,15 +376,18 @@ export class AbstractVariableResolverService
 						resolvedVariables,
 					);
 				}
+
 				return resolvedValue;
 			},
 		);
 	}
+
 	private fsPath(displayUri: uri): string {
 		return this._labelService
 			? this._labelService.getUriLabel(displayUri, { noPrefix: true })
 			: displayUri.fsPath;
 	}
+
 	private async evaluateSingleVariable(
 		environment: Environment,
 		match: string,
@@ -366,6 +402,7 @@ export class AbstractVariableResolverService
 
 		if (parts.length > 1) {
 			variable = parts[0];
+
 			argument = parts[1];
 		}
 		// common error handling for all variables that require an open editor
@@ -375,6 +412,7 @@ export class AbstractVariableResolverService
 			if (filePath) {
 				return normalizeDriveLetter(filePath);
 			}
+
 			throw new VariableError(
 				variableKind,
 				localize(
@@ -395,6 +433,7 @@ export class AbstractVariableResolverService
 					return normalizeDriveLetter(folderPath);
 				}
 			}
+
 			throw new VariableError(
 				variableKind,
 				localize(
@@ -413,6 +452,7 @@ export class AbstractVariableResolverService
 				if (folder) {
 					return folder;
 				}
+
 				throw new VariableError(
 					variableKind,
 					localize(
@@ -423,9 +463,11 @@ export class AbstractVariableResolverService
 					),
 				);
 			}
+
 			if (folderUri) {
 				return folderUri;
 			}
+
 			if (this._context.getWorkspaceFolderCount() > 1) {
 				throw new VariableError(
 					variableKind,
@@ -436,6 +478,7 @@ export class AbstractVariableResolverService
 					),
 				);
 			}
+
 			throw new VariableError(
 				variableKind,
 				localize(
@@ -463,6 +506,7 @@ export class AbstractVariableResolverService
 					// For `env` we should do the same as a normal shell does - evaluates undefined envs to an empty string #46436
 					return "";
 				}
+
 				throw new VariableError(
 					VariableKind.Env,
 					localize(
@@ -490,6 +534,7 @@ export class AbstractVariableResolverService
 							),
 						);
 					}
+
 					if (types.isObject(config)) {
 						throw new VariableError(
 							VariableKind.Config,
@@ -501,8 +546,10 @@ export class AbstractVariableResolverService
 							),
 						);
 					}
+
 					return config;
 				}
+
 				throw new VariableError(
 					VariableKind.Config,
 					localize(
@@ -545,8 +592,10 @@ export class AbstractVariableResolverService
 							),
 						);
 					}
+
 					return this.fsPath(ext.extensionLocation);
 				}
+
 				throw new VariableError(
 					VariableKind.ExtensionInstallFolder,
 					localize(
@@ -589,6 +638,7 @@ export class AbstractVariableResolverService
 						if (environment.userHome) {
 							return environment.userHome;
 						}
+
 						throw new VariableError(
 							VariableKind.UserHome,
 							localize(
@@ -598,12 +648,14 @@ export class AbstractVariableResolverService
 							),
 						);
 					}
+
 					case "lineNumber": {
 						const lineNumber = this._context.getLineNumber();
 
 						if (lineNumber) {
 							return lineNumber;
 						}
+
 						throw new VariableError(
 							VariableKind.LineNumber,
 							localize(
@@ -613,12 +665,14 @@ export class AbstractVariableResolverService
 							),
 						);
 					}
+
 					case "selectedText": {
 						const selectedText = this._context.getSelectedText();
 
 						if (selectedText) {
 							return selectedText;
 						}
+
 						throw new VariableError(
 							VariableKind.SelectedText,
 							localize(
@@ -628,6 +682,7 @@ export class AbstractVariableResolverService
 							),
 						);
 					}
+
 					case "file":
 						return getFilePath(VariableKind.File);
 
@@ -652,6 +707,7 @@ export class AbstractVariableResolverService
 								getFilePath(VariableKind.RelativeFile),
 							);
 						}
+
 						return getFilePath(VariableKind.RelativeFile);
 
 					case "relativeFileDirname": {
@@ -671,8 +727,10 @@ export class AbstractVariableResolverService
 
 							return relative.length === 0 ? "." : relative;
 						}
+
 						return dirname;
 					}
+
 					case "fileDirname":
 						return paths.dirname(
 							getFilePath(VariableKind.FileDirname),
@@ -698,6 +756,7 @@ export class AbstractVariableResolverService
 							basename.length - paths.extname(basename).length,
 						);
 					}
+
 					case "fileDirnameBasename":
 						return paths.basename(
 							paths.dirname(
@@ -711,16 +770,20 @@ export class AbstractVariableResolverService
 						if (ep) {
 							return ep;
 						}
+
 						return match;
 					}
+
 					case "execInstallFolder": {
 						const ar = this._context.getAppRoot();
 
 						if (ar) {
 							return ar;
 						}
+
 						return match;
 					}
+
 					case "pathSeparator":
 					case "/":
 						return paths.sep;
@@ -745,6 +808,7 @@ export class AbstractVariableResolverService
 			}
 		}
 	}
+
 	private resolveFromMap(
 		variableKind: VariableKind,
 		match: string,
@@ -761,6 +825,7 @@ export class AbstractVariableResolverService
 			if (typeof v === "string") {
 				return v;
 			}
+
 			throw new VariableError(
 				variableKind,
 				localize(
@@ -770,6 +835,7 @@ export class AbstractVariableResolverService
 				),
 			);
 		}
+
 		return match;
 	}
 }

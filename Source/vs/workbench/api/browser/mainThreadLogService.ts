@@ -40,6 +40,7 @@ export class MainThreadLoggerService implements MainThreadLoggerShape {
 		const proxy = extHostContext.getProxy(
 			ExtHostContext.ExtHostLogLevelServiceShape,
 		);
+
 		this.disposables.add(
 			loggerService.onDidChangeLogLevel((arg) => {
 				if (isLogLevel(arg)) {
@@ -56,25 +57,30 @@ export class MainThreadLoggerService implements MainThreadLoggerShape {
 		if (!logger) {
 			throw new Error("Create the logger before logging");
 		}
+
 		for (const [level, message] of messages) {
 			log(logger, level, message);
 		}
 	}
+
 	async $createLogger(
 		file: UriComponents,
 		options?: ILoggerOptions,
 	): Promise<void> {
 		this.loggerService.createLogger(URI.revive(file), options);
 	}
+
 	async $registerLogger(logResource: UriDto<ILoggerResource>): Promise<void> {
 		this.loggerService.registerLogger({
 			...logResource,
 			resource: URI.revive(logResource.resource),
 		});
 	}
+
 	async $deregisterLogger(resource: UriComponents): Promise<void> {
 		this.loggerService.deregisterLogger(URI.revive(resource));
 	}
+
 	async $setVisibility(
 		resource: UriComponents,
 		visible: boolean,
@@ -87,8 +93,10 @@ export class MainThreadLoggerService implements MainThreadLoggerShape {
 		if (!logger) {
 			throw new Error("Create the logger before flushing");
 		}
+
 		logger.flush();
 	}
+
 	dispose(): void {
 		this.disposables.dispose();
 	}

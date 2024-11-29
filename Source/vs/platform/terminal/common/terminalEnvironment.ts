@@ -16,7 +16,9 @@ export function escapeNonWindowsPath(path: string): string {
 	if (newPath.includes("\\")) {
 		newPath = newPath.replace(/\\/g, "\\\\");
 	}
+
 	const bannedChars = /[\`\$\|\&\>\~\#\!\^\*\;\<\"\']/g;
+
 	newPath = newPath.replace(bannedChars, "");
 
 	return `'${newPath}'`;
@@ -33,6 +35,7 @@ export function collapseTildePath(
 	if (!path) {
 		return "";
 	}
+
 	if (!userHome) {
 		return path;
 	}
@@ -40,6 +43,7 @@ export function collapseTildePath(
 	if (userHome.match(/[\/\\]$/)) {
 		userHome = userHome.slice(0, userHome.length - 1);
 	}
+
 	const normalizedPath = path.replace(/\\/g, "/").toLowerCase();
 
 	const normalizedUserHome = userHome.replace(/\\/g, "/").toLowerCase();
@@ -47,6 +51,7 @@ export function collapseTildePath(
 	if (!normalizedPath.includes(normalizedUserHome)) {
 		return path;
 	}
+
 	return `~${separator}${path.slice(userHome.length + 1)}`;
 }
 /**
@@ -63,6 +68,7 @@ export function sanitizeCwd(cwd: string): string {
 	if (OS === OperatingSystem.Windows && cwd && cwd[1] === ":") {
 		return cwd[0].toUpperCase() + cwd.substring(1);
 	}
+
 	return cwd;
 }
 /**

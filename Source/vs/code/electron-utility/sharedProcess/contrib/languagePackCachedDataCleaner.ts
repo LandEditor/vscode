@@ -16,13 +16,16 @@ import { IProductService } from "../../../../platform/product/common/productServ
 
 interface IExtensionEntry {
 	version: string;
+
 	extensionIdentifier: {
 		id: string;
+
 		uuid: string;
 	};
 }
 interface ILanguagePackEntry {
 	hash: string;
+
 	extensions: IExtensionEntry[];
 }
 interface ILanguagePackFile {
@@ -50,9 +53,11 @@ export class LanguagePackCachedDataCleaner extends Disposable {
 					this.cleanUpLanguagePackCache();
 				}, 40 * 1000 /* after 40s */),
 			);
+
 			scheduler.schedule();
 		}
 	}
+
 	private async cleanUpLanguagePackCache(): Promise<void> {
 		this.logService.trace(
 			"[language pack cache cleanup]: Starting to clean up unused language packs.",
@@ -73,6 +78,7 @@ export class LanguagePackCachedDataCleaner extends Disposable {
 
 			for (const locale of Object.keys(metaData)) {
 				const entry = metaData[locale];
+
 				installed[`${entry.hash}.${locale}`] = true;
 			}
 			// Cleanup entries for language packs that aren't installed anymore
@@ -83,6 +89,7 @@ export class LanguagePackCachedDataCleaner extends Disposable {
 			if (!cacheDirExists) {
 				return;
 			}
+
 			const entries = await Promises.readdir(cacheDir);
 
 			for (const entry of entries) {
@@ -93,11 +100,14 @@ export class LanguagePackCachedDataCleaner extends Disposable {
 
 					continue;
 				}
+
 				this.logService.trace(
 					`[language pack cache cleanup]: Removing unused language pack: ${entry}`,
 				);
+
 				await Promises.rm(join(cacheDir, entry));
 			}
+
 			const now = Date.now();
 
 			for (const packEntry of Object.keys(installed)) {
@@ -109,6 +119,7 @@ export class LanguagePackCachedDataCleaner extends Disposable {
 					if (entry === "tcf.json") {
 						continue;
 					}
+
 					const candidate = join(folder, entry);
 
 					const stat = await fs.promises.stat(candidate);
@@ -120,6 +131,7 @@ export class LanguagePackCachedDataCleaner extends Disposable {
 						this.logService.trace(
 							`[language pack cache cleanup]: Removing language pack cache folder: ${join(packEntry, entry)}`,
 						);
+
 						await Promises.rm(candidate);
 					}
 				}

@@ -41,6 +41,7 @@ export class OutputElement extends Disposable {
 	readonly resizeListener = this._register(new DisposableStore());
 
 	domNode!: HTMLElement;
+
 	renderResult?: IInsetRenderOutput;
 
 	constructor(
@@ -56,6 +57,7 @@ export class OutputElement extends Disposable {
 	) {
 		super();
 	}
+
 	render(index: number, beforeElement?: HTMLElement) {
 		const outputItemDiv = document.createElement("div");
 
@@ -73,16 +75,21 @@ export class OutputElement extends Disposable {
 			outputItemDiv.style.position = "relative";
 
 			const mimeTypePicker = DOM.$(".multi-mimetype-output");
+
 			mimeTypePicker.classList.add(
 				...ThemeIcon.asClassNameArray(mimetypeIcon),
 			);
+
 			mimeTypePicker.tabIndex = 0;
+
 			mimeTypePicker.title = nls.localize(
 				"mimeTypePicker",
 				"Choose a different output mimetype, available mimetypes: {0}",
 				mimeTypes.map((mimeType) => mimeType.mimeType).join(", "),
 			);
+
 			outputItemDiv.appendChild(mimeTypePicker);
+
 			this.resizeListener.add(
 				DOM.addStandardDisposableListener(
 					mimeTypePicker,
@@ -90,7 +97,9 @@ export class OutputElement extends Disposable {
 					async (e) => {
 						if (e.leftButton) {
 							e.preventDefault();
+
 							e.stopPropagation();
+
 							await this.pickActiveMimeTypeRenderer(
 								this._notebookTextModel,
 								this.output,
@@ -99,6 +108,7 @@ export class OutputElement extends Disposable {
 					},
 				),
 			);
+
 			this.resizeListener.add(
 				DOM.addDisposableListener(
 					mimeTypePicker,
@@ -111,7 +121,9 @@ export class OutputElement extends Disposable {
 							event.equals(KeyCode.Space)
 						) {
 							e.preventDefault();
+
 							e.stopPropagation();
+
 							await this.pickActiveMimeTypeRenderer(
 								this._notebookTextModel,
 								this.output,
@@ -121,13 +133,16 @@ export class OutputElement extends Disposable {
 				),
 			);
 		}
+
 		const innerContainer = DOM.$(".output-inner-container");
+
 		DOM.append(outputItemDiv, innerContainer);
 
 		if (mimeTypes.length !== 0) {
 			const renderer = this._notebookService.getRendererInfo(
 				pickedMimeTypeRenderer.rendererId,
 			);
+
 			result = renderer
 				? {
 						type: RenderOutputType.Extension,
@@ -139,9 +154,12 @@ export class OutputElement extends Disposable {
 						this.output,
 						pickedMimeTypeRenderer.mimeType,
 					);
+
 			this.output.pickedMimeType = pickedMimeTypeRenderer;
 		}
+
 		this.domNode = outputItemDiv;
+
 		this.renderResult = result;
 
 		if (!result) {
@@ -149,11 +167,13 @@ export class OutputElement extends Disposable {
 
 			return;
 		}
+
 		if (beforeElement) {
 			this._outputContainer.insertBefore(outputItemDiv, beforeElement);
 		} else {
 			this._outputContainer.appendChild(outputItemDiv);
 		}
+
 		this._notebookEditor.createOutput(
 			this._diffElementViewModel,
 			this._nestedCell,
@@ -166,6 +186,7 @@ export class OutputElement extends Disposable {
 					: DiffSide.Original,
 		);
 	}
+
 	private _renderMissingRenderer(
 		viewModel: ICellOutputViewModel,
 		preferredMimeType: string | undefined,
@@ -176,6 +197,7 @@ export class OutputElement extends Disposable {
 				nls.localize("empty", "Cell has no output"),
 			);
 		}
+
 		if (!preferredMimeType) {
 			const mimeTypes = viewModel.model.outputs.map((op) => op.mime);
 
@@ -190,8 +212,10 @@ export class OutputElement extends Disposable {
 				),
 			);
 		}
+
 		return this._renderSearchForMimetype(viewModel, preferredMimeType);
 	}
+
 	private _renderSearchForMimetype(
 		viewModel: ICellOutputViewModel,
 		mimeType: string,
@@ -222,6 +246,7 @@ export class OutputElement extends Disposable {
 			htmlContent: p.outerHTML + a.outerHTML,
 		};
 	}
+
 	private _renderMessage(
 		viewModel: ICellOutputViewModel,
 		message: string,
@@ -234,6 +259,7 @@ export class OutputElement extends Disposable {
 			htmlContent: el.outerHTML,
 		};
 	}
+
 	private async pickActiveMimeTypeRenderer(
 		notebookTextModel: NotebookTextModel,
 		viewModel: ICellOutputViewModel,
@@ -267,8 +293,11 @@ export class OutputElement extends Disposable {
 		const picker = disposables.add(
 			this._quickInputService.createQuickPick(),
 		);
+
 		picker.items = items;
+
 		picker.activeItems = items.filter((item) => !!item.picked);
+
 		picker.placeholder =
 			items.length !== mimeTypes.length
 				? nls.localize(
@@ -289,26 +318,31 @@ export class OutputElement extends Disposable {
 									.index
 							: undefined,
 					);
+
 					disposables.dispose();
 				}),
 			);
+
 			picker.show();
 		});
 
 		if (pick === undefined) {
 			return;
 		}
+
 		if (pick !== currIndex) {
 			// user chooses another mimetype
 			const index = this._nestedCell.outputsViewModels.indexOf(viewModel);
 
 			const nextElement = this.domNode.nextElementSibling;
+
 			this.resizeListener.clear();
 
 			const element = this.domNode;
 
 			if (element) {
 				element.remove();
+
 				this._notebookEditor.removeInset(
 					this._diffElementViewModel,
 					this._nestedCell,
@@ -316,10 +350,13 @@ export class OutputElement extends Disposable {
 					this._diffSide,
 				);
 			}
+
 			viewModel.pickedMimeType = mimeTypes[pick];
+
 			this.render(index, nextElement as HTMLElement);
 		}
 	}
+
 	private generateRendererInfo(renderId: string): string {
 		const renderInfo = this._notebookService.getRendererInfo(renderId);
 
@@ -331,13 +368,16 @@ export class OutputElement extends Disposable {
 
 			return `${displayName} (${renderInfo.extensionId.value})`;
 		}
+
 		return nls.localize("builtinRenderInfo", "built-in");
 	}
+
 	getCellOutputCurrentIndex() {
 		return this._diffElementViewModel
 			.getNestedCellViewModel(this._diffSide)
 			.outputs.indexOf(this.output.model);
 	}
+
 	updateHeight(index: number, height: number) {
 		this._diffElementViewModel.updateOutputHeight(
 			this._diffSide,
@@ -345,12 +385,14 @@ export class OutputElement extends Disposable {
 			height,
 		);
 	}
+
 	getOutputOffsetInContainer(index: number) {
 		return this._diffElementViewModel.getOutputOffsetInContainer(
 			this._diffSide,
 			index,
 		);
 	}
+
 	getOutputOffsetInCell(index: number) {
 		return this._diffElementViewModel.getOutputOffsetInCell(
 			this._diffSide,
@@ -374,6 +416,7 @@ export class OutputContainer extends Disposable {
 		private readonly _quickInputService: IQuickInputService,
 	) {
 		super();
+
 		this._register(
 			this._diffElementViewModel.onDidLayoutChange(() => {
 				this._outputEntries.forEach((value, key) => {
@@ -387,25 +430,30 @@ export class OutputContainer extends Disposable {
 								this._diffSide,
 								index,
 							);
+
 						value.domNode.style.top = `${top}px`;
 					}
 				});
 			}),
 		);
+
 		this._register(
 			this._nestedCellViewModel.textModel.onDidChangeOutputs((splice) => {
 				this._updateOutputs(splice);
 			}),
 		);
 	}
+
 	private _updateOutputs(splice: NotebookCellOutputsSplice) {
 		const removedKeys: ICellOutputViewModel[] = [];
+
 		this._outputEntries.forEach((value, key) => {
 			if (this._nestedCellViewModel.outputsViewModels.indexOf(key) < 0) {
 				// already removed
 				removedKeys.push(key);
 				// remove element from DOM
 				value.domNode.remove();
+
 				this._editor.removeInset(
 					this._diffElementViewModel,
 					this._nestedCellViewModel,
@@ -414,14 +462,17 @@ export class OutputContainer extends Disposable {
 				);
 			}
 		});
+
 		removedKeys.forEach((key) => {
 			this._outputEntries.get(key)?.dispose();
+
 			this._outputEntries.delete(key);
 		});
 
 		let prevElement: HTMLElement | undefined = undefined;
 
 		const outputsToRender = this._nestedCellViewModel.outputsViewModels;
+
 		outputsToRender.reverse().forEach((output) => {
 			if (this._outputEntries.has(output)) {
 				// already exist
@@ -432,15 +483,20 @@ export class OutputContainer extends Disposable {
 			// newly added element
 			const currIndex =
 				this._nestedCellViewModel.outputsViewModels.indexOf(output);
+
 			this._renderOutput(output, currIndex, prevElement);
+
 			prevElement = this._outputEntries.get(output)?.domNode;
 		});
 	}
+
 	render() {
 		// TODO, outputs to render (should have a limit)
 		for (
 			let index = 0;
+
 			index < this._nestedCellViewModel.outputsViewModels.length;
+
 			index++
 		) {
 			const currOutput =
@@ -449,10 +505,13 @@ export class OutputContainer extends Disposable {
 			this._renderOutput(currOutput, index, undefined);
 		}
 	}
+
 	showOutputs() {
 		for (
 			let index = 0;
+
 			index < this._nestedCellViewModel.outputsViewModels.length;
+
 			index++
 		) {
 			const currOutput =
@@ -466,6 +525,7 @@ export class OutputContainer extends Disposable {
 			);
 		}
 	}
+
 	hideOutputs() {
 		this._outputEntries.forEach((outputElement, cellOutputViewModel) => {
 			this._editor.hideInset(
@@ -475,6 +535,7 @@ export class OutputContainer extends Disposable {
 			);
 		});
 	}
+
 	private _renderOutput(
 		currOutput: ICellOutputViewModel,
 		index: number,
@@ -496,7 +557,9 @@ export class OutputContainer extends Disposable {
 				),
 			);
 		}
+
 		const renderElement = this._outputEntries.get(currOutput)!;
+
 		renderElement.render(index, beforeElement);
 	}
 }

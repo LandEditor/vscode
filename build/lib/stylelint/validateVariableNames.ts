@@ -17,11 +17,13 @@ function getKnownVariableNames() {
 		).toString();
 
 		const knownVariablesInfo = JSON.parse(knownVariablesFileContent);
+
 		knownVariables = new Set([
 			...knownVariablesInfo.colors,
 			...knownVariablesInfo.others,
 		] as string[]);
 	}
+
 	return knownVariables;
 }
 

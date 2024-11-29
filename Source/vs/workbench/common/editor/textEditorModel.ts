@@ -39,11 +39,15 @@ export class BaseTextEditorModel
 	implements ITextEditorModel, ILanguageSupport
 {
 	private static readonly AUTO_DETECT_LANGUAGE_THROTTLE_DELAY = 600;
+
 	protected textEditorModelHandle: URI | undefined = undefined;
+
 	private createdEditorModel: boolean | undefined;
+
 	private readonly modelDisposeListener = this._register(
 		new MutableDisposable(),
 	);
+
 	private readonly autoDetectLanguageThrottler = this._register(
 		new ThrottledDelayer<void>(
 			BaseTextEditorModel.AUTO_DETECT_LANGUAGE_THROTTLE_DELAY,
@@ -67,6 +71,7 @@ export class BaseTextEditorModel
 			this.handleExistingModel(textEditorModelHandle);
 		}
 	}
+
 	private handleExistingModel(textEditorModelHandle: URI): void {
 		// We need the resource to point to an existing model
 		const model = this.modelService.getModel(textEditorModelHandle);
@@ -76,49 +81,60 @@ export class BaseTextEditorModel
 				`Document with resource ${textEditorModelHandle.toString(true)} does not exist`,
 			);
 		}
+
 		this.textEditorModelHandle = textEditorModelHandle;
 		// Make sure we clean up when this model gets disposed
 		this.registerModelDisposeListener(model);
 	}
+
 	private registerModelDisposeListener(model: ITextModel): void {
 		this.modelDisposeListener.value = model.onWillDispose(() => {
 			this.textEditorModelHandle = undefined; // make sure we do not dispose code editor model again
 			this.dispose();
 		});
 	}
+
 	get textEditorModel(): ITextModel | null {
 		return this.textEditorModelHandle
 			? this.modelService.getModel(this.textEditorModelHandle)
 			: null;
 	}
+
 	isReadonly(): boolean | IMarkdownString {
 		return true;
 	}
+
 	private _hasLanguageSetExplicitly: boolean = false;
 
 	get hasLanguageSetExplicitly(): boolean {
 		return this._hasLanguageSetExplicitly;
 	}
+
 	setLanguageId(languageId: string, source?: string): void {
 		// Remember that an explicit language was set
 		this._hasLanguageSetExplicitly = true;
+
 		this.setLanguageIdInternal(languageId, source);
 	}
+
 	private setLanguageIdInternal(languageId: string, source?: string): void {
 		if (!this.isResolved()) {
 			return;
 		}
+
 		if (
 			!languageId ||
 			languageId === this.textEditorModel.getLanguageId()
 		) {
 			return;
 		}
+
 		this.textEditorModel.setLanguage(
 			this.languageService.createById(languageId),
 			source,
 		);
 	}
+
 	protected installModelListeners(model: ITextModel): void {
 		// Setup listener for lower level language changes
 		const disposable = this._register(
@@ -126,19 +142,24 @@ export class BaseTextEditorModel
 				if (e.source === LanguageDetectionLanguageEventSource) {
 					return;
 				}
+
 				this._hasLanguageSetExplicitly = true;
+
 				disposable.dispose();
 			}),
 		);
 	}
+
 	getLanguageId(): string | undefined {
 		return this.textEditorModel?.getLanguageId();
 	}
+
 	protected autoDetectLanguage(): Promise<void> {
 		return this.autoDetectLanguageThrottler.trigger(() =>
 			this.doAutoDetectLanguage(),
 		);
 	}
+
 	private async doAutoDetectLanguage(): Promise<void> {
 		if (
 			this.hasLanguageSetExplicitly || // skip detection when the user has made an explicit choice on the language
@@ -149,6 +170,7 @@ export class BaseTextEditorModel
 		) {
 			return;
 		}
+
 		const lang = await this.languageDetectionService.detectLanguage(
 			this.textEditorModelHandle,
 		);
@@ -162,6 +184,7 @@ export class BaseTextEditorModel
 			);
 
 			const languageName = this.languageService.getLanguageName(lang);
+
 			this.accessibilityService.alert(
 				localize(
 					"languageAutoDetected",
@@ -191,6 +214,7 @@ export class BaseTextEditorModel
 
 		return this.doCreateTextEditorModel(value, languageSelection, resource);
 	}
+
 	private doCreateTextEditorModel(
 		value: ITextBufferFactory,
 		languageSelection: ILanguageSelection,
@@ -204,16 +228,19 @@ export class BaseTextEditorModel
 				languageSelection,
 				resource,
 			);
+
 			this.createdEditorModel = true;
 			// Make sure we clean up when this model gets disposed
 			this.registerModelDisposeListener(model);
 		} else {
 			this.updateTextEditorModel(value, languageSelection.languageId);
 		}
+
 		this.textEditorModelHandle = model.uri;
 
 		return model;
 	}
+
 	protected getFirstLineText(value: ITextBufferFactory | ITextModel): string {
 		// text buffer factory
 		const textBufferFactory = value as ITextBufferFactory;
@@ -276,23 +303,31 @@ export class BaseTextEditorModel
 			);
 		}
 	}
+
 	createSnapshot(this: IResolvedTextEditorModel): ITextSnapshot;
+
 	createSnapshot(this: ITextEditorModel): ITextSnapshot | null;
+
 	createSnapshot(): ITextSnapshot | null {
 		if (!this.textEditorModel) {
 			return null;
 		}
+
 		return this.textEditorModel.createSnapshot(true /* preserve BOM */);
 	}
+
 	override isResolved(): this is IResolvedTextEditorModel {
 		return !!this.textEditorModelHandle;
 	}
+
 	override dispose(): void {
 		this.modelDisposeListener.dispose(); // dispose this first because it will trigger another dispose() otherwise
 		if (this.textEditorModelHandle && this.createdEditorModel) {
 			this.modelService.destroyModel(this.textEditorModelHandle);
 		}
+
 		this.textEditorModelHandle = undefined;
+
 		this.createdEditorModel = false;
 
 		super.dispose();

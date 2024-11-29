@@ -32,9 +32,13 @@ import {
 
 export interface IWorkspaceSymbol {
 	name: string;
+
 	containerName?: string;
+
 	kind: SymbolKind;
+
 	tags?: SymbolTag[];
+
 	location: Location;
 }
 export interface IWorkspaceSymbolProvider {
@@ -42,6 +46,7 @@ export interface IWorkspaceSymbolProvider {
 		search: string,
 		token: CancellationToken,
 	): ProviderResult<IWorkspaceSymbol[]>;
+
 	resolveWorkspaceSymbol?(
 		item: IWorkspaceSymbol,
 		token: CancellationToken,
@@ -56,6 +61,7 @@ export namespace WorkspaceSymbolProviderRegistry {
 		if (support) {
 			_supports.push(support);
 		}
+
 		return {
 			dispose() {
 				if (support) {
@@ -63,12 +69,14 @@ export namespace WorkspaceSymbolProviderRegistry {
 
 					if (idx >= 0) {
 						_supports.splice(idx, 1);
+
 						support = undefined;
 					}
 				}
 			},
 		};
 	}
+
 	export function all(): IWorkspaceSymbolProvider[] {
 		return _supports.slice(0);
 	}
@@ -96,6 +104,7 @@ export async function getWorkspaceSymbols(
 				if (!value) {
 					return;
 				}
+
 				for (const symbol of value) {
 					all.push(new WorkspaceSymbolItem(symbol, provider));
 				}
@@ -104,6 +113,7 @@ export async function getWorkspaceSymbols(
 			}
 		},
 	);
+
 	await Promise.all(promises);
 
 	if (token.isCancellationRequested) {
@@ -119,12 +129,14 @@ export async function getWorkspaceSymbols(
 		if (res === 0) {
 			res = a.symbol.kind - b.symbol.kind;
 		}
+
 		if (res === 0) {
 			res = compare(
 				a.symbol.location.uri.toString(),
 				b.symbol.location.uri.toString(),
 			);
 		}
+
 		if (res === 0) {
 			if (a.symbol.location.range && b.symbol.location.range) {
 				if (
@@ -150,14 +162,17 @@ export async function getWorkspaceSymbols(
 				res = 1;
 			}
 		}
+
 		if (res === 0) {
 			res = compare(
 				a.symbol.containerName ?? "",
 				b.symbol.containerName ?? "",
 			);
 		}
+
 		return res;
 	}
+
 	return groupBy(all, compareItems)
 		.map((group) => group[0])
 		.flat();
@@ -166,7 +181,9 @@ export interface IWorkbenchSearchConfigurationProperties
 	extends ISearchConfigurationProperties {
 	quickOpen: {
 		includeSymbols: boolean;
+
 		includeHistory: boolean;
+
 		history: {
 			filterSortOrder: "default" | "recency";
 		};
@@ -207,6 +224,7 @@ const LINE_COLON_PATTERN = /\s?[#:\(](?:line )?(\d*)(?:[#:,](\d*))?\)?:?\s*$/;
 
 export interface IFilterAndRange {
 	filter: string;
+
 	range: IRange;
 }
 export function extractRangeFromFilter(
@@ -230,6 +248,7 @@ export function extractRangeFromFilter(
 	) {
 		return undefined;
 	}
+
 	let range: IRange | undefined = undefined;
 	// Find Line/Column number from search value using RegExp
 	const patternMatch = LINE_COLON_PATTERN.exec(filter);
@@ -266,12 +285,14 @@ export function extractRangeFromFilter(
 			};
 		}
 	}
+
 	if (patternMatch && range) {
 		return {
 			filter: filter.substr(0, patternMatch.index), // clear range suffix from search value
 			range,
 		};
 	}
+
 	return undefined;
 }
 export enum SearchUIState {
@@ -286,5 +307,6 @@ export const SearchStateKey = new RawContextKey<SearchUIState>(
 
 export interface NotebookPriorityInfo {
 	isFromSettings: boolean;
+
 	filenamePatterns: string[];
 }

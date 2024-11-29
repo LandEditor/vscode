@@ -31,6 +31,7 @@ export class ExtHostDocumentSaveParticipant
 	implements ExtHostDocumentSaveParticipantShape
 {
 	private readonly _callbacks = new LinkedList<Listener>();
+
 	private readonly _badListeners = new WeakMap<Function, number>();
 
 	constructor(
@@ -39,14 +40,17 @@ export class ExtHostDocumentSaveParticipant
 		private readonly _mainThreadBulkEdits: MainThreadBulkEditsShape,
 		private readonly _thresholds: {
 			timeout: number;
+
 			errors: number;
 		} = { timeout: 1500, errors: 3 },
 	) {
 		//
 	}
+
 	dispose(): void {
 		this._callbacks.clear();
 	}
+
 	getOnWillSaveTextDocumentEvent(
 		extension: IExtensionDescription,
 	): Event<vscode.TextDocumentWillSaveEvent> {
@@ -58,9 +62,11 @@ export class ExtHostDocumentSaveParticipant
 			if (Array.isArray(disposables)) {
 				disposables.push(result);
 			}
+
 			return result;
 		};
 	}
+
 	async $participateInSave(
 		data: UriComponents,
 		reason: SaveReason,
@@ -83,6 +89,7 @@ export class ExtHostDocumentSaveParticipant
 					// timeout - no more listeners
 					break;
 				}
+
 				const document = this._documents.getDocument(resource);
 
 				const success =
@@ -93,13 +100,16 @@ export class ExtHostDocumentSaveParticipant
 							reason: TextDocumentSaveReason.to(reason),
 						},
 					);
+
 				results.push(success);
 			}
 		} finally {
 			clearTimeout(didTimeoutHandle);
 		}
+
 		return results;
 	}
+
 	private _deliverEventAsyncAndBlameBadListeners(
 		[listener, thisArg, extension]: Listener,
 		stubEvent: vscode.TextDocumentWillSaveEvent,
@@ -110,6 +120,7 @@ export class ExtHostDocumentSaveParticipant
 			// bad listener - ignore
 			return Promise.resolve(false);
 		}
+
 		return this._deliverEventAsync(
 			extension,
 			listener,
@@ -124,6 +135,7 @@ export class ExtHostDocumentSaveParticipant
 				this._logService.error(
 					`onWillSaveTextDocument-listener from extension '${extension.identifier.value}' threw ERROR`,
 				);
+
 				this._logService.error(err);
 
 				if (
@@ -131,6 +143,7 @@ export class ExtHostDocumentSaveParticipant
 					(<Error>err).message !== "concurrent_edits"
 				) {
 					const errors = this._badListeners.get(listener);
+
 					this._badListeners.set(listener, !errors ? 1 : errors + 1);
 
 					if (
@@ -142,10 +155,12 @@ export class ExtHostDocumentSaveParticipant
 						);
 					}
 				}
+
 				return false;
 			},
 		);
 	}
+
 	private _deliverEventAsync(
 		extension: IExtensionDescription,
 		listener: Function,
@@ -167,6 +182,7 @@ export class ExtHostDocumentSaveParticipant
 				if (Object.isFrozen(promises)) {
 					throw illegalState("waitUntil can not be called async");
 				}
+
 				promises.push(Promise.resolve(p));
 			},
 		});
@@ -192,11 +208,14 @@ export class ExtHostDocumentSaveParticipant
 					this._logService.debug(
 						`onWillSaveTextDocument-listener from extension '${extension.identifier.value}' finished after ${Date.now() - t1}ms`,
 					);
+
 					clearTimeout(handle);
+
 					resolve(edits);
 				})
 				.catch((err) => {
 					clearTimeout(handle);
+
 					reject(err);
 				});
 		}).then((values) => {
@@ -227,11 +246,13 @@ export class ExtHostDocumentSaveParticipant
 			if (dto.edits.length === 0) {
 				return undefined;
 			}
+
 			if (version === document.version) {
 				return this._mainThreadBulkEdits.$tryApplyWorkspaceEdit(
 					new SerializableObjectWithBuffers(dto),
 				);
 			}
+
 			return Promise.reject(new Error("concurrent_edits"));
 		});
 	}

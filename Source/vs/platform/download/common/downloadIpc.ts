@@ -13,9 +13,11 @@ import { IDownloadService } from "./download.js";
 
 export class DownloadServiceChannel implements IServerChannel {
 	constructor(private readonly service: IDownloadService) {}
+
 	listen(_: unknown, event: string, arg?: any): Event<any> {
 		throw new Error("Invalid listen");
 	}
+
 	call(context: any, command: string, args?: any): Promise<any> {
 		switch (command) {
 			case "download":
@@ -24,6 +26,7 @@ export class DownloadServiceChannel implements IServerChannel {
 					URI.revive(args[1]),
 				);
 		}
+
 		throw new Error("Invalid call");
 	}
 }
@@ -34,13 +37,16 @@ export class DownloadServiceChannelClient implements IDownloadService {
 		private channel: IChannel,
 		private getUriTransformer: () => IURITransformer | null,
 	) {}
+
 	async download(from: URI, to: URI): Promise<void> {
 		const uriTransformer = this.getUriTransformer();
 
 		if (uriTransformer) {
 			from = uriTransformer.transformOutgoingURI(from);
+
 			to = uriTransformer.transformOutgoingURI(to);
 		}
+
 		await this.channel.call("download", [from, to]);
 	}
 }

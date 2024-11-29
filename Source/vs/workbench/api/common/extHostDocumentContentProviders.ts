@@ -24,10 +24,12 @@ export class ExtHostDocumentContentProvider
 	implements ExtHostDocumentContentProvidersShape
 {
 	private static _handlePool = 0;
+
 	private readonly _documentContentProviders = new Map<
 		number,
 		vscode.TextDocumentContentProvider
 	>();
+
 	private readonly _proxy: MainThreadDocumentContentProvidersShape;
 
 	constructor(
@@ -39,6 +41,7 @@ export class ExtHostDocumentContentProvider
 			MainContext.MainThreadDocumentContentProviders,
 		);
 	}
+
 	registerTextDocumentContentProvider(
 		scheme: string,
 		provider: vscode.TextDocumentContentProvider,
@@ -48,14 +51,18 @@ export class ExtHostDocumentContentProvider
 		if (Object.keys(Schemas).indexOf(scheme) >= 0) {
 			throw new Error(`scheme '${scheme}' already registered`);
 		}
+
 		const handle = ExtHostDocumentContentProvider._handlePool++;
+
 		this._documentContentProviders.set(handle, provider);
+
 		this._proxy.$registerTextContentProvider(handle, scheme);
 
 		let subscription: IDisposable | undefined;
 
 		if (typeof provider.onDidChange === "function") {
 			let lastEvent: Promise<void> | undefined;
+
 			subscription = provider.onDidChange(async (uri) => {
 				if (uri.scheme !== scheme) {
 					this._logService.warn(
@@ -64,18 +71,22 @@ export class ExtHostDocumentContentProvider
 
 					return;
 				}
+
 				if (!this._documentsAndEditors.getDocument(uri)) {
 					// ignore event if document isn't open
 					return;
 				}
+
 				if (lastEvent) {
 					await lastEvent;
 				}
+
 				const thisEvent = this.$provideTextDocumentContent(handle, uri)
 					.then(async (value) => {
 						if (!value && typeof value !== "string") {
 							return;
 						}
+
 						const document =
 							this._documentsAndEditors.getDocument(uri);
 
@@ -99,15 +110,19 @@ export class ExtHostDocumentContentProvider
 							lastEvent = undefined;
 						}
 					});
+
 				lastEvent = thisEvent;
 			});
 		}
+
 		return new Disposable(() => {
 			if (this._documentContentProviders.delete(handle)) {
 				this._proxy.$unregisterTextContentProvider(handle);
 			}
+
 			if (subscription) {
 				subscription.dispose();
+
 				subscription = undefined;
 			}
 		});
@@ -123,6 +138,7 @@ export class ExtHostDocumentContentProvider
 				new Error(`unsupported uri-scheme: ${uri.scheme}`),
 			);
 		}
+
 		return Promise.resolve(
 			provider.provideTextDocumentContent(
 				URI.revive(uri),

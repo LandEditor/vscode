@@ -12,6 +12,7 @@ export function isOfflineError(error: any): boolean {
 	if (error instanceof OfflineError) {
 		return true;
 	}
+
 	return (
 		error instanceof Error &&
 		error.name === offlineName &&
@@ -21,6 +22,7 @@ export function isOfflineError(error: any): boolean {
 export class OfflineError extends Error {
 	constructor() {
 		super(offlineName);
+
 		this.name = this.message;
 	}
 }
@@ -28,6 +30,7 @@ export interface IHeaders {
 	"Proxy-Authorization"?: string;
 	"x-operation-id"?: string;
 	"retry-after"?: string;
+
 	etag?: string;
 	"Content-Length"?: string;
 	"activityid"?: string;
@@ -36,19 +39,29 @@ export interface IHeaders {
 }
 export interface IRequestOptions {
 	type?: string;
+
 	url?: string;
+
 	user?: string;
+
 	password?: string;
+
 	headers?: IHeaders;
+
 	timeout?: number;
+
 	data?: string;
+
 	followRedirects?: number;
+
 	proxyAuthorization?: string;
 }
 export interface IRequestContext {
 	res: {
 		headers: IHeaders;
+
 		statusCode?: number;
 	};
+
 	stream: VSBufferReadableStream;
 }

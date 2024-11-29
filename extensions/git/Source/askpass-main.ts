@@ -8,28 +8,34 @@ import { IPCClient } from "./ipc/ipcClient";
 
 function fatal(err: any): void {
 	console.error("Missing or invalid credentials.");
+
 	console.error(err);
+
 	process.exit(1);
 }
 function main(argv: string[]): void {
 	if (!process.env["VSCODE_GIT_ASKPASS_PIPE"]) {
 		return fatal("Missing pipe");
 	}
+
 	if (!process.env["VSCODE_GIT_ASKPASS_TYPE"]) {
 		return fatal("Missing type");
 	}
+
 	if (
 		process.env["VSCODE_GIT_ASKPASS_TYPE"] !== "https" &&
 		process.env["VSCODE_GIT_ASKPASS_TYPE"] !== "ssh"
 	) {
 		return fatal(`Invalid type: ${process.env["VSCODE_GIT_ASKPASS_TYPE"]}`);
 	}
+
 	if (
 		process.env["VSCODE_GIT_COMMAND"] === "fetch" &&
 		!!process.env["VSCODE_GIT_FETCH_SILENT"]
 	) {
 		return fatal("Skip silent fetch commands");
 	}
+
 	const output = process.env["VSCODE_GIT_ASKPASS_PIPE"] as string;
 
 	const askpassType = process.env["VSCODE_GIT_ASKPASS_TYPE"] as
@@ -45,6 +51,7 @@ function main(argv: string[]): void {
 	if (askpassType === "https") {
 		host = argv[4].replace(/^["']+|["':]+$/g, "");
 	}
+
 	if (askpassType === "ssh") {
 		if (/passphrase/i.test(request)) {
 			// passphrase
@@ -54,10 +61,13 @@ function main(argv: string[]): void {
 		} else {
 			// authenticity
 			host = argv[6].replace(/^["']+|["':]+$/g, "");
+
 			fingerprint = argv[15];
 		}
 	}
+
 	const ipcClient = new IPCClient("askpass");
+
 	ipcClient
 		.call({ askpassType, request, host, file, fingerprint })
 		.then((res) => {

@@ -52,19 +52,23 @@ abstract class NavigateAction extends Action2 {
 	override async run(accessor: ServicesAccessor) {
 
 		const chatEditingService = accessor.get(IChatEditingService);
+
 		const editorService = accessor.get(IEditorService);
 
 		const editor = editorService.activeTextEditorControl;
+
 		if (!isCodeEditor(editor) || !editor.hasModel()) {
 			return;
 		}
 
 		const session = chatEditingService.currentEditingSession;
+
 		if (!session) {
 			return;
 		}
 
 		const ctrl = ChatEditorController.get(editor);
+
 		if (!ctrl) {
 			return;
 		}
@@ -78,12 +82,15 @@ abstract class NavigateAction extends Action2 {
 		}
 
 		const entries = session.entries.get();
+
 		const idx = entries.findIndex(e => isEqual(e.modifiedURI, editor.getModel().uri));
+
 		if (idx < 0) {
 			return;
 		}
 
 		const newIdx = (idx + (this.next ? 1 : -1) + entries.length) % entries.length;
+
 		if (idx === newIdx) {
 			// wrap inside the same file
 			if (this.next) {
@@ -91,10 +98,12 @@ abstract class NavigateAction extends Action2 {
 			} else {
 				ctrl.revealPrevious(false);
 			}
+
 			return;
 		}
 
 		const entry = entries[newIdx];
+
 		const change = entry.diffInfo.get().changes.at(this.next ? 0 : -1);
 
 		const newEditorPane = await editorService.openEditor({
@@ -108,6 +117,7 @@ abstract class NavigateAction extends Action2 {
 
 
 		const newEditor = newEditorPane?.getControl();
+
 		if (isCodeEditor(newEditor)) {
 			ChatEditorController.get(newEditor)?.initNavigation();
 		}
@@ -148,18 +158,23 @@ abstract class AcceptDiscardAction extends Action2 {
 
 	override run(accessor: ServicesAccessor) {
 		const chatEditingService = accessor.get(IChatEditingService);
+
 		const editorService = accessor.get(IEditorService);
 
 		let uri = getNotebookEditorFromEditorPane(editorService.activeEditorPane)?.textModel?.uri;
+
 		if (!uri) {
 			const editor = editorService.activeTextEditorControl;
+
 			uri = isCodeEditor(editor) && editor.hasModel() ? editor.getModel().uri : undefined;
 		}
+
 		if (!uri) {
 			return;
 		}
 
 		const session = chatEditingService.getEditingSession(uri);
+
 		if (!session) {
 			return;
 		}
@@ -239,9 +254,14 @@ class OpenDiffFromHunkAction extends EditorAction2 {
 
 export function registerChatEditorActions() {
 	registerAction2(class NextAction extends NavigateAction { constructor() { super(true); } });
+
 	registerAction2(class PrevAction extends NavigateAction { constructor() { super(false); } });
+
 	registerAction2(AcceptAction);
+
 	registerAction2(RejectAction);
+
 	registerAction2(UndoHunkAction);
+
 	registerAction2(OpenDiffFromHunkAction);
 }

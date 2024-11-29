@@ -19,10 +19,15 @@ import { ITextModel } from "../model.js";
 
 export interface IShiftCommandOpts {
 	isUnshift: boolean;
+
 	tabSize: number;
+
 	indentSize: number;
+
 	insertSpaces: boolean;
+
 	useTabStops: boolean;
+
 	autoIndent: EditorAutoIndentStrategy;
 }
 
@@ -33,14 +38,17 @@ function cachedStringRepeat(str: string, count: number): string {
 	if (count <= 0) {
 		return "";
 	}
+
 	if (!repeatCache[str]) {
 		repeatCache[str] = ["", str];
 	}
+
 	const cache = repeatCache[str];
 
 	for (let i = cache.length; i <= count; i++) {
 		cache[i] = cache[i - 1] + str;
 	}
+
 	return cache[count];
 }
 export class ShiftCommand implements ICommand {
@@ -80,6 +88,7 @@ export class ShiftCommand implements ICommand {
 			return cachedStringRepeat(indent, indentCount);
 		}
 	}
+
 	public static shiftIndent(
 		line: string,
 		column: number,
@@ -116,10 +125,15 @@ export class ShiftCommand implements ICommand {
 			return cachedStringRepeat(indent, indentCount);
 		}
 	}
+
 	private readonly _opts: IShiftCommandOpts;
+
 	private readonly _selection: Selection;
+
 	private _selectionId: string | null;
+
 	private _useLastEditRangeForCursorEndPosition: boolean;
+
 	private _selectionStartColumnStaysPut: boolean;
 
 	constructor(
@@ -129,11 +143,16 @@ export class ShiftCommand implements ICommand {
 		private readonly _languageConfigurationService: ILanguageConfigurationService,
 	) {
 		this._opts = opts;
+
 		this._selection = range;
+
 		this._selectionId = null;
+
 		this._useLastEditRangeForCursorEndPosition = false;
+
 		this._selectionStartColumnStaysPut = false;
 	}
+
 	private _addEditOperation(
 		builder: IEditOperationBuilder,
 		range: Range,
@@ -145,6 +164,7 @@ export class ShiftCommand implements ICommand {
 			builder.addEditOperation(range, text);
 		}
 	}
+
 	public getEditOperations(
 		model: ITextModel,
 		builder: IEditOperationBuilder,
@@ -156,6 +176,7 @@ export class ShiftCommand implements ICommand {
 		if (this._selection.endColumn === 1 && startLine !== endLine) {
 			endLine = endLine - 1;
 		}
+
 		const { tabSize, indentSize, insertSpaces } = this._opts;
 
 		const shouldIndentEmptyLines = startLine === endLine;
@@ -173,7 +194,9 @@ export class ShiftCommand implements ICommand {
 
 			for (
 				let lineNumber = startLine;
+
 				lineNumber <= endLine;
+
 				lineNumber++, previousLineExtraSpaces = extraSpaces
 			) {
 				extraSpaces = 0;
@@ -190,6 +213,7 @@ export class ShiftCommand implements ICommand {
 					// empty line or line with no leading whitespace => nothing to do
 					continue;
 				}
+
 				if (
 					!shouldIndentEmptyLines &&
 					!this._opts.isUnshift &&
@@ -198,10 +222,12 @@ export class ShiftCommand implements ICommand {
 					// do not indent empty lines => nothing to do
 					continue;
 				}
+
 				if (indentationEndIndex === -1) {
 					// the entire line is whitespace
 					indentationEndIndex = lineText.length;
 				}
+
 				if (lineNumber > 1) {
 					const contentStartVisibleColumn =
 						CursorColumns.visibleColumnFromColumn(
@@ -236,7 +262,9 @@ export class ShiftCommand implements ICommand {
 										let j = 0,
 											lenJ =
 												enterAction.appendText.length;
+
 										j < lenJ && extraSpaces < indentSize;
+
 										j++
 									) {
 										if (
@@ -250,6 +278,7 @@ export class ShiftCommand implements ICommand {
 										}
 									}
 								}
+
 								if (enterAction.removeText) {
 									extraSpaces = Math.max(
 										0,
@@ -266,16 +295,19 @@ export class ShiftCommand implements ICommand {
 									) {
 										break;
 									}
+
 									indentationEndIndex--;
 								}
 							}
 						}
 					}
 				}
+
 				if (this._opts.isUnshift && indentationEndIndex === 0) {
 					// line with no leading whitespace => nothing to do
 					continue;
 				}
+
 				let desiredIndent: string;
 
 				if (this._opts.isUnshift) {
@@ -295,6 +327,7 @@ export class ShiftCommand implements ICommand {
 						insertSpaces,
 					);
 				}
+
 				this._addEditOperation(
 					builder,
 					new Range(
@@ -321,13 +354,16 @@ export class ShiftCommand implements ICommand {
 			) {
 				this._useLastEditRangeForCursorEndPosition = true;
 			}
+
 			const oneIndent = insertSpaces
 				? cachedStringRepeat(" ", indentSize)
 				: "\t";
 
 			for (
 				let lineNumber = startLine;
+
 				lineNumber <= endLine;
+
 				lineNumber++
 			) {
 				const lineText = model.getLineContent(lineNumber);
@@ -342,6 +378,7 @@ export class ShiftCommand implements ICommand {
 					// empty line or line with no leading whitespace => nothing to do
 					continue;
 				}
+
 				if (
 					!shouldIndentEmptyLines &&
 					!this._opts.isUnshift &&
@@ -350,14 +387,17 @@ export class ShiftCommand implements ICommand {
 					// do not indent empty lines => nothing to do
 					continue;
 				}
+
 				if (indentationEndIndex === -1) {
 					// the entire line is whitespace
 					indentationEndIndex = lineText.length;
 				}
+
 				if (this._opts.isUnshift && indentationEndIndex === 0) {
 					// line with no leading whitespace => nothing to do
 					continue;
 				}
+
 				if (this._opts.isUnshift) {
 					indentationEndIndex = Math.min(
 						indentationEndIndex,
@@ -373,6 +413,7 @@ export class ShiftCommand implements ICommand {
 							break;
 						}
 					}
+
 					this._addEditOperation(
 						builder,
 						new Range(
@@ -401,8 +442,10 @@ export class ShiftCommand implements ICommand {
 				}
 			}
 		}
+
 		this._selectionId = builder.trackSelection(this._selection);
 	}
+
 	public computeCursorState(
 		model: ITextModel,
 		helper: ICursorStateComputerData,
@@ -417,6 +460,7 @@ export class ShiftCommand implements ICommand {
 				lastOp.range.endColumn,
 			);
 		}
+
 		const result = helper.getTrackedSelection(this._selectionId!);
 
 		if (this._selectionStartColumnStaysPut) {
@@ -428,6 +472,7 @@ export class ShiftCommand implements ICommand {
 			if (resultStartColumn <= initialStartColumn) {
 				return result;
 			}
+
 			if (result.getDirection() === SelectionDirection.LTR) {
 				return new Selection(
 					result.startLineNumber,
@@ -436,6 +481,7 @@ export class ShiftCommand implements ICommand {
 					result.endColumn,
 				);
 			}
+
 			return new Selection(
 				result.endLineNumber,
 				result.endColumn,
@@ -443,6 +489,7 @@ export class ShiftCommand implements ICommand {
 				initialStartColumn,
 			);
 		}
+
 		return result;
 	}
 }

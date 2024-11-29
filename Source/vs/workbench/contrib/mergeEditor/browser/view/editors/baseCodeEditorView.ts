@@ -42,9 +42,11 @@ export class BaseCodeEditorView extends CodeEditorView {
 		configurationService: IConfigurationService,
 	) {
 		super(instantiationService, viewModel, configurationService);
+
 		this._register(
 			createSelectionsAutorun(this, (baseRange, viewModel) => baseRange),
 		);
+
 		this._register(
 			instantiationService.createInstance(
 				TitleMenu,
@@ -52,6 +54,7 @@ export class BaseCodeEditorView extends CodeEditorView {
 				this.htmlElements.title,
 			),
 		);
+
 		this._register(
 			autorunWithStore((reader, store) => {
 				/** @description update checkboxes */
@@ -74,6 +77,7 @@ export class BaseCodeEditorView extends CodeEditorView {
 				}
 			}),
 		);
+
 		this._register(
 			autorun((reader) => {
 				/** @description update labels & text model */
@@ -82,7 +86,9 @@ export class BaseCodeEditorView extends CodeEditorView {
 				if (!vm) {
 					return;
 				}
+
 				this.editor.setModel(vm.model.base);
+
 				reset(
 					this.htmlElements.title,
 					...renderLabelWithIcons(localize("base", "Base")),
@@ -105,21 +111,26 @@ export class BaseCodeEditorView extends CodeEditorView {
 						"compareWithTooltip",
 						"Differences are highlighted with a background color.",
 					);
+
 					node = h("span", { title: tooltip }, [label]).root;
 				}
+
 				reset(this.htmlElements.description, ...(node ? [node] : []));
 			}),
 		);
+
 		this._register(
 			applyObservableDecorations(this.editor, this.decorations),
 		);
 	}
+
 	private readonly decorations = derived(this, (reader) => {
 		const viewModel = this.viewModel.read(reader);
 
 		if (!viewModel) {
 			return [];
 		}
+
 		const model = viewModel.model;
 
 		const textModel = model.base;
@@ -140,6 +151,7 @@ export class BaseCodeEditorView extends CodeEditorView {
 			if (!range) {
 				continue;
 			}
+
 			const isHandled = model.isHandled(modifiedBaseRange).read(reader);
 
 			if (
@@ -149,6 +161,7 @@ export class BaseCodeEditorView extends CodeEditorView {
 			) {
 				continue;
 			}
+
 			const blockClassNames = ["merge-editor-block"];
 
 			let blockPadding: [
@@ -161,10 +174,13 @@ export class BaseCodeEditorView extends CodeEditorView {
 			if (isHandled) {
 				blockClassNames.push("handled");
 			}
+
 			if (modifiedBaseRange === activeModifiedBaseRange) {
 				blockClassNames.push("focused");
+
 				blockPadding = [0, 2, 0, 2];
 			}
+
 			blockClassNames.push("base");
 
 			const inputToDiffAgainst =
@@ -186,6 +202,7 @@ export class BaseCodeEditorView extends CodeEditorView {
 							},
 						});
 					}
+
 					for (const diff2 of diff.rangeMappings) {
 						if (
 							showDeletionMarkers ||
@@ -205,6 +222,7 @@ export class BaseCodeEditorView extends CodeEditorView {
 					}
 				}
 			}
+
 			result.push({
 				range: range.toInclusiveRangeOrEmpty(),
 				options: {
@@ -235,6 +253,7 @@ export class BaseCodeEditorView extends CodeEditorView {
 				},
 			});
 		}
+
 		return result;
 	});
 }

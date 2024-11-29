@@ -101,6 +101,7 @@ function triggerCodeActionsForEditorSelection(
 ): void {
 	if (editor.hasModel()) {
 		const controller = CodeActionController.get(editor);
+
 		controller?.manualTriggerAtCurrentPosition(
 			notAvailableMessage,
 			triggerAction,

@@ -14,6 +14,7 @@ export class CellFocusPart extends CellContentPart {
 		notebookEditor: INotebookEditor,
 	) {
 		super();
+
 		this._register(
 			DOM.addDisposableListener(
 				containerElement,

@@ -96,6 +96,7 @@ export class TerminalChatController
 						) {
 							return;
 						}
+
 						return {
 							element: editor,
 							code: editor.getValue(),
@@ -119,6 +120,7 @@ export class TerminalChatController
 					xterm,
 				),
 			);
+
 			this._register(
 				chatWidget.focusTracker.onDidFocus(() => {
 					TerminalChatController.activeChatController = this;
@@ -130,9 +132,11 @@ export class TerminalChatController
 					}
 				}),
 			);
+
 			this._register(
 				chatWidget.focusTracker.onDidBlur(() => {
 					TerminalChatController.activeChatController = undefined;
+
 					this._ctx.instance.resetScrollbarVisibility();
 				}),
 			);
@@ -142,6 +146,7 @@ export class TerminalChatController
 					"FindWidget expected terminal DOM to be initialized",
 				);
 			}
+
 			return chatWidget;
 		});
 	}
@@ -163,11 +168,13 @@ export class TerminalChatController
 
 	setPlaceholder(text: string): void {
 		this._forcedPlaceholder = text;
+
 		this._updatePlaceholder();
 	}
 
 	resetPlaceholder(): void {
 		this._forcedPlaceholder = undefined;
+
 		this._updatePlaceholder();
 	}
 
@@ -202,6 +209,7 @@ export class TerminalChatController
 				chatModel,
 			);
 		}
+
 		this._terminalChatWidget?.rawValue?.hide();
 	}
 }
@@ -223,6 +231,7 @@ async function moveToPanelChat(
 				request,
 			);
 		}
+
 		widget.focusLastMessage();
 	}
 }

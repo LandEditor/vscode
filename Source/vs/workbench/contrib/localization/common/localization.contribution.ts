@@ -31,7 +31,9 @@ export class BaseLocalizationWorkbenchContribution
 		super();
 		// Register action to configure locale and related settings
 		registerAction2(ConfigureDisplayLanguageAction);
+
 		registerAction2(ClearDisplayLanguageAction);
+
 		ExtensionsRegistry.registerExtensionPoint({
 			extensionPoint: "localizations",
 			defaultExtensionKind: ["ui", "workspace"],
@@ -125,15 +127,18 @@ class LocalizationsDataRenderer
 	implements IExtensionFeatureTableRenderer
 {
 	readonly type = "table";
+
 	shouldRender(manifest: IExtensionManifest): boolean {
 		return !!manifest.contributes?.localizations;
 	}
+
 	render(manifest: IExtensionManifest): IRenderedData<ITableData> {
 		const localizations = manifest.contributes?.localizations || [];
 
 		if (!localizations.length) {
 			return { data: { headers: [], rows: [] }, dispose: () => {} };
 		}
+
 		const headers = [
 			localize("language id", "Language ID"),
 			localize("localizations language name", "Language Name"),

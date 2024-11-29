@@ -103,15 +103,20 @@ namespace DocumentSortingRequest {
 		range: {
 			start: {
 				line: number;
+
 				character: number;
 			};
+
 			end: {
 				line: number;
+
 				character: number;
 			};
 		};
+
 		newText: string;
 	}
+
 	export const type: RequestType<DocumentSortingParams, ITextEdit[], any> =
 		new RequestType("json/sort");
 }
@@ -120,6 +125,7 @@ export interface ISchemaAssociations {
 }
 export interface ISchemaAssociation {
 	fileMatch: string[];
+
 	uri: string;
 }
 namespace SchemaAssociationNotification {
@@ -134,28 +140,40 @@ type Settings = {
 		format?: {
 			enable?: boolean;
 		};
+
 		keepLines?: {
 			enable?: boolean;
 		};
+
 		validate?: {
 			enable?: boolean;
 		};
+
 		resultLimit?: number;
+
 		jsonFoldingLimit?: number;
+
 		jsoncFoldingLimit?: number;
+
 		jsonColorDecoratorLimit?: number;
+
 		jsoncColorDecoratorLimit?: number;
 	};
+
 	http?: {
 		proxy?: string;
+
 		proxyStrictSSL?: boolean;
 	};
 };
 
 export type JSONSchemaSettings = {
 	fileMatch?: string[];
+
 	url?: string;
+
 	schema?: any;
+
 	folderUri?: string;
 };
 
@@ -199,7 +217,9 @@ export type LanguageClientConstructor = (
 
 export interface Runtime {
 	schemaRequests: SchemaRequestService;
+
 	telemetry?: TelemetryReporter;
+
 	readonly timer: {
 		setTimeout(
 			callback: (...args: any[]) => void,
@@ -207,10 +227,12 @@ export interface Runtime {
 			...args: any[]
 		): Disposable;
 	};
+
 	logOutputChannel: LogOutputChannel;
 }
 export interface SchemaRequestService {
 	getContent(uri: string): Promise<string>;
+
 	clearCache?(): Promise<string[]>;
 }
 export const languageServerDescription = l10n.t("JSON Language Server");
@@ -234,6 +256,7 @@ export async function startClient(
 	runtime: Runtime,
 ): Promise<AsyncDisposable> {
 	const languageParticipants = getLanguageParticipants();
+
 	context.subscriptions.push(languageParticipants);
 
 	let client: Disposable | undefined = await startClientWithParticipants(
@@ -244,20 +267,26 @@ export async function startClient(
 	);
 
 	let restartTrigger: Disposable | undefined;
+
 	languageParticipants.onDidChange(() => {
 		if (restartTrigger) {
 			restartTrigger.dispose();
 		}
+
 		restartTrigger = runtime.timer.setTimeout(async () => {
 			if (client) {
 				runtime.logOutputChannel.info(
 					"Extensions have changed, restarting JSON server...",
 				);
+
 				runtime.logOutputChannel.info("");
 
 				const oldClient = client;
+
 				client = undefined;
+
 				await oldClient.dispose();
+
 				client = await startClientWithParticipants(
 					context,
 					languageParticipants,
@@ -271,6 +300,7 @@ export async function startClient(
 	return {
 		dispose: async () => {
 			restartTrigger?.dispose();
+
 			await client?.dispose();
 		},
 	};
@@ -292,10 +322,13 @@ async function startClientWithParticipants(
 		StatusBarAlignment.Right,
 		0,
 	);
+
 	schemaResolutionErrorStatusBarItem.name = l10n.t(
 		"JSON: Schema Resolution Error",
 	);
+
 	schemaResolutionErrorStatusBarItem.text = "$(alert)";
+
 	toDispose.push(schemaResolutionErrorStatusBarItem);
 
 	const fileSchemaErrors = new Map<string, string>();
@@ -312,19 +345,24 @@ async function startClientWithParticipants(
 				limit,
 			),
 	);
+
 	toDispose.push(documentSymbolsLimitStatusbarItem);
+
 	toDispose.push(
 		commands.registerCommand("json.clearCache", async () => {
 			if (isClientReady && runtime.schemaRequests.clearCache) {
 				const cachedSchemas = await runtime.schemaRequests.clearCache();
+
 				await client.sendNotification(
 					SchemaContentChangeNotification.type,
 					cachedSchemas,
 				);
 			}
+
 			window.showInformationMessage(l10n.t("JSON schema cache cleared."));
 		}),
 	);
+
 	toDispose.push(
 		commands.registerCommand("json.sort", async () => {
 			if (isClientReady) {
@@ -370,6 +408,7 @@ async function startClientWithParticipants(
 
 		if (schemaErrorIndex !== -1) {
 			const schemaResolveDiagnostic = diagnostics[schemaErrorIndex];
+
 			fileSchemaErrors.set(
 				uri.toString(),
 				schemaResolveDiagnostic.message,
@@ -380,6 +419,7 @@ async function startClientWithParticipants(
 					(d) => !isSchemaResolveError(d),
 				);
 			}
+
 			if (
 				window.activeTextEditor &&
 				window.activeTextEditor.document.uri.toString() ===
@@ -388,6 +428,7 @@ async function startClientWithParticipants(
 				schemaResolutionErrorStatusBarItem.show();
 			}
 		}
+
 		return diagnostics;
 	}
 	// Options to control the language client
@@ -430,11 +471,13 @@ async function startClientWithParticipants(
 				) {
 					const uri =
 						uriOrDoc instanceof Uri ? uriOrDoc : uriOrDoc.uri;
+
 					diagnostics.items = filterSchemaErrorDiagnostics(
 						uri,
 						diagnostics.items,
 					);
 				}
+
 				return diagnostics;
 			},
 			handleDiagnostics: (
@@ -443,6 +486,7 @@ async function startClientWithParticipants(
 				next: HandleDiagnosticsSignature,
 			) => {
 				diagnostics = filterSchemaErrorDiagnostics(uri, diagnostics);
+
 				next(uri, diagnostics);
 			},
 			// testing the replace / insert mode
@@ -466,20 +510,24 @@ async function startClientWithParticipants(
 							replacing: range,
 						};
 					}
+
 					if (item.documentation instanceof MarkdownString) {
 						item.documentation = updateMarkdownString(
 							item.documentation,
 						);
 					}
 				}
+
 				function updateProposals(
 					r: CompletionItem[] | CompletionList | null | undefined,
 				): CompletionItem[] | CompletionList | null | undefined {
 					if (r) {
 						(Array.isArray(r) ? r : r.items).forEach(update);
 					}
+
 					return r;
 				}
+
 				const r = next(document, position, context, token);
 
 				if (
@@ -489,6 +537,7 @@ async function startClientWithParticipants(
 				) {
 					return r.then(updateProposals);
 				}
+
 				return updateProposals(r);
 			},
 			provideHover(
@@ -507,13 +556,16 @@ async function startClientWithParticipants(
 								: h,
 						);
 					}
+
 					return r;
 				}
+
 				const r = next(document, position, token);
 
 				if (isThenable<Hover | null | undefined>(r)) {
 					return r.then(updateHover);
 				}
+
 				return updateHover(r);
 			},
 			provideFoldingRanges(
@@ -527,6 +579,7 @@ async function startClientWithParticipants(
 				if (isThenable<FoldingRange[] | null | undefined>(r)) {
 					return r;
 				}
+
 				return r;
 			},
 			provideDocumentColors(
@@ -539,6 +592,7 @@ async function startClientWithParticipants(
 				if (isThenable<ColorInformation[] | null | undefined>(r)) {
 					return r;
 				}
+
 				return r;
 			},
 			provideDocumentSymbols(
@@ -559,9 +613,11 @@ async function startClientWithParticipants(
 						0,
 					);
 				}
+
 				function isDocumentSymbol(r: T): r is DocumentSymbol[] {
 					return r[0] instanceof DocumentSymbol;
 				}
+
 				function checkLimit(
 					r: T | null | undefined,
 				): T | null | undefined {
@@ -581,17 +637,21 @@ async function startClientWithParticipants(
 							false,
 						);
 					}
+
 					return r;
 				}
+
 				const r = next(document, token);
 
 				if (isThenable<T | undefined | null>(r)) {
 					return r.then(checkLimit);
 				}
+
 				return checkLimit(r);
 			},
 		},
 	};
+
 	clientOptions.outputChannel = runtime.logOutputChannel;
 	// Create the language client and start the client.
 	const client = newLanguageClient(
@@ -599,6 +659,7 @@ async function startClientWithParticipants(
 		languageServerDescription,
 		clientOptions,
 	);
+
 	client.registerProposedFeatures();
 
 	const schemaDocuments: {
@@ -613,11 +674,13 @@ async function startClientWithParticipants(
 		if (uri.scheme === "untitled") {
 			throw new ResponseError(3, l10n.t("Unable to load {0}", uriString));
 		}
+
 		if (uri.scheme === "vscode") {
 			try {
 				runtime.logOutputChannel.info(
 					"read schema from vscode: " + uriString,
 				);
+
 				ensureFilesystemWatcherInstalled(uri);
 
 				const content = await workspace.fs.readFile(uri);
@@ -629,6 +692,7 @@ async function startClientWithParticipants(
 		} else if (uri.scheme !== "http" && uri.scheme !== "https") {
 			try {
 				const document = await workspace.openTextDocument(uri);
+
 				schemaDocuments[uriString] = true;
 
 				return document.getText();
@@ -651,6 +715,7 @@ async function startClientWithParticipants(
 					schemaURL: uriString,
 				});
 			}
+
 			try {
 				return await runtime.schemaRequests.getContent(uriString);
 			} catch (e) {
@@ -666,7 +731,9 @@ async function startClientWithParticipants(
 			);
 		}
 	});
+
 	await client.start();
+
 	isClientReady = true;
 
 	const handleContentChange = (uriString: string) => {
@@ -678,6 +745,7 @@ async function startClientWithParticipants(
 
 			return true;
 		}
+
 		return false;
 	};
 
@@ -685,6 +753,7 @@ async function startClientWithParticipants(
 		if (!activeEditor) {
 			return;
 		}
+
 		const activeDocUri = activeEditor.document.uri.toString();
 
 		if (activeDocUri && fileSchemaErrors.has(activeDocUri)) {
@@ -698,10 +767,12 @@ async function startClientWithParticipants(
 		if (handleContentChange(uriString)) {
 			delete schemaDocuments[uriString];
 		}
+
 		fileSchemaErrors.delete(uriString);
 	};
 
 	const watchers: Map<string, Disposable> = new Map();
+
 	toDispose.push(
 		new Disposable(() => {
 			for (const d of watchers.values()) {
@@ -723,6 +794,7 @@ async function startClientWithParticipants(
 					runtime.logOutputChannel.info(
 						"schema change detected " + uri.toString(),
 					);
+
 					client.sendNotification(
 						SchemaContentChangeNotification.type,
 						uriString,
@@ -738,9 +810,11 @@ async function startClientWithParticipants(
 
 					if (watcher) {
 						watcher.dispose();
+
 						watchers.delete(uriString);
 					}
 				});
+
 				watchers.set(
 					uriString,
 					Disposable.from(
@@ -757,16 +831,19 @@ async function startClientWithParticipants(
 			}
 		}
 	};
+
 	toDispose.push(
 		workspace.onDidChangeTextDocument((e) =>
 			handleContentChange(e.document.uri.toString()),
 		),
 	);
+
 	toDispose.push(
 		workspace.onDidCloseTextDocument((d) =>
 			handleContentClosed(d.uri.toString()),
 		),
 	);
+
 	toDispose.push(
 		window.onDidChangeActiveTextEditor(handleActiveEditorChange),
 	);
@@ -777,6 +854,7 @@ async function startClientWithParticipants(
 
 			const activeDocUri =
 				window.activeTextEditor.document.uri.toString();
+
 			client
 				.sendRequest(ForceValidateRequest.type, activeDocUri)
 				.then((diagnostics) => {
@@ -787,6 +865,7 @@ async function startClientWithParticipants(
 						// Show schema resolution errors in status bar only; ref: #51032
 						const schemaResolveDiagnostic =
 							diagnostics[schemaErrorIndex];
+
 						fileSchemaErrors.set(
 							activeDocUri,
 							schemaResolveDiagnostic.message,
@@ -794,20 +873,24 @@ async function startClientWithParticipants(
 					} else {
 						schemaResolutionErrorStatusBarItem.hide();
 					}
+
 					schemaResolutionErrorStatusBarItem.text = "$(alert)";
 				});
 		}
 	};
+
 	toDispose.push(
 		commands.registerCommand(
 			"_json.retryResolveSchema",
 			handleRetryResolveSchemaCommand,
 		),
 	);
+
 	client.sendNotification(
 		SchemaAssociationNotification.type,
 		getSchemaAssociations(context),
 	);
+
 	toDispose.push(
 		extensions.onDidChange((_) => {
 			client.sendNotification(
@@ -818,10 +901,13 @@ async function startClientWithParticipants(
 	);
 	// manually register / deregister format provider based on the `json.format.enable` setting avoiding issues with late registration. See #71652.
 	updateFormatterRegistration();
+
 	toDispose.push({
 		dispose: () => rangeFormatting && rangeFormatting.dispose(),
 	});
+
 	updateSchemaDownloadSetting();
+
 	toDispose.push(
 		workspace.onDidChangeConfiguration((e) => {
 			if (e.affectsConfiguration(SettingIds.enableFormatter)) {
@@ -843,6 +929,7 @@ async function startClientWithParticipants(
 			}
 		}),
 	);
+
 	toDispose.push(
 		createLanguageStatusItem(documentSelector, (uri: string) =>
 			client.sendRequest(LanguageStatusRequest.type, uri),
@@ -856,6 +943,7 @@ async function startClientWithParticipants(
 
 		if (!formatEnabled && rangeFormatting) {
 			rangeFormatting.dispose();
+
 			rangeFormatting = undefined;
 		} else if (formatEnabled && !rangeFormatting) {
 			rangeFormatting =
@@ -927,6 +1015,7 @@ async function startClientWithParticipants(
 				);
 		}
 	}
+
 	function updateSchemaDownloadSetting() {
 		schemaDownloadEnabled =
 			workspace
@@ -937,13 +1026,16 @@ async function startClientWithParticipants(
 			schemaResolutionErrorStatusBarItem.tooltip = l10n.t(
 				"Unable to resolve schema. Click to retry.",
 			);
+
 			schemaResolutionErrorStatusBarItem.command =
 				"_json.retryResolveSchema";
+
 			handleRetryResolveSchemaCommand();
 		} else {
 			schemaResolutionErrorStatusBarItem.tooltip = l10n.t(
 				"Downloading schemas is disabled. Click to configure.",
 			);
+
 			schemaResolutionErrorStatusBarItem.command = {
 				command: "workbench.action.openSettings",
 				arguments: [SettingIds.enableSchemaDownload],
@@ -951,6 +1043,7 @@ async function startClientWithParticipants(
 			};
 		}
 	}
+
 	async function getSortTextEdits(
 		document: TextDocument,
 		tabSize: string | number = 4,
@@ -990,10 +1083,13 @@ async function startClientWithParticipants(
 			);
 		});
 	}
+
 	return {
 		dispose: async () => {
 			await client.stop();
+
 			toDispose.forEach((d) => d.dispose());
+
 			rangeFormatting?.dispose();
 		},
 	};
@@ -1002,6 +1098,7 @@ function getSchemaAssociations(
 	_context: ExtensionContext,
 ): ISchemaAssociation[] {
 	const associations: ISchemaAssociation[] = [];
+
 	extensions.all.forEach((extension) => {
 		const packageJSON = extension.packageJSON;
 
@@ -1019,6 +1116,7 @@ function getSchemaAssociations(
 					if (typeof fileMatch === "string") {
 						fileMatch = [fileMatch];
 					}
+
 					if (Array.isArray(fileMatch) && typeof url === "string") {
 						let uri: string = url;
 
@@ -1028,13 +1126,16 @@ function getSchemaAssociations(
 								uri,
 							).toString();
 						}
+
 						fileMatch = fileMatch.map((fm) => {
 							if (fm[0] === "%") {
 								fm = fm.replace(/%APP_SETTINGS_HOME%/, "/User");
+
 								fm = fm.replace(
 									/%MACHINE_SETTINGS_HOME%/,
 									"/Machine",
 								);
+
 								fm = fm.replace(
 									/%APP_WORKSPACES_HOME%/,
 									"/Workspaces",
@@ -1042,8 +1143,10 @@ function getSchemaAssociations(
 							} else if (!fm.match(/^(\w+:\/\/|\/|!)/)) {
 								fm = "/" + fm;
 							}
+
 							return fm;
 						});
+
 						associations.push({ fileMatch, uri });
 					}
 				});
@@ -1060,6 +1163,7 @@ function getSettings(): Settings {
 
 	const normalizeLimit = (settingValue: any) =>
 		Math.trunc(Math.max(0, Number(settingValue))) || 5000;
+
 	resultLimit = normalizeLimit(
 		workspace.getConfiguration().get(SettingIds.maxItemsComputed),
 	);
@@ -1073,15 +1177,19 @@ function getSettings(): Settings {
 		SettingIds.editorSection,
 		{ languageId: "jsonc" },
 	);
+
 	jsonFoldingLimit = normalizeLimit(
 		editorJSONSettings.get(SettingIds.foldingMaximumRegions),
 	);
+
 	jsoncFoldingLimit = normalizeLimit(
 		editorJSONCSettings.get(SettingIds.foldingMaximumRegions),
 	);
+
 	jsonColorDecoratorLimit = normalizeLimit(
 		editorJSONSettings.get(SettingIds.colorDecoratorsLimit),
 	);
+
 	jsoncColorDecoratorLimit = normalizeLimit(
 		editorJSONCSettings.get(SettingIds.colorDecoratorsLimit),
 	);
@@ -1130,6 +1238,7 @@ function getSettings(): Settings {
 						folderUri,
 						schema: setting.schema,
 					};
+
 					schemas.push(schemaSetting);
 				}
 			}
@@ -1163,12 +1272,14 @@ function getSettings(): Settings {
 					settingsLocation,
 				);
 			}
+
 			for (const folder of folders) {
 				const folderUri = folder.uri;
 
 				const folderSchemaConfigInfo = workspace
 					.getConfiguration("json", folderUri)
 					.inspect<JSONSchemaSettings[]>("schemas");
+
 				collectSchemaSettings(
 					folderSchemaConfigInfo?.workspaceFolderValue,
 					folderUri.toString(false),
@@ -1186,6 +1297,7 @@ function getSettings(): Settings {
 			}
 		}
 	}
+
 	return settings;
 }
 function getSchemaId(
@@ -1203,6 +1315,7 @@ function getSchemaId(
 	} else if (settingsLocation && (url[0] === "." || url[0] === "/")) {
 		url = Uri.joinPath(settingsLocation, url).toString(false);
 	}
+
 	return url;
 }
 function isThenable<T>(obj: ProviderResult<T>): obj is Thenable<T> {
@@ -1210,6 +1323,7 @@ function isThenable<T>(obj: ProviderResult<T>): obj is Thenable<T> {
 }
 function updateMarkdownString(h: MarkdownString): MarkdownString {
 	const n = new MarkdownString(h.value, true);
+
 	n.isTrusted = h.isTrusted;
 
 	return n;

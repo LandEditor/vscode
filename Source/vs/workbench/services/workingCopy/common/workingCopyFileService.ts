@@ -128,6 +128,7 @@ export interface IStoredFileWorkingCopySaveParticipant {
 }
 export interface ICreateOperation {
 	resource: URI;
+
 	overwrite?: boolean;
 }
 export interface ICreateFileOperation extends ICreateOperation {
@@ -135,11 +136,14 @@ export interface ICreateFileOperation extends ICreateOperation {
 }
 export interface IDeleteOperation {
 	resource: URI;
+
 	useTrash?: boolean;
+
 	recursive?: boolean;
 }
 export interface IMoveOperation {
 	file: Required<SourceTargetPair>;
+
 	overwrite?: boolean;
 }
 export interface ICopyOperation extends IMoveOperation {}
@@ -295,16 +299,21 @@ export class WorkingCopyFileService
 	private readonly _onWillRunWorkingCopyFileOperation = this._register(
 		new AsyncEmitter<WorkingCopyFileEvent>(),
 	);
+
 	readonly onWillRunWorkingCopyFileOperation =
 		this._onWillRunWorkingCopyFileOperation.event;
+
 	private readonly _onDidFailWorkingCopyFileOperation = this._register(
 		new AsyncEmitter<WorkingCopyFileEvent>(),
 	);
+
 	readonly onDidFailWorkingCopyFileOperation =
 		this._onDidFailWorkingCopyFileOperation.event;
+
 	private readonly _onDidRunWorkingCopyFileOperation = this._register(
 		new AsyncEmitter<WorkingCopyFileEvent>(),
 	);
+
 	readonly onDidRunWorkingCopyFileOperation =
 		this._onDidRunWorkingCopyFileOperation.event;
 	//#endregion
@@ -335,6 +344,7 @@ export class WorkingCopyFileService
 								resource,
 							);
 						}
+
 						return this.uriIdentityService.extUri.isEqual(
 							workingCopy.resource,
 							resource,
@@ -352,6 +362,7 @@ export class WorkingCopyFileService
 	): Promise<IFileStatWithMetadata[]> {
 		return this.doCreateFileOrFolder(operations, true, token, undoInfo);
 	}
+
 	createFolder(
 		operations: ICreateOperation[],
 		token: CancellationToken,
@@ -359,6 +370,7 @@ export class WorkingCopyFileService
 	): Promise<IFileStatWithMetadata[]> {
 		return this.doCreateFileOrFolder(operations, false, token, undoInfo);
 	}
+
 	async doCreateFileOrFolder(
 		operations: (ICreateFileOperation | ICreateOperation)[],
 		isFile: boolean,
@@ -390,6 +402,7 @@ export class WorkingCopyFileService
 		const files = operations.map((operation) => ({
 			target: operation.resource,
 		}));
+
 		await this.runFileOperationParticipants(
 			files,
 			FileOperation.CREATE,
@@ -402,6 +415,7 @@ export class WorkingCopyFileService
 			operation: FileOperation.CREATE,
 			files,
 		};
+
 		await this._onWillRunWorkingCopyFileOperation.fireAsync(
 			event,
 			CancellationToken.None /* intentional: we currently only forward cancellation to participants */,
@@ -444,6 +458,7 @@ export class WorkingCopyFileService
 
 		return stats;
 	}
+
 	async move(
 		operations: IMoveOperation[],
 		token: CancellationToken,
@@ -451,6 +466,7 @@ export class WorkingCopyFileService
 	): Promise<IFileStatWithMetadata[]> {
 		return this.doMoveOrCopy(operations, true, token, undoInfo);
 	}
+
 	async copy(
 		operations: ICopyOperation[],
 		token: CancellationToken,
@@ -458,6 +474,7 @@ export class WorkingCopyFileService
 	): Promise<IFileStatWithMetadata[]> {
 		return this.doMoveOrCopy(operations, false, token, undoInfo);
 	}
+
 	private async doMoveOrCopy(
 		operations: IMoveOperation[] | ICopyOperation[],
 		move: boolean,
@@ -480,6 +497,7 @@ export class WorkingCopyFileService
 		}
 		// file operation participant
 		const files = operations.map((o) => o.file);
+
 		await this.runFileOperationParticipants(
 			files,
 			move ? FileOperation.MOVE : FileOperation.COPY,
@@ -492,6 +510,7 @@ export class WorkingCopyFileService
 			operation: move ? FileOperation.MOVE : FileOperation.COPY,
 			files,
 		};
+
 		await this._onWillRunWorkingCopyFileOperation.fireAsync(
 			event,
 			CancellationToken.None /* intentional: we currently only forward cancellation to participants */,
@@ -510,6 +529,7 @@ export class WorkingCopyFileService
 					const dirtyWorkingCopies = move
 						? [...this.getDirty(source), ...this.getDirty(target)]
 						: this.getDirty(target);
+
 					await Promises.settled(
 						dirtyWorkingCopies.map((dirtyWorkingCopy) =>
 							dirtyWorkingCopy.revert({ soft: true }),
@@ -544,6 +564,7 @@ export class WorkingCopyFileService
 
 		return stats;
 	}
+
 	async delete(
 		operations: IDeleteOperation[],
 		token: CancellationToken,
@@ -567,6 +588,7 @@ export class WorkingCopyFileService
 		const files = operations.map((operation) => ({
 			target: operation.resource,
 		}));
+
 		await this.runFileOperationParticipants(
 			files,
 			FileOperation.DELETE,
@@ -579,6 +601,7 @@ export class WorkingCopyFileService
 			operation: FileOperation.DELETE,
 			files,
 		};
+
 		await this._onWillRunWorkingCopyFileOperation.fireAsync(
 			event,
 			CancellationToken.None /* intentional: we currently only forward cancellation to participants */,
@@ -588,6 +611,7 @@ export class WorkingCopyFileService
 		// any opened editor with these working copies
 		for (const operation of operations) {
 			const dirtyWorkingCopies = this.getDirty(operation.resource);
+
 			await Promises.settled(
 				dirtyWorkingCopies.map((dirtyWorkingCopy) =>
 					dirtyWorkingCopy.revert({ soft: true }),
@@ -624,6 +648,7 @@ export class WorkingCopyFileService
 			WorkingCopyFileOperationParticipant,
 		),
 	);
+
 	addFileOperationParticipant(
 		participant: IWorkingCopyFileOperationParticipant,
 	): IDisposable {
@@ -631,6 +656,7 @@ export class WorkingCopyFileService
 			participant,
 		);
 	}
+
 	private runFileOperationParticipants(
 		files: SourceTargetPair[],
 		operation: FileOperation,
@@ -655,11 +681,13 @@ export class WorkingCopyFileService
 	get hasSaveParticipants(): boolean {
 		return this.saveParticipants.length > 0;
 	}
+
 	addSaveParticipant(
 		participant: IStoredFileWorkingCopySaveParticipant,
 	): IDisposable {
 		return this.saveParticipants.addSaveParticipant(participant);
 	}
+
 	runSaveParticipants(
 		workingCopy: IStoredFileWorkingCopy<IStoredFileWorkingCopyModel>,
 		context: IStoredFileWorkingCopySaveParticipantContext,
@@ -676,11 +704,13 @@ export class WorkingCopyFileService
 	//#endregion
 	//#region Path related
 	private readonly workingCopyProviders: WorkingCopyProvider[] = [];
+
 	registerWorkingCopyProvider(provider: WorkingCopyProvider): IDisposable {
 		const remove = insert(this.workingCopyProviders, provider);
 
 		return toDisposable(remove);
 	}
+
 	getDirty(resource: URI): IWorkingCopy[] {
 		const dirtyWorkingCopies = new Set<IWorkingCopy>();
 
@@ -691,6 +721,7 @@ export class WorkingCopyFileService
 				}
 			}
 		}
+
 		return Array.from(dirtyWorkingCopies);
 	}
 }

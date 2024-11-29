@@ -37,11 +37,14 @@ import { formatPII, isUri } from "../common/debugUtils.js";
  */
 interface ILaunchVSCodeArgument {
 	prefix?: string;
+
 	path?: string;
 }
 interface ILaunchVSCodeArguments {
 	args: ILaunchVSCodeArgument[];
+
 	debugRenderer?: boolean;
+
 	env?: {
 		[key: string]: string | null;
 	};
@@ -51,48 +54,72 @@ interface ILaunchVSCodeArguments {
  */
 export class RawDebugSession implements IDisposable {
 	private allThreadsContinued = true;
+
 	private _readyForBreakpoints = false;
+
 	private _capabilities: DebugProtocol.Capabilities;
 	// shutdown
 	private debugAdapterStopped = false;
+
 	private inShutdown = false;
+
 	private terminated = false;
+
 	private firedAdapterExitEvent = false;
 	// telemetry
 	private startTime = 0;
+
 	private didReceiveStoppedEvent = false;
 	// DAP events
 	private readonly _onDidInitialize =
 		new Emitter<DebugProtocol.InitializedEvent>();
+
 	private readonly _onDidStop = new Emitter<DebugProtocol.StoppedEvent>();
+
 	private readonly _onDidContinued =
 		new Emitter<DebugProtocol.ContinuedEvent>();
+
 	private readonly _onDidTerminateDebugee =
 		new Emitter<DebugProtocol.TerminatedEvent>();
+
 	private readonly _onDidExitDebugee =
 		new Emitter<DebugProtocol.ExitedEvent>();
+
 	private readonly _onDidThread = new Emitter<DebugProtocol.ThreadEvent>();
+
 	private readonly _onDidOutput = new Emitter<DebugProtocol.OutputEvent>();
+
 	private readonly _onDidBreakpoint =
 		new Emitter<DebugProtocol.BreakpointEvent>();
+
 	private readonly _onDidLoadedSource =
 		new Emitter<DebugProtocol.LoadedSourceEvent>();
+
 	private readonly _onDidProgressStart =
 		new Emitter<DebugProtocol.ProgressStartEvent>();
+
 	private readonly _onDidProgressUpdate =
 		new Emitter<DebugProtocol.ProgressUpdateEvent>();
+
 	private readonly _onDidProgressEnd =
 		new Emitter<DebugProtocol.ProgressEndEvent>();
+
 	private readonly _onDidInvalidated =
 		new Emitter<DebugProtocol.InvalidatedEvent>();
+
 	private readonly _onDidInvalidateMemory =
 		new Emitter<DebugProtocol.MemoryEvent>();
+
 	private readonly _onDidCustomEvent = new Emitter<DebugProtocol.Event>();
+
 	private readonly _onDidEvent = new Emitter<DebugProtocol.Event>();
 	// DA events
 	private readonly _onDidExitAdapter = new Emitter<AdapterEndEvent>();
+
 	private debugAdapter: IDebugAdapter | null;
+
 	private stoppedSinceLastStep = false;
+
 	private toDispose: IDisposable[] = [];
 
 	constructor(
@@ -110,12 +137,15 @@ export class RawDebugSession implements IDisposable {
 		private readonly dialogSerivce: IDialogService,
 	) {
 		this.debugAdapter = debugAdapter;
+
 		this._capabilities = Object.create(null);
+
 		this.toDispose.push(
 			this.debugAdapter.onError((err) => {
 				this.shutdown(err);
 			}),
 		);
+
 		this.toDispose.push(
 			this.debugAdapter.onExit((code) => {
 				if (code !== 0) {
@@ -126,10 +156,12 @@ export class RawDebugSession implements IDisposable {
 				}
 			}),
 		);
+
 		this.debugAdapter.onEvent((event) => {
 			switch (event.event) {
 				case "initialized":
 					this._readyForBreakpoints = true;
+
 					this._onDidInitialize.fire(event);
 
 					break;
@@ -146,13 +178,16 @@ export class RawDebugSession implements IDisposable {
 						const capabilities = (<DebugProtocol.CapabilitiesEvent>(
 							event
 						)).body.capabilities;
+
 						this.mergeCapabilities(capabilities);
 					}
+
 					break;
 
 				case "stopped":
 					this.didReceiveStoppedEvent = true; // telemetry: remember that debugger stopped successfully
 					this.stoppedSinceLastStep = true;
+
 					this._onDidStop.fire(<DebugProtocol.StoppedEvent>event);
 
 					break;
@@ -163,6 +198,7 @@ export class RawDebugSession implements IDisposable {
 							.allThreadsContinued === false
 							? false
 							: true;
+
 					this._onDidContinued.fire(
 						<DebugProtocol.ContinuedEvent>event,
 					);
@@ -246,16 +282,21 @@ export class RawDebugSession implements IDisposable {
 
 					break;
 			}
+
 			this._onDidEvent.fire(event);
 		});
+
 		this.debugAdapter.onRequest((request) => this.dispatchRequest(request));
 	}
+
 	get isInShutdown() {
 		return this.inShutdown;
 	}
+
 	get onDidExitAdapter(): Event<AdapterEndEvent> {
 		return this._onDidExitAdapter.event;
 	}
+
 	get capabilities(): DebugProtocol.Capabilities {
 		return this._capabilities;
 	}
@@ -270,48 +311,63 @@ export class RawDebugSession implements IDisposable {
 	get onDidInitialize(): Event<DebugProtocol.InitializedEvent> {
 		return this._onDidInitialize.event;
 	}
+
 	get onDidStop(): Event<DebugProtocol.StoppedEvent> {
 		return this._onDidStop.event;
 	}
+
 	get onDidContinued(): Event<DebugProtocol.ContinuedEvent> {
 		return this._onDidContinued.event;
 	}
+
 	get onDidTerminateDebugee(): Event<DebugProtocol.TerminatedEvent> {
 		return this._onDidTerminateDebugee.event;
 	}
+
 	get onDidExitDebugee(): Event<DebugProtocol.ExitedEvent> {
 		return this._onDidExitDebugee.event;
 	}
+
 	get onDidThread(): Event<DebugProtocol.ThreadEvent> {
 		return this._onDidThread.event;
 	}
+
 	get onDidOutput(): Event<DebugProtocol.OutputEvent> {
 		return this._onDidOutput.event;
 	}
+
 	get onDidBreakpoint(): Event<DebugProtocol.BreakpointEvent> {
 		return this._onDidBreakpoint.event;
 	}
+
 	get onDidLoadedSource(): Event<DebugProtocol.LoadedSourceEvent> {
 		return this._onDidLoadedSource.event;
 	}
+
 	get onDidCustomEvent(): Event<DebugProtocol.Event> {
 		return this._onDidCustomEvent.event;
 	}
+
 	get onDidProgressStart(): Event<DebugProtocol.ProgressStartEvent> {
 		return this._onDidProgressStart.event;
 	}
+
 	get onDidProgressUpdate(): Event<DebugProtocol.ProgressUpdateEvent> {
 		return this._onDidProgressUpdate.event;
 	}
+
 	get onDidProgressEnd(): Event<DebugProtocol.ProgressEndEvent> {
 		return this._onDidProgressEnd.event;
 	}
+
 	get onDidInvalidated(): Event<DebugProtocol.InvalidatedEvent> {
 		return this._onDidInvalidated.event;
 	}
+
 	get onDidInvalidateMemory(): Event<DebugProtocol.MemoryEvent> {
 		return this._onDidInvalidateMemory.event;
 	}
+
 	get onDidEvent(): Event<DebugProtocol.Event> {
 		return this._onDidEvent.event;
 	}
@@ -330,7 +386,9 @@ export class RawDebugSession implements IDisposable {
 				),
 			);
 		}
+
 		await this.debugAdapter.startSession();
+
 		this.startTime = new Date().getTime();
 	}
 	/**
@@ -350,6 +408,7 @@ export class RawDebugSession implements IDisposable {
 		if (response) {
 			this.mergeCapabilities(response.body);
 		}
+
 		return response;
 	}
 	/**
@@ -388,6 +447,7 @@ export class RawDebugSession implements IDisposable {
 		if (response) {
 			this.mergeCapabilities(response.body);
 		}
+
 		return response;
 	}
 	/**
@@ -402,18 +462,23 @@ export class RawDebugSession implements IDisposable {
 
 				return this.send("terminate", { restart }, undefined);
 			}
+
 			return this.disconnect({ terminateDebuggee: true, restart });
 		}
+
 		return Promise.reject(new Error("terminated not supported"));
 	}
+
 	restart(
 		args: DebugProtocol.RestartArguments,
 	): Promise<DebugProtocol.RestartResponse | undefined> {
 		if (this.capabilities.supportsRestartRequest) {
 			return this.send("restart", args);
 		}
+
 		return Promise.reject(new Error("restart not supported"));
 	}
+
 	async next(
 		args: DebugProtocol.NextArguments,
 	): Promise<DebugProtocol.NextResponse | undefined> {
@@ -424,8 +489,10 @@ export class RawDebugSession implements IDisposable {
 		if (!this.stoppedSinceLastStep) {
 			this.fireSimulatedContinuedEvent(args.threadId);
 		}
+
 		return response;
 	}
+
 	async stepIn(
 		args: DebugProtocol.StepInArguments,
 	): Promise<DebugProtocol.StepInResponse | undefined> {
@@ -436,8 +503,10 @@ export class RawDebugSession implements IDisposable {
 		if (!this.stoppedSinceLastStep) {
 			this.fireSimulatedContinuedEvent(args.threadId);
 		}
+
 		return response;
 	}
+
 	async stepOut(
 		args: DebugProtocol.StepOutArguments,
 	): Promise<DebugProtocol.StepOutResponse | undefined> {
@@ -448,8 +517,10 @@ export class RawDebugSession implements IDisposable {
 		if (!this.stoppedSinceLastStep) {
 			this.fireSimulatedContinuedEvent(args.threadId);
 		}
+
 		return response;
 	}
+
 	async continue(
 		args: DebugProtocol.ContinueArguments,
 	): Promise<DebugProtocol.ContinueResponse | undefined> {
@@ -467,27 +538,33 @@ export class RawDebugSession implements IDisposable {
 		) {
 			this.allThreadsContinued = response.body.allThreadsContinued;
 		}
+
 		if (!this.stoppedSinceLastStep) {
 			this.fireSimulatedContinuedEvent(
 				args.threadId,
 				this.allThreadsContinued,
 			);
 		}
+
 		return response;
 	}
+
 	pause(
 		args: DebugProtocol.PauseArguments,
 	): Promise<DebugProtocol.PauseResponse | undefined> {
 		return this.send("pause", args);
 	}
+
 	terminateThreads(
 		args: DebugProtocol.TerminateThreadsArguments,
 	): Promise<DebugProtocol.TerminateThreadsResponse | undefined> {
 		if (this.capabilities.supportsTerminateThreadsRequest) {
 			return this.send("terminateThreads", args);
 		}
+
 		return Promise.reject(new Error("terminateThreads not supported"));
 	}
+
 	setVariable(
 		args: DebugProtocol.SetVariableArguments,
 	): Promise<DebugProtocol.SetVariableResponse | undefined> {
@@ -497,8 +574,10 @@ export class RawDebugSession implements IDisposable {
 				args,
 			);
 		}
+
 		return Promise.reject(new Error("setVariable not supported"));
 	}
+
 	setExpression(
 		args: DebugProtocol.SetExpressionArguments,
 	): Promise<DebugProtocol.SetExpressionResponse | undefined> {
@@ -508,8 +587,10 @@ export class RawDebugSession implements IDisposable {
 				args,
 			);
 		}
+
 		return Promise.reject(new Error("setExpression not supported"));
 	}
+
 	async restartFrame(
 		args: DebugProtocol.RestartFrameArguments,
 		threadId: number,
@@ -522,18 +603,23 @@ export class RawDebugSession implements IDisposable {
 			if (!this.stoppedSinceLastStep) {
 				this.fireSimulatedContinuedEvent(threadId);
 			}
+
 			return response;
 		}
+
 		return Promise.reject(new Error("restartFrame not supported"));
 	}
+
 	stepInTargets(
 		args: DebugProtocol.StepInTargetsArguments,
 	): Promise<DebugProtocol.StepInTargetsResponse | undefined> {
 		if (this.capabilities.supportsStepInTargetsRequest) {
 			return this.send("stepInTargets", args);
 		}
+
 		return Promise.reject(new Error("stepInTargets not supported"));
 	}
+
 	completions(
 		args: DebugProtocol.CompletionsArguments,
 		token: CancellationToken,
@@ -545,8 +631,10 @@ export class RawDebugSession implements IDisposable {
 				token,
 			);
 		}
+
 		return Promise.reject(new Error("completions not supported"));
 	}
+
 	setBreakpoints(
 		args: DebugProtocol.SetBreakpointsArguments,
 	): Promise<DebugProtocol.SetBreakpointsResponse | undefined> {
@@ -555,6 +643,7 @@ export class RawDebugSession implements IDisposable {
 			args,
 		);
 	}
+
 	setFunctionBreakpoints(
 		args: DebugProtocol.SetFunctionBreakpointsArguments,
 	): Promise<DebugProtocol.SetFunctionBreakpointsResponse | undefined> {
@@ -564,10 +653,12 @@ export class RawDebugSession implements IDisposable {
 				args,
 			);
 		}
+
 		return Promise.reject(
 			new Error("setFunctionBreakpoints not supported"),
 		);
 	}
+
 	dataBreakpointInfo(
 		args: DebugProtocol.DataBreakpointInfoArguments,
 	): Promise<DebugProtocol.DataBreakpointInfoResponse | undefined> {
@@ -577,8 +668,10 @@ export class RawDebugSession implements IDisposable {
 				args,
 			);
 		}
+
 		return Promise.reject(new Error("dataBreakpointInfo not supported"));
 	}
+
 	setDataBreakpoints(
 		args: DebugProtocol.SetDataBreakpointsArguments,
 	): Promise<DebugProtocol.SetDataBreakpointsResponse | undefined> {
@@ -588,8 +681,10 @@ export class RawDebugSession implements IDisposable {
 				args,
 			);
 		}
+
 		return Promise.reject(new Error("setDataBreakpoints not supported"));
 	}
+
 	setExceptionBreakpoints(
 		args: DebugProtocol.SetExceptionBreakpointsArguments,
 	): Promise<DebugProtocol.SetExceptionBreakpointsResponse | undefined> {
@@ -598,24 +693,29 @@ export class RawDebugSession implements IDisposable {
 			args,
 		);
 	}
+
 	breakpointLocations(
 		args: DebugProtocol.BreakpointLocationsArguments,
 	): Promise<DebugProtocol.BreakpointLocationsResponse | undefined> {
 		if (this.capabilities.supportsBreakpointLocationsRequest) {
 			return this.send("breakpointLocations", args);
 		}
+
 		return Promise.reject(
 			new Error("breakpointLocations is not supported"),
 		);
 	}
+
 	configurationDone(): Promise<
 		DebugProtocol.ConfigurationDoneResponse | undefined
 	> {
 		if (this.capabilities.supportsConfigurationDoneRequest) {
 			return this.send("configurationDone", null);
 		}
+
 		return Promise.reject(new Error("configurationDone not supported"));
 	}
+
 	stackTrace(
 		args: DebugProtocol.StackTraceArguments,
 		token: CancellationToken,
@@ -626,6 +726,7 @@ export class RawDebugSession implements IDisposable {
 			token,
 		);
 	}
+
 	exceptionInfo(
 		args: DebugProtocol.ExceptionInfoArguments,
 	): Promise<DebugProtocol.ExceptionInfoResponse | undefined> {
@@ -635,14 +736,17 @@ export class RawDebugSession implements IDisposable {
 				args,
 			);
 		}
+
 		return Promise.reject(new Error("exceptionInfo not supported"));
 	}
+
 	scopes(
 		args: DebugProtocol.ScopesArguments,
 		token: CancellationToken,
 	): Promise<DebugProtocol.ScopesResponse | undefined> {
 		return this.send<DebugProtocol.ScopesResponse>("scopes", args, token);
 	}
+
 	variables(
 		args: DebugProtocol.VariablesArguments,
 		token?: CancellationToken,
@@ -653,16 +757,19 @@ export class RawDebugSession implements IDisposable {
 			token,
 		);
 	}
+
 	source(
 		args: DebugProtocol.SourceArguments,
 	): Promise<DebugProtocol.SourceResponse | undefined> {
 		return this.send<DebugProtocol.SourceResponse>("source", args);
 	}
+
 	locations(
 		args: DebugProtocol.LocationsArguments,
 	): Promise<DebugProtocol.LocationsResponse | undefined> {
 		return this.send<DebugProtocol.LocationsResponse>("locations", args);
 	}
+
 	loadedSources(
 		args: DebugProtocol.LoadedSourcesArguments,
 	): Promise<DebugProtocol.LoadedSourcesResponse | undefined> {
@@ -672,16 +779,20 @@ export class RawDebugSession implements IDisposable {
 				args,
 			);
 		}
+
 		return Promise.reject(new Error("loadedSources not supported"));
 	}
+
 	threads(): Promise<DebugProtocol.ThreadsResponse | undefined> {
 		return this.send<DebugProtocol.ThreadsResponse>("threads", null);
 	}
+
 	evaluate(
 		args: DebugProtocol.EvaluateArguments,
 	): Promise<DebugProtocol.EvaluateResponse | undefined> {
 		return this.send<DebugProtocol.EvaluateResponse>("evaluate", args);
 	}
+
 	async stepBack(
 		args: DebugProtocol.StepBackArguments,
 	): Promise<DebugProtocol.StepBackResponse | undefined> {
@@ -693,10 +804,13 @@ export class RawDebugSession implements IDisposable {
 			if (!this.stoppedSinceLastStep) {
 				this.fireSimulatedContinuedEvent(args.threadId);
 			}
+
 			return response;
 		}
+
 		return Promise.reject(new Error("stepBack not supported"));
 	}
+
 	async reverseContinue(
 		args: DebugProtocol.ReverseContinueArguments,
 	): Promise<DebugProtocol.ReverseContinueResponse | undefined> {
@@ -708,18 +822,23 @@ export class RawDebugSession implements IDisposable {
 			if (!this.stoppedSinceLastStep) {
 				this.fireSimulatedContinuedEvent(args.threadId);
 			}
+
 			return response;
 		}
+
 		return Promise.reject(new Error("reverseContinue not supported"));
 	}
+
 	gotoTargets(
 		args: DebugProtocol.GotoTargetsArguments,
 	): Promise<DebugProtocol.GotoTargetsResponse | undefined> {
 		if (this.capabilities.supportsGotoTargetsRequest) {
 			return this.send("gotoTargets", args);
 		}
+
 		return Promise.reject(new Error("gotoTargets is not supported"));
 	}
+
 	async goto(
 		args: DebugProtocol.GotoArguments,
 	): Promise<DebugProtocol.GotoResponse | undefined> {
@@ -731,49 +850,61 @@ export class RawDebugSession implements IDisposable {
 			if (!this.stoppedSinceLastStep) {
 				this.fireSimulatedContinuedEvent(args.threadId);
 			}
+
 			return response;
 		}
+
 		return Promise.reject(new Error("goto is not supported"));
 	}
+
 	async setInstructionBreakpoints(
 		args: DebugProtocol.SetInstructionBreakpointsArguments,
 	): Promise<DebugProtocol.SetInstructionBreakpointsResponse | undefined> {
 		if (this.capabilities.supportsInstructionBreakpoints) {
 			return await this.send("setInstructionBreakpoints", args);
 		}
+
 		return Promise.reject(
 			new Error("setInstructionBreakpoints is not supported"),
 		);
 	}
+
 	async disassemble(
 		args: DebugProtocol.DisassembleArguments,
 	): Promise<DebugProtocol.DisassembleResponse | undefined> {
 		if (this.capabilities.supportsDisassembleRequest) {
 			return await this.send("disassemble", args);
 		}
+
 		return Promise.reject(new Error("disassemble is not supported"));
 	}
+
 	async readMemory(
 		args: DebugProtocol.ReadMemoryArguments,
 	): Promise<DebugProtocol.ReadMemoryResponse | undefined> {
 		if (this.capabilities.supportsReadMemoryRequest) {
 			return await this.send("readMemory", args);
 		}
+
 		return Promise.reject(new Error("readMemory is not supported"));
 	}
+
 	async writeMemory(
 		args: DebugProtocol.WriteMemoryArguments,
 	): Promise<DebugProtocol.WriteMemoryResponse | undefined> {
 		if (this.capabilities.supportsWriteMemoryRequest) {
 			return await this.send("writeMemory", args);
 		}
+
 		return Promise.reject(new Error("writeMemory is not supported"));
 	}
+
 	cancel(
 		args: DebugProtocol.CancelArguments,
 	): Promise<DebugProtocol.CancelResponse | undefined> {
 		return this.send("cancel", args);
 	}
+
 	custom(
 		request: string,
 		args: any,
@@ -797,6 +928,7 @@ export class RawDebugSession implements IDisposable {
 					if (typeof terminateDebuggee === "boolean") {
 						args.terminateDebuggee = terminateDebuggee;
 					}
+
 					if (typeof suspendDebuggee === "boolean") {
 						args.suspendDebuggee = suspendDebuggee;
 					}
@@ -817,18 +949,23 @@ export class RawDebugSession implements IDisposable {
 			}
 		}
 	}
+
 	private async stopAdapter(error?: Error): Promise<void> {
 		try {
 			if (this.debugAdapter) {
 				const da = this.debugAdapter;
+
 				this.debugAdapter = null;
+
 				await da.stopSession();
+
 				this.debugAdapterStopped = true;
 			}
 		} finally {
 			this.fireAdapterExitEvent(error);
 		}
 	}
+
 	private fireAdapterExitEvent(error?: Error): void {
 		if (!this.firedAdapterExitEvent) {
 			this.firedAdapterExitEvent = true;
@@ -842,9 +979,11 @@ export class RawDebugSession implements IDisposable {
 			if (error && !this.debugAdapterStopped) {
 				e.error = error;
 			}
+
 			this._onDidExitAdapter.fire(e);
 		}
 	}
+
 	private async dispatchRequest(
 		request: DebugProtocol.Request,
 	): Promise<void> {
@@ -887,17 +1026,23 @@ export class RawDebugSession implements IDisposable {
 						);
 					} else {
 						response.success = false;
+
 						safeSendResponse(response);
+
 						await this.shutdown();
 					}
 				}
+
 				response.body = {
 					rendererDebugPort: result.rendererDebugPort,
 				};
+
 				safeSendResponse(response);
 			} catch (err) {
 				response.success = false;
+
 				response.message = err.message;
+
 				safeSendResponse(response);
 			}
 		} else if (request.command === "runInTerminal") {
@@ -908,15 +1053,19 @@ export class RawDebugSession implements IDisposable {
 				);
 
 				const resp = response as DebugProtocol.RunInTerminalResponse;
+
 				resp.body = {};
 
 				if (typeof shellProcessId === "number") {
 					resp.body.shellProcessId = shellProcessId;
 				}
+
 				safeSendResponse(resp);
 			} catch (err) {
 				response.success = false;
+
 				response.message = err.message;
+
 				safeSendResponse(response);
 			}
 		} else if (request.command === "startDebugging") {
@@ -942,20 +1091,27 @@ export class RawDebugSession implements IDisposable {
 					safeSendResponse(response);
 				} else {
 					response.success = false;
+
 					response.message = "Failed to start debugging";
+
 					safeSendResponse(response);
 				}
 			} catch (err) {
 				response.success = false;
+
 				response.message = err.message;
+
 				safeSendResponse(response);
 			}
 		} else {
 			response.success = false;
+
 			response.message = `unknown request '${request.command}'`;
+
 			safeSendResponse(response);
 		}
 	}
+
 	private launchVsCode(
 		vscodeArgs: ILaunchVSCodeArguments,
 	): Promise<IOpenExtensionWindowResult> {
@@ -977,21 +1133,25 @@ export class RawDebugSession implements IDisposable {
 				) {
 					value = isUri(value) ? value : URI.file(value).toString();
 				}
+
 				args.push(`--${key}=${value}`);
 			} else {
 				args.push(a2);
 			}
 		}
+
 		if (vscodeArgs.env) {
 			args.push(
 				`--extensionEnvironment=${JSON.stringify(vscodeArgs.env)}`,
 			);
 		}
+
 		return this.extensionHostDebugService.openExtensionDevelopmentHostWindow(
 			args,
 			!!vscodeArgs.debugRenderer,
 		);
 	}
+
 	private send<R extends DebugProtocol.Response>(
 		command: string,
 		args: any,
@@ -1016,8 +1176,10 @@ export class RawDebugSession implements IDisposable {
 							),
 						);
 					}
+
 					return;
 				}
+
 				let cancelationListener: IDisposable;
 
 				const requestId = this.debugAdapter.sendRequest(
@@ -1049,6 +1211,7 @@ export class RawDebugSession implements IDisposable {
 			Promise.reject(this.handleErrorResponse(err, showErrors)),
 		);
 	}
+
 	private handleErrorResponse(
 		errorResponse: DebugProtocol.Response,
 		showErrors: boolean,
@@ -1059,6 +1222,7 @@ export class RawDebugSession implements IDisposable {
 		) {
 			return new errors.CancellationError();
 		}
+
 		const error: DebugProtocol.Message | undefined =
 			errorResponse?.body?.error;
 
@@ -1091,14 +1255,17 @@ export class RawDebugSession implements IDisposable {
 				}),
 			]);
 		}
+
 		if (showErrors && error && error.format && error.showUser) {
 			this.notificationService.error(userMessage);
 		}
+
 		const result = new errors.ErrorNoTelemetry(userMessage);
 		(<any>result).showUser = error?.showUser;
 
 		return result;
 	}
+
 	private mergeCapabilities(
 		capabilities: DebugProtocol.Capabilities | undefined,
 	): void {
@@ -1109,6 +1276,7 @@ export class RawDebugSession implements IDisposable {
 			);
 		}
 	}
+
 	private fireSimulatedContinuedEvent(
 		threadId: number,
 		allThreadsContinued = false,
@@ -1123,6 +1291,7 @@ export class RawDebugSession implements IDisposable {
 			seq: undefined!,
 		});
 	}
+
 	dispose(): void {
 		dispose(this.toDispose);
 	}

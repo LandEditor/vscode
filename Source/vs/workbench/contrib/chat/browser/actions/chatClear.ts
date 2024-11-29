@@ -15,14 +15,17 @@ export async function clearChatEditor(
 
 	if (!chatEditorInput) {
 		const editorInput = editorService.activeEditor;
+
 		chatEditorInput =
 			editorInput instanceof ChatEditorInput ? editorInput : undefined;
 	}
+
 	if (chatEditorInput instanceof ChatEditorInput) {
 		// A chat editor can only be open in one group
 		const identifier = editorService.findEditors(
 			chatEditorInput.resource,
 		)[0];
+
 		await editorService.replaceEditors(
 			[
 				{

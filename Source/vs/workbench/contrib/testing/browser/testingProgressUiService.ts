@@ -55,6 +55,7 @@ export class TestingProgressTrigger extends Disposable {
 			}
 
 			barContributionRegistration.dispose();
+
 			ExplorerTestCoverageBars.register();
 		});
 
@@ -85,7 +86,9 @@ export class TestingProgressTrigger extends Disposable {
 
 		// open on failure
 		const disposable = new DisposableStore();
+
 		disposable.add(result.onComplete(() => disposable.dispose()));
+
 		disposable.add(
 			result.onChange((e) => {
 				if (
@@ -93,6 +96,7 @@ export class TestingProgressTrigger extends Disposable {
 					isFailedState(e.item.ownComputedState)
 				) {
 					this.openResultsView();
+
 					disposable.dispose();
 				}
 			}),
@@ -126,11 +130,16 @@ export const collectTestStateCounts = (
 
 	for (const result of results) {
 		const count = result.counts;
+
 		failed +=
 			count[TestResultState.Errored] + count[TestResultState.Failed];
+
 		passed += count[TestResultState.Passed];
+
 		skipped += count[TestResultState.Skipped];
+
 		running += count[TestResultState.Running];
+
 		queued += count[TestResultState.Queued];
 	}
 

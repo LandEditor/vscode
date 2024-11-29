@@ -8,7 +8,9 @@
 declare module "vscode" {
 	export interface ChatWelcomeMessageContent {
 		icon: ThemeIcon;
+
 		title: string;
+
 		message: MarkdownString;
 	}
 
@@ -16,6 +18,7 @@ declare module "vscode" {
 		provideWelcomeMessage?(
 			token: CancellationToken,
 		): ProviderResult<ChatWelcomeMessageContent>;
+
 		provideSampleQuestions?(
 			location: ChatLocation,
 			token: CancellationToken,
@@ -64,7 +67,9 @@ declare module "vscode" {
 		helpTextPostfix?: string | MarkdownString;
 
 		welcomeMessageProvider?: ChatWelcomeMessageProvider;
+
 		titleProvider?: ChatTitleProvider;
+
 		requester?: ChatRequesterInformation;
 	}
 }

@@ -934,6 +934,7 @@ if (isMacintosh) {
 			order,
 		});
 	};
+
 	registerTouchBarEntry(
 		DEBUG_RUN_COMMAND_ID,
 		DEBUG_RUN_LABEL,
@@ -943,6 +944,7 @@ if (isMacintosh) {
 			"vs/workbench/contrib/debug/browser/media/continue-tb.png",
 		),
 	);
+
 	registerTouchBarEntry(
 		DEBUG_START_COMMAND_ID,
 		DEBUG_START_LABEL,
@@ -952,6 +954,7 @@ if (isMacintosh) {
 			"vs/workbench/contrib/debug/browser/media/run-with-debugging-tb.png",
 		),
 	);
+
 	registerTouchBarEntry(
 		CONTINUE_ID,
 		CONTINUE_LABEL,
@@ -961,6 +964,7 @@ if (isMacintosh) {
 			"vs/workbench/contrib/debug/browser/media/continue-tb.png",
 		),
 	);
+
 	registerTouchBarEntry(
 		PAUSE_ID,
 		PAUSE_LABEL,
@@ -976,6 +980,7 @@ if (isMacintosh) {
 			"vs/workbench/contrib/debug/browser/media/pause-tb.png",
 		),
 	);
+
 	registerTouchBarEntry(
 		STEP_OVER_ID,
 		STEP_OVER_LABEL,
@@ -985,6 +990,7 @@ if (isMacintosh) {
 			"vs/workbench/contrib/debug/browser/media/stepover-tb.png",
 		),
 	);
+
 	registerTouchBarEntry(
 		STEP_INTO_ID,
 		STEP_INTO_LABEL,
@@ -994,6 +1000,7 @@ if (isMacintosh) {
 			"vs/workbench/contrib/debug/browser/media/stepinto-tb.png",
 		),
 	);
+
 	registerTouchBarEntry(
 		STEP_OUT_ID,
 		STEP_OUT_LABEL,
@@ -1003,6 +1010,7 @@ if (isMacintosh) {
 			"vs/workbench/contrib/debug/browser/media/stepout-tb.png",
 		),
 	);
+
 	registerTouchBarEntry(
 		RESTART_SESSION_ID,
 		RESTART_LABEL,
@@ -1012,6 +1020,7 @@ if (isMacintosh) {
 			"vs/workbench/contrib/debug/browser/media/restart-tb.png",
 		),
 	);
+
 	registerTouchBarEntry(
 		STOP_ID,
 		STOP_LABEL,

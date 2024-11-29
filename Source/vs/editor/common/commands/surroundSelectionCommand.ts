@@ -14,7 +14,9 @@ import { ITextModel } from "../model.js";
 
 export class SurroundSelectionCommand implements ICommand {
 	private readonly _range: Selection;
+
 	private readonly _charBeforeSelection: string;
+
 	private readonly _charAfterSelection: string;
 
 	constructor(
@@ -23,9 +25,12 @@ export class SurroundSelectionCommand implements ICommand {
 		charAfterSelection: string,
 	) {
 		this._range = range;
+
 		this._charBeforeSelection = charBeforeSelection;
+
 		this._charAfterSelection = charAfterSelection;
 	}
+
 	public getEditOperations(
 		model: ITextModel,
 		builder: IEditOperationBuilder,
@@ -39,6 +44,7 @@ export class SurroundSelectionCommand implements ICommand {
 			),
 			this._charBeforeSelection,
 		);
+
 		builder.addTrackedEditOperation(
 			new Range(
 				this._range.endLineNumber,
@@ -49,6 +55,7 @@ export class SurroundSelectionCommand implements ICommand {
 			this._charAfterSelection,
 		);
 	}
+
 	public computeCursorState(
 		model: ITextModel,
 		helper: ICursorStateComputerData,
@@ -76,6 +83,7 @@ export class CompositionSurroundSelectionCommand implements ICommand {
 		private readonly _text: string,
 		private readonly _charAfter: string,
 	) {}
+
 	public getEditOperations(
 		model: ITextModel,
 		builder: IEditOperationBuilder,
@@ -90,6 +98,7 @@ export class CompositionSurroundSelectionCommand implements ICommand {
 			this._text + this._charAfter,
 		);
 	}
+
 	public computeCursorState(
 		model: ITextModel,
 		helper: ICursorStateComputerData,

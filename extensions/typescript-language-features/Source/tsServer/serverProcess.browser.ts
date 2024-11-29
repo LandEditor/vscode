@@ -25,16 +25,22 @@ import { TypeScriptVersion } from "./versionProvider";
 type BrowserWatchEvent =
 	| {
 			type: "watchDirectory" | "watchFile";
+
 			recursive?: boolean;
+
 			uri: {
 				scheme: string;
+
 				authority: string;
+
 				path: string;
 			};
+
 			id: number;
 	  }
 	| {
 			type: "dispose";
+
 			id: number;
 	  };
 
@@ -43,6 +49,7 @@ export class WorkerServerProcessFactory implements TsServerProcessFactory {
 		private readonly _extensionUri: vscode.Uri,
 		private readonly _logger: Logger,
 	) {}
+
 	public fork(
 		version: TypeScriptVersion,
 		args: readonly string[],
@@ -78,15 +85,21 @@ export class WorkerServerProcessFactory implements TsServerProcessFactory {
 }
 class WorkerServerProcess implements TsServerProcess {
 	private static idPool = 0;
+
 	private readonly id = WorkerServerProcess.idPool++;
+
 	private readonly _onDataHandlers = new Set<
 		(data: Proto.Response) => void
 	>();
+
 	private readonly _onErrorHandlers = new Set<(err: Error) => void>();
+
 	private readonly _onExitHandlers = new Set<
 		(code: number | null, signal: string | null) => void
 	>();
+
 	private readonly _worker: Worker;
+
 	private readonly _watches: FileWatcherManager;
 	/** For communicating with TS server synchronously */
 	private readonly _tsserver: MessagePort;
@@ -94,6 +107,7 @@ class WorkerServerProcess implements TsServerProcess {
 	private readonly _watcher: MessagePort;
 	/** For communicating with filesystem synchronously */
 	private readonly _syncFs: MessagePort;
+
 	public constructor(
 		private readonly kind: TsServerProcessKind,
 		tsServerPath: string,
@@ -105,6 +119,7 @@ class WorkerServerProcess implements TsServerProcess {
 		this._worker = new Worker(tsServerPath, {
 			name: `TS ${kind} server #${this.id}`,
 		});
+
 		this._watches = new FileWatcherManager(logger);
 
 		const tsserverChannel = new MessageChannel();
@@ -112,9 +127,13 @@ class WorkerServerProcess implements TsServerProcess {
 		const watcherChannel = new MessageChannel();
 
 		const syncChannel = new MessageChannel();
+
 		this._tsserver = tsserverChannel.port2;
+
 		this._watcher = watcherChannel.port2;
+
 		this._syncFs = syncChannel.port2;
+
 		this._tsserver.onmessage = (event) => {
 			if (event.data.type === "log") {
 				console.error(
@@ -123,10 +142,12 @@ class WorkerServerProcess implements TsServerProcess {
 
 				return;
 			}
+
 			for (const handler of this._onDataHandlers) {
 				handler(event.data);
 			}
 		};
+
 		this._watcher.onmessage = (event: MessageEvent<BrowserWatchEvent>) => {
 			switch (event.data.type) {
 				case "dispose": {
@@ -134,6 +155,7 @@ class WorkerServerProcess implements TsServerProcess {
 
 					break;
 				}
+
 				case "watchDirectory":
 				case "watchFile": {
 					this._watches.create(
@@ -165,12 +187,14 @@ class WorkerServerProcess implements TsServerProcess {
 
 					break;
 				}
+
 				default:
 					console.error(
 						`unexpected message on watcher channel: ${JSON.stringify(event)}`,
 					);
 			}
 		};
+
 		this._worker.onmessage = (msg: any) => {
 			// for logging only
 			if (msg.data.type === "log") {
@@ -178,10 +202,12 @@ class WorkerServerProcess implements TsServerProcess {
 
 				return;
 			}
+
 			console.error(
 				`unexpected message on main channel: ${JSON.stringify(msg)}`,
 			);
 		};
+
 		this._worker.onerror = (err: ErrorEvent) => {
 			console.error("error! " + JSON.stringify(err));
 
@@ -190,6 +216,7 @@ class WorkerServerProcess implements TsServerProcess {
 				handler(err.error);
 			}
 		};
+
 		this._worker.postMessage({ args, extensionUri }, [
 			syncChannel.port1,
 			tsserverChannel.port1,
@@ -197,31 +224,43 @@ class WorkerServerProcess implements TsServerProcess {
 		]);
 
 		const connection = new ServiceConnection<Requests>(syncChannel.port2);
+
 		new ApiService("vscode-wasm-typescript", connection);
+
 		connection.signalReady();
 	}
+
 	write(serverRequest: Proto.Request): void {
 		this._tsserver.postMessage(serverRequest);
 	}
+
 	onData(handler: (response: Proto.Response) => void): void {
 		this._onDataHandlers.add(handler);
 	}
+
 	onError(handler: (err: Error) => void): void {
 		this._onErrorHandlers.add(handler);
 	}
+
 	onExit(
 		handler: (code: number | null, signal: string | null) => void,
 	): void {
 		this._onExitHandlers.add(handler);
 		// Todo: not implemented
 	}
+
 	kill(): void {
 		this._worker.terminate();
+
 		this._tsserver.close();
+
 		this._watcher.close();
+
 		this._syncFs.close();
+
 		this._watches.dispose();
 	}
+
 	private appendLog(msg: string) {
 		if (this.tsServerLog?.type === "output") {
 			this.tsServerLog.output.appendLine(

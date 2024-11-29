@@ -39,9 +39,11 @@ export function joinCombine<T>(
 	if (arr1.length === 0) {
 		return arr2;
 	}
+
 	if (arr2.length === 0) {
 		return arr1;
 	}
+
 	const result: T[] = [];
 
 	let i = 0;
@@ -59,24 +61,33 @@ export function joinCombine<T>(
 
 		if (key1 < key2) {
 			result.push(val1);
+
 			i++;
 		} else if (key1 > key2) {
 			result.push(val2);
+
 			j++;
 		} else {
 			result.push(combine(val1, val2));
+
 			i++;
+
 			j++;
 		}
 	}
+
 	while (i < arr1.length) {
 		result.push(arr1[i]);
+
 		i++;
 	}
+
 	while (j < arr2.length) {
 		result.push(arr2[j]);
+
 		j++;
 	}
+
 	return result;
 }
 // TODO make utility
@@ -87,6 +98,7 @@ export function applyObservableDecorations(
 	const d = new DisposableStore();
 
 	const decorationsCollection = editor.createDecorationsCollection();
+
 	d.add(
 		autorunOpts(
 			{
@@ -95,10 +107,12 @@ export function applyObservableDecorations(
 			},
 			(reader) => {
 				const d = decorations.read(reader);
+
 				decorationsCollection.set(d);
 			},
 		),
 	);
+
 	d.add({
 		dispose: () => {
 			decorationsCollection.clear();
@@ -126,47 +140,61 @@ export function prependRemoveOnDispose(
 }
 export class ObservableElementSizeObserver extends Disposable {
 	private readonly elementSizeObserver: ElementSizeObserver;
+
 	private readonly _width: ISettableObservable<number>;
+
 	public get width(): IObservable<number> {
 		return this._width;
 	}
+
 	private readonly _height: ISettableObservable<number>;
+
 	public get height(): IObservable<number> {
 		return this._height;
 	}
+
 	private _automaticLayout: boolean = false;
+
 	public get automaticLayout(): boolean {
 		return this._automaticLayout;
 	}
+
 	constructor(
 		element: HTMLElement | null,
 		dimension: IDimension | undefined,
 	) {
 		super();
+
 		this.elementSizeObserver = this._register(
 			new ElementSizeObserver(element, dimension),
 		);
+
 		this._width = observableValue(
 			this,
 			this.elementSizeObserver.getWidth(),
 		);
+
 		this._height = observableValue(
 			this,
 			this.elementSizeObserver.getHeight(),
 		);
+
 		this._register(
 			this.elementSizeObserver.onDidChange((e) =>
 				transaction((tx) => {
 					/** @description Set width/height from elementSizeObserver */
 					this._width.set(this.elementSizeObserver.getWidth(), tx);
+
 					this._height.set(this.elementSizeObserver.getHeight(), tx);
 				}),
 			),
 		);
 	}
+
 	public observe(dimension?: IDimension): void {
 		this.elementSizeObserver.observe(dimension);
 	}
+
 	public setAutomaticLayout(automaticLayout: boolean): void {
 		this._automaticLayout = automaticLayout;
 
@@ -195,6 +223,7 @@ export function animatedObservable(
 	const durationMs = 300;
 
 	let animationFrame: number | undefined = undefined;
+
 	store.add(
 		autorunHandleChanges(
 			{
@@ -203,6 +232,7 @@ export function animatedObservable(
 					if (ctx.didChange(base)) {
 						s.animate = s.animate || ctx.change;
 					}
+
 					return true;
 				},
 			},
@@ -210,11 +240,16 @@ export function animatedObservable(
 				/** @description update value */
 				if (animationFrame !== undefined) {
 					targetWindow.cancelAnimationFrame(animationFrame);
+
 					animationFrame = undefined;
 				}
+
 				startVal = curVal;
+
 				targetVal = base.read(reader);
+
 				animationStartMs = Date.now() - (s.animate ? 0 : durationMs);
+
 				update();
 			},
 		),
@@ -222,6 +257,7 @@ export function animatedObservable(
 
 	function update() {
 		const passedMs = Date.now() - animationStartMs;
+
 		curVal = Math.floor(
 			easeOutExpo(passedMs, startVal, targetVal - startVal, durationMs),
 		);
@@ -231,8 +267,10 @@ export function animatedObservable(
 		} else {
 			curVal = targetVal;
 		}
+
 		result.set(curVal, undefined);
 	}
+
 	return result;
 }
 function easeOutExpo(t: number, b: number, c: number, d: number): number {
@@ -244,6 +282,7 @@ export function deepMerge<T extends {}>(source1: T, source2: Partial<T>): T {
 	for (const key in source1) {
 		result[key] = source1[key];
 	}
+
 	for (const key in source2) {
 		const source2Value = source2[key];
 
@@ -257,6 +296,7 @@ export function deepMerge<T extends {}>(source1: T, source2: Partial<T>): T {
 			result[key] = source2Value as any;
 		}
 	}
+
 	return result;
 }
 export abstract class ViewZoneOverlayWidget extends Disposable {
@@ -266,7 +306,9 @@ export abstract class ViewZoneOverlayWidget extends Disposable {
 		htmlElement: HTMLElement,
 	) {
 		super();
+
 		this._register(new ManagedOverlayWidget(editor, htmlElement));
+
 		this._register(
 			applyStyle(htmlElement, {
 				height: viewZone.actualHeight,
@@ -283,38 +325,49 @@ export interface IObservableViewZone extends IViewZone {
 }
 export class PlaceholderViewZone implements IObservableViewZone {
 	public readonly domNode = document.createElement("div");
+
 	private readonly _actualTop = observableValue<number | undefined>(
 		this,
 		undefined,
 	);
+
 	private readonly _actualHeight = observableValue<number | undefined>(
 		this,
 		undefined,
 	);
+
 	public readonly actualTop: IObservable<number | undefined> =
 		this._actualTop;
+
 	public readonly actualHeight: IObservable<number | undefined> =
 		this._actualHeight;
+
 	public readonly showInHiddenAreas = true;
+
 	public get afterLineNumber(): number {
 		return this._afterLineNumber.get();
 	}
+
 	public readonly onChange?: IObservable<unknown> = this._afterLineNumber;
 
 	constructor(
 		private readonly _afterLineNumber: IObservable<number>,
 		public readonly heightInPx: number,
 	) {}
+
 	onDomNodeTop = (top: number) => {
 		this._actualTop.set(top, undefined);
 	};
+
 	onComputedHeight = (height: number) => {
 		this._actualHeight.set(height, undefined);
 	};
 }
 export class ManagedOverlayWidget implements IDisposable {
 	private static _counter = 0;
+
 	private readonly _overlayWidgetId = `managedOverlayWidget-${ManagedOverlayWidget._counter++}`;
+
 	private readonly _overlayWidget: IOverlayWidget = {
 		getId: () => this._overlayWidgetId,
 		getDomNode: () => this._domElement,
@@ -327,17 +380,24 @@ export class ManagedOverlayWidget implements IDisposable {
 	) {
 		this._editor.addOverlayWidget(this._overlayWidget);
 	}
+
 	dispose(): void {
 		this._editor.removeOverlayWidget(this._overlayWidget);
 	}
 }
 export interface CSSStyle {
 	height: number | string;
+
 	width: number | string;
+
 	top: number | string;
+
 	visibility: "visible" | "hidden" | "collapse";
+
 	display: "block" | "inline" | "inline-block" | "flex" | "none";
+
 	paddingLeft: number | string;
+
 	paddingRight: number | string;
 }
 export function applyStyle(
@@ -355,9 +415,11 @@ export function applyStyle(
 			if (val && typeof val === "object" && "read" in val) {
 				val = val.read(reader) as any;
 			}
+
 			if (typeof val === "number") {
 				val = `${val}px`;
 			}
+
 			key = key.replace(/[A-Z]/g, (m) => "-" + m.toLowerCase());
 
 			domNode.style[key as any] = val as any;
@@ -373,6 +435,7 @@ export function applyViewZones(
 	const store = new DisposableStore();
 
 	const lastViewZoneIds: string[] = [];
+
 	store.add(
 		autorunWithStore((reader, store) => {
 			/** @description applyViewZones */
@@ -391,11 +454,14 @@ export function applyViewZones(
 			if (setIsUpdating) {
 				setIsUpdating(true);
 			}
+
 			editor.changeViewZones((a) => {
 				for (const id of lastViewZoneIds) {
 					a.removeZone(id);
+
 					zoneIds?.delete(id);
 				}
+
 				lastViewZoneIds.length = 0;
 
 				for (const z of curViewZones) {
@@ -404,8 +470,11 @@ export function applyViewZones(
 					if (z.setZoneId) {
 						z.setZoneId(id);
 					}
+
 					lastViewZoneIds.push(id);
+
 					zoneIds?.add(id);
+
 					viewZonIdsPerViewZone.set(z, id);
 				}
 			});
@@ -428,6 +497,7 @@ export function applyViewZones(
 							if (id !== undefined) {
 								changeSummary.zoneIds.push(id);
 							}
+
 							return true;
 						},
 					},
@@ -439,12 +509,15 @@ export function applyViewZones(
 									vz.onChange,
 									viewZonIdsPerViewZone.get(vz)!,
 								);
+
 								vz.onChange.read(reader);
 							}
 						}
+
 						if (setIsUpdating) {
 							setIsUpdating(true);
 						}
+
 						editor.changeViewZones((a) => {
 							for (const id of changeSummary.zoneIds) {
 								a.layoutZone(id);
@@ -459,16 +532,19 @@ export function applyViewZones(
 			);
 		}),
 	);
+
 	store.add({
 		dispose() {
 			if (setIsUpdating) {
 				setIsUpdating(true);
 			}
+
 			editor.changeViewZones((a) => {
 				for (const id of lastViewZoneIds) {
 					a.removeZone(id);
 				}
 			});
+
 			zoneIds?.clear();
 
 			if (setIsUpdating) {
@@ -497,6 +573,7 @@ export function translatePosition(
 		// No changes before the position
 		return Range.fromPositions(posInOriginal);
 	}
+
 	if (mapping.original.endLineNumberExclusive <= posInOriginal.lineNumber) {
 		const newLineNumber =
 			posInOriginal.lineNumber -
@@ -507,12 +584,14 @@ export function translatePosition(
 			new Position(newLineNumber, posInOriginal.column),
 		);
 	}
+
 	if (!mapping.innerChanges) {
 		// Only for legacy algorithm
 		return Range.fromPositions(
 			new Position(mapping.modified.startLineNumber, 1),
 		);
 	}
+
 	const innerMapping = findLast(mapping.innerChanges, (m) =>
 		m.originalRange.getStartPosition().isBeforeOrEqual(posInOriginal),
 	);
@@ -527,6 +606,7 @@ export function translatePosition(
 			new Position(newLineNumber, posInOriginal.column),
 		);
 	}
+
 	if (innerMapping.originalRange.containsPosition(posInOriginal)) {
 		return innerMapping.modifiedRange;
 	} else {
@@ -561,6 +641,7 @@ export function filterWithPrevious<T>(
 
 	return arr.filter((cur) => {
 		const result = filter(cur, prev);
+
 		prev = cur;
 
 		return result;
@@ -576,17 +657,21 @@ export abstract class RefCounted<T> implements IDisposable, IReference<T> {
 	): RefCounted<T> {
 		return new BaseRefCounted(value, value, debugOwner);
 	}
+
 	public static createWithDisposable<T extends IDisposable>(
 		value: T,
 		disposable: IDisposable,
 		debugOwner: object | undefined = undefined,
 	): RefCounted<T> {
 		const store = new DisposableStore();
+
 		store.add(disposable);
+
 		store.add(value);
 
 		return new BaseRefCounted(value, store, debugOwner);
 	}
+
 	public static createOfNonDisposable<T>(
 		value: T,
 		disposable: IDisposable,
@@ -594,15 +679,20 @@ export abstract class RefCounted<T> implements IDisposable, IReference<T> {
 	): RefCounted<T> {
 		return new BaseRefCounted(value, disposable, debugOwner);
 	}
+
 	public abstract createNewRef(
 		debugOwner?: object | undefined,
 	): RefCounted<T>;
+
 	public abstract dispose(): void;
+
 	public abstract get object(): T;
 }
 class BaseRefCounted<T> extends RefCounted<T> {
 	private _refCount = 1;
+
 	private _isDisposed = false;
+
 	private readonly _owners: object[] = [];
 
 	constructor(
@@ -616,32 +706,40 @@ class BaseRefCounted<T> extends RefCounted<T> {
 			this._addOwner(_debugOwner);
 		}
 	}
+
 	private _addOwner(debugOwner: object | undefined) {
 		if (debugOwner) {
 			this._owners.push(debugOwner);
 		}
 	}
+
 	public createNewRef(debugOwner?: object | undefined): RefCounted<T> {
 		this._refCount++;
 
 		if (debugOwner) {
 			this._addOwner(debugOwner);
 		}
+
 		return new ClonedRefCounted(this, debugOwner);
 	}
+
 	public dispose(): void {
 		if (this._isDisposed) {
 			return;
 		}
+
 		this._isDisposed = true;
+
 		this._decreaseRefCount(this._debugOwner);
 	}
+
 	public _decreaseRefCount(debugOwner?: object | undefined): void {
 		this._refCount--;
 
 		if (this._refCount === 0) {
 			this._disposable.dispose();
 		}
+
 		if (debugOwner) {
 			const idx = this._owners.indexOf(debugOwner);
 
@@ -660,17 +758,22 @@ class ClonedRefCounted<T> extends RefCounted<T> {
 	) {
 		super();
 	}
+
 	public get object(): T {
 		return this._base.object;
 	}
+
 	public createNewRef(debugOwner?: object | undefined): RefCounted<T> {
 		return this._base.createNewRef(debugOwner);
 	}
+
 	public dispose(): void {
 		if (this._isDisposed) {
 			return;
 		}
+
 		this._isDisposed = true;
+
 		this._base._decreaseRefCount(this._debugOwner);
 	}
 }

@@ -33,8 +33,10 @@ export class LineRange {
 
 	constructor(startIndex: number, endIndex: number) {
 		this.startOffset = startIndex;
+
 		this.endOffset = endIndex;
 	}
+
 	public equals(otherLineRange: LineRange) {
 		return (
 			this.startOffset === otherLineRange.startOffset &&
@@ -44,22 +46,39 @@ export class LineRange {
 }
 export class RenderLineInput {
 	public readonly useMonospaceOptimizations: boolean;
+
 	public readonly canUseHalfwidthRightwardsArrow: boolean;
+
 	public readonly lineContent: string;
+
 	public readonly continuesWithWrappedLine: boolean;
+
 	public readonly isBasicASCII: boolean;
+
 	public readonly containsRTL: boolean;
+
 	public readonly fauxIndentLength: number;
+
 	public readonly lineTokens: IViewLineTokens;
+
 	public readonly lineDecorations: LineDecoration[];
+
 	public readonly tabSize: number;
+
 	public readonly startVisibleColumn: number;
+
 	public readonly spaceWidth: number;
+
 	public readonly renderSpaceWidth: number;
+
 	public readonly renderSpaceCharCode: number;
+
 	public readonly stopRenderingLineAfter: number;
+
 	public readonly renderWhitespace: RenderWhitespace;
+
 	public readonly renderControlCharacters: boolean;
+
 	public readonly fontLigatures: boolean;
 	/**
 	 * Defined only when renderWhitespace is 'selection'. Selections are non-overlapping,
@@ -94,18 +113,31 @@ export class RenderLineInput {
 		selectionsOnLine: LineRange[] | null,
 	) {
 		this.useMonospaceOptimizations = useMonospaceOptimizations;
+
 		this.canUseHalfwidthRightwardsArrow = canUseHalfwidthRightwardsArrow;
+
 		this.lineContent = lineContent;
+
 		this.continuesWithWrappedLine = continuesWithWrappedLine;
+
 		this.isBasicASCII = isBasicASCII;
+
 		this.containsRTL = containsRTL;
+
 		this.fauxIndentLength = fauxIndentLength;
+
 		this.lineTokens = lineTokens;
+
 		this.lineDecorations = lineDecorations.sort(LineDecoration.compare);
+
 		this.tabSize = tabSize;
+
 		this.startVisibleColumn = startVisibleColumn;
+
 		this.spaceWidth = spaceWidth;
+
 		this.stopRenderingLineAfter = stopRenderingLineAfter;
+
 		this.renderWhitespace =
 			renderWhitespace === "all"
 				? RenderWhitespace.All
@@ -116,8 +148,11 @@ export class RenderLineInput {
 						: renderWhitespace === "trailing"
 							? RenderWhitespace.Trailing
 							: RenderWhitespace.None;
+
 		this.renderControlCharacters = renderControlCharacters;
+
 		this.fontLigatures = fontLigatures;
+
 		this.selectionsOnLine =
 			selectionsOnLine &&
 			selectionsOnLine.sort((a, b) =>
@@ -130,29 +165,37 @@ export class RenderLineInput {
 
 		if (wsmiddotDiff < middotDiff) {
 			this.renderSpaceWidth = wsmiddotWidth;
+
 			this.renderSpaceCharCode = 0x2e31; // U+2E31 - WORD SEPARATOR MIDDLE DOT
 		} else {
 			this.renderSpaceWidth = middotWidth;
+
 			this.renderSpaceCharCode = 0xb7; // U+00B7 - MIDDLE DOT
 		}
 	}
+
 	private sameSelection(otherSelections: LineRange[] | null): boolean {
 		if (this.selectionsOnLine === null) {
 			return otherSelections === null;
 		}
+
 		if (otherSelections === null) {
 			return false;
 		}
+
 		if (otherSelections.length !== this.selectionsOnLine.length) {
 			return false;
 		}
+
 		for (let i = 0; i < this.selectionsOnLine.length; i++) {
 			if (!this.selectionsOnLine[i].equals(otherSelections[i])) {
 				return false;
 			}
 		}
+
 		return true;
 	}
+
 	public equals(other: RenderLineInput): boolean {
 		return (
 			this.useMonospaceOptimizations ===
@@ -205,21 +248,28 @@ export class CharacterMapping {
 			CharacterMappingConstants.PART_INDEX_OFFSET
 		);
 	}
+
 	private static getCharIndex(partData: number): number {
 		return (
 			(partData & CharacterMappingConstants.CHAR_INDEX_MASK) >>>
 			CharacterMappingConstants.CHAR_INDEX_OFFSET
 		);
 	}
+
 	public readonly length: number;
+
 	private readonly _data: Uint32Array;
+
 	private readonly _horizontalOffset: Uint32Array;
 
 	constructor(length: number, partCount: number) {
 		this.length = length;
+
 		this._data = new Uint32Array(this.length);
+
 		this._horizontalOffset = new Uint32Array(this.length);
 	}
+
 	public setColumnInfo(
 		column: number,
 		partIndex: number,
@@ -230,28 +280,37 @@ export class CharacterMapping {
 			((partIndex << CharacterMappingConstants.PART_INDEX_OFFSET) |
 				(charIndex << CharacterMappingConstants.CHAR_INDEX_OFFSET)) >>>
 			0;
+
 		this._data[column - 1] = partData;
+
 		this._horizontalOffset[column - 1] = horizontalOffset;
 	}
+
 	public getHorizontalOffset(column: number): number {
 		if (this._horizontalOffset.length === 0) {
 			// No characters on this line
 			return 0;
 		}
+
 		return this._horizontalOffset[column - 1];
 	}
+
 	private charOffsetToPartData(charOffset: number): number {
 		if (this.length === 0) {
 			return 0;
 		}
+
 		if (charOffset < 0) {
 			return this._data[0];
 		}
+
 		if (charOffset >= this.length) {
 			return this._data[this.length - 1];
 		}
+
 		return this._data[charOffset];
 	}
+
 	public getDomPosition(column: number): DomPosition {
 		const partData = this.charOffsetToPartData(column - 1);
 
@@ -261,6 +320,7 @@ export class CharacterMapping {
 
 		return new DomPosition(partIndex, charIndex);
 	}
+
 	public getColumn(domPosition: DomPosition, partLength: number): number {
 		const charOffset = this.partDataToCharOffset(
 			domPosition.partIndex,
@@ -270,6 +330,7 @@ export class CharacterMapping {
 
 		return charOffset + 1;
 	}
+
 	private partDataToCharOffset(
 		partIndex: number,
 		partLength: number,
@@ -278,6 +339,7 @@ export class CharacterMapping {
 		if (this.length === 0) {
 			return 0;
 		}
+
 		const searchEntry =
 			((partIndex << CharacterMappingConstants.PART_INDEX_OFFSET) |
 				(charIndex << CharacterMappingConstants.CHAR_INDEX_OFFSET)) >>>
@@ -300,9 +362,11 @@ export class CharacterMapping {
 				min = mid;
 			}
 		}
+
 		if (min === max) {
 			return min;
 		}
+
 		const minEntry = this._data[min];
 
 		const maxEntry = this._data[max];
@@ -310,9 +374,11 @@ export class CharacterMapping {
 		if (minEntry === searchEntry) {
 			return min;
 		}
+
 		if (maxEntry === searchEntry) {
 			return max;
 		}
+
 		const minPartIndex = CharacterMapping.getPartIndex(minEntry);
 
 		const minCharIndex = CharacterMapping.getCharIndex(minEntry);
@@ -327,6 +393,7 @@ export class CharacterMapping {
 		} else {
 			maxCharIndex = CharacterMapping.getCharIndex(maxEntry);
 		}
+
 		const minEntryDistance = charIndex - minCharIndex;
 
 		const maxEntryDistance = maxCharIndex - charIndex;
@@ -334,8 +401,10 @@ export class CharacterMapping {
 		if (minEntryDistance <= maxEntryDistance) {
 			return min;
 		}
+
 		return max;
 	}
+
 	public inflate() {
 		const result: [number, number, number][] = [];
 
@@ -347,8 +416,10 @@ export class CharacterMapping {
 			const charIndex = CharacterMapping.getCharIndex(partData);
 
 			const visibleColumn = this._horizontalOffset[i];
+
 			result.push([partIndex, charIndex, visibleColumn]);
 		}
+
 		return result;
 	}
 }
@@ -359,8 +430,11 @@ export const enum ForeignElementType {
 }
 export class RenderLineOutput {
 	_renderLineOutputBrand: void = undefined;
+
 	readonly characterMapping: CharacterMapping;
+
 	readonly containsRTL: boolean;
+
 	readonly containsForeignElements: ForeignElementType;
 
 	constructor(
@@ -369,7 +443,9 @@ export class RenderLineOutput {
 		containsForeignElements: ForeignElementType,
 	) {
 		this.characterMapping = characterMapping;
+
 		this.containsRTL = containsRTL;
+
 		this.containsForeignElements = containsForeignElements;
 	}
 }
@@ -394,25 +470,32 @@ export function renderViewLine(
 					lineDecoration.type === InlineDecorationType.After
 				) {
 					sb.appendString(`<span class="`);
+
 					sb.appendString(lineDecoration.className);
+
 					sb.appendString(`"></span>`);
 
 					if (lineDecoration.type === InlineDecorationType.Before) {
 						containsForeignElements |= ForeignElementType.Before;
+
 						beforeCount++;
 					}
+
 					if (lineDecoration.type === InlineDecorationType.After) {
 						containsForeignElements |= ForeignElementType.After;
+
 						afterCount++;
 					}
 				}
 			}
+
 			sb.appendString(`</span>`);
 
 			const characterMapping = new CharacterMapping(
 				1,
 				beforeCount + afterCount,
 			);
+
 			characterMapping.setColumnInfo(1, beforeCount, 0, 0);
 
 			return new RenderLineOutput(
@@ -430,6 +513,7 @@ export function renderViewLine(
 			ForeignElementType.None,
 		);
 	}
+
 	return _renderLine(resolveRenderLineInput(input), sb);
 }
 export class RenderLineOutput2 {
@@ -490,14 +574,19 @@ function resolveRenderLineInput(
 		input.stopRenderingLineAfter < lineContent.length
 	) {
 		isOverflowing = true;
+
 		overflowingCharCount =
 			lineContent.length - input.stopRenderingLineAfter;
+
 		len = input.stopRenderingLineAfter;
 	} else {
 		isOverflowing = false;
+
 		overflowingCharCount = 0;
+
 		len = lineContent.length;
 	}
+
 	let tokens = transformAndRemoveOverflowing(
 		lineContent,
 		input.containsRTL,
@@ -511,6 +600,7 @@ function resolveRenderLineInput(
 		// for inline decorations. `extractControlCharacters` removes empty line parts.
 		tokens = extractControlCharacters(lineContent, tokens);
 	}
+
 	if (
 		input.renderWhitespace === RenderWhitespace.All ||
 		input.renderWhitespace === RenderWhitespace.Boundary ||
@@ -521,6 +611,7 @@ function resolveRenderLineInput(
 	) {
 		tokens = _applyRenderWhitespace(input, lineContent, len, tokens);
 	}
+
 	let containsForeignElements = ForeignElementType.None;
 
 	if (input.lineDecorations.length > 0) {
@@ -539,6 +630,7 @@ function resolveRenderLineInput(
 				containsForeignElements |= ForeignElementType.After;
 			}
 		}
+
 		tokens = _applyInlineDecorations(
 			lineContent,
 			len,
@@ -546,6 +638,7 @@ function resolveRenderLineInput(
 			input.lineDecorations,
 		);
 	}
+
 	if (!input.containsRTL) {
 		// We can never split RTL text, as it ruins the rendering
 		tokens = splitLargeTokens(
@@ -554,6 +647,7 @@ function resolveRenderLineInput(
 			!input.isBasicASCII || input.fontLigatures,
 		);
 	}
+
 	return new ResolvedRenderLineInput(
 		input.useMonospaceOptimizations,
 		input.canUseHalfwidthRightwardsArrow,
@@ -591,11 +685,14 @@ function transformAndRemoveOverflowing(
 	if (fauxIndentLength > 0) {
 		result[resultLen++] = new LinePart(fauxIndentLength, "", 0, false);
 	}
+
 	let startOffset = fauxIndentLength;
 
 	for (
 		let tokenIndex = 0, tokensLen = tokens.getCount();
+
 		tokenIndex < tokensLen;
+
 		tokenIndex++
 	) {
 		const endIndex = tokens.getEndOffset(tokenIndex);
@@ -604,22 +701,28 @@ function transformAndRemoveOverflowing(
 			// The faux indent part of the line should have no token type
 			continue;
 		}
+
 		const type = tokens.getClassName(tokenIndex);
 
 		if (endIndex >= len) {
 			const tokenContainsRTL = lineContainsRTL
 				? strings.containsRTL(lineContent.substring(startOffset, len))
 				: false;
+
 			result[resultLen++] = new LinePart(len, type, 0, tokenContainsRTL);
 
 			break;
 		}
+
 		const tokenContainsRTL = lineContainsRTL
 			? strings.containsRTL(lineContent.substring(startOffset, endIndex))
 			: false;
+
 		result[resultLen++] = new LinePart(endIndex, type, 0, tokenContainsRTL);
+
 		startOffset = endIndex;
 	}
+
 	return result;
 }
 /**
@@ -666,6 +769,7 @@ function splitLargeTokens(
 					if (lineContent.charCodeAt(j) === CharCode.Space) {
 						lastSpaceOffset = j;
 					}
+
 					if (
 						lastSpaceOffset !== -1 &&
 						j - currTokenStart >= Constants.LongToken
@@ -677,10 +781,13 @@ function splitLargeTokens(
 							tokenMetadata,
 							tokenContainsRTL,
 						);
+
 						currTokenStart = lastSpaceOffset + 1;
+
 						lastSpaceOffset = -1;
 					}
 				}
+
 				if (currTokenStart !== tokenEndIndex) {
 					result[resultLen++] = new LinePart(
 						tokenEndIndex,
@@ -692,6 +799,7 @@ function splitLargeTokens(
 			} else {
 				result[resultLen++] = token;
 			}
+
 			lastTokenEndIndex = tokenEndIndex;
 		}
 	} else {
@@ -715,6 +823,7 @@ function splitLargeTokens(
 				for (let j = 1; j < piecesCount; j++) {
 					const pieceEndIndex =
 						lastTokenEndIndex + j * Constants.LongToken;
+
 					result[resultLen++] = new LinePart(
 						pieceEndIndex,
 						tokenType,
@@ -722,6 +831,7 @@ function splitLargeTokens(
 						tokenContainsRTL,
 					);
 				}
+
 				result[resultLen++] = new LinePart(
 					tokenEndIndex,
 					tokenType,
@@ -731,19 +841,23 @@ function splitLargeTokens(
 			} else {
 				result[resultLen++] = token;
 			}
+
 			lastTokenEndIndex = tokenEndIndex;
 		}
 	}
+
 	return result;
 }
 function isControlCharacter(charCode: number): boolean {
 	if (charCode < 32) {
 		return charCode !== CharCode.Tab;
 	}
+
 	if (charCode === 127) {
 		// DEL
 		return true;
 	}
+
 	if (
 		(charCode >= 0x202a && charCode <= 0x202e) ||
 		(charCode >= 0x2066 && charCode <= 0x2069) ||
@@ -765,6 +879,7 @@ function isControlCharacter(charCode: number): boolean {
 		// ALM	U+061C	ARABIC LETTER MARK
 		return true;
 	}
+
 	return false;
 }
 function extractControlCharacters(
@@ -792,17 +907,21 @@ function extractControlCharacters(
 						token.metadata,
 						token.containsRTL,
 					);
+
 					result.push(lastLinePart);
 				}
+
 				lastLinePart = new LinePart(
 					charOffset + 1,
 					"mtkcontrol",
 					token.metadata,
 					false,
 				);
+
 				result.push(lastLinePart);
 			}
 		}
+
 		if (charOffset > lastLinePart.endIndex) {
 			// emit previous part if it has text
 			lastLinePart = new LinePart(
@@ -811,9 +930,11 @@ function extractControlCharacters(
 				token.metadata,
 				token.containsRTL,
 			);
+
 			result.push(lastLinePart);
 		}
 	}
+
 	return result;
 }
 /**
@@ -868,11 +989,14 @@ function _applyRenderWhitespace(
 
 	if (firstNonWhitespaceIndex === -1) {
 		lineIsEmptyOrWhitespace = true;
+
 		firstNonWhitespaceIndex = len;
+
 		lastNonWhitespaceIndex = len;
 	} else {
 		lastNonWhitespaceIndex = strings.lastNonWhitespaceIndex(lineContent);
 	}
+
 	let wasInWhitespace = false;
 
 	let currentSelectionIndex = 0;
@@ -886,8 +1010,10 @@ function _applyRenderWhitespace(
 
 		if (currentSelection && charIndex >= currentSelection.endOffset) {
 			currentSelectionIndex++;
+
 			currentSelection = selections && selections[currentSelectionIndex];
 		}
+
 		let isInWhitespace: boolean;
 
 		if (
@@ -910,6 +1036,7 @@ function _applyRenderWhitespace(
 						charIndex + 1 < len
 							? lineContent.charCodeAt(charIndex + 1)
 							: CharCode.Null;
+
 					isInWhitespace =
 						nextChCode === CharCode.Space ||
 						nextChCode === CharCode.Tab;
@@ -932,6 +1059,7 @@ function _applyRenderWhitespace(
 			isInWhitespace =
 				lineIsEmptyOrWhitespace || charIndex > lastNonWhitespaceIndex;
 		}
+
 		if (isInWhitespace && tokenContainsRTL) {
 			// If the token contains RTL text, breaking it up into multiple line parts
 			// to render whitespace might affect the browser's bidi layout.
@@ -946,6 +1074,7 @@ function _applyRenderWhitespace(
 				isInWhitespace = false;
 			}
 		}
+
 		if (wasInWhitespace) {
 			// was in whitespace token
 			if (
@@ -975,6 +1104,7 @@ function _applyRenderWhitespace(
 						false,
 					);
 				}
+
 				tmpIndent = tmpIndent % tabSize;
 			}
 		} else {
@@ -989,9 +1119,11 @@ function _applyRenderWhitespace(
 					0,
 					tokenContainsRTL,
 				);
+
 				tmpIndent = tmpIndent % tabSize;
 			}
 		}
+
 		if (chCode === CharCode.Tab) {
 			tmpIndent = tabSize;
 		} else if (strings.isFullWidthCharacter(chCode)) {
@@ -999,6 +1131,7 @@ function _applyRenderWhitespace(
 		} else {
 			tmpIndent++;
 		}
+
 		wasInWhitespace = isInWhitespace;
 
 		while (charIndex === tokenEndIndex) {
@@ -1006,13 +1139,16 @@ function _applyRenderWhitespace(
 
 			if (tokenIndex < tokensLength) {
 				tokenType = tokens[tokenIndex].type;
+
 				tokenContainsRTL = tokens[tokenIndex].containsRTL;
+
 				tokenEndIndex = tokens[tokenIndex].endIndex;
 			} else {
 				break;
 			}
 		}
 	}
+
 	let generateWhitespace = false;
 
 	if (wasInWhitespace) {
@@ -1036,6 +1172,7 @@ function _applyRenderWhitespace(
 			generateWhitespace = true;
 		}
 	}
+
 	if (generateWhitespace) {
 		if (generateLinePartForEachWhitespace) {
 			const lastEndIndex =
@@ -1062,6 +1199,7 @@ function _applyRenderWhitespace(
 	} else {
 		result[resultLen++] = new LinePart(len, tokenType, 0, tokenContainsRTL);
 	}
+
 	return result;
 }
 /**
@@ -1093,7 +1231,9 @@ function _applyInlineDecorations(
 
 	for (
 		let tokenIndex = 0, len = tokens.length;
+
 		tokenIndex < len;
+
 		tokenIndex++
 	) {
 		const token = tokens[tokenIndex];
@@ -1114,6 +1254,7 @@ function _applyInlineDecorations(
 
 			if (lineDecoration.startOffset > lastResultEndIndex) {
 				lastResultEndIndex = lineDecoration.startOffset;
+
 				result[resultLen++] = new LinePart(
 					lastResultEndIndex,
 					tokenType,
@@ -1121,19 +1262,23 @@ function _applyInlineDecorations(
 					tokenContainsRTL,
 				);
 			}
+
 			if (lineDecoration.endOffset + 1 <= tokenEndIndex) {
 				// This line decoration ends before this token ends
 				lastResultEndIndex = lineDecoration.endOffset + 1;
+
 				result[resultLen++] = new LinePart(
 					lastResultEndIndex,
 					tokenType + " " + lineDecoration.className,
 					tokenMetadata | lineDecoration.metadata,
 					tokenContainsRTL,
 				);
+
 				lineDecorationIndex++;
 			} else {
 				// This line decoration continues on to the next token
 				lastResultEndIndex = tokenEndIndex;
+
 				result[resultLen++] = new LinePart(
 					lastResultEndIndex,
 					tokenType + " " + lineDecoration.className,
@@ -1144,8 +1289,10 @@ function _applyInlineDecorations(
 				break;
 			}
 		}
+
 		if (tokenEndIndex > lastResultEndIndex) {
 			lastResultEndIndex = tokenEndIndex;
+
 			result[resultLen++] = new LinePart(
 				lastResultEndIndex,
 				tokenType,
@@ -1154,6 +1301,7 @@ function _applyInlineDecorations(
 			);
 		}
 	}
+
 	const lastTokenEndIndex = tokens[tokens.length - 1].endIndex;
 
 	if (
@@ -1166,15 +1314,18 @@ function _applyInlineDecorations(
 				lastTokenEndIndex
 		) {
 			const lineDecoration = lineDecorations[lineDecorationIndex];
+
 			result[resultLen++] = new LinePart(
 				lastResultEndIndex,
 				lineDecoration.className,
 				lineDecoration.metadata,
 				false,
 			);
+
 			lineDecorationIndex++;
 		}
 	}
+
 	return result;
 }
 /**
@@ -1234,9 +1385,12 @@ function _renderLine(
 	} else {
 		sb.appendString("<span>");
 	}
+
 	for (
 		let partIndex = 0, tokensLen = parts.length;
+
 		partIndex < tokensLen;
+
 		partIndex++
 	) {
 		const part = parts[partIndex];
@@ -1258,14 +1412,19 @@ function _renderLine(
 
 		const partIsEmptyAndHasPseudoAfter =
 			charIndex === partEndIndex && part.isPseudoAfter();
+
 		charOffsetInPart = 0;
+
 		sb.appendString("<span ");
 
 		if (partContainsRTL) {
 			sb.appendString('style="unicode-bidi:isolate" ');
 		}
+
 		sb.appendString('class="');
+
 		sb.appendString(partRendersWhitespaceWithWidth ? "mtkz" : partType);
+
 		sb.appendASCIICharCode(CharCode.DoubleQuote);
 
 		if (partRendersWhitespace) {
@@ -1282,6 +1441,7 @@ function _renderLine(
 						(charCode === CharCode.Tab
 							? tabSize - (_visibleColumn % tabSize)
 							: 1) | 0;
+
 					partWidth += charWidth;
 
 					if (_charIndex >= fauxIndentLength) {
@@ -1289,11 +1449,15 @@ function _renderLine(
 					}
 				}
 			}
+
 			if (partRendersWhitespaceWithWidth) {
 				sb.appendString(' style="width:');
+
 				sb.appendString(String(spaceWidth * partWidth));
+
 				sb.appendString('px"');
 			}
+
 			sb.appendASCIICharCode(CharCode.GreaterThan);
 
 			for (; charIndex < partEndIndex; charIndex++) {
@@ -1303,6 +1467,7 @@ function _renderLine(
 					charOffsetInPart,
 					charHorizontalOffset,
 				);
+
 				partDisplacement = 0;
 
 				const charCode = lineContent.charCodeAt(charIndex);
@@ -1314,6 +1479,7 @@ function _renderLine(
 				if (charCode === CharCode.Tab) {
 					producedCharacters =
 						(tabSize - (visibleColumn % tabSize)) | 0;
+
 					charWidth = producedCharacters;
 
 					if (!canUseHalfwidthRightwardsArrow || charWidth > 1) {
@@ -1321,17 +1487,22 @@ function _renderLine(
 					} else {
 						sb.appendCharCode(0xffeb); // HALFWIDTH RIGHTWARDS ARROW
 					}
+
 					for (let space = 2; space <= charWidth; space++) {
 						sb.appendCharCode(0xa0); // &nbsp;
 					}
 				} else {
 					// must be CharCode.Space
 					producedCharacters = 2;
+
 					charWidth = 1;
+
 					sb.appendCharCode(renderSpaceCharCode); // &middot; or word separator middle dot
 					sb.appendCharCode(0x200c); // ZERO WIDTH NON-JOINER
 				}
+
 				charOffsetInPart += producedCharacters;
+
 				charHorizontalOffset += charWidth;
 
 				if (charIndex >= fauxIndentLength) {
@@ -1348,6 +1519,7 @@ function _renderLine(
 					charOffsetInPart,
 					charHorizontalOffset,
 				);
+
 				partDisplacement = 0;
 
 				const charCode = lineContent.charCodeAt(charIndex);
@@ -1360,15 +1532,19 @@ function _renderLine(
 					case CharCode.Tab:
 						producedCharacters =
 							tabSize - (visibleColumn % tabSize);
+
 						charWidth = producedCharacters;
 
 						for (
 							let space = 1;
+
 							space <= producedCharacters;
+
 							space++
 						) {
 							sb.appendCharCode(0xa0); // &nbsp;
 						}
+
 						break;
 
 					case CharCode.Space:
@@ -1398,6 +1574,7 @@ function _renderLine(
 						} else {
 							sb.appendString("&#00;");
 						}
+
 						break;
 
 					case CharCode.UTF8_BOM:
@@ -1426,15 +1603,21 @@ function _renderLine(
 							isControlCharacter(charCode)
 						) {
 							sb.appendString("[U+");
+
 							sb.appendString(to4CharHex(charCode));
+
 							sb.appendString("]");
+
 							producedCharacters = 8;
+
 							charWidth = producedCharacters;
 						} else {
 							sb.appendCharCode(charCode);
 						}
 				}
+
 				charOffsetInPart += producedCharacters;
+
 				charHorizontalOffset += charWidth;
 
 				if (charIndex >= fauxIndentLength) {
@@ -1442,17 +1625,20 @@ function _renderLine(
 				}
 			}
 		}
+
 		if (partIsEmptyAndHasPseudoAfter) {
 			partDisplacement++;
 		} else {
 			partDisplacement = 0;
 		}
+
 		if (
 			charIndex >= len &&
 			!lastCharacterMappingDefined &&
 			part.isPseudoAfter()
 		) {
 			lastCharacterMappingDefined = true;
+
 			characterMapping.setColumnInfo(
 				charIndex + 1,
 				partIndex,
@@ -1460,8 +1646,10 @@ function _renderLine(
 				charHorizontalOffset,
 			);
 		}
+
 		sb.appendString("</span>");
 	}
+
 	if (!lastCharacterMappingDefined) {
 		// When getting client rects for the last character, we will position the
 		// text range at the end of the span, insteaf of at the beginning of next span
@@ -1472,8 +1660,10 @@ function _renderLine(
 			charHorizontalOffset,
 		);
 	}
+
 	if (isOverflowing) {
 		sb.appendString('<span class="mtkoverflow">');
+
 		sb.appendString(
 			nls.localize(
 				"showMore",
@@ -1481,8 +1671,10 @@ function _renderLine(
 				renderOverflowingCharCount(overflowingCharCount),
 			),
 		);
+
 		sb.appendString("</span>");
 	}
+
 	sb.appendString("</span>");
 
 	return new RenderLineOutput(
@@ -1498,8 +1690,10 @@ function renderOverflowingCharCount(n: number): string {
 	if (n < 1024) {
 		return nls.localize("overflow.chars", "{0} chars", n);
 	}
+
 	if (n < 1024 * 1024) {
 		return `${(n / 1024).toFixed(1)} KB`;
 	}
+
 	return `${(n / 1024 / 1024).toFixed(1)} MB`;
 }

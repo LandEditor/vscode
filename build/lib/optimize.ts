@@ -67,10 +67,12 @@ function bundleESMTask(opts: IBundleESMTaskOpts): NodeJS.ReadWriteStream {
 
 	for (const entryPoint of entryPoints) {
 		allMentionedModules.add(entryPoint.name);
+
 		entryPoint.include?.forEach(
 			allMentionedModules.add,
 			allMentionedModules,
 		);
+
 		entryPoint.exclude?.forEach(
 			allMentionedModules.add,
 			allMentionedModules,
@@ -103,6 +105,7 @@ function bundleESMTask(opts: IBundleESMTaskOpts): NodeJS.ReadWriteStream {
 					require.resolve("tslib"),
 					"../tslib.es6.js",
 				);
+
 				banner.js += await fs.promises.readFile(tslibPath, "utf-8");
 			}
 
@@ -213,6 +216,7 @@ function bundleESMTask(opts: IBundleESMTaskOpts): NodeJS.ReadWriteStream {
 							path: file.path,
 							base: path.join(REPO_ROOT_PATH, opts.src),
 						};
+
 						files.push(new VinylFile(fileProps));
 					}
 				});
@@ -281,6 +285,7 @@ export function minifyTask(
 		const cssFilter = filter("**/*.css", { restore: true });
 
 		const svgFilter = filter("**/*.svg", { restore: true });
+
 		pump(
 			gulp.src([src + "/**", "!" + src + "/**/*.map"]),
 			jsFilter,
@@ -320,7 +325,9 @@ export function minifyTask(
 							);
 						} else {
 							f.contents = contents;
+
 							f.sourceMap = JSON.parse(sourceMapFile.text);
+
 							cb(undefined, f);
 						}
 					}, cb);

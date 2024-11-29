@@ -11,6 +11,7 @@ const OVERRIDE_IDENTIFIER_REGEX = /\[([^\[\]]*)\]/g;
 
 export class SettingsDocument {
 	constructor(private document: vscode.TextDocument) {}
+
 	public async provideCompletionItems(
 		position: vscode.Position,
 		_token: vscode.CancellationToken,
@@ -57,6 +58,7 @@ export class SettingsDocument {
 			} catch (e) {
 				/* ignore error */
 			}
+
 			const range = this.getReplaceRange(location, position);
 
 			return provideInstalledExtensionProposals(
@@ -81,6 +83,7 @@ export class SettingsDocument {
 			} catch (e) {
 				/* ignore error */
 			}
+
 			const range = this.getReplaceRange(location, position);
 
 			return provideInstalledExtensionProposals(
@@ -100,8 +103,10 @@ export class SettingsDocument {
 				this.getReplaceRange(location, position),
 			);
 		}
+
 		return this.provideLanguageOverridesCompletionItems(location, position);
 	}
+
 	private getReplaceRange(location: Location, position: vscode.Position) {
 		const node = location.previousNode;
 
@@ -116,8 +121,10 @@ export class SettingsDocument {
 				return new vscode.Range(nodeStart, nodeEnd);
 			}
 		}
+
 		return new vscode.Range(position, position);
 	}
+
 	private isCompletingPropertyValue(
 		location: Location,
 		pos: vscode.Position,
@@ -125,6 +132,7 @@ export class SettingsDocument {
 		if (location.isAtPropertyKey) {
 			return false;
 		}
+
 		const previousNode = location.previousNode;
 
 		if (previousNode) {
@@ -135,8 +143,10 @@ export class SettingsDocument {
 				offset <= previousNode.offset + previousNode.length
 			);
 		}
+
 		return true;
 	}
+
 	private async provideWindowTitleCompletionItems(
 		location: Location,
 		pos: vscode.Position,
@@ -146,6 +156,7 @@ export class SettingsDocument {
 		if (!this.isCompletingPropertyValue(location, pos)) {
 			return completions;
 		}
+
 		let range = this.document.getWordRangeAtPosition(pos, /\$\{[^"\}]*\}?/);
 
 		if (
@@ -156,11 +167,13 @@ export class SettingsDocument {
 		) {
 			range = new vscode.Range(pos, pos);
 		}
+
 		const getText = (variable: string) => {
 			const text = "${" + variable + "}";
 
 			return location.previousNode ? text : JSON.stringify(text);
 		};
+
 		completions.push(
 			this.newSimpleCompletionItem(
 				getText("activeEditorShort"),
@@ -168,6 +181,7 @@ export class SettingsDocument {
 				vscode.l10n.t("the file name (e.g. myFile.txt)"),
 			),
 		);
+
 		completions.push(
 			this.newSimpleCompletionItem(
 				getText("activeEditorMedium"),
@@ -177,6 +191,7 @@ export class SettingsDocument {
 				),
 			),
 		);
+
 		completions.push(
 			this.newSimpleCompletionItem(
 				getText("activeEditorLong"),
@@ -186,6 +201,7 @@ export class SettingsDocument {
 				),
 			),
 		);
+
 		completions.push(
 			this.newSimpleCompletionItem(
 				getText("activeFolderShort"),
@@ -195,6 +211,7 @@ export class SettingsDocument {
 				),
 			),
 		);
+
 		completions.push(
 			this.newSimpleCompletionItem(
 				getText("activeFolderMedium"),
@@ -204,6 +221,7 @@ export class SettingsDocument {
 				),
 			),
 		);
+
 		completions.push(
 			this.newSimpleCompletionItem(
 				getText("activeFolderLong"),
@@ -213,6 +231,7 @@ export class SettingsDocument {
 				),
 			),
 		);
+
 		completions.push(
 			this.newSimpleCompletionItem(
 				getText("rootName"),
@@ -222,6 +241,7 @@ export class SettingsDocument {
 				),
 			),
 		);
+
 		completions.push(
 			this.newSimpleCompletionItem(
 				getText("rootNameShort"),
@@ -231,6 +251,7 @@ export class SettingsDocument {
 				),
 			),
 		);
+
 		completions.push(
 			this.newSimpleCompletionItem(
 				getText("rootPath"),
@@ -240,6 +261,7 @@ export class SettingsDocument {
 				),
 			),
 		);
+
 		completions.push(
 			this.newSimpleCompletionItem(
 				getText("folderName"),
@@ -249,6 +271,7 @@ export class SettingsDocument {
 				),
 			),
 		);
+
 		completions.push(
 			this.newSimpleCompletionItem(
 				getText("folderPath"),
@@ -258,6 +281,7 @@ export class SettingsDocument {
 				),
 			),
 		);
+
 		completions.push(
 			this.newSimpleCompletionItem(
 				getText("appName"),
@@ -265,6 +289,7 @@ export class SettingsDocument {
 				vscode.l10n.t("e.g. VS Code"),
 			),
 		);
+
 		completions.push(
 			this.newSimpleCompletionItem(
 				getText("remoteName"),
@@ -272,6 +297,7 @@ export class SettingsDocument {
 				vscode.l10n.t("e.g. SSH"),
 			),
 		);
+
 		completions.push(
 			this.newSimpleCompletionItem(
 				getText("dirty"),
@@ -281,6 +307,7 @@ export class SettingsDocument {
 				),
 			),
 		);
+
 		completions.push(
 			this.newSimpleCompletionItem(
 				getText("separator"),
@@ -290,6 +317,7 @@ export class SettingsDocument {
 				),
 			),
 		);
+
 		completions.push(
 			this.newSimpleCompletionItem(
 				getText("activeRepositoryName"),
@@ -299,6 +327,7 @@ export class SettingsDocument {
 				),
 			),
 		);
+
 		completions.push(
 			this.newSimpleCompletionItem(
 				getText("activeRepositoryBranchName"),
@@ -311,6 +340,7 @@ export class SettingsDocument {
 
 		return completions;
 	}
+
 	private async provideEditorLabelCompletionItems(
 		location: Location,
 		pos: vscode.Position,
@@ -320,6 +350,7 @@ export class SettingsDocument {
 		if (!this.isCompletingPropertyValue(location, pos)) {
 			return completions;
 		}
+
 		let range = this.document.getWordRangeAtPosition(pos, /\$\{[^"\}]*\}?/);
 
 		if (
@@ -330,11 +361,13 @@ export class SettingsDocument {
 		) {
 			range = new vscode.Range(pos, pos);
 		}
+
 		const getText = (variable: string) => {
 			const text = "${" + variable + "}";
 
 			return location.previousNode ? text : JSON.stringify(text);
 		};
+
 		completions.push(
 			this.newSimpleCompletionItem(
 				getText("dirname"),
@@ -344,6 +377,7 @@ export class SettingsDocument {
 				),
 			),
 		);
+
 		completions.push(
 			this.newSimpleCompletionItem(
 				getText("dirname(1)"),
@@ -351,6 +385,7 @@ export class SettingsDocument {
 				vscode.l10n.t("The nth parent folder name of the editor"),
 			),
 		);
+
 		completions.push(
 			this.newSimpleCompletionItem(
 				getText("filename"),
@@ -360,6 +395,7 @@ export class SettingsDocument {
 				),
 			),
 		);
+
 		completions.push(
 			this.newSimpleCompletionItem(
 				getText("extname"),
@@ -370,6 +406,7 @@ export class SettingsDocument {
 
 		return completions;
 	}
+
 	private async provideFilesAssociationsCompletionItems(
 		location: Location,
 		position: vscode.Position,
@@ -380,6 +417,7 @@ export class SettingsDocument {
 			// Key
 			if (location.path[1] === "") {
 				const range = this.getReplaceRange(location, position);
+
 				completions.push(
 					this.newSnippetCompletionItem({
 						label: vscode.l10n.t("Files with Extension"),
@@ -392,6 +430,7 @@ export class SettingsDocument {
 						range,
 					}),
 				);
+
 				completions.push(
 					this.newSnippetCompletionItem({
 						label: vscode.l10n.t("Files with Path"),
@@ -411,8 +450,10 @@ export class SettingsDocument {
 				);
 			}
 		}
+
 		return completions;
 	}
+
 	private async provideExcludeCompletionItems(
 		location: Location,
 		position: vscode.Position,
@@ -424,6 +465,7 @@ export class SettingsDocument {
 			(location.path.length === 2 && location.path[1] === "")
 		) {
 			const range = this.getReplaceRange(location, position);
+
 			completions.push(
 				this.newSnippetCompletionItem({
 					label: vscode.l10n.t("Files by Extension"),
@@ -437,6 +479,7 @@ export class SettingsDocument {
 					range,
 				}),
 			);
+
 			completions.push(
 				this.newSnippetCompletionItem({
 					label: vscode.l10n.t("Files with Multiple Extensions"),
@@ -450,6 +493,7 @@ export class SettingsDocument {
 					range,
 				}),
 			);
+
 			completions.push(
 				this.newSnippetCompletionItem({
 					label: vscode.l10n.t("Files with Siblings by Name"),
@@ -463,6 +507,7 @@ export class SettingsDocument {
 					range,
 				}),
 			);
+
 			completions.push(
 				this.newSnippetCompletionItem({
 					label: vscode.l10n.t("Folder by Name (Top Level)"),
@@ -476,6 +521,7 @@ export class SettingsDocument {
 					range,
 				}),
 			);
+
 			completions.push(
 				this.newSnippetCompletionItem({
 					label: vscode.l10n.t(
@@ -491,6 +537,7 @@ export class SettingsDocument {
 					range,
 				}),
 			);
+
 			completions.push(
 				this.newSnippetCompletionItem({
 					label: vscode.l10n.t("Folder by Name (Any Location)"),
@@ -511,6 +558,7 @@ export class SettingsDocument {
 			this.isCompletingPropertyValue(location, position)
 		) {
 			const range = this.getReplaceRange(location, position);
+
 			completions.push(
 				this.newSnippetCompletionItem({
 					label: vscode.l10n.t("Files with Siblings by Name"),
@@ -522,8 +570,10 @@ export class SettingsDocument {
 				}),
 			);
 		}
+
 		return completions;
 	}
+
 	private async provideLanguageCompletionItems(
 		location: Location,
 		position: vscode.Position,
@@ -549,8 +599,10 @@ export class SettingsDocument {
 				),
 			];
 		}
+
 		return [];
 	}
+
 	private async provideLanguageCompletionItemsForLanguageOverrides(
 		range: vscode.Range,
 	): Promise<vscode.CompletionItem[]> {
@@ -560,12 +612,17 @@ export class SettingsDocument {
 
 		for (const language of languages) {
 			const item = new vscode.CompletionItem(JSON.stringify(language));
+
 			item.kind = vscode.CompletionItemKind.Property;
+
 			item.range = range;
+
 			completionItems.push(item);
 		}
+
 		return completionItems;
 	}
+
 	private async provideLanguageOverridesCompletionItems(
 		location: Location,
 		position: vscode.Position,
@@ -608,15 +665,18 @@ export class SettingsDocument {
 							matches[0].length,
 					),
 				);
+
 				languageOverridesRanges.push(lastLanguageOverrideRange);
 				/* Suggest the configured language if the position is in the match range */
 				if (!lastLanguageOverrideRange.contains(position)) {
 					donotSuggestLanguages.push(matches[1].trim());
 				}
+
 				matches = OVERRIDE_IDENTIFIER_REGEX.exec(
 					location.previousNode.value,
 				);
 			}
+
 			const lastLanguageOverrideEndPosition = lastLanguageOverrideRange
 				? lastLanguageOverrideRange.end
 				: startPosition;
@@ -629,6 +689,7 @@ export class SettingsDocument {
 					),
 				);
 			}
+
 			const languageOverrideRange = languageOverridesRanges.find(
 				(range) => range.contains(position),
 			);
@@ -647,16 +708,22 @@ export class SettingsDocument {
 				for (const language of languages) {
 					if (!donotSuggestLanguages.includes(language)) {
 						const item = new vscode.CompletionItem(`[${language}]`);
+
 						item.kind = vscode.CompletionItemKind.Property;
+
 						item.range = languageOverrideRange;
+
 						completionItems.push(item);
 					}
 				}
+
 				return completionItems;
 			}
 		}
+
 		return [];
 	}
+
 	private providePortsAttributesCompletionItem(
 		range: vscode.Range,
 	): vscode.CompletionItem[] {
@@ -684,6 +751,7 @@ export class SettingsDocument {
 			}),
 		];
 	}
+
 	private newSimpleCompletionItem(
 		text: string,
 		range: vscode.Range,
@@ -691,24 +759,35 @@ export class SettingsDocument {
 		insertText?: string,
 	): vscode.CompletionItem {
 		const item = new vscode.CompletionItem(text);
+
 		item.kind = vscode.CompletionItemKind.Value;
+
 		item.detail = description;
+
 		item.insertText = insertText ? insertText : text;
+
 		item.range = range;
 
 		return item;
 	}
+
 	private newSnippetCompletionItem(o: {
 		label: string;
 
 		documentation?: string;
+
 		snippet: string;
+
 		range: vscode.Range;
 	}): vscode.CompletionItem {
 		const item = new vscode.CompletionItem(o.label);
+
 		item.kind = vscode.CompletionItemKind.Value;
+
 		item.documentation = o.documentation;
+
 		item.insertText = new vscode.SnippetString(o.snippet);
+
 		item.range = o.range;
 
 		return item;

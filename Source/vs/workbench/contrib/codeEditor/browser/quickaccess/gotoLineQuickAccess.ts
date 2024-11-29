@@ -42,6 +42,7 @@ export class GotoLineQuickAccessProvider extends AbstractGotoLineQuickAccessProv
 	) {
 		super();
 	}
+
 	private get configuration() {
 		const editorConfig =
 			this.configurationService.getValue<IWorkbenchEditorConfiguration>()
@@ -53,16 +54,20 @@ export class GotoLineQuickAccessProvider extends AbstractGotoLineQuickAccessProv
 				!editorConfig?.enablePreview,
 		};
 	}
+
 	protected get activeTextEditorControl() {
 		return this.editorService.activeTextEditorControl;
 	}
+
 	protected override gotoLocation(
 		context: IQuickAccessTextEditorContext,
 		options: {
 			range: IRange;
+
 			keyMods: IKeyMods;
 
 			forceSideBySide?: boolean;
+
 			preserveFocus?: boolean;
 		},
 	): void {
@@ -82,6 +87,7 @@ export class GotoLineQuickAccessProvider extends AbstractGotoLineQuickAccessProv
 					this.configuration.openEditorPinned,
 				preserveFocus: options.preserveFocus,
 			};
+
 			this.editorGroupService.sideGroup.openEditor(
 				this.editorService.activeEditor,
 				editorOptions,
@@ -109,6 +115,7 @@ class GotoLineAction extends Action2 {
 			},
 		});
 	}
+
 	async run(accessor: ServicesAccessor): Promise<void> {
 		accessor
 			.get(IQuickInputService)

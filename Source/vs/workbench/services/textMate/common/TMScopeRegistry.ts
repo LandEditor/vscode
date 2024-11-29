@@ -11,13 +11,21 @@ import {
 
 export interface IValidGrammarDefinition {
 	location: URI;
+
 	language?: string;
+
 	scopeName: string;
+
 	embeddedLanguages: IValidEmbeddedLanguagesMap;
+
 	tokenTypes: IValidTokenTypeMap;
+
 	injectTo?: string[];
+
 	balancedBracketSelectors: string[];
+
 	unbalancedBracketSelectors: string[];
+
 	sourceExtensionId?: string;
 }
 export interface IValidTokenTypeMap {
@@ -34,9 +42,11 @@ export class TMScopeRegistry {
 	constructor() {
 		this._scopeNameToLanguageRegistration = Object.create(null);
 	}
+
 	public reset(): void {
 		this._scopeNameToLanguageRegistration = Object.create(null);
 	}
+
 	public register(def: IValidGrammarDefinition): void {
 		if (this._scopeNameToLanguageRegistration[def.scopeName]) {
 			const existingRegistration =
@@ -52,8 +62,10 @@ export class TMScopeRegistry {
 				);
 			}
 		}
+
 		this._scopeNameToLanguageRegistration[def.scopeName] = def;
 	}
+
 	public getGrammarDefinition(
 		scopeName: string,
 	): IValidGrammarDefinition | null {

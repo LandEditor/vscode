@@ -33,17 +33,26 @@ export const enum TypeHierarchyDirection {
 }
 export interface TypeHierarchyItem {
 	_sessionId: string;
+
 	_itemId: string;
+
 	kind: SymbolKind;
+
 	name: string;
+
 	detail?: string;
+
 	uri: URI;
+
 	range: IRange;
+
 	selectionRange: IRange;
+
 	tags?: SymbolTag[];
 }
 export interface TypeHierarchySession {
 	roots: TypeHierarchyItem[];
+
 	dispose(): void;
 }
 export interface TypeHierarchyProvider {
@@ -52,10 +61,12 @@ export interface TypeHierarchyProvider {
 		position: IPosition,
 		token: CancellationToken,
 	): ProviderResult<TypeHierarchySession>;
+
 	provideSupertypes(
 		item: TypeHierarchyItem,
 		token: CancellationToken,
 	): ProviderResult<TypeHierarchyItem[]>;
+
 	provideSubtypes(
 		item: TypeHierarchyItem,
 		token: CancellationToken,
@@ -75,6 +86,7 @@ export class TypeHierarchyModel {
 		if (!provider) {
 			return undefined;
 		}
+
 		const session = await provider.prepareTypeHierarchy(
 			model,
 			position,
@@ -84,6 +96,7 @@ export class TypeHierarchyModel {
 		if (!session) {
 			return undefined;
 		}
+
 		return new TypeHierarchyModel(
 			session.roots.reduce((p, c) => p + c._sessionId, ""),
 			provider,
@@ -91,7 +104,9 @@ export class TypeHierarchyModel {
 			new RefCountedDisposable(session),
 		);
 	}
+
 	readonly root: TypeHierarchyItem;
+
 	private constructor(
 		readonly id: string,
 		readonly provider: TypeHierarchyProvider,
@@ -100,9 +115,11 @@ export class TypeHierarchyModel {
 	) {
 		this.root = roots[0];
 	}
+
 	dispose(): void {
 		this.ref.release();
 	}
+
 	fork(item: TypeHierarchyItem): TypeHierarchyModel {
 		const that = this;
 
@@ -112,6 +129,7 @@ export class TypeHierarchyModel {
 			}
 		})();
 	}
+
 	async provideSupertypes(
 		item: TypeHierarchyItem,
 		token: CancellationToken,
@@ -125,8 +143,10 @@ export class TypeHierarchyModel {
 		} catch (e) {
 			onUnexpectedExternalError(e);
 		}
+
 		return [];
 	}
+
 	async provideSubtypes(
 		item: TypeHierarchyItem,
 		token: CancellationToken,
@@ -140,6 +160,7 @@ export class TypeHierarchyModel {
 		} catch (e) {
 			onUnexpectedExternalError(e);
 		}
+
 		return [];
 	}
 }
@@ -149,7 +170,9 @@ CommandsRegistry.registerCommand(
 	"_executePrepareTypeHierarchy",
 	async (accessor, ...args) => {
 		const [resource, position] = args;
+
 		assertType(URI.isUri(resource));
+
 		assertType(Position.isIPosition(position));
 
 		const modelService = accessor.get(IModelService);
@@ -163,9 +186,12 @@ CommandsRegistry.registerCommand(
 
 			const result =
 				await textModelService.createModelReference(resource);
+
 			textModel = result.object.textEditorModel;
+
 			textModelReference = result;
 		}
+
 		try {
 			const model = await TypeHierarchyModel.create(
 				textModel,
@@ -176,10 +202,13 @@ CommandsRegistry.registerCommand(
 			if (!model) {
 				return [];
 			}
+
 			_models.set(model.id, model);
+
 			_models.forEach((value, key, map) => {
 				if (map.size > 10) {
 					value.dispose();
+
 					_models.delete(key);
 				}
 			});
@@ -206,6 +235,7 @@ CommandsRegistry.registerCommand(
 	"_executeProvideSupertypes",
 	async (_accessor, ...args) => {
 		const [item] = args;
+
 		assertType(isTypeHierarchyItemDto(item));
 		// find model
 		const model = _models.get(item._sessionId);
@@ -213,6 +243,7 @@ CommandsRegistry.registerCommand(
 		if (!model) {
 			return undefined;
 		}
+
 		return model.provideSupertypes(item, CancellationToken.None);
 	},
 );
@@ -220,6 +251,7 @@ CommandsRegistry.registerCommand(
 	"_executeProvideSubtypes",
 	async (_accessor, ...args) => {
 		const [item] = args;
+
 		assertType(isTypeHierarchyItemDto(item));
 		// find model
 		const model = _models.get(item._sessionId);
@@ -227,6 +259,7 @@ CommandsRegistry.registerCommand(
 		if (!model) {
 			return undefined;
 		}
+
 		return model.provideSubtypes(item, CancellationToken.None);
 	},
 );

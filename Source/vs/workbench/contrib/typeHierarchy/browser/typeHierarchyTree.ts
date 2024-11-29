@@ -33,26 +33,31 @@ export class Type {
 		readonly model: TypeHierarchyModel,
 		readonly parent: Type | undefined,
 	) {}
+
 	static compare(a: Type, b: Type): number {
 		let res = compare(a.item.uri.toString(), b.item.uri.toString());
 
 		if (res === 0) {
 			res = Range.compareRangesUsingStarts(a.item.range, b.item.range);
 		}
+
 		return res;
 	}
 }
 export class DataSource implements IAsyncDataSource<TypeHierarchyModel, Type> {
 	constructor(public getDirection: () => TypeHierarchyDirection) {}
+
 	hasChildren(): boolean {
 		return true;
 	}
+
 	async getChildren(element: TypeHierarchyModel | Type): Promise<Type[]> {
 		if (element instanceof TypeHierarchyModel) {
 			return element.roots.map(
 				(root) => new Type(root, element, undefined),
 			);
 		}
+
 		const { model, item } = element;
 
 		if (this.getDirection() === TypeHierarchyDirection.Supertypes) {
@@ -77,6 +82,7 @@ export class Sorter implements ITreeSorter<Type> {
 }
 export class IdentityProvider implements IIdentityProvider<Type> {
 	constructor(public getDirection: () => TypeHierarchyDirection) {}
+
 	getId(element: Type): {
 		toString(): string;
 	} {
@@ -88,6 +94,7 @@ export class IdentityProvider implements IIdentityProvider<Type> {
 		if (element.parent) {
 			res += this.getId(element.parent);
 		}
+
 		return res;
 	}
 }
@@ -101,17 +108,21 @@ export class TypeRenderer
 	implements ITreeRenderer<Type, FuzzyScore, TypeRenderingTemplate>
 {
 	static readonly id = "TypeRenderer";
+
 	templateId: string = TypeRenderer.id;
+
 	renderTemplate(container: HTMLElement): TypeRenderingTemplate {
 		container.classList.add("typehierarchy-element");
 
 		const icon = document.createElement("div");
+
 		container.appendChild(icon);
 
 		const label = new IconLabel(container, { supportHighlights: true });
 
 		return new TypeRenderingTemplate(icon, label);
 	}
+
 	renderElement(
 		node: ITreeNode<Type, FuzzyScore>,
 		_index: number,
@@ -120,18 +131,21 @@ export class TypeRenderer
 		const { element, filterData } = node;
 
 		const deprecated = element.item.tags?.includes(SymbolTag.Deprecated);
+
 		template.icon.classList.add(
 			"inline",
 			...ThemeIcon.asClassNameArray(
 				SymbolKinds.toIcon(element.item.kind),
 			),
 		);
+
 		template.label.setLabel(element.item.name, element.item.detail, {
 			labelEscapeNewLines: true,
 			matches: createMatches(filterData),
 			strikethrough: deprecated,
 		});
 	}
+
 	disposeTemplate(template: TypeRenderingTemplate): void {
 		template.label.dispose();
 	}
@@ -140,15 +154,18 @@ export class VirtualDelegate implements IListVirtualDelegate<Type> {
 	getHeight(_element: Type): number {
 		return 22;
 	}
+
 	getTemplateId(_element: Type): string {
 		return TypeRenderer.id;
 	}
 }
 export class AccessibilityProvider implements IListAccessibilityProvider<Type> {
 	constructor(public getDirection: () => TypeHierarchyDirection) {}
+
 	getWidgetAriaLabel(): string {
 		return localize("tree.aria", "Type Hierarchy");
 	}
+
 	getAriaLabel(element: Type): string | null {
 		if (this.getDirection() === TypeHierarchyDirection.Supertypes) {
 			return localize(

@@ -32,7 +32,9 @@ export class RunAndDebugAccessibilityHelp
 	implements IAccessibleViewImplentation
 {
 	priority = 120;
+
 	name = "runAndDebugHelp";
+
 	when = ContextKeyExpr.or(
 		ContextKeyExpr.and(
 			ContextKeyExpr.equals("activeViewlet", "workbench.view.debug"),
@@ -44,6 +46,7 @@ export class RunAndDebugAccessibilityHelp
 		ContextKeyExpr.equals(FocusedViewContext.key, LOADED_SCRIPTS_VIEW_ID),
 		ContextKeyExpr.equals(FocusedViewContext.key, BREAKPOINTS_VIEW_ID),
 	);
+
 	type: AccessibleViewType = AccessibleViewType.Help;
 
 	getProvider(accessor: ServicesAccessor) {
@@ -58,8 +61,11 @@ class RunAndDebugAccessibilityHelpProvider
 	implements IAccessibleViewContentProvider
 {
 	public readonly id = AccessibleViewProviderId.RunAndDebug;
+
 	public readonly verbositySettingKey = AccessibilityVerbositySettingId.Debug;
+
 	public readonly options = { type: AccessibleViewType.Help };
+
 	private _focusedView: string | undefined;
 
 	constructor(
@@ -69,8 +75,10 @@ class RunAndDebugAccessibilityHelpProvider
 		private readonly _viewsService: IViewsService,
 	) {
 		super();
+
 		this._focusedView = this._viewsService.getFocusedViewName();
 	}
+
 	public onClose(): void {
 		switch (this._focusedView) {
 			case "Watch":
@@ -105,6 +113,7 @@ class RunAndDebugAccessibilityHelpProvider
 				this._commandService.executeCommand("workbench.view.debug");
 		}
 	}
+
 	public provideContent(): string {
 		return [
 			localize(

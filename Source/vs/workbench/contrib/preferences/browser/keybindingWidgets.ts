@@ -52,11 +52,13 @@ import { SearchOptions, SearchWidget } from "./preferencesWidgets.js";
 
 export interface KeybindingsSearchOptions extends SearchOptions {
 	recordEnter?: boolean;
+
 	quoteRecordedKeys?: boolean;
 }
 
 export class KeybindingsSearchWidget extends SearchWidget {
 	private _chords: ResolvedKeybinding[] | null;
+
 	private _inputValue: string;
 
 	private readonly recordDisposables = this._register(new DisposableStore());
@@ -64,16 +66,20 @@ export class KeybindingsSearchWidget extends SearchWidget {
 	private _onKeybinding = this._register(
 		new Emitter<ResolvedKeybinding[] | null>(),
 	);
+
 	readonly onKeybinding: Event<ResolvedKeybinding[] | null> =
 		this._onKeybinding.event;
 
 	private _onEnter = this._register(new Emitter<void>());
+
 	readonly onEnter: Event<void> = this._onEnter.event;
 
 	private _onEscape = this._register(new Emitter<void>());
+
 	readonly onEscape: Event<void> = this._onEscape.event;
 
 	private _onBlur = this._register(new Emitter<void>());
+
 	readonly onBlur: Event<void> = this._onBlur.event;
 
 	constructor(
@@ -96,6 +102,7 @@ export class KeybindingsSearchWidget extends SearchWidget {
 		this._register(toDisposable(() => this.stopRecordingKeys()));
 
 		this._chords = null;
+
 		this._inputValue = "";
 	}
 
@@ -114,6 +121,7 @@ export class KeybindingsSearchWidget extends SearchWidget {
 					this._onKeyDown(new StandardKeyboardEvent(e)),
 			),
 		);
+
 		this.recordDisposables.add(
 			dom.addDisposableListener(
 				this.inputBox.inputElement,
@@ -121,6 +129,7 @@ export class KeybindingsSearchWidget extends SearchWidget {
 				() => this._onBlur.fire(),
 			),
 		);
+
 		this.recordDisposables.add(
 			dom.addDisposableListener(
 				this.inputBox.inputElement,
@@ -135,16 +144,19 @@ export class KeybindingsSearchWidget extends SearchWidget {
 
 	stopRecordingKeys(): void {
 		this._chords = null;
+
 		this.recordDisposables.clear();
 	}
 
 	setInputValue(value: string): void {
 		this._inputValue = value;
+
 		this.inputBox.value = this._inputValue;
 	}
 
 	private _onKeyDown(keyboardEvent: IKeyboardEvent): void {
 		keyboardEvent.preventDefault();
+
 		keyboardEvent.stopPropagation();
 
 		const options = this.options as KeybindingsSearchOptions;
@@ -154,11 +166,13 @@ export class KeybindingsSearchWidget extends SearchWidget {
 
 			return;
 		}
+
 		if (keyboardEvent.equals(KeyCode.Escape)) {
 			this._onEscape.fire();
 
 			return;
 		}
+
 		this.printKeybinding(keyboardEvent);
 	}
 
@@ -187,42 +201,53 @@ export class KeybindingsSearchWidget extends SearchWidget {
 				// TODO: limit chords # to 2 for now
 				this._chords = [];
 			}
+
 			this._chords.push(keybinding);
 		}
 
 		const value = this._chords
 			.map((keybinding) => keybinding.getUserSettingsLabel() || "")
 			.join(" ");
+
 		this.setInputValue(options.quoteRecordedKeys ? `"${value}"` : value);
 
 		this.inputBox.inputElement.title = info;
+
 		this._onKeybinding.fire(this._chords);
 	}
 }
 
 export class DefineKeybindingWidget extends Widget {
 	private static readonly WIDTH = 400;
+
 	private static readonly HEIGHT = 110;
 
 	private _domNode: FastDomNode<HTMLElement>;
+
 	private _keybindingInputWidget: KeybindingsSearchWidget;
+
 	private _outputNode: HTMLElement;
+
 	private _showExistingKeybindingsNode: HTMLElement;
+
 	private readonly _keybindingDisposables = this._register(
 		new DisposableStore(),
 	);
 
 	private _chords: ResolvedKeybinding[] | null = null;
+
 	private _isVisible: boolean = false;
 
 	private _onHide = this._register(new Emitter<void>());
 
 	private _onDidChange = this._register(new Emitter<string>());
+
 	onDidChange: Event<string> = this._onDidChange.event;
 
 	private _onShowExistingKeybindings = this._register(
 		new Emitter<string | null>(),
 	);
+
 	readonly onShowExistingKeybidings: Event<string | null> =
 		this._onShowExistingKeybindings.event;
 
@@ -234,9 +259,13 @@ export class DefineKeybindingWidget extends Widget {
 		super();
 
 		this._domNode = createFastDomNode(document.createElement("div"));
+
 		this._domNode.setDisplay("none");
+
 		this._domNode.setClassName("defineKeybindingWidget");
+
 		this._domNode.setWidth(DefineKeybindingWidget.WIDTH);
+
 		this._domNode.setHeight(DefineKeybindingWidget.HEIGHT);
 
 		const message = nls.localize(
@@ -252,9 +281,11 @@ export class DefineKeybindingWidget extends Widget {
 		this._domNode.domNode.style.backgroundColor = asCssVariable(
 			editorWidgetBackground,
 		);
+
 		this._domNode.domNode.style.color = asCssVariable(
 			editorWidgetForeground,
 		);
+
 		this._domNode.domNode.style.boxShadow = `0 2px 8px ${asCssVariable(widgetShadow)}`;
 
 		this._keybindingInputWidget = this._register(
@@ -268,21 +299,27 @@ export class DefineKeybindingWidget extends Widget {
 				},
 			),
 		);
+
 		this._keybindingInputWidget.startRecordingKeys();
+
 		this._register(
 			this._keybindingInputWidget.onKeybinding((keybinding) =>
 				this.onKeybinding(keybinding),
 			),
 		);
+
 		this._register(this._keybindingInputWidget.onEnter(() => this.hide()));
+
 		this._register(
 			this._keybindingInputWidget.onEscape(() => this.clearOrHide()),
 		);
+
 		this._register(
 			this._keybindingInputWidget.onBlur(() => this.onCancel()),
 		);
 
 		this._outputNode = dom.append(this._domNode.domNode, dom.$(".output"));
+
 		this._showExistingKeybindingsNode = dom.append(
 			this._domNode.domNode,
 			dom.$(".existing"),
@@ -303,9 +340,11 @@ export class DefineKeybindingWidget extends Widget {
 		return Promises.withAsyncBody<string | null>(async (c) => {
 			if (!this._isVisible) {
 				this._isVisible = true;
+
 				this._domNode.setDisplay("block");
 
 				this._chords = null;
+
 				this._keybindingInputWidget.setInputValue("");
 
 				dom.clearNode(this._outputNode);
@@ -318,8 +357,10 @@ export class DefineKeybindingWidget extends Widget {
 
 				this._keybindingInputWidget.focus();
 			}
+
 			const disposable = this._onHide.event(() => {
 				c(this.getUserSettingsLabel());
+
 				disposable.dispose();
 			});
 		});
@@ -329,11 +370,13 @@ export class DefineKeybindingWidget extends Widget {
 		const top = Math.round(
 			(layout.height - DefineKeybindingWidget.HEIGHT) / 2,
 		);
+
 		this._domNode.setTop(top);
 
 		const left = Math.round(
 			(layout.width - DefineKeybindingWidget.WIDTH) / 2,
 		);
+
 		this._domNode.setLeft(left);
 	}
 
@@ -355,14 +398,19 @@ export class DefineKeybindingWidget extends Widget {
 						);
 
 			dom.append(existingElement, document.createTextNode(text));
+
 			aria.alert(text);
+
 			this._showExistingKeybindingsNode.appendChild(existingElement);
+
 			existingElement.onmousedown = (e) => {
 				e.preventDefault();
 			};
+
 			existingElement.onmouseup = (e) => {
 				e.preventDefault();
 			};
+
 			existingElement.onclick = () => {
 				this._onShowExistingKeybindings.fire(
 					this.getUserSettingsLabel(),
@@ -373,6 +421,7 @@ export class DefineKeybindingWidget extends Widget {
 
 	private onKeybinding(keybinding: ResolvedKeybinding[] | null): void {
 		this._keybindingDisposables.clear();
+
 		this._chords = keybinding;
 
 		dom.clearNode(this._outputNode);
@@ -386,6 +435,7 @@ export class DefineKeybindingWidget extends Widget {
 				defaultKeybindingLabelStyles,
 			),
 		);
+
 		firstLabel.set(this._chords?.[0] ?? undefined);
 
 		if (this._chords) {
@@ -403,6 +453,7 @@ export class DefineKeybindingWidget extends Widget {
 						defaultKeybindingLabelStyles,
 					),
 				);
+
 				chordLabel.set(this._chords[i]);
 			}
 		}
@@ -422,11 +473,13 @@ export class DefineKeybindingWidget extends Widget {
 				.map((keybinding) => keybinding.getUserSettingsLabel())
 				.join(" ");
 		}
+
 		return label;
 	}
 
 	private onCancel(): void {
 		this._chords = null;
+
 		this.hide();
 	}
 
@@ -435,6 +488,7 @@ export class DefineKeybindingWidget extends Widget {
 			this.hide();
 		} else {
 			this._chords = null;
+
 			this._keybindingInputWidget.clear();
 
 			dom.clearNode(this._outputNode);
@@ -445,7 +499,9 @@ export class DefineKeybindingWidget extends Widget {
 
 	private hide(): void {
 		this._domNode.setDisplay("none");
+
 		this._isVisible = false;
+
 		this._onHide.fire();
 	}
 }
@@ -467,6 +523,7 @@ export class DefineKeybindingOverlayWidget
 		this._widget = this._register(
 			instantiationService.createInstance(DefineKeybindingWidget, null),
 		);
+
 		this._editor.addOverlayWidget(this);
 	}
 
@@ -497,7 +554,9 @@ export class DefineKeybindingOverlayWidget
 				ScrollType.Smooth,
 			);
 		}
+
 		const layoutInfo = this._editor.getLayoutInfo();
+
 		this._widget.layout(
 			new dom.Dimension(layoutInfo.width, layoutInfo.height),
 		);

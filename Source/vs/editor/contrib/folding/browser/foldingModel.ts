@@ -25,56 +25,75 @@ export interface IDecorationProvider {
 		isHidden: boolean,
 		isManual: boolean,
 	): IModelDecorationOptions;
+
 	changeDecorations<T>(
 		callback: (changeAccessor: IModelDecorationsChangeAccessor) => T,
 	): T | null;
+
 	removeDecorations(decorationIds: string[]): void;
 }
 export interface FoldingModelChangeEvent {
 	model: FoldingModel;
+
 	collapseStateChanged?: FoldingRegion[];
 }
 interface ILineMemento extends ILineRange {
 	checksum?: number;
+
 	isCollapsed?: boolean;
+
 	source?: FoldSource;
 }
 export type CollapseMemento = ILineMemento[];
 
 export class FoldingModel {
 	private readonly _textModel: ITextModel;
+
 	private readonly _decorationProvider: IDecorationProvider;
+
 	private _regions: FoldingRegions;
+
 	private _editorDecorationIds: string[];
+
 	private readonly _updateEventEmitter =
 		new Emitter<FoldingModelChangeEvent>();
+
 	public readonly onDidChange: Event<FoldingModelChangeEvent> =
 		this._updateEventEmitter.event;
+
 	public get regions(): FoldingRegions {
 		return this._regions;
 	}
+
 	public get textModel() {
 		return this._textModel;
 	}
+
 	public get decorationProvider() {
 		return this._decorationProvider;
 	}
+
 	constructor(
 		textModel: ITextModel,
 		decorationProvider: IDecorationProvider,
 	) {
 		this._textModel = textModel;
+
 		this._decorationProvider = decorationProvider;
+
 		this._regions = new FoldingRegions(
 			new Uint32Array(0),
 			new Uint32Array(0),
 		);
+
 		this._editorDecorationIds = [];
 	}
+
 	public toggleCollapseState(toggledRegions: FoldingRegion[]) {
 		if (!toggledRegions.length) {
 			return;
 		}
+
 		toggledRegions = toggledRegions.sort(
 			(r1, r2) => r1.regionIndex - r2.regionIndex,
 		);
@@ -82,6 +101,7 @@ export class FoldingModel {
 		const processed: {
 			[key: string]: boolean | undefined;
 		} = {};
+
 		this._decorationProvider.changeDecorations((accessor) => {
 			let k = 0; // index from [0 ... this.regions.length]
 			let dirtyRegionEndLine = -1; // end of the range where decorations need to be updated
@@ -95,6 +115,7 @@ export class FoldingModel {
 					if (endLineNumber <= dirtyRegionEndLine) {
 						const isManual =
 							this.regions.getSource(k) !== FoldSource.provider;
+
 						accessor.changeDecorationOptions(
 							this._editorDecorationIds[k],
 							this._decorationProvider.getDecorationOption(
@@ -104,9 +125,11 @@ export class FoldingModel {
 							),
 						);
 					}
+
 					if (isCollapsed && endLineNumber > lastHiddenLine) {
 						lastHiddenLine = endLineNumber;
 					}
+
 					k++;
 				}
 			};
@@ -118,22 +141,28 @@ export class FoldingModel {
 
 				if (editorDecorationId && !processed[editorDecorationId]) {
 					processed[editorDecorationId] = true;
+
 					updateDecorationsUntil(index); // update all decorations up to current index using the old dirtyRegionEndLine
 					const newCollapseState = !this._regions.isCollapsed(index);
+
 					this._regions.setCollapsed(index, newCollapseState);
+
 					dirtyRegionEndLine = Math.max(
 						dirtyRegionEndLine,
 						this._regions.getEndLineNumber(index),
 					);
 				}
 			}
+
 			updateDecorationsUntil(this._regions.length);
 		});
+
 		this._updateEventEmitter.fire({
 			model: this,
 			collapseStateChanged: toggledRegions,
 		});
 	}
+
 	public removeManualRanges(ranges: ILineRange[]) {
 		const newFoldingRanges: FoldRange[] = new Array();
 
@@ -148,6 +177,7 @@ export class FoldingModel {
 					return true;
 				}
 			}
+
 			return false;
 		};
 
@@ -161,8 +191,10 @@ export class FoldingModel {
 				newFoldingRanges.push(foldRange);
 			}
 		}
+
 		this.updatePost(FoldingRegions.fromFoldRanges(newFoldingRanges));
 	}
+
 	public update(newRegions: FoldingRegions, selection?: SelectedLines): void {
 		const foldedOrManualRanges =
 			this._currentFoldedOrManualRanges(selection);
@@ -173,8 +205,10 @@ export class FoldingModel {
 			this._textModel.getLineCount(),
 			selection,
 		);
+
 		this.updatePost(FoldingRegions.fromFoldRanges(newRanges));
 	}
+
 	public updatePost(newRegions: FoldingRegions) {
 		const newEditorDecorations: IModelDeltaDecoration[] = [];
 
@@ -196,6 +230,7 @@ export class FoldingModel {
 				endLineNumber: endLineNumber,
 				endColumn: this._textModel.getLineMaxColumn(endLineNumber) + 1,
 			};
+
 			newEditorDecorations.push({
 				range: decorationRange,
 				options: this._decorationProvider.getDecorationOption(
@@ -209,6 +244,7 @@ export class FoldingModel {
 				lastHiddenLine = endLineNumber;
 			}
 		}
+
 		this._decorationProvider.changeDecorations(
 			(accessor) =>
 				(this._editorDecorationIds = accessor.deltaDecorations(
@@ -216,9 +252,12 @@ export class FoldingModel {
 					newEditorDecorations,
 				)),
 		);
+
 		this._regions = newRegions;
+
 		this._updateEventEmitter.fire({ model: this });
 	}
+
 	private _currentFoldedOrManualRanges(
 		selection?: SelectedLines,
 	): FoldRange[] {
@@ -246,6 +285,7 @@ export class FoldingModel {
 					) {
 						isCollapsed = false; // uncollapse is the range is blocked
 					}
+
 					foldedRanges.push({
 						startLineNumber: decRange.startLineNumber,
 						endLineNumber: decRange.endLineNumber,
@@ -256,6 +296,7 @@ export class FoldingModel {
 				}
 			}
 		}
+
 		return foldedRanges;
 	}
 	/**
@@ -278,10 +319,12 @@ export class FoldingModel {
 			) {
 				continue;
 			}
+
 			const checksum = this._getLinesChecksum(
 				range.startLineNumber + 1,
 				range.endLineNumber,
 			);
+
 			result.push({
 				startLineNumber: range.startLineNumber,
 				endLineNumber: range.endLineNumber,
@@ -290,6 +333,7 @@ export class FoldingModel {
 				checksum: checksum,
 			});
 		}
+
 		return result.length > 0 ? result : undefined;
 	}
 	/**
@@ -299,6 +343,7 @@ export class FoldingModel {
 		if (!Array.isArray(state)) {
 			return;
 		}
+
 		const rangesToRestore: FoldRange[] = [];
 
 		const maxLineNumber = this._textModel.getLineCount();
@@ -311,6 +356,7 @@ export class FoldingModel {
 			) {
 				continue;
 			}
+
 			const checksum = this._getLinesChecksum(
 				range.startLineNumber + 1,
 				range.endLineNumber,
@@ -326,13 +372,16 @@ export class FoldingModel {
 				});
 			}
 		}
+
 		const newRanges = FoldingRegions.sanitizeAndMerge(
 			this._regions,
 			rangesToRestore,
 			maxLineNumber,
 		);
+
 		this.updatePost(FoldingRegions.fromFoldRanges(newRanges));
 	}
+
 	private _getLinesChecksum(
 		lineNumber1: number,
 		lineNumber2: number,
@@ -344,9 +393,11 @@ export class FoldingModel {
 
 		return h % 1000000; // 6 digits is plenty
 	}
+
 	public dispose() {
 		this._decorationProvider.removeDecorations(this._editorDecorationIds);
 	}
+
 	getAllRegionsAtLine(
 		lineNumber: number,
 		filter?: (r: FoldingRegion, level: number) => boolean,
@@ -364,12 +415,16 @@ export class FoldingModel {
 				if (!filter || filter(current, level)) {
 					result.push(current);
 				}
+
 				level++;
+
 				index = current.parentIndex;
 			}
 		}
+
 		return result;
 	}
+
 	getRegionAtLine(lineNumber: number): FoldingRegion | null {
 		if (this._regions) {
 			const index = this._regions.findRange(lineNumber);
@@ -378,8 +433,10 @@ export class FoldingModel {
 				return this._regions.toRegion(index);
 			}
 		}
+
 		return null;
 	}
+
 	getRegionsInside(
 		region: FoldingRegion | null,
 		filter?: RegionFilter | RegionFilterWithLevel,
@@ -403,6 +460,7 @@ export class FoldingModel {
 					) {
 						levelStack.pop();
 					}
+
 					levelStack.push(current);
 
 					if (filter(current, levelStack.length)) {
@@ -425,6 +483,7 @@ export class FoldingModel {
 				}
 			}
 		}
+
 		return result;
 	}
 }
@@ -447,6 +506,7 @@ export function toggleCollapseState(
 
 		if (region) {
 			const doCollapse = !region.isCollapsed;
+
 			toToggle.push(region);
 
 			if (levels > 1) {
@@ -455,10 +515,12 @@ export function toggleCollapseState(
 					(r, level: number) =>
 						r.isCollapsed !== doCollapse && level < levels,
 				);
+
 				toToggle.push(...regionsInside);
 			}
 		}
 	}
+
 	foldingModel.toggleCollapseState(toToggle);
 }
 /**
@@ -483,12 +545,14 @@ export function setCollapseStateLevelsDown(
 				if (region.isCollapsed !== doCollapse) {
 					toToggle.push(region);
 				}
+
 				if (levels > 1) {
 					const regionsInside = foldingModel.getRegionsInside(
 						region,
 						(r, level: number) =>
 							r.isCollapsed !== doCollapse && level < levels,
 					);
+
 					toToggle.push(...regionsInside);
 				}
 			}
@@ -499,8 +563,10 @@ export function setCollapseStateLevelsDown(
 			(r, level: number) =>
 				r.isCollapsed !== doCollapse && level < levels,
 		);
+
 		toToggle.push(...regionsInside);
 	}
+
 	foldingModel.toggleCollapseState(toToggle);
 }
 /**
@@ -523,8 +589,10 @@ export function setCollapseStateLevelsUp(
 			(region, level) =>
 				region.isCollapsed !== doCollapse && level <= levels,
 		);
+
 		toToggle.push(...regions);
 	}
+
 	foldingModel.toggleCollapseState(toToggle);
 }
 /**
@@ -549,6 +617,7 @@ export function setCollapseStateUp(
 			toToggle.push(regions[0]);
 		}
 	}
+
 	foldingModel.toggleCollapseState(toToggle);
 }
 /**
@@ -568,6 +637,7 @@ export function setCollapseStateAtLevel(
 		!blockedLineNumbers.some((line) => region.containsLine(line));
 
 	const toToggle = foldingModel.getRegionsInside(null, filter);
+
 	foldingModel.toggleCollapseState(toToggle);
 }
 /**
@@ -589,6 +659,7 @@ export function setCollapseStateForRest(
 			filteredRegions.push(regions[0]);
 		}
 	}
+
 	const filter = (region: FoldingRegion) =>
 		filteredRegions.every(
 			(filteredRegion) =>
@@ -597,6 +668,7 @@ export function setCollapseStateForRest(
 		) && region.isCollapsed !== doCollapse;
 
 	const toToggle = foldingModel.getRegionsInside(null, filter);
+
 	foldingModel.toggleCollapseState(toToggle);
 }
 /**
@@ -623,6 +695,7 @@ export function setCollapseStateForMatchingLines(
 			}
 		}
 	}
+
 	foldingModel.toggleCollapseState(toToggle);
 }
 /**
@@ -646,6 +719,7 @@ export function setCollapseStateForType(
 			toToggle.push(regions.toRegion(i));
 		}
 	}
+
 	foldingModel.toggleCollapseState(toToggle);
 }
 /**
@@ -677,6 +751,7 @@ export function getParentFoldLine(
 			}
 		}
 	}
+
 	return startLineNumber;
 }
 /**
@@ -741,6 +816,7 @@ export function getPreviousFoldLine(
 				if (foldingRegion.startLineNumber < lineNumber) {
 					return foldingRegion.startLineNumber;
 				}
+
 				if (foldingRegion.regionIndex > 0) {
 					foldingRegion = foldingModel.regions.toRegion(
 						foldingRegion.regionIndex - 1,
@@ -751,6 +827,7 @@ export function getPreviousFoldLine(
 			}
 		}
 	}
+
 	return null;
 }
 /**
@@ -812,6 +889,7 @@ export function getNextFoldLine(
 				if (foldingRegion.startLineNumber > lineNumber) {
 					return foldingRegion.startLineNumber;
 				}
+
 				if (foldingRegion.regionIndex < foldingModel.regions.length) {
 					foldingRegion = foldingModel.regions.toRegion(
 						foldingRegion.regionIndex + 1,
@@ -822,5 +900,6 @@ export function getNextFoldLine(
 			}
 		}
 	}
+
 	return null;
 }

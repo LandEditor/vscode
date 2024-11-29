@@ -55,6 +55,7 @@ export class BinaryFileEditor extends BaseBinaryResourceEditor {
 			storageService,
 		);
 	}
+
 	private async openInternal(
 		input: EditorInput,
 		options: IEditorOptions | undefined,
@@ -103,6 +104,7 @@ export class BinaryFileEditor extends BaseBinaryResourceEditor {
 					: [resolvedEditor.editor]) {
 					if (editor instanceof FileEditorInput) {
 						editor.setForceOpenAsText();
+
 						editor.setPreferredLanguageId(BINARY_TEXT_FILE_MODE); // https://github.com/microsoft/vscode/issues/131076
 					}
 				}
@@ -119,6 +121,7 @@ export class BinaryFileEditor extends BaseBinaryResourceEditor {
 			]);
 		}
 	}
+
 	override getTitle(): string {
 		return this.input
 			? this.input.getName()

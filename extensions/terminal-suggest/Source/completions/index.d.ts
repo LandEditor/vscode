@@ -30,8 +30,11 @@ declare namespace Fig {
 
 	type HistoryContext = {
 		currentWorkingDirectory: string;
+
 		time: number;
+
 		exitCode: number;
+
 		shell: string;
 	};
 
@@ -159,6 +162,7 @@ declare namespace Fig {
 
 	type GeneratorContext = ShellContext & {
 		isDangerous?: boolean;
+
 		searchTerm: string;
 	};
 
@@ -196,6 +200,7 @@ declare namespace Fig {
 		Fig.Option,
 		{
 			args?: ArgDiff | ArgDiff[];
+
 			remove?: true;
 		}
 	>;
@@ -208,8 +213,11 @@ declare namespace Fig {
 		Fig.Subcommand,
 		{
 			subcommands?: SubcommandDiff[];
+
 			options?: OptionDiff[];
+
 			args?: ArgDiff | ArgDiff[];
+
 			remove?: true;
 		}
 	>;
@@ -238,6 +246,7 @@ declare namespace Fig {
 		| ((version?: string) => Subcommand)
 		| ((version?: string) => {
 				versionedSpecPath: string;
+
 				version?: string;
 		  });
 
@@ -333,12 +342,14 @@ declare namespace Fig {
 	type TriggerOnThreshold = {
 		/** Trigger when the length of the token changes past a threshold */
 		on: "threshold";
+
 		length: number;
 	};
 
 	type TriggerOnMatch = {
 		/** Trigger when the index of a string changes */
 		on: "match";
+
 		string: string | string[];
 	};
 
@@ -696,7 +707,9 @@ declare namespace Fig {
 		 */
 		parserDirectives?: {
 			flagsArePosixNoncompliant?: boolean;
+
 			optionsMustPrecedeArguments?: boolean;
+
 			optionArgSeparators?: SingleOrArray<string>;
 		};
 

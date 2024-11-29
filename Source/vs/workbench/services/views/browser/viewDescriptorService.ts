@@ -74,7 +74,9 @@ import { IViewsService } from "../common/viewsService.js";
 
 interface IViewsCustomizations {
 	viewContainerLocations: IStringDictionary<ViewContainerLocation>;
+
 	viewLocations: IStringDictionary<string>;
+
 	viewContainerBadgeEnablementStates: IStringDictionary<boolean>;
 }
 
@@ -89,57 +91,79 @@ export class ViewDescriptorService
 	declare readonly _serviceBrand: undefined;
 
 	private static readonly VIEWS_CUSTOMIZATIONS = "views.customizations";
+
 	private static readonly COMMON_CONTAINER_ID_PREFIX =
 		"workbench.views.service";
 
 	private readonly _onDidChangeContainer: Emitter<{
 		views: IViewDescriptor[];
+
 		from: ViewContainer;
+
 		to: ViewContainer;
 	}> = this._register(
 		new Emitter<{
 			views: IViewDescriptor[];
+
 			from: ViewContainer;
+
 			to: ViewContainer;
 		}>(),
 	);
+
 	readonly onDidChangeContainer: Event<{
 		views: IViewDescriptor[];
+
 		from: ViewContainer;
+
 		to: ViewContainer;
 	}> = this._onDidChangeContainer.event;
 
 	private readonly _onDidChangeLocation: Emitter<{
 		views: IViewDescriptor[];
+
 		from: ViewContainerLocation;
+
 		to: ViewContainerLocation;
 	}> = this._register(
 		new Emitter<{
 			views: IViewDescriptor[];
+
 			from: ViewContainerLocation;
+
 			to: ViewContainerLocation;
 		}>(),
 	);
+
 	readonly onDidChangeLocation: Event<{
 		views: IViewDescriptor[];
+
 		from: ViewContainerLocation;
+
 		to: ViewContainerLocation;
 	}> = this._onDidChangeLocation.event;
 
 	private readonly _onDidChangeContainerLocation: Emitter<{
 		viewContainer: ViewContainer;
+
 		from: ViewContainerLocation;
+
 		to: ViewContainerLocation;
 	}> = this._register(
 		new Emitter<{
 			viewContainer: ViewContainer;
+
 			from: ViewContainerLocation;
+
 			to: ViewContainerLocation;
 		}>(),
 	);
+
 	readonly onDidChangeContainerLocation: Event<{
 		viewContainer: ViewContainer;
+
 		from: ViewContainerLocation;
+
 		to: ViewContainerLocation;
 	}> = this._onDidChangeContainerLocation.event;
 
@@ -148,44 +172,58 @@ export class ViewDescriptorService
 			ViewContainer,
 			{
 				viewContainerModel: ViewContainerModel;
+
 				disposables: DisposableStore;
 			} & IDisposable
 		>(),
 	);
+
 	private readonly viewsVisibilityActionDisposables = this._register(
 		new DisposableMap<ViewContainer, IDisposable>(),
 	);
+
 	private canRegisterViewsVisibilityActions: boolean = false;
+
 	private readonly activeViewContextKeys: Map<string, IContextKey<boolean>>;
+
 	private readonly movableViewContextKeys: Map<string, IContextKey<boolean>>;
+
 	private readonly defaultViewLocationContextKeys: Map<
 		string,
 		IContextKey<boolean>
 	>;
+
 	private readonly defaultViewContainerLocationContextKeys: Map<
 		string,
 		IContextKey<boolean>
 	>;
 
 	private readonly viewsRegistry: IViewsRegistry;
+
 	private readonly viewContainersRegistry: IViewContainersRegistry;
 
 	private viewContainersCustomLocations: Map<string, ViewContainerLocation>;
+
 	private viewDescriptorsCustomLocations: Map<string, string>;
+
 	private viewContainerBadgeEnablementStates: Map<string, boolean>;
 
 	private readonly _onDidChangeViewContainers = this._register(
 		new Emitter<{
 			added: ReadonlyArray<{
 				container: ViewContainer;
+
 				location: ViewContainerLocation;
 			}>;
+
 			removed: ReadonlyArray<{
 				container: ViewContainer;
+
 				location: ViewContainerLocation;
 			}>;
 		}>(),
 	);
+
 	readonly onDidChangeViewContainers = this._onDidChangeViewContainers.event;
 
 	get viewContainers(): ReadonlyArray<ViewContainer> {
@@ -214,11 +252,14 @@ export class ViewDescriptorService
 		);
 
 		this.activeViewContextKeys = new Map<string, IContextKey<boolean>>();
+
 		this.movableViewContextKeys = new Map<string, IContextKey<boolean>>();
+
 		this.defaultViewLocationContextKeys = new Map<
 			string,
 			IContextKey<boolean>
 		>();
+
 		this.defaultViewContainerLocationContextKeys = new Map<
 			string,
 			IContextKey<boolean>
@@ -227,18 +268,22 @@ export class ViewDescriptorService
 		this.viewContainersRegistry = Registry.as<IViewContainersRegistry>(
 			ViewExtensions.ViewContainersRegistry,
 		);
+
 		this.viewsRegistry = Registry.as<IViewsRegistry>(
 			ViewExtensions.ViewsRegistry,
 		);
 
 		this.migrateToViewsCustomizationsStorage();
+
 		this.viewContainersCustomLocations = new Map<
 			string,
 			ViewContainerLocation
 		>(Object.entries(this.viewCustomizations.viewContainerLocations));
+
 		this.viewDescriptorsCustomLocations = new Map<string, string>(
 			Object.entries(this.viewCustomizations.viewLocations),
 		);
+
 		this.viewContainerBadgeEnablementStates = new Map<string, boolean>(
 			Object.entries(
 				this.viewCustomizations.viewContainerBadgeEnablementStates,
@@ -255,6 +300,7 @@ export class ViewDescriptorService
 				this.onDidRegisterViews(views),
 			),
 		);
+
 		this._register(
 			this.viewsRegistry.onViewsDeregistered(({ views, viewContainer }) =>
 				this.onDidDeregisterViews(views, viewContainer),
@@ -270,6 +316,7 @@ export class ViewDescriptorService
 		this._register(
 			this.viewContainersRegistry.onDidRegister(({ viewContainer }) => {
 				this.onDidRegisterViewContainer(viewContainer);
+
 				this._onDidChangeViewContainers.fire({
 					added: [
 						{
@@ -287,6 +334,7 @@ export class ViewDescriptorService
 			this.viewContainersRegistry.onDidDeregister(
 				({ viewContainer, viewContainerLocation }) => {
 					this.onDidDeregisterViewContainer(viewContainer);
+
 					this._onDidChangeViewContainers.fire({
 						removed: [
 							{
@@ -352,26 +400,31 @@ export class ViewDescriptorService
 				IStringDictionary<ViewContainerLocation>
 			>((result, [id, location]) => {
 				result[id] = location;
+
 				return result;
 			}, {}),
 			viewLocations: viewDescriptorLocations.reduce<
 				IStringDictionary<string>
 			>((result, [id, { containerId }]) => {
 				result[id] = containerId;
+
 				return result;
 			}, {}),
 			viewContainerBadgeEnablementStates: {},
 		};
+
 		this.storageService.store(
 			ViewDescriptorService.VIEWS_CUSTOMIZATIONS,
 			JSON.stringify(viewsCustomizations),
 			StorageScope.PROFILE,
 			StorageTarget.USER,
 		);
+
 		this.storageService.remove(
 			"views.cachedViewContainerLocations",
 			StorageScope.PROFILE,
 		);
+
 		this.storageService.remove(
 			"views.cachedViewPositions",
 			StorageScope.PROFILE,
@@ -415,6 +468,7 @@ export class ViewDescriptorService
 					).allViewDescriptors.filter((vd) => vd.id === view.id)
 						.length === 0,
 			);
+
 			this.addViews(viewContainer, viewsToAdd);
 		}
 	}
@@ -479,6 +533,7 @@ export class ViewDescriptorService
 		for (const [key, value] of this.viewContainerModels) {
 			this.registerViewsVisibilityActions(key, value);
 		}
+
 		this.canRegisterViewsVisibilityActions = true;
 	}
 
@@ -517,7 +572,9 @@ export class ViewDescriptorService
 	): void {
 		// When views are registered, we need to regroup them based on the customizations
 		const regroupedViews = this.regroupViews(viewContainer.id, views);
+
 		this.deregisterGroupedViews(regroupedViews);
+
 		this.contextKeyService.bufferChangeEvents(() => {
 			views.forEach((viewDescriptor) =>
 				this.getOrCreateMovableViewContextKey(viewDescriptor).set(
@@ -543,6 +600,7 @@ export class ViewDescriptorService
 			if (!containerViews) {
 				viewsByContainer.set(correctContainerId, (containerViews = []));
 			}
+
 			containerViews.push(viewDescriptor);
 		}
 
@@ -623,11 +681,13 @@ export class ViewDescriptorService
 		this.logger.value.info(
 			`moveViewContainerToLocation: viewContainer:${viewContainer.id} location:${location} reason:${reason}`,
 		);
+
 		this.moveViewContainerToLocationWithoutSaving(
 			viewContainer,
 			location,
 			requestedIndex,
 		);
+
 		this.saveViewCustomizations();
 	}
 
@@ -640,6 +700,7 @@ export class ViewDescriptorService
 		badgesEnabled: boolean,
 	): void {
 		this.viewContainerBadgeEnablementStates.set(id, badgesEnabled);
+
 		this.saveViewCustomizations();
 	}
 
@@ -653,6 +714,7 @@ export class ViewDescriptorService
 		);
 
 		const container = this.registerGeneratedViewContainer(location);
+
 		this.moveViewsToContainer([view], container);
 	}
 
@@ -677,6 +739,7 @@ export class ViewDescriptorService
 		if (from && to && from !== to) {
 			// Move views
 			this.moveViewsWithoutSaving(views, from, to, visibilityState);
+
 			this.cleanUpGeneratedViewContainer(from.id);
 
 			// Save new locations
@@ -734,7 +797,9 @@ export class ViewDescriptorService
 		}
 
 		this.viewContainersCustomLocations.clear();
+
 		this.viewDescriptorsCustomLocations.clear();
+
 		this.saveViewCustomizations();
 	}
 
@@ -802,38 +867,58 @@ export class ViewDescriptorService
 
 		interface ViewDescriptorServiceMoveViewsEvent {
 			viewCount: number;
+
 			fromContainer: string;
+
 			toContainer: string;
+
 			fromLocation: string;
+
 			toLocation: string;
 		}
 
 		type ViewDescriptorServiceMoveViewsClassification = {
 			owner: "sbatten";
+
 			comment: "Logged when views are moved from one view container to another";
+
 			viewCount: {
 				classification: "SystemMetaData";
+
 				purpose: "FeatureInsight";
+
 				comment: "The number of views moved";
 			};
+
 			fromContainer: {
 				classification: "SystemMetaData";
+
 				purpose: "FeatureInsight";
+
 				comment: "The starting view container of the moved views";
 			};
+
 			toContainer: {
 				classification: "SystemMetaData";
+
 				purpose: "FeatureInsight";
+
 				comment: "The destination view container of the moved views";
 			};
+
 			fromLocation: {
 				classification: "SystemMetaData";
+
 				purpose: "FeatureInsight";
+
 				comment: "The location of the starting view container. e.g. Primary Side Bar";
 			};
+
 			toLocation: {
 				classification: "SystemMetaData";
+
 				purpose: "FeatureInsight";
+
 				comment: "The location of the destination view container. e.g. Panel";
 			};
 		};
@@ -857,6 +942,7 @@ export class ViewDescriptorService
 		visibilityState: ViewVisibilityState = ViewVisibilityState.Expand,
 	): void {
 		this.removeViews(from, views);
+
 		this.addViews(to, views, visibilityState);
 
 		const oldLocation = this.getViewContainerLocation(from);
@@ -896,11 +982,13 @@ export class ViewDescriptorService
 			} else {
 				this.viewContainersCustomLocations.delete(viewContainer.id);
 			}
+
 			this.getOrCreateDefaultViewContainerLocationContextKey(
 				viewContainer,
 			).set(isGeneratedViewContainer || isDefaultViewContainerLocation);
 
 			viewContainer.requestedIndex = requestedIndex;
+
 			this._onDidChangeContainerLocation.fire({
 				viewContainer,
 				from,
@@ -908,6 +996,7 @@ export class ViewDescriptorService
 			});
 
 			const views = this.getViewsByContainer(viewContainer);
+
 			this._onDidChangeLocation.fire({ views, from, to });
 		}
 	}
@@ -943,6 +1032,7 @@ export class ViewDescriptorService
 		}
 
 		this.viewContainersCustomLocations.delete(viewContainerId);
+
 		this.viewContainerBadgeEnablementStates.delete(viewContainerId);
 
 		// Clean up caches of container
@@ -1020,7 +1110,9 @@ export class ViewDescriptorService
 
 		const viewsToMove: {
 			views: IViewDescriptor[];
+
 			from: ViewContainer;
+
 			to: ViewContainer;
 		}[] = [];
 
@@ -1126,6 +1218,7 @@ export class ViewDescriptorService
 		}
 
 		this.viewContainersCustomLocations = newViewContainerCustomizations;
+
 		this.viewDescriptorsCustomLocations = newViewDescriptorCustomizations;
 	}
 
@@ -1133,6 +1226,7 @@ export class ViewDescriptorService
 	// {Common Prefix}.{Location}.{Uniqueness Id}
 	// Old Format (deprecated)
 	// {Common Prefix}.{Uniqueness Id}.{Source View Id}
+
 	private generateContainerId(location: ViewContainerLocation): string {
 		return `${ViewDescriptorService.COMMON_CONTAINER_ID_PREFIX}.${ViewContainerLocationToString(location)}.${generateUuid()}`;
 	}
@@ -1155,6 +1249,7 @@ export class ViewDescriptorService
 			) {
 				continue;
 			}
+
 			viewCustomizations.viewContainerLocations[containerId] = location;
 		}
 
@@ -1170,6 +1265,7 @@ export class ViewDescriptorService
 					continue;
 				}
 			}
+
 			viewCustomizations.viewLocations[viewId] = viewContainerId;
 		}
 
@@ -1182,23 +1278,29 @@ export class ViewDescriptorService
 				] = badgeEnablementState;
 			}
 		}
+
 		this.viewCustomizations = viewCustomizations;
 	}
 
 	private _viewCustomizations: IViewsCustomizations | undefined;
+
 	private get viewCustomizations(): IViewsCustomizations {
 		if (!this._viewCustomizations) {
 			this._viewCustomizations = JSON.parse(
 				this.getStoredViewCustomizationsValue(),
 			) as IViewsCustomizations;
+
 			this._viewCustomizations.viewContainerLocations =
 				this._viewCustomizations.viewContainerLocations ?? {};
+
 			this._viewCustomizations.viewLocations =
 				this._viewCustomizations.viewLocations ?? {};
+
 			this._viewCustomizations.viewContainerBadgeEnablementStates =
 				this._viewCustomizations.viewContainerBadgeEnablementStates ??
 				{};
 		}
+
 		return this._viewCustomizations;
 	}
 
@@ -1207,6 +1309,7 @@ export class ViewDescriptorService
 
 		if (JSON.stringify(this.viewCustomizations) !== value) {
 			this._viewCustomizations = viewCustomizations;
+
 			this.setStoredViewCustomizationsValue(value);
 		}
 	}
@@ -1269,9 +1372,11 @@ export class ViewDescriptorService
 			? true
 			: this.getViewContainerLocation(viewContainer) ===
 				this.getDefaultViewContainerLocation(viewContainer);
+
 		this.getOrCreateDefaultViewContainerLocationContextKey(
 			viewContainer,
 		).set(defaultLocation);
+
 		this.getOrRegisterViewContainerModel(viewContainer);
 	}
 
@@ -1283,6 +1388,7 @@ export class ViewDescriptorService
 
 		if (!viewContainerModel) {
 			const disposables = new DisposableStore();
+
 			viewContainerModel = disposables.add(
 				this.instantiationService.createInstance(
 					ViewContainerModel,
@@ -1294,6 +1400,7 @@ export class ViewDescriptorService
 				added: viewContainerModel.activeViewDescriptors,
 				removed: [],
 			});
+
 			viewContainerModel.onDidChangeActiveViewDescriptors(
 				(changed) => this.onDidChangeActiveViews(changed),
 				this,
@@ -1304,6 +1411,7 @@ export class ViewDescriptorService
 				added: [...viewContainerModel.visibleViewDescriptors],
 				removed: [],
 			});
+
 			viewContainerModel.onDidAddVisibleViewDescriptors(
 				(added) =>
 					this.onDidChangeVisibleViews({
@@ -1315,6 +1423,7 @@ export class ViewDescriptorService
 				this,
 				disposables,
 			);
+
 			viewContainerModel.onDidRemoveVisibleViewDescriptors(
 				(removed) =>
 					this.onDidChangeVisibleViews({
@@ -1344,6 +1453,7 @@ export class ViewDescriptorService
 				disposables,
 				dispose: () => disposables.dispose(),
 			};
+
 			this.viewContainerModels.set(viewContainer, value);
 
 			// Register all views that were statically registered to this container
@@ -1366,6 +1476,7 @@ export class ViewDescriptorService
 
 			if (viewsToRegister.length) {
 				this.addViews(viewContainer, viewsToRegister);
+
 				this.contextKeyService.bufferChangeEvents(() => {
 					viewsToRegister.forEach((viewDescriptor) =>
 						this.getOrCreateMovableViewContextKey(
@@ -1385,6 +1496,7 @@ export class ViewDescriptorService
 
 	private onDidDeregisterViewContainer(viewContainer: ViewContainer): void {
 		this.viewContainerModels.deleteAndDispose(viewContainer);
+
 		this.viewsVisibilityActionDisposables.deleteAndDispose(viewContainer);
 	}
 
@@ -1393,12 +1505,14 @@ export class ViewDescriptorService
 		removed,
 	}: {
 		added: ReadonlyArray<IViewDescriptor>;
+
 		removed: ReadonlyArray<IViewDescriptor>;
 	}): void {
 		this.contextKeyService.bufferChangeEvents(() => {
 			added.forEach((viewDescriptor) =>
 				this.getOrCreateActiveViewContextKey(viewDescriptor).set(true),
 			);
+
 			removed.forEach((viewDescriptor) =>
 				this.getOrCreateActiveViewContextKey(viewDescriptor).set(false),
 			);
@@ -1410,12 +1524,14 @@ export class ViewDescriptorService
 		removed,
 	}: {
 		added: IViewDescriptor[];
+
 		removed: IViewDescriptor[];
 	}): void {
 		this.contextKeyService.bufferChangeEvents(() => {
 			added.forEach((viewDescriptor) =>
 				this.getOrCreateVisibleViewContextKey(viewDescriptor).set(true),
 			);
+
 			removed.forEach((viewDescriptor) =>
 				this.getOrCreateVisibleViewContextKey(viewDescriptor).set(
 					false,
@@ -1431,14 +1547,17 @@ export class ViewDescriptorService
 			disposables,
 		}: {
 			viewContainerModel: ViewContainerModel;
+
 			disposables: DisposableStore;
 		},
 	): void {
 		this.viewsVisibilityActionDisposables.deleteAndDispose(viewContainer);
+
 		this.viewsVisibilityActionDisposables.set(
 			viewContainer,
 			this.registerViewsVisibilityActionsForContainer(viewContainerModel),
 		);
+
 		disposables.add(
 			Event.any(
 				viewContainerModel.onDidChangeActiveViewDescriptors,
@@ -1449,6 +1568,7 @@ export class ViewDescriptorService
 				this.viewsVisibilityActionDisposables.deleteAndDispose(
 					viewContainer,
 				);
+
 				this.viewsVisibilityActionDisposables.set(
 					viewContainer,
 					this.registerViewsVisibilityActionsForContainer(
@@ -1463,6 +1583,7 @@ export class ViewDescriptorService
 		viewContainerModel: ViewContainerModel,
 	): IDisposable {
 		const disposables = new DisposableStore();
+
 		viewContainerModel.activeViewDescriptors.forEach(
 			(viewDescriptor, index) => {
 				if (!viewDescriptor.remoteAuthority) {
@@ -1536,6 +1657,7 @@ export class ViewDescriptorService
 										],
 									});
 								}
+
 								async runInViewPaneContainer(
 									serviceAccessor: ServicesAccessor,
 									viewPaneContainer: ViewPaneContainer,
@@ -1547,6 +1669,7 @@ export class ViewDescriptorService
 							},
 						),
 					);
+
 					disposables.add(
 						registerAction2(
 							class extends ViewPaneContainerAction<ViewPaneContainer> {
@@ -1595,6 +1718,7 @@ export class ViewDescriptorService
 										],
 									});
 								}
+
 								async runInViewPaneContainer(
 									serviceAccessor: ServicesAccessor,
 									viewPaneContainer: ViewPaneContainer,
@@ -1650,6 +1774,7 @@ export class ViewDescriptorService
 						],
 					});
 				}
+
 				run(accessor: ServicesAccessor) {
 					that.moveViewContainerToLocation(
 						viewContainer,
@@ -1657,6 +1782,7 @@ export class ViewDescriptorService
 						undefined,
 						this.desc.id,
 					);
+
 					accessor
 						.get(IViewsService)
 						.openViewContainer(viewContainer.id, true);
@@ -1674,6 +1800,7 @@ export class ViewDescriptorService
 			views.forEach((view) => {
 				const isDefaultContainer =
 					this.getDefaultContainerById(view.id) === container;
+
 				this.getOrCreateDefaultViewLocationContextKey(view).set(
 					isDefaultContainer,
 				);
@@ -1719,6 +1846,7 @@ export class ViewDescriptorService
 				) {
 					this.viewDescriptorsCustomLocations.delete(view.id);
 				}
+
 				this.getOrCreateDefaultViewLocationContextKey(view).set(false);
 			});
 		});
@@ -1738,8 +1866,10 @@ export class ViewDescriptorService
 			contextKey = new RawContextKey(activeContextKeyId, false).bindTo(
 				this.contextKeyService,
 			);
+
 			this.activeViewContextKeys.set(activeContextKeyId, contextKey);
 		}
+
 		return contextKey;
 	}
 
@@ -1754,8 +1884,10 @@ export class ViewDescriptorService
 			contextKey = new RawContextKey(activeContextKeyId, false).bindTo(
 				this.contextKeyService,
 			);
+
 			this.activeViewContextKeys.set(activeContextKeyId, contextKey);
 		}
+
 		return contextKey;
 	}
 
@@ -1773,11 +1905,13 @@ export class ViewDescriptorService
 				movableViewContextKeyId,
 				false,
 			).bindTo(this.contextKeyService);
+
 			this.movableViewContextKeys.set(
 				movableViewContextKeyId,
 				contextKey,
 			);
 		}
+
 		return contextKey;
 	}
 
@@ -1795,11 +1929,13 @@ export class ViewDescriptorService
 				defaultViewLocationContextKeyId,
 				false,
 			).bindTo(this.contextKeyService);
+
 			this.defaultViewLocationContextKeys.set(
 				defaultViewLocationContextKeyId,
 				contextKey,
 			);
 		}
+
 		return contextKey;
 	}
 
@@ -1817,11 +1953,13 @@ export class ViewDescriptorService
 				defaultViewContainerLocationContextKeyId,
 				false,
 			).bindTo(this.contextKeyService);
+
 			this.defaultViewContainerLocationContextKeys.set(
 				defaultViewContainerLocationContextKeyId,
 				contextKey,
 			);
 		}
+
 		return contextKey;
 	}
 }

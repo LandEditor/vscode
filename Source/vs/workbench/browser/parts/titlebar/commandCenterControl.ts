@@ -35,9 +35,12 @@ import { WindowTitle } from "./windowTitle.js";
 
 export class CommandCenterControl {
 	private readonly _disposables = new DisposableStore();
+
 	private readonly _onDidChangeVisibility = new Emitter<void>();
+
 	readonly onDidChangeVisibility: Event<void> =
 		this._onDidChangeVisibility.event;
+
 	readonly element: HTMLElement = document.createElement("div");
 
 	constructor(
@@ -82,6 +85,7 @@ export class CommandCenterControl {
 				},
 			},
 		);
+
 		this._disposables.add(
 			Event.filter(
 				quickInputService.onShow,
@@ -89,15 +93,20 @@ export class CommandCenterControl {
 				this._disposables,
 			)(this._setVisibility.bind(this, false)),
 		);
+
 		this._disposables.add(
 			quickInputService.onHide(this._setVisibility.bind(this, true)),
 		);
+
 		this._disposables.add(titleToolbar);
 	}
+
 	private _setVisibility(show: boolean): void {
 		this.element.classList.toggle("hide", !show);
+
 		this._onDidChangeVisibility.fire();
 	}
+
 	dispose(): void {
 		this._disposables.dispose();
 	}
@@ -105,6 +114,7 @@ export class CommandCenterControl {
 class CommandCenterCenterViewItem extends BaseActionViewItem {
 	private static readonly _quickOpenCommandId =
 		"workbench.action.quickOpenWithModes";
+
 	private readonly _hoverDelegate: IHoverDelegate;
 
 	constructor(
@@ -127,12 +137,16 @@ class CommandCenterCenterViewItem extends BaseActionViewItem {
 			) ?? _submenu.actions[0],
 			options,
 		);
+
 		this._hoverDelegate =
 			options.hoverDelegate ?? getDefaultHoverDelegate("mouse");
 	}
+
 	override render(container: HTMLElement): void {
 		super.render(container);
+
 		container.classList.add("command-center-center");
+
 		container.classList.toggle(
 			"multiple",
 			this._submenu.actions.length > 1,
@@ -161,6 +175,7 @@ class CommandCenterCenterViewItem extends BaseActionViewItem {
 				groups.push([action]);
 			}
 		}
+
 		for (let i = 0; i < groups.length; i++) {
 			const group = groups[i];
 			// nested toolbar
@@ -186,6 +201,7 @@ class CommandCenterCenterViewItem extends BaseActionViewItem {
 								options,
 							);
 						}
+
 						const that = this;
 
 						return this._instaService.createInstance(
@@ -193,27 +209,36 @@ class CommandCenterCenterViewItem extends BaseActionViewItem {
 								constructor() {
 									super(undefined, action, options);
 								}
+
 								override render(container: HTMLElement): void {
 									super.render(container);
+
 									container.classList.toggle(
 										"command-center-quick-pick",
 									);
+
 									container.role = "button";
 
 									const action = this.action;
 									// icon (search)
 									const searchIcon =
 										document.createElement("span");
+
 									searchIcon.ariaHidden = "true";
+
 									searchIcon.className = action.class ?? "";
+
 									searchIcon.classList.add("search-icon");
 									// label: just workspace name and optional decorations
 									const label = this._getLabel();
 
 									const labelElement =
 										document.createElement("span");
+
 									labelElement.classList.add("search-label");
+
 									labelElement.innerText = label;
+
 									reset(container, searchIcon, labelElement);
 
 									const hover = this._store.add(
@@ -227,6 +252,7 @@ class CommandCenterCenterViewItem extends BaseActionViewItem {
 									this._store.add(
 										that._windowTitle.onDidChange(() => {
 											hover.update(this.getTooltip());
+
 											labelElement.innerText =
 												this._getLabel();
 										}),
@@ -245,6 +271,7 @@ class CommandCenterCenterViewItem extends BaseActionViewItem {
 													hover.update(
 														this.getTooltip(),
 													);
+
 													labelElement.innerText =
 														this._getLabel();
 												}
@@ -252,9 +279,11 @@ class CommandCenterCenterViewItem extends BaseActionViewItem {
 										),
 									);
 								}
+
 								protected override getTooltip() {
 									return that.getTooltip();
 								}
+
 								private _getLabel(): string {
 									const { prefix, suffix } =
 										that._windowTitle.getTitleDecorations();
@@ -273,9 +302,11 @@ class CommandCenterCenterViewItem extends BaseActionViewItem {
 										label =
 											that._windowTitle.fileName ?? label;
 									}
+
 									if (!label) {
 										label = localize("label.dfl", "Search");
 									}
+
 									if (prefix) {
 										label = localize(
 											"label1",
@@ -284,6 +315,7 @@ class CommandCenterCenterViewItem extends BaseActionViewItem {
 											label,
 										);
 									}
+
 									if (suffix) {
 										label = localize(
 											"label2",
@@ -292,6 +324,7 @@ class CommandCenterCenterViewItem extends BaseActionViewItem {
 											suffix,
 										);
 									}
+
 									return label.replaceAll(
 										/\r\n|\r|\n/g,
 										"\u23CE",
@@ -302,18 +335,25 @@ class CommandCenterCenterViewItem extends BaseActionViewItem {
 					},
 				},
 			);
+
 			toolbar.setActions(group);
+
 			this._store.add(toolbar);
 			// spacer
 			if (i < groups.length - 1) {
 				const icon = renderIcon(Codicon.circleSmallFilled);
+
 				icon.style.padding = "0 12px";
+
 				icon.style.height = "100%";
+
 				icon.style.opacity = "0.5";
+
 				container.appendChild(icon);
 			}
 		}
 	}
+
 	protected override getTooltip() {
 		// tooltip: full windowTitle
 		const kb = this._keybindingService

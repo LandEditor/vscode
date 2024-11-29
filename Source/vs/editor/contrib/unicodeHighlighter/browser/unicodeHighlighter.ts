@@ -106,9 +106,11 @@ export class UnicodeHighlighter
 		| DocumentUnicodeHighlighter
 		| ViewportUnicodeHighlighter
 		| null = null;
+
 	private _options: InternalUnicodeHighlightOptions;
 
 	private readonly _bannerController: BannerController;
+
 	private _bannerClosed: boolean = false;
 
 	constructor(
@@ -128,6 +130,7 @@ export class UnicodeHighlighter
 		this._register(
 			this._editor.onDidChangeModel(() => {
 				this._bannerClosed = false;
+
 				this._updateHighlighter();
 			}),
 		);
@@ -146,6 +149,7 @@ export class UnicodeHighlighter
 					this._options = _editor.getOption(
 						EditorOption.unicodeHighlighting,
 					);
+
 					this._updateHighlighter();
 				}
 			}),
@@ -157,8 +161,10 @@ export class UnicodeHighlighter
 	public override dispose(): void {
 		if (this._highlighter) {
 			this._highlighter.dispose();
+
 			this._highlighter = null;
 		}
+
 		super.dispose();
 	}
 
@@ -234,11 +240,14 @@ export class UnicodeHighlighter
 
 		if (this._highlighter) {
 			this._highlighter.dispose();
+
 			this._highlighter = null;
 		}
+
 		if (!this._editor.hasModel()) {
 			return;
 		}
+
 		const options = resolveOptions(
 			this._workspaceTrustService.isWorkspaceTrusted(),
 			this._options,
@@ -274,6 +283,7 @@ export class UnicodeHighlighter
 					} else if (locale === "_vscode") {
 						return platform.language;
 					}
+
 					return locale;
 				},
 			),
@@ -305,13 +315,16 @@ export class UnicodeHighlighter
 		if (this._highlighter) {
 			return this._highlighter.getDecorationInfo(decoration);
 		}
+
 		return null;
 	}
 }
 
 export interface UnicodeHighlighterDecorationInfo {
 	reason: UnicodeHighlighterReason;
+
 	inComment: boolean;
+
 	inString: boolean;
 }
 
@@ -353,7 +366,9 @@ function resolveOptions(
 
 class DocumentUnicodeHighlighter extends Disposable {
 	private readonly _model: ITextModel = this._editor.getModel();
+
 	private readonly _updateSoon: RunOnceScheduler;
+
 	private _decorations = this._editor.createDecorationsCollection();
 
 	constructor(
@@ -366,6 +381,7 @@ class DocumentUnicodeHighlighter extends Disposable {
 		private readonly _editorWorkerService: IEditorWorkerService,
 	) {
 		super();
+
 		this._updateSoon = this._register(
 			new RunOnceScheduler(() => this._update(), 250),
 		);
@@ -397,16 +413,19 @@ class DocumentUnicodeHighlighter extends Disposable {
 		}
 
 		const modelVersionId = this._model.getVersionId();
+
 		this._editorWorkerService
 			.computedUnicodeHighlights(this._model.uri, this._options)
 			.then((info) => {
 				if (this._model.isDisposed()) {
 					return;
 				}
+
 				if (this._model.getVersionId() !== modelVersionId) {
 					// model changed in the meantime
 					return;
 				}
+
 				this._updateState(info);
 
 				const decorations: IModelDeltaDecoration[] = [];
@@ -424,6 +443,7 @@ class DocumentUnicodeHighlighter extends Disposable {
 						});
 					}
 				}
+
 				this._decorations.set(decorations);
 			});
 	}
@@ -434,11 +454,13 @@ class DocumentUnicodeHighlighter extends Disposable {
 		if (!this._decorations.has(decoration)) {
 			return null;
 		}
+
 		const model = this._editor.getModel();
 
 		if (!isModelDecorationVisible(model, decoration)) {
 			return null;
 		}
+
 		const text = model.getValueInRange(decoration.range);
 
 		return {
@@ -451,7 +473,9 @@ class DocumentUnicodeHighlighter extends Disposable {
 
 class ViewportUnicodeHighlighter extends Disposable {
 	private readonly _model: ITextModel = this._editor.getModel();
+
 	private readonly _updateSoon: RunOnceScheduler;
+
 	private readonly _decorations = this._editor.createDecorationsCollection();
 
 	constructor(
@@ -472,16 +496,19 @@ class ViewportUnicodeHighlighter extends Disposable {
 				this._updateSoon.schedule();
 			}),
 		);
+
 		this._register(
 			this._editor.onDidScrollChange(() => {
 				this._updateSoon.schedule();
 			}),
 		);
+
 		this._register(
 			this._editor.onDidChangeHiddenAreas(() => {
 				this._updateSoon.schedule();
 			}),
 		);
+
 		this._register(
 			this._editor.onDidChangeModelContent(() => {
 				this._updateSoon.schedule();
@@ -530,12 +557,16 @@ class ViewportUnicodeHighlighter extends Disposable {
 			for (const r of result.ranges) {
 				totalResult.ranges.push(r);
 			}
+
 			totalResult.ambiguousCharacterCount +=
 				totalResult.ambiguousCharacterCount;
+
 			totalResult.invisibleCharacterCount +=
 				totalResult.invisibleCharacterCount;
+
 			totalResult.nonBasicAsciiCharacterCount +=
 				totalResult.nonBasicAsciiCharacterCount;
+
 			totalResult.hasMore = totalResult.hasMore || result.hasMore;
 		}
 
@@ -551,6 +582,7 @@ class ViewportUnicodeHighlighter extends Disposable {
 				});
 			}
 		}
+
 		this._updateState(totalResult);
 
 		this._decorations.set(decorations);
@@ -562,6 +594,7 @@ class ViewportUnicodeHighlighter extends Disposable {
 		if (!this._decorations.has(decoration)) {
 			return null;
 		}
+
 		const model = this._editor.getModel();
 
 		const text = model.getValueInRange(decoration.range);
@@ -569,6 +602,7 @@ class ViewportUnicodeHighlighter extends Disposable {
 		if (!isModelDecorationVisible(model, decoration)) {
 			return null;
 		}
+
 		return {
 			reason: computeReason(text, this._options)!,
 			inComment: isModelDecorationInComment(model, decoration),
@@ -640,6 +674,7 @@ export class UnicodeHighlighterHoverParticipant
 			if (!highlightInfo) {
 				continue;
 			}
+
 			const char = model.getValueInRange(d.range);
 			// text refers to a single character.
 			const codePoint = char.codePointAt(0)!;
@@ -673,6 +708,7 @@ export class UnicodeHighlighterHoverParticipant
 							),
 						);
 					}
+
 					break;
 				}
 
@@ -698,6 +734,7 @@ export class UnicodeHighlighterHoverParticipant
 			if (existedReason.has(reason)) {
 				continue;
 			}
+
 			existedReason.add(reason);
 
 			const adjustSettingsArgs: ShowExcludeOptionsArgs = {
@@ -722,10 +759,12 @@ export class UnicodeHighlighterHoverParticipant
 					adjustSettings,
 					configureUnicodeHighlightOptionsStr,
 				);
+
 			result.push(
 				new MarkdownHover(this, d.range, [markdown], false, index++),
 			);
 		}
+
 		return result;
 	}
 
@@ -758,6 +797,7 @@ function formatCodePointMarkdown(codePoint: number) {
 		// Don't render any control characters or any invisible characters, as they cannot be seen anyways.
 		value += ` "${`${renderCodePointAsInlineCode(codePoint)}`}"`;
 	}
+
 	return value;
 }
 
@@ -765,6 +805,7 @@ function renderCodePointAsInlineCode(codePoint: number): string {
 	if (codePoint === CharCode.BackTick) {
 		return "`` ` ``";
 	}
+
 	return "`" + String.fromCodePoint(codePoint) + "`";
 }
 
@@ -811,8 +852,10 @@ class Decorations {
 				hideInCommentTokens: hideInComments,
 				hideInStringTokens: hideInStrings,
 			});
+
 			this.map.set(key, options);
 		}
+
 		return options;
 	}
 }
@@ -827,6 +870,7 @@ export class DisableHighlightingInCommentsAction
 {
 	public static ID =
 		"editor.action.unicodeHighlight.disableHighlightingInComments";
+
 	public readonly shortLabel = nls.localize(
 		"unicodeHighlight.disableHighlightingInComments.shortLabel",
 		"Disable Highlight In Comments",
@@ -872,6 +916,7 @@ export class DisableHighlightingInStringsAction
 {
 	public static ID =
 		"editor.action.unicodeHighlight.disableHighlightingInStrings";
+
 	public readonly shortLabel = nls.localize(
 		"unicodeHighlight.disableHighlightingInStrings.shortLabel",
 		"Disable Highlight In Strings",
@@ -917,6 +962,7 @@ export class DisableHighlightingOfAmbiguousCharactersAction
 {
 	public static ID =
 		"editor.action.unicodeHighlight.disableHighlightingOfAmbiguousCharacters";
+
 	public readonly shortLabel = nls.localize(
 		"unicodeHighlight.disableHighlightingOfAmbiguousCharacters.shortLabel",
 		"Disable Ambiguous Highlight",
@@ -962,6 +1008,7 @@ export class DisableHighlightingOfInvisibleCharactersAction
 {
 	public static ID =
 		"editor.action.unicodeHighlight.disableHighlightingOfInvisibleCharacters";
+
 	public readonly shortLabel = nls.localize(
 		"unicodeHighlight.disableHighlightingOfInvisibleCharacters.shortLabel",
 		"Disable Invisible Highlight",
@@ -1007,6 +1054,7 @@ export class DisableHighlightingOfNonBasicAsciiCharactersAction
 {
 	public static ID =
 		"editor.action.unicodeHighlight.disableHighlightingOfNonBasicAsciiCharacters";
+
 	public readonly shortLabel = nls.localize(
 		"unicodeHighlight.disableHighlightingOfNonBasicAsciiCharacters.shortLabel",
 		"Disable Non ASCII Highlight",
@@ -1048,8 +1096,11 @@ export class DisableHighlightingOfNonBasicAsciiCharactersAction
 
 interface ShowExcludeOptionsArgs {
 	codePoint: number;
+
 	reason: UnicodeHighlighterReason;
+
 	inComment: boolean;
+
 	inString: boolean;
 }
 
@@ -1093,6 +1144,7 @@ export class ShowExcludeOptions extends EditorAction {
 					codePointToHex(codePoint),
 				);
 			}
+
 			return nls.localize(
 				"unicodeHighlight.excludeCharFromBeingHighlighted",
 				"Exclude {0} from being highlighted",
@@ -1130,12 +1182,14 @@ export class ShowExcludeOptions extends EditorAction {
 
 		if (inComment) {
 			const action = new DisableHighlightingInCommentsAction();
+
 			options.push({
 				label: action.label,
 				run: async () => action.runAction(configurationService),
 			});
 		} else if (inString) {
 			const action = new DisableHighlightingInStringsAction();
+
 			options.push({
 				label: action.label,
 				run: async () => action.runAction(configurationService),
@@ -1144,12 +1198,14 @@ export class ShowExcludeOptions extends EditorAction {
 
 		if (reason.kind === UnicodeHighlighterReasonKind.Ambiguous) {
 			const action = new DisableHighlightingOfAmbiguousCharactersAction();
+
 			options.push({
 				label: action.label,
 				run: async () => action.runAction(configurationService),
 			});
 		} else if (reason.kind === UnicodeHighlighterReasonKind.Invisible) {
 			const action = new DisableHighlightingOfInvisibleCharactersAction();
+
 			options.push({
 				label: action.label,
 				run: async () => action.runAction(configurationService),
@@ -1157,6 +1213,7 @@ export class ShowExcludeOptions extends EditorAction {
 		} else if (reason.kind === UnicodeHighlighterReasonKind.NonBasicAscii) {
 			const action =
 				new DisableHighlightingOfNonBasicAsciiCharactersAction();
+
 			options.push({
 				label: action.label,
 				run: async () => action.runAction(configurationService),

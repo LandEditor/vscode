@@ -29,16 +29,19 @@ export const IAccessibilitySignalService =
 
 export interface IAccessibilitySignalService {
 	readonly _serviceBrand: undefined;
+
 	playSignal(
 		signal: AccessibilitySignal,
 		options?: IAccessbilitySignalOptions,
 	): Promise<void>;
+
 	playSignals(
 		signals: (
 			| AccessibilitySignal
 			| { signal: AccessibilitySignal; source: string }
 		)[],
 	): Promise<void>;
+
 	playSignalLoop(
 		signal: AccessibilitySignal,
 		milliseconds: number,
@@ -103,13 +106,16 @@ export class AccessibilitySignalService
 	implements IAccessibilitySignalService
 {
 	readonly _serviceBrand: undefined;
+
 	private readonly sounds: Map<string, HTMLAudioElement> = new Map();
+
 	private readonly screenReaderAttached = observableFromEvent(
 		this,
 		this.accessibilityService.onDidChangeScreenReaderOptimized,
 		() =>
 			/** @description accessibilityService.onDidChangeScreenReaderOptimized */ this.accessibilityService.isScreenReaderOptimized(),
 	);
+
 	private readonly sentTelemetry = new Set<string>();
 
 	constructor(
@@ -158,6 +164,7 @@ export class AccessibilitySignalService
 			this.isSoundEnabled(signal, options.userGesture)
 		) {
 			this.sendSignalTelemetry(signal, options.source);
+
 			await this.playSound(
 				signal.sound.getSound(),
 				options.allowManyInParallel,
@@ -177,6 +184,7 @@ export class AccessibilitySignalService
 				"source" in signal ? signal.source : undefined,
 			);
 		}
+
 		const signalArray = signals.map((s) => ("signal" in s ? s.signal : s));
 
 		const announcements = signalArray
@@ -193,6 +201,7 @@ export class AccessibilitySignalService
 				.filter((signal) => this.isSoundEnabled(signal))
 				.map((signal) => signal.sound.getSound()),
 		);
+
 		await Promise.all(
 			Array.from(sounds).map((sound) => this.playSound(sound, true)),
 		);
@@ -213,12 +222,15 @@ export class AccessibilitySignalService
 		if (this.sentTelemetry.has(key) || this.getVolumeInPercent() === 0) {
 			return;
 		}
+
 		this.sentTelemetry.add(key);
 
 		this.telemetryService.publicLog2<
 			{
 				signal: string;
+
 				source: string;
+
 				isScreenReaderOptimized: boolean;
 			},
 			{
@@ -226,17 +238,25 @@ export class AccessibilitySignalService
 
 				signal: {
 					classification: "SystemMetaData";
+
 					purpose: "FeatureInsight";
+
 					comment: "The signal that was played.";
 				};
+
 				source: {
 					classification: "SystemMetaData";
+
 					purpose: "FeatureInsight";
+
 					comment: 'The source that triggered the signal (e.g. "diffEditorNavigation").';
 				};
+
 				isScreenReaderOptimized: {
 					classification: "SystemMetaData";
+
 					purpose: "FeatureInsight";
+
 					comment: "Whether the user is using a screen reader";
 				};
 
@@ -270,6 +290,7 @@ export class AccessibilitySignalService
 		if (!allowManyInParallel && this.playingSounds.has(sound)) {
 			return;
 		}
+
 		this.playingSounds.add(sound);
 
 		const url = FileAccess.asBrowserUri(
@@ -281,13 +302,16 @@ export class AccessibilitySignalService
 
 			if (sound) {
 				sound.volume = this.getVolumeInPercent() / 100;
+
 				sound.currentTime = 0;
+
 				await sound.play();
 			} else {
 				const playedSound = await playAudio(
 					url,
 					this.getVolumeInPercent() / 100,
 				);
+
 				this.sounds.set(url, playedSound);
 			}
 		} catch (e) {
@@ -323,6 +347,7 @@ export class AccessibilitySignalService
 				);
 			}
 		};
+
 		playSound();
 
 		return toDisposable(() => (playing = false));
@@ -332,6 +357,7 @@ export class AccessibilitySignalService
 		(signal: AccessibilitySignal) =>
 			observableConfigValue<{
 				sound: EnabledState;
+
 				announcement: EnabledState;
 			}>(
 				signal.settingsKey,
@@ -344,7 +370,9 @@ export class AccessibilitySignalService
 		{ getCacheKey: getStructuralKey },
 		(arg: {
 			signal: AccessibilitySignal;
+
 			userGesture: boolean;
+
 			modality?: AccessibilityModality | undefined;
 		}) => {
 			return derived((reader) => {
@@ -364,6 +392,7 @@ export class AccessibilitySignalService
 						return true;
 					}
 				}
+
 				if (
 					arg.modality === "announcement" ||
 					arg.modality === undefined
@@ -378,6 +407,7 @@ export class AccessibilitySignalService
 						return true;
 					}
 				}
+
 				return false;
 			}).recomputeInitiallyAndOnChange(this._store);
 		},
@@ -390,6 +420,7 @@ export class AccessibilitySignalService
 		if (!signal.announcementMessage) {
 			return false;
 		}
+
 		return this._signalEnabledState
 			.get({
 				signal,
@@ -424,6 +455,7 @@ export class AccessibilitySignalService
 		) {
 			return 0;
 		}
+
 		let value: { sound: number; announcement: number };
 
 		if (
@@ -445,6 +477,7 @@ export class AccessibilitySignalService
 				"accessibility.signalOptions.experimental.delays.general",
 			);
 		}
+
 		return modality === "sound" ? value.sound : value.announcement;
 	}
 }
@@ -470,14 +503,18 @@ function checkEnabledState(
 function playAudio(url: string, volume: number): Promise<HTMLAudioElement> {
 	return new Promise((resolve, reject) => {
 		const audio = new Audio(url);
+
 		audio.volume = volume;
+
 		audio.addEventListener("ended", () => {
 			resolve(audio);
 		});
+
 		audio.addEventListener("error", (e) => {
 			// When the error event fires, ended might not be called
 			reject(e.error);
 		});
+
 		audio.play().catch((e) => {
 			// When play fails, the error event is not fired.
 			reject(e);
@@ -496,61 +533,83 @@ export class Sound {
 	}
 
 	public static readonly error = Sound.register({ fileName: "error.mp3" });
+
 	public static readonly warning = Sound.register({
 		fileName: "warning.mp3",
 	});
+
 	public static readonly success = Sound.register({
 		fileName: "success.mp3",
 	});
+
 	public static readonly foldedArea = Sound.register({
 		fileName: "foldedAreas.mp3",
 	});
+
 	public static readonly break = Sound.register({ fileName: "break.mp3" });
+
 	public static readonly quickFixes = Sound.register({
 		fileName: "quickFixes.mp3",
 	});
+
 	public static readonly taskCompleted = Sound.register({
 		fileName: "taskCompleted.mp3",
 	});
+
 	public static readonly taskFailed = Sound.register({
 		fileName: "taskFailed.mp3",
 	});
+
 	public static readonly terminalBell = Sound.register({
 		fileName: "terminalBell.mp3",
 	});
+
 	public static readonly diffLineInserted = Sound.register({
 		fileName: "diffLineInserted.mp3",
 	});
+
 	public static readonly diffLineDeleted = Sound.register({
 		fileName: "diffLineDeleted.mp3",
 	});
+
 	public static readonly diffLineModified = Sound.register({
 		fileName: "diffLineModified.mp3",
 	});
+
 	public static readonly requestSent = Sound.register({
 		fileName: "requestSent.mp3",
 	});
+
 	public static readonly responseReceived1 = Sound.register({
 		fileName: "responseReceived1.mp3",
 	});
+
 	public static readonly responseReceived2 = Sound.register({
 		fileName: "responseReceived2.mp3",
 	});
+
 	public static readonly responseReceived3 = Sound.register({
 		fileName: "responseReceived3.mp3",
 	});
+
 	public static readonly responseReceived4 = Sound.register({
 		fileName: "responseReceived4.mp3",
 	});
+
 	public static readonly clear = Sound.register({ fileName: "clear.mp3" });
+
 	public static readonly save = Sound.register({ fileName: "save.mp3" });
+
 	public static readonly format = Sound.register({ fileName: "format.mp3" });
+
 	public static readonly voiceRecordingStarted = Sound.register({
 		fileName: "voiceRecordingStarted.mp3",
 	});
+
 	public static readonly voiceRecordingStopped = Sound.register({
 		fileName: "voiceRecordingStopped.mp3",
 	});
+
 	public static readonly progress = Sound.register({
 		fileName: "progress.mp3",
 	});
@@ -583,8 +642,10 @@ export class AccessibilitySignal {
 	) {}
 
 	private static _signals = new Set<AccessibilitySignal>();
+
 	private static register(options: {
 		name: string;
+
 		sound:
 			| Sound
 			| {
@@ -594,11 +655,15 @@ export class AccessibilitySignal {
 					 */
 					randomOneOf: Sound[];
 			  };
+
 		legacySoundSettingsKey?: string;
 
 		settingsKey: string;
+
 		legacyAnnouncementSettingsKey?: string;
+
 		announcementMessage?: string;
+
 		delaySettingsKey?: string;
 	}): AccessibilitySignal {
 		const soundSource = new SoundSource(
@@ -615,6 +680,7 @@ export class AccessibilitySignal {
 			options.legacyAnnouncementSettingsKey,
 			options.announcementMessage,
 		);
+
 		AccessibilitySignal._signals.add(signal);
 
 		return signal;
@@ -637,6 +703,7 @@ export class AccessibilitySignal {
 		settingsKey: "accessibility.signals.positionHasError",
 		delaySettingsKey: "accessibility.signalOptions.delays.errorAtPosition",
 	});
+
 	public static readonly warningAtPosition = AccessibilitySignal.register({
 		name: localize(
 			"accessibilitySignals.positionHasWarning.name",
@@ -681,6 +748,7 @@ export class AccessibilitySignal {
 		),
 		settingsKey: "accessibility.signals.lineHasWarning",
 	});
+
 	public static readonly foldedArea = AccessibilitySignal.register({
 		name: localize(
 			"accessibilitySignals.lineHasFoldedArea.name",
@@ -695,6 +763,7 @@ export class AccessibilitySignal {
 		),
 		settingsKey: "accessibility.signals.lineHasFoldedArea",
 	});
+
 	public static readonly break = AccessibilitySignal.register({
 		name: localize(
 			"accessibilitySignals.lineHasBreakpoint.name",
@@ -709,6 +778,7 @@ export class AccessibilitySignal {
 		),
 		settingsKey: "accessibility.signals.lineHasBreakpoint",
 	});
+
 	public static readonly inlineSuggestion = AccessibilitySignal.register({
 		name: localize(
 			"accessibilitySignals.lineHasInlineSuggestion.name",

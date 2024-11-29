@@ -34,6 +34,7 @@ export function createJupyterCellFromNotebookCell(
 	} else {
 		cell = createCodeCellFromNotebookCell(vscCell, preferredLanguage);
 	}
+
 	return cell;
 }
 /**
@@ -45,6 +46,7 @@ export function sortObjectPropertiesRecursively(obj: any): any {
 	if (Array.isArray(obj)) {
 		return obj.map(sortObjectPropertiesRecursively);
 	}
+
 	if (
 		obj !== undefined &&
 		obj !== null &&
@@ -59,6 +61,7 @@ export function sortObjectPropertiesRecursively(obj: any): any {
 				return sortedObj;
 			}, {}) as any;
 	}
+
 	return obj;
 }
 export function getCellMetadata(
@@ -84,6 +87,7 @@ export function getCellMetadata(
 		if (cell.kind === NotebookCellKindMarkup) {
 			delete (metadata as any).execution_count;
 		}
+
 		return metadata;
 	} else {
 		const cell = options;
@@ -106,6 +110,7 @@ export function setVSCodeCellLanguageId(
 	languageId: string,
 ) {
 	metadata.metadata = metadata.metadata || {};
+
 	metadata.metadata.vscode = { languageId };
 }
 export function removeVSCodeCellLanguageId(metadata: CellMetadata) {
@@ -120,6 +125,7 @@ function createCodeCellFromNotebookCell(
 	const cellMetadata: CellMetadata = JSON.parse(
 		JSON.stringify(getCellMetadata({ cell })),
 	);
+
 	cellMetadata.metadata = cellMetadata.metadata || {}; // This cannot be empty.
 	if (cell.languageId !== preferredLanguage) {
 		setVSCodeCellLanguageId(cellMetadata, cell.languageId);
@@ -127,6 +133,7 @@ function createCodeCellFromNotebookCell(
 		// cell current language is the same as the preferred cell language in the document, flush the vscode custom language id metadata
 		removeVSCodeCellLanguageId(cellMetadata);
 	}
+
 	const codeCell: nbformat.ICodeCell = {
 		cell_type: "code",
 		// Metadata should always contain the execution_count.
@@ -144,6 +151,7 @@ function createCodeCellFromNotebookCell(
 	if (cellMetadata?.id) {
 		codeCell.id = cellMetadata.id;
 	}
+
 	return codeCell;
 }
 function createRawCellFromNotebookCell(
@@ -160,15 +168,18 @@ function createRawCellFromNotebookCell(
 	if (cellMetadata?.attachments) {
 		rawCell.attachments = cellMetadata.attachments;
 	}
+
 	if (cellMetadata?.id) {
 		rawCell.id = cellMetadata.id;
 	}
+
 	return rawCell;
 }
 function splitMultilineString(source: nbformat.MultilineString): string[] {
 	if (Array.isArray(source)) {
 		return source as string[];
 	}
+
 	const str = source.toString();
 
 	if (str.length > 0) {
@@ -180,10 +191,12 @@ function splitMultilineString(source: nbformat.MultilineString): string[] {
 				if (i < arr.length - 1) {
 					return `${s}\n`;
 				}
+
 				return s;
 			})
 			.filter((s) => s.length > 0); // Skip last one if empty (it's the only one that could be length 0)
 	}
+
 	return [];
 }
 function translateCellDisplayOutput(output: NotebookCellOutput): JupyterOutput {
@@ -200,11 +213,13 @@ function translateCellDisplayOutput(output: NotebookCellOutput): JupyterOutput {
 
 			break;
 		}
+
 		case "stream": {
 			result = convertStreamOutput(output);
 
 			break;
 		}
+
 		case "display_data": {
 			result = {
 				output_type: "display_data",
@@ -221,6 +236,7 @@ function translateCellDisplayOutput(output: NotebookCellOutput): JupyterOutput {
 
 			break;
 		}
+
 		case "execute_result": {
 			result = {
 				output_type: "execute_result",
@@ -241,6 +257,7 @@ function translateCellDisplayOutput(output: NotebookCellOutput): JupyterOutput {
 
 			break;
 		}
+
 		case "update_display_data": {
 			result = {
 				output_type: "update_display_data",
@@ -257,6 +274,7 @@ function translateCellDisplayOutput(output: NotebookCellOutput): JupyterOutput {
 
 			break;
 		}
+
 		default: {
 			const isError =
 				output.items.length === 1 &&
@@ -295,15 +313,18 @@ function translateCellDisplayOutput(output: NotebookCellOutput): JupyterOutput {
 					metadata: {},
 					output_type: "display_data",
 				};
+
 				unknownOutput = displayData;
 			} else {
 				unknownOutput = {
 					output_type: outputType,
 				};
 			}
+
 			if (customMetadata?.metadata) {
 				unknownOutput.metadata = customMetadata.metadata;
 			}
+
 			if (output.items.length > 0) {
 				unknownOutput.data = output.items.reduce((prev: any, curr) => {
 					prev[curr.mime] = convertOutputMimeToJupyterOutput(
@@ -314,6 +335,7 @@ function translateCellDisplayOutput(output: NotebookCellOutput): JupyterOutput {
 					return prev;
 				}, {});
 			}
+
 			result = unknownOutput;
 
 			break;
@@ -324,6 +346,7 @@ function translateCellDisplayOutput(output: NotebookCellOutput): JupyterOutput {
 	if (result && customMetadata && customMetadata.transient) {
 		result.transient = customMetadata.transient;
 	}
+
 	return result;
 }
 function translateCellErrorOutput(output: NotebookCellOutput): nbformat.IError {
@@ -338,6 +361,7 @@ function translateCellErrorOutput(output: NotebookCellOutput): nbformat.IError {
 			traceback: [],
 		};
 	}
+
 	const originalError: undefined | nbformat.IError =
 		output.metadata?.originalError;
 
@@ -362,6 +386,7 @@ function getOutputStreamType(output: NotebookCellOutput): string | undefined {
 			? "stderr"
 			: "stdout";
 	}
+
 	return;
 }
 type JupyterOutput =
@@ -372,6 +397,7 @@ type JupyterOutput =
 	| nbformat.IError;
 function convertStreamOutput(output: NotebookCellOutput): JupyterOutput {
 	const outputs: string[] = [];
+
 	output.items
 		.filter(
 			(opit) =>
@@ -388,6 +414,7 @@ function convertStreamOutput(output: NotebookCellOutput): JupyterOutput {
 				outputs[outputs.length - 1] =
 					`${outputs[outputs.length - 1]}${lines.shift()!}`;
 			}
+
 			for (const line of lines) {
 				outputs.push(line);
 			}
@@ -400,6 +427,7 @@ function convertStreamOutput(output: NotebookCellOutput): JupyterOutput {
 	if (outputs.length && outputs[outputs.length - 1].length === 0) {
 		outputs.pop();
 	}
+
 	const streamType = getOutputStreamType(output) || "stdout";
 
 	return {
@@ -412,6 +440,7 @@ function convertOutputMimeToJupyterOutput(mime: string, value: Uint8Array) {
 	if (!value) {
 		return "";
 	}
+
 	try {
 		if (mime === CellOutputMimeTypes.error) {
 			const stringValue = textDecoder.decode(value);
@@ -466,9 +495,11 @@ export function createMarkdownCellFromNotebookCell(
 	if (cellMetadata?.attachments) {
 		markdownCell.attachments = cellMetadata.attachments;
 	}
+
 	if (cellMetadata?.id) {
 		markdownCell.id = cellMetadata.id;
 	}
+
 	return markdownCell;
 }
 export function pruneCell(cell: nbformat.ICell): nbformat.ICell {
@@ -480,6 +511,7 @@ export function pruneCell(cell: nbformat.ICell): nbformat.ICell {
 	// Remove outputs and execution_count from non code cells
 	if (result.cell_type !== "code") {
 		delete (<any>result).outputs;
+
 		delete (<any>result).execution_count;
 	} else {
 		// Clean outputs from code cells
@@ -487,6 +519,7 @@ export function pruneCell(cell: nbformat.ICell): nbformat.ICell {
 			? (result.outputs as nbformat.IOutput[]).map(fixupOutput)
 			: [];
 	}
+
 	return result;
 }
 
@@ -538,6 +571,7 @@ function fixupOutput(output: nbformat.IOutput): nbformat.IOutput {
 		default:
 			return output;
 	}
+
 	const result = { ...output };
 
 	for (const k of Object.keys(output)) {
@@ -545,6 +579,7 @@ function fixupOutput(output: nbformat.IOutput): nbformat.IOutput {
 			delete result[k];
 		}
 	}
+
 	return result;
 }
 export function serializeNotebookToString(data: NotebookData): string {
@@ -553,6 +588,7 @@ export function serializeNotebookToString(data: NotebookData): string {
 	const preferredCellLanguage =
 		notebookContent.metadata?.language_info?.name ??
 		data.cells.find((cell) => cell.kind === 2)?.languageId;
+
 	notebookContent.cells = data.cells
 		.map((cell) =>
 			createJupyterCellFromNotebookCell(cell, preferredCellLanguage),
@@ -582,11 +618,15 @@ export function getNotebookMetadata(document: NotebookDocument | NotebookData) {
 		document.metadata || {};
 
 	const notebookContent: Partial<nbformat.INotebookContent> = {};
+
 	notebookContent.cells = existingContent.cells || [];
+
 	notebookContent.nbformat =
 		existingContent.nbformat || defaultNotebookFormat.major;
+
 	notebookContent.nbformat_minor =
 		existingContent.nbformat_minor ?? defaultNotebookFormat.minor;
+
 	notebookContent.metadata = existingContent.metadata || {};
 
 	return notebookContent;

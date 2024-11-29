@@ -6,8 +6,11 @@ import * as vscode from "vscode";
 
 export interface TSConfig {
 	readonly uri: vscode.Uri;
+
 	readonly fsPath: string;
+
 	readonly posixPath: string;
+
 	readonly workspaceFolder?: vscode.WorkspaceFolder;
 }
 export class TsConfigProvider {
@@ -17,6 +20,7 @@ export class TsConfigProvider {
 		if (!vscode.workspace.workspaceFolders) {
 			return [];
 		}
+
 		const configs = new Map<string, TSConfig>();
 
 		for (const config of await this.findConfigFiles(token)) {
@@ -31,8 +35,10 @@ export class TsConfigProvider {
 				});
 			}
 		}
+
 		return configs.values();
 	}
+
 	private async findConfigFiles(
 		token: vscode.CancellationToken,
 	): Promise<vscode.Uri[]> {

@@ -58,7 +58,9 @@ import { createRequire } from "node:module";
 const require = createRequire(import.meta.url);
 interface ParsedExtHostArgs {
 	transformURIs?: boolean;
+
 	skipWorkspaceStorageLock?: boolean;
+
 	useHostProxy?: "true" | "false"; // use a string, as undefined is also a valid value
 }
 // workaround for https://github.com/microsoft/vscode/issues/85490
@@ -67,6 +69,7 @@ interface ParsedExtHostArgs {
 	for (let i = 0; i < process.execArgv.length; i++) {
 		if (process.execArgv[i] === "--inspect-port=0") {
 			process.execArgv.splice(i, 1);
+
 			i--;
 		}
 	}
@@ -87,12 +90,14 @@ const args = minimist(process.argv.slice(2), {
 	const Module = require("module");
 
 	const originalLoad = Module._load;
+
 	Module._load = function (request: string) {
 		if (request === "natives") {
 			throw new Error(
 				'Either the extension or an NPM dependency is using the [unsupported "natives" node module](https://go.microsoft.com/fwlink/?linkid=871887).',
 			);
 		}
+
 		return originalLoad.apply(this, arguments);
 	};
 })();
@@ -108,6 +113,7 @@ function patchProcess(allowExit: boolean) {
 			const err = new Error(
 				"An extension called process.exit() and this was prevented.",
 			);
+
 			console.warn(err.stack);
 		}
 	} as (code?: number) => never;
@@ -116,6 +122,7 @@ function patchProcess(allowExit: boolean) {
 		const err = new Error(
 			"An extension called process.crash() and this was prevented.",
 		);
+
 		console.warn(err.stack);
 	};
 	// Set ELECTRON_RUN_AS_NODE environment variable for extensions that use
@@ -123,6 +130,7 @@ function patchProcess(allowExit: boolean) {
 	// on the desktop.
 	// Refs https://github.com/microsoft/vscode/issues/151012#issuecomment-1156593228
 	process.env["ELECTRON_RUN_AS_NODE"] = "1";
+
 	process.on = <any>(
 		function (event: string, listener: (...args: any[]) => void) {
 			if (event === "uncaughtException") {
@@ -137,12 +145,14 @@ function patchProcess(allowExit: boolean) {
 					}
 				};
 			}
+
 			nativeOn(event, listener);
 		}
 	);
 }
 interface IRendererConnection {
 	protocol: IMessagePassingProtocol;
+
 	initData: IExtensionHostInitData;
 }
 // This calls exit directly in case the initialization is not finished and we need to exit
@@ -159,18 +169,23 @@ function _createExtHostProtocol(): Promise<IMessagePassingProtocol> {
 				const port = ports[0];
 
 				const onMessage = new BufferedEmitter<VSBuffer>();
+
 				port.on("message", (e) =>
 					onMessage.fire(VSBuffer.wrap(e.data)),
 				);
+
 				port.on("close", () => {
 					onTerminate("renderer closed the MessagePort");
 				});
+
 				port.start();
+
 				resolve({
 					onMessage: onMessage.event,
 					send: (message) => port.postMessage(message.buffer),
 				});
 			};
+
 			process.parentPort.on("message", (e: Electron.MessageEvent) =>
 				withPorts(e.ports),
 			);
@@ -198,6 +213,7 @@ function _createExtHostProtocol(): Promise<IMessagePassingProtocol> {
 				() => onTerminate("renderer disconnected for too long (2)"),
 				reconnectionShortGraceTime,
 			);
+
 			process.on(
 				"message",
 				(
@@ -221,6 +237,7 @@ function _createExtHostProtocol(): Promise<IMessagePassingProtocol> {
 							const inflateBytes = VSBuffer.wrap(
 								Buffer.from(msg.inflateBytes, "base64"),
 							);
+
 							socket = new WebSocketNodeSocket(
 								new NodeSocket(handle, "extHost-socket"),
 								msg.permessageDeflate,
@@ -228,26 +245,35 @@ function _createExtHostProtocol(): Promise<IMessagePassingProtocol> {
 								false,
 							);
 						}
+
 						if (protocol) {
 							// reconnection case
 							disconnectRunner1.cancel();
+
 							disconnectRunner2.cancel();
+
 							protocol.beginAcceptReconnection(
 								socket,
 								initialDataChunk,
 							);
+
 							protocol.endAcceptReconnection();
+
 							protocol.sendResume();
 						} else {
 							clearTimeout(timer);
+
 							protocol = new PersistentProtocol({
 								socket,
 								initialChunk: initialDataChunk,
 							});
+
 							protocol.sendResume();
+
 							protocol.onDidDispose(() =>
 								onTerminate("renderer disconnected"),
 							);
+
 							resolve(protocol);
 							// Wait for rich client to reconnect
 							protocol.onSocketClose(() => {
@@ -256,6 +282,7 @@ function _createExtHostProtocol(): Promise<IMessagePassingProtocol> {
 							});
 						}
 					}
+
 					if (
 						msg &&
 						msg.type === "VSCODE_EXTHOST_IPC_REDUCE_GRACE_TIME"
@@ -264,6 +291,7 @@ function _createExtHostProtocol(): Promise<IMessagePassingProtocol> {
 							// we are disconnected and already running the short reconnection timer
 							return;
 						}
+
 						if (disconnectRunner1.isScheduled()) {
 							// we are disconnected and running the long reconnection timer
 							disconnectRunner2.schedule();
@@ -275,6 +303,7 @@ function _createExtHostProtocol(): Promise<IMessagePassingProtocol> {
 			const req: IExtHostReadyMessage = {
 				type: "VSCODE_EXTHOST_IPC_READY",
 			};
+
 			process.send?.(req);
 		});
 	} else {
@@ -287,10 +316,14 @@ function _createExtHostProtocol(): Promise<IMessagePassingProtocol> {
 				const protocol = new PersistentProtocol({
 					socket: new NodeSocket(socket, "extHost-renderer"),
 				});
+
 				protocol.sendResume();
+
 				resolve(protocol);
 			});
+
 			socket.once("error", reject);
+
 			socket.on("close", () => {
 				onTerminate("renderer closed the socket");
 			});
@@ -302,27 +335,35 @@ async function createExtHostProtocol(): Promise<IMessagePassingProtocol> {
 
 	return new (class implements IMessagePassingProtocol {
 		private readonly _onMessage = new BufferedEmitter<VSBuffer>();
+
 		readonly onMessage: Event<VSBuffer> = this._onMessage.event;
+
 		private _terminating: boolean;
+
 		private _protocolListener: IDisposable;
 
 		constructor() {
 			this._terminating = false;
+
 			this._protocolListener = protocol.onMessage((msg) => {
 				if (isMessageOfType(msg, MessageType.Terminate)) {
 					this._terminating = true;
+
 					this._protocolListener.dispose();
+
 					onTerminate("received terminate message from renderer");
 				} else {
 					this._onMessage.fire(msg);
 				}
 			});
 		}
+
 		send(msg: any): void {
 			if (!this._terminating) {
 				protocol.send(msg);
 			}
 		}
+
 		async drain(): Promise<void> {
 			if (protocol.drain) {
 				return protocol.drain();
@@ -350,6 +391,7 @@ function connectToRenderer(
 					nativeExit(ExtensionHostExitCode.VersionMismatch);
 				}
 			}
+
 			if (initData.parentPid) {
 				// Kill oneself if one's parent dies. Much drama.
 				let epermErrors = 0;
@@ -384,6 +426,7 @@ function connectToRenderer(
 
 				try {
 					watchdog = require("native-watchdog");
+
 					watchdog.start(initData.parentPid);
 				} catch (err) {
 					// no problem...
@@ -392,6 +435,7 @@ function connectToRenderer(
 			}
 			// Tell the outside that we are initialized
 			protocol.send(createMessageOfType(MessageType.Initialized));
+
 			c({ protocol, initData });
 		});
 		// Tell the outside that we are ready to receive messages
@@ -403,6 +447,7 @@ async function startExtensionHostProcess(): Promise<void> {
 	// see https://nodejs.org/api/process.html#process_event_unhandledrejection
 	// and https://nodejs.org/api/process.html#process_event_rejectionhandled
 	const unhandledPromises: Promise<any>[] = [];
+
 	process.on("unhandledRejection", (reason: any, promise: Promise<any>) => {
 		unhandledPromises.push(promise);
 
@@ -421,6 +466,7 @@ async function startExtensionHostProcess(): Promise<void> {
 						if (e && e.stack) {
 							console.warn(`stack trace: ${e.stack}`);
 						}
+
 						if (reason) {
 							onUnexpectedError(reason);
 						}
@@ -429,6 +475,7 @@ async function startExtensionHostProcess(): Promise<void> {
 			}
 		}, 1000);
 	});
+
 	process.on("rejectionHandled", (promise: Promise<any>) => {
 		const idx = unhandledPromises.indexOf(promise);
 
@@ -442,12 +489,15 @@ async function startExtensionHostProcess(): Promise<void> {
 			onUnexpectedError(err);
 		}
 	});
+
 	performance.mark(`code/extHost/willConnectToRenderer`);
 
 	const protocol = await createExtHostProtocol();
+
 	performance.mark(`code/extHost/didConnectToRenderer`);
 
 	const renderer = await connectToRenderer(protocol);
+
 	performance.mark(`code/extHost/didWaitForInitData`);
 
 	const { initData } = renderer;
@@ -457,6 +507,7 @@ async function startExtensionHostProcess(): Promise<void> {
 		args.useHostProxy !== undefined
 			? args.useHostProxy !== "false"
 			: undefined;
+
 	initData.environment.skipWorkspaceStorageLock = boolean(
 		args.skipWorkspaceStorageLock,
 		false,
@@ -464,13 +515,17 @@ async function startExtensionHostProcess(): Promise<void> {
 	// host abstraction
 	const hostUtils = new (class NodeHost implements IHostUtils {
 		declare readonly _serviceBrand: undefined;
+
 		public readonly pid = process.pid;
+
 		exit(code: number) {
 			nativeExit(code);
 		}
+
 		fsExists(path: string) {
 			return Promises.exists(path);
 		}
+
 		fsRealpath(path: string) {
 			return realpath(path);
 		}
@@ -481,6 +536,7 @@ async function startExtensionHostProcess(): Promise<void> {
 	if (initData.remote.authority && args.transformURIs) {
 		uriTransformer = createURITransformer(initData.remote.authority);
 	}
+
 	const extensionHostMain = new ExtensionHostMain(
 		renderer.protocol,
 		initData,

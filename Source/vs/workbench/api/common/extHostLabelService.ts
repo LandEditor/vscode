@@ -13,6 +13,7 @@ import {
 
 export class ExtHostLabelService implements ExtHostLabelServiceShape {
 	private readonly _proxy: MainThreadLabelServiceShape;
+
 	private _handlePool: number = 0;
 
 	constructor(mainContext: IMainContext) {
@@ -22,6 +23,7 @@ export class ExtHostLabelService implements ExtHostLabelServiceShape {
 		formatter: ResourceLabelFormatter,
 	): IDisposable {
 		const handle = this._handlePool++;
+
 		this._proxy.$registerResourceLabelFormatter(handle, formatter);
 
 		return toDisposable(() => {

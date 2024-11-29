@@ -73,6 +73,7 @@ export interface ITestProfileService {
 	all(): Iterable<
 		Readonly<{
 			controller: IMainThreadTestController;
+
 			profiles: ITestRunProfile[];
 		}>
 	>;
@@ -118,6 +119,7 @@ const sorter = (a: ITestRunProfile, b: ITestRunProfile) => {
 	if (a.isDefault !== b.isDefault) {
 		return a.isDefault ? -1 : 1;
 	}
+
 	return a.label.localeCompare(b.label);
 };
 interface IExtendedTestRunProfile extends ITestRunProfile {
@@ -154,15 +156,20 @@ export class TestProfileService
 	implements ITestProfileService
 {
 	declare readonly _serviceBrand: undefined;
+
 	private readonly userDefaults: StoredValue<DefaultsMap>;
+
 	private readonly capabilitiesContexts: {
 		[K in TestRunProfileBitset]: IContextKey<boolean>;
 	};
+
 	private readonly changeEmitter = this._register(new Emitter<void>());
+
 	private readonly controllerProfiles = new Map<
 		/* controller ID */ string,
 		{
 			profiles: IExtendedTestRunProfile[];
+
 			controller: IMainThreadTestController;
 		}
 	>();
@@ -176,6 +183,7 @@ export class TestProfileService
 		storageService: IStorageService,
 	) {
 		super();
+
 		storageService.remove(
 			"testingPreferredProfiles",
 			StorageScope.WORKSPACE,
@@ -190,6 +198,7 @@ export class TestProfileService
 				storageService,
 			),
 		);
+
 		this.capabilitiesContexts = {
 			[TestRunProfileBitset.Run]:
 				TestingContextKeys.hasRunnableTests.bindTo(contextKeyService),
@@ -210,6 +219,7 @@ export class TestProfileService
 					contextKeyService,
 				),
 		};
+
 		this.refreshContextKeys();
 	}
 	/** @inheritdoc */
@@ -230,15 +240,19 @@ export class TestProfileService
 
 		if (record) {
 			record.profiles.push(extended);
+
 			record.profiles.sort(sorter);
 		} else {
 			record = {
 				profiles: [extended],
 				controller,
 			};
+
 			this.controllerProfiles.set(profile.controllerId, record);
 		}
+
 		this.refreshContextKeys();
+
 		this.changeEmitter.fire();
 	}
 	/** @inheritdoc */
@@ -252,6 +266,7 @@ export class TestProfileService
 		if (!ctrl) {
 			return;
 		}
+
 		const profile = ctrl.profiles.find(
 			(c) => c.controllerId === controllerId && c.profileId === profileId,
 		);
@@ -259,7 +274,9 @@ export class TestProfileService
 		if (!profile) {
 			return;
 		}
+
 		Object.assign(profile, update);
+
 		ctrl.profiles.sort(sorter);
 		// store updates is isDefault as if the user changed it (which they might
 		// have through some extension-contributed UI)
@@ -267,8 +284,10 @@ export class TestProfileService
 			const map = deepClone(this.userDefaults.get({}));
 
 			setIsDefault(map, profile, update.isDefault);
+
 			this.userDefaults.store(map);
 		}
+
 		this.changeEmitter.fire();
 	}
 	/** @inheritdoc */
@@ -284,19 +303,25 @@ export class TestProfileService
 		if (!ctrl) {
 			return;
 		}
+
 		if (!profileId) {
 			this.controllerProfiles.delete(controllerId);
+
 			this.changeEmitter.fire();
 
 			return;
 		}
+
 		const index = ctrl.profiles.findIndex((c) => c.profileId === profileId);
 
 		if (index === -1) {
 			return;
 		}
+
 		ctrl.profiles.splice(index, 1);
+
 		this.refreshContextKeys();
+
 		this.changeEmitter.fire();
 	}
 	/** @inheritdoc */
@@ -306,6 +331,7 @@ export class TestProfileService
 		if (!ctrl) {
 			return 0;
 		}
+
 		let capabilities = 0;
 
 		for (const profile of ctrl.profiles) {
@@ -316,6 +342,7 @@ export class TestProfileService
 						: profile.group;
 			}
 		}
+
 		return capabilities;
 	}
 	/** @inheritdoc */
@@ -351,6 +378,7 @@ export class TestProfileService
 				defaults.push(first);
 			}
 		}
+
 		return defaults;
 	}
 	/** @inheritdoc */
@@ -367,6 +395,7 @@ export class TestProfileService
 				if (profile.group !== group) {
 					continue;
 				}
+
 				setIsDefault(
 					next,
 					profile,
@@ -379,6 +408,7 @@ export class TestProfileService
 				if (profile.group === group) {
 					continue;
 				}
+
 				const matching = ctrl.profiles.find(
 					(p) => p.group === group && p.label === profile.label,
 				);
@@ -387,11 +417,15 @@ export class TestProfileService
 					setIsDefault(next, profile, matching.isDefault);
 				}
 			}
+
 			ctrl.profiles.sort(sorter);
 		}
+
 		this.userDefaults.store(next);
+
 		this.changeEmitter.fire();
 	}
+
 	getDefaultProfileForTest(
 		group: TestRunProfileBitset,
 		test: InternalTestItem,
@@ -400,6 +434,7 @@ export class TestProfileService
 			(p) => (p.group & group) !== 0 && canUseProfileWithTest(p, test),
 		);
 	}
+
 	private refreshContextKeys() {
 		let allCapabilities = 0;
 
@@ -409,11 +444,13 @@ export class TestProfileService
 					allCapabilities & profile.group
 						? TestRunProfileBitset.HasNonDefaultProfile
 						: profile.group;
+
 				allCapabilities |= profile.supportsContinuousRun
 					? TestRunProfileBitset.SupportsContinuousRun
 					: 0;
 			}
 		}
+
 		for (const group of testRunProfileBitsetList) {
 			this.capabilitiesContexts[group].set(
 				(allCapabilities & group) !== 0,
@@ -428,6 +465,7 @@ const setIsDefault = (
 	isDefault: boolean,
 ) => {
 	profile.isDefault = isDefault;
+
 	map[profile.controllerId] ??= {};
 
 	if (profile.isDefault !== profile.wasInitiallyDefault) {

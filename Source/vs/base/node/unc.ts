@@ -8,6 +8,7 @@ export function getUNCHostAllowlist(): string[] {
 	if (allowlist) {
 		return Array.from(allowlist);
 	}
+
 	return [];
 }
 function processUNCHostAllowlist(): Set<string> {
@@ -19,6 +20,7 @@ export function addUNCHostToAllowlist(allowedHost: string | string[]): void {
 	if (process.platform !== "win32") {
 		return;
 	}
+
 	const allowlist = processUNCHostAllowlist();
 
 	if (allowlist) {
@@ -41,6 +43,7 @@ function toSafeStringArray(arg0: unknown): string[] {
 			}
 		}
 	}
+
 	return Array.from(allowedUNCHosts);
 }
 export function getUNCHost(
@@ -49,6 +52,7 @@ export function getUNCHost(
 	if (typeof maybeUNCPath !== "string") {
 		return undefined; // require a valid string
 	}
+
 	const uncRoots = [
 		"\\\\.\\UNC\\", // DOS Device paths (https://learn.microsoft.com/en-us/dotnet/standard/io/file-path-formats)
 		"\\\\?\\UNC\\",
@@ -63,11 +67,13 @@ export function getUNCHost(
 		if (indexOfUNCRoot !== 0) {
 			continue; // not matching any of our expected UNC roots
 		}
+
 		const indexOfUNCPath = maybeUNCPath.indexOf("\\", uncRoot.length);
 
 		if (indexOfUNCPath === -1) {
 			continue; // no path component found
 		}
+
 		const hostCandidate = maybeUNCPath.substring(
 			uncRoot.length,
 			indexOfUNCPath,
@@ -79,6 +85,7 @@ export function getUNCHost(
 			break;
 		}
 	}
+
 	return host;
 }
 export function disableUNCAccessRestrictions(): void {
@@ -91,5 +98,6 @@ export function isUNCAccessRestrictionsDisabled(): boolean {
 	if (process.platform !== "win32") {
 		return true;
 	}
+
 	return (process as any).restrictUNCAccess === false;
 }

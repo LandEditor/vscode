@@ -43,8 +43,11 @@ import { ISplashStorageService } from "./splash.js";
 
 export class PartsSplash {
 	static readonly ID = "workbench.contrib.partsSplash";
+
 	private static readonly _splashElementId = "monaco-parts-splash";
+
 	private readonly _disposables = new DisposableStore();
+
 	private _didChangeTitleBarStyle?: boolean;
 
 	constructor(
@@ -66,6 +69,7 @@ export class PartsSplash {
 		Event.once(_layoutService.onDidLayoutMainContainer)(
 			() => {
 				this._removePartsSplash();
+
 				perf.mark("code/didRemovePartsSplash");
 			},
 			undefined,
@@ -81,6 +85,7 @@ export class PartsSplash {
 				2500,
 			);
 		};
+
 		lifecycleService.when(LifecyclePhase.Restored).then(() => {
 			Event.any(
 				Event.filter(
@@ -90,12 +95,15 @@ export class PartsSplash {
 				editorGroupsService.mainPart.onDidLayout,
 				_themeService.onDidColorThemeChange,
 			)(savePartsSplashSoon, undefined, this._disposables);
+
 			savePartsSplashSoon();
 		});
+
 		_configService.onDidChangeConfiguration(
 			(e) => {
 				if (e.affectsConfiguration(TitleBarSetting.TITLE_BAR_STYLE)) {
 					this._didChangeTitleBarStyle = true;
+
 					this._savePartsSplash();
 				}
 			},
@@ -103,11 +111,14 @@ export class PartsSplash {
 			this._disposables,
 		);
 	}
+
 	dispose(): void {
 		this._disposables.dispose();
 	}
+
 	private _savePartsSplash() {
 		const theme = this._themeService.getColorTheme();
+
 		this._partSplashService.saveWindowSplash({
 			zoomLevel:
 				this._configService.getValue<undefined>("window.zoomLevel"),
@@ -215,6 +226,7 @@ export class PartsSplash {
 					},
 		});
 	}
+
 	private _shouldSaveLayoutInfo(): boolean {
 		return (
 			!isFullscreen(mainWindow) &&
@@ -222,6 +234,7 @@ export class PartsSplash {
 			!this._didChangeTitleBarStyle
 		);
 	}
+
 	private _removePartsSplash(): void {
 		const element = mainWindow.document.getElementById(
 			PartsSplash._splashElementId,

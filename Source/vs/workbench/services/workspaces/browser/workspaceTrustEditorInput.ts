@@ -25,27 +25,33 @@ const WorkspaceTrustEditorIcon = registerIcon(
 
 export class WorkspaceTrustEditorInput extends EditorInput {
 	static readonly ID: string = "workbench.input.workspaceTrust";
+
 	override get capabilities(): EditorInputCapabilities {
 		return (
 			EditorInputCapabilities.Readonly | EditorInputCapabilities.Singleton
 		);
 	}
+
 	override get typeId(): string {
 		return WorkspaceTrustEditorInput.ID;
 	}
+
 	readonly resource: URI = URI.from({
 		scheme: Schemas.vscodeWorkspaceTrust,
 		path: `workspaceTrustEditor`,
 	});
+
 	override matches(otherInput: EditorInput | IUntypedEditorInput): boolean {
 		return (
 			super.matches(otherInput) ||
 			otherInput instanceof WorkspaceTrustEditorInput
 		);
 	}
+
 	override getName(): string {
 		return localize("workspaceTrustEditorInputName", "Workspace Trust");
 	}
+
 	override getIcon(): ThemeIcon {
 		return WorkspaceTrustEditorIcon;
 	}

@@ -71,6 +71,7 @@ function getLanguageServiceHost(scriptKind: ts.ScriptKind) {
 				if (fileName === currentTextDocument.uri) {
 					return scriptKind;
 				}
+
 				return fileName.substr(fileName.length - 2) === "ts"
 					? ts.ScriptKind.TS
 					: ts.ScriptKind.JS;
@@ -79,6 +80,7 @@ function getLanguageServiceHost(scriptKind: ts.ScriptKind) {
 				if (fileName === currentTextDocument.uri) {
 					return String(currentTextDocument.version);
 				}
+
 				return "1"; // default lib an jquery.d.ts are static
 			},
 			getScriptSnapshot: (fileName: string) => {
@@ -89,6 +91,7 @@ function getLanguageServiceHost(scriptKind: ts.ScriptKind) {
 				} else {
 					text = libs.loadLibrary(fileName);
 				}
+
 				return {
 					getText: (start, end) => text.substring(start, end),
 					getLength: () => text.length,
@@ -121,6 +124,7 @@ function getLanguageServiceHost(scriptKind: ts.ScriptKind) {
 				if (path.startsWith("node_modules")) {
 					return false;
 				}
+
 				return true;
 			},
 		};
@@ -170,11 +174,14 @@ export function getJavaScriptMode(
 
 	function updateHostSettings(settings: Settings) {
 		const hostSettings = host.getCompilationSettings();
+
 		hostSettings.experimentalDecorators =
 			settings?.["js/ts"]?.implicitProjectConfig?.experimentalDecorators;
+
 		hostSettings.strictNullChecks =
 			settings?.["js/ts"]?.implicitProjectConfig.strictNullChecks;
 	}
+
 	return {
 		getId() {
 			return languageId;
@@ -234,6 +241,7 @@ export function getJavaScriptMode(
 			if (!completions) {
 				return { isIncomplete: false, items: [] };
 			}
+
 			const replaceRange = convertRange(
 				jsDocument,
 				getWordAtText(jsDocument.getText(), offset, JS_WORD_REGEX),
@@ -282,12 +290,15 @@ export function getJavaScriptMode(
 
 				if (details) {
 					item.detail = ts.displayPartsToString(details.displayParts);
+
 					item.documentation = ts.displayPartsToString(
 						details.documentation,
 					);
+
 					delete item.data;
 				}
 			}
+
 			return item;
 		},
 		async doHover(
@@ -311,6 +322,7 @@ export function getJavaScriptMode(
 					contents: ["```typescript", contents, "```"].join("\n"),
 				};
 			}
+
 			return null;
 		},
 		async doSignatureHelp(
@@ -333,15 +345,18 @@ export function getJavaScriptMode(
 					activeParameter: signHelp.argumentIndex,
 					signatures: [],
 				};
+
 				signHelp.items.forEach((item) => {
 					const signature: SignatureInformation = {
 						label: "",
 						documentation: undefined,
 						parameters: [],
 					};
+
 					signature.label += ts.displayPartsToString(
 						item.prefixDisplayParts,
 					);
+
 					item.parameters.forEach((p, i, a) => {
 						const label = ts.displayPartsToString(p.displayParts);
 
@@ -351,7 +366,9 @@ export function getJavaScriptMode(
 								p.documentation,
 							),
 						};
+
 						signature.label += label;
+
 						signature.parameters!.push(parameter);
 
 						if (i < a.length - 1) {
@@ -360,14 +377,17 @@ export function getJavaScriptMode(
 							);
 						}
 					});
+
 					signature.label += ts.displayPartsToString(
 						item.suffixDisplayParts,
 					);
+
 					ret.signatures.push(signature);
 				});
 
 				return ret;
 			}
+
 			return null;
 		},
 		async doRename(
@@ -389,6 +409,7 @@ export function getJavaScriptMode(
 			if (!canRename) {
 				return null;
 			}
+
 			const renameInfos = jsLanguageService.findRenameLocations(
 				jsDocument.uri,
 				jsDocumentPosition,
@@ -397,6 +418,7 @@ export function getJavaScriptMode(
 			);
 
 			const edits: TextEdit[] = [];
+
 			renameInfos?.map((renameInfo) => {
 				edits.push({
 					range: convertRange(jsDocument, renameInfo.textSpan),
@@ -435,6 +457,7 @@ export function getJavaScriptMode(
 					});
 				}
 			}
+
 			return out;
 		},
 		async findDocumentSymbols(
@@ -469,20 +492,26 @@ export function getJavaScriptMode(
 							},
 							containerName: containerLabel,
 						};
+
 						existing[sig] = true;
+
 						result.push(symbol);
+
 						containerLabel = item.text;
 					}
+
 					if (item.childItems && item.childItems.length > 0) {
 						for (const child of item.childItems) {
 							collectSymbols(child, containerLabel);
 						}
 					}
 				};
+
 				items.forEach((item) => collectSymbols(item));
 
 				return result;
 			}
+
 			return [];
 		},
 		async findDefinition(
@@ -508,6 +537,7 @@ export function getJavaScriptMode(
 						};
 					});
 			}
+
 			return null;
 		},
 		async findReferences(
@@ -533,6 +563,7 @@ export function getJavaScriptMode(
 						};
 					});
 			}
+
 			return [];
 		},
 		async getSelectionRange(
@@ -555,6 +586,7 @@ export function getJavaScriptMode(
 					parent,
 				);
 			}
+
 			const range = jsLanguageService.getSmartSelectionRange(
 				jsDocument.uri,
 				jsDocument.offsetAt(position),
@@ -608,11 +640,13 @@ export function getJavaScriptMode(
 					))
 			) {
 				end -= range.end.character;
+
 				lastLineRange = Range.create(
 					Position.create(range.end.line, 0),
 					range.end,
 				);
 			}
+
 			const edits = jsLanguageService.getFormattingEditsForRange(
 				jsDocument.uri,
 				start,
@@ -634,6 +668,7 @@ export function getJavaScriptMode(
 						});
 					}
 				}
+
 				if (lastLineRange) {
 					result.push({
 						range: lastLineRange,
@@ -643,8 +678,10 @@ export function getJavaScriptMode(
 						),
 					});
 				}
+
 				return result;
 			}
+
 			return [];
 		},
 		async getFoldingRanges(
@@ -677,9 +714,11 @@ export function getJavaScriptMode(
 							? FoldingRangeKind.Region
 							: FoldingRangeKind.Comment;
 					}
+
 					ranges.push(foldingRange);
 				}
 			}
+
 			return ranges;
 		},
 		onDocumentRemoved(document: TextDocument) {
@@ -702,12 +741,14 @@ export function getJavaScriptMode(
 		},
 		getSemanticTokenLegend(): {
 			types: string[];
+
 			modifiers: string[];
 		} {
 			return getSemanticTokenLegend();
 		},
 		dispose() {
 			host.dispose();
+
 			jsDocuments.dispose();
 		},
 	};
@@ -716,6 +757,7 @@ function convertRange(
 	document: TextDocument,
 	span: {
 		start: number | undefined;
+
 		length: number | undefined;
 	},
 ): Range {
@@ -724,6 +766,7 @@ function convertRange(
 
 		return Range.create(pos, pos);
 	}
+
 	const startPosition = document.positionAt(span.start);
 
 	const endPosition = document.positionAt(span.start + (span.length || 0));
@@ -998,8 +1041,10 @@ function computeInitialIndent(
 		} else {
 			break;
 		}
+
 		i++;
 	}
+
 	return Math.floor(nChars / tabSize);
 }
 function generateIndent(level: number, options: FormattingOptions) {

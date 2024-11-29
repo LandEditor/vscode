@@ -59,24 +59,33 @@ export abstract class AbstractDiskFileSystemProvider
 	) {
 		super();
 	}
+
 	protected readonly _onDidChangeFile = this._register(
 		new Emitter<readonly IFileChange[]>(),
 	);
+
 	readonly onDidChangeFile = this._onDidChangeFile.event;
+
 	protected readonly _onDidWatchError = this._register(new Emitter<string>());
+
 	readonly onDidWatchError = this._onDidWatchError.event;
+
 	watch(resource: URI, opts: IWatchOptions): IDisposable {
 		if (opts.recursive || this.options?.watcher?.forceUniversal) {
 			return this.watchUniversal(resource, opts);
 		}
+
 		return this.watchNonRecursive(resource, opts);
 	}
 	//#region File Watching (universal)
 	private universalWatcher: AbstractUniversalWatcherClient | undefined;
+
 	private readonly universalWatchRequests: IUniversalWatchRequest[] = [];
+
 	private readonly universalWatchRequestDelayer = this._register(
 		new ThrottledDelayer<void>(0),
 	);
+
 	private watchUniversal(resource: URI, opts: IWatchOptions): IDisposable {
 		const request = this.toWatchRequest(resource, opts);
 
@@ -91,6 +100,7 @@ export abstract class AbstractDiskFileSystemProvider
 			this.refreshUniversalWatchers();
 		});
 	}
+
 	private toWatchRequest(
 		resource: URI,
 		opts: IWatchOptions,
@@ -119,8 +129,10 @@ export abstract class AbstractDiskFileSystemProvider
 				}
 			}
 		}
+
 		return request;
 	}
+
 	private refreshUniversalWatchers(): void {
 		// Buffer requests for universal watching to decide on right watcher
 		// that supports potentially watching more than one path at once
@@ -130,6 +142,7 @@ export abstract class AbstractDiskFileSystemProvider
 			})
 			.catch((error) => onUnexpectedError(error));
 	}
+
 	private doRefreshUniversalWatchers(): Promise<void> {
 		// Create watcher if this is the first time
 		if (!this.universalWatcher) {
@@ -153,6 +166,7 @@ export abstract class AbstractDiskFileSystemProvider
 		// Ask to watch the provided paths
 		return this.universalWatcher.watch(this.universalWatchRequests);
 	}
+
 	protected abstract createUniversalWatcher(
 		onChange: (changes: IFileChange[]) => void,
 		onLogMessage: (msg: ILogMessage) => void,
@@ -161,11 +175,14 @@ export abstract class AbstractDiskFileSystemProvider
 	//#endregion
 	//#region File Watching (non-recursive)
 	private nonRecursiveWatcher: AbstractNonRecursiveWatcherClient | undefined;
+
 	private readonly nonRecursiveWatchRequests: INonRecursiveWatchRequest[] =
 		[];
+
 	private readonly nonRecursiveWatchRequestDelayer = this._register(
 		new ThrottledDelayer<void>(0),
 	);
+
 	private watchNonRecursive(resource: URI, opts: IWatchOptions): IDisposable {
 		// Add to list of paths to watch non-recursively
 		const request: INonRecursiveWatchRequest = {
@@ -188,6 +205,7 @@ export abstract class AbstractDiskFileSystemProvider
 			this.refreshNonRecursiveWatchers();
 		});
 	}
+
 	private refreshNonRecursiveWatchers(): void {
 		// Buffer requests for nonrecursive watching to decide on right watcher
 		// that supports potentially watching more than one path at once
@@ -197,6 +215,7 @@ export abstract class AbstractDiskFileSystemProvider
 			})
 			.catch((error) => onUnexpectedError(error));
 	}
+
 	private doRefreshNonRecursiveWatchers(): Promise<void> {
 		// Create watcher if this is the first time
 		if (!this.nonRecursiveWatcher) {
@@ -220,6 +239,7 @@ export abstract class AbstractDiskFileSystemProvider
 		// Ask to watch the provided paths
 		return this.nonRecursiveWatcher.watch(this.nonRecursiveWatchRequests);
 	}
+
 	protected abstract createNonRecursiveWatcher(
 		onChange: (changes: IFileChange[]) => void,
 		onLogMessage: (msg: ILogMessage) => void,
@@ -230,14 +250,18 @@ export abstract class AbstractDiskFileSystemProvider
 		if (msg.type === "error") {
 			this._onDidWatchError.fire(msg.message);
 		}
+
 		this.logWatcherMessage(msg);
 	}
+
 	protected logWatcherMessage(msg: ILogMessage): void {
 		this.logService[msg.type](msg.message);
 	}
+
 	protected toFilePath(resource: URI): string {
 		return normalize(resource.fsPath);
 	}
+
 	private toWatchPath(resource: URI): string {
 		const filePath = this.toFilePath(resource);
 		// Ensure to have any trailing path separators removed, otherwise

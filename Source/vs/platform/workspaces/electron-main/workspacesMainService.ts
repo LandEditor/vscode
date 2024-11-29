@@ -55,8 +55,10 @@ export class WorkspacesMainService
 				path,
 			);
 		}
+
 		return undefined;
 	}
+
 	createUntitledWorkspace(
 		windowId: number,
 		folders?: IWorkspaceFolderCreationData[],
@@ -67,6 +69,7 @@ export class WorkspacesMainService
 			remoteAuthority,
 		);
 	}
+
 	deleteUntitledWorkspace(
 		windowId: number,
 		workspace: IWorkspaceIdentifier,
@@ -75,6 +78,7 @@ export class WorkspacesMainService
 			workspace,
 		);
 	}
+
 	getWorkspaceIdentifier(
 		windowId: number,
 		workspacePath: URI,
@@ -91,12 +95,15 @@ export class WorkspacesMainService
 	getRecentlyOpened(windowId: number): Promise<IRecentlyOpened> {
 		return this.workspacesHistoryMainService.getRecentlyOpened();
 	}
+
 	addRecentlyOpened(windowId: number, recents: IRecent[]): Promise<void> {
 		return this.workspacesHistoryMainService.addRecentlyOpened(recents);
 	}
+
 	removeRecentlyOpened(windowId: number, paths: URI[]): Promise<void> {
 		return this.workspacesHistoryMainService.removeRecentlyOpened(paths);
 	}
+
 	clearRecentlyOpened(windowId: number): Promise<void> {
 		return this.workspacesHistoryMainService.clearRecentlyOpened();
 	}

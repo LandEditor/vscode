@@ -47,6 +47,7 @@ class ExtHostOutputChannel
 	implements vscode.LogOutputChannel
 {
 	private offset: number = 0;
+
 	public visible: boolean = false;
 
 	constructor(
@@ -57,40 +58,54 @@ class ExtHostOutputChannel
 		readonly extension: IExtensionDescription,
 	) {
 		super();
+
 		this.setLevel(logger.getLevel());
+
 		this._register(
 			logger.onDidChangeLogLevel((level) => this.setLevel(level)),
 		);
+
 		this._register(toDisposable(() => this.proxy.$dispose(this.id)));
 	}
+
 	get logLevel(): LogLevel {
 		return this.getLevel();
 	}
+
 	appendLine(value: string): void {
 		this.append(value + "\n");
 	}
+
 	append(value: string): void {
 		this.info(value);
 	}
+
 	clear(): void {
 		const till = this.offset;
+
 		this.logger.flush();
+
 		this.proxy.$update(this.id, OutputChannelUpdateMode.Clear, till);
 	}
+
 	replace(value: string): void {
 		const till = this.offset;
+
 		this.info(value);
+
 		this.proxy.$update(this.id, OutputChannelUpdateMode.Replace, till);
 
 		if (this.visible) {
 			this.logger.flush();
 		}
 	}
+
 	show(
 		columnOrPreserveFocus?: vscode.ViewColumn | boolean,
 		preserveFocus?: boolean,
 	): void {
 		this.logger.flush();
+
 		this.proxy.$reveal(
 			this.id,
 			!!(typeof columnOrPreserveFocus === "boolean"
@@ -98,15 +113,19 @@ class ExtHostOutputChannel
 				: preserveFocus),
 		);
 	}
+
 	hide(): void {
 		this.proxy.$close(this.id);
 	}
+
 	protected log(level: LogLevel, message: string): void {
 		this.offset += VSBuffer.fromString(message).byteLength;
+
 		log(this.logger, level, message);
 
 		if (this.visible) {
 			this.logger.flush();
+
 			this.proxy.$update(this.id, OutputChannelUpdateMode.Append);
 		}
 	}
@@ -118,18 +137,25 @@ class ExtHostLogOutputChannel extends ExtHostOutputChannel {
 }
 export class ExtHostOutputService implements ExtHostOutputServiceShape {
 	readonly _serviceBrand: undefined;
+
 	private readonly proxy: MainThreadOutputServiceShape;
+
 	private readonly outputsLocation: URI;
+
 	private outputDirectoryPromise: Thenable<URI> | undefined;
+
 	private readonly extensionLogDirectoryPromise = new Map<
 		string,
 		Thenable<URI>
 	>();
+
 	private namePool: number = 1;
+
 	private readonly channels = new Map<
 		string,
 		ExtHostLogOutputChannel | ExtHostOutputChannel
 	>();
+
 	private visibleChannelId: string | null = null;
 
 	constructor(
@@ -147,6 +173,7 @@ export class ExtHostOutputService implements ExtHostOutputServiceShape {
 		private readonly logService: ILogService,
 	) {
 		this.proxy = extHostRpc.getProxy(MainContext.MainThreadOutputService);
+
 		this.outputsLocation = this.extHostFileSystemInfo.extUri.joinPath(
 			initData.logsLocation,
 			`output_logging_${toLocalISOString(new Date()).replace(/-|:|\.\d+Z$/g, "")}`,
@@ -159,6 +186,7 @@ export class ExtHostOutputService implements ExtHostOutputServiceShape {
 			channel.visible = id === this.visibleChannelId;
 		}
 	}
+
 	createOutputChannel(
 		name: string,
 		options:
@@ -174,6 +202,7 @@ export class ExtHostOutputService implements ExtHostOutputServiceShape {
 		if (!name) {
 			throw new Error("illegal argument `name`. must not be falsy");
 		}
+
 		const log = typeof options === "object" && options.log;
 
 		const languageId = isString(options) ? options : undefined;
@@ -181,6 +210,7 @@ export class ExtHostOutputService implements ExtHostOutputServiceShape {
 		if (isString(languageId) && !languageId.trim()) {
 			throw new Error("illegal argument `languageId`. must not be empty");
 		}
+
 		let logLevel: LogLevel | undefined;
 
 		const logLevelValue = this.initData.environment.extensionLogLevel?.find(
@@ -191,6 +221,7 @@ export class ExtHostOutputService implements ExtHostOutputServiceShape {
 		if (logLevelValue) {
 			logLevel = parseLogLevel(logLevelValue);
 		}
+
 		const channelDisposables = new DisposableStore();
 
 		const extHostOutputChannel = log
@@ -206,9 +237,12 @@ export class ExtHostOutputService implements ExtHostOutputServiceShape {
 					extension,
 					channelDisposables,
 				);
+
 		extHostOutputChannel.then((channel) => {
 			this.channels.set(channel.id, channel);
+
 			channel.visible = channel.id === this.visibleChannelId;
+
 			channelDisposables.add(
 				toDisposable(() => this.channels.delete(channel.id)),
 			);
@@ -227,6 +261,7 @@ export class ExtHostOutputService implements ExtHostOutputServiceShape {
 					channelDisposables,
 				);
 	}
+
 	private async doCreateOutputChannel(
 		name: string,
 		languageId: string | undefined,
@@ -238,6 +273,7 @@ export class ExtHostOutputService implements ExtHostOutputServiceShape {
 				.createDirectory(this.outputsLocation)
 				.then(() => this.outputsLocation);
 		}
+
 		const outputDir = await this.outputDirectoryPromise;
 
 		const file = this.extHostFileSystemInfo.extUri.joinPath(
@@ -260,6 +296,7 @@ export class ExtHostOutputService implements ExtHostOutputServiceShape {
 			languageId,
 			extension.identifier.value,
 		);
+
 		channelDisposables.add(
 			toDisposable(() => this.loggerService.deregisterLogger(file)),
 		);
@@ -272,6 +309,7 @@ export class ExtHostOutputService implements ExtHostOutputServiceShape {
 			extension,
 		);
 	}
+
 	private async doCreateLogOutputChannel(
 		name: string,
 		logLevel: LogLevel | undefined,
@@ -298,6 +336,7 @@ export class ExtHostOutputService implements ExtHostOutputServiceShape {
 				extensionId: extension.identifier.value,
 			}),
 		);
+
 		channelDisposables.add(
 			toDisposable(() => this.loggerService.deregisterLogger(file)),
 		);
@@ -310,6 +349,7 @@ export class ExtHostOutputService implements ExtHostOutputServiceShape {
 			extension,
 		);
 	}
+
 	private createExtensionLogDirectory(
 		extension: IExtensionDescription,
 	): Thenable<URI> {
@@ -322,6 +362,7 @@ export class ExtHostOutputService implements ExtHostOutputServiceShape {
 					this.initData.logsLocation,
 					extension.identifier.value,
 				);
+
 			this.extensionLogDirectoryPromise.set(
 				extension.identifier.value,
 				(extensionLogDirectoryPromise = (async () => {
@@ -337,12 +378,15 @@ export class ExtHostOutputService implements ExtHostOutputServiceShape {
 							throw err;
 						}
 					}
+
 					return extensionLogDirectory;
 				})()),
 			);
 		}
+
 		return extensionLogDirectoryPromise;
 	}
+
 	private createExtHostOutputChannel(
 		name: string,
 		channelPromise: Promise<ExtHostOutputChannel>,
@@ -353,6 +397,7 @@ export class ExtHostOutputService implements ExtHostOutputServiceShape {
 				throw new Error("Channel has been closed");
 			}
 		};
+
 		channelPromise.then((channel) => channelDisposables.add(channel));
 
 		return {
@@ -361,18 +406,22 @@ export class ExtHostOutputService implements ExtHostOutputServiceShape {
 			},
 			append(value: string): void {
 				validate();
+
 				channelPromise.then((channel) => channel.append(value));
 			},
 			appendLine(value: string): void {
 				validate();
+
 				channelPromise.then((channel) => channel.appendLine(value));
 			},
 			clear(): void {
 				validate();
+
 				channelPromise.then((channel) => channel.clear());
 			},
 			replace(value: string): void {
 				validate();
+
 				channelPromise.then((channel) => channel.replace(value));
 			},
 			show(
@@ -380,12 +429,14 @@ export class ExtHostOutputService implements ExtHostOutputServiceShape {
 				preserveFocus?: boolean,
 			): void {
 				validate();
+
 				channelPromise.then((channel) =>
 					channel.show(columnOrPreserveFocus, preserveFocus),
 				);
 			},
 			hide(): void {
 				validate();
+
 				channelPromise.then((channel) => channel.hide());
 			},
 			dispose(): void {
@@ -393,6 +444,7 @@ export class ExtHostOutputService implements ExtHostOutputServiceShape {
 			},
 		};
 	}
+
 	private createExtHostLogOutputChannel(
 		name: string,
 		logLevel: LogLevel,
@@ -411,12 +463,15 @@ export class ExtHostOutputService implements ExtHostOutputServiceShape {
 
 		function setLogLevel(newLogLevel: LogLevel): void {
 			logLevel = newLogLevel;
+
 			onDidChangeLogLevel.fire(newLogLevel);
 		}
+
 		channelPromise.then((channel) => {
 			if (channel.logLevel !== logLevel) {
 				setLogLevel(channel.logLevel);
 			}
+
 			channelDisposables.add(
 				channel.onDidChangeLogLevel((e) => setLogLevel(e)),
 			);
@@ -434,22 +489,27 @@ export class ExtHostOutputService implements ExtHostOutputServiceShape {
 			onDidChangeLogLevel: onDidChangeLogLevel.event,
 			trace(value: string, ...args: any[]): void {
 				validate();
+
 				channelPromise.then((channel) => channel.trace(value, ...args));
 			},
 			debug(value: string, ...args: any[]): void {
 				validate();
+
 				channelPromise.then((channel) => channel.debug(value, ...args));
 			},
 			info(value: string, ...args: any[]): void {
 				validate();
+
 				channelPromise.then((channel) => channel.info(value, ...args));
 			},
 			warn(value: string, ...args: any[]): void {
 				validate();
+
 				channelPromise.then((channel) => channel.warn(value, ...args));
 			},
 			error(value: Error | string, ...args: any[]): void {
 				validate();
+
 				channelPromise.then((channel) => channel.error(value, ...args));
 			},
 		};

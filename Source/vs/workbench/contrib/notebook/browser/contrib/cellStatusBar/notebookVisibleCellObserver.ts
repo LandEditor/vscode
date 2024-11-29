@@ -14,34 +14,43 @@ import { ICellViewModel, INotebookEditor } from "../../notebookBrowser.js";
 
 export interface ICellVisibilityChangeEvent {
 	added: ICellViewModel[];
+
 	removed: ICellViewModel[];
 }
 export class NotebookVisibleCellObserver extends Disposable {
 	private readonly _onDidChangeVisibleCells = this._register(
 		new Emitter<ICellVisibilityChangeEvent>(),
 	);
+
 	readonly onDidChangeVisibleCells = this._onDidChangeVisibleCells.event;
+
 	private readonly _viewModelDisposables = this._register(
 		new DisposableStore(),
 	);
+
 	private _visibleCells: ICellViewModel[] = [];
 
 	get visibleCells(): ICellViewModel[] {
 		return this._visibleCells;
 	}
+
 	constructor(private readonly _notebookEditor: INotebookEditor) {
 		super();
+
 		this._register(
 			this._notebookEditor.onDidChangeVisibleRanges(
 				this._updateVisibleCells,
 				this,
 			),
 		);
+
 		this._register(
 			this._notebookEditor.onDidChangeModel(this._onModelChange, this),
 		);
+
 		this._updateVisibleCells();
 	}
+
 	private _onModelChange() {
 		this._viewModelDisposables.clear();
 
@@ -52,20 +61,26 @@ export class NotebookVisibleCellObserver extends Disposable {
 				),
 			);
 		}
+
 		this.updateEverything();
 	}
+
 	protected updateEverything(): void {
 		this._onDidChangeVisibleCells.fire({
 			added: [],
 			removed: Array.from(this._visibleCells),
 		});
+
 		this._visibleCells = [];
+
 		this._updateVisibleCells();
 	}
+
 	private _updateVisibleCells(): void {
 		if (!this._notebookEditor.hasModel()) {
 			return;
 		}
+
 		const newVisibleCells = cellRangesToIndexes(
 			this._notebookEditor.visibleRanges,
 		)
@@ -89,7 +104,9 @@ export class NotebookVisibleCellObserver extends Disposable {
 		const removed = diff.removed
 			.map((handle) => this._notebookEditor.getCellByHandle(handle))
 			.filter(isDefined);
+
 		this._visibleCells = newVisibleCells;
+
 		this._onDidChangeVisibleCells.fire({
 			added,
 			removed,

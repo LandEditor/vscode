@@ -18,14 +18,18 @@ import { CHAT_PROVIDER_ID } from "./chatParticipantContribTypes.js";
 
 export interface IChatHistoryEntry {
 	text: string;
+
 	state?: IChatInputState;
 }
 /** The collected input state of ChatWidget contribs + attachments */
 export interface IChatInputState {
 	[key: string]: any;
+
 	chatContextAttachments?: ReadonlyArray<IChatRequestVariableEntry>;
+
 	chatWorkingSet?: ReadonlyArray<{
 		uri: URI;
+
 		state: WorkingSetEntryState;
 	}>;
 }
@@ -34,10 +38,13 @@ export const IChatWidgetHistoryService =
 
 export interface IChatWidgetHistoryService {
 	_serviceBrand: undefined;
+
 	readonly onDidClearHistory: Event<void>;
+
 	clearHistory(): void;
 
 	getHistory(location: ChatAgentLocation): IChatHistoryEntry[];
+
 	saveHistory(
 		location: ChatAgentLocation,
 		history: IChatHistoryEntry[],
@@ -50,9 +57,13 @@ interface IChatHistory {
 }
 export class ChatWidgetHistoryService implements IChatWidgetHistoryService {
 	_serviceBrand: undefined;
+
 	private memento: Memento;
+
 	private viewState: IChatHistory;
+
 	private readonly _onDidClearHistory = new Emitter<void>();
+
 	readonly onDidClearHistory: Event<void> = this._onDidClearHistory.event;
 
 	constructor(
@@ -73,19 +84,23 @@ export class ChatWidgetHistoryService implements IChatWidgetHistoryService {
 					typeof entry === "string" ? { text: entry } : entry,
 			);
 		}
+
 		this.viewState = loadedState;
 	}
+
 	getHistory(location: ChatAgentLocation): IChatHistoryEntry[] {
 		const key = this.getKey(location);
 
 		return this.viewState.history?.[key] ?? [];
 	}
+
 	private getKey(location: ChatAgentLocation): string {
 		// Preserve history for panel by continuing to use the same old provider id. Use the location as a key for other chat locations.
 		return location === ChatAgentLocation.Panel
 			? CHAT_PROVIDER_ID
 			: location;
 	}
+
 	saveHistory(
 		location: ChatAgentLocation,
 		history: IChatHistoryEntry[],
@@ -93,13 +108,19 @@ export class ChatWidgetHistoryService implements IChatWidgetHistoryService {
 		if (!this.viewState.history) {
 			this.viewState.history = {};
 		}
+
 		const key = this.getKey(location);
+
 		this.viewState.history[key] = history;
+
 		this.memento.saveMemento();
 	}
+
 	clearHistory(): void {
 		this.viewState.history = {};
+
 		this.memento.saveMemento();
+
 		this._onDidClearHistory.fire();
 	}
 }

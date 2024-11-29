@@ -42,9 +42,11 @@ export const IThemeMainService =
 
 export interface IThemeMainService {
 	readonly _serviceBrand: undefined;
+
 	readonly onDidChangeColorScheme: Event<IColorScheme>;
 
 	getBackgroundColor(): string;
+
 	saveWindowSplash(windowId: number | undefined, splash: IPartsSplash): void;
 
 	getWindowSplash(): IPartsSplash | undefined;
@@ -53,9 +55,11 @@ export interface IThemeMainService {
 }
 export class ThemeMainService extends Disposable implements IThemeMainService {
 	declare readonly _serviceBrand: undefined;
+
 	private readonly _onDidChangeColorScheme = this._register(
 		new Emitter<IColorScheme>(),
 	);
+
 	readonly onDidChangeColorScheme = this._onDidChangeColorScheme.event;
 
 	constructor(
@@ -82,6 +86,7 @@ export class ThemeMainService extends Disposable implements IThemeMainService {
 				}),
 			);
 		}
+
 		this.updateSystemColorTheme();
 		// Color Scheme changes
 		this._register(
@@ -91,6 +96,7 @@ export class ThemeMainService extends Disposable implements IThemeMainService {
 			)(() => this._onDidChangeColorScheme.fire(this.getColorScheme())),
 		);
 	}
+
 	private updateSystemColorTheme(): void {
 		if (
 			isLinux ||
@@ -131,6 +137,7 @@ export class ThemeMainService extends Disposable implements IThemeMainService {
 						default:
 							electron.nativeTheme.themeSource = "system";
 					}
+
 					break;
 
 				default:
@@ -140,6 +147,7 @@ export class ThemeMainService extends Disposable implements IThemeMainService {
 			}
 		}
 	}
+
 	getColorScheme(): IColorScheme {
 		if (isWindows) {
 			// high contrast is refelected by the shouldUseInvertedColorScheme property
@@ -167,11 +175,13 @@ export class ThemeMainService extends Disposable implements IThemeMainService {
 				return { dark: true, highContrast: true };
 			}
 		}
+
 		return {
 			dark: electron.nativeTheme.shouldUseDarkColors,
 			highContrast: false,
 		};
 	}
+
 	getBackgroundColor(): string {
 		const colorScheme = this.getColorScheme();
 
@@ -181,6 +191,7 @@ export class ThemeMainService extends Disposable implements IThemeMainService {
 		) {
 			return colorScheme.dark ? DEFAULT_BG_HC_BLACK : DEFAULT_BG_HC_LIGHT;
 		}
+
 		let background = this.stateService.getItem<string | null>(
 			THEME_BG_STORAGE_KEY,
 			null,
@@ -207,8 +218,10 @@ export class ThemeMainService extends Disposable implements IThemeMainService {
 					background = DEFAULT_BG_DARK;
 			}
 		}
+
 		return background;
 	}
+
 	private getBaseTheme(): "vs" | "vs-dark" | "hc-black" | "hc-light" {
 		const baseTheme = this.stateService
 			.getItem<string>(THEME_STORAGE_KEY, "vs-dark")
@@ -228,6 +241,7 @@ export class ThemeMainService extends Disposable implements IThemeMainService {
 				return "vs-dark";
 		}
 	}
+
 	saveWindowSplash(windowId: number | undefined, splash: IPartsSplash): void {
 		// Update in storage
 		this.stateService.setItems([
@@ -242,6 +256,7 @@ export class ThemeMainService extends Disposable implements IThemeMainService {
 		// Update system theme
 		this.updateSystemColorTheme();
 	}
+
 	private updateBackgroundColor(
 		windowId: number,
 		splash: IPartsSplash,
@@ -254,6 +269,7 @@ export class ThemeMainService extends Disposable implements IThemeMainService {
 			}
 		}
 	}
+
 	getWindowSplash(): IPartsSplash | undefined {
 		return this.stateService.getItem<IPartsSplash>(THEME_WINDOW_SPLASH);
 	}

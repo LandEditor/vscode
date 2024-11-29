@@ -29,11 +29,15 @@ import {
 
 interface ILanguagePack {
 	hash: string;
+
 	label: string | undefined;
+
 	extensions: {
 		extensionIdentifier: IExtensionIdentifier;
+
 		version: string;
 	}[];
+
 	translations: {
 		[id: string]: string;
 	};
@@ -52,9 +56,11 @@ export class NativeLanguagePackService extends LanguagePackBaseService {
 		private readonly logService: ILogService,
 	) {
 		super(extensionGalleryService);
+
 		this.cache = this._register(
 			new LanguagePacksCache(environmentService, logService),
 		);
+
 		this.extensionManagementService.registerParticipant({
 			postInstall: async (extension: ILocalExtension): Promise<void> => {
 				return this.postInstallExtension(extension);
@@ -66,6 +72,7 @@ export class NativeLanguagePackService extends LanguagePackBaseService {
 			},
 		});
 	}
+
 	async getBuiltInExtensionTranslationsUri(
 		id: string,
 		language: string,
@@ -79,10 +86,12 @@ export class NativeLanguagePackService extends LanguagePackBaseService {
 
 			return undefined;
 		}
+
 		const translation = pack.translations[id];
 
 		return translation ? URI.file(translation) : undefined;
 	}
+
 	async getInstalledLanguages(): Promise<Array<ILanguagePackItem>> {
 		const languagePacks = await this.cache.getLanguagePacks();
 
@@ -102,11 +111,14 @@ export class NativeLanguagePackService extends LanguagePackBaseService {
 				};
 			},
 		);
+
 		languages.push(this.createQuickPickItem("en", "English"));
+
 		languages.sort((a, b) => a.label.localeCompare(b.label));
 
 		return languages;
 	}
+
 	private async postInstallExtension(
 		extension: ILocalExtension,
 	): Promise<void> {
@@ -121,9 +133,11 @@ export class NativeLanguagePackService extends LanguagePackBaseService {
 				"Adding language packs from the extension",
 				extension.identifier.id,
 			);
+
 			await this.update();
 		}
 	}
+
 	private async postUninstallExtension(
 		extension: ILocalExtension,
 	): Promise<void> {
@@ -145,9 +159,11 @@ export class NativeLanguagePackService extends LanguagePackBaseService {
 				"Removing language packs from the extension",
 				extension.identifier.id,
 			);
+
 			await this.update();
 		}
 	}
+
 	async update(): Promise<boolean> {
 		const [current, installed] = await Promise.all([
 			this.cache.getLanguagePacks(),
@@ -163,8 +179,11 @@ class LanguagePacksCache extends Disposable {
 	private languagePacks: {
 		[language: string]: ILanguagePack;
 	} = {};
+
 	private languagePacksFilePath: string;
+
 	private languagePacksFileLimiter: Queue<any>;
+
 	private initializedCache: boolean | undefined;
 
 	constructor(
@@ -174,12 +193,15 @@ class LanguagePacksCache extends Disposable {
 		private readonly logService: ILogService,
 	) {
 		super();
+
 		this.languagePacksFilePath = join(
 			environmentService.userDataPath,
 			"languagepacks.json",
 		);
+
 		this.languagePacksFileLimiter = new Queue();
 	}
+
 	getLanguagePacks(): Promise<{
 		[language: string]: ILanguagePack;
 	}> {
@@ -187,8 +209,10 @@ class LanguagePacksCache extends Disposable {
 		if (this.languagePacksFileLimiter.size || !this.initializedCache) {
 			return this.withLanguagePacks().then(() => this.languagePacks);
 		}
+
 		return Promise.resolve(this.languagePacks);
 	}
+
 	update(extensions: ILocalExtension[]): Promise<{
 		[language: string]: ILanguagePack;
 	}> {
@@ -196,12 +220,14 @@ class LanguagePacksCache extends Disposable {
 			Object.keys(languagePacks).forEach(
 				(language) => delete languagePacks[language],
 			);
+
 			this.createLanguagePacksFromExtensions(
 				languagePacks,
 				...extensions,
 			);
 		}).then(() => this.languagePacks);
 	}
+
 	private createLanguagePacksFromExtensions(
 		languagePacks: {
 			[language: string]: ILanguagePack;
@@ -219,10 +245,12 @@ class LanguagePacksCache extends Disposable {
 				this.createLanguagePacksFromExtension(languagePacks, extension);
 			}
 		}
+
 		Object.keys(languagePacks).forEach((languageId) =>
 			this.updateHash(languagePacks[languageId]),
 		);
 	}
+
 	private createLanguagePacksFromExtension(
 		languagePacks: {
 			[language: string]: ILanguagePack;
@@ -254,9 +282,11 @@ class LanguagePacksCache extends Disposable {
 							localizationContribution.localizedLanguageName ??
 							localizationContribution.languageName,
 					};
+
 					languagePacks[localizationContribution.languageId] =
 						languagePack;
 				}
+
 				const extensionInLanguagePack = languagePack.extensions.filter(
 					(e) =>
 						areSameExtensions(
@@ -274,6 +304,7 @@ class LanguagePacksCache extends Disposable {
 						version: extension.manifest.version,
 					});
 				}
+
 				for (const translation of localizationContribution.translations) {
 					languagePack.translations[translation.id] = join(
 						extension.location.fsPath,
@@ -283,6 +314,7 @@ class LanguagePacksCache extends Disposable {
 			}
 		}
 	}
+
 	private updateHash(languagePack: ILanguagePack): void {
 		if (languagePack) {
 			const md5 = createHash("md5"); // CodeQL [SM04514] Used to create an hash for language pack extension version, which is not a security issue
@@ -292,9 +324,11 @@ class LanguagePacksCache extends Disposable {
 						extension.extensionIdentifier.id,
 				).update(extension.version); // CodeQL [SM01510] The extension UUID is not sensitive info and is not manually created by a user
 			}
+
 			languagePack.hash = md5.digest("hex");
 		}
 	}
+
 	private withLanguagePacks<T>(
 		fn: (languagePacks: {
 			[language: string]: ILanguagePack;
@@ -321,6 +355,7 @@ class LanguagePacksCache extends Disposable {
 				})
 				.then((languagePacks) => {
 					result = fn(languagePacks);
+
 					return languagePacks;
 				})
 				.then((languagePacks) => {
@@ -329,10 +364,13 @@ class LanguagePacksCache extends Disposable {
 							delete languagePacks[language];
 						}
 					}
+
 					this.languagePacks = languagePacks;
+
 					this.initializedCache = true;
 
 					const raw = JSON.stringify(this.languagePacks);
+
 					this.logService.debug("Writing language packs", raw);
 
 					return Promises.writeFile(this.languagePacksFilePath, raw);
@@ -348,31 +386,37 @@ function isValidLocalization(localization: ILocalizationContribution): boolean {
 	if (typeof localization.languageId !== "string") {
 		return false;
 	}
+
 	if (
 		!Array.isArray(localization.translations) ||
 		localization.translations.length === 0
 	) {
 		return false;
 	}
+
 	for (const translation of localization.translations) {
 		if (typeof translation.id !== "string") {
 			return false;
 		}
+
 		if (typeof translation.path !== "string") {
 			return false;
 		}
 	}
+
 	if (
 		localization.languageName &&
 		typeof localization.languageName !== "string"
 	) {
 		return false;
 	}
+
 	if (
 		localization.localizedLanguageName &&
 		typeof localization.localizedLanguageName !== "string"
 	) {
 		return false;
 	}
+
 	return true;
 }

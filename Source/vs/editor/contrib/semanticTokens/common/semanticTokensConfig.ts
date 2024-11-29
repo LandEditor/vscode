@@ -25,5 +25,6 @@ export function isSemanticColoringEnabled(
 	if (typeof setting === "boolean") {
 		return setting;
 	}
+
 	return themeService.getColorTheme().semanticHighlighting;
 }

@@ -92,6 +92,7 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
 		const markersView = accessor
 			.get(IViewsService)
 			.getActiveViewWithId<MarkersView>(Markers.MARKERS_VIEW_ID)!;
+
 		markersView.openFileAtElement(
 			markersView.getFocusElement(),
 			false,
@@ -112,6 +113,7 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
 		const markersView = accessor
 			.get(IViewsService)
 			.getActiveViewWithId<MarkersView>(Markers.MARKERS_VIEW_ID)!;
+
 		markersView.openFileAtElement(
 			markersView.getFocusElement(),
 			false,
@@ -264,6 +266,7 @@ registerAction2(
 				viewId: Markers.MARKERS_VIEW_ID,
 			});
 		}
+
 		async runInView(
 			serviceAccessor: ServicesAccessor,
 			view: IMarkersView,
@@ -299,6 +302,7 @@ registerAction2(
 				viewId: Markers.MARKERS_VIEW_ID,
 			});
 		}
+
 		async runInView(
 			serviceAccessor: ServicesAccessor,
 			view: IMarkersView,
@@ -333,6 +337,7 @@ registerAction2(
 				viewId: Markers.MARKERS_VIEW_ID,
 			});
 		}
+
 		async runInView(
 			serviceAccessor: ServicesAccessor,
 			view: IMarkersView,
@@ -367,6 +372,7 @@ registerAction2(
 				viewId: Markers.MARKERS_VIEW_ID,
 			});
 		}
+
 		async runInView(
 			serviceAccessor: ServicesAccessor,
 			view: IMarkersView,
@@ -401,6 +407,7 @@ registerAction2(
 				viewId: Markers.MARKERS_VIEW_ID,
 			});
 		}
+
 		async runInView(
 			serviceAccessor: ServicesAccessor,
 			view: IMarkersView,
@@ -435,6 +442,7 @@ registerAction2(
 				viewId: Markers.MARKERS_VIEW_ID,
 			});
 		}
+
 		async runInView(
 			serviceAccessor: ServicesAccessor,
 			view: IMarkersView,
@@ -470,6 +478,7 @@ registerAction2(
 				viewId: Markers.MARKERS_VIEW_ID,
 			});
 		}
+
 		async runInView(
 			serviceAccessor: ServicesAccessor,
 			view: IMarkersView,
@@ -488,6 +497,7 @@ registerAction2(
 				f1: true,
 			});
 		}
+
 		async run(accessor: ServicesAccessor): Promise<void> {
 			accessor.get(IViewsService).openView(Markers.MARKERS_VIEW_ID, true);
 		}
@@ -518,6 +528,7 @@ registerAction2(
 				viewId: Markers.MARKERS_VIEW_ID,
 			});
 		}
+
 		async runInView(
 			serviceAccessor: ServicesAccessor,
 			markersView: IMarkersView,
@@ -543,6 +554,7 @@ registerAction2(
 					addMarker(selected);
 				}
 			}
+
 			if (markers.length) {
 				await clipboardService.writeText(`[${markers}]`);
 			}
@@ -563,6 +575,7 @@ registerAction2(
 				viewId: Markers.MARKERS_VIEW_ID,
 			});
 		}
+
 		async runInView(
 			serviceAccessor: ServicesAccessor,
 			markersView: IMarkersView,
@@ -591,6 +604,7 @@ registerAction2(
 				viewId: Markers.MARKERS_VIEW_ID,
 			});
 		}
+
 		async runInView(
 			serviceAccessor: ServicesAccessor,
 			markersView: IMarkersView,
@@ -619,6 +633,7 @@ registerAction2(
 				viewId: Markers.MARKERS_VIEW_ID,
 			});
 		}
+
 		async runInView(
 			serviceAccessor: ServicesAccessor,
 			markersView: IMarkersView,
@@ -641,6 +656,7 @@ registerAction2(
 				viewId: Markers.MARKERS_VIEW_ID,
 			});
 		}
+
 		async runInView(
 			serviceAccessor: ServicesAccessor,
 			markersView: IMarkersView,
@@ -668,6 +684,7 @@ registerAction2(
 				viewId: Markers.MARKERS_VIEW_ID,
 			});
 		}
+
 		async runInView(
 			serviceAccessor: ServicesAccessor,
 			markersView: IMarkersView,
@@ -695,6 +712,7 @@ registerAction2(
 				viewId: Markers.MARKERS_VIEW_ID,
 			});
 		}
+
 		async runInView(
 			serviceAccessor: ServicesAccessor,
 			markersView: IMarkersView,
@@ -718,6 +736,7 @@ registerAction2(
 				viewId: Markers.MARKERS_VIEW_ID,
 			});
 		}
+
 		async runInView(
 			serviceAccessor: ServicesAccessor,
 			markersView: IMarkersView,
@@ -747,6 +766,7 @@ registerAction2(
 				viewId: Markers.MARKERS_VIEW_ID,
 			});
 		}
+
 		async runInView(
 			serviceAccessor: ServicesAccessor,
 			view: IMarkersView,
@@ -763,6 +783,7 @@ registerAction2(
 				title: Messages.MARKERS_PANEL_TOGGLE_LABEL,
 			});
 		}
+
 		async run(accessor: ServicesAccessor): Promise<void> {
 			const viewsService = accessor.get(IViewsService);
 
@@ -779,6 +800,7 @@ class MarkersStatusBarContributions
 	implements IWorkbenchContribution
 {
 	private markersStatusItem: IStatusbarEntryAccessor;
+
 	private markersStatusItemOff: IStatusbarEntryAccessor | undefined;
 
 	constructor(
@@ -790,6 +812,7 @@ class MarkersStatusBarContributions
 		private readonly configurationService: IConfigurationService,
 	) {
 		super();
+
 		this.markersStatusItem = this._register(
 			this.statusbarService.addEntry(
 				this.getMarkersItem(),
@@ -813,11 +836,13 @@ class MarkersStatusBarContributions
 		if (!config) {
 			addStatusBarEntry();
 		}
+
 		this._register(
 			this.markerService.onMarkerChanged(() => {
 				this.markersStatusItem.update(this.getMarkersItem());
 			}),
 		);
+
 		this._register(
 			this.configurationService.onDidChangeConfiguration((e) => {
 				if (e.affectsConfiguration("problems.visibility")) {
@@ -831,12 +856,14 @@ class MarkersStatusBarContributions
 						addStatusBarEntry();
 					} else if (config && this.markersStatusItemOff) {
 						this.markersStatusItemOff.dispose();
+
 						this.markersStatusItemOff = undefined;
 					}
 				}
 			}),
 		);
 	}
+
 	private getMarkersItem(): IStatusbarEntry {
 		const markersStatistics = this.markerService.getStatistics();
 
@@ -850,6 +877,7 @@ class MarkersStatusBarContributions
 			command: "workbench.actions.view.toggleProblems",
 		};
 	}
+
 	private getMarkersItemTurnedOff(): IStatusbarEntry {
 		// Update to true, config checked before `getMarkersItemTurnedOff` is called.
 		this.statusbarService.updateEntryVisibility(
@@ -879,6 +907,7 @@ class MarkersStatusBarContributions
 			},
 		};
 	}
+
 	private getMarkersTooltip(stats: MarkerStatistics): string {
 		const errorTitle = (n: number) =>
 			localize("totalErrors", "Errors: {0}", n);
@@ -894,17 +923,22 @@ class MarkersStatusBarContributions
 		if (stats.errors > 0) {
 			titles.push(errorTitle(stats.errors));
 		}
+
 		if (stats.warnings > 0) {
 			titles.push(warningTitle(stats.warnings));
 		}
+
 		if (stats.infos > 0) {
 			titles.push(infoTitle(stats.infos));
 		}
+
 		if (titles.length === 0) {
 			return localize("noProblems", "No Problems");
 		}
+
 		return titles.join(", ");
 	}
+
 	private getMarkersText(stats: MarkerStatistics): string {
 		const problemsText: string[] = [];
 		// Errors
@@ -915,8 +949,10 @@ class MarkersStatusBarContributions
 		if (stats.infos > 0) {
 			problemsText.push("$(info) " + this.packNumber(stats.infos));
 		}
+
 		return problemsText.join(" ");
 	}
+
 	private packNumber(n: number): string {
 		const manyProblems = localize("manyProblems", "10K+");
 
@@ -943,11 +979,14 @@ class ActivityUpdater extends Disposable implements IWorkbenchContribution {
 		private readonly markerService: IMarkerService,
 	) {
 		super();
+
 		this._register(
 			this.markerService.onMarkerChanged(() => this.updateBadge()),
 		);
+
 		this.updateBadge();
 	}
+
 	private updateBadge(): void {
 		const { errors, warnings, infos } = this.markerService.getStatistics();
 
@@ -959,6 +998,7 @@ class ActivityUpdater extends Disposable implements IWorkbenchContribution {
 				"Total {0} Problems",
 				total,
 			);
+
 			this.activity.value = this.activityService.showViewActivity(
 				Markers.MARKERS_VIEW_ID,
 				{ badge: new NumberBadge(total, () => message) },

@@ -14,6 +14,7 @@ function getAgent(url: string | undefined = process.env.HTTPS_PROXY): Agent {
 	if (!url) {
 		return globalAgent;
 	}
+
 	try {
 		const { hostname, port, username, password } = new URL(url);
 
@@ -62,6 +63,7 @@ export function getOctokit(): Promise<Octokit> {
 				throw err;
 			});
 	}
+
 	return _octokit;
 }
 let _octokitGraphql: Promise<graphql> | undefined;
@@ -78,6 +80,7 @@ export async function getOctokitGraphql(): Promise<graphql> {
 					"No GitHub authentication session available.",
 				);
 			}
+
 			const token = session.accessToken;
 
 			const { graphql } = await import("@octokit/graphql");
@@ -96,5 +99,6 @@ export async function getOctokitGraphql(): Promise<graphql> {
 			throw err;
 		}
 	}
+
 	return _octokitGraphql;
 }

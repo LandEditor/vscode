@@ -12,6 +12,7 @@ export function removeTag() {
 	if (!validate(false) || !vscode.window.activeTextEditor) {
 		return;
 	}
+
 	const editor = vscode.window.activeTextEditor;
 
 	const document = editor.document;
@@ -21,6 +22,7 @@ export function removeTag() {
 	if (!rootNode) {
 		return;
 	}
+
 	const finalRangesToRemove = Array.from(editor.selections)
 		.reverse()
 		.reduce<vscode.Range[]>(
@@ -59,6 +61,7 @@ function getRangesToRemove(
 	if (!nodeToUpdate) {
 		return [];
 	}
+
 	let openTagRange: vscode.Range | undefined;
 
 	if (nodeToUpdate.open) {
@@ -68,6 +71,7 @@ function getRangesToRemove(
 			nodeToUpdate.open.end,
 		);
 	}
+
 	let closeTagRange: vscode.Range | undefined;
 
 	if (nodeToUpdate.close) {
@@ -77,6 +81,7 @@ function getRangesToRemove(
 			nodeToUpdate.close.end,
 		);
 	}
+
 	if (openTagRange && closeTagRange) {
 		const innerCombinedRange = new vscode.Range(
 			openTagRange.end.line,
@@ -99,6 +104,7 @@ function getRangesToRemove(
 			return [outerCombinedRange];
 		}
 	}
+
 	const rangesToRemove = [];
 
 	if (openTagRange) {
@@ -117,7 +123,9 @@ function getRangesToRemove(
 
 			for (
 				let i = openTagRange.start.line + 1;
+
 				i < closeTagRange.start.line;
+
 				i++
 			) {
 				if (!document.lineAt(i).isEmptyOrWhitespace) {
@@ -129,6 +137,7 @@ function getRangesToRemove(
 						// We found the first non-empty inner line.
 						firstInnerNonEmptyLine = i;
 					}
+
 					lastInnerNonEmptyLine = i;
 				}
 			}
@@ -165,10 +174,12 @@ function getRangesToRemove(
 						firstInnerNonEmptyLine,
 					).firstNonWhitespaceCharacterIndex,
 				);
+
 				rangesToRemove.shift();
 			}
 		}
 	}
+
 	return rangesToRemove;
 }
 function entireLineIsTag(
@@ -184,6 +195,7 @@ function entireLineIsTag(
 			return true;
 		}
 	}
+
 	return false;
 }
 /**
@@ -211,11 +223,13 @@ function calculateIndentAmountToRemove(
 
 		if (!line.isEmptyOrWhitespace) {
 			const lineIndent = line.firstNonWhitespaceCharacterIndex;
+
 			contentIndent = !contentIndent
 				? lineIndent
 				: Math.min(contentIndent, lineIndent);
 		}
 	}
+
 	let indentAmount = 0;
 
 	if (contentIndent) {
@@ -228,5 +242,6 @@ function calculateIndentAmountToRemove(
 			);
 		}
 	}
+
 	return indentAmount;
 }

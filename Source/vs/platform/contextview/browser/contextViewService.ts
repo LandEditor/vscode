@@ -21,6 +21,7 @@ export class ContextViewHandler
 	implements IContextViewProvider
 {
 	private openContextView: IOpenContextView | undefined;
+
 	protected readonly contextView = this._register(
 		new ContextView(
 			this.layoutService.mainContainer,
@@ -33,7 +34,9 @@ export class ContextViewHandler
 		private readonly layoutService: ILayoutService,
 	) {
 		super();
+
 		this.layout();
+
 		this._register(layoutService.onDidLayoutContainer(() => this.layout()));
 	}
 	// ContextView
@@ -58,10 +61,12 @@ export class ContextViewHandler
 		} else {
 			domPosition = ContextViewDOMPosition.ABSOLUTE;
 		}
+
 		this.contextView.setContainer(
 			container ?? this.layoutService.activeContainer,
 			domPosition,
 		);
+
 		this.contextView.show(delegate);
 
 		const openContextView: IOpenContextView = {
@@ -71,15 +76,19 @@ export class ContextViewHandler
 				}
 			},
 		};
+
 		this.openContextView = openContextView;
 
 		return openContextView;
 	}
+
 	layout(): void {
 		this.contextView.layout();
 	}
+
 	hideContextView(data?: any): void {
 		this.contextView.hide(data);
+
 		this.openContextView = undefined;
 	}
 }

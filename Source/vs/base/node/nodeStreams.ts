@@ -14,7 +14,9 @@ import { binaryIndexOf } from "../common/buffer.js";
  */
 export class StreamSplitter extends Transform {
 	private buffer: Buffer | undefined;
+
 	private readonly splitter: Buffer | number;
+
 	private readonly spitterLen: number;
 
 	constructor(splitter: string | number | Buffer) {
@@ -22,15 +24,19 @@ export class StreamSplitter extends Transform {
 
 		if (typeof splitter === "number") {
 			this.splitter = splitter;
+
 			this.spitterLen = 1;
 		} else {
 			const buf = Buffer.isBuffer(splitter)
 				? splitter
 				: Buffer.from(splitter);
+
 			this.splitter = buf.length === 1 ? buf[0] : buf;
+
 			this.spitterLen = buf.length;
 		}
 	}
+
 	override _transform(
 		chunk: Buffer,
 		_encoding: string,
@@ -41,6 +47,7 @@ export class StreamSplitter extends Transform {
 		} else {
 			this.buffer = Buffer.concat([this.buffer, chunk]);
 		}
+
 		let offset = 0;
 
 		while (offset < this.buffer.length) {
@@ -52,21 +59,27 @@ export class StreamSplitter extends Transform {
 			if (index === -1) {
 				break;
 			}
+
 			this.push(this.buffer.slice(offset, index + this.spitterLen));
+
 			offset = index + this.spitterLen;
 		}
+
 		this.buffer =
 			offset === this.buffer.length
 				? undefined
 				: this.buffer.slice(offset);
+
 		callback();
 	}
+
 	override _flush(
 		callback: (error?: Error | null, data?: any) => void,
 	): void {
 		if (this.buffer) {
 			this.push(this.buffer);
 		}
+
 		callback();
 	}
 }

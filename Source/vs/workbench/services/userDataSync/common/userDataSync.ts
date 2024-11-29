@@ -26,7 +26,9 @@ import { IView } from "../../../common/views.js";
 
 export interface IUserDataSyncAccount {
 	readonly authenticationProviderId: string;
+
 	readonly accountName: string;
+
 	readonly accountId: string;
 }
 export const IUserDataSyncWorkbenchService =
@@ -36,20 +38,35 @@ export const IUserDataSyncWorkbenchService =
 
 export interface IUserDataSyncWorkbenchService {
 	_serviceBrand: any;
+
 	readonly enabled: boolean;
+
 	readonly authenticationProviders: IAuthenticationProvider[];
+
 	readonly current: IUserDataSyncAccount | undefined;
+
 	readonly accountStatus: AccountStatus;
+
 	readonly onDidChangeAccountStatus: Event<AccountStatus>;
+
 	readonly onDidTurnOnSync: Event<void>;
+
 	turnOn(): Promise<void>;
+
 	turnoff(everyWhere: boolean): Promise<void>;
+
 	signIn(): Promise<void>;
+
 	resetSyncedData(): Promise<void>;
+
 	showSyncActivity(): Promise<void>;
+
 	syncNow(): Promise<void>;
+
 	synchroniseUserDataSyncStoreType(): Promise<void>;
+
 	showConflicts(conflictToOpen?: IResourcePreview): Promise<void>;
+
 	accept(
 		resource: IUserDataSyncResource,
 		conflictResource: URI,

@@ -79,12 +79,16 @@ const quickFixClasses = [
 export interface ITerminalQuickFixAddon {
 	readonly onDidRequestRerunCommand: Event<{
 		command: string;
+
 		shouldExecute?: boolean;
 	}>;
+
 	readonly onDidUpdateQuickFixes: Event<{
 		command: ITerminalCommand;
+
 		actions: ITerminalAction[] | undefined;
 	}>;
+
 	showMenu(): void;
 	/**
 	 * Registers a listener on onCommandFinished scoped to a particular command or regular
@@ -112,13 +116,16 @@ export class TerminalQuickFixAddon
 
 	private readonly _decoration: MutableDisposable<IDecoration> =
 		this._register(new MutableDisposable());
+
 	private readonly _decorationDisposables: MutableDisposable<IDisposable> =
 		this._register(new MutableDisposable());
 
 	private _currentRenderContext:
 		| {
 				quickFixes: ITerminalAction[];
+
 				anchor: IAnchor;
+
 				parentElement: HTMLElement;
 		  }
 		| undefined;
@@ -131,13 +138,18 @@ export class TerminalQuickFixAddon
 
 	private readonly _onDidRequestRerunCommand = new Emitter<{
 		command: string;
+
 		shouldExecute?: boolean;
 	}>();
+
 	readonly onDidRequestRerunCommand = this._onDidRequestRerunCommand.event;
+
 	private readonly _onDidUpdateQuickFixes = new Emitter<{
 		command: ITerminalCommand;
+
 		actions: ITerminalAction[] | undefined;
 	}>();
+
 	readonly onDidUpdateQuickFixes = this._onDidUpdateQuickFixes.event;
 
 	constructor(
@@ -176,6 +188,7 @@ export class TerminalQuickFixAddon
 				}),
 			);
 		}
+
 		this._register(
 			this._quickFixService.onDidRegisterProvider((result) =>
 				this.registerCommandFinishedListener(
@@ -183,16 +196,19 @@ export class TerminalQuickFixAddon
 				),
 			),
 		);
+
 		this._quickFixService.extensionQuickFixes.then((quickFixSelectors) => {
 			for (const selector of quickFixSelectors) {
 				this.registerCommandSelector(selector);
 			}
 		});
+
 		this._register(
 			this._quickFixService.onDidRegisterCommandSelector((selector) =>
 				this.registerCommandSelector(selector),
 			),
 		);
+
 		this._register(
 			this._quickFixService.onDidUnregisterProvider((id) =>
 				this._commandListeners.delete(id),
@@ -226,12 +242,14 @@ export class TerminalQuickFixAddon
 		const delegate = {
 			onSelect: async (fix: TerminalQuickFixItem) => {
 				fix.action?.run();
+
 				this._actionWidgetService.hide();
 			},
 			onHide: () => {
 				this._terminal?.focus();
 			},
 		};
+
 		this._actionWidgetService.show(
 			"quickFixWidget",
 			false,
@@ -246,9 +264,11 @@ export class TerminalQuickFixAddon
 		if (this._registeredSelectors.has(selector.id)) {
 			return;
 		}
+
 		const matcherKey = selector.commandLineMatcher.toString();
 
 		const currentOptions = this._commandListeners.get(matcherKey) || [];
+
 		currentOptions.push({
 			id: selector.id,
 			type: "unresolved",
@@ -257,7 +277,9 @@ export class TerminalQuickFixAddon
 			commandExitResult: selector.commandExitResult,
 			kind: selector.kind,
 		});
+
 		this._registeredSelectors.add(selector.id);
+
 		this._commandListeners.set(matcherKey, currentOptions);
 	}
 
@@ -271,7 +293,9 @@ export class TerminalQuickFixAddon
 		let currentOptions = this._commandListeners.get(matcherKey) || [];
 		// removes the unresolved options
 		currentOptions = currentOptions.filter((o) => o.id !== options.id);
+
 		currentOptions.push(options);
+
 		this._commandListeners.set(matcherKey, currentOptions);
 	}
 
@@ -285,6 +309,7 @@ export class TerminalQuickFixAddon
 		if (!terminal || !commandDetection) {
 			return;
 		}
+
 		this._register(
 			commandDetection.onCommandFinished(
 				async (command) =>
@@ -306,6 +331,7 @@ export class TerminalQuickFixAddon
 		if (!terminal || command.wasReplayed) {
 			return;
 		}
+
 		if (command.command !== "" && this._lastQuickFixId) {
 			this._disposeQuickFix(command, this._lastQuickFixId);
 		}
@@ -317,7 +343,9 @@ export class TerminalQuickFixAddon
 			if (lines === undefined) {
 				return undefined;
 			}
+
 			const id = selector.id;
+
 			await this._extensionService.activateByEvent(
 				`onTerminalQuickFixRequest:${id}`,
 			);
@@ -356,34 +384,48 @@ export class TerminalQuickFixAddon
 		}
 
 		this._quickFixes = result;
+
 		this._lastQuickFixId = this._quickFixes[0].id;
+
 		this._registerQuickFixDecoration();
+
 		this._onDidUpdateQuickFixes.fire({
 			command,
 			actions: this._quickFixes,
 		});
+
 		this._quickFixes = undefined;
 	}
 
 	private _disposeQuickFix(command: ITerminalCommand, id: string): void {
 		type QuickFixResultTelemetryEvent = {
 			quickFixId: string;
+
 			ranQuickFix: boolean;
 		};
+
 		type QuickFixClassification = {
 			owner: "meganrogge";
+
 			quickFixId: {
 				classification: "SystemMetaData";
+
 				purpose: "FeatureInsight";
+
 				comment: "The quick fix ID";
 			};
+
 			ranQuickFix: {
 				classification: "SystemMetaData";
+
 				purpose: "FeatureInsight";
+
 				comment: "Whether the quick fix was run";
 			};
+
 			comment: "Terminal quick fixes";
 		};
+
 		this._telemetryService?.publicLog2<
 			QuickFixResultTelemetryEvent,
 			QuickFixClassification
@@ -391,14 +433,20 @@ export class TerminalQuickFixAddon
 			quickFixId: id,
 			ranQuickFix: this._didRun,
 		});
+
 		this._decoration.clear();
+
 		this._decorationDisposables.clear();
+
 		this._onDidUpdateQuickFixes.fire({
 			command,
 			actions: this._quickFixes,
 		});
+
 		this._quickFixes = undefined;
+
 		this._lastQuickFixId = undefined;
+
 		this._didRun = false;
 	}
 
@@ -411,6 +459,7 @@ export class TerminalQuickFixAddon
 		}
 
 		this._decoration.clear();
+
 		this._decorationDisposables.clear();
 
 		const quickFixes = this._quickFixes;
@@ -418,11 +467,13 @@ export class TerminalQuickFixAddon
 		if (!quickFixes || quickFixes.length === 0) {
 			return;
 		}
+
 		const marker = this._terminal.registerMarker();
 
 		if (!marker) {
 			return;
 		}
+
 		const decoration = (this._decoration.value =
 			this._terminal.registerDecoration({
 				marker,
@@ -433,8 +484,10 @@ export class TerminalQuickFixAddon
 		if (!decoration) {
 			return;
 		}
+
 		const store = (this._decorationDisposables.value =
 			new DisposableStore());
+
 		store.add(
 			decoration.onRender((e) => {
 				const rect = e.getBoundingClientRect();
@@ -463,6 +516,7 @@ export class TerminalQuickFixAddon
 				if (isExplainOnly) {
 					e.classList.add("explainOnly");
 				}
+
 				e.classList.add(
 					...ThemeIcon.asClassNameArray(
 						isExplainOnly ? Codicon.sparkle : Codicon.lightBulb,
@@ -470,6 +524,7 @@ export class TerminalQuickFixAddon
 				);
 
 				updateLayout(this._configurationService, e);
+
 				this._accessibilitySignalService.playSignal(
 					AccessibilitySignal.terminalQuickFix,
 				);
@@ -485,6 +540,7 @@ export class TerminalQuickFixAddon
 					anchor,
 					parentElement,
 				};
+
 				this._register(
 					dom.addDisposableListener(e, dom.EventType.CLICK, () =>
 						this.showMenu(),
@@ -492,6 +548,7 @@ export class TerminalQuickFixAddon
 				);
 			}),
 		);
+
 		store.add(
 			decoration.onDispose(
 				() => (this._currentRenderContext = undefined),
@@ -502,10 +559,15 @@ export class TerminalQuickFixAddon
 
 export interface ITerminalAction extends IAction {
 	type: TerminalQuickFixType;
+
 	kind?: "fix" | "explain";
+
 	source: string;
+
 	uri?: URI;
+
 	command?: string;
+
 	shouldExecute?: boolean;
 }
 
@@ -519,6 +581,7 @@ export async function getQuickFixesForCommand(
 	labelService: ILabelService,
 	onDidRequestRerunCommand?: Emitter<{
 		command: string;
+
 		shouldExecute?: boolean;
 	}>,
 	getResolvedFixes?: (
@@ -545,6 +608,7 @@ export async function getQuickFixesForCommand(
 			) {
 				continue;
 			}
+
 			let quickFixes;
 
 			if (option.type === "resolved") {
@@ -565,6 +629,7 @@ export async function getQuickFixesForCommand(
 				if (!getResolvedFixes) {
 					throw new Error("No resolved fix provider");
 				}
+
 				quickFixes = await getResolvedFixes(
 					option,
 					option.outputMatcher
@@ -584,6 +649,7 @@ export async function getQuickFixesForCommand(
 				if (!commandLineMatch) {
 					continue;
 				}
+
 				const outputMatcher = option.outputMatcher;
 
 				let outputMatch;
@@ -591,14 +657,17 @@ export async function getQuickFixesForCommand(
 				if (outputMatcher) {
 					outputMatch = terminalCommand.getOutputMatch(outputMatcher);
 				}
+
 				if (!outputMatch) {
 					continue;
 				}
+
 				const matchResult = {
 					commandLineMatch,
 					outputMatch,
 					commandLine: terminalCommand.command,
 				};
+
 				quickFixes = (
 					option as ITerminalQuickFixInternalOptions
 				).getQuickFixes(matchResult);
@@ -619,6 +688,7 @@ export async function getQuickFixesForCommand(
 								) {
 									continue;
 								}
+
 								commandQuickFixSet.add(fix.terminalCommand);
 
 								const label = localize(
@@ -626,6 +696,7 @@ export async function getQuickFixesForCommand(
 									"Run: {0}",
 									fix.terminalCommand,
 								);
+
 								action = {
 									type: TerminalQuickFixType.TerminalCommand,
 									kind: option.kind,
@@ -648,6 +719,7 @@ export async function getQuickFixesForCommand(
 
 								break;
 							}
+
 							case TerminalQuickFixType.Opener: {
 								const fix =
 									quickFix as ITerminalQuickFixOpenerAction;
@@ -655,9 +727,11 @@ export async function getQuickFixesForCommand(
 								if (!fix.uri) {
 									return;
 								}
+
 								if (openQuickFixSet.has(fix.uri.toString())) {
 									continue;
 								}
+
 								openQuickFixSet.add(fix.uri.toString());
 
 								const isUrl =
@@ -673,6 +747,7 @@ export async function getQuickFixesForCommand(
 									"Open: {0}",
 									uriLabel,
 								);
+
 								action = {
 									source: quickFix.source,
 									id: quickFix.id,
@@ -688,8 +763,10 @@ export async function getQuickFixesForCommand(
 
 								break;
 							}
+
 							case TerminalQuickFixType.Port: {
 								const fix = quickFix as ITerminalAction;
+
 								action = {
 									source: "builtin",
 									type: fix.type,
@@ -706,9 +783,11 @@ export async function getQuickFixesForCommand(
 
 								break;
 							}
+
 							case TerminalQuickFixType.VscodeCommand: {
 								const fix =
 									quickFix as ITerminalQuickFixCommandAction;
+
 								action = {
 									source: quickFix.source,
 									type: fix.type,
@@ -725,6 +804,7 @@ export async function getQuickFixesForCommand(
 								break;
 							}
 						}
+
 						if (action) {
 							fixes.push(action);
 						}
@@ -733,6 +813,7 @@ export async function getQuickFixesForCommand(
 			}
 		}
 	}
+
 	return fixes.length > 0 ? fixes : undefined;
 }
 
@@ -767,6 +848,7 @@ function toActionWidgetItems(
 	showHeaders: boolean,
 ): IActionListItem<TerminalQuickFixItem>[] {
 	const menuItems: IActionListItem<TerminalQuickFixItem>[] = [];
+
 	menuItems.push({
 		kind: ActionListItemKind.Header,
 		group: {
@@ -792,6 +874,7 @@ function toActionWidgetItems(
 			});
 		}
 	}
+
 	return menuItems;
 }
 
@@ -799,6 +882,7 @@ function getQuickFixIcon(quickFix: TerminalQuickFixItem): ThemeIcon {
 	if (quickFix.kind === "explain") {
 		return Codicon.sparkle;
 	}
+
 	switch (quickFix.type) {
 		case TerminalQuickFixType.Opener:
 			if ("uri" in quickFix.action && quickFix.action.uri) {
@@ -808,6 +892,7 @@ function getQuickFixIcon(quickFix: TerminalQuickFixItem): ThemeIcon {
 
 				return isUrl ? Codicon.linkExternal : Codicon.goToFile;
 			}
+
 		case TerminalQuickFixType.TerminalCommand:
 			return Codicon.run;
 

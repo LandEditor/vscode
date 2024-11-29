@@ -25,6 +25,7 @@ export class TerminalExternalLinkDetector implements ITerminalLinkDetector {
 			ITerminalExternalLinkProvider["provideLinks"]
 		>,
 	) {}
+
 	async detect(
 		lines: IBufferLine[],
 		startLine: number,
@@ -41,11 +42,13 @@ export class TerminalExternalLinkDetector implements ITerminalLinkDetector {
 		if (text === "" || text.length > this.maxLinkLength) {
 			return [];
 		}
+
 		const externalLinks = await this._provideLinks(text);
 
 		if (!externalLinks) {
 			return [];
 		}
+
 		const result = externalLinks.map((link) => {
 			const bufferRange = convertLinkRangeToBuffer(
 				lines,

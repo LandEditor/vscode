@@ -45,7 +45,9 @@ class SelectionAnchorController implements IEditorContribution {
 	}
 
 	private decorationId: string | undefined;
+
 	private selectionAnchorSetContextKey: IContextKey<boolean>;
+
 	private modelChangeListener: IDisposable;
 
 	constructor(
@@ -54,6 +56,7 @@ class SelectionAnchorController implements IEditorContribution {
 	) {
 		this.selectionAnchorSetContextKey =
 			SelectionAnchorSet.bindTo(contextKeyService);
+
 		this.modelChangeListener = editor.onDidChangeModel(() =>
 			this.selectionAnchorSetContextKey.reset(),
 		);
@@ -62,10 +65,12 @@ class SelectionAnchorController implements IEditorContribution {
 	setSelectionAnchor(): void {
 		if (this.editor.hasModel()) {
 			const position = this.editor.getPosition();
+
 			this.editor.changeDecorations((accessor) => {
 				if (this.decorationId) {
 					accessor.removeDecoration(this.decorationId);
 				}
+
 				this.decorationId = accessor.addDecoration(
 					Selection.fromPositions(position, position),
 					{
@@ -79,7 +84,9 @@ class SelectionAnchorController implements IEditorContribution {
 					},
 				);
 			});
+
 			this.selectionAnchorSetContextKey.set(!!this.decorationId);
+
 			alert(
 				localize(
 					"anchorSet",
@@ -111,9 +118,11 @@ class SelectionAnchorController implements IEditorContribution {
 
 			if (start) {
 				const end = this.editor.getPosition();
+
 				this.editor.setSelection(
 					Selection.fromPositions(start.getStartPosition(), end),
 				);
+
 				this.cancelSelectionAnchor();
 			}
 		}
@@ -122,16 +131,20 @@ class SelectionAnchorController implements IEditorContribution {
 	cancelSelectionAnchor(): void {
 		if (this.decorationId) {
 			const decorationId = this.decorationId;
+
 			this.editor.changeDecorations((accessor) => {
 				accessor.removeDecoration(decorationId);
+
 				this.decorationId = undefined;
 			});
+
 			this.selectionAnchorSetContextKey.set(false);
 		}
 	}
 
 	dispose(): void {
 		this.cancelSelectionAnchor();
+
 		this.modelChangeListener.dispose();
 	}
 }

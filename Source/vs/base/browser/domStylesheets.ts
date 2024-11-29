@@ -29,12 +29,14 @@ export function createStyleSheet2(): WrappedStyleElement {
 
 class WrappedStyleElement {
 	private _currentCssStyle = "";
+
 	private _styleSheet: HTMLStyleElement | undefined = undefined;
 
 	public setStyle(cssStyle: string): void {
 		if (cssStyle === this._currentCssStyle) {
 			return;
 		}
+
 		this._currentCssStyle = cssStyle;
 
 		if (!this._styleSheet) {
@@ -50,6 +52,7 @@ class WrappedStyleElement {
 	public dispose(): void {
 		if (this._styleSheet) {
 			this._styleSheet.remove();
+
 			this._styleSheet = undefined;
 		}
 	}
@@ -61,9 +64,13 @@ export function createStyleSheet(
 	disposableStore?: DisposableStore,
 ): HTMLStyleElement {
 	const style = document.createElement("style");
+
 	style.type = "text/css";
+
 	style.media = "screen";
+
 	beforeAppend?.(style);
+
 	container.appendChild(style);
 
 	if (disposableStore) {
@@ -74,6 +81,7 @@ export function createStyleSheet(
 	// to support auxiliary windows to clone the stylesheet.
 	if (container === mainWindow.document.head) {
 		const globalStylesheetClones = new Set<HTMLStyleElement>();
+
 		globalStylesheets.set(style, globalStylesheetClones);
 
 		for (const { window: targetWindow, disposables } of getWindows()) {
@@ -88,6 +96,7 @@ export function createStyleSheet(
 					targetWindow,
 				),
 			);
+
 			disposableStore?.add(cloneDisposable);
 		}
 	}
@@ -122,7 +131,9 @@ function cloneGlobalStyleSheet(
 	const disposables = new DisposableStore();
 
 	const clone = globalStylesheet.cloneNode(true) as HTMLStyleElement;
+
 	targetWindow.document.head.appendChild(clone);
+
 	disposables.add(toDisposable(() => clone.remove()));
 
 	for (const rule of getDynamicStyleSheetRules(globalStylesheet)) {
@@ -138,6 +149,7 @@ function cloneGlobalStyleSheet(
 	);
 
 	globalStylesheetClones.add(clone);
+
 	disposables.add(toDisposable(() => globalStylesheetClones.delete(clone)));
 
 	return disposables;
@@ -148,6 +160,7 @@ function getSharedStyleSheet(): HTMLStyleElement {
 	if (!_sharedStyleSheet) {
 		_sharedStyleSheet = createStyleSheet();
 	}
+
 	return _sharedStyleSheet;
 }
 
@@ -156,10 +169,12 @@ function getDynamicStyleSheetRules(style: HTMLStyleElement) {
 		// Chrome, IE
 		return style.sheet.rules;
 	}
+
 	if (style?.sheet?.cssRules) {
 		// FF
 		return style.sheet.cssRules;
 	}
+
 	return [];
 }
 

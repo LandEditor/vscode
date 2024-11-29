@@ -52,6 +52,7 @@ export class ChatImplicitContextContribution
 		super();
 
 		const activeEditorDisposables = this._register(new DisposableStore());
+
 		this._register(
 			Event.runAndSubscribe(
 				editorService.onDidVisibleEditorsChange,
@@ -78,6 +79,7 @@ export class ChatImplicitContextContribution
 				},
 			),
 		);
+
 		this._register(
 			chatWidgetService.onDidAddWidget((widget) =>
 				this.updateImplicitContext(widget),
@@ -95,6 +97,7 @@ export class ChatImplicitContextContribution
 				return codeEditor;
 			}
 		}
+
 		for (const codeOrDiffEditor of this.editorService.getVisibleTextEditorControls(
 			EditorsOrder.MOST_RECENTLY_ACTIVE,
 		)) {
@@ -114,6 +117,7 @@ export class ChatImplicitContextContribution
 				return codeEditor;
 			}
 		}
+
 		return undefined;
 	}
 
@@ -139,6 +143,7 @@ export class ChatImplicitContextContribution
 					uri: model.uri,
 					range: selection,
 				} satisfies Location;
+
 				isSelection = true;
 			} else {
 				const visibleRanges = codeEditor?.getVisibleRanges();
@@ -147,9 +152,11 @@ export class ChatImplicitContextContribution
 					// Merge visible ranges. Maybe the reference value could actually be an array of Locations?
 					// Something like a Location with an array of Ranges?
 					let range = visibleRanges[0];
+
 					visibleRanges.slice(1).forEach((r) => {
 						range = range.plusRange(r);
 					});
+
 					newValue = { uri: model.uri, range } satisfies Location;
 				} else {
 					newValue = model.uri;
@@ -234,14 +241,17 @@ export class ChatImplicitContext
 
 	// TODO@roblourens
 	readonly isDynamic = true;
+
 	readonly isFile = true;
 
 	private _isSelection = false;
+
 	public get isSelection(): boolean {
 		return this._isSelection;
 	}
 
 	private _onDidChangeValue = new Emitter<void>();
+
 	readonly onDidChangeValue = this._onDidChangeValue.event;
 
 	private _value: Location | URI | undefined;
@@ -258,17 +268,21 @@ export class ChatImplicitContext
 
 	set enabled(value: boolean) {
 		this._enabled = value;
+
 		this._onDidChangeValue.fire();
 	}
 
 	constructor(value?: Location | URI) {
 		super();
+
 		this._value = value;
 	}
 
 	setValue(value: Location | URI | undefined, isSelection: boolean) {
 		this._value = value;
+
 		this._isSelection = isSelection;
+
 		this._onDidChangeValue.fire();
 	}
 

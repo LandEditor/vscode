@@ -35,6 +35,7 @@ export function maxLeftInRange(
 	reader: IReader,
 ): number {
 	editor.layoutInfo.read(reader);
+
 	editor.value.read(reader);
 
 	const model = editor.model.read(reader);
@@ -42,6 +43,7 @@ export function maxLeftInRange(
 	if (!model) {
 		return 0;
 	}
+
 	let maxLeft = 0;
 
 	editor.scrollTop.read(reader);
@@ -50,8 +52,10 @@ export function maxLeftInRange(
 		const column = model.getLineMaxColumn(i);
 
 		const left = editor.editor.getOffsetForColumn(i, column);
+
 		maxLeft = Math.max(maxLeft, left);
 	}
+
 	const lines = range.mapToLineArray((l) => model.getLineContent(l));
 
 	if (
@@ -61,6 +65,7 @@ export function maxLeftInRange(
 	) {
 		console.error("unexpected width");
 	}
+
 	return maxLeft;
 }
 
@@ -74,6 +79,7 @@ export class StatusBarViewItem extends MenuEntryActionViewItem {
 		if (!kb) {
 			return super.updateLabel();
 		}
+
 		if (this.label) {
 			const div = h("div.keybinding").root;
 
@@ -83,9 +89,13 @@ export class StatusBarViewItem extends MenuEntryActionViewItem {
 					...unthemedKeybindingLabelOptions,
 				}),
 			);
+
 			keybindingLabel.set(kb);
+
 			this.label.textContent = this._action.label;
+
 			this.label.appendChild(div);
+
 			this.label.classList.add("inlineSuggestionStatusBarItemLabel");
 		}
 	}
@@ -130,8 +140,10 @@ export function applyEditToModifiedRangeMappings(
 
 	for (const m of rangeMapping) {
 		const updatedRange = edit.mapRange(m.modifiedRange);
+
 		updatedMappings.push(new RangeMapping(m.originalRange, updatedRange));
 	}
+
 	return updatedMappings;
 }
 
@@ -160,6 +172,7 @@ export function createReindentEdit(text: string, range: LineRange): TextEdit {
 		range.mapToLineArray((l) => getIndentationLength(newLines[l - 1])),
 		numberComparator,
 	)!;
+
 	range.forEach((lineNumber) => {
 		edits.push(
 			new SingleTextEdit(

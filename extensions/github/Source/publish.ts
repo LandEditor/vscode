@@ -35,12 +35,14 @@ export async function publishRepository(
 	if (!vscode.workspace.workspaceFolders?.length) {
 		return;
 	}
+
 	let folder: vscode.Uri;
 
 	if (repository) {
 		folder = repository.rootUri;
 	} else if (gitAPI.repositories.length === 1) {
 		repository = gitAPI.repositories[0];
+
 		folder = repository.rootUri;
 	} else if (vscode.workspace.workspaceFolders.length === 1) {
 		folder = vscode.workspace.workspaceFolders[0].uri;
@@ -57,19 +59,28 @@ export async function publishRepository(
 		if (!pick) {
 			return;
 		}
+
 		folder = pick.folder.uri;
 	}
+
 	let quickpick = vscode.window.createQuickPick<
 		vscode.QuickPickItem & {
 			repo?: string;
+
 			auth?: "https" | "ssh";
+
 			isPrivate?: boolean;
 		}
 	>();
+
 	quickpick.ignoreFocusOut = true;
+
 	quickpick.placeholder = "Repository Name";
+
 	quickpick.value = basename(folder.fsPath);
+
 	quickpick.show();
+
 	quickpick.busy = true;
 
 	let owner: string;
@@ -80,6 +91,7 @@ export async function publishRepository(
 		octokit = await getOctokit();
 
 		const user = await octokit.users.getAuthenticated({});
+
 		owner = user.data.login;
 	} catch (e) {
 		// User has cancelled sign in
@@ -87,6 +99,7 @@ export async function publishRepository(
 
 		return;
 	}
+
 	quickpick.busy = false;
 
 	let repo: string | undefined;
@@ -117,20 +130,26 @@ export async function publishRepository(
 			];
 		}
 	};
+
 	onDidChangeValue();
 
 	while (true) {
 		const listener = quickpick.onDidChangeValue(onDidChangeValue);
 
 		const pick = await getPick(quickpick);
+
 		listener.dispose();
+
 		repo = pick?.repo;
+
 		isPrivate = pick?.isPrivate ?? true;
 
 		if (repo) {
 			try {
 				quickpick.busy = true;
+
 				await octokit.repos.get({ owner, repo: repo });
+
 				quickpick.items = [
 					{
 						label: `$(error) GitHub repository already exists`,
@@ -145,11 +164,13 @@ export async function publishRepository(
 			}
 		}
 	}
+
 	quickpick.dispose();
 
 	if (!repo) {
 		return;
 	}
+
 	if (!repository) {
 		const gitignore = vscode.Uri.joinPath(folder, ".gitignore");
 
@@ -160,12 +181,16 @@ export async function publishRepository(
 		} catch (err) {
 			shouldGenerateGitignore = true;
 		}
+
 		if (shouldGenerateGitignore) {
 			quickpick = vscode.window.createQuickPick();
+
 			quickpick.placeholder = vscode.l10n.t(
 				"Select which files should be included in the repository.",
 			);
+
 			quickpick.canSelectMany = true;
+
 			quickpick.show();
 
 			try {
@@ -176,8 +201,11 @@ export async function publishRepository(
 				)
 					.map(([name]) => name)
 					.filter((name) => name !== ".git");
+
 				quickpick.items = children.map((name) => ({ label: name }));
+
 				quickpick.selectedItems = quickpick.items;
+
 				quickpick.busy = false;
 
 				const result = await Promise.race([
@@ -192,13 +220,16 @@ export async function publishRepository(
 				if (!result || result.length === 0) {
 					return;
 				}
+
 				const ignored = new Set(children);
+
 				result.forEach((c) => ignored.delete(c.label));
 
 				if (ignored.size > 0) {
 					const raw = [...ignored].map((i) => `/${i}`).join("\n");
 
 					const encoder = new TextEncoder();
+
 					await vscode.workspace.fs.writeFile(
 						gitignore,
 						encoder.encode(raw),
@@ -209,6 +240,7 @@ export async function publishRepository(
 			}
 		}
 	}
+
 	const githubRepository = await vscode.window.withProgress(
 		{
 			location: vscode.ProgressLocation.Notification,
@@ -222,6 +254,7 @@ export async function publishRepository(
 					: vscode.l10n.t("Publishing to a public GitHub repository"),
 				increment: 25,
 			});
+
 			type CreateRepositoryResponseData = Awaited<
 				ReturnType<typeof octokit.repos.createForAuthenticatedUser>
 			>["data"];
@@ -241,8 +274,10 @@ export async function publishRepository(
 					name: repo!,
 					private: isPrivate,
 				});
+
 				createdGithubRepository = res.data;
 			}
+
 			if (createdGithubRepository) {
 				progress.report({
 					message: vscode.l10n.t("Creating first commit"),
@@ -259,11 +294,13 @@ export async function publishRepository(
 					if (!repository) {
 						return;
 					}
+
 					await repository.commit("first commit", {
 						all: true,
 						postCommitCommand: null,
 					});
 				}
+
 				progress.report({
 					message: vscode.l10n.t("Uploading files"),
 					increment: 25,
@@ -279,9 +316,12 @@ export async function publishRepository(
 					protocol === "https"
 						? createdGithubRepository.clone_url
 						: createdGithubRepository.ssh_url;
+
 				await repository.addRemote("origin", remoteUrl);
+
 				await repository.push("origin", branch.name, true);
 			}
+
 			return createdGithubRepository;
 		},
 	);
@@ -289,7 +329,9 @@ export async function publishRepository(
 	if (!githubRepository) {
 		return;
 	}
+
 	const openOnGitHub = vscode.l10n.t("Open on GitHub");
+
 	vscode.window
 		.showInformationMessage(
 			vscode.l10n.t(

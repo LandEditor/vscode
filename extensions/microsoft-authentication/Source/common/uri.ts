@@ -14,6 +14,7 @@ function isLocalhost(uri: Uri): boolean {
 	if (!/^https?$/i.test(uri.scheme)) {
 		return false;
 	}
+
 	const host = uri.authority.split(":")[0];
 
 	return LOCALHOST_ADDRESSES.indexOf(host) >= 0;
@@ -30,6 +31,7 @@ export function isSupportedEnvironment(uri: Uri): boolean {
 	if (uri.scheme !== "https") {
 		return false;
 	}
+
 	return (
 		// vscode.dev & insiders.vscode.dev
 		/(?:^|\.)vscode\.dev$/.test(uri.authority) ||

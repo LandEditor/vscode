@@ -149,10 +149,12 @@ export function registerChatCodeBlockActions() {
 				}
 
 				const clipboardService = accessor.get(IClipboardService);
+
 				clipboardService.writeText(context.code);
 
 				if (isResponseVM(context.element)) {
 					const chatService = accessor.get(IChatService);
+
 					chatService.notifyUserAction({
 						agentId: context.element.agent?.id,
 						command: context.element.slashCommand?.name,
@@ -308,6 +310,7 @@ export function registerChatCodeBlockActions() {
 						.get(IInstantiationService)
 						.createInstance(ApplyCodeBlockOperation);
 				}
+
 				return this.operation.run(context);
 			}
 		},
@@ -531,17 +534,20 @@ export function registerChatCodeBlockActions() {
 				const unusableTerminal =
 					terminal.xterm?.isStdinDisabled ||
 					terminal.shellLaunchConfig.isFeatureTerminal;
+
 				terminal = unusableTerminal
 					? await terminalService.createTerminal()
 					: terminal;
 
 				terminalService.setActiveInstance(terminal);
+
 				await terminal.focusWhenReady(true);
 
 				if (terminal.target === TerminalLocation.Editor) {
 					const existingEditors = editorService.findEditors(
 						terminal.resource,
 					);
+
 					terminalEditorService.openEditor(terminal, {
 						viewColumn: existingEditors?.[0].groupId,
 					});
@@ -716,6 +722,7 @@ function getContextFromEditor(
 				return context;
 			}
 		}
+
 		return;
 	}
 
@@ -782,6 +789,7 @@ export function registerChatCodeCompareBlockActions() {
 				const editor = instaService.createInstance(
 					DefaultChatTextEditor,
 				);
+
 				await editor.apply(
 					context.element,
 					context.edit,
@@ -829,6 +837,7 @@ export function registerChatCodeCompareBlockActions() {
 				const editor = instaService.createInstance(
 					DefaultChatTextEditor,
 				);
+
 				editor.discard(context.element, context.edit);
 			}
 		},

@@ -53,6 +53,7 @@ import { GlobPattern } from "./searchExtTypes.js";
  */
 interface IOneSearchPathPattern {
 	searchPath: uri;
+
 	pattern?: string;
 }
 
@@ -61,6 +62,7 @@ interface IOneSearchPathPattern {
  */
 export interface ISearchPathPattern {
 	searchPath: uri;
+
 	pattern?: glob.IExpression;
 }
 
@@ -68,6 +70,7 @@ type ISearchPathPatternBuilder = string | string[];
 
 export interface ISearchPatternBuilder<U extends UriComponents> {
 	uri?: U;
+
 	pattern: ISearchPathPatternBuilder;
 }
 
@@ -97,49 +100,73 @@ export function globPatternToISearchPatternBuilder(
  */
 export interface ISearchPathsInfo {
 	searchPaths?: ISearchPathPattern[];
+
 	pattern?: glob.IExpression;
 }
 
 interface ICommonQueryBuilderOptions<U extends UriComponents = URI> {
 	_reason?: string;
+
 	excludePattern?: ISearchPatternBuilder<U>[];
+
 	includePattern?: ISearchPathPatternBuilder;
+
 	extraFileResources?: U[];
 
 	/** Parse the special ./ syntax supported by the searchview, and expand foo to ** /foo */
 	expandPatterns?: boolean;
 
 	maxResults?: number;
+
 	maxFileSize?: number;
+
 	disregardIgnoreFiles?: boolean;
+
 	disregardGlobalIgnoreFiles?: boolean;
+
 	disregardParentIgnoreFiles?: boolean;
+
 	disregardExcludeSettings?: boolean;
+
 	disregardSearchExcludeSettings?: boolean;
+
 	ignoreSymlinks?: boolean;
+
 	onlyOpenEditors?: boolean;
+
 	onlyFileScheme?: boolean;
 }
 
 export interface IFileQueryBuilderOptions<U extends UriComponents = URI>
 	extends ICommonQueryBuilderOptions<U> {
 	filePattern?: string;
+
 	exists?: boolean;
+
 	sortByScore?: boolean;
+
 	cacheKey?: string;
+
 	shouldGlobSearch?: boolean;
 }
 
 export interface ITextQueryBuilderOptions<U extends UriComponents = URI>
 	extends ICommonQueryBuilderOptions<U> {
 	previewOptions?: ITextSearchPreviewOptions;
+
 	fileEncoding?: string;
+
 	surroundingContext?: number;
+
 	isSmartCase?: boolean;
+
 	notebookSearchConfig?: {
 		includeMarkupInput: boolean;
+
 		includeMarkupPreview: boolean;
+
 		includeCodeInput: boolean;
+
 		includeOutput: boolean;
 	};
 }
@@ -249,6 +276,7 @@ export class QueryBuilder {
 			if (!newPattern.notebookInfo) {
 				newPattern.notebookInfo = {};
 			}
+
 			newPattern.notebookInfo.isInNotebookMarkdownInput =
 				options.notebookSearchConfig.includeMarkupInput;
 		}
@@ -257,6 +285,7 @@ export class QueryBuilder {
 			if (!newPattern.notebookInfo) {
 				newPattern.notebookInfo = {};
 			}
+
 			newPattern.notebookInfo.isInNotebookMarkdownPreview =
 				options.notebookSearchConfig.includeMarkupPreview;
 		}
@@ -265,6 +294,7 @@ export class QueryBuilder {
 			if (!newPattern.notebookInfo) {
 				newPattern.notebookInfo = {};
 			}
+
 			newPattern.notebookInfo.isInNotebookCellInput =
 				options.notebookSearchConfig.includeCodeInput;
 		}
@@ -273,6 +303,7 @@ export class QueryBuilder {
 			if (!newPattern.notebookInfo) {
 				newPattern.notebookInfo = {};
 			}
+
 			newPattern.notebookInfo.isInNotebookCellOutput =
 				options.notebookSearchConfig.includeOutput;
 		}
@@ -316,6 +347,7 @@ export class QueryBuilder {
 		} else {
 			pattern = normalizeSlashes(pattern);
 		}
+
 		return expandPatterns
 			? this.parseSearchPaths(pattern)
 			: {
@@ -334,6 +366,7 @@ export class QueryBuilder {
 		)
 			? options.excludePattern.map((p) => p.pattern).flat()
 			: options.excludePattern;
+
 		excludePatterns =
 			excludePatterns?.length === 1
 				? excludePatterns[0]
@@ -393,6 +426,7 @@ export class QueryBuilder {
 					group.editors.map((editor) => editor.resource),
 				),
 			);
+
 			this.logService.trace(
 				"QueryBuilder#commonQuery - openEditor URIs",
 				JSON.stringify(openEditors),
@@ -404,6 +438,7 @@ export class QueryBuilder {
 
 			const openEditorsQueryProps =
 				this.commonQueryFromFileList(openEditorsInQuery);
+
 			this.logService.trace(
 				"QueryBuilder#commonQuery - openEditor Query",
 				JSON.stringify(openEditorsQueryProps),
@@ -418,6 +453,7 @@ export class QueryBuilder {
 			options.extraFileResources.filter((extraFile) =>
 				pathIncludedInQuery(queryProps, extraFile.fsPath),
 			);
+
 		queryProps.extraFileResources =
 			extraFileResources && extraFileResources.length
 				? extraFileResources
@@ -434,6 +470,7 @@ export class QueryBuilder {
 		const includePattern: glob.IExpression = {};
 
 		let hasIncludedFile = false;
+
 		files.forEach((file) => {
 			if (file.scheme === Schemas.walkThrough) {
 				return;
@@ -450,18 +487,23 @@ export class QueryBuilder {
 
 				if (!folderQuery) {
 					hasIncludedFile = true;
+
 					folderQuery = { folder: searchRoot, includePattern: {} };
+
 					folderQueries.push(folderQuery);
+
 					foldersToSearch.set(searchRoot, folderQuery);
 				}
 
 				const relPath = path.relative(searchRoot.fsPath, file.fsPath);
+
 				assertIsDefined(folderQuery.includePattern)[
 					relPath.replace(/\\/g, "/")
 				] = true;
 			} else {
 				if (file.fsPath) {
 					hasIncludedFile = true;
+
 					includePattern[file.fsPath] = true;
 				}
 			}
@@ -633,6 +675,7 @@ export class QueryBuilder {
 		});
 
 		const searchPathPatternMap = new Map<string, ISearchPathPattern>();
+
 		expandedSearchPaths.forEach((oneSearchPathPattern) => {
 			const key = oneSearchPathPattern.searchPath.toString();
 
@@ -641,6 +684,7 @@ export class QueryBuilder {
 			if (existing) {
 				if (oneSearchPathPattern.pattern) {
 					existing.pattern = existing.pattern || {};
+
 					existing.pattern[oneSearchPathPattern.pattern] = true;
 				}
 			} else {
@@ -934,6 +978,7 @@ export class QueryBuilder {
 
 function splitGlobFromPath(searchPath: string): {
 	pathPortion: string;
+
 	globPortion?: string;
 } {
 	const globCharMatch = searchPath.match(/[\*\{\}\(\)\[\]\?]/);
@@ -972,6 +1017,7 @@ function patternListToIExpression(
 	return patterns.length
 		? patterns.reduce((glob, cur) => {
 				glob[cur] = true;
+
 				return glob;
 			}, Object.create(null))
 		: undefined;
@@ -1072,5 +1118,6 @@ export function resolveResourcesForSearchIncludes(
 			}
 		});
 	}
+
 	return folderPaths;
 }

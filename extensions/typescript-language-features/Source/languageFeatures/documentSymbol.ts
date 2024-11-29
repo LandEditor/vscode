@@ -59,6 +59,7 @@ const getSymbolKind = (kind: string): vscode.SymbolKind => {
 		case PConst.Kind.constructorImplementation:
 			return vscode.SymbolKind.Constructor;
 	}
+
 	return vscode.SymbolKind.Variable;
 };
 class TypeScriptDocumentSymbolProvider
@@ -68,6 +69,7 @@ class TypeScriptDocumentSymbolProvider
 		private readonly client: ITypeScriptServiceClient,
 		private readonly cachedResponse: CachedResponse<Proto.NavTreeResponse>,
 	) {}
+
 	public async provideDocumentSymbols(
 		document: vscode.TextDocument,
 		token: vscode.CancellationToken,
@@ -77,6 +79,7 @@ class TypeScriptDocumentSymbolProvider
 		if (!file) {
 			return undefined;
 		}
+
 		const args: Proto.FileRequestArgs = { file };
 
 		const response = await this.cachedResponse.execute(document, () =>
@@ -96,8 +99,10 @@ class TypeScriptDocumentSymbolProvider
 				item,
 			);
 		}
+
 		return result;
 	}
+
 	private static convertNavTree(
 		resource: vscode.Uri,
 		output: vscode.DocumentSymbol[],
@@ -109,6 +114,7 @@ class TypeScriptDocumentSymbolProvider
 		if (!shouldInclude && !item.childItems?.length) {
 			return false;
 		}
+
 		const children = new Set(item.childItems || []);
 
 		for (const span of item.spans) {
@@ -134,16 +140,21 @@ class TypeScriptDocumentSymbolProvider
 							symbolInfo.children,
 							child,
 						);
+
 					shouldInclude = shouldInclude || includedChild;
+
 					children.delete(child);
 				}
 			}
+
 			if (shouldInclude) {
 				output.push(symbolInfo);
 			}
 		}
+
 		return shouldInclude;
 	}
+
 	private static convertSymbol(
 		item: Proto.NavigationTree,
 		range: vscode.Range,
@@ -165,6 +176,7 @@ class TypeScriptDocumentSymbolProvider
 
 				break;
 		}
+
 		const symbolInfo = new vscode.DocumentSymbol(
 			label,
 			"",
@@ -178,14 +190,17 @@ class TypeScriptDocumentSymbolProvider
 		if (kindModifiers.has(PConst.KindModifiers.deprecated)) {
 			symbolInfo.tags = [vscode.SymbolTag.Deprecated];
 		}
+
 		return symbolInfo;
 	}
+
 	private static shouldInclueEntry(
 		item: Proto.NavigationTree | Proto.NavigationBarItem,
 	): boolean {
 		if (item.kind === PConst.Kind.alias) {
 			return false;
 		}
+
 		return !!(
 			item.text &&
 			item.text !== "<function>" &&

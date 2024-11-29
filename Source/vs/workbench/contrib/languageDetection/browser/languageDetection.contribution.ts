@@ -44,9 +44,13 @@ import { NOTEBOOK_EDITOR_EDITABLE } from "../../notebook/common/notebookContextK
 const detectLanguageCommandId = "editor.detectLanguage";
 class LanguageDetectionStatusContribution implements IWorkbenchContribution {
 	private static readonly _id = "status.languageDetectionStatus";
+
 	private readonly _disposables = new DisposableStore();
+
 	private _combinedEntry?: IStatusbarEntryAccessor;
+
 	private _delayer = new ThrottledDelayer(1000);
+
 	private readonly _renderDisposables = new DisposableStore();
 
 	constructor(
@@ -68,25 +72,35 @@ class LanguageDetectionStatusContribution implements IWorkbenchContribution {
 			this,
 			this._disposables,
 		);
+
 		this._update(false);
 	}
+
 	dispose(): void {
 		this._disposables.dispose();
+
 		this._delayer.dispose();
+
 		this._combinedEntry?.dispose();
+
 		this._renderDisposables.dispose();
 	}
+
 	private _update(clear: boolean): void {
 		if (clear) {
 			this._combinedEntry?.dispose();
+
 			this._combinedEntry = undefined;
 		}
+
 		this._delayer.trigger(() => this._doUpdate());
 	}
+
 	private async _doUpdate(): Promise<void> {
 		const editor = getCodeEditor(
 			this._editorService.activeTextEditorControl,
 		);
+
 		this._renderDisposables.clear();
 		// update when editor language changes
 		editor?.onDidChangeModelLanguage(
@@ -94,6 +108,7 @@ class LanguageDetectionStatusContribution implements IWorkbenchContribution {
 			this,
 			this._renderDisposables,
 		);
+
 		editor?.onDidChangeModelContent(
 			() => this._update(false),
 			this,
@@ -120,6 +135,7 @@ class LanguageDetectionStatusContribution implements IWorkbenchContribution {
 
 		if (disableLightbulb || !editorUri) {
 			this._combinedEntry?.dispose();
+
 			this._combinedEntry = undefined;
 		} else {
 			const lang =
@@ -150,6 +166,7 @@ class LanguageDetectionStatusContribution implements IWorkbenchContribution {
 				if (label) {
 					tooltip += ` (${label})`;
 				}
+
 				const props: IStatusbarEntry = {
 					name: localize("langDetection.name", "Language Detection"),
 					ariaLabel: localize(
@@ -178,6 +195,7 @@ class LanguageDetectionStatusContribution implements IWorkbenchContribution {
 				}
 			} else {
 				this._combinedEntry?.dispose();
+
 				this._combinedEntry = undefined;
 			}
 		}
@@ -206,6 +224,7 @@ registerAction2(
 				},
 			});
 		}
+
 		async run(accessor: ServicesAccessor): Promise<void> {
 			const editorService = accessor.get(IEditorService);
 

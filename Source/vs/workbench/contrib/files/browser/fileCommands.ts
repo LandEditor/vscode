@@ -164,8 +164,10 @@ export const openWindowCommand = (
 					),
 				};
 			}
+
 			return openable;
 		});
+
 		hostService.openWindow(toOpen, options);
 	}
 };
@@ -175,6 +177,7 @@ export const newWindowCommand = (
 	options?: IOpenEmptyWindowOptions,
 ) => {
 	const hostService = accessor.get(IHostService);
+
 	hostService.openWindow(options);
 };
 // Command registration
@@ -218,6 +221,7 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
 						// Explorer already resolved the item, no need to go to the file service #109780
 						return item;
 					}
+
 					return await fileService.stat(resource);
 				}),
 			);
@@ -235,6 +239,7 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
 						options: { pinned: true },
 					})),
 				);
+
 			await editorService.openEditors(editors, SIDE_GROUP);
 		}
 	},
@@ -295,7 +300,9 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
 			const provider = instantiationService.createInstance(
 				TextFileContentProvider,
 			);
+
 			providerDisposables.push(provider);
+
 			providerDisposables.push(
 				textModelService.registerTextModelContentProvider(
 					COMPARE_WITH_SAVED_SCHEMA,
@@ -373,6 +380,7 @@ CommandsRegistry.registerCommand({
 					accessor.get(IContextKeyService),
 				);
 		}
+
 		resourceSelectedForCompareContext.set(true);
 	},
 });
@@ -396,6 +404,7 @@ CommandsRegistry.registerCommand({
 				options: { pinned: true },
 			});
 		}
+
 		return true;
 	},
 });
@@ -440,6 +449,7 @@ async function resourcesToClipboard(
 				separator = relativeSeparator;
 			}
 		}
+
 		const text = resources
 			.map((resource) =>
 				labelService.getUriLabel(resource, {
@@ -449,6 +459,7 @@ async function resourcesToClipboard(
 				}),
 			)
 			.join(lineDelimiter);
+
 		await clipboardService.writeText(text);
 	}
 }
@@ -464,6 +475,7 @@ const copyPathCommandHandler: ICommandHandler = async (
 		accessor.get(IEditorGroupsService),
 		accessor.get(IExplorerService),
 	);
+
 	await resourcesToClipboard(
 		resources,
 		false,
@@ -507,6 +519,7 @@ const copyRelativePathCommandHandler: ICommandHandler = async (
 		accessor.get(IEditorGroupsService),
 		accessor.get(IExplorerService),
 	);
+
 	await resourcesToClipboard(
 		resources,
 		true,
@@ -559,6 +572,7 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
 		});
 
 		const resources = resource ? [resource] : [];
+
 		await resourcesToClipboard(
 			resources,
 			false,
@@ -594,9 +608,13 @@ CommandsRegistry.registerCommand({
 				// Disable autoreveal before revealing the explorer to prevent a race betwene auto reveal + selection
 				// Fixes #197268
 				explorerView.autoReveal = false;
+
 				explorerView.setExpanded(true);
+
 				await explorerService.select(uri, "force");
+
 				explorerView.focus();
+
 				explorerView.autoReveal = oldAutoReveal;
 			}
 		} else {
@@ -608,6 +626,7 @@ CommandsRegistry.registerCommand({
 
 			if (openEditorsView) {
 				openEditorsView.setExpanded(true);
+
 				openEditorsView.focus();
 			}
 		}
@@ -631,6 +650,7 @@ CommandsRegistry.registerCommand({
 				},
 			});
 		}
+
 		return undefined;
 	},
 });
@@ -679,6 +699,7 @@ async function saveSelectedEditors(
 					groupId: activeGroup.id,
 					editor: activeGroup.activeEditor.primary,
 				});
+
 				editors.push({
 					groupId: activeGroup.id,
 					editor: activeGroup.activeEditor.secondary,
@@ -691,6 +712,7 @@ async function saveSelectedEditors(
 			}
 		}
 	}
+
 	if (!editors || editors.length === 0) {
 		return; // nothing to save
 	}
@@ -743,6 +765,7 @@ function saveDirtyEditorsOfGroups(
 			}
 		}
 	}
+
 	return doSaveEditors(accessor, dirtyEditors, options);
 }
 async function doSaveEditors(
@@ -790,6 +813,7 @@ async function doSaveEditors(
 					}),
 				);
 			}
+
 			notificationService.notify({
 				id: editors
 					.map(({ editor }) => hash(editor.resource?.toString()))
@@ -896,6 +920,7 @@ CommandsRegistry.registerCommand({
 		} else {
 			groups = resolvedContext.groupedEditors.map(({ group }) => group);
 		}
+
 		return saveDirtyEditorsOfGroups(accessor, groups, {
 			reason: SaveReason.EXPLICIT,
 		});
@@ -935,9 +960,11 @@ CommandsRegistry.registerCommand({
 				];
 			}
 		}
+
 		if (!editors || editors.length === 0) {
 			return; // nothing to revert
 		}
+
 		try {
 			await editorService.revert(
 				editors.filter(
@@ -950,6 +977,7 @@ CommandsRegistry.registerCommand({
 			);
 		} catch (error) {
 			const notificationService = accessor.get(INotificationService);
+
 			notificationService.error(
 				nls.localize(
 					"genericRevertError",
@@ -988,6 +1016,7 @@ CommandsRegistry.registerCommand({
 			// Show a picker for the user to choose which folder to remove
 			return commandService.executeCommand(RemoveRootFolderAction.ID);
 		}
+
 		const workspaceEditingService = accessor.get(IWorkspaceEditingService);
 
 		return workspaceEditingService.removeFolders(resources);
@@ -1013,10 +1042,12 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
 		if (viewlet?.getId() !== VIEWLET_ID) {
 			return;
 		}
+
 		const explorer =
 			viewlet.getViewPaneContainer() as ExplorerViewPaneContainer;
 
 		const view = explorer.getExplorerView();
+
 		view.previousCompressedStat();
 	},
 });
@@ -1039,10 +1070,12 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
 		if (viewlet?.getId() !== VIEWLET_ID) {
 			return;
 		}
+
 		const explorer =
 			viewlet.getViewPaneContainer() as ExplorerViewPaneContainer;
 
 		const view = explorer.getExplorerView();
+
 		view.nextCompressedStat();
 	},
 });
@@ -1065,10 +1098,12 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
 		if (viewlet?.getId() !== VIEWLET_ID) {
 			return;
 		}
+
 		const explorer =
 			viewlet.getViewPaneContainer() as ExplorerViewPaneContainer;
 
 		const view = explorer.getExplorerView();
+
 		view.firstCompressedStat();
 	},
 });
@@ -1091,10 +1126,12 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
 		if (viewlet?.getId() !== VIEWLET_ID) {
 			return;
 		}
+
 		const explorer =
 			viewlet.getViewPaneContainer() as ExplorerViewPaneContainer;
 
 		const view = explorer.getExplorerView();
+
 		view.lastCompressedStat();
 	},
 });
@@ -1133,10 +1170,12 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
 		accessor,
 		args?: {
 			languageId?: string;
+
 			viewType?: string;
 		},
 	) => {
 		const editorService = accessor.get(IEditorService);
+
 		await editorService.openEditor({
 			resource: undefined,
 			options: {
@@ -1153,7 +1192,9 @@ CommandsRegistry.registerCommand({
 		accessor,
 		args?: {
 			languageId?: string;
+
 			viewType?: string;
+
 			fileName?: string;
 		},
 	) => {
@@ -1182,7 +1223,9 @@ CommandsRegistry.registerCommand({
 		if (!saveUri) {
 			return;
 		}
+
 		await fileService.createFile(saveUri, undefined, { overwrite: true });
+
 		await editorService.openEditor({
 			resource: saveUri,
 			options: {

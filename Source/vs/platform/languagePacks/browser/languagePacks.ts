@@ -23,6 +23,7 @@ export class WebLanguagePacksService extends LanguagePackBaseService {
 	) {
 		super(extensionGalleryService);
 	}
+
 	async getBuiltInExtensionTranslationsUri(
 		id: string,
 		language: string,
@@ -46,6 +47,7 @@ export class WebLanguagePacksService extends LanguagePackBaseService {
 
 			return undefined;
 		}
+
 		const languagePackExtensions = result.firstPage.find(
 			(e) => e.properties.localizedLanguages?.length,
 		);
@@ -96,6 +98,7 @@ export class WebLanguagePacksService extends LanguagePackBaseService {
 
 			return undefined;
 		}
+
 		return URI.joinPath(uri, translation.path);
 	}
 	// Web doesn't have a concept of language packs, so we just return an empty array

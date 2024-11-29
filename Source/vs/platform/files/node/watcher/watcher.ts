@@ -17,30 +17,38 @@ import { computeStats } from "./watcherStats.js";
 
 export class UniversalWatcher extends Disposable implements IUniversalWatcher {
 	private readonly recursiveWatcher = this._register(new ParcelWatcher());
+
 	private readonly nonRecursiveWatcher = this._register(
 		new NodeJSWatcher(this.recursiveWatcher),
 	);
+
 	readonly onDidChangeFile = Event.any(
 		this.recursiveWatcher.onDidChangeFile,
 		this.nonRecursiveWatcher.onDidChangeFile,
 	);
+
 	readonly onDidError = Event.any(
 		this.recursiveWatcher.onDidError,
 		this.nonRecursiveWatcher.onDidError,
 	);
+
 	private readonly _onDidLogMessage = this._register(
 		new Emitter<ILogMessage>(),
 	);
+
 	readonly onDidLogMessage = Event.any(
 		this._onDidLogMessage.event,
 		this.recursiveWatcher.onDidLogMessage,
 		this.nonRecursiveWatcher.onDidLogMessage,
 	);
+
 	private requests: IUniversalWatchRequest[] = [];
+
 	private failedRecursiveRequests = 0;
 
 	constructor() {
 		super();
+
 		this._register(
 			this.recursiveWatcher.onDidError((e) => {
 				if (e.request) {
@@ -49,8 +57,10 @@ export class UniversalWatcher extends Disposable implements IUniversalWatcher {
 			}),
 		);
 	}
+
 	async watch(requests: IUniversalWatchRequest[]): Promise<void> {
 		this.requests = requests;
+
 		this.failedRecursiveRequests = 0;
 		// Watch recursively first to give recursive watchers a chance
 		// to step in for non-recursive watch requests, thus reducing
@@ -64,6 +74,7 @@ export class UniversalWatcher extends Disposable implements IUniversalWatcher {
 		} catch (e) {
 			error = e;
 		}
+
 		try {
 			await this.nonRecursiveWatcher.watch(
 				requests.filter((request) => !isRecursiveWatchRequest(request)),
@@ -73,10 +84,12 @@ export class UniversalWatcher extends Disposable implements IUniversalWatcher {
 				error = e;
 			}
 		}
+
 		if (error) {
 			throw error;
 		}
 	}
+
 	async setVerboseLogging(enabled: boolean): Promise<void> {
 		// Log stats
 		if (enabled && this.requests.length > 0) {
@@ -96,6 +109,7 @@ export class UniversalWatcher extends Disposable implements IUniversalWatcher {
 			this.nonRecursiveWatcher.setVerboseLogging(enabled),
 		]);
 	}
+
 	async stop(): Promise<void> {
 		await Promises.settled([
 			this.recursiveWatcher.stop(),

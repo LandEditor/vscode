@@ -17,21 +17,30 @@ import { IExtHostCommands } from "../common/extHostCommands.js";
 
 export interface OpenCommandPipeArgs {
 	type: "open";
+
 	fileURIs?: string[];
+
 	folderURIs?: string[];
 
 	forceNewWindow?: boolean;
+
 	diffMode?: boolean;
+
 	mergeMode?: boolean;
+
 	addMode?: boolean;
+
 	gotoLineMode?: boolean;
 
 	forceReuseWindow?: boolean;
+
 	waitMarkerFilePath?: string;
+
 	remoteAuthority?: string | null;
 }
 export interface OpenExternalCommandPipeArgs {
 	type: "openExternal";
+
 	uris: string[];
 }
 export interface StatusPipeArgs {
@@ -39,11 +48,15 @@ export interface StatusPipeArgs {
 }
 export interface ExtensionManagementPipeArgs {
 	type: "extensionManagement";
+
 	list?: {
 		showVersions?: boolean;
+
 		category?: string;
 	};
+
 	install?: string[];
+
 	uninstall?: string[];
 
 	force?: boolean;
@@ -68,24 +81,30 @@ export class CLIServerBase {
 		this._server = http.createServer((req, res) =>
 			this.onRequest(req, res),
 		);
+
 		this.setup().catch((err) => {
 			logService.error(err);
 
 			return "";
 		});
 	}
+
 	public get ipcHandlePath() {
 		return this._ipcHandlePath;
 	}
+
 	private async setup(): Promise<string> {
 		try {
 			this._server.listen(this.ipcHandlePath);
+
 			this._server.on("error", (err) => this.logService.error(err));
 		} catch (err) {
 			this.logService.error("Could not start open from terminal server.");
 		}
+
 		return this._ipcHandlePath;
 	}
+
 	private onRequest(
 		req: http.IncomingMessage,
 		res: http.ServerResponse,
@@ -95,6 +114,7 @@ export class CLIServerBase {
 			returnObj: string | undefined,
 		) => {
 			res.writeHead(statusCode, { "content-type": "application/json" });
+
 			res.end(
 				JSON.stringify(returnObj || null),
 				(err?: any) => err && this.logService.error(err),
@@ -102,8 +122,11 @@ export class CLIServerBase {
 		};
 
 		const chunks: string[] = [];
+
 		req.setEncoding("utf8");
+
 		req.on("data", (d: string) => chunks.push(d));
+
 		req.on("end", async () => {
 			try {
 				const data: PipeCommand | any = JSON.parse(chunks.join(""));
@@ -136,15 +159,19 @@ export class CLIServerBase {
 
 						break;
 				}
+
 				sendResponse(200, returnObj);
 			} catch (e) {
 				const message =
 					e instanceof Error ? e.message : JSON.stringify(e);
+
 				sendResponse(500, message);
+
 				this.logService.error("Error while processing pipe request", e);
 			}
 		});
 	}
+
 	private async open(data: OpenCommandPipeArgs): Promise<undefined> {
 		const {
 			fileURIs,
@@ -170,6 +197,7 @@ export class CLIServerBase {
 				}
 			}
 		}
+
 		if (Array.isArray(fileURIs)) {
 			for (const s of fileURIs) {
 				try {
@@ -183,6 +211,7 @@ export class CLIServerBase {
 				}
 			}
 		}
+
 		const waitMarkerFileURI = waitMarkerFilePath
 			? URI.file(waitMarkerFilePath)
 			: undefined;
@@ -201,12 +230,14 @@ export class CLIServerBase {
 			waitMarkerFileURI,
 			remoteAuthority,
 		};
+
 		this._commands.executeCommand(
 			"_remoteCLI.windowOpen",
 			urisToOpen,
 			windowOpenArgs,
 		);
 	}
+
 	private async openExternal(
 		data: OpenExternalCommandPipeArgs,
 	): Promise<undefined> {
@@ -220,6 +251,7 @@ export class CLIServerBase {
 			);
 		}
 	}
+
 	private async manageExtensions(
 		data: ExtensionManagementPipeArgs,
 	): Promise<string | undefined> {
@@ -240,11 +272,13 @@ export class CLIServerBase {
 			commandArgs,
 		);
 	}
+
 	private async getStatus(data: StatusPipeArgs): Promise<string | undefined> {
 		return await this._commands.executeCommand<string | undefined>(
 			"_remoteCLI.getSystemStatus",
 		);
 	}
+
 	dispose(): void {
 		this._server.close();
 

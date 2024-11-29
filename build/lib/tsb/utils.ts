@@ -14,8 +14,10 @@ export module collections {
 		if (hasOwnProperty.call(collection, key)) {
 			return collection[key];
 		}
+
 		return null;
 	}
+
 	export function insert<T>(
 		collection: {
 			[keys: string]: T;
@@ -25,6 +27,7 @@ export module collections {
 	): void {
 		collection[key] = value;
 	}
+
 	export function lookupOrInsert<T>(
 		collection: {
 			[keys: string]: T;
@@ -40,6 +43,7 @@ export module collections {
 			return value;
 		}
 	}
+
 	export function forEach<T>(
 		collection: {
 			[keys: string]: T;
@@ -55,6 +59,7 @@ export module collections {
 			}
 		}
 	}
+
 	export function contains(
 		collection: {
 			[keys: string]: any;
@@ -83,13 +88,16 @@ export module strings {
 export module graph {
 	export interface Node<T> {
 		data: T;
+
 		incoming: {
 			[key: string]: Node<T>;
 		};
+
 		outgoing: {
 			[key: string]: Node<T>;
 		};
 	}
+
 	export function newNode<T>(data: T): Node<T> {
 		return {
 			data: data,
@@ -97,6 +105,7 @@ export module graph {
 			outgoing: {},
 		};
 	}
+
 	export class Graph<T> {
 		private _nodes: {
 			[key: string]: Node<T>;
@@ -105,6 +114,7 @@ export module graph {
 		constructor(private _hashFn: (element: T) => string) {
 			// empty
 		}
+
 		traverse(
 			start: T,
 			inwards: boolean,
@@ -115,8 +125,10 @@ export module graph {
 			if (!startNode) {
 				return;
 			}
+
 			this._traverse(startNode, inwards, {}, callback);
 		}
+
 		private _traverse(
 			node: Node<T>,
 			inwards: boolean,
@@ -130,29 +142,40 @@ export module graph {
 			if (collections.contains(seen, key)) {
 				return;
 			}
+
 			seen[key] = true;
+
 			callback(node.data);
 
 			const nodes = inwards ? node.outgoing : node.incoming;
+
 			collections.forEach(nodes, (entry) =>
 				this._traverse(entry.value, inwards, seen, callback),
 			);
 		}
+
 		inertEdge(from: T, to: T): void {
 			const fromNode = this.lookupOrInsertNode(from);
 
 			const toNode = this.lookupOrInsertNode(to);
+
 			fromNode.outgoing[this._hashFn(to)] = toNode;
+
 			toNode.incoming[this._hashFn(from)] = fromNode;
 		}
+
 		removeNode(data: T): void {
 			const key = this._hashFn(data);
+
 			delete this._nodes[key];
+
 			collections.forEach(this._nodes, (entry) => {
 				delete entry.value.outgoing[key];
+
 				delete entry.value.incoming[key];
 			});
 		}
+
 		lookupOrInsertNode(data: T): Node<T> {
 			const key = this._hashFn(data);
 
@@ -160,10 +183,13 @@ export module graph {
 
 			if (!node) {
 				node = newNode(data);
+
 				this._nodes[key] = node;
 			}
+
 			return node;
 		}
+
 		lookup(data: T): Node<T> | null {
 			return collections.lookup(this._nodes, this._hashFn(data));
 		}

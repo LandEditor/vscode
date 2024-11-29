@@ -46,11 +46,13 @@ export class ViewCompositionEndEvent {
 }
 export class ViewConfigurationChangedEvent {
 	public readonly type = ViewEventType.ViewConfigurationChanged;
+
 	public readonly _source: ConfigurationChangedEvent;
 
 	constructor(source: ConfigurationChangedEvent) {
 		this._source = source;
 	}
+
 	public hasChanged(id: EditorOption): boolean {
 		return this._source.hasChanged(id);
 	}
@@ -66,21 +68,31 @@ export class ViewCursorStateChangedEvent {
 }
 export class ViewDecorationsChangedEvent {
 	public readonly type = ViewEventType.ViewDecorationsChanged;
+
 	readonly affectsMinimap: boolean;
+
 	readonly affectsOverviewRuler: boolean;
+
 	readonly affectsGlyphMargin: boolean;
+
 	readonly affectsLineNumber: boolean;
 
 	constructor(source: IModelDecorationsChangedEvent | null) {
 		if (source) {
 			this.affectsMinimap = source.affectsMinimap;
+
 			this.affectsOverviewRuler = source.affectsOverviewRuler;
+
 			this.affectsGlyphMargin = source.affectsGlyphMargin;
+
 			this.affectsLineNumber = source.affectsLineNumber;
 		} else {
 			this.affectsMinimap = true;
+
 			this.affectsOverviewRuler = true;
+
 			this.affectsGlyphMargin = true;
+
 			this.affectsLineNumber = true;
 		}
 	}
@@ -94,6 +106,7 @@ export class ViewFlushedEvent {
 }
 export class ViewFocusChangedEvent {
 	public readonly type = ViewEventType.ViewFocusChanged;
+
 	public readonly isFocused: boolean;
 
 	constructor(isFocused: boolean) {
@@ -137,6 +150,7 @@ export class ViewLinesDeletedEvent {
 
 	constructor(fromLineNumber: number, toLineNumber: number) {
 		this.fromLineNumber = fromLineNumber;
+
 		this.toLineNumber = toLineNumber;
 	}
 }
@@ -153,6 +167,7 @@ export class ViewLinesInsertedEvent {
 
 	constructor(fromLineNumber: number, toLineNumber: number) {
 		this.fromLineNumber = fromLineNumber;
+
 		this.toLineNumber = toLineNumber;
 	}
 }
@@ -202,23 +217,38 @@ export class ViewRevealRangeRequestEvent {
 }
 export class ViewScrollChangedEvent {
 	public readonly type = ViewEventType.ViewScrollChanged;
+
 	public readonly scrollWidth: number;
+
 	public readonly scrollLeft: number;
+
 	public readonly scrollHeight: number;
+
 	public readonly scrollTop: number;
+
 	public readonly scrollWidthChanged: boolean;
+
 	public readonly scrollLeftChanged: boolean;
+
 	public readonly scrollHeightChanged: boolean;
+
 	public readonly scrollTopChanged: boolean;
 
 	constructor(source: ScrollEvent) {
 		this.scrollWidth = source.scrollWidth;
+
 		this.scrollLeft = source.scrollLeft;
+
 		this.scrollHeight = source.scrollHeight;
+
 		this.scrollTop = source.scrollTop;
+
 		this.scrollWidthChanged = source.scrollWidthChanged;
+
 		this.scrollLeftChanged = source.scrollLeftChanged;
+
 		this.scrollHeightChanged = source.scrollHeightChanged;
+
 		this.scrollTopChanged = source.scrollTopChanged;
 	}
 }
@@ -229,6 +259,7 @@ export class ViewThemeChangedEvent {
 }
 export class ViewTokensChangedEvent {
 	public readonly type = ViewEventType.ViewTokensChanged;
+
 	public readonly ranges: {
 		/**
 		 * Start line number of range
@@ -243,6 +274,7 @@ export class ViewTokensChangedEvent {
 	constructor(
 		ranges: {
 			fromLineNumber: number;
+
 			toLineNumber: number;
 		}[],
 	) {

@@ -42,6 +42,7 @@ class ResourceModelCollection extends ReferenceCollection<
 	Promise<IResolvedTextEditorModel>
 > {
 	private readonly providers = new Map<string, ITextModelContentProvider[]>();
+
 	private readonly modelsToDispose = new Set<string>();
 
 	constructor(
@@ -56,11 +57,13 @@ class ResourceModelCollection extends ReferenceCollection<
 	) {
 		super();
 	}
+
 	protected createReferencedObject(
 		key: string,
 	): Promise<IResolvedTextEditorModel> {
 		return this.doCreateReferencedObject(key);
 	}
+
 	private async doCreateReferencedObject(
 		key: string,
 		skipActivateProvider?: boolean,
@@ -76,6 +79,7 @@ class ResourceModelCollection extends ReferenceCollection<
 			if (!cachedModel) {
 				throw new Error(`Unable to resolve inMemory resource ${key}`);
 			}
+
 			const model = this.instantiationService.createInstance(
 				TextResourceEditorModel,
 				resource,
@@ -124,8 +128,10 @@ class ResourceModelCollection extends ReferenceCollection<
 
 			return this.doCreateReferencedObject(key, true);
 		}
+
 		throw new Error(`Unable to resolve resource ${key}`);
 	}
+
 	private ensureResolvedModel(
 		model: ITextEditorModel,
 		key: string,
@@ -133,8 +139,10 @@ class ResourceModelCollection extends ReferenceCollection<
 		if (isResolvedTextEditorModel(model)) {
 			return true;
 		}
+
 		throw new Error(`Unable to resolve resource ${key}`);
 	}
+
 	protected destroyReferencedObject(
 		key: string,
 		modelPromise: Promise<ITextEditorModel>,
@@ -156,6 +164,7 @@ class ResourceModelCollection extends ReferenceCollection<
 					// return if model has been acquired again meanwhile
 					return;
 				}
+
 				if (model instanceof TextFileEditorModel) {
 					// text file models have conditions that prevent them
 					// from dispose, so we have to wait until we can dispose
@@ -165,6 +174,7 @@ class ResourceModelCollection extends ReferenceCollection<
 					// from dispose, so we have to wait until we can dispose
 					await this.textFileService.untitled.canDispose(model);
 				}
+
 				if (!this.modelsToDispose.has(key)) {
 					// return if model has been acquired again meanwhile
 					return;
@@ -178,6 +188,7 @@ class ResourceModelCollection extends ReferenceCollection<
 			}
 		})();
 	}
+
 	registerTextModelContentProvider(
 		scheme: string,
 		provider: ITextModelContentProvider,
@@ -186,8 +197,10 @@ class ResourceModelCollection extends ReferenceCollection<
 
 		if (!providers) {
 			providers = [];
+
 			this.providers.set(scheme, providers);
 		}
+
 		providers.unshift(provider);
 
 		return toDisposable(() => {
@@ -196,11 +209,13 @@ class ResourceModelCollection extends ReferenceCollection<
 			if (!providersForScheme) {
 				return;
 			}
+
 			const index = providersForScheme.indexOf(provider);
 
 			if (index === -1) {
 				return;
 			}
+
 			providersForScheme.splice(index, 1);
 
 			if (providersForScheme.length === 0) {
@@ -208,9 +223,11 @@ class ResourceModelCollection extends ReferenceCollection<
 			}
 		});
 	}
+
 	hasTextModelContentProvider(scheme: string): boolean {
 		return this.providers.get(scheme) !== undefined;
 	}
+
 	private async resolveTextModelContent(key: string): Promise<ITextModel> {
 		const resource = URI.parse(key);
 
@@ -223,6 +240,7 @@ class ResourceModelCollection extends ReferenceCollection<
 				return value;
 			}
 		}
+
 		throw new Error(
 			`Unable to resolve text model content for resource ${key}`,
 		);
@@ -233,12 +251,14 @@ export class TextModelResolverService
 	implements ITextModelService
 {
 	declare readonly _serviceBrand: undefined;
+
 	private _resourceModelCollection:
 		| (ResourceModelCollection &
 				ReferenceCollection<
 					Promise<IResolvedTextEditorModel>
 				>) /* TS Fail */
 		| undefined = undefined;
+
 	private get resourceModelCollection() {
 		if (!this._resourceModelCollection) {
 			this._resourceModelCollection =
@@ -246,19 +266,24 @@ export class TextModelResolverService
 					ResourceModelCollection,
 				);
 		}
+
 		return this._resourceModelCollection;
 	}
+
 	private _asyncModelCollection:
 		| AsyncReferenceCollection<IResolvedTextEditorModel>
 		| undefined = undefined;
+
 	private get asyncModelCollection() {
 		if (!this._asyncModelCollection) {
 			this._asyncModelCollection = new AsyncReferenceCollection(
 				this.resourceModelCollection,
 			);
 		}
+
 		return this._asyncModelCollection;
 	}
+
 	constructor(
 		@IInstantiationService
 		private readonly instantiationService: IInstantiationService,
@@ -272,6 +297,7 @@ export class TextModelResolverService
 		private readonly uriIdentityService: IUriIdentityService,
 	) {
 		super();
+
 		this._register(
 			new ModelUndoRedoParticipant(
 				this.modelService,
@@ -280,6 +306,7 @@ export class TextModelResolverService
 			),
 		);
 	}
+
 	async createModelReference(
 		resource: URI,
 	): Promise<IReference<IResolvedTextEditorModel>> {
@@ -290,6 +317,7 @@ export class TextModelResolverService
 
 		return await this.asyncModelCollection.acquire(resource.toString());
 	}
+
 	registerTextModelContentProvider(
 		scheme: string,
 		provider: ITextModelContentProvider,
@@ -299,6 +327,7 @@ export class TextModelResolverService
 			provider,
 		);
 	}
+
 	canHandleResource(resource: URI): boolean {
 		if (
 			this.fileService.hasProvider(resource) ||
@@ -307,6 +336,7 @@ export class TextModelResolverService
 		) {
 			return true; // we handle file://, untitled:// and inMemory:// automatically
 		}
+
 		return this.resourceModelCollection.hasTextModelContentProvider(
 			resource.scheme,
 		);

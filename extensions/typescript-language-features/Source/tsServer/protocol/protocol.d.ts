@@ -14,6 +14,7 @@ declare enum ServerType {
 declare module "../../../../node_modules/typescript/lib/typescript" {
 	namespace server.protocol {
 		type TextInsertion = ts.TextInsertion;
+
 		type ScriptElementKind = ts.ScriptElementKind;
 
 		interface Response {

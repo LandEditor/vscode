@@ -21,6 +21,7 @@ export function fromExtractError(e: Error): ExtensionManagementError {
 			errorCode = ExtensionManagementErrorCode.IncompleteZip;
 		}
 	}
+
 	return toExtensionManagementError(e, errorCode);
 }
 export async function getManifest(
@@ -33,6 +34,7 @@ export async function getManifest(
 	} catch (e) {
 		throw fromExtractError(e);
 	}
+
 	try {
 		return JSON.parse(data.toString("utf8"));
 	} catch (err) {

@@ -450,6 +450,7 @@ export function registerColors(): void {
 		const entry = ansiColorMap[id];
 
 		const colorName = id.substring(13);
+
 		ansiColorIdentifiers[entry.index] = registerColor(
 			id,
 			entry.defaults,

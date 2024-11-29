@@ -12,7 +12,9 @@ import { EditorModel } from "./editorModel.js";
  */
 export class BinaryEditorModel extends EditorModel {
 	private readonly mime = Mimes.binary;
+
 	private size: number | undefined;
+
 	private etag: string | undefined;
 
 	constructor(
@@ -47,16 +49,19 @@ export class BinaryEditorModel extends EditorModel {
 	getETag(): string | undefined {
 		return this.etag;
 	}
+
 	override async resolve(): Promise<void> {
 		// Make sure to resolve up to date stat for file resources
 		if (this.fileService.hasProvider(this.resource)) {
 			const stat = await this.fileService.stat(this.resource);
+
 			this.etag = stat.etag;
 
 			if (typeof stat.size === "number") {
 				this.size = stat.size;
 			}
 		}
+
 		return super.resolve();
 	}
 }

@@ -53,13 +53,16 @@ import "./ghostTextView.css";
 
 export interface IGhostTextWidgetModel {
 	readonly targetTextModel: IObservable<ITextModel | undefined>;
+
 	readonly ghostText: IObservable<
 		GhostText | GhostTextReplacement | undefined
 	>;
+
 	readonly minReservedLineCount: IObservable<number>;
 }
 export class GhostTextView extends Disposable {
 	private readonly _isDisposed = observableValue(this, false);
+
 	private readonly _editorObs = observableCodeEditor(this._editor);
 
 	constructor(
@@ -69,30 +72,37 @@ export class GhostTextView extends Disposable {
 		private readonly _languageService: ILanguageService,
 	) {
 		super();
+
 		this._register(
 			toDisposable(() => {
 				this._isDisposed.set(true, undefined);
 			}),
 		);
+
 		this._register(this._editorObs.setDecorations(this.decorations));
 	}
+
 	private readonly _useSyntaxHighlighting = this._editorObs
 		.getOption(EditorOption.inlineSuggest)
 		.map((v) => v.syntaxHighlightingEnabled);
+
 	private readonly uiState = derived(this, (reader) => {
 		if (this._isDisposed.read(reader)) {
 			return undefined;
 		}
+
 		const textModel = this._editorObs.model.read(reader);
 
 		if (textModel !== this._model.targetTextModel.read(reader)) {
 			return undefined;
 		}
+
 		const ghostText = this._model.ghostText.read(reader);
 
 		if (!ghostText) {
 			return undefined;
 		}
+
 		const replacedRange =
 			ghostText instanceof GhostTextReplacement
 				? ghostText.columnRange
@@ -159,12 +169,14 @@ export class GhostTextView extends Disposable {
 			syntaxHighlightingEnabled,
 		};
 	});
+
 	private readonly decorations = derived(this, (reader) => {
 		const uiState = this.uiState.read(reader);
 
 		if (!uiState) {
 			return [];
 		}
+
 		const decorations: IModelDeltaDecoration[] = [];
 
 		const extraClassName = uiState.syntaxHighlightingEnabled
@@ -181,6 +193,7 @@ export class GhostTextView extends Disposable {
 				},
 			});
 		}
+
 		if (uiState.hiddenRange) {
 			decorations.push({
 				range: uiState.hiddenRange.toRange(uiState.lineNumber),
@@ -190,6 +203,7 @@ export class GhostTextView extends Disposable {
 				},
 			});
 		}
+
 		for (const p of uiState.inlineTexts) {
 			decorations.push({
 				range: Range.fromPositions(
@@ -209,8 +223,10 @@ export class GhostTextView extends Disposable {
 				},
 			});
 		}
+
 		return decorations;
 	});
+
 	private readonly additionalLinesWidget = this._register(
 		new AdditionalLinesWidget(
 			this._editor,
@@ -230,6 +246,7 @@ export class GhostTextView extends Disposable {
 			}),
 		),
 	);
+
 	public ownsViewZone(viewZoneId: string): boolean {
 		return this.additionalLinesWidget.viewZoneId === viewZoneId;
 	}
@@ -241,12 +258,15 @@ function computeGhostTextViewData(
 ) {
 	const inlineTexts: {
 		column: number;
+
 		text: string;
+
 		preview: boolean;
 	}[] = [];
 
 	const additionalLines: {
 		content: string;
+
 		decorations: LineDecoration[];
 	}[] = [];
 
@@ -267,9 +287,12 @@ function computeGhostTextViewData(
 					),
 				);
 			}
+
 			lastLine.content += lines[0];
+
 			lines = lines.slice(1);
 		}
+
 		for (const line of lines) {
 			additionalLines.push({
 				content: line,
@@ -286,6 +309,7 @@ function computeGhostTextViewData(
 			});
 		}
 	}
+
 	const textBufferLine = textModel.getLineContent(ghostText.lineNumber);
 
 	let hiddenTextStartColumn: number | undefined = undefined;
@@ -301,6 +325,7 @@ function computeGhostTextViewData(
 				text: lines[0],
 				preview: part.preview,
 			});
+
 			lines = lines.slice(1);
 		} else {
 			addToAdditionalLines(
@@ -308,6 +333,7 @@ function computeGhostTextViewData(
 				undefined,
 			);
 		}
+
 		if (lines.length > 0) {
 			addToAdditionalLines(lines, ghostTextClassName);
 
@@ -318,11 +344,14 @@ function computeGhostTextViewData(
 				hiddenTextStartColumn = part.column;
 			}
 		}
+
 		lastIdx = part.column - 1;
 	}
+
 	if (hiddenTextStartColumn !== undefined) {
 		addToAdditionalLines([textBufferLine.substring(lastIdx)], undefined);
 	}
+
 	const hiddenRange =
 		hiddenTextStartColumn !== undefined
 			? new ColumnRange(hiddenTextStartColumn, textBufferLine.length + 1)
@@ -336,9 +365,11 @@ function computeGhostTextViewData(
 }
 export class AdditionalLinesWidget extends Disposable {
 	private _viewZoneId: string | undefined = undefined;
+
 	public get viewZoneId(): string | undefined {
 		return this._viewZoneId;
 	}
+
 	private readonly editorOptionsChanged = observableSignalFromEvent(
 		"editorOptionChanged",
 		Event.filter(
@@ -359,18 +390,23 @@ export class AdditionalLinesWidget extends Disposable {
 		private readonly lines: IObservable<
 			| {
 					targetTextModel: ITextModel;
+
 					lineNumber: number;
+
 					additionalLines: LineData[];
+
 					minReservedLineCount: number;
 			  }
 			| undefined
 		>,
 	) {
 		super();
+
 		this._register(
 			autorun((reader) => {
 				/** @description update view zone */
 				const lines = this.lines.read(reader);
+
 				this.editorOptionsChanged.read(reader);
 
 				if (lines) {
@@ -385,18 +421,23 @@ export class AdditionalLinesWidget extends Disposable {
 			}),
 		);
 	}
+
 	public override dispose(): void {
 		super.dispose();
+
 		this.clear();
 	}
+
 	private clear(): void {
 		this.editor.changeViewZones((changeAccessor) => {
 			if (this._viewZoneId) {
 				changeAccessor.removeZone(this._viewZoneId);
+
 				this._viewZoneId = undefined;
 			}
 		});
 	}
+
 	private updateLines(
 		lineNumber: number,
 		additionalLines: LineData[],
@@ -407,12 +448,16 @@ export class AdditionalLinesWidget extends Disposable {
 		if (!textModel) {
 			return;
 		}
+
 		const { tabSize } = textModel.getOptions();
+
 		this.editor.changeViewZones((changeAccessor) => {
 			if (this._viewZoneId) {
 				changeAccessor.removeZone(this._viewZoneId);
+
 				this._viewZoneId = undefined;
 			}
+
 			const heightInLines = Math.max(
 				additionalLines.length,
 				minReservedLineCount,
@@ -420,12 +465,14 @@ export class AdditionalLinesWidget extends Disposable {
 
 			if (heightInLines > 0) {
 				const domNode = document.createElement("div");
+
 				renderLines(
 					domNode,
 					tabSize,
 					additionalLines,
 					this.editor.getOptions(),
 				);
+
 				this._viewZoneId = changeAccessor.addZone({
 					afterLineNumber: lineNumber,
 					heightInLines: heightInLines,
@@ -467,15 +514,20 @@ function renderLines(
 	const lineHeight = opts.get(EditorOption.lineHeight);
 
 	const sb = new StringBuilder(10000);
+
 	sb.appendString('<div class="suggest-preview-text">');
 
 	for (let i = 0, len = lines.length; i < len; i++) {
 		const lineData = lines[i];
 
 		const lineTokens = lineData.content;
+
 		sb.appendString('<div class="view-line');
+
 		sb.appendString('" style="top:');
+
 		sb.appendString(String(i * lineHeight));
+
 		sb.appendString('px;width:1000000px;">');
 
 		const line = lineTokens.getLineContent();
@@ -483,6 +535,7 @@ function renderLines(
 		const isBasicASCII = strings.isBasicASCII(line);
 
 		const containsRTL = strings.containsRTL(line);
+
 		renderViewLine(
 			new RenderLineInput(
 				fontInfo.isMonospace && !disableMonospaceOptimizations,
@@ -507,9 +560,12 @@ function renderLines(
 			),
 			sb,
 		);
+
 		sb.appendString("</div>");
 	}
+
 	sb.appendString("</div>");
+
 	applyFontInfo(domNode, fontInfo);
 
 	const html = sb.build();

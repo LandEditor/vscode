@@ -27,6 +27,7 @@ export class MainThreadAiRelatedInformation
 	implements MainThreadAiRelatedInformationShape
 {
 	private readonly _proxy: ExtHostAiRelatedInformationShape;
+
 	private readonly _registrations = this._register(
 		new DisposableMap<number>(),
 	);
@@ -37,6 +38,7 @@ export class MainThreadAiRelatedInformation
 		private readonly _aiRelatedInformationService: IAiRelatedInformationService,
 	) {
 		super();
+
 		this._proxy = context.getProxy(
 			ExtHostContext.ExtHostAiRelatedInformation,
 		);
@@ -65,6 +67,7 @@ export class MainThreadAiRelatedInformation
 				);
 			},
 		};
+
 		this._registrations.set(
 			handle,
 			this._aiRelatedInformationService.registerAiRelatedInformationProvider(

@@ -23,17 +23,24 @@ export interface IWorkbenchSettingsConfiguration {
 	workbench: {
 		settings: {
 			openDefaultSettings: boolean;
+
 			naturalLanguageSearchEndpoint: string;
+
 			naturalLanguageSearchKey: string;
+
 			naturalLanguageSearchAutoIngestFeedback: boolean;
+
 			useNaturalLanguageSearchPost: boolean;
+
 			enableNaturalLanguageSearch: boolean;
+
 			enableNaturalLanguageSearchFeedback: boolean;
 		};
 	};
 }
 export interface IEndpointDetails {
 	urlBase: string;
+
 	key?: string;
 }
 export const IPreferencesSearchService =
@@ -201,7 +208,9 @@ export const EXTENSION_FETCH_TIMEOUT_MS = 1000;
 
 export type ExtensionToggleData = {
 	settingsEditorRecommendedExtensions: IStringDictionary<IExtensionRecommendations>;
+
 	recommendedExtensionsGalleryInfo: IStringDictionary<IGalleryExtension>;
+
 	commonlyUsed: string[];
 };
 
@@ -214,18 +223,22 @@ export async function getExperimentalExtensionToggleData(
 	if (!ENABLE_EXTENSION_TOGGLE_SETTINGS) {
 		return undefined;
 	}
+
 	if (!extensionGalleryService.isEnabled()) {
 		return undefined;
 	}
+
 	if (cachedExtensionToggleData) {
 		return cachedExtensionToggleData;
 	}
+
 	if (
 		productService.extensionRecommendations &&
 		productService.commonlyUsedSettings
 	) {
 		const settingsEditorRecommendedExtensions: IStringDictionary<IExtensionRecommendations> =
 			{};
+
 		Object.keys(productService.extensionRecommendations).forEach(
 			(extensionId) => {
 				const extensionInfo =
@@ -267,6 +280,7 @@ export async function getExperimentalExtensionToggleData(
 				return undefined;
 			}
 		}
+
 		cachedExtensionToggleData = {
 			settingsEditorRecommendedExtensions,
 			recommendedExtensionsGalleryInfo,
@@ -275,6 +289,7 @@ export async function getExperimentalExtensionToggleData(
 
 		return cachedExtensionToggleData;
 	}
+
 	return undefined;
 }
 /**

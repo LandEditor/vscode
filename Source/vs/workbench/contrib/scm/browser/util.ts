@@ -146,6 +146,7 @@ export function connectPrimaryMenu(
 		}
 
 		cachedPrimary = primary;
+
 		cachedSecondary = secondary;
 
 		callback(primary, secondary);
@@ -169,6 +170,7 @@ export class StatusBarAction extends Action {
 		private commandService: ICommandService,
 	) {
 		super(`statusbaraction{${command.id}}`, command.title, "", true);
+
 		this.tooltip = command.tooltip || "";
 	}
 

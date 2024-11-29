@@ -36,6 +36,7 @@ export class InstallExtensionQuickAccessProvider extends PickerQuickAccessProvid
 	) {
 		super(InstallExtensionQuickAccessProvider.PREFIX);
 	}
+
 	protected _getPicks(
 		filter: string,
 		disposables: DisposableStore,
@@ -54,6 +55,7 @@ export class InstallExtensionQuickAccessProvider extends PickerQuickAccessProvid
 				},
 			];
 		}
+
 		const genericSearchPickItem: IPickerQuickAccessItem = {
 			label: localize(
 				"searchFor",
@@ -73,6 +75,7 @@ export class InstallExtensionQuickAccessProvider extends PickerQuickAccessProvid
 		// Extension name typed: offer to search it
 		return [genericSearchPickItem];
 	}
+
 	private async getPicksForExtensionId(
 		filter: string,
 		fallback: IPickerQuickAccessItem,
@@ -87,9 +90,11 @@ export class InstallExtensionQuickAccessProvider extends PickerQuickAccessProvid
 			if (token.isCancellationRequested) {
 				return []; // return early if canceled
 			}
+
 			if (!galleryExtension) {
 				return [fallback];
 			}
+
 			return [
 				{
 					label: localize(
@@ -105,17 +110,20 @@ export class InstallExtensionQuickAccessProvider extends PickerQuickAccessProvid
 			if (token.isCancellationRequested) {
 				return []; // expected error
 			}
+
 			this.logService.error(error);
 
 			return [fallback];
 		}
 	}
+
 	private async installExtension(
 		extension: IGalleryExtension,
 		name: string,
 	): Promise<void> {
 		try {
 			await this.extensionsWorkbenchService.openSearch(`@id:${name}`);
+
 			await this.extensionsService.installFromGallery(extension);
 		} catch (error) {
 			this.notificationService.error(error);
@@ -131,6 +139,7 @@ export class ManageExtensionsQuickAccessProvider extends PickerQuickAccessProvid
 	) {
 		super(ManageExtensionsQuickAccessProvider.PREFIX);
 	}
+
 	protected _getPicks(): Array<IPickerQuickAccessItem | IQuickPickSeparator> {
 		return [
 			{

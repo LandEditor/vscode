@@ -48,36 +48,54 @@ export const IWindowsMainService =
 
 export interface IWindowsMainService {
 	readonly _serviceBrand: undefined;
+
 	readonly onDidChangeWindowsCount: Event<IWindowsCountChangedEvent>;
+
 	readonly onDidOpenWindow: Event<ICodeWindow>;
+
 	readonly onDidSignalReadyWindow: Event<ICodeWindow>;
+
 	readonly onDidMaximizeWindow: Event<ICodeWindow>;
+
 	readonly onDidUnmaximizeWindow: Event<ICodeWindow>;
+
 	readonly onDidChangeFullScreen: Event<{
 		window: ICodeWindow;
+
 		fullscreen: boolean;
 	}>;
+
 	readonly onDidTriggerSystemContextMenu: Event<{
 		readonly window: ICodeWindow;
+
 		readonly x: number;
+
 		readonly y: number;
 	}>;
+
 	readonly onDidDestroyWindow: Event<ICodeWindow>;
+
 	open(openConfig: IOpenConfiguration): Promise<ICodeWindow[]>;
+
 	openEmptyWindow(
 		openConfig: IOpenEmptyConfiguration,
 		options?: IOpenEmptyWindowOptions,
 	): Promise<ICodeWindow[]>;
+
 	openExtensionDevelopmentHostWindow(
 		extensionDevelopmentPath: string[],
 		openConfig: IOpenConfiguration,
 	): Promise<ICodeWindow[]>;
+
 	openExistingWindow(
 		window: ICodeWindow,
 		openConfig: IOpenConfiguration,
 	): void;
+
 	sendToFocused(channel: string, ...args: any[]): void;
+
 	sendToOpeningWindow(channel: string, ...args: any[]): void;
+
 	sendToAll(
 		channel: string,
 		payload?: any,
@@ -100,6 +118,7 @@ export interface IWindowsMainService {
 }
 export interface IWindowsCountChangedEvent {
 	readonly oldCount: number;
+
 	readonly newCount: number;
 }
 export const enum OpenContext {
@@ -120,23 +139,38 @@ export const enum OpenContext {
 }
 export interface IBaseOpenConfiguration {
 	readonly context: OpenContext;
+
 	readonly contextWindowId?: number;
 }
 export interface IOpenConfiguration extends IBaseOpenConfiguration {
 	readonly cli: NativeParsedArgs;
+
 	readonly userEnv?: IProcessEnvironment;
+
 	readonly urisToOpen?: IWindowOpenable[];
+
 	readonly waitMarkerFileURI?: URI;
+
 	readonly preferNewWindow?: boolean;
+
 	readonly forceNewWindow?: boolean;
+
 	readonly forceNewTabbedWindow?: boolean;
+
 	readonly forceReuseWindow?: boolean;
+
 	readonly forceEmpty?: boolean;
+
 	readonly diffMode?: boolean;
+
 	readonly mergeMode?: boolean;
+
 	addMode?: boolean;
+
 	readonly gotoLineMode?: boolean;
+
 	readonly initialStartup?: boolean;
+
 	readonly noRecentEntry?: boolean;
 	/**
 	 * The remote authority to use when windows are opened with either
@@ -144,12 +178,15 @@ export interface IOpenConfiguration extends IBaseOpenConfiguration {
 	 * - a workspace that is neither `file://` nor `vscode-remote://`
 	 */
 	readonly remoteAuthority?: string;
+
 	readonly forceProfile?: string;
+
 	readonly forceTempProfile?: boolean;
 }
 export interface IOpenEmptyConfiguration extends IBaseOpenConfiguration {}
 export interface IDefaultBrowserWindowOptionsOverrides {
 	forceNativeTitlebar?: boolean;
+
 	disableFullscreen?: boolean;
 }
 export function defaultBrowserWindowOptions(
@@ -213,22 +250,26 @@ export function defaultBrowserWindowOptions(
 			"resources/win32/code_150x150.png",
 		); // only when running out of sources on Windows
 	}
+
 	if (isMacintosh) {
 		options.acceptFirstMouse = true; // enabled by default
 		if (windowSettings?.clickThroughInactive === false) {
 			options.acceptFirstMouse = false;
 		}
 	}
+
 	if (overrides?.disableFullscreen) {
 		options.fullscreen = false;
 	} else if (isMacintosh && !useNativeFullScreen(configurationService)) {
 		options.fullscreenable = false; // enables simple fullscreen mode
 	}
+
 	const useNativeTabs = isMacintosh && windowSettings?.nativeTabs === true;
 
 	if (useNativeTabs) {
 		options.tabbingIdentifier = productService.nameShort; // this opts in to sierra tabs
 	}
+
 	const hideNativeTitleBar = !hasNativeTitlebar(
 		configurationService,
 		overrides?.forceNativeTitlebar ? TitlebarStyle.NATIVE : undefined,
@@ -240,6 +281,7 @@ export function defaultBrowserWindowOptions(
 		if (!isMacintosh) {
 			options.frame = false;
 		}
+
 		if (useWindowControlsOverlay(configurationService)) {
 			// This logic will not perfectly guess the right colors
 			// to use on initialization, but prefer to keep things
@@ -252,6 +294,7 @@ export function defaultBrowserWindowOptions(
 			const symbolColor = Color.fromHex(titleBarColor).isDarker()
 				? "#FFFFFF"
 				: "#000000";
+
 			options.titleBarOverlay = {
 				height: 29, // the smallest size of the title bar on windows accounting for the border on windows 11
 				color: titleBarColor,
@@ -259,6 +302,7 @@ export function defaultBrowserWindowOptions(
 			};
 		}
 	}
+
 	return options;
 }
 export function getLastFocused(windows: ICodeWindow[]): ICodeWindow | undefined;
@@ -278,9 +322,11 @@ export function getLastFocused(
 	for (const window of windows) {
 		if (window.lastFocusTime > maxLastFocusTime) {
 			maxLastFocusTime = window.lastFocusTime;
+
 			lastFocusedWindow = window;
 		}
 	}
+
 	return lastFocusedWindow;
 }
 export namespace WindowStateValidator {
@@ -306,6 +352,7 @@ export namespace WindowStateValidator {
 
 			return undefined;
 		}
+
 		if (state.width <= 0 || state.height <= 0) {
 			logService.trace(
 				"window#validateWindowState: unexpected negative values",
@@ -321,6 +368,7 @@ export namespace WindowStateValidator {
 		//          some pixels (128) visible on the screen for the user to drag it back.
 		if (displays.length === 1) {
 			const displayWorkingArea = getWorkingArea(displays[0]);
+
 			logService.trace(
 				"window#validateWindowState: single monitor working area",
 				displayWorkingArea,
@@ -336,10 +384,12 @@ export namespace WindowStateValidator {
 					) {
 						return;
 					}
+
 					if (state.x < displayWorkingArea.x) {
 						// prevent window from falling out of the screen to the left
 						state.x = displayWorkingArea.x;
 					}
+
 					if (state.y < displayWorkingArea.y) {
 						// prevent window from falling out of the screen to the top
 						state.y = displayWorkingArea.y;
@@ -352,10 +402,12 @@ export namespace WindowStateValidator {
 					// prevent window from exceeding display bounds width
 					state.width = displayWorkingArea.width;
 				}
+
 				if (state.height > displayWorkingArea.height) {
 					// prevent window from exceeding display bounds height
 					state.height = displayWorkingArea.height;
 				}
+
 				if (
 					state.x >
 					displayWorkingArea.x + displayWorkingArea.width - 128
@@ -368,6 +420,7 @@ export namespace WindowStateValidator {
 						displayWorkingArea.width -
 						state.width;
 				}
+
 				if (
 					state.y >
 					displayWorkingArea.y + displayWorkingArea.height - 128
@@ -384,6 +437,7 @@ export namespace WindowStateValidator {
 				// (it may have changed from the previous validation step)
 				ensureStateInDisplayWorkingArea();
 			}
+
 			return state;
 		}
 		// Multi Montior (fullscreen): try to find the previously used display
@@ -418,7 +472,9 @@ export namespace WindowStateValidator {
 				width: state.width,
 				height: state.height,
 			});
+
 			displayWorkingArea = getWorkingArea(display);
+
 			logService.trace(
 				"window#validateWindowState: multi-monitor working area",
 				displayWorkingArea,
@@ -432,6 +488,7 @@ export namespace WindowStateValidator {
 				error,
 			);
 		}
+
 		if (
 			display && // we have a display matching the desired bounds
 			displayWorkingArea && // we have valid working area bounds
@@ -442,12 +499,14 @@ export namespace WindowStateValidator {
 		) {
 			return state;
 		}
+
 		logService.trace(
 			"window#validateWindowState: state is outside of the multi-monitor working area",
 		);
 
 		return undefined;
 	}
+
 	function getWorkingArea(
 		display: electron.Display,
 	): electron.Rectangle | undefined {
@@ -459,9 +518,11 @@ export namespace WindowStateValidator {
 		if (display.workArea.width > 0 && display.workArea.height > 0) {
 			return display.workArea;
 		}
+
 		if (display.bounds.width > 0 && display.bounds.height > 0) {
 			return display.bounds;
 		}
+
 		return undefined;
 	}
 }

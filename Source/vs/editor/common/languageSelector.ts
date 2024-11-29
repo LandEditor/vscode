@@ -11,13 +11,17 @@ import { URI } from "../../base/common/uri.js";
 
 export interface LanguageFilter {
 	readonly language?: string;
+
 	readonly scheme?: string;
+
 	readonly pattern?: string | IRelativePattern;
+
 	readonly notebookType?: string;
 	/**
 	 * This provider is implemented in the UI thread.
 	 */
 	readonly hasAccessToAllModels?: boolean;
+
 	readonly exclusive?: boolean;
 	/**
 	 * This provider comes from a builtin extension.
@@ -54,10 +58,12 @@ export function score(
 			if (value === 10) {
 				return value; // already at the highest
 			}
+
 			if (value > ret) {
 				ret = value;
 			}
 		}
+
 		return ret;
 	} else if (typeof selector === "string") {
 		if (!candidateIsSynchronized) {
@@ -66,6 +72,7 @@ export function score(
 		// short-hand notion, desugars to
 		// 'fooLang' -> { language: 'fooLang'}
 		// '*' -> { language: '*' }
+
 		if (selector === "*") {
 			return 5;
 		} else if (selector === candidateLanguage) {
@@ -90,6 +97,7 @@ export function score(
 		if (notebookType && candidateNotebookUri) {
 			candidateUri = candidateNotebookUri;
 		}
+
 		let ret = 0;
 
 		if (scheme) {
@@ -101,6 +109,7 @@ export function score(
 				return 0;
 			}
 		}
+
 		if (language) {
 			if (language === candidateLanguage) {
 				ret = 10;
@@ -110,6 +119,7 @@ export function score(
 				return 0;
 			}
 		}
+
 		if (notebookType) {
 			if (notebookType === candidateNotebookType) {
 				ret = 10;
@@ -122,6 +132,7 @@ export function score(
 				return 0;
 			}
 		}
+
 		if (pattern) {
 			let normalizedPattern: string | IRelativePattern;
 
@@ -138,6 +149,7 @@ export function score(
 					base: normalize(pattern.base),
 				};
 			}
+
 			if (
 				normalizedPattern === candidateUri.fsPath ||
 				matchGlobPattern(normalizedPattern, candidateUri.fsPath)
@@ -147,6 +159,7 @@ export function score(
 				return 0;
 			}
 		}
+
 		return ret;
 	} else {
 		return 0;

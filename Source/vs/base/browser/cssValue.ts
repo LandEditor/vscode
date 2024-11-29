@@ -25,10 +25,13 @@ export function asCssValueWithDefault(
 			if (varArguments.length === 2) {
 				dflt = asCssValueWithDefault(varArguments[1].trim(), dflt);
 			}
+
 			return `var(${varArguments[0]}, ${dflt})`;
 		}
+
 		return cssPropertyValue;
 	}
+
 	return dflt;
 }
 
@@ -38,6 +41,7 @@ export function sizeValue(value: string): CssFragment {
 	if (out !== value) {
 		console.warn(`CSS size ${value} modified to ${out} to be safe for CSS`);
 	}
+
 	return asFragment(out);
 }
 
@@ -49,6 +53,7 @@ export function hexColorValue(value: string): CssFragment {
 			`CSS hex color ${value} modified to ${out} to be safe for CSS`,
 		);
 	}
+
 	return asFragment(out);
 }
 
@@ -60,6 +65,7 @@ export function identValue(value: string): CssFragment {
 			`CSS ident value ${value} modified to ${out} to be safe for CSS`,
 		);
 	}
+
 	return asFragment(out);
 }
 
@@ -73,6 +79,7 @@ export function asCSSUrl(uri: URI | null | undefined): CssFragment {
 	if (!uri) {
 		return asFragment(`url('')`);
 	}
+
 	return inline`url(${stringValue(FileAccess.uriToBrowserUri(uri).toString(true))})`;
 }
 
@@ -87,6 +94,7 @@ export function className(
 			`CSS class name ${value} modified to ${out} to be safe for CSS`,
 		);
 	}
+
 	return asFragment(out);
 }
 

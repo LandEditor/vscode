@@ -64,6 +64,7 @@ export class MarkerDecorationsService extends Disposable implements IMarkerDecor
 	declare readonly _serviceBrand: undefined;
 
 	private readonly _onDidChangeMarker = this._register(new Emitter<ITextModel>());
+
 	readonly onDidChangeMarker: Event<ITextModel> = this._onDidChangeMarker.event;
 
 	private readonly _suppressedRanges = new ResourceMap<Set<Range>>();
@@ -77,18 +78,26 @@ export class MarkerDecorationsService extends Disposable implements IMarkerDecor
 		private readonly _markerService: IMarkerService,
 	) {
 		super();
+
 		modelService.getModels().forEach((model) => this._onModelAdded(model));
+
 		this._register(modelService.onModelAdded(this._onModelAdded, this));
+
 		this._register(modelService.onModelRemoved(this._onModelRemoved, this));
+
 		this._register(
 			this._markerService.onMarkerChanged(this._handleMarkerChange, this),
 		);
 	}
+
 	override dispose() {
 		super.dispose();
+
 		this._markerDecorations.forEach((value) => value.dispose());
+
 		this._markerDecorations.clear();
 	}
+
 	getMarker(uri: URI, decoration: IModelDecoration): IMarker | null {
 		const markerDecorations = this._markerDecorations.get(uri);
 
@@ -96,6 +105,7 @@ export class MarkerDecorationsService extends Disposable implements IMarkerDecor
 			? markerDecorations.getMarker(decoration) || null
 			: null;
 	}
+
 	getLiveMarkers(uri: URI): [Range, IMarker][] {
 		const markerDecorations = this._markerDecorations.get(uri);
 
@@ -105,20 +115,27 @@ export class MarkerDecorationsService extends Disposable implements IMarkerDecor
 	addMarkerSuppression(uri: URI, range: Range): IDisposable {
 
 		let suppressedRanges = this._suppressedRanges.get(uri);
+
 		if (!suppressedRanges) {
 			suppressedRanges = new Set<Range>();
+
 			this._suppressedRanges.set(uri, suppressedRanges);
 		}
+
 		suppressedRanges.add(range);
+
 		this._handleMarkerChange([uri]);
 
 		return toDisposable(() => {
 			const suppressedRanges = this._suppressedRanges.get(uri);
+
 			if (suppressedRanges) {
 				suppressedRanges.delete(range);
+
 				if (suppressedRanges.size === 0) {
 					this._suppressedRanges.delete(uri);
 				}
+
 				this._handleMarkerChange([uri]);
 			}
 		});
@@ -133,16 +150,21 @@ export class MarkerDecorationsService extends Disposable implements IMarkerDecor
 			}
 		});
 	}
+
 	private _onModelAdded(model: ITextModel): void {
 		const markerDecorations = new MarkerDecorations(model);
+
 		this._markerDecorations.set(model.uri, markerDecorations);
+
 		this._updateDecorations(markerDecorations);
 	}
+
 	private _onModelRemoved(model: ITextModel): void {
 		const markerDecorations = this._markerDecorations.get(model.uri);
 
 		if (markerDecorations) {
 			markerDecorations.dispose();
+
 			this._markerDecorations.delete(model.uri);
 		}
 		// clean up markers for internal, transient models
@@ -159,12 +181,14 @@ export class MarkerDecorationsService extends Disposable implements IMarkerDecor
 				);
 		}
 	}
+
 	private _updateDecorations(markerDecorations: MarkerDecorations): void {
 		// Limit to the first 500 errors/warnings
 		let markers = this._markerService.read({ resource: markerDecorations.model.uri, take: 500 });
 
 		// filter markers from suppressed ranges
 		const suppressedRanges = this._suppressedRanges.get(markerDecorations.model.uri);
+
 		if (suppressedRanges) {
 			markers = markers.filter(marker => {
 				return !Iterable.some(suppressedRanges, candidate => Range.areIntersectingOrTouching(candidate, marker));
@@ -184,13 +208,16 @@ class MarkerDecorations extends Disposable {
 
 	constructor(readonly model: ITextModel) {
 		super();
+
 		this._register(
 			toDisposable(() => {
 				this.model.deltaDecorations([...this._map.values()], []);
+
 				this._map.clear();
 			}),
 		);
 	}
+
 	public update(markers: IMarker[]): boolean {
 		// We use the fact that marker instances are not recreated when different owners
 		// update. So we can compare references to find out what changed since the last update.
@@ -202,6 +229,7 @@ class MarkerDecorations extends Disposable {
 		if (added.length === 0 && removed.length === 0) {
 			return false;
 		}
+
 		const oldIds: string[] = removed.map(
 			(marker) => this._map.get(marker)!,
 		);
@@ -218,16 +246,21 @@ class MarkerDecorations extends Disposable {
 		for (const removedMarker of removed) {
 			this._map.delete(removedMarker);
 		}
+
 		for (let index = 0; index < ids.length; index++) {
 			this._map.set(added[index], ids[index]);
 		}
+
 		return true;
 	}
+
 	getMarker(decoration: IModelDecoration): IMarker | undefined {
 		return this._map.getKey(decoration.id);
 	}
+
 	getMarkers(): [Range, IMarker][] {
 		const res: [Range, IMarker][] = [];
+
 		this._map.forEach((id, marker) => {
 			const range = this.model.getDecorationRange(id);
 
@@ -238,6 +271,7 @@ class MarkerDecorations extends Disposable {
 
 		return res;
 	}
+
 	private _createDecorationRange(
 		model: ITextModel,
 		rawMarker: IMarker,
@@ -253,6 +287,7 @@ class MarkerDecorations extends Disposable {
 			// * make enough space for three dots
 			ret = ret.setEndPosition(ret.startLineNumber, ret.startColumn + 2);
 		}
+
 		ret = model.validateRange(ret);
 
 		if (ret.isEmpty()) {
@@ -265,6 +300,7 @@ class MarkerDecorations extends Disposable {
 				// keep the range as is, it will be rendered 1ch wide
 				return ret;
 			}
+
 			const word = model.getWordAtPosition(ret.getStartPosition());
 
 			if (word) {
@@ -291,11 +327,14 @@ class MarkerDecorations extends Disposable {
 					ret.endLineNumber,
 					ret.endColumn,
 				);
+
 				rawMarker.startColumn = minColumn;
 			}
 		}
+
 		return ret;
 	}
+
 	private _createDecorationOption(marker: IMarker): IModelDecorationOptions {
 		let className: string | undefined;
 
@@ -316,14 +355,18 @@ class MarkerDecorations extends Disposable {
 				} else {
 					className = ClassName.EditorHintDecoration;
 				}
+
 				zIndex = 0;
 
 				break;
 
 			case MarkerSeverity.Info:
 				className = ClassName.EditorInfoDecoration;
+
 				color = themeColorFromId(overviewRulerInfo);
+
 				zIndex = 10;
+
 				minimap = {
 					color: themeColorFromId(minimapInfo),
 					position: MinimapPosition.Inline,
@@ -333,8 +376,11 @@ class MarkerDecorations extends Disposable {
 
 			case MarkerSeverity.Warning:
 				className = ClassName.EditorWarningDecoration;
+
 				color = themeColorFromId(overviewRulerWarning);
+
 				zIndex = 20;
+
 				minimap = {
 					color: themeColorFromId(minimapWarning),
 					position: MinimapPosition.Inline,
@@ -345,8 +391,11 @@ class MarkerDecorations extends Disposable {
 			case MarkerSeverity.Error:
 			default:
 				className = ClassName.EditorErrorDecoration;
+
 				color = themeColorFromId(overviewRulerError);
+
 				zIndex = 30;
+
 				minimap = {
 					color: themeColorFromId(minimapError),
 					position: MinimapPosition.Inline,
@@ -354,14 +403,17 @@ class MarkerDecorations extends Disposable {
 
 				break;
 		}
+
 		if (marker.tags) {
 			if (marker.tags.indexOf(MarkerTag.Unnecessary) !== -1) {
 				inlineClassName = ClassName.EditorUnnecessaryInlineDecoration;
 			}
+
 			if (marker.tags.indexOf(MarkerTag.Deprecated) !== -1) {
 				inlineClassName = ClassName.EditorDeprecatedInlineDecoration;
 			}
 		}
+
 		return {
 			description: "marker-decoration",
 			stickiness: TrackedRangeStickiness.NeverGrowsWhenTypingAtEdges,
@@ -376,10 +428,12 @@ class MarkerDecorations extends Disposable {
 			inlineClassName,
 		};
 	}
+
 	private _hasMarkerTag(marker: IMarker, tag: MarkerTag): boolean {
 		if (marker.tags) {
 			return marker.tags.indexOf(tag) >= 0;
 		}
+
 		return false;
 	}
 }

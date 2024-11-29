@@ -12,20 +12,27 @@ export const IInteractiveDocumentService =
 
 export interface IInteractiveDocumentService {
 	readonly _serviceBrand: undefined;
+
 	onWillAddInteractiveDocument: Event<{
 		notebookUri: URI;
+
 		inputUri: URI;
+
 		languageId: string;
 	}>;
+
 	onWillRemoveInteractiveDocument: Event<{
 		notebookUri: URI;
+
 		inputUri: URI;
 	}>;
+
 	willCreateInteractiveDocument(
 		notebookUri: URI,
 		inputUri: URI,
 		languageId: string,
 	): void;
+
 	willRemoveInteractiveDocument(notebookUri: URI, inputUri: URI): void;
 }
 export class InteractiveDocumentService
@@ -33,26 +40,34 @@ export class InteractiveDocumentService
 	implements IInteractiveDocumentService
 {
 	declare readonly _serviceBrand: undefined;
+
 	private readonly _onWillAddInteractiveDocument = this._register(
 		new Emitter<{
 			notebookUri: URI;
+
 			inputUri: URI;
+
 			languageId: string;
 		}>(),
 	);
+
 	onWillAddInteractiveDocument = this._onWillAddInteractiveDocument.event;
+
 	private readonly _onWillRemoveInteractiveDocument = this._register(
 		new Emitter<{
 			notebookUri: URI;
+
 			inputUri: URI;
 		}>(),
 	);
+
 	onWillRemoveInteractiveDocument =
 		this._onWillRemoveInteractiveDocument.event;
 
 	constructor() {
 		super();
 	}
+
 	willCreateInteractiveDocument(
 		notebookUri: URI,
 		inputUri: URI,
@@ -64,6 +79,7 @@ export class InteractiveDocumentService
 			languageId,
 		});
 	}
+
 	willRemoveInteractiveDocument(notebookUri: URI, inputUri: URI) {
 		this._onWillRemoveInteractiveDocument.fire({
 			notebookUri,

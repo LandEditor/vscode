@@ -340,7 +340,9 @@ jsonRegistry.registerSchema(ExtensionsConfigurationSchemaId, ExtensionsConfigura
 // Register Commands
 CommandsRegistry.registerCommand('_extensions.manage', (accessor: ServicesAccessor, extensionId: string, tab?: ExtensionEditorTab, preserveFocus?: boolean, feature?: string) => {
 	const extensionService = accessor.get(IExtensionsWorkbenchService);
+
 	const extension = extensionService.local.find(e => areSameExtensions(e.identifier, { id: extensionId }));
+
 	if (extension) {
 		extensionService.open(extension, { tab, preserveFocus, feature });
 	} else {
@@ -350,9 +352,11 @@ CommandsRegistry.registerCommand('_extensions.manage', (accessor: ServicesAccess
 
 CommandsRegistry.registerCommand('extension.open', async (accessor: ServicesAccessor, extensionId: string, tab?: ExtensionEditorTab, preserveFocus?: boolean, feature?: string, sideByside?: boolean) => {
 	const extensionService = accessor.get(IExtensionsWorkbenchService);
+
 	const commandService = accessor.get(ICommandService);
 
 	const [extension] = await extensionService.getExtensions([{ id: extensionId }], CancellationToken.None);
+
 	if (extension) {
 		return extensionService.open(extension, { tab, preserveFocus, feature, sideByside });
 	}
@@ -416,24 +420,36 @@ CommandsRegistry.registerCommand({
 		arg: string | UriComponents,
 		options?: {
 			installOnlyNewlyAddedFromExtensionPackVSIX?: boolean;
+
 			installPreReleaseVersion?: boolean;
+
 			donotSync?: boolean;
+
 			justification?: string | { reason: string; action: string };
+
 			enable?: boolean;
+
 			context?: IStringDictionary<any>;
 		}) => {
 		const extensionsWorkbenchService = accessor.get(IExtensionsWorkbenchService);
+
 		const extensionManagementService = accessor.get(IWorkbenchExtensionManagementService);
+
 		const extensionGalleryService = accessor.get(IExtensionGalleryService);
+
 		try {
 			if (typeof arg === 'string') {
 				const [id, version] = getIdAndVersion(arg);
+
 				const extension = extensionsWorkbenchService.local.find(e => areSameExtensions(e.identifier, { id, uuid: version }));
+
 				if (extension?.enablementState === EnablementState.DisabledByExtensionKind) {
 					const [gallery] = await extensionGalleryService.getExtensions([{ id, preRelease: options?.installPreReleaseVersion }], CancellationToken.None);
+
 					if (!gallery) {
 						throw new Error(localize('notFound', "Extension '{0}' not found.", arg));
 					}
+
 					await extensionManagementService.installFromGallery(gallery, {
 						isMachineScoped: options?.donotSync ? true : undefined, /* do not allow syncing extensions automatically while installing through the command */
 						installPreReleaseVersion: options?.installPreReleaseVersion,
@@ -452,10 +468,12 @@ CommandsRegistry.registerCommand({
 				}
 			} else {
 				const vsix = URI.revive(arg);
+
 				await extensionsWorkbenchService.install(vsix, { installOnlyNewlyAddedFromExtensionPack: options?.installOnlyNewlyAddedFromExtensionPackVSIX, installGivenVersion: true });
 			}
 		} catch (e) {
 			onUnexpectedError(e);
+
 			throw e;
 		}
 	}
@@ -478,12 +496,17 @@ CommandsRegistry.registerCommand({
 		if (!id) {
 			throw new Error(localize('id required', "Extension id required."));
 		}
+
 		const extensionManagementService = accessor.get(IExtensionManagementService);
+
 		const installed = await extensionManagementService.getInstalled();
+
 		const [extensionToUninstall] = installed.filter(e => areSameExtensions(e.identifier, { id }));
+
 		if (!extensionToUninstall) {
 			throw new Error(localize('notInstalled', "Extension '{0}' is not installed. Make sure you use the full extension ID, including the publisher, e.g.: ms-dotnettools.csharp.", id));
 		}
+
 		if (extensionToUninstall.isBuiltin) {
 			throw new Error(localize('builtin', "Extension '{0}' is a Built-in extension and cannot be installed", id));
 		}
@@ -492,6 +515,7 @@ CommandsRegistry.registerCommand({
 			await extensionManagementService.uninstall(extensionToUninstall);
 		} catch (e) {
 			onUnexpectedError(e);
+
 			throw e;
 		}
 	}
@@ -516,13 +540,17 @@ CommandsRegistry.registerCommand({
 function overrideActionForActiveExtensionEditorWebview(command: MultiCommand | undefined, f: (webview: IWebview) => void) {
 	command?.addImplementation(105, 'extensions-editor', (accessor) => {
 		const editorService = accessor.get(IEditorService);
+
 		const editor = editorService.activeEditorPane;
+
 		if (editor instanceof ExtensionEditor) {
 			if (editor.activeWebview?.isFocused) {
 				f(editor.activeWebview);
+
 				return true;
 			}
 		}
+
 		return false;
 	});
 }
@@ -550,6 +578,7 @@ async function runAction(action: IAction): Promise<void> {
 
 type IExtensionActionOptions = IAction2Options & {
 	menuTitles?: { [id: string]: string };
+
 	run(accessor: ServicesAccessor, ...args: any[]): Promise<any>;
 };
 
@@ -568,28 +597,35 @@ class ExtensionsContributions extends Disposable implements IWorkbenchContributi
 		@IProductService private readonly productService: IProductService,
 	) {
 		super();
+
 		const hasGalleryContext = CONTEXT_HAS_GALLERY.bindTo(contextKeyService);
+
 		if (extensionGalleryService.isEnabled()) {
 			hasGalleryContext.set(true);
 		}
 
 		const hasLocalServerContext = CONTEXT_HAS_LOCAL_SERVER.bindTo(contextKeyService);
+
 		if (this.extensionManagementServerService.localExtensionManagementServer) {
 			hasLocalServerContext.set(true);
 		}
 
 		const hasRemoteServerContext = CONTEXT_HAS_REMOTE_SERVER.bindTo(contextKeyService);
+
 		if (this.extensionManagementServerService.remoteExtensionManagementServer) {
 			hasRemoteServerContext.set(true);
 		}
 
 		const hasWebServerContext = CONTEXT_HAS_WEB_SERVER.bindTo(contextKeyService);
+
 		if (this.extensionManagementServerService.webExtensionManagementServer) {
 			hasWebServerContext.set(true);
 		}
 
 		this.registerGlobalActions();
+
 		this.registerContextMenuActions();
+
 		this.registerQuickAccessProvider();
 	}
 
@@ -617,6 +653,7 @@ class ExtensionsContributions extends Disposable implements IWorkbenchContributi
 			group: '2_configuration',
 			order: 3
 		}));
+
 		this._register(MenuRegistry.appendMenuItem(MenuId.GlobalActivity, {
 			command: {
 				id: VIEWLET_ID,
@@ -693,7 +730,9 @@ class ExtensionsContributions extends Disposable implements IWorkbenchContributi
 			}],
 			run: async () => {
 				await this.extensionsWorkbenchService.checkForUpdates();
+
 				const outdated = this.extensionsWorkbenchService.outdated;
+
 				if (outdated.length) {
 					return this.extensionsWorkbenchService.openSearch('@outdated ');
 				} else {
@@ -703,6 +742,7 @@ class ExtensionsContributions extends Disposable implements IWorkbenchContributi
 		});
 
 		const enableAutoUpdateWhenCondition = ContextKeyExpr.equals(`config.${AutoUpdateConfigurationKey}`, false);
+
 		this.registerExtensionAction({
 			id: 'workbench.extensions.action.enableAutoUpdate',
 			title: localize2('enableAutoUpdate', 'Enable Auto Update for All Extensions'),
@@ -720,6 +760,7 @@ class ExtensionsContributions extends Disposable implements IWorkbenchContributi
 		});
 
 		const disableAutoUpdateWhenCondition = ContextKeyExpr.notEquals(`config.${AutoUpdateConfigurationKey}`, false);
+
 		this.registerExtensionAction({
 			id: 'workbench.extensions.action.disableAutoUpdate',
 			title: localize2('disableAutoUpdate', 'Disable Auto Update for All Extensions'),
@@ -778,6 +819,7 @@ class ExtensionsContributions extends Disposable implements IWorkbenchContributi
 			}],
 			run: async () => {
 				const extensionsToEnable = this.extensionsWorkbenchService.local.filter(e => !!e.local && this.extensionEnablementService.canChangeEnablement(e.local) && !this.extensionEnablementService.isEnabled(e.local));
+
 				if (extensionsToEnable.length) {
 					await this.extensionsWorkbenchService.setEnablement(extensionsToEnable, EnablementState.EnabledGlobally);
 				}
@@ -794,6 +836,7 @@ class ExtensionsContributions extends Disposable implements IWorkbenchContributi
 			},
 			run: async () => {
 				const extensionsToEnable = this.extensionsWorkbenchService.local.filter(e => !!e.local && this.extensionEnablementService.canChangeEnablement(e.local) && !this.extensionEnablementService.isEnabled(e.local));
+
 				if (extensionsToEnable.length) {
 					await this.extensionsWorkbenchService.setEnablement(extensionsToEnable, EnablementState.EnabledWorkspace);
 				}
@@ -815,6 +858,7 @@ class ExtensionsContributions extends Disposable implements IWorkbenchContributi
 			}],
 			run: async () => {
 				const extensionsToDisable = this.extensionsWorkbenchService.local.filter(e => !e.isBuiltin && !!e.local && this.extensionEnablementService.isEnabled(e.local) && this.extensionEnablementService.canChangeEnablement(e.local));
+
 				if (extensionsToDisable.length) {
 					await this.extensionsWorkbenchService.setEnablement(extensionsToDisable, EnablementState.DisabledGlobally);
 				}
@@ -831,6 +875,7 @@ class ExtensionsContributions extends Disposable implements IWorkbenchContributi
 			},
 			run: async () => {
 				const extensionsToDisable = this.extensionsWorkbenchService.local.filter(e => !e.isBuiltin && !!e.local && this.extensionEnablementService.isEnabled(e.local) && this.extensionEnablementService.canChangeEnablement(e.local));
+
 				if (extensionsToDisable.length) {
 					await this.extensionsWorkbenchService.setEnablement(extensionsToDisable, EnablementState.DisabledWorkspace);
 				}
@@ -852,7 +897,9 @@ class ExtensionsContributions extends Disposable implements IWorkbenchContributi
 			}],
 			run: async (accessor: ServicesAccessor) => {
 				const fileDialogService = accessor.get(IFileDialogService);
+
 				const commandService = accessor.get(ICommandService);
+
 				const vsixPaths = await fileDialogService.showOpenDialog({
 					title: localize('installFromVSIX', "Install from VSIX"),
 					filters: [{ name: 'VSIX Extensions', extensions: ['vsix'] }],
@@ -860,6 +907,7 @@ class ExtensionsContributions extends Disposable implements IWorkbenchContributi
 					canSelectMany: true,
 					openLabel: mnemonicButtonLabel(localize({ key: 'installButton', comment: ['&& denotes a mnemonic'] }, "&&Install"))
 				});
+
 				if (vsixPaths) {
 					await commandService.executeCommand(INSTALL_EXTENSION_FROM_VSIX_COMMAND_ID, vsixPaths);
 				}
@@ -876,23 +924,33 @@ class ExtensionsContributions extends Disposable implements IWorkbenchContributi
 			}],
 			run: async (accessor: ServicesAccessor, resources: URI[] | URI) => {
 				const extensionsWorkbenchService = accessor.get(IExtensionsWorkbenchService);
+
 				const hostService = accessor.get(IHostService);
+
 				const notificationService = accessor.get(INotificationService);
 
 				const vsixs = Array.isArray(resources) ? resources : [resources];
+
 				const result = await Promise.allSettled(vsixs.map(async (vsix) => await extensionsWorkbenchService.install(vsix, { installGivenVersion: true })));
+
 				let error: Error | undefined, requireReload = false, requireRestart = false;
+
 				for (const r of result) {
 					if (r.status === 'rejected') {
 						error = new Error(r.reason);
+
 						break;
 					}
+
 					requireReload = requireReload || r.value.runtimeState?.action === ExtensionRuntimeActionType.ReloadWindow;
+
 					requireRestart = requireRestart || r.value.runtimeState?.action === ExtensionRuntimeActionType.RestartExtensions;
 				}
+
 				if (error) {
 					throw error;
 				}
+
 				if (requireReload) {
 					notificationService.prompt(
 						Severity.Info,
@@ -903,6 +961,7 @@ class ExtensionsContributions extends Disposable implements IWorkbenchContributi
 						}]
 					);
 				}
+
 				else if (requireRestart) {
 					notificationService.prompt(
 						Severity.Info,
@@ -913,6 +972,7 @@ class ExtensionsContributions extends Disposable implements IWorkbenchContributi
 						}]
 					);
 				}
+
 				else {
 					notificationService.prompt(
 						Severity.Info,
@@ -933,39 +993,55 @@ class ExtensionsContributions extends Disposable implements IWorkbenchContributi
 			}],
 			run: async (accessor: ServicesAccessor) => {
 				const extensionManagementService = accessor.get(IWorkbenchExtensionManagementService);
+
 				if (isWeb) {
 					return new Promise<void>((c, e) => {
 						const quickInputService = accessor.get(IQuickInputService);
+
 						const disposables = new DisposableStore();
+
 						const quickPick = disposables.add(quickInputService.createQuickPick());
+
 						quickPick.title = localize('installFromLocation', "Install Extension from Location");
+
 						quickPick.customButton = true;
+
 						quickPick.customLabel = localize('install button', "Install");
+
 						quickPick.placeholder = localize('installFromLocationPlaceHolder', "Location of the web extension");
+
 						quickPick.ignoreFocusOut = true;
+
 						disposables.add(Event.any(quickPick.onDidAccept, quickPick.onDidCustom)(async () => {
 							quickPick.hide();
+
 							if (quickPick.value) {
 								try {
 									await extensionManagementService.installFromLocation(URI.parse(quickPick.value));
 								} catch (error) {
 									e(error);
+
 									return;
 								}
 							}
+
 							c();
 						}));
+
 						disposables.add(quickPick.onDidHide(() => disposables.dispose()));
+
 						quickPick.show();
 					});
 				} else {
 					const fileDialogService = accessor.get(IFileDialogService);
+
 					const extensionLocation = await fileDialogService.showOpenDialog({
 						canSelectFolders: true,
 						canSelectFiles: false,
 						canSelectMany: false,
 						title: localize('installFromLocation', "Install Extension from Location"),
 					});
+
 					if (extensionLocation?.[0]) {
 						await extensionManagementService.installFromLocation(extensionLocation[0]);
 					}
@@ -974,6 +1050,7 @@ class ExtensionsContributions extends Disposable implements IWorkbenchContributi
 		});
 
 		const extensionsFilterSubMenu = new MenuId('extensionsFilterSubMenu');
+
 		MenuRegistry.appendMenuItem(extensionsSearchActionsMenu, {
 			submenu: extensionsFilterSubMenu,
 			title: localize('filterExtensions', "Filter Extensions..."),
@@ -983,6 +1060,7 @@ class ExtensionsContributions extends Disposable implements IWorkbenchContributi
 		});
 
 		const showFeaturedExtensionsId = 'extensions.filter.featured';
+
 		this.registerExtensionAction({
 			id: showFeaturedExtensionsId,
 			title: localize2('showFeaturedExtensions', 'Show Featured Extensions'),
@@ -1060,6 +1138,7 @@ class ExtensionsContributions extends Disposable implements IWorkbenchContributi
 		});
 
 		const extensionsCategoryFilterSubMenu = new MenuId('extensionsCategoryFilterSubMenu');
+
 		MenuRegistry.appendMenuItem(extensionsFilterSubMenu, {
 			submenu: extensionsCategoryFilterSubMenu,
 			title: localize('filter by category', "Category"),
@@ -1173,6 +1252,7 @@ class ExtensionsContributions extends Disposable implements IWorkbenchContributi
 		});
 
 		const extensionsSortSubMenu = new MenuId('extensionsSortSubMenu');
+
 		MenuRegistry.appendMenuItem(extensionsFilterSubMenu, {
 			submenu: extensionsSortSubMenu,
 			title: localize('sorty by', "Sort By"),
@@ -1200,8 +1280,11 @@ class ExtensionsContributions extends Disposable implements IWorkbenchContributi
 				toggled: ExtensionsSortByContext.isEqualTo(id),
 				run: async () => {
 					const extensionsViewPaneContainer = ((await this.viewsService.openViewContainer(VIEWLET_ID, true))?.getViewPaneContainer()) as IExtensionsViewPaneContainer | undefined;
+
 					const currentQuery = Query.parse(extensionsViewPaneContainer?.searchValue ?? '');
+
 					extensionsViewPaneContainer?.search(new Query(currentQuery.value, id).toString());
+
 					extensionsViewPaneContainer?.focus();
 				}
 			});
@@ -1221,9 +1304,12 @@ class ExtensionsContributions extends Disposable implements IWorkbenchContributi
 			},
 			run: async (accessor: ServicesAccessor) => {
 				const viewPaneContainer = accessor.get(IViewsService).getActiveViewPaneContainerWithId(VIEWLET_ID);
+
 				if (viewPaneContainer) {
 					const extensionsViewPaneContainer = viewPaneContainer as IExtensionsViewPaneContainer;
+
 					extensionsViewPaneContainer.search('');
+
 					extensionsViewPaneContainer.focus();
 				}
 			}
@@ -1243,6 +1329,7 @@ class ExtensionsContributions extends Disposable implements IWorkbenchContributi
 			},
 			run: async (accessor: ServicesAccessor) => {
 				const viewPaneContainer = accessor.get(IViewsService).getActiveViewPaneContainerWithId(VIEWLET_ID);
+
 				if (viewPaneContainer) {
 					await (viewPaneContainer as IExtensionsViewPaneContainer).refresh();
 				}
@@ -1261,6 +1348,7 @@ class ExtensionsContributions extends Disposable implements IWorkbenchContributi
 			},
 			run: async (accessor: ServicesAccessor) => {
 				const view = accessor.get(IViewsService).getActiveViewWithId(WORKSPACE_RECOMMENDATIONS_VIEW_ID) as IWorkspaceRecommendedExtensionsView;
+
 				return view.installWorkspaceRecommendations();
 			}
 		});
@@ -1318,11 +1406,16 @@ class ExtensionsContributions extends Disposable implements IWorkbenchContributi
 			},
 			run: async (accessor: ServicesAccessor, extensionId: string) => {
 				const extensionWorkbenchService = accessor.get(IExtensionsWorkbenchService);
+
 				const instantiationService = accessor.get(IInstantiationService);
+
 				const extension = extensionWorkbenchService.local.find(e => areSameExtensions(e.identifier, { id: extensionId }));
+
 				if (extension) {
 					const action = instantiationService.createInstance(SetColorThemeAction);
+
 					action.extension = extension;
+
 					return action.run();
 				}
 			}
@@ -1339,11 +1432,16 @@ class ExtensionsContributions extends Disposable implements IWorkbenchContributi
 			},
 			run: async (accessor: ServicesAccessor, extensionId: string) => {
 				const extensionWorkbenchService = accessor.get(IExtensionsWorkbenchService);
+
 				const instantiationService = accessor.get(IInstantiationService);
+
 				const extension = extensionWorkbenchService.local.find(e => areSameExtensions(e.identifier, { id: extensionId }));
+
 				if (extension) {
 					const action = instantiationService.createInstance(SetFileIconThemeAction);
+
 					action.extension = extension;
+
 					return action.run();
 				}
 			}
@@ -1360,11 +1458,16 @@ class ExtensionsContributions extends Disposable implements IWorkbenchContributi
 			},
 			run: async (accessor: ServicesAccessor, extensionId: string) => {
 				const extensionWorkbenchService = accessor.get(IExtensionsWorkbenchService);
+
 				const instantiationService = accessor.get(IInstantiationService);
+
 				const extension = extensionWorkbenchService.local.find(e => areSameExtensions(e.identifier, { id: extensionId }));
+
 				if (extension) {
 					const action = instantiationService.createInstance(SetProductIconThemeAction);
+
 					action.extension = extension;
+
 					return action.run();
 				}
 			}
@@ -1381,7 +1484,9 @@ class ExtensionsContributions extends Disposable implements IWorkbenchContributi
 			},
 			run: async (accessor: ServicesAccessor, extensionId: string) => {
 				const extensionWorkbenchService = accessor.get(IExtensionsWorkbenchService);
+
 				const extension = (await extensionWorkbenchService.getExtensions([{ id: extensionId }], CancellationToken.None))[0];
+
 				extensionWorkbenchService.open(extension, { showPreReleaseVersion: true });
 			}
 		});
@@ -1397,7 +1502,9 @@ class ExtensionsContributions extends Disposable implements IWorkbenchContributi
 			},
 			run: async (accessor: ServicesAccessor, extensionId: string) => {
 				const extensionWorkbenchService = accessor.get(IExtensionsWorkbenchService);
+
 				const extension = (await extensionWorkbenchService.getExtensions([{ id: extensionId }], CancellationToken.None))[0];
+
 				extensionWorkbenchService.open(extension, { showPreReleaseVersion: false });
 			}
 		});
@@ -1419,11 +1526,16 @@ class ExtensionsContributions extends Disposable implements IWorkbenchContributi
 			},
 			run: async (accessor: ServicesAccessor, id: string) => {
 				const instantiationService = accessor.get(IInstantiationService);
+
 				const extensionWorkbenchService = accessor.get(IExtensionsWorkbenchService);
+
 				const extension = extensionWorkbenchService.local.find(e => areSameExtensions(e.identifier, { id }));
+
 				if (extension) {
 					const action = instantiationService.createInstance(ToggleAutoUpdateForExtensionAction);
+
 					action.extension = extension;
+
 					return action.run();
 				}
 			}
@@ -1442,11 +1554,16 @@ class ExtensionsContributions extends Disposable implements IWorkbenchContributi
 			},
 			run: async (accessor: ServicesAccessor, id: string) => {
 				const instantiationService = accessor.get(IInstantiationService);
+
 				const extensionWorkbenchService = accessor.get(IExtensionsWorkbenchService);
+
 				const extension = extensionWorkbenchService.local.find(e => areSameExtensions(e.identifier, { id }));
+
 				if (extension) {
 					const action = instantiationService.createInstance(ToggleAutoUpdatesForPublisherAction);
+
 					action.extension = extension;
+
 					return action.run();
 				}
 			}
@@ -1464,11 +1581,16 @@ class ExtensionsContributions extends Disposable implements IWorkbenchContributi
 			},
 			run: async (accessor: ServicesAccessor, id: string) => {
 				const instantiationService = accessor.get(IInstantiationService);
+
 				const extensionWorkbenchService = accessor.get(IExtensionsWorkbenchService);
+
 				const extension = extensionWorkbenchService.local.find(e => areSameExtensions(e.identifier, { id }));
+
 				if (extension) {
 					const action = instantiationService.createInstance(TogglePreReleaseExtensionAction);
+
 					action.extension = extension;
+
 					return action.run();
 				}
 			}
@@ -1486,11 +1608,16 @@ class ExtensionsContributions extends Disposable implements IWorkbenchContributi
 			},
 			run: async (accessor: ServicesAccessor, id: string) => {
 				const instantiationService = accessor.get(IInstantiationService);
+
 				const extensionWorkbenchService = accessor.get(IExtensionsWorkbenchService);
+
 				const extension = extensionWorkbenchService.local.find(e => areSameExtensions(e.identifier, { id }));
+
 				if (extension) {
 					const action = instantiationService.createInstance(TogglePreReleaseExtensionAction);
+
 					action.extension = extension;
+
 					return action.run();
 				}
 			}
@@ -1507,10 +1634,15 @@ class ExtensionsContributions extends Disposable implements IWorkbenchContributi
 			},
 			run: async (accessor: ServicesAccessor, extensionId: string) => {
 				const instantiationService = accessor.get(IInstantiationService);
+
 				const extensionsWorkbenchService = accessor.get(IExtensionsWorkbenchService);
+
 				const extension = (await extensionsWorkbenchService.getExtensions([{ id: extensionId }], CancellationToken.None))[0];
+
 				const action = instantiationService.createInstance(ClearLanguageAction);
+
 				action.extension = extension;
+
 				return action.run();
 			}
 		});
@@ -1526,11 +1658,15 @@ class ExtensionsContributions extends Disposable implements IWorkbenchContributi
 			},
 			run: async (accessor: ServicesAccessor, extensionId: string) => {
 				const instantiationService = accessor.get(IInstantiationService);
+
 				const extension = this.extensionsWorkbenchService.local.filter(e => areSameExtensions(e.identifier, { id: extensionId }))[0]
 					|| (await this.extensionsWorkbenchService.getExtensions([{ id: extensionId }], CancellationToken.None))[0];
+
 				if (extension) {
 					const action = instantiationService.createInstance(InstallAction, { installPreReleaseVersion: this.extensionsWorkbenchService.preferPreReleases });
+
 					action.extension = extension;
+
 					return action.run();
 				}
 			}
@@ -1547,14 +1683,18 @@ class ExtensionsContributions extends Disposable implements IWorkbenchContributi
 			},
 			run: async (accessor: ServicesAccessor, extensionId: string) => {
 				const instantiationService = accessor.get(IInstantiationService);
+
 				const extension = this.extensionsWorkbenchService.local.filter(e => areSameExtensions(e.identifier, { id: extensionId }))[0]
 					|| (await this.extensionsWorkbenchService.getExtensions([{ id: extensionId }], CancellationToken.None))[0];
+
 				if (extension) {
 					const action = instantiationService.createInstance(InstallAction, {
 						installPreReleaseVersion: this.extensionsWorkbenchService.preferPreReleases,
 						isMachineScoped: true,
 					});
+
 					action.extension = extension;
+
 					return action.run();
 				}
 			}
@@ -1571,14 +1711,18 @@ class ExtensionsContributions extends Disposable implements IWorkbenchContributi
 			},
 			run: async (accessor: ServicesAccessor, extensionId: string) => {
 				const instantiationService = accessor.get(IInstantiationService);
+
 				const extension = this.extensionsWorkbenchService.local.filter(e => areSameExtensions(e.identifier, { id: extensionId }))[0]
 					|| (await this.extensionsWorkbenchService.getExtensions([{ id: extensionId }], CancellationToken.None))[0];
+
 				if (extension) {
 					const action = instantiationService.createInstance(InstallAction, {
 						isMachineScoped: true,
 						preRelease: true
 					});
+
 					action.extension = extension;
+
 					return action.run();
 				}
 			}
@@ -1595,8 +1739,10 @@ class ExtensionsContributions extends Disposable implements IWorkbenchContributi
 			},
 			run: async (accessor: ServicesAccessor, extensionId: string) => {
 				const instantiationService = accessor.get(IInstantiationService);
+
 				const extension = this.extensionsWorkbenchService.local.filter(e => areSameExtensions(e.identifier, { id: extensionId }))[0]
 					|| (await this.extensionsWorkbenchService.getExtensions([{ id: extensionId }], CancellationToken.None))[0];
+
 				if (extension) {
 					return instantiationService.createInstance(InstallAnotherVersionAction, extension, false).run();
 				}
@@ -1612,16 +1758,25 @@ class ExtensionsContributions extends Disposable implements IWorkbenchContributi
 			},
 			run: async (accessor: ServicesAccessor, extensionId: string) => {
 				const clipboardService = accessor.get(IClipboardService);
+
 				const extension = this.extensionsWorkbenchService.local.filter(e => areSameExtensions(e.identifier, { id: extensionId }))[0]
 					|| (await this.extensionsWorkbenchService.getExtensions([{ id: extensionId }], CancellationToken.None))[0];
+
 				if (extension) {
 					const name = localize('extensionInfoName', 'Name: {0}', extension.displayName);
+
 					const id = localize('extensionInfoId', 'Id: {0}', extensionId);
+
 					const description = localize('extensionInfoDescription', 'Description: {0}', extension.description);
+
 					const verision = localize('extensionInfoVersion', 'Version: {0}', extension.version);
+
 					const publisher = localize('extensionInfoPublisher', 'Publisher: {0}', extension.publisherDisplayName);
+
 					const link = extension.url ? localize('extensionInfoVSMarketplaceLink', 'VS Marketplace Link: {0}', `${extension.url}`) : null;
+
 					const clipboardStr = `${name}\n${id}\n${description}\n${verision}\n${publisher}${link ? '\n' + link : ''}`;
+
 					await clipboardService.writeText(clipboardStr);
 				}
 			}
@@ -1711,7 +1866,9 @@ class ExtensionsContributions extends Disposable implements IWorkbenchContributi
 			},
 			run: async (accessor: ServicesAccessor, _: string, extensionArg: IExtensionArg) => {
 				const uriIdentityService = accessor.get(IUriIdentityService);
+
 				const extension = extensionArg.location ? this.extensionsWorkbenchService.installed.find(e => uriIdentityService.extUri.isEqual(e.local?.location, extensionArg.location)) : undefined;
+
 				if (extension) {
 					return this.extensionsWorkbenchService.toggleApplyExtensionToAllProfiles(extension);
 				}
@@ -1729,6 +1886,7 @@ class ExtensionsContributions extends Disposable implements IWorkbenchContributi
 			},
 			run: async (accessor: ServicesAccessor, id: string) => {
 				const extension = this.extensionsWorkbenchService.local.find(e => areSameExtensions({ id }, e.identifier));
+
 				if (extension) {
 					return this.extensionsWorkbenchService.toggleExtensionIgnoredToSync(extension);
 				}
@@ -1793,15 +1951,21 @@ class ExtensionsContributions extends Disposable implements IWorkbenchContributi
 			},
 			async run(accessor: ServicesAccessor): Promise<any> {
 				const editorService = accessor.get(IEditorService);
+
 				const workspaceExtensionsConfigService = accessor.get(IWorkspaceExtensionsConfigService);
+
 				if (!(editorService.activeEditor instanceof ExtensionsInput)) {
 					return;
 				}
+
 				const extensionId = editorService.activeEditor.extension.identifier.id.toLowerCase();
+
 				const recommendations = await workspaceExtensionsConfigService.getRecommendations();
+
 				if (recommendations.includes(extensionId)) {
 					return;
 				}
+
 				await workspaceExtensionsConfigService.toggleRecommendation(extensionId);
 			}
 		});
@@ -1827,15 +1991,21 @@ class ExtensionsContributions extends Disposable implements IWorkbenchContributi
 			},
 			async run(accessor: ServicesAccessor): Promise<any> {
 				const editorService = accessor.get(IEditorService);
+
 				const workspaceExtensionsConfigService = accessor.get(IWorkspaceExtensionsConfigService);
+
 				if (!(editorService.activeEditor instanceof ExtensionsInput)) {
 					return;
 				}
+
 				const extensionId = editorService.activeEditor.extension.identifier.id.toLowerCase();
+
 				const unwantedRecommendations = await workspaceExtensionsConfigService.getUnwantedRecommendations();
+
 				if (unwantedRecommendations.includes(extensionId)) {
 					return;
 				}
+
 				await workspaceExtensionsConfigService.toggleUnwantedRecommendation(extensionId);
 			}
 		});
@@ -1866,12 +2036,17 @@ class ExtensionsContributions extends Disposable implements IWorkbenchContributi
 
 	private registerExtensionAction(extensionActionOptions: IExtensionActionOptions): IDisposable {
 		const menus = extensionActionOptions.menu ? Array.isArray(extensionActionOptions.menu) ? extensionActionOptions.menu : [extensionActionOptions.menu] : [];
+
 		let menusWithOutTitles: ({ id: MenuId } & Omit<IMenuItem, 'command'>)[] = [];
+
 		const menusWithTitles: { id: MenuId; item: IMenuItem }[] = [];
+
 		if (extensionActionOptions.menuTitles) {
 			for (let index = 0; index < menus.length; index++) {
 				const menu = menus[index];
+
 				const menuTitle = extensionActionOptions.menuTitles[menu.id.id];
+
 				if (menuTitle) {
 					menusWithTitles.push({ id: menu.id, item: { ...menu, command: { id: extensionActionOptions.id, title: menuTitle } } });
 				} else {
@@ -1881,7 +2056,9 @@ class ExtensionsContributions extends Disposable implements IWorkbenchContributi
 		} else {
 			menusWithOutTitles = menus;
 		}
+
 		const disposables = new DisposableStore();
+
 		disposables.add(registerAction2(class extends Action2 {
 			constructor() {
 				super({
@@ -1889,13 +2066,16 @@ class ExtensionsContributions extends Disposable implements IWorkbenchContributi
 					menu: menusWithOutTitles
 				});
 			}
+
 			run(accessor: ServicesAccessor, ...args: any[]): Promise<any> {
 				return extensionActionOptions.run(accessor, ...args);
 			}
 		}));
+
 		if (menusWithTitles.length) {
 			disposables.add(MenuRegistry.appendMenuItems(menusWithTitles));
 		}
+
 		return disposables;
 	}
 
@@ -1937,6 +2117,7 @@ Registry.as<IConfigurationMigrationRegistry>(ConfigurationMigrationExtensions.Co
 			if (value === 'onlySelectedExtensions') {
 				return { value: false };
 			}
+
 			return [];
 		}
 	}]);

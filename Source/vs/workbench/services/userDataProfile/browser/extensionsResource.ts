@@ -42,10 +42,15 @@ import {
 
 interface IProfileExtension {
 	identifier: IExtensionIdentifier;
+
 	displayName?: string;
+
 	preRelease?: boolean;
+
 	applicationScoped?: boolean;
+
 	disabled?: boolean;
+
 	version?: string;
 }
 
@@ -75,6 +80,7 @@ export class ExtensionsResourceInitializer
 
 		const extensionsToEnableOrDisable: {
 			extension: IExtensionIdentifier;
+
 			enable: boolean;
 		}[] = [];
 
@@ -98,6 +104,7 @@ export class ExtensionsResourceInitializer
 			) {
 				extensionsToInstall.push(e);
 			}
+
 			if (isDisabled !== !!e.disabled) {
 				extensionsToEnableOrDisable.push({
 					extension: e.identifier,
@@ -105,6 +112,7 @@ export class ExtensionsResourceInitializer
 				});
 			}
 		}
+
 		const extensionsToUninstall: ILocalExtension[] =
 			installedExtensions.filter(
 				(extension) =>
@@ -120,9 +128,11 @@ export class ExtensionsResourceInitializer
 					`Initializing Profile: Enabling extension...`,
 					extension.id,
 				);
+
 				await this.extensionEnablementService.enableExtension(
 					extension,
 				);
+
 				this.logService.info(
 					`Initializing Profile: Enabled extension...`,
 					extension.id,
@@ -132,15 +142,18 @@ export class ExtensionsResourceInitializer
 					`Initializing Profile: Disabling extension...`,
 					extension.id,
 				);
+
 				await this.extensionEnablementService.disableExtension(
 					extension,
 				);
+
 				this.logService.info(
 					`Initializing Profile: Disabled extension...`,
 					extension.id,
 				);
 			}
 		}
+
 		if (extensionsToInstall.length) {
 			const galleryExtensions =
 				await this.extensionGalleryService.getExtensions(
@@ -151,6 +164,7 @@ export class ExtensionsResourceInitializer
 					})),
 					CancellationToken.None,
 				);
+
 			await Promise.all(
 				extensionsToInstall.map(async (e) => {
 					const extension = galleryExtensions.find(
@@ -164,6 +178,7 @@ export class ExtensionsResourceInitializer
 					if (!extension) {
 						return;
 					}
+
 					if (
 						(await this.extensionManagementService.canInstall(
 							extension,
@@ -174,6 +189,7 @@ export class ExtensionsResourceInitializer
 							extension.identifier.id,
 							extension.version,
 						);
+
 						await this.extensionManagementService.installFromGallery(
 							extension,
 							{
@@ -191,6 +207,7 @@ export class ExtensionsResourceInitializer
 								},
 							},
 						);
+
 						this.logService.info(
 							`Initializing Profile: Installed extension...`,
 							extension.identifier.id,
@@ -205,6 +222,7 @@ export class ExtensionsResourceInitializer
 				}),
 			);
 		}
+
 		if (extensionsToUninstall.length) {
 			await Promise.all(
 				extensionsToUninstall.map((e) =>
@@ -267,6 +285,7 @@ export class ExtensionsResource implements IProfileResource {
 
 				const extensionsToEnableOrDisable: {
 					extension: IExtensionIdentifier;
+
 					enable: boolean;
 				}[] = [];
 
@@ -294,6 +313,7 @@ export class ExtensionsResource implements IProfileResource {
 					) {
 						extensionsToInstall.push(e);
 					}
+
 					if (isDisabled !== !!e.disabled) {
 						extensionsToEnableOrDisable.push({
 							extension: e.identifier,
@@ -301,6 +321,7 @@ export class ExtensionsResource implements IProfileResource {
 						});
 					}
 				}
+
 				const extensionsToUninstall: ILocalExtension[] =
 					installedExtensions.filter(
 						(extension) =>
@@ -323,9 +344,11 @@ export class ExtensionsResource implements IProfileResource {
 							`Importing Profile (${profile.name}): Enabling extension...`,
 							extension.id,
 						);
+
 						await extensionEnablementService.enableExtension(
 							extension,
 						);
+
 						this.logService.info(
 							`Importing Profile (${profile.name}): Enabled extension...`,
 							extension.id,
@@ -335,15 +358,18 @@ export class ExtensionsResource implements IProfileResource {
 							`Importing Profile (${profile.name}): Disabling extension...`,
 							extension.id,
 						);
+
 						await extensionEnablementService.disableExtension(
 							extension,
 						);
+
 						this.logService.info(
 							`Importing Profile (${profile.name}): Disabled extension...`,
 							extension.id,
 						);
 					}
 				}
+
 				if (extensionsToInstall.length) {
 					this.logService.info(
 						`Importing Profile (${profile.name}): Started installing extensions.`,
@@ -362,6 +388,7 @@ export class ExtensionsResource implements IProfileResource {
 						);
 
 					const installExtensionInfos: InstallExtensionInfo[] = [];
+
 					await Promise.all(
 						extensionsToInstall.map(async (e) => {
 							const extension = galleryExtensions.find(
@@ -375,6 +402,7 @@ export class ExtensionsResource implements IProfileResource {
 							if (!extension) {
 								return;
 							}
+
 							if (
 								(await this.extensionManagementService.canInstall(
 									extension,
@@ -411,6 +439,7 @@ export class ExtensionsResource implements IProfileResource {
 								if (token.isCancellationRequested) {
 									return;
 								}
+
 								progress?.(
 									localize(
 										"installingExtension",
@@ -421,6 +450,7 @@ export class ExtensionsResource implements IProfileResource {
 												.identifier.id,
 									),
 								);
+
 								await this.extensionManagementService.installFromGallery(
 									installExtensionInfo.extension,
 									installExtensionInfo.options,
@@ -432,10 +462,12 @@ export class ExtensionsResource implements IProfileResource {
 							);
 						}
 					}
+
 					this.logService.info(
 						`Importing Profile (${profile.name}): Finished installing extensions.`,
 					);
 				}
+
 				if (extensionsToUninstall.length) {
 					await Promise.all(
 						extensionsToUninstall.map((e) =>
@@ -474,6 +506,7 @@ export class ExtensionsResource implements IProfileResource {
 				extensionsToDisable.push(extension.identifier);
 			}
 		}
+
 		await this.withProfileScopedServices(
 			to,
 			async (extensionEnablementService) =>
@@ -517,18 +550,21 @@ export class ExtensionsResource implements IProfileResource {
 						// skip enabled builtin extensions
 						continue;
 					}
+
 					if (!extension.isBuiltin) {
 						if (!extension.identifier.uuid) {
 							// skip user extensions without uuid
 							continue;
 						}
 					}
+
 					const existing = result.get(identifier.id.toLowerCase());
 
 					if (existing?.disabled) {
 						// Remove the duplicate disabled extension
 						result.delete(identifier.id.toLowerCase());
 					}
+
 					const profileExtension: IProfileExtension = {
 						identifier,
 						displayName: extension.manifest.displayName,
@@ -537,19 +573,24 @@ export class ExtensionsResource implements IProfileResource {
 					if (disabled) {
 						profileExtension.disabled = true;
 					}
+
 					if (!extension.isBuiltin && extension.pinned) {
 						profileExtension.version = extension.manifest.version;
 					}
+
 					if (!profileExtension.version && preRelease) {
 						profileExtension.preRelease = true;
 					}
+
 					profileExtension.applicationScoped =
 						extension.isApplicationScoped;
+
 					result.set(
 						profileExtension.identifier.id.toLowerCase(),
 						profileExtension,
 					);
 				}
+
 				return [...result.values()];
 			},
 		);
@@ -599,10 +640,15 @@ export abstract class ExtensionsResourceTreeItem
 	implements IProfileResourceTreeItem
 {
 	readonly type = ProfileResourceType.Extensions;
+
 	readonly handle = ProfileResourceType.Extensions;
+
 	readonly label = { label: localize("extensions", "Extensions") };
+
 	readonly collapsibleState = TreeItemCollapsibleState.Expanded;
+
 	contextValue = ProfileResourceType.Extensions;
+
 	checkbox: ITreeItemCheckboxState | undefined;
 
 	protected readonly excludedExtensions = new Set<string>();
@@ -677,7 +723,9 @@ export abstract class ExtensionsResourceTreeItem
 	}
 
 	abstract isFromDefaultProfile(): boolean;
+
 	abstract getContent(): Promise<string>;
+
 	protected abstract getExtensions(): Promise<IProfileExtension[]>;
 }
 

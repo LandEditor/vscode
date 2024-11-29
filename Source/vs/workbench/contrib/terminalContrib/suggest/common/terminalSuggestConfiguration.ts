@@ -21,13 +21,18 @@ export const terminalSuggestConfigSection = "terminal.integrated.suggest";
 
 export interface ITerminalSuggestConfiguration {
 	enabled: boolean;
+
 	quickSuggestions: boolean;
+
 	suggestOnTriggerCharacters: boolean;
+
 	runOnEnter: "never" | "exactMatch" | "exactMatchIgnoreExtension" | "always";
+
 	builtinCompletions: {
 		"pwshCode": boolean;
 		"pwshGit": boolean;
 	};
+
 	enableExtensionCompletions: boolean;
 }
 

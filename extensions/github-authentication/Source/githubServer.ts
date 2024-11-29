@@ -25,20 +25,26 @@ const REDIRECT_URL_INSIDERS = "https://insiders.vscode.dev/redirect";
 
 export interface IGitHubServer {
 	login(scopes: string, existingLogin?: string): Promise<string>;
+
 	logout(session: vscode.AuthenticationSession): Promise<void>;
 
 	getUserInfo(token: string): Promise<{
 		id: string;
+
 		accountName: string;
 	}>;
+
 	sendAdditionalTelemetryInfo(
 		session: vscode.AuthenticationSession,
 	): Promise<void>;
+
 	friendlyName: string;
 }
 export class GitHubServer implements IGitHubServer {
 	readonly friendlyName: string;
+
 	private readonly _type: AuthProviderType;
+
 	private _redirectEndpoint: string | undefined;
 
 	constructor(
@@ -51,21 +57,26 @@ export class GitHubServer implements IGitHubServer {
 		this._type = _ghesUri
 			? AuthProviderType.githubEnterprise
 			: AuthProviderType.github;
+
 		this.friendlyName =
 			this._type === AuthProviderType.github
 				? "GitHub"
 				: _ghesUri?.authority!;
 	}
+
 	get baseUri() {
 		if (this._type === AuthProviderType.github) {
 			return vscode.Uri.parse("https://github.com/");
 		}
+
 		return this._ghesUri!;
 	}
+
 	private async getRedirectEndpoint(): Promise<string> {
 		if (this._redirectEndpoint) {
 			return this._redirectEndpoint;
 		}
+
 		if (this._type === AuthProviderType.github) {
 			const proxyEndpoints = await vscode.commands.executeCommand<
 				| {
@@ -93,19 +104,23 @@ export class GitHubServer implements IGitHubServer {
 			// GitHub maintained server.
 			this._redirectEndpoint = "https://vscode.dev/redirect";
 		}
+
 		return this._redirectEndpoint;
 	}
 	// TODO@joaomoreno TODO@TylerLeonhardt
 	private _isNoCorsEnvironment: boolean | undefined;
+
 	private async isNoCorsEnvironment(): Promise<boolean> {
 		if (this._isNoCorsEnvironment !== undefined) {
 			return this._isNoCorsEnvironment;
 		}
+
 		const uri = await vscode.env.asExternalUri(
 			vscode.Uri.parse(
 				`${vscode.env.uriScheme}://vscode.github-authentication/dummy`,
 			),
 		);
+
 		this._isNoCorsEnvironment =
 			(uri.scheme === "https" &&
 				/^((insiders\.)?vscode|github)\./.test(uri.authority)) ||
@@ -113,6 +128,7 @@ export class GitHubServer implements IGitHubServer {
 
 		return this._isNoCorsEnvironment;
 	}
+
 	public async login(
 		scopes: string,
 		existingLogin?: string,
@@ -130,6 +146,7 @@ export class GitHubServer implements IGitHubServer {
 				// We haven't had a failure yet so wait to prompt
 				return;
 			}
+
 			const message = userCancelled
 				? vscode.l10n.t(
 						"Having trouble logging in? Would you like to try a different way? ({0})",
@@ -186,6 +203,7 @@ export class GitHubServer implements IGitHubServer {
 				if (flow !== flows[0]) {
 					await promptToContinue(flow.label);
 				}
+
 				return await flow.trigger({
 					scopes,
 					callbackUri,
@@ -203,10 +221,12 @@ export class GitHubServer implements IGitHubServer {
 				userCancelled = this.processLoginError(e);
 			}
 		}
+
 		throw new Error(
 			userCancelled ? CANCELLATION_ERROR : "No auth flow succeeded.",
 		);
 	}
+
 	public async logout(session: vscode.AuthenticationSession): Promise<void> {
 		this._logger.trace(`Deleting session (${session.id}) from server...`);
 
@@ -226,6 +246,7 @@ export class GitHubServer implements IGitHubServer {
 
 			return;
 		}
+
 		if (!isSupportedTarget(this._type, this._ghesUri)) {
 			this._logger.trace(
 				"GitHub.com and GitHub hosted GitHub Enterprise are the only options that support deleting tokens on the server. Skipping.",
@@ -233,6 +254,7 @@ export class GitHubServer implements IGitHubServer {
 
 			return;
 		}
+
 		const authHeader =
 			"Basic " +
 			base64Encode(
@@ -263,6 +285,7 @@ export class GitHubServer implements IGitHubServer {
 
 				return;
 			}
+
 			try {
 				const body = await result.text();
 
@@ -276,6 +299,7 @@ export class GitHubServer implements IGitHubServer {
 			);
 		}
 	}
+
 	private getServerUri(path: string = "") {
 		const apiUri = this.baseUri;
 		// github.com and Hosted GitHub Enterprise instances
@@ -289,14 +313,17 @@ export class GitHubServer implements IGitHubServer {
 			`${apiUri.scheme}://${apiUri.authority}/api/v3${path}`,
 		);
 	}
+
 	public async getUserInfo(token: string): Promise<{
 		id: string;
+
 		accountName: string;
 	}> {
 		let result;
 
 		try {
 			this._logger.info("Getting user info...");
+
 			result = await fetching(this.getServerUri("/user").toString(), {
 				headers: {
 					Authorization: `token ${token}`,
@@ -308,12 +335,15 @@ export class GitHubServer implements IGitHubServer {
 
 			throw new Error(NETWORK_ERROR);
 		}
+
 		if (result.ok) {
 			try {
 				const json = (await result.json()) as {
 					id: number;
+
 					login: string;
 				};
+
 				this._logger.info("Got account info!");
 
 				return { id: `${json.id}`, accountName: json.login };
@@ -337,28 +367,33 @@ export class GitHubServer implements IGitHubServer {
 			} catch (err) {
 				// noop
 			}
+
 			this._logger.error(`Getting account info failed: ${errorMessage}`);
 
 			throw new Error(errorMessage);
 		}
 	}
+
 	public async sendAdditionalTelemetryInfo(
 		session: vscode.AuthenticationSession,
 	): Promise<void> {
 		if (!vscode.env.isTelemetryEnabled) {
 			return;
 		}
+
 		const nocors = await this.isNoCorsEnvironment();
 
 		if (nocors) {
 			return;
 		}
+
 		if (this._type === AuthProviderType.github) {
 			return await this.checkUserDetails(session);
 		}
 		// GHES
 		await this.checkEnterpriseVersion(session.accessToken);
 	}
+
 	private async checkUserDetails(
 		session: vscode.AuthenticationSession,
 	): Promise<void> {
@@ -379,8 +414,10 @@ export class GitHubServer implements IGitHubServer {
 			if (result.ok) {
 				const json: {
 					student: boolean;
+
 					faculty: boolean;
 				} = await result.json();
+
 				edu = json.student
 					? "student"
 					: json.faculty
@@ -405,6 +442,7 @@ export class GitHubServer implements IGitHubServer {
 			isManaged: session.account.label.includes("_") ? "true" : "false",
 		});
 	}
+
 	private async checkEnterpriseVersion(token: string): Promise<void> {
 		try {
 			let version: string;
@@ -423,10 +461,13 @@ export class GitHubServer implements IGitHubServer {
 				if (!result.ok) {
 					return;
 				}
+
 				const json: {
 					verifiable_password_authentication: boolean;
+
 					installed_version: string;
 				} = await result.json();
+
 				version = json.installed_version;
 			} else {
 				version = "hosted";
@@ -444,10 +485,12 @@ export class GitHubServer implements IGitHubServer {
 			// No-op
 		}
 	}
+
 	private processLoginError(error: Error): boolean {
 		if (error.message === CANCELLATION_ERROR) {
 			throw error;
 		}
+
 		this._logger.error(error.message ?? error);
 
 		return error.message === USER_CANCELLATION_ERROR;

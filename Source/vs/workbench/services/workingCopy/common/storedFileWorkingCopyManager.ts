@@ -160,39 +160,56 @@ export class StoredFileWorkingCopyManager<M extends IStoredFileWorkingCopyModel>
 	private readonly _onDidResolve = this._register(
 		new Emitter<IStoredFileWorkingCopy<M>>(),
 	);
+
 	readonly onDidResolve = this._onDidResolve.event;
+
 	private readonly _onDidChangeDirty = this._register(
 		new Emitter<IStoredFileWorkingCopy<M>>(),
 	);
+
 	readonly onDidChangeDirty = this._onDidChangeDirty.event;
+
 	private readonly _onDidChangeReadonly = this._register(
 		new Emitter<IStoredFileWorkingCopy<M>>(),
 	);
+
 	readonly onDidChangeReadonly = this._onDidChangeReadonly.event;
+
 	private readonly _onDidChangeOrphaned = this._register(
 		new Emitter<IStoredFileWorkingCopy<M>>(),
 	);
+
 	readonly onDidChangeOrphaned = this._onDidChangeOrphaned.event;
+
 	private readonly _onDidSaveError = this._register(
 		new Emitter<IStoredFileWorkingCopy<M>>(),
 	);
+
 	readonly onDidSaveError = this._onDidSaveError.event;
+
 	private readonly _onDidSave = this._register(
 		new Emitter<IStoredFileWorkingCopySaveEvent<M>>(),
 	);
+
 	readonly onDidSave = this._onDidSave.event;
+
 	private readonly _onDidRevert = this._register(
 		new Emitter<IStoredFileWorkingCopy<M>>(),
 	);
+
 	readonly onDidRevert = this._onDidRevert.event;
+
 	private readonly _onDidRemove = this._register(new Emitter<URI>());
+
 	readonly onDidRemove = this._onDidRemove.event;
 	//#endregion
 	private readonly mapResourceToWorkingCopyListeners =
 		new ResourceMap<IDisposable>();
+
 	private readonly mapResourceToPendingWorkingCopyResolve = new ResourceMap<
 		Promise<void>
 	>();
+
 	private readonly workingCopyResolveQueue = this._register(
 		new ResourceQueue(),
 	);
@@ -230,8 +247,10 @@ export class StoredFileWorkingCopyManager<M extends IStoredFileWorkingCopyModel>
 		private readonly progressService: IProgressService,
 	) {
 		super(fileService, logService, workingCopyBackupService);
+
 		this.registerListeners();
 	}
+
 	private registerListeners(): void {
 		// Update working copies from file change events
 		this._register(
@@ -243,6 +262,7 @@ export class StoredFileWorkingCopyManager<M extends IStoredFileWorkingCopyModel>
 				this.onDidChangeFileSystemProviderCapabilities(e),
 			),
 		);
+
 		this._register(
 			this.fileService.onDidChangeFileSystemProviderRegistrations((e) =>
 				this.onDidChangeFileSystemProviderRegistrations(e),
@@ -254,11 +274,13 @@ export class StoredFileWorkingCopyManager<M extends IStoredFileWorkingCopyModel>
 				this.onWillRunWorkingCopyFileOperation(e),
 			),
 		);
+
 		this._register(
 			this.workingCopyFileService.onDidFailWorkingCopyFileOperation((e) =>
 				this.onDidFailWorkingCopyFileOperation(e),
 			),
 		);
+
 		this._register(
 			this.workingCopyFileService.onDidRunWorkingCopyFileOperation((e) =>
 				this.onDidRunWorkingCopyFileOperation(e),
@@ -288,6 +310,7 @@ export class StoredFileWorkingCopyManager<M extends IStoredFileWorkingCopyModel>
 			);
 		}
 	}
+
 	private onBeforeShutdownWeb(): boolean {
 		if (
 			this.workingCopies.some((workingCopy) =>
@@ -298,8 +321,10 @@ export class StoredFileWorkingCopyManager<M extends IStoredFileWorkingCopyModel>
 			// veto because web does not support long running shutdown
 			return true;
 		}
+
 		return false;
 	}
+
 	private async onWillShutdownDesktop(): Promise<void> {
 		let pendingSavedWorkingCopies: IStoredFileWorkingCopy<M>[];
 		// As long as stored file working copies are pending to be saved, we prolong the shutdown
@@ -331,6 +356,7 @@ export class StoredFileWorkingCopyManager<M extends IStoredFileWorkingCopyModel>
 		// into all working copies.
 		this.queueWorkingCopyReloads(e.scheme);
 	}
+
 	private onDidChangeFileSystemProviderRegistrations(
 		e: IFileSystemProviderRegistrationEvent,
 	): void {
@@ -344,6 +370,7 @@ export class StoredFileWorkingCopyManager<M extends IStoredFileWorkingCopyModel>
 		// into all working copies.
 		this.queueWorkingCopyReloads(e.scheme);
 	}
+
 	private onDidFilesChange(e: FileChangesEvent): void {
 		// Trigger a resolve for any update or add event that impacts
 		// the working copy. We also consider the added event
@@ -351,8 +378,11 @@ export class StoredFileWorkingCopyManager<M extends IStoredFileWorkingCopyModel>
 		// right after.
 		this.queueWorkingCopyReloads(e);
 	}
+
 	private queueWorkingCopyReloads(scheme: string): void;
+
 	private queueWorkingCopyReloads(e: FileChangesEvent): void;
+
 	private queueWorkingCopyReloads(
 		schemeOrEvent: string | FileChangesEvent,
 	): void {
@@ -360,6 +390,7 @@ export class StoredFileWorkingCopyManager<M extends IStoredFileWorkingCopyModel>
 			if (workingCopy.isDirty()) {
 				continue; // never reload dirty working copies
 			}
+
 			let resolveWorkingCopy = false;
 
 			if (typeof schemeOrEvent === "string") {
@@ -372,11 +403,13 @@ export class StoredFileWorkingCopyManager<M extends IStoredFileWorkingCopyModel>
 					FileChangeType.ADDED,
 				);
 			}
+
 			if (resolveWorkingCopy) {
 				this.queueWorkingCopyReload(workingCopy);
 			}
 		}
 	}
+
 	private queueWorkingCopyReload(
 		workingCopy: IStoredFileWorkingCopy<M>,
 	): void {
@@ -406,10 +439,13 @@ export class StoredFileWorkingCopyManager<M extends IStoredFileWorkingCopyModel>
 		number,
 		{
 			source: URI;
+
 			target: URI;
+
 			snapshot?: VSBufferReadableStream;
 		}[]
 	>();
+
 	private onWillRunWorkingCopyFileOperation(e: WorkingCopyFileEvent): void {
 		// Move / Copy: remember working copies to restore after the operation
 		if (
@@ -420,7 +456,9 @@ export class StoredFileWorkingCopyManager<M extends IStoredFileWorkingCopyModel>
 				(async () => {
 					const workingCopiesToRestore: {
 						source: URI;
+
 						target: URI;
+
 						snapshot?: VSBufferReadableStream;
 					}[] = [];
 
@@ -474,6 +512,7 @@ export class StoredFileWorkingCopyManager<M extends IStoredFileWorkingCopyModel>
 										),
 									);
 								}
+
 								workingCopiesToRestore.push({
 									source: sourceResource,
 									target: targetResource,
@@ -487,6 +526,7 @@ export class StoredFileWorkingCopyManager<M extends IStoredFileWorkingCopyModel>
 							}
 						}
 					}
+
 					this.mapCorrelationIdToWorkingCopiesToRestore.set(
 						e.correlationId,
 						workingCopiesToRestore,
@@ -495,6 +535,7 @@ export class StoredFileWorkingCopyManager<M extends IStoredFileWorkingCopyModel>
 			);
 		}
 	}
+
 	private onDidFailWorkingCopyFileOperation(e: WorkingCopyFileEvent): void {
 		// Move / Copy: restore dirty flag on working copies to restore that were dirty
 		if (
@@ -522,6 +563,7 @@ export class StoredFileWorkingCopyManager<M extends IStoredFileWorkingCopyModel>
 			}
 		}
 	}
+
 	private onDidRunWorkingCopyFileOperation(e: WorkingCopyFileEvent): void {
 		switch (e.operation) {
 			// Create: Revert existing working copies
@@ -553,6 +595,7 @@ export class StoredFileWorkingCopyManager<M extends IStoredFileWorkingCopyModel>
 							this.mapCorrelationIdToWorkingCopiesToRestore.delete(
 								e.correlationId,
 							);
+
 							await Promises.settled(
 								workingCopiesToRestore.map(
 									async (workingCopyToRestore) => {
@@ -603,6 +646,7 @@ export class StoredFileWorkingCopyManager<M extends IStoredFileWorkingCopyModel>
 		// Trigger reload
 		await this.doResolve(workingCopy, { reload: { async: false } });
 	}
+
 	async resolve(
 		resource: URI,
 		options?: IStoredFileWorkingCopyManagerResolveOptions,
@@ -618,6 +662,7 @@ export class StoredFileWorkingCopyManager<M extends IStoredFileWorkingCopyModel>
 		// Trigger resolve
 		return this.doResolve(resource, options);
 	}
+
 	private async doResolve(
 		resourceOrWorkingCopy: URI | IStoredFileWorkingCopy<M>,
 		options?: IStoredFileWorkingCopyManagerResolveOptions,
@@ -628,11 +673,14 @@ export class StoredFileWorkingCopyManager<M extends IStoredFileWorkingCopyModel>
 
 		if (URI.isUri(resourceOrWorkingCopy)) {
 			resource = resourceOrWorkingCopy;
+
 			workingCopy = this.get(resource);
 		} else {
 			resource = resourceOrWorkingCopy.resource;
+
 			workingCopy = resourceOrWorkingCopy;
 		}
+
 		let workingCopyResolve: Promise<void>;
 
 		let didCreateWorkingCopy = false;
@@ -674,6 +722,7 @@ export class StoredFileWorkingCopyManager<M extends IStoredFileWorkingCopyModel>
 		// Stored file working copy does not exist
 		else {
 			didCreateWorkingCopy = true;
+
 			workingCopy = new StoredFileWorkingCopy(
 				this.workingCopyTypeId,
 				resource,
@@ -697,7 +746,9 @@ export class StoredFileWorkingCopyManager<M extends IStoredFileWorkingCopyModel>
 				this.elevatedFileService,
 				this.progressService,
 			);
+
 			workingCopyResolve = workingCopy.resolve(resolveOptions);
+
 			this.registerWorkingCopy(workingCopy);
 		}
 		// Store pending resolve to avoid race conditions
@@ -715,6 +766,7 @@ export class StoredFileWorkingCopyManager<M extends IStoredFileWorkingCopyModel>
 				this._onDidChangeDirty.fire(workingCopy);
 			}
 		}
+
 		try {
 			await workingCopyResolve;
 		} catch (error) {
@@ -724,6 +776,7 @@ export class StoredFileWorkingCopyManager<M extends IStoredFileWorkingCopyModel>
 			if (didCreateWorkingCopy) {
 				workingCopy.dispose();
 			}
+
 			throw error;
 		} finally {
 			// Remove from pending resolves
@@ -734,8 +787,10 @@ export class StoredFileWorkingCopyManager<M extends IStoredFileWorkingCopyModel>
 		if (didCreateWorkingCopy && workingCopy.isDirty()) {
 			this._onDidChangeDirty.fire(workingCopy);
 		}
+
 		return workingCopy;
 	}
+
 	private joinPendingResolves(resource: URI): Promise<void> | undefined {
 		const pendingWorkingCopyResolve =
 			this.mapResourceToPendingWorkingCopyResolve.get(resource);
@@ -743,8 +798,10 @@ export class StoredFileWorkingCopyManager<M extends IStoredFileWorkingCopyModel>
 		if (!pendingWorkingCopyResolve) {
 			return;
 		}
+
 		return this.doJoinPendingResolves(resource);
 	}
+
 	private async doJoinPendingResolves(resource: URI): Promise<void> {
 		// While we have pending working copy resolves, ensure
 		// to await the last one finishing before returning.
@@ -760,6 +817,7 @@ export class StoredFileWorkingCopyManager<M extends IStoredFileWorkingCopyModel>
 			if (nextPendingWorkingCopyResolve === currentWorkingCopyResolve) {
 				return; // already awaited on - return
 			}
+
 			currentWorkingCopyResolve = nextPendingWorkingCopyResolve;
 
 			try {
@@ -769,39 +827,47 @@ export class StoredFileWorkingCopyManager<M extends IStoredFileWorkingCopyModel>
 			}
 		}
 	}
+
 	private registerWorkingCopy(workingCopy: IStoredFileWorkingCopy<M>): void {
 		// Install working copy listeners
 		const workingCopyListeners = new DisposableStore();
+
 		workingCopyListeners.add(
 			workingCopy.onDidResolve(() =>
 				this._onDidResolve.fire(workingCopy),
 			),
 		);
+
 		workingCopyListeners.add(
 			workingCopy.onDidChangeDirty(() =>
 				this._onDidChangeDirty.fire(workingCopy),
 			),
 		);
+
 		workingCopyListeners.add(
 			workingCopy.onDidChangeReadonly(() =>
 				this._onDidChangeReadonly.fire(workingCopy),
 			),
 		);
+
 		workingCopyListeners.add(
 			workingCopy.onDidChangeOrphaned(() =>
 				this._onDidChangeOrphaned.fire(workingCopy),
 			),
 		);
+
 		workingCopyListeners.add(
 			workingCopy.onDidSaveError(() =>
 				this._onDidSaveError.fire(workingCopy),
 			),
 		);
+
 		workingCopyListeners.add(
 			workingCopy.onDidSave((e) =>
 				this._onDidSave.fire({ workingCopy, ...e }),
 			),
 		);
+
 		workingCopyListeners.add(
 			workingCopy.onDidRevert(() => this._onDidRevert.fire(workingCopy)),
 		);
@@ -811,6 +877,7 @@ export class StoredFileWorkingCopyManager<M extends IStoredFileWorkingCopyModel>
 			workingCopyListeners,
 		);
 	}
+
 	protected override remove(resource: URI): boolean {
 		const removed = super.remove(resource);
 		// Dispose any existing working copy listeners
@@ -819,11 +886,14 @@ export class StoredFileWorkingCopyManager<M extends IStoredFileWorkingCopyModel>
 
 		if (workingCopyListener) {
 			dispose(workingCopyListener);
+
 			this.mapResourceToWorkingCopyListeners.delete(resource);
 		}
+
 		if (removed) {
 			this._onDidRemove.fire(resource);
 		}
+
 		return removed;
 	}
 	//#endregion
@@ -842,6 +912,7 @@ export class StoredFileWorkingCopyManager<M extends IStoredFileWorkingCopyModel>
 		// Promise based return in all other cases
 		return this.doCanDispose(workingCopy);
 	}
+
 	private async doCanDispose(
 		workingCopy: IStoredFileWorkingCopy<M>,
 	): Promise<true> {
@@ -861,14 +932,17 @@ export class StoredFileWorkingCopyManager<M extends IStoredFileWorkingCopyModel>
 
 			return this.canDispose(workingCopy);
 		}
+
 		return true;
 	}
+
 	override dispose(): void {
 		super.dispose();
 		// Clear pending working copy resolves
 		this.mapResourceToPendingWorkingCopyResolve.clear();
 		// Dispose the working copy change listeners
 		dispose(this.mapResourceToWorkingCopyListeners.values());
+
 		this.mapResourceToWorkingCopyListeners.clear();
 	}
 }

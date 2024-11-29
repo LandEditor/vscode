@@ -83,9 +83,13 @@ class DecorationsManager implements IDisposable {
 			className: "reference-decoration",
 		},
 	);
+
 	private _decorations = new Map<string, OneReference>();
+
 	private _decorationIgnoreSet = new Set<string>();
+
 	private readonly _callOnDispose = new DisposableStore();
+
 	private readonly _callOnModelChange = new DisposableStore();
 
 	constructor(
@@ -95,13 +99,18 @@ class DecorationsManager implements IDisposable {
 		this._callOnDispose.add(
 			this._editor.onDidChangeModel(() => this._onModelChanged()),
 		);
+
 		this._onModelChanged();
 	}
+
 	dispose(): void {
 		this._callOnModelChange.dispose();
+
 		this._callOnDispose.dispose();
+
 		this.removeDecorations();
 	}
+
 	private _onModelChanged(): void {
 		this._callOnModelChange.clear();
 
@@ -110,6 +119,7 @@ class DecorationsManager implements IDisposable {
 		if (!model) {
 			return;
 		}
+
 		for (const ref of this._model.references) {
 			if (ref.uri.toString() === model.uri.toString()) {
 				this._addDecorations(ref.parent);
@@ -118,10 +128,12 @@ class DecorationsManager implements IDisposable {
 			}
 		}
 	}
+
 	private _addDecorations(reference: FileReferences): void {
 		if (!this._editor.hasModel()) {
 			return;
 		}
+
 		this._callOnModelChange.add(
 			this._editor
 				.getModel()
@@ -138,18 +150,22 @@ class DecorationsManager implements IDisposable {
 			if (this._decorationIgnoreSet.has(oneReference.id)) {
 				continue;
 			}
+
 			if (
 				oneReference.uri.toString() !==
 				this._editor.getModel().uri.toString()
 			) {
 				continue;
 			}
+
 			newDecorations.push({
 				range: oneReference.range,
 				options: DecorationsManager.DecorationOptions,
 			});
+
 			newDecorationsActualIndex.push(i);
 		}
+
 		this._editor.changeDecorations((changeAccessor) => {
 			const decorations = changeAccessor.deltaDecorations(
 				[],
@@ -164,6 +180,7 @@ class DecorationsManager implements IDisposable {
 			}
 		});
 	}
+
 	private _onDecorationChanged(): void {
 		const toRemove: string[] = [];
 
@@ -172,17 +189,20 @@ class DecorationsManager implements IDisposable {
 		if (!model) {
 			return;
 		}
+
 		for (const [decorationId, reference] of this._decorations) {
 			const newRange = model.getDecorationRange(decorationId);
 
 			if (!newRange) {
 				continue;
 			}
+
 			let ignore = false;
 
 			if (Range.equalsRange(newRange, reference.range)) {
 				continue;
 			}
+
 			if (Range.spansMultipleLines(newRange)) {
 				ignore = true;
 			} else {
@@ -195,26 +215,34 @@ class DecorationsManager implements IDisposable {
 					ignore = true;
 				}
 			}
+
 			if (ignore) {
 				this._decorationIgnoreSet.add(reference.id);
+
 				toRemove.push(decorationId);
 			} else {
 				reference.range = newRange;
 			}
 		}
+
 		for (let i = 0, len = toRemove.length; i < len; i++) {
 			this._decorations.delete(toRemove[i]);
 		}
+
 		this._editor.removeDecorations(toRemove);
 	}
+
 	removeDecorations(): void {
 		this._editor.removeDecorations([...this._decorations.keys()]);
+
 		this._decorations.clear();
 	}
 }
 export class LayoutData {
 	ratio: number = 0.7;
+
 	heightInLines: number = 18;
+
 	static fromJSON(raw: string): LayoutData {
 		let ratio: number | undefined;
 
@@ -222,11 +250,14 @@ export class LayoutData {
 
 		try {
 			const data = <LayoutData>JSON.parse(raw);
+
 			ratio = data.ratio;
+
 			heightInLines = data.heightInLines;
 		} catch {
 			//
 		}
+
 		return {
 			ratio: ratio || 0.7,
 			heightInLines: heightInLines || 18,
@@ -235,7 +266,9 @@ export class LayoutData {
 }
 export interface SelectionEvent {
 	readonly kind: "goto" | "show" | "side" | "open";
+
 	readonly source: "editor" | "tree" | "title";
+
 	readonly element?: Location;
 }
 class ReferencesTree extends WorkbenchAsyncDataTree<
@@ -248,20 +281,35 @@ class ReferencesTree extends WorkbenchAsyncDataTree<
  */
 export class ReferenceWidget extends peekView.PeekViewWidget {
 	private _model?: ReferencesModel;
+
 	private _decorationsManager?: DecorationsManager;
+
 	private readonly _disposeOnNewModel = new DisposableStore();
+
 	private readonly _callOnDispose = new DisposableStore();
+
 	private readonly _onDidSelectReference = new Emitter<SelectionEvent>();
+
 	readonly onDidSelectReference = this._onDidSelectReference.event;
+
 	private _tree!: ReferencesTree;
+
 	private _treeContainer!: HTMLElement;
+
 	private _splitView!: SplitView;
+
 	private _preview!: ICodeEditor;
+
 	private _previewModelReference!: IReference<ITextEditorModel>;
+
 	private _previewNotAvailableMessage!: TextModel;
+
 	private _previewContainer!: HTMLElement;
+
 	private _messageContainer!: HTMLElement;
+
 	private _dim = new dom.Dimension(0, 0);
+
 	private _isClosing = false; // whether or not a dispose is already in progress
 	constructor(
 		editor: ICodeEditor,
@@ -291,32 +339,48 @@ export class ReferenceWidget extends peekView.PeekViewWidget {
 			},
 			_instantiationService,
 		);
+
 		this._applyTheme(themeService.getColorTheme());
+
 		this._callOnDispose.add(
 			themeService.onDidColorThemeChange(this._applyTheme.bind(this)),
 		);
+
 		this._peekViewService.addExclusiveWidget(editor, this);
+
 		this.create();
 	}
+
 	get isClosing() {
 		return this._isClosing;
 	}
+
 	override dispose(): void {
 		this._isClosing = true;
+
 		this.setModel(undefined);
+
 		this._callOnDispose.dispose();
+
 		this._disposeOnNewModel.dispose();
+
 		dispose(this._preview);
+
 		dispose(this._previewNotAvailableMessage);
+
 		dispose(this._tree);
+
 		dispose(this._previewModelReference);
+
 		this._splitView.dispose();
 
 		super.dispose();
 	}
+
 	private _applyTheme(theme: IColorTheme) {
 		const borderColor =
 			theme.getColor(peekView.peekViewBorder) || Color.transparent;
+
 		this.style({
 			arrowColor: borderColor,
 			frameColor: borderColor,
@@ -331,18 +395,23 @@ export class ReferenceWidget extends peekView.PeekViewWidget {
 			),
 		});
 	}
+
 	override show(where: IRange) {
 		super.show(where, this.layoutData.heightInLines || 18);
 	}
+
 	focusOnReferenceTree(): void {
 		this._tree.domFocus();
 	}
+
 	focusOnPreviewEditor(): void {
 		this._preview.focus();
 	}
+
 	isPreviewEditorFocused(): boolean {
 		return this._preview.hasTextFocus();
 	}
+
 	protected override _onTitleClick(e: IMouseEvent): void {
 		if (this._preview && this._preview.getModel()) {
 			this._onDidSelectReference.fire({
@@ -352,6 +421,7 @@ export class ReferenceWidget extends peekView.PeekViewWidget {
 			});
 		}
 	}
+
 	protected _fillBody(containerElement: HTMLElement): void {
 		this.setCssClass("reference-zone-widget");
 		// message pane
@@ -361,6 +431,7 @@ export class ReferenceWidget extends peekView.PeekViewWidget {
 		);
 
 		dom.hide(this._messageContainer);
+
 		this._splitView = new SplitView(containerElement, {
 			orientation: Orientation.HORIZONTAL,
 		});
@@ -386,6 +457,7 @@ export class ReferenceWidget extends peekView.PeekViewWidget {
 				enabled: false,
 			},
 		};
+
 		this._preview = this._instantiationService.createInstance(
 			EmbeddedCodeEditorWidget,
 			this._previewContainer,
@@ -395,6 +467,7 @@ export class ReferenceWidget extends peekView.PeekViewWidget {
 		);
 
 		dom.hide(this._previewContainer);
+
 		this._previewNotAvailableMessage =
 			this._instantiationService.createInstance(
 				TextModel,
@@ -436,6 +509,7 @@ export class ReferenceWidget extends peekView.PeekViewWidget {
 					(e) => {
 						if (e.equals(KeyCode.Escape)) {
 							this._keybindingService.dispatchEvent(e, e.target);
+
 							e.stopPropagation();
 						}
 					},
@@ -443,6 +517,7 @@ export class ReferenceWidget extends peekView.PeekViewWidget {
 				),
 			);
 		}
+
 		this._tree = this._instantiationService.createInstance(
 			ReferencesTree,
 			"ReferencesWidget",
@@ -470,6 +545,7 @@ export class ReferenceWidget extends peekView.PeekViewWidget {
 			},
 			Sizing.Distribute,
 		);
+
 		this._splitView.addView(
 			{
 				onDidChange: Event.None,
@@ -478,12 +554,15 @@ export class ReferenceWidget extends peekView.PeekViewWidget {
 				maximumSize: Number.MAX_VALUE,
 				layout: (width) => {
 					this._treeContainer.style.height = `${this._dim.height}px`;
+
 					this._treeContainer.style.width = `${width}px`;
+
 					this._tree.layout(this._dim.height, width);
 				},
 			},
 			Sizing.Distribute,
 		);
+
 		this._disposables.add(
 			this._splitView.onDidSashChange(() => {
 				if (this._dim.width) {
@@ -498,6 +577,7 @@ export class ReferenceWidget extends peekView.PeekViewWidget {
 				if (kind === "show") {
 					this._revealReference(element, false);
 				}
+
 				this._onDidSelectReference.fire({
 					element,
 					kind,
@@ -505,6 +585,7 @@ export class ReferenceWidget extends peekView.PeekViewWidget {
 				});
 			}
 		};
+
 		this._disposables.add(
 			this._tree.onDidOpen((e) => {
 				if (e.sideBySide) {
@@ -519,23 +600,30 @@ export class ReferenceWidget extends peekView.PeekViewWidget {
 
 		dom.hide(this._treeContainer);
 	}
+
 	protected override _onWidth(width: number) {
 		if (this._dim) {
 			this._doLayoutBody(this._dim.height, width);
 		}
 	}
+
 	protected override _doLayoutBody(
 		heightInPixel: number,
 		widthInPixel: number,
 	): void {
 		super._doLayoutBody(heightInPixel, widthInPixel);
+
 		this._dim = new dom.Dimension(widthInPixel, heightInPixel);
+
 		this.layoutData.heightInLines = this._viewZone
 			? this._viewZone.heightInLines
 			: this.layoutData.heightInLines;
+
 		this._splitView.layout(widthInPixel);
+
 		this._splitView.resizeView(0, widthInPixel * this.layoutData.ratio);
 	}
+
 	setSelection(selection: OneReference): Promise<any> {
 		return this._revealReference(selection, true).then(() => {
 			if (!this._model) {
@@ -544,25 +632,32 @@ export class ReferenceWidget extends peekView.PeekViewWidget {
 			}
 			// show in tree
 			this._tree.setSelection([selection]);
+
 			this._tree.setFocus([selection]);
 		});
 	}
+
 	setModel(newModel: ReferencesModel | undefined): Promise<any> {
 		// clean up
 		this._disposeOnNewModel.clear();
+
 		this._model = newModel;
 
 		if (this._model) {
 			return this._onNewModel();
 		}
+
 		return Promise.resolve();
 	}
+
 	private _onNewModel(): Promise<any> {
 		if (!this._model) {
 			return Promise.resolve(undefined);
 		}
+
 		if (this._model.isEmpty) {
 			this.setTitle("");
+
 			this._messageContainer.innerText = nls.localize(
 				"noResults",
 				"No results",
@@ -572,11 +667,14 @@ export class ReferenceWidget extends peekView.PeekViewWidget {
 
 			return Promise.resolve(undefined);
 		}
+
 		dom.hide(this._messageContainer);
+
 		this._decorationsManager = new DecorationsManager(
 			this._preview,
 			this._model,
 		);
+
 		this._disposeOnNewModel.add(this._decorationsManager);
 		// listen on model changes
 		this._disposeOnNewModel.add(
@@ -592,11 +690,13 @@ export class ReferenceWidget extends peekView.PeekViewWidget {
 				if (event.detail !== 2) {
 					return;
 				}
+
 				const element = this._getFocusedReference();
 
 				if (!element) {
 					return;
 				}
+
 				this._onDidSelectReference.fire({
 					element: { uri: element.uri, range: target.range! },
 					kind:
@@ -613,7 +713,9 @@ export class ReferenceWidget extends peekView.PeekViewWidget {
 		dom.show(this._treeContainer);
 
 		dom.show(this._previewContainer);
+
 		this._splitView.layout(this._dim.width);
+
 		this.focusOnReferenceTree();
 		// pick input and a reference to begin with
 		return this._tree.setInput(
@@ -622,6 +724,7 @@ export class ReferenceWidget extends peekView.PeekViewWidget {
 				: this._model,
 		);
 	}
+
 	private _getFocusedReference(): OneReference | undefined {
 		const [element] = this._tree.getFocus();
 
@@ -632,17 +735,22 @@ export class ReferenceWidget extends peekView.PeekViewWidget {
 				return element.children[0];
 			}
 		}
+
 		return undefined;
 	}
+
 	async revealReference(reference: OneReference): Promise<void> {
 		await this._revealReference(reference, false);
+
 		this._onDidSelectReference.fire({
 			element: reference,
 			kind: "goto",
 			source: "tree",
 		});
 	}
+
 	private _revealedReference?: OneReference;
+
 	private async _revealReference(
 		reference: OneReference,
 		revealParent: boolean,
@@ -651,6 +759,7 @@ export class ReferenceWidget extends peekView.PeekViewWidget {
 		if (this._revealedReference === reference) {
 			return;
 		}
+
 		this._revealedReference = reference;
 		// Update widget header
 		if (reference.uri.scheme !== Schemas.inMemory) {
@@ -663,6 +772,7 @@ export class ReferenceWidget extends peekView.PeekViewWidget {
 				nls.localize("peekView.alternateTitle", "References"),
 			);
 		}
+
 		const promise = this._textModelResolverService.createModelReference(
 			reference.uri,
 		);
@@ -673,9 +783,12 @@ export class ReferenceWidget extends peekView.PeekViewWidget {
 			if (revealParent) {
 				this._tree.reveal(reference.parent);
 			}
+
 			await this._tree.expand(reference.parent);
+
 			this._tree.reveal(reference);
 		}
+
 		const ref = await promise;
 
 		if (!this._model) {
@@ -684,6 +797,7 @@ export class ReferenceWidget extends peekView.PeekViewWidget {
 
 			return;
 		}
+
 		dispose(this._previewModelReference);
 		// show in editor
 		const model = ref.object;
@@ -695,12 +809,17 @@ export class ReferenceWidget extends peekView.PeekViewWidget {
 					: ScrollType.Immediate;
 
 			const sel = Range.lift(reference.range).collapseToStart();
+
 			this._previewModelReference = ref;
+
 			this._preview.setModel(model.textEditorModel);
+
 			this._preview.setSelection(sel);
+
 			this._preview.revealRangeInCenter(sel, scrollType);
 		} else {
 			this._preview.setModel(this._previewNotAvailableMessage);
+
 			ref.dispose();
 		}
 	}

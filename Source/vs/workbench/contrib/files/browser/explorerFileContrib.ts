@@ -42,12 +42,15 @@ class ExplorerFileContributionRegistry
 {
 	private readonly _onDidRegisterDescriptor =
 		new Emitter<IExplorerFileContributionDescriptor>();
+
 	public readonly onDidRegisterDescriptor =
 		this._onDidRegisterDescriptor.event;
+
 	private readonly descriptors: IExplorerFileContributionDescriptor[] = [];
 	/** @inheritdoc */
 	public register(descriptor: IExplorerFileContributionDescriptor): void {
 		this.descriptors.push(descriptor);
+
 		this._onDidRegisterDescriptor.fire(descriptor);
 	}
 	/**
@@ -60,6 +63,7 @@ class ExplorerFileContributionRegistry
 	): IExplorerFileContribution[] {
 		return this.descriptors.map((d) => {
 			const i = d.create(insta, container);
+
 			store.add(i);
 
 			return i;

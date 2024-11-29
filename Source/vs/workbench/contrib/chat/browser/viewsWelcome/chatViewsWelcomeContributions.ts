@@ -19,8 +19,11 @@ import {
 
 interface IRawChatViewsWelcomeContribution {
 	icon: string;
+
 	title: string;
+
 	content: string;
+
 	when: string;
 }
 
@@ -99,6 +102,7 @@ export class ChatViewsWelcomeHandler implements IWorkbenchContribution {
 
 						continue;
 					}
+
 					const descriptor: IChatViewsWelcomeDescriptor = {
 						...providerDescriptor,
 						when,
@@ -108,6 +112,7 @@ export class ChatViewsWelcomeHandler implements IWorkbenchContribution {
 							{ isTrusted: true },
 						), // private API with command links
 					};
+
 					Registry.as<IChatViewsWelcomeContributionRegistry>(
 						ChatViewsWelcomeExtensions.ChatViewsWelcomeRegistry,
 					).register(descriptor);

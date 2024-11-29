@@ -54,16 +54,25 @@ export class TerminalEditorInput
 	implements IEditorCloseHandler
 {
 	static readonly ID = "workbench.editors.terminal";
+
 	override readonly closeHandler = this;
+
 	private _isDetached = false;
+
 	private _isShuttingDown = false;
+
 	private _isReverted = false;
+
 	private _copyLaunchConfig?: IShellLaunchConfig;
+
 	private _terminalEditorFocusContextKey: IContextKey<boolean>;
+
 	private _group: IEditorGroup | undefined;
+
 	protected readonly _onDidRequestAttach = this._register(
 		new Emitter<ITerminalInstance>(),
 	);
+
 	readonly onDidRequestAttach = this._onDidRequestAttach.event;
 
 	setGroup(group: IEditorGroup | undefined) {
@@ -75,15 +84,19 @@ export class TerminalEditorInput
 			);
 		}
 	}
+
 	get group(): IEditorGroup | undefined {
 		return this._group;
 	}
+
 	override get typeId(): string {
 		return TerminalEditorInput.ID;
 	}
+
 	override get editorId(): string | undefined {
 		return terminalEditorId;
 	}
+
 	override get capabilities(): EditorInputCapabilities {
 		return (
 			EditorInputCapabilities.Readonly |
@@ -92,19 +105,25 @@ export class TerminalEditorInput
 			EditorInputCapabilities.ForceDescription
 		);
 	}
+
 	setTerminalInstance(instance: ITerminalInstance): void {
 		if (this._terminalInstance) {
 			throw new Error("cannot set instance that has already been set");
 		}
+
 		this._terminalInstance = instance;
+
 		this._setupInstanceListeners();
 	}
+
 	override copy(): EditorInput {
 		const instance = this._terminalInstanceService.createInstance(
 			this._copyLaunchConfig || {},
 			TerminalLocation.Editor,
 		);
+
 		instance.focusWhenReady();
+
 		this._copyLaunchConfig = undefined;
 
 		return this._instantiationService.createInstance(
@@ -126,10 +145,12 @@ export class TerminalEditorInput
 	get terminalInstance(): ITerminalInstance | undefined {
 		return this._isDetached ? undefined : this._terminalInstance;
 	}
+
 	showConfirm(): boolean {
 		if (this._isReverted) {
 			return false;
 		}
+
 		const confirmOnKill =
 			this._configurationService.getValue<ConfirmOnKill>(
 				TerminalSettingId.ConfirmOnKill,
@@ -138,8 +159,10 @@ export class TerminalEditorInput
 		if (confirmOnKill === "editor" || confirmOnKill === "always") {
 			return this._terminalInstance?.hasChildProcesses || false;
 		}
+
 		return false;
 	}
+
 	async confirm(
 		terminals: ReadonlyArray<IEditorIdentifier>,
 	): Promise<ConfirmResult> {
@@ -174,10 +197,12 @@ export class TerminalEditorInput
 
 		return confirmed ? ConfirmResult.DONT_SAVE : ConfirmResult.CANCEL;
 	}
+
 	override async revert(): Promise<void> {
 		// On revert just treat the terminal as permanently non-dirty
 		this._isReverted = true;
 	}
+
 	constructor(
 		public readonly resource: URI,
 		private _terminalInstance: ITerminalInstance | undefined,
@@ -197,6 +222,7 @@ export class TerminalEditorInput
 		private readonly _dialogService: IDialogService,
 	) {
 		super();
+
 		this._terminalEditorFocusContextKey =
 			TerminalContextKeys.editorFocus.bindTo(_contextKeyService);
 
@@ -204,12 +230,14 @@ export class TerminalEditorInput
 			this._setupInstanceListeners();
 		}
 	}
+
 	private _setupInstanceListeners(): void {
 		const instance = this._terminalInstance;
 
 		if (!instance) {
 			return;
 		}
+
 		const instanceOnDidFocusListener = instance.onDidFocus(() =>
 			this._terminalEditorFocusContextKey.set(true),
 		);
@@ -217,6 +245,7 @@ export class TerminalEditorInput
 		const instanceOnDidBlurListener = instance.onDidBlur(() =>
 			this._terminalEditorFocusContextKey.reset(),
 		);
+
 		this._register(
 			toDisposable(() => {
 				if (!this._isDetached && !this._isShuttingDown) {
@@ -224,6 +253,7 @@ export class TerminalEditorInput
 					// as disposed was already called
 					instance.dispose(TerminalExitReason.User);
 				}
+
 				dispose([
 					instanceOnDidFocusListener,
 					instanceOnDidBlurListener,
@@ -250,6 +280,7 @@ export class TerminalEditorInput
 		// the editor/tabs don't disappear
 		this._lifecycleService.onWillShutdown((e: WillShutdownEvent) => {
 			this._isShuttingDown = true;
+
 			dispose(disposeListeners);
 			// Don't touch processes if the shutdown was a result of reload as they will be reattached
 			const shouldPersistTerminals =
@@ -264,9 +295,11 @@ export class TerminalEditorInput
 			}
 		});
 	}
+
 	override getName() {
 		return this._terminalInstance?.title || this.resource.fragment;
 	}
+
 	override getIcon(): ThemeIcon | undefined {
 		if (
 			!this._terminalInstance ||
@@ -274,12 +307,15 @@ export class TerminalEditorInput
 		) {
 			return undefined;
 		}
+
 		return this._terminalInstance.icon;
 	}
+
 	override getLabelExtraClasses(): string[] {
 		if (!this._terminalInstance) {
 			return [];
 		}
+
 		const extraClasses: string[] = ["terminal-tab", "predefined-file-icon"];
 
 		const colorClass = getColorClass(this._terminalInstance);
@@ -287,6 +323,7 @@ export class TerminalEditorInput
 		if (colorClass) {
 			extraClasses.push(colorClass);
 		}
+
 		const uriClasses = getUriClasses(
 			this._terminalInstance,
 			this._themeService.getColorTheme().type,
@@ -295,6 +332,7 @@ export class TerminalEditorInput
 		if (uriClasses) {
 			extraClasses.push(...uriClasses);
 		}
+
 		return extraClasses;
 	}
 	/**
@@ -304,15 +342,19 @@ export class TerminalEditorInput
 	detachInstance() {
 		if (!this._isShuttingDown) {
 			this._terminalInstance?.detachFromElement();
+
 			this._terminalInstance?.setParentContextKeyService(
 				this._contextKeyService,
 			);
+
 			this._isDetached = true;
 		}
 	}
+
 	public override getDescription(): string | undefined {
 		return this._terminalInstance?.description;
 	}
+
 	public override toUntyped(): IUntypedEditorInput {
 		return {
 			resource: this.resource,

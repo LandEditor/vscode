@@ -28,43 +28,54 @@ export interface ICommentsModel {
 	hasCommentThreads(): boolean;
 
 	getMessage(): string;
+
 	readonly resourceCommentThreads: ResourceWithCommentThreads[];
+
 	readonly commentThreadsMap: Map<
 		string,
 		{
 			resourceWithCommentThreads: ResourceWithCommentThreads[];
+
 			ownerLabel?: string;
 		}
 	>;
 }
 export class CommentsModel extends Disposable implements ICommentsModel {
 	readonly _serviceBrand: undefined;
+
 	private _resourceCommentThreads: ResourceWithCommentThreads[];
 
 	get resourceCommentThreads(): ResourceWithCommentThreads[] {
 		return this._resourceCommentThreads;
 	}
+
 	readonly commentThreadsMap: Map<
 		string,
 		{
 			resourceWithCommentThreads: ResourceWithCommentThreads[];
+
 			ownerLabel?: string;
 		}
 	>;
 
 	constructor() {
 		super();
+
 		this._resourceCommentThreads = [];
+
 		this.commentThreadsMap = new Map<
 			string,
 			{
 				resourceWithCommentThreads: ResourceWithCommentThreads[];
+
 				ownerLabel: string;
 			}
 		>();
 	}
+
 	private updateResourceCommentThreads() {
 		const includeLabel = this.commentThreadsMap.size > 1;
+
 		this._resourceCommentThreads = [...this.commentThreadsMap.values()]
 			.map((value) => {
 				return value.resourceWithCommentThreads
@@ -79,6 +90,7 @@ export class CommentsModel extends Disposable implements ICommentsModel {
 			})
 			.flat();
 	}
+
 	public setCommentThreads(
 		uniqueOwner: string,
 		owner: string,
@@ -93,11 +105,14 @@ export class CommentsModel extends Disposable implements ICommentsModel {
 				commentThreads,
 			),
 		});
+
 		this.updateResourceCommentThreads();
 	}
+
 	public deleteCommentsByOwner(uniqueOwner?: string): void {
 		if (uniqueOwner) {
 			const existingOwner = this.commentThreadsMap.get(uniqueOwner);
+
 			this.commentThreadsMap.set(uniqueOwner, {
 				ownerLabel: existingOwner?.ownerLabel,
 				resourceWithCommentThreads: [],
@@ -105,8 +120,10 @@ export class CommentsModel extends Disposable implements ICommentsModel {
 		} else {
 			this.commentThreadsMap.clear();
 		}
+
 		this.updateResourceCommentThreads();
 	}
+
 	public updateCommentThreads(event: ICommentThreadChangedEvent): boolean {
 		const { uniqueOwner, owner, ownerLabel, removed, changed, added } =
 			event;
@@ -114,6 +131,7 @@ export class CommentsModel extends Disposable implements ICommentsModel {
 		const threadsForOwner =
 			this.commentThreadsMap.get(uniqueOwner)
 				?.resourceWithCommentThreads || [];
+
 		removed.forEach((thread) => {
 			// Find resource that has the comment thread
 			const matchingResourceIndex = threadsForOwner.findIndex(
@@ -139,6 +157,7 @@ export class CommentsModel extends Disposable implements ICommentsModel {
 				threadsForOwner.splice(matchingResourceIndex, 1);
 			}
 		});
+
 		changed.forEach((thread) => {
 			// Find resource that has the comment thread
 			const matchingResourceIndex = threadsForOwner.findIndex(
@@ -177,6 +196,7 @@ export class CommentsModel extends Disposable implements ICommentsModel {
 				);
 			}
 		});
+
 		added.forEach((thread) => {
 			const existingResource = threadsForOwner.filter(
 				(resourceWithThreads) =>
@@ -207,14 +227,17 @@ export class CommentsModel extends Disposable implements ICommentsModel {
 				);
 			}
 		});
+
 		this.commentThreadsMap.set(uniqueOwner, {
 			ownerLabel,
 			resourceWithCommentThreads: threadsForOwner,
 		});
+
 		this.updateResourceCommentThreads();
 
 		return removed.length > 0 || changed.length > 0 || added.length > 0;
 	}
+
 	public hasCommentThreads(): boolean {
 		// There's a resource with at least one thread
 		return (
@@ -231,6 +254,7 @@ export class CommentsModel extends Disposable implements ICommentsModel {
 			})
 		);
 	}
+
 	public getMessage(): string {
 		if (!this._resourceCommentThreads.length) {
 			return localize(
@@ -241,6 +265,7 @@ export class CommentsModel extends Disposable implements ICommentsModel {
 			return "";
 		}
 	}
+
 	private groupByResource(
 		uniqueOwner: string,
 		owner: string,
@@ -267,12 +292,14 @@ export class CommentsModel extends Disposable implements ICommentsModel {
 				),
 			);
 		}
+
 		commentThreadsByResource.forEach((v, i, m) => {
 			resourceCommentThreads.push(v);
 		});
 
 		return resourceCommentThreads;
 	}
+
 	private static _compareURIs(a: CommentThread, b: CommentThread) {
 		const resourceA = a.resource!.toString();
 

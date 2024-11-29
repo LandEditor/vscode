@@ -24,6 +24,7 @@ const ID_SYNTAX_PROVIDER = "syntax";
 
 export class SyntaxRangeProvider implements RangeProvider {
 	readonly id = ID_SYNTAX_PROVIDER;
+
 	readonly disposables: DisposableStore;
 
 	constructor(
@@ -38,6 +39,7 @@ export class SyntaxRangeProvider implements RangeProvider {
 		if (fallbackRangeProvider) {
 			this.disposables.add(fallbackRangeProvider);
 		}
+
 		for (const provider of providers) {
 			if (typeof provider.onDidChange === "function") {
 				this.disposables.add(
@@ -46,6 +48,7 @@ export class SyntaxRangeProvider implements RangeProvider {
 			}
 		}
 	}
+
 	compute(
 		cancellationToken: CancellationToken,
 	): Promise<FoldingRegions | null> {
@@ -59,11 +62,13 @@ export class SyntaxRangeProvider implements RangeProvider {
 
 				return res;
 			}
+
 			return (
 				this.fallbackRangeProvider?.compute(cancellationToken) ?? null
 			);
 		});
 	}
+
 	dispose() {
 		this.disposables.dispose();
 	}
@@ -86,10 +91,12 @@ function collectSyntaxRanges(
 			if (cancellationToken.isCancellationRequested) {
 				return;
 			}
+
 			if (Array.isArray(ranges)) {
 				if (!Array.isArray(rangeData)) {
 					rangeData = [];
 				}
+
 				const nLines = model.getLineCount();
 
 				for (const r of ranges) {
@@ -112,22 +119,35 @@ function collectSyntaxRanges(
 }
 class RangesCollector {
 	private readonly _startIndexes: number[];
+
 	private readonly _endIndexes: number[];
+
 	private readonly _nestingLevels: number[];
+
 	private readonly _nestingLevelCounts: number[];
+
 	private readonly _types: Array<string | undefined>;
+
 	private _length: number;
+
 	private readonly _foldingRangesLimit: FoldingLimitReporter;
 
 	constructor(foldingRangesLimit: FoldingLimitReporter) {
 		this._startIndexes = [];
+
 		this._endIndexes = [];
+
 		this._nestingLevels = [];
+
 		this._nestingLevelCounts = [];
+
 		this._types = [];
+
 		this._length = 0;
+
 		this._foldingRangesLimit = foldingRangesLimit;
 	}
+
 	public add(
 		startLineNumber: number,
 		endLineNumber: number,
@@ -140,11 +160,17 @@ class RangesCollector {
 		) {
 			return;
 		}
+
 		const index = this._length;
+
 		this._startIndexes[index] = startLineNumber;
+
 		this._endIndexes[index] = endLineNumber;
+
 		this._nestingLevels[index] = nestingLevel;
+
 		this._types[index] = type;
+
 		this._length++;
 
 		if (nestingLevel < 30) {
@@ -152,6 +178,7 @@ class RangesCollector {
 				(this._nestingLevelCounts[nestingLevel] || 0) + 1;
 		}
 	}
+
 	public toIndentRanges() {
 		const limit = this._foldingRangesLimit.limit;
 
@@ -164,8 +191,10 @@ class RangesCollector {
 
 			for (let i = 0; i < this._length; i++) {
 				startIndexes[i] = this._startIndexes[i];
+
 				endIndexes[i] = this._endIndexes[i];
 			}
+
 			return new FoldingRegions(startIndexes, endIndexes, this._types);
 		} else {
 			this._foldingRangesLimit.update(this._length, limit);
@@ -183,9 +212,11 @@ class RangesCollector {
 
 						break;
 					}
+
 					entries += n;
 				}
 			}
+
 			const startIndexes = new Uint32Array(limit);
 
 			const endIndexes = new Uint32Array(limit);
@@ -200,11 +231,15 @@ class RangesCollector {
 					(level === maxLevel && entries++ < limit)
 				) {
 					startIndexes[k] = this._startIndexes[i];
+
 					endIndexes[k] = this._endIndexes[i];
+
 					types[k] = this._types[i];
+
 					k++;
 				}
 			}
+
 			return new FoldingRegions(startIndexes, endIndexes, types);
 		}
 	}
@@ -219,6 +254,7 @@ export function sanitizeRanges(
 		if (diff === 0) {
 			diff = d1.rank - d2.rank;
 		}
+
 		return diff;
 	});
 
@@ -231,6 +267,7 @@ export function sanitizeRanges(
 	for (const entry of sorted) {
 		if (!top) {
 			top = entry;
+
 			collector.add(
 				entry.start,
 				entry.end,
@@ -241,7 +278,9 @@ export function sanitizeRanges(
 			if (entry.start > top.start) {
 				if (entry.end <= top.end) {
 					previous.push(top);
+
 					top = entry;
+
 					collector.add(
 						entry.start,
 						entry.end,
@@ -257,8 +296,10 @@ export function sanitizeRanges(
 						if (top) {
 							previous.push(top);
 						}
+
 						top = entry;
 					}
+
 					collector.add(
 						entry.start,
 						entry.end,
@@ -269,5 +310,6 @@ export function sanitizeRanges(
 			}
 		}
 	}
+
 	return collector.toIndentRanges();
 }

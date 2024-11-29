@@ -400,9 +400,11 @@ export function fromNowByDay(
 	}
 
 	const todayMidnightTime = new Date();
+
 	todayMidnightTime.setHours(0, 0, 0, 0);
 
 	const yesterdayMidnightTime = new Date(todayMidnightTime.getTime());
+
 	yesterdayMidnightTime.setDate(yesterdayMidnightTime.getDate() - 1);
 
 	if (date > todayMidnightTime.getTime()) {
@@ -430,11 +432,13 @@ export function getDurationString(ms: number, useFullTimeWords?: boolean) {
 			? localize("duration.ms.full", "{0} milliseconds", ms)
 			: localize("duration.ms", "{0}ms", ms);
 	}
+
 	if (seconds < minute) {
 		return useFullTimeWords
 			? localize("duration.s.full", "{0} seconds", Math.round(ms) / 1000)
 			: localize("duration.s", "{0}s", Math.round(ms) / 1000);
 	}
+
 	if (seconds < hour) {
 		return useFullTimeWords
 			? localize(
@@ -448,6 +452,7 @@ export function getDurationString(ms: number, useFullTimeWords?: boolean) {
 					Math.round(ms / (1000 * minute)),
 				);
 	}
+
 	if (seconds < day) {
 		return useFullTimeWords
 			? localize(
@@ -457,6 +462,7 @@ export function getDurationString(ms: number, useFullTimeWords?: boolean) {
 				)
 			: localize("duration.h", "{0} hrs", Math.round(ms / (1000 * hour)));
 	}
+
 	return localize("duration.d", "{0} days", Math.round(ms / (1000 * day)));
 }
 

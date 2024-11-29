@@ -136,7 +136,9 @@ export class BrowserHostService extends Disposable implements IHostService {
 		} else {
 			this.workspaceProvider = new (class implements IWorkspaceProvider {
 				readonly workspace = undefined;
+
 				readonly trusted = undefined;
+
 				async open() {
 					return true;
 				}
@@ -170,6 +172,7 @@ export class BrowserHostService extends Disposable implements IHostService {
 				const confirmBeforeClose = this.configurationService.getValue(
 					"window.confirmBeforeClose",
 				);
+
 				if (
 					confirmBeforeClose === "always" ||
 					(confirmBeforeClose === "keyboardOnly" &&
@@ -177,6 +180,7 @@ export class BrowserHostService extends Disposable implements IHostService {
 				) {
 					e.veto(true, "veto.confirmBeforeClose");
 				}
+
 				break;
 			}
 			// Api never shows veto
@@ -211,6 +215,7 @@ export class BrowserHostService extends Disposable implements IHostService {
 				onDidRegisterWindow,
 				({ window, disposables }) => {
 					const focusTracker = disposables.add(trackFocus(window));
+
 					const visibilityTracker = disposables.add(
 						new DomEmitter(window.document, "visibilitychange"),
 					);
@@ -273,6 +278,7 @@ export class BrowserHostService extends Disposable implements IHostService {
 
 					// Emit via focus tracking
 					const focusTracker = disposables.add(trackFocus(window));
+
 					disposables.add(
 						focusTracker.onDidFocus(() => emitter.fire(windowId)),
 					);
@@ -286,6 +292,7 @@ export class BrowserHostService extends Disposable implements IHostService {
 								window,
 								() => {
 									const hasFocus = window.document.hasFocus();
+
 									if (hasFocus) {
 										emitter.fire(windowId);
 									}
@@ -308,6 +315,7 @@ export class BrowserHostService extends Disposable implements IHostService {
 	@memoize
 	get onDidChangeFullScreen(): Event<{
 		windowId: number;
+
 		fullscreen: boolean;
 	}> {
 		const emitter = this._register(
@@ -319,6 +327,7 @@ export class BrowserHostService extends Disposable implements IHostService {
 				onDidRegisterWindow,
 				({ window, disposables }) => {
 					const windowId = getWindowId(window);
+
 					const viewport =
 						isIOS && window.visualViewport
 							? window.visualViewport /** Visual viewport */
@@ -364,10 +373,12 @@ export class BrowserHostService extends Disposable implements IHostService {
 	}
 
 	openWindow(options?: IOpenEmptyWindowOptions): Promise<void>;
+
 	openWindow(
 		toOpen: IWindowOpenable[],
 		options?: IOpenWindowOptions,
 	): Promise<void>;
+
 	openWindow(
 		arg1?: IOpenEmptyWindowOptions | IWindowOpenable[],
 		arg2?: IOpenWindowOptions,
@@ -387,7 +398,9 @@ export class BrowserHostService extends Disposable implements IHostService {
 			false /* not an empty window */,
 			options,
 		);
+
 		const fileOpenables: IFileToOpen[] = [];
+
 		const foldersToAdd: IWorkspaceFolderCreationData[] = [];
 
 		for (const openable of toOpen) {
@@ -433,6 +446,7 @@ export class BrowserHostService extends Disposable implements IHostService {
 			this.withServices((accessor) => {
 				const workspaceEditingService: IWorkspaceEditingService =
 					accessor.get(IWorkspaceEditingService);
+
 				workspaceEditingService.addFolders(foldersToAdd);
 			});
 		}
@@ -451,6 +465,7 @@ export class BrowserHostService extends Disposable implements IHostService {
 							this.logService,
 						),
 					);
+
 					if (
 						editors.length !== 4 ||
 						!isResourceEditorInput(editors[0]) ||
@@ -475,18 +490,22 @@ export class BrowserHostService extends Disposable implements IHostService {
 					// New Window: open into empty window
 					else {
 						const environment = new Map<string, string>();
+
 						environment.set(
 							"mergeFile1",
 							editors[0].resource.toString(),
 						);
+
 						environment.set(
 							"mergeFile2",
 							editors[1].resource.toString(),
 						);
+
 						environment.set(
 							"mergeFileBase",
 							editors[2].resource.toString(),
 						);
+
 						environment.set(
 							"mergeFileResult",
 							editors[3].resource.toString(),
@@ -507,6 +526,7 @@ export class BrowserHostService extends Disposable implements IHostService {
 							this.logService,
 						),
 					);
+
 					if (
 						editors.length !== 2 ||
 						!isResourceEditorInput(editors[0]) ||
@@ -527,10 +547,12 @@ export class BrowserHostService extends Disposable implements IHostService {
 					// New Window: open into empty window
 					else {
 						const environment = new Map<string, string>();
+
 						environment.set(
 							"diffFileSecondary",
 							editors[0].resource.toString(),
 						);
+
 						environment.set(
 							"diffFilePrimary",
 							editors[1].resource.toString(),
@@ -554,6 +576,7 @@ export class BrowserHostService extends Disposable implements IHostService {
 								const pathColumnAware = parseLineAndColumnAware(
 									openable.fileUri.path,
 								);
+
 								openables = [
 									{
 										fileUri: openable.fileUri.with({
@@ -594,6 +617,7 @@ export class BrowserHostService extends Disposable implements IHostService {
 						// New Window: open into empty window
 						else {
 							const environment = new Map<string, string>();
+
 							environment.set(
 								"openFile",
 								openable.fileUri.toString(),
@@ -612,6 +636,7 @@ export class BrowserHostService extends Disposable implements IHostService {
 
 				// Support wait mode
 				const waitMarkerFileURI = options?.waitMarkerFileURI;
+
 				if (waitMarkerFileURI) {
 					(async () => {
 						// Wait for the resources to be closed in the text editor...
@@ -646,6 +671,7 @@ export class BrowserHostService extends Disposable implements IHostService {
 	): Array<unknown> | undefined {
 		// Selectively copy payload: for now only extension debugging properties are considered
 		const newPayload: Array<unknown> = new Array();
+
 		if (
 			!isEmptyWindow &&
 			this.environmentService.extensionDevelopmentLocationURI
@@ -675,6 +701,7 @@ export class BrowserHostService extends Disposable implements IHostService {
 					(profile) => profile.name === options?.forceProfile,
 				)
 			: undefined;
+
 		if (newWindowProfile && !newWindowProfile.isDefault) {
 			newPayload.push(["profile", newWindowProfile.name]);
 		}
@@ -710,6 +737,7 @@ export class BrowserHostService extends Disposable implements IHostService {
 		const windowConfig = this.configurationService.getValue<
 			IWindowSettings | undefined
 		>("window");
+
 		const openInNewWindowConfig = isFile
 			? windowConfig?.openFilesInNewWindow || "off" /* default */
 			: windowConfig?.openFoldersInNewWindow || "default" /* default */;
@@ -717,6 +745,7 @@ export class BrowserHostService extends Disposable implements IHostService {
 		let openInNewWindow =
 			(options.preferNewWindow || !!options.forceNewWindow) &&
 			!options.forceReuseWindow;
+
 		if (
 			!options.forceNewWindow &&
 			!options.forceReuseWindow &&
@@ -772,6 +801,7 @@ export class BrowserHostService extends Disposable implements IHostService {
 		}
 
 		const opened = await this.workspaceProvider.open(workspace, options);
+
 		if (!opened) {
 			const { confirmed } = await this.dialogService.confirm({
 				type: Severity.Warning,
@@ -784,6 +814,7 @@ export class BrowserHostService extends Disposable implements IHostService {
 					"&&Open",
 				),
 			});
+
 			if (confirmed) {
 				await this.workspaceProvider.open(workspace, options);
 			}
@@ -862,8 +893,10 @@ export class BrowserHostService extends Disposable implements IHostService {
 		expectedShutdownTask: () => Promise<T>,
 	): Promise<T> {
 		const previousShutdownReason = this.shutdownReason;
+
 		try {
 			this.shutdownReason = HostShutdownReason.Api;
+
 			return await expectedShutdownTask();
 		} finally {
 			this.shutdownReason = previousShutdownReason;
@@ -895,8 +928,11 @@ export class BrowserHostService extends Disposable implements IHostService {
 
 		// Create a video element to play the captured screen source
 		const video = document.createElement("video");
+
 		store.add(toDisposable(() => video.remove()));
+
 		let stream: MediaStream | undefined;
+
 		try {
 			// Create a stream from the screen source (capture screen without audio)
 			stream = await navigator.mediaDevices.getDisplayMedia({
@@ -906,6 +942,7 @@ export class BrowserHostService extends Disposable implements IHostService {
 
 			// Set the stream as the source of the video element
 			video.srcObject = stream;
+
 			video.play();
 
 			// Wait for the video to load properly before capturing the screenshot
@@ -927,10 +964,13 @@ export class BrowserHostService extends Disposable implements IHostService {
 			]);
 
 			const canvas = document.createElement("canvas");
+
 			canvas.width = video.videoWidth;
+
 			canvas.height = video.videoHeight;
 
 			const ctx = canvas.getContext("2d");
+
 			if (!ctx) {
 				return undefined;
 			}
@@ -942,6 +982,7 @@ export class BrowserHostService extends Disposable implements IHostService {
 			const blob: Blob | null = await new Promise((resolve) =>
 				canvas.toBlob((blob) => resolve(blob), "image/jpeg", 0.95),
 			);
+
 			if (!blob) {
 				throw new Error("Failed to create blob from canvas");
 			}
@@ -950,9 +991,11 @@ export class BrowserHostService extends Disposable implements IHostService {
 			return blob.arrayBuffer();
 		} catch (error) {
 			console.error("Error taking screenshot:", error);
+
 			return undefined;
 		} finally {
 			store.dispose();
+
 			if (stream) {
 				for (const track of stream.getTracks()) {
 					track.stop();

@@ -74,13 +74,16 @@ function patchFetching(asBrowserUri: (uri: URI) => Promise<URI>) {
 			// Request object - massage not supported
 			return nativeFetch(input, init);
 		}
+
 		if (shouldTransformUri(String(input))) {
 			input = (await asBrowserUri(URI.parse(String(input)))).toString(
 				true,
 			);
 		}
+
 		return nativeFetch(input, init);
 	};
+
 	self.XMLHttpRequest = class extends XMLHttpRequest {
 		override open(
 			method: string,
@@ -95,6 +98,7 @@ function patchFetching(asBrowserUri: (uri: URI) => Promise<URI>) {
 						await asBrowserUri(URI.parse(url.toString()))
 					).toString(true);
 				}
+
 				super.open(method, url, async ?? true, username, password);
 			})();
 		}
@@ -117,6 +121,7 @@ self.addEventListener = () =>
 if ((<any>self).Worker) {
 	// make sure new Worker(...) always uses blob: (to maintain current origin)
 	const _Worker = (<any>self).Worker;
+
 	Worker = <any>function (stringUrl: string | URL, options?: WorkerOptions) {
 		if (/^file:/i.test(stringUrl.toString())) {
 			stringUrl = FileAccess.uriToBrowserUri(
@@ -143,16 +148,21 @@ if ((<any>self).Worker) {
 						"vscode-file://vscode-app",
 					);
 				}
+
 				return url;
 			}
+
 			const nativeFetch = fetch.bind(self);
+
 			self.fetch = function (input, init) {
 				if (input instanceof Request) {
 					// Request object - massage not supported
 					return nativeFetch(input, init);
 				}
+
 				return nativeFetch(asWorkerBrowserUrl(input), init);
 			};
+
 			self.XMLHttpRequest = class extends XMLHttpRequest {
 				override open(
 					method: string,
@@ -172,14 +182,18 @@ if ((<any>self).Worker) {
 			};
 
 			const nativeImportScripts = importScripts.bind(self);
+
 			self.importScripts = (...urls: string[]) => {
 				nativeImportScripts(...urls.map(asWorkerBrowserUrl));
 			};
+
 			nativeImportScripts(workerUrl);
 		}.toString();
 
 		const js = `(${bootstrapFnSource}('${stringUrl}'))`;
+
 		options = options || {};
+
 		options.name = `${name} -> ${options.name || path.basename(stringUrl.toString())}`;
 
 		const blob = new Blob([js], { type: "application/javascript" });
@@ -201,7 +215,9 @@ if ((<any>self).Worker) {
 //#endregion ---
 const hostUtil = new (class implements IHostUtils {
 	declare readonly _serviceBrand: undefined;
+
 	public readonly pid = undefined;
+
 	exit(_code?: number | undefined): void {
 		nativeClose();
 	}
@@ -218,6 +234,7 @@ class ExtensionWorker {
 		let terminating = false;
 		// send over port2, keep port1
 		nativePostMessage(channel.port2, [channel.port2]);
+
 		channel.port1.onmessage = (event) => {
 			const { data } = event;
 
@@ -226,11 +243,13 @@ class ExtensionWorker {
 
 				return;
 			}
+
 			const msg = VSBuffer.wrap(new Uint8Array(data, 0, data.byteLength));
 
 			if (isMessageOfType(msg, MessageType.Terminate)) {
 				// handle terminate-message right here
 				terminating = true;
+
 				onTerminate("received terminate message from renderer");
 
 				return;
@@ -238,6 +257,7 @@ class ExtensionWorker {
 			// emit non-terminate messages to the outside
 			emitter.fire(msg);
 		};
+
 		this.protocol = {
 			onMessage: emitter.event,
 			send: (vsbuf) => {
@@ -246,6 +266,7 @@ class ExtensionWorker {
 						vsbuf.buffer.byteOffset,
 						vsbuf.buffer.byteOffset + vsbuf.buffer.byteLength,
 					);
+
 					channel.port1.postMessage(data, [data]);
 				}
 			},
@@ -254,6 +275,7 @@ class ExtensionWorker {
 }
 interface IRendererConnection {
 	protocol: IMessagePassingProtocol;
+
 	initData: IExtensionHostInitData;
 }
 function connectToRenderer(
@@ -264,15 +286,19 @@ function connectToRenderer(
 			once.dispose();
 
 			const initData = <IExtensionHostInitData>JSON.parse(raw.toString());
+
 			protocol.send(createMessageOfType(MessageType.Initialized));
+
 			resolve({ protocol, initData });
 		});
+
 		protocol.send(createMessageOfType(MessageType.Ready));
 	});
 }
 let onTerminate = (reason: string) => nativeClose();
 interface IInitMessage {
 	readonly type: "vscode.init";
+
 	readonly data: ReadonlyMap<string, MessagePort>;
 }
 function isInitMessage(a: any): a is IInitMessage {
@@ -299,6 +325,7 @@ export function create(): {
 			if (!isInitMessage(message)) {
 				return; // silently ignore foreign messages
 			}
+
 			connectToRenderer(res.protocol).then((data) => {
 				performance.mark(`code/extHost/didWaitForInitData`);
 
@@ -309,7 +336,9 @@ export function create(): {
 					null,
 					message.data,
 				);
+
 				patchFetching((uri) => extHostMain.asBrowserUri(uri));
+
 				onTerminate = (reason: string) => extHostMain.terminate(reason);
 			});
 		},

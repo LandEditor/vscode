@@ -50,12 +50,15 @@ export class ModifiedBaseRange {
 				),
 		);
 	}
+
 	public readonly input1CombinedDiff = DetailedLineRangeMapping.join(
 		this.input1Diffs,
 	);
+
 	public readonly input2CombinedDiff = DetailedLineRangeMapping.join(
 		this.input2Diffs,
 	);
+
 	public readonly isEqualChange = equals(
 		this.input1Diffs,
 		this.input2Diffs,
@@ -82,9 +85,11 @@ export class ModifiedBaseRange {
 			throw new BugIndicatingError("must have at least one diff");
 		}
 	}
+
 	public getInputRange(inputNumber: 1 | 2): LineRange {
 		return inputNumber === 1 ? this.input1Range : this.input2Range;
 	}
+
 	public getInputCombinedDiff(
 		inputNumber: 1 | 2,
 	): DetailedLineRangeMapping | undefined {
@@ -92,17 +97,21 @@ export class ModifiedBaseRange {
 			? this.input1CombinedDiff
 			: this.input2CombinedDiff;
 	}
+
 	public getInputDiffs(
 		inputNumber: 1 | 2,
 	): readonly DetailedLineRangeMapping[] {
 		return inputNumber === 1 ? this.input1Diffs : this.input2Diffs;
 	}
+
 	public get isConflicting(): boolean {
 		return this.input1Diffs.length > 0 && this.input2Diffs.length > 0;
 	}
+
 	public get canBeCombined(): boolean {
 		return this.smartCombineInputs(1) !== undefined;
 	}
+
 	public get isOrderRelevant(): boolean {
 		const input1 = this.smartCombineInputs(1);
 
@@ -111,29 +120,36 @@ export class ModifiedBaseRange {
 		if (!input1 || !input2) {
 			return false;
 		}
+
 		return !input1.equals(input2);
 	}
+
 	public getEditForBase(state: ModifiedBaseRangeState): {
 		edit: LineRangeEdit | undefined;
+
 		effectiveState: ModifiedBaseRangeState;
 	} {
 		const diffs: {
 			diff: DetailedLineRangeMapping;
+
 			inputNumber: InputNumber;
 		}[] = [];
 
 		if (state.includesInput1 && this.input1CombinedDiff) {
 			diffs.push({ diff: this.input1CombinedDiff, inputNumber: 1 });
 		}
+
 		if (state.includesInput2 && this.input2CombinedDiff) {
 			diffs.push({ diff: this.input2CombinedDiff, inputNumber: 2 });
 		}
+
 		if (diffs.length === 0) {
 			return {
 				edit: undefined,
 				effectiveState: ModifiedBaseRangeState.base,
 			};
 		}
+
 		if (diffs.length === 1) {
 			return {
 				edit: diffs[0].diff.getLineEdit(),
@@ -144,9 +160,11 @@ export class ModifiedBaseRange {
 				),
 			};
 		}
+
 		if (state.kind !== ModifiedBaseRangeStateKind.both) {
 			throw new BugIndicatingError();
 		}
+
 		const smartCombinedEdit = state.smartCombination
 			? this.smartCombineInputs(state.firstInput)
 			: this.dumbCombineInputs(state.firstInput);
@@ -154,6 +172,7 @@ export class ModifiedBaseRange {
 		if (smartCombinedEdit) {
 			return { edit: smartCombinedEdit, effectiveState: state };
 		}
+
 		return {
 			edit: diffs[
 				getOtherInputNumber(state.firstInput) - 1
@@ -165,14 +184,18 @@ export class ModifiedBaseRange {
 			),
 		};
 	}
+
 	private smartInput1LineRangeEdit: LineRangeEdit | undefined | null = null;
+
 	private smartInput2LineRangeEdit: LineRangeEdit | undefined | null = null;
+
 	private smartCombineInputs(firstInput: 1 | 2): LineRangeEdit | undefined {
 		if (firstInput === 1 && this.smartInput1LineRangeEdit !== null) {
 			return this.smartInput1LineRangeEdit;
 		} else if (firstInput === 2 && this.smartInput2LineRangeEdit !== null) {
 			return this.smartInput2LineRangeEdit;
 		}
+
 		const combinedDiffs = concatArrays(
 			this.input1Diffs.flatMap((diffs) =>
 				diffs.rangeMappings.map((diff) => ({
@@ -220,16 +243,21 @@ export class ModifiedBaseRange {
 		} else {
 			this.smartInput2LineRangeEdit = result;
 		}
+
 		return result;
 	}
+
 	private dumbInput1LineRangeEdit: LineRangeEdit | undefined | null = null;
+
 	private dumbInput2LineRangeEdit: LineRangeEdit | undefined | null = null;
+
 	private dumbCombineInputs(firstInput: 1 | 2): LineRangeEdit | undefined {
 		if (firstInput === 1 && this.dumbInput1LineRangeEdit !== null) {
 			return this.dumbInput1LineRangeEdit;
 		} else if (firstInput === 2 && this.dumbInput2LineRangeEdit !== null) {
 			return this.dumbInput2LineRangeEdit;
 		}
+
 		let input1Lines = this.input1Range.getLines(this.input1TextModel);
 
 		let input2Lines = this.input2Range.getLines(this.input2TextModel);
@@ -237,6 +265,7 @@ export class ModifiedBaseRange {
 		if (firstInput === 2) {
 			[input1Lines, input2Lines] = [input2Lines, input1Lines];
 		}
+
 		const result = new LineRangeEdit(
 			this.baseRange,
 			input1Lines.concat(input2Lines),
@@ -247,6 +276,7 @@ export class ModifiedBaseRange {
 		} else {
 			this.dumbInput2LineRangeEdit = result;
 		}
+
 		return result;
 	}
 }
@@ -272,6 +302,7 @@ function editsToLineRangeEdit(
 		if (!currentPosition.isBeforeOrEqual(diffStart)) {
 			return undefined;
 		}
+
 		let originalText = textModel.getValueInRange(
 			Range.fromPositions(currentPosition, diffStart),
 		);
@@ -282,10 +313,14 @@ function editsToLineRangeEdit(
 			// endsLineAfter will be false.
 			originalText += "\n";
 		}
+
 		text += originalText;
+
 		text += edit.newText;
+
 		currentPosition = edit.range.getEndPosition();
 	}
+
 	const endsLineAfter =
 		range.endLineNumberExclusive <= textModel.getLineCount();
 
@@ -299,6 +334,7 @@ function editsToLineRangeEdit(
 	const originalText = textModel.getValueInRange(
 		Range.fromPositions(currentPosition, end),
 	);
+
 	text += originalText;
 
 	const lines = splitLines(text);
@@ -307,14 +343,18 @@ function editsToLineRangeEdit(
 		if (lines[0] !== "") {
 			return undefined;
 		}
+
 		lines.shift();
 	}
+
 	if (endsLineAfter) {
 		if (lines[lines.length - 1] !== "") {
 			return undefined;
 		}
+
 		lines.pop();
 	}
+
 	return new LineRangeEdit(range, lines);
 }
 export enum ModifiedBaseRangeStateKind {
@@ -331,27 +371,37 @@ export function getOtherInputNumber(inputNumber: InputNumber): InputNumber {
 }
 export abstract class AbstractModifiedBaseRangeState {
 	constructor() {}
+
 	abstract get kind(): ModifiedBaseRangeStateKind;
+
 	public get includesInput1(): boolean {
 		return false;
 	}
+
 	public get includesInput2(): boolean {
 		return false;
 	}
+
 	public includesInput(inputNumber: InputNumber): boolean {
 		return inputNumber === 1 ? this.includesInput1 : this.includesInput2;
 	}
+
 	public isInputIncluded(inputNumber: InputNumber): boolean {
 		return inputNumber === 1 ? this.includesInput1 : this.includesInput2;
 	}
+
 	public abstract toString(): string;
+
 	public abstract swap(): ModifiedBaseRangeState;
+
 	public abstract withInputValue(
 		inputNumber: InputNumber,
 		value: boolean,
 		smartCombination?: boolean,
 	): ModifiedBaseRangeState;
+
 	public abstract equals(other: ModifiedBaseRangeState): boolean;
+
 	public toggle(inputNumber: InputNumber) {
 		return this.withInputValue(
 			inputNumber,
@@ -359,10 +409,12 @@ export abstract class AbstractModifiedBaseRangeState {
 			true,
 		);
 	}
+
 	public getInput(inputNumber: 1 | 2): InputState {
 		if (!this.isInputIncluded(inputNumber)) {
 			return InputState.excluded;
 		}
+
 		return InputState.first;
 	}
 }
@@ -370,12 +422,15 @@ export class ModifiedBaseRangeStateBase extends AbstractModifiedBaseRangeState {
 	override get kind(): ModifiedBaseRangeStateKind.base {
 		return ModifiedBaseRangeStateKind.base;
 	}
+
 	public override toString(): string {
 		return "base";
 	}
+
 	public override swap(): ModifiedBaseRangeState {
 		return this;
 	}
+
 	public override withInputValue(
 		inputNumber: InputNumber,
 		value: boolean,
@@ -387,6 +442,7 @@ export class ModifiedBaseRangeStateBase extends AbstractModifiedBaseRangeState {
 			return value ? new ModifiedBaseRangeStateInput2() : this;
 		}
 	}
+
 	public override equals(other: ModifiedBaseRangeState): boolean {
 		return other.kind === ModifiedBaseRangeStateKind.base;
 	}
@@ -395,15 +451,19 @@ export class ModifiedBaseRangeStateInput1 extends AbstractModifiedBaseRangeState
 	override get kind(): ModifiedBaseRangeStateKind.input1 {
 		return ModifiedBaseRangeStateKind.input1;
 	}
+
 	override get includesInput1(): boolean {
 		return true;
 	}
+
 	public toString(): string {
 		return "1✓";
 	}
+
 	public override swap(): ModifiedBaseRangeState {
 		return new ModifiedBaseRangeStateInput2();
 	}
+
 	public override withInputValue(
 		inputNumber: InputNumber,
 		value: boolean,
@@ -417,6 +477,7 @@ export class ModifiedBaseRangeStateInput1 extends AbstractModifiedBaseRangeState
 				: new ModifiedBaseRangeStateInput2();
 		}
 	}
+
 	public override equals(other: ModifiedBaseRangeState): boolean {
 		return other.kind === ModifiedBaseRangeStateKind.input1;
 	}
@@ -425,15 +486,19 @@ export class ModifiedBaseRangeStateInput2 extends AbstractModifiedBaseRangeState
 	override get kind(): ModifiedBaseRangeStateKind.input2 {
 		return ModifiedBaseRangeStateKind.input2;
 	}
+
 	override get includesInput2(): boolean {
 		return true;
 	}
+
 	public toString(): string {
 		return "2✓";
 	}
+
 	public override swap(): ModifiedBaseRangeState {
 		return new ModifiedBaseRangeStateInput1();
 	}
+
 	public withInputValue(
 		inputNumber: InputNumber,
 		value: boolean,
@@ -447,6 +512,7 @@ export class ModifiedBaseRangeStateInput2 extends AbstractModifiedBaseRangeState
 				: new ModifiedBaseRangeStateInput2();
 		}
 	}
+
 	public override equals(other: ModifiedBaseRangeState): boolean {
 		return other.kind === ModifiedBaseRangeStateKind.input2;
 	}
@@ -458,24 +524,30 @@ export class ModifiedBaseRangeStateBoth extends AbstractModifiedBaseRangeState {
 	) {
 		super();
 	}
+
 	override get kind(): ModifiedBaseRangeStateKind.both {
 		return ModifiedBaseRangeStateKind.both;
 	}
+
 	override get includesInput1(): boolean {
 		return true;
 	}
+
 	override get includesInput2(): boolean {
 		return true;
 	}
+
 	public toString(): string {
 		return "2✓";
 	}
+
 	public override swap(): ModifiedBaseRangeState {
 		return new ModifiedBaseRangeStateBoth(
 			getOtherInputNumber(this.firstInput),
 			this.smartCombination,
 		);
 	}
+
 	public withInputValue(
 		inputNumber: InputNumber,
 		value: boolean,
@@ -484,10 +556,12 @@ export class ModifiedBaseRangeStateBoth extends AbstractModifiedBaseRangeState {
 		if (value) {
 			return this;
 		}
+
 		return inputNumber === 1
 			? new ModifiedBaseRangeStateInput2()
 			: new ModifiedBaseRangeStateInput1();
 	}
+
 	public override equals(other: ModifiedBaseRangeState): boolean {
 		return (
 			other.kind === ModifiedBaseRangeStateKind.both &&
@@ -495,6 +569,7 @@ export class ModifiedBaseRangeStateBoth extends AbstractModifiedBaseRangeState {
 			this.smartCombination === other.smartCombination
 		);
 	}
+
 	public override getInput(inputNumber: 1 | 2): InputState {
 		return inputNumber === this.firstInput
 			? InputState.first
@@ -505,12 +580,15 @@ export class ModifiedBaseRangeStateUnrecognized extends AbstractModifiedBaseRang
 	override get kind(): ModifiedBaseRangeStateKind.unrecognized {
 		return ModifiedBaseRangeStateKind.unrecognized;
 	}
+
 	public override toString(): string {
 		return "unrecognized";
 	}
+
 	public override swap(): ModifiedBaseRangeState {
 		return this;
 	}
+
 	public withInputValue(
 		inputNumber: InputNumber,
 		value: boolean,
@@ -519,10 +597,12 @@ export class ModifiedBaseRangeStateUnrecognized extends AbstractModifiedBaseRang
 		if (!value) {
 			return this;
 		}
+
 		return inputNumber === 1
 			? new ModifiedBaseRangeStateInput1()
 			: new ModifiedBaseRangeStateInput2();
 	}
+
 	public override equals(other: ModifiedBaseRangeState): boolean {
 		return other.kind === ModifiedBaseRangeStateKind.unrecognized;
 	}

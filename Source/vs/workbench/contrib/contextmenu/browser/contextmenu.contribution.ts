@@ -30,9 +30,11 @@ class ContextMenuContribution
 				"context-menu-visible",
 				visible,
 			);
+
 		this._register(
 			contextMenuService.onDidShowContextMenu(() => update(true)),
 		);
+
 		this._register(
 			contextMenuService.onDidHideContextMenu(() => update(false)),
 		);

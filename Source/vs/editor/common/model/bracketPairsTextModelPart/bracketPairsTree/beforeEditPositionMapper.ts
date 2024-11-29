@@ -35,20 +35,26 @@ export class TextEditInfo {
 
 		return edits;
 	}
+
 	constructor(
 		public readonly startOffset: Length,
 		public readonly endOffset: Length,
 		public readonly newLength: Length,
 	) {}
+
 	toString(): string {
 		return `[${lengthToObj(this.startOffset)}...${lengthToObj(this.endOffset)}) -> ${lengthToObj(this.newLength)}`;
 	}
 }
 export class BeforeEditPositionMapper {
 	private nextEditIdx = 0;
+
 	private deltaOldToNewLineCount = 0;
+
 	private deltaOldToNewColumnCount = 0;
+
 	private deltaLineIdxInOld = -1;
+
 	private readonly edits: readonly TextEditInfoCache[];
 	/**
 	 * @param edits Must be sorted by offset in ascending order.
@@ -80,8 +86,10 @@ export class BeforeEditPositionMapper {
 		if (nextChangeOffset === null) {
 			return null;
 		}
+
 		return lengthDiffNonNegative(offset, nextChangeOffset);
 	}
+
 	private translateOldToCur(oldOffsetObj: TextLength): Length {
 		if (oldOffsetObj.lineCount === this.deltaLineIdxInOld) {
 			return toLength(
@@ -95,6 +103,7 @@ export class BeforeEditPositionMapper {
 			);
 		}
 	}
+
 	private translateCurToOld(newOffset: Length): Length {
 		const offsetObj = lengthToObj(newOffset);
 
@@ -113,6 +122,7 @@ export class BeforeEditPositionMapper {
 			);
 		}
 	}
+
 	private adjustNextEdit(offset: Length) {
 		while (this.nextEditIdx < this.edits.length) {
 			const nextEdit = this.edits[this.nextEditIdx];
@@ -136,6 +146,7 @@ export class BeforeEditPositionMapper {
 				const lineDelta =
 					nextEditEndOffsetInCurObj.lineCount -
 					nextEditEndOffsetBeforeInCurObj.lineCount;
+
 				this.deltaOldToNewLineCount += lineDelta;
 
 				const previousColumnDelta =
@@ -147,8 +158,10 @@ export class BeforeEditPositionMapper {
 				const columnDelta =
 					nextEditEndOffsetInCurObj.columnCount -
 					nextEditEndOffsetBeforeInCurObj.columnCount;
+
 				this.deltaOldToNewColumnCount =
 					previousColumnDelta + columnDelta;
+
 				this.deltaLineIdxInOld = nextEdit.endOffsetBeforeObj.lineCount;
 			} else {
 				// We are in or before the edit.
@@ -165,15 +178,20 @@ class TextEditInfoCache {
 			edit.newLength,
 		);
 	}
+
 	public readonly endOffsetBeforeObj: TextLength;
+
 	public readonly endOffsetAfterObj: TextLength;
+
 	public readonly offsetObj: TextLength;
 
 	constructor(startOffset: Length, endOffset: Length, textLength: Length) {
 		this.endOffsetBeforeObj = lengthToObj(endOffset);
+
 		this.endOffsetAfterObj = lengthToObj(
 			lengthAdd(startOffset, textLength),
 		);
+
 		this.offsetObj = lengthToObj(startOffset);
 	}
 }

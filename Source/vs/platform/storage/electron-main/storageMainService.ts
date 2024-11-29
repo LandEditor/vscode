@@ -46,6 +46,7 @@ export const IStorageMainService =
 
 export interface IProfileStorageChangeEvent extends IStorageChangeEvent {
 	readonly storage: IStorageMain;
+
 	readonly profile: IUserDataProfile;
 }
 export interface IStorageMainService {
@@ -89,10 +90,13 @@ export class StorageMainService
 	implements IStorageMainService
 {
 	declare readonly _serviceBrand: undefined;
+
 	private shutdownReason: ShutdownReason | undefined = undefined;
+
 	private readonly _onDidChangeProfileStorage = this._register(
 		new Emitter<IProfileStorageChangeEvent>(),
 	);
+
 	readonly onDidChangeProfileStorage = this._onDidChangeProfileStorage.event;
 
 	constructor(
@@ -110,22 +114,27 @@ export class StorageMainService
 		private readonly uriIdentityService: IUriIdentityService,
 	) {
 		super();
+
 		this.registerListeners();
 	}
+
 	protected getStorageOptions(): IStorageMainOptions {
 		return {
 			useInMemoryStorage:
 				!!this.environmentService.extensionTestsLocationURI, // no storage during extension tests!
 		};
 	}
+
 	private registerListeners(): void {
 		// Application Storage: Warmup when any window opens
 		(async () => {
 			await this.lifecycleMainService.when(
 				LifecycleMainPhase.AfterWindowOpen,
 			);
+
 			this.applicationStorage.init();
 		})();
+
 		this._register(
 			this.lifecycleMainService.onWillLoadWindow((e) => {
 				// Profile Storage: Warmup when related window with profile loads
@@ -189,6 +198,7 @@ export class StorageMainService
 	readonly applicationStorage = this._register(
 		this.createApplicationStorage(),
 	);
+
 	private createApplicationStorage(): IStorageMain {
 		this.logService.trace(
 			`StorageMainService: creating application storage`,
@@ -200,6 +210,7 @@ export class StorageMainService
 			this.logService,
 			this.fileService,
 		);
+
 		this._register(
 			Event.once(applicationStorage.onDidCloseStorage)(() => {
 				this.logService.trace(
@@ -216,17 +227,21 @@ export class StorageMainService
 		string /* profile ID */,
 		IStorageMain
 	>();
+
 	profileStorage(profile: IUserDataProfile): IStorageMain {
 		if (isProfileUsingDefaultStorage(profile)) {
 			return this.applicationStorage; // for profiles using default storage, use application storage
 		}
+
 		let profileStorage = this.mapProfileToStorage.get(profile.id);
 
 		if (!profileStorage) {
 			this.logService.trace(
 				`StorageMainService: creating profile storage (${profile.name})`,
 			);
+
 			profileStorage = this._register(this.createProfileStorage(profile));
+
 			this.mapProfileToStorage.set(profile.id, profileStorage);
 
 			const listener = this._register(
@@ -238,18 +253,23 @@ export class StorageMainService
 					}),
 				),
 			);
+
 			this._register(
 				Event.once(profileStorage.onDidCloseStorage)(() => {
 					this.logService.trace(
 						`StorageMainService: closed profile storage (${profile.name})`,
 					);
+
 					this.mapProfileToStorage.delete(profile.id);
+
 					listener.dispose();
 				}),
 			);
 		}
+
 		return profileStorage;
 	}
+
 	private createProfileStorage(profile: IUserDataProfile): IStorageMain {
 		if (this.shutdownReason === ShutdownReason.KILL) {
 			// Workaround for native crashes that we see when
@@ -257,6 +277,7 @@ export class StorageMainService
 			// https://github.com/microsoft/vscode/issues/143186
 			return new InMemoryStorageMain(this.logService, this.fileService);
 		}
+
 		return new ProfileStorageMain(
 			profile,
 			this.getStorageOptions(),
@@ -270,6 +291,7 @@ export class StorageMainService
 		string /* workspace ID */,
 		IStorageMain
 	>();
+
 	workspaceStorage(workspace: IAnyWorkspaceIdentifier): IStorageMain {
 		let workspaceStorage = this.mapWorkspaceToStorage.get(workspace.id);
 
@@ -277,21 +299,27 @@ export class StorageMainService
 			this.logService.trace(
 				`StorageMainService: creating workspace storage (${workspace.id})`,
 			);
+
 			workspaceStorage = this._register(
 				this.createWorkspaceStorage(workspace),
 			);
+
 			this.mapWorkspaceToStorage.set(workspace.id, workspaceStorage);
+
 			this._register(
 				Event.once(workspaceStorage.onDidCloseStorage)(() => {
 					this.logService.trace(
 						`StorageMainService: closed workspace storage (${workspace.id})`,
 					);
+
 					this.mapWorkspaceToStorage.delete(workspace.id);
 				}),
 			);
 		}
+
 		return workspaceStorage;
 	}
+
 	private createWorkspaceStorage(
 		workspace: IAnyWorkspaceIdentifier,
 	): IStorageMain {
@@ -301,6 +329,7 @@ export class StorageMainService
 			// https://github.com/microsoft/vscode/issues/143186
 			return new InMemoryStorageMain(this.logService, this.fileService);
 		}
+
 		return new WorkspaceStorageMain(
 			workspace,
 			this.getStorageOptions(),
@@ -321,6 +350,7 @@ export class StorageMainService
 			if (!storage.path) {
 				continue;
 			}
+
 			if (
 				this.uriIdentityService.extUri.isEqualOrParent(
 					URI.file(storage.path),
@@ -330,6 +360,7 @@ export class StorageMainService
 				return true;
 			}
 		}
+
 		return false;
 	}
 }
@@ -390,16 +421,20 @@ export interface IApplicationStorageMainService extends IStorageService {
 		scope: StorageScope.APPLICATION,
 		fallbackValue?: number,
 	): number | undefined;
+
 	store(
 		key: string,
 		value: string | boolean | number | undefined | null,
 		scope: StorageScope.APPLICATION,
 		target: StorageTarget,
 	): void;
+
 	remove(key: string, scope: StorageScope.APPLICATION): void;
+
 	keys(scope: StorageScope.APPLICATION, target: StorageTarget): string[];
 
 	switch(): never;
+
 	isNew(scope: StorageScope.APPLICATION): boolean;
 }
 export class ApplicationStorageMainService
@@ -407,6 +442,7 @@ export class ApplicationStorageMainService
 	implements IApplicationStorageMainService
 {
 	declare readonly _serviceBrand: undefined;
+
 	readonly whenReady = this.storageMainService.applicationStorage.whenInit;
 
 	constructor(
@@ -417,42 +453,52 @@ export class ApplicationStorageMainService
 	) {
 		super();
 	}
+
 	protected doInitialize(): Promise<void> {
 		// application storage is being initialized as part
 		// of the first window opening, so we do not trigger
 		// it here but can join it
 		return this.storageMainService.applicationStorage.whenInit;
 	}
+
 	protected getStorage(scope: StorageScope): IStorage | undefined {
 		if (scope === StorageScope.APPLICATION) {
 			return this.storageMainService.applicationStorage.storage;
 		}
+
 		return undefined; // any other scope is unsupported from main process
 	}
+
 	protected getLogDetails(scope: StorageScope): string | undefined {
 		if (scope === StorageScope.APPLICATION) {
 			return this.userDataProfilesService.defaultProfile.globalStorageHome.with(
 				{ scheme: Schemas.file },
 			).fsPath;
 		}
+
 		return undefined; // any other scope is unsupported from main process
 	}
+
 	protected override shouldFlushWhenIdle(): boolean {
 		return false; // not needed here, will be triggered from any window that is opened
 	}
+
 	override switch(): never {
 		throw new Error("Migrating storage is unsupported from main process");
 	}
+
 	protected switchToProfile(): never {
 		throw new Error(
 			"Switching storage profile is unsupported from main process",
 		);
 	}
+
 	protected switchToWorkspace(): never {
 		throw new Error(
 			"Switching storage workspace is unsupported from main process",
 		);
 	}
+
 	hasScope(): never {
 		throw new Error("Main process is never profile or workspace scoped");
 	}

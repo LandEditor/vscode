@@ -58,6 +58,7 @@ class DiffEditorHelperContribution
 			const onlyWhiteSpaceChange = computationResult.map(
 				(r) => r && !r.identical && r.changes2.length === 0,
 			);
+
 			this._register(
 				autorunWithStore((reader, store) => {
 					/** @description update state */
@@ -73,6 +74,7 @@ class DiffEditorHelperContribution
 								null,
 							),
 						);
+
 						store.add(
 							helperWidget.onClick(() => {
 								this._textResourceConfigurationService.updateValue(
@@ -82,10 +84,12 @@ class DiffEditorHelperContribution
 								);
 							}),
 						);
+
 						helperWidget.render();
 					}
 				}),
 			);
+
 			this._register(
 				this._diffEditor.onDidUpdateDiff(() => {
 					const diffComputationResult =

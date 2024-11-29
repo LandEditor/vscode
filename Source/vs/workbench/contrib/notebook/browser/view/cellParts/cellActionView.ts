@@ -38,23 +38,32 @@ export class CodiconActionViewItem extends MenuEntryActionViewItem {
 }
 export class ActionViewWithLabel extends MenuEntryActionViewItem {
 	private _actionLabel?: HTMLAnchorElement;
+
 	override render(container: HTMLElement): void {
 		super.render(container);
+
 		container.classList.add("notebook-action-view-item");
+
 		this._actionLabel = document.createElement("a");
+
 		container.appendChild(this._actionLabel);
+
 		this.updateLabel();
 	}
+
 	protected override updateLabel() {
 		if (this._actionLabel) {
 			this._actionLabel.classList.add("notebook-label");
+
 			this._actionLabel.innerText = this._action.label;
 		}
 	}
 }
 export class UnifiedSubmenuActionView extends SubmenuEntryActionViewItem {
 	private _actionLabel?: HTMLAnchorElement;
+
 	private _hover?: IManagedHover;
+
 	private _primaryAction: IAction | undefined;
 
 	constructor(
@@ -85,12 +94,18 @@ export class UnifiedSubmenuActionView extends SubmenuEntryActionViewItem {
 			_themeService,
 		);
 	}
+
 	override render(container: HTMLElement): void {
 		super.render(container);
+
 		container.classList.add("notebook-action-view-item");
+
 		container.classList.add("notebook-action-view-item-unified");
+
 		this._actionLabel = document.createElement("a");
+
 		container.appendChild(this._actionLabel);
+
 		this._hover = this._register(
 			this._hoverService.setupManagedHover(
 				this.options.hoverDelegate ??
@@ -99,6 +114,7 @@ export class UnifiedSubmenuActionView extends SubmenuEntryActionViewItem {
 				"",
 			),
 		);
+
 		this.updateLabel();
 
 		for (const event of [
@@ -113,6 +129,7 @@ export class UnifiedSubmenuActionView extends SubmenuEntryActionViewItem {
 			);
 		}
 	}
+
 	override onClick(event: DOM.EventLike, preserveFocus = false): void {
 		DOM.EventHelper.stop(event, true);
 
@@ -121,13 +138,16 @@ export class UnifiedSubmenuActionView extends SubmenuEntryActionViewItem {
 				? event
 				: { preserveFocus }
 			: this._context;
+
 		this.actionRunner.run(this._primaryAction ?? this._action, context);
 	}
+
 	protected override updateLabel() {
 		const actions = this.subActionProvider.getActions();
 
 		if (this._actionLabel) {
 			const primaryAction = actions[0];
+
 			this._primaryAction = primaryAction;
 
 			if (primaryAction && primaryAction instanceof MenuItemAction) {
@@ -147,11 +167,15 @@ export class UnifiedSubmenuActionView extends SubmenuEntryActionViewItem {
 							element.classList.remove(cl);
 						}
 					});
+
 					element.classList.add(...iconClasses);
 				}
+
 				if (this.renderLabel) {
 					this._actionLabel.classList.add("notebook-label");
+
 					this._actionLabel.innerText = this._action.label;
+
 					this._hover?.update(
 						primaryAction.tooltip.length
 							? primaryAction.tooltip
@@ -161,7 +185,9 @@ export class UnifiedSubmenuActionView extends SubmenuEntryActionViewItem {
 			} else {
 				if (this.renderLabel) {
 					this._actionLabel.classList.add("notebook-label");
+
 					this._actionLabel.innerText = this._action.label;
+
 					this._hover?.update(
 						this._action.tooltip.length
 							? this._action.tooltip

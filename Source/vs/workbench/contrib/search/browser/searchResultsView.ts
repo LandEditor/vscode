@@ -57,37 +57,57 @@ import { SearchView } from "./searchView.js";
 
 interface IFolderMatchTemplate {
 	label: IResourceLabel;
+
 	badge: CountBadge;
+
 	actions: MenuWorkbenchToolBar;
+
 	disposables: DisposableStore;
+
 	elementDisposables: DisposableStore;
+
 	contextKeyService: IContextKeyService;
 }
 
 interface ITextSearchResultTemplate {
 	label: IResourceLabel;
+
 	disposables: DisposableStore;
 }
 
 interface IFileMatchTemplate {
 	el: HTMLElement;
+
 	label: IResourceLabel;
+
 	badge: CountBadge;
+
 	actions: MenuWorkbenchToolBar;
+
 	disposables: DisposableStore;
+
 	elementDisposables: DisposableStore;
+
 	contextKeyService: IContextKeyService;
 }
 
 interface IMatchTemplate {
 	lineNumber: HTMLElement;
+
 	parent: HTMLElement;
+
 	before: HTMLElement;
+
 	match: HTMLElement;
+
 	replace: HTMLElement;
+
 	after: HTMLElement;
+
 	actions: MenuWorkbenchToolBar;
+
 	disposables: DisposableStore;
+
 	contextKeyService: IContextKeyService;
 }
 
@@ -135,12 +155,14 @@ export class TextSearchResultRenderer
 	) {
 		super();
 	}
+
 	disposeCompressedElements?(
 		node: ITreeNode<ICompressedTreeNode<ITextSearchHeading>, any>,
 		index: number,
 		templateData: ITextSearchResultTemplate,
 		height: number | undefined,
 	): void {}
+
 	renderTemplate(container: HTMLElement): ITextSearchResultTemplate {
 		const disposables = new DisposableStore();
 
@@ -154,6 +176,7 @@ export class TextSearchResultRenderer
 			supportHighlights: true,
 			supportIcons: true,
 		});
+
 		disposables.add(label);
 
 		return { label, disposables };
@@ -249,6 +272,7 @@ export class FolderMatchRenderer
 			const fileKind = isSearchTreeFolderMatchWorkspaceRoot(folder)
 				? FileKind.ROOT_FOLDER
 				: FileKind.FOLDER;
+
 			templateData.label.setResource(
 				{ resource: folder.resource, name: label },
 				{
@@ -276,6 +300,7 @@ export class FolderMatchRenderer
 			supportDescriptionHighlights: true,
 			supportHighlights: true,
 		});
+
 		disposables.add(label);
 
 		const badge = new CountBadge(
@@ -283,6 +308,7 @@ export class FolderMatchRenderer
 			{},
 			defaultCountBadgeStyles,
 		);
+
 		disposables.add(badge);
 
 		const actionBarContainer = DOM.append(
@@ -291,13 +317,17 @@ export class FolderMatchRenderer
 		);
 
 		const elementDisposables = new DisposableStore();
+
 		disposables.add(elementDisposables);
 
 		const contextKeyServiceMain = disposables.add(
 			this.contextKeyService.createScoped(container),
 		);
+
 		SearchContext.MatchFocusKey.bindTo(contextKeyServiceMain).set(false);
+
 		SearchContext.FileFocusKey.bindTo(contextKeyServiceMain).set(false);
+
 		SearchContext.FolderFocusKey.bindTo(contextKeyServiceMain).set(true);
 
 		const instantiationService = this._register(
@@ -409,7 +439,9 @@ export class FolderMatchRenderer
 		templateData: IFolderMatchTemplate,
 	) {
 		const count = folder.recursiveMatchCount();
+
 		templateData.badge.setCount(count);
+
 		templateData.badge.setTitleFormat(
 			count > 1
 				? nls.localize("searchFileMatches", "{0} files found", count)
@@ -464,11 +496,13 @@ export class FileMatchRenderer
 		const disposables = new DisposableStore();
 
 		const elementDisposables = new DisposableStore();
+
 		disposables.add(elementDisposables);
 
 		const fileMatchElement = DOM.append(container, DOM.$(".filematch"));
 
 		const label = this.labels.create(fileMatchElement);
+
 		disposables.add(label);
 
 		const badge = new CountBadge(
@@ -476,6 +510,7 @@ export class FileMatchRenderer
 			{},
 			defaultCountBadgeStyles,
 		);
+
 		disposables.add(badge);
 
 		const actionBarContainer = DOM.append(
@@ -486,8 +521,11 @@ export class FileMatchRenderer
 		const contextKeyServiceMain = disposables.add(
 			this.contextKeyService.createScoped(container),
 		);
+
 		SearchContext.MatchFocusKey.bindTo(contextKeyServiceMain).set(false);
+
 		SearchContext.FileFocusKey.bindTo(contextKeyServiceMain).set(true);
+
 		SearchContext.FolderFocusKey.bindTo(contextKeyServiceMain).set(false);
 
 		const instantiationService = this._register(
@@ -533,6 +571,7 @@ export class FileMatchRenderer
 		templateData: IFileMatchTemplate,
 	): void {
 		const fileMatch = node.element;
+
 		templateData.el.setAttribute(
 			"data-resource",
 			fileMatch.resource.toString(),
@@ -542,6 +581,7 @@ export class FileMatchRenderer
 			this.configurationService.getValue<ISearchConfigurationProperties>(
 				"search",
 			).decorations;
+
 		templateData.label.setFile(fileMatch.resource, {
 			range: isSearchTreeAIFileMatch(fileMatch)
 				? fileMatch.getFullRange()
@@ -557,7 +597,9 @@ export class FileMatchRenderer
 		});
 
 		const count = fileMatch.count();
+
 		templateData.badge.setCount(count);
+
 		templateData.badge.setTitleFormat(
 			count > 1
 				? nls.localize("searchMatches", "{0} matches found", count)
@@ -587,6 +629,7 @@ export class FileMatchRenderer
 			templateData.el.parentElement?.parentElement?.querySelector(
 				".monaco-tl-twistie",
 			);
+
 		twistieContainer?.classList.add("force-twistie");
 	}
 
@@ -626,6 +669,7 @@ export class MatchRenderer
 	) {
 		super();
 	}
+
 	renderCompressedElements(
 		node: ITreeNode<ICompressedTreeNode<ISearchTreeMatch>, void>,
 		index: number,
@@ -660,8 +704,11 @@ export class MatchRenderer
 		const contextKeyServiceMain = disposables.add(
 			this.contextKeyService.createScoped(container),
 		);
+
 		SearchContext.MatchFocusKey.bindTo(contextKeyServiceMain).set(true);
+
 		SearchContext.FileFocusKey.bindTo(contextKeyServiceMain).set(false);
+
 		SearchContext.FolderFocusKey.bindTo(contextKeyServiceMain).set(false);
 
 		const instantiationService = this._register(
@@ -718,9 +765,13 @@ export class MatchRenderer
 			!match.isReadonly;
 
 		templateData.before.textContent = preview.before;
+
 		templateData.match.textContent = preview.inside;
+
 		templateData.match.classList.toggle("replace", replace);
+
 		templateData.replace.textContent = replace ? match.replaceString : "";
+
 		templateData.after.textContent = preview.after;
 
 		const title = (
@@ -730,6 +781,7 @@ export class MatchRenderer
 		)
 			.trim()
 			.substr(0, 999);
+
 		templateData.disposables.add(
 			this.hoverService.setupManagedHover(
 				getDefaultHoverDelegate("mouse"),
@@ -755,12 +807,14 @@ export class MatchRenderer
 		const lineNumberStr = showLineNumbers
 			? `${match.range().startLineNumber}:`
 			: "";
+
 		templateData.lineNumber.classList.toggle(
 			"show",
 			numLines > 0 || showLineNumbers,
 		);
 
 		templateData.lineNumber.textContent = lineNumberStr + extraLinesStr;
+
 		templateData.disposables.add(
 			this.hoverService.setupManagedHover(
 				getDefaultHoverDelegate("mouse"),
@@ -882,6 +936,7 @@ export class SearchAccessibilityProvider
 				matchString,
 			);
 		}
+
 		return null;
 	}
 }

@@ -26,8 +26,10 @@ export class NotificationsAlerts extends Disposable {
 		for (const notification of model.notifications) {
 			this.triggerAriaAlert(notification);
 		}
+
 		this.registerListeners();
 	}
+
 	private registerListeners(): void {
 		this._register(
 			this.model.onDidChangeNotification((e) =>
@@ -35,6 +37,7 @@ export class NotificationsAlerts extends Disposable {
 			),
 		);
 	}
+
 	private onDidChangeNotification(e: INotificationChangeEvent): void {
 		if (e.kind === NotificationChangeType.ADD) {
 			// ARIA alert for screen readers
@@ -54,6 +57,7 @@ export class NotificationsAlerts extends Disposable {
 			}
 		}
 	}
+
 	private triggerAriaAlert(notification: INotificationViewItem): void {
 		if (notification.priority === NotificationPriority.SILENT) {
 			return;
@@ -64,9 +68,12 @@ export class NotificationsAlerts extends Disposable {
 				this.doTriggerAriaAlert(notification);
 			}
 		});
+
 		Event.once(notification.onDidClose)(() => listener.dispose());
+
 		this.doTriggerAriaAlert(notification);
 	}
+
 	private doTriggerAriaAlert(notification: INotificationViewItem): void {
 		let alertText: string;
 
@@ -89,6 +96,7 @@ export class NotificationsAlerts extends Disposable {
 				notification.message.linkedText.toString(),
 			);
 		}
+
 		alert(alertText);
 	}
 }

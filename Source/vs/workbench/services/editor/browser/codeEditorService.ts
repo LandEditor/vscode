@@ -38,17 +38,20 @@ export class CodeEditorService extends AbstractCodeEditorService {
 		private readonly configurationService: IConfigurationService,
 	) {
 		super(themeService);
+
 		this._register(
 			this.registerCodeEditorOpenHandler(
 				this.doOpenCodeEditor.bind(this),
 			),
 		);
+
 		this._register(
 			this.registerCodeEditorOpenHandler(
 				this.doOpenCodeEditorFromDiff.bind(this),
 			),
 		);
 	}
+
 	getActiveCodeEditor(): ICodeEditor | null {
 		const activeTextEditorControl =
 			this.editorService.activeTextEditorControl;
@@ -56,9 +59,11 @@ export class CodeEditorService extends AbstractCodeEditorService {
 		if (isCodeEditor(activeTextEditorControl)) {
 			return activeTextEditorControl;
 		}
+
 		if (isDiffEditor(activeTextEditorControl)) {
 			return activeTextEditorControl.getModifiedEditor();
 		}
+
 		const activeControl = this.editorService.activeEditorPane?.getControl();
 
 		if (
@@ -67,8 +72,10 @@ export class CodeEditorService extends AbstractCodeEditorService {
 		) {
 			return activeControl.activeCodeEditor;
 		}
+
 		return null;
 	}
+
 	private async doOpenCodeEditorFromDiff(
 		input: IResourceEditorInput,
 		source: ICodeEditor | null,
@@ -93,6 +100,7 @@ export class CodeEditorService extends AbstractCodeEditorService {
 			) // we need the input resources to match with modified side
 		) {
 			const targetEditor = activeTextEditorControl.getModifiedEditor();
+
 			applyTextEditorOptions(
 				input.options,
 				targetEditor,
@@ -101,6 +109,7 @@ export class CodeEditorService extends AbstractCodeEditorService {
 
 			return targetEditor;
 		}
+
 		return null;
 	}
 	// Open using our normal editor service
@@ -145,6 +154,7 @@ export class CodeEditorService extends AbstractCodeEditorService {
 			if (isCodeEditor(widget)) {
 				return widget;
 			}
+
 			if (
 				isCompositeEditor(widget) &&
 				isCodeEditor(widget.activeCodeEditor)
@@ -152,6 +162,7 @@ export class CodeEditorService extends AbstractCodeEditorService {
 				return widget.activeCodeEditor;
 			}
 		}
+
 		return null;
 	}
 }

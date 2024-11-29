@@ -48,6 +48,7 @@ export class NativeRequestService
 					"http.proxyAuthorization",
 				);
 		}
+
 		return this.logAndRequest(options, () =>
 			request(options, token, () => navigator.onLine),
 		);

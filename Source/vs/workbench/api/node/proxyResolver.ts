@@ -55,10 +55,12 @@ export function connectProxyResolver(
 	disposables: DisposableStore,
 ) {
 	const useHostProxy = initData.environment.useHostProxy;
+
 	const doUseHostProxy =
 		typeof useHostProxy === "boolean"
 			? useHostProxy
 			: !initData.remote.isRemote;
+
 	const params: ProxyAgentParams = {
 		resolveProxy: (url) => extHostWorkspace.resolveProxy(url),
 		lookupProxyAuthorization: lookupProxyAuthorization.bind(
@@ -85,24 +87,33 @@ export function connectProxyResolver(
 		log: extHostLogService,
 		getLogLevel: () => {
 			const level = extHostLogService.getLevel();
+
 			switch (level) {
 				case LogServiceLevel.Trace:
 					return LogLevel.Trace;
+
 				case LogServiceLevel.Debug:
 					return LogLevel.Debug;
+
 				case LogServiceLevel.Info:
 					return LogLevel.Info;
+
 				case LogServiceLevel.Warning:
 					return LogLevel.Warning;
+
 				case LogServiceLevel.Error:
 					return LogLevel.Error;
+
 				case LogServiceLevel.Off:
 					return LogLevel.Off;
+
 				default:
 					return never(level);
 			}
+
 			function never(level: never) {
 				extHostLogService.error("Unknown log level", level);
+
 				return LogLevel.Debug;
 			}
 		},
@@ -110,15 +121,18 @@ export function connectProxyResolver(
 		useHostProxy: doUseHostProxy,
 		loadAdditionalCertificates: async () => {
 			const promises: Promise<string[]>[] = [];
+
 			if (initData.remote.isRemote) {
 				promises.push(
 					loadSystemCertificates({ log: extHostLogService }),
 				);
 			}
+
 			if (doUseHostProxy) {
 				extHostLogService.trace(
 					"ProxyResolver#loadAdditionalCertificates: Loading certificates from main process",
 				);
+
 				const certs = extHostWorkspace.loadCertificates(); // Loading from main process to share cache.
 				certs.then((certs) =>
 					extHostLogService.trace(
@@ -126,6 +140,7 @@ export function connectProxyResolver(
 						certs.length,
 					),
 				);
+
 				promises.push(certs);
 			}
 			// Using https.globalAgent because it is shared with proxy.test.ts and mutable.
@@ -136,16 +151,19 @@ export function connectProxyResolver(
 				extHostLogService.trace(
 					"ProxyResolver#loadAdditionalCertificates: Loading test certificates",
 				);
+
 				promises.push(
 					Promise.resolve(
 						(https.globalAgent as any).testCertificates as string[],
 					),
 				);
 			}
+
 			return (await Promise.all(promises)).flat();
 		},
 		env: process.env,
 	};
+
 	const { resolveProxyWithRequest, resolveProxyURL } =
 		createProxyResolver(params);
 
@@ -160,6 +178,7 @@ export function connectProxyResolver(
 	);
 
 	const lookup = createPatchedModules(params, resolveProxyWithRequest);
+
 	return configureModuleLoading(extensionService, lookup);
 }
 
@@ -187,6 +206,7 @@ function patchGlobalFetch(
 	if (!(globalThis as any).__vscodeOriginalFetch) {
 		const originalFetch = globalThis.fetch;
 		(globalThis as any).__vscodeOriginalFetch = originalFetch;
+
 		const patchedFetch = patchFetch(
 			originalFetch,
 			configProvider,
@@ -195,11 +215,14 @@ function patchGlobalFetch(
 			loadAdditionalCertificates,
 		);
 		(globalThis as any).__vscodePatchedFetch = patchedFetch;
+
 		let useElectronFetch = false;
+
 		if (!initData.remote.isRemote) {
 			useElectronFetch = configProvider
 				.getConfiguration("http")
 				.get<boolean>("electronFetch", useElectronFetchDefault);
+
 			disposables.add(
 				configProvider.onDidChangeConfiguration((e) => {
 					if (e.affectsConfiguration("http.electronFetch")) {
@@ -235,23 +258,32 @@ function patchGlobalFetch(
 					: "cache" in input
 						? input.url
 						: input.toString();
+
 			const isDataUrl = urlString.startsWith("data:");
+
 			if (isDataUrl) {
 				recordFetchFeatureUse(mainThreadTelemetry, "data");
 			}
+
 			const isBlobUrl = urlString.startsWith("blob:");
+
 			if (isBlobUrl) {
 				recordFetchFeatureUse(mainThreadTelemetry, "blob");
 			}
+
 			const isManualRedirect =
 				getRequestProperty("redirect") === "manual";
+
 			if (isManualRedirect) {
 				recordFetchFeatureUse(mainThreadTelemetry, "manualRedirect");
 			}
+
 			const integrity = getRequestProperty("integrity");
+
 			if (integrity) {
 				recordFetchFeatureUse(mainThreadTelemetry, "integrity");
 			}
+
 			if (
 				!useElectronFetch ||
 				isDataUrl ||
@@ -260,27 +292,35 @@ function patchGlobalFetch(
 				integrity
 			) {
 				const response = await patchedFetch(input, init, urlString);
+
 				monitorResponseProperties(
 					mainThreadTelemetry,
 					response,
 					urlString,
 				);
+
 				return response;
 			}
 			// Unsupported headers: https://source.chromium.org/chromium/chromium/src/+/main:services/network/public/cpp/header_util.cc;l=32;drc=ee7299f8961a1b05a3554efcc496b6daa0d7f6e1
 			if (init?.headers) {
 				const headers = new Headers(init.headers);
+
 				for (const header of unsafeHeaders) {
 					headers.delete(header);
 				}
+
 				init = { ...init, headers };
 			}
 			// Support for URL: https://github.com/electron/electron/issues/43712
 			const electronInput =
 				input instanceof URL ? input.toString() : input;
+
 			const electron = require("electron");
+
 			const response = await electron.net.fetch(electronInput, init);
+
 			monitorResponseProperties(mainThreadTelemetry, response, urlString);
+
 			return response;
 		};
 	}
@@ -299,20 +339,27 @@ function patchFetch(
 		urlString?: string,
 	) {
 		const config = configProvider.getConfiguration("http");
+
 		const enabled = config.get<boolean>("fetchAdditionalSupport");
+
 		if (!enabled) {
 			return originalFetch(input, init);
 		}
+
 		const proxySupport =
 			config.get<ProxySupportSetting>("proxySupport") || "off";
+
 		const doResolveProxy =
 			proxySupport === "override" ||
 			proxySupport === "fallback" ||
 			(proxySupport === "on" && (init as any)?.dispatcher === undefined);
+
 		const addCerts = config.get<boolean>("systemCertificates");
+
 		if (!doResolveProxy && !addCerts) {
 			return originalFetch(input, init);
 		}
+
 		if (!urlString) {
 			// for testing
 			urlString =
@@ -322,16 +369,21 @@ function patchFetch(
 						? input.url
 						: input.toString();
 		}
+
 		const proxyURL = doResolveProxy
 			? await resolveProxyURL(urlString)
 			: undefined;
+
 		if (!proxyURL && !addCerts) {
 			return originalFetch(input, init);
 		}
+
 		const ca = addCerts
 			? [...tls.rootCertificates, ...(await loadAdditionalCertificates())]
 			: undefined;
+
 		const { allowH2, requestCA, proxyCA } = getAgentOptions(ca, init);
+
 		if (!proxyURL) {
 			const modifiedInit = {
 				...init,
@@ -340,15 +392,18 @@ function patchFetch(
 					connect: { ca: requestCA },
 				}),
 			};
+
 			return originalFetch(input, modifiedInit);
 		}
 
 		const state: Record<string, any> = {};
+
 		const proxyAuthorization = await lookupProxyAuthorization(
 			proxyURL,
 			undefined,
 			state,
 		);
+
 		const modifiedInit = {
 			...init,
 			dispatcher: new undici.ProxyAgent({
@@ -369,6 +424,7 @@ function patchFetch(
 								private abort:
 									| ((err?: Error) => void)
 									| undefined;
+
 								constructor(
 									private dispatch: undiciType.Dispatcher["dispatch"],
 									private options: undiciType.Dispatcher.DispatchOptions,
@@ -376,10 +432,13 @@ function patchFetch(
 								) {
 									super(handler);
 								}
+
 								onConnect(abort: (err?: Error) => void): void {
 									this.abort = abort;
+
 									this.handler.onConnect?.(abort);
 								}
+
 								onError(err: Error): void {
 									if (!(err instanceof ProxyAuthError)) {
 										return this.handler.onError?.(err);
@@ -392,6 +451,7 @@ function patchFetch(
 													err.proxyAuthenticate,
 													state,
 												);
+
 											if (proxyAuthorization) {
 												if (!this.options.headers) {
 													this.options.headers = [
@@ -411,6 +471,7 @@ function patchFetch(
 																value.toLowerCase() ===
 																	"proxy-authorization",
 														);
+
 													if (i === -1) {
 														this.options.headers.push(
 															"Proxy-Authorization",
@@ -426,6 +487,7 @@ function patchFetch(
 														"Proxy-Authorization"
 													] = proxyAuthorization;
 												}
+
 												this.dispatch(
 													this.options,
 													this,
@@ -442,6 +504,7 @@ function patchFetch(
 										}
 									})();
 								}
+
 								onUpgrade(
 									statusCode: number,
 									headers: Buffer[] | string[] | null,
@@ -449,9 +512,12 @@ function patchFetch(
 								): void {
 									if (statusCode === 407 && headers) {
 										const proxyAuthenticate: string[] = [];
+
 										for (
 											let i = 0;
+
 											i < headers.length;
+
 											i += 2
 										) {
 											if (
@@ -465,15 +531,18 @@ function patchFetch(
 												);
 											}
 										}
+
 										if (proxyAuthenticate.length) {
 											this.abort?.(
 												new ProxyAuthError(
 													proxyAuthenticate,
 												),
 											);
+
 											return;
 										}
 									}
+
 									this.handler.onUpgrade?.(
 										statusCode,
 										headers,
@@ -481,6 +550,7 @@ function patchFetch(
 									);
 								}
 							}
+
 							return function proxyAuthDispatch(
 								options: undiciType.Dispatcher.DispatchOptions,
 								handler: undiciType.Dispatcher.DispatchHandlers,
@@ -498,6 +568,7 @@ function patchFetch(
 					),
 			}),
 		};
+
 		return originalFetch(input, modifiedInit);
 	};
 }
@@ -514,16 +585,21 @@ function monitorResponseProperties(
 	urlString: string,
 ) {
 	const originalUrl = response.url;
+
 	Object.defineProperty(response, "url", {
 		get() {
 			recordFetchFeatureUse(mainThreadTelemetry, "url");
+
 			return originalUrl || urlString;
 		},
 	});
+
 	const originalType = response.type;
+
 	Object.defineProperty(response, "type", {
 		get() {
 			recordFetchFeatureUse(mainThreadTelemetry, "typeProperty");
+
 			return originalType !== "default" ? originalType : "basic";
 		},
 	});
@@ -531,45 +607,69 @@ function monitorResponseProperties(
 
 type FetchFeatureUseClassification = {
 	owner: "chrmarti";
+
 	comment: "Data about fetch API use";
+
 	url: {
 		classification: "SystemMetaData";
+
 		purpose: "FeatureInsight";
+
 		comment: "Whether the url property was used.";
 	};
+
 	typeProperty: {
 		classification: "SystemMetaData";
+
 		purpose: "FeatureInsight";
+
 		comment: "Whether the type property was used.";
 	};
+
 	data: {
 		classification: "SystemMetaData";
+
 		purpose: "FeatureInsight";
+
 		comment: "Whether a data URL was used.";
 	};
+
 	blob: {
 		classification: "SystemMetaData";
+
 		purpose: "FeatureInsight";
+
 		comment: "Whether a blob URL was used.";
 	};
+
 	integrity: {
 		classification: "SystemMetaData";
+
 		purpose: "FeatureInsight";
+
 		comment: "Whether the integrity property was used.";
 	};
+
 	manualRedirect: {
 		classification: "SystemMetaData";
+
 		purpose: "FeatureInsight";
+
 		comment: "Whether a manual redirect was used.";
 	};
 };
 
 type FetchFeatureUseEvent = {
 	url: number;
+
 	typeProperty: number;
+
 	data: number;
+
 	blob: number;
+
 	integrity: number;
+
 	manualRedirect: number;
 };
 
@@ -592,6 +692,7 @@ function recordFetchFeatureUse(
 		if (timer) {
 			clearTimeout(timer);
 		}
+
 		timer = setTimeout(() => {
 			mainThreadTelemetry.$publicLog2<
 				FetchFeatureUseEvent,
@@ -623,6 +724,7 @@ function createPatchedModules(
 
 function certSettingV1(configProvider: ExtHostConfigProvider) {
 	const http = configProvider.getConfiguration("http");
+
 	return (
 		!http.get<boolean>(
 			"experimental.systemCertificatesV2",
@@ -633,6 +735,7 @@ function certSettingV1(configProvider: ExtHostConfigProvider) {
 
 function certSettingV2(configProvider: ExtHostConfigProvider) {
 	const http = configProvider.getConfiguration("http");
+
 	return (
 		!!http.get<boolean>(
 			"experimental.systemCertificatesV2",
@@ -651,7 +754,9 @@ function configureModuleLoading(
 ): Promise<void> {
 	return extensionService.getExtensionPathIndex().then((extensionPaths) => {
 		const node_module = require("module");
+
 		const original = node_module._load;
+
 		node_module._load = function load(
 			request: string,
 			parent: { filename: string },
@@ -674,20 +779,27 @@ function configureModuleLoading(
 			}
 
 			const ext = extensionPaths.findSubstr(URI.file(parent.filename));
+
 			let cache = modulesCache.get(ext);
+
 			if (!cache) {
 				modulesCache.set(ext, (cache = {}));
 			}
+
 			if (!cache[request]) {
 				if (request === "undici") {
 					const undici = original.apply(this, arguments);
+
 					patchUndici(undici);
+
 					cache[request] = undici;
 				} else {
 					const mod = lookup[request];
+
 					cache[request] = <any>{ ...mod }; // Copy to work around #93167.
 				}
 			}
+
 			return cache[request];
 		};
 	});
@@ -698,6 +810,7 @@ const proxyAgentOptions = Symbol("proxyAgentOptions");
 
 function patchUndici(undici: typeof undiciType) {
 	const originalAgent = undici.Agent;
+
 	const patchedAgent = function PatchedAgent(
 		opts?: undiciType.Agent.Options,
 	): undiciType.Agent {
@@ -708,12 +821,15 @@ function patchUndici(undici: typeof undiciType) {
 				? { connect: { ...opts.connect } }
 				: undefined),
 		};
+
 		return agent;
 	};
+
 	patchedAgent.prototype = originalAgent.prototype;
 	(undici as any).Agent = patchedAgent;
 
 	const originalProxyAgent = undici.ProxyAgent;
+
 	const patchedProxyAgent = function PatchedProxyAgent(
 		opts: undiciType.ProxyAgent.Options | string,
 	): undiciType.ProxyAgent {
@@ -727,8 +843,10 @@ function patchUndici(undici: typeof undiciType) {
 							? { connect: { ...opts.connect } }
 							: undefined),
 					};
+
 		return proxyAgent;
 	};
+
 	patchedProxyAgent.prototype = originalProxyAgent.prototype;
 	(undici as any).ProxyAgent = patchedProxyAgent;
 }
@@ -738,15 +856,21 @@ function getAgentOptions(
 	requestInit: RequestInit | undefined,
 ) {
 	let allowH2: boolean | undefined;
+
 	let requestCA: string | Buffer | Array<string | Buffer> | undefined =
 		systemCA;
+
 	let proxyCA: string | Buffer | Array<string | Buffer> | undefined =
 		systemCA;
+
 	const dispatcher: undiciType.Dispatcher = (requestInit as any)?.dispatcher;
+
 	const originalAgentOptions: undiciType.Agent.Options | undefined =
 		dispatcher && (dispatcher as any)[agentOptions];
+
 	if (originalAgentOptions) {
 		allowH2 = originalAgentOptions.allowH2;
+
 		requestCA =
 			(originalAgentOptions.connect &&
 				typeof originalAgentOptions.connect === "object" &&
@@ -754,26 +878,31 @@ function getAgentOptions(
 				originalAgentOptions.connect.ca) ||
 			systemCA;
 	}
+
 	const originalProxyAgentOptions:
 		| undiciType.ProxyAgent.Options
 		| string
 		| undefined = dispatcher && (dispatcher as any)[proxyAgentOptions];
+
 	if (
 		originalProxyAgentOptions &&
 		typeof originalProxyAgentOptions === "object"
 	) {
 		allowH2 = originalProxyAgentOptions.allowH2;
+
 		requestCA =
 			(originalProxyAgentOptions.requestTls &&
 				"ca" in originalProxyAgentOptions.requestTls &&
 				originalProxyAgentOptions.requestTls.ca) ||
 			systemCA;
+
 		proxyCA =
 			(originalProxyAgentOptions.proxyTls &&
 				"ca" in originalProxyAgentOptions.proxyTls &&
 				originalProxyAgentOptions.proxyTls.ca) ||
 			systemCA;
 	}
+
 	return { allowH2, requestCA, proxyCA };
 }
 
@@ -790,27 +919,35 @@ async function lookupProxyAuthorization(
 	proxyAuthenticate: string | string[] | undefined,
 	state: {
 		kerberosRequested?: boolean;
+
 		basicAuthCacheUsed?: boolean;
+
 		basicAuthAttempt?: number;
 	},
 ): Promise<string | undefined> {
 	const cached = proxyAuthenticateCache[proxyURL];
+
 	if (proxyAuthenticate) {
 		proxyAuthenticateCache[proxyURL] = proxyAuthenticate;
 	}
+
 	extHostLogService.trace(
 		"ProxyResolver#lookupProxyAuthorization callback",
 		`proxyURL:${proxyURL}`,
 		`proxyAuthenticate:${proxyAuthenticate}`,
 		`proxyAuthenticateCache:${cached}`,
 	);
+
 	const header = proxyAuthenticate || cached;
+
 	const authenticate = Array.isArray(header)
 		? header
 		: typeof header === "string"
 			? [header]
 			: [];
+
 	sendTelemetry(mainThreadTelemetry, authenticate, isRemote);
+
 	if (
 		authenticate.some((a) => /^(Negotiate|Kerberos)( |$)/i.test(a)) &&
 		!state.kerberosRequested
@@ -819,8 +956,11 @@ async function lookupProxyAuthorization(
 
 		try {
 			const importKerberos = await import("kerberos");
+
 			const kerberos = importKerberos.default || importKerberos;
+
 			const url = new URL(proxyURL);
+
 			const spn =
 				configProvider
 					.getConfiguration("http")
@@ -828,13 +968,17 @@ async function lookupProxyAuthorization(
 				(process.platform === "win32"
 					? `HTTP/${url.hostname}`
 					: `HTTP@${url.hostname}`);
+
 			extHostLogService.debug(
 				"ProxyResolver#lookupProxyAuthorization Kerberos authentication lookup",
 				`proxyURL:${proxyURL}`,
 				`spn:${spn}`,
 			);
+
 			const client = await kerberos.initializeClient(spn);
+
 			const response = await client.step("");
+
 			return "Negotiate " + response;
 		} catch (err) {
 			extHostLogService.debug(
@@ -848,41 +992,54 @@ async function lookupProxyAuthorization(
 				"ProxyResolver#lookupProxyAuthorization Kerberos authentication lookup on host",
 				`proxyURL:${proxyURL}`,
 			);
+
 			const auth =
 				await extHostWorkspace.lookupKerberosAuthorization(proxyURL);
+
 			if (auth) {
 				return "Negotiate " + auth;
 			}
 		}
 	}
+
 	const basicAuthHeader = authenticate.find((a) => /^Basic( |$)/i.test(a));
+
 	if (basicAuthHeader) {
 		try {
 			const cachedAuth = basicAuthCache[proxyURL];
+
 			if (cachedAuth) {
 				if (state.basicAuthCacheUsed) {
 					extHostLogService.debug(
 						"ProxyResolver#lookupProxyAuthorization Basic authentication deleting cached credentials",
 						`proxyURL:${proxyURL}`,
 					);
+
 					delete basicAuthCache[proxyURL];
 				} else {
 					extHostLogService.debug(
 						"ProxyResolver#lookupProxyAuthorization Basic authentication using cached credentials",
 						`proxyURL:${proxyURL}`,
 					);
+
 					state.basicAuthCacheUsed = true;
+
 					return cachedAuth;
 				}
 			}
+
 			state.basicAuthAttempt = (state.basicAuthAttempt || 0) + 1;
+
 			const realm = / realm="([^"]+)"/i.exec(basicAuthHeader)?.[1];
+
 			extHostLogService.debug(
 				"ProxyResolver#lookupProxyAuthorization Basic authentication lookup",
 				`proxyURL:${proxyURL}`,
 				`realm:${realm}`,
 			);
+
 			const url = new URL(proxyURL);
+
 			const authInfo: AuthInfo = {
 				scheme: "basic",
 				host: url.hostname,
@@ -891,20 +1048,25 @@ async function lookupProxyAuthorization(
 				isProxy: true,
 				attempt: state.basicAuthAttempt,
 			};
+
 			const credentials =
 				await extHostWorkspace.lookupAuthorization(authInfo);
+
 			if (credentials) {
 				extHostLogService.debug(
 					"ProxyResolver#lookupProxyAuthorization Basic authentication received credentials",
 					`proxyURL:${proxyURL}`,
 					`realm:${realm}`,
 				);
+
 				const auth =
 					"Basic " +
 					Buffer.from(
 						`${credentials.username}:${credentials.password}`,
 					).toString("base64");
+
 				basicAuthCache[proxyURL] = auth;
+
 				return auth;
 			} else {
 				extHostLogService.debug(
@@ -920,26 +1082,35 @@ async function lookupProxyAuthorization(
 			);
 		}
 	}
+
 	return undefined;
 }
 
 type ProxyAuthenticationClassification = {
 	owner: "chrmarti";
+
 	comment: "Data about proxy authentication requests";
+
 	authenticationType: {
 		classification: "PublicNonPersonalData";
+
 		purpose: "FeatureInsight";
+
 		comment: "Type of the authentication requested";
 	};
+
 	extensionHostType: {
 		classification: "SystemMetaData";
+
 		purpose: "FeatureInsight";
+
 		comment: "Type of the extension host";
 	};
 };
 
 type ProxyAuthenticationEvent = {
 	authenticationType: string;
+
 	extensionHostType: string;
 };
 
@@ -953,6 +1124,7 @@ function sendTelemetry(
 	if (telemetrySent || !authenticate.length) {
 		return;
 	}
+
 	telemetrySent = true;
 
 	mainThreadTelemetry.$publicLog2<

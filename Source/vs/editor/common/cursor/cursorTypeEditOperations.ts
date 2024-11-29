@@ -67,6 +67,7 @@ export class AutoIndentOperation {
 		) {
 			const indentationForSelections: {
 				selection: Selection;
+
 				indentation: string;
 			}[] = [];
 
@@ -82,8 +83,10 @@ export class AutoIndentOperation {
 					// Auto indentation failed
 					return;
 				}
+
 				indentationForSelections.push({ selection, indentation });
 			}
+
 			const autoClosingPairClose =
 				AutoClosingOpenCharTypeOperation.getAutoClosingPairClose(
 					config,
@@ -101,6 +104,7 @@ export class AutoIndentOperation {
 				autoClosingPairClose,
 			);
 		}
+
 		return;
 	}
 
@@ -112,6 +116,7 @@ export class AutoIndentOperation {
 		if (config.autoIndent < EditorAutoIndentStrategy.Full) {
 			return false;
 		}
+
 		for (let i = 0, len = selections.length; i < len; i++) {
 			if (
 				!model.tokenization.isCheapToTokenize(
@@ -121,6 +126,7 @@ export class AutoIndentOperation {
 				return false;
 			}
 		}
+
 		return true;
 	}
 
@@ -162,6 +168,7 @@ export class AutoIndentOperation {
 		) {
 			return null;
 		}
+
 		return actualIndentation;
 	}
 
@@ -170,6 +177,7 @@ export class AutoIndentOperation {
 		model: ITextModel,
 		indentationForSelections: {
 			selection: Selection;
+
 			indentation: string;
 		}[],
 		ch: string,
@@ -245,11 +253,13 @@ export class AutoIndentOperation {
 
 		if (firstNonWhitespaceColumn !== 0) {
 			const startLine = model.getLineContent(startLineNumber);
+
 			text += startLine.substring(
 				firstNonWhitespaceColumn - 1,
 				selection.startColumn - 1,
 			);
 		}
+
 		text += includeChInEdit ? ch : "";
 
 		const range = new Range(
@@ -287,6 +297,7 @@ export class AutoClosingOvertypeOperation {
 				ch,
 			);
 		}
+
 		return;
 	}
 
@@ -308,8 +319,10 @@ export class AutoClosingOvertypeOperation {
 				position.lineNumber,
 				position.column + 1,
 			);
+
 			commands[i] = new ReplaceCommand(typeSelection, ch);
 		}
+
 		return new EditOperationResult(
 			EditOperationType.TypingOther,
 			commands,
@@ -365,6 +378,7 @@ export class AutoClosingOvertypeWithInterceptorsOperation {
 				},
 			);
 		}
+
 		return;
 	}
 }
@@ -396,6 +410,7 @@ export class AutoClosingOpenCharTypeOperation {
 				);
 			}
 		}
+
 		return;
 	}
 
@@ -409,6 +424,7 @@ export class AutoClosingOpenCharTypeOperation {
 
 		for (let i = 0, len = selections.length; i < len; i++) {
 			const selection = selections[i];
+
 			commands[i] = new TypeWithAutoClosingCommand(
 				selection,
 				ch,
@@ -416,6 +432,7 @@ export class AutoClosingOpenCharTypeOperation {
 				autoClosingPairClose,
 			);
 		}
+
 		return new EditOperationResult(
 			EditOperationType.TypingOther,
 			commands,
@@ -447,7 +464,9 @@ export class AutoClosingOpenCharTypeOperation {
 		//
 		const positions: {
 			lineNumber: number;
+
 			beforeColumn: number;
+
 			afterColumn: number;
 		}[] = selections.map((s) => {
 			const position = s.getPosition();
@@ -478,6 +497,7 @@ export class AutoClosingOpenCharTypeOperation {
 		if (!pair) {
 			return null;
 		}
+
 		let autoCloseConfig: EditorAutoClosingStrategy;
 
 		let shouldAutoCloseBefore: (ch: string) => boolean;
@@ -486,6 +506,7 @@ export class AutoClosingOpenCharTypeOperation {
 
 		if (chIsQuote) {
 			autoCloseConfig = config.autoClosingQuotes;
+
 			shouldAutoCloseBefore = config.shouldAutoCloseBefore.quote;
 		} else {
 			const pairIsForComments = config.blockCommentStartToken
@@ -494,12 +515,15 @@ export class AutoClosingOpenCharTypeOperation {
 
 			if (pairIsForComments) {
 				autoCloseConfig = config.autoClosingComments;
+
 				shouldAutoCloseBefore = config.shouldAutoCloseBefore.comment;
 			} else {
 				autoCloseConfig = config.autoClosingBrackets;
+
 				shouldAutoCloseBefore = config.shouldAutoCloseBefore.bracket;
 			}
 		}
+
 		if (autoCloseConfig === "never") {
 			return null;
 		}
@@ -565,10 +589,12 @@ export class AutoClosingOpenCharTypeOperation {
 					}
 				}
 			}
+
 			if (!model.tokenization.isCheapToTokenize(lineNumber)) {
 				// Do not force tokenization
 				return null;
 			}
+
 			model.tokenization.forceTokenization(lineNumber);
 
 			const lineTokens = model.tokenization.getLineTokens(lineNumber);
@@ -609,6 +635,7 @@ export class AutoClosingOpenCharTypeOperation {
 				}
 			}
 		}
+
 		if (isContainedPairPresent) {
 			return pair.close.substring(
 				0,
@@ -632,6 +659,7 @@ export class AutoClosingOpenCharTypeOperation {
 		if (pair.open.length <= 1) {
 			return null;
 		}
+
 		const lastChar = pair.close.charAt(pair.close.length - 1);
 		// get candidates with the same last character as close
 		const candidates =
@@ -651,6 +679,7 @@ export class AutoClosingOpenCharTypeOperation {
 				}
 			}
 		}
+
 		return result;
 	}
 
@@ -697,11 +726,13 @@ export class AutoClosingOpenCharTypeOperation {
 						break;
 					}
 				}
+
 				if (candidateIsMatch) {
 					result = candidate;
 				}
 			}
 		}
+
 		return result;
 	}
 
@@ -747,6 +778,7 @@ export class SurroundSelectionOperation {
 		) {
 			return this._runSurroundSelectionType(config, selections, ch);
 		}
+
 		return;
 	}
 
@@ -761,12 +793,14 @@ export class SurroundSelectionOperation {
 			const selection = selections[i];
 
 			const closeCharacter = config.surroundingPairs[ch];
+
 			commands[i] = new SurroundSelectionCommand(
 				selection,
 				ch,
 				closeCharacter,
 			);
 		}
+
 		return new EditOperationResult(EditOperationType.Other, commands, {
 			shouldPushStackElementBefore: true,
 			shouldPushStackElementAfter: true,
@@ -785,17 +819,21 @@ export class SurroundSelectionOperation {
 		) {
 			return false;
 		}
+
 		const isTypingAQuoteCharacter = isQuote(ch);
 
 		for (const selection of selections) {
 			if (selection.isEmpty()) {
 				return false;
 			}
+
 			let selectionContainsOnlyWhitespace = true;
 
 			for (
 				let lineNumber = selection.startLineNumber;
+
 				lineNumber <= selection.endLineNumber;
+
 				lineNumber++
 			) {
 				const lineText = model.getLineContent(lineNumber);
@@ -819,9 +857,11 @@ export class SurroundSelectionOperation {
 					break;
 				}
 			}
+
 			if (selectionContainsOnlyWhitespace) {
 				return false;
 			}
+
 			if (
 				isTypingAQuoteCharacter &&
 				selection.startLineNumber === selection.endLineNumber &&
@@ -836,6 +876,7 @@ export class SurroundSelectionOperation {
 				}
 			}
 		}
+
 		return true;
 	}
 }
@@ -867,6 +908,7 @@ export class InterceptorElectricCharOperation {
 				return r;
 			}
 		}
+
 		return;
 	}
 
@@ -883,6 +925,7 @@ export class InterceptorElectricCharOperation {
 		) {
 			return true;
 		}
+
 		return false;
 	}
 
@@ -896,7 +939,9 @@ export class InterceptorElectricCharOperation {
 		if (!config.electricChars.hasOwnProperty(ch) || !selection.isEmpty()) {
 			return null;
 		}
+
 		const position = selection.getPosition();
+
 		model.tokenization.forceTokenization(position.lineNumber);
 
 		const lineTokens = model.tokenization.getLineTokens(
@@ -916,9 +961,11 @@ export class InterceptorElectricCharOperation {
 
 			return null;
 		}
+
 		if (!electricAction) {
 			return null;
 		}
+
 		if (electricAction.matchOpenBracket) {
 			const endColumn =
 				(lineTokens.getLineContent() + ch).lastIndexOf(
@@ -939,6 +986,7 @@ export class InterceptorElectricCharOperation {
 					// matched something on the same line => no change in indentation
 					return null;
 				}
+
 				const matchLine = model.getLineContent(match.startLineNumber);
 
 				const matchLineIndentation =
@@ -980,6 +1028,7 @@ export class InterceptorElectricCharOperation {
 				);
 			}
 		}
+
 		return null;
 	}
 }
@@ -1023,6 +1072,7 @@ export class EnterOperation {
 			for (let i = 0, len = selections.length; i < len; i++) {
 				commands[i] = this._enter(config, model, false, selections[i]);
 			}
+
 			return new EditOperationResult(
 				EditOperationType.TypingOther,
 				commands,
@@ -1032,6 +1082,7 @@ export class EnterOperation {
 				},
 			);
 		}
+
 		return;
 	}
 
@@ -1044,6 +1095,7 @@ export class EnterOperation {
 		if (config.autoIndent === EditorAutoIndentStrategy.None) {
 			return typeCommand(range, "\n", keepPosition);
 		}
+
 		if (
 			!model.tokenization.isCheapToTokenize(
 				range.getStartPosition().lineNumber,
@@ -1062,6 +1114,7 @@ export class EnterOperation {
 				keepPosition,
 			);
 		}
+
 		const r = getEnterAction(
 			config.autoIndent,
 			model,
@@ -1180,6 +1233,7 @@ export class EnterOperation {
 						model.getLineMaxColumn(range.endLineNumber),
 					);
 				}
+
 				if (keepPosition) {
 					return new ReplaceCommandWithoutChangingPosition(
 						range,
@@ -1195,6 +1249,7 @@ export class EnterOperation {
 								oldEndViewColumn / config.indentSize,
 							);
 						}
+
 						offset = Math.min(
 							oldEndViewColumn +
 								1 -
@@ -1204,6 +1259,7 @@ export class EnterOperation {
 							0,
 						);
 					}
+
 					return new ReplaceCommandWithOffsetCursorState(
 						range,
 						"\n" + config.normalizeIndentation(ir.afterEnter),
@@ -1214,6 +1270,7 @@ export class EnterOperation {
 				}
 			}
 		}
+
 		return typeCommand(
 			range,
 			"\n" + config.normalizeIndentation(indentation),
@@ -1229,6 +1286,7 @@ export class EnterOperation {
 		if (model === null || selections === null) {
 			return [];
 		}
+
 		const commands: ICommand[] = [];
 
 		for (let i = 0, len = selections.length; i < len; i++) {
@@ -1252,6 +1310,7 @@ export class EnterOperation {
 				);
 			}
 		}
+
 		return commands;
 	}
 
@@ -1263,12 +1322,14 @@ export class EnterOperation {
 		if (model === null || selections === null) {
 			return [];
 		}
+
 		const commands: ICommand[] = [];
 
 		for (let i = 0, len = selections.length; i < len; i++) {
 			const lineNumber = selections[i].positionLineNumber;
 
 			const column = model.getLineMaxColumn(lineNumber);
+
 			commands[i] = this._enter(
 				config,
 				model,
@@ -1276,6 +1337,7 @@ export class EnterOperation {
 				new Range(lineNumber, column, lineNumber, column),
 			);
 		}
+
 		return commands;
 	}
 
@@ -1289,6 +1351,7 @@ export class EnterOperation {
 		for (let i = 0, len = selections.length; i < len; i++) {
 			commands[i] = this._enter(config, model, true, selections[i]);
 		}
+
 		return commands;
 	}
 }
@@ -1340,12 +1403,15 @@ export class PasteOperation {
 		if (pasteOnNewLine) {
 			return null;
 		}
+
 		if (selections.length === 1) {
 			return null;
 		}
+
 		if (multicursorText && multicursorText.length === selections.length) {
 			return multicursorText;
 		}
+
 		if (config.multiCursorPaste === "spread") {
 			// Try to spread the pasted text in case the line count matches the cursor count
 			// Remove trailing \n if present
@@ -1356,12 +1422,14 @@ export class PasteOperation {
 			if (text.charCodeAt(text.length - 1) === CharCode.CarriageReturn) {
 				text = text.substring(0, text.length - 1);
 			}
+
 			const lines = strings.splitLines(text);
 
 			if (lines.length === selections.length) {
 				return lines;
 			}
 		}
+
 		return null;
 	}
 
@@ -1376,6 +1444,7 @@ export class PasteOperation {
 		for (let i = 0, len = selections.length; i < len; i++) {
 			commands[i] = new ReplaceCommand(selections[i], text[i]);
 		}
+
 		return new EditOperationResult(EditOperationType.Other, commands, {
 			shouldPushStackElementBefore: true,
 			shouldPushStackElementAfter: true,
@@ -1399,9 +1468,11 @@ export class PasteOperation {
 			if (pasteOnNewLine && !selection.isEmpty()) {
 				pasteOnNewLine = false;
 			}
+
 			if (pasteOnNewLine && text.indexOf("\n") !== text.length - 1) {
 				pasteOnNewLine = false;
 			}
+
 			if (pasteOnNewLine) {
 				// Paste entire line at the beginning of line
 				const typeSelection = new Range(
@@ -1410,6 +1481,7 @@ export class PasteOperation {
 					position.lineNumber,
 					1,
 				);
+
 				commands[i] = new ReplaceCommandThatPreservesSelection(
 					typeSelection,
 					text,
@@ -1420,6 +1492,7 @@ export class PasteOperation {
 				commands[i] = new ReplaceCommand(selection, text);
 			}
 		}
+
 		return new EditOperationResult(EditOperationType.Other, commands, {
 			shouldPushStackElementBefore: true,
 			shouldPushStackElementAfter: true,
@@ -1476,6 +1549,7 @@ export class CompositionOperation {
 			// => ignore composition
 			return null;
 		}
+
 		const pos = selection.getPosition();
 
 		const startColumn = Math.max(1, pos.column - replacePrevCharCnt);
@@ -1512,6 +1586,7 @@ export class TypeWithoutInterceptorsOperation {
 		for (let i = 0, len = selections.length; i < len; i++) {
 			commands[i] = new ReplaceCommand(selections[i], str);
 		}
+
 		const opType = getTypingOperation(str, prevEditOperationType);
 
 		return new EditOperationResult(opType, commands, {
@@ -1551,6 +1626,7 @@ export class TabOperation {
 						model,
 						selection.startLineNumber,
 					);
+
 					goodIndent = goodIndent || "\t";
 
 					const possibleTypeText =
@@ -1571,6 +1647,7 @@ export class TabOperation {
 						continue;
 					}
 				}
+
 				commands[i] = this._replaceJumpToNextIndent(
 					config,
 					model,
@@ -1598,6 +1675,7 @@ export class TabOperation {
 						continue;
 					}
 				}
+
 				commands[i] = new ShiftCommand(
 					selection,
 					{
@@ -1612,6 +1690,7 @@ export class TabOperation {
 				);
 			}
 		}
+
 		return commands;
 	}
 
@@ -1634,13 +1713,16 @@ export class TabOperation {
 
 		if (expectedIndentAction) {
 			action = expectedIndentAction.action;
+
 			indentation = expectedIndentAction.indentation;
 		} else if (lineNumber > 1) {
 			let lastLineNumber: number;
 
 			for (
 				lastLineNumber = lineNumber - 1;
+
 				lastLineNumber >= 1;
+
 				lastLineNumber--
 			) {
 				const lineText = model.getLineContent(lastLineNumber);
@@ -1652,10 +1734,12 @@ export class TabOperation {
 					break;
 				}
 			}
+
 			if (lastLineNumber < 1) {
 				// No previous line with content found
 				return null;
 			}
+
 			const maxColumn = model.getLineMaxColumn(lastLineNumber);
 
 			const expectedEnterAction = getEnterAction(
@@ -1671,18 +1755,23 @@ export class TabOperation {
 					expectedEnterAction.appendText;
 			}
 		}
+
 		if (action) {
 			if (action === IndentAction.Indent) {
 				indentation = shiftIndent(config, indentation);
 			}
+
 			if (action === IndentAction.Outdent) {
 				indentation = unshiftIndent(config, indentation);
 			}
+
 			indentation = config.normalizeIndentation(indentation);
 		}
+
 		if (!indentation) {
 			return null;
 		}
+
 		return indentation;
 	}
 
@@ -1713,14 +1802,18 @@ export class TabOperation {
 		} else {
 			typeText = "\t";
 		}
+
 		return new ReplaceCommand(selection, typeText, insertsAutoWhitespace);
 	}
 }
 
 export class BaseTypeWithAutoClosingCommand extends ReplaceCommandWithOffsetCursorState {
 	private readonly _openCharacter: string;
+
 	private readonly _closeCharacter: string;
+
 	public closeCharacterRange: Range | null;
+
 	public enclosingRange: Range | null;
 
 	constructor(
@@ -1732,9 +1825,13 @@ export class BaseTypeWithAutoClosingCommand extends ReplaceCommandWithOffsetCurs
 		closeCharacter: string,
 	) {
 		super(selection, text, lineNumberDeltaOffset, columnDeltaOffset);
+
 		this._openCharacter = openCharacter;
+
 		this._closeCharacter = closeCharacter;
+
 		this.closeCharacterRange = null;
+
 		this.enclosingRange = null;
 	}
 
@@ -1749,6 +1846,7 @@ export class BaseTypeWithAutoClosingCommand extends ReplaceCommandWithOffsetCurs
 			range.endLineNumber,
 			range.endColumn,
 		);
+
 		this.enclosingRange = new Range(
 			range.startLineNumber,
 			range.endColumn -
@@ -1800,6 +1898,7 @@ class TypeWithAutoClosingCommand extends BaseTypeWithAutoClosingCommand {
 
 class TypeWithIndentationAndAutoClosingCommand extends BaseTypeWithAutoClosingCommand {
 	private readonly _autoIndentationEdit: { range: Range; text: string };
+
 	private readonly _autoClosingEdit: { range: Range; text: string };
 
 	constructor(
@@ -1822,7 +1921,9 @@ class TypeWithIndentationAndAutoClosingCommand extends BaseTypeWithAutoClosingCo
 			openCharacter,
 			closeCharacter,
 		);
+
 		this._autoIndentationEdit = autoIndentationEdit;
+
 		this._autoClosingEdit = { range: selection, text };
 	}
 
@@ -1834,6 +1935,7 @@ class TypeWithIndentationAndAutoClosingCommand extends BaseTypeWithAutoClosingCo
 			this._autoIndentationEdit.range,
 			this._autoIndentationEdit.text,
 		);
+
 		builder.addTrackedEditOperation(
 			this._autoClosingEdit.range,
 			this._autoClosingEdit.text,
@@ -1849,6 +1951,7 @@ class TypeWithIndentationAndAutoClosingCommand extends BaseTypeWithAutoClosingCo
 		if (inverseEditOperations.length !== 2) {
 			throw new Error("There should be two inverse edit operations!");
 		}
+
 		const range1 = inverseEditOperations[0].range;
 
 		const range2 = inverseEditOperations[1].range;
@@ -1884,6 +1987,7 @@ function shouldPushStackElementBetween(
 		// Always set an undo stop before non-type operations
 		return true;
 	}
+
 	if (previousTypingOperation === EditOperationType.TypingFirstSpace) {
 		// `abc |d`: No undo stop
 		// `abc  |d`: Undo stop
@@ -1923,15 +2027,18 @@ function isAutoClosingOvertype(
 	if (config.autoClosingOvertype === "never") {
 		return false;
 	}
+
 	if (!config.autoClosingPairs.autoClosingPairsCloseSingleChar.has(ch)) {
 		return false;
 	}
+
 	for (let i = 0, len = selections.length; i < len; i++) {
 		const selection = selections[i];
 
 		if (!selection.isEmpty()) {
 			return false;
 		}
+
 		const position = selection.getPosition();
 
 		const lineText = model.getLineContent(position.lineNumber);
@@ -1969,11 +2076,13 @@ function isAutoClosingOvertype(
 					break;
 				}
 			}
+
 			if (!found) {
 				return false;
 			}
 		}
 	}
+
 	return true;
 }
 

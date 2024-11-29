@@ -28,6 +28,7 @@ export function computeGhostText(
 		// This edit might span multiple lines, but the first lines must be a common prefix.
 		return undefined;
 	}
+
 	const sourceLine = model.getLineContent(e.range.startLineNumber);
 
 	const sourceIndentationLength = getLeadingWhitespace(sourceLine).length;
@@ -75,6 +76,7 @@ export function computeGhostText(
 				e.text.substring(replacedIndentation.length)
 			: // Changes or removes existing indentation. Only add ghost text for the non-indentation part.
 				e.text.substring(suggestionAddedIndentationLength);
+
 		e = new SingleTextEdit(
 			rangeThatDoesNotReplaceIndentation,
 			suggestionWithoutIndentationChange,
@@ -89,6 +91,7 @@ export function computeGhostText(
 		// No ghost text in case the diff would be too slow to compute
 		return undefined;
 	}
+
 	const lineNumber = e.range.startLineNumber;
 
 	const parts = new Array<GhostTextPart>();
@@ -105,6 +108,7 @@ export function computeGhostText(
 			return undefined;
 		}
 	}
+
 	const previewStartInCompletionText = e.text.length - previewSuffixLength;
 
 	for (const c of changes) {
@@ -120,12 +124,15 @@ export function computeGhostText(
 			// No ghost text before cursor
 			return undefined;
 		}
+
 		if (c.originalLength > 0) {
 			return undefined;
 		}
+
 		if (c.modifiedLength === 0) {
 			continue;
 		}
+
 		const modifiedEnd = c.modifiedStart + c.modifiedLength;
 
 		const nonPreviewTextEnd = Math.max(
@@ -146,16 +153,20 @@ export function computeGhostText(
 		if (nonPreviewText.length > 0) {
 			parts.push(new GhostTextPart(insertColumn, nonPreviewText, false));
 		}
+
 		if (italicText.length > 0) {
 			parts.push(new GhostTextPart(insertColumn, italicText, true));
 		}
 	}
+
 	return new GhostText(lineNumber, parts);
 }
 let lastRequest:
 	| {
 			originalValue: string;
+
 			newValue: string;
+
 			changes: readonly IDiffChange[] | undefined;
 	  }
 	| undefined = undefined;
@@ -187,6 +198,7 @@ function cachingDiff(
 				}
 			}
 		}
+
 		lastRequest = {
 			originalValue,
 			newValue,
@@ -202,6 +214,7 @@ function deletedCharacters(changes: readonly IDiffChange[]): number {
 	for (const c of changes) {
 		sum += c.originalLength;
 	}
+
 	return sum;
 }
 /**
@@ -221,6 +234,7 @@ function smartDiff(
 		// We don't want to work on strings that are too big
 		return undefined;
 	}
+
 	function getMaxCharCode(val: string): number {
 		let maxCharCode = 0;
 
@@ -231,8 +245,10 @@ function smartDiff(
 				maxCharCode = charCode;
 			}
 		}
+
 		return maxCharCode;
 	}
+
 	const maxCharCode = Math.max(
 		getMaxCharCode(originalValue),
 		getMaxCharCode(newValue),
@@ -242,8 +258,10 @@ function smartDiff(
 		if (id < 0) {
 			throw new Error("unexpected");
 		}
+
 		return maxCharCode + id + 1;
 	}
+
 	function getElements(source: string): Int32Array {
 		let level = 0;
 
@@ -255,12 +273,15 @@ function smartDiff(
 			// TODO support more brackets
 			if (smartBracketMatching && source[i] === "(") {
 				const id = group * 100 + level;
+
 				characters[i] = getUniqueCharCode(2 * id);
+
 				level++;
 			} else if (smartBracketMatching && source[i] === ")") {
 				level = Math.max(level - 1, 0);
 
 				const id = group * 100 + level;
+
 				characters[i] = getUniqueCharCode(2 * id + 1);
 
 				if (level === 0) {
@@ -270,8 +291,10 @@ function smartDiff(
 				characters[i] = source.charCodeAt(i);
 			}
 		}
+
 		return characters;
 	}
+
 	const elements1 = getElements(originalValue);
 
 	const elements2 = getElements(newValue);

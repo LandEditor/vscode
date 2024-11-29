@@ -30,13 +30,17 @@ import {
 
 interface CodeBlockContent {
 	readonly text: string;
+
 	readonly languageId?: string;
+
 	readonly isComplete: boolean;
 }
 
 interface CodeBlockEntry {
 	readonly model: Promise<ITextModel>;
+
 	readonly vulns: readonly IMarkdownVulnerability[];
+
 	readonly codemapperUri?: URI;
 }
 
@@ -45,7 +49,9 @@ export class CodeBlockModelCollection extends Disposable {
 		string,
 		{
 			model: Promise<IReference<IResolvedTextEditorModel>>;
+
 			vulns: readonly IMarkdownVulnerability[];
+
 			codemapperUri?: URI;
 		}
 	>();
@@ -66,6 +72,7 @@ export class CodeBlockModelCollection extends Disposable {
 
 	public override dispose(): void {
 		super.dispose();
+
 		this.clear();
 	}
 
@@ -81,6 +88,7 @@ export class CodeBlockModelCollection extends Disposable {
 		if (!entry) {
 			return;
 		}
+
 		return {
 			model: entry.model.then((ref) => ref.object.textEditorModel),
 			vulns: entry.vulns,
@@ -102,6 +110,7 @@ export class CodeBlockModelCollection extends Disposable {
 		const uri = this.getCodeBlockUri(sessionId, chat, codeBlockIndex);
 
 		const model = this.textModelService.createModelReference(uri);
+
 		this._models.set(this.getKey(sessionId, chat, codeBlockIndex), {
 			model: model,
 			vulns: [],
@@ -114,6 +123,7 @@ export class CodeBlockModelCollection extends Disposable {
 			if (!first) {
 				break;
 			}
+
 			this.delete(first);
 		}
 
@@ -138,6 +148,7 @@ export class CodeBlockModelCollection extends Disposable {
 
 	clear(): void {
 		this._models.forEach(async (entry) => (await entry.model).dispose());
+
 		this._models.clear();
 	}
 
@@ -152,6 +163,7 @@ export class CodeBlockModelCollection extends Disposable {
 		const extractedVulns = extractVulnerabilitiesFromText(content.text);
 
 		const newText = fixCodeText(extractedVulns.newText, content.languageId);
+
 		this.setVulns(
 			sessionId,
 			chat,
@@ -203,6 +215,7 @@ export class CodeBlockModelCollection extends Disposable {
 		const extractedVulns = extractVulnerabilitiesFromText(content.text);
 
 		let newText = fixCodeText(extractedVulns.newText, content.languageId);
+
 		this.setVulns(
 			sessionId,
 			chat,
@@ -219,6 +232,7 @@ export class CodeBlockModelCollection extends Disposable {
 				codeBlockIndex,
 				codeblockUri.uri,
 			);
+
 			newText = codeblockUri.textWithoutResult;
 		}
 
@@ -258,6 +272,7 @@ export class CodeBlockModelCollection extends Disposable {
 			const lastLine = textModel.getLineCount();
 
 			const lastCol = textModel.getLineMaxColumn(lastLine);
+
 			textModel.applyEdits([
 				{
 					range: new Range(lastLine, lastCol, lastLine, lastCol),
@@ -266,6 +281,7 @@ export class CodeBlockModelCollection extends Disposable {
 			]);
 		} else {
 			// console.log(`Failed to optimize setText`);
+
 			textModel.setValue(newText);
 		}
 

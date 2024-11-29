@@ -24,12 +24,16 @@ export interface MessagePort {
 		type: "message",
 		listener: (this: MessagePort, e: MessageEvent) => unknown,
 	): void;
+
 	removeEventListener(
 		type: "message",
 		listener: (this: MessagePort, e: MessageEvent) => unknown,
 	): void;
+
 	postMessage(message: Uint8Array): void;
+
 	start(): void;
+
 	close(): void;
 }
 /**
@@ -45,6 +49,7 @@ export class Protocol implements IMessagePassingProtocol {
 			if (e.data) {
 				return VSBuffer.wrap(e.data);
 			}
+
 			return VSBuffer.alloc(0);
 		},
 	);
@@ -53,9 +58,11 @@ export class Protocol implements IMessagePassingProtocol {
 		// we must call start() to ensure messages are flowing
 		port.start();
 	}
+
 	send(message: VSBuffer): void {
 		this.port.postMessage(message.buffer);
 	}
+
 	disconnect(): void {
 		this.port.close();
 	}
@@ -70,8 +77,10 @@ export class Client extends IPCClient implements IDisposable {
 		const protocol = new Protocol(port);
 
 		super(protocol, clientId);
+
 		this.protocol = protocol;
 	}
+
 	override dispose(): void {
 		this.protocol.disconnect();
 

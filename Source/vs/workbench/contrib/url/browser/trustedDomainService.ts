@@ -26,6 +26,7 @@ export const ITrustedDomainService = createDecorator<ITrustedDomainService>(
 
 export interface ITrustedDomainService {
 	_serviceBrand: undefined;
+
 	isValid(resource: URI): boolean;
 }
 export class TrustedDomainService
@@ -33,6 +34,7 @@ export class TrustedDomainService
 	implements ITrustedDomainService
 {
 	_serviceBrand: undefined;
+
 	private _staticTrustedDomainsResult!: WindowIdleValue<string[]>;
 
 	constructor(
@@ -53,7 +55,9 @@ export class TrustedDomainService
 				return [...defaultTrustedDomains, ...trustedDomains];
 			});
 		};
+
 		this._staticTrustedDomainsResult = initStaticDomainsResult();
+
 		this._register(
 			this._storageService.onDidChangeValue(
 				StorageScope.APPLICATION,
@@ -61,10 +65,12 @@ export class TrustedDomainService
 				this._store,
 			)(() => {
 				this._staticTrustedDomainsResult?.dispose();
+
 				this._staticTrustedDomainsResult = initStaticDomainsResult();
 			}),
 		);
 	}
+
 	isValid(resource: URI): boolean {
 		const { defaultTrustedDomains, trustedDomains } =
 			this._instantiationService.invokeFunction(readStaticTrustedDomains);
@@ -114,18 +120,22 @@ export function isURLDomainTrusted(
 	trustedDomains: string[],
 ): boolean {
 	url = URI.parse(normalizeURL(url));
+
 	trustedDomains = trustedDomains.map(normalizeURL);
 
 	if (isLocalhostAuthority(url.authority)) {
 		return true;
 	}
+
 	for (let i = 0; i < trustedDomains.length; i++) {
 		if (trustedDomains[i] === "*") {
 			return true;
 		}
+
 		if (testUrlMatchesGlob(url, trustedDomains[i])) {
 			return true;
 		}
 	}
+
 	return false;
 }

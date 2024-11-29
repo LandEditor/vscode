@@ -36,7 +36,9 @@ export class IssueReporter extends BaseIssueReporterService {
 		data: IssueReporterData,
 		os: {
 			type: string;
+
 			arch: string;
+
 			release: string;
 		},
 		product: IProductConfiguration,
@@ -57,12 +59,16 @@ export class IssueReporter extends BaseIssueReporterService {
 			issueFormService,
 			themeService,
 		);
+
 		this.processMainService = processMainService;
+
 		this.processMainService.$getSystemInfo().then((info) => {
 			this.issueReporterModel.update({ systemInfo: info });
+
 			this.receivedSystemInfo = true;
 
 			this.updateSystemInfo(this.issueReporterModel.getData());
+
 			this.updatePreviewButtonState();
 		});
 
@@ -73,9 +79,13 @@ export class IssueReporter extends BaseIssueReporterService {
 		}
 
 		this.setEventHandlers();
+
 		applyZoom(this.data.zoomLevel, this.window);
+
 		this.updateExperimentsInfo(this.data.experiments);
+
 		this.updateRestrictedMode(this.data.restrictedMode);
+
 		this.updateUnsupportedMode(this.data.isUnsupported);
 	}
 
@@ -84,6 +94,7 @@ export class IssueReporter extends BaseIssueReporterService {
 
 		this.addEventListener("issue-type", "change", (event: Event) => {
 			const issueType = parseInt((<HTMLInputElement>event.target).value);
+
 			this.issueReporterModel.update({ issueType: issueType });
 
 			if (
@@ -110,7 +121,9 @@ export class IssueReporter extends BaseIssueReporterService {
 			}
 
 			this.updatePreviewButtonState();
+
 			this.setSourceOptions();
+
 			this.render();
 		});
 	}
@@ -125,6 +138,7 @@ export class IssueReporter extends BaseIssueReporterService {
 
 			return false;
 		}
+
 		const url = `https://api.github.com/repos/${gitHubDetails.owner}/${gitHubDetails.repositoryName}/issues`;
 
 		const init = {
@@ -146,8 +160,11 @@ export class IssueReporter extends BaseIssueReporterService {
 
 			return false;
 		}
+
 		const result = await response.json();
+
 		await this.nativeHostService.openExternal(result.html_url);
+
 		this.close();
 
 		return true;
@@ -164,6 +181,7 @@ export class IssueReporter extends BaseIssueReporterService {
 
 			if (url) {
 				this.hasBeenSubmitted = true;
+
 				await this.nativeHostService.openExternal(url);
 
 				return true;
@@ -195,6 +213,7 @@ export class IssueReporter extends BaseIssueReporterService {
 			if (this.issueReporterModel.fileOnExtension()) {
 				this.addEventListener("extension-selector", "change", (_) => {
 					this.validateInput("extension-selector");
+
 					this.validateInput("description");
 				});
 			}
@@ -220,6 +239,7 @@ export class IssueReporter extends BaseIssueReporterService {
 
 		if (selectedExtension?.uri) {
 			const uri = URI.revive(selectedExtension.uri);
+
 			issueUrl = uri.toString();
 		}
 
@@ -338,6 +358,7 @@ export class IssueReporter extends BaseIssueReporterService {
 					$("td", undefined, systemInfo.vmHint),
 				),
 			);
+
 			reset(target, renderedDataTable);
 
 			systemInfo.remoteData.forEach((remote) => {
@@ -360,6 +381,7 @@ export class IssueReporter extends BaseIssueReporterService {
 							$("td", undefined, remote.errorMessage),
 						),
 					);
+
 					target.appendChild(remoteDataTable);
 				} else {
 					const remoteDataTable = $(
@@ -402,6 +424,7 @@ export class IssueReporter extends BaseIssueReporterService {
 							$("td", undefined, remote.machineInfo.vmHint),
 						),
 					);
+
 					target.appendChild(remoteDataTable);
 				}
 			});

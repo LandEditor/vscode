@@ -22,6 +22,7 @@ import { IEditObserver } from "./inlineChatStrategies.js";
 // --- async edit
 export interface AsyncTextEdit {
 	readonly range: IRange;
+
 	readonly newText: AsyncIterable<string>;
 }
 export async function performAsyncTextEdit(
@@ -50,6 +51,7 @@ export async function performAsyncTextEdit(
 		if (model.isDisposed()) {
 			break;
 		}
+
 		const range = model.getDecorationRange(id);
 
 		if (!range) {
@@ -57,16 +59,21 @@ export async function performAsyncTextEdit(
 				"FAILED to perform async replace edit because the anchor decoration was removed",
 			);
 		}
+
 		const edit = first
 			? EditOperation.replace(range, part) // first edit needs to override the "anchor"
 			: EditOperation.insert(range.getEndPosition(), part);
+
 		obs?.start();
+
 		model.pushEditOperations(null, [edit], (undoEdits) => {
 			progress?.report(undoEdits);
 
 			return null;
 		});
+
 		obs?.stop();
+
 		first = false;
 	}
 }
@@ -81,24 +88,32 @@ export function asProgressiveEdit(
 	const stream = new AsyncIterableSource<string>();
 
 	let newText = edit.text ?? "";
+
 	interval.cancelAndSet(() => {
 		if (token.isCancellationRequested) {
 			return;
 		}
+
 		const r = getNWords(newText, 1);
+
 		stream.emitOne(r.value);
+
 		newText = newText.substring(r.value.length);
 
 		if (r.isFullString) {
 			interval.cancel();
+
 			stream.resolve();
+
 			d.dispose();
 		}
 	}, 1000 / wordsPerSec);
 	// cancel ASAP
 	const d = token.onCancellationRequested(() => {
 		interval.cancel();
+
 		stream.resolve();
+
 		d.dispose();
 	});
 

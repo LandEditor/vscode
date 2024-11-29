@@ -16,10 +16,12 @@ import {
 
 export interface IAutomatedWindow {
 	codeAutomationLog(type: string, args: any[]): void;
+
 	codeAutomationExit(code: number, logs: Array<ILogFile>): void;
 }
 export interface ILogFile {
 	readonly relativePath: string;
+
 	readonly contents: string;
 }
 /**
@@ -32,6 +34,7 @@ export async function getLogs(
 	environmentService: IEnvironmentService,
 ): Promise<ILogFile[]> {
 	const result: ILogFile[] = [];
+
 	await doGetLogs(
 		fileService,
 		result,
@@ -84,6 +87,7 @@ function logLevelToString(level: LogLevel): string {
 		case LogLevel.Error:
 			return "error";
 	}
+
 	return "info";
 }
 /**
@@ -106,6 +110,7 @@ export class ConsoleLogInAutomationLogger
 			logLevel,
 		);
 	}
+
 	private consoleLog(type: string, args: any[]): void {
 		const automatedWindow = mainWindow as unknown as IAutomatedWindow;
 

@@ -30,5 +30,6 @@ export interface DecorationProvider {
 		filterOutValidation?: boolean,
 		onlyMinimapDecorations?: boolean,
 	): IModelDecoration[];
+
 	onDidChange: Event<void>;
 }

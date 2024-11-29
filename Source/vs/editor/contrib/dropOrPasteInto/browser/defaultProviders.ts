@@ -35,16 +35,22 @@ abstract class SimplePasteAndDropProvider
 	implements DocumentDropEditProvider, DocumentPasteEditProvider
 {
 	readonly kind: HierarchicalKind;
+
 	readonly providedDropEditKinds: HierarchicalKind[];
+
 	readonly providedPasteEditKinds: HierarchicalKind[];
 
 	abstract readonly dropMimeTypes: readonly string[] | undefined;
+
 	readonly copyMimeTypes = [];
+
 	abstract readonly pasteMimeTypes: readonly string[];
 
 	constructor(kind: HierarchicalKind) {
 		this.kind = kind;
+
 		this.providedDropEditKinds = [this.kind];
+
 		this.providedPasteEditKinds = [this.kind];
 	}
 
@@ -86,6 +92,7 @@ abstract class SimplePasteAndDropProvider
 		if (!edit) {
 			return;
 		}
+
 		return {
 			edits: [
 				{
@@ -110,7 +117,9 @@ export class DefaultTextPasteOrDropEditProvider extends SimplePasteAndDropProvid
 	static readonly id = "text";
 
 	readonly id = DefaultTextPasteOrDropEditProvider.id;
+
 	readonly dropMimeTypes = [Mimes.text];
+
 	readonly pasteMimeTypes = [Mimes.text];
 
 	constructor() {
@@ -146,6 +155,7 @@ export class DefaultTextPasteOrDropEditProvider extends SimplePasteAndDropProvid
 
 class PathProvider extends SimplePasteAndDropProvider {
 	readonly dropMimeTypes = [Mimes.uriList];
+
 	readonly pasteMimeTypes = [Mimes.uriList];
 
 	constructor() {
@@ -212,6 +222,7 @@ class PathProvider extends SimplePasteAndDropProvider {
 
 class RelativePathProvider extends SimplePasteAndDropProvider {
 	readonly dropMimeTypes = [Mimes.uriList];
+
 	readonly pasteMimeTypes = [Mimes.uriList];
 
 	constructor(
@@ -264,9 +275,11 @@ class RelativePathProvider extends SimplePasteAndDropProvider {
 
 class PasteHtmlProvider implements DocumentPasteEditProvider {
 	public readonly kind = new HierarchicalKind("html");
+
 	public readonly providedPasteEditKinds = [this.kind];
 
 	public readonly copyMimeTypes = [];
+
 	public readonly pasteMimeTypes = ["text/html"];
 
 	private readonly _yieldTo = [{ mimeType: Mimes.text }];
@@ -327,6 +340,7 @@ async function extractUriList(
 			// noop
 		}
 	}
+
 	return entries;
 }
 
@@ -345,12 +359,14 @@ export class DefaultDropProvidersFeature extends Disposable {
 				new DefaultTextPasteOrDropEditProvider(),
 			),
 		);
+
 		this._register(
 			languageFeaturesService.documentDropEditProvider.register(
 				"*",
 				new PathProvider(),
 			),
 		);
+
 		this._register(
 			languageFeaturesService.documentDropEditProvider.register(
 				"*",
@@ -375,18 +391,21 @@ export class DefaultPasteProvidersFeature extends Disposable {
 				new DefaultTextPasteOrDropEditProvider(),
 			),
 		);
+
 		this._register(
 			languageFeaturesService.documentPasteEditProvider.register(
 				"*",
 				new PathProvider(),
 			),
 		);
+
 		this._register(
 			languageFeaturesService.documentPasteEditProvider.register(
 				"*",
 				new RelativePathProvider(workspaceContextService),
 			),
 		);
+
 		this._register(
 			languageFeaturesService.documentPasteEditProvider.register(
 				"*",

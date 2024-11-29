@@ -68,9 +68,11 @@ const CONTEXT_DEBUGGER_INTERESTED_IN_ACTIVE_EDITOR = new RawContextKey<boolean>(
 
 export class WelcomeView extends ViewPane {
 	static readonly ID = "workbench.debug.welcome";
+
 	static readonly LABEL: ILocalizedString = localize2("run", "Run");
 
 	private debugStartLanguageContext: IContextKey<string | undefined>;
+
 	private debuggerInterestedContext: IContextKey<boolean>;
 
 	constructor(
@@ -105,25 +107,31 @@ export class WelcomeView extends ViewPane {
 
 		this.debugStartLanguageContext =
 			CONTEXT_DEBUG_START_LANGUAGE.bindTo(contextKeyService);
+
 		this.debuggerInterestedContext =
 			CONTEXT_DEBUGGER_INTERESTED_IN_ACTIVE_EDITOR.bindTo(
 				contextKeyService,
 			);
+
 		const lastSetLanguage = storageSevice.get(
 			debugStartLanguageKey,
 			StorageScope.WORKSPACE,
 		);
+
 		this.debugStartLanguageContext.set(lastSetLanguage);
 
 		const setContextKey = () => {
 			let editorControl = this.editorService.activeTextEditorControl;
+
 			if (isDiffEditor(editorControl)) {
 				editorControl = editorControl.getModifiedEditor();
 			}
 
 			if (isCodeEditor(editorControl)) {
 				const model = editorControl.getModel();
+
 				const language = model ? model.getLanguageId() : undefined;
+
 				if (
 					language &&
 					this.debugService
@@ -131,20 +139,25 @@ export class WelcomeView extends ViewPane {
 						.someDebuggerInterestedInLanguage(language)
 				) {
 					this.debugStartLanguageContext.set(language);
+
 					this.debuggerInterestedContext.set(true);
+
 					storageSevice.store(
 						debugStartLanguageKey,
 						language,
 						StorageScope.WORKSPACE,
 						StorageTarget.MACHINE,
 					);
+
 					return;
 				}
 			}
+
 			this.debuggerInterestedContext.set(false);
 		};
 
 		const disposables = new DisposableStore();
+
 		this._register(disposables);
 
 		this._register(
@@ -152,6 +165,7 @@ export class WelcomeView extends ViewPane {
 				disposables.clear();
 
 				let editorControl = this.editorService.activeTextEditorControl;
+
 				if (isDiffEditor(editorControl)) {
 					editorControl = editorControl.getModifiedEditor();
 				}
@@ -165,11 +179,13 @@ export class WelcomeView extends ViewPane {
 				setContextKey();
 			}),
 		);
+
 		this._register(
 			this.debugService
 				.getAdapterManager()
 				.onDidRegisterDebugger(setContextKey),
 		);
+
 		this._register(
 			this.onDidChangeBodyVisibility((visible) => {
 				if (visible) {
@@ -177,11 +193,13 @@ export class WelcomeView extends ViewPane {
 				}
 			}),
 		);
+
 		setContextKey();
 
 		const debugKeybinding = this.keybindingService.lookupKeybinding(
 			DEBUG_START_COMMAND_ID,
 		);
+
 		debugKeybindingLabel = debugKeybinding
 			? ` (${debugKeybinding.getLabel()})`
 			: "";

@@ -16,11 +16,13 @@ export async function checksum(
 			const input = fs.createReadStream(path);
 
 			const hash = crypto.createHash("sha256");
+
 			input.pipe(hash);
 
 			const done = createSingleCallFunction(
 				(err?: Error, result?: string) => {
 					input.removeAllListeners();
+
 					hash.removeAllListeners();
 
 					if (err) {
@@ -30,9 +32,13 @@ export async function checksum(
 					}
 				},
 			);
+
 			input.once("error", done);
+
 			input.once("end", done);
+
 			hash.once("error", done);
+
 			hash.once("data", (data: Buffer) =>
 				done(undefined, data.toString("hex")),
 			);

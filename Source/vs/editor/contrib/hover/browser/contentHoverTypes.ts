@@ -11,6 +11,7 @@ export class ContentHoverResult {
 		public readonly isComplete: boolean,
 		public readonly options: ContentHoverComputerOptions,
 	) {}
+
 	public filter(anchor: HoverAnchor): ContentHoverResult {
 		const filteredHoverParts = this.hoverParts.filter((m) =>
 			m.isValidForHoverAnchor(anchor),
@@ -19,6 +20,7 @@ export class ContentHoverResult {
 		if (filteredHoverParts.length === this.hoverParts.length) {
 			return this;
 		}
+
 		return new FilteredContentHoverResult(
 			this,
 			filteredHoverParts,
@@ -36,6 +38,7 @@ export class FilteredContentHoverResult extends ContentHoverResult {
 	) {
 		super(messages, isComplete, options);
 	}
+
 	public override filter(anchor: HoverAnchor): ContentHoverResult {
 		return this.original.filter(anchor);
 	}

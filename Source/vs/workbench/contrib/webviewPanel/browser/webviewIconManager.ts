@@ -15,6 +15,7 @@ import {
 
 export interface WebviewIcons {
 	readonly light: URI;
+
 	readonly dark: URI;
 }
 
@@ -30,6 +31,7 @@ export class WebviewIconManager extends Disposable {
 		private readonly _configService: IConfigurationService,
 	) {
 		super();
+
 		this._register(
 			this._configService.onDidChangeConfiguration((e) => {
 				if (e.affectsConfiguration("workbench.iconTheme")) {
@@ -38,8 +40,10 @@ export class WebviewIconManager extends Disposable {
 			}),
 		);
 	}
+
 	override dispose() {
 		super.dispose();
+
 		this._styleElement = undefined;
 	}
 
@@ -50,8 +54,10 @@ export class WebviewIconManager extends Disposable {
 				undefined,
 				this._store,
 			);
+
 			this._styleElement.className = "webview-icons";
 		}
+
 		return this._styleElement;
 	}
 
@@ -84,6 +90,7 @@ export class WebviewIconManager extends Disposable {
 				}
 			}
 		}
+
 		this.styleElement.textContent = cssRules.join("\n");
 	}
 }

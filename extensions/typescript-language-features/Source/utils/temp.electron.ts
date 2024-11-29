@@ -32,8 +32,10 @@ function makeRandomHexString(length: number): string {
 
 	for (let i = 0; i < length; i++) {
 		const idx = Math.floor(chars.length * Math.random());
+
 		result += chars[idx];
 	}
+
 	return result;
 }
 
@@ -45,6 +47,7 @@ const rootTempDir = lazy(() => {
 
 export const instanceTempDir = lazy(() => {
 	const dir = path.join(rootTempDir.value, makeRandomHexString(20));
+
 	fs.mkdirSync(dir, { recursive: true });
 
 	return dir;

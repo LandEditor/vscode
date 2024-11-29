@@ -36,6 +36,7 @@ function getIconClass(
 	if (!iconPath) {
 		return undefined;
 	}
+
 	let iconClass: string;
 
 	const key = iconPath.dark.toString();
@@ -54,6 +55,7 @@ function getIconClass(
 			`.vs-dark .${iconClass}, .hc-black .${iconClass}`,
 			`background-image: ${cssJs.asCSSUrl(iconPath.dark)}`,
 		);
+
 		iconPathToClass[key] = iconClass;
 	}
 
@@ -88,6 +90,7 @@ export function renderQuickInputDescription(
 	container: HTMLElement,
 	actionHandler: {
 		callback: (content: string) => void;
+
 		disposables: DisposableStore;
 	},
 ) {
@@ -118,6 +121,7 @@ export function renderQuickInputDescription(
 				{ href: node.href, title, tabIndex: tabIndex++ },
 				node.label,
 			);
+
 			anchor.style.textDecoration = "underline";
 
 			const handleOpen = (e: unknown) => {
@@ -158,6 +162,7 @@ export function renderQuickInputDescription(
 				null,
 				actionHandler.disposables,
 			);
+
 			container.appendChild(anchor);
 		}
 	}

@@ -50,8 +50,10 @@ export function getHTMLMode(
 			const htmlSettings = settings?.html;
 
 			const options = merge(htmlSettings?.suggest, {});
+
 			options.hideAutoCompleteProposals =
 				htmlSettings?.autoClosingTags === true;
+
 			options.attributeDefaultValue =
 				htmlSettings?.completion?.attributeDefaultValue ??
 				"doublequotes";
@@ -122,6 +124,7 @@ export function getHTMLMode(
 			} else {
 				formatSettings.contentUnformatted = "script";
 			}
+
 			merge(formatParams, formatSettings);
 
 			return htmlLanguageService.format(document, range, formatSettings);
@@ -146,6 +149,7 @@ export function getHTMLMode(
 					const htmlSettings = settings?.html;
 
 					const options = merge(htmlSettings?.suggest, {});
+
 					options.attributeDefaultValue =
 						htmlSettings?.completion?.attributeDefaultValue ??
 						"doublequotes";
@@ -166,6 +170,7 @@ export function getHTMLMode(
 					);
 				}
 			}
+
 			return null;
 		},
 		async doRename(
@@ -219,5 +224,6 @@ function merge(src: any, dst: any): any {
 			}
 		}
 	}
+
 	return dst;
 }

@@ -64,9 +64,11 @@ export async function changeCellToKind(
 	if (!notebookEditor.hasModel()) {
 		return;
 	}
+
 	if (notebookEditor.isReadOnly) {
 		return;
 	}
+
 	if (context.ui && context.cell) {
 		// action from UI
 		const { cell } = context;
@@ -74,6 +76,7 @@ export async function changeCellToKind(
 		if (cell.cellKind === kind) {
 			return;
 		}
+
 		const text = cell.getText();
 
 		const idx = notebookEditor.getCellIndex(cell);
@@ -81,8 +84,10 @@ export async function changeCellToKind(
 		if (language === undefined) {
 			const availableLanguages =
 				notebookEditor.activeKernel?.supportedLanguages ?? [];
+
 			language = availableLanguages[0] ?? PLAINTEXT_LANGUAGE_ID;
 		}
+
 		notebookEditor.textModel.applyEdits(
 			[
 				{
@@ -119,6 +124,7 @@ export async function changeCellToKind(
 		);
 
 		const newCell = notebookEditor.cellAt(idx);
+
 		await notebookEditor.focusNotebookCell(
 			newCell,
 			cell.getEditState() === CellEditState.Editing
@@ -129,10 +135,12 @@ export async function changeCellToKind(
 		const selectedCells = context.selectedCells;
 
 		const rawEdits: ICellEditOperation[] = [];
+
 		selectedCells.forEach((cell) => {
 			if (cell.cellKind === kind) {
 				return;
 			}
+
 			const text = cell.getText();
 
 			const idx = notebookEditor.getCellIndex(cell);
@@ -140,8 +148,10 @@ export async function changeCellToKind(
 			if (language === undefined) {
 				const availableLanguages =
 					notebookEditor.activeKernel?.supportedLanguages ?? [];
+
 				language = availableLanguages[0] ?? PLAINTEXT_LANGUAGE_ID;
 			}
+
 			rawEdits.push({
 				editType: CellEditType.Replace,
 				index: idx,
@@ -158,6 +168,7 @@ export async function changeCellToKind(
 				],
 			});
 		});
+
 		notebookEditor.textModel.applyEdits(
 			rawEdits,
 			true,
@@ -211,6 +222,7 @@ export function runDeleteAction(
 			containingSelection.end >= editor.getLength()
 				? undefined
 				: editor.cellAt(containingSelection.end);
+
 		textModel.applyEdits(
 			edits,
 			true,
@@ -292,12 +304,14 @@ export function runDeleteAction(
 				});
 			}
 		}
+
 		if (editor.cellAt(focus.start) === cell) {
 			// focus is the target, focus is also not part of any selection
 			const newFocus =
 				focus.end === textModel.length
 					? { start: focus.start - 1, end: focus.end - 1 }
 					: focus;
+
 			textModel.applyEdits(
 				edits,
 				true,
@@ -320,6 +334,7 @@ export function runDeleteAction(
 				focus.start > targetCellIndex
 					? { start: focus.start - 1, end: focus.end - 1 }
 					: focus;
+
 			textModel.applyEdits(
 				edits,
 				true,
@@ -346,6 +361,7 @@ export async function moveCellRange(
 	if (!context.notebookEditor.hasModel()) {
 		return;
 	}
+
 	const editor = context.notebookEditor;
 
 	const textModel = editor.textModel;
@@ -353,24 +369,30 @@ export async function moveCellRange(
 	if (editor.isReadOnly) {
 		return;
 	}
+
 	let range: ICellRange | undefined = undefined;
 
 	if (context.cell) {
 		const idx = editor.getCellIndex(context.cell);
+
 		range = { start: idx, end: idx + 1 };
 	} else {
 		const selections = editor.getSelections();
 
 		const modelRanges = expandCellRangesWithHiddenCells(editor, selections);
+
 		range = modelRanges[0];
 	}
+
 	if (!range || range.start === range.end) {
 		return;
 	}
+
 	if (direction === "up") {
 		if (range.start === 0) {
 			return;
 		}
+
 		const indexAbove = range.start - 1;
 
 		const finalSelection = { start: range.start - 1, end: range.end - 1 };
@@ -380,6 +402,7 @@ export async function moveCellRange(
 		const newFocus = cellRangeContains(range, focus)
 			? { start: focus.start - 1, end: focus.end - 1 }
 			: { start: range.start - 1, end: range.start };
+
 		textModel.applyEdits(
 			[
 				{
@@ -405,11 +428,13 @@ export async function moveCellRange(
 		);
 
 		const focusRange = editor.getSelections()[0] ?? editor.getFocus();
+
 		editor.revealCellRangeInView(focusRange);
 	} else {
 		if (range.end >= textModel.length) {
 			return;
 		}
+
 		const indexBelow = range.end;
 
 		const finalSelection = { start: range.start + 1, end: range.end + 1 };
@@ -419,6 +444,7 @@ export async function moveCellRange(
 		const newFocus = cellRangeContains(range, focus)
 			? { start: focus.start + 1, end: focus.end + 1 }
 			: { start: range.start + 1, end: range.start + 2 };
+
 		textModel.applyEdits(
 			[
 				{
@@ -444,6 +470,7 @@ export async function moveCellRange(
 		);
 
 		const focusRange = editor.getSelections()[0] ?? editor.getFocus();
+
 		editor.revealCellRangeInView(focusRange);
 	}
 }
@@ -456,32 +483,39 @@ export async function copyCellRange(
 	if (!editor.hasModel()) {
 		return;
 	}
+
 	const textModel = editor.textModel;
 
 	if (editor.isReadOnly) {
 		return;
 	}
+
 	let range: ICellRange | undefined = undefined;
 
 	if (context.ui) {
 		const targetCell = context.cell;
 
 		const targetCellIndex = editor.getCellIndex(targetCell);
+
 		range = { start: targetCellIndex, end: targetCellIndex + 1 };
 	} else {
 		const selections = editor.getSelections();
 
 		const modelRanges = expandCellRangesWithHiddenCells(editor, selections);
+
 		range = modelRanges[0];
 	}
+
 	if (!range || range.start === range.end) {
 		return;
 	}
+
 	if (direction === "up") {
 		// insert up, without changing focus and selections
 		const focus = editor.getFocus();
 
 		const selections = editor.getSelections();
+
 		textModel.applyEdits(
 			[
 				{
@@ -531,6 +565,7 @@ export async function copyCellRange(
 						end: range.end + countDelta,
 					},
 				];
+
 		textModel.applyEdits(
 			[
 				{
@@ -558,6 +593,7 @@ export async function copyCellRange(
 		);
 
 		const focusRange = editor.getSelections()[0] ?? editor.getFocus();
+
 		editor.revealCellRangeInView(focusRange);
 	}
 }
@@ -571,6 +607,7 @@ export async function joinSelectedCells(
 	if (editor.isReadOnly) {
 		return;
 	}
+
 	const edits: ResourceEdit[] = [];
 
 	const cells: ICellViewModel[] = [];
@@ -578,6 +615,7 @@ export async function joinSelectedCells(
 	for (const selection of editor.getSelections()) {
 		cells.push(...editor.getCellsInRange(selection));
 	}
+
 	if (cells.length <= 1) {
 		return;
 	}
@@ -604,6 +642,7 @@ export async function joinSelectedCells(
 		.join(firstCell.textBuffer.getEOL());
 
 	const firstSelection = editor.getSelections()[0];
+
 	edits.push(
 		new ResourceNotebookCellEdit(editor.textModel.uri, {
 			editType: CellEditType.Replace,
@@ -632,6 +671,7 @@ export async function joinSelectedCells(
 			}),
 		);
 	}
+
 	if (edits.length) {
 		await bulkEditService.apply(edits, {
 			quotableLabel: localize(
@@ -648,13 +688,17 @@ export async function joinNotebookCells(
 	constraint?: CellKind,
 ): Promise<{
 	edits: ResourceEdit[];
+
 	cell: ICellViewModel;
+
 	endFocus: ICellRange;
+
 	endSelections: ICellRange[];
 } | null> {
 	if (editor.isReadOnly) {
 		return null;
 	}
+
 	const textModel = editor.textModel;
 
 	const cells = editor.getCellsInRange(range);
@@ -662,12 +706,15 @@ export async function joinNotebookCells(
 	if (!cells.length) {
 		return null;
 	}
+
 	if (range.start === 0 && direction === "above") {
 		return null;
 	}
+
 	if (range.end === textModel.length && direction === "below") {
 		return null;
 	}
+
 	for (let i = 0; i < cells.length; i++) {
 		const cell = cells[i];
 
@@ -675,12 +722,14 @@ export async function joinNotebookCells(
 			return null;
 		}
 	}
+
 	if (direction === "above") {
 		const above = editor.cellAt(range.start - 1) as CellViewModel;
 
 		if (constraint && above.cellKind !== constraint) {
 			return null;
 		}
+
 		const insertContent = cells
 			.map((cell) => (cell.textBuffer.getEOL() ?? "") + cell.getText())
 			.join("");
@@ -718,6 +767,7 @@ export async function joinNotebookCells(
 		if (constraint && below.cellKind !== constraint) {
 			return null;
 		}
+
 		const cell = cells[0];
 
 		const restCells = [...cells.slice(1), below];
@@ -768,8 +818,11 @@ export async function joinCellsWithSurrounds(
 
 	let ret: {
 		edits: ResourceEdit[];
+
 		cell: ICellViewModel;
+
 		endFocus: ICellRange;
+
 		endSelections: ICellRange[];
 	} | null = null;
 
@@ -777,6 +830,7 @@ export async function joinCellsWithSurrounds(
 		const focusMode = context.cell.focusMode;
 
 		const cellIndex = editor.getCellIndex(context.cell);
+
 		ret = await joinNotebookCells(
 			editor,
 			{ start: cellIndex, end: cellIndex + 1 },
@@ -786,18 +840,22 @@ export async function joinCellsWithSurrounds(
 		if (!ret) {
 			return;
 		}
+
 		await bulkEditService.apply(ret?.edits, {
 			quotableLabel: "Join Notebook Cells",
 		});
+
 		viewModel.updateSelectionsState({
 			kind: SelectionStateType.Index,
 			focus: ret.endFocus,
 			selections: ret.endSelections,
 		});
+
 		ret.cell.updateEditState(
 			CellEditState.Editing,
 			"joinCellsWithSurrounds",
 		);
+
 		editor.revealCellRangeInView(editor.getFocus());
 
 		if (focusMode === CellFocusMode.Editor) {
@@ -809,6 +867,7 @@ export async function joinCellsWithSurrounds(
 		if (!selections.length) {
 			return;
 		}
+
 		const focus = editor.getFocus();
 
 		const focusMode = editor.cellAt(focus.start)?.focusMode;
@@ -831,10 +890,12 @@ export async function joinCellsWithSurrounds(
 				if (containFocus) {
 					cell = editor.cellAt(focus.start)!;
 				}
+
 				cells.push(...editor.getCellsInRange(selection));
 
 				continue;
 			}
+
 			const singleRet = await joinNotebookCells(
 				editor,
 				selection,
@@ -844,33 +905,41 @@ export async function joinCellsWithSurrounds(
 			if (!singleRet) {
 				return;
 			}
+
 			edits.push(...singleRet.edits);
+
 			cells.push(singleRet.cell);
 
 			if (containFocus) {
 				cell = singleRet.cell;
 			}
 		}
+
 		if (!edits.length) {
 			return;
 		}
+
 		if (!cell || !cells.length) {
 			return;
 		}
+
 		await bulkEditService.apply(edits, {
 			quotableLabel: "Join Notebook Cells",
 		});
+
 		cells.forEach((cell) => {
 			cell.updateEditState(
 				CellEditState.Editing,
 				"joinCellsWithSurrounds",
 			);
 		});
+
 		viewModel.updateSelectionsState({
 			kind: SelectionStateType.Handle,
 			primary: cell.handle,
 			selections: cells.map((cell) => cell.handle),
 		});
+
 		editor.revealCellRangeInView(editor.getFocus());
 
 		const newFocusedCell = editor.cellAt(editor.getFocus().start);
@@ -908,8 +977,10 @@ function _splitPointsToBoundaries(
 		) {
 			sp = new Position(sp.lineNumber + 1, 1);
 		}
+
 		_pushIfAbsent(boundaries, sp);
 	}
+
 	if (boundaries.length === 0) {
 		return null;
 	}
@@ -940,12 +1011,14 @@ export function computeCellLinesContents(
 	if (!rangeBoundaries) {
 		return null;
 	}
+
 	const newLineModels: string[] = [];
 
 	for (let i = 1; i < rangeBoundaries.length; i++) {
 		const start = rangeBoundaries[i - 1];
 
 		const end = rangeBoundaries[i];
+
 		newLineModels.push(
 			cell.textBuffer.getValueInRange(
 				new Range(
@@ -958,6 +1031,7 @@ export function computeCellLinesContents(
 			),
 		);
 	}
+
 	return newLineModels;
 }
 export function insertCell(
@@ -976,6 +1050,7 @@ export function insertCell(
 	if (viewModel.options.isReadOnly) {
 		return null;
 	}
+
 	const cell = editor.cellAt(index);
 
 	const nextIndex = ui ? viewModel.getNextVisibleCellIndex(index) : index + 1;
@@ -1010,6 +1085,7 @@ export function insertCell(
 				language = defaultLanguage;
 			}
 		}
+
 		if (!supportedLanguages.includes(language)) {
 			// the language no longer exists
 			language = defaultLanguage;
@@ -1017,6 +1093,7 @@ export function insertCell(
 	} else {
 		language = "markdown";
 	}
+
 	const insertIndex = cell
 		? direction === "above"
 			? index
@@ -1051,6 +1128,7 @@ export function insertCellAtIndex(
 		focus: { start: index, end: index + 1 },
 		selections: [{ start: index, end: index + 1 }],
 	};
+
 	viewModel.notebookDocument.applyEdits(
 		[
 			{

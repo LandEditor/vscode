@@ -17,21 +17,29 @@ import { ITextModel } from "../../../common/model.js";
 
 export class SortLinesCommand implements ICommand {
 	private static _COLLATOR: Intl.Collator | null = null;
+
 	public static getCollator(): Intl.Collator {
 		if (!SortLinesCommand._COLLATOR) {
 			SortLinesCommand._COLLATOR = new Intl.Collator();
 		}
+
 		return SortLinesCommand._COLLATOR;
 	}
+
 	private readonly selection: Selection;
+
 	private readonly descending: boolean;
+
 	private selectionId: string | null;
 
 	constructor(selection: Selection, descending: boolean) {
 		this.selection = selection;
+
 		this.descending = descending;
+
 		this.selectionId = null;
 	}
+
 	public getEditOperations(
 		model: ITextModel,
 		builder: IEditOperationBuilder,
@@ -41,14 +49,17 @@ export class SortLinesCommand implements ICommand {
 		if (op) {
 			builder.addEditOperation(op.range, op.text);
 		}
+
 		this.selectionId = builder.trackSelection(this.selection);
 	}
+
 	public computeCursorState(
 		model: ITextModel,
 		helper: ICursorStateComputerData,
 	): Selection {
 		return helper.getTrackedSelection(this.selectionId!);
 	}
+
 	public static canRun(
 		model: ITextModel | null,
 		selection: Selection,
@@ -57,16 +68,19 @@ export class SortLinesCommand implements ICommand {
 		if (model === null) {
 			return false;
 		}
+
 		const data = getSortData(model, selection, descending);
 
 		if (!data) {
 			return false;
 		}
+
 		for (let i = 0, len = data.before.length; i < len; i++) {
 			if (data.before[i] !== data.after[i]) {
 				return true;
 			}
 		}
+
 		return false;
 	}
 }
@@ -86,21 +100,27 @@ function getSortData(
 	if (startLineNumber >= endLineNumber) {
 		return null;
 	}
+
 	const linesToSort: string[] = [];
 	// Get the contents of the selection to be sorted.
 	for (
 		let lineNumber = startLineNumber;
+
 		lineNumber <= endLineNumber;
+
 		lineNumber++
 	) {
 		linesToSort.push(model.getLineContent(lineNumber));
 	}
+
 	let sorted = linesToSort.slice(0);
+
 	sorted.sort(SortLinesCommand.getCollator().compare);
 	// If descending, reverse the order.
 	if (descending === true) {
 		sorted = sorted.reverse();
 	}
+
 	return {
 		startLineNumber: startLineNumber,
 		endLineNumber: endLineNumber,
@@ -121,6 +141,7 @@ function sortLines(
 	if (!data) {
 		return null;
 	}
+
 	return EditOperation.replace(
 		new Range(
 			data.startLineNumber,

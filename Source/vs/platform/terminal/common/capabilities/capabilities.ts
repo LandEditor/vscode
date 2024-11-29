@@ -109,6 +109,7 @@ export interface ITerminalCapabilityStore {
 }
 export interface TerminalCapabilityChangeEvent<T extends TerminalCapability> {
 	id: T;
+
 	capability: ITerminalCapabilityImplMap[T];
 }
 /**
@@ -124,10 +125,13 @@ export interface ITerminalCapabilityImplMap {
 }
 export interface ICwdDetectionCapability {
 	readonly type: TerminalCapability.CwdDetection;
+
 	readonly onDidChangeCwd: Event<string>;
+
 	readonly cwds: string[];
 
 	getCwd(): string;
+
 	updateCwd(cwd: string): void;
 }
 export const enum CommandInvalidationReason {
@@ -139,26 +143,38 @@ export interface ICommandInvalidationRequest {
 }
 export interface IBufferMarkCapability {
 	type: TerminalCapability.BufferMarkDetection;
+
 	markers(): IterableIterator<IMarker>;
+
 	onMarkAdded: Event<IMarkProperties>;
+
 	addMark(properties?: IMarkProperties): void;
 
 	getMark(id: string): IMarker | undefined;
 }
 export interface ICommandDetectionCapability {
 	readonly type: TerminalCapability.CommandDetection;
+
 	readonly promptInputModel: IPromptInputModel;
+
 	readonly commands: readonly ITerminalCommand[];
 	/** The command currently being executed, otherwise undefined. */
 	readonly executingCommand: string | undefined;
+
 	readonly executingCommandObject: ITerminalCommand | undefined;
 	/** The current cwd at the cursor's position. */
 	readonly cwd: string | undefined;
+
 	readonly currentCommand: ICurrentPartialCommand | undefined;
+
 	readonly onCommandStarted: Event<ITerminalCommand>;
+
 	readonly onCommandFinished: Event<ITerminalCommand>;
+
 	readonly onCommandExecuted: Event<ITerminalCommand>;
+
 	readonly onCommandInvalidated: Event<ITerminalCommand[]>;
+
 	readonly onCurrentCommandInvalidated: Event<ICommandInvalidationRequest>;
 
 	setContinuationPrompt(value: string): void;
@@ -179,13 +195,21 @@ export interface ICommandDetectionCapability {
 	getCommandForLine(
 		line: number,
 	): ITerminalCommand | ICurrentPartialCommand | undefined;
+
 	handlePromptStart(options?: IHandleCommandOptions): void;
+
 	handleContinuationStart(): void;
+
 	handleContinuationEnd(): void;
+
 	handleRightPromptStart(): void;
+
 	handleRightPromptEnd(): void;
+
 	handleCommandStart(options?: IHandleCommandOptions): void;
+
 	handleCommandExecuted(options?: IHandleCommandOptions): void;
+
 	handleCommandFinished(
 		exitCode?: number,
 		options?: IHandleCommandOptions,
@@ -199,7 +223,9 @@ export interface ICommandDetectionCapability {
 	 * always be present when running the _builtin_ SI scripts.
 	 */
 	setCommandLine(commandLine: string, isTrusted: boolean): void;
+
 	serialize(): ISerializedCommandDetectionCapability;
+
 	deserialize(serialized: ISerializedCommandDetectionCapability): void;
 }
 export interface IHandleCommandOptions {
@@ -219,38 +245,56 @@ export interface IHandleCommandOptions {
 }
 export interface INaiveCwdDetectionCapability {
 	readonly type: TerminalCapability.NaiveCwdDetection;
+
 	readonly onDidChangeCwd: Event<string>;
 
 	getCwd(): Promise<string>;
 }
 export interface IPartialCommandDetectionCapability {
 	readonly type: TerminalCapability.PartialCommandDetection;
+
 	readonly commands: readonly IXtermMarker[];
+
 	readonly onCommandFinished: Event<IXtermMarker>;
 }
 interface IBaseTerminalCommand {
 	// Mandatory
 	command: string;
+
 	commandLineConfidence: "low" | "medium" | "high";
+
 	isTrusted: boolean;
+
 	timestamp: number;
+
 	duration: number;
 	// Optional serializable
 	cwd: string | undefined;
+
 	exitCode: number | undefined;
+
 	commandStartLineContent: string | undefined;
+
 	markProperties: IMarkProperties | undefined;
+
 	executedX: number | undefined;
+
 	startX: number | undefined;
 }
 export interface ITerminalCommand extends IBaseTerminalCommand {
 	// Optional non-serializable
 	readonly promptStartMarker?: IMarker;
+
 	readonly marker?: IXtermMarker;
+
 	endMarker?: IXtermMarker;
+
 	readonly executedMarker?: IXtermMarker;
+
 	readonly aliases?: string[][];
+
 	readonly wasReplayed?: boolean;
+
 	extractCommandLine(): string;
 
 	getOutput(): string | undefined;
@@ -258,6 +302,7 @@ export interface ITerminalCommand extends IBaseTerminalCommand {
 	getOutputMatch(
 		outputMatcher: ITerminalOutputMatcher,
 	): ITerminalOutputMatch | undefined;
+
 	hasOutput(): boolean;
 
 	getPromptRowCount(): number;
@@ -267,8 +312,11 @@ export interface ITerminalCommand extends IBaseTerminalCommand {
 export interface ISerializedTerminalCommand extends IBaseTerminalCommand {
 	// Optional non-serializable converted for serialization
 	startLine: number | undefined;
+
 	promptStartLine: number | undefined;
+
 	endLine: number | undefined;
+
 	executedLine: number | undefined;
 }
 /**
@@ -276,9 +324,13 @@ export interface ISerializedTerminalCommand extends IBaseTerminalCommand {
  */
 export interface IXtermMarker {
 	readonly id: number;
+
 	readonly isDisposed: boolean;
+
 	readonly line: number;
+
 	dispose(): void;
+
 	onDispose: {
 		(listener: () => any): {
 			dispose(): void;
@@ -287,17 +339,24 @@ export interface IXtermMarker {
 }
 export interface IMarkProperties {
 	hoverMessage?: string;
+
 	disableCommandStorage?: boolean;
+
 	hidden?: boolean;
+
 	marker?: IMarker;
+
 	id?: string;
 }
 export interface ISerializedCommandDetectionCapability {
 	isWindowsPty: boolean;
+
 	commands: ISerializedTerminalCommand[];
+
 	promptInputModel: ISerializedPromptInputModel | undefined;
 }
 export interface IPtyHostProcessReplayEvent {
 	events: ReplayEntry[];
+
 	commands: ISerializedCommandDetectionCapability;
 }

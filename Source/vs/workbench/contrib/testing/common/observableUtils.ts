@@ -22,6 +22,7 @@ export function onObservableChange<T>(
 			callback(change as any as T);
 		},
 	};
+
 	observable.addObserver(o);
 
 	return {

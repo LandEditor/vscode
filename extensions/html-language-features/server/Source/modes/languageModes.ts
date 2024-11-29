@@ -89,23 +89,32 @@ export { TextDocument } from "vscode-languageserver-textdocument";
 
 export interface Settings {
 	readonly css?: any;
+
 	readonly html?: any;
+
 	readonly javascript?: any;
+
 	readonly "js/ts"?: any;
 }
 export interface Workspace {
 	readonly settings: Settings;
+
 	readonly folders: WorkspaceFolder[];
 }
 export interface SemanticTokenData {
 	start: Position;
+
 	length: number;
+
 	typeIdx: number;
+
 	modifierSet: number;
 }
 export type CompletionItemData = {
 	languageId: string;
+
 	uri: string;
+
 	offset: number;
 };
 
@@ -163,21 +172,26 @@ export interface LanguageMode {
 		document: TextDocument,
 		position: Position,
 	) => Promise<Range[] | null>;
+
 	findDocumentHighlight?: (
 		document: TextDocument,
 		position: Position,
 	) => Promise<DocumentHighlight[]>;
+
 	findDocumentSymbols?: (
 		document: TextDocument,
 	) => Promise<SymbolInformation[]>;
+
 	findDocumentLinks?: (
 		document: TextDocument,
 		documentContext: DocumentContext,
 	) => Promise<DocumentLink[]>;
+
 	findDefinition?: (
 		document: TextDocument,
 		position: Position,
 	) => Promise<Definition | null>;
+
 	findReferences?: (
 		document: TextDocument,
 		position: Position,
@@ -189,6 +203,7 @@ export interface LanguageMode {
 		options: FormattingOptions,
 		settings?: Settings,
 	) => Promise<TextEdit[]>;
+
 	findDocumentColors?: (
 		document: TextDocument,
 	) => Promise<ColorInformation[]>;
@@ -204,20 +219,24 @@ export interface LanguageMode {
 		position: Position,
 		kind: "autoClose" | "autoQuote",
 	) => Promise<string | null>;
+
 	findMatchingTagPosition?: (
 		document: TextDocument,
 		position: Position,
 	) => Promise<Position | null>;
 
 	getFoldingRanges?: (document: TextDocument) => Promise<FoldingRange[]>;
+
 	onDocumentRemoved(document: TextDocument): void;
 
 	getSemanticTokens?(document: TextDocument): Promise<SemanticTokenData[]>;
 
 	getSemanticTokenLegend?(): {
 		types: string[];
+
 		modifiers: string[];
 	};
+
 	dispose(): void;
 }
 export interface LanguageModes {
@@ -235,11 +254,14 @@ export interface LanguageModes {
 	getAllModesInDocument(document: TextDocument): LanguageMode[];
 
 	getMode(languageId: string): LanguageMode | undefined;
+
 	onDocumentRemoved(document: TextDocument): void;
+
 	dispose(): void;
 }
 export interface LanguageModeRange extends Range {
 	mode: LanguageMode | undefined;
+
 	attributeValue?: boolean;
 }
 export function getLanguageModes(
@@ -267,9 +289,11 @@ export function getLanguageModes(
 	);
 
 	let modelCaches: LanguageModelCache<any>[] = [];
+
 	modelCaches.push(documentRegions);
 
 	let modes = Object.create(null);
+
 	modes["html"] = getHTMLMode(htmlLanguageService, workspace);
 
 	if (supportedLanguages["css"]) {
@@ -279,18 +303,21 @@ export function getLanguageModes(
 			workspace,
 		);
 	}
+
 	if (supportedLanguages["javascript"]) {
 		modes["javascript"] = getJavaScriptMode(
 			documentRegions,
 			"javascript",
 			workspace,
 		);
+
 		modes["typescript"] = getJavaScriptMode(
 			documentRegions,
 			"typescript",
 			workspace,
 		);
 	}
+
 	return {
 		async updateDataProviders(
 			dataProviders: IHTMLDataProvider[],
@@ -308,6 +335,7 @@ export function getLanguageModes(
 			if (languageId) {
 				return modes[languageId];
 			}
+
 			return undefined;
 		},
 		getModesInRange(
@@ -338,6 +366,7 @@ export function getLanguageModes(
 					result.push(mode);
 				}
 			}
+
 			return result;
 		},
 		getAllModes(): LanguageMode[] {
@@ -350,6 +379,7 @@ export function getLanguageModes(
 					result.push(mode);
 				}
 			}
+
 			return result;
 		},
 		getMode(languageId: string): LanguageMode {
@@ -364,11 +394,13 @@ export function getLanguageModes(
 		},
 		dispose(): void {
 			modelCaches.forEach((mc) => mc.dispose());
+
 			modelCaches = [];
 
 			for (const mode in modes) {
 				modes[mode].dispose();
 			}
+
 			modes = {};
 		},
 	};

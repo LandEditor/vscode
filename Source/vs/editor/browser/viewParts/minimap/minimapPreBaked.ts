@@ -32,6 +32,7 @@ const decodeData = (str: string) => {
 		output[i >> 1] =
 			(charTable[str[i]] << 4) | (charTable[str[i + 1]] & 0xf);
 	}
+
 	return output;
 };
 /*
@@ -43,6 +44,7 @@ const encodeData = (data: Uint8ClampedArray, length: string) => {
     for (let i = 0; i < data.length; i++) {
         output += chars[data[i] >> 4] + chars[data[i] & 0xf];
     }
+
     return output;
 };
 */

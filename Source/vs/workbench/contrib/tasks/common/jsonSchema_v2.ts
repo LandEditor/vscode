@@ -22,6 +22,7 @@ function fixReferences(literal: any) {
 		if (literal["$ref"]) {
 			literal["$ref"] = literal["$ref"] + "2";
 		}
+
 		Object.getOwnPropertyNames(literal).forEach((property) => {
 			const value = literal[property];
 
@@ -651,6 +652,7 @@ export function updateTaskDefinitions() {
 		) {
 			continue;
 		}
+
 		const schema: IJSONSchema = Objects.deepClone(taskConfiguration);
 
 		const schemaProperties = schema.properties!;
@@ -675,10 +677,13 @@ export function updateTaskDefinitions() {
 		if (taskType.properties) {
 			for (const key of Object.keys(taskType.properties)) {
 				const property = taskType.properties[key];
+
 				schemaProperties[key] = Objects.deepClone(property);
 			}
 		}
+
 		fixReferences(schema);
+
 		taskDefinitions.push(schema);
 	}
 }
@@ -867,8 +872,11 @@ function deprecatedVariableMessage(
 }
 Object.getOwnPropertyNames(definitions).forEach((key) => {
 	const newKey = key + "2";
+
 	definitions[newKey] = definitions[key];
+
 	delete definitions[key];
+
 	deprecatedVariableMessage(definitions, newKey);
 });
 fixReferences(schema);
@@ -878,6 +886,7 @@ export function updateProblemMatchers() {
 		const matcherIds = ProblemMatcherRegistry.keys().map(
 			(key) => "$" + key,
 		);
+
 		definitions.problemMatcherType2.oneOf![0].enum = matcherIds;
 		(
 			definitions.problemMatcherType2.oneOf![2].items as IJSONSchema

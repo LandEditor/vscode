@@ -11,6 +11,7 @@
 
 		return import(moduleUrl.href);
 	}
+
 	interface MessageHandler {
 		onmessage(msg: any, ports: readonly MessagePort[]): void;
 	}
@@ -20,6 +21,7 @@
 			postMessage: (msg: any, transfer?: Transferable[]) => void,
 		): MessageHandler;
 	}
+
 	function setupWorkerServer(ws: SimpleWorkerModule) {
 		setTimeout(function () {
 			const messageHandler = ws.create(
@@ -27,6 +29,7 @@
 					(<any>globalThis).postMessage(msg, transfer);
 				},
 			);
+
 			self.onmessage = (e: MessageEvent) =>
 				messageHandler.onmessage(e.data, e.ports);
 
@@ -35,16 +38,20 @@
 			}
 		}, 0);
 	}
+
 	let isFirstMessage = true;
 
 	const beforeReadyMessages: MessageEvent[] = [];
+
 	globalThis.onmessage = (message: MessageEvent) => {
 		if (!isFirstMessage) {
 			beforeReadyMessages.push(message);
 
 			return;
 		}
+
 		isFirstMessage = false;
+
 		loadCode(message.data).then(
 			(ws) => {
 				setupWorkerServer(ws);

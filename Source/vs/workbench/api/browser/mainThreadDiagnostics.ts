@@ -23,7 +23,9 @@ import {
 @extHostNamedCustomer(MainContext.MainThreadDiagnostics)
 export class MainThreadDiagnostics implements MainThreadDiagnosticsShape {
 	private readonly _activeOwners = new Set<string>();
+
 	private readonly _proxy: ExtHostDiagnosticsShape;
+
 	private readonly _markerListener: IDisposable;
 
 	constructor(
@@ -36,18 +38,23 @@ export class MainThreadDiagnostics implements MainThreadDiagnosticsShape {
 		this._proxy = extHostContext.getProxy(
 			ExtHostContext.ExtHostDiagnostics,
 		);
+
 		this._markerListener = this._markerService.onMarkerChanged(
 			this._forwardMarkers,
 			this,
 		);
 	}
+
 	dispose(): void {
 		this._markerListener.dispose();
+
 		this._activeOwners.forEach((owner) =>
 			this._markerService.changeAll(owner, []),
 		);
+
 		this._activeOwners.clear();
 	}
+
 	private _forwardMarkers(resources: readonly URI[]): void {
 		const data: [UriComponents, IMarkerData[]][] = [];
 
@@ -66,6 +73,7 @@ export class MainThreadDiagnostics implements MainThreadDiagnosticsShape {
 				}
 			}
 		}
+
 		if (data.length > 0) {
 			this._proxy.$acceptMarkersChange(data);
 		}
@@ -86,21 +94,25 @@ export class MainThreadDiagnostics implements MainThreadDiagnosticsShape {
 							);
 						}
 					}
+
 					if (marker.code && typeof marker.code !== "string") {
 						marker.code.target = URI.revive(marker.code.target);
 					}
 				}
 			}
+
 			this._markerService.changeOne(
 				owner,
 				this._uriIdentService.asCanonicalUri(URI.revive(uri)),
 				markers,
 			);
 		}
+
 		this._activeOwners.add(owner);
 	}
 	$clear(owner: string): void {
 		this._markerService.changeAll(owner, []);
+
 		this._activeOwners.delete(owner);
 	}
 }

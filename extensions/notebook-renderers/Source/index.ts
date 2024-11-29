@@ -56,7 +56,9 @@ function renderImage(
 			return disposable;
 		}
 	}
+
 	const image = document.createElement("img");
+
 	image.src = src;
 
 	const alt = getAltText(outputInfo);
@@ -64,6 +66,7 @@ function renderImage(
 	if (alt) {
 		image.alt = alt;
 	}
+
 	image.setAttribute(
 		"data-vscode-context",
 		JSON.stringify({
@@ -74,8 +77,11 @@ function renderImage(
 	);
 
 	const display = document.createElement("div");
+
 	display.classList.add("display");
+
 	display.appendChild(image);
+
 	element.appendChild(display);
 
 	return disposable;
@@ -99,6 +105,7 @@ const domEval = (container: Element) => {
 
 		const trustedScript =
 			ttPolicy?.createScript(node.innerText) ?? node.innerText;
+
 		scriptTag.text = trustedScript as string;
 
 		for (const key of preservedScriptAttributes) {
@@ -124,6 +131,7 @@ function getAltText(outputInfo: OutputItem) {
 	) {
 		return metadata.vscode_altText;
 	}
+
 	return undefined;
 }
 function fixUpSvgElement(outputInfo: OutputItem, element: HTMLElement) {
@@ -134,11 +142,15 @@ function fixUpSvgElement(outputInfo: OutputItem, element: HTMLElement) {
 
 		if (svgElement && altText) {
 			const title = document.createElement("title");
+
 			title.innerText = altText;
+
 			svgElement.prepend(title);
 		}
+
 		if (svgElement) {
 			svgElement.classList.add("output-image");
+
 			svgElement.setAttribute(
 				"data-vscode-context",
 				JSON.stringify({
@@ -163,7 +175,9 @@ async function renderHTML(
 	const htmlContent = outputInfo.text();
 
 	const trustedHtml = ttPolicy?.createHTML(htmlContent) ?? htmlContent;
+
 	element.innerHTML = trustedHtml as string;
+
 	fixUpSvgElement(outputInfo, element);
 
 	for (const hook of hooks) {
@@ -174,6 +188,7 @@ async function renderHTML(
 			return;
 		}
 	}
+
 	container.appendChild(element);
 
 	domEval(element);
@@ -199,15 +214,20 @@ async function renderJavascript(
 			return;
 		}
 	}
+
 	const script = document.createElement("script");
+
 	script.type = "module";
+
 	script.textContent = scriptText;
 
 	const element = document.createElement("div");
 
 	const trustedHtml =
 		ttPolicy?.createHTML(script.outerHTML) ?? script.outerHTML;
+
 	element.innerHTML = trustedHtml as string;
+
 	container.appendChild(element);
 
 	domEval(element);
@@ -221,6 +241,7 @@ interface Event<T> {
 }
 function createDisposableStore(): {
 	push(...disposables: IDisposable[]): void;
+
 	dispose(): void;
 } {
 	const localDisposables: IDisposable[] = [];
@@ -244,7 +265,9 @@ function renderError(
 	trustHtml: boolean,
 ): IDisposable {
 	const disposableStore = createDisposableStore();
+
 	clearContainer(outputElement);
+
 	type ErrorLike = Partial<Error>;
 
 	let err: ErrorLike;
@@ -256,6 +279,7 @@ function renderError(
 
 		return disposableStore;
 	}
+
 	const headerMessage =
 		err.name && err.message
 			? `${err.name}: ${err.message}`
@@ -264,6 +288,7 @@ function renderError(
 	if (err.stack) {
 		const minimalError =
 			ctx.settings.minimalError && !!headerMessage?.length;
+
 		outputElement.classList.add("traceback");
 
 		const { formattedStack, errorLocation } = formatStackTrace(err.stack);
@@ -287,11 +312,14 @@ function renderError(
 		);
 
 		const stackTraceElement = document.createElement("div");
+
 		stackTraceElement.appendChild(content);
+
 		outputElement.classList.toggle(
 			"word-wrap",
 			ctx.settings.outputWordWrap,
 		);
+
 		disposableStore.push(
 			ctx.onDidChangeSettings((e) => {
 				outputElement.classList.toggle("word-wrap", e.outputWordWrap);
@@ -307,7 +335,9 @@ function renderError(
 			);
 		} else {
 			stackTraceElement.classList.toggle("scrollable", outputScrolling);
+
 			outputElement.appendChild(stackTraceElement);
+
 			initializeScroll(stackTraceElement, disposableStore);
 		}
 	} else {
@@ -315,9 +345,11 @@ function renderError(
 
 		if (headerMessage) {
 			header.innerText = headerMessage;
+
 			outputElement.appendChild(header);
 		}
 	}
+
 	outputElement.classList.add("error");
 
 	return disposableStore;
@@ -331,47 +363,66 @@ function createMinimalError(
 	const outputDiv = document.createElement("div");
 
 	const headerSection = document.createElement("div");
+
 	headerSection.classList.add("error-output-header");
 
 	if (errorLocation && errorLocation.indexOf("<a") === 0) {
 		headerSection.innerHTML = errorLocation;
 	}
+
 	const header = document.createElement("span");
+
 	header.innerText = headerMessage;
+
 	headerSection.appendChild(header);
+
 	outputDiv.appendChild(headerSection);
 
 	function addButton(linkElement: HTMLElement) {
 		const button = document.createElement("li");
+
 		button.appendChild(linkElement);
 		// the :hover css selector doesn't work in the webview,
 		// so we need to add the hover class manually
 		button.onmouseover = function () {
 			button.classList.add("hover");
 		};
+
 		button.onmouseout = function () {
 			button.classList.remove("hover");
 		};
 
 		return button;
 	}
+
 	const buttons = document.createElement("ul");
+
 	buttons.classList.add("error-output-actions");
+
 	outputDiv.appendChild(buttons);
 
 	const toggleStackLink = document.createElement("a");
+
 	toggleStackLink.innerText = "Show Details";
+
 	toggleStackLink.href = "#!";
+
 	buttons.appendChild(addButton(toggleStackLink));
+
 	toggleStackLink.onclick = (e) => {
 		e.preventDefault();
 
 		const hidden = stackTrace.style.display === "none";
+
 		stackTrace.style.display = hidden ? "" : "none";
+
 		toggleStackLink.innerText = hidden ? "Hide Details" : "Show Details";
 	};
+
 	outputDiv.appendChild(stackTrace);
+
 	stackTrace.style.display = "none";
+
 	outputElement.appendChild(outputDiv);
 }
 function getPreviousMatchingContentGroup(outputElement: HTMLElement) {
@@ -390,9 +441,12 @@ function getPreviousMatchingContentGroup(outputElement: HTMLElement) {
 		) {
 			break;
 		}
+
 		match = outputElement.firstChild as HTMLElement;
+
 		previous = previous?.previousSibling;
 	}
+
 	return match;
 }
 function onScrollHandler(e: globalThis.Event) {
@@ -408,6 +462,7 @@ function onKeypressHandler(e: KeyboardEvent) {
 	if (e.ctrlKey || e.shiftKey) {
 		return;
 	}
+
 	if (
 		e.code === "ArrowDown" ||
 		e.code === "ArrowUp" ||
@@ -429,10 +484,12 @@ function initializeScroll(
 	if (scrollableElement.classList.contains(scrollableClass)) {
 		const scrollbarVisible =
 			scrollableElement.scrollHeight > scrollableElement.clientHeight;
+
 		scrollableElement.classList.toggle(
 			"scrollbar-visible",
 			scrollbarVisible,
 		);
+
 		scrollableElement.scrollTop =
 			scrollTop !== undefined
 				? scrollTop
@@ -440,6 +497,7 @@ function initializeScroll(
 
 		if (scrollbarVisible) {
 			scrollableElement.addEventListener("scroll", onScrollHandler);
+
 			disposables.push({
 				dispose: () =>
 					scrollableElement.removeEventListener(
@@ -447,7 +505,9 @@ function initializeScroll(
 						onScrollHandler,
 					),
 			});
+
 			scrollableElement.addEventListener("keydown", onKeypressHandler);
+
 			disposables.push({
 				dispose: () =>
 					scrollableElement.removeEventListener(
@@ -472,6 +532,7 @@ function findScrolledHeight(container: HTMLElement): number | undefined {
 		// not scrolled to the bottom
 		return scrollableElement.scrollTop;
 	}
+
 	return undefined;
 }
 function scrollingEnabled(output: OutputItem, options: RenderOptions) {
@@ -506,6 +567,7 @@ function renderStream(
 		error,
 		linkifyFilePaths: ctx.settings.linkifyFilePaths,
 	};
+
 	outputElement.classList.add("output-stream");
 
 	const scrollTop = outputScrolling
@@ -527,13 +589,16 @@ function renderStream(
 				outputInfo.text(),
 				outputOptions,
 			);
+
 			previousOutputParent.appendChild(newContent);
 		}
+
 		previousOutputParent.classList.toggle(
 			"scrollbar-visible",
 			previousOutputParent.scrollHeight >
 				previousOutputParent.clientHeight,
 		);
+
 		previousOutputParent.scrollTop =
 			scrollTop !== undefined
 				? scrollTop
@@ -553,26 +618,34 @@ function renderStream(
 				outputInfo.text(),
 				outputOptions,
 			);
+
 			contentParent = document.createElement("div");
+
 			contentParent.appendChild(newContent);
 
 			while (outputElement.firstChild) {
 				outputElement.firstChild.remove();
 			}
+
 			outputElement.appendChild(contentParent);
 		}
+
 		contentParent.classList.toggle("scrollable", outputScrolling);
+
 		outputElement.classList.toggle(
 			"word-wrap",
 			ctx.settings.outputWordWrap,
 		);
+
 		disposableStore.push(
 			ctx.onDidChangeSettings((e) => {
 				outputElement.classList.toggle("word-wrap", e.outputWordWrap);
 			}),
 		);
+
 		initializeScroll(contentParent, disposableStore, scrollTop);
 	}
+
 	return disposableStore;
 }
 function renderText(
@@ -581,6 +654,7 @@ function renderText(
 	ctx: IRichRenderContext,
 ): IDisposable {
 	const disposableStore = createDisposableStore();
+
 	clearContainer(outputElement);
 
 	const text = outputInfo.text();
@@ -595,15 +669,21 @@ function renderText(
 	};
 
 	const content = createOutputContent(outputInfo.id, text, outputOptions);
+
 	content.classList.add("output-plaintext");
+
 	outputElement.classList.toggle("word-wrap", ctx.settings.outputWordWrap);
+
 	disposableStore.push(
 		ctx.onDidChangeSettings((e) => {
 			outputElement.classList.toggle("word-wrap", e.outputWordWrap);
 		}),
 	);
+
 	content.classList.toggle("scrollable", outputScrolling);
+
 	outputElement.appendChild(content);
+
 	initializeScroll(content, disposableStore);
 
 	return disposableStore;
@@ -617,27 +697,37 @@ export const activate: ActivationFunction<void> = (ctx) => {
 
 	const latestContext = ctx as RendererContext<void> & {
 		readonly settings: RenderOptions;
+
 		readonly onDidChangeSettings: Event<RenderOptions>;
 	};
 
 	const style = document.createElement("style");
+
 	style.textContent = `
 	#container div.output.remove-padding {
 		padding-left: 0;
+
 		padding-right: 0;
 	}
 	.output-plaintext,
 	.output-stream,
 	.traceback {
 		display: inline-block;
+
 		width: 100%;
+
 		line-height: var(--notebook-cell-output-line-height);
+
 		font-family: var(--notebook-cell-output-font-family);
+
 		font-size: var(--notebook-cell-output-font-size);
+
 		user-select: text;
 		-webkit-user-select: text;
 		-ms-user-select: text;
+
 		cursor: auto;
+
 		word-wrap: break-word;
 		/* text/stream output container should scroll but preserve newline character */
 		white-space: pre;
@@ -648,18 +738,25 @@ export const activate: ActivationFunction<void> = (ctx) => {
 	}
 	#container div.output>div {
 		padding-left: var(--notebook-output-node-left-padding);
+
 		padding-right: var(--notebook-output-node-padding);
+
 		box-sizing: border-box;
+
 		border-width: 1px;
+
 		border-style: solid;
+
 		border-color: transparent;
 	}
 	#container div.output>div:focus {
 		outline: 0;
+
 		border-color: var(--theme-input-focus-border-color);
 	}
 	#container div.output .scrollable {
 		overflow-y: auto;
+
 		max-height: var(--notebook-cell-output-max-height);
 	}
 	#container div.output .scrollable.scrollbar-visible {
@@ -670,7 +767,9 @@ export const activate: ActivationFunction<void> = (ctx) => {
 	}
 	#container div.truncation-message {
 		font-style: italic;
+
 		font-family: var(--theme-font-family);
+
 		padding-top: 4px;
 	}
 	#container div.output .scrollable div {
@@ -704,15 +803,22 @@ export const activate: ActivationFunction<void> = (ctx) => {
 	}
 	#container ul.error-output-actions {
 		margin: 0px;
+
 		padding: 6px 0px 0px 6px;
+
 		padding-inline-start: 0px;
 	}
 	#container .error-output-actions li {
 		padding: 0px 4px 0px 4px;
+
 		border-radius: 5px;
+
 		height: 20px;
+
 		display: inline-flex;
+
 		cursor: pointer;
+
 		border: solid 1px var(--vscode-notebook-cellToolbarSeparator);
 	}
 	#container .error-output-actions li.hover {
@@ -726,6 +832,7 @@ export const activate: ActivationFunction<void> = (ctx) => {
 	}
 	#container .error-output-actions li a {
 		color: var(--vscode-foreground);
+
 		text-decoration: none;
 	}
 	#container .error-output-header a {
@@ -745,18 +852,22 @@ export const activate: ActivationFunction<void> = (ctx) => {
 					if (!ctx.workspace.isTrusted) {
 						return;
 					}
+
 					await renderHTML(outputInfo, element, signal!, htmlHooks);
 
 					break;
 				}
+
 				case "application/javascript": {
 					if (!ctx.workspace.isTrusted) {
 						return;
 					}
+
 					renderJavascript(outputInfo, element, signal!, jsHooks);
 
 					break;
 				}
+
 				case "image/gif":
 				case "image/png":
 				case "image/jpeg":
@@ -765,8 +876,10 @@ export const activate: ActivationFunction<void> = (ctx) => {
 						disposables.get(outputInfo.id)?.dispose();
 
 						const disposable = renderImage(outputInfo, element);
+
 						disposables.set(outputInfo.id, disposable);
 					}
+
 					break;
 
 				case "application/vnd.code.notebook.error":
@@ -779,8 +892,10 @@ export const activate: ActivationFunction<void> = (ctx) => {
 							latestContext,
 							ctx.workspace.isTrusted,
 						);
+
 						disposables.set(outputInfo.id, disposable);
 					}
+
 					break;
 
 				case "application/vnd.code.notebook.stdout":
@@ -795,8 +910,10 @@ export const activate: ActivationFunction<void> = (ctx) => {
 							false,
 							latestContext,
 						);
+
 						disposables.set(outputInfo.id, disposable);
 					}
+
 					break;
 
 				case "application/vnd.code.notebook.stderr":
@@ -810,8 +927,10 @@ export const activate: ActivationFunction<void> = (ctx) => {
 							true,
 							latestContext,
 						);
+
 						disposables.set(outputInfo.id, disposable);
 					}
+
 					break;
 
 				case "text/plain":
@@ -823,8 +942,10 @@ export const activate: ActivationFunction<void> = (ctx) => {
 							element,
 							latestContext,
 						);
+
 						disposables.set(outputInfo.id, disposable);
 					}
+
 					break;
 
 				default:
@@ -836,10 +957,13 @@ export const activate: ActivationFunction<void> = (ctx) => {
 							element,
 							latestContext,
 						);
+
 						disposables.set(outputInfo.id, disposable);
 					}
+
 					break;
 			}
+
 			if (element.querySelector("div")) {
 				element.querySelector("div")!.tabIndex = 0;
 			}

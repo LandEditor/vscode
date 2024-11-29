@@ -10,12 +10,15 @@ declare module "vscode" {
 		remoteAddress: { port: number; host: string };
 		// The desired local port. If this port can't be used, then another will be chosen.
 		localAddressPort?: number;
+
 		label?: string;
 		/**
 		 * @deprecated Use privacy instead
 		 */
 		public?: boolean;
+
 		privacy?: string;
+
 		protocol?: string;
 	}
 
@@ -27,6 +30,7 @@ declare module "vscode" {
 		 * @deprecated Use privacy instead
 		 */
 		public?: boolean;
+
 		privacy?: string;
 		// If protocol is not provided it is assumed to be http, regardless of the localAddress.
 		protocol?: string;
@@ -35,6 +39,7 @@ declare module "vscode" {
 	export interface Tunnel extends TunnelDescription {
 		// Implementers of Tunnel should fire onDidDispose when dispose is called.
 		onDidDispose: Event<void>;
+
 		dispose(): void | Thenable<void>;
 	}
 

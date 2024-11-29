@@ -67,19 +67,27 @@ export class MainThreadDebugService
 	implements MainThreadDebugServiceShape, IDebugAdapterFactory
 {
 	private readonly _proxy: ExtHostDebugServiceShape;
+
 	private readonly _toDispose = new DisposableStore();
+
 	private readonly _debugAdapters: Map<number, ExtensionHostDebugAdapter>;
+
 	private _debugAdaptersHandleCounter = 1;
+
 	private readonly _debugConfigurationProviders: Map<
 		number,
 		IDebugConfigurationProvider
 	>;
+
 	private readonly _debugAdapterDescriptorFactories: Map<
 		number,
 		IDebugAdapterDescriptorFactory
 	>;
+
 	private readonly _extHostKnownSessions: Set<DebugSessionUUID>;
+
 	private readonly _visualizerHandles = new Map<string, IDisposable>();
+
 	private readonly _visualizerTreeHandles = new Map<string, IDisposable>();
 
 	constructor(
@@ -97,7 +105,9 @@ export class MainThreadDebugService
 			IDebugSession,
 			DisposableStore
 		>();
+
 		this._toDispose.add(sessionListeners);
+
 		this._toDispose.add(
 			debugService.onDidNewSession((session) => {
 				this._proxy.$acceptDebugSessionStarted(
@@ -105,6 +115,7 @@ export class MainThreadDebugService
 				);
 
 				const store = sessionListeners.get(session);
+
 				store?.add(
 					session.onDidChangeName((name) => {
 						this._proxy.$acceptDebugSessionNameChanged(
@@ -122,8 +133,10 @@ export class MainThreadDebugService
 
 				if (!store) {
 					store = new DisposableStore();
+
 					sessionListeners.set(session, store);
 				}
+
 				store.add(
 					session.onDidCustomEvent((event) =>
 						this._proxy.$acceptDebugSessionCustomEvent(
@@ -134,11 +147,13 @@ export class MainThreadDebugService
 				);
 			}),
 		);
+
 		this._toDispose.add(
 			debugService.onDidEndSession(({ session, restart }) => {
 				this._proxy.$acceptDebugSessionTerminated(
 					this.getSessionDto(session),
 				);
+
 				this._extHostKnownSessions.delete(session.getId());
 				// keep the session listeners around since we still will get events after they restart
 				if (!restart) {
@@ -153,6 +168,7 @@ export class MainThreadDebugService
 				}
 			}),
 		);
+
 		this._toDispose.add(
 			debugService.getViewModel().onDidFocusSession((session) => {
 				this._proxy.$acceptDebugSessionActiveChanged(
@@ -160,6 +176,7 @@ export class MainThreadDebugService
 				);
 			}),
 		);
+
 		this._toDispose.add(
 			toDisposable(() => {
 				for (const [handle, da] of this._debugAdapters) {
@@ -167,12 +184,17 @@ export class MainThreadDebugService
 				}
 			}),
 		);
+
 		this._debugAdapters = new Map();
+
 		this._debugConfigurationProviders = new Map();
+
 		this._debugAdapterDescriptorFactories = new Map();
+
 		this._extHostKnownSessions = new Set();
 
 		const viewModel = this.debugService.getViewModel();
+
 		this._toDispose.add(
 			Event.any(
 				viewModel.onDidFocusStackFrame,
@@ -200,6 +222,7 @@ export class MainThreadDebugService
 				}
 			}),
 		);
+
 		this.sendBreakpointsAndListen();
 	}
 	$registerDebugVisualizerTree(treeId: string, canEdit: boolean): void {
@@ -215,6 +238,7 @@ export class MainThreadDebugService
 	}
 	$unregisterDebugVisualizerTree(treeId: string): void {
 		this._visualizerTreeHandles.get(treeId)?.dispose();
+
 		this._visualizerTreeHandles.delete(treeId);
 	}
 	$registerDebugVisualizer(extensionId: string, id: string): void {
@@ -232,13 +256,17 @@ export class MainThreadDebugService
 			resolveDebugVisualizer: (viz, token) =>
 				this._proxy.$resolveDebugVisualizer(viz.id, token),
 		});
+
 		this._visualizerHandles.set(`${extensionId}/${id}`, handle);
 	}
 	$unregisterDebugVisualizer(extensionId: string, id: string): void {
 		const key = `${extensionId}/${id}`;
+
 		this._visualizerHandles.get(key)?.dispose();
+
 		this._visualizerHandles.delete(key);
 	}
+
 	private sendBreakpointsAndListen(): void {
 		// set up a handler to send more
 		this._toDispose.add(
@@ -250,12 +278,15 @@ export class MainThreadDebugService
 					if (e.added) {
 						delta.added = this.convertToDto(e.added);
 					}
+
 					if (e.removed) {
 						delta.removed = e.removed.map((x) => x.getId());
 					}
+
 					if (e.changed) {
 						delta.changed = this.convertToDto(e.changed);
 					}
+
 					if (delta.added || delta.removed || delta.changed) {
 						this._proxy.$acceptBreakpointsDelta(delta);
 					}
@@ -277,6 +308,7 @@ export class MainThreadDebugService
 			});
 		}
 	}
+
 	public dispose(): void {
 		this._toDispose.dispose();
 	}
@@ -290,10 +322,12 @@ export class MainThreadDebugService
 			this._proxy,
 			session,
 		);
+
 		this._debugAdapters.set(handle, da);
 
 		return da;
 	}
+
 	substituteVariables(
 		folder: IWorkspaceFolder | undefined,
 		config: IConfig,
@@ -305,6 +339,7 @@ export class MainThreadDebugService
 			),
 		);
 	}
+
 	runInTerminal(
 		args: DebugProtocol.RunInTerminalRequestArguments,
 		sessionId: string,
@@ -319,6 +354,7 @@ export class MainThreadDebugService
 				.registerDebugAdapterFactory(debugTypes, this),
 		);
 	}
+
 	public $registerBreakpoints(
 		DTOs: Array<
 			| ISourceMultiBreakpointDto
@@ -340,6 +376,7 @@ export class MainThreadDebugService
 						mode: l.mode,
 					}),
 				);
+
 				this.debugService.addBreakpoints(uri.revive(dto.uri), rawbps);
 			} else if (dto.type === "function") {
 				this.debugService.addFunctionBreakpoint(
@@ -367,8 +404,10 @@ export class MainThreadDebugService
 				});
 			}
 		}
+
 		return Promise.resolve();
 	}
+
 	public $unregisterBreakpoints(
 		breakpointIds: string[],
 		functionBreakpointIds: string[],
@@ -379,12 +418,14 @@ export class MainThreadDebugService
 		functionBreakpointIds.forEach((id) =>
 			this.debugService.removeFunctionBreakpoints(id),
 		);
+
 		dataBreakpointIds.forEach((id) =>
 			this.debugService.removeDataBreakpoints(id),
 		);
 
 		return Promise.resolve();
 	}
+
 	public $registerDebugConfigurationProvider(
 		debugType: string,
 		providerTriggerKind: DebugConfigurationProviderTriggerKind,
@@ -407,6 +448,7 @@ export class MainThreadDebugService
 				);
 			};
 		}
+
 		if (hasResolve) {
 			provider.resolveDebugConfiguration = (folder, config, token) => {
 				return this._proxy.$resolveDebugConfiguration(
@@ -417,6 +459,7 @@ export class MainThreadDebugService
 				);
 			};
 		}
+
 		if (hasResolve2) {
 			provider.resolveDebugConfigurationWithSubstitutedVariables = (
 				folder,
@@ -431,7 +474,9 @@ export class MainThreadDebugService
 				);
 			};
 		}
+
 		this._debugConfigurationProviders.set(handle, provider);
+
 		this._toDispose.add(
 			this.debugService
 				.getConfigurationManager()
@@ -440,16 +485,19 @@ export class MainThreadDebugService
 
 		return Promise.resolve(undefined);
 	}
+
 	public $unregisterDebugConfigurationProvider(handle: number): void {
 		const provider = this._debugConfigurationProviders.get(handle);
 
 		if (provider) {
 			this._debugConfigurationProviders.delete(handle);
+
 			this.debugService
 				.getConfigurationManager()
 				.unregisterDebugConfigurationProvider(provider);
 		}
 	}
+
 	public $registerDebugAdapterDescriptorFactory(
 		debugType: string,
 		handle: number,
@@ -465,7 +513,9 @@ export class MainThreadDebugService
 				);
 			},
 		};
+
 		this._debugAdapterDescriptorFactories.set(handle, provider);
+
 		this._toDispose.add(
 			this.debugService
 				.getAdapterManager()
@@ -474,24 +524,29 @@ export class MainThreadDebugService
 
 		return Promise.resolve(undefined);
 	}
+
 	public $unregisterDebugAdapterDescriptorFactory(handle: number): void {
 		const provider = this._debugAdapterDescriptorFactories.get(handle);
 
 		if (provider) {
 			this._debugAdapterDescriptorFactories.delete(handle);
+
 			this.debugService
 				.getAdapterManager()
 				.unregisterDebugAdapterDescriptorFactory(provider);
 		}
 	}
+
 	private getSession(
 		sessionId: DebugSessionUUID | undefined,
 	): IDebugSession | undefined {
 		if (sessionId) {
 			return this.debugService.getModel().getSession(sessionId, true);
 		}
+
 		return undefined;
 	}
+
 	public async $startDebugging(
 		folder: UriComponents | undefined,
 		nameOrConfig: string | IDebugConfiguration,
@@ -537,13 +592,16 @@ export class MainThreadDebugService
 			);
 		}
 	}
+
 	public $setDebugSessionName(
 		sessionId: DebugSessionUUID,
 		name: string,
 	): void {
 		const session = this.debugService.getModel().getSession(sessionId);
+
 		session?.setName(name);
 	}
+
 	public $customDebugAdapterRequest(
 		sessionId: DebugSessionUUID,
 		request: string,
@@ -568,8 +626,10 @@ export class MainThreadDebugService
 				}
 			});
 		}
+
 		return Promise.reject(new ErrorNoTelemetry("debug session not found"));
 	}
+
 	public $getDebugProtocolBreakpoint(
 		sessionId: DebugSessionUUID,
 		breakpoinId: string,
@@ -583,8 +643,10 @@ export class MainThreadDebugService
 				session.getDebugProtocolBreakpoint(breakpoinId),
 			);
 		}
+
 		return Promise.reject(new ErrorNoTelemetry("debug session not found"));
 	}
+
 	public $stopDebugging(
 		sessionId: DebugSessionUUID | undefined,
 	): Promise<void> {
@@ -603,13 +665,17 @@ export class MainThreadDebugService
 			// stop all
 			return this.debugService.stopSession(undefined);
 		}
+
 		return Promise.reject(new ErrorNoTelemetry("debug session not found"));
 	}
+
 	public $appendDebugConsole(value: string): void {
 		// Use warning as severity to get the orange color for messages coming from the debug extension
 		const session = this.debugService.getViewModel().focusedSession;
+
 		session?.appendToRepl({ output: value, sev: severity.Warning });
 	}
+
 	public $acceptDAMessage(
 		handle: number,
 		message: DebugProtocol.ProtocolMessage,
@@ -618,6 +684,7 @@ export class MainThreadDebugService
 			convertToVSCPaths(message, false),
 		);
 	}
+
 	public $acceptDAError(
 		handle: number,
 		name: string,
@@ -629,15 +696,18 @@ export class MainThreadDebugService
 			.get(handle)
 			?.fireError(handle, new Error(`${name}: ${message}\n${stack}`));
 	}
+
 	public $acceptDAExit(handle: number, code: number, signal: string) {
 		this.getDebugAdapter(handle).fireExit(handle, code, signal);
 	}
+
 	private getDebugAdapter(handle: number): ExtensionHostDebugAdapter {
 		const adapter = this._debugAdapters.get(handle);
 
 		if (!adapter) {
 			throw new Error("Invalid debug adapter");
 		}
+
 		return adapter;
 	}
 	// dto helpers
@@ -645,6 +715,7 @@ export class MainThreadDebugService
 		// remember that the EH has cached the session and we do not have to send it again
 		this._extHostKnownSessions.add(sessionID);
 	}
+
 	getSessionDto(session: undefined): undefined;
 
 	getSessionDto(session: IDebugSession): IDebugSessionDto;
@@ -673,8 +744,10 @@ export class MainThreadDebugService
 				};
 			}
 		}
+
 		return undefined;
 	}
+
 	private convertToDto(
 		bps: ReadonlyArray<
 			| IBreakpoint
@@ -753,12 +826,15 @@ class ExtensionHostDebugAdapter extends AbstractDebugAdapter {
 	) {
 		super();
 	}
+
 	fireError(handle: number, err: Error) {
 		this._onError.fire(err);
 	}
+
 	fireExit(handle: number, code: number, signal: string) {
 		this._onExit.fire(code);
 	}
+
 	startSession(): Promise<void> {
 		return Promise.resolve(
 			this._proxy.$startDASession(
@@ -767,12 +843,14 @@ class ExtensionHostDebugAdapter extends AbstractDebugAdapter {
 			),
 		);
 	}
+
 	sendMessage(message: DebugProtocol.ProtocolMessage): void {
 		this._proxy.$sendDAMessage(
 			this._handle,
 			convertToDAPaths(message, true),
 		);
 	}
+
 	async stopSession(): Promise<void> {
 		await this.cancelPendingRequests();
 

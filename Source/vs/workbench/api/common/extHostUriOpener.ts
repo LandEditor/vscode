@@ -22,12 +22,15 @@ export class ExtHostUriOpeners implements ExtHostUriOpenersShape {
 		Schemas.http,
 		Schemas.https,
 	]);
+
 	private readonly _proxy: MainThreadUriOpenersShape;
+
 	private readonly _openers = new Map<string, vscode.ExternalUriOpener>();
 
 	constructor(mainContext: IMainContext) {
 		this._proxy = mainContext.getProxy(MainContext.MainThreadUriOpeners);
 	}
+
 	registerExternalUriOpener(
 		extensionId: ExtensionIdentifier,
 		id: string,
@@ -37,6 +40,7 @@ export class ExtHostUriOpeners implements ExtHostUriOpenersShape {
 		if (this._openers.has(id)) {
 			throw new Error(`Opener with id '${id}' already registered`);
 		}
+
 		const invalidScheme = metadata.schemes.find(
 			(scheme) => !ExtHostUriOpeners.supportedSchemes.has(scheme),
 		);
@@ -46,7 +50,9 @@ export class ExtHostUriOpeners implements ExtHostUriOpenersShape {
 				`Scheme '${invalidScheme}' is not supported. Only http and https are currently supported.`,
 			);
 		}
+
 		this._openers.set(id, opener);
+
 		this._proxy.$registerUriOpener(
 			id,
 			metadata.schemes,
@@ -56,9 +62,11 @@ export class ExtHostUriOpeners implements ExtHostUriOpenersShape {
 
 		return toDisposable(() => {
 			this._openers.delete(id);
+
 			this._proxy.$unregisterUriOpener(id);
 		});
 	}
+
 	async $canOpenUri(
 		id: string,
 		uriComponents: UriComponents,
@@ -69,14 +77,17 @@ export class ExtHostUriOpeners implements ExtHostUriOpenersShape {
 		if (!opener) {
 			throw new Error(`Unknown opener with id: ${id}`);
 		}
+
 		const uri = URI.revive(uriComponents);
 
 		return opener.canOpenExternalUri(uri, token);
 	}
+
 	async $openUri(
 		id: string,
 		context: {
 			resolvedUri: UriComponents;
+
 			sourceUri: UriComponents;
 		},
 		token: CancellationToken,
@@ -86,6 +97,7 @@ export class ExtHostUriOpeners implements ExtHostUriOpenersShape {
 		if (!opener) {
 			throw new Error(`Unknown opener id: '${id}'`);
 		}
+
 		return opener.openExternalUri(
 			URI.revive(context.resolvedUri),
 			{

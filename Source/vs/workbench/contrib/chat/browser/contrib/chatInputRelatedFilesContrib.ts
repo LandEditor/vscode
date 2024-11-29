@@ -28,6 +28,7 @@ export class ChatRelatedFilesContribution
 	static readonly ID = "chat.relatedFilesWorkingSet";
 
 	private readonly chatEditingSessionDisposables = new DisposableStore();
+
 	private _currentRelatedFilesRetrievalOperation: Promise<void> | undefined;
 
 	constructor(
@@ -39,9 +40,11 @@ export class ChatRelatedFilesContribution
 		super();
 
 		this._handleNewEditingSession();
+
 		this._register(
 			this.chatEditingService.onDidCreateEditingSession(() => {
 				this.chatEditingSessionDisposables.clear();
+
 				this._handleNewEditingSession();
 			}),
 		);
@@ -111,6 +114,7 @@ export class ChatRelatedFilesContribution
 								) {
 									break;
 								}
+
 								newSuggestions.add(file.uri);
 							}
 						}
@@ -127,6 +131,7 @@ export class ChatRelatedFilesContribution
 								existingSuggestedEntriesToRemove.push(entry[0]);
 							}
 						}
+
 						currentEditingSession?.remove(
 							WorkingSetEntryRemovalReason.Programmatic,
 							...existingSuggestedEntriesToRemove,
@@ -154,6 +159,7 @@ export class ChatRelatedFilesContribution
 		if (!currentEditingSession) {
 			return;
 		}
+
 		const widget = this.chatWidgetService.getWidgetBySessionId(
 			currentEditingSession.chatSessionId,
 		);
@@ -164,11 +170,13 @@ export class ChatRelatedFilesContribution
 		) {
 			return;
 		}
+
 		this.chatEditingSessionDisposables.add(
 			currentEditingSession.onDidDispose(() => {
 				this.chatEditingSessionDisposables.clear();
 			}),
 		);
+
 		this._updateRelatedFileSuggestions();
 
 		const onDebouncedType = Event.debounce(
@@ -176,11 +184,13 @@ export class ChatRelatedFilesContribution
 			() => null,
 			3000,
 		);
+
 		this.chatEditingSessionDisposables.add(
 			onDebouncedType(() => {
 				this._updateRelatedFileSuggestions();
 			}),
 		);
+
 		this.chatEditingSessionDisposables.add(
 			currentEditingSession.onDidChange((e) => {
 				if (e === ChatEditingSessionChangeType.WorkingSet) {

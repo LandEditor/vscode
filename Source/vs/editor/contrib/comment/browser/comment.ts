@@ -27,6 +27,7 @@ abstract class CommentLineAction extends EditorAction {
 
 	constructor(type: Type, opts: IActionOptions) {
 		super(opts);
+
 		this._type = type;
 	}
 
@@ -52,6 +53,7 @@ abstract class CommentLineAction extends EditorAction {
 			index,
 			ignoreFirstLine: false,
 		}));
+
 		selections.sort((a, b) =>
 			Range.compareRangesUsingStarts(a.selection, b.selection),
 		);
@@ -72,6 +74,7 @@ abstract class CommentLineAction extends EditorAction {
 				} else {
 					// curr wins
 					prev.ignoreFirstLine = true;
+
 					prev = curr;
 				}
 			}
@@ -92,7 +95,9 @@ abstract class CommentLineAction extends EditorAction {
 		}
 
 		editor.pushUndoStop();
+
 		editor.executeCommands(this.id, commands);
+
 		editor.pushUndoStop();
 	}
 }
@@ -215,7 +220,9 @@ class BlockCommentAction extends EditorAction {
 		}
 
 		editor.pushUndoStop();
+
 		editor.executeCommands(this.id, commands);
+
 		editor.pushUndoStop();
 	}
 }

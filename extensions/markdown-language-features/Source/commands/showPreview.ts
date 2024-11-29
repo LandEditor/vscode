@@ -13,6 +13,7 @@ import { TelemetryReporter } from "../telemetryReporter";
 
 interface ShowPreviewSettings {
 	readonly sideBySide?: boolean;
+
 	readonly locked?: boolean;
 }
 async function showPreview(
@@ -29,6 +30,7 @@ async function showPreview(
 			resource = vscode.window.activeTextEditor.document.uri;
 		}
 	}
+
 	if (!(resource instanceof vscode.Uri)) {
 		if (!vscode.window.activeTextEditor) {
 			// this is most likely toggling the preview
@@ -37,10 +39,12 @@ async function showPreview(
 		// nothing found that could be shown or toggled
 		return;
 	}
+
 	const resourceColumn =
 		(vscode.window.activeTextEditor &&
 			vscode.window.activeTextEditor.viewColumn) ||
 		vscode.ViewColumn.One;
+
 	webviewManager.openDynamicPreview(resource, {
 		resourceColumn: resourceColumn,
 		previewColumn: previewSettings.sideBySide
@@ -48,6 +52,7 @@ async function showPreview(
 			: resourceColumn,
 		locked: !!previewSettings.locked,
 	});
+
 	telemetryReporter.sendTelemetryEvent("openPreview", {
 		where: previewSettings.sideBySide ? "sideBySide" : "inPlace",
 		how: uri instanceof vscode.Uri ? "action" : "pallete",
@@ -55,10 +60,12 @@ async function showPreview(
 }
 export class ShowPreviewCommand implements Command {
 	public readonly id = "markdown.showPreview";
+
 	public constructor(
 		private readonly _webviewManager: MarkdownPreviewManager,
 		private readonly _telemetryReporter: TelemetryReporter,
 	) {}
+
 	public execute(
 		mainUri?: vscode.Uri,
 		allUris?: vscode.Uri[],
@@ -74,10 +81,12 @@ export class ShowPreviewCommand implements Command {
 }
 export class ShowPreviewToSideCommand implements Command {
 	public readonly id = "markdown.showPreviewToSide";
+
 	public constructor(
 		private readonly _webviewManager: MarkdownPreviewManager,
 		private readonly _telemetryReporter: TelemetryReporter,
 	) {}
+
 	public execute(uri?: vscode.Uri, previewSettings?: DynamicPreviewSettings) {
 		showPreview(this._webviewManager, this._telemetryReporter, uri, {
 			sideBySide: true,
@@ -87,10 +96,12 @@ export class ShowPreviewToSideCommand implements Command {
 }
 export class ShowLockedPreviewToSideCommand implements Command {
 	public readonly id = "markdown.showLockedPreviewToSide";
+
 	public constructor(
 		private readonly _webviewManager: MarkdownPreviewManager,
 		private readonly _telemetryReporter: TelemetryReporter,
 	) {}
+
 	public execute(uri?: vscode.Uri) {
 		showPreview(this._webviewManager, this._telemetryReporter, uri, {
 			sideBySide: true,

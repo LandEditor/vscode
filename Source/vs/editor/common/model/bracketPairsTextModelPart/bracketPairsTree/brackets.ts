@@ -24,6 +24,7 @@ export class BracketTokens {
 				`${bracketInfo.languageId}:::${bracketInfo.bracketText}`,
 			);
 		}
+
 		const map = new Map<string, Token>();
 
 		for (const openingBracket of configuration.bracketsNew
@@ -36,6 +37,7 @@ export class BracketTokens {
 				openingTextId,
 				identityKeyProvider,
 			);
+
 			map.set(
 				openingBracket.bracketText,
 				new Token(
@@ -47,6 +49,7 @@ export class BracketTokens {
 				),
 			);
 		}
+
 		for (const closingBracket of configuration.bracketsNew
 			.closingBrackets) {
 			const length = toLength(0, closingBracket.bracketText.length);
@@ -61,6 +64,7 @@ export class BracketTokens {
 					identityKeyProvider,
 				);
 			}
+
 			map.set(
 				closingBracket.bracketText,
 				new Token(
@@ -72,18 +76,24 @@ export class BracketTokens {
 				),
 			);
 		}
+
 		return new BracketTokens(map);
 	}
+
 	private hasRegExp = false;
+
 	private _regExpGlobal: RegExp | null = null;
 
 	constructor(private readonly map: Map<string, Token>) {}
+
 	getRegExpStr(): string | null {
 		if (this.isEmpty) {
 			return null;
 		} else {
 			const keys = [...this.map.keys()];
+
 			keys.sort();
+
 			keys.reverse();
 
 			return keys.map((k) => prepareBracketForRegExp(k)).join("|");
@@ -95,14 +105,19 @@ export class BracketTokens {
 	get regExpGlobal(): RegExp | null {
 		if (!this.hasRegExp) {
 			const regExpStr = this.getRegExpStr();
+
 			this._regExpGlobal = regExpStr ? new RegExp(regExpStr, "gi") : null;
+
 			this.hasRegExp = true;
 		}
+
 		return this._regExpGlobal;
 	}
+
 	getToken(value: string): Token | undefined {
 		return this.map.get(value.toLowerCase());
 	}
+
 	findClosingTokenText(
 		openingBracketIds: SmallImmutableSet<OpeningBracketId>,
 	): string | undefined {
@@ -114,8 +129,10 @@ export class BracketTokens {
 				return closingText;
 			}
 		}
+
 		return undefined;
 	}
+
 	get isEmpty(): boolean {
 		return this.map.size === 0;
 	}
@@ -127,9 +144,11 @@ function prepareBracketForRegExp(str: string): string {
 	if (/^[\w ]+/.test(str)) {
 		escaped = `\\b${escaped}`;
 	}
+
 	if (/[\w ]+$/.test(str)) {
 		escaped = `${escaped}\\b`;
 	}
+
 	return escaped;
 }
 export class LanguageAgnosticBracketTokens {
@@ -144,10 +163,12 @@ export class LanguageAgnosticBracketTokens {
 			languageId: string,
 		) => ResolvedLanguageConfiguration,
 	) {}
+
 	public didLanguageChange(languageId: string): boolean {
 		// Report a change whenever the language configuration updates.
 		return this.languageIdToBracketTokens.has(languageId);
 	}
+
 	getSingleLanguageBracketTokens(languageId: string): BracketTokens {
 		let singleLanguageBracketTokens =
 			this.languageIdToBracketTokens.get(languageId);
@@ -157,13 +178,16 @@ export class LanguageAgnosticBracketTokens {
 				this.getLanguageConfiguration(languageId),
 				this.denseKeyProvider,
 			);
+
 			this.languageIdToBracketTokens.set(
 				languageId,
 				singleLanguageBracketTokens,
 			);
 		}
+
 		return singleLanguageBracketTokens;
 	}
+
 	getToken(value: string, languageId: string): Token | undefined {
 		const singleLanguageBracketTokens =
 			this.getSingleLanguageBracketTokens(languageId);

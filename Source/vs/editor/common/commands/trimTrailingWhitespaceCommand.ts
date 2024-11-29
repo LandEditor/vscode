@@ -17,8 +17,11 @@ import { ITextModel } from "../model.js";
 
 export class TrimTrailingWhitespaceCommand implements ICommand {
 	private readonly _selection: Selection;
+
 	private _selectionId: string | null;
+
 	private readonly _cursors: Position[];
+
 	private readonly _trimInRegexesAndStrings: boolean;
 
 	constructor(
@@ -27,10 +30,14 @@ export class TrimTrailingWhitespaceCommand implements ICommand {
 		trimInRegexesAndStrings: boolean,
 	) {
 		this._selection = selection;
+
 		this._cursors = cursors;
+
 		this._selectionId = null;
+
 		this._trimInRegexesAndStrings = trimInRegexesAndStrings;
 	}
+
 	public getEditOperations(
 		model: ITextModel,
 		builder: IEditOperationBuilder,
@@ -43,10 +50,13 @@ export class TrimTrailingWhitespaceCommand implements ICommand {
 
 		for (let i = 0, len = ops.length; i < len; i++) {
 			const op = ops[i];
+
 			builder.addEditOperation(op.range, op.text);
 		}
+
 		this._selectionId = builder.trackSelection(this._selection);
 	}
+
 	public computeCursorState(
 		model: ITextModel,
 		helper: ICursorStateComputerData,
@@ -67,6 +77,7 @@ export function trimTrailingWhitespace(
 		if (a.lineNumber === b.lineNumber) {
 			return a.column - b.column;
 		}
+
 		return a.lineNumber - b.lineNumber;
 	});
 	// Reduce multiple cursors on the same line and only keep the last one on the line
@@ -76,6 +87,7 @@ export function trimTrailingWhitespace(
 			cursors.splice(i, 1);
 		}
 	}
+
 	const r: ISingleEditOperation[] = [];
 
 	let rLen = 0;
@@ -86,7 +98,9 @@ export function trimTrailingWhitespace(
 
 	for (
 		let lineNumber = 1, lineCount = model.getLineCount();
+
 		lineNumber <= lineCount;
+
 		lineNumber++
 	) {
 		const lineContent = model.getLineContent(lineNumber);
@@ -100,6 +114,7 @@ export function trimTrailingWhitespace(
 			cursors[cursorIndex].lineNumber === lineNumber
 		) {
 			minEditColumn = cursors[cursorIndex].column;
+
 			cursorIndex++;
 
 			if (minEditColumn === maxLineColumn) {
@@ -107,9 +122,11 @@ export function trimTrailingWhitespace(
 				continue;
 			}
 		}
+
 		if (lineContent.length === 0) {
 			continue;
 		}
+
 		const lastNonWhitespaceIndex =
 			strings.lastNonWhitespaceIndex(lineContent);
 
@@ -125,6 +142,7 @@ export function trimTrailingWhitespace(
 			// There is no trailing whitespace
 			continue;
 		}
+
 		if (!trimInRegexesAndStrings) {
 			if (!model.tokenization.hasAccurateTokensForLine(lineNumber)) {
 				// We don't want to force line tokenization, as that can be expensive, but we also don't want to trim
@@ -132,6 +150,7 @@ export function trimTrailingWhitespace(
 				// lines that the user requested we don't. So we bail out if the tokens are not accurate for this line.
 				continue;
 			}
+
 			const lineTokens = model.tokenization.getLineTokens(lineNumber);
 
 			const fromColumnType = lineTokens.getStandardTokenType(
@@ -145,10 +164,13 @@ export function trimTrailingWhitespace(
 				continue;
 			}
 		}
+
 		fromColumn = Math.max(minEditColumn, fromColumn);
+
 		r[rLen++] = EditOperation.delete(
 			new Range(lineNumber, fromColumn, lineNumber, maxLineColumn),
 		);
 	}
+
 	return r;
 }

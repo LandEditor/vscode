@@ -81,11 +81,13 @@ class TextAreaSyncContribution
 	implements ITerminalContribution
 {
 	static readonly ID = "terminal.textAreaSync";
+
 	static get(instance: ITerminalInstance): TextAreaSyncContribution | null {
 		return instance.getContribution<TextAreaSyncContribution>(
 			TextAreaSyncContribution.ID,
 		);
 	}
+
 	private _addon: TextAreaSyncAddon | undefined;
 
 	constructor(
@@ -95,6 +97,7 @@ class TextAreaSyncContribution
 	) {
 		super();
 	}
+
 	layout(
 		xterm: IXtermTerminal & {
 			raw: Terminal;
@@ -103,13 +106,16 @@ class TextAreaSyncContribution
 		if (this._addon) {
 			return;
 		}
+
 		this._addon = this.add(
 			this._instantiationService.createInstance(
 				TextAreaSyncAddon,
 				this._ctx.instance.capabilities,
 			),
 		);
+
 		xterm.raw.loadAddon(this._addon);
+
 		this._addon.activate(xterm.raw);
 	}
 }
@@ -123,6 +129,7 @@ export class TerminalAccessibleViewContribution
 	implements ITerminalContribution
 {
 	static readonly ID = "terminal.accessibleBufferProvider";
+
 	static get(
 		instance: ITerminalInstance,
 	): TerminalAccessibleViewContribution | null {
@@ -130,13 +137,17 @@ export class TerminalAccessibleViewContribution
 			TerminalAccessibleViewContribution.ID,
 		);
 	}
+
 	private _bufferTracker: BufferContentTracker | undefined;
+
 	private _bufferProvider: TerminalAccessibleBufferProvider | undefined;
+
 	private _xterm:
 		| (Pick<IXtermTerminal, "shellIntegration" | "getFont"> & {
 				raw: Terminal;
 		  })
 		| undefined;
+
 	private readonly _onDidRunCommand: MutableDisposable<IDisposable> =
 		new MutableDisposable();
 
@@ -156,6 +167,7 @@ export class TerminalAccessibleViewContribution
 		private readonly _terminalService: ITerminalService,
 	) {
 		super();
+
 		this._register(
 			AccessibleViewAction.addImplementation(
 				90,
@@ -167,6 +179,7 @@ export class TerminalAccessibleViewContribution
 					) {
 						return false;
 					}
+
 					this.show();
 
 					return true;
@@ -174,6 +187,7 @@ export class TerminalAccessibleViewContribution
 				TerminalContextKeys.focus,
 			),
 		);
+
 		this._register(
 			this._ctx.instance.onDidExecuteText(() => {
 				const focusAfterRun = _configurationService.getValue(
@@ -187,6 +201,7 @@ export class TerminalAccessibleViewContribution
 				}
 			}),
 		);
+
 		this._register(
 			this._configurationService.onDidChangeConfiguration((e) => {
 				if (
@@ -198,6 +213,7 @@ export class TerminalAccessibleViewContribution
 				}
 			}),
 		);
+
 		this._register(
 			this._ctx.instance.capabilities.onDidAddCapability((e) => {
 				if (e.capability.type === TerminalCapability.CommandDetection) {
@@ -206,6 +222,7 @@ export class TerminalAccessibleViewContribution
 			}),
 		);
 	}
+
 	xtermReady(
 		xterm: IXtermTerminal & {
 			raw: Terminal;
@@ -215,9 +232,13 @@ export class TerminalAccessibleViewContribution
 			TextAreaSyncAddon,
 			this._ctx.instance.capabilities,
 		);
+
 		xterm.raw.loadAddon(addon);
+
 		addon.activate(xterm.raw);
+
 		this._xterm = xterm;
+
 		this._register(
 			this._xterm.raw.onWriteParsed(async () => {
 				if (
@@ -225,6 +246,7 @@ export class TerminalAccessibleViewContribution
 				) {
 					return;
 				}
+
 				if (
 					this._isTerminalAccessibleViewOpen() &&
 					this._xterm!.raw.buffer.active.baseY === 0
@@ -235,6 +257,7 @@ export class TerminalAccessibleViewContribution
 		);
 
 		const onRequestUpdateEditor = Event.latch(this._xterm.raw.onScroll);
+
 		this._register(
 			onRequestUpdateEditor(() => {
 				if (
@@ -242,12 +265,14 @@ export class TerminalAccessibleViewContribution
 				) {
 					return;
 				}
+
 				if (this._isTerminalAccessibleViewOpen()) {
 					this.show();
 				}
 			}),
 		);
 	}
+
 	private _updateCommandExecutedListener(): void {
 		if (
 			!this._ctx.instance.capabilities.has(
@@ -256,6 +281,7 @@ export class TerminalAccessibleViewContribution
 		) {
 			return;
 		}
+
 		if (
 			!this._configurationService.getValue(
 				TerminalAccessibilitySettingId.AccessibleViewFocusOnCommandExecution,
@@ -267,9 +293,11 @@ export class TerminalAccessibleViewContribution
 		} else if (this._onDidRunCommand.value) {
 			return;
 		}
+
 		const capability = this._ctx.instance.capabilities.get(
 			TerminalCapability.CommandDetection,
 		)!;
+
 		this._onDidRunCommand.value = this._register(
 			capability.onCommandExecuted(() => {
 				if (this._ctx.instance.hasFocus) {
@@ -278,6 +306,7 @@ export class TerminalAccessibleViewContribution
 			}),
 		);
 	}
+
 	private _isTerminalAccessibleViewOpen(): boolean {
 		return (
 			accessibleViewCurrentProviderId.getValue(
@@ -285,10 +314,12 @@ export class TerminalAccessibleViewContribution
 			) === AccessibleViewProviderId.Terminal
 		);
 	}
+
 	show(): void {
 		if (!this._xterm) {
 			return;
 		}
+
 		if (!this._bufferTracker) {
 			this._bufferTracker = this._register(
 				this._instantiationService.createInstance(
@@ -297,6 +328,7 @@ export class TerminalAccessibleViewContribution
 				),
 			);
 		}
+
 		if (!this._bufferProvider) {
 			this._bufferProvider = this._register(
 				this._instantiationService.createInstance(
@@ -315,6 +347,7 @@ export class TerminalAccessibleViewContribution
 				),
 			);
 		}
+
 		const position = this._configurationService.getValue(
 			TerminalAccessibilitySettingId.AccessibleViewPreserveCursorPosition,
 		)
@@ -322,8 +355,10 @@ export class TerminalAccessibleViewContribution
 					AccessibleViewProviderId.Terminal,
 				)
 			: undefined;
+
 		this._accessibleViewService.show(this._bufferProvider, position);
 	}
+
 	navigateToCommand(type: NavigationType): void {
 		const currentLine = this._accessibleViewService.getPosition(
 			AccessibleViewProviderId.Terminal,
@@ -334,6 +369,7 @@ export class TerminalAccessibleViewContribution
 		if (!commands?.length || !currentLine) {
 			return;
 		}
+
 		const filteredCommands =
 			type === NavigationType.Previous
 				? commands
@@ -346,6 +382,7 @@ export class TerminalAccessibleViewContribution
 		if (!filteredCommands.length) {
 			return;
 		}
+
 		const command = filteredCommands[0];
 
 		const commandLine = command.command.command;
@@ -355,6 +392,7 @@ export class TerminalAccessibleViewContribution
 				new Position(command.lineNumber, 1),
 				true,
 			);
+
 			alert(commandLine);
 		} else {
 			this._accessibleViewService.setPosition(
@@ -363,6 +401,7 @@ export class TerminalAccessibleViewContribution
 				true,
 			);
 		}
+
 		if (command.exitCode) {
 			this._accessibilitySignalService.playSignal(
 				AccessibilitySignal.terminalCommandFailed,
@@ -373,6 +412,7 @@ export class TerminalAccessibleViewContribution
 			);
 		}
 	}
+
 	private _getCommandsWithEditorLine(): ICommandWithEditorLine[] | undefined {
 		const capability = this._ctx.instance.capabilities.get(
 			TerminalCapability.CommandDetection,
@@ -385,6 +425,7 @@ export class TerminalAccessibleViewContribution
 		if (!commands?.length) {
 			return;
 		}
+
 		const result: ICommandWithEditorLine[] = [];
 
 		for (const command of commands) {
@@ -393,8 +434,10 @@ export class TerminalAccessibleViewContribution
 			if (!lineNumber) {
 				continue;
 			}
+
 			result.push({ command, lineNumber, exitCode: command.exitCode });
 		}
+
 		if (currentCommand) {
 			const lineNumber = this._getEditorLineForCommand(currentCommand);
 
@@ -402,14 +445,17 @@ export class TerminalAccessibleViewContribution
 				result.push({ command: currentCommand, lineNumber });
 			}
 		}
+
 		return result;
 	}
+
 	private _getEditorLineForCommand(
 		command: ITerminalCommand | ICurrentPartialCommand,
 	): number | undefined {
 		if (!this._bufferTracker) {
 			return;
 		}
+
 		let line: number | undefined;
 
 		if ("marker" in command) {
@@ -417,14 +463,17 @@ export class TerminalAccessibleViewContribution
 		} else if ("commandStartMarker" in command) {
 			line = command.commandStartMarker?.line;
 		}
+
 		if (line === undefined || line < 0) {
 			return;
 		}
+
 		line = this._bufferTracker.bufferToEditorLineMapping.get(line);
 
 		if (line === undefined) {
 			return;
 		}
+
 		return line + 1;
 	}
 }
@@ -438,6 +487,7 @@ export class TerminalAccessibilityHelpContribution extends Disposable {
 
 	constructor() {
 		super();
+
 		this._register(
 			AccessibilityHelpAction.addImplementation(
 				105,
@@ -455,6 +505,7 @@ export class TerminalAccessibilityHelpContribution extends Disposable {
 
 					const instance =
 						await terminalService.getActiveOrCreateInstance();
+
 					await terminalService.revealActiveTerminal();
 
 					const terminal = instance?.xterm;
@@ -462,6 +513,7 @@ export class TerminalAccessibilityHelpContribution extends Disposable {
 					if (!terminal) {
 						return;
 					}
+
 					accessibleViewService.show(
 						instantiationService.createInstance(
 							TerminalAccessibilityHelpProvider,
@@ -519,6 +571,7 @@ class FocusAccessibleBufferAction extends Action2 {
 			],
 		});
 	}
+
 	override async run(
 		accessor: ServicesAccessor,
 		...args: any[]
@@ -530,6 +583,7 @@ class FocusAccessibleBufferAction extends Action2 {
 		if (!terminal?.xterm) {
 			return;
 		}
+
 		TerminalAccessibleViewContribution.get(terminal)?.show();
 	}
 }
@@ -572,6 +626,7 @@ registerTerminalAction({
 		if (!instance) {
 			return;
 		}
+
 		TerminalAccessibleViewContribution.get(instance)?.navigateToCommand(
 			NavigationType.Next,
 		);
@@ -617,6 +672,7 @@ registerTerminalAction({
 		if (!instance) {
 			return;
 		}
+
 		TerminalAccessibleViewContribution.get(instance)?.navigateToCommand(
 			NavigationType.Previous,
 		);
@@ -657,6 +713,7 @@ registerTerminalAction({
 		if (!lastPosition) {
 			return;
 		}
+
 		accessibleViewService.setPosition(lastPosition, true);
 	},
 });

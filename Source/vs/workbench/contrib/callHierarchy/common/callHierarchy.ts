@@ -33,25 +33,36 @@ export const enum CallHierarchyDirection {
 }
 export interface CallHierarchyItem {
 	_sessionId: string;
+
 	_itemId: string;
+
 	kind: SymbolKind;
+
 	name: string;
+
 	detail?: string;
+
 	uri: URI;
+
 	range: IRange;
+
 	selectionRange: IRange;
+
 	tags?: SymbolTag[];
 }
 export interface IncomingCall {
 	from: CallHierarchyItem;
+
 	fromRanges: IRange[];
 }
 export interface OutgoingCall {
 	fromRanges: IRange[];
+
 	to: CallHierarchyItem;
 }
 export interface CallHierarchySession {
 	roots: CallHierarchyItem[];
+
 	dispose(): void;
 }
 export interface CallHierarchyProvider {
@@ -60,10 +71,12 @@ export interface CallHierarchyProvider {
 		position: IPosition,
 		token: CancellationToken,
 	): ProviderResult<CallHierarchySession>;
+
 	provideIncomingCalls(
 		item: CallHierarchyItem,
 		token: CancellationToken,
 	): ProviderResult<IncomingCall[]>;
+
 	provideOutgoingCalls(
 		item: CallHierarchyItem,
 		token: CancellationToken,
@@ -83,6 +96,7 @@ export class CallHierarchyModel {
 		if (!provider) {
 			return undefined;
 		}
+
 		const session = await provider.prepareCallHierarchy(
 			model,
 			position,
@@ -92,6 +106,7 @@ export class CallHierarchyModel {
 		if (!session) {
 			return undefined;
 		}
+
 		return new CallHierarchyModel(
 			session.roots.reduce((p, c) => p + c._sessionId, ""),
 			provider,
@@ -99,7 +114,9 @@ export class CallHierarchyModel {
 			new RefCountedDisposable(session),
 		);
 	}
+
 	readonly root: CallHierarchyItem;
+
 	private constructor(
 		readonly id: string,
 		readonly provider: CallHierarchyProvider,
@@ -108,9 +125,11 @@ export class CallHierarchyModel {
 	) {
 		this.root = roots[0];
 	}
+
 	dispose(): void {
 		this.ref.release();
 	}
+
 	fork(item: CallHierarchyItem): CallHierarchyModel {
 		const that = this;
 
@@ -120,6 +139,7 @@ export class CallHierarchyModel {
 			}
 		})();
 	}
+
 	async resolveIncomingCalls(
 		item: CallHierarchyItem,
 		token: CancellationToken,
@@ -136,8 +156,10 @@ export class CallHierarchyModel {
 		} catch (e) {
 			onUnexpectedExternalError(e);
 		}
+
 		return [];
 	}
+
 	async resolveOutgoingCalls(
 		item: CallHierarchyItem,
 		token: CancellationToken,
@@ -154,6 +176,7 @@ export class CallHierarchyModel {
 		} catch (e) {
 			onUnexpectedExternalError(e);
 		}
+
 		return [];
 	}
 }
@@ -163,7 +186,9 @@ CommandsRegistry.registerCommand(
 	"_executePrepareCallHierarchy",
 	async (accessor, ...args) => {
 		const [resource, position] = args;
+
 		assertType(URI.isUri(resource));
+
 		assertType(Position.isIPosition(position));
 
 		const modelService = accessor.get(IModelService);
@@ -177,9 +202,12 @@ CommandsRegistry.registerCommand(
 
 			const result =
 				await textModelService.createModelReference(resource);
+
 			textModel = result.object.textEditorModel;
+
 			textModelReference = result;
 		}
+
 		try {
 			const model = await CallHierarchyModel.create(
 				textModel,
@@ -192,9 +220,11 @@ CommandsRegistry.registerCommand(
 			}
 			//
 			_models.set(model.id, model);
+
 			_models.forEach((value, key, map) => {
 				if (map.size > 10) {
 					value.dispose();
+
 					_models.delete(key);
 				}
 			});
@@ -212,6 +242,7 @@ CommandsRegistry.registerCommand(
 	"_executeProvideIncomingCalls",
 	async (_accessor, ...args) => {
 		const [item] = args;
+
 		assertType(isCallHierarchyItemDto(item));
 		// find model
 		const model = _models.get(item._sessionId);
@@ -219,6 +250,7 @@ CommandsRegistry.registerCommand(
 		if (!model) {
 			return undefined;
 		}
+
 		return model.resolveIncomingCalls(item, CancellationToken.None);
 	},
 );
@@ -226,6 +258,7 @@ CommandsRegistry.registerCommand(
 	"_executeProvideOutgoingCalls",
 	async (_accessor, ...args) => {
 		const [item] = args;
+
 		assertType(isCallHierarchyItemDto(item));
 		// find model
 		const model = _models.get(item._sessionId);
@@ -233,6 +266,7 @@ CommandsRegistry.registerCommand(
 		if (!model) {
 			return undefined;
 		}
+
 		return model.resolveOutgoingCalls(item, CancellationToken.None);
 	},
 );

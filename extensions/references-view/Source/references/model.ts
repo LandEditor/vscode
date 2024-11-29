@@ -26,6 +26,7 @@ export class ReferencesTreeInput
 	) {
 		this.contextValue = _command;
 	}
+
 	async resolve(): Promise<
 		SymbolTreeModel<FileItem | ReferenceItem> | undefined
 	> {
@@ -39,11 +40,14 @@ export class ReferencesTreeInput
 					vscode.Location[] | vscode.LocationLink[]
 				>(this._command, this.location.uri, this.location.range.start),
 			);
+
 			model = new ReferencesModel(resut ?? []);
 		}
+
 		if (model.items.length === 0) {
 			return;
 		}
+
 		const provider = new ReferencesTreeDataProvider(model);
 
 		return {
@@ -59,6 +63,7 @@ export class ReferencesTreeInput
 			},
 		};
 	}
+
 	with(location: vscode.Location): ReferencesTreeInput {
 		return new ReferencesTreeInput(this.title, location, this._command);
 	}
@@ -72,7 +77,9 @@ export class ReferencesModel
 	private _onDidChange = new vscode.EventEmitter<
 		FileItem | ReferenceItem | undefined
 	>();
+
 	readonly onDidChangeTreeData = this._onDidChange.event;
+
 	readonly items: FileItem[] = [];
 
 	constructor(locations: vscode.Location[] | vscode.LocationLink[]) {
@@ -90,11 +97,14 @@ export class ReferencesModel
 					0
 			) {
 				last = new FileItem(loc.uri.with({ fragment: "" }), [], this);
+
 				this.items.push(last);
 			}
+
 			last.references.push(new ReferenceItem(loc, last));
 		}
 	}
+
 	private static _compareUriIgnoreFragment(
 		a: vscode.Uri,
 		b: vscode.Uri,
@@ -108,8 +118,10 @@ export class ReferencesModel
 		} else if (aStr > bStr) {
 			return 1;
 		}
+
 		return 0;
 	}
+
 	private static _compareLocations(
 		a: vscode.Location | vscode.LocationLink,
 		b: vscode.Location | vscode.LocationLink,
@@ -123,6 +135,7 @@ export class ReferencesModel
 		} else if (aUri.toString() > bUri.toString()) {
 			return 1;
 		}
+
 		const aRange = a instanceof vscode.Location ? a.range : a.targetRange;
 
 		const bRange = b instanceof vscode.Location ? b.range : b.targetRange;
@@ -140,6 +153,7 @@ export class ReferencesModel
 		if (this.items.length === 0) {
 			return vscode.l10n.t("No results.");
 		}
+
 		const total = this.items.reduce(
 			(prev, cur) => prev + cur.references.length,
 			0,
@@ -157,6 +171,7 @@ export class ReferencesModel
 			return vscode.l10n.t("{0} results in {1} files", total, files);
 		}
 	}
+
 	location(item: FileItem | ReferenceItem) {
 		return item instanceof ReferenceItem
 			? item.location
@@ -166,6 +181,7 @@ export class ReferencesModel
 						new vscode.Position(0, 0),
 				);
 	}
+
 	nearest(
 		uri: vscode.Uri,
 		position: vscode.Position,
@@ -189,11 +205,14 @@ export class ReferencesModel
 					if (ref.location.range.end.isAfter(position)) {
 						return ref;
 					}
+
 					lastBefore = ref;
 				}
+
 				if (lastBefore) {
 					return lastBefore;
 				}
+
 				break;
 			}
 		}
@@ -215,8 +234,10 @@ export class ReferencesModel
 				best = i;
 			}
 		}
+
 		return this.items[best].references[0];
 	}
+
 	private static _prefixLen(a: string, b: string): number {
 		let pos = 0;
 
@@ -227,14 +248,18 @@ export class ReferencesModel
 		) {
 			pos += 1;
 		}
+
 		return pos;
 	}
+
 	next(item: FileItem | ReferenceItem): FileItem | ReferenceItem {
 		return this._move(item, true) ?? item;
 	}
+
 	previous(item: FileItem | ReferenceItem): FileItem | ReferenceItem {
 		return this._move(item, false) ?? item;
 	}
+
 	private _move(
 		item: FileItem | ReferenceItem,
 		fwd: boolean,
@@ -256,6 +281,7 @@ export class ReferencesModel
 				return tail(_move(item).references);
 			}
 		}
+
 		if (item instanceof ReferenceItem) {
 			const idx = item.file.references.indexOf(item) + delta;
 
@@ -268,6 +294,7 @@ export class ReferencesModel
 			}
 		}
 	}
+
 	getEditorHighlights(
 		_item: FileItem | ReferenceItem,
 		uri: vscode.Uri,
@@ -278,29 +305,35 @@ export class ReferencesModel
 
 		return file?.references.map((ref) => ref.location.range);
 	}
+
 	remove(item: FileItem | ReferenceItem) {
 		if (item instanceof FileItem) {
 			del(this.items, item);
+
 			this._onDidChange.fire(undefined);
 		} else {
 			del(item.file.references, item);
 
 			if (item.file.references.length === 0) {
 				del(this.items, item.file);
+
 				this._onDidChange.fire(undefined);
 			} else {
 				this._onDidChange.fire(item.file);
 			}
 		}
 	}
+
 	async asCopyText() {
 		let result = "";
 
 		for (const item of this.items) {
 			result += `${await item.asCopyText()}\n`;
 		}
+
 		return result;
 	}
+
 	getDragUri(item: FileItem | ReferenceItem): vscode.Uri | undefined {
 		if (item instanceof FileItem) {
 			return item.uri;
@@ -313,9 +346,11 @@ class ReferencesTreeDataProvider
 	implements vscode.TreeDataProvider<FileItem | ReferenceItem>
 {
 	private readonly _listener: vscode.Disposable;
+
 	private readonly _onDidChange = new vscode.EventEmitter<
 		FileItem | ReferenceItem | undefined
 	>();
+
 	readonly onDidChangeTreeData = this._onDidChange.event;
 
 	constructor(private readonly _model: ReferencesModel) {
@@ -323,17 +358,24 @@ class ReferencesTreeDataProvider
 			this._onDidChange.fire(undefined),
 		);
 	}
+
 	dispose(): void {
 		this._onDidChange.dispose();
+
 		this._listener.dispose();
 	}
+
 	async getTreeItem(element: FileItem | ReferenceItem) {
 		if (element instanceof FileItem) {
 			// files
 			const result = new vscode.TreeItem(element.uri);
+
 			result.contextValue = "file-item";
+
 			result.description = true;
+
 			result.iconPath = vscode.ThemeIcon.File;
+
 			result.collapsibleState = vscode.TreeItemCollapsibleState.Collapsed;
 
 			return result;
@@ -351,8 +393,11 @@ class ReferencesTreeDataProvider
 			};
 
 			const result = new vscode.TreeItem(label);
+
 			result.collapsibleState = vscode.TreeItemCollapsibleState.None;
+
 			result.contextValue = "reference-item";
+
 			result.command = {
 				command: "vscode.open",
 				title: vscode.l10n.t("Open Reference"),
@@ -367,15 +412,19 @@ class ReferencesTreeDataProvider
 			return result;
 		}
 	}
+
 	async getChildren(element?: FileItem | ReferenceItem) {
 		if (!element) {
 			return this._model.items;
 		}
+
 		if (element instanceof FileItem) {
 			return element.references;
 		}
+
 		return undefined;
 	}
+
 	getParent(element: FileItem | ReferenceItem) {
 		return element instanceof ReferenceItem ? element.file : undefined;
 	}
@@ -390,12 +439,14 @@ export class FileItem {
 	remove(): void {
 		this.model.remove(this);
 	}
+
 	async asCopyText() {
 		let result = `${vscode.workspace.asRelativePath(this.uri)}\n`;
 
 		for (const ref of this.references) {
 			result += `  ${await ref.asCopyText()}\n`;
 		}
+
 		return result;
 	}
 }
@@ -406,12 +457,14 @@ export class ReferenceItem {
 		readonly location: vscode.Location,
 		readonly file: FileItem,
 	) {}
+
 	async getDocument(warmUpNext?: boolean) {
 		if (!this._document) {
 			this._document = vscode.workspace.openTextDocument(
 				this.location.uri,
 			);
 		}
+
 		if (warmUpNext) {
 			// load next document once this document has been loaded
 			const next = this.file.model.next(this.file);
@@ -422,12 +475,14 @@ export class ReferenceItem {
 				vscode.workspace.openTextDocument(next.location.uri);
 			}
 		}
+
 		return this._document;
 	}
 	// --- adapter
 	remove(): void {
 		this.file.model.remove(this);
 	}
+
 	async asCopyText() {
 		const doc = await this.getDocument();
 

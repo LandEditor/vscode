@@ -34,18 +34,22 @@ export class MultiDiffEditorViewModel extends Disposable {
 	private readonly _documents: IObservable<
 		readonly RefCounted<IDocumentDiffItem>[] | "loading"
 	> = observableFromValueWithChangeEvent(this.model, this.model.documents);
+
 	private readonly _documentsArr = derived(this, (reader) => {
 		const result = this._documents.read(reader);
 
 		if (result === "loading") {
 			return [];
 		}
+
 		return result;
 	});
+
 	public readonly isLoading = derived(
 		this,
 		(reader) => this._documents.read(reader) === "loading",
 	);
+
 	public readonly items: IObservable<readonly DocumentDiffItemViewModel[]> =
 		mapObservableArrayCached(this, this._documentsArr, (d, store) =>
 			store.add(
@@ -56,9 +60,11 @@ export class MultiDiffEditorViewModel extends Disposable {
 				),
 			),
 		).recomputeInitiallyAndOnChange(this._store);
+
 	public readonly focusedDiffItem = derived(this, (reader) =>
 		this.items.read(reader).find((i) => i.isFocused.read(reader)),
 	);
+
 	public readonly activeDiffItem = derivedObservableWithWritableCache<
 		DocumentDiffItemViewModel | undefined
 	>(this, (reader, lastValue) =>
@@ -67,11 +73,13 @@ export class MultiDiffEditorViewModel extends Disposable {
 			? lastValue
 			: undefined,
 	);
+
 	public async waitForDiffs(): Promise<void> {
 		for (const d of this.items.get()) {
 			await d.diffEditorViewModel.waitForDiff();
 		}
 	}
+
 	public collapseAll(): void {
 		transaction((tx) => {
 			for (const d of this.items.get()) {
@@ -79,6 +87,7 @@ export class MultiDiffEditorViewModel extends Disposable {
 			}
 		});
 	}
+
 	public expandAll(): void {
 		transaction((tx) => {
 			for (const d of this.items.get()) {
@@ -86,9 +95,11 @@ export class MultiDiffEditorViewModel extends Disposable {
 			}
 		});
 	}
+
 	public get contextKeys(): Record<string, ContextKeyValue> | undefined {
 		return this.model.contextKeys;
 	}
+
 	constructor(
 		public readonly model: IMultiDiffEditorModel,
 		private readonly _instantiationService: IInstantiationService,
@@ -101,41 +112,54 @@ export class DocumentDiffItemViewModel extends Disposable {
 	 * The diff editor view model keeps its inner objects alive.
 	 */
 	public readonly diffEditorViewModelRef: RefCounted<IDiffEditorViewModel>;
+
 	public get diffEditorViewModel(): IDiffEditorViewModel {
 		return this.diffEditorViewModelRef.object;
 	}
+
 	public readonly collapsed = observableValue<boolean>(this, false);
+
 	public readonly lastTemplateData = observableValue<{
 		contentHeight: number;
+
 		selections: Selection[] | undefined;
 	}>(this, { contentHeight: 500, selections: undefined });
+
 	public get originalUri(): URI | undefined {
 		return this.documentDiffItem.original?.uri;
 	}
+
 	public get modifiedUri(): URI | undefined {
 		return this.documentDiffItem.modified?.uri;
 	}
+
 	public readonly isActive: IObservable<boolean> = derived(
 		this,
 		(reader) => this._editorViewModel.activeDiffItem.read(reader) === this,
 	);
+
 	private readonly _isFocusedSource = observableValue<IObservable<boolean>>(
 		this,
 		constObservable(false),
 	);
+
 	public readonly isFocused = derived(this, (reader) =>
 		this._isFocusedSource.read(reader).read(reader),
 	);
+
 	public setIsFocused(
 		source: IObservable<boolean>,
 		tx: ITransaction | undefined,
 	): void {
 		this._isFocusedSource.set(source, tx);
 	}
+
 	private readonly documentDiffItemRef: RefCounted<IDocumentDiffItem>;
+
 	public get documentDiffItem(): IDocumentDiffItem {
 		return this.documentDiffItemRef.object;
 	}
+
 	public readonly isAlive = observableValue<boolean>(this, true);
 
 	constructor(
@@ -147,11 +171,13 @@ export class DocumentDiffItemViewModel extends Disposable {
 		private readonly _modelService: IModelService,
 	) {
 		super();
+
 		this._register(
 			toDisposable(() => {
 				this.isAlive.set(false, undefined);
 			}),
 		);
+
 		this.documentDiffItemRef = this._register(
 			documentDiffItem.createNewRef(this),
 		);
@@ -166,6 +192,7 @@ export class DocumentDiffItemViewModel extends Disposable {
 				},
 			};
 		}
+
 		const options = this._instantiationService.createInstance(
 			DiffEditorOptions,
 			updateOptions(this.documentDiffItem.options || {}),
@@ -180,6 +207,7 @@ export class DocumentDiffItemViewModel extends Disposable {
 				}),
 			);
 		}
+
 		const diffEditorViewModelStore = new DisposableStore();
 
 		const originalTextModel =
@@ -193,9 +221,11 @@ export class DocumentDiffItemViewModel extends Disposable {
 			diffEditorViewModelStore.add(
 				this._modelService.createModel("", null),
 			);
+
 		diffEditorViewModelStore.add(
 			this.documentDiffItemRef.createNewRef(this),
 		);
+
 		this.diffEditorViewModelRef = this._register(
 			RefCounted.createWithDisposable(
 				this._instantiationService.createInstance(
@@ -211,6 +241,7 @@ export class DocumentDiffItemViewModel extends Disposable {
 			),
 		);
 	}
+
 	public getKey(): string {
 		return JSON.stringify([
 			this.originalUri?.toString(),

@@ -59,24 +59,30 @@ export class TerminalQuickAccessProvider extends PickerQuickAccessProvider<IPick
 			canAcceptInBackground: true,
 		});
 	}
+
 	protected _getPicks(
 		filter: string,
 	): Array<IPickerQuickAccessItem | IQuickPickSeparator> {
 		terminalPicks = [];
+
 		terminalPicks.push({ type: "separator", label: "panel" });
 
 		const terminalGroups = this._terminalGroupService.groups;
 
 		for (
 			let groupIndex = 0;
+
 			groupIndex < terminalGroups.length;
+
 			groupIndex++
 		) {
 			const terminalGroup = terminalGroups[groupIndex];
 
 			for (
 				let terminalIndex = 0;
+
 				terminalIndex < terminalGroup.terminalInstances.length;
+
 				terminalIndex++
 			) {
 				const terminal = terminalGroup.terminalInstances[terminalIndex];
@@ -91,17 +97,22 @@ export class TerminalQuickAccessProvider extends PickerQuickAccessProvider<IPick
 				}
 			}
 		}
+
 		if (terminalPicks.length > 0) {
 			terminalPicks.push({ type: "separator", label: "editor" });
 		}
+
 		const terminalEditors = this._terminalEditorService.instances;
 
 		for (
 			let editorIndex = 0;
+
 			editorIndex < terminalEditors.length;
+
 			editorIndex++
 		) {
 			const term = terminalEditors[editorIndex];
+
 			term.target = TerminalLocation.Editor;
 
 			const pick = this._createPick(term, editorIndex, filter);
@@ -110,13 +121,16 @@ export class TerminalQuickAccessProvider extends PickerQuickAccessProvider<IPick
 				terminalPicks.push(pick);
 			}
 		}
+
 		if (terminalPicks.length > 0) {
 			terminalPicks.push({ type: "separator" });
 		}
+
 		const createTerminalLabel = localize(
 			"workbench.action.terminal.newplus",
 			"Create New Terminal",
 		);
+
 		terminalPicks.push({
 			label: `$(plus) ${createTerminalLabel}`,
 			ariaLabel: createTerminalLabel,
@@ -128,6 +142,7 @@ export class TerminalQuickAccessProvider extends PickerQuickAccessProvider<IPick
 			"workbench.action.terminal.newWithProfilePlus",
 			"Create New Terminal With Profile...",
 		);
+
 		terminalPicks.push({
 			label: `$(plus) ${createWithProfileLabel}`,
 			ariaLabel: createWithProfileLabel,
@@ -139,12 +154,14 @@ export class TerminalQuickAccessProvider extends PickerQuickAccessProvider<IPick
 
 		return terminalPicks;
 	}
+
 	private _createPick(
 		terminal: ITerminalInstance,
 		terminalIndex: number,
 		filter: string,
 		groupInfo?: {
 			groupIndex: number;
+
 			groupSize: number;
 		},
 	): IPickerQuickAccessItem | undefined {
@@ -168,6 +185,7 @@ export class TerminalQuickAccessProvider extends PickerQuickAccessProvider<IPick
 		if (colorClass) {
 			iconClasses.push(colorClass);
 		}
+
 		const uriClasses = getUriClasses(
 			terminal,
 			this._themeService.getColorTheme().type,
@@ -176,6 +194,7 @@ export class TerminalQuickAccessProvider extends PickerQuickAccessProvider<IPick
 		if (uriClasses) {
 			iconClasses.push(...uriClasses);
 		}
+
 		const highlights = matchesFuzzy(filter, label, true);
 
 		if (highlights) {
@@ -209,6 +228,7 @@ export class TerminalQuickAccessProvider extends PickerQuickAccessProvider<IPick
 
 							return TriggerAction.REMOVE_ITEM;
 					}
+
 					return TriggerAction.NO_ACTION;
 				},
 				accept: (keyMod, event) => {
@@ -216,19 +236,23 @@ export class TerminalQuickAccessProvider extends PickerQuickAccessProvider<IPick
 						const existingEditors = this._editorService.findEditors(
 							terminal.resource,
 						);
+
 						this._terminalEditorService.openEditor(terminal, {
 							viewColumn: existingEditors?.[0].groupId,
 						});
+
 						this._terminalEditorService.setActiveInstance(terminal);
 					} else {
 						this._terminalGroupService.showPanel(
 							!event.inBackground,
 						);
+
 						this._terminalGroupService.setActiveInstance(terminal);
 					}
 				},
 			};
 		}
+
 		return undefined;
 	}
 }

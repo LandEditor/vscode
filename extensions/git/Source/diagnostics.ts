@@ -29,11 +29,14 @@ export enum DiagnosticCodes {
 }
 export class GitCommitInputBoxDiagnosticsManager {
 	private readonly diagnostics: DiagnosticCollection;
+
 	private readonly severity = DiagnosticSeverity.Warning;
+
 	private readonly disposables: Disposable[] = [];
 
 	constructor(private readonly model: Model) {
 		this.diagnostics = languages.createDiagnosticCollection();
+
 		this.migrateInputValidationSettings().then(() => {
 			mapEvent(
 				filterEvent(
@@ -42,6 +45,7 @@ export class GitCommitInputBoxDiagnosticsManager {
 				),
 				(e) => e.document,
 			)(this.onDidChangeTextDocument, this, this.disposables);
+
 			filterEvent(
 				workspace.onDidChangeConfiguration,
 				(e) =>
@@ -51,9 +55,11 @@ export class GitCommitInputBoxDiagnosticsManager {
 			)(this.onDidChangeConfiguration, this, this.disposables);
 		});
 	}
+
 	public getDiagnostics(uri: Uri): ReadonlyArray<Diagnostic> {
 		return this.diagnostics.get(uri) ?? [];
 	}
+
 	private async migrateInputValidationSettings(): Promise<void> {
 		try {
 			const config = workspace.getConfiguration("git");
@@ -83,11 +89,13 @@ export class GitCommitInputBoxDiagnosticsManager {
 			}
 		} catch {}
 	}
+
 	private onDidChangeConfiguration(): void {
 		for (const repository of this.model.repositories) {
 			this.onDidChangeTextDocument(repository.inputBox.document);
 		}
 	}
+
 	private onDidChangeTextDocument(document: TextDocument): void {
 		const config = workspace.getConfiguration("git");
 
@@ -98,6 +106,7 @@ export class GitCommitInputBoxDiagnosticsManager {
 
 			return;
 		}
+
 		if (/^\s+$/.test(document.getText())) {
 			const documentRange = new Range(
 				document.lineAt(0).range.start,
@@ -111,11 +120,14 @@ export class GitCommitInputBoxDiagnosticsManager {
 				),
 				this.severity,
 			);
+
 			diagnostic.code = DiagnosticCodes.empty_message;
+
 			this.diagnostics.set(document.uri, [diagnostic]);
 
 			return;
 		}
+
 		const diagnostics: Diagnostic[] = [];
 
 		const inputValidationLength = config.get<number>(
@@ -146,12 +158,16 @@ export class GitCommitInputBoxDiagnosticsManager {
 					),
 					this.severity,
 				);
+
 				diagnostic.code = DiagnosticCodes.line_length;
+
 				diagnostics.push(diagnostic);
 			}
 		}
+
 		this.diagnostics.set(document.uri, diagnostics);
 	}
+
 	dispose() {
 		dispose(this.disposables);
 	}
@@ -171,6 +187,7 @@ export class GitCommitInputBoxCodeActionsProvider
 			),
 		);
 	}
+
 	provideCodeActions(
 		document: TextDocument,
 		range: Range | Selection,
@@ -190,21 +207,27 @@ export class GitCommitInputBoxCodeActionsProvider
 			if (!diagnostic.range.contains(range)) {
 				continue;
 			}
+
 			switch (diagnostic.code) {
 				case DiagnosticCodes.empty_message: {
 					const workspaceEdit = new WorkspaceEdit();
+
 					workspaceEdit.delete(document.uri, diagnostic.range);
 
 					const codeAction = new CodeAction(
 						l10n.t("Clear whitespace characters"),
 						CodeActionKind.QuickFix,
 					);
+
 					codeAction.diagnostics = [diagnostic];
+
 					codeAction.edit = workspaceEdit;
+
 					codeActions.push(codeAction);
 
 					break;
 				}
+
 				case DiagnosticCodes.line_length: {
 					const workspaceEdit = this.getWrapLineWorkspaceEdit(
 						document,
@@ -215,20 +238,27 @@ export class GitCommitInputBoxCodeActionsProvider
 						l10n.t("Hard wrap line"),
 						CodeActionKind.QuickFix,
 					);
+
 					codeAction.diagnostics = [diagnostic];
+
 					codeAction.edit = workspaceEdit;
+
 					codeActions.push(codeAction);
 
 					if (wrapAllLinesCodeAction) {
 						wrapAllLinesCodeAction.diagnostics = [diagnostic];
+
 						codeActions.push(wrapAllLinesCodeAction);
 					}
+
 					break;
 				}
 			}
 		}
+
 		return codeActions;
 	}
+
 	private getWrapLineWorkspaceEdit(
 		document: TextDocument,
 		range: Range,
@@ -239,10 +269,12 @@ export class GitCommitInputBoxCodeActionsProvider
 		);
 
 		const workspaceEdit = new WorkspaceEdit();
+
 		workspaceEdit.replace(document.uri, range, lineSegments.join("\n"));
 
 		return workspaceEdit;
 	}
+
 	private getWrapAllLinesCodeAction(
 		document: TextDocument,
 		diagnostics: readonly Diagnostic[],
@@ -254,10 +286,12 @@ export class GitCommitInputBoxCodeActionsProvider
 		if (lineLengthDiagnostics.length < 2) {
 			return undefined;
 		}
+
 		const wrapAllLinesCodeAction = new CodeAction(
 			l10n.t("Hard wrap all lines"),
 			CodeActionKind.QuickFix,
 		);
+
 		wrapAllLinesCodeAction.edit = this.getWrapAllLinesWorkspaceEdit(
 			document,
 			lineLengthDiagnostics,
@@ -265,6 +299,7 @@ export class GitCommitInputBoxCodeActionsProvider
 
 		return wrapAllLinesCodeAction;
 	}
+
 	private getWrapAllLinesWorkspaceEdit(
 		document: TextDocument,
 		diagnostics: Diagnostic[],
@@ -276,14 +311,17 @@ export class GitCommitInputBoxCodeActionsProvider
 				document,
 				diagnostic.range.start.line,
 			);
+
 			workspaceEdit.replace(
 				document.uri,
 				diagnostic.range,
 				lineSegments.join("\n"),
 			);
 		}
+
 		return workspaceEdit;
 	}
+
 	private wrapTextDocumentLine(
 		document: TextDocument,
 		line: number,
@@ -324,6 +362,7 @@ export class GitCommitInputBoxCodeActionsProvider
 				lineSegments.push(
 					lineText.substring(position, lastSpaceBeforeThreshold),
 				);
+
 				position = lastSpaceBeforeThreshold + 1;
 			} else {
 				// Find first space after threshold
@@ -336,18 +375,23 @@ export class GitCommitInputBoxCodeActionsProvider
 					lineSegments.push(
 						lineText.substring(position, firstSpaceAfterThreshold),
 					);
+
 					position = firstSpaceAfterThreshold + 1;
 				} else {
 					lineSegments.push(lineText.substring(position));
+
 					position = lineText.length;
 				}
 			}
 		}
+
 		if (position < lineText.length) {
 			lineSegments.push(lineText.substring(position));
 		}
+
 		return lineSegments;
 	}
+
 	dispose() {
 		dispose(this.disposables);
 	}

@@ -12,6 +12,7 @@ export function matchTag() {
 	if (!validate(false) || !vscode.window.activeTextEditor) {
 		return;
 	}
+
 	const editor = vscode.window.activeTextEditor;
 
 	const document = editor.document;
@@ -21,7 +22,9 @@ export function matchTag() {
 	if (!rootNode) {
 		return;
 	}
+
 	const updatedSelections: vscode.Selection[] = [];
+
 	editor.selections.forEach((selection) => {
 		const updatedSelection = getUpdatedSelections(
 			document,
@@ -36,6 +39,7 @@ export function matchTag() {
 
 	if (updatedSelections.length) {
 		editor.selections = updatedSelections;
+
 		editor.revealRange(editor.selections[updatedSelections.length - 1]);
 	}
 }

@@ -29,6 +29,7 @@ class NotebookUndoRedoContribution extends Disposable {
 		super();
 
 		const PRIORITY = 105;
+
 		this._register(
 			UndoCommand.addImplementation(
 				PRIORITY,
@@ -62,6 +63,7 @@ class NotebookUndoRedoContribution extends Disposable {
 										);
 									}
 								}
+
 								editor?.setOptions({
 									cellOptions: { resource: cellResources[0] },
 									preserveFocus: true,
@@ -69,10 +71,12 @@ class NotebookUndoRedoContribution extends Disposable {
 							}
 						});
 					}
+
 					return false;
 				},
 			),
 		);
+
 		this._register(
 			RedoCommand.addImplementation(
 				PRIORITY,
@@ -106,6 +110,7 @@ class NotebookUndoRedoContribution extends Disposable {
 										);
 									}
 								}
+
 								editor?.setOptions({
 									cellOptions: { resource: cellResources[0] },
 									preserveFocus: true,
@@ -113,6 +118,7 @@ class NotebookUndoRedoContribution extends Disposable {
 							}
 						});
 					}
+
 					return false;
 				},
 			),

@@ -71,6 +71,7 @@ export const IActionWidgetService = createDecorator<IActionWidgetService>(
 
 export interface IActionWidgetService {
 	readonly _serviceBrand: undefined;
+
 	show<T>(
 		user: string,
 		supportsPreview: boolean,
@@ -80,7 +81,9 @@ export interface IActionWidgetService {
 		container: HTMLElement | undefined,
 		actionBarActions?: readonly IAction[],
 	): void;
+
 	hide(didCancel?: boolean): void;
+
 	readonly isVisible: boolean;
 }
 class ActionWidgetService extends Disposable implements IActionWidgetService {
@@ -92,6 +95,7 @@ class ActionWidgetService extends Disposable implements IActionWidgetService {
 			false
 		);
 	}
+
 	private readonly _list = this._register(
 		new MutableDisposable<ActionList<unknown>>(),
 	);
@@ -106,6 +110,7 @@ class ActionWidgetService extends Disposable implements IActionWidgetService {
 	) {
 		super();
 	}
+
 	show<T>(
 		user: string,
 		supportsPreview: boolean,
@@ -126,6 +131,7 @@ class ActionWidgetService extends Disposable implements IActionWidgetService {
 			items,
 			delegate,
 		);
+
 		this._contextViewService.showContextView(
 			{
 				getAnchor: () => anchor,
@@ -140,6 +146,7 @@ class ActionWidgetService extends Disposable implements IActionWidgetService {
 				},
 				onHide: (didCancel) => {
 					visibleContext.reset();
+
 					this._onWidgetClosed(didCancel);
 				},
 			},
@@ -147,30 +154,40 @@ class ActionWidgetService extends Disposable implements IActionWidgetService {
 			false,
 		);
 	}
+
 	acceptSelected(preview?: boolean) {
 		this._list.value?.acceptSelected(preview);
 	}
+
 	focusPrevious() {
 		this._list?.value?.focusPrevious();
 	}
+
 	focusNext() {
 		this._list?.value?.focusNext();
 	}
+
 	hide(didCancel?: boolean) {
 		this._list.value?.hide(didCancel);
+
 		this._list.clear();
 	}
+
 	clear() {
 		this._list.clear();
 	}
+
 	private _renderWidget(
 		element: HTMLElement,
 		list: ActionList<unknown>,
 		actionBarActions: readonly IAction[],
 	): IDisposable {
 		const widget = document.createElement("div");
+
 		widget.classList.add("action-widget");
+
 		element.appendChild(widget);
+
 		this._list.value = list;
 
 		if (this._list.value) {
@@ -178,12 +195,15 @@ class ActionWidgetService extends Disposable implements IActionWidgetService {
 		} else {
 			throw new Error("List has no value");
 		}
+
 		const renderDisposables = new DisposableStore();
 		// Invisible div to block mouse interaction in the rest of the UI
 		const menuBlock = document.createElement("div");
 
 		const block = element.appendChild(menuBlock);
+
 		block.classList.add("context-view-block");
+
 		renderDisposables.add(
 			dom.addDisposableListener(block, dom.EventType.MOUSE_DOWN, (e) =>
 				e.stopPropagation(),
@@ -193,6 +213,7 @@ class ActionWidgetService extends Disposable implements IActionWidgetService {
 		const pointerBlockDiv = document.createElement("div");
 
 		const pointerBlock = element.appendChild(pointerBlockDiv);
+
 		pointerBlock.classList.add("context-view-pointerBlock");
 		// Removes block on click INSIDE widget or ANY mouse movement
 		renderDisposables.add(
@@ -202,6 +223,7 @@ class ActionWidgetService extends Disposable implements IActionWidgetService {
 				() => pointerBlock.remove(),
 			),
 		);
+
 		renderDisposables.add(
 			dom.addDisposableListener(
 				pointerBlock,
@@ -220,18 +242,24 @@ class ActionWidgetService extends Disposable implements IActionWidgetService {
 
 			if (actionBar) {
 				widget.appendChild(actionBar.getContainer().parentElement!);
+
 				renderDisposables.add(actionBar);
+
 				actionBarWidth = actionBar.getContainer().offsetWidth;
 			}
 		}
+
 		const width = this._list.value?.layout(actionBarWidth);
+
 		widget.style.width = `${width}px`;
 
 		const focusTracker = renderDisposables.add(dom.trackFocus(element));
+
 		renderDisposables.add(focusTracker.onDidBlur(() => this.hide(true)));
 
 		return renderDisposables;
 	}
+
 	private _createActionBar(
 		className: string,
 		actions: readonly IAction[],
@@ -239,13 +267,16 @@ class ActionWidgetService extends Disposable implements IActionWidgetService {
 		if (!actions.length) {
 			return undefined;
 		}
+
 		const container = dom.$(className);
 
 		const actionBar = new ActionBar(container);
+
 		actionBar.push(actions, { icon: false, label: true });
 
 		return actionBar;
 	}
+
 	private _onWidgetClosed(didCancel?: boolean): void {
 		this._list.value?.hide(didCancel);
 	}
@@ -274,6 +305,7 @@ registerAction2(
 				},
 			});
 		}
+
 		run(accessor: ServicesAccessor): void {
 			accessor.get(IActionWidgetService).hide(true);
 		}
@@ -303,6 +335,7 @@ registerAction2(
 				},
 			});
 		}
+
 		run(accessor: ServicesAccessor): void {
 			const widgetService = accessor.get(IActionWidgetService);
 
@@ -336,6 +369,7 @@ registerAction2(
 				},
 			});
 		}
+
 		run(accessor: ServicesAccessor): void {
 			const widgetService = accessor.get(IActionWidgetService);
 
@@ -362,6 +396,7 @@ registerAction2(
 				},
 			});
 		}
+
 		run(accessor: ServicesAccessor): void {
 			const widgetService = accessor.get(IActionWidgetService);
 
@@ -387,6 +422,7 @@ registerAction2(
 				},
 			});
 		}
+
 		run(accessor: ServicesAccessor): void {
 			const widgetService = accessor.get(IActionWidgetService);
 

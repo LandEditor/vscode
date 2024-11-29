@@ -35,17 +35,26 @@ export function create(
 }
 export interface ICreateData {
 	grammarDefinitions: IValidGrammarDefinitionDTO[];
+
 	onigurumaWASMUri: string;
 }
 export interface IValidGrammarDefinitionDTO {
 	location: UriComponents;
+
 	language?: string;
+
 	scopeName: string;
+
 	embeddedLanguages: IValidEmbeddedLanguagesMap;
+
 	tokenTypes: IValidTokenTypeMap;
+
 	injectTo?: string[];
+
 	balancedBracketSelectors: string[];
+
 	unbalancedBracketSelectors: string[];
+
 	sourceExtensionId?: string;
 }
 export interface StateDeltas {
@@ -55,18 +64,23 @@ export interface StateDeltas {
 }
 export class TextMateTokenizationWorker implements IRequestHandler {
 	_requestHandlerBrand: any;
+
 	private readonly _host: TextMateWorkerHost;
+
 	private readonly _models = new Map<
 		/* controllerId */ number,
 		TextMateWorkerTokenizer
 	>();
+
 	private readonly _grammarCache: Promise<ICreateGrammarResult>[] = [];
+
 	private _grammarFactory: Promise<TMGrammarFactory | null> =
 		Promise.resolve(null);
 
 	constructor(workerServer: IWorkerServer) {
 		this._host = TextMateWorkerHost.getChannel(workerServer);
 	}
+
 	public async $init(_createData: ICreateData): Promise<void> {
 		const grammarDefinitions =
 			_createData.grammarDefinitions.map<IValidGrammarDefinition>(
@@ -85,11 +99,13 @@ export class TextMateTokenizationWorker implements IRequestHandler {
 					};
 				},
 			);
+
 		this._grammarFactory = this._loadTMGrammarFactory(
 			grammarDefinitions,
 			_createData.onigurumaWASMUri,
 		);
 	}
+
 	private async _loadTMGrammarFactory(
 		grammarDefinitions: IValidGrammarDefinition[],
 		onigurumaWASMUri: string,
@@ -107,6 +123,7 @@ export class TextMateTokenizationWorker implements IRequestHandler {
 		// Otherwise, a TypeError is thrown when using the streaming compiler.
 		// We therefore use the non-streaming compiler :(.
 		const bytes = await response.arrayBuffer();
+
 		await vscodeOniguruma.loadWASM(bytes);
 
 		const onigLib: Promise<IOnigLib> = Promise.resolve({
@@ -131,6 +148,7 @@ export class TextMateTokenizationWorker implements IRequestHandler {
 		const uri = URI.revive(data.uri);
 
 		const that = this;
+
 		this._models.set(
 			data.controllerId,
 			new TextMateWorkerTokenizer(
@@ -148,6 +166,7 @@ export class TextMateTokenizationWorker implements IRequestHandler {
 						if (!grammarFactory) {
 							return Promise.resolve(null);
 						}
+
 						if (!that._grammarCache[encodedLanguageId]) {
 							that._grammarCache[encodedLanguageId] =
 								grammarFactory.createGrammar(
@@ -155,6 +174,7 @@ export class TextMateTokenizationWorker implements IRequestHandler {
 									encodedLanguageId,
 								);
 						}
+
 						return that._grammarCache[encodedLanguageId];
 					},
 					setTokensAndStates(
@@ -191,12 +211,14 @@ export class TextMateTokenizationWorker implements IRequestHandler {
 			),
 		);
 	}
+
 	public $acceptModelChanged(
 		controllerId: number,
 		e: IModelChangedEvent,
 	): void {
 		this._models.get(controllerId)!.onEvents(e);
 	}
+
 	public $retokenize(
 		controllerId: number,
 		startLineNumber: number,
@@ -206,6 +228,7 @@ export class TextMateTokenizationWorker implements IRequestHandler {
 			.get(controllerId)!
 			.retokenize(startLineNumber, endLineNumberExclusive);
 	}
+
 	public $acceptModelLanguageChanged(
 		controllerId: number,
 		newLanguageId: string,
@@ -215,21 +238,26 @@ export class TextMateTokenizationWorker implements IRequestHandler {
 			.get(controllerId)!
 			.onLanguageId(newLanguageId, newEncodedLanguageId);
 	}
+
 	public $acceptRemovedModel(controllerId: number): void {
 		const model = this._models.get(controllerId);
 
 		if (model) {
 			model.dispose();
+
 			this._models.delete(controllerId);
 		}
 	}
+
 	public async $acceptTheme(
 		theme: IRawTheme,
 		colorMap: string[],
 	): Promise<void> {
 		const grammarFactory = await this._grammarFactory;
+
 		grammarFactory?.setTheme(theme, colorMap);
 	}
+
 	public $acceptMaxTokenizationLineLength(
 		controllerId: number,
 		value: number,
@@ -239,11 +267,18 @@ export class TextMateTokenizationWorker implements IRequestHandler {
 }
 export interface IRawModelData {
 	uri: UriComponents;
+
 	versionId: number;
+
 	lines: string[];
+
 	EOL: string;
+
 	languageId: string;
+
 	encodedLanguageId: LanguageId;
+
 	maxTokenizationLineLength: number;
+
 	controllerId: number;
 }

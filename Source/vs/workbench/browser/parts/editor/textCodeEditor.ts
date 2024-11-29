@@ -31,17 +31,21 @@ export abstract class AbstractTextCodeEditor<T extends IEditorViewState>
 	implements ITextEditorPane
 {
 	protected editorControl: ICodeEditor | undefined = undefined;
+
 	override get scopedContextKeyService(): IContextKeyService | undefined {
 		return this.editorControl?.invokeWithinContext((accessor) =>
 			accessor.get(IContextKeyService),
 		);
 	}
+
 	override getTitle(): string {
 		if (this.input) {
 			return this.input.getName();
 		}
+
 		return localize("textEditor", "Text Editor");
 	}
+
 	protected createEditorControl(
 		parent: HTMLElement,
 		initialOptions: ICodeEditorOptions,
@@ -55,39 +59,49 @@ export abstract class AbstractTextCodeEditor<T extends IEditorViewState>
 			),
 		);
 	}
+
 	protected getCodeEditorWidgetOptions(): ICodeEditorWidgetOptions {
 		return Object.create(null);
 	}
+
 	protected updateEditorControlOptions(options: ICodeEditorOptions): void {
 		this.editorControl?.updateOptions(options);
 	}
+
 	protected getMainControl(): ICodeEditor | undefined {
 		return this.editorControl;
 	}
+
 	override getControl(): ICodeEditor | undefined {
 		return this.editorControl;
 	}
+
 	protected override computeEditorViewState(resource: URI): T | undefined {
 		if (!this.editorControl) {
 			return undefined;
 		}
+
 		const model = this.editorControl.getModel();
 
 		if (!model) {
 			return undefined; // view state always needs a model
 		}
+
 		const modelUri = model.uri;
 
 		if (!modelUri) {
 			return undefined; // model URI is needed to make sure we save the view state correctly
 		}
+
 		if (!isEqual(modelUri, resource)) {
 			return undefined; // prevent saving view state for a model that is not the expected one
 		}
+
 		return (
 			(this.editorControl.saveViewState() as unknown as T) ?? undefined
 		);
 	}
+
 	override setOptions(options: ITextEditorOptions | undefined): void {
 		super.setOptions(options);
 
@@ -99,13 +113,17 @@ export abstract class AbstractTextCodeEditor<T extends IEditorViewState>
 			);
 		}
 	}
+
 	override focus(): void {
 		super.focus();
+
 		this.editorControl?.focus();
 	}
+
 	override hasFocus(): boolean {
 		return this.editorControl?.hasTextFocus() || super.hasFocus();
 	}
+
 	protected override setEditorVisible(visible: boolean): void {
 		super.setEditorVisible(visible);
 
@@ -115,6 +133,7 @@ export abstract class AbstractTextCodeEditor<T extends IEditorViewState>
 			this.editorControl?.onHide();
 		}
 	}
+
 	override layout(dimension: Dimension): void {
 		this.editorControl?.layout(dimension);
 	}

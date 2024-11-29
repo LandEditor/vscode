@@ -18,27 +18,37 @@ export class VscodeDevShareProvider
 	implements vscode.ShareProvider, vscode.Disposable
 {
 	readonly id: string = "copyVscodeDevLink";
+
 	readonly label: string = vscode.l10n.t("Copy vscode.dev Link");
+
 	readonly priority: number = 10;
+
 	private _hasGitHubRepositories: boolean = false;
+
 	private set hasGitHubRepositories(value: boolean) {
 		vscode.commands.executeCommand(
 			"setContext",
 			"github.hasGitHubRepo",
 			value,
 		);
+
 		this._hasGitHubRepositories = value;
+
 		this.ensureShareProviderRegistration();
 	}
+
 	private shareProviderRegistration: vscode.Disposable | undefined;
+
 	private disposables: vscode.Disposable[] = [];
 
 	constructor(private readonly gitAPI: API) {
 		this.initializeGitHubRepoContext();
 	}
+
 	dispose() {
 		this.disposables.forEach((d) => d.dispose());
 	}
+
 	private initializeGitHubRepoContext() {
 		if (
 			this.gitAPI.repositories.find((repo) =>
@@ -46,6 +56,7 @@ export class VscodeDevShareProvider
 			)
 		) {
 			this.hasGitHubRepositories = true;
+
 			vscode.commands.executeCommand(
 				"setContext",
 				"github.hasGitHubRepo",
@@ -62,11 +73,13 @@ export class VscodeDevShareProvider
 							"github.hasGitHubRepo",
 							true,
 						);
+
 						this.hasGitHubRepositories = true;
 					}
 				}),
 			);
 		}
+
 		this.disposables.push(
 			this.gitAPI.onDidCloseRepository(() => {
 				if (
@@ -79,6 +92,7 @@ export class VscodeDevShareProvider
 			}),
 		);
 	}
+
 	private ensureShareProviderRegistration() {
 		if (
 			vscode.env.appHost !== "codespaces" &&
@@ -87,16 +101,20 @@ export class VscodeDevShareProvider
 		) {
 			const shareProviderRegistration =
 				vscode.window.registerShareProvider({ scheme: "file" }, this);
+
 			this.shareProviderRegistration = shareProviderRegistration;
+
 			this.disposables.push(shareProviderRegistration);
 		} else if (
 			this.shareProviderRegistration &&
 			!this._hasGitHubRepositories
 		) {
 			this.shareProviderRegistration.dispose();
+
 			this.shareProviderRegistration = undefined;
 		}
 	}
+
 	async provideShare(
 		item: vscode.ShareableItem,
 		_token: vscode.CancellationToken,
@@ -106,14 +124,17 @@ export class VscodeDevShareProvider
 		if (!repository) {
 			return;
 		}
+
 		await ensurePublished(repository, item.resourceUri);
 
 		let repo:
 			| {
 					owner: string;
+
 					repo: string;
 			  }
 			| undefined;
+
 		repository.state.remotes.find((remote) => {
 			if (remote.fetchUrl) {
 				const foundRepo = getRepositoryFromUrl(remote.fetchUrl);
@@ -129,12 +150,14 @@ export class VscodeDevShareProvider
 					repo = foundRepo;
 				}
 			}
+
 			return;
 		});
 
 		if (!repo) {
 			return;
 		}
+
 		const blobSegment = repository?.state.HEAD?.name
 			? encodeURIComponentExceptSlashes(repository.state.HEAD?.name)
 			: repository?.state.HEAD?.commit;
@@ -149,6 +172,7 @@ export class VscodeDevShareProvider
 			`${this.getVscodeDevHost()}/${repo.owner}/${repo.repo}/blob/${blobSegment}${filepathSegment}${rangeSegment}`,
 		);
 	}
+
 	private getVscodeDevHost(): string {
 		return `https://${vscode.env.appName.toLowerCase().includes("insiders") ? "insiders." : ""}vscode.dev/github`;
 	}
@@ -170,5 +194,6 @@ function getRangeSegment(item: vscode.ShareableItem) {
 
 		return notebookCellRangeString(cellIndex, item.selection);
 	}
+
 	return rangeString(item.selection);
 }

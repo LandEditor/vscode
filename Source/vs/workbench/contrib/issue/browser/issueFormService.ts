@@ -34,6 +34,7 @@ import { IssueWebReporter } from "./issueReporterService.js";
 
 export interface IssuePassData {
 	issueTitle: string;
+
 	issueBody: string;
 }
 
@@ -43,11 +44,14 @@ export class IssueFormService implements IIssueFormService {
 	protected currentData: IssueReporterData | undefined;
 
 	protected issueReporterWindow: Window | null = null;
+
 	protected extensionIdentifierSet: ExtensionIdentifierSet =
 		new ExtensionIdentifierSet();
 
 	protected arch: string = "";
+
 	protected release: string = "";
+
 	protected type: string = "";
 
 	constructor(
@@ -79,6 +83,7 @@ export class IssueFormService implements IIssueFormService {
 				product,
 				this.issueReporterWindow,
 			);
+
 			issueReporter.render();
 		}
 	}
@@ -97,6 +102,7 @@ export class IssueFormService implements IIssueFormService {
 			const centerX = bounds.x + bounds.width / 2;
 
 			const centerY = bounds.y + bounds.height / 2;
+
 			issueReporterBounds = {
 				...issueReporterBounds,
 				x: centerX - 350,
@@ -118,18 +124,23 @@ export class IssueFormService implements IIssueFormService {
 
 		if (auxiliaryWindow) {
 			await auxiliaryWindow.whenStylesHaveLoaded;
+
 			auxiliaryWindow.window.document.title = "Issue Reporter";
+
 			auxiliaryWindow.window.document.body.classList.add(
 				"issue-reporter-body",
 			);
 
 			// custom issue reporter wrapper
 			const div = document.createElement("div");
+
 			div.classList.add("monaco-workbench");
 
 			// removes preset monaco-workbench
 			auxiliaryWindow.container.remove();
+
 			auxiliaryWindow.window.document.body.appendChild(div);
+
 			safeInnerHtml(div, BaseHtml());
 
 			this.issueReporterWindow = auxiliaryWindow.window;
@@ -140,6 +151,7 @@ export class IssueFormService implements IIssueFormService {
 		// handle closing issue reporter
 		this.issueReporterWindow?.addEventListener("beforeunload", () => {
 			auxiliaryWindow.window.close();
+
 			this.issueReporterWindow = null;
 		});
 	}
@@ -166,6 +178,7 @@ export class IssueFormService implements IIssueFormService {
 						extensionId.toLowerCase()
 				) {
 					this.extensionIdentifierSet.add(extensionId.toLowerCase());
+
 					await action.run();
 				}
 			} catch (error) {
@@ -182,6 +195,7 @@ export class IssueFormService implements IIssueFormService {
 		this.extensionIdentifierSet.delete(
 			new ExtensionIdentifier(extensionId),
 		);
+
 		menu.dispose();
 
 		const result = this.currentData;
@@ -223,6 +237,7 @@ export class IssueFormService implements IIssueFormService {
 					),
 					run: () => {
 						this.closeReporter();
+
 						this.issueReporterWindow = null;
 					},
 				},
@@ -271,6 +286,7 @@ export class IssueFormService implements IIssueFormService {
 			this.extensionIdentifierSet.has(data.extensionId)
 		) {
 			this.currentData = data;
+
 			this.issueReporterWindow?.focus();
 
 			return true;

@@ -10,7 +10,9 @@ import { IExtHostRpcService } from "./extHostRpcService.js";
 
 export abstract class AbstractExtHostConsoleForwarder {
 	private readonly _mainThreadConsole: MainThreadConsoleShape;
+
 	private readonly _includeStack: boolean;
+
 	private readonly _logNative: boolean;
 
 	constructor(
@@ -22,13 +24,19 @@ export abstract class AbstractExtHostConsoleForwarder {
 		this._mainThreadConsole = extHostRpc.getProxy(
 			MainContext.MainThreadConsole,
 		);
+
 		this._includeStack = initData.consoleForward.includeStack;
+
 		this._logNative = initData.consoleForward.logNative;
 		// Pass console logging to the outside so that we have it in the main side if told so
 		this._wrapConsoleMethod("info", "log");
+
 		this._wrapConsoleMethod("log", "log");
+
 		this._wrapConsoleMethod("warn", "warn");
+
 		this._wrapConsoleMethod("debug", "debug");
+
 		this._wrapConsoleMethod("error", "error");
 	}
 	/**
@@ -47,6 +55,7 @@ export abstract class AbstractExtHostConsoleForwarder {
 		const that = this;
 
 		const original = console[method];
+
 		Object.defineProperty(console, method, {
 			set: () => {},
 			get: () =>
@@ -60,6 +69,7 @@ export abstract class AbstractExtHostConsoleForwarder {
 				},
 		});
 	}
+
 	private _handleConsoleCall(
 		method: "log" | "info" | "warn" | "error" | "debug",
 		severity: "log" | "warn" | "error" | "debug",
@@ -76,6 +86,7 @@ export abstract class AbstractExtHostConsoleForwarder {
 			this._nativeConsoleLogMessage(method, original, args);
 		}
 	}
+
 	protected abstract _nativeConsoleLogMessage(
 		method: "log" | "info" | "warn" | "error" | "debug",
 		original: (...args: any[]) => void,
@@ -113,6 +124,7 @@ function safeStringifyArgumentsToArray(
 					arg = errorObj.toString();
 				}
 			}
+
 			argsArray.push(arg);
 		}
 	}
@@ -127,12 +139,14 @@ function safeStringifyArgumentsToArray(
 			} satisfies IStackArgument);
 		}
 	}
+
 	try {
 		const res = safeStringify(argsArray);
 
 		if (res.length > MAX_LENGTH) {
 			return "Output omitted for a large object that exceeds the limits";
 		}
+
 		return res;
 	} catch (error) {
 		return `Output omitted for an object that cannot be inspected ('${error.toString()}')`;

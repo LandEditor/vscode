@@ -26,10 +26,12 @@ export async function createRandomFile(
 
 	if (dir) {
 		assert.strictEqual(dir.scheme, testFs.scheme);
+
 		fakeFile = dir.with({ path: dir.path + "/" + rndName() + ext });
 	} else {
 		fakeFile = vscode.Uri.parse(`${testFs.scheme}:/${rndName() + ext}`);
 	}
+
 	testFs.writeFile(fakeFile, Buffer.from(contents), {
 		create: true,
 		overwrite: true,
@@ -49,8 +51,10 @@ export async function deleteFile(file: vscode.Uri): Promise<boolean> {
 export function pathEquals(path1: string, path2: string): boolean {
 	if (process.platform !== "linux") {
 		path1 = path1.toLowerCase();
+
 		path2 = path2.toLowerCase();
 	}
+
 	return path1 === path2;
 }
 export function closeAllEditors(): Thenable<any> {
@@ -76,6 +80,7 @@ function withLogLevel(
 		const logLevel = await vscode.commands.executeCommand(
 			"_extensionTests.getLogLevel",
 		);
+
 		await vscode.commands.executeCommand(
 			"_extensionTests.setLogLevel",
 			level,
@@ -117,30 +122,38 @@ export function assertNoRpcFromEntry(entry: [obj: any, name: string]) {
 		if (!obj) {
 			return;
 		}
+
 		if (typeof obj !== "object" && typeof obj !== "function") {
 			return;
 		}
+
 		if (seen.has(obj)) {
 			return;
 		}
+
 		seen.add(obj);
 
 		if (obj[symProtocol]) {
 			rpcPaths.push(`PROTOCOL via ${path}`);
 		}
+
 		if (obj[symProxy]) {
 			proxyPaths.push(`PROXY '${obj[symProxy]}' via ${path}`);
 		}
+
 		for (const key in obj) {
 			walk(obj[key], `${path}.${String(key)}`, seen);
 		}
 	}
+
 	try {
 		walk(entry[0], entry[1], new Set());
 	} catch (err) {
 		assert.fail(err);
 	}
+
 	assert.strictEqual(rpcPaths.length, 0, rpcPaths.join("\n"));
+
 	assert.strictEqual(proxyPaths.length, 0, proxyPaths.join("\n")); // happens...
 }
 export async function asPromise<T>(
@@ -152,12 +165,15 @@ export async function asPromise<T>(
 	return new Promise<T>((resolve, reject) => {
 		const handle = setTimeout(() => {
 			sub.dispose();
+
 			reject(error);
 		}, timeout);
 
 		const sub = event((e) => {
 			clearTimeout(handle);
+
 			sub.dispose();
+
 			resolve(e);
 		});
 	});
@@ -197,6 +213,7 @@ export async function poll<T>(
 				`Timeout: ${timeoutMessage} after ${(retryCount * retryInterval) / 1000} seconds.\r${lastError}`,
 			);
 		}
+
 		let result;
 
 		try {
@@ -210,7 +227,9 @@ export async function poll<T>(
 		} catch (e: any) {
 			lastError = Array.isArray(e.stack) ? e.stack.join(EOL) : e.stack;
 		}
+
 		await new Promise((resolve) => setTimeout(resolve, retryInterval));
+
 		trial++;
 	}
 }
@@ -220,44 +239,61 @@ export type ValueCallback<T = unknown> = (value: T | Promise<T>) => void;
  */
 export class DeferredPromise<T> {
 	private completeCallback!: ValueCallback<T>;
+
 	private errorCallback!: (err: unknown) => void;
+
 	private rejected = false;
+
 	private resolved = false;
+
 	public get isRejected() {
 		return this.rejected;
 	}
+
 	public get isResolved() {
 		return this.resolved;
 	}
+
 	public get isSettled() {
 		return this.rejected || this.resolved;
 	}
+
 	public readonly p: Promise<T>;
 
 	constructor() {
 		this.p = new Promise<T>((c, e) => {
 			this.completeCallback = c;
+
 			this.errorCallback = e;
 		});
 	}
+
 	public complete(value: T) {
 		return new Promise<void>((resolve) => {
 			this.completeCallback(value);
+
 			this.resolved = true;
+
 			resolve();
 		});
 	}
+
 	public error(err: unknown) {
 		return new Promise<void>((resolve) => {
 			this.errorCallback(err);
+
 			this.rejected = true;
+
 			resolve();
 		});
 	}
+
 	public cancel() {
 		new Promise<void>((resolve) => {
 			this.errorCallback(new Error("Canceled"));
+
 			this.rejected = true;
+
 			resolve();
 		});
 	}

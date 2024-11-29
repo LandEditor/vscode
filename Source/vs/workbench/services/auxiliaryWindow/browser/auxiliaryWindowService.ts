@@ -68,6 +68,7 @@ export const IAuxiliaryWindowService = createDecorator<IAuxiliaryWindowService>(
 
 export interface IAuxiliaryWindowOpenEvent {
 	readonly window: IAuxiliaryWindow;
+
 	readonly disposables: DisposableStore;
 }
 
@@ -81,9 +82,11 @@ export interface IAuxiliaryWindowOpenOptions {
 	readonly bounds?: Partial<IRectangle>;
 
 	readonly mode?: AuxiliaryWindowMode;
+
 	readonly zoomLevel?: number;
 
 	readonly nativeTitlebar?: boolean;
+
 	readonly disableFullscreen?: boolean;
 }
 
@@ -103,14 +106,17 @@ export interface BeforeAuxiliaryWindowUnloadEvent {
 
 export interface IAuxiliaryWindow extends IDisposable {
 	readonly onWillLayout: Event<Dimension>;
+
 	readonly onDidLayout: Event<Dimension>;
 
 	readonly onBeforeUnload: Event<BeforeAuxiliaryWindowUnloadEvent>;
+
 	readonly onUnload: Event<void>;
 
 	readonly whenStylesHaveLoaded: Promise<void>;
 
 	readonly window: CodeWindow;
+
 	readonly container: HTMLElement;
 
 	layout(): void;
@@ -120,20 +126,25 @@ export interface IAuxiliaryWindow extends IDisposable {
 
 export class AuxiliaryWindow extends BaseWindow implements IAuxiliaryWindow {
 	private readonly _onWillLayout = this._register(new Emitter<Dimension>());
+
 	readonly onWillLayout = this._onWillLayout.event;
 
 	private readonly _onDidLayout = this._register(new Emitter<Dimension>());
+
 	readonly onDidLayout = this._onDidLayout.event;
 
 	private readonly _onBeforeUnload = this._register(
 		new Emitter<BeforeAuxiliaryWindowUnloadEvent>(),
 	);
+
 	readonly onBeforeUnload = this._onBeforeUnload.event;
 
 	private readonly _onUnload = this._register(new Emitter<void>());
+
 	readonly onUnload = this._onUnload.event;
 
 	private readonly _onWillDispose = this._register(new Emitter<void>());
+
 	readonly onWillDispose = this._onWillDispose.event;
 
 	readonly whenStylesHaveLoaded: Promise<void>;
@@ -165,6 +176,7 @@ export class AuxiliaryWindow extends BaseWindow implements IAuxiliaryWindow {
 				(e: BeforeUnloadEvent) => this.handleBeforeUnload(e),
 			),
 		);
+
 		this._register(
 			addDisposableListener(this.window, EventType.UNLOAD, () =>
 				this.handleUnload(),
@@ -174,6 +186,7 @@ export class AuxiliaryWindow extends BaseWindow implements IAuxiliaryWindow {
 		this._register(
 			addDisposableListener(this.window, "unhandledrejection", (e) => {
 				onUnexpectedError(e.reason);
+
 				e.preventDefault();
 			}),
 		);
@@ -234,6 +247,7 @@ export class AuxiliaryWindow extends BaseWindow implements IAuxiliaryWindow {
 	private handleBeforeUnload(e: BeforeUnloadEvent): void {
 		// Check for veto from a listening component
 		let veto: string | undefined;
+
 		this._onBeforeUnload.fire({
 			veto(reason) {
 				if (reason) {
@@ -272,6 +286,7 @@ export class AuxiliaryWindow extends BaseWindow implements IAuxiliaryWindow {
 
 	protected preventUnload(e: BeforeUnloadEvent): void {
 		e.preventDefault();
+
 		e.returnValue = localize(
 			"lifecycleVeto",
 			"Changes that you made may not be saved. Please check press 'Cancel' and try again.",
@@ -299,7 +314,9 @@ export class AuxiliaryWindow extends BaseWindow implements IAuxiliaryWindow {
 			this.window.document.body,
 			this.container,
 		);
+
 		this._onWillLayout.fire(dimension);
+
 		this._onDidLayout.fire(dimension);
 	}
 
@@ -339,6 +356,7 @@ export class BrowserAuxiliaryWindowService
 	private readonly _onDidOpenAuxiliaryWindow = this._register(
 		new Emitter<IAuxiliaryWindowOpenEvent>(),
 	);
+
 	readonly onDidOpenAuxiliaryWindow = this._onDidOpenAuxiliaryWindow.event;
 
 	private readonly windows = new Map<number, IAuxiliaryWindow>();
@@ -375,6 +393,7 @@ export class BrowserAuxiliaryWindowService
 
 		// Add a `vscodeWindowId` property to identify auxiliary windows
 		const resolvedWindowId = await this.resolveWindowId(targetWindow);
+
 		ensureCodeWindow(targetWindow, resolvedWindowId);
 
 		const containerDisposables = new DisposableStore();
@@ -392,7 +411,9 @@ export class BrowserAuxiliaryWindowService
 		);
 
 		const registryDisposables = new DisposableStore();
+
 		this.windows.set(targetWindow.vscodeWindowId, auxiliaryWindow);
+
 		registryDisposables.add(
 			toDisposable(() =>
 				this.windows.delete(targetWindow.vscodeWindowId),
@@ -405,11 +426,14 @@ export class BrowserAuxiliaryWindowService
 			targetWindow.close();
 
 			containerDisposables.dispose();
+
 			registryDisposables.dispose();
+
 			eventDisposables.dispose();
 		});
 
 		registryDisposables.add(registerWindow(targetWindow));
+
 		this._onDidOpenAuxiliaryWindow.fire({
 			window: auxiliaryWindow,
 			disposables: eventDisposables,
@@ -419,16 +443,22 @@ export class BrowserAuxiliaryWindowService
 
 		type AuxiliaryWindowClassification = {
 			owner: "bpasero";
+
 			comment: "An event that fires when an auxiliary window is opened";
+
 			bounds: {
 				classification: "SystemMetaData";
+
 				purpose: "FeatureInsight";
+
 				comment: "Has window bounds provided.";
 			};
 		};
+
 		type AuxiliaryWindowOpenEvent = {
 			bounds: boolean;
 		};
+
 		this.telemetryService.publicLog2<
 			AuxiliaryWindowOpenEvent,
 			AuxiliaryWindowClassification
@@ -611,6 +641,7 @@ export class BrowserAuxiliaryWindowService
 				const clonedMetaElement = createMetaElement(
 					auxiliaryWindow.document.head,
 				);
+
 				copyAttributes(metaElement, clonedMetaElement);
 
 				if (metaTag === 'meta[http-equiv="Content-Security-Policy"]') {
@@ -634,6 +665,7 @@ export class BrowserAuxiliaryWindowService
 
 		if (originalIconLinkTag) {
 			const icon = createLinkElement(auxiliaryWindow.document.head);
+
 			copyAttributes(originalIconLinkTag, icon);
 		}
 	}
@@ -650,6 +682,7 @@ export class BrowserAuxiliaryWindowService
 		>();
 
 		const stylesLoaded = new Barrier();
+
 		stylesLoaded
 			.wait()
 			.then(() => mark("code/auxiliaryWindow/didLoadCSSStyles"));
@@ -661,6 +694,7 @@ export class BrowserAuxiliaryWindowService
 		function onLinkSettled() {
 			if (--pendingLinksToSettle === 0) {
 				pendingLinksDisposables.dispose();
+
 				stylesLoaded.open();
 			}
 		}
@@ -680,6 +714,7 @@ export class BrowserAuxiliaryWindowService
 				pendingLinksDisposables.add(
 					addDisposableListener(clonedNode, "load", onLinkSettled),
 				);
+
 				pendingLinksDisposables.add(
 					addDisposableListener(clonedNode, "error", onLinkSettled),
 				);
@@ -757,6 +792,7 @@ export class BrowserAuxiliaryWindowService
 
 						if (clonedNode) {
 							clonedNode.parentNode?.removeChild(clonedNode);
+
 							mapOriginalToClone.delete(node);
 						}
 					}
@@ -777,11 +813,17 @@ export class BrowserAuxiliaryWindowService
 
 		// Create workbench container and apply classes
 		const container = document.createElement("div");
+
 		container.setAttribute("role", "application");
+
 		position(container, 0, 0, 0, 0, "relative");
+
 		container.style.display = "flex";
+
 		container.style.height = "100%";
+
 		container.style.flexDirection = "column";
+
 		auxiliaryWindow.document.body.append(container);
 
 		// Track attributes
@@ -791,12 +833,14 @@ export class BrowserAuxiliaryWindowService
 				auxiliaryWindow.document.documentElement,
 			),
 		);
+
 		disposables.add(
 			trackAttributes(
 				mainWindow.document.body,
 				auxiliaryWindow.document.body,
 			),
 		);
+
 		disposables.add(
 			trackAttributes(this.layoutService.mainContainer, container, [
 				"class",

@@ -75,20 +75,31 @@ export class NotificationsCenter
 	implements INotificationsCenterController
 {
 	private static readonly MAX_DIMENSIONS = new Dimension(450, 400);
+
 	private static readonly MAX_NOTIFICATION_SOURCES = 10; // maximum number of notification sources to show in configure dropdown
 	private readonly _onDidChangeVisibility = this._register(
 		new Emitter<void>(),
 	);
+
 	readonly onDidChangeVisibility = this._onDidChangeVisibility.event;
+
 	private notificationsCenterContainer: HTMLElement | undefined;
+
 	private notificationsCenterHeader: HTMLElement | undefined;
+
 	private notificationsCenterTitle: HTMLSpanElement | undefined;
+
 	private notificationsList: NotificationsList | undefined;
+
 	private _isVisible: boolean | undefined;
+
 	private workbenchDimensions: Dimension | undefined;
+
 	private readonly notificationsCenterVisibleContextKey =
 		NotificationsCenterVisibleContext.bindTo(this.contextKeyService);
+
 	private clearAllAction: ClearAllNotificationsAction | undefined;
+
 	private configureDoNotDisturbAction:
 		| ConfigureDoNotDisturbAction
 		| undefined;
@@ -116,27 +127,33 @@ export class NotificationsCenter
 		private readonly contextMenuService: IContextMenuService,
 	) {
 		super(themeService);
+
 		this.notificationsCenterVisibleContextKey =
 			NotificationsCenterVisibleContext.bindTo(contextKeyService);
+
 		this.registerListeners();
 	}
+
 	private registerListeners(): void {
 		this._register(
 			this.model.onDidChangeNotification((e) =>
 				this.onDidChangeNotification(e),
 			),
 		);
+
 		this._register(
 			this.layoutService.onDidLayoutMainContainer((dimension) =>
 				this.layout(Dimension.lift(dimension)),
 			),
 		);
+
 		this._register(
 			this.notificationService.onDidChangeFilter(() =>
 				this.onDidChangeFilter(),
 			),
 		);
 	}
+
 	private onDidChangeFilter(): void {
 		if (
 			this.notificationService.getFilter() === NotificationsFilter.ERROR
@@ -144,9 +161,11 @@ export class NotificationsCenter
 			this.hide(); // hide the notification center when we have a error filter enabled
 		}
 	}
+
 	get isVisible(): boolean {
 		return !!this._isVisible;
 	}
+
 	show(): void {
 		if (this._isVisible) {
 			const notificationsList = assertIsDefined(this.notificationsList);
@@ -169,8 +188,11 @@ export class NotificationsCenter
 				this.notificationsList,
 				this.notificationsCenterContainer,
 			);
+
 		this._isVisible = true;
+
 		notificationsCenterContainer.classList.add("visible");
+
 		notificationsList.show();
 		// Layout
 		this.layout(this.workbenchDimensions);
@@ -193,6 +215,7 @@ export class NotificationsCenter
 		// Event
 		this._onDidChangeVisibility.fire();
 	}
+
 	private updateTitle(): void {
 		const [notificationsCenterTitle, clearAllAction] = assertAllDefined(
 			this.notificationsCenterTitle,
@@ -204,40 +227,50 @@ export class NotificationsCenter
 				"notificationsEmpty",
 				"No new notifications",
 			);
+
 			clearAllAction.enabled = false;
 		} else {
 			notificationsCenterTitle.textContent = localize(
 				"notifications",
 				"Notifications",
 			);
+
 			clearAllAction.enabled = this.model.notifications.some(
 				(notification) => !notification.hasProgress,
 			);
 		}
 	}
+
 	private create(): void {
 		// Container
 		this.notificationsCenterContainer = document.createElement("div");
+
 		this.notificationsCenterContainer.classList.add("notifications-center");
 		// Header
 		this.notificationsCenterHeader = document.createElement("div");
+
 		this.notificationsCenterHeader.classList.add(
 			"notifications-center-header",
 		);
+
 		this.notificationsCenterContainer.appendChild(
 			this.notificationsCenterHeader,
 		);
 		// Header Title
 		this.notificationsCenterTitle = document.createElement("span");
+
 		this.notificationsCenterTitle.classList.add(
 			"notifications-center-header-title",
 		);
+
 		this.notificationsCenterHeader.appendChild(
 			this.notificationsCenterTitle,
 		);
 		// Header Toolbar
 		const toolbarContainer = document.createElement("div");
+
 		toolbarContainer.classList.add("notifications-center-header-toolbar");
+
 		this.notificationsCenterHeader.appendChild(toolbarContainer);
 
 		const actionRunner = this._register(
@@ -301,6 +334,7 @@ export class NotificationsCenter
 											if (actions.length === 1) {
 												actions.push(new Separator());
 											}
+
 											actions.push(
 												toAction({
 													id: `${ToggleDoNotDisturbAction.ID}.${source.id}`,
@@ -322,11 +356,13 @@ export class NotificationsCenter
 												}),
 											);
 										}
+
 										if (
 											sortedFilters.length >
 											NotificationsCenter.MAX_NOTIFICATION_SOURCES
 										) {
 											actions.push(new Separator());
+
 											actions.push(
 												that._register(
 													that.instantiationService.createInstance(
@@ -340,6 +376,7 @@ export class NotificationsCenter
 												),
 											);
 										}
+
 										return actions;
 									},
 								},
@@ -356,10 +393,12 @@ export class NotificationsCenter
 							),
 						);
 					}
+
 					return undefined;
 				},
 			}),
 		);
+
 		this.clearAllAction = this._register(
 			this.instantiationService.createInstance(
 				ClearAllNotificationsAction,
@@ -367,11 +406,13 @@ export class NotificationsCenter
 				ClearAllNotificationsAction.LABEL,
 			),
 		);
+
 		notificationsToolBar.push(this.clearAllAction, {
 			icon: true,
 			label: false,
 			keybinding: this.getKeybindingLabel(this.clearAllAction),
 		});
+
 		this.configureDoNotDisturbAction = this._register(
 			this.instantiationService.createInstance(
 				ConfigureDoNotDisturbAction,
@@ -379,6 +420,7 @@ export class NotificationsCenter
 				ConfigureDoNotDisturbAction.LABEL,
 			),
 		);
+
 		notificationsToolBar.push(this.configureDoNotDisturbAction, {
 			icon: true,
 			label: false,
@@ -391,6 +433,7 @@ export class NotificationsCenter
 				HideNotificationsCenterAction.LABEL,
 			),
 		);
+
 		notificationsToolBar.push(hideAllAction, {
 			icon: true,
 			label: false,
@@ -407,17 +450,21 @@ export class NotificationsCenter
 				),
 			},
 		);
+
 		this.container.appendChild(this.notificationsCenterContainer);
 	}
+
 	private getKeybindingLabel(action: IAction): string | null {
 		const keybinding = this.keybindingService.lookupKeybinding(action.id);
 
 		return keybinding ? keybinding.getLabel() : null;
 	}
+
 	private onDidChangeNotification(e: INotificationChangeEvent): void {
 		if (!this._isVisible) {
 			return; // only if visible
 		}
+
 		let focusEditor = false;
 		// Update notifications list based on event kind
 		const [notificationsList, notificationsCenterContainer] =
@@ -429,6 +476,7 @@ export class NotificationsCenter
 		switch (e.kind) {
 			case NotificationChangeType.ADD:
 				notificationsList.updateNotificationsList(e.index, 0, [e.item]);
+
 				e.item.updateVisibility(true);
 
 				break;
@@ -449,8 +497,10 @@ export class NotificationsCenter
 						if (e.item.expanded) {
 							notificationsList.updateNotificationHeight(e.item);
 						}
+
 						break;
 				}
+
 				break;
 
 			case NotificationChangeType.EXPAND_COLLAPSE:
@@ -463,7 +513,9 @@ export class NotificationsCenter
 				focusEditor = isAncestorOfActiveElement(
 					notificationsCenterContainer,
 				);
+
 				notificationsList.updateNotificationsList(e.index, 1);
+
 				e.item.updateVisibility(false);
 
 				break;
@@ -479,6 +531,7 @@ export class NotificationsCenter
 			}
 		}
 	}
+
 	hide(): void {
 		if (
 			!this._isVisible ||
@@ -487,12 +540,15 @@ export class NotificationsCenter
 		) {
 			return; // already hidden
 		}
+
 		const focusEditor = isAncestorOfActiveElement(
 			this.notificationsCenterContainer,
 		);
 		// Hide
 		this._isVisible = false;
+
 		this.notificationsCenterContainer.classList.remove("visible");
+
 		this.notificationsList.hide();
 		// Mark as hidden
 		this.model.notifications.forEach((notification) =>
@@ -507,16 +563,19 @@ export class NotificationsCenter
 			this.editorGroupService.activeGroup.focus();
 		}
 	}
+
 	override updateStyles(): void {
 		if (
 			this.notificationsCenterContainer &&
 			this.notificationsCenterHeader
 		) {
 			const widgetShadowColor = this.getColor(widgetShadow);
+
 			this.notificationsCenterContainer.style.boxShadow =
 				widgetShadowColor ? `0 0 8px 2px ${widgetShadowColor}` : "";
 
 			const borderColor = this.getColor(NOTIFICATIONS_CENTER_BORDER);
+
 			this.notificationsCenterContainer.style.border = borderColor
 				? `1px solid ${borderColor}`
 				: "";
@@ -524,15 +583,18 @@ export class NotificationsCenter
 			const headerForeground = this.getColor(
 				NOTIFICATIONS_CENTER_HEADER_FOREGROUND,
 			);
+
 			this.notificationsCenterHeader.style.color = headerForeground ?? "";
 
 			const headerBackground = this.getColor(
 				NOTIFICATIONS_CENTER_HEADER_BACKGROUND,
 			);
+
 			this.notificationsCenterHeader.style.background =
 				headerBackground ?? "";
 		}
 	}
+
 	layout(dimension: Dimension | undefined): void {
 		this.workbenchDimensions = dimension;
 
@@ -548,6 +610,7 @@ export class NotificationsCenter
 			if (this.workbenchDimensions) {
 				// Make sure notifications are not exceding available width
 				availableWidth = this.workbenchDimensions.width;
+
 				availableWidth -= 2 * 8; // adjust for paddings left and right
 				// Make sure notifications are not exceeding available height
 				availableHeight =
@@ -561,6 +624,7 @@ export class NotificationsCenter
 				) {
 					availableHeight -= 22; // adjust for status bar
 				}
+
 				if (
 					this.layoutService.isVisible(
 						Parts.TITLEBAR_PART,
@@ -569,16 +633,19 @@ export class NotificationsCenter
 				) {
 					availableHeight -= 22; // adjust for title bar
 				}
+
 				availableHeight -= 2 * 12; // adjust for paddings top and bottom
 			}
 			// Apply to list
 			const notificationsList = assertIsDefined(this.notificationsList);
+
 			notificationsList.layout(
 				Math.min(maxWidth, availableWidth),
 				Math.min(maxHeight, availableHeight),
 			);
 		}
 	}
+
 	clearAll(): void {
 		// Hide notifications center first
 		this.hide();
@@ -589,6 +656,7 @@ export class NotificationsCenter
 			if (!notification.hasProgress) {
 				notification.close();
 			}
+
 			this.accessibilitySignalService.playSignal(
 				AccessibilitySignal.clear,
 			);

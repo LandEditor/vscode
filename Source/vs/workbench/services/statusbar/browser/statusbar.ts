@@ -111,7 +111,9 @@ export const ShowTooltipCommand: Command = {
 export interface IStatusbarStyleOverride {
 	readonly priority: number; // lower has higher priority
 	readonly foreground?: ColorIdentifier;
+
 	readonly background?: ColorIdentifier;
+
 	readonly border?: ColorIdentifier;
 }
 export type StatusbarEntryKind =

@@ -48,6 +48,7 @@ export interface ICompositionData {
 
 export interface IPasteData {
 	text: string;
+
 	metadata: ClipboardStoredMetadata | null;
 }
 
@@ -55,6 +56,7 @@ export interface ITextAreaInputHost {
 	getDataToCopy(): ClipboardDataToCopy;
 
 	getScreenReaderContent(): TextAreaState;
+
 	deduceModelPosition(
 		viewAnchorPosition: Position,
 		deltaOffset: number,
@@ -68,18 +70,31 @@ export interface ICompositionStartEvent {
 
 export interface ICompleteTextAreaWrapper extends ITextAreaWrapper {
 	readonly onKeyDown: Event<KeyboardEvent>;
+
 	readonly onKeyPress: Event<KeyboardEvent>;
+
 	readonly onKeyUp: Event<KeyboardEvent>;
+
 	readonly onCompositionStart: Event<CompositionEvent>;
+
 	readonly onCompositionUpdate: Event<CompositionEvent>;
+
 	readonly onCompositionEnd: Event<CompositionEvent>;
+
 	readonly onBeforeInput: Event<InputEvent>;
+
 	readonly onInput: Event<InputEvent>;
+
 	readonly onCut: Event<ClipboardEvent>;
+
 	readonly onCopy: Event<ClipboardEvent>;
+
 	readonly onPaste: Event<ClipboardEvent>;
+
 	readonly onFocus: Event<FocusEvent>;
+
 	readonly onBlur: Event<FocusEvent>;
+
 	readonly onSyntheticTap: Event<void>;
 
 	readonly ownerDocument: Document;
@@ -87,6 +102,7 @@ export interface ICompleteTextAreaWrapper extends ITextAreaWrapper {
 	setIgnoreSelectionChangeTime(reason: string): void;
 
 	getIgnoreSelectionChangeTime(): number;
+
 	resetSelectionChangeTime(): void;
 
 	hasFocus(): boolean;
@@ -94,8 +110,11 @@ export interface ICompleteTextAreaWrapper extends ITextAreaWrapper {
 
 export interface IBrowser {
 	isAndroid: boolean;
+
 	isFirefox: boolean;
+
 	isChrome: boolean;
+
 	isSafari: boolean;
 }
 
@@ -115,6 +134,7 @@ class CompositionContext {
 			replaceNextCharCnt: 0,
 			positionDelta: 0,
 		};
+
 		this._lastTypeTextLength = text.length;
 
 		return typeInput;
@@ -131,45 +151,56 @@ class CompositionContext {
  */
 export class TextAreaInput extends Disposable {
 	private _onFocus = this._register(new Emitter<void>());
+
 	public readonly onFocus: Event<void> = this._onFocus.event;
 
 	private _onBlur = this._register(new Emitter<void>());
+
 	public readonly onBlur: Event<void> = this._onBlur.event;
 
 	private _onKeyDown = this._register(new Emitter<IKeyboardEvent>());
+
 	public readonly onKeyDown: Event<IKeyboardEvent> = this._onKeyDown.event;
 
 	private _onKeyUp = this._register(new Emitter<IKeyboardEvent>());
+
 	public readonly onKeyUp: Event<IKeyboardEvent> = this._onKeyUp.event;
 
 	private _onCut = this._register(new Emitter<void>());
+
 	public readonly onCut: Event<void> = this._onCut.event;
 
 	private _onPaste = this._register(new Emitter<IPasteData>());
+
 	public readonly onPaste: Event<IPasteData> = this._onPaste.event;
 
 	private _onType = this._register(new Emitter<ITypeData>());
+
 	public readonly onType: Event<ITypeData> = this._onType.event;
 
 	private _onCompositionStart = this._register(
 		new Emitter<ICompositionStartEvent>(),
 	);
+
 	public readonly onCompositionStart: Event<ICompositionStartEvent> =
 		this._onCompositionStart.event;
 
 	private _onCompositionUpdate = this._register(
 		new Emitter<ICompositionData>(),
 	);
+
 	public readonly onCompositionUpdate: Event<ICompositionData> =
 		this._onCompositionUpdate.event;
 
 	private _onCompositionEnd = this._register(new Emitter<void>());
+
 	public readonly onCompositionEnd: Event<void> =
 		this._onCompositionEnd.event;
 
 	private _onSelectionChangeRequest = this._register(
 		new Emitter<Selection>(),
 	);
+
 	public readonly onSelectionChangeRequest: Event<Selection> =
 		this._onSelectionChangeRequest.event;
 
@@ -189,6 +220,7 @@ export class TextAreaInput extends Disposable {
 	private _selectionChangeListener: IDisposable | null;
 
 	private _hasFocus: boolean;
+
 	private _currentComposition: CompositionContext | null;
 
 	constructor(
@@ -201,15 +233,19 @@ export class TextAreaInput extends Disposable {
 		@ILogService private readonly _logService: ILogService,
 	) {
 		super();
+
 		this._asyncTriggerCut = this._register(
 			new RunOnceScheduler(() => this._onCut.fire(), 0),
 		);
+
 		this._textAreaState = TextAreaState.EMPTY;
+
 		this._selectionChangeListener = null;
 
 		if (this._accessibilityService.isScreenReaderOptimized()) {
 			this.writeNativeTextAreaContent("ctor");
 		}
+
 		this._register(
 			Event.runAndSubscribe(
 				this._accessibilityService.onDidChangeScreenReaderOptimized,
@@ -234,7 +270,9 @@ export class TextAreaInput extends Disposable {
 				},
 			),
 		);
+
 		this._hasFocus = false;
+
 		this._currentComposition = null;
 
 		let lastKeyDown: IKeyboardEvent | null = null;
@@ -259,6 +297,7 @@ export class TextAreaInput extends Disposable {
 				}
 
 				lastKeyDown = e;
+
 				this._onKeyDown.fire(e);
 			}),
 		);
@@ -266,6 +305,7 @@ export class TextAreaInput extends Disposable {
 		this._register(
 			this._textArea.onKeyUp((_e) => {
 				const e = new StandardKeyboardEvent(_e);
+
 				this._onKeyUp.fire(e);
 			}),
 		);
@@ -284,6 +324,7 @@ export class TextAreaInput extends Disposable {
 
 					return;
 				}
+
 				this._currentComposition = currentComposition;
 
 				if (
@@ -309,6 +350,7 @@ export class TextAreaInput extends Disposable {
 					}
 					// Pretend the previous character was composed (in order to get it removed by subsequent compositionupdate events)
 					currentComposition.handleCompositionUpdate("x");
+
 					this._onCompositionStart.fire({ data: e.data });
 
 					return;
@@ -331,12 +373,14 @@ export class TextAreaInput extends Disposable {
 				if (_debugComposition) {
 					console.log(`[compositionupdate]`, e);
 				}
+
 				const currentComposition = this._currentComposition;
 
 				if (!currentComposition) {
 					// should not be possible to receive a 'compositionupdate' without a 'compositionstart'
 					return;
 				}
+
 				if (this._browser.isAndroid) {
 					// On Android, the data sent with the composition update event is unusable.
 					// For example, if the cursor is in the middle of a word like Mic|osoft
@@ -352,20 +396,27 @@ export class TextAreaInput extends Disposable {
 							this._textAreaState,
 							newState,
 						);
+
 					this._textAreaState = newState;
+
 					this._onType.fire(typeInput);
+
 					this._onCompositionUpdate.fire(e);
 
 					return;
 				}
+
 				const typeInput = currentComposition.handleCompositionUpdate(
 					e.data,
 				);
+
 				this._textAreaState = TextAreaState.readFromTextArea(
 					this._textArea,
 					this._textAreaState,
 				);
+
 				this._onType.fire(typeInput);
+
 				this._onCompositionUpdate.fire(e);
 			}),
 		);
@@ -375,6 +426,7 @@ export class TextAreaInput extends Disposable {
 				if (_debugComposition) {
 					console.log(`[compositionend]`, e);
 				}
+
 				const currentComposition = this._currentComposition;
 
 				if (!currentComposition) {
@@ -382,6 +434,7 @@ export class TextAreaInput extends Disposable {
 					// On iOS 13.2, Chinese system IME randomly trigger an additional compositionend event with empty data
 					return;
 				}
+
 				this._currentComposition = null;
 
 				if (this._browser.isAndroid) {
@@ -399,8 +452,11 @@ export class TextAreaInput extends Disposable {
 							this._textAreaState,
 							newState,
 						);
+
 					this._textAreaState = newState;
+
 					this._onType.fire(typeInput);
+
 					this._onCompositionEnd.fire();
 
 					return;
@@ -409,11 +465,14 @@ export class TextAreaInput extends Disposable {
 				const typeInput = currentComposition.handleCompositionUpdate(
 					e.data,
 				);
+
 				this._textAreaState = TextAreaState.readFromTextArea(
 					this._textArea,
 					this._textAreaState,
 				);
+
 				this._onType.fire(typeInput);
+
 				this._onCompositionEnd.fire();
 			}),
 		);
@@ -484,6 +543,7 @@ export class TextAreaInput extends Disposable {
 				);
 
 				this._ensureClipboardGetsEditorSelection(e);
+
 				this._asyncTriggerCut.schedule();
 			}),
 		);
@@ -552,10 +612,12 @@ export class TextAreaInput extends Disposable {
 								0,
 							);
 					}
+
 					this._asyncFocusGainWriteScreenReaderContent.value.schedule();
 				}
 			}),
 		);
+
 		this._register(
 			this._textArea.onBlur(() => {
 				if (this._currentComposition) {
@@ -574,9 +636,11 @@ export class TextAreaInput extends Disposable {
 					// Fire artificial composition end
 					this._onCompositionEnd.fire();
 				}
+
 				this._setHasFocus(false);
 			}),
 		);
+
 		this._register(
 			this._textArea.onSyntheticTap(() => {
 				if (this._browser.isAndroid && this._currentComposition) {
@@ -598,6 +662,7 @@ export class TextAreaInput extends Disposable {
 
 	_initializeFromTest(): void {
 		this._hasFocus = true;
+
 		this._textAreaState = TextAreaState.readFromTextArea(
 			this._textArea,
 			null,
@@ -635,9 +700,11 @@ export class TextAreaInput extends Disposable {
 				if (!this._hasFocus) {
 					return;
 				}
+
 				if (this._currentComposition) {
 					return;
 				}
+
 				if (!this._browser.isChrome) {
 					// Support only for Chrome until testing happens on other browsers
 					return;
@@ -646,6 +713,7 @@ export class TextAreaInput extends Disposable {
 				const now = Date.now();
 
 				const delta1 = now - previousSelectionChangeEventTime;
+
 				previousSelectionChangeEventTime = now;
 
 				if (delta1 < 5) {
@@ -656,6 +724,7 @@ export class TextAreaInput extends Disposable {
 
 				const delta2 =
 					now - this._textArea.getIgnoreSelectionChangeTime();
+
 				this._textArea.resetSelectionChangeTime();
 
 				if (delta2 < 100) {
@@ -724,6 +793,7 @@ export class TextAreaInput extends Disposable {
 
 		if (this._selectionChangeListener) {
 			this._selectionChangeListener.dispose();
+
 			this._selectionChangeListener = null;
 		}
 	}
@@ -750,12 +820,15 @@ export class TextAreaInput extends Disposable {
 			// no change
 			return;
 		}
+
 		this._hasFocus = newHasFocus;
 
 		if (this._selectionChangeListener) {
 			this._selectionChangeListener.dispose();
+
 			this._selectionChangeListener = null;
 		}
+
 		if (this._hasFocus) {
 			this._selectionChangeListener =
 				this._installSelectionChangeListener();
@@ -779,12 +852,15 @@ export class TextAreaInput extends Disposable {
 		if (!this._hasFocus) {
 			textAreaState = textAreaState.collapseSelection();
 		}
+
 		if (
 			!textAreaState.isWrittenToTextArea(this._textArea, this._hasFocus)
 		) {
 			this._logService.trace(`writeTextAreaState(reason: ${reason})`);
 		}
+
 		textAreaState.writeToTextArea(reason, this._textArea, this._hasFocus);
+
 		this._textAreaState = textAreaState;
 	}
 
@@ -798,6 +874,7 @@ export class TextAreaInput extends Disposable {
 			// Do not write to the text area when doing composition
 			return;
 		}
+
 		this._setAndWriteTextAreaState(
 			reason,
 			this._host.getScreenReaderContent(),
@@ -813,6 +890,7 @@ export class TextAreaInput extends Disposable {
 			multicursorText: dataToCopy.multicursorText,
 			mode: dataToCopy.mode,
 		};
+
 		InMemoryClipboardMetadataManager.INSTANCE.set(
 			// When writing "LINE\r\n" to the clipboard and then pasting,
 			// Firefox pastes "LINE\n", so let's work around this quirk
@@ -842,38 +920,50 @@ export class TextAreaWrapper
 	public readonly onKeyDown = this._register(
 		new DomEmitter(this._actual, "keydown"),
 	).event;
+
 	public readonly onKeyPress = this._register(
 		new DomEmitter(this._actual, "keypress"),
 	).event;
+
 	public readonly onKeyUp = this._register(
 		new DomEmitter(this._actual, "keyup"),
 	).event;
+
 	public readonly onCompositionStart = this._register(
 		new DomEmitter(this._actual, "compositionstart"),
 	).event;
+
 	public readonly onCompositionUpdate = this._register(
 		new DomEmitter(this._actual, "compositionupdate"),
 	).event;
+
 	public readonly onCompositionEnd = this._register(
 		new DomEmitter(this._actual, "compositionend"),
 	).event;
+
 	public readonly onBeforeInput = this._register(
 		new DomEmitter(this._actual, "beforeinput"),
 	).event;
+
 	public readonly onInput = <Event<InputEvent>>(
 		this._register(new DomEmitter(this._actual, "input")).event
 	);
+
 	public readonly onCut = this._register(new DomEmitter(this._actual, "cut"))
 		.event;
+
 	public readonly onCopy = this._register(
 		new DomEmitter(this._actual, "copy"),
 	).event;
+
 	public readonly onPaste = this._register(
 		new DomEmitter(this._actual, "paste"),
 	).event;
+
 	public readonly onFocus = this._register(
 		new DomEmitter(this._actual, "focus"),
 	).event;
+
 	public readonly onBlur = this._register(
 		new DomEmitter(this._actual, "blur"),
 	).event;
@@ -883,17 +973,22 @@ export class TextAreaWrapper
 	}
 
 	private _onSyntheticTap = this._register(new Emitter<void>());
+
 	public readonly onSyntheticTap: Event<void> = this._onSyntheticTap.event;
 
 	private _ignoreSelectionChangeTime: number;
 
 	constructor(private readonly _actual: HTMLTextAreaElement) {
 		super();
+
 		this._ignoreSelectionChangeTime = 0;
 
 		this._register(this.onKeyDown(() => inputLatency.onKeyDown()));
+
 		this._register(this.onBeforeInput(() => inputLatency.onBeforeInput()));
+
 		this._register(this.onInput(() => inputLatency.onInput()));
+
 		this._register(this.onKeyUp(() => inputLatency.onKeyUp()));
 
 		this._register(
@@ -943,7 +1038,9 @@ export class TextAreaWrapper
 			return;
 		}
 		// console.log('reason: ' + reason + ', current value: ' + textArea.value + ' => new value: ' + value);
+
 		this.setIgnoreSelectionChangeTime("setValue");
+
 		textArea.value = value;
 	}
 
@@ -975,6 +1072,7 @@ export class TextAreaWrapper
 		} else {
 			activeElement = dom.getActiveElement();
 		}
+
 		const activeWindow = dom.getWindow(activeElement);
 
 		const currentIsFocused = activeElement === textArea;
@@ -993,6 +1091,7 @@ export class TextAreaWrapper
 			if (browser.isFirefox && activeWindow.parent !== activeWindow) {
 				textArea.focus();
 			}
+
 			return;
 		}
 
@@ -1001,11 +1100,13 @@ export class TextAreaWrapper
 		if (currentIsFocused) {
 			// No need to focus, only need to change the selection range
 			this.setIgnoreSelectionChangeTime("setSelectionRange");
+
 			textArea.setSelectionRange(selectionStart, selectionEnd);
 
 			if (browser.isFirefox && activeWindow.parent !== activeWindow) {
 				textArea.focus();
 			}
+
 			return;
 		}
 
@@ -1013,8 +1114,11 @@ export class TextAreaWrapper
 		// Here, we try to undo the browser's desperate reveal.
 		try {
 			const scrollState = dom.saveParentsScrollTop(textArea);
+
 			this.setIgnoreSelectionChangeTime("setSelectionRange");
+
 			textArea.focus();
+
 			textArea.setSelectionRange(selectionStart, selectionEnd);
 
 			dom.restoreParentsScrollTop(textArea, scrollState);

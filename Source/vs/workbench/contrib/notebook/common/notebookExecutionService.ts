@@ -20,14 +20,20 @@ export enum CellExecutionUpdateType {
 }
 export interface ICellExecuteOutputEdit {
 	editType: CellExecutionUpdateType.Output;
+
 	cellHandle: number;
+
 	append?: boolean;
+
 	outputs: IOutputDto[];
 }
 export interface ICellExecuteOutputItemEdit {
 	editType: CellExecutionUpdateType.OutputItems;
+
 	append?: boolean;
+
 	outputId: string;
+
 	items: IOutputItemDto[];
 }
 export const INotebookExecutionService =
@@ -35,19 +41,23 @@ export const INotebookExecutionService =
 
 export interface INotebookExecutionService {
 	_serviceBrand: undefined;
+
 	executeNotebookCells(
 		notebook: INotebookTextModel,
 		cells: Iterable<NotebookCellTextModel>,
 		contextKeyService: IContextKeyService,
 	): Promise<void>;
+
 	cancelNotebookCells(
 		notebook: INotebookTextModel,
 		cells: Iterable<NotebookCellTextModel>,
 	): Promise<void>;
+
 	cancelNotebookCellHandles(
 		notebook: INotebookTextModel,
 		cells: Iterable<number>,
 	): Promise<void>;
+
 	registerExecutionParticipant(
 		participant: ICellExecutionParticipant,
 	): IDisposable;

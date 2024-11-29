@@ -23,33 +23,55 @@ import {
  */
 export interface ISerializedFontInfo {
 	readonly version: number;
+
 	readonly pixelRatio: number;
+
 	readonly fontFamily: string;
+
 	readonly fontWeight: string;
+
 	readonly fontSize: number;
+
 	readonly fontFeatureSettings: string;
+
 	readonly fontVariationSettings: string;
+
 	readonly lineHeight: number;
+
 	readonly letterSpacing: number;
+
 	readonly isMonospace: boolean;
+
 	readonly typicalHalfwidthCharacterWidth: number;
+
 	readonly typicalFullwidthCharacterWidth: number;
+
 	readonly canUseHalfwidthRightwardsArrow: boolean;
+
 	readonly spaceWidth: number;
+
 	readonly middotWidth: number;
+
 	readonly wsmiddotWidth: number;
+
 	readonly maxDigitWidth: number;
 }
 export class FontMeasurementsImpl extends Disposable {
 	private readonly _cache = new Map<number, FontMeasurementsCache>();
+
 	private _evictUntrustedReadingsTimeout = -1;
+
 	private readonly _onDidChange = this._register(new Emitter<void>());
+
 	public readonly onDidChange = this._onDidChange.event;
+
 	public override dispose(): void {
 		if (this._evictUntrustedReadingsTimeout !== -1) {
 			clearTimeout(this._evictUntrustedReadingsTimeout);
+
 			this._evictUntrustedReadingsTimeout = -1;
 		}
+
 		super.dispose();
 	}
 	/**
@@ -57,8 +79,10 @@ export class FontMeasurementsImpl extends Disposable {
 	 */
 	public clearAllFontInfos(): void {
 		this._cache.clear();
+
 		this._onDidChange.fire();
 	}
+
 	private _ensureCache(targetWindow: Window): FontMeasurementsCache {
 		const windowId = getWindowId(targetWindow);
 
@@ -66,16 +90,20 @@ export class FontMeasurementsImpl extends Disposable {
 
 		if (!cache) {
 			cache = new FontMeasurementsCache();
+
 			this._cache.set(windowId, cache);
 		}
+
 		return cache;
 	}
+
 	private _writeToCache(
 		targetWindow: Window,
 		item: BareFontInfo,
 		value: FontInfo,
 	): void {
 		const cache = this._ensureCache(targetWindow);
+
 		cache.put(item, value);
 
 		if (!value.isTrusted && this._evictUntrustedReadingsTimeout === -1) {
@@ -83,12 +111,14 @@ export class FontMeasurementsImpl extends Disposable {
 			this._evictUntrustedReadingsTimeout = targetWindow.setTimeout(
 				() => {
 					this._evictUntrustedReadingsTimeout = -1;
+
 					this._evictUntrustedReadings(targetWindow);
 				},
 				5000,
 			);
 		}
 	}
+
 	private _evictUntrustedReadings(targetWindow: Window): void {
 		const cache = this._ensureCache(targetWindow);
 
@@ -99,9 +129,11 @@ export class FontMeasurementsImpl extends Disposable {
 		for (const item of values) {
 			if (!item.isTrusted) {
 				somethingRemoved = true;
+
 				cache.remove(item);
 			}
 		}
+
 		if (somethingRemoved) {
 			this._onDidChange.fire();
 		}
@@ -129,7 +161,9 @@ export class FontMeasurementsImpl extends Disposable {
 				// cannot use older version
 				continue;
 			}
+
 			const fontInfo = new FontInfo(savedFontInfo, false);
+
 			this._writeToCache(targetWindow, fontInfo, fontInfo);
 		}
 	}
@@ -184,10 +218,13 @@ export class FontMeasurementsImpl extends Disposable {
 					false,
 				);
 			}
+
 			this._writeToCache(targetWindow, bareFontInfo, readConfig);
 		}
+
 		return cache.get(bareFontInfo);
 	}
+
 	private _createRequest(
 		chr: string,
 		type: CharWidthRequestType,
@@ -195,11 +232,14 @@ export class FontMeasurementsImpl extends Disposable {
 		monospace: CharWidthRequest[] | null,
 	): CharWidthRequest {
 		const result = new CharWidthRequest(chr, type);
+
 		all.push(result);
+
 		monospace?.push(result);
 
 		return result;
 	}
+
 	private _actualReadFontInfo(
 		targetWindow: Window,
 		bareFontInfo: BareFontInfo,
@@ -336,12 +376,14 @@ export class FontMeasurementsImpl extends Disposable {
 				all,
 				monospace,
 			);
+
 			this._createRequest(
 				monospaceTestChars.charAt(i),
 				CharWidthRequestType.Italic,
 				all,
 				monospace,
 			);
+
 			this._createRequest(
 				monospaceTestChars.charAt(i),
 				CharWidthRequestType.Bold,
@@ -349,6 +391,7 @@ export class FontMeasurementsImpl extends Disposable {
 				monospace,
 			);
 		}
+
 		readCharWidths(targetWindow, bareFontInfo, all);
 
 		const maxDigitWidth = Math.max(
@@ -378,16 +421,19 @@ export class FontMeasurementsImpl extends Disposable {
 				break;
 			}
 		}
+
 		let canUseHalfwidthRightwardsArrow = true;
 
 		if (isMonospace && halfwidthRightwardsArrow.width !== referenceWidth) {
 			// using a halfwidth rightwards arrow would break monospace...
 			canUseHalfwidthRightwardsArrow = false;
 		}
+
 		if (halfwidthRightwardsArrow.width > rightwardsArrow.width) {
 			// using a halfwidth rightwards arrow would paint a larger arrow than a regular rightwards arrow
 			canUseHalfwidthRightwardsArrow = false;
 		}
+
 		return new FontInfo(
 			{
 				pixelRatio: PixelRatio.getInstance(targetWindow).value,
@@ -415,34 +461,45 @@ class FontMeasurementsCache {
 	private readonly _keys: {
 		[key: string]: BareFontInfo;
 	};
+
 	private readonly _values: {
 		[key: string]: FontInfo;
 	};
 
 	constructor() {
 		this._keys = Object.create(null);
+
 		this._values = Object.create(null);
 	}
+
 	public has(item: BareFontInfo): boolean {
 		const itemId = item.getId();
 
 		return !!this._values[itemId];
 	}
+
 	public get(item: BareFontInfo): FontInfo {
 		const itemId = item.getId();
 
 		return this._values[itemId];
 	}
+
 	public put(item: BareFontInfo, value: FontInfo): void {
 		const itemId = item.getId();
+
 		this._keys[itemId] = item;
+
 		this._values[itemId] = value;
 	}
+
 	public remove(item: BareFontInfo): void {
 		const itemId = item.getId();
+
 		delete this._keys[itemId];
+
 		delete this._values[itemId];
 	}
+
 	public getValues(): FontInfo[] {
 		return Object.keys(this._keys).map((id) => this._values[id]);
 	}

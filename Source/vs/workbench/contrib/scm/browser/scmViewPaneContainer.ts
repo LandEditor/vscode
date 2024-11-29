@@ -61,13 +61,17 @@ export class SCMViewPaneContainer extends ViewPaneContainer {
 			viewDescriptorService,
 		);
 	}
+
 	override create(parent: HTMLElement): void {
 		super.create(parent);
+
 		parent.classList.add("scm-viewlet");
 	}
+
 	override getOptimalWidth(): number {
 		return 400;
 	}
+
 	override getTitle(): string {
 		if (this.panes.length === 1) {
 			if (
@@ -80,6 +84,7 @@ export class SCMViewPaneContainer extends ViewPaneContainer {
 				return super.getTitle();
 			}
 		}
+
 		return localize("source control", "Source Control");
 	}
 }

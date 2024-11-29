@@ -48,14 +48,17 @@ export class WorkingCopyHistoryTracker
 		SIZE_LIMIT: "workbench.localHistory.maxFileSize",
 		EXCLUDES: "workbench.localHistory.exclude",
 	};
+
 	private static readonly UNDO_REDO_SAVE_SOURCE =
 		SaveSourceRegistry.registerSource(
 			"undoRedo.source",
 			localize("undoRedo.source", "Undo / Redo"),
 		);
+
 	private readonly limiter = this._register(
 		new Limiter(MAX_PARALLEL_HISTORY_IO_OPS),
 	);
+
 	private readonly resourceExcludeMatcher = this._register(
 		new GlobalIdleValue(() => {
 			const matcher = this._register(
@@ -77,13 +80,16 @@ export class WorkingCopyHistoryTracker
 			return matcher;
 		}),
 	);
+
 	private readonly pendingAddHistoryEntryOperations =
 		new ResourceMap<CancellationTokenSource>((resource) =>
 			this.uriIdentityService.extUri.getComparisonKey(resource),
 		);
+
 	private readonly workingCopyContentVersion = new ResourceMap<number>(
 		(resource) => this.uriIdentityService.extUri.getComparisonKey(resource),
 	);
+
 	private readonly historyEntryContentVersion = new ResourceMap<number>(
 		(resource) => this.uriIdentityService.extUri.getComparisonKey(resource),
 	);
@@ -107,8 +113,10 @@ export class WorkingCopyHistoryTracker
 		private readonly fileService: IFileService,
 	) {
 		super();
+
 		this.registerListeners();
 	}
+
 	private registerListeners() {
 		// File Events
 		this._register(
@@ -122,14 +130,17 @@ export class WorkingCopyHistoryTracker
 				this.onDidChangeContent(workingCopy),
 			),
 		);
+
 		this._register(
 			this.workingCopyService.onDidSave((e) => this.onDidSave(e)),
 		);
 	}
+
 	private async onDidRunFileOperation(e: FileOperationEvent): Promise<void> {
 		if (!this.shouldTrackHistoryFromFileOperationEvent(e)) {
 			return; // return early for working copies we are not interested in
 		}
+
 		const source = e.resource;
 
 		const target = e.target.resource;
@@ -144,24 +155,30 @@ export class WorkingCopyHistoryTracker
 		// (https://github.com/microsoft/vscode/issues/145881)
 		for (const resource of resources) {
 			const contentVersion = this.getContentVersion(resource);
+
 			this.historyEntryContentVersion.set(resource, contentVersion);
 		}
 	}
+
 	private onDidChangeContent(workingCopy: IWorkingCopy): void {
 		// Increment content version ID for resource
 		const contentVersionId = this.getContentVersion(workingCopy.resource);
+
 		this.workingCopyContentVersion.set(
 			workingCopy.resource,
 			contentVersionId + 1,
 		);
 	}
+
 	private getContentVersion(resource: URI): number {
 		return this.workingCopyContentVersion.get(resource) || 0;
 	}
+
 	private onDidSave(e: IWorkingCopySaveEvent): void {
 		if (!this.shouldTrackHistoryFromSaveEvent(e)) {
 			return; // return early for working copies we are not interested in
 		}
+
 		const contentVersion = this.getContentVersion(e.workingCopy.resource);
 
 		if (
@@ -176,12 +193,14 @@ export class WorkingCopyHistoryTracker
 			?.dispose(true);
 		// Create new cancellation token support and remember
 		const cts = new CancellationTokenSource();
+
 		this.pendingAddHistoryEntryOperations.set(e.workingCopy.resource, cts);
 		// Queue new operation to add to history
 		this.limiter.queue(async () => {
 			if (cts.token.isCancellationRequested) {
 				return;
 			}
+
 			const contentVersion = this.getContentVersion(
 				e.workingCopy.resource,
 			);
@@ -215,6 +234,7 @@ export class WorkingCopyHistoryTracker
 			);
 		});
 	}
+
 	private resolveSourceFromUndoRedo(
 		e: IWorkingCopySaveEvent,
 	): SaveSource | undefined {
@@ -226,8 +246,10 @@ export class WorkingCopyHistoryTracker
 			if (lastStackElement.code === "undoredo.textBufferEdit") {
 				return undefined; // ignore any unspecific stack element that resulted just from typing
 			}
+
 			return lastStackElement.label;
 		}
+
 		const allStackElements = this.undoRedoService.getElements(
 			e.workingCopy.resource,
 		);
@@ -238,24 +260,30 @@ export class WorkingCopyHistoryTracker
 		) {
 			return WorkingCopyHistoryTracker.UNDO_REDO_SAVE_SOURCE;
 		}
+
 		return undefined;
 	}
+
 	private shouldTrackHistoryFromSaveEvent(
 		e: IWorkingCopySaveEvent,
 	): e is IStoredFileWorkingCopySaveEvent<IStoredFileWorkingCopyModel> {
 		if (!isStoredFileWorkingCopySaveEvent(e)) {
 			return false; // only support working copies that are backed by stored files
 		}
+
 		return this.shouldTrackHistory(e.workingCopy.resource, e.stat);
 	}
+
 	private shouldTrackHistoryFromFileOperationEvent(
 		e: FileOperationEvent,
 	): e is IFileOperationEventWithMetadata {
 		if (!e.isOperation(FileOperation.MOVE)) {
 			return false; // only interested in move operations
 		}
+
 		return this.shouldTrackHistory(e.target.resource, e.target);
 	}
+
 	private shouldTrackHistory(
 		resource: URI,
 		stat: IFileStatWithMetadata,
@@ -267,6 +295,7 @@ export class WorkingCopyHistoryTracker
 		) {
 			return false; // do not support unknown resources
 		}
+
 		const configuredMaxFileSizeInBytes =
 			1024 *
 			this.configurationService.getValue<number>(
@@ -277,6 +306,7 @@ export class WorkingCopyHistoryTracker
 		if (stat.size > configuredMaxFileSizeInBytes) {
 			return false; // only track files that are not too large
 		}
+
 		if (
 			this.configurationService.getValue(
 				WorkingCopyHistoryTracker.SETTINGS.ENABLED,

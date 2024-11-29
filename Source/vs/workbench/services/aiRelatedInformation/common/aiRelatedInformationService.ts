@@ -26,6 +26,7 @@ export class AiRelatedInformationService
 	implements IAiRelatedInformationService
 {
 	readonly _serviceBrand: undefined;
+
 	static readonly DEFAULT_TIMEOUT = 1000 * 10; // 10 seconds
 	private readonly _providers: Map<
 		RelatedInformationType,
@@ -36,15 +37,19 @@ export class AiRelatedInformationService
 		@ILogService
 		private readonly logService: ILogService,
 	) {}
+
 	isEnabled(): boolean {
 		return this._providers.size > 0;
 	}
+
 	registerAiRelatedInformationProvider(
 		type: RelatedInformationType,
 		provider: IAiRelatedInformationProvider,
 	): IDisposable {
 		const providers = this._providers.get(type) ?? [];
+
 		providers.push(provider);
+
 		this._providers.set(type, providers);
 
 		return {
@@ -56,12 +61,14 @@ export class AiRelatedInformationService
 				if (index !== -1) {
 					providers.splice(index, 1);
 				}
+
 				if (providers.length === 0) {
 					this._providers.delete(type);
 				}
 			},
 		};
 	}
+
 	async getRelatedInformation(
 		query: string,
 		types: RelatedInformationType[],
@@ -80,11 +87,13 @@ export class AiRelatedInformationService
 				providers.push(...typeProviders);
 			}
 		}
+
 		if (providers.length === 0) {
 			throw new Error(
 				"No related information providers registered for the given types",
 			);
 		}
+
 		const stopwatch = StopWatch.create();
 
 		const cancellablePromises: Array<
@@ -101,6 +110,7 @@ export class AiRelatedInformationService
 				} catch (e) {
 					// logged in extension host
 				}
+
 				return [];
 			});
 		});
@@ -111,6 +121,7 @@ export class AiRelatedInformationService
 				AiRelatedInformationService.DEFAULT_TIMEOUT,
 				() => {
 					cancellablePromises.forEach((p) => p.cancel());
+
 					this.logService.warn(
 						"[AiRelatedInformationService]: Related information provider timed out",
 					);
@@ -120,6 +131,7 @@ export class AiRelatedInformationService
 			if (!results) {
 				return [];
 			}
+
 			const result = results
 				.filter((r) => r.status === "fulfilled")
 				.flatMap(
@@ -134,6 +146,7 @@ export class AiRelatedInformationService
 			return result;
 		} finally {
 			stopwatch.stop();
+
 			this.logService.trace(
 				`[AiRelatedInformationService]: getRelatedInformation took ${stopwatch.elapsed()}ms`,
 			);

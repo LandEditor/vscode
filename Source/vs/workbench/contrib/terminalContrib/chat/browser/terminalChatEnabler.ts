@@ -15,7 +15,9 @@ import { TerminalChatContextKeys } from "./terminalChat.js";
 
 export class TerminalChatEnabler {
 	static Id = "terminalChat.enabler";
+
 	private readonly _ctxHasProvider: IContextKey<boolean>;
+
 	private readonly _store = new DisposableStore();
 
 	constructor(
@@ -26,6 +28,7 @@ export class TerminalChatEnabler {
 	) {
 		this._ctxHasProvider =
 			TerminalChatContextKeys.hasChatAgent.bindTo(contextKeyService);
+
 		this._store.add(
 			chatAgentService.onDidChangeAgents(() => {
 				const hasTerminalAgent = Boolean(
@@ -33,12 +36,15 @@ export class TerminalChatEnabler {
 						ChatAgentLocation.Terminal,
 					),
 				);
+
 				this._ctxHasProvider.set(hasTerminalAgent);
 			}),
 		);
 	}
+
 	dispose() {
 		this._ctxHasProvider.reset();
+
 		this._store.dispose();
 	}
 }

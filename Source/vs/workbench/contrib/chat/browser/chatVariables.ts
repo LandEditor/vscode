@@ -41,6 +41,7 @@ import { ChatDynamicVariableModel } from "./contrib/chatDynamicVariables.js";
 
 interface IChatData {
 	data: IChatVariableData;
+
 	resolver: IChatVariableResolver;
 }
 
@@ -83,8 +84,10 @@ export class ChatVariablesService implements IChatVariablesService {
 
 							return;
 						}
+
 						progress(item);
 					};
+
 					jobs.push(
 						data
 							.resolver(
@@ -138,6 +141,7 @@ export class ChatVariablesService implements IChatVariablesService {
 		});
 
 		const resolvedAttachedContext: IChatRequestVariableEntry[] = [];
+
 		attachedContextVariables?.forEach((attachment, i) => {
 			const data = this._resolver.get(attachment.name?.toLowerCase());
 
@@ -152,8 +156,10 @@ export class ChatVariablesService implements IChatVariablesService {
 
 						return;
 					}
+
 					progress(item);
 				};
+
 				jobs.push(
 					data
 						.resolver(
@@ -279,6 +285,7 @@ export class ChatVariablesService implements IChatVariablesService {
 				`A chat variable with the name '${data.name}' already exists.`,
 			);
 		}
+
 		this._resolver.set(key, { data, resolver });
 
 		return toDisposable(() => {
@@ -314,6 +321,7 @@ export class ChatVariablesService implements IChatVariablesService {
 			const uri = URI.isUri(value) ? value : value.uri;
 
 			const range = "range" in value ? value.range : undefined;
+
 			widget.attachmentModel.addFile(uri, range);
 
 			return;

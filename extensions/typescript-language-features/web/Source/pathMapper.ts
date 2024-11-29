@@ -25,6 +25,7 @@ export class PathMapper {
 					filepath.slice(1),
 			});
 		}
+
 		const uri = filePathToResourceUri(filepath);
 
 		if (!uri) {
@@ -46,14 +47,17 @@ export class PathMapper {
 				allowRead = "block";
 			}
 		}
+
 		if (allowRead === "block") {
 			throw new AccessOutsideOfRootError(
 				filepath,
 				Array.from(this.projectRootPaths.keys()),
 			);
 		}
+
 		return uri;
 	}
+
 	addProjectRoot(projectRootPath: string) {
 		const uri = filePathToResourceUri(projectRootPath);
 
@@ -81,6 +85,7 @@ export function fromResource(extensionUri: URI, uri: URI) {
 	) {
 		return uri.path;
 	}
+
 	return `/${uri.scheme}/${uri.authority}${uri.path}`;
 }
 export function looksLikeLibDtsPath(filepath: string) {
@@ -95,6 +100,7 @@ function filePathToResourceUri(filepath: string): URI | undefined {
 	if (!parts) {
 		return undefined;
 	}
+
 	const scheme = parts[1];
 
 	const authority = parts[2] === "ts-nul-authority" ? "" : parts[2];
@@ -107,9 +113,11 @@ export function mapUri(uri: URI, mappedScheme: string): URI {
 	if (uri.scheme === "vscode-global-typings") {
 		throw new Error("can't map vscode-global-typings");
 	}
+
 	if (!uri.authority) {
 		uri = uri.with({ authority: "ts-nul-authority" });
 	}
+
 	uri = uri.with({
 		scheme: mappedScheme,
 		path: `/${uri.scheme}/${uri.authority || "ts-nul-authority"}${uri.path}`,

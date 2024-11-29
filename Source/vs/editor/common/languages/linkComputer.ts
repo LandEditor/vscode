@@ -31,7 +31,9 @@ export const enum State {
 export type Edge = [State, number, State];
 class Uint8Matrix {
 	private readonly _data: Uint8Array;
+
 	public readonly rows: number;
+
 	public readonly cols: number;
 
 	constructor(rows: number, cols: number, defaultValue: number) {
@@ -40,19 +42,25 @@ class Uint8Matrix {
 		for (let i = 0, len = rows * cols; i < len; i++) {
 			data[i] = defaultValue;
 		}
+
 		this._data = data;
+
 		this.rows = rows;
+
 		this.cols = cols;
 	}
+
 	public get(row: number, col: number): number {
 		return this._data[row * this.cols + col];
 	}
+
 	public set(row: number, col: number, value: number): void {
 		this._data[row * this.cols + col] = value;
 	}
 }
 export class StateMachine {
 	private readonly _states: Uint8Matrix;
+
 	private readonly _maxCharCode: number;
 
 	constructor(edges: Edge[]) {
@@ -66,29 +74,38 @@ export class StateMachine {
 			if (chCode > maxCharCode) {
 				maxCharCode = chCode;
 			}
+
 			if (from > maxState) {
 				maxState = from;
 			}
+
 			if (to > maxState) {
 				maxState = to;
 			}
 		}
+
 		maxCharCode++;
+
 		maxState++;
 
 		const states = new Uint8Matrix(maxState, maxCharCode, State.Invalid);
 
 		for (let i = 0, len = edges.length; i < len; i++) {
 			const [from, chCode, to] = edges[i];
+
 			states.set(from, chCode, to);
 		}
+
 		this._states = states;
+
 		this._maxCharCode = maxCharCode;
 	}
+
 	public nextState(currentState: State, chCode: number): State {
 		if (chCode < 0 || chCode >= this._maxCharCode) {
 			return State.Invalid;
 		}
+
 		return this._states.get(currentState, chCode);
 	}
 }
@@ -121,6 +138,7 @@ function getStateMachine(): StateMachine {
 			[State.AlmostThere, CharCode.Slash, State.End],
 		]);
 	}
+
 	return _stateMachine;
 }
 
@@ -145,6 +163,7 @@ function getClassifier(): CharacterClassifier<CharacterClass> {
 				CharacterClass.ForceTermination,
 			);
 		}
+
 		const CANNOT_END_WITH_CHARACTERS = ".,;:";
 
 		for (let i = 0; i < CANNOT_END_WITH_CHARACTERS.length; i++) {
@@ -154,6 +173,7 @@ function getClassifier(): CharacterClassifier<CharacterClass> {
 			);
 		}
 	}
+
 	return _classifier;
 }
 export class LinkComputer {
@@ -175,6 +195,7 @@ export class LinkComputer {
 			if (chClass !== CharacterClass.CannotEndIn) {
 				break;
 			}
+
 			lastIncludedCharIndex--;
 		} while (lastIncludedCharIndex > linkBeginIndex);
 		// Handle links enclosed in parens, square brackets and curlys.
@@ -197,6 +218,7 @@ export class LinkComputer {
 				lastIncludedCharIndex--;
 			}
 		}
+
 		return {
 			range: {
 				startLineNumber: lineNumber,
@@ -207,6 +229,7 @@ export class LinkComputer {
 			url: line.substring(linkBeginIndex, lastIncludedCharIndex + 1),
 		};
 	}
+
 	public static computeLinks(
 		model: ILinkComputerTarget,
 		stateMachine: StateMachine = getStateMachine(),
@@ -247,6 +270,7 @@ export class LinkComputer {
 					switch (chCode) {
 						case CharCode.OpenParen:
 							hasOpenParens = true;
+
 							chClass = CharacterClass.None;
 
 							break;
@@ -260,13 +284,16 @@ export class LinkComputer {
 
 						case CharCode.OpenSquareBracket:
 							inSquareBrackets = true;
+
 							hasOpenSquareBracket = true;
+
 							chClass = CharacterClass.None;
 
 							break;
 
 						case CharCode.CloseSquareBracket:
 							inSquareBrackets = false;
+
 							chClass = hasOpenSquareBracket
 								? CharacterClass.None
 								: CharacterClass.ForceTermination;
@@ -275,6 +302,7 @@ export class LinkComputer {
 
 						case CharCode.OpenCurlyBrace:
 							hasOpenCurlyBracket = true;
+
 							chClass = CharacterClass.None;
 
 							break;
@@ -301,6 +329,7 @@ export class LinkComputer {
 							} else {
 								chClass = CharacterClass.ForceTermination;
 							}
+
 							break;
 
 						case CharCode.Asterisk:
@@ -343,6 +372,7 @@ export class LinkComputer {
 								j,
 							),
 						);
+
 						resetStateMachine = true;
 					}
 				} else if (state === State.End) {
@@ -351,6 +381,7 @@ export class LinkComputer {
 					if (chCode === CharCode.OpenSquareBracket) {
 						// Allow for the authority part to contain ipv6 addresses which contain [ and ]
 						hasOpenSquareBracket = true;
+
 						chClass = CharacterClass.None;
 					} else {
 						chClass = classifier.get(chCode);
@@ -368,17 +399,24 @@ export class LinkComputer {
 						resetStateMachine = true;
 					}
 				}
+
 				if (resetStateMachine) {
 					state = State.Start;
+
 					hasOpenParens = false;
+
 					hasOpenSquareBracket = false;
+
 					hasOpenCurlyBracket = false;
 					// Record where the link started
 					linkBeginIndex = j + 1;
+
 					linkBeginChCode = chCode;
 				}
+
 				j++;
 			}
+
 			if (state === State.Accept) {
 				result.push(
 					LinkComputer._createLink(
@@ -391,6 +429,7 @@ export class LinkComputer {
 				);
 			}
 		}
+
 		return result;
 	}
 }
@@ -408,5 +447,6 @@ export function computeLinks(model: ILinkComputerTarget | null): ILink[] {
 		// Unknown caller!
 		return [];
 	}
+
 	return LinkComputer.computeLinks(model);
 }

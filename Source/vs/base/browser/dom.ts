@@ -33,6 +33,7 @@ import { CodeWindow, ensureCodeWindow, mainWindow } from "./window.js";
 
 export interface IRegisteredCodeWindow {
 	readonly window: CodeWindow;
+
 	readonly disposables: DisposableStore;
 }
 
@@ -59,6 +60,7 @@ export const {
 		window: mainWindow,
 		disposables: new DisposableStore(),
 	};
+
 	windows.set(mainWindow.vscodeWindowId, mainWindowRegistration);
 
 	const onDidRegisterWindow = new event.Emitter<IRegisteredCodeWindow>();
@@ -99,11 +101,13 @@ export const {
 				window,
 				disposables: disposables.add(new DisposableStore()),
 			};
+
 			windows.set(window.vscodeWindowId, registeredWindow);
 
 			disposables.add(
 				toDisposable(() => {
 					windows.delete(window.vscodeWindowId);
+
 					onDidUnregisterWindow.fire(window);
 				}),
 			);
@@ -165,8 +169,11 @@ export function clearNode(node: HTMLElement): void {
 
 class DomListener implements IDisposable {
 	private _handler: (e: any) => void;
+
 	private _node: EventTarget;
+
 	private readonly _type: string;
+
 	private readonly _options: boolean | AddEventListenerOptions;
 
 	constructor(
@@ -176,9 +183,13 @@ class DomListener implements IDisposable {
 		options?: boolean | AddEventListenerOptions,
 	) {
 		this._node = node;
+
 		this._type = type;
+
 		this._handler = handler;
+
 		this._options = options || false;
+
 		this._node.addEventListener(this._type, this._handler, this._options);
 	}
 
@@ -196,6 +207,7 @@ class DomListener implements IDisposable {
 
 		// Prevent leakers from holding on to the dom or handler func
 		this._node = null!;
+
 		this._handler = null!;
 	}
 }
@@ -499,6 +511,7 @@ export class WindowIntervalTimer extends IntervalTimer {
 	 */
 	constructor(node?: Node) {
 		super();
+
 		this.defaultTarget = node && getWindow(node);
 	}
 
@@ -517,12 +530,16 @@ export class WindowIntervalTimer extends IntervalTimer {
 
 class AnimationFrameQueueItem implements IDisposable {
 	private _runner: () => void;
+
 	public priority: number;
+
 	private _canceled: boolean;
 
 	constructor(runner: () => void, priority: number = 0) {
 		this._runner = runner;
+
 		this.priority = priority;
+
 		this._canceled = false;
 	}
 
@@ -579,7 +596,9 @@ class AnimationFrameQueueItem implements IDisposable {
 		animFrameRequested.set(targetWindowId, false);
 
 		const currentQueue = NEXT_QUEUE.get(targetWindowId) ?? [];
+
 		CURRENT_QUEUE.set(targetWindowId, currentQueue);
+
 		NEXT_QUEUE.set(targetWindowId, []);
 
 		inAnimationFrameRunner.set(targetWindowId, true);
@@ -588,8 +607,10 @@ class AnimationFrameQueueItem implements IDisposable {
 			currentQueue.sort(AnimationFrameQueueItem.sort);
 
 			const top = currentQueue.shift()!;
+
 			top.execute();
 		}
+
 		inAnimationFrameRunner.set(targetWindowId, false);
 	};
 
@@ -606,12 +627,15 @@ class AnimationFrameQueueItem implements IDisposable {
 
 		if (!nextQueue) {
 			nextQueue = [];
+
 			NEXT_QUEUE.set(targetWindowId, nextQueue);
 		}
+
 		nextQueue.push(item);
 
 		if (!animFrameRequested.get(targetWindowId)) {
 			animFrameRequested.set(targetWindowId, true);
+
 			targetWindow.requestAnimationFrame(() =>
 				animationFrameRunner(targetWindowId),
 			);
@@ -634,8 +658,10 @@ class AnimationFrameQueueItem implements IDisposable {
 
 			if (!currentQueue) {
 				currentQueue = [];
+
 				CURRENT_QUEUE.set(targetWindowId, currentQueue);
 			}
+
 			currentQueue.push(item);
 
 			return item;
@@ -701,7 +727,9 @@ class TimeoutThrottledDomListener<R, E extends Event> extends Disposable {
 
 		const invokeHandler = () => {
 			lastHandlerTime = new Date().getTime();
+
 			handler(<R>lastEvent);
+
 			lastEvent = null;
 		};
 
@@ -713,6 +741,7 @@ class TimeoutThrottledDomListener<R, E extends Event> extends Disposable {
 
 				if (elapsedTime >= minimumTimeMs) {
 					timeout.cancel();
+
 					invokeHandler();
 				} else {
 					timeout.setIfNotSet(
@@ -833,6 +862,7 @@ class SizeUtils {
 			"borderLeftWidth",
 		);
 	}
+
 	static getBorderRightWidth(element: HTMLElement): number {
 		return SizeUtils.getDimension(
 			element,
@@ -840,6 +870,7 @@ class SizeUtils {
 			"borderRightWidth",
 		);
 	}
+
 	static getBorderTopWidth(element: HTMLElement): number {
 		return SizeUtils.getDimension(
 			element,
@@ -847,6 +878,7 @@ class SizeUtils {
 			"borderTopWidth",
 		);
 	}
+
 	static getBorderBottomWidth(element: HTMLElement): number {
 		return SizeUtils.getDimension(
 			element,
@@ -858,12 +890,15 @@ class SizeUtils {
 	static getPaddingLeft(element: HTMLElement): number {
 		return SizeUtils.getDimension(element, "padding-left", "paddingLeft");
 	}
+
 	static getPaddingRight(element: HTMLElement): number {
 		return SizeUtils.getDimension(element, "padding-right", "paddingRight");
 	}
+
 	static getPaddingTop(element: HTMLElement): number {
 		return SizeUtils.getDimension(element, "padding-top", "paddingTop");
 	}
+
 	static getPaddingBottom(element: HTMLElement): number {
 		return SizeUtils.getDimension(
 			element,
@@ -875,12 +910,15 @@ class SizeUtils {
 	static getMarginLeft(element: HTMLElement): number {
 		return SizeUtils.getDimension(element, "margin-left", "marginLeft");
 	}
+
 	static getMarginTop(element: HTMLElement): number {
 		return SizeUtils.getDimension(element, "margin-top", "marginTop");
 	}
+
 	static getMarginRight(element: HTMLElement): number {
 		return SizeUtils.getDimension(element, "margin-right", "marginRight");
 	}
+
 	static getMarginBottom(element: HTMLElement): number {
 		return SizeUtils.getDimension(element, "margin-bottom", "marginBottom");
 	}
@@ -891,6 +929,7 @@ class SizeUtils {
 
 export interface IDimension {
 	readonly width: number;
+
 	readonly height: number;
 }
 
@@ -930,15 +969,18 @@ export class Dimension implements IDimension {
 		if (a === b) {
 			return true;
 		}
+
 		if (!a || !b) {
 			return false;
 		}
+
 		return a.width === b.width && a.height === b.height;
 	}
 }
 
 export interface IDomPosition {
 	readonly left: number;
+
 	readonly top: number;
 }
 
@@ -970,9 +1012,13 @@ export function getTopLeftOffset(element: HTMLElement): IDomPosition {
 
 		if (element === offsetParent) {
 			left += SizeUtils.getBorderLeftWidth(element);
+
 			top += SizeUtils.getBorderTopWidth(element);
+
 			top += element.offsetTop;
+
 			left += element.offsetLeft;
+
 			offsetParent = element.offsetParent;
 		}
 	}
@@ -985,8 +1031,11 @@ export function getTopLeftOffset(element: HTMLElement): IDomPosition {
 
 export interface IDomNodePagePosition {
 	left: number;
+
 	top: number;
+
 	width: number;
+
 	height: number;
 }
 
@@ -1183,6 +1232,7 @@ function getParentFlowToElement(node: HTMLElement): HTMLElement | null {
 	if (typeof flowToParentId === "string") {
 		return node.ownerDocument.getElementById(flowToParentId);
 	}
+
 	return null;
 }
 
@@ -1210,6 +1260,7 @@ export function isAncestorUsingFlowTo(
 				continue;
 			}
 		}
+
 		node = node.parentNode;
 	}
 
@@ -1266,8 +1317,10 @@ export function getShadowRoot(domNode: Node): ShadowRoot | null {
 			// reached the body
 			return null;
 		}
+
 		domNode = domNode.parentNode;
 	}
+
 	return isShadowRoot(domNode) ? domNode : null;
 }
 
@@ -1341,7 +1394,9 @@ export function getActiveWindow(): CodeWindow {
 
 interface IMutationObserver {
 	users: number;
+
 	readonly observer: MutationObserver;
+
 	readonly onDidMutate: event.Event<MutationRecord[]>;
 }
 
@@ -1360,6 +1415,7 @@ export const sharedMutationObserver = new (class {
 
 		if (!mutationObserversPerTarget) {
 			mutationObserversPerTarget = new Map<number, IMutationObserver>();
+
 			this.mutationObservers.set(target, mutationObserversPerTarget);
 		}
 
@@ -1374,6 +1430,7 @@ export const sharedMutationObserver = new (class {
 			const observer = new MutationObserver((mutations) =>
 				onDidMutate.fire(mutations),
 			);
+
 			observer.observe(target, options);
 
 			const resolvedMutationObserverPerOptions =
@@ -1389,6 +1446,7 @@ export const sharedMutationObserver = new (class {
 
 					if (resolvedMutationObserverPerOptions.users === 0) {
 						onDidMutate.dispose();
+
 						observer.disconnect();
 
 						mutationObserversPerTarget?.delete(optionsHash);
@@ -1429,6 +1487,7 @@ function createHeadElement(
 	container: HTMLElement = mainWindow.document.head,
 ): HTMLElement {
 	const element = document.createElement(tagName);
+
 	container.appendChild(element);
 
 	return element;
@@ -1596,6 +1655,7 @@ export const EventType = {
 
 export interface EventLike {
 	preventDefault(): void;
+
 	stopPropagation(): void;
 }
 
@@ -1616,13 +1676,16 @@ export const EventHelper = {
 		if (cancelBubble) {
 			e.stopPropagation();
 		}
+
 		return e;
 	},
 };
 
 export interface IFocusTracker extends Disposable {
 	readonly onDidFocus: event.Event<void>;
+
 	readonly onDidBlur: event.Event<void>;
+
 	refreshState(): void;
 }
 
@@ -1631,8 +1694,10 @@ export function saveParentsScrollTop(node: Element): number[] {
 
 	for (let i = 0; node && node.nodeType === node.ELEMENT_NODE; i++) {
 		r[i] = node.scrollTop;
+
 		node = <Element>node.parentNode;
 	}
+
 	return r;
 }
 
@@ -1641,15 +1706,18 @@ export function restoreParentsScrollTop(node: Element, state: number[]): void {
 		if (node.scrollTop !== state[i]) {
 			node.scrollTop = state[i];
 		}
+
 		node = <Element>node.parentNode;
 	}
 }
 
 class FocusTracker extends Disposable implements IFocusTracker {
 	private readonly _onDidFocus = this._register(new event.Emitter<void>());
+
 	readonly onDidFocus = this._onDidFocus.event;
 
 	private readonly _onDidBlur = this._register(new event.Emitter<void>());
+
 	readonly onDidBlur = this._onDidBlur.event;
 
 	private _refreshStateHandler: () => void;
@@ -1682,6 +1750,7 @@ class FocusTracker extends Disposable implements IFocusTracker {
 
 			if (!hasFocus) {
 				hasFocus = true;
+
 				this._onDidFocus.fire();
 			}
 		};
@@ -1695,7 +1764,9 @@ class FocusTracker extends Disposable implements IFocusTracker {
 				).setTimeout(() => {
 					if (loosingFocus) {
 						loosingFocus = false;
+
 						hasFocus = false;
+
 						this._onDidBlur.fire();
 					}
 				}, 0);
@@ -1719,6 +1790,7 @@ class FocusTracker extends Disposable implements IFocusTracker {
 		this._register(
 			addDisposableListener(element, EventType.FOCUS, onFocus, true),
 		);
+
 		this._register(
 			addDisposableListener(element, EventType.BLUR, onBlur, true),
 		);
@@ -1729,6 +1801,7 @@ class FocusTracker extends Disposable implements IFocusTracker {
 					this._refreshStateHandler(),
 				),
 			);
+
 			this._register(
 				addDisposableListener(element, EventType.FOCUS_OUT, () =>
 					this._refreshStateHandler(),
@@ -1790,6 +1863,7 @@ export function reset(
 	...children: Array<Node | string>
 ): void {
 	parent.innerText = "";
+
 	append(parent, ...children);
 }
 
@@ -1825,6 +1899,7 @@ function _$<T extends Element>(
 	if (match[3]) {
 		result.id = match[3];
 	}
+
 	if (match[4]) {
 		result.className = match[4].replace(/\./g, " ").trim();
 	}
@@ -1900,6 +1975,7 @@ export function setVisibility(
 export function show(...elements: HTMLElement[]): void {
 	for (const element of elements) {
 		element.style.display = "";
+
 		element.removeAttribute("aria-hidden");
 	}
 }
@@ -1907,6 +1983,7 @@ export function show(...elements: HTMLElement[]): void {
 export function hide(...elements: HTMLElement[]): void {
 	for (const element of elements) {
 		element.style.display = "none";
+
 		element.setAttribute("aria-hidden", "true");
 	}
 }
@@ -1940,6 +2017,7 @@ export function removeTabIndexAndUpdateFocus(node: HTMLElement): void {
 			node.parentElement,
 			"tabIndex",
 		);
+
 		parentFocusable?.focus();
 	}
 
@@ -1951,7 +2029,9 @@ export function finalHandler<T extends Event>(
 ): (event: T) => unknown {
 	return (e) => {
 		e.preventDefault();
+
 		e.stopPropagation();
+
 		fn(e);
 	};
 }
@@ -1972,6 +2052,7 @@ export function domContentLoaded(targetWindow: Window): Promise<void> {
 					listener,
 					false,
 				);
+
 				resolve();
 			};
 
@@ -2041,6 +2122,7 @@ export function windowOpenPopup(url: string): void {
 	const top = Math.floor(
 		mainWindow.screenTop + mainWindow.innerHeight / 2 - popupHeight / 2,
 	);
+
 	mainWindow.open(
 		url,
 		"_blank",
@@ -2071,16 +2153,19 @@ export function windowOpenWithSuccess(url: string, noOpener = true): boolean {
 			// see `windowOpenNoOpener` for details on why this is important
 			(newTab as any).opener = null;
 		}
+
 		newTab.location.href = url;
 
 		return true;
 	}
+
 	return false;
 }
 
 export function animate(targetWindow: Window, fn: () => void): IDisposable {
 	const step = () => {
 		fn();
+
 		stepDisposable = scheduleAtNextAnimationFrame(targetWindow, step);
 	};
 
@@ -2105,6 +2190,7 @@ export function triggerDownload(
 		url = dataOrUri.toString(true);
 	} else {
 		const blob = new Blob([dataOrUri]);
+
 		url = URL.createObjectURL(blob);
 
 		// Ensure to free the data from DOM eventually
@@ -2118,9 +2204,13 @@ export function triggerDownload(
 	const activeWindow = getActiveWindow();
 
 	const anchor = document.createElement("a");
+
 	activeWindow.document.body.appendChild(anchor);
+
 	anchor.download = name;
+
 	anchor.href = url;
+
 	anchor.click();
 
 	// Ensure to remove the element from DOM eventually
@@ -2135,8 +2225,11 @@ export function triggerUpload(): Promise<FileList | undefined> {
 		const activeWindow = getActiveWindow();
 
 		const input = document.createElement("input");
+
 		activeWindow.document.body.appendChild(input);
+
 		input.type = "file";
+
 		input.multiple = true;
 
 		// Resolve once the input event has fired once
@@ -2423,6 +2516,7 @@ export function safeInnerHtml(
 			...defaultDomPurifyConfig,
 			...extraDomPurifyConfig,
 		});
+
 		node.innerHTML = html as unknown as string;
 	} finally {
 		hook.dispose();
@@ -2440,6 +2534,7 @@ function toBinary(str: string): string {
 	for (let i = 0; i < codeUnits.length; i++) {
 		codeUnits[i] = str.charCodeAt(i);
 	}
+
 	let binary = "";
 
 	const uint8array = new Uint8Array(codeUnits.buffer);
@@ -2447,6 +2542,7 @@ function toBinary(str: string): string {
 	for (let i = 0; i < uint8array.length; i++) {
 		binary += String.fromCharCode(uint8array[i]);
 	}
+
 	return binary;
 }
 
@@ -2462,17 +2558,25 @@ type ModifierKey = "alt" | "ctrl" | "shift" | "meta";
 
 export interface IModifierKeyStatus {
 	altKey: boolean;
+
 	shiftKey: boolean;
+
 	ctrlKey: boolean;
+
 	metaKey: boolean;
+
 	lastKeyPressed?: ModifierKey;
+
 	lastKeyReleased?: ModifierKey;
+
 	event?: KeyboardEvent;
 }
 
 export class ModifierKeyEmitter extends event.Emitter<IModifierKeyStatus> {
 	private readonly _subscriptions = new DisposableStore();
+
 	private _keyStatus: IModifierKeyStatus;
+
 	private static instance: ModifierKeyEmitter;
 
 	private constructor() {
@@ -2530,12 +2634,16 @@ export class ModifierKeyEmitter extends event.Emitter<IModifierKeyStatus> {
 					}
 
 					this._keyStatus.altKey = e.altKey;
+
 					this._keyStatus.ctrlKey = e.ctrlKey;
+
 					this._keyStatus.metaKey = e.metaKey;
+
 					this._keyStatus.shiftKey = e.shiftKey;
 
 					if (this._keyStatus.lastKeyPressed) {
 						this._keyStatus.event = e;
+
 						this.fire(this._keyStatus);
 					}
 				},
@@ -2572,12 +2680,16 @@ export class ModifierKeyEmitter extends event.Emitter<IModifierKeyStatus> {
 					}
 
 					this._keyStatus.altKey = e.altKey;
+
 					this._keyStatus.ctrlKey = e.ctrlKey;
+
 					this._keyStatus.metaKey = e.metaKey;
+
 					this._keyStatus.shiftKey = e.shiftKey;
 
 					if (this._keyStatus.lastKeyReleased) {
 						this._keyStatus.event = e;
+
 						this.fire(this._keyStatus);
 					}
 				},
@@ -2645,6 +2757,7 @@ export class ModifierKeyEmitter extends event.Emitter<IModifierKeyStatus> {
 	 */
 	resetKeyStatus(): void {
 		this.doResetKeyStatus();
+
 		this.fire(this._keyStatus);
 	}
 
@@ -2667,6 +2780,7 @@ export class ModifierKeyEmitter extends event.Emitter<IModifierKeyStatus> {
 
 	override dispose() {
 		super.dispose();
+
 		this._subscriptions.dispose();
 	}
 }
@@ -2681,11 +2795,17 @@ export function getCookieValue(name: string): string | undefined {
 
 export interface IDragAndDropObserverCallbacks {
 	readonly onDragEnter?: (e: DragEvent) => void;
+
 	readonly onDragLeave?: (e: DragEvent) => void;
+
 	readonly onDrop?: (e: DragEvent) => void;
+
 	readonly onDragEnd?: (e: DragEvent) => void;
+
 	readonly onDragStart?: (e: DragEvent) => void;
+
 	readonly onDrag?: (e: DragEvent) => void;
+
 	readonly onDragOver?: (e: DragEvent, dragDuration: number) => void;
 }
 
@@ -2739,6 +2859,7 @@ export class DragAndDropObserver extends Disposable {
 				EventType.DRAG_ENTER,
 				(e: DragEvent) => {
 					this.counter++;
+
 					this.dragStartTime = e.timeStamp;
 
 					this.callbacks.onDragEnter?.(e);
@@ -2783,6 +2904,7 @@ export class DragAndDropObserver extends Disposable {
 				EventType.DRAG_END,
 				(e: DragEvent) => {
 					this.counter = 0;
+
 					this.dragStartTime = 0;
 
 					this.callbacks.onDragEnd?.(e);
@@ -2796,6 +2918,7 @@ export class DragAndDropObserver extends Disposable {
 				EventType.DROP,
 				(e: DragEvent) => {
 					this.counter = 0;
+
 					this.dragStartTime = 0;
 
 					this.callbacks.onDrop?.(e);
@@ -2907,9 +3030,11 @@ export function h(
 
 	if (Array.isArray(args[0])) {
 		attributes = {};
+
 		children = args[0];
 	} else {
 		attributes = (args[0] as any) || {};
+
 		children = args[1];
 	}
 
@@ -2936,6 +3061,7 @@ export function h(
 			}
 		}
 	}
+
 	if (attributes.className !== undefined) {
 		for (const className of attributes.className.split(".")) {
 			if (className !== "") {
@@ -2943,6 +3069,7 @@ export function h(
 			}
 		}
 	}
+
 	if (classNames.length > 0) {
 		el.className = classNames.join(" ");
 	}
@@ -2961,6 +3088,7 @@ export function h(
 				el.append(c);
 			} else if ("root" in c) {
 				Object.assign(result, c);
+
 				el.appendChild(c.root);
 			}
 		}
@@ -3032,9 +3160,11 @@ export function svgElem(
 
 	if (Array.isArray(args[0])) {
 		attributes = {};
+
 		children = args[0];
 	} else {
 		attributes = (args[0] as any) || {};
+
 		children = args[1];
 	}
 
@@ -3064,6 +3194,7 @@ export function svgElem(
 			}
 		}
 	}
+
 	if (attributes.className !== undefined) {
 		for (const className of attributes.className.split(".")) {
 			if (className !== "") {
@@ -3071,6 +3202,7 @@ export function svgElem(
 			}
 		}
 	}
+
 	if (classNames.length > 0) {
 		el.className = classNames.join(" ");
 	}
@@ -3089,6 +3221,7 @@ export function svgElem(
 				el.append(c);
 			} else if ("root" in c) {
 				Object.assign(result, c);
+
 				el.appendChild(c.root);
 			}
 		}
@@ -3197,15 +3330,19 @@ export class SafeTriangle {
 		let i = 0;
 
 		t[i++] = left;
+
 		t[i++] = top;
 
 		t[i++] = right;
+
 		t[i++] = top;
 
 		t[i++] = left;
+
 		t[i++] = bottom;
 
 		t[i++] = right;
+
 		t[i++] = bottom;
 	}
 

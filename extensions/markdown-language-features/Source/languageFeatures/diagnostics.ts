@@ -16,9 +16,11 @@ export enum DiagnosticCode {
 class AddToIgnoreLinksQuickFixProvider implements vscode.CodeActionProvider {
 	private static readonly _addToIgnoreLinksCommandId =
 		"_markdown.addToIgnoreLinks";
+
 	private static readonly _metadata: vscode.CodeActionProviderMetadata = {
 		providedCodeActionKinds: [vscode.CodeActionKind.QuickFix],
 	};
+
 	public static register(
 		selector: vscode.DocumentSelector,
 		commandManager: CommandManager,
@@ -40,7 +42,9 @@ class AddToIgnoreLinksQuickFixProvider implements vscode.CodeActionProvider {
 				);
 
 				const paths = new Set(config.get<string[]>(settingId, []));
+
 				paths.add(path);
+
 				config.update(
 					settingId,
 					[...paths],
@@ -51,6 +55,7 @@ class AddToIgnoreLinksQuickFixProvider implements vscode.CodeActionProvider {
 
 		return vscode.Disposable.from(reg, commandReg);
 	}
+
 	provideCodeActions(
 		document: vscode.TextDocument,
 		_range: vscode.Range | vscode.Selection,
@@ -75,18 +80,22 @@ class AddToIgnoreLinksQuickFixProvider implements vscode.CodeActionProvider {
 							),
 							vscode.CodeActionKind.QuickFix,
 						);
+
 						fix.command = {
 							command:
 								AddToIgnoreLinksQuickFixProvider._addToIgnoreLinksCommandId,
 							title: "",
 							arguments: [document.uri, hrefText],
 						};
+
 						fixes.push(fix);
 					}
+
 					break;
 				}
 			}
 		}
+
 		return fixes;
 	}
 }

@@ -39,6 +39,7 @@ export class ConfigureDisplayLanguageAction extends Action2 {
 			},
 		});
 	}
+
 	public async run(accessor: ServicesAccessor): Promise<void> {
 		const languagePackService: ILanguagePackService =
 			accessor.get(ILanguagePackService);
@@ -61,7 +62,9 @@ export class ConfigureDisplayLanguageAction extends Action2 {
 				useSeparators: true,
 			}),
 		);
+
 		qp.matchOnDescription = true;
+
 		qp.placeholder = localize("chooseLocale", "Select Display Language");
 
 		if (installedLanguages?.length) {
@@ -71,14 +74,18 @@ export class ConfigureDisplayLanguageAction extends Action2 {
 					label: localize("installed", "Installed"),
 				},
 			];
+
 			qp.items = items.concat(
 				this.withMoreInfoButton(installedLanguages),
 			);
 		}
+
 		const source = new CancellationTokenSource();
+
 		disposables.add(
 			qp.onDispose(() => {
 				source.cancel();
+
 				disposables.dispose();
 			}),
 		);
@@ -86,6 +93,7 @@ export class ConfigureDisplayLanguageAction extends Action2 {
 		const installedSet = new Set<string>(
 			installedLanguages?.map((language) => language.id!) ?? [],
 		);
+
 		languagePackService
 			.getAvailableLanguages()
 			.then((availableLanguages) => {
@@ -103,8 +111,10 @@ export class ConfigureDisplayLanguageAction extends Action2 {
 						...this.withMoreInfoButton(newLanguages),
 					];
 				}
+
 				qp.busy = false;
 			});
+
 		disposables.add(
 			qp.onDidAccept(async () => {
 				const selectedLanguage = qp.activeItems[0] as
@@ -113,10 +123,12 @@ export class ConfigureDisplayLanguageAction extends Action2 {
 
 				if (selectedLanguage) {
 					qp.hide();
+
 					await localeService.setLocale(selectedLanguage);
 				}
 			}),
 		);
+
 		disposables.add(
 			qp.onDidTriggerItemButton(async (e) => {
 				qp.hide();
@@ -126,9 +138,12 @@ export class ConfigureDisplayLanguageAction extends Action2 {
 				}
 			}),
 		);
+
 		qp.show();
+
 		qp.busy = true;
 	}
+
 	private withMoreInfoButton(
 		items: ILanguagePackItem[],
 	): ILanguagePackItem[] {
@@ -142,11 +157,13 @@ export class ConfigureDisplayLanguageAction extends Action2 {
 				];
 			}
 		}
+
 		return items;
 	}
 }
 export class ClearDisplayLanguageAction extends Action2 {
 	public static readonly ID = "workbench.action.clearLocalePreference";
+
 	public static readonly LABEL = localize2(
 		"clearDisplayLanguage",
 		"Clear Display Language Preference",
@@ -161,8 +178,10 @@ export class ClearDisplayLanguageAction extends Action2 {
 			},
 		});
 	}
+
 	public async run(accessor: ServicesAccessor): Promise<void> {
 		const localeService: ILocaleService = accessor.get(ILocaleService);
+
 		await localeService.clearLocalePreference();
 	}
 }

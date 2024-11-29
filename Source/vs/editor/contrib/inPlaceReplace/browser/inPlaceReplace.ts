@@ -53,9 +53,13 @@ class InPlaceReplaceController implements IEditorContribution {
 	});
 
 	private readonly editor: ICodeEditor;
+
 	private readonly editorWorkerService: IEditorWorkerService;
+
 	private readonly decorations: IEditorDecorationsCollection;
+
 	private currentRequest?: CancelablePromise<IInplaceReplaceSupportResult | null>;
+
 	private decorationRemover?: CancelablePromise<void>;
 
 	constructor(
@@ -63,7 +67,9 @@ class InPlaceReplaceController implements IEditorContribution {
 		@IEditorWorkerService editorWorkerService: IEditorWorkerService,
 	) {
 		this.editor = editor;
+
 		this.editorWorkerService = editorWorkerService;
+
 		this.decorations = this.editor.createDecorationsCollection();
 	}
 
@@ -80,6 +86,7 @@ class InPlaceReplaceController implements IEditorContribution {
 		if (!model || !editorSelection) {
 			return undefined;
 		}
+
 		let selection = editorSelection;
 
 		if (selection.startLineNumber !== selection.endLineNumber) {
@@ -148,7 +155,9 @@ class InPlaceReplaceController implements IEditorContribution {
 				);
 
 				this.editor.pushUndoStop();
+
 				this.editor.executeCommand(source, command);
+
 				this.editor.pushUndoStop();
 
 				// add decoration
@@ -161,7 +170,9 @@ class InPlaceReplaceController implements IEditorContribution {
 
 				// remove decoration after delay
 				this.decorationRemover?.cancel();
+
 				this.decorationRemover = timeout(350);
+
 				this.decorationRemover
 					.then(() => this.decorations.clear())
 					.catch(onUnexpectedError);
@@ -196,6 +207,7 @@ class InPlaceReplaceUp extends EditorAction {
 		if (!controller) {
 			return Promise.resolve(undefined);
 		}
+
 		return controller.run(this.id, false);
 	}
 }
@@ -226,6 +238,7 @@ class InPlaceReplaceDown extends EditorAction {
 		if (!controller) {
 			return Promise.resolve(undefined);
 		}
+
 		return controller.run(this.id, true);
 	}
 }

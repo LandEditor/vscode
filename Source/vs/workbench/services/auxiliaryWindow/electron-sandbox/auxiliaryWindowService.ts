@@ -43,6 +43,7 @@ type NativeCodeWindow = CodeWindow & {
 
 export class NativeAuxiliaryWindow extends AuxiliaryWindow {
 	private skipUnloadConfirmation = false;
+
 	private maximized = false;
 
 	constructor(
@@ -76,14 +77,17 @@ export class NativeAuxiliaryWindow extends AuxiliaryWindow {
 			// transitions (Windows, Linux) via window buttons.
 			this.handleMaximizedState();
 		}
+
 		this.handleFullScreenState();
 	}
+
 	private handleMaximizedState(): void {
 		(async () => {
 			this.maximized = await this.nativeHostService.isMaximized({
 				targetWindowId: this.window.vscodeWindowId,
 			});
 		})();
+
 		this._register(
 			this.nativeHostService.onDidMaximizeWindow((windowId) => {
 				if (windowId === this.window.vscodeWindowId) {
@@ -91,6 +95,7 @@ export class NativeAuxiliaryWindow extends AuxiliaryWindow {
 				}
 			}),
 		);
+
 		this._register(
 			this.nativeHostService.onDidUnmaximizeWindow((windowId) => {
 				if (windowId === this.window.vscodeWindowId) {
@@ -99,6 +104,7 @@ export class NativeAuxiliaryWindow extends AuxiliaryWindow {
 			}),
 		);
 	}
+
 	private async handleFullScreenState(): Promise<void> {
 		const fullscreen = await this.nativeHostService.isFullScreen({
 			targetWindowId: this.window.vscodeWindowId,
@@ -108,11 +114,13 @@ export class NativeAuxiliaryWindow extends AuxiliaryWindow {
 			setFullscreen(true, this.window);
 		}
 	}
+
 	protected override async handleVetoBeforeClose(
 		e: BeforeUnloadEvent,
 		veto: string,
 	): Promise<void> {
 		this.preventUnload(e);
+
 		await this.dialogService.error(
 			veto,
 			localize(
@@ -121,12 +129,14 @@ export class NativeAuxiliaryWindow extends AuxiliaryWindow {
 			),
 		);
 	}
+
 	protected override async confirmBeforeClose(
 		e: BeforeUnloadEvent,
 	): Promise<void> {
 		if (this.skipUnloadConfirmation) {
 			return;
 		}
+
 		this.preventUnload(e);
 
 		const confirmed = await this.instantiationService.invokeFunction(
@@ -139,15 +149,19 @@ export class NativeAuxiliaryWindow extends AuxiliaryWindow {
 
 		if (confirmed) {
 			this.skipUnloadConfirmation = true;
+
 			this.nativeHostService.closeWindow({
 				targetWindowId: this.window.vscodeWindowId,
 			});
 		}
 	}
+
 	protected override preventUnload(e: BeforeUnloadEvent): void {
 		e.preventDefault();
+
 		e.returnValue = true;
 	}
+
 	override createState(): IAuxiliaryWindowOpenOptions {
 		const state = super.createState();
 
@@ -192,6 +206,7 @@ export class NativeAuxiliaryWindowService extends BrowserAuxiliaryWindowService 
 			environmentService,
 		);
 	}
+
 	protected override async resolveWindowId(
 		auxiliaryWindow: NativeCodeWindow,
 	): Promise<number> {
@@ -201,10 +216,12 @@ export class NativeAuxiliaryWindowService extends BrowserAuxiliaryWindowService 
 			"vscode:registerAuxiliaryWindow",
 			this.nativeHostService.windowId,
 		);
+
 		mark("code/auxiliaryWindow/didResolveWindowId");
 
 		return windowId;
 	}
+
 	protected override createContainer(
 		auxiliaryWindow: NativeCodeWindow,
 		disposables: DisposableStore,
@@ -218,10 +235,12 @@ export class NativeAuxiliaryWindowService extends BrowserAuxiliaryWindowService 
 		} else {
 			windowZoomLevel = getZoomLevel(getActiveWindow());
 		}
+
 		applyZoom(windowZoomLevel, auxiliaryWindow);
 
 		return super.createContainer(auxiliaryWindow, disposables);
 	}
+
 	protected override createAuxiliaryWindow(
 		targetWindow: CodeWindow,
 		container: HTMLElement,

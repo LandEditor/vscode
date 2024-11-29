@@ -50,18 +50,25 @@ export function resolveWorkbenchCommonProperties(
 		StorageScope.APPLICATION,
 	)!;
 	// __GDPR__COMMON__ "common.version.shell" : { "classification": "SystemMetaData", "purpose": "PerformanceAndHealth" }
+
 	result["common.version.shell"] = process.versions?.["electron"];
 	// __GDPR__COMMON__ "common.version.renderer" : { "classification": "SystemMetaData", "purpose": "PerformanceAndHealth" }
+
 	result["common.version.renderer"] = process.versions?.["chrome"];
 	// __GDPR__COMMON__ "common.firstSessionDate" : { "classification": "SystemMetaData", "purpose": "FeatureInsight" }
+
 	result["common.firstSessionDate"] = firstSessionDate;
 	// __GDPR__COMMON__ "common.lastSessionDate" : { "classification": "SystemMetaData", "purpose": "FeatureInsight" }
+
 	result["common.lastSessionDate"] = lastSessionDate || "";
 	// __GDPR__COMMON__ "common.isNewSession" : { "classification": "SystemMetaData", "purpose": "FeatureInsight" }
+
 	result["common.isNewSession"] = !lastSessionDate ? "1" : "0";
 	// __GDPR__COMMON__ "common.remoteAuthority" : { "classification": "SystemMetaData", "purpose": "PerformanceAndHealth" }
+
 	result["common.remoteAuthority"] = cleanRemoteAuthority(remoteAuthority);
 	// __GDPR__COMMON__ "common.cli" : { "classification": "SystemMetaData", "purpose": "FeatureInsight" }
+
 	result["common.cli"] = !!process.env["VSCODE_CLI"];
 
 	return result;

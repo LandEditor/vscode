@@ -41,6 +41,7 @@ function shouldIncludeLocationLink(
 	) {
 		return false;
 	}
+
 	return true;
 }
 async function getLocationLinks<T>(
@@ -169,6 +170,7 @@ export function getReferencesAtPosition(
 			if (!compact || !result || result.length !== 2) {
 				return result;
 			}
+
 			const resultWithoutDeclaration = (
 				await provider.provideReferences(
 					model,
@@ -184,6 +186,7 @@ export function getReferencesAtPosition(
 			) {
 				return resultWithoutDeclaration;
 			}
+
 			return result;
 		},
 	);
@@ -197,6 +200,7 @@ async function _sortedAndDeduped(
 	const model = new ReferencesModel(rawLinks, "");
 
 	const modelLinks = model.references.map((ref) => ref.link);
+
 	model.dispose();
 
 	return modelLinks;

@@ -45,9 +45,11 @@ Registry.as<IEditorFactoryRegistry>(
 		canSerialize(): boolean {
 			return true;
 		}
+
 		serialize(): string {
 			return "";
 		}
+
 		deserialize(
 			instantiationService: IInstantiationService,
 		): PerfviewInput {
@@ -65,6 +67,7 @@ registerAction2(
 				f1: true,
 			});
 		}
+
 		run(accessor: ServicesAccessor) {
 			const editorService = accessor.get(IEditorService);
 
@@ -86,6 +89,7 @@ registerAction2(
 				f1: true,
 			});
 		}
+
 		run(accessor: ServicesAccessor) {
 			const instaService = accessor.get(IInstantiationService);
 
@@ -111,6 +115,7 @@ registerAction2(
 				f1: true,
 			});
 		}
+
 		run() {
 			if (Trace.all.size === 0) {
 				console.log(
@@ -119,6 +124,7 @@ registerAction2(
 
 				return;
 			}
+
 			for (const item of Trace.all) {
 				console.log(item);
 			}
@@ -135,6 +141,7 @@ registerAction2(
 				f1: true,
 			});
 		}
+
 		run(): void {
 			if (EventProfiling.all.size === 0) {
 				console.log(
@@ -143,6 +150,7 @@ registerAction2(
 
 				return;
 			}
+
 			for (const item of EventProfiling.all) {
 				console.log(
 					`${item.name}: ${item.invocationCount} invocations COST ${item.elapsedOverall}ms, ${item.listenerCount} listeners, avg cost is ${item.durations.reduce((a, b) => a + b, 0) / item.durations.length}ms`,

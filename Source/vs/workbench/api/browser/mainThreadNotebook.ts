@@ -49,8 +49,11 @@ import { NotebookDto } from "./mainThreadNotebookDto.js";
 @extHostNamedCustomer(MainContext.MainThreadNotebook)
 export class MainThreadNotebooks implements MainThreadNotebookShape {
 	private readonly _disposables = new DisposableStore();
+
 	private readonly _proxy: ExtHostNotebookShape;
+
 	private readonly _notebookSerializer = new Map<number, IDisposable>();
+
 	private readonly _notebookCellStatusBarRegistrations = new Map<
 		number,
 		IDisposable
@@ -67,8 +70,10 @@ export class MainThreadNotebooks implements MainThreadNotebookShape {
 	) {
 		this._proxy = extHostContext.getProxy(ExtHostContext.ExtHostNotebook);
 	}
+
 	dispose(): void {
 		this._disposables.dispose();
+
 		dispose(this._notebookSerializer.values());
 	}
 	$registerNotebookSerializer(
@@ -79,6 +84,7 @@ export class MainThreadNotebooks implements MainThreadNotebookShape {
 		data: INotebookContributionData | undefined,
 	): void {
 		const disposables = new DisposableStore();
+
 		disposables.add(
 			this._notebookService.registerNotebookSerializer(
 				viewType,
@@ -107,8 +113,10 @@ export class MainThreadNotebooks implements MainThreadNotebookShape {
 								data,
 								CancellationToken.None,
 							);
+
 							result = NotebookDto.fromNotebookDataDto(dto.value);
 						}
+
 						this._logService.trace(
 							`[NotebookSerializer] dataToNotebook DONE after ${sw.elapsed()}ms`,
 							{
@@ -129,6 +137,7 @@ export class MainThreadNotebooks implements MainThreadNotebookShape {
 							),
 							CancellationToken.None,
 						);
+
 						this._logService.trace(
 							`[NotebookSerializer] notebookToData DONE after ${sw.elapsed()}`,
 							{
@@ -160,6 +169,7 @@ export class MainThreadNotebooks implements MainThreadNotebookShape {
 						allPriorityInfo,
 					): Promise<{
 						results: INotebookFileMatchNoModel<URI>[];
+
 						limitHit: boolean;
 					}> => {
 						const contributedType =
@@ -170,6 +180,7 @@ export class MainThreadNotebooks implements MainThreadNotebookShape {
 						if (!contributedType) {
 							return { results: [], limitHit: false };
 						}
+
 						const fileNames = contributedType.selectors;
 
 						const includes = fileNames.map((selector) => {
@@ -187,6 +198,7 @@ export class MainThreadNotebooks implements MainThreadNotebookShape {
 								limitHit: false,
 							};
 						}
+
 						const thisPriorityInfo = coalesce<NotebookPriorityInfo>(
 							[
 								{
@@ -203,6 +215,7 @@ export class MainThreadNotebooks implements MainThreadNotebookShape {
 							if (key !== viewType) {
 								return allPriorityInfo.get(key) ?? [];
 							}
+
 							return [];
 						});
 
@@ -244,7 +257,9 @@ export class MainThreadNotebooks implements MainThreadNotebookShape {
 				),
 			);
 		}
+
 		this._notebookSerializer.set(handle, disposables);
+
 		this._logService.trace(
 			"[NotebookSerializer] registered notebook serializer",
 			{
@@ -255,6 +270,7 @@ export class MainThreadNotebooks implements MainThreadNotebookShape {
 	}
 	$unregisterNotebookSerializer(handle: number): void {
 		this._notebookSerializer.get(handle)?.dispose();
+
 		this._notebookSerializer.delete(handle);
 	}
 	$emitCellStatusBarEvent(eventHandle: number): void {
@@ -265,6 +281,7 @@ export class MainThreadNotebooks implements MainThreadNotebookShape {
 			emitter.fire(undefined);
 		}
 	}
+
 	async $registerNotebookCellStatusBarItemProvider(
 		handle: number,
 		eventHandle: number | undefined,
@@ -302,15 +319,20 @@ export class MainThreadNotebooks implements MainThreadNotebookShape {
 
 		if (typeof eventHandle === "number") {
 			const emitter = new Emitter<void>();
+
 			this._notebookCellStatusBarRegistrations.set(eventHandle, emitter);
+
 			provider.onDidChangeStatusBarItems = emitter.event;
 		}
+
 		const disposable =
 			this._cellStatusBarService.registerCellStatusBarItemProvider(
 				provider,
 			);
+
 		this._notebookCellStatusBarRegistrations.set(handle, disposable);
 	}
+
 	async $unregisterNotebookCellStatusBarItemProvider(
 		handle: number,
 		eventHandle: number | undefined,
@@ -320,9 +342,11 @@ export class MainThreadNotebooks implements MainThreadNotebookShape {
 
 			if (entry) {
 				this._notebookCellStatusBarRegistrations.get(handle)?.dispose();
+
 				this._notebookCellStatusBarRegistrations.delete(handle);
 			}
 		};
+
 		unregisterThing(handle);
 
 		if (typeof eventHandle === "number") {
@@ -334,7 +358,9 @@ CommandsRegistry.registerCommand(
 	"_executeDataToNotebook",
 	async (accessor, ...args) => {
 		const [notebookType, bytes] = args;
+
 		assertType(typeof notebookType === "string", "string");
+
 		assertType(bytes instanceof VSBuffer, "VSBuffer");
 
 		const notebookService = accessor.get(INotebookService);
@@ -345,6 +371,7 @@ CommandsRegistry.registerCommand(
 		if (!(info instanceof SimpleNotebookProviderInfo)) {
 			return;
 		}
+
 		const dto = await info.serializer.dataToNotebook(bytes);
 
 		return new SerializableObjectWithBuffers(
@@ -356,7 +383,9 @@ CommandsRegistry.registerCommand(
 	"_executeNotebookToData",
 	async (accessor, ...args) => {
 		const [notebookType, dto] = args;
+
 		assertType(typeof notebookType === "string", "string");
+
 		assertType(typeof dto === "object");
 
 		const notebookService = accessor.get(INotebookService);
@@ -367,6 +396,7 @@ CommandsRegistry.registerCommand(
 		if (!(info instanceof SimpleNotebookProviderInfo)) {
 			return;
 		}
+
 		const data = NotebookDto.fromNotebookDataDto(dto.value);
 
 		const bytes = await info.serializer.notebookToData(data);

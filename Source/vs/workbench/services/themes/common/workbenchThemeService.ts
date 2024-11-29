@@ -121,13 +121,18 @@ export const COLOR_THEME_LIGHT_INITIAL_COLORS = {
 
 export interface IWorkbenchTheme {
 	readonly id: string;
+
 	readonly label: string;
+
 	readonly extensionData?: ExtensionData;
+
 	readonly description?: string;
+
 	readonly settingsId: string | null;
 }
 export interface IWorkbenchColorTheme extends IWorkbenchTheme, IColorTheme {
 	readonly settingsId: string;
+
 	readonly tokenColors: ITextMateThemingRule[];
 }
 export interface IColorMap {
@@ -166,7 +171,9 @@ export interface IWorkbenchThemeService extends IThemeService {
 		name: string,
 		version: string,
 	): Promise<IWorkbenchColorTheme[]>;
+
 	onDidColorThemeChange: Event<IWorkbenchColorTheme>;
+
 	hasUpdatedDefaultThemes(): boolean;
 
 	getPreferredColorScheme(): ColorScheme | undefined;
@@ -185,6 +192,7 @@ export interface IWorkbenchThemeService extends IThemeService {
 		name: string,
 		version: string,
 	): Promise<IWorkbenchFileIconTheme[]>;
+
 	onDidFileIconThemeChange: Event<IWorkbenchFileIconTheme>;
 
 	setProductIconTheme(
@@ -201,6 +209,7 @@ export interface IWorkbenchThemeService extends IThemeService {
 		name: string,
 		version: string,
 	): Promise<IWorkbenchProductIconTheme[]>;
+
 	onDidProductIconThemeChange: Event<IWorkbenchProductIconTheme>;
 }
 export interface IThemeScopedColorCustomizations {
@@ -216,16 +225,23 @@ export interface IThemeScopedTokenColorCustomizations {
 		| boolean
 		| string
 		| undefined;
+
 	comments?: string | ITokenColorizationSetting;
+
 	strings?: string | ITokenColorizationSetting;
+
 	numbers?: string | ITokenColorizationSetting;
+
 	keywords?: string | ITokenColorizationSetting;
+
 	types?: string | ITokenColorizationSetting;
 
 	functions?: string | ITokenColorizationSetting;
 
 	variables?: string | ITokenColorizationSetting;
+
 	textMateRules?: ITextMateThemingRule[];
+
 	semanticHighlighting?: boolean; // deprecated, use ISemanticTokenColorCustomizations.enabled instead
 }
 export interface ITokenColorCustomizations {
@@ -236,21 +252,30 @@ export interface ITokenColorCustomizations {
 		| boolean
 		| string
 		| undefined;
+
 	comments?: string | ITokenColorizationSetting;
+
 	strings?: string | ITokenColorizationSetting;
+
 	numbers?: string | ITokenColorizationSetting;
+
 	keywords?: string | ITokenColorizationSetting;
+
 	types?: string | ITokenColorizationSetting;
 
 	functions?: string | ITokenColorizationSetting;
 
 	variables?: string | ITokenColorizationSetting;
+
 	textMateRules?: ITextMateThemingRule[];
+
 	semanticHighlighting?: boolean; // deprecated, use ISemanticTokenColorCustomizations.enabled instead
 }
 export interface IThemeScopedSemanticTokenColorCustomizations {
 	[styleRule: string]: ISemanticTokenRules | boolean | undefined;
+
 	enabled?: boolean;
+
 	rules?: ISemanticTokenRules;
 }
 export interface ISemanticTokenColorCustomizations {
@@ -259,7 +284,9 @@ export interface ISemanticTokenColorCustomizations {
 		| ISemanticTokenRules
 		| boolean
 		| undefined;
+
 	enabled?: boolean;
+
 	rules?: ISemanticTokenRules;
 }
 export interface IThemeScopedExperimentalSemanticTokenColorCustomizations {
@@ -288,27 +315,38 @@ export interface ISemanticTokenRules {
 }
 export interface ITextMateThemingRule {
 	name?: string;
+
 	scope?: string | string[];
 
 	settings: ITokenColorizationSetting;
 }
 export interface ITokenColorizationSetting {
 	foreground?: string;
+
 	background?: string;
+
 	fontStyle?: string /* [italic|bold|underline|strikethrough] */;
 }
 export interface ISemanticTokenColorizationSetting {
 	foreground?: string;
+
 	fontStyle?: string /* [italic|bold|underline|strikethrough] */;
+
 	bold?: boolean;
+
 	underline?: boolean;
+
 	strikethrough?: boolean;
+
 	italic?: boolean;
 }
 export interface ExtensionData {
 	extensionId: string;
+
 	extensionPublisher: string;
+
 	extensionName: string;
+
 	extensionIsBuiltin: boolean;
 }
 export namespace ExtensionData {
@@ -322,6 +360,7 @@ export namespace ExtensionData {
 			}
 		);
 	}
+
 	export function fromJSONObject(o: any): ExtensionData | undefined {
 		if (
 			o &&
@@ -337,8 +376,10 @@ export namespace ExtensionData {
 				extensionPublisher: o._extensionPublisher,
 			};
 		}
+
 		return undefined;
 	}
+
 	export function fromName(
 		publisher: string,
 		name: string,
@@ -354,13 +395,18 @@ export namespace ExtensionData {
 }
 export interface IThemeExtensionPoint {
 	id: string;
+
 	label?: string;
+
 	description?: string;
+
 	path: string;
+
 	uiTheme?:
 		| typeof VS_LIGHT_THEME
 		| typeof VS_DARK_THEME
 		| typeof VS_HC_THEME
 		| typeof VS_HC_LIGHT_THEME;
+
 	_watch: boolean; // unsupported options to watch location
 }

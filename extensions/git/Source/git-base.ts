@@ -8,6 +8,7 @@ import { API as GitBaseAPI, GitBaseExtension } from "./api/git-base";
 
 export class GitBaseApi {
 	private static _gitBaseApi: GitBaseAPI | undefined;
+
 	static getAPI(): GitBaseAPI {
 		if (!this._gitBaseApi) {
 			const gitBaseExtension =
@@ -22,15 +23,18 @@ export class GitBaseApi {
 					? gitBaseExtension.getAPI(1)
 					: undefined;
 			};
+
 			gitBaseExtension.onDidChangeEnablement(
 				onDidChangeGitBaseExtensionEnablement,
 			);
+
 			onDidChangeGitBaseExtensionEnablement(gitBaseExtension.enabled);
 
 			if (!this._gitBaseApi) {
 				throw new Error("vscode.git-base extension is not enabled.");
 			}
 		}
+
 		return this._gitBaseApi;
 	}
 }

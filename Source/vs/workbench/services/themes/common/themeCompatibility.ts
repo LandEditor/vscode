@@ -16,12 +16,14 @@ function addSettingMapping(settingId: string, colorId: string) {
 	if (!colorIds) {
 		settingToColorIdMapping[settingId] = colorIds = [];
 	}
+
 	colorIds.push(colorId);
 }
 export function convertSettings(
 	oldSettings: ITextMateThemingRule[],
 	result: {
 		textMateRules: ITextMateThemingRule[];
+
 		colors: IColorMap;
 	},
 ): void {
@@ -50,6 +52,7 @@ export function convertSettings(
 							}
 						}
 					}
+
 					if (
 						key !== "foreground" &&
 						key !== "background" &&

@@ -20,6 +20,7 @@ import { IndentRulesSupport } from "./indentRules.js";
  */
 export class ProcessedIndentRulesSupport {
 	private readonly _indentRulesSupport: IndentRulesSupport;
+
 	private readonly _indentationLineProcessor: IndentationLineProcessor;
 
 	constructor(
@@ -28,6 +29,7 @@ export class ProcessedIndentRulesSupport {
 		languageConfigurationService: ILanguageConfigurationService,
 	) {
 		this._indentRulesSupport = indentRulesSupport;
+
 		this._indentationLineProcessor = new IndentationLineProcessor(
 			model,
 			languageConfigurationService,
@@ -96,6 +98,7 @@ export class ProcessedIndentRulesSupport {
  */
 export class IndentationContextProcessor {
 	private readonly model: ITextModel;
+
 	private readonly indentationLineProcessor: IndentationLineProcessor;
 
 	constructor(
@@ -103,6 +106,7 @@ export class IndentationContextProcessor {
 		languageConfigurationService: ILanguageConfigurationService,
 	) {
 		this.model = model;
+
 		this.indentationLineProcessor = new IndentationLineProcessor(
 			model,
 			languageConfigurationService,
@@ -113,7 +117,9 @@ export class IndentationContextProcessor {
 	 */
 	getProcessedTokenContextAroundRange(range: Range): {
 		beforeRangeProcessedTokens: IViewLineTokens;
+
 		afterRangeProcessedTokens: IViewLineTokens;
+
 		previousLineProcessedTokens: IViewLineTokens;
 	} {
 		const beforeRangeProcessedTokens =
@@ -131,6 +137,7 @@ export class IndentationContextProcessor {
 			previousLineProcessedTokens,
 		};
 	}
+
 	private _getProcessedTokensBeforeRange(range: Range): IViewLineTokens {
 		this.model.tokenization.forceTokenization(range.startLineNumber);
 
@@ -158,6 +165,7 @@ export class IndentationContextProcessor {
 
 			const lastCharacterOffset =
 				firstCharacterOffset + columnIndexWithinScope;
+
 			slicedTokens = lineTokens.sliceAndInflate(
 				firstCharacterOffset,
 				lastCharacterOffset,
@@ -165,17 +173,21 @@ export class IndentationContextProcessor {
 			);
 		} else {
 			const columnWithinLine = range.startColumn - 1;
+
 			slicedTokens = lineTokens.sliceAndInflate(0, columnWithinLine, 0);
 		}
+
 		const processedTokens =
 			this.indentationLineProcessor.getProcessedTokens(slicedTokens);
 
 		return processedTokens;
 	}
+
 	private _getProcessedTokensAfterRange(range: Range): IViewLineTokens {
 		const position: Position = range.isEmpty()
 			? range.getStartPosition()
 			: range.getEndPosition();
+
 		this.model.tokenization.forceTokenization(position.lineNumber);
 
 		const lineTokens = this.model.tokenization.getLineTokens(
@@ -207,6 +219,7 @@ export class IndentationContextProcessor {
 
 		return processedTokens;
 	}
+
 	private _getProcessedPreviousLineTokens(range: Range): IViewLineTokens {
 		const getScopedLineTokensAtEndColumnOfLine = (
 			lineNumber: number,
@@ -225,6 +238,7 @@ export class IndentationContextProcessor {
 
 			return scopedLineTokensAtEndColumn;
 		};
+
 		this.model.tokenization.forceTokenization(range.startLineNumber);
 
 		const lineTokens = this.model.tokenization.getLineTokens(
@@ -248,12 +262,14 @@ export class IndentationContextProcessor {
 		if (isFirstLine) {
 			return emptyTokens;
 		}
+
 		const canScopeExtendOnPreviousLine =
 			scopedLineTokens.firstCharOffset === 0;
 
 		if (!canScopeExtendOnPreviousLine) {
 			return emptyTokens;
 		}
+
 		const scopedLineTokensAtEndColumnOfPreviousLine =
 			getScopedLineTokensAtEndColumnOfLine(previousLineNumber);
 
@@ -264,6 +280,7 @@ export class IndentationContextProcessor {
 		if (!doesLanguageContinueOnPreviousLine) {
 			return emptyTokens;
 		}
+
 		const previousSlicedLineTokens =
 			scopedLineTokensAtEndColumnOfPreviousLine.toIViewLineTokens();
 
@@ -300,6 +317,7 @@ class IndentationLineProcessor {
 
 			return adjustedLine;
 		};
+
 		this.model.tokenization.forceTokenization?.(lineNumber);
 
 		const tokens = this.model.tokenization.getLineTokens(lineNumber);
@@ -309,6 +327,7 @@ class IndentationLineProcessor {
 		if (newIndentation !== undefined) {
 			processedLine = replaceIndentation(processedLine, newIndentation);
 		}
+
 		return processedLine;
 	}
 	/**
@@ -338,8 +357,10 @@ class IndentationLineProcessor {
 
 		const textAndMetadata: {
 			text: string;
+
 			metadata: number;
 		}[] = [];
+
 		tokens.forEach((tokenIndex: number) => {
 			const tokenType = tokens.getStandardTokenType(tokenIndex);
 
@@ -348,7 +369,9 @@ class IndentationLineProcessor {
 			if (shouldRemoveBracketsFromTokenType(tokenType)) {
 				text = text.replace(bracketsRegExp, "");
 			}
+
 			const metadata = tokens.getMetadata(tokenIndex);
+
 			textAndMetadata.push({ text, metadata });
 		});
 

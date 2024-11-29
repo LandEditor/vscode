@@ -42,6 +42,7 @@ export function getSemanticSupportedSchemes() {
 			...alwaysSupportedSchemes,
 		];
 	}
+
 	return [file, ...alwaysSupportedSchemes];
 }
 /**

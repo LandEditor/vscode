@@ -57,16 +57,22 @@ let dataBreakpointInfoResponse: IDataBreakpointInfoResponse | undefined;
 
 interface IVariablesContext {
 	sessionId: string | undefined;
+
 	container: DebugProtocol.Variable | DebugProtocol.Scope | DebugProtocol.EvaluateArguments;
+
 	variable: DebugProtocol.Variable;
 }
 
 export class VariablesView extends ViewPane {
 
 	private updateTreeScheduler: RunOnceScheduler;
+
 	private needsRefresh = false;
+
 	private tree!: WorkbenchAsyncDataTree<IStackFrame | null, IExpression | IScope, FuzzyScore>;
+
 	private savedViewState = new Map<string, IAsyncDataTreeViewState>();
+
 	private autoExpandedScopes = new Set<string>();
 
 	constructor(
@@ -91,26 +97,33 @@ export class VariablesView extends ViewPane {
 			const stackFrame = this.debugService.getViewModel().focusedStackFrame;
 
 			this.needsRefresh = false;
+
 			const input = this.tree.getInput();
+
 			if (input) {
 				this.savedViewState.set(input.getId(), this.tree.getViewState());
 			}
+
 			if (!stackFrame) {
 				await this.tree.setInput(null);
+
 				return;
 			}
 
 			const viewState = this.savedViewState.get(stackFrame.getId());
+
 			await this.tree.setInput(stackFrame, viewState);
 
 			// Automatically expand the first non-expensive scope
 			const scopes = await stackFrame.getScopes();
+
 			const toExpand = scopes.find(s => !s.expensive);
 
 			// A race condition could be present causing the scopes here to be different from the scopes that the tree just retrieved.
 			// If that happened, don't try to reveal anything, it will be straightened out on the next update
 			if (toExpand && this.tree.hasNode(toExpand)) {
 				this.autoExpandedScopes.add(toExpand.getId());
+
 				await this.tree.expand(toExpand);
 			}
 		}, 400);
@@ -120,9 +133,13 @@ export class VariablesView extends ViewPane {
 		super.renderBody(container);
 
 		this.element.classList.add('debug-pane');
+
 		container.classList.add('debug-variables');
+
 		const treeContainer = renderViewTree(container);
+
 		const expressionRenderer = this.instantiationService.createInstance(DebugExpressionRenderer);
+
 		this.tree = this.instantiationService.createInstance(WorkbenchAsyncDataTree<IStackFrame | null, IExpression | IScope, FuzzyScore>, 'VariablesView', treeContainer, new VariablesDelegate(),
 			[
 				this.instantiationService.createInstance(VariablesRenderer, expressionRenderer),
@@ -138,6 +155,7 @@ export class VariablesView extends ViewPane {
 		});
 
 		this._register(VisualizedVariableRenderer.rendererOnVisualizationRange(this.debugService.getViewModel(), this.tree));
+
 		this.tree.setInput(this.debugService.getViewModel().focusedStackFrame ?? null);
 
 		CONTEXT_VARIABLES_FOCUSED.bindTo(this.tree.contextKeyService);
@@ -145,24 +163,33 @@ export class VariablesView extends ViewPane {
 		this._register(this.debugService.getViewModel().onDidFocusStackFrame(sf => {
 			if (!this.isBodyVisible()) {
 				this.needsRefresh = true;
+
 				return;
 			}
 
 			// Refresh the tree immediately if the user explictly changed stack frames.
 			// Otherwise postpone the refresh until user stops stepping.
 			const timeout = sf.explicit ? 0 : undefined;
+
 			this.updateTreeScheduler.schedule(timeout);
 		}));
+
 		this._register(this.debugService.getViewModel().onWillUpdateViews(() => {
 			const stackFrame = this.debugService.getViewModel().focusedStackFrame;
+
 			if (stackFrame && forgetScopes) {
 				stackFrame.forgetScopes();
 			}
+
 			forgetScopes = true;
+
 			this.tree.updateChildren();
 		}));
+
 		this._register(this.tree);
+
 		this._register(this.tree.onMouseDblClick(e => this.onMouseDblClick(e)));
+
 		this._register(this.tree.onContextMenu(async e => await this.onContextMenu(e)));
 
 		this._register(this.onDidChangeBodyVisibility(visible => {
@@ -170,11 +197,15 @@ export class VariablesView extends ViewPane {
 				this.updateTreeScheduler.schedule();
 			}
 		}));
+
 		let horizontalScrolling: boolean | undefined;
+
 		this._register(this.debugService.getViewModel().onDidSelectExpression(e => {
 			const variable = e?.expression;
+
 			if (variable && this.tree.hasNode(variable)) {
 				horizontalScrolling = this.tree.options.horizontalScrolling;
+
 				if (horizontalScrolling) {
 					this.tree.updateOptions({ horizontalScrolling: false });
 				}
@@ -182,28 +213,35 @@ export class VariablesView extends ViewPane {
 				this.tree.rerender(variable);
 			} else if (!e && horizontalScrolling !== undefined) {
 				this.tree.updateOptions({ horizontalScrolling: horizontalScrolling });
+
 				horizontalScrolling = undefined;
 			}
 		}));
+
 		this._register(this.debugService.getViewModel().onDidEvaluateLazyExpression(async e => {
 			if (e instanceof Variable && this.tree.hasNode(e)) {
 				await this.tree.updateChildren(e, false, true);
+
 				await this.tree.expand(e);
 			}
 		}));
+
 		this._register(this.debugService.onDidEndSession(() => {
 			this.savedViewState.clear();
+
 			this.autoExpandedScopes.clear();
 		}));
 	}
 
 	protected override layoutBody(width: number, height: number): void {
 		super.layoutBody(height, width);
+
 		this.tree.layout(width, height);
 	}
 
 	override focus(): void {
 		super.focus();
+
 		this.tree.domFocus();
 	}
 
@@ -219,6 +257,7 @@ export class VariablesView extends ViewPane {
 
 	private canSetExpressionValue(e: IExpression | IScope | null): e is IExpression {
 		const session = this.debugService.getViewModel().focusedSession;
+
 		if (!session) {
 			return false;
 		}
@@ -232,6 +271,7 @@ export class VariablesView extends ViewPane {
 
 	private async onContextMenu(e: ITreeContextMenuEvent<IExpression | IScope>): Promise<void> {
 		const variable = e.element;
+
 		if (!(variable instanceof Variable) || !variable.value) {
 			return;
 		}
@@ -242,15 +282,19 @@ export class VariablesView extends ViewPane {
 
 export async function openContextMenuForVariableTreeElement(parentContextKeyService: IContextKeyService, menuService: IMenuService, contextMenuService: IContextMenuService, menuId: MenuId, e: ITreeContextMenuEvent<IExpression | IScope>) {
 	const variable = e.element;
+
 	if (!(variable instanceof Variable) || !variable.value) {
 		return;
 	}
 
 	const contextKeyService = await getContextForVariableMenuWithDataAccess(parentContextKeyService, variable);
+
 	const context: IVariablesContext = getVariablesContext(variable);
+
 	const menu = menuService.getMenuActions(menuId, contextKeyService, { arg: context, shouldForwardArgs: false });
 
 	const { secondary } = getContextMenuActions(menu, 'inline');
+
 	contextMenuService.showContextMenu({
 		getAnchor: () => e.anchor,
 		getActions: () => secondary
@@ -270,13 +314,17 @@ const getVariablesContext = (variable: Variable): IVariablesContext => ({
  */
 async function getContextForVariableMenuWithDataAccess(parentContext: IContextKeyService, variable: Variable) {
 	const session = variable.getSession();
+
 	if (!session || !session.capabilities.supportsDataBreakpoints) {
 		return getContextForVariableMenuBase(parentContext, variable);
 	}
 
 	const contextKeys: [string, unknown][] = [];
+
 	dataBreakpointInfoResponse = await session.dataBreakpointInfo(variable.name, variable.parent.reference);
+
 	const dataBreakpointId = dataBreakpointInfoResponse?.dataId;
+
 	const dataBreakpointAccessTypes = dataBreakpointInfoResponse?.accessTypes;
 
 	if (!dataBreakpointAccessTypes) {
@@ -286,12 +334,17 @@ async function getContextForVariableMenuWithDataAccess(parentContext: IContextKe
 			switch (accessType) {
 				case 'read':
 					contextKeys.push([CONTEXT_BREAK_WHEN_VALUE_IS_READ_SUPPORTED.key, !!dataBreakpointId]);
+
 					break;
+
 				case 'write':
 					contextKeys.push([CONTEXT_BREAK_WHEN_VALUE_CHANGES_SUPPORTED.key, !!dataBreakpointId]);
+
 					break;
+
 				case 'readWrite':
 					contextKeys.push([CONTEXT_BREAK_WHEN_VALUE_IS_ACCESSED_SUPPORTED.key, !!dataBreakpointId]);
+
 					break;
 			}
 		}
@@ -305,6 +358,7 @@ async function getContextForVariableMenuWithDataAccess(parentContext: IContextKe
  */
 function getContextForVariableMenuBase(parentContext: IContextKeyService, variable: Variable, additionalContext: [string, unknown][] = []) {
 	variableInternalContext = variable;
+
 	return getContextForVariable(parentContext, variable, additionalContext);
 }
 
@@ -318,6 +372,7 @@ class VariablesDataSource extends AbstractExpressionDataSource<IStackFrame | nul
 		if (!element) {
 			return false;
 		}
+
 		if (isStackFrame(element)) {
 			return true;
 		}
@@ -336,6 +391,7 @@ class VariablesDataSource extends AbstractExpressionDataSource<IStackFrame | nul
 
 interface IScopeTemplateData {
 	name: HTMLElement;
+
 	label: HighlightedLabel;
 }
 
@@ -372,6 +428,7 @@ class ScopesRenderer implements ITreeRenderer<IScope, FuzzyScore, IScopeTemplate
 
 	renderTemplate(container: HTMLElement): IScopeTemplateData {
 		const name = dom.append(container, $('.scope'));
+
 		const label = new HighlightedLabel(name);
 
 		return { name, label };
@@ -400,7 +457,9 @@ class ScopeErrorRenderer implements ITreeRenderer<IScope, FuzzyScore, IScopeErro
 
 	renderTemplate(container: HTMLElement): IScopeErrorTemplateData {
 		const wrapper = dom.append(container, $('.scope'));
+
 		const error = dom.append(wrapper, $('.error'));
+
 		return { error };
 	}
 
@@ -427,6 +486,7 @@ export class VisualizedVariableRenderer extends AbstractExpressionsRenderer {
 			}
 
 			const parent: IExpression = tree.getParentElement(original);
+
 			tree.updateChildren(parent, false, false);
 		});
 
@@ -449,6 +509,7 @@ export class VisualizedVariableRenderer extends AbstractExpressionsRenderer {
 
 	public override renderElement(node: ITreeNode<IExpression, FuzzyScore>, index: number, data: IExpressionTemplateData): void {
 		data.elementDisposable.clear();
+
 		super.renderExpressionElement(node.element, node, data);
 	}
 
@@ -456,10 +517,13 @@ export class VisualizedVariableRenderer extends AbstractExpressionsRenderer {
 		const viz = expression as VisualizedExpression;
 
 		let text = viz.name;
+
 		if (viz.value && typeof viz.name === 'string') {
 			text += ':';
 		}
+
 		data.label.set(text, highlights, viz.name);
+
 		data.elementDisposable.add(this.expressionRenderer.renderValue(data.value, viz, {
 			showChanged: false,
 			maxValueLength: 1024,
@@ -470,6 +534,7 @@ export class VisualizedVariableRenderer extends AbstractExpressionsRenderer {
 
 	protected override getInputBoxOptions(expression: IExpression): IInputBoxOptions | undefined {
 		const viz = <VisualizedExpression>expression;
+
 		return {
 			initialValue: expression.value,
 			ariaLabel: localize('variableValueAriaLabel', "Type new variable value"),
@@ -478,10 +543,12 @@ export class VisualizedVariableRenderer extends AbstractExpressionsRenderer {
 			},
 			onFinish: (value: string, success: boolean) => {
 				viz.errorMessage = undefined;
+
 				if (success) {
 					viz.edit(value).then(() => {
 						// Do not refresh scopes due to a node limitation #15520
 						forgetScopes = false;
+
 						this.debugService.getViewModel().updateViews();
 					});
 				}
@@ -491,20 +558,29 @@ export class VisualizedVariableRenderer extends AbstractExpressionsRenderer {
 
 	protected override renderActionBar(actionBar: ActionBar, expression: IExpression, _data: IExpressionTemplateData) {
 		const viz = expression as VisualizedExpression;
+
 		const contextKeyService = viz.original ? getContextForVariableMenuBase(this.contextKeyService, viz.original) : this.contextKeyService;
+
 		const context = viz.original ? getVariablesContext(viz.original) : undefined;
+
 		const menu = this.menuService.getMenuActions(MenuId.DebugVariablesContext, contextKeyService, { arg: context, shouldForwardArgs: false });
 
 		const { primary } = getContextMenuActions(menu, 'inline');
 
 		if (viz.original) {
 			const action = new Action('debugViz', localize('removeVisualizer', 'Remove Visualizer'), ThemeIcon.asClassName(Codicon.eye), true, () => this.debugService.getViewModel().setVisualizedExpression(viz.original!, undefined));
+
 			action.checked = true;
+
 			primary.push(action);
+
 			actionBar.domNode.style.display = 'initial';
 		}
+
 		actionBar.clear();
+
 		actionBar.context = context;
+
 		actionBar.push(primary, { icon: true, label: false });
 	}
 }
@@ -539,11 +615,13 @@ export class VariablesRenderer extends AbstractExpressionsRenderer {
 
 	public override renderElement(node: ITreeNode<IExpression, FuzzyScore>, index: number, data: IExpressionTemplateData): void {
 		data.elementDisposable.clear();
+
 		super.renderExpressionElement(node.element, node, data);
 	}
 
 	protected getInputBoxOptions(expression: IExpression): IInputBoxOptions {
 		const variable = <Variable>expression;
+
 		return {
 			initialValue: expression.value,
 			ariaLabel: localize('variableValueAriaLabel', "Type new variable value"),
@@ -552,13 +630,16 @@ export class VariablesRenderer extends AbstractExpressionsRenderer {
 			},
 			onFinish: (value: string, success: boolean) => {
 				variable.errorMessage = undefined;
+
 				const focusedStackFrame = this.debugService.getViewModel().focusedStackFrame;
+
 				if (success && variable.value !== value && focusedStackFrame) {
 					variable.setVariable(value, focusedStackFrame)
 						// Need to force watch expressions and variables to update since a variable change can have an effect on both
 						.then(() => {
 							// Do not refresh scopes due to a node limitation #15520
 							forgetScopes = false;
+
 							this.debugService.getViewModel().updateViews();
 						});
 				}
@@ -568,23 +649,32 @@ export class VariablesRenderer extends AbstractExpressionsRenderer {
 
 	protected override renderActionBar(actionBar: ActionBar, expression: IExpression, data: IExpressionTemplateData) {
 		const variable = expression as Variable;
+
 		const contextKeyService = getContextForVariableMenuBase(this.contextKeyService, variable);
 
 		const context = getVariablesContext(variable);
+
 		const menu = this.menuService.getMenuActions(MenuId.DebugVariablesContext, contextKeyService, { arg: context, shouldForwardArgs: false });
+
 		const { primary } = getContextMenuActions(menu, 'inline');
 
 		actionBar.clear();
+
 		actionBar.context = context;
+
 		actionBar.push(primary, { icon: true, label: false });
 
 		const cts = new CancellationTokenSource();
+
 		data.elementDisposable.add(toDisposable(() => cts.dispose(true)));
+
 		this.visualization.getApplicableFor(expression, cts.token).then(result => {
 			data.elementDisposable.add(result);
 
 			const originalExpression = (expression instanceof VisualizedExpression && expression.original) || expression;
+
 			const actions = result.object.map(v => new Action('debugViz', v.name, v.iconClass || 'debug-viz-icon', undefined, this.useVisualizer(v, originalExpression, cts.token)));
+
 			if (actions.length === 0) {
 				// no-op
 			} else if (actions.length === 1) {
@@ -605,6 +695,7 @@ export class VariablesRenderer extends AbstractExpressionsRenderer {
 	private useVisualizer(viz: DebugVisualizer, expression: IExpression, token: CancellationToken) {
 		return async () => {
 			const resolved = await viz.resolve(token);
+
 			if (token.isCancellationRequested) {
 				return;
 			}
@@ -613,6 +704,7 @@ export class VariablesRenderer extends AbstractExpressionsRenderer {
 				viz.execute();
 			} else {
 				const replacement = await this.visualization.getVisualizedNodeFor(resolved.id, expression);
+
 				if (replacement) {
 					this.debugService.getViewModel().setVisualizedExpression(expression, replacement);
 				}
@@ -631,6 +723,7 @@ class VariablesAccessibilityProvider implements IListAccessibilityProvider<IExpr
 		if (element instanceof Scope) {
 			return localize('variableScopeAriaLabel', "Scope {0}", element.name);
 		}
+
 		if (element instanceof Variable) {
 			return localize({ key: 'variableAriaLabel', comment: ['Placeholders are variable name and variable value respectivly. They should not be translated.'] }, "{0}, value {1}", element.name, element.value);
 		}
@@ -644,6 +737,7 @@ CommandsRegistry.registerCommand({
 	id: SET_VARIABLE_ID,
 	handler: (accessor: ServicesAccessor) => {
 		const debugService = accessor.get(IDebugService);
+
 		debugService.getViewModel().setSelectedExpression(variableInternalContext, false);
 	}
 });
@@ -655,34 +749,46 @@ CommandsRegistry.registerCommand({
 	id: COPY_VALUE_ID,
 	handler: async (accessor: ServicesAccessor, arg: Variable | Expression | IVariablesContext, ctx?: (Variable | Expression)[]) => {
 		const debugService = accessor.get(IDebugService);
+
 		const clipboardService = accessor.get(IClipboardService);
+
 		let elementContext = '';
+
 		let elements: (Variable | Expression)[];
+
 		if (arg instanceof Variable || arg instanceof Expression) {
 			elementContext = 'watch';
+
 			elements = ctx ? ctx : [];
 		} else {
 			elementContext = 'variables';
+
 			elements = variableInternalContext ? [variableInternalContext] : [];
 		}
 
 		const stackFrame = debugService.getViewModel().focusedStackFrame;
+
 		const session = debugService.getViewModel().focusedSession;
+
 		if (!stackFrame || !session || elements.length === 0) {
 			return;
 		}
 
 		const evalContext = session.capabilities.supportsClipboardContext ? 'clipboard' : elementContext;
+
 		const toEvaluate = elements.map(element => element instanceof Variable ? (element.evaluateName || element.value) : element.name);
 
 		try {
 			const evaluations = await Promise.all(toEvaluate.map(expr => session.evaluate(expr, stackFrame.frameId, evalContext)));
+
 			const result = coalesce(evaluations).map(evaluation => evaluation.body.result);
+
 			if (result.length) {
 				clipboardService.writeText(result.join('\n'));
 			}
 		} catch (e) {
 			const result = elements.map(element => element.value);
+
 			clipboardService.writeText(result.join('\n'));
 		}
 	}
@@ -697,34 +803,47 @@ CommandsRegistry.registerCommand({
 	id: VIEW_MEMORY_ID,
 	handler: async (accessor: ServicesAccessor, arg: IVariablesContext | IExpression, ctx?: (Variable | Expression)[]) => {
 		const debugService = accessor.get(IDebugService);
+
 		let sessionId: string;
+
 		let memoryReference: string;
+
 		if ('sessionId' in arg) { // IVariablesContext
 			if (!arg.sessionId || !arg.variable.memoryReference) {
 				return;
 			}
+
 			sessionId = arg.sessionId;
+
 			memoryReference = arg.variable.memoryReference;
 		} else { // IExpression
 			if (!arg.memoryReference) {
 				return;
 			}
+
 			const focused = debugService.getViewModel().focusedSession;
+
 			if (!focused) {
 				return;
 			}
 
 			sessionId = focused.getId();
+
 			memoryReference = arg.memoryReference;
 		}
 
 		const extensionsWorkbenchService = accessor.get(IExtensionsWorkbenchService);
+
 		const editorService = accessor.get(IEditorService);
+
 		const notificationService = accessor.get(INotificationService);
+
 		const extensionService = accessor.get(IExtensionService);
+
 		const telemetryService = accessor.get(ITelemetryService);
 
 		const ext = await extensionService.getExtension(HEX_EDITOR_EXTENSION_ID);
+
 		if (ext || await tryInstallHexEditor(extensionsWorkbenchService, notificationService)) {
 			/* __GDPR__
 				"debug/didViewMemory" : {
@@ -753,9 +872,11 @@ async function tryInstallHexEditor(extensionsWorkbenchService: IExtensionsWorkbe
 			justification: localize("viewMemory.prompt", "Inspecting binary data requires this extension."),
 			enable: true
 		}, ProgressLocation.Notification);
+
 		return true;
 	} catch (error) {
 		notificationService.error(error);
+
 		return false;
 	}
 }
@@ -765,6 +886,7 @@ CommandsRegistry.registerCommand({
 	id: BREAK_WHEN_VALUE_CHANGES_ID,
 	handler: async (accessor: ServicesAccessor) => {
 		const debugService = accessor.get(IDebugService);
+
 		if (dataBreakpointInfoResponse) {
 			await debugService.addDataBreakpoint({ description: dataBreakpointInfoResponse.description, src: { type: DataBreakpointSetType.Variable, dataId: dataBreakpointInfoResponse.dataId! }, canPersist: !!dataBreakpointInfoResponse.canPersist, accessTypes: dataBreakpointInfoResponse.accessTypes, accessType: 'write' });
 		}
@@ -776,6 +898,7 @@ CommandsRegistry.registerCommand({
 	id: BREAK_WHEN_VALUE_IS_ACCESSED_ID,
 	handler: async (accessor: ServicesAccessor) => {
 		const debugService = accessor.get(IDebugService);
+
 		if (dataBreakpointInfoResponse) {
 			await debugService.addDataBreakpoint({ description: dataBreakpointInfoResponse.description, src: { type: DataBreakpointSetType.Variable, dataId: dataBreakpointInfoResponse.dataId! }, canPersist: !!dataBreakpointInfoResponse.canPersist, accessTypes: dataBreakpointInfoResponse.accessTypes, accessType: 'readWrite' });
 		}
@@ -787,6 +910,7 @@ CommandsRegistry.registerCommand({
 	id: BREAK_WHEN_VALUE_IS_READ_ID,
 	handler: async (accessor: ServicesAccessor) => {
 		const debugService = accessor.get(IDebugService);
+
 		if (dataBreakpointInfoResponse) {
 			await debugService.addDataBreakpoint({ description: dataBreakpointInfoResponse.description, src: { type: DataBreakpointSetType.Variable, dataId: dataBreakpointInfoResponse.dataId! }, canPersist: !!dataBreakpointInfoResponse.canPersist, accessTypes: dataBreakpointInfoResponse.accessTypes, accessType: 'read' });
 		}
@@ -800,6 +924,7 @@ CommandsRegistry.registerCommand({
 	id: COPY_EVALUATE_PATH_ID,
 	handler: async (accessor: ServicesAccessor, context: IVariablesContext) => {
 		const clipboardService = accessor.get(IClipboardService);
+
 		await clipboardService.writeText(context.variable.evaluateName!);
 	}
 });
@@ -811,6 +936,7 @@ CommandsRegistry.registerCommand({
 	id: ADD_TO_WATCH_ID,
 	handler: async (accessor: ServicesAccessor, context: IVariablesContext) => {
 		const debugService = accessor.get(IDebugService);
+
 		debugService.addWatchExpression(context.variable.evaluateName);
 	}
 });

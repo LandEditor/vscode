@@ -65,6 +65,7 @@ class NativeIssueContribution extends BaseIssueContribution {
 				registerAction2(ReportPerformanceIssueUsingReporterAction),
 			);
 		}
+
 		let disposable: IDisposable | undefined;
 
 		const registerQuickAccessProvider = () => {
@@ -89,6 +90,7 @@ class NativeIssueContribution extends BaseIssueContribution {
 				],
 			});
 		};
+
 		this._register(
 			configurationService.onDidChangeConfiguration((e) => {
 				if (
@@ -98,6 +100,7 @@ class NativeIssueContribution extends BaseIssueContribution {
 					disposable
 				) {
 					disposable.dispose();
+
 					disposable = undefined;
 				} else if (!disposable) {
 					registerQuickAccessProvider();
@@ -137,6 +140,7 @@ class ReportPerformanceIssueUsingReporterAction extends Action2 {
 			f1: true,
 		});
 	}
+
 	override async run(accessor: ServicesAccessor): Promise<void> {
 		const issueService = accessor.get(IWorkbenchIssueService); // later can just get IIssueFormService
 		return issueService.openReporter({

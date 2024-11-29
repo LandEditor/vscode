@@ -25,6 +25,7 @@ export function themeColorFromId(id: ColorIdentifier) {
 }
 export interface ThemeIcon {
 	readonly id: string;
+
 	readonly color?: ThemeColor;
 }
 export namespace ThemeIcon {
@@ -46,6 +47,7 @@ export namespace ThemeIcon {
 		if (!match) {
 			return asClassNameArray(Codicon.error);
 		}
+
 		const [, id, modifier] = match;
 
 		const classNames = ["codicon", "codicon-" + id];
@@ -53,14 +55,18 @@ export namespace ThemeIcon {
 		if (modifier) {
 			classNames.push("codicon-modifier-" + modifier.substring(1));
 		}
+
 		return classNames;
 	}
+
 	export function asClassName(icon: ThemeIcon): string {
 		return asClassNameArray(icon).join(" ");
 	}
+
 	export function asCSSSelector(icon: ThemeIcon): string {
 		return "." + asClassNameArray(icon).join(".");
 	}
+
 	export function isThemeIcon(obj: any): obj is ThemeIcon {
 		return (
 			obj &&
@@ -70,6 +76,7 @@ export namespace ThemeIcon {
 				ThemeColor.isThemeColor((<ThemeIcon>obj).color))
 		);
 	}
+
 	const _regexFromString = new RegExp(
 		`^\\$\\((${ThemeIcon.iconNameExpression}(?:${ThemeIcon.iconModifierExpression})?)\\)$`,
 	);
@@ -80,13 +87,16 @@ export namespace ThemeIcon {
 		if (!match) {
 			return undefined;
 		}
+
 		const [, name] = match;
 
 		return { id: name };
 	}
+
 	export function fromId(id: string): ThemeIcon {
 		return { id };
 	}
+
 	export function modify(
 		icon: ThemeIcon,
 		modifier: "disabled" | "spin" | undefined,
@@ -98,19 +108,24 @@ export namespace ThemeIcon {
 		if (tildeIndex !== -1) {
 			id = id.substring(0, tildeIndex);
 		}
+
 		if (modifier) {
 			id = `${id}~${modifier}`;
 		}
+
 		return { id };
 	}
+
 	export function getModifier(icon: ThemeIcon): string | undefined {
 		const tildeIndex = icon.id.lastIndexOf("~");
 
 		if (tildeIndex !== -1) {
 			return icon.id.substring(tildeIndex + 1);
 		}
+
 		return undefined;
 	}
+
 	export function isEqual(ti1: ThemeIcon, ti2: ThemeIcon): boolean {
 		return ti1.id === ti2.id && ti1.color?.id === ti2.color?.id;
 	}

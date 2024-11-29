@@ -16,22 +16,33 @@ export const IDecorationsService = createDecorator<IDecorationsService>(
 
 export interface IDecorationData {
 	readonly weight?: number;
+
 	readonly color?: ColorIdentifier;
+
 	readonly letter?: string | ThemeIcon;
+
 	readonly tooltip?: string;
+
 	readonly strikethrough?: boolean;
+
 	readonly bubble?: boolean;
 }
 export interface IDecoration extends IDisposable {
 	readonly tooltip: string;
+
 	readonly strikethrough: boolean;
+
 	readonly labelClassName: string;
+
 	readonly badgeClassName: string;
+
 	readonly iconClassName: string;
 }
 export interface IDecorationsProvider {
 	readonly label: string;
+
 	readonly onDidChange: Event<readonly URI[]>;
+
 	provideDecorations(
 		uri: URI,
 		token: CancellationToken,
@@ -42,7 +53,9 @@ export interface IResourceDecorationChangeEvent {
 }
 export interface IDecorationsService {
 	readonly _serviceBrand: undefined;
+
 	readonly onDidChangeDecorations: Event<IResourceDecorationChangeEvent>;
+
 	registerDecorationsProvider(provider: IDecorationsProvider): IDisposable;
 
 	getDecoration(uri: URI, includeChildren: boolean): IDecoration | undefined;

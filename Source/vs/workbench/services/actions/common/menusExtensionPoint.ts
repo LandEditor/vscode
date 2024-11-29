@@ -50,9 +50,13 @@ import {
 
 interface IAPIMenu {
 	readonly key: string;
+
 	readonly id: MenuId;
+
 	readonly description: string;
+
 	readonly proposed?: ApiProposalName;
+
 	readonly supportsSubmenus?: boolean; // defaults to true
 }
 
@@ -654,20 +658,27 @@ namespace schema {
 
 	export interface IUserFriendlyMenuItem {
 		command: string;
+
 		alt?: string;
+
 		when?: string;
+
 		group?: string;
 	}
 
 	export interface IUserFriendlySubmenuItem {
 		submenu: string;
+
 		when?: string;
+
 		group?: string;
 	}
 
 	export interface IUserFriendlySubmenu {
 		id: string;
+
 		label: string;
+
 		icon?: IUserFriendlyIcon;
 	}
 
@@ -692,6 +703,7 @@ namespace schema {
 
 			return false;
 		}
+
 		if (item.alt && typeof item.alt !== "string") {
 			collector.error(
 				localize(
@@ -703,6 +715,7 @@ namespace schema {
 
 			return false;
 		}
+
 		if (item.when && typeof item.when !== "string") {
 			collector.error(
 				localize(
@@ -714,6 +727,7 @@ namespace schema {
 
 			return false;
 		}
+
 		if (item.group && typeof item.group !== "string") {
 			collector.error(
 				localize(
@@ -744,6 +758,7 @@ namespace schema {
 
 			return false;
 		}
+
 		if (item.when && typeof item.when !== "string") {
 			collector.error(
 				localize(
@@ -755,6 +770,7 @@ namespace schema {
 
 			return false;
 		}
+
 		if (item.group && typeof item.group !== "string") {
 			collector.error(
 				localize(
@@ -820,6 +836,7 @@ namespace schema {
 
 			return false;
 		}
+
 		if (typeof submenu.label !== "string") {
 			collector.error(
 				localize(
@@ -999,10 +1016,15 @@ namespace schema {
 
 	export interface IUserFriendlyCommand {
 		command: string;
+
 		title: string | ILocalizedString;
+
 		shortTitle?: string | ILocalizedString;
+
 		enablement?: string;
+
 		category?: string | ILocalizedString;
+
 		icon?: IUserFriendlyIcon;
 	}
 
@@ -1017,6 +1039,7 @@ namespace schema {
 
 			return false;
 		}
+
 		if (isFalsyOrWhitespace(command.command)) {
 			collector.error(
 				localize(
@@ -1028,15 +1051,18 @@ namespace schema {
 
 			return false;
 		}
+
 		if (!isValidLocalizedString(command.title, collector, "title")) {
 			return false;
 		}
+
 		if (
 			command.shortTitle &&
 			!isValidLocalizedString(command.shortTitle, collector, "shortTitle")
 		) {
 			return false;
 		}
+
 		if (command.enablement && typeof command.enablement !== "string") {
 			collector.error(
 				localize(
@@ -1048,15 +1074,18 @@ namespace schema {
 
 			return false;
 		}
+
 		if (
 			command.category &&
 			!isValidLocalizedString(command.category, collector, "category")
 		) {
 			return false;
 		}
+
 		if (!isValidIcon(command.icon, collector)) {
 			return false;
 		}
+
 		return true;
 	}
 
@@ -1067,6 +1096,7 @@ namespace schema {
 		if (typeof icon === "undefined") {
 			return true;
 		}
+
 		if (typeof icon === "string") {
 			return true;
 		} else if (
@@ -1075,6 +1105,7 @@ namespace schema {
 		) {
 			return true;
 		}
+
 		collector.error(
 			localize(
 				"opticon",
@@ -1307,6 +1338,7 @@ commandsExtensionPoint.setHandler((extensions) => {
 				);
 			}
 		}
+
 		_commandRegistrations.add(
 			MenuRegistry.addCommand({
 				id: command,
@@ -1344,7 +1376,9 @@ commandsExtensionPoint.setHandler((extensions) => {
 
 interface IRegisteredSubmenu {
 	readonly id: MenuId;
+
 	readonly label: string;
+
 	readonly icon?: { dark: URI; light?: URI } | ThemeIcon;
 }
 
@@ -1379,6 +1413,7 @@ submenusExtensionPoint.setHandler((extensions) => {
 
 				continue;
 			}
+
 			if (_submenus.has(submenuInfo.id)) {
 				collector.info(
 					localize(
@@ -1390,6 +1425,7 @@ submenusExtensionPoint.setHandler((extensions) => {
 
 				continue;
 			}
+
 			if (!submenuInfo.label) {
 				collector.warn(
 					localize(
@@ -1463,6 +1499,7 @@ const menusExtensionPoint = ExtensionsRegistry.registerExtensionPoint<{
 menusExtensionPoint.setHandler((extensions) => {
 	// remove all previous menu registrations
 	_menuRegistrations.clear();
+
 	_submenuMenuItems.clear();
 
 	for (const extension of extensions) {
@@ -1530,6 +1567,7 @@ menusExtensionPoint.setHandler((extensions) => {
 
 						continue;
 					}
+
 					if (menuItem.alt && !alt) {
 						collector.warn(
 							localize(
@@ -1539,6 +1577,7 @@ menusExtensionPoint.setHandler((extensions) => {
 							),
 						);
 					}
+
 					if (menuItem.command === menuItem.alt) {
 						collector.info(
 							localize(
@@ -1587,6 +1626,7 @@ menusExtensionPoint.setHandler((extensions) => {
 
 					if (!submenuRegistrations) {
 						submenuRegistrations = new Set();
+
 						_submenuMenuItems.set(menu.id.id, submenuRegistrations);
 					}
 
@@ -1620,6 +1660,7 @@ menusExtensionPoint.setHandler((extensions) => {
 
 					if (idx > 0) {
 						item.group = menuItem.group.substr(0, idx);
+
 						item.order =
 							Number(menuItem.group.substr(idx + 1)) || undefined;
 					} else {
@@ -1648,6 +1689,7 @@ menusExtensionPoint.setHandler((extensions) => {
 				}
 
 				item.when = ContextKeyExpr.deserialize(menuItem.when);
+
 				_menuRegistrations.add(
 					MenuRegistry.appendMenuItem(menu.id, item),
 				);
@@ -1693,6 +1735,7 @@ class CommandsTableRenderer
 		for (const command of menus["commandPalette"]) {
 			delete implicitlyOnCommandPalette[command.command];
 		}
+
 		for (const command in implicitlyOnCommandPalette) {
 			menus["commandPalette"].push({ command });
 		}
@@ -1703,6 +1746,7 @@ class CommandsTableRenderer
 				if (menu.when === "false") {
 					continue;
 				}
+
 				if (menu.command) {
 					let command = byId[menu.command];
 
@@ -1717,7 +1761,9 @@ class CommandsTableRenderer
 							keybindings: [],
 							menus: [context],
 						};
+
 						byId[command.id] = command;
+
 						commands.push(command);
 					}
 				}
@@ -1748,7 +1794,9 @@ class CommandsTableRenderer
 					keybindings: [keybinding],
 					menus: [],
 				};
+
 				byId[command.id] = command;
+
 				commands.push(command);
 			}
 		});
@@ -1799,14 +1847,17 @@ class CommandsTableRenderer
 		switch (platform) {
 			case "win32":
 				key = rawKeyBinding.win;
+
 				break;
 
 			case "linux":
 				key = rawKeyBinding.linux;
+
 				break;
 
 			case "darwin":
 				key = rawKeyBinding.mac;
+
 				break;
 		}
 

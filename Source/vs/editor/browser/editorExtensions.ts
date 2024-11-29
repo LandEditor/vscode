@@ -96,12 +96,15 @@ export const enum EditorContributionInstantiation {
 
 export interface IEditorContributionDescription {
 	readonly id: string;
+
 	readonly ctor: EditorContributionCtor;
+
 	readonly instantiation: EditorContributionInstantiation;
 }
 
 export interface IDiffEditorContributionDescription {
 	id: string;
+
 	ctor: DiffEditorContributionCtor;
 }
 
@@ -109,6 +112,7 @@ export interface IDiffEditorContributionDescription {
 
 export interface ICommandKeybindingsOptions extends IKeybindings {
 	kbExpr?: ContextKeyExpression | null;
+
 	weight: number;
 	/**
 	 * the default keybinding arguments
@@ -117,37 +121,54 @@ export interface ICommandKeybindingsOptions extends IKeybindings {
 }
 export interface ICommandMenuOptions {
 	menuId: MenuId;
+
 	group: string;
+
 	order: number;
+
 	when?: ContextKeyExpression;
+
 	title: string;
+
 	icon?: ThemeIcon;
 }
 export interface ICommandOptions {
 	id: string;
+
 	precondition: ContextKeyExpression | undefined;
+
 	kbOpts?: ICommandKeybindingsOptions | ICommandKeybindingsOptions[];
+
 	metadata?: ICommandMetadata;
+
 	menuOpts?: ICommandMenuOptions | ICommandMenuOptions[];
 }
 export abstract class Command {
 	public readonly id: string;
+
 	public readonly precondition: ContextKeyExpression | undefined;
+
 	private readonly _kbOpts:
 		| ICommandKeybindingsOptions
 		| ICommandKeybindingsOptions[]
 		| undefined;
+
 	private readonly _menuOpts:
 		| ICommandMenuOptions
 		| ICommandMenuOptions[]
 		| undefined;
+
 	public readonly metadata: ICommandMetadata | undefined;
 
 	constructor(opts: ICommandOptions) {
 		this.id = opts.id;
+
 		this.precondition = opts.precondition;
+
 		this._kbOpts = opts.kbOpts;
+
 		this._menuOpts = opts.menuOpts;
+
 		this.metadata = opts.metadata;
 	}
 
@@ -233,8 +254,11 @@ export type CommandImplementation = (
 
 interface ICommandImplementationRegistration {
 	priority: number;
+
 	name: string;
+
 	implementation: CommandImplementation;
+
 	when?: ContextKeyExpression;
 }
 
@@ -252,6 +276,7 @@ export class MultiCommand extends Command {
 		when?: ContextKeyExpression,
 	): IDisposable {
 		this._implementations.push({ priority, name, implementation, when });
+
 		this._implementations.sort((a, b) => b.priority - a.priority);
 
 		return {
@@ -277,6 +302,7 @@ export class MultiCommand extends Command {
 		const logService = accessor.get(ILogService);
 
 		const contextKeyService = accessor.get(IContextKeyService);
+
 		logService.trace(
 			`Executing Command '${this.id}' which has ${this._implementations.length} bound.`,
 		);
@@ -292,6 +318,7 @@ export class MultiCommand extends Command {
 					continue;
 				}
 			}
+
 			const result = impl.implementation(accessor, args);
 
 			if (result) {
@@ -302,9 +329,11 @@ export class MultiCommand extends Command {
 				if (typeof result === "boolean") {
 					return;
 				}
+
 				return result;
 			}
 		}
+
 		logService.trace(
 			`The Command '${this.id}' was not handled by any implementation.`,
 		);
@@ -432,8 +461,11 @@ export abstract class EditorCommand extends Command {
 
 export interface IEditorActionContextMenuOptions {
 	group: string;
+
 	order: number;
+
 	when?: ContextKeyExpression;
+
 	menuId?: MenuId;
 }
 export type IActionOptions = ICommandOptions & {
@@ -443,10 +475,12 @@ export type IActionOptions = ICommandOptions & {
 } & (
 		| {
 				label: nls.ILocalizedString;
+
 				alias?: string;
 		  }
 		| {
 				label: string;
+
 				alias: string;
 		  }
 	);
@@ -469,12 +503,14 @@ export abstract class EditorAction extends EditorCommand {
 			if (!item.menuId) {
 				item.menuId = MenuId.EditorContext;
 			}
+
 			if (!item.title) {
 				item.title =
 					typeof opts.label === "string"
 						? opts.label
 						: opts.label.value;
 			}
+
 			item.when = ContextKeyExpr.and(opts.precondition, item.when);
 
 			return <ICommandMenuOptions>item;
@@ -492,6 +528,7 @@ export abstract class EditorAction extends EditorCommand {
 	}
 
 	public readonly label: string;
+
 	public readonly alias: string;
 
 	constructor(opts: IActionOptions) {
@@ -499,9 +536,11 @@ export abstract class EditorAction extends EditorCommand {
 
 		if (typeof opts.label === "string") {
 			this.label = opts.label;
+
 			this.alias = opts.alias ?? opts.label;
 		} else {
 			this.label = opts.label.value;
+
 			this.alias = opts.alias ?? opts.label.original;
 		}
 	}
@@ -519,22 +558,32 @@ export abstract class EditorAction extends EditorCommand {
 	protected reportTelemetry(accessor: ServicesAccessor, editor: ICodeEditor) {
 		type EditorActionInvokedClassification = {
 			owner: "alexdima";
+
 			comment: "An editor action has been invoked.";
+
 			name: {
 				classification: "SystemMetaData";
+
 				purpose: "FeatureInsight";
+
 				comment: "The label of the action that was invoked.";
 			};
+
 			id: {
 				classification: "SystemMetaData";
+
 				purpose: "FeatureInsight";
+
 				comment: "The identifier of the action that was invoked.";
 			};
 		};
+
 		type EditorActionInvokedEvent = {
 			name: string;
+
 			id: string;
 		};
+
 		accessor
 			.get(ITelemetryService)
 			.publicLog2<
@@ -568,6 +617,7 @@ export class MultiEditorAction extends EditorAction {
 		implementation: EditorActionImplementation,
 	): IDisposable {
 		this._implementations.push([priority, implementation]);
+
 		this._implementations.sort((a, b) => b[0] - a[0]);
 
 		return {
@@ -595,6 +645,7 @@ export class MultiEditorAction extends EditorAction {
 				if (typeof result === "boolean") {
 					return;
 				}
+
 				return result;
 			}
 		}
@@ -637,6 +688,7 @@ export abstract class EditorAction2 extends Action2 {
 
 				return;
 			}
+
 			return this.runEditorCommand(editorAccessor, editor, ...args);
 		});
 	}
@@ -665,7 +717,9 @@ export function registerModelAndPositionCommand(
 		const instaService = accessor.get(IInstantiationService);
 
 		const [resource, position] = args;
+
 		assertType(URI.isUri(resource));
+
 		assertType(Position.isIPosition(position));
 
 		const model = accessor.get(IModelService).getModel(resource);
@@ -693,6 +747,7 @@ export function registerModelAndPositionCommand(
 							Position.lift(position),
 							args.slice(2),
 						);
+
 						resolve(result);
 					} catch (err) {
 						reject(err);
@@ -716,6 +771,7 @@ export function registerEditorAction<T extends EditorAction>(ctor: {
 	new (): T;
 }): T {
 	const action = new ctor();
+
 	EditorContributionRegistry.INSTANCE.registerEditorAction(action);
 
 	return action;
@@ -806,9 +862,12 @@ class EditorContributionRegistry {
 	public static readonly INSTANCE = new EditorContributionRegistry();
 
 	private readonly editorContributions: IEditorContributionDescription[] = [];
+
 	private readonly diffEditorContributions: IDiffEditorContributionDescription[] =
 		[];
+
 	private readonly editorActions: EditorAction[] = [];
+
 	private readonly editorCommands: { [commandId: string]: EditorCommand } =
 		Object.create(null);
 
@@ -856,6 +915,7 @@ class EditorContributionRegistry {
 
 	public registerEditorAction(action: EditorAction) {
 		action.register();
+
 		this.editorActions.push(action);
 	}
 
@@ -865,6 +925,7 @@ class EditorContributionRegistry {
 
 	public registerEditorCommand(editorCommand: EditorCommand) {
 		editorCommand.register();
+
 		this.editorCommands[editorCommand.id] = editorCommand;
 	}
 

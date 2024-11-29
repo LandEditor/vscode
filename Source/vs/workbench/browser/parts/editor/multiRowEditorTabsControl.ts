@@ -27,7 +27,9 @@ export class MultiRowEditorControl
 	implements IEditorTabsControl
 {
 	private readonly stickyEditorTabsControl: IEditorTabsControl;
+
 	private readonly unstickyEditorTabsControl: IEditorTabsControl;
+
 	private activeControl: IEditorTabsControl | undefined;
 
 	constructor(
@@ -48,6 +50,7 @@ export class MultiRowEditorControl
 		const unstickyModel = this._register(
 			new UnstickyEditorGroupModel(this.model),
 		);
+
 		this.stickyEditorTabsControl = this._register(
 			this.instantiationService.createInstance(
 				MultiEditorTabsControl,
@@ -58,6 +61,7 @@ export class MultiRowEditorControl
 				stickyModel,
 			),
 		);
+
 		this.unstickyEditorTabsControl = this._register(
 			this.instantiationService.createInstance(
 				MultiEditorTabsControl,
@@ -68,19 +72,24 @@ export class MultiRowEditorControl
 				unstickyModel,
 			),
 		);
+
 		this.handleTabBarsStateChange();
 	}
+
 	private handleTabBarsStateChange(): void {
 		this.activeControl = this.model.activeEditor
 			? this.getEditorTabsController(this.model.activeEditor)
 			: undefined;
+
 		this.handleTabBarsLayoutChange();
 	}
+
 	private handleTabBarsLayoutChange(): void {
 		if (this.groupView.count === 0) {
 			// Do nothing as no tab bar is visible
 			return;
 		}
+
 		const hadTwoTabBars = this.parent.classList.contains("two-tab-bars");
 
 		const hasTwoTabBars =
@@ -93,6 +102,7 @@ export class MultiRowEditorControl
 			this.groupView.relayout();
 		}
 	}
+
 	private didActiveControlChange() {
 		return (
 			this.activeControl !==
@@ -101,11 +111,13 @@ export class MultiRowEditorControl
 				: undefined)
 		);
 	}
+
 	private getEditorTabsController(editor: EditorInput): IEditorTabsControl {
 		return this.model.isSticky(editor)
 			? this.stickyEditorTabsControl
 			: this.unstickyEditorTabsControl;
 	}
+
 	openEditor(
 		editor: EditorInput,
 		options: IInternalEditorOpenOptions,
@@ -121,8 +133,10 @@ export class MultiRowEditorControl
 		if (didChange) {
 			this.handleOpenedEditors();
 		}
+
 		return didChange;
 	}
+
 	openEditors(editors: EditorInput[]): boolean {
 		const stickyEditors = editors.filter((e) => this.model.isSticky(e));
 
@@ -144,31 +158,43 @@ export class MultiRowEditorControl
 		if (didChange) {
 			this.handleOpenedEditors();
 		}
+
 		return didChange;
 	}
+
 	private handleOpenedEditors(): void {
 		this.handleTabBarsStateChange();
 	}
+
 	beforeCloseEditor(editor: EditorInput): void {
 		this.getEditorTabsController(editor).beforeCloseEditor(editor);
 	}
+
 	closeEditor(editor: EditorInput): void {
 		// Has to be called on both tab bars as the editor could be either sticky or not
 		this.stickyEditorTabsControl.closeEditor(editor);
+
 		this.unstickyEditorTabsControl.closeEditor(editor);
+
 		this.handleClosedEditors();
 	}
+
 	closeEditors(editors: EditorInput[]): void {
 		const stickyEditors = editors.filter((e) => this.model.isSticky(e));
 
 		const unstickyEditors = editors.filter((e) => !this.model.isSticky(e));
+
 		this.stickyEditorTabsControl.closeEditors(stickyEditors);
+
 		this.unstickyEditorTabsControl.closeEditors(unstickyEditors);
+
 		this.handleClosedEditors();
 	}
+
 	private handleClosedEditors(): void {
 		this.handleTabBarsStateChange();
 	}
+
 	moveEditor(
 		editor: EditorInput,
 		fromIndex: number,
@@ -179,11 +205,14 @@ export class MultiRowEditorControl
 			// If sticky state changes, move editor between tab bars
 			if (this.model.isSticky(editor)) {
 				this.stickyEditorTabsControl.openEditor(editor);
+
 				this.unstickyEditorTabsControl.closeEditor(editor);
 			} else {
 				this.stickyEditorTabsControl.closeEditor(editor);
+
 				this.unstickyEditorTabsControl.openEditor(editor);
 			}
+
 			this.handleTabBarsStateChange();
 		} else {
 			if (this.model.isSticky(editor)) {
@@ -203,40 +232,56 @@ export class MultiRowEditorControl
 			}
 		}
 	}
+
 	pinEditor(editor: EditorInput): void {
 		this.getEditorTabsController(editor).pinEditor(editor);
 	}
+
 	stickEditor(editor: EditorInput): void {
 		this.unstickyEditorTabsControl.closeEditor(editor);
+
 		this.stickyEditorTabsControl.openEditor(editor);
+
 		this.handleTabBarsStateChange();
 	}
+
 	unstickEditor(editor: EditorInput): void {
 		this.stickyEditorTabsControl.closeEditor(editor);
+
 		this.unstickyEditorTabsControl.openEditor(editor);
+
 		this.handleTabBarsStateChange();
 	}
+
 	setActive(isActive: boolean): void {
 		this.stickyEditorTabsControl.setActive(isActive);
+
 		this.unstickyEditorTabsControl.setActive(isActive);
 	}
+
 	updateEditorSelections(): void {
 		this.stickyEditorTabsControl.updateEditorSelections();
+
 		this.unstickyEditorTabsControl.updateEditorSelections();
 	}
+
 	updateEditorLabel(editor: EditorInput): void {
 		this.getEditorTabsController(editor).updateEditorLabel(editor);
 	}
+
 	updateEditorDirty(editor: EditorInput): void {
 		this.getEditorTabsController(editor).updateEditorDirty(editor);
 	}
+
 	updateOptions(
 		oldOptions: IEditorPartOptions,
 		newOptions: IEditorPartOptions,
 	): void {
 		this.stickyEditorTabsControl.updateOptions(oldOptions, newOptions);
+
 		this.unstickyEditorTabsControl.updateOptions(oldOptions, newOptions);
 	}
+
 	layout(dimensions: IEditorTitleControlDimensions): Dimension {
 		const stickyDimensions =
 			this.stickyEditorTabsControl.layout(dimensions);
@@ -258,12 +303,14 @@ export class MultiRowEditorControl
 			stickyDimensions.height + unstickyDimensions.height,
 		);
 	}
+
 	getHeight(): number {
 		return (
 			this.stickyEditorTabsControl.getHeight() +
 			this.unstickyEditorTabsControl.getHeight()
 		);
 	}
+
 	override dispose(): void {
 		this.parent.classList.toggle("two-tab-bars", false);
 

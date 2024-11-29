@@ -50,11 +50,13 @@ export class ChatEditor extends EditorPane {
 	private widget!: ChatWidget;
 
 	private _scopedContextKeyService!: IScopedContextKeyService;
+
 	override get scopedContextKeyService() {
 		return this._scopedContextKeyService;
 	}
 
 	private _memento: Memento | undefined;
+
 	private _viewState: IChatViewState | undefined;
 
 	constructor(
@@ -89,6 +91,7 @@ export class ChatEditor extends EditorPane {
 		this._scopedContextKeyService = this._register(
 			this.contextKeyService.createScoped(parent),
 		);
+
 		const scopedInstantiationService = this._register(
 			this.instantiationService.createChild(
 				new ServiceCollection([
@@ -116,8 +119,11 @@ export class ChatEditor extends EditorPane {
 				},
 			),
 		);
+
 		this._register(this.widget.onDidClear(() => this.clear()));
+
 		this.widget.render(parent);
+
 		this.widget.setVisible(true);
 	}
 
@@ -135,6 +141,7 @@ export class ChatEditor extends EditorPane {
 
 	override clearInput(): void {
 		this.saveState();
+
 		super.clearInput();
 	}
 
@@ -147,6 +154,7 @@ export class ChatEditor extends EditorPane {
 		super.setInput(input, options, context, token);
 
 		const editorModel = await input.resolve();
+
 		if (!editorModel) {
 			throw new Error(
 				`Failed to get model for chat editor. id: ${input.sessionId}`,
@@ -168,12 +176,14 @@ export class ChatEditor extends EditorPane {
 			"interactive-session-editor-" + CHAT_PROVIDER_ID,
 			this.storageService,
 		);
+
 		this._viewState =
 			viewState ??
 			(this._memento.getMemento(
 				StorageScope.WORKSPACE,
 				StorageTarget.MACHINE,
 			) as IChatViewState);
+
 		this.widget.setModel(model, { ...this._viewState });
 	}
 
@@ -185,6 +195,7 @@ export class ChatEditor extends EditorPane {
 
 			// Need to set props individually on the memento
 			this._viewState.inputValue = widgetViewState.inputValue;
+
 			this._memento.saveMemento();
 		}
 	}

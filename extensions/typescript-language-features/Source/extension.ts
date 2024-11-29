@@ -29,13 +29,16 @@ import * as temp from "./utils/temp.electron";
 
 export function activate(context: vscode.ExtensionContext): Api {
 	const pluginManager = new PluginManager();
+
 	context.subscriptions.push(pluginManager);
 
 	const commandManager = new CommandManager();
+
 	context.subscriptions.push(commandManager);
 
 	const onCompletionAccepted =
 		new vscode.EventEmitter<vscode.CompletionItem>();
+
 	context.subscriptions.push(onCompletionAccepted);
 
 	const logDirectoryProvider = new NodeLogDirectoryProvider(context);
@@ -43,6 +46,7 @@ export function activate(context: vscode.ExtensionContext): Api {
 	const versionProvider = new DiskTypeScriptVersionProvider();
 
 	const activeJsTsEditorTracker = new ActiveJsTsEditorTracker();
+
 	context.subscriptions.push(activeJsTsEditorTracker);
 
 	let experimentTelemetryReporter:
@@ -55,9 +59,11 @@ export function activate(context: vscode.ExtensionContext): Api {
 		const { name: id, version, aiKey } = packageInfo;
 
 		const vscTelemetryReporter = new VsCodeTelemetryReporter(aiKey);
+
 		experimentTelemetryReporter = new ExperimentationTelemetryReporter(
 			vscTelemetryReporter,
 		);
+
 		context.subscriptions.push(experimentTelemetryReporter);
 		// Currently we have no experiments, but creating the service adds the appropriate
 		// shared properties to the ExperimentationTelemetryReporter we just created.
@@ -68,6 +74,7 @@ export function activate(context: vscode.ExtensionContext): Api {
 			context.globalState,
 		);
 	}
+
 	const logger = new Logger();
 
 	const lazyClientHost = createLazyClientHost(
@@ -90,6 +97,7 @@ export function activate(context: vscode.ExtensionContext): Api {
 			onCompletionAccepted.fire(item);
 		},
 	);
+
 	registerBaseCommands(
 		commandManager,
 		lazyClientHost,
@@ -106,6 +114,7 @@ export function activate(context: vscode.ExtensionContext): Api {
 	import("./languageFeatures/tsconfig").then((module) => {
 		context.subscriptions.push(module.register());
 	});
+
 	context.subscriptions.push(
 		lazilyActivateClient(
 			lazyClientHost,

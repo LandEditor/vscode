@@ -53,21 +53,32 @@ const $ = dom.$;
 export class StartDebugActionViewItem extends BaseActionViewItem {
 	private static readonly SEPARATOR =
 		"\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500";
+
 	private container!: HTMLElement;
+
 	private start!: HTMLElement;
+
 	private selectBox: SelectBox;
+
 	private debugOptions: {
 		label: string;
+
 		handler: () => Promise<boolean>;
 	}[] = [];
+
 	private toDispose: IDisposable[];
+
 	private selected = 0;
+
 	private providers: {
 		label: string;
+
 		type: string;
+
 		pick: () => Promise<
 			| {
 					launch: ILaunch;
+
 					config: IConfig;
 			  }
 			| undefined
@@ -96,7 +107,9 @@ export class StartDebugActionViewItem extends BaseActionViewItem {
 		private readonly contextKeyService: IContextKeyService,
 	) {
 		super(context, action, options);
+
 		this.toDispose = [];
+
 		this.selectBox = new SelectBox(
 			[],
 			-1,
@@ -109,10 +122,14 @@ export class StartDebugActionViewItem extends BaseActionViewItem {
 				),
 			},
 		);
+
 		this.selectBox.setFocusable(false);
+
 		this.toDispose.push(this.selectBox);
+
 		this.registerListeners();
 	}
+
 	private registerListeners(): void {
 		this.toDispose.push(
 			this.configurationService.onDidChangeConfiguration((e) => {
@@ -121,6 +138,7 @@ export class StartDebugActionViewItem extends BaseActionViewItem {
 				}
 			}),
 		);
+
 		this.toDispose.push(
 			this.debugService
 				.getConfigurationManager()
@@ -129,9 +147,12 @@ export class StartDebugActionViewItem extends BaseActionViewItem {
 				}),
 		);
 	}
+
 	override render(container: HTMLElement): void {
 		this.container = container;
+
 		container.classList.add("start-debug-action-item");
+
 		this.start = dom.append(
 			container,
 			$(ThemeIcon.asCSSSelector(debugStart)),
@@ -144,6 +165,7 @@ export class StartDebugActionViewItem extends BaseActionViewItem {
 		const keybindingLabel = keybinding ? ` (${keybinding})` : "";
 
 		const title = this.action.label + keybindingLabel;
+
 		this.toDispose.push(
 			this.hoverService.setupManagedHover(
 				getDefaultHoverDelegate("mouse"),
@@ -151,8 +173,11 @@ export class StartDebugActionViewItem extends BaseActionViewItem {
 				title,
 			),
 		);
+
 		this.start.setAttribute("role", "button");
+
 		this._setAriaLabel(title);
+
 		this.toDispose.push(
 			dom.addDisposableListener(this.start, dom.EventType.CLICK, () => {
 				this.start.blur();
@@ -162,6 +187,7 @@ export class StartDebugActionViewItem extends BaseActionViewItem {
 				}
 			}),
 		);
+
 		this.toDispose.push(
 			dom.addDisposableListener(
 				this.start,
@@ -173,6 +199,7 @@ export class StartDebugActionViewItem extends BaseActionViewItem {
 				},
 			),
 		);
+
 		this.toDispose.push(
 			dom.addDisposableListener(
 				this.start,
@@ -182,6 +209,7 @@ export class StartDebugActionViewItem extends BaseActionViewItem {
 				},
 			),
 		);
+
 		this.toDispose.push(
 			dom.addDisposableListener(
 				this.start,
@@ -191,6 +219,7 @@ export class StartDebugActionViewItem extends BaseActionViewItem {
 				},
 			),
 		);
+
 		this.toDispose.push(
 			dom.addDisposableListener(
 				this.start,
@@ -200,12 +229,15 @@ export class StartDebugActionViewItem extends BaseActionViewItem {
 
 					if (event.equals(KeyCode.RightArrow)) {
 						this.start.tabIndex = -1;
+
 						this.selectBox.focus();
+
 						event.stopPropagation();
 					}
 				},
 			),
 		);
+
 		this.toDispose.push(
 			this.selectBox.onDidSelect(async (e) => {
 				const target = this.debugOptions[e.index];
@@ -224,7 +256,9 @@ export class StartDebugActionViewItem extends BaseActionViewItem {
 		);
 
 		const selectBoxContainer = $(".configuration");
+
 		this.selectBox.render(dom.append(container, selectBoxContainer));
+
 		this.toDispose.push(
 			dom.addDisposableListener(
 				selectBoxContainer,
@@ -234,15 +268,21 @@ export class StartDebugActionViewItem extends BaseActionViewItem {
 
 					if (event.equals(KeyCode.LeftArrow)) {
 						this.selectBox.setFocusable(false);
+
 						this.start.tabIndex = 0;
+
 						this.start.focus();
+
 						event.stopPropagation();
 					}
 				},
 			),
 		);
+
 		this.container.style.border = `1px solid ${asCssVariable(selectBorder)}`;
+
 		selectBoxContainer.style.borderLeft = `1px solid ${asCssVariable(selectBorder)}`;
+
 		this.container.style.backgroundColor = asCssVariable(selectBackground);
 
 		const configManager = this.debugService.getConfigurationManager();
@@ -251,51 +291,67 @@ export class StartDebugActionViewItem extends BaseActionViewItem {
 			configManager.getDynamicProviders().then((providers) => {
 				if (providers.length !== this.providers.length) {
 					this.providers = providers;
+
 					this.updateOptions();
 				}
 			});
+
 		this.toDispose.push(
 			configManager.onDidChangeConfigurationProviders(
 				updateDynamicConfigs,
 			),
 		);
+
 		updateDynamicConfigs();
+
 		this.updateOptions();
 	}
+
 	override setActionContext(context: any): void {
 		this.context = context;
 	}
+
 	override isEnabled(): boolean {
 		return true;
 	}
+
 	override focus(fromRight?: boolean): void {
 		if (fromRight) {
 			this.selectBox.focus();
 		} else {
 			this.start.tabIndex = 0;
+
 			this.start.focus();
 		}
 	}
+
 	override blur(): void {
 		this.start.tabIndex = -1;
+
 		this.selectBox.blur();
+
 		this.container.blur();
 	}
+
 	override setFocusable(focusable: boolean): void {
 		if (focusable) {
 			this.start.tabIndex = 0;
 		} else {
 			this.start.tabIndex = -1;
+
 			this.selectBox.setFocusable(false);
 		}
 	}
+
 	override dispose(): void {
 		this.toDispose = dispose(this.toDispose);
 
 		super.dispose();
 	}
+
 	private updateOptions(): void {
 		this.selected = 0;
+
 		this.debugOptions = [];
 
 		const manager = this.debugService.getConfigurationManager();
@@ -307,6 +363,7 @@ export class StartDebugActionViewItem extends BaseActionViewItem {
 		let lastGroup: string | undefined;
 
 		const disabledIdxs: number[] = [];
+
 		manager
 			.getAllConfigurations()
 			.forEach(({ launch, name, presentation }) => {
@@ -318,16 +375,20 @@ export class StartDebugActionViewItem extends BaseActionViewItem {
 							label: StartDebugActionViewItem.SEPARATOR,
 							handler: () => Promise.resolve(false),
 						});
+
 						disabledIdxs.push(this.debugOptions.length - 1);
 					}
 				}
+
 				if (
 					name === manager.selectedConfiguration.name &&
 					launch === manager.selectedConfiguration.launch
 				) {
 					this.selected = this.debugOptions.length;
 				}
+
 				const label = inWorkspace ? `${name} (${launch.name})` : name;
+
 				this.debugOptions.push({
 					label,
 					handler: async () => {
@@ -348,6 +409,7 @@ export class StartDebugActionViewItem extends BaseActionViewItem {
 				) {
 					this.selected = this.debugOptions.length;
 				}
+
 				this.debugOptions.push({
 					label: name,
 					handler: async () => {
@@ -369,11 +431,14 @@ export class StartDebugActionViewItem extends BaseActionViewItem {
 				handler: async () => false,
 			});
 		}
+
 		this.debugOptions.push({
 			label: StartDebugActionViewItem.SEPARATOR,
 			handler: () => Promise.resolve(false),
 		});
+
 		disabledIdxs.push(this.debugOptions.length - 1);
+
 		this.providers.forEach((p) => {
 			this.debugOptions.push({
 				label: `${p.label}...`,
@@ -390,10 +455,12 @@ export class StartDebugActionViewItem extends BaseActionViewItem {
 
 						return true;
 					}
+
 					return false;
 				},
 			});
 		});
+
 		manager
 			.getLaunches()
 			.filter((l) => !l.hidden)
@@ -401,6 +468,7 @@ export class StartDebugActionViewItem extends BaseActionViewItem {
 				const label = inWorkspace
 					? nls.localize("addConfigTo", "Add Config ({0})...", l.name)
 					: nls.localize("addConfiguration", "Add Configuration...");
+
 				this.debugOptions.push({
 					label,
 					handler: async () => {
@@ -413,6 +481,7 @@ export class StartDebugActionViewItem extends BaseActionViewItem {
 					},
 				});
 			});
+
 		this.selectBox.setOptions(
 			this.debugOptions.map(
 				(data, index): ISelectOptionItem => ({
@@ -423,6 +492,7 @@ export class StartDebugActionViewItem extends BaseActionViewItem {
 			this.selected,
 		);
 	}
+
 	private _setAriaLabel(title: string): void {
 		let ariaLabel = title;
 
@@ -441,6 +511,7 @@ export class StartDebugActionViewItem extends BaseActionViewItem {
 					)
 					?.getLabel() ?? undefined;
 		}
+
 		if (keybinding) {
 			ariaLabel = nls.localize(
 				"commentLabelWithKeybinding",
@@ -455,6 +526,7 @@ export class StartDebugActionViewItem extends BaseActionViewItem {
 				ariaLabel,
 			);
 		}
+
 		this.start.ariaLabel = ariaLabel;
 	}
 }
@@ -478,48 +550,60 @@ export class FocusSessionActionViewItem extends SelectActionViewItem<IDebugSessi
 			defaultSelectBoxStyles,
 			{ ariaLabel: nls.localize("debugSession", "Debug Session") },
 		);
+
 		this._register(
 			this.debugService.getViewModel().onDidFocusSession(() => {
 				const session = this.getSelectedSession();
 
 				if (session) {
 					const index = this.getSessions().indexOf(session);
+
 					this.select(index);
 				}
 			}),
 		);
+
 		this._register(
 			this.debugService.onDidNewSession((session) => {
 				const sessionListeners: IDisposable[] = [];
+
 				sessionListeners.push(
 					session.onDidChangeName(() => this.update()),
 				);
+
 				sessionListeners.push(
 					session.onDidEndAdapter(() => dispose(sessionListeners)),
 				);
+
 				this.update();
 			}),
 		);
+
 		this.getSessions().forEach((session) => {
 			this._register(session.onDidChangeName(() => this.update()));
 		});
+
 		this._register(this.debugService.onDidEndSession(() => this.update()));
 
 		const selectedSession = session
 			? this.mapFocusedSessionToSelected(session)
 			: undefined;
+
 		this.update(selectedSession);
 	}
+
 	protected override getActionContext(
 		_: string,
 		index: number,
 	): IDebugSession {
 		return this.getSessions()[index];
 	}
+
 	private update(session?: IDebugSession) {
 		if (!session) {
 			session = this.getSelectedSession();
 		}
+
 		const sessions = this.getSessions();
 
 		const names = sessions.map((s) => {
@@ -529,18 +613,22 @@ export class FocusSessionActionViewItem extends SelectActionViewItem<IDebugSessi
 				// Indent child sessions so they look like children
 				return `\u00A0\u00A0${label}`;
 			}
+
 			return label;
 		});
+
 		this.setOptions(
 			names.map((data): ISelectOptionItem => ({ text: data })),
 			session ? sessions.indexOf(session) : undefined,
 		);
 	}
+
 	private getSelectedSession(): IDebugSession | undefined {
 		const session = this.debugService.getViewModel().focusedSession;
 
 		return session ? this.mapFocusedSessionToSelected(session) : undefined;
 	}
+
 	protected getSessions(): ReadonlyArray<IDebugSession> {
 		const showSubSessions =
 			this.configurationService.getValue<IDebugConfiguration>(
@@ -553,6 +641,7 @@ export class FocusSessionActionViewItem extends SelectActionViewItem<IDebugSessi
 			? sessions
 			: sessions.filter((s) => !s.parentSession);
 	}
+
 	protected mapFocusedSessionToSelected(
 		focusedSession: IDebugSession,
 	): IDebugSession {
@@ -564,6 +653,7 @@ export class FocusSessionActionViewItem extends SelectActionViewItem<IDebugSessi
 		while (focusedSession.parentSession && !showSubSessions) {
 			focusedSession = focusedSession.parentSession;
 		}
+
 		return focusedSession;
 	}
 }

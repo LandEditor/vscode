@@ -22,15 +22,19 @@ export const IContextViewService =
 
 export interface IContextViewService extends IContextViewProvider {
 	readonly _serviceBrand: undefined;
+
 	showContextView(
 		delegate: IContextViewDelegate,
 		container?: HTMLElement,
 		shadowRoot?: boolean,
 	): IOpenContextView;
+
 	hideContextView(data?: any): void;
 
 	getContextViewElement(): HTMLElement;
+
 	layout(): void;
+
 	anchorAlignment?: AnchorAlignment;
 }
 export interface IContextViewDelegate {
@@ -42,11 +46,17 @@ export interface IContextViewDelegate {
 	 * or an `IAnchor` to position it at a specific location.
 	 */
 	getAnchor(): HTMLElement | StandardMouseEvent | IAnchor;
+
 	render(container: HTMLElement): IDisposable;
+
 	onDOMEvent?(e: any, activeElement: HTMLElement): void;
+
 	onHide?(data?: any): void;
+
 	focus?(): void;
+
 	anchorAlignment?: AnchorAlignment;
+
 	anchorAxisAlignment?: AnchorAxisAlignment;
 	// context views with higher layers are rendered over contet views with lower layers
 	layer?: number; // Default: 0
@@ -59,8 +69,11 @@ export const IContextMenuService =
 
 export interface IContextMenuService {
 	readonly _serviceBrand: undefined;
+
 	readonly onDidShowContextMenu: Event<void>;
+
 	readonly onDidHideContextMenu: Event<void>;
+
 	showContextMenu(
 		delegate: IContextMenuDelegate | IContextMenuMenuDelegate,
 	): void;

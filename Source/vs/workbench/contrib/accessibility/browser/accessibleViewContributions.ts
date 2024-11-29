@@ -22,6 +22,7 @@ export class AccesibleViewHelpContribution extends Disposable {
 
 	constructor() {
 		super();
+
 		this._register(
 			AccessibilityHelpAction.addImplementation(
 				115,
@@ -43,6 +44,7 @@ export class AccesibleViewContributions extends Disposable {
 
 	constructor() {
 		super();
+
 		AccessibleViewRegistry.getImplementations().forEach((impl) => {
 			const implementation = (accessor: ServicesAccessor) => {
 				const provider:
@@ -53,6 +55,7 @@ export class AccesibleViewContributions extends Disposable {
 				if (!provider) {
 					return false;
 				}
+
 				try {
 					accessor.get(IAccessibleViewService).show(provider);
 

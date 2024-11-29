@@ -46,16 +46,20 @@ export class GlyphHoverWidget
 	public static readonly ID = "editor.contrib.modesGlyphHoverWidget";
 
 	private readonly _editor: ICodeEditor;
+
 	private readonly _hover: HoverWidget;
 
 	private _isVisible: boolean;
+
 	private _messages: IHoverMessage[];
 
 	private readonly _markdownRenderer: MarkdownRenderer;
+
 	private readonly _hoverOperation: HoverOperation<
 		GlyphHoverComputerOptions,
 		IHoverMessage
 	>;
+
 	private readonly _renderDisposeables = this._register(
 		new DisposableStore(),
 	);
@@ -68,12 +72,15 @@ export class GlyphHoverWidget
 		@IOpenerService openerService: IOpenerService,
 	) {
 		super();
+
 		this._editor = editor;
 
 		this._isVisible = false;
+
 		this._messages = [];
 
 		this._hover = this._register(new HoverWidget(true));
+
 		this._hover.containerDomNode.classList.toggle(
 			"hidden",
 			!this._isVisible,
@@ -86,12 +93,14 @@ export class GlyphHoverWidget
 				openerService,
 			),
 		);
+
 		this._hoverOperation = this._register(
 			new HoverOperation(
 				this._editor,
 				new GlyphHoverComputer(this._editor),
 			),
 		);
+
 		this._register(
 			this._hoverOperation.onResult((result) => this._withResult(result)),
 		);
@@ -101,6 +110,7 @@ export class GlyphHoverWidget
 				this._onModelDecorationsChanged(),
 			),
 		);
+
 		this._register(
 			this._editor.onDidChangeConfiguration(
 				(e: ConfigurationChangedEvent) => {
@@ -110,6 +120,7 @@ export class GlyphHoverWidget
 				},
 			),
 		);
+
 		this._register(
 			dom.addStandardDisposableListener(
 				this._hover.containerDomNode,
@@ -119,11 +130,13 @@ export class GlyphHoverWidget
 				},
 			),
 		);
+
 		this._editor.addOverlayWidget(this);
 	}
 
 	public override dispose(): void {
 		this._hoverComputerOptions = undefined;
+
 		this._editor.removeOverlayWidget(this);
 
 		super.dispose();
@@ -145,6 +158,7 @@ export class GlyphHoverWidget
 		const codeClasses: HTMLElement[] = Array.prototype.slice.call(
 			this._hover.contentsDomNode.getElementsByClassName("code"),
 		);
+
 		codeClasses.forEach((node) => this._editor.applyFontInfo(node));
 	}
 
@@ -153,6 +167,7 @@ export class GlyphHoverWidget
 			// The decorations have changed and the hover is visible,
 			// we need to recompute the displayed text
 			this._hoverOperation.cancel();
+
 			this._hoverOperation.start(
 				HoverStartMode.Delayed,
 				this._hoverComputerOptions,
@@ -174,11 +189,13 @@ export class GlyphHoverWidget
 
 			return true;
 		}
+
 		if (target.type === MouseTargetType.GUTTER_LINE_NUMBERS) {
 			this._startShowingAt(target.position.lineNumber, "lineNo");
 
 			return true;
 		}
+
 		return false;
 	}
 
@@ -194,9 +211,13 @@ export class GlyphHoverWidget
 			// We have to show the widget at the exact same line number as before, so no work is needed
 			return;
 		}
+
 		this._hoverOperation.cancel();
+
 		this.hide();
+
 		this._hoverComputerOptions = { lineNumber, laneOrLine };
+
 		this._hoverOperation.start(
 			HoverStartMode.Delayed,
 			this._hoverComputerOptions,
@@ -205,12 +226,15 @@ export class GlyphHoverWidget
 
 	public hide(): void {
 		this._hoverComputerOptions = undefined;
+
 		this._hoverOperation.cancel();
 
 		if (!this._isVisible) {
 			return;
 		}
+
 		this._isVisible = false;
+
 		this._hover.containerDomNode.classList.toggle(
 			"hidden",
 			!this._isVisible,
@@ -253,23 +277,29 @@ export class GlyphHoverWidget
 			const renderedContents = this._renderDisposeables.add(
 				this._markdownRenderer.render(msg.value),
 			);
+
 			hoverContentsElement.appendChild(renderedContents.element);
+
 			fragment.appendChild(markdownHoverElement);
 		}
 
 		this._updateContents(fragment);
+
 		this._showAt(lineNumber, laneOrLine);
 	}
 
 	private _updateContents(node: Node): void {
 		this._hover.contentsDomNode.textContent = "";
+
 		this._hover.contentsDomNode.appendChild(node);
+
 		this._updateFont();
 	}
 
 	private _showAt(lineNumber: number, laneOrLine: LaneOrLineNumber): void {
 		if (!this._isVisible) {
 			this._isVisible = true;
+
 			this._hover.containerDomNode.classList.toggle(
 				"hidden",
 				!this._isVisible,
@@ -293,7 +323,9 @@ export class GlyphHoverWidget
 			editorLayout.glyphMarginLeft +
 			editorLayout.glyphMarginWidth +
 			(laneOrLine === "lineNo" ? editorLayout.lineNumbersWidth : 0);
+
 		this._hover.containerDomNode.style.left = `${left}px`;
+
 		this._hover.containerDomNode.style.top = `${Math.max(Math.round(top), 0)}px`;
 	}
 

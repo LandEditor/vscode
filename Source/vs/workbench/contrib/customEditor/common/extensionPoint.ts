@@ -30,8 +30,11 @@ const Fields = Object.freeze({
 
 export interface ICustomEditorsExtensionPoint {
 	readonly [Fields.viewType]: string;
+
 	readonly [Fields.displayName]: string;
+
 	readonly [Fields.selector]?: readonly CustomEditorSelector[];
+
 	readonly [Fields.priority]?: string;
 }
 
@@ -151,15 +154,18 @@ class CustomEditorsDataRenderer
 	implements IExtensionFeatureTableRenderer
 {
 	readonly type = "table";
+
 	shouldRender(manifest: IExtensionManifest): boolean {
 		return !!manifest.contributes?.customEditors;
 	}
+
 	render(manifest: IExtensionManifest): IRenderedData<ITableData> {
 		const customEditors = manifest.contributes?.customEditors || [];
 
 		if (!customEditors.length) {
 			return { data: { headers: [], rows: [] }, dispose: () => {} };
 		}
+
 		const headers = [
 			nls.localize("customEditors view type", "View Type"),
 			nls.localize("customEditors priority", "Priority"),

@@ -44,6 +44,7 @@ export class UserDataProfilesReadonlyService
 			logService,
 		);
 	}
+
 	protected override getStoredProfiles(): StoredUserDataProfile[] {
 		const storedProfilesState = this.stateReadonlyService.getItem<
 			UriDto<StoredUserDataProfileState>[]
@@ -59,12 +60,14 @@ export class UserDataProfilesReadonlyService
 				: URI.revive(p.location),
 		}));
 	}
+
 	protected override getStoredProfileAssociations(): StoredProfileAssociations {
 		return this.stateReadonlyService.getItem<StoredProfileAssociations>(
 			UserDataProfilesReadonlyService.PROFILE_ASSOCIATIONS_KEY,
 			{},
 		);
 	}
+
 	protected override getDefaultProfileExtensionsLocation(): URI {
 		return this.uriIdentityService.extUri.joinPath(
 			URI.file(this.nativeEnvironmentService.extensionsPath).with({
@@ -98,6 +101,7 @@ export class UserDataProfilesService
 			logService,
 		);
 	}
+
 	protected override saveStoredProfiles(
 		storedProfiles: StoredUserDataProfile[],
 	): void {
@@ -115,6 +119,7 @@ export class UserDataProfilesService
 			this.stateService.removeItem(UserDataProfilesService.PROFILES_KEY);
 		}
 	}
+
 	protected override saveStoredProfileAssociations(
 		storedProfileAssociations: StoredProfileAssociations,
 	): void {
@@ -160,6 +165,7 @@ export class ServerUserDataProfilesService
 			logService,
 		);
 	}
+
 	override async init(): Promise<void> {
 		await (this.stateService as StateService).init();
 

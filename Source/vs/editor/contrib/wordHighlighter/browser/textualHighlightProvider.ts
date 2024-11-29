@@ -22,6 +22,7 @@ class TextualDocumentHighlightProvider
 	implements DocumentHighlightProvider, MultiDocumentHighlightProvider
 {
 	selector: LanguageFilter = { language: "*" };
+
 	provideDocumentHighlights(
 		model: ITextModel,
 		position: Position,
@@ -37,9 +38,11 @@ class TextualDocumentHighlightProvider
 		if (!word) {
 			return Promise.resolve(result);
 		}
+
 		if (model.isDisposed()) {
 			return;
 		}
+
 		const matches = model.findMatches(
 			word.word,
 			true,
@@ -54,6 +57,7 @@ class TextualDocumentHighlightProvider
 			kind: DocumentHighlightKind.Text,
 		}));
 	}
+
 	provideMultiDocumentHighlights(
 		primaryModel: ITextModel,
 		position: Position,
@@ -70,10 +74,12 @@ class TextualDocumentHighlightProvider
 		if (!word) {
 			return Promise.resolve(result);
 		}
+
 		for (const model of [primaryModel, ...otherModels]) {
 			if (model.isDisposed()) {
 				continue;
 			}
+
 			const matches = model.findMatches(
 				word.word,
 				true,
@@ -92,6 +98,7 @@ class TextualDocumentHighlightProvider
 				result.set(model.uri, highlights);
 			}
 		}
+
 		return result;
 	}
 }
@@ -101,12 +108,14 @@ export class TextualMultiDocumentHighlightFeature extends Disposable {
 		languageFeaturesService: ILanguageFeaturesService,
 	) {
 		super();
+
 		this._register(
 			languageFeaturesService.documentHighlightProvider.register(
 				"*",
 				new TextualDocumentHighlightProvider(),
 			),
 		);
+
 		this._register(
 			languageFeaturesService.multiDocumentHighlightProvider.register(
 				"*",

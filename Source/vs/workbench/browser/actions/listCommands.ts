@@ -70,9 +70,11 @@ async function updateFocus(
 	if (!WorkbenchListSelectionNavigation.getValue(widget.contextKeyService)) {
 		return updateFocusFn(widget);
 	}
+
 	const focus = widget.getFocus();
 
 	const selection = widget.getSelection();
+
 	await updateFocusFn(widget);
 
 	const newFocus = widget.getFocus();
@@ -84,7 +86,9 @@ async function updateFocus(
 	) {
 		return;
 	}
+
 	const fakeKeyboardEvent = new KeyboardEvent("keydown");
+
 	widget.setSelection(newFocus, fakeKeyboardEvent);
 }
 async function navigate(
@@ -94,6 +98,7 @@ async function navigate(
 	if (!widget) {
 		return;
 	}
+
 	await updateFocus(widget, updateFocusFn);
 
 	const listFocus = widget.getFocus();
@@ -101,7 +106,9 @@ async function navigate(
 	if (listFocus.length) {
 		widget.reveal(listFocus[0]);
 	}
+
 	widget.setAnchor(listFocus[0]);
+
 	ensureDOMFocus(widget);
 }
 KeybindingsRegistry.registerCommandAndKeybindingRule({
@@ -116,6 +123,7 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
 	handler: (accessor, arg2) => {
 		navigate(accessor.get(IListService).lastFocusedList, async (widget) => {
 			const fakeKeyboardEvent = new KeyboardEvent("keydown");
+
 			await widget.focusNext(
 				typeof arg2 === "number" ? arg2 : 1,
 				false,
@@ -136,6 +144,7 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
 	handler: (accessor, arg2) => {
 		navigate(accessor.get(IListService).lastFocusedList, async (widget) => {
 			const fakeKeyboardEvent = new KeyboardEvent("keydown");
+
 			await widget.focusPrevious(
 				typeof arg2 === "number" ? arg2 : 1,
 				false,
@@ -158,6 +167,7 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
 			const fakeKeyboardEvent = new KeyboardEvent("keydown", {
 				altKey: true,
 			});
+
 			await widget.focusNext(
 				typeof arg2 === "number" ? arg2 : 1,
 				false,
@@ -180,6 +190,7 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
 			const fakeKeyboardEvent = new KeyboardEvent("keydown", {
 				altKey: true,
 			});
+
 			await widget.focusPrevious(
 				typeof arg2 === "number" ? arg2 : 1,
 				false,
@@ -196,6 +207,7 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
 	handler: (accessor) => {
 		navigate(accessor.get(IListService).lastFocusedList, async (widget) => {
 			const fakeKeyboardEvent = new KeyboardEvent("keydown");
+
 			await widget.focusNextPage(fakeKeyboardEvent);
 		});
 	},
@@ -208,6 +220,7 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
 	handler: (accessor) => {
 		navigate(accessor.get(IListService).lastFocusedList, async (widget) => {
 			const fakeKeyboardEvent = new KeyboardEvent("keydown");
+
 			await widget.focusPreviousPage(fakeKeyboardEvent);
 		});
 	},
@@ -220,6 +233,7 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
 	handler: (accessor) => {
 		navigate(accessor.get(IListService).lastFocusedList, async (widget) => {
 			const fakeKeyboardEvent = new KeyboardEvent("keydown");
+
 			await widget.focusFirst(fakeKeyboardEvent);
 		});
 	},
@@ -232,6 +246,7 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
 	handler: (accessor) => {
 		navigate(accessor.get(IListService).lastFocusedList, async (widget) => {
 			const fakeKeyboardEvent = new KeyboardEvent("keydown");
+
 			await widget.focusLast(fakeKeyboardEvent);
 		});
 	},
@@ -246,6 +261,7 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
 			const fakeKeyboardEvent = new KeyboardEvent("keydown", {
 				altKey: true,
 			});
+
 			await widget.focusFirst(fakeKeyboardEvent);
 		});
 	},
@@ -260,6 +276,7 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
 			const fakeKeyboardEvent = new KeyboardEvent("keydown", {
 				altKey: true,
 			});
+
 			await widget.focusLast(fakeKeyboardEvent);
 		});
 	},
@@ -305,6 +322,7 @@ function expandMultiSelection(
 		if (previousFocus === focus) {
 			return;
 		}
+
 		const selection = list.getSelection();
 
 		const fakeKeyboardEvent = new KeyboardEvent("keydown", {
@@ -330,12 +348,16 @@ function revealFocusedStickyScroll(
 	if (focus.length === 0) {
 		throw new Error(`StickyScroll has no focus`);
 	}
+
 	if (focus.length > 1) {
 		throw new Error(`StickyScroll can only have a single focused item`);
 	}
+
 	tree.reveal(focus[0]);
+
 	tree.getHTMLElement().focus(); // domfocus() would focus stiky scroll dom and not the tree todo@benibenj
 	tree.setFocus(focus);
+
 	postRevealAction?.(focus[0]);
 }
 KeybindingsRegistry.registerCommandAndKeybindingRule({
@@ -358,6 +380,7 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
 			: undefined;
 
 		const fakeKeyboardEvent = new KeyboardEvent("keydown");
+
 		widget.focusNext(
 			typeof arg2 === "number" ? arg2 : 1,
 			false,
@@ -371,6 +394,7 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
 		if (focus.length) {
 			widget.reveal(focus[0]);
 		}
+
 		ensureDOMFocus(widget);
 	},
 });
@@ -394,6 +418,7 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
 			: undefined;
 
 		const fakeKeyboardEvent = new KeyboardEvent("keydown");
+
 		widget.focusPrevious(
 			typeof arg2 === "number" ? arg2 : 1,
 			false,
@@ -407,6 +432,7 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
 		if (focus.length) {
 			widget.reveal(focus[0]);
 		}
+
 		ensureDOMFocus(widget);
 	},
 });
@@ -438,6 +464,7 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
 		) {
 			return;
 		}
+
 		const tree = widget;
 
 		const focusedElements = tree.getFocus();
@@ -445,6 +472,7 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
 		if (focusedElements.length === 0) {
 			return;
 		}
+
 		const focus = focusedElements[0];
 
 		if (!tree.collapse(focus)) {
@@ -453,6 +481,7 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
 			if (parent) {
 				navigate(widget, (widget) => {
 					const fakeKeyboardEvent = new KeyboardEvent("keydown");
+
 					widget.setFocus([parent], fakeKeyboardEvent);
 				});
 			}
@@ -481,6 +510,7 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
 		) {
 			return;
 		}
+
 		revealFocusedStickyScroll(widget, (focus) => widget.collapse(focus));
 	},
 });
@@ -529,7 +559,9 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
 			if (focus.length > 0) {
 				tree.collapse(focus[0], true);
 			}
+
 			tree.setSelection(focus, fakeKeyboardEvent);
+
 			tree.setAnchor(focus[0]);
 		}
 	},
@@ -551,6 +583,7 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
 		) {
 			return;
 		}
+
 		const tree = widget;
 
 		const focusedElements = tree.getFocus();
@@ -558,6 +591,7 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
 		if (focusedElements.length === 0) {
 			return;
 		}
+
 		const focus = focusedElements[0];
 
 		const parent = tree.getParentElement(focus);
@@ -565,6 +599,7 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
 		if (parent) {
 			navigate(widget, (widget) => {
 				const fakeKeyboardEvent = new KeyboardEvent("keydown");
+
 				widget.setFocus([parent], fakeKeyboardEvent);
 			});
 		}
@@ -587,6 +622,7 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
 		if (!widget) {
 			return;
 		}
+
 		if (widget instanceof ObjectTree || widget instanceof DataTree) {
 			// TODO@Joao: instead of doing this here, just delegate to a tree method
 			const focusedElements = widget.getFocus();
@@ -594,6 +630,7 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
 			if (focusedElements.length === 0) {
 				return;
 			}
+
 			const focus = focusedElements[0];
 
 			if (!widget.expand(focus)) {
@@ -607,6 +644,7 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
 							const fakeKeyboardEvent = new KeyboardEvent(
 								"keydown",
 							);
+
 							widget.setFocus([child], fakeKeyboardEvent);
 						});
 					}
@@ -619,7 +657,9 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
 			if (focusedElements.length === 0) {
 				return;
 			}
+
 			const focus = focusedElements[0];
+
 			widget.expand(focus).then((didExpand) => {
 				if (focus && !didExpand) {
 					const child = widget.getFirstElementChild(focus);
@@ -632,6 +672,7 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
 								const fakeKeyboardEvent = new KeyboardEvent(
 									"keydown",
 								);
+
 								widget.setFocus([child], fakeKeyboardEvent);
 							});
 						}
@@ -658,7 +699,9 @@ function selectElement(
 		focused instanceof Table
 	) {
 		const list = focused;
+
 		list.setAnchor(list.getFocus()[0]);
+
 		list.setSelection(list.getFocus(), fakeKeyboardEvent);
 	}
 	// Trees
@@ -682,11 +725,14 @@ function selectElement(
 			) {
 				toggleCollapsed = false;
 			}
+
 			if (toggleCollapsed) {
 				tree.toggleCollapsed(focus[0]);
 			}
 		}
+
 		tree.setAnchor(focus[0]);
+
 		tree.setSelection(focus, fakeKeyboardEvent);
 	}
 }
@@ -725,6 +771,7 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
 		) {
 			return;
 		}
+
 		revealFocusedStickyScroll(widget, (focus) =>
 			widget.setSelection([focus]),
 		);
@@ -757,6 +804,7 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
 			const list = focused;
 
 			const fakeKeyboardEvent = new KeyboardEvent("keydown");
+
 			list.setSelection(range(list.length), fakeKeyboardEvent);
 		}
 		// Trees
@@ -779,6 +827,7 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
 			) {
 				start = focus[0];
 			}
+
 			if (!start && selection.length > 0) {
 				start = selection[0];
 			}
@@ -790,6 +839,7 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
 			} else {
 				scope = tree.getParentElement(start);
 			}
+
 			const newSelection: unknown[] = [];
 
 			const visit = (node: ITreeNode<unknown, unknown>) => {
@@ -809,7 +859,9 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
 			if (scope && selection.length === newSelection.length) {
 				newSelection.unshift(scope);
 			}
+
 			const fakeKeyboardEvent = new KeyboardEvent("keydown");
+
 			tree.setSelection(newSelection, fakeKeyboardEvent);
 		}
 	},
@@ -825,11 +877,13 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
 		if (!widget) {
 			return;
 		}
+
 		const focus = widget.getFocus();
 
 		if (focus.length === 0) {
 			return;
 		}
+
 		const selection = widget.getSelection();
 
 		const index = selection.indexOf(focus[0]);
@@ -881,6 +935,7 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
 		if (!focusedElement) {
 			return;
 		}
+
 		const elementWithHover = getCustomHoverForElement(
 			focusedElement as HTMLElement,
 		);
@@ -908,6 +963,7 @@ function getCustomHoverForElement(
 	if (noneFocusableElementWithHover) {
 		return noneFocusableElementWithHover as HTMLElement;
 	}
+
 	return undefined;
 }
 KeybindingsRegistry.registerCommandAndKeybindingRule({
@@ -933,6 +989,7 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
 				return;
 			}
 		}
+
 		selectElement(accessor, true);
 	},
 });
@@ -954,6 +1011,7 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
 		) {
 			return;
 		}
+
 		revealFocusedStickyScroll(widget);
 	},
 });
@@ -971,6 +1029,7 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
 		if (!widget) {
 			return;
 		}
+
 		const selection = widget.getSelection();
 
 		const fakeKeyboardEvent = new KeyboardEvent("keydown");
@@ -983,14 +1042,17 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
 
 			if (useSelectionNavigation) {
 				const focus = widget.getFocus();
+
 				widget.setSelection([focus[0]], fakeKeyboardEvent);
 			} else {
 				widget.setSelection([], fakeKeyboardEvent);
 			}
 		} else {
 			widget.setSelection([], fakeKeyboardEvent);
+
 			widget.setFocus([], fakeKeyboardEvent);
 		}
+
 		widget.setAnchor(undefined);
 	},
 });
@@ -998,6 +1060,7 @@ CommandsRegistry.registerCommand({
 	id: "list.triggerTypeNavigation",
 	handler: (accessor) => {
 		const widget = accessor.get(IListService).lastFocusedList;
+
 		widget?.triggerTypeNavigation();
 	},
 });
@@ -1008,6 +1071,7 @@ CommandsRegistry.registerCommand({
 
 		if (widget instanceof AbstractTree || widget instanceof AsyncDataTree) {
 			const tree = widget;
+
 			tree.findMode =
 				tree.findMode === TreeFindMode.Filter
 					? TreeFindMode.Highlight
@@ -1022,6 +1086,7 @@ CommandsRegistry.registerCommand({
 
 		if (widget instanceof AbstractTree || widget instanceof AsyncDataTree) {
 			const tree = widget;
+
 			tree.findMatchType =
 				tree.findMatchType === TreeFindMatchType.Contiguous
 					? TreeFindMatchType.Fuzzy
@@ -1063,6 +1128,7 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
 			widget instanceof AsyncDataTree
 		) {
 			const tree = widget;
+
 			tree.openFind();
 		}
 	},
@@ -1080,6 +1146,7 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
 
 		if (widget instanceof AbstractTree || widget instanceof AsyncDataTree) {
 			const tree = widget;
+
 			tree.closeFind();
 		}
 	},
@@ -1101,6 +1168,7 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
 		if (!focused) {
 			return;
 		}
+
 		focused.scrollTop -= 10;
 	},
 });
@@ -1119,6 +1187,7 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
 		if (!focused) {
 			return;
 		}
+
 		focused.scrollTop += 10;
 	},
 });
@@ -1132,6 +1201,7 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
 		if (!focused) {
 			return;
 		}
+
 		focused.scrollLeft -= 10;
 	},
 });
@@ -1145,6 +1215,7 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
 		if (!focused) {
 			return;
 		}
+
 		focused.scrollLeft += 10;
 	},
 });
@@ -1176,12 +1247,14 @@ registerAction2(
 				f1: true,
 			});
 		}
+
 		run(accessor: ServicesAccessor) {
 			const configurationService = accessor.get(IConfigurationService);
 
 			const newValue = !configurationService.getValue<boolean>(
 				"workbench.tree.enableStickyScroll",
 			);
+
 			configurationService.updateValue(
 				"workbench.tree.enableStickyScroll",
 				newValue,

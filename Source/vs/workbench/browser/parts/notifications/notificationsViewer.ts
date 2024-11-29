@@ -81,19 +81,25 @@ export class NotificationsListDelegate
 	implements IListVirtualDelegate<INotificationViewItem>
 {
 	private static readonly ROW_HEIGHT = 42;
+
 	private static readonly LINE_HEIGHT = 22;
+
 	private offsetHelper: HTMLElement;
 
 	constructor(container: HTMLElement) {
 		this.offsetHelper = this.createOffsetHelper(container);
 	}
+
 	private createOffsetHelper(container: HTMLElement): HTMLElement {
 		const offsetHelper = document.createElement("div");
+
 		offsetHelper.classList.add("notification-offset-helper");
+
 		container.appendChild(offsetHelper);
 
 		return offsetHelper;
 	}
+
 	getHeight(notification: INotificationViewItem): number {
 		if (!notification.expanded) {
 			return NotificationsListDelegate.ROW_HEIGHT; // return early if there are no more rows to show
@@ -110,6 +116,7 @@ export class NotificationsListDelegate
 		if (messageOverflows) {
 			const overflow =
 				preferredMessageHeight - NotificationsListDelegate.LINE_HEIGHT;
+
 			expandedHeight += overflow;
 		}
 		// Last row: source and buttons if we have any
@@ -126,8 +133,10 @@ export class NotificationsListDelegate
 		if (expandedHeight === NotificationsListDelegate.ROW_HEIGHT) {
 			notification.collapse(true /* skip events, no change in height */);
 		}
+
 		return expandedHeight;
 	}
+
 	private computePreferredHeight(
 		notification: INotificationViewItem,
 	): number {
@@ -137,9 +146,11 @@ export class NotificationsListDelegate
 		if (!notification.hasProgress) {
 			actions++; // close
 		}
+
 		if (notification.canCollapse) {
 			actions++; // expand/collapse
 		}
+
 		if (
 			isNonEmptyArray(
 				notification.actions && notification.actions.secondary,
@@ -147,11 +158,13 @@ export class NotificationsListDelegate
 		) {
 			actions++; // secondary actions
 		}
+
 		this.offsetHelper.style.width = `${450 /* notifications container width */ - (10 /* padding */ + 30 /* severity icon */ + actions * 30 /* actions */ - Math.max(actions - 1, 0) * 4) /* less padding for actions > 1 */}px`;
 		// Render message into offset helper
 		const renderedMessage = NotificationMessageRenderer.render(
 			notification.message,
 		);
+
 		this.offsetHelper.appendChild(renderedMessage);
 		// Compute height
 		const preferredHeight = Math.max(
@@ -163,28 +176,41 @@ export class NotificationsListDelegate
 
 		return preferredHeight;
 	}
+
 	getTemplateId(element: INotificationViewItem): string {
 		if (element instanceof NotificationViewItem) {
 			return NotificationRenderer.TEMPLATE_ID;
 		}
+
 		throw new Error("unknown element type: " + element);
 	}
 }
 export interface INotificationTemplateData {
 	container: HTMLElement;
+
 	toDispose: DisposableStore;
+
 	mainRow: HTMLElement;
+
 	icon: HTMLElement;
+
 	message: HTMLElement;
+
 	toolbar: ActionBar;
+
 	detailsRow: HTMLElement;
+
 	source: HTMLElement;
+
 	buttonsContainer: HTMLElement;
+
 	progress: ProgressBar;
+
 	renderer: NotificationTemplateRenderer;
 }
 interface IMessageActionHandler {
 	readonly toDispose: DisposableStore;
+
 	callback: (href: string) => void;
 }
 class NotificationMessageRenderer {
@@ -209,6 +235,7 @@ class NotificationMessageRenderer {
 				} else if (!title) {
 					title = node.href;
 				}
+
 				const anchor = $(
 					"a",
 					{ href: node.href, title, tabIndex: 0 },
@@ -220,6 +247,7 @@ class NotificationMessageRenderer {
 						if (isEventLike(e)) {
 							EventHelper.stop(e, true);
 						}
+
 						actionHandler.callback(node.href);
 					};
 
@@ -241,20 +269,24 @@ class NotificationMessageRenderer {
 							);
 						}),
 					);
+
 					actionHandler.toDispose.add(Gesture.addTarget(anchor));
 
 					const onTap = actionHandler.toDispose.add(
 						new DomEmitter(anchor, GestureEventType.Tap),
 					).event;
+
 					Event.any(onClick, onTap, onSpaceOrEnter)(
 						handleOpen,
 						null,
 						actionHandler.toDispose,
 					);
 				}
+
 				messageContainer.appendChild(anchor);
 			}
 		}
+
 		return messageContainer;
 	}
 }
@@ -272,31 +304,40 @@ export class NotificationRenderer
 		@INotificationService
 		private readonly notificationService: INotificationService,
 	) {}
+
 	get templateId() {
 		return NotificationRenderer.TEMPLATE_ID;
 	}
+
 	renderTemplate(container: HTMLElement): INotificationTemplateData {
 		const data: INotificationTemplateData = Object.create(null);
+
 		data.toDispose = new DisposableStore();
 		// Container
 		data.container = document.createElement("div");
+
 		data.container.classList.add("notification-list-item");
 		// Main Row
 		data.mainRow = document.createElement("div");
+
 		data.mainRow.classList.add("notification-list-item-main-row");
 		// Icon
 		data.icon = document.createElement("div");
+
 		data.icon.classList.add("notification-list-item-icon", "codicon");
 		// Message
 		data.message = document.createElement("div");
+
 		data.message.classList.add("notification-list-item-message");
 		// Toolbar
 		const that = this;
 
 		const toolbarContainer = document.createElement("div");
+
 		toolbarContainer.classList.add(
 			"notification-list-item-toolbar-container",
 		);
+
 		data.toolbar = new ActionBar(toolbarContainer, {
 			ariaLabel: localize("notificationActions", "Notification Actions"),
 			actionViewItemProvider: (action, options) => {
@@ -318,6 +359,7 @@ export class NotificationRenderer
 											that.notificationService.getFilter(
 												source,
 											) === NotificationsFilter.ERROR;
+
 										actions.push(
 											toAction({
 												id: source.id,
@@ -351,6 +393,7 @@ export class NotificationRenderer
 											actions.push(new Separator());
 										}
 									}
+
 									if (
 										Array.isArray(
 											action.notification.actions
@@ -362,6 +405,7 @@ export class NotificationRenderer
 												.secondary,
 										);
 									}
+
 									return actions;
 								},
 							},
@@ -374,34 +418,46 @@ export class NotificationRenderer
 						),
 					);
 				}
+
 				return undefined;
 			},
 			actionRunner: this.actionRunner,
 		});
+
 		data.toDispose.add(data.toolbar);
 		// Details Row
 		data.detailsRow = document.createElement("div");
+
 		data.detailsRow.classList.add("notification-list-item-details-row");
 		// Source
 		data.source = document.createElement("div");
+
 		data.source.classList.add("notification-list-item-source");
 		// Buttons Container
 		data.buttonsContainer = document.createElement("div");
+
 		data.buttonsContainer.classList.add(
 			"notification-list-item-buttons-container",
 		);
+
 		container.appendChild(data.container);
 		// the details row appears first in order for better keyboard access to notification buttons
 		data.container.appendChild(data.detailsRow);
+
 		data.detailsRow.appendChild(data.source);
+
 		data.detailsRow.appendChild(data.buttonsContainer);
 		// main row
 		data.container.appendChild(data.mainRow);
+
 		data.mainRow.appendChild(data.icon);
+
 		data.mainRow.appendChild(data.message);
+
 		data.mainRow.appendChild(toolbarContainer);
 		// Progress: below the rows to span the entire width of the item
 		data.progress = new ProgressBar(container, defaultProgressBarStyles);
+
 		data.toDispose.add(data.progress);
 		// Renderer
 		data.renderer = this.instantiationService.createInstance(
@@ -409,10 +465,12 @@ export class NotificationRenderer
 			data,
 			this.actionRunner,
 		);
+
 		data.toDispose.add(data.renderer);
 
 		return data;
 	}
+
 	renderElement(
 		notification: INotificationViewItem,
 		index: number,
@@ -420,19 +478,24 @@ export class NotificationRenderer
 	): void {
 		data.renderer.setInput(notification);
 	}
+
 	disposeTemplate(templateData: INotificationTemplateData): void {
 		dispose(templateData.toDispose);
 	}
 }
 export class NotificationTemplateRenderer extends Disposable {
 	private static closeNotificationAction: ClearNotificationAction;
+
 	private static expandNotificationAction: ExpandNotificationAction;
+
 	private static collapseNotificationAction: CollapseNotificationAction;
+
 	private static readonly SEVERITIES = [
 		Severity.Info,
 		Severity.Warning,
 		Severity.Error,
 	];
+
 	private readonly inputDisposables = this._register(new DisposableStore());
 
 	constructor(
@@ -458,12 +521,14 @@ export class NotificationTemplateRenderer extends Disposable {
 					ClearNotificationAction.ID,
 					ClearNotificationAction.LABEL,
 				);
+
 			NotificationTemplateRenderer.expandNotificationAction =
 				instantiationService.createInstance(
 					ExpandNotificationAction,
 					ExpandNotificationAction.ID,
 					ExpandNotificationAction.LABEL,
 				);
+
 			NotificationTemplateRenderer.collapseNotificationAction =
 				instantiationService.createInstance(
 					CollapseNotificationAction,
@@ -472,16 +537,20 @@ export class NotificationTemplateRenderer extends Disposable {
 				);
 		}
 	}
+
 	setInput(notification: INotificationViewItem): void {
 		this.inputDisposables.clear();
+
 		this.render(notification);
 	}
+
 	private render(notification: INotificationViewItem): void {
 		// Container
 		this.template.container.classList.toggle(
 			"expanded",
 			notification.expanded,
 		);
+
 		this.inputDisposables.add(
 			addDisposableListener(
 				this.template.container,
@@ -494,6 +563,7 @@ export class NotificationTemplateRenderer extends Disposable {
 				},
 			),
 		);
+
 		this.inputDisposables.add(
 			addDisposableListener(
 				this.template.container,
@@ -504,6 +574,7 @@ export class NotificationTemplateRenderer extends Disposable {
 						e.button === 1 /* Middle Button */
 					) {
 						EventHelper.stop(e, true);
+
 						notification.close();
 					}
 				},
@@ -534,6 +605,7 @@ export class NotificationTemplateRenderer extends Disposable {
 				"",
 			),
 		);
+
 		this.renderSource(notification, sourceCustomHover);
 		// Buttons
 		this.renderButtons(notification);
@@ -564,6 +636,7 @@ export class NotificationTemplateRenderer extends Disposable {
 			}),
 		);
 	}
+
 	private renderSeverity(notification: INotificationViewItem): void {
 		// first remove, then set as the codicon class names overlap
 		NotificationTemplateRenderer.SEVERITIES.forEach((severity) => {
@@ -575,17 +648,20 @@ export class NotificationTemplateRenderer extends Disposable {
 				);
 			}
 		});
+
 		this.template.icon.classList.add(
 			...ThemeIcon.asClassNameArray(
 				this.toSeverityIcon(notification.severity),
 			),
 		);
 	}
+
 	private renderMessage(
 		notification: INotificationViewItem,
 		customHover: IManagedHover,
 	): boolean {
 		clearNode(this.template.message);
+
 		this.template.message.appendChild(
 			NotificationMessageRenderer.render(notification.message, {
 				callback: (link) =>
@@ -601,12 +677,14 @@ export class NotificationTemplateRenderer extends Disposable {
 			!notification.expanded &&
 			this.template.message.scrollWidth >
 				this.template.message.clientWidth;
+
 		customHover.update(
 			messageOverflows ? this.template.message.textContent + "" : "",
 		);
 
 		return messageOverflows;
 	}
+
 	private renderSecondaryActions(
 		notification: INotificationViewItem,
 		messageOverflows: boolean,
@@ -621,7 +699,9 @@ export class NotificationTemplateRenderer extends Disposable {
 					ConfigureNotificationAction.LABEL,
 					notification,
 				);
+
 			actions.push(configureNotificationAction);
+
 			this.inputDisposables.add(configureNotificationAction);
 		}
 		// Expand / Collapse
@@ -636,6 +716,7 @@ export class NotificationTemplateRenderer extends Disposable {
 				showExpandCollapseAction = true; // allow to expand if message overflows
 			}
 		}
+
 		if (showExpandCollapseAction) {
 			actions.push(
 				notification.expanded
@@ -647,8 +728,11 @@ export class NotificationTemplateRenderer extends Disposable {
 		if (!notification.hasProgress) {
 			actions.push(NotificationTemplateRenderer.closeNotificationAction);
 		}
+
 		this.template.toolbar.clear();
+
 		this.template.toolbar.context = notification;
+
 		actions.forEach((action) =>
 			this.template.toolbar.push(action, {
 				icon: true,
@@ -657,6 +741,7 @@ export class NotificationTemplateRenderer extends Disposable {
 			}),
 		);
 	}
+
 	private renderSource(
 		notification: INotificationViewItem,
 		sourceCustomHover: IManagedHover,
@@ -667,12 +752,15 @@ export class NotificationTemplateRenderer extends Disposable {
 				"Source: {0}",
 				notification.source,
 			);
+
 			sourceCustomHover.update(notification.source);
 		} else {
 			this.template.source.textContent = "";
+
 			sourceCustomHover.update("");
 		}
 	}
+
 	private renderButtons(notification: INotificationViewItem): void {
 		clearNode(this.template.buttonsContainer);
 
@@ -726,18 +814,22 @@ export class NotificationTemplateRenderer extends Disposable {
 							})
 						: buttonToolbar.addButton(options),
 				);
+
 				button.label = action.label;
+
 				this.inputDisposables.add(
 					button.onDidClick((e) => {
 						if (e) {
 							EventHelper.stop(e, true);
 						}
+
 						actionRunner.run(action);
 					}),
 				);
 			}
 		}
 	}
+
 	private renderProgress(notification: INotificationViewItem): void {
 		// Return early if the item has no progress
 		if (!notification.hasProgress) {
@@ -762,6 +854,7 @@ export class NotificationTemplateRenderer extends Disposable {
 			) {
 				this.template.progress.total(state.total);
 			}
+
 			if (typeof state.worked === "number") {
 				this.template.progress.setWorked(state.worked).show();
 			}
@@ -771,6 +864,7 @@ export class NotificationTemplateRenderer extends Disposable {
 			this.template.progress.done().hide();
 		}
 	}
+
 	private toSeverityIcon(severity: Severity): ThemeIcon {
 		switch (severity) {
 			case Severity.Warning:
@@ -779,8 +873,10 @@ export class NotificationTemplateRenderer extends Disposable {
 			case Severity.Error:
 				return Codicon.error;
 		}
+
 		return Codicon.info;
 	}
+
 	private getKeybindingLabel(action: IAction): string | null {
 		const keybinding = this.keybindingService.lookupKeybinding(action.id);
 

@@ -24,8 +24,10 @@ export class TextResourceConfigurationService
 	implements ITextResourceConfigurationService
 {
 	public _serviceBrand: undefined;
+
 	private readonly _onDidChangeConfiguration: Emitter<ITextResourceConfigurationChangeEvent> =
 		this._register(new Emitter<ITextResourceConfigurationChangeEvent>());
+
 	public readonly onDidChangeConfiguration: Event<ITextResourceConfigurationChangeEvent> =
 		this._onDidChangeConfiguration.event;
 
@@ -38,6 +40,7 @@ export class TextResourceConfigurationService
 		private readonly languageService: ILanguageService,
 	) {
 		super();
+
 		this._register(
 			this.configurationService.onDidChangeConfiguration((e) =>
 				this._onDidChangeConfiguration.fire(
@@ -46,6 +49,7 @@ export class TextResourceConfigurationService
 			),
 		);
 	}
+
 	getValue<T>(resource: URI | undefined, section?: string): T;
 
 	getValue<T>(resource: URI | undefined, at?: IPosition, section?: string): T;
@@ -58,12 +62,14 @@ export class TextResourceConfigurationService
 				arg3,
 			);
 		}
+
 		return this._getValue(
 			resource,
 			null,
 			typeof arg2 === "string" ? arg2 : undefined,
 		);
 	}
+
 	updateValue(
 		resource: URI,
 		key: string,
@@ -83,6 +89,7 @@ export class TextResourceConfigurationService
 				language,
 			);
 		}
+
 		const overrideIdentifier =
 			language &&
 			configurationValue.overrideIdentifiers?.includes(language)
@@ -96,6 +103,7 @@ export class TextResourceConfigurationService
 			configurationTarget,
 		);
 	}
+
 	private deriveConfigurationTarget(
 		configurationValue: IConfigurationValue<any>,
 		language: string | null,
@@ -104,33 +112,43 @@ export class TextResourceConfigurationService
 			if (configurationValue.memory?.override !== undefined) {
 				return ConfigurationTarget.MEMORY;
 			}
+
 			if (configurationValue.workspaceFolder?.override !== undefined) {
 				return ConfigurationTarget.WORKSPACE_FOLDER;
 			}
+
 			if (configurationValue.workspace?.override !== undefined) {
 				return ConfigurationTarget.WORKSPACE;
 			}
+
 			if (configurationValue.userRemote?.override !== undefined) {
 				return ConfigurationTarget.USER_REMOTE;
 			}
+
 			if (configurationValue.userLocal?.override !== undefined) {
 				return ConfigurationTarget.USER_LOCAL;
 			}
 		}
+
 		if (configurationValue.memory?.value !== undefined) {
 			return ConfigurationTarget.MEMORY;
 		}
+
 		if (configurationValue.workspaceFolder?.value !== undefined) {
 			return ConfigurationTarget.WORKSPACE_FOLDER;
 		}
+
 		if (configurationValue.workspace?.value !== undefined) {
 			return ConfigurationTarget.WORKSPACE;
 		}
+
 		if (configurationValue.userRemote?.value !== undefined) {
 			return ConfigurationTarget.USER_REMOTE;
 		}
+
 		return ConfigurationTarget.USER_LOCAL;
 	}
+
 	private _getValue<T>(
 		resource: URI | undefined,
 		position: IPosition | null,
@@ -146,11 +164,13 @@ export class TextResourceConfigurationService
 				overrideIdentifier: language,
 			});
 		}
+
 		return this.configurationService.getValue<T>(section, {
 			resource,
 			overrideIdentifier: language,
 		});
 	}
+
 	inspect<T>(
 		resource: URI | undefined,
 		position: IPosition | null,
@@ -165,6 +185,7 @@ export class TextResourceConfigurationService
 			overrideIdentifier: language,
 		});
 	}
+
 	private getLanguage(
 		resource: URI,
 		position: IPosition | null,
@@ -179,10 +200,12 @@ export class TextResourceConfigurationService
 					)
 				: model.getLanguageId();
 		}
+
 		return this.languageService.guessLanguageIdByFilepathOrFirstLine(
 			resource,
 		);
 	}
+
 	private toResourceConfigurationChangeEvent(
 		configurationChangeEvent: IConfigurationChangeEvent,
 	): ITextResourceConfigurationChangeEvent {

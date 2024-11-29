@@ -11,12 +11,18 @@ import {
 export class CharacterPairSupport {
 	static readonly DEFAULT_AUTOCLOSE_BEFORE_LANGUAGE_DEFINED_QUOTES =
 		";:.,=}])> \n\t";
+
 	static readonly DEFAULT_AUTOCLOSE_BEFORE_LANGUAGE_DEFINED_BRACKETS =
 		"'\"`;:.,=}])> \n\t";
+
 	static readonly DEFAULT_AUTOCLOSE_BEFORE_WHITESPACE = " \n\t";
+
 	private readonly _autoClosingPairs: StandardAutoClosingPairConditional[];
+
 	private readonly _surroundingPairs: IAutoClosingPair[];
+
 	private readonly _autoCloseBeforeForQuotes: string;
+
 	private readonly _autoCloseBeforeForBrackets: string;
 
 	constructor(config: LanguageConfiguration) {
@@ -35,6 +41,7 @@ export class CharacterPairSupport {
 		} else {
 			this._autoClosingPairs = [];
 		}
+
 		if (
 			config.__electricCharacterSupport &&
 			config.__electricCharacterSupport.docComment
@@ -48,25 +55,31 @@ export class CharacterPairSupport {
 				}),
 			);
 		}
+
 		this._autoCloseBeforeForQuotes =
 			typeof config.autoCloseBefore === "string"
 				? config.autoCloseBefore
 				: CharacterPairSupport.DEFAULT_AUTOCLOSE_BEFORE_LANGUAGE_DEFINED_QUOTES;
+
 		this._autoCloseBeforeForBrackets =
 			typeof config.autoCloseBefore === "string"
 				? config.autoCloseBefore
 				: CharacterPairSupport.DEFAULT_AUTOCLOSE_BEFORE_LANGUAGE_DEFINED_BRACKETS;
+
 		this._surroundingPairs =
 			config.surroundingPairs || this._autoClosingPairs;
 	}
+
 	public getAutoClosingPairs(): StandardAutoClosingPairConditional[] {
 		return this._autoClosingPairs;
 	}
+
 	public getAutoCloseBeforeSet(forQuotes: boolean): string {
 		return forQuotes
 			? this._autoCloseBeforeForQuotes
 			: this._autoCloseBeforeForBrackets;
 	}
+
 	public getSurroundingPairs(): IAutoClosingPair[] {
 		return this._surroundingPairs;
 	}

@@ -30,10 +30,13 @@ export class MdLanguageClient implements IDisposable {
 		private readonly _client: BaseLanguageClient,
 		private readonly _workspace: VsCodeMdWorkspace,
 	) {}
+
 	dispose(): void {
 		this._client.stop();
+
 		this._workspace.dispose();
 	}
+
 	resolveLinkTarget(
 		linkText: string,
 		uri: vscode.Uri,
@@ -43,9 +46,11 @@ export class MdLanguageClient implements IDisposable {
 			uri: uri.toString(),
 		});
 	}
+
 	getEditForFileRenames(
 		files: ReadonlyArray<{
 			oldUri: string;
+
 			newUri: string;
 		}>,
 		token: vscode.CancellationToken,
@@ -56,6 +61,7 @@ export class MdLanguageClient implements IDisposable {
 			token,
 		);
 	}
+
 	getReferencesToFileInWorkspace(
 		resource: vscode.Uri,
 		token: vscode.CancellationToken,
@@ -66,6 +72,7 @@ export class MdLanguageClient implements IDisposable {
 			token,
 		);
 	}
+
 	prepareUpdatePastedLinks(
 		doc: vscode.Uri,
 		ranges: readonly vscode.Range[],
@@ -87,6 +94,7 @@ export class MdLanguageClient implements IDisposable {
 			token,
 		);
 	}
+
 	getUpdatePastedLinksEdit(
 		pastingIntoDoc: vscode.Uri,
 		edits: readonly vscode.TextEdit[],
@@ -139,6 +147,7 @@ export async function startClient(
 		vscode.l10n.t("Markdown Language Server"),
 		clientOptions,
 	);
+
 	client.registerProposedFeatures();
 
 	const notebookFeature = client.getFeature(
@@ -158,7 +167,9 @@ export async function startClient(
 			},
 		});
 	}
+
 	const workspace = new VsCodeMdWorkspace();
+
 	client.onRequest(proto.parse, async (e) => {
 		const uri = vscode.Uri.parse(e.uri);
 
@@ -174,11 +185,13 @@ export async function startClient(
 			}
 		}
 	});
+
 	client.onRequest(proto.fs_readFile, async (e): Promise<number[]> => {
 		const uri = vscode.Uri.parse(e.uri);
 
 		return Array.from(await vscode.workspace.fs.readFile(uri));
 	});
+
 	client.onRequest(
 		proto.fs_stat,
 		async (
@@ -200,6 +213,7 @@ export async function startClient(
 			}
 		},
 	);
+
 	client.onRequest(
 		proto.fs_readDirectory,
 		async (
@@ -222,6 +236,7 @@ export async function startClient(
 			]);
 		},
 	);
+
 	client.onRequest(
 		proto.findMarkdownFilesInWorkspace,
 		async (): Promise<string[]> => {
@@ -235,6 +250,7 @@ export async function startClient(
 	);
 
 	const watchers = new FileWatcherManager();
+
 	client.onRequest(proto.fs_watcher_create, async (params): Promise<void> => {
 		const id = params.id;
 
@@ -247,6 +263,7 @@ export async function startClient(
 				kind,
 			});
 		};
+
 		watchers.create(id, uri, params.watchParentDirs, {
 			create: params.options.ignoreCreate
 				? undefined
@@ -259,15 +276,18 @@ export async function startClient(
 				: () => sendWatcherChange("delete"),
 		});
 	});
+
 	client.onRequest(proto.fs_watcher_delete, async (params): Promise<void> => {
 		watchers.delete(params.id);
 	});
+
 	vscode.commands.registerCommand(
 		"vscodeMarkdownLanguageservice.open",
 		(uri, args) => {
 			return vscode.commands.executeCommand("vscode.open", uri, args);
 		},
 	);
+
 	vscode.commands.registerCommand(
 		"vscodeMarkdownLanguageservice.rename",
 		(uri, pos) => {
@@ -277,6 +297,7 @@ export async function startClient(
 			]);
 		},
 	);
+
 	await client.start();
 
 	return new MdLanguageClient(client, workspace);

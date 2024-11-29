@@ -200,6 +200,7 @@ export class NativeWindow extends BaseWindow {
 	private readonly addFoldersScheduler = this._register(
 		new RunOnceScheduler(() => this.doAddFolders(), 100),
 	);
+
 	private pendingFoldersToAdd: URI[] = [];
 
 	private isDocumentedEdited = false;
@@ -264,6 +265,7 @@ export class NativeWindow extends BaseWindow {
 		super(mainWindow, undefined, hostService, nativeEnvironmentService);
 
 		this.registerListeners();
+
 		this.create();
 	}
 
@@ -486,6 +488,7 @@ export class NativeWindow extends BaseWindow {
 
 							const insidersURL =
 								"https://code.visualstudio.com/docs/?dv=osx&build=insiders";
+
 							this.openerService.open(
 								quality === "stable" ? stableURL : insidersURL,
 							);
@@ -532,6 +535,7 @@ export class NativeWindow extends BaseWindow {
 		ipcRenderer.on("vscode:enterFullScreen", () =>
 			setFullscreen(true, mainWindow),
 		);
+
 		ipcRenderer.on("vscode:leaveFullScreen", () =>
 			setFullscreen(false, mainWindow),
 		);
@@ -543,8 +547,11 @@ export class NativeWindow extends BaseWindow {
 				event: unknown,
 				payload: {
 					authInfo: AuthInfo;
+
 					username?: string;
+
 					password?: string;
+
 					replyChannel: string;
 				},
 			) => {
@@ -619,6 +626,7 @@ export class NativeWindow extends BaseWindow {
 
 					// Reply back to main side with credentials
 					const [username, password] = result.values;
+
 					ipcRenderer.send(payload.replyChannel, {
 						username,
 						password,
@@ -686,6 +694,7 @@ export class NativeWindow extends BaseWindow {
 					kind === "local"
 						? "security.promptForLocalFileProtocolHandling"
 						: "security.promptForRemoteFileProtocolHandling";
+
 				this.configurationService.updateValue(setting, false);
 			},
 		);
@@ -849,6 +858,7 @@ export class NativeWindow extends BaseWindow {
 				),
 			),
 		);
+
 		this.layoutService.updateWindowMaximizedState(
 			mainWindow,
 			this.nativeEnvironmentService.window.maximized ?? false,
@@ -860,6 +870,7 @@ export class NativeWindow extends BaseWindow {
 				this.onDidChangePanelPosition(positionFromString(pos)),
 			),
 		);
+
 		this.onDidChangePanelPosition(this.layoutService.getPanelPosition());
 
 		// Lifecycle
@@ -868,11 +879,13 @@ export class NativeWindow extends BaseWindow {
 				this.onBeforeShutdown(e),
 			),
 		);
+
 		this._register(
 			this.lifecycleService.onBeforeShutdownError((e) =>
 				this.onBeforeShutdownError(e),
 			),
 		);
+
 		this._register(
 			this.lifecycleService.onWillShutdown((e) => this.onWillShutdown(e)),
 		);
@@ -880,11 +893,13 @@ export class NativeWindow extends BaseWindow {
 
 	private handleRepresentedFilename(part: IEditorPart): void {
 		const disposables = new DisposableStore();
+
 		Event.once(part.onWillDispose)(() => disposables.dispose());
 
 		const scopedEditorService = this.editorGroupService
 			.getScopedInstantiationService(part)
 			.invokeFunction((accessor) => accessor.get(IEditorService));
+
 		disposables.add(
 			scopedEditorService.onDidActiveEditorChange(() =>
 				this.updateRepresentedFilename(
@@ -1047,6 +1062,7 @@ export class NativeWindow extends BaseWindow {
 				},
 			);
 		}, 1200);
+
 		shutdownDialogScheduler.schedule();
 
 		// Dispose scheduler when we actually shutdown
@@ -1235,11 +1251,13 @@ export class NativeWindow extends BaseWindow {
 			}
 
 			const commandId = `workbench.action.revealPathInFinder${i}`;
+
 			this.customTitleContextMenuDisposable.add(
 				CommandsRegistry.registerCommand(commandId, () =>
 					this.nativeHostService.showItemInFolder(path.fsPath),
 				),
 			);
+
 			this.customTitleContextMenuDisposable.add(
 				MenuRegistry.appendMenuItem(MenuId.TitleBarTitleContext, {
 					command: { id: commandId, title: label || posix.sep },
@@ -1258,8 +1276,10 @@ export class NativeWindow extends BaseWindow {
 		this.lifecycleService
 			.when(LifecyclePhase.Ready)
 			.then(() => this.nativeHostService.notifyReady());
+
 		this.lifecycleService.when(LifecyclePhase.Restored).then(() => {
 			this.sharedProcessService.notifyRestored();
+
 			this.utilityProcessWorkerWorkbenchService.notifyRestored();
 		});
 
@@ -1389,6 +1409,7 @@ export class NativeWindow extends BaseWindow {
 
 		// Slow shell environment progress indicator
 		const shellEnv = process.shellEnv();
+
 		this.progressService.withProgress(
 			{
 				title: localize(
@@ -1461,6 +1482,7 @@ export class NativeWindow extends BaseWindow {
 				port,
 			);
 		}
+
 		return tunnel;
 	}
 
@@ -1490,6 +1512,7 @@ export class NativeWindow extends BaseWindow {
 						queryTunnel.tunnelRemotePort !== queryPortMapping.port
 					) {
 						queryTunnel.dispose();
+
 						queryTunnel = undefined;
 					} else {
 						if (!portMappingRequest) {
@@ -1503,6 +1526,7 @@ export class NativeWindow extends BaseWindow {
 					}
 				}
 			}
+
 			if (portMappingRequest) {
 				const tunnel = await this.openTunnel(
 					portMappingRequest.address,
@@ -1591,9 +1615,11 @@ export class NativeWindow extends BaseWindow {
 	//#region Touchbar
 
 	private touchBarMenu: IMenu | undefined;
+
 	private readonly touchBarDisposables = this._register(
 		new DisposableStore(),
 	);
+
 	private lastInstalledTouchedBar: ICommandAction[][] | undefined;
 
 	private updateTouchbarMenu(): void {
@@ -1603,6 +1629,7 @@ export class NativeWindow extends BaseWindow {
 
 		// Dispose old
 		this.touchBarDisposables.clear();
+
 		this.touchBarMenu = undefined;
 
 		// Create new (delayed)
@@ -1612,6 +1639,7 @@ export class NativeWindow extends BaseWindow {
 				300,
 			),
 		);
+
 		scheduler.schedule();
 	}
 
@@ -1620,11 +1648,14 @@ export class NativeWindow extends BaseWindow {
 			const scopedContextKeyService =
 				this.editorService.activeEditorPane?.scopedContextKeyService ||
 				this.editorGroupService.activeGroup.scopedContextKeyService;
+
 			this.touchBarMenu = this.menuService.createMenu(
 				MenuId.TouchBarContext,
 				scopedContextKeyService,
 			);
+
 			this.touchBarDisposables.add(this.touchBarMenu);
+
 			this.touchBarDisposables.add(
 				this.touchBarMenu.onDidChange(() => scheduler.schedule()),
 			);
@@ -1679,6 +1710,7 @@ export class NativeWindow extends BaseWindow {
 		// Only update if the actions have changed
 		if (!equals(this.lastInstalledTouchedBar, items)) {
 			this.lastInstalledTouchedBar = items;
+
 			this.nativeHostService.updateTouchBar(items);
 		}
 	}
@@ -1799,6 +1831,7 @@ export class NativeWindow extends BaseWindow {
 				result: { resource: resources[3].resource },
 				options: { pinned: true },
 			};
+
 			editors.push(mergeEditor);
 		} else if (
 			diffMode &&
@@ -1810,6 +1843,7 @@ export class NativeWindow extends BaseWindow {
 				modified: { resource: resources[1].resource },
 				options: { pinned: true },
 			};
+
 			editors.push(diffEditor);
 		} else {
 			editors.push(...resources);
@@ -1856,16 +1890,19 @@ export class NativeWindow extends BaseWindow {
 
 	private createWindowZoomStatusEntry(part: IEditorPart): void {
 		const disposables = new DisposableStore();
+
 		Event.once(part.onWillDispose)(() => disposables.dispose());
 
 		const scopedInstantiationService =
 			this.editorGroupService.getScopedInstantiationService(part);
+
 		this.mapWindowIdToZoomStatusEntry.set(
 			part.windowId,
 			disposables.add(
 				scopedInstantiationService.createInstance(ZoomStatusEntry),
 			),
 		);
+
 		disposables.add(
 			toDisposable(() =>
 				this.mapWindowIdToZoomStatusEntry.delete(part.windowId),
@@ -1965,13 +2002,17 @@ class ZoomStatusEntry extends Disposable {
 
 	private createZoomEntry(visibleOrText: string): void {
 		const disposables = new DisposableStore();
+
 		this.disposable.value = disposables;
 
 		const container = document.createElement("div");
+
 		container.classList.add("zoom-status");
 
 		const left = document.createElement("div");
+
 		left.classList.add("zoom-status-left");
+
 		container.appendChild(left);
 
 		const zoomOutAction: Action = disposables.add(
@@ -2003,6 +2044,7 @@ class ZoomStatusEntry extends Disposable {
 				() => this.commandService.executeCommand(zoomResetAction.id),
 			),
 		);
+
 		zoomResetAction.tooltip = localize(
 			"zoomResetLabel",
 			"{0} ({1})",
@@ -2031,11 +2073,13 @@ class ZoomStatusEntry extends Disposable {
 		);
 
 		this.zoomLevelLabel = zoomLevelLabel;
+
 		disposables.add(toDisposable(() => (this.zoomLevelLabel = undefined)));
 
 		const actionBarLeft = disposables.add(
 			new ActionBar(left, { hoverDelegate: nativeHoverDelegate }),
 		);
+
 		actionBarLeft.push(zoomOutAction, {
 			icon: true,
 			label: false,
@@ -2043,7 +2087,9 @@ class ZoomStatusEntry extends Disposable {
 				.lookupKeybinding(zoomOutAction.id)
 				?.getLabel(),
 		});
+
 		actionBarLeft.push(this.zoomLevelLabel, { icon: false, label: true });
+
 		actionBarLeft.push(zoomInAction, {
 			icon: true,
 			label: false,
@@ -2053,7 +2099,9 @@ class ZoomStatusEntry extends Disposable {
 		});
 
 		const right = document.createElement("div");
+
 		right.classList.add("zoom-status-right");
+
 		container.appendChild(right);
 
 		const actionBarRight = disposables.add(
@@ -2061,6 +2109,7 @@ class ZoomStatusEntry extends Disposable {
 		);
 
 		actionBarRight.push(zoomResetAction, { icon: false, label: true });
+
 		actionBarRight.push(zoomSettingsAction, {
 			icon: true,
 			label: false,
@@ -2070,6 +2119,7 @@ class ZoomStatusEntry extends Disposable {
 		});
 
 		const name = localize("status.windowZoom", "Window Zoom");
+
 		disposables.add(
 			this.statusbarService.addEntry(
 				{
@@ -2096,6 +2146,7 @@ class ZoomStatusEntry extends Disposable {
 			const zoomLevel = getZoomLevel(targetWindow);
 
 			this.zoomLevelLabel.label = `${zoomLevel}`;
+
 			this.zoomLevelLabel.tooltip = localize(
 				"zoomNumber",
 				"Zoom Level: {0} ({1}%)",

@@ -96,6 +96,7 @@ export class NativeWorkingCopyBackupTracker
 			editorGroupService,
 		);
 	}
+
 	protected async onFinalBeforeShutdown(
 		reason: ShutdownReason,
 	): Promise<boolean> {
@@ -131,6 +132,7 @@ export class NativeWorkingCopyBackupTracker
 			resume();
 		}
 	}
+
 	protected async onBeforeShutdownWithModified(
 		reason: ShutdownReason,
 		modifiedWorkingCopies: readonly IWorkingCopy[],
@@ -166,11 +168,13 @@ export class NativeWorkingCopyBackupTracker
 					reason,
 				);
 			}
+
 			return this.noVeto([...modifiedWorkingCopies]); // no veto (modified auto-saved)
 		}
 		// Auto save is not enabled
 		return this.handleModifiedBeforeShutdown(modifiedWorkingCopies, reason);
 	}
+
 	private async handleModifiedBeforeShutdown(
 		modifiedWorkingCopies: readonly IWorkingCopy[],
 		reason: ShutdownReason,
@@ -191,7 +195,9 @@ export class NativeWorkingCopyBackupTracker
 				const backupResult = await this.backupBeforeShutdown(
 					modifiedWorkingCopiesToBackup,
 				);
+
 				backups = backupResult.backups;
+
 				backupError = backupResult.error;
 
 				if (backups.length === modifiedWorkingCopies.length) {
@@ -201,6 +207,7 @@ export class NativeWorkingCopyBackupTracker
 				backupError = error;
 			}
 		}
+
 		const remainingModifiedWorkingCopies = modifiedWorkingCopies.filter(
 			(workingCopy) => !backups.includes(workingCopy),
 		);
@@ -213,6 +220,7 @@ export class NativeWorkingCopyBackupTracker
 
 				return false; // do not block shutdown during extension development (https://github.com/microsoft/vscode/issues/115028)
 			}
+
 			return this.showErrorDialog(
 				localize(
 					"backupTrackerBackupFailed",
@@ -237,6 +245,7 @@ export class NativeWorkingCopyBackupTracker
 
 				return false; // do not block shutdown during extension development (https://github.com/microsoft/vscode/issues/115028)
 			}
+
 			return this.showErrorDialog(
 				localize(
 					"backupTrackerConfirmFailed",
@@ -248,6 +257,7 @@ export class NativeWorkingCopyBackupTracker
 			);
 		}
 	}
+
 	private async shouldBackupBeforeShutdown(
 		reason: ShutdownReason,
 		modifiedWorkingCopies: readonly IWorkingCopy[],
@@ -255,9 +265,11 @@ export class NativeWorkingCopyBackupTracker
 		if (!this.filesConfigurationService.isHotExitEnabled) {
 			return []; // never backup when hot exit is disabled via settings
 		}
+
 		if (this.environmentService.isExtensionDevelopment) {
 			return modifiedWorkingCopies; // always backup closing extension development window without asking to speed up debugging
 		}
+
 		switch (reason) {
 			// Window Close
 			case ShutdownReason.CLOSE:
@@ -269,6 +281,7 @@ export class NativeWorkingCopyBackupTracker
 				) {
 					return modifiedWorkingCopies; // backup if a workspace/folder is open and onExitAndWindowClose is configured
 				}
+
 				if (
 					isMacintosh ||
 					(await this.nativeHostService.getWindowCount()) > 1
@@ -283,8 +296,10 @@ export class NativeWorkingCopyBackupTracker
 								WorkingCopyCapabilities.Scratchpad,
 						); // backup scratchpads automatically to avoid user confirmation
 					}
+
 					return []; // do not backup if a window is closed that does not cause quitting of the application
 				}
+
 				return modifiedWorkingCopies; // backup if last window is closed on win/linux where the application quits right after
 			// Application Quit
 			case ShutdownReason.QUIT:
@@ -304,15 +319,18 @@ export class NativeWorkingCopyBackupTracker
 					) {
 						return modifiedWorkingCopies; // backup if a workspace/folder is open and onExitAndWindowClose is configured
 					}
+
 					return modifiedWorkingCopies.filter(
 						(modifiedWorkingCopy) =>
 							modifiedWorkingCopy.capabilities &
 							WorkingCopyCapabilities.Scratchpad,
 					); // backup scratchpads automatically to avoid user confirmation
 				}
+
 				return []; // do not backup because we are switching contexts with no workspace/folder open
 		}
 	}
+
 	private async showErrorDialog(
 		message: string,
 		workingCopies: readonly IWorkingCopy[],
@@ -355,6 +373,7 @@ export class NativeWorkingCopyBackupTracker
 
 		return result ?? true;
 	}
+
 	private toForceShutdownLabel(reason: ShutdownReason): string {
 		switch (reason) {
 			case ShutdownReason.CLOSE:
@@ -368,15 +387,18 @@ export class NativeWorkingCopyBackupTracker
 				return localize("shutdownForceReload", "Reload Anyway");
 		}
 	}
+
 	private async backupBeforeShutdown(
 		modifiedWorkingCopies: readonly IWorkingCopy[],
 	): Promise<{
 		backups: IWorkingCopy[];
+
 		error?: Error;
 	}> {
 		const backups: IWorkingCopy[] = [];
 
 		let error: Error | undefined = undefined;
+
 		await this.withProgressAndCancellation(
 			async (token) => {
 				// Perform a backup of all modified working copies unless a backup already exists
@@ -402,6 +424,7 @@ export class NativeWorkingCopyBackupTracker
 								if (token.isCancellationRequested) {
 									return;
 								}
+
 								await this.workingCopyBackupService.backup(
 									workingCopy,
 									backup.content,
@@ -413,6 +436,7 @@ export class NativeWorkingCopyBackupTracker
 								if (token.isCancellationRequested) {
 									return;
 								}
+
 								backups.push(workingCopy);
 							}
 						}),
@@ -433,6 +457,7 @@ export class NativeWorkingCopyBackupTracker
 
 		return { backups, error };
 	}
+
 	private async confirmBeforeShutdown(
 		modifiedWorkingCopies: IWorkingCopy[],
 	): Promise<boolean> {
@@ -455,12 +480,14 @@ export class NativeWorkingCopyBackupTracker
 					`[backup tracker] error saving modified working copies: ${error}`,
 				); // guard against misbehaving saves, we handle remaining modified below
 			}
+
 			const savedWorkingCopies =
 				modifiedCountBeforeSave - this.workingCopyService.modifiedCount;
 
 			if (savedWorkingCopies < modifiedWorkingCopies.length) {
 				return true; // veto (save failed or was canceled)
 			}
+
 			return this.noVeto(modifiedWorkingCopies); // no veto (modified saved)
 		}
 		// Don't Save
@@ -472,11 +499,13 @@ export class NativeWorkingCopyBackupTracker
 					`[backup tracker] error reverting modified working copies: ${error}`,
 				); // do not block the shutdown on errors from revert
 			}
+
 			return this.noVeto(modifiedWorkingCopies); // no veto (modified reverted)
 		}
 		// Cancel
 		return true; // veto (user canceled)
 	}
+
 	private doSaveAllBeforeShutdown(
 		workingCopies: IWorkingCopy[],
 		reason: SaveReason,
@@ -532,6 +561,7 @@ export class NativeWorkingCopyBackupTracker
 				: ProgressLocation.Dialog,
 		);
 	}
+
 	private doRevertAllBeforeShutdown(
 		modifiedWorkingCopies: IWorkingCopy[],
 	): Promise<void> {
@@ -561,6 +591,7 @@ export class NativeWorkingCopyBackupTracker
 			),
 		);
 	}
+
 	private onBeforeShutdownWithoutModified(): Promise<boolean> {
 		// We are about to shutdown without modified editors
 		// and will discard any backups that are still
@@ -585,12 +616,15 @@ export class NativeWorkingCopyBackupTracker
 					: Array.from(this.unrestoredBackups),
 		});
 	}
+
 	private noVeto(
 		backupsToDiscard: IWorkingCopyIdentifier[],
 	): Promise<boolean>;
+
 	private noVeto(backupsToKeep: {
 		except: IWorkingCopyIdentifier[];
 	}): Promise<boolean>;
+
 	private async noVeto(
 		arg1:
 			| IWorkingCopyIdentifier[]
@@ -604,12 +638,15 @@ export class NativeWorkingCopyBackupTracker
 
 		return false; // no veto (no modified)
 	}
+
 	private discardBackupsBeforeShutdown(
 		backupsToDiscard: IWorkingCopyIdentifier[],
 	): Promise<void>;
+
 	private discardBackupsBeforeShutdown(backupsToKeep: {
 		except: IWorkingCopyIdentifier[];
 	}): Promise<void>;
+
 	private discardBackupsBeforeShutdown(
 		backupsToDiscardOrKeep:
 			| IWorkingCopyIdentifier[]
@@ -617,6 +654,7 @@ export class NativeWorkingCopyBackupTracker
 					except: IWorkingCopyIdentifier[];
 			  },
 	): Promise<void>;
+
 	private async discardBackupsBeforeShutdown(
 		arg1:
 			| IWorkingCopyIdentifier[]
@@ -631,6 +669,7 @@ export class NativeWorkingCopyBackupTracker
 		if (!this.isReady) {
 			return;
 		}
+
 		await this.withProgressAndCancellation(
 			async () => {
 				// When we shutdown either with no modified working copies left
@@ -666,6 +705,7 @@ export class NativeWorkingCopyBackupTracker
 			),
 		);
 	}
+
 	private withProgressAndCancellation(
 		promiseFactory: (token: CancellationToken) => Promise<void>,
 		title: string,

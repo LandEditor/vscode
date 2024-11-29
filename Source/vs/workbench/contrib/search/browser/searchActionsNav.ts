@@ -67,6 +67,7 @@ registerAction2(
 				},
 			});
 		}
+
 		run(accessor: ServicesAccessor, ...args: any[]) {
 			const contextService = accessor
 				.get(IContextKeyService)
@@ -87,6 +88,7 @@ registerAction2(
 				)
 			) {
 				const searchView = getSearchView(accessor.get(IViewsService));
+
 				assertIsDefined(searchView).toggleQueryDetails(
 					undefined,
 					args[0]?.show,
@@ -115,13 +117,16 @@ registerAction2(
 				},
 			});
 		}
+
 		run(accessor: ServicesAccessor) {
 			const searchView = getSearchView(accessor.get(IViewsService));
 
 			if (searchView) {
 				searchView.searchAndReplaceWidget.toggleReplace(false);
+
 				searchView.searchAndReplaceWidget.focus();
 			}
+
 			return Promise.resolve(null);
 		}
 	},
@@ -151,6 +156,7 @@ registerAction2(
 				),
 			});
 		}
+
 		override async run(accessor: ServicesAccessor): Promise<any> {
 			toggleCaseSensitiveCommand(accessor);
 		}
@@ -175,6 +181,7 @@ registerAction2(
 				category,
 			});
 		}
+
 		override async run(accessor: ServicesAccessor): Promise<any> {
 			return toggleWholeWordCommand(accessor);
 		}
@@ -199,6 +206,7 @@ registerAction2(
 				category,
 			});
 		}
+
 		override async run(accessor: ServicesAccessor): Promise<any> {
 			return toggleRegexCommand(accessor);
 		}
@@ -223,6 +231,7 @@ registerAction2(
 				category,
 			});
 		}
+
 		override async run(accessor: ServicesAccessor): Promise<any> {
 			return togglePreserveCaseCommand(accessor);
 		}
@@ -251,6 +260,7 @@ registerAction2(
 				},
 			});
 		}
+
 		run(accessor: ServicesAccessor) {
 			const searchView = getSearchView(accessor.get(IViewsService));
 
@@ -301,6 +311,7 @@ registerAction2(
 				},
 			});
 		}
+
 		run(accessor: ServicesAccessor) {
 			const searchView = getSearchView(accessor.get(IViewsService));
 
@@ -309,6 +320,7 @@ registerAction2(
 					ISearchResult,
 					RenderableMatch
 				> = searchView.getControl();
+
 				searchView.open(
 					<FileMatchOrMatch>tree.getFocus()[0],
 					false,
@@ -339,6 +351,7 @@ registerAction2(
 				category,
 			});
 		}
+
 		override async run(accessor: ServicesAccessor): Promise<any> {
 			const searchView = getSearchView(accessor.get(IViewsService));
 
@@ -347,6 +360,7 @@ registerAction2(
 					ISearchResult,
 					RenderableMatch
 				> = searchView.getControl();
+
 				searchView.openEditorWithMultiCursor(
 					<FileMatchOrMatch>tree.getFocus()[0],
 				);
@@ -382,6 +396,7 @@ registerAction2(
 				},
 			});
 		}
+
 		override async run(accessor: ServicesAccessor): Promise<any> {
 			const editorService = accessor.get(IEditorService);
 
@@ -393,7 +408,9 @@ registerAction2(
 					editorService.activeEditorPane as SearchEditor
 				).focusNextInput();
 			}
+
 			const searchView = getSearchView(accessor.get(IViewsService));
+
 			searchView?.focusNextInputBox();
 		}
 	},
@@ -425,6 +442,7 @@ registerAction2(
 				},
 			});
 		}
+
 		override async run(accessor: ServicesAccessor): Promise<any> {
 			const editorService = accessor.get(IEditorService);
 
@@ -436,7 +454,9 @@ registerAction2(
 					editorService.activeEditorPane as SearchEditor
 				).focusPrevInput();
 			}
+
 			const searchView = getSearchView(accessor.get(IViewsService));
+
 			searchView?.focusPreviousInputBox();
 		}
 	},
@@ -464,8 +484,10 @@ registerAction2(
 				},
 			});
 		}
+
 		run(accessor: ServicesAccessor) {
 			const searchView = getSearchView(accessor.get(IViewsService));
+
 			searchView?.focusPreviousInputBox();
 		}
 	},
@@ -481,6 +503,7 @@ registerAction2(
 				category,
 			});
 		}
+
 		override async run(accessor: ServicesAccessor): Promise<any> {
 			const configurationService = accessor.get(IConfigurationService);
 
@@ -508,6 +531,7 @@ registerAction2(
 				f1: true,
 			});
 		}
+
 		override async run(accessor: ServicesAccessor): Promise<any> {
 			focusSearchListCommand(accessor);
 		}
@@ -536,6 +560,7 @@ registerAction2(
 				),
 			});
 		}
+
 		override async run(accessor: ServicesAccessor): Promise<any> {
 			return await focusNextSearchResult(accessor);
 		}
@@ -565,6 +590,7 @@ registerAction2(
 				),
 			});
 		}
+
 		override async run(accessor: ServicesAccessor): Promise<any> {
 			return await focusPreviousSearchResult(accessor);
 		}
@@ -593,6 +619,7 @@ registerAction2(
 				],
 			});
 		}
+
 		override async run(accessor: ServicesAccessor): Promise<any> {
 			return await findOrReplaceInFiles(accessor, true);
 		}
@@ -602,23 +629,28 @@ registerAction2(
 //#region Helpers
 function toggleCaseSensitiveCommand(accessor: ServicesAccessor) {
 	const searchView = getSearchView(accessor.get(IViewsService));
+
 	searchView?.toggleCaseSensitive();
 }
 function toggleWholeWordCommand(accessor: ServicesAccessor) {
 	const searchView = getSearchView(accessor.get(IViewsService));
+
 	searchView?.toggleWholeWords();
 }
 function toggleRegexCommand(accessor: ServicesAccessor) {
 	const searchView = getSearchView(accessor.get(IViewsService));
+
 	searchView?.toggleRegex();
 }
 function togglePreserveCaseCommand(accessor: ServicesAccessor) {
 	const searchView = getSearchView(accessor.get(IViewsService));
+
 	searchView?.togglePreserveCase();
 }
 
 const focusSearchListCommand: ICommandHandler = (accessor) => {
 	const viewsService = accessor.get(IViewsService);
+
 	openSearchView(viewsService).then((searchView) => {
 		searchView?.moveFocusToResults();
 	});
@@ -634,6 +666,7 @@ async function focusNextSearchResult(accessor: ServicesAccessor): Promise<any> {
 			editorService.activeEditorPane as SearchEditor
 		).focusNextResult();
 	}
+
 	return openSearchView(accessor.get(IViewsService)).then((searchView) =>
 		searchView?.selectNextMatch(),
 	);
@@ -651,6 +684,7 @@ async function focusPreviousSearchResult(
 			editorService.activeEditorPane as SearchEditor
 		).focusPreviousResult();
 	}
+
 	return openSearchView(accessor.get(IViewsService)).then((searchView) =>
 		searchView?.selectPreviousMatch(),
 	);
@@ -664,12 +698,14 @@ async function findOrReplaceInFiles(
 			if (openedView) {
 				const searchAndReplaceWidget =
 					openedView.searchAndReplaceWidget;
+
 				searchAndReplaceWidget.toggleReplace(expandSearchReplaceWidget);
 
 				const updatedText =
 					openedView.updateTextFromFindWidgetOrSelection({
 						allowUnselectedWord: !expandSearchReplaceWidget,
 					});
+
 				openedView.searchAndReplaceWidget.focus(
 					undefined,
 					updatedText,

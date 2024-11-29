@@ -26,8 +26,10 @@ export class NativeWorkbenchStorageService extends RemoteStorageService {
 			mainProcessService,
 			environmentService,
 		);
+
 		this.registerListeners();
 	}
+
 	private registerListeners(): void {
 		this._register(
 			this.userDataProfileService.onDidChangeCurrentProfile((e) =>

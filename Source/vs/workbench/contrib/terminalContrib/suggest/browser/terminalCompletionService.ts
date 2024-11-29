@@ -64,20 +64,26 @@ export class TerminalCompletionList<ITerminalCompletion> {
 		resourceRequestConfig?: TerminalResourceRequestConfig,
 	) {
 		this.items = items;
+
 		this.resourceRequestConfig = resourceRequestConfig;
 	}
 }
 
 export interface TerminalResourceRequestConfig {
 	filesRequested?: boolean;
+
 	foldersRequested?: boolean;
+
 	cwd?: URI;
+
 	pathSeparator: string;
 }
 
 export interface ITerminalCompletionProvider {
 	id: string;
+
 	shellTypes?: TerminalShellType[];
+
 	provideCompletions(
 		value: string,
 		cursorPosition: number,
@@ -87,19 +93,24 @@ export interface ITerminalCompletionProvider {
 		| TerminalCompletionList<ITerminalCompletion>
 		| undefined
 	>;
+
 	triggerCharacters?: string[];
+
 	isBuiltin?: boolean;
 }
 
 export interface ITerminalCompletionService {
 	_serviceBrand: undefined;
+
 	readonly providers: IterableIterator<ITerminalCompletionProvider>;
+
 	registerTerminalCompletionProvider(
 		extensionIdentifier: string,
 		id: string,
 		provider: ITerminalCompletionProvider,
 		...triggerCharacters: string[]
 	): IDisposable;
+
 	provideCompletions(
 		promptValue: string,
 		cursorPosition: number,
@@ -114,6 +125,7 @@ export class TerminalCompletionService
 	implements ITerminalCompletionService
 {
 	declare _serviceBrand: undefined;
+
 	private readonly _providers: Map<
 		/*ext id*/ string,
 		Map</*provider id*/ string, ITerminalCompletionProvider>
@@ -146,17 +158,25 @@ export class TerminalCompletionService
 		...triggerCharacters: string[]
 	): IDisposable {
 		let extMap = this._providers.get(extensionIdentifier);
+
 		if (!extMap) {
 			extMap = new Map();
+
 			this._providers.set(extensionIdentifier, extMap);
 		}
+
 		provider.triggerCharacters = triggerCharacters;
+
 		provider.id = id;
+
 		extMap.set(id, provider);
+
 		return toDisposable(() => {
 			const extMap = this._providers.get(extensionIdentifier);
+
 			if (extMap) {
 				extMap.delete(id);
+
 				if (extMap.size === 0) {
 					this._providers.delete(extensionIdentifier);
 				}
@@ -179,22 +199,28 @@ export class TerminalCompletionService
 			this._configurationService.getValue<ITerminalSuggestConfiguration>(
 				terminalSuggestConfigSection,
 			).enableExtensionCompletions;
+
 		let providers;
+
 		if (triggerCharacter) {
 			const providersToRequest: ITerminalCompletionProvider[] = [];
+
 			for (const provider of this.providers) {
 				if (!provider.triggerCharacters) {
 					continue;
 				}
+
 				for (const char of provider.triggerCharacters) {
 					if (
 						promptValue.substring(0, cursorPosition)?.endsWith(char)
 					) {
 						providersToRequest.push(provider);
+
 						break;
 					}
 				}
 			}
+
 			providers = providersToRequest;
 		} else {
 			providers = [...this._providers.values()].flatMap((providerMap) => [
@@ -229,6 +255,7 @@ export class TerminalCompletionService
 			) {
 				return undefined;
 			}
+
 			const completions:
 				| ITerminalCompletion[]
 				| TerminalCompletionList<ITerminalCompletion>
@@ -237,12 +264,15 @@ export class TerminalCompletionService
 				cursorPosition,
 				token,
 			);
+
 			if (!completions) {
 				return undefined;
 			}
+
 			const devModeEnabled = this._configurationService.getValue(
 				TerminalSettingId.DevMode,
 			);
+
 			const completionItems = Array.isArray(completions)
 				? completions
 				: (completions.items ?? []);
@@ -255,6 +285,7 @@ export class TerminalCompletionService
 					) {
 						completion.detail = `(${provider.id}) ${completion.detail ?? ""}`;
 					}
+
 					return completion;
 				},
 			);
@@ -262,21 +293,26 @@ export class TerminalCompletionService
 			if (Array.isArray(completions)) {
 				return itemsWithModifiedLabels;
 			}
+
 			if (completions.resourceRequestConfig) {
 				const resourceCompletions = await this._resolveResources(
 					completions.resourceRequestConfig,
 					promptValue,
 					cursorPosition,
 				);
+
 				if (resourceCompletions) {
 					itemsWithModifiedLabels.push(...resourceCompletions);
 				}
+
 				return itemsWithModifiedLabels;
 			}
+
 			return;
 		});
 
 		const results = await Promise.all(completionPromises);
+
 		return results.filter((result) => !!result).flat();
 	}
 
@@ -286,9 +322,12 @@ export class TerminalCompletionService
 		cursorPosition: number,
 	): Promise<ITerminalCompletion[] | undefined> {
 		const cwd = URI.revive(resourceRequestConfig.cwd);
+
 		const foldersRequested =
 			resourceRequestConfig.foldersRequested ?? false;
+
 		const filesRequested = resourceRequestConfig.filesRequested ?? false;
+
 		if (!cwd || (!foldersRequested && !filesRequested)) {
 			return;
 		}
@@ -299,10 +338,13 @@ export class TerminalCompletionService
 			.split(resourceRequestConfig.pathSeparator)
 			.slice(0, -1)
 			.join(resourceRequestConfig.pathSeparator);
+
 		const parentCwd = URI.from({ scheme: cwd.scheme, path: parentDirPath });
+
 		const dirToPrefixMap = new Map<URI, string>();
 
 		dirToPrefixMap.set(cwd, ".");
+
 		dirToPrefixMap.set(parentCwd, "..");
 
 		const lastWord =
@@ -319,9 +361,11 @@ export class TerminalCompletionService
 
 			for (const stat of fileStat.children) {
 				let kind: TerminalCompletionItemKind | undefined;
+
 				if (foldersRequested && stat.isDirectory) {
 					kind = TerminalCompletionItemKind.Folder;
 				}
+
 				if (
 					filesRequested &&
 					!stat.isDirectory &&
@@ -329,12 +373,14 @@ export class TerminalCompletionService
 				) {
 					kind = TerminalCompletionItemKind.File;
 				}
+
 				if (kind === undefined) {
 					continue;
 				}
 
 				const label =
 					prefix + stat.resource.fsPath.replace(dir.fsPath, "");
+
 				resourceCompletions.push({
 					label,
 					kind,

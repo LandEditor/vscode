@@ -106,6 +106,7 @@ function parseAndValidate(
 			),
 		);
 	}
+
 	return args;
 }
 function stripAppPath(argv: string[]): string[] | undefined {
@@ -114,6 +115,7 @@ function stripAppPath(argv: string[]): string[] | undefined {
 	if (index > -1) {
 		return [...argv.slice(0, index), ...argv.slice(index + 1)];
 	}
+
 	return undefined;
 }
 /**
@@ -139,6 +141,7 @@ export function parseCLIProcessArgv(processArgv: string[]): NativeParsedArgs {
 	if (process.env["VSCODE_DEV"]) {
 		args = stripAppPath(args) || [];
 	}
+
 	return parseAndValidate(args, true);
 }
 export function addArg(argv: string[], ...args: string[]): string[] {
@@ -152,6 +155,7 @@ export function addArg(argv: string[], ...args: string[]): string[] {
 		// arguments before the "--" marker.
 		argv.splice(endOfArgsMarkerIndex, 0, ...args);
 	}
+
 	return argv;
 }
 export function isLaunchedFromCli(env: IProcessEnvironment): boolean {

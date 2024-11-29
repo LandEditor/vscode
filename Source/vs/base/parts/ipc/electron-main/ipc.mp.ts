@@ -49,12 +49,14 @@ export async function connect(window: BrowserWindow): Promise<MessagePortMain> {
 	// Ask to create message channel inside the window
 	// and send over a UUID to correlate the response
 	const nonce = generateUuid();
+
 	window.webContents.send("vscode:createMessageChannel", nonce);
 	// Wait until the window has returned the `MessagePort`
 	// We need to filter by the `nonce` to ensure we listen
 	// to the right response.
 	const onMessageChannelResult = Event.fromNodeEventEmitter<{
 		nonce: string;
+
 		port: MessagePortMain;
 	}>(
 		validatedIpcMain,

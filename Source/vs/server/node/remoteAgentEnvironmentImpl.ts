@@ -43,6 +43,7 @@ export class RemoteAgentEnvironmentChannel implements IServerChannel {
 		private readonly _userDataProfilesService: IUserDataProfilesService,
 		private readonly _extensionHostStatusService: IExtensionHostStatusService,
 	) {}
+
 	async call(_: any, command: string, arg?: any): Promise<any> {
 		switch (command) {
 			case "getEnvironmentData": {
@@ -55,6 +56,7 @@ export class RemoteAgentEnvironmentChannel implements IServerChannel {
 				let environmentData = await this._getEnvironmentData(
 					args.profile,
 				);
+
 				environmentData = transformOutgoingURIs(
 					environmentData,
 					uriTransformer,
@@ -62,6 +64,7 @@ export class RemoteAgentEnvironmentChannel implements IServerChannel {
 
 				return environmentData;
 			}
+
 			case "getExtensionHostExitInfo": {
 				const args = <IGetExtensionHostExitInfoArguments>arg;
 
@@ -69,6 +72,7 @@ export class RemoteAgentEnvironmentChannel implements IServerChannel {
 					args.reconnectionToken,
 				);
 			}
+
 			case "getDiagnosticInfo": {
 				const options = <IDiagnosticInfoOptions>arg;
 
@@ -98,6 +102,7 @@ export class RemoteAgentEnvironmentChannel implements IServerChannel {
 							),
 						)
 						.filter((uri) => uri.scheme === "file");
+
 					workspaceMetadataPromises = folderPaths.map((folder) => {
 						return collectWorkspaceStats(folder.fsPath, [
 							"node_modules",
@@ -107,11 +112,13 @@ export class RemoteAgentEnvironmentChannel implements IServerChannel {
 						});
 					});
 				}
+
 				return Promise.all([
 					processesPromise,
 					...workspaceMetadataPromises,
 				]).then(([processes, _]) => {
 					diagnosticInfo.processes = processes || undefined;
+
 					diagnosticInfo.workspaceMetadata = options.folders
 						? workspaceMetadata
 						: undefined;
@@ -120,11 +127,14 @@ export class RemoteAgentEnvironmentChannel implements IServerChannel {
 				});
 			}
 		}
+
 		throw new Error(`IPC Command ${command} not found`);
 	}
+
 	listen(_: any, event: string, arg: any): Event<any> {
 		throw new Error("Not supported");
 	}
+
 	private async _getEnvironmentData(
 		profile?: string,
 	): Promise<IRemoteAgentEnvironmentDTO> {
@@ -136,6 +146,7 @@ export class RemoteAgentEnvironmentChannel implements IServerChannel {
 		) {
 			await this._userDataProfilesService.createProfile(profile, profile);
 		}
+
 		type ProcessWithGlibc = NodeJS.Process & {
 			glibcVersion?: string;
 		};
@@ -148,8 +159,10 @@ export class RemoteAgentEnvironmentChannel implements IServerChannel {
 			const minorVersion = glibcVersion
 				? parseInt(glibcVersion.split(".")[1])
 				: 28;
+
 			isUnsupportedGlibc = minorVersion <= 27;
 		}
+
 		return {
 			pid: process.pid,
 			connectionToken:

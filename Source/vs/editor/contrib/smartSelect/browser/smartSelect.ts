@@ -49,12 +49,14 @@ class SelectionRanges {
 		if (index < 0 || index >= this.ranges.length) {
 			return this;
 		}
+
 		const res = new SelectionRanges(index, this.ranges);
 
 		if (res.ranges[index].equalsRange(this.ranges[this.index])) {
 			// next range equals this range, retry with next-next
 			return res.mov(fwd);
 		}
+
 		return res;
 	}
 }
@@ -69,7 +71,9 @@ export class SmartSelectController implements IEditorContribution {
 	}
 
 	private _state?: SelectionRanges[];
+
 	private _selectionListener?: IDisposable;
+
 	private _ignoreSelection: boolean = false;
 
 	constructor(
@@ -106,6 +110,7 @@ export class SmartSelectController implements IEditorContribution {
 					// invalid result
 					return;
 				}
+
 				if (
 					!this._editor.hasModel() ||
 					!arrays.equals(
@@ -140,10 +145,12 @@ export class SmartSelectController implements IEditorContribution {
 
 				// listen to caret move and forget about state
 				this._selectionListener?.dispose();
+
 				this._selectionListener =
 					this._editor.onDidChangeCursorPosition(() => {
 						if (!this._ignoreSelection) {
 							this._selectionListener?.dispose();
+
 							this._state = undefined;
 						}
 					});
@@ -154,6 +161,7 @@ export class SmartSelectController implements IEditorContribution {
 			// no state
 			return;
 		}
+
 		this._state = this._state.map((state) => state.mov(forward));
 
 		const newSelections = this._state.map((state) =>
@@ -162,6 +170,7 @@ export class SmartSelectController implements IEditorContribution {
 				state.ranges[state.index].getEndPosition(),
 			),
 		);
+
 		this._ignoreSelection = true;
 
 		try {
@@ -177,6 +186,7 @@ abstract class AbstractSmartSelect extends EditorAction {
 
 	constructor(forward: boolean, opts: IActionOptions) {
 		super(opts);
+
 		this._forward = forward;
 	}
 
@@ -279,6 +289,7 @@ registerEditorAction(ShrinkSelectionAction);
 
 export interface SelectionRangesOptions {
 	selectLeadingAndTrailingWhitespace: boolean;
+
 	selectSubwords: boolean;
 }
 
@@ -315,6 +326,7 @@ export async function provideSelectionRanges(
 						if (!allRawRanges[i]) {
 							allRawRanges[i] = [];
 						}
+
 						for (const oneProviderRanges of allProviderRanges[i]) {
 							if (
 								Range.isIRange(oneProviderRanges.range) &&
@@ -375,6 +387,7 @@ export async function provideSelectionRanges(
 					!Range.equalsRange(range, last))
 			) {
 				oneRanges.push(range);
+
 				last = range;
 			}
 		}
@@ -429,8 +442,10 @@ export async function provideSelectionRanges(
 					oneRangesWithTrivia.push(rangeFull);
 				}
 			}
+
 			oneRangesWithTrivia.push(cur);
 		}
+
 		return oneRangesWithTrivia;
 	});
 }
@@ -439,6 +454,7 @@ CommandsRegistry.registerCommand(
 	"_executeSelectionRangeProvider",
 	async function (accessor, ...args) {
 		const [resource, positions] = args;
+
 		assertType(URI.isUri(resource));
 
 		const registry = accessor.get(

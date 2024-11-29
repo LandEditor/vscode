@@ -14,9 +14,13 @@ export enum ViewsWelcomeExtensionPointFields {
 }
 export interface ViewWelcome {
 	readonly [ViewsWelcomeExtensionPointFields.view]: string;
+
 	readonly [ViewsWelcomeExtensionPointFields.contents]: string;
+
 	readonly [ViewsWelcomeExtensionPointFields.when]: string;
+
 	readonly [ViewsWelcomeExtensionPointFields.group]: string;
+
 	readonly [ViewsWelcomeExtensionPointFields.enablement]: string;
 }
 export type ViewsWelcomeExtensionPoint = ViewWelcome[];

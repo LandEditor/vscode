@@ -31,6 +31,7 @@ import {
 
 interface CacheRow {
 	uri: Uri;
+
 	timestamp: number;
 }
 
@@ -53,18 +54,25 @@ function sanitizeRef(
 
 		return indexStatus ? "" : "HEAD";
 	}
+
 	if (/^~\d$/.test(ref)) {
 		return `:${ref[1]}`;
 	}
+
 	return ref;
 }
 export class GitFileSystemProvider implements FileSystemProvider {
 	private _onDidChangeFile = new EventEmitter<FileChangeEvent[]>();
+
 	readonly onDidChangeFile: Event<FileChangeEvent[]> =
 		this._onDidChangeFile.event;
+
 	private changedRepositoryRoots = new Set<string>();
+
 	private cache = new Map<string, CacheRow>();
+
 	private mtime = new Date().getTime();
+
 	private disposables: Disposable[] = [];
 
 	constructor(private model: Model) {
@@ -82,22 +90,28 @@ export class GitFileSystemProvider implements FileSystemProvider {
 
 		setInterval(() => this.cleanup(), FIVE_MINUTES);
 	}
+
 	private onDidChangeRepository({ repository }: ModelChangeEvent): void {
 		this.changedRepositoryRoots.add(repository.root);
+
 		this.eventuallyFireChangeEvents();
 	}
+
 	private onDidChangeOriginalResource({
 		uri,
 	}: OriginalResourceChangeEvent): void {
 		if (uri.scheme !== "file") {
 			return;
 		}
+
 		const diffOriginalResourceUri = toGitUri(uri, "~");
 
 		const quickDiffOriginalResourceUri = toGitUri(uri, "", {
 			replaceFileExtension: true,
 		});
+
 		this.mtime = new Date().getTime();
+
 		this._onDidChangeFile.fire([
 			{ type: FileChangeType.Changed, uri: diffOriginalResourceUri },
 			{ type: FileChangeType.Changed, uri: quickDiffOriginalResourceUri },
@@ -114,8 +128,10 @@ export class GitFileSystemProvider implements FileSystemProvider {
 				window.onDidChangeWindowState,
 				(e) => e.focused,
 			);
+
 			await eventToPromise(onDidFocusWindow);
 		}
+
 		const events: FileChangeEvent[] = [];
 
 		for (const { uri } of this.cache.values()) {
@@ -129,12 +145,16 @@ export class GitFileSystemProvider implements FileSystemProvider {
 				}
 			}
 		}
+
 		if (events.length > 0) {
 			this.mtime = new Date().getTime();
+
 			this._onDidChangeFile.fire(events);
 		}
+
 		this.changedRepositoryRoots.clear();
 	}
+
 	private cleanup(): void {
 		const now = new Date().getTime();
 
@@ -153,11 +173,14 @@ export class GitFileSystemProvider implements FileSystemProvider {
 				// TODO: should fire delete events?
 			}
 		}
+
 		this.cache = cache;
 	}
+
 	watch(): Disposable {
 		return EmptyDisposable;
 	}
+
 	async stat(uri: Uri): Promise<FileStat> {
 		await this.model.isInitialized;
 
@@ -170,6 +193,7 @@ export class GitFileSystemProvider implements FileSystemProvider {
 		if (!repository) {
 			throw FileSystemError.FileNotFound();
 		}
+
 		let size = 0;
 
 		try {
@@ -177,18 +201,23 @@ export class GitFileSystemProvider implements FileSystemProvider {
 				sanitizeRef(ref, path, repository),
 				path,
 			);
+
 			size = details.size;
 		} catch {
 			// noop
 		}
+
 		return { type: FileType.File, size: size, mtime: this.mtime, ctime: 0 };
 	}
+
 	readDirectory(): Thenable<[string, FileType][]> {
 		throw new Error("Method not implemented.");
 	}
+
 	createDirectory(): void {
 		throw new Error("Method not implemented.");
 	}
+
 	async readFile(uri: Uri): Promise<Uint8Array> {
 		await this.model.isInitialized;
 
@@ -200,6 +229,7 @@ export class GitFileSystemProvider implements FileSystemProvider {
 			if (!repository) {
 				throw FileSystemError.FileNotFound();
 			}
+
 			const encoder = new TextEncoder();
 
 			if (ref === "index") {
@@ -208,14 +238,17 @@ export class GitFileSystemProvider implements FileSystemProvider {
 				return encoder.encode(await repository.diffWithHEAD(path));
 			}
 		}
+
 		const repository = this.model.getRepository(uri);
 
 		if (!repository) {
 			throw FileSystemError.FileNotFound();
 		}
+
 		const timestamp = new Date().getTime();
 
 		const cacheValue: CacheRow = { uri, timestamp };
+
 		this.cache.set(uri.toString(), cacheValue);
 
 		try {
@@ -227,15 +260,19 @@ export class GitFileSystemProvider implements FileSystemProvider {
 			return new Uint8Array(0);
 		}
 	}
+
 	writeFile(): void {
 		throw new Error("Method not implemented.");
 	}
+
 	delete(): void {
 		throw new Error("Method not implemented.");
 	}
+
 	rename(): void {
 		throw new Error("Method not implemented.");
 	}
+
 	dispose(): void {
 		this.disposables.forEach((d) => d.dispose());
 	}

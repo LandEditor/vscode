@@ -38,10 +38,12 @@ export async function getSelectionRanges(
 				) {
 					top = top.parent;
 				}
+
 				top.parent = htmlRange;
 
 				return range;
 			}
+
 			return (
 				htmlRange ||
 				SelectionRange.create(Range.create(position, position))

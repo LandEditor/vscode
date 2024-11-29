@@ -39,16 +39,21 @@ export class BaseCellEditorOptions
 		renderValidationDecorations: "on",
 		lineNumbersMinChars: 3,
 	};
+
 	private readonly _localDisposableStore = this._register(
 		new DisposableStore(),
 	);
+
 	private readonly _onDidChange = this._register(new Emitter<void>());
+
 	readonly onDidChange: Event<void> = this._onDidChange.event;
+
 	private _value: IEditorOptions;
 
 	get value(): Readonly<IEditorOptions> {
 		return this._value;
 	}
+
 	constructor(
 		readonly notebookEditor: INotebookEditorDelegate,
 		readonly notebookOptions: NotebookOptions,
@@ -56,6 +61,7 @@ export class BaseCellEditorOptions
 		readonly language: string,
 	) {
 		super();
+
 		this._register(
 			configurationService.onDidChangeConfiguration((e) => {
 				if (
@@ -66,6 +72,7 @@ export class BaseCellEditorOptions
 				}
 			}),
 		);
+
 		this._register(
 			notebookOptions.onDidChangeOptions((e) => {
 				if (
@@ -77,6 +84,7 @@ export class BaseCellEditorOptions
 				}
 			}),
 		);
+
 		this._register(
 			this.notebookEditor.onDidChangeModel(() => {
 				this._localDisposableStore.clear();
@@ -87,6 +95,7 @@ export class BaseCellEditorOptions
 							this._recomputeOptions();
 						}),
 					);
+
 					this._recomputeOptions();
 				}
 			}),
@@ -99,12 +108,16 @@ export class BaseCellEditorOptions
 				}),
 			);
 		}
+
 		this._value = this._computeEditorOptions();
 	}
+
 	private _recomputeOptions(): void {
 		this._value = this._computeEditorOptions();
+
 		this._onDidChange.fire();
 	}
+
 	private _computeEditorOptions() {
 		const editorOptions = deepClone(
 			this.configurationService.getValue<IEditorOptions>("editor", {
@@ -128,6 +141,7 @@ export class BaseCellEditorOptions
 				}
 			}
 		}
+
 		const computed = Object.freeze({
 			...editorOptions,
 			...BaseCellEditorOptions.fixedEditorOptions,

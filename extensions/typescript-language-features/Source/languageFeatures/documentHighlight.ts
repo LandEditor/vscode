@@ -15,6 +15,7 @@ class TypeScriptDocumentHighlightProvider
 		vscode.MultiDocumentHighlightProvider
 {
 	public constructor(private readonly client: ITypeScriptServiceClient) {}
+
 	public async provideMultiDocumentHighlights(
 		document: vscode.TextDocument,
 		position: vscode.Position,
@@ -30,6 +31,7 @@ class TypeScriptDocumentHighlightProvider
 		if (!file || allFiles.length === 0) {
 			return [];
 		}
+
 		const args = {
 			...typeConverters.Position.toFileLocationRequestArgs(
 				file,
@@ -47,6 +49,7 @@ class TypeScriptDocumentHighlightProvider
 		if (response.type !== "response" || !response.body) {
 			return [];
 		}
+
 		const result = response.body.map(
 			(highlightItem) =>
 				new vscode.MultiDocumentHighlight(
@@ -57,6 +60,7 @@ class TypeScriptDocumentHighlightProvider
 
 		return result;
 	}
+
 	public async provideDocumentHighlights(
 		document: vscode.TextDocument,
 		position: vscode.Position,
@@ -67,6 +71,7 @@ class TypeScriptDocumentHighlightProvider
 		if (!file) {
 			return [];
 		}
+
 		const args = {
 			...typeConverters.Position.toFileLocationRequestArgs(
 				file,
@@ -84,6 +89,7 @@ class TypeScriptDocumentHighlightProvider
 		if (response.type !== "response" || !response.body) {
 			return [];
 		}
+
 		return response.body.flatMap(convertDocumentHighlight);
 	}
 }

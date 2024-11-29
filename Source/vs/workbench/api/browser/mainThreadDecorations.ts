@@ -25,8 +25,11 @@ import {
 
 class DecorationRequestsQueue {
 	private _idPool = 0;
+
 	private _requests = new Map<number, DecorationRequest>();
+
 	private _resolver = new Map<number, (data: DecorationData) => any>();
+
 	private _timer: any;
 
 	constructor(
@@ -35,32 +38,39 @@ class DecorationRequestsQueue {
 	) {
 		//
 	}
+
 	enqueue(uri: URI, token: CancellationToken): Promise<DecorationData> {
 		const id = ++this._idPool;
 
 		const result = new Promise<DecorationData>((resolve) => {
 			this._requests.set(id, { id, uri });
+
 			this._resolver.set(id, resolve);
+
 			this._processQueue();
 		});
 
 		const sub = token.onCancellationRequested(() => {
 			this._requests.delete(id);
+
 			this._resolver.delete(id);
 		});
 
 		return result.finally(() => sub.dispose());
 	}
+
 	private _processQueue(): void {
 		if (typeof this._timer === "number") {
 			// already queued
 			return;
 		}
+
 		this._timer = setTimeout(() => {
 			// make request
 			const requests = this._requests;
 
 			const resolver = this._resolver;
+
 			this._proxy
 				.$provideDecorations(
 					this._handle,
@@ -74,7 +84,9 @@ class DecorationRequestsQueue {
 				});
 			// reset
 			this._requests = new Map();
+
 			this._resolver = new Map();
+
 			this._timer = undefined;
 		}, 0);
 	}
@@ -85,6 +97,7 @@ export class MainThreadDecorations implements MainThreadDecorationsShape {
 		number,
 		[Emitter<URI[]>, IDisposable]
 	>();
+
 	private readonly _proxy: ExtHostDecorationsShape;
 
 	constructor(
@@ -94,8 +107,10 @@ export class MainThreadDecorations implements MainThreadDecorationsShape {
 	) {
 		this._proxy = context.getProxy(ExtHostContext.ExtHostDecorations);
 	}
+
 	dispose() {
 		this._provider.forEach((value) => dispose(value));
+
 		this._provider.clear();
 	}
 	$registerDecorationProvider(handle: number, label: string): void {
@@ -116,6 +131,7 @@ export class MainThreadDecorations implements MainThreadDecorationsShape {
 					if (!data) {
 						return undefined;
 					}
+
 					const [bubble, tooltip, letter, themeColor] = data;
 
 					return {
@@ -127,6 +143,7 @@ export class MainThreadDecorations implements MainThreadDecorationsShape {
 					};
 				},
 			});
+
 		this._provider.set(handle, [emitter, registration]);
 	}
 	$onDidChange(handle: number, resources: UriComponents[]): void {
@@ -134,6 +151,7 @@ export class MainThreadDecorations implements MainThreadDecorationsShape {
 
 		if (provider) {
 			const [emitter] = provider;
+
 			emitter.fire(resources && resources.map((r) => URI.revive(r)));
 		}
 	}
@@ -142,6 +160,7 @@ export class MainThreadDecorations implements MainThreadDecorationsShape {
 
 		if (provider) {
 			dispose(provider);
+
 			this._provider.delete(handle);
 		}
 	}

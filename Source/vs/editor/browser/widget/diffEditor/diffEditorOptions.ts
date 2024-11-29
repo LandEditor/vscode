@@ -34,6 +34,7 @@ export class DiffEditorOptions {
 			changedOptions: IDiffEditorOptions;
 		}
 	>;
+
 	public get editorOptions(): IObservable<
 		IEditorOptions,
 		{
@@ -42,7 +43,9 @@ export class DiffEditorOptions {
 	> {
 		return this._options;
 	}
+
 	private readonly _diffEditorWidth = observableValue<number>(this, 0);
+
 	private readonly _screenReaderMode = observableFromEvent(
 		this,
 		this._accessibilityService.onDidChangeScreenReaderOptimized,
@@ -58,8 +61,10 @@ export class DiffEditorOptions {
 			...options,
 			...validateDiffEditorOptions(options, diffEditorDefaultOptions),
 		};
+
 		this._options = observableValue(this, optionsCopy);
 	}
+
 	public readonly couldShowInlineViewBecauseOfSize = derived(
 		this,
 		(reader) =>
@@ -67,16 +72,19 @@ export class DiffEditorOptions {
 			this._diffEditorWidth.read(reader) <=
 				this._options.read(reader).renderSideBySideInlineBreakpoint,
 	);
+
 	public readonly renderOverviewRuler = derived(
 		this,
 		(reader) => this._options.read(reader).renderOverviewRuler,
 	);
+
 	public readonly renderSideBySide = derived(this, (reader) => {
 		if (this.compactMode.read(reader)) {
 			if (this.shouldRenderInlineViewInSmartMode.read(reader)) {
 				return false;
 			}
 		}
+
 		return (
 			this._options.read(reader).renderSideBySide &&
 			!(
@@ -86,123 +94,152 @@ export class DiffEditorOptions {
 			)
 		);
 	});
+
 	public readonly readOnly = derived(
 		this,
 		(reader) => this._options.read(reader).readOnly,
 	);
+
 	public readonly shouldRenderOldRevertArrows = derived(this, (reader) => {
 		if (!this._options.read(reader).renderMarginRevertIcon) {
 			return false;
 		}
+
 		if (!this.renderSideBySide.read(reader)) {
 			return false;
 		}
+
 		if (this.readOnly.read(reader)) {
 			return false;
 		}
+
 		if (this.shouldRenderGutterMenu.read(reader)) {
 			return false;
 		}
+
 		return true;
 	});
+
 	public readonly shouldRenderGutterMenu = derived(
 		this,
 		(reader) => this._options.read(reader).renderGutterMenu,
 	);
+
 	public readonly renderIndicators = derived(
 		this,
 		(reader) => this._options.read(reader).renderIndicators,
 	);
+
 	public readonly enableSplitViewResizing = derived(
 		this,
 		(reader) => this._options.read(reader).enableSplitViewResizing,
 	);
+
 	public readonly splitViewDefaultRatio = derived(
 		this,
 		(reader) => this._options.read(reader).splitViewDefaultRatio,
 	);
+
 	public readonly ignoreTrimWhitespace = derived(
 		this,
 		(reader) => this._options.read(reader).ignoreTrimWhitespace,
 	);
+
 	public readonly maxComputationTimeMs = derived(
 		this,
 		(reader) => this._options.read(reader).maxComputationTime,
 	);
+
 	public readonly showMoves = derived(
 		this,
 		(reader) =>
 			this._options.read(reader).experimental.showMoves! &&
 			this.renderSideBySide.read(reader),
 	);
+
 	public readonly isInEmbeddedEditor = derived(
 		this,
 		(reader) => this._options.read(reader).isInEmbeddedEditor,
 	);
+
 	public readonly diffWordWrap = derived(
 		this,
 		(reader) => this._options.read(reader).diffWordWrap,
 	);
+
 	public readonly originalEditable = derived(
 		this,
 		(reader) => this._options.read(reader).originalEditable,
 	);
+
 	public readonly diffCodeLens = derived(
 		this,
 		(reader) => this._options.read(reader).diffCodeLens,
 	);
+
 	public readonly accessibilityVerbose = derived(
 		this,
 		(reader) => this._options.read(reader).accessibilityVerbose,
 	);
+
 	public readonly diffAlgorithm = derived(
 		this,
 		(reader) => this._options.read(reader).diffAlgorithm,
 	);
+
 	public readonly showEmptyDecorations = derived(
 		this,
 		(reader) =>
 			this._options.read(reader).experimental.showEmptyDecorations!,
 	);
+
 	public readonly onlyShowAccessibleDiffViewer = derived(
 		this,
 		(reader) => this._options.read(reader).onlyShowAccessibleDiffViewer,
 	);
+
 	public readonly compactMode = derived(
 		this,
 		(reader) => this._options.read(reader).compactMode,
 	);
+
 	private readonly trueInlineDiffRenderingEnabled: IObservable<boolean> =
 		derived(
 			this,
 			(reader) =>
 				this._options.read(reader).experimental.useTrueInlineView!,
 		);
+
 	public readonly useTrueInlineDiffRendering: IObservable<boolean> = derived(
 		this,
 		(reader) =>
 			!this.renderSideBySide.read(reader) &&
 			this.trueInlineDiffRenderingEnabled.read(reader),
 	);
+
 	public readonly hideUnchangedRegions = derived(
 		this,
 		(reader) => this._options.read(reader).hideUnchangedRegions.enabled!,
 	);
+
 	public readonly hideUnchangedRegionsRevealLineCount = derived(
 		this,
 		(reader) =>
 			this._options.read(reader).hideUnchangedRegions.revealLineCount!,
 	);
+
 	public readonly hideUnchangedRegionsContextLineCount = derived(
 		this,
 		(reader) =>
 			this._options.read(reader).hideUnchangedRegions.contextLineCount!,
 	);
+
 	public readonly hideUnchangedRegionsMinimumLineCount = derived(
 		this,
 		(reader) =>
 			this._options.read(reader).hideUnchangedRegions.minimumLineCount!,
 	);
+
 	public updateOptions(changedOptions: IDiffEditorOptions): void {
 		const newDiffEditorOptions = validateDiffEditorOptions(
 			changedOptions,
@@ -214,20 +251,25 @@ export class DiffEditorOptions {
 			...changedOptions,
 			...newDiffEditorOptions,
 		};
+
 		this._options.set(newOptions, undefined, {
 			changedOptions: changedOptions,
 		});
 	}
+
 	public setWidth(width: number): void {
 		this._diffEditorWidth.set(width, undefined);
 	}
+
 	private readonly _model = observableValue<DiffEditorViewModel | undefined>(
 		this,
 		undefined,
 	);
+
 	public setModel(model: DiffEditorViewModel | undefined) {
 		this._model.set(model, undefined);
 	}
+
 	private readonly shouldRenderInlineViewInSmartMode = this._model
 		.map(this, (model) =>
 			derivedConstOnceDefined(this, (reader) => {
@@ -243,6 +285,7 @@ export class DiffEditorOptions {
 		)
 		.flatten()
 		.map(this, (v) => !!v);
+
 	public readonly inlineViewHideOriginalLineNumbers = this.compactMode;
 }
 function isSimpleDiff(

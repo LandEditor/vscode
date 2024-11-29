@@ -32,25 +32,31 @@ function initGHES(
 
 		return;
 	}
+
 	const githubEnterpriseAuthProvider = new GitHubAuthenticationProvider(
 		context,
 		uriHandler,
 		uri,
 	);
+
 	context.subscriptions.push(githubEnterpriseAuthProvider);
 
 	return githubEnterpriseAuthProvider;
 }
 export function activate(context: vscode.ExtensionContext) {
 	const uriHandler = new UriEventHandler();
+
 	context.subscriptions.push(uriHandler);
+
 	context.subscriptions.push(vscode.window.registerUriHandler(uriHandler));
+
 	context.subscriptions.push(
 		new GitHubAuthenticationProvider(context, uriHandler),
 	);
 
 	let githubEnterpriseAuthProvider: GitHubAuthenticationProvider | undefined =
 		initGHES(context, uriHandler);
+
 	context.subscriptions.push(
 		vscode.workspace.onDidChangeConfiguration(async (e) => {
 			if (e.affectsConfiguration("github-enterprise.uri")) {
@@ -60,6 +66,7 @@ export function activate(context: vscode.ExtensionContext) {
 						.get<string>("github-enterprise.uri")
 				) {
 					githubEnterpriseAuthProvider?.dispose();
+
 					githubEnterpriseAuthProvider = initGHES(
 						context,
 						uriHandler,

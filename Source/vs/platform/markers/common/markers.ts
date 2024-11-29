@@ -12,15 +12,23 @@ export interface IMarkerService {
 	readonly _serviceBrand: undefined;
 
 	getStatistics(): MarkerStatistics;
+
 	changeOne(owner: string, resource: URI, markers: IMarkerData[]): void;
+
 	changeAll(owner: string, data: IResourceMarker[]): void;
+
 	remove(owner: string, resources: URI[]): void;
+
 	read(filter?: {
 		owner?: string;
+
 		resource?: URI;
+
 		severities?: number;
+
 		take?: number;
 	}): IMarker[];
+
 	readonly onMarkerChanged: Event<readonly URI[]>;
 }
 /**
@@ -28,10 +36,15 @@ export interface IMarkerService {
  */
 export interface IRelatedInformation {
 	resource: URI;
+
 	message: string;
+
 	startLineNumber: number;
+
 	startColumn: number;
+
 	endLineNumber: number;
+
 	endColumn: number;
 }
 export const enum MarkerTag {
@@ -48,19 +61,24 @@ export namespace MarkerSeverity {
 	export function compare(a: MarkerSeverity, b: MarkerSeverity): number {
 		return b - a;
 	}
+
 	const _displayStrings: {
 		[value: number]: string;
 	} = Object.create(null);
+
 	_displayStrings[MarkerSeverity.Error] = localize("sev.error", "Error");
+
 	_displayStrings[MarkerSeverity.Warning] = localize(
 		"sev.warning",
 		"Warning",
 	);
+
 	_displayStrings[MarkerSeverity.Info] = localize("sev.info", "Info");
 
 	export function toString(a: MarkerSeverity): string {
 		return _displayStrings[a] || "";
 	}
+
 	export function fromSeverity(severity: Severity): MarkerSeverity {
 		switch (severity) {
 			case Severity.Error:
@@ -76,6 +94,7 @@ export namespace MarkerSeverity {
 				return MarkerSeverity.Hint;
 		}
 	}
+
 	export function toSeverity(severity: MarkerSeverity): Severity {
 		switch (severity) {
 			case MarkerSeverity.Error:
@@ -100,47 +119,75 @@ export interface IMarkerData {
 		| string
 		| {
 				value: string;
+
 				target: URI;
 		  };
+
 	severity: MarkerSeverity;
+
 	message: string;
+
 	source?: string;
+
 	startLineNumber: number;
+
 	startColumn: number;
+
 	endLineNumber: number;
+
 	endColumn: number;
+
 	modelVersionId?: number;
+
 	relatedInformation?: IRelatedInformation[];
+
 	tags?: MarkerTag[];
 }
 export interface IResourceMarker {
 	resource: URI;
+
 	marker: IMarkerData;
 }
 export interface IMarker {
 	owner: string;
+
 	resource: URI;
+
 	severity: MarkerSeverity;
+
 	code?:
 		| string
 		| {
 				value: string;
+
 				target: URI;
 		  };
+
 	message: string;
+
 	source?: string;
+
 	startLineNumber: number;
+
 	startColumn: number;
+
 	endLineNumber: number;
+
 	endColumn: number;
+
 	modelVersionId?: number;
+
 	relatedInformation?: IRelatedInformation[];
+
 	tags?: MarkerTag[];
 }
 export interface MarkerStatistics {
 	errors: number;
+
 	warnings: number;
+
 	infos: number;
+
 	unknowns: number;
 }
 export namespace IMarkerData {
@@ -149,6 +196,7 @@ export namespace IMarkerData {
 	export function makeKey(markerData: IMarkerData): string {
 		return makeKeyOptionalMessage(markerData, true);
 	}
+
 	export function makeKeyOptionalMessage(
 		markerData: IMarkerData,
 		useMessage: boolean,
@@ -160,6 +208,7 @@ export namespace IMarkerData {
 		} else {
 			result.push(emptyString);
 		}
+
 		if (markerData.code) {
 			if (typeof markerData.code === "string") {
 				result.push(markerData.code.replace("¦", "\\¦"));
@@ -169,6 +218,7 @@ export namespace IMarkerData {
 		} else {
 			result.push(emptyString);
 		}
+
 		if (markerData.severity !== undefined && markerData.severity !== null) {
 			result.push(MarkerSeverity.toString(markerData.severity));
 		} else {
@@ -181,6 +231,7 @@ export namespace IMarkerData {
 		} else {
 			result.push(emptyString);
 		}
+
 		if (
 			markerData.startLineNumber !== undefined &&
 			markerData.startLineNumber !== null
@@ -189,6 +240,7 @@ export namespace IMarkerData {
 		} else {
 			result.push(emptyString);
 		}
+
 		if (
 			markerData.startColumn !== undefined &&
 			markerData.startColumn !== null
@@ -197,6 +249,7 @@ export namespace IMarkerData {
 		} else {
 			result.push(emptyString);
 		}
+
 		if (
 			markerData.endLineNumber !== undefined &&
 			markerData.endLineNumber !== null
@@ -205,6 +258,7 @@ export namespace IMarkerData {
 		} else {
 			result.push(emptyString);
 		}
+
 		if (
 			markerData.endColumn !== undefined &&
 			markerData.endColumn !== null
@@ -213,6 +267,7 @@ export namespace IMarkerData {
 		} else {
 			result.push(emptyString);
 		}
+
 		result.push(emptyString);
 
 		return result.join("¦");

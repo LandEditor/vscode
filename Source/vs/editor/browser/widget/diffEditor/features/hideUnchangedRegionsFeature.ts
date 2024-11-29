@@ -76,6 +76,7 @@ export class HideUnchangedRegionsFeature extends Disposable {
 			return [];
 		},
 	}));
+
 	public static setBreadcrumbsSourceFactory(
 		factory: (
 			textModel: ITextModel,
@@ -84,6 +85,7 @@ export class HideUnchangedRegionsFeature extends Disposable {
 	) {
 		this._breadcrumbsSourceFactory.set(factory, undefined);
 	}
+
 	private readonly _modifiedOutlineSource = derivedDisposable(
 		this,
 		(reader) => {
@@ -99,14 +101,19 @@ export class HideUnchangedRegionsFeature extends Disposable {
 				: factory(m, this._instantiationService);
 		},
 	);
+
 	public readonly viewZones: IObservable<{
 		origViewZones: IObservableViewZone[];
+
 		modViewZones: IObservableViewZone[];
 	}>;
+
 	private _isUpdatingHiddenAreas = false;
+
 	public get isUpdatingHiddenAreas() {
 		return this._isUpdatingHiddenAreas;
 	}
+
 	constructor(
 		private readonly _editors: DiffEditorEditors,
 		private readonly _diffModel: IObservable<
@@ -117,12 +124,15 @@ export class HideUnchangedRegionsFeature extends Disposable {
 		private readonly _instantiationService: IInstantiationService,
 	) {
 		super();
+
 		this._register(
 			this._editors.original.onDidChangeCursorPosition((e) => {
 				if (e.reason === CursorChangeReason.ContentFlush) {
 					return;
 				}
+
 				const m = this._diffModel.get();
+
 				transaction((tx) => {
 					for (const s of this._editors.original.getSelections() ||
 						[]) {
@@ -131,6 +141,7 @@ export class HideUnchangedRegionsFeature extends Disposable {
 							RevealPreference.FromCloserSide,
 							tx,
 						);
+
 						m?.ensureOriginalLineIsVisible(
 							s.getEndPosition().lineNumber,
 							RevealPreference.FromCloserSide,
@@ -140,12 +151,15 @@ export class HideUnchangedRegionsFeature extends Disposable {
 				});
 			}),
 		);
+
 		this._register(
 			this._editors.modified.onDidChangeCursorPosition((e) => {
 				if (e.reason === CursorChangeReason.ContentFlush) {
 					return;
 				}
+
 				const m = this._diffModel.get();
+
 				transaction((tx) => {
 					for (const s of this._editors.modified.getSelections() ||
 						[]) {
@@ -154,6 +168,7 @@ export class HideUnchangedRegionsFeature extends Disposable {
 							RevealPreference.FromCloserSide,
 							tx,
 						);
+
 						m?.ensureModifiedLineIsVisible(
 							s.getEndPosition().lineNumber,
 							RevealPreference.FromCloserSide,
@@ -175,8 +190,10 @@ export class HideUnchangedRegionsFeature extends Disposable {
 			) {
 				return [];
 			}
+
 			return regions;
 		});
+
 		this.viewZones = derivedWithStore(this, (reader, store) => {
 			/** @description view Zones */
 			const modifiedOutlineSource =
@@ -185,6 +202,7 @@ export class HideUnchangedRegionsFeature extends Disposable {
 			if (!modifiedOutlineSource) {
 				return { origViewZones: [], modViewZones: [] };
 			}
+
 			const origViewZones: IObservableViewZone[] = [];
 
 			const modViewZones: IObservableViewZone[] = [];
@@ -201,12 +219,14 @@ export class HideUnchangedRegionsFeature extends Disposable {
 				if (r.shouldHideControls(reader)) {
 					continue;
 				}
+
 				if (
 					compactMode &&
 					(i === 0 || i === curUnchangedRegions.length - 1)
 				) {
 					continue;
 				}
+
 				if (compactMode) {
 					{
 						const d = derived(
@@ -218,7 +238,9 @@ export class HideUnchangedRegionsFeature extends Disposable {
 						);
 
 						const origVz = new PlaceholderViewZone(d, 12);
+
 						origViewZones.push(origVz);
+
 						store.add(
 							new CompactCollapsedCodeOverlayWidget(
 								this._editors.original,
@@ -238,7 +260,9 @@ export class HideUnchangedRegionsFeature extends Disposable {
 						);
 
 						const modViewZone = new PlaceholderViewZone(d, 12);
+
 						modViewZones.push(modViewZone);
+
 						store.add(
 							new CompactCollapsedCodeOverlayWidget(
 								this._editors.modified,
@@ -258,7 +282,9 @@ export class HideUnchangedRegionsFeature extends Disposable {
 						);
 
 						const origVz = new PlaceholderViewZone(d, 24);
+
 						origViewZones.push(origVz);
+
 						store.add(
 							new CollapsedCodeOverlayWidget(
 								this._editors.original,
@@ -289,7 +315,9 @@ export class HideUnchangedRegionsFeature extends Disposable {
 						);
 
 						const modViewZone = new PlaceholderViewZone(d, 24);
+
 						modViewZones.push(modViewZone);
+
 						store.add(
 							new CollapsedCodeOverlayWidget(
 								this._editors.modified,
@@ -312,6 +340,7 @@ export class HideUnchangedRegionsFeature extends Disposable {
 					}
 				}
 			}
+
 			return { origViewZones, modViewZones };
 		});
 
@@ -333,6 +362,7 @@ export class HideUnchangedRegionsFeature extends Disposable {
 				"fold-unchanged " + ThemeIcon.asClassName(Codicon.fold),
 			zIndex: 10001,
 		};
+
 		this._register(
 			applyObservableDecorations(
 				this._editors.original,
@@ -356,10 +386,12 @@ export class HideUnchangedRegionsFeature extends Disposable {
 							});
 						}
 					}
+
 					return result;
 				}),
 			),
 		);
+
 		this._register(
 			applyObservableDecorations(
 				this._editors.modified,
@@ -384,14 +416,17 @@ export class HideUnchangedRegionsFeature extends Disposable {
 							});
 						}
 					}
+
 					return result;
 				}),
 			),
 		);
+
 		this._register(
 			autorun((reader) => {
 				/** @description update folded unchanged regions */
 				const curUnchangedRegions = unchangedRegions.read(reader);
+
 				this._isUpdatingHiddenAreas = true;
 
 				try {
@@ -404,6 +439,7 @@ export class HideUnchangedRegionsFeature extends Disposable {
 							)
 							.filter(isDefined),
 					);
+
 					this._editors.modified.setHiddenAreas(
 						curUnchangedRegions
 							.map((r) =>
@@ -418,6 +454,7 @@ export class HideUnchangedRegionsFeature extends Disposable {
 				}
 			}),
 		);
+
 		this._register(
 			this._editors.modified.onMouseUp((event) => {
 				if (
@@ -432,6 +469,7 @@ export class HideUnchangedRegionsFeature extends Disposable {
 					if (!model) {
 						return;
 					}
+
 					const region = model.unchangedRegions
 						.get()
 						.find((r) =>
@@ -441,12 +479,16 @@ export class HideUnchangedRegionsFeature extends Disposable {
 					if (!region) {
 						return;
 					}
+
 					region.collapseAll(undefined);
+
 					event.event.stopPropagation();
+
 					event.event.preventDefault();
 				}
 			}),
 		);
+
 		this._register(
 			this._editors.original.onMouseUp((event) => {
 				if (
@@ -461,6 +503,7 @@ export class HideUnchangedRegionsFeature extends Disposable {
 					if (!model) {
 						return;
 					}
+
 					const region = model.unchangedRegions
 						.get()
 						.find((r) =>
@@ -470,8 +513,11 @@ export class HideUnchangedRegionsFeature extends Disposable {
 					if (!region) {
 						return;
 					}
+
 					region.collapseAll(undefined);
+
 					event.event.stopPropagation();
+
 					event.event.preventDefault();
 				}
 			}),
@@ -494,11 +540,13 @@ class CompactCollapsedCodeOverlayWidget extends ViewZoneOverlayWidget {
 		const root = h("div.diff-hidden-lines-widget");
 
 		super(editor, _viewZone, root.root);
+
 		root.root.appendChild(this._nodes.root);
 
 		if (this._hide) {
 			this._nodes.root.replaceChildren();
 		}
+
 		this._register(
 			autorun((reader) => {
 				/** @description update labels */
@@ -513,6 +561,7 @@ class CompactCollapsedCodeOverlayWidget extends ViewZoneOverlayWidget {
 						"{0} hidden lines",
 						lineCount,
 					);
+
 					this._nodes.text.innerText = linesHiddenText;
 				}
 			}),
@@ -584,6 +633,7 @@ class CollapsedCodeOverlayWidget extends ViewZoneOverlayWidget {
 		const root = h("div.diff-hidden-lines-widget");
 
 		super(_editor, _viewZone, root.root);
+
 		root.root.appendChild(this._nodes.root);
 
 		if (!this._hide) {
@@ -596,6 +646,7 @@ class CollapsedCodeOverlayWidget extends ViewZoneOverlayWidget {
 		} else {
 			reset(this._nodes.first);
 		}
+
 		this._register(
 			autorun((reader) => {
 				/** @description Update CollapsedCodeOverlayWidget canMove* css classes */
@@ -605,19 +656,23 @@ class CollapsedCodeOverlayWidget extends ViewZoneOverlayWidget {
 							reader,
 						) ===
 					this._unchangedRegion.lineCount;
+
 				this._nodes.bottom.classList.toggle(
 					"canMoveTop",
 					!isFullyRevealed,
 				);
+
 				this._nodes.bottom.classList.toggle(
 					"canMoveBottom",
 					this._unchangedRegion.visibleLineCountBottom.read(reader) >
 						0,
 				);
+
 				this._nodes.top.classList.toggle(
 					"canMoveTop",
 					this._unchangedRegion.visibleLineCountTop.read(reader) > 0,
 				);
+
 				this._nodes.top.classList.toggle(
 					"canMoveBottom",
 					!isFullyRevealed,
@@ -667,13 +722,17 @@ class CollapsedCodeOverlayWidget extends ViewZoneOverlayWidget {
 		);
 
 		const editor = this._editor;
+
 		this._register(
 			addDisposableListener(this._nodes.top, "mousedown", (e) => {
 				if (e.button !== 0) {
 					return;
 				}
+
 				this._nodes.top.classList.toggle("dragging", true);
+
 				this._nodes.root.classList.toggle("dragging", true);
+
 				e.preventDefault();
 
 				const startTop = e.clientY;
@@ -681,6 +740,7 @@ class CollapsedCodeOverlayWidget extends ViewZoneOverlayWidget {
 				let didMove = false;
 
 				const cur = this._unchangedRegion.visibleLineCountTop.get();
+
 				this._unchangedRegion.isDragged.set("top", undefined);
 
 				const window = getWindow(this._nodes.top);
@@ -692,6 +752,7 @@ class CollapsedCodeOverlayWidget extends ViewZoneOverlayWidget {
 						const currentTop = e.clientY;
 
 						const delta = currentTop - startTop;
+
 						didMove = didMove || Math.abs(delta) > 2;
 
 						const lineDelta = Math.round(
@@ -705,6 +766,7 @@ class CollapsedCodeOverlayWidget extends ViewZoneOverlayWidget {
 								this._unchangedRegion.getMaxVisibleLineCountTop(),
 							),
 						);
+
 						this._unchangedRegion.visibleLineCountTop.set(
 							newVal,
 							undefined,
@@ -722,25 +784,34 @@ class CollapsedCodeOverlayWidget extends ViewZoneOverlayWidget {
 								undefined,
 							);
 						}
+
 						this._nodes.top.classList.toggle("dragging", false);
+
 						this._nodes.root.classList.toggle("dragging", false);
+
 						this._unchangedRegion.isDragged.set(
 							undefined,
 							undefined,
 						);
+
 						mouseMoveListener.dispose();
+
 						mouseUpListener.dispose();
 					},
 				);
 			}),
 		);
+
 		this._register(
 			addDisposableListener(this._nodes.bottom, "mousedown", (e) => {
 				if (e.button !== 0) {
 					return;
 				}
+
 				this._nodes.bottom.classList.toggle("dragging", true);
+
 				this._nodes.root.classList.toggle("dragging", true);
+
 				e.preventDefault();
 
 				const startTop = e.clientY;
@@ -748,6 +819,7 @@ class CollapsedCodeOverlayWidget extends ViewZoneOverlayWidget {
 				let didMove = false;
 
 				const cur = this._unchangedRegion.visibleLineCountBottom.get();
+
 				this._unchangedRegion.isDragged.set("bottom", undefined);
 
 				const window = getWindow(this._nodes.bottom);
@@ -759,6 +831,7 @@ class CollapsedCodeOverlayWidget extends ViewZoneOverlayWidget {
 						const currentTop = e.clientY;
 
 						const delta = currentTop - startTop;
+
 						didMove = didMove || Math.abs(delta) > 2;
 
 						const lineDelta = Math.round(
@@ -781,6 +854,7 @@ class CollapsedCodeOverlayWidget extends ViewZoneOverlayWidget {
 										this._unchangedRegionRange
 											.endLineNumberExclusive,
 									);
+
 						this._unchangedRegion.visibleLineCountBottom.set(
 							newVal,
 							undefined,
@@ -794,6 +868,7 @@ class CollapsedCodeOverlayWidget extends ViewZoneOverlayWidget {
 										this._unchangedRegionRange
 											.endLineNumberExclusive,
 									);
+
 						editor.setScrollTop(
 							editor.getScrollTop() + (top2 - top),
 						);
@@ -814,6 +889,7 @@ class CollapsedCodeOverlayWidget extends ViewZoneOverlayWidget {
 								this._unchangedRegionRange
 									.endLineNumberExclusive,
 							);
+
 							this._unchangedRegion.showMoreBelow(
 								this._options.hideUnchangedRegionsRevealLineCount.get(),
 								undefined,
@@ -823,18 +899,24 @@ class CollapsedCodeOverlayWidget extends ViewZoneOverlayWidget {
 								this._unchangedRegionRange
 									.endLineNumberExclusive,
 							);
+
 							editor.setScrollTop(
 								editor.getScrollTop() + (top2 - top),
 							);
 						}
+
 						this._nodes.bottom.classList.toggle("dragging", false);
+
 						this._nodes.root.classList.toggle("dragging", false);
+
 						mouseMoveListener.dispose();
+
 						mouseUpListener.dispose();
 					},
 				);
 			}),
 		);
+
 		this._register(
 			autorun((reader) => {
 				/** @description update labels */
@@ -860,13 +942,17 @@ class CollapsedCodeOverlayWidget extends ViewZoneOverlayWidget {
 						},
 						linesHiddenText,
 					);
+
 					span.addEventListener("dblclick", (e) => {
 						if (e.button !== 0) {
 							return;
 						}
+
 						e.preventDefault();
+
 						this._unchangedRegion.showAll(undefined);
 					});
+
 					children.push(span);
 
 					const range =
@@ -905,7 +991,9 @@ class CollapsedCodeOverlayWidget extends ViewZoneOverlayWidget {
 										: [renderIcon(Codicon.chevronRight)]),
 								],
 							).root;
+
 							children.push(divItem);
+
 							divItem.onclick = () => {
 								this._revealModifiedHiddenLine(
 									item.startLineNumber,
@@ -914,6 +1002,7 @@ class CollapsedCodeOverlayWidget extends ViewZoneOverlayWidget {
 						}
 					}
 				}
+
 				reset(this._nodes.others, ...children);
 			}),
 		);
@@ -925,7 +1014,9 @@ export interface IDiffEditorBreadcrumbsSource extends IDisposable {
 		reader: IReader,
 	): {
 		name: string;
+
 		kind: SymbolKind;
+
 		startLineNumber: number;
 	}[];
 }

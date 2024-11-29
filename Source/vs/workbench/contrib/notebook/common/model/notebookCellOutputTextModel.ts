@@ -18,14 +18,17 @@ export class NotebookCellOutputTextModel
 	implements ICellOutput
 {
 	private _onDidChangeData = this._register(new Emitter<void>());
+
 	onDidChangeData = this._onDidChangeData.event;
 
 	get outputs() {
 		return this._rawOutput.outputs || [];
 	}
+
 	get metadata(): Record<string, any> | undefined {
 		return this._rawOutput.metadata;
 	}
+
 	get outputId(): string {
 		return this._rawOutput.outputId;
 	}
@@ -37,35 +40,50 @@ export class NotebookCellOutputTextModel
 	get alternativeOutputId(): string {
 		return this._alternativeOutputId;
 	}
+
 	private _versionId = 0;
 
 	get versionId() {
 		return this._versionId;
 	}
+
 	constructor(private _rawOutput: IOutputDto) {
 		super();
+
 		this._alternativeOutputId = this._rawOutput.outputId;
 	}
+
 	replaceData(rawData: IOutputDto) {
 		this.versionedBufferLengths = {};
+
 		this._rawOutput = rawData;
+
 		this.optimizeOutputItems();
+
 		this._versionId = this._versionId + 1;
+
 		this._onDidChangeData.fire();
 	}
+
 	appendData(items: IOutputItemDto[]) {
 		this.trackBufferLengths();
+
 		this._rawOutput.outputs.push(...items);
+
 		this.optimizeOutputItems();
+
 		this._versionId = this._versionId + 1;
+
 		this._onDidChangeData.fire();
 	}
+
 	private trackBufferLengths() {
 		this.outputs.forEach((output) => {
 			if (isTextStreamMime(output.mime)) {
 				if (!this.versionedBufferLengths[output.mime]) {
 					this.versionedBufferLengths[output.mime] = {};
 				}
+
 				this.versionedBufferLengths[output.mime][this.versionId] =
 					output.data.byteLength;
 			}
@@ -73,6 +91,7 @@ export class NotebookCellOutputTextModel
 	}
 	// mime: versionId: buffer length
 	private versionedBufferLengths: Record<string, Record<number, number>> = {};
+
 	appendedSinceVersion(
 		versionId: number,
 		mime: string,
@@ -84,8 +103,10 @@ export class NotebookCellOutputTextModel
 		if (bufferLength && output) {
 			return output.data.slice(bufferLength);
 		}
+
 		return undefined;
 	}
+
 	private optimizeOutputItems() {
 		if (
 			this.outputs.length > 1 &&
@@ -96,6 +117,7 @@ export class NotebookCellOutputTextModel
 			const mimeOutputs = new Map<string, Uint8Array[]>();
 
 			const mimeTypes: string[] = [];
+
 			this.outputs.forEach((item) => {
 				let items: Uint8Array[];
 
@@ -103,16 +125,22 @@ export class NotebookCellOutputTextModel
 					items = mimeOutputs.get(item.mime)!;
 				} else {
 					items = [];
+
 					mimeOutputs.set(item.mime, items);
+
 					mimeTypes.push(item.mime);
 				}
+
 				items.push(item.data.buffer);
 			});
+
 			this.outputs.length = 0;
+
 			mimeTypes.forEach((mime) => {
 				const compressionResult = compressOutputItemStreams(
 					mimeOutputs.get(mime)!,
 				);
+
 				this.outputs.push({
 					mime,
 					data: compressionResult.data,
@@ -125,6 +153,7 @@ export class NotebookCellOutputTextModel
 			});
 		}
 	}
+
 	asDto(): IOutputDto {
 		return {
 			// data: this._data,
@@ -133,6 +162,7 @@ export class NotebookCellOutputTextModel
 			outputId: this._rawOutput.outputId,
 		};
 	}
+
 	bumpVersion() {
 		this._versionId = this._versionId + 1;
 	}

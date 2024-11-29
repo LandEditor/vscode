@@ -61,6 +61,7 @@ export class ExtensionsScannerService
 			instantiationService,
 		);
 	}
+
 	protected async getTranslations(language: string): Promise<Translations> {
 		const config = await getNLSConfiguration(
 			language,
@@ -78,6 +79,7 @@ export class ExtensionsScannerService
 				/* Ignore error */
 			}
 		}
+
 		return Object.create(null);
 	}
 }

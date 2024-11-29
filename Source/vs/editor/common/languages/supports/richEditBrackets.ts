@@ -9,6 +9,7 @@ import { CharacterPair } from "../languageConfiguration.js";
 
 interface InternalBracket {
 	open: string[];
+
 	close: string[];
 }
 /**
@@ -28,6 +29,7 @@ interface InternalBracket {
  */
 export class RichEditBracket {
 	_richEditBracketBrand: void = undefined;
+
 	readonly languageId: string;
 	/**
 	 * A 0-based consecutive unique identifier for this bracket pair.
@@ -71,7 +73,9 @@ export class RichEditBracket {
 	 * See the fine defails in `getReversedRegexForBracketPair`.
 	 */
 	readonly reversedRegex: RegExp;
+
 	private readonly _openSet: Set<string>;
+
 	private readonly _closeSet: Set<string>;
 
 	constructor(
@@ -83,12 +87,19 @@ export class RichEditBracket {
 		reversedRegex: RegExp,
 	) {
 		this.languageId = languageId;
+
 		this.index = index;
+
 		this.open = open;
+
 		this.close = close;
+
 		this.forwardRegex = forwardRegex;
+
 		this.reversedRegex = reversedRegex;
+
 		this._openSet = RichEditBracket._toSet(this.open);
+
 		this._closeSet = RichEditBracket._toSet(this.close);
 	}
 	/**
@@ -103,12 +114,14 @@ export class RichEditBracket {
 	public isClose(text: string) {
 		return this._closeSet.has(text);
 	}
+
 	private static _toSet(arr: string[]): Set<string> {
 		const result = new Set<string>();
 
 		for (const element of arr) {
 			result.add(element);
 		}
+
 		return result;
 	}
 }
@@ -129,6 +142,7 @@ function groupFuzzyBrackets(
 	brackets: readonly CharacterPair[],
 ): InternalBracket[] {
 	const N = brackets.length;
+
 	brackets = brackets.map((b) => [b[0].toLowerCase(), b[1].toLowerCase()]);
 
 	const group: number[] = [];
@@ -136,6 +150,7 @@ function groupFuzzyBrackets(
 	for (let i = 0; i < N; i++) {
 		group[i] = i;
 	}
+
 	const areOverlapping = (a: CharacterPair, b: CharacterPair) => {
 		const [aOpen, aClose] = a;
 
@@ -172,6 +187,7 @@ function groupFuzzyBrackets(
 			}
 		}
 	}
+
 	const result: InternalBracket[] = [];
 
 	for (let g = 0; g < N; g++) {
@@ -182,10 +198,13 @@ function groupFuzzyBrackets(
 		for (let i = 0; i < N; i++) {
 			if (group[i] === g) {
 				const [open, close] = brackets[i];
+
 				currentOpen.push(open);
+
 				currentClose.push(close);
 			}
 		}
+
 		if (currentOpen.length > 0) {
 			result.push({
 				open: currentOpen,
@@ -193,6 +212,7 @@ function groupFuzzyBrackets(
 			});
 		}
 	}
+
 	return result;
 }
 export class RichEditBrackets {
@@ -232,6 +252,7 @@ export class RichEditBrackets {
 
 	constructor(languageId: string, _brackets: readonly CharacterPair[]) {
 		const brackets = groupFuzzyBrackets(_brackets);
+
 		this.brackets = brackets.map((b, index) => {
 			return new RichEditBracket(
 				languageId,
@@ -247,24 +268,34 @@ export class RichEditBrackets {
 				),
 			);
 		});
+
 		this.forwardRegex = getRegexForBrackets(this.brackets);
+
 		this.reversedRegex = getReversedRegexForBrackets(this.brackets);
+
 		this.textIsBracket = {};
+
 		this.textIsOpenBracket = {};
+
 		this.maxBracketLength = 0;
 
 		for (const bracket of this.brackets) {
 			for (const open of bracket.open) {
 				this.textIsBracket[open] = bracket;
+
 				this.textIsOpenBracket[open] = true;
+
 				this.maxBracketLength = Math.max(
 					this.maxBracketLength,
 					open.length,
 				);
 			}
+
 			for (const close of bracket.close) {
 				this.textIsBracket[close] = bracket;
+
 				this.textIsOpenBracket[close] = false;
+
 				this.maxBracketLength = Math.max(
 					this.maxBracketLength,
 					close.length,
@@ -283,6 +314,7 @@ function collectSuperstrings(
 		if (i === currentIndex) {
 			continue;
 		}
+
 		const bracket = brackets[i];
 
 		for (const open of bracket.open) {
@@ -290,6 +322,7 @@ function collectSuperstrings(
 				dest.push(open);
 			}
 		}
+
 		for (const close of bracket.close) {
 			if (close.indexOf(str) >= 0) {
 				dest.push(close);
@@ -304,6 +337,7 @@ function unique(arr: string[]): string[] {
 	if (arr.length <= 1) {
 		return arr;
 	}
+
 	const result: string[] = [];
 
 	const seen = new Set<string>();
@@ -312,9 +346,12 @@ function unique(arr: string[]): string[] {
 		if (seen.has(element)) {
 			continue;
 		}
+
 		result.push(element);
+
 		seen.add(element);
 	}
+
 	return result;
 }
 /**
@@ -348,14 +385,19 @@ function getRegexForBracketPair(
 ): RegExp {
 	// search in all brackets for other brackets that are a superstring of these brackets
 	let pieces: string[] = [];
+
 	pieces = pieces.concat(open);
+
 	pieces = pieces.concat(close);
 
 	for (let i = 0, len = pieces.length; i < len; i++) {
 		collectSuperstrings(pieces[i], brackets, currentIndex, pieces);
 	}
+
 	pieces = unique(pieces);
+
 	pieces.sort(lengthcmp);
+
 	pieces.reverse();
 
 	return createBracketOrRegExp(pieces);
@@ -378,14 +420,19 @@ function getReversedRegexForBracketPair(
 ): RegExp {
 	// search in all brackets for other brackets that are a superstring of these brackets
 	let pieces: string[] = [];
+
 	pieces = pieces.concat(open);
+
 	pieces = pieces.concat(close);
 
 	for (let i = 0, len = pieces.length; i < len; i++) {
 		collectSuperstrings(pieces[i], brackets, currentIndex, pieces);
 	}
+
 	pieces = unique(pieces);
+
 	pieces.sort(lengthcmp);
+
 	pieces.reverse();
 
 	return createBracketOrRegExp(pieces.map(toReversedString));
@@ -407,10 +454,12 @@ function getRegexForBrackets(brackets: RichEditBracket[]): RegExp {
 		for (const open of bracket.open) {
 			pieces.push(open);
 		}
+
 		for (const close of bracket.close) {
 			pieces.push(close);
 		}
 	}
+
 	pieces = unique(pieces);
 
 	return createBracketOrRegExp(pieces);
@@ -435,10 +484,12 @@ function getReversedRegexForBrackets(brackets: RichEditBracket[]): RegExp {
 		for (const open of bracket.open) {
 			pieces.push(open);
 		}
+
 		for (const close of bracket.close) {
 			pieces.push(close);
 		}
 	}
+
 	pieces = unique(pieces);
 
 	return createBracketOrRegExp(pieces.map(toReversedString));
@@ -446,6 +497,7 @@ function getReversedRegexForBrackets(brackets: RichEditBracket[]): RegExp {
 function prepareBracketForRegExp(str: string): string {
 	// This bracket pair uses letters like e.g. "begin" - "end"
 	const insertWordBoundaries = /^[\w ]+$/.test(str);
+
 	str = strings.escapeRegExpCharacters(str);
 
 	return insertWordBoundaries ? `\\b${str}\\b` : str;
@@ -469,8 +521,10 @@ const toReversedString = (function () {
 		for (let i = str.length - 1; i >= 0; i--) {
 			arr[offset++] = str.charCodeAt(i);
 		}
+
 		return stringBuilder.getPlatformTextDecoder().decode(arr);
 	}
+
 	let lastInput: string | null = null;
 
 	let lastOutput: string | null = null;
@@ -478,8 +532,10 @@ const toReversedString = (function () {
 	return function toReversedString(str: string): string {
 		if (lastInput !== str) {
 			lastInput = str;
+
 			lastOutput = reverse(lastInput);
 		}
+
 		return lastOutput!;
 	};
 })();
@@ -496,6 +552,7 @@ export class BracketsUtils {
 		if (!m) {
 			return null;
 		}
+
 		const matchOffset = reversedText.length - (m.index || 0);
 
 		const matchLength = m[0].length;
@@ -509,6 +566,7 @@ export class BracketsUtils {
 			absoluteMatchOffset + 1,
 		);
 	}
+
 	public static findPrevBracketInRange(
 		reversedBracketRegex: RegExp,
 		lineNumber: number,
@@ -531,6 +589,7 @@ export class BracketsUtils {
 			startOffset,
 		);
 	}
+
 	public static findNextBracketInText(
 		bracketRegex: RegExp,
 		lineNumber: number,
@@ -542,6 +601,7 @@ export class BracketsUtils {
 		if (!m) {
 			return null;
 		}
+
 		const matchOffset = m.index || 0;
 
 		const matchLength = m[0].length;
@@ -549,6 +609,7 @@ export class BracketsUtils {
 		if (matchLength === 0) {
 			return null;
 		}
+
 		const absoluteMatchOffset = offset + matchOffset;
 
 		return new Range(
@@ -558,6 +619,7 @@ export class BracketsUtils {
 			absoluteMatchOffset + 1 + matchLength,
 		);
 	}
+
 	public static findNextBracketInRange(
 		bracketRegex: RegExp,
 		lineNumber: number,

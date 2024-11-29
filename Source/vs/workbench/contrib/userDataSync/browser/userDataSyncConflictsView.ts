@@ -117,27 +117,33 @@ export class UserDataSyncConflictsViewPane
 			hoverService,
 			accessibleViewVisibilityService,
 		);
+
 		this._register(
 			this.userDataSyncService.onDidChangeConflicts(() =>
 				this.treeView.refresh(),
 			),
 		);
+
 		this.registerActions();
 	}
+
 	protected override renderTreeView(container: HTMLElement): void {
 		super.renderTreeView(DOM.append(container, DOM.$("")));
 
 		const that = this;
+
 		this.treeView.message = localize(
 			"explanation",
 			"Please go through each entry and merge to resolve conflicts.",
 		);
+
 		this.treeView.dataProvider = {
 			getChildren() {
 				return that.getTreeItems();
 			},
 		};
 	}
+
 	private async getTreeItems(): Promise<ITreeItem[]> {
 		const roots: ITreeItem[] = [];
 
@@ -182,8 +188,10 @@ export class UserDataSyncConflictsViewPane
 					(result = []),
 				]);
 			}
+
 			result.push(previewResource);
 		}
+
 		for (const [profile, resources] of conflictResourcesByProfile) {
 			const children: ITreeItem[] = [];
 
@@ -214,8 +222,10 @@ export class UserDataSyncConflictsViewPane
 					},
 					contextValue: `sync-conflict-resource`,
 				};
+
 				children.push(treeItem);
 			}
+
 			roots.push({
 				handle: profile.id,
 				label: { label: profile.name },
@@ -223,11 +233,13 @@ export class UserDataSyncConflictsViewPane
 				children,
 			});
 		}
+
 		return conflictResourcesByProfile.length === 1 &&
 			conflictResourcesByProfile[0][0].isDefault
 			? (roots[0].children ?? [])
 			: roots;
 	}
+
 	private parseHandle(handle: string): UserDataSyncConflictResource {
 		const parsed: UserDataSyncConflictResource = JSON.parse(handle);
 
@@ -247,8 +259,10 @@ export class UserDataSyncConflictsViewPane
 			mergeState: parsed.mergeState,
 		};
 	}
+
 	private registerActions(): void {
 		const that = this;
+
 		this._register(
 			registerAction2(
 				class OpenConflictsAction extends Action2 {
@@ -266,6 +280,7 @@ export class UserDataSyncConflictsViewPane
 							),
 						});
 					}
+
 					async run(
 						accessor: ServicesAccessor,
 						handle: TreeViewItemHandleArg,
@@ -279,6 +294,7 @@ export class UserDataSyncConflictsViewPane
 				},
 			),
 		);
+
 		this._register(
 			registerAction2(
 				class AcceptRemoteAction extends Action2 {
@@ -307,6 +323,7 @@ export class UserDataSyncConflictsViewPane
 							},
 						});
 					}
+
 					async run(
 						accessor: ServicesAccessor,
 						handle: TreeViewItemHandleArg,
@@ -314,6 +331,7 @@ export class UserDataSyncConflictsViewPane
 						const conflict = that.parseHandle(
 							handle.$treeItemHandle,
 						);
+
 						await that.userDataSyncWorkbenchService.accept(
 							{
 								syncResource: conflict.syncResource,
@@ -327,6 +345,7 @@ export class UserDataSyncConflictsViewPane
 				},
 			),
 		);
+
 		this._register(
 			registerAction2(
 				class AcceptLocalAction extends Action2 {
@@ -355,6 +374,7 @@ export class UserDataSyncConflictsViewPane
 							},
 						});
 					}
+
 					async run(
 						accessor: ServicesAccessor,
 						handle: TreeViewItemHandleArg,
@@ -362,6 +382,7 @@ export class UserDataSyncConflictsViewPane
 						const conflict = that.parseHandle(
 							handle.$treeItemHandle,
 						);
+
 						await that.userDataSyncWorkbenchService.accept(
 							{
 								syncResource: conflict.syncResource,
@@ -376,6 +397,7 @@ export class UserDataSyncConflictsViewPane
 			),
 		);
 	}
+
 	async open(conflictToOpen: IResourcePreview): Promise<void> {
 		if (
 			!this.userDataSyncService.conflicts.some(({ conflicts }) =>
@@ -386,6 +408,7 @@ export class UserDataSyncConflictsViewPane
 		) {
 			return;
 		}
+
 		const remoteResourceName = localize(
 			{
 				key: "remoteResourceName",
@@ -400,6 +423,7 @@ export class UserDataSyncConflictsViewPane
 			"{0} (Local)",
 			basename(conflictToOpen.remoteResource),
 		);
+
 		await this.editorService.openEditor({
 			input1: {
 				resource: conflictToOpen.remoteResource,

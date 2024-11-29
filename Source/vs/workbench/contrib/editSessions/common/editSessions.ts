@@ -27,41 +27,56 @@ export const IEditSessionsStorageService =
 
 export interface IEditSessionsStorageService {
 	_serviceBrand: undefined;
+
 	readonly SIZE_LIMIT: number;
+
 	readonly isSignedIn: boolean;
+
 	readonly onDidSignIn: Event<void>;
+
 	readonly onDidSignOut: Event<void>;
+
 	storeClient: EditSessionsStoreClient | undefined;
+
 	lastReadResources: Map<
 		SyncResource,
 		{
 			ref: string;
+
 			content: string;
 		}
 	>;
+
 	lastWrittenResources: Map<
 		SyncResource,
 		{
 			ref: string;
+
 			content: string;
 		}
 	>;
+
 	initialize(reason: "read" | "write", silent?: boolean): Promise<boolean>;
+
 	read(
 		resource: SyncResource,
 		ref: string | undefined,
 	): Promise<
 		| {
 				ref: string;
+
 				content: string;
 		  }
 		| undefined
 	>;
+
 	write(
 		resource: SyncResource,
 		content: string | EditSession,
 	): Promise<string>;
+
 	delete(resource: SyncResource, ref: string | null): Promise<void>;
+
 	list(resource: SyncResource): Promise<IResourceRefHandle[]>;
 
 	getMachineById(machineId: string): Promise<string | undefined>;
@@ -80,30 +95,42 @@ export enum FileType {
 }
 interface Addition {
 	relativeFilePath: string;
+
 	fileType: FileType.File;
+
 	contents: string;
+
 	type: ChangeType.Addition;
 }
 interface Deletion {
 	relativeFilePath: string;
+
 	fileType: FileType.File;
+
 	contents: undefined;
+
 	type: ChangeType.Deletion;
 }
 export type Change = Addition | Deletion;
 
 export interface Folder {
 	name: string;
+
 	canonicalIdentity: string | undefined;
+
 	workingChanges: Change[];
+
 	absoluteUri: string | undefined;
 }
 export const EditSessionSchemaVersion = 3;
 
 export interface EditSession {
 	version: number;
+
 	workspaceStateId?: string;
+
 	machine?: string;
+
 	folders: Folder[];
 }
 export const EDIT_SESSIONS_SIGNED_IN_KEY = "editSessionsSignedIn";
@@ -161,6 +188,7 @@ export function decodeEditSessionFileContent(
 }
 export function hashedEditSessionId(editSessionId: string) {
 	const sha1 = new StringSHA1();
+
 	sha1.update(editSessionId);
 
 	return sha1.digest();

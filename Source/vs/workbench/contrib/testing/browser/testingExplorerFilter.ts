@@ -69,12 +69,17 @@ const testFilterDescriptions: {
 
 export class TestingExplorerFilter extends BaseActionViewItem {
 	private input!: SuggestEnabledInputWithHistory;
+
 	private wrapper!: HTMLDivElement;
+
 	private readonly focusEmitter = this._register(new Emitter<void>());
+
 	public readonly onDidFocus = this.focusEmitter.event;
+
 	private readonly history: StoredValue<
 		| {
 				values: string[];
+
 				lastValue: string;
 		  }
 		| string[]
@@ -85,6 +90,7 @@ export class TestingExplorerFilter extends BaseActionViewItem {
 			target: StorageTarget.MACHINE,
 		}),
 	);
+
 	private readonly filtersAction = new Action(
 		"markersFiltersAction",
 		localize("testing.filters.menu", "More Filters..."),
@@ -102,7 +108,9 @@ export class TestingExplorerFilter extends BaseActionViewItem {
 		private readonly testService: ITestService,
 	) {
 		super(null, action, options);
+
 		this.updateFilterActiveState();
+
 		this._register(
 			testService.excluded.onTestExclusionsChanged(
 				this.updateFilterActiveState,
@@ -119,6 +127,7 @@ export class TestingExplorerFilter extends BaseActionViewItem {
 		const updateDelayer = this._register(new Delayer<void>(400));
 
 		const wrapper = (this.wrapper = dom.$(".testing-filter-wrapper"));
+
 		container.appendChild(wrapper);
 
 		let history = this.history.get({ lastValue: "", values: [] });
@@ -126,9 +135,11 @@ export class TestingExplorerFilter extends BaseActionViewItem {
 		if (history instanceof Array) {
 			history = { lastValue: "", values: history };
 		}
+
 		if (history.lastValue) {
 			this.state.setText(history.lastValue);
 		}
+
 		const input = (this.input = this._register(
 			this.instantiationService.createInstance(
 				ContextScopedSuggestEnabledInputWithHistory,
@@ -181,6 +192,7 @@ export class TestingExplorerFilter extends BaseActionViewItem {
 				},
 			),
 		));
+
 		this._register(
 			this.state.text.onDidChange((newValue) => {
 				if (input.getValue() !== newValue) {
@@ -188,20 +200,24 @@ export class TestingExplorerFilter extends BaseActionViewItem {
 				}
 			}),
 		);
+
 		this._register(
 			this.state.onDidRequestInputFocus(() => {
 				input.focus();
 			}),
 		);
+
 		this._register(
 			input.onDidFocus(() => {
 				this.focusEmitter.fire();
 			}),
 		);
+
 		this._register(
 			input.onInputDidChange(() =>
 				updateDelayer.trigger(() => {
 					input.addToHistory();
+
 					this.state.setText(input.getValue());
 				}),
 			),
@@ -219,13 +235,17 @@ export class TestingExplorerFilter extends BaseActionViewItem {
 							this.actionRunner,
 						);
 					}
+
 					return undefined;
 				},
 			}),
 		);
+
 		actionbar.push(this.filtersAction, { icon: true, label: false });
+
 		this.layout(this.wrapper.clientWidth);
 	}
+
 	public layout(width: number) {
 		this.input.layout(
 			new dom.Dimension(
@@ -290,10 +310,13 @@ class FiltersDropdownMenuActionViewItem extends DropdownMenuActionViewItem {
 			},
 		);
 	}
+
 	override render(container: HTMLElement): void {
 		super.render(container);
+
 		this.updateChecked();
 	}
+
 	private getActions(): IAction[] {
 		return [
 			...[
@@ -349,6 +372,7 @@ class FiltersDropdownMenuActionViewItem extends DropdownMenuActionViewItem {
 			},
 		];
 	}
+
 	protected override updateChecked(): void {
 		this.element!.classList.toggle("checked", this._action.checked);
 	}

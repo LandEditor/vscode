@@ -28,7 +28,9 @@ export class DOMLineBreaksComputerFactory
 	public static create(targetWindow: Window): DOMLineBreaksComputerFactory {
 		return new DOMLineBreaksComputerFactory(new WeakRef(targetWindow));
 	}
+
 	constructor(private targetWindow: WeakRef<Window>) {}
+
 	public createLineBreaksComputer(
 		fontInfo: FontInfo,
 		tabSize: number,
@@ -47,6 +49,7 @@ export class DOMLineBreaksComputerFactory
 				previousLineBreakData: ModelLineProjectionData | null,
 			) => {
 				requests.push(lineText);
+
 				injectedTexts.push(injectedText);
 			},
 			finalize: () => {
@@ -103,14 +106,17 @@ function createLineBreaks(
 			return null;
 		}
 	}
+
 	if (firstLineBreakColumn === -1) {
 		const result: (ModelLineProjectionData | null)[] = [];
 
 		for (let i = 0, len = requests.length; i < len; i++) {
 			result[i] = createEmptyLineBreakWithPossiblyInjectedText(i);
 		}
+
 		return result;
 	}
+
 	const overallWidth = Math.round(
 		firstLineBreakColumn * fontInfo.typicalHalfwidthCharacterWidth,
 	);
@@ -129,6 +135,7 @@ function createLineBreaks(
 	);
 
 	const containerDomNode = document.createElement("div");
+
 	applyFontInfo(containerDomNode, fontInfo);
 
 	const sb = new StringBuilder(10000);
@@ -169,8 +176,10 @@ function createLineBreaks(
 						lineContent.charCodeAt(i) === CharCode.Tab
 							? tabSize - (wrappedTextIndentLength % tabSize)
 							: 1;
+
 					wrappedTextIndentLength += charWidth;
 				}
+
 				const indentWidth = Math.ceil(
 					fontInfo.spaceWidth * wrappedTextIndentLength,
 				);
@@ -180,12 +189,14 @@ function createLineBreaks(
 					overallWidth
 				) {
 					firstNonWhitespaceIndex = 0;
+
 					wrappedTextIndentLength = 0;
 				} else {
 					width = overallWidth - indentWidth;
 				}
 			}
 		}
+
 		const renderLineContent = lineContent.substr(firstNonWhitespaceIndex);
 
 		const tmp = renderLine(
@@ -196,28 +207,40 @@ function createLineBreaks(
 			sb,
 			additionalIndentLength,
 		);
+
 		firstNonWhitespaceIndices[i] = firstNonWhitespaceIndex;
+
 		wrappedTextIndentLengths[i] = wrappedTextIndentLength;
+
 		renderLineContents[i] = renderLineContent;
+
 		allCharOffsets[i] = tmp[0];
+
 		allVisibleColumns[i] = tmp[1];
 	}
+
 	const html = sb.build();
 
 	const trustedhtml = ttPolicy?.createHTML(html) ?? html;
+
 	containerDomNode.innerHTML = trustedhtml as string;
+
 	containerDomNode.style.position = "absolute";
+
 	containerDomNode.style.top = "10000";
 
 	if (wordBreak === "keepAll") {
 		// word-break: keep-all; overflow-wrap: anywhere
 		containerDomNode.style.wordBreak = "keep-all";
+
 		containerDomNode.style.overflowWrap = "anywhere";
 	} else {
 		// overflow-wrap: break-word
 		containerDomNode.style.wordBreak = "inherit";
+
 		containerDomNode.style.overflowWrap = "break-word";
 	}
+
 	targetWindow.document.body.appendChild(containerDomNode);
 
 	const range = document.createRange();
@@ -244,6 +267,7 @@ function createLineBreaks(
 
 			continue;
 		}
+
 		const firstNonWhitespaceIndex = firstNonWhitespaceIndices[i];
 
 		const wrappedTextIndentLength =
@@ -256,12 +280,14 @@ function createLineBreaks(
 		for (let j = 0, len = breakOffsets.length; j < len; j++) {
 			breakOffsetsVisibleColumn[j] = visibleColumns[breakOffsets[j]];
 		}
+
 		if (firstNonWhitespaceIndex !== 0) {
 			// All break offsets are relative to the renderLineContent, make them absolute again
 			for (let j = 0, len = breakOffsets.length; j < len; j++) {
 				breakOffsets[j] += firstNonWhitespaceIndex;
 			}
 		}
+
 		let injectionOptions: InjectedTextOptions[] | null;
 
 		let injectionOffsets: number[] | null;
@@ -270,11 +296,14 @@ function createLineBreaks(
 
 		if (curInjectedTexts) {
 			injectionOptions = curInjectedTexts.map((t) => t.options);
+
 			injectionOffsets = curInjectedTexts.map((text) => text.column - 1);
 		} else {
 			injectionOptions = null;
+
 			injectionOffsets = null;
 		}
+
 		result[i] = new ModelLineProjectionData(
 			injectionOffsets,
 			injectionOptions,
@@ -283,6 +312,7 @@ function createLineBreaks(
 			wrappedTextIndentLength,
 		);
 	}
+
 	containerDomNode.remove();
 
 	return result;
@@ -301,19 +331,27 @@ function renderLine(
 ): [number[], number[]] {
 	if (wrappingIndentLength !== 0) {
 		const hangingOffset = String(wrappingIndentLength);
+
 		sb.appendString('<div style="text-indent: -');
+
 		sb.appendString(hangingOffset);
+
 		sb.appendString("px; padding-left: ");
+
 		sb.appendString(hangingOffset);
+
 		sb.appendString("px; box-sizing: border-box; width:");
 	} else {
 		sb.appendString('<div style="width:');
 	}
+
 	sb.appendString(String(width));
+
 	sb.appendString('px;">');
 	// if (containsRTL) {
 	// 	sb.appendASCIIString('" dir="ltr');
 	// }
+
 	const len = lineContent.length;
 
 	let visibleColumn = initialVisibleColumn;
@@ -325,16 +363,20 @@ function renderLine(
 	const visibleColumns: number[] = [];
 
 	let nextCharCode = 0 < len ? lineContent.charCodeAt(0) : CharCode.Null;
+
 	sb.appendString("<span>");
 
 	for (let charIndex = 0; charIndex < len; charIndex++) {
 		if (charIndex !== 0 && charIndex % Constants.SPAN_MODULO_LIMIT === 0) {
 			sb.appendString("</span><span>");
 		}
+
 		charOffsets[charIndex] = charOffset;
+
 		visibleColumns[charIndex] = visibleColumn;
 
 		const charCode = nextCharCode;
+
 		nextCharCode =
 			charIndex + 1 < len
 				? lineContent.charCodeAt(charIndex + 1)
@@ -347,6 +389,7 @@ function renderLine(
 		switch (charCode) {
 			case CharCode.Tab:
 				producedCharacters = tabSize - (visibleColumn % tabSize);
+
 				charWidth = producedCharacters;
 
 				for (let space = 1; space <= producedCharacters; space++) {
@@ -356,6 +399,7 @@ function renderLine(
 						sb.appendASCIICharCode(CharCode.Space);
 					}
 				}
+
 				break;
 
 			case CharCode.Space:
@@ -364,6 +408,7 @@ function renderLine(
 				} else {
 					sb.appendASCIICharCode(CharCode.Space);
 				}
+
 				break;
 
 			case CharCode.LessThan:
@@ -398,18 +443,25 @@ function renderLine(
 				if (strings.isFullWidthCharacter(charCode)) {
 					charWidth++;
 				}
+
 				if (charCode < 32) {
 					sb.appendCharCode(9216 + charCode);
 				} else {
 					sb.appendCharCode(charCode);
 				}
 		}
+
 		charOffset += producedCharacters;
+
 		visibleColumn += charWidth;
 	}
+
 	sb.appendString("</span>");
+
 	charOffsets[lineContent.length] = charOffset;
+
 	visibleColumns[lineContent.length] = visibleColumn;
+
 	sb.appendString("</div>");
 
 	return [charOffsets, visibleColumns];
@@ -423,6 +475,7 @@ function readLineBreaks(
 	if (lineContent.length <= 1) {
 		return null;
 	}
+
 	const spans = <HTMLSpanElement[]>(
 		Array.prototype.slice.call(lineDomNode.children, 0)
 	);
@@ -445,9 +498,11 @@ function readLineBreaks(
 
 		return null;
 	}
+
 	if (breakOffsets.length === 0) {
 		return null;
 	}
+
 	breakOffsets.push(lineContent.length);
 
 	return breakOffsets;
@@ -465,9 +520,11 @@ function discoverBreaks(
 	if (low === high) {
 		return;
 	}
+
 	lowRects =
 		lowRects ||
 		readClientRect(range, spans, charOffsets[low], charOffsets[low + 1]);
+
 	highRects =
 		highRects ||
 		readClientRect(range, spans, charOffsets[high], charOffsets[high + 1]);
@@ -483,6 +540,7 @@ function discoverBreaks(
 
 		return;
 	}
+
 	const mid = (low + (high - low) / 2) | 0;
 
 	const midRects = readClientRect(
@@ -491,6 +549,7 @@ function discoverBreaks(
 		charOffsets[mid],
 		charOffsets[mid + 1],
 	);
+
 	discoverBreaks(
 		range,
 		spans,
@@ -501,6 +560,7 @@ function discoverBreaks(
 		midRects,
 		result,
 	);
+
 	discoverBreaks(
 		range,
 		spans,
@@ -522,6 +582,7 @@ function readClientRect(
 		spans[(startOffset / Constants.SPAN_MODULO_LIMIT) | 0].firstChild!,
 		startOffset % Constants.SPAN_MODULO_LIMIT,
 	);
+
 	range.setEnd(
 		spans[(endOffset / Constants.SPAN_MODULO_LIMIT) | 0].firstChild!,
 		endOffset % Constants.SPAN_MODULO_LIMIT,

@@ -61,22 +61,27 @@ export class TasksSynchroniser
 	implements IUserDataSynchroniser
 {
 	protected readonly version: number = 1;
+
 	private readonly previewResource: URI = this.extUri.joinPath(
 		this.syncPreviewFolder,
 		"tasks.json",
 	);
+
 	private readonly baseResource: URI = this.previewResource.with({
 		scheme: USER_DATA_SYNC_SCHEME,
 		authority: "base",
 	});
+
 	private readonly localResource: URI = this.previewResource.with({
 		scheme: USER_DATA_SYNC_SCHEME,
 		authority: "local",
 	});
+
 	private readonly remoteResource: URI = this.previewResource.with({
 		scheme: USER_DATA_SYNC_SCHEME,
 		authority: "remote",
 	});
+
 	private readonly acceptedResource: URI = this.previewResource.with({
 		scheme: USER_DATA_SYNC_SCHEME,
 		authority: "accepted",
@@ -122,6 +127,7 @@ export class TasksSynchroniser
 			uriIdentityService,
 		);
 	}
+
 	protected async generateSyncPreview(
 		remoteUserData: IRemoteUserData,
 		lastSyncUserData: IRemoteUserData | null,
@@ -176,9 +182,13 @@ export class TasksSynchroniser
 					remoteContent,
 					lastSyncContent,
 				);
+
 				content = result.content;
+
 				hasConflicts = result.hasConflicts;
+
 				hasLocalChanged = result.hasLocalChanged;
+
 				hasRemoteChanged = result.hasRemoteChanged;
 			}
 		}
@@ -187,9 +197,12 @@ export class TasksSynchroniser
 			this.logService.trace(
 				`${this.syncResourceLogLabel}: Remote tasks does not exist. Synchronizing tasks for the first time.`,
 			);
+
 			content = fileContent.value.toString();
+
 			hasRemoteChanged = true;
 		}
+
 		const previewResult: IMergeResult = {
 			content: hasConflicts ? lastSyncContent : content,
 			localChange: hasLocalChanged
@@ -220,6 +233,7 @@ export class TasksSynchroniser
 			},
 		];
 	}
+
 	protected async hasRemoteChanged(
 		lastSyncUserData: IRemoteUserData,
 	): Promise<boolean> {
@@ -233,6 +247,7 @@ export class TasksSynchroniser
 		if (lastSyncContent === null) {
 			return true;
 		}
+
 		const fileContent = await this.getLocalFileContent();
 
 		const localContent = fileContent ? fileContent.value.toString() : null;
@@ -241,12 +256,14 @@ export class TasksSynchroniser
 
 		return result.hasLocalChanged || result.hasRemoteChanged;
 	}
+
 	protected async getMergeResult(
 		resourcePreview: ITasksResourcePreview,
 		token: CancellationToken,
 	): Promise<IMergeResult> {
 		return resourcePreview.previewResult;
 	}
+
 	protected async getAcceptResult(
 		resourcePreview: ITasksResourcePreview,
 		resource: URI,
@@ -287,8 +304,10 @@ export class TasksSynchroniser
 				};
 			}
 		}
+
 		throw new Error(`Invalid Resource: ${resource.toString()}`);
 	}
+
 	protected async applyResult(
 		remoteUserData: IRemoteUserData,
 		lastSyncUserData: IRemoteUserData | null,
@@ -304,6 +323,7 @@ export class TasksSynchroniser
 				`${this.syncResourceLogLabel}: No changes found during synchronizing tasks.`,
 			);
 		}
+
 		if (localChange !== Change.None) {
 			this.logService.trace(
 				`${this.syncResourceLogLabel}: Updating local tasks...`,
@@ -316,15 +336,18 @@ export class TasksSynchroniser
 					),
 				);
 			}
+
 			if (content) {
 				await this.updateLocalFileContent(content, fileContent, force);
 			} else {
 				await this.deleteLocalFile();
 			}
+
 			this.logService.info(
 				`${this.syncResourceLogLabel}: Updated local tasks`,
 			);
 		}
+
 		if (remoteChange !== Change.None) {
 			this.logService.trace(
 				`${this.syncResourceLogLabel}: Updating remote tasks...`,
@@ -333,10 +356,12 @@ export class TasksSynchroniser
 			const remoteContents = JSON.stringify(
 				this.toTasksSyncContent(content),
 			);
+
 			remoteUserData = await this.updateRemoteUserData(
 				remoteContents,
 				force ? null : remoteUserData.ref,
 			);
+
 			this.logService.info(
 				`${this.syncResourceLogLabel}: Updated remote tasks`,
 			);
@@ -347,19 +372,24 @@ export class TasksSynchroniser
 		} catch (e) {
 			/* ignore */
 		}
+
 		if (lastSyncUserData?.ref !== remoteUserData.ref) {
 			this.logService.trace(
 				`${this.syncResourceLogLabel}: Updating last synchronized tasks...`,
 			);
+
 			await this.updateLastSyncUserData(remoteUserData);
+
 			this.logService.info(
 				`${this.syncResourceLogLabel}: Updated last synchronized tasks`,
 			);
 		}
 	}
+
 	async hasLocalData(): Promise<boolean> {
 		return this.fileService.exists(this.file);
 	}
+
 	override async resolveContent(uri: URI): Promise<string | null> {
 		if (
 			this.extUri.isEqual(this.remoteResource, uri) ||
@@ -369,8 +399,10 @@ export class TasksSynchroniser
 		) {
 			return this.resolvePreviewContent(uri);
 		}
+
 		return null;
 	}
+
 	private toTasksSyncContent(tasks: string | null): ITasksSyncContent {
 		return tasks ? { tasks } : {};
 	}
@@ -403,6 +435,7 @@ export class TasksInitializer extends AbstractInitializer {
 			uriIdentityService,
 		);
 	}
+
 	protected async doInitialize(
 		remoteUserData: IRemoteUserData,
 	): Promise<void> {
@@ -420,6 +453,7 @@ export class TasksInitializer extends AbstractInitializer {
 
 			return;
 		}
+
 		const isEmpty = await this.isEmpty();
 
 		if (!isEmpty) {
@@ -429,12 +463,15 @@ export class TasksInitializer extends AbstractInitializer {
 
 			return;
 		}
+
 		await this.fileService.writeFile(
 			this.tasksResource,
 			VSBuffer.fromString(tasksContent),
 		);
+
 		await this.updateLastSyncUserData(remoteUserData);
 	}
+
 	private async isEmpty(): Promise<boolean> {
 		return this.fileService.exists(this.tasksResource);
 	}
@@ -445,8 +482,11 @@ function merge(
 	baseContent: string | null,
 ): {
 	content: string | null;
+
 	hasLocalChanged: boolean;
+
 	hasRemoteChanged: boolean;
+
 	hasConflicts: boolean;
 } {
 	/* no changes */
@@ -471,6 +511,7 @@ function merge(
 			hasConflicts: false,
 		};
 	}
+
 	const localForwarded = baseContent !== originalLocalContent;
 
 	const remoteForwarded = baseContent !== originalRemoteContent;
@@ -501,6 +542,7 @@ function merge(
 			hasConflicts: false,
 		};
 	}
+
 	return {
 		content: originalLocalContent,
 		hasLocalChanged: true,

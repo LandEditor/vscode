@@ -22,12 +22,16 @@ export const ICommandService =
 
 export interface ICommandEvent {
 	commandId: string;
+
 	args: any[];
 }
 export interface ICommandService {
 	readonly _serviceBrand: undefined;
+
 	onWillExecuteCommand: Event<ICommandEvent>;
+
 	onDidExecuteCommand: Event<ICommandEvent>;
+
 	executeCommand<T = any>(
 		commandId: string,
 		...args: any[]
@@ -40,7 +44,9 @@ export interface ICommandHandler {
 }
 export interface ICommand {
 	id: string;
+
 	handler: ICommandHandler;
+
 	metadata?: ICommandMetadata | null;
 }
 export interface ICommandMetadata {
@@ -52,19 +58,28 @@ export interface ICommandMetadata {
 	 * - when searching for commands in the Command Palette
 	 */
 	readonly description: ILocalizedString | string;
+
 	readonly args?: ReadonlyArray<{
 		readonly name: string;
+
 		readonly isOptional?: boolean;
+
 		readonly description?: string;
+
 		readonly constraint?: TypeConstraint;
+
 		readonly schema?: IJSONSchema;
 	}>;
+
 	readonly returns?: string;
 }
 export interface ICommandRegistry {
 	onDidRegisterCommand: Event<string>;
+
 	registerCommand(id: string, command: ICommandHandler): IDisposable;
+
 	registerCommand(command: ICommand): IDisposable;
+
 	registerCommandAlias(oldId: string, newId: string): IDisposable;
 
 	getCommand(id: string): ICommand | undefined;
@@ -75,9 +90,12 @@ export const CommandsRegistry: ICommandRegistry = new (class
 	implements ICommandRegistry
 {
 	private readonly _commands = new Map<string, LinkedList<ICommand>>();
+
 	private readonly _onDidRegisterCommand = new Emitter<string>();
+
 	readonly onDidRegisterCommand: Event<string> =
 		this._onDidRegisterCommand.event;
+
 	registerCommand(
 		idOrCommand: string | ICommand,
 		handler?: ICommandHandler,
@@ -85,10 +103,12 @@ export const CommandsRegistry: ICommandRegistry = new (class
 		if (!idOrCommand) {
 			throw new Error(`invalid command`);
 		}
+
 		if (typeof idOrCommand === "string") {
 			if (!handler) {
 				throw new Error(`invalid command`);
 			}
+
 			return this.registerCommand({ id: idOrCommand, handler });
 		}
 		// add argument validation if rich command metadata is provided
@@ -98,7 +118,9 @@ export const CommandsRegistry: ICommandRegistry = new (class
 			for (const arg of idOrCommand.metadata.args) {
 				constraints.push(arg.constraint);
 			}
+
 			const actualHandler = idOrCommand.handler;
+
 			idOrCommand.handler = function (accessor, ...args: any[]) {
 				validateConstraints(args, constraints);
 
@@ -112,8 +134,10 @@ export const CommandsRegistry: ICommandRegistry = new (class
 
 		if (!commands) {
 			commands = new LinkedList<ICommand>();
+
 			this._commands.set(id, commands);
 		}
+
 		const removeFn = commands.unshift(idOrCommand);
 
 		const ret = toDisposable(() => {
@@ -130,19 +154,23 @@ export const CommandsRegistry: ICommandRegistry = new (class
 
 		return ret;
 	}
+
 	registerCommandAlias(oldId: string, newId: string): IDisposable {
 		return CommandsRegistry.registerCommand(oldId, (accessor, ...args) =>
 			accessor.get(ICommandService).executeCommand(newId, ...args),
 		);
 	}
+
 	getCommand(id: string): ICommand | undefined {
 		const list = this._commands.get(id);
 
 		if (!list || list.isEmpty()) {
 			return undefined;
 		}
+
 		return Iterable.first(list);
 	}
+
 	getCommands(): ICommandsMap {
 		const result = new Map<string, ICommand>();
 
@@ -153,6 +181,7 @@ export const CommandsRegistry: ICommandRegistry = new (class
 				result.set(key, command);
 			}
 		}
+
 		return result;
 	}
 })();

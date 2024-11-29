@@ -20,10 +20,13 @@ export interface ISelectBoxDelegate extends IDisposable {
 	readonly onDidSelect: Event<ISelectData>;
 
 	setOptions(options: ISelectOptionItem[], selected?: number): void;
+
 	select(index: number): void;
 
 	setAriaLabel(label: string): void;
+
 	focus(): void;
+
 	blur(): void;
 
 	setFocusable(focus: boolean): void;
@@ -34,28 +37,44 @@ export interface ISelectBoxDelegate extends IDisposable {
 }
 export interface ISelectBoxOptions {
 	useCustomDrawn?: boolean;
+
 	ariaLabel?: string;
+
 	ariaDescription?: string;
+
 	minBottomMargin?: number;
+
 	optionsAsChildren?: boolean;
 }
 // Utilize optionItem interface to capture all option parameters
 export interface ISelectOptionItem {
 	text: string;
+
 	detail?: string;
+
 	decoratorRight?: string;
+
 	description?: string;
+
 	descriptionIsMarkdown?: boolean;
+
 	descriptionMarkdownActionHandler?: IContentActionHandler;
+
 	isDisabled?: boolean;
 }
 export interface ISelectBoxStyles extends IListStyles {
 	readonly selectBackground: string | undefined;
+
 	readonly selectListBackground: string | undefined;
+
 	readonly selectForeground: string | undefined;
+
 	readonly decoratorRightForeground: string | undefined;
+
 	readonly selectBorder: string | undefined;
+
 	readonly selectListBorder: string | undefined;
+
 	readonly focusBorder: string | undefined;
 }
 export const unthemedSelectBoxStyles: ISelectBoxStyles = {
@@ -71,6 +90,7 @@ export const unthemedSelectBoxStyles: ISelectBoxStyles = {
 
 export interface ISelectData {
 	selected: string;
+
 	index: number;
 }
 export class SelectBox extends Widget implements ISelectBoxDelegate {
@@ -101,33 +121,42 @@ export class SelectBox extends Widget implements ISelectBoxDelegate {
 				selectBoxOptions,
 			);
 		}
+
 		this._register(this.selectBoxDelegate);
 	}
 	// Public SelectBox Methods - routed through delegate interface
 	get onDidSelect(): Event<ISelectData> {
 		return this.selectBoxDelegate.onDidSelect;
 	}
+
 	setOptions(options: ISelectOptionItem[], selected?: number): void {
 		this.selectBoxDelegate.setOptions(options, selected);
 	}
+
 	select(index: number): void {
 		this.selectBoxDelegate.select(index);
 	}
+
 	setAriaLabel(label: string): void {
 		this.selectBoxDelegate.setAriaLabel(label);
 	}
+
 	focus(): void {
 		this.selectBoxDelegate.focus();
 	}
+
 	blur(): void {
 		this.selectBoxDelegate.blur();
 	}
+
 	setFocusable(focusable: boolean): void {
 		this.selectBoxDelegate.setFocusable(focusable);
 	}
+
 	setEnabled(enabled: boolean): void {
 		this.selectBoxDelegate.setEnabled(enabled);
 	}
+
 	render(container: HTMLElement): void {
 		this.selectBoxDelegate.render(container);
 	}

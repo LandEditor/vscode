@@ -34,15 +34,19 @@ export class TerminalEnvironmentManager {
 		this.disposable = filterEvent(workspace.onDidChangeConfiguration, (e) =>
 			e.affectsConfiguration("git"),
 		)(this.refresh, this);
+
 		this.refresh();
 	}
+
 	private refresh(): void {
 		const config = workspace.getConfiguration("git", null);
+
 		this.context.environmentVariableCollection.clear();
 
 		if (!config.get<boolean>("enabled", true)) {
 			return;
 		}
+
 		const features: string[] = [];
 
 		for (const envProvider of this.envProviders) {
@@ -54,6 +58,7 @@ export class TerminalEnvironmentManager {
 					terminalEnv[name],
 				);
 			}
+
 			if (
 				envProvider?.featureDescription &&
 				Object.keys(terminalEnv).length > 0
@@ -61,6 +66,7 @@ export class TerminalEnvironmentManager {
 				features.push(envProvider.featureDescription);
 			}
 		}
+
 		if (features.length) {
 			this.context.environmentVariableCollection.description = l10n.t(
 				"Enables the following features: {0}",
@@ -68,6 +74,7 @@ export class TerminalEnvironmentManager {
 			);
 		}
 	}
+
 	dispose(): void {
 		this.disposable.dispose();
 	}
@@ -93,6 +100,7 @@ export class TerminalShellExecutionManager {
 		"stash",
 		"switch",
 	]);
+
 	private readonly disposables: IDisposable[] = [];
 
 	constructor(
@@ -105,6 +113,7 @@ export class TerminalShellExecutionManager {
 			this.disposables,
 		);
 	}
+
 	private onDidEndTerminalShellExecution(
 		e: TerminalShellExecutionEndEvent,
 	): void {
@@ -123,6 +132,7 @@ export class TerminalShellExecutionManager {
 		) {
 			return;
 		}
+
 		this.logger.trace(
 			`[TerminalShellExecutionManager][onDidEndTerminalShellExecution] Matched git subcommand: ${subcommand}`,
 		);
@@ -136,8 +146,10 @@ export class TerminalShellExecutionManager {
 
 			return;
 		}
+
 		repository.status();
 	}
+
 	dispose(): void {
 		dispose(this.disposables);
 	}

@@ -12,7 +12,9 @@ import {
 
 interface IMessageChannelResult {
 	nonce: string;
+
 	port: MessagePort;
+
 	source: unknown;
 }
 export async function acquirePort(

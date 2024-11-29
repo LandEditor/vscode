@@ -22,6 +22,7 @@ export class MainThreadErrors implements MainThreadErrorsShape {
 		if (err && err.$isError) {
 			err = transformErrorFromSerialization(err);
 		}
+
 		onUnexpectedError(err);
 	}
 }

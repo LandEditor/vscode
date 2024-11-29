@@ -13,20 +13,26 @@ import { ITextModel } from "../../../common/model.js";
 
 export class InPlaceReplaceCommand implements ICommand {
 	private readonly _editRange: Range;
+
 	private readonly _originalSelection: Selection;
+
 	private readonly _text: string;
 
 	constructor(editRange: Range, originalSelection: Selection, text: string) {
 		this._editRange = editRange;
+
 		this._originalSelection = originalSelection;
+
 		this._text = text;
 	}
+
 	public getEditOperations(
 		model: ITextModel,
 		builder: IEditOperationBuilder,
 	): void {
 		builder.addTrackedEditOperation(this._editRange, this._text);
 	}
+
 	public computeCursorState(
 		model: ITextModel,
 		helper: ICursorStateComputerData,
@@ -44,6 +50,7 @@ export class InPlaceReplaceCommand implements ICommand {
 				srcRange.endColumn,
 			);
 		}
+
 		return new Selection(
 			srcRange.endLineNumber,
 			Math.min(

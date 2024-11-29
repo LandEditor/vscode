@@ -16,8 +16,11 @@ import { isSpace } from "./utils.js";
 
 export class LinesSliceCharSequence implements ISequence {
 	private readonly elements: number[] = [];
+
 	private readonly firstElementOffsetByLineIdx: number[] = [];
+
 	private readonly lineStartOffsets: number[] = [];
+
 	private readonly trimmedWsLengthsByLineIdx: number[] = [];
 
 	constructor(
@@ -29,7 +32,9 @@ export class LinesSliceCharSequence implements ISequence {
 
 		for (
 			let lineNumber = this.range.startLineNumber;
+
 			lineNumber <= this.range.endLineNumber;
+
 			lineNumber++
 		) {
 			let line = lines[lineNumber - 1];
@@ -41,17 +46,22 @@ export class LinesSliceCharSequence implements ISequence {
 				this.range.startColumn > 1
 			) {
 				lineStartOffset = this.range.startColumn - 1;
+
 				line = line.substring(lineStartOffset);
 			}
+
 			this.lineStartOffsets.push(lineStartOffset);
 
 			let trimmedWsLength = 0;
 
 			if (!considerWhitespaceChanges) {
 				const trimmedStartLine = line.trimStart();
+
 				trimmedWsLength = line.length - trimmedStartLine.length;
+
 				line = trimmedStartLine.trimEnd();
 			}
+
 			this.trimmedWsLengthsByLineIdx.push(trimmedWsLength);
 
 			const lineLength =
@@ -68,30 +78,38 @@ export class LinesSliceCharSequence implements ISequence {
 			for (let i = 0; i < lineLength; i++) {
 				this.elements.push(line.charCodeAt(i));
 			}
+
 			if (lineNumber < this.range.endLineNumber) {
 				this.elements.push("\n".charCodeAt(0));
+
 				this.firstElementOffsetByLineIdx.push(this.elements.length);
 			}
 		}
 	}
+
 	toString() {
 		return `Slice: "${this.text}"`;
 	}
+
 	get text(): string {
 		return this.getText(new OffsetRange(0, this.length));
 	}
+
 	getText(range: OffsetRange): string {
 		return this.elements
 			.slice(range.start, range.endExclusive)
 			.map((e) => String.fromCharCode(e))
 			.join("");
 	}
+
 	getElement(offset: number): number {
 		return this.elements[offset];
 	}
+
 	get length(): number {
 		return this.elements.length;
 	}
+
 	public getBoundaryScore(length: number): number {
 		//   a   b   c   ,           d   e   f
 		// 11  0   0   12  15  6   13  0   0   11
@@ -110,10 +128,12 @@ export class LinesSliceCharSequence implements ISequence {
 			// don't break between \r and \n
 			return 0;
 		}
+
 		if (prevCategory === CharBoundaryCategory.LineBreakLF) {
 			// prefer the linebreak before the change
 			return 150;
 		}
+
 		let score = 0;
 
 		if (prevCategory !== nextCategory) {
@@ -126,11 +146,14 @@ export class LinesSliceCharSequence implements ISequence {
 				score += 1;
 			}
 		}
+
 		score += getCategoryBoundaryScore(prevCategory);
+
 		score += getCategoryBoundaryScore(nextCategory);
 
 		return score;
 	}
+
 	public translateOffset(
 		offset: number,
 		preference: "left" | "right" = "right",
@@ -153,6 +176,7 @@ export class LinesSliceCharSequence implements ISequence {
 					: this.trimmedWsLengthsByLineIdx[i]),
 		);
 	}
+
 	public translateRange(range: OffsetRange): Range {
 		const pos1 = this.translateOffset(range.start, "right");
 
@@ -161,6 +185,7 @@ export class LinesSliceCharSequence implements ISequence {
 		if (pos2.isBefore(pos1)) {
 			return Range.fromPositions(pos2, pos2);
 		}
+
 		return Range.fromPositions(pos1, pos2);
 	}
 	/**
@@ -170,6 +195,7 @@ export class LinesSliceCharSequence implements ISequence {
 		if (offset < 0 || offset >= this.elements.length) {
 			return undefined;
 		}
+
 		if (!isWordChar(this.elements[offset])) {
 			return undefined;
 		}
@@ -185,17 +211,21 @@ export class LinesSliceCharSequence implements ISequence {
 		while (end < this.elements.length && isWordChar(this.elements[end])) {
 			end++;
 		}
+
 		return new OffsetRange(start, end);
 	}
+
 	public countLinesIn(range: OffsetRange): number {
 		return (
 			this.translateOffset(range.endExclusive).lineNumber -
 			this.translateOffset(range.start).lineNumber
 		);
 	}
+
 	public isStronglyEqual(offset1: number, offset2: number): boolean {
 		return this.elements[offset1] === this.elements[offset2];
 	}
+
 	public extendToFullLines(range: OffsetRange): OffsetRange {
 		const start =
 			findLastMonotonous(

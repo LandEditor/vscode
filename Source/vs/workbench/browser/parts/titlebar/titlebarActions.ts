@@ -84,6 +84,7 @@ export class ToggleTitleBarConfigAction extends Action2 {
 		const configService = accessor.get(IConfigurationService);
 
 		const value = configService.getValue(this.section);
+
 		configService.updateValue(this.section, !value);
 	}
 }
@@ -174,6 +175,7 @@ registerAction2(
 
 		run(accessor: ServicesAccessor, ...args: any[]): void {
 			const configService = accessor.get(IConfigurationService);
+
 			configService.updateValue(
 				TitleBarSetting.CUSTOM_TITLE_BAR_VISIBILITY,
 				CustomTitleBarVisibility.NEVER,
@@ -210,6 +212,7 @@ registerAction2(
 
 		run(accessor: ServicesAccessor, ...args: any[]): void {
 			const configService = accessor.get(IConfigurationService);
+
 			configService.updateValue(
 				TitleBarSetting.CUSTOM_TITLE_BAR_VISIBILITY,
 				CustomTitleBarVisibility.WINDOWED,
@@ -300,8 +303,10 @@ class ToggleCustomTitleBar extends Action2 {
 						CustomTitleBarVisibility.NEVER,
 					);
 				}
+
 				break;
 			}
+
 			case CustomTitleBarVisibility.AUTO:
 			default:
 				configService.updateValue(
@@ -328,6 +333,7 @@ registerAction2(
 
 		run(accessor: ServicesAccessor, ...args: any[]): void {
 			const configService = accessor.get(IConfigurationService);
+
 			configService.updateValue(
 				TitleBarSetting.CUSTOM_TITLE_BAR_VISIBILITY,
 				CustomTitleBarVisibility.AUTO,
@@ -349,6 +355,7 @@ registerAction2(
 
 		run(accessor: ServicesAccessor, ...args: any[]): void {
 			const configService = accessor.get(IConfigurationService);
+
 			configService.updateValue(
 				TitleBarSetting.CUSTOM_TITLE_BAR_VISIBILITY,
 				CustomTitleBarVisibility.NEVER,
@@ -376,6 +383,7 @@ registerAction2(
 
 		run(accessor: ServicesAccessor, ...args: any[]): void {
 			const configService = accessor.get(IConfigurationService);
+
 			configService.updateValue(
 				TitleBarSetting.CUSTOM_TITLE_BAR_VISIBILITY,
 				CustomTitleBarVisibility.WINDOWED,
@@ -452,6 +460,7 @@ registerAction2(
 						ToggleEditorActions.settingsID,
 						StorageScope.PROFILE,
 					);
+
 					configService.updateValue(
 						ToggleEditorActions.settingsID,
 						storedValue ?? "default",
@@ -469,6 +478,7 @@ registerAction2(
 					ToggleEditorActions.settingsID,
 					"hidden",
 				);
+
 				storageService.store(
 					ToggleEditorActions.settingsID,
 					location,
@@ -516,6 +526,7 @@ if (isLinux && isNative) {
 
 			run(accessor: ServicesAccessor): void {
 				const configService = accessor.get(IConfigurationService);
+
 				configService.updateValue(
 					TitleBarSetting.TITLE_BAR_STYLE,
 					TitlebarStyle.NATIVE,

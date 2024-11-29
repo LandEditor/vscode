@@ -51,9 +51,11 @@ export class MarkerController implements IEditorContribution {
 	private readonly _editor: ICodeEditor;
 
 	private readonly _widgetVisible: IContextKey<boolean>;
+
 	private readonly _sessionDispoables = new DisposableStore();
 
 	private _model?: MarkerList;
+
 	private _widget?: MarkerNavigationWidget;
 
 	constructor(
@@ -67,6 +69,7 @@ export class MarkerController implements IEditorContribution {
 		private readonly _instantiationService: IInstantiationService,
 	) {
 		this._editor = editor;
+
 		this._widgetVisible = CONTEXT_MARKERS_NAVIGATION_VISIBLE.bindTo(
 			this._contextKeyService,
 		);
@@ -74,13 +77,17 @@ export class MarkerController implements IEditorContribution {
 
 	dispose(): void {
 		this._cleanUp();
+
 		this._sessionDispoables.dispose();
 	}
 
 	private _cleanUp(): void {
 		this._widgetVisible.reset();
+
 		this._sessionDispoables.clear();
+
 		this._widget = undefined;
+
 		this._model = undefined;
 	}
 
@@ -88,10 +95,12 @@ export class MarkerController implements IEditorContribution {
 		if (this._model && this._model.matches(uri)) {
 			return this._model;
 		}
+
 		let reusePosition = false;
 
 		if (this._model) {
 			reusePosition = true;
+
 			this._cleanUp();
 		}
 
@@ -109,14 +118,17 @@ export class MarkerController implements IEditorContribution {
 			MarkerNavigationWidget,
 			this._editor,
 		);
+
 		this._widget.onDidClose(
 			() => this.close(),
 			this,
 			this._sessionDispoables,
 		);
+
 		this._widgetVisible.set(true);
 
 		this._sessionDispoables.add(this._model);
+
 		this._sessionDispoables.add(this._widget);
 
 		// follow cursor
@@ -140,6 +152,7 @@ export class MarkerController implements IEditorContribution {
 				if (!this._widget || !this._widget.position || !this._model) {
 					return;
 				}
+
 				const info = this._model.find(
 					this._editor.getModel()!.uri,
 					this._widget.position,
@@ -167,9 +180,11 @@ export class MarkerController implements IEditorContribution {
 					},
 					this._editor,
 				);
+
 				this.close(false);
 			}),
 		);
+
 		this._sessionDispoables.add(
 			this._editor.onDidChangeModel(() => this._cleanUp()),
 		);
@@ -188,7 +203,9 @@ export class MarkerController implements IEditorContribution {
 	showAtMarker(marker: IMarker): void {
 		if (this._editor.hasModel()) {
 			const model = this._getOrCreateModel(this._editor.getModel().uri);
+
 			model.resetIndex();
+
 			model.move(
 				true,
 				this._editor.getModel(),
@@ -210,6 +227,7 @@ export class MarkerController implements IEditorContribution {
 			const model = this._getOrCreateModel(
 				multiFile ? undefined : this._editor.getModel().uri,
 			);
+
 			model.move(
 				next,
 				this._editor.getModel(),
@@ -219,6 +237,7 @@ export class MarkerController implements IEditorContribution {
 			if (!model.selected) {
 				return;
 			}
+
 			if (
 				model.selected.marker.resource.toString() !==
 				this._editor.getModel().uri.toString()
@@ -242,6 +261,7 @@ export class MarkerController implements IEditorContribution {
 
 				if (otherEditor) {
 					MarkerController.get(otherEditor)?.close();
+
 					MarkerController.get(otherEditor)?.nagivate(
 						next,
 						multiFile,
@@ -277,6 +297,7 @@ class MarkerNavigationAction extends EditorAction {
 
 export class NextMarkerAction extends MarkerNavigationAction {
 	static ID: string = "editor.action.marker.next";
+
 	static LABEL = nls.localize2(
 		"markerAction.next.label",
 		"Go to Next Problem (Error, Warning, Info)",
@@ -312,6 +333,7 @@ export class NextMarkerAction extends MarkerNavigationAction {
 
 class PrevMarkerAction extends MarkerNavigationAction {
 	static ID: string = "editor.action.marker.prev";
+
 	static LABEL = nls.localize2(
 		"markerAction.previous.label",
 		"Go to Previous Problem (Error, Warning, Info)",

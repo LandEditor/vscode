@@ -15,7 +15,9 @@ import { IConfigurationPropertySchema } from "../../../../platform/configuration
 
 type Validator<T> = {
 	enabled: boolean;
+
 	isValid: (value: T) => boolean;
+
 	message: string;
 };
 function canBeType(
@@ -52,6 +54,7 @@ export function createValidator(
 		if (isNullable && isNullOrEmpty(value)) {
 			return "";
 		}
+
 		const errors: string[] = [];
 
 		if (arrayValidator) {
@@ -61,6 +64,7 @@ export function createValidator(
 				errors.push(err);
 			}
 		}
+
 		if (objectValidator) {
 			const err = objectValidator(value);
 
@@ -68,6 +72,7 @@ export function createValidator(
 				errors.push(err);
 			}
 		}
+
 		if (prop.type === "boolean" && value !== true && value !== false) {
 			errors.push(
 				nls.localize(
@@ -76,6 +81,7 @@ export function createValidator(
 				),
 			);
 		}
+
 		if (isNumeric) {
 			if (
 				isNullOrEmpty(value) ||
@@ -97,6 +103,7 @@ export function createValidator(
 				);
 			}
 		}
+
 		if (prop.type === "string") {
 			if (prop.enum && !isStringArray(prop.enum)) {
 				errors.push(
@@ -120,11 +127,13 @@ export function createValidator(
 				);
 			}
 		}
+
 		if (errors.length) {
 			return prop.errorMessage
 				? [prop.errorMessage, ...errors].join(" ")
 				: errors.join(" ");
 		}
+
 		return "";
 	};
 }
@@ -138,6 +147,7 @@ export function getInvalidTypeError(
 	if (typeof type === "undefined") {
 		return;
 	}
+
 	const typeArr = Array.isArray(type) ? type : [type];
 
 	if (!typeArr.some((_type) => valueValidatesAsType(value, _type))) {
@@ -147,6 +157,7 @@ export function getInvalidTypeError(
 			JSON.stringify(type),
 		);
 	}
+
 	return;
 }
 function valueValidatesAsType(value: any, type: string): boolean {
@@ -165,6 +176,7 @@ function valueValidatesAsType(value: any, type: string): boolean {
 	} else if (type === "number" || type === "integer") {
 		return valueType === "number";
 	}
+
 	return true;
 }
 function toRegExp(pattern: string): RegExp {
@@ -201,6 +213,7 @@ function getStringValidators(prop: IConfigurationPropertySchema) {
 	if (typeof prop.pattern === "string") {
 		patternRegex = toRegExp(prop.pattern);
 	}
+
 	return [
 		{
 			enabled: prop.maxLength !== undefined,
@@ -298,6 +311,7 @@ function getNumericValidators(
 	if (!isNumeric) {
 		return [];
 	}
+
 	let exclusiveMax: number | undefined;
 
 	let exclusiveMin: number | undefined;
@@ -307,11 +321,13 @@ function getNumericValidators(
 	} else {
 		exclusiveMax = prop.exclusiveMaximum;
 	}
+
 	if (typeof prop.exclusiveMinimum === "boolean") {
 		exclusiveMin = prop.exclusiveMinimum ? prop.minimum : undefined;
 	} else {
 		exclusiveMin = prop.exclusiveMinimum;
 	}
+
 	return [
 		{
 			enabled:
@@ -389,6 +405,7 @@ function getArrayValidator(
 				if (!value) {
 					return null;
 				}
+
 				let message = "";
 
 				if (!Array.isArray(value)) {
@@ -396,10 +413,12 @@ function getArrayValidator(
 						"validations.arrayIncorrectType",
 						"Incorrect type. Expected an array.",
 					);
+
 					message += "\n";
 
 					return message;
 				}
+
 				const arrayValue = value as unknown[];
 
 				if (prop.uniqueItems) {
@@ -408,37 +427,46 @@ function getArrayValidator(
 							"validations.stringArrayUniqueItems",
 							"Array has duplicate items",
 						);
+
 						message += "\n";
 					}
 				}
+
 				if (prop.minItems && arrayValue.length < prop.minItems) {
 					message += nls.localize(
 						"validations.stringArrayMinItem",
 						"Array must have at least {0} items",
 						prop.minItems,
 					);
+
 					message += "\n";
 				}
+
 				if (prop.maxItems && arrayValue.length > prop.maxItems) {
 					message += nls.localize(
 						"validations.stringArrayMaxItem",
 						"Array must have at most {0} items",
 						prop.maxItems,
 					);
+
 					message += "\n";
 				}
+
 				if (propItems.type === "string") {
 					if (!isStringArray(arrayValue)) {
 						message += nls.localize(
 							"validations.stringArrayIncorrectType",
 							"Incorrect type. Expected a string array.",
 						);
+
 						message += "\n";
 
 						return message;
 					}
+
 					if (typeof propItems.pattern === "string") {
 						const patternRegex = toRegExp(propItems.pattern);
+
 						arrayValue.forEach((v) => {
 							if (!patternRegex.test(v)) {
 								message +=
@@ -452,6 +480,7 @@ function getArrayValidator(
 							}
 						});
 					}
+
 					const propItemsEnum = propItems.enum;
 
 					if (propItemsEnum) {
@@ -467,6 +496,7 @@ function getArrayValidator(
 											.join(", ") +
 										"]",
 								);
+
 								message += "\n";
 							}
 						});
@@ -483,10 +513,12 @@ function getArrayValidator(
 						}
 					});
 				}
+
 				return message;
 			};
 		}
 	}
+
 	return null;
 }
 function getObjectValidator(
@@ -499,6 +531,7 @@ function getObjectValidator(
 			if (!value) {
 				return null;
 			}
+
 			const errors: string[] = [];
 
 			if (!isObject(value)) {
@@ -521,8 +554,10 @@ function getObjectValidator(
 						if (errorMessage) {
 							errors.push(`${key}: ${errorMessage}\n`);
 						}
+
 						return;
 					}
+
 					if (patternProperties) {
 						for (const pattern in patternProperties) {
 							if (RegExp(pattern).test(key)) {
@@ -534,10 +569,12 @@ function getObjectValidator(
 								if (errorMessage) {
 									errors.push(`${key}: ${errorMessage}\n`);
 								}
+
 								return;
 							}
 						}
 					}
+
 					if (additionalProperties === false) {
 						errors.push(
 							nls.localize(
@@ -558,14 +595,17 @@ function getObjectValidator(
 					}
 				});
 			}
+
 			if (errors.length) {
 				return prop.errorMessage
 					? [prop.errorMessage, ...errors].join(" ")
 					: errors.join(" ");
 			}
+
 			return "";
 		};
 	}
+
 	return null;
 }
 function getErrorsForSchema(

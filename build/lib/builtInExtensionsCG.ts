@@ -40,6 +40,7 @@ async function downloadExtensionDetails(
 
 	async function getContent(fileName: string): Promise<{
 		fileName: string;
+
 		body: Buffer | undefined | null;
 	}> {
 		try {
@@ -61,7 +62,9 @@ async function downloadExtensionDetails(
 			return { fileName, body: null };
 		}
 	}
+
 	const promises = contentFileNames.map(getContent);
+
 	console.log(extensionLabel);
 
 	const results = await Promise.all(promises);
@@ -69,11 +72,14 @@ async function downloadExtensionDetails(
 	for (const result of results) {
 		if (result.body) {
 			const extensionFolder = path.join(rootCG, extension.name);
+
 			fs.mkdirSync(extensionFolder, { recursive: true });
+
 			fs.writeFileSync(
 				path.join(extensionFolder, result.fileName),
 				result.body,
 			);
+
 			console.log(`  - ${result.fileName} ${ansiColors.green("✔︎")}`);
 		} else if (result.body === undefined) {
 			console.log(`  - ${result.fileName} ${ansiColors.yellow("⚠️")}`);
@@ -85,6 +91,7 @@ async function downloadExtensionDetails(
 	if (!results.find((r) => r.fileName === "package.json")?.body) {
 		// throw new Error(`The "package.json" file could not be found for the built-in extension - ${extensionLabel}`);
 	}
+
 	if (!results.find((r) => r.fileName === "package-lock.json")?.body) {
 		// throw new Error(`The "package-lock.json" could not be found for the built-in extension - ${extensionLabel}`);
 	}
@@ -99,13 +106,16 @@ main().then(
 		console.log(
 			`Built-in extensions component data downloaded ${ansiColors.green("✔︎")}`,
 		);
+
 		process.exit(0);
 	},
 	(err) => {
 		console.log(
 			`Built-in extensions component data could not be downloaded ${ansiColors.red("🛑")}`,
 		);
+
 		console.error(err);
+
 		process.exit(1);
 	},
 );

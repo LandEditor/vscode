@@ -116,7 +116,9 @@ export interface IAccessibleDiffViewerModel {
 	 * Should do: `setSelection`, `revealLine` and `focus`
 	 */
 	modifiedReveal(range?: Range): void;
+
 	modifiedSetSelection(range: Range): void;
+
 	modifiedFocus(): void;
 
 	getModifiedPosition(): Position | undefined;
@@ -145,13 +147,16 @@ export class AccessibleDiffViewer extends Disposable {
 	) {
 		super();
 	}
+
 	private readonly _state = derivedWithStore(this, (reader, store) => {
 		const visible = this._visible.read(reader);
+
 		this._parentNode.style.visibility = visible ? "visible" : "hidden";
 
 		if (!visible) {
 			return null;
 		}
+
 		const model = store.add(
 			this._instantiationService.createInstance(
 				ViewModel,
@@ -175,9 +180,11 @@ export class AccessibleDiffViewer extends Disposable {
 
 		return { model, view };
 	}).recomputeInitiallyAndOnChange(this._store);
+
 	next(): void {
 		transaction((tx) => {
 			const isVisible = this._visible.get();
+
 			this._setVisible(true, tx);
 
 			if (isVisible) {
@@ -185,12 +192,15 @@ export class AccessibleDiffViewer extends Disposable {
 			}
 		});
 	}
+
 	prev(): void {
 		transaction((tx) => {
 			this._setVisible(true, tx);
+
 			this._state.get()!.model.previousGroup(tx);
 		});
 	}
+
 	close(): void {
 		transaction((tx) => {
 			this._setVisible(false, tx);
@@ -199,13 +209,19 @@ export class AccessibleDiffViewer extends Disposable {
 }
 class ViewModel extends Disposable {
 	private readonly _groups = observableValue<ViewElementGroup[]>(this, []);
+
 	private readonly _currentGroupIdx = observableValue(this, 0);
+
 	private readonly _currentElementIdx = observableValue(this, 0);
+
 	public readonly groups: IObservable<ViewElementGroup[]> = this._groups;
+
 	public readonly currentGroup: IObservable<ViewElementGroup | undefined> =
 		this._currentGroupIdx.map((idx, r) => this._groups.read(r)[idx]);
+
 	public readonly currentGroupIndex: IObservable<number> =
 		this._currentGroupIdx;
+
 	public readonly currentElement: IObservable<ViewElement | undefined> =
 		this._currentElementIdx.map(
 			(idx, r) => this.currentGroup.read(r)?.lines[idx],
@@ -225,6 +241,7 @@ class ViewModel extends Disposable {
 		private readonly _accessibilitySignalService: IAccessibilitySignalService,
 	) {
 		super();
+
 		this._register(
 			autorun((reader) => {
 				/** @description update groups */
@@ -235,11 +252,13 @@ class ViewModel extends Disposable {
 
 					return;
 				}
+
 				const groups = computeViewElementGroups(
 					diffs,
 					this._models.getOriginalModel().getLineCount(),
 					this._models.getModifiedModel().getLineCount(),
 				);
+
 				transaction((tx) => {
 					const p = this._models.getModifiedPosition();
 
@@ -254,10 +273,12 @@ class ViewModel extends Disposable {
 							this._currentGroupIdx.set(nextGroup, tx);
 						}
 					}
+
 					this._groups.set(groups, tx);
 				});
 			}),
 		);
+
 		this._register(
 			autorun((reader) => {
 				/** @description play audio-cue for diff */
@@ -280,6 +301,7 @@ class ViewModel extends Disposable {
 				}
 			}),
 		);
+
 		this._register(
 			autorun((reader) => {
 				/** @description select lines in editor */
@@ -293,6 +315,7 @@ class ViewModel extends Disposable {
 					const lineNumber =
 						currentViewItem.modifiedLineNumber ??
 						currentViewItem.diff.modified.startLineNumber;
+
 					this._models.modifiedSetSelection(
 						Range.fromPositions(new Position(lineNumber, 1)),
 					);
@@ -300,12 +323,14 @@ class ViewModel extends Disposable {
 			}),
 		);
 	}
+
 	private _goToGroupDelta(delta: number, tx?: ITransaction): void {
 		const groups = this.groups.get();
 
 		if (!groups || groups.length <= 1) {
 			return;
 		}
+
 		subtransaction(tx, (tx) => {
 			this._currentGroupIdx.set(
 				OffsetRange.ofLength(groups.length).clipCyclic(
@@ -313,21 +338,26 @@ class ViewModel extends Disposable {
 				),
 				tx,
 			);
+
 			this._currentElementIdx.set(0, tx);
 		});
 	}
+
 	nextGroup(tx?: ITransaction): void {
 		this._goToGroupDelta(1, tx);
 	}
+
 	previousGroup(tx?: ITransaction): void {
 		this._goToGroupDelta(-1, tx);
 	}
+
 	private _goToLineDelta(delta: number): void {
 		const group = this.currentGroup.get();
 
 		if (!group || group.lines.length <= 1) {
 			return;
 		}
+
 		transaction((tx) => {
 			this._currentElementIdx.set(
 				OffsetRange.ofLength(group.lines.length).clip(
@@ -337,31 +367,38 @@ class ViewModel extends Disposable {
 			);
 		});
 	}
+
 	goToNextLine(): void {
 		this._goToLineDelta(1);
 	}
+
 	goToPreviousLine(): void {
 		this._goToLineDelta(-1);
 	}
+
 	goToLine(line: ViewElement): void {
 		const group = this.currentGroup.get();
 
 		if (!group) {
 			return;
 		}
+
 		const idx = group.lines.indexOf(line);
 
 		if (idx === -1) {
 			return;
 		}
+
 		transaction((tx) => {
 			this._currentElementIdx.set(idx, tx);
 		});
 	}
+
 	revealCurrentElementInEditor(): void {
 		if (!this.canClose.get()) {
 			return;
 		}
+
 		this._setVisible(false, undefined);
 
 		const curElem = this.currentElement.get();
@@ -384,11 +421,14 @@ class ViewModel extends Disposable {
 			}
 		}
 	}
+
 	close(): void {
 		if (!this.canClose.get()) {
 			return;
 		}
+
 		this._setVisible(false, undefined);
+
 		this._models.modifiedFocus();
 	}
 }
@@ -408,6 +448,7 @@ function computeViewElementGroups(
 			2 * viewElementGroupLineMargin,
 	)) {
 		const viewElements: ViewElement[] = [];
+
 		viewElements.push(new HeaderViewElement());
 
 		const origFullRange = new LineRange(
@@ -452,6 +493,7 @@ function computeViewElementGroups(
 					? b.modified.startLineNumber
 					: modifiedFullRange.endLineNumberExclusive,
 			);
+
 			origRange.forEach((origLineNumber) => {
 				viewElements.push(
 					new UnchangedLineViewElement(
@@ -468,6 +510,7 @@ function computeViewElementGroups(
 						new DeletedLineViewElement(b, origLineNumber),
 					);
 				});
+
 				b.modified.forEach((modifiedLineNumber) => {
 					viewElements.push(
 						new AddedLineViewElement(b, modifiedLineNumber),
@@ -479,6 +522,7 @@ function computeViewElementGroups(
 		const modifiedRange = g[0].modified.join(g[g.length - 1].modified);
 
 		const originalRange = g[0].original.join(g[g.length - 1].original);
+
 		result.push(
 			new ViewElementGroup(
 				new LineRangeMapping(modifiedRange, originalRange),
@@ -486,6 +530,7 @@ function computeViewElementGroups(
 			),
 		);
 	}
+
 	return result;
 }
 enum LineType {
@@ -510,6 +555,7 @@ class HeaderViewElement {
 }
 class DeletedLineViewElement {
 	public readonly type = LineType.Deleted;
+
 	public readonly modifiedLineNumber = undefined;
 
 	constructor(
@@ -519,6 +565,7 @@ class DeletedLineViewElement {
 }
 class AddedLineViewElement {
 	public readonly type = LineType.Added;
+
 	public readonly originalLineNumber = undefined;
 
 	constructor(
@@ -536,8 +583,11 @@ class UnchangedLineViewElement {
 }
 class View extends Disposable {
 	public readonly domNode: HTMLElement;
+
 	private readonly _content: HTMLElement;
+
 	private readonly _scrollbar: DomScrollableElement;
+
 	private readonly _actionBar: ActionBar;
 
 	constructor(
@@ -550,13 +600,18 @@ class View extends Disposable {
 		private readonly _languageService: ILanguageService,
 	) {
 		super();
+
 		this.domNode = this._element;
+
 		this.domNode.className =
 			"monaco-component diff-review monaco-editor-background";
 
 		const actionBarContainer = document.createElement("div");
+
 		actionBarContainer.className = "diff-review-actions";
+
 		this._actionBar = this._register(new ActionBar(actionBarContainer));
+
 		this._register(
 			autorun((reader) => {
 				/** @description update actions */
@@ -579,41 +634,54 @@ class View extends Disposable {
 				}
 			}),
 		);
+
 		this._content = document.createElement("div");
+
 		this._content.className = "diff-review-content";
+
 		this._content.setAttribute("role", "code");
+
 		this._scrollbar = this._register(
 			new DomScrollableElement(this._content, {}),
 		);
+
 		reset(this.domNode, this._scrollbar.getDomNode(), actionBarContainer);
+
 		this._register(
 			autorun((r) => {
 				this._height.read(r);
+
 				this._width.read(r);
+
 				this._scrollbar.scanDomNode();
 			}),
 		);
+
 		this._register(
 			toDisposable(() => {
 				reset(this.domNode);
 			}),
 		);
+
 		this._register(
 			applyStyle(this.domNode, {
 				width: this._width,
 				height: this._height,
 			}),
 		);
+
 		this._register(
 			applyStyle(this._content, {
 				width: this._width,
 				height: this._height,
 			}),
 		);
+
 		this._register(
 			autorunWithStore((reader, store) => {
 				/** @description render */
 				this._model.currentGroup.read(reader);
+
 				this._render(store);
 			}),
 		);
@@ -626,16 +694,20 @@ class View extends Disposable {
 					e.equals(KeyMod.Alt | KeyCode.DownArrow)
 				) {
 					e.preventDefault();
+
 					this._model.goToNextLine();
 				}
+
 				if (
 					e.equals(KeyCode.UpArrow) ||
 					e.equals(KeyMod.CtrlCmd | KeyCode.UpArrow) ||
 					e.equals(KeyMod.Alt | KeyCode.UpArrow)
 				) {
 					e.preventDefault();
+
 					this._model.goToPreviousLine();
 				}
+
 				if (
 					e.equals(KeyCode.Escape) ||
 					e.equals(KeyMod.CtrlCmd | KeyCode.Escape) ||
@@ -643,23 +715,30 @@ class View extends Disposable {
 					e.equals(KeyMod.Shift | KeyCode.Escape)
 				) {
 					e.preventDefault();
+
 					this._model.close();
 				}
+
 				if (e.equals(KeyCode.Space) || e.equals(KeyCode.Enter)) {
 					e.preventDefault();
+
 					this._model.revealCurrentElementInEditor();
 				}
 			}),
 		);
 	}
+
 	private _render(store: DisposableStore): void {
 		const originalOptions = this._models.getOriginalOptions();
 
 		const modifiedOptions = this._models.getModifiedOptions();
 
 		const container = document.createElement("div");
+
 		container.className = "diff-review-table";
+
 		container.setAttribute("role", "list");
+
 		container.setAttribute(
 			"aria-label",
 			localize(
@@ -667,7 +746,9 @@ class View extends Disposable {
 				"Accessible Diff Viewer. Use arrow up and down to navigate.",
 			),
 		);
+
 		applyFontInfo(container, modifiedOptions.get(EditorOption.fontInfo));
+
 		reset(this._content, container);
 
 		const originalModel = this._models.getOriginalModel();
@@ -677,6 +758,7 @@ class View extends Disposable {
 		if (!originalModel || !modifiedModel) {
 			return;
 		}
+
 		const originalModelOpts = originalModel.getOptions();
 
 		const modifiedModelOpts = modifiedModel.getOptions();
@@ -689,11 +771,14 @@ class View extends Disposable {
 			if (!group) {
 				break;
 			}
+
 			let row: HTMLDivElement;
 
 			if (viewItem.type === LineType.Header) {
 				const header = document.createElement("div");
+
 				header.className = "diff-review-row";
+
 				header.setAttribute("role", "listitem");
 
 				const r = group.range;
@@ -720,6 +805,7 @@ class View extends Disposable {
 				const modifiedChangedLinesCntAria = getAriaLines(
 					r.modified.length,
 				);
+
 				header.setAttribute(
 					"aria-label",
 					localize(
@@ -745,6 +831,7 @@ class View extends Disposable {
 				);
 
 				const cell = document.createElement("div");
+
 				cell.className = "diff-review-cell diff-review-summary";
 				// e.g.: `1/10: @@ -504,7 +517,7 @@`
 				cell.appendChild(
@@ -752,7 +839,9 @@ class View extends Disposable {
 						`${diffIndex + 1}/${diffsLength}: @@ -${r.original.startLineNumber},${r.original.length} +${r.modified.startLineNumber},${r.modified.length} @@`,
 					),
 				);
+
 				header.appendChild(cell);
+
 				row = header;
 			} else {
 				row = this._createRow(
@@ -767,6 +856,7 @@ class View extends Disposable {
 					modifiedModelOpts,
 				);
 			}
+
 			container.appendChild(row);
 
 			const isSelectedObs = derived(
@@ -775,10 +865,12 @@ class View extends Disposable {
 						reader,
 					) === viewItem,
 			);
+
 			store.add(
 				autorun((reader) => {
 					/** @description update tab index */
 					const isSelected = isSelectedObs.read(reader);
+
 					row.tabIndex = isSelected ? 0 : -1;
 
 					if (isSelected) {
@@ -786,14 +878,17 @@ class View extends Disposable {
 					}
 				}),
 			);
+
 			store.add(
 				addDisposableListener(row, "focus", () => {
 					this._model.goToLine(viewItem);
 				}),
 			);
 		}
+
 		this._scrollbar.scanDomNode();
 	}
+
 	private _createRow(
 		item:
 			| DeletedLineViewElement
@@ -832,32 +927,47 @@ class View extends Disposable {
 		switch (item.type) {
 			case LineType.Added:
 				rowClassName = "diff-review-row line-insert";
+
 				lineNumbersExtraClassName = " char-insert";
+
 				spacerIcon = accessibleDiffViewerInsertIcon;
 
 				break;
 
 			case LineType.Deleted:
 				rowClassName = "diff-review-row line-delete";
+
 				lineNumbersExtraClassName = " char-delete";
+
 				spacerIcon = accessibleDiffViewerRemoveIcon;
 
 				break;
 		}
+
 		const row = document.createElement("div");
+
 		row.style.minWidth = width + "px";
+
 		row.className = rowClassName;
+
 		row.setAttribute("role", "listitem");
+
 		row.ariaLevel = "";
 
 		const cell = document.createElement("div");
+
 		cell.className = "diff-review-cell";
+
 		cell.style.height = `${lineHeight}px`;
+
 		row.appendChild(cell);
 
 		const originalLineNumber = document.createElement("span");
+
 		originalLineNumber.style.width = originalLineNumbersWidth + "px";
+
 		originalLineNumber.style.minWidth = originalLineNumbersWidth + "px";
+
 		originalLineNumber.className =
 			"diff-review-line-number" + lineNumbersExtraClassName;
 
@@ -868,12 +978,17 @@ class View extends Disposable {
 		} else {
 			originalLineNumber.innerText = "\u00a0";
 		}
+
 		cell.appendChild(originalLineNumber);
 
 		const modifiedLineNumber = document.createElement("span");
+
 		modifiedLineNumber.style.width = modifiedLineNumbersWidth + "px";
+
 		modifiedLineNumber.style.minWidth = modifiedLineNumbersWidth + "px";
+
 		modifiedLineNumber.style.paddingRight = "10px";
+
 		modifiedLineNumber.className =
 			"diff-review-line-number" + lineNumbersExtraClassName;
 
@@ -884,19 +999,25 @@ class View extends Disposable {
 		} else {
 			modifiedLineNumber.innerText = "\u00a0";
 		}
+
 		cell.appendChild(modifiedLineNumber);
 
 		const spacer = document.createElement("span");
+
 		spacer.className = spacerClassName;
 
 		if (spacerIcon) {
 			const spacerCodicon = document.createElement("span");
+
 			spacerCodicon.className = ThemeIcon.asClassName(spacerIcon);
+
 			spacerCodicon.innerText = "\u00a0\u00a0";
+
 			spacer.appendChild(spacerCodicon);
 		} else {
 			spacer.innerText = "\u00a0\u00a0";
 		}
+
 		cell.appendChild(spacer);
 
 		let lineContent: string;
@@ -915,7 +1036,9 @@ class View extends Disposable {
 					html as string,
 				);
 			}
+
 			cell.insertAdjacentHTML("beforeend", html as string);
+
 			lineContent = modifiedModel.getLineContent(item.modifiedLineNumber);
 		} else {
 			let html: string | TrustedHTML = this._getLineHtml(
@@ -931,12 +1054,16 @@ class View extends Disposable {
 					html as string,
 				);
 			}
+
 			cell.insertAdjacentHTML("beforeend", html as string);
+
 			lineContent = originalModel.getLineContent(item.originalLineNumber);
 		}
+
 		if (lineContent.length === 0) {
 			lineContent = localize("blankLine", "blank");
 		}
+
 		let ariaLabel: string = "";
 
 		switch (item.type) {
@@ -962,6 +1089,7 @@ class View extends Disposable {
 						item.modifiedLineNumber,
 					);
 				}
+
 				break;
 
 			case LineType.Added:
@@ -984,10 +1112,12 @@ class View extends Disposable {
 
 				break;
 		}
+
 		row.setAttribute("aria-label", ariaLabel);
 
 		return row;
 	}
+
 	private _getLineHtml(
 		model: ITextModel,
 		options: IComputedEditorOptions,
@@ -1045,36 +1175,49 @@ export class AccessibleDiffViewerModelFromEditors
 	implements IAccessibleDiffViewerModel
 {
 	constructor(private readonly editors: DiffEditorEditors) {}
+
 	getOriginalModel(): ITextModel {
 		return this.editors.original.getModel()!;
 	}
+
 	getOriginalOptions(): IComputedEditorOptions {
 		return this.editors.original.getOptions();
 	}
+
 	originalReveal(range: Range): void {
 		this.editors.original.revealRange(range);
+
 		this.editors.original.setSelection(range);
+
 		this.editors.original.focus();
 	}
+
 	getModifiedModel(): ITextModel {
 		return this.editors.modified.getModel()!;
 	}
+
 	getModifiedOptions(): IComputedEditorOptions {
 		return this.editors.modified.getOptions();
 	}
+
 	modifiedReveal(range?: Range | undefined): void {
 		if (range) {
 			this.editors.modified.revealRange(range);
+
 			this.editors.modified.setSelection(range);
 		}
+
 		this.editors.modified.focus();
 	}
+
 	modifiedSetSelection(range: Range): void {
 		this.editors.modified.setSelection(range);
 	}
+
 	modifiedFocus(): void {
 		this.editors.modified.focus();
 	}
+
 	getModifiedPosition(): Position | undefined {
 		return this.editors.modified.getPosition() ?? undefined;
 	}

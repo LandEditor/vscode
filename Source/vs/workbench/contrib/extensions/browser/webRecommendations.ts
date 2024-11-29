@@ -17,6 +17,7 @@ export class WebRecommendations extends ExtensionRecommendations {
 	get recommendations(): ReadonlyArray<ExtensionRecommendation> {
 		return this._recommendations;
 	}
+
 	constructor(
 		@IProductService
 		private readonly productService: IProductService,
@@ -25,6 +26,7 @@ export class WebRecommendations extends ExtensionRecommendations {
 	) {
 		super();
 	}
+
 	protected async doActivate(): Promise<void> {
 		const isOnlyWeb =
 			this.extensionManagementServerService

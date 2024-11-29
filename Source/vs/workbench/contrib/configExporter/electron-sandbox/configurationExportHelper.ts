@@ -19,17 +19,24 @@ import { IExtensionService } from "../../../services/extensions/common/extension
 
 interface IExportedConfigurationNode {
 	name: string;
+
 	description: string;
 
 	default: any;
+
 	type?: string | string[];
+
 	enum?: any[];
+
 	enumDescriptions?: string[];
 }
 interface IConfigurationExport {
 	settings: IExportedConfigurationNode[];
+
 	buildTime: number;
+
 	commit?: string;
+
 	buildNumber?: number;
 }
 export class DefaultConfigurationExportHelper {
@@ -54,23 +61,28 @@ export class DefaultConfigurationExportHelper {
 			);
 		}
 	}
+
 	private async writeConfigModelAndQuit(target: URI): Promise<void> {
 		try {
 			await this.extensionService.whenInstalledExtensionsRegistered();
+
 			await this.writeConfigModel(target);
 		} finally {
 			this.commandService.executeCommand("workbench.action.quit");
 		}
 	}
+
 	private async writeConfigModel(target: URI): Promise<void> {
 		const config = this.getConfigModel();
 
 		const resultString = JSON.stringify(config, undefined, "  ");
+
 		await this.fileService.writeFile(
 			target,
 			VSBuffer.fromString(resultString),
 		);
 	}
+
 	private getConfigModel(): IConfigurationExport {
 		const configRegistry = Registry.as<IConfigurationRegistry>(
 			Extensions.Configuration,
@@ -91,6 +103,7 @@ export class DefaultConfigurationExportHelper {
 
 				return;
 			}
+
 			processedNames.add(name);
 
 			const propDetails: IExportedConfigurationNode = {
@@ -103,10 +116,12 @@ export class DefaultConfigurationExportHelper {
 			if (prop.enum) {
 				propDetails.enum = prop.enum;
 			}
+
 			if (prop.enumDescriptions || prop.markdownEnumDescriptions) {
 				propDetails.enumDescriptions =
 					prop.enumDescriptions || prop.markdownEnumDescriptions;
 			}
+
 			settings.push(propDetails);
 		};
 
@@ -116,8 +131,10 @@ export class DefaultConfigurationExportHelper {
 					processProperty(name, config.properties[name]);
 				}
 			}
+
 			config.allOf?.forEach(processConfig);
 		};
+
 		configurations.forEach(processConfig);
 
 		const excludedProps =
@@ -126,6 +143,7 @@ export class DefaultConfigurationExportHelper {
 		for (const name in excludedProps) {
 			processProperty(name, excludedProps[name]);
 		}
+
 		const result: IConfigurationExport = {
 			settings: settings.sort((a, b) => a.name.localeCompare(b.name)),
 			buildTime: Date.now(),

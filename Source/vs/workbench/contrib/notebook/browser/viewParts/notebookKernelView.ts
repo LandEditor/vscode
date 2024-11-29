@@ -65,6 +65,7 @@ function getEditorFromContext(
 				return notebookEditor?.getId() === editorId;
 			},
 		);
+
 		editor = getNotebookEditorFromEditorPane(matchingEditor);
 	} else if (context !== undefined && "notebookEditor" in context) {
 		editor = context?.notebookEditor;
@@ -73,6 +74,7 @@ function getEditorFromContext(
 			editorService.activeEditorPane,
 		);
 	}
+
 	return editor;
 }
 registerAction2(
@@ -146,6 +148,7 @@ registerAction2(
 				},
 			});
 		}
+
 		async run(
 			accessor: ServicesAccessor,
 			context?: KernelQuickPickContext,
@@ -159,6 +162,7 @@ registerAction2(
 			if (!editor || !editor.hasModel()) {
 				return false;
 			}
+
 			let controllerId =
 				context && "id" in context ? context.id : undefined;
 
@@ -174,8 +178,10 @@ registerAction2(
 			) {
 				// validate context: id & extension MUST be strings
 				controllerId = undefined;
+
 				extensionId = undefined;
 			}
+
 			const notebook = editor.textModel;
 
 			const notebookKernelService = accessor.get(INotebookKernelService);
@@ -194,6 +200,7 @@ registerAction2(
 				// current kernel is wanted kernel -> done
 				return true;
 			}
+
 			const wantedKernelId = controllerId
 				? `${extensionId}/${controllerId}`
 				: undefined;
@@ -215,7 +222,9 @@ export class NotebooKernelActionViewItem extends ActionViewItem {
 		private readonly _editor:
 			| {
 					onDidChangeModel: Event<void>;
+
 					textModel: NotebookTextModel | undefined;
+
 					scopedContextKeyService?: IContextKeyService;
 			  }
 			| INotebookEditor,
@@ -236,28 +245,35 @@ export class NotebooKernelActionViewItem extends ActionViewItem {
 			),
 			{ ...options, label: false, icon: true },
 		);
+
 		this._register(_editor.onDidChangeModel(this._update, this));
+
 		this._register(
 			_notebookKernelService.onDidAddKernel(this._update, this),
 		);
+
 		this._register(
 			_notebookKernelService.onDidRemoveKernel(this._update, this),
 		);
+
 		this._register(
 			_notebookKernelService.onDidChangeNotebookAffinity(
 				this._update,
 				this,
 			),
 		);
+
 		this._register(
 			_notebookKernelService.onDidChangeSelectedNotebooks(
 				this._update,
 				this,
 			),
 		);
+
 		this._register(
 			_notebookKernelService.onDidChangeSourceActions(this._update, this),
 		);
+
 		this._register(
 			_notebookKernelService.onDidChangeKernelDetectionTasks(
 				this._update,
@@ -265,21 +281,29 @@ export class NotebooKernelActionViewItem extends ActionViewItem {
 			),
 		);
 	}
+
 	override render(container: HTMLElement): void {
 		this._update();
 
 		super.render(container);
+
 		container.classList.add("kernel-action-view-item");
+
 		this._kernelLabel = document.createElement("a");
+
 		container.appendChild(this._kernelLabel);
+
 		this.updateLabel();
 	}
+
 	protected override updateLabel() {
 		if (this._kernelLabel) {
 			this._kernelLabel.classList.add("kernel-label");
+
 			this._kernelLabel.innerText = this._action.label;
 		}
 	}
+
 	protected _update(): void {
 		const notebook = this._editor.textModel;
 
@@ -288,17 +312,22 @@ export class NotebooKernelActionViewItem extends ActionViewItem {
 
 			return;
 		}
+
 		KernelPickerMRUStrategy.updateKernelStatusAction(
 			notebook,
 			this._action,
 			this._notebookKernelService,
 			this._notebookKernelHistoryService,
 		);
+
 		this.updateClass();
 	}
+
 	private _resetAction(): void {
 		this._action.enabled = false;
+
 		this._action.label = "";
+
 		this._action.class = "";
 	}
 }

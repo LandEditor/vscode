@@ -67,7 +67,9 @@ import {
 
 export interface IUserFriendlyViewsContainerDescriptor {
 	id: string;
+
 	title: string;
+
 	icon: string;
 }
 
@@ -136,17 +138,27 @@ enum ViewType {
 }
 interface IUserFriendlyViewDescriptor {
 	type?: ViewType;
+
 	id: string;
+
 	name: string;
+
 	when?: string;
+
 	icon?: string;
+
 	contextualTitle?: string;
+
 	visibility?: string;
+
 	initialSize?: number;
 	// From 'remoteViewDescriptor' type
 	group?: string;
+
 	remoteName?: string | string[];
+
 	virtualWorkspace?: string;
+
 	accessibilityHelpContent?: string;
 }
 enum InitialVisibility {
@@ -397,7 +409,9 @@ const viewsExtensionPoint: IExtensionPoint<ViewExtensionPointType> =
 const CUSTOM_VIEWS_START_ORDER = 7;
 class ViewsExtensionHandler implements IWorkbenchContribution {
 	static readonly ID = "workbench.contrib.viewsExtensionHandler";
+
 	private viewContainersRegistry: IViewContainersRegistry;
+
 	private viewsRegistry: IViewsRegistry;
 
 	constructor(
@@ -409,18 +423,23 @@ class ViewsExtensionHandler implements IWorkbenchContribution {
 		this.viewContainersRegistry = Registry.as<IViewContainersRegistry>(
 			ViewContainerExtensions.ViewContainersRegistry,
 		);
+
 		this.viewsRegistry = Registry.as<IViewsRegistry>(
 			ViewContainerExtensions.ViewsRegistry,
 		);
+
 		this.handleAndRegisterCustomViewContainers();
+
 		this.handleAndRegisterCustomViews();
 	}
+
 	private handleAndRegisterCustomViewContainers() {
 		viewsContainersExtensionPoint.setHandler(
 			(extensions, { added, removed }) => {
 				if (removed.length) {
 					this.removeCustomViewContainers(removed);
 				}
+
 				if (added.length) {
 					this.addCustomViewContainers(
 						added,
@@ -430,6 +449,7 @@ class ViewsExtensionHandler implements IWorkbenchContribution {
 			},
 		);
 	}
+
 	private addCustomViewContainers(
 		extensionPoints: readonly IExtensionPointUser<ViewContainerExtensionPointType>[],
 		existingViewContainers: ViewContainer[],
@@ -462,6 +482,7 @@ class ViewsExtensionHandler implements IWorkbenchContribution {
 				if (!this.isValidViewsContainer(value, collector)) {
 					return;
 				}
+
 				switch (key) {
 					case "activitybar":
 						activityBarOrder = this.registerCustomViewContainers(
@@ -488,6 +509,7 @@ class ViewsExtensionHandler implements IWorkbenchContribution {
 			});
 		}
 	}
+
 	private removeCustomViewContainers(
 		extensionPoints: readonly IExtensionPointUser<ViewContainerExtensionPointType>[],
 	): void {
@@ -498,6 +520,7 @@ class ViewsExtensionHandler implements IWorkbenchContribution {
 		const removedExtensions: ExtensionIdentifierSet =
 			extensionPoints.reduce((result, e) => {
 				result.add(e.description.identifier);
+
 				return result;
 			}, new ExtensionIdentifierSet());
 
@@ -515,10 +538,12 @@ class ViewsExtensionHandler implements IWorkbenchContribution {
 						this.getDefaultViewContainer(),
 					);
 				}
+
 				this.deregisterCustomViewContainer(viewContainer);
 			}
 		}
 	}
+
 	private isValidViewsContainer(
 		viewsContainersDescriptors: IUserFriendlyViewsContainerDescriptor[],
 		collector: ExtensionMessageCollector,
@@ -533,6 +558,7 @@ class ViewsExtensionHandler implements IWorkbenchContribution {
 
 			return false;
 		}
+
 		for (const descriptor of viewsContainersDescriptors) {
 			if (
 				typeof descriptor.id !== "string" &&
@@ -548,6 +574,7 @@ class ViewsExtensionHandler implements IWorkbenchContribution {
 
 				return false;
 			}
+
 			if (!/^[a-z0-9_-]+$/i.test(descriptor.id)) {
 				collector.error(
 					localize(
@@ -559,6 +586,7 @@ class ViewsExtensionHandler implements IWorkbenchContribution {
 
 				return false;
 			}
+
 			if (typeof descriptor.title !== "string") {
 				collector.error(
 					localize(
@@ -570,6 +598,7 @@ class ViewsExtensionHandler implements IWorkbenchContribution {
 
 				return false;
 			}
+
 			if (typeof descriptor.icon !== "string") {
 				collector.error(
 					localize(
@@ -581,6 +610,7 @@ class ViewsExtensionHandler implements IWorkbenchContribution {
 
 				return false;
 			}
+
 			if (isFalsyOrWhitespace(descriptor.title)) {
 				collector.warn(
 					localize(
@@ -593,8 +623,10 @@ class ViewsExtensionHandler implements IWorkbenchContribution {
 				return true;
 			}
 		}
+
 		return true;
 	}
+
 	private registerCustomViewContainers(
 		containers: IUserFriendlyViewsContainerDescriptor[],
 		extension: IExtensionDescription,
@@ -642,6 +674,7 @@ class ViewsExtensionHandler implements IWorkbenchContribution {
 						);
 					}
 				}
+
 				if (viewsToMove.length) {
 					this.viewsRegistry.moveViews(viewsToMove, viewContainer);
 				}
@@ -650,6 +683,7 @@ class ViewsExtensionHandler implements IWorkbenchContribution {
 
 		return order;
 	}
+
 	private registerCustomViewContainer(
 		id: string,
 		title: string,
@@ -677,24 +711,30 @@ class ViewsExtensionHandler implements IWorkbenchContribution {
 				location,
 			);
 		}
+
 		return viewContainer;
 	}
+
 	private deregisterCustomViewContainer(viewContainer: ViewContainer): void {
 		this.viewContainersRegistry.deregisterViewContainer(viewContainer);
+
 		Registry.as<PaneCompositeRegistry>(
 			ViewletExtensions.Viewlets,
 		).deregisterPaneComposite(viewContainer.id);
 	}
+
 	private handleAndRegisterCustomViews() {
 		viewsExtensionPoint.setHandler((extensions, { added, removed }) => {
 			if (removed.length) {
 				this.removeViews(removed);
 			}
+
 			if (added.length) {
 				this.addViews(added);
 			}
 		});
 	}
+
 	private addViews(
 		extensions: readonly IExtensionPointUser<ViewExtensionPointType>[],
 	): void {
@@ -702,15 +742,18 @@ class ViewsExtensionHandler implements IWorkbenchContribution {
 
 		const allViewDescriptors: {
 			views: IViewDescriptor[];
+
 			viewContainer: ViewContainer;
 		}[] = [];
 
 		for (const extension of extensions) {
 			const { value, collector } = extension;
+
 			Object.entries(value).forEach(([key, value]) => {
 				if (!this.isValidViewDescriptors(value, collector)) {
 					return;
 				}
+
 				if (
 					key === "remote" &&
 					!isProposedApiEnabled(
@@ -728,6 +771,7 @@ class ViewsExtensionHandler implements IWorkbenchContribution {
 
 					return;
 				}
+
 				const viewContainer = this.getViewContainer(key);
 
 				if (!viewContainer) {
@@ -739,6 +783,7 @@ class ViewsExtensionHandler implements IWorkbenchContribution {
 						),
 					);
 				}
+
 				const container =
 					viewContainer || this.getDefaultViewContainer();
 
@@ -758,6 +803,7 @@ class ViewsExtensionHandler implements IWorkbenchContribution {
 
 						continue;
 					}
+
 					if (this.viewsRegistry.getView(item.id) !== null) {
 						collector.error(
 							localize(
@@ -769,6 +815,7 @@ class ViewsExtensionHandler implements IWorkbenchContribution {
 
 						continue;
 					}
+
 					const order = ExtensionIdentifier.equals(
 						extension.description.identifier,
 						container.extensionId,
@@ -788,6 +835,7 @@ class ViewsExtensionHandler implements IWorkbenchContribution {
 								item.icon,
 							);
 					}
+
 					const initialVisibility = this.convertInitialVisibility(
 						item.visibility,
 					);
@@ -805,6 +853,7 @@ class ViewsExtensionHandler implements IWorkbenchContribution {
 
 						continue;
 					}
+
 					let weight: number | undefined = undefined;
 
 					if (typeof item.initialSize === "number") {
@@ -819,6 +868,7 @@ class ViewsExtensionHandler implements IWorkbenchContribution {
 							);
 						}
 					}
+
 					let accessibilityHelpContent;
 
 					if (
@@ -832,6 +882,7 @@ class ViewsExtensionHandler implements IWorkbenchContribution {
 							item.accessibilityHelpContent,
 						);
 					}
+
 					const viewDescriptor: ICustomViewDescriptor = {
 						type: type,
 						ctorDescriptor:
@@ -876,35 +927,45 @@ class ViewsExtensionHandler implements IWorkbenchContribution {
 						weight,
 						accessibilityHelpContent,
 					};
+
 					viewIds.add(viewDescriptor.id);
+
 					viewDescriptors.push(viewDescriptor);
 				}
+
 				allViewDescriptors.push({
 					viewContainer: container,
 					views: viewDescriptors,
 				});
 			});
 		}
+
 		this.viewsRegistry.registerViews2(allViewDescriptors);
 	}
+
 	private getViewType(type: string | undefined): ViewType | undefined {
 		if (type === ViewType.Webview) {
 			return ViewType.Webview;
 		}
+
 		if (!type || type === ViewType.Tree) {
 			return ViewType.Tree;
 		}
+
 		return undefined;
 	}
+
 	private getDefaultViewContainer(): ViewContainer {
 		return this.viewContainersRegistry.get(EXPLORER)!;
 	}
+
 	private removeViews(
 		extensions: readonly IExtensionPointUser<ViewExtensionPointType>[],
 	): void {
 		const removedExtensions: ExtensionIdentifierSet = extensions.reduce(
 			(result, e) => {
 				result.add(e.description.identifier);
+
 				return result;
 			},
 			new ExtensionIdentifierSet(),
@@ -934,14 +995,17 @@ class ViewsExtensionHandler implements IWorkbenchContribution {
 			}
 		}
 	}
+
 	private convertInitialVisibility(
 		value: any,
 	): InitialVisibility | undefined {
 		if (Object.values(InitialVisibility).includes(value)) {
 			return value;
 		}
+
 		return undefined;
 	}
+
 	private isValidViewDescriptors(
 		viewDescriptors: IUserFriendlyViewDescriptor[],
 		collector: ExtensionMessageCollector,
@@ -951,6 +1015,7 @@ class ViewsExtensionHandler implements IWorkbenchContribution {
 
 			return false;
 		}
+
 		for (const descriptor of viewDescriptors) {
 			if (typeof descriptor.id !== "string") {
 				collector.error(
@@ -963,6 +1028,7 @@ class ViewsExtensionHandler implements IWorkbenchContribution {
 
 				return false;
 			}
+
 			if (typeof descriptor.name !== "string") {
 				collector.error(
 					localize(
@@ -974,6 +1040,7 @@ class ViewsExtensionHandler implements IWorkbenchContribution {
 
 				return false;
 			}
+
 			if (descriptor.when && typeof descriptor.when !== "string") {
 				collector.error(
 					localize(
@@ -985,6 +1052,7 @@ class ViewsExtensionHandler implements IWorkbenchContribution {
 
 				return false;
 			}
+
 			if (descriptor.icon && typeof descriptor.icon !== "string") {
 				collector.error(
 					localize(
@@ -996,6 +1064,7 @@ class ViewsExtensionHandler implements IWorkbenchContribution {
 
 				return false;
 			}
+
 			if (
 				descriptor.contextualTitle &&
 				typeof descriptor.contextualTitle !== "string"
@@ -1010,6 +1079,7 @@ class ViewsExtensionHandler implements IWorkbenchContribution {
 
 				return false;
 			}
+
 			if (
 				descriptor.visibility &&
 				!this.convertInitialVisibility(descriptor.visibility)
@@ -1026,8 +1096,10 @@ class ViewsExtensionHandler implements IWorkbenchContribution {
 				return false;
 			}
 		}
+
 		return true;
 	}
+
 	private getViewContainer(value: string): ViewContainer | undefined {
 		switch (value) {
 			case "explorer":
@@ -1048,6 +1120,7 @@ class ViewsExtensionHandler implements IWorkbenchContribution {
 				);
 		}
 	}
+
 	private showCollapsed(container: ViewContainer): boolean {
 		switch (container.id) {
 			case EXPLORER:
@@ -1055,6 +1128,7 @@ class ViewsExtensionHandler implements IWorkbenchContribution {
 			case DEBUG:
 				return true;
 		}
+
 		return false;
 	}
 }
@@ -1063,15 +1137,18 @@ class ViewContainersDataRenderer
 	implements IExtensionFeatureTableRenderer
 {
 	readonly type = "table";
+
 	shouldRender(manifest: IExtensionManifest): boolean {
 		return !!manifest.contributes?.viewsContainers;
 	}
+
 	render(manifest: IExtensionManifest): IRenderedData<ITableData> {
 		const contrib = manifest.contributes?.viewsContainers || {};
 
 		const viewContainers = Object.keys(contrib).reduce(
 			(result, location) => {
 				const viewContainersForLocation = contrib[location];
+
 				result.push(
 					...viewContainersForLocation.map((viewContainer) => ({
 						...viewContainer,
@@ -1083,7 +1160,9 @@ class ViewContainersDataRenderer
 			},
 			[] as Array<{
 				id: string;
+
 				title: string;
+
 				location: string;
 			}>,
 		);
@@ -1091,6 +1170,7 @@ class ViewContainersDataRenderer
 		if (!viewContainers.length) {
 			return { data: { headers: [], rows: [] }, dispose: () => {} };
 		}
+
 		const headers = [
 			localize("view container id", "ID"),
 			localize("view container title", "Title"),
@@ -1121,15 +1201,18 @@ class ViewsDataRenderer
 	implements IExtensionFeatureTableRenderer
 {
 	readonly type = "table";
+
 	shouldRender(manifest: IExtensionManifest): boolean {
 		return !!manifest.contributes?.views;
 	}
+
 	render(manifest: IExtensionManifest): IRenderedData<ITableData> {
 		const contrib = manifest.contributes?.views || {};
 
 		const views = Object.keys(contrib).reduce(
 			(result, location) => {
 				const viewsForLocation = contrib[location];
+
 				result.push(
 					...viewsForLocation.map((view) => ({ ...view, location })),
 				);
@@ -1138,7 +1221,9 @@ class ViewsDataRenderer
 			},
 			[] as Array<{
 				id: string;
+
 				name: string;
+
 				location: string;
 			}>,
 		);
@@ -1146,6 +1231,7 @@ class ViewsDataRenderer
 		if (!views.length) {
 			return { data: { headers: [], rows: [] }, dispose: () => {} };
 		}
+
 		const headers = [
 			localize("view id", "ID"),
 			localize("view name title", "Name"),

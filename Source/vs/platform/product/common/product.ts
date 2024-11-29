@@ -50,6 +50,7 @@ else if (globalThis._VSCODE_PRODUCT_JSON && globalThis._VSCODE_PACKAGE_JSON) {
 		const pkg = globalThis._VSCODE_PACKAGE_JSON as {
 			version: string;
 		};
+
 		Object.assign(product, {
 			version: pkg.version,
 		});

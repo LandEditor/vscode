@@ -16,24 +16,30 @@ export class MicrosoftAuthenticationTelemetryReporter
 	implements IExperimentationTelemetry
 {
 	private sharedProperties: Record<string, string> = {};
+
 	protected _telemetryReporter: TelemetryReporter;
 
 	constructor(aiKey: string) {
 		this._telemetryReporter = new TelemetryReporter(aiKey);
 	}
+
 	get telemetryReporter(): TelemetryReporter {
 		return this._telemetryReporter;
 	}
+
 	setSharedProperty(name: string, value: string): void {
 		this.sharedProperties[name] = value;
 	}
+
 	postEvent(eventName: string, props: Map<string, string>): void {
 		const eventProperties: TelemetryEventProperties = {
 			...this.sharedProperties,
 			...Object.fromEntries(props),
 		};
+
 		this._telemetryReporter.sendTelemetryEvent(eventName, eventProperties);
 	}
+
 	sendLoginEvent(scopes: readonly string[]): void {
 		/* __GDPR__
             "login" : {
@@ -47,18 +53,21 @@ export class MicrosoftAuthenticationTelemetryReporter
 			scopes: JSON.stringify(this._scrubGuids(scopes)),
 		});
 	}
+
 	sendLoginFailedEvent(): void {
 		/* __GDPR__
             "loginFailed" : { "owner": "TylerLeonhardt", "comment": "Used to determine how often users run into issues with the login flow." }
         */
 		this._telemetryReporter.sendTelemetryEvent("loginFailed");
 	}
+
 	sendLogoutEvent(): void {
 		/* __GDPR__
             "logout" : { "owner": "TylerLeonhardt", "comment": "Used to determine how often users log out." }
         */
 		this._telemetryReporter.sendTelemetryEvent("logout");
 	}
+
 	sendLogoutFailedEvent(): void {
 		/* __GDPR__
             "logoutFailed" : { "owner": "TylerLeonhardt", "comment": "Used to determine how often fail to log out." }
@@ -89,6 +98,7 @@ export class MicrosoftAuthenticationTelemetryReporter
 			accountType,
 		});
 	}
+
 	protected _scrubGuids(scopes: readonly string[]): string[] {
 		return scopes.map((s) =>
 			s.replace(
@@ -115,6 +125,7 @@ export class MicrosoftSovereignCloudAuthenticationTelemetryReporter extends Micr
 			},
 		);
 	}
+
 	override sendLoginFailedEvent(): void {
 		/* __GDPR__
             "loginMicrosoftSovereignCloudFailed" : { "owner": "TylerLeonhardt", "comment": "Used to determine how often users run into issues with the login flow." }
@@ -123,6 +134,7 @@ export class MicrosoftSovereignCloudAuthenticationTelemetryReporter extends Micr
 			"loginMicrosoftSovereignCloudFailed",
 		);
 	}
+
 	override sendLogoutEvent(): void {
 		/* __GDPR__
             "logoutMicrosoftSovereignCloud" : { "owner": "TylerLeonhardt", "comment": "Used to determine how often users log out." }
@@ -131,6 +143,7 @@ export class MicrosoftSovereignCloudAuthenticationTelemetryReporter extends Micr
 			"logoutMicrosoftSovereignCloud",
 		);
 	}
+
 	override sendLogoutFailedEvent(): void {
 		/* __GDPR__
             "logoutMicrosoftSovereignCloudFailed" : { "owner": "TylerLeonhardt", "comment": "Used to determine how often fail to log out." }

@@ -8,10 +8,12 @@ declare module "vscode" {
 
 	export interface NotebookRegistrationData {
 		readonly displayName: string;
+
 		readonly filenamePattern: ReadonlyArray<
 			| GlobPattern
 			| { readonly include: GlobPattern; readonly exclude: GlobPattern }
 		>;
+
 		readonly exclusive?: boolean;
 	}
 

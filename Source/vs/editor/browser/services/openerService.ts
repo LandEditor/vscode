@@ -36,18 +36,22 @@ class CommandOpener implements IOpener {
 		@ICommandService
 		private readonly _commandService: ICommandService,
 	) {}
+
 	async open(target: URI | string, options?: OpenOptions): Promise<boolean> {
 		if (!matchesScheme(target, Schemas.command)) {
 			return false;
 		}
+
 		if (!options?.allowCommands) {
 			// silently ignore commands when command-links are disabled, also
 			// suppress other openers by returning TRUE
 			return true;
 		}
+
 		if (typeof target === "string") {
 			target = URI.parse(target);
 		}
+
 		if (Array.isArray(options.allowCommands)) {
 			// Only allow specific commands
 			if (!options.allowCommands.includes(target.path)) {
@@ -68,9 +72,11 @@ class CommandOpener implements IOpener {
 				// ignore error
 			}
 		}
+
 		if (!Array.isArray(args)) {
 			args = [args];
 		}
+
 		await this._commandService.executeCommand(target.path, ...args);
 
 		return true;
@@ -81,16 +87,20 @@ class EditorOpener implements IOpener {
 		@ICodeEditorService
 		private readonly _editorService: ICodeEditorService,
 	) {}
+
 	async open(target: URI | string, options: OpenOptions) {
 		if (typeof target === "string") {
 			target = URI.parse(target);
 		}
+
 		const { selection, uri } = extractSelection(target);
+
 		target = uri;
 
 		if (target.scheme === Schemas.file) {
 			target = normalizePath(target); // workaround for non-normalized paths (https://github.com/microsoft/vscode/issues/12954)
 		}
+
 		await this._editorService.openCodeEditor(
 			{
 				resource: target,
@@ -111,13 +121,19 @@ class EditorOpener implements IOpener {
 }
 export class OpenerService implements IOpenerService {
 	declare readonly _serviceBrand: undefined;
+
 	private readonly _openers = new LinkedList<IOpener>();
+
 	private readonly _validators = new LinkedList<IValidator>();
+
 	private readonly _resolvers = new LinkedList<IExternalUriResolver>();
+
 	private readonly _resolvedUriTargets = new ResourceMap<URI>((uri) =>
 		uri.with({ path: null, fragment: null, query: null }).toString(),
 	);
+
 	private _defaultExternalOpener: IExternalOpener;
+
 	private readonly _externalOpeners = new LinkedList<IExternalOpener>();
 
 	constructor(
@@ -138,6 +154,7 @@ export class OpenerService implements IOpenerService {
 				} else {
 					mainWindow.location.href = href;
 				}
+
 				return true;
 			},
 		};
@@ -159,35 +176,44 @@ export class OpenerService implements IOpenerService {
 
 					return true;
 				}
+
 				return false;
 			},
 		});
+
 		this._openers.push(new CommandOpener(commandService));
+
 		this._openers.push(new EditorOpener(editorService));
 	}
+
 	registerOpener(opener: IOpener): IDisposable {
 		const remove = this._openers.unshift(opener);
 
 		return { dispose: remove };
 	}
+
 	registerValidator(validator: IValidator): IDisposable {
 		const remove = this._validators.push(validator);
 
 		return { dispose: remove };
 	}
+
 	registerExternalUriResolver(resolver: IExternalUriResolver): IDisposable {
 		const remove = this._resolvers.push(resolver);
 
 		return { dispose: remove };
 	}
+
 	setDefaultExternalOpener(externalOpener: IExternalOpener): void {
 		this._defaultExternalOpener = externalOpener;
 	}
+
 	registerExternalOpener(opener: IExternalOpener): IDisposable {
 		const remove = this._externalOpeners.push(opener);
 
 		return { dispose: remove };
 	}
+
 	async open(target: URI | string, options?: OpenOptions): Promise<boolean> {
 		// check with contributed validators
 		const targetURI =
@@ -209,8 +235,10 @@ export class OpenerService implements IOpenerService {
 				return true;
 			}
 		}
+
 		return false;
 	}
+
 	async resolveExternalUri(
 		resource: URI,
 		options?: ResolveExternalUriOptions,
@@ -226,16 +254,19 @@ export class OpenerService implements IOpenerService {
 					if (!this._resolvedUriTargets.has(result.resolved)) {
 						this._resolvedUriTargets.set(result.resolved, resource);
 					}
+
 					return result;
 				}
 			} catch {
 				// noop
 			}
 		}
+
 		throw new Error(
 			"Could not resolve external URI: " + resource.toString(),
 		);
 	}
+
 	private async _doOpenExternal(
 		resource: URI | string,
 		options: OpenOptions | undefined,
@@ -252,6 +283,7 @@ export class OpenerService implements IOpenerService {
 		} catch {
 			externalUri = uri;
 		}
+
 		let href: string;
 
 		if (
@@ -264,6 +296,7 @@ export class OpenerService implements IOpenerService {
 			// open URI using the toString(noEncode)+encodeURI-trick
 			href = encodeURI(externalUri.toString(true));
 		}
+
 		if (options?.allowContributedOpeners) {
 			const preferredOpenerId =
 				typeof options?.allowContributedOpeners === "string"
@@ -285,12 +318,14 @@ export class OpenerService implements IOpenerService {
 				}
 			}
 		}
+
 		return this._defaultExternalOpener.openExternal(
 			href,
 			{ sourceUri: uri },
 			CancellationToken.None,
 		);
 	}
+
 	dispose() {
 		this._validators.clear();
 	}

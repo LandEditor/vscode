@@ -17,10 +17,13 @@ export const onCaseInsensitiveFileSystem = (() => {
 				value = false;
 			} else {
 				const temp = getTempFile("typescript-case-check");
+
 				fs.writeFileSync(temp, "");
+
 				value = fs.existsSync(temp.toUpperCase());
 			}
 		}
+
 		return value;
 	};
 })();

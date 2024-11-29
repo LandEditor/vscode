@@ -24,6 +24,7 @@ export class SaveAccessibilitySignalContribution
 		private readonly _workingCopyService: IWorkingCopyService,
 	) {
 		super();
+
 		this._register(
 			this._workingCopyService.onDidSave((e) =>
 				this._accessibilitySignalService.playSignal(

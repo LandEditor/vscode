@@ -32,7 +32,9 @@ export class PointerEventHandler extends MouseHandler {
 		viewHelper: IPointerHandlerHelper,
 	) {
 		super(context, viewController, viewHelper);
+
 		this._register(Gesture.addTarget(this.viewHelper.linesContentDomNode));
+
 		this._register(
 			dom.addDisposableListener(
 				this.viewHelper.linesContentDomNode,
@@ -40,6 +42,7 @@ export class PointerEventHandler extends MouseHandler {
 				(e) => this.onTap(e),
 			),
 		);
+
 		this._register(
 			dom.addDisposableListener(
 				this.viewHelper.linesContentDomNode,
@@ -47,6 +50,7 @@ export class PointerEventHandler extends MouseHandler {
 				(e) => this.onChange(e),
 			),
 		);
+
 		this._register(
 			dom.addDisposableListener(
 				this.viewHelper.linesContentDomNode,
@@ -62,7 +66,9 @@ export class PointerEventHandler extends MouseHandler {
 					),
 			),
 		);
+
 		this._lastPointerType = "mouse";
+
 		this._register(
 			dom.addDisposableListener(
 				this.viewHelper.linesContentDomNode,
@@ -86,21 +92,25 @@ export class PointerEventHandler extends MouseHandler {
 		const pointerEvents = new EditorPointerEventFactory(
 			this.viewHelper.viewDomNode,
 		);
+
 		this._register(
 			pointerEvents.onPointerMove(this.viewHelper.viewDomNode, (e) =>
 				this._onMouseMove(e),
 			),
 		);
+
 		this._register(
 			pointerEvents.onPointerUp(this.viewHelper.viewDomNode, (e) =>
 				this._onMouseUp(e),
 			),
 		);
+
 		this._register(
 			pointerEvents.onPointerLeave(this.viewHelper.viewDomNode, (e) =>
 				this._onMouseLeave(e),
 			),
 		);
+
 		this._register(
 			pointerEvents.onPointerDown(
 				this.viewHelper.viewDomNode,
@@ -108,6 +118,7 @@ export class PointerEventHandler extends MouseHandler {
 			),
 		);
 	}
+
 	private onTap(event: GestureEvent): void {
 		if (
 			!event.initialTarget ||
@@ -117,10 +128,14 @@ export class PointerEventHandler extends MouseHandler {
 		) {
 			return;
 		}
+
 		event.preventDefault();
+
 		this.viewHelper.focusTextArea();
+
 		this._dispatchGesture(event, /*inSelectionMode*/ false);
 	}
+
 	private onChange(event: GestureEvent): void {
 		if (this._lastPointerType === "touch") {
 			this._context.viewModel.viewLayout.deltaScrollNow(
@@ -128,10 +143,12 @@ export class PointerEventHandler extends MouseHandler {
 				-event.translationY,
 			);
 		}
+
 		if (this._lastPointerType === "pen") {
 			this._dispatchGesture(event, /*inSelectionMode*/ true);
 		}
 	}
+
 	private _dispatchGesture(
 		event: GestureEvent,
 		inSelectionMode: boolean,
@@ -161,6 +178,7 @@ export class PointerEventHandler extends MouseHandler {
 			});
 		}
 	}
+
 	protected override _onMouseDown(
 		e: EditorMouseEvent,
 		pointerId: number,
@@ -168,6 +186,7 @@ export class PointerEventHandler extends MouseHandler {
 		if ((e.browserEvent as any).pointerType === "touch") {
 			return;
 		}
+
 		super._onMouseDown(e, pointerId);
 	}
 }
@@ -178,7 +197,9 @@ class TouchHandler extends MouseHandler {
 		viewHelper: IPointerHandlerHelper,
 	) {
 		super(context, viewController, viewHelper);
+
 		this._register(Gesture.addTarget(this.viewHelper.linesContentDomNode));
+
 		this._register(
 			dom.addDisposableListener(
 				this.viewHelper.linesContentDomNode,
@@ -186,6 +207,7 @@ class TouchHandler extends MouseHandler {
 				(e) => this.onTap(e),
 			),
 		);
+
 		this._register(
 			dom.addDisposableListener(
 				this.viewHelper.linesContentDomNode,
@@ -193,6 +215,7 @@ class TouchHandler extends MouseHandler {
 				(e) => this.onChange(e),
 			),
 		);
+
 		this._register(
 			dom.addDisposableListener(
 				this.viewHelper.linesContentDomNode,
@@ -209,8 +232,10 @@ class TouchHandler extends MouseHandler {
 			),
 		);
 	}
+
 	private onTap(event: GestureEvent): void {
 		event.preventDefault();
+
 		this.viewHelper.focusTextArea();
 
 		const target = this._createMouseTarget(
@@ -221,14 +246,18 @@ class TouchHandler extends MouseHandler {
 		if (target.position) {
 			// Send the tap event also to the <textarea> (for input purposes)
 			const event = document.createEvent("CustomEvent");
+
 			event.initEvent(TextAreaSyntethicEvents.Tap, false, true);
+
 			this.viewHelper.dispatchTextAreaEvent(event);
+
 			this.viewController.moveTo(
 				target.position,
 				NavigationCommandRevealType.Minimal,
 			);
 		}
 	}
+
 	private onChange(e: GestureEvent): void {
 		this._context.viewModel.viewLayout.deltaScrollNow(
 			-e.translationX,
@@ -263,6 +292,7 @@ export class PointerHandler extends Disposable {
 			);
 		}
 	}
+
 	public getTargetAtClientPoint(
 		clientX: number,
 		clientY: number,

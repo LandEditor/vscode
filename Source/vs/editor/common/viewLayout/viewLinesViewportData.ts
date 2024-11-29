@@ -41,7 +41,9 @@ export class ViewportData {
 	 * Positioning information about gaps whitespace.
 	 */
 	public readonly whitespaceViewportData: IViewWhitespaceViewportData[];
+
 	private readonly _model: IViewModel;
+
 	public readonly lineHeight: number;
 
 	constructor(
@@ -51,13 +53,21 @@ export class ViewportData {
 		model: IViewModel,
 	) {
 		this.selections = selections;
+
 		this.startLineNumber = partialData.startLineNumber | 0;
+
 		this.endLineNumber = partialData.endLineNumber | 0;
+
 		this.relativeVerticalOffset = partialData.relativeVerticalOffset;
+
 		this.bigNumbersDelta = partialData.bigNumbersDelta | 0;
+
 		this.lineHeight = partialData.lineHeight | 0;
+
 		this.whitespaceViewportData = whitespaceViewportData;
+
 		this._model = model;
+
 		this.visibleRange = new Range(
 			partialData.startLineNumber,
 			this._model.getLineMinColumn(partialData.startLineNumber),
@@ -65,12 +75,14 @@ export class ViewportData {
 			this._model.getLineMaxColumn(partialData.endLineNumber),
 		);
 	}
+
 	public getViewLineRenderingData(lineNumber: number): ViewLineRenderingData {
 		return this._model.getViewportViewLineRenderingData(
 			this.visibleRange,
 			lineNumber,
 		);
 	}
+
 	public getDecorationsInViewport(): ViewModelDecoration[] {
 		return this._model.getDecorationsInViewport(this.visibleRange);
 	}

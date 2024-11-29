@@ -11,15 +11,19 @@ import { OffsetRange } from "./offsetRange.js";
  */
 export class OffsetEdit {
 	public static readonly empty = new OffsetEdit([]);
+
 	public static fromJson(data: IOffsetEdit): OffsetEdit {
 		return new OffsetEdit(data.map(SingleOffsetEdit.fromJson));
 	}
+
 	public static replace(range: OffsetRange, newText: string): OffsetEdit {
 		return new OffsetEdit([new SingleOffsetEdit(range, newText)]);
 	}
+
 	public static insert(offset: number, insertText: string): OffsetEdit {
 		return OffsetEdit.replace(OffsetRange.emptyAt(offset), insertText);
 	}
+
 	constructor(public readonly edits: readonly SingleOffsetEdit[]) {
 		let lastEndEx = -1;
 
@@ -29,9 +33,11 @@ export class OffsetEdit {
 					`Edits must be disjoint and sorted. Found ${edit} after ${lastEndEx}`,
 				);
 			}
+
 			lastEndEx = edit.replaceRange.endExclusive;
 		}
 	}
+
 	normalize(): OffsetEdit {
 		const edits: SingleOffsetEdit[] = [];
 
@@ -41,6 +47,7 @@ export class OffsetEdit {
 			if (edit.newText.length === 0 && edit.replaceRange.length === 0) {
 				continue;
 			}
+
 			if (
 				lastEdit &&
 				lastEdit.replaceRange.endExclusive === edit.replaceRange.start
@@ -53,19 +60,24 @@ export class OffsetEdit {
 				if (lastEdit) {
 					edits.push(lastEdit);
 				}
+
 				lastEdit = edit;
 			}
 		}
+
 		if (lastEdit) {
 			edits.push(lastEdit);
 		}
+
 		return new OffsetEdit(edits);
 	}
+
 	toString() {
 		const edits = this.edits.map((e) => e.toString()).join(", ");
 
 		return `[${edits}]`;
 	}
+
 	apply(str: string): string {
 		const resultText: string[] = [];
 
@@ -73,13 +85,17 @@ export class OffsetEdit {
 
 		for (const edit of this.edits) {
 			resultText.push(str.substring(pos, edit.replaceRange.start));
+
 			resultText.push(edit.newText);
+
 			pos = edit.replaceRange.endExclusive;
 		}
+
 		resultText.push(str.substring(pos));
 
 		return resultText.join("");
 	}
+
 	compose(other: OffsetEdit): OffsetEdit {
 		return joinEdits(this, other);
 	}
@@ -104,10 +120,13 @@ export class OffsetEdit {
 					),
 				),
 			);
+
 			offset += e.newText.length - e.replaceRange.length;
 		}
+
 		return new OffsetEdit(edits);
 	}
+
 	getNewTextRanges(): OffsetRange[] {
 		const ranges: OffsetRange[] = [];
 
@@ -120,10 +139,13 @@ export class OffsetEdit {
 					e.newText.length,
 				),
 			);
+
 			offset += e.newText.length - e.replaceRange.length;
 		}
+
 		return ranges;
 	}
+
 	get isEmpty(): boolean {
 		return this.edits.length === 0;
 	}
@@ -163,6 +185,7 @@ export class OffsetEdit {
 						ourEdit.newText,
 					),
 				);
+
 				ourIdx++;
 			} else if (
 				ourEdit.replaceRange.intersectsOrTouches(baseEdit.replaceRange)
@@ -181,15 +204,19 @@ export class OffsetEdit {
 						ourEdit.newText,
 					),
 				);
+
 				ourIdx++;
 			} else {
 				baseIdx++;
+
 				offset +=
 					baseEdit.newText.length - baseEdit.replaceRange.length;
 			}
 		}
+
 		return new OffsetEdit(newEdits);
 	}
+
 	applyToOffset(originalOffset: number): number {
 		let accumulatedDelta = 0;
 
@@ -199,20 +226,24 @@ export class OffsetEdit {
 					// the offset is in the replaced range
 					return edit.replaceRange.start + accumulatedDelta;
 				}
+
 				accumulatedDelta +=
 					edit.newText.length - edit.replaceRange.length;
 			} else {
 				break;
 			}
 		}
+
 		return originalOffset + accumulatedDelta;
 	}
+
 	applyToOffsetRange(originalRange: OffsetRange): OffsetRange {
 		return new OffsetRange(
 			this.applyToOffset(originalRange.start),
 			this.applyToOffset(originalRange.endExclusive),
 		);
 	}
+
 	applyInverseToOffset(postEditsOffset: number): number {
 		let accumulatedDelta = 0;
 
@@ -227,11 +258,13 @@ export class OffsetEdit {
 					// the offset is in the replaced range
 					return edit.replaceRange.start;
 				}
+
 				accumulatedDelta += editLength - edit.replaceRange.length;
 			} else {
 				break;
 			}
 		}
+
 		return postEditsOffset - accumulatedDelta;
 	}
 }
@@ -239,7 +272,9 @@ export type IOffsetEdit = ISingleOffsetEdit[];
 
 export interface ISingleOffsetEdit {
 	txt: string;
+
 	pos: number;
+
 	len: number;
 }
 export class SingleOffsetEdit {
@@ -249,16 +284,20 @@ export class SingleOffsetEdit {
 			data.txt,
 		);
 	}
+
 	public static insert(offset: number, text: string): SingleOffsetEdit {
 		return new SingleOffsetEdit(OffsetRange.emptyAt(offset), text);
 	}
+
 	constructor(
 		public readonly replaceRange: OffsetRange,
 		public readonly newText: string,
 	) {}
+
 	toString(): string {
 		return `${this.replaceRange} -> "${this.newText}"`;
 	}
+
 	get isEmpty() {
 		return this.newText.length === 0 && this.replaceRange.length === 0;
 	}
@@ -271,14 +310,17 @@ export class SingleOffsetEdit {
  */
 function joinEdits(edits1: OffsetEdit, edits2: OffsetEdit): OffsetEdit {
 	edits1 = edits1.normalize();
+
 	edits2 = edits2.normalize();
 
 	if (edits1.isEmpty) {
 		return edits2;
 	}
+
 	if (edits2.isEmpty) {
 		return edits1;
 	}
+
 	const edit1Queue = [...edits1.edits];
 
 	const result: SingleOffsetEdit[] = [];
@@ -299,10 +341,14 @@ function joinEdits(edits1: OffsetEdit, edits2: OffsetEdit): OffsetEdit {
 			) {
 				break;
 			}
+
 			edit1Queue.shift();
+
 			result.push(edit1);
+
 			edit1ToEdit2 += edit1.newText.length - edit1.replaceRange.length;
 		}
+
 		const firstEdit1ToEdit2 = edit1ToEdit2;
 
 		let firstIntersecting: SingleOffsetEdit | undefined; // or touching
@@ -321,10 +367,14 @@ function joinEdits(edits1: OffsetEdit, edits2: OffsetEdit): OffsetEdit {
 			if (!firstIntersecting) {
 				firstIntersecting = edit1;
 			}
+
 			lastIntersecting = edit1;
+
 			edit1Queue.shift();
+
 			edit1ToEdit2 += edit1.newText.length - edit1.replaceRange.length;
 		}
+
 		if (!firstIntersecting) {
 			result.push(
 				new SingleOffsetEdit(
@@ -342,6 +392,7 @@ function joinEdits(edits1: OffsetEdit, edits2: OffsetEdit): OffsetEdit {
 			if (prefixLength > 0) {
 				prefix = firstIntersecting.newText.slice(0, prefixLength);
 			}
+
 			const suffixLength =
 				lastIntersecting!.replaceRange.endExclusive +
 				edit1ToEdit2 -
@@ -355,9 +406,12 @@ function joinEdits(edits1: OffsetEdit, edits2: OffsetEdit): OffsetEdit {
 					),
 					lastIntersecting!.newText.slice(-suffixLength),
 				);
+
 				edit1Queue.unshift(e);
+
 				edit1ToEdit2 -= e.newText.length - e.replaceRange.length;
 			}
+
 			const newText = prefix + edit2.newText;
 
 			const newReplaceRange = new OffsetRange(
@@ -367,16 +421,20 @@ function joinEdits(edits1: OffsetEdit, edits2: OffsetEdit): OffsetEdit {
 				),
 				edit2.replaceRange.endExclusive - edit1ToEdit2,
 			);
+
 			result.push(new SingleOffsetEdit(newReplaceRange, newText));
 		}
 	}
+
 	while (true) {
 		const item = edit1Queue.shift();
 
 		if (!item) {
 			break;
 		}
+
 		result.push(item);
 	}
+
 	return new OffsetEdit(result).normalize();
 }

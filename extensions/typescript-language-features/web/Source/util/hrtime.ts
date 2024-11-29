@@ -11,12 +11,15 @@ export function hrtime(previous?: [number, number]): [number, number] {
 	// NOTE: This check is added probably because it's missed without strictFunctionTypes on
 	if (previous?.[0] !== undefined && previous?.[1] !== undefined) {
 		seconds = seconds - previous[0];
+
 		nanoseconds = nanoseconds - previous[1];
 
 		if (nanoseconds < 0) {
 			seconds--;
+
 			nanoseconds += 1000000000;
 		}
 	}
+
 	return [seconds, nanoseconds];
 }

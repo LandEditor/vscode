@@ -36,6 +36,7 @@ import {
 
 interface IToolEntry {
 	data: IToolData;
+
 	impl?: IToolImpl;
 }
 
@@ -46,6 +47,7 @@ export class LanguageModelToolsService
 	_serviceBrand: undefined;
 
 	private _onDidChangeTools = new Emitter<void>();
+
 	readonly onDidChangeTools = this._onDidChangeTools.event;
 
 	/** Throttle tools updates because it sends all tools and runs on context key updates */
@@ -55,6 +57,7 @@ export class LanguageModelToolsService
 	);
 
 	private _tools = new Map<string, IToolEntry>();
+
 	private _toolContextKeys = new Set<string>();
 
 	constructor(
@@ -85,19 +88,23 @@ export class LanguageModelToolsService
 		}
 
 		this._tools.set(toolData.id, { data: toolData });
+
 		this._onDidChangeToolsScheduler.schedule();
 
 		toolData.when?.keys().forEach((key) => this._toolContextKeys.add(key));
 
 		return toDisposable(() => {
 			this._tools.delete(toolData.id);
+
 			this._refreshAllToolContextKeys();
+
 			this._onDidChangeToolsScheduler.schedule();
 		});
 	}
 
 	private _refreshAllToolContextKeys() {
 		this._toolContextKeys.clear();
+
 		for (const tool of this._tools.values()) {
 			tool.data.when
 				?.keys()
@@ -107,6 +114,7 @@ export class LanguageModelToolsService
 
 	registerToolImplementation(id: string, tool: IToolImpl): IDisposable {
 		const entry = this._tools.get(id);
+
 		if (!entry) {
 			throw new Error(`Tool "${id}" was not contributed.`);
 		}
@@ -116,6 +124,7 @@ export class LanguageModelToolsService
 		}
 
 		entry.impl = tool;
+
 		return toDisposable(() => {
 			entry.impl = undefined;
 		});
@@ -123,6 +132,7 @@ export class LanguageModelToolsService
 
 	getTools(): Iterable<Readonly<IToolData>> {
 		const toolDatas = Iterable.map(this._tools.values(), (i) => i.data);
+
 		return Iterable.filter(
 			toolDatas,
 			(toolData) =>
@@ -137,6 +147,7 @@ export class LanguageModelToolsService
 
 	private _getToolEntry(id: string): IToolEntry | undefined {
 		const entry = this._tools.get(id);
+
 		if (
 			entry &&
 			(!entry.data.when ||
@@ -154,6 +165,7 @@ export class LanguageModelToolsService
 				return toolData;
 			}
 		}
+
 		return undefined;
 	}
 
@@ -164,6 +176,7 @@ export class LanguageModelToolsService
 	): Promise<IToolResult> {
 		// When invoking a tool, don't validate the "when" clause. An extension may have invoked a tool just as it was becoming disabled, and just let it go through rather than throw and break the chat.
 		let tool = this._tools.get(dto.toolId);
+
 		if (!tool) {
 			throw new Error(`Tool ${dto.toolId} was not contributed`);
 		}
@@ -175,6 +188,7 @@ export class LanguageModelToolsService
 
 			// Extension should activate and register the tool implementation
 			tool = this._tools.get(dto.toolId);
+
 			if (!tool?.impl) {
 				throw new Error(
 					`Tool ${dto.toolId} does not have an implementation registered.`,
@@ -190,6 +204,7 @@ export class LanguageModelToolsService
 				const model = this._chatService.getSession(
 					dto.context?.sessionId,
 				) as ChatModel;
+
 				const request = model.getRequests().at(-1)!;
 
 				const prepared = tool.impl.prepareToolInvocation
@@ -204,18 +219,24 @@ export class LanguageModelToolsService
 					"Using {0}",
 					`"${tool.data.displayName}"`,
 				);
+
 				const invocationMessage =
 					prepared?.invocationMessage ?? defaultMessage;
+
 				toolInvocation = new ChatToolInvocation(
 					invocationMessage,
 					prepared?.confirmationMessages,
 				);
+
 				token.onCancellationRequested(() => {
 					toolInvocation!.confirmed.complete(false);
 				});
+
 				model.acceptResponseProgress(request, toolInvocation);
+
 				if (prepared?.confirmationMessages) {
 					const userConfirmed = await toolInvocation.confirmed.p;
+
 					if (!userConfirmed) {
 						throw new CancellationError();
 					}
@@ -235,6 +256,7 @@ export class LanguageModelToolsService
 							prepared.confirmationMessages.message,
 						),
 					});
+
 					if (!result.confirmed) {
 						throw new CancellationError();
 					}
@@ -242,6 +264,7 @@ export class LanguageModelToolsService
 			}
 
 			const result = await tool.impl.invoke(dto, countTokens, token);
+
 			this._telemetryService.publicLog2<
 				LanguageModelToolInvokedEvent,
 				LanguageModelToolInvokedClassification
@@ -251,9 +274,11 @@ export class LanguageModelToolsService
 				toolId: tool.data.id,
 				toolExtensionId: tool.data.extensionId?.value,
 			});
+
 			return result;
 		} catch (err) {
 			const result = isCancellationError(err) ? "userCancelled" : "error";
+
 			this._telemetryService.publicLog2<
 				LanguageModelToolInvokedEvent,
 				LanguageModelToolInvokedClassification
@@ -263,6 +288,7 @@ export class LanguageModelToolsService
 				toolId: tool.data.id,
 				toolExtensionId: tool.data.extensionId?.value,
 			});
+
 			throw err;
 		} finally {
 			toolInvocation?.isCompleteDeferred.complete();
@@ -272,32 +298,48 @@ export class LanguageModelToolsService
 
 type LanguageModelToolInvokedEvent = {
 	result: "success" | "error" | "userCancelled";
+
 	chatSessionId: string | undefined;
+
 	toolId: string;
+
 	toolExtensionId: string | undefined;
 };
 
 type LanguageModelToolInvokedClassification = {
 	result: {
 		classification: "SystemMetaData";
+
 		purpose: "FeatureInsight";
+
 		comment: "Whether invoking the LanguageModelTool resulted in an error.";
 	};
+
 	chatSessionId: {
 		classification: "SystemMetaData";
+
 		purpose: "FeatureInsight";
+
 		comment: "The ID of the chat session that the tool was used within, if applicable.";
 	};
+
 	toolId: {
 		classification: "SystemMetaData";
+
 		purpose: "FeatureInsight";
+
 		comment: "The ID of the tool used.";
 	};
+
 	toolExtensionId: {
 		classification: "SystemMetaData";
+
 		purpose: "FeatureInsight";
+
 		comment: "The extension that contributed the tool.";
 	};
+
 	owner: "roblourens";
+
 	comment: "Provides insight into the usage of language model tools.";
 };

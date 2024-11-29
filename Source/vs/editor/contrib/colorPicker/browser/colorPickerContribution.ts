@@ -62,6 +62,7 @@ CommandsRegistry.registerCommand(
 		if (!(resource instanceof URI)) {
 			throw illegalArgument();
 		}
+
 		const {
 			model,
 			colorProviderRegistry,
@@ -92,6 +93,7 @@ CommandsRegistry.registerCommand(
 		) {
 			throw illegalArgument();
 		}
+
 		const {
 			model,
 			colorProviderRegistry,

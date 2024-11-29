@@ -37,6 +37,7 @@ export class ToggleDevToolsAction extends Action2 {
 			},
 		});
 	}
+
 	async run(accessor: ServicesAccessor): Promise<void> {
 		const nativeHostService = accessor.get(INativeHostService);
 
@@ -57,10 +58,12 @@ export class ConfigureRuntimeArgumentsAction extends Action2 {
 			f1: true,
 		});
 	}
+
 	async run(accessor: ServicesAccessor): Promise<void> {
 		const editorService = accessor.get(IEditorService);
 
 		const environmentService = accessor.get(IWorkbenchEnvironmentService);
+
 		await editorService.openEditor({
 			resource: environmentService.argvResource,
 			options: { pinned: true },
@@ -79,6 +82,7 @@ export class ReloadWindowWithExtensionsDisabledAction extends Action2 {
 			f1: true,
 		});
 	}
+
 	async run(accessor: ServicesAccessor): Promise<void> {
 		return accessor
 			.get(INativeHostService)
@@ -94,6 +98,7 @@ export class OpenUserDataFolderAction extends Action2 {
 			f1: true,
 		});
 	}
+
 	async run(accessor: ServicesAccessor): Promise<void> {
 		const nativeHostService = accessor.get(INativeHostService);
 
@@ -114,6 +119,7 @@ export class OpenUserDataFolderAction extends Action2 {
 		} else {
 			itemToShow = userDataHome;
 		}
+
 		return nativeHostService.showItemInFolder(itemToShow.fsPath);
 	}
 }
@@ -126,8 +132,10 @@ export class ShowGPUInfoAction extends Action2 {
 			f1: true,
 		});
 	}
+
 	run(accessor: ServicesAccessor) {
 		const nativeHostService = accessor.get(INativeHostService);
+
 		nativeHostService.openGPUInfoWindow();
 	}
 }

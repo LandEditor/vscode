@@ -23,24 +23,36 @@ export interface IWorkbenchEnvironmentService extends IEnvironmentService {
 	// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 	// --- Paths
 	readonly logFile: URI;
+
 	readonly windowLogsPath: URI;
+
 	readonly extHostLogsPath: URI;
+
 	readonly extHostTelemetryLogFile: URI;
 	// --- Extensions
 	readonly extensionEnabledProposedApi?: string[];
 	// --- Config
 	readonly remoteAuthority?: string;
+
 	readonly skipReleaseNotes: boolean;
+
 	readonly skipWelcome: boolean;
+
 	readonly disableWorkspaceTrust: boolean;
+
 	readonly webviewExternalEndpoint: string;
 	// --- Development
 	readonly debugRenderer: boolean;
+
 	readonly logExtensionHostCommunication?: boolean;
+
 	readonly enableSmokeTestDriver?: boolean;
+
 	readonly profDurationMarkers?: string[];
 	// --- Editors to open
 	readonly filesToOpenOrCreate?: IPath[] | undefined;
+
 	readonly filesToDiff?: IPath[] | undefined;
+
 	readonly filesToMerge?: IPath[] | undefined;
 }

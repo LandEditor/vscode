@@ -47,24 +47,31 @@ import {
 
 export interface IFileUtils {
 	readdir: (resource: URI) => Promise<string[]>;
+
 	toCanonicalName: (encoding: string) => string;
 }
 interface IAITextQueryProviderPair {
 	query: IAITextQuery;
+
 	provider: AITextSearchProvider;
 }
 interface ITextQueryProviderPair {
 	query: ITextQuery;
+
 	provider: TextSearchProvider2;
 }
 interface FolderQueryInfo {
 	queryTester: QueryGlobTester;
+
 	folder: URI;
+
 	folderIdx: number;
 }
 export class TextSearchManager {
 	private collector: TextSearchResultsCollector | null = null;
+
 	private isLimitHit = false;
+
 	private resultCount = 0;
 
 	constructor(
@@ -74,9 +81,11 @@ export class TextSearchManager {
 		private fileUtils: IFileUtils,
 		private processType: ITextSearchStats["type"],
 	) {}
+
 	private get query() {
 		return this.queryProviderPair.query;
 	}
+
 	search(
 		onProgress: (matches: IFileMatch[]) => void,
 		token: CancellationToken,
@@ -94,6 +103,7 @@ export class TextSearchManager {
 				if (isCanceled) {
 					return;
 				}
+
 				if (!this.isLimitHit) {
 					const resultSize = this.resultSize(result);
 
@@ -103,14 +113,19 @@ export class TextSearchManager {
 						this.resultCount + resultSize > this.query.maxResults
 					) {
 						this.isLimitHit = true;
+
 						isCanceled = true;
+
 						tokenSource.cancel();
+
 						result = this.trimResultToSize(
 							result,
 							this.query.maxResults - this.resultCount,
 						);
 					}
+
 					const newResultSize = this.resultSize(result);
+
 					this.resultCount += newResultSize;
 
 					const a = result instanceof TextSearchMatch2;
@@ -124,7 +139,9 @@ export class TextSearchManager {
 			this.doSearch(folderQueries, onResult, tokenSource.token).then(
 				(result) => {
 					tokenSource.dispose();
+
 					this.collector!.flush();
+
 					resolve({
 						limitHit: this.isLimitHit || result?.limitHit,
 						messages: this.getMessagesFromResults(result),
@@ -137,22 +154,27 @@ export class TextSearchManager {
 					tokenSource.dispose();
 
 					const errMsg = toErrorMessage(err);
+
 					reject(new Error(errMsg));
 				},
 			);
 		});
 	}
+
 	private getMessagesFromResults(
 		result: TextSearchComplete2 | null | undefined,
 	) {
 		if (!result?.message) {
 			return [];
 		}
+
 		if (Array.isArray(result.message)) {
 			return result.message;
 		}
+
 		return [result.message];
 	}
+
 	private resultSize(result: TextSearchResult2): number {
 		if (result instanceof TextSearchMatch2) {
 			return Array.isArray(result.ranges) ? result.ranges.length : 1;
@@ -161,6 +183,7 @@ export class TextSearchManager {
 			return 0;
 		}
 	}
+
 	private trimResultToSize(
 		result: TextSearchMatch2,
 		size: number,
@@ -171,6 +194,7 @@ export class TextSearchManager {
 			result.previewText,
 		);
 	}
+
 	private async doSearch(
 		folderQueries: IFolderQuery<URI>[],
 		onResult: (result: TextSearchResult2, folderIdx: number) => void,
@@ -196,6 +220,7 @@ export class TextSearchManager {
 						"Text search result URI is undefined. Please check provider implementation.",
 					);
 				}
+
 				const folderQuery = folderMappings.findQueryFragmentAwareSubstr(
 					result.uri,
 				)!;
@@ -255,6 +280,7 @@ export class TextSearchManager {
 			(<IExtendedExtensionSearchOptions>searchOptions).usePCRE2 =
 				this.query.usePCRE2;
 		}
+
 		let result;
 
 		if (this.queryProviderPair.query.type === QueryType.aiText) {
@@ -276,11 +302,14 @@ export class TextSearchManager {
 				token,
 			);
 		}
+
 		if (testingPs.length) {
 			await Promise.all(testingPs);
 		}
+
 		return result;
 	}
+
 	private getSearchOptionsForFolder(
 		fq: IFolderQuery<URI>,
 	): TextSearchProviderFolderOptions {
@@ -308,6 +337,7 @@ export class TextSearchManager {
 				},
 			];
 		}
+
 		const excludes = excludeToGlobPattern(excludePattern);
 
 		const options = {
@@ -340,8 +370,11 @@ function patternInfoToQuery(patternInfo: IPatternInfo): TextSearchQuery2 {
 }
 export class TextSearchResultsCollector {
 	private _batchedCollector: BatchedCollector<IFileMatch>;
+
 	private _currentFolderIdx: number = -1;
+
 	private _currentUri: URI | undefined;
+
 	private _currentFileMatch: IFileMatch | null = null;
 
 	constructor(private _onResult: (result: IFileMatch[]) => void) {
@@ -350,6 +383,7 @@ export class TextSearchResultsCollector {
 			(items) => this.sendItems(items),
 		);
 	}
+
 	add(data: TextSearchResult2, folderIdx: number): void {
 		// Collects TextSearchResults into IInternalFileMatches and collates using BatchedCollector.
 		// This is efficient for ripgrep which sends results back one file at a time. It wouldn't be efficient for other search
@@ -360,30 +394,39 @@ export class TextSearchResultsCollector {
 				!resources.isEqual(this._currentUri, data.uri))
 		) {
 			this.pushToCollector();
+
 			this._currentFileMatch = null;
 		}
+
 		if (!this._currentFileMatch) {
 			this._currentFolderIdx = folderIdx;
+
 			this._currentFileMatch = {
 				resource: data.uri,
 				results: [],
 			};
 		}
+
 		this._currentFileMatch.results!.push(
 			extensionResultToFrontendResult(data),
 		);
 	}
+
 	private pushToCollector(): void {
 		const size =
 			this._currentFileMatch && this._currentFileMatch.results
 				? this._currentFileMatch.results.length
 				: 0;
+
 		this._batchedCollector.addItem(this._currentFileMatch!, size);
 	}
+
 	flush(): void {
 		this.pushToCollector();
+
 		this._batchedCollector.flush();
 	}
+
 	private sendItems(items: IFileMatch[]): void {
 		this._onResult(items);
 	}
@@ -427,37 +470,52 @@ export class BatchedCollector<T> {
 	private static readonly TIMEOUT = 4000;
 	// After START_BATCH_AFTER_COUNT items have been collected, stop flushing on timeout
 	private static readonly START_BATCH_AFTER_COUNT = 50;
+
 	private totalNumberCompleted = 0;
+
 	private batch: T[] = [];
+
 	private batchSize = 0;
+
 	private timeoutHandle: any;
 
 	constructor(
 		private maxBatchSize: number,
 		private cb: (items: T[]) => void,
 	) {}
+
 	addItem(item: T, size: number): void {
 		if (!item) {
 			return;
 		}
+
 		this.addItemToBatch(item, size);
 	}
+
 	addItems(items: T[], size: number): void {
 		if (!items) {
 			return;
 		}
+
 		this.addItemsToBatch(items, size);
 	}
+
 	private addItemToBatch(item: T, size: number): void {
 		this.batch.push(item);
+
 		this.batchSize += size;
+
 		this.onUpdate();
 	}
+
 	private addItemsToBatch(item: T[], size: number): void {
 		this.batch = this.batch.concat(item);
+
 		this.batchSize += size;
+
 		this.onUpdate();
 	}
+
 	private onUpdate(): void {
 		if (
 			this.totalNumberCompleted < BatchedCollector.START_BATCH_AFTER_COUNT
@@ -474,15 +532,20 @@ export class BatchedCollector<T> {
 			}, BatchedCollector.TIMEOUT);
 		}
 	}
+
 	flush(): void {
 		if (this.batchSize) {
 			this.totalNumberCompleted += this.batchSize;
+
 			this.cb(this.batch);
+
 			this.batch = [];
+
 			this.batchSize = 0;
 
 			if (this.timeoutHandle) {
 				clearTimeout(this.timeoutHandle);
+
 				this.timeoutHandle = 0;
 			}
 		}

@@ -47,11 +47,13 @@ export class RevertButtonsFeature extends Disposable {
 		private readonly _widget: DiffEditorWidget,
 	) {
 		super();
+
 		this._register(
 			autorunWithStore((reader, store) => {
 				if (!this._options.shouldRenderOldRevertArrows.read(reader)) {
 					return;
 				}
+
 				const model = this._diffModel.read(reader);
 
 				const diff = model?.diff.read(reader);
@@ -59,9 +61,11 @@ export class RevertButtonsFeature extends Disposable {
 				if (!model || !diff) {
 					return;
 				}
+
 				if (model.movedTextToCompare.read(reader)) {
 					return;
 				}
+
 				const glyphWidgetsModified: IGlyphMarginWidget[] = [];
 
 				const selectedDiffs = this._selectedDiffs.read(reader);
@@ -85,13 +89,17 @@ export class RevertButtonsFeature extends Disposable {
 							true,
 						),
 					);
+
 					this._editors.modified.addGlyphMarginWidget(btn);
+
 					glyphWidgetsModified.push(btn);
 				}
+
 				for (const m of diff.mappings) {
 					if (selectedDiffsSet.has(m)) {
 						continue;
 					}
+
 					if (
 						!m.lineRangeMapping.modified.isEmpty &&
 						m.lineRangeMapping.innerChanges
@@ -104,10 +112,13 @@ export class RevertButtonsFeature extends Disposable {
 								false,
 							),
 						);
+
 						this._editors.modified.addGlyphMarginWidget(btn);
+
 						glyphWidgetsModified.push(btn);
 					}
 				}
+
 				store.add(
 					toDisposable(() => {
 						for (const w of glyphWidgetsModified) {
@@ -118,6 +129,7 @@ export class RevertButtonsFeature extends Disposable {
 			}),
 		);
 	}
+
 	private readonly _selectedDiffs = derived(this, (reader) => {
 		/** @description selectedDiffs */
 		const model = this._diffModel.read(reader);
@@ -127,11 +139,13 @@ export class RevertButtonsFeature extends Disposable {
 		if (!diff) {
 			return emptyArr;
 		}
+
 		const selections = this._editors.modifiedSelections.read(reader);
 
 		if (selections.every((s) => s.isEmpty())) {
 			return emptyArr;
 		}
+
 		const selectedLineNumbers = new LineRangeSet(
 			selections.map((s) => LineRange.fromRangeInclusive(s)),
 		);
@@ -157,16 +171,19 @@ export class RevertButtonsFeature extends Disposable {
 		) {
 			return emptyArr;
 		}
+
 		return result;
 	});
 }
 export class RevertButton extends Disposable implements IGlyphMarginWidget {
 	public static counter = 0;
+
 	private readonly _id: string = `revertButton${RevertButton.counter++}`;
 
 	getId(): string {
 		return this._id;
 	}
+
 	private readonly _domNode = h(
 		"div.revertButton",
 		{
@@ -184,21 +201,26 @@ export class RevertButton extends Disposable implements IGlyphMarginWidget {
 		private readonly _revertSelection: boolean,
 	) {
 		super();
+
 		this._register(
 			addDisposableListener(this._domNode, EventType.MOUSE_DOWN, (e) => {
 				// don't prevent context menu from showing up
 				if (e.button !== 2) {
 					e.stopPropagation();
+
 					e.preventDefault();
 				}
 			}),
 		);
+
 		this._register(
 			addDisposableListener(this._domNode, EventType.MOUSE_UP, (e) => {
 				e.stopPropagation();
+
 				e.preventDefault();
 			}),
 		);
+
 		this._register(
 			addDisposableListener(this._domNode, EventType.CLICK, (e) => {
 				if (this._diffs instanceof LineRangeMapping) {
@@ -206,7 +228,9 @@ export class RevertButton extends Disposable implements IGlyphMarginWidget {
 				} else {
 					this._widget.revertRangeMappings(this._diffs);
 				}
+
 				e.stopPropagation();
+
 				e.preventDefault();
 			}),
 		);

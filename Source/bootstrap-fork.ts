@@ -43,9 +43,11 @@ function pipeLoggingToParent(): void {
 						arg = errorObj.toString();
 					}
 				}
+
 				argsArray.push(arg);
 			}
 		}
+
 		try {
 			const res = JSON.stringify(
 				argsArray,
@@ -55,8 +57,10 @@ function pipeLoggingToParent(): void {
 						if (seen.indexOf(value) !== -1) {
 							return "[Circular]";
 						}
+
 						seen.push(value);
 					}
+
 					return value;
 				},
 			);
@@ -64,14 +68,18 @@ function pipeLoggingToParent(): void {
 			if (res.length > MAX_LENGTH) {
 				return "Output omitted for a large object that exceeds the limits";
 			}
+
 			return res;
 		} catch (error) {
 			return `Output omitted for an object that cannot be inspected ('${error.toString()}')`;
 		}
 	}
+
 	function safeSend(arg: {
 		type: string;
+
 		severity: string;
+
 		arguments: string;
 	}): void {
 		try {
@@ -82,6 +90,7 @@ function pipeLoggingToParent(): void {
 			// Can happen if the parent channel is closed meanwhile
 		}
 	}
+
 	function isObject(obj: unknown): boolean {
 		return (
 			typeof obj === "object" &&
@@ -91,6 +100,7 @@ function pipeLoggingToParent(): void {
 			!(obj instanceof Date)
 		);
 	}
+
 	function safeSendConsoleMessage(
 		severity: "log" | "warn" | "error",
 		args: string,
@@ -130,6 +140,7 @@ function pipeLoggingToParent(): void {
 		const original = stream.write;
 
 		let buf = "";
+
 		Object.defineProperty(stream, "write", {
 			set: () => {},
 			get:
@@ -148,8 +159,10 @@ function pipeLoggingToParent(): void {
 
 					if (eol !== -1) {
 						console[severity](buf.slice(0, eol));
+
 						buf = buf.slice(eol + 1);
 					}
+
 					original.call(stream, chunk, encoding, callback);
 				},
 		});
@@ -157,16 +170,24 @@ function pipeLoggingToParent(): void {
 	// Pass console logging to the outside so that we have it in the main side if told so
 	if (process.env["VSCODE_VERBOSE_LOGGING"] === "true") {
 		wrapConsoleMethod("info", "log");
+
 		wrapConsoleMethod("log", "log");
+
 		wrapConsoleMethod("warn", "warn");
+
 		wrapConsoleMethod("error", "error");
 	} else {
 		console.log = function () {};
+
 		console.warn = function () {};
+
 		console.info = function () {};
+
 		wrapConsoleMethod("error", "error");
 	}
+
 	wrapStream("stderr", "error");
+
 	wrapStream("stdout", "log");
 }
 function handleExceptions(): void {

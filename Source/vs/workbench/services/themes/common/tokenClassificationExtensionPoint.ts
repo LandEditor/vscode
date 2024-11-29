@@ -15,16 +15,19 @@ import {
 
 interface ITokenTypeExtensionPoint {
 	id: string;
+
 	description: string;
 
 	superType?: string;
 }
 interface ITokenModifierExtensionPoint {
 	id: string;
+
 	description: string;
 }
 interface ITokenStyleDefaultExtensionPoint {
 	language?: string;
+
 	scopes: {
 		[selector: string]: string[];
 	};
@@ -179,6 +182,7 @@ export class TokenClassificationExtensionPoints {
 
 				return false;
 			}
+
 			if (!contribution.id.match(typeAndModifierIdPattern)) {
 				collector.error(
 					nls.localize(
@@ -190,6 +194,7 @@ export class TokenClassificationExtensionPoints {
 
 				return false;
 			}
+
 			const superType = (contribution as ITokenTypeExtensionPoint)
 				.superType;
 
@@ -204,6 +209,7 @@ export class TokenClassificationExtensionPoints {
 
 				return false;
 			}
+
 			if (
 				typeof contribution.description !== "string" ||
 				contribution.id.length === 0
@@ -218,8 +224,10 @@ export class TokenClassificationExtensionPoints {
 
 				return false;
 			}
+
 			return true;
 		}
+
 		tokenTypeExtPoint.setHandler((extensions, delta) => {
 			for (const extension of delta.added) {
 				const extensionValue = <ITokenTypeExtensionPoint[]>(
@@ -238,6 +246,7 @@ export class TokenClassificationExtensionPoints {
 
 					return;
 				}
+
 				for (const contribution of extensionValue) {
 					if (
 						validateTypeOrModifier(
@@ -254,6 +263,7 @@ export class TokenClassificationExtensionPoints {
 					}
 				}
 			}
+
 			for (const extension of delta.removed) {
 				const extensionValue = <ITokenTypeExtensionPoint[]>(
 					extension.value
@@ -266,6 +276,7 @@ export class TokenClassificationExtensionPoints {
 				}
 			}
 		});
+
 		tokenModifierExtPoint.setHandler((extensions, delta) => {
 			for (const extension of delta.added) {
 				const extensionValue = <ITokenModifierExtensionPoint[]>(
@@ -284,6 +295,7 @@ export class TokenClassificationExtensionPoints {
 
 					return;
 				}
+
 				for (const contribution of extensionValue) {
 					if (
 						validateTypeOrModifier(
@@ -299,6 +311,7 @@ export class TokenClassificationExtensionPoints {
 					}
 				}
 			}
+
 			for (const extension of delta.removed) {
 				const extensionValue = <ITokenModifierExtensionPoint[]>(
 					extension.value
@@ -311,6 +324,7 @@ export class TokenClassificationExtensionPoints {
 				}
 			}
 		});
+
 		tokenStyleDefaultsExtPoint.setHandler((extensions, delta) => {
 			for (const extension of delta.added) {
 				const extensionValue = <ITokenStyleDefaultExtensionPoint[]>(
@@ -329,6 +343,7 @@ export class TokenClassificationExtensionPoints {
 
 					return;
 				}
+
 				for (const contribution of extensionValue) {
 					if (
 						contribution.language &&
@@ -343,6 +358,7 @@ export class TokenClassificationExtensionPoints {
 
 						continue;
 					}
+
 					if (
 						!contribution.scopes ||
 						typeof contribution.scopes !== "object"
@@ -356,6 +372,7 @@ export class TokenClassificationExtensionPoints {
 
 						continue;
 					}
+
 					for (const selectorString in contribution.scopes) {
 						const tmScopes = contribution.scopes[selectorString];
 
@@ -372,12 +389,14 @@ export class TokenClassificationExtensionPoints {
 
 							continue;
 						}
+
 						try {
 							const selector =
 								tokenClassificationRegistry.parseTokenSelector(
 									selectorString,
 									contribution.language,
 								);
+
 							tokenClassificationRegistry.registerTokenStyleDefault(
 								selector,
 								{
@@ -399,6 +418,7 @@ export class TokenClassificationExtensionPoints {
 					}
 				}
 			}
+
 			for (const extension of delta.removed) {
 				const extensionValue = <ITokenStyleDefaultExtensionPoint[]>(
 					extension.value
@@ -414,6 +434,7 @@ export class TokenClassificationExtensionPoints {
 									selectorString,
 									contribution.language,
 								);
+
 							tokenClassificationRegistry.registerTokenStyleDefault(
 								selector,
 								{

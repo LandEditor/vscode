@@ -56,6 +56,7 @@ export class DebugExtensionHostAction extends Action2 {
 			},
 		});
 	}
+
 	run(accessor: ServicesAccessor): void {
 		const nativeHostService = accessor.get(INativeHostService);
 
@@ -68,6 +69,7 @@ export class DebugExtensionHostAction extends Action2 {
 		const instantiationService = accessor.get(IInstantiationService);
 
 		const hostService = accessor.get(IHostService);
+
 		extensionService
 			.getInspectPorts(ExtensionHostKind.LocalProcess, false)
 			.then(async (inspectPorts) => {
@@ -93,16 +95,21 @@ export class DebugExtensionHostAction extends Action2 {
 							addArgs: [`--inspect-extensions=${randomPort()}`],
 						});
 					}
+
 					return;
 				}
+
 				if (inspectPorts.length > 1) {
 					// TODO
 					console.warn(
 						`There are multiple extension hosts available for debugging. Picking the first one...`,
 					);
 				}
+
 				const s = instantiationService.createInstance(Storage);
+
 				s.storeDebugOnNewWindow(inspectPorts[0].port);
+
 				hostService.openWindow();
 			});
 	}
@@ -112,6 +119,7 @@ class Storage {
 		@IStorageService
 		private readonly _storageService: IStorageService,
 	) {}
+
 	storeDebugOnNewWindow(targetPort: number) {
 		this._storageService.store(
 			"debugExtensionHost.debugPort",
@@ -120,6 +128,7 @@ class Storage {
 			StorageTarget.MACHINE,
 		);
 	}
+
 	getAndDeleteDebugPortIfSet(): number | undefined {
 		const port = this._storageService.getNumber(
 			"debugExtensionHost.debugPort",
@@ -132,6 +141,7 @@ class Storage {
 				StorageScope.APPLICATION,
 			);
 		}
+
 		return port;
 	}
 }

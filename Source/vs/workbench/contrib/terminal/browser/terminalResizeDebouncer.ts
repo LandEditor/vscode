@@ -18,8 +18,11 @@ const enum Constants {
 }
 export class TerminalResizeDebouncer extends Disposable {
 	private _latestX: number = 0;
+
 	private _latestY: number = 0;
+
 	private readonly _resizeXJob = this._register(new MutableDisposable());
+
 	private readonly _resizeYJob = this._register(new MutableDisposable());
 
 	constructor(
@@ -34,12 +37,14 @@ export class TerminalResizeDebouncer extends Disposable {
 	) {
 		super();
 	}
+
 	async resize(
 		cols: number,
 		rows: number,
 		immediate: boolean,
 	): Promise<void> {
 		this._latestX = cols;
+
 		this._latestY = rows;
 		// Resize immediately if requested explicitly or if the buffer is small
 		if (
@@ -48,7 +53,9 @@ export class TerminalResizeDebouncer extends Disposable {
 				Constants.StartDebouncingThreshold
 		) {
 			this._resizeXJob.clear();
+
 			this._resizeYJob.clear();
+
 			this._resizeBothCallback(cols, rows);
 
 			return;
@@ -60,27 +67,36 @@ export class TerminalResizeDebouncer extends Disposable {
 			if (!this._resizeXJob.value) {
 				this._resizeXJob.value = runWhenWindowIdle(win, async () => {
 					this._resizeXCallback(this._latestX);
+
 					this._resizeXJob.clear();
 				});
 			}
+
 			if (!this._resizeYJob.value) {
 				this._resizeYJob.value = runWhenWindowIdle(win, async () => {
 					this._resizeYCallback(this._latestY);
+
 					this._resizeYJob.clear();
 				});
 			}
+
 			return;
 		}
 		// Update dimensions independently as vertical resize is cheap and horizontal resize is
 		// expensive due to reflow.
 		this._resizeYCallback(rows);
+
 		this._latestX = cols;
+
 		this._debounceResizeX(cols);
 	}
+
 	flush(): void {
 		if (this._resizeXJob.value || this._resizeYJob.value) {
 			this._resizeXJob.clear();
+
 			this._resizeYJob.clear();
+
 			this._resizeBothCallback(this._latestX, this._latestY);
 		}
 	}

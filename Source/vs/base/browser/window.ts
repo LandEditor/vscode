@@ -26,6 +26,7 @@ export function isAuxiliaryWindow(obj: Window): obj is CodeWindow {
 	if (obj === mainWindow) {
 		return false;
 	}
+
 	const candidate = obj as CodeWindow | undefined;
 
 	return typeof candidate?.vscodeWindowId === "number";

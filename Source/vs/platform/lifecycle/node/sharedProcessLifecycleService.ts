@@ -24,7 +24,9 @@ export class SharedProcessLifecycleService
 	implements ISharedProcessLifecycleService
 {
 	declare readonly _serviceBrand: undefined;
+
 	private readonly _onWillShutdown = this._register(new Emitter<void>());
+
 	readonly onWillShutdown = this._onWillShutdown.event;
 
 	constructor(
@@ -33,8 +35,10 @@ export class SharedProcessLifecycleService
 	) {
 		super();
 	}
+
 	fireOnWillShutdown(): void {
 		this.logService.trace("Lifecycle#onWillShutdown.fire()");
+
 		this._onWillShutdown.fire();
 	}
 }

@@ -59,6 +59,7 @@ export function promiseFromEvent<T, U>(
 	adapter: PromiseAdapter<T, U> = passthrough,
 ): {
 	promise: Promise<U>;
+
 	cancel: EventEmitter<void>;
 } {
 	let subscription: Disposable;
@@ -68,6 +69,7 @@ export function promiseFromEvent<T, U>(
 	return {
 		promise: new Promise<U>((resolve, reject) => {
 			cancel.event((_) => reject("Cancelled"));
+
 			subscription = event((value: T) => {
 				try {
 					Promise.resolve(adapter(value, resolve, reject)).catch(
@@ -100,29 +102,37 @@ export function arrayEquals<T>(
 	if (one === other) {
 		return true;
 	}
+
 	if (!one || !other) {
 		return false;
 	}
+
 	if (one.length !== other.length) {
 		return false;
 	}
+
 	for (let i = 0, len = one.length; i < len; i++) {
 		if (!itemEquals(one[i], other[i])) {
 			return false;
 		}
 	}
+
 	return true;
 }
 export class StopWatch {
 	private _startTime: number = Date.now();
+
 	private _stopTime: number = -1;
+
 	public stop(): void {
 		this._stopTime = Date.now();
 	}
+
 	public elapsed(): number {
 		if (this._stopTime !== -1) {
 			return this._stopTime - this._startTime;
 		}
+
 		return Date.now() - this._startTime;
 	}
 }

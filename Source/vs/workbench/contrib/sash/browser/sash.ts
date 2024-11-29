@@ -34,20 +34,25 @@ export class SashSettingsController
 			configurationService.onDidChangeConfiguration,
 			(e) => e.affectsConfiguration("workbench.sash.size"),
 		);
+
 		onDidChangeSize(this.onDidChangeSize, this, this.disposables);
+
 		this.onDidChangeSize();
 
 		const onDidChangeHoverDelay = Event.filter(
 			configurationService.onDidChangeConfiguration,
 			(e) => e.affectsConfiguration("workbench.sash.hoverDelay"),
 		);
+
 		onDidChangeHoverDelay(
 			this.onDidChangeHoverDelay,
 			this,
 			this.disposables,
 		);
+
 		this.onDidChangeHoverDelay();
 	}
+
 	private onDidChangeSize(): void {
 		const configuredSize = this.configurationService.getValue<number>(
 			"workbench.sash.size",
@@ -56,10 +61,12 @@ export class SashSettingsController
 		const size = clamp(configuredSize, 4, 20);
 
 		const hoverSize = clamp(configuredSize, 1, 8);
+
 		this.layoutService.mainContainer.style.setProperty(
 			"--vscode-sash-size",
 			size + "px",
 		);
+
 		this.layoutService.mainContainer.style.setProperty(
 			"--vscode-sash-hover-size",
 			hoverSize + "px",
@@ -67,6 +74,7 @@ export class SashSettingsController
 
 		setGlobalSashSize(size);
 	}
+
 	private onDidChangeHoverDelay(): void {
 		setGlobalHoverDelay(
 			this.configurationService.getValue<number>(
@@ -74,6 +82,7 @@ export class SashSettingsController
 			),
 		);
 	}
+
 	dispose(): void {
 		this.disposables.dispose();
 	}

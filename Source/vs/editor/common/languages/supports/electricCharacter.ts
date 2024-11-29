@@ -21,6 +21,7 @@ export class BracketElectricCharacterSupport {
 	constructor(richEditBrackets: RichEditBrackets | null) {
 		this._richEditBrackets = richEditBrackets;
 	}
+
 	public getElectricCharacters(): string[] {
 		const result: string[] = [];
 
@@ -28,12 +29,15 @@ export class BracketElectricCharacterSupport {
 			for (const bracket of this._richEditBrackets.brackets) {
 				for (const close of bracket.close) {
 					const lastChar = close.charAt(close.length - 1);
+
 					result.push(lastChar);
 				}
 			}
 		}
+
 		return distinct(result);
 	}
+
 	public onElectricCharacter(
 		character: string,
 		context: ScopedLineTokens,
@@ -45,11 +49,13 @@ export class BracketElectricCharacterSupport {
 		) {
 			return null;
 		}
+
 		const tokenIndex = context.findTokenIndexAtOffset(column - 1);
 
 		if (ignoreBracketsInToken(context.getStandardTokenType(tokenIndex))) {
 			return null;
 		}
+
 		const reversedBracketRegex = this._richEditBrackets.reversedRegex;
 
 		const text =
@@ -66,6 +72,7 @@ export class BracketElectricCharacterSupport {
 		if (!r) {
 			return null;
 		}
+
 		const bracketText = text
 			.substring(r.startColumn - 1, r.endColumn - 1)
 			.toLowerCase();
@@ -75,6 +82,7 @@ export class BracketElectricCharacterSupport {
 		if (isOpen) {
 			return null;
 		}
+
 		const textBeforeBracket = context.getActualLineContentBefore(
 			r.startColumn - 1,
 		);
@@ -83,6 +91,7 @@ export class BracketElectricCharacterSupport {
 			// There is other text on the line before the bracket
 			return null;
 		}
+
 		return {
 			matchOpenBracket: bracketText,
 		};

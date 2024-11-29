@@ -28,20 +28,25 @@ namespace Severity {
 		if (!value) {
 			return Severity.Ignore;
 		}
+
 		if (strings.equalsIgnoreCase(_error, value)) {
 			return Severity.Error;
 		}
+
 		if (
 			strings.equalsIgnoreCase(_warning, value) ||
 			strings.equalsIgnoreCase(_warn, value)
 		) {
 			return Severity.Warning;
 		}
+
 		if (strings.equalsIgnoreCase(_info, value)) {
 			return Severity.Info;
 		}
+
 		return Severity.Ignore;
 	}
+
 	export function toString(severity: Severity): string {
 		switch (severity) {
 			case Severity.Error:

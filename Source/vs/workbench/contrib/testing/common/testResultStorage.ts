@@ -59,11 +59,14 @@ export abstract class BaseTestResultStorage
 	implements ITestResultStorage
 {
 	declare readonly _serviceBrand: undefined;
+
 	protected readonly stored = this._register(
 		new StoredValue<
 			ReadonlyArray<{
 				rev: number;
+
 				id: string;
+
 				bytes: number;
 			}>
 		>(
@@ -95,12 +98,14 @@ export abstract class BaseTestResultStorage
 				if (rec.rev !== currentRevision) {
 					return undefined;
 				}
+
 				try {
 					const contents = await this.readForResultId(rec.id);
 
 					if (!contents) {
 						return undefined;
 					}
+
 					return {
 						rec,
 						result: new HydratedTestResult(
@@ -124,6 +129,7 @@ export abstract class BaseTestResultStorage
 		if (defined.length !== results.length) {
 			this.stored.store(defined.map(({ rec }) => rec));
 		}
+
 		return defined.map(({ result }) => result);
 	}
 	/**
@@ -131,6 +137,7 @@ export abstract class BaseTestResultStorage
 	 */
 	public getResultOutputWriter(resultId: string) {
 		const stream = newWriteableBufferStream();
+
 		this.storeOutputForResultId(resultId, stream);
 
 		return stream;
@@ -145,7 +152,9 @@ export abstract class BaseTestResultStorage
 
 		const toStore: {
 			rev: number;
+
 			id: string;
+
 			bytes: number;
 		}[] = [];
 
@@ -158,9 +167,11 @@ export abstract class BaseTestResultStorage
 		// 3. We store the min results, and have no more byte budget
 		for (
 			let i = 0;
+
 			i < results.length &&
 			i < RETAIN_MAX_RESULTS &&
 			(budget > 0 || toStore.length < RETAIN_MIN_RESULTS);
+
 			i++
 		) {
 			const result = results[i];
@@ -169,33 +180,43 @@ export abstract class BaseTestResultStorage
 
 			if (existingBytes !== undefined) {
 				toDelete.delete(result.id);
+
 				toStore.push({
 					id: result.id,
 					rev: currentRevision,
 					bytes: existingBytes,
 				});
+
 				budget -= existingBytes;
 
 				continue;
 			}
+
 			const obj = result.toJSON();
 
 			if (!obj) {
 				continue;
 			}
+
 			const contents = VSBuffer.fromString(JSON.stringify(obj));
+
 			todo.push(this.storeForResultId(result.id, obj));
+
 			toStore.push({
 				id: result.id,
 				rev: currentRevision,
 				bytes: contents.byteLength,
 			});
+
 			budget -= contents.byteLength;
 		}
+
 		for (const id of toDelete.keys()) {
 			todo.push(this.deleteForResultId(id).catch(() => undefined));
 		}
+
 		this.stored.store(toStore);
+
 		await Promise.all(todo);
 	}
 	/**
@@ -239,30 +260,36 @@ export abstract class BaseTestResultStorage
 }
 export class InMemoryResultStorage extends BaseTestResultStorage {
 	public readonly cache = new Map<string, ISerializedTestResults>();
+
 	protected async readForResultId(id: string) {
 		return Promise.resolve(this.cache.get(id));
 	}
+
 	protected storeForResultId(id: string, contents: ISerializedTestResults) {
 		this.cache.set(id, contents);
 
 		return Promise.resolve();
 	}
+
 	protected deleteForResultId(id: string) {
 		this.cache.delete(id);
 
 		return Promise.resolve();
 	}
+
 	protected readOutputForResultId(
 		id: string,
 	): Promise<VSBufferReadableStream> {
 		throw new Error("Method not implemented.");
 	}
+
 	protected storeOutputForResultId(
 		id: string,
 		input: VSBufferWriteableStream,
 	): Promise<void> {
 		throw new Error("Method not implemented.");
 	}
+
 	protected readOutputRangeForResultId(
 		id: string,
 		offset: number,
@@ -289,12 +316,14 @@ export class TestResultStorage extends BaseTestResultStorage {
 		environmentService: IEnvironmentService,
 	) {
 		super(uriIdentityService, storageService, logService);
+
 		this.directory = URI.joinPath(
 			environmentService.workspaceStorageHome,
 			workspaceContext.getWorkspace().id,
 			"testResults",
 		);
 	}
+
 	protected async readForResultId(id: string) {
 		const contents = await this.fileService.readFile(
 			this.getResultJsonPath(id),
@@ -302,17 +331,20 @@ export class TestResultStorage extends BaseTestResultStorage {
 
 		return JSON.parse(contents.value.toString());
 	}
+
 	protected storeForResultId(id: string, contents: ISerializedTestResults) {
 		return this.fileService.writeFile(
 			this.getResultJsonPath(id),
 			VSBuffer.fromString(JSON.stringify(contents)),
 		);
 	}
+
 	protected deleteForResultId(id: string) {
 		return this.fileService
 			.del(this.getResultJsonPath(id))
 			.catch(() => undefined);
 	}
+
 	protected async readOutputRangeForResultId(
 		id: string,
 		offset: number,
@@ -329,6 +361,7 @@ export class TestResultStorage extends BaseTestResultStorage {
 			return VSBuffer.alloc(0);
 		}
 	}
+
 	protected async readOutputForResultId(
 		id: string,
 	): Promise<VSBufferReadableStream> {
@@ -342,6 +375,7 @@ export class TestResultStorage extends BaseTestResultStorage {
 			return bufferToStream(VSBuffer.alloc(0));
 		}
 	}
+
 	protected async storeOutputForResultId(
 		id: string,
 		input: VSBufferWriteableStream,
@@ -368,12 +402,14 @@ export class TestResultStorage extends BaseTestResultStorage {
 		if (!children) {
 			return;
 		}
+
 		const stored = new Set(
 			this.stored
 				.get([])
 				.filter((s) => s.rev === currentRevision)
 				.map((s) => s.id),
 		);
+
 		await Promise.all(
 			children
 				.filter(
@@ -384,9 +420,11 @@ export class TestResultStorage extends BaseTestResultStorage {
 				),
 		);
 	}
+
 	private getResultJsonPath(id: string) {
 		return URI.joinPath(this.directory, `${id}.json`);
 	}
+
 	private getResultOutputPath(id: string) {
 		return URI.joinPath(this.directory, `${id}.output`);
 	}

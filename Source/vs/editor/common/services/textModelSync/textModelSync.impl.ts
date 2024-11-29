@@ -54,11 +54,15 @@ export class WorkerTextModelSyncClient extends Disposable {
 			modelService,
 		);
 	}
+
 	private readonly _proxy: IWorkerTextModelSyncChannelServer;
+
 	private readonly _modelService: IModelService;
+
 	private _syncedModels: {
 		[modelUrl: string]: IDisposable;
 	} = Object.create(null);
+
 	private _syncedModelsLastUsedTime: {
 		[modelUrl: string]: number;
 	} = Object.create(null);
@@ -69,27 +73,35 @@ export class WorkerTextModelSyncClient extends Disposable {
 		keepIdleModels: boolean = false,
 	) {
 		super();
+
 		this._proxy = proxy;
+
 		this._modelService = modelService;
 
 		if (!keepIdleModels) {
 			const timer = new IntervalTimer();
+
 			timer.cancelAndSet(
 				() => this._checkStopModelSync(),
 				Math.round(STOP_SYNC_MODEL_DELTA_TIME_MS / 2),
 			);
+
 			this._register(timer);
 		}
 	}
+
 	public override dispose(): void {
 		for (const modelUrl in this._syncedModels) {
 			dispose(this._syncedModels[modelUrl]);
 		}
+
 		this._syncedModels = Object.create(null);
+
 		this._syncedModelsLastUsedTime = Object.create(null);
 
 		super.dispose();
 	}
+
 	public ensureSyncedResources(
 		resources: URI[],
 		forceLargeModels: boolean = false,
@@ -100,12 +112,14 @@ export class WorkerTextModelSyncClient extends Disposable {
 			if (!this._syncedModels[resourceStr]) {
 				this._beginModelSync(resource, forceLargeModels);
 			}
+
 			if (this._syncedModels[resourceStr]) {
 				this._syncedModelsLastUsedTime[resourceStr] =
 					new Date().getTime();
 			}
 		}
 	}
+
 	private _checkStopModelSync(): void {
 		const currentTime = new Date().getTime();
 
@@ -119,20 +133,25 @@ export class WorkerTextModelSyncClient extends Disposable {
 				toRemove.push(modelUrl);
 			}
 		}
+
 		for (const e of toRemove) {
 			this._stopModelSync(e);
 		}
 	}
+
 	private _beginModelSync(resource: URI, forceLargeModels: boolean): void {
 		const model = this._modelService.getModel(resource);
 
 		if (!model) {
 			return;
 		}
+
 		if (!forceLargeModels && model.isTooLargeForSyncing()) {
 			return;
 		}
+
 		const modelUrl = resource.toString();
+
 		this._proxy.$acceptNewModel({
 			url: model.uri.toString(),
 			lines: model.getLinesContent(),
@@ -141,27 +160,35 @@ export class WorkerTextModelSyncClient extends Disposable {
 		});
 
 		const toDispose = new DisposableStore();
+
 		toDispose.add(
 			model.onDidChangeContent((e) => {
 				this._proxy.$acceptModelChanged(modelUrl.toString(), e);
 			}),
 		);
+
 		toDispose.add(
 			model.onWillDispose(() => {
 				this._stopModelSync(modelUrl);
 			}),
 		);
+
 		toDispose.add(
 			toDisposable(() => {
 				this._proxy.$acceptRemovedModel(modelUrl);
 			}),
 		);
+
 		this._syncedModels[modelUrl] = toDispose;
 	}
+
 	private _stopModelSync(modelUrl: string): void {
 		const toDispose = this._syncedModels[modelUrl];
+
 		delete this._syncedModels[modelUrl];
+
 		delete this._syncedModelsLastUsedTime[modelUrl];
+
 		dispose(toDispose);
 	}
 }
@@ -175,14 +202,18 @@ export class WorkerTextModelSyncServer
 	constructor() {
 		this._models = Object.create(null);
 	}
+
 	public bindToServer(workerServer: IWorkerServer): void {
 		workerServer.setChannel(WORKER_TEXT_MODEL_SYNC_CHANNEL, this);
 	}
+
 	public getModel(uri: string): ICommonModel | undefined {
 		return this._models[uri];
 	}
+
 	public getModels(): ICommonModel[] {
 		const all: MirrorModel[] = [];
+
 		Object.keys(this._models).forEach((key) => all.push(this._models[key]));
 
 		return all;
@@ -199,13 +230,16 @@ export class WorkerTextModelSyncServer
 		if (!this._models[uri]) {
 			return;
 		}
+
 		const model = this._models[uri];
+
 		model.onEvents(e);
 	}
 	$acceptRemovedModel(uri: string): void {
 		if (!this._models[uri]) {
 			return;
 		}
+
 		delete this._models[uri];
 	}
 }
@@ -213,12 +247,15 @@ export class MirrorModel extends BaseMirrorModel implements ICommonModel {
 	public get uri(): URI {
 		return this._uri;
 	}
+
 	public get eol(): string {
 		return this._eol;
 	}
+
 	public getValue(): string {
 		return this.getText();
 	}
+
 	public findMatches(regex: RegExp): RegExpMatchArray[] {
 		const matches = [];
 
@@ -233,20 +270,26 @@ export class MirrorModel extends BaseMirrorModel implements ICommonModel {
 				if (match.index || match.index === 0) {
 					match.index = match.index + offsetToAdd;
 				}
+
 				matches.push(match);
 			}
 		}
+
 		return matches;
 	}
+
 	public getLinesContent(): string[] {
 		return this._lines.slice(0);
 	}
+
 	public getLineCount(): number {
 		return this._lines.length;
 	}
+
 	public getLineContent(lineNumber: number): string {
 		return this._lines[lineNumber - 1];
 	}
+
 	public getWordAtPosition(
 		position: IPosition,
 		wordDefinition: RegExp,
@@ -266,8 +309,10 @@ export class MirrorModel extends BaseMirrorModel implements ICommonModel {
 				wordAtText.endColumn,
 			);
 		}
+
 		return null;
 	}
+
 	public getWordUntilPosition(
 		position: IPosition,
 		wordDefinition: RegExp,
@@ -281,6 +326,7 @@ export class MirrorModel extends BaseMirrorModel implements ICommonModel {
 				endColumn: position.column,
 			};
 		}
+
 		return {
 			word: this._lines[position.lineNumber - 1].substring(
 				wordAtPosition.startColumn - 1,
@@ -290,6 +336,7 @@ export class MirrorModel extends BaseMirrorModel implements ICommonModel {
 			endColumn: position.column,
 		};
 	}
+
 	public words(wordDefinition: RegExp): Iterable<string> {
 		const lines = this._lines;
 
@@ -311,14 +358,18 @@ export class MirrorModel extends BaseMirrorModel implements ICommonModel {
 							wordRanges[wordRangesIdx].start,
 							wordRanges[wordRangesIdx].end,
 						);
+
 						wordRangesIdx += 1;
 
 						yield value;
 					} else {
 						if (lineNumber < lines.length) {
 							lineText = lines[lineNumber];
+
 							wordRanges = wordenize(lineText, wordDefinition);
+
 							wordRangesIdx = 0;
+
 							lineNumber += 1;
 						} else {
 							break;
@@ -328,6 +379,7 @@ export class MirrorModel extends BaseMirrorModel implements ICommonModel {
 			},
 		};
 	}
+
 	public getLineWords(
 		lineNumber: number,
 		wordDefinition: RegExp,
@@ -345,25 +397,31 @@ export class MirrorModel extends BaseMirrorModel implements ICommonModel {
 				endColumn: range.end + 1,
 			});
 		}
+
 		return words;
 	}
+
 	private _wordenize(content: string, wordDefinition: RegExp): IWordRange[] {
 		const result: IWordRange[] = [];
 
 		let match: RegExpExecArray | null;
+
 		wordDefinition.lastIndex = 0; // reset lastIndex just to be sure
 		while ((match = wordDefinition.exec(content))) {
 			if (match[0].length === 0) {
 				// it did match the empty string
 				break;
 			}
+
 			result.push({
 				start: match.index,
 				end: match.index + match[0].length,
 			});
 		}
+
 		return result;
 	}
+
 	public getValueInRange(range: IRange): string {
 		range = this._validateRange(range);
 
@@ -373,6 +431,7 @@ export class MirrorModel extends BaseMirrorModel implements ICommonModel {
 				range.endColumn - 1,
 			);
 		}
+
 		const lineEnding = this._eol;
 
 		const startLineIndex = range.startLineNumber - 1;
@@ -380,6 +439,7 @@ export class MirrorModel extends BaseMirrorModel implements ICommonModel {
 		const endLineIndex = range.endLineNumber - 1;
 
 		const resultLines: string[] = [];
+
 		resultLines.push(
 			this._lines[startLineIndex].substring(range.startColumn - 1),
 		);
@@ -387,14 +447,17 @@ export class MirrorModel extends BaseMirrorModel implements ICommonModel {
 		for (let i = startLineIndex + 1; i < endLineIndex; i++) {
 			resultLines.push(this._lines[i]);
 		}
+
 		resultLines.push(
 			this._lines[endLineIndex].substring(0, range.endColumn - 1),
 		);
 
 		return resultLines.join(lineEnding);
 	}
+
 	public offsetAt(position: IPosition): number {
 		position = this._validatePosition(position);
+
 		this._ensureLineStarts();
 
 		return (
@@ -402,9 +465,12 @@ export class MirrorModel extends BaseMirrorModel implements ICommonModel {
 			(position.column - 1)
 		);
 	}
+
 	public positionAt(offset: number): IPosition {
 		offset = Math.floor(offset);
+
 		offset = Math.max(0, offset);
+
 		this._ensureLineStarts();
 
 		const out = this._lineStarts!.getIndexOf(offset);
@@ -416,6 +482,7 @@ export class MirrorModel extends BaseMirrorModel implements ICommonModel {
 			column: 1 + Math.min(out.remainder, lineLength),
 		};
 	}
+
 	private _validateRange(range: IRange): IRange {
 		const start = this._validatePosition({
 			lineNumber: range.startLineNumber,
@@ -440,35 +507,45 @@ export class MirrorModel extends BaseMirrorModel implements ICommonModel {
 				endColumn: end.column,
 			};
 		}
+
 		return range;
 	}
+
 	private _validatePosition(position: IPosition): IPosition {
 		if (!Position.isIPosition(position)) {
 			throw new Error("bad position");
 		}
+
 		let { lineNumber, column } = position;
 
 		let hasChanged = false;
 
 		if (lineNumber < 1) {
 			lineNumber = 1;
+
 			column = 1;
+
 			hasChanged = true;
 		} else if (lineNumber > this._lines.length) {
 			lineNumber = this._lines.length;
+
 			column = this._lines[lineNumber - 1].length + 1;
+
 			hasChanged = true;
 		} else {
 			const maxCharacter = this._lines[lineNumber - 1].length + 1;
 
 			if (column < 1) {
 				column = 1;
+
 				hasChanged = true;
 			} else if (column > maxCharacter) {
 				column = maxCharacter;
+
 				hasChanged = true;
 			}
 		}
+
 		if (!hasChanged) {
 			return position;
 		} else {
@@ -481,7 +558,9 @@ export interface ICommonModel
 		IDocumentColorComputerTarget,
 		IMirrorModel {
 	uri: URI;
+
 	version: number;
+
 	eol: string;
 
 	getValue(): string;
@@ -493,6 +572,7 @@ export interface ICommonModel
 	getLineContent(lineNumber: number): string;
 
 	getLineWords(lineNumber: number, wordDefinition: RegExp): IWordAtPosition[];
+
 	words(wordDefinition: RegExp): Iterable<string>;
 
 	getWordUntilPosition(
@@ -506,7 +586,10 @@ export interface ICommonModel
 		position: IPosition,
 		wordDefinition: RegExp,
 	): Range | null;
+
 	offsetAt(position: IPosition): number;
+
 	positionAt(offset: number): IPosition;
+
 	findMatches(regex: RegExp): RegExpMatchArray[];
 }

@@ -49,6 +49,7 @@ struct VSOutput {
 	let shape = shapes[instanceIndex];
 
 	var vsOut: VSOutput;
+
 	vsOut.position = vec4f(
 		(
 			// Top left corner
@@ -61,6 +62,7 @@ struct VSOutput {
 		0.0,
 		1.0
 	);
+
 	vsOut.color = shape.color;
 
 	return vsOut;

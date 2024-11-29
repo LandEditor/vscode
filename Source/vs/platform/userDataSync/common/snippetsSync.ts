@@ -63,6 +63,7 @@ export class SnippetsSynchroniser
 	implements IUserDataSynchroniser
 {
 	protected readonly version: number = 1;
+
 	private readonly snippetsFolder: URI;
 
 	constructor(
@@ -103,17 +104,22 @@ export class SnippetsSynchroniser
 			configurationService,
 			uriIdentityService,
 		);
+
 		this.snippetsFolder = profile.snippetsHome;
+
 		this._register(
 			this.fileService.watch(environmentService.userRoamingDataHome),
 		);
+
 		this._register(this.fileService.watch(this.snippetsFolder));
+
 		this._register(
 			Event.filter(this.fileService.onDidFilesChange, (e) =>
 				e.affects(this.snippetsFolder),
 			)(() => this.triggerLocalChange()),
 		);
 	}
+
 	protected async generateSyncPreview(
 		remoteUserData: IRemoteUserData,
 		lastSyncUserData: IRemoteUserData | null,
@@ -147,6 +153,7 @@ export class SnippetsSynchroniser
 				`${this.syncResourceLogLabel}: Remote snippets does not exist. Synchronizing snippets for the first time.`,
 			);
 		}
+
 		const mergeResult = merge(
 			localSnippets,
 			remoteSnippets,
@@ -160,6 +167,7 @@ export class SnippetsSynchroniser
 			lastSyncSnippets || {},
 		);
 	}
+
 	protected async hasRemoteChanged(
 		lastSyncUserData: IRemoteUserData,
 	): Promise<boolean> {
@@ -171,6 +179,7 @@ export class SnippetsSynchroniser
 		if (lastSyncSnippets === null) {
 			return true;
 		}
+
 		const local = await this.getSnippetsFileContents();
 
 		const localSnippets = this.toSnippetsContents(local);
@@ -188,12 +197,14 @@ export class SnippetsSynchroniser
 			mergeResult.conflicts.length > 0
 		);
 	}
+
 	protected async getMergeResult(
 		resourcePreview: ISnippetsResourcePreview,
 		token: CancellationToken,
 	): Promise<IMergeResult> {
 		return resourcePreview.previewResult;
 	}
+
 	protected async getAcceptResult(
 		resourcePreview: ISnippetsResourcePreview,
 		resource: URI,
@@ -269,8 +280,10 @@ export class SnippetsSynchroniser
 				};
 			}
 		}
+
 		throw new Error(`Invalid Resource: ${resource.toString()}`);
 	}
+
 	protected async applyResult(
 		remoteUserData: IRemoteUserData,
 		lastSyncUserData: IRemoteUserData | null,
@@ -293,6 +306,7 @@ export class SnippetsSynchroniser
 				`${this.syncResourceLogLabel}: No changes found during synchronizing snippets.`,
 			);
 		}
+
 		if (
 			accptedResourcePreviews.some(
 				({ localChange }) => localChange !== Change.None,
@@ -300,8 +314,10 @@ export class SnippetsSynchroniser
 		) {
 			// back up all snippets
 			await this.updateLocalBackup(accptedResourcePreviews);
+
 			await this.updateLocalSnippets(accptedResourcePreviews, force);
 		}
+
 		if (
 			accptedResourcePreviews.some(
 				({ remoteChange }) => remoteChange !== Change.None,
@@ -313,16 +329,20 @@ export class SnippetsSynchroniser
 				force,
 			);
 		}
+
 		if (lastSyncUserData?.ref !== remoteUserData.ref) {
 			// update last sync
 			this.logService.trace(
 				`${this.syncResourceLogLabel}: Updating last synchronized snippets...`,
 			);
+
 			await this.updateLastSyncUserData(remoteUserData);
+
 			this.logService.info(
 				`${this.syncResourceLogLabel}: Updated last synchronized snippets`,
 			);
 		}
+
 		for (const { previewResource } of accptedResourcePreviews) {
 			// Delete the preview
 			try {
@@ -332,6 +352,7 @@ export class SnippetsSynchroniser
 			}
 		}
 	}
+
 	private getResourcePreviews(
 		snippetsMergeResult: ISnippetsMergeResult,
 		localFileContent: IStringDictionary<IFileContent>,
@@ -350,6 +371,7 @@ export class SnippetsSynchroniser
 				localChange: Change.Added,
 				remoteChange: Change.None,
 			};
+
 			resourcePreviews.set(key, {
 				baseResource: this.extUri
 					.joinPath(this.syncPreviewFolder, key)
@@ -397,6 +419,7 @@ export class SnippetsSynchroniser
 			const localContent = localFileContent[key]
 				? localFileContent[key].value.toString()
 				: null;
+
 			resourcePreviews.set(key, {
 				baseResource: this.extUri
 					.joinPath(this.syncPreviewFolder, key)
@@ -444,6 +467,7 @@ export class SnippetsSynchroniser
 			const localContent = localFileContent[key]
 				? localFileContent[key].value.toString()
 				: null;
+
 			resourcePreviews.set(key, {
 				baseResource: this.extUri
 					.joinPath(this.syncPreviewFolder, key)
@@ -491,6 +515,7 @@ export class SnippetsSynchroniser
 			const localContent = localFileContent[key]
 				? localFileContent[key].value.toString()
 				: null;
+
 			resourcePreviews.set(key, {
 				baseResource: this.extUri
 					.joinPath(this.syncPreviewFolder, key)
@@ -538,6 +563,7 @@ export class SnippetsSynchroniser
 			const localContent = localFileContent[key]
 				? localFileContent[key].value.toString()
 				: null;
+
 			resourcePreviews.set(key, {
 				baseResource: this.extUri
 					.joinPath(this.syncPreviewFolder, key)
@@ -581,6 +607,7 @@ export class SnippetsSynchroniser
 				localChange: Change.None,
 				remoteChange: Change.Deleted,
 			};
+
 			resourcePreviews.set(key, {
 				baseResource: this.extUri
 					.joinPath(this.syncPreviewFolder, key)
@@ -632,6 +659,7 @@ export class SnippetsSynchroniser
 			const localContent = localFileContent[key]
 				? localFileContent[key].value.toString()
 				: null;
+
 			resourcePreviews.set(key, {
 				baseResource: this.extUri
 					.joinPath(this.syncPreviewFolder, key)
@@ -682,6 +710,7 @@ export class SnippetsSynchroniser
 				const localContent = localFileContent[key]
 					? localFileContent[key].value.toString()
 					: null;
+
 				resourcePreviews.set(key, {
 					baseResource: this.extUri
 						.joinPath(this.syncPreviewFolder, key)
@@ -721,8 +750,10 @@ export class SnippetsSynchroniser
 				});
 			}
 		}
+
 		return [...resourcePreviews.values()];
 	}
+
 	override async resolveContent(uri: URI): Promise<string | null> {
 		if (
 			this.extUri.isEqualOrParent(
@@ -756,8 +787,10 @@ export class SnippetsSynchroniser
 		) {
 			return this.resolvePreviewContent(uri);
 		}
+
 		return null;
 	}
+
 	async hasLocalData(): Promise<boolean> {
 		try {
 			const localSnippets = await this.getSnippetsFileContents();
@@ -768,8 +801,10 @@ export class SnippetsSynchroniser
 		} catch (error) {
 			/* ignore error */
 		}
+
 		return false;
 	}
+
 	private async updateLocalBackup(
 		resourcePreviews: IFileResourcePreview[],
 	): Promise<void> {
@@ -781,8 +816,10 @@ export class SnippetsSynchroniser
 					resourcePreview.fileContent;
 			}
 		}
+
 		await this.backupLocal(JSON.stringify(this.toSnippetsContents(local)));
 	}
+
 	private async updateLocalSnippets(
 		resourcePreviews: ISnippetsAcceptedResourcePreview[],
 		force: boolean,
@@ -806,7 +843,9 @@ export class SnippetsSynchroniser
 						`${this.syncResourceLogLabel}: Deleting snippet...`,
 						this.extUri.basename(resource),
 					);
+
 					await this.fileService.del(resource);
+
 					this.logService.info(
 						`${this.syncResourceLogLabel}: Deleted snippet`,
 						this.extUri.basename(resource),
@@ -818,11 +857,13 @@ export class SnippetsSynchroniser
 						`${this.syncResourceLogLabel}: Creating snippet...`,
 						this.extUri.basename(resource),
 					);
+
 					await this.fileService.createFile(
 						resource,
 						VSBuffer.fromString(acceptResult.content!),
 						{ overwrite: force },
 					);
+
 					this.logService.info(
 						`${this.syncResourceLogLabel}: Created snippet`,
 						this.extUri.basename(resource),
@@ -834,11 +875,13 @@ export class SnippetsSynchroniser
 						`${this.syncResourceLogLabel}: Updating snippet...`,
 						this.extUri.basename(resource),
 					);
+
 					await this.fileService.writeFile(
 						resource,
 						VSBuffer.fromString(acceptResult.content!),
 						force ? undefined : fileContent!,
 					);
+
 					this.logService.info(
 						`${this.syncResourceLogLabel}: Updated snippet`,
 						this.extUri.basename(resource),
@@ -847,6 +890,7 @@ export class SnippetsSynchroniser
 			}
 		}
 	}
+
 	private async updateRemoteSnippets(
 		resourcePreviews: ISnippetsAcceptedResourcePreview[],
 		remoteUserData: IRemoteUserData,
@@ -878,24 +922,30 @@ export class SnippetsSynchroniser
 				}
 			}
 		}
+
 		if (!areSame(currentSnippets, newSnippets)) {
 			// update remote
 			this.logService.trace(
 				`${this.syncResourceLogLabel}: Updating remote snippets...`,
 			);
+
 			remoteUserData = await this.updateRemoteUserData(
 				JSON.stringify(newSnippets),
 				forcePush ? null : remoteUserData.ref,
 			);
+
 			this.logService.info(
 				`${this.syncResourceLogLabel}: Updated remote snippets`,
 			);
 		}
+
 		return remoteUserData;
 	}
+
 	private parseSnippets(syncData: ISyncData): IStringDictionary<string> {
 		return parseSnippets(syncData);
 	}
+
 	private toSnippetsContents(
 		snippetsFileContents: IStringDictionary<IFileContent>,
 	): IStringDictionary<string> {
@@ -904,8 +954,10 @@ export class SnippetsSynchroniser
 		for (const key of Object.keys(snippetsFileContents)) {
 			snippets[key] = snippetsFileContents[key].value.toString();
 		}
+
 		return snippets;
 	}
+
 	private async getSnippetsFileContents(): Promise<
 		IStringDictionary<IFileContent>
 	> {
@@ -926,6 +978,7 @@ export class SnippetsSynchroniser
 				throw e;
 			}
 		}
+
 		for (const entry of stat.children || []) {
 			const resource = entry.resource;
 
@@ -938,9 +991,11 @@ export class SnippetsSynchroniser
 				)!;
 
 				const content = await this.fileService.readFile(resource);
+
 				snippets[key] = content;
 			}
 		}
+
 		return snippets;
 	}
 }
@@ -969,6 +1024,7 @@ export class SnippetsInitializer extends AbstractInitializer {
 			uriIdentityService,
 		);
 	}
+
 	protected async doInitialize(
 		remoteUserData: IRemoteUserData,
 	): Promise<void> {
@@ -984,6 +1040,7 @@ export class SnippetsInitializer extends AbstractInitializer {
 
 			return;
 		}
+
 		const isEmpty = await this.isEmpty();
 
 		if (!isEmpty) {
@@ -993,6 +1050,7 @@ export class SnippetsInitializer extends AbstractInitializer {
 
 			return;
 		}
+
 		for (const key of Object.keys(remoteSnippets)) {
 			const content = remoteSnippets[key];
 
@@ -1001,18 +1059,22 @@ export class SnippetsInitializer extends AbstractInitializer {
 					this.userDataProfilesService.defaultProfile.snippetsHome,
 					key,
 				);
+
 				await this.fileService.createFile(
 					resource,
 					VSBuffer.fromString(content),
 				);
+
 				this.logService.info(
 					"Created snippet",
 					this.extUri.basename(resource),
 				);
 			}
 		}
+
 		await this.updateLastSyncUserData(remoteUserData);
 	}
+
 	private async isEmpty(): Promise<boolean> {
 		try {
 			const stat = await this.fileService.resolve(

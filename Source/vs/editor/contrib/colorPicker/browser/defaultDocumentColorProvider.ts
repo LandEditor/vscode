@@ -20,6 +20,7 @@ export class DefaultDocumentColorProvider implements DocumentColorProvider {
 		@IEditorWorkerService
 		private readonly _editorWorkerService: IEditorWorkerService,
 	) {}
+
 	async provideDocumentColors(
 		model: ITextModel,
 		_token: CancellationToken,
@@ -28,6 +29,7 @@ export class DefaultDocumentColorProvider implements DocumentColorProvider {
 			model.uri,
 		);
 	}
+
 	provideColorPresentations(
 		_model: ITextModel,
 		colorInfo: IColorInformation,
@@ -61,14 +63,17 @@ export class DefaultDocumentColorProvider implements DocumentColorProvider {
 			: Color.Format.CSS.formatHexA(color);
 
 		const colorPresentations: IColorPresentation[] = [];
+
 		colorPresentations.push({
 			label: rgb,
 			textEdit: { range: range, text: rgb },
 		});
+
 		colorPresentations.push({
 			label: hsl,
 			textEdit: { range: range, text: hsl },
 		});
+
 		colorPresentations.push({
 			label: hex,
 			textEdit: { range: range, text: hex },
@@ -85,6 +90,7 @@ export class DefaultDocumentColorProviderFeature extends Disposable {
 		editorWorkerService: IEditorWorkerService,
 	) {
 		super();
+
 		this._register(
 			_languageFeaturesService.colorProvider.register(
 				"*",

@@ -20,8 +20,11 @@ import { fetching } from "./node/fetch";
 
 interface IGitHubDeviceCodeResponse {
 	device_code: string;
+
 	user_code: string;
+
 	verification_uri: string;
+
 	interval: number;
 }
 interface IFlowOptions {
@@ -33,9 +36,11 @@ interface IFlowOptions {
 	readonly supportsHostedGitHubEnterprise: boolean;
 	// Runtimes - there are constraints on which runtimes support which flows
 	readonly supportsWebWorkerExtensionHost: boolean;
+
 	readonly supportsRemoteExtensionHost: boolean;
 	// Clients - see `isSupportedClient` in `common/env.ts` for what constitutes a supported client
 	readonly supportsSupportedClients: boolean;
+
 	readonly supportsUnsupportedClients: boolean;
 	// Configurations - some flows require a client secret
 	readonly supportsNoClientSecret: boolean;
@@ -52,23 +57,35 @@ export const enum ExtensionHost {
 }
 export interface IFlowQuery {
 	target: GitHubTarget;
+
 	extensionHost: ExtensionHost;
+
 	isSupportedClient: boolean;
 }
 interface IFlowTriggerOptions {
 	scopes: string;
+
 	baseUri: Uri;
+
 	logger: Log;
+
 	redirectUri: Uri;
+
 	nonce: string;
+
 	callbackUri: Uri;
+
 	uriHandler: UriEventHandler;
+
 	enterpriseUri?: Uri;
+
 	existingLogin?: string;
 }
 interface IFlow {
 	label: string;
+
 	options: IFlowOptions;
+
 	trigger(options: IFlowTriggerOptions): Promise<string>;
 }
 async function exchangeCodeForToken(
@@ -87,6 +104,7 @@ async function exchangeCodeForToken(
 			"No client secret configured for GitHub authentication.",
 		);
 	}
+
 	const body = new URLSearchParams([
 		["code", code],
 		["client_id", Config.gitHubClientId],
@@ -97,6 +115,7 @@ async function exchangeCodeForToken(
 	if (enterpriseUri) {
 		body.append("github_enterprise", enterpriseUri.toString(true));
 	}
+
 	const result = await fetching(endpointUri.toString(true), {
 		method: "POST",
 		headers: {
@@ -109,6 +128,7 @@ async function exchangeCodeForToken(
 
 	if (result.ok) {
 		const json = await result.json();
+
 		logger.info("Token exchange success!");
 
 		return json.access_token;
@@ -116,6 +136,7 @@ async function exchangeCodeForToken(
 		const text = await result.text();
 
 		const error = new Error(text);
+
 		error.name = "GitHubTokenExchangeError";
 
 		throw error;
@@ -125,6 +146,7 @@ async function exchangeCodeForToken(
 const allFlows: IFlow[] = [
 	new (class UrlHandlerFlow implements IFlow {
 		label = l10n.t("url handler");
+
 		options: IFlowOptions = {
 			supportsGitHubDotCom: true,
 			// Supporting GHES would be challenging because different versions
@@ -197,6 +219,7 @@ const allFlows: IFlow[] = [
 							})
 							.toString(true),
 					);
+
 					await env.openExternal(uri);
 
 					const code = await promise;
@@ -230,6 +253,7 @@ const allFlows: IFlow[] = [
 	})(),
 	new (class LocalServerFlow implements IFlow {
 		label = l10n.t("local server");
+
 		options: IFlowOptions = {
 			supportsGitHubDotCom: true,
 			// Supporting GHES would be challenging because different versions
@@ -281,6 +305,7 @@ const allFlows: IFlow[] = [
 					} else {
 						searchParams.append("prompt", "select_account");
 					}
+
 					const loginUrl = baseUri.with({
 						path: "/login/oauth/authorize",
 						query: searchParams.toString(),
@@ -317,12 +342,14 @@ const allFlows: IFlow[] = [
 								},
 							).promise,
 						]);
+
 						codeToExchange = code;
 					} finally {
 						setTimeout(() => {
 							void server.stop();
 						}, 5000);
 					}
+
 					const accessToken = await exchangeCodeForToken(
 						logger,
 						baseUri.with({ path: "/login/oauth/access_token" }),
@@ -338,6 +365,7 @@ const allFlows: IFlow[] = [
 	})(),
 	new (class DeviceCodeFlow implements IFlow {
 		label = l10n.t("device code");
+
 		options: IFlowOptions = {
 			supportsGitHubDotCom: true,
 			supportsGitHubEnterpriseServer: true,
@@ -370,6 +398,7 @@ const allFlows: IFlow[] = [
 					`Failed to get one-time code: ${await result.text()}`,
 				);
 			}
+
 			const json = (await result.json()) as IGitHubDeviceCodeResponse;
 
 			const button = l10n.t("Copy & Continue to GitHub");
@@ -392,15 +421,18 @@ const allFlows: IFlow[] = [
 			if (modalResult !== button) {
 				throw new Error(USER_CANCELLATION_ERROR);
 			}
+
 			await env.clipboard.writeText(json.user_code);
 
 			const uriToOpen = await env.asExternalUri(
 				Uri.parse(json.verification_uri),
 			);
+
 			await env.openExternal(uriToOpen);
 
 			return await this.waitForDeviceCodeAccessToken(baseUri, json);
 		}
+
 		private async waitForDeviceCodeAccessToken(
 			baseUri: Uri,
 			json: IGitHubDeviceCodeResponse,
@@ -435,6 +467,7 @@ const allFlows: IFlow[] = [
 						if (token.isCancellationRequested) {
 							throw new Error(USER_CANCELLATION_ERROR);
 						}
+
 						let accessTokenResult;
 
 						try {
@@ -450,19 +483,24 @@ const allFlows: IFlow[] = [
 						} catch {
 							continue;
 						}
+
 						if (!accessTokenResult.ok) {
 							continue;
 						}
+
 						const accessTokenJson = await accessTokenResult.json();
 
 						if (accessTokenJson.error === "authorization_pending") {
 							continue;
 						}
+
 						if (accessTokenJson.error) {
 							throw new Error(accessTokenJson.error_description);
 						}
+
 						return accessTokenJson.access_token;
 					}
+
 					throw new Error(TIMED_OUT_ERROR);
 				},
 			);
@@ -470,6 +508,7 @@ const allFlows: IFlow[] = [
 	})(),
 	new (class PatFlow implements IFlow {
 		label = l10n.t("personal access token");
+
 		options: IFlowOptions = {
 			supportsGitHubDotCom: true,
 			supportsGitHubEnterpriseServer: true,
@@ -509,6 +548,7 @@ const allFlows: IFlow[] = [
 			if (modalResult !== button) {
 				throw new Error(USER_CANCELLATION_ERROR);
 			}
+
 			const description = `${env.appName} (${scopes})`;
 
 			const uriToOpen = await env.asExternalUri(
@@ -517,6 +557,7 @@ const allFlows: IFlow[] = [
 					query: `description=${description}&scopes=${scopes.split(" ").join(",")}`,
 				}),
 			);
+
 			await env.openExternal(uriToOpen);
 
 			const token = await window.showInputBox({
@@ -528,6 +569,7 @@ const allFlows: IFlow[] = [
 			if (!token) {
 				throw new Error(USER_CANCELLATION_ERROR);
 			}
+
 			const appUri =
 				!enterpriseUri || isHostedGitHubEnterprise(enterpriseUri)
 					? Uri.parse(`${baseUri.scheme}://api.${baseUri.authority}`)
@@ -544,6 +586,7 @@ const allFlows: IFlow[] = [
 					if (included || !scope.includes(":")) {
 						return included;
 					}
+
 					return scope.split(":").some((splitScopes) => {
 						return tokenScopes.includes(splitScopes);
 					});
@@ -553,8 +596,10 @@ const allFlows: IFlow[] = [
 					`The provided token does not match the requested scopes: ${scopes}`,
 				);
 			}
+
 			return token;
 		}
+
 		private async getScopes(
 			token: string,
 			serverUri: Uri,
@@ -610,6 +655,7 @@ export function getFlows(query: IFlowQuery) {
 
 				break;
 		}
+
 		switch (query.extensionHost) {
 			case ExtensionHost.Remote:
 				useFlow &&= flow.options.supportsRemoteExtensionHost;
@@ -621,9 +667,11 @@ export function getFlows(query: IFlowQuery) {
 
 				break;
 		}
+
 		if (!Config.gitHubClientSecret) {
 			useFlow &&= flow.options.supportsNoClientSecret;
 		}
+
 		if (query.isSupportedClient) {
 			// TODO: revisit how we support PAT in GHES but not DotCom... but this works for now since
 			// there isn't another flow that has supportsSupportedClients = false
@@ -633,6 +681,7 @@ export function getFlows(query: IFlowQuery) {
 		} else {
 			useFlow &&= flow.options.supportsUnsupportedClients;
 		}
+
 		return useFlow;
 	});
 }

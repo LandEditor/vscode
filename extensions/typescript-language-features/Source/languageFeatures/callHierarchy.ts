@@ -23,7 +23,9 @@ import {
 
 class TypeScriptCallHierarchySupport implements vscode.CallHierarchyProvider {
 	public static readonly minVersion = API.v380;
+
 	public constructor(private readonly client: ITypeScriptServiceClient) {}
+
 	public async prepareCallHierarchy(
 		document: vscode.TextDocument,
 		position: vscode.Position,
@@ -36,6 +38,7 @@ class TypeScriptCallHierarchySupport implements vscode.CallHierarchyProvider {
 		if (!filepath) {
 			return undefined;
 		}
+
 		const args = typeConverters.Position.toFileLocationRequestArgs(
 			filepath,
 			position,
@@ -50,10 +53,12 @@ class TypeScriptCallHierarchySupport implements vscode.CallHierarchyProvider {
 		if (response.type !== "response" || !response.body) {
 			return undefined;
 		}
+
 		return Array.isArray(response.body)
 			? response.body.map(fromProtocolCallHierarchyItem)
 			: fromProtocolCallHierarchyItem(response.body);
 	}
+
 	public async provideCallHierarchyIncomingCalls(
 		item: vscode.CallHierarchyItem,
 		token: vscode.CancellationToken,
@@ -63,6 +68,7 @@ class TypeScriptCallHierarchySupport implements vscode.CallHierarchyProvider {
 		if (!filepath) {
 			return undefined;
 		}
+
 		const args = typeConverters.Position.toFileLocationRequestArgs(
 			filepath,
 			item.selectionRange.start,
@@ -77,8 +83,10 @@ class TypeScriptCallHierarchySupport implements vscode.CallHierarchyProvider {
 		if (response.type !== "response" || !response.body) {
 			return undefined;
 		}
+
 		return response.body.map(fromProtocolCallHierarchyIncomingCall);
 	}
+
 	public async provideCallHierarchyOutgoingCalls(
 		item: vscode.CallHierarchyItem,
 		token: vscode.CancellationToken,
@@ -88,6 +96,7 @@ class TypeScriptCallHierarchySupport implements vscode.CallHierarchyProvider {
 		if (!filepath) {
 			return undefined;
 		}
+
 		const args = typeConverters.Position.toFileLocationRequestArgs(
 			filepath,
 			item.selectionRange.start,
@@ -102,6 +111,7 @@ class TypeScriptCallHierarchySupport implements vscode.CallHierarchyProvider {
 		if (response.type !== "response" || !response.body) {
 			return undefined;
 		}
+
 		return response.body.map(fromProtocolCallHierarchyOutgoingCall);
 	}
 }
@@ -140,6 +150,7 @@ function fromProtocolCallHierarchyItem(
 	if (kindModifiers?.has(PConst.KindModifiers.deprecated)) {
 		result.tags = [vscode.SymbolTag.Deprecated];
 	}
+
 	return result;
 }
 function fromProtocolCallHierarchyIncomingCall(

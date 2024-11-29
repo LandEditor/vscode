@@ -43,6 +43,7 @@ export function getDefaultHoverDelegate(
 	if (placement === "element") {
 		return defaultHoverDelegateElement.value;
 	}
+
 	return defaultHoverDelegateMouse.value;
 }
 // TODO: Create equivalent in IHoverService

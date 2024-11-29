@@ -32,12 +32,15 @@ export async function showDebugSessionMenu(
 	const quickPick = quickInputService.createQuickPick<IPickerDebugItem>({
 		useSeparators: true,
 	});
+
 	localDisposableStore.add(quickPick);
+
 	quickPick.matchOnLabel =
 		quickPick.matchOnDescription =
 		quickPick.matchOnDetail =
 		quickPick.sortByLabel =
 			false;
+
 	quickPick.placeholder = nls.localize(
 		"moveFocusedView.selectView",
 		"Search debug sessions by name",
@@ -50,8 +53,11 @@ export async function showDebugSessionMenu(
 		viewsService,
 		commandService,
 	);
+
 	quickPick.items = pickItems.picks;
+
 	quickPick.activeItems = pickItems.activeItems;
+
 	localDisposableStore.add(
 		quickPick.onDidChangeValue(async () => {
 			quickPick.items = _getPicksAndActiveItem(
@@ -63,14 +69,19 @@ export async function showDebugSessionMenu(
 			).picks;
 		}),
 	);
+
 	localDisposableStore.add(
 		quickPick.onDidAccept(() => {
 			const selectedItem = quickPick.selectedItems[0];
+
 			selectedItem.accept();
+
 			quickPick.hide();
+
 			localDisposableStore.dispose();
 		}),
 	);
+
 	quickPick.show();
 }
 function _getPicksAndActiveItem(
@@ -81,6 +92,7 @@ function _getPicksAndActiveItem(
 	commandService: ICommandService,
 ): {
 	picks: Array<IPickerDebugItem | IQuickPickSeparator>;
+
 	activeItems: Array<IPickerDebugItem>;
 } {
 	const debugConsolePicks: Array<IPickerDebugItem | IQuickPickSeparator> = [];
@@ -92,11 +104,13 @@ function _getPicksAndActiveItem(
 	const sessions = debugService.getModel().getSessions(false);
 
 	const activeItems: Array<IPickerDebugItem> = [];
+
 	sessions.forEach((session) => {
 		if (session.compact && session.parentSession) {
 			headerSessions.push(session.parentSession);
 		}
 	});
+
 	sessions.forEach((session) => {
 		const isHeader = headerSessions.includes(session);
 
@@ -106,6 +120,7 @@ function _getPicksAndActiveItem(
 				label: isHeader ? session.name : undefined,
 			});
 		}
+
 		if (!isHeader) {
 			const pick = _createPick(
 				session,
@@ -128,10 +143,12 @@ function _getPicksAndActiveItem(
 	if (debugConsolePicks.length) {
 		debugConsolePicks.push({ type: "separator" });
 	}
+
 	const createDebugSessionLabel = nls.localize(
 		"workbench.action.debug.startDebug",
 		"Start a New Debug Session",
 	);
+
 	debugConsolePicks.push({
 		label: `$(plus) ${createDebugSessionLabel}`,
 		ariaLabel: createDebugSessionLabel,
@@ -142,7 +159,9 @@ function _getPicksAndActiveItem(
 }
 function _getSessionInfo(session: IDebugSession): {
 	label: string;
+
 	description: string;
+
 	ariaLabel: string;
 } {
 	const label = !session.configuration.name.length
@@ -164,8 +183,10 @@ function _getSessionInfo(session: IDebugSession): {
 			label,
 			parentName,
 		);
+
 		description = parentName;
 	}
+
 	return { label, description, ariaLabel };
 }
 function _createPick(
@@ -196,5 +217,6 @@ function _createPick(
 			},
 		};
 	}
+
 	return undefined;
 }

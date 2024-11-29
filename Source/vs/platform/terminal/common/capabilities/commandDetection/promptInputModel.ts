@@ -29,7 +29,9 @@ const enum PromptInputState {
  */
 export interface IPromptInputModel extends IPromptInputModelState {
 	readonly onDidStartInput: Event<IPromptInputModelState>;
+
 	readonly onDidChangeInput: Event<IPromptInputModelState>;
+
 	readonly onDidFinishInput: Event<IPromptInputModelState>;
 	/**
 	 * Fires immediately before {@link onDidFinishInput} when a SIGINT/Ctrl+C/^C is detected.
@@ -72,9 +74,13 @@ export interface IPromptInputModelState {
 
 export interface ISerializedPromptInputModel {
 	readonly modelState: IPromptInputModelState;
+
 	readonly commandStartX: number;
+
 	readonly lastPromptLine: string | undefined;
+
 	readonly continuationPrompt: string | undefined;
+
 	readonly lastUserInput: string;
 }
 
@@ -82,8 +88,11 @@ export class PromptInputModel extends Disposable implements IPromptInputModel {
 	private _state: PromptInputState = PromptInputState.Unknown;
 
 	private _commandStartMarker: IMarker | undefined;
+
 	private _commandStartX: number = 0;
+
 	private _lastPromptLine: string | undefined;
+
 	private _continuationPrompt: string | undefined;
 
 	private _lastUserInput: string = "";
@@ -93,9 +102,11 @@ export class PromptInputModel extends Disposable implements IPromptInputModel {
 	get value() {
 		return this._value;
 	}
+
 	get prefix() {
 		return this._value.substring(0, this._cursorIndex);
 	}
+
 	get suffix() {
 		return this._value.substring(
 			this._cursorIndex,
@@ -118,18 +129,25 @@ export class PromptInputModel extends Disposable implements IPromptInputModel {
 	private readonly _onDidStartInput = this._register(
 		new Emitter<IPromptInputModelState>(),
 	);
+
 	readonly onDidStartInput = this._onDidStartInput.event;
+
 	private readonly _onDidChangeInput = this._register(
 		new Emitter<IPromptInputModelState>(),
 	);
+
 	readonly onDidChangeInput = this._onDidChangeInput.event;
+
 	private readonly _onDidFinishInput = this._register(
 		new Emitter<IPromptInputModelState>(),
 	);
+
 	readonly onDidFinishInput = this._onDidFinishInput.event;
+
 	private readonly _onDidInterrupt = this._register(
 		new Emitter<IPromptInputModelState>(),
 	);
+
 	readonly onDidInterrupt = this._onDidInterrupt.event;
 
 	constructor(
@@ -147,6 +165,7 @@ export class PromptInputModel extends Disposable implements IPromptInputModel {
 				this._xterm.onWriteParsed,
 			)(() => this._sync()),
 		);
+
 		this._register(this._xterm.onData((e) => this._handleUserInput(e)));
 
 		this._register(
@@ -154,6 +173,7 @@ export class PromptInputModel extends Disposable implements IPromptInputModel {
 				this._handleCommandStart(e as { marker: IMarker }),
 			),
 		);
+
 		this._register(onCommandExecuted(() => this._handleCommandExecuted()));
 
 		this._register(
@@ -163,6 +183,7 @@ export class PromptInputModel extends Disposable implements IPromptInputModel {
 				),
 			),
 		);
+
 		this._register(
 			this.onDidChangeInput(() =>
 				this._logCombinedStringIfTrace(
@@ -170,6 +191,7 @@ export class PromptInputModel extends Disposable implements IPromptInputModel {
 				),
 			),
 		);
+
 		this._register(
 			this.onDidFinishInput(() =>
 				this._logCombinedStringIfTrace(
@@ -177,6 +199,7 @@ export class PromptInputModel extends Disposable implements IPromptInputModel {
 				),
 			),
 		);
+
 		this._register(
 			this.onDidInterrupt(() =>
 				this._logCombinedStringIfTrace(
@@ -195,19 +218,24 @@ export class PromptInputModel extends Disposable implements IPromptInputModel {
 
 	setContinuationPrompt(value: string): void {
 		this._continuationPrompt = value;
+
 		this._sync();
 	}
 
 	setLastPromptLine(value: string): void {
 		this._lastPromptLine = value;
+
 		this._sync();
 	}
 
 	setConfidentCommandLine(value: string): void {
 		if (this._value !== value) {
 			this._value = value;
+
 			this._cursorIndex = -1;
+
 			this._ghostTextIndex = -1;
+
 			this._onDidChangeInput.fire(this._createStateObject());
 		}
 	}
@@ -218,17 +246,21 @@ export class PromptInputModel extends Disposable implements IPromptInputModel {
 		if (this._cursorIndex === -1) {
 			return value;
 		}
+
 		let result = `${value.substring(0, this.cursorIndex)}|`;
 
 		if (this.ghostTextIndex !== -1) {
 			result += `${value.substring(this.cursorIndex, this.ghostTextIndex)}[`;
+
 			result += `${value.substring(this.ghostTextIndex)}]`;
 		} else {
 			result += value.substring(this.cursorIndex);
 		}
+
 		if (result === "|" && emptyStringWhenEmpty) {
 			return "";
 		}
+
 		return result;
 	}
 
@@ -244,11 +276,17 @@ export class PromptInputModel extends Disposable implements IPromptInputModel {
 
 	deserialize(serialized: ISerializedPromptInputModel): void {
 		this._value = serialized.modelState.value;
+
 		this._cursorIndex = serialized.modelState.cursorIndex;
+
 		this._ghostTextIndex = serialized.modelState.ghostTextIndex;
+
 		this._commandStartX = serialized.commandStartX;
+
 		this._lastPromptLine = serialized.lastPromptLine;
+
 		this._continuationPrompt = serialized.continuationPrompt;
+
 		this._lastUserInput = serialized.lastUserInput;
 	}
 
@@ -258,11 +296,17 @@ export class PromptInputModel extends Disposable implements IPromptInputModel {
 		}
 
 		this._state = PromptInputState.Input;
+
 		this._commandStartMarker = command.marker;
+
 		this._commandStartX = this._xterm.buffer.active.cursorX;
+
 		this._value = "";
+
 		this._cursorIndex = 0;
+
 		this._onDidStartInput.fire(this._createStateObject());
+
 		this._onDidChangeInput.fire(this._createStateObject());
 
 		// Trigger a sync if prompt terminator is set as that could adjust the command start X
@@ -278,6 +322,7 @@ export class PromptInputModel extends Disposable implements IPromptInputModel {
 						.startsWith(this._lastPromptLine)
 				) {
 					this._commandStartX = this._lastPromptLine.length;
+
 					this._sync();
 				}
 			}
@@ -294,6 +339,7 @@ export class PromptInputModel extends Disposable implements IPromptInputModel {
 		// Remove any ghost text from the input if it exists on execute
 		if (this._ghostTextIndex !== -1) {
 			this._value = this._value.substring(0, this._ghostTextIndex);
+
 			this._ghostTextIndex = -1;
 		}
 
@@ -301,11 +347,14 @@ export class PromptInputModel extends Disposable implements IPromptInputModel {
 
 		if (this._lastUserInput === "\u0003") {
 			this._lastUserInput = "";
+
 			this._onDidInterrupt.fire(event);
 		}
 
 		this._state = PromptInputState.Execute;
+
 		this._onDidFinishInput.fire(event);
+
 		this._onDidChangeInput.fire(event);
 	}
 
@@ -397,6 +446,7 @@ export class PromptInputModel extends Disposable implements IPromptInputModel {
 				) {
 					const trimmedLineText =
 						this._trimContinuationPrompt(lineText);
+
 					value += `\n${trimmedLineText}`;
 
 					if (absoluteCursorY === y) {
@@ -412,6 +462,7 @@ export class PromptInputModel extends Disposable implements IPromptInputModel {
 								buffer,
 								line,
 							);
+
 						cursorIndex += relativeCursorIndex + 1;
 					} else {
 						cursorIndex += trimmedLineText.length + 1;
@@ -425,7 +476,9 @@ export class PromptInputModel extends Disposable implements IPromptInputModel {
 		// Below cursor line
 		for (
 			let y = absoluteCursorY + 1;
+
 			y < buffer.baseY + this._xterm.rows;
+
 			y++
 		) {
 			line = buffer.getLine(y);
@@ -511,6 +564,7 @@ export class PromptInputModel extends Disposable implements IPromptInputModel {
 							trailingWhitespace++;
 						}
 					}
+
 					trailingWhitespace = Math.max(
 						cursorIndex - valueEndTrimmed.length,
 						trailingWhitespace,
@@ -539,6 +593,7 @@ export class PromptInputModel extends Disposable implements IPromptInputModel {
 				const continuationOffset =
 					(valueLines.length - 1) *
 					(this._continuationPrompt?.length ?? 0);
+
 				trailingWhitespace = Math.max(
 					0,
 					cursorIndex - value.length - continuationOffset,
@@ -556,8 +611,11 @@ export class PromptInputModel extends Disposable implements IPromptInputModel {
 			this._ghostTextIndex !== ghostTextIndex
 		) {
 			this._value = value;
+
 			this._cursorIndex = cursorIndex;
+
 			this._ghostTextIndex = ghostTextIndex;
+
 			this._onDidChangeInput.fire(this._createStateObject());
 		}
 	}
@@ -588,6 +646,7 @@ export class PromptInputModel extends Disposable implements IPromptInputModel {
 			if (!cell) {
 				break;
 			}
+
 			if (cell.getChars().trim().length > 0) {
 				proceedWithGhostTextCheck =
 					!this._isCellStyledLikeGhostText(cell);
@@ -609,11 +668,13 @@ export class PromptInputModel extends Disposable implements IPromptInputModel {
 				if (!cell || cell.getCode() === 0) {
 					break;
 				}
+
 				if (this._isCellStyledLikeGhostText(cell)) {
 					ghostTextIndex = cursorIndex + potentialGhostIndexOffset;
 
 					break;
 				}
+
 				potentialGhostIndexOffset += cell.getChars().length;
 			}
 		}
@@ -625,6 +686,7 @@ export class PromptInputModel extends Disposable implements IPromptInputModel {
 		if (this._lineContainsContinuationPrompt(lineText)) {
 			lineText = lineText.substring(this._continuationPrompt!.length);
 		}
+
 		return lineText;
 	}
 
@@ -645,6 +707,7 @@ export class PromptInputModel extends Disposable implements IPromptInputModel {
 		) {
 			return 0;
 		}
+
 		let buffer = "";
 
 		let x = 0;
@@ -652,6 +715,7 @@ export class PromptInputModel extends Disposable implements IPromptInputModel {
 		while (buffer !== this._continuationPrompt) {
 			buffer += line.getCell(x++)!.getChars();
 		}
+
 		return x;
 	}
 

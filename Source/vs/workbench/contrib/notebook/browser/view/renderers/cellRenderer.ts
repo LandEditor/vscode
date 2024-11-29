@@ -89,17 +89,21 @@ export class NotebookCellListDelegate
 
 		const editorOptions =
 			this.configurationService.getValue<IEditorOptions>("editor");
+
 		this.lineHeight = BareFontInfo.createFromRawSettings(
 			editorOptions,
 			PixelRatio.getInstance(targetWindow).value,
 		).lineHeight;
 	}
+
 	getHeight(element: CellViewModel): number {
 		return element.getHeight(this.lineHeight);
 	}
+
 	getDynamicHeight(element: CellViewModel): number | null {
 		return element.getDynamicHeight();
 	}
+
 	getTemplateId(element: CellViewModel): string {
 		if (element.cellKind === CellKind.Markup) {
 			return MarkupCellRenderer.TEMPLATE_ID;
@@ -131,8 +135,10 @@ abstract class AbstractCellRenderer {
 			configurationService,
 		);
 	}
+
 	dispose() {
 		this.editorOptions.dispose();
+
 		this.dndController = undefined;
 	}
 }
@@ -141,6 +147,7 @@ export class MarkupCellRenderer
 	implements IListRenderer<MarkupCellViewModel, MarkdownCellRenderTemplate>
 {
 	static readonly TEMPLATE_ID = "markdown_cell";
+
 	private _notebookExecutionStateService: INotebookExecutionStateService;
 
 	constructor(
@@ -177,11 +184,14 @@ export class MarkupCellRenderer
 			"markdown",
 			dndController,
 		);
+
 		this._notebookExecutionStateService = notebookExecutionStateService;
 	}
+
 	get templateId() {
 		return MarkupCellRenderer.TEMPLATE_ID;
 	}
+
 	renderTemplate(rootContainer: HTMLElement): MarkdownCellRenderTemplate {
 		rootContainer.classList.add("markdown-cell-row");
 
@@ -246,12 +256,14 @@ export class MarkupCellRenderer
 			codeInnerContent,
 			$(".input-collapse-container"),
 		);
+
 		cellInputCollapsedContainer.style.display = "none";
 
 		const editorContainer = DOM.append(
 			editorPart,
 			$(".cell-editor-container"),
 		);
+
 		editorPart.style.display = "none";
 
 		const cellCommentPartContainer = DOM.append(
@@ -378,6 +390,7 @@ export class MarkupCellRenderer
 				),
 			],
 		);
+
 		templateDisposables.add(cellParts);
 
 		const templateData: MarkdownCellRenderTemplate = {
@@ -399,6 +412,7 @@ export class MarkupCellRenderer
 
 		return templateData;
 	}
+
 	renderElement(
 		element: MarkupCellViewModel,
 		index: number,
@@ -410,14 +424,19 @@ export class MarkupCellRenderer
 				"The notebook editor is not attached with view model yet.",
 			);
 		}
+
 		templateData.currentRenderedCell = element;
+
 		templateData.currentEditor = undefined;
+
 		templateData.editorPart.style.display = "none";
+
 		templateData.cellContainer.innerText = "";
 
 		if (height === undefined) {
 			return;
 		}
+
 		templateData.elementDisposables.add(
 			templateData.instantiationService.createInstance(
 				MarkupCell,
@@ -428,10 +447,13 @@ export class MarkupCellRenderer
 			),
 		);
 	}
+
 	disposeTemplate(templateData: MarkdownCellRenderTemplate): void {
 		templateData.elementDisposables.dispose();
+
 		templateData.templateDisposables.dispose();
 	}
+
 	disposeElement(
 		_element: ICellViewModel,
 		_index: number,
@@ -480,9 +502,11 @@ export class CodeCellRenderer
 			dndController,
 		);
 	}
+
 	get templateId() {
 		return CodeCellRenderer.TEMPLATE_ID;
 	}
+
 	renderTemplate(rootContainer: HTMLElement): CodeCellRenderTemplate {
 		rootContainer.classList.add("code-cell-row");
 
@@ -536,12 +560,14 @@ export class CodeCellRenderer
 			cellContainer,
 			$(".input-collapse-container"),
 		);
+
 		cellInputCollapsedContainer.style.display = "none";
 
 		const executionOrderLabel = DOM.append(
 			focusIndicatorLeft.domNode,
 			$("div.execution-count-label"),
 		);
+
 		executionOrderLabel.title = localize(
 			"cellExecutionOrderCountLabel",
 			"Execution Order",
@@ -571,6 +597,7 @@ export class CodeCellRenderer
 				]),
 			),
 		);
+
 		EditorContextKeys.inCompositeEditor
 			.bindTo(editorContextKeyService)
 			.set(true);
@@ -596,6 +623,7 @@ export class CodeCellRenderer
 					this.notebookEditor.creationOptions.cellEditorContributions,
 			},
 		);
+
 		templateDisposables.add(editor);
 
 		const outputContainer = new FastDomNode(
@@ -624,6 +652,7 @@ export class CodeCellRenderer
 			container,
 			$(".cell-editor-focus-sink"),
 		);
+
 		focusSinkElement.setAttribute("tabindex", "0");
 
 		const bottomCellToolbarContainer = DOM.append(
@@ -764,6 +793,7 @@ export class CodeCellRenderer
 				),
 			);
 		}
+
 		const cellParts = new CellPartsCollection(
 			DOM.getWindow(rootContainer),
 			contentParts,
@@ -779,6 +809,7 @@ export class CodeCellRenderer
 				),
 			],
 		);
+
 		templateDisposables.add(cellParts);
 
 		const templateData: CodeCellRenderTemplate = {
@@ -807,6 +838,7 @@ export class CodeCellRenderer
 			focusIndicatorPart.codeFocusIndicator.domNode,
 			focusIndicatorPart.outputFocusIndicator.domNode,
 		];
+
 		this.dndController?.registerDragHandle(
 			templateData,
 			rootContainer,
@@ -821,6 +853,7 @@ export class CodeCellRenderer
 
 		return templateData;
 	}
+
 	renderElement(
 		element: CodeCellViewModel,
 		index: number,
@@ -832,15 +865,19 @@ export class CodeCellRenderer
 				"The notebook editor is not attached with view model yet.",
 			);
 		}
+
 		templateData.currentRenderedCell = element;
 
 		if (height === undefined) {
 			return;
 		}
+
 		templateData.outputContainer.domNode.innerText = "";
+
 		templateData.outputContainer.domNode.appendChild(
 			templateData.cellOutputCollapsedContainer,
 		);
+
 		templateData.elementDisposables.add(
 			templateData.instantiationService.createInstance(
 				CodeCell,
@@ -850,11 +887,14 @@ export class CodeCellRenderer
 				this.editorPool,
 			),
 		);
+
 		this.renderedEditors.set(element, templateData.editor);
 	}
+
 	disposeTemplate(templateData: CodeCellRenderTemplate): void {
 		templateData.templateDisposables.clear();
 	}
+
 	disposeElement(
 		element: ICellViewModel,
 		index: number,
@@ -862,6 +902,7 @@ export class CodeCellRenderer
 		height: number | undefined,
 	): void {
 		templateData.elementDisposables.clear();
+
 		this.renderedEditors.delete(element);
 	}
 }

@@ -17,8 +17,10 @@ export async function activate(ctx: RendererContext<void>) {
 	if (!markdownItRenderer) {
 		throw new Error(`Could not load 'vscode.markdown-it-renderer'`);
 	}
+
 	markdownItRenderer.extendMarkdownIt((md: MarkdownIt) => {
 		const original = md.renderer.rules.image;
+
 		md.renderer.rules.image = (
 			tokens: MarkdownItToken[],
 			idx: number,
@@ -53,10 +55,12 @@ export async function activate(ctx: RendererContext<void>) {
 							attachmentKey +
 							";base64," +
 							attachmentVal;
+
 						token.attrSet("src", b64Markdown);
 					}
 				}
 			}
+
 			if (original) {
 				return original(tokens, idx, options, env, self);
 			} else {

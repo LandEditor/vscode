@@ -44,6 +44,7 @@ export class RendererProfiling {
 			// disabled when running extension tests
 			return;
 		}
+
 		timerService.perfBaseline.then((perfBaseline) => {
 			_logService.info(
 				`[perf] Render performance baseline is ${perfBaseline}ms`,
@@ -66,6 +67,7 @@ export class RendererProfiling {
 				if (maxDuration < slowThreshold) {
 					return;
 				}
+
 				if (
 					!configService.getValue(
 						"application.experimental.rendererProfiling",
@@ -77,7 +79,9 @@ export class RendererProfiling {
 
 					return;
 				}
+
 				const sessionId = generateUuid();
+
 				_logService.warn(
 					`[perf] Renderer reported VERY LONG TASK (${maxDuration}ms), starting profiling session '${sessionId}'`,
 				);
@@ -104,6 +108,7 @@ export class RendererProfiling {
 
 							break;
 						}
+
 						timeout(15000); // wait 15s
 					} catch (err) {
 						_logService.error(err);
@@ -114,13 +119,17 @@ export class RendererProfiling {
 				// reconnect the observer
 				obs.observe({ entryTypes: ["longtask"] });
 			});
+
 			obs.observe({ entryTypes: ["longtask"] });
+
 			this._observer = obs;
 		});
 	}
+
 	dispose(): void {
 		this._observer?.disconnect();
 	}
+
 	private async _store(
 		profile: IV8Profile,
 		sessionId: string,
@@ -129,10 +138,12 @@ export class RendererProfiling {
 			this._environmentService.tmpDir,
 			`renderer-${Math.random().toString(16).slice(2, 8)}.cpuprofile.json`,
 		);
+
 		await this._fileService.writeFile(
 			path,
 			VSBuffer.fromString(JSON.stringify(profile)),
 		);
+
 		this._logService.info(
 			`[perf] stored profile to DISK '${path}'`,
 			sessionId,

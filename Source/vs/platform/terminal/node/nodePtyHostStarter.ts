@@ -21,6 +21,7 @@ export class NodePtyHostStarter extends Disposable implements IPtyHostStarter {
 	) {
 		super();
 	}
+
 	start(): IPtyHostConnection {
 		const opts: IIPCOptions = {
 			serverName: "Pty Host",
@@ -54,12 +55,14 @@ export class NodePtyHostStarter extends Disposable implements IPtyHostStarter {
 				opts.debug = ptyHostDebug.port;
 			}
 		}
+
 		const client = new Client(
 			FileAccess.asFileUri("bootstrap-fork").fsPath,
 			opts,
 		);
 
 		const store = new DisposableStore();
+
 		store.add(client);
 
 		return {

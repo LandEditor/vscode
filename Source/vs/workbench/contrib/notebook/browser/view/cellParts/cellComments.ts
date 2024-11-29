@@ -34,9 +34,11 @@ export class CellComments extends CellContentPart {
 		string,
 		{
 			widget: CommentThreadWidget<ICellRange>;
+
 			dispose: () => void;
 		}
 	>;
+
 	private currentElement: ICellViewModel | undefined;
 
 	constructor(
@@ -54,16 +56,20 @@ export class CellComments extends CellContentPart {
 		private readonly instantiationService: IInstantiationService,
 	) {
 		super();
+
 		this.container.classList.add("review-widget");
+
 		this._register(
 			(this._commentThreadWidgets = new DisposableMap<
 				string,
 				{
 					widget: CommentThreadWidget<ICellRange>;
+
 					dispose: () => void;
 				}
 			>()),
 		);
+
 		this._register(
 			this.themeService.onDidColorThemeChange(this._applyTheme, this),
 		);
@@ -71,13 +77,17 @@ export class CellComments extends CellContentPart {
 		// this._register(this.notebookEditor.onDidchangeLa)
 		this._applyTheme();
 	}
+
 	private async initialize(element: ICellViewModel) {
 		if (this.currentElement === element) {
 			return;
 		}
+
 		this.currentElement = element;
+
 		await this._updateThread();
 	}
+
 	private async _createCommentTheadWidget(
 		owner: string,
 		commentThread: languages.CommentThread<ICellRange>,
@@ -106,15 +116,20 @@ export class CellComments extends CellContentPart {
 				collapse: () => {},
 			},
 		) as unknown as CommentThreadWidget<ICellRange>;
+
 		widgetDisposables.add(widget);
+
 		this._commentThreadWidgets.set(commentThread.threadId, {
 			widget,
 			dispose: () => widgetDisposables.dispose(),
 		});
 
 		const layoutInfo = this.notebookEditor.getLayoutInfo();
+
 		await widget.display(layoutInfo.fontInfo.lineHeight, true);
+
 		this._applyTheme();
+
 		widgetDisposables.add(
 			widget.onDidResize(() => {
 				if (this.currentElement) {
@@ -126,6 +141,7 @@ export class CellComments extends CellContentPart {
 			}),
 		);
 	}
+
 	private _bindListeners() {
 		this.cellDisposables.add(
 			this.commentService.onDidUpdateCommentThreads(async () =>
@@ -133,21 +149,25 @@ export class CellComments extends CellContentPart {
 			),
 		);
 	}
+
 	private async _updateThread() {
 		if (!this.currentElement) {
 			return;
 		}
+
 		const infos = await this._getCommentThreadsForCell(this.currentElement);
 
 		const widgetsToDelete = new Set(this._commentThreadWidgets.keys());
 
 		const layoutInfo = this.currentElement.layoutInfo;
+
 		this.container.style.top = `${layoutInfo.commentOffset}px`;
 
 		for (const info of infos) {
 			if (!info) {
 				continue;
 			}
+
 			for (const thread of info.threads) {
 				widgetsToDelete.delete(thread.threadId);
 
@@ -165,11 +185,14 @@ export class CellComments extends CellContentPart {
 				}
 			}
 		}
+
 		for (const threadId of widgetsToDelete) {
 			this._commentThreadWidgets.deleteAndDispose(threadId);
 		}
+
 		this._updateHeight();
 	}
+
 	private _calculateCommentThreadHeight(bodyHeight: number) {
 		const layoutInfo = this.notebookEditor.getLayoutInfo();
 
@@ -190,10 +213,12 @@ export class CellComments extends CellContentPart {
 
 		return computedHeight;
 	}
+
 	private _updateHeight() {
 		if (!this.currentElement) {
 			return;
 		}
+
 		let height = 0;
 
 		for (const { widget } of this._commentThreadWidgets.values()) {
@@ -201,8 +226,10 @@ export class CellComments extends CellContentPart {
 				widget.getDimensions().height,
 			);
 		}
+
 		this.currentElement.commentHeight = height;
 	}
+
 	private async _getCommentThreadsForCell(
 		element: ICellViewModel,
 	): Promise<(INotebookCommentInfo | null)[]> {
@@ -211,8 +238,10 @@ export class CellComments extends CellContentPart {
 				await this.commentService.getNotebookComments(element.uri),
 			);
 		}
+
 		return [];
 	}
+
 	private _applyTheme() {
 		const theme = this.themeService.getColorTheme();
 
@@ -222,13 +251,17 @@ export class CellComments extends CellContentPart {
 			widget.applyTheme(theme, fontInfo);
 		}
 	}
+
 	override didRenderCell(element: ICellViewModel): void {
 		this.initialize(element);
+
 		this._bindListeners();
 	}
+
 	override prepareLayout(): void {
 		this._updateHeight();
 	}
+
 	override updateInternalLayoutNow(element: ICellViewModel): void {
 		if (this.currentElement) {
 			this.container.style.top = `${element.layoutInfo.commentOffset}px`;

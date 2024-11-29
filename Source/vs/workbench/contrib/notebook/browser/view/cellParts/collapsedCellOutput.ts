@@ -28,6 +28,7 @@ export class CollapsedCellOutput extends CellContentPart {
 			cellOutputCollapseContainer,
 			$("span.expandOutputPlaceholder"),
 		) as HTMLElement;
+
 		placeholder.textContent = localize(
 			"cellOutputsCollapsedMsg",
 			"Outputs are collapsed",
@@ -37,6 +38,7 @@ export class CollapsedCellOutput extends CellContentPart {
 			cellOutputCollapseContainer,
 			$("span.expandOutputIcon"),
 		);
+
 		expandIcon.classList.add(...ThemeIcon.asClassNameArray(Codicon.more));
 
 		const keybinding = keybindingService.lookupKeybinding(
@@ -49,18 +51,22 @@ export class CollapsedCellOutput extends CellContentPart {
 				"Double-click to expand cell output ({0})",
 				keybinding.getLabel(),
 			);
+
 			cellOutputCollapseContainer.title = localize(
 				"cellExpandOutputButtonLabel",
 				"Expand Cell Output (${0})",
 				keybinding.getLabel(),
 			);
 		}
+
 		DOM.hide(cellOutputCollapseContainer);
+
 		this._register(
 			DOM.addDisposableListener(expandIcon, DOM.EventType.CLICK, () =>
 				this.expand(),
 			),
 		);
+
 		this._register(
 			DOM.addDisposableListener(
 				cellOutputCollapseContainer,
@@ -69,13 +75,16 @@ export class CollapsedCellOutput extends CellContentPart {
 			),
 		);
 	}
+
 	private expand() {
 		if (!this.currentCell) {
 			return;
 		}
+
 		if (!this.currentCell) {
 			return;
 		}
+
 		const textModel = this.notebookEditor.textModel!;
 
 		const index = textModel.cells.indexOf(this.currentCell.model);
@@ -83,6 +92,7 @@ export class CollapsedCellOutput extends CellContentPart {
 		if (index < 0) {
 			return;
 		}
+
 		this.currentCell.isOutputCollapsed =
 			!this.currentCell.isOutputCollapsed;
 	}

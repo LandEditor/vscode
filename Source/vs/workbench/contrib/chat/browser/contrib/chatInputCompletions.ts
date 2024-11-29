@@ -191,6 +191,7 @@ class SlashCommandCompletions extends Disposable {
 				},
 			),
 		);
+
 		this._register(
 			this.languageFeaturesService.completionProvider.register(
 				{
@@ -382,6 +383,7 @@ class AgentCompletions extends Disposable {
 				};
 			},
 		};
+
 		this._register(
 			this.languageFeaturesService.completionProvider.register(
 				{
@@ -538,8 +540,11 @@ class AgentCompletions extends Disposable {
 										if (agent.isDefault) {
 											// default agent isn't mentioned nor inserted
 											const label = `${chatSubcommandLeader}${c.name}`;
+
 											item.label = label;
+
 											item.insertText = `${label} `;
+
 											item.detail = c.description;
 										}
 
@@ -645,8 +650,11 @@ class AgentCompletions extends Disposable {
 									if (agent.isDefault) {
 										// default agent isn't mentioned nor inserted
 										const label = `${chatSubcommandLeader}${c.name}`;
+
 										item.label = label;
+
 										item.insertText = `${label} `;
+
 										item.detail = c.description;
 									}
 
@@ -734,6 +742,7 @@ class AgentCompletions extends Disposable {
 
 	private getAgentCompletionDetails(agent: IChatAgentData): {
 		label: string;
+
 		isDupe: boolean;
 	} {
 		const isAllowed =
@@ -753,6 +762,7 @@ Registry.as<IWorkbenchContributionsRegistry>(
 
 interface AssignSelectedAgentActionArgs {
 	agent: IChatAgentData;
+
 	widget: IChatWidget;
 }
 
@@ -787,6 +797,7 @@ class ReferenceArgument {
 
 class BuiltinDynamicCompletions extends Disposable {
 	private static readonly addReferenceCommand = "_addReferenceCmd";
+
 	private static readonly VariableNameDef = new RegExp(
 		`${chatVariableLeader}\\w*`,
 		"g",
@@ -851,6 +862,7 @@ class BuiltinDynamicCompletions extends Disposable {
 								position.lineNumber,
 								range.replace.startColumn + "#file:".length,
 							);
+
 							result.suggestions.push({
 								label: `${chatVariableLeader}file`,
 								insertText: `${chatVariableLeader}file:`,
@@ -909,7 +921,9 @@ class BuiltinDynamicCompletions extends Disposable {
 		result: CompletionList,
 		info: {
 			insert: Range;
+
 			replace: Range;
+
 			varWord: IWordAtPosition | null;
 		},
 		token: CancellationToken,
@@ -1004,7 +1018,9 @@ class BuiltinDynamicCompletions extends Disposable {
 					if (seen.has(relatedFile.uri)) {
 						continue;
 					}
+
 					seen.add(relatedFile.uri);
+
 					result.suggestions.push(
 						makeFileCompletionItem(
 							relatedFile.uri,
@@ -1062,6 +1078,7 @@ class BuiltinDynamicCompletions extends Disposable {
 		if (pattern) {
 			if (this.cacheKey && Date.now() - this.cacheKey.time > 60000) {
 				this.searchService.clearCache(this.cacheKey.key);
+
 				this.cacheKey = undefined;
 			}
 
@@ -1091,6 +1108,7 @@ class BuiltinDynamicCompletions extends Disposable {
 					// already included via history
 					continue;
 				}
+
 				result.suggestions.push(makeFileCompletionItem(match.resource));
 			}
 		}
@@ -1117,6 +1135,7 @@ Registry.as<IWorkbenchContributionsRegistry>(
 
 export interface IChatCompletionRangeResult {
 	insert: Range;
+
 	replace: Range;
 
 	varWord: IWordAtPosition | null;
@@ -1180,6 +1199,7 @@ export function computeCompletionRanges(
 			position.lineNumber,
 			position.column,
 		);
+
 		replace = new Range(
 			position.lineNumber,
 			varWord.startColumn,
@@ -1306,6 +1326,7 @@ class VariableCompletions extends Disposable {
 						);
 
 						const toolItems: CompletionItem[] = [];
+
 						toolItems.push(
 							...Array.from(toolsService.getTools())
 								.filter((t) => t.canBeReferencedInPrompt)

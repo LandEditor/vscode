@@ -28,6 +28,7 @@ export class DiffAlgorithmResult {
 			false,
 		);
 	}
+
 	static trivialTimedOut(
 		seq1: ISequence,
 		seq2: ISequence,
@@ -42,6 +43,7 @@ export class DiffAlgorithmResult {
 			true,
 		);
 	}
+
 	constructor(
 		public readonly diffs: SequenceDiff[],
 		/**
@@ -77,6 +79,7 @@ export class SequenceDiff {
 
 		return result;
 	}
+
 	public static fromOffsetPairs(
 		start: OffsetPair,
 		endExclusive: OffsetPair,
@@ -86,6 +89,7 @@ export class SequenceDiff {
 			new OffsetRange(start.offset2, endExclusive.offset2),
 		);
 	}
+
 	public static assertSorted(sequenceDiffs: SequenceDiff[]): void {
 		let last: SequenceDiff | undefined = undefined;
 
@@ -102,58 +106,71 @@ export class SequenceDiff {
 					);
 				}
 			}
+
 			last = cur;
 		}
 	}
+
 	constructor(
 		public readonly seq1Range: OffsetRange,
 		public readonly seq2Range: OffsetRange,
 	) {}
+
 	public swap(): SequenceDiff {
 		return new SequenceDiff(this.seq2Range, this.seq1Range);
 	}
+
 	public toString(): string {
 		return `${this.seq1Range} <-> ${this.seq2Range}`;
 	}
+
 	public join(other: SequenceDiff): SequenceDiff {
 		return new SequenceDiff(
 			this.seq1Range.join(other.seq1Range),
 			this.seq2Range.join(other.seq2Range),
 		);
 	}
+
 	public delta(offset: number): SequenceDiff {
 		if (offset === 0) {
 			return this;
 		}
+
 		return new SequenceDiff(
 			this.seq1Range.delta(offset),
 			this.seq2Range.delta(offset),
 		);
 	}
+
 	public deltaStart(offset: number): SequenceDiff {
 		if (offset === 0) {
 			return this;
 		}
+
 		return new SequenceDiff(
 			this.seq1Range.deltaStart(offset),
 			this.seq2Range.deltaStart(offset),
 		);
 	}
+
 	public deltaEnd(offset: number): SequenceDiff {
 		if (offset === 0) {
 			return this;
 		}
+
 		return new SequenceDiff(
 			this.seq1Range.deltaEnd(offset),
 			this.seq2Range.deltaEnd(offset),
 		);
 	}
+
 	public intersectsOrTouches(other: SequenceDiff): boolean {
 		return (
 			this.seq1Range.intersectsOrTouches(other.seq1Range) ||
 			this.seq2Range.intersectsOrTouches(other.seq2Range)
 		);
 	}
+
 	public intersect(other: SequenceDiff): SequenceDiff | undefined {
 		const i1 = this.seq1Range.intersect(other.seq1Range);
 
@@ -162,11 +179,14 @@ export class SequenceDiff {
 		if (!i1 || !i2) {
 			return undefined;
 		}
+
 		return new SequenceDiff(i1, i2);
 	}
+
 	public getStarts(): OffsetPair {
 		return new OffsetPair(this.seq1Range.start, this.seq2Range.start);
 	}
+
 	public getEndExclusives(): OffsetPair {
 		return new OffsetPair(
 			this.seq1Range.endExclusive,
@@ -176,6 +196,7 @@ export class SequenceDiff {
 }
 export class OffsetPair {
 	public static readonly zero = new OffsetPair(0, 0);
+
 	public static readonly max = new OffsetPair(
 		Number.MAX_SAFE_INTEGER,
 		Number.MAX_SAFE_INTEGER,
@@ -185,15 +206,19 @@ export class OffsetPair {
 		public readonly offset1: number,
 		public readonly offset2: number,
 	) {}
+
 	public toString(): string {
 		return `${this.offset1} <-> ${this.offset2}`;
 	}
+
 	public delta(offset: number): OffsetPair {
 		if (offset === 0) {
 			return this;
 		}
+
 		return new OffsetPair(this.offset1 + offset, this.offset2 + offset);
 	}
+
 	public equals(other: OffsetPair): boolean {
 		return this.offset1 === other.offset1 && this.offset2 === other.offset2;
 	}
@@ -220,12 +245,14 @@ export interface ITimeout {
 }
 export class InfiniteTimeout implements ITimeout {
 	public static instance = new InfiniteTimeout();
+
 	isValid(): boolean {
 		return true;
 	}
 }
 export class DateTimeout implements ITimeout {
 	private readonly startTime = Date.now();
+
 	private valid = true;
 
 	constructor(private timeout: number) {
@@ -240,11 +267,15 @@ export class DateTimeout implements ITimeout {
 		if (!valid && this.valid) {
 			this.valid = false; // timeout reached
 		}
+
 		return this.valid;
 	}
+
 	public disable() {
 		this.timeout = Number.MAX_SAFE_INTEGER;
+
 		this.isValid = () => true;
+
 		this.valid = true;
 	}
 }

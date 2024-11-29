@@ -394,17 +394,21 @@ registerThemingParticipant((theme, collector) => {
 			.getColor(testingUncoveredBackground)
 			?.transparent(2)
 			.makeOpaque(editorBg);
+
 	collector.addRule(`
 	.coverage-deco-inline.coverage-deco-hit.coverage-deco-hovered {
 		background: ${theme.getColor(testingCoveredBackground)?.transparent(1.3)};
+
 		outline-color: ${theme.getColor(testingCoveredBorder)?.transparent(2)};
 	}
 	.coverage-deco-inline.coverage-deco-miss.coverage-deco-hovered {
 		background: ${theme.getColor(testingUncoveredBackground)?.transparent(1.3)};
+
 		outline-color: ${theme.getColor(testingUncoveredBorder)?.transparent(2)};
 	}
 	.coverage-deco-branch-miss-indicator::before {
 		border-color: ${missBadgeBackground?.transparent(1.3)};
+
 		background-color: ${missBadgeBackground};
 	}
 	`);

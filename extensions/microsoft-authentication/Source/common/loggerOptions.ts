@@ -9,9 +9,11 @@ export class MsalLoggerOptions {
 	piiLoggingEnabled = false;
 
 	constructor(private readonly _output: LogOutputChannel) {}
+
 	get logLevel(): MsalLogLevel {
 		return this._toMsalLogLevel(env.logLevel);
 	}
+
 	loggerCallback(
 		level: MsalLogLevel,
 		message: string,
@@ -21,6 +23,7 @@ export class MsalLoggerOptions {
 			// TODO: Should we still log the message if it contains PII? It's just going to
 			// an output channel that doesn't leave the machine.
 			this._output.debug('Skipped logging message because it may contain PII');
+
 			return;
 		}
 
@@ -40,18 +43,23 @@ export class MsalLoggerOptions {
 				this._output.debug(message);
 
 				return;
+
 			case MsalLogLevel.Verbose:
 				this._output.trace(message);
 
 				return;
+
 			case MsalLogLevel.Trace:
 				// Do not log trace messages
 				return;
+
 			default:
 				this._output.debug(message);
+
 				return;
 		}
 	}
+
 	private _toMsalLogLevel(logLevel: LogLevel): MsalLogLevel {
 		switch (logLevel) {
 			case LogLevel.Trace:

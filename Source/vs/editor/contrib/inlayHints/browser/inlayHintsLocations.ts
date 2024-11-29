@@ -55,11 +55,13 @@ export async function showGoToContextMenu(
 	const instaService = accessor.get(IInstantiationService);
 
 	const notificationService = accessor.get(INotificationService);
+
 	await part.item.resolve(CancellationToken.None);
 
 	if (!part.part.location) {
 		return;
 	}
+
 	const location: Location = part.part.location;
 
 	const menuActions: IAction[] = [];
@@ -93,6 +95,7 @@ export async function showGoToContextMenu(
 							);
 
 							const range = part.item.anchor.range;
+
 							await instaService.invokeFunction(
 								delegate.runEditorCommand.bind(delegate),
 								editor,
@@ -107,9 +110,12 @@ export async function showGoToContextMenu(
 			);
 		}
 	}
+
 	if (part.part.command) {
 		const { command } = part.part;
+
 		menuActions.push(new Separator());
+
 		menuActions.push(
 			new Action(command.id, command.title, undefined, true, async () => {
 				try {
@@ -129,6 +135,7 @@ export async function showGoToContextMenu(
 	}
 	// show context menu
 	const useShadowDOM = editor.getOption(EditorOption.useShadowDOM);
+
 	contextMenuService.showContextMenu({
 		domForShadowRoot: useShadowDOM
 			? (editor.getDomNode() ?? undefined)
@@ -154,6 +161,7 @@ export async function goToDefinitionWithLocation(
 	const resolverService = accessor.get(ITextModelService);
 
 	const ref = await resolverService.createModelReference(location.uri);
+
 	await editor.invokeWithinContext(async (accessor) => {
 		const openToSide = event.hasSideBySideModifier;
 
@@ -184,5 +192,6 @@ export async function goToDefinitionWithLocation(
 			Range.lift(location.range),
 		);
 	});
+
 	ref.dispose();
 }

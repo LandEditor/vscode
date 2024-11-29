@@ -7,6 +7,7 @@ import { ISearchTreeFileMatch } from "../searchTreeModel/searchTreeCommon.js";
 
 export interface ISearchTreeAIFileMatch extends ISearchTreeFileMatch {
 	getFullRange(): Range | undefined;
+
 	readonly rank: number;
 }
 export function isSearchTreeAIFileMatch(

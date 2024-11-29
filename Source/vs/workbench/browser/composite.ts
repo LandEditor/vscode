@@ -39,29 +39,38 @@ import { IComposite, ICompositeControl } from "../common/composite.js";
  */
 export abstract class Composite extends Component implements IComposite {
 	private readonly _onTitleAreaUpdate = this._register(new Emitter<void>());
+
 	readonly onTitleAreaUpdate = this._onTitleAreaUpdate.event;
+
 	protected _onDidFocus: Emitter<void> | undefined;
 
 	get onDidFocus(): Event<void> {
 		if (!this._onDidFocus) {
 			this._onDidFocus = this.registerFocusTrackEvents().onDidFocus;
 		}
+
 		return this._onDidFocus.event;
 	}
+
 	private _onDidBlur: Emitter<void> | undefined;
 
 	get onDidBlur(): Event<void> {
 		if (!this._onDidBlur) {
 			this._onDidBlur = this.registerFocusTrackEvents().onDidBlur;
 		}
+
 		return this._onDidBlur.event;
 	}
+
 	private _hasFocus = false;
+
 	hasFocus(): boolean {
 		return this._hasFocus;
 	}
+
 	private registerFocusTrackEvents(): {
 		onDidFocus: Emitter<void>;
+
 		onDidBlur: Emitter<void>;
 	} {
 		const container = assertIsDefined(this.getContainer());
@@ -71,9 +80,11 @@ export abstract class Composite extends Component implements IComposite {
 		const onDidFocus = (this._onDidFocus = this._register(
 			new Emitter<void>(),
 		));
+
 		this._register(
 			focusTracker.onDidFocus(() => {
 				this._hasFocus = true;
+
 				onDidFocus.fire();
 			}),
 		);
@@ -81,17 +92,22 @@ export abstract class Composite extends Component implements IComposite {
 		const onDidBlur = (this._onDidBlur = this._register(
 			new Emitter<void>(),
 		));
+
 		this._register(
 			focusTracker.onDidBlur(() => {
 				this._hasFocus = false;
+
 				onDidBlur.fire();
 			}),
 		);
 
 		return { onDidFocus, onDidBlur };
 	}
+
 	protected actionRunner: IActionRunner | undefined;
+
 	private visible = false;
+
 	private parent: HTMLElement | undefined;
 
 	constructor(
@@ -102,6 +118,7 @@ export abstract class Composite extends Component implements IComposite {
 	) {
 		super(id, themeService, storageService);
 	}
+
 	getTitle(): string | undefined {
 		return undefined;
 	}
@@ -206,6 +223,7 @@ export abstract class Composite extends Component implements IComposite {
 		if (!this.actionRunner) {
 			this.actionRunner = this._register(new ActionRunner());
 		}
+
 		return this.actionRunner;
 	}
 	/**
@@ -242,6 +260,7 @@ export abstract class CompositeDescriptor<T extends Composite> {
 		readonly order?: number,
 		readonly requestedIndex?: number,
 	) {}
+
 	instantiate(instantiationService: IInstantiationService): T {
 		return instantiationService.createInstance(this.ctor);
 	}
@@ -252,34 +271,47 @@ export abstract class CompositeRegistry<
 	private readonly _onDidRegister = this._register(
 		new Emitter<CompositeDescriptor<T>>(),
 	);
+
 	readonly onDidRegister = this._onDidRegister.event;
+
 	private readonly _onDidDeregister = this._register(
 		new Emitter<CompositeDescriptor<T>>(),
 	);
+
 	readonly onDidDeregister = this._onDidDeregister.event;
+
 	private readonly composites: CompositeDescriptor<T>[] = [];
+
 	protected registerComposite(descriptor: CompositeDescriptor<T>): void {
 		if (this.compositeById(descriptor.id)) {
 			return;
 		}
+
 		this.composites.push(descriptor);
+
 		this._onDidRegister.fire(descriptor);
 	}
+
 	protected deregisterComposite(id: string): void {
 		const descriptor = this.compositeById(id);
 
 		if (!descriptor) {
 			return;
 		}
+
 		this.composites.splice(this.composites.indexOf(descriptor), 1);
+
 		this._onDidDeregister.fire(descriptor);
 	}
+
 	getComposite(id: string): CompositeDescriptor<T> | undefined {
 		return this.compositeById(id);
 	}
+
 	protected getComposites(): CompositeDescriptor<T>[] {
 		return this.composites.slice(0);
 	}
+
 	private compositeById(id: string): CompositeDescriptor<T> | undefined {
 		return this.composites.find((composite) => composite.id === id);
 	}

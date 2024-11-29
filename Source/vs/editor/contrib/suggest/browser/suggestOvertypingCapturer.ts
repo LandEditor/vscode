@@ -11,11 +11,15 @@ import { SuggestModel } from "./suggestModel.js";
 
 export class OvertypingCapturer implements IDisposable {
 	private static readonly _maxSelectionLength = 51200;
+
 	private readonly _disposables = new DisposableStore();
+
 	private _lastOvertyped: {
 		value: string;
+
 		multiline: boolean;
 	}[] = [];
+
 	private _locked: boolean = false;
 
 	constructor(editor: ICodeEditor, suggestModel: SuggestModel) {
@@ -24,6 +28,7 @@ export class OvertypingCapturer implements IDisposable {
 				if (this._locked || !editor.hasModel()) {
 					return;
 				}
+
 				const selections = editor.getSelections();
 
 				const selectionsLength = selections.length;
@@ -37,12 +42,15 @@ export class OvertypingCapturer implements IDisposable {
 						break;
 					}
 				}
+
 				if (!willOvertype) {
 					if (this._lastOvertyped.length !== 0) {
 						this._lastOvertyped.length = 0;
 					}
+
 					return;
 				}
+
 				this._lastOvertyped = [];
 
 				const model = editor.getModel();
@@ -56,6 +64,7 @@ export class OvertypingCapturer implements IDisposable {
 					) {
 						return;
 					}
+
 					this._lastOvertyped[i] = {
 						value: model.getValueInRange(selection),
 						multiline:
@@ -65,28 +74,34 @@ export class OvertypingCapturer implements IDisposable {
 				}
 			}),
 		);
+
 		this._disposables.add(
 			suggestModel.onDidTrigger((e) => {
 				this._locked = true;
 			}),
 		);
+
 		this._disposables.add(
 			suggestModel.onDidCancel((e) => {
 				this._locked = false;
 			}),
 		);
 	}
+
 	getLastOvertypedInfo(idx: number):
 		| {
 				value: string;
+
 				multiline: boolean;
 		  }
 		| undefined {
 		if (idx >= 0 && idx < this._lastOvertyped.length) {
 			return this._lastOvertyped[idx];
 		}
+
 		return undefined;
 	}
+
 	dispose() {
 		this._disposables.dispose();
 	}

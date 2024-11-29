@@ -14,9 +14,12 @@ import Logger from "./logger";
 
 export interface IDidChangeInOtherWindowEvent<T> {
 	added: string[];
+
 	updated: string[];
+
 	removed: Array<{
 		key: string;
+
 		value: T;
 	}>;
 }
@@ -30,9 +33,11 @@ export class BetterTokenStorage<T> {
 	);
 	// The vscode SecretStorage instance for this extension.
 	private readonly _secretStorage: SecretStorage;
+
 	private _didChangeInOtherWindow = new EventEmitter<
 		IDidChangeInOtherWindowEvent<T>
 	>();
+
 	public onDidChangeInOtherWindow: Event<IDidChangeInOtherWindowEvent<T>> =
 		this._didChangeInOtherWindow.event;
 	/**
@@ -45,13 +50,17 @@ export class BetterTokenStorage<T> {
 		context: ExtensionContext,
 	) {
 		this._secretStorage = context.secrets;
+
 		context.subscriptions.push(
 			context.secrets.onDidChange((e) => this.handleSecretChange(e)),
 		);
+
 		this.initialize();
 	}
+
 	private initialize(): void {
 		this._operationInProgress = true;
+
 		this._tokensPromise = new Promise((resolve, _) => {
 			this._secretStorage.get(this.keylistKey).then(
 				(keyListStr) => {
@@ -60,12 +69,14 @@ export class BetterTokenStorage<T> {
 
 						return;
 					}
+
 					const keyList: Array<string> = JSON.parse(keyListStr);
 					// Gather promises that contain key value pairs our of secret storage
 					const promises = keyList.map(
 						(key) =>
 							new Promise<{
 								key: string;
+
 								value: string | undefined;
 							}>((res, rej) => {
 								this._secretStorage.get(key).then((value) => {
@@ -73,11 +84,14 @@ export class BetterTokenStorage<T> {
 								}, rej);
 							}),
 					);
+
 					Promise.allSettled(promises).then((results) => {
 						const tokens = new Map<string, T>();
+
 						results.forEach((p) => {
 							if (p.status === "fulfilled" && p.value.value) {
 								const secret = this.parseSecret(p.value.value);
+
 								tokens.set(p.value.key, secret);
 							} else if (p.status === "rejected") {
 								Logger.error(p.reason);
@@ -87,22 +101,27 @@ export class BetterTokenStorage<T> {
 								);
 							}
 						});
+
 						resolve(tokens);
 					});
 				},
 				(err) => {
 					Logger.error(err);
+
 					resolve(new Map());
 				},
 			);
 		});
+
 		this._operationInProgress = false;
 	}
+
 	async get(key: string): Promise<T | undefined> {
 		const tokens = await this.getTokens();
 
 		return tokens.get(key);
 	}
+
 	async getAll(predicate?: (item: T) => boolean): Promise<T[]> {
 		const tokens = await this.getTokens();
 
@@ -113,41 +132,53 @@ export class BetterTokenStorage<T> {
 				values.push(value);
 			}
 		}
+
 		return values;
 	}
+
 	async store(key: string, value: T): Promise<void> {
 		const tokens = await this.getTokens();
 
 		const isAddition = !tokens.has(key);
+
 		tokens.set(key, value);
 
 		const valueStr = this.serializeSecret(value);
+
 		this._operationInProgress = true;
+
 		this._tokensPromise = new Promise((resolve, _) => {
 			const promises = [this._secretStorage.store(key, valueStr)];
 			// if we are adding a secret we need to update the keylist too
 			if (isAddition) {
 				promises.push(this.updateKeyList(tokens));
 			}
+
 			Promise.allSettled(promises).then((results) => {
 				results.forEach((r) => {
 					if (r.status === "rejected") {
 						Logger.error(r.reason);
 					}
 				});
+
 				resolve(tokens);
 			});
 		});
+
 		this._operationInProgress = false;
 	}
+
 	async delete(key: string): Promise<void> {
 		const tokens = await this.getTokens();
 
 		if (!tokens.has(key)) {
 			return;
 		}
+
 		tokens.delete(key);
+
 		this._operationInProgress = true;
+
 		this._tokensPromise = new Promise((resolve, _) => {
 			Promise.allSettled([
 				this._secretStorage.delete(key),
@@ -158,11 +189,14 @@ export class BetterTokenStorage<T> {
 						Logger.error(r.reason);
 					}
 				});
+
 				resolve(tokens);
 			});
 		});
+
 		this._operationInProgress = false;
 	}
+
 	async deleteAll(predicate?: (item: T) => boolean): Promise<void> {
 		const tokens = await this.getTokens();
 
@@ -173,20 +207,26 @@ export class BetterTokenStorage<T> {
 				promises.push(this.delete(key));
 			}
 		}
+
 		await Promise.all(promises);
 	}
+
 	private async updateKeyList(tokens: Map<string, T>) {
 		const keyList = [];
 
 		for (const [key] of tokens) {
 			keyList.push(key);
 		}
+
 		const keyListStr = JSON.stringify(keyList);
+
 		await this._secretStorage.store(this.keylistKey, keyListStr);
 	}
+
 	protected parseSecret(secret: string): T {
 		return JSON.parse(secret);
 	}
+
 	protected serializeSecret(secret: T): string {
 		return JSON.stringify(secret);
 	}
@@ -217,8 +257,11 @@ export class BetterTokenStorage<T> {
 		if (key === this.keylistKey) {
 			return;
 		}
+
 		const tokens = await this.getTokens();
+
 		this._operationInProgress = true;
+
 		this._tokensPromise = new Promise((resolve, _) => {
 			this._secretStorage
 				.get(key)
@@ -229,15 +272,19 @@ export class BetterTokenStorage<T> {
 							// false -> secret was deleted in this window
 							if (tokens.has(key)) {
 								const value = tokens.get(key)!;
+
 								tokens.delete(key);
+
 								this._didChangeInOtherWindow.fire({
 									added: [],
 									updated: [],
 									removed: [{ key, value }],
 								});
 							}
+
 							return tokens;
 						}
+
 						const storageSecret =
 							this.parseSecret(storageSecretStr);
 
@@ -246,6 +293,7 @@ export class BetterTokenStorage<T> {
 						if (!cachedSecret) {
 							// token was added in another window
 							tokens.set(key, storageSecret);
+
 							this._didChangeInOtherWindow.fire({
 								added: [key],
 								updated: [],
@@ -254,12 +302,14 @@ export class BetterTokenStorage<T> {
 
 							return tokens;
 						}
+
 						const cachedSecretStr =
 							this.serializeSecret(cachedSecret);
 
 						if (storageSecretStr !== cachedSecretStr) {
 							// token was updated in another window
 							tokens.set(key, storageSecret);
+
 							this._didChangeInOtherWindow.fire({
 								added: [],
 								updated: [key],
@@ -279,6 +329,7 @@ export class BetterTokenStorage<T> {
 				)
 				.then(resolve);
 		});
+
 		this._operationInProgress = false;
 	}
 }

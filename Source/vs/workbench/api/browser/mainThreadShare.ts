@@ -25,7 +25,9 @@ import {
 @extHostNamedCustomer(MainContext.MainThreadShare)
 export class MainThreadShare implements MainThreadShareShape {
 	private readonly proxy: ExtHostShareShape;
+
 	private providers = new Map<number, IShareProvider>();
+
 	private providerDisposables = new Map<number, IDisposable>();
 
 	constructor(
@@ -57,22 +59,28 @@ export class MainThreadShare implements MainThreadShareShape {
 				return typeof result === "string" ? result : URI.revive(result);
 			},
 		};
+
 		this.providers.set(handle, provider);
 
 		const disposable = this.shareService.registerShareProvider(provider);
+
 		this.providerDisposables.set(handle, disposable);
 	}
 	$unregisterShareProvider(handle: number): void {
 		if (this.providers.has(handle)) {
 			this.providers.delete(handle);
 		}
+
 		if (this.providerDisposables.has(handle)) {
 			this.providerDisposables.delete(handle);
 		}
 	}
+
 	dispose(): void {
 		this.providers.clear();
+
 		dispose(this.providerDisposables.values());
+
 		this.providerDisposables.clear();
 	}
 }

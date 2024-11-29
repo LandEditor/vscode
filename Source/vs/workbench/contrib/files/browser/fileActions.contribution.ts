@@ -267,6 +267,7 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
 	primary: KeyCode.Escape,
 	handler: async (accessor: ServicesAccessor) => {
 		const explorerService = accessor.get(IExplorerService);
+
 		await explorerService.setToCopy([], true);
 	},
 });
@@ -974,6 +975,7 @@ for (const menuId of [
 		group: "1_file",
 		order: 10,
 	});
+
 	MenuRegistry.appendMenuItem(menuId, {
 		command: {
 			id: "workbench.action.quickOpen",

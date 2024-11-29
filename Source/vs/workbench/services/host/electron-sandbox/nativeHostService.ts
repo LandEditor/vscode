@@ -136,6 +136,7 @@ class WorkbenchHostService extends Disposable implements IHostService {
 						window,
 						() => {
 							const hasFocus = window.document.hasFocus();
+
 							if (hasFocus) {
 								emitter.fire(window.vscodeWindowId);
 							}
@@ -159,10 +160,12 @@ class WorkbenchHostService extends Disposable implements IHostService {
 	);
 
 	openWindow(options?: IOpenEmptyWindowOptions): Promise<void>;
+
 	openWindow(
 		toOpen: IWindowOpenable[],
 		options?: IOpenWindowOptions,
 	): Promise<void>;
+
 	openWindow(
 		arg1?: IOpenEmptyWindowOptions | IWindowOpenable[],
 		arg2?: IOpenWindowOptions,
@@ -179,6 +182,7 @@ class WorkbenchHostService extends Disposable implements IHostService {
 		options?: IOpenWindowOptions,
 	): Promise<void> {
 		const remoteAuthority = this.environmentService.remoteAuthority;
+
 		if (!!remoteAuthority) {
 			toOpen.forEach(
 				(openable) =>
@@ -219,12 +223,14 @@ class WorkbenchHostService extends Disposable implements IHostService {
 		options?: IOpenEmptyWindowOptions,
 	): Promise<void> {
 		const remoteAuthority = this.environmentService.remoteAuthority;
+
 		if (!!remoteAuthority && options?.remoteAuthority === undefined) {
 			// set the remoteAuthority of the window the request came from
 			options = options
 				? { ...options, remoteAuthority }
 				: { remoteAuthority };
 		}
+
 		return this.nativeHostService.openWindow(options);
 	}
 
@@ -250,6 +256,7 @@ class WorkbenchHostService extends Disposable implements IHostService {
 
 	getCursorScreenPoint(): Promise<{
 		readonly point: IPoint;
+
 		readonly display: IRectangle;
 	}> {
 		return this.nativeHostService.getCursorScreenPoint();
@@ -300,6 +307,7 @@ class WorkbenchHostService extends Disposable implements IHostService {
 		number,
 		Promise<VSBuffer | undefined>
 	>();
+
 	async getNativeWindowHandle(
 		windowId: number,
 	): Promise<VSBuffer | undefined> {
@@ -309,6 +317,7 @@ class WorkbenchHostService extends Disposable implements IHostService {
 				this.nativeHostService.getNativeWindowHandle(windowId),
 			);
 		}
+
 		return this._nativeWindowHandleCache.get(windowId)!;
 	}
 

@@ -30,10 +30,15 @@ import * as indentUtils from "../../indentation/common/indentUtils.js";
 
 export class MoveLinesCommand implements ICommand {
 	private readonly _selection: Selection;
+
 	private readonly _isMovingDown: boolean;
+
 	private readonly _autoIndent: EditorAutoIndentStrategy;
+
 	private _selectionId: string | null;
+
 	private _moveEndPositionDown?: boolean;
+
 	private _moveEndLineSelectionShrink: boolean;
 
 	constructor(
@@ -44,11 +49,16 @@ export class MoveLinesCommand implements ICommand {
 		private readonly _languageConfigurationService: ILanguageConfigurationService,
 	) {
 		this._selection = selection;
+
 		this._isMovingDown = isMovingDown;
+
 		this._autoIndent = autoIndent;
+
 		this._selectionId = null;
+
 		this._moveEndLineSelectionShrink = false;
 	}
+
 	public getEditOperations(
 		model: ITextModel,
 		builder: IEditOperationBuilder,
@@ -74,22 +84,26 @@ export class MoveLinesCommand implements ICommand {
 
 			return;
 		}
+
 		if (!this._isMovingDown && this._selection.startLineNumber === 1) {
 			this._selectionId = builder.trackSelection(this._selection);
 
 			return;
 		}
+
 		this._moveEndPositionDown = false;
 
 		let s = this._selection;
 
 		if (s.startLineNumber < s.endLineNumber && s.endColumn === 1) {
 			this._moveEndPositionDown = true;
+
 			s = s.setEndPosition(
 				s.endLineNumber - 1,
 				model.getLineMaxColumn(s.endLineNumber - 1),
 			);
 		}
+
 		const { tabSize, indentSize, insertSpaces } = model.getOptions();
 
 		const indentConverter = this.buildIndentConverter(
@@ -139,6 +153,7 @@ export class MoveLinesCommand implements ICommand {
 
 			if (this._isMovingDown) {
 				movingLineNumber = s.endLineNumber + 1;
+
 				movingLineText = model.getLineContent(movingLineNumber);
 				// Delete line that needs to be moved
 				builder.addEditOperation(
@@ -176,6 +191,7 @@ export class MoveLinesCommand implements ICommand {
 							tabSize,
 							insertSpaces,
 						);
+
 						insertingText =
 							newIndentation + this.trimStart(movingLineText);
 					} else {
@@ -238,6 +254,7 @@ export class MoveLinesCommand implements ICommand {
 										tabSize,
 										insertSpaces,
 									);
+
 								insertingText =
 									newIndentation +
 									this.trimStart(movingLineText);
@@ -338,6 +355,7 @@ export class MoveLinesCommand implements ICommand {
 							if (newSpaceCnt !== oldSpaceCnt) {
 								const spaceCntOffset =
 									newSpaceCnt - oldSpaceCnt;
+
 								this.getIndentEditsOfMovingBlock(
 									model,
 									builder,
@@ -358,6 +376,7 @@ export class MoveLinesCommand implements ICommand {
 				}
 			} else {
 				movingLineNumber = s.startLineNumber - 1;
+
 				movingLineText = model.getLineContent(movingLineNumber);
 				// Delete line that needs to be moved
 				builder.addEditOperation(
@@ -450,6 +469,7 @@ export class MoveLinesCommand implements ICommand {
 							if (newSpaceCnt !== oldSpaceCnt) {
 								const spaceCntOffset =
 									newSpaceCnt - oldSpaceCnt;
+
 								this.getIndentEditsOfMovingBlock(
 									model,
 									builder,
@@ -464,8 +484,10 @@ export class MoveLinesCommand implements ICommand {
 				}
 			}
 		}
+
 		this._selectionId = builder.trackSelection(s);
 	}
+
 	private buildIndentConverter(
 		tabSize: number,
 		indentSize: number,
@@ -492,6 +514,7 @@ export class MoveLinesCommand implements ICommand {
 			},
 		};
 	}
+
 	private parseEnterResult(
 		model: ITextModel,
 		indentConverter: IIndentConverter,
@@ -513,6 +536,7 @@ export class MoveLinesCommand implements ICommand {
 					indentConverter.unshiftIndent(enter.indentation) +
 					enter.appendText;
 			}
+
 			const movingLineText = model.getLineContent(line);
 
 			if (
@@ -539,6 +563,7 @@ export class MoveLinesCommand implements ICommand {
 					newIndentation =
 						indentConverter.unshiftIndent(newIndentation);
 				}
+
 				const newSpaceCnt = indentUtils.getSpaceCnt(
 					newIndentation,
 					tabSize,
@@ -552,6 +577,7 @@ export class MoveLinesCommand implements ICommand {
 				return newSpaceCnt - oldSpaceCnt;
 			}
 		}
+
 		return null;
 	}
 	/**
@@ -607,11 +633,14 @@ export class MoveLinesCommand implements ICommand {
 				if (nonWhitespaceIdx >= 0) {
 					break;
 				}
+
 				validPrecedingLine--;
 			}
+
 			if (validPrecedingLine < 1 || line > model.getLineCount()) {
 				return null;
 			}
+
 			const maxColumn = model.getLineMaxColumn(validPrecedingLine);
 
 			const enter = getEnterAction(
@@ -635,6 +664,7 @@ export class MoveLinesCommand implements ICommand {
 			);
 		}
 	}
+
 	private matchEnterRule(
 		model: ITextModel,
 		indentConverter: IIndentConverter,
@@ -657,17 +687,21 @@ export class MoveLinesCommand implements ICommand {
 			} else {
 				lineContent = model.getLineContent(validPrecedingLine);
 			}
+
 			const nonWhitespaceIdx =
 				strings.lastNonWhitespaceIndex(lineContent);
 
 			if (nonWhitespaceIdx >= 0) {
 				break;
 			}
+
 			validPrecedingLine--;
 		}
+
 		if (validPrecedingLine < 1 || line > model.getLineCount()) {
 			return null;
 		}
+
 		const maxColumn = model.getLineMaxColumn(validPrecedingLine);
 
 		const enter = getEnterAction(
@@ -690,9 +724,11 @@ export class MoveLinesCommand implements ICommand {
 			enter,
 		);
 	}
+
 	private trimStart(str: string) {
 		return str.replace(/^\s+/, "");
 	}
+
 	private shouldAutoIndent(model: ITextModel, selection: Selection) {
 		if (this._autoIndent < EditorAutoIndentStrategy.Full) {
 			return false;
@@ -701,6 +737,7 @@ export class MoveLinesCommand implements ICommand {
 		if (!model.tokenization.isCheapToTokenize(selection.startLineNumber)) {
 			return false;
 		}
+
 		const languageAtSelectionStart = model.getLanguageIdAtPosition(
 			selection.startLineNumber,
 			1,
@@ -714,6 +751,7 @@ export class MoveLinesCommand implements ICommand {
 		if (languageAtSelectionStart !== languageAtSelectionEnd) {
 			return false;
 		}
+
 		if (
 			this._languageConfigurationService.getLanguageConfiguration(
 				languageAtSelectionStart,
@@ -721,8 +759,10 @@ export class MoveLinesCommand implements ICommand {
 		) {
 			return false;
 		}
+
 		return true;
 	}
+
 	private getIndentEditsOfMovingBlock(
 		model: ITextModel,
 		builder: IEditOperationBuilder,
@@ -767,6 +807,7 @@ export class MoveLinesCommand implements ICommand {
 			}
 		}
 	}
+
 	public computeCursorState(
 		model: ITextModel,
 		helper: ICursorStateComputerData,
@@ -776,12 +817,14 @@ export class MoveLinesCommand implements ICommand {
 		if (this._moveEndPositionDown) {
 			result = result.setEndPosition(result.endLineNumber + 1, 1);
 		}
+
 		if (
 			this._moveEndLineSelectionShrink &&
 			result.startLineNumber < result.endLineNumber
 		) {
 			result = result.setEndPosition(result.endLineNumber, 2);
 		}
+
 		return result;
 	}
 }

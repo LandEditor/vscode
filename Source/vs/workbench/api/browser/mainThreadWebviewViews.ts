@@ -24,9 +24,11 @@ export class MainThreadWebviewsViews
 	implements extHostProtocol.MainThreadWebviewViewsShape
 {
 	private readonly _proxy: extHostProtocol.ExtHostWebviewViewsShape;
+
 	private readonly _webviewViews = this._register(
 		new DisposableMap<string, WebviewView>(),
 	);
+
 	private readonly _webviewViewProviders = this._register(
 		new DisposableMap<string>(),
 	);
@@ -40,49 +42,61 @@ export class MainThreadWebviewsViews
 		private readonly _webviewViewService: IWebviewViewService,
 	) {
 		super();
+
 		this._proxy = context.getProxy(
 			extHostProtocol.ExtHostContext.ExtHostWebviewViews,
 		);
 	}
+
 	public $setWebviewViewTitle(
 		handle: extHostProtocol.WebviewHandle,
 		value: string | undefined,
 	): void {
 		const webviewView = this.getWebviewView(handle);
+
 		webviewView.title = value;
 	}
+
 	public $setWebviewViewDescription(
 		handle: extHostProtocol.WebviewHandle,
 		value: string | undefined,
 	): void {
 		const webviewView = this.getWebviewView(handle);
+
 		webviewView.description = value;
 	}
+
 	public $setWebviewViewBadge(
 		handle: string,
 		badge: IViewBadge | undefined,
 	): void {
 		const webviewView = this.getWebviewView(handle);
+
 		webviewView.badge = badge;
 	}
+
 	public $show(
 		handle: extHostProtocol.WebviewHandle,
 		preserveFocus: boolean,
 	): void {
 		const webviewView = this.getWebviewView(handle);
+
 		webviewView.show(preserveFocus);
 	}
+
 	public $registerWebviewViewProvider(
 		extensionData: extHostProtocol.WebviewExtensionDescription,
 		viewType: string,
 		options: {
 			retainContextWhenHidden?: boolean;
+
 			serializeBuffersForPostMessage: boolean;
 		},
 	): void {
 		if (this._webviewViewProviders.has(viewType)) {
 			throw new Error(`View provider for ${viewType} already registered`);
 		}
+
 		const extension = reviveWebviewExtension(extensionData);
 
 		const registration = this._webviewViewService.register(viewType, {
@@ -91,7 +105,9 @@ export class MainThreadWebviewsViews
 				cancellation: CancellationToken,
 			) => {
 				const handle = generateUuid();
+
 				this._webviewViews.set(handle, webviewView);
+
 				this.mainThreadWebviews.addWebview(
 					handle,
 					webviewView.webview,
@@ -114,39 +130,54 @@ export class MainThreadWebviewsViews
 						);
 					}
 				}
+
 				webviewView.webview.extension = extension;
 
 				if (options) {
 					webviewView.webview.options = options;
 				}
+
 				webviewView.onDidChangeVisibility((visible) => {
 					this._proxy.$onDidChangeWebviewViewVisibility(
 						handle,
 						visible,
 					);
 				});
+
 				webviewView.onDispose(() => {
 					this._proxy.$disposeWebviewView(handle);
+
 					this._webviewViews.deleteAndDispose(handle);
 				});
+
 				type CreateWebviewViewTelemetry = {
 					extensionId: string;
+
 					id: string;
 				};
+
 				type Classification = {
 					extensionId: {
 						classification: "SystemMetaData";
+
 						purpose: "FeatureInsight";
+
 						comment: "Id of the extension";
 					};
+
 					id: {
 						classification: "SystemMetaData";
+
 						purpose: "FeatureInsight";
+
 						comment: "Id of the view";
 					};
+
 					owner: "digitarald";
+
 					comment: "Helps to gain insights on what extension contributed views are most popular";
 				};
+
 				this._telemetryService.publicLog2<
 					CreateWebviewViewTelemetry,
 					Classification
@@ -165,6 +196,7 @@ export class MainThreadWebviewsViews
 					);
 				} catch (error) {
 					onUnexpectedError(error);
+
 					webviewView.webview.setHtml(
 						this.mainThreadWebviews.getWebviewResolvedFailedContent(
 							viewType,
@@ -173,20 +205,25 @@ export class MainThreadWebviewsViews
 				}
 			},
 		});
+
 		this._webviewViewProviders.set(viewType, registration);
 	}
+
 	public $unregisterWebviewViewProvider(viewType: string): void {
 		if (!this._webviewViewProviders.has(viewType)) {
 			throw new Error(`No view provider for ${viewType} registered`);
 		}
+
 		this._webviewViewProviders.deleteAndDispose(viewType);
 	}
+
 	private getWebviewView(handle: string): WebviewView {
 		const webviewView = this._webviewViews.get(handle);
 
 		if (!webviewView) {
 			throw new Error("unknown webview view");
 		}
+
 		return webviewView;
 	}
 }

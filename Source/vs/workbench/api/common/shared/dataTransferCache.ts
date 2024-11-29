@@ -11,15 +11,19 @@ import {
 
 export class DataTransferFileCache {
 	private requestIdPool = 0;
+
 	private readonly dataTransferFiles = new Map<
 		/* requestId */ number,
 		ReadonlyArray<IDataTransferFile>
 	>();
+
 	public add(dataTransfer: IReadonlyVSDataTransfer): {
 		id: number;
+
 		dispose: () => void;
 	} {
 		const requestId = this.requestIdPool++;
+
 		this.dataTransferFiles.set(
 			requestId,
 			coalesce(Array.from(dataTransfer, ([, item]) => item.asFile())),
@@ -32,6 +36,7 @@ export class DataTransferFileCache {
 			},
 		};
 	}
+
 	async resolveFileData(
 		requestId: number,
 		dataItemId: string,
@@ -41,13 +46,16 @@ export class DataTransferFileCache {
 		if (!files) {
 			throw new Error("No data transfer found");
 		}
+
 		const file = files.find((file) => file.id === dataItemId);
 
 		if (!file) {
 			throw new Error("No matching file found in data transfer");
 		}
+
 		return VSBuffer.wrap(await file.data());
 	}
+
 	dispose() {
 		this.dataTransferFiles.clear();
 	}

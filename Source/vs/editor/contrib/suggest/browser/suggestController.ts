@@ -106,10 +106,12 @@ class LineSuffix {
 			const offset = _model.getOffsetAt(_position);
 
 			const end = _model.getPositionAt(offset + 1);
+
 			_model.changeDecorations((accessor) => {
 				if (this._marker) {
 					accessor.removeDecoration(this._marker);
 				}
+
 				this._marker = accessor.addDecoration(
 					Range.fromPositions(_position, end),
 					this._decorationOptions,
@@ -122,6 +124,7 @@ class LineSuffix {
 		if (this._marker && !this._model.isDisposed()) {
 			this._model.changeDecorations((accessor) => {
 				accessor.removeDecoration(this._marker!);
+
 				this._marker = undefined;
 			});
 		}
@@ -168,13 +171,19 @@ export class SuggestController implements IEditorContribution {
 	}
 
 	readonly editor: ICodeEditor;
+
 	readonly model: SuggestModel;
+
 	readonly widget: WindowIdleValue<SuggestWidget>;
 
 	private readonly _alternatives: WindowIdleValue<SuggestAlternatives>;
+
 	private readonly _lineSuffix = new MutableDisposable<LineSuffix>();
+
 	private readonly _toDispose = new DisposableStore();
+
 	private readonly _overtypingCapturer: WindowIdleValue<OvertypingCapturer>;
+
 	private readonly _selectors = new PriorityRegistry<ISuggestItemPreselector>(
 		(s) => s.priority,
 	);
@@ -182,6 +191,7 @@ export class SuggestController implements IEditorContribution {
 	private readonly _onWillInsertSuggestItem = new Emitter<{
 		item: CompletionItem;
 	}>();
+
 	readonly onWillInsertSuggestItem: Event<{ item: CompletionItem }> =
 		this._onWillInsertSuggestItem.event;
 
@@ -199,6 +209,7 @@ export class SuggestController implements IEditorContribution {
 		private readonly _telemetryService: ITelemetryService,
 	) {
 		this.editor = editor;
+
 		this.model = _instantiationService.createInstance(
 			SuggestModel,
 			this.editor,
@@ -214,7 +225,9 @@ export class SuggestController implements IEditorContribution {
 		// context key: update insert/replace mode
 		const ctxInsertMode =
 			SuggestContext.InsertMode.bindTo(_contextKeyService);
+
 		ctxInsertMode.set(editor.getOption(EditorOption.suggest).insertMode);
+
 		this._toDispose.add(
 			this.model.onDidTrigger(() =>
 				ctxInsertMode.set(
@@ -231,6 +244,7 @@ export class SuggestController implements IEditorContribution {
 				);
 
 				this._toDispose.add(widget);
+
 				this._toDispose.add(
 					widget.onDidSelect(
 						(item) =>
@@ -250,6 +264,7 @@ export class SuggestController implements IEditorContribution {
 							InsertFlags.NoAfterUndoStop,
 						),
 				);
+
 				this._toDispose.add(commitCharacterController);
 
 				// Wire up makes text edit context key
@@ -269,7 +284,9 @@ export class SuggestController implements IEditorContribution {
 				this._toDispose.add(
 					toDisposable(() => {
 						ctxMakesTextEdit.reset();
+
 						ctxHasInsertAndReplace.reset();
+
 						ctxCanResolve.reset();
 					}),
 				);
@@ -306,8 +323,10 @@ export class SuggestController implements IEditorContribution {
 									endLineNumber: position.lineNumber,
 									endColumn,
 								});
+
 							value = oldText !== item.completion.insertText;
 						}
+
 						ctxMakesTextEdit.set(value);
 
 						// (ctx: hasInsertAndReplaceRange)
@@ -398,17 +417,20 @@ export class SuggestController implements IEditorContribution {
 		this._toDispose.add(
 			this.model.onDidTrigger((e) => {
 				this.widget.value.showTriggered(e.auto, e.shy ? 250 : 50);
+
 				this._lineSuffix.value = new LineSuffix(
 					this.editor.getModel()!,
 					e.position,
 				);
 			}),
 		);
+
 		this._toDispose.add(
 			this.model.onDidSuggest((e) => {
 				if (e.triggerOptions.shy) {
 					return;
 				}
+
 				let index = -1;
 
 				for (const selector of this._selectors
@@ -423,15 +445,18 @@ export class SuggestController implements IEditorContribution {
 						break;
 					}
 				}
+
 				if (index === -1) {
 					index = 0;
 				}
+
 				if (this.model.state === State.Idle) {
 					// selecting an item can "pump" out selection/cursor change events
 					// which can cancel suggest halfway through this function. therefore
 					// we need to check again and bail if the session has been canceled
 					return;
 				}
+
 				let noFocus = false;
 
 				if (e.triggerOptions.auto) {
@@ -461,6 +486,7 @@ export class SuggestController implements IEditorContribution {
 							!e.triggerOptions.refilter;
 					}
 				}
+
 				this.widget.value.showSuggestions(
 					e.completionModel,
 					index,
@@ -470,6 +496,7 @@ export class SuggestController implements IEditorContribution {
 				);
 			}),
 		);
+
 		this._toDispose.add(
 			this.model.onDidCancel((e) => {
 				if (!e.retrigger) {
@@ -477,10 +504,12 @@ export class SuggestController implements IEditorContribution {
 				}
 			}),
 		);
+
 		this._toDispose.add(
 			this.editor.onDidBlurEditorWidget(() => {
 				if (!_sticky) {
 					this.model.cancel();
+
 					this.model.clear();
 				}
 			}),
@@ -494,23 +523,31 @@ export class SuggestController implements IEditorContribution {
 			const acceptSuggestionOnEnter = this.editor.getOption(
 				EditorOption.acceptSuggestionOnEnter,
 			);
+
 			acceptSuggestionsOnEnter.set(
 				acceptSuggestionOnEnter === "on" ||
 					acceptSuggestionOnEnter === "smart",
 			);
 		};
+
 		this._toDispose.add(
 			this.editor.onDidChangeConfiguration(() => updateFromConfig()),
 		);
+
 		updateFromConfig();
 	}
 
 	dispose(): void {
 		this._alternatives.dispose();
+
 		this._toDispose.dispose();
+
 		this.widget.dispose();
+
 		this.model.dispose();
+
 		this._lineSuffix.dispose();
+
 		this._onWillInsertSuggestItem.dispose();
 	}
 
@@ -520,14 +557,18 @@ export class SuggestController implements IEditorContribution {
 	): void {
 		if (!event || !event.item) {
 			this._alternatives.value.reset();
+
 			this.model.cancel();
+
 			this.model.clear();
 
 			return;
 		}
+
 		if (!this.editor.hasModel()) {
 			return;
 		}
+
 		const snippetController = SnippetController2.get(this.editor);
 
 		if (!snippetController) {
@@ -575,6 +616,7 @@ export class SuggestController implements IEditorContribution {
 
 			// sync additional edits
 			const scrollState = StableEditorScrollState.capture(this.editor);
+
 			this.editor.executeEdits(
 				"suggestController.additionalTextEdits.sync",
 				item.completion.additionalTextEdits.map((edit) => {
@@ -594,6 +636,7 @@ export class SuggestController implements IEditorContribution {
 						const endColumnDelta = Range.spansMultipleLines(range)
 							? 0
 							: columnDelta;
+
 						range = new Range(
 							range.startLineNumber,
 							range.startColumn + startColumnDelta,
@@ -601,9 +644,11 @@ export class SuggestController implements IEditorContribution {
 							range.endColumn + endColumnDelta,
 						);
 					}
+
 					return EditOperation.replaceMove(range, edit.text);
 				}),
 			);
+
 			scrollState.restoreRelativeVerticalPositionOfCursor(this.editor);
 		} else if (!isResolved) {
 			// async additional edits
@@ -619,6 +664,7 @@ export class SuggestController implements IEditorContribution {
 
 					return;
 				}
+
 				for (const change of e.changes) {
 					const thisPosition = Range.getEndPosition(change.range);
 
@@ -632,12 +678,14 @@ export class SuggestController implements IEditorContribution {
 			});
 
 			const oldFlags = flags;
+
 			flags |= InsertFlags.NoAfterUndoStop;
 
 			let didType = false;
 
 			const typeListener = this.editor.onWillType(() => {
 				typeListener.dispose();
+
 				didType = true;
 
 				if (!(oldFlags & InsertFlags.NoAfterUndoStop)) {
@@ -655,6 +703,7 @@ export class SuggestController implements IEditorContribution {
 						) {
 							return undefined;
 						}
+
 						if (
 							position &&
 							item.completion.additionalTextEdits.some((edit) =>
@@ -666,12 +715,15 @@ export class SuggestController implements IEditorContribution {
 						) {
 							return false;
 						}
+
 						if (didType) {
 							this.editor.pushUndoStop();
 						}
+
 						const scrollState = StableEditorScrollState.capture(
 							this.editor,
 						);
+
 						this.editor.executeEdits(
 							"suggestController.additionalTextEdits.async",
 							item.completion.additionalTextEdits.map((edit) =>
@@ -681,6 +733,7 @@ export class SuggestController implements IEditorContribution {
 								),
 							),
 						);
+
 						scrollState.restoreRelativeVerticalPositionOfCursor(
 							this.editor,
 						);
@@ -691,6 +744,7 @@ export class SuggestController implements IEditorContribution {
 						) {
 							this.editor.pushUndoStop();
 						}
+
 						return true;
 					})
 					.then((applied) => {
@@ -699,11 +753,13 @@ export class SuggestController implements IEditorContribution {
 							sw.elapsed(),
 							applied,
 						);
+
 						_additionalEditsAppliedAsync =
 							applied === true ? 1 : applied === false ? 0 : -2;
 					})
 					.finally(() => {
 						docListener.dispose();
+
 						typeListener.dispose();
 					}),
 			);
@@ -747,6 +803,7 @@ export class SuggestController implements IEditorContribution {
 			} else {
 				// exec command, done
 				const sw = new StopWatch();
+
 				tasks.push(
 					this._commandService
 						.executeCommand(
@@ -781,6 +838,7 @@ export class SuggestController implements IEditorContribution {
 					if (modelVersionNow !== model.getAlternativeVersionId()) {
 						model.undo();
 					}
+
 					this._insertSuggestion(
 						next,
 						InsertFlags.NoBeforeUndoStop |
@@ -810,6 +868,7 @@ export class SuggestController implements IEditorContribution {
 			);
 
 			this.model.clear();
+
 			cts.dispose();
 		});
 	}
@@ -848,79 +907,128 @@ export class SuggestController implements IEditorContribution {
 
 		type AcceptedSuggestion = {
 			extensionId: string;
+
 			providerId: string;
+
 			fileExtension: string;
+
 			languageId: string;
+
 			basenameHash: string;
+
 			kind: number;
+
 			resolveInfo: number;
+
 			resolveDuration: number;
+
 			commandDuration: number;
+
 			additionalEditsAsync: number;
+
 			index: number;
+
 			firstIndex: number;
 		};
+
 		type AcceptedSuggestionClassification = {
 			owner: "jrieken";
+
 			comment: "Information accepting completion items";
+
 			extensionId: {
 				classification: "PublicNonPersonalData";
+
 				purpose: "FeatureInsight";
+
 				comment: "Extension contributing the completions item";
 			};
+
 			providerId: {
 				classification: "PublicNonPersonalData";
+
 				purpose: "FeatureInsight";
+
 				comment: "Provider of the completions item";
 			};
+
 			basenameHash: {
 				classification: "PublicNonPersonalData";
+
 				purpose: "FeatureInsight";
+
 				comment: "Hash of the basename of the file into which the completion was inserted";
 			};
+
 			fileExtension: {
 				classification: "SystemMetaData";
+
 				purpose: "FeatureInsight";
+
 				comment: "File extension of the file into which the completion was inserted";
 			};
+
 			languageId: {
 				classification: "SystemMetaData";
+
 				purpose: "FeatureInsight";
+
 				comment: "Language type of the file into which the completion was inserted";
 			};
+
 			kind: {
 				classification: "SystemMetaData";
+
 				purpose: "FeatureInsight";
+
 				comment: "The completion item kind";
 			};
+
 			resolveInfo: {
 				classification: "SystemMetaData";
+
 				purpose: "FeatureInsight";
+
 				comment: "If the item was inserted before resolving was done";
 			};
+
 			resolveDuration: {
 				classification: "SystemMetaData";
+
 				purpose: "FeatureInsight";
+
 				comment: "How long resolving took to finish";
 			};
+
 			commandDuration: {
 				classification: "SystemMetaData";
+
 				purpose: "FeatureInsight";
+
 				comment: "How long a completion item command took";
 			};
+
 			additionalEditsAsync: {
 				classification: "SystemMetaData";
+
 				purpose: "FeatureInsight";
+
 				comment: "Info about asynchronously applying additional edits";
 			};
+
 			index: {
 				classification: "SystemMetaData";
+
 				purpose: "FeatureInsight";
+
 				comment: "The index of the completion item in the sorted list.";
 			};
+
 			firstIndex: {
 				classification: "SystemMetaData";
+
 				purpose: "FeatureInsight";
+
 				comment: "When there are multiple completions, the index of the first instance.";
 			};
 		};
@@ -961,6 +1069,7 @@ export class SuggestController implements IEditorContribution {
 		if (toggleMode) {
 			replace = !replace;
 		}
+
 		const overwriteBefore = item.position.column - item.editStart.column;
 
 		const overwriteAfter =
@@ -988,6 +1097,7 @@ export class SuggestController implements IEditorContribution {
 				item.textLabel,
 				item.completion.additionalTextEdits.length,
 			);
+
 			alert(msg);
 		}
 	}
@@ -1005,10 +1115,12 @@ export class SuggestController implements IEditorContribution {
 					kindFilter: noFilter ? new Set() : undefined,
 				},
 			});
+
 			this.editor.revealPosition(
 				this.editor.getPosition(),
 				ScrollType.Smooth,
 			);
+
 			this.editor.focus();
 		}
 	}
@@ -1017,6 +1129,7 @@ export class SuggestController implements IEditorContribution {
 		if (!this.editor.hasModel()) {
 			return;
 		}
+
 		const positionNow = this.editor.getPosition();
 
 		const fallback = () => {
@@ -1034,6 +1147,7 @@ export class SuggestController implements IEditorContribution {
 				// snippet, other editor -> makes edit
 				return true;
 			}
+
 			const position = this.editor.getPosition()!;
 
 			const startColumn = item.editStart.column;
@@ -1044,6 +1158,7 @@ export class SuggestController implements IEditorContribution {
 				// unequal lengths -> makes edit
 				return true;
 			}
+
 			const textNow = this.editor.getModel()!.getValueInRange({
 				startLineNumber: position.lineNumber,
 				startColumn,
@@ -1062,6 +1177,7 @@ export class SuggestController implements IEditorContribution {
 				() => {
 					// retrigger or cancel -> try to type default text
 					dispose(listener);
+
 					fallback();
 				},
 				undefined,
@@ -1077,6 +1193,7 @@ export class SuggestController implements IEditorContribution {
 
 						return;
 					}
+
 					const index = this._memoryService.select(
 						this.editor.getModel()!,
 						this.editor.getPosition()!,
@@ -1090,7 +1207,9 @@ export class SuggestController implements IEditorContribution {
 
 						return;
 					}
+
 					this.editor.pushUndoStop();
+
 					this._insertSuggestion(
 						{ index, item, model: completionModel },
 						InsertFlags.KeepAlternativeSuggestions |
@@ -1104,7 +1223,9 @@ export class SuggestController implements IEditorContribution {
 		});
 
 		this.model.trigger({ auto: false, shy: true });
+
 		this.editor.revealPosition(positionNow, ScrollType.Smooth);
+
 		this.editor.focus();
 	}
 
@@ -1119,9 +1240,11 @@ export class SuggestController implements IEditorContribution {
 		if (keepAlternativeSuggestions) {
 			flags |= InsertFlags.KeepAlternativeSuggestions;
 		}
+
 		if (alternativeOverwriteConfig) {
 			flags |= InsertFlags.AlternativeOverwriteConfig;
 		}
+
 		this._insertSuggestion(item, flags);
 	}
 
@@ -1135,7 +1258,9 @@ export class SuggestController implements IEditorContribution {
 
 	cancelSuggestWidget(): void {
 		this.model.cancel();
+
 		this.model.clear();
+
 		this.widget.value.hideWidget();
 	}
 
@@ -1192,6 +1317,7 @@ export class SuggestController implements IEditorContribution {
 			// This method has no effect if the widget is not initialized yet.
 			return;
 		}
+
 		this.widget.value.stopForceRenderingAbove();
 	}
 
@@ -1209,7 +1335,9 @@ class PriorityRegistry<T> {
 		if (this._items.indexOf(value) !== -1) {
 			throw new Error("Value is already registered");
 		}
+
 		this._items.push(value);
+
 		this._items.sort(
 			(s1, s2) => this.prioritySelector(s2) - this.prioritySelector(s1),
 		);
@@ -1570,6 +1698,7 @@ registerEditorCommand(
 		),
 		handler: (c) => {
 			c.focusSuggestion();
+
 			c.acceptSelectedSuggestion(true, false);
 		},
 	}),

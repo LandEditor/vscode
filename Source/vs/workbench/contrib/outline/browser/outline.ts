@@ -12,7 +12,9 @@ export const enum OutlineSortOrder {
 }
 export interface IOutlineViewState {
 	followCursor: boolean;
+
 	filterOnType: boolean;
+
 	sortBy: OutlineSortOrder;
 }
 export namespace IOutlinePane {
@@ -20,7 +22,9 @@ export namespace IOutlinePane {
 }
 export interface IOutlinePane extends IView {
 	outlineViewState: IOutlineViewState;
+
 	collapseAll(): void;
+
 	expandAll(): void;
 }
 // --- context keys

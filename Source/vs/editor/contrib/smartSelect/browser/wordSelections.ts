@@ -17,6 +17,7 @@ import { ITextModel } from "../../../common/model.js";
 
 export class WordSelectionRangeProvider implements SelectionRangeProvider {
 	constructor(private readonly selectSubwords = true) {}
+
 	provideSelectionRanges(
 		model: ITextModel,
 		positions: Position[],
@@ -25,17 +26,23 @@ export class WordSelectionRangeProvider implements SelectionRangeProvider {
 
 		for (const position of positions) {
 			const bucket: SelectionRange[] = [];
+
 			result.push(bucket);
 
 			if (this.selectSubwords) {
 				this._addInWordRanges(bucket, model, position);
 			}
+
 			this._addWordRanges(bucket, model, position);
+
 			this._addWhitespaceLine(bucket, model, position);
+
 			bucket.push({ range: model.getFullModelRange() });
 		}
+
 		return result;
 	}
+
 	private _addInWordRanges(
 		bucket: SelectionRange[],
 		model: ITextModel,
@@ -46,6 +53,7 @@ export class WordSelectionRangeProvider implements SelectionRangeProvider {
 		if (!obj) {
 			return;
 		}
+
 		const { word, startColumn } = obj;
 
 		const offset = pos.column - startColumn;
@@ -69,8 +77,10 @@ export class WordSelectionRangeProvider implements SelectionRangeProvider {
 				// fooBar
 				break;
 			}
+
 			lastCh = ch;
 		}
+
 		start += 1;
 		// RIGHT anchor (end)
 		for (; end < word.length; end++) {
@@ -83,8 +93,10 @@ export class WordSelectionRangeProvider implements SelectionRangeProvider {
 				// foo-bar OR foo_bar
 				break;
 			}
+
 			lastCh = ch;
 		}
+
 		if (start < end) {
 			bucket.push({
 				range: new Range(
@@ -96,6 +108,7 @@ export class WordSelectionRangeProvider implements SelectionRangeProvider {
 			});
 		}
 	}
+
 	private _addWordRanges(
 		bucket: SelectionRange[],
 		model: ITextModel,
@@ -114,6 +127,7 @@ export class WordSelectionRangeProvider implements SelectionRangeProvider {
 			});
 		}
 	}
+
 	private _addWhitespaceLine(
 		bucket: SelectionRange[],
 		model: ITextModel,

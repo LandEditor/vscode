@@ -28,6 +28,7 @@ class Protocol implements IMessagePassingProtocol {
 			if (e.data) {
 				return VSBuffer.wrap(e.data);
 			}
+
 			return VSBuffer.alloc(0);
 		},
 	);
@@ -36,9 +37,11 @@ class Protocol implements IMessagePassingProtocol {
 		// we must call start() to ensure messages are flowing
 		port.start();
 	}
+
 	send(message: VSBuffer): void {
 		this.port.postMessage(message.buffer);
 	}
+
 	disconnect(): void {
 		this.port.close();
 	}
@@ -65,10 +68,12 @@ export class Server extends IPCServer {
 		assertType(isUtilityProcess(process), "Electron Utility Process");
 
 		const onCreateMessageChannel = new Emitter<MessagePortMain>();
+
 		process.parentPort.on("message", (e: MessageEvent) => {
 			if (filter?.handledClientConnection(e)) {
 				return;
 			}
+
 			const port = e.ports.at(0);
 
 			if (port) {
@@ -93,12 +98,14 @@ export class Server extends IPCServer {
 			return result;
 		});
 	}
+
 	constructor(filter?: IClientConnectionFilter) {
 		super(Server.getOnDidClientConnect(filter));
 	}
 }
 interface INodeMessagePortFragment {
 	on(event: "message", listener: (messageEvent: MessageEvent) => void): this;
+
 	removeListener(
 		event: "message",
 		listener: (messageEvent: MessageEvent) => void,
@@ -112,8 +119,10 @@ export function once(
 	const listener = (e: MessageEvent) => {
 		if (e.data === message) {
 			port.removeListener("message", listener);
+
 			callback();
 		}
 	};
+
 	port.on("message", listener);
 }

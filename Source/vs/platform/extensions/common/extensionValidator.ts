@@ -13,24 +13,39 @@ import { allApiProposals } from "./extensionsApiProposals.js";
 
 export interface IParsedVersion {
 	hasCaret: boolean;
+
 	hasGreaterEquals: boolean;
+
 	majorBase: number;
+
 	majorMustEqual: boolean;
+
 	minorBase: number;
+
 	minorMustEqual: boolean;
+
 	patchBase: number;
+
 	patchMustEqual: boolean;
+
 	preRelease: string | null;
 }
 
 export interface INormalizedVersion {
 	majorBase: number;
+
 	majorMustEqual: boolean;
+
 	minorBase: number;
+
 	minorMustEqual: boolean;
+
 	patchBase: number;
+
 	patchMustEqual: boolean;
+
 	notBefore: number /* milliseconds timestamp, or 0 */;
+
 	isMinimum: boolean;
 }
 
@@ -70,6 +85,7 @@ export function parseVersion(version: string): IParsedVersion | null {
 	if (!m) {
 		return null;
 	}
+
 	return {
 		hasCaret: m[1] === "^",
 		hasGreaterEquals: m[1] === ">=",
@@ -107,6 +123,7 @@ export function normalizeVersion(
 			patchMustEqual = false;
 		} else {
 			minorMustEqual = false;
+
 			patchMustEqual = false;
 		}
 	}
@@ -118,6 +135,7 @@ export function normalizeVersion(
 
 		if (match) {
 			const [, year, month, day] = match;
+
 			notBefore = Date.UTC(Number(year), Number(month) - 1, Number(day));
 		}
 	}
@@ -218,10 +236,15 @@ export function isValidVersion(
 		(!majorMustEqual || !minorMustEqual || !patchMustEqual)
 	) {
 		desiredMajorBase = 1;
+
 		desiredMinorBase = 0;
+
 		desiredPatchBase = 0;
+
 		majorMustEqual = true;
+
 		minorMustEqual = false;
+
 		patchMustEqual = false;
 	}
 
@@ -294,6 +317,7 @@ export function validateExtensionManifest(
 
 		return validations;
 	}
+
 	if (typeof extensionManifest.name !== "string") {
 		validations.push([
 			Severity.Error,
@@ -306,6 +330,7 @@ export function validateExtensionManifest(
 
 		return validations;
 	}
+
 	if (typeof extensionManifest.version !== "string") {
 		validations.push([
 			Severity.Error,
@@ -318,6 +343,7 @@ export function validateExtensionManifest(
 
 		return validations;
 	}
+
 	if (!extensionManifest.engines) {
 		validations.push([
 			Severity.Error,
@@ -330,6 +356,7 @@ export function validateExtensionManifest(
 
 		return validations;
 	}
+
 	if (typeof extensionManifest.engines.vscode !== "string") {
 		validations.push([
 			Severity.Error,
@@ -342,6 +369,7 @@ export function validateExtensionManifest(
 
 		return validations;
 	}
+
 	if (typeof extensionManifest.extensionDependencies !== "undefined") {
 		if (!isStringArray(extensionManifest.extensionDependencies)) {
 			validations.push([
@@ -356,6 +384,7 @@ export function validateExtensionManifest(
 			return validations;
 		}
 	}
+
 	if (typeof extensionManifest.activationEvents !== "undefined") {
 		if (!isStringArray(extensionManifest.activationEvents)) {
 			validations.push([
@@ -369,6 +398,7 @@ export function validateExtensionManifest(
 
 			return validations;
 		}
+
 		if (
 			typeof extensionManifest.main === "undefined" &&
 			typeof extensionManifest.browser === "undefined"
@@ -387,6 +417,7 @@ export function validateExtensionManifest(
 			return validations;
 		}
 	}
+
 	if (typeof extensionManifest.extensionKind !== "undefined") {
 		if (typeof extensionManifest.main === "undefined") {
 			validations.push([
@@ -400,6 +431,7 @@ export function validateExtensionManifest(
 			// not a failure case
 		}
 	}
+
 	if (typeof extensionManifest.main !== "undefined") {
 		if (typeof extensionManifest.main !== "string") {
 			validations.push([
@@ -432,6 +464,7 @@ export function validateExtensionManifest(
 			}
 		}
 	}
+
 	if (typeof extensionManifest.browser !== "undefined") {
 		if (typeof extensionManifest.browser !== "string") {
 			validations.push([
@@ -556,6 +589,7 @@ export function areApiProposalsCompatible(
 	productApiProposals: Readonly<{
 		[proposalName: string]: Readonly<{
 			proposal: string;
+
 			version?: number;
 		}>;
 	}>,
@@ -568,6 +602,7 @@ export function areApiProposalsCompatible(
 	if (apiProposals.length === 0) {
 		return true;
 	}
+
 	const notices: string[] | undefined = Array.isArray(arg1)
 		? arg1
 		: undefined;
@@ -575,6 +610,7 @@ export function areApiProposalsCompatible(
 	const productApiProposals: Readonly<{
 		[proposalName: string]: Readonly<{
 			proposal: string;
+
 			version?: number;
 		}>;
 	}> = (notices ? undefined : arg1) ?? allApiProposals;
@@ -587,12 +623,14 @@ export function areApiProposalsCompatible(
 		if (!version) {
 			continue;
 		}
+
 		const existingProposal = productApiProposals[proposalName];
 
 		if (existingProposal?.version !== version) {
 			incompatibleProposals.push(proposalName);
 		}
 	}
+
 	if (incompatibleProposals.length) {
 		if (notices) {
 			if (incompatibleProposals.length === 1) {
@@ -617,8 +655,10 @@ export function areApiProposalsCompatible(
 				);
 			}
 		}
+
 		return false;
 	}
+
 	return true;
 }
 
@@ -693,10 +733,12 @@ function isStringArray(arr: string[]): boolean {
 	if (!Array.isArray(arr)) {
 		return false;
 	}
+
 	for (let i = 0, len = arr.length; i < len; i++) {
 		if (typeof arr[i] !== "string") {
 			return false;
 		}
 	}
+
 	return true;
 }

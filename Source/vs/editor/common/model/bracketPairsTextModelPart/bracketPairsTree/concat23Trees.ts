@@ -14,9 +14,11 @@ export function concat23Trees(items: AstNode[]): AstNode | null {
 	if (items.length === 0) {
 		return null;
 	}
+
 	if (items.length === 1) {
 		return items[0];
 	}
+
 	let i = 0;
 	/**
 	 * Reads nodes of same height and concatenates them to a single node.
@@ -25,14 +27,17 @@ export function concat23Trees(items: AstNode[]): AstNode | null {
 		if (i >= items.length) {
 			return null;
 		}
+
 		const start = i;
 
 		const height = items[start].listHeight;
+
 		i++;
 
 		while (i < items.length && items[i].listHeight === height) {
 			i++;
 		}
+
 		if (i - start >= 2) {
 			return concat23TreesOfSameHeight(
 				start === 0 && i === items.length
@@ -52,15 +57,18 @@ export function concat23Trees(items: AstNode[]): AstNode | null {
 	if (!second) {
 		return first;
 	}
+
 	for (let item = readNode(); item; item = readNode()) {
 		// Prefer concatenating smaller trees, as the runtime of concat depends on the tree height.
 		if (heightDiff(first, second) <= heightDiff(second, item)) {
 			first = concat(first, second);
+
 			second = item;
 		} else {
 			second = concat(second, item);
 		}
 	}
+
 	const result = concat(first, second);
 
 	return result;
@@ -72,9 +80,11 @@ export function concat23TreesOfSameHeight(
 	if (items.length === 0) {
 		return null;
 	}
+
 	if (items.length === 1) {
 		return items[0];
 	}
+
 	let length = items.length;
 	// All trees have same height, just create parent nodes.
 	while (length > 3) {
@@ -82,6 +92,7 @@ export function concat23TreesOfSameHeight(
 
 		for (let i = 0; i < newLength; i++) {
 			const j = i << 1;
+
 			items[i] = ListAstNode.create23(
 				items[j],
 				items[j + 1],
@@ -89,8 +100,10 @@ export function concat23TreesOfSameHeight(
 				createImmutableLists,
 			);
 		}
+
 		length = newLength;
 	}
+
 	return ListAstNode.create23(
 		items[0],
 		items[1],
@@ -135,6 +148,7 @@ function append(list: ListAstNode, nodeToAppend: AstNode): AstNode {
 		if (curNode.kind !== AstNodeKind.List) {
 			throw new Error("unexpected");
 		}
+
 		parents.push(curNode);
 		// assert 2 <= curNode.childrenLength <= 3
 		curNode = curNode.makeLastElementMutable()!;
@@ -157,12 +171,14 @@ function append(list: ListAstNode, nodeToAppend: AstNode): AstNode {
 				);
 			} else {
 				parent.appendChildOfSameHeight(nodeToAppendOfCorrectHeight);
+
 				nodeToAppendOfCorrectHeight = undefined;
 			}
 		} else {
 			parent.handleChildrenChanged();
 		}
 	}
+
 	if (nodeToAppendOfCorrectHeight) {
 		return ListAstNode.create23(
 			list,
@@ -190,10 +206,12 @@ function prepend(list: ListAstNode, nodeToAppend: AstNode): AstNode {
 		if (curNode.kind !== AstNodeKind.List) {
 			throw new Error("unexpected");
 		}
+
 		parents.push(curNode);
 		// assert 2 <= curNode.childrenFast.length <= 3
 		curNode = curNode.makeFirstElementMutable()!;
 	}
+
 	let nodeToPrependOfCorrectHeight: AstNode | undefined = nodeToAppend;
 	// assert nodeToAppendOfCorrectHeight!.listHeight === curNode.listHeight
 	for (let i = parents.length - 1; i >= 0; i--) {
@@ -213,12 +231,14 @@ function prepend(list: ListAstNode, nodeToAppend: AstNode): AstNode {
 				);
 			} else {
 				parent.prependChildOfSameHeight(nodeToPrependOfCorrectHeight);
+
 				nodeToPrependOfCorrectHeight = undefined;
 			}
 		} else {
 			parent.handleChildrenChanged();
 		}
 	}
+
 	if (nodeToPrependOfCorrectHeight) {
 		return ListAstNode.create23(
 			nodeToPrependOfCorrectHeight,

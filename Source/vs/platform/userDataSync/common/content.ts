@@ -25,6 +25,7 @@ export function edit(
 			edit.content +
 			content.substring(edit.offset + edit.length);
 	}
+
 	return content;
 }
 export function getLineStartOffset(
@@ -40,6 +41,7 @@ export function getLineStartOffset(
 				return lineStartingOffset + 1;
 			}
 		}
+
 		lineStartingOffset--;
 
 		if (eol.length === 2) {
@@ -51,6 +53,7 @@ export function getLineStartOffset(
 			}
 		}
 	}
+
 	return 0;
 }
 export function getLineEndOffset(
@@ -66,6 +69,7 @@ export function getLineEndOffset(
 				return lineEndOffset;
 			}
 		}
+
 		lineEndOffset++;
 
 		if (eol.length === 2) {
@@ -77,5 +81,6 @@ export function getLineEndOffset(
 			}
 		}
 	}
+
 	return content.length - 1;
 }

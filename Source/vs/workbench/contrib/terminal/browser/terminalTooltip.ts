@@ -11,6 +11,7 @@ import { ITerminalInstance } from "./terminal.js";
 
 export function getInstanceHoverInfo(instance: ITerminalInstance): {
 	content: MarkdownString;
+
 	actions: IHoverAction[];
 } {
 	let statusString = "";
@@ -26,6 +27,7 @@ export function getInstanceHoverInfo(instance: ITerminalInstance): {
 			actions.push(...status.hoverActions);
 		}
 	}
+
 	const shellProcessString = getShellProcessTooltip(instance, true);
 
 	const shellIntegrationString = getShellIntegrationTooltip(instance, true);
@@ -49,9 +51,11 @@ export function getShellIntegrationTooltip(
 	if (instance.capabilities.has(TerminalCapability.CommandDetection)) {
 		shellIntegrationCapabilities.push(TerminalCapability.CommandDetection);
 	}
+
 	if (instance.capabilities.has(TerminalCapability.CwdDetection)) {
 		shellIntegrationCapabilities.push(TerminalCapability.CwdDetection);
 	}
+
 	let shellIntegrationString = "";
 
 	if (shellIntegrationCapabilities.length > 0) {
@@ -65,6 +69,7 @@ export function getShellIntegrationTooltip(
 			}
 		}
 	}
+
 	return shellIntegrationString;
 }
 export function getShellProcessTooltip(
@@ -88,6 +93,7 @@ export function getShellProcessTooltip(
 			) + "\n",
 		);
 	}
+
 	if (instance.shellLaunchConfig.executable) {
 		let commandLine = instance.shellLaunchConfig.executable;
 
@@ -100,6 +106,7 @@ export function getShellProcessTooltip(
 		if (args) {
 			commandLine += ` ${args}`;
 		}
+
 		lines.push(
 			localize(
 				"shellProcessTooltip.commandLine",
@@ -108,6 +115,7 @@ export function getShellProcessTooltip(
 			),
 		);
 	}
+
 	return lines.length
 		? `${markdown ? "\n\n---\n\n" : "\n\n"}${lines.join("\n")}`
 		: "";

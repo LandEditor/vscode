@@ -18,6 +18,7 @@ function findRenameLocations(
 			new StaticLanguageServiceHost(projectPath),
 		);
 	}
+
 	return (
 		service.findRenameLocations(fileName, position, false, false, {
 			providePrefixAndSuffixTextForRename: true,

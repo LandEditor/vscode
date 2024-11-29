@@ -186,6 +186,7 @@ export function toWorkspaceIdentifier(
 		if (isExtensionDevelopment) {
 			return EXTENSION_DEVELOPMENT_EMPTY_WINDOW_WORKSPACE;
 		}
+
 		return UNKNOWN_EMPTY_WINDOW_WORKSPACE;
 	}
 	// Multi root
@@ -282,6 +283,7 @@ export function reviveIdentifier(
 	if (identifier?.id) {
 		return { id: identifier.id };
 	}
+
 	return undefined;
 }
 export const enum WorkbenchState {
@@ -291,12 +293,16 @@ export const enum WorkbenchState {
 }
 export interface IWorkspaceFoldersWillChangeEvent {
 	readonly changes: IWorkspaceFoldersChangeEvent;
+
 	readonly fromCache: boolean;
+
 	join(promise: Promise<void>): void;
 }
 export interface IWorkspaceFoldersChangeEvent {
 	added: IWorkspaceFolder[];
+
 	removed: IWorkspaceFolder[];
+
 	changed: IWorkspaceFolder[];
 }
 export interface IWorkspace {
@@ -367,6 +373,7 @@ export class Workspace implements IWorkspace {
 			this._ignorePathCasing,
 			() => true,
 		);
+
 	private _folders!: WorkspaceFolder[];
 
 	constructor(
@@ -378,38 +385,53 @@ export class Workspace implements IWorkspace {
 	) {
 		this.folders = folders;
 	}
+
 	update(workspace: Workspace) {
 		this._id = workspace.id;
+
 		this._configuration = workspace.configuration;
+
 		this._transient = workspace.transient;
+
 		this._ignorePathCasing = workspace._ignorePathCasing;
+
 		this.folders = workspace.folders;
 	}
+
 	get folders(): WorkspaceFolder[] {
 		return this._folders;
 	}
+
 	set folders(folders: WorkspaceFolder[]) {
 		this._folders = folders;
+
 		this.updateFoldersMap();
 	}
+
 	get id(): string {
 		return this._id;
 	}
+
 	get transient(): boolean {
 		return this._transient;
 	}
+
 	get configuration(): URI | null {
 		return this._configuration;
 	}
+
 	set configuration(configuration: URI | null) {
 		this._configuration = configuration;
 	}
+
 	getFolder(resource: URI): IWorkspaceFolder | null {
 		if (!resource) {
 			return null;
 		}
+
 		return this._foldersMap.findSubstr(resource) || null;
 	}
+
 	private updateFoldersMap(): void {
 		this._foldersMap = TernarySearchTree.forUris<WorkspaceFolder>(
 			this._ignorePathCasing,
@@ -420,6 +442,7 @@ export class Workspace implements IWorkspace {
 			this._foldersMap.set(folder.uri, folder);
 		}
 	}
+
 	toJSON(): IWorkspace {
 		return {
 			id: this.id,
@@ -431,15 +454,19 @@ export class Workspace implements IWorkspace {
 }
 export interface IRawFileWorkspaceFolder {
 	readonly path: string;
+
 	name?: string;
 }
 export interface IRawUriWorkspaceFolder {
 	readonly uri: string;
+
 	name?: string;
 }
 export class WorkspaceFolder implements IWorkspaceFolder {
 	readonly uri: URI;
+
 	readonly name: string;
+
 	readonly index: number;
 
 	constructor(
@@ -454,12 +481,16 @@ export class WorkspaceFolder implements IWorkspaceFolder {
 		readonly raw?: IRawFileWorkspaceFolder | IRawUriWorkspaceFolder,
 	) {
 		this.uri = data.uri;
+
 		this.index = data.index;
+
 		this.name = data.name;
 	}
+
 	toResource(relativePath: string): URI {
 		return joinPath(this.uri, relativePath);
 	}
+
 	toJSON(): IWorkspaceFolderData {
 		return { uri: this.uri, name: this.name, index: this.index };
 	}
@@ -504,6 +535,7 @@ export function isTemporaryWorkspace(arg1: IWorkspace | URI): boolean {
 	} else {
 		path = arg1.configuration;
 	}
+
 	return path?.scheme === Schemas.tmp;
 }
 export const STANDALONE_EDITOR_WORKSPACE_ID =

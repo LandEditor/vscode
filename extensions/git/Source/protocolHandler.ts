@@ -28,6 +28,7 @@ export class GitProtocolHandler implements UriHandler {
 	constructor(private readonly logger: LogOutputChannel) {
 		this.disposables.push(window.registerUriHandler(this));
 	}
+
 	handleUri(uri: Uri): void {
 		this.logger.info(
 			`[GitProtocolHandler][handleUri] URI:(${uri.toString()})`,
@@ -38,6 +39,7 @@ export class GitProtocolHandler implements UriHandler {
 				this.clone(uri);
 		}
 	}
+
 	private async clone(uri: Uri): Promise<void> {
 		const data = querystring.parse(uri.query);
 
@@ -51,6 +53,7 @@ export class GitProtocolHandler implements UriHandler {
 
 			return;
 		}
+
 		if (Array.isArray(data.url) && data.url.length === 0) {
 			this.logger.warn(
 				"[GitProtocolHandler][clone] Failed to open URI:" +
@@ -59,6 +62,7 @@ export class GitProtocolHandler implements UriHandler {
 
 			return;
 		}
+
 		if (ref !== undefined && typeof ref !== "string") {
 			this.logger.warn(
 				"[GitProtocolHandler][clone] Failed to open URI due to multiple references:" +
@@ -67,6 +71,7 @@ export class GitProtocolHandler implements UriHandler {
 
 			return;
 		}
+
 		let cloneUri: Uri;
 
 		try {
@@ -74,6 +79,7 @@ export class GitProtocolHandler implements UriHandler {
 			// Handle SSH Uri
 			// Ex: git@github.com:microsoft/vscode.git
 			rawUri = rawUri.replace(/^(git@[^\/:]+)(:)/i, "ssh://$1/");
+
 			cloneUri = Uri.parse(rawUri, true);
 			// Validate against supported schemes
 			if (!schemes.has(cloneUri.scheme.toLowerCase())) {
@@ -90,6 +96,7 @@ export class GitProtocolHandler implements UriHandler {
 
 			return;
 		}
+
 		if (!(await commands.getCommands(true)).includes("git.clone")) {
 			this.logger.error(
 				"[GitProtocolHandler][clone] Could not complete git clone operation as git installation was not found.",
@@ -113,17 +120,21 @@ export class GitProtocolHandler implements UriHandler {
 					Uri.parse("https://aka.ms/vscode-download-git"),
 				);
 			}
+
 			return;
 		} else {
 			const cloneTarget = cloneUri.toString(true);
+
 			this.logger.info(
 				`[GitProtocolHandler][clone] Executing git.clone for ${cloneTarget}`,
 			);
+
 			commands.executeCommand("git.clone", cloneTarget, undefined, {
 				ref: ref,
 			});
 		}
 	}
+
 	dispose(): void {
 		this.disposables = dispose(this.disposables);
 	}

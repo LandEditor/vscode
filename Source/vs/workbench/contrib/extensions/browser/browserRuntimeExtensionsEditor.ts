@@ -15,16 +15,19 @@ export class RuntimeExtensionsEditor extends AbstractRuntimeExtensionsEditor {
 	protected _getProfileInfo(): IExtensionHostProfile | null {
 		return null;
 	}
+
 	protected _getUnresponsiveProfile(
 		extensionId: ExtensionIdentifier,
 	): IExtensionHostProfile | undefined {
 		return undefined;
 	}
+
 	protected _createSlowExtensionAction(
 		element: IRuntimeExtension,
 	): Action | null {
 		return null;
 	}
+
 	protected _createReportExtensionIssueAction(
 		element: IRuntimeExtension,
 	): Action | null {
@@ -34,6 +37,7 @@ export class RuntimeExtensionsEditor extends AbstractRuntimeExtensionsEditor {
 				element.description,
 			);
 		}
+
 		return null;
 	}
 }

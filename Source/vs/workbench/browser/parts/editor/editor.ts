@@ -159,11 +159,13 @@ export function getEditorPartOptions(
 			options.autoLockGroups = DEFAULT_EDITOR_PART_OPTIONS.autoLockGroups;
 		}
 	}
+
 	const windowConfig = configurationService.getValue<IWindowsConfiguration>();
 
 	if (windowConfig?.window?.density?.editorTabHeight) {
 		options.tabHeight = windowConfig.window.density.editorTabHeight;
 	}
+
 	return validateEditorPartOptions(options);
 }
 function validateEditorPartOptions(
@@ -173,6 +175,7 @@ function validateEditorPartOptions(
 	if (typeof options.showTabs === "boolean") {
 		options.showTabs = options.showTabs ? "multiple" : "single";
 	}
+
 	return verifyObject<IEditorPartOptions>(
 		{
 			"wrapTabs": new BooleanVerifier(
@@ -342,17 +345,23 @@ function validateEditorPartOptions(
  */
 export interface IEditorPartsView {
 	readonly mainPart: IEditorGroupsView;
+
 	registerPart(part: IEditorPart): IDisposable;
+
 	readonly activeGroup: IEditorGroupView;
+
 	readonly groups: IEditorGroupView[];
 
 	getGroup(identifier: GroupIdentifier): IEditorGroupView | undefined;
 
 	getGroups(order?: GroupsOrder): IEditorGroupView[];
+
 	readonly count: number;
+
 	createAuxiliaryEditorPart(
 		options?: IAuxiliaryWindowOpenOptions,
 	): Promise<IAuxiliaryEditorPart>;
+
 	bind<T extends ContextKeyValue>(
 		contextKey: RawContextKey<T>,
 		group: IEditorGroupView,
@@ -363,51 +372,66 @@ export interface IEditorPartsView {
  */
 export interface IEditorGroupsView {
 	readonly windowId: number;
+
 	readonly groups: IEditorGroupView[];
+
 	readonly activeGroup: IEditorGroupView;
+
 	readonly partOptions: IEditorPartOptions;
+
 	readonly onDidChangeEditorPartOptions: Event<IEditorPartOptionsChangeEvent>;
+
 	readonly onDidVisibilityChange: Event<boolean>;
 
 	getGroup(identifier: GroupIdentifier): IEditorGroupView | undefined;
 
 	getGroups(order: GroupsOrder): IEditorGroupView[];
+
 	activateGroup(
 		identifier: IEditorGroupView | GroupIdentifier,
 		preserveWindowOrder?: boolean,
 	): IEditorGroupView;
+
 	restoreGroup(
 		identifier: IEditorGroupView | GroupIdentifier,
 	): IEditorGroupView;
+
 	addGroup(
 		location: IEditorGroupView | GroupIdentifier,
 		direction: GroupDirection,
 		groupToCopy?: IEditorGroupView,
 	): IEditorGroupView;
+
 	mergeGroup(
 		group: IEditorGroupView | GroupIdentifier,
 		target: IEditorGroupView | GroupIdentifier,
 		options?: IMergeGroupOptions,
 	): boolean;
+
 	moveGroup(
 		group: IEditorGroupView | GroupIdentifier,
 		location: IEditorGroupView | GroupIdentifier,
 		direction: GroupDirection,
 	): IEditorGroupView;
+
 	copyGroup(
 		group: IEditorGroupView | GroupIdentifier,
 		location: IEditorGroupView | GroupIdentifier,
 		direction: GroupDirection,
 	): IEditorGroupView;
+
 	removeGroup(
 		group: IEditorGroupView | GroupIdentifier,
 		preserveFocus?: boolean,
 	): void;
+
 	arrangeGroups(
 		arrangement: GroupsArrangement,
 		target?: IEditorGroupView | GroupIdentifier,
 	): void;
+
 	toggleMaximizeGroup(group?: IEditorGroupView | GroupIdentifier): void;
+
 	toggleExpandGroup(group?: IEditorGroupView | GroupIdentifier): void;
 }
 export interface IEditorGroupTitleHeight {
@@ -438,9 +462,13 @@ export interface IEditorGroupView
 		ISerializableView,
 		IEditorGroup {
 	readonly onDidFocus: Event<void>;
+
 	readonly onWillOpenEditor: Event<IEditorWillOpenEvent>;
+
 	readonly onDidOpenEditorFail: Event<EditorInput>;
+
 	readonly onDidCloseEditor: Event<IEditorCloseEvent>;
+
 	readonly groupsView: IEditorGroupsView;
 	/**
 	 * A promise that resolves when the group has been restored.
@@ -449,17 +477,23 @@ export interface IEditorGroupView
 	 * when the active editor has finished to resolve.
 	 */
 	readonly whenRestored: Promise<void>;
+
 	readonly titleHeight: IEditorGroupTitleHeight;
+
 	readonly disposed: boolean;
 
 	setActive(isActive: boolean): void;
+
 	notifyIndexChanged(newIndex: number): void;
+
 	notifyLabelChanged(newLabel: string): void;
+
 	openEditor(
 		editor: EditorInput,
 		options?: IEditorOptions,
 		internalOptions?: IInternalEditorOpenOptions,
 	): Promise<IEditorPane | undefined>;
+
 	relayout(): void;
 }
 export function fillActiveEditorViewState(
@@ -479,6 +513,7 @@ export function fillActiveEditorViewState(
 
 		return options;
 	}
+
 	return presetOptions || Object.create(null);
 }
 /**

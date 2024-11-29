@@ -395,6 +395,7 @@ export interface IManagedHoverTooltipMarkdownString {
 		| ((
 				token: CancellationToken,
 		  ) => Promise<IMarkdownString | string | undefined>);
+
 	markdownNotSupportedFallback: string | undefined;
 }
 

@@ -135,13 +135,19 @@ const DEBUG_TOOLBAR_Y_KEY = "debug.actionswidgety";
 
 export class DebugToolBar extends Themable implements IWorkbenchContribution {
 	private $el: HTMLElement;
+
 	private dragArea: HTMLElement;
+
 	private actionBar: ActionBar;
+
 	private activeActions: IAction[];
+
 	private updateScheduler: RunOnceScheduler;
+
 	private debugToolBarMenu: IMenu;
 
 	private isVisible = false;
+
 	private isBuilt = false;
 
 	private readonly stopActionViewItemDisposables = this._register(
@@ -190,6 +196,7 @@ export class DebugToolBar extends Themable implements IWorkbenchContribution {
 		const controlsOnRight =
 			customTitleBar &&
 			(platform === Platform.Windows || platform === Platform.Linux);
+
 		this.$el.style.transform = `translate(
 			min(
 				max(${controlsOnLeft ? "60px" : "0px"}, calc(-50% + (100vw * var(--x-position)))),
@@ -209,13 +216,16 @@ export class DebugToolBar extends Themable implements IWorkbenchContribution {
 			this.$el,
 			dom.$("div.action-bar-container"),
 		);
+
 		this.debugToolBarMenu = menuService.createMenu(
 			MenuId.DebugToolBar,
 			contextKeyService,
 		);
+
 		this._register(this.debugToolBarMenu);
 
 		this.activeActions = [];
+
 		this.actionBar = this._register(
 			new ActionBar(actionBarContainer, {
 				orientation: ActionsOrientation.HORIZONTAL,
@@ -298,7 +308,9 @@ export class DebugToolBar extends Themable implements IWorkbenchContribution {
 					)
 				) {
 					this.actionBar.clear();
+
 					this.actionBar.push(actions, { icon: true, label: false });
+
 					this.activeActions = actions;
 				}
 
@@ -307,7 +319,9 @@ export class DebugToolBar extends Themable implements IWorkbenchContribution {
 		);
 
 		this.updateStyles();
+
 		this.registerListeners();
+
 		this.hide();
 	}
 
@@ -317,25 +331,30 @@ export class DebugToolBar extends Themable implements IWorkbenchContribution {
 				this.updateScheduler.schedule(),
 			),
 		);
+
 		this._register(
 			this.configurationService.onDidChangeConfiguration((e) => {
 				if (e.affectsConfiguration("debug.toolBarLocation")) {
 					this.updateScheduler.schedule();
 				}
+
 				if (
 					e.affectsConfiguration(LayoutSettings.EDITOR_TABS_MODE) ||
 					e.affectsConfiguration(LayoutSettings.COMMAND_CENTER)
 				) {
 					this._yRange = undefined;
+
 					this.setCoordinates();
 				}
 			}),
 		);
+
 		this._register(
 			this.debugToolBarMenu.onDidChange(() =>
 				this.updateScheduler.schedule(),
 			),
 		);
+
 		this._register(
 			this.actionBar.actionRunner.onDidRun((e: IRunEvent) => {
 				// check for error
@@ -366,6 +385,7 @@ export class DebugToolBar extends Themable implements IWorkbenchContribution {
 					if (mouseClickEvent.detail === 2) {
 						// double click on debug bar centers it again #8250
 						this.setCoordinates(0.5, this.yDefault);
+
 						this.storePosition();
 					}
 				},
@@ -398,6 +418,7 @@ export class DebugToolBar extends Themable implements IWorkbenchContribution {
 								);
 								// Prevent default to stop editor selecting text #8524
 								mouseMoveEvent.preventDefault();
+
 								this.setCoordinates(
 									originX +
 										(mouseMoveEvent.posx -
@@ -415,9 +436,11 @@ export class DebugToolBar extends Themable implements IWorkbenchContribution {
 							activeWindow,
 							(e: MouseEvent) => {
 								this.storePosition();
+
 								this.dragArea.classList.remove("dragged");
 
 								mouseMoveListener.dispose();
+
 								mouseUpListener.dispose();
 							},
 						);
@@ -443,6 +466,7 @@ export class DebugToolBar extends Themable implements IWorkbenchContribution {
 
 				if (this.isBuilt) {
 					this.doShowInActiveContainer();
+
 					this.setCoordinates();
 				}
 			}),
@@ -475,6 +499,7 @@ export class DebugToolBar extends Themable implements IWorkbenchContribution {
 				StorageScope.PROFILE,
 				StorageTarget.MACHINE,
 			);
+
 			this.storageService.store(
 				DEBUG_TOOLBAR_Y_KEY,
 				y,
@@ -494,6 +519,7 @@ export class DebugToolBar extends Themable implements IWorkbenchContribution {
 				this.getColor(debugToolBarBackground) || "";
 
 			const widgetShadowColor = this.getColor(widgetShadow);
+
 			this.$el.style.boxShadow = widgetShadowColor
 				? `0 0 8px 2px ${widgetShadowColor}`
 				: "";
@@ -508,6 +534,7 @@ export class DebugToolBar extends Themable implements IWorkbenchContribution {
 				this.$el.style.border = borderColor
 					? `solid ${borderColor}`
 					: "none";
+
 				this.$el.style.border = "1px 0";
 			}
 		}
@@ -554,11 +581,15 @@ export class DebugToolBar extends Themable implements IWorkbenchContribution {
 		}
 
 		x ??= this.getStoredXPosition();
+
 		y ??= this.getStoredYPosition();
 
 		const [yMin, yMax] = this.yRange;
+
 		y = Math.max(yMin, Math.min(y, yMax));
+
 		this.$el.style.setProperty("--x-position", `${x}`);
+
 		this.$el.style.setProperty("--y-position", `${y}px`);
 	}
 
@@ -567,6 +598,7 @@ export class DebugToolBar extends Themable implements IWorkbenchContribution {
 	}
 
 	private _yRange: [number, number] | undefined;
+
 	private get yRange(): [number, number] {
 		if (!this._yRange) {
 			const isTitleBarVisible = this.layoutService.isVisible(
@@ -599,8 +631,10 @@ export class DebugToolBar extends Themable implements IWorkbenchContribution {
 			) {
 				yMax += 35;
 			}
+
 			this._yRange = [yMin, yMax];
 		}
+
 		return this._yRange;
 	}
 
@@ -610,19 +644,23 @@ export class DebugToolBar extends Themable implements IWorkbenchContribution {
 
 			return;
 		}
+
 		if (!this.isBuilt) {
 			this.isBuilt = true;
+
 			this.doShowInActiveContainer();
 		}
 
 		this.isVisible = true;
 
 		dom.show(this.$el);
+
 		this.setCoordinates();
 	}
 
 	private doShowInActiveContainer(): void {
 		this.layoutService.activeContainer.appendChild(this.$el);
+
 		this.trackPixelRatioListener.value = PixelRatio.getInstance(
 			dom.getWindow(this.$el),
 		).onDidChange(() => this.setCoordinates());

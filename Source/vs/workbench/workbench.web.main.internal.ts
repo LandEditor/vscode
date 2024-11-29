@@ -255,6 +255,7 @@ if ((globalThis as any).__VSCODE_WEB_ESM_PROMISE) {
 		Menu: Menu,
 	};
 	(globalThis as any).__VSCODE_WEB_ESM_PROMISE(exports);
+
 	delete (globalThis as any).__VSCODE_WEB_ESM_PROMISE;
 }
 export {

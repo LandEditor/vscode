@@ -67,9 +67,13 @@ class DecorationRule {
 	private static readonly _classNamesPrefix = "monaco-decoration";
 
 	readonly data: IDecorationData | IDecorationData[];
+
 	readonly itemColorClassName: string;
+
 	readonly itemBadgeClassName: string;
+
 	readonly iconBadgeClassName: string;
+
 	readonly bubbleBadgeClassName: string;
 
 	private _refCounter: number = 0;
@@ -82,9 +86,13 @@ class DecorationRule {
 		this.data = data;
 
 		const suffix = hash(key).toString(36);
+
 		this.itemColorClassName = `${DecorationRule._classNamesPrefix}-itemColor-${suffix}`;
+
 		this.itemBadgeClassName = `${DecorationRule._classNamesPrefix}-itemBadge-${suffix}`;
+
 		this.bubbleBadgeClassName = `${DecorationRule._classNamesPrefix}-bubbleBadge-${suffix}`;
+
 		this.iconBadgeClassName = `${DecorationRule._classNamesPrefix}-iconBadge-${suffix}`;
 	}
 
@@ -133,6 +141,7 @@ class DecorationRule {
 	): void {
 		// label
 		const { color } = data.find((d) => !!d.color) ?? data[0];
+
 		createCSSRule(
 			`.${this.itemColorClassName}`,
 			`color: ${getColor(color)};`,
@@ -185,11 +194,13 @@ class DecorationRule {
 		if (modifier) {
 			icon = ThemeIcon.modify(icon, undefined);
 		}
+
 		const iconContribution = getIconRegistry().getIcon(icon.id);
 
 		if (!iconContribution) {
 			return;
 		}
+
 		const definition = this.themeService
 			.getProductIconTheme()
 			.getIcon(iconContribution);
@@ -197,13 +208,19 @@ class DecorationRule {
 		if (!definition) {
 			return;
 		}
+
 		createCSSRule(
 			`.${this.iconBadgeClassName}::after`,
 			`content: '${definition.fontCharacter}';
+
 			color: ${icon.color ? getColor(icon.color.id) : getColor(color)};
+
 			font-family: ${cssValue.stringValue(definition.font?.id ?? "codicon")};
+
 			font-size: 16px;
+
 			margin-right: 14px;
+
 			font-weight: normal;
 			${modifier === "spin" ? "animation: codicon-spin 1.5s steps(30) infinite" : ""};
 			`,
@@ -213,19 +230,24 @@ class DecorationRule {
 
 	removeCSSRules(element: HTMLStyleElement): void {
 		removeCSSRulesContainingSelector(this.itemColorClassName, element);
+
 		removeCSSRulesContainingSelector(this.itemBadgeClassName, element);
+
 		removeCSSRulesContainingSelector(this.bubbleBadgeClassName, element);
+
 		removeCSSRulesContainingSelector(this.iconBadgeClassName, element);
 	}
 }
 
 class DecorationStyles {
 	private readonly _dispoables = new DisposableStore();
+
 	private readonly _styleElement = createStyleSheet(
 		undefined,
 		undefined,
 		this._dispoables,
 	);
+
 	private readonly _decorationRules = new Map<string, DecorationRule>();
 
 	constructor(private readonly _themeService: IThemeService) {}
@@ -245,7 +267,9 @@ class DecorationStyles {
 		if (!rule) {
 			// new css rule
 			rule = new DecorationRule(this._themeService, data, key);
+
 			this._decorationRules.set(key, rule);
+
 			rule.appendCSSRules(this._styleElement);
 		}
 
@@ -268,6 +292,7 @@ class DecorationStyles {
 		if (onlyChildren) {
 			// show items from its children only
 			badgeClassName = rule.bubbleBadgeClassName;
+
 			tooltip = localize("bubbleTitle", "Contains emphasized items");
 		}
 
@@ -280,7 +305,9 @@ class DecorationStyles {
 			dispose: () => {
 				if (rule?.release()) {
 					this._decorationRules.delete(key);
+
 					rule.removeCSSRules(this._styleElement);
+
 					rule = undefined;
 				}
 			},
@@ -320,9 +347,11 @@ export class DecorationsService implements IDecorationsService {
 	declare _serviceBrand: undefined;
 
 	private readonly _store = new DisposableStore();
+
 	private readonly _onDidChangeDecorationsDelayed = this._store.add(
 		new DebounceEmitter<URI | URI[]>({ merge: (all) => all.flat() }),
 	);
+
 	private readonly _onDidChangeDecorations = this._store.add(
 		new Emitter<IResourceDecorationChangeEvent>(),
 	);
@@ -331,7 +360,9 @@ export class DecorationsService implements IDecorationsService {
 		this._onDidChangeDecorations.event;
 
 	private readonly _provider = new LinkedList<IDecorationsProvider>();
+
 	private readonly _decorationStyles: DecorationStyles;
+
 	private readonly _data: TernarySearchTree<URI, DecorationEntry>;
 
 	constructor(
@@ -339,6 +370,7 @@ export class DecorationsService implements IDecorationsService {
 		@IThemeService themeService: IThemeService,
 	) {
 		this._decorationStyles = new DecorationStyles(themeService);
+
 		this._data = TernarySearchTree.forUris((key) =>
 			uriIdentityService.extUri.ignorePathCasing(key),
 		);
@@ -354,6 +386,7 @@ export class DecorationsService implements IDecorationsService {
 
 	dispose(): void {
 		this._store.dispose();
+
 		this._data.clear();
 	}
 
@@ -376,6 +409,7 @@ export class DecorationsService implements IDecorationsService {
 					uris.push(uri);
 				}
 			}
+
 			if (uris.length > 0) {
 				this._onDidChangeDecorationsDelayed.fire(uris);
 			}
@@ -389,6 +423,7 @@ export class DecorationsService implements IDecorationsService {
 				// selective changes -> drop for resource, fetch again, send event
 				for (const uri of uris) {
 					const map = this._ensureEntry(uri);
+
 					this._fetchData(map, uri, provider);
 				}
 			}
@@ -396,7 +431,9 @@ export class DecorationsService implements IDecorationsService {
 
 		return toDisposable(() => {
 			rm();
+
 			listener.dispose();
+
 			removeAll();
 		});
 	}
@@ -407,8 +444,10 @@ export class DecorationsService implements IDecorationsService {
 		if (!map) {
 			// nothing known about this uri
 			map = new Map();
+
 			this._data.set(uri, map);
 		}
+
 		return map;
 	}
 
@@ -443,6 +482,7 @@ export class DecorationsService implements IDecorationsService {
 						if (data && !(data instanceof DecorationDataRequest)) {
 							if (data.bubble) {
 								all.push(data);
+
 								containsChildren = true;
 							}
 						}
@@ -466,6 +506,7 @@ export class DecorationsService implements IDecorationsService {
 
 		if (pendingRequest instanceof DecorationDataRequest) {
 			pendingRequest.source.cancel();
+
 			map.delete(provider);
 		}
 
@@ -522,12 +563,14 @@ export class DecorationsService implements IDecorationsService {
 		const deco = data ? data : null;
 
 		const old = map.get(provider);
+
 		map.set(provider, deco);
 
 		if (deco || old) {
 			// only fire event when something changed
 			this._onDidChangeDecorationsDelayed.fire(uri);
 		}
+
 		return deco;
 	}
 }

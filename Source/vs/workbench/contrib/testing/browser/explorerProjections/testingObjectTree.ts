@@ -34,6 +34,7 @@ export class TestingObjectTree<TFilterData = void> extends WorkbenchObjectTree<
 			if (!(node.element instanceof TestItemTreeElement)) {
 				return false;
 			}
+
 			const localId = TestId.localId(node.element.test.item.extId);
 
 			const inTree = parent.children?.[localId] || {};
@@ -51,14 +52,18 @@ export class TestingObjectTree<TFilterData = void> extends WorkbenchObjectTree<
 						build(child, inTree) || hasAnyNonDefaultValue;
 				}
 			}
+
 			if (hasAnyNonDefaultValue) {
 				parent.children ??= {};
+
 				parent.children[localId] = inTree;
 			} else if (parent.children?.hasOwnProperty(localId)) {
 				delete parent.children[localId];
 			}
+
 			return hasAnyNonDefaultValue;
 		};
+
 		root.children ??= {};
 		// Controller IDs are hidden if there's only a single test controller, but
 		// make sure they're added when the tree is built if this is the case, so
@@ -74,10 +79,12 @@ export class TestingObjectTree<TFilterData = void> extends WorkbenchObjectTree<
 					const ctrlNode = (root.children[
 						node.element.test.controllerId
 					] ??= { children: {} });
+
 					build(node, ctrlNode);
 				}
 			}
 		}
+
 		return root;
 	}
 }

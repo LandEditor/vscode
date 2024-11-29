@@ -8,11 +8,14 @@ export function deepClone<T>(obj: T): T {
 	if (!obj || typeof obj !== "object") {
 		return obj;
 	}
+
 	if (obj instanceof RegExp) {
 		// See https://github.com/microsoft/TypeScript/issues/10990
 		return obj as any;
 	}
+
 	const result: any = Array.isArray(obj) ? [] : {};
+
 	Object.keys(<any>obj).forEach((key: string) => {
 		if ((<any>obj)[key] && typeof (<any>obj)[key] === "object") {
 			result[key] = deepClone((<any>obj)[key]);
@@ -28,6 +31,7 @@ export function objectEquals(one: any, other: any) {
 	if (one === other) {
 		return true;
 	}
+
 	if (
 		one === null ||
 		one === undefined ||
@@ -36,15 +40,19 @@ export function objectEquals(one: any, other: any) {
 	) {
 		return false;
 	}
+
 	if (typeof one !== typeof other) {
 		return false;
 	}
+
 	if (typeof one !== "object") {
 		return false;
 	}
+
 	if (Array.isArray(one) !== Array.isArray(other)) {
 		return false;
 	}
+
 	let i: number;
 
 	let key: string;
@@ -53,6 +61,7 @@ export function objectEquals(one: any, other: any) {
 		if (one.length !== other.length) {
 			return false;
 		}
+
 		for (i = 0; i < one.length; i++) {
 			if (!objectEquals(one[i], other[i])) {
 				return false;
@@ -64,6 +73,7 @@ export function objectEquals(one: any, other: any) {
 		for (key in one) {
 			oneKeys.push(key);
 		}
+
 		oneKeys.sort();
 
 		const otherKeys: string[] = [];
@@ -71,17 +81,20 @@ export function objectEquals(one: any, other: any) {
 		for (key in other) {
 			otherKeys.push(key);
 		}
+
 		otherKeys.sort();
 
 		if (!objectEquals(oneKeys, otherKeys)) {
 			return false;
 		}
+
 		for (i = 0; i < oneKeys.length; i++) {
 			if (!objectEquals(one[oneKeys[i]], other[oneKeys[i]])) {
 				return false;
 			}
 		}
 	}
+
 	return true;
 }
 /**
@@ -90,23 +103,32 @@ export function objectEquals(one: any, other: any) {
  */
 export class Delayer<T> {
 	public defaultDelay: number;
+
 	private _timeout: any; // Timer
 	private _cancelTimeout: Promise<T | null> | null;
+
 	private _onSuccess:
 		| ((value: T | PromiseLike<T> | undefined) => void)
 		| null;
+
 	private _task: ITask<T> | null;
 
 	constructor(defaultDelay: number) {
 		this.defaultDelay = defaultDelay;
+
 		this._timeout = null;
+
 		this._cancelTimeout = null;
+
 		this._onSuccess = null;
+
 		this._task = null;
 	}
+
 	dispose() {
 		this._doCancelTimeout();
 	}
+
 	public trigger(
 		task: ITask<T>,
 		delay: number = this.defaultDelay,
@@ -116,33 +138,41 @@ export class Delayer<T> {
 		if (delay >= 0) {
 			this._doCancelTimeout();
 		}
+
 		if (!this._cancelTimeout) {
 			this._cancelTimeout = new Promise<T | undefined>((resolve) => {
 				this._onSuccess = resolve;
 			}).then(() => {
 				this._cancelTimeout = null;
+
 				this._onSuccess = null;
 
 				const result = this._task && this._task?.();
+
 				this._task = null;
 
 				return result;
 			});
 		}
+
 		if (delay >= 0 || this._timeout === null) {
 			this._timeout = setTimeout(
 				() => {
 					this._timeout = null;
+
 					this._onSuccess?.(undefined);
 				},
 				delay >= 0 ? delay : this.defaultDelay,
 			);
 		}
+
 		return this._cancelTimeout;
 	}
+
 	private _doCancelTimeout(): void {
 		if (this._timeout !== null) {
 			clearTimeout(this._timeout);
+
 			this._timeout = null;
 		}
 	}
@@ -159,6 +189,7 @@ export function generateUuid() {
 		for (let i = 0; i < bucket.length; i++) {
 			bucket[i] = Math.floor(Math.random() * 256);
 		}
+
 		return bucket;
 	}
 	// prep-work
@@ -173,30 +204,51 @@ export function generateUuid() {
 	getRandomValues(_data);
 	// set version bits
 	_data[6] = (_data[6] & 0x0f) | 0x40;
+
 	_data[8] = (_data[8] & 0x3f) | 0x80;
 	// print as string
 	let i = 0;
 
 	let result = "";
+
 	result += _hex[_data[i++]];
+
 	result += _hex[_data[i++]];
+
 	result += _hex[_data[i++]];
+
 	result += _hex[_data[i++]];
+
 	result += "-";
+
 	result += _hex[_data[i++]];
+
 	result += _hex[_data[i++]];
+
 	result += "-";
+
 	result += _hex[_data[i++]];
+
 	result += _hex[_data[i++]];
+
 	result += "-";
+
 	result += _hex[_data[i++]];
+
 	result += _hex[_data[i++]];
+
 	result += "-";
+
 	result += _hex[_data[i++]];
+
 	result += _hex[_data[i++]];
+
 	result += _hex[_data[i++]];
+
 	result += _hex[_data[i++]];
+
 	result += _hex[_data[i++]];
+
 	result += _hex[_data[i++]];
 
 	return result;
@@ -212,52 +264,69 @@ const enum DeferredOutcome {
  */
 export class DeferredPromise<T> {
 	private completeCallback!: ValueCallback<T>;
+
 	private errorCallback!: (err: unknown) => void;
+
 	private outcome?:
 		| {
 				outcome: DeferredOutcome.Rejected;
+
 				value: any;
 		  }
 		| {
 				outcome: DeferredOutcome.Resolved;
+
 				value: T;
 		  };
+
 	public get isRejected() {
 		return this.outcome?.outcome === DeferredOutcome.Rejected;
 	}
+
 	public get isResolved() {
 		return this.outcome?.outcome === DeferredOutcome.Resolved;
 	}
+
 	public get isSettled() {
 		return !!this.outcome;
 	}
+
 	public get value() {
 		return this.outcome?.outcome === DeferredOutcome.Resolved
 			? this.outcome?.value
 			: undefined;
 	}
+
 	public readonly p: Promise<T>;
 
 	constructor() {
 		this.p = new Promise<T>((c, e) => {
 			this.completeCallback = c;
+
 			this.errorCallback = e;
 		});
 	}
+
 	public complete(value: T) {
 		return new Promise<void>((resolve) => {
 			this.completeCallback(value);
+
 			this.outcome = { outcome: DeferredOutcome.Resolved, value };
+
 			resolve();
 		});
 	}
+
 	public error(err: unknown) {
 		return new Promise<void>((resolve) => {
 			this.errorCallback(err);
+
 			this.outcome = { outcome: DeferredOutcome.Rejected, value: err };
+
 			resolve();
 		});
 	}
+
 	public cancel() {
 		return this.error(new CancellationError());
 	}

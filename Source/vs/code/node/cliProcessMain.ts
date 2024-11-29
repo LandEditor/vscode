@@ -128,8 +128,11 @@ class CliMain extends Disposable {
 
 		return instantiationService.invokeFunction(async (accessor) => {
 			const logService = accessor.get(ILogService);
+
 			const fileService = accessor.get(IFileService);
+
 			const environmentService = accessor.get(INativeEnvironmentService);
+
 			const userDataProfilesService = accessor.get(
 				IUserDataProfilesService,
 			);
@@ -154,6 +157,7 @@ class CliMain extends Disposable {
 					raceTimeout(a.flush(), 1000);
 				}),
 			);
+
 			return;
 		});
 	}
@@ -165,6 +169,7 @@ class CliMain extends Disposable {
 
 		// Product
 		const productService = { _serviceBrand: undefined, ...product };
+
 		services.set(IProductService, productService);
 
 		// Environment
@@ -172,6 +177,7 @@ class CliMain extends Disposable {
 			this.argv,
 			productService,
 		);
+
 		services.set(INativeEnvironmentService, environmentService);
 
 		// Init folders
@@ -193,31 +199,38 @@ class CliMain extends Disposable {
 			getLogLevel(environmentService),
 			environmentService.logsHome,
 		);
+
 		services.set(ILoggerService, loggerService);
 
 		// Log
 		const logger = this._register(
 			loggerService.createLogger("cli", { name: localize("cli", "CLI") }),
 		);
+
 		const otherLoggers: ILogger[] = [];
+
 		if (loggerService.getLogLevel() === LogLevel.Trace) {
 			otherLoggers.push(new ConsoleLogger(loggerService.getLogLevel()));
 		}
 
 		const logService = this._register(new LogService(logger, otherLoggers));
+
 		services.set(ILogService, logService);
 
 		// Files
 		const fileService = this._register(new FileService(logService));
+
 		services.set(IFileService, fileService);
 
 		const diskFileSystemProvider = this._register(
 			new DiskFileSystemProvider(logService),
 		);
+
 		fileService.registerProvider(Schemas.file, diskFileSystemProvider);
 
 		// Uri Identity
 		const uriIdentityService = new UriIdentityService(fileService);
+
 		services.set(IUriIdentityService, uriIdentityService);
 
 		// User Data Profiles
@@ -227,6 +240,7 @@ class CliMain extends Disposable {
 			logService,
 			fileService,
 		);
+
 		const userDataProfilesService = new UserDataProfilesReadonlyService(
 			stateService,
 			uriIdentityService,
@@ -234,6 +248,7 @@ class CliMain extends Disposable {
 			fileService,
 			logService,
 		);
+
 		services.set(IUserDataProfilesService, userDataProfilesService);
 
 		// Use FileUserDataProvider for user data to
@@ -268,6 +283,7 @@ class CliMain extends Disposable {
 							),
 						)
 					: new NullPolicyService();
+
 		services.set(IPolicyService, policyService);
 
 		// Configuration
@@ -279,6 +295,7 @@ class CliMain extends Disposable {
 				logService,
 			),
 		);
+
 		services.set(IConfigurationService, configurationService);
 
 		// Initialize
@@ -289,6 +306,7 @@ class CliMain extends Disposable {
 
 		// Get machine ID
 		let machineId: string | undefined = undefined;
+
 		try {
 			machineId = await resolveMachineId(stateService, logService);
 		} catch (error) {
@@ -296,7 +314,9 @@ class CliMain extends Disposable {
 				logService.error(error);
 			}
 		}
+
 		const sqmId = await resolveSqmId(stateService, logService);
+
 		const devDeviceId = await resolvedevDeviceId(stateService, logService);
 
 		// Initialize user data profiles after initializing the state
@@ -311,6 +331,7 @@ class CliMain extends Disposable {
 			environmentService,
 			logService,
 		);
+
 		services.set(IRequestService, requestService);
 
 		// Download Service
@@ -328,10 +349,12 @@ class CliMain extends Disposable {
 				true,
 			),
 		);
+
 		services.set(
 			IExtensionsScannerService,
 			new SyncDescriptor(ExtensionsScannerService, undefined, true),
 		);
+
 		services.set(
 			IExtensionSignatureVerificationService,
 			new SyncDescriptor(
@@ -340,14 +363,17 @@ class CliMain extends Disposable {
 				true,
 			),
 		);
+
 		services.set(
 			IAllowedExtensionsService,
 			new SyncDescriptor(AllowedExtensionsService, undefined, true),
 		);
+
 		services.set(
 			INativeServerExtensionManagementService,
 			new SyncDescriptor(ExtensionManagementService, undefined, true),
 		);
+
 		services.set(
 			IExtensionGalleryService,
 			new SyncDescriptor(
@@ -365,10 +391,12 @@ class CliMain extends Disposable {
 
 		// Telemetry
 		const appenders: ITelemetryAppender[] = [];
+
 		const isInternal = isInternalTelemetry(
 			productService,
 			configurationService,
 		);
+
 		if (supportsTelemetry(productService, environmentService)) {
 			if (productService.aiConfig && productService.aiConfig.ariaKey) {
 				appenders.push(
@@ -413,6 +441,7 @@ class CliMain extends Disposable {
 	private allowWindowsUNCPath(path: string): string {
 		if (isWindows) {
 			const host = getUNCHost(path);
+
 			if (host) {
 				addUNCHostToAllowlist(host);
 			}
@@ -425,6 +454,7 @@ class CliMain extends Disposable {
 		// Install handler for unexpected errors
 		setUnexpectedErrorHandler((error) => {
 			const message = toErrorMessage(error, true);
+
 			if (!message) {
 				return;
 			}
@@ -438,6 +468,7 @@ class CliMain extends Disposable {
 				onUnexpectedError(err);
 			}
 		});
+
 		process.on("unhandledRejection", (reason: unknown) =>
 			onUnexpectedError(reason),
 		);
@@ -450,16 +481,19 @@ class CliMain extends Disposable {
 		instantiationService: IInstantiationService,
 	): Promise<void> {
 		let profile: IUserDataProfile | undefined = undefined;
+
 		if (environmentService.args.profile) {
 			profile = userDataProfilesService.profiles.find(
 				(p) => p.name === environmentService.args.profile,
 			);
+
 			if (!profile) {
 				throw new Error(
 					`Profile '${environmentService.args.profile}' not found.`,
 				);
 			}
 		}
+
 		const profileLocation = (
 			profile ?? userDataProfilesService.defaultProfile
 		).extensionsResource;
@@ -488,6 +522,7 @@ class CliMain extends Disposable {
 				installPreReleaseVersion: !!this.argv["pre-release"],
 				profileLocation,
 			};
+
 			return instantiationService
 				.createInstance(
 					ExtensionManagementCLI,

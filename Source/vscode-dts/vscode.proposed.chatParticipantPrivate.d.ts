@@ -35,7 +35,9 @@ declare module "vscode" {
 	export class ChatRequestEditorData {
 		//TODO@API should be the editor
 		document: TextDocument;
+
 		selection: Selection;
+
 		wholeRange: Range;
 
 		constructor(
@@ -114,8 +116,11 @@ declare module "vscode" {
 	 */
 	export interface DynamicChatParticipantProps {
 		name: string;
+
 		publisherName: string;
+
 		description?: string;
+
 		fullName?: string;
 	}
 

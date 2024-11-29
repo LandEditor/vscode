@@ -22,18 +22,24 @@ export class Askpass implements IIPCHandler, ITerminalEnvironmentProvider {
 	private env: {
 		[key: string]: string;
 	};
+
 	private sshEnv: {
 		[key: string]: string;
 	};
+
 	private disposable: IDisposable = EmptyDisposable;
+
 	private cache = new Map<string, Credentials>();
+
 	private credentialsProviders = new Set<CredentialsProvider>();
+
 	readonly featureDescription = "git auth provider";
 
 	constructor(private ipc?: IIPCServer) {
 		if (ipc) {
 			this.disposable = ipc.registerHandler("askpass", this);
 		}
+
 		this.env = {
 			// GIT_ASKPASS
 			GIT_ASKPASS: path.join(
@@ -45,6 +51,7 @@ export class Askpass implements IIPCHandler, ITerminalEnvironmentProvider {
 			VSCODE_GIT_ASKPASS_EXTRA_ARGS: "",
 			VSCODE_GIT_ASKPASS_MAIN: path.join(__dirname, "askpass-main.js"),
 		};
+
 		this.sshEnv = {
 			// SSH_ASKPASS
 			SSH_ASKPASS: path.join(
@@ -54,18 +61,25 @@ export class Askpass implements IIPCHandler, ITerminalEnvironmentProvider {
 			SSH_ASKPASS_REQUIRE: "force",
 		};
 	}
+
 	async handle(
 		payload:
 			| {
 					askpassType: "https";
+
 					request: string;
+
 					host: string;
 			  }
 			| {
 					askpassType: "ssh";
+
 					request: string;
+
 					host?: string;
+
 					file?: string;
+
 					fingerprint?: string;
 			  },
 	): Promise<string> {
@@ -88,6 +102,7 @@ export class Askpass implements IIPCHandler, ITerminalEnvironmentProvider {
 			payload.fingerprint,
 		);
 	}
+
 	async handleAskpass(request: string, host: string): Promise<string> {
 		const uri = Uri.parse(host);
 
@@ -102,6 +117,7 @@ export class Askpass implements IIPCHandler, ITerminalEnvironmentProvider {
 
 			return cached.password;
 		}
+
 		if (!password) {
 			for (const credentialsProvider of this.credentialsProviders) {
 				try {
@@ -118,6 +134,7 @@ export class Askpass implements IIPCHandler, ITerminalEnvironmentProvider {
 				} catch {}
 			}
 		}
+
 		const options: InputBoxOptions = {
 			password,
 			placeHolder: request,
@@ -127,6 +144,7 @@ export class Askpass implements IIPCHandler, ITerminalEnvironmentProvider {
 
 		return (await window.showInputBox(options)) || "";
 	}
+
 	async handleSSHAskpass(
 		request: string,
 		host?: string,
@@ -162,6 +180,7 @@ export class Askpass implements IIPCHandler, ITerminalEnvironmentProvider {
 
 		return (await window.showQuickPick(items, options)) ?? "";
 	}
+
 	getEnv(): {
 		[key: string]: string;
 	} {
@@ -171,6 +190,7 @@ export class Askpass implements IIPCHandler, ITerminalEnvironmentProvider {
 			? { ...this.env, ...this.sshEnv }
 			: {};
 	}
+
 	getTerminalEnv(): {
 		[key: string]: string;
 	} {
@@ -181,11 +201,13 @@ export class Askpass implements IIPCHandler, ITerminalEnvironmentProvider {
 			? this.env
 			: {};
 	}
+
 	registerCredentialsProvider(provider: CredentialsProvider): Disposable {
 		this.credentialsProviders.add(provider);
 
 		return toDisposable(() => this.credentialsProviders.delete(provider));
 	}
+
 	dispose(): void {
 		this.disposable.dispose();
 	}

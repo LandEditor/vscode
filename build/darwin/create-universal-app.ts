@@ -63,19 +63,23 @@ async function main(buildDir?: string) {
 					return true;
 				}
 			}
+
 			return false;
 		},
 	});
 
 	const productJson = JSON.parse(fs.readFileSync(productJsonPath, "utf8"));
+
 	Object.assign(productJson, {
 		darwinUniversalAssetId: "darwin-universal",
 	});
+
 	fs.writeFileSync(productJsonPath, JSON.stringify(productJson, null, "\t"));
 }
 if (require.main === module) {
 	main(process.argv[2]).catch((err) => {
 		console.error(err);
+
 		process.exit(1);
 	});
 }

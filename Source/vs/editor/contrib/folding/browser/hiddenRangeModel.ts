@@ -13,27 +13,37 @@ import { FoldingModel } from "./foldingModel.js";
 
 export class HiddenRangeModel {
 	private readonly _foldingModel: FoldingModel;
+
 	private _hiddenRanges: IRange[];
+
 	private _foldingModelListener: IDisposable | null;
+
 	private readonly _updateEventEmitter = new Emitter<IRange[]>();
+
 	private _hasLineChanges: boolean = false;
+
 	public get onDidChange(): Event<IRange[]> {
 		return this._updateEventEmitter.event;
 	}
+
 	public get hiddenRanges() {
 		return this._hiddenRanges;
 	}
+
 	public constructor(model: FoldingModel) {
 		this._foldingModel = model;
+
 		this._foldingModelListener = model.onDidChange((_) =>
 			this.updateHiddenRanges(),
 		);
+
 		this._hiddenRanges = [];
 
 		if (model.regions.length) {
 			this.updateHiddenRanges();
 		}
 	}
+
 	public notifyChangeModelContent(e: IModelContentChangedEvent) {
 		if (this._hiddenRanges.length && !this._hasLineChanges) {
 			this._hasLineChanges = e.changes.some((change) => {
@@ -45,6 +55,7 @@ export class HiddenRangeModel {
 			});
 		}
 	}
+
 	private updateHiddenRanges(): void {
 		let updateHiddenAreas = false;
 
@@ -63,6 +74,7 @@ export class HiddenRangeModel {
 			if (!ranges.isCollapsed(i)) {
 				continue;
 			}
+
 			const startLineNumber = ranges.getStartLineNumber(i) + 1; // the first line is not hidden
 			const endLineNumber = ranges.getEndLineNumber(i);
 
@@ -73,6 +85,7 @@ export class HiddenRangeModel {
 				// ignore ranges contained in collapsed regions
 				continue;
 			}
+
 			if (
 				!updateHiddenAreas &&
 				k < this._hiddenRanges.length &&
@@ -81,16 +94,21 @@ export class HiddenRangeModel {
 			) {
 				// reuse the old ranges
 				newHiddenAreas.push(this._hiddenRanges[k]);
+
 				k++;
 			} else {
 				updateHiddenAreas = true;
+
 				newHiddenAreas.push(
 					new Range(startLineNumber, 1, endLineNumber, 1),
 				);
 			}
+
 			lastCollapsedStart = startLineNumber;
+
 			lastCollapsedEnd = endLineNumber;
 		}
+
 		if (
 			this._hasLineChanges ||
 			updateHiddenAreas ||
@@ -99,17 +117,23 @@ export class HiddenRangeModel {
 			this.applyHiddenRanges(newHiddenAreas);
 		}
 	}
+
 	private applyHiddenRanges(newHiddenAreas: IRange[]) {
 		this._hiddenRanges = newHiddenAreas;
+
 		this._hasLineChanges = false;
+
 		this._updateEventEmitter.fire(newHiddenAreas);
 	}
+
 	public hasRanges() {
 		return this._hiddenRanges.length > 0;
 	}
+
 	public isHidden(line: number): boolean {
 		return findRange(this._hiddenRanges, line) !== null;
 	}
+
 	public adjustSelections(selections: Selection[]): boolean {
 		let hasChanges = false;
 
@@ -121,9 +145,11 @@ export class HiddenRangeModel {
 			if (!lastRange || !isInside(line, lastRange)) {
 				lastRange = findRange(this._hiddenRanges, line);
 			}
+
 			if (lastRange) {
 				return lastRange.startLineNumber - 1;
 			}
+
 			return null;
 		};
 
@@ -137,8 +163,10 @@ export class HiddenRangeModel {
 					adjustedStartLine,
 					editorModel.getLineMaxColumn(adjustedStartLine),
 				);
+
 				hasChanges = true;
 			}
+
 			const adjustedEndLine = adjustLine(selection.endLineNumber);
 
 			if (adjustedEndLine) {
@@ -146,19 +174,26 @@ export class HiddenRangeModel {
 					adjustedEndLine,
 					editorModel.getLineMaxColumn(adjustedEndLine),
 				);
+
 				hasChanges = true;
 			}
+
 			selections[i] = selection;
 		}
+
 		return hasChanges;
 	}
+
 	public dispose() {
 		if (this.hiddenRanges.length > 0) {
 			this._hiddenRanges = [];
+
 			this._updateEventEmitter.fire(this._hiddenRanges);
 		}
+
 		if (this._foldingModelListener) {
 			this._foldingModelListener.dispose();
+
 			this._foldingModelListener = null;
 		}
 	}
@@ -176,5 +211,6 @@ function findRange(ranges: IRange[], line: number): IRange | null {
 	if (i >= 0 && ranges[i].endLineNumber >= line) {
 		return ranges[i];
 	}
+
 	return null;
 }

@@ -43,7 +43,9 @@ export interface IAuxiliaryEditorPartOpenOptions
 }
 export interface ICreateAuxiliaryEditorPartResult {
 	readonly part: AuxiliaryEditorPartImpl;
+
 	readonly instantiationService: IInstantiationService;
+
 	readonly disposables: DisposableStore;
 }
 export class AuxiliaryEditorPart {
@@ -68,6 +70,7 @@ export class AuxiliaryEditorPart {
 		@IWorkbenchLayoutService
 		private readonly layoutService: IWorkbenchLayoutService,
 	) {}
+
 	async create(
 		label: string,
 		options?: IAuxiliaryEditorPartOpenOptions,
@@ -78,34 +81,42 @@ export class AuxiliaryEditorPart {
 			if (statusbarVisible) {
 				editorPartHeightOffset += statusbarPart.height;
 			}
+
 			if (titlebarPart && titlebarVisible) {
 				editorPartHeightOffset += titlebarPart.height;
 			}
+
 			return editorPartHeightOffset;
 		}
+
 		function updateStatusbarVisibility(fromEvent: boolean): void {
 			if (statusbarVisible) {
 				show(statusbarPart.container);
 			} else {
 				hide(statusbarPart.container);
 			}
+
 			if (fromEvent) {
 				auxiliaryWindow.layout();
 			}
 		}
+
 		function updateTitlebarVisibility(fromEvent: boolean): void {
 			if (!titlebarPart) {
 				return;
 			}
+
 			if (titlebarVisible) {
 				show(titlebarPart.container);
 			} else {
 				hide(titlebarPart.container);
 			}
+
 			if (fromEvent) {
 				auxiliaryWindow.layout();
 			}
 		}
+
 		const disposables = new DisposableStore();
 		// Auxiliary Window
 		const auxiliaryWindow = disposables.add(
@@ -113,9 +124,13 @@ export class AuxiliaryEditorPart {
 		);
 		// Editor Part
 		const editorPartContainer = document.createElement("div");
+
 		editorPartContainer.classList.add("part", "editor");
+
 		editorPartContainer.setAttribute("role", "main");
+
 		editorPartContainer.style.position = "relative";
+
 		auxiliaryWindow.container.appendChild(editorPartContainer);
 
 		const editorPart = disposables.add(
@@ -127,7 +142,9 @@ export class AuxiliaryEditorPart {
 				label,
 			),
 		);
+
 		disposables.add(this.editorPartsView.registerPart(editorPart));
+
 		editorPart.create(editorPartContainer);
 		// Titlebar
 		let titlebarPart: IAuxiliaryTitlebarPart | undefined = undefined;
@@ -143,6 +160,7 @@ export class AuxiliaryEditorPart {
 					editorPart,
 				),
 			);
+
 			titlebarVisible = shouldShowCustomTitleBar(
 				this.configurationService,
 				auxiliaryWindow.window,
@@ -151,6 +169,7 @@ export class AuxiliaryEditorPart {
 
 			const handleTitleBarVisibilityEvent = () => {
 				const oldTitlebarPartVisible = titlebarVisible;
+
 				titlebarVisible = shouldShowCustomTitleBar(
 					this.configurationService,
 					auxiliaryWindow.window,
@@ -161,22 +180,27 @@ export class AuxiliaryEditorPart {
 					updateTitlebarVisibility(true);
 				}
 			};
+
 			disposables.add(
 				titlebarPart.onDidChange(() => auxiliaryWindow.layout()),
 			);
+
 			disposables.add(
 				this.layoutService.onDidChangePartVisibility(() =>
 					handleTitleBarVisibilityEvent(),
 				),
 			);
+
 			disposables.add(
 				onDidChangeFullscreen((windowId) => {
 					if (windowId !== auxiliaryWindow.window.vscodeWindowId) {
 						return; // ignore all but our window
 					}
+
 					handleTitleBarVisibilityEvent();
 				}),
 			);
+
 			updateTitlebarVisibility(false);
 		} else {
 			disposables.add(
@@ -198,6 +222,7 @@ export class AuxiliaryEditorPart {
 			this.configurationService.getValue<boolean>(
 				AuxiliaryEditorPart.STATUS_BAR_VISIBILITY,
 			) !== false;
+
 		disposables.add(
 			this.configurationService.onDidChangeConfiguration((e) => {
 				if (
@@ -209,10 +234,12 @@ export class AuxiliaryEditorPart {
 						this.configurationService.getValue<boolean>(
 							AuxiliaryEditorPart.STATUS_BAR_VISIBILITY,
 						) !== false;
+
 					updateStatusbarVisibility(true);
 				}
 			}),
 		);
+
 		updateStatusbarVisibility(false);
 		// Lifecycle
 		const editorCloseListener = disposables.add(
@@ -220,21 +247,27 @@ export class AuxiliaryEditorPart {
 				auxiliaryWindow.window.close(),
 			),
 		);
+
 		disposables.add(
 			Event.once(auxiliaryWindow.onUnload)(() => {
 				if (disposables.isDisposed) {
 					return; // the close happened as part of an earlier dispose call
 				}
+
 				editorCloseListener.dispose();
+
 				editorPart.close();
+
 				disposables.dispose();
 			}),
 		);
+
 		disposables.add(
 			Event.once(this.lifecycleService.onDidShutdown)(() =>
 				disposables.dispose(),
 			),
 		);
+
 		disposables.add(
 			auxiliaryWindow.onBeforeUnload((event) => {
 				for (const group of editorPart.groups) {
@@ -250,6 +283,7 @@ export class AuxiliaryEditorPart {
 
 						if (typeof canMoveVeto === "string") {
 							group.openEditor(editor);
+
 							event.veto(canMoveVeto);
 
 							break;
@@ -264,16 +298,19 @@ export class AuxiliaryEditorPart {
 		disposables.add(
 			auxiliaryWindow.onWillLayout((dimension) => {
 				const titlebarPartHeight = titlebarPart?.height ?? 0;
+
 				titlebarPart?.layout(dimension.width, titlebarPartHeight, 0, 0);
 
 				const editorPartHeight =
 					dimension.height - computeEditorPartHeightOffset();
+
 				editorPart.layout(
 					dimension.width,
 					editorPartHeight,
 					titlebarPartHeight,
 					0,
 				);
+
 				statusbarPart.layout(
 					dimension.width,
 					statusbarPart.height,
@@ -282,6 +319,7 @@ export class AuxiliaryEditorPart {
 				);
 			}),
 		);
+
 		auxiliaryWindow.layout();
 		// Have a InstantiationService that is scoped to the auxiliary window
 		const instantiationService = disposables.add(
@@ -317,7 +355,9 @@ class AuxiliaryEditorPartImpl
 	implements IAuxiliaryEditorPart
 {
 	private static COUNTER = 1;
+
 	private readonly _onWillClose = this._register(new Emitter<void>());
+
 	readonly onWillClose = this._onWillClose.event;
 
 	constructor(
@@ -356,6 +396,7 @@ class AuxiliaryEditorPartImpl
 			contextKeyService,
 		);
 	}
+
 	override removeGroup(
 		group: number | IEditorGroupView,
 		preserveFocus?: boolean,
@@ -371,6 +412,7 @@ class AuxiliaryEditorPartImpl
 			super.removeGroup(group, preserveFocus);
 		}
 	}
+
 	private doRemoveLastGroup(preserveFocus?: boolean): void {
 		const restoreFocus =
 			!preserveFocus && this.shouldRestoreFocus(this.container);
@@ -387,27 +429,34 @@ class AuxiliaryEditorPartImpl
 				nextActiveGroup.focus();
 			}
 		}
+
 		this.doClose(false /* do not merge any groups to main part */);
 	}
+
 	protected override loadState(): IEditorPartUIState | undefined {
 		return this.state;
 	}
+
 	protected override saveState(): void {
 		return; // disabled, auxiliary editor part state is tracked outside
 	}
+
 	close(): boolean {
 		return this.doClose(true /* merge all groups to main part */);
 	}
+
 	private doClose(mergeGroupsToMainPart: boolean): boolean {
 		let result = true;
 
 		if (mergeGroupsToMainPart) {
 			result = this.mergeGroupsToMainPart();
 		}
+
 		this._onWillClose.fire();
 
 		return result;
 	}
+
 	private mergeGroupsToMainPart(): boolean {
 		if (!this.groups.some((group) => group.count > 0)) {
 			return true; // skip if we have no editors opened
@@ -424,6 +473,7 @@ class AuxiliaryEditorPartImpl
 				break;
 			}
 		}
+
 		if (!targetGroup) {
 			targetGroup = this.editorPartsView.mainPart.addGroup(
 				this.editorPartsView.mainPart.activeGroup,
@@ -432,7 +482,9 @@ class AuxiliaryEditorPartImpl
 					: GroupDirection.DOWN,
 			);
 		}
+
 		const result = this.mergeAllGroups(targetGroup);
+
 		targetGroup.focus();
 
 		return result;

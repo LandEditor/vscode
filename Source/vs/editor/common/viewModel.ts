@@ -40,11 +40,17 @@ import { VerticalRevealType } from "./viewEvents.js";
 
 export interface IViewModel extends ICursorSimpleModel {
 	readonly model: ITextModel;
+
 	readonly coordinatesConverter: ICoordinatesConverter;
+
 	readonly viewLayout: IViewLayout;
+
 	readonly cursorConfig: CursorConfiguration;
+
 	readonly glyphLanes: IGlyphMarginLanesModel;
+
 	addViewEventHandler(eventHandler: ViewEventHandler): void;
+
 	removeViewEventHandler(eventHandler: ViewEventHandler): void;
 	/**
 	 * Gives a hint that a lot of requests are about to come in for these line numbers.
@@ -54,10 +60,13 @@ export interface IViewModel extends ICursorSimpleModel {
 		endLineNumber: number,
 		centeredLineNumber: number,
 	): void;
+
 	visibleLinesStabilized(): void;
 
 	setHasFocus(hasFocus: boolean): void;
+
 	onCompositionStart(): void;
+
 	onCompositionEnd(): void;
 
 	getMinimapDecorationsInRange(range: Range): ViewModelDecoration[];
@@ -124,9 +133,11 @@ export interface IViewModel extends ICursorSimpleModel {
 	getValueInRange(range: Range, eol: EndOfLinePreference): string;
 
 	getValueLengthInRange(range: Range, eol: EndOfLinePreference): number;
+
 	modifyPosition(position: Position, offset: number): Position;
 
 	getInjectedTextAt(viewPosition: Position): InjectedText | null;
+
 	deduceModelPositionRelativeToViewPosition(
 		viewAnchorPosition: Position,
 		deltaOffset: number,
@@ -144,8 +155,10 @@ export interface IViewModel extends ICursorSimpleModel {
 		emptySelectionClipboard: boolean,
 	): {
 		html: string;
+
 		mode: string;
 	} | null;
+
 	createLineBreaksComputer(): ILineBreaksComputer;
 	//#region cursor
 	getPrimaryCursorState(): CursorState;
@@ -169,18 +182,23 @@ export interface IViewModel extends ICursorSimpleModel {
 	getPrevEditOperationType(): EditOperationType;
 
 	setPrevEditOperationType(type: EditOperationType): void;
+
 	revealAllCursors(
 		source: string | null | undefined,
 		revealHorizontal: boolean,
 		minimalReveal?: boolean,
 	): void;
+
 	revealPrimaryCursor(
 		source: string | null | undefined,
 		revealHorizontal: boolean,
 		minimalReveal?: boolean,
 	): void;
+
 	revealTopMostCursor(source: string | null | undefined): void;
+
 	revealBottomMostCursor(source: string | null | undefined): void;
+
 	revealRange(
 		source: string | null | undefined,
 		revealHorizontal: boolean,
@@ -212,7 +230,9 @@ export interface IViewLayout {
 	getFutureViewport(): Viewport;
 
 	setScrollPosition(position: INewScrollPosition, type: ScrollType): void;
+
 	deltaScrollNow(deltaScrollLeft: number, deltaScrollTop: number): void;
+
 	validateScrollPosition(scrollPosition: INewScrollPosition): IScrollPosition;
 
 	setMaxLineWidth(maxLineWidth: number): void;
@@ -226,8 +246,11 @@ export interface IViewLayout {
 	): IPartialViewLinesViewportData;
 
 	getWhitespaces(): IEditorWhitespace[];
+
 	isAfterLines(verticalOffset: number): boolean;
+
 	isInTopPadding(verticalOffset: number): boolean;
+
 	isInBottomPadding(verticalOffset: number): boolean;
 
 	getLineNumberAtVerticalOffset(verticalOffset: number): number;
@@ -252,7 +275,9 @@ export interface IViewLayout {
 }
 export interface IEditorWhitespace {
 	readonly id: string;
+
 	readonly afterLineNumber: number;
+
 	readonly height: number;
 }
 /**
@@ -265,11 +290,13 @@ export interface IWhitespaceChangeAccessor {
 		heightInPx: number,
 		minWidth: number,
 	): string;
+
 	changeOneWhitespace(
 		id: string,
 		newAfterLineNumber: number,
 		newHeight: number,
 	): void;
+
 	removeWhitespace(id: string): void;
 }
 export interface IPartialViewLinesViewportData {
@@ -308,32 +335,45 @@ export interface IPartialViewLinesViewportData {
 }
 export interface IViewWhitespaceViewportData {
 	readonly id: string;
+
 	readonly afterLineNumber: number;
+
 	readonly verticalOffset: number;
+
 	readonly height: number;
 }
 export class Viewport {
 	readonly _viewportBrand: void = undefined;
+
 	readonly top: number;
+
 	readonly left: number;
+
 	readonly width: number;
+
 	readonly height: number;
 
 	constructor(top: number, left: number, width: number, height: number) {
 		this.top = top | 0;
+
 		this.left = left | 0;
+
 		this.width = width | 0;
+
 		this.height = height | 0;
 	}
 }
 export interface ICoordinatesConverter {
 	// View -> Model conversion and related methods
 	convertViewPositionToModelPosition(viewPosition: Position): Position;
+
 	convertViewRangeToModelRange(viewRange: Range): Range;
+
 	validateViewPosition(
 		viewPosition: Position,
 		expectedModelPosition: Position,
 	): Position;
+
 	validateViewRange(viewRange: Range, expectedModelRange: Range): Range;
 	// Model -> View conversion and related methods
 	/**
@@ -353,6 +393,7 @@ export interface ICoordinatesConverter {
 		modelRange: Range,
 		affinity?: PositionAffinity,
 	): Range;
+
 	modelPositionIsVisible(modelPosition: Position): boolean;
 
 	getModelLineViewLineCount(modelLineNumber: number): number;
@@ -364,10 +405,12 @@ export interface ICoordinatesConverter {
 }
 export class MinimapLinesRenderingData {
 	public readonly tabSize: number;
+
 	public readonly data: Array<ViewLineData | null>;
 
 	constructor(tabSize: number, data: Array<ViewLineData | null>) {
 		this.tabSize = tabSize;
+
 		this.data = data;
 	}
 }
@@ -414,11 +457,17 @@ export class ViewLineData {
 		inlineDecorations: readonly SingleLineInlineDecoration[] | null,
 	) {
 		this.content = content;
+
 		this.continuesWithWrappedLine = continuesWithWrappedLine;
+
 		this.minColumn = minColumn;
+
 		this.maxColumn = maxColumn;
+
 		this.startVisibleColumn = startVisibleColumn;
+
 		this.tokens = tokens;
+
 		this.inlineDecorations = inlineDecorations;
 	}
 }
@@ -477,23 +526,33 @@ export class ViewLineRenderingData {
 		startVisibleColumn: number,
 	) {
 		this.minColumn = minColumn;
+
 		this.maxColumn = maxColumn;
+
 		this.content = content;
+
 		this.continuesWithWrappedLine = continuesWithWrappedLine;
+
 		this.isBasicASCII = ViewLineRenderingData.isBasicASCII(
 			content,
 			mightContainNonBasicASCII,
 		);
+
 		this.containsRTL = ViewLineRenderingData.containsRTL(
 			content,
 			this.isBasicASCII,
 			mightContainRTL,
 		);
+
 		this.tokens = tokens;
+
 		this.inlineDecorations = inlineDecorations;
+
 		this.tabSize = tabSize;
+
 		this.startVisibleColumn = startVisibleColumn;
 	}
+
 	public static isBasicASCII(
 		lineContent: string,
 		mightContainNonBasicASCII: boolean,
@@ -501,8 +560,10 @@ export class ViewLineRenderingData {
 		if (mightContainNonBasicASCII) {
 			return strings.isBasicASCII(lineContent);
 		}
+
 		return true;
 	}
+
 	public static containsRTL(
 		lineContent: string,
 		isBasicASCII: boolean,
@@ -511,6 +572,7 @@ export class ViewLineRenderingData {
 		if (!isBasicASCII && mightContainRTL) {
 			return strings.containsRTL(lineContent);
 		}
+
 		return false;
 	}
 }
@@ -534,6 +596,7 @@ export class SingleLineInlineDecoration {
 		public readonly inlineClassName: string,
 		public readonly inlineClassNameAffectsLetterSpacing: boolean,
 	) {}
+
 	toInlineDecoration(lineNumber: number): InlineDecoration {
 		return new InlineDecoration(
 			new Range(
@@ -551,11 +614,14 @@ export class SingleLineInlineDecoration {
 }
 export class ViewModelDecoration {
 	_viewModelDecorationBrand: void = undefined;
+
 	public readonly range: Range;
+
 	public readonly options: IModelDecorationOptions;
 
 	constructor(range: Range, options: IModelDecorationOptions) {
 		this.range = range;
+
 		this.options = options;
 	}
 }
@@ -571,6 +637,7 @@ export class OverviewRulerDecorationsGroup {
 		 */
 		public readonly data: number[],
 	) {}
+
 	public static compareByRenderingProps(
 		a: OverviewRulerDecorationsGroup,
 		b: OverviewRulerDecorationsGroup,
@@ -579,13 +646,17 @@ export class OverviewRulerDecorationsGroup {
 			if (a.color < b.color) {
 				return -1;
 			}
+
 			if (a.color > b.color) {
 				return 1;
 			}
+
 			return 0;
 		}
+
 		return a.zIndex - b.zIndex;
 	}
+
 	public static equals(
 		a: OverviewRulerDecorationsGroup,
 		b: OverviewRulerDecorationsGroup,
@@ -596,6 +667,7 @@ export class OverviewRulerDecorationsGroup {
 			arrays.equals(a.data, b.data)
 		);
 	}
+
 	public static equalsArr(
 		a: OverviewRulerDecorationsGroup[],
 		b: OverviewRulerDecorationsGroup[],

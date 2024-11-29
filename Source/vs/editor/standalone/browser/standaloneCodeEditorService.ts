@@ -24,6 +24,7 @@ import { ITextModel } from "../../common/model.js";
 
 export class StandaloneCodeEditorService extends AbstractCodeEditorService {
 	private readonly _editorIsOpen: IContextKey<boolean>;
+
 	private _activeCodeEditor: ICodeEditor | null;
 
 	constructor(
@@ -33,21 +34,28 @@ export class StandaloneCodeEditorService extends AbstractCodeEditorService {
 		themeService: IThemeService,
 	) {
 		super(themeService);
+
 		this._register(this.onCodeEditorAdd(() => this._checkContextKey()));
+
 		this._register(this.onCodeEditorRemove(() => this._checkContextKey()));
+
 		this._editorIsOpen = contextKeyService.createKey("editorIsOpen", false);
+
 		this._activeCodeEditor = null;
+
 		this._register(
 			this.registerCodeEditorOpenHandler(
 				async (input, source, sideBySide) => {
 					if (!source) {
 						return null;
 					}
+
 					return this.doOpenEditor(source, input);
 				},
 			),
 		);
 	}
+
 	private _checkContextKey(): void {
 		let hasCodeEditor = false;
 
@@ -58,14 +66,18 @@ export class StandaloneCodeEditorService extends AbstractCodeEditorService {
 				break;
 			}
 		}
+
 		this._editorIsOpen.set(hasCodeEditor);
 	}
+
 	public setActiveCodeEditor(activeCodeEditor: ICodeEditor | null): void {
 		this._activeCodeEditor = activeCodeEditor;
 	}
+
 	public getActiveCodeEditor(): ICodeEditor | null {
 		return this._activeCodeEditor;
 	}
+
 	private doOpenEditor(
 		editor: ICodeEditor,
 		input: ITextResourceEditorInput,
@@ -83,8 +95,10 @@ export class StandaloneCodeEditorService extends AbstractCodeEditorService {
 					return editor;
 				}
 			}
+
 			return null;
 		}
+
 		const selection = <IRange>(
 			(input.options ? input.options.selection : null)
 		);
@@ -95,24 +109,30 @@ export class StandaloneCodeEditorService extends AbstractCodeEditorService {
 				typeof selection.endColumn === "number"
 			) {
 				editor.setSelection(selection);
+
 				editor.revealRangeInCenter(selection, ScrollType.Immediate);
 			} else {
 				const pos = {
 					lineNumber: selection.startLineNumber,
 					column: selection.startColumn,
 				};
+
 				editor.setPosition(pos);
+
 				editor.revealPositionInCenter(pos, ScrollType.Immediate);
 			}
 		}
+
 		return editor;
 	}
+
 	private findModel(editor: ICodeEditor, resource: URI): ITextModel | null {
 		const model = editor.getModel();
 
 		if (model && model.uri.toString() !== resource.toString()) {
 			return null;
 		}
+
 		return model;
 	}
 }

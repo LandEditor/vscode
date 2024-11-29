@@ -59,6 +59,7 @@ export function gitSimilar(): ITerminalQuickFixInternalOptions {
 			if (!regexMatch || !matchResult.outputMatch) {
 				return;
 			}
+
 			const actions: TerminalQuickFixActionInternal[] = [];
 
 			const startIndex =
@@ -86,6 +87,7 @@ export function gitSimilar(): ITerminalQuickFixInternalOptions {
 					});
 				}
 			}
+
 			return actions;
 		},
 	};
@@ -131,6 +133,7 @@ export function gitTwoDashes(): ITerminalQuickFixInternalOptions {
 			if (!problemArg) {
 				return;
 			}
+
 			return {
 				type: TerminalQuickFixType.TerminalCommand,
 				id: "Git Two Dashes",
@@ -165,6 +168,7 @@ export function freePort(
 			if (!port) {
 				return;
 			}
+
 			const label = localize("terminal.freePort", "Free port {0}", port);
 
 			return {
@@ -221,11 +225,13 @@ export function gitPushSetUpstream(): ITerminalQuickFixInternalOptions {
 			if (!matches) {
 				return;
 			}
+
 			const groups = matches.regexMatch.groups;
 
 			if (!groups) {
 				return;
 			}
+
 			const actions: TerminalQuickFixActionInternal[] = [];
 
 			let fixedCommand = commandToRun;
@@ -236,11 +242,13 @@ export function gitPushSetUpstream(): ITerminalQuickFixInternalOptions {
 				if (!commandToRun.includes(varToResolve)) {
 					return [];
 				}
+
 				fixedCommand = fixedCommand.replaceAll(
 					varToResolve,
 					() => value,
 				);
 			}
+
 			if (fixedCommand) {
 				actions.push({
 					type: TerminalQuickFixType.TerminalCommand,
@@ -252,6 +260,7 @@ export function gitPushSetUpstream(): ITerminalQuickFixInternalOptions {
 
 				return actions;
 			}
+
 			return;
 		},
 	};
@@ -290,6 +299,7 @@ export function gitCreatePr(): ITerminalQuickFixInternalOptions {
 			if (!link) {
 				return;
 			}
+
 			const label = localize("terminal.createPR", "Create PR {0}", link);
 
 			return {
@@ -334,9 +344,11 @@ export function pwshGeneralError(): ITerminalQuickFixInternalOptions {
 					break;
 				}
 			}
+
 			if (!inFeedbackProvider) {
 				return;
 			}
+
 			const suggestions = lines[i + 1]
 				.match(/The most similar commands are: (?<values>.+)./)
 				?.groups?.values?.split(", ");
@@ -344,6 +356,7 @@ export function pwshGeneralError(): ITerminalQuickFixInternalOptions {
 			if (!suggestions) {
 				return;
 			}
+
 			const result: ITerminalQuickFixTerminalCommandAction[] = [];
 
 			for (const suggestion of suggestions) {
@@ -354,6 +367,7 @@ export function pwshGeneralError(): ITerminalQuickFixInternalOptions {
 					source: QuickFixSource.Builtin,
 				});
 			}
+
 			return result;
 		},
 	};
@@ -389,6 +403,7 @@ export function pwshUnixCommandNotFoundError(): ITerminalQuickFixInternalOptions
 					break;
 				}
 			}
+
 			if (!inFeedbackProvider) {
 				return;
 			}
@@ -403,6 +418,7 @@ export function pwshUnixCommandNotFoundError(): ITerminalQuickFixInternalOptions
 				if (line.length === 0) {
 					break;
 				}
+
 				const installCommand = line.match(
 					/You also have .+ installed, you can run '(?<command>.+)' instead./,
 				)?.groups?.command;
@@ -414,10 +430,12 @@ export function pwshUnixCommandNotFoundError(): ITerminalQuickFixInternalOptions
 						terminalCommand: installCommand,
 						source: QuickFixSource.Builtin,
 					});
+
 					inSuggestions = false;
 
 					continue;
 				}
+
 				if (
 					line.match(
 						/Command '.+' not found, but can be installed with:/,
@@ -427,6 +445,7 @@ export function pwshUnixCommandNotFoundError(): ITerminalQuickFixInternalOptions
 
 					continue;
 				}
+
 				if (inSuggestions) {
 					result.push({
 						id: "Pwsh Unix Command Not Found Error",
@@ -436,6 +455,7 @@ export function pwshUnixCommandNotFoundError(): ITerminalQuickFixInternalOptions
 					});
 				}
 			}
+
 			return result;
 		},
 	};

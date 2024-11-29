@@ -36,7 +36,9 @@ import {
 
 interface ConfigFilePatterns {
 	tag: string;
+
 	filePattern: RegExp;
+
 	relativePathPattern?: RegExp;
 }
 
@@ -53,6 +55,7 @@ export async function collectWorkspaceStats(
 	if (cached) {
 		return cached;
 	}
+
 	const configFilePatterns: ConfigFilePatterns[] = [
 		{ tag: "grunt.js", filePattern: /^gruntfile\.js$/i },
 		{ tag: "gulp.js", filePattern: /^gulpfile\.js$/i },
@@ -95,7 +98,9 @@ export async function collectWorkspaceStats(
 		filter: string[],
 		token: {
 			count: number;
+
 			maxReached: boolean;
+
 			readdirCount: number;
 		},
 	): Promise<void> {
@@ -103,6 +108,7 @@ export async function collectWorkspaceStats(
 
 		return Promises.withAsyncBody(async (resolve) => {
 			let files: IDirent[];
+
 			token.readdirCount++;
 
 			try {
@@ -113,13 +119,17 @@ export async function collectWorkspaceStats(
 
 				return;
 			}
+
 			if (token.count >= MAX_FILES) {
 				token.count += files.length;
+
 				token.maxReached = true;
+
 				resolve();
 
 				return;
 			}
+
 			let pending = files.length;
 
 			if (pending === 0) {
@@ -127,13 +137,17 @@ export async function collectWorkspaceStats(
 
 				return;
 			}
+
 			let filesToRead = files;
 
 			if (token.count + files.length > MAX_FILES) {
 				token.maxReached = true;
+
 				pending = MAX_FILES - token.count;
+
 				filesToRead = files.slice(0, pending);
 			}
+
 			token.count += files.length;
 
 			for (const file of filesToRead) {
@@ -146,6 +160,7 @@ export async function collectWorkspaceStats(
 							token,
 						);
 					}
+
 					if (--pending === 0) {
 						resolve();
 
@@ -164,6 +179,7 @@ export async function collectWorkspaceStats(
 							);
 						}
 					}
+
 					for (const configFile of configFilePatterns) {
 						if (
 							configFile.relativePathPattern?.test(
@@ -177,6 +193,7 @@ export async function collectWorkspaceStats(
 							);
 						}
 					}
+
 					if (--pending === 0) {
 						resolve();
 
@@ -186,18 +203,23 @@ export async function collectWorkspaceStats(
 			}
 		});
 	}
+
 	const statsPromise = Promises.withAsyncBody<WorkspaceStats>(
 		async (resolve) => {
 			const token: {
 				count: number;
+
 				maxReached: boolean;
+
 				readdirCount: number;
 			} = { count: 0, maxReached: false, readdirCount: 0 };
 
 			const sw = new StopWatch(true);
+
 			await collect(folder, folder, filter, token);
 
 			const launchConfigs = await collectLaunchConfigs(folder);
+
 			resolve({
 				configFiles: asSortedItems(configFiles),
 				fileTypes: asSortedItems(fileTypes),
@@ -209,6 +231,7 @@ export async function collectWorkspaceStats(
 			});
 		},
 	);
+
 	workspaceStatsCache.set(cacheKey, statsPromise);
 
 	return statsPromise;
@@ -231,6 +254,7 @@ export function getMachineInfo(): IMachineInfo {
 	if (cpus && cpus.length > 0) {
 		machineInfo.cpus = `${cpus[0].model} (${cpus.length} x ${cpus[0].speed})`;
 	}
+
 	return machineInfo;
 }
 export async function collectLaunchConfigs(
@@ -252,6 +276,7 @@ export async function collectLaunchConfigs(
 
 			return [];
 		}
+
 		if (getNodeType(json) === "object" && json["configurations"]) {
 			for (const each of json["configurations"]) {
 				const type = each["type"];
@@ -265,6 +290,7 @@ export async function collectLaunchConfigs(
 				}
 			}
 		}
+
 		return asSortedItems(launchConfigs);
 	} catch (error) {
 		return [];
@@ -279,20 +305,28 @@ export class DiagnosticsService implements IDiagnosticsService {
 		@IProductService
 		private readonly productService: IProductService,
 	) {}
+
 	private formatMachineInfo(info: IMachineInfo): string {
 		const output: string[] = [];
+
 		output.push(`OS Version:       ${info.os}`);
+
 		output.push(`CPUs:             ${info.cpus}`);
+
 		output.push(`Memory (System):  ${info.memory}`);
+
 		output.push(`VM:               ${info.vmHint}`);
 
 		return output.join("\n");
 	}
+
 	private formatEnvironment(info: IMainProcessDiagnostics): string {
 		const output: string[] = [];
+
 		output.push(
 			`Version:          ${this.productService.nameShort} ${this.productService.version} (${this.productService.commit || "Commit unknown"}, ${this.productService.date || "Date unknown"})`,
 		);
+
 		output.push(
 			`OS Version:       ${osLib.type()} ${osLib.arch()} ${osLib.release()}`,
 		);
@@ -304,6 +338,7 @@ export class DiagnosticsService implements IDiagnosticsService {
 				`CPUs:             ${cpus[0].model} (${cpus.length} x ${cpus[0].speed})`,
 			);
 		}
+
 		output.push(
 			`Memory (System):  ${(osLib.totalmem() / ByteSize.GB).toFixed(2)}GB (${(osLib.freemem() / ByteSize.GB).toFixed(2)}GB free)`,
 		);
@@ -316,17 +351,22 @@ export class DiagnosticsService implements IDiagnosticsService {
 					.join(", ")}`,
 			); // only provided on Linux/macOS
 		}
+
 		output.push(
 			`VM:               ${Math.round(virtualMachineHint.value() * 100)}%`,
 		);
+
 		output.push(`Screen Reader:    ${info.screenReader ? "yes" : "no"}`);
+
 		output.push(`Process Argv:     ${info.mainArguments.join(" ")}`);
+
 		output.push(
 			`GPU Status:       ${this.expandGPUFeatures(info.gpuFeatureStatus)}`,
 		);
 
 		return output.join("\n");
 	}
+
 	public async getPerformanceInfo(
 		info: IMainProcessDiagnostics,
 		remoteData: (IRemoteDiagnosticInfo | IRemoteDiagnosticError)[],
@@ -338,9 +378,11 @@ export class DiagnosticsService implements IDiagnosticsService {
 			let [rootProcess, workspaceInfo] = result;
 
 			let processInfo = this.formatProcessList(info, rootProcess);
+
 			remoteData.forEach((diagnostics) => {
 				if (isRemoteDiagnosticError(diagnostics)) {
 					processInfo += `\n${diagnostics.errorMessage}`;
+
 					workspaceInfo += `\n${diagnostics.errorMessage}`;
 				} else {
 					processInfo += `\n\nRemote: ${diagnostics.hostName}`;
@@ -348,6 +390,7 @@ export class DiagnosticsService implements IDiagnosticsService {
 					if (diagnostics.processes) {
 						processInfo += `\n${this.formatProcessList(info, diagnostics.processes)}`;
 					}
+
 					if (diagnostics.workspaceMetadata) {
 						workspaceInfo += `\n|  Remote: ${diagnostics.hostName}`;
 
@@ -362,7 +405,9 @@ export class DiagnosticsService implements IDiagnosticsService {
 							if (metadata.maxFilesReached) {
 								countMessage = `more than ${countMessage}`;
 							}
+
 							workspaceInfo += `|    Folder (${folder}): ${countMessage}`;
+
 							workspaceInfo +=
 								this.formatWorkspaceStats(metadata);
 						}
@@ -376,6 +421,7 @@ export class DiagnosticsService implements IDiagnosticsService {
 			};
 		});
 	}
+
 	public async getSystemInfo(
 		info: IMainProcessDiagnostics,
 		remoteData: (IRemoteDiagnosticInfo | IRemoteDiagnosticError)[],
@@ -399,6 +445,7 @@ export class DiagnosticsService implements IDiagnosticsService {
 				.map((l) => Math.round(l))
 				.join(", ")}`;
 		}
+
 		if (isLinux) {
 			systemInfo.linuxEnv = {
 				desktopSession: process.env["DESKTOP_SESSION"],
@@ -407,8 +454,10 @@ export class DiagnosticsService implements IDiagnosticsService {
 				xdgSessionType: process.env["XDG_SESSION_TYPE"],
 			};
 		}
+
 		return Promise.resolve(systemInfo);
 	}
+
 	public async getDiagnostics(
 		info: IMainProcessDiagnostics,
 		remoteDiagnostics: (IRemoteDiagnosticInfo | IRemoteDiagnosticError)[],
@@ -418,9 +467,11 @@ export class DiagnosticsService implements IDiagnosticsService {
 		return listProcesses(info.mainPID).then(async (rootProcess) => {
 			// Environment Info
 			output.push("");
+
 			output.push(this.formatEnvironment(info));
 			// Process List
 			output.push("");
+
 			output.push(this.formatProcessList(info, rootProcess));
 			// Workspace Stats
 			if (
@@ -432,15 +483,20 @@ export class DiagnosticsService implements IDiagnosticsService {
 				)
 			) {
 				output.push("");
+
 				output.push("Workspace Stats: ");
+
 				output.push(await this.formatWorkspaceMetadata(info));
 			}
+
 			remoteDiagnostics.forEach((diagnostics) => {
 				if (isRemoteDiagnosticError(diagnostics)) {
 					output.push(`\n${diagnostics.errorMessage}`);
 				} else {
 					output.push("\n\n");
+
 					output.push(`Remote:           ${diagnostics.hostName}`);
+
 					output.push(
 						this.formatMachineInfo(diagnostics.machineInfo),
 					);
@@ -450,6 +506,7 @@ export class DiagnosticsService implements IDiagnosticsService {
 							this.formatProcessList(info, diagnostics.processes),
 						);
 					}
+
 					if (diagnostics.workspaceMetadata) {
 						for (const folder of Object.keys(
 							diagnostics.workspaceMetadata,
@@ -462,18 +519,23 @@ export class DiagnosticsService implements IDiagnosticsService {
 							if (metadata.maxFilesReached) {
 								countMessage = `more than ${countMessage}`;
 							}
+
 							output.push(`Folder (${folder}): ${countMessage}`);
+
 							output.push(this.formatWorkspaceStats(metadata));
 						}
 					}
 				}
 			});
+
 			output.push("");
+
 			output.push("");
 
 			return output.join("\n");
 		});
 	}
+
 	private formatWorkspaceStats(workspaceStats: WorkspaceStats): string {
 		const output: string[] = [];
 
@@ -486,11 +548,14 @@ export class DiagnosticsService implements IDiagnosticsService {
 
 			if (col + item.length > lineLength) {
 				output.push(line);
+
 				line = "|                 ";
+
 				col = line.length;
 			} else {
 				col += item.length;
 			}
+
 			line += item;
 		};
 		// File Types
@@ -505,31 +570,42 @@ export class DiagnosticsService implements IDiagnosticsService {
 
 		for (let i = 0; i < max; i++) {
 			const item = workspaceStats.fileTypes[i];
+
 			appendAndWrap(item.name, item.count);
 		}
+
 		output.push(line);
 		// Conf Files
 		if (workspaceStats.configFiles.length >= 0) {
 			line = "|      Conf files:";
+
 			col = 0;
+
 			workspaceStats.configFiles.forEach((item) => {
 				appendAndWrap(item.name, item.count);
 			});
+
 			output.push(line);
 		}
+
 		if (workspaceStats.launchConfigFiles.length > 0) {
 			let line = "|      Launch Configs:";
+
 			workspaceStats.launchConfigFiles.forEach((each) => {
 				const item =
 					each.count > 1
 						? ` ${each.name}(${each.count})`
 						: ` ${each.name}`;
+
 				line += item;
 			});
+
 			output.push(line);
 		}
+
 		return output.join("\n");
 	}
+
 	private expandGPUFeatures(gpuFeatures: any): string {
 		const longestFeatureName = Math.max(
 			...Object.keys(gpuFeatures).map((feature) => feature.length),
@@ -542,22 +618,27 @@ export class DiagnosticsService implements IDiagnosticsService {
 			)
 			.join("\n                  ");
 	}
+
 	private formatWorkspaceMetadata(
 		info: IMainProcessDiagnostics,
 	): Promise<string> {
 		const output: string[] = [];
 
 		const workspaceStatPromises: Promise<void>[] = [];
+
 		info.windows.forEach((window) => {
 			if (window.folderURIs.length === 0 || !!window.remoteAuthority) {
 				return;
 			}
+
 			output.push(`|  Window (${window.title})`);
+
 			window.folderURIs.forEach((uriComponents) => {
 				const folderUri = URI.revive(uriComponents);
 
 				if (folderUri.scheme === Schemas.file) {
 					const folder = folderUri.fsPath;
+
 					workspaceStatPromises.push(
 						collectWorkspaceStats(folder, ["node_modules", ".git"])
 							.then((stats) => {
@@ -566,9 +647,11 @@ export class DiagnosticsService implements IDiagnosticsService {
 								if (stats.maxFilesReached) {
 									countMessage = `more than ${countMessage}`;
 								}
+
 								output.push(
 									`|    Folder (${basename(folder)}): ${countMessage}`,
 								);
+
 								output.push(this.formatWorkspaceStats(stats));
 							})
 							.catch((error) => {
@@ -589,22 +672,26 @@ export class DiagnosticsService implements IDiagnosticsService {
 			.then((_) => output.join("\n"))
 			.catch((e) => `Unable to collect workspace stats: ${e}`);
 	}
+
 	private formatProcessList(
 		info: IMainProcessDiagnostics,
 		rootProcess: ProcessItem,
 	): string {
 		const mapProcessToName = new Map<number, string>();
+
 		info.windows.forEach((window) =>
 			mapProcessToName.set(
 				window.pid,
 				`window [${window.id}] (${window.title})`,
 			),
 		);
+
 		info.pidToNames.forEach(({ pid, name }) =>
 			mapProcessToName.set(pid, name),
 		);
 
 		const output: string[] = [];
+
 		output.push("CPU %\tMem MB\t   PID\tProcess");
 
 		if (rootProcess) {
@@ -616,8 +703,10 @@ export class DiagnosticsService implements IDiagnosticsService {
 				0,
 			);
 		}
+
 		return output.join("\n");
 	}
+
 	private formatProcessItem(
 		mainPid: number,
 		mapProcessToName: Map<number, string>,
@@ -641,10 +730,12 @@ export class DiagnosticsService implements IDiagnosticsService {
 				name = `${"  ".repeat(indent)} ${item.name}`;
 			}
 		}
+
 		const memory =
 			process.platform === "win32"
 				? item.mem
 				: osLib.totalmem() * (item.mem / 100);
+
 		output.push(
 			`${item.load.toFixed(0).padStart(5, " ")}\t${(memory / ByteSize.MB).toFixed(0).padStart(6, " ")}\t${item.pid.toFixed(0).padStart(6, " ")}\t${name}`,
 		);
@@ -661,6 +752,7 @@ export class DiagnosticsService implements IDiagnosticsService {
 			);
 		}
 	}
+
 	public async getWorkspaceFileExtensions(workspace: IWorkspace): Promise<{
 		extensions: string[];
 	}> {
@@ -672,6 +764,7 @@ export class DiagnosticsService implements IDiagnosticsService {
 			if (folderUri.scheme !== Schemas.file) {
 				continue;
 			}
+
 			const folder = folderUri.fsPath;
 
 			try {
@@ -679,11 +772,14 @@ export class DiagnosticsService implements IDiagnosticsService {
 					"node_modules",
 					".git",
 				]);
+
 				stats.fileTypes.forEach((item) => items.add(item.name));
 			} catch {}
 		}
+
 		return { extensions: [...items] };
 	}
+
 	public async reportWorkspaceStats(
 		workspace: IWorkspaceInformation,
 	): Promise<void> {
@@ -693,6 +789,7 @@ export class DiagnosticsService implements IDiagnosticsService {
 			if (folderUri.scheme !== Schemas.file) {
 				continue;
 			}
+
 			const folder = folderUri.fsPath;
 
 			try {
@@ -700,24 +797,34 @@ export class DiagnosticsService implements IDiagnosticsService {
 					"node_modules",
 					".git",
 				]);
+
 				type WorkspaceStatsClassification = {
 					owner: "lramos15";
+
 					comment: "Metadata related to the workspace";
 					"workspace.id": {
 						classification: "SystemMetaData";
+
 						purpose: "FeatureInsight";
+
 						comment: "A UUID given to a workspace to identify it.";
 					};
+
 					rendererSessionId: {
 						classification: "SystemMetaData";
+
 						purpose: "FeatureInsight";
+
 						comment: "The ID of the session";
 					};
 				};
+
 				type WorkspaceStatsEvent = {
 					"workspace.id": string | undefined;
+
 					rendererSessionId: string;
 				};
+
 				this.telemetryService.publicLog2<
 					WorkspaceStatsEvent,
 					WorkspaceStatsClassification
@@ -725,30 +832,45 @@ export class DiagnosticsService implements IDiagnosticsService {
 					"workspace.id": workspace.telemetryId,
 					rendererSessionId: workspace.rendererSessionId,
 				});
+
 				type WorkspaceStatsFileClassification = {
 					owner: "lramos15";
+
 					comment: "Helps us gain insights into what type of files are being used in a workspace";
+
 					rendererSessionId: {
 						classification: "SystemMetaData";
+
 						purpose: "FeatureInsight";
+
 						comment: "The ID of the session.";
 					};
+
 					type: {
 						classification: "SystemMetaData";
+
 						purpose: "FeatureInsight";
+
 						comment: "The type of file";
 					};
+
 					count: {
 						classification: "SystemMetaData";
+
 						purpose: "FeatureInsight";
+
 						comment: "How many types of that file are present";
 					};
 				};
+
 				type WorkspaceStatsFileEvent = {
 					rendererSessionId: string;
+
 					type: string;
+
 					count: number;
 				};
+
 				stats.fileTypes.forEach((e) => {
 					this.telemetryService.publicLog2<
 						WorkspaceStatsFileEvent,
@@ -759,6 +881,7 @@ export class DiagnosticsService implements IDiagnosticsService {
 						count: e.count,
 					});
 				});
+
 				stats.launchConfigFiles.forEach((e) => {
 					this.telemetryService.publicLog2<
 						WorkspaceStatsFileEvent,
@@ -769,6 +892,7 @@ export class DiagnosticsService implements IDiagnosticsService {
 						count: e.count,
 					});
 				});
+
 				stats.configFiles.forEach((e) => {
 					this.telemetryService.publicLog2<
 						WorkspaceStatsFileEvent,
@@ -782,34 +906,52 @@ export class DiagnosticsService implements IDiagnosticsService {
 				// Workspace stats metadata
 				type WorkspaceStatsMetadataClassification = {
 					owner: "jrieken";
+
 					comment: "Metadata about workspace metadata collection";
+
 					duration: {
 						classification: "SystemMetaData";
+
 						purpose: "PerformanceAndHealth";
+
 						comment: "How did it take to make workspace stats";
 					};
+
 					reachedLimit: {
 						classification: "SystemMetaData";
+
 						purpose: "PerformanceAndHealth";
+
 						comment: "Did making workspace stats reach its limits";
 					};
+
 					fileCount: {
 						classification: "SystemMetaData";
+
 						purpose: "PerformanceAndHealth";
+
 						comment: "How many files did workspace stats discover";
 					};
+
 					readdirCount: {
 						classification: "SystemMetaData";
+
 						purpose: "PerformanceAndHealth";
+
 						comment: "How many readdir call were needed";
 					};
 				};
+
 				type WorkspaceStatsMetadata = {
 					duration: number;
+
 					reachedLimit: boolean;
+
 					fileCount: number;
+
 					readdirCount: number;
 				};
+
 				this.telemetryService.publicLog2<
 					WorkspaceStatsMetadata,
 					WorkspaceStatsMetadataClassification

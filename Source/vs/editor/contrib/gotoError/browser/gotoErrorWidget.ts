@@ -60,16 +60,22 @@ import {
 
 class MessageWidget {
 	private _lines: number = 0;
+
 	private _longestLineLength: number = 0;
 
 	private readonly _editor: ICodeEditor;
+
 	private readonly _messageBlock: HTMLDivElement;
+
 	private readonly _relatedBlock: HTMLDivElement;
+
 	private readonly _scrollable: ScrollableElement;
+
 	private readonly _relatedDiagnostics = new WeakMap<
 		HTMLElement,
 		IRelatedInformation
 	>();
+
 	private readonly _disposables: DisposableStore = new DisposableStore();
 
 	private _codeLink?: HTMLElement;
@@ -88,8 +94,11 @@ class MessageWidget {
 		domNode.className = "descriptioncontainer";
 
 		this._messageBlock = document.createElement("div");
+
 		this._messageBlock.classList.add("message");
+
 		this._messageBlock.setAttribute("aria-live", "assertive");
+
 		this._messageBlock.setAttribute("role", "alert");
 
 		domNode.appendChild(this._messageBlock);
@@ -97,6 +106,7 @@ class MessageWidget {
 		this._relatedBlock = document.createElement("div");
 
 		domNode.appendChild(this._relatedBlock);
+
 		this._disposables.add(
 			dom.addStandardDisposableListener(
 				this._relatedBlock,
@@ -120,7 +130,9 @@ class MessageWidget {
 			horizontalScrollbarSize: 6,
 			verticalScrollbarSize: 6,
 		});
+
 		parent.appendChild(this._scrollable.getDomNode());
+
 		this._disposables.add(
 			this._scrollable.onScroll((e) => {
 				domNode.style.left = `-${e.scrollLeft}px`;
@@ -128,6 +140,7 @@ class MessageWidget {
 				domNode.style.top = `-${e.scrollTop}px`;
 			}),
 		);
+
 		this._disposables.add(this._scrollable);
 	}
 
@@ -149,7 +162,9 @@ class MessageWidget {
 		}
 
 		const lines = splitLines(message);
+
 		this._lines = lines.length;
+
 		this._longestLineLength = 0;
 
 		for (const line of lines) {
@@ -160,43 +175,58 @@ class MessageWidget {
 		}
 
 		dom.clearNode(this._messageBlock);
+
 		this._messageBlock.setAttribute(
 			"aria-label",
 			this.getAriaLabel(marker),
 		);
+
 		this._editor.applyFontInfo(this._messageBlock);
 
 		let lastLineElement = this._messageBlock;
 
 		for (const line of lines) {
 			lastLineElement = document.createElement("div");
+
 			lastLineElement.innerText = line;
 
 			if (line === "") {
 				lastLineElement.style.height =
 					this._messageBlock.style.lineHeight;
 			}
+
 			this._messageBlock.appendChild(lastLineElement);
 		}
+
 		if (source || code) {
 			const detailsElement = document.createElement("span");
+
 			detailsElement.classList.add("details");
+
 			lastLineElement.appendChild(detailsElement);
 
 			if (source) {
 				const sourceElement = document.createElement("span");
+
 				sourceElement.innerText = source;
+
 				sourceElement.classList.add("source");
+
 				detailsElement.appendChild(sourceElement);
 			}
+
 			if (code) {
 				if (typeof code === "string") {
 					const codeElement = document.createElement("span");
+
 					codeElement.innerText = `(${code})`;
+
 					codeElement.classList.add("code");
+
 					detailsElement.appendChild(codeElement);
 				} else {
 					this._codeLink = dom.$("a.code-link");
+
 					this._codeLink.setAttribute(
 						"href",
 						`${code.target.toString()}`,
@@ -206,7 +236,9 @@ class MessageWidget {
 						this._openerService.open(code.target, {
 							allowCommands: true,
 						});
+
 						e.preventDefault();
+
 						e.stopPropagation();
 					};
 
@@ -214,40 +246,52 @@ class MessageWidget {
 						this._codeLink,
 						dom.$("span"),
 					);
+
 					codeElement.innerText = code.value;
+
 					detailsElement.appendChild(this._codeLink);
 				}
 			}
 		}
 
 		dom.clearNode(this._relatedBlock);
+
 		this._editor.applyFontInfo(this._relatedBlock);
 
 		if (isNonEmptyArray(relatedInformation)) {
 			const relatedInformationNode = this._relatedBlock.appendChild(
 				document.createElement("div"),
 			);
+
 			relatedInformationNode.style.paddingTop = `${Math.floor(this._editor.getOption(EditorOption.lineHeight) * 0.66)}px`;
+
 			this._lines += 1;
 
 			for (const related of relatedInformation) {
 				const container = document.createElement("div");
 
 				const relatedResource = document.createElement("a");
+
 				relatedResource.classList.add("filename");
+
 				relatedResource.innerText = `${this._labelService.getUriBasenameLabel(related.resource)}(${related.startLineNumber}, ${related.startColumn}): `;
+
 				relatedResource.title = this._labelService.getUriLabel(
 					related.resource,
 				);
+
 				this._relatedDiagnostics.set(relatedResource, related);
 
 				const relatedMessage = document.createElement("span");
+
 				relatedMessage.innerText = related.message;
 
 				container.appendChild(relatedResource);
+
 				container.appendChild(relatedMessage);
 
 				this._lines += 1;
+
 				relatedInformationNode.appendChild(container);
 			}
 		}
@@ -261,12 +305,15 @@ class MessageWidget {
 		);
 
 		const scrollHeight = fontInfo.lineHeight * this._lines;
+
 		this._scrollable.setScrollDimensions({ scrollWidth, scrollHeight });
 	}
 
 	layout(height: number, width: number): void {
 		this._scrollable.getDomNode().style.height = `${height}px`;
+
 		this._scrollable.getDomNode().style.width = `${width}px`;
+
 		this._scrollable.setScrollDimensions({ width, height });
 	}
 
@@ -314,8 +361,10 @@ class MessageWidget {
 			marker.startLineNumber >= 1
 		) {
 			const lineContent = model.getLineContent(marker.startLineNumber);
+
 			ariaLabel = `${lineContent}, ${ariaLabel}`;
 		}
+
 		return ariaLabel;
 	}
 }
@@ -324,14 +373,22 @@ export class MarkerNavigationWidget extends PeekViewWidget {
 	static readonly TitleMenu = new MenuId("gotoErrorTitleMenu");
 
 	private _parentContainer!: HTMLElement;
+
 	private _container!: HTMLElement;
+
 	private _icon!: HTMLElement;
+
 	private _message!: MessageWidget;
+
 	private readonly _callOnDispose = new DisposableStore();
+
 	private _severity: MarkerSeverity;
+
 	private _backgroundColor?: Color;
+
 	private readonly _onDidSelectRelatedInformation =
 		new Emitter<IRelatedInformation>();
+
 	private _heightInPixel!: number;
 
 	readonly onDidSelectRelatedInformation: Event<IRelatedInformation> =
@@ -357,10 +414,13 @@ export class MarkerNavigationWidget extends PeekViewWidget {
 			},
 			instantiationService,
 		);
+
 		this._severity = MarkerSeverity.Warning;
+
 		this._backgroundColor = Color.white;
 
 		this._applyTheme(_themeService.getColorTheme());
+
 		this._callOnDispose.add(
 			_themeService.onDidColorThemeChange(this._applyTheme.bind(this)),
 		);
@@ -379,9 +439,11 @@ export class MarkerNavigationWidget extends PeekViewWidget {
 
 		if (this._severity === MarkerSeverity.Warning) {
 			colorId = editorMarkerNavigationWarning;
+
 			headerBackground = editorMarkerNavigationWarningHeader;
 		} else if (this._severity === MarkerSeverity.Info) {
 			colorId = editorMarkerNavigationInfo;
+
 			headerBackground = editorMarkerNavigationInfoHeader;
 		}
 
@@ -404,6 +466,7 @@ export class MarkerNavigationWidget extends PeekViewWidget {
 				? this._backgroundColor.toString()
 				: "";
 		}
+
 		super._applyStyles();
 	}
 
@@ -432,6 +495,7 @@ export class MarkerNavigationWidget extends PeekViewWidget {
 		);
 
 		const actions = getFlatActionBarActions(menu);
+
 		this._actionbarWidget!.push(actions, {
 			label: false,
 			icon: true,
@@ -445,11 +509,15 @@ export class MarkerNavigationWidget extends PeekViewWidget {
 
 	protected _fillBody(container: HTMLElement): void {
 		this._parentContainer = container;
+
 		container.classList.add("marker-widget");
+
 		this._parentContainer.tabIndex = 0;
+
 		this._parentContainer.setAttribute("role", "tooltip");
 
 		this._container = document.createElement("div");
+
 		container.appendChild(this._container);
 
 		this._message = new MessageWidget(
@@ -459,6 +527,7 @@ export class MarkerNavigationWidget extends PeekViewWidget {
 			this._openerService,
 			this._labelService,
 		);
+
 		this._disposables.add(this._message);
 	}
 
@@ -475,10 +544,12 @@ export class MarkerNavigationWidget extends PeekViewWidget {
 		// * title
 		// * message
 		this._container.classList.remove("stale");
+
 		this._message.update(marker);
 
 		// update frame color (only applied on 'show')
 		this._severity = marker.severity;
+
 		this._applyTheme(this._themeService.getColorTheme());
 
 		// show
@@ -510,21 +581,26 @@ export class MarkerNavigationWidget extends PeekViewWidget {
 							markerIdx,
 							markerCount,
 						);
+
 			this.setTitle(basename(model.uri), detail);
 		}
+
 		this._icon.className = `codicon ${SeverityIcon.className(MarkerSeverity.toSeverity(this._severity))}`;
 
 		this.editor.revealPositionNearTop(position, ScrollType.Smooth);
+
 		this.editor.focus();
 	}
 
 	updateMarker(marker: IMarker): void {
 		this._container.classList.remove("stale");
+
 		this._message.update(marker);
 	}
 
 	showStale() {
 		this._container.classList.add("stale");
+
 		this._relayout();
 	}
 
@@ -533,8 +609,11 @@ export class MarkerNavigationWidget extends PeekViewWidget {
 		widthInPixel: number,
 	): void {
 		super._doLayoutBody(heightInPixel, widthInPixel);
+
 		this._heightInPixel = heightInPixel;
+
 		this._message.layout(heightInPixel, widthInPixel);
+
 		this._container.style.height = `${heightInPixel}px`;
 	}
 

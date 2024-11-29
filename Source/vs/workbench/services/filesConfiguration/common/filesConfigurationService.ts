@@ -62,8 +62,11 @@ export const AutoSaveAfterShortDelayContext = new RawContextKey<boolean>(
 
 export interface IAutoSaveConfiguration {
 	autoSave?: "afterDelay" | "onFocusChange" | "onWindowChange";
+
 	autoSaveDelay?: number;
+
 	autoSaveWorkspaceFilesOnly?: boolean;
+
 	autoSaveWhenNoErrors?: boolean;
 }
 interface ICachedAutoSaveConfiguration extends IAutoSaveConfiguration {
@@ -71,6 +74,7 @@ interface ICachedAutoSaveConfiguration extends IAutoSaveConfiguration {
 	// of lookup we have to do since auto save methods
 	// are being called very often, e.g. when content changes
 	isOutOfWorkspace?: boolean;
+
 	isShortAutoSaveDelay?: boolean;
 }
 export const enum AutoSaveMode {
@@ -97,6 +101,7 @@ export interface IEnabledAutoSaveMode {
 }
 export interface IDisabledAutoSaveMode {
 	readonly mode: AutoSaveMode.OFF;
+
 	readonly reason: AutoSaveDisabledReason;
 }
 export const IFilesConfigurationService =
@@ -106,11 +111,13 @@ export interface IFilesConfigurationService {
 	readonly _serviceBrand: undefined;
 	//#region Auto Save
 	readonly onDidChangeAutoSaveConfiguration: Event<void>;
+
 	readonly onDidChangeAutoSaveDisabled: Event<URI>;
 
 	getAutoSaveConfiguration(
 		resourceOrEditor: EditorInput | URI | undefined,
 	): IAutoSaveConfiguration;
+
 	hasShortAutoSaveDelay(
 		resourceOrEditor: EditorInput | URI | undefined,
 	): boolean;
@@ -119,20 +126,27 @@ export interface IFilesConfigurationService {
 		resourceOrEditor: EditorInput | URI | undefined,
 		saveReason?: SaveReason,
 	): IAutoSaveMode;
+
 	toggleAutoSave(): Promise<void>;
+
 	disableAutoSave(resourceOrEditor: EditorInput | URI): IDisposable;
 	//#endregion
 	//#region Configured Readonly
 	readonly onDidChangeReadonly: Event<void>;
+
 	isReadonly(resource: URI, stat?: IBaseFileStat): boolean | IMarkdownString;
+
 	updateReadonly(
 		resource: URI,
 		readonly: true | false | "toggle" | "reset",
 	): Promise<void>;
 	//#endregion
 	readonly onDidChangeFilesAssociation: Event<void>;
+
 	readonly isHotExitEnabled: boolean;
+
 	readonly hotExitConfiguration: string | undefined;
+
 	preventSaveConflicts(resource: URI, language?: string): boolean;
 }
 export class FilesConfigurationService
@@ -140,10 +154,13 @@ export class FilesConfigurationService
 	implements IFilesConfigurationService
 {
 	declare readonly _serviceBrand: undefined;
+
 	private static readonly DEFAULT_AUTO_SAVE_MODE = isWeb
 		? AutoSaveConfiguration.AFTER_DELAY
 		: AutoSaveConfiguration.OFF;
+
 	private static readonly DEFAULT_AUTO_SAVE_DELAY = 1000;
+
 	private static readonly READONLY_MESSAGES = {
 		providerReadonly: {
 			value: localize(
@@ -203,47 +220,65 @@ export class FilesConfigurationService
 			isTrusted: true,
 		},
 	};
+
 	private readonly _onDidChangeAutoSaveConfiguration = this._register(
 		new Emitter<void>(),
 	);
+
 	readonly onDidChangeAutoSaveConfiguration =
 		this._onDidChangeAutoSaveConfiguration.event;
+
 	private readonly _onDidChangeAutoSaveDisabled = this._register(
 		new Emitter<URI>(),
 	);
+
 	readonly onDidChangeAutoSaveDisabled =
 		this._onDidChangeAutoSaveDisabled.event;
+
 	private readonly _onDidChangeFilesAssociation = this._register(
 		new Emitter<void>(),
 	);
+
 	readonly onDidChangeFilesAssociation =
 		this._onDidChangeFilesAssociation.event;
+
 	private readonly _onDidChangeReadonly = this._register(new Emitter<void>());
+
 	readonly onDidChangeReadonly = this._onDidChangeReadonly.event;
+
 	private currentGlobalAutoSaveConfiguration: IAutoSaveConfiguration;
+
 	private currentFilesAssociationConfiguration:
 		| IStringDictionary<string>
 		| undefined;
+
 	private currentHotExitConfiguration: string;
+
 	private readonly autoSaveConfigurationCache = new LRUCache<
 		URI,
 		ICachedAutoSaveConfiguration
 	>(1000);
+
 	private readonly autoSaveDisabledOverrides =
 		new ResourceMap<number /* counter */>();
+
 	private readonly autoSaveAfterShortDelayContext =
 		AutoSaveAfterShortDelayContext.bindTo(this.contextKeyService);
+
 	private readonly readonlyIncludeMatcher = this._register(
 		new GlobalIdleValue(() =>
 			this.createReadonlyMatcher(FILES_READONLY_INCLUDE_CONFIG),
 		),
 	);
+
 	private readonly readonlyExcludeMatcher = this._register(
 		new GlobalIdleValue(() =>
 			this.createReadonlyMatcher(FILES_READONLY_EXCLUDE_CONFIG),
 		),
 	);
+
 	private configuredReadonlyFromPermissions: boolean | undefined;
+
 	private readonly sessionReadonlyOverrides = new ResourceMap<boolean>(
 		(resource) => this.uriIdentityService.extUri.getComparisonKey(resource),
 	);
@@ -270,15 +305,21 @@ export class FilesConfigurationService
 
 		const configuration =
 			configurationService.getValue<IFilesConfiguration>();
+
 		this.currentGlobalAutoSaveConfiguration =
 			this.computeAutoSaveConfiguration(undefined, configuration.files);
+
 		this.currentFilesAssociationConfiguration =
 			configuration?.files?.associations;
+
 		this.currentHotExitConfiguration =
 			configuration?.files?.hotExit || HotExitConfiguration.ON_EXIT;
+
 		this.onFilesConfigurationChange(configuration, false);
+
 		this.registerListeners();
 	}
+
 	private createReadonlyMatcher(config: string) {
 		const matcher = this._register(
 			new ResourceGlobMatcher(
@@ -289,12 +330,14 @@ export class FilesConfigurationService
 				this.configurationService,
 			),
 		);
+
 		this._register(
 			matcher.onExpressionChange(() => this._onDidChangeReadonly.fire()),
 		);
 
 		return matcher;
 	}
+
 	isReadonly(resource: URI, stat?: IBaseFileStat): boolean | IMarkdownString {
 		// if the entire file system provider is readonly, we respect that
 		// and do not allow to change readonly. we take this as a hint that
@@ -316,6 +359,7 @@ export class FilesConfigurationService
 				? FilesConfigurationService.READONLY_MESSAGES.sessionReadonly
 				: false;
 		}
+
 		if (
 			this.uriIdentityService.extUri.isEqualOrParent(
 				resource,
@@ -342,8 +386,10 @@ export class FilesConfigurationService
 		if (stat?.readonly) {
 			return FilesConfigurationService.READONLY_MESSAGES.fileReadonly;
 		}
+
 		return false;
 	}
+
 	async updateReadonly(
 		resource: URI,
 		readonly: true | false | "toggle" | "reset",
@@ -358,15 +404,19 @@ export class FilesConfigurationService
 			} catch (error) {
 				// ignore
 			}
+
 			readonly = !this.isReadonly(resource, stat);
 		}
+
 		if (readonly === "reset") {
 			this.sessionReadonlyOverrides.delete(resource);
 		} else {
 			this.sessionReadonlyOverrides.set(resource, readonly);
 		}
+
 		this._onDidChangeReadonly.fire();
 	}
+
 	private registerListeners(): void {
 		// Files configuration changes
 		this._register(
@@ -380,6 +430,7 @@ export class FilesConfigurationService
 			}),
 		);
 	}
+
 	protected onFilesConfigurationChange(
 		configuration: IFilesConfiguration,
 		fromEvent: boolean,
@@ -387,7 +438,9 @@ export class FilesConfigurationService
 		// Auto Save
 		this.currentGlobalAutoSaveConfiguration =
 			this.computeAutoSaveConfiguration(undefined, configuration.files);
+
 		this.autoSaveConfigurationCache.clear();
+
 		this.autoSaveAfterShortDelayContext.set(
 			this.getAutoSaveMode(undefined).mode ===
 				AutoSaveMode.AFTER_SHORT_DELAY,
@@ -435,6 +488,7 @@ export class FilesConfigurationService
 			}
 		}
 	}
+
 	getAutoSaveConfiguration(
 		resourceOrEditor: EditorInput | URI | undefined,
 	): ICachedAutoSaveConfiguration {
@@ -453,15 +507,19 @@ export class FilesConfigurationService
 							"files",
 						),
 					);
+
 				this.autoSaveConfigurationCache.set(
 					resource,
 					resourceAutoSaveConfiguration,
 				);
 			}
+
 			return resourceAutoSaveConfiguration;
 		}
+
 		return this.currentGlobalAutoSaveConfiguration;
 	}
+
 	private computeAutoSaveConfiguration(
 		resource: URI | undefined,
 		filesConfiguration: IFilesConfigurationNode | undefined,
@@ -488,17 +546,20 @@ export class FilesConfigurationService
 		) {
 			case AutoSaveConfiguration.AFTER_DELAY: {
 				autoSave = "afterDelay";
+
 				autoSaveDelay =
 					typeof filesConfiguration?.autoSaveDelay === "number" &&
 					filesConfiguration.autoSaveDelay >= 0
 						? filesConfiguration.autoSaveDelay
 						: FilesConfigurationService.DEFAULT_AUTO_SAVE_DELAY;
+
 				isShortAutoSaveDelay =
 					autoSaveDelay <=
 					FilesConfigurationService.DEFAULT_AUTO_SAVE_DELAY;
 
 				break;
 			}
+
 			case AutoSaveConfiguration.ON_FOCUS_CHANGE:
 				autoSave = "onFocusChange";
 
@@ -509,18 +570,23 @@ export class FilesConfigurationService
 
 				break;
 		}
+
 		if (filesConfiguration?.autoSaveWorkspaceFilesOnly === true) {
 			autoSaveWorkspaceFilesOnly = true;
 
 			if (resource && !this.contextService.isInsideWorkspace(resource)) {
 				isOutOfWorkspace = true;
+
 				isShortAutoSaveDelay = undefined; // out of workspace file are not auto saved with this configuration
 			}
 		}
+
 		if (filesConfiguration?.autoSaveWhenNoErrors === true) {
 			autoSaveWhenNoErrors = true;
+
 			isShortAutoSaveDelay = undefined; // this configuration disables short auto save delay
 		}
+
 		return {
 			autoSave,
 			autoSaveDelay,
@@ -530,6 +596,7 @@ export class FilesConfigurationService
 			isShortAutoSaveDelay,
 		};
 	}
+
 	private toResource(
 		resourceOrEditor: EditorInput | URI | undefined,
 	): URI | undefined {
@@ -538,8 +605,10 @@ export class FilesConfigurationService
 				supportSideBySide: SideBySideEditor.PRIMARY,
 			});
 		}
+
 		return resourceOrEditor;
 	}
+
 	hasShortAutoSaveDelay(
 		resourceOrEditor: EditorInput | URI | undefined,
 	): boolean {
@@ -548,8 +617,10 @@ export class FilesConfigurationService
 		if (this.getAutoSaveConfiguration(resource).isShortAutoSaveDelay) {
 			return !resource || !this.autoSaveDisabledOverrides.has(resource);
 		}
+
 		return false;
 	}
+
 	getAutoSaveMode(
 		resourceOrEditor: EditorInput | URI | undefined,
 		saveReason?: SaveReason,
@@ -562,6 +633,7 @@ export class FilesConfigurationService
 				reason: AutoSaveDisabledReason.DISABLED,
 			};
 		}
+
 		const autoSaveConfiguration = this.getAutoSaveConfiguration(resource);
 
 		if (typeof autoSaveConfiguration.autoSave === "undefined") {
@@ -570,6 +642,7 @@ export class FilesConfigurationService
 				reason: AutoSaveDisabledReason.SETTINGS,
 			};
 		}
+
 		if (typeof saveReason === "number") {
 			if (
 				(autoSaveConfiguration.autoSave === "afterDelay" &&
@@ -586,6 +659,7 @@ export class FilesConfigurationService
 				};
 			}
 		}
+
 		if (resource) {
 			if (
 				autoSaveConfiguration.autoSaveWorkspaceFilesOnly &&
@@ -596,6 +670,7 @@ export class FilesConfigurationService
 					reason: AutoSaveDisabledReason.OUT_OF_WORKSPACE,
 				};
 			}
+
 			if (
 				autoSaveConfiguration.autoSaveWhenNoErrors &&
 				this.markerService.read({
@@ -610,6 +685,7 @@ export class FilesConfigurationService
 				};
 			}
 		}
+
 		switch (autoSaveConfiguration.autoSave) {
 			case "afterDelay":
 				if (
@@ -628,6 +704,7 @@ export class FilesConfigurationService
 							: AutoSaveMode.AFTER_SHORT_DELAY,
 					};
 				}
+
 				return { mode: AutoSaveMode.AFTER_LONG_DELAY };
 
 			case "onFocusChange":
@@ -637,6 +714,7 @@ export class FilesConfigurationService
 				return { mode: AutoSaveMode.ON_WINDOW_CHANGE };
 		}
 	}
+
 	async toggleAutoSave(): Promise<void> {
 		const currentSetting =
 			this.configurationService.getValue("files.autoSave");
@@ -654,45 +732,55 @@ export class FilesConfigurationService
 		} else {
 			newAutoSaveValue = AutoSaveConfiguration.AFTER_DELAY;
 		}
+
 		return this.configurationService.updateValue(
 			"files.autoSave",
 			newAutoSaveValue,
 		);
 	}
+
 	disableAutoSave(resourceOrEditor: EditorInput | URI): IDisposable {
 		const resource = this.toResource(resourceOrEditor);
 
 		if (!resource) {
 			return Disposable.None;
 		}
+
 		const counter = this.autoSaveDisabledOverrides.get(resource) ?? 0;
+
 		this.autoSaveDisabledOverrides.set(resource, counter + 1);
 
 		if (counter === 0) {
 			this._onDidChangeAutoSaveDisabled.fire(resource);
 		}
+
 		return toDisposable(() => {
 			const counter = this.autoSaveDisabledOverrides.get(resource) ?? 0;
 
 			if (counter <= 1) {
 				this.autoSaveDisabledOverrides.delete(resource);
+
 				this._onDidChangeAutoSaveDisabled.fire(resource);
 			} else {
 				this.autoSaveDisabledOverrides.set(resource, counter - 1);
 			}
 		});
 	}
+
 	get isHotExitEnabled(): boolean {
 		if (this.contextService.getWorkspace().transient) {
 			// Transient workspace: hot exit is disabled because
 			// transient workspaces are not restored upon restart
 			return false;
 		}
+
 		return this.currentHotExitConfiguration !== HotExitConfiguration.OFF;
 	}
+
 	get hotExitConfiguration(): string {
 		return this.currentHotExitConfiguration;
 	}
+
 	preventSaveConflicts(resource: URI, language?: string): boolean {
 		return (
 			this.configurationService.getValue("files.saveConflictResolution", {

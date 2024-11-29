@@ -15,22 +15,28 @@ export class VersionStatus extends Disposable {
 
 	constructor(private readonly _client: ITypeScriptServiceClient) {
 		super();
+
 		this._statusItem = this._register(
 			vscode.languages.createLanguageStatusItem(
 				"typescript.version",
 				jsTsLanguageModes,
 			),
 		);
+
 		this._statusItem.name = vscode.l10n.t("TypeScript Version");
+
 		this._statusItem.detail = vscode.l10n.t("TypeScript Version");
+
 		this._register(
 			this._client.onTsServerStarted(({ version }) =>
 				this.onDidChangeTypeScriptVersion(version),
 			),
 		);
 	}
+
 	private onDidChangeTypeScriptVersion(version: TypeScriptVersion) {
 		this._statusItem.text = version.displayName;
+
 		this._statusItem.command = {
 			command: SelectTypeScriptVersionCommand.id,
 			title: vscode.l10n.t("Select Version"),

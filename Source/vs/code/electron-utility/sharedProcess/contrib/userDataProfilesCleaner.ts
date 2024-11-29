@@ -18,6 +18,7 @@ export class UserDataProfilesCleaner extends Disposable {
 				userDataProfilesService.cleanUp();
 			}, 10 * 1000 /* after 10s */),
 		);
+
 		scheduler.schedule();
 	}
 }

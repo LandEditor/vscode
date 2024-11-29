@@ -69,6 +69,7 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
 		accessor,
 		args?: {
 			range: IRange;
+
 			fileComment: boolean;
 		},
 	) => {
@@ -77,11 +78,13 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
 		if (!activeEditor) {
 			return Promise.resolve();
 		}
+
 		const controller = CommentController.get(activeEditor);
 
 		if (!controller) {
 			return Promise.resolve();
 		}
+
 		controller.nextCommentThread(true);
 	},
 	weight: KeybindingWeight.EditorContrib,
@@ -93,6 +96,7 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
 		accessor,
 		args?: {
 			range: IRange;
+
 			fileComment: boolean;
 		},
 	) => {
@@ -101,11 +105,13 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
 		if (!activeEditor) {
 			return Promise.resolve();
 		}
+
 		const controller = CommentController.get(activeEditor);
 
 		if (!controller) {
 			return Promise.resolve();
 		}
+
 		controller.previousCommentThread(true);
 	},
 	weight: KeybindingWeight.EditorContrib,
@@ -140,17 +146,20 @@ registerAction2(
 				},
 			});
 		}
+
 		override run(accessor: ServicesAccessor, ...args: any[]): void {
 			const activeEditor = getActiveEditor(accessor);
 
 			if (!activeEditor) {
 				return;
 			}
+
 			const controller = CommentController.get(activeEditor);
 
 			if (!controller) {
 				return;
 			}
+
 			controller.nextCommentThread(false);
 		}
 	},
@@ -184,17 +193,20 @@ registerAction2(
 				},
 			});
 		}
+
 		override run(accessor: ServicesAccessor, ...args: any[]): void {
 			const activeEditor = getActiveEditor(accessor);
 
 			if (!activeEditor) {
 				return;
 			}
+
 			const controller = CommentController.get(activeEditor);
 
 			if (!controller) {
 				return;
 			}
+
 			controller.previousCommentThread(false);
 		}
 	},
@@ -243,10 +255,12 @@ registerAction2(
 				},
 			});
 		}
+
 		override run(
 			accessor: ServicesAccessor,
 			args?: {
 				range: IRange;
+
 				fileComment: boolean;
 			},
 		): void {
@@ -255,11 +269,13 @@ registerAction2(
 			if (!activeEditor) {
 				return;
 			}
+
 			const controller = CommentController.get(activeEditor);
 
 			if (!controller) {
 				return;
 			}
+
 			controller.nextCommentingRange();
 		}
 	},
@@ -308,6 +324,7 @@ registerAction2(
 				},
 			});
 		}
+
 		override async run(
 			accessor: ServicesAccessor,
 			...args: any[]
@@ -317,11 +334,13 @@ registerAction2(
 			if (!activeEditor) {
 				return;
 			}
+
 			const controller = CommentController.get(activeEditor);
 
 			if (!controller) {
 				return;
 			}
+
 			controller.previousCommentingRange();
 		}
 	},
@@ -350,10 +369,12 @@ registerAction2(
 				],
 			});
 		}
+
 		override run(accessor: ServicesAccessor, ...args: any[]): void {
 			const commentService = accessor.get(ICommentService);
 
 			const enable = commentService.isCommentingEnabled;
+
 			commentService.enableCommenting(!enable);
 		}
 	},
@@ -390,10 +411,12 @@ registerAction2(
 				},
 			});
 		}
+
 		override async run(
 			accessor: ServicesAccessor,
 			args?: {
 				range: IRange;
+
 				fileComment: boolean;
 			},
 		): Promise<void> {
@@ -402,11 +425,13 @@ registerAction2(
 			if (!activeEditor) {
 				return;
 			}
+
 			const controller = CommentController.get(activeEditor);
 
 			if (!controller) {
 				return;
 			}
+
 			const position = args?.range
 				? new Range(
 						args.range.startLineNumber,
@@ -453,6 +478,7 @@ registerAction2(
 				precondition: CommentContextKeys.activeCursorHasComment,
 			});
 		}
+
 		override async run(
 			accessor: ServicesAccessor,
 			...args: any[]
@@ -462,11 +488,13 @@ registerAction2(
 			if (!activeEditor) {
 				return;
 			}
+
 			const controller = CommentController.get(activeEditor);
 
 			if (!controller) {
 				return;
 			}
+
 			const position = activeEditor.getSelection();
 
 			const notificationService = accessor.get(INotificationService);
@@ -489,6 +517,7 @@ registerAction2(
 			} catch (e) {
 				error = true;
 			}
+
 			if (error) {
 				notificationService.error(
 					nls.localize(
@@ -524,6 +553,7 @@ registerAction2(
 				],
 			});
 		}
+
 		override run(accessor: ServicesAccessor, ...args: any[]): void {
 			getActiveController(accessor)?.collapseAll();
 		}
@@ -553,6 +583,7 @@ registerAction2(
 				],
 			});
 		}
+
 		override run(accessor: ServicesAccessor, ...args: any[]): void {
 			getActiveController(accessor)?.expandAll();
 		}
@@ -582,6 +613,7 @@ registerAction2(
 				],
 			});
 		}
+
 		override run(accessor: ServicesAccessor, ...args: any[]): void {
 			getActiveController(accessor)?.expandUnresolved();
 		}
@@ -624,6 +656,7 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
 			if (!controller) {
 				return;
 			}
+
 			const notificationService = accessor.get(INotificationService);
 
 			const commentService = accessor.get(ICommentService);
@@ -644,6 +677,7 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
 			} catch (e) {
 				error = true;
 			}
+
 			if (error) {
 				notificationService.error(
 					nls.localize(
@@ -671,12 +705,14 @@ export function getActiveEditor(
 				activeTextEditorControl.getModifiedEditor();
 		}
 	}
+
 	if (
 		!isCodeEditor(activeTextEditorControl) ||
 		!activeTextEditorControl.hasModel()
 	) {
 		return null;
 	}
+
 	return activeTextEditorControl;
 }
 function getActiveController(
@@ -687,10 +723,12 @@ function getActiveController(
 	if (!activeEditor) {
 		return undefined;
 	}
+
 	const controller = CommentController.get(activeEditor);
 
 	if (!controller) {
 		return undefined;
 	}
+
 	return controller;
 }

@@ -70,6 +70,7 @@ export class ExtensionsScannerService
 			instantiationService,
 		);
 	}
+
 	protected async getTranslations(): Promise<Translations> {
 		return {};
 	}

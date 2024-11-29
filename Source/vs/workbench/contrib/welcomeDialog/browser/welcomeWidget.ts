@@ -49,8 +49,11 @@ import { registerThemingParticipant } from "../../../../platform/theme/common/th
 
 export class WelcomeWidget extends Disposable implements IOverlayWidget {
 	private readonly _rootDomNode: HTMLElement;
+
 	private readonly element: HTMLElement;
+
 	private readonly messageContainer: HTMLElement;
+
 	private readonly markdownRenderer =
 		this.instantiationService.createInstance(MarkdownRenderer, {});
 
@@ -62,18 +65,26 @@ export class WelcomeWidget extends Disposable implements IOverlayWidget {
 		private readonly openerService: IOpenerService,
 	) {
 		super();
+
 		this._rootDomNode = document.createElement("div");
+
 		this._rootDomNode.className = "welcome-widget";
+
 		this.element = this._rootDomNode.appendChild($(".monaco-dialog-box"));
+
 		this.element.setAttribute("role", "dialog");
+
 		hide(this._rootDomNode);
+
 		this.messageContainer = this.element.appendChild(
 			$(".dialog-message-container"),
 		);
 	}
+
 	async executeCommand(commandId: string, ...args: string[]) {
 		try {
 			await this.commandService.executeCommand(commandId, ...args);
+
 			this.telemetryService.publicLog2<
 				WorkbenchActionExecutedEvent,
 				WorkbenchActionExecutedClassification
@@ -83,6 +94,7 @@ export class WelcomeWidget extends Disposable implements IOverlayWidget {
 			});
 		} catch (ex) {}
 	}
+
 	public async render(
 		title: string,
 		message: string,
@@ -92,9 +104,13 @@ export class WelcomeWidget extends Disposable implements IOverlayWidget {
 		if (!this._editor._getViewModel()) {
 			return;
 		}
+
 		await this.buildWidgetContent(title, message, buttonText, buttonAction);
+
 		this._editor.addOverlayWidget(this);
+
 		this._show();
+
 		this.telemetryService.publicLog2<
 			WorkbenchActionExecutedEvent,
 			WorkbenchActionExecutedClassification
@@ -103,6 +119,7 @@ export class WelcomeWidget extends Disposable implements IOverlayWidget {
 			from: "welcomeWidget",
 		});
 	}
+
 	private async buildWidgetContent(
 		title: string,
 		message: string,
@@ -122,6 +139,7 @@ export class WelcomeWidget extends Disposable implements IOverlayWidget {
 				},
 			),
 		);
+
 		actionBar.push(action, { icon: true, label: false });
 
 		const renderBody = (message: string, icon: string): MarkdownString => {
@@ -129,7 +147,9 @@ export class WelcomeWidget extends Disposable implements IOverlayWidget {
 				supportThemeIcons: true,
 				supportHtml: true,
 			});
+
 			mds.appendMarkdown(`<a class="copilot">$(${icon})</a>`);
+
 			mds.appendMarkdown(message);
 
 			return mds;
@@ -142,7 +162,9 @@ export class WelcomeWidget extends Disposable implements IOverlayWidget {
 		const titleElementMdt = this.markdownRenderer.render(
 			renderBody(title, "zap"),
 		);
+
 		titleElement.appendChild(titleElementMdt.element);
+
 		this.buildStepMarkdownDescription(
 			this.messageContainer,
 			message
@@ -168,14 +190,18 @@ export class WelcomeWidget extends Disposable implements IOverlayWidget {
 				...defaultButtonStyles,
 			}),
 		);
+
 		primaryButton.label = mnemonicButtonLabel(buttonText, true);
+
 		this._register(
 			primaryButton.onDidClick(async () => {
 				await this.executeCommand(buttonAction);
 			}),
 		);
+
 		buttonBar.buttons[0].focus();
 	}
+
 	private buildStepMarkdownDescription(
 		container: HTMLElement,
 		text: LinkedText[],
@@ -213,44 +239,59 @@ export class WelcomeWidget extends Disposable implements IOverlayWidget {
 									id: "welcomeWidetLinkAction",
 									from: "welcomeWidget",
 								});
+
 								this.openerService.open(href, {
 									allowCommands: true,
 								});
 							},
 						},
 					);
+
 					this._register(link);
 				}
 			}
 		}
+
 		return container;
 	}
+
 	getId(): string {
 		return "editor.contrib.welcomeWidget";
 	}
+
 	getDomNode(): HTMLElement {
 		return this._rootDomNode;
 	}
+
 	getPosition(): IOverlayWidgetPosition | null {
 		return {
 			preference: OverlayWidgetPositionPreference.TOP_RIGHT_CORNER,
 		};
 	}
+
 	private _isVisible: boolean = false;
+
 	private _show(): void {
 		if (this._isVisible) {
 			return;
 		}
+
 		this._isVisible = true;
+
 		this._rootDomNode.style.display = "block";
 	}
+
 	private _hide(): void {
 		if (!this._isVisible) {
 			return;
 		}
+
 		this._isVisible = true;
+
 		this._rootDomNode.style.display = "none";
+
 		this._editor.removeOverlayWidget(this);
+
 		this.telemetryService.publicLog2<
 			WorkbenchActionExecutedEvent,
 			WorkbenchActionExecutedClassification
@@ -273,6 +314,7 @@ registerThemingParticipant((theme, collector) => {
 	};
 
 	const widgetBackground = theme.getColor(editorWidgetBackground);
+
 	addBackgroundColorRule(".welcome-widget", widgetBackground);
 
 	const widgetShadowColor = theme.getColor(widgetShadow);
@@ -282,6 +324,7 @@ registerThemingParticipant((theme, collector) => {
 			`.welcome-widget { box-shadow: 0 0 8px 2px ${widgetShadowColor}; }`,
 		);
 	}
+
 	const widgetBorderColor = theme.getColor(widgetBorder);
 
 	if (widgetBorderColor) {
@@ -289,11 +332,13 @@ registerThemingParticipant((theme, collector) => {
 			`.welcome-widget { border-left: 1px solid ${widgetBorderColor}; border-right: 1px solid ${widgetBorderColor}; border-bottom: 1px solid ${widgetBorderColor}; }`,
 		);
 	}
+
 	const hcBorder = theme.getColor(contrastBorder);
 
 	if (hcBorder) {
 		collector.addRule(`.welcome-widget { border: 1px solid ${hcBorder}; }`);
 	}
+
 	const foreground = theme.getColor(editorWidgetForeground);
 
 	if (foreground) {

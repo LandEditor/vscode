@@ -28,9 +28,11 @@ export class ExtensionIgnoredRecommendationsService
 	implements IExtensionIgnoredRecommendationsService
 {
 	declare readonly _serviceBrand: undefined;
+
 	private _onDidChangeIgnoredRecommendations = this._register(
 		new Emitter<void>(),
 	);
+
 	readonly onDidChangeIgnoredRecommendations =
 		this._onDidChangeIgnoredRecommendations.event;
 	// Global Ignored Recommendations
@@ -39,9 +41,11 @@ export class ExtensionIgnoredRecommendationsService
 	get globalIgnoredRecommendations(): string[] {
 		return [...this._globalIgnoredRecommendations];
 	}
+
 	private _onDidChangeGlobalIgnoredRecommendation = this._register(
 		new Emitter<IgnoredRecommendationChangeNotification>(),
 	);
+
 	readonly onDidChangeGlobalIgnoredRecommendation =
 		this._onDidChangeGlobalIgnoredRecommendation.event;
 	// Ignored Workspace Recommendations
@@ -53,6 +57,7 @@ export class ExtensionIgnoredRecommendationsService
 			...this.ignoredWorkspaceRecommendations,
 		]);
 	}
+
 	constructor(
 		@IWorkspaceExtensionsConfigService
 		private readonly workspaceExtensionsConfigService: IWorkspaceExtensionsConfigService,
@@ -60,8 +65,10 @@ export class ExtensionIgnoredRecommendationsService
 		private readonly storageService: IStorageService,
 	) {
 		super();
+
 		this._globalIgnoredRecommendations =
 			this.getCachedIgnoredRecommendations();
+
 		this._register(
 			this.storageService.onDidChangeValue(
 				StorageScope.PROFILE,
@@ -69,22 +76,28 @@ export class ExtensionIgnoredRecommendationsService
 				this._store,
 			)(() => this.onDidStorageChange()),
 		);
+
 		this.initIgnoredWorkspaceRecommendations();
 	}
+
 	private async initIgnoredWorkspaceRecommendations(): Promise<void> {
 		this.ignoredWorkspaceRecommendations =
 			await this.workspaceExtensionsConfigService.getUnwantedRecommendations();
+
 		this._onDidChangeIgnoredRecommendations.fire();
+
 		this._register(
 			this.workspaceExtensionsConfigService.onDidChangeExtensionsConfigs(
 				async () => {
 					this.ignoredWorkspaceRecommendations =
 						await this.workspaceExtensionsConfigService.getUnwantedRecommendations();
+
 					this._onDidChangeIgnoredRecommendations.fire();
 				},
 			),
 		);
 	}
+
 	toggleGlobalIgnoredRecommendation(
 		extensionId: string,
 		shouldIgnore: boolean,
@@ -97,20 +110,25 @@ export class ExtensionIgnoredRecommendationsService
 		if (ignored === shouldIgnore) {
 			return;
 		}
+
 		this._globalIgnoredRecommendations = shouldIgnore
 			? [...this._globalIgnoredRecommendations, extensionId]
 			: this._globalIgnoredRecommendations.filter(
 					(id) => id !== extensionId,
 				);
+
 		this.storeCachedIgnoredRecommendations(
 			this._globalIgnoredRecommendations,
 		);
+
 		this._onDidChangeGlobalIgnoredRecommendation.fire({
 			extensionId,
 			isRecommended: !shouldIgnore,
 		});
+
 		this._onDidChangeIgnoredRecommendations.fire();
 	}
+
 	private getCachedIgnoredRecommendations(): string[] {
 		const ignoredRecommendations: string[] = JSON.parse(
 			this.ignoredRecommendationsValue,
@@ -118,17 +136,21 @@ export class ExtensionIgnoredRecommendationsService
 
 		return ignoredRecommendations.map((e) => e.toLowerCase());
 	}
+
 	private onDidStorageChange(): void {
 		if (
 			this.ignoredRecommendationsValue !==
 			this.getStoredIgnoredRecommendationsValue() /* This checks if current window changed the value or not */
 		) {
 			this._ignoredRecommendationsValue = undefined;
+
 			this._globalIgnoredRecommendations =
 				this.getCachedIgnoredRecommendations();
+
 			this._onDidChangeIgnoredRecommendations.fire();
 		}
 	}
+
 	private storeCachedIgnoredRecommendations(
 		ignoredRecommendations: string[],
 	): void {
@@ -136,24 +158,30 @@ export class ExtensionIgnoredRecommendationsService
 			ignoredRecommendations,
 		);
 	}
+
 	private _ignoredRecommendationsValue: string | undefined;
+
 	private get ignoredRecommendationsValue(): string {
 		if (!this._ignoredRecommendationsValue) {
 			this._ignoredRecommendationsValue =
 				this.getStoredIgnoredRecommendationsValue();
 		}
+
 		return this._ignoredRecommendationsValue;
 	}
+
 	private set ignoredRecommendationsValue(
 		ignoredRecommendationsValue: string,
 	) {
 		if (this.ignoredRecommendationsValue !== ignoredRecommendationsValue) {
 			this._ignoredRecommendationsValue = ignoredRecommendationsValue;
+
 			this.setStoredIgnoredRecommendationsValue(
 				ignoredRecommendationsValue,
 			);
 		}
 	}
+
 	private getStoredIgnoredRecommendationsValue(): string {
 		return this.storageService.get(
 			ignoredRecommendationsStorageKey,
@@ -161,6 +189,7 @@ export class ExtensionIgnoredRecommendationsService
 			"[]",
 		);
 	}
+
 	private setStoredIgnoredRecommendationsValue(value: string): void {
 		this.storageService.store(
 			ignoredRecommendationsStorageKey,

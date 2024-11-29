@@ -23,7 +23,9 @@ import { settingKeyToDisplayFormat } from "../../preferences/browser/settingsTre
 
 export class SimpleSettingRenderer {
 	private readonly codeSettingAnchorRegex: RegExp;
+
 	private readonly codeSettingSimpleRegex: RegExp;
+
 	private _updatedSettings = new Map<string, any>(); // setting ID to user's original setting value
 	private _encounteredSettings = new Map<string, ISetting>(); // setting ID to setting
 	private _featuredSettings = new Map<string, any>(); // setting ID to feature value
@@ -42,10 +44,12 @@ export class SimpleSettingRenderer {
 		this.codeSettingAnchorRegex = new RegExp(
 			`^<a (href)=".*code.*://settings/([^\\s"]+)"(?:\\s*codesetting="([^"]+)")?>`,
 		);
+
 		this.codeSettingSimpleRegex = new RegExp(
 			`^setting\\(([^\\s:)]+)(?::([^)]+))?\\)$`,
 		);
 	}
+
 	get featuredSettingStates(): Map<string, boolean> {
 		const result = new Map<string, boolean>();
 
@@ -55,8 +59,10 @@ export class SimpleSettingRenderer {
 				this._configurationService.getValue(settingId) === value,
 			);
 		}
+
 		return result;
 	}
+
 	private replaceAnchor(raw: string): string | undefined {
 		const match = this.codeSettingAnchorRegex.exec(raw);
 
@@ -69,8 +75,10 @@ export class SimpleSettingRenderer {
 				return raw.replace(this.codeSettingAnchorRegex, rendered);
 			}
 		}
+
 		return undefined;
 	}
+
 	private replaceSimple(raw: string): string | undefined {
 		const match = this.codeSettingSimpleRegex.exec(raw);
 
@@ -83,8 +91,10 @@ export class SimpleSettingRenderer {
 				return raw.replace(this.codeSettingSimpleRegex, rendered);
 			}
 		}
+
 		return undefined;
 	}
+
 	getHtmlRenderer(): (token: Tokens.HTML | Tokens.Tag) => string {
 		return ({ raw }: Tokens.HTML | Tokens.Tag): string => {
 			const replacedAnchor = this.replaceAnchor(raw);
@@ -92,9 +102,11 @@ export class SimpleSettingRenderer {
 			if (replacedAnchor) {
 				raw = replacedAnchor;
 			}
+
 			return raw;
 		};
 	}
+
 	getCodeSpanRenderer(): (token: Tokens.Codespan) => string {
 		return ({ text }: Tokens.Codespan): string => {
 			const replacedSimple = this.replaceSimple(text);
@@ -102,27 +114,34 @@ export class SimpleSettingRenderer {
 			if (replacedSimple) {
 				return replacedSimple;
 			}
+
 			return `<code>${text}</code>`;
 		};
 	}
+
 	settingToUriString(settingId: string, value?: any): string {
 		return `${Schemas.codeSetting}://${settingId}${value ? `/${value}` : ""}`;
 	}
+
 	private getSetting(settingId: string): ISetting | undefined {
 		if (this._encounteredSettings.has(settingId)) {
 			return this._encounteredSettings.get(settingId);
 		}
+
 		return this._preferencesService.getSetting(settingId);
 	}
+
 	parseValue(settingId: string, value: string) {
 		if (value === "undefined" || value === "") {
 			return undefined;
 		}
+
 		const setting = this.getSetting(settingId);
 
 		if (!setting) {
 			return value;
 		}
+
 		switch (setting.type) {
 			case "boolean":
 				return value === "true";
@@ -135,14 +154,17 @@ export class SimpleSettingRenderer {
 				return value;
 		}
 	}
+
 	private render(settingId: string, newValue: string): string | undefined {
 		const setting = this.getSetting(settingId);
 
 		if (!setting) {
 			return "";
 		}
+
 		return this.renderSetting(setting, newValue);
 	}
+
 	private viewInSettingsMessage(
 		settingId: string,
 		alreadyDisplayed: boolean,
@@ -160,6 +182,7 @@ export class SimpleSettingRenderer {
 			);
 		}
 	}
+
 	private restorePreviousSettingMessage(settingId: string): string {
 		const displayName = settingKeyToDisplayFormat(settingId);
 
@@ -170,6 +193,7 @@ export class SimpleSettingRenderer {
 			displayName.label,
 		);
 	}
+
 	private isAlreadySet(
 		setting: ISetting,
 		value: string | number | boolean,
@@ -183,6 +207,7 @@ export class SimpleSettingRenderer {
 			(currentValue === undefined && setting.value === value)
 		);
 	}
+
 	private booleanSettingMessage(
 		setting: ISetting,
 		booleanValue: boolean,
@@ -206,6 +231,7 @@ export class SimpleSettingRenderer {
 				);
 			}
 		}
+
 		if (booleanValue) {
 			return nls.localize(
 				"trueMessage",
@@ -222,6 +248,7 @@ export class SimpleSettingRenderer {
 			);
 		}
 	}
+
 	private stringSettingMessage(
 		setting: ISetting,
 		stringValue: string,
@@ -237,6 +264,7 @@ export class SimpleSettingRenderer {
 				stringValue,
 			);
 		}
+
 		return nls.localize(
 			"stringValue",
 			'Set "{0}: {1}" to "{2}"',
@@ -245,6 +273,7 @@ export class SimpleSettingRenderer {
 			stringValue,
 		);
 	}
+
 	private numberSettingMessage(
 		setting: ISetting,
 		numberValue: number,
@@ -260,6 +289,7 @@ export class SimpleSettingRenderer {
 				numberValue,
 			);
 		}
+
 		return nls.localize(
 			"numberValue",
 			'Set "{0}: {1}" to {2}',
@@ -268,6 +298,7 @@ export class SimpleSettingRenderer {
 			numberValue,
 		);
 	}
+
 	private renderSetting(
 		setting: ISetting,
 		newValue: string | undefined,
@@ -284,6 +315,7 @@ export class SimpleSettingRenderer {
 			<span class="setting-name">${setting.key}</span>
 		</a></code>`;
 	}
+
 	private getSettingMessage(
 		setting: ISetting,
 		newValue: boolean | string | number,
@@ -295,10 +327,13 @@ export class SimpleSettingRenderer {
 		} else if (setting.type === "number") {
 			return this.numberSettingMessage(setting, newValue as number);
 		}
+
 		return undefined;
 	}
+
 	async restoreSetting(settingId: string): Promise<void> {
 		const userOriginalSettingValue = this._updatedSettings.get(settingId);
+
 		this._updatedSettings.delete(settingId);
 
 		return this._configurationService.updateValue(
@@ -307,6 +342,7 @@ export class SimpleSettingRenderer {
 			ConfigurationTarget.USER,
 		);
 	}
+
 	async setSetting(
 		settingId: string,
 		currentSettingValue: any,
@@ -320,10 +356,12 @@ export class SimpleSettingRenderer {
 			ConfigurationTarget.USER,
 		);
 	}
+
 	getActions(uri: URI) {
 		if (uri.scheme !== Schemas.codeSetting) {
 			return;
 		}
+
 		const actions: IAction[] = [];
 
 		const settingId = uri.authority;
@@ -343,6 +381,7 @@ export class SimpleSettingRenderer {
 		) {
 			const restoreMessage =
 				this.restorePreviousSettingMessage(settingId);
+
 			actions.push({
 				class: undefined,
 				id: "restoreSetting",
@@ -377,10 +416,12 @@ export class SimpleSettingRenderer {
 				});
 			}
 		}
+
 		const viewInSettingsMessage = this.viewInSettingsMessage(
 			settingId,
 			actions.length > 0,
 		);
+
 		actions.push({
 			class: undefined,
 			enabled: true,
@@ -393,6 +434,7 @@ export class SimpleSettingRenderer {
 				});
 			},
 		});
+
 		actions.push({
 			class: undefined,
 			enabled: true,
@@ -406,12 +448,14 @@ export class SimpleSettingRenderer {
 
 		return actions;
 	}
+
 	private showContextMenu(uri: URI, x: number, y: number) {
 		const actions = this.getActions(uri);
 
 		if (!actions) {
 			return;
 		}
+
 		this._contextMenuService.showContextMenu({
 			getAnchor: () => ({ x, y }),
 			getActions: () => actions,
@@ -420,21 +464,27 @@ export class SimpleSettingRenderer {
 			},
 		});
 	}
+
 	async updateSetting(uri: URI, x: number, y: number) {
 		if (uri.scheme === Schemas.codeSetting) {
 			type ReleaseNotesSettingUsedClassification = {
 				owner: "alexr00";
+
 				comment: "Used to understand if the the action to update settings from the release notes is used.";
 
 				settingId: {
 					classification: "SystemMetaData";
+
 					purpose: "FeatureInsight";
+
 					comment: "The id of the setting that was clicked on in the release notes";
 				};
 			};
+
 			type ReleaseNotesSettingUsed = {
 				settingId: string;
 			};
+
 			this._telemetryService.publicLog2<
 				ReleaseNotesSettingUsed,
 				ReleaseNotesSettingUsedClassification

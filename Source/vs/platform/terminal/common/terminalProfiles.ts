@@ -17,10 +17,12 @@ export function createProfileSchemaEnums(
 	extensionProfiles?: readonly IExtensionTerminalProfile[],
 ): {
 	values: (string | null)[] | undefined;
+
 	markdownDescriptions: string[] | undefined;
 } {
 	const result: {
 		name: string | null;
+
 		description: string;
 	}[] = [
 		{
@@ -31,6 +33,7 @@ export function createProfileSchemaEnums(
 			),
 		},
 	];
+
 	result.push(
 		...detectedProfiles.map((e) => {
 			return {
@@ -51,6 +54,7 @@ export function createProfileSchemaEnums(
 			}),
 		);
 	}
+
 	return {
 		values: result.map((e) => e.name),
 		markdownDescriptions: result.map((e) => e.description),
@@ -66,15 +70,19 @@ function createProfileDescription(profile: ITerminalProfile): string {
 			description += `\n- args: [${profile.args.length === 0 ? "" : `'${profile.args.join(`','`)}'`}]`;
 		}
 	}
+
 	if (profile.overrideName !== undefined) {
 		description += `\n- overrideName: ${profile.overrideName}`;
 	}
+
 	if (profile.color) {
 		description += `\n- color: ${profile.color}`;
 	}
+
 	if (profile.env) {
 		description += `\n- env: ${JSON.stringify(profile.env)}`;
 	}
+
 	return description;
 }
 function createExtensionProfileDescription(
@@ -96,13 +104,16 @@ export function terminalProfileArgsMatch(
 		if (args1.length !== args2.length) {
 			return false;
 		}
+
 		for (let i = 0; i < args1.length; i++) {
 			if (args1[i] !== args2[i]) {
 				return false;
 			}
 		}
+
 		return true;
 	}
+
 	return false;
 }
 export function terminalIconsEqual(
@@ -114,9 +125,11 @@ export function terminalIconsEqual(
 	} else if (!a || !b) {
 		return false;
 	}
+
 	if (ThemeIcon.isThemeIcon(a) && ThemeIcon.isThemeIcon(b)) {
 		return a.id === b.id && a.color === b.color;
 	}
+
 	if (
 		typeof a === "object" &&
 		"light" in a &&
@@ -127,11 +140,13 @@ export function terminalIconsEqual(
 	) {
 		const castedA = a as {
 			light: unknown;
+
 			dark: unknown;
 		};
 
 		const castedB = b as {
 			light: unknown;
+
 			dark: unknown;
 		};
 
@@ -147,6 +162,7 @@ export function terminalIconsEqual(
 			);
 		}
 	}
+
 	if (
 		(URI.isUri(a) && URI.isUri(b)) ||
 		isUriComponents(a) ||
@@ -154,11 +170,13 @@ export function terminalIconsEqual(
 	) {
 		const castedA = a as {
 			scheme: unknown;
+
 			path: unknown;
 		};
 
 		const castedB = b as {
 			scheme: unknown;
+
 			path: unknown;
 		};
 
@@ -166,12 +184,14 @@ export function terminalIconsEqual(
 			castedA.path === castedB.path && castedA.scheme === castedB.scheme
 		);
 	}
+
 	return false;
 }
 export function isUriComponents(thing: unknown): thing is UriComponents {
 	if (!thing) {
 		return false;
 	}
+
 	return (
 		typeof (<any>thing).path === "string" &&
 		typeof (<any>thing).scheme === "string"

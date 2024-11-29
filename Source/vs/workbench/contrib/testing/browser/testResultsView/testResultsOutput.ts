@@ -84,6 +84,7 @@ import {
 
 class SimpleDiffEditorModel extends EditorModel {
 	public readonly original = this._original.object.textEditorModel;
+
 	public readonly modified = this._modified.object.textEditorModel;
 
 	constructor(
@@ -92,14 +93,18 @@ class SimpleDiffEditorModel extends EditorModel {
 	) {
 		super();
 	}
+
 	public override dispose() {
 		super.dispose();
+
 		this._original.dispose();
+
 		this._modified.dispose();
 	}
 }
 export interface IPeekOutputRenderer extends IDisposable {
 	onDidContentSizeChange?: Event<void>;
+
 	onScrolled?(evt: ScrollEvent): void;
 	/** Updates the displayed test. Should clear if it cannot display the test. */
 	update(subject: InspectSubject): Promise<boolean>;
@@ -153,12 +158,17 @@ export class DiffContentProvider
 	private readonly widget = this._register(
 		new MutableDisposable<DiffEditorWidget>(),
 	);
+
 	private readonly model = this._register(new MutableDisposable());
+
 	private dimension?: dom.IDimension;
+
 	private helper?: ScrollHelper;
+
 	public get onDidContentSizeChange() {
 		return this.widget.value?.onDidContentSizeChange || Event.None;
 	}
+
 	constructor(
 		private readonly editor: ICodeEditor | undefined,
 		private readonly container: HTMLElement,
@@ -169,12 +179,14 @@ export class DiffContentProvider
 	) {
 		super();
 	}
+
 	public async update(subject: InspectSubject) {
 		if (!(subject instanceof MessageSubject)) {
 			this.clear();
 
 			return false;
 		}
+
 		const message = subject.message;
 
 		if (!ITestMessage.isDiffable(message)) {
@@ -182,6 +194,7 @@ export class DiffContentProvider
 
 			return false;
 		}
+
 		const [original, modified] = await Promise.all([
 			this.modelService.createModelReference(subject.expectedUri),
 			this.modelService.createModelReference(subject.actualUri),
@@ -212,7 +225,9 @@ export class DiffContentProvider
 				this.widget.value.layout(this.dimension);
 			}
 		}
+
 		this.widget.value.setModel(model);
+
 		this.widget.value.updateOptions(
 			this.getOptions(
 				isMultiline(message.expected) || isMultiline(message.actual),
@@ -221,10 +236,13 @@ export class DiffContentProvider
 
 		return true;
 	}
+
 	private clear() {
 		this.model.clear();
+
 		this.widget.clear();
 	}
+
 	public layout(dimensions: dom.IDimension, hasMultipleFrames: boolean) {
 		this.dimension = dimensions;
 
@@ -233,12 +251,14 @@ export class DiffContentProvider
 		if (!editor) {
 			return;
 		}
+
 		editor.layout(dimensions);
 
 		const height = Math.max(
 			editor.getOriginalEditor().getContentHeight(),
 			editor.getModifiedEditor().getContentHeight(),
 		);
+
 		this.helper = new ScrollHelper(
 			hasMultipleFrames,
 			height,
@@ -247,6 +267,7 @@ export class DiffContentProvider
 
 		return height;
 	}
+
 	public onScrolled(evt: ScrollEvent): void {
 		this.helper?.onScrolled(
 			evt,
@@ -254,6 +275,7 @@ export class DiffContentProvider
 			this.widget.value?.getOriginalEditor(),
 		);
 	}
+
 	protected getOptions(isMultiline: boolean): IDiffEditorOptions {
 		return isMultiline
 			? { ...diffEditorOptions, lineNumbers: "on" }
@@ -269,7 +291,9 @@ export class MarkdownTestMessagePeek
 			this.instantiationService.createInstance(MarkdownRenderer, {}),
 		),
 	);
+
 	private readonly rendered = this._register(new DisposableStore());
+
 	private element?: HTMLElement;
 
 	constructor(
@@ -278,14 +302,17 @@ export class MarkdownTestMessagePeek
 		private readonly instantiationService: IInstantiationService,
 	) {
 		super();
+
 		this._register(toDisposable(() => this.clear()));
 	}
+
 	public async update(subject: InspectSubject) {
 		this.clear();
 
 		if (!(subject instanceof MessageSubject)) {
 			return false;
 		}
+
 		const message = subject.message;
 
 		if (
@@ -294,27 +321,37 @@ export class MarkdownTestMessagePeek
 		) {
 			return false;
 		}
+
 		const rendered = this.rendered.add(
 			this.markdown.value.render(message.message, {}),
 		);
+
 		rendered.element.style.userSelect = "text";
+
 		rendered.element.classList.add("preview-text");
+
 		this.container.appendChild(rendered.element);
+
 		this.element = rendered.element;
+
 		this.rendered.add(toDisposable(() => rendered.element.remove()));
 
 		return true;
 	}
+
 	public layout(dimension: dom.IDimension): number | undefined {
 		if (!this.element) {
 			return undefined;
 		}
+
 		this.element.style.width = `${dimension.width - 32}px`;
 
 		return this.element.clientHeight;
 	}
+
 	private clear() {
 		this.rendered.clear();
+
 		this.element = undefined;
 	}
 }
@@ -324,6 +361,7 @@ class ScrollHelper {
 		private readonly contentHeight: number,
 		private readonly viewHeight: number,
 	) {}
+
 	public onScrolled(
 		evt: ScrollEvent,
 		container: HTMLElement | undefined | null,
@@ -332,16 +370,20 @@ class ScrollHelper {
 		if (!editor || !container) {
 			return;
 		}
+
 		let delta = Math.max(
 			0,
 			evt.scrollTop -
 				(this.hasMultipleFrames ? CALL_STACK_WIDGET_HEADER_HEIGHT : 0),
 		);
+
 		delta = Math.min(
 			Math.max(0, this.contentHeight - this.viewHeight),
 			delta,
 		);
+
 		editor.setScrollTop(delta);
+
 		container.style.transform = `translateY(${delta}px)`;
 	}
 }
@@ -352,15 +394,21 @@ export class PlainTextMessagePeek
 	private readonly widgetDecorations = this._register(
 		new MutableDisposable(),
 	);
+
 	private readonly widget = this._register(
 		new MutableDisposable<CodeEditorWidget>(),
 	);
+
 	private readonly model = this._register(new MutableDisposable());
+
 	private dimension?: dom.IDimension;
+
 	private helper?: ScrollHelper;
+
 	public get onDidContentSizeChange() {
 		return this.widget.value?.onDidContentSizeChange || Event.None;
 	}
+
 	constructor(
 		private readonly editor: ICodeEditor | undefined,
 		private readonly container: HTMLElement,
@@ -371,12 +419,14 @@ export class PlainTextMessagePeek
 	) {
 		super();
 	}
+
 	public async update(subject: InspectSubject): Promise<boolean> {
 		if (!(subject instanceof MessageSubject)) {
 			this.clear();
 
 			return false;
 		}
+
 		const message = subject.message;
 
 		if (
@@ -388,6 +438,7 @@ export class PlainTextMessagePeek
 
 			return false;
 		}
+
 		const modelRef = (this.model.value =
 			await this.modelService.createModelReference(subject.messageUri));
 
@@ -411,8 +462,11 @@ export class PlainTextMessagePeek
 				this.widget.value.layout(this.dimension);
 			}
 		}
+
 		this.widget.value.setModel(modelRef.object.textEditorModel);
+
 		this.widget.value.updateOptions(commonEditorOptions);
+
 		this.widgetDecorations.value = colorizeTestMessageInEditor(
 			message.message,
 			this.widget.value,
@@ -420,11 +474,15 @@ export class PlainTextMessagePeek
 
 		return true;
 	}
+
 	private clear() {
 		this.widgetDecorations.clear();
+
 		this.widget.clear();
+
 		this.model.clear();
 	}
+
 	onScrolled(evt: ScrollEvent): void {
 		this.helper?.onScrolled(
 			evt,
@@ -432,6 +490,7 @@ export class PlainTextMessagePeek
 			this.widget.value,
 		);
 	}
+
 	public layout(dimensions: dom.IDimension, hasMultipleFrames: boolean) {
 		this.dimension = dimensions;
 
@@ -440,9 +499,11 @@ export class PlainTextMessagePeek
 		if (!editor) {
 			return;
 		}
+
 		editor.layout(dimensions);
 
 		const height = editor.getContentHeight();
+
 		this.helper = new ScrollHelper(
 			hasMultipleFrames,
 			height,
@@ -457,9 +518,11 @@ export class TerminalMessagePeek
 	implements IPeekOutputRenderer
 {
 	private dimensions?: dom.IDimension;
+
 	private readonly terminalCwd = this._register(
 		new MutableObservableValue<string>(""),
 	);
+
 	private readonly xtermLayoutDelayer = this._register(new Delayer(50));
 	/** Active terminal instance. */
 	private readonly terminal = this._register(
@@ -482,20 +545,24 @@ export class TerminalMessagePeek
 	) {
 		super();
 	}
+
 	private async makeTerminal() {
 		const prev = this.terminal.value;
 
 		if (prev) {
 			prev.xterm.clearBuffer();
+
 			prev.xterm.clearSearchDecorations();
 			// clearBuffer tries to retain the prompt. Reset prompt, scrolling state, etc.
 			prev.xterm.write(`\x1bc`);
 
 			return prev;
 		}
+
 		const capabilities = new TerminalCapabilityStore();
 
 		const cwd = this.terminalCwd;
+
 		capabilities.add(TerminalCapability.CwdDetection, {
 			type: TerminalCapability.CwdDetection,
 			get cwds() {
@@ -522,9 +589,11 @@ export class TerminalMessagePeek
 						if (terminalBackground) {
 							return terminalBackground;
 						}
+
 						if (this.isInPeekView) {
 							return theme.getColor(peekViewResultsBackground);
 						}
+
 						const location =
 							this.viewDescriptorService.getViewLocationById(
 								Testing.ResultsViewId,
@@ -537,6 +606,7 @@ export class TerminalMessagePeek
 				},
 			}));
 	}
+
 	public async update(subject: InspectSubject): Promise<boolean> {
 		this.outputDataListener.clear();
 
@@ -553,8 +623,10 @@ export class TerminalMessagePeek
 
 			return false;
 		}
+
 		return true;
 	}
+
 	private async updateForTestSubject(
 		subject: TestOutputSubject | MessageSubject,
 	) {
@@ -583,6 +655,7 @@ export class TerminalMessagePeek
 				if (!state) {
 					return;
 				}
+
 				for (const message of state.tasks[subject.taskIndex].messages) {
 					if (message.type === TestMessageType.Output) {
 						yield* output.getRangeIter(
@@ -621,6 +694,7 @@ export class TerminalMessagePeek
 			);
 		}
 	}
+
 	private updateForTaskSubject(subject: TaskSubject) {
 		return this.updateGenerically<ITestRunTaskResults>({
 			subject,
@@ -642,8 +716,10 @@ export class TerminalMessagePeek
 				task.output.onDidWriteData((e) => write(e.buffer)),
 		});
 	}
+
 	private async updateGenerically<T>(opts: {
 		subject: InspectSubject;
+
 		noOutputMessage: string;
 
 		getTarget: (result: ITestResult) => T | undefined;
@@ -666,6 +742,7 @@ export class TerminalMessagePeek
 		if (!target) {
 			return this.clear();
 		}
+
 		const terminal = await this.makeTerminal();
 
 		let didWriteData = false;
@@ -675,11 +752,14 @@ export class TerminalMessagePeek
 		if (result instanceof LiveTestResult) {
 			for (const chunk of opts.doInitialWrite(target, result)) {
 				didWriteData ||= chunk.byteLength > 0;
+
 				pendingWrites.value++;
+
 				terminal.xterm.write(chunk.buffer, () => pendingWrites.value--);
 			}
 		} else {
 			didWriteData = true;
+
 			this.writeNotice(
 				terminal,
 				localize(
@@ -688,7 +768,9 @@ export class TerminalMessagePeek
 				),
 			);
 		}
+
 		this.attachTerminalToDom(terminal);
+
 		this.outputDataListener.clear();
 
 		if (result instanceof LiveTestResult && !result.completedAt) {
@@ -700,10 +782,13 @@ export class TerminalMessagePeek
 
 			const l2 = opts.doListenForMoreData(target, result, (data) => {
 				terminal.xterm.write(data);
+
 				didWriteData ||= data.byteLength > 0;
 			});
+
 			this.outputDataListener.value = combinedDisposable(l1, l2);
 		}
+
 		if (!this.outputDataListener.value && !didWriteData) {
 			this.writeNotice(terminal, opts.noOutputMessage);
 		}
@@ -714,13 +799,16 @@ export class TerminalMessagePeek
 				const l = pendingWrites.onDidChange(() => {
 					if (pendingWrites.value === 0) {
 						l.dispose();
+
 						resolve();
 					}
 				});
 			});
 		}
+
 		return terminal;
 	}
+
 	private updateCwd(testUri?: URI) {
 		const wf =
 			(testUri && this.workspaceContext.getWorkspaceFolder(testUri)) ||
@@ -730,21 +818,28 @@ export class TerminalMessagePeek
 			this.terminalCwd.value = wf.uri.fsPath;
 		}
 	}
+
 	private writeNotice(terminal: IDetachedTerminalInstance, str: string) {
 		terminal.xterm.write(formatMessageForTerminal(str));
 	}
+
 	private attachTerminalToDom(terminal: IDetachedTerminalInstance) {
 		terminal.xterm.write("\x1b[?25l"); // hide cursor
 		dom.scheduleAtNextAnimationFrame(dom.getWindow(this.container), () =>
 			this.layoutTerminal(terminal),
 		);
+
 		terminal.attachToElement(this.container, { enableGpu: false });
 	}
+
 	private clear() {
 		this.outputDataListener.clear();
+
 		this.xtermLayoutDelayer.cancel();
+
 		this.terminal.clear();
 	}
+
 	public layout(dimensions: dom.IDimension) {
 		this.dimensions = dimensions;
 
@@ -757,8 +852,10 @@ export class TerminalMessagePeek
 
 			return dimensions.height;
 		}
+
 		return undefined;
 	}
+
 	private layoutTerminal(
 		{ xterm }: IDetachedTerminalInstance,
 		width = this.dimensions?.width ?? this.container.clientWidth,

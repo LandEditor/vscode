@@ -9,7 +9,9 @@ import * as Platform from "../common/platform.js";
 
 type ReleaseInfo = {
 	id: string;
+
 	id_like?: string;
+
 	version_id?: string;
 };
 
@@ -35,6 +37,7 @@ export async function getOSReleaseInfo(
 			break;
 		} catch (err) {}
 	}
+
 	if (!handle) {
 		errorLogger(
 			"Unable to retrieve release information from known identifier paths.",
@@ -42,6 +45,7 @@ export async function getOSReleaseInfo(
 
 		return;
 	}
+
 	try {
 		const osReleaseKeys = new Set([
 			"ID",
@@ -62,6 +66,7 @@ export async function getOSReleaseInfo(
 			if (!line.includes("=")) {
 				continue;
 			}
+
 			const key = line.split("=")[0].toUpperCase().trim();
 
 			if (osReleaseKeys.has(key)) {
@@ -80,9 +85,11 @@ export async function getOSReleaseInfo(
 				}
 			}
 		}
+
 		return releaseInfo;
 	} catch (err) {
 		errorLogger(err);
 	}
+
 	return;
 }

@@ -43,6 +43,7 @@ export class ColumnRange {
 			);
 		}
 	}
+
 	toRange(lineNumber: number): Range {
 		return new Range(
 			lineNumber,
@@ -51,6 +52,7 @@ export class ColumnRange {
 			this.endColumnExclusive,
 		);
 	}
+
 	equals(other: ColumnRange): boolean {
 		return (
 			this.startColumn === other.startColumn &&
@@ -82,6 +84,7 @@ export function substringPos(text: string, pos: Position): string {
 			i === pos.lineNumber - 1 ? pos.column - 1 : 0,
 		);
 	}
+
 	return subtext;
 }
 export function getEndPositionsAfterApplying(
@@ -107,9 +110,11 @@ export function convertItemsToStableObservables<T>(
 	const result = observableValue<IObservable<T>[]>("result", []);
 
 	const innerObservables: ISettableObservable<T>[] = [];
+
 	store.add(
 		autorun((reader) => {
 			const itemsValue = items.read(reader);
+
 			transaction((tx) => {
 				if (itemsValue.length !== innerObservables.length) {
 					innerObservables.length = itemsValue.length;
@@ -122,8 +127,10 @@ export function convertItemsToStableObservables<T>(
 							);
 						}
 					}
+
 					result.set([...innerObservables], tx);
 				}
+
 				innerObservables.forEach((o, i) => o.set(itemsValue[i], tx));
 			});
 		}),
@@ -133,14 +140,17 @@ export function convertItemsToStableObservables<T>(
 }
 export class ObservableContextKeyService {
 	constructor(private readonly _contextKeyService: IContextKeyService) {}
+
 	bind<T extends ContextKeyValue>(
 		key: RawContextKey<T>,
 		obs: IObservable<T>,
 	): IDisposable;
+
 	bind<T extends ContextKeyValue>(
 		key: RawContextKey<T>,
 		fn: (reader: IReader) => T,
 	): IDisposable;
+
 	bind<T extends ContextKeyValue>(
 		key: RawContextKey<T>,
 		obs: IObservable<T> | ((reader: IReader) => T),

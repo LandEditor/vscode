@@ -38,6 +38,7 @@ export function setProperty(
 
 	while (path.length > 0) {
 		lastSegment = path.pop();
+
 		parent = findNodeAtLocation(root, path);
 
 		if (parent === undefined && value !== undefined) {
@@ -50,12 +51,14 @@ export function setProperty(
 			break;
 		}
 	}
+
 	if (!parent) {
 		// empty document
 		if (value === undefined) {
 			// delete
 			return []; // property does not exist, nothing to do
 		}
+
 		return withFormatting(
 			text,
 			{
@@ -78,6 +81,7 @@ export function setProperty(
 				if (!existing.parent) {
 					throw new Error("Malformed AST");
 				}
+
 				const propertyIndex = parent.children.indexOf(existing.parent);
 
 				let removeBegin: number;
@@ -87,6 +91,7 @@ export function setProperty(
 				if (propertyIndex > 0) {
 					// remove the comma of the previous node
 					const previous = parent.children[propertyIndex - 1];
+
 					removeBegin = previous.offset + previous.length;
 				} else {
 					removeBegin = parent.offset + 1;
@@ -94,9 +99,11 @@ export function setProperty(
 					if (parent.children.length > 1) {
 						// remove the comma of the next node
 						const next = parent.children[1];
+
 						removeEnd = next.offset;
 					}
 				}
+
 				return withFormatting(
 					text,
 					{
@@ -123,6 +130,7 @@ export function setProperty(
 				// delete
 				return []; // property does not exist, nothing to do
 			}
+
 			const newProperty = `${JSON.stringify(lastSegment)}: ${JSON.stringify(value)}`;
 
 			const index = getInsertionIndex
@@ -135,6 +143,7 @@ export function setProperty(
 
 			if (index > 0) {
 				const previous = parent.children[index - 1];
+
 				edit = {
 					offset: previous.offset + previous.length,
 					length: 0,
@@ -153,6 +162,7 @@ export function setProperty(
 					content: newProperty + ",",
 				};
 			}
+
 			return withFormatting(text, edit, formattingOptions);
 		}
 	} else if (
@@ -182,12 +192,14 @@ export function setProperty(
 						: lastSegment;
 
 				const previous = parent.children[index - 1];
+
 				edit = {
 					offset: previous.offset + previous.length,
 					length: 0,
 					content: "," + newProperty,
 				};
 			}
+
 			return withFormatting(text, edit, formattingOptions);
 		} else {
 			//Removal
@@ -211,6 +223,7 @@ export function setProperty(
 				const offset = previous.offset + previous.length;
 
 				const parentEndOffset = parent.offset + parent.length;
+
 				edit = {
 					offset,
 					length: parentEndOffset - 2 - offset,
@@ -225,6 +238,7 @@ export function setProperty(
 					content: "",
 				};
 			}
+
 			return withFormatting(text, edit, formattingOptions);
 		}
 	} else {
@@ -250,10 +264,12 @@ export function withFormatting(
 		while (begin > 0 && !isEOL(newText, begin - 1)) {
 			begin--;
 		}
+
 		while (end < newText.length && !isEOL(newText, end)) {
 			end++;
 		}
 	}
+
 	const edits = format(
 		newText,
 		{ offset: begin, length: end - begin },
@@ -262,9 +278,13 @@ export function withFormatting(
 	// apply the formatting edits and track the begin and end offsets of the changes
 	for (let i = edits.length - 1; i >= 0; i--) {
 		const curr = edits[i];
+
 		newText = applyEdit(newText, curr);
+
 		begin = Math.min(begin, curr.offset);
+
 		end = Math.max(end, curr.offset + curr.length);
+
 		end += curr.content.length - curr.length;
 	}
 	// create a single edit with all changes
@@ -292,6 +312,7 @@ export function applyEdits(text: string, edits: Edit[]): string {
 		if (diff === 0) {
 			return a.length - b.length;
 		}
+
 		return diff;
 	});
 
@@ -305,7 +326,9 @@ export function applyEdits(text: string, edits: Edit[]): string {
 		} else {
 			throw new Error("Overlapping edit");
 		}
+
 		lastModifiedOffset = e.offset;
 	}
+
 	return text;
 }

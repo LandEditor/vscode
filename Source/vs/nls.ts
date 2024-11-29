@@ -17,10 +17,12 @@ const isPseudo =
 
 export interface ILocalizeInfo {
 	key: string;
+
 	comment: string[];
 }
 export interface ILocalizedString {
 	original: string;
+
 	value: string;
 }
 function _format(
@@ -49,13 +51,16 @@ function _format(
 			) {
 				result = String(arg);
 			}
+
 			return result;
 		});
 	}
+
 	if (isPseudo) {
 		// FF3B and FF3D is the Unicode zenkaku representation for [ and ]
 		result = "\uFF3B" + result.replace(/[aouei]/g, "$&$&") + "\uFF3D";
 	}
+
 	return result;
 }
 /**
@@ -103,6 +108,7 @@ export function localize(
 	if (typeof data === "number") {
 		return _format(lookupMessage(data, message), args);
 	}
+
 	return _format(message, args);
 }
 /**
@@ -117,8 +123,10 @@ function lookupMessage(index: number, fallback: string | null): string {
 		if (typeof fallback === "string") {
 			return fallback;
 		}
+
 		throw new Error(`!!! NLS MISSING: ${index} !!!`);
 	}
+
 	return message;
 }
 /**
@@ -172,6 +180,7 @@ export function localize2(
 	} else {
 		message = originalMessage;
 	}
+
 	const value = _format(message, args);
 
 	return {
@@ -250,14 +259,19 @@ export interface INLSConfiguration {
 }
 export interface ILanguagePack {
 	readonly hash: string;
+
 	readonly label: string | undefined;
+
 	readonly extensions: {
 		readonly extensionIdentifier: {
 			readonly id: string;
+
 			readonly uuid?: string;
 		};
+
 		readonly version: string;
 	}[];
+
 	readonly translations: Record<string, string | undefined>;
 }
 export type ILanguagePacks = Record<string, ILanguagePack | undefined>;

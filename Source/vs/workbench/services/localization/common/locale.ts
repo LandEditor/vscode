@@ -16,6 +16,7 @@ export interface ILocaleService {
 		languagePackItem: ILanguagePackItem,
 		skipDialog?: boolean,
 	): Promise<void>;
+
 	clearLocalePreference(): Promise<void>;
 }
 export const IActiveLanguagePackService =

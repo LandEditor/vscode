@@ -15,6 +15,7 @@ import { CellContentPart } from "../cellPart.js";
 
 export class CellProgressBar extends CellContentPart {
 	private readonly _progressBar: ProgressBar;
+
 	private readonly _collapsedProgressBar: ProgressBar;
 
 	constructor(
@@ -24,24 +25,31 @@ export class CellProgressBar extends CellContentPart {
 		private readonly _notebookExecutionStateService: INotebookExecutionStateService,
 	) {
 		super();
+
 		this._progressBar = this._register(
 			new ProgressBar(editorContainer, defaultProgressBarStyles),
 		);
+
 		this._progressBar.hide();
+
 		this._collapsedProgressBar = this._register(
 			new ProgressBar(collapsedInputContainer, defaultProgressBarStyles),
 		);
+
 		this._collapsedProgressBar.hide();
 	}
+
 	override didRenderCell(element: ICellViewModel): void {
 		this._updateForExecutionState(element);
 	}
+
 	override updateForExecutionState(
 		element: ICellViewModel,
 		e: ICellExecutionStateChangedEvent,
 	): void {
 		this._updateForExecutionState(element, e);
 	}
+
 	override updateState(
 		element: ICellViewModel,
 		e: CellViewModelStateChangeEvent,
@@ -49,6 +57,7 @@ export class CellProgressBar extends CellContentPart {
 		if (e.metadataChanged || e.internalMetadataChanged) {
 			this._updateForExecutionState(element);
 		}
+
 		if (e.inputCollapsedChanged) {
 			const exeState =
 				this._notebookExecutionStateService.getCellExecution(
@@ -70,6 +79,7 @@ export class CellProgressBar extends CellContentPart {
 			}
 		}
 	}
+
 	private _updateForExecutionState(
 		element: ICellViewModel,
 		e?: ICellExecutionStateChangedEvent,

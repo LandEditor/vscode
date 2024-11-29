@@ -133,30 +133,41 @@ interface SuggestEnabledInputOptions {
 
 export interface ISuggestEnabledInputStyleOverrides {
 	inputBackground?: ColorIdentifier;
+
 	inputForeground?: ColorIdentifier;
+
 	inputBorder?: ColorIdentifier;
+
 	inputPlaceholderForeground?: ColorIdentifier;
 }
 
 export class SuggestEnabledInput extends Widget {
 	private readonly _onShouldFocusResults = new Emitter<void>();
+
 	readonly onShouldFocusResults: Event<void> =
 		this._onShouldFocusResults.event;
 
 	private readonly _onInputDidChange = new Emitter<string | undefined>();
+
 	readonly onInputDidChange: Event<string | undefined> =
 		this._onInputDidChange.event;
 
 	private readonly _onDidFocus = this._register(new Emitter<void>());
+
 	readonly onDidFocus = this._onDidFocus.event;
 
 	private readonly _onDidBlur = this._register(new Emitter<void>());
+
 	readonly onDidBlur = this._onDidBlur.event;
 
 	readonly inputWidget: CodeEditorWidget;
+
 	private readonly inputModel: ITextModel;
+
 	protected stylingContainer: HTMLDivElement;
+
 	readonly element: HTMLElement;
+
 	private placeholderText: HTMLDivElement;
 
 	constructor(
@@ -177,7 +188,9 @@ export class SuggestEnabledInput extends Widget {
 		super();
 
 		this.stylingContainer = append(parent, $(".suggest-input-container"));
+
 		this.element = parent;
+
 		this.placeholderText = append(
 			this.stylingContainer,
 			$(
@@ -191,6 +204,7 @@ export class SuggestEnabledInput extends Widget {
 			getSimpleEditorOptions(configurationService),
 			getSuggestEnabledInputOptions(ariaLabel),
 		);
+
 		editorOptions.overflowWidgetsDomNode = options.overflowWidgetsDomNode;
 
 		const scopedContextKeyService =
@@ -239,6 +253,7 @@ export class SuggestEnabledInput extends Widget {
 					const cursorBlinking = configurationService.getValue<
 						"blink" | "smooth" | "phase" | "expand" | "solid"
 					>("editor.cursorBlinking");
+
 					this.inputWidget.updateOptions({
 						accessibilitySupport,
 						cursorBlinking,
@@ -252,13 +267,17 @@ export class SuggestEnabledInput extends Widget {
 				this._onDidFocus.fire(),
 			),
 		);
+
 		this._register(
 			this.inputWidget.onDidBlurEditorText(() => this._onDidBlur.fire()),
 		);
 
 		const scopeHandle = uri.parse(resourceHandle);
+
 		this.inputModel = modelService.createModel("", null, scopeHandle, true);
+
 		this._register(this.inputModel);
+
 		this.inputWidget.setModel(this.inputModel);
 
 		this._register(
@@ -270,14 +289,17 @@ export class SuggestEnabledInput extends Widget {
 				if (options.focusContextKey) {
 					options.focusContextKey.set(true);
 				}
+
 				this.stylingContainer.classList.add("synthetic-focus");
 			}),
 		);
+
 		this._register(
 			this.inputWidget.onDidBlurEditorText(() => {
 				if (options.focusContextKey) {
 					options.focusContextKey.set(false);
 				}
+
 				this.stylingContainer.classList.remove("synthetic-focus");
 			}),
 		);
@@ -289,6 +311,7 @@ export class SuggestEnabledInput extends Widget {
 				e.preventDefault(); /** Do nothing. Enter causes new line which is not expected. */
 			}, this),
 		);
+
 		this._register(
 			Event.chain(this.inputWidget.onKeyDown, ($) =>
 				$.filter(
@@ -307,6 +330,7 @@ export class SuggestEnabledInput extends Widget {
 			this._register(
 				inputWidgetModel.onDidChangeContent(() => {
 					const content = this.getValue();
+
 					this.placeholderText.style.visibility = content
 						? "hidden"
 						: "visible";
@@ -314,7 +338,9 @@ export class SuggestEnabledInput extends Widget {
 					if (preexistingContent.trim() === content.trim()) {
 						return;
 					}
+
 					this._onInputDidChange.fire(undefined);
+
 					preexistingContent = content;
 				}),
 			);
@@ -362,7 +388,9 @@ export class SuggestEnabledInput extends Widget {
 								query,
 								0,
 							);
+
 							alreadyTypedCount = wordAtText?.word.length ?? 0;
+
 							zeroIndexedWordStart = wordAtText
 								? wordAtText.startColumn - 1
 								: 0;
@@ -370,6 +398,7 @@ export class SuggestEnabledInput extends Widget {
 							zeroIndexedWordStart =
 								query.lastIndexOf(" ", zeroIndexedColumn - 1) +
 								1;
+
 							alreadyTypedCount =
 								zeroIndexedColumn - zeroIndexedWordStart;
 						}
@@ -399,6 +428,7 @@ export class SuggestEnabledInput extends Widget {
 										label = result;
 									} else {
 										label = result.label;
+
 										rest = result;
 									}
 
@@ -444,10 +474,13 @@ export class SuggestEnabledInput extends Widget {
 		val = val.replace(/\s/g, " ");
 
 		const fullRange = this.inputModel.getFullModelRange();
+
 		this.inputWidget.executeEdits("suggestEnabledInput.setValue", [
 			EditOperation.replace(fullRange, val),
 		]);
+
 		this.inputWidget.setScrollTop(0);
+
 		this.inputWidget.setPosition(new Position(1, val.length + 1));
 	}
 
@@ -459,15 +492,20 @@ export class SuggestEnabledInput extends Widget {
 		this.stylingContainer.style.backgroundColor = asCssVariable(
 			styleOverrides.inputBackground ?? inputBackground,
 		);
+
 		this.stylingContainer.style.color = asCssVariable(
 			styleOverrides.inputForeground ?? inputForeground,
 		);
+
 		this.placeholderText.style.color = asCssVariable(
 			styleOverrides.inputPlaceholderForeground ??
 				inputPlaceholderForeground,
 		);
+
 		this.stylingContainer.style.borderWidth = "1px";
+
 		this.stylingContainer.style.borderStyle = "solid";
+
 		this.stylingContainer.style.borderColor = asCssVariableWithDefault(
 			styleOverrides.inputBorder ?? inputBorder,
 			"transparent",
@@ -498,6 +536,7 @@ export class SuggestEnabledInput extends Widget {
 
 	public layout(dimension: Dimension): void {
 		this.inputWidget.layout(dimension);
+
 		this.placeholderText.style.width = `${dimension.width - 2}px`;
 	}
 
@@ -510,11 +549,17 @@ export class SuggestEnabledInput extends Widget {
 
 export interface ISuggestEnabledHistoryOptions {
 	id: string;
+
 	ariaLabel: string;
+
 	parent: HTMLElement;
+
 	suggestionProvider: SuggestResultsProvider;
+
 	resourceHandle: string;
+
 	suggestOptions: SuggestEnabledInputOptions;
+
 	history: string[];
 }
 
@@ -554,6 +599,7 @@ export class SuggestEnabledInputWithHistory
 			languageFeaturesService,
 			configurationService,
 		);
+
 		this.history = new HistoryNavigator<string>(new Set(history), 100);
 	}
 
@@ -599,6 +645,7 @@ export class SuggestEnabledInputWithHistory
 
 		if (previous) {
 			this.setValue(previous);
+
 			this.inputWidget.setPosition({ lineNumber: 0, column: 0 });
 		}
 	}
@@ -612,8 +659,10 @@ export class SuggestEnabledInputWithHistory
 
 		if (!currentValue) {
 			currentValue = this.history.last();
+
 			this.history.next();
 		}
+
 		return currentValue;
 	}
 
@@ -651,6 +700,7 @@ export class ContextScopedSuggestEnabledInputWithHistory extends SuggestEnabledI
 			historyNavigationBackwardsEnablement,
 			historyNavigationForwardsEnablement,
 		} = this.historyContext;
+
 		this._register(
 			this.inputWidget.onDidChangeCursorPosition(({ position }) => {
 				const viewModel = this.inputWidget._getViewModel()!;
@@ -663,9 +713,11 @@ export class ContextScopedSuggestEnabledInputWithHistory extends SuggestEnabledI
 					viewModel.coordinatesConverter.convertModelPositionToViewPosition(
 						position,
 					);
+
 				historyNavigationBackwardsEnablement.set(
 					viewPosition.lineNumber === 1 && viewPosition.column === 1,
 				);
+
 				historyNavigationForwardsEnablement.set(
 					viewPosition.lineNumber === lastLineNumber &&
 						viewPosition.column === lastLineCol,
@@ -680,6 +732,7 @@ export class ContextScopedSuggestEnabledInputWithHistory extends SuggestEnabledI
 		const scopedContextKeyService = this._register(
 			contextKeyService.createScoped(this.element),
 		);
+
 		this.historyContext = this._register(
 			registerAndCreateHistoryNavigationContext(
 				scopedContextKeyService,

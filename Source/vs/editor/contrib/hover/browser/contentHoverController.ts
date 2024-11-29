@@ -48,7 +48,9 @@ const _sticky = false;
 // || Boolean("true") // done "weirdly" so that a lint warning prevents you from pushing this
 interface IHoverSettings {
 	readonly enabled: boolean;
+
 	readonly sticky: boolean;
+
 	readonly hidingDelay: number;
 }
 
@@ -59,6 +61,7 @@ export class ContentHoverController
 	private readonly _onHoverContentsChanged = this._register(
 		new Emitter<void>(),
 	);
+
 	public readonly onHoverContentsChanged = this._onHoverContentsChanged.event;
 
 	public static readonly ID = "editor.contrib.contentHover";
@@ -70,9 +73,11 @@ export class ContentHoverController
 	private _contentWidget: ContentHoverWidgetWrapper | undefined;
 
 	private _mouseMoveEvent: IEditorMouseEvent | undefined;
+
 	private _reactToEditorMouseMoveRunner: RunOnceScheduler;
 
 	private _hoverSettings!: IHoverSettings;
+
 	private _isMouseDown: boolean = false;
 
 	constructor(
@@ -83,18 +88,22 @@ export class ContentHoverController
 		private readonly _keybindingService: IKeybindingService,
 	) {
 		super();
+
 		this._reactToEditorMouseMoveRunner = this._register(
 			new RunOnceScheduler(
 				() => this._reactToEditorMouseMove(this._mouseMoveEvent),
 				0,
 			),
 		);
+
 		this._hookListeners();
+
 		this._register(
 			this._editor.onDidChangeConfiguration(
 				(e: ConfigurationChangedEvent) => {
 					if (e.hasChanged(EditorOption.hover)) {
 						this._unhookListeners();
+
 						this._hookListeners();
 					}
 				},
@@ -110,6 +119,7 @@ export class ContentHoverController
 
 	private _hookListeners(): void {
 		const hoverOpts = this._editor.getOption(EditorOption.hover);
+
 		this._hoverSettings = {
 			enabled: hoverOpts.enabled,
 			sticky: hoverOpts.sticky,
@@ -122,32 +132,39 @@ export class ContentHoverController
 					this._onEditorMouseDown(e),
 				),
 			);
+
 			this._listenersStore.add(
 				this._editor.onMouseUp(() => this._onEditorMouseUp()),
 			);
+
 			this._listenersStore.add(
 				this._editor.onMouseMove((e: IEditorMouseEvent) =>
 					this._onEditorMouseMove(e),
 				),
 			);
+
 			this._listenersStore.add(
 				this._editor.onKeyDown((e: IKeyboardEvent) =>
 					this._onKeyDown(e),
 				),
 			);
+
 			this._listenersStore.add(
 				this._editor.onMouseLeave((e) => this._onEditorMouseLeave(e)),
 			);
+
 			this._listenersStore.add(
 				this._editor.onDidChangeModel(() =>
 					this._cancelSchedulerAndHide(),
 				),
 			);
+
 			this._listenersStore.add(
 				this._editor.onDidChangeModelContent(() =>
 					this._cancelScheduler(),
 				),
 			);
+
 			this._listenersStore.add(
 				this._editor.onDidScrollChange((e: IScrollEvent) =>
 					this._onEditorScrollChanged(e),
@@ -164,11 +181,13 @@ export class ContentHoverController
 
 	private _cancelSchedulerAndHide(): void {
 		this._cancelScheduler();
+
 		this.hideContentHover();
 	}
 
 	private _cancelScheduler() {
 		this._mouseMoveEvent = undefined;
+
 		this._reactToEditorMouseMoveRunner.cancel();
 	}
 
@@ -187,6 +206,7 @@ export class ContentHoverController
 		if (shouldKeepHoverWidgetVisible) {
 			return;
 		}
+
 		this.hideContentHover();
 	}
 
@@ -206,6 +226,7 @@ export class ContentHoverController
 		if (!this._contentWidget) {
 			return false;
 		}
+
 		return isMousePositionWithinElement(
 			this._contentWidget.getDomNode(),
 			mouseEvent.event.posx,
@@ -221,6 +242,7 @@ export class ContentHoverController
 		if (this.shouldKeepOpenOnEditorMouseMoveOrLeave) {
 			return;
 		}
+
 		this._cancelScheduler();
 
 		const shouldKeepHoverWidgetVisible =
@@ -229,9 +251,11 @@ export class ContentHoverController
 		if (shouldKeepHoverWidgetVisible) {
 			return;
 		}
+
 		if (_sticky) {
 			return;
 		}
+
 		this.hideContentHover();
 	}
 
@@ -292,6 +316,7 @@ export class ContentHoverController
 		if (!shouldReactToEditorMouseMove) {
 			return;
 		}
+
 		const shouldRescheduleHoverComputation =
 			this._shouldRescheduleHoverComputation();
 
@@ -301,8 +326,10 @@ export class ContentHoverController
 					this._hoverSettings.hidingDelay,
 				);
 			}
+
 			return;
 		}
+
 		this._reactToEditorMouseMove(mouseEvent);
 	}
 
@@ -312,6 +339,7 @@ export class ContentHoverController
 		if (this.shouldKeepOpenOnEditorMouseMoveOrLeave) {
 			return false;
 		}
+
 		this._mouseMoveEvent = mouseEvent;
 
 		if (
@@ -322,6 +350,7 @@ export class ContentHoverController
 		) {
 			return false;
 		}
+
 		const sticky = this._hoverSettings.sticky;
 
 		if (sticky && this._contentWidget?.isVisibleFromKeyboard) {
@@ -329,6 +358,7 @@ export class ContentHoverController
 			// so moving the mouse has no effect
 			return false;
 		}
+
 		const shouldNotRecomputeCurrentHoverWidget =
 			this._shouldNotRecomputeCurrentHoverWidget(mouseEvent);
 
@@ -337,6 +367,7 @@ export class ContentHoverController
 
 			return false;
 		}
+
 		return true;
 	}
 
@@ -360,15 +391,18 @@ export class ContentHoverController
 		if (!mouseEvent) {
 			return;
 		}
+
 		const contentWidget: ContentHoverWidgetWrapper =
 			this._getOrCreateContentWidget();
 
 		if (contentWidget.showsOrWillShow(mouseEvent)) {
 			return;
 		}
+
 		if (_sticky) {
 			return;
 		}
+
 		this.hideContentHover();
 	}
 
@@ -376,6 +410,7 @@ export class ContentHoverController
 		if (!this._editor.hasModel()) {
 			return;
 		}
+
 		const isPotentialKeyboardShortcut =
 			this._isPotentialKeyboardShortcut(e);
 
@@ -384,6 +419,7 @@ export class ContentHoverController
 		if (isPotentialKeyboardShortcut || isModifierKeyPressed) {
 			return;
 		}
+
 		this.hideContentHover();
 	}
 
@@ -391,6 +427,7 @@ export class ContentHoverController
 		if (!this._editor.hasModel() || !this._contentWidget) {
 			return false;
 		}
+
 		const resolvedKeyboardEvent = this._keybindingService.softDispatch(
 			e,
 			this._editor.getDomNode(),
@@ -425,9 +462,11 @@ export class ContentHoverController
 		if (_sticky) {
 			return;
 		}
+
 		if (InlineSuggestionHintsContentWidget.dropDownVisible) {
 			return;
 		}
+
 		this._contentWidget?.hide();
 	}
 
@@ -437,12 +476,14 @@ export class ContentHoverController
 				ContentHoverWidgetWrapper,
 				this._editor,
 			);
+
 			this._listenersStore.add(
 				this._contentWidget.onContentsChanged(() =>
 					this._onHoverContentsChanged.fire(),
 				),
 			);
 		}
+
 		return this._contentWidget;
 	}
 
@@ -554,8 +595,11 @@ export class ContentHoverController
 
 	public override dispose(): void {
 		super.dispose();
+
 		this._unhookListeners();
+
 		this._listenersStore.dispose();
+
 		this._contentWidget?.dispose();
 	}
 }

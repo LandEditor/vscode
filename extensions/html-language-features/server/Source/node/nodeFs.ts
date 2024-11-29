@@ -14,12 +14,14 @@ export function getNodeFileFS(): FileSystemProvider {
 			throw new Error("fileSystemProvider can only handle file URLs");
 		}
 	}
+
 	return {
 		stat(location: string) {
 			ensureFileUri(location);
 
 			return new Promise((c, e) => {
 				const uri = Uri.parse(location);
+
 				fs.stat(uri.fsPath, (err, stats) => {
 					if (err) {
 						if (err.code === "ENOENT") {
@@ -33,6 +35,7 @@ export function getNodeFileFS(): FileSystemProvider {
 							return e(err);
 						}
 					}
+
 					let type = FileType.Unknown;
 
 					if (stats.isFile()) {
@@ -42,6 +45,7 @@ export function getNodeFileFS(): FileSystemProvider {
 					} else if (stats.isSymbolicLink()) {
 						type = FileType.SymbolicLink;
 					}
+
 					c({
 						type,
 						ctime: stats.ctime.getTime(),
@@ -56,10 +60,12 @@ export function getNodeFileFS(): FileSystemProvider {
 
 			return new Promise((c, e) => {
 				const path = Uri.parse(location).fsPath;
+
 				fs.readdir(path, { withFileTypes: true }, (err, children) => {
 					if (err) {
 						return e(err);
 					}
+
 					c(
 						children.map((stat) => {
 							if (stat.isSymbolicLink()) {

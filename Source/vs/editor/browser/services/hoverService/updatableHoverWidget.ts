@@ -31,6 +31,7 @@ type IManagedHoverResolvedContent =
 
 export class ManagedHoverWidget implements IDisposable {
 	private _hoverWidget: IHoverWidget | undefined;
+
 	private _cancellationTokenSource: CancellationTokenSource | undefined;
 
 	constructor(
@@ -38,6 +39,7 @@ export class ManagedHoverWidget implements IDisposable {
 		private target: IHoverDelegateTarget | HTMLElement,
 		private fadeInAnimation: boolean,
 	) {}
+
 	async update(
 		content: IManagedHoverContent,
 		focus?: boolean,
@@ -46,11 +48,14 @@ export class ManagedHoverWidget implements IDisposable {
 		if (this._cancellationTokenSource) {
 			// there's an computation ongoing, cancel it
 			this._cancellationTokenSource.dispose(true);
+
 			this._cancellationTokenSource = undefined;
 		}
+
 		if (this.isDisposed) {
 			return;
 		}
+
 		let resolvedContent;
 
 		if (
@@ -76,19 +81,23 @@ export class ManagedHoverWidget implements IDisposable {
 			this._cancellationTokenSource = new CancellationTokenSource();
 
 			const token = this._cancellationTokenSource.token;
+
 			resolvedContent = await content.markdown(token);
 
 			if (resolvedContent === undefined) {
 				resolvedContent = content.markdownNotSupportedFallback;
 			}
+
 			if (this.isDisposed || token.isCancellationRequested) {
 				// either the widget has been closed in the meantime
 				// or there has been a new call to `update`
 				return;
 			}
 		}
+
 		this.show(resolvedContent, focus, options);
 	}
+
 	private show(
 		content: IManagedHoverResolvedContent,
 		focus?: boolean,
@@ -113,30 +122,39 @@ export class ManagedHoverWidget implements IDisposable {
 					hoverPosition: HoverPosition.BELOW,
 				},
 			};
+
 			this._hoverWidget = this.hoverDelegate.showHover(
 				hoverOptions,
 				focus,
 			);
 		}
+
 		oldHoverWidget?.dispose();
 	}
+
 	private hasContent(
 		content: IManagedHoverResolvedContent,
 	): content is NonNullable<IManagedHoverResolvedContent> {
 		if (!content) {
 			return false;
 		}
+
 		if (isMarkdownString(content)) {
 			return !!content.value;
 		}
+
 		return true;
 	}
+
 	get isDisposed() {
 		return this._hoverWidget?.isDisposed;
 	}
+
 	dispose(): void {
 		this._hoverWidget?.dispose();
+
 		this._cancellationTokenSource?.dispose(true);
+
 		this._cancellationTokenSource = undefined;
 	}
 }

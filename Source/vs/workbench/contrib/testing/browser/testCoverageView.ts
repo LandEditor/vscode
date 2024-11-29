@@ -62,6 +62,7 @@ const enum CoverageSortOrder {
 
 export class TestCoverageView extends ViewPane {
 	private readonly tree = new MutableDisposable<TestCoverageTree>();
+
 	public readonly sortOrder = observableValue('sortOrder', CoverageSortOrder.Location);
 
 	constructor(
@@ -88,8 +89,10 @@ export class TestCoverageView extends ViewPane {
 
 		this._register(autorun(reader => {
 			const coverage = this.coverageService.selected.read(reader);
+
 			if (coverage) {
 				const t = (this.tree.value ??= this.instantiationService.createInstance(TestCoverageTree, container, labels, this.sortOrder));
+
 				t.setInput(coverage, this.coverageService.filterToTest.read(reader));
 			} else {
 				this.tree.clear();
@@ -106,6 +109,7 @@ export class TestCoverageView extends ViewPane {
 
 	protected override layoutBody(height: number, width: number): void {
 		super.layoutBody(height, width);
+
 		this.tree.value?.layout(height, width);
 	}
 }
@@ -114,7 +118,9 @@ let fnNodeId = 0;
 
 class DeclarationCoverageNode {
 	public readonly id = String(fnNodeId++);
+
 	public readonly containedDetails = new Set<CoverageDetails>();
+
 	public readonly children: DeclarationCoverageNode[] = [];
 
 	public get hits() {
@@ -131,6 +137,7 @@ class DeclarationCoverageNode {
 
 	public get tpc() {
 		const attr = this.attributableCoverage();
+
 		return attr && getTotalCoveragePercent(attr.statement, attr.branch, undefined);
 	}
 
@@ -151,6 +158,7 @@ class DeclarationCoverageNode {
 	/** Gets whether this function has a defined range and contains the given range. */
 	public contains(location: Range | Position) {
 		const own = this.data.location;
+
 		return own instanceof Range && (location instanceof Range ? own.containsRange(location) : own.containsPosition(location));
 	}
 
@@ -162,22 +170,28 @@ class DeclarationCoverageNode {
 	@memoize
 	public attributableCoverage() {
 		const { location, count } = this.data;
+
 		if (!(location instanceof Range) || !count) {
 			return;
 		}
 
 		const statement: ICoverageCount = { covered: 0, total: 0 };
+
 		const branch: ICoverageCount = { covered: 0, total: 0 };
+
 		for (const detail of this.containedDetails) {
 			if (detail.type !== DetailType.Statement) {
 				continue;
 			}
 
 			statement.covered += detail.count ? 1 : 0;
+
 			statement.total++;
+
 			if (detail.branches) {
 				for (const { count } of detail.branches) {
 					branch.covered += count ? 1 : 0;
+
 					branch.total++;
 				}
 			}
@@ -199,6 +213,7 @@ class RevealUncoveredDeclarations {
 
 class LoadingDetails {
 	public readonly id = String(fnNodeId++);
+
 	public readonly label = localize('loadingCoverageDetails', "Loading Coverage Details...");
 }
 
@@ -213,6 +228,7 @@ const shouldShowDeclDetailsOnExpand = (c: CoverageTreeElement): c is IPrefixTree
 
 class TestCoverageTree extends Disposable {
 	private readonly tree: WorkbenchCompressibleObjectTree<CoverageTreeElement, void>;
+
 	private readonly inputDisposables = this._register(new DisposableStore());
 
 	constructor(
@@ -251,6 +267,7 @@ class TestCoverageTree extends Disposable {
 					getAriaLabel(element: CoverageTreeElement) {
 						if (isFileCoverage(element)) {
 							const name = basenameOrAuthority(element.value!.uri);
+
 							return localize('testCoverageItemLabel', "{0} coverage: {0}%", name, (element.value!.tpc * 100).toFixed(2));
 						} else {
 							return element.label;
@@ -266,12 +283,15 @@ class TestCoverageTree extends Disposable {
 
 		this._register(autorun(reader => {
 			sortOrder.read(reader);
+
 			this.tree.resort(null, true);
 		}));
 
 		this._register(this.tree);
+
 		this._register(this.tree.onDidChangeCollapseState(e => {
 			const el = e.node.element;
+
 			if (!e.node.collapsed && !e.node.children.length && el && shouldShowDeclDetailsOnExpand(el)) {
 				if (el.value!.hasSynchronousDetails) {
 					this.tree.setChildren(el, [{ element: new LoadingDetails(), incompressible: true }]);
@@ -280,17 +300,22 @@ class TestCoverageTree extends Disposable {
 				el.value!.details().then(details => this.updateWithDetails(el, details));
 			}
 		}));
+
 		this._register(this.tree.onDidOpen(e => {
 			let resource: URI | undefined;
+
 			let selection: Range | Position | undefined;
+
 			if (e.element) {
 				if (isFileCoverage(e.element) && !e.element.children?.size) {
 					resource = e.element.value!.uri;
 				} else if (isDeclarationCoverage(e.element)) {
 					resource = e.element.uri;
+
 					selection = e.element.location;
 				}
 			}
+
 			if (!resource) {
 				return;
 			}
@@ -320,16 +345,19 @@ class TestCoverageTree extends Disposable {
 		}
 
 		const files: TestCoverageFileNode[] = [];
+
 		for (let node of tree.nodes) {
 			// when showing initial children, only show from the first file or tee
 			while (!(node.value instanceof FileCoverage) && node.children?.size === 1) {
 				node = Iterable.first(node.children.values())!;
 			}
+
 			files.push(node);
 		}
 
 		const toChild = (value: TestCoverageFileNode): ICompressedTreeElement<CoverageTreeElement> => {
 			const isFile = !value.children?.size;
+
 			return {
 				element: value,
 				incompressible: isFile,
@@ -342,6 +370,7 @@ class TestCoverageTree extends Disposable {
 
 		this.inputDisposables.add(onObservableChange(coverage.didAddCoverage, nodes => {
 			const toRender = findLast(nodes, n => this.tree.hasElement(n));
+
 			if (toRender) {
 				this.tree.setChildren(
 					toRender,
@@ -364,14 +393,17 @@ class TestCoverageTree extends Disposable {
 		}
 
 		const decl: DeclarationCoverageNode[] = [];
+
 		for (const fn of details) {
 			if (fn.type !== DetailType.Declaration) {
 				continue;
 			}
 
 			let arr = decl;
+
 			while (true) {
 				const parent = arr.find(p => p.containedDetails.has(fn));
+
 				if (parent) {
 					arr = parent.children;
 				} else {
@@ -403,25 +435,31 @@ class TestCoverageTreeListDelegate implements IListVirtualDelegate<CoverageTreeE
 		if (isFileCoverage(element)) {
 			return FileCoverageRenderer.ID;
 		}
+
 		if (isDeclarationCoverage(element)) {
 			return DeclarationCoverageRenderer.ID;
 		}
+
 		if (element instanceof LoadingDetails || element instanceof RevealUncoveredDeclarations) {
 			return BasicRenderer.ID;
 		}
+
 		assertNever(element);
 	}
 }
 
 class Sorter implements ITreeSorter<CoverageTreeElement> {
 	constructor(private readonly order: IObservable<CoverageSortOrder>) { }
+
 	compare(a: CoverageTreeElement, b: CoverageTreeElement): number {
 		const order = this.order.get();
+
 		if (isFileCoverage(a) && isFileCoverage(b)) {
 			switch (order) {
 				case CoverageSortOrder.Location:
 				case CoverageSortOrder.Name:
 					return a.value!.uri.toString().localeCompare(b.value!.uri.toString());
+
 				case CoverageSortOrder.Coverage:
 					return b.value!.tpc - a.value!.tpc;
 			}
@@ -432,11 +470,15 @@ class Sorter implements ITreeSorter<CoverageTreeElement> {
 						a.location instanceof Range ? a.location.getStartPosition() : a.location,
 						b.location instanceof Range ? b.location.getStartPosition() : b.location,
 					);
+
 				case CoverageSortOrder.Name:
 					return a.label.localeCompare(b.label);
+
 				case CoverageSortOrder.Coverage: {
 					const attrA = a.tpc;
+
 					const attrB = b.tpc;
+
 					return (attrA !== undefined && attrB !== undefined && attrB - attrA)
 						|| (+b.hits - +a.hits)
 						|| a.label.localeCompare(b.label);
@@ -450,14 +492,19 @@ class Sorter implements ITreeSorter<CoverageTreeElement> {
 
 interface FileTemplateData {
 	container: HTMLElement;
+
 	bars: ManagedTestCoverageBars;
+
 	templateDisposables: DisposableStore;
+
 	elementsDisposables: DisposableStore;
+
 	label: IResourceLabel;
 }
 
 class FileCoverageRenderer implements ICompressibleTreeRenderer<CoverageTreeElement, FuzzyScore, FileTemplateData> {
 	public static readonly ID = 'F';
+
 	public readonly templateId = FileCoverageRenderer.ID;
 
 	constructor(
@@ -469,6 +516,7 @@ class FileCoverageRenderer implements ICompressibleTreeRenderer<CoverageTreeElem
 	/** @inheritdoc */
 	public renderTemplate(container: HTMLElement): FileTemplateData {
 		const templateDisposables = new DisposableStore();
+
 		container.classList.add('test-coverage-list-item');
 
 		return {
@@ -501,13 +549,17 @@ class FileCoverageRenderer implements ICompressibleTreeRenderer<CoverageTreeElem
 		templateData.elementsDisposables.clear();
 
 		const stat = (element instanceof Array ? element[element.length - 1] : element) as TestCoverageFileNode;
+
 		const file = stat.value!;
+
 		const name = element instanceof Array ? element.map(e => basenameOrAuthority((e as TestCoverageFileNode).value!.uri)) : basenameOrAuthority(file.uri);
+
 		if (file instanceof BypassedFileCoverage) {
 			templateData.bars.setCoverageInfo(undefined);
 		} else {
 			templateData.elementsDisposables.add(autorun(reader => {
 				stat.value?.didChange.read(reader);
+
 				templateData.bars.setCoverageInfo(file);
 			}));
 
@@ -525,14 +577,19 @@ class FileCoverageRenderer implements ICompressibleTreeRenderer<CoverageTreeElem
 
 interface DeclarationTemplateData {
 	container: HTMLElement;
+
 	bars: ManagedTestCoverageBars;
+
 	templateDisposables: DisposableStore;
+
 	icon: HTMLElement;
+
 	label: HTMLElement;
 }
 
 class DeclarationCoverageRenderer implements ICompressibleTreeRenderer<CoverageTreeElement, FuzzyScore, DeclarationTemplateData> {
 	public static readonly ID = 'N';
+
 	public readonly templateId = DeclarationCoverageRenderer.ID;
 
 	constructor(
@@ -542,8 +599,11 @@ class DeclarationCoverageRenderer implements ICompressibleTreeRenderer<CoverageT
 	/** @inheritdoc */
 	public renderTemplate(container: HTMLElement): DeclarationTemplateData {
 		const templateDisposables = new DisposableStore();
+
 		container.classList.add('test-coverage-list-item');
+
 		const icon = dom.append(container, dom.$('.state'));
+
 		const label = dom.append(container, dom.$('.name'));
 
 		return {
@@ -572,16 +632,22 @@ class DeclarationCoverageRenderer implements ICompressibleTreeRenderer<CoverageT
 	/** @inheritdoc */
 	private doRender(element: DeclarationCoverageNode, templateData: DeclarationTemplateData, _filterData: FuzzyScore | undefined) {
 		const covered = !!element.hits;
+
 		const icon = covered ? testingWasCovered : testingStatesToIcons.get(TestResultState.Unset);
+
 		templateData.container.classList.toggle('not-covered', !covered);
+
 		templateData.icon.className = `computed-state ${ThemeIcon.asClassName(icon!)}`;
+
 		templateData.label.innerText = element.label;
+
 		templateData.bars.setCoverageInfo(element.attributableCoverage());
 	}
 }
 
 class BasicRenderer implements ICompressibleTreeRenderer<CoverageTreeElement, FuzzyScore, HTMLElement> {
 	public static readonly ID = 'B';
+
 	public readonly templateId = BasicRenderer.ID;
 
 	renderCompressedElements(node: ITreeNode<ICompressedTreeNode<CoverageTreeElement>, FuzzyScore>, _index: number, container: HTMLElement): void {
@@ -637,16 +703,23 @@ registerAction2(class TestCoverageChangePerTestFilterAction extends Action2 {
 
 	override run(accessor: ServicesAccessor): void {
 		const coverageService = accessor.get(ITestCoverageService);
+
 		const quickInputService = accessor.get(IQuickInputService);
+
 		const coverage = coverageService.selected.get();
+
 		if (!coverage) {
 			return;
 		}
 
 		const tests = [...coverage.allPerTestIDs()].map(TestId.fromString);
+
 		const commonPrefix = TestId.getLengthOfCommonPrefix(tests.length, i => tests[i]);
+
 		const result = coverage.result;
+
 		const previousSelection = coverageService.filterToTest.get();
+
 		const previousSelectionStr = previousSelection?.toString();
 
 		type TItem = { label: string; testId?: TestId };
@@ -688,7 +761,9 @@ registerAction2(class TestCoverageChangeSortingAction extends ViewAction<TestCov
 		type Item = IQuickPickItem & { value: CoverageSortOrder };
 
 		const disposables = new DisposableStore();
+
 		const quickInput = disposables.add(accessor.get(IQuickInputService).createQuickPick<Item>());
+
 		const items: Item[] = [
 			{ label: localize('testing.coverageSortByLocation', 'Sort by Location'), value: CoverageSortOrder.Location, description: localize('testing.coverageSortByLocationDescription', 'Files are sorted alphabetically, declarations are sorted by position') },
 			{ label: localize('testing.coverageSortByCoverage', 'Sort by Coverage'), value: CoverageSortOrder.Coverage, description: localize('testing.coverageSortByCoverageDescription', 'Files and declarations are sorted by total coverage') },
@@ -696,13 +771,19 @@ registerAction2(class TestCoverageChangeSortingAction extends ViewAction<TestCov
 		];
 
 		quickInput.placeholder = localize('testing.coverageSortPlaceholder', 'Sort the Test Coverage view...');
+
 		quickInput.items = items;
+
 		quickInput.show();
+
 		disposables.add(quickInput.onDidHide(() => disposables.dispose()));
+
 		disposables.add(quickInput.onDidAccept(() => {
 			const picked = quickInput.selectedItems[0]?.value;
+
 			if (picked !== undefined) {
 				view.sortOrder.set(picked, undefined);
+
 				quickInput.dispose();
 			}
 		}));

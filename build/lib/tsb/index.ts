@@ -18,6 +18,7 @@ import colors = require("ansi-colors");
 
 export interface IncrementalCompiler {
 	(token?: any): Readable & Writable;
+
 	src(opts?: { cwd?: string; base?: string }): Readable;
 }
 class EmptyDuplex extends Duplex {
@@ -28,6 +29,7 @@ class EmptyDuplex extends Duplex {
 	): void {
 		callback();
 	}
+
 	_read() {
 		this.push(null);
 	}
@@ -36,6 +38,7 @@ function createNullCompiler(): IncrementalCompiler {
 	const result: IncrementalCompiler = function () {
 		return new EmptyDuplex();
 	};
+
 	result.src = () => new EmptyDuplex();
 
 	return result;
@@ -49,8 +52,11 @@ export function create(
 	existingOptions: Partial<ts.CompilerOptions>,
 	config: {
 		verbose?: boolean;
+
 		transpileOnly?: boolean;
+
 		transpileOnlyIncludesDts?: boolean;
+
 		transpileWithSwc?: boolean;
 	},
 	onError: (message: string) => void = _defaultOnError,
@@ -64,6 +70,7 @@ export function create(
 			const lineAndCh = diag.file.getLineAndCharacterOfPosition(
 				diag.start,
 			);
+
 			onError(
 				strings.format(
 					"{0}({1},{2}): {3}",
@@ -75,6 +82,7 @@ export function create(
 			);
 		}
 	}
+
 	const parsed = ts.readConfigFile(projectPath, ts.sys.readFile);
 
 	if (parsed.error) {
@@ -82,6 +90,7 @@ export function create(
 
 		return createNullCompiler();
 	}
+
 	const cmdLine = ts.parseJsonConfigFileContent(
 		parsed.config,
 		ts.sys,
@@ -94,6 +103,7 @@ export function create(
 
 		return createNullCompiler();
 	}
+
 	function logFn(topic: string, message: string): void {
 		if (config.verbose) {
 			log(colors.cyan(topic), message);
@@ -112,6 +122,7 @@ export function create(
 
 					return;
 				}
+
 				builder.file(file);
 			},
 			function (this: { queue(a: any): void }) {
@@ -140,28 +151,34 @@ export function create(
 
 					return;
 				}
+
 				if (!file.contents) {
 					return;
 				}
+
 				if (
 					!config.transpileOnlyIncludesDts &&
 					file.path.endsWith(".d.ts")
 				) {
 					return;
 				}
+
 				if (!transpiler.onOutfile) {
 					transpiler.onOutfile = (file) => this.queue(file);
 				}
+
 				transpiler.transpile(file);
 			},
 			function (this: { queue(a: any): void }) {
 				transpiler.join().then(() => {
 					this.queue(null);
+
 					transpiler.onOutfile = undefined;
 				});
 			},
 		);
 	}
+
 	let result: IncrementalCompiler;
 
 	if (config.transpileOnly) {
@@ -173,6 +190,7 @@ export function create(
 					projectPath,
 					cmdLine,
 				);
+
 		result = <any>(() => createTranspileStream(transpiler));
 	} else {
 		const _builder = builder.createTypeScriptBuilder(
@@ -180,11 +198,13 @@ export function create(
 			projectPath,
 			cmdLine,
 		);
+
 		result = <any>(
 			((token: builder.CancellationToken) =>
 				createCompileStream(_builder, token))
 		);
 	}
+
 	result.src = (opts?: { cwd?: string; base?: string }) => {
 		let _pos = 0;
 
@@ -194,6 +214,7 @@ export function create(
 			constructor() {
 				super({ objectMode: true });
 			}
+
 			_read() {
 				let more: boolean = true;
 
@@ -201,6 +222,7 @@ export function create(
 
 				for (; more && _pos < _fileNames.length; _pos++) {
 					path = _fileNames[_pos];
+
 					more = this.push(
 						new Vinyl({
 							path,
@@ -211,6 +233,7 @@ export function create(
 						}),
 					);
 				}
+
 				if (_pos >= _fileNames.length) {
 					this.push(null);
 				}

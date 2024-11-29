@@ -35,6 +35,7 @@ export interface ICommandActionTitle extends ILocalizedString {
 export type Icon =
 	| {
 			dark?: URI;
+
 			light?: URI;
 	  }
 	| ThemeIcon;
@@ -44,7 +45,9 @@ export interface ICommandActionToggleInfo {
 	 * The condition that marks the action as toggled.
 	 */
 	condition: ContextKeyExpression;
+
 	icon?: Icon;
+
 	tooltip?: string;
 	/**
 	 * The title that goes well with a a check mark, e.g "(check) Line Numbers" vs "Toggle Line Numbers"
@@ -64,11 +67,14 @@ export function isICommandActionToggleInfo(
 }
 export interface ICommandActionSource {
 	readonly id: string;
+
 	readonly title: string;
 }
 export interface ICommandAction {
 	id: string;
+
 	title: string | ICommandActionTitle;
+
 	shortTitle?: string | ICommandActionTitle;
 	/**
 	 * Metadata about this command, used for:
@@ -77,9 +83,13 @@ export interface ICommandAction {
 	 * - when searching for commands in the Command Palette
 	 */
 	metadata?: ICommandMetadata;
+
 	category?: keyof typeof Categories | ILocalizedString | string;
+
 	tooltip?: string | ILocalizedString;
+
 	icon?: Icon;
+
 	source?: ICommandActionSource;
 	/**
 	 * Precondition controls enablement (for example for a menu item, show

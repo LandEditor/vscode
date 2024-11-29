@@ -9,11 +9,14 @@ export class UriEventHandler
 	implements vscode.UriHandler
 {
 	private _disposable = vscode.window.registerUriHandler(this);
+
 	handleUri(uri: vscode.Uri) {
 		this.fire(uri);
 	}
+
 	override dispose(): void {
 		super.dispose();
+
 		this._disposable.dispose();
 	}
 }

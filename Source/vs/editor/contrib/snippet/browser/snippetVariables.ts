@@ -73,6 +73,7 @@ export class CompositeSnippetVariableResolver implements VariableResolver {
 	constructor(private readonly _delegates: VariableResolver[]) {
 		//
 	}
+
 	resolve(variable: Variable): string | undefined {
 		for (const delegate of this._delegates) {
 			const value = delegate.resolve(variable);
@@ -81,6 +82,7 @@ export class CompositeSnippetVariableResolver implements VariableResolver {
 				return value;
 			}
 		}
+
 		return undefined;
 	}
 }
@@ -93,6 +95,7 @@ export class SelectionBasedVariableResolver implements VariableResolver {
 	) {
 		//
 	}
+
 	resolve(variable: Variable): string | undefined {
 		const { name } = variable;
 
@@ -111,9 +114,11 @@ export class SelectionBasedVariableResolver implements VariableResolver {
 
 				if (info) {
 					value = info.value;
+
 					isMultiline = info.multiline;
 				}
 			}
+
 			if (value && isMultiline && variable.snippet) {
 				// Selection is a multiline string which we indentation we now
 				// need to adjust. We compare the indentation of this variable
@@ -135,11 +140,13 @@ export class SelectionBasedVariableResolver implements VariableResolver {
 					if (marker === variable) {
 						return false;
 					}
+
 					if (marker instanceof Text) {
 						varLeadingWhitespace = getLeadingWhitespace(
 							splitLines(marker.value).pop()!,
 						);
 					}
+
 					return true;
 				});
 
@@ -147,12 +154,14 @@ export class SelectionBasedVariableResolver implements VariableResolver {
 					varLeadingWhitespace,
 					lineLeadingWhitespace,
 				);
+
 				value = value.replace(
 					/(\r\n|\r|\n)(.*)/g,
 					(m, newline, rest) =>
 						`${newline}${varLeadingWhitespace.substr(whitespaceCommonLength)}${rest}`,
 				);
 			}
+
 			return value;
 		} else if (name === "TM_CURRENT_LINE") {
 			return this._model.getLineContent(
@@ -174,6 +183,7 @@ export class SelectionBasedVariableResolver implements VariableResolver {
 		} else if (name === "CURSOR_NUMBER") {
 			return String(this._selectionIdx + 1);
 		}
+
 		return undefined;
 	}
 }
@@ -184,6 +194,7 @@ export class ModelBasedVariableResolver implements VariableResolver {
 	) {
 		//
 	}
+
 	resolve(variable: Variable): string | undefined {
 		const { name } = variable;
 
@@ -203,6 +214,7 @@ export class ModelBasedVariableResolver implements VariableResolver {
 			if (path.dirname(this._model.uri.fsPath) === ".") {
 				return "";
 			}
+
 			return this._labelService.getUriLabel(dirname(this._model.uri));
 		} else if (name === "TM_FILEPATH") {
 			return this._labelService.getUriLabel(this._model.uri);
@@ -212,6 +224,7 @@ export class ModelBasedVariableResolver implements VariableResolver {
 				noPrefix: true,
 			});
 		}
+
 		return undefined;
 	}
 }
@@ -227,10 +240,12 @@ export class ClipboardBasedVariableResolver implements VariableResolver {
 	) {
 		//
 	}
+
 	resolve(variable: Variable): string | undefined {
 		if (variable.name !== "CLIPBOARD") {
 			return undefined;
 		}
+
 		const clipboardText = this._readClipboardText();
 
 		if (!clipboardText) {
@@ -248,6 +263,7 @@ export class ClipboardBasedVariableResolver implements VariableResolver {
 				return lines[this._selectionIdx];
 			}
 		}
+
 		return clipboardText;
 	}
 }
@@ -260,6 +276,7 @@ export class CommentBasedVariableResolver implements VariableResolver {
 	) {
 		//
 	}
+
 	resolve(variable: Variable): string | undefined {
 		const { name } = variable;
 
@@ -276,6 +293,7 @@ export class CommentBasedVariableResolver implements VariableResolver {
 		if (!config) {
 			return undefined;
 		}
+
 		if (name === "LINE_COMMENT") {
 			return config.lineCommentToken || undefined;
 		} else if (name === "BLOCK_COMMENT_START") {
@@ -283,6 +301,7 @@ export class CommentBasedVariableResolver implements VariableResolver {
 		} else if (name === "BLOCK_COMMENT_END") {
 			return config.blockCommentEndToken || undefined;
 		}
+
 		return undefined;
 	}
 }
@@ -296,6 +315,7 @@ export class TimeBasedVariableResolver implements VariableResolver {
 		nls.localize("Friday", "Friday"),
 		nls.localize("Saturday", "Saturday"),
 	];
+
 	private static readonly dayNamesShort = [
 		nls.localize("SundayShort", "Sun"),
 		nls.localize("MondayShort", "Mon"),
@@ -305,6 +325,7 @@ export class TimeBasedVariableResolver implements VariableResolver {
 		nls.localize("FridayShort", "Fri"),
 		nls.localize("SaturdayShort", "Sat"),
 	];
+
 	private static readonly monthNames = [
 		nls.localize("January", "January"),
 		nls.localize("February", "February"),
@@ -319,6 +340,7 @@ export class TimeBasedVariableResolver implements VariableResolver {
 		nls.localize("November", "November"),
 		nls.localize("December", "December"),
 	];
+
 	private static readonly monthNamesShort = [
 		nls.localize("JanuaryShort", "Jan"),
 		nls.localize("FebruaryShort", "Feb"),
@@ -333,7 +355,9 @@ export class TimeBasedVariableResolver implements VariableResolver {
 		nls.localize("NovemberShort", "Nov"),
 		nls.localize("DecemberShort", "Dec"),
 	];
+
 	private readonly _date = new Date();
+
 	resolve(variable: Variable): string | undefined {
 		const { name } = variable;
 
@@ -378,6 +402,7 @@ export class TimeBasedVariableResolver implements VariableResolver {
 
 			return sign + hoursString + ":" + minutesString;
 		}
+
 		return undefined;
 	}
 }
@@ -389,10 +414,12 @@ export class WorkspaceBasedVariableResolver implements VariableResolver {
 	) {
 		//
 	}
+
 	resolve(variable: Variable): string | undefined {
 		if (!this._workspaceService) {
 			return undefined;
 		}
+
 		const workspaceIdentifier = toWorkspaceIdentifier(
 			this._workspaceService.getWorkspace(),
 		);
@@ -400,13 +427,16 @@ export class WorkspaceBasedVariableResolver implements VariableResolver {
 		if (isEmptyWorkspaceIdentifier(workspaceIdentifier)) {
 			return undefined;
 		}
+
 		if (variable.name === "WORKSPACE_NAME") {
 			return this._resolveWorkspaceName(workspaceIdentifier);
 		} else if (variable.name === "WORKSPACE_FOLDER") {
 			return this._resoveWorkspacePath(workspaceIdentifier);
 		}
+
 		return undefined;
 	}
+
 	private _resolveWorkspaceName(
 		workspaceIdentifier:
 			| IWorkspaceIdentifier
@@ -415,6 +445,7 @@ export class WorkspaceBasedVariableResolver implements VariableResolver {
 		if (isSingleFolderWorkspaceIdentifier(workspaceIdentifier)) {
 			return path.basename(workspaceIdentifier.uri.path);
 		}
+
 		let filename = path.basename(workspaceIdentifier.configPath.path);
 
 		if (filename.endsWith(WORKSPACE_EXTENSION)) {
@@ -423,8 +454,10 @@ export class WorkspaceBasedVariableResolver implements VariableResolver {
 				filename.length - WORKSPACE_EXTENSION.length - 1,
 			);
 		}
+
 		return filename;
 	}
+
 	private _resoveWorkspacePath(
 		workspaceIdentifier:
 			| IWorkspaceIdentifier
@@ -433,6 +466,7 @@ export class WorkspaceBasedVariableResolver implements VariableResolver {
 		if (isSingleFolderWorkspaceIdentifier(workspaceIdentifier)) {
 			return normalizeDriveLetter(workspaceIdentifier.uri.fsPath);
 		}
+
 		const filename = path.basename(workspaceIdentifier.configPath.path);
 
 		let folderpath = workspaceIdentifier.configPath.fsPath;
@@ -443,6 +477,7 @@ export class WorkspaceBasedVariableResolver implements VariableResolver {
 				folderpath.length - filename.length - 1,
 			);
 		}
+
 		return folderpath ? normalizeDriveLetter(folderpath) : "/";
 	}
 }
@@ -457,6 +492,7 @@ export class RandomBasedVariableResolver implements VariableResolver {
 		} else if (name === "UUID") {
 			return generateUuid();
 		}
+
 		return undefined;
 	}
 }

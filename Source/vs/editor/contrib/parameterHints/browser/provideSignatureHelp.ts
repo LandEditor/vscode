@@ -48,14 +48,18 @@ export async function provideSignatureHelp(
 			onUnexpectedExternalError(err);
 		}
 	}
+
 	return undefined;
 }
 CommandsRegistry.registerCommand(
 	"_executeSignatureHelpProvider",
 	async (accessor, ...args: [URI, IPosition, string?]) => {
 		const [uri, position, triggerCharacter] = args;
+
 		assertType(URI.isUri(uri));
+
 		assertType(Position.isIPosition(position));
+
 		assertType(typeof triggerCharacter === "string" || !triggerCharacter);
 
 		const languageFeaturesService = accessor.get(ILanguageFeaturesService);
@@ -80,6 +84,7 @@ CommandsRegistry.registerCommand(
 			if (!result) {
 				return undefined;
 			}
+
 			setTimeout(() => result.dispose(), 0);
 
 			return result.value;

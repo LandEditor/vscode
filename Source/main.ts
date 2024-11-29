@@ -54,6 +54,7 @@ if (
 	app.commandLine.appendSwitch("disable-gpu-sandbox");
 } else {
 	app.commandLine.appendSwitch("no-sandbox");
+
 	app.commandLine.appendSwitch("disable-gpu-sandbox");
 }
 // Set userData path before app 'ready' event
@@ -154,6 +155,7 @@ if (userLocale) {
 if (process.platform === "win32" || process.platform === "linux") {
 	const electronLocale =
 		!userLocale || userLocale === "qps-ploc" ? "en" : userLocale;
+
 	app.commandLine.appendSwitch("lang", electronLocale);
 }
 // Load our code once ready
@@ -164,6 +166,7 @@ app.once("ready", function () {
 			traceOptions:
 				args["trace-options"] || "record-until-full,enable-sampling",
 		};
+
 		contentTracing.startRecording(traceOptions).finally(() => onReady());
 	} else {
 		onReady();
@@ -177,6 +180,7 @@ async function onReady() {
 			mkdirpIgnoreError(codeCachePath),
 			resolveNlsConfiguration(),
 		]);
+
 		await startup(codeCachePath, nlsConfig);
 	} catch (error) {
 		console.error(error);
@@ -190,11 +194,13 @@ async function startup(
 	nlsConfig: INLSConfiguration,
 ): Promise<void> {
 	process.env["VSCODE_NLS_CONFIG"] = JSON.stringify(nlsConfig);
+
 	process.env["VSCODE_CODE_CACHE_PATH"] = codeCachePath || "";
 	// Bootstrap ESM
 	await bootstrapESM();
 	// Load Main
 	await import("./vs/code/electron-main/main.js");
+
 	perf.mark("code/didRunMainBundle");
 }
 function configureCommandlineSwitchesSync(cliArgs: NativeParsedArgs) {
@@ -215,6 +221,7 @@ function configureCommandlineSwitchesSync(cliArgs: NativeParsedArgs) {
 		// override which password-store is used on Linux
 		SUPPORTED_ELECTRON_SWITCHES.push("password-store");
 	}
+
 	const SUPPORTED_MAIN_PROCESS_SWITCHES = [
 		// Persistently enable proposed api via argv.json: https://github.com/microsoft/vscode/issues/99775
 		"enable-proposed-api",
@@ -225,6 +232,7 @@ function configureCommandlineSwitchesSync(cliArgs: NativeParsedArgs) {
 	];
 	// Read argv config
 	const argvConfig = readArgvConfigSync();
+
 	Object.keys(argvConfig).forEach((argvKey) => {
 		const argvValue = argvConfig[argvKey];
 		// Append Electron flags to Electron
@@ -247,6 +255,7 @@ function configureCommandlineSwitchesSync(cliArgs: NativeParsedArgs) {
 					) {
 						migratedArgvValue = "gnome-libsecret";
 					}
+
 					app.commandLine.appendSwitch(argvKey, migratedArgvValue);
 				} else {
 					app.commandLine.appendSwitch(argvKey, argvValue);
@@ -269,6 +278,7 @@ function configureCommandlineSwitchesSync(cliArgs: NativeParsedArgs) {
 							`Unexpected value for \`enable-proposed-api\` in argv.json. Expected array of extension ids.`,
 						);
 					}
+
 					break;
 
 				case "log-level":
@@ -279,12 +289,14 @@ function configureCommandlineSwitchesSync(cliArgs: NativeParsedArgs) {
 							process.argv.push("--log", value);
 						}
 					}
+
 					break;
 
 				case "use-inmemory-secretstorage":
 					if (argvValue) {
 						process.argv.push("--use-inmemory-secretstorage");
 					}
+
 					break;
 			}
 		}
@@ -292,10 +304,12 @@ function configureCommandlineSwitchesSync(cliArgs: NativeParsedArgs) {
 	// Following features are disabled from the runtime:
 	// `CalculateNativeWinOcclusion` - Disable native window occlusion tracker (https://groups.google.com/a/chromium.org/g/embedder-dev/c/ZF3uHHyWLKw/m/VDN2hDXMAAAJ)
 	const featuresToDisable = `CalculateNativeWinOcclusion,${app.commandLine.getSwitchValue("disable-features")}`;
+
 	app.commandLine.appendSwitch("disable-features", featuresToDisable);
 	// Blink features to configure.
 	// `FontMatchingCTMigration` - Siwtch font matching on macOS to Appkit (Refs https://github.com/microsoft/vscode/issues/224496#issuecomment-2270418470).
 	const blinkFeaturesToDisable = `FontMatchingCTMigration,${app.commandLine.getSwitchValue("disable-blink-features")}`;
+
 	app.commandLine.appendSwitch(
 		"disable-blink-features",
 		blinkFeaturesToDisable,
@@ -306,20 +320,32 @@ function configureCommandlineSwitchesSync(cliArgs: NativeParsedArgs) {
 	if (jsFlags) {
 		app.commandLine.appendSwitch("js-flags", jsFlags);
 	}
+
 	return argvConfig;
 }
 interface IArgvConfig {
 	[key: string]: string | string[] | boolean | undefined;
+
 	readonly locale?: string;
+
 	readonly "disable-lcd-text"?: boolean;
+
 	readonly "proxy-bypass-list"?: string;
+
 	readonly "disable-hardware-acceleration"?: boolean;
+
 	readonly "force-color-profile"?: string;
+
 	readonly "enable-crash-reporter"?: boolean;
+
 	readonly "crash-reporter-id"?: string;
+
 	readonly "enable-proposed-api"?: string[];
+
 	readonly "log-level"?: string | string[];
+
 	readonly "disable-chromium-sandbox"?: boolean;
+
 	readonly "use-inmemory-secretstorage"?: boolean;
 }
 function readArgvConfigSync(): IArgvConfig {
@@ -343,6 +369,7 @@ function readArgvConfigSync(): IArgvConfig {
 	if (!argvConfig) {
 		argvConfig = {};
 	}
+
 	return argvConfig;
 }
 function createDefaultArgvConfigSync(argvConfigPath: string): void {
@@ -382,11 +409,13 @@ function getArgvConfigPath(): string {
 	if (vscodePortable) {
 		return path.join(vscodePortable, "argv.json");
 	}
+
 	let dataFolderName = product.dataFolderName;
 
 	if (process.env["VSCODE_DEV"]) {
 		dataFolderName = `${dataFolderName}-dev`;
 	}
+
 	return path.join(os.homedir(), dataFolderName!, "argv.json");
 }
 function configureCrashReporter(): void {
@@ -401,8 +430,10 @@ function configureCrashReporter(): void {
 			console.error(
 				`The path '${crashReporterDirectory}' specified for --crash-reporter-directory must be absolute.`,
 			);
+
 			app.exit(1);
 		}
+
 		if (!fs.existsSync(crashReporterDirectory)) {
 			try {
 				fs.mkdirSync(crashReporterDirectory, { recursive: true });
@@ -410,6 +441,7 @@ function configureCrashReporter(): void {
 				console.error(
 					`The path '${crashReporterDirectory}' specified for --crash-reporter-directory does not seem to exist or cannot be created.`,
 				);
+
 				app.exit(1);
 			}
 		}
@@ -418,6 +450,7 @@ function configureCrashReporter(): void {
 		console.log(
 			`Found --crash-reporter-directory argument. Setting crashDumps directory to be '${crashReporterDirectory}'`,
 		);
+
 		app.setPath("crashDumps", crashReporterDirectory);
 	}
 	// Otherwise we configure the crash reporter from product.json
@@ -468,6 +501,7 @@ function configureCrashReporter(): void {
 				} else if (isLinux) {
 					submitURL = appCenter["linux-x64"];
 				}
+
 				submitURL = submitURL.concat(
 					"&uid=",
 					crashReporterId,
@@ -512,6 +546,7 @@ function configureCrashReporter(): void {
 	const uploadToServer = Boolean(
 		!process.env["VSCODE_DEV"] && submitURL && !crashReporterDirectory,
 	);
+
 	crashReporter.start({
 		companyName,
 		productName: process.env["VSCODE_DEV"]
@@ -528,6 +563,7 @@ function getJSFlags(cliArgs: NativeParsedArgs): string | null {
 	if (cliArgs["js-flags"]) {
 		jsFlags.push(cliArgs["js-flags"]);
 	}
+
 	return jsFlags.length > 0 ? jsFlags.join(" ") : null;
 }
 function parseCLIArgs(): NativeParsedArgs {
@@ -554,6 +590,7 @@ function registerListeners(): void {
 	 */
 	const macOpenFiles: string[] = [];
 	(globalThis as any)["macOpenFiles"] = macOpenFiles;
+
 	app.on("open-file", function (event, path) {
 		macOpenFiles.push(path);
 	});
@@ -569,8 +606,10 @@ function registerListeners(): void {
 		url: string,
 	) {
 		event.preventDefault();
+
 		openUrls.push(url);
 	};
+
 	app.on("will-finish-launching", function () {
 		app.on("open-url", onOpenUrl);
 	});
@@ -595,6 +634,7 @@ function getCodeCachePath(): string | undefined {
 	if (!commit) {
 		return undefined;
 	}
+
 	return path.join(userDataPath, "CachedData", commit);
 }
 async function mkdirpIgnoreError(
@@ -609,6 +649,7 @@ async function mkdirpIgnoreError(
 			// ignore
 		}
 	}
+
 	return undefined;
 }
 //#region NLS Support
@@ -627,8 +668,10 @@ function processZhLocale(appLocale: string): string {
 		if (["hans", "cn", "sg", "my"].includes(region)) {
 			return "zh-cn";
 		}
+
 		return "zh-tw";
 	}
+
 	return appLocale;
 }
 /**
@@ -683,6 +726,7 @@ function getUserDefinedLocale(argvConfig: IArgvConfig): string | undefined {
 	if (locale) {
 		return locale.toLowerCase(); // a directly provided --locale always wins
 	}
+
 	return typeof argvConfig?.locale === "string"
 		? argvConfig.locale.toLowerCase()
 		: undefined;

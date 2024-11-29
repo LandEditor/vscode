@@ -58,6 +58,7 @@ export class TypeScriptServerSpawner {
 			vscode.l10n.t("TypeScript Server Log"),
 		);
 	}
+
 	public constructor(
 		private readonly _versionProvider: ITypeScriptVersionProvider,
 		private readonly _versionManager: TypeScriptVersionManager,
@@ -69,6 +70,7 @@ export class TypeScriptServerSpawner {
 		private readonly _tracer: Tracer,
 		private readonly _factory: TsServerProcessFactory,
 	) {}
+
 	public spawn(
 		version: TypeScriptVersion,
 		capabilities: ClientCapabilities,
@@ -94,6 +96,7 @@ export class TypeScriptServerSpawner {
 				const enableDynamicRouting =
 					!shouldUseSeparateDiagnosticsServer &&
 					serverType === CompositeServerType.DynamicSeparateSyntax;
+
 				primaryServer = new SyntaxRoutingTsServer(
 					{
 						syntax: this.spawnTsServer(
@@ -117,6 +120,7 @@ export class TypeScriptServerSpawner {
 
 				break;
 			}
+
 			case CompositeServerType.Single: {
 				primaryServer = this.spawnTsServer(
 					TsServerProcessKind.Main,
@@ -128,6 +132,7 @@ export class TypeScriptServerSpawner {
 
 				break;
 			}
+
 			case CompositeServerType.SyntaxOnly: {
 				primaryServer = this.spawnTsServer(
 					TsServerProcessKind.Syntax,
@@ -140,6 +145,7 @@ export class TypeScriptServerSpawner {
 				break;
 			}
 		}
+
 		if (shouldUseSeparateDiagnosticsServer) {
 			return new GetErrRoutingTsServer(
 				{
@@ -155,8 +161,10 @@ export class TypeScriptServerSpawner {
 				delegate,
 			);
 		}
+
 		return primaryServer;
 	}
+
 	private getCompositeServerType(
 		version: TypeScriptVersion,
 		capabilities: ClientCapabilities,
@@ -165,6 +173,7 @@ export class TypeScriptServerSpawner {
 		if (!capabilities.has(ClientCapability.Semantic)) {
 			return CompositeServerType.SyntaxOnly;
 		}
+
 		switch (configuration.useSyntaxServer) {
 			case SyntaxServerConfiguration.Always:
 				return CompositeServerType.SyntaxOnly;
@@ -178,11 +187,13 @@ export class TypeScriptServerSpawner {
 					: CompositeServerType.SeparateSyntax;
 		}
 	}
+
 	private shouldUseSeparateDiagnosticsServer(
 		configuration: TypeScriptServiceConfiguration,
 	): boolean {
 		return configuration.enableProjectDiagnostics;
 	}
+
 	private spawnTsServer(
 		kind: TsServerProcessKind,
 		version: TypeScriptVersion,
@@ -215,6 +226,7 @@ export class TypeScriptServerSpawner {
 				this._logger.error(`<${kind}> Could not create TS Server log`);
 			}
 		}
+
 		if (configuration.enableTsServerTracing) {
 			if (tsServerTraceDirectory) {
 				this._logger.info(
@@ -226,6 +238,7 @@ export class TypeScriptServerSpawner {
 				);
 			}
 		}
+
 		this._logger.info(`<${kind}> Forking...`);
 
 		const process = this._factory.fork(
@@ -237,6 +250,7 @@ export class TypeScriptServerSpawner {
 			this._nodeVersionManager,
 			tsServerLog,
 		);
+
 		this._logger.info(`<${kind}> Starting...`);
 
 		return new SingleTsServer(
@@ -250,6 +264,7 @@ export class TypeScriptServerSpawner {
 			this._tracer,
 		);
 	}
+
 	private kindToServerType(kind: TsServerProcessKind): ServerType {
 		switch (kind) {
 			case TsServerProcessKind.Syntax:
@@ -262,6 +277,7 @@ export class TypeScriptServerSpawner {
 				return ServerType.Semantic;
 		}
 	}
+
 	private getTsServerArgs(
 		kind: TsServerProcessKind,
 		configuration: TypeScriptServiceConfiguration,
@@ -271,7 +287,9 @@ export class TypeScriptServerSpawner {
 		cancellationPipeName: string | undefined,
 	): {
 		args: string[];
+
 		tsServerLog: TsServerLog | undefined;
+
 		tsServerTraceDirectory: vscode.Uri | undefined;
 	} {
 		const args: string[] = [];
@@ -287,6 +305,7 @@ export class TypeScriptServerSpawner {
 				args.push("--syntaxOnly");
 			}
 		}
+
 		args.push("--useInferredProjectPerProjectRoot");
 
 		if (
@@ -296,21 +315,25 @@ export class TypeScriptServerSpawner {
 		) {
 			args.push("--disableAutomaticTypingAcquisition");
 		}
+
 		if (
 			kind === TsServerProcessKind.Semantic ||
 			kind === TsServerProcessKind.Main
 		) {
 			args.push("--enableTelemetry");
 		}
+
 		if (cancellationPipeName) {
 			args.push("--cancellationPipeName", cancellationPipeName + "*");
 		}
+
 		if (TypeScriptServerSpawner.isLoggingEnabled(configuration)) {
 			if (isWeb()) {
 				args.push(
 					"--logVerbosity",
 					TsServerLogLevel.toString(configuration.tsServerLogLevel),
 				);
+
 				tsServerLog = {
 					type: "output",
 					output: TypeScriptServerSpawner.tsServerLogOutputChannel,
@@ -323,17 +346,21 @@ export class TypeScriptServerSpawner {
 						logDir,
 						`tsserver.log`,
 					);
+
 					tsServerLog = { type: "file", uri: logFilePath };
+
 					args.push(
 						"--logVerbosity",
 						TsServerLogLevel.toString(
 							configuration.tsServerLogLevel,
 						),
 					);
+
 					args.push("--logFile", logFilePath.fsPath);
 				}
 			}
 		}
+
 		if (configuration.enableTsServerTracing && !isWeb()) {
 			tsServerTraceDirectory =
 				this._logDirectoryProvider.getNewLogDirectory();
@@ -345,6 +372,7 @@ export class TypeScriptServerSpawner {
 				);
 			}
 		}
+
 		const pluginPaths = isWeb()
 			? []
 			: this._pluginPathsProvider.getPluginPaths();
@@ -370,16 +398,20 @@ export class TypeScriptServerSpawner {
 				}
 			}
 		}
+
 		if (pluginPaths.length !== 0) {
 			args.push("--pluginProbeLocations", pluginPaths.join(","));
 		}
+
 		if (configuration.npmLocation && !isWeb()) {
 			args.push("--npmLocation", `"${configuration.npmLocation}"`);
 		}
+
 		args.push(
 			"--locale",
 			TypeScriptServerSpawner.getTsLocale(configuration),
 		);
+
 		args.push("--noGetErrOnBackgroundUpdate");
 
 		const configUseVsCodeWatcher = configuration.useVsCodeWatcher;
@@ -403,18 +435,22 @@ export class TypeScriptServerSpawner {
 				);
 			}
 		}
+
 		args.push("--validateDefaultNpmLocation");
 
 		if (isWebAndHasSharedArrayBuffers()) {
 			args.push("--enableProjectWideIntelliSenseOnWeb");
 		}
+
 		return { args, tsServerLog, tsServerTraceDirectory };
 	}
+
 	private static isLoggingEnabled(
 		configuration: TypeScriptServiceConfiguration,
 	) {
 		return configuration.tsServerLogLevel !== TsServerLogLevel.Off;
 	}
+
 	private static getTsLocale(
 		configuration: TypeScriptServiceConfiguration,
 	): string {

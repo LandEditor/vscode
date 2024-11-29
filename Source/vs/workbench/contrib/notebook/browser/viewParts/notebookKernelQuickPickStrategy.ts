@@ -63,6 +63,7 @@ function isKernelPick(
 }
 type GroupedKernelsPick = IQuickPickItem & {
 	kernels: INotebookKernel[];
+
 	source: string;
 };
 function isGroupedKernelsPick(
@@ -91,6 +92,7 @@ function isSearchMarketplacePick(
 
 type KernelSourceQuickPickItem = IQuickPickItem & {
 	command: Command;
+
 	documentation?: string;
 };
 function isKernelSourceQuickPickItem(
@@ -151,6 +153,7 @@ function toKernelQuickPick(
 			);
 		}
 	}
+
 	return res;
 }
 
@@ -189,6 +192,7 @@ abstract class KernelPickerStrategyBase implements IKernelPickerStrategy {
 					break;
 				}
 			}
+
 			if (!newKernel) {
 				this._logService.warn(
 					`wanted kernel DOES NOT EXIST, wanted: ${wantedId}, all: ${all.map((k) => k.id)}`,
@@ -229,13 +233,16 @@ abstract class KernelPickerStrategyBase implements IKernelPickerStrategy {
 				quickPickItems[0],
 				quickPickItems as KernelQuickPickItem[],
 			);
+
 			localDisposableStore.dispose();
 
 			return picked;
 		}
 
 		quickPick.items = quickPickItems;
+
 		quickPick.canSelectMany = false;
+
 		quickPick.placeholder = selected
 			? localize(
 					"prompt.placeholder.change",
@@ -289,6 +296,7 @@ abstract class KernelPickerStrategyBase implements IKernelPickerStrategy {
 		)(async () => {
 			// reset quick pick progress
 			quickPick.busy = false;
+
 			extensionRecommendataionPromise?.cancel();
 
 			const currentActiveItems = quickPick.activeItems;
@@ -301,6 +309,7 @@ abstract class KernelPickerStrategyBase implements IKernelPickerStrategy {
 				this._notebookKernelService,
 				scopedContextKeyService,
 			);
+
 			quickPick.keepScrollPosition = true;
 
 			// recalcuate active items
@@ -331,11 +340,13 @@ abstract class KernelPickerStrategyBase implements IKernelPickerStrategy {
 			}
 
 			quickPick.items = quickPickItems;
+
 			quickPick.activeItems = activeItems;
 		}, this);
 
 		const pick = await new Promise<{
 			selected: KernelQuickPickItem | undefined;
+
 			items: KernelQuickPickItem[];
 		}>((resolve, reject) => {
 			localDisposableStore.add(
@@ -361,14 +372,18 @@ abstract class KernelPickerStrategyBase implements IKernelPickerStrategy {
 			localDisposableStore.add(
 				quickPick.onDidHide(() => {
 					kernelDetectionTaskListener.dispose();
+
 					kernelChangeEventListener.dispose();
+
 					quickPick.dispose();
+
 					resolve({
 						selected: undefined,
 						items: quickPick.items as KernelQuickPickItem[],
 					});
 				}),
 			);
+
 			quickPick.show();
 		});
 
@@ -403,6 +418,7 @@ abstract class KernelPickerStrategyBase implements IKernelPickerStrategy {
 	): Promise<boolean> {
 		if (isKernelPick(pick)) {
 			const newKernel = pick.kernel;
+
 			this._selecteKernel(editor.textModel, newKernel);
 
 			return true;
@@ -532,6 +548,7 @@ abstract class KernelPickerStrategyBase implements IKernelPickerStrategy {
 			.split(/[^a-z0-9]/gi)
 			.map(uppercaseFirstLetter)
 			.join("");
+
 		await extensionWorkbenchService.openSearch(
 			`@tag:notebookKernel${pascalCased}`,
 		);
@@ -550,6 +567,7 @@ abstract class KernelPickerStrategyBase implements IKernelPickerStrategy {
 				notebookTextModel,
 				extensionWorkbenchService,
 			);
+
 		quickPick.busy = false;
 
 		if (token.isCancellationRequested) {
@@ -657,6 +675,7 @@ abstract class KernelPickerStrategyBase implements IKernelPickerStrategy {
 				}
 			}
 		}
+
 		return suggestedKernelLanguage;
 	}
 
@@ -716,6 +735,7 @@ export class KernelPickerMRUStrategy extends KernelPickerStrategyBase {
 				matchResult.selected,
 				matchResult.selected,
 			);
+
 			quickPickItems.push(kernelItem);
 		}
 
@@ -760,7 +780,9 @@ export class KernelPickerMRUStrategy extends KernelPickerStrategyBase {
 				currentInfo.selected,
 			);
 		}
+
 		super._selecteKernel(notebook, kernel);
+
 		this._notebookKernelHistoryService.addMostRecentKernel(kernel);
 	}
 
@@ -817,12 +839,16 @@ export class KernelPickerMRUStrategy extends KernelPickerStrategyBase {
 			quickPick.title = kernelListEmpty
 				? localize("select", "Select Kernel")
 				: localize("selectAnotherKernel", "Select Another Kernel");
+
 			quickPick.placeholder = localize(
 				"selectKernel.placeholder",
 				"Type to choose a kernel source",
 			);
+
 			quickPick.busy = true;
+
 			quickPick.buttons = [this._quickInputService.backButton];
+
 			quickPick.show();
 
 			disposables.add(
@@ -832,6 +858,7 @@ export class KernelPickerMRUStrategy extends KernelPickerStrategyBase {
 					}
 				}),
 			);
+
 			disposables.add(
 				quickPick.onDidTriggerItemButton(async (e) => {
 					if (
@@ -843,17 +870,20 @@ export class KernelPickerMRUStrategy extends KernelPickerStrategyBase {
 							: await this._commandService.executeCommand(
 									e.item.documentation,
 								);
+
 						void this._openerService.open(uri, {
 							openExternal: true,
 						});
 					}
 				}),
 			);
+
 			disposables.add(
 				quickPick.onDidAccept(async () => {
 					resolve(quickPick.selectedItems[0]);
 				}),
 			);
+
 			disposables.add(
 				quickPick.onDidHide(() => {
 					resolve(undefined);
@@ -882,13 +912,16 @@ export class KernelPickerMRUStrategy extends KernelPickerStrategyBase {
 
 					const quickPickItems =
 						await this._calculdateKernelSources(editor);
+
 					quickPick.items = quickPickItems;
+
 					quickPick.busy = false;
 				}),
 			);
 		});
 
 		quickPick.hide();
+
 		disposables.dispose();
 
 		if (quickPickItem === this._quickInputService.backButton) {
@@ -919,6 +952,7 @@ export class KernelPickerMRUStrategy extends KernelPickerStrategyBase {
 
 							return true;
 						}
+
 						return true;
 					} else {
 						return this.displaySelectAnotherQuickPick(
@@ -1098,7 +1132,9 @@ export class KernelPickerMRUStrategy extends KernelPickerStrategyBase {
 				useSeparators: true,
 			}),
 		);
+
 		quickPick.items = quickPickItems;
+
 		quickPick.canSelectMany = false;
 
 		quickPick.title = localize(
@@ -1121,6 +1157,7 @@ export class KernelPickerMRUStrategy extends KernelPickerStrategyBase {
 				}
 
 				quickPick.hide();
+
 				quickPick.dispose();
 			}),
 		);
@@ -1173,7 +1210,9 @@ export class KernelPickerMRUStrategy extends KernelPickerStrategyBase {
 
 		if (detectionTasks.length) {
 			const info = notebookKernelService.getMatchingKernel(notebook);
+
 			action.enabled = true;
+
 			action.class = ThemeIcon.asClassName(
 				ThemeIcon.modify(executingStateIcon, "spin"),
 			);
@@ -1183,6 +1222,7 @@ export class KernelPickerMRUStrategy extends KernelPickerStrategyBase {
 
 				const kernelInfo =
 					info.selected.description ?? info.selected.detail;
+
 				action.tooltip = kernelInfo
 					? localize(
 							"kernels.selectedKernelAndKernelDetectionRunning",
@@ -1196,6 +1236,7 @@ export class KernelPickerMRUStrategy extends KernelPickerStrategyBase {
 					"Detecting Kernels",
 				);
 			}
+
 			return;
 		}
 
@@ -1207,12 +1248,15 @@ export class KernelPickerMRUStrategy extends KernelPickerStrategyBase {
 			running: boolean,
 		) => {
 			const sAction = sourceAction.action;
+
 			action.class = running
 				? ThemeIcon.asClassName(
 						ThemeIcon.modify(executingStateIcon, "spin"),
 					)
 				: ThemeIcon.asClassName(selectKernelIcon);
+
 			action.label = sAction.label;
+
 			action.enabled = true;
 		};
 
@@ -1227,11 +1271,15 @@ export class KernelPickerMRUStrategy extends KernelPickerStrategyBase {
 
 		if (selected) {
 			action.label = selected.label;
+
 			action.class = ThemeIcon.asClassName(selectKernelIcon);
+
 			action.tooltip = selected.description ?? selected.detail ?? "";
 		} else {
 			action.label = localize("select", "Select Kernel");
+
 			action.class = ThemeIcon.asClassName(selectKernelIcon);
+
 			action.tooltip = "";
 		}
 	}

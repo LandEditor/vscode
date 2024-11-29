@@ -33,9 +33,11 @@ class UserDataSyncUtilService implements IUserDataSyncUtilService {
 		@ITextResourceConfigurationService
 		private readonly textResourceConfigurationService: ITextResourceConfigurationService,
 	) {}
+
 	async resolveDefaultCoreIgnoredSettings(): Promise<string[]> {
 		return getDefaultIgnoredSettings(true);
 	}
+
 	async resolveUserBindings(
 		userBindings: string[],
 	): Promise<IStringDictionary<string>> {
@@ -47,8 +49,10 @@ class UserDataSyncUtilService implements IUserDataSyncUtilService {
 				.map((part) => part.getUserSettingsLabel())
 				.join(" ");
 		}
+
 		return keys;
 	}
+
 	async resolveFormattingOptions(resource: URI): Promise<FormattingOptions> {
 		try {
 			const modelReference =
@@ -58,10 +62,12 @@ class UserDataSyncUtilService implements IUserDataSyncUtilService {
 				modelReference.object.textEditorModel.getOptions();
 
 			const eol = modelReference.object.textEditorModel.getEOL();
+
 			modelReference.dispose();
 
 			return { eol, insertSpaces, tabSize };
 		} catch (e) {}
+
 		return {
 			eol: this.textResourcePropertiesService.getEOL(resource),
 			insertSpaces: !!this.textResourceConfigurationService.getValue(

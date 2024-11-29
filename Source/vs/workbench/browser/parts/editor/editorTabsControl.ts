@@ -107,6 +107,7 @@ export class EditorCommandsContextActionRunner extends ActionRunner {
 	constructor(private context: IEditorCommandsContext) {
 		super();
 	}
+
 	override run(
 		action: IAction,
 		context?: {
@@ -124,6 +125,7 @@ export class EditorCommandsContextActionRunner extends ActionRunner {
 				preserveFocus: true,
 			};
 		}
+
 		return super.run(action, mergedContext);
 	}
 }
@@ -132,28 +134,41 @@ export interface IEditorTabsControl extends IDisposable {
 		oldOptions: IEditorPartOptions,
 		newOptions: IEditorPartOptions,
 	): void;
+
 	openEditor(
 		editor: EditorInput,
 		options?: IInternalEditorOpenOptions,
 	): boolean;
+
 	openEditors(editors: EditorInput[]): boolean;
+
 	beforeCloseEditor(editor: EditorInput): void;
+
 	closeEditor(editor: EditorInput): void;
+
 	closeEditors(editors: EditorInput[]): void;
+
 	moveEditor(
 		editor: EditorInput,
 		fromIndex: number,
 		targetIndex: number,
 		stickyStateChange: boolean,
 	): void;
+
 	pinEditor(editor: EditorInput): void;
+
 	stickEditor(editor: EditorInput): void;
+
 	unstickEditor(editor: EditorInput): void;
 
 	setActive(isActive: boolean): void;
+
 	updateEditorSelections(): void;
+
 	updateEditorLabel(editor: EditorInput): void;
+
 	updateEditorDirty(editor: EditorInput): void;
+
 	layout(dimensions: IEditorTitleControlDimensions): Dimension;
 
 	getHeight(): number;
@@ -164,32 +179,50 @@ export abstract class EditorTabsControl
 {
 	protected readonly editorTransfer =
 		LocalSelectionTransfer.getInstance<DraggedEditorIdentifier>();
+
 	protected readonly groupTransfer =
 		LocalSelectionTransfer.getInstance<DraggedEditorGroupIdentifier>();
+
 	protected readonly treeItemsTransfer =
 		LocalSelectionTransfer.getInstance<DraggedTreeItemsIdentifier>();
+
 	private static readonly EDITOR_TAB_HEIGHT = {
 		normal: 35 as const,
 		compact: 22 as const,
 	};
+
 	protected editorActionsToolbarContainer: HTMLElement | undefined;
+
 	private editorActionsToolbar: WorkbenchToolBar | undefined;
+
 	private readonly editorActionsToolbarDisposables = this._register(
 		new DisposableStore(),
 	);
+
 	private readonly editorActionsDisposables = this._register(
 		new DisposableStore(),
 	);
+
 	private readonly contextMenuContextKeyService: IContextKeyService;
+
 	private resourceContext: ResourceContextKey;
+
 	private editorPinnedContext: IContextKey<boolean>;
+
 	private editorIsFirstContext: IContextKey<boolean>;
+
 	private editorIsLastContext: IContextKey<boolean>;
+
 	private editorStickyContext: IContextKey<boolean>;
+
 	private editorAvailableEditorIds: IContextKey<string>;
+
 	private editorCanSplitInGroupContext: IContextKey<boolean>;
+
 	private sideBySideEditorContext: IContextKey<boolean>;
+
 	private groupLockedContext: IContextKey<boolean>;
+
 	private renderDropdownAsChildElement: boolean;
 
 	constructor(
@@ -218,6 +251,7 @@ export abstract class EditorTabsControl
 		private readonly hostService: IHostService,
 	) {
 		super(themeService);
+
 		this.renderDropdownAsChildElement = false;
 
 		const container = this.create(parent);
@@ -234,58 +268,74 @@ export abstract class EditorTabsControl
 				]),
 			),
 		);
+
 		this.resourceContext = this._register(
 			scopedInstantiationService.createInstance(ResourceContextKey),
 		);
+
 		this.editorPinnedContext = ActiveEditorPinnedContext.bindTo(
 			this.contextMenuContextKeyService,
 		);
+
 		this.editorIsFirstContext = ActiveEditorFirstInGroupContext.bindTo(
 			this.contextMenuContextKeyService,
 		);
+
 		this.editorIsLastContext = ActiveEditorLastInGroupContext.bindTo(
 			this.contextMenuContextKeyService,
 		);
+
 		this.editorStickyContext = ActiveEditorStickyContext.bindTo(
 			this.contextMenuContextKeyService,
 		);
+
 		this.editorAvailableEditorIds =
 			ActiveEditorAvailableEditorIdsContext.bindTo(
 				this.contextMenuContextKeyService,
 			);
+
 		this.editorCanSplitInGroupContext =
 			ActiveEditorCanSplitInGroupContext.bindTo(
 				this.contextMenuContextKeyService,
 			);
+
 		this.sideBySideEditorContext = SideBySideEditorActiveContext.bindTo(
 			this.contextMenuContextKeyService,
 		);
+
 		this.groupLockedContext = ActiveEditorGroupLockedContext.bindTo(
 			this.contextMenuContextKeyService,
 		);
 	}
+
 	protected create(parent: HTMLElement): HTMLElement {
 		this.updateTabHeight();
 
 		return parent;
 	}
+
 	private get editorActionsEnabled(): boolean {
 		return (
 			this.groupsView.partOptions.editorActionsLocation === "default" &&
 			this.groupsView.partOptions.showTabs !== "none"
 		);
 	}
+
 	protected createEditorActionsToolBar(
 		parent: HTMLElement,
 		classes: string[],
 	): void {
 		this.editorActionsToolbarContainer = document.createElement("div");
+
 		this.editorActionsToolbarContainer.classList.add(...classes);
+
 		parent.appendChild(this.editorActionsToolbarContainer);
+
 		this.handleEditorActionToolBarVisibility(
 			this.editorActionsToolbarContainer,
 		);
 	}
+
 	private handleEditorActionToolBarVisibility(container: HTMLElement): void {
 		const editorActionsEnabled = this.editorActionsEnabled;
 
@@ -297,12 +347,17 @@ export abstract class EditorTabsControl
 		// Remove toolbar if it is not enabled (and is visible)
 		else if (!editorActionsEnabled && editorActionsVisible) {
 			this.editorActionsToolbar?.getElement().remove();
+
 			this.editorActionsToolbar = undefined;
+
 			this.editorActionsToolbarDisposables.clear();
+
 			this.editorActionsDisposables.clear();
 		}
+
 		container.classList.toggle("hidden", !editorActionsEnabled);
 	}
+
 	private doCreateEditorActionsToolBar(container: HTMLElement): void {
 		const context: IEditorCommandsContext = { groupId: this.groupView.id };
 		// Toolbar Widget
@@ -347,6 +402,7 @@ export abstract class EditorTabsControl
 			}),
 		);
 	}
+
 	private actionViewItemProvider(
 		action: IAction,
 		options: IBaseActionViewItemOptions,
@@ -366,15 +422,18 @@ export abstract class EditorTabsControl
 			menuAsChild: this.renderDropdownAsChildElement,
 		});
 	}
+
 	protected updateEditorActionsToolbar(): void {
 		if (!this.editorActionsEnabled) {
 			return;
 		}
+
 		this.editorActionsDisposables.clear();
 
 		const editorActions = this.groupView.createEditorActions(
 			this.editorActionsDisposables,
 		);
+
 		this.editorActionsDisposables.add(
 			editorActions.onDidChange(() => this.updateEditorActionsToolbar()),
 		);
@@ -384,31 +443,39 @@ export abstract class EditorTabsControl
 		const { primary, secondary } = this.prepareEditorActions(
 			editorActions.actions,
 		);
+
 		editorActionsToolbar.setActions(
 			prepareActions(primary),
 			prepareActions(secondary),
 		);
 	}
+
 	protected abstract prepareEditorActions(
 		editorActions: IToolbarActions,
 	): IToolbarActions;
+
 	private getEditorPaneAwareContextKeyService(): IContextKeyService {
 		return (
 			this.groupView.activeEditorPane?.scopedContextKeyService ??
 			this.contextKeyService
 		);
 	}
+
 	protected clearEditorActionsToolbar(): void {
 		if (!this.editorActionsEnabled) {
 			return;
 		}
+
 		const editorActionsToolbar = assertIsDefined(this.editorActionsToolbar);
+
 		editorActionsToolbar.setActions([], []);
 	}
+
 	protected onGroupDragStart(e: DragEvent, element: HTMLElement): boolean {
 		if (e.target !== element) {
 			return false; // only if originating from tabs container
 		}
+
 		const isNewWindowOperation = this.isNewWindowOperation(e);
 		// Set editor group as transfer
 		this.groupTransfer.setData(
@@ -461,6 +528,7 @@ export abstract class EditorTabsControl
 					this.groupView.count - 1,
 				);
 			}
+
 			applyDragImage(
 				e,
 				label,
@@ -469,8 +537,10 @@ export abstract class EditorTabsControl
 				this.getColor(listActiveSelectionForeground),
 			);
 		}
+
 		return isNewWindowOperation;
 	}
+
 	protected async onGroupDragEnd(
 		e: DragEvent,
 		previousDragEvent: DragEvent | undefined,
@@ -486,6 +556,7 @@ export abstract class EditorTabsControl
 		) {
 			return; // drag to open in new window is disabled
 		}
+
 		const auxiliaryEditorPart = await this.maybeCreateAuxiliaryEditorPartAt(
 			e,
 			element,
@@ -494,14 +565,18 @@ export abstract class EditorTabsControl
 		if (!auxiliaryEditorPart) {
 			return;
 		}
+
 		const targetGroup = auxiliaryEditorPart.activeGroup;
+
 		this.groupsView.mergeGroup(this.groupView, targetGroup.id, {
 			mode: this.isMoveOperation(previousDragEvent ?? e, targetGroup.id)
 				? MergeGroupMode.MOVE_EDITORS
 				: MergeGroupMode.COPY_EDITORS,
 		});
+
 		targetGroup.focus();
 	}
+
 	protected async maybeCreateAuxiliaryEditorPartAt(
 		e: DragEvent,
 		offsetElement: HTMLElement,
@@ -526,6 +601,7 @@ export abstract class EditorTabsControl
 				return; // refuse to create as long as the mouse was released over active focused window to reduce chance of opening by accident
 			}
 		}
+
 		const offsetX = offsetElement.offsetWidth / 2;
 
 		const offsetY =
@@ -541,18 +617,23 @@ export abstract class EditorTabsControl
 			if (bounds.x < display.x) {
 				bounds.x = display.x; // prevent overflow to the left
 			}
+
 			if (bounds.y < display.y) {
 				bounds.y = display.y; // prevent overflow to the top
 			}
 		}
+
 		return this.editorPartsView.createAuxiliaryEditorPart({ bounds });
 	}
+
 	protected isNewWindowOperation(e: DragEvent): boolean {
 		if (this.groupsView.partOptions.dragToOpenWindow) {
 			return !e.altKey;
 		}
+
 		return e.altKey;
 	}
+
 	protected isMoveOperation(
 		e: DragEvent,
 		sourceGroup: GroupIdentifier,
@@ -561,10 +642,12 @@ export abstract class EditorTabsControl
 		if (sourceEditor?.hasCapability(EditorInputCapabilities.Singleton)) {
 			return true; // Singleton editors cannot be split
 		}
+
 		const isCopy = (e.ctrlKey && !isMacintosh) || (e.altKey && isMacintosh);
 
 		return !isCopy || sourceGroup === this.groupView.id;
 	}
+
 	protected doFillResourceDataTransfers(
 		editors: readonly EditorInput[],
 		e: DragEvent,
@@ -583,8 +666,10 @@ export abstract class EditorTabsControl
 
 			return true;
 		}
+
 		return false;
 	}
+
 	protected onTabContextMenu(
 		editor: EditorInput,
 		e: Event,
@@ -596,17 +681,25 @@ export abstract class EditorTabsControl
 				supportSideBySide: SideBySideEditor.PRIMARY,
 			}),
 		);
+
 		this.editorPinnedContext.set(this.tabsModel.isPinned(editor));
+
 		this.editorIsFirstContext.set(this.tabsModel.isFirst(editor));
+
 		this.editorIsLastContext.set(this.tabsModel.isLast(editor));
+
 		this.editorStickyContext.set(this.tabsModel.isSticky(editor));
+
 		this.groupLockedContext.set(this.tabsModel.isLocked);
+
 		this.editorCanSplitInGroupContext.set(
 			editor.hasCapability(EditorInputCapabilities.CanSplitInGroup),
 		);
+
 		this.sideBySideEditorContext.set(
 			editor.typeId === SideBySideEditorInput.ID,
 		);
+
 		applyAvailableEditorIds(
 			this.editorAvailableEditorIds,
 			editor,
@@ -639,22 +732,26 @@ export abstract class EditorTabsControl
 			onHide: () => this.groupsView.activeGroup.focus(), // restore focus to active group
 		});
 	}
+
 	protected getKeybinding(action: IAction): ResolvedKeybinding | undefined {
 		return this.keybindingService.lookupKeybinding(
 			action.id,
 			this.getEditorPaneAwareContextKeyService(),
 		);
 	}
+
 	protected getKeybindingLabel(action: IAction): string | undefined {
 		const keybinding = this.getKeybinding(action);
 
 		return keybinding ? (keybinding.getLabel() ?? undefined) : undefined;
 	}
+
 	protected get tabHeight() {
 		return this.groupsView.partOptions.tabHeight !== "compact"
 			? EditorTabsControl.EDITOR_TAB_HEIGHT.normal
 			: EditorTabsControl.EDITOR_TAB_HEIGHT.compact;
 	}
+
 	protected getHoverTitle(
 		editor: EditorInput,
 	): string | IManagedHoverTooltipMarkdownString {
@@ -673,14 +770,17 @@ export abstract class EditorTabsControl
 				markdownNotSupportedFallback: title + " (preview)",
 			};
 		}
+
 		return title;
 	}
+
 	protected updateTabHeight(): void {
 		this.parent.style.setProperty(
 			"--editor-group-tab-height",
 			`${this.tabHeight}px`,
 		);
 	}
+
 	updateOptions(
 		oldOptions: IEditorPartOptions,
 		newOptions: IEditorPartOptions,
@@ -699,27 +799,43 @@ export abstract class EditorTabsControl
 				this.handleEditorActionToolBarVisibility(
 					this.editorActionsToolbarContainer,
 				);
+
 				this.updateEditorActionsToolbar();
 			}
 		}
 	}
+
 	abstract openEditor(editor: EditorInput): boolean;
+
 	abstract openEditors(editors: EditorInput[]): boolean;
+
 	abstract beforeCloseEditor(editor: EditorInput): void;
+
 	abstract closeEditor(editor: EditorInput): void;
+
 	abstract closeEditors(editors: EditorInput[]): void;
+
 	abstract moveEditor(
 		editor: EditorInput,
 		fromIndex: number,
 		targetIndex: number,
 	): void;
+
 	abstract pinEditor(editor: EditorInput): void;
+
 	abstract stickEditor(editor: EditorInput): void;
+
 	abstract unstickEditor(editor: EditorInput): void;
+
 	abstract setActive(isActive: boolean): void;
+
 	abstract updateEditorSelections(): void;
+
 	abstract updateEditorLabel(editor: EditorInput): void;
+
 	abstract updateEditorDirty(editor: EditorInput): void;
+
 	abstract layout(dimensions: IEditorTitleControlDimensions): Dimension;
+
 	abstract getHeight(): number;
 }

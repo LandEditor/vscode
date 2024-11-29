@@ -37,25 +37,30 @@ export function searchMatchComparer(
 	if (isSearchTreeFileMatch(elementA) && isSearchTreeFolderMatch(elementB)) {
 		return 1;
 	}
+
 	if (isSearchTreeFileMatch(elementB) && isSearchTreeFolderMatch(elementA)) {
 		return -1;
 	}
+
 	if (
 		isSearchTreeFolderMatch(elementA) &&
 		isSearchTreeFolderMatch(elementB)
 	) {
 		elemAIndex = elementA.index();
+
 		elemBIndex = elementB.index();
 
 		if (elemAIndex !== -1 && elemBIndex !== -1) {
 			return elemAIndex - elemBIndex;
 		}
+
 		if (
 			isSearchTreeAIFileMatch(elementA) &&
 			isSearchTreeAIFileMatch(elementB)
 		) {
 			return elementA.rank - elementB.rank;
 		}
+
 		switch (sortOrder) {
 			case SearchSortOrder.CountDescending:
 				return elementB.count() - elementA.count();
@@ -73,6 +78,7 @@ export function searchMatchComparer(
 				if (!elementA.resource || !elementB.resource) {
 					return 0;
 				}
+
 				return (
 					comparePaths(
 						elementA.resource.fsPath,
@@ -81,6 +87,7 @@ export function searchMatchComparer(
 				);
 		}
 	}
+
 	if (isSearchTreeFileMatch(elementA) && isSearchTreeFileMatch(elementB)) {
 		switch (sortOrder) {
 			case SearchSortOrder.CountDescending:
@@ -114,15 +121,18 @@ export function searchMatchComparer(
 				);
 		}
 	}
+
 	if (isIMatchInNotebook(elementA) && isIMatchInNotebook(elementB)) {
 		return compareNotebookPos(elementA, elementB);
 	}
+
 	if (isSearchTreeMatch(elementA) && isSearchTreeMatch(elementB)) {
 		return Range.compareRangesUsingStarts(
 			elementA.range(),
 			elementB.range(),
 		);
 	}
+
 	return 0;
 }
 function compareNotebookPos(
@@ -178,9 +188,12 @@ export function searchComparer(
 				sortOrder,
 			);
 		}
+
 		i--;
+
 		j--;
 	}
+
 	const elemAAtEnd = i === 0;
 
 	const elemBAtEnd = j === 0;
@@ -190,5 +203,6 @@ export function searchComparer(
 	} else if (!elemAAtEnd && elemBAtEnd) {
 		return -1;
 	}
+
 	return 0;
 }

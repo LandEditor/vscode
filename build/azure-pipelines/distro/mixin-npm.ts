@@ -21,6 +21,7 @@ function mixin(mixinPath: string) {
 
 		return;
 	}
+
 	log(`Mixing in distro npm dependencies: ${mixinPath}`);
 
 	const distroPackageJson = JSON.parse(
@@ -34,12 +35,14 @@ function mixin(mixinPath: string) {
 			recursive: true,
 			force: true,
 		});
+
 		fs.cpSync(
 			`${mixinPath}/node_modules/${dependency}`,
 			`./${targetPath}/node_modules/${dependency}`,
 			{ recursive: true, force: true, dereference: true },
 		);
 	}
+
 	log(`Mixed in distro npm dependencies: ${mixinPath} ✔︎`);
 }
 function main() {

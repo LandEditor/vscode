@@ -63,6 +63,7 @@ class TypeScriptWorkspaceSymbolProvider
 		private readonly client: ITypeScriptServiceClient,
 		private readonly modeIds: readonly string[],
 	) {}
+
 	public async provideWorkspaceSymbols(
 		search: string,
 		token: vscode.CancellationToken,
@@ -73,6 +74,7 @@ class TypeScriptWorkspaceSymbolProvider
 			file = undefined;
 		} else {
 			const document = this.getDocument();
+
 			file = document
 				? await this.toOpenedFiledPath(document)
 				: undefined;
@@ -81,6 +83,7 @@ class TypeScriptWorkspaceSymbolProvider
 				return [];
 			}
 		}
+
 		const args: Proto.NavtoRequestArgs = {
 			file,
 			searchValue: search,
@@ -92,10 +95,12 @@ class TypeScriptWorkspaceSymbolProvider
 		if (response.type !== "response" || !response.body) {
 			return [];
 		}
+
 		return coalesce(
 			response.body.map((item) => this.toSymbolInformation(item)),
 		);
 	}
+
 	private get searchAllOpenProjects() {
 		return (
 			this.client.apiVersion.gte(API.v390) &&
@@ -105,6 +110,7 @@ class TypeScriptWorkspaceSymbolProvider
 				"allOpenProjects"
 		);
 	}
+
 	private async toOpenedFiledPath(document: vscode.TextDocument) {
 		if (document.uri.scheme === fileSchemes.git) {
 			try {
@@ -125,19 +131,23 @@ class TypeScriptWorkspaceSymbolProvider
 				// noop
 			}
 		}
+
 		return this.client.toOpenTsFilePath(document);
 	}
+
 	private toSymbolInformation(
 		item: Proto.NavtoItem,
 	): vscode.SymbolInformation | undefined {
 		if (item.kind === "alias" && !item.containerName) {
 			return;
 		}
+
 		const uri = this.client.toResource(item.file);
 
 		if (fileSchemes.isOfScheme(uri, fileSchemes.chatCodeBlock)) {
 			return;
 		}
+
 		const label = TypeScriptWorkspaceSymbolProvider.getLabel(item);
 
 		const info = new vscode.SymbolInformation(
@@ -154,16 +164,20 @@ class TypeScriptWorkspaceSymbolProvider
 		if (kindModifiers?.has(PConst.KindModifiers.deprecated)) {
 			info.tags = [vscode.SymbolTag.Deprecated];
 		}
+
 		return info;
 	}
+
 	private static getLabel(item: Proto.NavtoItem) {
 		const label = item.name;
 
 		if (item.kind === "method" || item.kind === "function") {
 			return label + "()";
 		}
+
 		return label;
 	}
+
 	private getDocument(): vscode.TextDocument | undefined {
 		// typescript wants to have a resource even when asking
 		// general questions so we check the active editor. If this
@@ -175,6 +189,7 @@ class TypeScriptWorkspaceSymbolProvider
 				return activeDocument;
 			}
 		}
+
 		const documents = vscode.workspace.textDocuments;
 
 		for (const document of documents) {
@@ -182,6 +197,7 @@ class TypeScriptWorkspaceSymbolProvider
 				return document;
 			}
 		}
+
 		return undefined;
 	}
 }

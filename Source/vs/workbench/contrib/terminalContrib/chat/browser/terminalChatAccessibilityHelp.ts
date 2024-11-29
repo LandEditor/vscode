@@ -23,8 +23,11 @@ export class TerminalChatAccessibilityHelp
 	implements IAccessibleViewImplentation
 {
 	readonly priority = 110;
+
 	readonly name = "terminalChat";
+
 	readonly when = TerminalChatContextKeys.focused;
+
 	readonly type = AccessibleViewType.Help;
 
 	getProvider(accessor: ServicesAccessor) {
@@ -35,6 +38,7 @@ export class TerminalChatAccessibilityHelp
 		if (!instance) {
 			return;
 		}
+
 		const helpText = getAccessibilityHelpText(accessor);
 
 		return new AccessibleContentProvider(
@@ -81,12 +85,14 @@ export function getAccessibilityHelpText(accessor: ServicesAccessor): string {
 	const focusInputKeybinding = keybindingService
 		.lookupKeybinding("workbench.action.chat.focusInput")
 		?.getAriaLabel();
+
 	content.push(
 		localize(
 			"inlineChat.overview",
 			"Inline chat occurs within a terminal. It is useful for suggesting terminal commands. Keep in mind that AI generated code may be incorrect.",
 		),
 	);
+
 	content.push(
 		localize(
 			"inlineChat.access",
@@ -94,6 +100,7 @@ export function getAccessibilityHelpText(accessor: ServicesAccessor): string {
 			startChatKeybinding,
 		),
 	);
+
 	content.push(
 		makeRequestKeybinding
 			? localize(
@@ -106,6 +113,7 @@ export function getAccessibilityHelpText(accessor: ServicesAccessor): string {
 					"The input box is where the user can type a request and can make the request by tabbing to the Make Request button, which is not currently triggerable via keybindings. The widget will be closed and all content will be discarded when the Escape key is pressed and the terminal will regain focus.",
 				),
 	);
+
 	content.push(
 		openAccessibleViewKeybinding
 			? localize(
@@ -118,6 +126,7 @@ export function getAccessibilityHelpText(accessor: ServicesAccessor): string {
 					"With the input box focused, inspect the response in the accessible view via the Open Accessible View command, which is currently not triggerable by a keybinding.",
 				),
 	);
+
 	content.push(
 		focusResponseKeybinding
 			? localize(
@@ -130,6 +139,7 @@ export function getAccessibilityHelpText(accessor: ServicesAccessor): string {
 					"Reach the response from the input box by tabbing or assigning a keybinding for the command: Focus Terminal Response.",
 				),
 	);
+
 	content.push(
 		focusInputKeybinding
 			? localize(
@@ -142,6 +152,7 @@ export function getAccessibilityHelpText(accessor: ServicesAccessor): string {
 					"Reach the response from the input box by shift+tabbing or assigning a keybinding for the command: Focus Terminal Input.",
 				),
 	);
+
 	content.push(
 		runCommandKeybinding
 			? localize(
@@ -154,6 +165,7 @@ export function getAccessibilityHelpText(accessor: ServicesAccessor): string {
 					"Run a command by tabbing to the button as the action is currently not triggerable by a keybinding.",
 				),
 	);
+
 	content.push(
 		insertCommandKeybinding
 			? localize(
@@ -166,12 +178,14 @@ export function getAccessibilityHelpText(accessor: ServicesAccessor): string {
 					"Insert a command by tabbing to the button as the action is currently not triggerable by a keybinding.",
 				),
 	);
+
 	content.push(
 		localize(
 			"inlineChat.toolbar",
 			"Use tab to reach conditional parts like commands, status, message responses and more.",
 		),
 	);
+
 	content.push(
 		localize(
 			"chat.signals",

@@ -26,6 +26,7 @@ export class RelativeWorkspacePathResolver {
 				}
 			}
 		}
+
 		return undefined;
 	}
 }

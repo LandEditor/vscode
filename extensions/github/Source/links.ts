@@ -28,6 +28,7 @@ export function getRepositoryForFile(
 			return repository;
 		}
 	}
+
 	return undefined;
 }
 enum LinkType {
@@ -36,22 +37,29 @@ enum LinkType {
 }
 interface IFilePosition {
 	type: LinkType.File;
+
 	uri: vscode.Uri;
+
 	range: vscode.Range | undefined;
 }
 interface INotebookPosition {
 	type: LinkType.Notebook;
+
 	uri: vscode.Uri;
+
 	cellIndex: number;
+
 	range: vscode.Range | undefined;
 }
 interface EditorLineNumberContext {
 	uri: vscode.Uri;
+
 	lineNumber: number;
 }
 export type LinkContext = vscode.Uri | EditorLineNumberContext | undefined;
 function extractContext(context: LinkContext): {
 	fileUri: vscode.Uri | undefined;
+
 	lineNumber: number | undefined;
 } {
 	if (context instanceof vscode.Uri) {
@@ -101,6 +109,7 @@ function getFileAndPosition(
 			return { type: LinkType.File, uri, range };
 		}
 	}
+
 	if (vscode.window.activeNotebookEditor) {
 		// if the active editor is a notebook editor but the focus is not inside any cell text editor, generate deep link for the cell selection in the notebook document.
 		return {
@@ -110,6 +119,7 @@ function getFileAndPosition(
 			range: undefined,
 		};
 	}
+
 	return undefined;
 }
 function getRangeOrSelection(lineNumber: number | undefined) {
@@ -126,11 +136,13 @@ export function rangeString(range: vscode.Range | undefined) {
 	if (!range) {
 		return "";
 	}
+
 	let hash = `#L${range.start.line + 1}`;
 
 	if (range.start.line !== range.end.line) {
 		hash += `-L${range.end.line + 1}`;
 	}
+
 	return hash;
 }
 export function notebookCellRangeString(
@@ -140,14 +152,17 @@ export function notebookCellRangeString(
 	if (index === undefined) {
 		return "";
 	}
+
 	if (!range) {
 		return `#C${index + 1}`;
 	}
+
 	let hash = `#C${index + 1}:L${range.start.line + 1}`;
 
 	if (range.start.line !== range.end.line) {
 		hash += `-L${range.end.line + 1}`;
 	}
+
 	return hash;
 }
 export function encodeURIComponentExceptSlashes(path: string) {
@@ -188,15 +203,19 @@ export async function getLink(
 	if (!gitRepo) {
 		return;
 	}
+
 	if (shouldEnsurePublished && fileUri) {
 		await ensurePublished(gitRepo, fileUri);
 	}
+
 	let repo:
 		| {
 				owner: string;
+
 				repo: string;
 		  }
 		| undefined;
+
 	gitRepo.state.remotes.find((remote) => {
 		if (remote.fetchUrl) {
 			const foundRepo = getRepositoryFromUrl(remote.fetchUrl);
@@ -212,12 +231,14 @@ export async function getLink(
 				repo = foundRepo;
 			}
 		}
+
 		return;
 	});
 
 	if (!repo) {
 		return;
 	}
+
 	const blobSegment = gitRepo.state.HEAD
 		? `/blob/${linkType === "headlink" && gitRepo.state.HEAD.name ? encodeURIComponentExceptSlashes(gitRepo.state.HEAD.name) : gitRepo.state.HEAD?.commit}`
 		: "";
@@ -227,6 +248,7 @@ export async function getLink(
 	if (!fileUri) {
 		return uriWithoutFileSegments;
 	}
+
 	const encodedFilePath = encodeURIComponentExceptSlashes(
 		fileUri.path.substring(gitRepo.rootUri.path.length),
 	);
@@ -252,6 +274,7 @@ export function getBranchLink(
 	if (!repo) {
 		throw new Error("Invalid repository URL provided");
 	}
+
 	branch = encodeURIComponentExceptSlashes(branch);
 
 	return `${hostPrefix}/${repo.owner}/${repo.repo}/tree/${branch}`;
@@ -284,8 +307,10 @@ export async function ensurePublished(
 		if (selection !== publishBranch) {
 			throw new vscode.CancellationError();
 		}
+
 		await vscode.commands.executeCommand("git.publish");
 	}
+
 	const uncommittedChanges = [
 		...repository.state.workingTreeChanges,
 		...repository.state.indexChanges,
@@ -329,6 +354,7 @@ export async function ensurePublished(
 		if (selection !== pushCommits) {
 			throw new vscode.CancellationError();
 		}
+
 		await repository.push();
 	} else if (repository.state.HEAD?.behind) {
 		const pull = vscode.l10n.t("Pull Changes & Copy Link");
@@ -344,7 +370,9 @@ export async function ensurePublished(
 		if (selection !== pull) {
 			throw new vscode.CancellationError();
 		}
+
 		await repository.pull();
 	}
+
 	await repository.status();
 }

@@ -104,9 +104,11 @@ import {
 
 abstract class CheckoutCommandItem implements QuickPickItem {
 	abstract get label(): string;
+
 	get description(): string {
 		return "";
 	}
+
 	get alwaysShow(): boolean {
 		return true;
 	}
@@ -139,10 +141,13 @@ class RefItemSeparator implements QuickPickItem {
 		switch (this.refType) {
 			case RefType.Head:
 				return l10n.t("branches");
+
 			case RefType.RemoteHead:
 				return l10n.t("remote branches");
+
 			case RefType.Tag:
 				return l10n.t("tags");
+
 			default:
 				return "";
 		}
@@ -156,10 +161,13 @@ class RefItem implements QuickPickItem {
 		switch (this.ref.type) {
 			case RefType.Head:
 				return `$(git-branch) ${this.ref.name ?? this.shortCommit}`;
+
 			case RefType.RemoteHead:
 				return `$(cloud) ${this.ref.name ?? this.shortCommit}`;
+
 			case RefType.Tag:
 				return `$(tag) ${this.ref.name ?? this.shortCommit}`;
+
 			default:
 				return "";
 		}
@@ -169,10 +177,13 @@ class RefItem implements QuickPickItem {
 		switch (this.ref.type) {
 			case RefType.Head:
 				return this.shortCommit;
+
 			case RefType.RemoteHead:
 				return l10n.t("Remote branch at {0}", this.shortCommit);
+
 			case RefType.Tag:
 				return l10n.t("Tag at {0}", this.shortCommit);
+
 			default:
 				return "";
 		}
@@ -181,17 +192,21 @@ class RefItem implements QuickPickItem {
 	get refName(): string | undefined {
 		return this.ref.name;
 	}
+
 	get refRemote(): string | undefined {
 		return this.ref.remote;
 	}
+
 	get shortCommit(): string {
 		return (this.ref.commit || "").substr(0, 8);
 	}
 
 	private _buttons?: QuickInputButton[];
+
 	get buttons(): QuickInputButton[] | undefined {
 		return this._buttons;
 	}
+
 	set buttons(newButtons: QuickInputButton[] | undefined) {
 		this._buttons = newButtons;
 	}
@@ -212,12 +227,14 @@ class CheckoutItem extends RefItem {
 			"git",
 			Uri.file(repository.root),
 		);
+
 		const pullBeforeCheckout =
 			config.get<boolean>("pullBeforeCheckout", false) === true;
 
 		const treeish = opts?.detached
 			? (this.ref.commit ?? this.ref.name)
 			: this.ref.name;
+
 		await repository.checkout(treeish, { ...opts, pullBeforeCheckout });
 	}
 }
@@ -239,6 +256,7 @@ class CheckoutRemoteHeadItem extends RefItem {
 
 		if (opts?.detached) {
 			await repository.checkout(this.ref.commit ?? this.ref.name, opts);
+
 			return;
 		}
 
@@ -321,15 +339,18 @@ class HEADItem implements QuickPickItem {
 	get label(): string {
 		return "HEAD";
 	}
+
 	get description(): string {
 		return (
 			(this.repository.HEAD && this.repository.HEAD.commit) ||
 			""
 		).substr(0, 8);
 	}
+
 	get alwaysShow(): boolean {
 		return true;
 	}
+
 	get refName(): string {
 		return "HEAD";
 	}
@@ -341,6 +362,7 @@ class AddRemoteItem implements QuickPickItem {
 	get label(): string {
 		return "$(plus) " + l10n.t("Add a new remote...");
 	}
+
 	get description(): string {
 		return "";
 	}
@@ -358,9 +380,11 @@ class RemoteItem implements QuickPickItem {
 	get label() {
 		return `$(cloud) ${this.remote.name}`;
 	}
+
 	get description(): string | undefined {
 		return this.remote.fetchUrl;
 	}
+
 	get remoteName(): string {
 		return this.remote.name;
 	}
@@ -413,13 +437,17 @@ class StashItem implements QuickPickItem {
 
 interface ScmCommandOptions {
 	repository?: boolean;
+
 	diff?: boolean;
 }
 
 interface ScmCommand {
 	commandId: string;
+
 	key: string;
+
 	method: Function;
+
 	options: ScmCommandOptions;
 }
 
@@ -448,29 +476,41 @@ async function categorizeResourceByResolution(
 	resources: Resource[],
 ): Promise<{
 	merge: Resource[];
+
 	resolved: Resource[];
+
 	unresolved: Resource[];
+
 	deletionConflicts: Resource[];
 }> {
 	const selection = resources.filter(
 		(s) => s instanceof Resource,
 	) as Resource[];
+
 	const merge = selection.filter(
 		(s) => s.resourceGroupType === ResourceGroupType.Merge,
 	);
+
 	const isBothAddedOrModified = (s: Resource) =>
 		s.type === Status.BOTH_MODIFIED || s.type === Status.BOTH_ADDED;
+
 	const isAnyDeleted = (s: Resource) =>
 		s.type === Status.DELETED_BY_THEM || s.type === Status.DELETED_BY_US;
+
 	const possibleUnresolved = merge.filter(isBothAddedOrModified);
+
 	const promises = possibleUnresolved.map((s) =>
 		grep(s.resourceUri.fsPath, /^<{7}|^={7}|^>{7}/),
 	);
+
 	const unresolvedBothModified = await Promise.all<boolean>(promises);
+
 	const resolved = possibleUnresolved.filter(
 		(_s, i) => !unresolvedBothModified[i],
 	);
+
 	const deletionConflicts = merge.filter((s) => isAnyDeleted(s));
+
 	const unresolved = [
 		...merge.filter((s) => !isBothAddedOrModified(s) && !isAnyDeleted(s)),
 		...possibleUnresolved.filter((_s, i) => unresolvedBothModified[i]),
@@ -484,7 +524,9 @@ async function createCheckoutItems(
 	detached = false,
 ): Promise<QuickPickItem[]> {
 	const config = workspace.getConfiguration("git");
+
 	const checkoutTypeConfig = config.get<string | string[]>("checkoutType");
+
 	let checkoutTypes: string[];
 
 	if (
@@ -505,11 +547,13 @@ async function createCheckoutItems(
 	}
 
 	const refs = await repository.getRefs();
+
 	const refProcessors = checkoutTypes
 		.map((type) => getCheckoutRefProcessor(repository, type))
 		.filter((p) => !!p) as RefProcessor[];
 
 	const buttons = await getRemoteRefItemButtons(repository);
+
 	const itemsProcessor = new CheckoutItemsProcessor(
 		refProcessors,
 		repository,
@@ -522,7 +566,9 @@ async function createCheckoutItems(
 
 type RemoteSourceActionButton = {
 	iconPath: ThemeIcon;
+
 	tooltip: string;
+
 	actual: RemoteSourceAction;
 };
 
@@ -540,12 +586,17 @@ async function getRemoteRefItemButtons(repository: Repository) {
 	for (const remote of repository.remotes) {
 		if (remote.fetchUrl) {
 			const actions = remoteUrlsToActions.get(remote.fetchUrl) ?? [];
+
 			actions.push(...(await getButtons(remote.fetchUrl)));
+
 			remoteUrlsToActions.set(remote.fetchUrl, actions);
 		}
+
 		if (remote.pushUrl && remote.pushUrl !== remote.fetchUrl) {
 			const actions = remoteUrlsToActions.get(remote.pushUrl) ?? [];
+
 			actions.push(...(await getButtons(remote.pushUrl)));
+
 			remoteUrlsToActions.set(remote.pushUrl, actions);
 		}
 	}
@@ -558,6 +609,7 @@ class RefProcessor {
 
 	get items(): QuickPickItem[] {
 		const items = this.refs.map((r) => new this.ctor(r));
+
 		return items.length === 0
 			? items
 			: [new RefItemSeparator(this.type), ...items];
@@ -572,11 +624,13 @@ class RefProcessor {
 		if (!ref.name && !ref.commit) {
 			return false;
 		}
+
 		if (ref.type !== this.type) {
 			return false;
 		}
 
 		this.refs.push(ref);
+
 		return true;
 	}
 }
@@ -594,6 +648,7 @@ class RefItemsProcessor {
 		}
 
 		const result: QuickPickItem[] = [];
+
 		for (const processor of this.processors) {
 			result.push(...processor.items);
 		}
@@ -626,6 +681,7 @@ class RebaseItemsProcessors extends RefItemsProcessor {
 
 			if (ref.name === this.upstreamName) {
 				result.push(new RebaseUpstreamItem(ref));
+
 				continue;
 			}
 
@@ -680,7 +736,9 @@ class CheckoutItemsProcessor extends RefItemsProcessor {
 					r.pushUrl === repository.HEAD?.remote ||
 					r.fetchUrl === repository.HEAD?.remote,
 			) ?? repository.remotes[0];
+
 		const remoteUrl = remote?.pushUrl ?? remote?.fetchUrl;
+
 		if (remoteUrl) {
 			this.defaultButtons = buttons.get(remoteUrl);
 		}
@@ -700,10 +758,12 @@ class CheckoutItemsProcessor extends RefItemsProcessor {
 		}
 
 		const result: QuickPickItem[] = [];
+
 		for (const processor of this.processors) {
 			for (const item of processor.items) {
 				if (!(item instanceof RefItem)) {
 					result.push(item);
+
 					continue;
 				}
 
@@ -712,12 +772,15 @@ class CheckoutItemsProcessor extends RefItemsProcessor {
 					const matchingRemote = this.repository.remotes.find(
 						(remote) => remote.name === item.refRemote,
 					);
+
 					const buttons = [];
+
 					if (matchingRemote?.pushUrl) {
 						buttons.push(
 							...(this.buttons.get(matchingRemote.pushUrl) ?? []),
 						);
 					}
+
 					if (
 						matchingRemote?.fetchUrl &&
 						matchingRemote.fetchUrl !== matchingRemote.pushUrl
@@ -727,6 +790,7 @@ class CheckoutItemsProcessor extends RefItemsProcessor {
 								[]),
 						);
 					}
+
 					if (buttons.length) {
 						item.buttons = buttons;
 					}
@@ -749,10 +813,13 @@ function getCheckoutRefProcessor(
 	switch (type) {
 		case "local":
 			return new CheckoutRefProcessor(repository);
+
 		case "remote":
 			return new RefProcessor(RefType.RemoteHead, CheckoutRemoteHeadItem);
+
 		case "tags":
 			return new RefProcessor(RefType.Tag, CheckoutTagItem);
+
 		default:
 			return undefined;
 	}
@@ -762,6 +829,7 @@ function getRepositoryLabel(repositoryRoot: string): string {
 	const workspaceFolder = workspace.getWorkspaceFolder(
 		Uri.file(repositoryRoot),
 	);
+
 	return workspaceFolder?.uri.toString() === repositoryRoot
 		? workspaceFolder.name
 		: path.basename(repositoryRoot);
@@ -790,6 +858,7 @@ function sanitizeBranchName(name: string, whitespaceChar: string): string {
 
 function sanitizeRemoteName(name: string) {
 	name = name.trim();
+
 	return (
 		name &&
 		name.replace(
@@ -808,12 +877,16 @@ enum PushType {
 
 interface PushOptions {
 	pushType: PushType;
+
 	forcePush?: boolean;
+
 	silent?: boolean;
 
 	pushTo?: {
 		remote?: string;
+
 		refspec?: string;
+
 		setUpstream?: boolean;
 	};
 }
@@ -838,6 +911,7 @@ class CommandErrorOutputTextDocumentContentProvider
 
 export class CommandCenter {
 	private disposables: Disposable[];
+
 	private commandErrors = new CommandErrorOutputTextDocumentContentProvider();
 
 	constructor(
@@ -929,10 +1003,13 @@ export class CommandCenter {
 				uri = window.tabGroups.activeTabGroup.activeTab.input.uri;
 			}
 		}
+
 		if (!(uri instanceof Uri)) {
 			return;
 		}
+
 		const repo = this.model.getRepository(uri);
+
 		if (!repo) {
 			return;
 		}
@@ -941,17 +1018,24 @@ export class CommandCenter {
 
 		type InputData = {
 			uri: Uri;
+
 			title?: string;
+
 			detail?: string;
+
 			description?: string;
 		};
+
 		const mergeUris = toMergeUris(uri);
 
 		let isStashConflict = false;
+
 		try {
 			// Look at the conflict markers to check if this is a stash conflict
 			const document = await workspace.openTextDocument(uri);
+
 			const firstConflictInfo = findFirstConflictMarker(document);
+
 			isStashConflict =
 				firstConflictInfo?.incomingChangeLabel === "Stashed changes";
 		} catch (error) {
@@ -962,6 +1046,7 @@ export class CommandCenter {
 			uri: mergeUris.ours,
 			title: l10n.t("Current"),
 		};
+
 		const incoming: InputData = {
 			uri: mergeUris.theirs,
 			title: l10n.t("Incoming"),
@@ -982,6 +1067,7 @@ export class CommandCenter {
 					"HEAD",
 				),
 			]);
+
 			const diffFile = diffBetween?.find(
 				(diff) => diff.uri.fsPath === uri.fsPath,
 			);
@@ -990,13 +1076,17 @@ export class CommandCenter {
 			current.detail = head.refNames
 				.map((s) => s.replace(/^HEAD ->/, ""))
 				.join(", ");
+
 			current.description = "$(git-commit) " + head.hash.substring(0, 7);
+
 			current.uri = toGitUri(uri, head.hash);
 
 			// theirs
 			incoming.detail = rebaseOrMergeHead.refNames.join(", ");
+
 			incoming.description =
 				"$(git-commit) " + rebaseOrMergeHead.hash.substring(0, 7);
+
 			if (diffFile) {
 				incoming.uri = toGitUri(
 					diffFile.originalUri,
@@ -1008,6 +1098,7 @@ export class CommandCenter {
 		} catch (error) {
 			// not so bad, can continue with just uris
 			console.error("FAILED to read HEAD, MERGE_HEAD commits");
+
 			console.error(error);
 		}
 
@@ -1026,20 +1117,28 @@ export class CommandCenter {
 			| { currentChangeLabel: string; incomingChangeLabel: string }
 			| undefined {
 			const conflictMarkerStart = "<<<<<<<";
+
 			const conflictMarkerEnd = ">>>>>>>";
+
 			let inConflict = false;
+
 			let currentChangeLabel: string = "";
+
 			let incomingChangeLabel: string = "";
+
 			let hasConflict = false;
 
 			for (let lineIdx = 0; lineIdx < doc.lineCount; lineIdx++) {
 				const lineStr = doc.lineAt(lineIdx).text;
+
 				if (!inConflict) {
 					if (lineStr.startsWith(conflictMarkerStart)) {
 						currentChangeLabel = lineStr
 							.substring(conflictMarkerStart.length)
 							.trim();
+
 						inConflict = true;
+
 						hasConflict = true;
 					}
 				} else {
@@ -1047,17 +1146,21 @@ export class CommandCenter {
 						incomingChangeLabel = lineStr
 							.substring(conflictMarkerStart.length)
 							.trim();
+
 						inConflict = false;
+
 						break;
 					}
 				}
 			}
+
 			if (hasConflict) {
 				return {
 					currentChangeLabel,
 					incomingChangeLabel,
 				};
 			}
+
 			return undefined;
 		}
 	}
@@ -1085,6 +1188,7 @@ export class CommandCenter {
 			this.telemetryReporter.sendTelemetryEvent("clone", {
 				outcome: "no_URL",
 			});
+
 			return;
 		}
 
@@ -1092,8 +1196,10 @@ export class CommandCenter {
 
 		if (!parentPath) {
 			const config = workspace.getConfiguration("git");
+
 			let defaultCloneDirectory =
 				config.get<string>("defaultCloneDirectory") || os.homedir();
+
 			defaultCloneDirectory = defaultCloneDirectory.replace(
 				/^~/,
 				os.homedir(),
@@ -1118,10 +1224,12 @@ export class CommandCenter {
 				this.telemetryReporter.sendTelemetryEvent("clone", {
 					outcome: "no_directory",
 				});
+
 				return;
 			}
 
 			const uri = uris[0];
+
 			parentPath = uri.fsPath;
 		}
 
@@ -1148,6 +1256,7 @@ export class CommandCenter {
 			);
 
 			const config = workspace.getConfiguration("git");
+
 			const openAfterClone = config.get<
 				"always" | "alwaysNewWindow" | "whenNoFolderOpen" | "prompt"
 			>("openAfterClone");
@@ -1157,6 +1266,7 @@ export class CommandCenter {
 				OpenNewWindow,
 				AddToWorkspace,
 			}
+
 			let action: PostCloneAction | undefined = undefined;
 
 			if (openAfterClone === "always") {
@@ -1174,15 +1284,20 @@ export class CommandCenter {
 				let message = l10n.t(
 					"Would you like to open the cloned repository?",
 				);
+
 				const open = l10n.t("Open");
+
 				const openNewWindow = l10n.t("Open in New Window");
+
 				const choices = [open, openNewWindow];
 
 				const addToWorkspace = l10n.t("Add to Workspace");
+
 				if (workspace.workspaceFolders) {
 					message = l10n.t(
 						"Would you like to open the cloned repository, or add it to the current workspace?",
 					);
+
 					choices.push(addToWorkspace);
 				}
 
@@ -1286,30 +1401,38 @@ export class CommandCenter {
 			const remote = repository.remotes.find(
 				(r) => r.name === repository.HEAD?.upstream?.remote,
 			);
+
 			if (remote?.pushUrl) {
 				items.push({ repository: repository, label: remote.pushUrl });
 			}
+
 			return items;
 		}, []);
 
 		let selection = items[0];
+
 		if (items.length > 1) {
 			const pick = await window.showQuickPick(items, {
 				canPickMany: false,
 				placeHolder: l10n.t("Choose which repository to clone"),
 			});
+
 			if (pick === undefined) {
 				return;
 			}
+
 			selection = pick;
 		}
 
 		const uri = selection.label;
+
 		const ref = selection.repository.HEAD?.upstream?.name;
 
 		if (uri !== undefined) {
 			let target = `${env.uriScheme}://vscode.git/clone?url=${encodeURIComponent(uri)}`;
+
 			const isWeb = env.uiKind === UIKind.Web;
+
 			const isRemote = env.remoteName !== undefined;
 
 			if (isWeb || isRemote) {
@@ -1326,6 +1449,7 @@ export class CommandCenter {
 					// If already in desktop client but in a remote window, we need to force a new window
 					// so that the git extension can access the local filesystem for cloning
 					target += `&windowId=_blank`;
+
 					return Uri.parse(target);
 				}
 			}
@@ -1352,17 +1476,21 @@ export class CommandCenter {
 	@command("git.init")
 	async init(skipFolderPrompt = false): Promise<void> {
 		let repositoryPath: string | undefined = undefined;
+
 		let askToOpen = true;
 
 		if (workspace.workspaceFolders) {
 			if (skipFolderPrompt && workspace.workspaceFolders.length === 1) {
 				repositoryPath = workspace.workspaceFolders[0].uri.fsPath;
+
 				askToOpen = false;
 			} else {
 				const placeHolder = l10n.t(
 					"Pick workspace folder to initialize git repo in",
 				);
+
 				const pick = { label: l10n.t("Choose Folder...") };
+
 				const items: { label: string; folder?: WorkspaceFolder }[] = [
 					...workspace.workspaceFolders.map((folder) => ({
 						label: folder.name,
@@ -1371,6 +1499,7 @@ export class CommandCenter {
 					})),
 					pick,
 				];
+
 				const item = await window.showQuickPick(items, {
 					placeHolder,
 					ignoreFocusOut: true,
@@ -1380,6 +1509,7 @@ export class CommandCenter {
 					return;
 				} else if (item.folder) {
 					repositoryPath = item.folder.uri.fsPath;
+
 					askToOpen = false;
 				}
 			}
@@ -1387,6 +1517,7 @@ export class CommandCenter {
 
 		if (!repositoryPath) {
 			const homeUri = Uri.file(os.homedir());
+
 			const defaultUri =
 				workspace.workspaceFolders &&
 				workspace.workspaceFolders.length > 0
@@ -1409,6 +1540,7 @@ export class CommandCenter {
 
 			if (homeUri.toString().startsWith(uri.toString())) {
 				const yes = l10n.t("Initialize Repository");
+
 				const answer = await window.showWarningMessage(
 					l10n.t(
 						'This will create a Git repository in "{0}". Are you sure you want to continue?',
@@ -1435,10 +1567,12 @@ export class CommandCenter {
 		}
 
 		const config = workspace.getConfiguration("git");
+
 		const defaultBranchName = config.get<string>(
 			"defaultBranchName",
 			"main",
 		);
+
 		const branchWhitespaceChar = config.get<string>(
 			"branchWhitespaceChar",
 			"-",
@@ -1454,24 +1588,31 @@ export class CommandCenter {
 		let message = l10n.t(
 			"Would you like to open the initialized repository?",
 		);
+
 		const open = l10n.t("Open");
+
 		const openNewWindow = l10n.t("Open in New Window");
+
 		const choices = [open, openNewWindow];
 
 		if (!askToOpen) {
 			await this.model.openRepository(repositoryPath);
+
 			return;
 		}
 
 		const addToWorkspace = l10n.t("Add to Workspace");
+
 		if (workspace.workspaceFolders) {
 			message = l10n.t(
 				"Would you like to open the initialized repository, or add it to the current workspace?",
 			);
+
 			choices.push(addToWorkspace);
 		}
 
 		const result = await window.showInformationMessage(message, ...choices);
+
 		const uri = Uri.file(repositoryPath);
 
 		if (result === open) {
@@ -1519,12 +1660,15 @@ export class CommandCenter {
 		const closedRepositories: string[] = [];
 
 		const title = l10n.t("Reopen Closed Repositories");
+
 		const placeHolder = l10n.t("Pick a repository to reopen");
 
 		const allRepositoriesLabel = l10n.t("All Repositories");
+
 		const allRepositoriesQuickPickItem: QuickPickItem = {
 			label: allRepositoriesLabel,
 		};
+
 		const repositoriesQuickPickItems: QuickPickItem[] =
 			this.model.closedRepositories
 				.sort(compareRepositoryLabel)
@@ -1543,6 +1687,7 @@ export class CommandCenter {
 			title,
 			placeHolder,
 		});
+
 		if (!repositoryItem) {
 			return;
 		}
@@ -1584,10 +1729,12 @@ export class CommandCenter {
 			.filter(isDefined);
 
 		const selectedRepositories = [repository, ...otherRepositories];
+
 		for (const r of this.model.repositories) {
 			if (selectedRepositories.includes(r)) {
 				continue;
 			}
+
 			this.model.close(r);
 		}
 	}
@@ -1635,7 +1782,9 @@ export class CommandCenter {
 		const activeTextEditor = window.activeTextEditor;
 		// Must extract these now because opening a new document will change the activeTextEditor reference
 		const previousVisibleRanges = activeTextEditor?.visibleRanges;
+
 		const previousURI = activeTextEditor?.document.uri;
+
 		const previousSelection = activeTextEditor?.selection;
 
 		for (const uri of uris) {
@@ -1671,10 +1820,12 @@ export class CommandCenter {
 			if (previousURI.path === uri.path && document) {
 				// preserve not only selection but also visible range
 				opts.selection = previousSelection;
+
 				const editor = await window.showTextDocument(document, opts);
 				// This should always be defined but just in case
 				if (previousVisibleRanges && previousVisibleRanges.length > 0) {
 					let rangeToReveal = previousVisibleRanges[0];
+
 					if (previousSelection && previousVisibleRanges.length > 1) {
 						// In case of multiple visible ranges, find the one that intersects with the selection
 						rangeToReveal =
@@ -1682,6 +1833,7 @@ export class CommandCenter {
 								r.intersection(previousSelection),
 							) ?? rangeToReveal;
 					}
+
 					editor.revealRange(rangeToReveal);
 				}
 			}
@@ -1699,6 +1851,7 @@ export class CommandCenter {
 	@command("git.openHEADFile")
 	async openHEADFile(arg?: Resource | Uri): Promise<void> {
 		let resource: Resource | undefined = undefined;
+
 		const preview = !(arg instanceof Resource);
 
 		if (arg instanceof Resource) {
@@ -1714,7 +1867,9 @@ export class CommandCenter {
 		}
 
 		const HEAD = resource.leftUri;
+
 		const basename = path.basename(resource.resourceUri.fsPath);
+
 		const title = `${basename} (HEAD)`;
 
 		if (!HEAD) {
@@ -1724,6 +1879,7 @@ export class CommandCenter {
 					path.basename(resource.resourceUri.fsPath),
 				),
 			);
+
 			return;
 		}
 
@@ -1748,6 +1904,7 @@ export class CommandCenter {
 
 		if (arg instanceof Uri) {
 			const resource = this.getSCMResource(arg);
+
 			if (resource !== undefined) {
 				resources = [resource];
 			}
@@ -1786,6 +1943,7 @@ export class CommandCenter {
 		}
 
 		const from = relativePath(repository.root, fromUri.fsPath);
+
 		let to = await window.showInputBox({
 			value: from,
 			valueSelection: [
@@ -1834,6 +1992,7 @@ export class CommandCenter {
 		const selection = resourceStates.filter(
 			(s) => s instanceof Resource,
 		) as Resource[];
+
 		const { resolved, unresolved, deletionConflicts } =
 			await categorizeResourceByResolution(selection);
 
@@ -1850,6 +2009,7 @@ export class CommandCenter {
 						);
 
 			const yes = l10n.t("Yes");
+
 			const pick = await window.showWarningMessage(
 				message,
 				{ modal: true },
@@ -1881,9 +2041,11 @@ export class CommandCenter {
 		const workingTree = selection.filter(
 			(s) => s.resourceGroupType === ResourceGroupType.WorkingTree,
 		);
+
 		const untracked = selection.filter(
 			(s) => s.resourceGroupType === ResourceGroupType.Untracked,
 		);
+
 		const scmResources = [
 			...workingTree,
 			...untracked,
@@ -1894,11 +2056,13 @@ export class CommandCenter {
 		this.logger.debug(
 			`[CommandCenter][stage] git.stage.scmResources ${scmResources.length} `,
 		);
+
 		if (!scmResources.length) {
 			return;
 		}
 
 		const resources = scmResources.map((r) => r.resourceUri);
+
 		await this.runByRepository(resources, async (repository, resources) =>
 			repository.add(resources),
 		);
@@ -1910,6 +2074,7 @@ export class CommandCenter {
 			...repository.workingTreeGroup.resourceStates,
 			...repository.untrackedGroup.resourceStates,
 		];
+
 		const uris = resources.map((r) => r.resourceUri);
 
 		if (uris.length > 0) {
@@ -1917,9 +2082,11 @@ export class CommandCenter {
 				"git",
 				Uri.file(repository.root),
 			);
+
 			const untrackedChanges = config.get<
 				"mixed" | "separate" | "hidden"
 			>("untrackedChanges");
+
 			await repository.add(
 				uris,
 				untrackedChanges === "mixed" ? undefined : { update: true },
@@ -1932,6 +2099,7 @@ export class CommandCenter {
 		uri: Uri,
 	): Promise<void> {
 		const uriString = uri.toString();
+
 		const resource = repository.mergeGroup.resourceStates.filter(
 			(r) => r.resourceUri.toString() === uriString,
 		)[0];
@@ -1942,7 +2110,9 @@ export class CommandCenter {
 
 		if (resource.type === Status.DELETED_BY_THEM) {
 			const keepIt = l10n.t("Keep Our Version");
+
 			const deleteIt = l10n.t("Delete File");
+
 			const result = await window.showInformationMessage(
 				l10n.t(
 					'File "{0}" was deleted by them and modified by us.\n\nWhat would you like to do?',
@@ -1962,7 +2132,9 @@ export class CommandCenter {
 			}
 		} else if (resource.type === Status.DELETED_BY_US) {
 			const keepIt = l10n.t("Keep Their Version");
+
 			const deleteIt = l10n.t("Delete File");
+
 			const result = await window.showInformationMessage(
 				l10n.t(
 					'File "{0}" was deleted by us and modified by them.\n\nWhat would you like to do?',
@@ -1988,6 +2160,7 @@ export class CommandCenter {
 		const resources = repository.workingTreeGroup.resourceStates.filter(
 			(r) => r.type !== Status.UNTRACKED && r.type !== Status.IGNORED,
 		);
+
 		const uris = resources.map((r) => r.resourceUri);
 
 		await repository.add(uris);
@@ -2001,6 +2174,7 @@ export class CommandCenter {
 		].filter(
 			(r) => r.type === Status.UNTRACKED || r.type === Status.IGNORED,
 		);
+
 		const uris = resources.map((r) => r.resourceUri);
 
 		await repository.add(uris);
@@ -2011,6 +2185,7 @@ export class CommandCenter {
 		const resources = repository.mergeGroup.resourceStates.filter(
 			(s) => s instanceof Resource,
 		) as Resource[];
+
 		const { merge, unresolved, deletionConflicts } =
 			await categorizeResourceByResolution(resources);
 
@@ -2042,6 +2217,7 @@ export class CommandCenter {
 						);
 
 			const yes = l10n.t("Yes");
+
 			const pick = await window.showWarningMessage(
 				message,
 				{ modal: true },
@@ -2081,6 +2257,7 @@ export class CommandCenter {
 		await this._stageChanges(textEditor, [changes[index]]);
 
 		const firstStagedLine = changes[index].modifiedStartLineNumber;
+
 		textEditor.selections = [
 			new Selection(firstStagedLine, 0, firstStagedLine, 0),
 		];
@@ -2108,18 +2285,25 @@ export class CommandCenter {
 		}
 
 		let modifiedUri = changes.modifiedUri;
+
 		if (!modifiedUri) {
 			const textEditor = window.activeTextEditor;
+
 			if (!textEditor) {
 				return;
 			}
+
 			const modifiedDocument = textEditor.document;
+
 			modifiedUri = modifiedDocument.uri;
 		}
+
 		if (modifiedUri.scheme !== "file") {
 			return;
 		}
+
 		const result = changes.originalWithModifiedChanges;
+
 		await this.runByRepository(
 			modifiedUri,
 			async (repository, resource) =>
@@ -2136,10 +2320,12 @@ export class CommandCenter {
 		}
 
 		const modifiedDocument = textEditor.document;
+
 		const selectedLines = toLineRanges(
 			textEditor.selections,
 			modifiedDocument,
 		);
+
 		const selectedChanges = changes
 			.map((change) =>
 				selectedLines.reduce<LineChange | null>(
@@ -2155,6 +2341,7 @@ export class CommandCenter {
 			window.showInformationMessage(
 				l10n.t("The selection range does not contain any changes."),
 			);
+
 			return;
 		}
 
@@ -2168,6 +2355,7 @@ export class CommandCenter {
 		}
 
 		const repository = this.model.getRepository(uri);
+
 		if (!repository) {
 			return;
 		}
@@ -2193,6 +2381,7 @@ export class CommandCenter {
 	@command("git.acceptMerge")
 	async acceptMerge(_uri: Uri | unknown): Promise<void> {
 		const { activeTab } = window.tabGroups.activeTabGroup;
+
 		if (!activeTab) {
 			return;
 		}
@@ -2204,18 +2393,22 @@ export class CommandCenter {
 		const uri = activeTab.input.result;
 
 		const repository = this.model.getRepository(uri);
+
 		if (!repository) {
 			console.log(
 				`FAILED to complete merge because uri ${uri.toString()} doesn't belong to any repository`,
 			);
+
 			return;
 		}
 
 		const result = (await commands.executeCommand(
 			"mergeEditor.acceptMerge",
 		)) as { successful: boolean };
+
 		if (result.successful) {
 			await repository.add([uri]);
+
 			await commands.executeCommand("workbench.view.scm");
 		}
 
@@ -2229,17 +2422,22 @@ export class CommandCenter {
 
 		// make sure to save the merged document
 		const doc = workspace.textDocuments.find(doc => doc.uri.toString() === uri.toString());
+
 		if (!doc) {
 			console.log(`FAILED to complete merge because uri ${uri.toString()} doesn't match a document`);
+
 			return;
 		}
+
 		if (doc.isDirty) {
 			await doc.save();
 		}
 
 		// find the merge editor tabs for the resource in question and close them all
 		let didCloseTab = false;
+
 		const mergeEditorTabs = window.tabGroups.all.map(group => group.tabs.filter(tab => tab.input instanceof TabInputTextMerge && tab.input.result.toString() === uri.toString())).flat();
+
 		if (mergeEditorTabs.includes(activeTab)) {
 			didCloseTab = await window.tabGroups.close(mergeEditorTabs, true);
 		}
@@ -2248,6 +2446,7 @@ export class CommandCenter {
 		// handled or unhandled conflicts are OK by the user.
 		if (didCloseTab) {
 			await repository.add([uri]);
+
 			await commands.executeCommand('workbench.view.scm');
 		}*/
 	}
@@ -2264,11 +2463,13 @@ export class CommandCenter {
 
 	private async runGitMerge(diff3: boolean): Promise<void> {
 		const { activeTab } = window.tabGroups.activeTabGroup;
+
 		if (!activeTab) {
 			return;
 		}
 
 		const input = activeTab.input;
+
 		if (!(input instanceof TabInputTextMerge)) {
 			return;
 		}
@@ -2283,9 +2484,11 @@ export class CommandCenter {
 		const doc = workspace.textDocuments.find(
 			(doc) => doc.uri.toString() === input.result.toString(),
 		);
+
 		if (!doc) {
 			return;
 		}
+
 		const e = new WorkspaceEdit();
 
 		e.replace(
@@ -2293,6 +2496,7 @@ export class CommandCenter {
 			new Range(new Position(0, 0), new Position(doc.lineCount, 0)),
 			result,
 		);
+
 		await workspace.applyEdit(e);
 	}
 
@@ -2301,6 +2505,7 @@ export class CommandCenter {
 		changes: LineChange[],
 	): Promise<void> {
 		const modifiedDocument = textEditor.document;
+
 		const modifiedUri = modifiedDocument.uri;
 
 		if (modifiedUri.scheme !== "file") {
@@ -2308,7 +2513,9 @@ export class CommandCenter {
 		}
 
 		const originalUri = toGitUri(modifiedUri, "~");
+
 		const originalDocument = await workspace.openTextDocument(originalUri);
+
 		const result = applyLineChanges(
 			originalDocument,
 			modifiedDocument,
@@ -2346,6 +2553,7 @@ export class CommandCenter {
 		]);
 
 		const firstStagedLine = changes[index].modifiedStartLineNumber;
+
 		textEditor.selections = [
 			new Selection(firstStagedLine, 0, firstStagedLine, 0),
 		];
@@ -2360,9 +2568,12 @@ export class CommandCenter {
 		}
 
 		const modifiedDocument = textEditor.document;
+
 		const selections = textEditor.selections;
+
 		const selectedChanges = changes.filter((change) => {
 			const modifiedRange = getModifiedRange(modifiedDocument, change);
+
 			return selections.every(
 				(selection) => !selection.intersection(modifiedRange),
 			);
@@ -2372,11 +2583,14 @@ export class CommandCenter {
 			window.showInformationMessage(
 				l10n.t("The selection range does not contain any changes."),
 			);
+
 			return;
 		}
 
 		const selectionsBeforeRevert = textEditor.selections;
+
 		await this._revertChanges(textEditor, selectedChanges);
+
 		textEditor.selections = selectionsBeforeRevert;
 	}
 
@@ -2385,6 +2599,7 @@ export class CommandCenter {
 		changes: LineChange[],
 	): Promise<void> {
 		const modifiedDocument = textEditor.document;
+
 		const modifiedUri = modifiedDocument.uri;
 
 		if (modifiedUri.scheme !== "file") {
@@ -2392,8 +2607,11 @@ export class CommandCenter {
 		}
 
 		const originalUri = toGitUri(modifiedUri, "~");
+
 		const originalDocument = await workspace.openTextDocument(originalUri);
+
 		const visibleRangesBeforeRevert = textEditor.visibleRanges;
+
 		const result = applyLineChanges(
 			originalDocument,
 			modifiedDocument,
@@ -2401,6 +2619,7 @@ export class CommandCenter {
 		);
 
 		const edit = new WorkspaceEdit();
+
 		edit.replace(
 			modifiedUri,
 			new Range(
@@ -2411,6 +2630,7 @@ export class CommandCenter {
 			),
 			result,
 		);
+
 		workspace.applyEdit(edit);
 
 		await modifiedDocument.save();
@@ -2449,6 +2669,7 @@ export class CommandCenter {
 		}
 
 		const resources = scmResources.map((r) => r.resourceUri);
+
 		await this.runByRepository(resources, async (repository, resources) =>
 			repository.revert(resources),
 		);
@@ -2468,6 +2689,7 @@ export class CommandCenter {
 		}
 
 		const modifiedDocument = textEditor.document;
+
 		const modifiedUri = modifiedDocument.uri;
 
 		if (!isGitUri(modifiedUri)) {
@@ -2481,11 +2703,14 @@ export class CommandCenter {
 		}
 
 		const originalUri = toGitUri(modifiedUri, "HEAD");
+
 		const originalDocument = await workspace.openTextDocument(originalUri);
+
 		const selectedLines = toLineRanges(
 			textEditor.selections,
 			modifiedDocument,
 		);
+
 		const selectedDiffs = changes
 			.map((change) =>
 				selectedLines.reduce<LineChange | null>(
@@ -2501,10 +2726,12 @@ export class CommandCenter {
 			window.showInformationMessage(
 				l10n.t("The selection range does not contain any changes."),
 			);
+
 			return;
 		}
 
 		const invertedDiffs = selectedDiffs.map(invertLineChange);
+
 		const result = applyLineChanges(
 			modifiedDocument,
 			originalDocument,
@@ -2525,6 +2752,7 @@ export class CommandCenter {
 		}
 
 		const repository = this.model.getRepository(uri);
+
 		if (!repository) {
 			return;
 		}
@@ -2550,6 +2778,7 @@ export class CommandCenter {
 	): Promise<void> {
 		// Remove duplicate resources
 		const resourceUris = new Set<string>();
+
 		resourceStates = resourceStates.filter((s) => {
 			if (s === undefined) {
 				return false;
@@ -2560,6 +2789,7 @@ export class CommandCenter {
 			}
 
 			resourceUris.add(s.resourceUri.toString());
+
 			return true;
 		});
 
@@ -2592,7 +2822,9 @@ export class CommandCenter {
 			(s, r) => s + (r.type === Status.UNTRACKED ? 1 : 0),
 			0,
 		);
+
 		let message: string;
+
 		let yes = l10n.t("Discard Changes");
 
 		if (scmResources.length === 1) {
@@ -2601,10 +2833,12 @@ export class CommandCenter {
 					"Are you sure you want to DELETE {0}?\nThis is IRREVERSIBLE!\nThis file will be FOREVER LOST if you proceed.",
 					path.basename(scmResources[0].resourceUri.fsPath),
 				);
+
 				yes = l10n.t("Delete file");
 			} else {
 				if (scmResources[0].type === Status.DELETED) {
 					yes = l10n.t("Restore file");
+
 					message = l10n.t(
 						"Are you sure you want to restore {0}?",
 						path.basename(scmResources[0].resourceUri.fsPath),
@@ -2623,6 +2857,7 @@ export class CommandCenter {
 				)
 			) {
 				yes = l10n.t("Restore files");
+
 				message = l10n.t(
 					"Are you sure you want to restore {0} files?",
 					scmResources.length,
@@ -2650,6 +2885,7 @@ export class CommandCenter {
 		}
 
 		const resources = scmResources.map((r) => r.resourceUri);
+
 		await this.runByRepository(resources, async (repository, resources) =>
 			repository.clean(resources),
 		);
@@ -2666,6 +2902,7 @@ export class CommandCenter {
 		const trackedResources = resources.filter(
 			(r) => r.type !== Status.UNTRACKED && r.type !== Status.IGNORED,
 		);
+
 		const untrackedResources = resources.filter(
 			(r) => r.type === Status.UNTRACKED || r.type === Status.IGNORED,
 		);
@@ -2706,6 +2943,7 @@ export class CommandCenter {
 						);
 
 			const yesAll = l10n.t("Discard All {0} Files", resources.length);
+
 			const pick = await window.showWarningMessage(
 				message,
 				{ modal: true },
@@ -2770,10 +3008,12 @@ export class CommandCenter {
 						"Are you sure you want to discard ALL changes in {0} files?\nThis is IRREVERSIBLE!\nYour current working set will be FOREVER LOST if you proceed.",
 						resources.length,
 					);
+
 		const yes =
 			resources.length === 1
 				? l10n.t("Discard 1 File")
 				: l10n.t("Discard All {0} Files", resources.length);
+
 		const pick = await window.showWarningMessage(
 			message,
 			{ modal: true },
@@ -2795,7 +3035,9 @@ export class CommandCenter {
 			"Are you sure you want to DELETE {0}?\nThis is IRREVERSIBLE!\nThis file will be FOREVER LOST if you proceed.",
 			path.basename(resource.resourceUri.fsPath),
 		);
+
 		const yes = l10n.t("Delete file");
+
 		const pick = await window.showWarningMessage(
 			message,
 			{ modal: true },
@@ -2817,7 +3059,9 @@ export class CommandCenter {
 			"Are you sure you want to DELETE {0} files?\nThis is IRREVERSIBLE!\nThese files will be FOREVER LOST if you proceed.",
 			resources.length,
 		);
+
 		const yes = l10n.t("Delete Files");
+
 		const pick = await window.showWarningMessage(
 			message,
 			{ modal: true },
@@ -2840,6 +3084,7 @@ export class CommandCenter {
 			"git",
 			Uri.file(repository.root),
 		);
+
 		let promptToSaveFilesBeforeCommit = config.get<
 			"always" | "staged" | "never"
 		>("promptToSaveFilesBeforeCommit");
@@ -2853,9 +3098,12 @@ export class CommandCenter {
 
 		let enableSmartCommit =
 			config.get<boolean>("enableSmartCommit") === true;
+
 		const enableCommitSigning =
 			config.get<boolean>("enableCommitSigning") === true;
+
 		let noStagedChanges = repository.indexGroup.resourceStates.length === 0;
+
 		let noUnstagedChanges =
 			repository.workingTreeGroup.resourceStates.length === 0;
 
@@ -2890,8 +3138,11 @@ export class CommandCenter {
 									"There are {0} unsaved files.\n\nWould you like to save them before committing?",
 									documents.length,
 								);
+
 					const saveAndCommit = l10n.t("Save All & Commit Changes");
+
 					const commit = l10n.t("Commit Changes");
+
 					const pick = await window.showWarningMessage(
 						message,
 						{ modal: true },
@@ -2909,10 +3160,12 @@ export class CommandCenter {
 								pathEquals(s.resourceUri.fsPath, d.uri.fsPath),
 							),
 						);
+
 						await repository.add(documents.map((d) => d.uri));
 
 						noStagedChanges =
 							repository.indexGroup.resourceStates.length === 0;
+
 						noUnstagedChanges =
 							repository.workingTreeGroup.resourceStates
 								.length === 0;
@@ -2941,9 +3194,13 @@ export class CommandCenter {
 				const message = l10n.t(
 					"There are no staged changes to commit.\n\nWould you like to stage all your changes and commit them directly?",
 				);
+
 				const yes = l10n.t("Yes");
+
 				const always = l10n.t("Always");
+
 				const never = l10n.t("Never");
+
 				const pick = await window.showWarningMessage(
 					message,
 					{ modal: true },
@@ -2954,9 +3211,11 @@ export class CommandCenter {
 
 				if (pick === always) {
 					enableSmartCommit = true;
+
 					config.update("enableSmartCommit", true, true);
 				} else if (pick === never) {
 					config.update("suggestSmartCommit", false, true);
+
 					return;
 				} else if (pick === yes) {
 					enableSmartCommit = true;
@@ -3009,6 +3268,7 @@ export class CommandCenter {
 			repository.rebaseCommit === undefined
 		) {
 			const commitAnyway = l10n.t("Create Empty Commit");
+
 			const answer = await window.showInformationMessage(
 				l10n.t("There are no changes to commit."),
 				commitAnyway,
@@ -3028,6 +3288,7 @@ export class CommandCenter {
 						'Commits without verification are not allowed, please enable them with the "git.allowNoVerifyCommit" setting.',
 					),
 				);
+
 				return;
 			}
 
@@ -3035,8 +3296,11 @@ export class CommandCenter {
 				const message = l10n.t(
 					"You are about to commit your changes without verification, this skips pre-commit hooks and can be undesirable.\n\nAre you sure to continue?",
 				);
+
 				const yes = l10n.t("OK");
+
 				const neverAgain = l10n.t("OK, Don't Ask Again");
+
 				const pick = await window.showWarningMessage(
 					message,
 					{ modal: true },
@@ -3074,6 +3338,7 @@ export class CommandCenter {
 		const branchProtectionPrompt = config.get<
 			"alwaysCommit" | "alwaysCommitToNewBranch" | "alwaysPrompt"
 		>("branchProtectionPrompt")!;
+
 		if (
 			repository.isBranchProtected() &&
 			(branchProtectionPrompt === "alwaysPrompt" ||
@@ -3087,6 +3352,7 @@ export class CommandCenter {
 				const message = l10n.t(
 					"You are trying to commit to a protected branch and you might not have permission to push your commits to the remote.\n\nHow would you like to proceed?",
 				);
+
 				const commit = l10n.t("Commit Anyway");
 
 				pick = await window.showWarningMessage(
@@ -3118,7 +3384,9 @@ export class CommandCenter {
 		opts: CommitOptions,
 	): Promise<void> {
 		const message = repository.inputBox.value;
+
 		const root = Uri.file(repository.root);
+
 		const config = workspace.getConfiguration("git", root);
 
 		const getCommitMessage = async () => {
@@ -3137,6 +3405,7 @@ export class CommandCenter {
 				}
 
 				const branchName = repository.headShortName;
+
 				let placeHolder: string;
 
 				if (branchName) {
@@ -3218,6 +3487,7 @@ export class CommandCenter {
 		if (!arg && !window.activeTextEditor) {
 			return;
 		}
+
 		arg ??= window.activeTextEditor!.document.uri;
 
 		// Close the tab
@@ -3229,6 +3499,7 @@ export class CommandCenter {
 		if (!arg && !window.activeTextEditor) {
 			return;
 		}
+
 		arg ??= window.activeTextEditor!.document.uri;
 
 		// Clear the contents of the editor
@@ -3243,10 +3514,12 @@ export class CommandCenter {
 		}
 
 		const commitMsgEditor = editors[0];
+
 		const commitMsgDocument = commitMsgEditor.document;
 
 		const editResult = await commitMsgEditor.edit((builder) => {
 			const firstLine = commitMsgDocument.lineAt(0);
+
 			const lastLine = commitMsgDocument.lineAt(
 				commitMsgDocument.lineCount - 1,
 			);
@@ -3262,6 +3535,7 @@ export class CommandCenter {
 
 		// Save the document
 		const saveResult = await commitMsgDocument.save();
+
 		if (!saveResult) {
 			return;
 		}
@@ -3288,7 +3562,9 @@ export class CommandCenter {
 		noVerify?: boolean,
 	): Promise<void> {
 		const root = Uri.file(repository.root);
+
 		const config = workspace.getConfiguration("git", root);
+
 		const shouldPrompt =
 			config.get<boolean>("confirmEmptyCommits") === true;
 
@@ -3296,8 +3572,11 @@ export class CommandCenter {
 			const message = l10n.t(
 				"Are you sure you want to create an empty commit?",
 			);
+
 			const yes = l10n.t("Yes");
+
 			const neverAgain = l10n.t("Yes, Don't Show Again");
+
 			const pick = await window.showWarningMessage(
 				message,
 				{ modal: true },
@@ -3411,6 +3690,7 @@ export class CommandCenter {
 			window.showWarningMessage(
 				l10n.t("Can't undo because HEAD doesn't point to any commit."),
 			);
+
 			return;
 		}
 
@@ -3418,6 +3698,7 @@ export class CommandCenter {
 
 		if (commit.parents.length > 1) {
 			const yes = l10n.t("Undo merge commit");
+
 			const result = await window.showWarningMessage(
 				l10n.t(
 					"The last commit was a merge commit. Are you sure you want to undo it?",
@@ -3435,6 +3716,7 @@ export class CommandCenter {
 			await repository.reset("HEAD~");
 		} else {
 			await repository.deleteRef("HEAD");
+
 			await this.unstageAll(repository);
 		}
 
@@ -3462,6 +3744,7 @@ export class CommandCenter {
 		if (!historyItem) {
 			return false;
 		}
+
 		return this._checkout(repository, {
 			detached: true,
 			treeish: historyItem.id,
@@ -3474,13 +3757,18 @@ export class CommandCenter {
 	): Promise<boolean> {
 		if (typeof opts?.treeish === "string") {
 			await repository.checkout(opts?.treeish, opts);
+
 			return true;
 		}
 
 		const createBranch = new CreateBranchItem();
+
 		const createBranchFrom = new CreateBranchFromItem();
+
 		const checkoutDetached = new CheckoutDetachedItem();
+
 		const picks: QuickPickItem[] = [];
+
 		const commands: QuickPickItem[] = [];
 
 		if (!opts?.detached) {
@@ -3488,51 +3776,68 @@ export class CommandCenter {
 		}
 
 		const disposables: Disposable[] = [];
+
 		const quickPick = window.createQuickPick();
+
 		quickPick.busy = true;
+
 		quickPick.sortByLabel = false;
+
 		quickPick.placeholder = opts?.detached
 			? l10n.t("Select a branch to checkout in detached mode")
 			: l10n.t("Select a branch or tag to checkout");
 
 		quickPick.show();
+
 		picks.push(...(await createCheckoutItems(repository, opts?.detached)));
 
 		const setQuickPickItems = () => {
 			switch (true) {
 				case quickPick.value === "":
 					quickPick.items = [...commands, ...picks];
+
 					break;
+
 				case commands.length === 0:
 					quickPick.items = picks;
+
 					break;
+
 				case picks.length === 0:
 					quickPick.items = commands;
+
 					break;
+
 				default:
 					quickPick.items = [
 						...picks,
 						{ label: "", kind: QuickPickItemKind.Separator },
 						...commands,
 					];
+
 					break;
 			}
 		};
 
 		setQuickPickItems();
+
 		quickPick.busy = false;
 
 		const choice = await new Promise<QuickPickItem | undefined>((c) => {
 			disposables.push(quickPick.onDidHide(() => c(undefined)));
+
 			disposables.push(
 				quickPick.onDidAccept(() => c(quickPick.activeItems[0])),
 			);
+
 			disposables.push(
 				quickPick.onDidTriggerItemButton((e) => {
 					const button = e.button as QuickInputButton & {
 						actual: RemoteSourceAction;
 					};
+
 					const item = e.item as CheckoutItem;
+
 					if (button.actual && item.refName) {
 						button.actual.run(
 							item.refRemote
@@ -3546,12 +3851,14 @@ export class CommandCenter {
 					c(undefined);
 				}),
 			);
+
 			disposables.push(
 				quickPick.onDidChangeValue(() => setQuickPickItems()),
 			);
 		});
 
 		dispose(disposables);
+
 		quickPick.dispose();
 
 		if (!choice) {
@@ -3575,8 +3882,11 @@ export class CommandCenter {
 				}
 
 				const stash = l10n.t("Stash & Checkout");
+
 				const migrate = l10n.t("Migrate Changes");
+
 				const force = l10n.t("Force Checkout");
+
 				const choice = await window.showWarningMessage(
 					l10n.t(
 						"Your local changes would be overwritten by checkout.",
@@ -3589,6 +3899,7 @@ export class CommandCenter {
 
 				if (choice === force) {
 					await this.cleanAll(repository);
+
 					await item.run(repository, opts);
 				} else if (choice === stash || choice === migrate) {
 					if (await this._stash(repository)) {
@@ -3623,21 +3934,26 @@ export class CommandCenter {
 		separator: string,
 	): Promise<string> {
 		const config = workspace.getConfiguration("git");
+
 		const branchRandomNameDictionary = config.get<string[]>(
 			"branchRandomName.dictionary",
 		)!;
 
 		const dictionaries: string[][] = [];
+
 		for (const dictionary of branchRandomNameDictionary) {
 			if (dictionary.toLowerCase() === "adjectives") {
 				dictionaries.push(adjectives);
 			}
+
 			if (dictionary.toLowerCase() === "animals") {
 				dictionaries.push(animals);
 			}
+
 			if (dictionary.toLowerCase() === "colors") {
 				dictionaries.push(colors);
 			}
+
 			if (dictionary.toLowerCase() === "numbers") {
 				dictionaries.push(NumberDictionary.generate({ length: 3 }));
 			}
@@ -3659,6 +3975,7 @@ export class CommandCenter {
 			const refs = await repository.getRefs({
 				pattern: `refs/heads/${randomName}`,
 			});
+
 			if (refs.length === 0) {
 				return randomName;
 			}
@@ -3673,13 +3990,17 @@ export class CommandCenter {
 		initialValue?: string,
 	): Promise<string> {
 		const config = workspace.getConfiguration("git");
+
 		const branchPrefix = config.get<string>("branchPrefix")!;
+
 		const branchWhitespaceChar = config.get<string>(
 			"branchWhitespaceChar",
 		)!;
+
 		const branchValidationRegex = config.get<string>(
 			"branchValidationRegex",
 		)!;
+
 		const branchRandomNameEnabled = config.get<boolean>(
 			"branchRandomName.enable",
 			false,
@@ -3696,6 +4017,7 @@ export class CommandCenter {
 						branchWhitespaceChar,
 					)
 				: "";
+
 			return `${branchPrefix}${branchName}`;
 		};
 
@@ -3711,10 +4033,12 @@ export class CommandCenter {
 			name: string,
 		): string | InputBoxValidationMessage | undefined => {
 			const validateName = new RegExp(branchValidationRegex);
+
 			const sanitizedName = sanitizeBranchName(
 				name,
 				branchWhitespaceChar,
 			);
+
 			if (validateName.test(sanitizedName)) {
 				// If the sanitized name that we will use is different than what is
 				// in the input box, show an info message to the user informing them
@@ -3737,9 +4061,11 @@ export class CommandCenter {
 		};
 
 		const disposables: Disposable[] = [];
+
 		const inputBox = window.createInputBox();
 
 		inputBox.placeholder = l10n.t("Branch name");
+
 		inputBox.prompt = l10n.t("Please provide a new branch name");
 
 		inputBox.buttons = branchRandomNameEnabled
@@ -3753,31 +4079,39 @@ export class CommandCenter {
 			: [];
 
 		inputBox.value = initialValue ?? (await getBranchName());
+
 		inputBox.valueSelection = getValueSelection(inputBox.value);
+
 		inputBox.validationMessage = getValidationMessage(inputBox.value);
+
 		inputBox.ignoreFocusOut = true;
 
 		inputBox.show();
 
 		const branchName = await new Promise<string | undefined>((resolve) => {
 			disposables.push(inputBox.onDidHide(() => resolve(undefined)));
+
 			disposables.push(
 				inputBox.onDidAccept(() => resolve(inputBox.value)),
 			);
+
 			disposables.push(
 				inputBox.onDidChangeValue((value) => {
 					inputBox.validationMessage = getValidationMessage(value);
 				}),
 			);
+
 			disposables.push(
 				inputBox.onDidTriggerButton(async () => {
 					inputBox.value = await getBranchName();
+
 					inputBox.valueSelection = getValueSelection(inputBox.value);
 				}),
 			);
 		});
 
 		dispose(disposables);
+
 		inputBox.dispose();
 
 		return sanitizeBranchName(branchName || "", branchWhitespaceChar);
@@ -3794,6 +4128,7 @@ export class CommandCenter {
 		if (from) {
 			const getRefPicks = async () => {
 				const refs = await repository.getRefs();
+
 				const refProcessors = new RefItemsProcessor([
 					new RefProcessor(RefType.Head),
 					new RefProcessor(RefType.RemoteHead),
@@ -3809,6 +4144,7 @@ export class CommandCenter {
 			const placeHolder = l10n.t(
 				"Select a ref to create the branch from",
 			);
+
 			const choice = await window.showQuickPick(getRefPicks(), {
 				placeHolder,
 			});
@@ -3839,25 +4175,31 @@ export class CommandCenter {
 		placeHolder: string,
 	): Promise<T | undefined> {
 		const disposables: Disposable[] = [];
+
 		const quickPick = window.createQuickPick<T>();
 
 		quickPick.placeholder = placeHolder;
+
 		quickPick.sortByLabel = false;
+
 		quickPick.busy = true;
 
 		quickPick.show();
 
 		quickPick.items = await items;
+
 		quickPick.busy = false;
 
 		const choice = await new Promise<T | undefined>((resolve) => {
 			disposables.push(quickPick.onDidHide(() => resolve(undefined)));
+
 			disposables.push(
 				quickPick.onDidAccept(() => resolve(quickPick.activeItems[0])),
 			);
 		});
 
 		dispose(disposables);
+
 		quickPick.dispose();
 
 		return choice;
@@ -3870,6 +4212,7 @@ export class CommandCenter {
 		force?: boolean,
 	): Promise<void> {
 		let run: (force?: boolean) => Promise<void>;
+
 		if (typeof name === "string") {
 			run = (force) => repository.deleteBranch(name, force);
 		} else {
@@ -3877,6 +4220,7 @@ export class CommandCenter {
 				const refs = await repository.getRefs({
 					pattern: "refs/heads",
 				});
+
 				const currentHead = repository.HEAD && repository.HEAD.name;
 
 				return refs
@@ -3885,6 +4229,7 @@ export class CommandCenter {
 			};
 
 			const placeHolder = l10n.t("Select a branch to delete");
+
 			const choice = await this.pickRef<BranchDeleteItem>(
 				getBranchPicks(),
 				placeHolder,
@@ -3893,7 +4238,9 @@ export class CommandCenter {
 			if (!choice || !choice.refName) {
 				return;
 			}
+
 			name = choice.refName;
+
 			run = (force) => choice.run(repository, force);
 		}
 
@@ -3908,7 +4255,9 @@ export class CommandCenter {
 				'The branch "{0}" is not fully merged. Delete anyway?',
 				name,
 			);
+
 			const yes = l10n.t("Delete Branch");
+
 			const pick = await window.showWarningMessage(
 				message,
 				{ modal: true },
@@ -3924,6 +4273,7 @@ export class CommandCenter {
 	@command("git.renameBranch", { repository: true })
 	async renameBranch(repository: Repository): Promise<void> {
 		const currentBranchName = repository.HEAD && repository.HEAD.name;
+
 		const branchName = await this.promptForBranchName(
 			repository,
 			undefined,
@@ -3940,7 +4290,9 @@ export class CommandCenter {
 			switch (err.gitErrorCode) {
 				case GitErrorCodes.InvalidBranchName:
 					window.showErrorMessage(l10n.t("Invalid branch name"));
+
 					return;
+
 				case GitErrorCodes.BranchAlreadyExists:
 					window.showErrorMessage(
 						l10n.t(
@@ -3948,7 +4300,9 @@ export class CommandCenter {
 							branchName,
 						),
 					);
+
 					return;
+
 				default:
 					throw err;
 			}
@@ -3959,6 +4313,7 @@ export class CommandCenter {
 	async merge(repository: Repository): Promise<void> {
 		const getQuickPickItems = async (): Promise<QuickPickItem[]> => {
 			const refs = await repository.getRefs();
+
 			const itemsProcessor = new RefItemsProcessor([
 				new RefProcessor(RefType.Head, MergeItem),
 				new RefProcessor(RefType.RemoteHead, MergeItem),
@@ -3969,6 +4324,7 @@ export class CommandCenter {
 		};
 
 		const placeHolder = l10n.t("Select a branch or tag to merge from");
+
 		const choice = await this.pickRef(getQuickPickItems(), placeHolder);
 
 		if (choice instanceof MergeItem) {
@@ -3985,12 +4341,14 @@ export class CommandCenter {
 	async rebase(repository: Repository): Promise<void> {
 		const getQuickPickItems = async (): Promise<QuickPickItem[]> => {
 			const refs = await repository.getRefs();
+
 			const itemsProcessor = new RebaseItemsProcessors(repository);
 
 			return itemsProcessor.processRefs(refs);
 		};
 
 		const placeHolder = l10n.t("Select a branch to rebase onto");
+
 		const choice = await this.pickRef(getQuickPickItems(), placeHolder);
 
 		if (choice instanceof RebaseItem) {
@@ -4023,6 +4381,7 @@ export class CommandCenter {
 			/^\.|\/\.|\.\.|~|\^|:|\/$|\.lock$|\.lock\/|\\|\*|\s|^\s*$|\.$/g,
 			"-",
 		);
+
 		await repository.tag({
 			name,
 			message: inputMessage,
@@ -4038,12 +4397,14 @@ export class CommandCenter {
 			const remoteTags = await repository.getRefs({
 				pattern: "refs/tags",
 			});
+
 			return remoteTags.length === 0
 				? [{ label: l10n.t("$(info) This repository has no tags.") }]
 				: remoteTags.map((ref) => new TagDeleteItem(ref));
 		};
 
 		const placeHolder = l10n.t("Select a tag to delete");
+
 		const choice = await this.pickRef<TagDeleteItem | QuickPickItem>(
 			tagPicks(),
 			placeHolder,
@@ -4064,14 +4425,17 @@ export class CommandCenter {
 			window.showErrorMessage(
 				l10n.t("Your repository has no remotes configured to push to."),
 			);
+
 			return;
 		}
 
 		let remoteName = remotePicks[0].remoteName;
+
 		if (remotePicks.length > 1) {
 			const remotePickPlaceholder = l10n.t(
 				"Select a remote to delete a tag from",
 			);
+
 			const remotePick = await window.showQuickPick(remotePicks, {
 				placeHolder: remotePickPlaceholder,
 			});
@@ -4092,12 +4456,15 @@ export class CommandCenter {
 
 			// Deduplicate annotated and lightweight tags
 			const remoteTagNames = new Set<string>();
+
 			const remoteTags: Ref[] = [];
 
 			for (const tag of remoteTagsRaw) {
 				const tagName = (tag.name ?? "").replace(/\^{}$/, "");
+
 				if (!remoteTagNames.has(tagName)) {
 					remoteTags.push({ ...tag, name: tagName });
+
 					remoteTagNames.add(tagName);
 				}
 			}
@@ -4115,6 +4482,7 @@ export class CommandCenter {
 		};
 
 		const tagPickPlaceholder = l10n.t("Select a remote tag to delete");
+
 		const remoteTagPick = await window.showQuickPick<
 			RemoteTagDeleteItem | QuickPickItem
 		>(remoteTagPicks(), { placeHolder: tagPickPlaceholder });
@@ -4132,11 +4500,13 @@ export class CommandCenter {
 					"This repository has no remotes configured to fetch from.",
 				),
 			);
+
 			return;
 		}
 
 		if (repository.remotes.length === 1) {
 			await repository.fetchDefault();
+
 			return;
 		}
 
@@ -4160,8 +4530,11 @@ export class CommandCenter {
 		}
 
 		const quickpick = window.createQuickPick();
+
 		quickpick.placeholder = l10n.t("Select a remote to fetch");
+
 		quickpick.canSelectMany = false;
+
 		quickpick.items = [
 			...remoteItems,
 			{ label: "", kind: QuickPickItemKind.Separator },
@@ -4169,6 +4542,7 @@ export class CommandCenter {
 		];
 
 		quickpick.show();
+
 		const remoteItem = await new Promise<
 			RemoteItem | FetchAllRemotesItem | undefined
 		>((resolve) => {
@@ -4179,8 +4553,10 @@ export class CommandCenter {
 						| FetchAllRemotesItem,
 				),
 			);
+
 			quickpick.onDidHide(() => resolve(undefined));
 		});
+
 		quickpick.hide();
 
 		if (!remoteItem) {
@@ -4198,6 +4574,7 @@ export class CommandCenter {
 					"This repository has no remotes configured to fetch from.",
 				),
 			);
+
 			return;
 		}
 
@@ -4212,6 +4589,7 @@ export class CommandCenter {
 					"This repository has no remotes configured to fetch from.",
 				),
 			);
+
 			return;
 		}
 
@@ -4222,11 +4600,13 @@ export class CommandCenter {
 	async fetchRef(repository: Repository, ref?: string): Promise<void> {
 		ref =
 			ref ?? repository?.historyProvider.currentHistoryItemRemoteRef?.id;
+
 		if (!repository || !ref) {
 			return;
 		}
 
 		const branch = await repository.getBranch(ref);
+
 		await repository.fetch({ remote: branch.remote, ref: branch.name });
 	}
 
@@ -4240,15 +4620,19 @@ export class CommandCenter {
 					"Your repository has no remotes configured to pull from.",
 				),
 			);
+
 			return;
 		}
 
 		let remoteName = remotes[0].name;
+
 		if (remotes.length > 1) {
 			const remotePicks = remotes
 				.filter((r) => r.fetchUrl !== undefined)
 				.map((r) => ({ label: r.name, description: r.fetchUrl! }));
+
 			const placeHolder = l10n.t("Pick a remote to pull the branch from");
+
 			const remotePick = await window.showQuickPick(remotePicks, {
 				placeHolder,
 			});
@@ -4264,10 +4648,12 @@ export class CommandCenter {
 			const remoteRefs = await repository.getRefs({
 				pattern: `refs/remotes/${remoteName}/`,
 			});
+
 			return remoteRefs.map((r) => new RefItem(r));
 		};
 
 		const branchPlaceHolder = l10n.t("Pick a branch to pull from");
+
 		const branchPick = await this.pickRef(
 			getBranchPicks(),
 			branchPlaceHolder,
@@ -4278,6 +4664,7 @@ export class CommandCenter {
 		}
 
 		const remoteCharCnt = remoteName.length;
+
 		await repository.pullFrom(
 			false,
 			remoteName,
@@ -4295,6 +4682,7 @@ export class CommandCenter {
 					"Your repository has no remotes configured to pull from.",
 				),
 			);
+
 			return;
 		}
 
@@ -4311,6 +4699,7 @@ export class CommandCenter {
 					"Your repository has no remotes configured to pull from.",
 				),
 			);
+
 			return;
 		}
 
@@ -4321,11 +4710,13 @@ export class CommandCenter {
 	async pullRef(repository: Repository, ref?: string): Promise<void> {
 		ref =
 			ref ?? repository?.historyProvider.currentHistoryItemRemoteRef?.id;
+
 		if (!repository || !ref) {
 			return;
 		}
 
 		const branch = await repository.getBranch(ref);
+
 		await repository.pullFrom(false, branch.remote, branch.name);
 	}
 
@@ -4338,6 +4729,7 @@ export class CommandCenter {
 			}
 
 			const addRemote = l10n.t("Add Remote");
+
 			const result = await window.showWarningMessage(
 				l10n.t("Your repository has no remotes configured to push to."),
 				addRemote,
@@ -4354,6 +4746,7 @@ export class CommandCenter {
 			"git",
 			Uri.file(repository.root),
 		);
+
 		let forcePushMode: ForcePushMode | undefined = undefined;
 
 		if (pushOptions.forcePush) {
@@ -4363,13 +4756,16 @@ export class CommandCenter {
 						'Force push is not allowed, please enable it with the "git.allowForcePush" setting.',
 					),
 				);
+
 				return;
 			}
 
 			const useForcePushWithLease =
 				config.get<boolean>("useForcePushWithLease") === true;
+
 			const useForcePushIfIncludes =
 				config.get<boolean>("useForcePushIfIncludes") === true;
+
 			forcePushMode = useForcePushWithLease
 				? useForcePushIfIncludes
 					? ForcePushMode.ForceWithLeaseIfIncludes
@@ -4380,8 +4776,11 @@ export class CommandCenter {
 				const message = l10n.t(
 					"You are about to force push your changes, this can be destructive and could inadvertently overwrite changes made by others.\n\nAre you sure to continue?",
 				);
+
 				const yes = l10n.t("OK");
+
 				const neverAgain = l10n.t("OK, Don't Ask Again");
+
 				const pick = await window.showWarningMessage(
 					message,
 					{ modal: true },
@@ -4399,6 +4798,7 @@ export class CommandCenter {
 
 		if (pushOptions.pushType === PushType.PushFollowTags) {
 			await repository.pushFollowTags(undefined, forcePushMode);
+
 			return;
 		}
 
@@ -4412,6 +4812,7 @@ export class CommandCenter {
 					l10n.t("Please check out a branch to push to a remote."),
 				);
 			}
+
 			return;
 		}
 
@@ -4431,12 +4832,16 @@ export class CommandCenter {
 					this.globalState.get<boolean>("confirmBranchPublish", true)
 				) {
 					const branchName = repository.HEAD.name;
+
 					const message = l10n.t(
 						'The branch "{0}" has no remote branch. Would you like to publish this branch?',
 						branchName,
 					);
+
 					const yes = l10n.t("OK");
+
 					const neverAgain = l10n.t("OK, Don't Ask Again");
+
 					const pick = await window.showWarningMessage(
 						message,
 						{ modal: true },
@@ -4451,6 +4856,7 @@ export class CommandCenter {
 								false,
 							);
 						}
+
 						await this.publish(repository);
 					}
 				} else {
@@ -4459,8 +4865,10 @@ export class CommandCenter {
 			}
 		} else {
 			const branchName = repository.HEAD.name;
+
 			if (!pushOptions.pushTo?.remote) {
 				const addRemote = new AddRemoteItem(this);
+
 				const picks = [
 					...remotes
 						.filter((r) => r.pushUrl !== undefined)
@@ -4470,10 +4878,12 @@ export class CommandCenter {
 						})),
 					addRemote,
 				];
+
 				const placeHolder = l10n.t(
 					'Pick a remote to publish the branch "{0}" to:',
 					branchName,
 				);
+
 				const choice = await window.showQuickPick(picks, {
 					placeHolder,
 				});
@@ -4570,6 +4980,7 @@ export class CommandCenter {
 		if (!historyItem) {
 			return;
 		}
+
 		await repository.cherryPick(historyItem.id);
 	}
 
@@ -4652,7 +5063,9 @@ export class CommandCenter {
 		}
 
 		await repository.addRemote(name, url.trim());
+
 		await repository.fetch({ remote: name });
+
 		return name;
 	}
 
@@ -4662,12 +5075,14 @@ export class CommandCenter {
 
 		if (remotes.length === 0) {
 			window.showErrorMessage(l10n.t("Your repository has no remotes."));
+
 			return;
 		}
 
 		const picks: RemoteItem[] = repository.remotes.map(
 			(r) => new RemoteItem(repository, r),
 		);
+
 		const placeHolder = l10n.t("Pick a remote to remove");
 
 		const remote = await window.showQuickPick(picks, { placeHolder });
@@ -4689,14 +5104,18 @@ export class CommandCenter {
 			return;
 		} else if (!HEAD.upstream) {
 			this._push(repository, { pushType: PushType.Push });
+
 			return;
 		}
 
 		const remoteName = HEAD.remote || HEAD.upstream.remote;
+
 		const remote = repository.remotes.find((r) => r.name === remoteName);
+
 		const isReadonly = remote && remote.isReadOnly;
 
 		const config = workspace.getConfiguration("git");
+
 		const shouldPrompt =
 			!isReadonly && config.get<boolean>("confirmSync") === true;
 
@@ -4706,8 +5125,11 @@ export class CommandCenter {
 				HEAD.upstream.remote,
 				HEAD.upstream.name,
 			);
+
 			const yes = l10n.t("OK");
+
 			const neverAgain = l10n.t("OK, Don't Show Again");
+
 			const pick = await window.showWarningMessage(
 				message,
 				{ modal: true },
@@ -4731,6 +5153,7 @@ export class CommandCenter {
 			"git",
 			Uri.file(repository.root),
 		);
+
 		const rebase = config.get<boolean>("rebaseWhenSync", false) === true;
 
 		try {
@@ -4752,6 +5175,7 @@ export class CommandCenter {
 					"git",
 					Uri.file(repository.root),
 				);
+
 				const rebase =
 					config.get<boolean>("rebaseWhenSync", false) === true;
 
@@ -4782,6 +5206,7 @@ export class CommandCenter {
 	@command("git.publish", { repository: true })
 	async publish(repository: Repository): Promise<void> {
 		const branchName = (repository.HEAD && repository.HEAD.name) || "";
+
 		const remotes = repository.remotes;
 
 		if (remotes.length === 0) {
@@ -4793,6 +5218,7 @@ export class CommandCenter {
 						"Your repository has no remotes configured to publish to.",
 					),
 				);
+
 				return;
 			}
 
@@ -4808,10 +5234,12 @@ export class CommandCenter {
 					alwaysShow: true,
 					provider,
 				}));
+
 				const placeHolder = l10n.t(
 					'Pick a provider to publish the branch "{0}" to:',
 					branchName,
 				);
+
 				const choice = await window.showQuickPick(picks, {
 					placeHolder,
 				});
@@ -4824,6 +5252,7 @@ export class CommandCenter {
 			}
 
 			await publisher.publishRepository(new ApiRepository(repository));
+
 			this.model.firePublishEvent(repository, branchName);
 
 			return;
@@ -4831,12 +5260,14 @@ export class CommandCenter {
 
 		if (remotes.length === 1) {
 			await repository.pushTo(remotes[0].name, branchName, true);
+
 			this.model.firePublishEvent(repository, branchName);
 
 			return;
 		}
 
 		const addRemote = new AddRemoteItem(this);
+
 		const picks = [
 			...repository.remotes.map((r) => ({
 				label: r.name,
@@ -4844,10 +5275,12 @@ export class CommandCenter {
 			})),
 			addRemote,
 		];
+
 		const placeHolder = l10n.t(
 			'Pick a remote to publish the branch "{0}" to:',
 			branchName,
 		);
+
 		const choice = await window.showQuickPick(picks, { placeHolder });
 
 		if (!choice) {
@@ -4949,6 +5382,7 @@ export class CommandCenter {
 			repository.workingTreeGroup.resourceStates.length === 0 &&
 			(!includeUntracked ||
 				repository.untrackedGroup.resourceStates.length === 0);
+
 		const noStagedChanges =
 			repository.indexGroup.resourceStates.length === 0;
 
@@ -4957,6 +5391,7 @@ export class CommandCenter {
 				window.showInformationMessage(
 					l10n.t("There are no staged changes to stash."),
 				);
+
 				return false;
 			}
 		} else {
@@ -4964,6 +5399,7 @@ export class CommandCenter {
 				window.showInformationMessage(
 					l10n.t("There are no changes to stash."),
 				);
+
 				return false;
 			}
 		}
@@ -4972,6 +5408,7 @@ export class CommandCenter {
 			"git",
 			Uri.file(repository.root),
 		);
+
 		const promptToSaveFilesBeforeStashing = config.get<
 			"always" | "staged" | "never"
 		>("promptToSaveFilesBeforeStash");
@@ -5006,8 +5443,11 @@ export class CommandCenter {
 								"There are {0} unsaved files.\n\nWould you like to save them before stashing?",
 								documents.length,
 							);
+
 				const saveAndStash = l10n.t("Save All & Stash");
+
 				const stash = l10n.t("Stash Anyway");
+
 				const pick = await window.showWarningMessage(
 					message,
 					{ modal: true },
@@ -5046,6 +5486,7 @@ export class CommandCenter {
 
 		try {
 			await repository.createStash(message, includeUntracked, staged);
+
 			return true;
 		} catch (err) {
 			if (
@@ -5056,6 +5497,7 @@ export class CommandCenter {
 						"The repository does not have any commits. Please make an initial commit before creating a stash.",
 					),
 				);
+
 				return false;
 			}
 
@@ -5066,24 +5508,28 @@ export class CommandCenter {
 	@command("git.stash", { repository: true })
 	async stash(repository: Repository): Promise<boolean> {
 		const result = await this._stash(repository);
+
 		return result;
 	}
 
 	@command("git.stashStaged", { repository: true })
 	async stashStaged(repository: Repository): Promise<boolean> {
 		const result = await this._stash(repository, false, true);
+
 		return result;
 	}
 
 	@command("git.stashIncludeUntracked", { repository: true })
 	async stashIncludeUntracked(repository: Repository): Promise<boolean> {
 		const result = await this._stash(repository, true);
+
 		return result;
 	}
 
 	@command("git.stashPop", { repository: true })
 	async stashPop(repository: Repository): Promise<void> {
 		const placeHolder = l10n.t("Pick a stash to pop");
+
 		const stash = await this.pickStash(repository, placeHolder);
 
 		if (!stash) {
@@ -5101,6 +5547,7 @@ export class CommandCenter {
 			window.showInformationMessage(
 				l10n.t("There are no stashes in the repository."),
 			);
+
 			return;
 		}
 
@@ -5110,17 +5557,20 @@ export class CommandCenter {
 	@command("git.stashPopEditor")
 	async stashPopEditor(uri: Uri): Promise<void> {
 		const result = await this.getStashFromUri(uri);
+
 		if (!result) {
 			return;
 		}
 
 		await commands.executeCommand("workbench.action.closeActiveEditor");
+
 		await result.repository.popStash(result.stash.index);
 	}
 
 	@command("git.stashApply", { repository: true })
 	async stashApply(repository: Repository): Promise<void> {
 		const placeHolder = l10n.t("Pick a stash to apply");
+
 		const stash = await this.pickStash(repository, placeHolder);
 
 		if (!stash) {
@@ -5138,6 +5588,7 @@ export class CommandCenter {
 			window.showInformationMessage(
 				l10n.t("There are no stashes in the repository."),
 			);
+
 			return;
 		}
 
@@ -5147,17 +5598,20 @@ export class CommandCenter {
 	@command("git.stashApplyEditor")
 	async stashApplyEditor(uri: Uri): Promise<void> {
 		const result = await this.getStashFromUri(uri);
+
 		if (!result) {
 			return;
 		}
 
 		await commands.executeCommand("workbench.action.closeActiveEditor");
+
 		await result.repository.applyStash(result.stash.index);
 	}
 
 	@command("git.stashDrop", { repository: true })
 	async stashDrop(repository: Repository): Promise<void> {
 		const placeHolder = l10n.t("Pick a stash to drop");
+
 		const stash = await this.pickStash(repository, placeHolder);
 
 		if (!stash) {
@@ -5175,11 +5629,13 @@ export class CommandCenter {
 			window.showInformationMessage(
 				l10n.t("There are no stashes in the repository."),
 			);
+
 			return;
 		}
 
 		// request confirmation for the operation
 		const yes = l10n.t("Yes");
+
 		const question =
 			stashes.length === 1
 				? l10n.t(
@@ -5195,6 +5651,7 @@ export class CommandCenter {
 			{ modal: true },
 			yes,
 		);
+
 		if (result !== yes) {
 			return;
 		}
@@ -5205,6 +5662,7 @@ export class CommandCenter {
 	@command("git.stashDropEditor")
 	async stashDropEditor(uri: Uri): Promise<void> {
 		const result = await this.getStashFromUri(uri);
+
 		if (!result) {
 			return;
 		}
@@ -5216,6 +5674,7 @@ export class CommandCenter {
 
 	async _stashDrop(repository: Repository, stash: Stash): Promise<boolean> {
 		const yes = l10n.t("Yes");
+
 		const result = await window.showWarningMessage(
 			l10n.t(
 				"Are you sure you want to drop the stash: {0}?",
@@ -5224,17 +5683,20 @@ export class CommandCenter {
 			{ modal: true },
 			yes,
 		);
+
 		if (result !== yes) {
 			return false;
 		}
 
 		await repository.dropStash(stash.index);
+
 		return true;
 	}
 
 	@command("git.stashView", { repository: true })
 	async stashView(repository: Repository): Promise<void> {
 		const placeHolder = l10n.t("Pick a stash to view");
+
 		const stash = await this.pickStash(repository, placeHolder);
 
 		if (!stash) {
@@ -5242,6 +5704,7 @@ export class CommandCenter {
 		}
 
 		const stashChanges = await repository.showStash(stash.index);
+
 		if (!stashChanges || stashChanges.length === 0) {
 			return;
 		}
@@ -5252,14 +5715,17 @@ export class CommandCenter {
 		// 3. The third parent (when present) represents the untracked files when the stash was created.
 		const stashFirstParentCommit =
 			stash.parents.length > 0 ? stash.parents[0] : `${stash.hash}^`;
+
 		const stashUntrackedFilesParentCommit =
 			stash.parents.length === 3 ? stash.parents[2] : undefined;
+
 		const stashUntrackedFiles: string[] = [];
 
 		if (stashUntrackedFilesParentCommit) {
 			const untrackedFiles = await repository.getObjectFiles(
 				stashUntrackedFilesParentCommit,
 			);
+
 			stashUntrackedFiles.push(
 				...untrackedFiles.map((f) =>
 					path.join(repository.root, f.file),
@@ -5268,6 +5734,7 @@ export class CommandCenter {
 		}
 
 		const title = `Git Stash #${stash.index}: ${stash.description}`;
+
 		const multiDiffSourceUri = toGitUri(
 			Uri.file(repository.root),
 			`stash@{${stash.index}}`,
@@ -5276,12 +5743,15 @@ export class CommandCenter {
 
 		const resources: {
 			originalUri: Uri | undefined;
+
 			modifiedUri: Uri | undefined;
 		}[] = [];
+
 		for (const change of stashChanges) {
 			const isChangeUntracked = !!stashUntrackedFiles.find((f) =>
 				pathEquals(f, change.uri.fsPath),
 			);
+
 			const modifiedUriRef = !isChangeUntracked
 				? stash.hash
 				: (stashUntrackedFilesParentCommit ?? stash.hash);
@@ -5310,6 +5780,7 @@ export class CommandCenter {
 			StashItem[] | QuickPickItem[]
 		> => {
 			const stashes = await repository.getStashes();
+
 			return stashes.length > 0
 				? stashes.map((stash) => new StashItem(stash))
 				: [
@@ -5325,6 +5796,7 @@ export class CommandCenter {
 			getStashQuickPickItems(),
 			{ placeHolder },
 		);
+
 		return result instanceof StashItem ? result.stash : undefined;
 	}
 
@@ -5339,20 +5811,26 @@ export class CommandCenter {
 
 		// Repository
 		const repository = this.model.getRepository(stashUri.path);
+
 		if (!repository) {
 			return undefined;
 		}
 
 		// Stash
 		const regex = /^stash@{(\d+)}$/;
+
 		const match = regex.exec(stashUri.ref);
+
 		if (!match) {
 			return undefined;
 		}
 
 		const [, index] = match;
+
 		const stashes = await repository.getStashes();
+
 		const stash = stashes.find((stash) => stash.index === parseInt(index));
+
 		if (!stash) {
 			return undefined;
 		}
@@ -5371,6 +5849,7 @@ export class CommandCenter {
 			preview: true,
 			viewColumn: ViewColumn.Active,
 		});
+
 		if (cmd === undefined) {
 			return undefined;
 		}
@@ -5390,6 +5869,7 @@ export class CommandCenter {
 		const basename = path.basename(uri.fsPath);
 
 		let title;
+
 		if (
 			(item.previousRef === "HEAD" || item.previousRef === "~") &&
 			item.ref === ""
@@ -5433,6 +5913,7 @@ export class CommandCenter {
 			preview: true,
 			viewColumn: ViewColumn.Active,
 		});
+
 		if (cmd === undefined) {
 			return undefined;
 		}
@@ -5450,19 +5931,23 @@ export class CommandCenter {
 		}
 
 		const repository = await this.model.getRepository(uri.fsPath);
+
 		if (!repository) {
 			return undefined;
 		}
 
 		const commit = await repository.getCommit(item.ref);
+
 		const commitParentId =
 			commit.parents.length > 0 ? commit.parents[0] : `${commit.hash}^`;
+
 		const changes = await repository.diffBetween(
 			commitParentId,
 			commit.hash,
 		);
 
 		const title = `${item.shortRef} - ${commit.message}`;
+
 		const multiDiffSourceUri = toGitUri(
 			Uri.file(repository.root),
 			commit.hash,
@@ -5471,8 +5956,10 @@ export class CommandCenter {
 
 		const resources: {
 			originalUri: Uri | undefined;
+
 			modifiedUri: Uri | undefined;
 		}[] = [];
+
 		for (const change of changes) {
 			resources.push(
 				toMultiFileDiffEditorUris(change, commitParentId, commit.hash),
@@ -5527,6 +6014,7 @@ export class CommandCenter {
 		}
 
 		this._selectedForCompare = { uri, item };
+
 		await commands.executeCommand(
 			"setContext",
 			"git.timeline.selectedForCompare",
@@ -5552,7 +6040,9 @@ export class CommandCenter {
 		const { item: selected } = this._selectedForCompare;
 
 		const basename = path.basename(uri.fsPath);
+
 		let leftTitle;
+
 		if (
 			(selected.previousRef === "HEAD" || selected.previousRef === "~") &&
 			selected.ref === ""
@@ -5565,6 +6055,7 @@ export class CommandCenter {
 		}
 
 		let rightTitle;
+
 		if (
 			(item.previousRef === "HEAD" || item.previousRef === "~") &&
 			item.ref === ""
@@ -5577,6 +6068,7 @@ export class CommandCenter {
 		}
 
 		const title = l10n.t("{0} ↔ {1}", leftTitle, rightTitle);
+
 		await commands.executeCommand(
 			"vscode.diff",
 			selected.ref === "" ? uri : toGitUri(uri, selected.ref),
@@ -5607,22 +6099,26 @@ export class CommandCenter {
 
 		// Collect all modified files
 		const modifiedFiles: string[] = [];
+
 		for (const repository of this.model.repositories) {
 			modifiedFiles.push(
 				...repository.indexGroup.resourceStates.map(
 					(r) => r.resourceUri.fsPath,
 				),
 			);
+
 			modifiedFiles.push(
 				...repository.workingTreeGroup.resourceStates.map(
 					(r) => r.resourceUri.fsPath,
 				),
 			);
+
 			modifiedFiles.push(
 				...repository.untrackedGroup.resourceStates.map(
 					(r) => r.resourceUri.fsPath,
 				),
 			);
+
 			modifiedFiles.push(
 				...repository.mergeGroup.resourceStates.map(
 					(r) => r.resourceUri.fsPath,
@@ -5641,6 +6137,7 @@ export class CommandCenter {
 				tab.input instanceof TabInputNotebook
 			) {
 				const { uri } = tab.input;
+
 				if (!modifiedFiles.find((p) => pathEquals(p, uri.fsPath))) {
 					editorTabsToClose.push(tab);
 				}
@@ -5656,12 +6153,15 @@ export class CommandCenter {
 		const parentRepositories: string[] = [];
 
 		const title = l10n.t("Open Repositories In Parent Folders");
+
 		const placeHolder = l10n.t("Pick a repository to open");
 
 		const allRepositoriesLabel = l10n.t("All Repositories");
+
 		const allRepositoriesQuickPickItem: QuickPickItem = {
 			label: allRepositoriesLabel,
 		};
+
 		const repositoriesQuickPickItems: QuickPickItem[] =
 			this.model.parentRepositories
 				.sort(compareRepositoryLabel)
@@ -5680,6 +6180,7 @@ export class CommandCenter {
 			title,
 			placeHolder,
 		});
+
 		if (!repositoryItem) {
 			return;
 		}
@@ -5702,15 +6203,19 @@ export class CommandCenter {
 		const unsafeRepositories: string[] = [];
 
 		const quickpick = window.createQuickPick();
+
 		quickpick.title = l10n.t("Manage Unsafe Repositories");
+
 		quickpick.placeholder = l10n.t(
 			"Pick a repository to mark as safe and open",
 		);
 
 		const allRepositoriesLabel = l10n.t("All Repositories");
+
 		const allRepositoriesQuickPickItem: QuickPickItem = {
 			label: allRepositoriesLabel,
 		};
+
 		const repositoriesQuickPickItems: QuickPickItem[] =
 			this.model.unsafeRepositories
 				.sort(compareRepositoryLabel)
@@ -5726,12 +6231,15 @@ export class CommandCenter {
 					];
 
 		quickpick.show();
+
 		const repositoryItem = await new Promise<
 			RepositoryItem | QuickPickItem | undefined
 		>((resolve) => {
 			quickpick.onDidAccept(() => resolve(quickpick.activeItems[0]));
+
 			quickpick.onDidHide(() => resolve(undefined));
 		});
+
 		quickpick.hide();
 
 		if (!repositoryItem) {
@@ -5754,6 +6262,7 @@ export class CommandCenter {
 
 			// Open Repository
 			await this.model.openRepository(unsafeRepository);
+
 			this.model.deleteUnsafeRepository(unsafeRepository);
 		}
 	}
@@ -5791,20 +6300,26 @@ export class CommandCenter {
 							"The repository does not have any staged changes.",
 						),
 					);
+
 					break;
+
 				case "workingTree":
 					window.showInformationMessage(
 						l10n.t("The repository does not have any changes."),
 					);
+
 					break;
+
 				case "untracked":
 					window.showInformationMessage(
 						l10n.t(
 							"The repository does not have any untracked changes.",
 						),
 					);
+
 					break;
 			}
+
 			return;
 		}
 
@@ -5830,6 +6345,7 @@ export class CommandCenter {
 				historyItem1.id,
 				historyItem2.id,
 			);
+
 			if (
 				!mergeBase ||
 				(mergeBase !== historyItem1.id && mergeBase !== historyItem2.id)
@@ -5839,6 +6355,7 @@ export class CommandCenter {
 		}
 
 		let title: string | undefined;
+
 		let historyItemParentId: string | undefined;
 
 		// If historyItem2 is not provided, we are viewing a single commit. If historyItem2 is
@@ -5846,7 +6363,9 @@ export class CommandCenter {
 		// TODO@lszomoru - handle the case when historyItem2 is the first commit in the repository
 		if (!historyItem2) {
 			const commit = await repository.getCommit(historyItem1.id);
+
 			title = `${historyItem1.id.substring(0, 8)} - ${commit.message}`;
+
 			historyItemParentId =
 				historyItem1.parentIds.length > 0
 					? historyItem1.parentIds[0]
@@ -5857,6 +6376,7 @@ export class CommandCenter {
 				historyItem2.id.substring(0, 8),
 				historyItem1.id.substring(0, 8),
 			);
+
 			historyItemParentId =
 				historyItem2.parentIds.length > 0
 					? historyItem2.parentIds[0]
@@ -5888,10 +6408,12 @@ export class CommandCenter {
 		}
 
 		const modifiedShortRef = historyItem.id.substring(0, 8);
+
 		const originalShortRef =
 			historyItem.parentIds.length > 0
 				? historyItem.parentIds[0].substring(0, 8)
 				: `${modifiedShortRef}^`;
+
 		const title = l10n.t(
 			"All Changes ({0} ↔ {1})",
 			originalShortRef,
@@ -5924,6 +6446,7 @@ export class CommandCenter {
 			historyItemParentId,
 			historyItemId,
 		);
+
 		const resources = changes.map((c) =>
 			toMultiFileDiffEditorUris(c, historyItemParentId, historyItemId),
 		);
@@ -5969,7 +6492,9 @@ export class CommandCenter {
 		}
 
 		const commit = await repository.getCommit(historyItemId);
+
 		const title = `${historyItemId.substring(0, 8)} - ${commit.message}`;
+
 		const historyItemParentId =
 			commit.parents.length > 0 ? commit.parents[0] : `${historyItemId}^`;
 
@@ -5983,6 +6508,7 @@ export class CommandCenter {
 			historyItemParentId,
 			historyItemId,
 		);
+
 		const resources = changes.map((c) =>
 			toMultiFileDiffEditorUris(c, historyItemParentId, historyItemId),
 		);
@@ -6017,6 +6543,7 @@ export class CommandCenter {
 			} else {
 				// try to guess the repository based on the first argument
 				const repository = this.model.getRepository(args[0]);
+
 				let repositoryPromise: Promise<Repository | undefined>;
 
 				if (repository) {
@@ -6056,19 +6583,25 @@ export class CommandCenter {
 				};
 
 				let message: string;
+
 				let type: "error" | "warning" | "information" = "error";
 
 				const choices = new Map<string, () => void>();
+
 				const openOutputChannelChoice = l10n.t("Open Git Log");
+
 				const outputChannelLogger = this.logger;
+
 				choices.set(openOutputChannelChoice, () =>
 					outputChannelLogger.show(),
 				);
 
 				const showCommandOutputChoice = l10n.t("Show Command Output");
+
 				if (err.stderr) {
 					choices.set(showCommandOutputChoice, async () => {
 						const timestamp = new Date().getTime();
+
 						const uri = Uri.parse(
 							`git-output:/git-error-${timestamp}`,
 						);
@@ -6088,6 +6621,7 @@ export class CommandCenter {
 
 						try {
 							const doc = await workspace.openTextDocument(uri);
+
 							await window.showTextDocument(doc);
 						} finally {
 							this.commandErrors.delete(uri);
@@ -6100,40 +6634,57 @@ export class CommandCenter {
 						message = l10n.t(
 							"Please clean your repository working tree before checkout.",
 						);
+
 						break;
+
 					case GitErrorCodes.PushRejected:
 						message = l10n.t(
 							'Can\'t push refs to remote. Try running "Pull" first to integrate your changes.',
 						);
+
 						break;
+
 					case GitErrorCodes.ForcePushWithLeaseRejected:
 					case GitErrorCodes.ForcePushWithLeaseIfIncludesRejected:
 						message = l10n.t(
 							'Can\'t force push refs to remote. The tip of the remote-tracking branch has been updated since the last checkout. Try running "Pull" first to pull the latest changes from the remote branch first.',
 						);
+
 						break;
+
 					case GitErrorCodes.Conflict:
 						message = l10n.t(
 							"There are merge conflicts. Resolve them before committing.",
 						);
+
 						type = "warning";
+
 						choices.set(l10n.t("Show Changes"), () =>
 							commands.executeCommand("workbench.view.scm"),
 						);
+
 						options.modal = false;
+
 						break;
+
 					case GitErrorCodes.StashConflict:
 						message = l10n.t(
 							"There were merge conflicts while applying the stash.",
 						);
+
 						choices.set(l10n.t("Show Changes"), () =>
 							commands.executeCommand("workbench.view.scm"),
 						);
+
 						type = "warning";
+
 						options.modal = false;
+
 						break;
+
 					case GitErrorCodes.AuthenticationFailed: {
 						const regex = /Authentication failed for '(.*)'/i;
+
 						const match = regex.exec(err.stderr || String(err));
 
 						message = match
@@ -6142,46 +6693,66 @@ export class CommandCenter {
 									match[1],
 								)
 							: l10n.t("Failed to authenticate to git remote.");
+
 						break;
 					}
+
 					case GitErrorCodes.NoUserNameConfigured:
 					case GitErrorCodes.NoUserEmailConfigured:
 						message = l10n.t(
 							'Make sure you configure your "user.name" and "user.email" in git.',
 						);
+
 						choices.set(l10n.t("Learn More"), () =>
 							commands.executeCommand(
 								"vscode.open",
 								Uri.parse("https://aka.ms/vscode-setup-git"),
 							),
 						);
+
 						break;
+
 					case GitErrorCodes.EmptyCommitMessage:
 						message = l10n.t(
 							"Commit operation was cancelled due to empty commit message.",
 						);
+
 						choices.clear();
+
 						type = "information";
+
 						options.modal = false;
+
 						break;
+
 					case GitErrorCodes.CherryPickEmpty:
 						message = l10n.t(
 							"The changes are already present in the current branch.",
 						);
+
 						choices.clear();
+
 						type = "information";
+
 						options.modal = false;
+
 						break;
+
 					case GitErrorCodes.CherryPickConflict:
 						message = l10n.t(
 							"There were merge conflicts while cherry picking the changes. Resolve the conflicts before committing them.",
 						);
+
 						type = "warning";
+
 						choices.set(l10n.t("Show Changes"), () =>
 							commands.executeCommand("workbench.view.scm"),
 						);
+
 						options.modal = false;
+
 						break;
+
 					default: {
 						const hint = (err.stderr || err.message || String(err))
 							.replace(/^error: /im, "")
@@ -6199,6 +6770,7 @@ export class CommandCenter {
 
 				if (!message) {
 					console.error(err);
+
 					return;
 				}
 
@@ -6222,6 +6794,7 @@ export class CommandCenter {
 		choices: Map<string, () => void>,
 	): Promise<void> {
 		let result: string | undefined;
+
 		const allChoices = Array.from(choices.keys());
 
 		switch (type) {
@@ -6231,20 +6804,25 @@ export class CommandCenter {
 					options,
 					...allChoices,
 				);
+
 				break;
+
 			case "warning":
 				result = await window.showWarningMessage(
 					message,
 					options,
 					...allChoices,
 				);
+
 				break;
+
 			case "information":
 				result = await window.showInformationMessage(
 					message,
 					options,
 					...allChoices,
 				);
+
 				break;
 		}
 
@@ -6276,11 +6854,13 @@ export class CommandCenter {
 
 		if (isGitUri(uri)) {
 			const { path } = fromGitUri(uri);
+
 			uri = Uri.file(path);
 		}
 
 		if (uri.scheme === "file") {
 			const uriString = uri.toString();
+
 			const repository = this.model.getRepository(uri);
 
 			if (!repository) {
@@ -6299,6 +6879,7 @@ export class CommandCenter {
 				)[0]
 			);
 		}
+
 		return undefined;
 	}
 
@@ -6306,15 +6887,18 @@ export class CommandCenter {
 		resource: Uri,
 		fn: (repository: Repository, resource: Uri) => Promise<T>,
 	): Promise<T[]>;
+
 	private runByRepository<T>(
 		resources: Uri[],
 		fn: (repository: Repository, resources: Uri[]) => Promise<T>,
 	): Promise<T[]>;
+
 	private async runByRepository<T>(
 		arg: Uri | Uri[],
 		fn: (repository: Repository, resources: any) => Promise<T>,
 	): Promise<T[]> {
 		const resources = arg instanceof Uri ? [arg] : arg;
+
 		const isSingleResource = arg instanceof Uri;
 
 		const groups = resources.reduce(
@@ -6326,6 +6910,7 @@ export class CommandCenter {
 						"Could not find git repository for ",
 						resource,
 					);
+
 					return result;
 				}
 

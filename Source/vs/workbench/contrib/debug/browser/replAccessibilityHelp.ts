@@ -18,8 +18,11 @@ import { getReplView, Repl } from "./repl.js";
 
 export class ReplAccessibilityHelp implements IAccessibleViewImplentation {
 	priority = 120;
+
 	name = "replHelp";
+
 	when = ContextKeyExpr.equals("focusedView", "workbench.panel.repl.view");
+
 	type: AccessibleViewType = AccessibleViewType.Help;
 
 	getProvider(accessor: ServicesAccessor) {
@@ -30,6 +33,7 @@ export class ReplAccessibilityHelp implements IAccessibleViewImplentation {
 		if (!replView) {
 			return undefined;
 		}
+
 		return new ReplAccessibilityHelpProvider(replView);
 	}
 }
@@ -38,20 +42,27 @@ class ReplAccessibilityHelpProvider
 	implements IAccessibleViewContentProvider
 {
 	public readonly id = AccessibleViewProviderId.ReplHelp;
+
 	public readonly verbositySettingKey = AccessibilityVerbositySettingId.Debug;
+
 	public readonly options = { type: AccessibleViewType.Help };
+
 	private _treeHadFocus = false;
 
 	constructor(private readonly _replView: Repl) {
 		super();
+
 		this._treeHadFocus = !!_replView.getFocusedElement();
 	}
+
 	public onClose(): void {
 		if (this._treeHadFocus) {
 			return this._replView.focusTree();
 		}
+
 		this._replView.getReplInput().focus();
 	}
+
 	public provideContent(): string {
 		return [
 			localize(

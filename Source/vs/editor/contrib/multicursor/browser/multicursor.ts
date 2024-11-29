@@ -76,6 +76,7 @@ function announceCursorChange(
 						"Cursors added: {0}",
 						cursorPositions,
 					);
+
 		status(msg);
 	}
 }
@@ -126,6 +127,7 @@ export class InsertCursorAbove extends EditorAction {
 		if (args && args.logicalLine === false) {
 			useLogicalLine = false;
 		}
+
 		const viewModel = editor._getViewModel();
 
 		if (viewModel.cursorConfig.readOnly) {
@@ -135,6 +137,7 @@ export class InsertCursorAbove extends EditorAction {
 		viewModel.model.pushStackElement();
 
 		const previousCursorState = viewModel.getCursorStates();
+
 		viewModel.setCursorStates(
 			args.source,
 			CursorChangeReason.Explicit,
@@ -144,7 +147,9 @@ export class InsertCursorAbove extends EditorAction {
 				useLogicalLine,
 			),
 		);
+
 		viewModel.revealTopMostCursor(args.source);
+
 		announceCursorChange(previousCursorState, viewModel.getCursorStates());
 	}
 }
@@ -195,6 +200,7 @@ export class InsertCursorBelow extends EditorAction {
 		if (args && args.logicalLine === false) {
 			useLogicalLine = false;
 		}
+
 		const viewModel = editor._getViewModel();
 
 		if (viewModel.cursorConfig.readOnly) {
@@ -204,6 +210,7 @@ export class InsertCursorBelow extends EditorAction {
 		viewModel.model.pushStackElement();
 
 		const previousCursorState = viewModel.getCursorStates();
+
 		viewModel.setCursorStates(
 			args.source,
 			CursorChangeReason.Explicit,
@@ -213,7 +220,9 @@ export class InsertCursorBelow extends EditorAction {
 				useLogicalLine,
 			),
 		);
+
 		viewModel.revealBottomMostCursor(args.source);
+
 		announceCursorChange(previousCursorState, viewModel.getCursorStates());
 	}
 }
@@ -258,14 +267,18 @@ class InsertCursorAtEndOfEachLineSelected extends EditorAction {
 
 		for (
 			let i = selection.startLineNumber;
+
 			i < selection.endLineNumber;
+
 			i++
 		) {
 			const currentLineMaxColumn = model.getLineMaxColumn(i);
+
 			result.push(
 				new Selection(i, currentLineMaxColumn, i, currentLineMaxColumn),
 			);
 		}
+
 		if (selection.endColumn > 1) {
 			result.push(
 				new Selection(
@@ -292,6 +305,7 @@ class InsertCursorAtEndOfEachLineSelected extends EditorAction {
 		const previousCursorState = viewModel.getCursorStates();
 
 		const newSelections: Selection[] = [];
+
 		selections.forEach((sel) =>
 			this.getCursorsForSelection(sel, model, newSelections),
 		);
@@ -299,6 +313,7 @@ class InsertCursorAtEndOfEachLineSelected extends EditorAction {
 		if (newSelections.length > 0) {
 			editor.setSelections(newSelections);
 		}
+
 		announceCursorChange(previousCursorState, viewModel.getCursorStates());
 	}
 }
@@ -344,6 +359,7 @@ class InsertCursorAtEndOfLineSelected extends EditorAction {
 		if (newSelections.length > 0) {
 			editor.setSelections(newSelections);
 		}
+
 		announceCursorChange(previousCursorState, viewModel.getCursorStates());
 	}
 }
@@ -387,6 +403,7 @@ class InsertCursorAtTopOfLineSelected extends EditorAction {
 		if (newSelections.length > 0) {
 			editor.setSelections(newSelections);
 		}
+
 		announceCursorChange(previousCursorState, viewModel.getCursorStates());
 	}
 }
@@ -407,6 +424,7 @@ export class MultiCursorSession {
 		if (!editor.hasModel()) {
 			return null;
 		}
+
 		const findState = findController.getState();
 
 		// Find widget owns entirely what we search for if:
@@ -442,10 +460,13 @@ export class MultiCursorSession {
 
 		if (selections.length === 1 && selections[0].isEmpty()) {
 			isDisconnectedFromFindController = true;
+
 			wholeWord = true;
+
 			matchCase = true;
 		} else {
 			wholeWord = findState.wholeWord;
+
 			matchCase = findState.matchCase;
 		}
 
@@ -465,7 +486,9 @@ export class MultiCursorSession {
 			if (!word) {
 				return null;
 			}
+
 			searchText = word.word;
+
 			currentMatch = new Selection(
 				s.startLineNumber,
 				word.startColumn,
@@ -547,6 +570,7 @@ export class MultiCursorSession {
 
 		if (this.currentMatch) {
 			const result = this.currentMatch;
+
 			this.currentMatch = null;
 
 			return result;
@@ -574,6 +598,7 @@ export class MultiCursorSession {
 		if (!nextMatch) {
 			return null;
 		}
+
 		return new Selection(
 			nextMatch.range.startLineNumber,
 			nextMatch.range.startColumn,
@@ -631,6 +656,7 @@ export class MultiCursorSession {
 
 		if (this.currentMatch) {
 			const result = this.currentMatch;
+
 			this.currentMatch = null;
 
 			return result;
@@ -658,6 +684,7 @@ export class MultiCursorSession {
 		if (!previousMatch) {
 			return null;
 		}
+
 		return new Selection(
 			previousMatch.range.startLineNumber,
 			previousMatch.range.startColumn,
@@ -688,6 +715,7 @@ export class MultiCursorSession {
 				Constants.MAX_SAFE_SMALL_INTEGER,
 			);
 		}
+
 		return editorModel.findMatches(
 			this.searchText,
 			true,
@@ -709,8 +737,11 @@ export class MultiCursorSelectionController
 	public static readonly ID = "editor.contrib.multiCursorController";
 
 	private readonly _editor: ICodeEditor;
+
 	private _ignoreSelectionChange: boolean;
+
 	private _session: MultiCursorSession | null;
+
 	private readonly _sessionDispose = this._register(new DisposableStore());
 
 	public static get(
@@ -723,8 +754,11 @@ export class MultiCursorSelectionController
 
 	constructor(editor: ICodeEditor) {
 		super();
+
 		this._editor = editor;
+
 		this._ignoreSelectionChange = false;
+
 		this._session = null;
 	}
 
@@ -754,9 +788,12 @@ export class MultiCursorSelectionController
 
 			if (this._session.isDisconnectedFromFindController) {
 				newState.wholeWordOverride = FindOptionOverride.True;
+
 				newState.matchCaseOverride = FindOptionOverride.True;
+
 				newState.isRegexOverride = FindOptionOverride.False;
 			}
+
 			findController.getState().change(newState, false);
 
 			this._sessionDispose.add(
@@ -764,14 +801,17 @@ export class MultiCursorSelectionController
 					if (this._ignoreSelectionChange) {
 						return;
 					}
+
 					this._endSession();
 				}),
 			);
+
 			this._sessionDispose.add(
 				this._editor.onDidBlurEditorText(() => {
 					this._endSession();
 				}),
 			);
+
 			this._sessionDispose.add(
 				findController.getState().onFindReplaceStateChange((e) => {
 					if (e.matchCase || e.wholeWord) {
@@ -791,14 +831,18 @@ export class MultiCursorSelectionController
 				matchCaseOverride: FindOptionOverride.NotSet,
 				isRegexOverride: FindOptionOverride.NotSet,
 			};
+
 			this._session.findController.getState().change(newState, false);
 		}
+
 		this._session = null;
 	}
 
 	private _setSelections(selections: Selection[]): void {
 		this._ignoreSelectionChange = true;
+
 		this._editor.setSelections(selections);
+
 		this._ignoreSelectionChange = false;
 	}
 
@@ -809,6 +853,7 @@ export class MultiCursorSelectionController
 		if (!selection.isEmpty()) {
 			return selection;
 		}
+
 		const word = this._editor.getConfiguredWordAtPosition(
 			selection.getStartPosition(),
 		);
@@ -816,6 +861,7 @@ export class MultiCursorSelectionController
 		if (!word) {
 			return selection;
 		}
+
 		return new Selection(
 			selection.startLineNumber,
 			word.startColumn,
@@ -828,6 +874,7 @@ export class MultiCursorSelectionController
 		if (!result) {
 			return;
 		}
+
 		this._setSelections(result.selections);
 
 		if (result.revealRange) {
@@ -850,6 +897,7 @@ export class MultiCursorSelectionController
 		if (!this._editor.hasModel()) {
 			return;
 		}
+
 		if (!this._session) {
 			// If there are multiple cursors, handle the case where they do not all select the same text.
 			const allSelections = this._editor.getSelections();
@@ -876,12 +924,14 @@ export class MultiCursorSelectionController
 							allSelections[i],
 						);
 					}
+
 					this._editor.setSelections(resultingSelections);
 
 					return;
 				}
 			}
 		}
+
 		this._beginSessionIfNeeded(findController);
 
 		if (this._session) {
@@ -995,6 +1045,7 @@ export class MultiCursorSelectionController
 				if (intersection) {
 					// bingo!
 					matches[i] = matches[0];
+
 					matches[0] = match;
 
 					break;
@@ -1030,6 +1081,7 @@ export abstract class MultiCursorSelectionControllerAction extends EditorAction 
 		if (!multiCursorController) {
 			return;
 		}
+
 		const viewModel = editor._getViewModel();
 
 		if (viewModel) {
@@ -1043,7 +1095,9 @@ export abstract class MultiCursorSelectionControllerAction extends EditorAction 
 				const newFindController = accessor
 					.get(IInstantiationService)
 					.createInstance(CommonFindController, editor);
+
 				this._run(multiCursorController, newFindController);
+
 				newFindController.dispose();
 			}
 
@@ -1088,6 +1142,7 @@ export class AddSelectionToNextFindMatchAction extends MultiCursorSelectionContr
 			},
 		});
 	}
+
 	protected _run(
 		multiCursorController: MultiCursorSelectionController,
 		findController: CommonFindController,
@@ -1119,6 +1174,7 @@ export class AddSelectionToPreviousFindMatchAction extends MultiCursorSelectionC
 			},
 		});
 	}
+
 	protected _run(
 		multiCursorController: MultiCursorSelectionController,
 		findController: CommonFindController,
@@ -1146,6 +1202,7 @@ export class MoveSelectionToNextFindMatchAction extends MultiCursorSelectionCont
 			},
 		});
 	}
+
 	protected _run(
 		multiCursorController: MultiCursorSelectionController,
 		findController: CommonFindController,
@@ -1165,6 +1222,7 @@ export class MoveSelectionToPreviousFindMatchAction extends MultiCursorSelection
 			precondition: undefined,
 		});
 	}
+
 	protected _run(
 		multiCursorController: MultiCursorSelectionController,
 		findController: CommonFindController,
@@ -1201,6 +1259,7 @@ export class SelectHighlightsAction extends MultiCursorSelectionControllerAction
 			},
 		});
 	}
+
 	protected _run(
 		multiCursorController: MultiCursorSelectionController,
 		findController: CommonFindController,
@@ -1229,6 +1288,7 @@ export class CompatChangeAll extends MultiCursorSelectionControllerAction {
 			},
 		});
 	}
+
 	protected _run(
 		multiCursorController: MultiCursorSelectionController,
 		findController: CommonFindController,
@@ -1239,6 +1299,7 @@ export class CompatChangeAll extends MultiCursorSelectionControllerAction {
 
 class SelectionHighlighterState {
 	private readonly _modelVersionId: number = this._model.getVersionId();
+
 	private _cachedFindMatches: Range[] | null = null;
 
 	constructor(
@@ -1272,8 +1333,10 @@ class SelectionHighlighterState {
 					false,
 				)
 				.map((m) => m.range);
+
 			this._cachedFindMatches.sort(Range.compareRangesUsingStarts);
 		}
+
 		return this._cachedFindMatches;
 	}
 }
@@ -1285,9 +1348,13 @@ export class SelectionHighlighter
 	public static readonly ID = "editor.contrib.selectionHighlighter";
 
 	private readonly editor: ICodeEditor;
+
 	private _isEnabled: boolean;
+
 	private readonly _decorations: IEditorDecorationsCollection;
+
 	private readonly updateSoon: RunOnceScheduler;
+
 	private state: SelectionHighlighterState | null;
 
 	constructor(
@@ -1296,12 +1363,17 @@ export class SelectionHighlighter
 		private readonly _languageFeaturesService: ILanguageFeaturesService,
 	) {
 		super();
+
 		this.editor = editor;
+
 		this._isEnabled = editor.getOption(EditorOption.selectionHighlight);
+
 		this._decorations = editor.createDecorationsCollection();
+
 		this.updateSoon = this._register(
 			new RunOnceScheduler(() => this._update(), 300),
 		);
+
 		this.state = null;
 
 		this._register(
@@ -1311,6 +1383,7 @@ export class SelectionHighlighter
 				);
 			}),
 		);
+
 		this._register(
 			editor.onDidChangeCursorSelection(
 				(e: ICursorSelectionChangedEvent) => {
@@ -1326,6 +1399,7 @@ export class SelectionHighlighter
 								// no longer valid
 								this._setState(null);
 							}
+
 							this.updateSoon.schedule();
 						} else {
 							this._setState(null);
@@ -1336,11 +1410,13 @@ export class SelectionHighlighter
 				},
 			),
 		);
+
 		this._register(
 			editor.onDidChangeModel((e) => {
 				this._setState(null);
 			}),
 		);
+
 		this._register(
 			editor.onDidChangeModelContent((e) => {
 				if (this._isEnabled) {
@@ -1358,6 +1434,7 @@ export class SelectionHighlighter
 				}),
 			);
 		}
+
 		this.updateSoon.schedule();
 	}
 
@@ -1379,26 +1456,31 @@ export class SelectionHighlighter
 		if (!isEnabled) {
 			return null;
 		}
+
 		if (!editor.hasModel()) {
 			return null;
 		}
+
 		const s = editor.getSelection();
 
 		if (s.startLineNumber !== s.endLineNumber) {
 			// multiline forbidden for perf reasons
 			return null;
 		}
+
 		const multiCursorController =
 			MultiCursorSelectionController.get(editor);
 
 		if (!multiCursorController) {
 			return null;
 		}
+
 		const findController = CommonFindController.get(editor);
 
 		if (!findController) {
 			return null;
 		}
+
 		let r = multiCursorController.getSession(findController);
 
 		if (!r) {
@@ -1422,6 +1504,7 @@ export class SelectionHighlighter
 
 			r = MultiCursorSession.create(editor, findController);
 		}
+
 		if (!r) {
 			return null;
 		}
@@ -1431,10 +1514,12 @@ export class SelectionHighlighter
 			// Do not interfere with semantic word highlighting in the no selection case
 			return null;
 		}
+
 		if (/^[ \t]+$/.test(r.searchText)) {
 			// whitespace only selection
 			return null;
 		}
+
 		if (r.searchText.length > 200) {
 			// very long selection
 			return null;
@@ -1501,6 +1586,7 @@ export class SelectionHighlighter
 		const allMatches = this.state.findMatches();
 
 		const selections = this.editor.getSelections();
+
 		selections.sort(Range.compareRangesUsingStarts);
 
 		// do not overlap with selection (issue #64 and #512)
@@ -1508,6 +1594,7 @@ export class SelectionHighlighter
 
 		for (
 			let i = 0, j = 0, len = allMatches.length, lenJ = selections.length;
+
 			i < len;
 
 		) {
@@ -1516,6 +1603,7 @@ export class SelectionHighlighter
 			if (j >= lenJ) {
 				// finished all editor selections
 				matches.push(match);
+
 				i++;
 			} else {
 				const cmp = Range.compareRangesUsingStarts(
@@ -1531,6 +1619,7 @@ export class SelectionHighlighter
 					) {
 						matches.push(match);
 					}
+
 					i++;
 				} else if (cmp > 0) {
 					// sel is before match
@@ -1538,6 +1627,7 @@ export class SelectionHighlighter
 				} else {
 					// sel is equal to match
 					i++;
+
 					j++;
 				}
 			}
@@ -1583,12 +1673,14 @@ function modelRangesContainSameText(
 		if (range.isEmpty()) {
 			return false;
 		}
+
 		const thisSelectedText = getValueInRange(model, range, !matchCase);
 
 		if (selectedText !== thisSelectedText) {
 			return false;
 		}
 	}
+
 	return true;
 }
 
@@ -1645,6 +1737,7 @@ export class FocusNextCursor extends EditorAction {
 		if (!firstCursor) {
 			return;
 		}
+
 		previousCursorState.push(firstCursor);
 
 		viewModel.setCursorStates(
@@ -1652,7 +1745,9 @@ export class FocusNextCursor extends EditorAction {
 			CursorChangeReason.Explicit,
 			previousCursorState,
 		);
+
 		viewModel.revealPrimaryCursor(args.source, true);
+
 		announceCursorChange(previousCursorState, viewModel.getCursorStates());
 	}
 }
@@ -1700,6 +1795,7 @@ export class FocusPreviousCursor extends EditorAction {
 		if (!firstCursor) {
 			return;
 		}
+
 		previousCursorState.unshift(firstCursor);
 
 		viewModel.setCursorStates(
@@ -1707,7 +1803,9 @@ export class FocusPreviousCursor extends EditorAction {
 			CursorChangeReason.Explicit,
 			previousCursorState,
 		);
+
 		viewModel.revealPrimaryCursor(args.source, true);
+
 		announceCursorChange(previousCursorState, viewModel.getCursorStates());
 	}
 }

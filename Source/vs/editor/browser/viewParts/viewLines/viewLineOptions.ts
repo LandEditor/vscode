@@ -8,21 +8,32 @@ import { EditorOption } from "../../../common/config/editorOptions.js";
 
 export class ViewLineOptions {
 	public readonly themeType: ColorScheme;
+
 	public readonly renderWhitespace:
 		| "none"
 		| "boundary"
 		| "selection"
 		| "trailing"
 		| "all";
+
 	public readonly renderControlCharacters: boolean;
+
 	public readonly spaceWidth: number;
+
 	public readonly middotWidth: number;
+
 	public readonly wsmiddotWidth: number;
+
 	public readonly useMonospaceOptimizations: boolean;
+
 	public readonly canUseHalfwidthRightwardsArrow: boolean;
+
 	public readonly lineHeight: number;
+
 	public readonly stopRenderingLineAfter: number;
+
 	public readonly fontLigatures: string;
+
 	public readonly useGpu: boolean;
 
 	constructor(config: IEditorConfiguration, themeType: ColorScheme) {
@@ -42,25 +53,36 @@ export class ViewLineOptions {
 			// whitespace is rendered in a different layer
 			this.renderWhitespace = "none";
 		}
+
 		this.renderControlCharacters = options.get(
 			EditorOption.renderControlCharacters,
 		);
+
 		this.spaceWidth = fontInfo.spaceWidth;
+
 		this.middotWidth = fontInfo.middotWidth;
+
 		this.wsmiddotWidth = fontInfo.wsmiddotWidth;
+
 		this.useMonospaceOptimizations =
 			fontInfo.isMonospace &&
 			!options.get(EditorOption.disableMonospaceOptimizations);
+
 		this.canUseHalfwidthRightwardsArrow =
 			fontInfo.canUseHalfwidthRightwardsArrow;
+
 		this.lineHeight = options.get(EditorOption.lineHeight);
+
 		this.stopRenderingLineAfter = options.get(
 			EditorOption.stopRenderingLineAfter,
 		);
+
 		this.fontLigatures = options.get(EditorOption.fontLigatures);
+
 		this.useGpu =
 			options.get(EditorOption.experimentalGpuAcceleration) === "on";
 	}
+
 	public equals(other: ViewLineOptions): boolean {
 		return (
 			this.themeType === other.themeType &&

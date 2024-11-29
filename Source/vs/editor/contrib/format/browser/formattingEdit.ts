@@ -25,17 +25,21 @@ export class FormattingEdit {
 			if (typeof edit.eol === "number") {
 				newEol = edit.eol;
 			}
+
 			if (edit.range && typeof edit.text === "string") {
 				singleEdits.push(edit);
 			}
 		}
+
 		if (typeof newEol === "number") {
 			if (editor.hasModel()) {
 				editor.getModel().pushEOL(newEol);
 			}
 		}
+
 		return singleEdits;
 	}
+
 	private static _isFullModelReplaceEdit(
 		editor: ICodeEditor,
 		edit: ISingleEditOperation,
@@ -43,6 +47,7 @@ export class FormattingEdit {
 		if (!editor.hasModel()) {
 			return false;
 		}
+
 		const model = editor.getModel();
 
 		const editRange = model.validateRange(edit.range);
@@ -51,6 +56,7 @@ export class FormattingEdit {
 
 		return fullModelRange.equalsRange(editRange);
 	}
+
 	static execute(
 		editor: ICodeEditor,
 		_edits: TextEdit[],
@@ -59,6 +65,7 @@ export class FormattingEdit {
 		if (addUndoStops) {
 			editor.pushUndoStop();
 		}
+
 		const scrollState = StableEditorScrollState.capture(editor);
 
 		const edits = FormattingEdit._handleEolEdits(editor, _edits);
@@ -85,9 +92,11 @@ export class FormattingEdit {
 				),
 			);
 		}
+
 		if (addUndoStops) {
 			editor.pushUndoStop();
 		}
+
 		scrollState.restoreRelativeVerticalPositionOfCursor(editor);
 	}
 }

@@ -86,6 +86,7 @@ export async function main(argv: string[]): Promise<any> {
 
 				return;
 			}
+
 			const env: IProcessEnvironment = {
 				...process.env,
 			};
@@ -123,6 +124,7 @@ export async function main(argv: string[]): Promise<any> {
 						"bin",
 						`${product.tunnelApplicationName}${isWindows ? ".exe" : ""}`,
 					);
+
 					tunnelProcess = spawn(
 						tunnelCommand,
 						[subcommand, ...tunnelArgs],
@@ -131,8 +133,11 @@ export async function main(argv: string[]): Promise<any> {
 				}
 
 				tunnelProcess.stdout!.pipe(process.stdout);
+
 				tunnelProcess.stderr!.pipe(process.stderr);
+
 				tunnelProcess.on("exit", resolve);
+
 				tunnelProcess.on("error", reject);
 			});
 		}
@@ -141,6 +146,7 @@ export async function main(argv: string[]): Promise<any> {
 	// Help
 	if (args.help) {
 		const executable = `${product.applicationName}${isWindows ? ".exe" : ""}`;
+
 		console.log(
 			buildHelpMessage(
 				product.nameLong,
@@ -164,18 +170,22 @@ export async function main(argv: string[]): Promise<any> {
 			// Usage: `[[ "$TERM_PROGRAM" == "vscode" ]] && . "$(code --locate-shell-integration-path bash)"`
 			case "bash":
 				file = "shellIntegration-bash.sh";
+
 				break;
 			// Usage: `if ($env:TERM_PROGRAM -eq "vscode") { . "$(code --locate-shell-integration-path pwsh)" }`
 			case "pwsh":
 				file = "shellIntegration.ps1";
+
 				break;
 			// Usage: `[[ "$TERM_PROGRAM" == "vscode" ]] && . "$(code --locate-shell-integration-path zsh)"`
 			case "zsh":
 				file = "shellIntegration-rc.zsh";
+
 				break;
 			// Usage: `string match -q "$TERM_PROGRAM" "vscode"; and . (code --locate-shell-integration-path fish)`
 			case "fish":
 				file = "shellIntegration.fish";
+
 				break;
 
 			default:
@@ -183,6 +193,7 @@ export async function main(argv: string[]): Promise<any> {
 					"Error using --locate-shell-integration-path: Invalid shell type",
 				);
 		}
+
 		console.log(
 			join(
 				getAppRoot(),
@@ -214,6 +225,7 @@ export async function main(argv: string[]): Promise<any> {
 		}
 
 		const cli = await import(cliProcessMain);
+
 		await cli.main(args);
 
 		return;
@@ -240,7 +252,9 @@ export async function main(argv: string[]): Promise<any> {
 			const argsContents: { source: string; target: string } = JSON.parse(
 				readFileSync(argsFile, "utf8"),
 			);
+
 			source = argsContents.source;
+
 			target = argsContents.target;
 		} catch (error) {
 			throw new Error("Using --file-write with invalid arguments.");
@@ -288,6 +302,7 @@ export async function main(argv: string[]): Promise<any> {
 					)
 				) {
 					chmodSync(target, targetMode | 0o200);
+
 					restoreMode = true;
 				}
 			}
@@ -303,6 +318,7 @@ export async function main(argv: string[]): Promise<any> {
 				// prevent removing alternate data streams
 				// (see https://github.com/microsoft/vscode/issues/6363)
 				truncateSync(target, 0);
+
 				writeFileSync(target, data, { flag: "r+" });
 			} else {
 				writeFileSync(target, data);
@@ -339,6 +355,7 @@ export async function main(argv: string[]): Promise<any> {
 				child.stdout?.on("data", (data: Buffer) =>
 					console.log(data.toString("utf8").trim()),
 				);
+
 				child.stderr?.on("data", (data: Buffer) =>
 					console.log(data.toString("utf8").trim()),
 				);
@@ -354,6 +371,7 @@ export async function main(argv: string[]): Promise<any> {
 		if (hasReadStdinArg) {
 			// remove the "-" argument when we read from stdin
 			args._ = args._.filter((a) => a !== "-");
+
 			argv = argv.filter((a) => a !== "-");
 		}
 
@@ -369,6 +387,7 @@ export async function main(argv: string[]): Promise<any> {
 
 				try {
 					const readFromStdinDone = new DeferredPromise<void>();
+
 					await readFromStdin(stdinFilePath, !!args.verbose, () =>
 						readFromStdinDone.complete(),
 					);
@@ -393,6 +412,7 @@ export async function main(argv: string[]): Promise<any> {
 
 					// Make sure to open tmp file as editor but ignore it in the "recently open" list
 					addArg(argv, stdinFilePath);
+
 					addArg(argv, "--skip-add-to-recently-opened");
 
 					console.log(`Reading from stdin via: ${stdinFilePath}`);
@@ -400,6 +420,7 @@ export async function main(argv: string[]): Promise<any> {
 					console.log(
 						`Failed to create file to read via stdin: ${e.toString()}`,
 					);
+
 					stdinFilePath = undefined;
 				}
 			} else {
@@ -464,6 +485,7 @@ export async function main(argv: string[]): Promise<any> {
 						Event.fromNodeEventEmitter(child, "exit"),
 					);
 				}
+
 				try {
 					await Promise.race([
 						whenDeleted(waitMarkerFilePath!),
@@ -503,15 +525,19 @@ export async function main(argv: string[]): Promise<any> {
 			const filenamePrefix = randomPath(homedir(), "prof");
 
 			addArg(argv, `--inspect-brk=${profileHost}:${portMain}`);
+
 			addArg(
 				argv,
 				`--remote-debugging-port=${profileHost}:${portRenderer}`,
 			);
+
 			addArg(
 				argv,
 				`--inspect-brk-extensions=${profileHost}:${portExthost}`,
 			);
+
 			addArg(argv, `--prof-startup-prefix`, filenamePrefix);
+
 			addArg(argv, `--no-cached-data`);
 
 			writeFileSync(filenamePrefix, argv.slice(-6).join("|"));
@@ -523,7 +549,9 @@ export async function main(argv: string[]): Promise<any> {
 						filenamePrefix: string,
 						opts: {
 							port: number;
+
 							tries?: number;
+
 							target?: (targets: Target[]) => Target;
 						},
 					) {
@@ -547,6 +575,7 @@ export async function main(argv: string[]): Promise<any> {
 								if (!session) {
 									return;
 								}
+
 								let suffix = "";
 
 								const result = await session.stop();
@@ -560,6 +589,7 @@ export async function main(argv: string[]): Promise<any> {
 										result.profile,
 										"piiRemoved",
 									);
+
 									suffix = ".txt";
 								}
 
@@ -601,6 +631,7 @@ export async function main(argv: string[]): Promise<any> {
 									if (!target.webSocketDebuggerUrl) {
 										return false;
 									}
+
 									if (target.type === "page") {
 										return (
 											target.url.indexOf(
@@ -629,7 +660,9 @@ export async function main(argv: string[]): Promise<any> {
 
 					// stop profiling
 					await main.stop();
+
 					await renderer.stop();
+
 					await extHost.stop();
 
 					// re-create the marker file to signal that profiling is done
@@ -687,7 +720,9 @@ export async function main(argv: string[]): Promise<any> {
 					: ["stdout"]) {
 					// Tmp file to target output to
 					const tmpName = randomPath(tmpdir(), `code-${outputType}`);
+
 					writeFileSync(tmpName, "");
+
 					spawnArgs.push(`--${outputType}`, tmpName);
 
 					// Listener to redirect content to stdout/stderr
@@ -699,11 +734,13 @@ export async function main(argv: string[]): Promise<any> {
 									: process.stderr;
 
 							const cts = new CancellationTokenSource();
+
 							child.on("close", () => {
 								// We must dispose the token to stop watching,
 								// but the watcher might still be reading data.
 								setTimeout(() => cts.dispose(true), 200);
 							});
+
 							await watchFileContents(
 								tmpName,
 								(chunk) => stream.write(chunk),
@@ -726,6 +763,7 @@ export async function main(argv: string[]): Promise<any> {
 				// https://github.com/microsoft/vscode/issues/134696.
 				if (e !== "_") {
 					spawnArgs.push("--env");
+
 					spawnArgs.push(`${e}=${env[e]}`);
 				}
 			}
@@ -767,5 +805,6 @@ main(process.argv)
 	.then(() => eventuallyExit(0))
 	.then(null, (err) => {
 		console.error(err.message || err.stack || err);
+
 		eventuallyExit(1);
 	});

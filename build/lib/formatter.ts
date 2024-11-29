@@ -8,12 +8,15 @@ import * as ts from "typescript";
 
 class LanguageServiceHost implements ts.LanguageServiceHost {
 	files: ts.MapLike<ts.IScriptSnapshot> = {};
+
 	addFile(fileName: string, text: string) {
 		this.files[fileName] = ts.ScriptSnapshot.fromString(text);
 	}
+
 	fileExists(path: string): boolean {
 		return !!this.files[path];
 	}
+
 	readFile(path: string): string | undefined {
 		return this.files[path]?.getText(0, this.files[path]!.getLength());
 	}
@@ -74,6 +77,7 @@ const getOverrides = (() => {
 
 export function format(fileName: string, text: string) {
 	const host = new LanguageServiceHost();
+
 	host.addFile(fileName, text);
 
 	const languageService = ts.createLanguageService(host);
@@ -82,6 +86,7 @@ export function format(fileName: string, text: string) {
 		...defaults,
 		...getOverrides(),
 	});
+
 	edits
 		.sort((a, b) => a.span.start - b.span.start)
 		.reverse()
@@ -89,6 +94,7 @@ export function format(fileName: string, text: string) {
 			const head = text.slice(0, edit.span.start);
 
 			const tail = text.slice(edit.span.start + edit.span.length);
+
 			text = `${head}${edit.newText}${tail}`;
 		});
 

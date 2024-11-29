@@ -14,6 +14,7 @@ export function activate(context: vscode.ExtensionContext) {
 
 		return config.get<boolean>("math.enabled", true);
 	}
+
 	function getMacros(): {
 		[key: string]: string;
 	} {
@@ -23,6 +24,7 @@ export function activate(context: vscode.ExtensionContext) {
 			[key: string]: string;
 		}>("math.macros", {});
 	}
+
 	vscode.workspace.onDidChangeConfiguration(
 		(e) => {
 			if (e.affectsConfiguration(markdownMathSetting)) {
@@ -45,12 +47,14 @@ export function activate(context: vscode.ExtensionContext) {
 					globalGroup: true,
 					macros: { ...settingsMacros },
 				};
+
 				md.core.ruler.push("reset-katex-macros", () => {
 					options.macros = { ...settingsMacros };
 				});
 
 				return md.use(katex, options);
 			}
+
 			return md;
 		},
 	};

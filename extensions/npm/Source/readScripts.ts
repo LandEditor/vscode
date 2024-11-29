@@ -7,12 +7,16 @@ import { Location, Position, Range, TextDocument } from "vscode";
 
 export interface INpmScriptReference {
 	name: string;
+
 	value: string;
+
 	nameRange: Range;
+
 	valueRange: Range;
 }
 export interface INpmScriptInfo {
 	location: Location;
+
 	scripts: INpmScriptReference[];
 }
 export const readScripts = (
@@ -27,6 +31,7 @@ export const readScripts = (
 
 	let buildingScript: {
 		name: string;
+
 		nameRange: Range;
 	} | void;
 
@@ -44,8 +49,10 @@ export const readScripts = (
 		onObjectEnd(offset) {
 			if (inScripts) {
 				end = document.positionAt(offset);
+
 				inScripts = false;
 			}
+
 			level--;
 		},
 		onLiteralValue(value: unknown, offset: number, length: number) {
@@ -58,12 +65,14 @@ export const readScripts = (
 						document.positionAt(offset + length),
 					),
 				});
+
 				buildingScript = undefined;
 			}
 		},
 		onObjectProperty(property: string, offset: number, length: number) {
 			if (level === 1 && property === "scripts") {
 				inScripts = true;
+
 				start = document.positionAt(offset);
 			} else if (inScripts) {
 				buildingScript = {
@@ -76,11 +85,13 @@ export const readScripts = (
 			}
 		},
 	};
+
 	visit(buffer, visitor);
 
 	if (start === undefined) {
 		return undefined;
 	}
+
 	return {
 		location: new Location(document.uri, new Range(start, end ?? start)),
 		scripts,

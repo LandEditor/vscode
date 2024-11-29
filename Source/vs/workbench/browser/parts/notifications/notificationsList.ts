@@ -29,9 +29,13 @@ export interface INotificationsListOptions extends IListOptions<INotificationVie
 export class NotificationsList extends Disposable {
 
 	private listContainer: HTMLElement | undefined;
+
 	private list: WorkbenchList<INotificationViewItem> | undefined;
+
 	private listDelegate: NotificationsListDelegate | undefined;
+
 	private viewModel: INotificationViewItem[] = [];
+
 	private isVisible: boolean | undefined;
 
 	constructor(
@@ -61,6 +65,7 @@ export class NotificationsList extends Disposable {
 
 		// List Container
 		this.listContainer = document.createElement('div');
+
 		this.listContainer.classList.add('notifications-list-container');
 
 		const actionRunner = this._register(this.instantiationService.createInstance(NotificationActionRunner));
@@ -70,7 +75,9 @@ export class NotificationsList extends Disposable {
 
 		// List
 		const listDelegate = this.listDelegate = new NotificationsListDelegate(this.listContainer);
+
 		const options = this.options;
+
 		const list = this.list = this._register(this.instantiationService.createInstance(
 			WorkbenchList<INotificationViewItem>,
 			'NotificationsList',
@@ -90,6 +97,7 @@ export class NotificationsList extends Disposable {
 
 		// Context menu to copy message
 		const copyAction = this._register(this.instantiationService.createInstance(CopyNotificationMessageAction, CopyNotificationMessageAction.ID, CopyNotificationMessageAction.LABEL));
+
 		this._register((list.onContextMenu(e => {
 			if (!e.element) {
 				return;
@@ -110,6 +118,7 @@ export class NotificationsList extends Disposable {
 		// Use document.hasFocus() to not clear the focus when the entire window lost focus
 		// This ensures that when the focus comes back, the notification is still focused
 		const listFocusTracker = this._register(trackFocus(list.getHTMLElement()));
+
 		this._register(listFocusTracker.onDidBlur(() => {
 			if (getWindow(this.listContainer).document.hasFocus()) {
 				list.setFocus([]);
@@ -133,13 +142,16 @@ export class NotificationsList extends Disposable {
 
 	updateNotificationsList(start: number, deleteCount: number, items: INotificationViewItem[] = []) {
 		const [list, listContainer] = assertAllDefined(this.list, this.listContainer);
+
 		const listHasDOMFocus = isAncestorOfActiveElement(listContainer);
 
 		// Remember focus and relative top of that item
 		const focusedIndex = list.getFocus()[0];
+
 		const focusedItem = this.viewModel[focusedIndex];
 
 		let focusRelativeTop: number | null = null;
+
 		if (typeof focusedIndex === 'number') {
 			focusRelativeTop = list.getRelativeTop(focusedIndex);
 		}
@@ -149,6 +161,7 @@ export class NotificationsList extends Disposable {
 
 		// Update list
 		list.splice(start, deleteCount, items);
+
 		list.layout();
 
 		// Hide if no more notifications to show
@@ -159,8 +172,10 @@ export class NotificationsList extends Disposable {
 		// Otherwise restore focus if we had
 		else if (typeof focusedIndex === 'number') {
 			let indexToFocus = 0;
+
 			if (focusedItem) {
 				let indexToFocusCandidate = this.viewModel.indexOf(focusedItem);
+
 				if (indexToFocusCandidate === -1) {
 					indexToFocusCandidate = focusedIndex - 1; // item could have been removed
 				}
@@ -185,12 +200,15 @@ export class NotificationsList extends Disposable {
 
 	updateNotificationHeight(item: INotificationViewItem): void {
 		const index = this.viewModel.indexOf(item);
+
 		if (index === -1) {
 			return;
 		}
 
 		const [list, listDelegate] = assertAllDefined(this.list, this.listDelegate);
+
 		list.updateElementHeight(index, listDelegate.getHeight(item));
+
 		list.layout();
 	}
 
@@ -215,6 +233,7 @@ export class NotificationsList extends Disposable {
 		}
 
 		this.list.focusFirst();
+
 		this.list.domFocus();
 	}
 
@@ -251,21 +270,27 @@ class NotificationAccessibilityProvider implements IListAccessibilityProvider<IN
 		@IKeybindingService private readonly _keybindingService: IKeybindingService,
 		@IConfigurationService private readonly _configurationService: IConfigurationService
 	) { }
+
 	getAriaLabel(element: INotificationViewItem): string {
 		let accessibleViewHint: string | undefined;
+
 		const keybinding = this._keybindingService.lookupKeybinding('editor.action.accessibleView')?.getAriaLabel();
+
 		if (this._configurationService.getValue('accessibility.verbosity.notification')) {
 			accessibleViewHint = keybinding ? localize('notificationAccessibleViewHint', "Inspect the response in the accessible view with {0}", keybinding) : localize('notificationAccessibleViewHintNoKb', "Inspect the response in the accessible view via the command Open Accessible View which is currently not triggerable via keybinding");
 		}
+
 		if (!element.source) {
 			return accessibleViewHint ? localize('notificationAriaLabelHint', "{0}, notification, {1}", element.message.raw, accessibleViewHint) : localize('notificationAriaLabel', "{0}, notification", element.message.raw);
 		}
 
 		return accessibleViewHint ? localize('notificationWithSourceAriaLabelHint', "{0}, source: {1}, notification, {2}", element.message.raw, element.source, accessibleViewHint) : localize('notificationWithSourceAriaLabel', "{0}, source: {1}, notification", element.message.raw, element.source);
 	}
+
 	getWidgetAriaLabel(): string {
 		return this._options.widgetAriaLabel ?? localize('notificationsList', "Notifications List");
 	}
+
 	getRole(): AriaRole {
 		return 'dialog'; // https://github.com/microsoft/vscode/issues/82728
 	}

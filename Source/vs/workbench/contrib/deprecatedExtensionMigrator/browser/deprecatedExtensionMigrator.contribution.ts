@@ -44,8 +44,10 @@ class DeprecatedExtensionMigratorContribution {
 	) {
 		this.init().catch(onUnexpectedError);
 	}
+
 	private async init(): Promise<void> {
 		const bracketPairColorizerId = "coenraads.bracket-pair-colorizer";
+
 		await this.extensionsWorkbenchService.queryLocal();
 
 		const extension = this.extensionsWorkbenchService.installed.find(
@@ -59,6 +61,7 @@ class DeprecatedExtensionMigratorContribution {
 		) {
 			return;
 		}
+
 		const state = await this.getState();
 
 		const disablementLogEntry = state.disablementLog.some(
@@ -68,11 +71,14 @@ class DeprecatedExtensionMigratorContribution {
 		if (disablementLogEntry) {
 			return;
 		}
+
 		state.disablementLog.push({
 			extensionId: bracketPairColorizerId,
 			disablementDateTime: new Date().getTime(),
 		});
+
 		await this.setState(state);
+
 		await this.extensionsWorkbenchService.setEnablement(
 			extension,
 			EnablementState.DisabledGlobally,
@@ -85,6 +91,7 @@ class DeprecatedExtensionMigratorContribution {
 			!!this.configurationService.inspect(
 				nativeBracketPairColorizationEnabledKey,
 			).user;
+
 		this.notificationService.notify({
 			message: localize(
 				"bracketPairColorizer.notification",
@@ -145,7 +152,9 @@ class DeprecatedExtensionMigratorContribution {
 			},
 		});
 	}
+
 	private readonly storageKey = "deprecatedExtensionMigrator.state";
+
 	private async getState(): Promise<State> {
 		const jsonStr = await this.storageService.get(
 			this.storageKey,
@@ -156,10 +165,13 @@ class DeprecatedExtensionMigratorContribution {
 		if (jsonStr === "") {
 			return { disablementLog: [] };
 		}
+
 		return JSON.parse(jsonStr) as State;
 	}
+
 	private async setState(state: State): Promise<void> {
 		const json = JSON.stringify(state);
+
 		await this.storageService.store(
 			this.storageKey,
 			json,
@@ -171,6 +183,7 @@ class DeprecatedExtensionMigratorContribution {
 interface State {
 	disablementLog: {
 		extensionId: string;
+
 		disablementDateTime: number;
 	}[];
 }

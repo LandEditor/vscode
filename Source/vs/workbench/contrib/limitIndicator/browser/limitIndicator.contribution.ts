@@ -56,6 +56,7 @@ export class LimitIndicatorContribution
 			(indicator) =>
 				new LanguageStatusEntry(languageStatusService, indicator),
 		);
+
 		statusEntries.forEach((entry) => this._register(entry));
 
 		let control: any;
@@ -66,47 +67,61 @@ export class LimitIndicatorContribution
 			if (activeControl === control) {
 				return;
 			}
+
 			control = activeControl;
 
 			const editor = getCodeEditor(activeControl);
+
 			statusEntries.forEach((statusEntry) =>
 				statusEntry.onActiveEditorChanged(editor),
 			);
 		};
+
 		this._register(
 			editorService.onDidActiveEditorChange(onActiveEditorChanged),
 		);
+
 		onActiveEditorChanged();
 	}
 }
 export interface LimitInfo {
 	readonly onDidChange: Event<void>;
+
 	readonly computed: number;
+
 	readonly limited: number | false;
 }
 interface LanguageFeatureAccessor {
 	readonly id: string;
+
 	readonly name: string;
+
 	readonly label: string;
+
 	readonly source: string;
+
 	readonly settingsId: string;
 
 	getLimitReporter(editor: ICodeEditor): LimitInfo | undefined;
 }
 class ColorDecorationAccessor implements LanguageFeatureAccessor {
 	readonly id = "decoratorsLimitInfo";
+
 	readonly name = nls.localize(
 		"colorDecoratorsStatusItem.name",
 		"Color Decorator Status",
 	);
+
 	readonly label = nls.localize(
 		"status.limitedColorDecorators.short",
 		"Color Decorators",
 	);
+
 	readonly source = nls.localize(
 		"colorDecoratorsStatusItem.source",
 		"Color Decorators",
 	);
+
 	readonly settingsId = "editor.colorDecoratorsLimit";
 
 	getLimitReporter(editor: ICodeEditor): LimitInfo | undefined {
@@ -115,15 +130,19 @@ class ColorDecorationAccessor implements LanguageFeatureAccessor {
 }
 class FoldingRangeAccessor implements LanguageFeatureAccessor {
 	readonly id = "foldingLimitInfo";
+
 	readonly name = nls.localize(
 		"foldingRangesStatusItem.name",
 		"Folding Status",
 	);
+
 	readonly label = nls.localize(
 		"status.limitedFoldingRanges.short",
 		"Folding Ranges",
 	);
+
 	readonly source = nls.localize("foldingRangesStatusItem.source", "Folding");
+
 	readonly settingsId = "editor.foldingMaximumRegions";
 
 	getLimitReporter(editor: ICodeEditor): LimitInfo | undefined {
@@ -132,22 +151,27 @@ class FoldingRangeAccessor implements LanguageFeatureAccessor {
 }
 class LanguageStatusEntry {
 	private _limitStatusItem: IDisposable | undefined;
+
 	private _indicatorChangeListener: IDisposable | undefined;
 
 	constructor(
 		private languageStatusService: ILanguageStatusService,
 		private accessor: LanguageFeatureAccessor,
 	) {}
+
 	onActiveEditorChanged(editor: ICodeEditor | null): boolean {
 		if (this._indicatorChangeListener) {
 			this._indicatorChangeListener.dispose();
+
 			this._indicatorChangeListener = undefined;
 		}
+
 		let info: LimitInfo | undefined;
 
 		if (editor) {
 			info = this.accessor.getLimitReporter(editor);
 		}
+
 		this.updateStatusItem(info);
 
 		if (info) {
@@ -157,13 +181,17 @@ class LanguageStatusEntry {
 
 			return true;
 		}
+
 		return false;
 	}
+
 	private updateStatusItem(info: LimitInfo | undefined) {
 		if (this._limitStatusItem) {
 			this._limitStatusItem.dispose();
+
 			this._limitStatusItem = undefined;
 		}
+
 		if (info && info.limited !== false) {
 			const status: ILanguageStatus = {
 				id: this.accessor.id,
@@ -185,14 +213,19 @@ class LanguageStatusEntry {
 				source: this.accessor.source,
 				busy: false,
 			};
+
 			this._limitStatusItem =
 				this.languageStatusService.addStatus(status);
 		}
 	}
+
 	public dispose() {
 		this._limitStatusItem?.dispose;
+
 		this._limitStatusItem = undefined;
+
 		this._indicatorChangeListener?.dispose;
+
 		this._indicatorChangeListener = undefined;
 	}
 }

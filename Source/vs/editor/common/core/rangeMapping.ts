@@ -12,6 +12,7 @@ import { TextLength } from "./textLength.js";
  */
 export class RangeMapping {
 	constructor(public readonly mappings: readonly SingleRangeMapping[]) {}
+
 	mapPosition(position: Position): PositionOrRange {
 		const mapping = findLastMonotonous(this.mappings, (m) =>
 			m.original.getStartPosition().isBeforeOrEqual(position),
@@ -20,9 +21,11 @@ export class RangeMapping {
 		if (!mapping) {
 			return PositionOrRange.position(position);
 		}
+
 		if (mapping.original.containsPosition(position)) {
 			return PositionOrRange.range(mapping.modified);
 		}
+
 		const l = TextLength.betweenPositions(
 			mapping.original.getEndPosition(),
 			position,
@@ -32,6 +35,7 @@ export class RangeMapping {
 			l.addToPosition(mapping.modified.getEndPosition()),
 		);
 	}
+
 	mapRange(range: Range): Range {
 		const start = this.mapPosition(range.getStartPosition());
 
@@ -42,6 +46,7 @@ export class RangeMapping {
 			end.range?.getEndPosition() ?? end.position!,
 		);
 	}
+
 	reverse(): RangeMapping {
 		return new RangeMapping(
 			this.mappings.map((mapping) => mapping.reverse()),
@@ -53,9 +58,11 @@ export class SingleRangeMapping {
 		public readonly original: Range,
 		public readonly modified: Range,
 	) {}
+
 	reverse(): SingleRangeMapping {
 		return new SingleRangeMapping(this.modified, this.original);
 	}
+
 	toString() {
 		return `${this.original.toString()} -> ${this.modified.toString()}`;
 	}
@@ -64,9 +71,11 @@ export class PositionOrRange {
 	public static position(position: Position): PositionOrRange {
 		return new PositionOrRange(position, undefined);
 	}
+
 	public static range(range: Range): PositionOrRange {
 		return new PositionOrRange(undefined, range);
 	}
+
 	private constructor(
 		public readonly position: Position | undefined,
 		public readonly range: Range | undefined,

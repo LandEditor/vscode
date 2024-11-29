@@ -148,50 +148,65 @@ class RemoteAuthoritiesImpl {
 	private readonly _hosts: {
 		[authority: string]: string | undefined;
 	} = Object.create(null);
+
 	private readonly _ports: {
 		[authority: string]: number | undefined;
 	} = Object.create(null);
+
 	private readonly _connectionTokens: {
 		[authority: string]: string | undefined;
 	} = Object.create(null);
+
 	private _preferredWebSchema: "http" | "https" = "http";
+
 	private _delegate: ((uri: URI) => URI) | null = null;
+
 	private _serverRootPath: string = "/";
 
 	setPreferredWebSchema(schema: "http" | "https") {
 		this._preferredWebSchema = schema;
 	}
+
 	setDelegate(delegate: (uri: URI) => URI): void {
 		this._delegate = delegate;
 	}
+
 	setServerRootPath(
 		product: {
 			quality?: string;
+
 			commit?: string;
 		},
 		serverBasePath: string | undefined,
 	): void {
 		this._serverRootPath = getServerRootPath(product, serverBasePath);
 	}
+
 	getServerRootPath(): string {
 		return this._serverRootPath;
 	}
+
 	private get _remoteResourcesPath(): string {
 		return paths.posix.join(
 			this._serverRootPath,
 			Schemas.vscodeRemoteResource,
 		);
 	}
+
 	set(authority: string, host: string, port: number): void {
 		this._hosts[authority] = host;
+
 		this._ports[authority] = port;
 	}
+
 	setConnectionToken(authority: string, connectionToken: string): void {
 		this._connectionTokens[authority] = connectionToken;
 	}
+
 	getPreferredWebSchema(): "http" | "https" {
 		return this._preferredWebSchema;
 	}
+
 	rewrite(uri: URI): URI {
 		if (this._delegate) {
 			try {
@@ -202,6 +217,7 @@ class RemoteAuthoritiesImpl {
 				return uri;
 			}
 		}
+
 		const authority = uri.authority;
 
 		let host = this._hosts[authority];
@@ -209,6 +225,7 @@ class RemoteAuthoritiesImpl {
 		if (host && host.indexOf(":") !== -1 && host.indexOf("[") === -1) {
 			host = `[${host}]`;
 		}
+
 		const port = this._ports[authority];
 
 		const connectionToken = this._connectionTokens[authority];
@@ -218,6 +235,7 @@ class RemoteAuthoritiesImpl {
 		if (typeof connectionToken === "string") {
 			query += `&${connectionTokenQueryName}=${encodeURIComponent(connectionToken)}`;
 		}
+
 		return URI.from({
 			scheme: platform.isWeb
 				? this._preferredWebSchema
@@ -233,6 +251,7 @@ export const RemoteAuthorities = new RemoteAuthoritiesImpl();
 export function getServerRootPath(
 	product: {
 		quality?: string;
+
 		commit?: string;
 	},
 	basePath: string | undefined,
@@ -329,6 +348,7 @@ class FileAccessImpl {
 				fragment: null,
 			});
 		}
+
 		return uri;
 	}
 	/**
@@ -360,8 +380,10 @@ class FileAccessImpl {
 				fragment: null,
 			});
 		}
+
 		return uri;
 	}
+
 	private toUri(
 		uriOrModule: URI | string,
 		moduleIdToUrl?: {
@@ -371,6 +393,7 @@ class FileAccessImpl {
 		if (URI.isUri(uriOrModule)) {
 			return uriOrModule;
 		}
+
 		if (globalThis._VSCODE_FILE_ROOT) {
 			const rootUriOrPath = globalThis._VSCODE_FILE_ROOT;
 			// File URL (with scheme)
@@ -385,6 +408,7 @@ class FileAccessImpl {
 
 			return URI.file(modulePath);
 		}
+
 		return URI.parse(moduleIdToUrl!.toUrl(uriOrModule));
 	}
 }
@@ -424,11 +448,13 @@ export namespace COI {
 		} else if (URI.isUri(url)) {
 			params = new URL(url.toString(true)).searchParams;
 		}
+
 		const value = params?.get(coiSearchParamName);
 
 		if (!value) {
 			return undefined;
 		}
+
 		return coiHeaders.get(value);
 	}
 	/**
@@ -444,6 +470,7 @@ export namespace COI {
 			// depends on the current context being COI
 			return;
 		}
+
 		const value = coop && coep ? "3" : coep ? "2" : "1";
 
 		if (urlOrSearch instanceof URLSearchParams) {

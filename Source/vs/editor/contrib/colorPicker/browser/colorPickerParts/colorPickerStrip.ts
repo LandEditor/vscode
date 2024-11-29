@@ -16,14 +16,19 @@ const $ = dom.$;
 
 export abstract class Strip extends Disposable {
 	protected domNode: HTMLElement;
+
 	protected overlay: HTMLElement;
+
 	protected slider: HTMLElement;
+
 	private height!: number;
 
 	private readonly _onDidChange = new Emitter<number>();
+
 	readonly onDidChange: Event<number> = this._onDidChange.event;
 
 	private readonly _onColorFlushed = new Emitter<void>();
+
 	readonly onColorFlushed: Event<void> = this._onColorFlushed.event;
 
 	constructor(
@@ -35,12 +40,16 @@ export abstract class Strip extends Disposable {
 
 		if (type === ColorPickerWidgetType.Standalone) {
 			this.domNode = dom.append(container, $(".standalone-strip"));
+
 			this.overlay = dom.append(this.domNode, $(".standalone-overlay"));
 		} else {
 			this.domNode = dom.append(container, $(".strip"));
+
 			this.overlay = dom.append(this.domNode, $(".overlay"));
 		}
+
 		this.slider = dom.append(this.domNode, $(".slider"));
+
 		this.slider.style.top = `0px`;
 
 		this._register(
@@ -50,7 +59,9 @@ export abstract class Strip extends Disposable {
 				(e) => this.onPointerDown(e),
 			),
 		);
+
 		this._register(model.onDidChangeColor(this.onDidChangeColor, this));
+
 		this.layout();
 	}
 
@@ -58,11 +69,13 @@ export abstract class Strip extends Disposable {
 		this.height = this.domNode.offsetHeight - this.slider.offsetHeight;
 
 		const value = this.getValue(this.model.color);
+
 		this.updateSliderPosition(value);
 	}
 
 	protected onDidChangeColor(color: Color) {
 		const value = this.getValue(color);
+
 		this.updateSliderPosition(value);
 	}
 
@@ -70,9 +83,11 @@ export abstract class Strip extends Disposable {
 		if (!e.target || !(e.target instanceof Element)) {
 			return;
 		}
+
 		const monitor = this._register(new GlobalPointerMoveMonitor());
 
 		const origin = dom.getDomNodePagePosition(this.domNode);
+
 		this.domNode.classList.add("grabbing");
 
 		if (e.target !== this.slider) {
@@ -92,8 +107,11 @@ export abstract class Strip extends Disposable {
 			dom.EventType.POINTER_UP,
 			() => {
 				this._onColorFlushed.fire();
+
 				pointerUpListener.dispose();
+
 				monitor.stopMonitoring(true);
+
 				this.domNode.classList.remove("grabbing");
 			},
 			true,
@@ -104,6 +122,7 @@ export abstract class Strip extends Disposable {
 		const value = Math.max(0, Math.min(1, 1 - top / this.height));
 
 		this.updateSliderPosition(value);
+
 		this._onDidChange.fire(value);
 	}
 
@@ -121,6 +140,7 @@ export class OpacityStrip extends Strip {
 		type: ColorPickerWidgetType,
 	) {
 		super(container, model, type);
+
 		this.domNode.classList.add("opacity-strip");
 
 		this.onDidChangeColor(this.model.color);
@@ -150,6 +170,7 @@ export class HueStrip extends Strip {
 		type: ColorPickerWidgetType,
 	) {
 		super(container, model, type);
+
 		this.domNode.classList.add("hue-strip");
 	}
 

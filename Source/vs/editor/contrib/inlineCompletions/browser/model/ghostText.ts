@@ -14,6 +14,7 @@ export class GhostText {
 		public readonly lineNumber: number,
 		public readonly parts: GhostTextPart[],
 	) {}
+
 	equals(other: GhostText): boolean {
 		return (
 			this.lineNumber === other.lineNumber &&
@@ -37,10 +38,12 @@ export class GhostText {
 			),
 		]).applyToString(documentText);
 	}
+
 	renderForScreenReader(lineText: string): string {
 		if (this.parts.length === 0) {
 			return "";
 		}
+
 		const lastPart = this.parts[this.parts.length - 1];
 
 		const cappedLineText = lineText.substr(0, lastPart.column - 1);
@@ -57,9 +60,11 @@ export class GhostText {
 
 		return text.substring(this.parts[0].column - 1);
 	}
+
 	isEmpty(): boolean {
 		return this.parts.every((p) => p.lines.length === 0);
 	}
+
 	get lineCount(): number {
 		return 1 + this.parts.reduce((r, p) => r + p.lines.length - 1, 0);
 	}
@@ -73,7 +78,9 @@ export class GhostTextPart {
 		 */
 		readonly preview: boolean,
 	) {}
+
 	readonly lines = splitLines(this.text);
+
 	equals(other: GhostTextPart): boolean {
 		return (
 			this.column === other.column &&
@@ -97,10 +104,13 @@ export class GhostTextReplacement {
 		readonly text: string,
 		public readonly additionalReservedLineCount: number = 0,
 	) {}
+
 	readonly newLines = splitLines(this.text);
+
 	renderForScreenReader(_lineText: string): string {
 		return this.newLines.join("\n");
 	}
+
 	render(documentText: string, debug: boolean = false): string {
 		const replaceRange = this.columnRange.toRange(this.lineNumber);
 
@@ -121,12 +131,15 @@ export class GhostTextReplacement {
 			]).applyToString(documentText);
 		}
 	}
+
 	get lineCount(): number {
 		return this.newLines.length;
 	}
+
 	isEmpty(): boolean {
 		return this.parts.every((p) => p.lines.length === 0);
 	}
+
 	equals(other: GhostTextReplacement): boolean {
 		return (
 			this.lineNumber === other.lineNumber &&
@@ -155,17 +168,21 @@ export function ghostTextOrReplacementEquals(
 	if (a === b) {
 		return true;
 	}
+
 	if (!a || !b) {
 		return false;
 	}
+
 	if (a instanceof GhostText && b instanceof GhostText) {
 		return a.equals(b);
 	}
+
 	if (
 		a instanceof GhostTextReplacement &&
 		b instanceof GhostTextReplacement
 	) {
 		return a.equals(b);
 	}
+
 	return false;
 }

@@ -84,19 +84,24 @@ export class UtilityProcessWorkerWorkbenchService
 	implements IUtilityProcessWorkerWorkbenchService
 {
 	declare readonly _serviceBrand: undefined;
+
 	private _utilityProcessWorkerService:
 		| IUtilityProcessWorkerService
 		| undefined = undefined;
+
 	private get utilityProcessWorkerService(): IUtilityProcessWorkerService {
 		if (!this._utilityProcessWorkerService) {
 			const channel = this.mainProcessService.getChannel(
 				ipcUtilityProcessWorkerChannelName,
 			);
+
 			this._utilityProcessWorkerService =
 				ProxyChannel.toService<IUtilityProcessWorkerService>(channel);
 		}
+
 		return this._utilityProcessWorkerService;
 	}
+
 	private readonly restoredBarrier = new Barrier();
 
 	constructor(
@@ -108,6 +113,7 @@ export class UtilityProcessWorkerWorkbenchService
 	) {
 		super();
 	}
+
 	async createWorker(
 		process: IUtilityProcessWorkerProcess,
 	): Promise<IUtilityProcessWorker> {
@@ -136,12 +142,14 @@ export class UtilityProcessWorkerWorkbenchService
 		});
 		// Dispose worker upon disposal via utility process service
 		const disposables = new DisposableStore();
+
 		disposables.add(
 			toDisposable(() => {
 				this.logService.trace(
 					"Renderer->UtilityProcess#disposeWorker",
 					process,
 				);
+
 				this.utilityProcessWorkerService.disposeWorker({
 					process,
 					reply: { windowId: this.windowId },
@@ -157,9 +165,11 @@ export class UtilityProcessWorkerWorkbenchService
 				`window:${this.windowId},module:${process.moduleId}`,
 			),
 		);
+
 		this.logService.trace(
 			"Renderer->UtilityProcess#createWorkerChannel: connection established",
 		);
+
 		onDidTerminate.then(({ reason }) => {
 			if (reason?.code === 0) {
 				this.logService.trace(
@@ -174,6 +184,7 @@ export class UtilityProcessWorkerWorkbenchService
 
 		return { client, onDidTerminate, dispose: () => disposables.dispose() };
 	}
+
 	notifyRestored(): void {
 		if (!this.restoredBarrier.isOpen()) {
 			this.restoredBarrier.open();

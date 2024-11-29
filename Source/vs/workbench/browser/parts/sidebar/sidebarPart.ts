@@ -76,9 +76,13 @@ export class SidebarPart extends AbstractPaneCompositePart {
 	//#region IView
 
 	readonly minimumWidth: number = 170;
+
 	readonly maximumWidth: number = Number.POSITIVE_INFINITY;
+
 	readonly minimumHeight: number = 0;
+
 	readonly maximumHeight: number = Number.POSITIVE_INFINITY;
+
 	override get snap(): boolean {
 		return true;
 	}
@@ -154,6 +158,7 @@ export class SidebarPart extends AbstractPaneCompositePart {
 		);
 
 		this.rememberActivityBarVisiblePosition();
+
 		this._register(
 			configurationService.onDidChangeConfiguration((e) => {
 				if (
@@ -192,6 +197,7 @@ export class SidebarPart extends AbstractPaneCompositePart {
 
 		container.style.backgroundColor =
 			this.getColor(SIDE_BAR_BACKGROUND) || "";
+
 		container.style.color = this.getColor(SIDE_BAR_FOREGROUND) || "";
 
 		const borderColor =
@@ -199,20 +205,27 @@ export class SidebarPart extends AbstractPaneCompositePart {
 
 		const isPositionLeft =
 			this.layoutService.getSideBarPosition() === SideBarPosition.LEFT;
+
 		container.style.borderRightWidth =
 			borderColor && isPositionLeft ? "1px" : "";
+
 		container.style.borderRightStyle =
 			borderColor && isPositionLeft ? "solid" : "";
+
 		container.style.borderRightColor = isPositionLeft
 			? borderColor || ""
 			: "";
+
 		container.style.borderLeftWidth =
 			borderColor && !isPositionLeft ? "1px" : "";
+
 		container.style.borderLeftStyle =
 			borderColor && !isPositionLeft ? "solid" : "";
+
 		container.style.borderLeftColor = !isPositionLeft
 			? borderColor || ""
 			: "";
+
 		container.style.outlineColor =
 			this.getColor(SIDE_BAR_DRAG_AND_DROP_BACKGROUND) ?? "";
 	}
@@ -273,6 +286,7 @@ export class SidebarPart extends AbstractPaneCompositePart {
 
 					if (viewsSubmenuAction) {
 						actions.push(new Separator());
+
 						actions.push(viewsSubmenuAction);
 					}
 				}
@@ -424,6 +438,7 @@ export class SidebarPart extends AbstractPaneCompositePart {
 
 	private registerActions(): void {
 		const that = this;
+
 		this._register(
 			registerAction2(
 				class extends Action2 {
@@ -436,6 +451,7 @@ export class SidebarPart extends AbstractPaneCompositePart {
 							),
 						});
 					}
+
 					run(): Promise<void> {
 						const value =
 							that.configurationService.getValue(

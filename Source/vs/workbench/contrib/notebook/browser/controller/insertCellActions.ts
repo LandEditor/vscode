@@ -59,10 +59,12 @@ export function insertNewCell(
 	if (context.ui) {
 		context.notebookEditor.focus();
 	}
+
 	const languageService = accessor.get(ILanguageService);
 
 	if (context.cell) {
 		const idx = context.notebookEditor.getCellIndex(context.cell);
+
 		newCell = insertCell(
 			languageService,
 			context.notebookEditor,
@@ -76,6 +78,7 @@ export function insertNewCell(
 		const focusRange = context.notebookEditor.getFocus();
 
 		const next = Math.max(focusRange.end - 1, 0);
+
 		newCell = insertCell(
 			languageService,
 			context.notebookEditor,
@@ -86,6 +89,7 @@ export function insertNewCell(
 			true,
 		);
 	}
+
 	return newCell;
 }
 export abstract class InsertCellCommand extends NotebookAction {
@@ -97,6 +101,7 @@ export abstract class InsertCellCommand extends NotebookAction {
 	) {
 		super(desc);
 	}
+
 	async runWithContext(
 		accessor: ServicesAccessor,
 		context: INotebookActionContext,
@@ -272,6 +277,7 @@ registerAction2(
 				f1: false,
 			});
 		}
+
 		override async run(
 			accessor: ServicesAccessor,
 			context?: INotebookActionContext,
@@ -283,6 +289,7 @@ registerAction2(
 				this.runWithContext(accessor, context);
 			}
 		}
+
 		async runWithContext(
 			accessor: ServicesAccessor,
 			context: INotebookActionContext,
@@ -320,6 +327,7 @@ registerAction2(
 				f1: false,
 			});
 		}
+
 		override async run(
 			accessor: ServicesAccessor,
 			context?: INotebookActionContext,
@@ -331,6 +339,7 @@ registerAction2(
 				this.runWithContext(accessor, context);
 			}
 		}
+
 		async runWithContext(
 			accessor: ServicesAccessor,
 			context: INotebookActionContext,

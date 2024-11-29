@@ -54,15 +54,21 @@ import { IWebviewWorkbenchService } from "../../webviewPanel/browser/webviewWork
 
 export class ReleaseNotesManager {
 	private readonly _simpleSettingRenderer: SimpleSettingRenderer;
+
 	private readonly _releaseNotesCache = new Map<string, Promise<string>>();
+
 	private _currentReleaseNotes: WebviewInput | undefined = undefined;
+
 	private _lastMeta:
 		| {
 				text: string;
+
 				base: URI;
 		  }
 		| undefined;
+
 	private readonly disposables = new DisposableStore();
+
 	public constructor(
 		@IEnvironmentService
 		private readonly _environmentService: IEnvironmentService,
@@ -94,30 +100,36 @@ export class ReleaseNotesManager {
 		TokenizationRegistry.onDidChange(() => {
 			return this.updateHtml();
 		});
+
 		_configurationService.onDidChangeConfiguration(
 			this.onDidChangeConfiguration,
 			this,
 			this.disposables,
 		);
+
 		_webviewWorkbenchService.onDidChangeActiveWebviewEditor(
 			this.onDidChangeActiveWebviewEditor,
 			this,
 			this.disposables,
 		);
+
 		this._simpleSettingRenderer = this._instantiationService.createInstance(
 			SimpleSettingRenderer,
 		);
 	}
+
 	private async updateHtml() {
 		if (!this._currentReleaseNotes || !this._lastMeta) {
 			return;
 		}
+
 		const html = await this.renderBody(this._lastMeta);
 
 		if (this._currentReleaseNotes) {
 			this._currentReleaseNotes.webview.setHtml(html);
 		}
 	}
+
 	private async getBase(useCurrentFile: boolean) {
 		if (useCurrentFile) {
 			const currentFileUri = this._codeEditorService
@@ -128,8 +140,10 @@ export class ReleaseNotesManager {
 				return dirname(currentFileUri);
 			}
 		}
+
 		return URI.parse("https://code.visualstudio.com/raw");
 	}
+
 	public async show(
 		version: string,
 		useCurrentFile: boolean,
@@ -140,6 +154,7 @@ export class ReleaseNotesManager {
 		);
 
 		const base = await this.getBase(useCurrentFile);
+
 		this._lastMeta = { text: releaseNoteText, base };
 
 		const html = await this.renderBody(this._lastMeta);
@@ -154,7 +169,9 @@ export class ReleaseNotesManager {
 
 		if (this._currentReleaseNotes) {
 			this._currentReleaseNotes.setName(title);
+
 			this._currentReleaseNotes.webview.setHtml(html);
+
 			this._webviewWorkbenchService.revealWebview(
 				this._currentReleaseNotes,
 				activeEditorPane
@@ -182,11 +199,13 @@ export class ReleaseNotesManager {
 					title,
 					{ group: ACTIVE_GROUP, preserveFocus: false },
 				);
+
 			this._currentReleaseNotes.webview.onDidClickLink((uri) =>
 				this.onDidClickLink(URI.parse(uri)),
 			);
 
 			const disposables = new DisposableStore();
+
 			disposables.add(
 				this._currentReleaseNotes.webview.onMessage((e) => {
 					if (e.message.type === "showReleaseNotes") {
@@ -202,6 +221,7 @@ export class ReleaseNotesManager {
 						const y =
 							this._currentReleaseNotes?.webview.container
 								.offsetTop + e.message.value.y;
+
 						this._simpleSettingRenderer.updateSetting(
 							URI.parse(e.message.value.uri),
 							x,
@@ -210,16 +230,21 @@ export class ReleaseNotesManager {
 					}
 				}),
 			);
+
 			disposables.add(
 				this._currentReleaseNotes.onWillDispose(() => {
 					disposables.dispose();
+
 					this._currentReleaseNotes = undefined;
 				}),
 			);
+
 			this._currentReleaseNotes.webview.setHtml(html);
 		}
+
 		return true;
 	}
+
 	private async loadReleaseNotes(
 		version: string,
 		useCurrentFile: boolean,
@@ -229,6 +254,7 @@ export class ReleaseNotesManager {
 		if (!match) {
 			throw new Error("not found");
 		}
+
 		const versionLabel = match[1].replace(/\./g, "_");
 
 		const baseUrl = "https://code.visualstudio.com/raw";
@@ -248,6 +274,7 @@ export class ReleaseNotesManager {
 				if (!keybinding) {
 					return unassigned;
 				}
+
 				return keybinding.getLabel() || unassigned;
 			};
 
@@ -257,12 +284,14 @@ export class ReleaseNotesManager {
 				if (!keybinding) {
 					return unassigned;
 				}
+
 				const resolvedKeybindings =
 					this._keybindingService.resolveKeybinding(keybinding);
 
 				if (resolvedKeybindings.length === 0) {
 					return unassigned;
 				}
+
 				return resolvedKeybindings[0].getLabel() || unassigned;
 			};
 
@@ -302,6 +331,7 @@ export class ReleaseNotesManager {
 						.getActiveCodeEditor()
 						?.getModel()
 						?.getValue();
+
 					text = file ? file.substring(file.indexOf("#")) : undefined;
 				} else {
 					text = await asTextOrError(
@@ -314,16 +344,19 @@ export class ReleaseNotesManager {
 			} catch {
 				throw new Error("Failed to fetch release notes");
 			}
+
 			if (!text || (!/^#\s/.test(text) && !useCurrentFile)) {
 				// release notes always starts with `#` followed by whitespace, except when using the current file
 				throw new Error("Invalid release notes");
 			}
+
 			return patchKeybindings(text);
 		};
 		// Don't cache the current file
 		if (useCurrentFile) {
 			return fetchReleaseNotes();
 		}
+
 		if (!this._releaseNotesCache.has(version)) {
 			this._releaseNotesCache.set(
 				version,
@@ -338,8 +371,10 @@ export class ReleaseNotesManager {
 				})(),
 			);
 		}
+
 		return this._releaseNotesCache.get(version)!;
 	}
+
 	private async onDidClickLink(uri: URI) {
 		if (uri.scheme === Schemas.codeSetting) {
 			// handled in receive message
@@ -353,6 +388,7 @@ export class ReleaseNotesManager {
 				.then(undefined, onUnexpectedError);
 		}
 	}
+
 	private async addGAParameters(
 		uri: URI,
 		origin: string,
@@ -372,8 +408,10 @@ export class ReleaseNotesManager {
 				});
 			}
 		}
+
 		return uri;
 	}
+
 	private async renderBody(fileContent: { text: string; base: URI }) {
 		const nonce = generateUuid();
 
@@ -423,9 +461,13 @@ export class ReleaseNotesManager {
 
 					code:has(.codesetting) {
 						background-color: var(--vscode-textPreformat-background);
+
 						color: var(--vscode-textPreformat-foreground);
+
 						padding-left: 1px;
+
 						margin-right: 3px;
+
 						padding-right: 0px;
 					}
 
@@ -435,67 +477,109 @@ export class ReleaseNotesManager {
 
 					.codesetting {
 						color: var(--vscode-textPreformat-foreground);
+
 						padding: 0px 1px 1px 0px;
+
 						font-size: 0px;
+
 						overflow: hidden;
+
 						text-overflow: ellipsis;
+
 						outline-offset: 2px !important;
+
 						box-sizing: border-box;
+
 						text-align: center;
+
 						cursor: pointer;
+
 						display: inline;
+
 						margin-right: 3px;
 					}
 					.codesetting svg {
 						font-size: 12px;
+
 						text-align: center;
+
 						cursor: pointer;
+
 						border: 1px solid var(--vscode-button-secondaryBorder, transparent);
+
 						outline: 1px solid transparent;
+
 						line-height: 9px;
+
 						margin-bottom: -5px;
+
 						padding-left: 0px;
+
 						padding-top: 2px;
+
 						padding-bottom: 2px;
+
 						padding-right: 2px;
+
 						display: inline-block;
+
 						text-decoration: none;
+
 						text-rendering: auto;
+
 						text-transform: none;
 						-webkit-font-smoothing: antialiased;
 						-moz-osx-font-smoothing: grayscale;
+
 						user-select: none;
 						-webkit-user-select: none;
 					}
 					.codesetting .setting-name {
 						font-size: 13px;
+
 						padding-left: 2px;
+
 						padding-right: 3px;
+
 						padding-top: 1px;
+
 						padding-bottom: 1px;
+
 						margin-left: -5px;
+
 						margin-top: -3px;
 					}
 					.codesetting:hover {
 						color: var(--vscode-textPreformat-foreground) !important;
+
 						text-decoration: none !important;
 					}
+
 					code:has(.codesetting):hover {
 						filter: brightness(140%);
+
 						text-decoration: none !important;
 					}
 					.codesetting:focus {
 						outline: 0 !important;
+
 						text-decoration: none !important;
+
 						color: var(--vscode-button-hoverForeground) !important;
 					}
 					.codesetting .separator {
 						width: 1px;
+
 						height: 14px;
+
 						margin-bottom: -3px;
+
 						display: inline-block;
+
 						background-color: var(--vscode-editor-background);
+
 						font-size: 12px;
+
 						margin-right: 8px;
 					}
 
@@ -508,18 +592,27 @@ export class ReleaseNotesManager {
 					const vscode = acquireVsCodeApi();
 
 					const container = document.createElement('p');
+
 					container.style.display = 'flex';
+
 					container.style.alignItems = 'center';
 
 					const input = document.createElement('input');
+
 					input.type = 'checkbox';
+
 					input.id = 'showReleaseNotes';
+
 					input.checked = ${showReleaseNotes};
+
 					container.appendChild(input);
 
 					const label = document.createElement('label');
+
 					label.htmlFor = 'showReleaseNotes';
+
 					label.textContent = '${nls.localize("showOnUpdate", "Show release notes after an update")}';
+
 					container.appendChild(label);
 
 					const beforeElement = document.querySelector("body > h1")?.nextElementSibling;
@@ -548,6 +641,7 @@ export class ReleaseNotesManager {
 						if (event.keyCode === 13) {
 							if (event.target.children.length > 0 && event.target.children[0].href) {
 								const clientRect = event.target.getBoundingClientRect();
+
 								vscode.postMessage({ type: 'clickSetting', value: { uri: event.target.children[0].href, x: clientRect.right , y: clientRect.bottom }});
 							}
 						}
@@ -560,11 +654,13 @@ export class ReleaseNotesManager {
 			</body>
 		</html>`;
 	}
+
 	private onDidChangeConfiguration(e: IConfigurationChangeEvent): void {
 		if (e.affectsConfiguration("update.showReleaseNotes")) {
 			this.updateCheckboxWebview();
 		}
 	}
+
 	private onDidChangeActiveWebviewEditor(
 		input: WebviewInput | undefined,
 	): void {
@@ -572,6 +668,7 @@ export class ReleaseNotesManager {
 			this.updateCheckboxWebview();
 		}
 	}
+
 	private updateCheckboxWebview() {
 		if (this._currentReleaseNotes) {
 			this._currentReleaseNotes.webview.postMessage({

@@ -62,6 +62,7 @@ export class NotebookStickyLine extends Disposable {
 						const currentFoldingState = (
 							this.entry.cell as MarkupCellViewModel
 						).foldingState;
+
 						this.toggleFoldRange(currentFoldingState);
 					}
 				},
@@ -76,7 +77,9 @@ export class NotebookStickyLine extends Disposable {
 			);
 
 		const index = this.entry.index;
+
 		const headerLevel = this.entry.level;
+
 		const newFoldingState =
 			currentState === CellFoldingState.Collapsed
 				? CellFoldingState.Expanded
@@ -87,14 +90,17 @@ export class NotebookStickyLine extends Disposable {
 			newFoldingState,
 			headerLevel,
 		);
+
 		this.focusCell();
 	}
 
 	private focusCell() {
 		this.notebookEditor.focusNotebookCell(this.entry.cell, "container");
+
 		const cellScrollTop = this.notebookEditor.getAbsoluteTopOfElement(
 			this.entry.cell,
 		);
+
 		const parentCount = NotebookStickyLine.getParentCount(this.entry);
 		// 1.1 addresses visible cell padding, to make sure we don't focus md cell and also render its sticky line
 		this.notebookEditor.setScrollTop(
@@ -104,10 +110,13 @@ export class NotebookStickyLine extends Disposable {
 
 	static getParentCount(entry: OutlineEntry) {
 		let count = 0;
+
 		while (entry.parent) {
 			count++;
+
 			entry = entry.parent;
 		}
+
 		return count;
 	}
 }
@@ -120,8 +129,11 @@ class StickyFoldingIcon {
 		public dimension: number,
 	) {
 		this.domNode = document.createElement("div");
+
 		this.domNode.style.width = `${dimension}px`;
+
 		this.domNode.style.height = `${dimension}px`;
+
 		this.domNode.className = ThemeIcon.asClassName(
 			isCollapsed ? foldingCollapsedIcon : foldingExpandedIcon,
 		);
@@ -129,12 +141,14 @@ class StickyFoldingIcon {
 
 	public setVisible(visible: boolean) {
 		this.domNode.style.cursor = visible ? "pointer" : "default";
+
 		this.domNode.style.opacity = visible ? "1" : "0";
 	}
 }
 
 export class NotebookStickyScroll extends Disposable {
 	private readonly _disposables = new DisposableStore();
+
 	private currentStickyLines = new Map<
 		OutlineEntry,
 		{ line: NotebookStickyLine; rendered: boolean }
@@ -143,8 +157,10 @@ export class NotebookStickyScroll extends Disposable {
 	private readonly _onDidChangeNotebookStickyScroll = this._register(
 		new Emitter<number>(),
 	);
+
 	readonly onDidChangeNotebookStickyScroll: Event<number> =
 		this._onDidChangeNotebookStickyScroll.event;
+
 	private notebookCellOutlineReference?: IReference<NotebookCellOutlineDataSource>;
 
 	private readonly _layoutDisposableStore = this._register(
@@ -157,11 +173,13 @@ export class NotebookStickyScroll extends Disposable {
 
 	getCurrentStickyHeight() {
 		let height = 0;
+
 		this.currentStickyLines.forEach((value) => {
 			if (value.rendered) {
 				height += 22;
 			}
 		});
+
 		return height;
 	}
 
@@ -190,6 +208,7 @@ export class NotebookStickyScroll extends Disposable {
 
 		for (const [key, value] of mapA) {
 			const otherValue = mapB.get(key);
+
 			if (!otherValue || value.rendered !== otherValue.rendered) {
 				return false;
 			}
@@ -240,10 +259,12 @@ export class NotebookStickyScroll extends Disposable {
 		const event = new StandardMouseEvent(DOM.getWindow(this.domNode), e);
 
 		const selectedElement = event.target.parentElement;
+
 		const selectedOutlineEntry = Array.from(
 			this.currentStickyLines.values(),
 		).find((entry) => entry.line.element.contains(selectedElement))?.line
 			.entry;
+
 		if (!selectedOutlineEntry) {
 			return;
 		}
@@ -269,9 +290,13 @@ export class NotebookStickyScroll extends Disposable {
 				this.init();
 			} else {
 				this._disposables.clear();
+
 				this.notebookCellOutlineReference?.dispose();
+
 				this.disposeCurrentStickyLines();
+
 				DOM.clearNode(this.domNode);
+
 				this.updateDisplay();
 			}
 		} else if (
@@ -299,7 +324,9 @@ export class NotebookStickyScroll extends Disposable {
 						.get(INotebookCellOutlineDataSourceFactory)
 						.getOrCreate(this.notebookEditor),
 				));
+
 		this._register(this.notebookCellOutlineReference);
+
 		this.updateContent(
 			computeContent(
 				this.notebookEditor,
@@ -317,6 +344,7 @@ export class NotebookStickyScroll extends Disposable {
 					notebookCellOutline.entries,
 					this.getCurrentStickyHeight(),
 				);
+
 				if (
 					!this.compareStickyLineMaps(
 						recompute,
@@ -344,14 +372,17 @@ export class NotebookStickyScroll extends Disposable {
 		this._disposables.add(
 			this.notebookEditor.onDidScroll(() => {
 				const d = new Delayer(100);
+
 				d.trigger(() => {
 					d.dispose();
+
 					const recompute = computeContent(
 						this.notebookEditor,
 						this.notebookCellList,
 						notebookCellOutline.entries,
 						this.getCurrentStickyHeight(),
 					);
+
 					if (
 						!this.compareStickyLineMaps(
 							recompute,
@@ -371,16 +402,21 @@ export class NotebookStickyScroll extends Disposable {
 		notebookOutlineEntries: OutlineEntry[],
 	): OutlineEntry | undefined {
 		let left = 0;
+
 		let right = notebookOutlineEntries.length - 1;
+
 		let bucket = -1;
 
 		while (left <= right) {
 			const mid = Math.floor((left + right) / 2);
+
 			if (notebookOutlineEntries[mid].index === visibleIndex) {
 				bucket = mid;
+
 				break;
 			} else if (notebookOutlineEntries[mid].index < visibleIndex) {
 				bucket = mid;
+
 				left = mid + 1;
 			} else {
 				right = mid - 1;
@@ -389,10 +425,14 @@ export class NotebookStickyScroll extends Disposable {
 
 		if (bucket !== -1) {
 			const rootEntry = notebookOutlineEntries[bucket];
+
 			const flatList: OutlineEntry[] = [];
+
 			rootEntry.asFlatList(flatList);
+
 			return flatList.find((entry) => entry.index === visibleIndex);
 		}
+
 		return undefined;
 	}
 
@@ -403,15 +443,19 @@ export class NotebookStickyScroll extends Disposable {
 		>,
 	) {
 		DOM.clearNode(this.domNode);
+
 		this.disposeCurrentStickyLines();
+
 		this.renderStickyLines(newMap, this.domNode);
 
 		const oldStickyHeight = this.getCurrentStickyHeight();
+
 		this.setCurrentStickyLines(newMap);
 
 		// (+) = sticky height increased
 		// (-) = sticky height decreased
 		const sizeDelta = this.getCurrentStickyHeight() - oldStickyHeight;
+
 		if (sizeDelta !== 0) {
 			this._onDidChangeNotebookStickyScroll.fire(sizeDelta);
 
@@ -420,6 +464,7 @@ export class NotebookStickyScroll extends Disposable {
 					DOM.getWindow(this.getDomNode()),
 					() => {
 						this.layoutFn(sizeDelta);
+
 						this.updateDisplay();
 
 						this._layoutDisposableStore.delete(d);
@@ -433,6 +478,7 @@ export class NotebookStickyScroll extends Disposable {
 
 	private updateDisplay() {
 		const hasSticky = this.getCurrentStickyHeight() > 0;
+
 		if (!hasSticky) {
 			this.domNode.style.display = "none";
 		} else {
@@ -442,13 +488,17 @@ export class NotebookStickyScroll extends Disposable {
 
 	static computeStickyHeight(entry: OutlineEntry) {
 		let height = 0;
+
 		if (entry.cell.cellKind === CellKind.Markup && entry.level < 7) {
 			height += 22;
 		}
+
 		while (entry.parent) {
 			height += 22;
+
 			entry = entry.parent;
 		}
+
 		return height;
 	}
 
@@ -458,24 +508,31 @@ export class NotebookStickyScroll extends Disposable {
 		notebookEditor: INotebookEditor,
 	) {
 		let currentEntry = entry;
+
 		const newMap = new Map<
 			OutlineEntry,
 			{ line: NotebookStickyLine; rendered: boolean }
 		>();
 
 		const elementsToRender = [];
+
 		while (currentEntry) {
 			if (currentEntry.level >= 7) {
 				// level 7+ represents a non-header entry, which we don't want to render
 				currentEntry = currentEntry.parent;
+
 				continue;
 			}
+
 			const lineToRender = NotebookStickyScroll.createStickyElement(
 				currentEntry,
 				notebookEditor,
 			);
+
 			newMap.set(currentEntry, { line: lineToRender, rendered: false });
+
 			elementsToRender.unshift(lineToRender);
+
 			currentEntry = currentEntry.parent;
 		}
 
@@ -485,11 +542,13 @@ export class NotebookStickyScroll extends Disposable {
 			if (i >= numLinesToRender) {
 				break;
 			}
+
 			newMap.set(elementsToRender[i].entry, {
 				line: elementsToRender[i],
 				rendered: true,
 			});
 		}
+
 		return newMap;
 	}
 
@@ -501,10 +560,12 @@ export class NotebookStickyScroll extends Disposable {
 		containerElement: HTMLElement,
 	) {
 		const reversedEntries = Array.from(stickyMap.entries()).reverse();
+
 		for (const [, value] of reversedEntries) {
 			if (!value.rendered) {
 				continue;
 			}
+
 			containerElement.append(value.line.element);
 		}
 	}
@@ -514,17 +575,20 @@ export class NotebookStickyScroll extends Disposable {
 		notebookEditor: INotebookEditor,
 	) {
 		const stickyElement = document.createElement("div");
+
 		stickyElement.classList.add("notebook-sticky-scroll-element");
 
 		const indentMode =
 			notebookEditor.notebookOptions.getLayoutConfiguration()
 				.stickyScrollMode;
+
 		if (indentMode === "indented") {
 			stickyElement.style.paddingLeft =
 				NotebookStickyLine.getParentCount(entry) * 10 + "px";
 		}
 
 		let isCollapsed = false;
+
 		if (entry.cell.cellKind === CellKind.Markup) {
 			isCollapsed =
 				(entry.cell as MarkupCellViewModel).foldingState ===
@@ -532,13 +596,17 @@ export class NotebookStickyScroll extends Disposable {
 		}
 
 		const stickyFoldingIcon = new StickyFoldingIcon(isCollapsed, 16);
+
 		stickyFoldingIcon.domNode.classList.add(
 			"notebook-sticky-scroll-folding-icon",
 		);
+
 		stickyFoldingIcon.setVisible(true);
 
 		const stickyHeader = document.createElement("div");
+
 		stickyHeader.classList.add("notebook-sticky-scroll-header");
+
 		stickyHeader.innerText = entry.label;
 
 		stickyElement.append(stickyFoldingIcon.domNode, stickyHeader);
@@ -560,8 +628,11 @@ export class NotebookStickyScroll extends Disposable {
 
 	override dispose() {
 		this._disposables.dispose();
+
 		this.disposeCurrentStickyLines();
+
 		this.notebookCellOutlineReference?.dispose();
+
 		super.dispose();
 	}
 }
@@ -574,7 +645,9 @@ export function computeContent(
 ): Map<OutlineEntry, { line: NotebookStickyLine; rendered: boolean }> {
 	// get data about the cell list within viewport ----------------------------------------------------------------------------------------
 	const editorScrollTop = notebookEditor.scrollTop - renderedStickyHeight;
+
 	const visibleRange = notebookEditor.visibleRanges[0];
+
 	if (!visibleRange) {
 		return new Map();
 	}
@@ -582,10 +655,12 @@ export function computeContent(
 	// edge case for cell 0 in the notebook is a header ------------------------------------------------------------------------------------
 	if (visibleRange.start === 0) {
 		const firstCell = notebookEditor.cellAt(0);
+
 		const firstCellEntry = NotebookStickyScroll.getVisibleOutlineEntry(
 			0,
 			notebookOutlineEntries,
 		);
+
 		if (
 			firstCell &&
 			firstCellEntry &&
@@ -598,6 +673,7 @@ export function computeContent(
 					100,
 					notebookEditor,
 				);
+
 				return newMap;
 			}
 		}
@@ -605,41 +681,54 @@ export function computeContent(
 
 	// iterate over cells in viewport ------------------------------------------------------------------------------------------------------
 	let cell;
+
 	let cellEntry;
+
 	const startIndex = visibleRange.start - 1; // -1 to account for cells hidden "under" sticky lines.
 	for (
 		let currentIndex = startIndex;
+
 		currentIndex < visibleRange.end;
+
 		currentIndex++
 	) {
 		// store data for current cell, and next cell
 		cell = notebookEditor.cellAt(currentIndex);
+
 		if (!cell) {
 			return new Map();
 		}
+
 		cellEntry = NotebookStickyScroll.getVisibleOutlineEntry(
 			currentIndex,
 			notebookOutlineEntries,
 		);
+
 		if (!cellEntry) {
 			continue;
 		}
 
 		const nextCell = notebookEditor.cellAt(currentIndex + 1);
+
 		if (!nextCell) {
 			const sectionBottom = notebookEditor.getLayoutInfo().scrollHeight;
+
 			const linesToRender = Math.floor(sectionBottom / 22);
+
 			const newMap = NotebookStickyScroll.checkCollapsedStickyLines(
 				cellEntry,
 				linesToRender,
 				notebookEditor,
 			);
+
 			return newMap;
 		}
+
 		const nextCellEntry = NotebookStickyScroll.getVisibleOutlineEntry(
 			currentIndex + 1,
 			notebookOutlineEntries,
 		);
+
 		if (!nextCellEntry) {
 			continue;
 		}
@@ -648,8 +737,10 @@ export function computeContent(
 		if (nextCell.cellKind === CellKind.Markup && nextCellEntry.level < 7) {
 			const sectionBottom =
 				notebookCellList.getCellViewScrollTop(nextCell);
+
 			const currentSectionStickyHeight =
 				NotebookStickyScroll.computeStickyHeight(cellEntry);
+
 			const nextSectionStickyHeight =
 				NotebookStickyScroll.computeStickyHeight(nextCellEntry);
 
@@ -658,11 +749,13 @@ export function computeContent(
 				const linesToRender = Math.floor(
 					(sectionBottom - editorScrollTop) / 22,
 				);
+
 				const newMap = NotebookStickyScroll.checkCollapsedStickyLines(
 					cellEntry,
 					linesToRender,
 					notebookEditor,
 				);
+
 				return newMap;
 			}
 
@@ -673,6 +766,7 @@ export function computeContent(
 					100,
 					notebookEditor,
 				);
+
 				return newMap;
 			}
 			// case: next section is the smaller, shrink until next section height is greater than the available space ---------------------
@@ -681,12 +775,14 @@ export function computeContent(
 
 				if (availableSpace >= nextSectionStickyHeight) {
 					const linesToRender = Math.floor(availableSpace / 22);
+
 					const newMap =
 						NotebookStickyScroll.checkCollapsedStickyLines(
 							cellEntry,
 							linesToRender,
 							notebookEditor,
 						);
+
 					return newMap;
 				} else {
 					const newMap =
@@ -695,6 +791,7 @@ export function computeContent(
 							100,
 							notebookEditor,
 						);
+
 					return newMap;
 				}
 			}
@@ -703,11 +800,14 @@ export function computeContent(
 
 	// case: all visible cells were non-header cells, so render any headers relevant to their section --------------------------------------
 	const sectionBottom = notebookEditor.getLayoutInfo().scrollHeight;
+
 	const linesToRender = Math.floor((sectionBottom - editorScrollTop) / 22);
+
 	const newMap = NotebookStickyScroll.checkCollapsedStickyLines(
 		cellEntry,
 		linesToRender,
 		notebookEditor,
 	);
+
 	return newMap;
 }

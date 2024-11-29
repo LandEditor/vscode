@@ -74,6 +74,7 @@ export interface IHostService {
 	 */
 	readonly onDidChangeFullScreen: Event<{
 		windowId: number;
+
 		fullscreen: boolean;
 	}>;
 	/**
@@ -102,6 +103,7 @@ export interface IHostService {
 	getCursorScreenPoint(): Promise<
 		| {
 				readonly point: IPoint;
+
 				readonly display: IRectangle;
 		  }
 		| undefined

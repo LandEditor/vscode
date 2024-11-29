@@ -125,10 +125,15 @@ export const webUtils: WebUtils = vscodeGlobal.webUtils;
  */
 export interface IMainWindowSandboxGlobals {
 	readonly ipcRenderer: IpcRenderer;
+
 	readonly ipcMessagePort: IpcMessagePort;
+
 	readonly webFrame: WebFrame;
+
 	readonly process: ISandboxNodeProcess;
+
 	readonly context: ISandboxContext;
+
 	readonly webUtils: WebUtils;
 }
 /**
@@ -140,5 +145,6 @@ export interface ISandboxGlobals {
 		import("./electronTypes.js").IpcRenderer,
 		"send" | "invoke"
 	>;
+
 	readonly webFrame: import("./electronTypes.js").WebFrame;
 }

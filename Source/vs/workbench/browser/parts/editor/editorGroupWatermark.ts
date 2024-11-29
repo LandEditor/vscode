@@ -39,9 +39,12 @@ import {
 
 interface WatermarkEntry {
 	readonly id: string;
+
 	readonly text: string;
+
 	readonly when?: {
 		native?: ContextKeyExpression;
+
 		web?: ContextKeyExpression;
 	};
 }
@@ -145,12 +148,15 @@ export class EditorGroupWatermark extends Disposable {
 		);
 
 	private readonly shortcuts: HTMLElement;
+
 	private readonly transientDisposables = this._register(
 		new DisposableStore(),
 	);
+
 	private readonly keybindingLabels = this._register(new DisposableStore());
 
 	private enabled = false;
+
 	private workbenchState = this.contextService.getWorkbenchState();
 
 	constructor(
@@ -173,6 +179,7 @@ export class EditorGroupWatermark extends Disposable {
 		]);
 
 		append(container, elements.root);
+
 		this.shortcuts = elements.shortcuts;
 
 		this.registerListeners();
@@ -199,6 +206,7 @@ export class EditorGroupWatermark extends Disposable {
 			this.contextService.onDidChangeWorkbenchState((workbenchState) => {
 				if (this.workbenchState !== workbenchState) {
 					this.workbenchState = workbenchState;
+
 					this.render();
 				}
 			}),
@@ -213,10 +221,12 @@ export class EditorGroupWatermark extends Disposable {
 						...workspaceEntries,
 						...randomWorkspaceEntries,
 					];
+
 					for (const entry of entries) {
 						const when = isWeb
 							? entry.when?.web
 							: entry.when?.native;
+
 						if (when) {
 							this.cachedWhen[entry.id] =
 								this.contextKeyService.contextMatchesRules(
@@ -242,6 +252,7 @@ export class EditorGroupWatermark extends Disposable {
 		);
 
 		clearNode(this.shortcuts);
+
 		this.transientDisposables.clear();
 
 		if (!this.enabled) {
@@ -254,28 +265,34 @@ export class EditorGroupWatermark extends Disposable {
 				: emptyWindowEntries,
 			false /* not shuffled */,
 		);
+
 		const randomEntries = this.filterEntries(
 			this.workbenchState !== WorkbenchState.EMPTY
 				? randomWorkspaceEntries
 				: randomEmptyWindowEntries,
 			true /* shuffled */,
 		).slice(0, Math.max(0, 5 - fixedEntries.length));
+
 		const entries = [...fixedEntries, ...randomEntries];
 
 		const box = append(this.shortcuts, $(".watermark-box"));
 
 		const update = () => {
 			clearNode(box);
+
 			this.keybindingLabels.clear();
 
 			for (const entry of entries) {
 				const keys = this.keybindingService.lookupKeybinding(entry.id);
+
 				if (!keys) {
 					continue;
 				}
 
 				const dl = append(box, $("dl"));
+
 				const dt = append(dl, $("dt"));
+
 				dt.textContent = entry.text;
 
 				const dd = append(dl, $("dd"));
@@ -286,11 +303,13 @@ export class EditorGroupWatermark extends Disposable {
 						...defaultKeybindingLabelStyles,
 					}),
 				);
+
 				label.set(keys);
 			}
 		};
 
 		update();
+
 		this.transientDisposables.add(
 			this.keybindingService.onDidUpdateKeybindings(update),
 		);

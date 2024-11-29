@@ -50,6 +50,7 @@ class ToggleScreenReaderMode extends Action2 {
 			],
 		});
 	}
+
 	async run(accessor: ServicesAccessor): Promise<void> {
 		const accessibiiltyService = accessor.get(IAccessibilityService);
 
@@ -57,11 +58,13 @@ class ToggleScreenReaderMode extends Action2 {
 
 		const isScreenReaderOptimized =
 			accessibiiltyService.isScreenReaderOptimized();
+
 		configurationService.updateValue(
 			"editor.accessibilitySupport",
 			isScreenReaderOptimized ? "off" : "on",
 			ConfigurationTarget.USER,
 		);
+
 		alert(
 			isScreenReaderOptimized
 				? AccessibilityHelpNLS.screenReaderModeDisabled

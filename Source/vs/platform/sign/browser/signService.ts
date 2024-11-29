@@ -23,9 +23,12 @@ declare module vsdaWeb {
 		free(): void;
 
 		constructor();
+
 		createNewMessage(original: string): string;
+
 		validate(signed_message: string): "ok" | "error";
 	}
+
 	export type InitInput =
 		| RequestInfo
 		| URL
@@ -40,7 +43,9 @@ declare module vsdaWeb {
 // Initialized if/when vsda is loaded
 declare const vsda_web: {
 	default: typeof vsdaWeb.init;
+
 	sign: typeof vsdaWeb.sign;
+
 	validator: typeof vsdaWeb.validator;
 };
 
@@ -57,6 +62,7 @@ export class SignService extends AbstractSignService implements ISignService {
 	) {
 		super();
 	}
+
 	protected override getValidator(): Promise<IVsdaValidator> {
 		return this.vsda().then((vsda) => {
 			const v = new vsda.validator();
@@ -68,6 +74,7 @@ export class SignService extends AbstractSignService implements ISignService {
 			};
 		});
 	}
+
 	protected override signValue(arg: string): Promise<string> {
 		return this.vsda().then((vsda) => vsda.sign(arg));
 	}
@@ -108,16 +115,19 @@ export class SignService extends AbstractSignService implements ISignService {
 				false,
 				["decrypt"],
 			);
+
 			wasm = await crypto.subtle.decrypt(
 				{ name: "AES-CBC", iv: keyBytes.slice(i, i + IV_SIZE) },
 				key,
 				wasm,
 			);
 		}
+
 		await vsda_web.default(wasm);
 
 		return vsda_web;
 	}
+
 	private async getWasmBytes(): Promise<ArrayBuffer> {
 		const url = resolveAmdNodeModulePath("vsda", "rust/web/vsda_bg.wasm");
 
@@ -126,6 +136,7 @@ export class SignService extends AbstractSignService implements ISignService {
 		if (!response.ok) {
 			throw new Error("error loading vsda");
 		}
+
 		return response.arrayBuffer();
 	}
 }

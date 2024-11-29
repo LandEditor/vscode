@@ -60,6 +60,7 @@ async function applyProfile(
 			configService.updateValue(settingKey, profile[settingKey]),
 		);
 	}
+
 	await Promise.all(promises);
 }
 export interface ISetProfileArgs {
@@ -73,10 +74,12 @@ registerAction2(
 				title: localize("setProfileTitle", "Set Profile"),
 			});
 		}
+
 		async run(accessor: ServicesAccessor, args: unknown): Promise<void> {
 			if (!isSetProfileArgs(args)) {
 				return;
 			}
+
 			const configService = accessor.get(IConfigurationService);
 
 			return applyProfile(configService, profiles[args.profile]);

@@ -73,6 +73,7 @@ declare module "vinyl" {
 		 * Full path to the file.
 		 */
 		public path: string;
+
 		public stat: fs.Stats;
 		/**
 		 * Type: Buffer|Stream|null (Default: null)

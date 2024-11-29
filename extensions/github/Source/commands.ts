@@ -52,11 +52,13 @@ async function openVscodeDevLink(
 		if (!(err instanceof vscode.CancellationError)) {
 			vscode.window.showErrorMessage(err.message);
 		}
+
 		return undefined;
 	}
 }
 export function registerCommands(gitAPI: GitAPI): vscode.Disposable {
 	const disposables = new DisposableStore();
+
 	disposables.add(
 		vscode.commands.registerCommand("github.publish", async () => {
 			try {
@@ -66,6 +68,7 @@ export function registerCommands(gitAPI: GitAPI): vscode.Disposable {
 			}
 		}),
 	);
+
 	disposables.add(
 		vscode.commands.registerCommand(
 			"github.copyVscodeDevLink",
@@ -74,6 +77,7 @@ export function registerCommands(gitAPI: GitAPI): vscode.Disposable {
 			},
 		),
 	);
+
 	disposables.add(
 		vscode.commands.registerCommand(
 			"github.copyVscodeDevLinkFile",
@@ -82,6 +86,7 @@ export function registerCommands(gitAPI: GitAPI): vscode.Disposable {
 			},
 		),
 	);
+
 	disposables.add(
 		vscode.commands.registerCommand(
 			"github.copyVscodeDevLinkWithoutRange",
@@ -90,6 +95,7 @@ export function registerCommands(gitAPI: GitAPI): vscode.Disposable {
 			},
 		),
 	);
+
 	disposables.add(
 		vscode.commands.registerCommand("github.openOnVscodeDev", async () => {
 			return openVscodeDevLink(gitAPI);

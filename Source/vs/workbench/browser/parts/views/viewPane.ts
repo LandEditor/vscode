@@ -140,8 +140,11 @@ export enum ViewPaneShowActions {
 
 export interface IViewPaneOptions extends IPaneOptions {
 	readonly id: string;
+
 	readonly showActions?: ViewPaneShowActions;
+
 	readonly titleMenuId?: MenuId;
+
 	readonly donotForwardArgs?: boolean;
 	// The title of the container pane when it is merged with the view container
 	readonly singleViewPaneContainerTitle?: string;
@@ -155,16 +158,23 @@ export const VIEWPANE_FILTER_ACTION = new Action("viewpane.action.filter");
 
 type WelcomeActionClassification = {
 	owner: "joaomoreno";
+
 	viewId: {
 		classification: "SystemMetaData";
+
 		purpose: "FeatureInsight";
+
 		comment: "The view ID in which the welcome view button was clicked.";
 	};
+
 	uri: {
 		classification: "SystemMetaData";
+
 		purpose: "FeatureInsight";
+
 		comment: "The URI of the command ran by the result of clicking the button.";
 	};
+
 	comment: "This is used to know when users click on the welcome view buttons.";
 };
 
@@ -192,30 +202,39 @@ const viewsRegistry = Registry.as<IViewsRegistry>(
 
 interface IItem {
 	readonly descriptor: IViewContentDescriptor;
+
 	visible: boolean;
 }
 
 interface IViewWelcomeDelegate {
 	readonly id: string;
+
 	readonly onDidChangeViewWelcomeState: Event<void>;
+
 	shouldShowWelcome(): boolean;
 }
 
 class ViewWelcomeController {
 	private defaultItem: IItem | undefined;
+
 	private items: IItem[] = [];
 
 	get enabled(): boolean {
 		return this._enabled;
 	}
+
 	private _enabled: boolean = false;
+
 	private element: HTMLElement | undefined;
+
 	private scrollableElement: DomScrollableElement | undefined;
 
 	private readonly disposables = new DisposableStore();
+
 	private readonly enabledDisposables = this.disposables.add(
 		new DisposableStore(),
 	);
+
 	private readonly renderDisposables = this.disposables.add(
 		new DisposableStore(),
 	);
@@ -236,6 +255,7 @@ class ViewWelcomeController {
 				() => this.onDidChangeViewWelcomeState(),
 			),
 		);
+
 		this.disposables.add(
 			lifecycleService.onWillShutdown(() => this.dispose()),
 		); // Fixes https://github.com/microsoft/vscode/issues/208878
@@ -247,8 +267,11 @@ class ViewWelcomeController {
 		}
 
 		this.element!.style.height = `${height}px`;
+
 		this.element!.style.width = `${width}px`;
+
 		this.element!.classList.toggle("wide", width > 640);
+
 		this.scrollableElement!.scanDomNode();
 	}
 
@@ -278,20 +301,27 @@ class ViewWelcomeController {
 		this.container.classList.add("welcome");
 
 		const viewWelcomeContainer = append(this.container, $(".welcome-view"));
+
 		this.element = $(".welcome-view-content", { tabIndex: 0 });
+
 		this.scrollableElement = new DomScrollableElement(this.element, {
 			alwaysConsumeMouseWheel: true,
 			horizontal: ScrollbarVisibility.Hidden,
 			vertical: ScrollbarVisibility.Visible,
 		});
+
 		append(viewWelcomeContainer, this.scrollableElement.getDomNode());
 
 		this.enabledDisposables.add(
 			toDisposable(() => {
 				this.container.classList.remove("welcome");
+
 				this.scrollableElement!.dispose();
+
 				viewWelcomeContainer.remove();
+
 				this.scrollableElement = undefined;
+
 				this.element = undefined;
 			}),
 		);
@@ -301,9 +331,11 @@ class ViewWelcomeController {
 			this,
 			this.enabledDisposables,
 		);
+
 		Event.chain(viewsRegistry.onDidChangeViewWelcomeContent, ($) =>
 			$.filter((id) => id === this.delegate.id),
 		)(this.onDidChangeViewWelcomeContent, this, this.enabledDisposables);
+
 		this.onDidChangeViewWelcomeContent();
 	}
 
@@ -323,6 +355,7 @@ class ViewWelcomeController {
 							descriptor.when,
 						)
 					: true;
+
 				this.items.push({ descriptor, visible });
 			}
 		}
@@ -347,6 +380,7 @@ class ViewWelcomeController {
 			}
 
 			item.visible = visible;
+
 			didChange = true;
 		}
 
@@ -357,12 +391,14 @@ class ViewWelcomeController {
 
 	private render(): void {
 		this.renderDisposables.clear();
+
 		this.element!.innerText = "";
 
 		const contents = this.getContentDescriptors();
 
 		if (contents.length === 0) {
 			this.container.classList.remove("welcome");
+
 			this.scrollableElement!.scanDomNode();
 
 			return;
@@ -406,7 +442,9 @@ class ViewWelcomeController {
 								: false,
 						...defaultButtonStyles,
 					});
+
 					button.label = node.label;
+
 					button.onDidClick(
 						(_) => {
 							this.telemetryService.publicLog2<
@@ -416,6 +454,7 @@ class ViewWelcomeController {
 								viewId: this.delegate.id,
 								uri: node.href,
 							});
+
 							this.openerService.open(node.href, {
 								allowCommands: true,
 							});
@@ -423,7 +462,9 @@ class ViewWelcomeController {
 						null,
 						this.renderDisposables,
 					);
+
 					this.renderDisposables.add(button);
+
 					buttonsCount++;
 
 					if (precondition) {
@@ -432,6 +473,7 @@ class ViewWelcomeController {
 								this.contextKeyService.contextMatchesRules(
 									precondition,
 								));
+
 						updateEnablement();
 
 						const keys = new Set(precondition.keys());
@@ -440,6 +482,7 @@ class ViewWelcomeController {
 							this.contextKeyService.onDidChangeContext,
 							(e) => e.affectsSome(keys),
 						);
+
 						onDidChangeContext(
 							updateEnablement,
 							null,
@@ -471,6 +514,7 @@ class ViewWelcomeController {
 										this.contextKeyService.contextMatchesRules(
 											precondition,
 										));
+
 								updateEnablement();
 
 								const keys = new Set(precondition.keys());
@@ -479,6 +523,7 @@ class ViewWelcomeController {
 									this.contextKeyService.onDidChangeContext,
 									(e) => e.affectsSome(keys),
 								);
+
 								onDidChangeContext(
 									updateEnablement,
 									null,
@@ -492,6 +537,7 @@ class ViewWelcomeController {
 		}
 
 		this.container.classList.add("welcome");
+
 		this.scrollableElement!.scanDomNode();
 	}
 
@@ -515,39 +561,48 @@ export abstract class ViewPane extends Pane implements IView {
 		"workbench.view.alwaysShowHeaderActions";
 
 	private _onDidFocus = this._register(new Emitter<void>());
+
 	readonly onDidFocus: Event<void> = this._onDidFocus.event;
 
 	private _onDidBlur = this._register(new Emitter<void>());
+
 	readonly onDidBlur: Event<void> = this._onDidBlur.event;
 
 	private _onDidChangeBodyVisibility = this._register(new Emitter<boolean>());
+
 	readonly onDidChangeBodyVisibility: Event<boolean> =
 		this._onDidChangeBodyVisibility.event;
 
 	protected _onDidChangeTitleArea = this._register(new Emitter<void>());
+
 	readonly onDidChangeTitleArea: Event<void> =
 		this._onDidChangeTitleArea.event;
 
 	protected _onDidChangeViewWelcomeState = this._register(
 		new Emitter<void>(),
 	);
+
 	readonly onDidChangeViewWelcomeState: Event<void> =
 		this._onDidChangeViewWelcomeState.event;
 
 	private _isVisible: boolean = false;
+
 	readonly id: string;
 
 	private _title: string;
+
 	public get title(): string {
 		return this._title;
 	}
 
 	private _titleDescription: string | undefined;
+
 	public get titleDescription(): string | undefined {
 		return this._titleDescription;
 	}
 
 	private _singleViewPaneContainerTitle: string | undefined;
+
 	public get singleViewPaneContainerTitle(): string | undefined {
 		return this._singleViewPaneContainerTitle;
 	}
@@ -555,18 +610,29 @@ export abstract class ViewPane extends Pane implements IView {
 	readonly menuActions: CompositeMenuActions;
 
 	private progressBar!: ProgressBar;
+
 	private progressIndicator!: IProgressIndicator;
 
 	private toolbar?: WorkbenchToolBar;
+
 	private readonly showActions: ViewPaneShowActions;
+
 	private headerContainer?: HTMLElement;
+
 	private titleContainer?: HTMLElement;
+
 	private titleContainerHover?: IManagedHover;
+
 	private titleDescriptionContainer?: HTMLElement;
+
 	private titleDescriptionContainerHover?: IManagedHover;
+
 	private iconContainer?: HTMLElement;
+
 	private iconContainerHover?: IManagedHover;
+
 	protected twistiesContainer?: HTMLElement;
+
 	private viewWelcomeController!: ViewWelcomeController;
 
 	protected readonly scopedContextKeyService: IContextKeyService;
@@ -600,15 +666,20 @@ export abstract class ViewPane extends Pane implements IView {
 		});
 
 		this.id = options.id;
+
 		this._title = options.title;
+
 		this._titleDescription = options.titleDescription;
+
 		this._singleViewPaneContainerTitle =
 			options.singleViewPaneContainerTitle;
+
 		this.showActions = options.showActions ?? ViewPaneShowActions.Default;
 
 		this.scopedContextKeyService = this._register(
 			contextKeyService.createScoped(this.element),
 		);
+
 		this.scopedContextKeyService.createKey("view", this.id);
 
 		const viewLocationKey = this.scopedContextKeyService.createKey(
@@ -617,6 +688,7 @@ export abstract class ViewPane extends Pane implements IView {
 				viewDescriptorService.getViewLocationById(this.id)!,
 			),
 		);
+
 		this._register(
 			Event.filter(viewDescriptorService.onDidChangeLocation, (e) =>
 				e.views.some((view) => view.id === this.id),
@@ -637,6 +709,7 @@ export abstract class ViewPane extends Pane implements IView {
 				]),
 			),
 		);
+
 		this.menuActions = this._register(
 			childInstantiationService.createInstance(
 				CompositeMenuActions,
@@ -648,6 +721,7 @@ export abstract class ViewPane extends Pane implements IView {
 				},
 			),
 		);
+
 		this._register(
 			this.menuActions.onDidChange(() => this.updateActions()),
 		);
@@ -659,6 +733,7 @@ export abstract class ViewPane extends Pane implements IView {
 
 	override set headerVisible(visible: boolean) {
 		super.headerVisible = visible;
+
 		this.element.classList.toggle("merged-header", !visible);
 	}
 
@@ -686,6 +761,7 @@ export abstract class ViewPane extends Pane implements IView {
 		if (changed) {
 			this._onDidChangeBodyVisibility.fire(expanded);
 		}
+
 		this.updateTwistyIcon();
 
 		return changed;
@@ -695,8 +771,11 @@ export abstract class ViewPane extends Pane implements IView {
 		super.render();
 
 		const focusTracker = trackFocus(this.element);
+
 		this._register(focusTracker);
+
 		this._register(focusTracker.onDidFocus(() => this._onDidFocus.fire()));
+
 		this._register(focusTracker.onDidBlur(() => this._onDidBlur.fire()));
 	}
 
@@ -713,14 +792,17 @@ export abstract class ViewPane extends Pane implements IView {
 		this.renderHeaderTitle(container, this.title);
 
 		const actions = append(container, $(".actions"));
+
 		actions.classList.toggle(
 			"show-always",
 			this.showActions === ViewPaneShowActions.Always,
 		);
+
 		actions.classList.toggle(
 			"show-expanded",
 			this.showActions === ViewPaneShowActions.WhenExpanded,
 		);
+
 		this.toolbar = this.instantiationService.createInstance(
 			WorkbenchToolBar,
 			actions,
@@ -742,6 +824,7 @@ export abstract class ViewPane extends Pane implements IView {
 		);
 
 		this._register(this.toolbar);
+
 		this.setActions();
 
 		this._register(
@@ -769,17 +852,20 @@ export abstract class ViewPane extends Pane implements IView {
 			this.configurationService.onDidChangeConfiguration,
 			(e) => e.affectsConfiguration(ViewPane.AlwaysShowActionsConfig),
 		);
+
 		this._register(
 			onDidRelevantConfigurationChange(
 				this.updateActionsVisibility,
 				this,
 			),
 		);
+
 		this.updateActionsVisibility();
 	}
 
 	protected override updateHeader(): void {
 		super.updateHeader();
+
 		this.updateTwistyIcon();
 	}
 
@@ -790,6 +876,7 @@ export abstract class ViewPane extends Pane implements IView {
 					this.getTwistyIcon(!this._expanded),
 				),
 			);
+
 			this.twistiesContainer.classList.add(
 				...ThemeIcon.asClassNameArray(
 					this.getTwistyIcon(this._expanded),
@@ -818,10 +905,12 @@ export abstract class ViewPane extends Pane implements IView {
 			if (URI.isUri(icon)) {
 				// Apply background color to activity bar item provided with iconUrls
 				this.iconContainer.style.backgroundColor = fgColor;
+
 				this.iconContainer.style.color = "";
 			} else {
 				// Apply foreground color to activity bar items provided with codicons
 				this.iconContainer.style.color = fgColor;
+
 				this.iconContainer.style.backgroundColor = "";
 			}
 		}
@@ -850,6 +939,7 @@ export abstract class ViewPane extends Pane implements IView {
 				iconClass,
 				`
 				mask: ${asCSSUrl(icon)} no-repeat 50% 50%;
+
 				mask-size: 24px;
 				-webkit-mask: ${asCSSUrl(icon)} no-repeat 50% 50%;
 				-webkit-mask-size: 16px;
@@ -864,10 +954,12 @@ export abstract class ViewPane extends Pane implements IView {
 		}
 
 		const calculatedTitle = this.calculateTitle(title);
+
 		this.titleContainer = append(
 			container,
 			$("h3.title", {}, calculatedTitle),
 		);
+
 		this.titleContainerHover = this._register(
 			this.hoverService.setupManagedHover(
 				getDefaultHoverDelegate("mouse"),
@@ -887,6 +979,7 @@ export abstract class ViewPane extends Pane implements IView {
 				calculatedTitle,
 			),
 		);
+
 		this.iconContainer.setAttribute(
 			"aria-label",
 			this._getAriaLabel(calculatedTitle),
@@ -920,11 +1013,13 @@ export abstract class ViewPane extends Pane implements IView {
 
 		if (this.titleContainer) {
 			this.titleContainer.textContent = calculatedTitle;
+
 			this.titleContainerHover?.update(calculatedTitle);
 		}
 
 		if (this.iconContainer) {
 			this.iconContainerHover?.update(calculatedTitle);
+
 			this.iconContainer.setAttribute(
 				"aria-label",
 				this._getAriaLabel(calculatedTitle),
@@ -932,18 +1027,21 @@ export abstract class ViewPane extends Pane implements IView {
 		}
 
 		this._title = title;
+
 		this._onDidChangeTitleArea.fire();
 	}
 
 	private setTitleDescription(description: string | undefined) {
 		if (this.titleDescriptionContainer) {
 			this.titleDescriptionContainer.textContent = description ?? "";
+
 			this.titleDescriptionContainerHover?.update(description ?? "");
 		} else if (description && this.titleContainer) {
 			this.titleDescriptionContainer = after(
 				this.titleContainer,
 				$("span.description", {}, description),
 			);
+
 			this.titleDescriptionContainerHover = this._register(
 				this.hoverService.setupManagedHover(
 					getDefaultHoverDelegate("mouse"),
@@ -958,6 +1056,7 @@ export abstract class ViewPane extends Pane implements IView {
 		this.setTitleDescription(description);
 
 		this._titleDescription = description;
+
 		this._onDidChangeTitleArea.fire();
 	}
 
@@ -1011,17 +1110,20 @@ export abstract class ViewPane extends Pane implements IView {
 			this.progressBar = this._register(
 				new ProgressBar(this.element, defaultProgressBarStyles),
 			);
+
 			this.progressBar.hide();
 		}
 
 		if (this.progressIndicator === undefined) {
 			const that = this;
+
 			this.progressIndicator = this._register(
 				new ScopedProgressIndicator(
 					assertIsDefined(this.progressBar),
 					new (class extends AbstractProgressScope {
 						constructor() {
 							super(that.id, that.isBodyVisible());
+
 							this._register(
 								that.onDidChangeBodyVisibility((isVisible) =>
 									isVisible
@@ -1034,6 +1136,7 @@ export abstract class ViewPane extends Pane implements IView {
 				),
 			);
 		}
+
 		return this.progressIndicator;
 	}
 
@@ -1053,6 +1156,7 @@ export abstract class ViewPane extends Pane implements IView {
 		} else if (this.element) {
 			this.element.focus();
 		}
+
 		if (
 			isActiveElement(this.element) ||
 			isAncestorOfActiveElement(this.element)
@@ -1068,10 +1172,12 @@ export abstract class ViewPane extends Pane implements IView {
 			if (this.shouldShowFilterInHeader()) {
 				primaryActions.unshift(VIEWPANE_FILTER_ACTION);
 			}
+
 			this.toolbar.setActions(
 				prepareActions(primaryActions),
 				prepareActions(this.menuActions.getSecondaryActions()),
 			);
+
 			this.toolbar.context = this.getActionsContext();
 		}
 	}
@@ -1080,10 +1186,12 @@ export abstract class ViewPane extends Pane implements IView {
 		if (!this.headerContainer) {
 			return;
 		}
+
 		const shouldAlwaysShowActions =
 			this.configurationService.getValue<boolean>(
 				"workbench.view.alwaysShowHeaderActions",
 			);
+
 		this.headerContainer.classList.toggle(
 			"actions-always-visible",
 			shouldAlwaysShowActions,
@@ -1092,6 +1200,7 @@ export abstract class ViewPane extends Pane implements IView {
 
 	protected updateActions(): void {
 		this.setActions();
+
 		this._onDidChangeTitleArea.fire();
 	}
 
@@ -1106,21 +1215,27 @@ export abstract class ViewPane extends Pane implements IView {
 				constructor() {
 					super(null, action);
 				}
+
 				override setFocusable(): void {
 					/* noop input elements are focusable by default */
 				}
+
 				override get trapsArrowNavigation(): boolean {
 					return true;
 				}
+
 				override render(container: HTMLElement): void {
 					container.classList.add("viewpane-filter-container");
 
 					const filter = that.getFilterWidget()!;
+
 					append(container, filter.element);
+
 					filter.relayout();
 				}
 			})();
 		}
+
 		return createActionViewItem(this.instantiationService, action, {
 			...options,
 			...{ menuAsChild: action instanceof SubmenuItemAction },
@@ -1158,7 +1273,9 @@ export abstract class ViewPane extends Pane implements IView {
 
 export abstract class FilterViewPane extends ViewPane {
 	readonly filterWidget: FilterWidget;
+
 	private dimension: Dimension | undefined;
+
 	private filterContainer: HTMLElement | undefined;
 
 	constructor(
@@ -1198,6 +1315,7 @@ export abstract class FilterViewPane extends ViewPane {
 				]),
 			),
 		);
+
 		this.filterWidget = this._register(
 			childInstantiationService.createInstance(
 				FilterWidget,
@@ -1212,6 +1330,7 @@ export abstract class FilterViewPane extends ViewPane {
 
 	protected override renderBody(container: HTMLElement): void {
 		super.renderBody(container);
+
 		this.filterContainer = append(
 			container,
 			$(".viewpane-filter-container"),
@@ -1231,16 +1350,20 @@ export abstract class FilterViewPane extends ViewPane {
 			if (shouldShowFilterInHeader) {
 				reset(this.filterContainer!);
 			}
+
 			this.updateActions();
 
 			if (!shouldShowFilterInHeader) {
 				append(this.filterContainer!, this.filterWidget.element);
 			}
 		}
+
 		if (!shouldShowFilterInHeader) {
 			height = height - 44;
 		}
+
 		this.filterWidget.layout(width);
+
 		this.layoutBodyContent(height, width);
 	}
 
@@ -1257,7 +1380,9 @@ export abstract class FilterViewPane extends ViewPane {
 
 export interface IViewPaneLocationColors {
 	background: string;
+
 	overlayBackground: string;
+
 	listOverrideStyles: PartialExcept<
 		IListStyles,
 		"listBackground" | "treeStickyScrollBackground"
@@ -1276,9 +1401,13 @@ export function getLocationBasedViewColors(
 	switch (location) {
 		case ViewContainerLocation.Panel:
 			background = PANEL_BACKGROUND;
+
 			overlayBackground = PANEL_SECTION_DRAG_AND_DROP_BACKGROUND;
+
 			stickyScrollBackground = PANEL_STICKY_SCROLL_BACKGROUND;
+
 			stickyScrollBorder = PANEL_STICKY_SCROLL_BORDER;
+
 			stickyScrollShadow = PANEL_STICKY_SCROLL_SHADOW;
 
 			break;
@@ -1287,9 +1416,13 @@ export function getLocationBasedViewColors(
 		case ViewContainerLocation.AuxiliaryBar:
 		default:
 			background = SIDE_BAR_BACKGROUND;
+
 			overlayBackground = SIDE_BAR_DRAG_AND_DROP_BACKGROUND;
+
 			stickyScrollBackground = SIDE_BAR_STICKY_SCROLL_BACKGROUND;
+
 			stickyScrollBorder = SIDE_BAR_STICKY_SCROLL_BORDER;
+
 			stickyScrollShadow = SIDE_BAR_STICKY_SCROLL_SHADOW;
 	}
 
@@ -1310,6 +1443,7 @@ export abstract class ViewAction<T extends IView> extends Action2 {
 
 	constructor(desc: Readonly<IAction2Options> & { viewId: string }) {
 		super(desc);
+
 		this.desc = desc;
 	}
 
@@ -1321,6 +1455,7 @@ export abstract class ViewAction<T extends IView> extends Action2 {
 		if (view) {
 			return this.runInView(accessor, <T>view, ...args);
 		}
+
 		return undefined;
 	}
 

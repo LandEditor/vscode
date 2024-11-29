@@ -31,19 +31,25 @@ export function popup(
 		context: IContextMenuEvent,
 	) => {
 		const item = processedItems[itemId];
+
 		item.click?.(context);
 	};
+
 	ipcRenderer.once(onClickChannel, onClickChannelHandler);
+
 	ipcRenderer.once(
 		CONTEXT_MENU_CLOSE_CHANNEL,
 		(event: unknown, closedContextMenuId: number) => {
 			if (closedContextMenuId !== contextMenuId) {
 				return;
 			}
+
 			ipcRenderer.removeListener(onClickChannel, onClickChannelHandler);
+
 			onHide?.();
 		},
 	);
+
 	ipcRenderer.send(
 		CONTEXT_MENU_CHANNEL,
 		contextMenuId,
@@ -65,6 +71,7 @@ function createItem(
 		enabled: typeof item.enabled === "boolean" ? item.enabled : true,
 		visible: typeof item.visible === "boolean" ? item.visible : true,
 	};
+
 	processedItems.push(item);
 	// Submenu
 	if (Array.isArray(item.submenu)) {
@@ -72,5 +79,6 @@ function createItem(
 			createItem(submenuItem, processedItems),
 		);
 	}
+
 	return serializableItem;
 }

@@ -20,12 +20,19 @@ import { IChatContentReference, IChatProgressMessage } from "./chatService.js";
 
 export interface IChatVariableData {
 	id: string;
+
 	name: string;
+
 	icon?: ThemeIcon;
+
 	fullName?: string;
+
 	description: string;
+
 	modelDescription?: string;
+
 	isSlow?: boolean;
+
 	canTakeArgument?: boolean;
 }
 export type IChatRequestVariableValue =
@@ -54,10 +61,12 @@ export const IChatVariablesService = createDecorator<IChatVariablesService>(
 
 export interface IChatVariablesService {
 	_serviceBrand: undefined;
+
 	registerVariable(
 		data: IChatVariableData,
 		resolver: IChatVariableResolver,
 	): IDisposable;
+
 	hasVariable(name: string): boolean;
 
 	getVariable(name: string): IChatVariableData | undefined;
@@ -82,6 +91,7 @@ export interface IChatVariablesService {
 		progress: (part: IChatVariableResolverProgress) => void,
 		token: CancellationToken,
 	): Promise<IChatRequestVariableData>;
+
 	resolveVariable(
 		variableName: string,
 		promptText: string,
@@ -92,11 +102,18 @@ export interface IChatVariablesService {
 }
 export interface IDynamicVariable {
 	range: IRange;
+
 	id: string;
+
 	fullName?: string;
+
 	icon?: ThemeIcon;
+
 	prefix?: string;
+
 	modelDescription?: string;
+
 	isFile?: boolean;
+
 	data: IChatRequestVariableValue;
 }

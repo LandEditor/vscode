@@ -71,7 +71,9 @@ export enum WillShutdownJoinerOrder {
 }
 export interface IWillShutdownEventJoiner {
 	readonly id: string;
+
 	readonly label: string;
+
 	readonly order?: WillShutdownJoinerOrder;
 }
 export interface IWillShutdownEventDefaultJoiner

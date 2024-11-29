@@ -6,21 +6,27 @@
 declare module "vscode" {
 	export interface DocumentContextItem {
 		readonly uri: Uri;
+
 		readonly version: number;
+
 		readonly ranges: Range[];
 	}
 
 	export interface ConversationRequest {
 		// eslint-disable-next-line local/vscode-dts-string-type-literals
 		readonly type: "request";
+
 		readonly message: string;
 	}
 
 	export interface ConversationResponse {
 		// eslint-disable-next-line local/vscode-dts-string-type-literals
 		readonly type: "response";
+
 		readonly message: string;
+
 		readonly result?: ChatResult;
+
 		readonly references?: DocumentContextItem[];
 	}
 
@@ -59,9 +65,12 @@ declare module "vscode" {
 	export interface MappedEditsRequest {
 		readonly codeBlocks: {
 			code: string;
+
 			resource: Uri;
+
 			markdownBeforeBlock?: string;
 		}[];
+
 		readonly conversation: Array<
 			ConversationRequest | ConversationResponse
 		>; // for every prior response that contains codeblocks, make sure we pass the code as well as the resources based on the reported codemapper URIs

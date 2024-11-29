@@ -44,16 +44,20 @@ import { ITextModel } from "../../../common/model.js";
 
 export interface MoveWordOptions extends ICommandOptions {
 	inSelectionMode: boolean;
+
 	wordNavigationType: WordNavigationType;
 }
 
 export abstract class MoveWordCommand extends EditorCommand {
 	private readonly _inSelectionMode: boolean;
+
 	private readonly _wordNavigationType: WordNavigationType;
 
 	constructor(opts: MoveWordOptions) {
 		super(opts);
+
 		this._inSelectionMode = opts.inSelectionMode;
+
 		this._wordNavigationType = opts.wordNavigationType;
 	}
 
@@ -65,6 +69,7 @@ export abstract class MoveWordCommand extends EditorCommand {
 		if (!editor.hasModel()) {
 			return;
 		}
+
 		const wordSeparators = getMapForWordSeparators(
 			editor.getOption(EditorOption.wordSeparators),
 			editor.getOption(EditorOption.wordSegmenterLocales),
@@ -94,6 +99,7 @@ export abstract class MoveWordCommand extends EditorCommand {
 		});
 
 		model.pushStackElement();
+
 		editor._getViewModel().setCursorStates(
 			"moveWordCommand",
 			CursorChangeReason.Explicit,
@@ -105,6 +111,7 @@ export abstract class MoveWordCommand extends EditorCommand {
 				result[0].positionLineNumber,
 				result[0].positionColumn,
 			);
+
 			editor.revealPosition(pos, ScrollType.Smooth);
 		}
 	}
@@ -482,16 +489,20 @@ export class CursorWordAccessibilityRightSelect extends WordRightCommand {
 
 export interface DeleteWordOptions extends ICommandOptions {
 	whitespaceHeuristics: boolean;
+
 	wordNavigationType: WordNavigationType;
 }
 
 export abstract class DeleteWordCommand extends EditorCommand {
 	private readonly _whitespaceHeuristics: boolean;
+
 	private readonly _wordNavigationType: WordNavigationType;
 
 	constructor(opts: DeleteWordOptions) {
 		super(opts);
+
 		this._whitespaceHeuristics = opts.whitespaceHeuristics;
+
 		this._wordNavigationType = opts.wordNavigationType;
 	}
 
@@ -507,6 +518,7 @@ export abstract class DeleteWordCommand extends EditorCommand {
 		if (!editor.hasModel()) {
 			return;
 		}
+
 		const wordSeparators = getMapForWordSeparators(
 			editor.getOption(EditorOption.wordSeparators),
 			editor.getOption(EditorOption.wordSegmenterLocales),
@@ -553,7 +565,9 @@ export abstract class DeleteWordCommand extends EditorCommand {
 		});
 
 		editor.pushUndoStop();
+
 		editor.executeCommands(this.id, commands);
+
 		editor.pushUndoStop();
 	}
 
@@ -573,6 +587,7 @@ export class DeleteWordLeftCommand extends DeleteWordCommand {
 		if (r) {
 			return r;
 		}
+
 		return new Range(1, 1, 1, 1);
 	}
 }
@@ -587,6 +602,7 @@ export class DeleteWordRightCommand extends DeleteWordCommand {
 		if (r) {
 			return r;
 		}
+
 		const lineCount = ctx.model.getLineCount();
 
 		const maxColumn = ctx.model.getLineMaxColumn(lineCount);
@@ -690,6 +706,7 @@ export class DeleteInsideWord extends EditorAction {
 		if (!editor.hasModel()) {
 			return;
 		}
+
 		const wordSeparators = getMapForWordSeparators(
 			editor.getOption(EditorOption.wordSeparators),
 			editor.getOption(EditorOption.wordSegmenterLocales),
@@ -710,7 +727,9 @@ export class DeleteInsideWord extends EditorAction {
 		});
 
 		editor.pushUndoStop();
+
 		editor.executeCommands(this.id, commands);
+
 		editor.pushUndoStop();
 	}
 }

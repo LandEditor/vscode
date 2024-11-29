@@ -90,7 +90,9 @@ class DropOrPasteEditProvider
 			vscode.l10n.t("Insert Image as Attachment"),
 			DropOrPasteEditProvider.kind,
 		);
+
 		pasteEdit.yieldTo = [vscode.DocumentDropOrPasteEditKind.Text];
+
 		pasteEdit.additionalEdit = insert.additionalEdit;
 
 		return [pasteEdit];
@@ -113,8 +115,11 @@ class DropOrPasteEditProvider
 		}
 
 		const dropEdit = new vscode.DocumentDropEdit(insert.insertText);
+
 		dropEdit.yieldTo = [vscode.DocumentDropOrPasteEditKind.Text];
+
 		dropEdit.additionalEdit = insert.additionalEdit;
+
 		dropEdit.title = vscode.l10n.t("Insert Image as Attachment");
 
 		return dropEdit;
@@ -127,6 +132,7 @@ class DropOrPasteEditProvider
 	): Promise<
 		| {
 				insertText: vscode.SnippetString;
+
 				additionalEdit: vscode.WorkspaceEdit;
 		  }
 		| undefined
@@ -159,13 +165,17 @@ class DropOrPasteEditProvider
 		);
 
 		const notebookUri = currentCell.notebook.uri;
+
 		additionalEdit.set(notebookUri, [nbEdit]);
 
 		// create a snippet for paste
 		const insertText = new vscode.SnippetString();
+
 		newAttachment.filenames.forEach((filename, i) => {
 			insertText.appendText("![");
+
 			insertText.appendPlaceholder(`${filename}`);
+
 			insertText.appendText(
 				`](${/\s/.test(filename) ? `<attachment:${filename}>` : `attachment:${filename}`})`,
 			);
@@ -267,6 +277,7 @@ function getCellFromCellDocument(
 			}
 		}
 	}
+
 	return undefined;
 }
 
@@ -296,14 +307,19 @@ function encodeBase64(buffer: Uint8Array, padded = true, urlSafe = false) {
 		const c = buffer[i + 2];
 
 		output += dictionary[a >>> 2];
+
 		output += dictionary[((a << 4) | (b >>> 4)) & 0b111111];
+
 		output += dictionary[((b << 2) | (c >>> 6)) & 0b111111];
+
 		output += dictionary[c & 0b111111];
 	}
 
 	if (remainder === 1) {
 		const a = buffer[i + 0];
+
 		output += dictionary[a >>> 2];
+
 		output += dictionary[(a << 4) & 0b111111];
 
 		if (padded) {
@@ -313,8 +329,11 @@ function encodeBase64(buffer: Uint8Array, padded = true, urlSafe = false) {
 		const a = buffer[i + 0];
 
 		const b = buffer[i + 1];
+
 		output += dictionary[a >>> 2];
+
 		output += dictionary[((a << 4) | (b >>> 4)) & 0b111111];
+
 		output += dictionary[(b << 2) & 0b111111];
 
 		if (padded) {
@@ -327,7 +346,9 @@ function encodeBase64(buffer: Uint8Array, padded = true, urlSafe = false) {
 
 interface ImageAttachmentData {
 	readonly fileName: string;
+
 	readonly data: Uint8Array;
+
 	readonly mimeType: string;
 }
 
@@ -358,7 +379,9 @@ function buildAttachment(
 
 		for (
 			let appendValue = 2;
+
 			tempFilename in cellMetadata.attachments;
+
 			appendValue++
 		) {
 			const objEntries = Object.entries(
@@ -380,6 +403,7 @@ function buildAttachment(
 		}
 
 		tempFilenames.push(tempFilename);
+
 		cellMetadata.attachments[tempFilename] = { [attachment.mimeType]: b64 };
 	}
 

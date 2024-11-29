@@ -17,6 +17,7 @@ export const INotebookSearchService = createDecorator<INotebookSearchService>(
 
 export interface INotebookSearchService {
 	readonly _serviceBrand: undefined;
+
 	notebookSearch(
 		query: ITextQuery,
 		token: CancellationToken | undefined,
@@ -24,7 +25,9 @@ export interface INotebookSearchService {
 		onProgress?: (result: ISearchProgressItem) => void,
 	): {
 		openFilesToScan: ResourceSet;
+
 		completeData: Promise<ISearchComplete>;
+
 		allScannedFiles: Promise<ResourceSet>;
 	};
 }

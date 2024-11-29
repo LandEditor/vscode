@@ -25,6 +25,7 @@ import { AbstractUserDataSyncStoreManagementService } from "./userDataSyncStoreS
 
 export class UserDataSyncAccountServiceChannel implements IServerChannel {
 	constructor(private readonly service: IUserDataSyncAccountService) {}
+
 	listen(_: unknown, event: string): Event<any> {
 		switch (event) {
 			case "onDidChangeAccount":
@@ -33,10 +34,12 @@ export class UserDataSyncAccountServiceChannel implements IServerChannel {
 			case "onTokenFailed":
 				return this.service.onTokenFailed;
 		}
+
 		throw new Error(
 			`[UserDataSyncAccountServiceChannel] Event not found: ${event}`,
 		);
 	}
+
 	call(context: any, command: string, args?: any): Promise<any> {
 		switch (command) {
 			case "_getInitialData":
@@ -45,6 +48,7 @@ export class UserDataSyncAccountServiceChannel implements IServerChannel {
 			case "updateAccount":
 				return this.service.updateAccount(args);
 		}
+
 		throw new Error("Invalid call");
 	}
 }
@@ -53,35 +57,43 @@ export class UserDataSyncAccountServiceChannelClient
 	implements IUserDataSyncAccountService
 {
 	declare readonly _serviceBrand: undefined;
+
 	private _account: IUserDataSyncAccount | undefined;
 
 	get account(): IUserDataSyncAccount | undefined {
 		return this._account;
 	}
+
 	get onTokenFailed(): Event<boolean> {
 		return this.channel.listen<boolean>("onTokenFailed");
 	}
+
 	private _onDidChangeAccount = this._register(
 		new Emitter<IUserDataSyncAccount | undefined>(),
 	);
+
 	readonly onDidChangeAccount = this._onDidChangeAccount.event;
 
 	constructor(private readonly channel: IChannel) {
 		super();
+
 		this.channel
 			.call<IUserDataSyncAccount | undefined>("_getInitialData")
 			.then((account) => {
 				this._account = account;
+
 				this._register(
 					this.channel.listen<IUserDataSyncAccount | undefined>(
 						"onDidChangeAccount",
 					)((account) => {
 						this._account = account;
+
 						this._onDidChangeAccount.fire(account);
 					}),
 				);
 			});
 	}
+
 	updateAccount(
 		account: IUserDataSyncAccount | undefined,
 	): Promise<undefined> {
@@ -94,15 +106,18 @@ export class UserDataSyncStoreManagementServiceChannel
 	constructor(
 		private readonly service: IUserDataSyncStoreManagementService,
 	) {}
+
 	listen(_: unknown, event: string): Event<any> {
 		switch (event) {
 			case "onDidChangeUserDataSyncStore":
 				return this.service.onDidChangeUserDataSyncStore;
 		}
+
 		throw new Error(
 			`[UserDataSyncStoreManagementServiceChannel] Event not found: ${event}`,
 		);
 	}
+
 	call(context: any, command: string, args?: any): Promise<any> {
 		switch (command) {
 			case "switch":
@@ -111,6 +126,7 @@ export class UserDataSyncStoreManagementServiceChannel
 			case "getPreviousUserDataSyncStore":
 				return this.service.getPreviousUserDataSyncStore();
 		}
+
 		throw new Error("Invalid call");
 	}
 }
@@ -128,15 +144,18 @@ export class UserDataSyncStoreManagementServiceChannelClient
 		storageService: IStorageService,
 	) {
 		super(productService, configurationService, storageService);
+
 		this._register(
 			this.channel.listen<void>("onDidChangeUserDataSyncStore")(() =>
 				this.updateUserDataSyncStore(),
 			),
 		);
 	}
+
 	async switch(type: UserDataSyncStoreType): Promise<void> {
 		return this.channel.call("switch", [type]);
 	}
+
 	async getPreviousUserDataSyncStore(): Promise<IUserDataSyncStore> {
 		const userDataSyncStore = await this.channel.call<IUserDataSyncStore>(
 			"getPreviousUserDataSyncStore",
@@ -144,6 +163,7 @@ export class UserDataSyncStoreManagementServiceChannelClient
 
 		return this.revive(userDataSyncStore);
 	}
+
 	private revive(userDataSyncStore: IUserDataSyncStore): IUserDataSyncStore {
 		return {
 			url: URI.revive(userDataSyncStore.url),

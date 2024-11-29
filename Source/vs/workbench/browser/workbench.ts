@@ -96,8 +96,11 @@ export class Workbench extends Layout {
 	private readonly _onWillShutdown = this._register(
 		new Emitter<WillShutdownEvent>(),
 	);
+
 	readonly onWillShutdown = this._onWillShutdown.event;
+
 	private readonly _onDidShutdown = this._register(new Emitter<void>());
+
 	readonly onDidShutdown = this._onDidShutdown.event;
 
 	constructor(
@@ -109,8 +112,10 @@ export class Workbench extends Layout {
 		super(parent);
 		// Perf: measure workbench startup time
 		mark("code/willStartWorkbench");
+
 		this.registerErrorHandler(logService);
 	}
+
 	private registerErrorHandler(logService: ILogService): void {
 		// Listen on unhandled rejection events
 		// Note: intentionally not registered as disposable to handle
@@ -126,10 +131,13 @@ export class Workbench extends Layout {
 			this.handleUnexpectedError(error, logService),
 		);
 	}
+
 	private previousUnexpectedError: {
 		message: string | undefined;
+
 		time: number;
 	} = { message: undefined, time: 0 };
+
 	private handleUnexpectedError(
 		error: unknown,
 		logService: ILogService,
@@ -139,6 +147,7 @@ export class Workbench extends Layout {
 		if (!message) {
 			return;
 		}
+
 		const now = Date.now();
 
 		if (
@@ -147,11 +156,14 @@ export class Workbench extends Layout {
 		) {
 			return; // Return if error message identical to previous and shorter than 1 second
 		}
+
 		this.previousUnexpectedError.time = now;
+
 		this.previousUnexpectedError.message = message;
 		// Log it
 		logService.error(message);
 	}
+
 	startup(): IInstantiationService {
 		try {
 			// Configure emitter leak warning threshold
@@ -160,6 +172,7 @@ export class Workbench extends Layout {
 			const instantiationService = this.initServices(
 				this.serviceCollection,
 			);
+
 			instantiationService.invokeFunction((accessor) => {
 				const lifecycleService = accessor.get(ILifecycleService);
 
@@ -196,6 +209,7 @@ export class Workbench extends Layout {
 				Registry.as<IWorkbenchContributionsRegistry>(
 					WorkbenchExtensions.Workbench,
 				).start(accessor);
+
 				Registry.as<IEditorFactoryRegistry>(
 					EditorExtensions.EditorFactory,
 				).start(accessor);
@@ -235,6 +249,7 @@ export class Workbench extends Layout {
 			throw error; // rethrow because this is a critical issue we cannot handle properly here
 		}
 	}
+
 	private initServices(
 		serviceCollection: ServiceCollection,
 	): IInstantiationService {
@@ -254,6 +269,7 @@ export class Workbench extends Layout {
 		for (const [id, descriptor] of contributedServices) {
 			serviceCollection.set(id, descriptor);
 		}
+
 		const instantiationService = new InstantiationService(
 			serviceCollection,
 			true,
@@ -280,6 +296,7 @@ export class Workbench extends Layout {
 
 		return instantiationService;
 	}
+
 	private registerListeners(
 		lifecycleService: ILifecycleService,
 		storageService: IStorageService,
@@ -315,9 +332,11 @@ export class Workbench extends Layout {
 				this._onWillShutdown.fire(event),
 			),
 		);
+
 		this._register(
 			lifecycleService.onDidShutdown(() => {
 				this._onDidShutdown.fire();
+
 				this.dispose();
 			}),
 		);
@@ -339,18 +358,21 @@ export class Workbench extends Layout {
 				this.mainContainer.classList.add("modal-dialog-visible"),
 			),
 		);
+
 		this._register(
 			dialogService.onDidShowDialog(() =>
 				this.mainContainer.classList.remove("modal-dialog-visible"),
 			),
 		);
 	}
+
 	private fontAliasing:
 		| "default"
 		| "antialiased"
 		| "none"
 		| "auto"
 		| undefined;
+
 	private updateFontAliasing(
 		e: IConfigurationChangeEvent | undefined,
 		configurationService: IConfigurationService,
@@ -358,9 +380,11 @@ export class Workbench extends Layout {
 		if (!isMacintosh) {
 			return; // macOS only
 		}
+
 		if (e && !e.affectsConfiguration("workbench.fontAliasing")) {
 			return;
 		}
+
 		const aliasing = configurationService.getValue<
 			"default" | "antialiased" | "none" | "auto"
 		>("workbench.fontAliasing");
@@ -368,6 +392,7 @@ export class Workbench extends Layout {
 		if (this.fontAliasing === aliasing) {
 			return;
 		}
+
 		this.fontAliasing = aliasing;
 		// Remove all
 		const fontAliasingValues: (typeof aliasing)[] = [
@@ -375,6 +400,7 @@ export class Workbench extends Layout {
 			"none",
 			"auto",
 		];
+
 		this.mainContainer.classList.remove(
 			...fontAliasingValues.map(
 				(value) => `monaco-font-aliasing-${value}`,
@@ -387,6 +413,7 @@ export class Workbench extends Layout {
 			);
 		}
 	}
+
 	private restoreFontInfo(
 		storageService: IStorageService,
 		configurationService: IConfigurationService,
@@ -410,6 +437,7 @@ export class Workbench extends Layout {
 				/* ignore */
 			}
 		}
+
 		FontMeasurements.readFontInfo(
 			mainWindow,
 			BareFontInfo.createFromRawSettings(
@@ -418,6 +446,7 @@ export class Workbench extends Layout {
 			),
 		);
 	}
+
 	private storeFontInfo(storageService: IStorageService): void {
 		const serializedFontInfo =
 			FontMeasurements.serializeFontInfo(mainWindow);
@@ -431,6 +460,7 @@ export class Workbench extends Layout {
 			);
 		}
 	}
+
 	private renderWorkbench(
 		instantiationService: IInstantiationService,
 		notificationService: NotificationService,
@@ -465,7 +495,9 @@ export class Workbench extends Layout {
 			...this.getLayoutClasses(),
 			...(this.options?.extraClasses ? this.options.extraClasses : []),
 		]);
+
 		this.mainContainer.classList.add(...workbenchClasses);
+
 		mainWindow.document.body.classList.add(platformClass); // used by our fonts
 		if (isWeb) {
 			mainWindow.document.body.classList.add("web");
@@ -531,8 +563,11 @@ export class Workbench extends Layout {
 			},
 		]) {
 			const partContainer = this.createPart(id, role, classes);
+
 			mark(`code/willCreatePart/${id}`);
+
 			this.getPart(id).create(partContainer, options);
+
 			mark(`code/didCreatePart/${id}`);
 		}
 		// Notification Handlers
@@ -543,6 +578,7 @@ export class Workbench extends Layout {
 		// Add Workbench to DOM
 		this.parent.appendChild(this.mainContainer);
 	}
+
 	private createPart(
 		id: string,
 		role: string,
@@ -553,15 +589,20 @@ export class Workbench extends Layout {
 				? "footer" /* Use footer element for status bar #98376 */
 				: "div",
 		);
+
 		part.classList.add("part", ...classes);
+
 		part.id = id;
+
 		part.setAttribute("role", role);
 
 		if (role === "status") {
 			part.setAttribute("aria-live", "off");
 		}
+
 		return part;
 	}
+
 	private createNotificationsHandlers(
 		instantiationService: IInstantiationService,
 		notificationService: NotificationService,
@@ -582,6 +623,7 @@ export class Workbench extends Layout {
 				notificationService.model,
 			),
 		);
+
 		this._register(
 			instantiationService.createInstance(
 				NotificationsAlerts,
@@ -593,6 +635,7 @@ export class Workbench extends Layout {
 			NotificationsStatus,
 			notificationService.model,
 		);
+
 		this._register(
 			instantiationService.createInstance(NotificationsTelemetry),
 		);
@@ -603,9 +646,11 @@ export class Workbench extends Layout {
 					notificationsCenter.isVisible,
 					notificationsToasts.isVisible,
 				);
+
 				notificationsToasts.update(notificationsCenter.isVisible);
 			}),
 		);
+
 		this._register(
 			notificationsToasts.onDidChangeVisibility(() => {
 				notificationsStatus.update(
@@ -635,6 +680,7 @@ export class Workbench extends Layout {
 			),
 		});
 	}
+
 	private restore(lifecycleService: ILifecycleService): void {
 		// Ask each part to restore
 		try {
@@ -658,12 +704,14 @@ export class Workbench extends Layout {
 				// editors to be included in these numbers
 				function markDidStartWorkbench() {
 					mark("code/didStartWorkbench");
+
 					performance.measure(
 						"perf: workbench create & restore",
 						"code/didLoadWorkbenchMain",
 						"code/didStartWorkbench",
 					);
 				}
+
 				if (this.isRestored()) {
 					markDidStartWorkbench();
 				} else {
@@ -685,6 +733,7 @@ export class Workbench extends Layout {
 						);
 					}, 2500),
 				);
+
 				eventuallyPhaseScheduler.schedule();
 			}),
 		);

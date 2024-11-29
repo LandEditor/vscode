@@ -77,6 +77,7 @@ export interface IBracketPairsTextModelPart {
 }
 export interface IFoundBracket {
 	range: Range;
+
 	bracketInfo: OpeningBracketKind | ClosingBracketKind;
 }
 export class BracketInfo {
@@ -98,10 +99,12 @@ export class BracketPairInfo {
 		public readonly nestingLevelOfEqualBracketType: number,
 		private readonly bracketPairNode: PairAstNode,
 	) {}
+
 	public get openingBracketInfo(): OpeningBracketKind {
 		return this.bracketPairNode.openingBracket
 			.bracketInfo as OpeningBracketKind;
 	}
+
 	public get closingBracketInfo(): ClosingBracketKind | undefined {
 		return this.bracketPairNode.closingBracket?.bracketInfo as
 			| ClosingBracketKind

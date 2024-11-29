@@ -63,9 +63,12 @@ export function convertLinkRangeToBuffer(
 		if (!line) {
 			break;
 		}
+
 		for (
 			let x = 0;
+
 			x < Math.min(bufferWidth, lineLength + lineOffset);
+
 			x++
 		) {
 			const cell = line.getCell(x);
@@ -74,17 +77,20 @@ export function convertLinkRangeToBuffer(
 			if (!cell) {
 				break;
 			}
+
 			const width = cell.getWidth();
 
 			if (width === 2) {
 				lineOffset++;
 			}
+
 			const char = cell.getChars();
 
 			if (char.length > 1) {
 				lineOffset -= char.length - 1;
 			}
 		}
+
 		startOffset += lineOffset;
 	}
 	// Shift end range right for each wide character inside the link
@@ -94,7 +100,9 @@ export function convertLinkRangeToBuffer(
 
 	for (
 		let y = Math.max(0, startWrappedLineCount - 1);
+
 		y < endWrappedLineCount;
+
 		y++
 	) {
 		const start =
@@ -116,9 +124,12 @@ export function convertLinkRangeToBuffer(
 		if (!line) {
 			break;
 		}
+
 		for (
 			let x = start;
+
 			x < Math.min(bufferWidth, lineLength + lineOffset);
+
 			x++
 		) {
 			const cell = line.getCell(x);
@@ -127,6 +138,7 @@ export function convertLinkRangeToBuffer(
 			if (!cell) {
 				break;
 			}
+
 			const width = cell.getWidth();
 
 			const chars = cell.getChars();
@@ -143,20 +155,26 @@ export function convertLinkRangeToBuffer(
 				lineOffset -= chars.length - 1;
 			}
 		}
+
 		endOffset += lineOffset;
 	}
 	// Apply the width character offsets to the result
 	bufferRange.start.x += startOffset;
+
 	bufferRange.end.x += startOffset + endOffset;
 	// Convert back to wrapped lines
 	while (bufferRange.start.x > bufferWidth) {
 		bufferRange.start.x -= bufferWidth;
+
 		bufferRange.start.y++;
 	}
+
 	while (bufferRange.end.x > bufferWidth) {
 		bufferRange.end.x -= bufferWidth;
+
 		bufferRange.end.y++;
 	}
+
 	return bufferRange;
 }
 export function convertBufferRangeToViewport(
@@ -183,6 +201,7 @@ export function getXtermLineContent(
 	// Cap the maximum number of lines generated to prevent potential performance problems. This is
 	// more of a sanity check as the wrapped line should already be trimmed down at this point.
 	const maxLineLength = Math.max(2048, cols * 2);
+
 	lineEnd = Math.min(lineEnd, lineStart + maxLineLength);
 
 	let content = "";
@@ -196,6 +215,7 @@ export function getXtermLineContent(
 			content += line.translateToString(true, 0, cols);
 		}
 	}
+
 	return content;
 }
 export function getXtermRangesByAttr(
@@ -218,6 +238,7 @@ export function getXtermRangesByAttr(
 		if (!line) {
 			continue;
 		}
+
 		for (let x = 0; x < cols; x++) {
 			const cell = line.getCell(x);
 
@@ -240,17 +261,22 @@ export function getXtermRangesByAttr(
 				if (lastFgAttr !== thisFgAttr || lastBgAttr !== thisBgAttr) {
 					// TODO: x overflow
 					const bufferRangeEnd = { x, y };
+
 					ranges.push({
 						start: bufferRangeStart!,
 						end: bufferRangeEnd,
 					});
+
 					bufferRangeStart = { x, y };
 				}
 			}
+
 			lastFgAttr = thisFgAttr;
+
 			lastBgAttr = thisBgAttr;
 		}
 	}
+
 	return ranges;
 }
 // export function positionIsInRange(position: IBufferCellPosition, range: IBufferRange): boolean {
@@ -279,11 +305,13 @@ export function updateLinkWithRelativeCwd(
 	const cwd = capabilities
 		.get(TerminalCapability.CommandDetection)
 		?.getCwdForLine(y);
+
 	logService.trace("terminalLinkHelpers#updateLinkWithRelativeCwd cwd", cwd);
 
 	if (!cwd) {
 		return undefined;
 	}
+
 	const result: string[] = [];
 
 	const sep = osPath.sep;
@@ -314,9 +342,11 @@ export function updateLinkWithRelativeCwd(
 			} else {
 				break;
 			}
+
 			i++;
 		}
 	}
+
 	return result;
 }
 export function osPathModule(os: OperatingSystem): IPath {

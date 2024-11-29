@@ -16,10 +16,12 @@ import {
 
 export interface IWorkerTextSearchComplete {
 	results: IFileMatch<UriComponents>[];
+
 	limitHit?: boolean;
 }
 export interface IWorkerFileSearchComplete {
 	results: string[];
+
 	limitHit?: boolean;
 }
 // Copied from lib.dom.ts, which is not available in this layer.
@@ -27,7 +29,9 @@ type IWorkerFileSystemHandleKind = "directory" | "file";
 
 export interface IWorkerFileSystemHandle {
 	readonly kind: IWorkerFileSystemHandleKind;
+
 	readonly name: string;
+
 	isSameEntry(other: IWorkerFileSystemHandle): Promise<boolean>;
 }
 export interface IWorkerFileSystemDirectoryHandle
@@ -37,9 +41,11 @@ export interface IWorkerFileSystemDirectoryHandle
 	getDirectoryHandle(name: string): Promise<IWorkerFileSystemDirectoryHandle>;
 
 	getFileHandle(name: string): Promise<IWorkerFileSystemFileHandle>;
+
 	resolve(
 		possibleDescendant: IWorkerFileSystemHandle,
 	): Promise<string[] | null>;
+
 	entries(): AsyncIterableIterator<
 		[string, IWorkerFileSystemDirectoryHandle | IWorkerFileSystemFileHandle]
 	>;
@@ -71,6 +77,7 @@ export interface ILocalFileSearchSimpleWorker {
 }
 export abstract class LocalFileSearchSimpleWorkerHost {
 	public static CHANNEL_NAME = "localFileSearchWorkerHost";
+
 	public static getChannel(
 		workerServer: IWorkerServer,
 	): LocalFileSearchSimpleWorkerHost {
@@ -78,6 +85,7 @@ export abstract class LocalFileSearchSimpleWorkerHost {
 			LocalFileSearchSimpleWorkerHost.CHANNEL_NAME,
 		);
 	}
+
 	public static setChannel(
 		workerClient: IWorkerClient<any>,
 		obj: LocalFileSearchSimpleWorkerHost,
@@ -87,6 +95,7 @@ export abstract class LocalFileSearchSimpleWorkerHost {
 			obj,
 		);
 	}
+
 	abstract $sendTextSearchMatch(
 		match: IFileMatch<UriComponents>,
 		queryId: number,

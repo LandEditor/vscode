@@ -131,6 +131,7 @@ export function setupTerminalMenus(): void {
 			},
 		},
 	]);
+
 	MenuRegistry.appendMenuItems([
 		{
 			id: MenuId.TerminalInstanceContext,
@@ -239,6 +240,7 @@ export function setupTerminalMenus(): void {
 			},
 		},
 	]);
+
 	MenuRegistry.appendMenuItems([
 		{
 			id: MenuId.TerminalEditorInstanceContext,
@@ -347,6 +349,7 @@ export function setupTerminalMenus(): void {
 			},
 		},
 	]);
+
 	MenuRegistry.appendMenuItems([
 		{
 			id: MenuId.TerminalTabEmptyAreaContext,
@@ -372,6 +375,7 @@ export function setupTerminalMenus(): void {
 			},
 		},
 	]);
+
 	MenuRegistry.appendMenuItems([
 		{
 			id: MenuId.TerminalNewDropdownContext,
@@ -430,6 +434,7 @@ export function setupTerminalMenus(): void {
 			},
 		},
 	]);
+
 	MenuRegistry.appendMenuItems([
 		{
 			id: MenuId.ViewTitle,
@@ -617,6 +622,7 @@ export function setupTerminalMenus(): void {
 			},
 		},
 	]);
+
 	MenuRegistry.appendMenuItems([
 		{
 			id: MenuId.TerminalTabContext,
@@ -739,6 +745,7 @@ export function setupTerminalMenus(): void {
 			},
 		},
 	]);
+
 	MenuRegistry.appendMenuItem(MenuId.EditorTitleContext, {
 		command: {
 			id: TerminalCommandId.MoveToTerminalPanel,
@@ -747,6 +754,7 @@ export function setupTerminalMenus(): void {
 		when: ResourceContextKey.Scheme.isEqualTo(Schemas.vscodeTerminal),
 		group: "2_files",
 	});
+
 	MenuRegistry.appendMenuItem(MenuId.EditorTitleContext, {
 		command: {
 			id: TerminalCommandId.Rename,
@@ -755,6 +763,7 @@ export function setupTerminalMenus(): void {
 		when: ResourceContextKey.Scheme.isEqualTo(Schemas.vscodeTerminal),
 		group: "2_files",
 	});
+
 	MenuRegistry.appendMenuItem(MenuId.EditorTitleContext, {
 		command: {
 			id: TerminalCommandId.ChangeColor,
@@ -763,6 +772,7 @@ export function setupTerminalMenus(): void {
 		when: ResourceContextKey.Scheme.isEqualTo(Schemas.vscodeTerminal),
 		group: "2_files",
 	});
+
 	MenuRegistry.appendMenuItem(MenuId.EditorTitleContext, {
 		command: {
 			id: TerminalCommandId.ChangeIcon,
@@ -771,6 +781,7 @@ export function setupTerminalMenus(): void {
 		when: ResourceContextKey.Scheme.isEqualTo(Schemas.vscodeTerminal),
 		group: "2_files",
 	});
+
 	MenuRegistry.appendMenuItem(MenuId.EditorTitleContext, {
 		command: {
 			id: TerminalCommandId.SizeToContentWidth,
@@ -779,6 +790,7 @@ export function setupTerminalMenus(): void {
 		when: ResourceContextKey.Scheme.isEqualTo(Schemas.vscodeTerminal),
 		group: "2_files",
 	});
+
 	MenuRegistry.appendMenuItem(MenuId.EditorTitle, {
 		command: {
 			id: TerminalCommandId.CreateTerminalEditorSameGroup,
@@ -804,14 +816,17 @@ export function getTerminalActionBarArgs(
 	dropdownMenu: IMenu,
 ): {
 	dropdownAction: IAction;
+
 	dropdownMenuActions: IAction[];
 
 	className: string;
+
 	dropdownIcon?: string;
 } {
 	let dropdownActions: IAction[] = [];
 
 	let submenuActions: IAction[] = [];
+
 	profiles = profiles.filter((e) => !e.isAutoDetected);
 
 	const splitLocation =
@@ -833,6 +848,7 @@ export function getTerminalActionBarArgs(
 		};
 
 		const sanitizedProfileName = p.profileName.replace(/[\n\r\t]/g, "");
+
 		dropdownActions.push(
 			new Action(
 				TerminalCommandId.NewWithProfile,
@@ -848,11 +864,14 @@ export function getTerminalActionBarArgs(
 				async () => {
 					const instance =
 						await terminalService.createTerminal(options);
+
 					terminalService.setActiveInstance(instance);
+
 					await terminalService.focusActiveInstance();
 				},
 			),
 		);
+
 		submenuActions.push(
 			new Action(
 				TerminalCommandId.Split,
@@ -868,12 +887,15 @@ export function getTerminalActionBarArgs(
 				async () => {
 					const instance =
 						await terminalService.createTerminal(splitOptions);
+
 					terminalService.setActiveInstance(instance);
+
 					await terminalService.focusActiveInstance();
 				},
 			),
 		);
 	}
+
 	for (const contributed of contributedProfiles) {
 		const isDefault = contributed.title === defaultProfileName;
 
@@ -884,6 +906,7 @@ export function getTerminalActionBarArgs(
 					contributed.title.replace(/[\n\r\t]/g, ""),
 				)
 			: contributed.title.replace(/[\n\r\t]/g, "");
+
 		dropdownActions.push(
 			new Action("contributed", title, undefined, true, () =>
 				terminalService.createTerminal({
@@ -896,6 +919,7 @@ export function getTerminalActionBarArgs(
 				}),
 			),
 		);
+
 		submenuActions.push(
 			new Action("contributed-split", title, undefined, true, () =>
 				terminalService.createTerminal({
@@ -909,6 +933,7 @@ export function getTerminalActionBarArgs(
 			),
 		);
 	}
+
 	const defaultProfileAction = dropdownActions.find((d) =>
 		d.label.endsWith("(Default)"),
 	);
@@ -917,8 +942,10 @@ export function getTerminalActionBarArgs(
 		dropdownActions = dropdownActions
 			.filter((d) => d !== defaultProfileAction)
 			.sort((a, b) => a.label.localeCompare(b.label));
+
 		dropdownActions.unshift(defaultProfileAction);
 	}
+
 	if (dropdownActions.length > 0) {
 		dropdownActions.push(
 			new SubmenuAction(
@@ -927,9 +954,12 @@ export function getTerminalActionBarArgs(
 				submenuActions,
 			),
 		);
+
 		dropdownActions.push(new Separator());
 	}
+
 	const actions = dropdownMenu.getActions();
+
 	dropdownActions.push(...Separator.join(...actions.map((a) => a[1])));
 
 	const defaultSubmenuProfileAction = submenuActions.find((d) =>
@@ -940,8 +970,10 @@ export function getTerminalActionBarArgs(
 		submenuActions = submenuActions
 			.filter((d) => d !== defaultSubmenuProfileAction)
 			.sort((a, b) => a.label.localeCompare(b.label));
+
 		submenuActions.unshift(defaultSubmenuProfileAction);
 	}
+
 	const dropdownAction = new Action(
 		"refresh profiles",
 		localize("launchProfile", "Launch Profile..."),

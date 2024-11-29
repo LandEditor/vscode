@@ -34,6 +34,7 @@ export class FocusSideBarAction extends Action2 {
 			},
 		});
 	}
+
 	async run(accessor: ServicesAccessor): Promise<void> {
 		const layoutService = accessor.get(IWorkbenchLayoutService);
 
@@ -46,6 +47,7 @@ export class FocusSideBarAction extends Action2 {
 		const viewlet = paneCompositeService.getActivePaneComposite(
 			ViewContainerLocation.Sidebar,
 		);
+
 		viewlet?.focus();
 	}
 }

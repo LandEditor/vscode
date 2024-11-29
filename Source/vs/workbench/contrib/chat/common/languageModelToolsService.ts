@@ -16,27 +16,42 @@ import { createDecorator } from "../../../../platform/instantiation/common/insta
 
 export interface IToolData {
 	id: string;
+
 	extensionId?: ExtensionIdentifier;
+
 	toolReferenceName?: string;
+
 	icon?:
 		| {
 				dark: URI;
+
 				light?: URI;
 		  }
 		| ThemeIcon;
+
 	when?: ContextKeyExpression;
+
 	tags?: string[];
+
 	displayName: string;
+
 	userDescription?: string;
+
 	modelDescription: string;
+
 	inputSchema?: IJSONSchema;
+
 	canBeReferencedInPrompt?: boolean;
 }
 export interface IToolInvocation {
 	callId: string;
+
 	toolId: string;
+
 	parameters: Object;
+
 	tokenBudget?: number;
+
 	context: IToolInvocationContext | undefined;
 }
 export interface IToolInvocationContext {
@@ -52,18 +67,22 @@ export interface IToolResult {
 }
 export interface IToolResultPromptTsxPart {
 	kind: "promptTsx";
+
 	value: unknown;
 }
 export interface IToolResultTextPart {
 	kind: "text";
+
 	value: string;
 }
 export interface IToolConfirmationMessages {
 	title: string;
+
 	message: string | IMarkdownString;
 }
 export interface IPreparedToolInvocation {
 	invocationMessage?: string | IMarkdownString;
+
 	confirmationMessages?: IToolConfirmationMessages;
 }
 export interface IToolImpl {
@@ -72,6 +91,7 @@ export interface IToolImpl {
 		countTokens: CountTokensCallback,
 		token: CancellationToken,
 	): Promise<IToolResult>;
+
 	prepareToolInvocation?(
 		parameters: any,
 		token: CancellationToken,
@@ -87,8 +107,11 @@ export type CountTokensCallback = (
 
 export interface ILanguageModelToolsService {
 	_serviceBrand: undefined;
+
 	onDidChangeTools: Event<void>;
+
 	registerToolData(toolData: IToolData): IDisposable;
+
 	registerToolImplementation(id: string, tool: IToolImpl): IDisposable;
 
 	getTools(): Iterable<Readonly<IToolData>>;
@@ -96,6 +119,7 @@ export interface ILanguageModelToolsService {
 	getTool(id: string): IToolData | undefined;
 
 	getToolByName(name: string): IToolData | undefined;
+
 	invokeTool(
 		invocation: IToolInvocation,
 		countTokens: CountTokensCallback,

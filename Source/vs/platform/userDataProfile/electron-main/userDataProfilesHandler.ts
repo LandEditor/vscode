@@ -23,6 +23,7 @@ export class UserDataProfilesHandler extends Disposable {
 		private readonly windowsMainService: IWindowsMainService,
 	) {
 		super();
+
 		this._register(
 			lifecycleMainService.onWillLoadWindow((e) => {
 				if (e.reason === LoadReason.LOAD) {
@@ -30,11 +31,13 @@ export class UserDataProfilesHandler extends Disposable {
 				}
 			}),
 		);
+
 		this._register(
 			lifecycleMainService.onBeforeCloseWindow((window) =>
 				this.unsetProfileForWorkspace(window),
 			),
 		);
+
 		this._register(
 			new RunOnceScheduler(
 				() => this.cleanUpEmptyWindowAssociations(),
@@ -42,6 +45,7 @@ export class UserDataProfilesHandler extends Disposable {
 			),
 		).schedule();
 	}
+
 	private async unsetProfileForWorkspace(window: ICodeWindow): Promise<void> {
 		const workspace = this.getWorkspace(window);
 
@@ -59,6 +63,7 @@ export class UserDataProfilesHandler extends Disposable {
 			}
 		}
 	}
+
 	private getWorkspace(window: ICodeWindow): IAnyWorkspaceIdentifier {
 		return (
 			window.openedWorkspace ??
@@ -68,6 +73,7 @@ export class UserDataProfilesHandler extends Disposable {
 			)
 		);
 	}
+
 	private cleanUpEmptyWindowAssociations(): void {
 		const associatedEmptyWindows =
 			this.userDataProfilesService.getAssociatedEmptyWindows();
@@ -75,6 +81,7 @@ export class UserDataProfilesHandler extends Disposable {
 		if (associatedEmptyWindows.length === 0) {
 			return;
 		}
+
 		const openedWorkspaces = this.windowsMainService
 			.getWindows()
 			.map((window) => this.getWorkspace(window));
@@ -88,6 +95,7 @@ export class UserDataProfilesHandler extends Disposable {
 			) {
 				continue;
 			}
+
 			this.userDataProfilesService.unsetWorkspace(
 				associatedEmptyWindow,
 				false,

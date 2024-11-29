@@ -79,8 +79,10 @@ export class ExtHostTask extends ExtHostTaskBase {
 				platform: process.platform,
 			});
 		}
+
 		this._proxy.$registerSupportedExecutions(true, true, true);
 	}
+
 	public async executeTask(
 		extension: IExtensionDescription,
 		task: vscode.Task,
@@ -100,7 +102,9 @@ export class ExtHostTask extends ExtHostTaskBase {
 			if (executionDTO.task === undefined) {
 				throw new Error("Task from execution DTO is undefined");
 			}
+
 			const execution = await this.getTaskExecution(executionDTO, task);
+
 			this._proxy.$executeTask(handleDto).catch(() => {});
 
 			return execution;
@@ -121,11 +125,13 @@ export class ExtHostTask extends ExtHostTaskBase {
 				await this._proxy.$getTaskExecution(dto),
 				task,
 			);
+
 			this._proxy.$executeTask(dto).catch(() => {});
 
 			return execution;
 		}
 	}
+
 	protected provideTasksInternal(
 		validTypes: {
 			[key: string]: boolean;
@@ -135,6 +141,7 @@ export class ExtHostTask extends ExtHostTaskBase {
 		value: vscode.Task[] | null | undefined,
 	): {
 		tasks: tasks.ITaskDTO[];
+
 		extension: IExtensionDescription;
 	} {
 		const taskDTOs: tasks.ITaskDTO[] = [];
@@ -148,6 +155,7 @@ export class ExtHostTask extends ExtHostTaskBase {
 						`The task [${task.source}, ${task.name}] uses an undefined task type. The task will be ignored in the future.`,
 					);
 				}
+
 				const taskDTO: tasks.ITaskDTO | undefined = TaskDTO.from(
 					task,
 					handler.extension,
@@ -167,16 +175,19 @@ export class ExtHostTask extends ExtHostTaskBase {
 				}
 			}
 		}
+
 		return {
 			tasks: taskDTOs,
 			extension: handler.extension,
 		};
 	}
+
 	protected async resolveTaskInternal(
 		resolvedTaskDTO: tasks.ITaskDTO,
 	): Promise<tasks.ITaskDTO | undefined> {
 		return resolvedTaskDTO;
 	}
+
 	private async getAFolder(
 		workspaceFolders: vscode.WorkspaceFolder[] | undefined,
 	): Promise<IWorkspaceFolder> {
@@ -187,12 +198,14 @@ export class ExtHostTask extends ExtHostTaskBase {
 
 		if (!folder) {
 			const userhome = URI.file(homedir());
+
 			folder = new WorkspaceFolder({
 				uri: userhome,
 				name: resources.basename(userhome),
 				index: 0,
 			});
 		}
+
 		return {
 			uri: folder.uri,
 			name: folder.name,
@@ -202,12 +215,15 @@ export class ExtHostTask extends ExtHostTaskBase {
 			},
 		};
 	}
+
 	public async $resolveVariables(
 		uriComponents: UriComponents,
 		toResolve: {
 			process?: {
 				name: string;
+
 				cwd?: string;
+
 				path?: string;
 			};
 
@@ -252,6 +268,7 @@ export class ExtHostTask extends ExtHostTaskBase {
 				variable,
 			);
 		}
+
 		if (toResolve.process !== undefined) {
 			let paths: string[] | undefined = undefined;
 
@@ -262,6 +279,7 @@ export class ExtHostTask extends ExtHostTaskBase {
 					paths[i] = await resolver.resolveAsync(ws, paths[i]);
 				}
 			}
+
 			result.process = await win32.findExecutable(
 				await resolver.resolveAsync(ws, toResolve.process.name),
 				toResolve.process.cwd !== undefined
@@ -270,11 +288,14 @@ export class ExtHostTask extends ExtHostTaskBase {
 				paths,
 			);
 		}
+
 		return result;
 	}
+
 	public async $jsonTasksSupported(): Promise<boolean> {
 		return true;
 	}
+
 	public async $findExecutable(
 		command: string,
 		cwd?: string,

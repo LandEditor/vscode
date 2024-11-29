@@ -18,17 +18,21 @@ export class ElectronIPCMainProcessService
 	implements IMainProcessService
 {
 	declare readonly _serviceBrand: undefined;
+
 	private mainProcessConnection: IPCElectronClient;
 
 	constructor(windowId: number) {
 		super();
+
 		this.mainProcessConnection = this._register(
 			new IPCElectronClient(`window:${windowId}`),
 		);
 	}
+
 	getChannel(channelName: string): IChannel {
 		return this.mainProcessConnection.getChannel(channelName);
 	}
+
 	registerChannel(
 		channelName: string,
 		channel: IServerChannel<string>,

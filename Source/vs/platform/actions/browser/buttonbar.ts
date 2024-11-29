@@ -38,22 +38,28 @@ export type IButtonConfigProvider = (
 ) =>
 	| {
 			showIcon?: boolean;
+
 			showLabel?: boolean;
+
 			isSecondary?: boolean;
 	  }
 	| undefined;
 
 export interface IWorkbenchButtonBarOptions {
 	telemetrySource?: string;
+
 	buttonConfigProvider?: IButtonConfigProvider;
 }
 
 export class WorkbenchButtonBar extends ButtonBar {
 	protected readonly _store = new DisposableStore();
+
 	protected readonly _updateStore = new DisposableStore();
 
 	private readonly _actionRunner: IActionRunner;
+
 	private readonly _onDidChange = new Emitter<this>();
+
 	readonly onDidChange: Event<this> = this._onDidChange.event;
 
 	constructor(
@@ -89,7 +95,9 @@ export class WorkbenchButtonBar extends ButtonBar {
 
 	override dispose() {
 		this._onDidChange.dispose();
+
 		this._updateStore.dispose();
+
 		this._store.dispose();
 
 		super.dispose();
@@ -101,6 +109,7 @@ export class WorkbenchButtonBar extends ButtonBar {
 			(() => ({ showLabel: true }));
 
 		this._updateStore.clear();
+
 		this.clear();
 
 		// Support instamt hover between buttons
@@ -122,7 +131,9 @@ export class WorkbenchButtonBar extends ButtonBar {
 				actionOrSubmenu.actions.length > 0
 			) {
 				const [first, ...rest] = actionOrSubmenu.actions;
+
 				action = <MenuItemAction>first;
+
 				btn = this.addButtonWithDropdown({
 					secondary:
 						conifgProvider(action, i)?.isSecondary ?? secondary,
@@ -134,6 +145,7 @@ export class WorkbenchButtonBar extends ButtonBar {
 				});
 			} else {
 				action = actionOrSubmenu;
+
 				btn = this.addButton({
 					secondary:
 						conifgProvider(action, i)?.isSecondary ?? secondary,
@@ -143,7 +155,9 @@ export class WorkbenchButtonBar extends ButtonBar {
 			}
 
 			btn.enabled = action.enabled;
+
 			btn.checked = action.checked ?? false;
+
 			btn.element.classList.add("default-colors");
 
 			const showLabel = conifgProvider(action, i)?.showLabel ?? true;
@@ -153,6 +167,7 @@ export class WorkbenchButtonBar extends ButtonBar {
 			} else {
 				btn.element.classList.add("monaco-text-button");
 			}
+
 			if (conifgProvider(action, i)?.showIcon) {
 				if (
 					action instanceof MenuItemAction &&
@@ -169,6 +184,7 @@ export class WorkbenchButtonBar extends ButtonBar {
 					btn.element.classList.add(...action.class.split(" "));
 				}
 			}
+
 			const kb = this._keybindingService.lookupKeybinding(action.id);
 
 			let tooltip: string;
@@ -183,6 +199,7 @@ export class WorkbenchButtonBar extends ButtonBar {
 			} else {
 				tooltip = action.tooltip || action.label;
 			}
+
 			this._updateStore.add(
 				this._hoverService.setupManagedHover(
 					hoverDelegate,
@@ -190,6 +207,7 @@ export class WorkbenchButtonBar extends ButtonBar {
 					tooltip,
 				),
 			);
+
 			this._updateStore.add(
 				btn.onDidClick(async () => {
 					this._actionRunner.run(action);
@@ -204,9 +222,11 @@ export class WorkbenchButtonBar extends ButtonBar {
 			});
 
 			btn.icon = Codicon.dropDownButton;
+
 			btn.element.classList.add("default-colors", "monaco-text-button");
 
 			btn.enabled = true;
+
 			this._updateStore.add(
 				this._hoverService.setupManagedHover(
 					hoverDelegate,
@@ -214,6 +234,7 @@ export class WorkbenchButtonBar extends ButtonBar {
 					localize("moreActions", "More Actions"),
 				),
 			);
+
 			this._updateStore.add(
 				btn.onDidClick(async () => {
 					this._contextMenuService.showContextMenu({
@@ -223,10 +244,12 @@ export class WorkbenchButtonBar extends ButtonBar {
 						onHide: () =>
 							btn.element.setAttribute("aria-expanded", "false"),
 					});
+
 					btn.element.setAttribute("aria-expanded", "true");
 				}),
 			);
 		}
+
 		this._onDidChange.fire(this);
 	}
 }
@@ -260,6 +283,7 @@ export class MenuWorkbenchButtonBar extends WorkbenchButtonBar {
 		);
 
 		const menu = menuService.createMenu(menuId, contextKeyService);
+
 		this._store.add(menu);
 
 		const update = () => {
@@ -272,7 +296,9 @@ export class MenuWorkbenchButtonBar extends WorkbenchButtonBar {
 
 			super.update(actions.primary, actions.secondary);
 		};
+
 		this._store.add(menu.onDidChange(update));
+
 		update();
 	}
 

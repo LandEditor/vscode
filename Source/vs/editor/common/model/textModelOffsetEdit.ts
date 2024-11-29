@@ -14,6 +14,7 @@ export abstract class OffsetEdits {
 	private constructor() {
 		// static utils only!
 	}
+
 	static asEditOperations(
 		offsetEdit: OffsetEdit,
 		doc: ITextModel,
@@ -28,10 +29,13 @@ export abstract class OffsetEdits {
 						singleEdit.replaceRange.length,
 				),
 			);
+
 			edits.push(EditOperation.replace(range, singleEdit.newText));
 		}
+
 		return edits;
 	}
+
 	static fromContentChanges(contentChanges: readonly IModelContentChange[]) {
 		const editsArr = contentChanges.map(
 			(c) =>
@@ -40,12 +44,14 @@ export abstract class OffsetEdits {
 					c.text,
 				),
 		);
+
 		editsArr.reverse();
 
 		const edits = new OffsetEdit(editsArr);
 
 		return edits;
 	}
+
 	static fromLineRangeMapping(
 		original: ITextModel,
 		modified: ITextModel,
@@ -66,9 +72,11 @@ export abstract class OffsetEdits {
 				);
 
 				const origRange = new OffsetRange(startOrig, endExOrig);
+
 				edits.push(new SingleOffsetEdit(origRange, newText));
 			}
 		}
+
 		return new OffsetEdit(edits);
 	}
 }

@@ -6,11 +6,13 @@
 declare module "vscode" {
 	export interface ChatResponseFragment {
 		index: number;
+
 		part: string;
 	}
 
 	export interface ChatResponseFragment2 {
 		index: number;
+
 		part: LanguageModelTextPart | LanguageModelToolCallPart;
 	}
 
@@ -22,7 +24,9 @@ declare module "vscode" {
 	export interface LanguageModelChatProvider {
 		onDidReceiveLanguageModelResponse2?: Event<{
 			readonly extensionId: string;
+
 			readonly participant?: string;
+
 			readonly tokenCount?: number;
 		}>;
 
@@ -83,6 +87,7 @@ declare module "vscode" {
 
 		// TODO@API maybe an enum, LanguageModelChatProviderPickerAvailability?
 		readonly isDefault?: boolean;
+
 		readonly isUserSelectable?: boolean;
 	}
 

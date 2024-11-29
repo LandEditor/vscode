@@ -18,27 +18,36 @@ import { Disposable } from "../utils/dispose";
  */
 export class ActiveJsTsEditorTracker extends Disposable {
 	private _activeJsTsEditor: vscode.TextEditor | undefined;
+
 	private readonly _onDidChangeActiveJsTsEditor = this._register(
 		new vscode.EventEmitter<vscode.TextEditor | undefined>(),
 	);
+
 	public readonly onDidChangeActiveJsTsEditor =
 		this._onDidChangeActiveJsTsEditor.event;
+
 	public constructor() {
 		super();
+
 		this._register(
 			vscode.window.onDidChangeActiveTextEditor((_) => this.update()),
 		);
+
 		this._register(
 			vscode.window.onDidChangeVisibleTextEditors((_) => this.update()),
 		);
+
 		this._register(
 			vscode.window.tabGroups.onDidChangeTabGroups((_) => this.update()),
 		);
+
 		this.update();
 	}
+
 	public get activeJsTsEditor(): vscode.TextEditor | undefined {
 		return this._activeJsTsEditor;
 	}
+
 	private update() {
 		// Use tabs to find the active editor.
 		// This correctly handles switching to the output view / debug console, which changes the activeEditor but not
@@ -53,9 +62,11 @@ export class ActiveJsTsEditorTracker extends Disposable {
 
 		if (this._activeJsTsEditor !== newActiveJsTsEditor) {
 			this._activeJsTsEditor = newActiveJsTsEditor;
+
 			this._onDidChangeActiveJsTsEditor.fire(this._activeJsTsEditor);
 		}
 	}
+
 	private getEditorCandidatesForActiveTab(): vscode.TextEditor[] {
 		const tab = vscode.window.tabGroups.activeTabGroup.activeTab;
 
@@ -107,6 +118,7 @@ export class ActiveJsTsEditorTracker extends Disposable {
 			if (activeEditor.viewColumn !== undefined) {
 				return [];
 			}
+
 			const notebook = vscode.window.visibleNotebookEditors.find(
 				(editor) =>
 					editor.notebook.uri.toString() ===
@@ -124,16 +136,20 @@ export class ActiveJsTsEditorTracker extends Disposable {
 				? [activeEditor]
 				: [];
 		}
+
 		return [];
 	}
+
 	private isManagedFile(editor: vscode.TextEditor): boolean {
 		return (
 			this.isManagedScriptFile(editor) || this.isManagedConfigFile(editor)
 		);
 	}
+
 	private isManagedScriptFile(editor: vscode.TextEditor): boolean {
 		return isSupportedLanguageMode(editor.document);
 	}
+
 	private isManagedConfigFile(editor: vscode.TextEditor): boolean {
 		return isJsConfigOrTsConfigFileName(editor.document.fileName);
 	}

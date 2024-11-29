@@ -24,13 +24,18 @@ export type IColors = {
 
 export interface IStandaloneThemeData {
 	base: BuiltinTheme;
+
 	inherit: boolean;
+
 	rules: ITokenThemeRule[];
+
 	encodedTokensColors?: string[];
+
 	colors: IColors;
 }
 export interface IStandaloneTheme extends IColorTheme {
 	tokenTheme: TokenTheme;
+
 	themeName: string;
 }
 export interface IStandaloneThemeService extends IThemeService {
@@ -39,6 +44,7 @@ export interface IStandaloneThemeService extends IThemeService {
 	setTheme(themeName: string): void;
 
 	setAutoDetectHighContrast(autoDetectHighContrast: boolean): void;
+
 	defineTheme(themeName: string, themeData: IStandaloneThemeData): void;
 
 	getColorTheme(): IStandaloneTheme;

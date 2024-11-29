@@ -8,19 +8,24 @@ import { ArrayNavigator, INavigator } from "./navigator.js";
 
 export interface IHistory<T> {
 	delete(t: T): boolean;
+
 	add(t: T): this;
+
 	has(t: T): boolean;
+
 	clear(): void;
 
 	forEach(
 		callbackfn: (value: T, value2: T, set: Set<T>) => void,
 		thisArg?: any,
 	): void;
+
 	replace?(t: T[]): void;
 }
 
 export class HistoryNavigator<T> implements INavigator<T> {
 	private _limit: number;
+
 	private _navigator!: ArrayNavigator<T>;
 
 	constructor(
@@ -28,6 +33,7 @@ export class HistoryNavigator<T> implements INavigator<T> {
 		limit: number = 10,
 	) {
 		this._limit = limit;
+
 		this._onChange();
 	}
 
@@ -37,7 +43,9 @@ export class HistoryNavigator<T> implements INavigator<T> {
 
 	public add(t: T) {
 		this._history.delete(t);
+
 		this._history.add(t);
+
 		this._onChange();
 	}
 
@@ -50,6 +58,7 @@ export class HistoryNavigator<T> implements INavigator<T> {
 		if (this._currentPosition() !== 0) {
 			return this._navigator.previous();
 		}
+
 		return null;
 	}
 
@@ -83,6 +92,7 @@ export class HistoryNavigator<T> implements INavigator<T> {
 
 	public clear(): void {
 		this._history.clear();
+
 		this._onChange();
 	}
 
@@ -90,6 +100,7 @@ export class HistoryNavigator<T> implements INavigator<T> {
 		this._reduceToLimit();
 
 		const elements = this._elements;
+
 		this._navigator = new ArrayNavigator(
 			elements,
 			0,
@@ -124,6 +135,7 @@ export class HistoryNavigator<T> implements INavigator<T> {
 
 	private get _elements(): T[] {
 		const elements: T[] = [];
+
 		this._history.forEach((e) => elements.push(e));
 
 		return elements;
@@ -132,7 +144,9 @@ export class HistoryNavigator<T> implements INavigator<T> {
 
 interface HistoryNode<T> {
 	value: T;
+
 	previous: HistoryNode<T> | undefined;
+
 	next: HistoryNode<T> | undefined;
 }
 
@@ -142,9 +156,13 @@ interface HistoryNode<T> {
  */
 export class HistoryNavigator2<T> {
 	private valueSet: Set<T>;
+
 	private head: HistoryNode<T>;
+
 	private tail: HistoryNode<T>;
+
 	private cursor: HistoryNode<T>;
+
 	private _size: number;
 
 	get size(): number {
@@ -161,6 +179,7 @@ export class HistoryNavigator2<T> {
 		}
 
 		this._size = 1;
+
 		this.head =
 			this.tail =
 			this.cursor =
@@ -185,8 +204,11 @@ export class HistoryNavigator2<T> {
 		};
 
 		this.tail.next = node;
+
 		this.tail = node;
+
 		this.cursor = this.tail;
+
 		this._size++;
 
 		if (this.valueSet.has(value)) {
@@ -199,7 +221,9 @@ export class HistoryNavigator2<T> {
 			this.valueSet.delete(this.head.value);
 
 			this.head = this.head.next!;
+
 			this.head.previous = undefined;
+
 			this._size--;
 		}
 	}
@@ -213,7 +237,9 @@ export class HistoryNavigator2<T> {
 		}
 
 		const oldValue = this.tail.value;
+
 		this.valueSet.delete(oldValue);
+
 		this.tail.value = value;
 
 		if (this.valueSet.has(value)) {
@@ -237,7 +263,9 @@ export class HistoryNavigator2<T> {
 		};
 
 		this.head.previous = node;
+
 		this.head = node;
+
 		this._size++;
 
 		this.valueSet.add(value);
@@ -282,6 +310,7 @@ export class HistoryNavigator2<T> {
 
 		while (node) {
 			yield node.value;
+
 			node = node.next;
 		}
 	}
@@ -295,9 +324,11 @@ export class HistoryNavigator2<T> {
 			if (this.identityFn(temp.value) === valueKey) {
 				if (temp === this.head) {
 					this.head = this.head.next!;
+
 					this.head.previous = undefined;
 				} else {
 					temp.previous!.next = temp.next;
+
 					temp.next!.previous = temp.previous;
 				}
 

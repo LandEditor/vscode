@@ -30,6 +30,7 @@ export function getUserDataPath(
 	if (!path.isAbsolute(userDataPath)) {
 		pathsToResolve.unshift(cwd);
 	}
+
 	return path.resolve(...pathsToResolve);
 }
 function doGetUserDataPath(
@@ -74,8 +75,10 @@ function doGetUserDataPath(
 						"Windows: Unexpected undefined %USERPROFILE% environment variable",
 					);
 				}
+
 				appDataPath = path.join(userProfile, "AppData", "Roaming");
 			}
+
 			break;
 
 		case "darwin":
@@ -97,5 +100,6 @@ function doGetUserDataPath(
 		default:
 			throw new Error("Platform not supported");
 	}
+
 	return path.join(appDataPath, productName);
 }

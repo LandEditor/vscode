@@ -42,6 +42,7 @@ export function createBlobWorker(
 	if (!blobUrl.startsWith("blob:")) {
 		throw new URIError("Not a blob-url: " + blobUrl);
 	}
+
 	return new Worker(
 		ttPolicy
 			? (ttPolicy.createScriptURL(blobUrl) as unknown as string)
@@ -59,6 +60,7 @@ function getWorker(
 
 		getWorkerUrl?(moduleId: string, label: string): string;
 	}
+
 	const monacoEnvironment: IMonacoEnvironment | undefined = (
 		globalThis as any
 	).MonacoEnvironment;
@@ -67,6 +69,7 @@ function getWorker(
 		if (typeof monacoEnvironment.getWorker === "function") {
 			return monacoEnvironment.getWorker("workerMain.js", label);
 		}
+
 		if (typeof monacoEnvironment.getWorkerUrl === "function") {
 			const workerUrl = monacoEnvironment.getWorkerUrl(
 				"workerMain.js",
@@ -81,6 +84,7 @@ function getWorker(
 			);
 		}
 	}
+
 	if (esmWorkerLocation) {
 		const workerUrl = getWorkerBootstrapUrl(
 			label,
@@ -96,6 +100,7 @@ function getWorker(
 
 		return whenESMWorkerReady(worker);
 	}
+
 	throw new Error(
 		`You must define a function MonacoEnvironment.getWorkerUrl or MonacoEnvironment.getWorker`,
 	);
@@ -122,6 +127,7 @@ function getWorkerBootstrapUrl(label: string, workerScriptUrl: string): string {
 						),
 					)
 				: new URLSearchParams();
+
 		COI.addSearchParam(params, true, true);
 
 		const search = params.toString();
@@ -159,9 +165,11 @@ function whenESMWorkerReady(worker: Worker): Promise<Worker> {
 		worker.onmessage = function (e) {
 			if (e.data.type === "vscode-worker-ready") {
 				worker.onmessage = null;
+
 				resolve(worker);
 			}
 		};
+
 		worker.onerror = reject;
 	});
 }
@@ -169,6 +177,7 @@ function isPromiseLike<T>(obj: any): obj is PromiseLike<T> {
 	if (typeof obj.then === "function") {
 		return true;
 	}
+
 	return false;
 }
 /**
@@ -177,7 +186,9 @@ function isPromiseLike<T>(obj: any): obj is PromiseLike<T> {
  */
 class WebWorker extends Disposable implements IWorker {
 	private readonly id: number;
+
 	private readonly label: string;
+
 	private worker: Promise<Worker> | null;
 
 	constructor(
@@ -189,7 +200,9 @@ class WebWorker extends Disposable implements IWorker {
 		onErrorCallback: (err: any) => void,
 	) {
 		super();
+
 		this.id = id;
+
 		this.label = label;
 
 		const workerOrPromise = getWorker(esmWorkerLocation, label);
@@ -199,38 +212,49 @@ class WebWorker extends Disposable implements IWorker {
 		} else {
 			this.worker = Promise.resolve(workerOrPromise);
 		}
+
 		this.postMessage(moduleId, []);
+
 		this.worker.then((w) => {
 			w.onmessage = function (ev) {
 				onMessageCallback(ev.data);
 			};
+
 			w.onmessageerror = onErrorCallback;
 
 			if (typeof w.addEventListener === "function") {
 				w.addEventListener("error", onErrorCallback);
 			}
 		});
+
 		this._register(
 			toDisposable(() => {
 				this.worker?.then((w) => {
 					w.onmessage = null;
+
 					w.onmessageerror = null;
+
 					w.removeEventListener("error", onErrorCallback);
+
 					w.terminate();
 				});
+
 				this.worker = null;
 			}),
 		);
 	}
+
 	public getId(): number {
 		return this.id;
 	}
+
 	public postMessage(message: any, transfer: Transferable[]): void {
 		this.worker?.then((w) => {
 			try {
 				w.postMessage(message, transfer);
 			} catch (err) {
 				onUnexpectedError(err);
+
 				onUnexpectedError(
 					new Error(
 						`FAILED to post message to '${this.label}'-worker`,
@@ -255,11 +279,13 @@ export class WorkerDescriptor implements IWorkerDescriptor {
 }
 class DefaultWorkerFactory implements IWorkerFactory {
 	private static LAST_WORKER_ID = 0;
+
 	private _webWorkerFailedBeforeError: any;
 
 	constructor() {
 		this._webWorkerFailedBeforeError = false;
 	}
+
 	public create(
 		desc: IWorkerDescriptor,
 		onMessageCallback: IWorkerCallback,
@@ -270,6 +296,7 @@ class DefaultWorkerFactory implements IWorkerFactory {
 		if (this._webWorkerFailedBeforeError) {
 			throw this._webWorkerFailedBeforeError;
 		}
+
 		return new WebWorker(
 			desc.esmModuleLocation,
 			desc.moduleId,
@@ -278,7 +305,9 @@ class DefaultWorkerFactory implements IWorkerFactory {
 			onMessageCallback,
 			(err) => {
 				logOnceWebWorkerWarning(err);
+
 				this._webWorkerFailedBeforeError = err;
+
 				onErrorCallback(err);
 			},
 		);

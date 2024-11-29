@@ -81,7 +81,9 @@ function computeTrustedDomainContent(
 	} else {
 		content += `// By default, VS Code trusts "localhost".\n`;
 	}
+
 	content += CONFIG_HELP_TEXT_AFTER;
+
 	content += configuring
 		? `\n// Currently configuring trust for ${configuring}\n`
 		: "";
@@ -91,6 +93,7 @@ function computeTrustedDomainContent(
 	} else {
 		content += JSON.stringify(trustedDomains, null, 2);
 	}
+
 	return content;
 }
 export class TrustedDomainsFileSystemProvider
@@ -99,8 +102,11 @@ export class TrustedDomainsFileSystemProvider
 		IWorkbenchContribution
 {
 	static readonly ID = "workbench.contrib.trustedDomainsFileSystemProvider";
+
 	readonly capabilities = FileSystemProviderCapabilities.FileReadWrite;
+
 	readonly onDidChangeCapabilities = Event.None;
+
 	readonly onDidChangeFile = Event.None;
 
 	constructor(
@@ -113,9 +119,11 @@ export class TrustedDomainsFileSystemProvider
 	) {
 		this.fileService.registerProvider(TRUSTED_DOMAINS_SCHEMA, this);
 	}
+
 	stat(resource: URI): Promise<IStat> {
 		return Promise.resolve(TRUSTED_DOMAINS_STAT);
 	}
+
 	async readFile(resource: URI): Promise<Uint8Array> {
 		let trustedDomainsContent = this.storageService.get(
 			TRUSTED_DOMAINS_CONTENT_STORAGE_KEY,
@@ -142,10 +150,12 @@ export class TrustedDomainsFileSystemProvider
 				configuring,
 			);
 		}
+
 		const buffer = VSBuffer.fromString(trustedDomainsContent).buffer;
 
 		return buffer;
 	}
+
 	writeFile(
 		resource: URI,
 		content: Uint8Array,
@@ -155,12 +165,14 @@ export class TrustedDomainsFileSystemProvider
 			const trustedDomainsContent = VSBuffer.wrap(content).toString();
 
 			const trustedDomains = parse(trustedDomainsContent);
+
 			this.storageService.store(
 				TRUSTED_DOMAINS_CONTENT_STORAGE_KEY,
 				trustedDomainsContent,
 				StorageScope.APPLICATION,
 				StorageTarget.USER,
 			);
+
 			this.storageService.store(
 				TRUSTED_DOMAINS_STORAGE_KEY,
 				JSON.stringify(trustedDomains) || "",
@@ -168,8 +180,10 @@ export class TrustedDomainsFileSystemProvider
 				StorageTarget.USER,
 			);
 		} catch (err) {}
+
 		return Promise.resolve();
 	}
+
 	watch(resource: URI, opts: IWatchOptions): IDisposable {
 		return {
 			dispose() {
@@ -177,15 +191,19 @@ export class TrustedDomainsFileSystemProvider
 			},
 		};
 	}
+
 	mkdir(resource: URI): Promise<void> {
 		return Promise.resolve(undefined!);
 	}
+
 	readdir(resource: URI): Promise<[string, FileType][]> {
 		return Promise.resolve(undefined!);
 	}
+
 	delete(resource: URI, opts: IFileDeleteOptions): Promise<void> {
 		return Promise.resolve(undefined!);
 	}
+
 	rename(from: URI, to: URI, opts: IFileOverwriteOptions): Promise<void> {
 		return Promise.resolve(undefined!);
 	}

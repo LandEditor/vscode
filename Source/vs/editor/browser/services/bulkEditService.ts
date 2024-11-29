@@ -28,14 +28,17 @@ export const IBulkEditService = createDecorator<IBulkEditService>(
 
 export class ResourceEdit {
 	protected constructor(readonly metadata?: WorkspaceEditMetadata) {}
+
 	static convert(edit: WorkspaceEdit): ResourceEdit[] {
 		return edit.edits.map((edit) => {
 			if (ResourceTextEdit.is(edit)) {
 				return ResourceTextEdit.lift(edit);
 			}
+
 			if (ResourceFileEdit.is(edit)) {
 				return ResourceFileEdit.lift(edit);
 			}
+
 			throw new Error("Unsupported edit");
 		});
 	}
@@ -48,12 +51,14 @@ export class ResourceTextEdit
 		if (candidate instanceof ResourceTextEdit) {
 			return true;
 		}
+
 		return (
 			isObject(candidate) &&
 			URI.isUri((<IWorkspaceTextEdit>candidate).resource) &&
 			isObject((<IWorkspaceTextEdit>candidate).textEdit)
 		);
 	}
+
 	static lift(edit: IWorkspaceTextEdit): ResourceTextEdit {
 		if (edit instanceof ResourceTextEdit) {
 			return edit;
@@ -66,6 +71,7 @@ export class ResourceTextEdit
 			);
 		}
 	}
+
 	constructor(
 		readonly resource: URI,
 		readonly textEdit: TextEdit & {
@@ -92,6 +98,7 @@ export class ResourceFileEdit
 			);
 		}
 	}
+
 	static lift(edit: IWorkspaceFileEdit): ResourceFileEdit {
 		if (edit instanceof ResourceFileEdit) {
 			return edit;
@@ -104,6 +111,7 @@ export class ResourceFileEdit
 			);
 		}
 	}
+
 	constructor(
 		readonly oldResource: URI | undefined,
 		readonly newResource: URI | undefined,
@@ -115,19 +123,30 @@ export class ResourceFileEdit
 }
 export interface IBulkEditOptions {
 	editor?: ICodeEditor;
+
 	progress?: IProgress<IProgressStep>;
+
 	token?: CancellationToken;
+
 	showPreview?: boolean;
+
 	label?: string;
+
 	code?: string;
+
 	quotableLabel?: string;
+
 	undoRedoSource?: UndoRedoSource;
+
 	undoRedoGroupId?: number;
+
 	confirmBeforeUndo?: boolean;
+
 	respectAutoSaveConfig?: boolean;
 }
 export interface IBulkEditResult {
 	ariaSummary: string;
+
 	isApplied: boolean;
 }
 export type IBulkEditPreviewHandler = (
@@ -137,9 +156,11 @@ export type IBulkEditPreviewHandler = (
 
 export interface IBulkEditService {
 	readonly _serviceBrand: undefined;
+
 	hasPreviewHandler(): boolean;
 
 	setPreviewHandler(handler: IBulkEditPreviewHandler): IDisposable;
+
 	apply(
 		edit: ResourceEdit[] | WorkspaceEdit,
 		options?: IBulkEditOptions,

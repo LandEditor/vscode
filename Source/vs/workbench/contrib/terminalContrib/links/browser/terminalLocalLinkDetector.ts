@@ -99,6 +99,7 @@ export class TerminalLocalLinkDetector implements ITerminalLinkDetector {
 		@IWorkspaceContextService
 		private readonly _workspaceContextService: IWorkspaceContextService,
 	) {}
+
 	async detect(
 		lines: IBufferLine[],
 		startLine: number,
@@ -116,6 +117,7 @@ export class TerminalLocalLinkDetector implements ITerminalLinkDetector {
 		if (text === "" || text.length > Constants.MaxLineLength) {
 			return [];
 		}
+
 		let stringIndex = -1;
 
 		let resolvedLinkCount = 0;
@@ -123,7 +125,9 @@ export class TerminalLocalLinkDetector implements ITerminalLinkDetector {
 		const os = this._processManager.os || OS;
 
 		const parsedLinks = detectLinks(text, os);
+
 		this._logService.trace("terminalLocalLinkDetector#detect text", text);
+
 		this._logService.trace(
 			"terminalLocalLinkDetector#detect parsedLinks",
 			parsedLinks,
@@ -214,13 +218,19 @@ export class TerminalLocalLinkDetector implements ITerminalLinkDetector {
 					if (!parsedLink.suffix) {
 						trimRange++;
 					}
+
 					specialEndLinkCandidates.push(removed);
+
 					trimRangeMap.set(removed, trimRange);
+
 					previous = removed;
+
 					removed = removed.replace(specialEndCharRegex, "");
 				}
 			}
+
 			linkCandidates.push(...specialEndLinkCandidates);
+
 			this._logService.trace(
 				"terminalLocalLinkDetector#detect linkCandidates",
 				linkCandidates,
@@ -235,6 +245,7 @@ export class TerminalLocalLinkDetector implements ITerminalLinkDetector {
 
 			if (simpleLink) {
 				simpleLink.parsedLink = parsedLink;
+
 				simpleLink.text = text.substring(
 					parsedLink.prefix?.index ?? parsedLink.path.index,
 					parsedLink.suffix
@@ -242,10 +253,12 @@ export class TerminalLocalLinkDetector implements ITerminalLinkDetector {
 								parsedLink.suffix.suffix.text.length
 						: parsedLink.path.index + parsedLink.path.text.length,
 				);
+
 				this._logService.trace(
 					"terminalLocalLinkDetector#detect verified link",
 					simpleLink,
 				);
+
 				links.push(simpleLink);
 			}
 			// Stop early if too many links exist in the line
@@ -264,6 +277,7 @@ export class TerminalLocalLinkDetector implements ITerminalLinkDetector {
 				if (!group) {
 					continue;
 				}
+
 				const link = group?.link;
 
 				const path = group?.path;
@@ -324,7 +338,9 @@ export class TerminalLocalLinkDetector implements ITerminalLinkDetector {
 
 				for (
 					let y = rangeCandidate.start.y;
+
 					y <= rangeCandidate.end.y;
+
 					y++
 				) {
 					const line = this.xterm.buffer.active.getLine(y);
@@ -332,6 +348,7 @@ export class TerminalLocalLinkDetector implements ITerminalLinkDetector {
 					if (!line) {
 						break;
 					}
+
 					const lineStartX =
 						y === rangeCandidate.start.y
 							? rangeCandidate.start.x
@@ -341,11 +358,14 @@ export class TerminalLocalLinkDetector implements ITerminalLinkDetector {
 						y === rangeCandidate.end.y
 							? rangeCandidate.end.x
 							: this.xterm.cols - 1;
+
 					text += line.translateToString(false, lineStartX, lineEndX);
 				}
 				// HACK: Adjust to 1-based for link API
 				rangeCandidate.start.x++;
+
 				rangeCandidate.start.y++;
+
 				rangeCandidate.end.y++;
 				// Validate and add link
 				const simpleLink = await this._validateAndGetLink(
@@ -363,8 +383,10 @@ export class TerminalLocalLinkDetector implements ITerminalLinkDetector {
 				}
 			}
 		}
+
 		return links;
 	}
+
 	private _isDirectoryInsideWorkspace(uri: URI) {
 		const folders = this._workspaceContextService.getWorkspace().folders;
 
@@ -378,8 +400,10 @@ export class TerminalLocalLinkDetector implements ITerminalLinkDetector {
 				return true;
 			}
 		}
+
 		return false;
 	}
+
 	private async _validateLinkCandidates(
 		linkCandidates: string[],
 	): Promise<ResolvedLink | undefined> {
@@ -389,6 +413,7 @@ export class TerminalLocalLinkDetector implements ITerminalLinkDetector {
 			if (link.startsWith("file://")) {
 				uri = URI.parse(link);
 			}
+
 			const result = await this._linkResolver.resolveLink(
 				this._processManager,
 				link,
@@ -399,6 +424,7 @@ export class TerminalLocalLinkDetector implements ITerminalLinkDetector {
 				return result;
 			}
 		}
+
 		return undefined;
 	}
 	/**
@@ -434,9 +460,11 @@ export class TerminalLocalLinkDetector implements ITerminalLinkDetector {
 
 				if (bufferRange.end.x < 0) {
 					bufferRange.end.y--;
+
 					bufferRange.end.x += this.xterm.cols;
 				}
 			}
+
 			return {
 				text: linkText ?? linkStat.link,
 				uri: linkStat.uri,
@@ -444,6 +472,7 @@ export class TerminalLocalLinkDetector implements ITerminalLinkDetector {
 				type,
 			};
 		}
+
 		return undefined;
 	}
 }

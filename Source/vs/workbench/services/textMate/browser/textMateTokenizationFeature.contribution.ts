@@ -81,6 +81,7 @@ CommandsRegistry.registerCommand(
 				state,
 			).endState;
 		}
+
 		stopwatch.stop();
 
 		return { tokenizeTime: stopwatch.elapsed() };

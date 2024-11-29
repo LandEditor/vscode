@@ -80,6 +80,7 @@ class RemoteAgentDiagnosticListener implements IWorkbenchContribution {
 				event: unknown,
 				request: {
 					replyChannel: string;
+
 					args: IDiagnosticInfoOptions;
 				},
 			): void => {
@@ -90,6 +91,7 @@ class RemoteAgentDiagnosticListener implements IWorkbenchContribution {
 						Schemas.vscodeRemote,
 						connection.remoteAuthority,
 					);
+
 					remoteAgentService
 						.getDiagnosticInfo(request.args)
 						.then((info) => {
@@ -111,6 +113,7 @@ class RemoteAgentDiagnosticListener implements IWorkbenchContribution {
 									};
 								}
 							}
+
 							ipcRenderer.send(request.replyChannel, info);
 						})
 						.catch((e) => {
@@ -118,6 +121,7 @@ class RemoteAgentDiagnosticListener implements IWorkbenchContribution {
 								e && e.message
 									? `Connection to '${hostName}' could not be established  ${e.message}`
 									: `Connection to '${hostName}' could not be established `;
+
 							ipcRenderer.send(request.replyChannel, {
 								hostName,
 								errorMessage,
@@ -175,7 +179,9 @@ class RemoteTelemetryEnablementUpdater
 		private readonly configurationService: IConfigurationService,
 	) {
 		super();
+
 		this.updateRemoteTelemetryEnablement();
+
 		this._register(
 			configurationService.onDidChangeConfiguration((e) => {
 				if (e.affectsConfiguration(TELEMETRY_SETTING_ID)) {
@@ -184,6 +190,7 @@ class RemoteTelemetryEnablementUpdater
 			}),
 		);
 	}
+
 	private updateRemoteTelemetryEnablement(): Promise<void> {
 		return this.remoteAgentService.updateTelemetryLevel(
 			getTelemetryLevel(this.configurationService),
@@ -220,9 +227,11 @@ class RemoteEmptyWorkbenchPresentation
 				startupEditor !== "welcomePageInEmptyWorkbench"
 			);
 		}
+
 		function shouldShowTerminal(): boolean {
 			return shouldShowExplorer();
 		}
+
 		const {
 			remoteAuthority,
 			filesToDiff,
@@ -247,6 +256,7 @@ class RemoteEmptyWorkbenchPresentation
 							"workbench.view.explorer",
 						);
 					}
+
 					if (shouldShowTerminal()) {
 						commandService.executeCommand(
 							"workbench.action.terminal.toggleTerminal",
@@ -381,6 +391,7 @@ if (isMacintosh) {
 		metadata: { description: OpenLocalFileCommand.LABEL, args: [] },
 		handler: OpenLocalFileCommand.handler(),
 	});
+
 	KeybindingsRegistry.registerCommandAndKeybindingRule({
 		id: OpenLocalFolderCommand.ID,
 		weight: KeybindingWeight.WorkbenchContrib,

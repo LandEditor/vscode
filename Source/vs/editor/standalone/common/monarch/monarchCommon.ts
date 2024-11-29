@@ -18,13 +18,19 @@ export const enum MonarchBracket {
 }
 export interface ILexerMin {
 	languageId: string;
+
 	includeLF: boolean;
+
 	noThrow: boolean;
+
 	ignoreCase: boolean;
+
 	unicode: boolean;
+
 	usesEmbedded: boolean;
 
 	defaultToken: string;
+
 	stateNames: {
 		[stateName: string]: any;
 	};
@@ -32,18 +38,26 @@ export interface ILexerMin {
 }
 export interface ILexer extends ILexerMin {
 	maxStack: number;
+
 	start: string | null;
+
 	ignoreCase: boolean;
+
 	unicode: boolean;
+
 	tokenPostfix: string;
+
 	tokenizer: {
 		[stateName: string]: IRule[];
 	};
+
 	brackets: IBracket[];
 }
 export interface IBracket {
 	token: string;
+
 	open: string;
+
 	close: string;
 }
 export type FuzzyAction = IAction | string;
@@ -66,8 +80,11 @@ export function isIAction(what: FuzzyAction): what is IAction {
 }
 export interface IRule {
 	action: FuzzyAction;
+
 	matchOnlyAtLineStart: boolean;
+
 	name: string;
+
 	resolveRegex(state: string): RegExp;
 }
 export interface IAction {
@@ -82,19 +99,28 @@ export interface IAction {
 	) => FuzzyAction;
 	// or it is a declarative action with a token value and various other attributes
 	token?: string;
+
 	tokenSubst?: boolean;
+
 	next?: string;
+
 	nextEmbedded?: string;
+
 	bracket?: MonarchBracket;
+
 	log?: string;
 
 	switchTo?: string;
+
 	goBack?: number;
+
 	transform?: (states: string[]) => string[];
 }
 export interface IBranch {
 	name: string;
+
 	value: FuzzyAction;
+
 	test?: (
 		id: string,
 		matches: string[],
@@ -159,23 +185,30 @@ export function substituteMatches(
 			if (!empty(dollar)) {
 				return "$"; // $$
 			}
+
 			if (!empty(hash)) {
 				return fixCase(lexer, id); // default $#
 			}
+
 			if (!empty(n) && n < matches.length) {
 				return fixCase(lexer, matches[n]); // $n
 			}
+
 			if (!empty(attr) && lexer && typeof lexer[attr] === "string") {
 				return lexer[attr]; //@attribute
 			}
+
 			if (stateMatches === null) {
 				// split state on demand
 				stateMatches = state.split(".");
+
 				stateMatches.unshift(state);
 			}
+
 			if (!empty(s) && s < stateMatches.length) {
 				return fixCase(lexer, stateMatches[s]); //$Sn
 			}
+
 			return "";
 		},
 	);
@@ -198,11 +231,14 @@ export function substituteMatchesRe(
 		if (stateMatches === null) {
 			// split state on demand
 			stateMatches = state.split(".");
+
 			stateMatches.unshift(state);
 		}
+
 		if (!empty(s) && s < stateMatches.length) {
 			return fixCase(lexer, stateMatches[s]); //$Sn
 		}
+
 		return "";
 	});
 }
@@ -218,6 +254,7 @@ export function findRules(lexer: ILexer, inState: string): IRule[] | null {
 		if (rules) {
 			return rules;
 		}
+
 		const idx = state.lastIndexOf(".");
 
 		if (idx < 0) {
@@ -226,6 +263,7 @@ export function findRules(lexer: ILexer, inState: string): IRule[] | null {
 			state = state.substr(0, idx);
 		}
 	}
+
 	return null;
 }
 /**
@@ -242,6 +280,7 @@ export function stateExists(lexer: ILexerMin, inState: string): boolean {
 		if (exist) {
 			return true;
 		}
+
 		const idx = state.lastIndexOf(".");
 
 		if (idx < 0) {
@@ -250,5 +289,6 @@ export function stateExists(lexer: ILexerMin, inState: string): boolean {
 			state = state.substr(0, idx);
 		}
 	}
+
 	return false;
 }

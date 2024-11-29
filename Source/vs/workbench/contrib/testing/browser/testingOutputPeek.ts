@@ -161,7 +161,9 @@ function* allMessages([result]: readonly ITestResult[]) {
 
 			for (
 				let messageIndex = 0;
+
 				messageIndex < messages.length;
+
 				messageIndex++
 			) {
 				if (messages[messageIndex].type === TestMessageType.Error) {
@@ -174,8 +176,11 @@ function* allMessages([result]: readonly ITestResult[]) {
 
 interface IMessageIteratedReference {
 	messageIndex: number;
+
 	taskIndex: number;
+
 	result: ITestResult;
+
 	test: TestResultItem;
 }
 
@@ -234,6 +239,7 @@ export class TestingPeekOpener
 		private readonly notificationService: INotificationService,
 	) {
 		super();
+
 		this._register(testResults.onTestChanged(this.openPeekOnFailure, this));
 	}
 
@@ -426,6 +432,7 @@ export class TestingPeekOpener
 	) {
 		if (isCodeEditor(editor)) {
 			this.lastUri = uri;
+
 			TestingOutputPeekController.get(editor)?.show(
 				buildTestUri(this.lastUri),
 			);
@@ -445,6 +452,7 @@ export class TestingPeekOpener
 		}
 
 		this.lastUri = uri;
+
 		TestingOutputPeekController.get(control)?.show(
 			buildTestUri(this.lastUri),
 		);
@@ -505,8 +513,10 @@ export class TestingPeekOpener
 				) {
 					return;
 				}
+
 				break; //continue
 			}
+
 			case AutoOpenPeekViewWhen.FailureAnywhere:
 				break; //continue
 
@@ -562,6 +572,7 @@ export class TestingPeekOpener
 
 					if (!best || distance <= bestDistance) {
 						bestDistance = distance;
+
 						best = {
 							type: TestUriType.ResultMessage,
 							testExtId: result[1].item.extId,
@@ -626,11 +637,15 @@ export class TestingPeekOpener
 		let best:
 			| {
 					taskId: number;
+
 					index: number;
+
 					message: ITestMessage;
+
 					location: IRichLocation;
 			  }
 			| undefined;
+
 		mapFindTestMessage(test, (task, message, messageIndex, taskId) => {
 			const location = message.location || fallbackLocation;
 
@@ -697,17 +712,21 @@ export class TestingOutputPeekController
 		@IContextKeyService contextKeyService: IContextKeyService,
 	) {
 		super();
+
 		this.visible =
 			TestingContextKeys.isPeekVisible.bindTo(contextKeyService);
+
 		this._register(
 			editor.onDidChangeModel(() => this.peek.set(undefined, undefined)),
 		);
+
 		this._register(
 			testResults.onResultsChanged(
 				this.closePeekOnCertainResultEvents,
 				this,
 			),
 		);
+
 		this._register(
 			testResults.onTestChanged(this.closePeekOnTestChange, this),
 		);
@@ -733,13 +752,17 @@ export class TestingOutputPeekController
 				TestResultsPeek,
 				this.editor,
 			);
+
 			this.peek.set(peek, undefined);
+
 			peek.onDidClose(() => {
 				this.visible.set(false);
+
 				this.peek.set(undefined, undefined);
 			});
 
 			this.visible.set(true);
+
 			peek.create();
 		}
 
@@ -870,6 +893,7 @@ export class TestingOutputPeekController
 					if (m.result.id === subject.result.id) {
 						previousLockedIn = true;
 					}
+
 					continue;
 				}
 
@@ -881,6 +905,7 @@ export class TestingOutputPeekController
 					) {
 						previousLockedIn = true;
 					}
+
 					continue;
 				}
 
@@ -967,6 +992,7 @@ export class TestingOutputPeekController
 			if (!test) {
 				return;
 			}
+
 			return new TestOutputSubject(result, parts.taskIndex, test);
 		}
 
@@ -988,12 +1014,16 @@ class TestResultsPeek extends PeekViewWidget {
 	private readonly visibilityChange = this._disposables.add(
 		new Emitter<boolean>(),
 	);
+
 	public readonly current = observableValue<InspectSubject | undefined>(
 		"testPeekCurrent",
 		undefined,
 	);
+
 	private content!: TestResultsViewContent;
+
 	private scopedContextKeyService!: IContextKeyService;
+
 	private dimension?: dom.Dimension;
 
 	constructor(
@@ -1027,9 +1057,11 @@ class TestResultsPeek extends PeekViewWidget {
 		this._disposables.add(
 			themeService.onDidColorThemeChange(this.applyTheme, this),
 		);
+
 		this._disposables.add(
 			this.onDidClose(() => this.visibilityChange.fire(false)),
 		);
+
 		peekViewService.addExclusiveWidget(editor, this);
 	}
 
@@ -1055,6 +1087,7 @@ class TestResultsPeek extends PeekViewWidget {
 			Color.transparent;
 
 		const editorBg = theme.getColor(editorBackground);
+
 		this.style({
 			arrowColor: borderColor,
 			frameColor: borderColor,
@@ -1070,6 +1103,7 @@ class TestResultsPeek extends PeekViewWidget {
 			this.scopedContextKeyService = this._disposables.add(
 				this.contextKeyService.createScoped(container),
 			);
+
 			TestingContextKeys.isInPeek
 				.bindTo(this.scopedContextKeyService)
 				.set(true);
@@ -1082,6 +1116,7 @@ class TestResultsPeek extends PeekViewWidget {
 					]),
 				),
 			);
+
 			this.content = this._disposables.add(
 				instaService.createInstance(
 					TestResultsViewContent,
@@ -1110,6 +1145,7 @@ class TestResultsPeek extends PeekViewWidget {
 		const menuContextKeyService = this._disposables.add(
 			this.contextKeyService.createScoped(container),
 		);
+
 		this._disposables.add(
 			bindContextKey(
 				TestingContextKeys.peekHasStack,
@@ -1124,25 +1160,31 @@ class TestResultsPeek extends PeekViewWidget {
 		);
 
 		const actionBar = this._actionbarWidget!;
+
 		this._disposables.add(
 			menu.onDidChange(() => {
 				actions.length = 0;
+
 				fillInActionBarActions(menu.getActions(), actions);
 
 				while (actionBar.getAction(1)) {
 					actionBar.pull(0); // remove all but the view's default "close" button
 				}
+
 				actionBar.push(actions, { label: false, icon: true, index: 0 });
 			}),
 		);
 
 		const actions: IAction[] = [];
+
 		fillInActionBarActions(menu.getActions(), actions);
+
 		actionBar.push(actions, { label: false, icon: true, index: 0 });
 	}
 
 	protected override _fillBody(containerElement: HTMLElement): void {
 		this.content.fillBody(containerElement);
+
 		this._disposables.add(
 			this.content.onDidRequestReveal((sub) => {
 				TestingOutputPeekController.get(this.editor)?.show(
@@ -1194,6 +1236,7 @@ class TestResultsPeek extends PeekViewWidget {
 			);
 
 		this.show(revealLocation, peekLines);
+
 		this.editor.revealRangeNearTopIfOutsideViewport(
 			Range.fromPositions(revealLocation),
 			ScrollType.Smooth,
@@ -1225,6 +1268,7 @@ class TestResultsPeek extends PeekViewWidget {
 	public async showInPlace(subject: InspectSubject) {
 		if (subject instanceof MessageSubject) {
 			const message = subject.message;
+
 			this.setTitle(
 				firstLine(renderTestMessageAsText(message.message)),
 				stripIcons(subject.test.label),
@@ -1232,18 +1276,22 @@ class TestResultsPeek extends PeekViewWidget {
 		} else {
 			this.setTitle(localize("testOutputTitle", "Test Output"));
 		}
+
 		this.applyTheme();
+
 		await this.content.reveal({ subject, preserveFocus: false });
 	}
 
 	protected override _relayout(newHeightInLines: number): void {
 		super._relayout(newHeightInLines);
+
 		TestResultsPeek.lastHeightInLines = newHeightInLines;
 	}
 
 	/** @override */
 	protected override _doLayoutBody(height: number, width: number) {
 		super._doLayoutBody(height, width);
+
 		this.content.onLayoutBody(height, width);
 	}
 
@@ -1337,12 +1385,15 @@ export class TestResultsView extends ViewPane {
 
 	protected override layoutBody(height: number, width: number): void {
 		super.layoutBody(height, width);
+
 		this.content.rawValue?.onLayoutBody(height, width);
 	}
 
 	private renderContent(container: HTMLElement) {
 		const content = this.content.value;
+
 		content.fillBody(container);
+
 		this._register(
 			content.onDidRequestReveal((subject) =>
 				content.reveal({ preserveFocus: true, subject }),
@@ -1423,6 +1474,7 @@ export class CloseTestPeek extends EditorAction2 {
 		const parent = getPeekedEditorFromFocus(
 			accessor.get(ICodeEditorService),
 		);
+
 		TestingOutputPeekController.get(parent ?? editor)?.removePeek();
 	}
 }
@@ -1655,6 +1707,7 @@ export class ToggleTestingPeekHistory extends Action2 {
 
 	public override run(accessor: ServicesAccessor) {
 		const opener = accessor.get(ITestingPeekOpener);
+
 		opener.historyVisible.value = !opener.historyVisible.value;
 	}
 }

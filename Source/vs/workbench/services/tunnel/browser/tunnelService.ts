@@ -30,9 +30,11 @@ export class TunnelService extends AbstractTunnelService {
 	) {
 		super(logService, configurationService);
 	}
+
 	public isPortPrivileged(_port: number): boolean {
 		return false;
 	}
+
 	protected retainOrCreateTunnel(
 		tunnelProvider: IAddressProvider | ITunnelProvider,
 		remoteHost: string,
@@ -50,6 +52,7 @@ export class TunnelService extends AbstractTunnelService {
 
 			return existing.value;
 		}
+
 		if (isTunnelProvider(tunnelProvider)) {
 			return this.createWithProvider(
 				tunnelProvider,
@@ -61,8 +64,10 @@ export class TunnelService extends AbstractTunnelService {
 				protocol,
 			);
 		}
+
 		return undefined;
 	}
+
 	override canTunnel(uri: URI): boolean {
 		return (
 			super.canTunnel(uri) && !!this.environmentService.remoteAuthority

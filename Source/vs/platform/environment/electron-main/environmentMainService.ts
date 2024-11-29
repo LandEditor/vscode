@@ -26,13 +26,17 @@ export interface IEnvironmentMainService extends INativeEnvironmentService {
 	readonly backupHome: string;
 	// --- V8 code caching
 	readonly codeCachePath: string | undefined;
+
 	readonly useCodeCache: boolean;
 	// --- IPC
 	readonly mainIPCHandle: string;
+
 	readonly mainLockfile: string;
 	// --- config
 	readonly disableUpdates: boolean;
+
 	unsetSnapExportedVariables(): void;
+
 	restoreSnapExportedVariables(): void;
 }
 export class EnvironmentMainService
@@ -72,10 +76,12 @@ export class EnvironmentMainService
 	get useCodeCache(): boolean {
 		return !!this.codeCachePath;
 	}
+
 	unsetSnapExportedVariables() {
 		if (!isLinux) {
 			return;
 		}
+
 		for (const key in process.env) {
 			if (key.endsWith("_VSCODE_SNAP_ORIG")) {
 				const originalKey = key.slice(0, -17); // Remove the _VSCODE_SNAP_ORIG suffix
@@ -96,12 +102,15 @@ export class EnvironmentMainService
 			}
 		}
 	}
+
 	restoreSnapExportedVariables() {
 		if (!isLinux) {
 			return;
 		}
+
 		for (const key in this._snapEnv) {
 			process.env[key] = this._snapEnv[key];
+
 			delete this._snapEnv[key];
 		}
 	}

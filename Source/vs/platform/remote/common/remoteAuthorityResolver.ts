@@ -20,6 +20,7 @@ export class ManagedRemoteConnection {
 	public readonly type = RemoteConnectionType.Managed;
 
 	constructor(public readonly id: number) {}
+
 	public toString(): string {
 		return `Managed(${this.id})`;
 	}
@@ -31,6 +32,7 @@ export class WebSocketRemoteConnection {
 		public readonly host: string,
 		public readonly port: number,
 	) {}
+
 	public toString(): string {
 		return `WebSocket(${this.host}:${this.port})`;
 	}
@@ -46,54 +48,73 @@ export type RemoteConnectionOfType<T extends RemoteConnectionType> =
 
 export interface ResolvedAuthority {
 	readonly authority: string;
+
 	readonly connectTo: RemoteConnection;
+
 	readonly connectionToken: string | undefined;
 }
 export interface ResolvedOptions {
 	readonly extensionHostEnv?: {
 		[key: string]: string | null;
 	};
+
 	readonly isTrusted?: boolean;
+
 	readonly authenticationSession?: {
 		id: string;
+
 		providerId: string;
 	};
 }
 export interface TunnelDescription {
 	remoteAddress: {
 		port: number;
+
 		host: string;
 	};
+
 	localAddress:
 		| {
 				port: number;
+
 				host: string;
 		  }
 		| string;
+
 	privacy?: string;
+
 	protocol?: string;
 }
 export interface TunnelPrivacy {
 	themeIcon: string;
+
 	id: string;
+
 	label: string;
 }
 export interface TunnelInformation {
 	environmentTunnels?: TunnelDescription[];
+
 	features?: {
 		elevation: boolean;
+
 		public?: boolean;
+
 		privacyOptions: TunnelPrivacy[];
+
 		protocol: boolean;
 	};
 }
 export interface ResolverResult {
 	authority: ResolvedAuthority;
+
 	options?: ResolvedOptions;
+
 	tunnelInformation?: TunnelInformation;
 }
 export interface IRemoteConnectionData {
 	connectTo: RemoteConnection;
+
 	connectionToken: string | undefined;
 }
 export enum RemoteAuthorityResolverErrorCode {
@@ -110,6 +131,7 @@ export class RemoteAuthorityResolverError extends ErrorNoTelemetry {
 			err._code === RemoteAuthorityResolverErrorCode.NotAvailable
 		);
 	}
+
 	public static isTemporarilyNotAvailable(err: any): boolean {
 		return (
 			err instanceof RemoteAuthorityResolverError &&
@@ -117,6 +139,7 @@ export class RemoteAuthorityResolverError extends ErrorNoTelemetry {
 				RemoteAuthorityResolverErrorCode.TemporarilyNotAvailable
 		);
 	}
+
 	public static isNoResolverFound(
 		err: any,
 	): err is RemoteAuthorityResolverError {
@@ -125,18 +148,24 @@ export class RemoteAuthorityResolverError extends ErrorNoTelemetry {
 			err._code === RemoteAuthorityResolverErrorCode.NoResolverFound
 		);
 	}
+
 	public static isInvalidAuthority(err: any): boolean {
 		return (
 			err instanceof RemoteAuthorityResolverError &&
 			err._code === RemoteAuthorityResolverErrorCode.InvalidAuthority
 		);
 	}
+
 	public static isHandled(err: any): boolean {
 		return err instanceof RemoteAuthorityResolverError && err.isHandled;
 	}
+
 	public readonly _message: string | undefined;
+
 	public readonly _code: RemoteAuthorityResolverErrorCode;
+
 	public readonly _detail: any;
+
 	public isHandled: boolean;
 
 	constructor(
@@ -145,9 +174,13 @@ export class RemoteAuthorityResolverError extends ErrorNoTelemetry {
 		detail?: any,
 	) {
 		super(message);
+
 		this._message = message;
+
 		this._code = code;
+
 		this._detail = detail;
+
 		this.isHandled =
 			code === RemoteAuthorityResolverErrorCode.NotAvailable &&
 			detail === true;
@@ -158,7 +191,9 @@ export class RemoteAuthorityResolverError extends ErrorNoTelemetry {
 }
 export interface IRemoteAuthorityResolverService {
 	readonly _serviceBrand: undefined;
+
 	readonly onDidChangeConnectionData: Event<void>;
+
 	resolveAuthority(authority: string): Promise<ResolverResult>;
 
 	getConnectionData(authority: string): IRemoteConnectionData | null;
@@ -170,16 +205,21 @@ export interface IRemoteAuthorityResolverService {
 	 * @param uri The `vscode-remote://` URI
 	 */
 	getCanonicalURI(uri: URI): Promise<URI>;
+
 	_clearResolvedAuthority(authority: string): void;
+
 	_setResolvedAuthority(
 		resolvedAuthority: ResolvedAuthority,
 		resolvedOptions?: ResolvedOptions,
 	): void;
+
 	_setResolvedAuthorityError(authority: string, err: any): void;
+
 	_setAuthorityConnectionToken(
 		authority: string,
 		connectionToken: string,
 	): void;
+
 	_setCanonicalURIProvider(provider: (uri: URI) => Promise<URI>): void;
 }
 export function getRemoteAuthorityPrefix(remoteAuthority: string): string {
@@ -188,5 +228,6 @@ export function getRemoteAuthorityPrefix(remoteAuthority: string): string {
 	if (plusIndex === -1) {
 		return remoteAuthority;
 	}
+
 	return remoteAuthority.substring(0, plusIndex);
 }

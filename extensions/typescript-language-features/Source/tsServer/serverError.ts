@@ -22,6 +22,7 @@ export class TypeScriptServerError extends Error {
 			parsedResult?.sanitizedStack,
 		);
 	}
+
 	private constructor(
 		public readonly serverId: string,
 		public readonly version: TypeScriptVersion,
@@ -34,12 +35,15 @@ export class TypeScriptServerError extends Error {
 			`<${serverId}> TypeScript Server Error (${version.displayName})\n${serverMessage}\n${serverStack}`,
 		);
 	}
+
 	public get serverErrorText() {
 		return this.response.message;
 	}
+
 	public get serverCommand() {
 		return this.response.command;
 	}
+
 	public get telemetry() {
 		// The "sanitizedstack" has been purged of error messages, paths, and file names (other than tsserver)
 		// and, thus, can be classified as SystemMetaData, rather than CallstackOrException.
@@ -90,6 +94,7 @@ export class TypeScriptServerError extends Error {
 				}
 			}
 		}
+
 		return undefined;
 	}
 	/**
@@ -99,6 +104,7 @@ export class TypeScriptServerError extends Error {
 		if (!message) {
 			return "";
 		}
+
 		const regex =
 			/(\btsserver)?(\.(?:ts|tsx|js|jsx)(?::\d+(?::\d+)?)?)\)?$/gim;
 
@@ -114,6 +120,7 @@ export class TypeScriptServerError extends Error {
 			// [2] is '.js:{line_number}:{column_number}'
 			serverStack += `${match[1] || "suppressed"}${match[2]}\n`;
 		}
+
 		return serverStack;
 	}
 }

@@ -13,6 +13,7 @@ export interface IListVirtualDelegate<T> {
 	getHeight(element: T): number;
 
 	getTemplateId(element: T): string;
+
 	hasDynamicHeight?(element: T): boolean;
 
 	getDynamicHeight?(element: T): number | null;
@@ -21,24 +22,30 @@ export interface IListVirtualDelegate<T> {
 }
 export interface IListRenderer<T, TTemplateData> {
 	readonly templateId: string;
+
 	renderTemplate(container: HTMLElement): TTemplateData;
+
 	renderElement(
 		element: T,
 		index: number,
 		templateData: TTemplateData,
 		height: number | undefined,
 	): void;
+
 	disposeElement?(
 		element: T,
 		index: number,
 		templateData: TTemplateData,
 		height: number | undefined,
 	): void;
+
 	disposeTemplate(templateData: TTemplateData): void;
 }
 export interface IListEvent<T> {
 	readonly elements: readonly T[];
+
 	readonly indexes: readonly number[];
+
 	readonly browserEvent?: UIEvent;
 }
 export interface IListBrowserMouseEvent extends MouseEvent {
@@ -46,29 +53,41 @@ export interface IListBrowserMouseEvent extends MouseEvent {
 }
 export interface IListMouseEvent<T> {
 	readonly browserEvent: IListBrowserMouseEvent;
+
 	readonly element: T | undefined;
+
 	readonly index: number | undefined;
 }
 export interface IListTouchEvent<T> {
 	readonly browserEvent: TouchEvent;
+
 	readonly element: T | undefined;
+
 	readonly index: number | undefined;
 }
 export interface IListGestureEvent<T> {
 	readonly browserEvent: GestureEvent;
+
 	readonly element: T | undefined;
+
 	readonly index: number | undefined;
 }
 export interface IListDragEvent<T> {
 	readonly browserEvent: DragEvent;
+
 	readonly element: T | undefined;
+
 	readonly index: number | undefined;
+
 	readonly sector: ListViewTargetSector | undefined;
 }
 export interface IListContextMenuEvent<T> {
 	readonly browserEvent: UIEvent;
+
 	readonly element: T | undefined;
+
 	readonly index: number | undefined;
+
 	readonly anchor: HTMLElement | IMouseEvent;
 }
 export interface IIdentityProvider<T> {
@@ -105,11 +124,14 @@ export const enum ListDragOverEffectPosition {
 }
 export interface ListDragOverEffect {
 	type: ListDragOverEffectType;
+
 	position?: ListDragOverEffectPosition;
 }
 export interface IListDragOverReaction {
 	accept: boolean;
+
 	effect?: ListDragOverEffect;
+
 	feedback?: number[]; // use -1 for entire list
 }
 export const ListDragOverReactions = {
@@ -128,7 +150,9 @@ export interface IListDragAndDrop<T> extends IDisposable {
 	getDragURI(element: T): string | null;
 
 	getDragLabel?(elements: T[], originalEvent: DragEvent): string | undefined;
+
 	onDragStart?(data: IDragAndDropData, originalEvent: DragEvent): void;
+
 	onDragOver(
 		data: IDragAndDropData,
 		targetElement: T | undefined,
@@ -136,12 +160,14 @@ export interface IListDragAndDrop<T> extends IDisposable {
 		targetSector: ListViewTargetSector | undefined,
 		originalEvent: DragEvent,
 	): boolean | IListDragOverReaction;
+
 	onDragLeave?(
 		data: IDragAndDropData,
 		targetElement: T | undefined,
 		targetIndex: number | undefined,
 		originalEvent: DragEvent,
 	): void;
+
 	drop(
 		data: IDragAndDropData,
 		targetElement: T | undefined,
@@ -149,6 +175,7 @@ export interface IListDragAndDrop<T> extends IDisposable {
 		targetSector: ListViewTargetSector | undefined,
 		originalEvent: DragEvent,
 	): void;
+
 	onDragEnd?(originalEvent: DragEvent): void;
 }
 export class ListError extends Error {
@@ -164,7 +191,9 @@ export abstract class CachedListVirtualDelegate<T extends object>
 	getHeight(element: T): number {
 		return this.cache.get(element) ?? this.estimateHeight(element);
 	}
+
 	protected abstract estimateHeight(element: T): number;
+
 	abstract getTemplateId(element: T): string;
 
 	setDynamicHeight(element: T, height: number): void {

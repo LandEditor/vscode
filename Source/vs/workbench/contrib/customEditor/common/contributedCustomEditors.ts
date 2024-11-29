@@ -23,12 +23,16 @@ import {
 
 export class ContributedCustomEditors extends Disposable {
 	private static readonly CUSTOM_EDITORS_STORAGE_ID = "customEditors";
+
 	private static readonly CUSTOM_EDITORS_ENTRY_ID = "editors";
+
 	private readonly _editors = new Map<string, CustomEditorInfo>();
+
 	private readonly _memento: Memento;
 
 	constructor(storageService: IStorageService) {
 		super();
+
 		this._memento = new Memento(
 			ContributedCustomEditors.CUSTOM_EDITORS_STORAGE_ID,
 			storageService,
@@ -44,12 +48,16 @@ export class ContributedCustomEditors extends Disposable {
 		] || []) as CustomEditorDescriptor[]) {
 			this.add(new CustomEditorInfo(info));
 		}
+
 		customEditorsExtensionPoint.setHandler((extensions) => {
 			this.update(extensions);
 		});
 	}
+
 	private readonly _onChange = this._register(new Emitter<void>());
+
 	public readonly onChange = this._onChange.event;
+
 	private update(
 		extensions: readonly IExtensionPointUser<
 			ICustomEditorsExtensionPoint[]
@@ -79,26 +87,34 @@ export class ContributedCustomEditors extends Disposable {
 				);
 			}
 		}
+
 		const mementoObject = this._memento.getMemento(
 			StorageScope.PROFILE,
 			StorageTarget.MACHINE,
 		);
+
 		mementoObject[ContributedCustomEditors.CUSTOM_EDITORS_ENTRY_ID] =
 			Array.from(this._editors.values());
+
 		this._memento.saveMemento();
+
 		this._onChange.fire();
 	}
+
 	public [Symbol.iterator](): Iterator<CustomEditorInfo> {
 		return this._editors.values();
 	}
+
 	public get(viewType: string): CustomEditorInfo | undefined {
 		return this._editors.get(viewType);
 	}
+
 	public getContributedEditors(resource: URI): readonly CustomEditorInfo[] {
 		return Array.from(this._editors.values()).filter((customEditor) =>
 			customEditor.matches(resource),
 		);
 	}
+
 	private add(info: CustomEditorInfo): void {
 		if (this._editors.has(info.id)) {
 			console.error(
@@ -107,6 +123,7 @@ export class ContributedCustomEditors extends Disposable {
 
 			return;
 		}
+
 		this._editors.set(info.id, info);
 	}
 }

@@ -30,6 +30,7 @@ export class Position {
 
 	constructor(lineNumber: number, column: number) {
 		this.lineNumber = lineNumber;
+
 		this.column = column;
 	}
 	/**
@@ -73,6 +74,7 @@ export class Position {
 		if (!a && !b) {
 			return true;
 		}
+
 		return (
 			!!a && !!b && a.lineNumber === b.lineNumber && a.column === b.column
 		);
@@ -92,9 +94,11 @@ export class Position {
 		if (a.lineNumber < b.lineNumber) {
 			return true;
 		}
+
 		if (b.lineNumber < a.lineNumber) {
 			return false;
 		}
+
 		return a.column < b.column;
 	}
 	/**
@@ -112,9 +116,11 @@ export class Position {
 		if (a.lineNumber < b.lineNumber) {
 			return true;
 		}
+
 		if (b.lineNumber < a.lineNumber) {
 			return false;
 		}
+
 		return a.column <= b.column;
 	}
 	/**
@@ -132,6 +138,7 @@ export class Position {
 
 			return aColumn - bColumn;
 		}
+
 		return aLineNumber - bLineNumber;
 	}
 	/**
@@ -163,6 +170,7 @@ export class Position {
 			typeof obj.column === "number"
 		);
 	}
+
 	public toJSON(): IPosition {
 		return {
 			lineNumber: this.lineNumber,

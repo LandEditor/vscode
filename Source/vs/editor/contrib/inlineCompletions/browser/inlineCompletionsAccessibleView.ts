@@ -22,8 +22,11 @@ export class InlineCompletionsAccessibleView
 	implements IAccessibleViewImplentation
 {
 	readonly type = AccessibleViewType.View;
+
 	readonly priority = 95;
+
 	readonly name = "inline-completions";
+
 	readonly when = ContextKeyExpr.and(
 		InlineCompletionContextKeys.inlineSuggestionVisible,
 	);
@@ -38,11 +41,13 @@ export class InlineCompletionsAccessibleView
 		if (!editor) {
 			return;
 		}
+
 		const model = InlineCompletionsController.get(editor)?.model.get();
 
 		if (!model?.inlineCompletionState.get()) {
 			return;
 		}
+
 		return new InlineCompletionsAccessibleViewContentProvider(
 			editor,
 			model,
@@ -56,6 +61,7 @@ class InlineCompletionsAccessibleViewContentProvider
 	private readonly _onDidChangeContent: Emitter<void> = this._register(
 		new Emitter<void>(),
 	);
+
 	public readonly onDidChangeContent: Event<void> =
 		this._onDidChangeContent.event;
 
@@ -65,13 +71,17 @@ class InlineCompletionsAccessibleViewContentProvider
 	) {
 		super();
 	}
+
 	public readonly id = AccessibleViewProviderId.InlineCompletions;
+
 	public readonly verbositySettingKey =
 		"accessibility.verbosity.inlineCompletions";
+
 	public readonly options = {
 		language: this._editor.getModel()?.getLanguageId() ?? undefined,
 		type: AccessibleViewType.View,
 	};
+
 	public provideContent(): string {
 		const state = this._model.inlineCompletionState.get();
 
@@ -80,6 +90,7 @@ class InlineCompletionsAccessibleViewContentProvider
 				"Inline completion is visible but state is not available",
 			);
 		}
+
 		const lineText = this._model.textModel.getLineContent(
 			state.primaryGhostText.lineNumber,
 		);
@@ -92,22 +103,27 @@ class InlineCompletionsAccessibleViewContentProvider
 				"Inline completion is visible but ghost text is not available",
 			);
 		}
+
 		return lineText + ghostText;
 	}
+
 	public provideNextContent(): string | undefined {
 		// asynchronously update the model and fire the event
 		this._model.next().then(() => this._onDidChangeContent.fire());
 
 		return;
 	}
+
 	public providePreviousContent(): string | undefined {
 		// asynchronously update the model and fire the event
 		this._model.previous().then(() => this._onDidChangeContent.fire());
 
 		return;
 	}
+
 	public onClose(): void {
 		this._model.stop();
+
 		this._editor.focus();
 	}
 }

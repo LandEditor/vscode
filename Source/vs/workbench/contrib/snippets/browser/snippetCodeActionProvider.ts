@@ -28,6 +28,7 @@ import { Snippet } from "./snippetsFile.js";
 
 class SurroundWithSnippetCodeActionProvider implements CodeActionProvider {
 	private static readonly _MAX_CODE_ACTIONS = 4;
+
 	private static readonly _overflowCommandCodeAction: CodeAction = {
 		kind: CodeActionKind.SurroundWith.value,
 		title: localize("more", "More..."),
@@ -41,6 +42,7 @@ class SurroundWithSnippetCodeActionProvider implements CodeActionProvider {
 		@ISnippetsService
 		private readonly _snippetService: ISnippetsService,
 	) {}
+
 	async provideCodeActions(
 		model: ITextModel,
 		range: Range | Selection,
@@ -48,6 +50,7 @@ class SurroundWithSnippetCodeActionProvider implements CodeActionProvider {
 		if (range.isEmpty()) {
 			return undefined;
 		}
+
 		const position = Selection.isISelection(range)
 			? range.getPosition()
 			: range.getStartPosition();
@@ -62,6 +65,7 @@ class SurroundWithSnippetCodeActionProvider implements CodeActionProvider {
 		if (!snippets.length) {
 			return undefined;
 		}
+
 		const actions: CodeAction[] = [];
 
 		for (const snippet of snippets) {
@@ -75,12 +79,14 @@ class SurroundWithSnippetCodeActionProvider implements CodeActionProvider {
 
 				break;
 			}
+
 			actions.push({
 				title: localize("codeAction", "{0}", snippet.name),
 				kind: CodeActionKind.SurroundWith.value,
 				edit: asWorkspaceEdit(model, range, snippet),
 			});
 		}
+
 		return {
 			actions,
 			dispose() {},
@@ -89,6 +95,7 @@ class SurroundWithSnippetCodeActionProvider implements CodeActionProvider {
 }
 class FileTemplateCodeActionProvider implements CodeActionProvider {
 	private static readonly _MAX_CODE_ACTIONS = 4;
+
 	private static readonly _overflowCommandCodeAction: CodeAction = {
 		title: localize("overflow.start.title", "Start with Snippet"),
 		kind: CodeActionKind.SurroundWith.value,
@@ -97,6 +104,7 @@ class FileTemplateCodeActionProvider implements CodeActionProvider {
 			title: "",
 		},
 	};
+
 	readonly providedCodeActionKinds?: readonly string[] = [
 		CodeActionKind.SurroundWith.value,
 	];
@@ -105,10 +113,12 @@ class FileTemplateCodeActionProvider implements CodeActionProvider {
 		@ISnippetsService
 		private readonly _snippetService: ISnippetsService,
 	) {}
+
 	async provideCodeActions(model: ITextModel) {
 		if (model.getValueLength() !== 0) {
 			return undefined;
 		}
+
 		const snippets = await this._snippetService.getSnippets(
 			model.getLanguageId(),
 			{ fileTemplateSnippets: true, includeNoPrefixSnippets: true },
@@ -127,6 +137,7 @@ class FileTemplateCodeActionProvider implements CodeActionProvider {
 
 				break;
 			}
+
 			actions.push({
 				title: localize("title", "Start with: {0}", snippet.name),
 				kind: CodeActionKind.SurroundWith.value,
@@ -137,6 +148,7 @@ class FileTemplateCodeActionProvider implements CodeActionProvider {
 				),
 			});
 		}
+
 		return {
 			actions,
 			dispose() {},
@@ -189,6 +201,7 @@ export class SnippetCodeActions implements IWorkbenchContribution {
 						),
 					),
 				);
+
 				sessionStore.add(
 					languageFeaturesService.codeActionProvider.register(
 						"*",
@@ -199,14 +212,18 @@ export class SnippetCodeActions implements IWorkbenchContribution {
 				);
 			}
 		};
+
 		update();
+
 		this._store.add(
 			configService.onDidChangeConfiguration(
 				(e) => e.affectsConfiguration(setting) && update(),
 			),
 		);
+
 		this._store.add(sessionStore);
 	}
+
 	dispose(): void {
 		this._store.dispose();
 	}

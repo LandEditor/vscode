@@ -9,6 +9,7 @@ import { ITypeScriptServiceClient } from "../typescriptService";
 
 export default class TypeScriptDefinitionProviderBase {
 	constructor(protected readonly client: ITypeScriptServiceClient) {}
+
 	protected async getSymbolLocations(
 		definitionType: "definition" | "implementation" | "typeDefinition",
 		document: vscode.TextDocument,
@@ -20,6 +21,7 @@ export default class TypeScriptDefinitionProviderBase {
 		if (!file) {
 			return undefined;
 		}
+
 		const args = typeConverters.Position.toFileLocationRequestArgs(
 			file,
 			position,
@@ -30,6 +32,7 @@ export default class TypeScriptDefinitionProviderBase {
 		if (response.type !== "response" || !response.body) {
 			return undefined;
 		}
+
 		return response.body.map((location) =>
 			typeConverters.Location.fromTextSpan(
 				this.client.toResource(location.file),

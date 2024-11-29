@@ -34,6 +34,7 @@ export class GuidesTextModelPart
 	) {
 		super();
 	}
+
 	private getLanguageConfiguration(
 		languageId: string,
 	): ResolvedLanguageConfiguration {
@@ -41,12 +42,14 @@ export class GuidesTextModelPart
 			languageId,
 		);
 	}
+
 	private _computeIndentLevel(lineIndex: number): number {
 		return computeIndentLevel(
 			this.textModel.getLineContent(lineIndex + 1),
 			this.textModel.getOptions().tabSize,
 		);
 	}
+
 	public getActiveIndentGuide(
 		lineNumber: number,
 		minLineNumber: number,
@@ -59,6 +62,7 @@ export class GuidesTextModelPart
 		if (lineNumber < 1 || lineNumber > lineCount) {
 			throw new BugIndicatingError("Illegal value for lineNumber");
 		}
+
 		const foldingRules = this.getLanguageConfiguration(
 			this.textModel.getLanguageId(),
 		).foldingRules;
@@ -80,36 +84,45 @@ export class GuidesTextModelPart
 					up_aboveContentLineIndex > lineNumber - 1)
 			) {
 				up_aboveContentLineIndex = -1;
+
 				up_aboveContentLineIndent = -1;
 				// must find previous line with content
 				for (
 					let lineIndex = lineNumber - 2;
+
 					lineIndex >= 0;
+
 					lineIndex--
 				) {
 					const indent = this._computeIndentLevel(lineIndex);
 
 					if (indent >= 0) {
 						up_aboveContentLineIndex = lineIndex;
+
 						up_aboveContentLineIndent = indent;
 
 						break;
 					}
 				}
 			}
+
 			if (up_belowContentLineIndex === -2) {
 				up_belowContentLineIndex = -1;
+
 				up_belowContentLineIndent = -1;
 				// must find next line with content
 				for (
 					let lineIndex = lineNumber;
+
 					lineIndex < lineCount;
+
 					lineIndex++
 				) {
 					const indent = this._computeIndentLevel(lineIndex);
 
 					if (indent >= 0) {
 						up_belowContentLineIndex = lineIndex;
+
 						up_belowContentLineIndent = indent;
 
 						break;
@@ -134,7 +147,9 @@ export class GuidesTextModelPart
 				// must find previous line with content
 				for (
 					let lineIndex = lineNumber - 2;
+
 					lineIndex >= 0;
+
 					lineIndex--
 				) {
 					const indent = this._computeIndentLevel(lineIndex);
@@ -148,6 +163,7 @@ export class GuidesTextModelPart
 					}
 				}
 			}
+
 			if (
 				down_belowContentLineIndex !== -1 &&
 				(down_belowContentLineIndex === -2 ||
@@ -159,7 +175,9 @@ export class GuidesTextModelPart
 				// must find next line with content
 				for (
 					let lineIndex = lineNumber;
+
 					lineIndex < lineCount;
+
 					lineIndex++
 				) {
 					const indent = this._computeIndentLevel(lineIndex);
@@ -198,17 +216,21 @@ export class GuidesTextModelPart
 			) {
 				goUp = false;
 			}
+
 			if (
 				distance > 1 &&
 				(downLineNumber > lineCount || downLineNumber > maxLineNumber)
 			) {
 				goDown = false;
 			}
+
 			if (distance > 50000) {
 				// stop processing
 				goUp = false;
+
 				goDown = false;
 			}
+
 			let upLineIndentLevel: number = -1;
 
 			if (goUp && upLineNumber >= 1) {
@@ -221,12 +243,15 @@ export class GuidesTextModelPart
 					// This line has content (besides whitespace)
 					// Use the line's indent
 					up_belowContentLineIndex = upLineNumber - 1;
+
 					up_belowContentLineIndent = currentIndent;
+
 					upLineIndentLevel = Math.ceil(
 						currentIndent / this.textModel.getOptions().indentSize,
 					);
 				} else {
 					up_resolveIndents(upLineNumber);
+
 					upLineIndentLevel = this._getIndentLevelForWhitespaceLine(
 						offSide,
 						up_aboveContentLineIndent,
@@ -234,6 +259,7 @@ export class GuidesTextModelPart
 					);
 				}
 			}
+
 			let downLineIndentLevel = -1;
 
 			if (goDown && downLineNumber <= lineCount) {
@@ -262,11 +288,13 @@ export class GuidesTextModelPart
 					);
 				}
 			}
+
 			if (distance === 0) {
 				initialIndent = upLineIndentLevel;
 
 				continue;
 			}
+
 			if (distance === 1) {
 				if (
 					downLineNumber <= lineCount &&
@@ -276,12 +304,16 @@ export class GuidesTextModelPart
 					// This is the beginning of a scope, we have special handling here, since we want the
 					// child scope indent to be active, not the parent scope
 					goUp = false;
+
 					startLineNumber = downLineNumber;
+
 					endLineNumber = downLineNumber;
+
 					indent = downLineIndentLevel;
 
 					continue;
 				}
+
 				if (
 					upLineNumber >= 1 &&
 					upLineIndentLevel >= 0 &&
@@ -289,14 +321,20 @@ export class GuidesTextModelPart
 				) {
 					// This is the end of a scope, just like above
 					goDown = false;
+
 					startLineNumber = upLineNumber;
+
 					endLineNumber = upLineNumber;
+
 					indent = upLineIndentLevel;
 
 					continue;
 				}
+
 				startLineNumber = lineNumber;
+
 				endLineNumber = lineNumber;
+
 				indent = initialIndent;
 
 				if (indent === 0) {
@@ -304,6 +342,7 @@ export class GuidesTextModelPart
 					return { startLineNumber, endLineNumber, indent };
 				}
 			}
+
 			if (goUp) {
 				if (upLineIndentLevel >= indent) {
 					startLineNumber = upLineNumber;
@@ -311,6 +350,7 @@ export class GuidesTextModelPart
 					goUp = false;
 				}
 			}
+
 			if (goDown) {
 				if (downLineIndentLevel >= indent) {
 					endLineNumber = downLineNumber;
@@ -319,8 +359,10 @@ export class GuidesTextModelPart
 				}
 			}
 		}
+
 		return { startLineNumber, endLineNumber, indent };
 	}
+
 	public getLinesBracketGuides(
 		startLineNumber: number,
 		endLineNumber: number,
@@ -331,7 +373,9 @@ export class GuidesTextModelPart
 
 		for (
 			let lineNumber = startLineNumber;
+
 			lineNumber <= endLineNumber;
+
 			lineNumber++
 		) {
 			result.push([]);
@@ -366,6 +410,7 @@ export class GuidesTextModelPart
 			).filter((bp) =>
 				Range.strictContainsPosition(bp.range, activePosition),
 			);
+
 			activeBracketPairRange = findLast(
 				bracketsContainingActivePosition,
 				(i) =>
@@ -373,6 +418,7 @@ export class GuidesTextModelPart
 					i.range.startLineNumber !== i.range.endLineNumber,
 			)?.range;
 		}
+
 		const independentColorPoolPerBracketType =
 			this.textModel.getOptions().bracketPairColorizationOptions
 				.independentColorPoolPerBracketType;
@@ -409,6 +455,7 @@ export class GuidesTextModelPart
 			if (!pair.closingBracketRange) {
 				continue;
 			}
+
 			const isActive =
 				activeBracketPairRange &&
 				pair.range.equalsRange(activeBracketPairRange);
@@ -416,6 +463,7 @@ export class GuidesTextModelPart
 			if (!isActive && !options.includeInactive) {
 				continue;
 			}
+
 			const className =
 				colorProvider.getInlineClassName(
 					pair.nestingLevel,
@@ -449,8 +497,10 @@ export class GuidesTextModelPart
 						),
 					);
 				}
+
 				continue;
 			}
+
 			const endVisibleColumn = this.getVisibleColumnFromPosition(end);
 
 			const startVisibleColumn = this.getVisibleColumnFromPosition(
@@ -477,6 +527,7 @@ export class GuidesTextModelPart
 			if (hasTextBeforeClosingBracket) {
 				renderHorizontalEndLineAtTheBottom = true;
 			}
+
 			const visibleGuideStartLineNumber = Math.max(
 				start.lineNumber,
 				startLineNumber,
@@ -491,7 +542,9 @@ export class GuidesTextModelPart
 
 			for (
 				let l = visibleGuideStartLineNumber;
+
 				l < visibleGuideEndLineNumber + offset;
+
 				l++
 			) {
 				result[l - startLineNumber].push(
@@ -505,6 +558,7 @@ export class GuidesTextModelPart
 					),
 				);
 			}
+
 			if (horizontalGuides) {
 				if (
 					start.lineNumber >= startLineNumber &&
@@ -521,6 +575,7 @@ export class GuidesTextModelPart
 						),
 					);
 				}
+
 				if (
 					end.lineNumber <= endLineNumber &&
 					endVisibleColumn > guideVisibleColumn
@@ -541,11 +596,14 @@ export class GuidesTextModelPart
 				}
 			}
 		}
+
 		for (const guides of result) {
 			guides.sort((a, b) => a.visibleColumn - b.visibleColumn);
 		}
+
 		return result;
 	}
+
 	private getVisibleColumnFromPosition(position: Position): number {
 		return (
 			CursorColumns.visibleColumnFromColumn(
@@ -555,6 +613,7 @@ export class GuidesTextModelPart
 			) + 1
 		);
 	}
+
 	public getLinesIndentGuides(
 		startLineNumber: number,
 		endLineNumber: number,
@@ -566,9 +625,11 @@ export class GuidesTextModelPart
 		if (startLineNumber < 1 || startLineNumber > lineCount) {
 			throw new Error("Illegal value for startLineNumber");
 		}
+
 		if (endLineNumber < 1 || endLineNumber > lineCount) {
 			throw new Error("Illegal value for endLineNumber");
 		}
+
 		const options = this.textModel.getOptions();
 
 		const foldingRules = this.getLanguageConfiguration(
@@ -591,7 +652,9 @@ export class GuidesTextModelPart
 
 		for (
 			let lineNumber = startLineNumber;
+
 			lineNumber <= endLineNumber;
+
 			lineNumber++
 		) {
 			const resultIndex = lineNumber - startLineNumber;
@@ -602,63 +665,78 @@ export class GuidesTextModelPart
 				// This line has content (besides whitespace)
 				// Use the line's indent
 				aboveContentLineIndex = lineNumber - 1;
+
 				aboveContentLineIndent = currentIndent;
+
 				result[resultIndex] = Math.ceil(
 					currentIndent / options.indentSize,
 				);
 
 				continue;
 			}
+
 			if (aboveContentLineIndex === -2) {
 				aboveContentLineIndex = -1;
+
 				aboveContentLineIndent = -1;
 				// must find previous line with content
 				for (
 					let lineIndex = lineNumber - 2;
+
 					lineIndex >= 0;
+
 					lineIndex--
 				) {
 					const indent = this._computeIndentLevel(lineIndex);
 
 					if (indent >= 0) {
 						aboveContentLineIndex = lineIndex;
+
 						aboveContentLineIndent = indent;
 
 						break;
 					}
 				}
 			}
+
 			if (
 				belowContentLineIndex !== -1 &&
 				(belowContentLineIndex === -2 ||
 					belowContentLineIndex < lineNumber - 1)
 			) {
 				belowContentLineIndex = -1;
+
 				belowContentLineIndent = -1;
 				// must find next line with content
 				for (
 					let lineIndex = lineNumber;
+
 					lineIndex < lineCount;
+
 					lineIndex++
 				) {
 					const indent = this._computeIndentLevel(lineIndex);
 
 					if (indent >= 0) {
 						belowContentLineIndex = lineIndex;
+
 						belowContentLineIndent = indent;
 
 						break;
 					}
 				}
 			}
+
 			result[resultIndex] = this._getIndentLevelForWhitespaceLine(
 				offSide,
 				aboveContentLineIndent,
 				belowContentLineIndent,
 			);
 		}
+
 		return result;
 	}
+
 	private _getIndentLevelForWhitespaceLine(
 		offSide: boolean,
 		aboveContentLineIndent: number,
@@ -702,6 +780,7 @@ export class BracketPairGuidesClassNames {
 				: nestingLevel,
 		);
 	}
+
 	getInlineClassNameOfLevel(level: number): string {
 		// To support a dynamic amount of colors up to 6 colors,
 		// we use a number that is a lcm of all numbers from 1 to 6.

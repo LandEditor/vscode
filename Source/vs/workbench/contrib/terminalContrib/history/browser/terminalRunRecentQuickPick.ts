@@ -91,8 +91,10 @@ export async function showRunRecentQuickPick(
 	const runRecentStorageKey = `${TerminalStorageKeys.PinnedRecentCommandsPrefix}.${instance.shellType}`;
 
 	let placeholder: string;
+
 	type Item = IQuickPickItem & {
 		command?: ITerminalCommand;
+
 		rawLabel: string;
 	};
 
@@ -139,6 +141,7 @@ export async function showRunRecentQuickPick(
 		if (executingCommand) {
 			commandMap.add(executingCommand);
 		}
+
 		function formatLabel(label: string) {
 			return (
 				label
@@ -149,6 +152,7 @@ export async function showRunRecentQuickPick(
 					.replace(/\s\s\s+/g, "\u22EF")
 			);
 		}
+
 		if (commands && commands.length > 0) {
 			for (const entry of commands) {
 				// Trim off any whitespace and/or line endings, replace new lines with the
@@ -158,6 +162,7 @@ export async function showRunRecentQuickPick(
 				if (label.length === 0 || commandMap.has(label)) {
 					continue;
 				}
+
 				let description = collapseTildePath(
 					entry.cwd,
 					instance.userHome,
@@ -173,6 +178,7 @@ export async function showRunRecentQuickPick(
 						description += ` exitCode: ${entry.exitCode}`;
 					}
 				}
+
 				description = description.trim();
 
 				const buttons: IQuickInputButton[] = [commandOutputButton];
@@ -185,10 +191,12 @@ export async function showRunRecentQuickPick(
 					lastItem?.label === label
 				) {
 					lastItem.id = entry.timestamp.toString();
+
 					lastItem.description = description;
 
 					continue;
 				}
+
 				items.push({
 					label: formatLabel(label),
 					rawLabel: label,
@@ -197,10 +205,13 @@ export async function showRunRecentQuickPick(
 					command: entry,
 					buttons: entry.hasOutput() ? buttons : undefined,
 				});
+
 				commandMap.add(label);
 			}
+
 			items = items.reverse();
 		}
+
 		if (executingCommand) {
 			items.unshift({
 				label: formatLabel(executingCommand),
@@ -208,6 +219,7 @@ export async function showRunRecentQuickPick(
 				description: cmdDetection.cwd,
 			});
 		}
+
 		if (items.length > 0) {
 			items.unshift({
 				type: "separator",
@@ -233,6 +245,7 @@ export async function showRunRecentQuickPick(
 					rawLabel: label,
 					buttons: [removeFromCommandHistoryButton],
 				});
+
 				commandMap.add(label);
 			}
 		}
@@ -267,6 +280,7 @@ export async function showRunRecentQuickPick(
 					});
 				}
 			}
+
 			if (dedupedShellFileItems.length > 0) {
 				const button: IQuickInputButton & { resource: URI } = {
 					iconClass: ThemeIcon.asClassName(
@@ -276,7 +290,9 @@ export async function showRunRecentQuickPick(
 					alwaysVisible: false,
 					resource: shellFileHistory.sourceResource,
 				};
+
 				openResourceButtons.push(button);
+
 				items.push(
 					{
 						type: "separator",
@@ -311,7 +327,9 @@ export async function showRunRecentQuickPick(
 			for (const label of cwds) {
 				items.push({ label, rawLabel: label });
 			}
+
 			items = items.reverse();
+
 			items.unshift({
 				type: "separator",
 				label: terminalStrings.currentSessionCategory,
@@ -338,6 +356,7 @@ export async function showRunRecentQuickPick(
 				});
 			}
 		}
+
 		if (previousSessionItems.length > 0) {
 			items.push(
 				{
@@ -348,9 +367,11 @@ export async function showRunRecentQuickPick(
 			);
 		}
 	}
+
 	if (items.length === 0) {
 		return;
 	}
+
 	const disposables = new DisposableStore();
 
 	const fuzzySearchToggle = disposables.add(
@@ -367,6 +388,7 @@ export async function showRunRecentQuickPick(
 			),
 		}),
 	);
+
 	disposables.add(
 		fuzzySearchToggle.onChange(() => {
 			instantiationService.invokeFunction(
@@ -391,11 +413,17 @@ export async function showRunRecentQuickPick(
 	);
 
 	const originalItems = items;
+
 	quickPick.items = [...originalItems];
+
 	quickPick.sortByLabel = false;
+
 	quickPick.placeholder = placeholder;
+
 	quickPick.matchOnLabelMode = filterMode || "contiguous";
+
 	quickPick.toggles = [fuzzySearchToggle];
+
 	disposables.add(
 		quickPick.onDidTriggerItemButton(async (e) => {
 			if (e.button === removeFromCommandHistoryButton) {
@@ -430,6 +458,7 @@ export async function showRunRecentQuickPick(
 					}
 				}
 			}
+
 			await instantiationService.invokeFunction(
 				showRunRecentQuickPick,
 				instance,
@@ -440,6 +469,7 @@ export async function showRunRecentQuickPick(
 			);
 		}),
 	);
+
 	disposables.add(
 		quickPick.onDidTriggerSeparatorButton(async (e) => {
 			const resource = openResourceButtons.find(
@@ -453,6 +483,7 @@ export async function showRunRecentQuickPick(
 			}
 		}),
 	);
+
 	disposables.add(
 		quickPick.onDidChangeValue(async (value) => {
 			if (!value) {
@@ -472,9 +503,12 @@ export async function showRunRecentQuickPick(
 
 	function restoreScrollState() {
 		terminalScrollStateSaved = false;
+
 		instance.xterm?.markTracker.restoreScrollState();
+
 		instance.xterm?.markTracker.clear();
 	}
+
 	disposables.add(
 		quickPick.onDidChangeActive(async () => {
 			const xterm = instance.xterm;
@@ -482,19 +516,24 @@ export async function showRunRecentQuickPick(
 			if (!xterm) {
 				return;
 			}
+
 			const [item] = quickPick.activeItems;
 
 			if (!item) {
 				return;
 			}
+
 			if ("command" in item && item.command && item.command.marker) {
 				if (!terminalScrollStateSaved) {
 					xterm.markTracker.saveScrollState();
+
 					terminalScrollStateSaved = true;
 				}
+
 				const promptRowCount = item.command.getPromptRowCount();
 
 				const commandRowCount = item.command.getCommandRowCount();
+
 				xterm.markTracker.revealRange({
 					start: {
 						x: 1,
@@ -510,6 +549,7 @@ export async function showRunRecentQuickPick(
 			}
 		}),
 	);
+
 	disposables.add(
 		quickPick.onDidAccept(async () => {
 			const result = quickPick.activeItems[0];
@@ -522,22 +562,28 @@ export async function showRunRecentQuickPick(
 				// command
 				text = result.rawLabel;
 			}
+
 			quickPick.hide();
+
 			instance.runCommand(text, !quickPick.keyMods.alt);
 
 			if (quickPick.keyMods.alt) {
 				instance.focus();
 			}
+
 			restoreScrollState();
 		}),
 	);
+
 	disposables.add(quickPick.onDidHide(() => restoreScrollState()));
 
 	if (value) {
 		quickPick.value = value;
 	}
+
 	return new Promise<void>((r) => {
 		terminalInRunCommandPicker.set(true);
+
 		disposables.add(
 			showWithPinnedItems(
 				storageService,
@@ -546,13 +592,17 @@ export async function showRunRecentQuickPick(
 				true,
 			),
 		);
+
 		disposables.add(
 			quickPick.onDidHide(() => {
 				terminalInRunCommandPicker.set(false);
+
 				accessibleViewService.showLastProvider(
 					AccessibleViewProviderId.Terminal,
 				);
+
 				r();
+
 				disposables.dispose();
 			}),
 		);
@@ -570,6 +620,7 @@ class TerminalOutputProvider
 		@IModelService private readonly _modelService: IModelService,
 	) {
 		super();
+
 		this._register(
 			textModelResolverService.registerTextModelContentProvider(
 				TerminalOutputProvider.scheme,

@@ -14,6 +14,7 @@ import { SearchParams } from "../../../../editor/common/model/textModelSearch.js
 
 interface RawOutputFindMatch {
 	textBuffer: IReadonlyTextBuffer;
+
 	matches: FindMatch[];
 }
 export class CellSearchModel extends Disposable {
@@ -26,6 +27,7 @@ export class CellSearchModel extends Disposable {
 	) {
 		super();
 	}
+
 	private _getFullModelRange(buffer: IReadonlyTextBuffer): Range {
 		const lineCount = buffer.getLineCount();
 
@@ -36,6 +38,7 @@ export class CellSearchModel extends Disposable {
 			this._getLineMaxColumn(buffer, lineCount),
 		);
 	}
+
 	private _getLineMaxColumn(
 		buffer: IReadonlyTextBuffer,
 		lineNumber: number,
@@ -43,11 +46,14 @@ export class CellSearchModel extends Disposable {
 		if (lineNumber < 1 || lineNumber > buffer.getLineCount()) {
 			throw new Error("Illegal value for lineNumber");
 		}
+
 		return buffer.getLineLength(lineNumber) + 1;
 	}
+
 	get inputTextBuffer(): IReadonlyTextBuffer {
 		if (!this._inputTextBuffer) {
 			const builder = new PieceTreeTextBufferBuilder();
+
 			builder.acceptChunk(this._source);
 
 			const bufferFactory = builder.finish(true);
@@ -55,15 +61,20 @@ export class CellSearchModel extends Disposable {
 			const { textBuffer, disposable } = bufferFactory.create(
 				DefaultEndOfLine.LF,
 			);
+
 			this._inputTextBuffer = textBuffer;
+
 			this._register(disposable);
 		}
+
 		return this._inputTextBuffer;
 	}
+
 	get outputTextBuffers(): IReadonlyTextBuffer[] {
 		if (!this._outputTextBuffers) {
 			this._outputTextBuffers = this._outputs.map((output) => {
 				const builder = new PieceTreeTextBufferBuilder();
+
 				builder.acceptChunk(output);
 
 				const bufferFactory = builder.finish(true);
@@ -71,13 +82,16 @@ export class CellSearchModel extends Disposable {
 				const { textBuffer, disposable } = bufferFactory.create(
 					DefaultEndOfLine.LF,
 				);
+
 				this._register(disposable);
 
 				return textBuffer;
 			});
 		}
+
 		return this._outputTextBuffers;
 	}
+
 	findInInputs(target: string): FindMatch[] {
 		const searchParams = new SearchParams(target, false, false, null);
 
@@ -86,6 +100,7 @@ export class CellSearchModel extends Disposable {
 		if (!searchData) {
 			return [];
 		}
+
 		const fullInputRange = this._getFullModelRange(this.inputTextBuffer);
 
 		return this.inputTextBuffer.findMatchesLineByLine(
@@ -95,6 +110,7 @@ export class CellSearchModel extends Disposable {
 			5000,
 		);
 	}
+
 	findInOutputs(target: string): RawOutputFindMatch[] {
 		const searchParams = new SearchParams(target, false, false, null);
 
@@ -103,6 +119,7 @@ export class CellSearchModel extends Disposable {
 		if (!searchData) {
 			return [];
 		}
+
 		return this.outputTextBuffers
 			.map((buffer) => {
 				const matches = buffer.findMatchesLineByLine(
@@ -115,6 +132,7 @@ export class CellSearchModel extends Disposable {
 				if (matches.length === 0) {
 					return undefined;
 				}
+
 				return {
 					textBuffer: buffer,
 					matches,

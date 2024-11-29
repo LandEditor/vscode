@@ -140,6 +140,7 @@ export function createDecorationsForStackFrame(
 				range,
 			});
 		}
+
 		result.push({
 			options: TOP_STACK_FRAME_DECORATION,
 			range: columnUntilEOLRange,
@@ -158,11 +159,13 @@ export function createDecorationsForStackFrame(
 				range,
 			});
 		}
+
 		result.push({
 			options: FOCUSED_STACK_FRAME_DECORATION,
 			range: columnUntilEOLRange,
 		});
 	}
+
 	return result;
 }
 export class CallStackEditorContribution
@@ -184,6 +187,7 @@ export class CallStackEditorContribution
 
 		const setDecorations = () =>
 			this.decorations.set(this.createCallStackDecorations());
+
 		this._register(
 			Event.any(
 				this.debugService.getViewModel().onDidFocusStackFrame,
@@ -192,6 +196,7 @@ export class CallStackEditorContribution
 				setDecorations();
 			}),
 		);
+
 		this._register(
 			this.editor.onDidChangeModel((e) => {
 				if (e.newModelUrl) {
@@ -202,22 +207,26 @@ export class CallStackEditorContribution
 
 		setDecorations();
 	}
+
 	private createCallStackDecorations(): IModelDeltaDecoration[] {
 		const editor = this.editor;
 
 		if (!editor.hasModel()) {
 			return [];
 		}
+
 		const focusedStackFrame =
 			this.debugService.getViewModel().focusedStackFrame;
 
 		const decorations: IModelDeltaDecoration[] = [];
+
 		this.debugService
 			.getModel()
 			.getSessions()
 			.forEach((s) => {
 				const isSessionFocused =
 					s === focusedStackFrame?.thread.session;
+
 				s.getAllThreads().forEach((t) => {
 					if (t.stopped) {
 						const callStack = t.getCallStack();
@@ -232,8 +241,10 @@ export class CallStackEditorContribution
 							) {
 								stackFrames.push(focusedStackFrame);
 							}
+
 							stackFrames.push(callStack[0]);
 						}
+
 						stackFrames.forEach((candidateStackFrame) => {
 							if (
 								candidateStackFrame &&
@@ -254,6 +265,7 @@ export class CallStackEditorContribution
 
 									return;
 								}
+
 								const noCharactersBefore =
 									editor
 										.getModel()
@@ -262,6 +274,7 @@ export class CallStackEditorContribution
 												.startLineNumber,
 										) >=
 									candidateStackFrame.range.startColumn;
+
 								decorations.push(
 									...createDecorationsForStackFrame(
 										candidateStackFrame,
@@ -281,8 +294,10 @@ export class CallStackEditorContribution
 				`${d.options.className} ${d.options.glyphMarginClassName} ${d.range.startLineNumber} ${d.range.startColumn}`,
 		);
 	}
+
 	override dispose(): void {
 		super.dispose();
+
 		this.decorations.clear();
 	}
 }

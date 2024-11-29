@@ -18,11 +18,17 @@ export interface TokenTypesContribution {
 export interface ITMSyntaxExtensionPoint {
 	language?: string; // undefined if the grammar is only included by other grammars
 	scopeName: string;
+
 	path: string;
+
 	embeddedLanguages: IEmbeddedLanguagesMap;
+
 	tokenTypes: TokenTypesContribution;
+
 	injectTo: string[];
+
 	balancedBracketScopes: string[];
+
 	unbalancedBracketScopes: string[];
 }
 export const grammarsExtPoint: IExtensionPoint<ITMSyntaxExtensionPoint[]> =

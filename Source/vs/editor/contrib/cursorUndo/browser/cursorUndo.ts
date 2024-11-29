@@ -34,11 +34,13 @@ class CursorState {
 		if (thisLen !== otherLen) {
 			return false;
 		}
+
 		for (let i = 0; i < thisLen; i++) {
 			if (!this.selections[i].equalsSelection(other.selections[i])) {
 				return false;
 			}
 		}
+
 		return true;
 	}
 }
@@ -64,42 +66,54 @@ export class CursorUndoRedoController
 	}
 
 	private readonly _editor: ICodeEditor;
+
 	private _isCursorUndoRedo: boolean;
 
 	private _undoStack: StackElement[];
+
 	private _redoStack: StackElement[];
 
 	constructor(editor: ICodeEditor) {
 		super();
+
 		this._editor = editor;
+
 		this._isCursorUndoRedo = false;
 
 		this._undoStack = [];
+
 		this._redoStack = [];
 
 		this._register(
 			editor.onDidChangeModel((e) => {
 				this._undoStack = [];
+
 				this._redoStack = [];
 			}),
 		);
+
 		this._register(
 			editor.onDidChangeModelContent((e) => {
 				this._undoStack = [];
+
 				this._redoStack = [];
 			}),
 		);
+
 		this._register(
 			editor.onDidChangeCursorSelection((e) => {
 				if (this._isCursorUndoRedo) {
 					return;
 				}
+
 				if (!e.oldSelections) {
 					return;
 				}
+
 				if (e.oldModelVersionId !== e.modelVersionId) {
 					return;
 				}
+
 				const prevState = new CursorState(e.oldSelections);
 
 				const isEqualToLastUndoStack =
@@ -116,6 +130,7 @@ export class CursorUndoRedoController
 							editor.getScrollLeft(),
 						),
 					);
+
 					this._redoStack = [];
 
 					if (this._undoStack.length > 50) {
@@ -139,6 +154,7 @@ export class CursorUndoRedoController
 				this._editor.getScrollLeft(),
 			),
 		);
+
 		this._applyState(this._undoStack.pop()!);
 	}
 
@@ -154,16 +170,20 @@ export class CursorUndoRedoController
 				this._editor.getScrollLeft(),
 			),
 		);
+
 		this._applyState(this._redoStack.pop()!);
 	}
 
 	private _applyState(stackElement: StackElement): void {
 		this._isCursorUndoRedo = true;
+
 		this._editor.setSelections(stackElement.cursorState.selections);
+
 		this._editor.setScrollPosition({
 			scrollTop: stackElement.scrollTop,
 			scrollLeft: stackElement.scrollLeft,
 		});
+
 		this._isCursorUndoRedo = false;
 	}
 }

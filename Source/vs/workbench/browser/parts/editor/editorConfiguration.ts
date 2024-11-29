@@ -33,11 +33,13 @@ export class DynamicEditorConfigurations
 	implements IWorkbenchContribution
 {
 	static readonly ID = "workbench.contrib.dynamicEditorConfigurations";
+
 	private static readonly AUTO_LOCK_DEFAULT_ENABLED = new Set<string>([
 		"terminalEditor",
 		"mainThreadWebview-simpleBrowser.view",
 		"mainThreadWebview-browserPreview",
 	]);
+
 	private static readonly AUTO_LOCK_EXTRA_EDITORS: RegisteredEditorInfo[] = [
 		// List some editor input identifiers that are not
 		// registered yet via the editor resolver infrastructure
@@ -62,6 +64,7 @@ export class DynamicEditorConfigurations
 			priority: RegisteredEditorPriority.builtin,
 		},
 	];
+
 	private static readonly AUTO_LOCK_REMOVE_EDITORS = new Set<string>([
 		// List some editor types that the above `AUTO_LOCK_EXTRA_EDITORS`
 		// already covers to avoid duplicates.
@@ -69,15 +72,20 @@ export class DynamicEditorConfigurations
 		"interactive",
 		"vscode.markdown.preview.editor",
 	]);
+
 	private readonly configurationRegistry =
 		Registry.as<IConfigurationRegistry>(
 			ConfigurationExtensions.Configuration,
 		);
+
 	private autoLockConfigurationNode: IConfigurationNode | undefined;
+
 	private defaultBinaryEditorConfigurationNode:
 		| IConfigurationNode
 		| undefined;
+
 	private editorAssociationsConfigurationNode: IConfigurationNode | undefined;
+
 	private editorLargeFileConfirmationConfigurationNode:
 		| IConfigurationNode
 		| undefined;
@@ -97,10 +105,13 @@ export class DynamicEditorConfigurations
 		// are registered.
 		(async () => {
 			await extensionService.whenInstalledExtensionsRegistered();
+
 			this.updateDynamicEditorConfigurations();
+
 			this.registerListeners();
 		})();
 	}
+
 	private registerListeners(): void {
 		// Registered editors (debounced to reduce perf overhead)
 		this._register(
@@ -110,6 +121,7 @@ export class DynamicEditorConfigurations
 			)(() => this.updateDynamicEditorConfigurations()),
 		);
 	}
+
 	private updateDynamicEditorConfigurations(): void {
 		const lockableEditors = [
 			...this.editorResolverService.getEditors(),
@@ -147,6 +159,7 @@ export class DynamicEditorConfigurations
 		}
 		// Register setting for auto locking groups
 		const oldAutoLockConfigurationNode = this.autoLockConfigurationNode;
+
 		this.autoLockConfigurationNode = {
 			...workbenchConfigurationNodeBase,
 			properties: {
@@ -165,6 +178,7 @@ export class DynamicEditorConfigurations
 		// Registers setting for default binary editors
 		const oldDefaultBinaryEditorConfigurationNode =
 			this.defaultBinaryEditorConfigurationNode;
+
 		this.defaultBinaryEditorConfigurationNode = {
 			...workbenchConfigurationNodeBase,
 			properties: {
@@ -183,6 +197,7 @@ export class DynamicEditorConfigurations
 		// Registers setting for editorAssociations
 		const oldEditorAssociationsConfigurationNode =
 			this.editorAssociationsConfigurationNode;
+
 		this.editorAssociationsConfigurationNode = {
 			...workbenchConfigurationNodeBase,
 			properties: {
@@ -204,6 +219,7 @@ export class DynamicEditorConfigurations
 		// Registers setting for large file confirmation based on environment
 		const oldEditorLargeFileConfirmationConfigurationNode =
 			this.editorLargeFileConfirmationConfigurationNode;
+
 		this.editorLargeFileConfirmationConfigurationNode = {
 			...workbenchConfigurationNodeBase,
 			properties: {
@@ -222,6 +238,7 @@ export class DynamicEditorConfigurations
 				},
 			},
 		};
+
 		this.configurationRegistry.updateConfigurations({
 			add: [
 				this.autoLockConfigurationNode,

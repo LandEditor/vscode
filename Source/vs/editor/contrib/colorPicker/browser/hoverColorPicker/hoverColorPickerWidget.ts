@@ -22,9 +22,11 @@ export class ColorPickerWidget
 	implements IEditorHoverColorPickerWidget
 {
 	private static readonly ID = "editor.contrib.colorPickerWidget";
+
 	private readonly _domNode: HTMLElement;
 
 	body: ColorPickerBody;
+
 	header: ColorPickerHeader;
 
 	constructor(
@@ -43,6 +45,7 @@ export class ColorPickerWidget
 		);
 
 		this._domNode = $(".colorpicker-widget");
+
 		container.appendChild(this._domNode);
 
 		this.header = this._register(
@@ -53,6 +56,7 @@ export class ColorPickerWidget
 				type,
 			),
 		);
+
 		this.body = this._register(
 			new ColorPickerBody(
 				this._domNode,

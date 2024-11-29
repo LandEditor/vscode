@@ -16,20 +16,27 @@ export class CharacterClassifier<T extends number> {
 	 * The entire map (sparse array).
 	 */
 	protected readonly _map: Map<number, number>;
+
 	protected readonly _defaultValue: number;
 
 	constructor(_defaultValue: T) {
 		const defaultValue = toUint8(_defaultValue);
+
 		this._defaultValue = defaultValue;
+
 		this._asciiMap = CharacterClassifier._createAsciiMap(defaultValue);
+
 		this._map = new Map<number, number>();
 	}
+
 	private static _createAsciiMap(defaultValue: number): Uint8Array {
 		const asciiMap = new Uint8Array(256);
+
 		asciiMap.fill(defaultValue);
 
 		return asciiMap;
 	}
+
 	public set(charCode: number, _value: T): void {
 		const value = toUint8(_value);
 
@@ -39,6 +46,7 @@ export class CharacterClassifier<T extends number> {
 			this._map.set(charCode, value);
 		}
 	}
+
 	public get(charCode: number): T {
 		if (charCode >= 0 && charCode < 256) {
 			return <T>this._asciiMap[charCode];
@@ -46,8 +54,10 @@ export class CharacterClassifier<T extends number> {
 			return <T>(this._map.get(charCode) || this._defaultValue);
 		}
 	}
+
 	public clear() {
 		this._asciiMap.fill(this._defaultValue);
+
 		this._map.clear();
 	}
 }
@@ -62,12 +72,15 @@ export class CharacterSet {
 	constructor() {
 		this._actual = new CharacterClassifier<Boolean>(Boolean.False);
 	}
+
 	public add(charCode: number): void {
 		this._actual.set(charCode, Boolean.True);
 	}
+
 	public has(charCode: number): boolean {
 		return this._actual.get(charCode) === Boolean.True;
 	}
+
 	public clear(): void {
 		return this._actual.clear();
 	}

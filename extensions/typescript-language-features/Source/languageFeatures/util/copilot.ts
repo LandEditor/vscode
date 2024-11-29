@@ -13,12 +13,14 @@ import { nulToken } from "../../utils/cancellation";
 
 export class EditorChatFollowUp implements Command {
 	public static readonly ID = "_typescript.quickFix.editorChatReplacement2";
+
 	public readonly id = EditorChatFollowUp.ID;
 
 	constructor(
 		private readonly client: ITypeScriptServiceClient,
 		private readonly telemetryReporter: TelemetryReporter,
 	) {}
+
 	async execute({
 		message,
 		document,
@@ -52,6 +54,7 @@ export class EditorChatFollowUp implements Command {
 				action: action.refactor.name,
 			});
 		}
+
 		const initialRange =
 			expand.kind === "navtree-function"
 				? await findScopeEndLineFromNavTree(
@@ -78,6 +81,7 @@ export class EditorChatFollowUp implements Command {
 		const initialSelection = initialRange
 			? new vscode.Selection(initialRange.start, initialRange.end)
 			: undefined;
+
 		await vscode.commands.executeCommand("vscode.editorChat.start", {
 			initialRange,
 			initialSelection,
@@ -88,21 +92,28 @@ export class EditorChatFollowUp implements Command {
 }
 export interface EditorChatFollowUp_Args {
 	readonly message: string;
+
 	readonly document: vscode.TextDocument;
+
 	readonly expand: Expand;
+
 	readonly action:
 		| {
 				readonly type: "refactor";
+
 				readonly refactor: Proto.RefactorActionInfo;
 		  }
 		| {
 				readonly type: "quickfix";
+
 				readonly quickfix: Proto.CodeFixAction;
 		  };
 }
 export class CompositeCommand implements Command {
 	public static readonly ID = "_typescript.compositeCommand";
+
 	public readonly id = CompositeCommand.ID;
+
 	public async execute(...commands: vscode.Command[]): Promise<void> {
 		for (const command of commands) {
 			await vscode.commands.executeCommand(
@@ -115,18 +126,22 @@ export class CompositeCommand implements Command {
 export type Expand =
 	| {
 			kind: "none";
+
 			readonly range: vscode.Range;
 	  }
 	| {
 			kind: "navtree-function";
+
 			readonly pos: vscode.Position;
 	  }
 	| {
 			kind: "refactor-info";
+
 			readonly refactor: Proto.RefactorEditInfo;
 	  }
 	| {
 			kind: "code-action";
+
 			readonly action: Proto.CodeAction;
 	  };
 function findScopeEndLineFromNavTreeWorker(
@@ -149,6 +164,7 @@ function findScopeEndLineFromNavTreeWorker(
 			);
 		}
 	}
+
 	return undefined;
 }
 async function findScopeEndLineFromNavTree(
@@ -161,6 +177,7 @@ async function findScopeEndLineFromNavTree(
 	if (!filepath) {
 		return;
 	}
+
 	const response = await client.execute(
 		"navtree",
 		{ file: filepath },
@@ -170,6 +187,7 @@ async function findScopeEndLineFromNavTree(
 	if (response.type !== "response" || !response.body?.childItems) {
 		return;
 	}
+
 	return findScopeEndLineFromNavTreeWorker(
 		startLine,
 		response.body.childItems,
@@ -195,13 +213,17 @@ async function findEditScope(
 
 		if (start.compareTo(first) < 0) {
 			first = start;
+
 			firstEdit = edit;
 		}
+
 		if (end.compareTo(last) > 0) {
 			last = end;
+
 			lastEdit = edit;
 		}
 	}
+
 	const text = document.getText();
 
 	const startIndex = text.indexOf(firstEdit.newText);

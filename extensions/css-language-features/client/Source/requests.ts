@@ -11,6 +11,7 @@ export namespace FsContentRequest {
 	export const type: RequestType<
 		{
 			uri: string;
+
 			encoding?: string;
 		},
 		string,
@@ -38,25 +39,30 @@ export function serveFileSystemRequests(
 			if (uri.scheme === "file" && runtime.fs) {
 				return runtime.fs.getContent(param.uri);
 			}
+
 			return workspace.fs.readFile(uri).then((buffer) => {
 				return new runtime.TextDecoder(param.encoding).decode(buffer);
 			});
 		},
 	);
+
 	client.onRequest(FsReadDirRequest.type, (uriString: string) => {
 		const uri = Uri.parse(uriString);
 
 		if (uri.scheme === "file" && runtime.fs) {
 			return runtime.fs.readDirectory(uriString);
 		}
+
 		return workspace.fs.readDirectory(uri);
 	});
+
 	client.onRequest(FsStatRequest.type, (uriString: string) => {
 		const uri = Uri.parse(uriString);
 
 		if (uri.scheme === "file" && runtime.fs) {
 			return runtime.fs.stat(uriString);
 		}
+
 		return workspace.fs.stat(uri);
 	});
 }
@@ -99,6 +105,8 @@ export interface FileStat {
 }
 export interface RequestService {
 	getContent(uri: string, encoding?: string): Promise<string>;
+
 	stat(uri: string): Promise<FileStat>;
+
 	readDirectory(uri: string): Promise<[string, FileType][]>;
 }

@@ -15,6 +15,7 @@ declare module "vscode" {
 
 	interface RelatedInformationBaseResult {
 		type: RelatedInformationType;
+
 		weight: number;
 	}
 
@@ -23,6 +24,7 @@ declare module "vscode" {
 	export interface CommandInformationResult
 		extends RelatedInformationBaseResult {
 		type: RelatedInformationType.CommandInformation;
+
 		command: string;
 	}
 

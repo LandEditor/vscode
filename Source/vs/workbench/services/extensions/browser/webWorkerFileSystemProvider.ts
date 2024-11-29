@@ -25,7 +25,9 @@ export class FetchFileSystemProvider
 		FileSystemProviderCapabilities.Readonly +
 		FileSystemProviderCapabilities.FileReadWrite +
 		FileSystemProviderCapabilities.PathCaseSensitive;
+
 	readonly onDidChangeCapabilities = Event.None;
+
 	readonly onDidChangeFile = Event.None;
 	// working implementations
 	async readFile(resource: URI): Promise<Uint8Array> {
@@ -35,6 +37,7 @@ export class FetchFileSystemProvider
 			if (res.status === 200) {
 				return new Uint8Array(await res.arrayBuffer());
 			}
+
 			throw createFileSystemProviderError(
 				res.statusText,
 				FileSystemProviderErrorCode.Unknown,
@@ -55,6 +58,7 @@ export class FetchFileSystemProvider
 			ctime: 0,
 		};
 	}
+
 	watch(): IDisposable {
 		return Disposable.None;
 	}
@@ -66,15 +70,19 @@ export class FetchFileSystemProvider
 	): Promise<void> {
 		throw new NotSupportedError();
 	}
+
 	readdir(_resource: URI): Promise<[string, FileType][]> {
 		throw new NotSupportedError();
 	}
+
 	mkdir(_resource: URI): Promise<void> {
 		throw new NotSupportedError();
 	}
+
 	delete(_resource: URI, _opts: IFileDeleteOptions): Promise<void> {
 		throw new NotSupportedError();
 	}
+
 	rename(_from: URI, _to: URI, _opts: IFileOverwriteOptions): Promise<void> {
 		throw new NotSupportedError();
 	}

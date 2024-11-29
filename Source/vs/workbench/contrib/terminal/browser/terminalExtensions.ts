@@ -20,12 +20,16 @@ import { TerminalWidgetManager } from "./widgets/widgetManager.js";
 
 export interface ITerminalContributionContext {
 	instance: ITerminalInstance;
+
 	processManager: ITerminalProcessManager;
+
 	widgetManager: TerminalWidgetManager;
 }
 export interface IDetachedCompatibleTerminalContributionContext {
 	instance: IDetachedTerminalInstance;
+
 	processManager: ITerminalProcessInfo;
+
 	widgetManager: TerminalWidgetManager;
 }
 /** Constructor compatible with full terminal instances, is assignable to {@link DetachedCompatibleTerminalContributionCtor} */
@@ -44,10 +48,12 @@ export type ITerminalContributionDescription = {
 } & (
 	| {
 			readonly canRunInDetachedTerminals: false;
+
 			readonly ctor: TerminalContributionCtor;
 	  }
 	| {
 			readonly canRunInDetachedTerminals: true;
+
 			readonly ctor: DetachedCompatibleTerminalContributionCtor;
 	  }
 );
@@ -109,15 +115,18 @@ export namespace TerminalExtensionsRegistry {
 }
 class TerminalContributionRegistry {
 	public static readonly INSTANCE = new TerminalContributionRegistry();
+
 	private readonly _terminalContributions: ITerminalContributionDescription[] =
 		[];
 
 	constructor() {}
+
 	public registerTerminalContribution(
 		description: ITerminalContributionDescription,
 	): void {
 		this._terminalContributions.push(description);
 	}
+
 	public getTerminalContributions(): ITerminalContributionDescription[] {
 		return this._terminalContributions.slice(0);
 	}

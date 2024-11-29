@@ -42,9 +42,11 @@ export const getCoverageColor = (
 
 		if (t && pct >= t && pct - t < distance) {
 			best = color;
+
 			distance = pct - t;
 		}
 	}
+
 	return best;
 };
 
@@ -56,6 +58,7 @@ export const displayPercent = (value: number, precision = 2) => {
 	if (value < 1 - epsilon && display === "100") {
 		return `${100 - 10 ** -precision}%`;
 	}
+
 	return `${display}%`;
 };
 
@@ -73,11 +76,14 @@ export const calculateDisplayedStat = (
 			if (coverage.branch) {
 				value = Math.min(value, percent(coverage.branch));
 			}
+
 			if (coverage.declaration) {
 				value = Math.min(value, percent(coverage.declaration));
 			}
+
 			return value;
 		}
+
 		case TestingDisplayedCoveragePercent.TotalCoverage:
 			return getTotalCoveragePercent(
 				coverage.statement,
@@ -103,8 +109,10 @@ export function getLabelForItem(
 		if (!item) {
 			break;
 		}
+
 		parts.push(item.label);
 	}
+
 	return parts.slice(commonPrefixLen).join(" \u203a ");
 }
 export namespace labels {

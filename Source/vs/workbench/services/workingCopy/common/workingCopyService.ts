@@ -108,6 +108,7 @@ export interface IWorkingCopyService {
 	 * exists.
 	 */
 	has(identifier: IWorkingCopyIdentifier): boolean;
+
 	has(resource: URI): boolean;
 	/**
 	 * Returns a working copy with the given identifier or `undefined`
@@ -129,35 +130,48 @@ export class WorkingCopyService
 	private readonly _onDidRegister = this._register(
 		new Emitter<IWorkingCopy>(),
 	);
+
 	readonly onDidRegister = this._onDidRegister.event;
+
 	private readonly _onDidUnregister = this._register(
 		new Emitter<IWorkingCopy>(),
 	);
+
 	readonly onDidUnregister = this._onDidUnregister.event;
+
 	private readonly _onDidChangeDirty = this._register(
 		new Emitter<IWorkingCopy>(),
 	);
+
 	readonly onDidChangeDirty = this._onDidChangeDirty.event;
+
 	private readonly _onDidChangeContent = this._register(
 		new Emitter<IWorkingCopy>(),
 	);
+
 	readonly onDidChangeContent = this._onDidChangeContent.event;
+
 	private readonly _onDidSave = this._register(
 		new Emitter<IWorkingCopySaveEvent>(),
 	);
+
 	readonly onDidSave = this._onDidSave.event;
 	//#endregion
 	//#region Registry
 	get workingCopies(): IWorkingCopy[] {
 		return Array.from(this._workingCopies.values());
 	}
+
 	private _workingCopies = new Set<IWorkingCopy>();
+
 	private readonly mapResourceToWorkingCopies = new ResourceMap<
 		Map<string, IWorkingCopy>
 	>();
+
 	private readonly mapWorkingCopyToListeners = this._register(
 		new DisposableMap<IWorkingCopy>(),
 	);
+
 	registerWorkingCopy(workingCopy: IWorkingCopy): IDisposable {
 		let workingCopiesForResource = this.mapResourceToWorkingCopies.get(
 			workingCopy.resource,
@@ -173,29 +187,35 @@ export class WorkingCopyService
 		// Registry (type based)
 		if (!workingCopiesForResource) {
 			workingCopiesForResource = new Map();
+
 			this.mapResourceToWorkingCopies.set(
 				workingCopy.resource,
 				workingCopiesForResource,
 			);
 		}
+
 		workingCopiesForResource.set(workingCopy.typeId, workingCopy);
 		// Wire in Events
 		const disposables = new DisposableStore();
+
 		disposables.add(
 			workingCopy.onDidChangeContent(() =>
 				this._onDidChangeContent.fire(workingCopy),
 			),
 		);
+
 		disposables.add(
 			workingCopy.onDidChangeDirty(() =>
 				this._onDidChangeDirty.fire(workingCopy),
 			),
 		);
+
 		disposables.add(
 			workingCopy.onDidSave((e) =>
 				this._onDidSave.fire({ workingCopy, ...e }),
 			),
 		);
+
 		this.mapWorkingCopyToListeners.set(workingCopy, disposables);
 		// Send some initial events
 		this._onDidRegister.fire(workingCopy);
@@ -203,6 +223,7 @@ export class WorkingCopyService
 		if (workingCopy.isDirty()) {
 			this._onDidChangeDirty.fire(workingCopy);
 		}
+
 		return toDisposable(() => {
 			// Unregister working copy
 			this.unregisterWorkingCopy(workingCopy);
@@ -210,6 +231,7 @@ export class WorkingCopyService
 			this._onDidUnregister.fire(workingCopy);
 		});
 	}
+
 	protected unregisterWorkingCopy(workingCopy: IWorkingCopy): void {
 		// Registry (all)
 		this._workingCopies.delete(workingCopy);
@@ -232,29 +254,36 @@ export class WorkingCopyService
 		// Remove all listeners associated to working copy
 		this.mapWorkingCopyToListeners.deleteAndDispose(workingCopy);
 	}
+
 	has(identifier: IWorkingCopyIdentifier): boolean;
+
 	has(resource: URI): boolean;
+
 	has(resourceOrIdentifier: URI | IWorkingCopyIdentifier): boolean {
 		if (URI.isUri(resourceOrIdentifier)) {
 			return this.mapResourceToWorkingCopies.has(resourceOrIdentifier);
 		}
+
 		return (
 			this.mapResourceToWorkingCopies
 				.get(resourceOrIdentifier.resource)
 				?.has(resourceOrIdentifier.typeId) ?? false
 		);
 	}
+
 	get(identifier: IWorkingCopyIdentifier): IWorkingCopy | undefined {
 		return this.mapResourceToWorkingCopies
 			.get(identifier.resource)
 			?.get(identifier.typeId);
 	}
+
 	getAll(resource: URI): readonly IWorkingCopy[] | undefined {
 		const workingCopies = this.mapResourceToWorkingCopies.get(resource);
 
 		if (!workingCopies) {
 			return undefined;
 		}
+
 		return Array.from(workingCopies.values());
 	}
 	//#endregion
@@ -265,8 +294,10 @@ export class WorkingCopyService
 				return true;
 			}
 		}
+
 		return false;
 	}
+
 	get dirtyCount(): number {
 		let totalDirtyCount = 0;
 
@@ -275,13 +306,16 @@ export class WorkingCopyService
 				totalDirtyCount++;
 			}
 		}
+
 		return totalDirtyCount;
 	}
+
 	get dirtyWorkingCopies(): IWorkingCopy[] {
 		return this.workingCopies.filter((workingCopy) =>
 			workingCopy.isDirty(),
 		);
 	}
+
 	get modifiedCount(): number {
 		let totalModifiedCount = 0;
 
@@ -290,13 +324,16 @@ export class WorkingCopyService
 				totalModifiedCount++;
 			}
 		}
+
 		return totalModifiedCount;
 	}
+
 	get modifiedWorkingCopies(): IWorkingCopy[] {
 		return this.workingCopies.filter((workingCopy) =>
 			workingCopy.isModified(),
 		);
 	}
+
 	isDirty(resource: URI, typeId?: string): boolean {
 		const workingCopies = this.mapResourceToWorkingCopies.get(resource);
 
@@ -314,6 +351,7 @@ export class WorkingCopyService
 				}
 			}
 		}
+
 		return false;
 	}
 }

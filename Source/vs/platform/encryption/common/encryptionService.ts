@@ -19,8 +19,11 @@ export const IEncryptionMainService = createDecorator<IEncryptionMainService>(
 export interface IEncryptionMainService extends IEncryptionService {}
 export interface ICommonEncryptionService {
 	readonly _serviceBrand: undefined;
+
 	encrypt(value: string): Promise<string>;
+
 	decrypt(value: string): Promise<string>;
+
 	isEncryptionAvailable(): Promise<boolean>;
 }
 // The values provided to the `password-store` command line switch.

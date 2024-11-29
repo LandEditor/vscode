@@ -28,15 +28,21 @@ export interface IDropdownWithPrimaryActionViewItemOptions {
 	actionRunner?: IActionRunner;
 
 	getKeyBinding?: (action: IAction) => ResolvedKeybinding | undefined;
+
 	hoverDelegate?: IHoverDelegate;
+
 	menuAsChild?: boolean;
+
 	skipTelemetry?: boolean;
 }
 
 export class DropdownWithPrimaryActionViewItem extends BaseActionViewItem {
 	protected readonly _primaryAction: ActionViewItem;
+
 	private _dropdown: DropdownMenuActionViewItem;
+
 	private _container: HTMLElement | null = null;
+
 	private _dropdownContainer: HTMLElement | null = null;
 
 	get onDidChangeDropdownVisibility(): Event<boolean> {
@@ -60,6 +66,7 @@ export class DropdownWithPrimaryActionViewItem extends BaseActionViewItem {
 		@IAccessibilityService _accessibilityService: IAccessibilityService,
 	) {
 		super(null, primaryAction, { hoverDelegate: _options?.hoverDelegate });
+
 		this._primaryAction = new MenuEntryActionViewItem(
 			primaryAction,
 			{ hoverDelegate: _options?.hoverDelegate },
@@ -99,12 +106,15 @@ export class DropdownWithPrimaryActionViewItem extends BaseActionViewItem {
 		super.actionRunner = actionRunner;
 
 		this._primaryAction.actionRunner = actionRunner;
+
 		this._dropdown.actionRunner = actionRunner;
 	}
 
 	override setActionContext(newContext: unknown): void {
 		super.setActionContext(newContext);
+
 		this._primaryAction.setActionContext(newContext);
+
 		this._dropdown.setActionContext(newContext);
 	}
 
@@ -112,17 +122,23 @@ export class DropdownWithPrimaryActionViewItem extends BaseActionViewItem {
 		this._container = container;
 
 		super.render(this._container);
+
 		this._container.classList.add("monaco-dropdown-with-primary");
 
 		const primaryContainer = DOM.$(".action-container");
+
 		primaryContainer.role = "button";
+
 		this._primaryAction.render(
 			DOM.append(this._container, primaryContainer),
 		);
+
 		this._dropdownContainer = DOM.$(".dropdown-action-container");
+
 		this._dropdown.render(
 			DOM.append(this._container, this._dropdownContainer),
 		);
+
 		this._register(
 			DOM.addDisposableListener(
 				primaryContainer,
@@ -132,12 +148,15 @@ export class DropdownWithPrimaryActionViewItem extends BaseActionViewItem {
 
 					if (event.equals(KeyCode.RightArrow)) {
 						this._primaryAction.element!.tabIndex = -1;
+
 						this._dropdown.focus();
+
 						event.stopPropagation();
 					}
 				},
 			),
 		);
+
 		this._register(
 			DOM.addDisposableListener(
 				this._dropdownContainer,
@@ -147,8 +166,11 @@ export class DropdownWithPrimaryActionViewItem extends BaseActionViewItem {
 
 					if (event.equals(KeyCode.LeftArrow)) {
 						this._primaryAction.element!.tabIndex = 0;
+
 						this._dropdown.setFocusable(false);
+
 						this._primaryAction.element?.focus();
+
 						event.stopPropagation();
 					}
 				},
@@ -163,13 +185,16 @@ export class DropdownWithPrimaryActionViewItem extends BaseActionViewItem {
 			this._dropdown.focus();
 		} else {
 			this._primaryAction.element!.tabIndex = 0;
+
 			this._primaryAction.element!.focus();
 		}
 	}
 
 	override blur(): void {
 		this._primaryAction.element!.tabIndex = -1;
+
 		this._dropdown.blur();
+
 		this._container!.blur();
 	}
 
@@ -178,12 +203,14 @@ export class DropdownWithPrimaryActionViewItem extends BaseActionViewItem {
 			this._primaryAction.element!.tabIndex = 0;
 		} else {
 			this._primaryAction.element!.tabIndex = -1;
+
 			this._dropdown.setFocusable(false);
 		}
 	}
 
 	protected override updateEnabled(): void {
 		const disabled = !this.action.enabled;
+
 		this.element?.classList.toggle("disabled", disabled);
 	}
 
@@ -193,6 +220,7 @@ export class DropdownWithPrimaryActionViewItem extends BaseActionViewItem {
 		dropdownIcon?: string,
 	): void {
 		this._dropdown.dispose();
+
 		this._dropdown = new DropdownMenuActionViewItem(
 			dropdownAction,
 			dropdownMenuActions,
@@ -217,6 +245,7 @@ export class DropdownWithPrimaryActionViewItem extends BaseActionViewItem {
 
 	override dispose() {
 		this._primaryAction.dispose();
+
 		this._dropdown.dispose();
 
 		super.dispose();

@@ -36,6 +36,7 @@ class MenuActions extends Disposable {
 	}
 
 	private readonly _onDidChange = this._register(new Emitter<void>());
+
 	readonly onDidChange = this._onDidChange.event;
 
 	private readonly disposables = this._register(new DisposableStore());
@@ -53,6 +54,7 @@ class MenuActions extends Disposable {
 		);
 
 		this._register(this.menu.onDidChange(() => this.updateActions()));
+
 		this.updateActions();
 	}
 
@@ -62,14 +64,18 @@ class MenuActions extends Disposable {
 		const newActions = getActionBarActions(
 			this.menu.getActions(this.options),
 		);
+
 		this._primaryActions = newActions.primary;
+
 		this._secondaryActions = newActions.secondary;
+
 		this.disposables.add(
 			this.updateSubmenus(
 				[...this._primaryActions, ...this._secondaryActions],
 				{},
 			),
 		);
+
 		this._onDidChange.fire();
 	}
 
@@ -91,7 +97,9 @@ class MenuActions extends Disposable {
 							this.contextKeyService,
 						),
 					));
+
 				disposables.add(menu.onDidChange(() => this.updateActions()));
+
 				disposables.add(this.updateSubmenus(action.actions, submenus));
 			}
 		}
@@ -104,6 +112,7 @@ export class CompositeMenuActions extends Disposable {
 	private readonly menuActions: MenuActions;
 
 	private _onDidChange = this._register(new Emitter<void>());
+
 	readonly onDidChange: Event<void> = this._onDidChange.event;
 
 	constructor(

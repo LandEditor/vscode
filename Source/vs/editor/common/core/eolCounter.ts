@@ -26,16 +26,19 @@ export function countEOL(text: string): [number, number, number, StringEOL] {
 			if (eolCount === 0) {
 				firstLineLength = i;
 			}
+
 			eolCount++;
 
 			if (i + 1 < len && text.charCodeAt(i + 1) === CharCode.LineFeed) {
 				// \r\n... case
 				eol |= StringEOL.CRLF;
+
 				i++; // skip \n
 			} else {
 				// \r... case
 				eol |= StringEOL.Invalid;
 			}
+
 			lastLineStart = i + 1;
 		} else if (chr === CharCode.LineFeed) {
 			// \n... case
@@ -44,12 +47,16 @@ export function countEOL(text: string): [number, number, number, StringEOL] {
 			if (eolCount === 0) {
 				firstLineLength = i;
 			}
+
 			eolCount++;
+
 			lastLineStart = i + 1;
 		}
 	}
+
 	if (eolCount === 0) {
 		firstLineLength = text.length;
 	}
+
 	return [eolCount, firstLineLength, text.length - lastLineStart, eol];
 }

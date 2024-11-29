@@ -9,13 +9,16 @@ import { Disposable } from "../utils/dispose";
 
 export class LogLevelMonitor extends Disposable {
 	private static readonly logLevelConfigKey = "typescript.tsserver.log";
+
 	private static readonly logLevelChangedStorageKey =
 		"typescript.tsserver.logLevelChanged";
+
 	private static readonly doNotPromptLogLevelStorageKey =
 		"typescript.tsserver.doNotPromptLogLevel";
 
 	constructor(private readonly context: vscode.ExtensionContext) {
 		super();
+
 		this._register(
 			vscode.workspace.onDidChangeConfiguration(
 				this.onConfigurationChange,
@@ -28,6 +31,7 @@ export class LogLevelMonitor extends Disposable {
 			this.notifyExtendedLogging();
 		}
 	}
+
 	private onConfigurationChange(event: vscode.ConfigurationChangeEvent) {
 		const logLevelChanged = event.affectsConfiguration(
 			LogLevelMonitor.logLevelConfigKey,
@@ -36,11 +40,13 @@ export class LogLevelMonitor extends Disposable {
 		if (!logLevelChanged) {
 			return;
 		}
+
 		this.context.globalState.update(
 			LogLevelMonitor.logLevelChangedStorageKey,
 			new Date(),
 		);
 	}
+
 	private get logLevel(): TsServerLogLevel {
 		return TsServerLogLevel.fromString(
 			vscode.workspace
@@ -64,8 +70,10 @@ export class LogLevelMonitor extends Disposable {
 				return date;
 			}
 		}
+
 		return undefined;
 	}
+
 	private get doNotPrompt(): boolean {
 		return (
 			this.context.globalState.get<boolean | undefined>(
@@ -73,6 +81,7 @@ export class LogLevelMonitor extends Disposable {
 			) || false
 		);
 	}
+
 	private shouldNotifyExtendedLogging(): boolean {
 		const lastChangeMilliseconds = this.lastLogLevelChange
 			? new Date(this.lastLogLevelChange).valueOf()
@@ -89,16 +98,20 @@ export class LogLevelMonitor extends Disposable {
 		) {
 			return true;
 		}
+
 		return false;
 	}
+
 	private notifyExtendedLogging() {
 		const enum Choice {
 			DisableLogging = 0,
 			DoNotShowAgain = 1,
 		}
+
 		interface Item extends vscode.MessageItem {
 			readonly choice: Choice;
 		}
+
 		vscode.window
 			.showInformationMessage<Item>(
 				vscode.l10n.t(
@@ -117,6 +130,7 @@ export class LogLevelMonitor extends Disposable {
 				if (!selection) {
 					return;
 				}
+
 				if (selection.choice === Choice.DisableLogging) {
 					return vscode.workspace
 						.getConfiguration()
@@ -127,6 +141,7 @@ export class LogLevelMonitor extends Disposable {
 						true,
 					);
 				}
+
 				return;
 			});
 	}

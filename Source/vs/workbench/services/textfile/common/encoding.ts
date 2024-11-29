@@ -48,13 +48,18 @@ const AUTO_ENCODING_GUESS_MIN_BYTES = 512 * 8; // with auto guessing we want a l
 const AUTO_ENCODING_GUESS_MAX_BYTES = 512 * 128; // set an upper limit for the number of bytes we pass on to jschardet
 export interface IDecodeStreamOptions {
 	acceptTextOnly: boolean;
+
 	guessEncoding: boolean;
+
 	candidateGuessEncodings: string[];
+
 	minBytesRequiredForDetection?: number;
+
 	overwriteEncoding(detectedEncoding: string | null): Promise<string>;
 }
 export interface IDecodeStreamResult {
 	stream: ReadableStream<string>;
+
 	detected: IDetectedEncodingResult;
 }
 export const enum DecodeStreamErrorKind {
@@ -74,6 +79,7 @@ export class DecodeStreamError extends Error {
 }
 export interface IDecoderStream {
 	write(buffer: Uint8Array): string;
+
 	end(): string | undefined;
 }
 class DecoderStream implements IDecoderStream {
@@ -94,9 +100,11 @@ class DecoderStream implements IDecoderStream {
 			const iconv = await importAMDNodeModule<
 				typeof import("@vscode/iconv-lite-umd")
 			>("@vscode/iconv-lite-umd", "lib/iconv-lite-umd.js");
+
 			decoder = iconv.getDecoder(toNodeEncoding(encoding));
 		} else {
 			const utf8TextDecoder = new TextDecoder();
+
 			decoder = {
 				write(buffer: Uint8Array): string {
 					return utf8TextDecoder.decode(buffer, {
@@ -111,12 +119,16 @@ class DecoderStream implements IDecoderStream {
 				},
 			};
 		}
+
 		return new DecoderStream(decoder);
 	}
+
 	private constructor(private iconvLiteDecoder: IDecoderStream) {}
+
 	write(buffer: Uint8Array): string {
 		return this.iconvLiteDecoder.write(buffer);
 	}
+
 	end(): string | undefined {
 		return this.iconvLiteDecoder.end();
 	}
@@ -172,8 +184,11 @@ export function toDecodeStream(
 				const decoded = decoder.write(
 					VSBuffer.concat(bufferedChunks).buffer,
 				);
+
 				target.write(decoded);
+
 				bufferedChunks.length = 0;
+
 				bytesBuffered = 0;
 				// signal to the outside our detected encoding and final decoder stream
 				resolve({
@@ -183,10 +198,13 @@ export function toDecodeStream(
 			} catch (error) {
 				// Stop handling anything from the source and target
 				cts.cancel();
+
 				target.destroy();
+
 				reject(error);
 			}
 		};
+
 		listenStream(
 			source,
 			{
@@ -198,11 +216,13 @@ export function toDecodeStream(
 					// otherwise we need to buffer the data until the stream is ready
 					else {
 						bufferedChunks.push(chunk);
+
 						bytesBuffered += chunk.byteLength;
 						// buffered enough data for encoding detection, create stream
 						if (bytesBuffered >= minBytesRequiredForDetection) {
 							// pause stream here until the decoder is ready
 							source.pause();
+
 							await createDecoder();
 							// resume stream now that decoder is ready but
 							// outside of this stack to reduce recursion
@@ -248,6 +268,7 @@ export async function toEncodeReadable(
 			if (done) {
 				return null;
 			}
+
 			const chunk = readable.read();
 
 			if (typeof chunk !== "string") {
@@ -268,6 +289,7 @@ export async function toEncodeReadable(
 							return VSBuffer.wrap(Uint8Array.from(UTF16le_BOM));
 					}
 				}
+
 				const leftovers = encoder.end();
 
 				if (leftovers && leftovers.length > 0) {
@@ -275,8 +297,10 @@ export async function toEncodeReadable(
 
 					return VSBuffer.wrap(leftovers);
 				}
+
 				return null;
 			}
+
 			bytesWritten = true;
 
 			return VSBuffer.wrap(encoder.write(chunk));
@@ -294,6 +318,7 @@ export function toNodeEncoding(enc: string | null): string {
 	if (enc === UTF8_with_bom || enc === null) {
 		return UTF8; // iconv does not distinguish UTF 8 with or without BOM, so we need to help it
 	}
+
 	return enc;
 }
 export function detectEncodingByBOMFromBuffer(
@@ -303,6 +328,7 @@ export function detectEncodingByBOMFromBuffer(
 	if (!buffer || bytesRead < UTF16be_BOM.length) {
 		return null;
 	}
+
 	const b0 = buffer.readUInt8(0);
 
 	const b1 = buffer.readUInt8(1);
@@ -314,14 +340,17 @@ export function detectEncodingByBOMFromBuffer(
 	if (b0 === UTF16le_BOM[0] && b1 === UTF16le_BOM[1]) {
 		return UTF16le;
 	}
+
 	if (bytesRead < UTF8_BOM.length) {
 		return null;
 	}
+
 	const b2 = buffer.readUInt8(2);
 	// UTF-8
 	if (b0 === UTF8_BOM[0] && b1 === UTF8_BOM[1] && b2 === UTF8_BOM[2]) {
 		return UTF8_with_bom;
 	}
+
 	return null;
 }
 // we explicitly ignore a specific set of encodings from auto guessing
@@ -357,6 +386,7 @@ async function guessEncodingByBuffer(
 			candidateGuessEncodings = undefined;
 		}
 	}
+
 	const guessed = jschardet.detect(
 		binaryString,
 		candidateGuessEncodings
@@ -367,11 +397,13 @@ async function guessEncodingByBuffer(
 	if (!guessed || !guessed.encoding) {
 		return null;
 	}
+
 	const enc = guessed.encoding.toLowerCase();
 
 	if (0 <= IGNORE_ENCODINGS.indexOf(enc)) {
 		return null; // see comment above why we ignore some encodings
 	}
+
 	return toIconvLiteEncoding(guessed.encoding);
 }
 
@@ -404,6 +436,7 @@ function encodeLatin1(buffer: Uint8Array): string {
 	for (let i = 0; i < buffer.length; i++) {
 		result += String.fromCharCode(buffer[i]);
 	}
+
 	return result;
 }
 /**
@@ -449,16 +482,19 @@ export function toCanonicalName(enc: string): string {
 			if (m) {
 				return "windows-" + m[1];
 			}
+
 			return enc;
 		}
 	}
 }
 export interface IDetectedEncodingResult {
 	encoding: string | null;
+
 	seemsBinary: boolean;
 }
 export interface IReadResult {
 	buffer: VSBuffer | null;
+
 	bytesRead: number;
 }
 export function detectEncodingFromBuffer(
@@ -496,7 +532,9 @@ export function detectEncodingFromBuffer(
 		// that is using 4 bytes to encode a character).
 		for (
 			let i = 0;
+
 			i < bytesRead && i < ZERO_BYTE_DETECTION_BUFFER_MAX_LEN;
+
 			i++
 		) {
 			const isEndian = i % 2 === 1; // assume 2-byte sequences typical for UTF-16
@@ -547,15 +585,21 @@ export function detectEncodingFromBuffer(
 			};
 		});
 	}
+
 	return { seemsBinary, encoding };
 }
 type EncodingsMap = {
 	[encoding: string]: {
 		labelLong: string;
+
 		labelShort: string;
+
 		order: number;
+
 		encodeOnly?: boolean;
+
 		alias?: string;
+
 		guessableName?: string;
 	};
 };
@@ -828,5 +872,6 @@ export const GUESSABLE_ENCODINGS: EncodingsMap = (() => {
 			guessableEncodings[encoding] = SUPPORTED_ENCODINGS[encoding];
 		}
 	}
+
 	return guessableEncodings;
 })();

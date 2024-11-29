@@ -15,10 +15,13 @@ import { NotebookFindInputFilterButton } from "../../notebook/browser/contrib/fi
 
 export class SearchFindInput extends ContextScopedFindInput {
 	private _findFilter: NotebookFindInputFilterButton;
+
 	private _filterChecked: boolean = false;
+
 	private readonly _onDidChangeAIToggle = this._register(
 		new Emitter<boolean>(),
 	);
+
 	public readonly onDidChangeAIToggle = this._onDidChangeAIToggle.event;
 
 	constructor(
@@ -32,6 +35,7 @@ export class SearchFindInput extends ContextScopedFindInput {
 		filterStartVisiblitity: boolean,
 	) {
 		super(container, contextViewProvider, options, contextKeyService);
+
 		this._findFilter = this._register(
 			new NotebookFindInputFilterButton(
 				filters,
@@ -44,11 +48,16 @@ export class SearchFindInput extends ContextScopedFindInput {
 				),
 			),
 		);
+
 		this._updatePadding();
+
 		this.controls.appendChild(this._findFilter.container);
+
 		this._findFilter.container.classList.add("monaco-custom-toggle");
+
 		this.filterVisible = filterStartVisiblitity;
 	}
+
 	private _updatePadding() {
 		this.inputBox.paddingRight =
 			(this.caseSensitive?.visible ? this.caseSensitive.width() : 0) +
@@ -56,11 +65,15 @@ export class SearchFindInput extends ContextScopedFindInput {
 			(this.regex?.visible ? this.regex.width() : 0) +
 			(this._findFilter.visible ? this._findFilter.width() : 0);
 	}
+
 	set filterVisible(visible: boolean) {
 		this._findFilter.visible = visible;
+
 		this.updateFilterStyles();
+
 		this._updatePadding();
 	}
+
 	override setEnabled(enabled: boolean) {
 		super.setEnabled(enabled);
 
@@ -70,6 +83,7 @@ export class SearchFindInput extends ContextScopedFindInput {
 			this.regex?.disable();
 		}
 	}
+
 	updateFilterStyles() {
 		// filter is checked if it's in a non-default state
 		this._filterChecked =

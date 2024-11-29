@@ -56,15 +56,21 @@ import {
 
 export interface ICommandQuickPick extends IPickerQuickAccessItem {
 	readonly commandId: string;
+
 	readonly commandWhen?: string;
+
 	readonly commandAlias?: string;
+
 	readonly commandDescription?: ILocalizedString;
+
 	tfIdfScore?: number;
+
 	readonly args?: any[];
 }
 export interface ICommandsQuickAccessOptions
 	extends IPickerQuickAccessProviderOptions<ICommandQuickPick> {
 	readonly showAlias: boolean;
+
 	suggestedCommandIds?: Set<string>;
 }
 export abstract class AbstractCommandsQuickAccessProvider
@@ -72,16 +78,21 @@ export abstract class AbstractCommandsQuickAccessProvider
 	implements IDisposable
 {
 	static PREFIX = ">";
+
 	private static readonly TFIDF_THRESHOLD = 0.5;
+
 	private static readonly TFIDF_MAX_RESULTS = 5;
+
 	private static WORD_FILTER = or(
 		matchesPrefix,
 		matchesWords,
 		matchesContiguousSubString,
 	);
+
 	private readonly commandsHistory = this._register(
 		this.instantiationService.createInstance(CommandsHistory),
 	);
+
 	protected override readonly options: ICommandsQuickAccessOptions;
 
 	constructor(
@@ -98,8 +109,10 @@ export abstract class AbstractCommandsQuickAccessProvider
 		private readonly dialogService: IDialogService,
 	) {
 		super(AbstractCommandsQuickAccessProvider.PREFIX, options);
+
 		this.options = options;
 	}
+
 	protected async _getPicks(
 		filter: string,
 		_disposables: DisposableStore,
@@ -112,8 +125,10 @@ export abstract class AbstractCommandsQuickAccessProvider
 		if (token.isCancellationRequested) {
 			return [];
 		}
+
 		const runTfidf = createSingleCallFunction(() => {
 			const tfidf = new TfIdfCalculator();
+
 			tfidf.updateDocuments(
 				allCommandPicks.map((commandPick) => ({
 					key: commandPick.commandId,
@@ -158,6 +173,7 @@ export abstract class AbstractCommandsQuickAccessProvider
 						? aliasHighlights
 						: undefined,
 				};
+
 				filteredCommandPicks.push(commandPick);
 			}
 			// Also add if we have a 100% command ID match
@@ -178,6 +194,7 @@ export abstract class AbstractCommandsQuickAccessProvider
 
 				if (tfidfScore) {
 					commandPick.tfIdfScore = tfidfScore.score;
+
 					filteredCommandPicks.push(commandPick);
 				}
 			}
@@ -192,6 +209,7 @@ export abstract class AbstractCommandsQuickAccessProvider
 
 			if (existingCommandForLabel) {
 				commandPick.description = commandPick.commandId;
+
 				existingCommandForLabel.description =
 					existingCommandForLabel.commandId;
 			} else {
@@ -205,12 +223,14 @@ export abstract class AbstractCommandsQuickAccessProvider
 				if (commandPickA.tfIdfScore === commandPickB.tfIdfScore) {
 					return commandPickA.label.localeCompare(commandPickB.label); // prefer lexicographically smaller command
 				}
+
 				return commandPickB.tfIdfScore - commandPickA.tfIdfScore; // prefer higher tf-idf score
 			} else if (commandPickA.tfIdfScore) {
 				return 1; // first command has a score but other doesn't so other wins
 			} else if (commandPickB.tfIdfScore) {
 				return -1; // other command has a score but first doesn't so first wins
 			}
+
 			const commandACounter = this.commandsHistory.peek(
 				commandPickA.commandId,
 			);
@@ -222,12 +242,15 @@ export abstract class AbstractCommandsQuickAccessProvider
 			if (commandACounter && commandBCounter) {
 				return commandACounter > commandBCounter ? -1 : 1; // use more recently used command before older
 			}
+
 			if (commandACounter) {
 				return -1; // first command was used, so it wins over the non used one
 			}
+
 			if (commandBCounter) {
 				return 1; // other command was used so it wins over the command
 			}
+
 			if (this.options.suggestedCommandIds) {
 				const commandASuggestion = this.options.suggestedCommandIds.has(
 					commandPickA.commandId,
@@ -240,9 +263,11 @@ export abstract class AbstractCommandsQuickAccessProvider
 				if (commandASuggestion && commandBSuggestion) {
 					return 0; // honor the order of the array
 				}
+
 				if (commandASuggestion) {
 					return -1; // first command was suggested, so it wins over the non suggested one
 				}
+
 				if (commandBSuggestion) {
 					return 1; // other command was suggested so it wins over the command
 				}
@@ -267,13 +292,16 @@ export abstract class AbstractCommandsQuickAccessProvider
 					type: "separator",
 					label: localize("recentlyUsed", "recently used"),
 				});
+
 				addOtherSeparator = true;
 			}
+
 			if (addSuggestedSeparator && commandPick.tfIdfScore !== undefined) {
 				commandPicks.push({
 					type: "separator",
 					label: localize("suggested", "similar commands"),
 				});
+
 				addSuggestedSeparator = false;
 			}
 			// Separator: commonly used
@@ -287,7 +315,9 @@ export abstract class AbstractCommandsQuickAccessProvider
 					type: "separator",
 					label: localize("commonlyUsed", "commonly used"),
 				});
+
 				addOtherSeparator = true;
+
 				addCommonlyUsedSeparator = false;
 			}
 			// Separator: other commands
@@ -301,14 +331,17 @@ export abstract class AbstractCommandsQuickAccessProvider
 					type: "separator",
 					label: localize("morecCommands", "other commands"),
 				});
+
 				addOtherSeparator = false;
 			}
 			// Command
 			commandPicks.push(this.toCommandPick(commandPick, runOptions));
 		}
+
 		if (!this.hasAdditionalCommandPicks(filter, token)) {
 			return commandPicks;
 		}
+
 		return {
 			picks: commandPicks,
 			additionalPicks: (async (): Promise<Picks<ICommandQuickPick>> => {
@@ -323,6 +356,7 @@ export abstract class AbstractCommandsQuickAccessProvider
 				if (token.isCancellationRequested) {
 					return [];
 				}
+
 				const commandPicks: Array<
 					ICommandQuickPick | IQuickPickSeparator
 				> = additionalCommandPicks.map((commandPick) =>
@@ -339,10 +373,12 @@ export abstract class AbstractCommandsQuickAccessProvider
 						label: localize("suggested", "similar commands"),
 					});
 				}
+
 				return commandPicks;
 			})(),
 		};
 	}
+
 	private toCommandPick(
 		commandPick: ICommandQuickPick | IQuickPickSeparator,
 		runOptions?: IQuickAccessProviderRunOptions,
@@ -350,6 +386,7 @@ export abstract class AbstractCommandsQuickAccessProvider
 		if (commandPick.type === "separator") {
 			return commandPick;
 		}
+
 		const keybinding = this.keybindingService.lookupKeybinding(
 			commandPick.commandId,
 		);
@@ -419,19 +456,24 @@ export abstract class AbstractCommandsQuickAccessProvider
 		if (commandAlias && commandAlias !== label) {
 			chunk += ` - ${commandAlias}`;
 		}
+
 		if (commandDescription && commandDescription.value !== label) {
 			// If the original is the same as the value, don't add it
 			chunk += ` - ${commandDescription.value === commandDescription.original ? commandDescription.value : `${commandDescription.value} (${commandDescription.original})`}`;
 		}
+
 		return chunk;
 	}
+
 	protected abstract getCommandPicks(
 		token: CancellationToken,
 	): Promise<Array<ICommandQuickPick>>;
+
 	protected abstract hasAdditionalCommandPicks(
 		filter: string,
 		token: CancellationToken,
 	): boolean;
+
 	protected abstract getAdditionalCommandPicks(
 		allPicks: ICommandQuickPick[],
 		picksSoFar: ICommandQuickPick[],
@@ -441,8 +483,10 @@ export abstract class AbstractCommandsQuickAccessProvider
 }
 interface ISerializedCommandHistory {
 	readonly usesLRU?: boolean;
+
 	readonly entries: {
 		key: string;
+
 		value: number;
 	}[];
 }
@@ -450,17 +494,24 @@ interface ICommandsQuickAccessConfiguration {
 	readonly workbench: {
 		readonly commandPalette: {
 			readonly history: number;
+
 			readonly preserveInput: boolean;
 		};
 	};
 }
 export class CommandsHistory extends Disposable {
 	static readonly DEFAULT_COMMANDS_HISTORY_LENGTH = 50;
+
 	private static readonly PREF_KEY_CACHE = "commandPalette.mru.cache";
+
 	private static readonly PREF_KEY_COUNTER = "commandPalette.mru.counter";
+
 	private static cache: LRUCache<string, number> | undefined;
+
 	private static counter = 1;
+
 	private static hasChanges = false;
+
 	private configuredCommandsHistoryLength = 0;
 
 	constructor(
@@ -472,16 +523,21 @@ export class CommandsHistory extends Disposable {
 		private readonly logService: ILogService,
 	) {
 		super();
+
 		this.updateConfiguration();
+
 		this.load();
+
 		this.registerListeners();
 	}
+
 	private registerListeners(): void {
 		this._register(
 			this.configurationService.onDidChangeConfiguration((e) =>
 				this.updateConfiguration(e),
 			),
 		);
+
 		this._register(
 			this.storageService.onWillSaveState((e) => {
 				if (e.reason === WillSaveStateReason.SHUTDOWN) {
@@ -493,10 +549,12 @@ export class CommandsHistory extends Disposable {
 			}),
 		);
 	}
+
 	private updateConfiguration(e?: IConfigurationChangeEvent): void {
 		if (e && !e.affectsConfiguration("workbench.commandPalette.history")) {
 			return;
 		}
+
 		this.configuredCommandsHistoryLength =
 			CommandsHistory.getConfiguredCommandHistoryLength(
 				this.configurationService,
@@ -507,9 +565,11 @@ export class CommandsHistory extends Disposable {
 			CommandsHistory.cache.limit !== this.configuredCommandsHistoryLength
 		) {
 			CommandsHistory.cache.limit = this.configuredCommandsHistoryLength;
+
 			CommandsHistory.hasChanges = true;
 		}
 	}
+
 	private load(): void {
 		const raw = this.storageService.get(
 			CommandsHistory.PREF_KEY_CACHE,
@@ -527,6 +587,7 @@ export class CommandsHistory extends Disposable {
 				);
 			}
 		}
+
 		const cache = (CommandsHistory.cache = new LRUCache<string, number>(
 			this.configuredCommandsHistoryLength,
 			1,
@@ -535,6 +596,7 @@ export class CommandsHistory extends Disposable {
 		if (serializedCache) {
 			let entries: {
 				key: string;
+
 				value: number;
 			}[];
 
@@ -545,52 +607,65 @@ export class CommandsHistory extends Disposable {
 					(a, b) => a.value - b.value,
 				);
 			}
+
 			entries.forEach((entry) => cache.set(entry.key, entry.value));
 		}
+
 		CommandsHistory.counter = this.storageService.getNumber(
 			CommandsHistory.PREF_KEY_COUNTER,
 			StorageScope.PROFILE,
 			CommandsHistory.counter,
 		);
 	}
+
 	push(commandId: string): void {
 		if (!CommandsHistory.cache) {
 			return;
 		}
+
 		CommandsHistory.cache.set(commandId, CommandsHistory.counter++); // set counter to command
 		CommandsHistory.hasChanges = true;
 	}
+
 	peek(commandId: string): number | undefined {
 		return CommandsHistory.cache?.peek(commandId);
 	}
+
 	private saveState(): void {
 		if (!CommandsHistory.cache) {
 			return;
 		}
+
 		if (!CommandsHistory.hasChanges) {
 			return;
 		}
+
 		const serializedCache: ISerializedCommandHistory = {
 			usesLRU: true,
 			entries: [],
 		};
+
 		CommandsHistory.cache.forEach((value, key) =>
 			serializedCache.entries.push({ key, value }),
 		);
+
 		this.storageService.store(
 			CommandsHistory.PREF_KEY_CACHE,
 			JSON.stringify(serializedCache),
 			StorageScope.PROFILE,
 			StorageTarget.USER,
 		);
+
 		this.storageService.store(
 			CommandsHistory.PREF_KEY_COUNTER,
 			CommandsHistory.counter,
 			StorageScope.PROFILE,
 			StorageTarget.USER,
 		);
+
 		CommandsHistory.hasChanges = false;
 	}
+
 	static getConfiguredCommandHistoryLength(
 		configurationService: IConfigurationService,
 	): number {
@@ -604,8 +679,10 @@ export class CommandsHistory extends Disposable {
 		if (typeof configuredCommandHistoryLength === "number") {
 			return configuredCommandHistoryLength;
 		}
+
 		return CommandsHistory.DEFAULT_COMMANDS_HISTORY_LENGTH;
 	}
+
 	static clearHistory(
 		configurationService: IConfigurationService,
 		storageService: IStorageService,
@@ -614,10 +691,13 @@ export class CommandsHistory extends Disposable {
 			CommandsHistory.getConfiguredCommandHistoryLength(
 				configurationService,
 			);
+
 		CommandsHistory.cache = new LRUCache<string, number>(
 			commandHistoryLength,
 		);
+
 		CommandsHistory.counter = 1;
+
 		CommandsHistory.hasChanges = true;
 	}
 }

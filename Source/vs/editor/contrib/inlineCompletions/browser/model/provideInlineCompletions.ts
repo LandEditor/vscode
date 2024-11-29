@@ -77,6 +77,7 @@ export async function provideInlineCompletions(
 		if (!provider.yieldsToGroupIds) {
 			return [];
 		}
+
 		const result: InlineCompletionsProvider<any>[] = [];
 
 		for (const groupId of provider.yieldsToGroupIds || []) {
@@ -86,6 +87,7 @@ export async function provideInlineCompletions(
 				result.push(p);
 			}
 		}
+
 		return result;
 	}
 
@@ -120,6 +122,7 @@ export async function provideInlineCompletions(
 		} finally {
 			seen.delete(provider);
 		}
+
 		return undefined;
 	}
 
@@ -146,6 +149,7 @@ export async function provideInlineCompletions(
 		const deferredPromise = new DeferredPromise<
 			InlineCompletionList | undefined
 		>();
+
 		states.set(provider, deferredPromise.p);
 
 		(async () => {
@@ -201,6 +205,7 @@ export async function provideInlineCompletions(
 		if (!result) {
 			return undefined;
 		}
+
 		const list = new InlineCompletionList(result, provider);
 
 		runWhenCancelled(token, () => list.removeRef());
@@ -225,6 +230,7 @@ export async function provideInlineCompletions(
 		model,
 		languageConfigurationService,
 	);
+
 	tokenSource.dispose(true); // This disposes results that are not referenced.
 	return result;
 }
@@ -241,6 +247,7 @@ function runWhenCancelled(
 	} else {
 		const listener = token.onCancellationRequested(() => {
 			listener.dispose();
+
 			callback();
 		});
 
@@ -267,16 +274,20 @@ async function addRefAndCreateResult(
 		if (!completions) {
 			continue;
 		}
+
 		completions.addRef();
+
 		lists.push(completions);
 
 		for (const item of completions.inlineCompletions.items) {
 			if (!context.includeInlineEdits && item.isInlineEdit) {
 				continue;
 			}
+
 			if (!context.includeInlineCompletions && !item.isInlineEdit) {
 				continue;
 			}
+
 			const inlineCompletionItem = InlineCompletionItem.from(
 				item,
 				completions,
@@ -444,9 +455,11 @@ export class InlineCompletionItem {
 				snippet.children[0] instanceof Text
 			) {
 				insertText = snippet.children[0].value;
+
 				snippetInfo = undefined;
 			} else {
 				insertText = snippet.toString();
+
 				snippetInfo = {
 					snippet: inlineCompletion.insertText.snippet,
 					range: range,
@@ -494,12 +507,14 @@ export class InlineCompletionItem {
 		readonly source: InlineCompletionList,
 	) {
 		filterText = filterText.replace(/\r\n|\r/g, "\n");
+
 		insertText = filterText.replace(/\r\n|\r/g, "\n");
 	}
 
 	public get didShow(): boolean {
 		return this._didCallShow;
 	}
+
 	public markAsShown(): void {
 		this._didCallShow = true;
 	}

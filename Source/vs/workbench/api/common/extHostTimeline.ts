@@ -48,14 +48,18 @@ export const IExtHostTimeline =
 
 export class ExtHostTimeline implements IExtHostTimeline {
 	declare readonly _serviceBrand: undefined;
+
 	private _proxy: MainThreadTimelineShape;
+
 	private _providers = new Map<
 		string,
 		{
 			provider: TimelineProvider;
+
 			extension: ExtensionIdentifier;
 		}
 	>();
+
 	private _itemsBySourceAndUriMap = new Map<
 		string,
 		Map<string | undefined, Map<string, vscode.TimelineItem>>
@@ -63,6 +67,7 @@ export class ExtHostTimeline implements IExtHostTimeline {
 
 	constructor(mainContext: IMainContext, commands: ExtHostCommands) {
 		this._proxy = mainContext.getProxy(MainContext.MainThreadTimeline);
+
 		commands.registerArgumentProcessor({
 			processArgument: (arg, extension) => {
 				if (arg && arg.$mid === MarshalledId.TimelineActionContext) {
@@ -86,10 +91,12 @@ export class ExtHostTimeline implements IExtHostTimeline {
 						return undefined;
 					}
 				}
+
 				return arg;
 			},
 		});
 	}
+
 	async $getTimeline(
 		id: string,
 		uri: UriComponents,
@@ -100,6 +107,7 @@ export class ExtHostTimeline implements IExtHostTimeline {
 
 		return item?.provider.provideTimeline(URI.revive(uri), options, token);
 	}
+
 	registerTimelineProvider(
 		scheme: string | string[],
 		provider: vscode.TimelineProvider,
@@ -128,6 +136,7 @@ export class ExtHostTimeline implements IExtHostTimeline {
 				this,
 			);
 		}
+
 		const itemsBySourceAndUriMap = this._itemsBySourceAndUriMap;
 
 		return this.registerTimelineProviderCore(
@@ -144,8 +153,10 @@ export class ExtHostTimeline implements IExtHostTimeline {
 						timelineDisposables.clear();
 						// For now, only allow the caching of a single Uri
 						// itemsBySourceAndUriMap.get(provider.id)?.get(getUriKey(uri))?.clear();
+
 						itemsBySourceAndUriMap.get(provider.id)?.clear();
 					}
+
 					const result = await provider.provideTimeline(
 						uri,
 						options,
@@ -168,13 +179,16 @@ export class ExtHostTimeline implements IExtHostTimeline {
 					for (const sourceMap of itemsBySourceAndUriMap.values()) {
 						sourceMap.get(provider.id)?.clear();
 					}
+
 					disposable?.dispose();
+
 					timelineDisposables.dispose();
 				},
 			},
 			extensionId,
 		);
 	}
+
 	private convertTimelineItem(
 		source: string,
 		commandConverter: CommandsConverter,
@@ -188,20 +202,26 @@ export class ExtHostTimeline implements IExtHostTimeline {
 
 				if (itemsByUri === undefined) {
 					itemsByUri = new Map();
+
 					this._itemsBySourceAndUriMap.set(source, itemsByUri);
 				}
+
 				const uriKey = getUriKey(uri);
+
 				items = itemsByUri.get(uriKey);
 
 				if (items === undefined) {
 					items = new Map();
+
 					itemsByUri.set(uriKey, items);
 				}
 			}
+
 			return (item: vscode.TimelineItem): TimelineItem => {
 				const { iconPath, ...props } = item;
 
 				const handle = `${source}|${item.id ?? item.timestamp}`;
+
 				items?.set(handle, item);
 
 				let icon;
@@ -215,14 +235,17 @@ export class ExtHostTimeline implements IExtHostTimeline {
 						themeIcon = { id: iconPath.id, color: iconPath.color };
 					} else if (URI.isUri(iconPath)) {
 						icon = iconPath;
+
 						iconDark = iconPath;
 					} else {
 						({ light: icon, dark: iconDark } = iconPath as {
 							light: URI;
+
 							dark: URI;
 						});
 					}
 				}
+
 				let tooltip;
 
 				if (MarkdownStringType.isMarkdownString(props.tooltip)) {
@@ -237,13 +260,16 @@ export class ExtHostTimeline implements IExtHostTimeline {
 					console.warn(
 						"Using deprecated TimelineItem.detail, migrate to TimelineItem.tooltip",
 					);
+
 					tooltip = MarkdownString.from((props as any).detail);
 				} else if (isString((props as any).detail)) {
 					console.warn(
 						"Using deprecated TimelineItem.detail, migrate to TimelineItem.tooltip",
 					);
+
 					tooltip = (props as any).detail;
 				}
+
 				return {
 					...props,
 					id: props.id ?? undefined,
@@ -261,6 +287,7 @@ export class ExtHostTimeline implements IExtHostTimeline {
 			};
 		};
 	}
+
 	private registerTimelineProviderCore(
 		provider: TimelineProvider,
 		extension: ExtensionIdentifier,
@@ -272,19 +299,24 @@ export class ExtHostTimeline implements IExtHostTimeline {
 		if (existing) {
 			throw new Error(`Timeline Provider ${provider.id} already exists.`);
 		}
+
 		this._proxy.$registerTimelineProvider({
 			id: provider.id,
 			label: provider.label,
 			scheme: provider.scheme,
 		});
+
 		this._providers.set(provider.id, { provider, extension });
 
 		return toDisposable(() => {
 			for (const sourceMap of this._itemsBySourceAndUriMap.values()) {
 				sourceMap.get(provider.id)?.clear();
 			}
+
 			this._providers.delete(provider.id);
+
 			this._proxy.$unregisterTimelineProvider(provider.id);
+
 			provider.dispose();
 		});
 	}

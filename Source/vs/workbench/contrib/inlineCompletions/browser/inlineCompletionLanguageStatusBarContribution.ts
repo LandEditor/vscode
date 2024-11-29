@@ -16,6 +16,7 @@ export class InlineCompletionLanguageStatusBarContribution extends Disposable {
 	public static readonly hot = createHotClass(
 		InlineCompletionLanguageStatusBarContribution,
 	);
+
 	public static Id =
 		"vs.editor.contrib.inlineCompletionLanguageStatusBarContribution";
 	// TODO always enable this!
@@ -35,24 +36,29 @@ export class InlineCompletionLanguageStatusBarContribution extends Disposable {
 		super();
 
 		const c = InlineCompletionsController.get(this._editor);
+
 		this._register(
 			autorunWithStore((reader, store) => {
 				// TODO always enable this feature!
 				if (!this._inlineCompletionInlineEdits.read(reader)) {
 					return;
 				}
+
 				const model = c?.model.read(reader);
 
 				if (!model) {
 					return;
 				}
+
 				const status = model.status.read(reader);
 
 				const statusMap: Record<
 					typeof status,
 					{
 						shortLabel: string;
+
 						label: string;
+
 						loading: boolean;
 					}
 				> = {
@@ -77,6 +83,7 @@ export class InlineCompletionLanguageStatusBarContribution extends Disposable {
 						loading: false,
 					},
 				};
+
 				store.add(
 					this._languageStatusService.addStatus({
 						accessibilityInfo: undefined,

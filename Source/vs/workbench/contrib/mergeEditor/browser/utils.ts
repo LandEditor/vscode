@@ -25,8 +25,11 @@ export function setStyle(
 	element: HTMLElement,
 	style: {
 		width?: number | string;
+
 		height?: number | string;
+
 		left?: number | string;
+
 		top?: number | string;
 	},
 ): void {
@@ -44,6 +47,7 @@ export function applyObservableDecorations(
 	const d = new DisposableStore();
 
 	let decorationIds: string[] = [];
+
 	d.add(
 		autorunOpts(
 			{
@@ -52,12 +56,14 @@ export function applyObservableDecorations(
 			},
 			(reader) => {
 				const d = decorations.read(reader);
+
 				editor.changeDecorations((a) => {
 					decorationIds = a.deltaDecorations(decorationIds, d);
 				});
 			},
 		),
 	);
+
 	d.add({
 		dispose: () => {
 			editor.changeDecorations((a) => {
@@ -74,6 +80,7 @@ export function* leftJoin<TLeft, TRight>(
 	compare: (left: TLeft, right: TRight) => CompareResult,
 ): IterableIterator<{
 	left: TLeft;
+
 	rights: TRight[];
 }> {
 	const rightQueue = new ArrayQueue(right);
@@ -98,6 +105,7 @@ export function* join<TLeft, TRight>(
 	compare: (left: TLeft, right: TRight) => CompareResult,
 ): IterableIterator<{
 	left?: TLeft;
+
 	rights: TRight[];
 }> {
 	const rightQueue = new ArrayQueue(right);
@@ -110,6 +118,7 @@ export function* join<TLeft, TRight>(
 		if (skipped) {
 			yield { rights: skipped };
 		}
+
 		const equals = rightQueue.takeWhile((rightElement) =>
 			CompareResult.isNeitherLessOrGreaterThan(
 				compare(leftElement, rightElement),
@@ -135,10 +144,12 @@ export function thenIfNotDisposed<T>(
 	then: () => void,
 ): IDisposable {
 	let disposed = false;
+
 	promise.then(() => {
 		if (disposed) {
 			return;
 		}
+
 		then();
 	});
 
@@ -155,6 +166,7 @@ export function deepMerge<T extends {}>(source1: T, source2: Partial<T>): T {
 	for (const key in source1) {
 		result[key] = source1[key];
 	}
+
 	for (const key in source2) {
 		const source2Value = source2[key];
 
@@ -168,10 +180,12 @@ export function deepMerge<T extends {}>(source1: T, source2: Partial<T>): T {
 			result[key] = source2Value as any;
 		}
 	}
+
 	return result;
 }
 export class PersistentStore<T> {
 	private hasValue = false;
+
 	private value: Readonly<T> | undefined = undefined;
 
 	constructor(
@@ -179,6 +193,7 @@ export class PersistentStore<T> {
 		@IStorageService
 		private readonly storageService: IStorageService,
 	) {}
+
 	public get(): Readonly<T> | undefined {
 		if (!this.hasValue) {
 			const value = this.storageService.get(
@@ -193,12 +208,16 @@ export class PersistentStore<T> {
 					onUnexpectedError(e);
 				}
 			}
+
 			this.hasValue = true;
 		}
+
 		return this.value;
 	}
+
 	public set(newValue: T | undefined): void {
 		this.value = newValue;
+
 		this.storageService.store(
 			this.key,
 			JSON.stringify(this.value),

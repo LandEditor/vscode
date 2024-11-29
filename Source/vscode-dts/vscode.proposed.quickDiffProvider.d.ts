@@ -17,6 +17,7 @@ declare module "vscode" {
 
 	interface QuickDiffProvider {
 		label?: string;
+
 		readonly visible?: boolean;
 	}
 }

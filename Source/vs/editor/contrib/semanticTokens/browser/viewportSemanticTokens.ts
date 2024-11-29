@@ -42,6 +42,7 @@ export class ViewportSemanticTokensContribution
 	implements IEditorContribution
 {
 	public static readonly ID = "editor.contrib.viewportSemanticTokens";
+
 	public static get(
 		editor: ICodeEditor,
 	): ViewportSemanticTokensContribution | null {
@@ -49,10 +50,15 @@ export class ViewportSemanticTokensContribution
 			ViewportSemanticTokensContribution.ID,
 		);
 	}
+
 	private readonly _editor: ICodeEditor;
+
 	private readonly _provider: LanguageFeatureRegistry<DocumentRangeSemanticTokensProvider>;
+
 	private readonly _debounceInformation: IFeatureDebounceInformation;
+
 	private readonly _tokenizeViewport: RunOnceScheduler;
+
 	private _outstandingRequests: CancelablePromise<any>[];
 
 	constructor(
@@ -69,17 +75,22 @@ export class ViewportSemanticTokensContribution
 		languageFeaturesService: ILanguageFeaturesService,
 	) {
 		super();
+
 		this._editor = editor;
+
 		this._provider =
 			languageFeaturesService.documentRangeSemanticTokensProvider;
+
 		this._debounceInformation = languageFeatureDebounceService.for(
 			this._provider,
 			"DocumentRangeSemanticTokens",
 			{ min: 100, max: 500 },
 		);
+
 		this._tokenizeViewport = this._register(
 			new RunOnceScheduler(() => this._tokenizeViewportNow(), 100),
 		);
+
 		this._outstandingRequests = [];
 
 		const scheduleTokenizeViewport = () => {
@@ -89,51 +100,66 @@ export class ViewportSemanticTokensContribution
 				);
 			}
 		};
+
 		this._register(
 			this._editor.onDidScrollChange(() => {
 				scheduleTokenizeViewport();
 			}),
 		);
+
 		this._register(
 			this._editor.onDidChangeModel(() => {
 				this._cancelAll();
+
 				scheduleTokenizeViewport();
 			}),
 		);
+
 		this._register(
 			this._editor.onDidChangeModelContent((e) => {
 				this._cancelAll();
+
 				scheduleTokenizeViewport();
 			}),
 		);
+
 		this._register(
 			this._provider.onDidChange(() => {
 				this._cancelAll();
+
 				scheduleTokenizeViewport();
 			}),
 		);
+
 		this._register(
 			this._configurationService.onDidChangeConfiguration((e) => {
 				if (e.affectsConfiguration(SEMANTIC_HIGHLIGHTING_SETTING_ID)) {
 					this._cancelAll();
+
 					scheduleTokenizeViewport();
 				}
 			}),
 		);
+
 		this._register(
 			this._themeService.onDidColorThemeChange(() => {
 				this._cancelAll();
+
 				scheduleTokenizeViewport();
 			}),
 		);
+
 		scheduleTokenizeViewport();
 	}
+
 	private _cancelAll(): void {
 		for (const request of this._outstandingRequests) {
 			request.cancel();
 		}
+
 		this._outstandingRequests = [];
 	}
+
 	private _removeOutstandingRequest(req: CancelablePromise<any>): void {
 		for (let i = 0, len = this._outstandingRequests.length; i < len; i++) {
 			if (this._outstandingRequests[i] === req) {
@@ -143,15 +169,18 @@ export class ViewportSemanticTokensContribution
 			}
 		}
 	}
+
 	private _tokenizeViewportNow(): void {
 		if (!this._editor.hasModel()) {
 			return;
 		}
+
 		const model = this._editor.getModel();
 
 		if (model.tokenization.hasCompleteSemanticTokens()) {
 			return;
 		}
+
 		if (
 			!isSemanticColoringEnabled(
 				model,
@@ -162,20 +191,26 @@ export class ViewportSemanticTokensContribution
 			if (model.tokenization.hasSomeSemanticTokens()) {
 				model.tokenization.setSemanticTokens(null, false);
 			}
+
 			return;
 		}
+
 		if (!hasDocumentRangeSemanticTokensProvider(this._provider, model)) {
 			if (model.tokenization.hasSomeSemanticTokens()) {
 				model.tokenization.setSemanticTokens(null, false);
 			}
+
 			return;
 		}
+
 		const visibleRanges =
 			this._editor.getVisibleRangesPlusViewportAboveBelow();
+
 		this._outstandingRequests = this._outstandingRequests.concat(
 			visibleRanges.map((range) => this._requestRange(model, range)),
 		);
 	}
+
 	private _requestRange(
 		model: ITextModel,
 		range: Range,
@@ -194,6 +229,7 @@ export class ViewportSemanticTokensContribution
 		);
 
 		const sw = new StopWatch(false);
+
 		request
 			.then((r) => {
 				this._debounceInformation.update(model, sw.elapsed());
@@ -206,10 +242,12 @@ export class ViewportSemanticTokensContribution
 				) {
 					return;
 				}
+
 				const { provider, tokens: result } = r;
 
 				const styling =
 					this._semanticTokensStylingService.getStyling(provider);
+
 				model.tokenization.setPartialSemanticTokens(
 					range,
 					toMultilineTokens2(result, styling, model.getLanguageId()),

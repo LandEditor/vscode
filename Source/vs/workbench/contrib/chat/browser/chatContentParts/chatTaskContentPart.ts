@@ -28,6 +28,7 @@ export class ChatTaskContentPart
 	implements IChatContentPart
 {
 	public readonly domNode: HTMLElement;
+
 	public readonly onDidChangeHeight: Event<void>;
 
 	constructor(
@@ -49,8 +50,11 @@ export class ChatTaskContentPart
 					contentReferencesListPool,
 				),
 			);
+
 			this.domNode = dom.$(".chat-progress-task");
+
 			this.domNode.appendChild(refsPart.domNode);
+
 			this.onDidChangeHeight = refsPart.onDidChangeHeight;
 		} else {
 			// #217645
@@ -66,7 +70,9 @@ export class ChatTaskContentPart
 					true,
 				),
 			);
+
 			this.domNode = progressPart.domNode;
+
 			this.onDidChangeHeight = Event.None;
 		}
 	}

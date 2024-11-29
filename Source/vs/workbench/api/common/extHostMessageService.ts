@@ -30,6 +30,7 @@ export class ExtHostMessageService {
 			MainContext.MainThreadMessageService,
 		);
 	}
+
 	showMessage(
 		extension: IExtensionDescription,
 		severity: Severity,
@@ -37,6 +38,7 @@ export class ExtHostMessageService {
 		optionsOrFirstItem: vscode.MessageOptions | string | undefined,
 		rest: string[],
 	): Promise<string | undefined>;
+
 	showMessage(
 		extension: IExtensionDescription,
 		severity: Severity,
@@ -47,6 +49,7 @@ export class ExtHostMessageService {
 			| undefined,
 		rest: vscode.MessageItem[],
 	): Promise<vscode.MessageItem | undefined>;
+
 	showMessage(
 		extension: IExtensionDescription,
 		severity: Severity,
@@ -58,6 +61,7 @@ export class ExtHostMessageService {
 			| undefined,
 		rest: Array<vscode.MessageItem | string>,
 	): Promise<string | vscode.MessageItem | undefined>;
+
 	showMessage(
 		extension: IExtensionDescription,
 		severity: Severity,
@@ -85,16 +89,23 @@ export class ExtHostMessageService {
 			items = [optionsOrFirstItem, ...rest];
 		} else {
 			options.modal = optionsOrFirstItem?.modal;
+
 			options.useCustom = optionsOrFirstItem?.useCustom;
+
 			options.detail = optionsOrFirstItem?.detail;
+
 			items = rest;
 		}
+
 		if (options.useCustom) {
 			checkProposedApiEnabled(extension, "resolvers");
 		}
+
 		const commands: {
 			title: string;
+
 			isCloseAffordance: boolean;
+
 			handle: number;
 		}[] = [];
 
@@ -111,6 +122,7 @@ export class ExtHostMessageService {
 				});
 			} else if (typeof command === "object") {
 				const { title, isCloseAffordance } = command;
+
 				commands.push({
 					title,
 					isCloseAffordance: !!isCloseAffordance,
@@ -134,12 +146,14 @@ export class ExtHostMessageService {
 				);
 			}
 		}
+
 		return this._proxy
 			.$showMessage(severity, message, options, commands)
 			.then((handle) => {
 				if (typeof handle === "number") {
 					return items[handle];
 				}
+
 				return undefined;
 			});
 	}

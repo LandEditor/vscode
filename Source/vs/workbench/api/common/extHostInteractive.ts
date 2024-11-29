@@ -57,19 +57,25 @@ export class ExtHostInteractive implements ExtHostInteractiveShape {
 			new ApiCommandResult<
 				{
 					notebookUri: UriComponents;
+
 					inputUri: UriComponents;
+
 					notebookEditorId?: string;
 				},
 				{
 					notebookUri: URI;
+
 					inputUri: URI;
+
 					notebookEditor?: NotebookEditor;
 				}
 			>(
 				"Notebook and input URI",
 				(v: {
 					notebookUri: UriComponents;
+
 					inputUri: UriComponents;
+
 					notebookEditorId?: string;
 				}) => {
 					_logService.debug(
@@ -81,6 +87,7 @@ export class ExtHostInteractive implements ExtHostInteractiveShape {
 						const editor = this._extHostNotebooks.getEditorById(
 							v.notebookEditorId,
 						);
+
 						_logService.debug(
 							"[ExtHostInteractive] notebook editor found",
 							editor.id,
@@ -92,6 +99,7 @@ export class ExtHostInteractive implements ExtHostInteractiveShape {
 							notebookEditor: editor.apiEditor,
 						};
 					}
+
 					_logService.debug(
 						"[ExtHostInteractive] notebook editor not found, uris for the interactive document",
 						v.notebookUri,
@@ -105,6 +113,7 @@ export class ExtHostInteractive implements ExtHostInteractiveShape {
 				},
 			),
 		);
+
 		this._commands.registerApiCommand(openApiCommand);
 	}
 	$willAddInteractiveDocument(

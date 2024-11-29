@@ -20,8 +20,11 @@ import { IInstantiationService } from "../../../../platform/instantiation/common
 
 export class SuggestWidgetStatus {
 	readonly element: HTMLElement;
+
 	private readonly _leftActions: ActionBar;
+
 	private readonly _rightActions: ActionBar;
+
 	private readonly _menuDisposables = new DisposableStore();
 
 	constructor(
@@ -45,21 +48,30 @@ export class SuggestWidgetStatus {
 					)
 				: undefined;
 		});
+
 		this._leftActions = new ActionBar(this.element, {
 			actionViewItemProvider,
 		});
+
 		this._rightActions = new ActionBar(this.element, {
 			actionViewItemProvider,
 		});
+
 		this._leftActions.domNode.classList.add("left");
+
 		this._rightActions.domNode.classList.add("right");
 	}
+
 	dispose(): void {
 		this._menuDisposables.dispose();
+
 		this._leftActions.dispose();
+
 		this._rightActions.dispose();
+
 		this.element.remove();
 	}
+
 	show(): void {
 		const menu = this._menuService.createMenu(
 			this._menuId,
@@ -78,14 +90,21 @@ export class SuggestWidgetStatus {
 					right.push(...actions);
 				}
 			}
+
 			this._leftActions.clear();
+
 			this._leftActions.push(left);
+
 			this._rightActions.clear();
+
 			this._rightActions.push(right);
 		};
+
 		this._menuDisposables.add(menu.onDidChange(() => renderMenu()));
+
 		this._menuDisposables.add(menu);
 	}
+
 	hide(): void {
 		this._menuDisposables.clear();
 	}

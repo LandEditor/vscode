@@ -17,6 +17,7 @@ import { ISplashStorageService } from "../browser/splash.js";
 
 class SplashStorageService implements ISplashStorageService {
 	_serviceBrand: undefined;
+
 	readonly saveWindowSplash: (splash: IPartsSplash) => Promise<void>;
 
 	constructor(

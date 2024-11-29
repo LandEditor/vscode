@@ -47,10 +47,15 @@ export class CustomTextEditorModel
 			);
 		});
 	}
+
 	private readonly _textFileModel: ITextFileEditorModel | undefined;
+
 	private readonly _onDidChangeOrphaned = this._register(new Emitter<void>());
+
 	public readonly onDidChangeOrphaned = this._onDidChangeOrphaned.event;
+
 	private readonly _onDidChangeReadonly = this._register(new Emitter<void>());
+
 	public readonly onDidChangeReadonly = this._onDidChangeReadonly.event;
 
 	constructor(
@@ -65,7 +70,9 @@ export class CustomTextEditorModel
 		extensionService: IExtensionService,
 	) {
 		super();
+
 		this._register(_model);
+
 		this._textFileModel = this.textFileService.files.get(_resource);
 
 		if (this._textFileModel) {
@@ -74,20 +81,24 @@ export class CustomTextEditorModel
 					this._onDidChangeOrphaned.fire(),
 				),
 			);
+
 			this._register(
 				this._textFileModel.onDidChangeReadonly(() =>
 					this._onDidChangeReadonly.fire(),
 				),
 			);
 		}
+
 		this._register(
 			this.textFileService.files.onDidChangeDirty((e) => {
 				if (isEqual(this.resource, e.resource)) {
 					this._onDidChangeDirty.fire();
+
 					this._onDidChangeContent.fire();
 				}
 			}),
 		);
+
 		this._register(
 			extensionService.onWillStop((e) => {
 				e.veto(
@@ -101,41 +112,55 @@ export class CustomTextEditorModel
 			}),
 		);
 	}
+
 	public get resource() {
 		return this._resource;
 	}
+
 	public get name() {
 		return basename(this._labelService.getUriLabel(this._resource));
 	}
+
 	public isReadonly(): boolean | IMarkdownString {
 		return this._model.object.isReadonly();
 	}
+
 	public get backupId() {
 		return undefined;
 	}
+
 	public get canHotExit() {
 		return true; // ensured via backups from text file models
 	}
+
 	public isDirty(): boolean {
 		return this.textFileService.isDirty(this.resource);
 	}
+
 	public isOrphaned(): boolean {
 		return !!this._textFileModel?.hasState(TextFileEditorModelState.ORPHAN);
 	}
+
 	private readonly _onDidChangeDirty: Emitter<void> = this._register(
 		new Emitter<void>(),
 	);
+
 	readonly onDidChangeDirty: Event<void> = this._onDidChangeDirty.event;
+
 	private readonly _onDidChangeContent: Emitter<void> = this._register(
 		new Emitter<void>(),
 	);
+
 	readonly onDidChangeContent: Event<void> = this._onDidChangeContent.event;
+
 	public async revert(options?: IRevertOptions) {
 		return this.textFileService.revert(this.resource, options);
 	}
+
 	public saveCustomEditor(options?: ISaveOptions): Promise<URI | undefined> {
 		return this.textFileService.save(this.resource, options);
 	}
+
 	public async saveCustomEditorAs(
 		resource: URI,
 		targetResource: URI,

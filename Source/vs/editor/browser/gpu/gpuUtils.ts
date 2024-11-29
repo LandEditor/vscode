@@ -16,6 +16,7 @@ export function ensureNonNullable<T>(value: T | null): T {
 	if (!value) {
 		throw new Error(`Value "${value}" cannot be null`);
 	}
+
 	return value;
 }
 // TODO: Move capabilities into ElementSizeObserver?
@@ -38,6 +39,7 @@ export function observeDevicePixelDimensions(
 			// Disconnect if devicePixelContentBoxSize isn't supported by the browser
 			if (!("devicePixelContentBoxSize" in entry)) {
 				observer?.disconnect();
+
 				observer = undefined;
 
 				return;
@@ -57,11 +59,13 @@ export function observeDevicePixelDimensions(
 		observer.observe(element, { box: ["device-pixel-content-box"] } as any);
 	} catch {
 		observer.disconnect();
+
 		observer = undefined;
 
 		throw new BugIndicatingError(
 			"Could not observe device pixel dimensions",
 		);
 	}
+
 	return toDisposable(() => observer?.disconnect());
 }

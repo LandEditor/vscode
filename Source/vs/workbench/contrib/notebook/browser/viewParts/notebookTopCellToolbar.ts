@@ -25,9 +25,12 @@ import { CodiconActionViewItem } from "../view/cellParts/cellActionView.js";
 
 export class ListTopCellToolbar extends Disposable {
 	private readonly topCellToolbarContainer: HTMLElement;
+
 	private topCellToolbar: HTMLElement;
+
 	private readonly viewZone: MutableDisposable<DisposableStore> =
 		this._register(new MutableDisposable());
+
 	private readonly _modelDisposables = this._register(new DisposableStore());
 
 	constructor(
@@ -41,14 +44,19 @@ export class ListTopCellToolbar extends Disposable {
 		protected readonly menuService: IMenuService,
 	) {
 		super();
+
 		this.topCellToolbarContainer = DOM.$("div");
+
 		this.topCellToolbar = DOM.$(".cell-list-top-cell-toolbar-container");
+
 		this.topCellToolbarContainer.appendChild(this.topCellToolbar);
+
 		this._register(
 			this.notebookEditor.onDidAttachViewModel(() => {
 				this.updateTopToolbar();
 			}),
 		);
+
 		this._register(
 			this.notebookOptions.onDidChangeOptions((e) => {
 				if (
@@ -61,8 +69,10 @@ export class ListTopCellToolbar extends Disposable {
 			}),
 		);
 	}
+
 	private updateTopToolbar() {
 		const layoutInfo = this.notebookOptions.getLayoutConfiguration();
+
 		this.viewZone.value = new DisposableStore();
 
 		if (
@@ -81,7 +91,9 @@ export class ListTopCellToolbar extends Disposable {
 						heightInPx: height,
 						domNode: DOM.$("div"),
 					});
+
 					accessor.layoutZone(id);
+
 					this.viewZone.value?.add({
 						dispose: () => {
 							if (!this.notebookEditor.isDisposed) {
@@ -95,8 +107,10 @@ export class ListTopCellToolbar extends Disposable {
 					});
 				});
 			}
+
 			return;
 		}
+
 		this.notebookEditor.changeViewZones((accessor) => {
 			const height = this.notebookOptions.computeTopInsertToolbarHeight(
 				this.notebookEditor.textModel?.viewType,
@@ -107,7 +121,9 @@ export class ListTopCellToolbar extends Disposable {
 				heightInPx: height,
 				domNode: this.topCellToolbarContainer,
 			});
+
 			accessor.layoutZone(id);
+
 			this.viewZone.value?.add({
 				dispose: () => {
 					if (!this.notebookEditor.isDisposed) {
@@ -117,6 +133,7 @@ export class ListTopCellToolbar extends Disposable {
 					}
 				},
 			});
+
 			DOM.clearNode(this.topCellToolbar);
 
 			const toolbar = this.instantiationService.createInstance(
@@ -136,6 +153,7 @@ export class ListTopCellToolbar extends Disposable {
 
 							return item;
 						}
+
 						return undefined;
 					},
 					menuOptions: {
@@ -153,6 +171,7 @@ export class ListTopCellToolbar extends Disposable {
 					notebookEditor: this.notebookEditor,
 				} satisfies INotebookActionContext;
 			}
+
 			this.viewZone.value?.add(toolbar);
 			// update toolbar container css based on cell list length
 			this.viewZone.value?.add(
@@ -165,13 +184,16 @@ export class ListTopCellToolbar extends Disposable {
 								this.updateClass();
 							}),
 						);
+
 						this.updateClass();
 					}
 				}),
 			);
+
 			this.updateClass();
 		});
 	}
+
 	private updateClass() {
 		if (
 			this.notebookEditor.hasModel() &&

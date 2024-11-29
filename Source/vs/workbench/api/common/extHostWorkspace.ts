@@ -82,14 +82,19 @@ export interface IExtHostWorkspaceProvider {
 		uri: vscode.Uri,
 		resolveParent?: boolean,
 	): Promise<vscode.WorkspaceFolder | undefined>;
+
 	resolveWorkspaceFolder(
 		uri: vscode.Uri,
 	): Promise<vscode.WorkspaceFolder | undefined>;
 
 	getWorkspaceFolders2(): Promise<vscode.WorkspaceFolder[] | undefined>;
+
 	resolveProxy(url: string): Promise<string | undefined>;
+
 	lookupAuthorization(authInfo: AuthInfo): Promise<Credentials | undefined>;
+
 	lookupKerberosAuthorization(url: string): Promise<string | undefined>;
+
 	loadCertificates(): Promise<string[]>;
 }
 function isFolderEqual(
@@ -118,6 +123,7 @@ function compareWorkspaceFolderByUriAndNameAndIndex(
 	if (a.index !== b.index) {
 		return a.index < b.index ? -1 : 1;
 	}
+
 	return isFolderEqual(a.uri, b.uri, extHostFileSystemInfo)
 		? compare(a.name, b.name)
 		: compare(a.uri.toString(), b.uri.toString());
@@ -133,6 +139,7 @@ function delta(
 	extHostFileSystemInfo: IExtHostFileSystemInfo,
 ): {
 	removed: vscode.WorkspaceFolder[];
+
 	added: vscode.WorkspaceFolder[];
 } {
 	const oldSortedFolders = oldFolders
@@ -160,10 +167,12 @@ function ignorePathCasing(
 }
 interface MutableWorkspaceFolder extends vscode.WorkspaceFolder {
 	name: string;
+
 	index: number;
 }
 interface QueryOptions<T> {
 	options: T;
+
 	folder: URI | undefined;
 }
 class ExtHostWorkspaceImpl extends Workspace {
@@ -174,12 +183,15 @@ class ExtHostWorkspaceImpl extends Workspace {
 		extHostFileSystemInfo: IExtHostFileSystemInfo,
 	): {
 		workspace: ExtHostWorkspaceImpl | null;
+
 		added: vscode.WorkspaceFolder[];
+
 		removed: vscode.WorkspaceFolder[];
 	} {
 		if (!data) {
 			return { workspace: null, added: [], removed: [] };
 		}
+
 		const { id, name, folders, configuration, transient, isUntitled } =
 			data;
 
@@ -201,7 +213,9 @@ class ExtHostWorkspaceImpl extends Workspace {
 
 				if (existingFolder) {
 					existingFolder.name = folderData.name;
+
 					existingFolder.index = folderData.index;
+
 					newWorkspaceFolders.push(existingFolder);
 				} else {
 					newWorkspaceFolders.push({
@@ -242,6 +256,7 @@ class ExtHostWorkspaceImpl extends Workspace {
 
 		return { workspace, added, removed };
 	}
+
 	private static _findFolder(
 		workspace: ExtHostWorkspaceImpl,
 		folderUriToFind: URI,
@@ -260,9 +275,12 @@ class ExtHostWorkspaceImpl extends Workspace {
 				return folder;
 			}
 		}
+
 		return undefined;
 	}
+
 	private readonly _workspaceFolders: vscode.WorkspaceFolder[] = [];
+
 	private readonly _structure: TernarySearchTree<URI, vscode.WorkspaceFolder>;
 
 	constructor(
@@ -281,6 +299,7 @@ class ExtHostWorkspaceImpl extends Workspace {
 			configuration,
 			ignorePathCasing,
 		);
+
 		this._structure = TernarySearchTree.forUris<vscode.WorkspaceFolder>(
 			ignorePathCasing,
 			() => true,
@@ -288,18 +307,23 @@ class ExtHostWorkspaceImpl extends Workspace {
 		// setup the workspace folder data structure
 		folders.forEach((folder) => {
 			this._workspaceFolders.push(folder);
+
 			this._structure.set(folder.uri, folder);
 		});
 	}
+
 	get name(): string {
 		return this._name;
 	}
+
 	get isUntitled(): boolean {
 		return this._isUntitled;
 	}
+
 	get workspaceFolders(): vscode.WorkspaceFolder[] {
 		return this._workspaceFolders.slice(0);
 	}
+
 	getWorkspaceFolder(
 		uri: URI,
 		resolveParent?: boolean,
@@ -308,8 +332,10 @@ class ExtHostWorkspaceImpl extends Workspace {
 			// `uri` is a workspace folder so we check for its parent
 			uri = dirname(uri);
 		}
+
 		return this._structure.findSubstr(uri);
 	}
+
 	resolveWorkspaceFolder(uri: URI): vscode.WorkspaceFolder | undefined {
 		return this._structure.get(uri);
 	}
@@ -318,26 +344,42 @@ export class ExtHostWorkspace
 	implements ExtHostWorkspaceShape, IExtHostWorkspaceProvider
 {
 	readonly _serviceBrand: undefined;
+
 	private readonly _onDidChangeWorkspace =
 		new Emitter<vscode.WorkspaceFoldersChangeEvent>();
+
 	readonly onDidChangeWorkspace: Event<vscode.WorkspaceFoldersChangeEvent> =
 		this._onDidChangeWorkspace.event;
+
 	private readonly _onDidGrantWorkspaceTrust = new Emitter<void>();
+
 	readonly onDidGrantWorkspaceTrust: Event<void> =
 		this._onDidGrantWorkspaceTrust.event;
+
 	private readonly _logService: ILogService;
+
 	private readonly _requestIdProvider: Counter;
+
 	private readonly _barrier: Barrier;
+
 	private _confirmedWorkspace?: ExtHostWorkspaceImpl;
+
 	private _unconfirmedWorkspace?: ExtHostWorkspaceImpl;
+
 	private readonly _proxy: MainThreadWorkspaceShape;
+
 	private readonly _messageService: MainThreadMessageServiceShape;
+
 	private readonly _extHostFileSystemInfo: IExtHostFileSystemInfo;
+
 	private readonly _uriTransformerService: IURITransformerService;
+
 	private readonly _activeSearchCallbacks: ((
 		match: IRawFileMatch2,
 	) => any)[] = [];
+
 	private _trusted: boolean = false;
+
 	private readonly _editSessionIdentityProviders = new Map<
 		string,
 		vscode.EditSessionIdentityProvider
@@ -356,16 +398,23 @@ export class ExtHostWorkspace
 		uriTransformerService: IURITransformerService,
 	) {
 		this._logService = logService;
+
 		this._extHostFileSystemInfo = extHostFileSystemInfo;
+
 		this._uriTransformerService = uriTransformerService;
+
 		this._requestIdProvider = new Counter();
+
 		this._barrier = new Barrier();
+
 		this._proxy = extHostRpc.getProxy(MainContext.MainThreadWorkspace);
+
 		this._messageService = extHostRpc.getProxy(
 			MainContext.MainThreadMessageService,
 		);
 
 		const data = initData.workspace;
+
 		this._confirmedWorkspace = data
 			? new ExtHostWorkspaceImpl(
 					data.id,
@@ -380,9 +429,12 @@ export class ExtHostWorkspace
 	}
 	$initializeWorkspace(data: IWorkspaceData | null, trusted: boolean): void {
 		this._trusted = trusted;
+
 		this.$acceptWorkspaceData(data);
+
 		this._barrier.open();
 	}
+
 	waitForInitializeCall(): Promise<boolean> {
 		return this._barrier.wait();
 	}
@@ -390,9 +442,11 @@ export class ExtHostWorkspace
 	get workspace(): Workspace | undefined {
 		return this._actualWorkspace;
 	}
+
 	get name(): string | undefined {
 		return this._actualWorkspace ? this._actualWorkspace.name : undefined;
 	}
+
 	get workspaceFile(): vscode.Uri | undefined {
 		if (this._actualWorkspace) {
 			if (this._actualWorkspace.configuration) {
@@ -404,20 +458,26 @@ export class ExtHostWorkspace
 						),
 					}); // Untitled Workspace: return untitled URI
 				}
+
 				return this._actualWorkspace.configuration; // Workspace: return the configuration location
 			}
 		}
+
 		return undefined;
 	}
+
 	private get _actualWorkspace(): ExtHostWorkspaceImpl | undefined {
 		return this._unconfirmedWorkspace || this._confirmedWorkspace;
 	}
+
 	getWorkspaceFolders(): vscode.WorkspaceFolder[] | undefined {
 		if (!this._actualWorkspace) {
 			return undefined;
 		}
+
 		return this._actualWorkspace.workspaceFolders.slice(0);
 	}
+
 	async getWorkspaceFolders2(): Promise<
 		vscode.WorkspaceFolder[] | undefined
 	> {
@@ -426,19 +486,23 @@ export class ExtHostWorkspace
 		if (!this._actualWorkspace) {
 			return undefined;
 		}
+
 		return this._actualWorkspace.workspaceFolders.slice(0);
 	}
+
 	updateWorkspaceFolders(
 		extension: IExtensionDescription,
 		index: number,
 		deleteCount: number,
 		...workspaceFoldersToAdd: {
 			uri: vscode.Uri;
+
 			name?: string;
 		}[]
 	): boolean {
 		const validatedDistinctWorkspaceFoldersToAdd: {
 			uri: vscode.Uri;
+
 			name?: string;
 		}[] = [];
 
@@ -463,18 +527,22 @@ export class ExtHostWorkspace
 				}
 			});
 		}
+
 		if (!!this._unconfirmedWorkspace) {
 			return false; // prevent accumulated calls without a confirmed workspace
 		}
+
 		if ([index, deleteCount].some((i) => typeof i !== "number" || i < 0)) {
 			return false; // validate numbers
 		}
+
 		if (
 			deleteCount === 0 &&
 			validatedDistinctWorkspaceFoldersToAdd.length === 0
 		) {
 			return false; // nothing to delete or add
 		}
+
 		const currentWorkspaceFolders: MutableWorkspaceFolder[] = this
 			._actualWorkspace
 			? this._actualWorkspace.workspaceFolders
@@ -485,6 +553,7 @@ export class ExtHostWorkspace
 		}
 		// Simulate the updateWorkspaceFolders method on our data to do more validation
 		const newWorkspaceFolders = currentWorkspaceFolders.slice(0);
+
 		newWorkspaceFolders.splice(
 			index,
 			deleteCount,
@@ -512,6 +581,7 @@ export class ExtHostWorkspace
 				return false; // cannot add the same folder multiple times
 			}
 		}
+
 		newWorkspaceFolders.forEach((f, index) => (f.index = index)); // fix index
 		const { added, removed } = delta(
 			currentWorkspaceFolders,
@@ -526,6 +596,7 @@ export class ExtHostWorkspace
 		// Trigger on main side
 		if (this._proxy) {
 			const extName = extension.displayName || extension.name;
+
 			this._proxy
 				.$updateWorkspaceFolders(
 					extName,
@@ -544,6 +615,7 @@ export class ExtHostWorkspace
 							label: extension.displayName || extension.name,
 						},
 					};
+
 					this._messageService.$showMessage(
 						Severity.Error,
 						localize(
@@ -562,6 +634,7 @@ export class ExtHostWorkspace
 
 		return true;
 	}
+
 	getWorkspaceFolder(
 		uri: vscode.Uri,
 		resolveParent?: boolean,
@@ -569,8 +642,10 @@ export class ExtHostWorkspace
 		if (!this._actualWorkspace) {
 			return undefined;
 		}
+
 		return this._actualWorkspace.getWorkspaceFolder(uri, resolveParent);
 	}
+
 	async getWorkspaceFolder2(
 		uri: vscode.Uri,
 		resolveParent?: boolean,
@@ -580,8 +655,10 @@ export class ExtHostWorkspace
 		if (!this._actualWorkspace) {
 			return undefined;
 		}
+
 		return this._actualWorkspace.getWorkspaceFolder(uri, resolveParent);
 	}
+
 	async resolveWorkspaceFolder(
 		uri: vscode.Uri,
 	): Promise<vscode.WorkspaceFolder | undefined> {
@@ -590,8 +667,10 @@ export class ExtHostWorkspace
 		if (!this._actualWorkspace) {
 			return undefined;
 		}
+
 		return this._actualWorkspace.resolveWorkspaceFolder(uri);
 	}
+
 	getPath(): string | undefined {
 		// this is legacy from the days before having
 		// multi-root and we keep it only alive if there
@@ -599,6 +678,7 @@ export class ExtHostWorkspace
 		if (!this._actualWorkspace) {
 			return undefined;
 		}
+
 		const { folders } = this._actualWorkspace;
 
 		if (folders.length === 0) {
@@ -607,6 +687,7 @@ export class ExtHostWorkspace
 		// #54483 @Joh Why are we still using fsPath?
 		return folders[0].uri.fsPath;
 	}
+
 	getRelativePath(
 		pathOrUri: string | vscode.Uri,
 		includeWorkspace?: boolean,
@@ -617,29 +698,37 @@ export class ExtHostWorkspace
 
 		if (typeof pathOrUri === "string") {
 			resource = URI.file(pathOrUri);
+
 			path = pathOrUri;
 		} else if (typeof pathOrUri !== "undefined") {
 			resource = pathOrUri;
+
 			path = pathOrUri.fsPath;
 		}
+
 		if (!resource) {
 			return path;
 		}
+
 		const folder = this.getWorkspaceFolder(resource, true);
 
 		if (!folder) {
 			return path;
 		}
+
 		if (typeof includeWorkspace === "undefined" && this._actualWorkspace) {
 			includeWorkspace = this._actualWorkspace.folders.length > 1;
 		}
+
 		let result = relativePath(folder.uri, resource);
 
 		if (includeWorkspace && folder.name) {
 			result = `${folder.name}/${result}`;
 		}
+
 		return result!;
 	}
+
 	private trySetWorkspaceFolders(folders: vscode.WorkspaceFolder[]): void {
 		// Update directly here. The workspace is unconfirmed as long as we did not get an
 		// acknowledgement from the main side (via $acceptWorkspaceData)
@@ -670,6 +759,7 @@ export class ExtHostWorkspace
 		// Update our workspace object. We have a confirmed workspace, so we drop our
 		// unconfirmed workspace.
 		this._confirmedWorkspace = workspace || undefined;
+
 		this._unconfirmedWorkspace = undefined;
 		// Events
 		this._onDidChangeWorkspace.fire(
@@ -724,6 +814,7 @@ export class ExtHostWorkspace
 			token,
 		);
 	}
+
 	findFiles2(
 		filePatterns: vscode.GlobPattern[],
 		options: vscode.FindFiles2Options = {},
@@ -736,6 +827,7 @@ export class ExtHostWorkspace
 
 		return this._findFilesImpl(undefined, filePatterns, options, token);
 	}
+
 	private async _findFilesImpl(
 		// the old `findFiles` used `include` to query, but the new `findFiles2` uses `filePattern` to query.
 		// `filePattern` is the proper way to handle this, since it takes less precedence than the ignore files.
@@ -747,6 +839,7 @@ export class ExtHostWorkspace
 		if (token && token.isCancellationRequested) {
 			return Promise.resolve([]);
 		}
+
 		const filePatternsToUse =
 			include !== undefined ? [include] : filePatterns;
 
@@ -801,6 +894,7 @@ export class ExtHostWorkspace
 				} else {
 					fileQueries.filePattern = parseInclude?.pattern;
 				}
+
 				return {
 					folder: folderToUse,
 					options: fileQueries,
@@ -809,6 +903,7 @@ export class ExtHostWorkspace
 
 		return this._findFilesBase(queryOptions, token);
 	}
+
 	private async _findFilesBase(
 		queryOptions: QueryOptions<IFileQueryBuilderOptions>[] | undefined,
 		token: CancellationToken,
@@ -831,6 +926,7 @@ export class ExtHostWorkspace
 
 		return result.flat();
 	}
+
 	findTextInFiles2(
 		query: vscode.TextSearchQuery2,
 		options: vscode.FindTextInFilesOptions2 | undefined,
@@ -850,6 +946,7 @@ export class ExtHostWorkspace
 					options: {},
 				};
 			}
+
 			const parsedInclude = include
 				? parseSearchExcludeInclude(GlobPattern.from(include))
 				: undefined;
@@ -921,6 +1018,7 @@ export class ExtHostWorkspace
 		const progressEmitter = disposables.add(
 			new Emitter<{
 				result: ITextSearchResult<URI>;
+
 				uri: URI;
 			}>(),
 		);
@@ -972,6 +1070,7 @@ export class ExtHostWorkspace
 						}
 					}),
 				);
+
 				await complete;
 			},
 		);
@@ -987,6 +1086,7 @@ export class ExtHostWorkspace
 			}),
 		};
 	}
+
 	async findTextInFilesBase(
 		query: vscode.TextSearchQuery,
 		queryOptions: QueryOptions<ITextQueryBuilderOptions>[] | undefined,
@@ -996,16 +1096,21 @@ export class ExtHostWorkspace
 		const requestId = this._requestIdProvider.getNext();
 
 		let isCanceled = false;
+
 		token.onCancellationRequested((_) => {
 			isCanceled = true;
 		});
+
 		this._activeSearchCallbacks[requestId] = (p) => {
 			if (isCanceled) {
 				return;
 			}
+
 			const uri = URI.revive(p.resource);
+
 			p.results!.forEach((rawResult) => {
 				const result: ITextSearchResult<URI> = revive(rawResult);
+
 				callback(result, uri);
 			});
 		};
@@ -1013,6 +1118,7 @@ export class ExtHostWorkspace
 		if (token.isCancellationRequested) {
 			return {};
 		}
+
 		try {
 			const result = await Promise.all(
 				queryOptions?.map(
@@ -1026,6 +1132,7 @@ export class ExtHostWorkspace
 						) || {},
 				) ?? [],
 			);
+
 			delete this._activeSearchCallbacks[requestId];
 
 			return (
@@ -1045,6 +1152,7 @@ export class ExtHostWorkspace
 			throw err;
 		}
 	}
+
 	async findTextInFiles(
 		query: vscode.TextSearchQuery,
 		options: vscode.FindTextInFilesOptions & {
@@ -1159,28 +1267,35 @@ export class ExtHostWorkspace
 	$handleTextSearchResult(result: IRawFileMatch2, requestId: number): void {
 		this._activeSearchCallbacks[requestId]?.(result);
 	}
+
 	async save(uri: URI): Promise<URI | undefined> {
 		const result = await this._proxy.$save(uri, { saveAs: false });
 
 		return URI.revive(result);
 	}
+
 	async saveAs(uri: URI): Promise<URI | undefined> {
 		const result = await this._proxy.$save(uri, { saveAs: true });
 
 		return URI.revive(result);
 	}
+
 	saveAll(includeUntitled?: boolean): Promise<boolean> {
 		return this._proxy.$saveAll(includeUntitled);
 	}
+
 	resolveProxy(url: string): Promise<string | undefined> {
 		return this._proxy.$resolveProxy(url);
 	}
+
 	lookupAuthorization(authInfo: AuthInfo): Promise<Credentials | undefined> {
 		return this._proxy.$lookupAuthorization(authInfo);
 	}
+
 	lookupKerberosAuthorization(url: string): Promise<string | undefined> {
 		return this._proxy.$lookupKerberosAuthorization(url);
 	}
+
 	loadCertificates(): Promise<string[]> {
 		return this._proxy.$loadCertificates();
 	}
@@ -1188,6 +1303,7 @@ export class ExtHostWorkspace
 	get trusted(): boolean {
 		return this._trusted;
 	}
+
 	requestWorkspaceTrust(
 		options?: vscode.WorkspaceTrustRequestOptions,
 	): Promise<boolean | undefined> {
@@ -1196,6 +1312,7 @@ export class ExtHostWorkspace
 	$onDidGrantWorkspaceTrust(): void {
 		if (!this._trusted) {
 			this._trusted = true;
+
 			this._onDidGrantWorkspaceTrust.fire();
 		}
 	}
@@ -1211,12 +1328,14 @@ export class ExtHostWorkspace
 				`A provider has already been registered for scheme ${scheme}`,
 			);
 		}
+
 		this._editSessionIdentityProviders.set(scheme, provider);
 
 		const outgoingScheme =
 			this._uriTransformerService.transformOutgoingScheme(scheme);
 
 		const handle = this._providerHandlePool++;
+
 		this._proxy.$registerEditSessionIdentityProvider(
 			handle,
 			outgoingScheme,
@@ -1224,6 +1343,7 @@ export class ExtHostWorkspace
 
 		return toDisposable(() => {
 			this._editSessionIdentityProviders.delete(scheme);
+
 			this._proxy.$unregisterEditSessionIdentityProvider(handle);
 		});
 	}
@@ -1246,6 +1366,7 @@ export class ExtHostWorkspace
 
 			return undefined;
 		}
+
 		this._logService.info(
 			"Invoking #provideEditSessionIdentity for workspaceFolder",
 			folder,
@@ -1254,6 +1375,7 @@ export class ExtHostWorkspace
 		const provider = this._editSessionIdentityProviders.get(
 			folder.uri.scheme,
 		);
+
 		this._logService.info(
 			`Provider for scheme ${folder.uri.scheme} is defined: `,
 			!!provider,
@@ -1262,10 +1384,12 @@ export class ExtHostWorkspace
 		if (!provider) {
 			return undefined;
 		}
+
 		const result = await provider.provideEditSessionIdentity(
 			folder,
 			cancellationToken,
 		);
+
 		this._logService.info(
 			"Provider returned edit session identifier: ",
 			result,
@@ -1274,8 +1398,10 @@ export class ExtHostWorkspace
 		if (!result) {
 			return undefined;
 		}
+
 		return result;
 	}
+
 	async $provideEditSessionIdentityMatch(
 		workspaceFolder: UriComponents,
 		identity1: string,
@@ -1296,6 +1422,7 @@ export class ExtHostWorkspace
 
 			return undefined;
 		}
+
 		this._logService.info(
 			"Invoking #provideEditSessionIdentity for workspaceFolder",
 			folder,
@@ -1304,6 +1431,7 @@ export class ExtHostWorkspace
 		const provider = this._editSessionIdentityProviders.get(
 			folder.uri.scheme,
 		);
+
 		this._logService.info(
 			`Provider for scheme ${folder.uri.scheme} is defined: `,
 			!!provider,
@@ -1312,11 +1440,13 @@ export class ExtHostWorkspace
 		if (!provider) {
 			return undefined;
 		}
+
 		const result = await provider.provideEditSessionIdentityMatch?.(
 			identity1,
 			identity2,
 			cancellationToken,
 		);
+
 		this._logService.info(
 			"Provider returned edit session identifier match result: ",
 			result,
@@ -1325,8 +1455,10 @@ export class ExtHostWorkspace
 		if (!result) {
 			return undefined;
 		}
+
 		return result;
 	}
+
 	private readonly _onWillCreateEditSessionIdentityEvent =
 		new AsyncEmitter<vscode.EditSessionIdentityWillCreateEvent>();
 
@@ -1338,6 +1470,7 @@ export class ExtHostWorkspace
 				function wrapped(e) {
 					listener.call(thisArg, e);
 				};
+
 			wrappedListener.extension = extension;
 
 			return this._onWillCreateEditSessionIdentityEvent.event(
@@ -1360,11 +1493,13 @@ export class ExtHostWorkspace
 		if (folder === undefined) {
 			throw new Error("Unable to resolve workspace folder");
 		}
+
 		await this._onWillCreateEditSessionIdentityEvent.fireAsync(
 			{ workspaceFolder: folder },
 			token,
 			async (thenable: Promise<unknown>, listener) => {
 				const now = Date.now();
+
 				await Promise.resolve(thenable);
 
 				if (Date.now() - now > timeout) {
@@ -1397,19 +1532,23 @@ export class ExtHostWorkspace
 				`A provider has already been registered for scheme ${scheme}`,
 			);
 		}
+
 		this._canonicalUriProviders.set(scheme, provider);
 
 		const outgoingScheme =
 			this._uriTransformerService.transformOutgoingScheme(scheme);
 
 		const handle = this._providerHandlePool++;
+
 		this._proxy.$registerCanonicalUriProvider(handle, outgoingScheme);
 
 		return toDisposable(() => {
 			this._canonicalUriProviders.delete(scheme);
+
 			this._proxy.$unregisterCanonicalUriProvider(handle);
 		});
 	}
+
 	async provideCanonicalUri(
 		uri: URI,
 		options: vscode.CanonicalUriRequestOptions,
@@ -1420,6 +1559,7 @@ export class ExtHostWorkspace
 		if (!provider) {
 			return undefined;
 		}
+
 		const result = await provider.provideCanonicalUri?.(
 			URI.revive(uri),
 			options,
@@ -1429,6 +1569,7 @@ export class ExtHostWorkspace
 		if (!result) {
 			return undefined;
 		}
+
 		return result;
 	}
 	// called by main thread
@@ -1456,6 +1597,7 @@ function parseSearchExcludeInclude(
 ):
 	| {
 			pattern: string;
+
 			folder?: URI;
 	  }
 	| undefined {
@@ -1468,13 +1610,16 @@ function parseSearchExcludeInclude(
 			pattern = include;
 		} else {
 			pattern = include.pattern;
+
 			includeFolder = URI.revive(include.baseUri);
 		}
+
 		return {
 			pattern,
 			folder: includeFolder,
 		};
 	}
+
 	return undefined;
 }
 interface IExtensionListener<E> {
@@ -1490,6 +1635,7 @@ function globsToISearchPatternBuilder(
 				if (exclude === "") {
 					return undefined;
 				}
+
 				return {
 					pattern: exclude,
 					uri: undefined,
@@ -1500,6 +1646,7 @@ function globsToISearchPatternBuilder(
 				if (!parsedExclude) {
 					return undefined;
 				}
+
 				return {
 					pattern: parsedExclude.pattern,
 					uri: parsedExclude.folder,

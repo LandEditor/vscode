@@ -55,13 +55,17 @@ class TerminalLinkContribution
 	implements ITerminalContribution
 {
 	static readonly ID = "terminal.link";
+
 	static get(instance: ITerminalInstance): TerminalLinkContribution | null {
 		return instance.getContribution<TerminalLinkContribution>(
 			TerminalLinkContribution.ID,
 		);
 	}
+
 	private _linkManager: TerminalLinkManager | undefined;
+
 	private _terminalLinkQuickpick: TerminalLinkQuickpick | undefined;
+
 	private _linkResolver: TerminalLinkResolver;
 
 	constructor(
@@ -74,9 +78,11 @@ class TerminalLinkContribution
 		private readonly _terminalLinkProviderService: ITerminalLinkProviderService,
 	) {
 		super();
+
 		this._linkResolver =
 			this._instantiationService.createInstance(TerminalLinkResolver);
 	}
+
 	xtermReady(
 		xterm: IXtermTerminal & {
 			raw: RawXtermTerminal;
@@ -96,6 +102,7 @@ class TerminalLinkContribution
 			const disposable = linkManager.add(
 				Event.once(this._ctx.processManager.onProcessReady)(() => {
 					linkManager.setWidgetManager(this._ctx.widgetManager);
+
 					this.delete(disposable);
 				}),
 			);
@@ -112,6 +119,7 @@ class TerminalLinkContribution
 						this._ctx.instance,
 					);
 			}
+
 			linkManager.add(
 				this._terminalLinkProviderService.onDidAddLinkProvider((e) => {
 					linkManager.externalProvideLinksCb = e.provideLinks.bind(
@@ -121,12 +129,14 @@ class TerminalLinkContribution
 				}),
 			);
 		}
+
 		linkManager.add(
 			this._terminalLinkProviderService.onDidRemoveLinkProvider(
 				() => (linkManager.externalProvideLinksCb = undefined),
 			),
 		);
 	}
+
 	async showLinkQuickpick(extended?: boolean): Promise<void> {
 		if (!this._terminalLinkQuickpick) {
 			this._terminalLinkQuickpick = this.add(
@@ -134,10 +144,12 @@ class TerminalLinkContribution
 					TerminalLinkQuickpick,
 				),
 			);
+
 			this._terminalLinkQuickpick.onDidRequestMoreLinks(() => {
 				this.showLinkQuickpick(true);
 			});
 		}
+
 		const links = await this._getLinks();
 
 		return await this._terminalLinkQuickpick.show(
@@ -145,8 +157,10 @@ class TerminalLinkContribution
 			links,
 		);
 	}
+
 	private async _getLinks(): Promise<{
 		viewport: IDetectedLinks;
+
 		all: Promise<IDetectedLinks>;
 	}> {
 		if (!this._linkManager) {
@@ -154,12 +168,15 @@ class TerminalLinkContribution
 				"terminal links are not ready, cannot generate link quick pick",
 			);
 		}
+
 		return this._linkManager.getLinks();
 	}
+
 	async openRecentLink(type: "localFile" | "url"): Promise<void> {
 		if (!this._linkManager) {
 			throw new Error("terminal links are not ready, cannot open a link");
 		}
+
 		this._linkManager.openRecentLink(type);
 	}
 }

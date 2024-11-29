@@ -23,6 +23,7 @@ export function locateFile(base: string, filePath: string): Promise<string> {
 		// path with protocol, already absolute
 		return Promise.resolve(filePath);
 	}
+
 	filePath = path.normalize(filePath);
 
 	return reAbsolute.test(filePath)
@@ -50,9 +51,11 @@ function resolveAbsolute(basePath: string, filePath: string): Promise<string> {
 				if (!dir || dir === ctx) {
 					return reject(`Unable to locate absolute file ${filePath}`);
 				}
+
 				next(dir);
 			});
 		};
+
 		next(basePath);
 	});
 }
@@ -65,9 +68,11 @@ function tryFile(file: string): Promise<string> {
 			if (err) {
 				return reject(err);
 			}
+
 			if (!stat.isFile()) {
 				return reject(new Error(`${file} is not a file`));
 			}
+
 			resolve(file);
 		});
 	});

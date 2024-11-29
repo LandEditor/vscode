@@ -65,6 +65,7 @@ export class WorkspaceTags implements IWorkbenchContribution {
 			this.report();
 		}
 	}
+
 	private async report(): Promise<void> {
 		// Windows-only Edition Event
 		this.reportWindowsEdition();
@@ -75,15 +76,19 @@ export class WorkspaceTags implements IWorkbenchContribution {
 		);
 		// Cloud Stats
 		this.reportCloudStats();
+
 		this.reportProxyStats();
+
 		this.getWorkspaceInformation().then((stats) =>
 			this.diagnosticsService.reportWorkspaceStats(stats),
 		);
 	}
+
 	private async reportWindowsEdition(): Promise<void> {
 		if (!isWindows) {
 			return;
 		}
+
 		let value = await this.nativeHostService.windowsGetStringRegKey(
 			"HKEY_LOCAL_MACHINE",
 			"SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion",
@@ -93,21 +98,27 @@ export class WorkspaceTags implements IWorkbenchContribution {
 		if (value === undefined) {
 			value = "Unknown";
 		}
+
 		this.telemetryService.publicLog2<
 			{
 				edition: string;
 			},
 			{
 				owner: "sbatten";
+
 				comment: "Information about the Windows edition.";
+
 				edition: {
 					classification: "SystemMetaData";
+
 					purpose: "BusinessInsight";
+
 					comment: "The Windows edition.";
 				};
 			}
 		>("windowsEdition", { edition: value });
 	}
+
 	private async getWorkspaceInformation(): Promise<IWorkspaceInformation> {
 		const workspace = this.contextService.getWorkspace();
 
@@ -128,6 +139,7 @@ export class WorkspaceTags implements IWorkbenchContribution {
 			configuration: workspace.configuration,
 		};
 	}
+
 	private reportWorkspaceTags(tags: Tags): void {
 		/* __GDPR__
             "workspce.tags" : {
@@ -139,6 +151,7 @@ export class WorkspaceTags implements IWorkbenchContribution {
         */
 		this.telemetryService.publicLog("workspce.tags", tags);
 	}
+
 	private reportRemoteDomains(workspaceUris: URI[]): void {
 		Promise.all<string[]>(
 			workspaceUris.map((workspaceUri) => {
@@ -152,6 +165,7 @@ export class WorkspaceTags implements IWorkbenchContribution {
 					if (!exists) {
 						return [];
 					}
+
 					return this.textFileService
 						.read(uri, { acceptTextOnly: true })
 						.then(
@@ -184,6 +198,7 @@ export class WorkspaceTags implements IWorkbenchContribution {
 			});
 		}, onUnexpectedError);
 	}
+
 	private reportRemotes(workspaceUris: URI[]): void {
 		Promise.all<string[]>(
 			workspaceUris.map((workspaceUri) => {
@@ -231,6 +246,7 @@ export class WorkspaceTags implements IWorkbenchContribution {
 					if (referencesAzure) {
 						tags["node"] = true;
 					}
+
 					return tags;
 				},
 				(err) => {
@@ -238,6 +254,7 @@ export class WorkspaceTags implements IWorkbenchContribution {
 				},
 			);
 	}
+
 	private static searchArray(
 		arr: string[],
 		regEx: RegExp,
@@ -262,6 +279,7 @@ export class WorkspaceTags implements IWorkbenchContribution {
 					if (!exists) {
 						return false;
 					}
+
 					return this.textFileService
 						.read(uri, { acceptTextOnly: true })
 						.then(
@@ -274,11 +292,14 @@ export class WorkspaceTags implements IWorkbenchContribution {
 			if (javas.indexOf(true) !== -1) {
 				tags["java"] = true;
 			}
+
 			return tags;
 		});
 	}
+
 	private reportAzure(uris: URI[]) {
 		const tags: Tags = Object.create(null);
+
 		this.reportAzureNode(uris, tags)
 			.then((tags) => {
 				return this.reportAzureJava(uris, tags);
@@ -298,6 +319,7 @@ export class WorkspaceTags implements IWorkbenchContribution {
 			})
 			.then(undefined, onUnexpectedError);
 	}
+
 	private reportCloudStats(): void {
 		const uris = this.contextService
 			.getWorkspace()
@@ -305,16 +327,20 @@ export class WorkspaceTags implements IWorkbenchContribution {
 
 		if (uris.length && this.fileService) {
 			this.reportRemoteDomains(uris);
+
 			this.reportRemotes(uris);
+
 			this.reportAzure(uris);
 		}
 	}
+
 	private reportProxyStats() {
 		const downloadUrl = this.productService.downloadUrl;
 
 		if (!downloadUrl) {
 			return;
 		}
+
 		this.requestService
 			.resolveProxy(downloadUrl)
 			.then((proxy) => {

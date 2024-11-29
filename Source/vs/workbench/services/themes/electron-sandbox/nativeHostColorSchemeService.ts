@@ -24,12 +24,17 @@ export class NativeHostColorSchemeService
 	implements IHostColorSchemeService
 {
 	static readonly STORAGE_KEY = "HostColorSchemeData";
+
 	declare readonly _serviceBrand: undefined;
+
 	private readonly _onDidChangeColorScheme = this._register(
 		new Emitter<void>(),
 	);
+
 	readonly onDidChangeColorScheme = this._onDidChangeColorScheme.event;
+
 	public dark: boolean;
+
 	public highContrast: boolean;
 
 	constructor(
@@ -50,13 +55,16 @@ export class NativeHostColorSchemeService
 
 		const initial =
 			this.getStoredValue() ?? environmentService.window.colorScheme;
+
 		this.dark = initial.dark;
+
 		this.highContrast = initial.highContrast;
 		// fetch the actual value from the OS
 		this.nativeHostService
 			.getOSColorScheme()
 			.then((scheme) => this.update(scheme));
 	}
+
 	private getStoredValue(): IColorScheme | undefined {
 		const stored = this.storageService.get(
 			NativeHostColorSchemeService.STORAGE_KEY,
@@ -78,18 +86,23 @@ export class NativeHostColorSchemeService
 				// ignore
 			}
 		}
+
 		return undefined;
 	}
+
 	private update({ highContrast, dark }: IColorScheme) {
 		if (dark !== this.dark || highContrast !== this.highContrast) {
 			this.dark = dark;
+
 			this.highContrast = highContrast;
+
 			this.storageService.store(
 				NativeHostColorSchemeService.STORAGE_KEY,
 				JSON.stringify({ highContrast, dark }),
 				StorageScope.APPLICATION,
 				StorageTarget.MACHINE,
 			);
+
 			this._onDidChangeColorScheme.fire();
 		}
 	}

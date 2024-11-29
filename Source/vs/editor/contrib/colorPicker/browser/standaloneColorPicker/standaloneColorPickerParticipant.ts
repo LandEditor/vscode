@@ -55,6 +55,7 @@ export class StandaloneColorPickerHover implements BaseColor {
 
 export class StandaloneColorPickerParticipant {
 	public readonly hoverOrdinal: number = 2;
+
 	private _color: Color | null = null;
 
 	constructor(
@@ -68,16 +69,19 @@ export class StandaloneColorPickerParticipant {
 		colorProviderRegistry: LanguageFeatureRegistry<DocumentColorProvider>,
 	): Promise<{
 		colorHover: StandaloneColorPickerHover;
+
 		foundInEditor: boolean;
 	} | null> {
 		if (!this._editor.hasModel()) {
 			return null;
 		}
+
 		const colorDetector = ColorDetector.get(this._editor);
 
 		if (!colorDetector) {
 			return null;
 		}
+
 		const colors = await getColors(
 			colorProviderRegistry,
 			this._editor.getModel(),
@@ -93,9 +97,11 @@ export class StandaloneColorPickerParticipant {
 
 			if (Range.containsRange(colorInfo.range, defaultColorInfo.range)) {
 				foundColorInfo = colorInfo;
+
 				foundColorProvider = colorData.provider;
 			}
 		}
+
 		const colorInfo = foundColorInfo ?? defaultColorInfo;
 
 		const colorProvider = foundColorProvider ?? defaultColorProvider;
@@ -120,6 +126,7 @@ export class StandaloneColorPickerParticipant {
 		if (!this._editor.hasModel()) {
 			return;
 		}
+
 		const colorPickerModel = colorHoverData.model;
 
 		let range = new Range(
@@ -137,6 +144,7 @@ export class StandaloneColorPickerParticipant {
 				range,
 				colorHoverData,
 			);
+
 			range = updateEditorModel(this._editor, range, colorPickerModel);
 		}
 	}
@@ -147,16 +155,20 @@ export class StandaloneColorPickerParticipant {
 	):
 		| {
 				disposables: IDisposable;
+
 				hoverPart: StandaloneColorPickerHover;
+
 				colorPicker: ColorPickerWidget;
 		  }
 		| undefined {
 		if (hoverParts.length === 0 || !this._editor.hasModel()) {
 			return undefined;
 		}
+
 		if (context.setMinimumDimensions) {
 			const minimumHeight =
 				this._editor.getOption(EditorOption.lineHeight) + 8;
+
 			context.setMinimumDimensions(new Dimension(302, minimumHeight));
 		}
 
@@ -188,13 +200,17 @@ export class StandaloneColorPickerParticipant {
 		);
 
 		const color = colorHover.model.color;
+
 		this._color = color;
+
 		updateColorPresentations(editorModel, model, color, range, colorHover);
+
 		disposables.add(
 			model.onColorFlushed((color: Color) => {
 				this._color = color;
 			}),
 		);
+
 		disposables.add(
 			model.onDidChangeColor((color: Color) => {
 				updateColorPresentations(
@@ -206,12 +222,14 @@ export class StandaloneColorPickerParticipant {
 				);
 			}),
 		);
+
 		disposables.add(
 			this._editor.onDidChangeModelContent((e) => {
 				if (editorUpdatedByColorPicker) {
 					editorUpdatedByColorPicker = false;
 				} else {
 					context.hide();
+
 					this._editor.focus();
 				}
 			}),

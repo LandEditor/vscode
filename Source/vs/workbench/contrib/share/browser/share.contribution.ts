@@ -66,6 +66,7 @@ const targetMenus = [
 class ShareWorkbenchContribution {
 	private static SHARE_ENABLED_SETTING =
 		"workbench.experimental.share.enabled";
+
 	private _disposables: DisposableStore | undefined;
 
 	constructor(
@@ -81,6 +82,7 @@ class ShareWorkbenchContribution {
 		) {
 			this.registerActions();
 		}
+
 		this.configurationService.onDidChangeConfiguration((e) => {
 			if (
 				e.affectsConfiguration(
@@ -99,19 +101,23 @@ class ShareWorkbenchContribution {
 					this._disposables !== undefined
 				) {
 					this._disposables?.clear();
+
 					this._disposables = undefined;
 				}
 			}
 		});
 	}
+
 	private registerActions() {
 		if (!this._disposables) {
 			this._disposables = new DisposableStore();
 		}
+
 		this._disposables.add(
 			registerAction2(
 				class ShareAction extends Action2 {
 					static readonly ID = "workbench.action.share";
+
 					static readonly LABEL = localize2("share", "Share...");
 
 					constructor() {
@@ -132,6 +138,7 @@ class ShareWorkbenchContribution {
 							menu: [{ id: MenuId.CommandCenter, order: 1000 }],
 						});
 					}
+
 					override async run(
 						accessor: ServicesAccessor,
 						...args: any[]
@@ -188,7 +195,9 @@ class ShareWorkbenchContribution {
 							const uriText = result.toString();
 
 							const isResultText = typeof result === "string";
+
 							await clipboardService.writeText(uriText);
+
 							dialogService.prompt({
 								type: Severity.Info,
 								message: isResultText

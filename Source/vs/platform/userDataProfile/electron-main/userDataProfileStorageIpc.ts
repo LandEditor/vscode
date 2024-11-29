@@ -42,6 +42,7 @@ export class ProfileStorageChangesListenerChannel
 		super();
 
 		const disposable = this._register(new MutableDisposable<IDisposable>());
+
 		this._onDidChange = this._register(
 			new Emitter<IProfileStorageChanges>({
 				// Start listening to profile storage changes only when someone is listening
@@ -52,12 +53,14 @@ export class ProfileStorageChangesListenerChannel
 			}),
 		);
 	}
+
 	private registerStorageChangeListeners(): IDisposable {
 		this.logService.debug(
 			"ProfileStorageChangesListenerChannel#registerStorageChangeListeners",
 		);
 
 		const disposables = new DisposableStore();
+
 		disposables.add(
 			Event.debounce(
 				this.storageMainService.applicationStorage.onDidChangeStorage,
@@ -67,11 +70,13 @@ export class ProfileStorageChangesListenerChannel
 					} else {
 						keys = [e.key];
 					}
+
 					return keys;
 				},
 				100,
 			)((keys) => this.onDidChangeApplicationStorage(keys)),
 		);
+
 		disposables.add(
 			Event.debounce(
 				this.storageMainService.onDidChangeProfileStorage,
@@ -81,7 +86,9 @@ export class ProfileStorageChangesListenerChannel
 								string,
 								{
 									profile: IUserDataProfile;
+
 									keys: string[];
+
 									storage: IStorageMain;
 								}
 						  >
@@ -93,11 +100,14 @@ export class ProfileStorageChangesListenerChannel
 							string,
 							{
 								profile: IUserDataProfile;
+
 								keys: string[];
+
 								storage: IStorageMain;
 							}
 						>();
 					}
+
 					let profileChanges = changes.get(e.profile.id);
 
 					if (!profileChanges) {
@@ -110,6 +120,7 @@ export class ProfileStorageChangesListenerChannel
 							}),
 						);
 					}
+
 					profileChanges.keys.push(e.key);
 
 					return changes;
@@ -120,6 +131,7 @@ export class ProfileStorageChangesListenerChannel
 
 		return disposables;
 	}
+
 	private onDidChangeApplicationStorage(keys: string[]): void {
 		const targetChangedProfiles: IUserDataProfile[] = keys.includes(
 			TARGET_KEY,
@@ -128,12 +140,14 @@ export class ProfileStorageChangesListenerChannel
 			: [];
 
 		const profileStorageValueChanges: IProfileStorageValueChanges[] = [];
+
 		keys = keys.filter((key) => key !== TARGET_KEY);
 
 		if (keys.length) {
 			const keyTargets = loadKeyTargets(
 				this.storageMainService.applicationStorage.storage,
 			);
+
 			profileStorageValueChanges.push({
 				profile: this.userDataProfilesService.defaultProfile,
 				changes: keys.map((key) => ({
@@ -143,14 +157,18 @@ export class ProfileStorageChangesListenerChannel
 				})),
 			});
 		}
+
 		this.triggerEvents(targetChangedProfiles, profileStorageValueChanges);
 	}
+
 	private onDidChangeProfileStorage(
 		changes: Map<
 			string,
 			{
 				profile: IUserDataProfile;
+
 				keys: string[];
+
 				storage: IStorageMain;
 			}
 		>,
@@ -166,6 +184,7 @@ export class ProfileStorageChangesListenerChannel
 			if (profileChanges.keys.includes(TARGET_KEY)) {
 				targetChangedProfiles.push(profileChanges.profile);
 			}
+
 			const keys = profileChanges.keys.filter(
 				(key) => key !== TARGET_KEY,
 			);
@@ -174,6 +193,7 @@ export class ProfileStorageChangesListenerChannel
 				const keyTargets = loadKeyTargets(
 					profileChanges.storage.storage,
 				);
+
 				profileStorageValueChanges.set(profileId, {
 					profile: profileChanges.profile,
 					changes: keys.map((key) => ({
@@ -184,10 +204,12 @@ export class ProfileStorageChangesListenerChannel
 				});
 			}
 		}
+
 		this.triggerEvents(targetChangedProfiles, [
 			...profileStorageValueChanges.values(),
 		]);
 	}
+
 	private triggerEvents(
 		targetChanges: IUserDataProfile[],
 		valueChanges: IProfileStorageValueChanges[],
@@ -196,6 +218,7 @@ export class ProfileStorageChangesListenerChannel
 			this._onDidChange.fire({ valueChanges, targetChanges });
 		}
 	}
+
 	listen(
 		_: unknown,
 		event: string,
@@ -205,10 +228,12 @@ export class ProfileStorageChangesListenerChannel
 			case "onDidChange":
 				return this._onDidChange.event;
 		}
+
 		throw new Error(
 			`[ProfileStorageChangesListenerChannel] Event not found: ${event}`,
 		);
 	}
+
 	async call(_: unknown, command: string): Promise<any> {
 		throw new Error(`Call not found: ${command}`);
 	}

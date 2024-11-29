@@ -36,7 +36,9 @@ export class NativeLogService extends LogService {
 			// Normal mode: Log to console
 			consoleLogger = new ConsoleLogger(fileLogger.getLevel());
 		}
+
 		super(fileLogger, [consoleLogger]);
+
 		this._register(disposables);
 	}
 }

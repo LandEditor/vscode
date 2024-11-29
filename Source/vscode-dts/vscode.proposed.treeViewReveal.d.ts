@@ -11,7 +11,9 @@ declare module "vscode" {
 			element: T | undefined,
 			options?: {
 				select?: boolean;
+
 				focus?: boolean;
+
 				expand?: boolean | number;
 			},
 		): Thenable<void>;

@@ -42,6 +42,7 @@ export async function shouldPasteTerminalText(
 		// Invalid value fallback
 		return "auto";
 	}
+
 	const configValue = parseConfigValue(
 		configurationService.getValue(
 			TerminalSettingId.EnableMultiLinePasteWarning,
@@ -58,12 +59,14 @@ export async function shouldPasteTerminalText(
 		if (bracketedPasteMode) {
 			return true;
 		}
+
 		const textForLines = text.split(/\r?\n/);
 		// Ignore check when a command is copied with a trailing new line
 		if (textForLines.length === 2 && textForLines[1].trim().length === 0) {
 			return true;
 		}
 	}
+
 	const displayItemsCount = 3;
 
 	const maxPreviewLineLength = 30;
@@ -77,13 +80,17 @@ export async function shouldPasteTerminalText(
 			line.length > maxPreviewLineLength
 				? `${line.slice(0, maxPreviewLineLength)}…`
 				: line;
+
 		detail += `\n${cleanedLine}`;
 	}
+
 	if (textForLines.length > displayItemsCount) {
 		detail += `\n…`;
 	}
+
 	const { result, checkboxChecked } = await dialogService.prompt<{
 		confirmed: boolean;
+
 		singleLine: boolean;
 	}>({
 		message: localize(
@@ -124,14 +131,17 @@ export async function shouldPasteTerminalText(
 	if (!result) {
 		return false;
 	}
+
 	if (result.confirmed && checkboxChecked) {
 		await configurationService.updateValue(
 			TerminalSettingId.EnableMultiLinePasteWarning,
 			false,
 		);
 	}
+
 	if (result.singleLine) {
 		return { modifiedText: text.replace(/\r?\n/g, "") };
 	}
+
 	return result.confirmed;
 }

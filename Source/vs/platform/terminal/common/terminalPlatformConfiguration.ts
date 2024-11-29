@@ -483,6 +483,7 @@ export function registerTerminalPlatformConfiguration() {
 	Registry.as<IConfigurationRegistry>(
 		Extensions.Configuration,
 	).registerConfiguration(terminalPlatformConfiguration);
+
 	registerTerminalDefaultProfileConfiguration();
 }
 let defaultProfilesConfiguration: IConfigurationNode | undefined;
@@ -490,6 +491,7 @@ let defaultProfilesConfiguration: IConfigurationNode | undefined;
 export function registerTerminalDefaultProfileConfiguration(
 	detectedProfiles?: {
 		os: OperatingSystem;
+
 		profiles: ITerminalProfile[];
 	},
 	extensionContributedProfiles?: readonly IExtensionTerminalProfile[],
@@ -506,6 +508,7 @@ export function registerTerminalDefaultProfileConfiguration(
 			extensionContributedProfiles,
 		);
 	}
+
 	const oldDefaultProfilesConfiguration = defaultProfilesConfiguration;
 
 	defaultProfilesConfiguration = {
@@ -570,6 +573,7 @@ export function registerTerminalDefaultProfileConfiguration(
 			},
 		},
 	};
+
 	registry.updateConfigurations({
 		add: [defaultProfilesConfiguration],
 		remove: oldDefaultProfilesConfiguration

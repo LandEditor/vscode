@@ -4,13 +4,21 @@
  *--------------------------------------------------------------------------------------------*/
 export interface PreviewSettings {
 	readonly source: string;
+
 	readonly line?: number;
+
 	readonly fragment?: string;
+
 	readonly selectedLine?: number;
+
 	readonly scrollPreviewWithEditor?: boolean;
+
 	readonly scrollEditorWithPreview: boolean;
+
 	readonly disableSecurityWarnings: boolean;
+
 	readonly doubleClickToSwitchToEditor: boolean;
+
 	readonly webviewResourceRoot: string;
 }
 export function getData<T = {}>(key: string): T {
@@ -23,13 +31,16 @@ export function getData<T = {}>(key: string): T {
 			return JSON.parse(data);
 		}
 	}
+
 	throw new Error(`Could not load data for ${key}`);
 }
 export class SettingsManager {
 	private _settings: PreviewSettings = getData("data-settings");
+
 	public get settings(): PreviewSettings {
 		return this._settings;
 	}
+
 	public updateSettings(newSettings: PreviewSettings) {
 		this._settings = newSettings;
 	}

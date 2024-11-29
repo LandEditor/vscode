@@ -28,6 +28,7 @@ export class IndexedDB {
 
 		return new IndexedDB(database, name);
 	}
+
 	private static async openDatabase(
 		name: string,
 		version: number | undefined,
@@ -55,13 +56,16 @@ export class IndexedDB {
 
 					throw error;
 				}
+
 				return await IndexedDB.doOpenDatabase(name, version, stores);
 			}
+
 			throw err;
 		} finally {
 			mark(`code/didOpenDatabase/${name}`);
 		}
 	}
+
 	private static doOpenDatabase(
 		name: string,
 		version: number | undefined,
@@ -69,7 +73,9 @@ export class IndexedDB {
 	): Promise<IDBDatabase> {
 		return new Promise((c, e) => {
 			const request = indexedDB.open(name, version);
+
 			request.onerror = () => e(request.error);
+
 			request.onsuccess = () => {
 				const db = request.result;
 
@@ -78,13 +84,16 @@ export class IndexedDB {
 						console.error(
 							`Error while opening IndexedDB. Could not find '${store}'' object store`,
 						);
+
 						e(new MissingStoresError(db));
 
 						return;
 					}
 				}
+
 				c(db);
 			};
+
 			request.onupgradeneeded = () => {
 				const db = request.result;
 
@@ -96,17 +105,22 @@ export class IndexedDB {
 			};
 		});
 	}
+
 	private static deleteDatabase(database: IDBDatabase): Promise<void> {
 		return new Promise((c, e) => {
 			// Close any opened connections
 			database.close();
 			// Delete the db
 			const deleteRequest = indexedDB.deleteDatabase(database.name);
+
 			deleteRequest.onerror = (err) => e(deleteRequest.error);
+
 			deleteRequest.onsuccess = () => c();
 		});
 	}
+
 	private database: IDBDatabase | null = null;
+
 	private readonly pendingTransactions: IDBTransaction[] = [];
 
 	constructor(
@@ -115,23 +129,29 @@ export class IndexedDB {
 	) {
 		this.database = database;
 	}
+
 	hasPendingTransactions(): boolean {
 		return this.pendingTransactions.length > 0;
 	}
+
 	close(): void {
 		if (this.pendingTransactions.length) {
 			this.pendingTransactions
 				.splice(0, this.pendingTransactions.length)
 				.forEach((transaction) => transaction.abort());
 		}
+
 		this.database?.close();
+
 		this.database = null;
 	}
+
 	runInTransaction<T>(
 		store: string,
 		transactionMode: IDBTransactionMode,
 		dbRequestFn: (store: IDBObjectStore) => IDBRequest<T>[],
 	): Promise<T[]>;
+
 	runInTransaction<T>(
 		store: string,
 		transactionMode: IDBTransactionMode,
@@ -146,7 +166,9 @@ export class IndexedDB {
 		if (!this.database) {
 			throw new DBClosedError(this.name);
 		}
+
 		const transaction = this.database.transaction(store, transactionMode);
+
 		this.pendingTransactions.push(transaction);
 
 		return new Promise<T | T[]>((c, e) => {
@@ -157,12 +179,14 @@ export class IndexedDB {
 					c(request.result);
 				}
 			};
+
 			transaction.onerror = () =>
 				e(
 					transaction.error
 						? ErrorNoTelemetry.fromError(transaction.error)
 						: new ErrorNoTelemetry("unknown error"),
 				);
+
 			transaction.onabort = () =>
 				e(
 					transaction.error
@@ -178,6 +202,7 @@ export class IndexedDB {
 			),
 		);
 	}
+
 	async getKeyValues<V>(
 		store: string,
 		isValid: (value: unknown) => value is V,
@@ -185,7 +210,9 @@ export class IndexedDB {
 		if (!this.database) {
 			throw new DBClosedError(this.name);
 		}
+
 		const transaction = this.database.transaction(store, "readonly");
+
 		this.pendingTransactions.push(transaction);
 
 		return new Promise<Map<string, V>>((resolve) => {
@@ -219,9 +246,12 @@ export class IndexedDB {
 				console.error(
 					`IndexedDB getKeyValues(): ${toErrorMessage(error, true)}`,
 				);
+
 				resolve(items);
 			};
+
 			cursor.onerror = () => onError(cursor.error);
+
 			transaction.onerror = () => onError(transaction.error);
 		}).finally(() =>
 			this.pendingTransactions.splice(

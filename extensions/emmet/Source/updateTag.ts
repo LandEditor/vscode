@@ -10,6 +10,7 @@ import { getHtmlFlatNode, validate } from "./util";
 
 interface TagRange {
 	name: string;
+
 	range: vscode.Range;
 }
 export async function updateTag(
@@ -18,6 +19,7 @@ export async function updateTag(
 	if (!validate(false) || !vscode.window.activeTextEditor) {
 		return;
 	}
+
 	const editor = vscode.window.activeTextEditor;
 
 	const document = editor.document;
@@ -27,6 +29,7 @@ export async function updateTag(
 	if (!rootNode) {
 		return;
 	}
+
 	const rangesToUpdate = editor.selections.reduceRight<TagRange[]>(
 		(prev, selection) =>
 			prev.concat(getRangesToUpdate(document, selection, rootNode)),
@@ -36,6 +39,7 @@ export async function updateTag(
 	if (!rangesToUpdate.length) {
 		return;
 	}
+
 	const firstTagName = rangesToUpdate[0].name;
 
 	const tagNamesAreEqual = rangesToUpdate.every(
@@ -52,6 +56,7 @@ export async function updateTag(
 			return false;
 		}
 	}
+
 	return editor.edit((editBuilder) => {
 		rangesToUpdate.forEach((tagRange) => {
 			editBuilder.replace(tagRange.range, tagName!);
@@ -66,6 +71,7 @@ function getRangesFromNode(
 
 	if (node.open) {
 		const start = document.positionAt(node.open.start);
+
 		ranges.push({
 			name: node.name,
 			range: new vscode.Range(
@@ -74,10 +80,12 @@ function getRangesFromNode(
 			),
 		});
 	}
+
 	if (node.close) {
 		const endTagStart = document.positionAt(node.close.start);
 
 		const end = document.positionAt(node.close.end);
+
 		ranges.push({
 			name: node.name,
 			range: new vscode.Range(
@@ -86,6 +94,7 @@ function getRangesFromNode(
 			),
 		});
 	}
+
 	return ranges;
 }
 function getRangesToUpdate(
@@ -102,5 +111,6 @@ function getRangesToUpdate(
 	if (!nodeToUpdate) {
 		return [];
 	}
+
 	return getRangesFromNode(nodeToUpdate, document);
 }

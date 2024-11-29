@@ -48,38 +48,47 @@ function normalizeId(id: string) {
 	if (id.length > 0 && id.charAt(id.length - 1) === "#") {
 		return id.substring(0, id.length - 1);
 	}
+
 	return id;
 }
 class JSONContributionRegistry implements IJSONContributionRegistry {
 	private schemasById: {
 		[id: string]: IJSONSchema;
 	};
+
 	private readonly _onDidChangeSchema = new Emitter<string>();
+
 	readonly onDidChangeSchema: Event<string> = this._onDidChangeSchema.event;
 
 	constructor() {
 		this.schemasById = {};
 	}
+
 	public registerSchema(
 		uri: string,
 		unresolvedSchemaContent: IJSONSchema,
 	): void {
 		this.schemasById[normalizeId(uri)] = unresolvedSchemaContent;
+
 		this._onDidChangeSchema.fire(uri);
 	}
+
 	public notifySchemaChanged(uri: string): void {
 		this._onDidChangeSchema.fire(uri);
 	}
+
 	public getSchemaContributions(): ISchemaContributions {
 		return {
 			schemas: this.schemasById,
 		};
 	}
+
 	public getSchemaContent(uri: string): string | undefined {
 		const schema = this.schemasById[uri];
 
 		return schema ? getCompressedContent(schema) : undefined;
 	}
+
 	public hasSchemaContent(uri: string): boolean {
 		return !!this.schemasById[uri];
 	}

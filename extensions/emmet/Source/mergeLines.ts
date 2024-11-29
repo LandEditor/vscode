@@ -12,6 +12,7 @@ export function mergeLines() {
 	if (!validate(false) || !vscode.window.activeTextEditor) {
 		return;
 	}
+
 	const editor = vscode.window.activeTextEditor;
 
 	const rootNode = getRootNode(editor.document, true);
@@ -19,6 +20,7 @@ export function mergeLines() {
 	if (!rootNode) {
 		return;
 	}
+
 	return editor.edit((editBuilder) => {
 		Array.from(editor.selections)
 			.reverse()
@@ -56,11 +58,14 @@ function getRangesToReplace(
 		);
 	} else {
 		startNodeToUpdate = getFlatNode(rootNode, selectionStart, true);
+
 		endNodeToUpdate = getFlatNode(rootNode, selectionEnd, true);
 	}
+
 	if (!startNodeToUpdate || !endNodeToUpdate) {
 		return;
 	}
+
 	const startPos = document.positionAt(startNodeToUpdate.start);
 
 	const startLine = startPos.line;
@@ -74,6 +79,7 @@ function getRangesToReplace(
 	if (startLine === endLine) {
 		return;
 	}
+
 	const rangeToReplace = offsetRangeToVsRange(
 		document,
 		startNodeToUpdate.start,
@@ -85,5 +91,6 @@ function getRangesToReplace(
 	for (let i = startLine + 1; i <= endLine; i++) {
 		textToReplaceWith += document.lineAt(i).text.trim();
 	}
+
 	return new vscode.TextEdit(rangeToReplace, textToReplaceWith);
 }

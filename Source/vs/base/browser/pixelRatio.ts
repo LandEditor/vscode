@@ -11,21 +11,30 @@ import { getWindowId, onDidUnregisterWindow } from "./dom.js";
  */
 class DevicePixelRatioMonitor extends Disposable {
 	private readonly _onDidChange = this._register(new Emitter<void>());
+
 	readonly onDidChange = this._onDidChange.event;
+
 	private readonly _listener: () => void;
+
 	private _mediaQueryList: MediaQueryList | null;
 
 	constructor(targetWindow: Window) {
 		super();
+
 		this._listener = () => this._handleChange(targetWindow, true);
+
 		this._mediaQueryList = null;
+
 		this._handleChange(targetWindow, false);
 	}
+
 	private _handleChange(targetWindow: Window, fireEvent: boolean): void {
 		this._mediaQueryList?.removeEventListener("change", this._listener);
+
 		this._mediaQueryList = targetWindow.matchMedia(
 			`(resolution: ${targetWindow.devicePixelRatio}dppx)`,
 		);
+
 		this._mediaQueryList.addEventListener("change", this._listener);
 
 		if (fireEvent) {
@@ -35,30 +44,38 @@ class DevicePixelRatioMonitor extends Disposable {
 }
 export interface IPixelRatioMonitor {
 	readonly value: number;
+
 	readonly onDidChange: Event<number>;
 }
 class PixelRatioMonitorImpl extends Disposable implements IPixelRatioMonitor {
 	private readonly _onDidChange = this._register(new Emitter<number>());
+
 	readonly onDidChange = this._onDidChange.event;
+
 	private _value: number;
 
 	get value(): number {
 		return this._value;
 	}
+
 	constructor(targetWindow: Window) {
 		super();
+
 		this._value = this._getPixelRatio(targetWindow);
 
 		const dprMonitor = this._register(
 			new DevicePixelRatioMonitor(targetWindow),
 		);
+
 		this._register(
 			dprMonitor.onDidChange(() => {
 				this._value = this._getPixelRatio(targetWindow);
+
 				this._onDidChange.fire(this._value);
 			}),
 		);
 	}
+
 	private _getPixelRatio(targetWindow: Window): number {
 		const ctx: any = document.createElement("canvas").getContext("2d");
 
@@ -80,6 +97,7 @@ class PixelRatioMonitorFacade {
 		number,
 		PixelRatioMonitorImpl
 	>();
+
 	private _getOrCreatePixelRatioMonitor(
 		targetWindow: Window,
 	): PixelRatioMonitorImpl {
@@ -92,14 +110,17 @@ class PixelRatioMonitorFacade {
 			pixelRatioMonitor = markAsSingleton(
 				new PixelRatioMonitorImpl(targetWindow),
 			);
+
 			this.mapWindowIdToPixelRatioMonitor.set(
 				targetWindowId,
 				pixelRatioMonitor,
 			);
+
 			markAsSingleton(
 				Event.once(onDidUnregisterWindow)(({ vscodeWindowId }) => {
 					if (vscodeWindowId === targetWindowId) {
 						pixelRatioMonitor?.dispose();
+
 						this.mapWindowIdToPixelRatioMonitor.delete(
 							targetWindowId,
 						);
@@ -107,8 +128,10 @@ class PixelRatioMonitorFacade {
 				}),
 			);
 		}
+
 		return pixelRatioMonitor;
 	}
+
 	getInstance(targetWindow: Window): IPixelRatioMonitor {
 		return this._getOrCreatePixelRatioMonitor(targetWindow);
 	}

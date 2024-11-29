@@ -38,8 +38,11 @@ export type OpenInternalOptions = {
 
 export type OpenExternalOptions = {
 	readonly openExternal?: boolean;
+
 	readonly allowTunneling?: boolean;
+
 	readonly allowContributedOpeners?: boolean | string;
+
 	readonly fromWorkspace?: boolean;
 };
 
@@ -63,10 +66,12 @@ export interface IExternalOpener {
 		href: string,
 		ctx: {
 			sourceUri: URI;
+
 			preferredOpenerId?: string;
 		},
 		token: CancellationToken,
 	): Promise<boolean>;
+
 	dispose?(): void;
 }
 export interface IValidator {
@@ -82,6 +87,7 @@ export interface IExternalUriResolver {
 	): Promise<
 		| {
 				resolved: URI;
+
 				dispose(): void;
 		  }
 		| undefined
@@ -154,6 +160,7 @@ export function withSelection(uri: URI, selection: ITextEditorSelection): URI {
  */
 export function extractSelection(uri: URI): {
 	selection: ITextEditorSelection | undefined;
+
 	uri: URI;
 } {
 	let selection: ITextEditorSelection | undefined = undefined;
@@ -173,7 +180,9 @@ export function extractSelection(uri: URI): {
 					: 1
 				: undefined,
 		};
+
 		uri = uri.with({ fragment: "" });
 	}
+
 	return { selection, uri };
 }

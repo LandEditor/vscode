@@ -13,12 +13,14 @@ enum OpenMarkdownLinks {
 }
 export class MdLinkOpener {
 	constructor(private readonly _client: MdLanguageClient) {}
+
 	public async resolveDocumentLink(
 		linkText: string,
 		fromResource: vscode.Uri,
 	): Promise<proto.ResolvedDocumentLinkTarget> {
 		return this._client.resolveLinkTarget(linkText, fromResource);
 	}
+
 	public async openDocumentLink(
 		linkText: string,
 		fromResource: vscode.Uri,
@@ -32,6 +34,7 @@ export class MdLinkOpener {
 		if (!resolved) {
 			return;
 		}
+
 		const uri = vscode.Uri.from(resolved.uri);
 
 		switch (resolved.kind) {
@@ -56,6 +59,7 @@ export class MdLinkOpener {
 						}
 					}
 				}
+
 				return vscode.commands.executeCommand("vscode.open", uri, {
 					selection: resolved.position
 						? new vscode.Range(

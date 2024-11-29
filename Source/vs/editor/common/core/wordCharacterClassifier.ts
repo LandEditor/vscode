@@ -16,8 +16,11 @@ export const enum WordCharacterClass {
 
 export class WordCharacterClassifier extends CharacterClassifier<WordCharacterClass> {
 	public readonly intlSegmenterLocales: Intl.UnicodeBCP47LocaleIdentifier[];
+
 	private readonly _segmenter: Intl.Segmenter | null = null;
+
 	private _cachedLine: string | null = null;
+
 	private _cachedSegments: IntlWordSegmentData[] = [];
 
 	constructor(
@@ -25,6 +28,7 @@ export class WordCharacterClassifier extends CharacterClassifier<WordCharacterCl
 		intlSegmenterLocales: Intl.UnicodeBCP47LocaleIdentifier[],
 	) {
 		super(WordCharacterClass.Regular);
+
 		this.intlSegmenterLocales = intlSegmenterLocales;
 
 		if (this.intlSegmenterLocales.length > 0) {
@@ -43,6 +47,7 @@ export class WordCharacterClassifier extends CharacterClassifier<WordCharacterCl
 		}
 
 		this.set(CharCode.Space, WordCharacterClass.Whitespace);
+
 		this.set(CharCode.Tab, WordCharacterClass.Whitespace);
 	}
 
@@ -56,8 +61,10 @@ export class WordCharacterClassifier extends CharacterClassifier<WordCharacterCl
 			if (segment.index > offset) {
 				break;
 			}
+
 			candidate = segment;
 		}
+
 		return candidate;
 	}
 
@@ -69,8 +76,10 @@ export class WordCharacterClassifier extends CharacterClassifier<WordCharacterCl
 			if (segment.index < offset) {
 				continue;
 			}
+
 			return segment;
 		}
+
 		return null;
 	}
 
@@ -86,6 +95,7 @@ export class WordCharacterClassifier extends CharacterClassifier<WordCharacterCl
 
 		// Update the cache with the new line
 		this._cachedLine = line;
+
 		this._cachedSegments = this._filterWordSegments(
 			this._segmenter.segment(line),
 		);
@@ -103,6 +113,7 @@ export class WordCharacterClassifier extends CharacterClassifier<WordCharacterCl
 				result.push(segment);
 			}
 		}
+
 		return result;
 	}
 
@@ -112,6 +123,7 @@ export class WordCharacterClassifier extends CharacterClassifier<WordCharacterCl
 		if (segment.isWordLike) {
 			return true;
 		}
+
 		return false;
 	}
 }
@@ -135,7 +147,9 @@ export function getMapForWordSeparators(
 			wordSeparators,
 			intlSegmenterLocales,
 		);
+
 		wordClassifierCache.set(key, result);
 	}
+
 	return result;
 }

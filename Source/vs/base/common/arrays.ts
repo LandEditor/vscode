@@ -19,6 +19,7 @@ export function tail2<T>(arr: T[]): [T[], T] {
 	if (arr.length === 0) {
 		throw new Error("Invalid tail call");
 	}
+
 	return [arr.slice(0, arr.length - 1), arr[arr.length - 1]];
 }
 export function equals<T>(
@@ -29,17 +30,21 @@ export function equals<T>(
 	if (one === other) {
 		return true;
 	}
+
 	if (!one || !other) {
 		return false;
 	}
+
 	if (one.length !== other.length) {
 		return false;
 	}
+
 	for (let i = 0, len = one.length; i < len; i++) {
 		if (!itemEquals(one[i], other[i])) {
 			return false;
 		}
 	}
+
 	return true;
 }
 /**
@@ -52,6 +57,7 @@ export function removeFastWithoutKeepingOrder<T>(array: T[], index: number) {
 	if (index < last) {
 		array[index] = array[last];
 	}
+
 	array.pop();
 }
 /**
@@ -107,6 +113,7 @@ export function binarySearch2(
 			return mid;
 		}
 	}
+
 	return -(low + 1);
 }
 type Compare<T> = (a: T, b: T) => number;
@@ -117,6 +124,7 @@ export function quickSelect<T>(nth: number, data: T[], compare: Compare<T>): T {
 	if (nth >= data.length) {
 		throw new TypeError("invalid index");
 	}
+
 	const pivotValue = data[Math.floor(data.length * Math.random())];
 
 	const lower: T[] = [];
@@ -136,6 +144,7 @@ export function quickSelect<T>(nth: number, data: T[], compare: Compare<T>): T {
 			pivots.push(value);
 		}
 	}
+
 	if (nth < lower.length) {
 		return quickSelect(nth, lower, compare);
 	} else if (nth < lower.length + pivots.length) {
@@ -159,11 +168,13 @@ export function groupBy<T>(
 	for (const element of data.slice(0).sort(compare)) {
 		if (!currentGroup || compare(currentGroup[0], element) !== 0) {
 			currentGroup = [element];
+
 			result.push(currentGroup);
 		} else {
 			currentGroup.push(element);
 		}
 	}
+
 	return result;
 }
 /**
@@ -186,10 +197,13 @@ export function* groupAdjacentBy<T>(
 			if (currentGroup) {
 				yield currentGroup;
 			}
+
 			currentGroup = [item];
 		}
+
 		last = item;
 	}
+
 	if (currentGroup) {
 		yield currentGroup;
 	}
@@ -219,6 +233,7 @@ export function forEachWithNeighbors<T>(
 }
 interface IMutableSplice<T> extends ISplice<T> {
 	readonly toInsert: T[];
+
 	deleteCount: number;
 }
 /**
@@ -239,15 +254,18 @@ export function sortedDiff<T>(
 		if (deleteCount === 0 && toInsert.length === 0) {
 			return;
 		}
+
 		const latest = result[result.length - 1];
 
 		if (latest && latest.start + latest.deleteCount === start) {
 			latest.deleteCount += deleteCount;
+
 			latest.toInsert.push(...toInsert);
 		} else {
 			result.push({ start, deleteCount, toInsert });
 		}
 	}
+
 	let beforeIdx = 0;
 
 	let afterIdx = 0;
@@ -258,11 +276,13 @@ export function sortedDiff<T>(
 
 			break;
 		}
+
 		if (afterIdx === after.length) {
 			pushSplice(beforeIdx, before.length - beforeIdx, []);
 
 			break;
 		}
+
 		const beforeElement = before[beforeIdx];
 
 		const afterElement = after[afterIdx];
@@ -272,17 +292,21 @@ export function sortedDiff<T>(
 		if (n === 0) {
 			// equal
 			beforeIdx += 1;
+
 			afterIdx += 1;
 		} else if (n < 0) {
 			// beforeElement is smaller -> before element removed
 			pushSplice(beforeIdx, 1, []);
+
 			beforeIdx += 1;
 		} else if (n > 0) {
 			// beforeElement is greater -> after element added
 			pushSplice(beforeIdx, 0, [afterElement]);
+
 			afterIdx += 1;
 		}
 	}
+
 	return result;
 }
 /**
@@ -295,6 +319,7 @@ export function delta<T>(
 	compare: (a: T, b: T) => number,
 ): {
 	removed: T[];
+
 	added: T[];
 } {
 	const splices = sortedDiff(before, after, compare);
@@ -307,8 +332,10 @@ export function delta<T>(
 		removed.push(
 			...before.slice(splice.start, splice.start + splice.deleteCount),
 		);
+
 		added.push(...splice.toInsert);
 	}
+
 	return { removed, added };
 }
 /**
@@ -329,7 +356,9 @@ export function top<T>(
 	if (n === 0) {
 		return [];
 	}
+
 	const result = array.slice(0, n).sort(compare);
+
 	topStep(array, compare, result, n, array.length);
 
 	return result;
@@ -357,6 +386,7 @@ export function topAsync<T>(
 	if (n === 0) {
 		return Promise.resolve([]);
 	}
+
 	return new Promise((resolve, reject) => {
 		(async () => {
 			const o = array.length;
@@ -365,17 +395,22 @@ export function topAsync<T>(
 
 			for (
 				let i = n, m = Math.min(n + batch, o);
+
 				i < o;
+
 				i = m, m = Math.min(m + batch, o)
 			) {
 				if (i > n) {
 					await new Promise((resolve) => setTimeout(resolve)); // any other delay function would starve I/O
 				}
+
 				if (token && token.isCancellationRequested) {
 					throw new CancellationError();
 				}
+
 				topStep(array, compare, result, i, m);
 			}
+
 			return result;
 		})().then(resolve, reject);
 	});
@@ -397,6 +432,7 @@ function topStep<T>(
 				result,
 				(e) => compare(element, e) < 0,
 			);
+
 			result.splice(j, 0, element);
 		}
 	}
@@ -418,9 +454,11 @@ export function coalesceInPlace<T>(
 	for (let i = 0; i < array.length; i++) {
 		if (!!array[i]) {
 			array[to] = array[i];
+
 			to += 1;
 		}
 	}
+
 	array.length = to;
 }
 /**
@@ -465,6 +503,7 @@ export function distinct<T>(
 		if (seen.has(key)) {
 			return false;
 		}
+
 		seen.add(key);
 
 		return true;
@@ -479,6 +518,7 @@ export function uniqueFilter<T, R>(keyFn: (t: T) => R): (t: T) => boolean {
 		if (seen.has(key)) {
 			return false;
 		}
+
 		seen.add(key);
 
 		return true;
@@ -493,11 +533,14 @@ export function commonPrefixLength<T>(
 
 	for (
 		let i = 0, len = Math.min(one.length, other.length);
+
 		i < len && equals(one[i], other[i]);
+
 		i++
 	) {
 		result++;
 	}
+
 	return result;
 }
 export function range(to: number): number[];
@@ -511,8 +554,10 @@ export function range(arg: number, to?: number): number[] {
 		from = arg;
 	} else {
 		from = 0;
+
 		to = arg;
 	}
+
 	const result: number[] = [];
 
 	if (from <= to) {
@@ -524,6 +569,7 @@ export function range(arg: number, to?: number): number[] {
 			result.push(i);
 		}
 	}
+
 	return result;
 }
 export function index<T>(
@@ -578,6 +624,7 @@ export function remove<T>(array: T[], element: T): T | undefined {
 
 		return element;
 	}
+
 	return undefined;
 }
 /**
@@ -612,11 +659,14 @@ export function shuffle<T>(array: T[], _seed?: number): void {
 	} else {
 		rand = Math.random;
 	}
+
 	for (let i = array.length - 1; i > 0; i -= 1) {
 		const j = Math.floor(rand() * (i + 1));
 
 		const temp = array[i];
+
 		array[i] = array[j];
+
 		array[j] = temp;
 	}
 }
@@ -628,6 +678,7 @@ export function pushToStart<T>(arr: T[], value: T): void {
 
 	if (index > -1) {
 		arr.splice(index, 1);
+
 		arr.unshift(value);
 	}
 }
@@ -639,6 +690,7 @@ export function pushToEnd<T>(arr: T[], value: T): void {
 
 	if (index > -1) {
 		arr.splice(index, 1);
+
 		arr.push(value);
 	}
 }
@@ -672,11 +724,13 @@ export function insertInto<T>(array: T[], start: number, newItems: T[]): void {
 	const originalLength = array.length;
 
 	const newItemsLength = newItems.length;
+
 	array.length = originalLength + newItemsLength;
 	// Move the items after the start index, start from the end so that we don't overwrite any value.
 	for (let i = originalLength - 1; i >= startIdx; i--) {
 		array[i + newItemsLength] = array[i];
 	}
+
 	for (let i = 0; i < newItemsLength; i++) {
 		array[i + startIdx] = newItems[i];
 	}
@@ -703,6 +757,7 @@ export function splice<T>(
 		// see https://bugs.webkit.org/show_bug.cgi?id=261140
 		result = [];
 	}
+
 	insertInto(array, index, newItems);
 
 	return result;
@@ -731,15 +786,19 @@ export namespace CompareResult {
 	export function isLessThan(result: CompareResult): boolean {
 		return result < 0;
 	}
+
 	export function isLessThanOrEqual(result: CompareResult): boolean {
 		return result <= 0;
 	}
+
 	export function isGreaterThan(result: CompareResult): boolean {
 		return result > 0;
 	}
+
 	export function isNeitherLessOrGreaterThan(result: CompareResult): boolean {
 		return result === 0;
 	}
+
 	export const greaterThan = 1;
 
 	export const lessThan = -1;
@@ -770,6 +829,7 @@ export function tieBreakComparators<TItem>(
 				return result;
 			}
 		}
+
 		return CompareResult.neitherLessOrGreaterThan;
 	};
 }
@@ -788,11 +848,13 @@ export function reverseOrder<TItem>(
 }
 export class ArrayQueue<T> {
 	private firstIdx = 0;
+
 	private lastIdx = this.items.length - 1;
 	/**
 	 * Constructs a queue that is backed by the given array. Runtime is O(1).
 	 */
 	constructor(private readonly items: readonly T[]) {}
+
 	get length(): number {
 		return this.lastIdx - this.firstIdx + 1;
 	}
@@ -811,10 +873,12 @@ export class ArrayQueue<T> {
 		) {
 			startIdx++;
 		}
+
 		const result =
 			startIdx === this.firstIdx
 				? null
 				: this.items.slice(this.firstIdx, startIdx);
+
 		this.firstIdx = startIdx;
 
 		return result;
@@ -832,40 +896,52 @@ export class ArrayQueue<T> {
 		while (endIdx >= 0 && predicate(this.items[endIdx])) {
 			endIdx--;
 		}
+
 		const result =
 			endIdx === this.lastIdx
 				? null
 				: this.items.slice(endIdx + 1, this.lastIdx + 1);
+
 		this.lastIdx = endIdx;
 
 		return result;
 	}
+
 	peek(): T | undefined {
 		if (this.length === 0) {
 			return undefined;
 		}
+
 		return this.items[this.firstIdx];
 	}
+
 	peekLast(): T | undefined {
 		if (this.length === 0) {
 			return undefined;
 		}
+
 		return this.items[this.lastIdx];
 	}
+
 	dequeue(): T | undefined {
 		const result = this.items[this.firstIdx];
+
 		this.firstIdx++;
 
 		return result;
 	}
+
 	removeLast(): T | undefined {
 		const result = this.items[this.lastIdx];
+
 		this.lastIdx--;
 
 		return result;
 	}
+
 	takeCount(count: number): T[] {
 		const result = this.items.slice(this.firstIdx, this.firstIdx + count);
+
 		this.firstIdx += count;
 
 		return result;
@@ -886,76 +962,96 @@ export class CallbackIterable<T> {
 		 */
 		public readonly iterate: (callback: (item: T) => boolean) => void,
 	) {}
+
 	forEach(handler: (item: T) => void) {
 		this.iterate((item) => {
 			handler(item);
+
 			return true;
 		});
 	}
+
 	toArray(): T[] {
 		const result: T[] = [];
+
 		this.iterate((item) => {
 			result.push(item);
+
 			return true;
 		});
 
 		return result;
 	}
+
 	filter(predicate: (item: T) => boolean): CallbackIterable<T> {
 		return new CallbackIterable((cb) =>
 			this.iterate((item) => (predicate(item) ? cb(item) : true)),
 		);
 	}
+
 	map<TResult>(mapFn: (item: T) => TResult): CallbackIterable<TResult> {
 		return new CallbackIterable<TResult>((cb) =>
 			this.iterate((item) => cb(mapFn(item))),
 		);
 	}
+
 	some(predicate: (item: T) => boolean): boolean {
 		let result = false;
+
 		this.iterate((item) => {
 			result = predicate(item);
+
 			return !result;
 		});
 
 		return result;
 	}
+
 	findFirst(predicate: (item: T) => boolean): T | undefined {
 		let result: T | undefined;
+
 		this.iterate((item) => {
 			if (predicate(item)) {
 				result = item;
 
 				return false;
 			}
+
 			return true;
 		});
 
 		return result;
 	}
+
 	findLast(predicate: (item: T) => boolean): T | undefined {
 		let result: T | undefined;
+
 		this.iterate((item) => {
 			if (predicate(item)) {
 				result = item;
 			}
+
 			return true;
 		});
 
 		return result;
 	}
+
 	findLastMaxBy(comparator: Comparator<T>): T | undefined {
 		let result: T | undefined;
 
 		let first = true;
+
 		this.iterate((item) => {
 			if (
 				first ||
 				CompareResult.isGreaterThan(comparator(item, result!))
 			) {
 				first = false;
+
 				result = item;
 			}
+
 			return true;
 		});
 
@@ -995,6 +1091,7 @@ export class Permutation {
 		for (let i = 0; i < this._indexMap.length; i++) {
 			inverseIndexMap[this._indexMap[i]] = i;
 		}
+
 		return new Permutation(inverseIndexMap);
 	}
 }

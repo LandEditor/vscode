@@ -69,8 +69,11 @@ import {
 
 interface IDisposableDecoration {
 	decoration: IDecoration;
+
 	disposables: IDisposable[];
+
 	exitCode?: number;
+
 	markProperties?: IMarkProperties;
 }
 
@@ -79,22 +82,31 @@ export class DecorationAddon
 	implements ITerminalAddon, IDecorationAddon
 {
 	protected _terminal: Terminal | undefined;
+
 	private _capabilityDisposables: Map<TerminalCapability, DisposableStore> =
 		new Map();
+
 	private _decorations: Map<number, IDisposableDecoration> = new Map();
+
 	private _placeholderDecoration: IDecoration | undefined;
+
 	private _showGutterDecorations?: boolean;
+
 	private _showOverviewRulerDecorations?: boolean;
+
 	private readonly _registeredMenuItems: Map<ITerminalCommand, IAction[]> =
 		new Map();
 
 	private readonly _onDidRequestRunCommand = this._register(
 		new Emitter<{ command: ITerminalCommand; noNewLine?: boolean }>(),
 	);
+
 	readonly onDidRequestRunCommand = this._onDidRequestRunCommand.event;
+
 	private readonly _onDidRequestCopyAsHtml = this._register(
 		new Emitter<{ command: ITerminalCommand }>(),
 	);
+
 	readonly onDidRequestCopyAsHtml = this._onDidRequestCopyAsHtml.event;
 
 	constructor(
@@ -118,7 +130,9 @@ export class DecorationAddon
 		@IHoverService private readonly _hoverService: IHoverService,
 	) {
 		super();
+
 		this._register(toDisposable(() => this._dispose()));
+
 		this._register(
 			this._configurationService.onDidChangeConfiguration((e) => {
 				if (
@@ -138,26 +152,32 @@ export class DecorationAddon
 					this._removeCapabilityDisposables(
 						TerminalCapability.CommandDetection,
 					);
+
 					this._updateDecorationVisibility();
 				}
 			}),
 		);
+
 		this._register(
 			this._themeService.onDidColorThemeChange(() =>
 				this._refreshStyles(true),
 			),
 		);
+
 		this._updateDecorationVisibility();
+
 		this._register(
 			this._capabilities.onDidAddCapabilityType((c) =>
 				this._createCapabilityDisposables(c),
 			),
 		);
+
 		this._register(
 			this._capabilities.onDidRemoveCapabilityType((c) =>
 				this._removeCapabilityDisposables(c),
 			),
 		);
+
 		this._register(
 			lifecycleService.onWillShutdown(() =>
 				this._disposeAllDecorations(),
@@ -171,6 +191,7 @@ export class DecorationAddon
 		if (disposables) {
 			dispose(disposables);
 		}
+
 		this._capabilityDisposables.delete(c);
 	}
 
@@ -182,6 +203,7 @@ export class DecorationAddon
 		if (!capability || this._capabilityDisposables.has(c)) {
 			return;
 		}
+
 		switch (capability.type) {
 			case TerminalCapability.BufferMarkDetection:
 				store.add(
@@ -199,9 +221,11 @@ export class DecorationAddon
 				for (const d of disposables) {
 					store.add(d);
 				}
+
 				break;
 			}
 		}
+
 		this._capabilityDisposables.set(c, store);
 	}
 
@@ -213,9 +237,11 @@ export class DecorationAddon
 		) {
 			return undefined;
 		}
+
 		if (mark.hidden) {
 			return undefined;
 		}
+
 		return this.registerCommandDecoration(undefined, undefined, mark);
 	}
 
@@ -223,16 +249,21 @@ export class DecorationAddon
 		const showDecorations = this._configurationService.getValue(
 			TerminalSettingId.ShellIntegrationDecorationsEnabled,
 		);
+
 		this._showGutterDecorations =
 			showDecorations === "both" || showDecorations === "gutter";
+
 		this._showOverviewRulerDecorations =
 			showDecorations === "both" || showDecorations === "overviewRuler";
+
 		this._disposeAllDecorations();
 
 		if (this._showGutterDecorations || this._showOverviewRulerDecorations) {
 			this._attachToCommandCapability();
+
 			this._updateGutterDecorationVisibility();
 		}
+
 		const currentCommand = this._capabilities.get(
 			TerminalCapability.CommandDetection,
 		)?.executingCommandObject;
@@ -247,6 +278,7 @@ export class DecorationAddon
 
 		for (const value of this._decorations.values()) {
 			value.decoration.dispose();
+
 			dispose(value.disposables);
 		}
 	}
@@ -306,6 +338,7 @@ export class DecorationAddon
 				}
 			}
 		}
+
 		this._updateClasses(this._placeholderDecoration?.element);
 
 		for (const decoration of this._decorations.values()) {
@@ -321,18 +354,23 @@ export class DecorationAddon
 		for (const disposable of this._capabilityDisposables.values()) {
 			dispose(disposable);
 		}
+
 		this.clearDecorations();
 	}
 
 	private _clearPlaceholder(): void {
 		this._placeholderDecoration?.dispose();
+
 		this._placeholderDecoration = undefined;
 	}
 
 	public clearDecorations(): void {
 		this._placeholderDecoration?.marker.dispose();
+
 		this._clearPlaceholder();
+
 		this._disposeAllDecorations();
+
 		this._decorations.clear();
 	}
 
@@ -349,6 +387,7 @@ export class DecorationAddon
 			for (const d of disposables) {
 				store.add(d);
 			}
+
 			this._capabilityDisposables.set(
 				TerminalCapability.CommandDetection,
 				store,
@@ -365,9 +404,12 @@ export class DecorationAddon
 			const disposables = this._capabilityDisposables.get(
 				TerminalCapability.CommandDetection,
 			)!;
+
 			dispose(disposables);
+
 			this._capabilityDisposables.delete(capability.type);
 		}
+
 		const commandDetectionListeners = [];
 		// Command started
 		if (capability.executingCommandObject?.marker) {
@@ -376,6 +418,7 @@ export class DecorationAddon
 				true,
 			);
 		}
+
 		commandDetectionListeners.push(
 			capability.onCommandStarted((command) =>
 				this.registerCommandDecoration(command, true),
@@ -385,6 +428,7 @@ export class DecorationAddon
 		for (const command of capability.commands) {
 			this.registerCommandDecoration(command);
 		}
+
 		commandDetectionListeners.push(
 			capability.onCommandFinished((command) => {
 				this.registerCommandDecoration(command);
@@ -411,6 +455,7 @@ export class DecorationAddon
 
 						if (match) {
 							match.decoration.dispose();
+
 							dispose(match.disposables);
 						}
 					}
@@ -427,6 +472,7 @@ export class DecorationAddon
 					const lastDecoration = Array.from(
 						this._decorations.entries(),
 					)[this._decorations.size - 1];
+
 					lastDecoration?.[1].decoration.dispose();
 				} else if (
 					request.reason === CommandInvalidationReason.Windows
@@ -441,6 +487,7 @@ export class DecorationAddon
 
 	activate(terminal: Terminal): void {
 		this._terminal = terminal;
+
 		this._attachToCommandCapability();
 	}
 
@@ -457,6 +504,7 @@ export class DecorationAddon
 		) {
 			return undefined;
 		}
+
 		const marker = command?.marker || markProperties?.marker;
 
 		if (!marker) {
@@ -464,6 +512,7 @@ export class DecorationAddon
 				`cannot add a decoration for a command ${JSON.stringify(command)} with no marker`,
 			);
 		}
+
 		this._clearPlaceholder();
 
 		const color = this._getDecorationCssColor(command)?.toString() ?? "";
@@ -480,17 +529,21 @@ export class DecorationAddon
 		if (!decoration) {
 			return undefined;
 		}
+
 		if (beforeCommandExecution) {
 			this._placeholderDecoration = decoration;
 		}
+
 		decoration.onRender((element) => {
 			if (element.classList.contains(DecorationSelector.OverviewRuler)) {
 				return;
 			}
+
 			if (!this._decorations.get(decoration.marker.id)) {
 				decoration.onDispose(() =>
 					this._decorations.delete(decoration.marker.id),
 				);
+
 				this._decorations.set(decoration.marker.id, {
 					decoration,
 					disposables: this._createDisposables(
@@ -502,12 +555,14 @@ export class DecorationAddon
 					markProperties: command?.markProperties,
 				});
 			}
+
 			if (
 				!element.classList.contains(DecorationSelector.Codicon) ||
 				command?.marker?.line === 0
 			) {
 				// first render or buffer was cleared
 				updateLayout(this._configurationService, element);
+
 				this._updateClasses(
 					element,
 					command?.exitCode,
@@ -530,6 +585,7 @@ export class DecorationAddon
 		} else {
 			this._registeredMenuItems.set(command, [...items]);
 		}
+
 		return toDisposable(() => {
 			const commandItems = this._registeredMenuItems.get(command);
 
@@ -561,6 +617,7 @@ export class DecorationAddon
 				),
 			];
 		}
+
 		return [
 			...this._createContextMenu(element, command),
 			this._createHover(element, command),
@@ -587,9 +644,11 @@ export class DecorationAddon
 		if (!element) {
 			return;
 		}
+
 		for (const classes of element.classList) {
 			element.classList.remove(classes);
 		}
+
 		element.classList.add(
 			DecorationSelector.CommandDecoration,
 			DecorationSelector.Codicon,
@@ -615,11 +674,13 @@ export class DecorationAddon
 					DecorationSelector.DefaultColor,
 					DecorationSelector.Default,
 				);
+
 				element.classList.add(
 					...ThemeIcon.asClassNameArray(terminalDecorationIncomplete),
 				);
 			} else if (exitCode) {
 				element.classList.add(DecorationSelector.ErrorColor);
+
 				element.classList.add(
 					...ThemeIcon.asClassNameArray(terminalDecorationError),
 				);
@@ -652,6 +713,7 @@ export class DecorationAddon
 					e.stopImmediatePropagation();
 
 					const actions = await this._getCommandActions(command);
+
 					this._contextMenuService.showContextMenu({
 						getAnchor: () => element,
 						getActions: () => actions,
@@ -665,6 +727,7 @@ export class DecorationAddon
 					e.stopImmediatePropagation();
 
 					const actions = this._getContextMenuActions();
+
 					this._contextMenuService.showContextMenu({
 						getAnchor: () => element,
 						getActions: () => actions,
@@ -673,6 +736,7 @@ export class DecorationAddon
 			),
 		];
 	}
+
 	private _getContextMenuActions(): IAction[] {
 		const label = localize(
 			"workbench.action.terminal.toggleVisibility",
@@ -703,8 +767,10 @@ export class DecorationAddon
 		if (registeredMenuItems?.length) {
 			actions.push(...registeredMenuItems, new Separator());
 		}
+
 		if (command.command !== "") {
 			const labelRun = localize("terminal.rerunCommand", "Rerun Command");
+
 			actions.push({
 				class: undefined,
 				tooltip: labelRun,
@@ -715,6 +781,7 @@ export class DecorationAddon
 					if (command.command === "") {
 						return;
 					}
+
 					if (!command.isTrusted) {
 						const shouldRun = await new Promise<boolean>((r) => {
 							this._notificationService.prompt(
@@ -741,6 +808,7 @@ export class DecorationAddon
 							return;
 						}
 					}
+
 					this._onDidRequestRunCommand.fire({ command });
 				},
 			});
@@ -748,6 +816,7 @@ export class DecorationAddon
 			actions.push(new Separator());
 
 			const labelCopy = localize("terminal.copyCommand", "Copy Command");
+
 			actions.push({
 				class: undefined,
 				tooltip: labelCopy,
@@ -757,11 +826,13 @@ export class DecorationAddon
 				run: () => this._clipboardService.writeText(command.command),
 			});
 		}
+
 		if (command.hasOutput()) {
 			const labelCopyCommandAndOutput = localize(
 				"terminal.copyCommandAndOutput",
 				"Copy Command and Output",
 			);
+
 			actions.push({
 				class: undefined,
 				tooltip: labelCopyCommandAndOutput,
@@ -780,6 +851,7 @@ export class DecorationAddon
 			});
 
 			const labelText = localize("terminal.copyOutput", "Copy Output");
+
 			actions.push({
 				class: undefined,
 				tooltip: labelText,
@@ -799,6 +871,7 @@ export class DecorationAddon
 				"terminal.copyOutputAsHtml",
 				"Copy Output as HTML",
 			);
+
 			actions.push({
 				class: undefined,
 				tooltip: labelHtml,
@@ -808,13 +881,16 @@ export class DecorationAddon
 				run: () => this._onDidRequestCopyAsHtml.fire({ command }),
 			});
 		}
+
 		if (actions.length > 0) {
 			actions.push(new Separator());
 		}
+
 		const labelRunRecent = localize(
 			"workbench.action.terminal.runRecentCommand",
 			"Run Recent Command",
 		);
+
 		actions.push({
 			class: undefined,
 			tooltip: labelRunRecent,
@@ -831,6 +907,7 @@ export class DecorationAddon
 			"workbench.action.terminal.goToRecentDirectory",
 			"Go To Recent Directory",
 		);
+
 		actions.push({
 			class: undefined,
 			tooltip: labelRunRecent,
@@ -849,6 +926,7 @@ export class DecorationAddon
 			"terminal.learnShellIntegration",
 			"Learn About Shell Integration",
 		);
+
 		actions.push({
 			class: undefined,
 			tooltip: labelAbout,
@@ -868,9 +946,13 @@ export class DecorationAddon
 		const quickPick = this._register(
 			this._quickInputService.createQuickPick(),
 		);
+
 		quickPick.hideInput = true;
+
 		quickPick.hideCheckAll = true;
+
 		quickPick.canSelectMany = true;
+
 		quickPick.title = localize("toggleVisibility", "Toggle visibility");
 
 		const configValue = this._configurationService.getValue(
@@ -889,6 +971,7 @@ export class DecorationAddon
 			),
 			picked: configValue !== "never" && configValue !== "gutter",
 		};
+
 		quickPick.items = [gutterIcon, overviewRulerIcon];
 
 		const selectedItems: IQuickPickItem[] = [];
@@ -897,11 +980,14 @@ export class DecorationAddon
 			if (configValue !== "gutter") {
 				selectedItems.push(gutterIcon);
 			}
+
 			if (configValue !== "overviewRuler") {
 				selectedItems.push(overviewRulerIcon);
 			}
 		}
+
 		quickPick.selectedItems = selectedItems;
+
 		this._register(
 			quickPick.onDidChangeSelection(async (e) => {
 				let newValue: "both" | "gutter" | "overviewRuler" | "never" =
@@ -916,13 +1002,16 @@ export class DecorationAddon
 				} else if (e.includes(overviewRulerIcon)) {
 					newValue = "overviewRuler";
 				}
+
 				await this._configurationService.updateValue(
 					TerminalSettingId.ShellIntegrationDecorationsEnabled,
 					newValue,
 				);
 			}),
 		);
+
 		quickPick.ok = false;
+
 		quickPick.show();
 	}
 
@@ -938,6 +1027,7 @@ export class DecorationAddon
 				? TERMINAL_COMMAND_DECORATION_ERROR_BACKGROUND_COLOR
 				: TERMINAL_COMMAND_DECORATION_SUCCESS_BACKGROUND_COLOR;
 		}
+
 		return this._themeService.getColorTheme().getColor(colorId)?.toString();
 	}
 }

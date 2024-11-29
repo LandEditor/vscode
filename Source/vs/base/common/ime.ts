@@ -6,8 +6,11 @@ import { Emitter } from "./event.js";
 
 export class IMEImpl {
 	private readonly _onDidChange = new Emitter<void>();
+
 	public readonly onDidChange = this._onDidChange.event;
+
 	private _enabled = true;
+
 	public get enabled() {
 		return this._enabled;
 	}
@@ -16,6 +19,7 @@ export class IMEImpl {
 	 */
 	public enable(): void {
 		this._enabled = true;
+
 		this._onDidChange.fire();
 	}
 	/**
@@ -23,6 +27,7 @@ export class IMEImpl {
 	 */
 	public disable(): void {
 		this._enabled = false;
+
 		this._onDidChange.fire();
 	}
 }

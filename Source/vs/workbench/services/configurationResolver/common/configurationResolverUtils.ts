@@ -7,6 +7,7 @@ import * as nls from "../../../../nls.js";
 
 export function applyDeprecatedVariableMessage(schema: IJSONSchema) {
 	schema.pattern = schema.pattern || "^(?!.*\\$\\{(env|config|command)\\.)";
+
 	schema.patternErrorMessage =
 		schema.patternErrorMessage ||
 		nls.localize(

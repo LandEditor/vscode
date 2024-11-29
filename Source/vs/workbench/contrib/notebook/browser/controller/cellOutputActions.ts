@@ -108,6 +108,7 @@ registerAction2(
 			if (outputContext && "notebookEditor" in outputContext) {
 				return outputContext.notebookEditor;
 			}
+
 			return getNotebookEditorFromEditorPane(
 				editorService.activeEditorPane,
 			);
@@ -180,11 +181,13 @@ registerAction2(
 					outputId: outputViewModel.model.outputId,
 					altOutputId: outputViewModel.model.alternativeOutputId,
 				};
+
 				await notebookEditor.focusNotebookCell(
 					outputViewModel.cellViewModel as ICellViewModel,
 					"output",
 					focusOptions,
 				);
+
 				notebookEditor.copyOutputImage(outputViewModel);
 			} else {
 				const clipboardService = accessor.get(IClipboardService);
@@ -256,6 +259,7 @@ registerAction2(
 			if (outputContext && "notebookEditor" in outputContext) {
 				return outputContext.notebookEditor;
 			}
+
 			return getNotebookEditorFromEditorPane(
 				editorService.activeEditorPane,
 			);
@@ -306,12 +310,14 @@ registerAction2(
 				const ref = await notebookModelService.resolve(
 					notebookEditor.textModel.uri,
 				);
+
 				await openerService.open(
 					CellUri.generateCellOutputUri(
 						notebookEditor.textModel.uri,
 						outputViewModel.model.outputId,
 					),
 				);
+
 				ref.dispose();
 			}
 		}

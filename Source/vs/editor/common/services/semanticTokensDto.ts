@@ -7,15 +7,21 @@ import * as platform from "../../../base/common/platform.js";
 
 export interface IFullSemanticTokensDto {
 	id: number;
+
 	type: "full";
+
 	data: Uint32Array;
 }
 export interface IDeltaSemanticTokensDto {
 	id: number;
+
 	type: "delta";
+
 	deltas: {
 		start: number;
+
 		deleteCount: number;
+
 		data?: Uint32Array;
 	}[];
 }
@@ -37,9 +43,13 @@ function reverseEndianness(arr: Uint8Array): void {
 		const b2 = arr[i + 2];
 
 		const b3 = arr[i + 3];
+
 		arr[i + 0] = b3;
+
 		arr[i + 1] = b2;
+
 		arr[i + 2] = b1;
+
 		arr[i + 3] = b0;
 	}
 }
@@ -50,6 +60,7 @@ function toLittleEndianBuffer(arr: Uint32Array): VSBuffer {
 		// the byte order must be changed
 		reverseEndianness(uint8Arr);
 	}
+
 	return VSBuffer.wrap(uint8Arr);
 }
 function fromLittleEndianBuffer(buff: VSBuffer): Uint32Array {
@@ -59,6 +70,7 @@ function fromLittleEndianBuffer(buff: VSBuffer): Uint32Array {
 		// the byte order must be changed
 		reverseEndianness(uint8Arr);
 	}
+
 	if (uint8Arr.byteOffset % 4 === 0) {
 		return new Uint32Array(
 			uint8Arr.buffer,
@@ -68,6 +80,7 @@ function fromLittleEndianBuffer(buff: VSBuffer): Uint32Array {
 	} else {
 		// unaligned memory access doesn't work on all platforms
 		const data = new Uint8Array(uint8Arr.byteLength);
+
 		data.set(uint8Arr);
 
 		return new Uint32Array(data.buffer, data.byteOffset, data.length / 4);
@@ -79,36 +92,46 @@ export function encodeSemanticTokensDto(
 	const dest = new Uint32Array(encodeSemanticTokensDtoSize(semanticTokens));
 
 	let offset = 0;
+
 	dest[offset++] = semanticTokens.id;
 
 	if (semanticTokens.type === "full") {
 		dest[offset++] = EncodedSemanticTokensType.Full;
+
 		dest[offset++] = semanticTokens.data.length;
+
 		dest.set(semanticTokens.data, offset);
+
 		offset += semanticTokens.data.length;
 	} else {
 		dest[offset++] = EncodedSemanticTokensType.Delta;
+
 		dest[offset++] = semanticTokens.deltas.length;
 
 		for (const delta of semanticTokens.deltas) {
 			dest[offset++] = delta.start;
+
 			dest[offset++] = delta.deleteCount;
 
 			if (delta.data) {
 				dest[offset++] = delta.data.length;
+
 				dest.set(delta.data, offset);
+
 				offset += delta.data.length;
 			} else {
 				dest[offset++] = 0;
 			}
 		}
 	}
+
 	return toLittleEndianBuffer(dest);
 }
 function encodeSemanticTokensDtoSize(
 	semanticTokens: ISemanticTokensDto,
 ): number {
 	let result = 0;
+
 	result +=
 		+1 + // id
 		1; // type
@@ -131,6 +154,7 @@ function encodeSemanticTokensDtoSize(
 			}
 		}
 	}
+
 	return result;
 }
 export function decodeSemanticTokensDto(_buff: VSBuffer): ISemanticTokensDto {
@@ -146,6 +170,7 @@ export function decodeSemanticTokensDto(_buff: VSBuffer): ISemanticTokensDto {
 		const length = src[offset++];
 
 		const data = src.subarray(offset, offset + length);
+
 		offset += length;
 
 		return {
@@ -154,11 +179,14 @@ export function decodeSemanticTokensDto(_buff: VSBuffer): ISemanticTokensDto {
 			data: data,
 		};
 	}
+
 	const deltaCount = src[offset++];
 
 	const deltas: {
 		start: number;
+
 		deleteCount: number;
+
 		data?: Uint32Array;
 	}[] = [];
 
@@ -173,10 +201,13 @@ export function decodeSemanticTokensDto(_buff: VSBuffer): ISemanticTokensDto {
 
 		if (length > 0) {
 			data = src.subarray(offset, offset + length);
+
 			offset += length;
 		}
+
 		deltas[i] = { start, deleteCount, data };
 	}
+
 	return {
 		id: id,
 		type: "delta",

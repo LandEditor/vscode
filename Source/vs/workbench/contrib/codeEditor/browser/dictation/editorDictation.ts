@@ -82,6 +82,7 @@ export class EditorDictationStartAction extends EditorAction2 {
 			},
 		});
 	}
+
 	override runEditorCommand(
 		accessor: ServicesAccessor,
 		editor: ICodeEditor,
@@ -98,6 +99,7 @@ export class EditorDictationStartAction extends EditorAction2 {
 			const handle = setTimeout(() => {
 				shouldCallStop = true;
 			}, 500);
+
 			holdMode.finally(() => {
 				clearTimeout(handle);
 
@@ -106,6 +108,7 @@ export class EditorDictationStartAction extends EditorAction2 {
 				}
 			});
 		}
+
 		EditorDictation.get(editor)?.start();
 	}
 }
@@ -125,6 +128,7 @@ export class EditorDictationStopAction extends EditorAction2 {
 			},
 		});
 	}
+
 	override runEditorCommand(
 		_accessor: ServicesAccessor,
 		editor: ICodeEditor,
@@ -134,7 +138,9 @@ export class EditorDictationStopAction extends EditorAction2 {
 }
 export class DictationWidget extends Disposable implements IContentWidget {
 	readonly suppressMouseDown = true;
+
 	readonly allowEditorOverflow = true;
+
 	private readonly domNode = document.createElement("div");
 
 	constructor(
@@ -148,6 +154,7 @@ export class DictationWidget extends Disposable implements IContentWidget {
 		const stopActionKeybinding = keybindingService
 			.lookupKeybinding(EditorDictationStopAction.ID)
 			?.getLabel();
+
 		actionBar.push(
 			toAction({
 				id: EditorDictationStopAction.ID,
@@ -163,19 +170,25 @@ export class DictationWidget extends Disposable implements IContentWidget {
 			}),
 			{ icon: true, label: false, keybinding: stopActionKeybinding },
 		);
+
 		this.domNode.classList.add("editor-dictation-widget");
+
 		this.domNode.appendChild(actionBar.domNode);
 	}
+
 	getId(): string {
 		return "editorDictation";
 	}
+
 	getDomNode(): HTMLElement {
 		return this.domNode;
 	}
+
 	getPosition(): IContentWidgetPosition | null {
 		if (!this.editor.hasModel()) {
 			return null;
 		}
+
 		const selection = this.editor.getSelection();
 
 		return {
@@ -188,14 +201,17 @@ export class DictationWidget extends Disposable implements IContentWidget {
 			],
 		};
 	}
+
 	beforeRender(): IDimension | null {
 		const lineHeight = this.editor.getOption(EditorOption.lineHeight);
 
 		const width = this.editor.getLayoutInfo().contentWidth * 0.7;
+
 		this.domNode.style.setProperty(
 			"--vscode-editor-dictation-widget-height",
 			`${lineHeight}px`,
 		);
+
 		this.domNode.style.setProperty(
 			"--vscode-editor-dictation-widget-width",
 			`${width}px`,
@@ -203,30 +219,39 @@ export class DictationWidget extends Disposable implements IContentWidget {
 
 		return null;
 	}
+
 	show() {
 		this.editor.addContentWidget(this);
 	}
+
 	layout(): void {
 		this.editor.layoutContentWidget(this);
 	}
+
 	active(): void {
 		this.domNode.classList.add("recording");
 	}
+
 	hide() {
 		this.domNode.classList.remove("recording");
+
 		this.editor.removeContentWidget(this);
 	}
 }
 export class EditorDictation extends Disposable implements IEditorContribution {
 	static readonly ID = "editorDictation";
+
 	static get(editor: ICodeEditor): EditorDictation | null {
 		return editor.getContribution<EditorDictation>(EditorDictation.ID);
 	}
+
 	private readonly widget = this._register(
 		new DictationWidget(this.editor, this.keybindingService),
 	);
+
 	private readonly editorDictationInProgress =
 		EDITOR_DICTATION_IN_PROGRESS.bindTo(this.contextKeyService);
+
 	private readonly sessionDisposables = this._register(
 		new MutableDisposable(),
 	);
@@ -242,18 +267,26 @@ export class EditorDictation extends Disposable implements IEditorContribution {
 	) {
 		super();
 	}
+
 	async start(): Promise<void> {
 		const disposables = new DisposableStore();
+
 		this.sessionDisposables.value = disposables;
+
 		this.widget.show();
+
 		disposables.add(toDisposable(() => this.widget.hide()));
+
 		this.editorDictationInProgress.set(true);
+
 		disposables.add(
 			toDisposable(() => this.editorDictationInProgress.reset()),
 		);
 
 		const collection = this.editor.createDecorationsCollection();
+
 		disposables.add(toDisposable(() => collection.clear()));
+
 		disposables.add(
 			this.editor.onDidChangeCursorPosition(() => this.widget.layout()),
 		);
@@ -266,10 +299,12 @@ export class EditorDictation extends Disposable implements IEditorContribution {
 			if (!previewStart) {
 				previewStart = assertIsDefined(this.editor.getPosition());
 			}
+
 			const endPosition = new Position(
 				previewStart.lineNumber,
 				previewStart.column + text.length,
 			);
+
 			this.editor.executeEdits(
 				EditorDictation.ID,
 				[
@@ -306,27 +341,33 @@ export class EditorDictation extends Disposable implements IEditorContribution {
 			} else {
 				collection.clear();
 			}
+
 			lastReplaceTextLength = text.length;
 
 			if (!isPreview) {
 				previewStart = undefined;
+
 				lastReplaceTextLength = 0;
 			}
+
 			this.editor.revealPositionInCenterIfOutsideViewport(endPosition);
 		};
 
 		const cts = new CancellationTokenSource();
+
 		disposables.add(toDisposable(() => cts.dispose(true)));
 
 		const session = await this.speechService.createSpeechToTextSession(
 			cts.token,
 			"editor",
 		);
+
 		disposables.add(
 			session.onDidChange((e) => {
 				if (cts.token.isCancellationRequested) {
 					return;
 				}
+
 				switch (e.status) {
 					case SpeechToTextStatus.Started:
 						this.widget.active();
@@ -342,14 +383,17 @@ export class EditorDictation extends Disposable implements IEditorContribution {
 						if (!e.text) {
 							return;
 						}
+
 						replaceText(e.text, true);
 
 						break;
 					}
+
 					case SpeechToTextStatus.Recognized: {
 						if (!e.text) {
 							return;
 						}
+
 						replaceText(`${e.text} `, false);
 
 						break;
@@ -358,6 +402,7 @@ export class EditorDictation extends Disposable implements IEditorContribution {
 			}),
 		);
 	}
+
 	stop(): void {
 		this.sessionDisposables.clear();
 	}

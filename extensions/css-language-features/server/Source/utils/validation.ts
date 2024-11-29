@@ -21,6 +21,7 @@ export type Validator = (textDocument: TextDocument) => Promise<Diagnostic[]>;
 
 export type DiagnosticsSupport = {
 	dispose(): void;
+
 	requestRefresh(): void;
 };
 
@@ -50,6 +51,7 @@ export function registerDiagnosticsPushSupport(
 	documents.onDidClose(
 		(event) => {
 			cleanPendingValidation(event.document);
+
 			connection.sendDiagnostics({
 				uri: event.document.uri,
 				diagnostics: [],
@@ -64,9 +66,11 @@ export function registerDiagnosticsPushSupport(
 
 		if (request) {
 			request.dispose();
+
 			delete pendingValidationRequests[textDocument.uri];
 		}
 	}
+
 	function triggerValidation(textDocument: TextDocument): void {
 		cleanPendingValidation(textDocument);
 
@@ -85,6 +89,7 @@ export function registerDiagnosticsPushSupport(
 								diagnostics,
 							});
 						}
+
 						delete pendingValidationRequests[textDocument.uri];
 					} catch (e) {
 						connection.console.error(
@@ -97,18 +102,21 @@ export function registerDiagnosticsPushSupport(
 				}
 			}, validationDelayMs));
 	}
+
 	return {
 		requestRefresh: () => {
 			documents.all().forEach(triggerValidation);
 		},
 		dispose: () => {
 			disposables.forEach((d) => d.dispose());
+
 			disposables.length = 0;
 
 			const keys = Object.keys(pendingValidationRequests);
 
 			for (const key of keys) {
 				pendingValidationRequests[key].dispose();
+
 				delete pendingValidationRequests[key];
 			}
 		},
@@ -128,6 +136,7 @@ export function registerDiagnosticsPullSupport(
 			items: diagnostics,
 		};
 	}
+
 	const registration = connection.languages.diagnostics.on(
 		async (params: DocumentDiagnosticParams, token: CancellationToken) => {
 			return runSafeAsync(
@@ -140,6 +149,7 @@ export function registerDiagnosticsPullSupport(
 							await validate(document),
 						);
 					}
+
 					return newDocumentDiagnosticReport([]);
 				},
 				newDocumentDiagnosticReport([]),
@@ -152,6 +162,7 @@ export function registerDiagnosticsPullSupport(
 	function requestRefresh(): void {
 		connection.languages.diagnostics.refresh();
 	}
+
 	return {
 		requestRefresh,
 		dispose: () => {

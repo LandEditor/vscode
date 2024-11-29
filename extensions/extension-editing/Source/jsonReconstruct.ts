@@ -9,6 +9,7 @@
  */
 export class JsonStringScanner {
 	private resultChars = 0;
+
 	private pos = 0;
 	/**
 	 *
@@ -29,10 +30,12 @@ export class JsonStringScanner {
 			if (this.resultChars > offsetDecoded) {
 				return start;
 			}
+
 			const ch = this.text.charCodeAt(this.pos);
 
 			if (ch === CharacterCodes.backslash) {
 				start = this.pos;
+
 				this.pos++;
 
 				const ch2 = this.text.charCodeAt(this.pos++);
@@ -56,16 +59,22 @@ export class JsonStringScanner {
 						if (ch3 >= 0) {
 							this.resultChars += String.fromCharCode(ch3).length;
 						}
+
 						break;
 					}
 				}
+
 				continue;
 			}
+
 			start = this.pos;
+
 			this.pos++;
+
 			this.resultChars++;
 		}
 	}
+
 	scanHexDigits(count: number, exact?: boolean): number {
 		let digits = 0;
 
@@ -83,12 +92,16 @@ export class JsonStringScanner {
 			} else {
 				break;
 			}
+
 			this.pos++;
+
 			digits++;
 		}
+
 		if (digits < count) {
 			value = -1;
 		}
+
 		return value;
 	}
 }
@@ -162,6 +175,7 @@ const enum CharacterCodes {
 	asterisk = 0x2a, // *
 	backslash = 0x5c, // \
 	closeBrace = 0x7d, // }
+
 	closeBracket = 0x5d, // ]
 	colon = 0x3a, // :
 	comma = 0x2c, // ,

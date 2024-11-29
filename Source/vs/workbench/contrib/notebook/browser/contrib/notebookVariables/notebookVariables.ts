@@ -40,8 +40,11 @@ export class NotebookVariables
 	implements IWorkbenchContribution
 {
 	private listeners: IDisposable[] = [];
+
 	private configListener: IDisposable;
+
 	private initialized = false;
+
 	private viewEnabled: IContextKey<boolean>;
 
 	constructor(
@@ -61,27 +64,33 @@ export class NotebookVariables
 		private readonly viewDescriptorService: IViewDescriptorService,
 	) {
 		super();
+
 		this.viewEnabled =
 			NOTEBOOK_VARIABLE_VIEW_ENABLED.bindTo(contextKeyService);
+
 		this.listeners.push(
 			this.editorService.onDidActiveEditorChange(() =>
 				this.handleInitEvent(),
 			),
 		);
+
 		this.listeners.push(
 			this.notebookExecutionStateService.onDidChangeExecution((e) =>
 				this.handleInitEvent(e.notebook),
 			),
 		);
+
 		this.configListener = configurationService.onDidChangeConfiguration(
 			(e) => this.handleConfigChange(e),
 		);
 	}
+
 	private handleConfigChange(e: IConfigurationChangeEvent) {
 		if (e.affectsConfiguration(NotebookSetting.notebookVariablesView)) {
 			this.handleInitEvent();
 		}
 	}
+
 	private handleInitEvent(notebook?: URI) {
 		const enabled =
 			this.editorService.activeEditorPane?.getId() ===
@@ -106,11 +115,14 @@ export class NotebookVariables
 				this.initializeView()
 			) {
 				this.viewEnabled.set(true);
+
 				this.initialized = true;
+
 				this.listeners.forEach((listener) => listener.dispose());
 			}
 		}
 	}
+
 	private hasVariableProvider(notebookUri?: URI) {
 		const notebook = notebookUri
 			? this.notebookDocumentService.getNotebookTextModel(notebookUri)
@@ -124,6 +136,7 @@ export class NotebookVariables
 				?.hasVariableProvider
 		);
 	}
+
 	private initializeView() {
 		const debugViewContainer =
 			this.viewDescriptorService.getViewContainerById(debugContainerId);
@@ -145,15 +158,20 @@ export class NotebookVariables
 				collapsed: false,
 				when: NOTEBOOK_VARIABLE_VIEW_ENABLED,
 			};
+
 			viewsRegistry.registerViews([viewDescriptor], debugViewContainer);
 
 			return true;
 		}
+
 		return false;
 	}
+
 	override dispose(): void {
 		super.dispose();
+
 		this.listeners.forEach((listener) => listener.dispose());
+
 		this.configListener.dispose();
 	}
 }

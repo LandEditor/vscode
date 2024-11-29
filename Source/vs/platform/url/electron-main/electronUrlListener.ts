@@ -28,6 +28,7 @@ import { IProtocolUrl } from "./url.js";
  */
 export class ElectronURLListener extends Disposable {
 	private uris: IProtocolUrl[] = [];
+
 	private retryCount = 0;
 
 	constructor(
@@ -53,7 +54,9 @@ export class ElectronURLListener extends Disposable {
 			const windowsParameters = environmentMainService.isBuilt
 				? []
 				: [`"${environmentMainService.appRoot}"`];
+
 			windowsParameters.push("--open-url", "--");
+
 			app.setAsDefaultProtocolClient(
 				productService.urlProtocol,
 				process.execPath,
@@ -72,6 +75,7 @@ export class ElectronURLListener extends Disposable {
 				return url;
 			},
 		);
+
 		this._register(
 			onOpenElectronUrl((url) => {
 				const uri = this.uriFromRawUrl(url);
@@ -79,6 +83,7 @@ export class ElectronURLListener extends Disposable {
 				if (!uri) {
 					return;
 				}
+
 				this.urlService.open(uri, { originalUrl: url });
 			}),
 		);
@@ -91,11 +96,13 @@ export class ElectronURLListener extends Disposable {
 			logService.trace(
 				"ElectronURLListener: window is ready to handle URLs",
 			);
+
 			this.flush();
 		} else {
 			logService.trace(
 				"ElectronURLListener: waiting for window to be ready to handle URLs...",
 			);
+
 			this._register(
 				Event.once(windowsMainService.onDidSignalReadyWindow)(() =>
 					this.flush(),
@@ -103,6 +110,7 @@ export class ElectronURLListener extends Disposable {
 			);
 		}
 	}
+
 	private uriFromRawUrl(url: string): URI | undefined {
 		try {
 			return URI.parse(url);
@@ -110,6 +118,7 @@ export class ElectronURLListener extends Disposable {
 			return undefined;
 		}
 	}
+
 	private async flush(): Promise<void> {
 		if (this.retryCount++ > 10) {
 			this.logService.trace(
@@ -118,6 +127,7 @@ export class ElectronURLListener extends Disposable {
 
 			return;
 		}
+
 		this.logService.trace("ElectronURLListener#flush(): flushing URLs");
 
 		const uris: IProtocolUrl[] = [];
@@ -137,13 +147,17 @@ export class ElectronURLListener extends Disposable {
 					"ElectronURLListener#flush(): URL was not yet handled",
 					obj.originalUrl,
 				);
+
 				uris.push(obj);
 			}
 		}
+
 		if (uris.length === 0) {
 			return;
 		}
+
 		this.uris = uris;
+
 		disposableTimeout(() => this.flush(), 500, this._store);
 	}
 }

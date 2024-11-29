@@ -27,9 +27,12 @@ export interface IStateService extends IStateReadService {
 	setItems(
 		items: readonly {
 			key: string;
+
 			data?: object | string | number | boolean | undefined | null;
 		}[],
 	): void;
+
 	removeItem(key: string): void;
+
 	close(): Promise<void>;
 }

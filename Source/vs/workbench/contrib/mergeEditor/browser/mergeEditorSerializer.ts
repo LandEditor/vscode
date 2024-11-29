@@ -13,9 +13,11 @@ export class MergeEditorSerializer implements IEditorSerializer {
 	canSerialize(): boolean {
 		return true;
 	}
+
 	serialize(editor: MergeEditorInput): string {
 		return JSON.stringify(this.toJSON(editor));
 	}
+
 	toJSON(editor: MergeEditorInput): MergeEditorInputJSON {
 		return {
 			base: editor.base,
@@ -24,6 +26,7 @@ export class MergeEditorSerializer implements IEditorSerializer {
 			result: editor.result,
 		};
 	}
+
 	deserialize(
 		instantiationService: IInstantiationService,
 		raw: string,
@@ -57,17 +60,26 @@ export class MergeEditorSerializer implements IEditorSerializer {
 }
 interface MergeEditorInputJSON {
 	base: URI;
+
 	input1: {
 		uri: URI;
+
 		title?: string;
+
 		detail?: string;
+
 		description?: string;
 	};
+
 	input2: {
 		uri: URI;
+
 		title?: string;
+
 		detail?: string;
+
 		description?: string;
 	};
+
 	result: URI;
 }

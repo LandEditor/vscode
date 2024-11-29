@@ -36,11 +36,17 @@ export const IExtensionManifestPropertiesService =
 
 export interface IExtensionManifestPropertiesService {
 	readonly _serviceBrand: undefined;
+
 	prefersExecuteOnUI(manifest: IExtensionManifest): boolean;
+
 	prefersExecuteOnWorkspace(manifest: IExtensionManifest): boolean;
+
 	prefersExecuteOnWeb(manifest: IExtensionManifest): boolean;
+
 	canExecuteOnUI(manifest: IExtensionManifest): boolean;
+
 	canExecuteOnWorkspace(manifest: IExtensionManifest): boolean;
+
 	canExecuteOnWeb(manifest: IExtensionManifest): boolean;
 
 	getExtensionKind(manifest: IExtensionManifest): ExtensionKind[];
@@ -62,26 +68,35 @@ export class ExtensionManifestPropertiesService
 	implements IExtensionManifestPropertiesService
 {
 	readonly _serviceBrand: undefined;
+
 	private _extensionPointExtensionKindsMap: Map<
 		string,
 		ExtensionKind[]
 	> | null = null;
+
 	private _productExtensionKindsMap: ExtensionIdentifierMap<
 		ExtensionKind[]
 	> | null = null;
+
 	private _configuredExtensionKindsMap: ExtensionIdentifierMap<
 		ExtensionKind | ExtensionKind[]
 	> | null = null;
+
 	private _productVirtualWorkspaceSupportMap: ExtensionIdentifierMap<{
 		default?: boolean;
+
 		override?: boolean;
 	}> | null = null;
+
 	private _configuredVirtualWorkspaceSupportMap: ExtensionIdentifierMap<boolean> | null =
 		null;
+
 	private readonly _configuredExtensionWorkspaceTrustRequestMap: ExtensionIdentifierMap<{
 		supported: ExtensionUntrustedWorkspaceSupportType;
+
 		version?: string;
 	}>;
+
 	private readonly _productExtensionWorkspaceTrustRequestMap: Map<
 		string,
 		ExtensionUntrustedWorkspaceSupport
@@ -102,6 +117,7 @@ export class ExtensionManifestPropertiesService
 		this._configuredExtensionWorkspaceTrustRequestMap =
 			new ExtensionIdentifierMap<{
 				supported: ExtensionUntrustedWorkspaceSupportType;
+
 				version?: string;
 			}>();
 
@@ -109,6 +125,7 @@ export class ExtensionManifestPropertiesService
 			configurationService.inspect<{
 				[key: string]: {
 					supported: ExtensionUntrustedWorkspaceSupportType;
+
 					version?: string;
 				};
 			}>(WORKSPACE_TRUST_EXTENSION_SUPPORT).userValue || {};
@@ -138,36 +155,43 @@ export class ExtensionManifestPropertiesService
 			}
 		}
 	}
+
 	prefersExecuteOnUI(manifest: IExtensionManifest): boolean {
 		const extensionKind = this.getExtensionKind(manifest);
 
 		return extensionKind.length > 0 && extensionKind[0] === "ui";
 	}
+
 	prefersExecuteOnWorkspace(manifest: IExtensionManifest): boolean {
 		const extensionKind = this.getExtensionKind(manifest);
 
 		return extensionKind.length > 0 && extensionKind[0] === "workspace";
 	}
+
 	prefersExecuteOnWeb(manifest: IExtensionManifest): boolean {
 		const extensionKind = this.getExtensionKind(manifest);
 
 		return extensionKind.length > 0 && extensionKind[0] === "web";
 	}
+
 	canExecuteOnUI(manifest: IExtensionManifest): boolean {
 		const extensionKind = this.getExtensionKind(manifest);
 
 		return extensionKind.some((kind) => kind === "ui");
 	}
+
 	canExecuteOnWorkspace(manifest: IExtensionManifest): boolean {
 		const extensionKind = this.getExtensionKind(manifest);
 
 		return extensionKind.some((kind) => kind === "workspace");
 	}
+
 	canExecuteOnWeb(manifest: IExtensionManifest): boolean {
 		const extensionKind = this.getExtensionKind(manifest);
 
 		return extensionKind.some((kind) => kind === "web");
 	}
+
 	getExtensionKind(manifest: IExtensionManifest): ExtensionKind[] {
 		const deducedExtensionKind = this.deduceExtensionKind(manifest);
 
@@ -185,6 +209,7 @@ export class ExtensionManifestPropertiesService
 			// If opted out from web without specifying other extension kinds then default to ui, workspace
 			if (configuredExtensionKind.includes("-web") && !result.length) {
 				result.push("ui");
+
 				result.push("workspace");
 			}
 			// Add web kind if not opted out from web and can run in web
@@ -196,10 +221,13 @@ export class ExtensionManifestPropertiesService
 			) {
 				result.push("web");
 			}
+
 			return result;
 		}
+
 		return deducedExtensionKind;
 	}
+
 	getUserConfiguredExtensionKind(
 		extensionIdentifier: IExtensionIdentifier,
 	): ExtensionKind[] | undefined {
@@ -219,8 +247,10 @@ export class ExtensionManifestPropertiesService
 					configuredExtensionKinds[id],
 				);
 			}
+
 			this._configuredExtensionKindsMap = configuredExtensionKindsMap;
 		}
+
 		const userConfiguredExtensionKind =
 			this._configuredExtensionKindsMap.get(extensionIdentifier.id);
 
@@ -228,6 +258,7 @@ export class ExtensionManifestPropertiesService
 			? this.toArray(userConfiguredExtensionKind)
 			: undefined;
 	}
+
 	getExtensionUntrustedWorkspaceSupportType(
 		manifest: IExtensionManifest,
 	): ExtensionUntrustedWorkspaceSupportType {
@@ -262,8 +293,10 @@ export class ExtensionManifestPropertiesService
 		if (productWorkspaceTrustRequest?.default !== undefined) {
 			return productWorkspaceTrustRequest.default;
 		}
+
 		return false;
 	}
+
 	getExtensionVirtualWorkspaceSupportType(
 		manifest: IExtensionManifest,
 	): ExtensionVirtualWorkspaceSupportType {
@@ -274,6 +307,7 @@ export class ExtensionManifestPropertiesService
 		if (userConfiguredVirtualWorkspaceSupport !== undefined) {
 			return userConfiguredVirtualWorkspaceSupport;
 		}
+
 		const productConfiguredWorkspaceSchemes =
 			this.getProductVirtualWorkspaceSupport(manifest);
 		// check override from product
@@ -299,17 +333,21 @@ export class ExtensionManifestPropertiesService
 		// Default - supports virtual workspace
 		return true;
 	}
+
 	private deduceExtensionKind(manifest: IExtensionManifest): ExtensionKind[] {
 		// Not an UI extension if it has main
 		if (manifest.main) {
 			if (manifest.browser) {
 				return isWeb ? ["workspace", "web"] : ["workspace"];
 			}
+
 			return ["workspace"];
 		}
+
 		if (manifest.browser) {
 			return ["web"];
 		}
+
 		let result = [...ALL_EXTENSION_KINDS];
 
 		if (
@@ -319,6 +357,7 @@ export class ExtensionManifestPropertiesService
 			// Extension pack defaults to [workspace, web] in web and only [workspace] in desktop
 			result = isWeb ? ["workspace", "web"] : ["workspace"];
 		}
+
 		if (manifest.contributes) {
 			for (const contribution of Object.keys(manifest.contributes)) {
 				const supportedExtensionKinds =
@@ -333,14 +372,17 @@ export class ExtensionManifestPropertiesService
 				}
 			}
 		}
+
 		if (!result.length) {
 			this.logService.warn(
 				"Cannot deduce extensionKind for extension",
 				getGalleryExtensionId(manifest.publisher, manifest.name),
 			);
 		}
+
 		return result;
 	}
+
 	private getSupportedExtensionKindsForExtensionPoint(
 		extensionPoint: string,
 	): ExtensionKind[] {
@@ -349,21 +391,25 @@ export class ExtensionManifestPropertiesService
 				string,
 				ExtensionKind[]
 			>();
+
 			ExtensionsRegistry.getExtensionPoints().forEach((e) =>
 				extensionPointExtensionKindsMap.set(
 					e.name,
 					e.defaultExtensionKind || [] /* supports all */,
 				),
 			);
+
 			this._extensionPointExtensionKindsMap =
 				extensionPointExtensionKindsMap;
 		}
+
 		let extensionPointExtensionKind =
 			this._extensionPointExtensionKindsMap.get(extensionPoint);
 
 		if (extensionPointExtensionKind) {
 			return extensionPointExtensionKind;
 		}
+
 		extensionPointExtensionKind = this.productService
 			.extensionPointExtensionKind
 			? this.productService.extensionPointExtensionKind[extensionPoint]
@@ -375,6 +421,7 @@ export class ExtensionManifestPropertiesService
 		/* Unknown extension point */
 		return isWeb ? ["workspace", "web"] : ["workspace"];
 	}
+
 	private getConfiguredExtensionKind(
 		manifest: IExtensionManifest,
 	): (ExtensionKind | "-web")[] | null {
@@ -402,8 +449,10 @@ export class ExtensionManifestPropertiesService
 
 			return result.filter((r) => ["ui", "workspace"].includes(r));
 		}
+
 		return null;
 	}
+
 	private getProductExtensionKind(
 		manifest: IExtensionManifest,
 	): ExtensionKind[] | undefined {
@@ -422,8 +471,10 @@ export class ExtensionManifestPropertiesService
 					);
 				}
 			}
+
 			this._productExtensionKindsMap = productExtensionKindsMap;
 		}
+
 		const extensionId = getGalleryExtensionId(
 			manifest.publisher,
 			manifest.name,
@@ -431,15 +482,18 @@ export class ExtensionManifestPropertiesService
 
 		return this._productExtensionKindsMap.get(extensionId);
 	}
+
 	private getProductVirtualWorkspaceSupport(manifest: IExtensionManifest):
 		| {
 				default?: boolean;
+
 				override?: boolean;
 		  }
 		| undefined {
 		if (this._productVirtualWorkspaceSupportMap === null) {
 			const productWorkspaceSchemesMap = new ExtensionIdentifierMap<{
 				default?: boolean;
+
 				override?: boolean;
 			}>();
 
@@ -455,9 +509,11 @@ export class ExtensionManifestPropertiesService
 					);
 				}
 			}
+
 			this._productVirtualWorkspaceSupportMap =
 				productWorkspaceSchemesMap;
 		}
+
 		const extensionId = getGalleryExtensionId(
 			manifest.publisher,
 			manifest.name,
@@ -465,6 +521,7 @@ export class ExtensionManifestPropertiesService
 
 		return this._productVirtualWorkspaceSupportMap.get(extensionId);
 	}
+
 	private getConfiguredVirtualWorkspaceSupport(
 		manifest: IExtensionManifest,
 	): boolean | undefined {
@@ -485,9 +542,11 @@ export class ExtensionManifestPropertiesService
 					);
 				}
 			}
+
 			this._configuredVirtualWorkspaceSupportMap =
 				configuredWorkspaceSchemesMap;
 		}
+
 		const extensionId = getGalleryExtensionId(
 			manifest.publisher,
 			manifest.name,
@@ -495,6 +554,7 @@ export class ExtensionManifestPropertiesService
 
 		return this._configuredVirtualWorkspaceSupportMap.get(extensionId);
 	}
+
 	private getConfiguredExtensionWorkspaceTrustRequest(
 		manifest: IExtensionManifest,
 	): ExtensionUntrustedWorkspaceSupportType | undefined {
@@ -513,8 +573,10 @@ export class ExtensionManifestPropertiesService
 		) {
 			return extensionWorkspaceTrustRequest.supported;
 		}
+
 		return undefined;
 	}
+
 	private getProductExtensionWorkspaceTrustRequest(
 		manifest: IExtensionManifest,
 	): ExtensionUntrustedWorkspaceSupport | undefined {
@@ -525,12 +587,14 @@ export class ExtensionManifestPropertiesService
 
 		return this._productExtensionWorkspaceTrustRequestMap.get(extensionId);
 	}
+
 	private toArray(
 		extensionKind: ExtensionKind | ExtensionKind[],
 	): ExtensionKind[] {
 		if (Array.isArray(extensionKind)) {
 			return extensionKind;
 		}
+
 		return extensionKind === "ui" ? ["ui", "workspace"] : [extensionKind];
 	}
 }

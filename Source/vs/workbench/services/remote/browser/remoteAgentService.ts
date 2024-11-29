@@ -76,6 +76,7 @@ class RemoteConnectionFailureNotificationContribution
 			}
 		});
 	}
+
 	private async _presentConnectionError(err: any): Promise<void> {
 		await this._dialogService.prompt({
 			type: Severity.Error,

@@ -77,6 +77,7 @@ async function rimrafMove(
 			if (error.code === "ENOENT") {
 				return; // ignore - path to delete did not exist
 			}
+
 			return rimrafUnlink(path); // otherwise fallback to unlink
 		}
 		// Delete but do not return as promise
@@ -98,14 +99,18 @@ export function rimrafSync(path: string): void {
 	if (isRootOrDriveLetter(path)) {
 		throw new Error("rimraf - will refuse to recursively delete root");
 	}
+
 	fs.rmSync(path, { recursive: true, force: true, maxRetries: 3 });
 }
 //#endregion
 //#region readdir with NFC support (macos)
 export interface IDirent {
 	name: string;
+
 	isFile(): boolean;
+
 	isDirectory(): boolean;
+
 	isSymbolicLink(): boolean;
 }
 /**
@@ -160,8 +165,11 @@ async function safeReaddirWithFileTypes(path: string): Promise<IDirent[]> {
 
 		try {
 			const lstat = await fs.promises.lstat(join(path, child));
+
 			isFile = lstat.isFile();
+
 			isDirectory = lstat.isDirectory();
+
 			isSymbolicLink = lstat.isSymbolicLink();
 		} catch (error) {
 			console.warn(
@@ -169,6 +177,7 @@ async function safeReaddirWithFileTypes(path: string): Promise<IDirent[]> {
 				error,
 			);
 		}
+
 		result.push({
 			name: child,
 			isFile: () => isFile,
@@ -176,6 +185,7 @@ async function safeReaddirWithFileTypes(path: string): Promise<IDirent[]> {
 			isSymbolicLink: () => isSymbolicLink,
 		});
 	}
+
 	return result;
 }
 /**
@@ -200,6 +210,7 @@ function handleDirectoryChildren(
 		if (typeof child === "string") {
 			return isMacintosh ? normalizeNFC(child) : child;
 		}
+
 		child.name = isMacintosh ? normalizeNFC(child.name) : child.name;
 
 		return child;
@@ -219,6 +230,7 @@ async function readDirsInDir(dirPath: string): Promise<string[]> {
 			directories.push(child);
 		}
 	}
+
 	return directories;
 }
 //#endregion
@@ -234,11 +246,13 @@ export function whenDeleted(path: string, intervalMs = 1000): Promise<void> {
 		const interval = setInterval(() => {
 			if (!running) {
 				running = true;
+
 				fs.access(path, (err) => {
 					running = false;
 
 					if (err) {
 						clearInterval(interval);
+
 						resolve(undefined);
 					}
 				});
@@ -318,9 +332,11 @@ export namespace SymlinkSupport {
 							symbolicLink: { dangling: true },
 						};
 					}
+
 					throw error;
 				}
 			}
+
 			throw error;
 		}
 	}
@@ -342,6 +358,7 @@ export namespace SymlinkSupport {
 		} catch (error) {
 			// Ignore, path might not exist
 		}
+
 		return false;
 	}
 	/**
@@ -362,6 +379,7 @@ export namespace SymlinkSupport {
 		} catch (error) {
 			// Ignore, path might not exist
 		}
+
 		return false;
 	}
 }
@@ -419,10 +437,12 @@ function writeFile(
 }
 interface IWriteFileOptions {
 	mode?: number;
+
 	flag?: string;
 }
 interface IEnsuredWriteFileOptions extends IWriteFileOptions {
 	mode: number;
+
 	flag: string;
 }
 let canFlush = true;
@@ -469,8 +489,10 @@ function doWriteFileAndFlush(
 						"[node.js fs] fdatasync is now disabled for this session because it failed: ",
 						syncError,
 					);
+
 					configureFlushOnWrite(false);
 				}
+
 				return fs.close(fd, (closeError) => callback(closeError));
 			});
 		});
@@ -508,6 +530,7 @@ export function writeFileSync(
 				"[node.js fs] fdatasyncSync is now disabled for this session because it failed: ",
 				syncError,
 			);
+
 			configureFlushOnWrite(false);
 		}
 	} finally {
@@ -520,6 +543,7 @@ function ensureWriteOptions(
 	if (!options) {
 		return { mode: 0o666 /* default node.js mode for files */, flag: "w" };
 	}
+
 	return {
 		mode:
 			typeof options.mode === "number"
@@ -543,6 +567,7 @@ async function rename(
 	if (source === target) {
 		return; // simulate node.js behaviour here and do a no-op if paths match
 	}
+
 	try {
 		if (isWindows && typeof windowsRetryTimeout === "number") {
 			// On Windows, a rename can fail when either source or target
@@ -573,6 +598,7 @@ async function rename(
 			await copy(source, target, {
 				preserveSymlinks: false /* copying to another device */,
 			});
+
 			await rimraf(source, RimRafMode.MOVE);
 		} else {
 			throw error;
@@ -596,6 +622,7 @@ async function renameWithRetry(
 		) {
 			throw error; // only for errors we think are temporary
 		}
+
 		if (Date.now() - startTime >= retryTimeout) {
 			console.error(
 				`[node.js fs] rename failed after ${attempt} retries with error: ${error}`,
@@ -603,6 +630,7 @@ async function renameWithRetry(
 
 			throw error; // give up after configurable timeout
 		}
+
 		if (attempt === 0) {
 			let abortRetry = false;
 
@@ -615,6 +643,7 @@ async function renameWithRetry(
 			} catch (error) {
 				// Ignore
 			}
+
 			if (abortRetry) {
 				throw error;
 			}
@@ -634,11 +663,14 @@ async function renameWithRetry(
 interface ICopyPayload {
 	readonly root: {
 		source: string;
+
 		target: string;
 	};
+
 	readonly options: {
 		preserveSymlinks: boolean;
 	};
+
 	readonly handledSourcePaths: Set<string>;
 }
 /**
@@ -678,6 +710,7 @@ async function doCopy(
 	} else {
 		payload.handledSourcePaths.add(source);
 	}
+
 	const { stat, symbolicLink } = await SymlinkSupport.stat(source);
 	// Symlink
 	if (symbolicLink) {
@@ -689,6 +722,7 @@ async function doCopy(
 				// in any case of an error fallback to normal copy via dereferencing
 			}
 		}
+
 		if (symbolicLink.dangling) {
 			return; // skip dangling symbolic links from here on (https://github.com/microsoft/vscode/issues/111621)
 		}
@@ -779,6 +813,7 @@ export const Promises = new (class {
 		) => {
 			return new Promise<{
 				bytesRead: number;
+
 				buffer: Uint8Array;
 			}>((resolve, reject) => {
 				fs.read(
@@ -791,12 +826,14 @@ export const Promises = new (class {
 						if (err) {
 							return reject(err);
 						}
+
 						return resolve({ bytesRead, buffer });
 					},
 				);
 			});
 		};
 	}
+
 	get write() {
 		// Not using `promisify` here for a reason: the return
 		// type is not an object as indicated by TypeScript but
@@ -810,6 +847,7 @@ export const Promises = new (class {
 		) => {
 			return new Promise<{
 				bytesWritten: number;
+
 				buffer: Uint8Array;
 			}>((resolve, reject) => {
 				fs.write(
@@ -822,12 +860,14 @@ export const Promises = new (class {
 						if (err) {
 							return reject(err);
 						}
+
 						return resolve({ bytesWritten, buffer });
 					},
 				);
 			});
 		};
 	}
+
 	get fdatasync() {
 		return promisify(fs.fdatasync);
 	} // not exposed as API in 20.x yet
@@ -854,21 +894,27 @@ export const Promises = new (class {
 			return false;
 		}
 	}
+
 	get readdir() {
 		return readdir;
 	}
+
 	get readDirsInDir() {
 		return readDirsInDir;
 	}
+
 	get writeFile() {
 		return writeFile;
 	}
+
 	get rm() {
 		return rimraf;
 	}
+
 	get rename() {
 		return rename;
 	}
+
 	get copy() {
 		return copy;
 	}

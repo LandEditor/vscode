@@ -15,6 +15,7 @@ interface IIPCEvent {
 	event: {
 		sender: WebContents;
 	};
+
 	message: Buffer | null;
 }
 function createScopedOnMessageEvent(
@@ -41,6 +42,7 @@ function createScopedOnMessageEvent(
  */
 export class Server extends IPCServer {
 	private static readonly Clients = new Map<number, IDisposable>();
+
 	private static getOnDidClientConnect(): Event<ClientConnectionEvent> {
 		const onHello = Event.fromNodeEventEmitter<WebContents>(
 			validatedIpcMain,
@@ -52,9 +54,11 @@ export class Server extends IPCServer {
 			const id = webContents.id;
 
 			const client = Server.Clients.get(id);
+
 			client?.dispose();
 
 			const onDidClientReconnect = new Emitter<void>();
+
 			Server.Clients.set(
 				id,
 				toDisposable(() => onDidClientReconnect.fire()),
@@ -77,6 +81,7 @@ export class Server extends IPCServer {
 			return { protocol, onDidClientDisconnect };
 		});
 	}
+
 	constructor() {
 		super(Server.getOnDidClientConnect());
 	}

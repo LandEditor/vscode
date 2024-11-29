@@ -418,6 +418,7 @@ registerAction2(
 			}
 
 			const computeUndoRedo = !editor.isReadOnly;
+
 			editor.textModel.applyEdits(
 				[{ editType: CellEditType.Output, index, outputs: [] }],
 				true,
@@ -509,6 +510,7 @@ registerAction2(
 			}
 
 			const computeUndoRedo = !editor.isReadOnly;
+
 			editor.textModel.applyEdits(
 				editor.textModel.cells.map((cell, index) => ({
 					editType: CellEditType.Output,
@@ -563,12 +565,14 @@ registerAction2(
 
 interface ILanguagePickInput extends IQuickPickItem {
 	languageId: string;
+
 	description: string;
 }
 
 interface IChangeCellContext extends INotebookCellActionContext {
 	// TODO@rebornix : `cells`
 	// range: ICellRange;
+
 	language?: string;
 }
 
@@ -692,6 +696,7 @@ registerAction2(
 				const allSupportedLanguages = matchResult.all.flatMap(
 					(kernel) => kernel.supportedLanguages,
 				);
+
 				languages =
 					allSupportedLanguages.length > 0
 						? allSupportedLanguages
@@ -865,6 +870,7 @@ registerAction2(
 			);
 
 			const providerLanguages = [...(kernel?.supportedLanguages ?? [])];
+
 			providerLanguages.push("markdown");
 
 			const detection = await languageDetectionService.detectLanguage(
@@ -889,6 +895,7 @@ async function setCellToLanguage(
 ) {
 	if (languageId === "markdown" && context.cell?.language !== "markdown") {
 		const idx = context.notebookEditor.getCellIndex(context.cell);
+
 		await changeCellToKind(
 			CellKind.Markup,
 			{
@@ -922,6 +929,7 @@ async function setCellToLanguage(
 		const index = context.notebookEditor.textModel.cells.indexOf(
 			context.cell.model,
 		);
+
 		context.notebookEditor.textModel.applyEdits(
 			[
 				{
@@ -1020,6 +1028,7 @@ registerAction2(
 				type: "separator",
 				label: localize("indentConvert", "convert file"),
 			});
+
 			picks.unshift({
 				type: "separator",
 				label: localize("indentView", "change view"),
@@ -1033,7 +1042,9 @@ registerAction2(
 			if (!action) {
 				return;
 			}
+
 			action.run();
+
 			context.notebookEditor.focus();
 
 			return;
@@ -1121,6 +1132,7 @@ registerAction2(
 							range.endColumn,
 						);
 					});
+
 				cellViewModel.setSelections(newTrackedSelections ?? []);
 			}); // end of cells forEach
 		}

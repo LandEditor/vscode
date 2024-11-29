@@ -13,34 +13,46 @@ import { IDebugAdapter } from "./debug.js";
  */
 export abstract class AbstractDebugAdapter implements IDebugAdapter {
 	private sequence: number;
+
 	private pendingRequests = new Map<
 		number,
 		(e: DebugProtocol.Response) => void
 	>();
+
 	private requestCallback:
 		| ((request: DebugProtocol.Request) => void)
 		| undefined;
+
 	private eventCallback: ((request: DebugProtocol.Event) => void) | undefined;
+
 	private messageCallback:
 		| ((message: DebugProtocol.ProtocolMessage) => void)
 		| undefined;
+
 	private queue: DebugProtocol.ProtocolMessage[] = [];
+
 	protected readonly _onError = new Emitter<Error>();
+
 	protected readonly _onExit = new Emitter<number | null>();
 
 	constructor() {
 		this.sequence = 1;
 	}
+
 	abstract startSession(): Promise<void>;
+
 	abstract stopSession(): Promise<void>;
+
 	abstract sendMessage(message: DebugProtocol.ProtocolMessage): void;
 
 	get onError(): Event<Error> {
 		return this._onError.event;
 	}
+
 	get onExit(): Event<number | null> {
 		return this._onExit.event;
 	}
+
 	onMessage(
 		callback: (message: DebugProtocol.ProtocolMessage) => void,
 	): void {
@@ -49,24 +61,30 @@ export abstract class AbstractDebugAdapter implements IDebugAdapter {
 				new Error(`attempt to set more than one 'Message' callback`),
 			);
 		}
+
 		this.messageCallback = callback;
 	}
+
 	onEvent(callback: (event: DebugProtocol.Event) => void): void {
 		if (this.eventCallback) {
 			this._onError.fire(
 				new Error(`attempt to set more than one 'Event' callback`),
 			);
 		}
+
 		this.eventCallback = callback;
 	}
+
 	onRequest(callback: (request: DebugProtocol.Request) => void): void {
 		if (this.requestCallback) {
 			this._onError.fire(
 				new Error(`attempt to set more than one 'Request' callback`),
 			);
 		}
+
 		this.requestCallback = callback;
 	}
+
 	sendResponse(response: DebugProtocol.Response): void {
 		if (response.seq > 0) {
 			this._onError.fire(
@@ -78,6 +96,7 @@ export abstract class AbstractDebugAdapter implements IDebugAdapter {
 			this.internalSend("response", response);
 		}
 	}
+
 	sendRequest(
 		command: string,
 		args: any,
@@ -91,6 +110,7 @@ export abstract class AbstractDebugAdapter implements IDebugAdapter {
 		if (args && Object.keys(args).length > 0) {
 			request.arguments = args;
 		}
+
 		this.internalSend("request", request);
 
 		if (typeof timeout === "number") {
@@ -115,16 +135,20 @@ export abstract class AbstractDebugAdapter implements IDebugAdapter {
 							command,
 						),
 					};
+
 					clb(err);
 				}
 			}, timeout);
 		}
+
 		if (clb) {
 			// store callback for this request
 			this.pendingRequests.set(request.seq, clb);
 		}
+
 		return request.seq;
 	}
+
 	acceptMessage(message: DebugProtocol.ProtocolMessage): void {
 		if (this.messageCallback) {
 			this.messageCallback(message);
@@ -175,11 +199,13 @@ export abstract class AbstractDebugAdapter implements IDebugAdapter {
 			) {
 				await timeout(0);
 			}
+
 			message = this.queue.shift();
 
 			if (!message) {
 				return; // may have been disposed of
 			}
+
 			switch (message.type) {
 				case "event":
 					this.eventCallback?.(<DebugProtocol.Event>message);
@@ -198,28 +224,38 @@ export abstract class AbstractDebugAdapter implements IDebugAdapter {
 
 					if (clb) {
 						this.pendingRequests.delete(response.request_seq);
+
 						clb(response);
 					}
+
 					break;
 				}
 			}
 		}
 	}
+
 	private internalSend(
 		typ: "request" | "response" | "event",
 		message: DebugProtocol.ProtocolMessage,
 	): void {
 		message.type = typ;
+
 		message.seq = this.sequence++;
+
 		this.sendMessage(message);
 	}
+
 	protected async cancelPendingRequests(): Promise<void> {
 		if (this.pendingRequests.size === 0) {
 			return Promise.resolve();
 		}
+
 		const pending = new Map<number, (e: DebugProtocol.Response) => void>();
+
 		this.pendingRequests.forEach((value, key) => pending.set(key, value));
+
 		await timeout(500);
+
 		pending.forEach((callback, request_seq) => {
 			const err: DebugProtocol.Response = {
 				type: "response",
@@ -229,13 +265,17 @@ export abstract class AbstractDebugAdapter implements IDebugAdapter {
 				command: "canceled",
 				message: "canceled",
 			};
+
 			callback(err);
+
 			this.pendingRequests.delete(request_seq);
 		});
 	}
+
 	getPendingRequestIds(): number[] {
 		return Array.from(this.pendingRequests.keys());
 	}
+
 	dispose(): void {
 		this.queue = [];
 	}

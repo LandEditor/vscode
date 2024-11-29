@@ -52,11 +52,17 @@ import {
 
 export interface IRemoteExtensionHostInitData {
 	readonly connectionData: IRemoteConnectionData | null;
+
 	readonly pid: number;
+
 	readonly appRoot: URI;
+
 	readonly extensionHostLogsPath: URI;
+
 	readonly globalStorageHome: URI;
+
 	readonly workspaceStorageHome: URI;
+
 	readonly extensions: ExtensionHostExtensions;
 }
 export interface IRemoteExtensionHostDataProvider {
@@ -66,17 +72,27 @@ export interface IRemoteExtensionHostDataProvider {
 }
 export class RemoteExtensionHost extends Disposable implements IExtensionHost {
 	public readonly pid = null;
+
 	public readonly remoteAuthority: string;
+
 	public readonly startup = ExtensionHostStartup.EagerAutoStart;
+
 	public extensions: ExtensionHostExtensions | null = null;
+
 	private _onExit: Emitter<[number, string | null]> = this._register(
 		new Emitter<[number, string | null]>(),
 	);
+
 	public readonly onExit: Event<[number, string | null]> = this._onExit.event;
+
 	private _protocol: PersistentProtocol | null;
+
 	private _hasLostConnection: boolean;
+
 	private _terminating: boolean;
+
 	private _hasDisconnected = false;
+
 	private readonly _isExtensionDevHost: boolean;
 
 	constructor(
@@ -106,14 +122,20 @@ export class RemoteExtensionHost extends Disposable implements IExtensionHost {
 		private readonly _signService: ISignService,
 	) {
 		super();
+
 		this.remoteAuthority = this._initDataProvider.remoteAuthority;
+
 		this._protocol = null;
+
 		this._hasLostConnection = false;
+
 		this._terminating = false;
 
 		const devOpts = parseExtensionDevOptions(this._environmentService);
+
 		this._isExtensionDevHost = devOpts.isExtensionDevHost;
 	}
+
 	public start(): Promise<IMessagePassingProtocol> {
 		const options: IConnectionOptions = {
 			commit: this._productService.commit,
@@ -163,9 +185,11 @@ export class RemoteExtensionHost extends Disposable implements IExtensionHost {
 						debugOk = false;
 					}
 				}
+
 				if (!debugOk) {
 					startParams.break = false;
 				}
+
 				return connectRemoteAgentExtensionHost(
 					options,
 					startParams,
@@ -189,9 +213,11 @@ export class RemoteExtensionHost extends Disposable implements IExtensionHost {
 							this._initDataProvider.remoteAuthority,
 						);
 					}
+
 					protocol.onDidDispose(() => {
 						this._onExtHostConnectionLost(reconnectionToken);
 					});
+
 					protocol.onSocketClose(() => {
 						if (this._isExtensionDevHost) {
 							this._onExtHostConnectionLost(reconnectionToken);
@@ -222,6 +248,7 @@ export class RemoteExtensionHost extends Disposable implements IExtensionHost {
 
 									return;
 								}
+
 								if (
 									isMessageOfType(
 										msg,
@@ -234,10 +261,12 @@ export class RemoteExtensionHost extends Disposable implements IExtensionHost {
 									disposable.dispose();
 									// release this promise
 									this._protocol = protocol;
+
 									resolve(protocol);
 
 									return;
 								}
+
 								console.error(
 									`received unexpected message during handshake phase from the extension host: `,
 									msg,
@@ -248,11 +277,13 @@ export class RemoteExtensionHost extends Disposable implements IExtensionHost {
 				});
 			});
 	}
+
 	private _onExtHostConnectionLost(reconnectionToken: string): void {
 		if (this._hasLostConnection) {
 			// avoid re-entering this method
 			return;
 		}
+
 		this._hasLostConnection = true;
 
 		if (
@@ -263,16 +294,20 @@ export class RemoteExtensionHost extends Disposable implements IExtensionHost {
 				this._environmentService.debugExtensionHost.debugId,
 			);
 		}
+
 		if (this._terminating) {
 			// Expected termination path (we asked the process to terminate)
 			return;
 		}
+
 		this._onExit.fire([0, reconnectionToken]);
 	}
+
 	private async _createExtHostInitData(
 		isExtensionDevelopmentDebug: boolean,
 	): Promise<IExtensionHostInitData> {
 		const remoteInitData = await this._initDataProvider.getInitData();
+
 		this.extensions = remoteInitData.extensions;
 
 		const workspace = this._contextService.getWorkspace();
@@ -342,23 +377,32 @@ export class RemoteExtensionHost extends Disposable implements IExtensionHost {
 			uiKind: platform.isWeb ? UIKind.Web : UIKind.Desktop,
 		};
 	}
+
 	getInspectPort(): undefined {
 		return undefined;
 	}
+
 	enableInspectPort(): Promise<boolean> {
 		return Promise.resolve(false);
 	}
+
 	async disconnect() {
 		if (this._protocol && !this._hasDisconnected) {
 			this._protocol.send(createMessageOfType(MessageType.Terminate));
+
 			this._protocol.sendDisconnect();
+
 			this._hasDisconnected = true;
+
 			await this._protocol.drain();
 		}
 	}
+
 	override dispose(): void {
 		super.dispose();
+
 		this._terminating = true;
+
 		this.disconnect();
 
 		if (this._protocol) {
@@ -366,8 +410,10 @@ export class RemoteExtensionHost extends Disposable implements IExtensionHost {
 			// (graceful termination)
 			// setTimeout(() => {
 			// console.log(`SENDING TERMINATE TO REMOTE EXT HOST!`);
+
 			this._protocol.getSocket().end();
 			// this._protocol.drain();
+
 			this._protocol = null;
 			// }, 1000);
 		}

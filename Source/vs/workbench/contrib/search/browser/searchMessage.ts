@@ -56,6 +56,7 @@ export const renderSearchMessage = (
 					if (!message.trusted) {
 						return;
 					}
+
 					const parsed = URI.parse(href, true);
 
 					if (parsed.scheme === Schemas.command && message.trusted) {
@@ -92,8 +93,10 @@ export const renderSearchMessage = (
 					}
 				},
 			});
+
 			disposableStore.add(link);
 		}
 	}
+
 	return div;
 };

@@ -47,6 +47,7 @@ export async function getDependencies(
 			throw new Error("Invalid Debian arch string " + arch);
 		}
 	}
+
 	if (packageType === "rpm" && !isRpmArchString(arch)) {
 		throw new Error("Invalid RPM arch string " + arch);
 	}
@@ -67,10 +68,12 @@ export async function getDependencies(
 
 	if (findResult.status) {
 		console.error("Error finding files:");
+
 		console.error(findResult.stderr.toString());
 
 		return [];
 	}
+
 	const appPath = path.join(buildDir, applicationName);
 	// Add the native modules
 	const files = findResult.stdout.toString().trimEnd().split("\n");
@@ -80,6 +83,7 @@ export async function getDependencies(
 	files.push(appPath);
 	// Add chrome sandbox and crashpad handler.
 	files.push(path.join(buildDir, "chrome-sandbox"));
+
 	files.push(path.join(buildDir, "chrome_crashpad_handler"));
 	// Generate the dependencies.
 	let dependencies: Set<string>[];
@@ -90,6 +94,7 @@ export async function getDependencies(
 		);
 
 		const vscodeSysroot = await getVSCodeSysroot(arch as DebianArchString);
+
 		dependencies = generatePackageDepsDebian(
 			files,
 			arch as DebianArchString,
@@ -132,6 +137,7 @@ export async function getDependencies(
 			console.warn(failMessage);
 		}
 	}
+
 	return sortedDependencies;
 }
 // Based on https://source.chromium.org/chromium/chromium/src/+/main:chrome/installer/linux/rpm/merge_package_deps.py.
@@ -150,5 +156,6 @@ function mergePackageDeps(inputDeps: Set<string>[]): Set<string> {
 			}
 		}
 	}
+
 	return requires;
 }

@@ -12,6 +12,7 @@ export class CollapsedCellInput extends CellContentPart {
 		cellInputCollapsedContainer: HTMLElement,
 	) {
 		super();
+
 		this._register(
 			DOM.addDisposableListener(
 				cellInputCollapsedContainer,
@@ -20,6 +21,7 @@ export class CollapsedCellInput extends CellContentPart {
 					if (!this.currentCell || !this.notebookEditor.hasModel()) {
 						return;
 					}
+
 					if (this.currentCell.isInputCollapsed) {
 						this.currentCell.isInputCollapsed = false;
 					} else {
@@ -28,6 +30,7 @@ export class CollapsedCellInput extends CellContentPart {
 				},
 			),
 		);
+
 		this._register(
 			DOM.addDisposableListener(
 				cellInputCollapsedContainer,
@@ -36,6 +39,7 @@ export class CollapsedCellInput extends CellContentPart {
 					if (!this.currentCell || !this.notebookEditor.hasModel()) {
 						return;
 					}
+
 					const element = e.target as HTMLElement;
 
 					if (

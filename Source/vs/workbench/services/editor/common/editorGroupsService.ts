@@ -66,6 +66,7 @@ export const enum GroupLocation {
 }
 export interface IFindGroupScope {
 	readonly direction?: GroupDirection;
+
 	readonly location?: GroupLocation;
 }
 export const enum GroupsArrangement {
@@ -114,6 +115,7 @@ export const enum MergeGroupMode {
 }
 export interface IMergeGroupOptions {
 	mode?: MergeGroupMode;
+
 	readonly index?: number;
 }
 export interface ICloseEditorOptions {
@@ -121,18 +123,24 @@ export interface ICloseEditorOptions {
 }
 export type ICloseEditorsFilter = {
 	readonly except?: EditorInput;
+
 	readonly direction?: CloseDirection;
+
 	readonly savedOnly?: boolean;
+
 	readonly excludeSticky?: boolean;
 };
 
 export interface ICloseAllEditorsOptions {
 	readonly excludeSticky?: boolean;
+
 	readonly excludeConfirming?: boolean;
 }
 export interface IEditorReplacement {
 	readonly editor: EditorInput;
+
 	readonly replacement: EditorInput;
+
 	readonly options?: IEditorOptions;
 	/**
 	 * Skips asking the user for confirmation and doesn't
@@ -295,6 +303,7 @@ export interface IEditorGroupsContainer {
 	 */
 	getSize(group: IEditorGroup | GroupIdentifier): {
 		width: number;
+
 		height: number;
 	};
 	/**
@@ -304,6 +313,7 @@ export interface IEditorGroupsContainer {
 		group: IEditorGroup | GroupIdentifier,
 		size: {
 			width: number;
+
 			height: number;
 		},
 	): void;
@@ -480,6 +490,7 @@ export interface IAuxiliaryEditorPart extends IEditorPart {
 }
 export interface IEditorWorkingSet {
 	readonly id: string;
+
 	readonly name: string;
 }
 export interface IEditorWorkingSetOptions {
@@ -585,6 +596,7 @@ export const enum OpenEditorContext {
 }
 export interface IActiveEditorActions {
 	readonly actions: IToolbarActions;
+
 	readonly onDidChange: Event<IMenuChangeEvent | void>;
 }
 export interface IEditorGroup {
@@ -925,6 +937,7 @@ export function preferredSideBySideGroupDirection(
 	if (openSideBySideDirection === "down") {
 		return GroupDirection.DOWN;
 	}
+
 	return GroupDirection.RIGHT;
 }
 //#endregion

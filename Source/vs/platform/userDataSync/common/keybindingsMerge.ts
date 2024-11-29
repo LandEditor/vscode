@@ -14,15 +14,22 @@ import { IUserDataSyncUtilService } from "./userDataSync.js";
 
 interface ICompareResult {
 	added: Set<string>;
+
 	removed: Set<string>;
+
 	updated: Set<string>;
 }
 interface IMergeResult {
 	hasLocalForwarded: boolean;
+
 	hasRemoteForwarded: boolean;
+
 	added: Set<string>;
+
 	removed: Set<string>;
+
 	updated: Set<string>;
+
 	conflicts: Set<string>;
 }
 function parseKeybindings(content: string): IUserFriendlyKeybinding[] {
@@ -36,7 +43,9 @@ export async function merge(
 	userDataSyncUtilService: IUserDataSyncUtilService,
 ): Promise<{
 	mergeContent: string;
+
 	hasChanges: boolean;
+
 	hasConflicts: boolean;
 }> {
 	const local = parseKeybindings(localContent);
@@ -70,6 +79,7 @@ export async function merge(
 			hasConflicts: false,
 		};
 	}
+
 	if (
 		!keybindingsMergeResult.hasLocalForwarded &&
 		keybindingsMergeResult.hasRemoteForwarded
@@ -80,6 +90,7 @@ export async function merge(
 			hasConflicts: false,
 		};
 	}
+
 	if (
 		keybindingsMergeResult.hasLocalForwarded &&
 		!keybindingsMergeResult.hasRemoteForwarded
@@ -109,6 +120,7 @@ export async function merge(
 		: {
 				added: [...localByCommand.keys()].reduce((r, k) => {
 					r.add(k);
+
 					return r;
 				}, new Set<string>()),
 				removed: new Set<string>(),
@@ -120,6 +132,7 @@ export async function merge(
 		: {
 				added: [...remoteByCommand.keys()].reduce((r, k) => {
 					r.add(k);
+
 					return r;
 				}, new Set<string>()),
 				removed: new Set<string>(),
@@ -138,6 +151,7 @@ export async function merge(
 		if (commandsMergeResult.conflicts.has(command)) {
 			continue;
 		}
+
 		mergeContent = removeKeybindings(
 			mergeContent,
 			command,
@@ -149,6 +163,7 @@ export async function merge(
 		if (commandsMergeResult.conflicts.has(command)) {
 			continue;
 		}
+
 		const keybindings = remoteByCommand.get(command)!;
 		// Ignore negated commands
 		if (
@@ -164,6 +179,7 @@ export async function merge(
 
 			continue;
 		}
+
 		mergeContent = addKeybindings(
 			mergeContent,
 			keybindings,
@@ -175,6 +191,7 @@ export async function merge(
 		if (commandsMergeResult.conflicts.has(command)) {
 			continue;
 		}
+
 		const keybindings = remoteByCommand.get(command)!;
 		// Ignore negated commands
 		if (
@@ -190,6 +207,7 @@ export async function merge(
 
 			continue;
 		}
+
 		mergeContent = updateKeybindings(
 			mergeContent,
 			command,
@@ -197,6 +215,7 @@ export async function merge(
 			formattingOptions,
 		);
 	}
+
 	return {
 		mergeContent,
 		hasChanges: true,
@@ -209,8 +228,11 @@ function computeMergeResult(
 	baseToRemote: ICompareResult,
 ): {
 	added: Set<string>;
+
 	removed: Set<string>;
+
 	updated: Set<string>;
+
 	conflicts: Set<string>;
 } {
 	const added: Set<string> = new Set<string>();
@@ -297,6 +319,7 @@ function computeMergeResult(
 			updated.add(key);
 		}
 	}
+
 	return { added, removed, updated, conflicts };
 }
 function computeMergeResultByKeybinding(
@@ -332,11 +355,13 @@ function computeMergeResultByKeybinding(
 			conflicts: empty,
 		};
 	}
+
 	const baseToLocalByKeybinding = baseByKeybinding
 		? compareByKeybinding(baseByKeybinding, localByKeybinding)
 		: {
 				added: [...localByKeybinding.keys()].reduce((r, k) => {
 					r.add(k);
+
 					return r;
 				}, new Set<string>()),
 				removed: new Set<string>(),
@@ -358,11 +383,13 @@ function computeMergeResultByKeybinding(
 			conflicts: empty,
 		};
 	}
+
 	const baseToRemoteByKeybinding = baseByKeybinding
 		? compareByKeybinding(baseByKeybinding, remoteByKeybinding)
 		: {
 				added: [...remoteByKeybinding.keys()].reduce((r, k) => {
 					r.add(k);
+
 					return r;
 				}, new Set<string>()),
 				removed: new Set<string>(),
@@ -383,6 +410,7 @@ function computeMergeResultByKeybinding(
 			conflicts: empty,
 		};
 	}
+
 	const { added, removed, updated, conflicts } = computeMergeResult(
 		localToRemoteByKeybinding,
 		baseToLocalByKeybinding,
@@ -414,10 +442,13 @@ function byKeybinding(
 
 		if (!value) {
 			value = [];
+
 			map.set(key, value);
 		}
+
 		value.push(keybinding);
 	}
+
 	return map;
 }
 function byCommand(
@@ -438,10 +469,13 @@ function byCommand(
 
 		if (!value) {
 			value = [];
+
 			map.set(command, value);
 		}
+
 		value.push(keybinding);
 	}
+
 	return map;
 }
 function compareByKeybinding(
@@ -456,6 +490,7 @@ function compareByKeybinding(
 		.filter((key) => !fromKeys.includes(key))
 		.reduce((r, key) => {
 			r.add(key);
+
 			return r;
 		}, new Set<string>());
 
@@ -463,6 +498,7 @@ function compareByKeybinding(
 		.filter((key) => !toKeys.includes(key))
 		.reduce((r, key) => {
 			r.add(key);
+
 			return r;
 		}, new Set<string>());
 
@@ -472,6 +508,7 @@ function compareByKeybinding(
 		if (removed.has(key)) {
 			continue;
 		}
+
 		const value1: IUserFriendlyKeybinding[] = from
 			.get(key)!
 			.map((keybinding) => ({ ...keybinding, ...{ key } }));
@@ -484,6 +521,7 @@ function compareByKeybinding(
 			updated.add(key);
 		}
 	}
+
 	return { added, removed, updated };
 }
 function compareByCommand(
@@ -499,6 +537,7 @@ function compareByCommand(
 		.filter((key) => !fromKeys.includes(key))
 		.reduce((r, key) => {
 			r.add(key);
+
 			return r;
 		}, new Set<string>());
 
@@ -506,6 +545,7 @@ function compareByCommand(
 		.filter((key) => !toKeys.includes(key))
 		.reduce((r, key) => {
 			r.add(key);
+
 			return r;
 		}, new Set<string>());
 
@@ -515,6 +555,7 @@ function compareByCommand(
 		if (removed.has(key)) {
 			continue;
 		}
+
 		const value1: IUserFriendlyKeybinding[] = from
 			.get(key)!
 			.map((keybinding) => ({
@@ -533,6 +574,7 @@ function compareByCommand(
 			updated.add(key);
 		}
 	}
+
 	return { added, removed, updated };
 }
 function areSameKeybindingsWithSameCommand(
@@ -559,6 +601,7 @@ function areSameKeybindingsWithSameCommand(
 	) {
 		return false;
 	}
+
 	return true;
 }
 function isSameKeybinding(
@@ -568,9 +611,11 @@ function isSameKeybinding(
 	if (a.command !== b.command) {
 		return false;
 	}
+
 	if (a.key !== b.key) {
 		return false;
 	}
+
 	const whenA = ContextKeyExpr.deserialize(a.when);
 
 	const whenB = ContextKeyExpr.deserialize(b.when);
@@ -578,12 +623,15 @@ function isSameKeybinding(
 	if ((whenA && !whenB) || (!whenA && whenB)) {
 		return false;
 	}
+
 	if (whenA && whenB && !whenA.equals(whenB)) {
 		return false;
 	}
+
 	if (!objects.equals(a.args, b.args)) {
 		return false;
 	}
+
 	return true;
 }
 function addKeybindings(
@@ -599,6 +647,7 @@ function addKeybindings(
 			formattingOptions,
 		);
 	}
+
 	return content;
 }
 function removeKeybindings(
@@ -621,6 +670,7 @@ function removeKeybindings(
 			);
 		}
 	}
+
 	return content;
 }
 function updateKeybindings(
@@ -659,5 +709,6 @@ function updateKeybindings(
 			formattingOptions,
 		);
 	}
+
 	return content;
 }

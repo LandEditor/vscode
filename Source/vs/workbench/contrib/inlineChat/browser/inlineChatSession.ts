@@ -54,80 +54,128 @@ import { IInlineChatSessionService } from "./inlineChatSessionService.js";
 
 export type TelemetryData = {
 	extension: string;
+
 	rounds: string;
+
 	undos: string;
+
 	unstashed: number;
+
 	edits: number;
+
 	finishedByEdit: boolean;
+
 	startTime: string;
+
 	endTime: string;
+
 	editMode: string;
+
 	acceptedHunks: number;
+
 	discardedHunks: number;
+
 	responseTypes: string;
 };
 
 export type TelemetryDataClassification = {
 	owner: "jrieken";
+
 	comment: "Data about an interaction editor session";
+
 	extension: {
 		classification: "SystemMetaData";
+
 		purpose: "FeatureInsight";
+
 		comment: "The extension providing the data";
 	};
+
 	rounds: {
 		classification: "SystemMetaData";
+
 		purpose: "FeatureInsight";
+
 		comment: "Number of request that were made";
 	};
+
 	undos: {
 		classification: "SystemMetaData";
+
 		purpose: "FeatureInsight";
+
 		comment: "Requests that have been undone";
 	};
+
 	edits: {
 		classification: "SystemMetaData";
+
 		purpose: "FeatureInsight";
+
 		comment: "Did edits happen while the session was active";
 	};
+
 	unstashed: {
 		classification: "SystemMetaData";
+
 		purpose: "FeatureInsight";
+
 		comment: "How often did this session become stashed and resumed";
 	};
+
 	finishedByEdit: {
 		classification: "SystemMetaData";
+
 		purpose: "FeatureInsight";
+
 		comment: "Did edits cause the session to terminate";
 	};
+
 	startTime: {
 		classification: "SystemMetaData";
+
 		purpose: "FeatureInsight";
+
 		comment: "When the session started";
 	};
+
 	endTime: {
 		classification: "SystemMetaData";
+
 		purpose: "FeatureInsight";
+
 		comment: "When the session ended";
 	};
+
 	editMode: {
 		classification: "SystemMetaData";
+
 		purpose: "FeatureInsight";
+
 		comment: "What edit mode was choosen: live, livePreview, preview";
 	};
+
 	acceptedHunks: {
 		classification: "SystemMetaData";
+
 		purpose: "FeatureInsight";
+
 		comment: "Number of accepted hunks";
 	};
+
 	discardedHunks: {
 		classification: "SystemMetaData";
+
 		purpose: "FeatureInsight";
+
 		comment: "Number of discarded hunks";
 	};
+
 	responseTypes: {
 		classification: "SystemMetaData";
+
 		purpose: "FeatureInsight";
+
 		comment: "Comma separated list of response types like edits, message, mixed";
 	};
 };
@@ -137,8 +185,11 @@ export class SessionWholeRange {
 		ModelDecorationOptions.register({
 			description: "inlineChat/session/wholeRange",
 		});
+
 	private readonly _onDidChange = new Emitter<this>();
+
 	readonly onDidChange: Event<this> = this._onDidChange.event;
+
 	private _decorationIds: string[] = [];
 
 	constructor(
@@ -150,6 +201,7 @@ export class SessionWholeRange {
 			[{ range: wholeRange, options: SessionWholeRange._options }],
 		);
 	}
+
 	dispose() {
 		this._onDidChange.dispose();
 
@@ -157,6 +209,7 @@ export class SessionWholeRange {
 			this._textModel.deltaDecorations(this._decorationIds, []);
 		}
 	}
+
 	fixup(changes: readonly DetailedLineRangeMapping[]): void {
 		const newDeco: IModelDeltaDecoration[] = [];
 
@@ -176,16 +229,21 @@ export class SessionWholeRange {
 							modified.endLineNumberExclusive - 1,
 						),
 					);
+
 			newDeco.push({
 				range: modifiedRange,
 				options: SessionWholeRange._options,
 			});
 		}
+
 		const [first, ...rest] = this._decorationIds; // first is the original whole range
 		const newIds = this._textModel.deltaDecorations(rest, newDeco);
+
 		this._decorationIds = [first].concat(newIds);
+
 		this._onDidChange.fire(this);
 	}
+
 	get trackedInitialRange(): Range {
 		const [first] = this._decorationIds;
 
@@ -193,6 +251,7 @@ export class SessionWholeRange {
 			this._textModel.getDecorationRange(first) ?? new Range(1, 1, 1, 1)
 		);
 	}
+
 	get value(): Range {
 		let result: Range | undefined;
 
@@ -207,13 +266,17 @@ export class SessionWholeRange {
 				}
 			}
 		}
+
 		return result!;
 	}
 }
 export class Session {
 	private _isUnstashed: boolean = false;
+
 	private readonly _startTime = new Date();
+
 	private readonly _teldata: TelemetryData;
+
 	private readonly _versionByRequest = new Map<string, number>();
 
 	constructor(
@@ -256,22 +319,28 @@ export class Session {
 			this._versionByRequest = new Map(versionsByRequest);
 		}
 	}
+
 	get isUnstashed(): boolean {
 		return this._isUnstashed;
 	}
+
 	markUnstashed() {
 		this._teldata.unstashed! += 1;
+
 		this._isUnstashed = true;
 	}
+
 	markModelVersion(request: IChatRequestModel) {
 		this._versionByRequest.set(
 			request.id,
 			this.textModelN.getAlternativeVersionId(),
 		);
 	}
+
 	get versionsByRequest() {
 		return Array.from(this._versionByRequest);
 	}
+
 	async undoChangesUntil(requestId: string): Promise<boolean> {
 		const targetAltVersion = this._versionByRequest.get(requestId);
 
@@ -291,33 +360,42 @@ export class Session {
 		} finally {
 			this.hunkData.ignoreTextModelNChanges = false;
 		}
+
 		return true;
 	}
+
 	get hasChangedText(): boolean {
 		return !this.textModel0.equalsTextBuffer(
 			this.textModelN.getTextBuffer(),
 		);
 	}
+
 	asChangedText(changes: readonly LineRangeMapping[]): string | undefined {
 		if (changes.length === 0) {
 			return undefined;
 		}
+
 		let startLine = Number.MAX_VALUE;
 
 		let endLine = Number.MIN_VALUE;
 
 		for (const change of changes) {
 			startLine = Math.min(startLine, change.modified.startLineNumber);
+
 			endLine = Math.max(endLine, change.modified.endLineNumberExclusive);
 		}
+
 		return this.textModelN.getValueInRange(
 			new Range(startLine, 1, endLine, Number.MAX_VALUE),
 		);
 	}
+
 	recordExternalEditOccurred(didFinish: boolean) {
 		this._teldata.edits += 1;
+
 		this._teldata.finishedByEdit = didFinish;
 	}
+
 	asTelemetryData(): TelemetryData {
 		for (const item of this.hunkData.getInfo()) {
 			switch (item.getState()) {
@@ -332,6 +410,7 @@ export class Session {
 					break;
 			}
 		}
+
 		this._teldata.endTime = new Date().toISOString();
 
 		return this._teldata;
@@ -339,7 +418,9 @@ export class Session {
 }
 export class StashedSession {
 	private readonly _listener: IDisposable;
+
 	private readonly _ctxHasStashedSession: IContextKey<boolean>;
+
 	private _session: Session | undefined;
 
 	constructor(
@@ -357,7 +438,9 @@ export class StashedSession {
 			CTX_INLINE_CHAT_HAS_STASHED_SESSION.bindTo(contextKeyService);
 		// keep session for a little bit, only release when user continues to work (type, move cursor, etc.)
 		this._session = session;
+
 		this._ctxHasStashedSession.set(true);
+
 		this._listener = Event.once(
 			Event.any(
 				editor.onDidChangeCursorSelection,
@@ -367,34 +450,46 @@ export class StashedSession {
 			),
 		)(() => {
 			this._session = undefined;
+
 			this._sessionService.releaseSession(session);
+
 			this._ctxHasStashedSession.reset();
 		});
 	}
+
 	dispose() {
 		this._listener.dispose();
+
 		this._ctxHasStashedSession.reset();
 
 		if (this._session) {
 			this._sessionService.releaseSession(this._session);
 		}
 	}
+
 	unstash(): Session | undefined {
 		if (!this._session) {
 			return undefined;
 		}
+
 		this._listener.dispose();
 
 		const result = this._session;
+
 		result.markUnstashed();
+
 		result.hunkData.ignoreTextModelNChanges = true;
+
 		result.textModelN.pushEditOperations(
 			null,
 			this._undoCancelEdits,
 			() => null,
 		);
+
 		result.hunkData.ignoreTextModelNChanges = false;
+
 		this._session = undefined;
+
 		this._logService.debug("[IE] Unstashed session");
 
 		return result;
@@ -422,9 +517,13 @@ export class HunkData {
 			description: "inline-chat-hunk-tracked-range",
 			stickiness: TrackedRangeStickiness.AlwaysGrowsWhenTypingAtEdges,
 		});
+
 	private static readonly _HUNK_THRESHOLD = 8;
+
 	private readonly _store = new DisposableStore();
+
 	private readonly _data = new Map<RawHunk, RawHunkData>();
+
 	private _ignoreChanges: boolean = false;
 
 	constructor(
@@ -441,6 +540,7 @@ export class HunkData {
 			}),
 		);
 	}
+
 	dispose(): void {
 		if (!this._textModelN.isDisposed()) {
 			this._textModelN.changeDecorations((accessor) => {
@@ -452,6 +552,7 @@ export class HunkData {
 				}
 			});
 		}
+
 		if (!this._textModel0.isDisposed()) {
 			this._textModel0.changeDecorations((accessor) => {
 				for (const { textModel0Decorations } of this._data.values()) {
@@ -462,21 +563,28 @@ export class HunkData {
 				}
 			});
 		}
+
 		this._data.clear();
+
 		this._store.dispose();
 	}
+
 	set ignoreTextModelNChanges(value: boolean) {
 		this._ignoreChanges = value;
 	}
+
 	get ignoreTextModelNChanges(): boolean {
 		return this._ignoreChanges;
 	}
+
 	private _mirrorChanges(event: IModelContentChangedEvent) {
 		// mirror textModelN changes to textModel0 execept for those that
 		// overlap with a hunk
 		type HunkRangePair = {
 			rangeN: Range;
+
 			range0: Range;
+
 			markAccepted: () => void;
 		};
 
@@ -518,9 +626,11 @@ export class HunkData {
 				}
 			}
 		}
+
 		hunkRanges.sort((a, b) =>
 			Range.compareRangesUsingStarts(a.rangeN, b.rangeN),
 		);
+
 		ranges0.sort(Range.compareRangesUsingStarts);
 
 		const edits: IIdentifiedSingleEditOperation[] = [];
@@ -543,6 +653,7 @@ export class HunkData {
 					pendingChangesLen += this._textModelN.getValueLengthInRange(
 						entry.rangeN,
 					);
+
 					pendingChangesLen -= this._textModel0.getValueLengthInRange(
 						entry.range0,
 					);
@@ -553,6 +664,7 @@ export class HunkData {
 					// to mark the hunk as accepted and to ignore the edit. The range of the hunk
 					// will be up-to-date because of decorations created for them
 					entry.markAccepted();
+
 					isOverlapping = true;
 
 					break;
@@ -561,10 +673,12 @@ export class HunkData {
 					break;
 				}
 			}
+
 			if (isOverlapping) {
 				// hunk overlaps, it grew
 				continue;
 			}
+
 			const offset0 = change.rangeOffset - pendingChangesLen;
 
 			const start0 = this._textModel0.getPositionAt(offset0);
@@ -579,6 +693,7 @@ export class HunkData {
 						this._textModel0.getValueLengthInRange(range);
 				}
 			}
+
 			const start = this._textModel0.getPositionAt(
 				offset0 + acceptedChangesLen,
 			);
@@ -586,6 +701,7 @@ export class HunkData {
 			const end = this._textModel0.getPositionAt(
 				offset0 + acceptedChangesLen + change.rangeLength,
 			);
+
 			edits.push(
 				EditOperation.replace(
 					Range.fromPositions(start, end),
@@ -593,8 +709,10 @@ export class HunkData {
 				),
 			);
 		}
+
 		this._textModel0.pushEditOperations(null, edits, () => null);
 	}
+
 	async recompute(
 		editState: IChatTextEditGroupState,
 		diff?: IDocumentDiff | null,
@@ -639,6 +757,7 @@ export class HunkData {
 				}
 			}
 		}
+
 		const hunks = mergedChanges.map(
 			(change) =>
 				new RawHunk(
@@ -647,7 +766,9 @@ export class HunkData {
 					change.innerChanges ?? [],
 				),
 		);
+
 		editState.applied = hunks.length;
+
 		this._textModelN.changeDecorations((accessorN) => {
 			this._textModel0.changeDecorations((accessor0) => {
 				// clean up old decorations
@@ -659,23 +780,27 @@ export class HunkData {
 						accessorN.removeDecoration,
 						accessorN,
 					);
+
 					textModel0Decorations.forEach(
 						accessor0.removeDecoration,
 						accessor0,
 					);
 				}
+
 				this._data.clear();
 				// add new decorations
 				for (const hunk of hunks) {
 					const textModelNDecorations: string[] = [];
 
 					const textModel0Decorations: string[] = [];
+
 					textModelNDecorations.push(
 						accessorN.addDecoration(
 							lineRangeAsRange(hunk.modified, this._textModelN),
 							HunkData._HUNK_TRACKED_RANGE,
 						),
 					);
+
 					textModel0Decorations.push(
 						accessor0.addDecoration(
 							lineRangeAsRange(hunk.original, this._textModel0),
@@ -690,6 +815,7 @@ export class HunkData {
 								HunkData._HUNK_TRACKED_RANGE,
 							),
 						);
+
 						textModel0Decorations.push(
 							accessor0.addDecoration(
 								change.originalRange,
@@ -697,6 +823,7 @@ export class HunkData {
 							),
 						);
 					}
+
 					this._data.set(hunk, {
 						editState,
 						textModelNDecorations,
@@ -707,9 +834,11 @@ export class HunkData {
 			});
 		});
 	}
+
 	get size(): number {
 		return this._data.size;
 	}
+
 	get pending(): number {
 		return Iterable.reduce(
 			this._data.values(),
@@ -717,6 +846,7 @@ export class HunkData {
 			0,
 		);
 	}
+
 	private _discardEdits(item: HunkInformation): ISingleEditOperation[] {
 		const edits: ISingleEditOperation[] = [];
 
@@ -728,10 +858,13 @@ export class HunkData {
 			const modifiedRange = rangesN[i];
 
 			const originalValue = this._textModel0.getValueInRange(ranges0[i]);
+
 			edits.push(EditOperation.replace(modifiedRange, originalValue));
 		}
+
 		return edits;
 	}
+
 	discardAll() {
 		const edits: ISingleEditOperation[][] = [];
 
@@ -740,7 +873,9 @@ export class HunkData {
 				edits.push(this._discardEdits(item));
 			}
 		}
+
 		const undoEdits: IValidEditOperation[][] = [];
+
 		this._textModelN.pushEditOperations(
 			null,
 			edits.flat(),
@@ -753,6 +888,7 @@ export class HunkData {
 
 		return undoEdits.flat();
 	}
+
 	getInfo(): HunkInformation[] {
 		const result: HunkInformation[] = [];
 
@@ -768,6 +904,7 @@ export class HunkData {
 					const ranges = data.textModelNDecorations.map((id) =>
 						this._textModelN.getDecorationRange(id),
 					);
+
 					coalesceInPlace(ranges);
 
 					return ranges;
@@ -776,6 +913,7 @@ export class HunkData {
 					const ranges = data.textModel0Decorations.map((id) =>
 						this._textModel0.getDecorationRange(id),
 					);
+
 					coalesceInPlace(ranges);
 
 					return ranges;
@@ -785,11 +923,13 @@ export class HunkData {
 					// which was created above so that typing in the editor keeps discard working.
 					if (data.state === HunkState.Pending) {
 						const edits = this._discardEdits(item);
+
 						this._textModelN.pushEditOperations(
 							null,
 							edits,
 							() => null,
 						);
+
 						data.state = HunkState.Rejected;
 
 						if (data.editState.applied > 0) {
@@ -812,6 +952,7 @@ export class HunkData {
 
 							const modifiedValue =
 								this._textModelN.getValueInRange(rangesN[i]);
+
 							edits.push(
 								EditOperation.replace(
 									originalRange,
@@ -819,17 +960,21 @@ export class HunkData {
 								),
 							);
 						}
+
 						this._textModel0.pushEditOperations(
 							null,
 							edits,
 							() => null,
 						);
+
 						data.state = HunkState.Accepted;
 					}
 				},
 			};
+
 			result.push(item);
 		}
+
 		return result;
 	}
 }
@@ -842,8 +987,11 @@ class RawHunk {
 }
 type RawHunkData = {
 	textModelNDecorations: string[];
+
 	textModel0Decorations: string[];
+
 	state: HunkState;
+
 	editState: IChatTextEditGroupState;
 };
 
@@ -859,7 +1007,9 @@ export interface HunkInformation {
 	getRangesN(): Range[];
 
 	getRanges0(): Range[];
+
 	isInsertion(): boolean;
+
 	discardChanges(): void;
 	/**
 	 * Accept the hunk. Applies the corresponding edits into textModel0

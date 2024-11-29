@@ -18,7 +18,9 @@ export interface INotebookRendererMessagingService {
 	 */
 	onShouldPostMessage: Event<{
 		editorId: string;
+
 		rendererId: string;
+
 		message: unknown;
 	}>;
 	/**

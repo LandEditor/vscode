@@ -26,8 +26,10 @@ export class LogsDataCleaner extends Disposable {
 				this.cleanUpOldLogs();
 			}, 10 * 1000 /* after 10s */),
 		);
+
 		scheduler.schedule();
 	}
+
 	private async cleanUpOldLogs(): Promise<void> {
 		this.logService.trace("[logs cleanup]: Starting to clean up old logs.");
 
@@ -57,6 +59,7 @@ export class LogsDataCleaner extends Disposable {
 				this.logService.trace(
 					`[logs cleanup]: Removing log folders '${sessionsToDelete.join(", ")}'`,
 				);
+
 				await Promise.all(
 					sessionsToDelete.map((sessionToDelete) =>
 						Promises.rm(join(logsRoot, sessionToDelete)),

@@ -12,8 +12,10 @@ import { ISelectedSuggestion, SuggestWidget } from "./suggestWidget.js";
 
 export class CommitCharacterController {
 	private readonly _disposables = new DisposableStore();
+
 	private _active?: {
 		readonly acceptCharacters: CharacterSet;
+
 		readonly item: ISelectedSuggestion;
 	};
 
@@ -30,16 +32,21 @@ export class CommitCharacterController {
 				}
 			}),
 		);
+
 		this._disposables.add(
 			model.onDidCancel((e) => {
 				this.reset();
 			}),
 		);
+
 		this._disposables.add(
 			widget.onDidShow(() => this._onItem(widget.getFocusedItem())),
 		);
+
 		this._disposables.add(widget.onDidFocus(this._onItem, this));
+
 		this._disposables.add(widget.onDidHide(this.reset, this));
+
 		this._disposables.add(
 			editor.onWillType((text) => {
 				if (
@@ -61,6 +68,7 @@ export class CommitCharacterController {
 			}),
 		);
 	}
+
 	private _onItem(selected: ISelectedSuggestion | undefined): void {
 		if (
 			!selected ||
@@ -71,6 +79,7 @@ export class CommitCharacterController {
 
 			return;
 		}
+
 		if (this._active && this._active.item.item === selected.item) {
 			// still the same item
 			return;
@@ -83,11 +92,14 @@ export class CommitCharacterController {
 				acceptCharacters.add(ch.charCodeAt(0));
 			}
 		}
+
 		this._active = { acceptCharacters, item: selected };
 	}
+
 	reset(): void {
 		this._active = undefined;
 	}
+
 	dispose() {
 		this._disposables.dispose();
 	}

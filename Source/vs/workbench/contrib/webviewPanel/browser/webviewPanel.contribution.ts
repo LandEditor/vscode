@@ -68,6 +68,7 @@ class WebviewPanelContribution
 		private readonly editorGroupService: IEditorGroupsService,
 	) {
 		super();
+
 		this._register(
 			editorService.onWillOpenEditor((e) => {
 				const group = editorGroupService.getGroup(e.groupId);
@@ -78,6 +79,7 @@ class WebviewPanelContribution
 			}),
 		);
 	}
+
 	private onEditorOpening(editor: EditorInput, group: IEditorGroup): void {
 		if (
 			!(editor instanceof WebviewInput) ||
@@ -85,9 +87,11 @@ class WebviewPanelContribution
 		) {
 			return;
 		}
+
 		if (group.contains(editor)) {
 			return;
 		}
+
 		let previousGroup: IEditorGroup | undefined;
 
 		const groups = this.editorGroupService.groups;
@@ -99,9 +103,11 @@ class WebviewPanelContribution
 				break;
 			}
 		}
+
 		if (!previousGroup) {
 			return;
 		}
+
 		previousGroup.closeEditor(editor);
 	}
 }

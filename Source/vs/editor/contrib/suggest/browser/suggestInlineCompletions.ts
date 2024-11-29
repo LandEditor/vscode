@@ -71,6 +71,7 @@ class InlineCompletionResults
 	) {
 		super(completions.disposable);
 	}
+
 	canBeReused(model: ITextModel, line: number, word: IWordAtPosition) {
 		return (
 			this.model === model && // same model
@@ -81,6 +82,7 @@ class InlineCompletionResults
 			this.completionModel.getIncompleteProvider().size === 0
 		); // no incomplete results
 	}
+
 	get items(): SuggestInlineCompletion[] {
 		const result: SuggestInlineCompletion[] = [];
 		// Split items by preselected index. This ensures the memory-selected item shows first and that better/worst
@@ -109,6 +111,7 @@ class InlineCompletionResults
 				// skip items that have no overlap
 				continue;
 			}
+
 			const range = new Range(
 				item.editStart.lineNumber,
 				item.editStart.column,
@@ -123,6 +126,7 @@ class InlineCompletionResults
 					CompletionItemInsertTextRule.InsertAsSnippet
 					? { snippet: item.completion.insertText }
 					: item.completion.insertText;
+
 			result.push(
 				new SuggestInlineCompletion(
 					range,
@@ -138,6 +142,7 @@ class InlineCompletionResults
 				item.resolve(CancellationToken.None);
 			}
 		}
+
 		return result;
 	}
 }
@@ -158,6 +163,7 @@ export class SuggestInlineCompletions
 		private readonly _editorService: ICodeEditorService,
 	) {
 		super();
+
 		this._store.add(
 			_languageFeatureService.inlineCompletionsProvider.register(
 				"*",
@@ -165,6 +171,7 @@ export class SuggestInlineCompletions
 			),
 		);
 	}
+
 	async provideInlineCompletions(
 		model: ITextModel,
 		position: Position,
@@ -174,6 +181,7 @@ export class SuggestInlineCompletions
 		if (context.selectedSuggestionInfo) {
 			return;
 		}
+
 		let editor: ICodeEditor | undefined;
 
 		for (const candidate of this._editorService.listCodeEditors()) {
@@ -183,15 +191,18 @@ export class SuggestInlineCompletions
 				break;
 			}
 		}
+
 		if (!editor) {
 			return;
 		}
+
 		const config = editor.getOption(EditorOption.quickSuggestions);
 
 		if (QuickSuggestionsOptions.isAllOff(config)) {
 			// quick suggest is off (for this model/language)
 			return;
 		}
+
 		model.tokenization.tokenizeIfCheap(position.lineNumber);
 
 		const lineTokens = model.tokenization.getLineTokens(
@@ -215,6 +226,7 @@ export class SuggestInlineCompletions
 		let triggerCharacterInfo:
 			| {
 					ch: string;
+
 					providers: Set<CompletionItemProvider>;
 			  }
 			| undefined;
@@ -225,6 +237,7 @@ export class SuggestInlineCompletions
 				position,
 			);
 		}
+
 		if (!wordInfo?.word && !triggerCharacterInfo) {
 			// not at word, not a trigger character
 			return;
@@ -234,9 +247,11 @@ export class SuggestInlineCompletions
 		if (!wordInfo) {
 			wordInfo = model.getWordUntilPosition(position);
 		}
+
 		if (wordInfo.endColumn !== position.column) {
 			return;
 		}
+
 		let result: InlineCompletionResults;
 
 		const leadingLineContents = model.getValueInRange(
@@ -260,8 +275,11 @@ export class SuggestInlineCompletions
 				leadingLineContents,
 				position.column - this._lastResult.word.endColumn,
 			);
+
 			this._lastResult.completionModel.lineContext = newLineContext;
+
 			this._lastResult.acquire();
+
 			result = this._lastResult;
 		} else {
 			// refesh model is required
@@ -286,6 +304,7 @@ export class SuggestInlineCompletions
 			if (completions.needsClipboard) {
 				clipboardText = await this._clipboardService.readText();
 			}
+
 			const completionModel = new CompletionModel(
 				completions.items,
 				position.column,
@@ -296,6 +315,7 @@ export class SuggestInlineCompletions
 				{ boostFullMatch: false, firstMatchCanBeWeak: false },
 				clipboardText,
 			);
+
 			result = new InlineCompletionResults(
 				model,
 				position.lineNumber,
@@ -305,19 +325,23 @@ export class SuggestInlineCompletions
 				this._suggestMemoryService,
 			);
 		}
+
 		this._lastResult = result;
 
 		return result;
 	}
+
 	handleItemDidShow(
 		_completions: InlineCompletionResults,
 		item: SuggestInlineCompletion,
 	): void {
 		item.completion.resolve(CancellationToken.None);
 	}
+
 	freeInlineCompletions(result: InlineCompletionResults): void {
 		result.release();
 	}
+
 	private _getTriggerCharacterInfo(model: ITextModel, position: IPosition) {
 		const ch = model.getValueInRange(
 			Range.fromPositions(
@@ -338,9 +362,11 @@ export class SuggestInlineCompletions
 				providers.add(provider);
 			}
 		}
+
 		if (providers.size === 0) {
 			return undefined;
 		}
+
 		return { providers, ch };
 	}
 }

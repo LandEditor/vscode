@@ -67,30 +67,44 @@ import {
 
 type ExtensionRecommendationsNotificationClassification = {
 	owner: "sandy081";
+
 	comment: "Response information when an extension is recommended";
+
 	userReaction: {
 		classification: "SystemMetaData";
+
 		purpose: "FeatureInsight";
+
 		comment: "User reaction after showing the recommendation prompt. Eg., install, cancel, show, neverShowAgain";
 	};
+
 	extensionId?: {
 		classification: "PublicNonPersonalData";
+
 		purpose: "FeatureInsight";
+
 		comment: "Id of the extension that is recommended";
 	};
+
 	source: {
 		classification: "SystemMetaData";
+
 		purpose: "FeatureInsight";
+
 		comment: "The source from which this recommendation is coming from. Eg., file, exe.,";
 	};
 };
 
 type ExtensionWorkspaceRecommendationsNotificationClassification = {
 	owner: "sandy081";
+
 	comment: "Response information when a recommendation from workspace is recommended";
+
 	userReaction: {
 		classification: "SystemMetaData";
+
 		purpose: "FeatureInsight";
+
 		comment: "User reaction after showing the recommendation prompt. Eg., install, cancel, show, neverShowAgain";
 	};
 };
@@ -103,8 +117,11 @@ const donotShowWorkspaceRecommendationsStorageKey =
 
 type RecommendationsNotificationActions = {
 	onDidInstallRecommendedExtensions(extensions: IExtension[]): void;
+
 	onDidShowRecommendedExtensions(extensions: IExtension[]): void;
+
 	onDidCancelRecommendedExtensions(extensions: IExtension[]): void;
+
 	onDidNeverShowRecommendedExtensionsAgain(extensions: IExtension[]): void;
 };
 
@@ -115,12 +132,15 @@ type ExtensionRecommendations = Omit<
 
 class RecommendationsNotification extends Disposable {
 	private _onDidClose = this._register(new Emitter<void>());
+
 	readonly onDidClose = this._onDidClose.event;
 
 	private _onDidChangeVisibility = this._register(new Emitter<boolean>());
+
 	readonly onDidChangeVisibility = this._onDidChangeVisibility.event;
 
 	private notificationHandle: INotificationHandle | undefined;
+
 	private cancelled: boolean = false;
 
 	constructor(
@@ -148,8 +168,11 @@ class RecommendationsNotification extends Disposable {
 	hide(): void {
 		if (this.notificationHandle) {
 			this.onDidCloseDisposable.clear();
+
 			this.notificationHandle.close();
+
 			this.cancelled = false;
+
 			this.updateNotificationHandle(
 				this.notificationService.prompt(
 					this.severity,
@@ -171,25 +194,32 @@ class RecommendationsNotification extends Disposable {
 	private readonly onDidCloseDisposable = this._register(
 		new MutableDisposable(),
 	);
+
 	private readonly onDidChangeVisibilityDisposable = this._register(
 		new MutableDisposable(),
 	);
+
 	private updateNotificationHandle(notificationHandle: INotificationHandle) {
 		this.onDidCloseDisposable.clear();
+
 		this.onDidChangeVisibilityDisposable.clear();
+
 		this.notificationHandle = notificationHandle;
 
 		this.onDidCloseDisposable.value = this.notificationHandle.onDidClose(
 			() => {
 				this.onDidCloseDisposable.dispose();
+
 				this.onDidChangeVisibilityDisposable.dispose();
 
 				this._onDidClose.fire();
 
 				this._onDidClose.dispose();
+
 				this._onDidChangeVisibility.dispose();
 			},
 		);
+
 		this.onDidChangeVisibilityDisposable.value =
 			this.notificationHandle.onDidChangeVisibility((e) =>
 				this._onDidChangeVisibility.fire(e),
@@ -199,12 +229,16 @@ class RecommendationsNotification extends Disposable {
 
 type PendingRecommendationsNotification = {
 	recommendationsNotification: RecommendationsNotification;
+
 	source: RecommendationSource;
+
 	token: CancellationToken;
 };
 type VisibleRecommendationsNotification = {
 	recommendationsNotification: RecommendationsNotification;
+
 	source: RecommendationSource;
+
 	from: number;
 };
 
@@ -232,10 +266,13 @@ export class ExtensionRecommendationNotificationService
 	}
 
 	private recommendedExtensions: string[] = [];
+
 	private recommendationSources: RecommendationSource[] = [];
 
 	private hideVisibleNotificationPromise: CancelablePromise<void> | undefined;
+
 	private visibleNotification: VisibleRecommendationsNotification | undefined;
+
 	private pendingNotificaitons: PendingRecommendationsNotification[] = [];
 
 	constructor(
@@ -266,6 +303,7 @@ export class ExtensionRecommendationNotificationService
 	hasToIgnoreRecommendationNotifications(): boolean {
 		const config = this.configurationService.getValue<{
 			ignoreRecommendations: boolean;
+
 			showRecommendationsOnlyOnDemand?: boolean;
 		}>("extensions");
 
@@ -300,7 +338,9 @@ export class ExtensionRecommendationNotificationService
 						this.telemetryService.publicLog2<
 							{
 								userReaction: string;
+
 								extensionId: string;
+
 								source: string;
 							},
 							ExtensionRecommendationsNotificationClassification
@@ -317,7 +357,9 @@ export class ExtensionRecommendationNotificationService
 						this.telemetryService.publicLog2<
 							{
 								userReaction: string;
+
 								extensionId: string;
+
 								source: string;
 							},
 							ExtensionRecommendationsNotificationClassification
@@ -334,7 +376,9 @@ export class ExtensionRecommendationNotificationService
 						this.telemetryService.publicLog2<
 							{
 								userReaction: string;
+
 								extensionId: string;
+
 								source: string;
 							},
 							ExtensionRecommendationsNotificationClassification
@@ -353,10 +397,13 @@ export class ExtensionRecommendationNotificationService
 						this.addToImportantRecommendationsIgnore(
 							extension.identifier.id,
 						);
+
 						this.telemetryService.publicLog2<
 							{
 								userReaction: string;
+
 								extensionId: string;
+
 								source: string;
 							},
 							ExtensionRecommendationsNotificationClassification
@@ -368,6 +415,7 @@ export class ExtensionRecommendationNotificationService
 							),
 						});
 					}
+
 					this.notificationService.prompt(
 						Severity.Info,
 						localize(
@@ -406,6 +454,7 @@ export class ExtensionRecommendationNotificationService
 		}
 
 		let installed = await this.extensionManagementService.getInstalled();
+
 		installed = installed.filter(
 			(l) =>
 				this.extensionEnablementService.getEnablementState(l) !==
@@ -472,6 +521,7 @@ export class ExtensionRecommendationNotificationService
 					>("extensionWorkspaceRecommendations:popup", {
 						userReaction: "neverShowAgain",
 					});
+
 					this.storageService.store(
 						donotShowWorkspaceRecommendationsStorageKey,
 						true,
@@ -599,6 +649,7 @@ export class ExtensionRecommendationNotificationService
 				extensionsMessage,
 			);
 		}
+
 		if (!searchValue) {
 			searchValue =
 				source === RecommendationSource.WORKSPACE
@@ -665,6 +716,7 @@ export class ExtensionRecommendationNotificationService
 
 				const installExtensions = async (isMachineScoped: boolean) => {
 					this.extensionsWorkbenchService.openSearch(searchValue);
+
 					onDidInstallRecommendedExtensions(extensions);
 
 					const galleryExtensions: IGalleryExtension[] = [],
@@ -677,6 +729,7 @@ export class ExtensionRecommendationNotificationService
 							resourceExtensions.push(extension);
 						}
 					}
+
 					await Promises.settled<any>([
 						Promises.settled(
 							extensions.map((extension) =>
@@ -705,6 +758,7 @@ export class ExtensionRecommendationNotificationService
 							: Promise.resolve(),
 					]);
 				};
+
 				choices.push({
 					label: localize("install", "Install"),
 					run: () => installExtensions(false),
@@ -724,6 +778,7 @@ export class ExtensionRecommendationNotificationService
 								]
 							: undefined,
 				});
+
 				choices.push(
 					...[
 						{
@@ -740,6 +795,7 @@ export class ExtensionRecommendationNotificationService
 										{ pinned: true },
 									);
 								}
+
 								this.extensionsWorkbenchService.openSearch(
 									searchValue,
 								);
@@ -849,6 +905,7 @@ export class ExtensionRecommendationNotificationService
 					this.notificationService,
 				),
 			);
+
 			disposables.add(
 				Event.once(
 					Event.filter(
@@ -860,11 +917,13 @@ export class ExtensionRecommendationNotificationService
 
 			if (this.visibleNotification) {
 				const index = this.pendingNotificaitons.length;
+
 				disposables.add(
 					token.onCancellationRequested(() =>
 						this.pendingNotificaitons.splice(index, 1),
 					),
 				);
+
 				this.pendingNotificaitons.push({
 					recommendationsNotification,
 					source,
@@ -883,8 +942,10 @@ export class ExtensionRecommendationNotificationService
 					source,
 					from: Date.now(),
 				};
+
 				recommendationsNotification.show();
 			}
+
 			await raceCancellation(
 				new Promise((c) =>
 					disposables.add(
@@ -917,6 +978,7 @@ export class ExtensionRecommendationNotificationService
 					source: nextNotificaiton.source,
 					from: Date.now(),
 				};
+
 				nextNotificaiton.recommendationsNotification.show();
 			}
 		});
@@ -938,18 +1000,21 @@ export class ExtensionRecommendationNotificationService
 				}
 			}
 		}
+
 		return index;
 	}
 
 	private hideVisibleNotification(timeInMillis: number): void {
 		if (this.visibleNotification && !this.hideVisibleNotificationPromise) {
 			const visibleNotification = this.visibleNotification;
+
 			this.hideVisibleNotificationPromise = timeout(
 				Math.max(
 					timeInMillis - (Date.now() - visibleNotification.from),
 					0,
 				),
 			);
+
 			this.hideVisibleNotificationPromise.then(() =>
 				visibleNotification.recommendationsNotification.hide(),
 			);
@@ -958,7 +1023,9 @@ export class ExtensionRecommendationNotificationService
 
 	private unsetVisibileNotification(): void {
 		this.hideVisibleNotificationPromise?.cancel();
+
 		this.hideVisibleNotificationPromise = undefined;
+
 		this.visibleNotification = undefined;
 	}
 
@@ -979,6 +1046,7 @@ export class ExtensionRecommendationNotificationService
 					resourceExtensions.push(recommendation);
 				}
 			}
+
 			if (galleryExtensions.length) {
 				const extensions =
 					await this.extensionsWorkbenchService.getExtensions(
@@ -998,6 +1066,7 @@ export class ExtensionRecommendationNotificationService
 					}
 				}
 			}
+
 			if (resourceExtensions.length) {
 				const extensions =
 					await this.extensionsWorkbenchService.getResourceExtensions(
@@ -1016,6 +1085,7 @@ export class ExtensionRecommendationNotificationService
 				}
 			}
 		}
+
 		return result;
 	}
 
@@ -1026,6 +1096,7 @@ export class ExtensionRecommendationNotificationService
 
 		if (!importantRecommendationsIgnoreList.includes(id.toLowerCase())) {
 			importantRecommendationsIgnoreList.push(id.toLowerCase());
+
 			this.storageService.store(
 				ignoreImportantExtensionRecommendationStorageKey,
 				JSON.stringify(importantRecommendationsIgnoreList),

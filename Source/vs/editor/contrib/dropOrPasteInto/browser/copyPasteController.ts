@@ -94,6 +94,7 @@ const vscodeClipboardMime = "application/vnd.code.copymetadata";
 
 interface CopyMetadata {
 	readonly id?: string;
+
 	readonly providerCopyMimeTypes?: readonly string[];
 
 	readonly defaultPastePayload: Omit<PastePayload, "text">;
@@ -105,6 +106,7 @@ type PasteEditWithProvider = DocumentPasteEdit & {
 
 interface DocumentPasteWithProviderEditsSession {
 	edits: readonly PasteEditWithProvider[];
+
 	dispose(): void;
 }
 
@@ -140,15 +142,18 @@ export class CopyPasteController
 	 */
 	private static _currentCopyOperation?: {
 		readonly handle: string;
+
 		readonly dataTransferPromise: CancelablePromise<VSDataTransfer>;
 	};
 
 	private readonly _editor: ICodeEditor;
 
 	private _currentPasteOperation?: CancelablePromise<void>;
+
 	private _pasteAsActionContext?: { readonly preferred?: PastePreference };
 
 	private readonly _pasteProgressManager: InlineProgressManager;
+
 	private readonly _postPasteWidgetManager: PostEditWidgetManager<PasteEditWithProvider>;
 
 	constructor(
@@ -171,12 +176,15 @@ export class CopyPasteController
 		this._editor = editor;
 
 		const container = editor.getContainerDomNode();
+
 		this._register(
 			addDisposableListener(container, "copy", (e) => this.handleCopy(e)),
 		);
+
 		this._register(
 			addDisposableListener(container, "cut", (e) => this.handleCopy(e)),
 		);
+
 		this._register(
 			addDisposableListener(
 				container,
@@ -224,6 +232,7 @@ export class CopyPasteController
 
 		try {
 			this._pasteAsActionContext = { preferred };
+
 			this._commandService.executeCommand(
 				"editor.action.clipboardPasteAction",
 			);
@@ -325,6 +334,7 @@ export class CopyPasteController
 
 		// Save off a handle pointing to data that VS Code maintains.
 		const handle = generateUuid();
+
 		this.setCopyMetadata(e.clipboardData, {
 			id: handle,
 			providerCopyMimeTypes,
@@ -365,6 +375,7 @@ export class CopyPasteController
 		});
 
 		CopyPasteController._currentCopyOperation?.dataTransferPromise.cancel();
+
 		CopyPasteController._currentCopyOperation = {
 			handle: handle,
 			dataTransferPromise: promise,
@@ -377,7 +388,9 @@ export class CopyPasteController
 		}
 
 		MessageController.get(this._editor)?.closeMessage();
+
 		this._currentPasteOperation?.cancel();
+
 		this._currentPasteOperation = undefined;
 
 		const model = this._editor.getModel();
@@ -398,6 +411,7 @@ export class CopyPasteController
 		const metadata = this.fetchCopyMetadata(e);
 
 		const dataTransfer = toExternalVSDataTransfer(e.clipboardData);
+
 		dataTransfer.delete(vscodeClipboardMime);
 
 		const fileTypes = Array.from(e.clipboardData.files).map(
@@ -447,8 +461,10 @@ export class CopyPasteController
 
 				// Also prevent default paste from applying
 				e.preventDefault();
+
 				e.stopImmediatePropagation();
 			}
+
 			return;
 		}
 
@@ -456,6 +472,7 @@ export class CopyPasteController
 		// Note that after this point, we are fully responsible for handling paste.
 		// If we can't provider a paste for any reason, we need to explicitly delegate pasting back to the editor.
 		e.preventDefault();
+
 		e.stopImmediatePropagation();
 
 		if (this._pasteAsActionContext) {
@@ -527,11 +544,13 @@ export class CopyPasteController
 			if (!editor.hasModel()) {
 				return;
 			}
+
 			const model = editor.getModel();
 
 			const disposables = new DisposableStore();
 
 			const cts = disposables.add(new CancellationTokenSource(pToken));
+
 			disposables.add(
 				editorStateCts.token.onCancellationRequested(() =>
 					cts.cancel(),
@@ -577,6 +596,7 @@ export class CopyPasteController
 					context,
 					token,
 				);
+
 				disposables.add(editSession);
 
 				if (token.isCancellationRequested) {
@@ -654,6 +674,7 @@ export class CopyPasteController
 												edit.additionalEdit =
 													resolved.additionalEdit;
 											}
+
 											return resolve(edit);
 										} catch (err) {
 											return reject(err);
@@ -713,6 +734,7 @@ export class CopyPasteController
 			.then(() => {
 				editorStateCts.dispose();
 			});
+
 		this._currentPasteOperation = p;
 	}
 
@@ -729,6 +751,7 @@ export class CopyPasteController
 			if (!editor.hasModel()) {
 				return;
 			}
+
 			const model = editor.getModel();
 
 			const disposables = new DisposableStore();
@@ -817,6 +840,7 @@ export class CopyPasteController
 					if (preference) {
 						this.showPasteAsNoEditMessage(selections, preference);
 					}
+
 					return;
 				}
 
@@ -888,6 +912,7 @@ export class CopyPasteController
 					selections,
 					pickedEdit,
 				);
+
 				await this._bulkEditService.apply(combinedWorkspaceEdit, {
 					editor: this._editor,
 				});
@@ -1012,6 +1037,7 @@ export class CopyPasteController
 						if (edits) {
 							disposables.add(edits);
 						}
+
 						return edits?.edits?.map((edit) => ({
 							...edit,
 							provider,
@@ -1020,6 +1046,7 @@ export class CopyPasteController
 						if (!isCancellationError(err)) {
 							console.error(err);
 						}
+
 						return undefined;
 					}
 				}),
@@ -1063,6 +1090,7 @@ export class CopyPasteController
 				metadata?.defaultPastePayload.multicursorText ?? null,
 			mode: null,
 		};
+
 		this._editor.trigger("keyboard", Handler.Paste, payload);
 	}
 
@@ -1127,6 +1155,7 @@ export class CopyPasteController
 				return editIndex;
 			}
 		}
+
 		return 0;
 	}
 }

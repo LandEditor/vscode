@@ -53,6 +53,7 @@ export function assertFn(condition: () => boolean): void {
 		debugger;
 		// Reevaluate `condition` again to make debugging easier
 		condition();
+
 		onUnexpectedError(new BugIndicatingError("Assertion Failed"));
 	}
 }
@@ -70,7 +71,9 @@ export function checkAdjacentItems<T>(
 		if (!predicate(a, b)) {
 			return false;
 		}
+
 		i++;
 	}
+
 	return true;
 }

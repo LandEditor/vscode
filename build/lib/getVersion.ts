@@ -10,5 +10,6 @@ export function getVersion(root: string): string | undefined {
 	if (!version || !/^[0-9a-f]{40}$/i.test(version.trim())) {
 		version = git.getVersion(root);
 	}
+
 	return version;
 }

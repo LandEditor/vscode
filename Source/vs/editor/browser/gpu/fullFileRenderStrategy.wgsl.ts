@@ -56,6 +56,7 @@ struct VSOutput {
 	@builtin(vertex_index) vertexIndex : u32
 ) -> VSOutput {
 	let cell = cells[instanceIndex];
+
 	var glyph = glyphInfo[u32(cell.textureIndex)][u32(cell.glyphIndex)];
 
 	var vsOut: VSOutput;
@@ -74,6 +75,7 @@ struct VSOutput {
 	vsOut.layerIndex = cell.textureIndex;
 	// Textures are flipped from natural direction on the y-axis, so flip it back
 	vsOut.texcoord = vert.position;
+
 	vsOut.texcoord = (
 		// Glyph offset (0-1)
 		(glyph.position / atlasDims) +

@@ -51,12 +51,15 @@ import { AbstractEditorWithViewState } from "./editorWithViewState.js";
 
 export interface IEditorConfiguration {
 	editor: object;
+
 	diffEditor: object;
+
 	accessibility?: {
 		verbosity?: {
 			diffEditor?: boolean;
 		};
 	};
+
 	problems?: {
 		visibility?: boolean;
 	};
@@ -69,15 +72,23 @@ export abstract class AbstractTextEditor<T extends IEditorViewState>
 	implements IEditorPaneWithSelection, IEditorPaneWithScrolling
 {
 	private static readonly VIEW_STATE_PREFERENCE_KEY = "textEditorViewState";
+
 	protected readonly _onDidChangeSelection = this._register(
 		new Emitter<IEditorPaneSelectionChangeEvent>(),
 	);
+
 	readonly onDidChangeSelection = this._onDidChangeSelection.event;
+
 	protected readonly _onDidChangeScroll = this._register(new Emitter<void>());
+
 	readonly onDidChangeScroll = this._onDidChangeScroll.event;
+
 	private editorContainer: HTMLElement | undefined;
+
 	private hasPendingConfigurationChange: boolean | undefined;
+
 	private lastAppliedEditorOptions?: ICodeEditorOptions;
+
 	private readonly inputListener = this._register(new MutableDisposable());
 
 	constructor(
@@ -126,7 +137,9 @@ export abstract class AbstractTextEditor<T extends IEditorViewState>
 				this.editorGroupService.onDidRemoveGroup,
 			)(() => {
 				const ariaLabel = this.computeAriaLabel();
+
 				this.editorContainer?.setAttribute("aria-label", ariaLabel);
+
 				this.updateEditorControlOptions({ ariaLabel });
 			}),
 		);
@@ -136,12 +149,14 @@ export abstract class AbstractTextEditor<T extends IEditorViewState>
 				this.onDidChangeFileSystemProvider(e.scheme),
 			),
 		);
+
 		this._register(
 			this.fileService.onDidChangeFileSystemProviderRegistrations((e) =>
 				this.onDidChangeFileSystemProvider(e.scheme),
 			),
 		);
 	}
+
 	private handleConfigurationChangeEvent(
 		e: ITextResourceConfigurationChangeEvent,
 	): void {
@@ -150,12 +165,14 @@ export abstract class AbstractTextEditor<T extends IEditorViewState>
 		if (!this.shouldHandleConfigurationChangeEvent(e, resource)) {
 			return;
 		}
+
 		if (this.isVisible()) {
 			this.updateEditorConfiguration(resource);
 		} else {
 			this.hasPendingConfigurationChange = true;
 		}
 	}
+
 	protected shouldHandleConfigurationChangeEvent(
 		e: ITextResourceConfigurationChangeEvent,
 		resource: URI | undefined,
@@ -165,12 +182,15 @@ export abstract class AbstractTextEditor<T extends IEditorViewState>
 			e.affectsConfiguration(resource, "problems.visibility")
 		);
 	}
+
 	private consumePendingConfigurationChangeEvent(): void {
 		if (this.hasPendingConfigurationChange) {
 			this.updateEditorConfiguration();
+
 			this.hasPendingConfigurationChange = false;
 		}
 	}
+
 	protected computeConfiguration(
 		configuration: IEditorConfiguration,
 	): ICodeEditorOptions {
@@ -180,6 +200,7 @@ export abstract class AbstractTextEditor<T extends IEditorViewState>
 		)
 			? deepClone(configuration.editor)
 			: Object.create(null);
+
 		Object.assign(
 			editorConfiguration,
 			this.getConfigurationOverrides(configuration),
@@ -189,6 +210,7 @@ export abstract class AbstractTextEditor<T extends IEditorViewState>
 
 		return editorConfiguration;
 	}
+
 	protected computeAriaLabel(): string {
 		return this.input
 			? computeEditorAriaLabel(
@@ -199,28 +221,34 @@ export abstract class AbstractTextEditor<T extends IEditorViewState>
 				)
 			: localize("editor", "Editor");
 	}
+
 	private onDidChangeFileSystemProvider(scheme: string): void {
 		if (!this.input) {
 			return;
 		}
+
 		if (this.getActiveResource()?.scheme === scheme) {
 			this.updateReadonly(this.input);
 		}
 	}
+
 	private onDidChangeInputCapabilities(input: EditorInput): void {
 		if (this.input === input) {
 			this.updateReadonly(input);
 		}
 	}
+
 	protected updateReadonly(input: EditorInput): void {
 		this.updateEditorControlOptions({
 			...this.getReadonlyConfiguration(input.isReadonly()),
 		});
 	}
+
 	protected getReadonlyConfiguration(
 		isReadonly: boolean | IMarkdownString | undefined,
 	): {
 		readOnly: boolean;
+
 		readOnlyMessage: IMarkdownString | undefined;
 	} {
 		return {
@@ -229,6 +257,7 @@ export abstract class AbstractTextEditor<T extends IEditorViewState>
 				typeof isReadonly !== "boolean" ? isReadonly : undefined,
 		};
 	}
+
 	protected getConfigurationOverrides(
 		configuration: IEditorConfiguration,
 	): ICodeEditorOptions {
@@ -241,9 +270,11 @@ export abstract class AbstractTextEditor<T extends IEditorViewState>
 				configuration.problems?.visibility !== false ? "on" : "off",
 		};
 	}
+
 	protected createEditor(parent: HTMLElement): void {
 		// Create editor control
 		this.editorContainer = parent;
+
 		this.createEditorControl(
 			parent,
 			this.computeConfiguration(
@@ -255,6 +286,7 @@ export abstract class AbstractTextEditor<T extends IEditorViewState>
 		// Listeners
 		this.registerCodeEditorListeners();
 	}
+
 	private registerCodeEditorListeners(): void {
 		const mainControl = this.getMainControl();
 
@@ -264,11 +296,13 @@ export abstract class AbstractTextEditor<T extends IEditorViewState>
 					this.updateEditorConfiguration(),
 				),
 			);
+
 			this._register(
 				mainControl.onDidChangeModel(() =>
 					this.updateEditorConfiguration(),
 				),
 			);
+
 			this._register(
 				mainControl.onDidChangeCursorPosition((e) =>
 					this._onDidChangeSelection.fire({
@@ -276,6 +310,7 @@ export abstract class AbstractTextEditor<T extends IEditorViewState>
 					}),
 				),
 			);
+
 			this._register(
 				mainControl.onDidChangeModelContent(() =>
 					this._onDidChangeSelection.fire({
@@ -283,6 +318,7 @@ export abstract class AbstractTextEditor<T extends IEditorViewState>
 					}),
 				),
 			);
+
 			this._register(
 				mainControl.onDidScrollChange(() =>
 					this._onDidChangeScroll.fire(),
@@ -290,6 +326,7 @@ export abstract class AbstractTextEditor<T extends IEditorViewState>
 			);
 		}
 	}
+
 	private toEditorPaneSelectionChangeReason(
 		e: ICursorPositionChangedEvent,
 	): EditorPaneSelectionChangeReason {
@@ -307,6 +344,7 @@ export abstract class AbstractTextEditor<T extends IEditorViewState>
 				return EditorPaneSelectionChangeReason.USER;
 		}
 	}
+
 	getSelection(): IEditorPaneSelection | undefined {
 		const mainControl = this.getMainControl();
 
@@ -317,6 +355,7 @@ export abstract class AbstractTextEditor<T extends IEditorViewState>
 				return new TextEditorPaneSelection(selection);
 			}
 		}
+
 		return undefined;
 	}
 	/**
@@ -344,6 +383,7 @@ export abstract class AbstractTextEditor<T extends IEditorViewState>
 	 * hand (modified) side.
 	 */
 	protected abstract getMainControl(): ICodeEditor | undefined;
+
 	override async setInput(
 		input: EditorInput,
 		options: ITextEditorOptions | undefined,
@@ -360,49 +400,59 @@ export abstract class AbstractTextEditor<T extends IEditorViewState>
 		this.updateEditorConfiguration();
 		// Update aria label on editor
 		const editorContainer = assertIsDefined(this.editorContainer);
+
 		editorContainer.setAttribute("aria-label", this.computeAriaLabel());
 	}
+
 	override clearInput(): void {
 		// Clear input listener
 		this.inputListener.clear();
 
 		super.clearInput();
 	}
+
 	getScrollPosition(): IEditorPaneScrollPosition {
 		const editor = this.getMainControl();
 
 		if (!editor) {
 			throw new Error("Control has not yet been initialized");
 		}
+
 		return {
 			// The top position can vary depending on the view zones (find widget for example)
 			scrollTop: editor.getScrollTop() - editor.getTopForLineNumber(1),
 			scrollLeft: editor.getScrollLeft(),
 		};
 	}
+
 	setScrollPosition(scrollPosition: IEditorPaneScrollPosition): void {
 		const editor = this.getMainControl();
 
 		if (!editor) {
 			throw new Error("Control has not yet been initialized");
 		}
+
 		editor.setScrollTop(scrollPosition.scrollTop);
 
 		if (scrollPosition.scrollLeft) {
 			editor.setScrollLeft(scrollPosition.scrollLeft);
 		}
 	}
+
 	protected override setEditorVisible(visible: boolean): void {
 		if (visible) {
 			this.consumePendingConfigurationChangeEvent();
 		}
+
 		super.setEditorVisible(visible);
 	}
+
 	protected override toEditorViewStateResource(
 		input: EditorInput,
 	): URI | undefined {
 		return input.resource;
 	}
+
 	private updateEditorConfiguration(
 		resource = this.getActiveResource(),
 	): void {
@@ -414,9 +464,11 @@ export abstract class AbstractTextEditor<T extends IEditorViewState>
 					resource,
 				);
 		}
+
 		if (!configuration) {
 			return;
 		}
+
 		const editorConfiguration = this.computeConfiguration(configuration);
 		// Try to figure out the actual editor options that changed from the last time we updated the editor.
 		// We do this so that we are not overwriting some dynamic editor settings (e.g. word wrap) that might
@@ -429,11 +481,14 @@ export abstract class AbstractTextEditor<T extends IEditorViewState>
 				editorSettingsToApply,
 			);
 		}
+
 		if (Object.keys(editorSettingsToApply).length > 0) {
 			this.lastAppliedEditorOptions = editorConfiguration;
+
 			this.updateEditorControlOptions(editorSettingsToApply);
 		}
 	}
+
 	private getActiveResource(): URI | undefined {
 		const mainControl = this.getMainControl();
 
@@ -444,11 +499,14 @@ export abstract class AbstractTextEditor<T extends IEditorViewState>
 				return model.uri;
 			}
 		}
+
 		if (this.input) {
 			return this.input.resource;
 		}
+
 		return undefined;
 	}
+
 	override dispose(): void {
 		this.lastAppliedEditorOptions = undefined;
 
@@ -458,10 +516,12 @@ export abstract class AbstractTextEditor<T extends IEditorViewState>
 export class TextEditorPaneSelection implements IEditorPaneSelection {
 	private static readonly TEXT_EDITOR_SELECTION_THRESHOLD = 10; // number of lines to move in editor to justify for significant change
 	constructor(private readonly textSelection: Selection) {}
+
 	compare(other: IEditorPaneSelection): EditorPaneSelectionCompareResult {
 		if (!(other instanceof TextEditorPaneSelection)) {
 			return EditorPaneSelectionCompareResult.DIFFERENT;
 		}
+
 		const thisLineNumber = Math.min(
 			this.textSelection.selectionStartLineNumber,
 			this.textSelection.positionLineNumber,
@@ -475,14 +535,17 @@ export class TextEditorPaneSelection implements IEditorPaneSelection {
 		if (thisLineNumber === otherLineNumber) {
 			return EditorPaneSelectionCompareResult.IDENTICAL;
 		}
+
 		if (
 			Math.abs(thisLineNumber - otherLineNumber) <
 			TextEditorPaneSelection.TEXT_EDITOR_SELECTION_THRESHOLD
 		) {
 			return EditorPaneSelectionCompareResult.SIMILAR; // when in close proximity, treat selection as being similar
 		}
+
 		return EditorPaneSelectionCompareResult.DIFFERENT;
 	}
+
 	restore(options: IEditorOptions): ITextEditorOptions {
 		const textEditorOptions: ITextEditorOptions = {
 			...options,
@@ -493,6 +556,7 @@ export class TextEditorPaneSelection implements IEditorPaneSelection {
 
 		return textEditorOptions;
 	}
+
 	log(): string {
 		return `line: ${this.textSelection.startLineNumber}-${this.textSelection.endLineNumber}, col:  ${this.textSelection.startColumn}-${this.textSelection.endColumn}`;
 	}

@@ -164,6 +164,7 @@ export class IconExtensionPoint {
 
 						return;
 					}
+
 					const iconContribution = extensionValue[id];
 
 					if (
@@ -179,6 +180,7 @@ export class IconExtensionPoint {
 
 						return;
 					}
+
 					const defaultIcon = iconContribution.default;
 
 					if (typeof defaultIcon === "string") {
@@ -209,6 +211,7 @@ export class IconExtensionPoint {
 
 							return;
 						}
+
 						if (
 							!defaultIcon.fontCharacter.match(fontCharacterRegex)
 						) {
@@ -218,8 +221,10 @@ export class IconExtensionPoint {
 									"Expected `contributes.icons.default.fontCharacter` to consist of a single character or a \\ followed by a Unicode code points in hexadecimal.",
 								),
 							);
+
 							return;
 						}
+
 						const extensionLocation =
 							extension.description.extensionLocation;
 
@@ -255,6 +260,7 @@ export class IconExtensionPoint {
 
 							return;
 						}
+
 						iconRegistry.registerIcon(
 							id,
 							{
@@ -276,6 +282,7 @@ export class IconExtensionPoint {
 					}
 				}
 			}
+
 			for (const extension of delta.removed) {
 				const extensionValue = <IIconExtensionPoint>extension.value;
 

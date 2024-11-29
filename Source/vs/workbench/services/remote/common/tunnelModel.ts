@@ -79,38 +79,60 @@ export const forwardedPortsViewEnabled = new RawContextKey<boolean>(
 
 export interface RestorableTunnel {
 	remoteHost: string;
+
 	remotePort: number;
+
 	localAddress: string;
+
 	localUri: URI;
+
 	protocol: TunnelProtocol;
+
 	localPort?: number;
+
 	name?: string;
+
 	source: {
 		source: TunnelSource;
+
 		description: string;
 	};
 }
 export interface Tunnel {
 	remoteHost: string;
+
 	remotePort: number;
+
 	localAddress: string;
+
 	localUri: URI;
+
 	protocol: TunnelProtocol;
+
 	localPort?: number;
+
 	name?: string;
+
 	closeable?: boolean;
+
 	privacy: TunnelPrivacyId | string;
+
 	runningProcess: string | undefined;
+
 	hasRunningProcess?: boolean;
+
 	pid: number | undefined;
+
 	source: {
 		source: TunnelSource;
+
 		description: string;
 	};
 }
 export function parseAddress(address: string):
 	| {
 			host: string;
+
 			port: number;
 	  }
 	| undefined {
@@ -121,6 +143,7 @@ export function parseAddress(address: string):
 	if (!matches) {
 		return undefined;
 	}
+
 	return {
 		host: matches[1]?.substring(0, matches[1].length - 1) || "localhost",
 		port: Number(matches[2]),
@@ -156,6 +179,7 @@ export function mapHasAddress<T>(
 	if (initialAddress) {
 		return initialAddress;
 	}
+
 	if (isLocalhost(host)) {
 		// Do localhost checks
 		for (const testHost of LOCALHOST_ADDRESSES) {
@@ -175,6 +199,7 @@ export function mapHasAddress<T>(
 			}
 		}
 	}
+
 	return undefined;
 }
 export function mapHasAddressLocalhostOrAllInterfaces<T>(
@@ -187,6 +212,7 @@ export function mapHasAddressLocalhostOrAllInterfaces<T>(
 	if (originalAddress) {
 		return originalAddress;
 	}
+
 	const otherHost = isAllInterfaces(host)
 		? "localhost"
 		: isLocalhost(host)
@@ -196,6 +222,7 @@ export function mapHasAddressLocalhostOrAllInterfaces<T>(
 	if (otherHost) {
 		return mapHasAddress(map, otherHost, port);
 	}
+
 	return undefined;
 }
 export function makeAddress(host: string, port: number): string {
@@ -204,21 +231,31 @@ export function makeAddress(host: string, port: number): string {
 export interface TunnelProperties {
 	remote: {
 		host: string;
+
 		port: number;
 	};
+
 	local?: number;
+
 	name?: string;
+
 	source?: {
 		source: TunnelSource;
+
 		description: string;
 	};
+
 	elevateIfNeeded?: boolean;
+
 	privacy?: string;
 }
 export interface CandidatePort {
 	host: string;
+
 	port: number;
+
 	detail?: string;
+
 	pid?: number;
 }
 interface PortAttributes extends Attributes {
@@ -234,17 +271,23 @@ export enum OnPortForward {
 }
 export interface Attributes {
 	label: string | undefined;
+
 	onAutoForward: OnPortForward | undefined;
+
 	elevateIfNeeded: boolean | undefined;
+
 	requireLocalPort: boolean | undefined;
+
 	protocol: TunnelProtocol | undefined;
 }
 interface PortRange {
 	start: number;
+
 	end: number;
 }
 interface HostAndPort {
 	host: string;
+
 	port: number;
 }
 export function isCandidatePort(candidate: any): candidate is CandidatePort {
@@ -260,16 +303,24 @@ export function isCandidatePort(candidate: any): candidate is CandidatePort {
 }
 export class PortsAttributes extends Disposable {
 	private static SETTING = "remote.portsAttributes";
+
 	private static DEFAULTS = "remote.otherPortsAttributes";
+
 	private static RANGE = /^(\d+)\-(\d+)$/;
+
 	private static HOST_AND_PORT = /^([a-z0-9\-]+):(\d{1,5})$/;
+
 	private portsAttributes: PortAttributes[] = [];
+
 	private defaultPortAttributes: Attributes | undefined;
+
 	private _onDidChangeAttributes = new Emitter<void>();
+
 	public readonly onDidChangeAttributes = this._onDidChangeAttributes.event;
 
 	constructor(private readonly configurationService: IConfigurationService) {
 		super();
+
 		this._register(
 			configurationService.onDidChangeConfiguration((e) => {
 				if (
@@ -280,12 +331,16 @@ export class PortsAttributes extends Disposable {
 				}
 			}),
 		);
+
 		this.updateAttributes();
 	}
+
 	private updateAttributes() {
 		this.portsAttributes = this.readSetting();
+
 		this._onDidChangeAttributes.fire();
 	}
+
 	getAttributes(
 		port: number,
 		host: string,
@@ -313,28 +368,37 @@ export class PortsAttributes extends Disposable {
 			if (found.key === port) {
 				attributes.onAutoForward =
 					found.onAutoForward ?? attributes.onAutoForward;
+
 				attributes.elevateIfNeeded =
 					found.elevateIfNeeded !== undefined
 						? found.elevateIfNeeded
 						: attributes.elevateIfNeeded;
+
 				attributes.label = found.label ?? attributes.label;
+
 				attributes.requireLocalPort = found.requireLocalPort;
+
 				attributes.protocol = found.protocol;
 			} else {
 				// It's a range or regex, which means that if the attribute is already set, we keep it
 				attributes.onAutoForward =
 					attributes.onAutoForward ?? found.onAutoForward;
+
 				attributes.elevateIfNeeded =
 					attributes.elevateIfNeeded !== undefined
 						? attributes.elevateIfNeeded
 						: found.elevateIfNeeded;
+
 				attributes.label = attributes.label ?? found.label;
+
 				attributes.requireLocalPort =
 					attributes.requireLocalPort !== undefined
 						? attributes.requireLocalPort
 						: undefined;
+
 				attributes.protocol = attributes.protocol ?? found.protocol;
 			}
+
 			index = this.findNextIndex(
 				port,
 				host,
@@ -343,6 +407,7 @@ export class PortsAttributes extends Disposable {
 				index + 1,
 			);
 		}
+
 		if (
 			attributes.onAutoForward !== undefined ||
 			attributes.elevateIfNeeded !== undefined ||
@@ -355,6 +420,7 @@ export class PortsAttributes extends Disposable {
 		// If we find no matches, then use the other port attributes.
 		return this.getOtherAttributes();
 	}
+
 	private hasStartEnd(
 		value: number | PortRange | RegExp | HostAndPort,
 	): value is PortRange {
@@ -362,6 +428,7 @@ export class PortsAttributes extends Disposable {
 			(<any>value).start !== undefined && (<any>value).end !== undefined
 		);
 	}
+
 	private hasHostAndPort(
 		value: number | PortRange | RegExp | HostAndPort,
 	): value is HostAndPort {
@@ -372,6 +439,7 @@ export class PortsAttributes extends Disposable {
 			isNumber((<any>value).port)
 		);
 	}
+
 	private findNextIndex(
 		port: number,
 		host: string,
@@ -382,6 +450,7 @@ export class PortsAttributes extends Disposable {
 		if (fromIndex >= attributes.length) {
 			return -1;
 		}
+
 		const shouldUseHost = !isLocalhost(host) && !isAllInterfaces(host);
 
 		const sliced = attributes.slice(fromIndex);
@@ -402,6 +471,7 @@ export class PortsAttributes extends Disposable {
 
 		return foundIndex >= 0 ? foundIndex + fromIndex : -1;
 	}
+
 	private readSetting(): PortAttributes[] {
 		const settingValue = this.configurationService.getValue(
 			PortsAttributes.SETTING,
@@ -410,12 +480,14 @@ export class PortsAttributes extends Disposable {
 		if (!settingValue || !isObject(settingValue)) {
 			return [];
 		}
+
 		const attributes: PortAttributes[] = [];
 
 		for (const attributesKey in settingValue) {
 			if (attributesKey === undefined) {
 				continue;
 			}
+
 			const setting = (<any>settingValue)[attributesKey];
 
 			let key: number | PortRange | RegExp | HostAndPort | undefined =
@@ -426,11 +498,13 @@ export class PortsAttributes extends Disposable {
 			} else if (isString(attributesKey)) {
 				if (PortsAttributes.RANGE.test(attributesKey)) {
 					const match = attributesKey.match(PortsAttributes.RANGE);
+
 					key = { start: Number(match![1]), end: Number(match![2]) };
 				} else if (PortsAttributes.HOST_AND_PORT.test(attributesKey)) {
 					const match = attributesKey.match(
 						PortsAttributes.HOST_AND_PORT,
 					);
+
 					key = { host: match![1], port: Number(match![2]) };
 				} else {
 					let regTest: RegExp | undefined = undefined;
@@ -440,14 +514,17 @@ export class PortsAttributes extends Disposable {
 					} catch (e) {
 						// The user entered an invalid regular expression.
 					}
+
 					if (regTest) {
 						key = regTest;
 					}
 				}
 			}
+
 			if (!key) {
 				continue;
 			}
+
 			attributes.push({
 				key: key,
 				elevateIfNeeded: setting.elevateIfNeeded,
@@ -457,6 +534,7 @@ export class PortsAttributes extends Disposable {
 				protocol: setting.protocol,
 			});
 		}
+
 		const defaults = <any>(
 			this.configurationService.getValue(PortsAttributes.DEFAULTS)
 		);
@@ -470,8 +548,10 @@ export class PortsAttributes extends Disposable {
 				protocol: defaults.protocol,
 			};
 		}
+
 		return this.sortAttributes(attributes);
 	}
+
 	private sortAttributes(attributes: PortAttributes[]): PortAttributes[] {
 		function getVal(item: PortAttributes, thisRef: PortsAttributes) {
 			if (isNumber(item.key)) {
@@ -484,13 +564,16 @@ export class PortsAttributes extends Disposable {
 				return Number.MAX_VALUE;
 			}
 		}
+
 		return attributes.sort((a, b) => {
 			return getVal(a, this) - getVal(b, this);
 		});
 	}
+
 	private getOtherAttributes() {
 		return this.defaultPortAttributes;
 	}
+
 	static providedActionToAction(
 		providedAction: ProvidedOnAutoForward | undefined,
 	) {
@@ -517,6 +600,7 @@ export class PortsAttributes extends Disposable {
 				return undefined;
 		}
 	}
+
 	public async addAttributes(
 		port: number,
 		attributes: Partial<Attributes>,
@@ -535,12 +619,15 @@ export class PortsAttributes extends Disposable {
 		} else {
 			newRemoteValue = deepClone(remoteValue);
 		}
+
 		if (!newRemoteValue[`${port}`]) {
 			newRemoteValue[`${port}`] = {};
 		}
+
 		for (const attribute in attributes) {
 			newRemoteValue[`${port}`][attribute] = (<any>attributes)[attribute];
 		}
+
 		return this.configurationService.updateValue(
 			PortsAttributes.SETTING,
 			newRemoteValue,
@@ -550,33 +637,49 @@ export class PortsAttributes extends Disposable {
 }
 export class TunnelModel extends Disposable {
 	readonly forwarded: Map<string, Tunnel>;
+
 	private readonly inProgress: Map<string, true> = new Map();
+
 	readonly detected: Map<string, Tunnel>;
+
 	private remoteTunnels: Map<string, RemoteTunnel>;
+
 	private _onForwardPort: Emitter<Tunnel | void> = new Emitter();
+
 	public onForwardPort: Event<Tunnel | void> = this._onForwardPort.event;
+
 	private _onClosePort: Emitter<{
 		host: string;
+
 		port: number;
 	}> = new Emitter();
+
 	public onClosePort: Event<{
 		host: string;
+
 		port: number;
 	}> = this._onClosePort.event;
+
 	private _onPortName: Emitter<{
 		host: string;
+
 		port: number;
 	}> = new Emitter();
+
 	public onPortName: Event<{
 		host: string;
+
 		port: number;
 	}> = this._onPortName.event;
+
 	private _candidates: Map<string, CandidatePort> | undefined;
+
 	private _onCandidatesChanged: Emitter<
 		Map<
 			string,
 			{
 				host: string;
+
 				port: number;
 			}
 		>
@@ -587,27 +690,41 @@ export class TunnelModel extends Disposable {
 			string,
 			{
 				host: string;
+
 				port: number;
 			}
 		>
 	> = this._onCandidatesChanged.event;
+
 	private _candidateFilter:
 		| ((candidates: CandidatePort[]) => Promise<CandidatePort[]>)
 		| undefined;
+
 	private tunnelRestoreValue: Promise<string | undefined>;
+
 	private _onEnvironmentTunnelsSet: Emitter<void> = new Emitter();
+
 	public onEnvironmentTunnelsSet: Event<void> =
 		this._onEnvironmentTunnelsSet.event;
+
 	private _environmentTunnelsSet: boolean = false;
+
 	public readonly configPortsAttributes: PortsAttributes;
+
 	private restoreListener: DisposableStore | undefined = undefined;
+
 	private knownPortsRestoreValue: string | undefined;
+
 	private restoreComplete = false;
+
 	private onRestoreComplete: Emitter<void> = new Emitter();
+
 	private unrestoredExtensionTunnels: Map<string, RestorableTunnel> =
 		new Map();
+
 	private sessionCachedProperties: Map<string, Partial<TunnelProperties>> =
 		new Map();
+
 	private portAttributesProviders: PortAttributesProvider[] = [];
 
 	constructor(
@@ -633,16 +750,22 @@ export class TunnelModel extends Disposable {
 		private readonly contextKeyService: IContextKeyService,
 	) {
 		super();
+
 		this.configPortsAttributes = new PortsAttributes(configurationService);
+
 		this.tunnelRestoreValue = this.getTunnelRestoreValue();
+
 		this._register(
 			this.configPortsAttributes.onDidChangeAttributes(
 				this.updateAttributes,
 				this,
 			),
 		);
+
 		this.forwarded = new Map();
+
 		this.remoteTunnels = new Map();
+
 		this.tunnelService.tunnels.then(async (tunnels) => {
 			const attributes = await this.getAttributes(
 				tunnels.map((tunnel) => {
@@ -666,6 +789,7 @@ export class TunnelModel extends Disposable {
 							tunnel.tunnelRemoteHost,
 							tunnel.tunnelRemotePort,
 						);
+
 					this.forwarded.set(key, {
 						remotePort: tunnel.tunnelRemotePort,
 						remoteHost: tunnel.tunnelRemoteHost,
@@ -685,11 +809,14 @@ export class TunnelModel extends Disposable {
 						privacy: tunnel.privacy,
 						source: UserTunnelSource,
 					});
+
 					this.remoteTunnels.set(key, tunnel);
 				}
 			}
 		});
+
 		this.detected = new Map();
+
 		this._register(
 			this.tunnelService.onTunnelOpened(async (tunnel) => {
 				const key = makeAddress(
@@ -730,6 +857,7 @@ export class TunnelModel extends Disposable {
 							},
 						])
 					)?.get(tunnel.tunnelRemotePort);
+
 					this.forwarded.set(key, {
 						remoteHost: tunnel.tunnelRemoteHost,
 						remotePort: tunnel.tunnelRemotePort,
@@ -749,19 +877,26 @@ export class TunnelModel extends Disposable {
 						source: UserTunnelSource,
 					});
 				}
+
 				await this.storeForwarded();
+
 				this.checkExtensionActivationEvents(true);
+
 				this.remoteTunnels.set(key, tunnel);
+
 				this._onForwardPort.fire(this.forwarded.get(key)!);
 			}),
 		);
+
 		this._register(
 			this.tunnelService.onTunnelClosed((address) => {
 				return this.onTunnelClosed(address, TunnelCloseReason.Other);
 			}),
 		);
+
 		this.checkExtensionActivationEvents(false);
 	}
+
 	private extensionHasActivationEvent() {
 		if (
 			this.extensionService.extensions.find((extension) =>
@@ -775,25 +910,32 @@ export class TunnelModel extends Disposable {
 
 			return true;
 		}
+
 		return false;
 	}
+
 	private hasCheckedExtensionsOnTunnelOpened = false;
+
 	private checkExtensionActivationEvents(tunnelOpened: boolean) {
 		if (this.hasCheckedExtensionsOnTunnelOpened) {
 			return;
 		}
+
 		if (tunnelOpened) {
 			this.hasCheckedExtensionsOnTunnelOpened = true;
 		}
+
 		const hasRemote = this.environmentService.remoteAuthority !== undefined;
 
 		if (hasRemote && !tunnelOpened) {
 			// We don't activate extensions on startup if there is a remote
 			return;
 		}
+
 		if (this.extensionHasActivationEvent()) {
 			return;
 		}
+
 		const activationDisposable = this._register(
 			this.extensionService.onDidRegisterExtensions(() => {
 				if (this.extensionHasActivationEvent()) {
@@ -802,9 +944,11 @@ export class TunnelModel extends Disposable {
 			}),
 		);
 	}
+
 	private async onTunnelClosed(
 		address: {
 			host: string;
+
 			port: number;
 		},
 		reason: TunnelCloseReason,
@@ -813,18 +957,23 @@ export class TunnelModel extends Disposable {
 
 		if (this.forwarded.has(key)) {
 			this.forwarded.delete(key);
+
 			await this.storeForwarded();
+
 			this._onClosePort.fire(address);
 		}
 	}
+
 	private makeLocalUri(localAddress: string, attributes?: Attributes) {
 		if (localAddress.startsWith("http")) {
 			return URI.parse(localAddress);
 		}
+
 		const protocol = attributes?.protocol ?? "http";
 
 		return URI.parse(`${protocol}://${localAddress}`);
 	}
+
 	private async addStorageKeyPostfix(
 		prefix: string,
 	): Promise<string | undefined> {
@@ -843,16 +992,20 @@ export class TunnelModel extends Disposable {
 
 			return undefined;
 		}
+
 		return `${prefix}.${this.environmentService.remoteAuthority}.${workspaceHash}`;
 	}
+
 	private async getTunnelRestoreStorageKey(): Promise<string | undefined> {
 		return this.addStorageKeyPostfix(TUNNELS_TO_RESTORE);
 	}
+
 	private async getRestoreExpirationStorageKey(): Promise<
 		string | undefined
 	> {
 		return this.addStorageKeyPostfix(TUNNELS_TO_RESTORE_EXPIRATION);
 	}
+
 	private async getTunnelRestoreValue(): Promise<string | undefined> {
 		const deprecatedValue = this.storageService.get(
 			TUNNELS_TO_RESTORE,
@@ -864,17 +1017,21 @@ export class TunnelModel extends Disposable {
 				TUNNELS_TO_RESTORE,
 				StorageScope.WORKSPACE,
 			);
+
 			await this.storeForwarded();
 
 			return deprecatedValue;
 		}
+
 		const storageKey = await this.getTunnelRestoreStorageKey();
 
 		if (!storageKey) {
 			return undefined;
 		}
+
 		return this.storageService.get(storageKey, StorageScope.PROFILE);
 	}
+
 	async restoreForwarded() {
 		this.cleanupExpiredTunnelsForRestore();
 
@@ -891,6 +1048,7 @@ export class TunnelModel extends Disposable {
 					<RestorableTunnel[] | undefined>(
 						JSON.parse(tunnelRestoreValue)
 					) ?? [];
+
 				this.logService.trace(
 					`ForwardedPorts: (TunnelModel) restoring ports ${tunnels.map((tunnel) => tunnel.remotePort).join(", ")}`,
 				);
@@ -931,13 +1089,17 @@ export class TunnelModel extends Disposable {
 				}
 			}
 		}
+
 		this.restoreComplete = true;
+
 		this.onRestoreComplete.fire();
 
 		if (!this.restoreListener) {
 			// It's possible that at restore time the value hasn't synced.
 			const key = await this.getTunnelRestoreStorageKey();
+
 			this.restoreListener = this._register(new DisposableStore());
+
 			this.restoreListener.add(
 				this.storageService.onDidChangeValue(
 					StorageScope.PROFILE,
@@ -948,12 +1110,14 @@ export class TunnelModel extends Disposable {
 						this.tunnelRestoreValue = Promise.resolve(
 							this.storageService.get(key, StorageScope.PROFILE),
 						);
+
 						await this.restoreForwarded();
 					}
 				}),
 			);
 		}
 	}
+
 	private cleanupExpiredTunnelsForRestore() {
 		const keys = this.storageService
 			.keys(StorageScope.PROFILE, StorageTarget.USER)
@@ -972,7 +1136,9 @@ export class TunnelModel extends Disposable {
 					TUNNELS_TO_RESTORE_EXPIRATION,
 					TUNNELS_TO_RESTORE,
 				);
+
 				this.storageService.remove(key, StorageScope.PROFILE);
+
 				this.storageService.remove(storageKey, StorageScope.PROFILE);
 			}
 		}
@@ -1004,12 +1170,14 @@ export class TunnelModel extends Disposable {
 			if (forwarded.length > 0) {
 				valueToStore = JSON.stringify(restorableTunnels);
 			}
+
 			const key = await this.getTunnelRestoreStorageKey();
 
 			const expirationKey = await this.getRestoreExpirationStorageKey();
 
 			if (!valueToStore && key && expirationKey) {
 				this.storageService.remove(key, StorageScope.PROFILE);
+
 				this.storageService.remove(expirationKey, StorageScope.PROFILE);
 			} else if (
 				valueToStore !== this.knownPortsRestoreValue &&
@@ -1022,6 +1190,7 @@ export class TunnelModel extends Disposable {
 					StorageScope.PROFILE,
 					StorageTarget.USER,
 				);
+
 				this.storageService.store(
 					expirationKey,
 					Date.now() + RESTORE_EXPIRATION_TIME,
@@ -1029,10 +1198,13 @@ export class TunnelModel extends Disposable {
 					StorageTarget.USER,
 				);
 			}
+
 			this.knownPortsRestoreValue = valueToStore;
 		}
 	}
+
 	private mismatchCooldown = new Date();
+
 	private async showPortMismatchModalIfNeeded(
 		tunnel: RemoteTunnel,
 		expectedLocal: number,
@@ -1041,9 +1213,11 @@ export class TunnelModel extends Disposable {
 		if (!tunnel.tunnelLocalPort || !attributes?.requireLocalPort) {
 			return;
 		}
+
 		if (tunnel.tunnelLocalPort === expectedLocal) {
 			return;
 		}
+
 		const newCooldown = new Date();
 
 		if (
@@ -1052,6 +1226,7 @@ export class TunnelModel extends Disposable {
 		) {
 			return;
 		}
+
 		this.mismatchCooldown = newCooldown;
 
 		const mismatchString = nls.localize(
@@ -1064,6 +1239,7 @@ export class TunnelModel extends Disposable {
 
 		return this.dialogService.info(mismatchString);
 	}
+
 	async forward(
 		tunnelProperties: TunnelProperties,
 		attributes?: Attributes | null,
@@ -1071,8 +1247,10 @@ export class TunnelModel extends Disposable {
 		if (!this.restoreComplete && this.environmentService.remoteAuthority) {
 			await Event.toPromise(this.onRestoreComplete.event);
 		}
+
 		return this.doForward(tunnelProperties, attributes);
 	}
+
 	private async doForward(
 		tunnelProperties: TunnelProperties,
 		attributes?: Attributes | null,
@@ -1084,6 +1262,7 @@ export class TunnelModel extends Disposable {
 			tunnelProperties.remote.host,
 			tunnelProperties.remote.port,
 		);
+
 		attributes =
 			attributes ??
 			(attributes !== null
@@ -1118,7 +1297,9 @@ export class TunnelModel extends Disposable {
 				tunnelProperties.remote.host,
 				tunnelProperties.remote.port,
 			);
+
 			this.inProgress.set(key, true);
+
 			tunnelProperties = this.mergeCachedAndUnrestoredProperties(
 				key,
 				tunnelProperties,
@@ -1172,19 +1353,26 @@ export class TunnelModel extends Disposable {
 					source: tunnelProperties.source ?? UserTunnelSource,
 					privacy: tunnel.privacy,
 				};
+
 				this.forwarded.set(key, newForward);
+
 				this.remoteTunnels.set(key, tunnel);
+
 				this.inProgress.delete(key);
+
 				await this.storeForwarded();
+
 				await this.showPortMismatchModalIfNeeded(
 					tunnel,
 					localPort,
 					attributes,
 				);
+
 				this._onForwardPort.fire(newForward);
 
 				return tunnel;
 			}
+
 			this.inProgress.delete(key);
 		} else {
 			return this.mergeAttributesIntoExistingTunnel(
@@ -1193,8 +1381,10 @@ export class TunnelModel extends Disposable {
 				attributes,
 			);
 		}
+
 		return noTunnelValue;
 	}
+
 	private mergeCachedAndUnrestoredProperties(
 		key: string,
 		tunnelProperties: TunnelProperties,
@@ -1207,37 +1397,45 @@ export class TunnelModel extends Disposable {
 
 		if (map) {
 			const updateProps = map.get(key)!;
+
 			map.delete(key);
 
 			if (updateProps) {
 				tunnelProperties.name =
 					updateProps.name ?? tunnelProperties.name;
+
 				tunnelProperties.local =
 					("local" in updateProps
 						? updateProps.local
 						: "localPort" in updateProps
 							? updateProps.localPort
 							: undefined) ?? tunnelProperties.local;
+
 				tunnelProperties.privacy = tunnelProperties.privacy;
 			}
 		}
+
 		return tunnelProperties;
 	}
+
 	private async mergeAttributesIntoExistingTunnel(
 		existingTunnel: Tunnel,
 		tunnelProperties: TunnelProperties,
 		attributes: Attributes | undefined,
 	) {
 		const newName = attributes?.label ?? tunnelProperties.name;
+
 		enum MergedAttributeAction {
 			None = 0,
 			Fire = 1,
 			Reopen = 2,
 		}
+
 		let mergedAction = MergedAttributeAction.None;
 
 		if (newName !== existingTunnel.name) {
 			existingTunnel.name = newName;
+
 			mergedAction = MergedAttributeAction.Fire;
 		}
 		// Source of existing tunnel wins so that original source is maintained
@@ -1247,6 +1445,7 @@ export class TunnelModel extends Disposable {
 			attributes?.protocol !== existingTunnel.protocol
 		) {
 			tunnelProperties.source = existingTunnel.source;
+
 			mergedAction = MergedAttributeAction.Reopen;
 		}
 		// New privacy value wins
@@ -1256,27 +1455,32 @@ export class TunnelModel extends Disposable {
 		) {
 			mergedAction = MergedAttributeAction.Reopen;
 		}
+
 		switch (mergedAction) {
 			case MergedAttributeAction.Fire: {
 				this._onForwardPort.fire();
 
 				break;
 			}
+
 			case MergedAttributeAction.Reopen: {
 				await this.close(
 					existingTunnel.remoteHost,
 					existingTunnel.remotePort,
 					TunnelCloseReason.User,
 				);
+
 				await this.doForward(tunnelProperties, attributes);
 			}
 		}
+
 		return mapHasAddressLocalhostOrAllInterfaces(
 			this.remoteTunnels,
 			tunnelProperties.remote.host,
 			tunnelProperties.remote.port,
 		);
 	}
+
 	async name(host: string, port: number, name: string) {
 		const existingForwarded = mapHasAddressLocalhostOrAllInterfaces(
 			this.forwarded,
@@ -1288,15 +1492,19 @@ export class TunnelModel extends Disposable {
 
 		if (existingForwarded) {
 			existingForwarded.name = name;
+
 			await this.storeForwarded();
+
 			this._onPortName.fire({ host, port });
 
 			return;
 		} else if (this.detected.has(key)) {
 			this.detected.get(key)!.name = name;
+
 			this._onPortName.fire({ host, port });
 		}
 	}
+
 	async close(
 		host: string,
 		port: number,
@@ -1317,19 +1525,23 @@ export class TunnelModel extends Disposable {
 				privacy: oldTunnel.privacy,
 			});
 		}
+
 		await this.tunnelService.closeTunnel(host, port);
 
 		return this.onTunnelClosed({ host, port }, reason);
 	}
+
 	address(host: string, port: number): string | undefined {
 		const key = makeAddress(host, port);
 
 		return (this.forwarded.get(key) || this.detected.get(key))
 			?.localAddress;
 	}
+
 	public get environmentTunnelsSet(): boolean {
 		return this._environmentTunnelsSet;
 	}
+
 	addEnvironmentTunnels(tunnels: TunnelDescription[] | undefined): void {
 		if (tunnels) {
 			for (const tunnel of tunnels) {
@@ -1346,6 +1558,7 @@ export class TunnelModel extends Disposable {
 								tunnel.localAddress.host,
 								tunnel.localAddress.port,
 							);
+
 				this.detected.set(
 					makeAddress(
 						tunnel.remoteAddress.host,
@@ -1371,6 +1584,7 @@ export class TunnelModel extends Disposable {
 						},
 					},
 				);
+
 				this.tunnelService.setEnvironmentTunnel(
 					tunnel.remoteAddress.host,
 					tunnel.remoteAddress.port,
@@ -1380,10 +1594,14 @@ export class TunnelModel extends Disposable {
 				);
 			}
 		}
+
 		this._environmentTunnelsSet = true;
+
 		this._onEnvironmentTunnelsSet.fire();
+
 		this._onForwardPort.fire();
 	}
+
 	setCandidateFilter(
 		filter:
 			| ((candidates: CandidatePort[]) => Promise<CandidatePort[]>)
@@ -1391,6 +1609,7 @@ export class TunnelModel extends Disposable {
 	): void {
 		this._candidateFilter = filter;
 	}
+
 	async setCandidates(candidates: CandidatePort[]) {
 		let processedCandidates = candidates;
 
@@ -1399,8 +1618,10 @@ export class TunnelModel extends Disposable {
 			// However, when the filter doesn't come from an extension we filter here.
 			processedCandidates = await this._candidateFilter(candidates);
 		}
+
 		const removedCandidates =
 			this.updateInResponseToCandidates(processedCandidates);
+
 		this.logService.trace(
 			`ForwardedPorts: (TunnelModel) removed candidates ${Array.from(
 				removedCandidates.values(),
@@ -1408,6 +1629,7 @@ export class TunnelModel extends Disposable {
 				.map((candidate) => candidate.port)
 				.join(", ")}`,
 		);
+
 		this._onCandidatesChanged.fire(removedCandidates);
 	}
 	// Returns removed candidates
@@ -1415,15 +1637,19 @@ export class TunnelModel extends Disposable {
 		string,
 		{
 			host: string;
+
 			port: number;
 		}
 	> {
 		const removedCandidates = this._candidates ?? new Map();
 
 		const candidatesMap = new Map();
+
 		this._candidates = candidatesMap;
+
 		candidates.forEach((value) => {
 			const addressKey = makeAddress(value.host, value.port);
+
 			candidatesMap.set(addressKey, {
 				host: value.host,
 				port: value.port,
@@ -1434,6 +1660,7 @@ export class TunnelModel extends Disposable {
 			if (removedCandidates.has(addressKey)) {
 				removedCandidates.delete(addressKey);
 			}
+
 			const forwardedValue = mapHasAddressLocalhostOrAllInterfaces(
 				this.forwarded,
 				value.host,
@@ -1448,12 +1675,14 @@ export class TunnelModel extends Disposable {
 				forwardedValue.pid = value.pid;
 			}
 		});
+
 		removedCandidates.forEach((_value, key) => {
 			const parsedAddress = parseAddress(key);
 
 			if (!parsedAddress) {
 				return;
 			}
+
 			const forwardedValue = mapHasAddressLocalhostOrAllInterfaces(
 				this.forwarded,
 				parsedAddress.host,
@@ -1467,6 +1696,7 @@ export class TunnelModel extends Disposable {
 
 				forwardedValue.pid = undefined;
 			}
+
 			const detectedValue = mapHasAddressLocalhostOrAllInterfaces(
 				this.detected,
 				parsedAddress.host,
@@ -1475,19 +1705,24 @@ export class TunnelModel extends Disposable {
 
 			if (detectedValue) {
 				detectedValue.runningProcess = undefined;
+
 				detectedValue.hasRunningProcess = false;
+
 				detectedValue.pid = undefined;
 			}
 		});
 
 		return removedCandidates;
 	}
+
 	get candidates(): CandidatePort[] {
 		return this._candidates ? Array.from(this._candidates.values()) : [];
 	}
+
 	get candidatesOrUndefined(): CandidatePort[] | undefined {
 		return this._candidates ? this.candidates : undefined;
 	}
+
 	private async updateAttributes() {
 		// If the label changes in the attributes, we should update it.
 		const tunnels = Array.from(this.forwarded.values());
@@ -1502,6 +1737,7 @@ export class TunnelModel extends Disposable {
 		if (!allAttributes) {
 			return;
 		}
+
 		for (const forwarded of tunnels) {
 			const attributes = allAttributes.get(forwarded.remotePort);
 
@@ -1523,9 +1759,11 @@ export class TunnelModel extends Disposable {
 					attributes,
 				);
 			}
+
 			if (!attributes) {
 				continue;
 			}
+
 			if (attributes.label && attributes.label !== forwarded.name) {
 				await this.name(
 					forwarded.remoteHost,
@@ -1535,9 +1773,11 @@ export class TunnelModel extends Disposable {
 			}
 		}
 	}
+
 	async getAttributes(
 		forwardedPorts: {
 			host: string;
+
 			port: number;
 		}[],
 		checkProviders: boolean = true,
@@ -1564,6 +1804,7 @@ export class TunnelModel extends Disposable {
 				if (!pidToPortsMapping.has(pid)) {
 					pidToPortsMapping.set(pid, []);
 				}
+
 				pidToPortsMapping.get(pid)?.push(forwardedPort.port);
 			}
 		});
@@ -1607,6 +1848,7 @@ export class TunnelModel extends Disposable {
 
 		const providedAttributes: Map<number, ProvidedPortAttributes> =
 			new Map();
+
 		allProviderResults.forEach((attributes) =>
 			attributes.forEach((attribute) => {
 				if (attribute) {
@@ -1625,6 +1867,7 @@ export class TunnelModel extends Disposable {
 			const config = configAttributes.get(forwardedPorts.port);
 
 			const provider = providedAttributes.get(forwardedPorts.port);
+
 			mergedAttributes.set(forwardedPorts.port, {
 				elevateIfNeeded: config?.elevateIfNeeded,
 				label: config?.label,
@@ -1640,6 +1883,7 @@ export class TunnelModel extends Disposable {
 
 		return mergedAttributes;
 	}
+
 	addAttributesProvider(provider: PortAttributesProvider) {
 		this.portAttributesProviders.push(provider);
 	}

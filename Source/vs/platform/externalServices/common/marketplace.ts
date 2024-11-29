@@ -41,6 +41,7 @@ export async function resolveMarketplaceHeaders(
 			fileService,
 			storageService,
 		);
+
 		headers["X-Market-User-Id"] = serviceMachineId;
 		// Send machineId as VSCode-SessionId so we can correlate telemetry events across different services
 		// machineId can be undefined sometimes (eg: when launching from CLI), so send serviceMachineId instead otherwise
@@ -48,5 +49,6 @@ export async function resolveMarketplaceHeaders(
 		headers["VSCode-SessionId"] =
 			telemetryService.machineId || serviceMachineId;
 	}
+
 	return headers;
 }

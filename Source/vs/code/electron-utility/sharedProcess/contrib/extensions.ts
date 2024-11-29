@@ -32,7 +32,9 @@ export class ExtensionsContributions extends Disposable {
 		logService: ILogService,
 	) {
 		super();
+
 		extensionManagementService.cleanUp();
+
 		migrateUnsupportedExtensions(
 			extensionManagementService,
 			extensionGalleryService,
@@ -40,6 +42,7 @@ export class ExtensionsContributions extends Disposable {
 			extensionEnablementService,
 			logService,
 		);
+
 		ExtensionStorageService.removeOutdatedExtensionVersions(
 			extensionManagementService,
 			storageService,

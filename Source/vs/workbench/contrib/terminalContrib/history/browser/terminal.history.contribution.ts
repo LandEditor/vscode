@@ -47,6 +47,7 @@ class TerminalHistoryContribution
 	implements ITerminalContribution
 {
 	static readonly ID = "terminal.history";
+
 	static get(
 		instance: ITerminalInstance,
 	): TerminalHistoryContribution | null {
@@ -54,6 +55,7 @@ class TerminalHistoryContribution
 			TerminalHistoryContribution.ID,
 		);
 	}
+
 	private _terminalInRunCommandPicker: IContextKey<boolean>;
 
 	constructor(
@@ -64,10 +66,12 @@ class TerminalHistoryContribution
 		private readonly _instantiationService: IInstantiationService,
 	) {
 		super();
+
 		this._terminalInRunCommandPicker =
 			TerminalContextKeys.inTerminalRunCommandPicker.bindTo(
 				contextKeyService,
 			);
+
 		this._register(
 			_ctx.instance.capabilities.onDidAddCapabilityType((e) => {
 				switch (e) {
@@ -85,6 +89,7 @@ class TerminalHistoryContribution
 
 						break;
 					}
+
 					case TerminalCapability.CommandDetection: {
 						_ctx.instance.capabilities
 							.get(TerminalCapability.CommandDetection)
@@ -142,6 +147,7 @@ registerTerminalAction({
 	precondition,
 	run: async (c, accessor) => {
 		getCommandHistory(accessor).clear();
+
 		clearShellFileHistory();
 	},
 });
@@ -169,6 +175,7 @@ registerActiveInstanceAction({
 		if (!history) {
 			return;
 		}
+
 		await history.runRecent("cwd");
 
 		if (activeInstance?.target === TerminalLocation.Editor) {
@@ -218,6 +225,7 @@ registerActiveInstanceAction({
 		if (!history) {
 			return;
 		}
+
 		await history.runRecent("command");
 
 		if (activeInstance?.target === TerminalLocation.Editor) {

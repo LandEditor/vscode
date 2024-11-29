@@ -38,6 +38,7 @@ export class ChatAttachmentsContentPart extends Disposable {
 	private readonly attachedContextDisposables = this._register(new DisposableStore());
 
 	private readonly _onDidChangeVisibility = this._register(new Emitter<boolean>());
+
 	private readonly _contextResourceLabels = this.instantiationService.createInstance(ResourceLabels, { onDidChangeVisibility: this._onDidChangeVisibility.event });
 
 	constructor(
@@ -59,30 +60,40 @@ export class ChatAttachmentsContentPart extends Disposable {
 
 	private initAttachedContext(container: HTMLElement) {
 		dom.clearNode(container);
+
 		this.attachedContextDisposables.clear();
+
 		dom.setVisibility(Boolean(this.variables.length), this.domNode);
+
 		const hoverDelegate = this.attachedContextDisposables.add(createInstantHoverDelegate());
 
 		this.variables.forEach(async (attachment) => {
 			const resource = URI.isUri(attachment.value) ? attachment.value : attachment.value && typeof attachment.value === 'object' && 'uri' in attachment.value && URI.isUri(attachment.value.uri) ? attachment.value.uri : undefined;
+
 			const range = attachment.value && typeof attachment.value === 'object' && 'range' in attachment.value && Range.isIRange(attachment.value.range) ? attachment.value.range : undefined;
+
 			if (resource && attachment.isFile && this.workingSet.find(entry => entry.toString() === resource.toString())) {
 				// Don't render attachment if it's in the working set
 				return;
 			}
 
 			const widget = dom.append(container, dom.$('.chat-attached-context-attachment.show-file-icons'));
+
 			const label = this._contextResourceLabels.create(widget, { supportIcons: true, hoverDelegate, hoverTargetOverride: widget });
 
 			const correspondingContentReference = this.contentReferences.find((ref) => typeof ref.reference === 'object' && 'variableName' in ref.reference && ref.reference.variableName === attachment.name);
+
 			const isAttachmentOmitted = correspondingContentReference?.options?.status?.kind === ChatResponseReferencePartStatusKind.Omitted;
+
 			const isAttachmentPartialOrOmitted = isAttachmentOmitted || correspondingContentReference?.options?.status?.kind === ChatResponseReferencePartStatusKind.Partial;
 
 			let ariaLabel: string | undefined;
 
 			if (resource && (attachment.isFile || attachment.isDirectory)) {
 				const fileBasename = basename(resource.path);
+
 				const fileDirname = dirname(resource.path);
+
 				const friendlyName = `${fileBasename} ${fileDirname}`;
 
 				if (isAttachmentOmitted) {
@@ -97,6 +108,7 @@ export class ChatAttachmentsContentPart extends Disposable {
 					hidePath: true,
 					title: correspondingContentReference?.options?.status?.description
 				};
+
 				label.setFile(resource, attachment.isFile ? {
 					...fileOptions,
 					fileKind: FileKind.FILE,
@@ -113,29 +125,37 @@ export class ChatAttachmentsContentPart extends Disposable {
 				ariaLabel = localize('chat.imageAttachment', "Attached image, {0}", attachment.name);
 
 				const hoverElement = dom.$('div.chat-attached-context-hover');
+
 				hoverElement.setAttribute('aria-label', ariaLabel);
 
 				// Custom label
 				const pillIcon = dom.$('div.chat-attached-context-pill', {}, dom.$('span.codicon.codicon-file-media'));
+
 				const textLabel = dom.$('span.chat-attached-context-custom-text', {}, attachment.name);
+
 				widget.appendChild(pillIcon);
+
 				widget.appendChild(textLabel);
 
 				let buffer: Uint8Array;
+
 				try {
 					if (attachment.value instanceof URI) {
 						const readFile = await this.fileService.readFile(attachment.value);
+
 						buffer = readFile.value.buffer;
 
 					} else {
 						buffer = attachment.value as Uint8Array;
 					}
+
 					await this.createImageElements(buffer, widget, hoverElement);
 				} catch (error) {
 					console.error('Error processing attachment:', error);
 				}
 
 				widget.style.position = 'relative';
+
 				if (!this.attachedContextDisposables.isDisposed) {
 					this.attachedContextDisposables.add(this.hoverService.setupManagedHover(hoverDelegate, widget, hoverElement));
 				}
@@ -150,7 +170,9 @@ export class ChatAttachmentsContentPart extends Disposable {
 				};
 
 				const classNames = ['file-icon', `${attachment.language}-lang-file-icon`];
+
 				label.setLabel(attachment.fileName, undefined, { extraClasses: classNames });
+
 				widget.appendChild(dom.$('span.attachment-additional-info', {}, `Pasted ${attachment.pastedLines}`));
 
 				widget.style.position = 'relative';
@@ -160,7 +182,9 @@ export class ChatAttachmentsContentPart extends Disposable {
 				}
 			} else {
 				const attachmentLabel = attachment.fullName ?? attachment.name;
+
 				const withIcon = attachment.icon?.id ? `$(${attachment.icon.id}) ${attachmentLabel}` : attachmentLabel;
+
 				label.setLabel(withIcon, correspondingContentReference?.options?.status?.description);
 
 				ariaLabel = localize('chat.attachment3', "Attached context: {0}.", attachment.name);
@@ -169,11 +193,15 @@ export class ChatAttachmentsContentPart extends Disposable {
 			if (isAttachmentPartialOrOmitted) {
 				widget.classList.add('warning');
 			}
+
 			const description = correspondingContentReference?.options?.status?.description;
+
 			if (isAttachmentPartialOrOmitted) {
 				ariaLabel = `${ariaLabel}${description ? ` ${description}` : ''}`;
+
 				for (const selector of ['.monaco-icon-suffix-container', '.monaco-icon-name-container']) {
 					const element = label.element.querySelector(selector);
+
 					if (element) {
 						element.classList.add('warning');
 					}
@@ -182,9 +210,11 @@ export class ChatAttachmentsContentPart extends Disposable {
 
 			if (resource) {
 				widget.style.cursor = 'pointer';
+
 				if (!this.attachedContextDisposables.isDisposed) {
 					this.attachedContextDisposables.add(dom.addDisposableListener(widget, dom.EventType.CLICK, async (e: MouseEvent) => {
 						dom.EventHelper.stop(e, true);
+
 						if (attachment.isDirectory) {
 							this.openResource(resource, true);
 						} else {
@@ -195,37 +225,48 @@ export class ChatAttachmentsContentPart extends Disposable {
 			}
 
 			widget.ariaLabel = ariaLabel;
+
 			widget.tabIndex = 0;
 		});
 	}
 
 	private openResource(resource: URI, isDirectory: true): void;
+
 	private openResource(resource: URI, isDirectory: false, range: IRange | undefined): void;
+
 	private openResource(resource: URI, isDirectory?: boolean, range?: IRange): void {
 		if (isDirectory) {
 			// Reveal Directory in explorer
 			this.commandService.executeCommand(revealInSideBarCommand.id, resource);
+
 			return;
 		}
 
 		// Open file in editor
 		const openTextEditorOptions: ITextEditorOptions | undefined = range ? { selection: range } : undefined;
+
 		const options: OpenInternalOptions = {
 			fromUserGesture: true,
 			editorOptions: openTextEditorOptions,
 		};
+
 		this.openerService.open(resource, options);
 	}
 
 	// Helper function to create and replace image
 	private async createImageElements(buffer: ArrayBuffer | Uint8Array, widget: HTMLElement, hoverElement: HTMLElement) {
 		const blob = new Blob([buffer], { type: 'image/png' });
+
 		const url = URL.createObjectURL(blob);
+
 		const img = dom.$('img.chat-attached-context-image', { src: url, alt: '' });
+
 		const pillImg = dom.$('img.chat-attached-context-pill-image', { src: url, alt: '' });
+
 		const pill = dom.$('div.chat-attached-context-pill', {}, pillImg);
 
 		const existingPill = widget.querySelector('.chat-attached-context-pill');
+
 		if (existingPill) {
 			existingPill.replaceWith(pill);
 		}
@@ -237,28 +278,39 @@ export class ChatAttachmentsContentPart extends Disposable {
 
 export function hookUpResourceAttachmentInteractions(accessor: ServicesAccessor, store: DisposableStore, widget: HTMLElement, resource: URI): void {
 	const fileService = accessor.get(IFileService);
+
 	const languageService = accessor.get(ILanguageService);
+
 	const modelService = accessor.get(IModelService);
+
 	const contextKeyService = accessor.get(IContextKeyService);
+
 	const instantiationService = accessor.get(IInstantiationService);
+
 	const contextMenuService = accessor.get(IContextMenuService);
+
 	const menuService = accessor.get(IMenuService);
 
 	// Context
 	const scopedContextKeyService = store.add(contextKeyService.createScoped(widget));
+
 	const resourceContextKey = store.add(new ResourceContextKey(scopedContextKeyService, fileService, languageService, modelService));
+
 	resourceContextKey.set(resource);
 
 	// Drag and drop
 	widget.draggable = true;
+
 	store.add(dom.addDisposableListener(widget, 'dragstart', e => {
 		instantiationService.invokeFunction(accessor => fillEditorsDragData(accessor, [resource], e));
+
 		e.dataTransfer?.setDragImage(widget, 0, 0);
 	}));
 
 	// Context menu
 	store.add(dom.addDisposableListener(widget, dom.EventType.CONTEXT_MENU, domEvent => {
 		const event = new StandardMouseEvent(dom.getWindow(domEvent), domEvent);
+
 		dom.EventHelper.stop(domEvent, true);
 
 		contextMenuService.showContextMenu({
@@ -266,6 +318,7 @@ export function hookUpResourceAttachmentInteractions(accessor: ServicesAccessor,
 			getAnchor: () => event,
 			getActions: () => {
 				const menu = menuService.getMenuActions(MenuId.ChatInputResourceAttachmentContext, scopedContextKeyService, { arg: resource });
+
 				return getFlatContextMenuActions(menu);
 			},
 		});

@@ -69,23 +69,33 @@ export class QuickInputService extends Themable implements IQuickInputService {
 	get backButton(): IQuickInputButton {
 		return this.controller.backButton;
 	}
+
 	private readonly _onShow = this._register(new Emitter<void>());
+
 	readonly onShow = this._onShow.event;
+
 	private readonly _onHide = this._register(new Emitter<void>());
+
 	readonly onHide = this._onHide.event;
+
 	private _controller: QuickInputController | undefined;
+
 	private get controller(): QuickInputController {
 		if (!this._controller) {
 			this._controller = this._register(this.createController());
 		}
+
 		return this._controller;
 	}
+
 	private get hasController() {
 		return !!this._controller;
 	}
+
 	get currentQuickInput() {
 		return this.controller.currentQuickInput;
 	}
+
 	private _quickAccess: IQuickAccessController | undefined;
 
 	get quickAccess(): IQuickAccessController {
@@ -94,8 +104,10 @@ export class QuickInputService extends Themable implements IQuickInputService {
 				this.instantiationService.createInstance(QuickAccessController),
 			);
 		}
+
 		return this._quickAccess;
 	}
+
 	private readonly contexts = new Map<string, IContextKey<boolean>>();
 
 	constructor(
@@ -112,6 +124,7 @@ export class QuickInputService extends Themable implements IQuickInputService {
 	) {
 		super(themeService);
 	}
+
 	protected createController(
 		host: IQuickInputControllerHost = this.layoutService,
 		options?: Partial<IQuickInputOptions>,
@@ -126,6 +139,7 @@ export class QuickInputService extends Themable implements IQuickInputService {
 				// HACK: https://github.com/microsoft/vscode/issues/173691
 				this.instantiationService.invokeFunction((accessor) => {
 					const openerService = accessor.get(IOpenerService);
+
 					openerService.open(content, {
 						allowCommands: true,
 						fromUserGesture: true,
@@ -147,6 +161,7 @@ export class QuickInputService extends Themable implements IQuickInputService {
 				...options,
 			}),
 		);
+
 		controller.layout(
 			host.activeContainerDimension,
 			host.activeContainerOffset.quickPickTop,
@@ -165,11 +180,13 @@ export class QuickInputService extends Themable implements IQuickInputService {
 				}
 			}),
 		);
+
 		this._register(
 			host.onDidChangeActiveContainer(() => {
 				if (controller.isVisible()) {
 					return;
 				}
+
 				controller.layout(
 					host.activeContainerDimension,
 					host.activeContainerOffset.quickPickTop,
@@ -180,18 +197,22 @@ export class QuickInputService extends Themable implements IQuickInputService {
 		this._register(
 			controller.onShow(() => {
 				this.resetContextKeys();
+
 				this._onShow.fire();
 			}),
 		);
+
 		this._register(
 			controller.onHide(() => {
 				this.resetContextKeys();
+
 				this._onHide.fire();
 			}),
 		);
 
 		return controller;
 	}
+
 	private setContextKey(id?: string) {
 		let key: IContextKey<boolean> | undefined;
 
@@ -202,15 +223,20 @@ export class QuickInputService extends Themable implements IQuickInputService {
 				key = new RawContextKey<boolean>(id, false).bindTo(
 					this.contextKeyService,
 				);
+
 				this.contexts.set(id, key);
 			}
 		}
+
 		if (key && key.get()) {
 			return; // already active context
 		}
+
 		this.resetContextKeys();
+
 		key?.set(true);
 	}
+
 	private resetContextKeys() {
 		this.contexts.forEach((context) => {
 			if (context.get()) {
@@ -218,6 +244,7 @@ export class QuickInputService extends Themable implements IQuickInputService {
 			}
 		});
 	}
+
 	pick<T extends IQuickPickItem, O extends IPickOptions<T>>(
 		picks: Promise<QuickPickInput<T>[]> | QuickPickInput<T>[],
 		options?: O,
@@ -232,12 +259,14 @@ export class QuickInputService extends Themable implements IQuickInputService {
 	> {
 		return this.controller.pick(picks, options, token);
 	}
+
 	input(
 		options: IInputOptions = {},
 		token: CancellationToken = CancellationToken.None,
 	): Promise<string | undefined> {
 		return this.controller.input(options, token);
 	}
+
 	createQuickPick<T extends IQuickPickItem>(options: {
 		useSeparators: true;
 	}): IQuickPick<
@@ -246,6 +275,7 @@ export class QuickInputService extends Themable implements IQuickInputService {
 			useSeparators: true;
 		}
 	>;
+
 	createQuickPick<T extends IQuickPickItem>(options?: {
 		useSeparators: boolean;
 	}): IQuickPick<
@@ -254,6 +284,7 @@ export class QuickInputService extends Themable implements IQuickInputService {
 			useSeparators: false;
 		}
 	>;
+
 	createQuickPick<T extends IQuickPickItem>(
 		options: {
 			useSeparators: boolean;
@@ -266,35 +297,45 @@ export class QuickInputService extends Themable implements IQuickInputService {
 	> {
 		return this.controller.createQuickPick(options);
 	}
+
 	createInputBox(): IInputBox {
 		return this.controller.createInputBox();
 	}
+
 	createQuickWidget(): IQuickWidget {
 		return this.controller.createQuickWidget();
 	}
+
 	focus() {
 		this.controller.focus();
 	}
+
 	toggle() {
 		this.controller.toggle();
 	}
+
 	navigate(next: boolean, quickNavigate?: IQuickNavigateConfiguration) {
 		this.controller.navigate(next, quickNavigate);
 	}
+
 	accept(keyMods?: IKeyMods) {
 		return this.controller.accept(keyMods);
 	}
+
 	back() {
 		return this.controller.back();
 	}
+
 	cancel() {
 		return this.controller.cancel();
 	}
+
 	override updateStyles() {
 		if (this.hasController) {
 			this.controller.applyStyles(this.computeStyles());
 		}
 	}
+
 	private computeStyles(): IQuickInputStyles {
 		return {
 			widget: {

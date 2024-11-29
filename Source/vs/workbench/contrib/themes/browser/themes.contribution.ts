@@ -125,12 +125,19 @@ enum ConfigureItem {
 }
 class MarketplaceThemesPicker {
 	private readonly _installedExtensions: Promise<Set<string>>;
+
 	private readonly _marketplaceExtensions: Set<string> = new Set();
+
 	private readonly _marketplaceThemes: ThemeItem[] = [];
+
 	private _searchOngoing: boolean = false;
+
 	private _searchError: string | undefined = undefined;
+
 	private readonly _onDidChange = new Emitter<void>();
+
 	private _tokenSource: CancellationTokenSource | undefined;
+
 	private readonly _queryDelayer = new ThrottledDelayer<void>(200);
 
 	constructor(
@@ -163,31 +170,39 @@ class MarketplaceThemesPicker {
 				for (const ext of installed) {
 					result.add(ext.identifier.id);
 				}
+
 				return result;
 			});
 	}
+
 	public get themes(): ThemeItem[] {
 		return this._marketplaceThemes;
 	}
+
 	public get onDidChange() {
 		return this._onDidChange.event;
 	}
+
 	public trigger(value: string) {
 		if (this._tokenSource) {
 			this._tokenSource.cancel();
+
 			this._tokenSource = undefined;
 		}
+
 		this._queryDelayer.trigger(() => {
 			this._tokenSource = new CancellationTokenSource();
 
 			return this.doSearch(value, this._tokenSource.token);
 		});
 	}
+
 	private async doSearch(
 		value: string,
 		token: CancellationToken,
 	): Promise<void> {
 		this._searchOngoing = true;
+
 		this._onDidChange.fire();
 
 		try {
@@ -208,6 +223,7 @@ class MarketplaceThemesPicker {
 				if (token.isCancellationRequested) {
 					break;
 				}
+
 				const nThemes = this._marketplaceThemes.length;
 
 				const gallery =
@@ -221,6 +237,7 @@ class MarketplaceThemesPicker {
 					if (token.isCancellationRequested) {
 						break;
 					}
+
 					const ext = gallery[i];
 
 					if (
@@ -228,6 +245,7 @@ class MarketplaceThemesPicker {
 						!this._marketplaceExtensions.has(ext.identifier.id)
 					) {
 						this._marketplaceExtensions.add(ext.identifier.id);
+
 						promises.push(
 							this.getMarketplaceColorThemes(
 								ext.publisher,
@@ -235,9 +253,11 @@ class MarketplaceThemesPicker {
 								ext.version,
 							),
 						);
+
 						promisesGalleries.push(ext);
 					}
 				}
+
 				const allThemes = await Promise.all(promises);
 
 				for (let i = 0; i < allThemes.length; i++) {
@@ -254,23 +274,28 @@ class MarketplaceThemesPicker {
 						});
 					}
 				}
+
 				if (nThemes !== this._marketplaceThemes.length) {
 					this._marketplaceThemes.sort((t1, t2) =>
 						t1.label.localeCompare(t2.label),
 					);
+
 					this._onDidChange.fire();
 				}
 			}
 		} catch (e) {
 			if (!isCancellationError(e)) {
 				this.logService.error(`Error while searching for themes:`, e);
+
 				this._searchError = "message" in e ? e.message : String(e);
 			}
 		} finally {
 			this._searchOngoing = false;
+
 			this._onDidChange.fire();
 		}
 	}
+
 	public openQuickPick(
 		value: string,
 		currentTheme: IWorkbenchTheme | undefined,
@@ -287,25 +312,35 @@ class MarketplaceThemesPicker {
 			const quickpick = disposables.add(
 				this.quickInputService.createQuickPick<ThemeItem>(),
 			);
+
 			quickpick.items = [];
+
 			quickpick.sortByLabel = false;
+
 			quickpick.matchOnDescription = true;
+
 			quickpick.buttons = [this.quickInputService.backButton];
+
 			quickpick.title = "Marketplace Themes";
+
 			quickpick.placeholder = localize(
 				"themes.selectMarketplaceTheme",
 				"Type to Search More. Select to Install. Up/Down Keys to Preview",
 			);
+
 			quickpick.canSelectMany = false;
+
 			disposables.add(
 				quickpick.onDidChangeValue(() => this.trigger(quickpick.value)),
 			);
+
 			disposables.add(
 				quickpick.onDidAccept(async (_) => {
 					const themeItem = quickpick.selectedItems[0];
 
 					if (themeItem?.galleryExtension) {
 						result = "selected";
+
 						quickpick.hide();
 
 						const success = await this.installExtension(
@@ -320,6 +355,7 @@ class MarketplaceThemesPicker {
 					}
 				}),
 			);
+
 			disposables.add(
 				quickpick.onDidTriggerItemButton((e) => {
 					if (isItem(e.item)) {
@@ -338,6 +374,7 @@ class MarketplaceThemesPicker {
 					}
 				}),
 			);
+
 			disposables.add(
 				quickpick.onDidChangeActive((themes) => {
 					if (result === undefined) {
@@ -345,23 +382,29 @@ class MarketplaceThemesPicker {
 					}
 				}),
 			);
+
 			disposables.add(
 				quickpick.onDidHide(() => {
 					if (result === undefined) {
 						selectTheme(currentTheme, true);
+
 						result = "cancelled";
 					}
+
 					s(result);
 				}),
 			);
+
 			disposables.add(
 				quickpick.onDidTriggerButton((e) => {
 					if (e === this.quickInputService.backButton) {
 						result = "back";
+
 						quickpick.hide();
 					}
 				}),
 			);
+
 			disposables.add(
 				this.onDidChange(() => {
 					let items = this.themes;
@@ -381,11 +424,13 @@ class MarketplaceThemesPicker {
 							},
 						];
 					}
+
 					const activeItemId = quickpick.activeItems[0]?.id;
 
 					const newActiveItem = activeItemId
 						? items.find((i) => isItem(i) && i.id === activeItemId)
 						: undefined;
+
 					quickpick.items = items;
 
 					if (newActiveItem) {
@@ -393,12 +438,15 @@ class MarketplaceThemesPicker {
 					}
 				}),
 			);
+
 			this.trigger(value);
+
 			quickpick.show();
 		}).finally(() => {
 			disposables.dispose();
 		});
 	}
+
 	private async installExtension(galleryExtension: IGalleryExtension) {
 		this.extensionsWorkbenchService.openSearch(
 			`@id:${galleryExtension.identifier.id}`,
@@ -417,6 +465,7 @@ class MarketplaceThemesPicker {
 		if (!result.confirmed) {
 			return false;
 		}
+
 		try {
 			await this.progressService.withProgress(
 				{
@@ -448,24 +497,36 @@ class MarketplaceThemesPicker {
 			return false;
 		}
 	}
+
 	public dispose() {
 		if (this._tokenSource) {
 			this._tokenSource.cancel();
+
 			this._tokenSource = undefined;
 		}
+
 		this._queryDelayer.dispose();
+
 		this._marketplaceExtensions.clear();
+
 		this._marketplaceThemes.length = 0;
 	}
 }
 interface InstalledThemesPickerOptions {
 	readonly installMessage: string;
+
 	readonly browseMessage?: string;
+
 	readonly placeholderMessage: string;
+
 	readonly marketplaceTag: string;
+
 	readonly title?: string;
+
 	readonly description?: string;
+
 	readonly toggles?: IQuickInputToggle[];
+
 	readonly onToggle?: (
 		toggle: IQuickInputToggle,
 		quickInput: IQuickPick<
@@ -499,6 +560,7 @@ class InstalledThemesPicker {
 		@IInstantiationService
 		private readonly instantiationService: IInstantiationService,
 	) {}
+
 	public async openQuickPick(
 		picks: QuickPickInput<ThemeItem>[],
 		currentTheme: IWorkbenchTheme,
@@ -517,6 +579,7 @@ class InstalledThemesPicker {
 						this.getMarketplaceColorThemes.bind(this),
 						this.options.marketplaceTag,
 					);
+
 				picks = [
 					configurationEntry(
 						this.options.browseMessage,
@@ -535,6 +598,7 @@ class InstalledThemesPicker {
 				];
 			}
 		}
+
 		let selectThemeTimeout: number | undefined;
 
 		const selectTheme = (
@@ -544,16 +608,19 @@ class InstalledThemesPicker {
 			if (selectThemeTimeout) {
 				clearTimeout(selectThemeTimeout);
 			}
+
 			selectThemeTimeout = mainWindow.setTimeout(
 				() => {
 					selectThemeTimeout = undefined;
 
 					const newTheme = (theme ?? currentTheme) as IWorkbenchTheme;
+
 					this.setTheme(
 						newTheme,
 						applyTheme ? "auto" : "preview",
 					).then(undefined, (err) => {
 						onUnexpectedError(err);
+
 						this.setTheme(currentTheme, undefined);
 					});
 				},
@@ -576,13 +643,21 @@ class InstalledThemesPicker {
 						useSeparators: true,
 					}),
 				);
+
 				quickpick.items = picks;
+
 				quickpick.title = this.options.title;
+
 				quickpick.description = this.options.description;
+
 				quickpick.placeholder = this.options.placeholderMessage;
+
 				quickpick.activeItems = [picks[autoFocusIndex] as ThemeItem];
+
 				quickpick.canSelectMany = false;
+
 				quickpick.toggles = this.options.toggles;
+
 				quickpick.toggles?.forEach((toggle) => {
 					disposables.add(
 						toggle.onChange(() =>
@@ -590,7 +665,9 @@ class InstalledThemesPicker {
 						),
 					);
 				});
+
 				quickpick.matchOnDescription = true;
+
 				disposables.add(
 					quickpick.onDidAccept(async (_) => {
 						isCompleted = true;
@@ -627,24 +704,31 @@ class InstalledThemesPicker {
 						} else {
 							selectTheme(theme.theme, true);
 						}
+
 						quickpick.hide();
+
 						s();
 					}),
 				);
+
 				disposables.add(
 					quickpick.onDidChangeActive((themes) =>
 						selectTheme(themes[0]?.theme, false),
 					),
 				);
+
 				disposables.add(
 					quickpick.onDidHide(() => {
 						if (!isCompleted) {
 							selectTheme(currentTheme, true);
+
 							s();
 						}
+
 						quickpick.dispose();
 					}),
 				);
+
 				disposables.add(
 					quickpick.onDidTriggerItemButton((e) => {
 						if (isItem(e.item)) {
@@ -663,12 +747,15 @@ class InstalledThemesPicker {
 						}
 					}),
 				);
+
 				quickpick.show();
 			}).finally(() => {
 				disposables.dispose();
 			});
 		};
+
 		await pickInstalledThemes(currentTheme.id);
+
 		marketplaceThemePicker?.dispose();
 	}
 }
@@ -691,6 +778,7 @@ registerAction2(
 				},
 			});
 		}
+
 		private getTitle(colorScheme: ColorScheme | undefined): string {
 			switch (colorScheme) {
 				case ColorScheme.DARK:
@@ -724,6 +812,7 @@ registerAction2(
 					);
 			}
 		}
+
 		override async run(accessor: ServicesAccessor) {
 			const themeService = accessor.get(IWorkbenchThemeService);
 
@@ -754,6 +843,7 @@ registerAction2(
 					...defaultToggleStyles,
 				});
 			}
+
 			const options = {
 				installMessage: localize(
 					"installColorThemes",
@@ -770,6 +860,7 @@ registerAction2(
 				toggles: [modeConfigureToggle],
 				onToggle: async (toggle, picker) => {
 					picker.hide();
+
 					await preferencesService.openSettings({
 						query: ThemeSettings.DETECT_COLOR_SCHEME,
 					});
@@ -844,6 +935,7 @@ registerAction2(
 
 					break;
 			}
+
 			await picker.openQuickPick(picks, currentTheme);
 		}
 	},
@@ -860,6 +952,7 @@ registerAction2(
 				f1: true,
 			});
 		}
+
 		override async run(accessor: ServicesAccessor) {
 			const themeService = accessor.get(IWorkbenchThemeService);
 
@@ -923,6 +1016,7 @@ registerAction2(
 				},
 				...toEntries(await themeService.getFileIconThemes()),
 			];
+
 			await picker.openQuickPick(picks, themeService.getFileIconTheme());
 		}
 	},
@@ -943,6 +1037,7 @@ registerAction2(
 				f1: true,
 			});
 		}
+
 		override async run(accessor: ServicesAccessor) {
 			const themeService = accessor.get(IWorkbenchThemeService);
 
@@ -1008,6 +1103,7 @@ registerAction2(
 				},
 				...toEntries(await themeService.getProductIconThemes()),
 			];
+
 			await picker.openQuickPick(
 				picks,
 				themeService.getProductIconTheme(),
@@ -1021,7 +1117,9 @@ CommandsRegistry.registerCommand(
 		accessor: ServicesAccessor,
 		extension: {
 			publisher: string;
+
 			name: string;
+
 			version: string;
 		},
 		themeSettingsId?: string,
@@ -1040,6 +1138,7 @@ CommandsRegistry.registerCommand(
 				extension.version,
 			);
 		}
+
 		for (const theme of themes) {
 			if (!themeSettingsId || theme.settingsId === themeSettingsId) {
 				await themeService.setColorTheme(theme, "preview");
@@ -1047,6 +1146,7 @@ CommandsRegistry.registerCommand(
 				return theme.settingsId;
 			}
 		}
+
 		return undefined;
 	},
 );
@@ -1054,6 +1154,7 @@ function findBuiltInThemes(
 	themes: IWorkbenchColorTheme[],
 	extension: {
 		publisher: string;
+
 		name: string;
 	},
 ): IWorkbenchColorTheme[] {
@@ -1082,11 +1183,17 @@ function configurationEntry(
 }
 interface ThemeItem extends IQuickPickItem {
 	readonly id: string | undefined;
+
 	readonly theme?: IWorkbenchTheme;
+
 	readonly galleryExtension?: IGalleryExtension;
+
 	readonly label: string;
+
 	readonly description?: string;
+
 	readonly alwaysShow?: boolean;
+
 	readonly configureItem?: ConfigureItem;
 }
 function isItem(i: QuickPickInput<ThemeItem>): i is ThemeItem {
@@ -1107,6 +1214,7 @@ function toEntry(theme: IWorkbenchTheme): ThemeItem {
 	if (theme.extensionData) {
 		item.buttons = [configureButton];
 	}
+
 	return item;
 }
 function toEntries(
@@ -1123,6 +1231,7 @@ function toEntries(
 	if (entries.length > 0 && label) {
 		entries.unshift({ type: "separator", label });
 	}
+
 	return entries;
 }
 
@@ -1143,6 +1252,7 @@ registerAction2(
 				f1: true,
 			});
 		}
+
 		override run(accessor: ServicesAccessor) {
 			const themeService = accessor.get(IWorkbenchThemeService);
 
@@ -1172,6 +1282,7 @@ registerAction2(
 					inherited.push(colorId);
 				}
 			}
+
 			const nullDefaults = [];
 
 			for (const id of inherited) {
@@ -1186,9 +1297,11 @@ registerAction2(
 					nullDefaults.push(id);
 				}
 			}
+
 			for (const id of nullDefaults) {
 				resultingColors["__" + id] = null;
 			}
+
 			let contents = JSON.stringify(
 				{
 					"$schema": colorThemeSchemaId,
@@ -1199,6 +1312,7 @@ registerAction2(
 				null,
 				"\t",
 			);
+
 			contents = contents.replace(/\"__/g, '//"');
 
 			const editorService = accessor.get(IEditorService);
@@ -1227,6 +1341,7 @@ registerAction2(
 				f1: true,
 			});
 		}
+
 		override async run(accessor: ServicesAccessor) {
 			const themeService = accessor.get(IWorkbenchThemeService);
 
@@ -1244,6 +1359,7 @@ registerAction2(
 					"Cannot toggle between light and dark themes when `{0}` is enabled in settings.",
 					ThemeSettings.DETECT_COLOR_SCHEME,
 				);
+
 				notificationService.prompt(Severity.Info, message, [
 					{
 						label: localize("goToSetting", "Open Settings"),
@@ -1257,6 +1373,7 @@ registerAction2(
 
 				return;
 			}
+
 			const currentTheme = themeService.getColorTheme();
 
 			let newSettingsId: string = ThemeSettings.PREFERRED_DARK_THEME;
@@ -1282,6 +1399,7 @@ registerAction2(
 
 					break;
 			}
+
 			const themeSettingId: string =
 				configurationService.getValue(newSettingsId);
 
@@ -1313,6 +1431,7 @@ registerAction2(
 				f1: true,
 			});
 		}
+
 		override async run(accessor: ServicesAccessor) {
 			const marketplaceTag = "category:themes";
 
@@ -1334,6 +1453,7 @@ registerAction2(
 			) {
 				return;
 			}
+
 			const currentTheme = themeService.getColorTheme();
 
 			const getMarketplaceColorThemes = (
@@ -1356,12 +1476,14 @@ registerAction2(
 				if (selectThemeTimeout) {
 					clearTimeout(selectThemeTimeout);
 				}
+
 				selectThemeTimeout = mainWindow.setTimeout(
 					() => {
 						selectThemeTimeout = undefined;
 
 						const newTheme = (theme ??
 							currentTheme) as IWorkbenchTheme;
+
 						themeService
 							.setColorTheme(
 								newTheme as IWorkbenchColorTheme,
@@ -1369,6 +1491,7 @@ registerAction2(
 							)
 							.then(undefined, (err) => {
 								onUnexpectedError(err);
+
 								themeService.setColorTheme(
 									currentTheme,
 									undefined,
@@ -1384,6 +1507,7 @@ registerAction2(
 				getMarketplaceColorThemes,
 				marketplaceTag,
 			);
+
 			await marketplaceThemePicker
 				.openQuickPick("", themeService.getColorTheme(), selectTheme)
 				.then(undefined, onUnexpectedError);
@@ -1464,6 +1588,7 @@ class DefaultThemeUpdatedNotificationContribution
 		) {
 			return;
 		}
+
 		setTimeout(async () => {
 			if (
 				_storageService.getBoolean(
@@ -1473,6 +1598,7 @@ class DefaultThemeUpdatedNotificationContribution
 			) {
 				return;
 			}
+
 			if (await this._hostService.hadLastFocus()) {
 				this._storageService.store(
 					DefaultThemeUpdatedNotificationContribution.STORAGE_KEY,
@@ -1499,6 +1625,7 @@ class DefaultThemeUpdatedNotificationContribution
 			}
 		}, 3000);
 	}
+
 	private async _showYouGotMigratedNotification(): Promise<void> {
 		const usingLight =
 			this._workbenchThemeService.getColorTheme().type ===
@@ -1524,6 +1651,7 @@ class DefaultThemeUpdatedNotificationContribution
 					label: localize("button.browse", "Browse Themes"),
 					run: () => {
 						this._writeTelemetry("browse");
+
 						this._commandService.executeCommand(
 							SelectColorThemeCommandId,
 						);
@@ -1551,6 +1679,7 @@ class DefaultThemeUpdatedNotificationContribution
 					},
 				},
 			];
+
 			await this._notificationService.prompt(
 				Severity.Info,
 				localize(
@@ -1568,6 +1697,7 @@ class DefaultThemeUpdatedNotificationContribution
 			);
 		}
 	}
+
 	private async _tryNewThemeNotification(): Promise<void> {
 		const newThemeSettingsId =
 			this._workbenchThemeService.getColorTheme().type ===
@@ -1585,6 +1715,7 @@ class DefaultThemeUpdatedNotificationContribution
 					label: localize("button.tryTheme", "Try New Theme"),
 					run: () => {
 						this._writeTelemetry("tryNew");
+
 						this._workbenchThemeService.setColorTheme(
 							theme,
 							"auto",
@@ -1598,6 +1729,7 @@ class DefaultThemeUpdatedNotificationContribution
 					},
 				},
 			];
+
 			await this._notificationService.prompt(
 				Severity.Info,
 				localize(
@@ -1613,27 +1745,38 @@ class DefaultThemeUpdatedNotificationContribution
 			);
 		}
 	}
+
 	private _writeTelemetry(
 		outcome: DefaultThemeUpdatedNotificationReaction,
 	): void {
 		type ThemeUpdatedNoticationClassification = {
 			owner: "aeschli";
+
 			comment: "Reaction to the notification that theme has updated to a new default theme";
+
 			web: {
 				classification: "SystemMetaData";
+
 				purpose: "PerformanceAndHealth";
+
 				comment: "Whether this is running on web";
 			};
+
 			reaction: {
 				classification: "SystemMetaData";
+
 				purpose: "PerformanceAndHealth";
+
 				comment: "Outcome of the notification";
 			};
 		};
+
 		type ThemeUpdatedNoticationEvent = {
 			web: boolean;
+
 			reaction: DefaultThemeUpdatedNotificationReaction;
 		};
+
 		this._telemetryService.publicLog2<
 			ThemeUpdatedNoticationEvent,
 			ThemeUpdatedNoticationClassification

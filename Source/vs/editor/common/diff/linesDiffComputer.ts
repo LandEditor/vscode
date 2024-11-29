@@ -13,7 +13,9 @@ export interface ILinesDiffComputer {
 }
 export interface ILinesDiffComputerOptions {
 	readonly ignoreTrimWhitespace: boolean;
+
 	readonly maxComputationTimeMs: number;
+
 	readonly computeMoves: boolean;
 }
 export class LinesDiff {
@@ -45,8 +47,10 @@ export class MovedText {
 		changes: readonly DetailedLineRangeMapping[],
 	) {
 		this.lineRangeMapping = lineRangeMapping;
+
 		this.changes = changes;
 	}
+
 	public flip(): MovedText {
 		return new MovedText(
 			this.lineRangeMapping.flip(),

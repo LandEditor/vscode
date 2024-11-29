@@ -103,6 +103,7 @@ export function isNotificationSource(
 			typeof candidate.label === "string"
 		);
 	}
+
 	return false;
 }
 export interface INotification extends INotificationProperties {
@@ -385,16 +386,25 @@ export interface INotificationService {
 }
 export class NoOpNotification implements INotificationHandle {
 	readonly progress = new NoOpProgress();
+
 	readonly onDidClose = Event.None;
+
 	readonly onDidChangeVisibility = Event.None;
+
 	updateSeverity(severity: Severity): void {}
+
 	updateMessage(message: NotificationMessage): void {}
+
 	updateActions(actions?: INotificationActions): void {}
+
 	close(): void {}
 }
 export class NoOpProgress implements INotificationProgress {
 	infinite(): void {}
+
 	done(): void {}
+
 	total(value: number): void {}
+
 	worked(value: number): void {}
 }

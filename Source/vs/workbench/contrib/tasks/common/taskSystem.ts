@@ -23,12 +23,16 @@ export const enum TaskErrors {
 }
 export class TaskError {
 	public severity: Severity;
+
 	public message: string;
+
 	public code: TaskErrors;
 
 	constructor(severity: Severity, message: string, code: TaskErrors) {
 		this.severity = severity;
+
 		this.message = message;
+
 		this.code = code;
 	}
 }
@@ -51,13 +55,18 @@ export const enum TaskExecuteKind {
 }
 export interface ITaskExecuteResult {
 	kind: TaskExecuteKind;
+
 	promise: Promise<ITaskSummary>;
+
 	task: Task;
+
 	started?: {
 		restartOnFileChanges?: string;
 	};
+
 	active?: {
 		same: boolean;
+
 		background: boolean;
 	};
 }
@@ -73,7 +82,9 @@ export interface ITaskTerminateResponse extends TerminateResponse {
 export interface IResolveSet {
 	process?: {
 		name: string;
+
 		cwd?: string;
+
 		path?: string;
 	};
 
@@ -86,13 +97,17 @@ export interface IResolvedVariables {
 }
 export interface ITaskSystemInfo {
 	platform: Platform;
+
 	context: any;
+
 	uriProvider: (this: void, path: string) => URI;
+
 	resolveVariables(
 		workspaceFolder: IWorkspaceFolder,
 		toResolve: IResolveSet,
 		target: ConfigurationTarget,
 	): Promise<IResolvedVariables | undefined>;
+
 	findExecutable(
 		command: string,
 		cwd?: string,
@@ -106,10 +121,15 @@ export interface ITaskSystemInfoResolver {
 }
 export interface ITaskSystem {
 	onDidStateChange: Event<ITaskEvent>;
+
 	reconnect(task: Task, resolver: ITaskResolver): ITaskExecuteResult;
+
 	run(task: Task, resolver: ITaskResolver): ITaskExecuteResult;
+
 	rerun(): ITaskExecuteResult | undefined;
+
 	isActive(): Promise<boolean>;
+
 	isActiveSync(): boolean;
 
 	getActiveTasks(): Task[];
@@ -117,10 +137,16 @@ export interface ITaskSystem {
 	getLastInstance(task: Task): Task | undefined;
 
 	getBusyTasks(): Task[];
+
 	canAutoTerminate(): boolean;
+
 	terminate(task: Task): Promise<ITaskTerminateResponse>;
+
 	terminateAll(): Promise<ITaskTerminateResponse[]>;
+
 	revealTask(task: Task): boolean;
+
 	customExecutionComplete(task: Task, result: number): Promise<void>;
+
 	isTaskVisible(task: Task): boolean;
 }

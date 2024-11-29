@@ -40,6 +40,7 @@ export class MergeDiffComputer implements IMergeDiffComputer {
 		@IConfigurationService
 		private readonly configurationService: IConfigurationService,
 	) {}
+
 	async computeDiff(
 		textModel1: ITextModel,
 		textModel2: ITextModel,
@@ -65,9 +66,11 @@ export class MergeDiffComputer implements IMergeDiffComputer {
 		if (!result) {
 			throw new Error("Diff computation failed");
 		}
+
 		if (textModel1.isDisposed() || textModel2.isDisposed()) {
 			return { diffs: null };
 		}
+
 		const changes = result.changes.map(
 			(c) =>
 				new DetailedLineRangeMapping(
@@ -89,6 +92,7 @@ export class MergeDiffComputer implements IMergeDiffComputer {
 		) {
 			return { diffs: null };
 		}
+
 		assertFn(() => {
 			for (const c of changes) {
 				const inputRange = c.inputRange;
@@ -117,6 +121,7 @@ export class MergeDiffComputer implements IMergeDiffComputer {
 								map.inputRange.startLineNumber,
 							);
 					}
+
 					if (
 						inputRangesValid &&
 						map.inputRange.endLineNumber ===
@@ -124,6 +129,7 @@ export class MergeDiffComputer implements IMergeDiffComputer {
 					) {
 						inputRangesValid = map.inputRange.endColumn === 1;
 					}
+
 					let outputRangesValid =
 						outputRange.startLineNumber - 1 <=
 							map.outputRange.startLineNumber &&
@@ -141,6 +147,7 @@ export class MergeDiffComputer implements IMergeDiffComputer {
 								map.outputRange.endLineNumber,
 							);
 					}
+
 					if (
 						outputRangesValid &&
 						map.outputRange.endLineNumber ===
@@ -148,11 +155,13 @@ export class MergeDiffComputer implements IMergeDiffComputer {
 					) {
 						outputRangesValid = map.outputRange.endColumn === 1;
 					}
+
 					if (!inputRangesValid || !outputRangesValid) {
 						return false;
 					}
 				}
 			}
+
 			return (
 				changes.length === 0 ||
 				(changes[0].inputRange.startLineNumber ===

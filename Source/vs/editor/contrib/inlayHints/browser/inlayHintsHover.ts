@@ -101,9 +101,11 @@ export class InlayHintsHover
 		if (!controller) {
 			return null;
 		}
+
 		if (mouseEvent.target.type !== MouseTargetType.CONTENT_TEXT) {
 			return null;
 		}
+
 		const options = mouseEvent.target.detail.injectedText?.options;
 
 		if (
@@ -114,6 +116,7 @@ export class InlayHintsHover
 		) {
 			return null;
 		}
+
 		return new InlayHintsHoverAnchor(
 			options.attachedData,
 			this,
@@ -138,6 +141,7 @@ export class InlayHintsHover
 
 		return new AsyncIterableObject<MarkdownHover>(async (executor) => {
 			const { part } = anchor;
+
 			await part.item.resolve(token);
 
 			if (token.isCancellationRequested) {
@@ -154,6 +158,7 @@ export class InlayHintsHover
 			} else if (part.item.hint.tooltip) {
 				itemTooltip = part.item.hint.tooltip;
 			}
+
 			if (itemTooltip) {
 				executor.emitOne(
 					new MarkdownHover(
@@ -192,6 +197,7 @@ export class InlayHintsHover
 			} else if (part.part.tooltip) {
 				partTooltip = part.part.tooltip;
 			}
+
 			if (partTooltip) {
 				executor.emitOne(
 					new MarkdownHover(
@@ -241,6 +247,7 @@ export class InlayHintsHover
 						{ isTrusted: true },
 					);
 				}
+
 				if (linkHint) {
 					executor.emitOne(
 						new MarkdownHover(
@@ -273,6 +280,7 @@ export class InlayHintsHover
 		if (!part.part.location) {
 			return AsyncIterableObject.EMPTY;
 		}
+
 		const { uri, range } = part.part.location;
 
 		const ref = await this._resolverService.createModelReference(uri);
@@ -283,6 +291,7 @@ export class InlayHintsHover
 			if (!this._languageFeaturesService.hoverProvider.has(model)) {
 				return AsyncIterableObject.EMPTY;
 			}
+
 			return getHoverProviderResultsAsAsyncIterable(
 				this._languageFeaturesService.hoverProvider,
 				model,

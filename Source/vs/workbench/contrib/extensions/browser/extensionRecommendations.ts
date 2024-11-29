@@ -8,11 +8,13 @@ import { IExtensionRecommendationReason } from "../../../services/extensionRecom
 
 export type GalleryExtensionRecommendation = {
 	readonly extension: string;
+
 	readonly reason: IExtensionRecommendationReason;
 };
 
 export type ResourceExtensionRecommendation = {
 	readonly extension: URI;
+
 	readonly reason: IExtensionRecommendationReason;
 };
 
@@ -22,16 +24,20 @@ export type ExtensionRecommendation =
 
 export abstract class ExtensionRecommendations extends Disposable {
 	abstract readonly recommendations: ReadonlyArray<ExtensionRecommendation>;
+
 	protected abstract doActivate(): Promise<void>;
+
 	private _activationPromise: Promise<void> | null = null;
 
 	get activated(): boolean {
 		return this._activationPromise !== null;
 	}
+
 	activate(): Promise<void> {
 		if (!this._activationPromise) {
 			this._activationPromise = this.doActivate();
 		}
+
 		return this._activationPromise;
 	}
 }

@@ -6,11 +6,13 @@
 declare module "vscode" {
 	export interface ChatRequestDraft {
 		readonly prompt: string;
+
 		readonly files: readonly Uri[];
 	}
 
 	export interface ChatRelatedFile {
 		readonly uri: Uri;
+
 		readonly description: string;
 	}
 

@@ -82,6 +82,7 @@ namespace AutoInsertRequest {
 // experimental: semantic tokens
 interface SemanticTokenParams {
 	textDocument: TextDocumentIdentifier;
+
 	ranges?: LspRange[];
 }
 namespace SemanticTokenRequest {
@@ -92,6 +93,7 @@ namespace SemanticTokenLegendRequest {
 	export const type: RequestType0<
 		{
 			types: string[];
+
 			modifiers: string[];
 		} | null,
 		any
@@ -127,8 +129,11 @@ export interface Runtime {
 			decode(buffer: ArrayBuffer): string;
 		};
 	};
+
 	fileFs?: FileSystemProvider;
+
 	telemetry?: TelemetryReporter;
+
 	readonly timer: {
 		setTimeout(
 			callback: (...args: any[]) => void,
@@ -148,6 +153,7 @@ export async function startClient(
 	const outputChannel = window.createOutputChannel(languageServerDescription);
 
 	const languageParticipants = getLanguageParticipants();
+
 	context.subscriptions.push(languageParticipants);
 
 	let client: Disposable | undefined = await startClientWithParticipants(
@@ -179,6 +185,7 @@ export async function startClient(
 							promptForLinkedEditingKey,
 							false,
 						);
+
 						activeEditorListener.dispose();
 
 						const configure = l10n.t("Configure");
@@ -199,24 +206,32 @@ export async function startClient(
 					}
 				},
 			);
+
 			context.subscriptions.push(activeEditorListener);
 		}
 	}
+
 	let restartTrigger: Disposable | undefined;
+
 	languageParticipants.onDidChange(() => {
 		if (restartTrigger) {
 			restartTrigger.dispose();
 		}
+
 		restartTrigger = runtime.timer.setTimeout(async () => {
 			if (client) {
 				outputChannel.appendLine(
 					"Extensions have changed, restarting HTML server...",
 				);
+
 				outputChannel.appendLine("");
 
 				const oldClient = client;
+
 				client = undefined;
+
 				await oldClient.dispose();
+
 				client = await startClientWithParticipants(
 					languageParticipants,
 					newLanguageClient,
@@ -230,7 +245,9 @@ export async function startClient(
 	return {
 		dispose: async () => {
 			restartTrigger?.dispose();
+
 			await client?.dispose();
+
 			outputChannel.dispose();
 		},
 	};
@@ -283,14 +300,17 @@ async function startClientWithParticipants(
 						};
 					}
 				}
+
 				function updateProposals(
 					r: CompletionItem[] | CompletionList | null | undefined,
 				): CompletionItem[] | CompletionList | null | undefined {
 					if (r) {
 						(Array.isArray(r) ? r : r.items).forEach(updateRanges);
 					}
+
 					return r;
 				}
+
 				const isThenable = <T>(
 					obj: ProviderResult<T>,
 				): obj is Thenable<T> => obj && (<any>obj)["then"];
@@ -304,10 +324,12 @@ async function startClientWithParticipants(
 				) {
 					return r.then(updateProposals);
 				}
+
 				return updateProposals(r);
 			},
 		},
 	};
+
 	clientOptions.outputChannel = outputChannel;
 	// Create the language client and start the client.
 	const client = newLanguageClient(
@@ -315,15 +337,20 @@ async function startClientWithParticipants(
 		languageServerDescription,
 		clientOptions,
 	);
+
 	client.registerProposedFeatures();
+
 	await client.start();
+
 	toDispose.push(serveFileSystemRequests(client, runtime));
 
 	const customDataSource = getCustomDataSource(runtime, toDispose);
+
 	client.sendNotification(
 		CustomDataChangedNotification.type,
 		customDataSource.uris,
 	);
+
 	customDataSource.onDidChange(
 		() => {
 			client.sendNotification(
@@ -334,6 +361,7 @@ async function startClientWithParticipants(
 		undefined,
 		toDispose,
 	);
+
 	toDispose.push(
 		client.onRequest(CustomDataContent.type, customDataSource.getContent),
 	);
@@ -360,17 +388,21 @@ async function startClientWithParticipants(
 		languageParticipants,
 		runtime,
 	);
+
 	toDispose.push(disposable);
 
 	const disposable2 = client.onTelemetry((e) => {
 		runtime.telemetry?.sendTelemetryEvent(e.key, e.data);
 	});
+
 	toDispose.push(disposable2);
 	// manually register / deregister format provider based on the `html.format.enable` setting avoiding issues with late registration. See #71652.
 	updateFormatterRegistration();
+
 	toDispose.push({
 		dispose: () => rangeFormatting && rangeFormatting.dispose(),
 	});
+
 	toDispose.push(
 		workspace.onDidChangeConfiguration(
 			(e) =>
@@ -378,6 +410,7 @@ async function startClientWithParticipants(
 				updateFormatterRegistration(),
 		),
 	);
+
 	client.sendRequest(SemanticTokenLegendRequest.type).then((legend) => {
 		if (legend) {
 			const provider: DocumentSemanticTokensProvider &
@@ -418,6 +451,7 @@ async function startClientWithParticipants(
 						});
 				},
 			};
+
 			toDispose.push(
 				languages.registerDocumentSemanticTokensProvider(
 					documentSelector,
@@ -435,6 +469,7 @@ async function startClientWithParticipants(
 
 		if (!formatEnabled && rangeFormatting) {
 			rangeFormatting.dispose();
+
 			rangeFormatting = undefined;
 		} else if (formatEnabled && !rangeFormatting) {
 			rangeFormatting =
@@ -506,9 +541,11 @@ async function startClientWithParticipants(
 				);
 		}
 	}
+
 	const regionCompletionRegExpr = /^(\s*)(<(!(-(-\s*(#\w*)?)?)?)?)?$/;
 
 	const htmlSnippetCompletionRegExpr = /^(\s*)(<(h(t(m(l)?)?)?)?)?$/;
+
 	toDispose.push(
 		languages.registerCompletionItemProvider(documentSelector, {
 			provideCompletionItems(doc, pos) {
@@ -530,30 +567,43 @@ async function startClientWithParticipants(
 						"#region",
 						CompletionItemKind.Snippet,
 					);
+
 					beginProposal.range = range;
+
 					beginProposal.insertText = new SnippetString(
 						"<!-- #region $1-->",
 					);
+
 					beginProposal.documentation = l10n.t(
 						"Folding Region Start",
 					);
+
 					beginProposal.filterText = match[2];
+
 					beginProposal.sortText = "za";
+
 					results.push(beginProposal);
 
 					const endProposal = new CompletionItem(
 						"#endregion",
 						CompletionItemKind.Snippet,
 					);
+
 					endProposal.range = range;
+
 					endProposal.insertText = new SnippetString(
 						"<!-- #endregion -->",
 					);
+
 					endProposal.documentation = l10n.t("Folding Region End");
+
 					endProposal.filterText = match[2];
+
 					endProposal.sortText = "zb";
+
 					results.push(endProposal);
 				}
+
 				const match2 = lineUntilPos.match(htmlSnippetCompletionRegExpr);
 
 				if (
@@ -571,6 +621,7 @@ async function startClientWithParticipants(
 						"HTML sample",
 						CompletionItemKind.Snippet,
 					);
+
 					snippetProposal.range = range;
 
 					const content = [
@@ -589,14 +640,20 @@ async function startClientWithParticipants(
 						"</body>",
 						"</html>",
 					].join("\n");
+
 					snippetProposal.insertText = new SnippetString(content);
+
 					snippetProposal.documentation = l10n.t(
 						"Simple HTML5 starting point",
 					);
+
 					snippetProposal.filterText = match2[2];
+
 					snippetProposal.sortText = "za";
+
 					results.push(snippetProposal);
 				}
+
 				return results;
 			},
 		}),
@@ -605,7 +662,9 @@ async function startClientWithParticipants(
 	return {
 		dispose: async () => {
 			await client.stop();
+
 			toDispose.forEach((d) => d.dispose());
+
 			rangeFormatting?.dispose();
 		},
 	};

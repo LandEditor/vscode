@@ -17,29 +17,38 @@ export class UserDataProfileService
 	implements IUserDataProfileService
 {
 	readonly _serviceBrand: undefined;
+
 	private readonly _onDidChangeCurrentProfile = this._register(
 		new Emitter<DidChangeUserDataProfileEvent>(),
 	);
+
 	readonly onDidChangeCurrentProfile = this._onDidChangeCurrentProfile.event;
+
 	private _currentProfile: IUserDataProfile;
 
 	get currentProfile(): IUserDataProfile {
 		return this._currentProfile;
 	}
+
 	constructor(currentProfile: IUserDataProfile) {
 		super();
+
 		this._currentProfile = currentProfile;
 	}
+
 	async updateCurrentProfile(
 		userDataProfile: IUserDataProfile,
 	): Promise<void> {
 		if (equals(this._currentProfile, userDataProfile)) {
 			return;
 		}
+
 		const previous = this._currentProfile;
+
 		this._currentProfile = userDataProfile;
 
 		const joiners: Promise<void>[] = [];
+
 		this._onDidChangeCurrentProfile.fire({
 			previous,
 			profile: userDataProfile,
@@ -47,6 +56,7 @@ export class UserDataProfileService
 				joiners.push(promise);
 			},
 		});
+
 		await Promises.settled(joiners);
 	}
 }

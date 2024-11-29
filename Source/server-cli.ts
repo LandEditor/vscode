@@ -28,6 +28,7 @@ if (process.env["VSCODE_DEV"]) {
 	process.env["VSCODE_DEV_INJECT_NODE_MODULE_LOOKUP_PATH"] =
 		process.env["VSCODE_DEV_INJECT_NODE_MODULE_LOOKUP_PATH"] ||
 		join(__dirname, "..", "remote", "node_modules");
+
 	devInjectNodeModuleLookupPath(
 		process.env["VSCODE_DEV_INJECT_NODE_MODULE_LOOKUP_PATH"],
 	);

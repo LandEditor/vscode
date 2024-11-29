@@ -36,6 +36,7 @@ async function executeProvider(
 	if (!result || !isValid(result)) {
 		return undefined;
 	}
+
 	return new HoverProviderResult(provider, result, ordinal);
 }
 export function getHoverProviderResultsAsAsyncIterable(

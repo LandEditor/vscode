@@ -17,9 +17,11 @@ export class EditorHoverStatusBar
 	implements IEditorHoverStatusBar
 {
 	public readonly hoverElement: HTMLElement;
+
 	public readonly actions: HoverAction[] = [];
 
 	private readonly actionsElement: HTMLElement;
+
 	private _hasContent: boolean = false;
 
 	public get hasContent() {
@@ -32,15 +34,21 @@ export class EditorHoverStatusBar
 		@IHoverService private readonly _hoverService: IHoverService,
 	) {
 		super();
+
 		this.hoverElement = $("div.hover-row.status-bar");
+
 		this.hoverElement.tabIndex = 0;
+
 		this.actionsElement = dom.append(this.hoverElement, $("div.actions"));
 	}
 
 	public addAction(actionOptions: {
 		label: string;
+
 		iconClass?: string;
+
 		run: (target: HTMLElement) => void;
+
 		commandId: string;
 	}): IEditorHoverAction {
 		const keybinding = this._keybindingService.lookupKeybinding(
@@ -48,6 +56,7 @@ export class EditorHoverStatusBar
 		);
 
 		const keybindingLabel = keybinding ? keybinding.getLabel() : null;
+
 		this._hasContent = true;
 
 		const action = this._register(
@@ -57,6 +66,7 @@ export class EditorHoverStatusBar
 				keybindingLabel,
 			),
 		);
+
 		this._register(
 			this._hoverService.setupManagedHover(
 				getDefaultHoverDelegate("element"),
@@ -64,6 +74,7 @@ export class EditorHoverStatusBar
 				action.actionRenderedLabel,
 			),
 		);
+
 		this.actions.push(action);
 
 		return action;
@@ -71,6 +82,7 @@ export class EditorHoverStatusBar
 
 	public append(element: HTMLElement): HTMLElement {
 		const result = dom.append(this.actionsElement, element);
+
 		this._hasContent = true;
 
 		return result;

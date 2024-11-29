@@ -28,6 +28,7 @@ import {
 @extHostNamedCustomer(MainContext.MainThreadTimeline)
 export class MainThreadTimeline implements MainThreadTimelineShape {
 	private readonly _proxy: ExtHostTimelineShape;
+
 	private readonly _providerEmitters = new Map<
 		string,
 		Emitter<TimelineChangeEvent>
@@ -55,8 +56,10 @@ export class MainThreadTimeline implements MainThreadTimelineShape {
 
 		if (onDidChange === undefined) {
 			onDidChange = new Emitter<TimelineChangeEvent>();
+
 			emitters.set(provider.id, onDidChange);
 		}
+
 		this._timelineService.registerTimelineProvider({
 			...provider,
 			onDidChange: onDidChange.event,
@@ -71,6 +74,7 @@ export class MainThreadTimeline implements MainThreadTimelineShape {
 			},
 			dispose() {
 				emitters.delete(provider.id);
+
 				onDidChange?.dispose();
 			},
 		});
@@ -79,6 +83,7 @@ export class MainThreadTimeline implements MainThreadTimelineShape {
 		this.logService.trace(
 			`MainThreadTimeline#unregisterTimelineProvider: id=${id}`,
 		);
+
 		this._timelineService.unregisterTimelineProvider(id);
 	}
 	$emitTimelineChangeEvent(e: TimelineChangeEvent): void {
@@ -87,8 +92,10 @@ export class MainThreadTimeline implements MainThreadTimelineShape {
 		);
 
 		const emitter = this._providerEmitters.get(e.id);
+
 		emitter?.fire(e);
 	}
+
 	dispose(): void {
 		// noop
 	}

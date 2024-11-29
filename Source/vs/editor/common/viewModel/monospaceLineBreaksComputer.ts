@@ -30,6 +30,7 @@ export class MonospaceLineBreaksComputerFactory
 			options.get(EditorOption.wordWrapBreakAfterCharacters),
 		);
 	}
+
 	private readonly classifier: WrappingCharacterClassifier;
 
 	constructor(breakBeforeChars: string, breakAfterChars: string) {
@@ -38,6 +39,7 @@ export class MonospaceLineBreaksComputerFactory
 			breakAfterChars,
 		);
 	}
+
 	public createLineBreaksComputer(
 		fontInfo: FontInfo,
 		tabSize: number,
@@ -58,7 +60,9 @@ export class MonospaceLineBreaksComputerFactory
 				previousLineBreakData: ModelLineProjectionData | null,
 			) => {
 				requests.push(lineText);
+
 				injectedTexts.push(injectedText);
+
 				previousBreakingData.push(previousLineBreakData);
 			},
 			finalize: () => {
@@ -101,7 +105,9 @@ export class MonospaceLineBreaksComputerFactory
 						);
 					}
 				}
+
 				arrPool1.length = 0;
+
 				arrPool2.length = 0;
 
 				return result;
@@ -123,10 +129,12 @@ class WrappingCharacterClassifier extends CharacterClassifier<CharacterClass> {
 		for (let i = 0; i < BREAK_BEFORE.length; i++) {
 			this.set(BREAK_BEFORE.charCodeAt(i), CharacterClass.BREAK_BEFORE);
 		}
+
 		for (let i = 0; i < BREAK_AFTER.length; i++) {
 			this.set(BREAK_AFTER.charCodeAt(i), CharacterClass.BREAK_AFTER);
 		}
 	}
+
 	public override get(charCode: number): CharacterClass {
 		if (charCode >= 0 && charCode < 256) {
 			return <CharacterClass>this._asciiMap[charCode];
@@ -142,6 +150,7 @@ class WrappingCharacterClassifier extends CharacterClassifier<CharacterClass> {
 			) {
 				return CharacterClass.BREAK_IDEOGRAPHIC;
 			}
+
 			return <CharacterClass>(
 				(this._map.get(charCode) || this._defaultValue)
 			);
@@ -164,11 +173,13 @@ function createLineBreaksFromPreviousLineBreaks(
 	if (firstLineBreakColumn === -1) {
 		return null;
 	}
+
 	const len = lineText.length;
 
 	if (len <= 1) {
 		return null;
 	}
+
 	const isKeepAll = wordBreak === "keepAll";
 
 	const prevBreakingOffsets = previousBreakingData.breakOffsets;
@@ -217,10 +228,13 @@ function createLineBreaksFromPreviousLineBreaks(
 			if (distance >= bestDistance) {
 				break;
 			}
+
 			bestDistance = distance;
+
 			prevIndex++;
 		}
 	}
+
 	while (prevIndex < prevLen) {
 		// Allow for prevIndex to be -1 (for the case where we hit a tab when walking backwards from the first break)
 		let prevBreakOffset =
@@ -231,8 +245,10 @@ function createLineBreaksFromPreviousLineBreaks(
 
 		if (lastBreakingOffset > prevBreakOffset) {
 			prevBreakOffset = lastBreakingOffset;
+
 			prevBreakOffsetVisibleColumn = lastBreakingOffsetVisibleColumn;
 		}
+
 		let breakOffset = 0;
 
 		let breakOffsetVisibleColumn = 0;
@@ -268,10 +284,13 @@ function createLineBreaksFromPreviousLineBreaks(
 				if (strings.isHighSurrogate(charCode)) {
 					// A surrogate pair must always be considered as a single unit, so it is never to be broken
 					i++;
+
 					charCodeClass = CharacterClass.NONE;
+
 					charWidth = 2;
 				} else {
 					charCodeClass = classifier.get(charCode);
+
 					charWidth = computeCharWidth(
 						charCode,
 						visibleColumn,
@@ -279,6 +298,7 @@ function createLineBreaksFromPreviousLineBreaks(
 						columnsForFullWidthChar,
 					);
 				}
+
 				if (
 					charStartOffset > lastBreakingOffset &&
 					canBreak(
@@ -293,6 +313,7 @@ function createLineBreaksFromPreviousLineBreaks(
 
 					breakOffsetVisibleColumn = visibleColumn;
 				}
+
 				visibleColumn += charWidth;
 				// check if adding character at `i` will go over the breaking column
 				if (visibleColumn > breakingColumn) {
@@ -308,6 +329,7 @@ function createLineBreaksFromPreviousLineBreaks(
 
 						forcedBreakOffsetVisibleColumn = visibleColumn;
 					}
+
 					if (
 						visibleColumn - breakOffsetVisibleColumn >
 						wrappedLineBreakColumn
@@ -315,13 +337,17 @@ function createLineBreaksFromPreviousLineBreaks(
 						// Cannot break at `breakOffset` => reset it if it was set
 						breakOffset = 0;
 					}
+
 					entireLineFits = false;
 
 					break;
 				}
+
 				prevCharCode = charCode;
+
 				prevCharCodeClass = charCodeClass;
 			}
+
 			if (entireLineFits) {
 				// there is no more need to break => stop the outer loop!
 				if (breakingOffsetsCount > 0) {
@@ -336,9 +362,11 @@ function createLineBreaksFromPreviousLineBreaks(
 
 					breakingOffsetsCount++;
 				}
+
 				break;
 			}
 		}
+
 		if (breakOffset === 0) {
 			// must search left
 			let visibleColumn = prevBreakOffsetVisibleColumn;
@@ -360,6 +388,7 @@ function createLineBreaksFromPreviousLineBreaks(
 
 					break;
 				}
+
 				let prevCharCodeClass: number;
 
 				let prevCharWidth: number;
@@ -367,20 +396,25 @@ function createLineBreaksFromPreviousLineBreaks(
 				if (strings.isLowSurrogate(prevCharCode)) {
 					// A surrogate pair must always be considered as a single unit, so it is never to be broken
 					i--;
+
 					prevCharCodeClass = CharacterClass.NONE;
+
 					prevCharWidth = 2;
 				} else {
 					prevCharCodeClass = classifier.get(prevCharCode);
+
 					prevCharWidth = strings.isFullWidthCharacter(prevCharCode)
 						? columnsForFullWidthChar
 						: 1;
 				}
+
 				if (visibleColumn <= breakingColumn) {
 					if (forcedBreakOffset === 0) {
 						forcedBreakOffset = charStartOffset;
 
 						forcedBreakOffsetVisibleColumn = visibleColumn;
 					}
+
 					if (
 						visibleColumn <=
 						breakingColumn - wrappedLineBreakColumn
@@ -388,6 +422,7 @@ function createLineBreaksFromPreviousLineBreaks(
 						// went too far!
 						break;
 					}
+
 					if (
 						canBreak(
 							prevCharCode,
@@ -404,10 +439,14 @@ function createLineBreaksFromPreviousLineBreaks(
 						break;
 					}
 				}
+
 				visibleColumn -= prevCharWidth;
+
 				charCode = prevCharCode;
+
 				charCodeClass = prevCharCodeClass;
 			}
+
 			if (breakOffset !== 0) {
 				const remainingWidthOfNextLine =
 					wrappedLineBreakColumn -
@@ -430,12 +469,14 @@ function createLineBreaksFromPreviousLineBreaks(
 							columnsForFullWidthChar,
 						);
 					}
+
 					if (remainingWidthOfNextLine - charWidth < 0) {
 						// it is not worth it to break at breakOffset, it just introduces an extra needless line!
 						breakOffset = 0;
 					}
 				}
 			}
+
 			if (hitATabCharacter) {
 				// cannot determine the width of a tab when going backwards, so we must go forwards from the previous break
 				prevIndex--;
@@ -443,12 +484,14 @@ function createLineBreaksFromPreviousLineBreaks(
 				continue;
 			}
 		}
+
 		if (breakOffset === 0) {
 			// Could not find a good breaking point
 			breakOffset = forcedBreakOffset;
 
 			breakOffsetVisibleColumn = forcedBreakOffsetVisibleColumn;
 		}
+
 		if (breakOffset <= lastBreakingOffset) {
 			// Make sure that we are advancing (at least one character)
 			const charCode = lineText.charCodeAt(lastBreakingOffset);
@@ -471,9 +514,11 @@ function createLineBreaksFromPreviousLineBreaks(
 					);
 			}
 		}
+
 		lastBreakingOffset = breakOffset;
 
 		breakingOffsets[breakingOffsetsCount] = breakOffset;
+
 		lastBreakingOffsetVisibleColumn = breakOffsetVisibleColumn;
 
 		breakingOffsetsVisibleColumn[breakingOffsetsCount] =
@@ -491,6 +536,7 @@ function createLineBreaksFromPreviousLineBreaks(
 		) {
 			prevIndex++;
 		}
+
 		let bestDistance = Math.abs(
 			prevBreakingOffsetsVisibleColumn[prevIndex] - breakingColumn,
 		);
@@ -504,10 +550,13 @@ function createLineBreaksFromPreviousLineBreaks(
 			if (distance >= bestDistance) {
 				break;
 			}
+
 			bestDistance = distance;
+
 			prevIndex++;
 		}
 	}
+
 	if (breakingOffsetsCount === 0) {
 		return null;
 	}
@@ -515,11 +564,16 @@ function createLineBreaksFromPreviousLineBreaks(
 	breakingOffsets.length = breakingOffsetsCount;
 
 	breakingOffsetsVisibleColumn.length = breakingOffsetsCount;
+
 	arrPool1 = previousBreakingData.breakOffsets;
+
 	arrPool2 = previousBreakingData.breakOffsetsVisibleColumn;
+
 	previousBreakingData.breakOffsets = breakingOffsets;
+
 	previousBreakingData.breakOffsetsVisibleColumn =
 		breakingOffsetsVisibleColumn;
+
 	previousBreakingData.wrappedTextIndentLength = wrappedTextIndentLength;
 
 	return previousBreakingData;
@@ -545,11 +599,14 @@ function createLineBreaks(
 
 	if (injectedTexts && injectedTexts.length > 0) {
 		injectionOptions = injectedTexts.map((t) => t.options);
+
 		injectionOffsets = injectedTexts.map((text) => text.column - 1);
 	} else {
 		injectionOptions = null;
+
 		injectionOffsets = null;
 	}
+
 	if (firstLineBreakColumn === -1) {
 		if (!injectionOptions) {
 			return null;
@@ -564,6 +621,7 @@ function createLineBreaks(
 			0,
 		);
 	}
+
 	const len = lineText.length;
 
 	if (len <= 1) {
@@ -580,6 +638,7 @@ function createLineBreaks(
 			0,
 		);
 	}
+
 	const isKeepAll = wordBreak === "keepAll";
 
 	const wrappedTextIndentLength = computeWrappedTextIndentLength(
@@ -621,10 +680,14 @@ function createLineBreaks(
 	if (strings.isHighSurrogate(prevCharCode)) {
 		// A surrogate pair must always be considered as a single unit, so it is never to be broken
 		visibleColumn += 1;
+
 		prevCharCode = lineText.charCodeAt(1);
+
 		prevCharCodeClass = classifier.get(prevCharCode);
+
 		startOffset++;
 	}
+
 	for (let i = startOffset; i < len; i++) {
 		const charStartOffset = i;
 
@@ -637,10 +700,13 @@ function createLineBreaks(
 		if (strings.isHighSurrogate(charCode)) {
 			// A surrogate pair must always be considered as a single unit, so it is never to be broken
 			i++;
+
 			charCodeClass = CharacterClass.NONE;
+
 			charWidth = 2;
 		} else {
 			charCodeClass = classifier.get(charCode);
+
 			charWidth = computeCharWidth(
 				charCode,
 				visibleColumn,
@@ -648,6 +714,7 @@ function createLineBreaks(
 				columnsForFullWidthChar,
 			);
 		}
+
 		if (
 			canBreak(
 				prevCharCode,
@@ -661,6 +728,7 @@ function createLineBreaks(
 
 			breakOffsetVisibleColumn = visibleColumn;
 		}
+
 		visibleColumn += charWidth;
 		// check if adding character at `i` will go over the breaking column
 		if (visibleColumn > breakingColumn) {
@@ -675,6 +743,7 @@ function createLineBreaks(
 
 				breakOffsetVisibleColumn = visibleColumn - charWidth;
 			}
+
 			breakingOffsets[breakingOffsetsCount] = breakOffset;
 
 			breakingOffsetsVisibleColumn[breakingOffsetsCount] =
@@ -686,9 +755,12 @@ function createLineBreaks(
 
 			breakOffset = 0;
 		}
+
 		prevCharCode = charCode;
+
 		prevCharCodeClass = charCodeClass;
 	}
+
 	if (
 		breakingOffsetsCount === 0 &&
 		(!injectedTexts || injectedTexts.length === 0)
@@ -717,13 +789,16 @@ function computeCharWidth(
 	if (charCode === CharCode.Tab) {
 		return tabSize - (visibleColumn % tabSize);
 	}
+
 	if (strings.isFullWidthCharacter(charCode)) {
 		return columnsForFullWidthChar;
 	}
+
 	if (charCode < 32) {
 		// when using `editor.renderControlCharacters`, the substitutions are often wide
 		return columnsForFullWidthChar;
 	}
+
 	return 1;
 }
 function tabCharacterWidth(visibleColumn: number, tabSize: number): number {
@@ -774,6 +849,7 @@ function computeWrappedTextIndentLength(
 					lineText.charCodeAt(i) === CharCode.Tab
 						? tabCharacterWidth(wrappedTextIndentLength, tabSize)
 						: 1;
+
 				wrappedTextIndentLength += charWidth;
 			}
 			// Increase indent of continuation lines, if desired
@@ -789,6 +865,7 @@ function computeWrappedTextIndentLength(
 					wrappedTextIndentLength,
 					tabSize,
 				);
+
 				wrappedTextIndentLength += charWidth;
 			}
 			// Force sticking to beginning of line if no character would fit except for the indentation
@@ -800,5 +877,6 @@ function computeWrappedTextIndentLength(
 			}
 		}
 	}
+
 	return wrappedTextIndentLength;
 }

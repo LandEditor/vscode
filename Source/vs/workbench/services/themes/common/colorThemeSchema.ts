@@ -314,6 +314,8 @@ export function registerColorThemeSchemas() {
 	const schemaRegistry = Registry.as<IJSONContributionRegistry>(
 		JSONExtensions.JSONContribution,
 	);
+
 	schemaRegistry.registerSchema(colorThemeSchemaId, colorThemeSchema);
+
 	schemaRegistry.registerSchema(textmateColorsSchemaId, textmateColorSchema);
 }

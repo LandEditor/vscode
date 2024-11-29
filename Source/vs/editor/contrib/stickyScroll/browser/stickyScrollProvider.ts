@@ -40,11 +40,13 @@ export interface IStickyLineCandidateProvider {
 	dispose(): void;
 
 	getVersionId(): number | undefined;
+
 	update(): Promise<void>;
 
 	getCandidateStickyLinesIntersecting(
 		range: StickyRange,
 	): StickyLineCandidate[];
+
 	onDidChangeStickyScroll: Event<void>;
 }
 export class StickyLineCandidateProvider
@@ -52,16 +54,24 @@ export class StickyLineCandidateProvider
 	implements IStickyLineCandidateProvider
 {
 	static readonly ID = "store.contrib.stickyScrollController";
+
 	private readonly _onDidChangeStickyScroll = this._register(
 		new Emitter<void>(),
 	);
+
 	public readonly onDidChangeStickyScroll =
 		this._onDidChangeStickyScroll.event;
+
 	private readonly _editor: ICodeEditor;
+
 	private readonly _updateSoon: RunOnceScheduler;
+
 	private readonly _sessionStore: DisposableStore;
+
 	private _model: StickyModel | null = null;
+
 	private _cts: CancellationTokenSource | null = null;
+
 	private _stickyModelProvider: IStickyModelProvider | null = null;
 
 	constructor(
@@ -72,11 +82,15 @@ export class StickyLineCandidateProvider
 		private readonly _languageConfigurationService: ILanguageConfigurationService,
 	) {
 		super();
+
 		this._editor = editor;
+
 		this._sessionStore = this._register(new DisposableStore());
+
 		this._updateSoon = this._register(
 			new RunOnceScheduler(() => this.update(), 50),
 		);
+
 		this._register(
 			this._editor.onDidChangeConfiguration((e) => {
 				if (e.hasChanged(EditorOption.stickyScroll)) {
@@ -84,8 +98,10 @@ export class StickyLineCandidateProvider
 				}
 			}),
 		);
+
 		this.readConfiguration();
 	}
+
 	private readConfiguration() {
 		this._sessionStore.clear();
 
@@ -94,43 +110,57 @@ export class StickyLineCandidateProvider
 		if (!options.enabled) {
 			return;
 		}
+
 		this._sessionStore.add(
 			this._editor.onDidChangeModel(() => {
 				// We should not show an old model for a different file, it will always be wrong.
 				// So we clear the model here immediately and then trigger an update.
 				this._model = null;
+
 				this.updateStickyModelProvider();
+
 				this._onDidChangeStickyScroll.fire();
+
 				this.update();
 			}),
 		);
+
 		this._sessionStore.add(
 			this._editor.onDidChangeHiddenAreas(() => this.update()),
 		);
+
 		this._sessionStore.add(
 			this._editor.onDidChangeModelContent(() =>
 				this._updateSoon.schedule(),
 			),
 		);
+
 		this._sessionStore.add(
 			this._languageFeaturesService.documentSymbolProvider.onDidChange(
 				() => this.update(),
 			),
 		);
+
 		this._sessionStore.add(
 			toDisposable(() => {
 				this._stickyModelProvider?.dispose();
+
 				this._stickyModelProvider = null;
 			}),
 		);
+
 		this.updateStickyModelProvider();
+
 		this.update();
 	}
+
 	public getVersionId(): number | undefined {
 		return this._model?.version;
 	}
+
 	private updateStickyModelProvider() {
 		this._stickyModelProvider?.dispose();
+
 		this._stickyModelProvider = null;
 
 		const editor = this._editor;
@@ -144,12 +174,17 @@ export class StickyLineCandidateProvider
 			);
 		}
 	}
+
 	public async update(): Promise<void> {
 		this._cts?.dispose(true);
+
 		this._cts = new CancellationTokenSource();
+
 		await this.updateStickyModel(this._cts.token);
+
 		this._onDidChangeStickyScroll.fire();
 	}
+
 	private async updateStickyModel(token: CancellationToken): Promise<void> {
 		if (
 			!this._editor.hasModel() ||
@@ -160,22 +195,27 @@ export class StickyLineCandidateProvider
 
 			return;
 		}
+
 		const model = await this._stickyModelProvider.update(token);
 
 		if (token.isCancellationRequested) {
 			// the computation was canceled, so do not overwrite the model
 			return;
 		}
+
 		this._model = model;
 	}
+
 	private updateIndex(index: number) {
 		if (index === -1) {
 			index = 0;
 		} else if (index < 0) {
 			index = -index - 2;
 		}
+
 		return index;
 	}
+
 	public getCandidateStickyLinesIntersectingFromStickyModel(
 		range: StickyRange,
 		outlineModel: StickyElement,
@@ -186,6 +226,7 @@ export class StickyLineCandidateProvider
 		if (outlineModel.children.length === 0) {
 			return;
 		}
+
 		let lastLine = lastStartLineNumber;
 
 		const childrenStartLines: number[] = [];
@@ -197,6 +238,7 @@ export class StickyLineCandidateProvider
 				childrenStartLines.push(child.range.startLineNumber);
 			}
 		}
+
 		const lowerBound = this.updateIndex(
 			binarySearch(
 				childrenStartLines,
@@ -223,6 +265,7 @@ export class StickyLineCandidateProvider
 			if (!child) {
 				return;
 			}
+
 			if (child.range) {
 				const childStartLine = child.range.startLineNumber;
 
@@ -234,6 +277,7 @@ export class StickyLineCandidateProvider
 					childStartLine !== lastLine
 				) {
 					lastLine = childStartLine;
+
 					result.push(
 						new StickyLineCandidate(
 							childStartLine,
@@ -241,6 +285,7 @@ export class StickyLineCandidateProvider
 							depth + 1,
 						),
 					);
+
 					this.getCandidateStickyLinesIntersectingFromStickyModel(
 						range,
 						child,
@@ -260,13 +305,16 @@ export class StickyLineCandidateProvider
 			}
 		}
 	}
+
 	public getCandidateStickyLinesIntersecting(
 		range: StickyRange,
 	): StickyLineCandidate[] {
 		if (!this._model?.element) {
 			return [];
 		}
+
 		let stickyLineCandidates: StickyLineCandidate[] = [];
+
 		this.getCandidateStickyLinesIntersectingFromStickyModel(
 			range,
 			this._model.element,
@@ -292,6 +340,7 @@ export class StickyLineCandidateProvider
 				);
 			}
 		}
+
 		return stickyLineCandidates;
 	}
 }

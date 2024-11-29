@@ -25,6 +25,7 @@ export class USLayoutResolvedKeybinding extends BaseResolvedKeybinding<KeyCodeCh
 	constructor(chords: KeyCodeChord[], os: OperatingSystem) {
 		super(os, chords);
 	}
+
 	private _keyCodeToUILabel(keyCode: KeyCode): string {
 		if (this._os === OperatingSystem.Macintosh) {
 			switch (keyCode) {
@@ -41,59 +42,76 @@ export class USLayoutResolvedKeybinding extends BaseResolvedKeybinding<KeyCodeCh
 					return "↓";
 			}
 		}
+
 		return KeyCodeUtils.toString(keyCode);
 	}
+
 	protected _getLabel(chord: KeyCodeChord): string | null {
 		if (chord.isDuplicateModifierCase()) {
 			return "";
 		}
+
 		return this._keyCodeToUILabel(chord.keyCode);
 	}
+
 	protected _getAriaLabel(chord: KeyCodeChord): string | null {
 		if (chord.isDuplicateModifierCase()) {
 			return "";
 		}
+
 		return KeyCodeUtils.toString(chord.keyCode);
 	}
+
 	protected _getElectronAccelerator(chord: KeyCodeChord): string | null {
 		return KeyCodeUtils.toElectronAccelerator(chord.keyCode);
 	}
+
 	protected _getUserSettingsLabel(chord: KeyCodeChord): string | null {
 		if (chord.isDuplicateModifierCase()) {
 			return "";
 		}
+
 		const result = KeyCodeUtils.toUserSettingsUS(chord.keyCode);
 
 		return result ? result.toLowerCase() : result;
 	}
+
 	protected _isWYSIWYG(): boolean {
 		return true;
 	}
+
 	protected _getChordDispatch(chord: KeyCodeChord): string | null {
 		return USLayoutResolvedKeybinding.getDispatchStr(chord);
 	}
+
 	public static getDispatchStr(chord: KeyCodeChord): string | null {
 		if (chord.isModifierKey()) {
 			return null;
 		}
+
 		let result = "";
 
 		if (chord.ctrlKey) {
 			result += "ctrl+";
 		}
+
 		if (chord.shiftKey) {
 			result += "shift+";
 		}
+
 		if (chord.altKey) {
 			result += "alt+";
 		}
+
 		if (chord.metaKey) {
 			result += "meta+";
 		}
+
 		result += KeyCodeUtils.toString(chord.keyCode);
 
 		return result;
 	}
+
 	protected _getSingleModifierChordDispatch(
 		keybinding: KeyCodeChord,
 	): SingleModifierChord | null {
@@ -105,6 +123,7 @@ export class USLayoutResolvedKeybinding extends BaseResolvedKeybinding<KeyCodeCh
 		) {
 			return "ctrl";
 		}
+
 		if (
 			keybinding.keyCode === KeyCode.Shift &&
 			!keybinding.ctrlKey &&
@@ -113,6 +132,7 @@ export class USLayoutResolvedKeybinding extends BaseResolvedKeybinding<KeyCodeCh
 		) {
 			return "shift";
 		}
+
 		if (
 			keybinding.keyCode === KeyCode.Alt &&
 			!keybinding.ctrlKey &&
@@ -121,6 +141,7 @@ export class USLayoutResolvedKeybinding extends BaseResolvedKeybinding<KeyCodeCh
 		) {
 			return "alt";
 		}
+
 		if (
 			keybinding.keyCode === KeyCode.Meta &&
 			!keybinding.ctrlKey &&
@@ -129,6 +150,7 @@ export class USLayoutResolvedKeybinding extends BaseResolvedKeybinding<KeyCodeCh
 		) {
 			return "meta";
 		}
+
 		return null;
 	}
 	/**
@@ -140,6 +162,7 @@ export class USLayoutResolvedKeybinding extends BaseResolvedKeybinding<KeyCodeCh
 		if (immutableKeyCode !== KeyCode.DependsOnKbLayout) {
 			return immutableKeyCode;
 		}
+
 		switch (scanCode) {
 			case ScanCode.KeyA:
 				return KeyCode.KeyA;
@@ -287,20 +310,25 @@ export class USLayoutResolvedKeybinding extends BaseResolvedKeybinding<KeyCodeCh
 			case ScanCode.IntlBackslash:
 				return KeyCode.IntlBackslash;
 		}
+
 		return KeyCode.Unknown;
 	}
+
 	private static _toKeyCodeChord(chord: Chord | null): KeyCodeChord | null {
 		if (!chord) {
 			return null;
 		}
+
 		if (chord instanceof KeyCodeChord) {
 			return chord;
 		}
+
 		const keyCode = this._scanCodeToKeyCode(chord.scanCode);
 
 		if (keyCode === KeyCode.Unknown) {
 			return null;
 		}
+
 		return new KeyCodeChord(
 			chord.ctrlKey,
 			chord.shiftKey,
@@ -309,6 +337,7 @@ export class USLayoutResolvedKeybinding extends BaseResolvedKeybinding<KeyCodeCh
 			keyCode,
 		);
 	}
+
 	public static resolveKeybinding(
 		keybinding: Keybinding,
 		os: OperatingSystem,
@@ -320,6 +349,7 @@ export class USLayoutResolvedKeybinding extends BaseResolvedKeybinding<KeyCodeCh
 		if (chords.length > 0) {
 			return [new USLayoutResolvedKeybinding(chords, os)];
 		}
+
 		return [];
 	}
 }

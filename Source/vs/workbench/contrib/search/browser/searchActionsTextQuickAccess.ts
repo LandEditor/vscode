@@ -28,6 +28,7 @@ registerAction2(
 				f1: true,
 			});
 		}
+
 		override async run(
 			accessor: ServicesAccessor,
 			match: RenderableMatch | undefined,
@@ -35,6 +36,7 @@ registerAction2(
 			const quickInputService = accessor.get(IQuickInputService);
 
 			const searchText = getSearchText(accessor) ?? "";
+
 			quickInputService.quickAccess.show(
 				TEXT_SEARCH_QUICK_ACCESS_PREFIX + searchText,
 				{ preserveValue: !!searchText },
@@ -53,6 +55,7 @@ function getSearchText(accessor: ServicesAccessor): string | null {
 	if (!activeEditor) {
 		return null;
 	}
+
 	if (!activeEditor.hasTextFocus()) {
 		return null;
 	}
@@ -65,5 +68,6 @@ function getSearchText(accessor: ServicesAccessor): string | null {
 	if (!seedSearchStringFromSelection) {
 		return null;
 	}
+
 	return getSelectionTextFromEditor(false, activeEditor);
 }

@@ -59,13 +59,21 @@ export class ExplorerService implements IExplorerService {
 	private static readonly EXPLORER_FILE_CHANGES_REACT_DELAY = 500; // delay in ms to react to file changes to give our internal events a chance to react first
 
 	private readonly disposables = new DisposableStore();
+
 	private editable: { stat: ExplorerItem; data: IEditableData } | undefined;
+
 	private config: IFilesConfiguration["explorer"];
+
 	private cutItems: ExplorerItem[] | undefined;
+
 	private view: IExplorerView | undefined;
+
 	private model: ExplorerModel;
+
 	private onFileChangesScheduler: RunOnceScheduler;
+
 	private fileChangeEvents: FileChangesEvent[] = [];
+
 	private revealExcludeMatcher: ResourceGlobMatcher;
 
 	constructor(
@@ -94,7 +102,9 @@ export class ExplorerService implements IExplorerService {
 			this.configurationService,
 			this.filesConfigurationService,
 		);
+
 		this.disposables.add(this.model);
+
 		this.disposables.add(
 			this.fileService.onDidRunOperation((e) =>
 				this.onDidRunOperation(e),
@@ -103,6 +113,7 @@ export class ExplorerService implements IExplorerService {
 
 		this.onFileChangesScheduler = new RunOnceScheduler(async () => {
 			const events = this.fileChangeEvents;
+
 			this.fileChangeEvents = [];
 
 			// Filter to the ones we care
@@ -154,25 +165,30 @@ export class ExplorerService implements IExplorerService {
 				if (this.editable) {
 					return;
 				}
+
 				if (!this.onFileChangesScheduler.isScheduled()) {
 					this.onFileChangesScheduler.schedule();
 				}
 			}),
 		);
+
 		this.disposables.add(
 			this.configurationService.onDidChangeConfiguration((e) =>
 				this.onConfigurationUpdated(e),
 			),
 		);
+
 		this.disposables.add(
 			Event.any<{ scheme: string }>(
 				this.fileService.onDidChangeFileSystemProviderRegistrations,
 				this.fileService.onDidChangeFileSystemProviderCapabilities,
 			)(async (e) => {
 				let affected = false;
+
 				this.model.roots.forEach((r) => {
 					if (r.resource.scheme === e.scheme) {
 						affected = true;
+
 						r.forgetChildren();
 					}
 				});
@@ -184,6 +200,7 @@ export class ExplorerService implements IExplorerService {
 				}
 			}),
 		);
+
 		this.disposables.add(
 			this.model.onDidChangeRoots(() => {
 				this.view?.setTreeInput();
@@ -198,6 +215,7 @@ export class ExplorerService implements IExplorerService {
 				}
 			}),
 		);
+
 		this.revealExcludeMatcher = new ResourceGlobMatcher(
 			(uri) =>
 				getRevealExcludes(
@@ -209,6 +227,7 @@ export class ExplorerService implements IExplorerService {
 			contextService,
 			configurationService,
 		);
+
 		this.disposables.add(this.revealExcludeMatcher);
 	}
 
@@ -239,6 +258,7 @@ export class ExplorerService implements IExplorerService {
 		const items = new Set<ExplorerItem>(
 			this.view.getContext(respectMultiSelection),
 		);
+
 		items.forEach((item) => {
 			try {
 				if (
@@ -265,8 +285,11 @@ export class ExplorerService implements IExplorerService {
 		edit: ResourceFileEdit[],
 		options: {
 			undoLabel: string;
+
 			progressLabel: string;
+
 			confirmBeforeUndo?: boolean;
+
 			progressLocation?:
 				| ProgressLocation.Explorer
 				| ProgressLocation.Window;
@@ -292,6 +315,7 @@ export class ExplorerService implements IExplorerService {
 				delay: 500,
 			} satisfies IProgressCompositeOptions;
 		}
+
 		const promise = this.progressService.withProgress(
 			progressOptions,
 			async (progress) => {
@@ -306,10 +330,12 @@ export class ExplorerService implements IExplorerService {
 			},
 			() => cancellationTokenSource.cancel(),
 		);
+
 		await this.progressService.withProgress(
 			{ location: ProgressLocation.Explorer, delay: 500 },
 			() => promise,
 		);
+
 		cancellationTokenSource.dispose();
 	}
 
@@ -352,75 +378,118 @@ export class ExplorerService implements IExplorerService {
 		} else {
 			this.editable = { stat, data };
 		}
+
 		const isEditing = this.isEditable(stat);
 
 		try {
 			await this.view.setEditable(stat, isEditing);
 		} catch {
 			const parent = stat.parent;
+
 			type ExplorerViewEditableErrorData = {
 				parentIsDirectory: boolean | undefined;
+
 				isDirectory: boolean | undefined;
+
 				isReadonly: boolean | undefined;
+
 				parentIsReadonly: boolean | undefined;
+
 				parentIsExcluded: boolean | undefined;
+
 				isExcluded: boolean | undefined;
+
 				parentIsRoot: boolean | undefined;
+
 				isRoot: boolean | undefined;
+
 				parentHasNests: boolean | undefined;
+
 				hasNests: boolean | undefined;
 			};
+
 			type ExplorerViewEditableErrorClassification = {
 				owner: "lramos15";
+
 				comment: "Helps gain a broard understanding of why users are unable to edit files in the explorer";
+
 				parentIsDirectory: {
 					classification: "SystemMetaData";
+
 					purpose: "PerformanceAndHealth";
+
 					comment: "Whether the parent of the editable element is a directory";
 				};
+
 				isDirectory: {
 					classification: "SystemMetaData";
+
 					purpose: "PerformanceAndHealth";
+
 					comment: "Whether the editable element is a directory";
 				};
+
 				isReadonly: {
 					classification: "SystemMetaData";
+
 					purpose: "PerformanceAndHealth";
+
 					comment: "Whether the editable element is readonly";
 				};
+
 				parentIsReadonly: {
 					classification: "SystemMetaData";
+
 					purpose: "PerformanceAndHealth";
+
 					comment: "Whether the parent of the editable element is readonly";
 				};
+
 				parentIsExcluded: {
 					classification: "SystemMetaData";
+
 					purpose: "PerformanceAndHealth";
+
 					comment: "Whether the parent of the editable element is excluded from being shown in the explorer";
 				};
+
 				isExcluded: {
 					classification: "SystemMetaData";
+
 					purpose: "PerformanceAndHealth";
+
 					comment: "Whether the editable element is excluded from being shown in the explorer";
 				};
+
 				parentIsRoot: {
 					classification: "SystemMetaData";
+
 					purpose: "PerformanceAndHealth";
+
 					comment: "Whether the parent of the editable element is a root";
 				};
+
 				isRoot: {
 					classification: "SystemMetaData";
+
 					purpose: "PerformanceAndHealth";
+
 					comment: "Whether the editable element is a root";
 				};
+
 				parentHasNests: {
 					classification: "SystemMetaData";
+
 					purpose: "PerformanceAndHealth";
+
 					comment: "Whether the parent of the editable element has nested children";
 				};
+
 				hasNests: {
 					classification: "SystemMetaData";
+
 					purpose: "PerformanceAndHealth";
+
 					comment: "Whether the editable element has nested children";
 				};
 			};
@@ -437,6 +506,7 @@ export class ExplorerService implements IExplorerService {
 				parentHasNests: parent?.hasNests,
 				hasNests: stat.hasNests,
 			};
+
 			this.telemetryService.publicLogError2<
 				ExplorerViewEditableErrorData,
 				ExplorerViewEditableErrorClassification
@@ -456,7 +526,9 @@ export class ExplorerService implements IExplorerService {
 
 	async setToCopy(items: ExplorerItem[], cut: boolean): Promise<void> {
 		const previouslyCutItems = this.cutItems;
+
 		this.cutItems = cut ? items : undefined;
+
 		await this.clipboardService.writeResources(
 			items.map((s) => s.resource),
 		);
@@ -504,6 +576,7 @@ export class ExplorerService implements IExplorerService {
 			if (!this.shouldAutoRevealItem(fileStat, ignoreRevealExcludes)) {
 				return;
 			}
+
 			await this.view.selectResource(fileStat.resource, reveal);
 
 			return Promise.resolve(undefined);
@@ -537,6 +610,7 @@ export class ExplorerService implements IExplorerService {
 			ExplorerItem.mergeLocalWithDisk(modelStat, root);
 
 			const item = root.find(resource);
+
 			await this.view.refresh(true, root);
 
 			// Once item is resolved, check again if folder should be expanded
@@ -546,12 +620,14 @@ export class ExplorerService implements IExplorerService {
 			) {
 				return;
 			}
+
 			await this.view.selectResource(
 				item ? item.resource : undefined,
 				reveal,
 			);
 		} catch (error) {
 			root.error = error;
+
 			await this.view.refresh(false, root);
 		}
 	}
@@ -621,6 +697,7 @@ export class ExplorerService implements IExplorerService {
 									stat,
 									p.parent,
 								);
+
 								ExplorerItem.mergeLocalWithDisk(modelStat, p);
 							}
 						}
@@ -634,6 +711,7 @@ export class ExplorerService implements IExplorerService {
 						);
 						// Make sure to remove any previous version of the file if any
 						p.removeChild(childElement);
+
 						p.addChild(childElement);
 						// Refresh the Parent (View)
 						await this.view?.refresh(shouldDeepRefresh, p);
@@ -667,6 +745,7 @@ export class ExplorerService implements IExplorerService {
 					modelElements.map(async (modelElement) => {
 						// Rename File (Model)
 						modelElement.rename(newElement);
+
 						await this.view?.refresh(
 							shouldDeepRefresh,
 							modelElement.parent,
@@ -686,6 +765,7 @@ export class ExplorerService implements IExplorerService {
 							const oldParent = modelElement.parent;
 
 							const oldNestedParent = modelElement.nestedParent;
+
 							modelElement.move(newParents[index]);
 
 							if (oldNestedParent) {
@@ -694,7 +774,9 @@ export class ExplorerService implements IExplorerService {
 									oldNestedParent,
 								);
 							}
+
 							await this.view?.refresh(false, oldParent);
+
 							await this.view?.refresh(
 								shouldDeepRefresh,
 								newParents[index],
@@ -708,18 +790,22 @@ export class ExplorerService implements IExplorerService {
 		// Delete
 		else if (e.isOperation(FileOperation.DELETE)) {
 			const modelElements = this.model.findAll(e.resource);
+
 			await Promise.all(
 				modelElements.map(async (modelElement) => {
 					if (modelElement.parent) {
 						// Remove Element from Parent (Model)
 						const parent = modelElement.parent;
+
 						parent.removeChild(modelElement);
+
 						this.view?.focusNext();
 
 						const oldNestedParent = modelElement.nestedParent;
 
 						if (oldNestedParent) {
 							oldNestedParent.removeChild(modelElement);
+
 							await this.view?.refresh(false, oldNestedParent);
 						}
 						// Refresh Parent (View)
@@ -742,6 +828,7 @@ export class ExplorerService implements IExplorerService {
 		if (item === undefined || ignore) {
 			return true;
 		}
+
 		if (
 			this.revealExcludeMatcher.matches(
 				item.resource,
@@ -750,6 +837,7 @@ export class ExplorerService implements IExplorerService {
 		) {
 			return false;
 		}
+
 		const root = item.root;
 
 		let currentItem = item.parent;
@@ -758,11 +846,14 @@ export class ExplorerService implements IExplorerService {
 			if (currentItem === undefined) {
 				return true;
 			}
+
 			if (this.revealExcludeMatcher.matches(currentItem.resource)) {
 				return false;
 			}
+
 			currentItem = currentItem.parent;
 		}
+
 		return true;
 	}
 
@@ -801,6 +892,7 @@ export class ExplorerService implements IExplorerService {
 				shouldRefresh ||
 				this.config.sortOrderLexicographicOptions !== undefined;
 		}
+
 		const sortOrderReverse =
 			configuration?.explorer?.sortOrderReverse || false;
 
@@ -832,6 +924,7 @@ function doesFileEventAffect(
 			if (events.some((e) => e.contains(child.resource, ...types))) {
 				return true;
 			}
+
 			if (child.isDirectory && child.isDirectoryResolved) {
 				if (doesFileEventAffect(child, view, events, types)) {
 					return true;

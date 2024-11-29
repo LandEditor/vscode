@@ -40,10 +40,12 @@ export class ManageTrustedExtensionsForAccountAction extends Action2 {
 			f1: true,
 		});
 	}
+
 	override run(
 		accessor: ServicesAccessor,
 		options?: {
 			providerId: string;
+
 			accountLabel: string;
 		},
 	): Promise<void> {
@@ -56,6 +58,7 @@ export class ManageTrustedExtensionsForAccountAction extends Action2 {
 }
 interface TrustedExtensionsQuickPickItem extends IQuickPickItem {
 	extension: AllowedExtension;
+
 	lastUsed?: number;
 }
 class ManageTrustedExtensionsForAccountActionImpl {
@@ -77,6 +80,7 @@ class ManageTrustedExtensionsForAccountActionImpl {
 		@ICommandService
 		private readonly _commandService: ICommandService,
 	) {}
+
 	async run(options?: { providerId: string; accountLabel: string }) {
 		const { providerId, accountLabel } =
 			await this._resolveProviderAndAccountLabel(
@@ -87,11 +91,13 @@ class ManageTrustedExtensionsForAccountActionImpl {
 		if (!providerId || !accountLabel) {
 			return;
 		}
+
 		const items = await this._getItems(providerId, accountLabel);
 
 		if (!items.length) {
 			return;
 		}
+
 		const disposables = new DisposableStore();
 
 		const picker = this._createQuickPick(
@@ -99,13 +105,17 @@ class ManageTrustedExtensionsForAccountActionImpl {
 			providerId,
 			accountLabel,
 		);
+
 		picker.items = items;
+
 		picker.selectedItems = items.filter(
 			(i): i is TrustedExtensionsQuickPickItem =>
 				i.type !== "separator" && !!i.picked,
 		);
+
 		picker.show();
 	}
+
 	private async _resolveProviderAndAccountLabel(
 		providerId: string | undefined,
 		accountLabel: string | undefined,
@@ -113,7 +123,9 @@ class ManageTrustedExtensionsForAccountActionImpl {
 		if (!providerId || !accountLabel) {
 			const accounts = new Array<{
 				providerId: string;
+
 				providerLabel: string;
+
 				accountLabel: string;
 			}>();
 
@@ -129,6 +141,7 @@ class ManageTrustedExtensionsForAccountActionImpl {
 				for (const session of sessions) {
 					if (!uniqueAccountLabels.has(session.account.label)) {
 						uniqueAccountLabels.add(session.account.label);
+
 						accounts.push({
 							providerId: id,
 							providerLabel,
@@ -137,6 +150,7 @@ class ManageTrustedExtensionsForAccountActionImpl {
 					}
 				}
 			}
+
 			const pick = await this._quickInputService.pick(
 				accounts.map((account) => ({
 					providerId: account.providerId,
@@ -154,13 +168,16 @@ class ManageTrustedExtensionsForAccountActionImpl {
 
 			if (pick) {
 				providerId = pick.providerId;
+
 				accountLabel = pick.label;
 			} else {
 				return { providerId: undefined, accountLabel: undefined };
 			}
 		}
+
 		return { providerId, accountLabel };
 	}
+
 	private async _getItems(providerId: string, accountLabel: string) {
 		let allowedExtensions =
 			this._authenticationAccessService.readAllowedExtensions(
@@ -173,6 +190,7 @@ class ManageTrustedExtensionsForAccountActionImpl {
 				this._extensionService.getExtension(ext.id),
 			),
 		);
+
 		allowedExtensions = resolvedExtensions
 			.map((ext, i) => (ext ? allowedExtensions[i] : undefined))
 			.filter((ext) => !!ext);
@@ -210,9 +228,11 @@ class ManageTrustedExtensionsForAccountActionImpl {
 			} else {
 				// Update the extension to be allowed
 				allowedExtension.allowed = true;
+
 				allowedExtension.trusted = true;
 			}
 		}
+
 		if (!allowedExtensions.length) {
 			this._dialogService.info(
 				localize(
@@ -223,6 +243,7 @@ class ManageTrustedExtensionsForAccountActionImpl {
 
 			return [];
 		}
+
 		const usages = this._authenticationUsageService.readAccountUsages(
 			providerId,
 			accountLabel,
@@ -236,6 +257,7 @@ class ManageTrustedExtensionsForAccountActionImpl {
 			const usage = usages.find(
 				(usage) => extension.id === usage.extensionId,
 			);
+
 			extension.lastUsed = usage?.lastUsed;
 
 			if (extension.trusted) {
@@ -244,6 +266,7 @@ class ManageTrustedExtensionsForAccountActionImpl {
 				otherExtensions.push(extension);
 			}
 		}
+
 		const sortByLastUsed = (a: AllowedExtension, b: AllowedExtension) =>
 			(b.lastUsed || 0) - (a.lastUsed || 0);
 
@@ -260,6 +283,7 @@ class ManageTrustedExtensionsForAccountActionImpl {
 
 		return items;
 	}
+
 	private _toQuickPickItem(
 		extension: AllowedExtension,
 	): TrustedExtensionsQuickPickItem {
@@ -287,8 +311,10 @@ class ManageTrustedExtensionsForAccountActionImpl {
 				"trustedExtensionTooltip",
 				"This extension is trusted by Microsoft and\nalways has access to this account",
 			);
+
 			disabled = true;
 		}
+
 		return {
 			label: extension.name,
 			extension,
@@ -307,6 +333,7 @@ class ManageTrustedExtensionsForAccountActionImpl {
 			picked: extension.allowed === undefined || extension.allowed,
 		};
 	}
+
 	private _createQuickPick(
 		disposableStore: DisposableStore,
 		providerId: string,
@@ -317,20 +344,26 @@ class ManageTrustedExtensionsForAccountActionImpl {
 				{ useSeparators: true },
 			),
 		);
+
 		quickPick.canSelectMany = true;
+
 		quickPick.customButton = true;
+
 		quickPick.customLabel = localize(
 			"manageTrustedExtensions.cancel",
 			"Cancel",
 		);
+
 		quickPick.title = localize(
 			"manageTrustedExtensions",
 			"Manage Trusted Extensions",
 		);
+
 		quickPick.placeholder = localize(
 			"manageExtensions",
 			"Choose which extensions can access this account",
 		);
+
 		disposableStore.add(
 			quickPick.onDidAccept(() => {
 				const updatedAllowedList = quickPick.items
@@ -343,27 +376,33 @@ class ManageTrustedExtensionsForAccountActionImpl {
 				const allowedExtensionsSet = new Set(
 					quickPick.selectedItems.map((i) => i.extension),
 				);
+
 				updatedAllowedList.forEach((extension) => {
 					extension.allowed = allowedExtensionsSet.has(extension);
 				});
+
 				this._authenticationAccessService.updateAllowedExtensions(
 					providerId,
 					accountLabel,
 					updatedAllowedList,
 				);
+
 				quickPick.hide();
 			}),
 		);
+
 		disposableStore.add(
 			quickPick.onDidHide(() => {
 				disposableStore.dispose();
 			}),
 		);
+
 		disposableStore.add(
 			quickPick.onDidCustom(() => {
 				quickPick.hide();
 			}),
 		);
+
 		disposableStore.add(
 			quickPick.onDidTriggerItemButton((e) =>
 				this._commandService.executeCommand(

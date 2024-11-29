@@ -15,18 +15,28 @@ import {
 export interface ICommentThreadChangedEvent
 	extends CommentThreadChangedEvent<IRange> {
 	uniqueOwner: string;
+
 	owner: string;
+
 	ownerLabel: string;
 }
 export class CommentNode {
 	isRoot: boolean = false;
+
 	replies: CommentNode[] = [];
+
 	public readonly threadId: string;
+
 	public readonly range: IRange | undefined;
+
 	public readonly threadState: CommentThreadState | undefined;
+
 	public readonly threadRelevance: CommentThreadApplicability | undefined;
+
 	public readonly contextValue: string | undefined;
+
 	public readonly controllerHandle: number;
+
 	public readonly threadHandle: number;
 
 	constructor(
@@ -37,16 +47,24 @@ export class CommentNode {
 		public readonly thread: CommentThread,
 	) {
 		this.threadId = thread.threadId;
+
 		this.range = thread.range;
+
 		this.threadState = thread.state;
+
 		this.threadRelevance = thread.applicability;
+
 		this.contextValue = thread.contextValue;
+
 		this.controllerHandle = thread.controllerHandle;
+
 		this.threadHandle = thread.commentThreadHandle;
 	}
+
 	hasReply(): boolean {
 		return this.replies && this.replies.length !== 0;
 	}
+
 	private _lastUpdatedAt: string | undefined;
 
 	get lastUpdatedAt(): string {
@@ -62,16 +80,22 @@ export class CommentNode {
 					updatedAt = replyUpdatedAt;
 				}
 			}
+
 			this._lastUpdatedAt = updatedAt;
 		}
+
 		return this._lastUpdatedAt;
 	}
 }
 export class ResourceWithCommentThreads {
 	id: string;
+
 	uniqueOwner: string;
+
 	owner: string;
+
 	ownerLabel: string | undefined;
+
 	commentThreads: CommentNode[]; // The top level comments on the file. Replys are nested under each node.
 	resource: URI;
 
@@ -82,9 +106,13 @@ export class ResourceWithCommentThreads {
 		commentThreads: CommentThread[],
 	) {
 		this.uniqueOwner = uniqueOwner;
+
 		this.owner = owner;
+
 		this.id = resource.toString();
+
 		this.resource = resource;
+
 		this.commentThreads = commentThreads
 			.filter((thread) => thread.comments && thread.comments.length)
 			.map((thread) =>
@@ -96,6 +124,7 @@ export class ResourceWithCommentThreads {
 				),
 			);
 	}
+
 	public static createCommentNode(
 		uniqueOwner: string,
 		owner: string,
@@ -121,10 +150,12 @@ export class ResourceWithCommentThreads {
 				commentNodes.length,
 			);
 		}
+
 		commentNodes[0].isRoot = true;
 
 		return commentNodes[0];
 	}
+
 	private _lastUpdatedAt: string | undefined;
 
 	get lastUpdatedAt() {
@@ -134,6 +165,7 @@ export class ResourceWithCommentThreads {
 			if (!this.commentThreads.length) {
 				return updatedAt;
 			}
+
 			for (const thread of this.commentThreads) {
 				const threadUpdatedAt = thread.lastUpdatedAt;
 
@@ -141,8 +173,10 @@ export class ResourceWithCommentThreads {
 					updatedAt = threadUpdatedAt;
 				}
 			}
+
 			this._lastUpdatedAt = updatedAt;
 		}
+
 		return this._lastUpdatedAt;
 	}
 }

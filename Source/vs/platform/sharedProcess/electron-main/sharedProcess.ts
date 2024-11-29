@@ -27,9 +27,13 @@ import { ISharedProcessConfiguration } from "../node/sharedProcess.js";
 
 export class SharedProcess extends Disposable {
 	private readonly firstWindowConnectionBarrier = new Barrier();
+
 	private utilityProcess: UtilityProcess | undefined = undefined;
+
 	private utilityProcessLogListener: IDisposable | undefined = undefined;
+
 	private readonly _onDidCrash = this._register(new Emitter<void>());
+
 	readonly onDidCrash = this._onDidCrash.event;
 
 	constructor(
@@ -50,8 +54,10 @@ export class SharedProcess extends Disposable {
 		private readonly policyService: IPolicyService,
 	) {
 		super();
+
 		this.registerListeners();
 	}
+
 	private registerListeners(): void {
 		// Shared process channel connections from workbench windows
 		validatedIpcMain.on(
@@ -80,6 +86,7 @@ export class SharedProcess extends Disposable {
 			),
 		);
 	}
+
 	private async onWindowConnection(
 		e: IpcMainEvent,
 		nonce: string,
@@ -109,12 +116,17 @@ export class SharedProcess extends Disposable {
 		// send the port back to the requesting window
 		e.sender.postMessage(responseChannel, nonce, [port]);
 	}
+
 	private onWillShutdown(): void {
 		this.logService.trace("[SharedProcess] onWillShutdown");
+
 		this.utilityProcess?.postMessage(SharedProcessLifecycle.exit);
+
 		this.utilityProcess = undefined;
 	}
+
 	private _whenReady: Promise<void> | undefined = undefined;
+
 	whenReady(): Promise<void> {
 		if (!this._whenReady) {
 			this._whenReady = (async () => {
@@ -123,17 +135,24 @@ export class SharedProcess extends Disposable {
 				// Overall signal that the shared process was loaded and
 				// all services within have been created.
 				const whenReady = new DeferredPromise<void>();
+
 				this.utilityProcess?.once(SharedProcessLifecycle.initDone, () =>
 					whenReady.complete(),
 				);
+
 				await whenReady.p;
+
 				this.utilityProcessLogListener?.dispose();
+
 				this.logService.trace("[SharedProcess] Overall ready");
 			})();
 		}
+
 		return this._whenReady;
 	}
+
 	private _whenIpcReady: Promise<void> | undefined = undefined;
+
 	private get whenIpcReady() {
 		if (!this._whenIpcReady) {
 			this._whenIpcReady = (async () => {
@@ -143,15 +162,20 @@ export class SharedProcess extends Disposable {
 				this.createUtilityProcess();
 				// Wait for shared process indicating that IPC connections are accepted
 				const sharedProcessIpcReady = new DeferredPromise<void>();
+
 				this.utilityProcess?.once(SharedProcessLifecycle.ipcReady, () =>
 					sharedProcessIpcReady.complete(),
 				);
+
 				await sharedProcessIpcReady.p;
+
 				this.logService.trace("[SharedProcess] IPC ready");
 			})();
 		}
+
 		return this._whenIpcReady;
 	}
+
 	private createUtilityProcess(): void {
 		this.utilityProcess = this._register(
 			new UtilityProcess(
@@ -187,6 +211,7 @@ export class SharedProcess extends Disposable {
 				execArgv.push(`--inspect=${inspectParams.port}`);
 			}
 		}
+
 		this.utilityProcess.start({
 			type: "shared-process",
 			entryPoint:
@@ -195,10 +220,12 @@ export class SharedProcess extends Disposable {
 			respondToAuthRequestsFromMainProcess: true,
 			execArgv,
 		});
+
 		this._register(
 			this.utilityProcess.onCrash(() => this._onDidCrash.fire()),
 		);
 	}
+
 	private createSharedProcessConfiguration(): ISharedProcessConfiguration {
 		return {
 			machineId: this.machineId,
@@ -215,6 +242,7 @@ export class SharedProcess extends Disposable {
 			policiesData: this.policyService.serialize(),
 		};
 	}
+
 	async connect(payload?: unknown): Promise<MessagePortMain> {
 		// Wait for shared process being ready to accept connection
 		await this.whenIpcReady;

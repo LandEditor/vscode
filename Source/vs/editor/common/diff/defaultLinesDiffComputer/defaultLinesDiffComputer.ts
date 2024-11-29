@@ -43,7 +43,9 @@ import { LinesSliceCharSequence } from "./linesSliceCharSequence.js";
 export class DefaultLinesDiffComputer implements ILinesDiffComputer {
 	private readonly dynamicProgrammingDiffing =
 		new DynamicProgrammingDiffing();
+
 	private readonly myersDiffingAlgorithm = new MyersDiffAlgorithm();
+
 	computeDiff(
 		originalLines: string[],
 		modifiedLines: string[],
@@ -55,6 +57,7 @@ export class DefaultLinesDiffComputer implements ILinesDiffComputer {
 		) {
 			return new LinesDiff([], [], false);
 		}
+
 		if (
 			(originalLines.length === 1 && originalLines[0].length === 0) ||
 			(modifiedLines.length === 1 && modifiedLines[0].length === 0)
@@ -88,6 +91,7 @@ export class DefaultLinesDiffComputer implements ILinesDiffComputer {
 				false,
 			);
 		}
+
 		const timeout =
 			options.maxComputationTimeMs === 0
 				? InfiniteTimeout.instance
@@ -102,10 +106,13 @@ export class DefaultLinesDiffComputer implements ILinesDiffComputer {
 
 			if (hash === undefined) {
 				hash = perfectHashes.size;
+
 				perfectHashes.set(text, hash);
 			}
+
 			return hash;
 		}
+
 		const originalLinesHashes = originalLines.map((l) =>
 			getOrCreateHash(l.trim()),
 		);
@@ -134,6 +141,7 @@ export class DefaultLinesDiffComputer implements ILinesDiffComputer {
 							: 0.99,
 				);
 			}
+
 			return this.myersDiffingAlgorithm.compute(
 				sequence1,
 				sequence2,
@@ -144,11 +152,13 @@ export class DefaultLinesDiffComputer implements ILinesDiffComputer {
 		let lineAlignments = lineAlignmentResult.diffs;
 
 		let hitTimeout = lineAlignmentResult.hitTimeout;
+
 		lineAlignments = optimizeSequenceDiffs(
 			sequence1,
 			sequence2,
 			lineAlignments,
 		);
+
 		lineAlignments = removeVeryShortMatchingLinesBetweenDiffs(
 			sequence1,
 			sequence2,
@@ -161,6 +171,7 @@ export class DefaultLinesDiffComputer implements ILinesDiffComputer {
 			if (!considerWhitespaceChanges) {
 				return;
 			}
+
 			for (let i = 0; i < equalLinesCount; i++) {
 				const seq1Offset = seq1LastStart + i;
 
@@ -182,6 +193,7 @@ export class DefaultLinesDiffComputer implements ILinesDiffComputer {
 					for (const a of characterDiffs.mappings) {
 						alignments.push(a);
 					}
+
 					if (characterDiffs.hitTimeout) {
 						hitTimeout = true;
 					}
@@ -201,8 +213,11 @@ export class DefaultLinesDiffComputer implements ILinesDiffComputer {
 			);
 
 			const equalLinesCount = diff.seq1Range.start - seq1LastStart;
+
 			scanForWhitespaceChanges(equalLinesCount);
+
 			seq1LastStart = diff.seq1Range.endExclusive;
+
 			seq2LastStart = diff.seq2Range.endExclusive;
 
 			const characterDiffs = this.refineDiff(
@@ -216,10 +231,12 @@ export class DefaultLinesDiffComputer implements ILinesDiffComputer {
 			if (characterDiffs.hitTimeout) {
 				hitTimeout = true;
 			}
+
 			for (const a of characterDiffs.mappings) {
 				alignments.push(a);
 			}
 		}
+
 		scanForWhitespaceChanges(originalLines.length - seq1LastStart);
 
 		const changes = lineRangeMappingFromRangeMappings(
@@ -247,13 +264,16 @@ export class DefaultLinesDiffComputer implements ILinesDiffComputer {
 				if (pos.lineNumber < 1 || pos.lineNumber > lines.length) {
 					return false;
 				}
+
 				const line = lines[pos.lineNumber - 1];
 
 				if (pos.column < 1 || pos.column > line.length + 1) {
 					return false;
 				}
+
 				return true;
 			}
+
 			function validateRange(range: LineRange, lines: string[]): boolean {
 				if (
 					range.startLineNumber < 1 ||
@@ -261,18 +281,22 @@ export class DefaultLinesDiffComputer implements ILinesDiffComputer {
 				) {
 					return false;
 				}
+
 				if (
 					range.endLineNumberExclusive < 1 ||
 					range.endLineNumberExclusive > lines.length + 1
 				) {
 					return false;
 				}
+
 				return true;
 			}
+
 			for (const c of changes) {
 				if (!c.innerChanges) {
 					return false;
 				}
+
 				for (const ic of c.innerChanges) {
 					const valid =
 						validatePosition(
@@ -296,6 +320,7 @@ export class DefaultLinesDiffComputer implements ILinesDiffComputer {
 						return false;
 					}
 				}
+
 				if (
 					!validateRange(c.modified, modifiedLines) ||
 					!validateRange(c.original, originalLines)
@@ -303,11 +328,13 @@ export class DefaultLinesDiffComputer implements ILinesDiffComputer {
 					return false;
 				}
 			}
+
 			return true;
 		});
 
 		return new LinesDiff(changes, moves, hitTimeout);
 	}
+
 	private computeMoves(
 		changes: DetailedLineRangeMapping[],
 		originalLines: string[],
@@ -350,6 +377,7 @@ export class DefaultLinesDiffComputer implements ILinesDiffComputer {
 
 		return movesWithDiffs;
 	}
+
 	private refineDiff(
 		originalLines: string[],
 		modifiedLines: string[],
@@ -358,6 +386,7 @@ export class DefaultLinesDiffComputer implements ILinesDiffComputer {
 		considerWhitespaceChanges: boolean,
 	): {
 		mappings: RangeMapping[];
+
 		hitTimeout: boolean;
 	} {
 		const lineRangeMapping = toLineRangeMapping(diff);
@@ -395,21 +424,25 @@ export class DefaultLinesDiffComputer implements ILinesDiffComputer {
 		if (check) {
 			SequenceDiff.assertSorted(diffs);
 		}
+
 		diffs = optimizeSequenceDiffs(slice1, slice2, diffs);
 
 		if (check) {
 			SequenceDiff.assertSorted(diffs);
 		}
+
 		diffs = extendDiffsToEntireWordIfAppropriate(slice1, slice2, diffs);
 
 		if (check) {
 			SequenceDiff.assertSorted(diffs);
 		}
+
 		diffs = removeShortMatches(slice1, slice2, diffs);
 
 		if (check) {
 			SequenceDiff.assertSorted(diffs);
 		}
+
 		diffs = removeVeryShortMatchingTextBetweenLongDiffs(
 			slice1,
 			slice2,
@@ -419,6 +452,7 @@ export class DefaultLinesDiffComputer implements ILinesDiffComputer {
 		if (check) {
 			SequenceDiff.assertSorted(diffs);
 		}
+
 		const result = diffs.map(
 			(d) =>
 				new RangeMapping(

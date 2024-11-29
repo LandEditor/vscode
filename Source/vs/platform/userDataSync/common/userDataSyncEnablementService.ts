@@ -23,10 +23,14 @@ import {
 
 type SyncEnablementClassification = {
 	owner: "sandy081";
+
 	comment: "Reporting when Settings Sync is turned on or off";
+
 	enabled?: {
 		classification: "SystemMetaData";
+
 		purpose: "FeatureInsight";
+
 		comment: "Flag indicating if settings sync is enabled or not";
 	};
 };
@@ -38,12 +42,16 @@ export class UserDataSyncEnablementService
 	implements IUserDataSyncEnablementService
 {
 	_serviceBrand: any;
+
 	private _onDidChangeEnablement = new Emitter<boolean>();
+
 	readonly onDidChangeEnablement: Event<boolean> =
 		this._onDidChangeEnablement.event;
+
 	private _onDidChangeResourceEnablement = new Emitter<
 		[SyncResource, boolean]
 	>();
+
 	readonly onDidChangeResourceEnablement: Event<[SyncResource, boolean]> =
 		this._onDidChangeResourceEnablement.event;
 
@@ -58,6 +66,7 @@ export class UserDataSyncEnablementService
 		private readonly userDataSyncStoreManagementService: IUserDataSyncStoreManagementService,
 	) {
 		super();
+
 		this._register(
 			storageService.onDidChangeValue(
 				StorageScope.APPLICATION,
@@ -66,6 +75,7 @@ export class UserDataSyncEnablementService
 			)((e) => this.onDidStorageChange(e)),
 		);
 	}
+
 	isEnabled(): boolean {
 		switch (this.environmentService.sync) {
 			case "on":
@@ -74,28 +84,33 @@ export class UserDataSyncEnablementService
 			case "off":
 				return false;
 		}
+
 		return this.storageService.getBoolean(
 			enablementKey,
 			StorageScope.APPLICATION,
 			false,
 		);
 	}
+
 	canToggleEnablement(): boolean {
 		return (
 			this.userDataSyncStoreManagementService.userDataSyncStore !==
 				undefined && this.environmentService.sync === undefined
 		);
 	}
+
 	setEnablement(enabled: boolean): void {
 		if (enabled && !this.canToggleEnablement()) {
 			return;
 		}
+
 		this.telemetryService.publicLog2<
 			{
 				enabled: boolean;
 			},
 			SyncEnablementClassification
 		>(enablementKey, { enabled });
+
 		this.storageService.store(
 			enablementKey,
 			enabled,
@@ -103,6 +118,7 @@ export class UserDataSyncEnablementService
 			StorageTarget.MACHINE,
 		);
 	}
+
 	isResourceEnabled(resource: SyncResource): boolean {
 		return this.storageService.getBoolean(
 			getEnablementKey(resource),
@@ -110,15 +126,19 @@ export class UserDataSyncEnablementService
 			true,
 		);
 	}
+
 	setResourceEnablement(resource: SyncResource, enabled: boolean): void {
 		if (this.isResourceEnabled(resource) !== enabled) {
 			const resourceEnablementKey = getEnablementKey(resource);
+
 			this.storeResourceEnablement(resourceEnablementKey, enabled);
 		}
 	}
+
 	getResourceSyncStateVersion(resource: SyncResource): string | undefined {
 		return undefined;
 	}
+
 	private storeResourceEnablement(
 		resourceEnablementKey: string,
 		enabled: boolean,
@@ -132,6 +152,7 @@ export class UserDataSyncEnablementService
 				: StorageTarget.MACHINE,
 		);
 	}
+
 	private onDidStorageChange(
 		storageChangeEvent: IApplicationStorageValueChangeEvent,
 	): void {
@@ -140,6 +161,7 @@ export class UserDataSyncEnablementService
 
 			return;
 		}
+
 		const resourceKey = ALL_SYNC_RESOURCES.filter(
 			(resourceKey) =>
 				getEnablementKey(resourceKey) === storageChangeEvent.key,

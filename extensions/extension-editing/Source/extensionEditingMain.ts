@@ -12,6 +12,7 @@ export function activate(context: vscode.ExtensionContext) {
 	context.subscriptions.push(registerPackageDocumentCompletions());
 	//package.json code actions for lint warnings
 	context.subscriptions.push(registerCodeActionsProvider());
+
 	context.subscriptions.push(new ExtensionLinter());
 }
 function registerPackageDocumentCompletions(): vscode.Disposable {

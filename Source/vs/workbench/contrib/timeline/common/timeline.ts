@@ -31,19 +31,33 @@ export interface TimelineItem {
 	 * The identifier of the timeline provider this timeline item is from.
 	 */
 	source: string;
+
 	id?: string;
+
 	label: string;
+
 	description?: string;
+
 	tooltip?: string | IMarkdownString | undefined;
+
 	timestamp: number;
+
 	accessibilityInformation?: IAccessibilityInformation;
+
 	icon?: URI;
+
 	iconDark?: URI;
+
 	themeIcon?: ThemeIcon;
+
 	command?: Command;
+
 	contextValue?: string;
+
 	relativeTime?: string;
+
 	relativeTimeFullWord?: string;
+
 	hideRelativeTime?: boolean;
 }
 export interface TimelineChangeEvent {
@@ -63,13 +77,17 @@ export interface TimelineChangeEvent {
 }
 export interface TimelineOptions {
 	cursor?: string;
+
 	limit?:
 		| number
 		| {
 				timestamp: number;
+
 				id?: string;
 		  };
+
 	resetCache?: boolean;
+
 	cacheResults?: boolean;
 }
 export interface Timeline {
@@ -77,7 +95,9 @@ export interface Timeline {
 	 * The identifier of the timeline provider this timeline is from.
 	 */
 	source: string;
+
 	items: TimelineItem[];
+
 	paging?: {
 		cursor: string | undefined;
 	};
@@ -86,6 +106,7 @@ export interface TimelineProvider
 	extends TimelineProviderDescriptor,
 		IDisposable {
 	onDidChange?: Event<TimelineChangeEvent>;
+
 	provideTimeline(
 		uri: URI,
 		options: TimelineOptions,
@@ -94,6 +115,7 @@ export interface TimelineProvider
 }
 export interface TimelineSource {
 	id: string;
+
 	label: string;
 }
 export interface TimelineProviderDescriptor {
@@ -112,21 +134,31 @@ export interface TimelineProviderDescriptor {
 }
 export interface TimelineProvidersChangeEvent {
 	readonly added?: string[];
+
 	readonly removed?: string[];
 }
 export interface TimelineRequest {
 	readonly result: Promise<Timeline | undefined>;
+
 	readonly options: TimelineOptions;
+
 	readonly source: string;
+
 	readonly tokenSource: CancellationTokenSource;
+
 	readonly uri: URI;
 }
 export interface ITimelineService {
 	readonly _serviceBrand: undefined;
+
 	onDidChangeProviders: Event<TimelineProvidersChangeEvent>;
+
 	onDidChangeTimeline: Event<TimelineChangeEvent>;
+
 	onDidChangeUri: Event<URI>;
+
 	registerTimelineProvider(provider: TimelineProvider): IDisposable;
+
 	unregisterTimelineProvider(id: string): void;
 
 	getSources(): TimelineSource[];

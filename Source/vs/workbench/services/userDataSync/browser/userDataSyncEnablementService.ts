@@ -20,6 +20,7 @@ export class UserDataSyncEnablementService
 	protected get workbenchEnvironmentService(): IBrowserWorkbenchEnvironmentService {
 		return <IBrowserWorkbenchEnvironmentService>this.environmentService;
 	}
+
 	override getResourceSyncStateVersion(
 		resource: SyncResource,
 	): string | undefined {

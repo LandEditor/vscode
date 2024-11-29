@@ -119,12 +119,17 @@ export interface IStorageChangeEvent {
 }
 abstract class BaseStorageMain extends Disposable implements IStorageMain {
 	private static readonly LOG_SLOW_CLOSE_THRESHOLD = 2000;
+
 	protected readonly _onDidChangeStorage = this._register(
 		new Emitter<IStorageChangeEvent>(),
 	);
+
 	readonly onDidChangeStorage = this._onDidChangeStorage.event;
+
 	private readonly _onDidCloseStorage = this._register(new Emitter<void>());
+
 	readonly onDidCloseStorage = this._onDidCloseStorage.event;
+
 	private _storage = this._register(
 		new Storage(new InMemoryStorageDatabase(), {
 			hint: StorageHint.STORAGE_IN_MEMORY,
@@ -133,10 +138,15 @@ abstract class BaseStorageMain extends Disposable implements IStorageMain {
 	get storage(): IStorage {
 		return this._storage;
 	}
+
 	abstract get path(): string | undefined;
+
 	private initializePromise: Promise<void> | undefined = undefined;
+
 	private readonly whenInitPromise = new DeferredPromise<void>();
+
 	readonly whenInit = this.whenInitPromise.p;
+
 	private state = StorageState.None;
 
 	constructor(
@@ -145,15 +155,18 @@ abstract class BaseStorageMain extends Disposable implements IStorageMain {
 	) {
 		super();
 	}
+
 	isInMemory(): boolean {
 		return this._storage.isInMemory();
 	}
+
 	init(): Promise<void> {
 		if (!this.initializePromise) {
 			this.initializePromise = (async () => {
 				if (this.state !== StorageState.None) {
 					return; // either closed or already initialized
 				}
+
 				try {
 					// Create storage via subclasses
 					const storage = this._register(await this.doCreate());
@@ -161,6 +174,7 @@ abstract class BaseStorageMain extends Disposable implements IStorageMain {
 					// once as soon as possible without awaiting
 					// the init call.
 					this._storage.dispose();
+
 					this._storage = storage;
 					// Re-emit storage changes via event
 					this._register(
@@ -190,8 +204,10 @@ abstract class BaseStorageMain extends Disposable implements IStorageMain {
 				}
 			})();
 		}
+
 		return this.initializePromise;
 	}
+
 	protected createLoggingOptions(): ISQLiteStorageDatabaseLoggingOptions {
 		return {
 			logTrace:
@@ -201,14 +217,17 @@ abstract class BaseStorageMain extends Disposable implements IStorageMain {
 			logError: (error) => this.logService.error(error),
 		};
 	}
+
 	protected doInit(storage: IStorage): Promise<void> {
 		return storage.init();
 	}
+
 	protected abstract doCreate(): Promise<Storage>;
 
 	get items(): Map<string, string> {
 		return this._storage.items;
 	}
+
 	get(key: string, fallbackValue: string): string;
 
 	get(key: string, fallbackValue?: string): string | undefined;
@@ -216,22 +235,28 @@ abstract class BaseStorageMain extends Disposable implements IStorageMain {
 	get(key: string, fallbackValue?: string): string | undefined {
 		return this._storage.get(key, fallbackValue);
 	}
+
 	set(
 		key: string,
 		value: string | boolean | number | undefined | null,
 	): Promise<void> {
 		return this._storage.set(key, value);
 	}
+
 	delete(key: string): Promise<void> {
 		return this._storage.delete(key);
 	}
+
 	optimize(): Promise<void> {
 		return this._storage.optimize();
 	}
+
 	async close(): Promise<void> {
 		// Measure how long it takes to close storage
 		const watch = new StopWatch(false);
+
 		await this.doClose();
+
 		watch.stop();
 		// If close() is taking a long time, there is
 		// a chance that the underlying DB is large
@@ -243,10 +268,12 @@ abstract class BaseStorageMain extends Disposable implements IStorageMain {
 		// Signal as event
 		this._onDidCloseStorage.fire();
 	}
+
 	private async logSlowClose(watch: StopWatch) {
 		if (!this.path) {
 			return;
 		}
+
 		try {
 			const largestEntries = top(
 				Array.from(this._storage.items.entries()).map(
@@ -260,6 +287,7 @@ abstract class BaseStorageMain extends Disposable implements IStorageMain {
 
 			const dbSize = (await this.fileService.stat(URI.file(this.path)))
 				.size;
+
 			this.logService.warn(
 				`[storage main] detected slow close() operation: Time: ${watch.elapsed()}ms, DB size: ${dbSize}b, Large Keys: ${largestEntries}`,
 			);
@@ -270,6 +298,7 @@ abstract class BaseStorageMain extends Disposable implements IStorageMain {
 			);
 		}
 	}
+
 	private async doClose(): Promise<void> {
 		// Ensure we are not accidentally leaving
 		// a pending initialized storage behind in
@@ -295,8 +324,10 @@ class BaseProfileAwareStorageMain extends BaseStorageMain {
 				BaseProfileAwareStorageMain.STORAGE_NAME,
 			);
 		}
+
 		return undefined;
 	}
+
 	constructor(
 		private readonly profile: IUserDataProfile,
 		private readonly options: IStorageMainOptions,
@@ -305,6 +336,7 @@ class BaseProfileAwareStorageMain extends BaseStorageMain {
 	) {
 		super(logService, fileService);
 	}
+
 	protected async doCreate(): Promise<Storage> {
 		return new Storage(
 			new SQLiteStorageDatabase(
@@ -341,11 +373,13 @@ export class ApplicationStorageMain extends BaseProfileAwareStorageMain {
 			fileService,
 		);
 	}
+
 	protected override async doInit(storage: IStorage): Promise<void> {
 		await super.doInit(storage);
 		// Apply telemetry values as part of the application storage initialization
 		this.updateTelemetryState(storage);
 	}
+
 	private updateTelemetryState(storage: IStorage): void {
 		// First session date (once)
 		const firstSessionDate = storage.get(
@@ -365,15 +399,18 @@ export class ApplicationStorageMain extends BaseProfileAwareStorageMain {
 		);
 
 		const currentSessionDate = new Date().toUTCString();
+
 		storage.set(
 			lastSessionDateStorageKey,
 			typeof lastSessionDate === "undefined" ? null : lastSessionDate,
 		);
+
 		storage.set(currentSessionDateStorageKey, currentSessionDate);
 	}
 }
 export class WorkspaceStorageMain extends BaseStorageMain {
 	private static readonly WORKSPACE_STORAGE_NAME = "state.vscdb";
+
 	private static readonly WORKSPACE_META_NAME = "workspace.json";
 
 	get path(): string | undefined {
@@ -386,8 +423,10 @@ export class WorkspaceStorageMain extends BaseStorageMain {
 				WorkspaceStorageMain.WORKSPACE_STORAGE_NAME,
 			);
 		}
+
 		return undefined;
 	}
+
 	constructor(
 		private workspace: IAnyWorkspaceIdentifier,
 		private readonly options: IStorageMainOptions,
@@ -397,6 +436,7 @@ export class WorkspaceStorageMain extends BaseStorageMain {
 	) {
 		super(logService, fileService);
 	}
+
 	protected async doCreate(): Promise<Storage> {
 		const { storageFilePath, wasCreated } =
 			await this.prepareWorkspaceStorageFolder();
@@ -414,8 +454,10 @@ export class WorkspaceStorageMain extends BaseStorageMain {
 			},
 		);
 	}
+
 	private async prepareWorkspaceStorageFolder(): Promise<{
 		storageFilePath: string;
+
 		wasCreated: boolean;
 	}> {
 		// Return early if using inMemory storage
@@ -458,6 +500,7 @@ export class WorkspaceStorageMain extends BaseStorageMain {
 			wasCreated: true,
 		};
 	}
+
 	private async ensureWorkspaceStorageFolderMeta(
 		workspaceStorageFolderPath: string,
 	): Promise<void> {
@@ -468,6 +511,7 @@ export class WorkspaceStorageMain extends BaseStorageMain {
 		} else if (isWorkspaceIdentifier(this.workspace)) {
 			meta = { workspace: this.workspace.configPath.toString() };
 		}
+
 		if (meta) {
 			try {
 				const workspaceStorageMetaPath = join(
@@ -497,6 +541,7 @@ export class InMemoryStorageMain extends BaseStorageMain {
 	get path(): string | undefined {
 		return undefined; // in-memory has no path
 	}
+
 	protected async doCreate(): Promise<Storage> {
 		return new Storage(new InMemoryStorageDatabase(), {
 			hint: StorageHint.STORAGE_IN_MEMORY,

@@ -87,16 +87,20 @@ class TerminalSuggestContribution
 
 	private readonly _addon: MutableDisposable<SuggestAddon> =
 		new MutableDisposable();
+
 	private readonly _pwshAddon: MutableDisposable<PwshCompletionProviderAddon> =
 		new MutableDisposable();
+
 	private _terminalSuggestWidgetContextKeys: IReadableSet<string> = new Set(
 		TerminalContextKeys.suggestWidgetVisible.key,
 	);
+
 	private _terminalSuggestWidgetVisibleContextKey: IContextKey<boolean>;
 
 	get addon(): SuggestAddon | undefined {
 		return this._addon.value;
 	}
+
 	get pwshAddon(): PwshCompletionProviderAddon | undefined {
 		return this._pwshAddon.value;
 	}
@@ -113,12 +117,15 @@ class TerminalSuggestContribution
 		private readonly _terminalCompletionService: ITerminalCompletionService,
 	) {
 		super();
+
 		this.add(
 			toDisposable(() => {
 				this._addon?.dispose();
+
 				this._pwshAddon?.dispose();
 			}),
 		);
+
 		this._terminalSuggestWidgetVisibleContextKey =
 			TerminalContextKeys.suggestWidgetVisible.bindTo(
 				this._contextKeyService,
@@ -136,6 +143,7 @@ class TerminalSuggestContribution
 		if (!enabled) {
 			return;
 		}
+
 		this.add(
 			Event.runAndSubscribe(
 				this._ctx.instance.onDidChangeShellType,
@@ -144,6 +152,7 @@ class TerminalSuggestContribution
 				},
 			),
 		);
+
 		this.add(
 			this._contextKeyService.onDidChangeContext((e) => {
 				if (e.affectsSome(this._terminalSuggestWidgetContextKeys)) {
@@ -151,6 +160,7 @@ class TerminalSuggestContribution
 				}
 			}),
 		);
+
 		this.add(
 			this._configurationService.onDidChangeConfiguration((e) => {
 				if (
@@ -168,20 +178,26 @@ class TerminalSuggestContribution
 		if (this._ctx.instance.shellType !== GeneralShellType.PowerShell) {
 			return;
 		}
+
 		const pwshCompletionProviderAddon = (this._pwshAddon.value =
 			this._instantiationService.createInstance(
 				PwshCompletionProviderAddon,
 				undefined,
 				this._ctx.instance.capabilities,
 			));
+
 		xterm.loadAddon(pwshCompletionProviderAddon);
+
 		this.add(pwshCompletionProviderAddon);
+
 		this.add(
 			pwshCompletionProviderAddon.onDidRequestSendText((text) => {
 				this._ctx.instance.focus();
+
 				this._ctx.instance.sendText(text, false);
 			}),
 		);
+
 		this.add(
 			this._terminalCompletionService.registerTerminalCompletionProvider(
 				"builtinPwsh",
@@ -201,14 +217,17 @@ class TerminalSuggestContribution
 				this.add(
 					pwshCompletionProviderAddon.onDidRequestSendText(() => {
 						barrier = new AutoOpenBarrier(2000);
+
 						this._ctx.instance.pauseInputEvents(barrier);
 					}),
 				);
 			}
+
 			if (this._pwshAddon.value) {
 				this.add(
 					this._pwshAddon.value.onDidReceiveCompletions(() => {
 						barrier?.open();
+
 						barrier = undefined;
 					}),
 				);
@@ -226,10 +245,12 @@ class TerminalSuggestContribution
 
 		if (sendingKeybindingsToShell || !this._ctx.instance.shellType) {
 			this._addon.clear();
+
 			this._pwshAddon.clear();
 
 			return;
 		}
+
 		if (this._terminalSuggestWidgetVisibleContextKey) {
 			const addon = (this._addon.value =
 				this._instantiationService.createInstance(
@@ -238,7 +259,9 @@ class TerminalSuggestContribution
 					this._ctx.instance.capabilities,
 					this._terminalSuggestWidgetVisibleContextKey,
 				));
+
 			xterm.loadAddon(addon);
+
 			this._loadPwshCompletionAddon(xterm);
 
 			if (this._ctx.instance.target === TerminalLocation.Editor) {
@@ -248,13 +271,17 @@ class TerminalSuggestContribution
 					dom.findParentWithClass(xterm.element!, "panel")!,
 				);
 			}
+
 			addon.setScreen(xterm.element!.querySelector(".xterm-screen")!);
+
 			this.add(
 				this._ctx.instance.onDidBlur(() => addon.hideSuggestWidget()),
 			);
+
 			this.add(
 				addon.onAcceptedCompletion(async (text) => {
 					this._ctx.instance.focus();
+
 					this._ctx.instance.sendText(text, false);
 				}),
 			);
@@ -262,9 +289,11 @@ class TerminalSuggestContribution
 			const clipboardContrib = TerminalClipboardContribution.get(
 				this._ctx.instance,
 			)!;
+
 			this.add(
 				clipboardContrib.onWillPaste(() => (addon.isPasting = true)),
 			);
+
 			this.add(
 				clipboardContrib.onDidPaste(() => {
 					// Delay this slightly as synchronizing the prompt input is debounced
@@ -274,9 +303,11 @@ class TerminalSuggestContribution
 
 			if (!isWindows) {
 				let barrier: AutoOpenBarrier | undefined;
+
 				this.add(
 					addon.onDidReceiveCompletions(() => {
 						barrier?.open();
+
 						barrier = undefined;
 					}),
 				);

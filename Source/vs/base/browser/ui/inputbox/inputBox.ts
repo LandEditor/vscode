@@ -39,31 +39,53 @@ const $ = dom.$;
 
 export interface IInputOptions {
 	readonly placeholder?: string;
+
 	readonly showPlaceholderOnFocus?: boolean;
+
 	readonly tooltip?: string;
+
 	readonly ariaLabel?: string;
+
 	readonly type?: string;
+
 	readonly validationOptions?: IInputValidationOptions;
+
 	readonly flexibleHeight?: boolean;
+
 	readonly flexibleWidth?: boolean;
+
 	readonly flexibleMaxHeight?: number;
+
 	readonly actions?: ReadonlyArray<IAction>;
+
 	readonly inputBoxStyles: IInputBoxStyles;
+
 	readonly history?: IHistory<string>;
 }
 
 export interface IInputBoxStyles {
 	readonly inputBackground: string | undefined;
+
 	readonly inputForeground: string | undefined;
+
 	readonly inputBorder: string | undefined;
+
 	readonly inputValidationInfoBorder: string | undefined;
+
 	readonly inputValidationInfoBackground: string | undefined;
+
 	readonly inputValidationInfoForeground: string | undefined;
+
 	readonly inputValidationWarningBorder: string | undefined;
+
 	readonly inputValidationWarningBackground: string | undefined;
+
 	readonly inputValidationWarningForeground: string | undefined;
+
 	readonly inputValidationErrorBorder: string | undefined;
+
 	readonly inputValidationErrorBackground: string | undefined;
+
 	readonly inputValidationErrorForeground: string | undefined;
 }
 
@@ -73,6 +95,7 @@ export interface IInputValidator {
 
 export interface IMessage {
 	readonly content?: string;
+
 	readonly formatContent?: boolean; // defaults to false
 	readonly type?: MessageType;
 }
@@ -89,6 +112,7 @@ export const enum MessageType {
 
 export interface IRange {
 	start: number;
+
 	end: number;
 }
 
@@ -109,30 +133,47 @@ export const unthemedInboxStyles: IInputBoxStyles = {
 
 export class InputBox extends Widget {
 	private contextViewProvider?: IContextViewProvider;
+
 	element: HTMLElement;
+
 	protected input: HTMLInputElement;
+
 	private actionbar?: ActionBar;
+
 	private readonly options: IInputOptions;
+
 	private message: IMessage | null;
+
 	protected placeholder: string;
+
 	private tooltip: string;
+
 	private ariaLabel: string;
+
 	private validation?: IInputValidator;
+
 	private state: "idle" | "open" | "closed" = "idle";
 
 	private mirror: HTMLElement | undefined;
+
 	private cachedHeight: number | undefined;
+
 	private cachedContentHeight: number | undefined;
+
 	private maxHeight: number = Number.POSITIVE_INFINITY;
+
 	private scrollableElement: ScrollableElement | undefined;
+
 	private readonly hover: MutableDisposable<IDisposable> = this._register(
 		new MutableDisposable(),
 	);
 
 	private _onDidChange = this._register(new Emitter<string>());
+
 	public readonly onDidChange: Event<string> = this._onDidChange.event;
 
 	private _onDidHeightChange = this._register(new Emitter<number>());
+
 	public readonly onDidHeightChange: Event<number> =
 		this._onDidHeightChange.event;
 
@@ -144,11 +185,15 @@ export class InputBox extends Widget {
 		super();
 
 		this.contextViewProvider = contextViewProvider;
+
 		this.options = options;
 
 		this.message = null;
+
 		this.placeholder = this.options.placeholder || "";
+
 		this.tooltip = this.options.tooltip ?? (this.placeholder || "");
+
 		this.ariaLabel = this.options.ariaLabel || "";
 
 		if (this.options.validationOptions) {
@@ -160,14 +205,19 @@ export class InputBox extends Widget {
 		const tagName = this.options.flexibleHeight ? "textarea" : "input";
 
 		const wrapper = dom.append(this.element, $(".ibwrapper"));
+
 		this.input = dom.append(wrapper, $(tagName + ".input.empty"));
+
 		this.input.setAttribute("autocorrect", "off");
+
 		this.input.setAttribute("autocapitalize", "off");
+
 		this.input.setAttribute("spellcheck", "false");
 
 		this.onfocus(this.input, () =>
 			this.element.classList.add("synthetic-focus"),
 		);
+
 		this.onblur(this.input, () =>
 			this.element.classList.remove("synthetic-focus"),
 		);
@@ -179,6 +229,7 @@ export class InputBox extends Widget {
 					: Number.POSITIVE_INFINITY;
 
 			this.mirror = dom.append(wrapper, $("div.mirror"));
+
 			this.mirror.innerText = "\u00a0";
 
 			this.scrollableElement = new ScrollableElement(this.element, {
@@ -187,11 +238,14 @@ export class InputBox extends Widget {
 
 			if (this.options.flexibleWidth) {
 				this.input.setAttribute("wrap", "off");
+
 				this.mirror.style.whiteSpace = "pre";
+
 				this.mirror.style.wordWrap = "initial";
 			}
 
 			dom.append(container, this.scrollableElement.getDomNode());
+
 			this._register(this.scrollableElement);
 
 			// from ScrollableElement to DOM
@@ -218,11 +272,13 @@ export class InputBox extends Widget {
 			this._register(
 				onAnchoredSelectionChange(this.updateScrollDimensions, this),
 			);
+
 			this._register(
 				this.onDidHeightChange(this.updateScrollDimensions, this),
 			);
 		} else {
 			this.input.type = this.options.type || "text";
+
 			this.input.setAttribute("wrap", "off");
 		}
 
@@ -239,7 +295,9 @@ export class InputBox extends Widget {
 		}
 
 		this.oninput(this.input, () => this.onValueChange());
+
 		this.onblur(this.input, () => this.onBlur());
+
 		this.onfocus(this.input, () => this.onFocus());
 
 		this._register(this.ignoreGesture(this.input));
@@ -249,6 +307,7 @@ export class InputBox extends Widget {
 		// Support actions
 		if (this.options.actions) {
 			this.actionbar = this._register(new ActionBar(this.element));
+
 			this.actionbar.push(this.options.actions, {
 				icon: true,
 				label: false,
@@ -276,6 +335,7 @@ export class InputBox extends Widget {
 
 	public setPlaceHolder(placeHolder: string): void {
 		this.placeholder = placeHolder;
+
 		this.input.setAttribute("placeholder", placeHolder);
 	}
 
@@ -326,6 +386,7 @@ export class InputBox extends Widget {
 	public set value(newValue: string) {
 		if (this.input.value !== newValue) {
 			this.input.value = newValue;
+
 			this.onValueChange();
 		}
 	}
@@ -381,6 +442,7 @@ export class InputBox extends Widget {
 		if (selectionStart === null) {
 			return null;
 		}
+
 		const selectionEnd = this.input.selectionEnd ?? selectionStart;
 
 		return {
@@ -395,7 +457,9 @@ export class InputBox extends Widget {
 
 	public disable(): void {
 		this.blur();
+
 		this.input.disabled = true;
+
 		this._hideMessage();
 	}
 
@@ -422,8 +486,10 @@ export class InputBox extends Widget {
 
 				const paddingRight =
 					parseFloat(this.mirror.style.paddingRight || "") || 0;
+
 				horizontalPadding = paddingLeft + paddingRight;
 			}
+
 			this.input.style.width = width - horizontalPadding + "px";
 		} else {
 			this.input.style.width = width + "px";
@@ -459,6 +525,7 @@ export class InputBox extends Widget {
 		const scrollTop = this.input.scrollTop;
 
 		this.scrollableElement.setScrollDimensions({ scrollHeight, height });
+
 		this.scrollableElement.setScrollPosition({ scrollTop });
 	}
 
@@ -471,12 +538,17 @@ export class InputBox extends Widget {
 		this.message = message;
 
 		this.element.classList.remove("idle");
+
 		this.element.classList.remove("info");
+
 		this.element.classList.remove("warning");
+
 		this.element.classList.remove("error");
+
 		this.element.classList.add(this.classForType(message.type));
 
 		const styles = this.stylesForType(this.message.type);
+
 		this.element.style.border = `1px solid ${cssJs.asCssValueWithDefault(styles.border, "transparent")}`;
 
 		if (this.message.content && (this.hasFocus() || force)) {
@@ -488,11 +560,15 @@ export class InputBox extends Widget {
 		this.message = null;
 
 		this.element.classList.remove("info");
+
 		this.element.classList.remove("warning");
+
 		this.element.classList.remove("error");
+
 		this.element.classList.add("idle");
 
 		this._hideMessage();
+
 		this.applyStyles();
 	}
 
@@ -508,9 +584,11 @@ export class InputBox extends Widget {
 
 			if (errorMsg) {
 				this.inputElement.setAttribute("aria-invalid", "true");
+
 				this.showMessage(errorMsg);
 			} else if (this.inputElement.hasAttribute("aria-invalid")) {
 				this.inputElement.removeAttribute("aria-invalid");
+
 				this.hideMessage();
 			}
 		}
@@ -520,7 +598,9 @@ export class InputBox extends Widget {
 
 	public stylesForType(type: MessageType | undefined): {
 		border: string | undefined;
+
 		background: string | undefined;
+
 		foreground: string | undefined;
 	} {
 		const styles = this.options.inputBoxStyles;
@@ -581,6 +661,7 @@ export class InputBox extends Widget {
 				}
 
 				div = dom.append(container, $(".monaco-inputbox-container"));
+
 				layout();
 
 				const renderOptions: MarkdownRenderOptions = {
@@ -591,11 +672,15 @@ export class InputBox extends Widget {
 				const spanElement = this.message.formatContent
 					? renderFormattedText(this.message.content!, renderOptions)
 					: renderText(this.message.content!, renderOptions);
+
 				spanElement.classList.add(this.classForType(this.message.type));
 
 				const styles = this.stylesForType(this.message.type);
+
 				spanElement.style.backgroundColor = styles.background ?? "";
+
 				spanElement.style.color = styles.foreground ?? "";
+
 				spanElement.style.border = styles.border
 					? `1px solid ${styles.border}`
 					: "";
@@ -654,7 +739,9 @@ export class InputBox extends Widget {
 		this._onDidChange.fire(this.value);
 
 		this.validate();
+
 		this.updateMirror();
+
 		this.input.classList.toggle("empty", !this.value);
 
 		if (this.state === "open" && this.contextViewProvider) {
@@ -694,8 +781,11 @@ export class InputBox extends Widget {
 		const border = styles.inputBorder ?? "";
 
 		this.element.style.backgroundColor = background;
+
 		this.element.style.color = foreground;
+
 		this.input.style.backgroundColor = "inherit";
+
 		this.input.style.color = foreground;
 
 		// there's always a border, even if the color is not set.
@@ -708,6 +798,7 @@ export class InputBox extends Widget {
 		}
 
 		const previousHeight = this.cachedContentHeight;
+
 		this.cachedContentHeight = dom.getTotalHeight(this.mirror);
 
 		if (previousHeight !== this.cachedContentHeight) {
@@ -715,7 +806,9 @@ export class InputBox extends Widget {
 				this.cachedContentHeight,
 				this.maxHeight,
 			);
+
 			this.input.style.height = this.cachedHeight + "px";
+
 			this._onDidHeightChange.fire(this.cachedContentHeight);
 		}
 	}
@@ -731,7 +824,9 @@ export class InputBox extends Widget {
 
 		if (start !== null && end !== null) {
 			this.value = content.substr(0, start) + text + content.substr(end);
+
 			inputElement.setSelectionRange(start + 1, start + 1);
+
 			this.layout();
 		}
 	}
@@ -756,12 +851,15 @@ export class HistoryInputBox
 	implements IHistoryNavigationWidget
 {
 	private readonly history: HistoryNavigator<string>;
+
 	private observer: MutationObserver | undefined;
 
 	private readonly _onDidFocus = this._register(new Emitter<void>());
+
 	readonly onDidFocus = this._onDidFocus.event;
 
 	private readonly _onDidBlur = this._register(new Emitter<void>());
+
 	readonly onDidBlur = this._onDidBlur.event;
 
 	constructor(
@@ -792,6 +890,7 @@ export class HistoryInputBox
 		);
 
 		super(container, contextViewProvider, options);
+
 		this.history = new HistoryNavigator<string>(options.history, 100);
 
 		// Function to append the history suffix to the placeholder if necessary
@@ -835,9 +934,11 @@ export class HistoryInputBox
 				});
 			},
 		);
+
 		this.observer.observe(this.input, { attributeFilter: ["class"] });
 
 		this.onfocus(this.input, () => addSuffix());
+
 		this.onblur(this.input, () => {
 			const resetPlaceholder = (historyHint: string) => {
 				if (!this.placeholder.endsWith(historyHint)) {
@@ -853,6 +954,7 @@ export class HistoryInputBox
 					} else {
 						this.setPlaceHolder(revertedPlaceholder);
 					}
+
 					return true;
 				}
 			};
@@ -870,6 +972,7 @@ export class HistoryInputBox
 
 		if (this.observer) {
 			this.observer.disconnect();
+
 			this.observer = undefined;
 		}
 	}
@@ -882,6 +985,7 @@ export class HistoryInputBox
 
 	public prependHistory(restoredHistory: string[]): void {
 		const newHistory = this.getHistory();
+
 		this.clearHistory();
 
 		restoredHistory.forEach((item) => {
@@ -921,6 +1025,7 @@ export class HistoryInputBox
 		}
 
 		this.value = next ?? "";
+
 		aria.status(
 			this.value
 				? this.value
@@ -942,6 +1047,7 @@ export class HistoryInputBox
 
 		if (previous) {
 			this.value = previous;
+
 			aria.status(this.value);
 		}
 	}
@@ -952,16 +1058,19 @@ export class HistoryInputBox
 
 	public override setPlaceHolder(placeHolder: string): void {
 		super.setPlaceHolder(placeHolder);
+
 		this.setTooltip(placeHolder);
 	}
 
 	protected override onBlur(): void {
 		super.onBlur();
+
 		this._onDidBlur.fire();
 	}
 
 	protected override onFocus(): void {
 		super.onFocus();
+
 		this._onDidFocus.fire();
 	}
 
@@ -970,8 +1079,10 @@ export class HistoryInputBox
 
 		if (!currentValue) {
 			currentValue = this.history.last();
+
 			this.history.next();
 		}
+
 		return currentValue;
 	}
 

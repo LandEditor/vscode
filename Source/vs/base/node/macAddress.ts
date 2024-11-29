@@ -28,5 +28,6 @@ export function getMac(): string {
 			}
 		}
 	}
+
 	throw new Error("Unable to retrieve mac address (unexpected format)");
 }

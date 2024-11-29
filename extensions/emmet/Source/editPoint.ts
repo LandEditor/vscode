@@ -10,17 +10,22 @@ export function fetchEditPoint(direction: string): void {
 	if (!validate() || !vscode.window.activeTextEditor) {
 		return;
 	}
+
 	const editor = vscode.window.activeTextEditor;
 
 	const newSelections: vscode.Selection[] = [];
+
 	editor.selections.forEach((selection) => {
 		const updatedSelection =
 			direction === "next"
 				? nextEditPoint(selection, editor)
 				: prevEditPoint(selection, editor);
+
 		newSelections.push(updatedSelection);
 	});
+
 	editor.selections = newSelections;
+
 	editor.revealRange(editor.selections[editor.selections.length - 1]);
 }
 function nextEditPoint(
@@ -29,7 +34,9 @@ function nextEditPoint(
 ): vscode.Selection {
 	for (
 		let lineNum = selection.anchor.line;
+
 		lineNum < editor.document.lineCount;
+
 		lineNum++
 	) {
 		const updatedSelection = findEditPoint(
@@ -43,6 +50,7 @@ function nextEditPoint(
 			return updatedSelection;
 		}
 	}
+
 	return selection;
 }
 function prevEditPoint(
@@ -61,6 +69,7 @@ function prevEditPoint(
 			return updatedSelection;
 		}
 	}
+
 	return selection;
 }
 function findEditPoint(
@@ -85,9 +94,11 @@ function findEditPoint(
 			lineContent.length,
 		);
 	}
+
 	if (lineNum === position.line && direction === "prev") {
 		lineContent = lineContent.substr(0, position.character);
 	}
+
 	const emptyAttrIndex =
 		direction === "next"
 			? lineContent.indexOf(
@@ -116,8 +127,10 @@ function findEditPoint(
 	} else {
 		winner = emptyTagIndex;
 	}
+
 	if (winner > -1) {
 		return new vscode.Selection(lineNum, winner + 1, lineNum, winner + 1);
 	}
+
 	return;
 }

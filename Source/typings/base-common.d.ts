@@ -8,6 +8,7 @@
 declare global {
 	interface IdleDeadline {
 		readonly didTimeout: boolean;
+
 		timeRemaining(): number;
 	}
 

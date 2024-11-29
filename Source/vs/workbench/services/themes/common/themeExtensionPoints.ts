@@ -197,6 +197,7 @@ class ThemeDataRenderer
 	implements IExtensionFeatureMarkdownRenderer
 {
 	readonly type = "markdown";
+
 	shouldRender(manifest: IExtensionManifest): boolean {
 		return (
 			!!manifest.contributes?.themes ||
@@ -204,6 +205,7 @@ class ThemeDataRenderer
 			!!manifest.contributes?.productIconThemes
 		);
 	}
+
 	render(manifest: IExtensionManifest): IRenderedData<IMarkdownString> {
 		const markdown = new MarkdownString();
 
@@ -216,6 +218,7 @@ class ThemeDataRenderer
 				markdown.appendMarkdown(`- ${theme.label}\n`);
 			}
 		}
+
 		if (manifest.contributes?.iconThemes) {
 			markdown.appendMarkdown(
 				`### ${nls.localize("file icon themes", "File Icon Themes")}\n\n`,
@@ -225,6 +228,7 @@ class ThemeDataRenderer
 				markdown.appendMarkdown(`- ${theme.label}\n`);
 			}
 		}
+
 		if (manifest.contributes?.productIconThemes) {
 			markdown.appendMarkdown(
 				`### ${nls.localize("product icon themes", "Product Icon Themes")}\n\n`,
@@ -234,6 +238,7 @@ class ThemeDataRenderer
 				markdown.appendMarkdown(`- ${theme.label}\n`);
 			}
 		}
+
 		return {
 			data: markdown,
 			dispose: () => {},
@@ -253,18 +258,23 @@ Registry.as<IExtensionFeaturesRegistry>(
 
 export interface ThemeChangeEvent<T> {
 	themes: T[];
+
 	added: T[];
+
 	removed: T[];
 }
 export interface IThemeData {
 	id: string;
 
 	settingsId: string | null;
+
 	location?: URI;
 }
 export class ThemeRegistry<T extends IThemeData> implements IDisposable {
 	private extensionThemes: T[];
+
 	private readonly onDidChangeEmitter = new Emitter<ThemeChangeEvent<T>>();
+
 	public readonly onDidChange: Event<ThemeChangeEvent<T>> =
 		this.onDidChangeEmitter.event;
 
@@ -281,11 +291,14 @@ export class ThemeRegistry<T extends IThemeData> implements IDisposable {
 		private builtInTheme: T | undefined = undefined,
 	) {
 		this.extensionThemes = [];
+
 		this.initialize();
 	}
+
 	dispose() {
 		this.themesExtPoint.setHandler(() => {});
 	}
+
 	private initialize() {
 		this.themesExtPoint.setHandler((extensions, delta) => {
 			const previousIds: {
@@ -297,6 +310,7 @@ export class ThemeRegistry<T extends IThemeData> implements IDisposable {
 			for (const theme of this.extensionThemes) {
 				previousIds[theme.id] = theme;
 			}
+
 			this.extensionThemes.length = 0;
 
 			for (const ext of extensions) {
@@ -305,6 +319,7 @@ export class ThemeRegistry<T extends IThemeData> implements IDisposable {
 					ext.description.name,
 					ext.description.isBuiltin,
 				);
+
 				this.onThemes(
 					extensionData,
 					ext.description.extensionLocation,
@@ -313,6 +328,7 @@ export class ThemeRegistry<T extends IThemeData> implements IDisposable {
 					ext.collector,
 				);
 			}
+
 			for (const theme of this.extensionThemes) {
 				if (!previousIds[theme.id]) {
 					added.push(theme);
@@ -320,7 +336,9 @@ export class ThemeRegistry<T extends IThemeData> implements IDisposable {
 					delete previousIds[theme.id];
 				}
 			}
+
 			const removed = Object.values(previousIds);
+
 			this.onDidChangeEmitter.fire({
 				themes: this.extensionThemes,
 				added,
@@ -328,6 +346,7 @@ export class ThemeRegistry<T extends IThemeData> implements IDisposable {
 			});
 		});
 	}
+
 	private onThemes(
 		extensionData: ExtensionData,
 		extensionLocation: URI,
@@ -346,6 +365,7 @@ export class ThemeRegistry<T extends IThemeData> implements IDisposable {
 
 			return resultingThemes;
 		}
+
 		themeContributions.forEach((theme) => {
 			if (!theme.path || !types.isString(theme.path)) {
 				log?.error(
@@ -359,6 +379,7 @@ export class ThemeRegistry<T extends IThemeData> implements IDisposable {
 
 				return;
 			}
+
 			if (this.idRequired && (!theme.id || !types.isString(theme.id))) {
 				log?.error(
 					nls.localize(
@@ -371,6 +392,7 @@ export class ThemeRegistry<T extends IThemeData> implements IDisposable {
 
 				return;
 			}
+
 			const themeLocation = resources.joinPath(
 				extensionLocation,
 				theme.path,
@@ -387,16 +409,20 @@ export class ThemeRegistry<T extends IThemeData> implements IDisposable {
 					),
 				);
 			}
+
 			const themeData = this.create(theme, themeLocation, extensionData);
+
 			resultingThemes.push(themeData);
 		});
 
 		return resultingThemes;
 	}
+
 	public findThemeById(themeId: string): T | undefined {
 		if (this.builtInTheme && this.builtInTheme.id === themeId) {
 			return this.builtInTheme;
 		}
+
 		const allThemes = this.getThemes();
 
 		for (const t of allThemes) {
@@ -404,8 +430,10 @@ export class ThemeRegistry<T extends IThemeData> implements IDisposable {
 				return t;
 			}
 		}
+
 		return undefined;
 	}
+
 	public findThemeBySettingsId(
 		settingsId: string | null,
 		defaultSettingsId?: string,
@@ -413,6 +441,7 @@ export class ThemeRegistry<T extends IThemeData> implements IDisposable {
 		if (this.builtInTheme && this.builtInTheme.settingsId === settingsId) {
 			return this.builtInTheme;
 		}
+
 		const allThemes = this.getThemes();
 
 		let defaultTheme: T | undefined = undefined;
@@ -421,12 +450,15 @@ export class ThemeRegistry<T extends IThemeData> implements IDisposable {
 			if (t.settingsId === settingsId) {
 				return t;
 			}
+
 			if (t.settingsId === defaultSettingsId) {
 				defaultTheme = t;
 			}
 		}
+
 		return defaultTheme;
 	}
+
 	public findThemeByExtensionLocation(extLocation: URI | undefined): T[] {
 		if (extLocation) {
 			return this.getThemes().filter(
@@ -435,11 +467,14 @@ export class ThemeRegistry<T extends IThemeData> implements IDisposable {
 					resources.isEqualOrParent(t.location, extLocation),
 			);
 		}
+
 		return [];
 	}
+
 	public getThemes(): T[] {
 		return this.extensionThemes;
 	}
+
 	public getMarketplaceThemes(
 		manifest: any,
 		extensionLocation: URI,
@@ -450,6 +485,7 @@ export class ThemeRegistry<T extends IThemeData> implements IDisposable {
 		if (Array.isArray(themes)) {
 			return this.onThemes(extensionData, extensionLocation, themes);
 		}
+
 		return [];
 	}
 }

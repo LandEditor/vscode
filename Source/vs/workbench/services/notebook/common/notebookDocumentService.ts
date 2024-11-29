@@ -34,17 +34,20 @@ const _radix = 7;
 export function parse(cell: URI):
 	| {
 			notebook: URI;
+
 			handle: number;
 	  }
 	| undefined {
 	if (cell.scheme !== Schemas.vscodeNotebookCell) {
 		return undefined;
 	}
+
 	const idx = cell.fragment.indexOf("s");
 
 	if (idx < 0) {
 		return undefined;
 	}
+
 	const handle = parseInt(
 		cell.fragment.substring(0, idx).replace(_padRegexp, ""),
 		_radix,
@@ -55,6 +58,7 @@ export function parse(cell: URI):
 	if (isNaN(handle)) {
 		return undefined;
 	}
+
 	return {
 		handle,
 		notebook: cell.with({ scheme: _scheme, fragment: null }),
@@ -73,6 +77,7 @@ export function parseMetadataUri(metadata: URI): URI | undefined {
 	if (metadata.scheme !== Schemas.vscodeNotebookMetadata) {
 		return undefined;
 	}
+
 	const _scheme = decodeBase64(metadata.fragment).toString();
 
 	return metadata.with({ scheme: _scheme, fragment: null });
@@ -86,13 +91,16 @@ export interface INotebookDocumentService {
 	readonly _serviceBrand: undefined;
 
 	getNotebook(uri: URI): INotebookDocument | undefined;
+
 	addNotebookDocument(document: INotebookDocument): void;
+
 	removeNotebookDocument(document: INotebookDocument): void;
 }
 export class NotebookDocumentWorkbenchService
 	implements INotebookDocumentService
 {
 	declare readonly _serviceBrand: undefined;
+
 	private readonly _documents = new ResourceMap<INotebookDocument>();
 
 	getNotebook(uri: URI): INotebookDocument | undefined {
@@ -107,11 +115,14 @@ export class NotebookDocumentWorkbenchService
 				}
 			}
 		}
+
 		return this._documents.get(uri);
 	}
+
 	addNotebookDocument(document: INotebookDocument) {
 		this._documents.set(document.uri, document);
 	}
+
 	removeNotebookDocument(document: INotebookDocument) {
 		this._documents.delete(document.uri);
 	}

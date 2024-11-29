@@ -26,7 +26,9 @@ enum TsConfigLinkType {
 }
 type OpenExtendsLinkCommandArgs = {
 	readonly resourceUri: vscode.Uri;
+
 	readonly extendsValue: string;
+
 	readonly linkType: TsConfigLinkType;
 };
 class TsconfigLinkProvider implements vscode.DocumentLinkProvider {
@@ -39,12 +41,14 @@ class TsconfigLinkProvider implements vscode.DocumentLinkProvider {
 		if (!root) {
 			return [];
 		}
+
 		return coalesce([
 			this.getExtendsLink(document, root),
 			...this.getFilesLinks(document, root),
 			...this.getReferencesLinks(document, root),
 		]);
 	}
+
 	private getExtendsLink(
 		document: vscode.TextDocument,
 		root: jsonc.Node,
@@ -56,6 +60,7 @@ class TsconfigLinkProvider implements vscode.DocumentLinkProvider {
 			this.tryCreateTsConfigLink(document, node, TsConfigLinkType.Extends)
 		);
 	}
+
 	private getReferencesLinks(
 		document: vscode.TextDocument,
 		root: jsonc.Node,
@@ -76,6 +81,7 @@ class TsconfigLinkProvider implements vscode.DocumentLinkProvider {
 			},
 		);
 	}
+
 	private tryCreateTsConfigLink(
 		document: vscode.TextDocument,
 		node: jsonc.Node,
@@ -84,6 +90,7 @@ class TsconfigLinkProvider implements vscode.DocumentLinkProvider {
 		if (!this.isPathValue(node)) {
 			return undefined;
 		}
+
 		const args: OpenExtendsLinkCommandArgs = {
 			resourceUri: { ...document.uri.toJSON(), $mid: undefined },
 			extendsValue: node.value,
@@ -96,15 +103,18 @@ class TsconfigLinkProvider implements vscode.DocumentLinkProvider {
 				`command:${openExtendsLinkCommandId}?${JSON.stringify(args)}`,
 			),
 		);
+
 		link.tooltip = vscode.l10n.t("Follow link");
 
 		return link;
 	}
+
 	private getFilesLinks(document: vscode.TextDocument, root: jsonc.Node) {
 		return mapChildren(jsonc.findNodeAtLocation(root, ["files"]), (child) =>
 			this.pathNodeToLink(document, child),
 		);
 	}
+
 	private pathNodeToLink(
 		document: vscode.TextDocument,
 		node: jsonc.Node | undefined,
@@ -116,6 +126,7 @@ class TsconfigLinkProvider implements vscode.DocumentLinkProvider {
 				)
 			: undefined;
 	}
+
 	private isPathValue(node: jsonc.Node | undefined): node is jsonc.Node {
 		return (
 			node &&
@@ -124,6 +135,7 @@ class TsconfigLinkProvider implements vscode.DocumentLinkProvider {
 			!(node.value as string).includes("*")
 		); // don't treat globs as links.
 	}
+
 	private getFileTarget(
 		document: vscode.TextDocument,
 		node: jsonc.Node,
@@ -131,8 +143,10 @@ class TsconfigLinkProvider implements vscode.DocumentLinkProvider {
 		if (isAbsolute(node.value)) {
 			return vscode.Uri.file(node.value);
 		}
+
 		return vscode.Uri.joinPath(Utils.dirname(document.uri), node.value);
 	}
+
 	private getRange(document: vscode.TextDocument, node: jsonc.Node) {
 		const offset = node.offset;
 
@@ -172,6 +186,7 @@ async function resolveNodeModulesPath(
 		} catch (err) {
 			// noop
 		}
+
 		if (moduleStat && moduleStat.type & vscode.FileType.Directory) {
 			for (const uriCandidate of pathCandidates
 				.map((relativePath) =>
@@ -191,7 +206,9 @@ async function resolveNodeModulesPath(
 			}
 			// Continue to looking for potentially another version
 		}
+
 		const oldUri = currentUri;
+
 		currentUri = vscode.Uri.joinPath(currentUri, "..");
 		// Can't go next. Reached the system root
 		if (oldUri.path === currentUri.path) {
@@ -216,10 +233,12 @@ async function getTsconfigPath(
 		) {
 			return absolutePath;
 		}
+
 		return absolutePath.with({
 			path: `${absolutePath.path}${linkType === TsConfigLinkType.References ? "/tsconfig.json" : ".json"}`,
 		});
 	}
+
 	const isRelativePath = ["./", "../"].some((str) =>
 		pathValue.startsWith(str),
 	);
@@ -227,6 +246,7 @@ async function getTsconfigPath(
 	if (isRelativePath) {
 		return resolve(vscode.Uri.joinPath(baseDirUri, pathValue));
 	}
+
 	if (pathValue.startsWith("/") || looksLikeAbsoluteWindowsPath(pathValue)) {
 		return resolve(vscode.Uri.file(pathValue));
 	}

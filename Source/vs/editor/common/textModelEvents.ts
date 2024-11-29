@@ -84,8 +84,11 @@ export interface IModelContentChangedEvent {
  */
 export interface IModelDecorationsChangedEvent {
 	readonly affectsMinimap: boolean;
+
 	readonly affectsOverviewRuler: boolean;
+
 	readonly affectsGlyphMargin: boolean;
+
 	readonly affectsLineNumber: boolean;
 }
 /**
@@ -94,6 +97,7 @@ export interface IModelDecorationsChangedEvent {
  */
 export interface IModelTokensChangedEvent {
 	readonly semanticTokensApplied: boolean;
+
 	readonly ranges: {
 		/**
 		 * The start of the range (inclusive)
@@ -107,8 +111,11 @@ export interface IModelTokensChangedEvent {
 }
 export interface IModelOptionsChangedEvent {
 	readonly tabSize: boolean;
+
 	readonly indentSize: boolean;
+
 	readonly insertSpaces: boolean;
+
 	readonly trimAutoWhitespace: boolean;
 }
 /**
@@ -140,6 +147,7 @@ export class LineInjectedText {
 		if (!injectedTexts || injectedTexts.length === 0) {
 			return lineText;
 		}
+
 		let result = "";
 
 		let lastOriginalOffset = 0;
@@ -149,13 +157,17 @@ export class LineInjectedText {
 				lastOriginalOffset,
 				injectedText.column - 1,
 			);
+
 			lastOriginalOffset = injectedText.column - 1;
+
 			result += injectedText.options.content;
 		}
+
 		result += lineText.substring(lastOriginalOffset);
 
 		return result;
 	}
+
 	public static fromDecorations(
 		decorations: IModelDecoration[],
 	): LineInjectedText[] {
@@ -176,6 +188,7 @@ export class LineInjectedText {
 					),
 				);
 			}
+
 			if (
 				decoration.options.after &&
 				decoration.options.after.content.length > 0
@@ -191,18 +204,22 @@ export class LineInjectedText {
 				);
 			}
 		}
+
 		result.sort((a, b) => {
 			if (a.lineNumber === b.lineNumber) {
 				if (a.column === b.column) {
 					return a.order - b.order;
 				}
+
 				return a.column - b.column;
 			}
+
 			return a.lineNumber - b.lineNumber;
 		});
 
 		return result;
 	}
+
 	constructor(
 		public readonly ownerId: number,
 		public readonly lineNumber: number,
@@ -210,6 +227,7 @@ export class LineInjectedText {
 		public readonly options: InjectedTextOptions,
 		public readonly order: number,
 	) {}
+
 	public withText(text: string): LineInjectedText {
 		return new LineInjectedText(
 			this.ownerId,
@@ -245,7 +263,9 @@ export class ModelRawLineChanged {
 		injectedText: LineInjectedText[] | null,
 	) {
 		this.lineNumber = lineNumber;
+
 		this.detail = detail;
+
 		this.injectedText = injectedText;
 	}
 }
@@ -266,6 +286,7 @@ export class ModelRawLinesDeleted {
 
 	constructor(fromLineNumber: number, toLineNumber: number) {
 		this.fromLineNumber = fromLineNumber;
+
 		this.toLineNumber = toLineNumber;
 	}
 }
@@ -299,8 +320,11 @@ export class ModelRawLinesInserted {
 		injectedTexts: (LineInjectedText[] | null)[],
 	) {
 		this.injectedTexts = injectedTexts;
+
 		this.fromLineNumber = fromLineNumber;
+
 		this.toLineNumber = toLineNumber;
+
 		this.detail = detail;
 	}
 }
@@ -338,6 +362,7 @@ export class ModelRawContentChangedEvent {
 	 * Flag that indicates that this event was generated while redoing.
 	 */
 	public readonly isRedoing: boolean;
+
 	public resultingSelection: Selection[] | null;
 
 	constructor(
@@ -347,11 +372,16 @@ export class ModelRawContentChangedEvent {
 		isRedoing: boolean,
 	) {
 		this.changes = changes;
+
 		this.versionId = versionId;
+
 		this.isUndoing = isUndoing;
+
 		this.isRedoing = isRedoing;
+
 		this.resultingSelection = null;
 	}
+
 	public containsEvent(type: RawContentChangedType): boolean {
 		for (let i = 0, len = this.changes.length; i < len; i++) {
 			const change = this.changes[i];
@@ -360,8 +390,10 @@ export class ModelRawContentChangedEvent {
 				return true;
 			}
 		}
+
 		return false;
 	}
+
 	public static merge(
 		a: ModelRawContentChangedEvent,
 		b: ModelRawContentChangedEvent,
@@ -403,6 +435,7 @@ export class InternalModelContentChangeEvent {
 		public readonly rawContentChangedEvent: ModelRawContentChangedEvent,
 		public readonly contentChangedEvent: IModelContentChangedEvent,
 	) {}
+
 	public merge(
 		other: InternalModelContentChangeEvent,
 	): InternalModelContentChangeEvent {
@@ -422,6 +455,7 @@ export class InternalModelContentChangeEvent {
 			contentChangedEvent,
 		);
 	}
+
 	private static _mergeChangeEvents(
 		a: IModelContentChangedEvent,
 		b: IModelContentChangedEvent,

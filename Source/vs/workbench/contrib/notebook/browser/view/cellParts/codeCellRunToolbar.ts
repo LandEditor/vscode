@@ -43,6 +43,7 @@ export class RunToolbar extends CellContentPart {
 	private toolbar!: ToolBar;
 
 	private primaryMenu: IMenu;
+
 	private secondaryMenu: IMenu;
 
 	constructor(
@@ -65,9 +66,11 @@ export class RunToolbar extends CellContentPart {
 		this.primaryMenu = this._register(
 			menuService.createMenu(primaryMenuId, contextKeyService),
 		);
+
 		this.secondaryMenu = this._register(
 			menuService.createMenu(secondaryMenuId, contextKeyService),
 		);
+
 		this.createRunCellToolbar(
 			runButtonContainer,
 			cellContainer,
@@ -80,9 +83,13 @@ export class RunToolbar extends CellContentPart {
 			const primary = actions.primary[0]; // Only allow one primary action
 			this.toolbar.setActions(primary ? [primary] : []);
 		};
+
 		updateActions();
+
 		this._register(this.primaryMenu.onDidChange(updateActions));
+
 		this._register(this.secondaryMenu.onDidChange(updateActions));
+
 		this._register(
 			this.notebookEditor.notebookOptions.onDidChangeOptions(
 				updateActions,
@@ -106,12 +113,14 @@ export class RunToolbar extends CellContentPart {
 				notebookEditor: this.notebookEditor,
 				$mid: MarshalledId.NotebookCellActionContext,
 			};
+
 			this.toolbar.context = context;
 		}
 	}
 
 	getCellToolbarActions(menu: IMenu): {
 		primary: IAction[];
+
 		secondary: IAction[];
 	} {
 		return getActionBarActions(
@@ -145,6 +154,7 @@ export class RunToolbar extends CellContentPart {
 		const executionContextKeyService = this._register(
 			getCodeCellExecutionContextKeyService(contextKeyService),
 		);
+
 		this.toolbar = this._register(
 			new ToolBar(container, this.contextMenuService, {
 				getKeyBinding: keybindingProvider,
@@ -177,6 +187,7 @@ export class RunToolbar extends CellContentPart {
 							getKeyBinding: keybindingProvider,
 						},
 					);
+
 					actionViewItemDisposables.add(
 						item.onDidChangeDropdownVisibility((visible) => {
 							cellContainer.classList.toggle(
@@ -201,19 +212,27 @@ export function getCodeCellExecutionContextKeyService(
 	const executionContextKeyService = contextKeyService.createScoped(
 		document.createElement("div"),
 	);
+
 	InputFocusedContext.bindTo(executionContextKeyService).set(true);
+
 	EditorContextKeys.editorTextFocus
 		.bindTo(executionContextKeyService)
 		.set(true);
+
 	EditorContextKeys.focus.bindTo(executionContextKeyService).set(true);
+
 	EditorContextKeys.textInputFocus
 		.bindTo(executionContextKeyService)
 		.set(true);
+
 	NOTEBOOK_CELL_EXECUTION_STATE.bindTo(executionContextKeyService).set(
 		"idle",
 	);
+
 	NOTEBOOK_CELL_LIST_FOCUSED.bindTo(executionContextKeyService).set(true);
+
 	NOTEBOOK_EDITOR_FOCUSED.bindTo(executionContextKeyService).set(true);
+
 	NOTEBOOK_CELL_TYPE.bindTo(executionContextKeyService).set("code");
 
 	return executionContextKeyService;

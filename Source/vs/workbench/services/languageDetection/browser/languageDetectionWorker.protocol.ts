@@ -9,6 +9,7 @@ import {
 
 export abstract class LanguageDetectionWorkerHost {
 	public static CHANNEL_NAME = "languageDetectionWorkerHost";
+
 	public static getChannel(
 		workerServer: IWorkerServer,
 	): LanguageDetectionWorkerHost {
@@ -16,6 +17,7 @@ export abstract class LanguageDetectionWorkerHost {
 			LanguageDetectionWorkerHost.CHANNEL_NAME,
 		);
 	}
+
 	public static setChannel(
 		workerClient: IWorkerClient<any>,
 		obj: LanguageDetectionWorkerHost,
@@ -25,17 +27,23 @@ export abstract class LanguageDetectionWorkerHost {
 			obj,
 		);
 	}
+
 	abstract $getIndexJsUri(): Promise<string>;
+
 	abstract $getLanguageId(
 		languageIdOrExt: string | undefined,
 	): Promise<string | undefined>;
+
 	abstract $sendTelemetryEvent(
 		languages: string[],
 		confidences: number[],
 		timeSpent: number,
 	): Promise<void>;
+
 	abstract $getRegexpModelUri(): Promise<string>;
+
 	abstract $getModelJsonUri(): Promise<string>;
+
 	abstract $getWeightsUri(): Promise<string>;
 }
 export interface ILanguageDetectionWorker {

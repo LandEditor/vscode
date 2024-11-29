@@ -11,13 +11,18 @@ import { Length, lengthAdd, lengthLessThan, lengthZero } from "./length.js";
  */
 export class NodeReader {
 	private readonly nextNodes: AstNode[];
+
 	private readonly offsets: Length[];
+
 	private readonly idxs: number[];
+
 	private lastOffset: Length = lengthZero;
 
 	constructor(node: AstNode) {
 		this.nextNodes = [node];
+
 		this.offsets = [lengthZero];
+
 		this.idxs = [];
 	}
 	/**
@@ -31,6 +36,7 @@ export class NodeReader {
 		if (lengthLessThan(offset, this.lastOffset)) {
 			throw new Error("Invalid offset");
 		}
+
 		this.lastOffset = offset;
 		// Find the longest node of all those that are closest to the current offset.
 		while (true) {
@@ -39,6 +45,7 @@ export class NodeReader {
 			if (!curNode) {
 				return undefined;
 			}
+
 			const curNodeOffset = lastOrUndefined(this.offsets)!;
 
 			if (lengthLessThan(offset, curNodeOffset)) {
@@ -46,6 +53,7 @@ export class NodeReader {
 				// The reader must advance before a cached node is hit.
 				return undefined;
 			}
+
 			if (lengthLessThan(curNodeOffset, offset)) {
 				// The reader is ahead of the current node.
 				if (lengthAdd(curNodeOffset, curNode.length) <= offset) {
@@ -58,7 +66,9 @@ export class NodeReader {
 					if (nextChildIdx !== -1) {
 						// Go to the first child and repeat.
 						this.nextNodes.push(curNode.getChild(nextChildIdx)!);
+
 						this.offsets.push(curNodeOffset);
+
 						this.idxs.push(nextChildIdx);
 					} else {
 						// We don't have children
@@ -82,7 +92,9 @@ export class NodeReader {
 					} else {
 						// Descend into first child & repeat.
 						this.nextNodes.push(curNode.getChild(nextChildIdx)!);
+
 						this.offsets.push(curNodeOffset);
+
 						this.idxs.push(nextChildIdx);
 					}
 				}
@@ -95,7 +107,9 @@ export class NodeReader {
 			const currentOffset = lastOrUndefined(this.offsets);
 
 			const currentNode = lastOrUndefined(this.nextNodes);
+
 			this.nextNodes.pop();
+
 			this.offsets.pop();
 
 			if (this.idxs.length === 0) {
@@ -112,9 +126,11 @@ export class NodeReader {
 
 			if (nextChildIdx !== -1) {
 				this.nextNodes.push(parent.getChild(nextChildIdx)!);
+
 				this.offsets.push(
 					lengthAdd(currentOffset!, currentNode!.length),
 				);
+
 				this.idxs[this.idxs.length - 1] = nextChildIdx;
 
 				break;
@@ -133,6 +149,7 @@ function getNextChildIdx(node: AstNode, curIdx: number = -1): number | -1 {
 		if (curIdx >= node.childrenLength) {
 			return -1;
 		}
+
 		if (node.getChild(curIdx)) {
 			return curIdx;
 		}

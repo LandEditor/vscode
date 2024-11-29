@@ -26,9 +26,11 @@ export function register(
 				),
 				command,
 			);
+
 			tree.setInput(input);
 		}
 	}
+
 	context.subscriptions.push(
 		vscode.commands.registerCommand("references-view.findReferences", () =>
 			findLocations("References", "vscode.executeReferenceProvider"),
@@ -73,8 +75,11 @@ export function register(
 		if (event && !event.affectsConfiguration(config)) {
 			return;
 		}
+
 		const value = vscode.workspace.getConfiguration().get<string>(config);
+
 		showReferencesDisposable?.dispose();
+
 		showReferencesDisposable = undefined;
 
 		if (value === "view") {
@@ -91,17 +96,21 @@ export function register(
 						"vscode.executeReferenceProvider",
 						locations,
 					);
+
 					tree.setInput(input);
 				},
 			);
 		}
 	}
+
 	context.subscriptions.push(
 		vscode.workspace.onDidChangeConfiguration(updateShowReferences),
 	);
+
 	context.subscriptions.push({
 		dispose: () => showReferencesDisposable?.dispose(),
 	});
+
 	updateShowReferences();
 }
 
@@ -131,6 +140,7 @@ async function copyCommand(
 	} else if (item instanceof FileItem) {
 		val = await item.asCopyText();
 	}
+
 	if (val) {
 		await vscode.env.clipboard.writeText(val);
 	}

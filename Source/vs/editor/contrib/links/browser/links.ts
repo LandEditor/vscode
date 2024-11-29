@@ -65,11 +65,17 @@ export class LinkDetector extends Disposable implements IEditorContribution {
 	}
 
 	private readonly providers: LanguageFeatureRegistry<LinkProvider>;
+
 	private readonly debounceInformation: IFeatureDebounceInformation;
+
 	private readonly computeLinks: RunOnceScheduler;
+
 	private computePromise: CancelablePromise<LinksList> | null;
+
 	private activeLinksList: LinksList | null;
+
 	private activeLinkDecorationId: string | null;
+
 	private currentOccurrences: { [decorationId: string]: LinkOccurrence };
 
 	constructor(
@@ -85,17 +91,23 @@ export class LinkDetector extends Disposable implements IEditorContribution {
 		super();
 
 		this.providers = this.languageFeaturesService.linkProvider;
+
 		this.debounceInformation = languageFeatureDebounceService.for(
 			this.providers,
 			"Links",
 			{ min: 1000, max: 4000 },
 		);
+
 		this.computeLinks = this._register(
 			new RunOnceScheduler(() => this.computeLinksNow(), 1000),
 		);
+
 		this.computePromise = null;
+
 		this.activeLinksList = null;
+
 		this.currentOccurrences = {};
+
 		this.activeLinkDecorationId = null;
 
 		const clickLinkGesture = this._register(new ClickLinkGesture(editor));
@@ -107,16 +119,19 @@ export class LinkDetector extends Disposable implements IEditorContribution {
 				},
 			),
 		);
+
 		this._register(
 			clickLinkGesture.onExecute((e) => {
 				this.onEditorMouseUp(e);
 			}),
 		);
+
 		this._register(
 			clickLinkGesture.onCancel((e) => {
 				this.cleanUpActiveLinkDecoration();
 			}),
 		);
+
 		this._register(
 			editor.onDidChangeConfiguration((e) => {
 				if (!e.hasChanged(EditorOption.links)) {
@@ -132,33 +147,43 @@ export class LinkDetector extends Disposable implements IEditorContribution {
 				this.computeLinks.schedule(0);
 			}),
 		);
+
 		this._register(
 			editor.onDidChangeModelContent((e) => {
 				if (!this.editor.hasModel()) {
 					return;
 				}
+
 				this.computeLinks.schedule(
 					this.debounceInformation.get(this.editor.getModel()),
 				);
 			}),
 		);
+
 		this._register(
 			editor.onDidChangeModel((e) => {
 				this.currentOccurrences = {};
+
 				this.activeLinkDecorationId = null;
+
 				this.stop();
+
 				this.computeLinks.schedule(0);
 			}),
 		);
+
 		this._register(
 			editor.onDidChangeModelLanguage((e) => {
 				this.stop();
+
 				this.computeLinks.schedule(0);
 			}),
 		);
+
 		this._register(
 			this.providers.onDidChange((e) => {
 				this.stop();
+
 				this.computeLinks.schedule(0);
 			}),
 		);
@@ -186,6 +211,7 @@ export class LinkDetector extends Disposable implements IEditorContribution {
 
 		if (this.activeLinksList) {
 			this.activeLinksList.dispose();
+
 			this.activeLinksList = null;
 		}
 
@@ -195,12 +221,15 @@ export class LinkDetector extends Disposable implements IEditorContribution {
 
 		try {
 			const sw = new StopWatch(false);
+
 			this.activeLinksList = await this.computePromise;
+
 			this.debounceInformation.update(model, sw.elapsed());
 
 			if (model.isDisposed()) {
 				return;
 			}
+
 			this.updateDecorations(this.activeLinksList.links);
 		} catch (err) {
 			onUnexpectedError(err);
@@ -220,6 +249,7 @@ export class LinkDetector extends Disposable implements IEditorContribution {
 
 		for (const decorationId of keys) {
 			const occurence = this.currentOccurrences[decorationId];
+
 			oldDecorations.push(occurence.decorationId);
 		}
 
@@ -241,10 +271,12 @@ export class LinkDetector extends Disposable implements IEditorContribution {
 			);
 
 			this.currentOccurrences = {};
+
 			this.activeLinkDecorationId = null;
 
 			for (let i = 0, len = decorations.length; i < len; i++) {
 				const occurence = new LinkOccurrence(links[i], decorations[i]);
+
 				this.currentOccurrences[occurence.decorationId] = occurence;
 			}
 		});
@@ -267,6 +299,7 @@ export class LinkDetector extends Disposable implements IEditorContribution {
 			if (occurrence) {
 				this.editor.changeDecorations((changeAccessor) => {
 					occurrence.activate(changeAccessor, useMetaKey);
+
 					this.activeLinkDecorationId = occurrence.decorationId;
 				});
 			}
@@ -298,11 +331,13 @@ export class LinkDetector extends Disposable implements IEditorContribution {
 		if (!this.isEnabled(mouseEvent)) {
 			return;
 		}
+
 		const occurrence = this.getLinkOccurrence(mouseEvent.target.position);
 
 		if (!occurrence) {
 			return;
 		}
+
 		this.openLinkOccurrence(
 			occurrence,
 			mouseEvent.hasSideBySideModifier,
@@ -398,6 +433,7 @@ export class LinkDetector extends Disposable implements IEditorContribution {
 		if (!this.editor.hasModel() || !position) {
 			return null;
 		}
+
 		const decorations = this.editor.getModel().getDecorationsInRange(
 			{
 				startLineNumber: position.lineNumber,
@@ -436,16 +472,20 @@ export class LinkDetector extends Disposable implements IEditorContribution {
 
 		if (this.activeLinksList) {
 			this.activeLinksList?.dispose();
+
 			this.activeLinksList = null;
 		}
+
 		if (this.computePromise) {
 			this.computePromise.cancel();
+
 			this.computePromise = null;
 		}
 	}
 
 	public override dispose(): void {
 		super.dispose();
+
 		this.stop();
 	}
 }
@@ -484,16 +524,19 @@ class LinkOccurrence {
 		const options = {
 			...(isActive ? decoration.active : decoration.general),
 		};
+
 		options.hoverMessage = getHoverMessage(link, useMetaKey);
 
 		return options;
 	}
 
 	public decorationId: string;
+
 	public link: Link;
 
 	constructor(link: Link, decorationId: string) {
 		this.link = link;
+
 		this.decorationId = decorationId;
 	}
 
@@ -544,6 +587,7 @@ function getHoverMessage(link: Link, useMetaKey: boolean): MarkdownString {
 
 			if (match) {
 				const commandId = match[1];
+
 				nativeLabel = nls.localize(
 					"tooltip.explanation",
 					"Execute command {0}",
@@ -551,6 +595,7 @@ function getHoverMessage(link: Link, useMetaKey: boolean): MarkdownString {
 				);
 			}
 		}
+
 		const hoverMessage = new MarkdownString("", true)
 			.appendLink(
 				link.url.toString(true).replace(/ /g, "%20"),
@@ -580,6 +625,7 @@ class OpenLinkAction extends EditorAction {
 		if (!linkDetector) {
 			return;
 		}
+
 		if (!editor.hasModel()) {
 			return;
 		}

@@ -28,6 +28,7 @@ export class ListResizeColumnAction extends Action2 {
 			f1: true,
 		});
 	}
+
 	async run(accessor: ServicesAccessor): Promise<void> {
 		const listService = accessor.get(IListService);
 

@@ -64,6 +64,7 @@ export class StatusbarEntryItem extends Disposable {
 	private readonly foregroundListener = this._register(
 		new MutableDisposable(),
 	);
+
 	private readonly backgroundListener = this._register(
 		new MutableDisposable(),
 	);
@@ -71,9 +72,11 @@ export class StatusbarEntryItem extends Disposable {
 	private readonly commandMouseListener = this._register(
 		new MutableDisposable(),
 	);
+
 	private readonly commandTouchListener = this._register(
 		new MutableDisposable(),
 	);
+
 	private readonly commandKeyboardListener = this._register(
 		new MutableDisposable(),
 	);
@@ -81,6 +84,7 @@ export class StatusbarEntryItem extends Disposable {
 	private hover: IManagedHover | undefined = undefined;
 
 	readonly labelContainer: HTMLElement;
+
 	readonly beakContainer: HTMLElement;
 
 	get name(): string {
@@ -106,20 +110,26 @@ export class StatusbarEntryItem extends Disposable {
 
 		// Label Container
 		this.labelContainer = document.createElement("a");
+
 		this.labelContainer.tabIndex = -1; // allows screen readers to read title, but still prevents tab focus.
 		this.labelContainer.setAttribute("role", "button");
+
 		this.labelContainer.className = "statusbar-item-label";
+
 		this._register(Gesture.addTarget(this.labelContainer)); // enable touch
 
 		// Label (with support for progress)
 		this.label = this._register(
 			new StatusBarCodiconLabel(this.labelContainer),
 		);
+
 		this.container.appendChild(this.labelContainer);
 
 		// Beak Container
 		this.beakContainer = document.createElement("div");
+
 		this.beakContainer.className = "status-bar-item-beak-container";
+
 		this.container.appendChild(this.beakContainer);
 
 		this.update(entry);
@@ -147,6 +157,7 @@ export class StatusbarEntryItem extends Disposable {
 
 		if (!this.entry || entry.ariaLabel !== this.entry.ariaLabel) {
 			this.container.setAttribute("aria-label", entry.ariaLabel);
+
 			this.labelContainer.setAttribute("aria-label", entry.ariaLabel);
 		}
 
@@ -179,7 +190,9 @@ export class StatusbarEntryItem extends Disposable {
 		// Update: Command
 		if (!this.entry || entry.command !== this.entry.command) {
 			this.commandMouseListener.clear();
+
 			this.commandTouchListener.clear();
+
 			this.commandKeyboardListener.clear();
 
 			const command = entry.command;
@@ -195,11 +208,13 @@ export class StatusbarEntryItem extends Disposable {
 					EventType.CLICK,
 					() => this.executeCommand(command),
 				);
+
 				this.commandTouchListener.value = addDisposableListener(
 					this.labelContainer,
 					TouchEventType.Tap,
 					() => this.executeCommand(command),
 				);
+
 				this.commandKeyboardListener.value = addDisposableListener(
 					this.labelContainer,
 					EventType.KEY_DOWN,
@@ -274,6 +289,7 @@ export class StatusbarEntryItem extends Disposable {
 				"has-background-color",
 				hasBackgroundColor,
 			);
+
 			this.applyColor(this.container, entry.backgroundColor, true);
 		}
 
@@ -379,6 +395,7 @@ class StatusBarCodiconLabel extends SimpleIconLabel {
 	private progressCodicon = renderIcon(syncing);
 
 	private currentText = "";
+
 	private currentShowProgress: boolean | "loading" | "syncing" = false;
 
 	constructor(private readonly container: HTMLElement) {
@@ -388,9 +405,11 @@ class StatusBarCodiconLabel extends SimpleIconLabel {
 	set showProgress(showProgress: boolean | "loading" | "syncing") {
 		if (this.currentShowProgress !== showProgress) {
 			this.currentShowProgress = showProgress;
+
 			this.progressCodicon = renderIcon(
 				showProgress === "syncing" ? syncing : spinningLoading,
 			);
+
 			this.text = this.currentText;
 		}
 	}

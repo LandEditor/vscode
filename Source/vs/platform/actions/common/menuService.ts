@@ -42,6 +42,7 @@ import {
 
 export class MenuService implements IMenuService {
 	declare readonly _serviceBrand: undefined;
+
 	private readonly _hiddenStates: PersistedMenuHideState;
 
 	constructor(
@@ -54,6 +55,7 @@ export class MenuService implements IMenuService {
 	) {
 		this._hiddenStates = new PersistedMenuHideState(storageService);
 	}
+
 	createMenu(
 		id: MenuId,
 		contextKeyService: IContextKeyService,
@@ -72,6 +74,7 @@ export class MenuService implements IMenuService {
 			contextKeyService,
 		);
 	}
+
 	getMenuActions(
 		id: MenuId,
 		contextKeyService: IContextKeyService,
@@ -91,10 +94,12 @@ export class MenuService implements IMenuService {
 		);
 
 		const actions = menu.getActions(options);
+
 		menu.dispose();
 
 		return actions;
 	}
+
 	getMenuContexts(id: MenuId): ReadonlySet<string> {
 		const menuInfo = new MenuInfoSnapshot(id, false);
 
@@ -104,17 +109,24 @@ export class MenuService implements IMenuService {
 			...menuInfo.toggledContextKeys,
 		]);
 	}
+
 	resetHiddenStates(ids?: MenuId[]): void {
 		this._hiddenStates.reset(ids);
 	}
 }
 class PersistedMenuHideState {
 	private static readonly _key = "menu.hiddenCommands";
+
 	private readonly _disposables = new DisposableStore();
+
 	private readonly _onDidChange = new Emitter<void>();
+
 	readonly onDidChange: Event<void> = this._onDidChange.event;
+
 	private _ignoreChangeEvent: boolean = false;
+
 	private _data: Record<string, string[] | undefined>;
+
 	private _hiddenByDefaultCache = new Map<string, boolean>();
 
 	constructor(
@@ -127,10 +139,12 @@ class PersistedMenuHideState {
 				StorageScope.PROFILE,
 				"{}",
 			);
+
 			this._data = JSON.parse(raw);
 		} catch (err) {
 			this._data = Object.create(null);
 		}
+
 		this._disposables.add(
 			_storageService.onDidChangeValue(
 				StorageScope.PROFILE,
@@ -144,27 +158,34 @@ class PersistedMenuHideState {
 							StorageScope.PROFILE,
 							"{}",
 						);
+
 						this._data = JSON.parse(raw);
 					} catch (err) {
 						console.log("FAILED to read storage after UPDATE", err);
 					}
 				}
+
 				this._onDidChange.fire();
 			}),
 		);
 	}
+
 	dispose() {
 		this._onDidChange.dispose();
+
 		this._disposables.dispose();
 	}
+
 	private _isHiddenByDefault(menu: MenuId, commandId: string) {
 		return (
 			this._hiddenByDefaultCache.get(`${menu.id}/${commandId}`) ?? false
 		);
 	}
+
 	setDefaultState(menu: MenuId, commandId: string, hidden: boolean): void {
 		this._hiddenByDefaultCache.set(`${menu.id}/${commandId}`, hidden);
 	}
+
 	isHidden(menu: MenuId, commandId: string): boolean {
 		const hiddenByDefault = this._isHiddenByDefault(menu, commandId);
 
@@ -172,12 +193,14 @@ class PersistedMenuHideState {
 
 		return hiddenByDefault ? !state : state;
 	}
+
 	updateHidden(menu: MenuId, commandId: string, hidden: boolean): void {
 		const hiddenByDefault = this._isHiddenByDefault(menu, commandId);
 
 		if (hiddenByDefault) {
 			hidden = !hidden;
 		}
+
 		const entries = this._data[menu.id];
 
 		if (!hidden) {
@@ -188,6 +211,7 @@ class PersistedMenuHideState {
 				if (idx >= 0) {
 					removeFastWithoutKeepingOrder(entries, idx);
 				}
+
 				if (entries.length === 0) {
 					delete this._data[menu.id];
 				}
@@ -204,12 +228,15 @@ class PersistedMenuHideState {
 				}
 			}
 		}
+
 		this._persist();
 	}
+
 	reset(menus?: MenuId[]): void {
 		if (menus === undefined) {
 			// reset all
 			this._data = Object.create(null);
+
 			this._persist();
 		} else {
 			// reset only for a specific menu
@@ -218,14 +245,17 @@ class PersistedMenuHideState {
 					delete this._data[id];
 				}
 			}
+
 			this._persist();
 		}
 	}
+
 	private _persist(): void {
 		try {
 			this._ignoreChangeEvent = true;
 
 			const raw = JSON.stringify(this._data);
+
 			this._storageService.store(
 				PersistedMenuHideState._key,
 				raw,
@@ -240,9 +270,13 @@ class PersistedMenuHideState {
 type MenuItemGroup = [string, Array<IMenuItem | ISubmenuItem>];
 class MenuInfoSnapshot {
 	protected _menuGroups: MenuItemGroup[] = [];
+
 	private _allMenuIds: Set<MenuId> = new Set();
+
 	private _structureContextKeys: Set<string> = new Set();
+
 	private _preconditionContextKeys: Set<string> = new Set();
+
 	private _toggledContextKeys: Set<string> = new Set();
 
 	constructor(
@@ -251,24 +285,33 @@ class MenuInfoSnapshot {
 	) {
 		this.refresh();
 	}
+
 	get allMenuIds(): ReadonlySet<MenuId> {
 		return this._allMenuIds;
 	}
+
 	get structureContextKeys(): ReadonlySet<string> {
 		return this._structureContextKeys;
 	}
+
 	get preconditionContextKeys(): ReadonlySet<string> {
 		return this._preconditionContextKeys;
 	}
+
 	get toggledContextKeys(): ReadonlySet<string> {
 		return this._toggledContextKeys;
 	}
+
 	refresh(): void {
 		// reset
 		this._menuGroups.length = 0;
+
 		this._allMenuIds.clear();
+
 		this._structureContextKeys.clear();
+
 		this._preconditionContextKeys.clear();
+
 		this._toggledContextKeys.clear();
 
 		const menuItems = this._sort(MenuRegistry.getMenuItems(this._id));
@@ -281,18 +324,23 @@ class MenuInfoSnapshot {
 
 			if (!group || group[0] !== groupName) {
 				group = [groupName, []];
+
 				this._menuGroups.push(group);
 			}
+
 			group[1].push(item);
 			// keep keys and submenu ids for eventing
 			this._collectContextKeysAndSubmenuIds(item);
 		}
+
 		this._allMenuIds.add(this._id);
 	}
+
 	protected _sort(menuItems: (IMenuItem | ISubmenuItem)[]) {
 		// no sorting needed in snapshot
 		return menuItems;
 	}
+
 	private _collectContextKeysAndSubmenuIds(
 		item: IMenuItem | ISubmenuItem,
 	): void {
@@ -317,6 +365,7 @@ class MenuInfoSnapshot {
 							condition: ContextKeyExpression;
 						}
 					).condition || item.command.toggled;
+
 				MenuInfoSnapshot._fillInKbExprKeys(
 					toggledExpression,
 					this._toggledContextKeys,
@@ -329,9 +378,11 @@ class MenuInfoSnapshot {
 				this._collectContextKeysAndSubmenuIds,
 				this,
 			);
+
 			this._allMenuIds.add(item.submenu);
 		}
 	}
+
 	private static _fillInKbExprKeys(
 		exp: ContextKeyExpression | undefined,
 		set: Set<string>,
@@ -356,8 +407,10 @@ class MenuInfo extends MenuInfoSnapshot {
 		private readonly _contextKeyService: IContextKeyService,
 	) {
 		super(_id, _collectContextKeysForSubmenus);
+
 		this.refresh();
 	}
+
 	createActionGroups(
 		options: IMenuActionOptions | undefined,
 	): [string, Array<MenuItemAction | SubmenuItemAction>][] {
@@ -382,6 +435,7 @@ class MenuInfo extends MenuInfoSnapshot {
 							!!item.isHiddenByDefault,
 						);
 					}
+
 					const menuHide = createMenuHide(
 						this._id,
 						isMenuItem ? item.command : item,
@@ -434,17 +488,21 @@ class MenuInfo extends MenuInfoSnapshot {
 					}
 				}
 			}
+
 			if (activeActions && activeActions.length > 0) {
 				result.push([id, activeActions]);
 			}
 		}
+
 		return result;
 	}
+
 	protected override _sort(
 		menuItems: (IMenuItem | ISubmenuItem)[],
 	): (IMenuItem | ISubmenuItem)[] {
 		return menuItems.sort(MenuInfo._compareMenuItems);
 	}
+
 	private static _compareMenuItems(
 		a: IMenuItem | ISubmenuItem,
 		b: IMenuItem | ISubmenuItem,
@@ -489,6 +547,7 @@ class MenuInfo extends MenuInfoSnapshot {
 			isIMenuItem(b) ? b.command.title : b.title,
 		);
 	}
+
 	private static _compareTitles(
 		a: string | ILocalizedString,
 		b: string | ILocalizedString,
@@ -502,8 +561,11 @@ class MenuInfo extends MenuInfoSnapshot {
 }
 class MenuImpl implements IMenu {
 	private readonly _menuInfo: MenuInfo;
+
 	private readonly _disposables = new DisposableStore();
+
 	private readonly _onDidChange: Emitter<IMenuChangeEvent>;
+
 	readonly onDidChange: Event<IMenuChangeEvent>;
 
 	constructor(
@@ -530,6 +592,7 @@ class MenuImpl implements IMenu {
 		// structure of the menu
 		const rebuildMenuSoon = new RunOnceScheduler(() => {
 			this._menuInfo.refresh();
+
 			this._onDidChange.fire({
 				menu: this,
 				isStructuralChange: true,
@@ -537,7 +600,9 @@ class MenuImpl implements IMenu {
 				isToggleChange: true,
 			});
 		}, options.eventDebounceDelay);
+
 		this._disposables.add(rebuildMenuSoon);
+
 		this._disposables.add(
 			MenuRegistry.onDidChangeMenu((e) => {
 				for (const id of this._menuInfo.allMenuIds) {
@@ -564,8 +629,10 @@ class MenuImpl implements IMenu {
 			for (const item of events) {
 				isStructuralChange =
 					isStructuralChange || item.isStructuralChange;
+
 				isEnablementChange =
 					isEnablementChange || item.isEnablementChange;
+
 				isToggleChange = isToggleChange || item.isToggleChange;
 
 				if (
@@ -577,6 +644,7 @@ class MenuImpl implements IMenu {
 					break;
 				}
 			}
+
 			return {
 				menu: this,
 				isStructuralChange,
@@ -614,6 +682,7 @@ class MenuImpl implements IMenu {
 					}
 				}),
 			);
+
 			lazyListener.add(
 				hiddenStates.onDidChange((e) => {
 					this._onDidChange.fire({
@@ -625,6 +694,7 @@ class MenuImpl implements IMenu {
 				}),
 			);
 		};
+
 		this._onDidChange = new DebounceEmitter({
 			// start/stop context key listener
 			onWillAddFirstListener: startLazyListener,
@@ -632,15 +702,19 @@ class MenuImpl implements IMenu {
 			delay: options.eventDebounceDelay,
 			merge,
 		});
+
 		this.onDidChange = this._onDidChange.event;
 	}
+
 	getActions(
 		options?: IMenuActionOptions | undefined,
 	): [string, (MenuItemAction | SubmenuItemAction)[]][] {
 		return this._menuInfo.createActionGroups(options);
 	}
+
 	dispose(): void {
 		this._disposables.dispose();
+
 		this._onDidChange.dispose();
 	}
 }
@@ -699,6 +773,7 @@ export function createConfigureKeybindingAction(
 				!!keybindingService.lookupKeybinding(commandId); // This may only be called inside the `run()` method as it can be expensive on startup. #210529
 			const whenValue =
 				!hasKeybinding && when ? when.serialize() : undefined;
+
 			commandService.executeCommand(
 				"workbench.action.openGlobalKeybindings",
 				`@command:${commandId}` +

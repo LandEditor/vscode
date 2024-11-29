@@ -128,6 +128,7 @@ class ToggleBreakpointAction extends Action2 {
 					});
 				}
 			}
+
 			return;
 		}
 
@@ -452,6 +453,7 @@ class OpenDisassemblyViewAction extends Action2 {
 
 	run(accessor: ServicesAccessor): void {
 		const editorService = accessor.get(IEditorService);
+
 		editorService.openEditor(DisassemblyViewInput.instance, {
 			pinned: true,
 			revealIfOpened: true,
@@ -461,6 +463,7 @@ class OpenDisassemblyViewAction extends Action2 {
 
 class ToggleDisassemblyViewSourceCodeAction extends Action2 {
 	public static readonly ID = "debug.action.toggleDisassemblyViewSourceCode";
+
 	public static readonly configID: string =
 		"debug.disassemblyView.showSourceCode";
 
@@ -497,6 +500,7 @@ class ToggleDisassemblyViewSourceCodeAction extends Action2 {
 			const value =
 				configService.getValue<IDebugConfiguration>("debug")
 					.disassemblyView.showSourceCode;
+
 			configService.updateValue(
 				ToggleDisassemblyViewSourceCodeAction.configID,
 				!value,
@@ -507,6 +511,7 @@ class ToggleDisassemblyViewSourceCodeAction extends Action2 {
 
 export class RunToCursorAction extends EditorAction {
 	public static readonly ID = "editor.debug.action.runToCursor";
+
 	public static readonly LABEL: ILocalizedString = nls.localize2(
 		"runToCursor",
 		"Run to Cursor",
@@ -540,6 +545,7 @@ export class RunToCursorAction extends EditorAction {
 		if (!(editor.hasModel() && position)) {
 			return;
 		}
+
 		const uri = editor.getModel().uri;
 
 		const debugService = accessor.get(IDebugService);
@@ -564,12 +570,14 @@ export class RunToCursorAction extends EditorAction {
 			// otherwise set it at the precise column #102199
 			column = position.column;
 		}
+
 		await debugService.runTo(uri, position.lineNumber, column);
 	}
 }
 
 export class SelectionToReplAction extends EditorAction {
 	public static readonly ID = "editor.debug.action.selectionToRepl";
+
 	public static readonly LABEL: ILocalizedString = nls.localize2(
 		"evaluateInDebugConsole",
 		"Evaluate in Debug Console",
@@ -621,12 +629,14 @@ export class SelectionToReplAction extends EditorAction {
 		const replView = (await viewsService.openView(REPL_VIEW_ID, false)) as
 			| Repl
 			| undefined;
+
 		replView?.sendReplInput(text);
 	}
 }
 
 export class SelectionToWatchExpressionsAction extends EditorAction {
 	public static readonly ID = "editor.debug.action.selectionToWatch";
+
 	public static readonly LABEL: ILocalizedString = nls.localize2(
 		"addToWatch",
 		"Add to Watch",
@@ -681,6 +691,7 @@ export class SelectionToWatchExpressionsAction extends EditorAction {
 			if (!evaluatableExpression) {
 				return;
 			}
+
 			expression = evaluatableExpression.matchingExpression;
 		}
 
@@ -689,6 +700,7 @@ export class SelectionToWatchExpressionsAction extends EditorAction {
 		}
 
 		await viewsService.openView(WATCH_VIEW_ID);
+
 		debugService.addWatchExpression(expression);
 	}
 }
@@ -730,6 +742,7 @@ const NO_TARGETS_MESSAGE = nls.localize(
 
 class StepIntoTargetsAction extends EditorAction {
 	public static readonly ID = "editor.debug.action.stepIntoTargets";
+
 	public static readonly LABEL = nls.localize(
 		{
 			key: "stepIntoTargets",
@@ -793,6 +806,7 @@ class StepIntoTargetsAction extends EditorAction {
 					targetPosition,
 				);
 			}
+
 			return;
 		}
 
@@ -811,7 +825,9 @@ class StepIntoTargetsAction extends EditorAction {
 		if (selection) {
 			const positionalTargets: {
 				start: Position;
+
 				end?: Position;
+
 				target: DebugProtocol.StepInTarget;
 			}[] = [];
 
@@ -1017,6 +1033,7 @@ class CloseExceptionWidgetAction extends EditorAction {
 		const contribution = editor.getContribution<IDebugEditorContribution>(
 			EDITOR_CONTRIBUTION_ID,
 		);
+
 		contribution?.closeExceptionWidget();
 	}
 }

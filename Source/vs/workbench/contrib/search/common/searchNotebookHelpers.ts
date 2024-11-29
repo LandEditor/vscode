@@ -23,7 +23,9 @@ export interface INotebookFileMatchNoModel<U extends UriComponents = URI>
 }
 export interface INotebookCellMatchNoModel<U extends UriComponents = URI> {
 	index: number;
+
 	contentResults: ITextSearchMatch<U>[];
+
 	webviewResults: ITextSearchMatch<U>[];
 }
 export function isINotebookFileMatchNoModel(
@@ -42,20 +44,25 @@ export function genericCellMatchesToTextSearchMatches(
 	const contextGroupings: FindMatch[][] = [];
 
 	let currentContextGrouping: FindMatch[] = [];
+
 	contentMatches.forEach((match) => {
 		if (match.range.startLineNumber !== previousEndLine) {
 			if (currentContextGrouping.length > 0) {
 				contextGroupings.push([...currentContextGrouping]);
+
 				currentContextGrouping = [];
 			}
 		}
+
 		currentContextGrouping.push(match);
+
 		previousEndLine = match.range.endLineNumber;
 	});
 
 	if (currentContextGrouping.length > 0) {
 		contextGroupings.push([...currentContextGrouping]);
 	}
+
 	const textSearchResults = contextGroupings.map((grouping) => {
 		const lineTexts: string[] = [];
 
@@ -66,6 +73,7 @@ export function genericCellMatchesToTextSearchMatches(
 		for (let i = firstLine; i <= lastLine; i++) {
 			lineTexts.push(buffer.getLineContent(i));
 		}
+
 		return new TextSearchMatch(
 			lineTexts.join("\n") + "\n",
 			grouping.map(

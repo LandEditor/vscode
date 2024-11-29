@@ -87,13 +87,19 @@ export class TerminalStickyScrollOverlay extends Disposable {
 	private _stickyScrollOverlay?: RawXtermTerminal;
 
 	private readonly _xtermAddonLoader = new XtermAddonImporter();
+
 	private _serializeAddon?: SerializeAddonType;
+
 	private _webglAddon?: WebglAddonType;
+
 	private _ligaturesAddon?: LigaturesAddonType;
 
 	private _element?: HTMLElement;
+
 	private _currentStickyCommand?: ITerminalCommand | ICurrentPartialCommand;
+
 	private _currentContent?: string;
+
 	private _contextMenu: IMenu;
 
 	private readonly _refreshListeners = this._register(
@@ -101,7 +107,9 @@ export class TerminalStickyScrollOverlay extends Disposable {
 	);
 
 	private _state: OverlayState = OverlayState.Off;
+
 	private _isRefreshQueued = false;
+
 	private _rawMaxLineCount: number = 5;
 
 	constructor(
@@ -174,6 +182,7 @@ export class TerminalStickyScrollOverlay extends Disposable {
 			if (this._store.isDisposed) {
 				return;
 			}
+
 			this._stickyScrollOverlay = this._register(
 				new ctor({
 					rows: 1,
@@ -182,6 +191,7 @@ export class TerminalStickyScrollOverlay extends Disposable {
 					...this._getOptions(),
 				}),
 			);
+
 			this._refreshGpuAcceleration();
 
 			this._register(
@@ -191,17 +201,21 @@ export class TerminalStickyScrollOverlay extends Disposable {
 					}
 				}),
 			);
+
 			this._register(
 				this._themeService.onDidColorThemeChange(() => {
 					this._syncOptions();
 				}),
 			);
+
 			this._register(
 				this._xterm.raw.onResize(() => {
 					this._syncOptions();
+
 					this._refresh();
 				}),
 			);
+
 			this._register(
 				this._instance.onDidChangeVisibility((isVisible) => {
 					if (isVisible) {
@@ -216,7 +230,9 @@ export class TerminalStickyScrollOverlay extends Disposable {
 					if (this._store.isDisposed) {
 						return;
 					}
+
 					this._serializeAddon = this._register(new SerializeAddon());
+
 					this._xterm.raw.loadAddon(this._serializeAddon);
 					// Trigger a render as the serialize addon is required to render
 					this._refresh();
@@ -236,15 +252,19 @@ export class TerminalStickyScrollOverlay extends Disposable {
 		if (this._state === state) {
 			return;
 		}
+
 		switch (state) {
 			case OverlayState.Off: {
 				this._setVisible(false);
+
 				this._uninstallRefreshListeners();
 
 				break;
 			}
+
 			case OverlayState.On: {
 				this._refresh();
+
 				this._installRefreshListeners();
 
 				break;
@@ -279,6 +299,7 @@ export class TerminalStickyScrollOverlay extends Disposable {
 		if (isVisible) {
 			this._ensureElement();
 		}
+
 		this._element?.classList.toggle(CssClasses.Visible, isVisible);
 	}
 
@@ -286,9 +307,12 @@ export class TerminalStickyScrollOverlay extends Disposable {
 		if (this._isRefreshQueued) {
 			return;
 		}
+
 		this._isRefreshQueued = true;
+
 		queueMicrotask(() => {
 			this._refreshNow();
+
 			this._isRefreshQueued = false;
 		});
 	}
@@ -324,6 +348,7 @@ export class TerminalStickyScrollOverlay extends Disposable {
 
 				return;
 			}
+
 			this._setVisible(false);
 
 			return;
@@ -452,7 +477,9 @@ export class TerminalStickyScrollOverlay extends Disposable {
 			);
 			// Clear attrs, reset cursor position, clear right
 			this._stickyScrollOverlay.write("\x1b[0m\x1b[H\x1b[2J");
+
 			this._stickyScrollOverlay.write(content);
+
 			this._currentContent = content;
 			// DEBUG: Log to show the command line we know
 			// this._stickyScrollOverlay.write(` [${command?.command}]`);
@@ -460,6 +487,7 @@ export class TerminalStickyScrollOverlay extends Disposable {
 
 		if (content) {
 			this._currentStickyCommand = command;
+
 			this._setVisible(true);
 
 			// Position the sticky scroll such that it never overlaps the prompt/output of the
@@ -491,6 +519,7 @@ export class TerminalStickyScrollOverlay extends Disposable {
 								buffer.viewportY +
 								stickyScrollLineCount -
 								command.endMarker.line;
+
 							endMarkerOffset = diff * rowHeight;
 						}
 					}
@@ -518,8 +547,11 @@ export class TerminalStickyScrollOverlay extends Disposable {
 		const overlay = this._stickyScrollOverlay;
 
 		const hoverOverlay = $(".hover-overlay");
+
 		this._element = $(".terminal-sticky-scroll", undefined, hoverOverlay);
+
 		this._xterm.raw.element.parentElement.append(this._element);
+
 		this._register(toDisposable(() => this._element?.remove()));
 
 		// Fill tooltip
@@ -547,6 +579,7 @@ export class TerminalStickyScrollOverlay extends Disposable {
 					);
 			}
 		}
+
 		const scrollToNextCommandKeybinding =
 			this._keybindingService.lookupKeybinding(
 				TerminalCommandId.ScrollToNextCommand,
@@ -566,6 +599,7 @@ export class TerminalStickyScrollOverlay extends Disposable {
 					);
 			}
 		}
+
 		hoverOverlay.title = hoverTitle;
 
 		const scrollBarWidth = (this._xterm.raw as any as { _core: IXtermCore })
@@ -583,7 +617,9 @@ export class TerminalStickyScrollOverlay extends Disposable {
 				if (this._store.isDisposed || !this._stickyScrollOverlay) {
 					return;
 				}
+
 				this._ligaturesAddon = new LigaturesAddon();
+
 				this._stickyScrollOverlay.loadAddon(this._ligaturesAddon);
 			});
 
@@ -594,6 +630,7 @@ export class TerminalStickyScrollOverlay extends Disposable {
 					this._xterm.markTracker.revealCommand(
 						this._currentStickyCommand,
 					);
+
 					this._instance.focus();
 				}
 			}),
@@ -613,13 +650,17 @@ export class TerminalStickyScrollOverlay extends Disposable {
 		this._register(
 			addDisposableListener(hoverOverlay, "mousedown", (e) => {
 				e.stopImmediatePropagation();
+
 				e.preventDefault();
 			}),
 		);
+
 		this._register(
 			addDisposableListener(hoverOverlay, "contextmenu", (e) => {
 				e.stopImmediatePropagation();
+
 				e.preventDefault();
+
 				openContextMenu(
 					getWindow(hoverOverlay),
 					e,
@@ -640,6 +681,7 @@ export class TerminalStickyScrollOverlay extends Disposable {
 				() => (overlay.options.theme = this._getTheme(true)),
 			),
 		);
+
 		this._register(
 			addStandardDisposableListener(
 				hoverOverlay,
@@ -654,11 +696,14 @@ export class TerminalStickyScrollOverlay extends Disposable {
 		if (!this._stickyScrollOverlay) {
 			return;
 		}
+
 		this._stickyScrollOverlay.resize(
 			this._xterm.raw.cols,
 			this._stickyScrollOverlay.rows,
 		);
+
 		this._stickyScrollOverlay.options = this._getOptions();
+
 		this._refreshGpuAcceleration();
 	}
 
@@ -694,10 +739,13 @@ export class TerminalStickyScrollOverlay extends Disposable {
 			if (this._store.isDisposed) {
 				return;
 			}
+
 			this._webglAddon = this._register(new WebglAddon());
+
 			this._stickyScrollOverlay?.loadAddon(this._webglAddon);
 		} else if (!this._shouldLoadWebgl() && this._webglAddon) {
 			this._webglAddon.dispose();
+
 			this._webglAddon = undefined;
 		}
 	}
@@ -736,10 +784,12 @@ function lineStartsWith(line: IBufferLine | undefined, text: string): boolean {
 	if (!line) {
 		return false;
 	}
+
 	for (let i = 0; i < text.length; i++) {
 		if (line.getCell(i)?.getChars() !== text[i]) {
 			return false;
 		}
 	}
+
 	return true;
 }

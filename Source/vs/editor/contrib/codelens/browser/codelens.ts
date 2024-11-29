@@ -23,17 +23,22 @@ import { IModelService } from "../../../common/services/model.js";
 
 export interface CodeLensItem {
 	symbol: CodeLens;
+
 	provider: CodeLensProvider;
 }
 export class CodeLensModel {
 	lenses: CodeLensItem[] = [];
+
 	private readonly _disposables = new DisposableStore();
+
 	dispose(): void {
 		this._disposables.dispose();
 	}
+
 	get isDisposed(): boolean {
 		return this._disposables.isDisposed;
 	}
+
 	add(list: CodeLensList, provider: CodeLensProvider): void {
 		this._disposables.add(list);
 
@@ -68,7 +73,9 @@ export async function getCodeLensModel(
 			onUnexpectedExternalError(err);
 		}
 	});
+
 	await Promise.all(promises);
+
 	result.lenses = result.lenses.sort((a, b) => {
 		// sort by lineNumber, provider-rank, and column
 		if (a.symbol.range.startLineNumber < b.symbol.range.startLineNumber) {
@@ -100,7 +107,9 @@ CommandsRegistry.registerCommand(
 	"_executeCodeLensProvider",
 	function (accessor, ...args: [URI, number | undefined | null]) {
 		let [uri, itemResolveCount] = args;
+
 		assertType(URI.isUri(uri));
+
 		assertType(typeof itemResolveCount === "number" || !itemResolveCount);
 
 		const { codeLensProvider } = accessor.get(ILanguageFeaturesService);
@@ -110,6 +119,7 @@ CommandsRegistry.registerCommand(
 		if (!model) {
 			throw illegalArgument();
 		}
+
 		const result: CodeLens[] = [];
 
 		const disposables = new DisposableStore();
@@ -144,6 +154,7 @@ CommandsRegistry.registerCommand(
 						);
 					}
 				}
+
 				return Promise.all(resolve);
 			})
 			.then(() => {

@@ -217,21 +217,25 @@ class ProblemReporter implements TaskConfig.IProblemReporter {
 
 	public info(message: string): void {
 		this._validationStatus.state = ValidationState.Info;
+
 		this._outputChannel.append(message + "\n");
 	}
 
 	public warn(message: string): void {
 		this._validationStatus.state = ValidationState.Warning;
+
 		this._outputChannel.append(message + "\n");
 	}
 
 	public error(message: string): void {
 		this._validationStatus.state = ValidationState.Error;
+
 		this._outputChannel.append(message + "\n");
 	}
 
 	public fatal(message: string): void {
 		this._validationStatus.state = ValidationState.Fatal;
+
 		this._outputChannel.append(message + "\n");
 	}
 
@@ -242,12 +246,15 @@ class ProblemReporter implements TaskConfig.IProblemReporter {
 
 export interface IWorkspaceFolderConfigurationResult {
 	workspaceFolder: IWorkspaceFolder;
+
 	config: TaskConfig.IExternalTaskRunnerConfiguration | undefined;
+
 	hasErrors: boolean;
 }
 
 interface ICommandUpgrade {
 	command?: string;
+
 	args?: string[];
 }
 
@@ -271,8 +278,10 @@ class TaskMap {
 			)
 				? workspaceFolder.uri
 				: workspaceFolder.configuration;
+
 			key = uri ? uri.toString() : "";
 		}
+
 		return key;
 	}
 
@@ -285,8 +294,10 @@ class TaskMap {
 
 		if (!result) {
 			result = [];
+
 			this._store.set(key, result);
 		}
+
 		return result;
 	}
 
@@ -300,13 +311,16 @@ class TaskMap {
 
 		if (!values) {
 			values = [];
+
 			this._store.set(key, values);
 		}
+
 		values.push(...task);
 	}
 
 	public all(): Task[] {
 		const result: Task[] = [];
+
 		this._store.forEach((values) => result.push(...values));
 
 		return result;
@@ -318,40 +332,59 @@ export abstract class AbstractTaskService
 	implements ITaskService
 {
 	// private static autoDetectTelemetryName: string = 'taskServer.autoDetect';
+
 	private static readonly RecentlyUsedTasks_Key =
 		"workbench.tasks.recentlyUsedTasks";
+
 	private static readonly RecentlyUsedTasks_KeyV2 =
 		"workbench.tasks.recentlyUsedTasks2";
+
 	private static readonly PersistentTasks_Key =
 		"workbench.tasks.persistentTasks";
+
 	private static readonly IgnoreTask010DonotShowAgain_key =
 		"workbench.tasks.ignoreTask010Shown";
 
 	public _serviceBrand: undefined;
+
 	public static OutputChannelId: string = "tasks";
+
 	public static OutputChannelLabel: string = nls.localize("tasks", "Tasks");
 
 	private static _nextHandle: number = 0;
 
 	private _tasksReconnected: boolean = false;
+
 	private _schemaVersion: JsonSchemaVersion | undefined;
+
 	private _executionEngine: ExecutionEngine | undefined;
+
 	private _workspaceFolders: IWorkspaceFolder[] | undefined;
+
 	private _workspace: IWorkspace | undefined;
+
 	private _ignoredWorkspaceFolders: IWorkspaceFolder[] | undefined;
+
 	private _showIgnoreMessage?: boolean;
+
 	private _providers: Map<number, ITaskProvider>;
+
 	private _providerTypes: Map<number, string>;
+
 	protected _taskSystemInfos: Map<string, ITaskSystemInfo[]>;
 
 	protected _workspaceTasksPromise?: Promise<
 		Map<string, IWorkspaceFolderTaskResult>
 	>;
+
 	protected readonly _whenTaskSystemReady: Promise<void>;
 
 	protected _taskSystem?: ITaskSystem;
+
 	protected _taskSystemListeners?: IDisposable[] = [];
+
 	private _recentlyUsedTasksV1: LRUCache<string, string> | undefined;
+
 	private _recentlyUsedTasks: LRUCache<string, string> | undefined;
 
 	private _persistentTasks: LRUCache<string, string> | undefined;
@@ -359,24 +392,38 @@ export abstract class AbstractTaskService
 	protected _taskRunningState: IContextKey<boolean>;
 
 	protected _outputChannel: IOutputChannel;
+
 	protected readonly _onDidStateChange: Emitter<ITaskEvent>;
+
 	private _waitForAllSupportedExecutions: Promise<void>;
+
 	private _onDidRegisterSupportedExecutions: Emitter<void> = new Emitter();
+
 	private _onDidRegisterAllSupportedExecutions: Emitter<void> = new Emitter();
+
 	private _onDidChangeTaskSystemInfo: Emitter<void> = new Emitter();
+
 	private _willRestart: boolean = false;
+
 	public onDidChangeTaskSystemInfo: Event<void> =
 		this._onDidChangeTaskSystemInfo.event;
+
 	private _onDidReconnectToTasks: Emitter<void> = new Emitter();
+
 	public onDidReconnectToTasks: Event<void> =
 		this._onDidReconnectToTasks.event;
+
 	private _onDidChangeTaskConfig: Emitter<void> = new Emitter();
+
 	public onDidChangeTaskConfig: Event<void> =
 		this._onDidChangeTaskConfig.event;
+
 	public get isReconnected(): boolean {
 		return this._tasksReconnected;
 	}
+
 	private _onDidChangeTaskProviders = this._register(new Emitter<void>());
+
 	public onDidChangeTaskProviders = this._onDidChangeTaskProviders.event;
 
 	private _activatedTaskProviders: Set<string> = new Set();
@@ -439,31 +486,43 @@ export abstract class AbstractTaskService
 		private readonly _instantiationService: IInstantiationService,
 	) {
 		super();
+
 		this._whenTaskSystemReady = Event.toPromise(
 			this.onDidChangeTaskSystemInfo,
 		);
+
 		this._workspaceTasksPromise = undefined;
+
 		this._taskSystem = undefined;
+
 		this._taskSystemListeners = undefined;
+
 		this._outputChannel = this._outputService.getChannel(
 			AbstractTaskService.OutputChannelId,
 		)!;
+
 		this._providers = new Map<number, ITaskProvider>();
+
 		this._providerTypes = new Map<number, string>();
+
 		this._taskSystemInfos = new Map<string, ITaskSystemInfo[]>();
+
 		this._register(
 			this._contextService.onDidChangeWorkspaceFolders(() => {
 				const folderSetup = this._computeWorkspaceFolderSetup();
 
 				if (this.executionEngine !== folderSetup[2]) {
 					this._disposeTaskSystemListeners();
+
 					this._taskSystem = undefined;
 				}
+
 				this._updateSetup(folderSetup);
 
 				return this._updateWorkspaceTasks(TaskRunSource.FolderOpen);
 			}),
 		);
+
 		this._register(
 			this._configurationService.onDidChangeConfiguration(async (e) => {
 				if (
@@ -487,6 +546,7 @@ export abstract class AbstractTaskService
 						)
 					) {
 						this._persistentTasks?.clear();
+
 						this._storageService.remove(
 							AbstractTaskService.PersistentTasks_Key,
 							StorageScope.WORKSPACE,
@@ -495,21 +555,28 @@ export abstract class AbstractTaskService
 				}
 
 				this._setTaskLRUCacheLimit();
+
 				await this._updateWorkspaceTasks(
 					TaskRunSource.ConfigurationChange,
 				);
+
 				this._onDidChangeTaskConfig.fire();
 			}),
 		);
+
 		this._taskRunningState = TASK_RUNNING_STATE.bindTo(_contextKeyService);
+
 		this._onDidStateChange = this._register(new Emitter());
+
 		this._registerCommands().then(() =>
 			TaskCommandsRegistered.bindTo(this._contextKeyService).set(true),
 		);
+
 		ServerlessWebContext.bindTo(this._contextKeyService).set(
 			Platform.isWeb &&
 				!remoteAgentService.getConnection()?.remoteAuthority,
 		);
+
 		this._configurationResolverService.contributeVariable(
 			"defaultBuildTask",
 			async (): Promise<string | undefined> => {
@@ -553,14 +620,17 @@ export abstract class AbstractTaskService
 				if (!task) {
 					return undefined;
 				}
+
 				return task._label;
 			},
 		);
+
 		this._register(
 			this._lifecycleService.onBeforeShutdown((e) => {
 				this._willRestart = e.reason !== ShutdownReason.RELOAD;
 			}),
 		);
+
 		this._register(
 			this.onDidStateChange((e) => {
 				this._log(
@@ -590,6 +660,7 @@ export abstract class AbstractTaskService
 				}
 			}),
 		);
+
 		this._waitForAllSupportedExecutions = new Promise((resolve) => {
 			Event.once(this._onDidRegisterAllSupportedExecutions.event)(() =>
 				resolve(),
@@ -607,10 +678,12 @@ export abstract class AbstractTaskService
 					this._attemptTaskReconnection();
 				} else {
 					this._tasksReconnected = true;
+
 					this._onDidReconnectToTasks.fire();
 				}
 			});
 		}
+
 		this._upgrade();
 	}
 
@@ -623,8 +696,10 @@ export abstract class AbstractTaskService
 			const customContext = CustomExecutionSupportedContext.bindTo(
 				this._contextKeyService,
 			);
+
 			customContext.set(custom);
 		}
+
 		const isVirtual = !!VirtualWorkspaceContext.getValue(
 			this._contextKeyService,
 		);
@@ -633,16 +708,20 @@ export abstract class AbstractTaskService
 			const shellContext = ShellExecutionSupportedContext.bindTo(
 				this._contextKeyService,
 			);
+
 			shellContext.set(shell && !isVirtual);
 		}
+
 		if (process !== undefined) {
 			const processContext = ProcessExecutionSupportedContext.bindTo(
 				this._contextKeyService,
 			);
+
 			processContext.set(process && !isVirtual);
 		}
 		// update tasks so an incomplete list isn't returned when getWorkspaceTasks is called
 		this._workspaceTasksPromise = undefined;
+
 		this._onDidRegisterSupportedExecutions.fire();
 
 		if (Platform.isWeb || (custom && shell && process)) {
@@ -659,12 +738,15 @@ export abstract class AbstractTaskService
 				),
 				true,
 			);
+
 			this._tasksReconnected = true;
+
 			this._storageService.remove(
 				AbstractTaskService.PersistentTasks_Key,
 				StorageScope.WORKSPACE,
 			);
 		}
+
 		if (
 			!this._configurationService.getValue(TaskSettingId.Reconnection) ||
 			this._tasksReconnected
@@ -680,10 +762,12 @@ export abstract class AbstractTaskService
 				),
 				true,
 			);
+
 			this._tasksReconnected = true;
 
 			return;
 		}
+
 		this._log(
 			nls.localize(
 				"TaskService.reconnecting",
@@ -691,8 +775,10 @@ export abstract class AbstractTaskService
 			),
 			true,
 		);
+
 		this.getWorkspaceTasks(TaskRunSource.Reconnect).then(async () => {
 			this._tasksReconnected = await this._reconnectTasks();
+
 			this._log(
 				nls.localize(
 					"TaskService.reconnected",
@@ -700,6 +786,7 @@ export abstract class AbstractTaskService
 				),
 				true,
 			);
+
 			this._onDidReconnectToTasks.fire();
 		});
 	}
@@ -718,7 +805,9 @@ export abstract class AbstractTaskService
 
 			return true;
 		}
+
 		const taskLabels = tasks.map((task) => task._label).join(", ");
+
 		this._log(
 			nls.localize(
 				"TaskService.reconnectingTasks",
@@ -739,6 +828,7 @@ export abstract class AbstractTaskService
 				this.run(task, undefined, TaskRunSource.Reconnect);
 			}
 		}
+
 		return true;
 	}
 
@@ -829,6 +919,7 @@ export abstract class AbstractTaskService
 				}
 			},
 		);
+
 		CommandsRegistry.registerCommand(
 			"workbench.action.tasks.showLog",
 			() => {
@@ -927,6 +1018,7 @@ export abstract class AbstractTaskService
 		if (!this._workspaceFolders) {
 			this._updateSetup();
 		}
+
 		return this._workspaceFolders!;
 	}
 
@@ -934,6 +1026,7 @@ export abstract class AbstractTaskService
 		if (!this._ignoredWorkspaceFolders) {
 			this._updateSetup();
 		}
+
 		return this._ignoredWorkspaceFolders!;
 	}
 
@@ -941,6 +1034,7 @@ export abstract class AbstractTaskService
 		if (this._executionEngine === undefined) {
 			this._updateSetup();
 		}
+
 		return this._executionEngine!;
 	}
 
@@ -948,6 +1042,7 @@ export abstract class AbstractTaskService
 		if (this._schemaVersion === undefined) {
 			this._updateSetup();
 		}
+
 		return this._schemaVersion!;
 	}
 
@@ -959,11 +1054,13 @@ export abstract class AbstractTaskService
 				false,
 			);
 		}
+
 		return this._showIgnoreMessage;
 	}
 
 	private _getActivationEvents(type: string | undefined): string[] {
 		const result: string[] = [];
+
 		result.push("onCommand:workbench.action.tasks.runTask");
 
 		if (type) {
@@ -975,6 +1072,7 @@ export abstract class AbstractTaskService
 				result.push(`onTaskType:${definition.taskType}`);
 			}
 		}
+
 		return result;
 	}
 
@@ -992,6 +1090,7 @@ export abstract class AbstractTaskService
 		if (!hasLoggedActivation) {
 			this._log("Activating task providers " + (type ?? "all"));
 		}
+
 		const result = await raceTimeout(
 			Promise.all(
 				this._getActivationEvents(type).map((activationEvent) =>
@@ -1022,6 +1121,7 @@ export abstract class AbstractTaskService
 		if (!setup) {
 			setup = this._computeWorkspaceFolderSetup();
 		}
+
 		this._workspaceFolders = setup[0];
 
 		if (this._ignoredWorkspaceFolders) {
@@ -1029,6 +1129,7 @@ export abstract class AbstractTaskService
 				this._showIgnoreMessage = undefined;
 			} else {
 				const set: Set<string> = new Set();
+
 				this._ignoredWorkspaceFolders.forEach((folder) =>
 					set.add(folder.uri.toString()),
 				);
@@ -1042,9 +1143,13 @@ export abstract class AbstractTaskService
 				}
 			}
 		}
+
 		this._ignoredWorkspaceFolders = setup[1];
+
 		this._executionEngine = setup[2];
+
 		this._schemaVersion = setup[3];
+
 		this._workspace = setup[4];
 	}
 
@@ -1085,6 +1190,7 @@ export abstract class AbstractTaskService
 	protected _disposeTaskSystemListeners(): void {
 		if (this._taskSystemListeners) {
 			dispose(this._taskSystemListeners);
+
 			this._taskSystemListeners = undefined;
 		}
 	}
@@ -1098,15 +1204,21 @@ export abstract class AbstractTaskService
 				dispose: () => {},
 			};
 		}
+
 		const handle = AbstractTaskService._nextHandle++;
+
 		this._providers.set(handle, provider);
+
 		this._providerTypes.set(handle, type);
+
 		this._onDidChangeTaskProviders.fire();
 
 		return {
 			dispose: () => {
 				this._providers.delete(handle);
+
 				this._providerTypes.delete(handle);
+
 				this._onDidChangeTaskProviders.fire();
 			},
 		};
@@ -1120,6 +1232,7 @@ export abstract class AbstractTaskService
 		if (this._environmentService.remoteAuthority) {
 			return infosCount > 1;
 		}
+
 		return infosCount > 0;
 	}
 
@@ -1131,6 +1244,7 @@ export abstract class AbstractTaskService
 				? this.workspaceFolders[0].uri.scheme
 				: key;
 		}
+
 		if (!this._taskSystemInfos.has(key)) {
 			this._taskSystemInfos.set(key, [info]);
 		} else {
@@ -1162,6 +1276,7 @@ export abstract class AbstractTaskService
 		if (!this._taskSystem) {
 			return Promise.resolve();
 		}
+
 		return this._taskSystem.customExecutionComplete(task, result);
 	}
 
@@ -1190,6 +1305,7 @@ export abstract class AbstractTaskService
 					}
 				}
 			}
+
 			if (workspaceTasks.set) {
 				for (const task of workspaceTasks.set.tasks) {
 					if (predicate(task, workspaceTasks.workspaceFolder)) {
@@ -1198,6 +1314,7 @@ export abstract class AbstractTaskService
 				}
 			}
 		}
+
 		return result;
 	}
 
@@ -1214,6 +1331,7 @@ export abstract class AbstractTaskService
 					(!isDefault || !!taskGroup.isDefault)
 				);
 			}
+
 			return false;
 		});
 	}
@@ -1227,6 +1345,7 @@ export abstract class AbstractTaskService
 		if (!(await this._trust())) {
 			return;
 		}
+
 		const name = Types.isString(folder)
 			? folder
 			: isWorkspaceFolder(folder)
@@ -1250,6 +1369,7 @@ export abstract class AbstractTaskService
 				),
 			);
 		}
+
 		const key: string | KeyedTaskIdentifier | undefined = !Types.isString(
 			identifier,
 		)
@@ -1273,9 +1393,11 @@ export abstract class AbstractTaskService
 				) {
 					return false;
 				}
+
 				return task.matches(key, compareId);
 			},
 		);
+
 		matchedTasks.sort((task) =>
 			task._source.kind === TaskSourceKind.Extension ? 1 : -1,
 		);
@@ -1295,11 +1417,13 @@ export abstract class AbstractTaskService
 		const map = await this._getGroupedTasks({ type });
 
 		let values = map.get(folder);
+
 		values = values.concat(map.get(USER_TASKS_GROUP_KEY));
 
 		if (!values) {
 			return undefined;
 		}
+
 		values = values
 			.filter((task) => task.matches(key, compareId))
 			.sort((task) =>
@@ -1315,6 +1439,7 @@ export abstract class AbstractTaskService
 		if (!(await this._trust())) {
 			return;
 		}
+
 		await this._activateTaskProviders(configuringTask.type);
 
 		let matchingProvider: ITaskProvider | undefined;
@@ -1333,6 +1458,7 @@ export abstract class AbstractTaskService
 
 					continue;
 				}
+
 				matchingProvider = provider;
 
 				break;
@@ -1349,6 +1475,7 @@ export abstract class AbstractTaskService
 					),
 				);
 			}
+
 			return;
 		}
 
@@ -1390,9 +1517,11 @@ export abstract class AbstractTaskService
 		if (!(await this._trust())) {
 			return [];
 		}
+
 		if (!this._versionAndEngineCompatible(filter)) {
 			return Promise.resolve<Task[]>([]);
 		}
+
 		return this._getGroupedTasks(filter).then((map) =>
 			this.applyFilterToTaskMap(filter, map),
 		);
@@ -1418,6 +1547,7 @@ export abstract class AbstractTaskService
 				}
 			}
 		}
+
 		return types;
 	}
 
@@ -1433,6 +1563,7 @@ export abstract class AbstractTaskService
 		if (!this._taskSystem) {
 			return Promise.resolve(false);
 		}
+
 		return this._taskSystem.isActive();
 	}
 
@@ -1440,6 +1571,7 @@ export abstract class AbstractTaskService
 		if (!this._taskSystem) {
 			return [];
 		}
+
 		return this._taskSystem.getActiveTasks();
 	}
 
@@ -1447,6 +1579,7 @@ export abstract class AbstractTaskService
 		if (!this._taskSystem) {
 			return [];
 		}
+
 		return this._taskSystem.getBusyTasks();
 	}
 
@@ -1454,10 +1587,12 @@ export abstract class AbstractTaskService
 		if (this._recentlyUsedTasksV1) {
 			return this._recentlyUsedTasksV1;
 		}
+
 		const quickOpenHistoryLimit =
 			this._configurationService.getValue<number>(
 				QUICKOPEN_HISTORY_LIMIT_CONFIG,
 			);
+
 		this._recentlyUsedTasksV1 = new LRUCache<string, string>(
 			quickOpenHistoryLimit,
 		);
@@ -1480,6 +1615,7 @@ export abstract class AbstractTaskService
 				// Ignore. We use the empty result
 			}
 		}
+
 		return this._recentlyUsedTasksV1;
 	}
 
@@ -1490,7 +1626,9 @@ export abstract class AbstractTaskService
 		if (!filter || !filter.type) {
 			return map.all();
 		}
+
 		const result: Task[] = [];
+
 		map.forEach((tasks) => {
 			for (const task of tasks) {
 				if (
@@ -1528,10 +1666,12 @@ export abstract class AbstractTaskService
 		if (this._recentlyUsedTasks) {
 			return this._recentlyUsedTasks;
 		}
+
 		const quickOpenHistoryLimit =
 			this._configurationService.getValue<number>(
 				QUICKOPEN_HISTORY_LIMIT_CONFIG,
 			);
+
 		this._recentlyUsedTasks = new LRUCache<string, string>(
 			quickOpenHistoryLimit,
 		);
@@ -1554,6 +1694,7 @@ export abstract class AbstractTaskService
 				// Ignore. We use the empty result
 			}
 		}
+
 		return this._recentlyUsedTasks;
 	}
 
@@ -1591,11 +1732,13 @@ export abstract class AbstractTaskService
 				// Ignore. We use the empty result
 			}
 		}
+
 		return this._persistentTasks;
 	}
 
 	private _getFolderFromTaskKey(key: string): {
 		folder: string | undefined;
+
 		isWorkspaceFile: boolean | undefined;
 	} {
 		const keyValue: { folder: string | undefined; id: string | undefined } =
@@ -1614,6 +1757,7 @@ export abstract class AbstractTaskService
 	): Promise<(Task | ConfiguringTask)[]> {
 		const folderMap: IStringDictionary<IWorkspaceFolder> =
 			Object.create(null);
+
 		this.workspaceFolders.forEach((folder) => {
 			folderMap[folder.uri.toString()] = folder;
 		});
@@ -1625,6 +1769,7 @@ export abstract class AbstractTaskService
 		const storedTasks = this._getTasksFromStorage(type);
 
 		const tasks: (Task | ConfiguringTask)[] = [];
+
 		this._log(
 			nls.localize(
 				"taskService.getSavedTasks",
@@ -1641,6 +1786,7 @@ export abstract class AbstractTaskService
 			if (folder && !map.has(folder)) {
 				map.set(folder, []);
 			}
+
 			if (
 				folder &&
 				(folderMap[folder] || folder === USER_TASKS_GROUP_KEY) &&
@@ -1649,6 +1795,7 @@ export abstract class AbstractTaskService
 				map.get(folder).push(task);
 			}
 		}
+
 		for (const entry of storedTasks.entries()) {
 			try {
 				const key = entry[0];
@@ -1656,6 +1803,7 @@ export abstract class AbstractTaskService
 				const task = JSON.parse(entry[1]);
 
 				const folderInfo = this._getFolderFromTaskKey(key);
+
 				this._log(
 					nls.localize(
 						"taskService.getSavedTasks.reading",
@@ -1666,6 +1814,7 @@ export abstract class AbstractTaskService
 					),
 					true,
 				);
+
 				addTaskToMap(
 					folderInfo.isWorkspaceFile
 						? workspaceToTaskMap
@@ -1703,6 +1852,7 @@ export abstract class AbstractTaskService
 						? TaskConfig.TaskConfigSource.WorkspaceFile
 						: TaskConfig.TaskConfigSource.TasksJson
 					: TaskConfig.TaskConfigSource.User;
+
 				await that._computeTasksForSingleConfig(
 					folderMap[key] ?? (await that._getAFolder()),
 					{
@@ -1715,6 +1865,7 @@ export abstract class AbstractTaskService
 					taskConfigSource,
 					true,
 				);
+
 				custom.forEach((task) => {
 					const taskKey = task.getKey();
 
@@ -1732,12 +1883,15 @@ export abstract class AbstractTaskService
 				}
 			}
 		}
+
 		await readTasks(this, folderToTasksMap, false);
+
 		await readTasks(this, workspaceToTaskMap, true);
 
 		for (const key of storedTasks.keys()) {
 			if (readTasksMap.has(key)) {
 				tasks.push(readTasksMap.get(key)!);
+
 				this._log(
 					nls.localize(
 						"taskService.getSavedTasks.resolved",
@@ -1757,12 +1911,14 @@ export abstract class AbstractTaskService
 				);
 			}
 		}
+
 		return tasks;
 	}
 
 	public removeRecentlyUsedTask(taskRecentlyUsedKey: string) {
 		if (this._getTasksFromStorage("historical").has(taskRecentlyUsedKey)) {
 			this._getTasksFromStorage("historical").delete(taskRecentlyUsedKey);
+
 			this._saveRecentlyUsedTasks();
 		}
 	}
@@ -1779,6 +1935,7 @@ export abstract class AbstractTaskService
 
 		if (this._getTasksFromStorage("persistent").has(key)) {
 			this._getTasksFromStorage("persistent").delete(key);
+
 			this._savePersistentTasks();
 		}
 	}
@@ -1805,6 +1962,7 @@ export abstract class AbstractTaskService
 
 				const customized: IStringDictionary<ConfiguringTask> =
 					Object.create(null);
+
 				await this._computeTasksForSingleConfig(
 					task._source.workspaceFolder ?? this.workspaceFolders[0],
 					{
@@ -1822,10 +1980,12 @@ export abstract class AbstractTaskService
 					key = customized[configuration].getKey()!;
 				}
 			}
+
 			this._getTasksFromStorage("historical").set(
 				key,
 				JSON.stringify(customizations),
 			);
+
 			this._saveRecentlyUsedTasks();
 		}
 	}
@@ -1834,6 +1994,7 @@ export abstract class AbstractTaskService
 		if (!this._recentlyUsedTasks) {
 			return;
 		}
+
 		const quickOpenHistoryLimit =
 			this._configurationService.getValue<number>(
 				QUICKOPEN_HISTORY_LIMIT_CONFIG,
@@ -1842,11 +2003,13 @@ export abstract class AbstractTaskService
 		if (quickOpenHistoryLimit === 0) {
 			return;
 		}
+
 		let keys = [...this._recentlyUsedTasks.keys()];
 
 		if (keys.length > quickOpenHistoryLimit) {
 			keys = keys.slice(0, quickOpenHistoryLimit);
 		}
+
 		const keyValues: [string, string][] = [];
 
 		for (const key of keys) {
@@ -1855,6 +2018,7 @@ export abstract class AbstractTaskService
 				this._recentlyUsedTasks.get(key, Touch.None)!,
 			]);
 		}
+
 		this._storageService.store(
 			AbstractTaskService.RecentlyUsedTasks_KeyV2,
 			JSON.stringify(keyValues),
@@ -1867,6 +2031,7 @@ export abstract class AbstractTaskService
 		if (!this._configurationService.getValue(TaskSettingId.Reconnection)) {
 			return;
 		}
+
 		let key = task.getKey();
 
 		if (!InMemoryTask.is(task) && key) {
@@ -1877,6 +2042,7 @@ export abstract class AbstractTaskService
 
 				const customized: IStringDictionary<ConfiguringTask> =
 					Object.create(null);
+
 				await this._computeTasksForSingleConfig(
 					task._source.workspaceFolder ?? this.workspaceFolders[0],
 					{
@@ -1894,9 +2060,11 @@ export abstract class AbstractTaskService
 					key = customized[configuration].getKey()!;
 				}
 			}
+
 			if (!task.configurationProperties.isBackground) {
 				return;
 			}
+
 			this._log(
 				nls.localize(
 					"taskService.setPersistentTask",
@@ -1905,10 +2073,12 @@ export abstract class AbstractTaskService
 				),
 				true,
 			);
+
 			this._getTasksFromStorage("persistent").set(
 				key,
 				JSON.stringify(customizations),
 			);
+
 			this._savePersistentTasks();
 		}
 	}
@@ -1923,6 +2093,7 @@ export abstract class AbstractTaskService
 		for (const key of keys) {
 			keyValues.push([key, this._persistentTasks.get(key, Touch.None)!]);
 		}
+
 		this._log(
 			nls.localize(
 				"savePersistentTask",
@@ -1931,6 +2102,7 @@ export abstract class AbstractTaskService
 			),
 			true,
 		);
+
 		this._storageService.store(
 			AbstractTaskService.PersistentTasks_Key,
 			JSON.stringify(keyValues),
@@ -1964,10 +2136,12 @@ export abstract class AbstractTaskService
 			} else {
 				resolvedTask = tasksOfGroup[0];
 			}
+
 			if (resolvedTask) {
 				return this.run(resolvedTask, undefined, TaskRunSource.User);
 			}
 		}
+
 		return undefined;
 	}
 
@@ -1979,6 +2153,7 @@ export abstract class AbstractTaskService
 		if (tryBuildShortcut) {
 			return tryBuildShortcut;
 		}
+
 		return this._getGroupedTasksAndExecute();
 	}
 
@@ -2047,6 +2222,7 @@ export abstract class AbstractTaskService
 				}
 			}
 		}
+
 		let executeTaskResult: ITaskSummary;
 
 		try {
@@ -2060,6 +2236,7 @@ export abstract class AbstractTaskService
 
 			return Promise.reject(error);
 		}
+
 		return executeTaskResult;
 	}
 
@@ -2071,6 +2248,7 @@ export abstract class AbstractTaskService
 		if (!(await this._trust())) {
 			return;
 		}
+
 		if (!task) {
 			throw new TaskError(
 				Severity.Info,
@@ -2081,6 +2259,7 @@ export abstract class AbstractTaskService
 				TaskErrors.TaskNotFound,
 			);
 		}
+
 		const resolver = this._createResolver();
 
 		let executeTaskResult: ITaskSummary | undefined;
@@ -2108,6 +2287,7 @@ export abstract class AbstractTaskService
 					runSource,
 				);
 			}
+
 			return executeTaskResult;
 		} catch (error) {
 			this._handleError(error);
@@ -2132,9 +2312,11 @@ export abstract class AbstractTaskService
 		if (Types.isBoolean(settingValue)) {
 			return !settingValue;
 		}
+
 		if (type === undefined) {
 			return true;
 		}
+
 		const settingValueMap: IStringDictionary<boolean> = settingValue as any;
 
 		return !settingValueMap[type];
@@ -2146,10 +2328,12 @@ export abstract class AbstractTaskService
 		if (CustomTask.is(task)) {
 			const configProperties: TaskConfig.IConfigurationProperties =
 				task._source.config.element;
+
 			type = (<any>configProperties).type;
 		} else {
 			type = task.getDefinition()!.type;
 		}
+
 		return type;
 	}
 
@@ -2161,21 +2345,25 @@ export abstract class AbstractTaskService
 		if (enabled === false) {
 			return false;
 		}
+
 		if (!this._canCustomize(task)) {
 			return false;
 		}
+
 		if (
 			task.configurationProperties.group !== undefined &&
 			task.configurationProperties.group !== TaskGroup.Build
 		) {
 			return false;
 		}
+
 		if (
 			task.configurationProperties.problemMatchers !== undefined &&
 			task.configurationProperties.problemMatchers.length > 0
 		) {
 			return false;
 		}
+
 		if (ContributedTask.is(task)) {
 			return (
 				!task.hasDefinedMatchers &&
@@ -2183,6 +2371,7 @@ export abstract class AbstractTaskService
 				task.configurationProperties.problemMatchers.length === 0
 			);
 		}
+
 		if (CustomTask.is(task)) {
 			const configProperties: TaskConfig.IConfigurationProperties =
 				task._source.config.element;
@@ -2192,6 +2381,7 @@ export abstract class AbstractTaskService
 				!task.hasDefinedMatchers
 			);
 		}
+
 		return false;
 	}
 
@@ -2205,6 +2395,7 @@ export abstract class AbstractTaskService
 		if (current === true) {
 			return;
 		}
+
 		let newValue: IStringDictionary<boolean>;
 
 		if (current !== false) {
@@ -2212,6 +2403,7 @@ export abstract class AbstractTaskService
 		} else {
 			newValue = Object.create(null);
 		}
+
 		newValue[type] = true;
 
 		return this._configurationService.updateValue(
@@ -2225,11 +2417,14 @@ export abstract class AbstractTaskService
 	): Promise<Task | undefined> {
 		interface IProblemMatcherPickEntry extends IQuickPickItem {
 			matcher: INamedProblemMatcher | undefined;
+
 			never?: boolean;
+
 			learnMore?: boolean;
 
 			setting?: string;
 		}
+
 		let entries: QuickPickInput<IProblemMatcherPickEntry>[] = [];
 
 		for (const key of ProblemMatcherRegistry.keys()) {
@@ -2238,6 +2433,7 @@ export abstract class AbstractTaskService
 			if (matcher.deprecated) {
 				continue;
 			}
+
 			if (matcher.name === matcher.label) {
 				entries.push({ label: matcher.name, matcher: matcher });
 			} else {
@@ -2248,9 +2444,11 @@ export abstract class AbstractTaskService
 				});
 			}
 		}
+
 		if (entries.length === 0) {
 			return;
 		}
+
 		entries = entries.sort((a, b) => {
 			if (a.label && b.label) {
 				return a.label.localeCompare(b.label);
@@ -2258,6 +2456,7 @@ export abstract class AbstractTaskService
 				return 0;
 			}
 		});
+
 		entries.unshift({
 			type: "separator",
 			label: nls.localize("TaskService.associate", "associate"),
@@ -2268,10 +2467,12 @@ export abstract class AbstractTaskService
 		if (CustomTask.is(task)) {
 			const configProperties: TaskConfig.IConfigurationProperties =
 				task._source.config.element;
+
 			taskType = (<any>configProperties).type;
 		} else {
 			taskType = task.getDefinition().type;
 		}
+
 		entries.unshift(
 			{
 				label: nls.localize(
@@ -2317,16 +2518,19 @@ export abstract class AbstractTaskService
 		if (!problemMatcher) {
 			return task;
 		}
+
 		if (problemMatcher.learnMore) {
 			this._openDocumentation();
 
 			return undefined;
 		}
+
 		if (problemMatcher.never) {
 			this.customize(task, { problemMatcher: [] }, true);
 
 			return task;
 		}
+
 		if (problemMatcher.matcher) {
 			const newTask = task.clone();
 
@@ -2335,6 +2539,7 @@ export abstract class AbstractTaskService
 			const properties: ICustomizationProperties = {
 				problemMatcher: [matcherReference],
 			};
+
 			newTask.configurationProperties.problemMatchers = [
 				matcherReference,
 			];
@@ -2345,17 +2550,21 @@ export abstract class AbstractTaskService
 
 			if (matcher && matcher.watching !== undefined) {
 				properties.isBackground = true;
+
 				newTask.configurationProperties.isBackground = true;
 			}
+
 			this.customize(task, properties, true);
 
 			return newTask;
 		}
+
 		if (problemMatcher.setting) {
 			await this._updateNeverProblemMatcherSetting(
 				problemMatcher.setting,
 			);
 		}
+
 		return task;
 	}
 
@@ -2366,6 +2575,7 @@ export abstract class AbstractTaskService
 		const groups = await this._getGroupedTasks(undefined, waitToActivate);
 
 		const result: Task[] = [];
+
 		groups.forEach((tasks) => {
 			for (const task of tasks) {
 				const configTaskGroup = TaskGroup.from(
@@ -2392,12 +2602,15 @@ export abstract class AbstractTaskService
 		if (this.schemaVersion !== JsonSchemaVersion.V2_0_0) {
 			return false;
 		}
+
 		if (CustomTask.is(task)) {
 			return true;
 		}
+
 		if (ContributedTask.is(task)) {
 			return !!task.getWorkspaceFolder();
 		}
+
 		return false;
 	}
 
@@ -2431,12 +2644,14 @@ export abstract class AbstractTaskService
 				eol + (insertSpaces ? " ".repeat(tabSize) : "\\t"),
 				"g",
 			);
+
 			stringified = stringified.replace(
 				regex,
 				eol + (insertSpaces ? " ".repeat(tabSize * 3) : "\t\t\t"),
 			);
 
 			const twoTabs = insertSpaces ? " ".repeat(tabSize * 2) : "\t\t";
+
 			stringValue =
 				twoTabs +
 				stringified.slice(0, stringified.length - 1) +
@@ -2445,6 +2660,7 @@ export abstract class AbstractTaskService
 		} finally {
 			reference?.dispose();
 		}
+
 		return stringValue;
 	}
 
@@ -2460,6 +2676,7 @@ export abstract class AbstractTaskService
 		if (resource === undefined) {
 			return Promise.resolve(false);
 		}
+
 		const fileContent = await this._fileService.readFile(resource);
 
 		const content = fileContent.value;
@@ -2467,6 +2684,7 @@ export abstract class AbstractTaskService
 		if (!content || !task) {
 			return false;
 		}
+
 		const contentValue = content.toString();
 
 		let stringValue: string | undefined;
@@ -2485,6 +2703,7 @@ export abstract class AbstractTaskService
 				);
 			}
 		}
+
 		if (!stringValue) {
 			if (typeof task === "string") {
 				stringValue = task;
@@ -2502,6 +2721,7 @@ export abstract class AbstractTaskService
 				startLineNumber++;
 			}
 		}
+
 		let endLineNumber = startLineNumber;
 
 		for (let i = 0; i < stringValue.length; i++) {
@@ -2509,6 +2729,7 @@ export abstract class AbstractTaskService
 				endLineNumber++;
 			}
 		}
+
 		const selection =
 			startLineNumber > 1
 				? {
@@ -2556,7 +2777,9 @@ export abstract class AbstractTaskService
 				Object.create(null),
 				task.defines,
 			);
+
 			delete identifier["_key"];
+
 			Object.keys(identifier).forEach(
 				(key) => ((<any>toCustomize)![key] = identifier[key]),
 			);
@@ -2571,15 +2794,18 @@ export abstract class AbstractTaskService
 				toCustomize.problemMatcher =
 					task.configurationProperties.problemMatchers;
 			}
+
 			if (task.configurationProperties.group) {
 				toCustomize.group = TaskConfig.GroupKind.to(
 					task.configurationProperties.group,
 				);
 			}
 		}
+
 		if (!toCustomize) {
 			return undefined;
 		}
+
 		if (
 			(toCustomize.problemMatcher === undefined &&
 				task.configurationProperties.problemMatchers === undefined) ||
@@ -2588,11 +2814,13 @@ export abstract class AbstractTaskService
 		) {
 			toCustomize.problemMatcher = [];
 		}
+
 		if (task._source.label !== "Workspace") {
 			toCustomize.label = task.configurationProperties.identifier;
 		} else {
 			toCustomize.label = task._label;
 		}
+
 		toCustomize.detail = task.configurationProperties.detail;
 
 		return toCustomize;
@@ -2612,6 +2840,7 @@ export abstract class AbstractTaskService
 		if (!workspaceFolder) {
 			return Promise.resolve(undefined);
 		}
+
 		const configuration = this._getConfiguration(
 			workspaceFolder,
 			task._source.kind,
@@ -2635,6 +2864,7 @@ export abstract class AbstractTaskService
 		if (!toCustomize) {
 			return Promise.resolve(undefined);
 		}
+
 		const index: number | undefined = CustomTask.is(task)
 			? task._source.config.index
 			: undefined;
@@ -2674,6 +2904,7 @@ export abstract class AbstractTaskService
 						" ".repeat(s2.length * editorConfig.editor.tabSize),
 				);
 			}
+
 			await this._textFileService.create([
 				{
 					resource: workspaceFolder.toResource(".vscode/tasks.json"),
@@ -2685,6 +2916,7 @@ export abstract class AbstractTaskService
 			if (index === -1 && properties) {
 				if (properties.problemMatcher !== undefined) {
 					fileConfig.problemMatcher = properties.problemMatcher;
+
 					await this._writeConfiguration(
 						workspaceFolder,
 						"tasks.problemMatchers",
@@ -2693,6 +2925,7 @@ export abstract class AbstractTaskService
 					);
 				} else if (properties.group !== undefined) {
 					fileConfig.group = properties.group;
+
 					await this._writeConfiguration(
 						workspaceFolder,
 						"tasks.group",
@@ -2704,11 +2937,13 @@ export abstract class AbstractTaskService
 				if (!Array.isArray(fileConfig.tasks)) {
 					fileConfig.tasks = [];
 				}
+
 				if (index === undefined) {
 					fileConfig.tasks.push(toCustomize);
 				} else {
 					fileConfig.tasks[index] = toCustomize;
 				}
+
 				await this._writeConfiguration(
 					workspaceFolder,
 					"tasks.tasks",
@@ -2734,10 +2969,12 @@ export abstract class AbstractTaskService
 		switch (source) {
 			case TaskSourceKind.User:
 				target = ConfigurationTarget.USER;
+
 				break;
 
 			case TaskSourceKind.WorkspaceFile:
 				target = ConfigurationTarget.WORKSPACE;
+
 				break;
 
 			default:
@@ -2753,6 +2990,7 @@ export abstract class AbstractTaskService
 					target = ConfigurationTarget.WORKSPACE_FOLDER;
 				}
 		}
+
 		if (target) {
 			return this._configurationService.updateValue(
 				key,
@@ -2777,11 +3015,13 @@ export abstract class AbstractTaskService
 					"tasks.json",
 				);
 			}
+
 			case TaskSourceKind.WorkspaceFile: {
 				if (this._workspace && this._workspace.configuration) {
 					return this._workspace.configuration;
 				}
 			}
+
 			default: {
 				return undefined;
 			}
@@ -2803,6 +3043,7 @@ export abstract class AbstractTaskService
 					uri = this.workspaceFolders[0].uri;
 				}
 			}
+
 			return uri;
 		} else {
 			return task.getWorkspaceFolder()!.toResource(".vscode/tasks.json");
@@ -2822,6 +3063,7 @@ export abstract class AbstractTaskService
 					? this._workspaceFolders[0].toResource(".vscode/tasks.json")
 					: undefined;
 		}
+
 		return this._openEditorAtTask(
 			resource,
 			task ? task._label : undefined,
@@ -2835,7 +3077,9 @@ export abstract class AbstractTaskService
 	): { task: Task; resolver: ITaskResolver } | undefined {
 		interface IResolverData {
 			id: Map<string, Task>;
+
 			label: Map<string, Task>;
+
 			identifier: Map<string, Task>;
 		}
 
@@ -2844,6 +3088,7 @@ export abstract class AbstractTaskService
 		const workspaceTasks: Task[] = [];
 
 		const extensionTasks: Task[] = [];
+
 		tasks.forEach((tasks, folder) => {
 			let data = resolverData.get(folder);
 
@@ -2853,10 +3098,13 @@ export abstract class AbstractTaskService
 					label: new Map<string, Task>(),
 					identifier: new Map<string, Task>(),
 				};
+
 				resolverData.set(folder, data);
 			}
+
 			for (const task of tasks) {
 				data.id.set(task._id, task);
+
 				data.label.set(task._label, task);
 
 				if (task.configurationProperties.identifier) {
@@ -2865,6 +3113,7 @@ export abstract class AbstractTaskService
 						task,
 					);
 				}
+
 				if (group && task.configurationProperties.group === group) {
 					if (task._source.kind === TaskSourceKind.Workspace) {
 						workspaceTasks.push(task);
@@ -2884,6 +3133,7 @@ export abstract class AbstractTaskService
 				if (!data) {
 					return undefined;
 				}
+
 				return (
 					data.id.get(alias) ||
 					data.label.get(alias) ||
@@ -2901,8 +3151,10 @@ export abstract class AbstractTaskService
 					),
 				);
 			}
+
 			return { task: workspaceTasks[0], resolver };
 		}
+
 		if (extensionTasks.length === 0) {
 			return undefined;
 		}
@@ -2939,7 +3191,9 @@ export abstract class AbstractTaskService
 	private _createResolver(grouped?: TaskMap): ITaskResolver {
 		interface ResolverData {
 			label: Map<string, Task>;
+
 			identifier: Map<string, Task>;
+
 			taskIdentifier: Map<string, Task>;
 		}
 
@@ -2963,6 +3217,7 @@ export abstract class AbstractTaskService
 					if (taskUri?.toString() !== originalUri) {
 						return false;
 					}
+
 					if (Types.isString(identifier)) {
 						return (
 							task._label === identifier ||
@@ -2988,11 +3243,13 @@ export abstract class AbstractTaskService
 			if (foundTasks.length === 0) {
 				return undefined;
 			}
+
 			const task = foundTasks[0];
 
 			if (ConfiguringTask.is(task)) {
 				return that.tryResolveTask(task);
 			}
+
 			return task;
 		}
 
@@ -3009,8 +3266,10 @@ export abstract class AbstractTaskService
 								identifier: new Map<string, Task>(),
 								taskIdentifier: new Map<string, Task>(),
 							};
+
 							resolverData!.set(folder, data);
 						}
+
 						for (const task of tasks) {
 							data.label.set(task._label, task);
 
@@ -3020,6 +3279,7 @@ export abstract class AbstractTaskService
 									task,
 								);
 							}
+
 							const keyedIdentifier = task.getDefinition(true);
 
 							if (keyedIdentifier !== undefined) {
@@ -3032,6 +3292,7 @@ export abstract class AbstractTaskService
 					},
 				);
 			}
+
 			return resolverData;
 		}
 
@@ -3049,6 +3310,7 @@ export abstract class AbstractTaskService
 			if (!data) {
 				return undefined;
 			}
+
 			if (Types.isString(identifier)) {
 				return (
 					data.label.get(identifier) ||
@@ -3074,6 +3336,7 @@ export abstract class AbstractTaskService
 				if (!identifier) {
 					return undefined;
 				}
+
 				if (resolverData === undefined && grouped === undefined) {
 					return (
 						(await quickResolve(this, uri, identifier)) ??
@@ -3131,6 +3394,7 @@ export abstract class AbstractTaskService
 				return false;
 			}
 		}
+
 		await this._editorService.saveAll({ reason: SaveReason.AUTO });
 
 		return true;
@@ -3145,6 +3409,7 @@ export abstract class AbstractTaskService
 
 		if (await this._saveBeforeRun()) {
 			await this._configurationService.reloadConfiguration();
+
 			await this._updateWorkspaceTasks();
 
 			const taskFolder = task.getWorkspaceFolder();
@@ -3171,6 +3436,7 @@ export abstract class AbstractTaskService
 						)
 					: task) ?? task;
 		}
+
 		await ProblemMatcherRegistry.onReady();
 
 		const executeResult =
@@ -3181,6 +3447,7 @@ export abstract class AbstractTaskService
 		if (executeResult) {
 			return this._handleExecuteResult(executeResult, runSource);
 		}
+
 		return { exitCode: 0 };
 	}
 
@@ -3191,6 +3458,7 @@ export abstract class AbstractTaskService
 		if (runSource === TaskRunSource.User) {
 			await this._setRecentlyUsedTask(executeResult.task);
 		}
+
 		if (executeResult.kind === TaskExecuteKind.Active) {
 			const active = executeResult.active;
 
@@ -3208,6 +3476,7 @@ export abstract class AbstractTaskService
 
 				return executeResult.promise;
 			}
+
 			if (active && active.same) {
 				if (this._taskSystem?.isTaskVisible(executeResult.task)) {
 					const message = nls.localize(
@@ -3220,6 +3489,7 @@ export abstract class AbstractTaskService
 						this._getTaskSystem().getLastInstance(
 							executeResult.task,
 						) ?? executeResult.task;
+
 					this._notificationService.prompt(
 						Severity.Warning,
 						message,
@@ -3255,6 +3525,7 @@ export abstract class AbstractTaskService
 				);
 			}
 		}
+
 		this._setRecentlyUsedTask(executeResult.task);
 
 		return executeResult.promise;
@@ -3264,6 +3535,7 @@ export abstract class AbstractTaskService
 		if (!this._taskSystem) {
 			return;
 		}
+
 		const response = await this._taskSystem.terminate(task);
 
 		if (response.success) {
@@ -3293,6 +3565,7 @@ export abstract class AbstractTaskService
 		if (!this._taskSystem) {
 			return { success: true, task: undefined };
 		}
+
 		return this._taskSystem.terminate(task);
 	}
 
@@ -3300,6 +3573,7 @@ export abstract class AbstractTaskService
 		if (!this._taskSystem) {
 			return Promise.resolve<ITaskTerminateResponse[]>([]);
 		}
+
 		return this._taskSystem.terminateAll();
 	}
 
@@ -3336,6 +3610,7 @@ export abstract class AbstractTaskService
 					if (notFile.length > 0) {
 						return notFile[0][1][0];
 					}
+
 					return infos[0][1][0];
 				} else {
 					return undefined;
@@ -3370,11 +3645,15 @@ export abstract class AbstractTaskService
 		if (!waitToActivate) {
 			await this._activateTaskProviders(filter?.type);
 		}
+
 		const validTypes: IStringDictionary<boolean> = Object.create(null);
+
 		TaskDefinitionRegistry.all().forEach(
 			(definition) => (validTypes[definition.taskType] = true),
 		);
+
 		validTypes["shell"] = true;
+
 		validTypes["process"] = true;
 
 		const contributedTaskSets = await new Promise<ITaskSet[]>((resolve) => {
@@ -3386,6 +3665,7 @@ export abstract class AbstractTaskService
 				if (value) {
 					result.push(value);
 				}
+
 				if (--counter === 0) {
 					resolve(result);
 				}
@@ -3395,11 +3675,13 @@ export abstract class AbstractTaskService
 				try {
 					if (error && Types.isString(error.message)) {
 						this._log(`Error: ${error.message}\n`);
+
 						this._showOutput();
 					} else {
 						this._log(
 							"Unknown error received while collecting tasks from providers.",
 						);
+
 						this._showOutput();
 					}
 				} finally {
@@ -3426,8 +3708,11 @@ export abstract class AbstractTaskService
 						) {
 							continue;
 						}
+
 						foundAnyProviders = true;
+
 						counter++;
+
 						raceTimeout(
 							provider
 								.provideTasks(validTypes)
@@ -3455,9 +3740,11 @@ export abstract class AbstractTaskService
 											) {
 												this._showOutput();
 											}
+
 											break;
 										}
 									}
+
 									return done(taskSet);
 								}, error),
 							5000,
@@ -3473,6 +3760,7 @@ export abstract class AbstractTaskService
 						);
 					}
 				}
+
 				if (!foundAnyProviders) {
 					resolve(result);
 				}
@@ -3504,6 +3792,7 @@ export abstract class AbstractTaskService
 			) {
 				tasks = Array.from(await this.getWorkspaceTasks());
 			}
+
 			await Promise.all(
 				this._getCustomTaskPromises(
 					tasks,
@@ -3518,6 +3807,7 @@ export abstract class AbstractTaskService
 				// At this point we have all the tasks and can migrate the recently used tasks.
 				await this._migrateRecentTasks(result.all());
 			}
+
 			return result;
 		} catch {
 			// If we can't read the tasks.json file provide at least the contributed tasks
@@ -3532,9 +3822,11 @@ export abstract class AbstractTaskService
 					}
 				}
 			}
+
 			return result;
 		}
 	}
+
 	private _getCustomTaskPromises(
 		customTasksKeyValuePairs: [string, IWorkspaceFolderTaskResult][],
 		filter: ITaskFilter | undefined,
@@ -3549,6 +3841,7 @@ export abstract class AbstractTaskService
 				if (contributed) {
 					result.add(key, ...contributed);
 				}
+
 				return;
 			}
 
@@ -3574,16 +3867,19 @@ export abstract class AbstractTaskService
 							(key) => unUsedConfigurations.add(key),
 						);
 					}
+
 					for (const task of contributed) {
 						if (!ContributedTask.is(task)) {
 							continue;
 						}
+
 						if (configurations) {
 							const configuringTask =
 								configurations.byIdentifier[task.defines._key];
 
 							if (configuringTask) {
 								unUsedConfigurations.delete(task.defines._key);
+
 								result.add(
 									key,
 									TaskConfig.createCustomTask(
@@ -3606,6 +3902,7 @@ export abstract class AbstractTaskService
 										configuringTask,
 									),
 								);
+
 								customTasksToDelete.push(configuringTask);
 							} else {
 								result.add(key, task);
@@ -3614,6 +3911,7 @@ export abstract class AbstractTaskService
 							result.add(key, task);
 						}
 					}
+
 					if (customTasksToDelete.length > 0) {
 						const toDelete = customTasksToDelete.reduce<
 							IStringDictionary<boolean>
@@ -3627,6 +3925,7 @@ export abstract class AbstractTaskService
 							if (toDelete[task._id]) {
 								continue;
 							}
+
 							result.add(key, task);
 						}
 					} else {
@@ -3693,6 +3992,7 @@ export abstract class AbstractTaskService
 									}
 								}
 							}
+
 							if (requiredTaskProviderUnavailable) {
 								this._log(
 									nls.localize(
@@ -3715,6 +4015,7 @@ export abstract class AbstractTaskService
 										),
 									),
 								);
+
 								this._showOutput();
 							}
 						});
@@ -3722,6 +4023,7 @@ export abstract class AbstractTaskService
 					await Promise.all(unUsedConfigurationPromises);
 				} else {
 					result.add(key, ...folderTasks.set.tasks);
+
 					result.add(key, ...contributed);
 				}
 			}
@@ -3737,10 +4039,12 @@ export abstract class AbstractTaskService
 			if (result) {
 				return result;
 			}
+
 			result = Object.create(null);
 
 			return result!;
 		}
+
 		for (const task of workspaceTasks.tasks) {
 			if (CustomTask.is(task)) {
 				const commandName = task.command && task.command.name;
@@ -3760,6 +4064,7 @@ export abstract class AbstractTaskService
 				}
 			}
 		}
+
 		return result;
 	}
 
@@ -3769,16 +4074,19 @@ export abstract class AbstractTaskService
 		if (!(await this._trust())) {
 			return new Map();
 		}
+
 		await raceTimeout(this._waitForAllSupportedExecutions, 2000, () => {
 			this._logService.warn(
 				"Timed out waiting for all supported executions",
 			);
 		});
+
 		await this._whenTaskSystemReady;
 
 		if (this._workspaceTasksPromise) {
 			return this._workspaceTasksPromise;
 		}
+
 		return this._updateWorkspaceTasks(runSource);
 	}
 
@@ -3798,12 +4106,14 @@ export abstract class AbstractTaskService
 
 		if (!folder) {
 			const userhome = await this._pathService.userHome();
+
 			folder = new WorkspaceFolder({
 				uri: userhome,
 				name: resources.basename(userhome),
 				index: 0,
 			});
 		}
+
 		return folder;
 	}
 
@@ -3815,6 +4125,7 @@ export abstract class AbstractTaskService
 		for (const folder of this.workspaceFolders) {
 			promises.push(this._computeWorkspaceFolderTasks(folder, runSource));
 		}
+
 		const values = await Promise.all(promises);
 
 		const result = new Map<string, IWorkspaceFolderTaskResult>();
@@ -3850,6 +4161,7 @@ export abstract class AbstractTaskService
 		if (userTasks) {
 			result.set(USER_TASKS_GROUP_KEY, userTasks);
 		}
+
 		return result;
 	}
 
@@ -3886,6 +4198,7 @@ export abstract class AbstractTaskService
 					: false,
 			});
 		}
+
 		await ProblemMatcherRegistry.onReady();
 
 		const taskSystemInfo: ITaskSystemInfo | undefined =
@@ -3910,8 +4223,10 @@ export abstract class AbstractTaskService
 			parseResult.validationStatus.state !== ValidationState.Info
 		) {
 			hasErrors = true;
+
 			this._showOutput(runSource);
 		}
+
 		if (problemReporter.status.isFatal()) {
 			problemReporter.fatal(
 				nls.localize(
@@ -3927,6 +4242,7 @@ export abstract class AbstractTaskService
 				hasErrors,
 			};
 		}
+
 		let customizedTasks:
 			| { byIdentifier: IStringDictionary<ConfiguringTask> }
 			| undefined;
@@ -3940,9 +4256,11 @@ export abstract class AbstractTaskService
 				customizedTasks.byIdentifier[task.configures._key] = task;
 			}
 		}
+
 		if (!this._jsonTasksSupported && parseResult.custom.length > 0) {
 			console.warn("Custom workspace tasks are not supported.");
 		}
+
 		return {
 			workspaceFolder,
 			set: { tasks: this._jsonTasksSupported ? parseResult.custom : [] },
@@ -3956,11 +4274,13 @@ export abstract class AbstractTaskService
 		location: string,
 	): {
 		config: TaskConfig.IExternalTaskRunnerConfiguration | undefined;
+
 		hasParseErrors: boolean;
 	} {
 		if (!config) {
 			return { config: undefined, hasParseErrors: false };
 		}
+
 		const parseErrors: string[] = (config as any).$parseErrors;
 
 		if (parseErrors) {
@@ -3973,6 +4293,7 @@ export abstract class AbstractTaskService
 					break;
 				}
 			}
+
 			if (isAffected) {
 				this._log(
 					nls.localize(
@@ -3986,11 +4307,13 @@ export abstract class AbstractTaskService
 						location,
 					),
 				);
+
 				this._showOutput();
 
 				return { config, hasParseErrors: true };
 			}
 		}
+
 		return { config, hasParseErrors: false };
 	}
 
@@ -4010,6 +4333,7 @@ export abstract class AbstractTaskService
 		if (this._executionEngine === ExecutionEngine.Process) {
 			return this._emptyWorkspaceTaskResults(workspaceFolder);
 		}
+
 		const workspaceFileConfig = this._getConfiguration(
 			workspaceFolder,
 			TaskSourceKind.WorkspaceFile,
@@ -4030,6 +4354,7 @@ export abstract class AbstractTaskService
 		};
 
 		const custom: CustomTask[] = [];
+
 		await this._computeTasksForSingleConfig(
 			workspaceFolder,
 			configuration.config,
@@ -4053,6 +4378,7 @@ export abstract class AbstractTaskService
 
 			return this._emptyWorkspaceTaskResults(workspaceFolder);
 		}
+
 		return {
 			workspaceFolder,
 			set: { tasks: custom },
@@ -4068,6 +4394,7 @@ export abstract class AbstractTaskService
 		if (this._executionEngine === ExecutionEngine.Process) {
 			return this._emptyWorkspaceTaskResults(workspaceFolder);
 		}
+
 		const userTasksConfig = this._getConfiguration(
 			workspaceFolder,
 			TaskSourceKind.User,
@@ -4085,6 +4412,7 @@ export abstract class AbstractTaskService
 		};
 
 		const custom: CustomTask[] = [];
+
 		await this._computeTasksForSingleConfig(
 			workspaceFolder,
 			configuration.config,
@@ -4108,6 +4436,7 @@ export abstract class AbstractTaskService
 
 			return this._emptyWorkspaceTaskResults(workspaceFolder);
 		}
+
 		return {
 			workspaceFolder,
 			set: { tasks: custom },
@@ -4146,6 +4475,7 @@ export abstract class AbstractTaskService
 
 			return false;
 		}
+
 		const taskSystemInfo: ITaskSystemInfo | undefined =
 			this._getTaskSystemInfo(workspaceFolder.uri.scheme);
 
@@ -4169,8 +4499,10 @@ export abstract class AbstractTaskService
 			parseResult.validationStatus.state !== ValidationState.Info
 		) {
 			this._showOutput(runSource);
+
 			hasErrors = true;
 		}
+
 		if (problemReporter.status.isFatal()) {
 			problemReporter.fatal(
 				nls.localize(
@@ -4181,11 +4513,13 @@ export abstract class AbstractTaskService
 
 			return hasErrors;
 		}
+
 		if (parseResult.configured && parseResult.configured.length > 0) {
 			for (const task of parseResult.configured) {
 				customized[task.configures._key] = task;
 			}
 		}
+
 		if (!this._jsonTasksSupported && parseResult.custom.length > 0) {
 			console.warn("Custom workspace tasks are not supported.");
 		} else {
@@ -4193,6 +4527,7 @@ export abstract class AbstractTaskService
 				custom.push(task);
 			}
 		}
+
 		return hasErrors;
 	}
 
@@ -4235,7 +4570,9 @@ export abstract class AbstractTaskService
 		) {
 			const workspaceFolder: IWorkspaceFolder =
 				this._contextService.getWorkspace().folders[0];
+
 			workspaceFolders.push(workspaceFolder);
+
 			executionEngine = this._computeExecutionEngine(workspaceFolder);
 
 			const telemetryData: { [key: string]: any } = {
@@ -4252,6 +4589,7 @@ export abstract class AbstractTaskService
 				"taskService.engineVersion",
 				telemetryData,
 			);
+
 			schemaVersion = this._computeJsonSchemaVersion(workspaceFolder);
 		} else if (
 			this._contextService.getWorkbenchState() ===
@@ -4268,6 +4606,7 @@ export abstract class AbstractTaskService
 					workspaceFolders.push(workspaceFolder);
 				} else {
 					ignoredWorkspaceFolders.push(workspaceFolder);
+
 					this._log(
 						nls.localize(
 							"taskService.ignoreingFolder",
@@ -4278,6 +4617,7 @@ export abstract class AbstractTaskService
 				}
 			}
 		}
+
 		return [
 			workspaceFolders,
 			ignoredWorkspaceFolders,
@@ -4295,6 +4635,7 @@ export abstract class AbstractTaskService
 		if (!config) {
 			return ExecutionEngine._default;
 		}
+
 		return TaskConfig.ExecutionEngine.from(config);
 	}
 
@@ -4306,6 +4647,7 @@ export abstract class AbstractTaskService
 		if (!config) {
 			return JsonSchemaVersion.V2_0_0;
 		}
+
 		return TaskConfig.JsonSchemaVersion.from(config);
 	}
 
@@ -4314,6 +4656,7 @@ export abstract class AbstractTaskService
 		source?: string,
 	): {
 		config: TaskConfig.IExternalTaskRunnerConfiguration | undefined;
+
 		hasParseErrors: boolean;
 	} {
 		let result;
@@ -4338,12 +4681,15 @@ export abstract class AbstractTaskService
 					) {
 						result = Objects.deepClone(wholeConfig.userValue);
 					}
+
 					break;
 				}
+
 				case TaskSourceKind.Workspace:
 					result = Objects.deepClone(
 						wholeConfig.workspaceFolderValue,
 					);
+
 					break;
 
 				case TaskSourceKind.WorkspaceFile: {
@@ -4355,17 +4701,21 @@ export abstract class AbstractTaskService
 					) {
 						result = Objects.deepClone(wholeConfig.workspaceValue);
 					}
+
 					break;
 				}
+
 				default:
 					result = Objects.deepClone(
 						wholeConfig.workspaceFolderValue,
 					);
 			}
 		}
+
 		if (!result) {
 			return { config: undefined, hasParseErrors: false };
 		}
+
 		const parseErrors: string[] = (result as any).$parseErrors;
 
 		if (parseErrors) {
@@ -4378,6 +4728,7 @@ export abstract class AbstractTaskService
 					break;
 				}
 			}
+
 			if (isAffected) {
 				this._log(
 					nls.localize(
@@ -4385,11 +4736,13 @@ export abstract class AbstractTaskService
 						"Error: The content of the tasks.json file has syntax errors. Please correct them before executing a task.",
 					),
 				);
+
 				this._showOutput();
 
 				return { config: undefined, hasParseErrors: true };
 			}
 		}
+
 		return { config: result, hasParseErrors: false };
 	}
 
@@ -4397,6 +4750,7 @@ export abstract class AbstractTaskService
 		if (this._taskSystem) {
 			return this._taskSystem instanceof TerminalTaskSystem;
 		}
+
 		return this._executionEngine === ExecutionEngine.Terminal;
 	}
 
@@ -4412,6 +4766,7 @@ export abstract class AbstractTaskService
 					true,
 					() => {
 						thisCapture._runConfigureTasks();
+
 						return Promise.resolve(undefined);
 					},
 				);
@@ -4462,7 +4817,9 @@ export abstract class AbstractTaskService
 			}
 		} else if (err instanceof Error) {
 			const error = err;
+
 			this._notificationService.error(error.message);
+
 			showOutput = false;
 		} else if (Types.isString(err)) {
 			this._notificationService.error(<string>err);
@@ -4474,6 +4831,7 @@ export abstract class AbstractTaskService
 				),
 			);
 		}
+
 		if (showOutput) {
 			this._showOutput();
 		}
@@ -4497,6 +4855,7 @@ export abstract class AbstractTaskService
 		if (tasks === undefined || tasks === null || tasks.length === 0) {
 			return [];
 		}
+
 		const TaskQuickPickEntry = (task: Task): ITaskQuickPickEntry => {
 			const newEntry = {
 				label: task._label,
@@ -4511,6 +4870,7 @@ export abstract class AbstractTaskService
 				if (encounteredTasks[task._id].length === 1) {
 					encounteredTasks[task._id][0].label += " (1)";
 				}
+
 				newEntry.label =
 					newEntry.label +
 					" (" +
@@ -4519,6 +4879,7 @@ export abstract class AbstractTaskService
 			} else {
 				encounteredTasks[task._id] = [];
 			}
+
 			encounteredTasks[task._id].push(newEntry);
 
 			return newEntry;
@@ -4532,8 +4893,10 @@ export abstract class AbstractTaskService
 			if (tasks.length) {
 				entries.push({ type: "separator", label: groupLabel });
 			}
+
 			for (const task of tasks) {
 				const entry: ITaskQuickPickEntry = TaskQuickPickEntry(task);
+
 				entry.buttons = [
 					{
 						iconClass: ThemeIcon.asClassName(configureTaskIcon),
@@ -4551,6 +4914,7 @@ export abstract class AbstractTaskService
 				}
 			}
 		}
+
 		let entries: ITaskQuickPickEntry[];
 
 		if (group) {
@@ -4571,6 +4935,7 @@ export abstract class AbstractTaskService
 				let detected: Task[] = [];
 
 				const taskMap: IStringDictionary<Task> = Object.create(null);
+
 				tasks.forEach((task) => {
 					const key = task.getCommonTaskId();
 
@@ -4578,6 +4943,7 @@ export abstract class AbstractTaskService
 						taskMap[key] = task;
 					}
 				});
+
 				recentlyUsedTasks.reverse().forEach((recentTask) => {
 					const key = recentTask.getCommonTaskId();
 
@@ -4606,6 +4972,7 @@ export abstract class AbstractTaskService
 						}
 					}
 				}
+
 				const sorter = this.createSorter();
 
 				if (includeRecents) {
@@ -4615,13 +4982,17 @@ export abstract class AbstractTaskService
 						nls.localize("recentlyUsed", "recently used tasks"),
 					);
 				}
+
 				configured = configured.sort((a, b) => sorter.compare(a, b));
+
 				fillEntries(
 					entries,
 					configured,
 					nls.localize("configured", "configured tasks"),
 				);
+
 				detected = detected.sort((a, b) => sorter.compare(a, b));
+
 				fillEntries(
 					entries,
 					detected,
@@ -4631,16 +5002,20 @@ export abstract class AbstractTaskService
 		} else {
 			if (sort) {
 				const sorter = this.createSorter();
+
 				tasks = tasks.sort((a, b) => sorter.compare(a, b));
 			}
+
 			entries = tasks.map<ITaskQuickPickEntry>((task) =>
 				TaskQuickPickEntry(task),
 			);
 		}
+
 		encounteredTasks = {};
 
 		return entries;
 	}
+
 	private async _showTwoLevelQuickPick(
 		placeHolder: string,
 		defaultEntry?: ITaskQuickPickEntry,
@@ -4680,6 +5055,7 @@ export abstract class AbstractTaskService
 		if (!entries) {
 			return undefined;
 		}
+
 		if (
 			entries.length === 1 &&
 			this._configurationService.getValue<boolean>(QUICKOPEN_SKIP_CONFIG)
@@ -4693,6 +5069,7 @@ export abstract class AbstractTaskService
 			additionalEntries.length > 0
 		) {
 			entries.push({ type: "separator", label: "" });
+
 			entries.push(additionalEntries[0]);
 		}
 
@@ -4702,6 +5079,7 @@ export abstract class AbstractTaskService
 			matchOnDescription: true,
 			onDidTriggerItemButton: (context) => {
 				const task = context.item.task;
+
 				this._quickInputService.cancel();
 
 				if (ContributedTask.is(task)) {
@@ -4724,9 +5102,11 @@ export abstract class AbstractTaskService
 		if (!this._needsRecentTasksMigration()) {
 			return;
 		}
+
 		const recentlyUsedTasks = this.getRecentlyUsedTasksV1();
 
 		const taskMap: IStringDictionary<Task> = Object.create(null);
+
 		tasks.forEach((task) => {
 			const key = task.getKey();
 
@@ -4744,6 +5124,7 @@ export abstract class AbstractTaskService
 				await this._setRecentlyUsedTask(task);
 			}
 		}
+
 		this._storageService.remove(
 			AbstractTaskService.RecentlyUsedTasks_Key,
 			StorageScope.WORKSPACE,
@@ -4779,6 +5160,7 @@ export abstract class AbstractTaskService
 							StorageScope.WORKSPACE,
 							StorageTarget.MACHINE,
 						);
+
 						this._showIgnoreMessage = false;
 					},
 				},
@@ -4792,6 +5174,7 @@ export abstract class AbstractTaskService
 		if (ServerlessWebContext && !TaskExecutionSupportedContext) {
 			return false;
 		}
+
 		await this._workspaceTrustManagementService.workspaceTrustInitialized;
 
 		if (!this._workspaceTrustManagementService.isWorkspaceTrusted()) {
@@ -4806,6 +5189,7 @@ export abstract class AbstractTaskService
 				)) === true
 			);
 		}
+
 		return true;
 	}
 
@@ -4815,9 +5199,11 @@ export abstract class AbstractTaskService
 		if (!this._tasksReconnected) {
 			return;
 		}
+
 		if (!filter) {
 			return this._doRunTaskCommand();
 		}
+
 		const type = typeof filter === "string" ? undefined : filter.type;
 
 		const taskName = typeof filter === "string" ? filter : filter.task;
@@ -4840,6 +5226,7 @@ export abstract class AbstractTaskService
 		) {
 			folderURIs.push(this._contextService.getWorkspace().configuration!);
 		}
+
 		folderURIs.push(USER_TASKS_GROUP_KEY);
 
 		if (identifier) {
@@ -4853,6 +5240,7 @@ export abstract class AbstractTaskService
 				}
 			}
 		}
+
 		const exactMatchTask = !taskName
 			? undefined
 			: tasks.find(
@@ -4865,6 +5253,7 @@ export abstract class AbstractTaskService
 		if (!exactMatchTask) {
 			return this._doRunTaskCommand(tasks, type, taskName);
 		}
+
 		for (const uri of folderURIs) {
 			const task = await resolver.resolve(uri, taskName);
 
@@ -4882,6 +5271,7 @@ export abstract class AbstractTaskService
 
 	private _tasksAndGroupedTasks(filter?: ITaskFilter): {
 		tasks: Promise<Task[]>;
+
 		grouped: Promise<TaskMap>;
 	} {
 		if (!this._versionAndEngineCompatible(filter)) {
@@ -4890,13 +5280,16 @@ export abstract class AbstractTaskService
 				grouped: Promise.resolve(new TaskMap()),
 			};
 		}
+
 		const grouped = this._getGroupedTasks(filter);
 
 		const tasks = grouped.then((map) => {
 			if (!filter || !filter.type) {
 				return map.all();
 			}
+
 			const result: Task[] = [];
+
 			map.forEach((tasks) => {
 				for (const task of tasks) {
 					if (
@@ -4933,6 +5326,7 @@ export abstract class AbstractTaskService
 			if (task === undefined) {
 				return;
 			}
+
 			if (task === null) {
 				this._runConfigureTasks();
 			} else {
@@ -4960,6 +5354,7 @@ export abstract class AbstractTaskService
 				if (!tasks) {
 					taskResult = this._tasksAndGroupedTasks();
 				}
+
 				this._showQuickPick(
 					tasks ? tasks : taskResult!.tasks,
 					placeholder,
@@ -5014,6 +5409,7 @@ export abstract class AbstractTaskService
 							// No task running, prompt to ask which to run
 							this._doRunTaskCommand();
 						}
+
 						return Promise.resolve(undefined);
 					}
 				});
@@ -5050,6 +5446,7 @@ export abstract class AbstractTaskService
 				defaults.push(task);
 			}
 		}
+
 		return defaults;
 	}
 
@@ -5057,7 +5454,9 @@ export abstract class AbstractTaskService
 		taskGroup: TaskGroup,
 		strings: {
 			fetching: string;
+
 			select: string;
+
 			notFoundConfigure: string;
 		},
 		configure: () => void,
@@ -5068,6 +5467,7 @@ export abstract class AbstractTaskService
 
 			return;
 		}
+
 		const options: IProgressOptions = {
 			location: ProgressLocation.Window,
 			title: strings.fetching,
@@ -5086,6 +5486,7 @@ export abstract class AbstractTaskService
 					},
 				);
 			}
+
 			const chooseAndRunTask = (tasks: Task[]) => {
 				this._showIgnoredFoldersMessage().then(() => {
 					this._showQuickPick(
@@ -5104,11 +5505,13 @@ export abstract class AbstractTaskService
 						if (task === undefined) {
 							return;
 						}
+
 						if (task === null) {
 							configure.apply(this);
 
 							return;
 						}
+
 						runSingleTask(
 							task,
 							{ attachProblemMatcher: true },
@@ -5122,6 +5525,7 @@ export abstract class AbstractTaskService
 
 			const { globGroupTasks, globTasksDetected } =
 				await this._getGlobTasks(taskGroup._id);
+
 			groupTasks = [...globGroupTasks];
 
 			if (!globTasksDetected && groupTasks.length === 0) {
@@ -5194,11 +5598,13 @@ export abstract class AbstractTaskService
 			// Multiple default tasks returned, show the quickPicker
 			return handleMultipleTasks(false);
 		})();
+
 		this._progressService.withProgress(options, () => promise);
 	}
 
 	private async _getGlobTasks(taskGroupId: string): Promise<{
 		globGroupTasks: (Task | ConfiguringTask)[];
+
 		globTasksDetected: boolean;
 	}> {
 		let globTasksDetected = false;
@@ -5264,6 +5670,7 @@ export abstract class AbstractTaskService
 				}
 			}
 		}
+
 		return { globGroupTasks: [], globTasksDetected };
 	}
 
@@ -5271,6 +5678,7 @@ export abstract class AbstractTaskService
 		if (!this._tasksReconnected) {
 			return;
 		}
+
 		return this._runTaskGroupCommand(
 			TaskGroup.Build,
 			{
@@ -5320,6 +5728,7 @@ export abstract class AbstractTaskService
 
 			return;
 		}
+
 		const runQuickPick = (promise?: Promise<Task[]>) => {
 			this._showQuickPick(
 				promise || this.getActiveTasks(),
@@ -5351,6 +5760,7 @@ export abstract class AbstractTaskService
 				if (entry && entry.id === "terminateAll") {
 					this._terminateAll();
 				}
+
 				const task: Task | undefined | null = entry
 					? entry.task
 					: undefined;
@@ -5358,6 +5768,7 @@ export abstract class AbstractTaskService
 				if (task === undefined || task === null) {
 					return;
 				}
+
 				this.terminate(task);
 			});
 		};
@@ -5369,6 +5780,7 @@ export abstract class AbstractTaskService
 
 			if (identifier !== undefined) {
 				promise = this.getActiveTasks();
+
 				promise.then((tasks) => {
 					for (const task of tasks) {
 						if (task.matches(identifier)) {
@@ -5377,6 +5789,7 @@ export abstract class AbstractTaskService
 							return;
 						}
 					}
+
 					runQuickPick(promise);
 				});
 			} else {
@@ -5392,6 +5805,7 @@ export abstract class AbstractTaskService
 						if (response.success) {
 							return;
 						}
+
 						if (
 							response.code &&
 							response.code ===
@@ -5477,6 +5891,7 @@ export abstract class AbstractTaskService
 		} else if (filter && Types.isString(filter.type)) {
 			result = TaskDefinition.createTaskIdentifier(filter, console);
 		}
+
 		return result;
 	}
 
@@ -5490,6 +5905,7 @@ export abstract class AbstractTaskService
 
 	private _openTaskFile(resource: URI, taskSource: string) {
 		let configFileCreated = false;
+
 		this._fileService
 			.stat(resource)
 			.then(
@@ -5514,22 +5930,28 @@ export abstract class AbstractTaskService
 						tasksExistInFile = this._configHasTasks(
 							configValue.userValue,
 						);
+
 						target = ConfigurationTarget.USER;
+
 						break;
 
 					case TaskSourceKind.WorkspaceFile:
 						tasksExistInFile = this._configHasTasks(
 							configValue.workspaceValue,
 						);
+
 						target = ConfigurationTarget.WORKSPACE;
+
 						break;
 
 					default:
 						tasksExistInFile = this._configHasTasks(
 							configValue.workspaceFolderValue,
 						);
+
 						target = ConfigurationTarget.WORKSPACE_FOLDER;
 				}
+
 				let content;
 
 				if (!tasksExistInFile) {
@@ -5544,6 +5966,7 @@ export abstract class AbstractTaskService
 					if (!pickTemplateResult) {
 						return Promise.resolve(undefined);
 					}
+
 					content = pickTemplateResult.content;
 
 					const editorConfig =
@@ -5559,6 +5982,7 @@ export abstract class AbstractTaskService
 								),
 						);
 					}
+
 					configFileCreated = true;
 				}
 
@@ -5579,14 +6003,17 @@ export abstract class AbstractTaskService
 							target,
 						);
 					}
+
 					return statResource;
 				}
+
 				return undefined;
 			})
 			.then((resource) => {
 				if (!resource) {
 					return;
 				}
+
 				this._editorService.openEditor({
 					resource,
 					options: {
@@ -5627,11 +6054,13 @@ export abstract class AbstractTaskService
 		if (!selection) {
 			return;
 		}
+
 		if (this._isTaskEntry(selection)) {
 			this._configureTask(selection.task);
 		} else if (this._isSettingEntry(selection)) {
 			const taskQuickPick =
 				this._instantiationService.createInstance(TaskQuickPick);
+
 			taskQuickPick.handleSettingOption(selection.settingType);
 		} else if (
 			selection.folder &&
@@ -5666,6 +6095,7 @@ export abstract class AbstractTaskService
 				description = workspaceFolder.name;
 			}
 		}
+
 		return description;
 	}
 
@@ -5731,11 +6161,13 @@ export abstract class AbstractTaskService
 								? task.configurationProperties.detail
 								: undefined,
 						};
+
 						TaskQuickPick.applyColorStyles(
 							task,
 							entry,
 							this._themeService,
 						);
+
 						entries.push(entry);
 
 						if (!ContributedTask.is(task)) {
@@ -5743,6 +6175,7 @@ export abstract class AbstractTaskService
 						}
 					}
 				}
+
 				const needsCreateOrOpen = configuredCount === 0;
 				// If the only configured tasks are user tasks, then we should also show the option to create from a template.
 				if (
@@ -5755,14 +6188,17 @@ export abstract class AbstractTaskService
 					if (entries.length) {
 						entries.push({ type: "separator" });
 					}
+
 					entries.push({
 						label,
 						folder: this._contextService.getWorkspace().folders[0],
 					});
 				}
+
 				if (entries.length === 1 && !needsCreateOrOpen) {
 					tokenSource.cancel();
 				}
+
 				return entries;
 			});
 		});
@@ -5774,6 +6210,7 @@ export abstract class AbstractTaskService
 			new Promise<boolean>((resolve) => {
 				const timer = setTimeout(() => {
 					clearTimeout(timer);
+
 					resolve(true);
 				}, 200);
 			}),
@@ -5821,6 +6258,7 @@ export abstract class AbstractTaskService
 						selection = <TaskQuickPickEntryType>task;
 					}
 				}
+
 				this._handleSelection(selection);
 			});
 	}
@@ -5833,11 +6271,13 @@ export abstract class AbstractTaskService
 
 					return;
 				}
+
 				const entries: QuickPickInput<TaskQuickPickEntryType>[] = [];
 
 				let selectedTask: Task | undefined;
 
 				let selectedEntry: TaskQuickPickEntryType | undefined;
+
 				this._showIgnoredFoldersMessage().then(async () => {
 					const { globGroupTasks } = await this._getGlobTasks(
 						TaskGroup.Build._id,
@@ -5848,6 +6288,7 @@ export abstract class AbstractTaskService
 					if (!defaultTasks?.length) {
 						defaultTasks = this._getDefaultTasks(tasks, false);
 					}
+
 					let defaultBuildTask;
 
 					if (defaultTasks.length === 1) {
@@ -5865,6 +6306,7 @@ export abstract class AbstractTaskService
 							}
 						}
 					}
+
 					for (const task of tasks) {
 						if (task === defaultBuildTask) {
 							const label = nls.localize(
@@ -5875,7 +6317,9 @@ export abstract class AbstractTaskService
 									task.getQualifiedLabel(),
 								),
 							);
+
 							selectedTask = task;
+
 							selectedEntry = {
 								label,
 								task,
@@ -5884,6 +6328,7 @@ export abstract class AbstractTaskService
 									? task.configurationProperties.detail
 									: undefined,
 							};
+
 							TaskQuickPick.applyColorStyles(
 								task,
 								selectedEntry,
@@ -5898,21 +6343,26 @@ export abstract class AbstractTaskService
 									? task.configurationProperties.detail
 									: undefined,
 							};
+
 							TaskQuickPick.applyColorStyles(
 								task,
 								entry,
 								this._themeService,
 							);
+
 							entries.push(entry);
 						}
 					}
+
 					if (selectedEntry) {
 						entries.unshift(selectedEntry);
 					}
+
 					const tokenSource = new CancellationTokenSource();
 
 					const cancellationToken: CancellationToken =
 						tokenSource.token;
+
 					this._quickInputService
 						.pick(
 							entries,
@@ -5933,6 +6383,7 @@ export abstract class AbstractTaskService
 									entry = <TaskQuickPickEntryType>task;
 								}
 							}
+
 							const task: Task | undefined | null =
 								entry && "task" in entry
 									? entry.task
@@ -5941,9 +6392,11 @@ export abstract class AbstractTaskService
 							if (task === undefined || task === null) {
 								return;
 							}
+
 							if (task === selectedTask && CustomTask.is(task)) {
 								this.openConfig(task);
 							}
+
 							if (!InMemoryTask.is(task)) {
 								this.customize(
 									task,
@@ -5969,6 +6422,7 @@ export abstract class AbstractTaskService
 								});
 							}
 						});
+
 					this._quickInputService
 						.pick(entries, {
 							placeHolder: nls.localize(
@@ -5985,9 +6439,11 @@ export abstract class AbstractTaskService
 							if (task === undefined || task === null) {
 								return;
 							}
+
 							if (task === selectedTask && CustomTask.is(task)) {
 								this.openConfig(task);
 							}
+
 							if (!InMemoryTask.is(task)) {
 								this.customize(
 									task,
@@ -6028,6 +6484,7 @@ export abstract class AbstractTaskService
 
 					return;
 				}
+
 				let selectedTask: Task | undefined;
 
 				let selectedEntry: ITaskQuickPickEntry;
@@ -6047,6 +6504,7 @@ export abstract class AbstractTaskService
 						break;
 					}
 				}
+
 				if (selectedTask) {
 					selectedEntry = {
 						label: nls.localize(
@@ -6080,9 +6538,11 @@ export abstract class AbstractTaskService
 						if (!task) {
 							return;
 						}
+
 						if (task === selectedTask && CustomTask.is(task)) {
 							this.openConfig(task);
 						}
+
 						if (!InMemoryTask.is(task)) {
 							this.customize(
 								task,
@@ -6129,6 +6589,7 @@ export abstract class AbstractTaskService
 				if (!group) {
 					group = task.command.presentation?.group;
 				}
+
 				return (
 					task.command.presentation?.group &&
 					task.command.presentation.group === group
@@ -6160,6 +6621,7 @@ export abstract class AbstractTaskService
 				if (task === undefined || task === null) {
 					return;
 				}
+
 				this._taskSystem!.revealTask(task);
 			});
 		}
@@ -6172,10 +6634,12 @@ export abstract class AbstractTaskService
 
 		if (await this._fileService.exists(tasksFile)) {
 			const oldFile = tasksFile.with({ path: `${tasksFile.path}.old` });
+
 			await this._fileService.copy(tasksFile, oldFile, true);
 
 			return [oldFile, tasksFile];
 		}
+
 		return undefined;
 	}
 
@@ -6184,13 +6648,16 @@ export abstract class AbstractTaskService
 		suppressTaskName: boolean,
 		globalConfig: {
 			windows?: ICommandUpgrade;
+
 			osx?: ICommandUpgrade;
+
 			linux?: ICommandUpgrade;
 		},
 	): TaskConfig.ICustomTask | TaskConfig.IConfiguringTask | undefined {
 		if (!CustomTask.is(task)) {
 			return;
 		}
+
 		const configElement: any = {
 			label: task._label,
 		};
@@ -6202,11 +6669,13 @@ export abstract class AbstractTaskService
 			oldTaskTypes.has(task.command.name)
 		) {
 			configElement.type = task.command.name;
+
 			configElement.task = task.command.args![0];
 		} else {
 			if (task.command.runtime === RuntimeType.Shell) {
 				configElement.type = RuntimeType.toString(RuntimeType.Shell);
 			}
+
 			if (
 				task.command.name &&
 				!suppressTaskName &&
@@ -6218,6 +6687,7 @@ export abstract class AbstractTaskService
 			} else if (suppressTaskName) {
 				configElement.command = task._source.config.element.command;
 			}
+
 			if (
 				task.command.args &&
 				(!Array.isArray(task.command.args) ||
@@ -6239,14 +6709,17 @@ export abstract class AbstractTaskService
 			configElement.presentation =
 				task.configurationProperties.presentation;
 		}
+
 		if (task.configurationProperties.isBackground) {
 			configElement.isBackground =
 				task.configurationProperties.isBackground;
 		}
+
 		if (task.configurationProperties.problemMatchers) {
 			configElement.problemMatcher =
 				task._source.config.element.problemMatcher;
 		}
+
 		if (task.configurationProperties.group) {
 			configElement.group = task.configurationProperties.group;
 		}
@@ -6269,6 +6742,7 @@ export abstract class AbstractTaskService
 		if (configTask) {
 			return configTask;
 		}
+
 		return;
 	}
 
@@ -6301,6 +6775,7 @@ export abstract class AbstractTaskService
 			if (diff) {
 				fileDiffs.push(diff);
 			}
+
 			if (!diff) {
 				continue;
 			}
@@ -6335,6 +6810,7 @@ export abstract class AbstractTaskService
 					)
 				),
 			};
+
 			tasks.get(folder).forEach((task) => {
 				const configTask = this._upgradeTask(
 					task,
@@ -6346,9 +6822,13 @@ export abstract class AbstractTaskService
 					configTasks.push(configTask);
 				}
 			});
+
 			this._taskSystem = undefined;
+
 			this._workspaceTasksPromise = undefined;
+
 			await this._writeConfiguration(folder, "tasks.tasks", configTasks);
+
 			await this._writeConfiguration(folder, "tasks.version", "2.0.0");
 
 			if (
@@ -6363,6 +6843,7 @@ export abstract class AbstractTaskService
 					{ resource: folder.uri },
 				);
 			}
+
 			if (
 				this._configurationService.getValue(
 					TasksSchemaProperties.IsShellCommand,
@@ -6375,6 +6856,7 @@ export abstract class AbstractTaskService
 					{ resource: folder.uri },
 				);
 			}
+
 			if (
 				this._configurationService.getValue(
 					TasksSchemaProperties.SuppressTaskName,
@@ -6388,6 +6870,7 @@ export abstract class AbstractTaskService
 				);
 			}
 		}
+
 		this._updateSetup();
 
 		this._notificationService.prompt(

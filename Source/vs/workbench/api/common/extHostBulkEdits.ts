@@ -13,6 +13,7 @@ import { WorkspaceEdit } from "./extHostTypeConverters.js";
 
 export class ExtHostBulkEdits {
 	private readonly _proxy: MainThreadBulkEditsShape;
+
 	private readonly _versionInformationProvider: WorkspaceEdit.IVersionInformationProvider;
 
 	constructor(
@@ -21,12 +22,14 @@ export class ExtHostBulkEdits {
 		extHostDocumentsAndEditors: ExtHostDocumentsAndEditors,
 	) {
 		this._proxy = extHostRpc.getProxy(MainContext.MainThreadBulkEdits);
+
 		this._versionInformationProvider = {
 			getTextDocumentVersion: (uri) =>
 				extHostDocumentsAndEditors.getDocument(uri)?.version,
 			getNotebookDocumentVersion: () => undefined,
 		};
 	}
+
 	applyWorkspaceEdit(
 		edit: vscode.WorkspaceEdit,
 		extension: IExtensionDescription,

@@ -33,6 +33,7 @@ export function updateImageSize(): Promise<boolean> | undefined {
 	if (!validate() || !window.activeTextEditor) {
 		return;
 	}
+
 	const editor = window.activeTextEditor;
 
 	const allUpdatesPromise = Array.from(editor.selections)
@@ -73,6 +74,7 @@ function updateImageSizeHTML(
 	if (!src) {
 		return updateImageSizeStyleTag(editor, position);
 	}
+
 	return locateFile(path.dirname(editor.document.fileName), src)
 		.then(getImageSize)
 		.then((size: any) => {
@@ -83,10 +85,12 @@ function updateImageSizeHTML(
 			if (img && getImageSrcHTML(img) === src) {
 				return updateHTMLTag(editor, img, size.width, size.height);
 			}
+
 			return [];
 		})
 		.catch((err) => {
 			console.warn("Error while updating image size:", err);
+
 			return [];
 		});
 }
@@ -127,6 +131,7 @@ function updateImageSizeStyleTag(
 				? <Property>innerNode
 				: null;
 		}
+
 		return null;
 	};
 
@@ -153,6 +158,7 @@ function updateImageSizeCSS(
 	if (!src) {
 		return Promise.reject(new Error("No valid image source"));
 	}
+
 	return locateFile(path.dirname(editor.document.fileName), src)
 		.then(getImageSize)
 		.then((size: ImageInfoWithScale | undefined): TextEdit[] => {
@@ -167,10 +173,12 @@ function updateImageSizeCSS(
 			) {
 				return updateCSSNode(editor, prop, size.width, size.height);
 			}
+
 			return [];
 		})
 		.catch((err) => {
 			console.warn("Error while updating image size:", err);
+
 			return [];
 		});
 }
@@ -219,6 +227,7 @@ function getImageSrcHTML(node: HtmlNode): string | undefined {
 	if (!srcAttr) {
 		return;
 	}
+
 	return (<HtmlToken>srcAttr.value).value;
 }
 /**
@@ -232,6 +241,7 @@ function getImageSrcCSS(
 	if (!node) {
 		return;
 	}
+
 	const urlToken = findUrlToken(editor, node, position);
 
 	if (!urlToken) {
@@ -243,6 +253,7 @@ function getImageSrcCSS(
 	if (urlValue && urlValue.type === "string") {
 		urlValue = urlValue.item(0);
 	}
+
 	return urlValue && urlValue.valueOf();
 }
 /**
@@ -261,6 +272,7 @@ function updateHTMLTag(
 	if (!srcAttr) {
 		return [];
 	}
+
 	const widthAttr = getAttribute(node, "width");
 
 	const heightAttr = getAttribute(node, "height");
@@ -287,6 +299,7 @@ function updateHTMLTag(
 			),
 		);
 	}
+
 	if (!heightAttr) {
 		textToAdd += ` height=${quote}${height}${quote}`;
 	} else {
@@ -301,6 +314,7 @@ function updateHTMLTag(
 			),
 		);
 	}
+
 	if (textToAdd) {
 		edits.push(
 			new TextEdit(
@@ -313,6 +327,7 @@ function updateHTMLTag(
 			),
 		);
 	}
+
 	return edits;
 }
 /**
@@ -346,6 +361,7 @@ function updateCSSNode(
 			),
 		);
 	}
+
 	let textToAdd = "";
 
 	if (!widthProp) {
@@ -362,6 +378,7 @@ function updateCSSNode(
 			),
 		);
 	}
+
 	if (!heightProp) {
 		textToAdd += `${before}height${separator}${height}px;`;
 	} else {
@@ -376,6 +393,7 @@ function updateCSSNode(
 			),
 		);
 	}
+
 	if (textToAdd) {
 		edits.push(
 			new TextEdit(
@@ -384,6 +402,7 @@ function updateCSSNode(
 			),
 		);
 	}
+
 	return edits;
 }
 /**
@@ -432,6 +451,7 @@ function findUrlToken(
 
 				return false;
 			}
+
 			return true;
 		});
 
@@ -439,6 +459,7 @@ function findUrlToken(
 			return url;
 		}
 	}
+
 	return;
 }
 /**
@@ -452,5 +473,6 @@ function getPropertyDelimitor(editor: TextEditor, node: Property): string {
 	} else if ((anchor = node.nextSibling || node.parent.contentEndToken)) {
 		return editor.document.getText().substring(node.end, anchor.start);
 	}
+
 	return "";
 }

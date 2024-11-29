@@ -16,7 +16,9 @@ export class TokenArray {
 	public static create(tokenInfo: TokenInfo[]): TokenArray {
 		return new TokenArray(tokenInfo);
 	}
+
 	private constructor(private readonly _tokenInfo: TokenInfo[]) {}
+
 	public forEach(
 		cb: (range: OffsetRange, tokenInfo: TokenInfo) => void,
 	): void {
@@ -27,10 +29,13 @@ export class TokenArray {
 				lengthSum,
 				lengthSum + tokenInfo.length,
 			);
+
 			cb(range, tokenInfo);
+
 			lengthSum += tokenInfo.length;
 		}
 	}
+
 	public slice(range: OffsetRange): TokenArray {
 		const result: TokenInfo[] = [];
 
@@ -45,9 +50,11 @@ export class TokenArray {
 				if (tokenStart >= range.endExclusive) {
 					break;
 				}
+
 				const deltaBefore = Math.max(0, range.start - tokenStart);
 
 				const deltaAfter = Math.max(0, tokenEndEx - range.endExclusive);
+
 				result.push(
 					new TokenInfo(
 						tokenInfo.length - deltaBefore - deltaAfter,
@@ -55,8 +62,10 @@ export class TokenArray {
 					),
 				);
 			}
+
 			lengthSum += tokenInfo.length;
 		}
+
 		return TokenArray.create(result);
 	}
 }
@@ -73,9 +82,11 @@ export class TokenInfo {
  */
 export class TokenArrayBuilder {
 	private readonly _tokens: TokenInfo[] = [];
+
 	public add(length: number, metadata: TokenMetadata): void {
 		this._tokens.push(new TokenInfo(length, metadata));
 	}
+
 	public build(): TokenArray {
 		return TokenArray.create(this._tokens);
 	}

@@ -74,8 +74,10 @@ export class WorkspacesFinderContribution
 		private readonly storageService: IStorageService,
 	) {
 		super();
+
 		this.findWorkspaces();
 	}
+
 	private async findWorkspaces(): Promise<void> {
 		const folder = this.contextService.getWorkspace().folders[0];
 
@@ -86,6 +88,7 @@ export class WorkspacesFinderContribution
 		) {
 			return; // require a single (non virtual) root folder
 		}
+
 		const rootFileNames = (
 			await this.fileService.resolve(folder.uri)
 		).children?.map((child) => child.name);
@@ -100,6 +103,7 @@ export class WorkspacesFinderContribution
 			}
 		}
 	}
+
 	private doHandleWorkspaceFiles(folder: URI, workspaces: string[]): void {
 		const neverShowAgain: INeverShowAgainOptions = {
 			id: "workspaces.dontPromptToOpen",
@@ -109,6 +113,7 @@ export class WorkspacesFinderContribution
 		// Prompt to open one workspace
 		if (workspaces.length === 1) {
 			const workspaceFile = workspaces[0];
+
 			this.notificationService.prompt(
 				Severity.Info,
 				localize(
@@ -224,6 +229,7 @@ registerAction2(
 				},
 			});
 		}
+
 		async run(accessor: ServicesAccessor, uri: URI): Promise<void> {
 			const hostService = accessor.get(IHostService);
 
@@ -251,6 +257,7 @@ registerAction2(
 					return; // workspace already opened
 				}
 			}
+
 			return hostService.openWindow([{ workspaceUri: uri }]);
 		}
 	},

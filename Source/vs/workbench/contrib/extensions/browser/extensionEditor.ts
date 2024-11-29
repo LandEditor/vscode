@@ -183,12 +183,15 @@ function toMemoryString(bytes: number) {
 	if (bytes < 1024) {
 		return `${bytes} B`;
 	}
+
 	if (bytes < 1024 * 1024) {
 		return `${(bytes / 1024).toFixed(1)} KB`;
 	}
+
 	if (bytes < 1024 * 1024 * 1024) {
 		return `${(bytes / 1024 / 1024).toFixed(1)} MB`;
 	}
+
 	return `${(bytes / 1024 / 1024 / 1024).toFixed(1)} GB`;
 }
 
@@ -208,13 +211,16 @@ class NavBar extends Disposable {
 	}
 
 	private actions: Action[];
+
 	private actionbar: ActionBar;
 
 	constructor(container: HTMLElement) {
 		super();
 
 		const element = append(container, $(".navbar"));
+
 		this.actions = [];
+
 		this.actionbar = this._register(new ActionBar(element));
 	}
 
@@ -226,6 +232,7 @@ class NavBar extends Disposable {
 		action.tooltip = tooltip;
 
 		this.actions.push(action);
+
 		this.actionbar.push(action);
 
 		if (this.actions.length === 1) {
@@ -235,6 +242,7 @@ class NavBar extends Disposable {
 
 	clear(): void {
 		this.actions = dispose(this.actions);
+
 		this.actionbar.clear();
 	}
 
@@ -246,12 +254,15 @@ class NavBar extends Disposable {
 
 			return true;
 		}
+
 		return false;
 	}
 
 	private update(id: string, focus?: boolean): void {
 		this._currentId = id;
+
 		this._onChange.fire({ id, focus: !!focus });
+
 		this.actions.forEach((a) => (a.checked = a.id === id));
 	}
 }
@@ -266,23 +277,41 @@ interface IActiveElement {
 
 interface IExtensionEditorTemplate {
 	iconContainer: HTMLElement;
+
 	icon: HTMLImageElement;
+
 	name: HTMLElement;
+
 	preview: HTMLElement;
+
 	builtin: HTMLElement;
+
 	publisher: HTMLElement;
+
 	publisherDisplayName: HTMLElement;
+
 	resource: HTMLElement;
+
 	installCount: HTMLElement;
+
 	rating: HTMLElement;
+
 	description: HTMLElement;
+
 	actionsAndStatusContainer: HTMLElement;
+
 	extensionActionBar: ActionBar;
+
 	navbar: NavBar;
+
 	content: HTMLElement;
+
 	header: HTMLElement;
+
 	extension: IExtension;
+
 	gallery: IGalleryExtension | null;
+
 	manifest: IExtensionManifest | null;
 }
 
@@ -302,6 +331,7 @@ abstract class ExtensionWithDifferentGalleryVersionWidget extends ExtensionWidge
 	get gallery(): IGalleryExtension | null {
 		return this._gallery;
 	}
+
 	set gallery(gallery: IGalleryExtension | null) {
 		if (
 			this.extension &&
@@ -310,7 +340,9 @@ abstract class ExtensionWithDifferentGalleryVersionWidget extends ExtensionWidge
 		) {
 			return;
 		}
+
 		this._gallery = gallery;
+
 		this.update();
 	}
 }
@@ -320,10 +352,12 @@ class VersionWidget extends ExtensionWithDifferentGalleryVersionWidget {
 
 	constructor(container: HTMLElement, hoverService: IHoverService) {
 		super();
+
 		this.element = append(
 			container,
 			$("code.version", undefined, "pre-release"),
 		);
+
 		this._register(
 			hoverService.setupManagedHover(
 				getDefaultHoverDelegate("mouse"),
@@ -331,8 +365,10 @@ class VersionWidget extends ExtensionWithDifferentGalleryVersionWidget {
 				localize("extension version", "Extension Version"),
 			),
 		);
+
 		this.render();
 	}
+
 	render(): void {
 		if (this.extension?.preRelease) {
 			show(this.element);
@@ -348,10 +384,13 @@ export class ExtensionEditor extends EditorPane {
 	private readonly _scopedContextKeyService = this._register(
 		new MutableDisposable<IScopedContextKeyService>(),
 	);
+
 	private template: IExtensionEditorTemplate | undefined;
 
 	private extensionReadme: Cache<string> | null;
+
 	private extensionChangelog: Cache<string> | null;
+
 	private extensionManifest: Cache<IExtensionManifest | null> | null;
 
 	// Some action bar items use a webview whose vertical scroll position we track in this map
@@ -361,11 +400,15 @@ export class ExtensionEditor extends EditorPane {
 	private currentIdentifier: string = "";
 
 	private layoutParticipants: ILayoutParticipant[] = [];
+
 	private readonly contentDisposables = this._register(new DisposableStore());
+
 	private readonly transientDisposables = this._register(
 		new DisposableStore(),
 	);
+
 	private activeElement: IActiveElement | null = null;
+
 	private dimension: Dimension | undefined;
 
 	private showPreReleaseVersionContextKey: IContextKey<boolean> | undefined;
@@ -413,8 +456,11 @@ export class ExtensionEditor extends EditorPane {
 			themeService,
 			storageService,
 		);
+
 		this.extensionReadme = null;
+
 		this.extensionChangelog = null;
+
 		this.extensionManifest = null;
 	}
 
@@ -424,12 +470,15 @@ export class ExtensionEditor extends EditorPane {
 
 	protected createEditor(parent: HTMLElement): void {
 		const root = append(parent, $(".extension-editor"));
+
 		this._scopedContextKeyService.value =
 			this.contextKeyService.createScoped(root);
+
 		this._scopedContextKeyService.value.createKey(
 			"inExtensionEditor",
 			true,
 		);
+
 		this.showPreReleaseVersionContextKey =
 			CONTEXT_SHOW_PRE_RELEASE_VERSION.bindTo(
 				this._scopedContextKeyService.value,
@@ -437,6 +486,7 @@ export class ExtensionEditor extends EditorPane {
 
 		root.tabIndex = 0; // this is required for the focus tracker on the editor
 		root.style.outline = "none";
+
 		root.setAttribute("role", "document");
 
 		const header = append(root, $(".header"));
@@ -462,6 +512,7 @@ export class ExtensionEditor extends EditorPane {
 			title,
 			$("span.name.clickable", { role: "heading", tabIndex: 0 }),
 		);
+
 		this._register(
 			this.hoverService.setupManagedHover(
 				getDefaultHoverDelegate("mouse"),
@@ -473,6 +524,7 @@ export class ExtensionEditor extends EditorPane {
 		const versionWidget = new VersionWidget(title, this.hoverService);
 
 		const preview = append(title, $("span.preview"));
+
 		this._register(
 			this.hoverService.setupManagedHover(
 				getDefaultHoverDelegate("mouse"),
@@ -480,9 +532,11 @@ export class ExtensionEditor extends EditorPane {
 				localize("preview", "Preview"),
 			),
 		);
+
 		preview.textContent = localize("preview", "Preview");
 
 		const builtin = append(title, $("span.builtin"));
+
 		builtin.textContent = localize("builtin", "Built-in");
 
 		const subtitle = append(details, $(".subtitle"));
@@ -491,6 +545,7 @@ export class ExtensionEditor extends EditorPane {
 			append(subtitle, $(".subtitle-entry")),
 			$(".publisher.clickable", { tabIndex: 0 }),
 		);
+
 		publisher.setAttribute("role", "button");
 
 		const publisherDisplayName = append(publisher, $(".publisher-name"));
@@ -506,12 +561,14 @@ export class ExtensionEditor extends EditorPane {
 			append(subtitle, $(".subtitle-entry.resource")),
 			$("", { tabIndex: 0 }),
 		);
+
 		resource.setAttribute("role", "button");
 
 		const installCount = append(
 			append(subtitle, $(".subtitle-entry")),
 			$("span.install", { tabIndex: 0 }),
 		);
+
 		this._register(
 			this.hoverService.setupManagedHover(
 				getDefaultHoverDelegate("mouse"),
@@ -530,6 +587,7 @@ export class ExtensionEditor extends EditorPane {
 			append(subtitle, $(".subtitle-entry")),
 			$("span.rating.clickable", { tabIndex: 0 }),
 		);
+
 		this._register(
 			this.hoverService.setupManagedHover(
 				getDefaultHoverDelegate("mouse"),
@@ -537,6 +595,7 @@ export class ExtensionEditor extends EditorPane {
 				localize("rating", "Rating"),
 			),
 		);
+
 		rating.setAttribute("role", "link"); // #132645
 		const ratingsWidget = this.instantiationService.createInstance(
 			RatingsWidget,
@@ -632,6 +691,7 @@ export class ExtensionEditor extends EditorPane {
 					if (action instanceof DropDownExtensionAction) {
 						return action.createActionViewItem(options);
 					}
+
 					if (action instanceof ButtonWithDropDownExtensionAction) {
 						return new ButtonWithDropdownExtensionActionViewItem(
 							action,
@@ -648,6 +708,7 @@ export class ExtensionEditor extends EditorPane {
 							this.contextMenuService,
 						);
 					}
+
 					if (action instanceof ToggleAutoUpdateForExtensionAction) {
 						return new CheckboxActionViewItem(undefined, action, {
 							...options,
@@ -656,6 +717,7 @@ export class ExtensionEditor extends EditorPane {
 							checkboxStyles: defaultCheckboxStyles,
 						});
 					}
+
 					return undefined;
 				},
 				focusOnlyEnabledItems: true,
@@ -663,6 +725,7 @@ export class ExtensionEditor extends EditorPane {
 		);
 
 		extensionActionBar.push(actions, { icon: true, label: true });
+
 		extensionActionBar.setFocusable(true);
 		// update focusable elements when the enablement of an action changes
 		this._register(
@@ -672,6 +735,7 @@ export class ExtensionEditor extends EditorPane {
 				),
 			)(() => {
 				extensionActionBar.setFocusable(false);
+
 				extensionActionBar.setFocusable(true);
 			}),
 		);
@@ -706,6 +770,7 @@ export class ExtensionEditor extends EditorPane {
 			ExtensionRecommendationWidget,
 			append(details, $(".recommendation")),
 		);
+
 		widgets.push(recommendationWidget);
 
 		this._register(
@@ -746,6 +811,7 @@ export class ExtensionEditor extends EditorPane {
 		const navbar = new NavBar(body);
 
 		const content = append(body, $(".content"));
+
 		content.id = generateUuid(); // An id is needed for the webview parent flow to
 
 		this.template = {
@@ -784,6 +850,7 @@ export class ExtensionEditor extends EditorPane {
 		token: CancellationToken,
 	): Promise<void> {
 		await super.setInput(input, options, context, token);
+
 		this.updatePreReleaseVersionContext();
 
 		if (this.template) {
@@ -800,6 +867,7 @@ export class ExtensionEditor extends EditorPane {
 			this.options;
 
 		super.setOptions(options);
+
 		this.updatePreReleaseVersionContext();
 
 		if (
@@ -831,6 +899,7 @@ export class ExtensionEditor extends EditorPane {
 			showPreReleaseVersion = !!(<ExtensionsInput>this.input).extension
 				.gallery?.properties.isPreReleaseVersion;
 		}
+
 		this.showPreReleaseVersionContextKey?.set(showPreReleaseVersion);
 	}
 
@@ -838,6 +907,7 @@ export class ExtensionEditor extends EditorPane {
 		if (!this.input || !this.template) {
 			return;
 		}
+
 		if (this.template.navbar.switch(tab)) {
 			return;
 		}
@@ -854,21 +924,27 @@ export class ExtensionEditor extends EditorPane {
 		if (extension.resourceExtension) {
 			return null;
 		}
+
 		if (extension.local?.source === "resource") {
 			return null;
 		}
+
 		if (isUndefined(preRelease)) {
 			return null;
 		}
+
 		if (preRelease === extension.gallery?.properties.isPreReleaseVersion) {
 			return null;
 		}
+
 		if (preRelease && !extension.hasPreReleaseVersion) {
 			return null;
 		}
+
 		if (!preRelease && !extension.hasReleaseVersion) {
 			return null;
 		}
+
 		return (
 			(
 				await this.extensionGalleryService.getExtensions(
@@ -891,6 +967,7 @@ export class ExtensionEditor extends EditorPane {
 		preserveFocus: boolean,
 	): Promise<void> {
 		this.activeElement = null;
+
 		this.transientDisposables.clear();
 
 		const token = this.transientDisposables.add(
@@ -911,11 +988,13 @@ export class ExtensionEditor extends EditorPane {
 				? this.extensionGalleryService.getReadme(gallery, token)
 				: extension.getReadme(token),
 		);
+
 		this.extensionChangelog = new Cache(() =>
 			gallery
 				? this.extensionGalleryService.getChangelog(gallery, token)
 				: extension.getChangelog(token),
 		);
+
 		this.extensionManifest = new Cache(() =>
 			gallery
 				? this.extensionGalleryService.getManifest(gallery, token)
@@ -923,7 +1002,9 @@ export class ExtensionEditor extends EditorPane {
 		);
 
 		template.extension = extension;
+
 		template.gallery = gallery;
+
 		template.manifest = null;
 
 		this.transientDisposables.add(
@@ -934,15 +1015,20 @@ export class ExtensionEditor extends EditorPane {
 				{ once: true },
 			),
 		);
+
 		template.icon.src = extension.iconUrl;
 
 		template.name.textContent = extension.displayName;
+
 		template.name.classList.toggle("clickable", !!extension.url);
+
 		template.name.classList.toggle(
 			"deprecated",
 			!!extension.deprecationInfo,
 		);
+
 		template.preview.style.display = extension.preview ? "inherit" : "none";
+
 		template.builtin.style.display = extension.isBuiltin
 			? "inherit"
 			: "none";
@@ -951,13 +1037,16 @@ export class ExtensionEditor extends EditorPane {
 
 		// subtitle
 		template.publisher.classList.toggle("clickable", !!extension.url);
+
 		template.publisherDisplayName.textContent =
 			extension.publisherDisplayName;
+
 		template.publisher.parentElement?.classList.toggle(
 			"hide",
 			!!extension.resourceExtension ||
 				extension.local?.source === "resource",
 		);
+
 		this.transientDisposables.add(
 			this.hoverService.setupManagedHover(
 				getDefaultHoverDelegate("mouse"),
@@ -971,6 +1060,7 @@ export class ExtensionEditor extends EditorPane {
 			(extension.local?.source === "resource"
 				? extension.local?.location
 				: undefined);
+
 		template.resource.parentElement?.classList.toggle("hide", !location);
 
 		if (location) {
@@ -979,6 +1069,7 @@ export class ExtensionEditor extends EditorPane {
 
 			if (workspaceFolder && extension.isWorkspaceScoped) {
 				template.resource.parentElement?.classList.add("clickable");
+
 				this.transientDisposables.add(
 					this.hoverService.setupManagedHover(
 						getDefaultHoverDelegate("mouse"),
@@ -989,10 +1080,12 @@ export class ExtensionEditor extends EditorPane {
 						),
 					),
 				);
+
 				template.resource.textContent = localize(
 					"workspace extension",
 					"Workspace Extension",
 				);
+
 				this.transientDisposables.add(
 					onClick(template.resource, () => {
 						this.viewsService
@@ -1004,6 +1097,7 @@ export class ExtensionEditor extends EditorPane {
 				);
 			} else {
 				template.resource.parentElement?.classList.remove("clickable");
+
 				this.transientDisposables.add(
 					this.hoverService.setupManagedHover(
 						getDefaultHoverDelegate("mouse"),
@@ -1011,6 +1105,7 @@ export class ExtensionEditor extends EditorPane {
 						location.path,
 					),
 				);
+
 				template.resource.textContent = localize(
 					"local extension",
 					"Local Extension",
@@ -1022,7 +1117,9 @@ export class ExtensionEditor extends EditorPane {
 			"hide",
 			!extension.url,
 		);
+
 		template.rating.parentElement?.classList.toggle("hide", !extension.url);
+
 		template.rating.classList.toggle("clickable", !!extension.url);
 
 		if (extension.url) {
@@ -1031,6 +1128,7 @@ export class ExtensionEditor extends EditorPane {
 					this.openerService.open(URI.parse(extension.url!)),
 				),
 			);
+
 			this.transientDisposables.add(
 				onClick(template.rating, () =>
 					this.openerService.open(
@@ -1038,6 +1136,7 @@ export class ExtensionEditor extends EditorPane {
 					),
 				),
 			);
+
 			this.transientDisposables.add(
 				onClick(template.publisher, () =>
 					this.extensionsWorkbenchService.openSearch(
@@ -1094,10 +1193,12 @@ export class ExtensionEditor extends EditorPane {
 		preserveFocus: boolean,
 	): void {
 		template.content.innerText = "";
+
 		template.navbar.clear();
 
 		if (this.currentIdentifier !== extension.identifier.id) {
 			this.initialScrollProgress.clear();
+
 			this.currentIdentifier = extension.identifier.id;
 		}
 
@@ -1120,6 +1221,7 @@ export class ExtensionEditor extends EditorPane {
 				),
 			);
 		}
+
 		if (extension.hasChangelog()) {
 			template.navbar.push(
 				ExtensionEditorTab.Changelog,
@@ -1130,6 +1232,7 @@ export class ExtensionEditor extends EditorPane {
 				),
 			);
 		}
+
 		if (extension.dependencies.length) {
 			template.navbar.push(
 				ExtensionEditorTab.Dependencies,
@@ -1140,6 +1243,7 @@ export class ExtensionEditor extends EditorPane {
 				),
 			);
 		}
+
 		if (
 			manifest &&
 			manifest.extensionPack?.length &&
@@ -1160,6 +1264,7 @@ export class ExtensionEditor extends EditorPane {
 				(<IExtensionEditorOptions>this.options).tab!,
 			);
 		}
+
 		if (template.navbar.currentId) {
 			this.onNavbarChange(
 				extension,
@@ -1167,6 +1272,7 @@ export class ExtensionEditor extends EditorPane {
 				template,
 			);
 		}
+
 		template.navbar.onChange(
 			(e) => this.onNavbarChange(extension, e, template),
 			this,
@@ -1176,6 +1282,7 @@ export class ExtensionEditor extends EditorPane {
 
 	override clearInput(): void {
 		this.contentDisposables.clear();
+
 		this.transientDisposables.clear();
 
 		super.clearInput();
@@ -1183,6 +1290,7 @@ export class ExtensionEditor extends EditorPane {
 
 	override focus(): void {
 		super.focus();
+
 		this.activeElement?.focus();
 	}
 
@@ -1201,6 +1309,7 @@ export class ExtensionEditor extends EditorPane {
 		) {
 			return undefined;
 		}
+
 		return this.activeElement as IWebview;
 	}
 
@@ -1210,17 +1319,22 @@ export class ExtensionEditor extends EditorPane {
 		template: IExtensionEditorTemplate,
 	): void {
 		this.contentDisposables.clear();
+
 		template.content.innerText = "";
+
 		this.activeElement = null;
 
 		if (id) {
 			const cts = new CancellationTokenSource();
+
 			this.contentDisposables.add(toDisposable(() => cts.dispose(true)));
+
 			this.open(id, extension, template, cts.token).then(
 				(activeElement) => {
 					if (cts.token.isCancellationRequested) {
 						return;
 					}
+
 					this.activeElement = activeElement;
 
 					if (focus) {
@@ -1257,6 +1371,7 @@ export class ExtensionEditor extends EditorPane {
 			case ExtensionEditorTab.ExtensionPack:
 				return this.openExtensionPack(extension, template, token);
 		}
+
 		return Promise.resolve(null);
 	}
 
@@ -1300,9 +1415,11 @@ export class ExtensionEditor extends EditorPane {
 			webview.claim(this, this.window, this.scopedContextKeyService);
 
 			setParentFlowTo(webview.container, container);
+
 			webview.layoutWebviewOverElement(container);
 
 			webview.setHtml(body);
+
 			webview.claim(this, this.window, undefined);
 
 			this.contentDisposables.add(
@@ -1326,9 +1443,11 @@ export class ExtensionEditor extends EditorPane {
 					},
 				},
 			);
+
 			this.contentDisposables.add(toDisposable(removeLayoutParticipant));
 
 			let isDisposed = false;
+
 			this.contentDisposables.add(
 				toDisposable(() => {
 					isDisposed = true;
@@ -1364,6 +1483,7 @@ export class ExtensionEditor extends EditorPane {
 					) {
 						this.openerService.open(link);
 					}
+
 					if (
 						matchesScheme(link, Schemas.command) &&
 						extension.type === ExtensionType.System
@@ -1376,6 +1496,7 @@ export class ExtensionEditor extends EditorPane {
 			return webview;
 		} catch (e) {
 			const p = append(container, $("p.nocontent"));
+
 			p.textContent = noContentCopy;
 
 			return p;
@@ -1430,40 +1551,60 @@ export class ExtensionEditor extends EditorPane {
 
 					#scroll-to-top {
 						position: fixed;
+
 						width: 32px;
+
 						height: 32px;
+
 						right: 25px;
+
 						bottom: 25px;
+
 						background-color: var(--vscode-button-secondaryBackground);
+
 						border-color: var(--vscode-button-border);
+
 						border-radius: 50%;
+
 						cursor: pointer;
+
 						box-shadow: 1px 1px 1px rgba(0,0,0,.25);
+
 						outline: none;
+
 						display: flex;
+
 						justify-content: center;
+
 						align-items: center;
 					}
 
 					#scroll-to-top:hover {
 						background-color: var(--vscode-button-secondaryHoverBackground);
+
 						box-shadow: 2px 2px 2px rgba(0,0,0,.25);
 					}
 
 					body.vscode-high-contrast #scroll-to-top {
 						border-width: 2px;
+
 						border-style: solid;
+
 						box-shadow: none;
 					}
 
 					#scroll-to-top span.icon::before {
 						content: "";
+
 						display: block;
+
 						background: var(--vscode-button-secondaryForeground);
 						/* Chevron up icon */
 						webkit-mask-image: url('data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0idXRmLTgiPz4KPCEtLSBHZW5lcmF0b3I6IEFkb2JlIElsbHVzdHJhdG9yIDE5LjIuMCwgU1ZHIEV4cG9ydCBQbHVnLUluIC4gU1ZHIFZlcnNpb246IDYuMDAgQnVpbGQgMCkgIC0tPgo8c3ZnIHZlcnNpb249IjEuMSIgaWQ9IkxheWVyXzEiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgeG1sbnM6eGxpbms9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkveGxpbmsiIHg9IjBweCIgeT0iMHB4IgoJIHZpZXdCb3g9IjAgMCAxNiAxNiIgc3R5bGU9ImVuYWJsZS1iYWNrZ3JvdW5kOm5ldyAwIDAgMTYgMTY7IiB4bWw6c3BhY2U9InByZXNlcnZlIj4KPHN0eWxlIHR5cGU9InRleHQvY3NzIj4KCS5zdDB7ZmlsbDojRkZGRkZGO30KCS5zdDF7ZmlsbDpub25lO30KPC9zdHlsZT4KPHRpdGxlPnVwY2hldnJvbjwvdGl0bGU+CjxwYXRoIGNsYXNzPSJzdDAiIGQ9Ik04LDUuMWwtNy4zLDcuM0wwLDExLjZsOC04bDgsOGwtMC43LDAuN0w4LDUuMXoiLz4KPHJlY3QgY2xhc3M9InN0MSIgd2lkdGg9IjE2IiBoZWlnaHQ9IjE2Ii8+Cjwvc3ZnPgo=');
 						-webkit-mask-image: url('data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0idXRmLTgiPz4KPCEtLSBHZW5lcmF0b3I6IEFkb2JlIElsbHVzdHJhdG9yIDE5LjIuMCwgU1ZHIEV4cG9ydCBQbHVnLUluIC4gU1ZHIFZlcnNpb246IDYuMDAgQnVpbGQgMCkgIC0tPgo8c3ZnIHZlcnNpb249IjEuMSIgaWQ9IkxheWVyXzEiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgeG1sbnM6eGxpbms9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkveGxpbmsiIHg9IjBweCIgeT0iMHB4IgoJIHZpZXdCb3g9IjAgMCAxNiAxNiIgc3R5bGU9ImVuYWJsZS1iYWNrZ3JvdW5kOm5ldyAwIDAgMTYgMTY7IiB4bWw6c3BhY2U9InByZXNlcnZlIj4KPHN0eWxlIHR5cGU9InRleHQvY3NzIj4KCS5zdDB7ZmlsbDojRkZGRkZGO30KCS5zdDF7ZmlsbDpub25lO30KPC9zdHlsZT4KPHRpdGxlPnVwY2hldnJvbjwvdGl0bGU+CjxwYXRoIGNsYXNzPSJzdDAiIGQ9Ik04LDUuMWwtNy4zLDcuM0wwLDExLjZsOC04bDgsOGwtMC43LDAuN0w4LDUuMXoiLz4KPHJlY3QgY2xhc3M9InN0MSIgd2lkdGg9IjE2IiBoZWlnaHQ9IjE2Ii8+Cjwvc3ZnPgo=');
+
 						width: 16px;
+
 						height: 16px;
 					}
 					${css}
@@ -1495,7 +1636,9 @@ export class ExtensionEditor extends EditorPane {
 				"narrow",
 				this.dimension && this.dimension.width < 500,
 			);
+
 		layout();
+
 		this.contentDisposables.add(
 			toDisposable(arrays.insert(this.layoutParticipants, { layout })),
 		);
@@ -1552,7 +1695,9 @@ export class ExtensionEditor extends EditorPane {
 			container,
 			$("div", { class: "extension-pack-readme" }),
 		);
+
 		extensionPackReadme.style.margin = "0 auto";
+
 		extensionPackReadme.style.maxWidth = "882px";
 
 		const extensionPack = append(
@@ -1571,6 +1716,7 @@ export class ExtensionEditor extends EditorPane {
 		}
 
 		const extensionPackHeader = append(extensionPack, $("div.header"));
+
 		extensionPackHeader.textContent = localize(
 			"extension pack",
 			"Extension Pack ({0})",
@@ -1581,7 +1727,9 @@ export class ExtensionEditor extends EditorPane {
 			extensionPack,
 			$("div", { class: "extension-pack-content" }),
 		);
+
 		extensionPackContent.setAttribute("tabindex", "0");
+
 		append(extensionPack, $("div.footer"));
 
 		const readmeContent = append(
@@ -1621,19 +1769,25 @@ export class ExtensionEditor extends EditorPane {
 		const removeLayoutParticipant = arrays.insert(this.layoutParticipants, {
 			layout,
 		});
+
 		this.contentDisposables.add(toDisposable(removeLayoutParticipant));
+
 		this.contentDisposables.add(scrollableContent);
 
 		if (extension.local) {
 			this.renderInstallInfo(content, extension.local);
 		}
+
 		if (extension.gallery) {
 			this.renderMarketplaceInfo(content, extension);
 		}
+
 		this.renderCategories(content, extension);
+
 		this.renderExtensionResources(content, extension);
 
 		append(container, scrollableContent.getDomNode());
+
 		scrollableContent.scanDomNode();
 	}
 
@@ -1646,6 +1800,7 @@ export class ExtensionEditor extends EditorPane {
 				container,
 				$(".categories-container.additional-details-element"),
 			);
+
 			append(
 				categoriesContainer,
 				$(
@@ -1689,6 +1844,7 @@ export class ExtensionEditor extends EditorPane {
 				URI.parse(extension.url),
 			]);
 		}
+
 		if (extension.url && extension.supportUrl) {
 			try {
 				resources.push([
@@ -1699,6 +1855,7 @@ export class ExtensionEditor extends EditorPane {
 				/* Ignore */
 			}
 		}
+
 		if (extension.repository) {
 			try {
 				resources.push([
@@ -1709,6 +1866,7 @@ export class ExtensionEditor extends EditorPane {
 				/* Ignore */
 			}
 		}
+
 		if (extension.url && extension.licenseUrl) {
 			try {
 				resources.push([
@@ -1719,17 +1877,20 @@ export class ExtensionEditor extends EditorPane {
 				/* Ignore */
 			}
 		}
+
 		if (extension.publisherUrl) {
 			resources.push([
 				extension.publisherDisplayName,
 				extension.publisherUrl,
 			]);
 		}
+
 		if (resources.length || extension.publisherSponsorLink) {
 			const extensionResourcesContainer = append(
 				container,
 				$(".resources-container.additional-details-element"),
 			);
+
 			append(
 				extensionResourcesContainer,
 				$(
@@ -1749,11 +1910,13 @@ export class ExtensionEditor extends EditorPane {
 					resourcesElement,
 					$("a.resource", { tabindex: "0" }, label),
 				);
+
 				this.transientDisposables.add(
 					onClick(resource, () => {
 						this.openerService.open(uri);
 					}),
 				);
+
 				this.transientDisposables.add(
 					this.hoverService.setupManagedHover(
 						getDefaultHoverDelegate("mouse"),
@@ -1773,6 +1936,7 @@ export class ExtensionEditor extends EditorPane {
 			container,
 			$(".more-info-container.additional-details-element"),
 		);
+
 		append(
 			installInfoContainer,
 			$(
@@ -1783,6 +1947,7 @@ export class ExtensionEditor extends EditorPane {
 		);
 
 		const installInfo = append(installInfoContainer, $(".more-info"));
+
 		append(
 			installInfo,
 			$(
@@ -1792,6 +1957,7 @@ export class ExtensionEditor extends EditorPane {
 				$("code", undefined, extension.identifier.id),
 			),
 		);
+
 		append(
 			installInfo,
 			$(
@@ -1821,6 +1987,7 @@ export class ExtensionEditor extends EditorPane {
 				),
 			);
 		}
+
 		if (extension.source !== "gallery") {
 			const element = $(
 				"div",
@@ -1829,6 +1996,7 @@ export class ExtensionEditor extends EditorPane {
 					? localize("vsix", "VSIX")
 					: localize("other", "Local"),
 			);
+
 			append(
 				installInfo,
 				$(
@@ -1845,7 +2013,9 @@ export class ExtensionEditor extends EditorPane {
 				extension.location.scheme === Schemas.file
 			) {
 				element.classList.add("link");
+
 				element.title = extension.location.fsPath;
+
 				this.transientDisposables.add(
 					onClick(element, () =>
 						this.openerService.open(extension.location, {
@@ -1855,8 +2025,10 @@ export class ExtensionEditor extends EditorPane {
 				);
 			}
 		}
+
 		if (extension.size) {
 			const element = $("div", undefined, toMemoryString(extension.size));
+
 			append(
 				installInfo,
 				$(
@@ -1878,7 +2050,9 @@ export class ExtensionEditor extends EditorPane {
 
 			if (isNative && extension.location.scheme === Schemas.file) {
 				element.classList.add("link");
+
 				element.title = extension.location.fsPath;
+
 				this.transientDisposables.add(
 					onClick(element, () =>
 						this.openerService.open(extension.location, {
@@ -1888,15 +2062,19 @@ export class ExtensionEditor extends EditorPane {
 				);
 			}
 		}
+
 		this.getCacheLocation(extension).then((cacheLocation) => {
 			if (!cacheLocation) {
 				return;
 			}
+
 			computeSize(cacheLocation, this.fileService).then((cacheSize) => {
 				if (!cacheSize) {
 					return;
 				}
+
 				const element = $("div", undefined, toMemoryString(cacheSize));
+
 				append(
 					installInfo,
 					$(
@@ -1918,7 +2096,9 @@ export class ExtensionEditor extends EditorPane {
 
 				if (isNative && extension.location.scheme === Schemas.file) {
 					element.classList.add("link");
+
 					element.title = cacheLocation.fsPath;
+
 					this.transientDisposables.add(
 						onClick(element, () =>
 							this.openerService.open(
@@ -1946,11 +2126,13 @@ export class ExtensionEditor extends EditorPane {
 			if (!environment) {
 				return undefined;
 			}
+
 			extensionCacheLocation = this.uriIdentityService.extUri.joinPath(
 				environment.globalStorageHome,
 				extension.identifier.id.toLowerCase(),
 			);
 		}
+
 		return extensionCacheLocation;
 	}
 
@@ -1964,6 +2146,7 @@ export class ExtensionEditor extends EditorPane {
 			container,
 			$(".more-info-container.additional-details-element"),
 		);
+
 		append(
 			moreInfoContainer,
 			$(
@@ -1986,6 +2169,7 @@ export class ExtensionEditor extends EditorPane {
 						$("code", undefined, extension.identifier.id),
 					),
 				);
+
 				append(
 					moreInfo,
 					$(
@@ -1996,6 +2180,7 @@ export class ExtensionEditor extends EditorPane {
 					),
 				);
 			}
+
 			append(
 				moreInfo,
 				$(
@@ -2054,6 +2239,7 @@ export class ExtensionEditor extends EditorPane {
 		if (token.isCancellationRequested) {
 			return null;
 		}
+
 		if (!manifest) {
 			return null;
 		}
@@ -2075,8 +2261,11 @@ export class ExtensionEditor extends EditorPane {
 		const removeLayoutParticipant = arrays.insert(this.layoutParticipants, {
 			layout,
 		});
+
 		this.contentDisposables.add(toDisposable(removeLayoutParticipant));
+
 		append(template.content, extensionFeaturesTab.domNode);
+
 		layout();
 
 		return extensionFeaturesTab.domNode;
@@ -2103,7 +2292,9 @@ export class ExtensionEditor extends EditorPane {
 		const content = $("div", { class: "subcontent" });
 
 		const scrollableContent = new DomScrollableElement(content, {});
+
 		append(template.content, scrollableContent.getDomNode());
+
 		this.contentDisposables.add(scrollableContent);
 
 		const dependenciesTree = this.instantiationService.createInstance(
@@ -2124,15 +2315,18 @@ export class ExtensionEditor extends EditorPane {
 			scrollableContent.scanDomNode();
 
 			const scrollDimensions = scrollableContent.getScrollDimensions();
+
 			dependenciesTree.layout(scrollDimensions.height);
 		};
 
 		const removeLayoutParticipant = arrays.insert(this.layoutParticipants, {
 			layout,
 		});
+
 		this.contentDisposables.add(toDisposable(removeLayoutParticipant));
 
 		this.contentDisposables.add(dependenciesTree);
+
 		scrollableContent.scanDomNode();
 
 		return Promise.resolve({
@@ -2150,6 +2344,7 @@ export class ExtensionEditor extends EditorPane {
 		if (token.isCancellationRequested) {
 			return Promise.resolve(null);
 		}
+
 		const manifest = await this.loadContents(
 			() => this.extensionManifest!.get(),
 			template.content,
@@ -2158,9 +2353,11 @@ export class ExtensionEditor extends EditorPane {
 		if (token.isCancellationRequested) {
 			return null;
 		}
+
 		if (!manifest) {
 			return null;
 		}
+
 		return this.renderExtensionPack(manifest, template.content, token);
 	}
 
@@ -2178,6 +2375,7 @@ export class ExtensionEditor extends EditorPane {
 		const scrollableContent = new DomScrollableElement(content, {
 			useShadows: false,
 		});
+
 		append(parent, scrollableContent.getDomNode());
 
 		const extensionsGridView = this.instantiationService.createInstance(
@@ -2190,11 +2388,15 @@ export class ExtensionEditor extends EditorPane {
 			manifest.extensionPack!,
 			this.extensionsWorkbenchService,
 		);
+
 		extensionsGridView.setExtensions(extensions);
+
 		scrollableContent.scanDomNode();
 
 		this.contentDisposables.add(scrollableContent);
+
 		this.contentDisposables.add(extensionsGridView);
+
 		this.contentDisposables.add(
 			toDisposable(
 				arrays.insert(this.layoutParticipants, {
@@ -2215,6 +2417,7 @@ export class ExtensionEditor extends EditorPane {
 		const result = this.contentDisposables.add(loadingTask());
 
 		const onDone = () => container.classList.remove("loading");
+
 		result.promise.then(onDone, onDone);
 
 		return result.promise;
@@ -2222,6 +2425,7 @@ export class ExtensionEditor extends EditorPane {
 
 	layout(dimension: Dimension): void {
 		this.dimension = dimension;
+
 		this.layoutParticipants.forEach((p) => p.layout());
 	}
 
@@ -2251,8 +2455,10 @@ registerAction2(
 				},
 			});
 		}
+
 		run(accessor: ServicesAccessor): void {
 			const extensionEditor = getExtensionEditor(accessor);
+
 			extensionEditor?.showFind();
 		}
 	},
@@ -2274,8 +2480,10 @@ registerAction2(
 				},
 			});
 		}
+
 		run(accessor: ServicesAccessor): void {
 			const extensionEditor = getExtensionEditor(accessor);
+
 			extensionEditor?.runFindAction(false);
 		}
 	},
@@ -2297,8 +2505,10 @@ registerAction2(
 				},
 			});
 		}
+
 		run(accessor: ServicesAccessor): void {
 			const extensionEditor = getExtensionEditor(accessor);
+
 			extensionEditor?.runFindAction(true);
 		}
 	},
@@ -2312,6 +2522,7 @@ registerThemingParticipant(
 			collector.addRule(
 				`.monaco-workbench .extension-editor .content .details .additional-details-container .resources-container a.resource { color: ${link}; }`,
 			);
+
 			collector.addRule(
 				`.monaco-workbench .extension-editor .content .feature-contributions a { color: ${link}; }`,
 			);
@@ -2322,6 +2533,7 @@ registerThemingParticipant(
 		if (activeLink) {
 			collector.addRule(`.monaco-workbench .extension-editor .content .details .additional-details-container .resources-container a.resource:hover,
 			.monaco-workbench .extension-editor .content .details .additional-details-container .resources-container a.resource:active { color: ${activeLink}; }`);
+
 			collector.addRule(`.monaco-workbench .extension-editor .content .feature-contributions a:hover,
 			.monaco-workbench .extension-editor .content .feature-contributions a:active { color: ${activeLink}; }`);
 		}
@@ -2334,6 +2546,7 @@ registerThemingParticipant(
 			collector.addRule(
 				`.monaco-workbench .extension-editor .content > .details > .additional-details-container .categories-container > .categories > .category:hover { background-color: ${buttonHoverBackgroundColor}; border-color: ${buttonHoverBackgroundColor}; }`,
 			);
+
 			collector.addRule(
 				`.monaco-workbench .extension-editor .content > .details > .additional-details-container .tags-container > .tags > .tag:hover { background-color: ${buttonHoverBackgroundColor}; border-color: ${buttonHoverBackgroundColor}; }`,
 			);
@@ -2345,6 +2558,7 @@ registerThemingParticipant(
 			collector.addRule(
 				`.monaco-workbench .extension-editor .content > .details > .additional-details-container .categories-container > .categories > .category:hover { color: ${buttonForegroundColor}; }`,
 			);
+
 			collector.addRule(
 				`.monaco-workbench .extension-editor .content > .details > .additional-details-container .tags-container > .tags > .tag:hover { color: ${buttonForegroundColor}; }`,
 			);
@@ -2360,5 +2574,6 @@ function getExtensionEditor(
 	if (activeEditorPane instanceof ExtensionEditor) {
 		return activeEditorPane;
 	}
+
 	return null;
 }

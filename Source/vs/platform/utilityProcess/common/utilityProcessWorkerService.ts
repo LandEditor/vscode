@@ -45,7 +45,9 @@ export interface IUtilityProcessWorkerConfiguration {
 	 */
 	readonly reply: {
 		readonly windowId: number;
+
 		readonly channel?: string;
+
 		readonly nonce?: string;
 	};
 }
@@ -53,7 +55,9 @@ export interface IUtilityProcessWorkerCreateConfiguration
 	extends IUtilityProcessWorkerConfiguration {
 	readonly reply: {
 		readonly windowId: number;
+
 		readonly channel: string;
+
 		readonly nonce: string;
 	};
 }

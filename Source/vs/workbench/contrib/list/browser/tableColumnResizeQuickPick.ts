@@ -22,8 +22,10 @@ export class TableColumnResizeQuickPick extends Disposable {
 	) {
 		super();
 	}
+
 	async show(): Promise<void> {
 		const items: IColumnResizeQuickPickItem[] = [];
+
 		this._table.getColumnLabels().forEach((label, index) => {
 			if (label) {
 				items.push({ label, index });
@@ -44,6 +46,7 @@ export class TableColumnResizeQuickPick extends Disposable {
 		if (!column) {
 			return;
 		}
+
 		const value = await this._quickInputService.input({
 			placeHolder: localize(
 				"table.column.resizeValue.placeHolder",
@@ -63,12 +66,15 @@ export class TableColumnResizeQuickPick extends Disposable {
 		if (!percentageValue) {
 			return;
 		}
+
 		this._table.resizeColumn(column.index, percentageValue);
 	}
+
 	private async _validateColumnResizeValue(input: string): Promise<
 		| string
 		| {
 				content: string;
+
 				severity: Severity;
 		  }
 		| null
@@ -87,6 +93,7 @@ export class TableColumnResizeQuickPick extends Disposable {
 				"Please enter a number greater than 0 and less than or equal to 100.",
 			);
 		}
+
 		return null;
 	}
 }

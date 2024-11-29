@@ -34,6 +34,7 @@ export function getEmmetHelper() {
 	if (!_emmetHelper) {
 		_emmetHelper = require("@vscode/emmet-helper");
 	}
+
 	return _emmetHelper;
 }
 /**
@@ -49,6 +50,7 @@ export function updateEmmetExtensionsPath(forceRefresh: boolean = false) {
 	if (!extensionsPath) {
 		extensionsPath = [];
 	}
+
 	if (forceRefresh || _currentExtensionsPath !== extensionsPath) {
 		_currentExtensionsPath = extensionsPath;
 
@@ -57,6 +59,7 @@ export function updateEmmetExtensionsPath(forceRefresh: boolean = false) {
 			: undefined;
 
 		const fileSystem = vscode.workspace.fs;
+
 		helper
 			.updateExtensionsPath(
 				extensionsPath,
@@ -298,9 +301,11 @@ export function validate(allowStylesheet: boolean = true): boolean {
 
 		return false;
 	}
+
 	if (!allowStylesheet && isStyleSheet(editor.document.languageId)) {
 		return false;
 	}
+
 	return true;
 }
 export function getMappingForIncludedLanguages(): Record<string, string> {
@@ -324,6 +329,7 @@ export function getMappingForIncludedLanguages(): Record<string, string> {
 		MAPPED_MODES,
 		includeLanguagesConfig ?? {},
 	);
+
 	Object.keys(includeLanguages).forEach((syntax) => {
 		if (
 			typeof includeLanguages[syntax] === "string" &&
@@ -351,12 +357,15 @@ export function getEmmetMode(
 	if (!language || excludedLanguages.includes(language)) {
 		return;
 	}
+
 	if (language === "jsx-tags") {
 		language = "javascriptreact";
 	}
+
 	if (mappedModes[language]) {
 		language = mappedModes[language];
 	}
+
 	if (/\b(typescriptreact|javascriptreact|jsx-tags)\b/.test(language)) {
 		// treat tsx like jsx
 		language = "jsx";
@@ -366,6 +375,7 @@ export function getEmmetMode(
 	} else if (language === "jade" || language === "pug") {
 		language = "pug";
 	}
+
 	const syntaxes = getSyntaxes();
 
 	if (
@@ -374,6 +384,7 @@ export function getEmmetMode(
 	) {
 		return language;
 	}
+
 	return;
 }
 
@@ -416,8 +427,10 @@ export function parsePartialStylesheet(
 		if (offset === -1) {
 			return;
 		}
+
 		return offset;
 	}
+
 	function findClosingCommentAfterPosition(pos: number): number | undefined {
 		const text = document.getText().substring(pos);
 
@@ -426,10 +439,12 @@ export function parsePartialStylesheet(
 		if (offset === -1) {
 			return;
 		}
+
 		offset += 2 + pos;
 
 		return offset;
 	}
+
 	function consumeLineCommentBackwards() {
 		const posLineNumber = document.positionAt(stream.pos).line;
 
@@ -447,6 +462,7 @@ export function parsePartialStylesheet(
 			}
 		}
 	}
+
 	function consumeBlockCommentBackwards() {
 		if (!stream.sof() && stream.peek() === slash) {
 			if (stream.backUp(1) === star) {
@@ -457,10 +473,12 @@ export function parsePartialStylesheet(
 			}
 		}
 	}
+
 	function consumeCommentForwards() {
 		if (stream.eat(slash)) {
 			if (stream.eat(slash) && !isCSS) {
 				const posLineNumber = document.positionAt(stream.pos).line;
+
 				stream.pos = document.offsetAt(
 					new vscode.Position(posLineNumber + 1, 0),
 				);
@@ -478,9 +496,11 @@ export function parsePartialStylesheet(
 			stream.next();
 		}
 	}
+
 	if (!stream.eof()) {
 		endOffset = stream.pos;
 	}
+
 	stream.pos = positionOffset;
 
 	let openBracesToFind = 1;
@@ -501,11 +521,14 @@ export function parsePartialStylesheet(
 			case closeBrace:
 				if (isCSS) {
 					stream.next();
+
 					startOffset = stream.pos;
+
 					exit = true;
 				} else {
 					openBracesToFind++;
 				}
+
 				break;
 
 			case slash:
@@ -516,6 +539,7 @@ export function parsePartialStylesheet(
 			default:
 				break;
 		}
+
 		if (
 			position.line - document.positionAt(stream.pos).line > 100 ||
 			stream.pos <= limitOffset
@@ -525,6 +549,7 @@ export function parsePartialStylesheet(
 	}
 	// We are at an opening brace. We need to include its selector.
 	currentLine = document.positionAt(stream.pos).line;
+
 	openBracesToFind = 0;
 
 	let foundSelector = false;
@@ -537,6 +562,7 @@ export function parsePartialStylesheet(
 		if (/\s/.test(String.fromCharCode(ch))) {
 			continue;
 		}
+
 		switch (ch) {
 			case slash:
 				consumeBlockCommentBackwards();
@@ -557,12 +583,15 @@ export function parsePartialStylesheet(
 				if (!openBracesToFind) {
 					foundSelector = true;
 				}
+
 				break;
 		}
+
 		if (!stream.sof() && foundSelector) {
 			startOffset = stream.pos;
 		}
 	}
+
 	try {
 		const buffer =
 			" ".repeat(startOffset) +
@@ -584,12 +613,14 @@ export function getFlatNode(
 	if (!root) {
 		return;
 	}
+
 	function getFlatNodeChild(
 		child: FlatNode | undefined,
 	): FlatNode | undefined {
 		if (!child) {
 			return;
 		}
+
 		const nodeStart = child.start;
 
 		const nodeEnd = child.end;
@@ -609,8 +640,10 @@ export function getFlatNode(
 				return getFlatNodeChildren(htmlChild.children);
 			}
 		}
+
 		return;
 	}
+
 	function getFlatNodeChildren(children: FlatNode[]): FlatNode | undefined {
 		for (let i = 0; i < children.length; i++) {
 			const foundChild = getFlatNodeChild(children[i]);
@@ -619,8 +652,10 @@ export function getFlatNode(
 				return foundChild;
 			}
 		}
+
 		return;
 	}
+
 	return getFlatNodeChildren(root.children);
 }
 export const allowedMimeTypesInScriptTag = [
@@ -665,6 +700,7 @@ export function getHtmlFlatNode(
 		}
 	} else if (currentNode.type === "cdata") {
 		const cdataBody = setupCdataNodeSubtree(documentText, currentNode);
+
 		currentNode =
 			getHtmlFlatNode(
 				cdataBody,
@@ -673,6 +709,7 @@ export function getHtmlFlatNode(
 				includeNodeBoundary,
 			) ?? currentNode;
 	}
+
 	return currentNode;
 }
 export function setupScriptNodeSubtree(
@@ -701,13 +738,16 @@ export function setupScriptNodeSubtree(
 			documentText.substring(scriptNode.open.end, endToUse);
 
 		const innerRoot: HtmlFlatNode = parse(scriptBodyText);
+
 		innerRoot.children.forEach((child) => {
 			scriptNode.children.push(child);
+
 			child.parent = scriptNode;
 		});
 
 		return scriptBodyText;
 	}
+
 	return "";
 }
 export function setupCdataNodeSubtree(
@@ -729,8 +769,10 @@ export function setupCdataNodeSubtree(
 		beforePadding + documentText.substring(startToUse, endToUse);
 
 	const innerRoot: HtmlFlatNode = parse(cdataBody);
+
 	innerRoot.children.forEach((child) => {
 		cdataNode.children.push(child);
+
 		child.parent = cdataNode;
 	});
 
@@ -752,6 +794,7 @@ export function isOffsetInsideOpenOrCloseTag(
 	) {
 		return true;
 	}
+
 	return false;
 }
 export function offsetRangeToSelection(
@@ -790,11 +833,13 @@ export function getDeepestFlatNode(
 	) {
 		return node;
 	}
+
 	for (let i = node.children.length - 1; i >= 0; i--) {
 		if (node.children[i].type !== "comment") {
 			return getDeepestFlatNode(node.children[i]);
 		}
 	}
+
 	return undefined;
 }
 export function findNextWord(
@@ -818,27 +863,35 @@ export function findNextWord(
 			if (propertyValue[pos] === " ") {
 				foundSpace = true;
 			}
+
 			continue;
 		}
+
 		if (foundSpace && !foundStart && propertyValue[pos] === " ") {
 			continue;
 		}
+
 		if (!foundStart) {
 			newSelectionStart = pos;
+
 			foundStart = true;
 
 			continue;
 		}
+
 		if (propertyValue[pos] === " ") {
 			newSelectionEnd = pos;
+
 			foundEnd = true;
 
 			break;
 		}
 	}
+
 	if (foundStart && !foundEnd) {
 		newSelectionEnd = propertyValue.length;
 	}
+
 	return [newSelectionStart, newSelectionEnd];
 }
 export function findPrevWord(
@@ -862,27 +915,35 @@ export function findPrevWord(
 			if (propertyValue[pos] === " ") {
 				foundSpace = true;
 			}
+
 			continue;
 		}
+
 		if (foundSpace && !foundEnd && propertyValue[pos] === " ") {
 			continue;
 		}
+
 		if (!foundEnd) {
 			newSelectionEnd = pos + 1;
+
 			foundEnd = true;
 
 			continue;
 		}
+
 		if (propertyValue[pos] === " ") {
 			newSelectionStart = pos + 1;
+
 			foundStart = true;
 
 			break;
 		}
 	}
+
 	if (foundEnd && !foundStart) {
 		newSelectionStart = 0;
 	}
+
 	return [newSelectionStart, newSelectionEnd];
 }
 export function getNodesInBetween(
@@ -912,6 +973,7 @@ export function getNodesInBetween(
 			node2 = node2.parent;
 		}
 	}
+
 	const siblings: FlatNode[] = [];
 
 	let currentNode: FlatNode | undefined = node1;
@@ -920,8 +982,10 @@ export function getNodesInBetween(
 
 	while (currentNode && position > currentNode.start) {
 		siblings.push(currentNode);
+
 		currentNode = currentNode.nextSibling;
 	}
+
 	return siblings;
 }
 export function sameNodes(
@@ -936,6 +1000,7 @@ export function sameNodes(
 	if (!node1 || !node2) {
 		return false;
 	}
+
 	return node1.start === node2.start && node1.end === node2.end;
 }
 export function getEmmetConfiguration(syntax: string) {
@@ -962,6 +1027,7 @@ export function getEmmetConfiguration(syntax: string) {
 			};
 		}
 	}
+
 	return {
 		preferences,
 		showExpandedAbbreviation: emmetConfig["showExpandedAbbreviation"],
@@ -988,6 +1054,7 @@ export function iterateCSSToken(
 			return false;
 		}
 	}
+
 	return true;
 }
 /**
@@ -1020,6 +1087,7 @@ export function getCssPropertyFromDocument(
 	if (isStyleSheet(editor.document.languageId)) {
 		return node && node.type === "property" ? <FlatProperty>node : null;
 	}
+
 	const htmlNode = <HtmlFlatNode>node;
 
 	if (
@@ -1042,6 +1110,7 @@ export function getCssPropertyFromDocument(
 			? <FlatProperty>innerNode
 			: null;
 	}
+
 	return null;
 }
 export function getEmbeddedCssNodeIfAny(
@@ -1052,6 +1121,7 @@ export function getEmbeddedCssNodeIfAny(
 	if (!currentNode) {
 		return;
 	}
+
 	const currentHtmlNode = <HtmlFlatNode>currentNode;
 
 	if (currentHtmlNode && currentHtmlNode.open && currentHtmlNode.close) {
@@ -1075,6 +1145,7 @@ export function getEmbeddedCssNodeIfAny(
 			}
 		}
 	}
+
 	return;
 }
 export function isStyleAttribute(
@@ -1084,6 +1155,7 @@ export function isStyleAttribute(
 	if (!currentNode) {
 		return false;
 	}
+
 	const currentHtmlNode = <HtmlFlatNode>currentNode;
 
 	const index = (currentHtmlNode.attributes || []).findIndex(
@@ -1093,6 +1165,7 @@ export function isStyleAttribute(
 	if (index === -1) {
 		return false;
 	}
+
 	const styleAttribute = currentHtmlNode.attributes[index];
 
 	return (

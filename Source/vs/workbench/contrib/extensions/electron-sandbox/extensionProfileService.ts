@@ -47,32 +47,46 @@ export class ExtensionHostProfileService
 	implements IExtensionHostProfileService
 {
 	declare readonly _serviceBrand: undefined;
+
 	private readonly _onDidChangeState: Emitter<void> = this._register(
 		new Emitter<void>(),
 	);
+
 	public readonly onDidChangeState: Event<void> =
 		this._onDidChangeState.event;
+
 	private readonly _onDidChangeLastProfile: Emitter<void> = this._register(
 		new Emitter<void>(),
 	);
+
 	public readonly onDidChangeLastProfile: Event<void> =
 		this._onDidChangeLastProfile.event;
+
 	private readonly _unresponsiveProfiles =
 		new ExtensionIdentifierMap<IExtensionHostProfile>();
+
 	private _profile: IExtensionHostProfile | null;
+
 	private _profileSession: ProfileSession | null;
+
 	private _state: ProfileSessionState = ProfileSessionState.None;
+
 	private profilingStatusBarIndicator: IStatusbarEntryAccessor | undefined;
+
 	private readonly profilingStatusBarIndicatorLabelUpdater = this._register(
 		new MutableDisposable(),
 	);
+
 	public lastProfileSavedTo: URI | undefined;
+
 	public get state() {
 		return this._state;
 	}
+
 	public get lastProfile() {
 		return this._profile;
 	}
+
 	constructor(
 		@IExtensionService
 		private readonly _extensionService: IExtensionService,
@@ -90,13 +104,18 @@ export class ExtensionHostProfileService
 		private readonly _productService: IProductService,
 	) {
 		super();
+
 		this._profile = null;
+
 		this._profileSession = null;
+
 		this._setState(ProfileSessionState.None);
+
 		CommandsRegistry.registerCommand(
 			"workbench.action.extensionHostProfiler.stop",
 			() => {
 				this.stopProfiling();
+
 				this._editorService.openEditor(
 					RuntimeExtensionsInput.instance,
 					{ pinned: true },
@@ -104,10 +123,12 @@ export class ExtensionHostProfileService
 			},
 		);
 	}
+
 	private _setState(state: ProfileSessionState): void {
 		if (this._state === state) {
 			return;
 		}
+
 		this._state = state;
 
 		if (this._state === ProfileSessionState.Running) {
@@ -115,8 +136,10 @@ export class ExtensionHostProfileService
 		} else if (this._state === ProfileSessionState.Stopping) {
 			this.updateProfilingStatusBarIndicator(false);
 		}
+
 		this._onDidChangeState.fire(undefined);
 	}
+
 	private updateProfilingStatusBarIndicator(visible: boolean): void {
 		this.profilingStatusBarIndicatorLabelUpdater.clear();
 
@@ -157,6 +180,7 @@ export class ExtensionHostProfileService
 				},
 				1000,
 			);
+
 			this.profilingStatusBarIndicatorLabelUpdater.value = handle;
 
 			if (!this.profilingStatusBarIndicator) {
@@ -172,14 +196,17 @@ export class ExtensionHostProfileService
 		} else {
 			if (this.profilingStatusBarIndicator) {
 				this.profilingStatusBarIndicator.dispose();
+
 				this.profilingStatusBarIndicator = undefined;
 			}
 		}
 	}
+
 	public async startProfiling(): Promise<any> {
 		if (this._state !== ProfileSessionState.None) {
 			return null;
 		}
+
 		const inspectPorts = await this._extensionService.getInspectPorts(
 			ExtensionHostKind.LocalProcess,
 			true,
@@ -208,12 +235,14 @@ export class ExtensionHostProfileService
 					}
 				});
 		}
+
 		if (inspectPorts.length > 1) {
 			// TODO
 			console.warn(
 				`There are multiple extension hosts available for profiling. Picking the first one...`,
 			);
 		}
+
 		this._setState(ProfileSessionState.Starting);
 
 		return this._instantiationService
@@ -226,14 +255,17 @@ export class ExtensionHostProfileService
 			.then(
 				(value) => {
 					this._profileSession = value;
+
 					this._setState(ProfileSessionState.Running);
 				},
 				(err) => {
 					onUnexpectedError(err);
+
 					this._setState(ProfileSessionState.None);
 				},
 			);
 	}
+
 	public stopProfiling(): void {
 		if (
 			this._state !== ProfileSessionState.Running ||
@@ -241,34 +273,45 @@ export class ExtensionHostProfileService
 		) {
 			return;
 		}
+
 		this._setState(ProfileSessionState.Stopping);
+
 		this._profileSession.stop().then(
 			(result) => {
 				this._setLastProfile(result);
+
 				this._setState(ProfileSessionState.None);
 			},
 			(err) => {
 				onUnexpectedError(err);
+
 				this._setState(ProfileSessionState.None);
 			},
 		);
+
 		this._profileSession = null;
 	}
+
 	private _setLastProfile(profile: IExtensionHostProfile) {
 		this._profile = profile;
+
 		this.lastProfileSavedTo = undefined;
+
 		this._onDidChangeLastProfile.fire(undefined);
 	}
+
 	getUnresponsiveProfile(
 		extensionId: ExtensionIdentifier,
 	): IExtensionHostProfile | undefined {
 		return this._unresponsiveProfiles.get(extensionId);
 	}
+
 	setUnresponsiveProfile(
 		extensionId: ExtensionIdentifier,
 		profile: IExtensionHostProfile,
 	): void {
 		this._unresponsiveProfiles.set(extensionId, profile);
+
 		this._setLastProfile(profile);
 	}
 }

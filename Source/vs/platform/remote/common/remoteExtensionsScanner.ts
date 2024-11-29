@@ -14,6 +14,8 @@ export const RemoteExtensionsScannerChannelName = "remoteExtensionsScanner";
 
 export interface IRemoteExtensionsScannerService {
 	readonly _serviceBrand: undefined;
+
 	whenExtensionsReady(): Promise<void>;
+
 	scanExtensions(): Promise<IExtensionDescription[]>;
 }

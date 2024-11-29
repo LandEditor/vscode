@@ -26,6 +26,7 @@ function editorMatchToTextSearchResult(
 	for (let i = firstLine; i <= lastLine; i++) {
 		lineTexts.push(model.getLineContent(i));
 	}
+
 	return new TextSearchMatch(
 		lineTexts.join("\n") + "\n",
 		matches.map(
@@ -53,12 +54,16 @@ export function editorMatchesToTextSearchResults(
 	const groupedMatches: FindMatch[][] = [];
 
 	let currentMatches: FindMatch[] = [];
+
 	matches.forEach((match) => {
 		if (match.range.startLineNumber !== previousEndLine) {
 			currentMatches = [];
+
 			groupedMatches.push(currentMatches);
 		}
+
 		currentMatches.push(match);
+
 		previousEndLine = match.range.endLineNumber;
 	});
 
@@ -100,6 +105,7 @@ export function getTextSearchMatchWithModelContext(
 				});
 			}
 		}
+
 		results.push(matches[i]);
 
 		const nextMatch = matches[i + 1];
@@ -125,12 +131,15 @@ export function getTextSearchMatchWithModelContext(
 				});
 			}
 		}
+
 		prevLine = matchEndLine;
 	}
+
 	return results;
 }
 function getMatchStartEnd(match: ITextSearchMatch): {
 	start: number;
+
 	end: number;
 } {
 	const matchRanges = match.rangeLocations.map((e) => e.source);

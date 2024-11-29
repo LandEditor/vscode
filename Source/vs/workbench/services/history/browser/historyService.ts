@@ -104,12 +104,15 @@ interface ISerializedEditorHistoryEntry {
 
 interface IRecentlyClosedEditor {
 	readonly editorId: string | undefined;
+
 	readonly editor: IUntypedEditorInput;
 
 	readonly resource: URI | undefined;
+
 	readonly associatedResources: URI[];
 
 	readonly index: number;
+
 	readonly sticky: boolean;
 }
 
@@ -118,12 +121,14 @@ export class HistoryService extends Disposable implements IHistoryService {
 
 	private static readonly MOUSE_NAVIGATION_SETTING =
 		"workbench.editor.mouseBackForwardToNavigate";
+
 	private static readonly NAVIGATION_SCOPE_SETTING =
 		"workbench.editor.navigationScope";
 
 	private readonly activeEditorListeners = this._register(
 		new DisposableStore(),
 	);
+
 	private lastActiveEditor: IEditorIdentifier | undefined = undefined;
 
 	private readonly editorHelper =
@@ -171,16 +176,19 @@ export class HistoryService extends Disposable implements IHistoryService {
 				this.onDidActiveEditorChange(),
 			),
 		);
+
 		this._register(
 			this.editorService.onDidOpenEditorFail((event) =>
 				this.remove(event.editor),
 			),
 		);
+
 		this._register(
 			this.editorService.onDidCloseEditor((event) =>
 				this.onDidCloseEditor(event),
 			),
 		);
+
 		this._register(
 			this.editorService.onDidMostRecentlyActiveEditorsChange(() =>
 				this.handleEditorEventInRecentEditorsStack(),
@@ -200,6 +208,7 @@ export class HistoryService extends Disposable implements IHistoryService {
 				this.onDidFilesChange(event),
 			),
 		);
+
 		this._register(
 			this.fileService.onDidRunOperation((event) =>
 				this.onDidFilesChange(event),
@@ -220,6 +229,7 @@ export class HistoryService extends Disposable implements IHistoryService {
 				this.updateContextKeys(),
 			),
 		);
+
 		this._register(
 			this.editorGroupService.onDidChangeActiveGroup(() =>
 				this.updateContextKeys(),
@@ -229,6 +239,7 @@ export class HistoryService extends Disposable implements IHistoryService {
 
 	private onDidCloseEditor(e: IEditorCloseEvent): void {
 		this.handleEditorCloseEventInHistory(e);
+
 		this.handleEditorCloseEventInReopen(e);
 	}
 
@@ -252,6 +263,7 @@ export class HistoryService extends Disposable implements IHistoryService {
 							const eventDisposables = disposables.add(
 								new DisposableStore(),
 							);
+
 							eventDisposables.add(
 								addDisposableListener(
 									container,
@@ -259,6 +271,7 @@ export class HistoryService extends Disposable implements IHistoryService {
 									(e) => this.onMouseDownOrUp(e, true),
 								),
 							);
+
 							eventDisposables.add(
 								addDisposableListener(
 									container,
@@ -308,6 +321,7 @@ export class HistoryService extends Disposable implements IHistoryService {
 				if (isMouseDown) {
 					this.goBack();
 				}
+
 				break;
 
 			case 4:
@@ -442,6 +456,7 @@ export class HistoryService extends Disposable implements IHistoryService {
 		editorPane?: IEditorPane,
 	): void {
 		this.handleActiveEditorChangeInHistory(editorPane);
+
 		this.handleActiveEditorChangeInNavigationStacks(group, editorPane);
 	}
 
@@ -459,18 +474,25 @@ export class HistoryService extends Disposable implements IHistoryService {
 
 	private move(event: FileOperationEvent): void {
 		this.moveInHistory(event);
+
 		this.moveInEditorNavigationStacks(event);
 	}
 
 	private remove(editor: EditorInput): void;
+
 	private remove(event: FileChangesEvent): void;
+
 	private remove(event: FileOperationEvent): void;
+
 	private remove(
 		arg1: EditorInput | FileChangesEvent | FileOperationEvent,
 	): void {
 		this.removeFromHistory(arg1);
+
 		this.removeFromEditorNavigationStacks(arg1);
+
 		this.removeFromRecentlyClosedEditors(arg1);
+
 		this.removeFromRecentlyOpened(arg1);
 	}
 
@@ -516,6 +538,7 @@ export class HistoryService extends Disposable implements IHistoryService {
 			"Whether it is possible to navigate back in editor history",
 		),
 	).bindTo(this.contextKeyService);
+
 	private readonly canNavigateForwardContextKey = new RawContextKey<boolean>(
 		"canNavigateForward",
 		false,
@@ -534,6 +557,7 @@ export class HistoryService extends Disposable implements IHistoryService {
 				"Whether it is possible to navigate back in editor navigation locations history",
 			),
 		).bindTo(this.contextKeyService);
+
 	private readonly canNavigateForwardInNavigationsContextKey =
 		new RawContextKey<boolean>(
 			"canNavigateForwardInNavigationLocations",
@@ -543,6 +567,7 @@ export class HistoryService extends Disposable implements IHistoryService {
 				"Whether it is possible to navigate forward in editor navigation locations history",
 			),
 		).bindTo(this.contextKeyService);
+
 	private readonly canNavigateToLastNavigationLocationContextKey =
 		new RawContextKey<boolean>(
 			"canNavigateToLastNavigationLocation",
@@ -562,6 +587,7 @@ export class HistoryService extends Disposable implements IHistoryService {
 				"Whether it is possible to navigate back in editor edit locations history",
 			),
 		).bindTo(this.contextKeyService);
+
 	private readonly canNavigateForwardInEditsContextKey =
 		new RawContextKey<boolean>(
 			"canNavigateForwardInEditLocations",
@@ -571,6 +597,7 @@ export class HistoryService extends Disposable implements IHistoryService {
 				"Whether it is possible to navigate forward in editor edit locations history",
 			),
 		).bindTo(this.contextKeyService);
+
 	private readonly canNavigateToLastEditLocationContextKey =
 		new RawContextKey<boolean>(
 			"canNavigateToLastEditLocation",
@@ -598,6 +625,7 @@ export class HistoryService extends Disposable implements IHistoryService {
 			this.canNavigateBackContextKey.set(
 				activeStack.canGoBack(GoFilter.NONE),
 			);
+
 			this.canNavigateForwardContextKey.set(
 				activeStack.canGoForward(GoFilter.NONE),
 			);
@@ -605,9 +633,11 @@ export class HistoryService extends Disposable implements IHistoryService {
 			this.canNavigateBackInNavigationsContextKey.set(
 				activeStack.canGoBack(GoFilter.NAVIGATION),
 			);
+
 			this.canNavigateForwardInNavigationsContextKey.set(
 				activeStack.canGoForward(GoFilter.NAVIGATION),
 			);
+
 			this.canNavigateToLastNavigationLocationContextKey.set(
 				activeStack.canGoLast(GoFilter.NAVIGATION),
 			);
@@ -615,9 +645,11 @@ export class HistoryService extends Disposable implements IHistoryService {
 			this.canNavigateBackInEditsContextKey.set(
 				activeStack.canGoBack(GoFilter.EDITS),
 			);
+
 			this.canNavigateForwardInEditsContextKey.set(
 				activeStack.canGoForward(GoFilter.EDITS),
 			);
+
 			this.canNavigateToLastEditLocationContextKey.set(
 				activeStack.canGoLast(GoFilter.EDITS),
 			);
@@ -635,16 +667,19 @@ export class HistoryService extends Disposable implements IHistoryService {
 	private readonly _onDidChangeEditorNavigationStack = this._register(
 		new Emitter<void>(),
 	);
+
 	readonly onDidChangeEditorNavigationStack =
 		this._onDidChangeEditorNavigationStack.event;
 
 	private defaultScopedEditorNavigationStack:
 		| IEditorNavigationStacks
 		| undefined = undefined;
+
 	private readonly editorGroupScopedNavigationStacks = new Map<
 		GroupIdentifier,
 		{ stack: IEditorNavigationStacks; disposable: IDisposable }
 	>();
+
 	private readonly editorScopedNavigationStacks = new Map<
 		GroupIdentifier,
 		Map<
@@ -709,9 +744,11 @@ export class HistoryService extends Disposable implements IHistoryService {
 						EditorInput,
 						{
 							stack: IEditorNavigationStacks;
+
 							disposable: IDisposable;
 						}
 					>();
+
 					this.editorScopedNavigationStacks.set(
 						group.id,
 						stacksForGroup,
@@ -729,6 +766,7 @@ export class HistoryService extends Disposable implements IHistoryService {
 							GoScope.EDITOR,
 						),
 					);
+
 					disposable.add(
 						stack.onDidChange(() =>
 							this._onDidChangeEditorNavigationStack.fire(),
@@ -756,6 +794,7 @@ export class HistoryService extends Disposable implements IHistoryService {
 							GoScope.EDITOR_GROUP,
 						),
 					);
+
 					disposable.add(
 						stack.onDidChange(() =>
 							this._onDidChangeEditorNavigationStack.fire(),
@@ -837,6 +876,7 @@ export class HistoryService extends Disposable implements IHistoryService {
 
 			if (editorStack) {
 				editorStack.disposable.dispose();
+
 				editors.delete(e.editor);
 			}
 
@@ -859,6 +899,7 @@ export class HistoryService extends Disposable implements IHistoryService {
 
 		if (editorGroupStack) {
 			editorGroupStack.disposable.dispose();
+
 			this.editorGroupScopedNavigationStacks.delete(group.id);
 		}
 	}
@@ -901,12 +942,14 @@ export class HistoryService extends Disposable implements IHistoryService {
 	private disposeEditorNavigationStacks(): void {
 		// Global
 		this.defaultScopedEditorNavigationStack?.dispose();
+
 		this.defaultScopedEditorNavigationStack = undefined;
 
 		// Per Editor group
 		for (const [, stack] of this.editorGroupScopedNavigationStacks) {
 			stack.disposable.dispose();
 		}
+
 		this.editorGroupScopedNavigationStacks.clear();
 
 		// Per Editor
@@ -915,6 +958,7 @@ export class HistoryService extends Disposable implements IHistoryService {
 				stack.disposable.dispose();
 			}
 		}
+
 		this.editorScopedNavigationStacks.clear();
 	}
 
@@ -924,14 +968,17 @@ export class HistoryService extends Disposable implements IHistoryService {
 
 	private recentlyUsedEditorsStack: readonly IEditorIdentifier[] | undefined =
 		undefined;
+
 	private recentlyUsedEditorsStackIndex = 0;
 
 	private recentlyUsedEditorsInGroupStack:
 		| readonly IEditorIdentifier[]
 		| undefined = undefined;
+
 	private recentlyUsedEditorsInGroupStackIndex = 0;
 
 	private navigatingInRecentlyUsedEditorsStack = false;
+
 	private navigatingInRecentlyUsedEditorsInGroupStack = false;
 
 	openNextRecentlyUsedEditor(groupId?: GroupIdentifier): Promise<void> {
@@ -1003,6 +1050,7 @@ export class HistoryService extends Disposable implements IHistoryService {
 				this.editorService.getEditors(
 					EditorsOrder.MOST_RECENTLY_ACTIVE,
 				);
+
 			index = this.recentlyUsedEditorsStackIndex;
 		}
 
@@ -1013,6 +1061,7 @@ export class HistoryService extends Disposable implements IHistoryService {
 				group
 					.getEditors(EditorsOrder.MOST_RECENTLY_ACTIVE)
 					.map((editor) => ({ groupId: group.id, editor }));
+
 			index = this.recentlyUsedEditorsInGroupStackIndex;
 		}
 
@@ -1028,9 +1077,11 @@ export class HistoryService extends Disposable implements IHistoryService {
 		// Remember index and editors
 		if (!group) {
 			this.recentlyUsedEditorsStack = editors;
+
 			this.recentlyUsedEditorsStackIndex = newIndex;
 		} else {
 			this.recentlyUsedEditorsInGroupStack = editors;
+
 			this.recentlyUsedEditorsInGroupStackIndex = newIndex;
 		}
 
@@ -1041,12 +1092,14 @@ export class HistoryService extends Disposable implements IHistoryService {
 		// Drop all-editors stack unless navigating in all editors
 		if (!this.navigatingInRecentlyUsedEditorsStack) {
 			this.recentlyUsedEditorsStack = undefined;
+
 			this.recentlyUsedEditorsStackIndex = 0;
 		}
 
 		// Drop in-group-editors stack unless navigating in group
 		if (!this.navigatingInRecentlyUsedEditorsInGroupStack) {
 			this.recentlyUsedEditorsInGroupStack = undefined;
+
 			this.recentlyUsedEditorsInGroupStackIndex = 0;
 		}
 	}
@@ -1058,6 +1111,7 @@ export class HistoryService extends Disposable implements IHistoryService {
 	private static readonly MAX_RECENTLY_CLOSED_EDITORS = 20;
 
 	private recentlyClosedEditors: IRecentlyClosedEditor[] = [];
+
 	private ignoreEditorCloseEvent = false;
 
 	private handleEditorCloseEventInReopen(event: IEditorCloseEvent): void {
@@ -1255,6 +1309,7 @@ export class HistoryService extends Disposable implements IHistoryService {
 	//#region Go to: Recently Opened Editor (limit: 200, persisted)
 
 	private static readonly MAX_HISTORY_ITEMS = 200;
+
 	private static readonly HISTORY_STORAGE_KEY = "history.entries";
 
 	private history: Array<EditorInput | IResourceEditorInput> | undefined =
@@ -1304,6 +1359,7 @@ export class HistoryService extends Disposable implements IHistoryService {
 
 		// Remove any existing entry and add to the beginning
 		this.removeFromHistory(editor);
+
 		this.addToHistory(editor);
 	}
 
@@ -1447,6 +1503,7 @@ export class HistoryService extends Disposable implements IHistoryService {
 					arg1,
 					this.editorHistoryListeners,
 				);
+
 				removed = true;
 			}
 
@@ -1478,6 +1535,7 @@ export class HistoryService extends Disposable implements IHistoryService {
 				// Insert replacements but only once
 				if (!replaced) {
 					newHistory.push(...replacements);
+
 					replaced = true;
 				}
 			}
@@ -1508,6 +1566,7 @@ export class HistoryService extends Disposable implements IHistoryService {
 		for (const [, disposable] of this.editorHistoryListeners) {
 			dispose(disposable);
 		}
+
 		this.editorHistoryListeners.clear();
 	}
 
@@ -1596,6 +1655,7 @@ export class HistoryService extends Disposable implements IHistoryService {
 				this.includeInHistory(editor)
 			) {
 				handledEditors.add(historyEntryId);
+
 				this.addToHistory(editor, false /* at the end */);
 			}
 		}
@@ -1829,20 +1889,28 @@ interface IEditorNavigationStacks extends IDisposable {
 	readonly onDidChange: Event<void>;
 
 	canGoForward(filter?: GoFilter): boolean;
+
 	goForward(filter?: GoFilter): Promise<void>;
+
 	canGoBack(filter?: GoFilter): boolean;
+
 	goBack(filter?: GoFilter): Promise<void>;
+
 	goPrevious(filter?: GoFilter): Promise<void>;
+
 	canGoLast(filter?: GoFilter): boolean;
+
 	goLast(filter?: GoFilter): Promise<void>;
 
 	handleActiveEditorChange(editorPane?: IEditorPane): void;
+
 	handleActiveEditorSelectionChange(
 		editorPane: IEditorPaneWithSelection,
 		event: IEditorPaneSelectionChangeEvent,
 	): void;
 
 	clear(): void;
+
 	remove(
 		arg1:
 			| EditorInput
@@ -1850,6 +1918,7 @@ interface IEditorNavigationStacks extends IDisposable {
 			| FileOperationEvent
 			| GroupIdentifier,
 	): void;
+
 	move(event: FileOperationEvent): void;
 }
 
@@ -1864,6 +1933,7 @@ class EditorNavigationStacks
 			this.scope,
 		),
 	);
+
 	private readonly editsStack = this._register(
 		this.instantiationService.createInstance(
 			EditorNavigationStack,
@@ -1871,6 +1941,7 @@ class EditorNavigationStacks
 			this.scope,
 		),
 	);
+
 	private readonly navigationsStack = this._register(
 		this.instantiationService.createInstance(
 			EditorNavigationStack,
@@ -2022,22 +2093,31 @@ class NoOpEditorNavigationStacks implements IEditorNavigationStacks {
 	canGoForward(): boolean {
 		return false;
 	}
+
 	async goForward(): Promise<void> {}
+
 	canGoBack(): boolean {
 		return false;
 	}
+
 	async goBack(): Promise<void> {}
+
 	async goPrevious(): Promise<void> {}
+
 	canGoLast(): boolean {
 		return false;
 	}
+
 	async goLast(): Promise<void> {}
 
 	handleActiveEditorChange(): void {}
+
 	handleActiveEditorSelectionChange(): void {}
 
 	clear(): void {}
+
 	remove(): void {}
+
 	move(): void {}
 
 	dispose(): void {}
@@ -2045,7 +2125,9 @@ class NoOpEditorNavigationStacks implements IEditorNavigationStacks {
 
 interface IEditorNavigationStackEntry {
 	groupId: GroupIdentifier;
+
 	editor: EditorInput | IResourceEditorInput;
+
 	selection?: IEditorPaneSelection;
 }
 
@@ -2053,12 +2135,14 @@ export class EditorNavigationStack extends Disposable {
 	private static readonly MAX_STACK_SIZE = 50;
 
 	private readonly _onDidChange = this._register(new Emitter<void>());
+
 	readonly onDidChange = this._onDidChange.event;
 
 	private readonly mapEditorToDisposable = new Map<
 		EditorInput,
 		DisposableStore
 	>();
+
 	private readonly mapGroupToDisposable = new Map<
 		GroupIdentifier,
 		IDisposable
@@ -2070,6 +2154,7 @@ export class EditorNavigationStack extends Disposable {
 	private stack: IEditorNavigationStackEntry[] = [];
 
 	private index = -1;
+
 	private previousIndex = -1;
 
 	private navigating: boolean = false;
@@ -2103,6 +2188,7 @@ export class EditorNavigationStack extends Disposable {
 
 	private registerListeners(): void {
 		this._register(this.onDidChange(() => this.traceStack()));
+
 		this._register(
 			this.logService.onDidChangeLogLevel(() => this.traceStack()),
 		);
@@ -2467,6 +2553,7 @@ ${entryLabels.join("\n")}
 			if (this.current) {
 				removedEntries.push(this.current);
 			}
+
 			this.current = newStackEntry;
 		}
 
@@ -2595,11 +2682,13 @@ ${entryLabels.join("\n")}
 
 		// Reset indeces
 		this.index = this.stack.length - 1;
+
 		this.previousIndex = -1;
 
 		// Clear group listener
 		if (typeof arg1 === "number") {
 			this.mapGroupToDisposable.get(arg1)?.dispose();
+
 			this.mapGroupToDisposable.delete(arg1);
 		}
 
@@ -2621,6 +2710,7 @@ ${entryLabels.join("\n")}
 			}
 
 			previousEntry = entry;
+
 			flattenedStack.push(entry);
 		}
 
@@ -2629,17 +2719,21 @@ ${entryLabels.join("\n")}
 
 	clear(): void {
 		this.index = -1;
+
 		this.previousIndex = -1;
+
 		this.stack.splice(0);
 
 		for (const [, disposable] of this.mapEditorToDisposable) {
 			dispose(disposable);
 		}
+
 		this.mapEditorToDisposable.clear();
 
 		for (const [, disposable] of this.mapGroupToDisposable) {
 			dispose(disposable);
 		}
+
 		this.mapGroupToDisposable.clear();
 	}
 
@@ -2782,6 +2876,7 @@ ${entryLabels.join("\n")}
 
 	private setIndex(newIndex: number, skipEvent?: boolean): void {
 		this.previousIndex = this.index;
+
 		this.index = newIndex;
 
 		// Event
@@ -2851,12 +2946,15 @@ class EditorHelper {
 	preferResourceEditorInput(
 		editor: EditorInput,
 	): EditorInput | IResourceEditorInput;
+
 	preferResourceEditorInput(
 		editor: IResourceEditorInput,
 	): IResourceEditorInput | undefined;
+
 	preferResourceEditorInput(
 		editor: EditorInput | IResourceEditorInput,
 	): EditorInput | IResourceEditorInput | undefined;
+
 	preferResourceEditorInput(
 		editor: EditorInput | IResourceEditorInput,
 	): EditorInput | IResourceEditorInput | undefined {
@@ -3010,6 +3108,7 @@ class EditorHelper {
 
 		if (!disposables) {
 			disposables = new DisposableStore();
+
 			mapEditorToDispose.set(editor, disposables);
 		}
 
@@ -3032,6 +3131,7 @@ class EditorHelper {
 
 		if (disposables) {
 			dispose(disposables);
+
 			mapEditorToDispose.delete(editor);
 		}
 	}

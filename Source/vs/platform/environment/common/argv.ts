@@ -23,22 +23,34 @@ export interface NativeParsedArgs {
 		};
 	};
 	"serve-web"?: INativeCliOptions;
+
 	_: string[];
 	"folder-uri"?: string[]; // undefined or array of 1 or more
 	"file-uri"?: string[]; // undefined or array of 1 or more
 	_urls?: string[];
+
 	help?: boolean;
+
 	version?: boolean;
+
 	telemetry?: boolean;
+
 	status?: boolean;
+
 	wait?: boolean;
+
 	waitMarkerFilePath?: string;
+
 	diff?: boolean;
+
 	merge?: boolean;
+
 	add?: boolean;
+
 	goto?: boolean;
 	"new-window"?: boolean;
 	"reuse-window"?: boolean;
+
 	locale?: string;
 	"user-data-dir"?: string;
 	"prof-startup"?: boolean;
@@ -48,23 +60,31 @@ export interface NativeParsedArgs {
 	"prof-duration-markers-file"?: string;
 	"prof-v8-extensions"?: boolean;
 	"no-cached-data"?: boolean;
+
 	verbose?: boolean;
+
 	trace?: boolean;
 	"trace-category-filter"?: string;
 	"trace-options"?: string;
 	"open-devtools"?: boolean;
+
 	log?: string[];
+
 	logExtensionHostCommunication?: boolean;
 	"extensions-dir"?: string;
 	"extensions-download-dir"?: string;
 	"builtin-extensions-dir"?: string;
+
 	extensionDevelopmentPath?: string[]; // undefined or array of 1 or more local paths or URIs
 	extensionTestsPath?: string; // either a local path or a URI
 	extensionDevelopmentKind?: string[];
+
 	extensionEnvironment?: string; // JSON-stringified Record<string, string> object
 	"inspect-extensions"?: string;
 	"inspect-brk-extensions"?: string;
+
 	debugId?: string;
+
 	debugRenderer?: boolean; // whether we expect a debugger (js-debug) to attach to the renderer, incl webviews+webworker
 	"inspect-search"?: string;
 	"inspect-brk-search"?: string;
@@ -110,6 +130,7 @@ export interface NativeParsedArgs {
 	"sync"?: "on" | "off";
 	"logsPath"?: string;
 	"__enable-file-policy"?: boolean;
+
 	editSessionId?: string;
 
 	continueOn?: string;
@@ -117,6 +138,7 @@ export interface NativeParsedArgs {
 	"profile"?: string;
 	"profile-temp"?: boolean;
 	"disable-chromium-sandbox"?: boolean;
+
 	sandbox?: boolean;
 
 	"enable-coi"?: boolean;

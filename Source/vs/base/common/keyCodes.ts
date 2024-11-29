@@ -408,21 +408,27 @@ export const enum ScanCode {
 }
 class KeyCodeStrMap {
 	public _keyCodeToStr: string[];
+
 	public _strToKeyCode: {
 		[str: string]: KeyCode;
 	};
 
 	constructor() {
 		this._keyCodeToStr = [];
+
 		this._strToKeyCode = Object.create(null);
 	}
+
 	define(keyCode: KeyCode, str: string): void {
 		this._keyCodeToStr[keyCode] = str;
+
 		this._strToKeyCode[str.toLowerCase()] = keyCode;
 	}
+
 	keyCodeToStr(keyCode: KeyCode): string {
 		return this._keyCodeToStr[keyCode];
 	}
+
 	strToKeyCode(str: string): KeyCode {
 		return this._strToKeyCode[str.toLowerCase()] || KeyCode.Unknown;
 	}
@@ -476,6 +482,7 @@ for (let i = 0; i <= KeyCode.MAX_VALUE; i++) {
 	// See https://msdn.microsoft.com/en-us/library/windows/desktop/dd375731(v=vs.85).aspx
 	// See https://github.com/microsoft/node-native-keymap/blob/88c0b0e5/deps/chromium/keyboard_codes_win.h
 	const empty = "";
+
 	type IMappingEntry = [
 		0 | 1,
 		ScanCode,
@@ -2662,8 +2669,11 @@ for (let i = 0; i <= KeyCode.MAX_VALUE; i++) {
 
 		if (!seenScanCode[scanCode]) {
 			seenScanCode[scanCode] = true;
+
 			scanCodeIntToStr[scanCode] = scanCodeStr;
+
 			scanCodeStrToInt[scanCodeStr] = scanCode;
+
 			scanCodeLowerCaseStrToInt[scanCodeStr.toLowerCase()] = scanCode;
 
 			if (immutable) {
@@ -2681,6 +2691,7 @@ for (let i = 0; i <= KeyCode.MAX_VALUE; i++) {
 				}
 			}
 		}
+
 		if (!seenKeyCode[keyCode]) {
 			seenKeyCode[keyCode] = true;
 
@@ -2689,19 +2700,24 @@ for (let i = 0; i <= KeyCode.MAX_VALUE; i++) {
 					`String representation missing for key code ${keyCode} around scan code ${scanCodeStr}`,
 				);
 			}
+
 			uiMap.define(keyCode, keyCodeStr);
+
 			userSettingsUSMap.define(
 				keyCode,
 				usUserSettingsLabel || keyCodeStr,
 			);
+
 			userSettingsGeneralMap.define(
 				keyCode,
 				generalUserSettingsLabel || usUserSettingsLabel || keyCodeStr,
 			);
 		}
+
 		if (eventKeyCode) {
 			EVENT_KEY_CODE_MAP[eventKeyCode] = keyCode;
 		}
+
 		if (vkey) {
 			NATIVE_WINDOWS_KEY_CODE_TO_KEY_CODE[vkey] = keyCode;
 		}
@@ -2714,21 +2730,26 @@ export namespace KeyCodeUtils {
 	export function toString(keyCode: KeyCode): string {
 		return uiMap.keyCodeToStr(keyCode);
 	}
+
 	export function fromString(key: string): KeyCode {
 		return uiMap.strToKeyCode(key);
 	}
+
 	export function toUserSettingsUS(keyCode: KeyCode): string {
 		return userSettingsUSMap.keyCodeToStr(keyCode);
 	}
+
 	export function toUserSettingsGeneral(keyCode: KeyCode): string {
 		return userSettingsGeneralMap.keyCodeToStr(keyCode);
 	}
+
 	export function fromUserSettings(key: string): KeyCode {
 		return (
 			userSettingsUSMap.strToKeyCode(key) ||
 			userSettingsGeneralMap.strToKeyCode(key)
 		);
 	}
+
 	export function toElectronAccelerator(keyCode: KeyCode): string | null {
 		if (keyCode >= KeyCode.Numpad0 && keyCode <= KeyCode.NumpadDivide) {
 			// [Electron Accelerators] Electron is able to parse numpad keys, but unfortunately it
@@ -2741,6 +2762,7 @@ export namespace KeyCodeUtils {
 			// We therefore need to fall back to custom rendering for numpad keys.
 			return null;
 		}
+
 		switch (keyCode) {
 			case KeyCode.UpArrow:
 				return "Up";
@@ -2754,6 +2776,7 @@ export namespace KeyCodeUtils {
 			case KeyCode.RightArrow:
 				return "Right";
 		}
+
 		return uiMap.keyCodeToStr(keyCode);
 	}
 }

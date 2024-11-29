@@ -287,37 +287,58 @@ export interface IFilesConfiguration
 	explorer: {
 		openEditors: {
 			visible: number;
+
 			sortOrder: "editorOrder" | "alphabetical" | "fullPath";
 		};
+
 		autoReveal: boolean | "focusNoScroll";
+
 		autoRevealExclude: IExpression;
+
 		enableDragAndDrop: boolean;
+
 		confirmDelete: boolean;
+
 		enableUndo: boolean;
+
 		confirmUndo: UndoConfirmLevel;
+
 		expandSingleFolderWorkspaces: boolean;
+
 		sortOrder: SortOrder;
+
 		sortOrderLexicographicOptions: LexicographicOptions;
+
 		sortOrderReverse: boolean;
+
 		decorations: {
 			colors: boolean;
+
 			badges: boolean;
 		};
+
 		incrementalNaming: "simple" | "smart" | "disabled";
+
 		excludeGitIgnore: boolean;
+
 		fileNesting: {
 			enabled: boolean;
+
 			expand: boolean;
+
 			patterns: {
 				[parent: string]: string;
 			};
 		};
+
 		autoOpenDroppedFile: boolean;
 	};
+
 	editor: IEditorOptions;
 }
 export interface IFileResource {
 	resource: URI;
+
 	isDirectory?: boolean;
 }
 export const enum SortOrder {
@@ -341,7 +362,9 @@ export const enum LexicographicOptions {
 }
 export interface ISortOrderConfiguration {
 	sortOrder: SortOrder;
+
 	lexicographicOptions: LexicographicOptions;
+
 	reverse: boolean;
 }
 export class TextFileContentProvider
@@ -364,6 +387,7 @@ export class TextFileContentProvider
 	) {
 		super();
 	}
+
 	static async open(
 		resource: URI,
 		scheme: string,
@@ -383,6 +407,7 @@ export class TextFileContentProvider
 			options,
 		});
 	}
+
 	private static resourceToTextFile(scheme: string, resource: URI): URI {
 		return resource.with({
 			scheme,
@@ -392,17 +417,20 @@ export class TextFileContentProvider
 			}),
 		});
 	}
+
 	private static textFileToResource(resource: URI): URI {
 		const { scheme, query } = JSON.parse(resource.query);
 
 		return resource.with({ scheme, query });
 	}
+
 	async provideTextContent(resource: URI): Promise<ITextModel | null> {
 		if (!resource.query) {
 			// We require the URI to use the `query` to transport the original scheme and query
 			// as done by `resourceToTextFile`
 			return null;
 		}
+
 		const savedFileResource =
 			TextFileContentProvider.textFileToResource(resource);
 		// Make sure our text file is resolved up to date
@@ -410,7 +438,9 @@ export class TextFileContentProvider
 		// Make sure to keep contents up to date when it changes
 		if (!this.fileWatcherDisposable.value) {
 			const disposables = new DisposableStore();
+
 			this.fileWatcherDisposable.value = disposables;
+
 			disposables.add(
 				this.fileService.onDidFilesChange((changes) => {
 					if (
@@ -435,16 +465,20 @@ export class TextFileContentProvider
 				);
 			}
 		}
+
 		return codeEditorModel;
 	}
+
 	private resolveEditorModel(
 		resource: URI,
 		createAsNeeded?: true,
 	): Promise<ITextModel>;
+
 	private resolveEditorModel(
 		resource: URI,
 		createAsNeeded?: boolean,
 	): Promise<ITextModel | null>;
+
 	private async resolveEditorModel(
 		resource: URI,
 		createAsNeeded: boolean = true,
@@ -474,17 +508,20 @@ export class TextFileContentProvider
 						savedFileResource,
 					);
 			}
+
 			codeEditorModel = this.modelService.createModel(
 				content.value,
 				languageSelector,
 				resource,
 			);
 		}
+
 		return codeEditorModel;
 	}
 }
 export class OpenEditor implements IEditorIdentifier {
 	private id: number;
+
 	private static COUNTER = 0;
 
 	constructor(
@@ -493,24 +530,31 @@ export class OpenEditor implements IEditorIdentifier {
 	) {
 		this.id = OpenEditor.COUNTER++;
 	}
+
 	get editor() {
 		return this._editor;
 	}
+
 	get group() {
 		return this._group;
 	}
+
 	get groupId() {
 		return this._group.id;
 	}
+
 	getId(): string {
 		return `openeditor:${this.groupId}:${this.id}`;
 	}
+
 	isPreview(): boolean {
 		return !this._group.isPinned(this.editor);
 	}
+
 	isSticky(): boolean {
 		return this._group.isSticky(this.editor);
 	}
+
 	getResource(): URI | undefined {
 		return EditorResourceAccessor.getOriginalUri(this.editor, {
 			supportSideBySide: SideBySideEditor.PRIMARY,

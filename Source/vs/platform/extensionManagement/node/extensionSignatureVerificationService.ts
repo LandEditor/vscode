@@ -50,14 +50,18 @@ declare module vsceSign {
  */
 export interface ExtensionSignatureVerificationResult {
 	readonly code: ExtensionSignatureVerificationCode;
+
 	readonly didExecute: boolean;
+
 	readonly internalCode?: number;
+
 	readonly output?: string;
 }
 export class ExtensionSignatureVerificationService
 	implements IExtensionSignatureVerificationService
 {
 	declare readonly _serviceBrand: undefined;
+
 	private moduleLoadingPromise: Promise<typeof vsceSign> | undefined;
 
 	constructor(
@@ -66,17 +70,21 @@ export class ExtensionSignatureVerificationService
 		@ITelemetryService
 		private readonly telemetryService: ITelemetryService,
 	) {}
+
 	private vsceSign(): Promise<typeof vsceSign> {
 		if (!this.moduleLoadingPromise) {
 			this.moduleLoadingPromise = this.resolveVsceSign();
 		}
+
 		return this.moduleLoadingPromise;
 	}
+
 	private async resolveVsceSign(): Promise<typeof vsceSign> {
 		const mod = "@vscode/vsce-sign";
 
 		return import(mod);
 	}
+
 	public async verify(
 		extensionId: string,
 		version: string,
@@ -93,12 +101,14 @@ export class ExtensionSignatureVerificationService
 				"Could not load vsce-sign module",
 				getErrorMessage(error),
 			);
+
 			this.logService.info(
 				`Extension signature verification is not done: ${extensionId}`,
 			);
 
 			return undefined;
 		}
+
 		const startTime = new Date().getTime();
 
 		let result: ExtensionSignatureVerificationResult;
@@ -107,6 +117,7 @@ export class ExtensionSignatureVerificationService
 			this.logService.trace(
 				`Verifying extension signature for ${extensionId}...`,
 			);
+
 			result = await module.verify(
 				vsixFilePath,
 				signatureArchiveFilePath,
@@ -119,63 +130,97 @@ export class ExtensionSignatureVerificationService
 				output: getErrorMessage(e),
 			};
 		}
+
 		const duration = new Date().getTime() - startTime;
+
 		this.logService.info(
 			`Extension signature verification result for ${extensionId}: ${result.code}. Executed: ${result.didExecute}. Duration: ${duration}ms.`,
 		);
+
 		this.logService.trace(
 			`Extension signature verification output for ${extensionId}:\n${result.output}`,
 		);
+
 		type ExtensionSignatureVerificationClassification = {
 			owner: "sandy081";
+
 			comment: "Extension signature verification event";
+
 			extensionId: {
 				classification: "SystemMetaData";
+
 				purpose: "FeatureInsight";
+
 				comment: "extension identifier";
 			};
+
 			extensionVersion: {
 				classification: "SystemMetaData";
+
 				purpose: "FeatureInsight";
+
 				comment: "extension version";
 			};
+
 			code: {
 				classification: "SystemMetaData";
+
 				purpose: "FeatureInsight";
+
 				comment: "result code of the verification";
 			};
+
 			internalCode?: {
 				classification: "SystemMetaData";
+
 				purpose: "PerformanceAndHealth";
 				"isMeasurement": true;
+
 				comment: "internal code of the verification";
 			};
+
 			duration: {
 				classification: "SystemMetaData";
+
 				purpose: "PerformanceAndHealth";
 				"isMeasurement": true;
+
 				comment: "amount of time taken to verify the signature";
 			};
+
 			didExecute: {
 				classification: "SystemMetaData";
+
 				purpose: "FeatureInsight";
+
 				comment: "whether the verification was executed";
 			};
+
 			clientTargetPlatform?: {
 				classification: "SystemMetaData";
+
 				purpose: "FeatureInsight";
+
 				comment: "target platform of the client";
 			};
 		};
+
 		type ExtensionSignatureVerificationEvent = {
 			extensionId: string;
+
 			extensionVersion: string;
+
 			code: string;
+
 			internalCode?: number;
+
 			duration: number;
+
 			didExecute: boolean;
+
 			clientTargetPlatform?: string;
 		};
+
 		this.telemetryService.publicLog2<
 			ExtensionSignatureVerificationEvent,
 			ExtensionSignatureVerificationClassification

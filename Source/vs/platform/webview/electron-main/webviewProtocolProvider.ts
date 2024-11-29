@@ -24,8 +24,10 @@ export class WebviewProtocolProvider extends Disposable {
 		super();
 		// Register the protocol for loading webview html
 		const webviewHandler = this.handleWebviewRequest.bind(this);
+
 		protocol.registerFileProtocol(Schemas.vscodeWebview, webviewHandler);
 	}
+
 	private handleWebviewRequest(
 		request: Electron.ProtocolRequest,
 		callback: (response: string | Electron.ProtocolResponse) => void,
@@ -57,6 +59,7 @@ export class WebviewProtocolProvider extends Disposable {
 		} catch {
 			// noop
 		}
+
 		return callback({
 			error: -2 /* FAILED - https://cs.chromium.org/chromium/src/net/base/net_error_list.h?l=32 */,
 		});

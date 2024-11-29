@@ -17,6 +17,7 @@ export function incrementDecrement(
 
 		return;
 	}
+
 	const editor = vscode.window.activeTextEditor;
 
 	return editor.edit((editBuilder) => {
@@ -29,6 +30,7 @@ export function incrementDecrement(
 			if (!rangeToReplace) {
 				return;
 			}
+
 			const text = editor.document.getText(rangeToReplace);
 
 			if (isValidNumber(text)) {
@@ -60,10 +62,12 @@ export function update(numString: string, delta: number): string {
 				prefix,
 		);
 	}
+
 	if (/^\-?\./.test(numString)) {
 		// omit integer part
 		output = output.replace(/^(\-?)0+/, "$1");
 	}
+
 	return output;
 }
 /**
@@ -101,9 +105,11 @@ export function locate(
 			break;
 		}
 	}
+
 	if (line[end] === "-" && !hadMinus) {
 		end++;
 	}
+
 	while (end < line.length) {
 		ch = line[end++];
 
@@ -120,6 +126,7 @@ export function locate(
 	if (start !== end && isValidNumber(line.slice(start, end))) {
 		return new vscode.Range(pos.line, start, pos.line, end);
 	}
+
 	return;
 }
 /**

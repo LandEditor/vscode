@@ -38,6 +38,7 @@ import {
 
 interface IFileOperation {
 	uris: URI[];
+
 	perform(token: CancellationToken): Promise<IFileOperation>;
 }
 class Noop implements IFileOperation {
@@ -46,6 +47,7 @@ class Noop implements IFileOperation {
 	async perform() {
 		return this;
 	}
+
 	toString(): string {
 		return "(noop)";
 	}
@@ -68,9 +70,11 @@ class RenameOperation implements IFileOperation {
 		@IFileService
 		private readonly _fileService: IFileService,
 	) {}
+
 	get uris() {
 		return this._edits.flatMap((edit) => [edit.newUri, edit.oldUri]);
 	}
+
 	async perform(token: CancellationToken): Promise<IFileOperation> {
 		const moves: IMoveOperation[] = [];
 
@@ -94,9 +98,11 @@ class RenameOperation implements IFileOperation {
 				);
 			}
 		}
+
 		if (moves.length === 0) {
 			return new Noop();
 		}
+
 		await this._workingCopyFileService.move(
 			moves,
 			token,
@@ -110,6 +116,7 @@ class RenameOperation implements IFileOperation {
 			this._fileService,
 		);
 	}
+
 	toString(): string {
 		return `(rename ${this._edits.map((edit) => `${edit.oldUri} to ${edit.newUri}`).join(", ")})`;
 	}
@@ -134,9 +141,11 @@ class CopyOperation implements IFileOperation {
 		@IInstantiationService
 		private readonly _instaService: IInstantiationService,
 	) {}
+
 	get uris() {
 		return this._edits.flatMap((edit) => [edit.newUri, edit.oldUri]);
 	}
+
 	async perform(token: CancellationToken): Promise<IFileOperation> {
 		// (1) create copy operations, remove noops
 		const copies: ICopyOperation[] = [];
@@ -155,6 +164,7 @@ class CopyOperation implements IFileOperation {
 				});
 			}
 		}
+
 		if (copies.length === 0) {
 			return new Noop();
 		}
@@ -171,6 +181,7 @@ class CopyOperation implements IFileOperation {
 			const stat = stats[i];
 
 			const edit = this._edits[i];
+
 			undoes.push(
 				new DeleteEdit(
 					stat.resource,
@@ -184,10 +195,12 @@ class CopyOperation implements IFileOperation {
 				),
 			);
 		}
+
 		return this._instaService.createInstance(DeleteOperation, undoes, {
 			isUndoing: true,
 		});
 	}
+
 	toString(): string {
 		return `(copy ${this._edits.map((edit) => `${edit.oldUri} to ${edit.newUri}`).join(", ")})`;
 	}
@@ -214,9 +227,11 @@ class CreateOperation implements IFileOperation {
 		@ITextFileService
 		private readonly _textFileService: ITextFileService,
 	) {}
+
 	get uris() {
 		return this._edits.map((edit) => edit.newUri);
 	}
+
 	async perform(token: CancellationToken): Promise<IFileOperation> {
 		const folderCreates: ICreateOperation[] = [];
 
@@ -228,6 +243,7 @@ class CreateOperation implements IFileOperation {
 			if (edit.newUri.scheme === Schemas.untitled) {
 				continue; // ignore, will be handled by a later edit
 			}
+
 			if (
 				edit.options.overwrite === undefined &&
 				edit.options.ignoreIfExists &&
@@ -235,6 +251,7 @@ class CreateOperation implements IFileOperation {
 			) {
 				continue; // not overwriting, but ignoring, and the target file exists
 			}
+
 			if (edit.options.folder) {
 				folderCreates.push({ resource: edit.newUri });
 			} else {
@@ -245,12 +262,14 @@ class CreateOperation implements IFileOperation {
 						: await this._textFileService.getEncodedReadable(
 								edit.newUri,
 							);
+
 				fileCreates.push({
 					resource: edit.newUri,
 					contents: encodedReadable,
 					overwrite: edit.options.overwrite,
 				});
 			}
+
 			undoes.push(
 				new DeleteEdit(
 					edit.newUri,
@@ -259,14 +278,17 @@ class CreateOperation implements IFileOperation {
 				),
 			);
 		}
+
 		if (folderCreates.length === 0 && fileCreates.length === 0) {
 			return new Noop();
 		}
+
 		await this._workingCopyFileService.createFolder(
 			folderCreates,
 			token,
 			this._undoRedoInfo,
 		);
+
 		await this._workingCopyFileService.create(
 			fileCreates,
 			token,
@@ -277,6 +299,7 @@ class CreateOperation implements IFileOperation {
 			isUndoing: true,
 		});
 	}
+
 	toString(): string {
 		return `(create ${this._edits.map((edit) => (edit.options.folder ? `folder ${edit.newUri}` : `file ${edit.newUri} with ${edit.contents?.byteLength || 0} bytes`)).join(", ")})`;
 	}
@@ -305,9 +328,11 @@ class DeleteOperation implements IFileOperation {
 		@ILogService
 		private readonly _logService: ILogService,
 	) {}
+
 	get uris() {
 		return this._edits.map((edit) => edit.oldUri);
 	}
+
 	async perform(token: CancellationToken): Promise<IFileOperation> {
 		// delete file
 		const deletes: IDeleteOperation[] = [];
@@ -327,8 +352,10 @@ class DeleteOperation implements IFileOperation {
 						`${edit.oldUri} does not exist and can not be deleted`,
 					);
 				}
+
 				continue;
 			}
+
 			deletes.push({
 				resource: edit.oldUri,
 				recursive: edit.options.recursive,
@@ -359,6 +386,7 @@ class DeleteOperation implements IFileOperation {
 					this._logService.error(err);
 				}
 			}
+
 			if (fileContent !== undefined) {
 				undoes.push(
 					new CreateEdit(
@@ -369,9 +397,11 @@ class DeleteOperation implements IFileOperation {
 				);
 			}
 		}
+
 		if (deletes.length === 0) {
 			return new Noop();
 		}
+
 		await this._workingCopyFileService.delete(
 			deletes,
 			token,
@@ -381,16 +411,19 @@ class DeleteOperation implements IFileOperation {
 		if (undoes.length === 0) {
 			return new Noop();
 		}
+
 		return this._instaService.createInstance(CreateOperation, undoes, {
 			isUndoing: true,
 		});
 	}
+
 	toString(): string {
 		return `(delete ${this._edits.map((edit) => edit.oldUri).join(", ")})`;
 	}
 }
 class FileUndoRedoElement implements IWorkspaceUndoRedoElement {
 	readonly type = UndoRedoElementType.Workspace;
+
 	readonly resources: readonly URI[];
 
 	constructor(
@@ -401,20 +434,25 @@ class FileUndoRedoElement implements IWorkspaceUndoRedoElement {
 	) {
 		this.resources = operations.flatMap((op) => op.uris);
 	}
+
 	async undo(): Promise<void> {
 		await this._reverse();
 	}
+
 	async redo(): Promise<void> {
 		await this._reverse();
 	}
+
 	private async _reverse() {
 		for (let i = 0; i < this.operations.length; i++) {
 			const op = this.operations[i];
 
 			const undo = await op.perform(CancellationToken.None);
+
 			this.operations[i] = undo;
 		}
 	}
+
 	toString(): string {
 		return this.operations.map((op) => String(op)).join(", ");
 	}
@@ -434,6 +472,7 @@ export class BulkFileEdits {
 		@IUndoRedoService
 		private readonly _undoRedoService: IUndoRedoService,
 	) {}
+
 	async apply(): Promise<readonly URI[]> {
 		const undoOperations: IFileOperation[] = [];
 
@@ -477,11 +516,14 @@ export class BulkFileEdits {
 				);
 			}
 		}
+
 		if (edits.length === 0) {
 			return [];
 		}
+
 		const groups: Array<RenameEdit | CopyEdit | DeleteEdit | CreateEdit>[] =
 			[];
+
 		groups[0] = [edits[0]];
 
 		for (let i = 1; i < edits.length; i++) {
@@ -495,10 +537,12 @@ export class BulkFileEdits {
 				groups.push([edit]);
 			}
 		}
+
 		for (const group of groups) {
 			if (this._token.isCancellationRequested) {
 				break;
 			}
+
 			let op: IFileOperation | undefined;
 
 			switch (group[0].type) {
@@ -538,18 +582,23 @@ export class BulkFileEdits {
 
 					break;
 			}
+
 			if (op) {
 				const undoOp = await op.perform(this._token);
+
 				undoOperations.push(undoOp);
 			}
+
 			this._progress.report(undefined);
 		}
+
 		const undoRedoElement = new FileUndoRedoElement(
 			this._label,
 			this._code,
 			undoOperations,
 			this._confirmBeforeUndo,
 		);
+
 		this._undoRedoService.pushElement(
 			undoRedoElement,
 			this._undoRedoGroup,

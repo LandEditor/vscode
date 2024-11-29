@@ -9,15 +9,22 @@ export interface IPropertyData {
 		| "CustomerContent"
 		| "PublicNonPersonalData"
 		| "EndUserPseudonymizedInformation";
+
 	purpose: "PerformanceAndHealth" | "FeatureInsight" | "BusinessInsight";
+
 	comment: string;
+
 	expiration?: string;
+
 	endpoint?: string;
 }
 export interface IGDPRProperty {
 	owner: string;
+
 	comment: string;
+
 	expiration?: string;
+
 	readonly [name: string]: IPropertyData | undefined | IGDPRProperty | string;
 }
 type IGDPRPropertyWithoutMetadata = Omit<

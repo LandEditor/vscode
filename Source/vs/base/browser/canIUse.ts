@@ -37,9 +37,11 @@ export const BrowserFeatures = {
 		if (platform.isNative || browser.isStandalone()) {
 			return KeyboardSupport.Always;
 		}
+
 		if ((<any>navigator).keyboard || browser.isSafari) {
 			return KeyboardSupport.FullScreen;
 		}
+
 		return KeyboardSupport.None;
 	})(),
 	// 'ontouchstart' in window always evaluates to true with typescript's modern typings. This causes `window` to be

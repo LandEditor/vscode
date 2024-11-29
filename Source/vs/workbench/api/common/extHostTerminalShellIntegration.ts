@@ -32,7 +32,9 @@ export interface IExtHostTerminalShellIntegration
 	readonly _serviceBrand: undefined;
 
 	readonly onDidChangeTerminalShellIntegration: Event<vscode.TerminalShellIntegrationChangeEvent>;
+
 	readonly onDidStartTerminalShellExecution: Event<vscode.TerminalShellExecutionStartEvent>;
+
 	readonly onDidEndTerminalShellExecution: Event<vscode.TerminalShellExecutionEndEvent>;
 }
 export const IExtHostTerminalShellIntegration =
@@ -55,14 +57,19 @@ export class ExtHostTerminalShellIntegration
 
 	protected readonly _onDidChangeTerminalShellIntegration =
 		new Emitter<vscode.TerminalShellIntegrationChangeEvent>();
+
 	readonly onDidChangeTerminalShellIntegration =
 		this._onDidChangeTerminalShellIntegration.event;
+
 	protected readonly _onDidStartTerminalShellExecution =
 		new Emitter<vscode.TerminalShellExecutionStartEvent>();
+
 	readonly onDidStartTerminalShellExecution =
 		this._onDidStartTerminalShellExecution.event;
+
 	protected readonly _onDidEndTerminalShellExecution =
 		new Emitter<vscode.TerminalShellExecutionEndEvent>();
+
 	readonly onDidEndTerminalShellExecution =
 		this._onDidEndTerminalShellExecution.event;
 
@@ -83,6 +90,7 @@ export class ExtHostTerminalShellIntegration
 				for (const [_, integration] of this._activeShellIntegrations) {
 					integration.dispose();
 				}
+
 				this._activeShellIntegrations.clear();
 			}),
 		);
@@ -131,29 +139,36 @@ export class ExtHostTerminalShellIntegration
 				terminal.value,
 				this._onDidStartTerminalShellExecution,
 			);
+
 			this._activeShellIntegrations.set(instanceId, shellIntegration);
+
 			shellIntegration.store.add(
 				terminal.onWillDispose(() =>
 					this._activeShellIntegrations.get(instanceId)?.dispose(),
 				),
 			);
+
 			shellIntegration.store.add(
 				shellIntegration.onDidRequestShellExecution((commandLine) =>
 					this._proxy.$executeCommand(instanceId, commandLine),
 				),
 			);
+
 			shellIntegration.store.add(
 				shellIntegration.onDidRequestEndExecution((e) =>
 					this._onDidEndTerminalShellExecution.fire(e),
 				),
 			);
+
 			shellIntegration.store.add(
 				shellIntegration.onDidRequestChangeShellIntegration((e) =>
 					this._onDidChangeTerminalShellIntegration.fire(e),
 				),
 			);
+
 			terminal.shellIntegration = shellIntegration.value;
 		}
+
 		this._onDidChangeTerminalShellIntegration.fire({
 			terminal: apiTerminal,
 			shellIntegration: shellIntegration.value,
@@ -172,11 +187,13 @@ export class ExtHostTerminalShellIntegration
 		if (!this._activeShellIntegrations.has(instanceId)) {
 			this.$shellIntegrationChange(instanceId);
 		}
+
 		const commandLine: vscode.TerminalShellExecutionCommandLine = {
 			value: commandLineValue,
 			confidence: commandLineConfidence,
 			isTrusted,
 		};
+
 		this._activeShellIntegrations
 			.get(instanceId)
 			?.startShellExecution(commandLine, URI.revive(cwd));
@@ -194,6 +211,7 @@ export class ExtHostTerminalShellIntegration
 			confidence: commandLineConfidence,
 			isTrusted,
 		};
+
 		this._activeShellIntegrations
 			.get(instanceId)
 			?.endShellExecution(commandLine, exitCode);
@@ -212,6 +230,7 @@ export class ExtHostTerminalShellIntegration
 
 	public $closeTerminal(instanceId: number): void {
 		this._activeShellIntegrations.get(instanceId)?.dispose();
+
 		this._activeShellIntegrations.delete(instanceId);
 	}
 }
@@ -224,6 +243,7 @@ class InternalTerminalShellIntegration extends Disposable {
 	}
 
 	private _ignoreNextExecution: boolean = false;
+
 	private _cwd: URI | undefined;
 
 	readonly store: DisposableStore = this._register(new DisposableStore());
@@ -233,16 +253,21 @@ class InternalTerminalShellIntegration extends Disposable {
 	protected readonly _onDidRequestChangeShellIntegration = this._register(
 		new Emitter<vscode.TerminalShellIntegrationChangeEvent>(),
 	);
+
 	readonly onDidRequestChangeShellIntegration =
 		this._onDidRequestChangeShellIntegration.event;
+
 	protected readonly _onDidRequestShellExecution = this._register(
 		new Emitter<string>(),
 	);
+
 	readonly onDidRequestShellExecution =
 		this._onDidRequestShellExecution.event;
+
 	protected readonly _onDidRequestEndExecution = this._register(
 		new Emitter<vscode.TerminalShellExecutionEndEvent>(),
 	);
+
 	readonly onDidRequestEndExecution = this._onDidRequestEndExecution.event;
 
 	constructor(
@@ -252,12 +277,14 @@ class InternalTerminalShellIntegration extends Disposable {
 		super();
 
 		const that = this;
+
 		this.value = {
 			get cwd(): URI | undefined {
 				return that._cwd;
 			},
 			// executeCommand(commandLine: string): vscode.TerminalShellExecution;
 			// executeCommand(executable: string, args: string[]): vscode.TerminalShellExecution;
+
 			executeCommand(
 				commandLineOrExecutable: string,
 				args?: string[],
@@ -292,6 +319,7 @@ class InternalTerminalShellIntegration extends Disposable {
 					that._cwd,
 					true,
 				).value;
+
 				that._ignoreNextExecution = true;
 
 				return execution;
@@ -309,6 +337,7 @@ class InternalTerminalShellIntegration extends Disposable {
 		} else {
 			if (this._currentExecution) {
 				this._currentExecution.endExecution(undefined);
+
 				this._onDidRequestEndExecution.fire({
 					terminal: this._terminal,
 					shellIntegration: this.value,
@@ -339,6 +368,7 @@ class InternalTerminalShellIntegration extends Disposable {
 				});
 			}
 		}
+
 		return this._currentExecution;
 	}
 
@@ -352,12 +382,14 @@ class InternalTerminalShellIntegration extends Disposable {
 	): void {
 		if (this._currentExecution) {
 			this._currentExecution.endExecution(commandLine);
+
 			this._onDidRequestEndExecution.fire({
 				terminal: this._terminal,
 				shellIntegration: this.value,
 				execution: this._currentExecution.value,
 				exitCode,
 			});
+
 			this._currentExecution = undefined;
 		}
 	}
@@ -371,8 +403,10 @@ class InternalTerminalShellIntegration extends Disposable {
 		} else if (this._cwd !== cwd) {
 			wasChanged = true;
 		}
+
 		if (wasChanged) {
 			this._cwd = cwd;
+
 			this._onDidRequestChangeShellIntegration.fire({
 				terminal: this._terminal,
 				shellIntegration: this.value,
@@ -393,6 +427,7 @@ class InternalTerminalShellExecution {
 		readonly cwd: URI | undefined,
 	) {
 		const that = this;
+
 		this.value = {
 			get commandLine(): vscode.TerminalShellExecutionCommandLine {
 				return that._commandLine;
@@ -411,8 +446,10 @@ class InternalTerminalShellExecution {
 			if (this._ended) {
 				return AsyncIterableObject.EMPTY;
 			}
+
 			this._dataStream = new ShellExecutionDataStream();
 		}
+
 		return this._dataStream.createIterable();
 	}
 
@@ -426,24 +463,30 @@ class InternalTerminalShellExecution {
 		if (commandLine) {
 			this._commandLine = commandLine;
 		}
+
 		this._dataStream?.endExecution();
+
 		this._dataStream = undefined;
+
 		this._ended = true;
 	}
 }
 
 class ShellExecutionDataStream extends Disposable {
 	private _barrier: Barrier | undefined;
+
 	private _emitters: AsyncIterableEmitter<string>[] = [];
 
 	createIterable(): AsyncIterable<string> {
 		if (!this._barrier) {
 			this._barrier = new Barrier();
 		}
+
 		const barrier = this._barrier;
 
 		const iterable = new AsyncIterableObject<string>(async (emitter) => {
 			this._emitters.push(emitter);
+
 			await barrier.wait();
 		});
 
@@ -458,6 +501,7 @@ class ShellExecutionDataStream extends Disposable {
 
 	endExecution(): void {
 		this._barrier?.open();
+
 		this._barrier = undefined;
 	}
 }

@@ -21,12 +21,15 @@ import { IModelService } from "../../../common/services/model.js";
 
 export class Link implements ILink {
 	private _link: ILink;
+
 	private readonly _provider: LinkProvider;
 
 	constructor(link: ILink, provider: LinkProvider) {
 		this._link = link;
+
 		this._provider = provider;
 	}
+
 	toJSON(): ILink {
 		return {
 			range: this.range,
@@ -34,19 +37,24 @@ export class Link implements ILink {
 			tooltip: this.tooltip,
 		};
 	}
+
 	get range(): IRange {
 		return this._link.range;
 	}
+
 	get url(): URI | string | undefined {
 		return this._link.url;
 	}
+
 	get tooltip(): string | undefined {
 		return this._link.tooltip;
 	}
+
 	async resolve(token: CancellationToken): Promise<URI | string> {
 		if (this._link.url) {
 			return this._link.url;
 		}
+
 		if (typeof this._provider.resolveLink === "function") {
 			return Promise.resolve(
 				this._provider.resolveLink(this._link, token),
@@ -57,14 +65,17 @@ export class Link implements ILink {
 					// recurse
 					return this.resolve(token);
 				}
+
 				return Promise.reject(new Error("missing"));
 			});
 		}
+
 		return Promise.reject(new Error("missing"));
 	}
 }
 export class LinksList {
 	readonly links: Link[];
+
 	private readonly _disposables = new DisposableStore();
 
 	constructor(tuples: [ILinksList, LinkProvider][]) {
@@ -73,18 +84,23 @@ export class LinksList {
 		for (const [list, provider] of tuples) {
 			// merge all links
 			const newLinks = list.links.map((link) => new Link(link, provider));
+
 			links = LinksList._union(links, newLinks);
 			// register disposables
 			if (isDisposable(list)) {
 				this._disposables.add(list);
 			}
 		}
+
 		this.links = links;
 	}
+
 	dispose(): void {
 		this._disposables.dispose();
+
 		this.links.length = 0;
 	}
+
 	private static _union(oldLinks: Link[], newLinks: Link[]): Link[] {
 		// reunite oldLinks with newLinks and remove duplicates
 		const result: Link[] = [];
@@ -102,6 +118,7 @@ export class LinksList {
 				newIndex = 0,
 				oldLen = oldLinks.length,
 				newLen = newLinks.length;
+
 			oldIndex < oldLen && newIndex < newLen;
 
 		) {
@@ -115,6 +132,7 @@ export class LinksList {
 
 				continue;
 			}
+
 			const comparisonResult = Range.compareRangesUsingStarts(
 				oldLink.range,
 				newLink.range,
@@ -123,19 +141,24 @@ export class LinksList {
 			if (comparisonResult < 0) {
 				// oldLink is before
 				result.push(oldLink);
+
 				oldIndex++;
 			} else {
 				// newLink is before
 				result.push(newLink);
+
 				newIndex++;
 			}
 		}
+
 		for (; oldIndex < oldLen; oldIndex++) {
 			result.push(oldLinks[oldIndex]);
 		}
+
 		for (; newIndex < newLen; newIndex++) {
 			result.push(newLinks[newIndex]);
 		}
+
 		return result;
 	}
 }
@@ -166,6 +189,7 @@ export function getLinks(
 		if (!token.isCancellationRequested) {
 			return result;
 		}
+
 		result.dispose();
 
 		return new LinksList([]);
@@ -175,11 +199,13 @@ CommandsRegistry.registerCommand(
 	"_executeLinkProvider",
 	async (accessor, ...args): Promise<ILink[]> => {
 		let [uri, resolveCount] = args;
+
 		assertType(uri instanceof URI);
 
 		if (typeof resolveCount !== "number") {
 			resolveCount = 0;
 		}
+
 		const { linkProvider } = accessor.get(ILanguageFeaturesService);
 
 		const model = accessor.get(IModelService).getModel(uri);
@@ -187,6 +213,7 @@ CommandsRegistry.registerCommand(
 		if (!model) {
 			return [];
 		}
+
 		const list = await getLinks(
 			linkProvider,
 			model,
@@ -200,7 +227,9 @@ CommandsRegistry.registerCommand(
 		for (let i = 0; i < Math.min(resolveCount, list.links.length); i++) {
 			await list.links[i].resolve(CancellationToken.None);
 		}
+
 		const result = list.links.slice(0);
+
 		list.dispose();
 
 		return result;

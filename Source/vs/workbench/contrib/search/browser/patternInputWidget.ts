@@ -29,11 +29,17 @@ import { defaultToggleStyles } from "../../../../platform/theme/browser/defaultS
 
 export interface IOptions {
 	placeholder?: string;
+
 	showPlaceholderOnFocus?: boolean;
+
 	tooltip?: string;
+
 	width?: number;
+
 	ariaLabel?: string;
+
 	history?: string[];
+
 	inputBoxStyles: IInputBoxStyles;
 }
 
@@ -45,12 +51,15 @@ export class PatternInputWidget extends Widget {
 	private width: number;
 
 	private domNode!: HTMLElement;
+
 	protected inputBox!: HistoryInputBox;
 
 	private _onSubmit = this._register(new Emitter<boolean>());
+
 	onSubmit: CommonEvent<boolean /* triggeredOnType */> = this._onSubmit.event;
 
 	private _onCancel = this._register(new Emitter<void>());
+
 	onCancel: CommonEvent<void> = this._onCancel.event;
 
 	constructor(
@@ -65,12 +74,14 @@ export class PatternInputWidget extends Widget {
 		private readonly keybindingService: IKeybindingService,
 	) {
 		super();
+
 		options = {
 			...{
 				ariaLabel: nls.localize("defaultLabel", "input"),
 			},
 			...options,
 		};
+
 		this.width = options.width ?? 100;
 
 		this.render(options);
@@ -80,12 +91,15 @@ export class PatternInputWidget extends Widget {
 
 	override dispose(): void {
 		super.dispose();
+
 		this.inputFocusTracker?.dispose();
 	}
 
 	setWidth(newWidth: number): void {
 		this.width = newWidth;
+
 		this.contextViewProvider.layout();
+
 		this.setInputWidth();
 	}
 
@@ -149,6 +163,7 @@ export class PatternInputWidget extends Widget {
 
 	private render(options: IOptions): void {
 		this.domNode = document.createElement("div");
+
 		this.domNode.classList.add("monaco-findInput");
 
 		const history = options.history || [];
@@ -171,20 +186,25 @@ export class PatternInputWidget extends Widget {
 			},
 			this.contextKeyService,
 		);
+
 		this._register(
 			this.inputBox.onDidChange(() => this._onSubmit.fire(true)),
 		);
 
 		this.inputFocusTracker = dom.trackFocus(this.inputBox.inputElement);
+
 		this.onkeyup(this.inputBox.inputElement, (keyboardEvent) =>
 			this.onInputKeyUp(keyboardEvent),
 		);
 
 		const controls = document.createElement("div");
+
 		controls.className = "controls";
+
 		this.renderSubcontrols(controls);
 
 		this.domNode.appendChild(controls);
+
 		this.setInputWidth();
 	}
 
@@ -194,6 +214,7 @@ export class PatternInputWidget extends Widget {
 		switch (keyboardEvent.keyCode) {
 			case KeyCode.Enter:
 				this.onSearchSubmit();
+
 				this._onSubmit.fire(false);
 
 				return;
@@ -210,6 +231,7 @@ export class IncludePatternInputWidget extends PatternInputWidget {
 	private _onChangeSearchInEditorsBoxEmitter = this._register(
 		new Emitter<void>(),
 	);
+
 	onChangeSearchInEditorsBox = this._onChangeSearchInEditorsBoxEmitter.event;
 
 	constructor(
@@ -234,6 +256,7 @@ export class IncludePatternInputWidget extends PatternInputWidget {
 
 	override dispose(): void {
 		super.dispose();
+
 		this.useSearchInEditorsBox.dispose();
 	}
 
@@ -243,6 +266,7 @@ export class IncludePatternInputWidget extends PatternInputWidget {
 
 	setOnlySearchInOpenEditors(value: boolean) {
 		this.useSearchInEditorsBox.checked = value;
+
 		this._onChangeSearchInEditorsBoxEmitter.fire();
 	}
 
@@ -263,6 +287,7 @@ export class IncludePatternInputWidget extends PatternInputWidget {
 				...defaultToggleStyles,
 			}),
 		);
+
 		this._register(
 			this.useSearchInEditorsBox.onChange((viaKeyboard) => {
 				this._onChangeSearchInEditorsBoxEmitter.fire();
@@ -272,6 +297,7 @@ export class IncludePatternInputWidget extends PatternInputWidget {
 				}
 			}),
 		);
+
 		controlsDiv.appendChild(this.useSearchInEditorsBox.domNode);
 
 		super.renderSubcontrols(controlsDiv);
@@ -280,6 +306,7 @@ export class IncludePatternInputWidget extends PatternInputWidget {
 
 export class ExcludePatternInputWidget extends PatternInputWidget {
 	private _onChangeIgnoreBoxEmitter = this._register(new Emitter<void>());
+
 	onChangeIgnoreBox = this._onChangeIgnoreBoxEmitter.event;
 
 	constructor(
@@ -304,6 +331,7 @@ export class ExcludePatternInputWidget extends PatternInputWidget {
 
 	override dispose(): void {
 		super.dispose();
+
 		this.useExcludesAndIgnoreFilesBox.dispose();
 	}
 
@@ -313,6 +341,7 @@ export class ExcludePatternInputWidget extends PatternInputWidget {
 
 	setUseExcludesAndIgnoreFiles(value: boolean) {
 		this.useExcludesAndIgnoreFilesBox.checked = value;
+
 		this._onChangeIgnoreBoxEmitter.fire();
 	}
 
@@ -337,6 +366,7 @@ export class ExcludePatternInputWidget extends PatternInputWidget {
 				...defaultToggleStyles,
 			}),
 		);
+
 		this._register(
 			this.useExcludesAndIgnoreFilesBox.onChange((viaKeyboard) => {
 				this._onChangeIgnoreBoxEmitter.fire();

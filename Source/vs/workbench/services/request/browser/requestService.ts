@@ -52,6 +52,7 @@ export class BrowserRequestService
 						"http.proxyAuthorization",
 					);
 			}
+
 			const context = await this.logAndRequest(options, () =>
 				request(options, token, () => navigator.onLine),
 			);
@@ -61,6 +62,7 @@ export class BrowserRequestService
 			if (connection && context.res.statusCode === 405) {
 				return this._makeRemoteRequest(connection, options, token);
 			}
+
 			return context;
 		} catch (error) {
 			const connection = this.remoteAgentService.getConnection();
@@ -68,6 +70,7 @@ export class BrowserRequestService
 			if (connection) {
 				return this._makeRemoteRequest(connection, options, token);
 			}
+
 			throw error;
 		}
 	}

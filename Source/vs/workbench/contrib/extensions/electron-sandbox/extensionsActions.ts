@@ -25,6 +25,7 @@ export class OpenExtensionsFolderAction extends Action2 {
 			f1: true,
 		});
 	}
+
 	async run(accessor: ServicesAccessor): Promise<void> {
 		const nativeHostService = accessor.get(INativeHostService);
 
@@ -45,6 +46,7 @@ export class OpenExtensionsFolderAction extends Action2 {
 		} else {
 			itemToShow = extensionsHome;
 		}
+
 		if (itemToShow.scheme === Schemas.file) {
 			return nativeHostService.showItemInFolder(itemToShow.fsPath);
 		}
@@ -62,6 +64,7 @@ export class CleanUpExtensionsFolderAction extends Action2 {
 			f1: true,
 		});
 	}
+
 	async run(accessor: ServicesAccessor): Promise<void> {
 		const extensionManagementService = accessor.get(
 			IExtensionManagementService,

@@ -34,6 +34,7 @@ export function decodeKeybinding(
 		if (keybinding === 0) {
 			return null;
 		}
+
 		const firstChord = (keybinding & 0x0000ffff) >>> 0;
 
 		const secondChord = (keybinding & 0xffff0000) >>> 16;
@@ -44,6 +45,7 @@ export function decodeKeybinding(
 				createSimpleKeybinding(secondChord, OS),
 			]);
 		}
+
 		return new Keybinding([createSimpleKeybinding(firstChord, OS)]);
 	} else {
 		const chords = [];
@@ -51,6 +53,7 @@ export function decodeKeybinding(
 		for (let i = 0; i < keybinding.length; i++) {
 			chords.push(createSimpleKeybinding(keybinding[i], OS));
 		}
+
 		return new Keybinding(chords);
 	}
 }
@@ -76,8 +79,11 @@ export function createSimpleKeybinding(
 }
 export interface Modifiers {
 	readonly ctrlKey: boolean;
+
 	readonly shiftKey: boolean;
+
 	readonly altKey: boolean;
+
 	readonly metaKey: boolean;
 }
 /**
@@ -92,6 +98,7 @@ export class KeyCodeChord implements Modifiers {
 		public readonly metaKey: boolean,
 		public readonly keyCode: KeyCode,
 	) {}
+
 	public equals(other: Chord): boolean {
 		return (
 			other instanceof KeyCodeChord &&
@@ -102,6 +109,7 @@ export class KeyCodeChord implements Modifiers {
 			this.keyCode === other.keyCode
 		);
 	}
+
 	public getHashCode(): string {
 		const ctrl = this.ctrlKey ? "1" : "0";
 
@@ -113,6 +121,7 @@ export class KeyCodeChord implements Modifiers {
 
 		return `K${ctrl}${shift}${alt}${meta}${this.keyCode}`;
 	}
+
 	public isModifierKey(): boolean {
 		return (
 			this.keyCode === KeyCode.Unknown ||
@@ -122,6 +131,7 @@ export class KeyCodeChord implements Modifiers {
 			this.keyCode === KeyCode.Shift
 		);
 	}
+
 	public toKeybinding(): Keybinding {
 		return new Keybinding([this]);
 	}
@@ -149,6 +159,7 @@ export class ScanCodeChord implements Modifiers {
 		public readonly metaKey: boolean,
 		public readonly scanCode: ScanCode,
 	) {}
+
 	public equals(other: Chord): boolean {
 		return (
 			other instanceof ScanCodeChord &&
@@ -159,6 +170,7 @@ export class ScanCodeChord implements Modifiers {
 			this.scanCode === other.scanCode
 		);
 	}
+
 	public getHashCode(): string {
 		const ctrl = this.ctrlKey ? "1" : "0";
 
@@ -201,8 +213,10 @@ export class Keybinding {
 		if (chords.length === 0) {
 			throw illegalArgument(`chords`);
 		}
+
 		this.chords = chords;
 	}
+
 	public getHashCode(): string {
 		let result = "";
 
@@ -210,22 +224,28 @@ export class Keybinding {
 			if (i !== 0) {
 				result += ";";
 			}
+
 			result += this.chords[i].getHashCode();
 		}
+
 		return result;
 	}
+
 	public equals(other: Keybinding | null): boolean {
 		if (other === null) {
 			return false;
 		}
+
 		if (this.chords.length !== other.chords.length) {
 			return false;
 		}
+
 		for (let i = 0; i < this.chords.length; i++) {
 			if (!this.chords[i].equals(other.chords[i])) {
 				return false;
 			}
 		}
+
 		return true;
 	}
 }

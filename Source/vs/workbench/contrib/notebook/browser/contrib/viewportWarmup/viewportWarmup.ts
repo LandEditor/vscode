@@ -27,7 +27,9 @@ class NotebookViewportContribution
 	implements INotebookEditorContribution
 {
 	static id: string = "workbench.notebook.viewportWarmup";
+
 	private readonly _warmupViewport: RunOnceScheduler;
+
 	private readonly _warmupDocument: RunOnceScheduler | null = null;
 
 	constructor(
@@ -38,21 +40,27 @@ class NotebookViewportContribution
 		accessibilityService: IAccessibilityService,
 	) {
 		super();
+
 		this._warmupViewport = new RunOnceScheduler(
 			() => this._warmupViewportNow(),
 			200,
 		);
+
 		this._register(this._warmupViewport);
+
 		this._register(
 			this._notebookEditor.onDidScroll(() => {
 				this._warmupViewport.schedule();
 			}),
 		);
+
 		this._warmupDocument = new RunOnceScheduler(
 			() => this._warmupDocumentNow(),
 			200,
 		);
+
 		this._register(this._warmupDocument);
+
 		this._register(
 			this._notebookEditor.onDidAttachViewModel(() => {
 				if (this._notebookEditor.hasModel()) {
@@ -65,6 +73,7 @@ class NotebookViewportContribution
 			this._warmupDocument?.schedule();
 		}
 	}
+
 	private _warmupDocumentNow() {
 		if (this._notebookEditor.hasModel()) {
 			for (let i = 0; i < this._notebookEditor.getLength(); i++) {
@@ -83,15 +92,19 @@ class NotebookViewportContribution
 			}
 		}
 	}
+
 	private _warmupViewportNow() {
 		if (this._notebookEditor.isDisposed) {
 			return;
 		}
+
 		if (!this._notebookEditor.hasModel()) {
 			return;
 		}
+
 		const visibleRanges =
 			this._notebookEditor.getVisibleRangesPlusViewportAboveAndBelow();
+
 		cellRangesToIndexes(visibleRanges).forEach((index) => {
 			const cell = this._notebookEditor.cellAt(index);
 
@@ -108,10 +121,12 @@ class NotebookViewportContribution
 			}
 		});
 	}
+
 	private _warmupCodeCell(viewCell: CodeCellViewModel) {
 		if (viewCell.isOutputCollapsed) {
 			return;
 		}
+
 		const outputs = viewCell.outputsViewModels;
 
 		for (const output of outputs.slice(0, outputDisplayLimit)) {
@@ -126,14 +141,17 @@ class NotebookViewportContribution
 			) {
 				continue;
 			}
+
 			const pickedMimeTypeRenderer = mimeTypes[pick];
 
 			if (!pickedMimeTypeRenderer) {
 				return;
 			}
+
 			if (!this._notebookEditor.hasModel()) {
 				return;
 			}
+
 			const renderer = this._notebookService.getRendererInfo(
 				pickedMimeTypeRenderer.rendererId,
 			);
@@ -141,12 +159,14 @@ class NotebookViewportContribution
 			if (!renderer) {
 				return;
 			}
+
 			const result: IInsetRenderOutput = {
 				type: RenderOutputType.Extension,
 				renderer,
 				source: output,
 				mimeType: pickedMimeTypeRenderer.mimeType,
 			};
+
 			this._notebookEditor.createOutput(viewCell, result, 0, true);
 		}
 	}

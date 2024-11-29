@@ -20,8 +20,11 @@ import { markedGfmHeadingIdPlugin } from "./markedGfmHeadingIdPlugin.js";
 export const DEFAULT_MARKDOWN_STYLES = `
 body {
 	padding: 10px 20px;
+
 	line-height: 22px;
+
 	max-width: 882px;
+
 	margin: 0 auto;
 }
 
@@ -31,6 +34,7 @@ body *:last-child {
 
 img {
 	max-width: 100%;
+
 	max-height: 100%;
 }
 
@@ -47,19 +51,25 @@ input:focus,
 select:focus,
 textarea:focus {
 	outline: 1px solid -webkit-focus-ring-color;
+
 	outline-offset: -1px;
 }
 
 hr {
 	border: 0;
+
 	height: 2px;
+
 	border-bottom: 2px solid;
 }
 
 h1 {
 	padding-bottom: 0.3em;
+
 	line-height: 1.2;
+
 	border-bottom-width: 1px;
+
 	border-bottom-style: solid;
 }
 
@@ -73,6 +83,7 @@ table {
 
 th {
 	text-align: left;
+
 	border-bottom: 1px solid;
 }
 
@@ -83,13 +94,17 @@ td {
 
 table > tbody > tr + tr > td {
 	border-top-width: 1px;
+
 	border-top-style: solid;
 }
 
 blockquote {
 	margin: 0 7px 0 5px;
+
 	padding: 0 16px 0 10px;
+
 	border-left-width: 5px;
+
 	border-left-style: solid;
 }
 
@@ -99,16 +114,23 @@ code {
 
 pre {
 	padding: 16px;
+
 	border-radius: 3px;
+
 	overflow: auto;
 }
 
 pre code {
 	font-family: var(--vscode-editor-font-family);
+
 	font-weight: var(--vscode-editor-font-weight);
+
 	font-size: var(--vscode-editor-font-size);
+
 	line-height: 1.5;
+
 	color: var(--vscode-editor-foreground);
+
 	tab-size: 4;
 }
 
@@ -193,8 +215,11 @@ function sanitize(
 }
 interface IRenderMarkdownDocumentOptions {
 	readonly shouldSanitize?: boolean;
+
 	readonly allowUnknownProtocols?: boolean;
+
 	readonly markedExtensions?: marked.MarkedExtension[];
+
 	readonly token?: CancellationToken;
 }
 /**
@@ -215,11 +240,13 @@ export async function renderMarkdownDocument(
 				if (typeof lang !== "string") {
 					return escape(code);
 				}
+
 				await extensionService.whenInstalledExtensionsRegistered();
 
 				if (options?.token?.isCancellationRequested) {
 					return "";
 				}
+
 				const languageId =
 					languageService.getLanguageIdByLanguageName(lang) ??
 					languageService.getLanguageIdByLanguageName(
@@ -257,15 +284,18 @@ namespace MarkedHighlight {
 				highlight: options,
 			};
 		}
+
 		if (!options || typeof options.highlight !== "function") {
 			throw new Error("Must provide highlight function");
 		}
+
 		return {
 			async: !!options.async,
 			walkTokens(token: marked.Token): Promise<void> | void {
 				if (token.type !== "code") {
 					return;
 				}
+
 				const lang = getLang(token.lang);
 
 				if (options.async) {
@@ -273,6 +303,7 @@ namespace MarkedHighlight {
 						options.highlight(token.text, lang, token.lang || ""),
 					).then(updateToken(token));
 				}
+
 				const code = options.highlight(
 					token.text,
 					lang,
@@ -284,6 +315,7 @@ namespace MarkedHighlight {
 						"markedHighlight is not set to async but the highlight function is async. Set the async option to true on markedHighlight to await the async highlight function.",
 					);
 				}
+
 				updateToken(token)(code);
 			},
 			renderer: {
@@ -291,6 +323,7 @@ namespace MarkedHighlight {
 					const classAttr = lang
 						? ` class="language-${escape(lang)}"`
 						: "";
+
 					text = text.replace(/\n$/, "");
 
 					return `<pre><code${classAttr}>${escaped ? text : escape(text, true)}\n</code></pre>`;
@@ -298,13 +331,16 @@ namespace MarkedHighlight {
 			},
 		};
 	}
+
 	function getLang(lang: string) {
 		return (lang || "").match(/\S*/)![0];
 	}
+
 	function updateToken(token: any) {
 		return (code: string) => {
 			if (typeof code === "string" && code !== token.text) {
 				token.escaped = true;
+
 				token.text = code;
 			}
 		};
@@ -342,6 +378,7 @@ namespace MarkedHighlight {
 				);
 			}
 		}
+
 		return html;
 	}
 }

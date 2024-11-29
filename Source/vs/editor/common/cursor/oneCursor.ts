@@ -19,13 +19,18 @@ import { CursorContext } from "./cursorContext.js";
  */
 export class Cursor {
 	public modelState!: SingleCursorState;
+
 	public viewState!: SingleCursorState;
+
 	private _selTrackedRange: string | null;
+
 	private _trackSelection: boolean;
 
 	constructor(context: CursorContext) {
 		this._selTrackedRange = null;
+
 		this._trackSelection = true;
+
 		this._setState(
 			context,
 			new SingleCursorState(
@@ -44,28 +49,36 @@ export class Cursor {
 			),
 		);
 	}
+
 	public dispose(context: CursorContext): void {
 		this._removeTrackedRange(context);
 	}
+
 	public startTrackingSelection(context: CursorContext): void {
 		this._trackSelection = true;
+
 		this._updateTrackedRange(context);
 	}
+
 	public stopTrackingSelection(context: CursorContext): void {
 		this._trackSelection = false;
+
 		this._removeTrackedRange(context);
 	}
+
 	private _updateTrackedRange(context: CursorContext): void {
 		if (!this._trackSelection) {
 			// don't track the selection
 			return;
 		}
+
 		this._selTrackedRange = context.model._setTrackedRange(
 			this._selTrackedRange,
 			this.modelState.selection,
 			TrackedRangeStickiness.AlwaysGrowsWhenTypingAtEdges,
 		);
 	}
+
 	private _removeTrackedRange(context: CursorContext): void {
 		this._selTrackedRange = context.model._setTrackedRange(
 			this._selTrackedRange,
@@ -73,9 +86,11 @@ export class Cursor {
 			TrackedRangeStickiness.AlwaysGrowsWhenTypingAtEdges,
 		);
 	}
+
 	public asCursorState(): CursorState {
 		return new CursorState(this.modelState, this.viewState);
 	}
+
 	public readSelectionFromMarkers(context: CursorContext): Selection {
 		const range = context.model._getTrackedRange(this._selTrackedRange!)!;
 
@@ -86,14 +101,17 @@ export class Cursor {
 				this.modelState.selection.getDirection(),
 			);
 		}
+
 		return Selection.fromRange(
 			range,
 			this.modelState.selection.getDirection(),
 		);
 	}
+
 	public ensureValidState(context: CursorContext): void {
 		this._setState(context, this.modelState, this.viewState);
 	}
+
 	public setState(
 		context: CursorContext,
 		modelState: SingleCursorState | null,
@@ -101,6 +119,7 @@ export class Cursor {
 	): void {
 		this._setState(context, modelState, viewState);
 	}
+
 	private static _validatePositionWithCache(
 		viewModel: ICursorSimpleModel,
 		position: Position,
@@ -110,8 +129,10 @@ export class Cursor {
 		if (position.equals(cacheInput)) {
 			return cacheOutput;
 		}
+
 		return viewModel.normalizePosition(position, PositionAffinity.None);
 	}
+
 	private static _validateViewState(
 		viewModel: ICursorSimpleModel,
 		viewState: SingleCursorState,
@@ -149,6 +170,7 @@ export class Cursor {
 			// fast path: the state is valid
 			return viewState;
 		}
+
 		return new SingleCursorState(
 			Range.fromPositions(validSStartPosition, validSEndPosition),
 			viewState.selectionStartKind,
@@ -161,6 +183,7 @@ export class Cursor {
 				validPosition.column,
 		);
 	}
+
 	private _setState(
 		context: CursorContext,
 		modelState: SingleCursorState | null,
@@ -169,6 +192,7 @@ export class Cursor {
 		if (viewState) {
 			viewState = Cursor._validateViewState(context.viewModel, viewState);
 		}
+
 		if (!modelState) {
 			if (!viewState) {
 				return;
@@ -185,6 +209,7 @@ export class Cursor {
 					viewState.position,
 				),
 			);
+
 			modelState = new SingleCursorState(
 				selectionStart,
 				viewState.selectionStartKind,
@@ -210,6 +235,7 @@ export class Cursor {
 			const leftoverVisibleColumns = modelState.position.equals(position)
 				? modelState.leftoverVisibleColumns
 				: 0;
+
 			modelState = new SingleCursorState(
 				selectionStart,
 				modelState.selectionStartKind,
@@ -218,6 +244,7 @@ export class Cursor {
 				leftoverVisibleColumns,
 			);
 		}
+
 		if (!viewState) {
 			// We only have the model state => compute the view state
 			const viewSelectionStart1 =
@@ -247,6 +274,7 @@ export class Cursor {
 				context.coordinatesConverter.convertModelPositionToViewPosition(
 					modelState.position,
 				);
+
 			viewState = new SingleCursorState(
 				viewSelectionStart,
 				modelState.selectionStartKind,
@@ -267,6 +295,7 @@ export class Cursor {
 					viewState.position,
 					modelState.position,
 				);
+
 			viewState = new SingleCursorState(
 				viewSelectionStart,
 				modelState.selectionStartKind,
@@ -275,8 +304,11 @@ export class Cursor {
 				modelState.leftoverVisibleColumns,
 			);
 		}
+
 		this.modelState = modelState;
+
 		this.viewState = viewState;
+
 		this._updateTrackedRange(context);
 	}
 }

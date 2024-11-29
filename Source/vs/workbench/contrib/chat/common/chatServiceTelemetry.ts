@@ -12,206 +12,310 @@ import {
 
 type ChatVoteEvent = {
 	direction: "up" | "down";
+
 	agentId: string;
+
 	command: string | undefined;
+
 	reason: string | undefined;
 };
 type ChatVoteClassification = {
 	direction: {
 		classification: "SystemMetaData";
+
 		purpose: "FeatureInsight";
+
 		comment: "Whether the user voted up or down.";
 	};
+
 	agentId: {
 		classification: "SystemMetaData";
+
 		purpose: "FeatureInsight";
+
 		comment: "The ID of the chat agent that this vote is for.";
 	};
+
 	command: {
 		classification: "SystemMetaData";
+
 		purpose: "FeatureInsight";
+
 		comment: "The name of the slash command that this vote is for.";
 	};
+
 	reason: {
 		classification: "SystemMetaData";
+
 		purpose: "FeatureInsight";
+
 		comment: "The reason selected by the user for voting down.";
 	};
+
 	owner: "roblourens";
+
 	comment: "Provides insight into the performance of Chat agents.";
 };
 type ChatCopyEvent = {
 	copyKind: "action" | "toolbar";
+
 	agentId: string;
+
 	command: string | undefined;
 };
 type ChatCopyClassification = {
 	copyKind: {
 		classification: "SystemMetaData";
+
 		purpose: "FeatureInsight";
+
 		comment: "How the copy was initiated.";
 	};
+
 	agentId: {
 		classification: "SystemMetaData";
+
 		purpose: "FeatureInsight";
+
 		comment: "The ID of the chat agent that the copy acted on.";
 	};
+
 	command: {
 		classification: "SystemMetaData";
+
 		purpose: "FeatureInsight";
+
 		comment: "The name of the slash command the copy acted on.";
 	};
+
 	owner: "roblourens";
+
 	comment: "Provides insight into the usage of Chat features.";
 };
 type ChatInsertEvent = {
 	newFile: boolean;
+
 	agentId: string;
+
 	command: string | undefined;
 };
 type ChatInsertClassification = {
 	newFile: {
 		classification: "SystemMetaData";
+
 		purpose: "FeatureInsight";
+
 		comment: "Whether the code was inserted into a new untitled file.";
 	};
+
 	agentId: {
 		classification: "SystemMetaData";
+
 		purpose: "FeatureInsight";
+
 		comment: "The ID of the chat agent that this insertion is for.";
 	};
+
 	command: {
 		classification: "SystemMetaData";
+
 		purpose: "FeatureInsight";
+
 		comment: "The name of the slash command that this insertion is for.";
 	};
+
 	owner: "roblourens";
+
 	comment: "Provides insight into the usage of Chat features.";
 };
 type ChatApplyEvent = {
 	newFile: boolean;
+
 	agentId: string;
+
 	command: string | undefined;
+
 	codeMapper: string | undefined;
+
 	editsProposed: boolean;
 };
 type ChatApplyClassification = {
 	newFile: {
 		classification: "SystemMetaData";
+
 		purpose: "FeatureInsight";
+
 		comment: "Whether the code was inserted into a new untitled file.";
 	};
+
 	agentId: {
 		classification: "SystemMetaData";
+
 		purpose: "FeatureInsight";
+
 		comment: "The ID of the chat agent that this insertion is for.";
 	};
+
 	command: {
 		classification: "SystemMetaData";
+
 		purpose: "FeatureInsight";
+
 		comment: "The name of the slash command that this insertion is for.";
 	};
+
 	codeMapper: {
 		classification: "SystemMetaData";
+
 		purpose: "FeatureInsight";
+
 		comment: "The code mapper that wa used to compute the edit.";
 	};
+
 	editsProposed: {
 		classification: "SystemMetaData";
+
 		purpose: "FeatureInsight";
+
 		comment: "Whether there was a change proposed to the user.";
 	};
+
 	owner: "aeschli";
+
 	comment: "Provides insight into the usage of Chat features.";
 };
 type ChatCommandEvent = {
 	commandId: string;
+
 	agentId: string;
+
 	command: string | undefined;
 };
 type ChatCommandClassification = {
 	commandId: {
 		classification: "SystemMetaData";
+
 		purpose: "FeatureInsight";
+
 		comment: "The id of the command that was executed.";
 	};
+
 	agentId: {
 		classification: "SystemMetaData";
+
 		purpose: "FeatureInsight";
+
 		comment: "The ID of the related chat agent.";
 	};
+
 	command: {
 		classification: "SystemMetaData";
+
 		purpose: "FeatureInsight";
+
 		comment: "The name of the related slash command.";
 	};
+
 	owner: "roblourens";
+
 	comment: "Provides insight into the usage of Chat features.";
 };
 type ChatFollowupEvent = {
 	agentId: string;
+
 	command: string | undefined;
 };
 type ChatFollowupClassification = {
 	agentId: {
 		classification: "SystemMetaData";
+
 		purpose: "FeatureInsight";
+
 		comment: "The ID of the related chat agent.";
 	};
+
 	command: {
 		classification: "SystemMetaData";
+
 		purpose: "FeatureInsight";
+
 		comment: "The name of the related slash command.";
 	};
+
 	owner: "roblourens";
+
 	comment: "Provides insight into the usage of Chat features.";
 };
 type ChatTerminalEvent = {
 	languageId: string;
+
 	agentId: string;
+
 	command: string | undefined;
 };
 type ChatTerminalClassification = {
 	languageId: {
 		classification: "SystemMetaData";
+
 		purpose: "FeatureInsight";
+
 		comment: "The language of the code that was run in the terminal.";
 	};
+
 	agentId: {
 		classification: "SystemMetaData";
+
 		purpose: "FeatureInsight";
+
 		comment: "The ID of the related chat agent.";
 	};
+
 	command: {
 		classification: "SystemMetaData";
+
 		purpose: "FeatureInsight";
+
 		comment: "The name of the related slash command.";
 	};
+
 	owner: "roblourens";
+
 	comment: "Provides insight into the usage of Chat features.";
 };
 type ChatFollowupsRetrievedEvent = {
 	agentId: string;
+
 	command: string | undefined;
+
 	numFollowups: number;
 };
 type ChatFollowupsRetrievedClassification = {
 	agentId: {
 		classification: "SystemMetaData";
+
 		purpose: "FeatureInsight";
+
 		comment: "The ID of the related chat agent.";
 	};
+
 	command: {
 		classification: "SystemMetaData";
+
 		purpose: "FeatureInsight";
+
 		comment: "The name of the related slash command.";
 	};
+
 	numFollowups: {
 		classification: "SystemMetaData";
+
 		purpose: "FeatureInsight";
+
 		comment: "The number of followup prompts returned by the agent.";
 	};
+
 	owner: "roblourens";
+
 	comment: "Provides insight into the usage of Chat features.";
 };
 
@@ -220,6 +324,7 @@ export class ChatServiceTelemetry {
 		@ITelemetryService
 		private readonly telemetryService: ITelemetryService,
 	) {}
+
 	notifyUserAction(action: IChatUserActionEvent): void {
 		if (action.action.kind === "vote") {
 			this.telemetryService.publicLog2<
@@ -275,6 +380,7 @@ export class ChatServiceTelemetry {
 			const commandId = command
 				? action.action.commandButton.command.id
 				: "INVALID";
+
 			this.telemetryService.publicLog2<
 				ChatCommandEvent,
 				ChatCommandClassification
@@ -302,6 +408,7 @@ export class ChatServiceTelemetry {
 			});
 		}
 	}
+
 	retrievedFollowups(
 		agentId: string,
 		command: string | undefined,

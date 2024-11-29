@@ -27,6 +27,7 @@ export function activateAutoInsertion(
 	runtime: Runtime,
 ): Disposable {
 	const disposables: Disposable[] = [];
+
 	workspace.onDidChangeTextDocument(
 		onDidChangeTextDocument,
 		null,
@@ -39,10 +40,13 @@ export function activateAutoInsertion(
 		"autoQuote": false,
 		"autoClose": false,
 	};
+
 	updateEnabledState();
+
 	window.onDidChangeActiveTextEditor(updateEnabledState, null, disposables);
 
 	let timeout: Disposable | undefined = undefined;
+
 	disposables.push({
 		dispose: () => {
 			timeout?.dispose();
@@ -57,21 +61,27 @@ export function activateAutoInsertion(
 		if (!editor) {
 			return;
 		}
+
 		const document = editor.document;
 
 		if (!languageParticipants.useAutoInsert(document.languageId)) {
 			return;
 		}
+
 		const configurations = workspace.getConfiguration(
 			undefined,
 			document.uri,
 		);
+
 		isEnabled["autoQuote"] =
 			configurations.get<boolean>("html.autoCreateQuotes") ?? false;
+
 		isEnabled["autoClose"] =
 			configurations.get<boolean>("html.autoClosingTags") ?? false;
+
 		anyIsEnabled = isEnabled["autoQuote"] || isEnabled["autoClose"];
 	}
+
 	function onDidChangeTextDocument({
 		document,
 		contentChanges,
@@ -85,15 +95,18 @@ export function activateAutoInsertion(
 		) {
 			return;
 		}
+
 		const activeDocument =
 			window.activeTextEditor && window.activeTextEditor.document;
 
 		if (document !== activeDocument) {
 			return;
 		}
+
 		if (timeout) {
 			timeout.dispose();
 		}
+
 		const lastChange = contentChanges[contentChanges.length - 1];
 
 		if (lastChange.rangeLength === 0 && isSingleLine(lastChange.text)) {
@@ -109,9 +122,11 @@ export function activateAutoInsertion(
 			}
 		}
 	}
+
 	function isSingleLine(text: string): boolean {
 		return !/\n/.test(text);
 	}
+
 	function doAutoInsert(
 		kind: "autoQuote" | "autoClose",
 		document: TextDocument,
@@ -120,11 +135,13 @@ export function activateAutoInsertion(
 		const rangeStart = lastChange.range.start;
 
 		const version = document.version;
+
 		timeout = runtime.timer.setTimeout(() => {
 			const position = new Position(
 				rangeStart.line,
 				rangeStart.character + lastChange.text.length,
 			);
+
 			provider(kind, document, position).then((text) => {
 				if (text && isEnabled[kind]) {
 					const activeEditor = window.activeTextEditor;
@@ -158,8 +175,10 @@ export function activateAutoInsertion(
 					}
 				}
 			});
+
 			timeout = undefined;
 		}, 100);
 	}
+
 	return Disposable.from(...disposables);
 }

@@ -28,6 +28,7 @@ class NodeModuleRequireInterceptor extends RequireInterceptor {
 		const node_module = require("module");
 
 		const originalLoad = node_module._load;
+
 		node_module._load = function load(
 			request: string,
 			parent: {
@@ -40,6 +41,7 @@ class NodeModuleRequireInterceptor extends RequireInterceptor {
 			if (!that._factories.has(request)) {
 				return originalLoad.apply(this, arguments);
 			}
+
 			return that._factories
 				.get(request)!
 				.load(
@@ -51,6 +53,7 @@ class NodeModuleRequireInterceptor extends RequireInterceptor {
 		};
 
 		const originalLookup = node_module._resolveLookupPaths;
+
 		node_module._resolveLookupPaths = (
 			request: string,
 			parent: unknown,
@@ -63,6 +66,7 @@ class NodeModuleRequireInterceptor extends RequireInterceptor {
 		};
 
 		const originalResolveFilename = node_module._resolveFilename;
+
 		node_module._resolveFilename = function resolveFilename(
 			request: string,
 			parent: unknown,
@@ -84,6 +88,7 @@ class NodeModuleRequireInterceptor extends RequireInterceptor {
 					import.meta.dirname,
 				);
 			}
+
 			return originalResolveFilename.call(
 				this,
 				request,
@@ -103,12 +108,14 @@ class NodeModuleRequireInterceptor extends RequireInterceptor {
 					break;
 				}
 			}
+
 			return request;
 		};
 	}
 }
 export class ExtHostExtensionService extends AbstractExtHostExtensionService {
 	readonly extensionRuntime = ExtensionRuntime.Node;
+
 	protected async _beforeAlmostReadyToRunExtensions(): Promise<void> {
 		// make sure console.log calls make it to the render
 		this._instaService.createInstance(ExtHostConsoleForwarder);
@@ -121,6 +128,7 @@ export class ExtHostExtensionService extends AbstractExtHostExtensionService {
 		// Register CLI Server for ipc
 		if (this._initData.remote.isRemote && this._initData.remote.authority) {
 			const cliServer = this._instaService.createInstance(CLIServer);
+
 			process.env["VSCODE_IPC_HOOK_CLI"] = cliServer.ipcHandlePath;
 		}
 		// Register local file system shortcut
@@ -131,11 +139,14 @@ export class ExtHostExtensionService extends AbstractExtHostExtensionService {
 			extensionApiFactory,
 			{ mine: this._myRegistry, all: this._globalRegistry },
 		);
+
 		await interceptor.install();
+
 		performance.mark("code/extHost/didInitAPI");
 		// Do this when extension service exists, but extensions are not being activated yet.
 		const configProvider =
 			await this._extHostConfiguration.getConfigProvider();
+
 		await connectProxyResolver(
 			this._extHostWorkspace,
 			configProvider,
@@ -145,13 +156,16 @@ export class ExtHostExtensionService extends AbstractExtHostExtensionService {
 			this._initData,
 			this._store,
 		);
+
 		performance.mark("code/extHost/didInitProxyResolver");
 	}
+
 	protected _getEntryPoint(
 		extensionDescription: IExtensionDescription,
 	): string | undefined {
 		return extensionDescription.main;
 	}
+
 	protected async _loadCommonJSModule<T>(
 		extension: IExtensionDescription | null,
 		module: URI,
@@ -162,11 +176,15 @@ export class ExtHostExtensionService extends AbstractExtHostExtensionService {
 				`Cannot load URI: '${module}', must be of file-scheme`,
 			);
 		}
+
 		let r: T | null = null;
+
 		activationTimesBuilder.codeLoadingStart();
+
 		this._logService.trace(
 			`ExtensionService#loadCommonJSModule ${module.toString(true)}`,
 		);
+
 		this._logService.flush();
 
 		const extensionId = extension?.identifier.value;
@@ -176,12 +194,14 @@ export class ExtHostExtensionService extends AbstractExtHostExtensionService {
 				extension,
 			);
 		}
+
 		try {
 			if (extensionId) {
 				performance.mark(
 					`code/extHost/willLoadExtensionCode/${extensionId}`,
 				);
 			}
+
 			r = <T>require(module.fsPath);
 		} finally {
 			if (extensionId) {
@@ -189,16 +209,20 @@ export class ExtHostExtensionService extends AbstractExtHostExtensionService {
 					`code/extHost/didLoadExtensionCode/${extensionId}`,
 				);
 			}
+
 			activationTimesBuilder.codeLoadingStop();
 		}
+
 		return r;
 	}
+
 	public async $setRemoteEnvironment(env: {
 		[key: string]: string | null;
 	}): Promise<void> {
 		if (!this._initData.remote.isRemote) {
 			return;
 		}
+
 		for (const key in env) {
 			const value = env[key];
 

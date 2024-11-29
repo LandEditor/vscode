@@ -26,7 +26,9 @@ export async function createExperimentationService(
 		experimentationTelemetry,
 		context.globalState,
 	) as unknown as IExperimentationService;
+
 	await service.initializePromise;
+
 	await service.initialFetch;
 
 	return service;

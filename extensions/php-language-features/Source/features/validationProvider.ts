@@ -17,12 +17,15 @@ const enum Setting {
 }
 export class LineDecoder {
 	private stringDecoder: StringDecoder;
+
 	private remaining: string | null;
 
 	constructor(encoding: BufferEncoding = "utf8") {
 		this.stringDecoder = new StringDecoder(encoding);
+
 		this.remaining = null;
 	}
+
 	public write(buffer: Buffer): string[] {
 		const result: string[] = [];
 
@@ -33,6 +36,7 @@ export class LineDecoder {
 		if (value.length < 1) {
 			return result;
 		}
+
 		let start = 0;
 
 		let ch: number;
@@ -43,6 +47,7 @@ export class LineDecoder {
 		) {
 			start++;
 		}
+
 		let idx = start;
 
 		while (idx < value.length) {
@@ -50,6 +55,7 @@ export class LineDecoder {
 
 			if (ch === 13 || ch === 10) {
 				result.push(value.substring(start, idx));
+
 				idx++;
 
 				while (
@@ -58,15 +64,18 @@ export class LineDecoder {
 				) {
 					idx++;
 				}
+
 				start = idx;
 			} else {
 				idx++;
 			}
 		}
+
 		this.remaining = start < value.length ? value.substr(start) : null;
 
 		return result;
 	}
+
 	public end(): string | null {
 		return this.remaining;
 	}
@@ -92,6 +101,7 @@ namespace RunTrigger {
 export default class PHPValidationProvider {
 	private static MatchExpression: RegExp =
 		/(?:(?:Parse|Fatal) error): (.*)(?: in )(.*?)(?: on line )(\d+)/;
+
 	private static BufferArgs: string[] = [
 		"-l",
 		"-n",
@@ -100,6 +110,7 @@ export default class PHPValidationProvider {
 		"-d",
 		"log_errors=Off",
 	];
+
 	private static FileArgs: string[] = [
 		"-l",
 		"-n",
@@ -109,35 +120,49 @@ export default class PHPValidationProvider {
 		"log_errors=Off",
 		"-f",
 	];
+
 	private validationEnabled: boolean;
+
 	private pauseValidation: boolean;
+
 	private config: IPhpConfig | undefined;
+
 	private loadConfigP: Promise<void>;
+
 	private documentListener: vscode.Disposable | null = null;
+
 	private diagnosticCollection?: vscode.DiagnosticCollection;
+
 	private delayers?: {
 		[key: string]: ThrottledDelayer<void>;
 	};
 
 	constructor() {
 		this.validationEnabled = true;
+
 		this.pauseValidation = false;
+
 		this.loadConfigP = this.loadConfiguration();
 	}
+
 	public activate(subscriptions: vscode.Disposable[]) {
 		this.diagnosticCollection =
 			vscode.languages.createDiagnosticCollection();
+
 		subscriptions.push(this);
+
 		subscriptions.push(
 			vscode.workspace.onDidChangeConfiguration(
 				() => (this.loadConfigP = this.loadConfiguration()),
 			),
 		);
+
 		vscode.workspace.onDidOpenTextDocument(
 			this.triggerValidate,
 			this,
 			subscriptions,
 		);
+
 		vscode.workspace.onDidCloseTextDocument(
 			(textDocument) => {
 				this.diagnosticCollection!.delete(textDocument.uri);
@@ -150,31 +175,42 @@ export default class PHPValidationProvider {
 			subscriptions,
 		);
 	}
+
 	public dispose(): void {
 		if (this.diagnosticCollection) {
 			this.diagnosticCollection.clear();
+
 			this.diagnosticCollection.dispose();
 		}
+
 		if (this.documentListener) {
 			this.documentListener.dispose();
+
 			this.documentListener = null;
 		}
 	}
+
 	private async loadConfiguration(): Promise<void> {
 		const section = vscode.workspace.getConfiguration();
 
 		const oldExecutable = this.config?.executable;
+
 		this.validationEnabled = section.get<boolean>(Setting.Enable, true);
+
 		this.config = await getConfig();
+
 		this.delayers = Object.create(null);
 
 		if (this.pauseValidation) {
 			this.pauseValidation = oldExecutable === this.config.executable;
 		}
+
 		if (this.documentListener) {
 			this.documentListener.dispose();
+
 			this.documentListener = null;
 		}
+
 		this.diagnosticCollection!.clear();
 
 		if (this.validationEnabled) {
@@ -193,6 +229,7 @@ export default class PHPValidationProvider {
 			vscode.workspace.textDocuments.forEach(this.triggerValidate, this);
 		}
 	}
+
 	private async triggerValidate(
 		textDocument: vscode.TextDocument,
 	): Promise<void> {
@@ -205,6 +242,7 @@ export default class PHPValidationProvider {
 		) {
 			return;
 		}
+
 		if (vscode.workspace.isTrusted) {
 			const key = textDocument.uri.toString();
 
@@ -214,11 +252,14 @@ export default class PHPValidationProvider {
 				delayer = new ThrottledDelayer<void>(
 					this.config?.trigger === RunTrigger.onType ? 250 : 0,
 				);
+
 				this.delayers![key] = delayer;
 			}
+
 			delayer.trigger(() => this.doValidate(textDocument));
 		}
 	}
+
 	private doValidate(textDocument: vscode.TextDocument): Promise<void> {
 		return new Promise<void>((resolve) => {
 			const executable = this.config!.executable;
@@ -229,16 +270,20 @@ export default class PHPValidationProvider {
 						"Cannot validate since a PHP installation could not be found. Use the setting 'php.validate.executablePath' to configure the PHP executable.",
 					),
 				);
+
 				this.pauseValidation = true;
+
 				resolve();
 
 				return;
 			}
+
 			if (!path.isAbsolute(executable)) {
 				// executable should either be resolved to an absolute path or undefined.
 				// This is just to be sure.
 				return;
 			}
+
 			const decoder = new LineDecoder();
 
 			const diagnostics: vscode.Diagnostic[] = [];
@@ -257,6 +302,7 @@ export default class PHPValidationProvider {
 						new vscode.Range(line, 0, line, 2 ** 31 - 1), // See https://github.com/microsoft/vscode/issues/80288#issuecomment-650636442 for discussion
 						message,
 					);
+
 					diagnostics.push(diagnostic);
 				}
 			};
@@ -271,41 +317,52 @@ export default class PHPValidationProvider {
 
 			if (this.config!.trigger === RunTrigger.onSave) {
 				args = PHPValidationProvider.FileArgs.slice(0);
+
 				args.push(textDocument.fileName);
 			} else {
 				args = PHPValidationProvider.BufferArgs;
 			}
+
 			try {
 				const childProcess = cp.spawn(executable, args, options);
+
 				childProcess.on("error", (error: Error) => {
 					if (this.pauseValidation) {
 						resolve();
 
 						return;
 					}
+
 					this.showError(error, executable);
+
 					this.pauseValidation = true;
+
 					resolve();
 				});
 
 				if (childProcess.pid) {
 					if (this.config!.trigger === RunTrigger.onType) {
 						childProcess.stdin.write(textDocument.getText());
+
 						childProcess.stdin.end();
 					}
+
 					childProcess.stdout.on("data", (data: Buffer) => {
 						decoder.write(data).forEach(processLine);
 					});
+
 					childProcess.stdout.on("end", () => {
 						const line = decoder.end();
 
 						if (line) {
 							processLine(line);
 						}
+
 						this.diagnosticCollection!.set(
 							textDocument.uri,
 							diagnostics,
 						);
+
 						resolve();
 					});
 				} else {
@@ -316,6 +373,7 @@ export default class PHPValidationProvider {
 			}
 		});
 	}
+
 	private async showError(error: any, executable: string): Promise<void> {
 		let message: string | null = null;
 
@@ -338,11 +396,14 @@ export default class PHPValidationProvider {
 						executable,
 					);
 		}
+
 		if (!message) {
 			return;
 		}
+
 		return this.showErrorMessage(message);
 	}
+
 	private async showErrorMessage(message: string): Promise<void> {
 		const openSettings = vscode.l10n.t("Open Settings");
 
@@ -361,7 +422,9 @@ export default class PHPValidationProvider {
 }
 interface IPhpConfig {
 	readonly executable: string | undefined;
+
 	readonly executableIsUserDefined: boolean | undefined;
+
 	readonly trigger: RunTrigger;
 }
 async function getConfig(): Promise<IPhpConfig> {
@@ -375,14 +438,18 @@ async function getConfig(): Promise<IPhpConfig> {
 
 	if (inspect && inspect.workspaceValue) {
 		executable = inspect.workspaceValue;
+
 		executableIsUserDefined = false;
 	} else if (inspect && inspect.globalValue) {
 		executable = inspect.globalValue;
+
 		executableIsUserDefined = true;
 	} else {
 		executable = undefined;
+
 		executableIsUserDefined = undefined;
 	}
+
 	if (executable && !path.isAbsolute(executable)) {
 		const first =
 			vscode.workspace.workspaceFolders &&
@@ -396,6 +463,7 @@ async function getConfig(): Promise<IPhpConfig> {
 	} else if (!executable) {
 		executable = await getPhpPath();
 	}
+
 	const trigger = RunTrigger.from(
 		section.get<string>(Setting.Run, RunTrigger.strings.onSave),
 	);

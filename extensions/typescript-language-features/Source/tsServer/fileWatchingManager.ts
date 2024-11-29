@@ -12,6 +12,7 @@ import { ResourceMap } from "../utils/resourceMap";
 
 interface DirWatcherEntry {
 	readonly uri: vscode.Uri;
+
 	readonly disposables: readonly IDisposable[];
 }
 export class FileWatcherManager implements IDisposable {
@@ -19,28 +20,37 @@ export class FileWatcherManager implements IDisposable {
 		number,
 		{
 			readonly uri: vscode.Uri;
+
 			readonly watcher: vscode.FileSystemWatcher;
+
 			readonly dirWatchers: DirWatcherEntry[];
 		}
 	>();
+
 	private readonly _dirWatchers = new ResourceMap<{
 		readonly uri: vscode.Uri;
+
 		readonly watcher: vscode.FileSystemWatcher;
+
 		refCount: number;
 	}>((uri) => uri.toString(), { onCaseInsensitiveFileSystem: false });
 
 	constructor(private readonly logger: Logger) {}
+
 	dispose(): void {
 		for (const entry of this._fileWatchers.values()) {
 			entry.watcher.dispose();
 		}
+
 		this._fileWatchers.clear();
 
 		for (const entry of this._dirWatchers.values()) {
 			entry.watcher.dispose();
 		}
+
 		this._dirWatchers.clear();
 	}
+
 	create(
 		id: number,
 		uri: vscode.Uri,
@@ -48,7 +58,9 @@ export class FileWatcherManager implements IDisposable {
 		isRecursive: boolean,
 		listeners: {
 			create?: (uri: vscode.Uri) => void;
+
 			change?: (uri: vscode.Uri) => void;
+
 			delete?: (uri: vscode.Uri) => void;
 		},
 	): void {
@@ -57,6 +69,7 @@ export class FileWatcherManager implements IDisposable {
 		if (!vscode.workspace.fs.isWritableFileSystem(uri.scheme)) {
 			return;
 		}
+
 		const watcher = vscode.workspace.createFileSystemWatcher(
 			new vscode.RelativePattern(uri, isRecursive ? "**" : "*"),
 			!listeners.create,
@@ -65,6 +78,7 @@ export class FileWatcherManager implements IDisposable {
 		);
 
 		const parentDirWatchers: DirWatcherEntry[] = [];
+
 		this._fileWatchers.set(id, {
 			uri,
 			watcher,
@@ -74,17 +88,22 @@ export class FileWatcherManager implements IDisposable {
 		if (listeners.create) {
 			watcher.onDidCreate(listeners.create);
 		}
+
 		if (listeners.change) {
 			watcher.onDidChange(listeners.change);
 		}
+
 		if (listeners.delete) {
 			watcher.onDidDelete(listeners.delete);
 		}
+
 		if (watchParentDirs && uri.scheme !== Schemes.untitled) {
 			// We need to watch the parent directories too for when these are deleted / created
 			for (
 				let dirUri = Utils.dirname(uri);
+
 				dirUri.path.length > 1;
+
 				dirUri = Utils.dirname(dirUri)
 			) {
 				const disposables: IDisposable[] = [];
@@ -108,13 +127,16 @@ export class FileWatcherManager implements IDisposable {
 							true,
 							!listeners.delete,
 						);
+
 					parentDirWatcher = {
 						uri: dirUri,
 						refCount: 0,
 						watcher: parentWatcher,
 					};
+
 					this._dirWatchers.set(dirUri, parentDirWatcher);
 				}
+
 				parentDirWatcher.refCount++;
 
 				if (listeners.create) {
@@ -134,6 +156,7 @@ export class FileWatcherManager implements IDisposable {
 						}),
 					);
 				}
+
 				if (listeners.delete) {
 					// When the parent dir is deleted, consider our file deleted too
 					// TODO: this fires if the file previously did not exist and then the parent is deleted
@@ -141,10 +164,12 @@ export class FileWatcherManager implements IDisposable {
 						parentDirWatcher.watcher.onDidDelete(listeners.delete),
 					);
 				}
+
 				parentDirWatchers.push({ uri: dirUri, disposables });
 			}
 		}
 	}
+
 	delete(id: number): void {
 		const entry = this._fileWatchers.get(id);
 
@@ -161,13 +186,17 @@ export class FileWatcherManager implements IDisposable {
 						this.logger.trace(
 							`Deleting parent dir ${dirWatcherEntry.uri}`,
 						);
+
 						dirWatcherEntry.watcher.dispose();
+
 						this._dirWatchers.delete(dirWatcher.uri);
 					}
 				}
 			}
+
 			entry.watcher.dispose();
 		}
+
 		this._fileWatchers.delete(id);
 	}
 }

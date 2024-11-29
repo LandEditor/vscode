@@ -145,6 +145,7 @@ export class InlineEditsView extends Disposable {
 	private readonly _useMixedLinesDiff = observableCodeEditor(this._editor)
 		.getOption(EditorOption.inlineSuggest)
 		.map((s) => s.edits.experimental.useMixedLinesDiff);
+
 	private readonly _useInterleavedLinesDiff = observableCodeEditor(
 		this._editor,
 	)
@@ -181,6 +182,7 @@ export class InlineEditsView extends Disposable {
 					if (x === undefined) {
 						return 0;
 					}
+
 					const width = this._previewEditorWidth.read(reader);
 
 					return x + width;
@@ -207,76 +209,109 @@ export class InlineEditsView extends Disposable {
 				const width = this._previewEditorWidth.read(reader) + 10;
 
 				const pathBuilder1 = new PathBuilder();
+
 				pathBuilder1.moveTo(layoutInfo.code2);
+
 				pathBuilder1.lineTo(layoutInfo.codeStart2);
+
 				pathBuilder1.lineTo(layoutInfo.codeStart1);
+
 				pathBuilder1.lineTo(layoutInfo.code1);
 
 				const pathBuilder2 = new PathBuilder();
+
 				pathBuilder2.moveTo(layoutInfo.code1);
+
 				pathBuilder2.lineTo(layoutInfo.edit1);
+
 				pathBuilder2.lineTo(layoutInfo.edit1.deltaX(width));
+
 				pathBuilder2.lineTo(layoutInfo.edit2.deltaX(width));
+
 				pathBuilder2.lineTo(layoutInfo.edit2);
+
 				pathBuilder2.curveTo2(
 					layoutInfo.edit2.deltaX(-20),
 					layoutInfo.code2.deltaX(20),
 					layoutInfo.code2.deltaX(0),
 				);
+
 				pathBuilder2.lineTo(layoutInfo.code2);
 
 				const pathBuilder3 = new PathBuilder();
+
 				pathBuilder3.moveTo(layoutInfo.code1);
+
 				pathBuilder3.lineTo(layoutInfo.code2);
 
 				const pathBuilder4 = new PathBuilder();
+
 				pathBuilder4.moveTo(layoutInfo.code1);
+
 				pathBuilder4.lineTo(layoutInfo.code1.deltaX(1000));
+
 				pathBuilder4.lineTo(layoutInfo.code2.deltaX(1000));
+
 				pathBuilder4.lineTo(layoutInfo.code2);
 
 				const path1 = document.createElementNS(
 					"http://www.w3.org/2000/svg",
 					"path",
 				);
+
 				path1.setAttribute("d", pathBuilder1.build());
+
 				path1.style.fill =
 					"var(--vscode-inlineEdit-originalBackground, transparent)";
+
 				path1.style.stroke = "var(--vscode-inlineEdit-border)";
+
 				path1.style.strokeWidth = "1px";
 
 				const path2 = document.createElementNS(
 					"http://www.w3.org/2000/svg",
 					"path",
 				);
+
 				path2.setAttribute("d", pathBuilder2.build());
+
 				path2.style.fill =
 					"var(--vscode-inlineEdit-modifiedBackground, transparent)";
+
 				path2.style.stroke = "var(--vscode-inlineEdit-border)";
+
 				path2.style.strokeWidth = "1px";
 
 				const pathModifiedBackground = document.createElementNS(
 					"http://www.w3.org/2000/svg",
 					"path",
 				);
+
 				pathModifiedBackground.setAttribute("d", pathBuilder2.build());
+
 				pathModifiedBackground.style.fill =
 					"var(--vscode-editor-background, transparent)";
+
 				pathModifiedBackground.style.strokeWidth = "1px";
 
 				const path3 = document.createElementNS(
 					"http://www.w3.org/2000/svg",
 					"path",
 				);
+
 				path3.setAttribute("d", pathBuilder3.build());
+
 				path3.style.stroke = "var(--vscode-inlineEdit-border)";
+
 				path3.style.strokeWidth = "1px";
 
 				const path4 = document.createElementNS(
 					"http://www.w3.org/2000/svg",
 					"path",
 				);
+
 				path4.setAttribute("d", pathBuilder4.build());
+
 				path4.style.fill =
 					"var(--vscode-editor-background, transparent)";
 
@@ -284,9 +319,11 @@ export class InlineEditsView extends Disposable {
 					path4,
 					pathModifiedBackground,
 				);
+
 				this._elements.svg2.replaceChildren(path1, path2, path3);
 
 				this._elements.editorContainer.style.top = `${topEdit.y}px`;
+
 				this._elements.editorContainer.style.left = `${topEdit.x}px`;
 
 				this._previewEditor.layout({ height: editHeight, width });
@@ -361,12 +398,14 @@ export class InlineEditsView extends Disposable {
 				newText,
 				edit.modifiedLineRange,
 			);
+
 			newText = indentationAdjustmentEdit.applyToString(newText);
 
 			mappings = applyEditToModifiedRangeMappings(
 				mappings,
 				indentationAdjustmentEdit,
 			);
+
 			diff = lineRangeMappingFromRangeMappings(
 				mappings,
 				edit.originalText,
@@ -411,6 +450,7 @@ export class InlineEditsView extends Disposable {
 							undefined,
 						);
 					}
+
 					if (action.class === undefined) {
 						return this._instantiationService.createInstance(
 							ActionViewItem,
@@ -419,6 +459,7 @@ export class InlineEditsView extends Disposable {
 							{ icon: false },
 						);
 					}
+
 					return undefined;
 				},
 				telemetrySource: "inlineEditsToolbar",
@@ -465,6 +506,7 @@ export class InlineEditsView extends Disposable {
 			}
 
 			this._toolbar.setAdditionalPrimaryActions(primaryExtraActions);
+
 			this._toolbar.setAdditionalSecondaryActions(secondaryExtraActions);
 		}),
 	);
@@ -534,6 +576,7 @@ export class InlineEditsView extends Disposable {
 	private readonly _previewEditorRootVisibility = derived(this, (reader) =>
 		this._uiState.read(reader)?.state === "sideBySide" ? "block" : "none",
 	);
+
 	private readonly _updatePreviewEditorRootVisibility = derived((reader) => {
 		this._elements.root.style.display =
 			this._previewEditorRootVisibility.read(reader);
@@ -557,6 +600,7 @@ export class InlineEditsView extends Disposable {
 		if (range.startLineNumber > 1) {
 			hiddenAreas.push(new Range(1, 1, range.startLineNumber - 1, 1));
 		}
+
 		if (
 			range.startLineNumber + uiState.newTextLineCount <
 			this._previewTextModel.getLineCount() + 1
@@ -580,6 +624,7 @@ export class InlineEditsView extends Disposable {
 		if (!edit) {
 			return 0;
 		}
+
 		this._updatePreviewEditor.read(reader);
 
 		return maxLeftInRange(
@@ -693,6 +738,7 @@ export class InlineEditsView extends Disposable {
 			modifiedCodeEditor: this._previewEditor,
 		};
 	});
+
 	protected readonly _inlineDiffView = this._register(
 		new OriginalEditorInlineDiffView(
 			this._editor,
@@ -712,6 +758,7 @@ export class InlineEditsView extends Disposable {
 				if (!edit1 || !state) {
 					return undefined;
 				}
+
 				return {
 					editTopLeft: edit1,
 					showAlways: state.state !== "sideBySide",

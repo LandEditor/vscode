@@ -27,66 +27,106 @@ export namespace EventType {
 }
 interface TouchData {
 	id: number;
+
 	initialTarget: EventTarget;
+
 	initialTimeStamp: number;
+
 	initialPageX: number;
+
 	initialPageY: number;
+
 	rollingTimestamps: number[];
+
 	rollingPageX: number[];
+
 	rollingPageY: number[];
 }
 export interface GestureEvent extends MouseEvent {
 	initialTarget: EventTarget | undefined;
+
 	translationX: number;
+
 	translationY: number;
+
 	pageX: number;
+
 	pageY: number;
+
 	tapCount: number;
 }
 interface Touch {
 	identifier: number;
+
 	screenX: number;
+
 	screenY: number;
+
 	clientX: number;
+
 	clientY: number;
+
 	pageX: number;
+
 	pageY: number;
+
 	radiusX: number;
+
 	radiusY: number;
+
 	rotationAngle: number;
 
 	force: number;
+
 	target: Element;
 }
 interface TouchList {
 	[i: number]: Touch;
+
 	length: number;
+
 	item(index: number): Touch;
+
 	identifiedTouch(id: number): Touch;
 }
 interface TouchEvent extends Event {
 	touches: TouchList;
+
 	targetTouches: TouchList;
+
 	changedTouches: TouchList;
 }
 export class Gesture extends Disposable {
 	private static readonly SCROLL_FRICTION = -0.005;
+
 	private static INSTANCE: Gesture;
+
 	private static readonly HOLD_DELAY = 700;
+
 	private dispatched = false;
+
 	private readonly targets = new LinkedList<HTMLElement>();
+
 	private readonly ignoreTargets = new LinkedList<HTMLElement>();
+
 	private handle: IDisposable | null;
+
 	private readonly activeTouches: {
 		[id: number]: TouchData;
 	};
+
 	private _lastSetTapCountTime: number;
+
 	private static readonly CLEAR_TAP_COUNT_TIME = 400; // ms
 	private constructor() {
 		super();
+
 		this.activeTouches = {};
+
 		this.handle = null;
+
 		this._lastSetTapCountTime = 0;
+
 		this._register(
 			EventUtils.runAndSubscribe(
 				DomUtils.onDidRegisterWindow,
@@ -99,6 +139,7 @@ export class Gesture extends Disposable {
 							{ passive: false },
 						),
 					);
+
 					disposables.add(
 						DomUtils.addDisposableListener(
 							window.document,
@@ -106,6 +147,7 @@ export class Gesture extends Disposable {
 							(e: TouchEvent) => this.onTouchEnd(window, e),
 						),
 					);
+
 					disposables.add(
 						DomUtils.addDisposableListener(
 							window.document,
@@ -119,24 +161,30 @@ export class Gesture extends Disposable {
 			),
 		);
 	}
+
 	public static addTarget(element: HTMLElement): IDisposable {
 		if (!Gesture.isTouchDevice()) {
 			return Disposable.None;
 		}
+
 		if (!Gesture.INSTANCE) {
 			Gesture.INSTANCE = markAsSingleton(new Gesture());
 		}
+
 		const remove = Gesture.INSTANCE.targets.push(element);
 
 		return toDisposable(remove);
 	}
+
 	public static ignoreTarget(element: HTMLElement): IDisposable {
 		if (!Gesture.isTouchDevice()) {
 			return Disposable.None;
 		}
+
 		if (!Gesture.INSTANCE) {
 			Gesture.INSTANCE = markAsSingleton(new Gesture());
 		}
+
 		const remove = Gesture.INSTANCE.ignoreTargets.push(element);
 
 		return toDisposable(remove);
@@ -147,21 +195,28 @@ export class Gesture extends Disposable {
 		// `never` later in `window.navigator`. That's why we need the explicit `window as Window` cast
 		return "ontouchstart" in mainWindow || navigator.maxTouchPoints > 0;
 	}
+
 	public override dispose(): void {
 		if (this.handle) {
 			this.handle.dispose();
+
 			this.handle = null;
 		}
+
 		super.dispose();
 	}
+
 	private onTouchStart(e: TouchEvent): void {
 		const timestamp = Date.now(); // use Date.now() because on FF e.timeStamp is not epoch based.
 		if (this.handle) {
 			this.handle.dispose();
+
 			this.handle = null;
 		}
+
 		for (let i = 0, len = e.targetTouches.length; i < len; i++) {
 			const touch = e.targetTouches.item(i);
+
 			this.activeTouches[touch.identifier] = {
 				id: touch.identifier,
 				initialTarget: touch.target,
@@ -174,16 +229,23 @@ export class Gesture extends Disposable {
 			};
 
 			const evt = this.newGestureEvent(EventType.Start, touch.target);
+
 			evt.pageX = touch.pageX;
+
 			evt.pageY = touch.pageY;
+
 			this.dispatchEvent(evt);
 		}
+
 		if (this.dispatched) {
 			e.preventDefault();
+
 			e.stopPropagation();
+
 			this.dispatched = false;
 		}
 	}
+
 	private onTouchEnd(targetWindow: Window, e: TouchEvent): void {
 		const timestamp = Date.now(); // use Date.now() because on FF e.timeStamp is not epoch based.
 		const activeTouchCount = Object.keys(this.activeTouches).length;
@@ -196,6 +258,7 @@ export class Gesture extends Disposable {
 
 				continue;
 			}
+
 			const data = this.activeTouches[touch.identifier],
 				holdTime = Date.now() - data.initialTimeStamp;
 
@@ -208,8 +271,11 @@ export class Gesture extends Disposable {
 					EventType.Tap,
 					data.initialTarget,
 				);
+
 				evt.pageX = data.rollingPageX.at(-1)!;
+
 				evt.pageY = data.rollingPageY.at(-1)!;
+
 				this.dispatchEvent(evt);
 			} else if (
 				holdTime >= Gesture.HOLD_DELAY &&
@@ -220,8 +286,11 @@ export class Gesture extends Disposable {
 					EventType.Contextmenu,
 					data.initialTarget,
 				);
+
 				evt.pageX = data.rollingPageX.at(-1)!;
+
 				evt.pageY = data.rollingPageY.at(-1)!;
+
 				this.dispatchEvent(evt);
 			} else if (activeTouchCount === 1) {
 				const finalX = data.rollingPageX.at(-1)!;
@@ -240,6 +309,7 @@ export class Gesture extends Disposable {
 						data.initialTarget instanceof Node &&
 						t.contains(data.initialTarget),
 				);
+
 				this.inertia(
 					targetWindow,
 					dispatchTo,
@@ -252,18 +322,23 @@ export class Gesture extends Disposable {
 					finalY, // y now
 				);
 			}
+
 			this.dispatchEvent(
 				this.newGestureEvent(EventType.End, data.initialTarget),
 			);
 			// forget about this touch
 			delete this.activeTouches[touch.identifier];
 		}
+
 		if (this.dispatched) {
 			e.preventDefault();
+
 			e.stopPropagation();
+
 			this.dispatched = false;
 		}
 	}
+
 	private newGestureEvent(
 		type: string,
 		initialTarget?: EventTarget,
@@ -271,12 +346,16 @@ export class Gesture extends Disposable {
 		const event = document.createEvent(
 			"CustomEvent",
 		) as unknown as GestureEvent;
+
 		event.initEvent(type, false, true);
+
 		event.initialTarget = initialTarget;
+
 		event.tapCount = 0;
 
 		return event;
 	}
+
 	private dispatchEvent(event: GestureEvent): void {
 		if (event.type === EventType.Tap) {
 			const currentTime = new Date().getTime();
@@ -291,7 +370,9 @@ export class Gesture extends Disposable {
 			} else {
 				setTapCount = 2;
 			}
+
 			this._lastSetTapCountTime = currentTime;
+
 			event.tapCount = setTapCount;
 		} else if (
 			event.type === EventType.Change ||
@@ -300,12 +381,14 @@ export class Gesture extends Disposable {
 			// tap is canceled by scrolling or context menu
 			this._lastSetTapCountTime = 0;
 		}
+
 		if (event.initialTarget instanceof Node) {
 			for (const ignoreTarget of this.ignoreTargets) {
 				if (ignoreTarget.contains(event.initialTarget)) {
 					return;
 				}
 			}
+
 			const targets: [number, HTMLElement][] = [];
 
 			for (const target of this.targets) {
@@ -316,19 +399,24 @@ export class Gesture extends Disposable {
 
 					while (now && now !== target) {
 						depth++;
+
 						now = now.parentElement;
 					}
+
 					targets.push([depth, target]);
 				}
 			}
+
 			targets.sort((a, b) => a[0] - b[0]);
 
 			for (const [_, target] of targets) {
 				target.dispatchEvent(event);
+
 				this.dispatched = true;
 			}
 		}
 	}
+
 	private inertia(
 		targetWindow: Window,
 		dispatchTo: readonly EventTarget[],
@@ -351,21 +439,29 @@ export class Gesture extends Disposable {
 					delta_pos_y = 0;
 
 				let stopped = true;
+
 				vX += Gesture.SCROLL_FRICTION * deltaT;
+
 				vY += Gesture.SCROLL_FRICTION * deltaT;
 
 				if (vX > 0) {
 					stopped = false;
+
 					delta_pos_x = dirX * vX * deltaT;
 				}
+
 				if (vY > 0) {
 					stopped = false;
+
 					delta_pos_y = dirY * vY * deltaT;
 				}
 				// dispatch translation event
 				const evt = this.newGestureEvent(EventType.Change);
+
 				evt.translationX = delta_pos_x;
+
 				evt.translationY = delta_pos_y;
+
 				dispatchTo.forEach((d) => d.dispatchEvent(evt));
 
 				if (!stopped) {
@@ -384,6 +480,7 @@ export class Gesture extends Disposable {
 			},
 		);
 	}
+
 	private onTouchMove(e: TouchEvent): void {
 		const timestamp = Date.now(); // use Date.now() because on FF e.timeStamp is not epoch based.
 		for (let i = 0, len = e.changedTouches.length; i < len; i++) {
@@ -394,30 +491,44 @@ export class Gesture extends Disposable {
 
 				continue;
 			}
+
 			const data = this.activeTouches[touch.identifier];
 
 			const evt = this.newGestureEvent(
 				EventType.Change,
 				data.initialTarget,
 			);
+
 			evt.translationX = touch.pageX - data.rollingPageX.at(-1)!;
+
 			evt.translationY = touch.pageY - data.rollingPageY.at(-1)!;
+
 			evt.pageX = touch.pageX;
+
 			evt.pageY = touch.pageY;
+
 			this.dispatchEvent(evt);
 			// only keep a few data points, to average the final speed
 			if (data.rollingPageX.length > 3) {
 				data.rollingPageX.shift();
+
 				data.rollingPageY.shift();
+
 				data.rollingTimestamps.shift();
 			}
+
 			data.rollingPageX.push(touch.pageX);
+
 			data.rollingPageY.push(touch.pageY);
+
 			data.rollingTimestamps.push(timestamp);
 		}
+
 		if (this.dispatched) {
 			e.preventDefault();
+
 			e.stopPropagation();
+
 			this.dispatched = false;
 		}
 	}

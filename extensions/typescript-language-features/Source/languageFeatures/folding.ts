@@ -12,6 +12,7 @@ import { coalesce } from "../utils/arrays";
 
 class TypeScriptFoldingProvider implements vscode.FoldingRangeProvider {
 	public constructor(private readonly client: ITypeScriptServiceClient) {}
+
 	async provideFoldingRanges(
 		document: vscode.TextDocument,
 		_context: vscode.FoldingContext,
@@ -22,6 +23,7 @@ class TypeScriptFoldingProvider implements vscode.FoldingRangeProvider {
 		if (!file) {
 			return;
 		}
+
 		const args: Proto.FileRequestArgs = { file };
 
 		const response = await this.client.execute(
@@ -33,12 +35,14 @@ class TypeScriptFoldingProvider implements vscode.FoldingRangeProvider {
 		if (response.type !== "response" || !response.body) {
 			return;
 		}
+
 		return coalesce(
 			response.body.map((span) =>
 				this.convertOutliningSpan(span, document),
 			),
 		);
 	}
+
 	private convertOutliningSpan(
 		span: Proto.OutliningSpan,
 		document: vscode.TextDocument,
@@ -54,13 +58,16 @@ class TypeScriptFoldingProvider implements vscode.FoldingRangeProvider {
 				return undefined;
 			}
 		}
+
 		const start = range.start.line;
 
 		const end = this.adjustFoldingEnd(range, document);
 
 		return new vscode.FoldingRange(start, end, kind);
 	}
+
 	private static readonly foldEndPairCharacters = ["}", "]", ")", "`", ">"];
+
 	private adjustFoldingEnd(
 		range: vscode.Range,
 		document: vscode.TextDocument,
@@ -79,8 +86,10 @@ class TypeScriptFoldingProvider implements vscode.FoldingRangeProvider {
 				return Math.max(range.end.line - 1, range.start.line);
 			}
 		}
+
 		return range.end.line;
 	}
+
 	private static getFoldingRangeKind(
 		span: Proto.OutliningSpan,
 	): vscode.FoldingRangeKind | undefined {

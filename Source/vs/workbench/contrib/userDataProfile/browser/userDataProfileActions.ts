@@ -17,6 +17,7 @@ import {
 
 class CreateTransientProfileAction extends Action2 {
 	static readonly ID = "workbench.profiles.actions.createTemporaryProfile";
+
 	static readonly TITLE = localize2(
 		"create temporary profile",
 		"Create a Temporary Profile",
@@ -30,6 +31,7 @@ class CreateTransientProfileAction extends Action2 {
 			f1: true,
 		});
 	}
+
 	async run(accessor: ServicesAccessor) {
 		return accessor
 			.get(IUserDataProfileManagementService)
@@ -48,6 +50,7 @@ registerAction2(
 				f1: true,
 			});
 		}
+
 		async run(accessor: ServicesAccessor) {
 			return accessor.get(IUserDataProfilesService).cleanUp();
 		}
@@ -66,6 +69,7 @@ registerAction2(
 				f1: true,
 			});
 		}
+
 		async run(accessor: ServicesAccessor) {
 			const userDataProfilesService = accessor.get(
 				IUserDataProfilesService,

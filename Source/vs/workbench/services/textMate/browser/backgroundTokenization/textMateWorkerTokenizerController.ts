@@ -40,19 +40,24 @@ import type {
 
 export class TextMateWorkerTokenizerController extends Disposable {
 	private static _id = 0;
+
 	public readonly controllerId = TextMateWorkerTokenizerController._id++;
+
 	private readonly _pendingChanges: IModelContentChangedEvent[] = [];
 	/**
 	 * These states will eventually equal the worker states.
 	 * _states[i] stores the state at the end of line number i+1.
 	 */
 	private readonly _states = new TokenizationStateStore<StateStack>();
+
 	private readonly _loggingEnabled = observableConfigValue(
 		"editor.experimental.asyncTokenizationLogging",
 		false,
 		this._configurationService,
 	);
+
 	private _applyStateStackDiffFn?: typeof applyStateStackDiff;
+
 	private _initialState?: StateStack;
 
 	constructor(
@@ -64,7 +69,9 @@ export class TextMateWorkerTokenizerController extends Disposable {
 		private readonly _maxTokenizationLineLength: IObservable<number>,
 	) {
 		super();
+
 		this._register(keepObserved(this._loggingEnabled));
+
 		this._register(
 			this._model.onDidChangeContent((e) => {
 				if (this._shouldLog) {
@@ -73,16 +80,20 @@ export class TextMateWorkerTokenizerController extends Disposable {
 						changes: changesToString(e.changes),
 					});
 				}
+
 				this._worker.$acceptModelChanged(this.controllerId, e);
+
 				this._pendingChanges.push(e);
 			}),
 		);
+
 		this._register(
 			this._model.onDidChangeLanguage((e) => {
 				const languageId = this._model.getLanguageId();
 
 				const encodedLanguageId =
 					this._languageIdCodec.encodeLanguageId(languageId);
+
 				this._worker.$acceptModelLanguageChanged(
 					this.controllerId,
 					languageId,
@@ -95,6 +106,7 @@ export class TextMateWorkerTokenizerController extends Disposable {
 
 		const encodedLanguageId =
 			this._languageIdCodec.encodeLanguageId(languageId);
+
 		this._worker.$acceptNewModel({
 			uri: this._model.uri,
 			versionId: this._model.getVersionId(),
@@ -105,11 +117,13 @@ export class TextMateWorkerTokenizerController extends Disposable {
 			maxTokenizationLineLength: this._maxTokenizationLineLength.get(),
 			controllerId: this.controllerId,
 		});
+
 		this._register(
 			autorun((reader) => {
 				/** @description update maxTokenizationLineLength */
 				const maxTokenizationLineLength =
 					this._maxTokenizationLineLength.read(reader);
+
 				this._worker.$acceptMaxTokenizationLineLength(
 					this.controllerId,
 					maxTokenizationLineLength,
@@ -117,10 +131,13 @@ export class TextMateWorkerTokenizerController extends Disposable {
 			}),
 		);
 	}
+
 	public override dispose(): void {
 		super.dispose();
+
 		this._worker.$acceptRemovedModel(this.controllerId);
 	}
+
 	public requestTokens(
 		startLineNumber: number,
 		endLineNumberExclusive: number,
@@ -167,12 +184,14 @@ export class TextMateWorkerTokenizerController extends Disposable {
 					.join(" & "),
 			});
 		}
+
 		if (this._shouldLog) {
 			const changes = this._pendingChanges
 				.filter((c) => c.versionId <= versionId)
 				.map((c) => c.changes)
 				.map((c) => changesToString(c))
 				.join(" then ");
+
 			console.log("Applying changes to local states", changes);
 		}
 		// Apply past changes to _states
@@ -181,16 +200,20 @@ export class TextMateWorkerTokenizerController extends Disposable {
 			this._pendingChanges[0].versionId <= versionId
 		) {
 			const change = this._pendingChanges.shift()!;
+
 			this._states.acceptChanges(change.changes);
 		}
+
 		if (this._pendingChanges.length > 0) {
 			if (this._shouldLog) {
 				const changes = this._pendingChanges
 					.map((c) => c.changes)
 					.map((c) => changesToString(c))
 					.join(" then ");
+
 				console.log("Considering non-processed changes", changes);
 			}
+
 			const curToFutureTransformerTokens =
 				MonotonousIndexTransformer.fromMany(
 					this._pendingChanges.map((c) =>
@@ -213,6 +236,7 @@ export class TextMateWorkerTokenizerController extends Disposable {
 					}
 				}
 			}
+
 			tokens = b.finalize();
 			// Apply future changes to tokens
 			for (const change of this._pendingChanges) {
@@ -226,6 +250,7 @@ export class TextMateWorkerTokenizerController extends Disposable {
 				}
 			}
 		}
+
 		const curToFutureTransformerStates =
 			MonotonousIndexTransformer.fromMany(
 				this._pendingChanges.map((c) =>
@@ -237,7 +262,9 @@ export class TextMateWorkerTokenizerController extends Disposable {
 			const { applyStateStackDiff, INITIAL } = await importAMDNodeModule<
 				typeof import("vscode-textmate")
 			>("vscode-textmate", "release/main.js");
+
 			this._applyStateStackDiffFn = applyStateStackDiff;
+
 			this._initialState = INITIAL;
 		}
 		// Apply state deltas to _states and _backgroundTokenizationStore
@@ -254,10 +281,12 @@ export class TextMateWorkerTokenizerController extends Disposable {
 
 				if (delta) {
 					state = this._applyStateStackDiffFn(prevState, delta)!;
+
 					this._states.setEndState(d.startLineNumber + i, state);
 				} else {
 					state = this._states.getEndState(d.startLineNumber + i)!;
 				}
+
 				const offset = curToFutureTransformerStates.transform(
 					d.startLineNumber + i - 1,
 				);
@@ -270,15 +299,18 @@ export class TextMateWorkerTokenizerController extends Disposable {
 						state,
 					);
 				}
+
 				if (d.startLineNumber + i >= this._model.getLineCount() - 1) {
 					this._backgroundTokenizationStore.backgroundTokenizationFinished();
 				}
+
 				prevState = state;
 			}
 		}
 		// First set states, then tokens, so that events fired from set tokens don't read invalid states
 		this._backgroundTokenizationStore.setTokens(tokens);
 	}
+
 	private get _shouldLog() {
 		return this._loggingEnabled.get();
 	}

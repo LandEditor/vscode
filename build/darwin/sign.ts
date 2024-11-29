@@ -25,9 +25,11 @@ async function main(buildDir?: string): Promise<void> {
 	if (!buildDir) {
 		throw new Error("$AGENT_BUILDDIRECTORY not set");
 	}
+
 	if (!tempDir) {
 		throw new Error("$AGENT_TEMPDIRECTORY not set");
 	}
+
 	const product = JSON.parse(
 		fs.readFileSync(path.join(root, "product.json"), "utf8"),
 	);
@@ -156,6 +158,7 @@ async function main(buildDir?: string): Promise<void> {
 			"An application in Visual Studio Code wants to use AppleScript.",
 			`${infoPlistPath}`,
 		]);
+
 		await spawn("plutil", [
 			"-replace",
 			"NSMicrophoneUsageDescription",
@@ -163,6 +166,7 @@ async function main(buildDir?: string): Promise<void> {
 			"An application in Visual Studio Code wants to use the Microphone.",
 			`${infoPlistPath}`,
 		]);
+
 		await spawn("plutil", [
 			"-replace",
 			"NSCameraUsageDescription",
@@ -171,14 +175,19 @@ async function main(buildDir?: string): Promise<void> {
 			`${infoPlistPath}`,
 		]);
 	}
+
 	await codesign.signAsync(gpuHelperOpts);
+
 	await codesign.signAsync(rendererHelperOpts);
+
 	await codesign.signAsync(pluginHelperOpts);
+
 	await codesign.signAsync(appOpts as any);
 }
 if (require.main === module) {
 	main(process.argv[2]).catch((err) => {
 		console.error(err);
+
 		process.exit(1);
 	});
 }

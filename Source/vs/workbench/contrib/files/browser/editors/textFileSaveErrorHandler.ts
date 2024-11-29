@@ -80,12 +80,15 @@ export class TextFileSaveErrorHandler
 	implements ISaveErrorHandler, IWorkbenchContribution
 {
 	static readonly ID = "workbench.contrib.textFileSaveErrorHandler";
+
 	private readonly messages = new ResourceMap<INotificationHandle>();
+
 	private readonly conflictResolutionContext = new RawContextKey<boolean>(
 		CONFLICT_RESOLUTION_CONTEXT,
 		false,
 		true,
 	).bindTo(this.contextKeyService);
+
 	private activeConflictResolutionResource: URI | undefined = undefined;
 
 	constructor(
@@ -109,6 +112,7 @@ export class TextFileSaveErrorHandler
 		const provider = this._register(
 			instantiationService.createInstance(TextFileContentProvider),
 		);
+
 		this._register(
 			textModelService.registerTextModelContentProvider(
 				CONFLICT_RESOLUTION_SCHEME,
@@ -117,25 +121,30 @@ export class TextFileSaveErrorHandler
 		);
 		// Set as save error handler to service for text files
 		this.textFileService.files.saveErrorHandler = this;
+
 		this.registerListeners();
 	}
+
 	private registerListeners(): void {
 		this._register(
 			this.textFileService.files.onDidSave((e) =>
 				this.onFileSavedOrReverted(e.model.resource),
 			),
 		);
+
 		this._register(
 			this.textFileService.files.onDidRevert((model) =>
 				this.onFileSavedOrReverted(model.resource),
 			),
 		);
+
 		this._register(
 			this.editorService.onDidActiveEditorChange(() =>
 				this.onActiveEditorChanged(),
 			),
 		);
 	}
+
 	private onActiveEditorChanged(): void {
 		let isActiveEditorSaveConflictResolution = false;
 
@@ -148,24 +157,30 @@ export class TextFileSaveErrorHandler
 
 			if (resource?.scheme === CONFLICT_RESOLUTION_SCHEME) {
 				isActiveEditorSaveConflictResolution = true;
+
 				activeConflictResolutionResource =
 					activeInput.modified.resource;
 			}
 		}
+
 		this.conflictResolutionContext.set(
 			isActiveEditorSaveConflictResolution,
 		);
+
 		this.activeConflictResolutionResource =
 			activeConflictResolutionResource;
 	}
+
 	private onFileSavedOrReverted(resource: URI): void {
 		const messageHandle = this.messages.get(resource);
 
 		if (messageHandle) {
 			messageHandle.close();
+
 			this.messages.delete(resource);
 		}
 	}
+
 	onSaveError(
 		error: unknown,
 		model: ITextFileEditorModel,
@@ -198,12 +213,15 @@ export class TextFileSaveErrorHandler
 				) {
 					return; // return if this message is ignored
 				}
+
 				message = conflictEditorHelp;
+
 				primaryActions.push(
 					this.instantiationService.createInstance(
 						ResolveConflictLearnMoreAction,
 					),
 				);
+
 				secondaryActions.push(
 					this.instantiationService.createInstance(
 						DoNotShowResolveConflictLearnMoreAction,
@@ -217,12 +235,14 @@ export class TextFileSaveErrorHandler
 					"Failed to save '{0}': The content of the file is newer. Please compare your version with the file contents or overwrite the content of the file with your changes.",
 					basename(resource),
 				);
+
 				primaryActions.push(
 					this.instantiationService.createInstance(
 						ResolveSaveConflictAction,
 						model,
 					),
 				);
+
 				primaryActions.push(
 					this.instantiationService.createInstance(
 						SaveModelIgnoreModifiedSinceAction,
@@ -230,6 +250,7 @@ export class TextFileSaveErrorHandler
 						options,
 					),
 				);
+
 				secondaryActions.push(
 					this.instantiationService.createInstance(
 						ConfigureSaveConflictAction,
@@ -357,14 +378,19 @@ export class TextFileSaveErrorHandler
 			message,
 			actions,
 		});
+
 		Event.once(handle.onDidClose)(() => {
 			dispose(primaryActions);
+
 			dispose(secondaryActions);
 		});
+
 		this.messages.set(model.resource, handle);
 	}
+
 	override dispose(): void {
 		super.dispose();
+
 		this.messages.clear();
 	}
 }
@@ -373,6 +399,7 @@ const pendingResolveSaveConflictMessages: INotificationHandle[] = [];
 function clearPendingResolveSaveConflictMessages(): void {
 	while (pendingResolveSaveConflictMessages.length > 0) {
 		const item = pendingResolveSaveConflictMessages.pop();
+
 		item?.close();
 	}
 }
@@ -386,6 +413,7 @@ class ResolveConflictLearnMoreAction extends Action {
 			localize("learnMore", "Learn More"),
 		);
 	}
+
 	override async run(): Promise<void> {
 		await this.openerService.open(
 			URI.parse("https://go.microsoft.com/fwlink/?linkid=868264"),
@@ -402,6 +430,7 @@ class DoNotShowResolveConflictLearnMoreAction extends Action {
 			localize("dontShowAgain", "Don't Show Again"),
 		);
 	}
+
 	override async run(notification: IDisposable): Promise<void> {
 		// Remember this as application state
 		this.storageService.store(
@@ -431,6 +460,7 @@ class ResolveSaveConflictAction extends Action {
 			localize("compareChanges", "Compare"),
 		);
 	}
+
 	override async run(): Promise<void> {
 		if (!this.model.isDisposed()) {
 			const resource = this.model.resource;
@@ -444,6 +474,7 @@ class ResolveSaveConflictAction extends Action {
 				name,
 				this.productService.nameLong,
 			);
+
 			await TextFileContentProvider.open(
 				resource,
 				CONFLICT_RESOLUTION_SCHEME,
@@ -470,7 +501,9 @@ class ResolveSaveConflictAction extends Action {
 					isSecondary: true,
 				},
 			});
+
 			Event.once(handle.onDidClose)(() => dispose(actions.primary));
+
 			pendingResolveSaveConflictMessages.push(handle);
 		}
 	}
@@ -492,6 +525,7 @@ class SaveModelElevatedAction extends Action {
 					: localize("saveElevatedSudo", "Retry as Sudo..."),
 		);
 	}
+
 	override async run(): Promise<void> {
 		if (!this.model.isDisposed()) {
 			await this.model.save({
@@ -510,6 +544,7 @@ class RetrySaveModelAction extends Action {
 	) {
 		super("workbench.files.action.saveModel", localize("retry", "Retry"));
 	}
+
 	override async run(): Promise<void> {
 		if (!this.model.isDisposed()) {
 			await this.model.save({
@@ -526,6 +561,7 @@ class RevertModelAction extends Action {
 			localize("revert", "Revert"),
 		);
 	}
+
 	override async run(): Promise<void> {
 		if (!this.model.isDisposed()) {
 			await this.model.revert();
@@ -540,6 +576,7 @@ class SaveModelAsAction extends Action {
 	) {
 		super("workbench.files.action.saveModelAs", SAVE_FILE_AS_LABEL.value);
 	}
+
 	override async run(): Promise<void> {
 		if (!this.model.isDisposed()) {
 			const editor = this.findEditor();
@@ -552,6 +589,7 @@ class SaveModelAsAction extends Action {
 			}
 		}
 	}
+
 	private findEditor(): IEditorIdentifier | undefined {
 		let preferredMatchingEditor: IEditorIdentifier | undefined;
 
@@ -572,6 +610,7 @@ class SaveModelAsAction extends Action {
 				preferredMatchingEditor = identifier;
 			}
 		}
+
 		return preferredMatchingEditor;
 	}
 }
@@ -585,6 +624,7 @@ class UnlockModelAction extends Action {
 			localize("overwrite", "Overwrite"),
 		);
 	}
+
 	override async run(): Promise<void> {
 		if (!this.model.isDisposed()) {
 			await this.model.save({
@@ -605,6 +645,7 @@ class SaveModelIgnoreModifiedSinceAction extends Action {
 			localize("overwrite", "Overwrite"),
 		);
 	}
+
 	override async run(): Promise<void> {
 		if (!this.model.isDisposed()) {
 			await this.model.save({
@@ -625,6 +666,7 @@ class ConfigureSaveConflictAction extends Action {
 			localize("configure", "Configure"),
 		);
 	}
+
 	override async run(): Promise<void> {
 		this.preferencesService.openSettings({
 			query: "files.saveConflictResolution",
@@ -656,6 +698,7 @@ async function acceptOrRevertLocalChangesCommand(
 	if (!editorPane) {
 		return;
 	}
+
 	const editor = editorPane.input;
 
 	const group = editorPane.group;
@@ -667,6 +710,7 @@ async function acceptOrRevertLocalChangesCommand(
 			ignoreModifiedSince: true,
 			reason: SaveReason.EXPLICIT,
 		};
+
 		await editorService.save({ editor, groupId: group.id }, options);
 	} else {
 		await editorService.revert({ editor, groupId: group.id });

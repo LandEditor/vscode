@@ -53,8 +53,11 @@ export abstract class BaseFileWorkingCopyManager<
 	implements IBaseFileWorkingCopyManager<M, W>
 {
 	private readonly _onDidCreate = this._register(new Emitter<W>());
+
 	readonly onDidCreate = this._onDidCreate.event;
+
 	private readonly mapResourceToWorkingCopy = new ResourceMap<W>();
+
 	private readonly mapResourceToDisposeListener =
 		new ResourceMap<IDisposable>();
 
@@ -68,9 +71,11 @@ export abstract class BaseFileWorkingCopyManager<
 	) {
 		super();
 	}
+
 	protected has(resource: URI): boolean {
 		return this.mapResourceToWorkingCopy.has(resource);
 	}
+
 	protected add(resource: URI, workingCopy: W): void {
 		const knownWorkingCopy = this.get(resource);
 
@@ -81,6 +86,7 @@ export abstract class BaseFileWorkingCopyManager<
 		this.mapResourceToWorkingCopy.set(resource, workingCopy);
 		// Update our dispose listener to remove it on dispose
 		this.mapResourceToDisposeListener.get(resource)?.dispose();
+
 		this.mapResourceToDisposeListener.set(
 			resource,
 			workingCopy.onWillDispose(() => this.remove(resource)),
@@ -88,12 +94,14 @@ export abstract class BaseFileWorkingCopyManager<
 		// Signal creation event
 		this._onDidCreate.fire(workingCopy);
 	}
+
 	protected remove(resource: URI): boolean {
 		// Dispose any existing listener
 		const disposeListener = this.mapResourceToDisposeListener.get(resource);
 
 		if (disposeListener) {
 			dispose(disposeListener);
+
 			this.mapResourceToDisposeListener.delete(resource);
 		}
 		// Remove from our working copy map
@@ -103,6 +111,7 @@ export abstract class BaseFileWorkingCopyManager<
 	get workingCopies(): W[] {
 		return [...this.mapResourceToWorkingCopy.values()];
 	}
+
 	get(resource: URI): W | undefined {
 		return this.mapResourceToWorkingCopy.get(resource);
 	}
@@ -121,8 +130,10 @@ export abstract class BaseFileWorkingCopyManager<
 		this.mapResourceToWorkingCopy.clear();
 		// Dispose the dispose listeners
 		dispose(this.mapResourceToDisposeListener.values());
+
 		this.mapResourceToDisposeListener.clear();
 	}
+
 	async destroy(): Promise<void> {
 		// Make sure all dirty working copies are saved to disk
 		try {
@@ -141,6 +152,7 @@ export abstract class BaseFileWorkingCopyManager<
 		// Finally dispose manager
 		this.dispose();
 	}
+
 	private async saveWithFallback(workingCopy: W): Promise<void> {
 		// First try regular save
 		let saveSuccess = false;

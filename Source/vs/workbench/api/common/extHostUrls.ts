@@ -20,13 +20,17 @@ import {
 
 export class ExtHostUrls implements ExtHostUrlsShape {
 	private static HandlePool = 0;
+
 	private readonly _proxy: MainThreadUrlsShape;
+
 	private handles = new ExtensionIdentifierSet();
+
 	private handlers = new Map<number, vscode.UriHandler>();
 
 	constructor(mainContext: IMainContext) {
 		this._proxy = mainContext.getProxy(MainContext.MainThreadUrls);
 	}
+
 	registerUriHandler(
 		extension: IExtensionDescription,
 		handler: vscode.UriHandler,
@@ -38,9 +42,13 @@ export class ExtHostUrls implements ExtHostUrlsShape {
 				`Protocol handler already registered for extension ${extensionId}`,
 			);
 		}
+
 		const handle = ExtHostUrls.HandlePool++;
+
 		this.handles.add(extensionId);
+
 		this.handlers.set(handle, handler);
+
 		this._proxy.$registerUriHandler(
 			handle,
 			extensionId,
@@ -49,7 +57,9 @@ export class ExtHostUrls implements ExtHostUrlsShape {
 
 		return toDisposable(() => {
 			this.handles.delete(extensionId);
+
 			this.handlers.delete(handle);
+
 			this._proxy.$unregisterUriHandler(handle);
 		});
 	}
@@ -59,13 +69,16 @@ export class ExtHostUrls implements ExtHostUrlsShape {
 		if (!handler) {
 			return Promise.resolve(undefined);
 		}
+
 		try {
 			handler.handleUri(URI.revive(uri));
 		} catch (err) {
 			onUnexpectedError(err);
 		}
+
 		return Promise.resolve(undefined);
 	}
+
 	async createAppUri(uri: URI): Promise<vscode.Uri> {
 		return URI.revive(await this._proxy.$createAppUri(uri));
 	}

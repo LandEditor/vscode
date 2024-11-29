@@ -116,7 +116,9 @@ import "./media/inlineChat.css";
 
 export interface InlineChatWidgetViewState {
 	editorViewState: ICodeEditorViewState;
+
 	input: string;
+
 	placeholder: string;
 }
 
@@ -153,6 +155,7 @@ export class InlineChatWidget {
 	protected readonly _store = new DisposableStore();
 
 	private readonly _ctxInputEditorFocused: IContextKey<boolean>;
+
 	private readonly _ctxResponseFocused: IContextKey<boolean>;
 
 	private readonly _chatWidget: ChatWidget;
@@ -160,12 +163,14 @@ export class InlineChatWidget {
 	protected readonly _onDidChangeHeight = this._store.add(
 		new Emitter<void>(),
 	);
+
 	readonly onDidChangeHeight: Event<void> = Event.filter(
 		this._onDidChangeHeight.event,
 		(_) => !this._isLayouting,
 	);
 
 	private readonly _requestInProgress = observableValue(this, false);
+
 	readonly requestInProgress: IObservable<boolean> = this._requestInProgress;
 
 	private _isLayouting: boolean = false;
@@ -220,11 +225,13 @@ export class InlineChatWidget {
 						// show all requests and errors
 						return true;
 					}
+
 					const emptyResponse = item.response.value.length === 0;
 
 					if (emptyResponse) {
 						return false;
 					}
+
 					if (
 						item.response.value.every(
 							(item) =>
@@ -236,6 +243,7 @@ export class InlineChatWidget {
 					) {
 						return false;
 					}
+
 					return true;
 				},
 				..._options.chatWidgetViewOptions,
@@ -248,16 +256,21 @@ export class InlineChatWidget {
 				resultEditorBackground: editorBackground,
 			},
 		);
+
 		this._elements.root.classList.toggle(
 			"in-zone-widget",
 			!!_options.inZoneWidget,
 		);
+
 		this._chatWidget.render(this._elements.chatWidget);
+
 		this._elements.chatWidget.style.setProperty(
 			asCssVariableName(chatRequestBackground),
 			asCssVariable(inlineChatBackground),
 		);
+
 		this._chatWidget.setVisible(true);
+
 		this._store.add(this._chatWidget);
 
 		const ctxResponse = ChatContextKeys.isResponse.bindTo(
@@ -283,6 +296,7 @@ export class InlineChatWidget {
 			);
 
 		const viewModelStore = this._store.add(new DisposableStore());
+
 		this._store.add(
 			this._chatWidget.onDidChangeViewModel(() => {
 				viewModelStore.clear();
@@ -296,10 +310,15 @@ export class InlineChatWidget {
 				viewModelStore.add(
 					toDisposable(() => {
 						toolbar2.context = undefined;
+
 						ctxResponse.reset();
+
 						ctxResponseVote.reset();
+
 						ctxResponseError.reset();
+
 						ctxResponseErrorFiltered.reset();
+
 						ctxResponseSupportIssues.reset();
 					}),
 				);
@@ -312,9 +331,11 @@ export class InlineChatWidget {
 						);
 
 						const last = viewModel.getItems().at(-1);
+
 						toolbar2.context = last;
 
 						ctxResponse.set(isResponseVM(last));
+
 						ctxResponseVote.set(
 							isResponseVM(last)
 								? last.vote === ChatAgentVoteDirection.Down
@@ -324,16 +345,19 @@ export class InlineChatWidget {
 										: ""
 								: "",
 						);
+
 						ctxResponseError.set(
 							isResponseVM(last) &&
 								last.errorDetails !== undefined,
 						);
+
 						ctxResponseErrorFiltered.set(
 							!!(
 								isResponseVM(last) &&
 								last.errorDetails?.responseIsFiltered
 							),
 						);
+
 						ctxResponseSupportIssues.set(
 							isResponseVM(last) &&
 								(last.agent?.metadata.supportIssueReporting ??
@@ -343,6 +367,7 @@ export class InlineChatWidget {
 						this._onDidChangeHeight.fire();
 					}),
 				);
+
 				this._onDidChangeHeight.fire();
 			}),
 		);
@@ -359,20 +384,24 @@ export class InlineChatWidget {
 		);
 
 		const tracker = this._store.add(trackFocus(this.domNode));
+
 		this._store.add(
 			tracker.onDidBlur(() => this._ctxResponseFocused.set(false)),
 		);
+
 		this._store.add(
 			tracker.onDidFocus(() => this._ctxResponseFocused.set(true)),
 		);
 
 		this._ctxInputEditorFocused =
 			CTX_INLINE_CHAT_FOCUSED.bindTo(_contextKeyService);
+
 		this._store.add(
 			this._chatWidget.inputEditor.onDidFocusEditorWidget(() =>
 				this._ctxInputEditorFocused.set(true),
 			),
 		);
+
 		this._store.add(
 			this._chatWidget.inputEditor.onDidBlurEditorWidget(() =>
 				this._ctxInputEditorFocused.set(false),
@@ -402,9 +431,11 @@ export class InlineChatWidget {
 				...statusMenuOptions,
 			},
 		);
+
 		this._store.add(
 			statusButtonBar.onDidChange(() => this._onDidChangeHeight.fire()),
 		);
+
 		this._store.add(statusButtonBar);
 
 		// secondary toolbar
@@ -433,6 +464,7 @@ export class InlineChatWidget {
 							options as IMenuEntryActionViewItemOptions,
 						);
 					}
+
 					return createActionViewItem(
 						scopedInstaService,
 						action,
@@ -441,9 +473,11 @@ export class InlineChatWidget {
 				},
 			},
 		);
+
 		this._store.add(
 			toolbar2.onDidChangeMenuItems(() => this._onDidChangeHeight.fire()),
 		);
+
 		this._store.add(toolbar2);
 
 		this._store.add(
@@ -459,7 +493,9 @@ export class InlineChatWidget {
 		);
 
 		this._elements.root.tabIndex = 0;
+
 		this._elements.statusLabel.tabIndex = 0;
+
 		this._updateAriaLabel();
 
 		// this._elements.status
@@ -507,6 +543,7 @@ export class InlineChatWidget {
 						AccessibilityCommandId.OpenAccessibilityHelp,
 					)
 					?.getLabel();
+
 				label = kbLabel
 					? localize(
 							"inlineChat.accessibilityHelp",
@@ -518,6 +555,7 @@ export class InlineChatWidget {
 							"Inline Chat Input, Run the Inline Chat Accessibility Help command for more information.",
 						);
 			}
+
 			this._chatWidget.inputEditor.updateOptions({ ariaLabel: label });
 		}
 	}
@@ -540,6 +578,7 @@ export class InlineChatWidget {
 
 	layout(widgetDim: Dimension) {
 		const contentHeight = this.contentHeight;
+
 		this._isLayouting = true;
 
 		try {
@@ -561,6 +600,7 @@ export class InlineChatWidget {
 		// console.log('ZONE#Widget#layout', { height: dimension.height, extraHeight, progressHeight, followUpsHeight, statusHeight, LIST: dimension.height - progressHeight - followUpsHeight - statusHeight - extraHeight });
 
 		this._elements.root.style.height = `${dimension.height - extraHeight}px`;
+
 		this._elements.root.style.width = `${dimension.width}px`;
 
 		this._chatWidget.layout(
@@ -605,7 +645,9 @@ export class InlineChatWidget {
 		}
 
 		let value = this.contentHeight;
+
 		value -= this._chatWidget.contentHeight;
+
 		value += Math.min(
 			this._chatWidget.input.contentHeight + maxWidgetOutputHeight,
 			this._chatWidget.contentHeight,
@@ -638,18 +680,27 @@ export class InlineChatWidget {
 
 	toggleStatus(show: boolean) {
 		this._elements.toolbar1.classList.toggle("hidden", !show);
+
 		this._elements.toolbar2.classList.toggle("hidden", !show);
+
 		this._elements.status.classList.toggle("hidden", !show);
+
 		this._elements.infoLabel.classList.toggle("hidden", !show);
+
 		this._onDidChangeHeight.fire();
 	}
 
 	updateToolbar(show: boolean) {
 		this._elements.root.classList.toggle("toolbar", show);
+
 		this._elements.toolbar1.classList.toggle("hidden", !show);
+
 		this._elements.toolbar2.classList.toggle("hidden", !show);
+
 		this._elements.status.classList.toggle("actions", show);
+
 		this._elements.infoLabel.classList.toggle("hidden", show);
+
 		this._onDidChangeHeight.fire();
 	}
 
@@ -661,6 +712,7 @@ export class InlineChatWidget {
 		if (!viewModel) {
 			return undefined;
 		}
+
 		const items = viewModel.getItems().filter((i) => isResponseVM(i));
 
 		const item = items.at(-1);
@@ -668,6 +720,7 @@ export class InlineChatWidget {
 		if (!item) {
 			return;
 		}
+
 		return viewModel.codeBlockModelCollection.get(
 			viewModel.sessionId,
 			item,
@@ -681,6 +734,7 @@ export class InlineChatWidget {
 		if (!isNonEmptyArray(requests)) {
 			return undefined;
 		}
+
 		return requests.at(-1)?.response?.response.toString();
 	}
 
@@ -699,7 +753,9 @@ export class InlineChatWidget {
 		this._elements.infoLabel.classList.toggle("hidden", !message);
 
 		const renderedMessage = renderLabelWithIcons(message);
+
 		reset(this._elements.infoLabel, ...renderedMessage);
+
 		this._onDidChangeHeight.fire();
 	}
 
@@ -707,8 +763,11 @@ export class InlineChatWidget {
 		message: string,
 		ops: {
 			classes?: string[];
+
 			resetAfter?: number;
+
 			keepMessage?: boolean;
+
 			title?: string;
 		} = {},
 	) {
@@ -731,9 +790,13 @@ export class InlineChatWidget {
 				});
 			}, ops.resetAfter);
 		}
+
 		const renderedMessage = renderLabelWithIcons(message);
+
 		reset(this._elements.statusLabel, ...renderedMessage);
+
 		this._elements.statusLabel.className = `label status ${(ops.classes ?? []).join(" ")}`;
+
 		this._elements.statusLabel.classList.toggle("hidden", !message);
 
 		if (isTempMessage) {
@@ -747,20 +810,27 @@ export class InlineChatWidget {
 		} else {
 			delete this._elements.statusLabel.dataset["title"];
 		}
+
 		this._onDidChangeHeight.fire();
 	}
 
 	reset() {
 		this._chatWidget.attachmentModel.clear();
+
 		this._chatWidget.saveState();
 
 		reset(this._elements.statusLabel);
+
 		this._elements.statusLabel.classList.toggle("hidden", true);
+
 		this._elements.toolbar1.classList.add("hidden");
+
 		this._elements.toolbar2.classList.add("hidden");
+
 		this.updateInfo("");
 
 		this._elements.accessibleViewer.classList.toggle("hidden", true);
+
 		this._onDidChangeHeight.fire();
 	}
 
@@ -836,6 +906,7 @@ export class EditorBasedInlineChatWidget extends InlineChatWidget {
 
 		if (this._accessibleViewer.value) {
 			this._accessibleViewer.value.width = dimension.width - 12;
+
 			newHeight -= this._accessibleViewer.value.height + 8;
 		}
 
@@ -855,6 +926,7 @@ export class EditorBasedInlineChatWidget extends InlineChatWidget {
 
 	showAccessibleHunk(session: Session, hunkData: HunkInformation): void {
 		this._elements.accessibleViewer.classList.remove("hidden");
+
 		this._accessibleViewer.clear();
 
 		this._accessibleViewer.value =
@@ -913,6 +985,7 @@ class HunkAccessibleDiffViewer extends AccessibleDiffViewer {
 		);
 
 		this.height = height;
+
 		this._width2 = width;
 
 		this._store.add(
@@ -936,6 +1009,7 @@ class HunkAccessibleDiffViewer extends AccessibleDiffViewer {
 		for (let i = 1; i < ranges0.length; i++) {
 			innerChanges.push(new RangeMapping(ranges0[i], rangesN[i]));
 		}
+
 		return new DetailedLineRangeMapping(
 			originalLineRange,
 			modifiedLineRange,
@@ -954,31 +1028,39 @@ class AccessibleHunk implements IAccessibleDiffViewerModel {
 	getOriginalModel(): ITextModel {
 		return this._session.textModel0;
 	}
+
 	getModifiedModel(): ITextModel {
 		return this._session.textModelN;
 	}
+
 	getOriginalOptions(): IComputedEditorOptions {
 		return this._editor.getOptions();
 	}
+
 	getModifiedOptions(): IComputedEditorOptions {
 		return this._editor.getOptions();
 	}
+
 	originalReveal(range: Range): void {
 		// throw new Error('Method not implemented.');
 	}
+
 	modifiedReveal(range?: Range | undefined): void {
 		this._editor.revealRangeInCenterIfOutsideViewport(
 			range || this._hunk.getRangesN()[0],
 			ScrollType.Smooth,
 		);
 	}
+
 	modifiedSetSelection(range: Range): void {
 		// this._editor.revealRangeInCenterIfOutsideViewport(range, ScrollType.Smooth);
 		// this._editor.setSelection(range);
 	}
+
 	modifiedFocus(): void {
 		this._editor.focus();
 	}
+
 	getModifiedPosition(): Position | undefined {
 		return this._hunk.getRangesN()[0].getStartPosition();
 	}

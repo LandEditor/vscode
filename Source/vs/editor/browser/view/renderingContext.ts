@@ -13,6 +13,7 @@ export interface IViewLines {
 		range: Range,
 		includeNewLines: boolean,
 	): LineVisibleRanges[] | null;
+
 	visibleRangeForPosition(position: Position): HorizontalPosition | null;
 }
 
@@ -22,33 +23,44 @@ export abstract class RestrictedRenderingContext {
 	public readonly viewportData: ViewportData;
 
 	public readonly scrollWidth: number;
+
 	public readonly scrollHeight: number;
 
 	public readonly visibleRange: Range;
+
 	public readonly bigNumbersDelta: number;
 
 	public readonly scrollTop: number;
+
 	public readonly scrollLeft: number;
 
 	public readonly viewportWidth: number;
+
 	public readonly viewportHeight: number;
 
 	private readonly _viewLayout: IViewLayout;
 
 	constructor(viewLayout: IViewLayout, viewportData: ViewportData) {
 		this._viewLayout = viewLayout;
+
 		this.viewportData = viewportData;
 
 		this.scrollWidth = this._viewLayout.getScrollWidth();
+
 		this.scrollHeight = this._viewLayout.getScrollHeight();
 
 		this.visibleRange = this.viewportData.visibleRange;
+
 		this.bigNumbersDelta = this.viewportData.bigNumbersDelta;
 
 		const vInfo = this._viewLayout.getCurrentViewport();
+
 		this.scrollTop = vInfo.top;
+
 		this.scrollLeft = vInfo.left;
+
 		this.viewportWidth = vInfo.width;
+
 		this.viewportHeight = vInfo.height;
 	}
 
@@ -85,6 +97,7 @@ export class RenderingContext extends RestrictedRenderingContext {
 	_renderingContextBrand: void = undefined;
 
 	private readonly _viewLines: IViewLines;
+
 	private readonly _viewLinesGpu?: IViewLines;
 
 	constructor(
@@ -94,7 +107,9 @@ export class RenderingContext extends RestrictedRenderingContext {
 		viewLinesGpu?: IViewLines,
 	) {
 		super(viewLayout, viewportData);
+
 		this._viewLines = viewLines;
+
 		this._viewLinesGpu = viewLinesGpu;
 	}
 
@@ -110,6 +125,7 @@ export class RenderingContext extends RestrictedRenderingContext {
 		if (!this._viewLinesGpu) {
 			return domRanges ?? null;
 		}
+
 		const gpuRanges = this._viewLinesGpu.linesVisibleRangesForRange(
 			range,
 			includeNewLines,
@@ -118,9 +134,11 @@ export class RenderingContext extends RestrictedRenderingContext {
 		if (!domRanges) {
 			return gpuRanges;
 		}
+
 		if (!gpuRanges) {
 			return domRanges;
 		}
+
 		return domRanges
 			.concat(gpuRanges)
 			.sort((a, b) => a.lineNumber - b.lineNumber);
@@ -147,6 +165,7 @@ export class LineVisibleRanges {
 		if (!ranges) {
 			return null;
 		}
+
 		let result: LineVisibleRanges | null = null;
 
 		for (const range of ranges) {
@@ -154,6 +173,7 @@ export class LineVisibleRanges {
 				result = range;
 			}
 		}
+
 		return result;
 	}
 
@@ -166,6 +186,7 @@ export class LineVisibleRanges {
 		if (!ranges) {
 			return null;
 		}
+
 		let result: LineVisibleRanges | null = null;
 
 		for (const range of ranges) {
@@ -173,6 +194,7 @@ export class LineVisibleRanges {
 				result = range;
 			}
 		}
+
 		return result;
 	}
 
@@ -191,6 +213,7 @@ export class HorizontalRange {
 	_horizontalRangeBrand: void = undefined;
 
 	public left: number;
+
 	public width: number;
 
 	public static from(ranges: FloatHorizontalRange[]): HorizontalRange[] {
@@ -198,13 +221,16 @@ export class HorizontalRange {
 
 		for (let i = 0, len = ranges.length; i < len; i++) {
 			const range = ranges[i];
+
 			result[i] = new HorizontalRange(range.left, range.width);
 		}
+
 		return result;
 	}
 
 	constructor(left: number, width: number) {
 		this.left = Math.round(left);
+
 		this.width = Math.round(width);
 	}
 
@@ -217,10 +243,12 @@ export class FloatHorizontalRange {
 	_floatHorizontalRangeBrand: void = undefined;
 
 	public left: number;
+
 	public width: number;
 
 	constructor(left: number, width: number) {
 		this.left = left;
+
 		this.width = width;
 	}
 
@@ -242,11 +270,14 @@ export class HorizontalPosition {
 	 * Math.round(this.originalLeft)
 	 */
 	public left: number;
+
 	public originalLeft: number;
 
 	constructor(outsideRenderedLine: boolean, left: number) {
 		this.outsideRenderedLine = outsideRenderedLine;
+
 		this.originalLeft = left;
+
 		this.left = Math.round(this.originalLeft);
 	}
 }

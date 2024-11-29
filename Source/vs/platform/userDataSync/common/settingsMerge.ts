@@ -25,8 +25,11 @@ import {
 
 export interface IMergeResult {
 	localContent: string | null;
+
 	remoteContent: string | null;
+
 	hasConflicts: boolean;
+
 	conflictsSettings: IConflictSetting[];
 }
 export function getIgnoredSettings(
@@ -41,6 +44,7 @@ export function getIgnoredSettings(
 	} else {
 		value = getIgnoredSettingsFromConfig(configurationService);
 	}
+
 	const added: string[] = [],
 		removed: string[] = [...getDisallowedIgnoredSettings()];
 
@@ -53,6 +57,7 @@ export function getIgnoredSettings(
 			}
 		}
 	}
+
 	return distinct(
 		[...defaultIgnoredSettings, ...added].filter(
 			(setting) => !removed.includes(setting),
@@ -69,6 +74,7 @@ function getIgnoredSettingsFromConfig(
 	if (userValue !== undefined) {
 		return userValue;
 	}
+
 	userValue = configurationService.inspect<string[]>(
 		"sync.ignoredSettings",
 	).userValue;
@@ -76,6 +82,7 @@ function getIgnoredSettingsFromConfig(
 	if (userValue !== undefined) {
 		return userValue;
 	}
+
 	return (
 		configurationService.getValue<string[]>(
 			"settingsSync.ignoredSettings",
@@ -106,8 +113,10 @@ export function removeComments(
 			source[key],
 			formattingOptions,
 		);
+
 		result = applyEdits(result, edits);
 	}
+
 	return result;
 }
 export function updateIgnoredSettings(
@@ -126,6 +135,7 @@ export function updateIgnoredSettings(
 		if (!target) {
 			return targetContent;
 		}
+
 		const settingsToAdd: INode[] = [];
 
 		for (const key of ignoredSettings) {
@@ -153,6 +163,7 @@ export function updateIgnoredSettings(
 				settingsToAdd.push(findSettingNode(key, sourceTree)!);
 			}
 		}
+
 		settingsToAdd.sort((a, b) => a.startOffset - b.startOffset);
 
 		settingsToAdd.forEach(
@@ -165,6 +176,7 @@ export function updateIgnoredSettings(
 				)),
 		);
 	}
+
 	return targetContent;
 }
 export function merge(
@@ -174,6 +186,7 @@ export function merge(
 	ignoredSettings: string[],
 	resolvedConflicts: {
 		key: string;
+
 		value: any | undefined;
 	}[],
 	formattingOptions: FormattingOptions,
@@ -255,6 +268,7 @@ export function merge(
 
 	const ignored = ignoredSettings.reduce((set, key) => {
 		set.add(key);
+
 		return set;
 	}, new Set<string>());
 
@@ -285,6 +299,7 @@ export function merge(
 				resolvedConflict.value,
 				formattingOptions,
 			);
+
 			remoteContent = contentUtil.edit(
 				remoteContent,
 				[conflictKey],
@@ -414,6 +429,7 @@ export function merge(
 			);
 		}
 	}
+
 	const hasConflicts =
 		conflicts.size > 0 ||
 		!areSame(localContent, remoteContent, ignoredSettings);
@@ -439,12 +455,14 @@ function areSame(
 	if (localContent === remoteContent) {
 		return true;
 	}
+
 	const local = parse(localContent);
 
 	const remote = parse(remoteContent);
 
 	const ignored = ignoredSettings.reduce((set, key) => {
 		set.add(key);
+
 		return set;
 	}, new Set<string>());
 
@@ -459,6 +477,7 @@ function areSame(
 	if (localTree.length !== remoteTree.length) {
 		return false;
 	}
+
 	for (let index = 0; index < localTree.length; index++) {
 		const localNode = localTree[index];
 
@@ -468,6 +487,7 @@ function areSame(
 			if (localNode.setting.key !== remoteNode.setting.key) {
 				return false;
 			}
+
 			if (
 				!objects.equals(
 					local[localNode.setting.key],
@@ -484,6 +504,7 @@ function areSame(
 			return false;
 		}
 	}
+
 	return true;
 }
 export function isEmpty(content: string): boolean {
@@ -492,6 +513,7 @@ export function isEmpty(content: string): boolean {
 
 		return nodes.length === 0;
 	}
+
 	return true;
 }
 function compare(
@@ -500,7 +522,9 @@ function compare(
 	ignored: Set<string>,
 ): {
 	added: Set<string>;
+
 	removed: Set<string>;
+
 	updated: Set<string>;
 } {
 	const fromKeys = from
@@ -513,6 +537,7 @@ function compare(
 		.filter((key) => !fromKeys.includes(key))
 		.reduce((r, key) => {
 			r.add(key);
+
 			return r;
 		}, new Set<string>());
 
@@ -520,6 +545,7 @@ function compare(
 		.filter((key) => !toKeys.includes(key))
 		.reduce((r, key) => {
 			r.add(key);
+
 			return r;
 		}, new Set<string>());
 
@@ -530,6 +556,7 @@ function compare(
 			if (removed.has(key)) {
 				continue;
 			}
+
 			const value1 = from[key];
 
 			const value2 = to[key];
@@ -539,6 +566,7 @@ function compare(
 			}
 		}
 	}
+
 	return { added, removed, updated };
 }
 export function addSetting(
@@ -566,6 +594,7 @@ export function addSetting(
 }
 interface InsertLocation {
 	index: number;
+
 	insertAfter: boolean;
 }
 function getInsertLocation(
@@ -680,6 +709,7 @@ function getInsertLocation(
 				}
 			}
 		}
+
 		const sourceNextNode = sourceTree[sourceNodeIndex + 1];
 
 		if (sourceNextNode) {
@@ -816,6 +846,7 @@ function insertAtLocation(
 			formattingOptions,
 		).map((edit) => withFormatting(content, edit, formattingOptions)[0]);
 	}
+
 	return applyEdits(content, edits);
 }
 function getEditToInsertAtLocation(
@@ -863,9 +894,11 @@ function getEditToInsertAtLocation(
 					content: ",",
 				});
 			}
+
 			const isPreviouisSettingIncludesComment =
 				previousSettingCommaOffset !== undefined &&
 				previousSettingCommaOffset > node.endOffset;
+
 			edits.push({
 				offset: isPreviouisSettingIncludesComment
 					? previousSettingCommaOffset + 1
@@ -876,6 +909,7 @@ function getEditToInsertAtLocation(
 					: eol + newProperty,
 			});
 		}
+
 		return edits;
 	} else {
 		/* Insert before a setting */
@@ -913,6 +947,7 @@ function findPreviousSettingNode(
 			return tree[i];
 		}
 	}
+
 	return undefined;
 }
 function findNextSettingNode(index: number, tree: INode[]): INode | undefined {
@@ -921,6 +956,7 @@ function findNextSettingNode(index: number, tree: INode[]): INode | undefined {
 			return tree[i];
 		}
 	}
+
 	return undefined;
 }
 function findNodesBetween(nodes: INode[], from: INode, till: INode): INode[] {
@@ -941,25 +977,34 @@ function findLastMatchingTargetCommentNode(
 
 		for (
 			;
+
 			index < targetComments.length && index < sourceComments.length;
+
 			index++
 		) {
 			if (sourceComments[index].value !== targetComments[index].value) {
 				return targetComments[index - 1];
 			}
 		}
+
 		return targetComments[index - 1];
 	}
+
 	return undefined;
 }
 interface INode {
 	readonly startOffset: number;
+
 	readonly endOffset: number;
+
 	readonly value: string;
+
 	readonly setting?: {
 		readonly key: string;
+
 		readonly commaOffset: number | undefined;
 	};
+
 	readonly comment?: string;
 }
 function parseSettings(content: string): INode[] {
@@ -979,6 +1024,7 @@ function parseSettings(content: string): INode[] {
 			if (hierarchyLevel === 0) {
 				// this is setting key
 				startOffset = offset;
+
 				key = name;
 			}
 		},
@@ -1038,6 +1084,7 @@ function parseSettings(content: string): INode[] {
 							break;
 						}
 					}
+
 					const node = nodes[index];
 
 					if (node) {
@@ -1064,6 +1111,7 @@ function parseSettings(content: string): INode[] {
 			}
 		},
 	};
+
 	visit(content, visitor);
 
 	return nodes;

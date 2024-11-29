@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 export interface IClickTarget {
 	type: ClickTargetType;
+
 	event: MouseEvent;
 }
 export const enum ClickTargetType {

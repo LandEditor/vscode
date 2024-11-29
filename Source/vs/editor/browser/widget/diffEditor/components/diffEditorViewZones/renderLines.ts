@@ -73,6 +73,7 @@ export function renderLines(
 					breakOffset,
 					0,
 				);
+
 				maxCharsPerLine = Math.max(
 					maxCharsPerLine,
 					renderOriginalLine(
@@ -90,12 +91,16 @@ export function renderLines(
 						sb,
 					),
 				);
+
 				renderedLineCount++;
+
 				lastBreakOffset = breakOffset;
 			}
+
 			viewLineCounts.push(lineBreakData.breakOffsets.length);
 		} else {
 			viewLineCounts.push(1);
+
 			maxCharsPerLine = Math.max(
 				maxCharsPerLine,
 				renderOriginalLine(
@@ -109,9 +114,11 @@ export function renderLines(
 					sb,
 				),
 			);
+
 			renderedLineCount++;
 		}
 	}
+
 	maxCharsPerLine += options.scrollBeyondLastColumn;
 
 	const html = sb.build();
@@ -185,7 +192,9 @@ export class RenderOptions {
 
 export interface RenderLinesResult {
 	minWidthInPx: number;
+
 	heightInLines: number;
+
 	viewLineCounts: number[];
 }
 
@@ -205,8 +214,11 @@ function renderOriginalLine(
 		// No char changes
 		sb.appendString(" char-delete");
 	}
+
 	sb.appendString('" style="top:');
+
 	sb.appendString(String(viewLineIdx * options.lineHeight));
+
 	sb.appendString('px;width:1000000px;">');
 
 	const lineContent = lineTokens.getLineContent();

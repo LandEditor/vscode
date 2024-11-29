@@ -30,13 +30,16 @@ export interface IUserDataProfilesMainService extends IUserDataProfilesService {
 	getProfileForWorkspace(
 		workspaceIdentifier: IAnyWorkspaceIdentifier,
 	): IUserDataProfile | undefined;
+
 	unsetWorkspace(
 		workspaceIdentifier: IAnyWorkspaceIdentifier,
 		transient?: boolean,
 	): void;
 
 	getAssociatedEmptyWindows(): IEmptyWorkspaceIdentifier[];
+
 	readonly onWillCreateProfile: Event<WillCreateProfileEvent>;
+
 	readonly onWillRemoveProfile: Event<WillRemoveProfileEvent>;
 }
 export class UserDataProfilesMainService
@@ -63,12 +66,14 @@ export class UserDataProfilesMainService
 			logService,
 		);
 	}
+
 	getAssociatedEmptyWindows(): IEmptyWorkspaceIdentifier[] {
 		const emptyWindows: IEmptyWorkspaceIdentifier[] = [];
 
 		for (const id of this.profilesObject.emptyWindows.keys()) {
 			emptyWindows.push({ id });
 		}
+
 		return emptyWindows;
 	}
 }

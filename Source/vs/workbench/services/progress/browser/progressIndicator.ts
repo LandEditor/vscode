@@ -22,8 +22,10 @@ export class EditorProgressIndicator
 		private readonly group: IEditorGroupView,
 	) {
 		super();
+
 		this.registerListeners();
 	}
+
 	private registerListeners() {
 		// Stop any running progress when the active editor changes or
 		// the group becomes empty.
@@ -41,20 +43,28 @@ export class EditorProgressIndicator
 			}),
 		);
 	}
+
 	show(infinite: true, delay?: number): IProgressRunner;
+
 	show(total: number, delay?: number): IProgressRunner;
+
 	show(infiniteOrTotal: true | number, delay?: number): IProgressRunner {
 		// No editor open: ignore any progress reporting
 		if (this.group.isEmpty) {
 			return emptyProgressRunner;
 		}
+
 		if (infiniteOrTotal === true) {
 			return this.doShow(true, delay);
 		}
+
 		return this.doShow(infiniteOrTotal, delay);
 	}
+
 	private doShow(infinite: true, delay?: number): IProgressRunner;
+
 	private doShow(total: number, delay?: number): IProgressRunner;
+
 	private doShow(
 		infiniteOrTotal: true | number,
 		delay?: number,
@@ -64,6 +74,7 @@ export class EditorProgressIndicator
 		} else {
 			this.progressBar.total(infiniteOrTotal).show(delay);
 		}
+
 		return {
 			total: (total: number) => {
 				this.progressBar.total(total);
@@ -80,6 +91,7 @@ export class EditorProgressIndicator
 			},
 		};
 	}
+
 	async showWhile(promise: Promise<unknown>, delay?: number): Promise<void> {
 		// No editor open: ignore any progress reporting
 		if (this.group.isEmpty) {
@@ -89,14 +101,17 @@ export class EditorProgressIndicator
 				// ignore
 			}
 		}
+
 		return this.doShowWhile(promise, delay);
 	}
+
 	private async doShowWhile(
 		promise: Promise<unknown>,
 		delay?: number,
 	): Promise<void> {
 		try {
 			this.progressBar.infinite().show(delay);
+
 			await promise;
 		} catch (error) {
 			// ignore
@@ -113,6 +128,7 @@ namespace ProgressIndicatorState {
 		While,
 		Work,
 	}
+
 	export const None = { type: Type.None } as const;
 
 	export const Done = { type: Type.Done } as const;
@@ -128,6 +144,7 @@ namespace ProgressIndicatorState {
 			readonly whileDelay: number,
 		) {}
 	}
+
 	export class Work {
 		readonly type = Type.Work;
 
@@ -136,6 +153,7 @@ namespace ProgressIndicatorState {
 			readonly worked: number | undefined,
 		) {}
 	}
+
 	export type State =
 		| typeof None
 		| typeof Done
@@ -165,8 +183,10 @@ export class ScopedProgressIndicator
 		private readonly scope: IProgressScope,
 	) {
 		super();
+
 		this.registerListeners();
 	}
+
 	registerListeners() {
 		this._register(
 			this.scope.onDidChangeActive(() => {
@@ -178,6 +198,7 @@ export class ScopedProgressIndicator
 			}),
 		);
 	}
+
 	private onDidScopeActivate(): void {
 		// Return early if progress state indicates that progress is done
 		if (this.progressState.type === ProgressIndicatorState.Done.type) {
@@ -196,6 +217,7 @@ export class ScopedProgressIndicator
 					delay = remainingDelay;
 				}
 			}
+
 			this.doShowWhile(delay);
 		}
 		// Replay Infinite Progress
@@ -209,16 +231,21 @@ export class ScopedProgressIndicator
 			if (this.progressState.total) {
 				this.progressBar.total(this.progressState.total).show();
 			}
+
 			if (this.progressState.worked) {
 				this.progressBar.worked(this.progressState.worked).show();
 			}
 		}
 	}
+
 	private onDidScopeDeactivate(): void {
 		this.progressBar.stop().hide();
 	}
+
 	show(infinite: true, delay?: number): IProgressRunner;
+
 	show(total: number, delay?: number): IProgressRunner;
+
 	show(infiniteOrTotal: true | number, delay?: number): IProgressRunner {
 		// Sort out Arguments
 		if (typeof infiniteOrTotal === "boolean") {
@@ -245,6 +272,7 @@ export class ScopedProgressIndicator
 				this.progressBar.total(this.progressState.total).show(delay);
 			}
 		}
+
 		return {
 			total: (total: number) => {
 				this.progressState = new ProgressIndicatorState.Work(
@@ -280,6 +308,7 @@ export class ScopedProgressIndicator
 				// Otherwise the progress bar does not support worked(), we fallback to infinite() progress
 				else {
 					this.progressState = ProgressIndicatorState.Infinite;
+
 					this.progressBar.infinite().show();
 				}
 			},
@@ -292,6 +321,7 @@ export class ScopedProgressIndicator
 			},
 		};
 	}
+
 	async showWhile(promise: Promise<unknown>, delay?: number): Promise<void> {
 		// Join with existing running promise to ensure progress is accurate
 		if (this.progressState.type === ProgressIndicatorState.Type.While) {
@@ -309,6 +339,7 @@ export class ScopedProgressIndicator
 
 		try {
 			this.doShowWhile(delay);
+
 			await promise;
 		} catch (error) {
 			// ignore
@@ -327,6 +358,7 @@ export class ScopedProgressIndicator
 			}
 		}
 	}
+
 	private doShowWhile(delay?: number): void {
 		// Show Progress when active
 		if (this.scope.isActive) {
@@ -339,29 +371,35 @@ export abstract class AbstractProgressScope
 	implements IProgressScope
 {
 	private readonly _onDidChangeActive = this._register(new Emitter<void>());
+
 	readonly onDidChangeActive = this._onDidChangeActive.event;
 
 	get isActive() {
 		return this._isActive;
 	}
+
 	constructor(
 		private scopeId: string,
 		private _isActive: boolean,
 	) {
 		super();
 	}
+
 	protected onScopeOpened(scopeId: string) {
 		if (scopeId === this.scopeId) {
 			if (!this._isActive) {
 				this._isActive = true;
+
 				this._onDidChangeActive.fire();
 			}
 		}
 	}
+
 	protected onScopeClosed(scopeId: string) {
 		if (scopeId === this.scopeId) {
 			if (this._isActive) {
 				this._isActive = false;
+
 				this._onDidChangeActive.fire();
 			}
 		}

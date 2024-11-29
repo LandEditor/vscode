@@ -39,7 +39,9 @@ import { IPaneCompositePartService } from "../../panecomposite/browser/panecompo
 */
 export interface IMemoryInfo {
 	readonly workingSetSize: number;
+
 	readonly privateBytes: number;
+
 	readonly sharedBytes: number;
 }
 /* __GDPR__FRAGMENT__
@@ -369,20 +371,33 @@ export interface IStartupMetrics {
 		 */
 		readonly ellapsedRenderer: number;
 	};
+
 	readonly hasAccessibilitySupport: boolean;
+
 	readonly isVMLikelyhood?: number;
+
 	readonly platform?: string;
+
 	readonly release?: string;
+
 	readonly arch?: string;
+
 	readonly totalmem?: number;
+
 	readonly freemem?: number;
+
 	readonly meminfo?: IMemoryInfo;
+
 	readonly cpus?: {
 		count: number;
+
 		speed: number;
+
 		model: string;
 	};
+
 	readonly loadavg?: number[];
+
 	readonly isARM64Emulated?: boolean;
 }
 export interface ITimerService {
@@ -436,24 +451,29 @@ class PerfMarks {
 	setMarks(source: string, entries: perf.PerformanceMark[]): void {
 		this._entries.push([source, entries]);
 	}
+
 	getDuration(from: string, to: string): number {
 		const fromEntry = this._findEntry(from);
 
 		if (!fromEntry) {
 			return 0;
 		}
+
 		const toEntry = this._findEntry(to);
 
 		if (!toEntry) {
 			return 0;
 		}
+
 		return toEntry.startTime - fromEntry.startTime;
 	}
+
 	getStartTime(mark: string): number {
 		const entry = this._findEntry(mark);
 
 		return entry ? entry.startTime : -1;
 	}
+
 	private _findEntry(name: string): perf.PerformanceMark | void {
 		for (const [, marks] of this._entries) {
 			for (let i = marks.length - 1; i >= 0; i--) {
@@ -463,6 +483,7 @@ class PerfMarks {
 			}
 		}
 	}
+
 	getEntries() {
 		return this._entries.slice(0);
 	}
@@ -473,10 +494,14 @@ export type Writeable<T> = {
 
 export abstract class AbstractTimerService implements ITimerService {
 	declare readonly _serviceBrand: undefined;
+
 	private readonly _barrier = new Barrier();
+
 	private readonly _marks = new PerfMarks();
+
 	private readonly _rndValueShouldSendTelemetry = Math.random() < 0.05; // 5% of users
 	private _startupMetrics?: IStartupMetrics;
+
 	readonly perfBaseline: Promise<number>;
 
 	constructor(
@@ -519,9 +544,12 @@ export abstract class AbstractTimerService implements ITimerService {
 			})
 			.then((metrics) => {
 				this._startupMetrics = metrics;
+
 				this._reportStartupTimes(metrics);
+
 				this._barrier.open();
 			});
+
 		this.perfBaseline = this._barrier
 			.wait()
 			.then(() => this._lifecycleService.when(LifecyclePhase.Eventually))
@@ -538,18 +566,24 @@ export abstract class AbstractTimerService implements ITimerService {
 						if (tooSlow) {
 							return 0;
 						}
+
 						if (performance.now() - t1 >= 1000) {
 							tooSlow = true;
 						}
+
 						if (n <= 2) {
 							return n;
 						}
+
 						return fib(n - 1) + fib(n - 2);
 					}
+
 					const t1 = performance.now();
+
 					fib(24);
 
 					const value = Math.round(performance.now() - t1);
+
 					self.postMessage({ value: tooSlow ? -1 : value });
 				}.toString();
 
@@ -567,40 +601,51 @@ export abstract class AbstractTimerService implements ITimerService {
 					worker.onmessage = (e) => resolve(e.data.value);
 				}).finally(() => {
 					worker.terminate();
+
 					URL.revokeObjectURL(blobUrl);
 				});
 			});
 	}
+
 	whenReady(): Promise<boolean> {
 		return this._barrier.wait();
 	}
+
 	get startupMetrics(): IStartupMetrics {
 		if (!this._startupMetrics) {
 			throw new Error(
 				"illegal state, MUST NOT access startupMetrics before whenReady has resolved",
 			);
 		}
+
 		return this._startupMetrics;
 	}
+
 	setPerformanceMarks(source: string, marks: perf.PerformanceMark[]): void {
 		// Perf marks are a shared resource because anyone can generate them
 		// and because of that we only accept marks that start with 'code/'
 		const codeMarks = marks.filter((mark) => mark.name.startsWith("code/"));
+
 		this._marks.setMarks(source, codeMarks);
+
 		this._reportPerformanceMarks(source, codeMarks);
 	}
+
 	getPerformanceMarks(): [
 		source: string,
 		marks: readonly perf.PerformanceMark[],
 	][] {
 		return this._marks.getEntries();
 	}
+
 	getDuration(from: string, to: string): number {
 		return this._marks.getDuration(from, to);
 	}
+
 	getStartTime(mark: string): number {
 		return this._marks.getStartTime(mark);
 	}
+
 	private _reportStartupTimes(metrics: IStartupMetrics): void {
 		// report IStartupMetrics as telemetry
 		/* __GDPR__
@@ -613,9 +658,11 @@ export abstract class AbstractTimerService implements ITimerService {
         */
 		this._telemetryService.publicLog("startupTimeVaried", metrics);
 	}
+
 	protected _shouldReportPerfMarks(): boolean {
 		return this._rndValueShouldSendTelemetry;
 	}
+
 	private _reportPerformanceMarks(
 		source: string,
 		marks: perf.PerformanceMark[],
@@ -630,25 +677,38 @@ export abstract class AbstractTimerService implements ITimerService {
 		// defines the start
 		type Mark = {
 			source: string;
+
 			name: TelemetryTrustedValue<string>;
+
 			startTime: number;
 		};
+
 		type MarkClassification = {
 			owner: "jrieken";
+
 			comment: "Information about a performance marker";
+
 			source: {
 				classification: "SystemMetaData";
+
 				purpose: "PerformanceAndHealth";
+
 				comment: "Where this marker was generated, e.g main, renderer, extension host";
 			};
+
 			name: {
 				classification: "SystemMetaData";
+
 				purpose: "PerformanceAndHealth";
+
 				comment: "The name of this marker (as defined in source code)";
 			};
+
 			startTime: {
 				classification: "SystemMetaData";
+
 				purpose: "PerformanceAndHealth";
+
 				comment: "The absolute timestamp (unix time)";
 			};
 		};
@@ -664,6 +724,7 @@ export abstract class AbstractTimerService implements ITimerService {
 			);
 		}
 	}
+
 	private async _computeStartupMetrics(): Promise<IStartupMetrics> {
 		const initialStartup = this._isInitialStartup();
 
@@ -676,6 +737,7 @@ export abstract class AbstractTimerService implements ITimerService {
 				? "code/didStartMain"
 				: "code/willOpenNewWindow";
 		}
+
 		const activeViewlet = this._paneCompositeService.getActivePaneComposite(
 			ViewContainerLocation.Sidebar,
 		);
@@ -852,13 +914,18 @@ export abstract class AbstractTimerService implements ITimerService {
 				this._contextService.getWorkbenchState() ===
 				WorkbenchState.EMPTY,
 		};
+
 		await this._extendStartupInfo(info);
 
 		return info;
 	}
+
 	protected abstract _isInitialStartup(): boolean;
+
 	protected abstract _didUseCachedData(): boolean;
+
 	protected abstract _getWindowCount(): Promise<number>;
+
 	protected abstract _extendStartupInfo(
 		info: Writeable<IStartupMetrics>,
 	): Promise<void>;
@@ -867,18 +934,24 @@ export class TimerService extends AbstractTimerService {
 	protected _isInitialStartup(): boolean {
 		return false;
 	}
+
 	protected _didUseCachedData(): boolean {
 		return false;
 	}
+
 	protected async _getWindowCount(): Promise<number> {
 		return 1;
 	}
+
 	protected async _extendStartupInfo(
 		info: Writeable<IStartupMetrics>,
 	): Promise<void> {
 		info.isVMLikelyhood = 0;
+
 		info.isARM64Emulated = false;
+
 		info.platform = navigator.userAgent;
+
 		info.release = navigator.appVersion;
 	}
 }

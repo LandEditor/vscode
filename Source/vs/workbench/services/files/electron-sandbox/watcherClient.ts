@@ -23,8 +23,10 @@ export class UniversalWatcherClient extends AbstractUniversalWatcherClient {
 		private readonly utilityProcessWorkerWorkbenchService: IUtilityProcessWorkerWorkbenchService,
 	) {
 		super(onFileChanges, onLogMessage, verboseLogging);
+
 		this.init();
 	}
+
 	protected override createWatcher(
 		disposables: DisposableStore,
 	): IRecursiveWatcher {

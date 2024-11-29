@@ -19,6 +19,7 @@ export class ChatAttachmentModel extends Disposable {
 	}
 
 	protected _onDidChangeContext = this._register(new Emitter<void>());
+
 	readonly onDidChangeContext = this._onDidChangeContext.event;
 
 	get size(): number {
@@ -31,11 +32,13 @@ export class ChatAttachmentModel extends Disposable {
 
 	clear(): void {
 		this._attachments.clear();
+
 		this._onDidChangeContext.fire();
 	}
 
 	delete(variableEntryId: string) {
 		this._attachments.delete(variableEntryId);
+
 		this._onDidChangeContext.fire();
 	}
 
@@ -59,6 +62,7 @@ export class ChatAttachmentModel extends Disposable {
 		for (const attachment of attachments) {
 			if (!this._attachments.has(attachment.id)) {
 				this._attachments.set(attachment.id, attachment);
+
 				hasAdded = true;
 			}
 		}
@@ -70,12 +74,14 @@ export class ChatAttachmentModel extends Disposable {
 
 	clearAndSetContext(...attachments: IChatRequestVariableEntry[]) {
 		this.clear();
+
 		this.addContext(...attachments);
 	}
 }
 
 export class EditsAttachmentModel extends ChatAttachmentModel {
 	private _onFileLimitExceeded = this._register(new Emitter<void>());
+
 	readonly onFileLimitExceeded = this._onFileLimitExceeded.event;
 
 	get fileAttachments() {
@@ -83,6 +89,7 @@ export class EditsAttachmentModel extends ChatAttachmentModel {
 	}
 
 	private readonly _excludedFileAttachments: IChatRequestVariableEntry[] = [];
+
 	get excludedFileAttachments(): IChatRequestVariableEntry[] {
 		return this._excludedFileAttachments;
 	}
@@ -106,9 +113,11 @@ export class EditsAttachmentModel extends ChatAttachmentModel {
 		const fileAttachments = attachments.filter(
 			(attachment) => attachment.isFile,
 		);
+
 		const newFileAttachments = fileAttachments.filter(
 			(attachment) => !currentAttachmentIds.has(attachment.id),
 		);
+
 		const otherAttachments = attachments.filter(
 			(attachment) => !attachment.isFile,
 		);
@@ -118,6 +127,7 @@ export class EditsAttachmentModel extends ChatAttachmentModel {
 			this._chatEditingService.editingSessionFileLimit -
 				this.fileAttachments.length,
 		);
+
 		const fileAttachmentsToBeAdded = newFileAttachments.slice(
 			0,
 			availableFileCount,
@@ -130,8 +140,11 @@ export class EditsAttachmentModel extends ChatAttachmentModel {
 					(attachment) =>
 						!this.isExcludeFileAttachment(attachment.id),
 				);
+
 			this._excludedFileAttachments.push(...attachmentsExceedingSize);
+
 			this._onDidChangeContext.fire();
+
 			this._onFileLimitExceeded.fire();
 		}
 
@@ -143,6 +156,7 @@ export class EditsAttachmentModel extends ChatAttachmentModel {
 			0,
 			this._excludedFileAttachments.length,
 		);
+
 		super.clear();
 	}
 
@@ -150,6 +164,7 @@ export class EditsAttachmentModel extends ChatAttachmentModel {
 		const excludedFileIndex = this._excludedFileAttachments.findIndex(
 			(attachment) => attachment.id === variableEntryId,
 		);
+
 		if (excludedFileIndex !== -1) {
 			this._excludedFileAttachments.splice(excludedFileIndex, 1);
 		}
@@ -165,10 +180,12 @@ export class EditsAttachmentModel extends ChatAttachmentModel {
 				this._chatEditingService.editingSessionFileLimit -
 					this.fileAttachments.length,
 			);
+
 			const reAddAttachments = this._excludedFileAttachments.splice(
 				0,
 				availableFileCount,
 			);
+
 			super.addContext(...reAddAttachments);
 		}
 	}

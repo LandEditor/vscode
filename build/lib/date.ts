@@ -15,12 +15,16 @@ export function writeISODate(outDir: string) {
 	const result = () =>
 		new Promise<void>((resolve, _) => {
 			const outDirectory = path.join(root, outDir);
+
 			fs.mkdirSync(outDirectory, { recursive: true });
 
 			const date = new Date().toISOString();
+
 			fs.writeFileSync(path.join(outDirectory, "date"), date, "utf8");
+
 			resolve();
 		});
+
 	result.taskName = "build-date-file";
 
 	return result;

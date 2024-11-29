@@ -21,9 +21,11 @@ export class IgnoreFile {
 				"Unexpected path format, do not use trailing backslashes",
 			);
 		}
+
 		if (location[location.length - 1] !== "/") {
 			location += "/";
 		}
+
 		this.isPathIgnored = this.parseIgnoreFile(
 			contents,
 			this.location,
@@ -56,6 +58,7 @@ export class IgnoreFile {
 					path,
 			);
 		}
+
 		const ignored = this.isPathIgnored(path, isDir);
 
 		return !ignored;
@@ -71,6 +74,7 @@ export class IgnoreFile {
 					path,
 			);
 		}
+
 		const segments = path.split("/").filter((x) => x);
 
 		let ignored = false;
@@ -81,6 +85,7 @@ export class IgnoreFile {
 			const isLast = i === segments.length - 1;
 
 			const segment = segments[i];
+
 			walkingPath = walkingPath + "/" + segment;
 
 			if (
@@ -94,8 +99,10 @@ export class IgnoreFile {
 				break;
 			}
 		}
+
 		return ignored;
 	}
+
 	private gitignoreLinesToExpression(
 		lines: string[],
 		dirPath: string,
@@ -110,8 +117,10 @@ export class IgnoreFile {
 		for (const line of includeLines) {
 			includeExpression[line] = true;
 		}
+
 		return glob.parse(includeExpression, { trimForExclusions });
 	}
+
 	private parseIgnoreFile(
 		ignoreContents: string,
 		dirPath: string,
@@ -166,20 +175,25 @@ export class IgnoreFile {
 			if (!path.startsWith(dirPath)) {
 				return false;
 			}
+
 			if (isDir && isDirIgnored(path) && !isDirIncluded(path)) {
 				return true;
 			}
+
 			if (isFileIgnored(path) && !isFileIncluded(path)) {
 				return true;
 			}
+
 			if (parent) {
 				return parent.isPathIgnored(path, isDir);
 			}
+
 			return false;
 		};
 
 		return isPathIgnored;
 	}
+
 	private gitignoreLineToGlob(line: string, dirPath: string): string {
 		const firstSep = line.indexOf("/");
 
@@ -195,8 +209,10 @@ export class IgnoreFile {
 					line = "/" + line;
 				}
 			}
+
 			line = dirPath + line;
 		}
+
 		return line;
 	}
 }

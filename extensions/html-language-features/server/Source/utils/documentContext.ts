@@ -19,18 +19,22 @@ export function getDocumentContext(
 			if (!endsWith(folderURI, "/")) {
 				folderURI = folderURI + "/";
 			}
+
 			if (startsWith(documentUri, folderURI)) {
 				return folderURI;
 			}
 		}
+
 		return undefined;
 	}
+
 	return {
 		resolveReference: (ref: string, base = documentUri) => {
 			if (ref.match(/^\w[\w\d+.-]*:/)) {
 				// starts with a schema
 				return ref;
 			}
+
 			if (ref[0] === "/") {
 				// resolve absolute path against the current workspace folder
 				const folderUri = getRootFolder();
@@ -39,6 +43,7 @@ export function getDocumentContext(
 					return folderUri + ref.substr(1);
 				}
 			}
+
 			const baseUri = URI.parse(base);
 
 			const baseUriDir = baseUri.path.endsWith("/")

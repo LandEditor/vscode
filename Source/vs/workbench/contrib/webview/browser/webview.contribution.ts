@@ -50,6 +50,7 @@ function overrideCommandForWebview(
 				return true;
 			}
 		}
+
 		return false;
 	});
 }

@@ -57,17 +57,22 @@ export class NativeIssueFormService
 		if (this.hasToReload(data)) {
 			return;
 		}
+
 		const bounds = await this.nativeHostService.getActiveWindowPosition();
 
 		if (!bounds) {
 			return;
 		}
+
 		await this.openAuxIssueReporter(data, bounds);
 		// Get platform information
 		const { arch, release, type } =
 			await this.nativeHostService.getOSProperties();
+
 		this.arch = arch;
+
 		this.release = release;
+
 		this.type = type;
 		// create issue reporter and instantiate
 		if (this.issueReporterWindow) {
@@ -79,6 +84,7 @@ export class NativeIssueFormService
 				product,
 				this.issueReporterWindow,
 			);
+
 			issueReporter.render();
 		}
 	}

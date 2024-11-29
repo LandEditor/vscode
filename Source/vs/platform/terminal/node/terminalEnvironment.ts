@@ -36,6 +36,7 @@ export function getWindowsBuildNumber(): number {
 	if (osVersion && osVersion.length === 4) {
 		buildNumber = parseInt(osVersion[3]);
 	}
+
 	return buildNumber;
 }
 
@@ -50,9 +51,11 @@ export async function findExecutable(
 	if (path.isAbsolute(command)) {
 		return (await exists(command)) ? command : undefined;
 	}
+
 	if (cwd === undefined) {
 		cwd = process.cwd();
 	}
+
 	const dir = path.dirname(command);
 
 	if (dir !== ".") {
@@ -62,6 +65,7 @@ export async function findExecutable(
 
 		return (await exists(fullPath)) ? fullPath : undefined;
 	}
+
 	const envPath = getCaseInsensitive(env, "PATH");
 
 	if (paths === undefined && isString(envPath)) {
@@ -88,12 +92,14 @@ export async function findExecutable(
 		if (await exists(fullPath)) {
 			return fullPath;
 		}
+
 		if (isWindows) {
 			let withExtension = fullPath + ".com";
 
 			if (await exists(withExtension)) {
 				return withExtension;
 			}
+
 			withExtension = fullPath + ".exe";
 
 			if (await exists(withExtension)) {
@@ -101,6 +107,7 @@ export async function findExecutable(
 			}
 		}
 	}
+
 	const fullPath = path.join(cwd, command);
 
 	return (await exists(fullPath)) ? fullPath : undefined;
@@ -120,6 +127,7 @@ export interface IShellIntegrationConfigInjection {
 	 */
 	filesToCopy?: {
 		source: string;
+
 		dest: string;
 	}[];
 }
@@ -192,21 +200,25 @@ export function getShellIntegrationInjection(
 					ShellIntegrationExecutable.WindowsPwshLogin,
 				);
 			}
+
 			if (!newArgs) {
 				return undefined;
 			}
+
 			newArgs = [...newArgs]; // Shallow clone the array to avoid setting the default array
 			newArgs[newArgs.length - 1] = format(
 				newArgs[newArgs.length - 1],
 				appRoot,
 				"",
 			);
+
 			envMixin["VSCODE_STABLE"] =
 				productService.quality === "stable" ? "1" : "0";
 
 			if (options.shellIntegration.suggestEnabled) {
 				envMixin["VSCODE_SUGGEST"] = "1";
 			}
+
 			return { newArgs, envMixin };
 		} else if (shell === "bash.exe") {
 			if (!originalArgs || originalArgs.length === 0) {
@@ -215,24 +227,30 @@ export function getShellIntegrationInjection(
 				);
 			} else if (areZshBashFishLoginArgs(originalArgs)) {
 				envMixin["VSCODE_SHELL_LOGIN"] = "1";
+
 				addEnvMixinPathPrefix(options, envMixin, shell);
+
 				newArgs = shellIntegrationArgs.get(
 					ShellIntegrationExecutable.Bash,
 				);
 			}
+
 			if (!newArgs) {
 				return undefined;
 			}
+
 			newArgs = [...newArgs]; // Shallow clone the array to avoid setting the default array
 			newArgs[newArgs.length - 1] = format(
 				newArgs[newArgs.length - 1],
 				appRoot,
 			);
+
 			envMixin["VSCODE_STABLE"] =
 				productService.quality === "stable" ? "1" : "0";
 
 			return { newArgs, envMixin };
 		}
+
 		logService.warn(
 			`Shell integration cannot be enabled for executable "${shellLaunchConfig.executable}" and args`,
 			shellLaunchConfig.args,
@@ -250,24 +268,30 @@ export function getShellIntegrationInjection(
 				);
 			} else if (areZshBashFishLoginArgs(originalArgs)) {
 				envMixin["VSCODE_SHELL_LOGIN"] = "1";
+
 				addEnvMixinPathPrefix(options, envMixin, shell);
+
 				newArgs = shellIntegrationArgs.get(
 					ShellIntegrationExecutable.Bash,
 				);
 			}
+
 			if (!newArgs) {
 				return undefined;
 			}
+
 			newArgs = [...newArgs]; // Shallow clone the array to avoid setting the default array
 			newArgs[newArgs.length - 1] = format(
 				newArgs[newArgs.length - 1],
 				appRoot,
 			);
+
 			envMixin["VSCODE_STABLE"] =
 				productService.quality === "stable" ? "1" : "0";
 
 			return { newArgs, envMixin };
 		}
+
 		case "fish": {
 			if (!originalArgs || originalArgs.length === 0) {
 				newArgs = shellIntegrationArgs.get(
@@ -287,6 +311,7 @@ export function getShellIntegrationInjection(
 			) {
 				newArgs = originalArgs;
 			}
+
 			if (!newArgs) {
 				return undefined;
 			}
@@ -303,6 +328,7 @@ export function getShellIntegrationInjection(
 
 			return { newArgs, envMixin };
 		}
+
 		case "pwsh": {
 			if (!originalArgs || arePwshImpliedArgs(originalArgs)) {
 				newArgs = shellIntegrationArgs.get(
@@ -313,23 +339,28 @@ export function getShellIntegrationInjection(
 					ShellIntegrationExecutable.PwshLogin,
 				);
 			}
+
 			if (!newArgs) {
 				return undefined;
 			}
+
 			if (options.shellIntegration.suggestEnabled) {
 				envMixin["VSCODE_SUGGEST"] = "1";
 			}
+
 			newArgs = [...newArgs]; // Shallow clone the array to avoid setting the default array
 			newArgs[newArgs.length - 1] = format(
 				newArgs[newArgs.length - 1],
 				appRoot,
 				"",
 			);
+
 			envMixin["VSCODE_STABLE"] =
 				productService.quality === "stable" ? "1" : "0";
 
 			return { newArgs, envMixin };
 		}
+
 		case "zsh": {
 			if (!originalArgs || originalArgs.length === 0) {
 				newArgs = shellIntegrationArgs.get(
@@ -339,6 +370,7 @@ export function getShellIntegrationInjection(
 				newArgs = shellIntegrationArgs.get(
 					ShellIntegrationExecutable.ZshLogin,
 				);
+
 				addEnvMixinPathPrefix(options, envMixin, shell);
 			} else if (
 				originalArgs ===
@@ -350,9 +382,11 @@ export function getShellIntegrationInjection(
 			) {
 				newArgs = originalArgs;
 			}
+
 			if (!newArgs) {
 				return undefined;
 			}
+
 			newArgs = [...newArgs]; // Shallow clone the array to avoid setting the default array
 			newArgs[newArgs.length - 1] = format(
 				newArgs[newArgs.length - 1],
@@ -367,17 +401,21 @@ export function getShellIntegrationInjection(
 			} catch {
 				username = "unknown";
 			}
+
 			const zdotdir = path.join(
 				os.tmpdir(),
 				`${username}-${productService.applicationName}-zsh`,
 			);
+
 			envMixin["ZDOTDIR"] = zdotdir;
 
 			const userZdotdir = env?.ZDOTDIR ?? os.homedir() ?? `~`;
+
 			envMixin["USER_ZDOTDIR"] = userZdotdir;
 
 			const filesToCopy: IShellIntegrationConfigInjection["filesToCopy"] =
 				[];
+
 			filesToCopy.push({
 				source: path.join(
 					appRoot,
@@ -385,6 +423,7 @@ export function getShellIntegrationInjection(
 				),
 				dest: path.join(zdotdir, ".zshrc"),
 			});
+
 			filesToCopy.push({
 				source: path.join(
 					appRoot,
@@ -392,6 +431,7 @@ export function getShellIntegrationInjection(
 				),
 				dest: path.join(zdotdir, ".zprofile"),
 			});
+
 			filesToCopy.push({
 				source: path.join(
 					appRoot,
@@ -399,6 +439,7 @@ export function getShellIntegrationInjection(
 				),
 				dest: path.join(zdotdir, ".zshenv"),
 			});
+
 			filesToCopy.push({
 				source: path.join(
 					appRoot,
@@ -410,6 +451,7 @@ export function getShellIntegrationInjection(
 			return { newArgs, envMixin, filesToCopy };
 		}
 	}
+
 	logService.warn(
 		`Shell integration cannot be enabled for executable "${shellLaunchConfig.executable}" and args`,
 		shellLaunchConfig.args,
@@ -563,6 +605,7 @@ function areZshBashFishLoginArgs(originalArgs: string | string[]): boolean {
 			(arg) => !shInteractiveArgs.includes(arg.toLowerCase()),
 		);
 	}
+
 	return (
 		(originalArgs === "string" &&
 			shLoginArgs.includes(originalArgs.toLowerCase())) ||

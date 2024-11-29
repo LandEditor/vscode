@@ -23,6 +23,7 @@ export function generatePackageDeps(
 	);
 
 	const additionalDepsSet = new Set(additionalDeps);
+
 	dependencies.push(additionalDepsSet);
 
 	return dependencies;
@@ -68,6 +69,7 @@ function calculatePackageDeps(
 			"Cannot retrieve dpkg-shlibdeps. Stderr:\n" + result.stderr,
 		);
 	}
+
 	const cmd = [dpkgShlibdepsScriptLocation, "--ignore-weak-undefined"];
 
 	switch (arch) {
@@ -101,8 +103,11 @@ function calculatePackageDeps(
 
 			break;
 	}
+
 	cmd.push(`-l${chromiumSysroot}/usr/lib`);
+
 	cmd.push(`-L${vscodeSysroot}/debian/libxkbfile1/DEBIAN/shlibs`);
+
 	cmd.push("-O", "-e", path.resolve(binaryPath));
 
 	const dpkgShlibdepsResult = spawnSync("perl", cmd, {

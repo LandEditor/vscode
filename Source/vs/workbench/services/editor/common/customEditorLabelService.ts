@@ -33,8 +33,11 @@ interface ICustomEditorLabelObject {
 }
 interface ICustomEditorLabelPattern {
 	readonly pattern: string;
+
 	readonly template: string;
+
 	readonly isAbsolutePath: boolean;
+
 	readonly parsedPattern: ParsedPattern;
 }
 export class CustomEditorLabelService
@@ -42,14 +45,21 @@ export class CustomEditorLabelService
 	implements ICustomEditorLabelService
 {
 	readonly _serviceBrand: undefined;
+
 	static readonly SETTING_ID_PATTERNS =
 		"workbench.editor.customLabels.patterns";
+
 	static readonly SETTING_ID_ENABLED =
 		"workbench.editor.customLabels.enabled";
+
 	private readonly _onDidChange = this._register(new Emitter<void>());
+
 	readonly onDidChange = this._onDidChange.event;
+
 	private patterns: ICustomEditorLabelPattern[] = [];
+
 	private enabled = true;
+
 	private cache = new MRUCache<string, string | null>(1000);
 
 	constructor(
@@ -59,10 +69,14 @@ export class CustomEditorLabelService
 		private readonly workspaceContextService: IWorkspaceContextService,
 	) {
 		super();
+
 		this.storeEnablementState();
+
 		this.storeCustomPatterns();
+
 		this.registerListeners();
 	}
+
 	private registerListeners(): void {
 		this._register(
 			this.configurationService.onDidChangeConfiguration((e) => {
@@ -73,6 +87,7 @@ export class CustomEditorLabelService
 					)
 				) {
 					const oldEnablement = this.enabled;
+
 					this.storeEnablementState();
 
 					if (
@@ -89,18 +104,23 @@ export class CustomEditorLabelService
 					)
 				) {
 					this.cache.clear();
+
 					this.storeCustomPatterns();
+
 					this._onDidChange.fire();
 				}
 			}),
 		);
 	}
+
 	private storeEnablementState(): void {
 		this.enabled = this.configurationService.getValue<boolean>(
 			CustomEditorLabelService.SETTING_ID_ENABLED,
 		);
 	}
+
 	private _templateRegexValidation: RegExp = /[a-zA-Z0-9]/;
+
 	private storeCustomPatterns(): void {
 		this.patterns = [];
 
@@ -115,9 +135,11 @@ export class CustomEditorLabelService
 			if (!this._templateRegexValidation.test(template)) {
 				continue;
 			}
+
 			const isAbsolutePath = isAbsolute(pattern);
 
 			const parsedPattern = parseGlob(pattern);
+
 			this.patterns.push({
 				pattern,
 				template,
@@ -125,11 +147,13 @@ export class CustomEditorLabelService
 				parsedPattern,
 			});
 		}
+
 		this.patterns.sort(
 			(a, b) =>
 				this.patternWeight(b.pattern) - this.patternWeight(a.pattern),
 		);
 	}
+
 	private patternWeight(pattern: string): number {
 		let weight = 0;
 
@@ -144,12 +168,15 @@ export class CustomEditorLabelService
 				weight += 100;
 			}
 		}
+
 		return weight;
 	}
+
 	getName(resource: URI): string | undefined {
 		if (!this.enabled || this.patterns.length === 0) {
 			return undefined;
 		}
+
 		const key = resource.toString();
 
 		const cached = this.cache.get(key);
@@ -157,11 +184,14 @@ export class CustomEditorLabelService
 		if (cached !== undefined) {
 			return cached ?? undefined;
 		}
+
 		const result = this.applyPatterns(resource);
+
 		this.cache.set(key, result ?? null);
 
 		return result;
 	}
+
 	private applyPatterns(resource: URI): string | undefined {
 		const root = this.workspaceContextService.getWorkspaceFolder(resource);
 
@@ -176,10 +206,12 @@ export class CustomEditorLabelService
 						getRelativePath(resourceDirname(root.uri), resource) ??
 						resource.path;
 				}
+
 				relevantPath = relativePath;
 			} else {
 				relevantPath = resource.path;
 			}
+
 			if (pattern.parsedPattern(relevantPath)) {
 				return this.applyTemplate(
 					pattern.template,
@@ -188,11 +220,15 @@ export class CustomEditorLabelService
 				);
 			}
 		}
+
 		return undefined;
 	}
+
 	private readonly _parsedTemplateExpression =
 		/\$\{(dirname|filename|extname|extname\((?<extnameN>[-+]?\d+)\)|dirname\((?<dirnameN>[-+]?\d+)\))\}/g;
+
 	private readonly _filenameCaptureExpression = /(?<filename>^\.*[^.]*)/;
+
 	private applyTemplate(
 		template: string,
 		resource: URI,
@@ -210,6 +246,7 @@ export class CustomEditorLabelService
 					extnameN = "0",
 				}: {
 					dirnameN?: string;
+
 					extnameN?: string;
 				} = args.pop();
 
@@ -244,18 +281,22 @@ export class CustomEditorLabelService
 						return nthDir;
 					}
 				}
+
 				return match;
 			},
 		);
 	}
+
 	private removeLeadingDot(path: string): string {
 		let withoutLeadingDot = path;
 
 		while (withoutLeadingDot.startsWith(".")) {
 			withoutLeadingDot = withoutLeadingDot.slice(1);
 		}
+
 		return withoutLeadingDot;
 	}
+
 	private getNthDirname(path: string, n: number): string | undefined {
 		// grand-parent/parent/filename.ext1.ext2 -> [grand-parent, parent]
 		path = path.startsWith("/") ? path.slice(1) : path;
@@ -264,19 +305,23 @@ export class CustomEditorLabelService
 
 		return this.getNthFragment(pathFragments, n);
 	}
+
 	private getExtnames(fullFileName: string): string {
 		return this.removeLeadingDot(fullFileName)
 			.split(".")
 			.slice(1)
 			.join(".");
 	}
+
 	private getNthExtname(fullFileName: string, n: number): string | undefined {
 		// file.ext1.ext2.ext3 -> [file, ext1, ext2, ext3]
 		const extensionNameFragments =
 			this.removeLeadingDot(fullFileName).split(".");
+
 		extensionNameFragments.shift(); // remove the first element which is the file name
 		return this.getNthFragment(extensionNameFragments, n);
 	}
+
 	private getNthFragment(fragments: string[], n: number): string | undefined {
 		const length = fragments.length;
 
@@ -287,11 +332,13 @@ export class CustomEditorLabelService
 		} else {
 			nth = length - n - 1;
 		}
+
 		const nthFragment = fragments[nth];
 
 		if (nthFragment === undefined || nthFragment === "") {
 			return undefined;
 		}
+
 		return nthFragment;
 	}
 }
@@ -300,6 +347,7 @@ export const ICustomEditorLabelService =
 
 export interface ICustomEditorLabelService {
 	readonly _serviceBrand: undefined;
+
 	readonly onDidChange: Event<void>;
 
 	getName(resource: URI): string | undefined;

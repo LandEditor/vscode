@@ -19,18 +19,24 @@ try {
 		process.cwd(),
 		"DefinitelyTyped/types/vscode/index.d.ts",
 	);
+
 	cp.execSync(`curl ${dtsUri} --output ${outPath}`);
+
 	updateDTSFile(outPath, tag);
+
 	console.log(`Done updating vscode.d.ts at ${outPath}`);
 } catch (err) {
 	console.error(err);
+
 	console.error("Failed to update types");
+
 	process.exit(1);
 }
 function updateDTSFile(outPath: string, tag: string) {
 	const oldContent = fs.readFileSync(outPath, "utf-8");
 
 	const newContent = getNewFileContent(oldContent, tag);
+
 	fs.writeFileSync(outPath, newContent);
 }
 function repeat(str: string, times: number): string {
@@ -39,6 +45,7 @@ function repeat(str: string, times: number): string {
 	for (let i = 0; i < times; i++) {
 		result[i] = str;
 	}
+
 	return result.join("");
 }
 function convertTabsToSpaces(str: string): string {

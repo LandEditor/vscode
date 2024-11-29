@@ -36,6 +36,7 @@ class WebIssueContribution extends BaseIssueContribution {
 		configurationService: IConfigurationService,
 	) {
 		super(productService, configurationService);
+
 		Registry.as<IConfigurationRegistry>(
 			ConfigurationExtensions.Configuration,
 		).registerConfiguration({

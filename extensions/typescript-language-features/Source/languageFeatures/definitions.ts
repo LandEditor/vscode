@@ -31,6 +31,7 @@ export default class TypeScriptDefinitionProvider
 		if (!filepath) {
 			return undefined;
 		}
+
 		const args = typeConverters.Position.toFileLocationRequestArgs(
 			filepath,
 			position,
@@ -45,6 +46,7 @@ export default class TypeScriptDefinitionProvider
 		if (response.type !== "response" || !response.body) {
 			return undefined;
 		}
+
 		const span = response.body.textSpan
 			? typeConverters.Range.fromTextSpan(response.body.textSpan)
 			: undefined;
@@ -70,6 +72,7 @@ export default class TypeScriptDefinitionProvider
 				definitions = sourceDefinitionsResponse.body;
 			}
 		}
+
 		return definitions.map((location): vscode.DefinitionLink => {
 			const target = typeConverters.Location.fromTextSpan(
 				this.client.toResource(location.file),
@@ -87,6 +90,7 @@ export default class TypeScriptDefinitionProvider
 					targetSelectionRange: target.range,
 				};
 			}
+
 			return {
 				originSelectionRange: span,
 				targetRange: target.range,

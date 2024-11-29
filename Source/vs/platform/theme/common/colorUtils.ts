@@ -23,9 +23,13 @@ export type ColorIdentifier = string;
 
 export interface ColorContribution {
 	readonly id: ColorIdentifier;
+
 	readonly description: string;
+
 	readonly defaults: ColorDefaults | ColorValue | null;
+
 	readonly needsTransparency: boolean;
+
 	readonly deprecationMessage: string | undefined;
 }
 /**
@@ -58,39 +62,53 @@ export const enum ColorTransformType {
 export type ColorTransform =
 	| {
 			op: ColorTransformType.Darken;
+
 			value: ColorValue;
+
 			factor: number;
 	  }
 	| {
 			op: ColorTransformType.Lighten;
+
 			value: ColorValue;
+
 			factor: number;
 	  }
 	| {
 			op: ColorTransformType.Transparent;
+
 			value: ColorValue;
+
 			factor: number;
 	  }
 	| {
 			op: ColorTransformType.Opaque;
+
 			value: ColorValue;
+
 			background: ColorValue;
 	  }
 	| {
 			op: ColorTransformType.OneOf;
+
 			values: readonly ColorValue[];
 	  }
 	| {
 			op: ColorTransformType.LessProminent;
+
 			value: ColorValue;
+
 			background: ColorValue;
+
 			factor: number;
+
 			transparency: number;
 	  }
 	| {
 			op: ColorTransformType.IfDefinedThenElse;
 
 			if: ColorIdentifier;
+
 			then: ColorValue;
 
 			else: ColorValue;
@@ -98,8 +116,11 @@ export type ColorTransform =
 
 export interface ColorDefaults {
 	light: ColorValue | null;
+
 	dark: ColorValue | null;
+
 	hcDark: ColorValue | null;
+
 	hcLight: ColorValue | null;
 }
 export function isColorDefaults(value: unknown): value is ColorDefaults {
@@ -176,22 +197,28 @@ type IJSONSchemaWithSnippets = IJSONSchema & {
 };
 class ColorRegistry implements IColorRegistry {
 	private readonly _onDidChangeSchema = new Emitter<void>();
+
 	readonly onDidChangeSchema: Event<void> = this._onDidChangeSchema.event;
+
 	private colorsById: {
 		[key: string]: ColorContribution;
 	};
+
 	private colorSchema: IJSONSchemaForColors = {
 		type: "object",
 		properties: {},
 	};
+
 	private colorReferenceSchema: IJSONSchema & {
 		enum: string[];
+
 		enumDescriptions: string[];
 	} = { type: "string", enum: [], enumDescriptions: [] };
 
 	constructor() {
 		this.colorsById = {};
 	}
+
 	public notifyThemeUpdate(colorThemeData: IColorTheme) {
 		for (const key of Object.keys(this.colorsById)) {
 			const color = colorThemeData.getColor(key);
@@ -203,8 +230,10 @@ class ColorRegistry implements IColorRegistry {
 					`\${1:${color.toString()}}`;
 			}
 		}
+
 		this._onDidChangeSchema.fire();
 	}
+
 	public registerColor(
 		id: string,
 		defaults: ColorDefaults | ColorValue | null,
@@ -219,6 +248,7 @@ class ColorRegistry implements IColorRegistry {
 			needsTransparency,
 			deprecationMessage,
 		};
+
 		this.colorsById[id] = colorContribution;
 
 		const propertySchema: IJSONSchemaWithSnippets = {
@@ -230,14 +260,17 @@ class ColorRegistry implements IColorRegistry {
 		if (deprecationMessage) {
 			propertySchema.deprecationMessage = deprecationMessage;
 		}
+
 		if (needsTransparency) {
 			propertySchema.pattern =
 				"^#(?:(?<rgba>[0-9a-fA-f]{3}[0-9a-eA-E])|(?:[0-9a-fA-F]{6}(?:(?![fF]{2})(?:[0-9a-fA-F]{2}))))?$";
+
 			propertySchema.patternErrorMessage = nls.localize(
 				"transparecyRequired",
 				"This color must be transparent or it will obscure content",
 			);
 		}
+
 		this.colorSchema.properties[id] = {
 			description,
 			oneOf: [
@@ -252,27 +285,36 @@ class ColorRegistry implements IColorRegistry {
 				},
 			],
 		};
+
 		this.colorReferenceSchema.enum.push(id);
+
 		this.colorReferenceSchema.enumDescriptions.push(description);
+
 		this._onDidChangeSchema.fire();
 
 		return id;
 	}
+
 	public deregisterColor(id: string): void {
 		delete this.colorsById[id];
+
 		delete this.colorSchema.properties[id];
 
 		const index = this.colorReferenceSchema.enum.indexOf(id);
 
 		if (index !== -1) {
 			this.colorReferenceSchema.enum.splice(index, 1);
+
 			this.colorReferenceSchema.enumDescriptions.splice(index, 1);
 		}
+
 		this._onDidChangeSchema.fire();
 	}
+
 	public getColors(): ColorContribution[] {
 		return Object.keys(this.colorsById).map((id) => this.colorsById[id]);
 	}
+
 	public resolveDefaultColor(
 		id: ColorIdentifier,
 		theme: IColorTheme,
@@ -286,14 +328,18 @@ class ColorRegistry implements IColorRegistry {
 
 			return resolveColorValue(colorValue, theme);
 		}
+
 		return undefined;
 	}
+
 	public getColorSchema(): IJSONSchema {
 		return this.colorSchema;
 	}
+
 	public getColorReferenceSchema(): IJSONSchema {
 		return this.colorReferenceSchema;
 	}
+
 	public toString() {
 		const sorter = (a: string, b: string) => {
 			const cat1 = a.indexOf(".") === -1 ? 0 : 1;
@@ -303,6 +349,7 @@ class ColorRegistry implements IColorRegistry {
 			if (cat1 !== cat2) {
 				return cat1 - cat2;
 			}
+
 			return a.localeCompare(b);
 		};
 
@@ -364,10 +411,12 @@ export function executeTransform(
 			if (!backgroundColor) {
 				return resolveColorValue(transform.value, theme);
 			}
+
 			return resolveColorValue(transform.value, theme)?.makeOpaque(
 				backgroundColor,
 			);
 		}
+
 		case ColorTransformType.OneOf:
 			for (const candidate of transform.values) {
 				const color = resolveColorValue(candidate, theme);
@@ -376,6 +425,7 @@ export function executeTransform(
 					return color;
 				}
 			}
+
 			return undefined;
 
 		case ColorTransformType.IfDefinedThenElse:
@@ -390,6 +440,7 @@ export function executeTransform(
 			if (!from) {
 				return undefined;
 			}
+
 			const backgroundColor = resolveColorValue(
 				transform.background,
 				theme,
@@ -400,6 +451,7 @@ export function executeTransform(
 					transform.factor * transform.transparency,
 				);
 			}
+
 			return from.isDarkerThan(backgroundColor)
 				? Color.getLighterColor(
 						from,
@@ -412,6 +464,7 @@ export function executeTransform(
 						transform.factor,
 					).transparent(transform.transparency);
 		}
+
 		default:
 			throw assertNever(transform);
 	}
@@ -480,12 +533,14 @@ export function resolveColorValue(
 		if (colorValue[0] === "#") {
 			return Color.fromHex(colorValue);
 		}
+
 		return theme.getColor(colorValue);
 	} else if (colorValue instanceof Color) {
 		return colorValue;
 	} else if (typeof colorValue === "object") {
 		return executeTransform(colorValue, theme);
 	}
+
 	return undefined;
 }
 export const workbenchColorsSchemaId = "vscode://schemas/workbench-colors";

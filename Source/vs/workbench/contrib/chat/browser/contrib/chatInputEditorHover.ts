@@ -40,6 +40,7 @@ export class ChatAgentHoverParticipant
 		@ICommandService
 		private readonly commandService: ICommandService,
 	) {}
+
 	public computeSync(
 		anchor: HoverAnchor,
 		_lineDecorations: IModelDecoration[],
@@ -47,6 +48,7 @@ export class ChatAgentHoverParticipant
 		if (!this.editor.hasModel()) {
 			return [];
 		}
+
 		const widget = this.chatWidgetService.getWidgetByInputUri(
 			this.editor.getModel().uri,
 		);
@@ -54,11 +56,13 @@ export class ChatAgentHoverParticipant
 		if (!widget) {
 			return [];
 		}
+
 		const { agentPart } = extractAgentAndCommand(widget.parsedInput);
 
 		if (!agentPart) {
 			return [];
 		}
+
 		if (
 			Range.containsPosition(
 				agentPart.editorRange,
@@ -73,8 +77,10 @@ export class ChatAgentHoverParticipant
 				),
 			];
 		}
+
 		return [];
 	}
+
 	public renderHoverParts(
 		context: IEditorHoverRenderContext,
 		hoverParts: ChatAgentHoverPart[],
@@ -82,11 +88,13 @@ export class ChatAgentHoverParticipant
 		if (!hoverParts.length) {
 			return new RenderedHoverParts([]);
 		}
+
 		const disposables = new DisposableStore();
 
 		const hover = disposables.add(
 			this.instantiationService.createInstance(ChatAgentHover),
 		);
+
 		disposables.add(
 			hover.onDidChangeContents(() => context.onContentsChanged()),
 		);
@@ -94,6 +102,7 @@ export class ChatAgentHoverParticipant
 		const hoverPart = hoverParts[0];
 
 		const agent = hoverPart.agent;
+
 		hover.setAgent(agent.id);
 
 		const actions = getChatAgentHoverOptions(
@@ -108,6 +117,7 @@ export class ChatAgentHoverParticipant
 		);
 
 		const wrapperNode = wrapper.domNode;
+
 		context.fragment.appendChild(wrapperNode);
 
 		const renderedHoverPart: IRenderedHoverPart<ChatAgentHoverPart> = {
@@ -120,6 +130,7 @@ export class ChatAgentHoverParticipant
 
 		return new RenderedHoverParts([renderedHoverPart]);
 	}
+
 	public getAccessibleContent(hoverPart: ChatAgentHoverPart): string {
 		return nls.localize(
 			"hoverAccessibilityChatAgent",
@@ -133,6 +144,7 @@ export class ChatAgentHoverPart implements IHoverPart {
 		public readonly range: Range,
 		public readonly agent: IChatAgentData,
 	) {}
+
 	public isValidForHoverAnchor(anchor: HoverAnchor): boolean {
 		return (
 			anchor.type === HoverAnchorType.Range &&

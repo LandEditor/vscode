@@ -27,6 +27,7 @@ import { NativeURLService } from "../../../../platform/url/common/urlService.js"
 
 export interface IRelayOpenURLOptions extends IOpenURLOptions {
 	openToSide?: boolean;
+
 	openExternal?: boolean;
 }
 export class RelayURLService
@@ -48,15 +49,19 @@ export class RelayURLService
 		private readonly logService: ILogService,
 	) {
 		super(productService);
+
 		this.urlService = ProxyChannel.toService<IURLService>(
 			mainProcessService.getChannel("url"),
 		);
+
 		mainProcessService.registerChannel(
 			"urlHandler",
 			new URLHandlerChannel(this),
 		);
+
 		openerService.registerOpener(this);
 	}
+
 	override create(options?: Partial<UriComponents>): URI {
 		const uri = super.create(options);
 
@@ -67,8 +72,10 @@ export class RelayURLService
 		} else {
 			query += `&windowId=${encodeURIComponent(this.nativeHostService.windowId)}`;
 		}
+
 		return uri.with({ query });
 	}
+
 	override async open(
 		resource: URI | string,
 		options?: IRelayOpenURLOptions,
@@ -76,11 +83,14 @@ export class RelayURLService
 		if (!matchesScheme(resource, this.productService.urlProtocol)) {
 			return false;
 		}
+
 		if (typeof resource === "string") {
 			resource = URI.parse(resource);
 		}
+
 		return await this.urlService.open(resource, options);
 	}
+
 	async handleURL(uri: URI, options?: IOpenURLOptions): Promise<boolean> {
 		const result = await super.open(uri, options);
 
@@ -89,6 +99,7 @@ export class RelayURLService
 				"URLService#handleURL(): handled",
 				uri.toString(true),
 			);
+
 			await this.nativeHostService.focusWindow({
 				force: true /* Application may not be active */,
 				targetWindowId: this.nativeHostService.windowId,
@@ -99,6 +110,7 @@ export class RelayURLService
 				uri.toString(true),
 			);
 		}
+
 		return result;
 	}
 }

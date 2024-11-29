@@ -26,9 +26,12 @@ export class CodeActionDocumentationContribution
 {
 	private contributions: {
 		title: string;
+
 		when: ContextKeyExpression;
+
 		command: string;
 	}[] = [];
+
 	private readonly emptyCodeActionsList = {
 		actions: [],
 		dispose: () => {},
@@ -42,9 +45,11 @@ export class CodeActionDocumentationContribution
 		languageFeaturesService: ILanguageFeaturesService,
 	) {
 		super();
+
 		this._register(
 			languageFeaturesService.codeActionProvider.register("*", this),
 		);
+
 		extensionPoint.setHandler((points) => {
 			this.contributions = [];
 
@@ -52,6 +57,7 @@ export class CodeActionDocumentationContribution
 				if (!documentation.value.refactoring) {
 					continue;
 				}
+
 				for (const contribution of documentation.value.refactoring) {
 					const precondition = ContextKeyExpr.deserialize(
 						contribution.when,
@@ -60,6 +66,7 @@ export class CodeActionDocumentationContribution
 					if (!precondition) {
 						continue;
 					}
+
 					this.contributions.push({
 						title: contribution.title,
 						when: precondition,
@@ -69,6 +76,7 @@ export class CodeActionDocumentationContribution
 			}
 		});
 	}
+
 	async provideCodeActions(
 		_model: ITextModel,
 		_range: Range | Selection,
@@ -77,6 +85,7 @@ export class CodeActionDocumentationContribution
 	): Promise<languages.CodeActionList> {
 		return this.emptyCodeActionsList;
 	}
+
 	public _getAdditionalMenuItems(
 		context: languages.CodeActionContext,
 		actions: readonly languages.CodeAction[],
@@ -94,6 +103,7 @@ export class CodeActionDocumentationContribution
 				return [];
 			}
 		}
+
 		return this.contributions
 			.filter((contribution) =>
 				this.contextKeyService.contextMatchesRules(contribution.when),

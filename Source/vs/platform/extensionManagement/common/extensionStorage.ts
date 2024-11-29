@@ -29,6 +29,7 @@ import {
 
 export interface IExtensionIdWithVersion {
 	id: string;
+
 	version: string;
 }
 export const IExtensionStorageService =
@@ -52,6 +53,7 @@ export interface IExtensionStorageService {
 		state: IStringDictionary<any> | undefined,
 		global: boolean,
 	): void;
+
 	readonly onDidChangeExtensionStorageToSync: Event<void>;
 
 	setKeysForSync(
@@ -62,6 +64,7 @@ export interface IExtensionStorageService {
 	getKeysForSync(
 		extensionIdWithVersion: IExtensionIdWithVersion,
 	): string[] | undefined;
+
 	addToMigrationList(from: string, to: string): void;
 
 	getSourceExtensionToMigrate(target: string): string | undefined;
@@ -75,16 +78,20 @@ export class ExtensionStorageService
 	implements IExtensionStorageService
 {
 	readonly _serviceBrand: undefined;
+
 	private static LARGE_STATE_WARNING_THRESHOLD = 512 * 1024;
+
 	private static toKey(extension: IExtensionIdWithVersion): string {
 		return `extensionKeys/${adoptToGalleryExtensionId(extension.id)}@${extension.version}`;
 	}
+
 	private static fromKey(key: string): IExtensionIdWithVersion | undefined {
 		const matches = EXTENSION_KEYS_ID_VERSION_REGEX.exec(key);
 
 		if (matches && matches[1]) {
 			return { id: matches[1], version: matches[2] };
 		}
+
 		return undefined;
 	}
 	/* TODO @sandy081: This has to be done across all profiles */
@@ -114,10 +121,12 @@ export class ExtensionStorageService
 				}
 			}
 		}
+
 		for (const key of extensionVersionsToRemove) {
 			storageService.remove(key, StorageScope.PROFILE);
 		}
 	}
+
 	private static readAllExtensionsWithKeysForSync(
 		storageService: IStorageService,
 	): Map<string, string[]> {
@@ -142,16 +151,21 @@ export class ExtensionStorageService
 						(versions = []),
 					);
 				}
+
 				versions.push(extensionIdWithVersion.version);
 			}
 		}
+
 		return extensionsWithKeysForSync;
 	}
+
 	private readonly _onDidChangeExtensionStorageToSync = this._register(
 		new Emitter<void>(),
 	);
+
 	readonly onDidChangeExtensionStorageToSync =
 		this._onDidChangeExtensionStorageToSync.event;
+
 	private readonly extensionsWithKeysForSync: Map<string, string[]>;
 
 	constructor(
@@ -163,10 +177,12 @@ export class ExtensionStorageService
 		private readonly logService: ILogService,
 	) {
 		super();
+
 		this.extensionsWithKeysForSync =
 			ExtensionStorageService.readAllExtensionsWithKeysForSync(
 				storageService,
 			);
+
 		this._register(
 			this.storageService.onDidChangeValue(
 				StorageScope.PROFILE,
@@ -175,6 +191,7 @@ export class ExtensionStorageService
 			)((e) => this.onDidChangeStorageValue(e)),
 		);
 	}
+
 	private onDidChangeStorageValue(e: IProfileStorageValueChangeEvent): void {
 		// State of extension with keys for sync has changed
 		if (this.extensionsWithKeysForSync.has(e.key.toLowerCase())) {
@@ -204,18 +221,23 @@ export class ExtensionStorageService
 						(versions = []),
 					);
 				}
+
 				versions.push(extensionIdWithVersion.version);
+
 				this._onDidChangeExtensionStorageToSync.fire();
 			}
+
 			return;
 		}
 	}
+
 	private getExtensionId(
 		extension: IExtension | IGalleryExtension | string,
 	): string {
 		if (isString(extension)) {
 			return extension;
 		}
+
 		const publisher = (extension as IExtension).manifest
 			? (extension as IExtension).manifest.publisher
 			: (extension as IGalleryExtension).publisher;
@@ -226,6 +248,7 @@ export class ExtensionStorageService
 
 		return getExtensionId(publisher, name);
 	}
+
 	getExtensionState(
 		extension: IExtension | IGalleryExtension | string,
 		global: boolean,
@@ -245,8 +268,10 @@ export class ExtensionStorageService
 				);
 			}
 		}
+
 		return undefined;
 	}
+
 	getExtensionStateRaw(
 		extension: IExtension | IGalleryExtension | string,
 		global: boolean,
@@ -267,8 +292,10 @@ export class ExtensionStorageService
 				`[mainThreadStorage] large extension state detected (extensionId: ${extensionId}, global: ${global}): ${rawState.length / 1024}kb. Consider to use 'storageUri' or 'globalStorageUri' to store this data on disk instead.`,
 			);
 		}
+
 		return rawState;
 	}
+
 	setExtensionState(
 		extension: IExtension | IGalleryExtension | string,
 		state: IStringDictionary<any> | undefined,
@@ -290,6 +317,7 @@ export class ExtensionStorageService
 			);
 		}
 	}
+
 	setKeysForSync(
 		extensionIdWithVersion: IExtensionIdWithVersion,
 		keys: string[],
@@ -301,6 +329,7 @@ export class ExtensionStorageService
 			StorageTarget.MACHINE,
 		);
 	}
+
 	getKeysForSync(
 		extensionIdWithVersion: IExtensionIdWithVersion,
 	): string[] | undefined {
@@ -328,21 +357,26 @@ export class ExtensionStorageService
 			: extensionKeysForSyncFromStorage ||
 					extensionKeysForSyncFromProduct;
 	}
+
 	addToMigrationList(from: string, to: string): void {
 		if (from !== to) {
 			// remove the duplicates
 			const migrationList: [string, string][] = this.migrationList.filter(
 				(entry) => !entry.includes(from) && !entry.includes(to),
 			);
+
 			migrationList.push([from, to]);
+
 			this.migrationList = migrationList;
 		}
 	}
+
 	getSourceExtensionToMigrate(toExtensionId: string): string | undefined {
 		const entry = this.migrationList.find(([, to]) => toExtensionId === to);
 
 		return entry ? entry[0] : undefined;
 	}
+
 	private get migrationList(): [string, string][] {
 		const value = this.storageService.get(
 			"extensionStorage.migrationList",
@@ -359,8 +393,10 @@ export class ExtensionStorageService
 		} catch (error) {
 			/* ignore */
 		}
+
 		return [];
 	}
+
 	private set migrationList(migrationList: [string, string][]) {
 		if (migrationList.length) {
 			this.storageService.store(

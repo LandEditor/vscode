@@ -86,6 +86,7 @@ registerAction2(
 				],
 			});
 		}
+
 		run(accessor: ServicesAccessor): void {
 			accessor
 				.get(ICommandService)
@@ -121,6 +122,7 @@ registerAction2(
 				],
 			});
 		}
+
 		run(accessor: ServicesAccessor): void {
 			accessor.get(IPreferencesService).openSettings({
 				jsonEditor: false,
@@ -150,6 +152,7 @@ registerAction2(
 				],
 			});
 		}
+
 		run(accessor: ServicesAccessor): void {
 			accessor.get(IPreferencesService).openSettings({
 				jsonEditor: false,
@@ -199,6 +202,7 @@ registerAction2(
 				},
 			});
 		}
+
 		async run(accessor: ServicesAccessor): Promise<void> {
 			return accessor
 				.get(ICommandService)
@@ -226,6 +230,7 @@ registerAction2(
 				f1: false,
 			});
 		}
+
 		async run(accessor: ServicesAccessor, ...args: any[]): Promise<void> {
 			return accessor
 				.get(ICommandService)
@@ -252,6 +257,7 @@ registerAction2(
 				f1: false,
 			});
 		}
+
 		async run(accessor: ServicesAccessor): Promise<void> {
 			return accessor
 				.get(ICommandService)
@@ -273,6 +279,7 @@ registerAction2(
 				precondition: NOTEBOOK_IS_ACTIVE_EDITOR,
 			});
 		}
+
 		run(accessor: ServicesAccessor) {
 			const service = accessor.get(INotebookService);
 
@@ -285,10 +292,12 @@ registerAction2(
 					}
 				>(),
 			);
+
 			qp.placeholder = localize(
 				"notebook.placeholder",
 				"Settings file to save in",
 			);
+
 			qp.items = [
 				{
 					target: ConfigurationTarget.USER,
@@ -302,6 +311,7 @@ registerAction2(
 					),
 				},
 			];
+
 			disposables.add(
 				qp.onDidAccept(() => {
 					const target = qp.selectedItems[0]?.target;
@@ -309,10 +319,13 @@ registerAction2(
 					if (target !== undefined) {
 						service.saveMimeDisplayOrder(target);
 					}
+
 					qp.dispose();
 				}),
 			);
+
 			disposables.add(qp.onDidHide(() => disposables.dispose()));
+
 			qp.show();
 		}
 	},
@@ -330,6 +343,7 @@ registerAction2(
 				category: NOTEBOOK_ACTIONS_CATEGORY,
 			});
 		}
+
 		run(accessor: ServicesAccessor, args?: UriComponents): void {
 			const editorService = accessor.get(IEditorService);
 
@@ -361,6 +375,7 @@ registerAction2(
 				if (!editor) {
 					return;
 				}
+
 				editor.getInnerWebview()?.reload();
 			}
 		}
@@ -412,6 +427,7 @@ registerAction2(
 				],
 			});
 		}
+
 		override async run(accessor: ServicesAccessor): Promise<void> {
 			const configurationService = accessor.get(IConfigurationService);
 

@@ -15,10 +15,13 @@ export class CustomEditorModelManager implements ICustomEditorModelManager {
 		string,
 		{
 			readonly viewType: string;
+
 			readonly model: Promise<ICustomEditorModel>;
+
 			counter: number;
 		}
 	>();
+
 	public async getAllModels(resource: URI): Promise<ICustomEditorModel[]> {
 		const keyStart = `${resource.toString()}@@@`;
 
@@ -29,8 +32,10 @@ export class CustomEditorModelManager implements ICustomEditorModelManager {
 				models.push(await entry.model);
 			}
 		}
+
 		return models;
 	}
+
 	public async get(
 		resource: URI,
 		viewType: string,
@@ -41,6 +46,7 @@ export class CustomEditorModelManager implements ICustomEditorModelManager {
 
 		return entry?.model;
 	}
+
 	public tryRetain(
 		resource: URI,
 		viewType: string,
@@ -52,6 +58,7 @@ export class CustomEditorModelManager implements ICustomEditorModelManager {
 		if (!entry) {
 			return undefined;
 		}
+
 		entry.counter++;
 
 		return entry.model.then((model) => {
@@ -60,12 +67,14 @@ export class CustomEditorModelManager implements ICustomEditorModelManager {
 				dispose: createSingleCallFunction(() => {
 					if (--entry.counter <= 0) {
 						entry.model.then((x) => x.dispose());
+
 						this._references.delete(key);
 					}
 				}),
 			};
 		});
 	}
+
 	public add(
 		resource: URI,
 		viewType: string,
@@ -78,18 +87,22 @@ export class CustomEditorModelManager implements ICustomEditorModelManager {
 		if (existing) {
 			throw new Error("Model already exists");
 		}
+
 		this._references.set(key, { viewType, model, counter: 0 });
 
 		return this.tryRetain(resource, viewType)!;
 	}
+
 	public disposeAllModelsForView(viewType: string): void {
 		for (const [key, value] of this._references) {
 			if (value.viewType === viewType) {
 				value.model.then((x) => x.dispose());
+
 				this._references.delete(key);
 			}
 		}
 	}
+
 	private key(resource: URI, viewType: string): string {
 		return `${resource.toString()}@@@${viewType}`;
 	}

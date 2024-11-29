@@ -25,9 +25,13 @@ import {
 
 export interface IViewCursorRenderData {
 	domNode: HTMLElement;
+
 	position: Position;
+
 	contentLeft: number;
+
 	width: number;
+
 	height: number;
 }
 class ViewCursorRenderData {
@@ -48,15 +52,25 @@ export enum CursorPlurality {
 }
 export class ViewCursor {
 	private readonly _context: ViewContext;
+
 	private readonly _domNode: FastDomNode<HTMLElement>;
+
 	private _cursorStyle: TextEditorCursorStyle;
+
 	private _lineCursorWidth: number;
+
 	private _lineHeight: number;
+
 	private _typicalHalfwidthCharacterWidth: number;
+
 	private _isVisible: boolean;
+
 	private _position: Position;
+
 	private _pluralityClass: string;
+
 	private _lastRenderedContent: string;
+
 	private _renderData: ViewCursorRenderData | null;
 
 	constructor(context: ViewContext, plurality: CursorPlurality) {
@@ -65,37 +79,56 @@ export class ViewCursor {
 		const options = this._context.configuration.options;
 
 		const fontInfo = options.get(EditorOption.fontInfo);
+
 		this._cursorStyle = options.get(EditorOption.cursorStyle);
+
 		this._lineHeight = options.get(EditorOption.lineHeight);
+
 		this._typicalHalfwidthCharacterWidth =
 			fontInfo.typicalHalfwidthCharacterWidth;
+
 		this._lineCursorWidth = Math.min(
 			options.get(EditorOption.cursorWidth),
 			this._typicalHalfwidthCharacterWidth,
 		);
+
 		this._isVisible = true;
 		// Create the dom node
 		this._domNode = createFastDomNode(document.createElement("div"));
+
 		this._domNode.setClassName(
 			`cursor ${MOUSE_CURSOR_TEXT_CSS_CLASS_NAME}`,
 		);
+
 		this._domNode.setHeight(this._lineHeight);
+
 		this._domNode.setTop(0);
+
 		this._domNode.setLeft(0);
+
 		applyFontInfo(this._domNode, fontInfo);
+
 		this._domNode.setDisplay("none");
+
 		this._position = new Position(1, 1);
+
 		this._pluralityClass = "";
+
 		this.setPlurality(plurality);
+
 		this._lastRenderedContent = "";
+
 		this._renderData = null;
 	}
+
 	public getDomNode(): FastDomNode<HTMLElement> {
 		return this._domNode;
 	}
+
 	public getPosition(): Position {
 		return this._position;
 	}
+
 	public setPlurality(plurality: CursorPlurality) {
 		switch (plurality) {
 			default:
@@ -115,36 +148,47 @@ export class ViewCursor {
 				break;
 		}
 	}
+
 	public show(): void {
 		if (!this._isVisible) {
 			this._domNode.setVisibility("inherit");
+
 			this._isVisible = true;
 		}
 	}
+
 	public hide(): void {
 		if (this._isVisible) {
 			this._domNode.setVisibility("hidden");
+
 			this._isVisible = false;
 		}
 	}
+
 	public onConfigurationChanged(
 		e: viewEvents.ViewConfigurationChangedEvent,
 	): boolean {
 		const options = this._context.configuration.options;
 
 		const fontInfo = options.get(EditorOption.fontInfo);
+
 		this._cursorStyle = options.get(EditorOption.cursorStyle);
+
 		this._lineHeight = options.get(EditorOption.lineHeight);
+
 		this._typicalHalfwidthCharacterWidth =
 			fontInfo.typicalHalfwidthCharacterWidth;
+
 		this._lineCursorWidth = Math.min(
 			options.get(EditorOption.cursorWidth),
 			this._typicalHalfwidthCharacterWidth,
 		);
+
 		applyFontInfo(this._domNode, fontInfo);
 
 		return true;
 	}
+
 	public onCursorPositionChanged(
 		position: Position,
 		pauseAnimation: boolean,
@@ -154,6 +198,7 @@ export class ViewCursor {
 		} else {
 			this._domNode.domNode.style.transitionProperty = "";
 		}
+
 		this._position = position;
 
 		return true;
@@ -177,6 +222,7 @@ export class ViewCursor {
 			lineContent.substring(startOffset, endOffset),
 		];
 	}
+
 	private _prepareRender(ctx: RenderingContext): ViewCursorRenderData | null {
 		let textContent = "";
 
@@ -194,6 +240,7 @@ export class ViewCursor {
 				// Outside viewport
 				return null;
 			}
+
 			const window = dom.getWindow(this._domNode.domNode);
 
 			let width: number;
@@ -206,11 +253,13 @@ export class ViewCursor {
 
 				if (width > 2) {
 					textContent = nextGrapheme;
+
 					textContentClassName = this._getTokenClassName(position);
 				}
 			} else {
 				width = dom.computeScreenAwareSize(window, 1);
 			}
+
 			let left = visibleRange.left;
 
 			let paddingLeft = 0;
@@ -218,8 +267,10 @@ export class ViewCursor {
 			if (width >= 2 && left >= 1) {
 				// shift the cursor a bit between the characters
 				paddingLeft = 1;
+
 				left -= paddingLeft;
 			}
+
 			const top =
 				ctx.getVerticalOffsetForLineNumber(position.lineNumber) -
 				ctx.bigNumbersDelta;
@@ -234,6 +285,7 @@ export class ViewCursor {
 				textContentClassName,
 			);
 		}
+
 		const visibleRangeForCharacter = ctx.linesVisibleRangesForRange(
 			new Range(
 				position.lineNumber,
@@ -251,6 +303,7 @@ export class ViewCursor {
 			// Outside viewport
 			return null;
 		}
+
 		const firstVisibleRangeForCharacter = visibleRangeForCharacter[0];
 
 		if (
@@ -260,6 +313,7 @@ export class ViewCursor {
 			// Outside viewport
 			return null;
 		}
+
 		const range = firstVisibleRangeForCharacter.ranges[0];
 
 		const width =
@@ -271,8 +325,10 @@ export class ViewCursor {
 
 		if (this._cursorStyle === TextEditorCursorStyle.Block) {
 			textContent = nextGrapheme;
+
 			textContentClassName = this._getTokenClassName(position);
 		}
+
 		let top =
 			ctx.getVerticalOffsetForLineNumber(position.lineNumber) -
 			ctx.bigNumbersDelta;
@@ -284,8 +340,10 @@ export class ViewCursor {
 			this._cursorStyle === TextEditorCursorStyle.UnderlineThin
 		) {
 			top += this._lineHeight - 2;
+
 			height = 2;
 		}
+
 		return new ViewCursorRenderData(
 			top,
 			range.left,
@@ -296,6 +354,7 @@ export class ViewCursor {
 			textContentClassName,
 		);
 	}
+
 	private _getTokenClassName(position: Position): string {
 		const lineData = this._context.viewModel.getViewLineData(
 			position.lineNumber,
@@ -307,9 +366,11 @@ export class ViewCursor {
 
 		return lineData.tokens.getClassName(tokenIndex);
 	}
+
 	public prepareRender(ctx: RenderingContext): void {
 		this._renderData = this._prepareRender(ctx);
 	}
+
 	public render(
 		ctx: RestrictedRenderingContext,
 	): IViewCursorRenderData | null {
@@ -318,19 +379,29 @@ export class ViewCursor {
 
 			return null;
 		}
+
 		if (this._lastRenderedContent !== this._renderData.textContent) {
 			this._lastRenderedContent = this._renderData.textContent;
+
 			this._domNode.domNode.textContent = this._lastRenderedContent;
 		}
+
 		this._domNode.setClassName(
 			`cursor ${this._pluralityClass} ${MOUSE_CURSOR_TEXT_CSS_CLASS_NAME} ${this._renderData.textContentClassName}`,
 		);
+
 		this._domNode.setDisplay("block");
+
 		this._domNode.setTop(this._renderData.top);
+
 		this._domNode.setLeft(this._renderData.left);
+
 		this._domNode.setPaddingLeft(this._renderData.paddingLeft);
+
 		this._domNode.setWidth(this._renderData.width);
+
 		this._domNode.setLineHeight(this._renderData.height);
+
 		this._domNode.setHeight(this._renderData.height);
 
 		return {

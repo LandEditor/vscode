@@ -308,9 +308,13 @@ export interface IStoredFileWorkingCopyResolveOptions {
  */
 interface IStoredFileWorkingCopyBackupMetaData extends IWorkingCopyBackupMeta {
 	readonly mtime: number;
+
 	readonly ctime: number;
+
 	readonly size: number;
+
 	readonly etag: string;
+
 	readonly orphaned: boolean;
 }
 export interface IStoredFileWorkingCopySaveEvent extends IWorkingCopySaveEvent {
@@ -332,6 +336,7 @@ export class StoredFileWorkingCopy<M extends IStoredFileWorkingCopyModel>
 {
 	readonly capabilities: WorkingCopyCapabilities =
 		WorkingCopyCapabilities.None;
+
 	private _model: M | undefined = undefined;
 
 	get model(): M | undefined {
@@ -339,20 +344,33 @@ export class StoredFileWorkingCopy<M extends IStoredFileWorkingCopyModel>
 	}
 	//#region events
 	private readonly _onDidChangeContent = this._register(new Emitter<void>());
+
 	readonly onDidChangeContent = this._onDidChangeContent.event;
+
 	private readonly _onDidResolve = this._register(new Emitter<void>());
+
 	readonly onDidResolve = this._onDidResolve.event;
+
 	private readonly _onDidChangeDirty = this._register(new Emitter<void>());
+
 	readonly onDidChangeDirty = this._onDidChangeDirty.event;
+
 	private readonly _onDidSaveError = this._register(new Emitter<void>());
+
 	readonly onDidSaveError = this._onDidSaveError.event;
+
 	private readonly _onDidSave = this._register(
 		new Emitter<IStoredFileWorkingCopySaveEvent>(),
 	);
+
 	readonly onDidSave = this._onDidSave.event;
+
 	private readonly _onDidRevert = this._register(new Emitter<void>());
+
 	readonly onDidRevert = this._onDidRevert.event;
+
 	private readonly _onDidChangeReadonly = this._register(new Emitter<void>());
+
 	readonly onDidChangeReadonly = this._onDidChangeReadonly.event;
 	//#endregion
 	constructor(
@@ -387,8 +405,10 @@ export class StoredFileWorkingCopy<M extends IStoredFileWorkingCopyModel>
 		super(resource, fileService);
 		// Make known to working copy service
 		this._register(workingCopyService.registerWorkingCopy(this));
+
 		this.registerListeners();
 	}
+
 	private registerListeners(): void {
 		this._register(
 			this.filesConfigurationService.onDidChangeReadonly(() =>
@@ -398,25 +418,31 @@ export class StoredFileWorkingCopy<M extends IStoredFileWorkingCopyModel>
 	}
 	//#region Dirty
 	private dirty = false;
+
 	private savedVersionId: unknown;
+
 	isDirty(): this is IResolvedStoredFileWorkingCopy<M> {
 		return this.dirty;
 	}
+
 	markModified(): void {
 		this.setDirty(true); // stored file working copy tracks modified via dirty
 	}
+
 	private setDirty(dirty: boolean): void {
 		if (!this.isResolved()) {
 			return; // only resolved working copies can be marked dirty
 		}
 		// Track dirty state and version id
 		const wasDirty = this.dirty;
+
 		this.doSetDirty(dirty);
 		// Emit as Event if dirty changed
 		if (dirty !== wasDirty) {
 			this._onDidChangeDirty.fire();
 		}
 	}
+
 	private doSetDirty(dirty: boolean): () => void {
 		const wasDirty = this.dirty;
 
@@ -428,7 +454,9 @@ export class StoredFileWorkingCopy<M extends IStoredFileWorkingCopyModel>
 
 		if (!dirty) {
 			this.dirty = false;
+
 			this.inConflictMode = false;
+
 			this.inErrorMode = false;
 			// we remember the models alternate version id to remember when the version
 			// of the model matches with the saved version on disk. we need to keep this
@@ -444,8 +472,11 @@ export class StoredFileWorkingCopy<M extends IStoredFileWorkingCopyModel>
 		// Return function to revert this call
 		return () => {
 			this.dirty = wasDirty;
+
 			this.inConflictMode = wasInConflictMode;
+
 			this.inErrorMode = wasInErrorMode;
+
 			this.savedVersionId = oldSavedVersionId;
 		};
 	}
@@ -455,6 +486,7 @@ export class StoredFileWorkingCopy<M extends IStoredFileWorkingCopyModel>
 	isResolved(): this is IResolvedStoredFileWorkingCopy<M> {
 		return !!this.model;
 	}
+
 	async resolve(
 		options?: IStoredFileWorkingCopyResolveOptions,
 	): Promise<void> {
@@ -480,8 +512,10 @@ export class StoredFileWorkingCopy<M extends IStoredFileWorkingCopyModel>
 
 			return;
 		}
+
 		return this.doResolve(options);
 	}
+
 	private async doResolve(
 		options?: IStoredFileWorkingCopyResolveOptions,
 	): Promise<void> {
@@ -502,6 +536,7 @@ export class StoredFileWorkingCopy<M extends IStoredFileWorkingCopyModel>
 		// Finally, resolve from file resource
 		return this.resolveFromFile(options);
 	}
+
 	private async resolveFromBuffer(
 		buffer: VSBufferReadableStream,
 	): Promise<void> {
@@ -517,17 +552,24 @@ export class StoredFileWorkingCopy<M extends IStoredFileWorkingCopyModel>
 
 		try {
 			const metadata = await this.fileService.stat(this.resource);
+
 			mtime = metadata.mtime;
+
 			ctime = metadata.ctime;
+
 			size = metadata.size;
+
 			etag = metadata.etag;
 			// Clear orphaned state when resolving was successful
 			this.setOrphaned(false);
 		} catch (error) {
 			// Put some fallback values in error case
 			mtime = Date.now();
+
 			ctime = Date.now();
+
 			size = 0;
+
 			etag = ETAG_DISABLED;
 			// Apply orphaned state based on error code
 			this.setOrphaned(
@@ -551,6 +593,7 @@ export class StoredFileWorkingCopy<M extends IStoredFileWorkingCopyModel>
 			true /* dirty (resolved from buffer) */,
 		);
 	}
+
 	private async resolveFromBackup(): Promise<boolean> {
 		// Resolve backup if any
 		const backup =
@@ -576,6 +619,7 @@ export class StoredFileWorkingCopy<M extends IStoredFileWorkingCopyModel>
 		// Otherwise signal back that resolving did not happen
 		return false;
 	}
+
 	private async doResolveFromBackup(
 		backup: IResolvedWorkingCopyBackup<IStoredFileWorkingCopyBackupMetaData>,
 	): Promise<void> {
@@ -600,6 +644,7 @@ export class StoredFileWorkingCopy<M extends IStoredFileWorkingCopyModel>
 			this.setOrphaned(true);
 		}
 	}
+
 	private async resolveFromFile(
 		options?: IStoredFileWorkingCopyResolveOptions,
 	): Promise<void> {
@@ -638,6 +683,7 @@ export class StoredFileWorkingCopy<M extends IStoredFileWorkingCopyModel>
 
 				return;
 			}
+
 			await this.resolveFromContent(
 				content,
 				false /* not dirty (resolved from file) */,
@@ -656,6 +702,7 @@ export class StoredFileWorkingCopy<M extends IStoredFileWorkingCopyModel>
 				if (error instanceof NotModifiedSinceFileOperationError) {
 					this.updateLastResolvedFileStat(error.stat);
 				}
+
 				return;
 			}
 			// Unless we are forced to read from the file, ignore when a working copy has
@@ -673,6 +720,7 @@ export class StoredFileWorkingCopy<M extends IStoredFileWorkingCopyModel>
 			throw error;
 		}
 	}
+
 	private async resolveFromContent(
 		content: IFileStreamContent,
 		dirty: boolean,
@@ -718,6 +766,7 @@ export class StoredFileWorkingCopy<M extends IStoredFileWorkingCopyModel>
 		// Emit as event
 		this._onDidResolve.fire();
 	}
+
 	private async doCreateModel(
 		contents: VSBufferReadableStream,
 	): Promise<void> {
@@ -733,7 +782,9 @@ export class StoredFileWorkingCopy<M extends IStoredFileWorkingCopyModel>
 		// Model listeners
 		this.installModelListeners(this._model);
 	}
+
 	private ignoreDirtyOnModelContentChange = false;
+
 	private async doUpdateModel(
 		contents: VSBufferReadableStream,
 	): Promise<void> {
@@ -747,6 +798,7 @@ export class StoredFileWorkingCopy<M extends IStoredFileWorkingCopyModel>
 			this.ignoreDirtyOnModelContentChange = false;
 		}
 	}
+
 	private installModelListeners(model: M): void {
 		// See https://github.com/microsoft/vscode/issues/30189
 		// This code has been extracted to a different method because it caused a memory leak
@@ -760,10 +812,12 @@ export class StoredFileWorkingCopy<M extends IStoredFileWorkingCopyModel>
 		// Lifecycle
 		this._register(model.onWillDispose(() => this.dispose()));
 	}
+
 	private onModelContentChanged(model: M, isUndoingOrRedoing: boolean): void {
 		this.trace(`onModelContentChanged() - enter`);
 		// In any case increment the version id because it tracks the content state of the model at all times
 		this.versionId++;
+
 		this.trace(`onModelContentChanged() - new versionId ${this.versionId}`);
 		// Remember when the user changed the model through a undo/redo operation.
 		// We need this information to throttle save participants to fix
@@ -783,6 +837,7 @@ export class StoredFileWorkingCopy<M extends IStoredFileWorkingCopyModel>
 				);
 				// Clear flags
 				const wasDirty = this.dirty;
+
 				this.setDirty(false);
 				// Emit revert event if we were dirty
 				if (wasDirty) {
@@ -801,6 +856,7 @@ export class StoredFileWorkingCopy<M extends IStoredFileWorkingCopyModel>
 		// Emit as event
 		this._onDidChangeContent.fire();
 	}
+
 	private async forceResolveFromFile(): Promise<void> {
 		if (this.isDisposed()) {
 			return; // return early when the working copy is invalid
@@ -819,6 +875,7 @@ export class StoredFileWorkingCopy<M extends IStoredFileWorkingCopyModel>
 	get backupDelay(): number | undefined {
 		return this.model?.configuration?.backupDelay;
 	}
+
 	async backup(token: CancellationToken): Promise<IWorkingCopyBackup> {
 		// Fill in metadata if we are resolved
 		let meta: IStoredFileWorkingCopyBackupMetaData | undefined = undefined;
@@ -841,14 +898,19 @@ export class StoredFileWorkingCopy<M extends IStoredFileWorkingCopyModel>
 				token,
 			);
 		}
+
 		return { meta, content };
 	}
 	//#endregion
 	//#region Save
 	private versionId = 0;
+
 	private static readonly UNDO_REDO_SAVE_PARTICIPANTS_AUTO_SAVE_THROTTLE_THRESHOLD = 500;
+
 	private lastContentChangeFromUndoRedo: number | undefined = undefined;
+
 	private readonly saveSequentializer = new TaskSequentializer();
+
 	private ignoreSaveFromSaveParticipants = false;
 
 	async save(
@@ -857,11 +919,13 @@ export class StoredFileWorkingCopy<M extends IStoredFileWorkingCopyModel>
 		if (!this.isResolved()) {
 			return false;
 		}
+
 		if (this.isReadonly()) {
 			this.trace("save() - ignoring request for readonly resource");
 
 			return false; // if working copy is readonly we do not attempt to save at all
 		}
+
 		if (
 			(this.hasState(StoredFileWorkingCopyState.CONFLICT) ||
 				this.hasState(StoredFileWorkingCopyState.ERROR)) &&
@@ -877,18 +941,23 @@ export class StoredFileWorkingCopy<M extends IStoredFileWorkingCopyModel>
 		}
 		// Actually do save
 		this.trace("save() - enter");
+
 		await this.doSave(options);
+
 		this.trace("save() - exit");
 
 		return this.hasState(StoredFileWorkingCopyState.SAVED);
 	}
+
 	private async doSave(
 		options: IStoredFileWorkingCopySaveAsOptions,
 	): Promise<void> {
 		if (typeof options.reason !== "number") {
 			options.reason = SaveReason.EXPLICIT;
 		}
+
 		const versionId = this.versionId;
+
 		this.trace(`doSave(${versionId}) - enter with versionId ${versionId}`);
 		// Return early if saved from within save participant to break recursion
 		//
@@ -948,6 +1017,7 @@ export class StoredFileWorkingCopy<M extends IStoredFileWorkingCopyModel>
 		if (this.isResolved()) {
 			this.model.pushStackElement();
 		}
+
 		const saveCancellation = new CancellationTokenSource();
 
 		return this.progressService
@@ -978,6 +1048,7 @@ export class StoredFileWorkingCopy<M extends IStoredFileWorkingCopyModel>
 				saveCancellation.dispose();
 			});
 	}
+
 	private doSaveSequential(
 		versionId: number,
 		options: IStoredFileWorkingCopySaveAsOptions,
@@ -1095,6 +1166,7 @@ export class StoredFileWorkingCopy<M extends IStoredFileWorkingCopyModel>
 				progress.report({
 					message: localize("saveTextFile", "Writing into file..."),
 				});
+
 				this.trace(`doSave(${versionId}) - before write()`);
 
 				const lastResolvedFileStat = assertIsDefined(
@@ -1138,6 +1210,7 @@ export class StoredFileWorkingCopy<M extends IStoredFileWorkingCopyModel>
 									) {
 										return undefined; // save was cancelled
 									}
+
 									throw error;
 								}
 							}
@@ -1186,6 +1259,7 @@ export class StoredFileWorkingCopy<M extends IStoredFileWorkingCopyModel>
 									);
 								}
 							}
+
 							this.handleSaveSuccess(stat, versionId, options);
 						} catch (error) {
 							this.handleSaveError(error, versionId, options);
@@ -1197,6 +1271,7 @@ export class StoredFileWorkingCopy<M extends IStoredFileWorkingCopyModel>
 			() => saveCancellation.cancel(),
 		);
 	}
+
 	private handleSaveSuccess(
 		stat: IFileStatWithMetadata,
 		versionId: number,
@@ -1209,6 +1284,7 @@ export class StoredFileWorkingCopy<M extends IStoredFileWorkingCopyModel>
 			this.trace(
 				`handleSaveSuccess(${versionId}) - setting dirty to false because versionId did not change`,
 			);
+
 			this.setDirty(false);
 		} else {
 			this.trace(
@@ -1224,6 +1300,7 @@ export class StoredFileWorkingCopy<M extends IStoredFileWorkingCopyModel>
 			source: options.source,
 		});
 	}
+
 	private handleSaveError(
 		error: Error,
 		versionId: number,
@@ -1261,6 +1338,7 @@ export class StoredFileWorkingCopy<M extends IStoredFileWorkingCopyModel>
 		// Emit as event
 		this._onDidSaveError.fire();
 	}
+
 	private doHandleSaveError(
 		error: Error,
 		options: IStoredFileWorkingCopySaveAsOptions,
@@ -1280,6 +1358,7 @@ export class StoredFileWorkingCopy<M extends IStoredFileWorkingCopyModel>
 				"Failed to save '{0}': The content of the file is newer. Do you want to overwrite the file with your changes?",
 				this.name,
 			);
+
 			primaryActions.push(
 				toAction({
 					id: "fileWorkingCopy.overwrite",
@@ -1292,6 +1371,7 @@ export class StoredFileWorkingCopy<M extends IStoredFileWorkingCopyModel>
 						}),
 				}),
 			);
+
 			primaryActions.push(
 				toAction({
 					id: "fileWorkingCopy.revert",
@@ -1473,8 +1553,10 @@ export class StoredFileWorkingCopy<M extends IStoredFileWorkingCopyModel>
 				handle.close(),
 			),
 		);
+
 		this._register(Event.once(handle.onDidClose)(() => listener.dispose()));
 	}
+
 	private updateLastResolvedFileStat(
 		newFileStat: IFileStatWithMetadata,
 	): void {
@@ -1510,6 +1592,7 @@ export class StoredFileWorkingCopy<M extends IStoredFileWorkingCopyModel>
 		if (!this.isResolved() || (!this.dirty && !options?.force)) {
 			return; // ignore if not resolved or not dirty and not enforced
 		}
+
 		this.trace("revert()");
 		// Unset flags
 		const wasDirty = this.dirty;
@@ -1544,7 +1627,9 @@ export class StoredFileWorkingCopy<M extends IStoredFileWorkingCopyModel>
 	//#endregion
 	//#region State
 	private inConflictMode = false;
+
 	private inErrorMode = false;
+
 	hasState(state: StoredFileWorkingCopyState): boolean {
 		switch (state) {
 			case StoredFileWorkingCopyState.CONFLICT:
@@ -1566,6 +1651,7 @@ export class StoredFileWorkingCopy<M extends IStoredFileWorkingCopyModel>
 				return !this.dirty;
 		}
 	}
+
 	async joinState(
 		state: StoredFileWorkingCopyState.PENDING_SAVE,
 	): Promise<void> {
@@ -1579,6 +1665,7 @@ export class StoredFileWorkingCopy<M extends IStoredFileWorkingCopyModel>
 			this.lastResolvedFileStat,
 		);
 	}
+
 	private trace(msg: string): void {
 		this.logService.trace(
 			`[stored file working copy] ${msg}`,
@@ -1592,6 +1679,7 @@ export class StoredFileWorkingCopy<M extends IStoredFileWorkingCopyModel>
 		this.trace("dispose()");
 		// State
 		this.inConflictMode = false;
+
 		this.inErrorMode = false;
 		// Free up model for GC
 		this._model = undefined;

@@ -51,20 +51,27 @@ import { IEditorTitleControlDimensions } from "./editorTitleControl.js";
 
 interface IRenderedEditorLabel {
 	readonly editor?: EditorInput;
+
 	readonly pinned: boolean;
 }
 export class SingleEditorTabsControl extends EditorTabsControl {
 	private titleContainer: HTMLElement | undefined;
+
 	private editorLabel: IResourceLabel | undefined;
+
 	private activeLabel: IRenderedEditorLabel = Object.create(null);
+
 	private breadcrumbsControlFactory: BreadcrumbsControlFactory | undefined;
+
 	private get breadcrumbsControl() {
 		return this.breadcrumbsControlFactory?.control;
 	}
+
 	protected override create(parent: HTMLElement): HTMLElement {
 		super.create(parent);
 
 		const titleContainer = (this.titleContainer = parent);
+
 		titleContainer.draggable = true;
 		// Container listeners
 		this.registerContainerListeners(titleContainer);
@@ -72,7 +79,9 @@ export class SingleEditorTabsControl extends EditorTabsControl {
 		this._register(Gesture.addTarget(titleContainer));
 
 		const labelContainer = document.createElement("div");
+
 		labelContainer.classList.add("label-container");
+
 		titleContainer.appendChild(labelContainer);
 		// Editor Label
 		this.editorLabel = this._register(
@@ -82,6 +91,7 @@ export class SingleEditorTabsControl extends EditorTabsControl {
 				{},
 			),
 		).element;
+
 		this._register(
 			addDisposableListener(
 				this.editorLabel.element,
@@ -107,15 +117,18 @@ export class SingleEditorTabsControl extends EditorTabsControl {
 				},
 			),
 		);
+
 		this._register(
 			this.breadcrumbsControlFactory.onDidEnablementChange(() =>
 				this.handleBreadcrumbsEnablementChange(),
 			),
 		);
+
 		titleContainer.classList.toggle(
 			"breadcrumbs",
 			Boolean(this.breadcrumbsControl),
 		);
+
 		this._register(
 			toDisposable(() => titleContainer.classList.remove("breadcrumbs")),
 		); // important to remove because the container is a shared dom node
@@ -124,11 +137,13 @@ export class SingleEditorTabsControl extends EditorTabsControl {
 
 		return titleContainer;
 	}
+
 	private registerContainerListeners(titleContainer: HTMLElement): void {
 		// Drag & Drop support
 		let lastDragEvent: DragEvent | undefined = undefined;
 
 		let isNewWindowOperation = false;
+
 		this._register(
 			new DragAndDropObserver(titleContainer, {
 				onDragStart: (e) => {
@@ -188,15 +203,19 @@ export class SingleEditorTabsControl extends EditorTabsControl {
 			);
 		}
 	}
+
 	private onTitleLabelClick(e: MouseEvent): void {
 		EventHelper.stop(e, false);
 		// delayed to let the onTitleClick() come first which can cause a focus change which can close quick access
 		setTimeout(() => this.quickInputService.quickAccess.show());
 	}
+
 	private onTitleDoubleClick(e: MouseEvent): void {
 		EventHelper.stop(e);
+
 		this.groupView.pinEditor();
 	}
+
 	private onTitleAuxClick(e: MouseEvent): void {
 		if (e.button === 1 /* Middle Button */ && this.tabsModel.activeEditor) {
 			EventHelper.stop(
@@ -216,6 +235,7 @@ export class SingleEditorTabsControl extends EditorTabsControl {
 			}
 		}
 	}
+
 	private onTitleTap(e: GestureEvent): void {
 		// We only want to open the quick access picker when
 		// the tap occurred over the editor label, so we need
@@ -237,12 +257,15 @@ export class SingleEditorTabsControl extends EditorTabsControl {
 		// `touchend` events, which are not an atom event.
 		setTimeout(() => this.quickInputService.quickAccess.show(), 50);
 	}
+
 	openEditor(editor: EditorInput): boolean {
 		return this.doHandleOpenEditor();
 	}
+
 	openEditors(editors: EditorInput[]): boolean {
 		return this.doHandleOpenEditor();
 	}
+
 	private doHandleOpenEditor(): boolean {
 		const activeEditorChanged = this.ifActiveEditorChanged(() =>
 			this.redraw(),
@@ -251,17 +274,22 @@ export class SingleEditorTabsControl extends EditorTabsControl {
 		if (!activeEditorChanged) {
 			this.ifActiveEditorPropertiesChanged(() => this.redraw());
 		}
+
 		return activeEditorChanged;
 	}
+
 	beforeCloseEditor(editor: EditorInput): void {
 		// Nothing to do before closing an editor
 	}
+
 	closeEditor(editor: EditorInput): void {
 		this.ifActiveEditorChanged(() => this.redraw());
 	}
+
 	closeEditors(editors: EditorInput[]): void {
 		this.ifActiveEditorChanged(() => this.redraw());
 	}
+
 	moveEditor(
 		editor: EditorInput,
 		fromIndex: number,
@@ -269,18 +297,25 @@ export class SingleEditorTabsControl extends EditorTabsControl {
 	): void {
 		this.ifActiveEditorChanged(() => this.redraw());
 	}
+
 	pinEditor(editor: EditorInput): void {
 		this.ifEditorIsActive(editor, () => this.redraw());
 	}
+
 	stickEditor(editor: EditorInput): void {}
+
 	unstickEditor(editor: EditorInput): void {}
+
 	setActive(isActive: boolean): void {
 		this.redraw();
 	}
+
 	updateEditorSelections(): void {}
+
 	updateEditorLabel(editor: EditorInput): void {
 		this.ifEditorIsActive(editor, () => this.redraw());
 	}
+
 	updateEditorDirty(editor: EditorInput): void {
 		this.ifEditorIsActive(editor, () => {
 			const titleContainer = assertIsDefined(this.titleContainer);
@@ -294,6 +329,7 @@ export class SingleEditorTabsControl extends EditorTabsControl {
 			}
 		});
 	}
+
 	override updateOptions(
 		oldOptions: IEditorPartOptions,
 		newOptions: IEditorPartOptions,
@@ -307,17 +343,22 @@ export class SingleEditorTabsControl extends EditorTabsControl {
 			this.redraw();
 		}
 	}
+
 	override updateStyles(): void {
 		this.redraw();
 	}
+
 	protected handleBreadcrumbsEnablementChange(): void {
 		const titleContainer = assertIsDefined(this.titleContainer);
+
 		titleContainer.classList.toggle(
 			"breadcrumbs",
 			Boolean(this.breadcrumbsControl),
 		);
+
 		this.redraw();
 	}
+
 	private ifActiveEditorChanged(fn: () => void): boolean {
 		if (
 			(!this.activeLabel.editor && this.tabsModel.activeEditor) || // active editor changed from null => editor
@@ -329,12 +370,15 @@ export class SingleEditorTabsControl extends EditorTabsControl {
 
 			return true;
 		}
+
 		return false;
 	}
+
 	private ifActiveEditorPropertiesChanged(fn: () => void): void {
 		if (!this.activeLabel.editor || !this.tabsModel.activeEditor) {
 			return; // need an active editor to check for properties changed
 		}
+
 		if (
 			this.activeLabel.pinned !==
 			this.tabsModel.isPinned(this.tabsModel.activeEditor)
@@ -342,11 +386,13 @@ export class SingleEditorTabsControl extends EditorTabsControl {
 			fn(); // only run if pinned state has changed
 		}
 	}
+
 	private ifEditorIsActive(editor: EditorInput, fn: () => void): void {
 		if (this.tabsModel.isActive(editor)) {
 			fn(); // only run if editor is current active
 		}
 	}
+
 	private redraw(): void {
 		const editor = this.tabsModel.activeEditor ?? undefined;
 
@@ -355,11 +401,13 @@ export class SingleEditorTabsControl extends EditorTabsControl {
 		const isEditorPinned = editor ? this.tabsModel.isPinned(editor) : false;
 
 		const isGroupActive = this.groupsView.activeGroup === this.groupView;
+
 		this.activeLabel = { editor, pinned: isEditorPinned };
 		// Update Breadcrumbs
 		if (this.breadcrumbsControl) {
 			if (isGroupActive) {
 				this.breadcrumbsControl.update();
+
 				this.breadcrumbsControl.domNode.classList.toggle(
 					"preview",
 					!isEditorPinned,
@@ -376,7 +424,9 @@ export class SingleEditorTabsControl extends EditorTabsControl {
 
 		if (!editor) {
 			titleContainer.classList.remove("dirty");
+
 			editorLabel.clear();
+
 			this.clearEditorActionsToolbar();
 		}
 		// Otherwise render it
@@ -399,6 +449,7 @@ export class SingleEditorTabsControl extends EditorTabsControl {
 				description =
 					editor.getDescription(this.getVerbosity(labelFormat)) || "";
 			}
+
 			editorLabel.setResource(
 				{
 					resource: EditorResourceAccessor.getOriginalUri(editor, {
@@ -433,6 +484,7 @@ export class SingleEditorTabsControl extends EditorTabsControl {
 			this.updateEditorActionsToolbar();
 		}
 	}
+
 	private getVerbosity(style: string | undefined): Verbosity {
 		switch (style) {
 			case "short":
@@ -445,6 +497,7 @@ export class SingleEditorTabsControl extends EditorTabsControl {
 				return Verbosity.MEDIUM;
 		}
 	}
+
 	protected override prepareEditorActions(
 		editorActions: IToolbarActions,
 	): IToolbarActions {
@@ -467,9 +520,11 @@ export class SingleEditorTabsControl extends EditorTabsControl {
 			};
 		}
 	}
+
 	getHeight(): number {
 		return this.tabHeight;
 	}
+
 	layout(dimensions: IEditorTitleControlDimensions): Dimension {
 		this.breadcrumbsControl?.layout(undefined);
 

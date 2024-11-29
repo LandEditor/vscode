@@ -59,6 +59,7 @@ async function getBulkEditPane(
 	if (view instanceof BulkEditPane) {
 		return view;
 	}
+
 	return undefined;
 }
 class UXState {
@@ -74,6 +75,7 @@ class UXState {
 			.getActivePaneComposite(ViewContainerLocation.Panel)
 			?.getId();
 	}
+
 	async restore(panels: boolean, editors: boolean): Promise<void> {
 		// (1) restore previous panel
 		if (panels) {
@@ -103,6 +105,7 @@ class UXState {
 						previewEditors.push(input);
 					}
 				}
+
 				if (previewEditors.length) {
 					group.closeEditors(previewEditors, { preserveFocus: true });
 				}
@@ -118,11 +121,14 @@ class PreviewSession {
 }
 class BulkEditPreviewContribution {
 	static readonly ID = "workbench.contrib.bulkEditPreview";
+
 	static readonly ctxEnabled = new RawContextKey(
 		"refactorPreview.enabled",
 		false,
 	);
+
 	private readonly _ctxEnabled: IContextKey<boolean>;
+
 	private _activeSession: PreviewSession | undefined;
 
 	constructor(
@@ -140,9 +146,11 @@ class BulkEditPreviewContribution {
 		contextKeyService: IContextKeyService,
 	) {
 		bulkEditService.setPreviewHandler((edits) => this._previewEdit(edits));
+
 		this._ctxEnabled =
 			BulkEditPreviewContribution.ctxEnabled.bindTo(contextKeyService);
 	}
+
 	private async _previewEdit(edits: ResourceEdit[]): Promise<ResourceEdit[]> {
 		this._ctxEnabled.set(true);
 
@@ -184,11 +192,14 @@ class BulkEditPreviewContribution {
 
 		if (this._activeSession) {
 			await this._activeSession.uxState.restore(false, true);
+
 			this._activeSession.cts.dispose(true);
+
 			session = new PreviewSession(uxState);
 		} else {
 			session = new PreviewSession(uxState);
 		}
+
 		this._activeSession = session;
 		// the actual work...
 		try {
@@ -197,8 +208,11 @@ class BulkEditPreviewContribution {
 			// restore UX state
 			if (this._activeSession === session) {
 				await this._activeSession.uxState.restore(true, true);
+
 				this._activeSession.cts.dispose();
+
 				this._ctxEnabled.set(false);
+
 				this._activeSession = undefined;
 			}
 		}
@@ -233,10 +247,12 @@ registerAction2(
 				},
 			});
 		}
+
 		async run(accessor: ServicesAccessor): Promise<void> {
 			const viewsService = accessor.get(IViewsService);
 
 			const view = await getBulkEditPane(viewsService);
+
 			view?.accept();
 		}
 	},
@@ -259,10 +275,12 @@ registerAction2(
 				],
 			});
 		}
+
 		async run(accessor: ServicesAccessor): Promise<void> {
 			const viewsService = accessor.get(IViewsService);
 
 			const view = await getBulkEditPane(viewsService);
+
 			view?.discard();
 		}
 	},
@@ -287,10 +305,12 @@ registerAction2(
 				},
 			});
 		}
+
 		async run(accessor: ServicesAccessor): Promise<void> {
 			const viewsService = accessor.get(IViewsService);
 
 			const view = await getBulkEditPane(viewsService);
+
 			view?.toggleChecked();
 		}
 	},
@@ -322,10 +342,12 @@ registerAction2(
 				],
 			});
 		}
+
 		async run(accessor: ServicesAccessor): Promise<void> {
 			const viewsService = accessor.get(IViewsService);
 
 			const view = await getBulkEditPane(viewsService);
+
 			view?.groupByFile();
 		}
 	},
@@ -356,10 +378,12 @@ registerAction2(
 				],
 			});
 		}
+
 		async run(accessor: ServicesAccessor): Promise<void> {
 			const viewsService = accessor.get(IViewsService);
 
 			const view = await getBulkEditPane(viewsService);
+
 			view?.groupByType();
 		}
 	},
@@ -385,10 +409,12 @@ registerAction2(
 				],
 			});
 		}
+
 		async run(accessor: ServicesAccessor): Promise<void> {
 			const viewsService = accessor.get(IViewsService);
 
 			const view = await getBulkEditPane(viewsService);
+
 			view?.toggleGrouping();
 		}
 	},

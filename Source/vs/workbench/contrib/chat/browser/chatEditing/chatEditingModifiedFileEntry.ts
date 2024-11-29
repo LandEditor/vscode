@@ -73,16 +73,23 @@ export class ChatEditingModifiedFileEntry
 	implements IModifiedFileEntry
 {
 	public static readonly scheme = "modified-file-entry";
+
 	private static lastEntryId = 0;
+
 	public readonly entryId = `${ChatEditingModifiedFileEntry.scheme}::${++ChatEditingModifiedFileEntry.lastEntryId}`;
 
 	private readonly docSnapshot: ITextModel;
+
 	public readonly initialContent: string;
+
 	private readonly doc: ITextModel;
+
 	private readonly docFileEditorModel: IResolvedTextFileEditorModel;
+
 	private _allEditsAreFromUs: boolean = true;
 
 	private readonly _onDidDelete = this._register(new Emitter<void>());
+
 	public get onDidDelete() {
 		return this._onDidDelete.event;
 	}
@@ -107,6 +114,7 @@ export class ChatEditingModifiedFileEntry
 		this,
 		WorkingSetEntryState.Modified,
 	);
+
 	public get state(): IObservable<WorkingSetEntryState> {
 		return this._stateObs;
 	}
@@ -115,19 +123,25 @@ export class ChatEditingModifiedFileEntry
 		this,
 		false,
 	);
+
 	public get isCurrentlyBeingModified(): IObservable<boolean> {
 		return this._isCurrentlyBeingModifiedObs;
 	}
 
 	private readonly _rewriteRatioObs = observableValue<number>(this, 0);
+
 	public get rewriteRatio(): IObservable<number> {
 		return this._rewriteRatioObs;
 	}
 
 	private _isFirstEditAfterStartOrSnapshot: boolean = true;
+
 	private _edit: OffsetEdit = OffsetEdit.empty;
+
 	private _isEditFromUs: boolean = false;
+
 	private _diffOperation: Promise<any> | undefined;
+
 	private _diffOperationIds: number = 0;
 
 	private readonly _diffInfo = observableValue<IDocumentDiff>(
@@ -147,6 +161,7 @@ export class ChatEditingModifiedFileEntry
 			);
 		}, 3000),
 	);
+
 	private _editDecorations: string[] = [];
 
 	private static readonly _editDecorationOptions =
@@ -193,11 +208,14 @@ export class ChatEditingModifiedFileEntry
 		if (kind === ChatEditKind.Created) {
 			this.createdInRequestId = this._telemetryInfo.requestId;
 		}
+
 		this.docFileEditorModel = this._register(resourceRef)
 			.object as IResolvedTextFileEditorModel;
+
 		this.doc = resourceRef.object.textEditorModel;
 
 		this.initialContent = initialContent ?? this.doc.getValue();
+
 		const docSnapshot = (this.docSnapshot = this._register(
 			modelService.createModel(
 				createTextBufferFactoryFromSnapshot(
@@ -225,13 +243,16 @@ export class ChatEditingModifiedFileEntry
 
 				return;
 			}
+
 			this._register(reference);
 		})();
 
 		this._register(
 			this.doc.onDidChangeContent((e) => this._mirrorEdits(e)),
 		);
+
 		this._register(this._fileService.watch(this.modifiedURI));
+
 		this._register(
 			this._fileService.onDidFilesChange((e) => {
 				if (
@@ -280,10 +301,14 @@ export class ChatEditingModifiedFileEntry
 			telemetryInfo: this._telemetryInfo,
 		};
 	}
+
 	restoreFromSnapshot(snapshot: ISnapshotEntry) {
 		this._stateObs.set(snapshot.state, undefined);
+
 		this.docSnapshot.setValue(snapshot.original);
+
 		this._setDocValue(snapshot.current);
+
 		this._edit = snapshot.originalToCurrentEdit;
 	}
 
@@ -301,7 +326,9 @@ export class ChatEditingModifiedFileEntry
 
 	private _resetEditsState(tx: ITransaction): void {
 		this._isCurrentlyBeingModifiedObs.set(false, tx);
+
 		this._rewriteRatioObs.set(0, tx);
+
 		this._clearCurrentEditLineDecoration();
 	}
 
@@ -312,6 +339,7 @@ export class ChatEditingModifiedFileEntry
 			const e_sum = this._edit;
 
 			const e_ai = edit;
+
 			this._edit = e_sum.compose(e_ai);
 		} else {
 			//           e_ai
@@ -347,7 +375,9 @@ export class ChatEditingModifiedFileEntry
 					e_user_r,
 					this.docSnapshot,
 				);
+
 				this.docSnapshot.applyEdits(edits);
+
 				this._edit = e_ai.tryRebase(e_user_r);
 			}
 
@@ -357,6 +387,7 @@ export class ChatEditingModifiedFileEntry
 		if (!this.isCurrentlyBeingModified.get()) {
 			const didResetToOriginalContent =
 				this.doc.getValue() === this.initialContent;
+
 			const currentState = this._stateObs.get();
 
 			switch (currentState) {
@@ -387,6 +418,7 @@ export class ChatEditingModifiedFileEntry
 				} satisfies IModelDeltaDecoration;
 			}),
 		);
+
 		this._editDecorationClear.schedule();
 
 		// push stack element for the first edit
@@ -405,6 +437,7 @@ export class ChatEditingModifiedFileEntry
 						request.message.text,
 					)
 				: localize("chatEditing2", "Chat Edit");
+
 			this._undoRedoService.pushElement(
 				new SingleModelEditStackElement(
 					label,
@@ -416,11 +449,13 @@ export class ChatEditingModifiedFileEntry
 		}
 
 		const ops = textEdits.map(TextEdit.asEditOperation);
+
 		this._applyEdits(ops);
 
 		transaction((tx) => {
 			if (!isLastEdits) {
 				this._stateObs.set(WorkingSetEntryState.Modified, tx);
+
 				this._isCurrentlyBeingModifiedObs.set(true, tx);
 
 				const maxLineNumber = ops.reduce(
@@ -429,13 +464,16 @@ export class ChatEditingModifiedFileEntry
 				);
 
 				const lineCount = this.doc.getLineCount();
+
 				this._rewriteRatioObs.set(
 					Math.min(1, maxLineNumber / lineCount),
 					tx,
 				);
 			} else {
 				this._resetEditsState(tx);
+
 				this._updateDiffInfoSeq(true);
+
 				this._rewriteRatioObs.set(1, tx);
 			}
 		});
@@ -454,6 +492,7 @@ export class ChatEditingModifiedFileEntry
 
 	private _updateDiffInfoSeq(fast: boolean) {
 		const myDiffOperationId = ++this._diffOperationIds;
+
 		Promise.resolve(this._diffOperation).then(() => {
 			if (this._diffOperationIds === myDiffOperationId) {
 				this._diffOperation = this._updateDiffInfo(fast);
@@ -494,7 +533,9 @@ export class ChatEditingModifiedFileEntry
 			this.docSnapshot.getVersionId() === snapshotVersionNow
 		) {
 			const diff2 = diff ?? nullDocumentDiff;
+
 			this._diffInfo.set(diff2, undefined);
+
 			this._edit = OffsetEdits.fromLineRangeMapping(
 				this.docSnapshot,
 				this.doc,
@@ -510,9 +551,13 @@ export class ChatEditingModifiedFileEntry
 		}
 
 		this.docSnapshot.setValue(this.doc.createSnapshot());
+
 		this._edit = OffsetEdit.empty;
+
 		this._stateObs.set(WorkingSetEntryState.Accepted, transaction);
+
 		await this.collapse(transaction);
+
 		this._notifyAction("accepted");
 	}
 
@@ -523,10 +568,12 @@ export class ChatEditingModifiedFileEntry
 		}
 
 		this._stateObs.set(WorkingSetEntryState.Rejected, transaction);
+
 		this._notifyAction("rejected");
 
 		if (this.createdInRequestId === this._telemetryInfo.requestId) {
 			await this._fileService.del(this.modifiedURI);
+
 			this._onDidDelete.fire();
 		} else {
 			this._setDocValue(this.docSnapshot.getValue());
@@ -538,6 +585,7 @@ export class ChatEditingModifiedFileEntry
 					reason: SaveReason.EXPLICIT,
 				});
 			}
+
 			await this.collapse(transaction);
 		}
 	}
@@ -580,19 +628,30 @@ export class ChatEditingModifiedFileEntry
 
 export interface IModifiedEntryTelemetryInfo {
 	readonly agentId: string | undefined;
+
 	readonly command: string | undefined;
+
 	readonly sessionId: string;
+
 	readonly requestId: string;
+
 	readonly result: IChatAgentResult | undefined;
 }
 
 export interface ISnapshotEntry {
 	readonly resource: URI;
+
 	readonly languageId: string;
+
 	readonly snapshotUri: URI;
+
 	readonly original: string;
+
 	readonly current: string;
+
 	readonly originalToCurrentEdit: OffsetEdit;
+
 	readonly state: WorkingSetEntryState;
+
 	telemetryInfo: IModifiedEntryTelemetryInfo;
 }

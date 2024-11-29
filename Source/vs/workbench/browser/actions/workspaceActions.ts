@@ -65,6 +65,7 @@ export class OpenFileAction extends Action2 {
 			},
 		});
 	}
+
 	override async run(
 		accessor: ServicesAccessor,
 		data?: ITelemetryData,
@@ -105,6 +106,7 @@ export class OpenFolderAction extends Action2 {
 			},
 		});
 	}
+
 	override async run(
 		accessor: ServicesAccessor,
 		data?: ITelemetryData,
@@ -140,6 +142,7 @@ export class OpenFolderViaWorkspaceAction extends Action2 {
 			},
 		});
 	}
+
 	override run(accessor: ServicesAccessor): Promise<void> {
 		const commandService = accessor.get(ICommandService);
 
@@ -148,6 +151,7 @@ export class OpenFolderViaWorkspaceAction extends Action2 {
 }
 export class OpenFileFolderAction extends Action2 {
 	static readonly ID = "workbench.action.files.openFileFolder";
+
 	static readonly LABEL: ILocalizedString = localize2(
 		"openFileFolder",
 		"Open...",
@@ -169,6 +173,7 @@ export class OpenFileFolderAction extends Action2 {
 			},
 		});
 	}
+
 	override async run(
 		accessor: ServicesAccessor,
 		data?: ITelemetryData,
@@ -196,6 +201,7 @@ class OpenWorkspaceAction extends Action2 {
 			precondition: EnterMultiRootWorkspaceSupportContext,
 		});
 	}
+
 	override async run(
 		accessor: ServicesAccessor,
 		data?: ITelemetryData,
@@ -226,6 +232,7 @@ class CloseWorkspaceAction extends Action2 {
 			},
 		});
 	}
+
 	override async run(accessor: ServicesAccessor): Promise<void> {
 		const hostService = accessor.get(IHostService);
 
@@ -252,6 +259,7 @@ class OpenWorkspaceConfigFileAction extends Action2 {
 			precondition: WorkbenchStateContext.isEqualTo("workspace"),
 		});
 	}
+
 	override async run(accessor: ServicesAccessor): Promise<void> {
 		const contextService = accessor.get(IWorkspaceContextService);
 
@@ -282,6 +290,7 @@ export class AddRootFolderAction extends Action2 {
 			),
 		});
 	}
+
 	override run(accessor: ServicesAccessor): Promise<void> {
 		const commandService = accessor.get(ICommandService);
 
@@ -309,6 +318,7 @@ export class RemoveRootFolderAction extends Action2 {
 			),
 		});
 	}
+
 	override async run(accessor: ServicesAccessor): Promise<void> {
 		const commandService = accessor.get(ICommandService);
 
@@ -335,6 +345,7 @@ class SaveWorkspaceAsAction extends Action2 {
 			precondition: EnterMultiRootWorkspaceSupportContext,
 		});
 	}
+
 	override async run(accessor: ServicesAccessor): Promise<void> {
 		const workspaceEditingService = accessor.get(IWorkspaceEditingService);
 
@@ -356,6 +367,7 @@ class SaveWorkspaceAsAction extends Action2 {
 						configPathUri,
 					);
 				}
+
 				case WorkbenchState.WORKSPACE:
 					return workspaceEditingService.saveAndEnterWorkspace(
 						configPathUri,
@@ -379,6 +391,7 @@ class DuplicateWorkspaceInNewWindowAction extends Action2 {
 			precondition: EnterMultiRootWorkspaceSupportContext,
 		});
 	}
+
 	override async run(accessor: ServicesAccessor): Promise<void> {
 		const workspaceContextService = accessor.get(IWorkspaceContextService);
 
@@ -398,6 +411,7 @@ class DuplicateWorkspaceInNewWindowAction extends Action2 {
 			folders,
 			remoteAuthority,
 		);
+
 		await workspaceEditingService.copyWorkspaceSettings(newWorkspace);
 
 		return hostService.openWindow(

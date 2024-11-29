@@ -53,10 +53,12 @@ export async function activate(context: ExtensionContext) {
 	};
 	// pass the location of the localization bundle to the server
 	process.env["VSCODE_L10N_BUNDLE_LOCATION"] = l10n.uri?.toString() ?? "";
+
 	client = await startClient(context, newLanguageClient, {
 		fs: getNodeFSRequestService(),
 		TextDecoder,
 	});
+
 	context.subscriptions.push(
 		registerDropOrPasteResourceSupport({ language: "css", scheme: "*" }),
 	);
@@ -64,6 +66,7 @@ export async function activate(context: ExtensionContext) {
 export async function deactivate(): Promise<void> {
 	if (client) {
 		await client.stop();
+
 		client = undefined;
 	}
 }

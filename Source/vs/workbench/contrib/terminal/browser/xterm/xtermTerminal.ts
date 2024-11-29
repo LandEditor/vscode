@@ -126,6 +126,7 @@ function getFullBufferLineAsString(
 	if (!line) {
 		return { lineData: undefined, lineIndex };
 	}
+
 	let lineData = line.translateToString(true);
 
 	while (lineIndex > 0 && line.isWrapped) {
@@ -134,8 +135,10 @@ function getFullBufferLineAsString(
 		if (!line) {
 			break;
 		}
+
 		lineData = line.translateToString(false) + lineData;
 	}
+
 	return { lineData, lineIndex };
 }
 
@@ -166,23 +169,33 @@ export class XtermTerminal
 {
 	/** The raw xterm.js instance */
 	readonly raw: RawXtermTerminal;
+
 	private _core: IXtermCore;
+
 	private readonly _xtermAddonLoader: XtermAddonImporter;
+
 	private readonly _xtermColorProvider: IXtermColorProvider;
+
 	private readonly _capabilities: ITerminalCapabilityStore;
 
 	private static _suggestedRendererType: "dom" | undefined = undefined;
+
 	private static _checkedWebglCompatible = false;
+
 	private _attached?: {
 		container: HTMLElement;
+
 		options: IXtermAttachToElementOptions;
 	};
+
 	private _isPhysicalMouseWheel =
 		MouseWheelClassifier.INSTANCE.isPhysicalMouseWheel();
 
 	// Always on addons
 	private _markNavigationAddon: MarkNavigationAddon;
+
 	private _shellIntegrationAddon: ShellIntegrationAddon;
+
 	private _decorationAddon: DecorationAddon;
 
 	// Always on dynamicly imported addons
@@ -190,17 +203,24 @@ export class XtermTerminal
 
 	// Optional addons
 	private _searchAddon?: SearchAddonType;
+
 	private _unicode11Addon?: Unicode11AddonType;
+
 	private _webglAddon?: WebglAddonType;
+
 	private _serializeAddon?: SerializeAddonType;
+
 	private _imageAddon?: ImageAddonType;
+
 	private readonly _ligaturesAddon: MutableDisposable<LigaturesAddonType> =
 		this._register(new MutableDisposable());
 
 	private readonly _attachedDisposables = this._register(
 		new DisposableStore(),
 	);
+
 	private readonly _anyTerminalFocusContextKey: IContextKey<boolean>;
+
 	private readonly _anyFocusedTerminalHasSelection: IContextKey<boolean>;
 
 	private _lastFindResult:
@@ -214,6 +234,7 @@ export class XtermTerminal
 	get isStdinDisabled(): boolean {
 		return !!this.raw.options.disableStdin;
 	}
+
 	get isGpuAccelerated(): boolean {
 		return !!this._webglAddon;
 	}
@@ -221,35 +242,50 @@ export class XtermTerminal
 	private readonly _onDidRequestRunCommand = this._register(
 		new Emitter<{ command: ITerminalCommand; noNewLine?: boolean }>(),
 	);
+
 	readonly onDidRequestRunCommand = this._onDidRequestRunCommand.event;
+
 	private readonly _onDidRequestCopyAsHtml = this._register(
 		new Emitter<{ command: ITerminalCommand }>(),
 	);
+
 	readonly onDidRequestCopyAsHtml = this._onDidRequestCopyAsHtml.event;
+
 	private readonly _onDidRequestRefreshDimensions = this._register(
 		new Emitter<void>(),
 	);
+
 	readonly onDidRequestRefreshDimensions =
 		this._onDidRequestRefreshDimensions.event;
+
 	private readonly _onDidChangeFindResults = this._register(
 		new Emitter<{ resultIndex: number; resultCount: number }>(),
 	);
+
 	readonly onDidChangeFindResults = this._onDidChangeFindResults.event;
+
 	private readonly _onDidChangeSelection = this._register(
 		new Emitter<void>(),
 	);
+
 	readonly onDidChangeSelection = this._onDidChangeSelection.event;
+
 	private readonly _onDidChangeFocus = this._register(new Emitter<boolean>());
+
 	readonly onDidChangeFocus = this._onDidChangeFocus.event;
+
 	private readonly _onDidDispose = this._register(new Emitter<void>());
+
 	readonly onDidDispose = this._onDidDispose.event;
 
 	get markTracker(): IMarkTracker {
 		return this._markNavigationAddon;
 	}
+
 	get shellIntegration(): IShellIntegration {
 		return this._shellIntegrationAddon;
 	}
+
 	get decorationAddon(): IDecorationAddon {
 		return this._decorationAddon;
 	}
@@ -260,6 +296,7 @@ export class XtermTerminal
 		if (!canvas) {
 			return undefined;
 		}
+
 		return createImageBitmap(canvas);
 	}
 
@@ -267,6 +304,7 @@ export class XtermTerminal
 		if (!this.raw.element) {
 			return false;
 		}
+
 		return dom.isAncestorOfActiveElement(this.raw.element);
 	}
 
@@ -300,7 +338,9 @@ export class XtermTerminal
 
 		this._xtermAddonLoader =
 			options.xtermAddonImporter ?? new XtermAddonImporter();
+
 		this._xtermColorProvider = options.xtermColorProvider;
+
 		this._capabilities = options.capabilities;
 
 		const font = this._terminalConfigurationService.getFont(
@@ -366,7 +406,9 @@ export class XtermTerminal
 				},
 			}),
 		);
+
 		this._updateSmoothScrolling();
+
 		this._core = (this.raw as any)._core as IXtermCore;
 
 		this._register(
@@ -374,6 +416,7 @@ export class XtermTerminal
 				if (e.affectsConfiguration(TerminalSettingId.GpuAcceleration)) {
 					XtermTerminal._suggestedRendererType = undefined;
 				}
+
 				if (
 					e.affectsConfiguration("terminal.integrated") ||
 					e.affectsConfiguration("editor.fastScrollSensitivity") ||
@@ -384,9 +427,11 @@ export class XtermTerminal
 				) {
 					this.updateConfig();
 				}
+
 				if (e.affectsConfiguration(TerminalSettingId.UnicodeVersion)) {
 					this._updateUnicodeVersion();
 				}
+
 				if (
 					e.affectsConfiguration(
 						TerminalSettingId.ShellIntegrationDecorationsEnabled,
@@ -402,6 +447,7 @@ export class XtermTerminal
 				this._updateTheme(theme),
 			),
 		);
+
 		this._register(
 			this._logService.onDidChangeLogLevel(
 				(e) => (this.raw.options.logLevel = vscodeToXtermLogLevel(e)),
@@ -423,39 +469,49 @@ export class XtermTerminal
 
 		// Load addons
 		this._updateUnicodeVersion();
+
 		this._markNavigationAddon = this._instantiationService.createInstance(
 			MarkNavigationAddon,
 			options.capabilities,
 		);
+
 		this.raw.loadAddon(this._markNavigationAddon);
+
 		this._decorationAddon = this._instantiationService.createInstance(
 			DecorationAddon,
 			this._capabilities,
 		);
+
 		this._register(
 			this._decorationAddon.onDidRequestRunCommand((e) =>
 				this._onDidRequestRunCommand.fire(e),
 			),
 		);
+
 		this._register(
 			this._decorationAddon.onDidRequestCopyAsHtml((e) =>
 				this._onDidRequestCopyAsHtml.fire(e),
 			),
 		);
+
 		this.raw.loadAddon(this._decorationAddon);
+
 		this._shellIntegrationAddon = new ShellIntegrationAddon(
 			options.shellIntegrationNonce ?? "",
 			options.disableShellIntegrationReporting,
 			this._telemetryService,
 			this._logService,
 		);
+
 		this.raw.loadAddon(this._shellIntegrationAddon);
+
 		this._xtermAddonLoader
 			.importAddon("clipboard")
 			.then((ClipboardAddon) => {
 				if (this._store.isDisposed) {
 					return;
 				}
+
 				this._clipboardAddon =
 					this._instantiationService.createInstance(
 						ClipboardAddon,
@@ -479,11 +535,13 @@ export class XtermTerminal
 							},
 						},
 					);
+
 				this.raw.loadAddon(this._clipboardAddon);
 			});
 
 		this._anyTerminalFocusContextKey =
 			TerminalContextKeys.focusInAny.bindTo(contextKeyService);
+
 		this._anyFocusedTerminalHasSelection =
 			TerminalContextKeys.textSelectedInFocused.bindTo(contextKeyService);
 	}
@@ -506,7 +564,9 @@ export class XtermTerminal
 	async getContentsAsHtml(): Promise<string> {
 		if (!this._serializeAddon) {
 			const Addon = await this._xtermAddonLoader.importAddon("serialize");
+
 			this._serializeAddon = new Addon();
+
 			this.raw.loadAddon(this._serializeAddon);
 		}
 
@@ -516,9 +576,12 @@ export class XtermTerminal
 	async getSelectionAsHtml(command?: ITerminalCommand): Promise<string> {
 		if (!this._serializeAddon) {
 			const Addon = await this._xtermAddonLoader.importAddon("serialize");
+
 			this._serializeAddon = new Addon();
+
 			this.raw.loadAddon(this._serializeAddon);
 		}
+
 		if (command) {
 			const length = command.getOutput()?.length;
 
@@ -529,12 +592,14 @@ export class XtermTerminal
 					`No row ${row} or output length ${length} for command ${command}`,
 				);
 			}
+
 			this.raw.select(
 				0,
 				row + 1,
 				length - Math.floor(length / this.raw.cols),
 			);
 		}
+
 		const result = this._serializeAddon.serializeAsHTML({
 			onlySelection: true,
 		});
@@ -542,6 +607,7 @@ export class XtermTerminal
 		if (command) {
 			this.raw.clearSelection();
 		}
+
 		return result;
 	}
 
@@ -570,17 +636,21 @@ export class XtermTerminal
 		}
 
 		const ad = this._attachedDisposables;
+
 		ad.clear();
+
 		ad.add(
 			dom.addDisposableListener(this.raw.textarea, "focus", () =>
 				this._setFocused(true),
 			),
 		);
+
 		ad.add(
 			dom.addDisposableListener(this.raw.textarea, "blur", () =>
 				this._setFocused(false),
 			),
 		);
+
 		ad.add(
 			dom.addDisposableListener(this.raw.textarea, "focusout", () =>
 				this._setFocused(false),
@@ -604,6 +674,7 @@ export class XtermTerminal
 
 					if (value !== this._isPhysicalMouseWheel) {
 						this._isPhysicalMouseWheel = value;
+
 						this._updateSmoothScrolling();
 					}
 				},
@@ -620,7 +691,9 @@ export class XtermTerminal
 
 	private _setFocused(isFocused: boolean) {
 		this._onDidChangeFocus.fire(isFocused);
+
 		this._anyTerminalFocusContextKey.set(isFocused);
+
 		this._anyFocusedTerminalHasSelection.set(
 			isFocused && this.raw.hasSelection(),
 		);
@@ -636,39 +709,60 @@ export class XtermTerminal
 
 	updateConfig(): void {
 		const config = this._terminalConfigurationService.config;
+
 		this.raw.options.altClickMovesCursor = config.altClickMovesCursor;
+
 		this._setCursorBlink(config.cursorBlinking);
+
 		this._setCursorStyle(config.cursorStyle);
+
 		this._setCursorStyleInactive(config.cursorStyleInactive);
+
 		this._setCursorWidth(config.cursorWidth);
+
 		this.raw.options.scrollback = config.scrollback;
+
 		this.raw.options.drawBoldTextInBrightColors =
 			config.drawBoldTextInBrightColors;
+
 		this.raw.options.minimumContrastRatio = config.minimumContrastRatio;
+
 		this.raw.options.tabStopWidth = config.tabStopWidth;
+
 		this.raw.options.fastScrollSensitivity = config.fastScrollSensitivity;
+
 		this.raw.options.scrollSensitivity = config.mouseWheelScrollSensitivity;
+
 		this.raw.options.macOptionIsMeta = config.macOptionIsMeta;
 
 		const editorOptions =
 			this._configurationService.getValue<IEditorOptions>("editor");
+
 		this.raw.options.altClickMovesCursor =
 			config.altClickMovesCursor &&
 			editorOptions.multiCursorModifier === "alt";
+
 		this.raw.options.macOptionClickForcesSelection =
 			config.macOptionClickForcesSelection;
+
 		this.raw.options.rightClickSelectsWord =
 			config.rightClickBehavior === "selectWord";
+
 		this.raw.options.wordSeparator = config.wordSeparators;
+
 		this.raw.options.customGlyphs = config.customGlyphs;
+
 		this.raw.options.ignoreBracketedPasteMode =
 			config.ignoreBracketedPasteMode;
+
 		this.raw.options.rescaleOverlappingGlyphs =
 			config.rescaleOverlappingGlyphs;
+
 		this.raw.options.overviewRuler = {
 			width: 14,
 			showTopBorder: true,
 		};
+
 		this._updateSmoothScrolling();
 
 		if (this._attached) {
@@ -679,6 +773,7 @@ export class XtermTerminal
 					this._disposeOfWebglRenderer();
 				}
 			}
+
 			this._refreshLigaturesAddon();
 		}
 	}
@@ -763,6 +858,7 @@ export class XtermTerminal
 		const findMatchHighlightOverviewRuler = theme.getColor(
 			TERMINAL_OVERVIEW_RULER_FIND_MATCH_FOREGROUND_COLOR,
 		);
+
 		searchOptions.decorations = {
 			activeMatchBackground: findMatchBackground?.toString(),
 			activeMatchBorder: findMatchBorder?.toString() || "transparent",
@@ -781,6 +877,7 @@ export class XtermTerminal
 	}
 
 	private _searchAddonPromise: Promise<SearchAddonType> | undefined;
+
 	private _getSearchAddon(): Promise<SearchAddonType> {
 		if (!this._searchAddonPromise) {
 			this._searchAddonPromise = this._xtermAddonLoader
@@ -791,17 +888,22 @@ export class XtermTerminal
 							"Could not create search addon, terminal is disposed",
 						);
 					}
+
 					this._searchAddon = new AddonCtor({
 						highlightLimit:
 							XtermTerminalConstants.SearchHighlightLimit,
 					});
+
 					this.raw.loadAddon(this._searchAddon);
+
 					this._searchAddon.onDidChangeResults(
 						(results: {
 							resultIndex: number;
+
 							resultCount: number;
 						}) => {
 							this._lastFindResult = results;
+
 							this._onDidChangeFindResults.fire(results);
 						},
 					);
@@ -809,6 +911,7 @@ export class XtermTerminal
 					return this._searchAddon;
 				});
 		}
+
 		return this._searchAddonPromise;
 	}
 
@@ -832,19 +935,24 @@ export class XtermTerminal
 
 		for (
 			let i = this.raw.buffer.active.length - 1;
+
 			i >= this.raw.buffer.active.viewportY;
+
 			i--
 		) {
 			const lineInfo = this._getWrappedLineCount(
 				i,
 				this.raw.buffer.active,
 			);
+
 			maxLineLength = Math.max(
 				maxLineLength,
 				lineInfo.lineCount * this.raw.cols - lineInfo.endSpaces || 0,
 			);
+
 			i = lineInfo.currentIndex;
 		}
+
 		return maxLineLength;
 	}
 
@@ -857,6 +965,7 @@ export class XtermTerminal
 		if (!line) {
 			throw new Error("Could not get line");
 		}
+
 		let currentIndex = index;
 
 		let endSpaces = 0;
@@ -868,10 +977,13 @@ export class XtermTerminal
 				break;
 			}
 		}
+
 		while (line?.isWrapped && currentIndex > 0) {
 			currentIndex--;
+
 			line = buffer.getLine(currentIndex);
 		}
+
 		return { lineCount: index - currentIndex + 1, currentIndex, endSpaces };
 	}
 
@@ -913,9 +1025,11 @@ export class XtermTerminal
 		this._capabilities
 			.get(TerminalCapability.CommandDetection)
 			?.handlePromptStart();
+
 		this._capabilities
 			.get(TerminalCapability.CommandDetection)
 			?.handleCommandStart();
+
 		this._accessibilitySignalService.playSignal(AccessibilitySignal.clear);
 	}
 
@@ -957,6 +1071,7 @@ export class XtermTerminal
 
 	selectAll(): void {
 		this.raw.focus();
+
 		this.raw.selectAll();
 	}
 
@@ -979,9 +1094,12 @@ export class XtermTerminal
 							command?.getOutput() ?? "",
 						);
 					}
+
 					e.clipboardData.setData("text/html", textAsHtml);
+
 					e.preventDefault();
 				}
+
 				const doc = dom.getDocument(this.raw.element);
 
 				doc.addEventListener("copy", listener);
@@ -1005,6 +1123,7 @@ export class XtermTerminal
 	private _setCursorBlink(blink: boolean): void {
 		if (this.raw.options.cursorBlink !== blink) {
 			this.raw.options.cursorBlink = blink;
+
 			this.raw.refresh(0, this.raw.rows - 1);
 		}
 	}
@@ -1073,17 +1192,22 @@ export class XtermTerminal
 		}
 
 		const Addon = await this._xtermAddonLoader.importAddon("webgl");
+
 		this._webglAddon = new Addon();
 
 		try {
 			this.raw.loadAddon(this._webglAddon);
+
 			this._logService.trace("Webgl was loaded");
+
 			this._webglAddon.onContextLoss(() => {
 				this._logService.info(
 					`Webgl lost context, disposing of webgl renderer`,
 				);
+
 				this._disposeOfWebglRenderer();
 			});
+
 			this._refreshImageAddon();
 			// WebGL renderer cell dimensions differ from the DOM renderer, make sure the terminal
 			// gets resized after the webgl addon is loaded
@@ -1099,12 +1223,14 @@ export class XtermTerminal
 				`Webgl could not be loaded. Falling back to the DOM renderer`,
 				e,
 			);
+
 			this._disableWebglForThisSession();
 		}
 	}
 
 	private _disableWebglForThisSession() {
 		XtermTerminal._suggestedRendererType = "dom";
+
 		this._disposeOfWebglRenderer();
 	}
 
@@ -1113,6 +1239,7 @@ export class XtermTerminal
 		if (!this.raw.element) {
 			return;
 		}
+
 		if (this._terminalConfigurationService.config.fontLigatures) {
 			if (!this._ligaturesAddon.value) {
 				this._xtermAddonLoader
@@ -1121,10 +1248,12 @@ export class XtermTerminal
 						if (this._store.isDisposed) {
 							return;
 						}
+
 						this._ligaturesAddon.value =
 							this._instantiationService.createInstance(
 								LigaturesAddon,
 							);
+
 						this.raw.loadAddon(this._ligaturesAddon.value);
 					});
 			}
@@ -1143,7 +1272,9 @@ export class XtermTerminal
 			if (!this._imageAddon) {
 				const AddonCtor =
 					await this._xtermAddonLoader.importAddon("image");
+
 				this._imageAddon = new AddonCtor();
+
 				this.raw.loadAddon(this._imageAddon);
 			}
 		} else {
@@ -1152,6 +1283,7 @@ export class XtermTerminal
 			} catch {
 				// ignore
 			}
+
 			this._imageAddon = undefined;
 		}
 	}
@@ -1162,7 +1294,9 @@ export class XtermTerminal
 		} catch {
 			// ignore
 		}
+
 		this._webglAddon = undefined;
+
 		this._refreshImageAddon();
 		// WebGL renderer cell dimensions differ from the DOM renderer, make sure the terminal
 		// gets resized after the webgl addon is disposed
@@ -1250,6 +1384,7 @@ export class XtermTerminal
 
 	refresh() {
 		this._updateTheme();
+
 		this._decorationAddon.refreshLayouts();
 	}
 
@@ -1259,9 +1394,12 @@ export class XtermTerminal
 			this._terminalConfigurationService.config.unicodeVersion === "11"
 		) {
 			const Addon = await this._xtermAddonLoader.importAddon("unicode11");
+
 			this._unicode11Addon = new Addon();
+
 			this.raw.loadAddon(this._unicode11Addon);
 		}
+
 		if (
 			this.raw.unicode.activeVersion !==
 			this._terminalConfigurationService.config.unicodeVersion
@@ -1278,7 +1416,9 @@ export class XtermTerminal
 
 	override dispose(): void {
 		this._anyTerminalFocusContextKey.reset();
+
 		this._anyFocusedTerminalHasSelection.reset();
+
 		this._onDidDispose.fire();
 
 		super.dispose();
@@ -1356,5 +1496,6 @@ function vscodeToXtermCursorStyle<
 	if (style === "line") {
 		return "bar";
 	}
+
 	return style as ICursorStyleVscodeToXtermMap[T];
 }

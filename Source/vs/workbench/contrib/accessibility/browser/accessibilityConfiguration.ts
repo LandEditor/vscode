@@ -1164,6 +1164,7 @@ export function registerAccessibilityConfiguration() {
 	const registry = Registry.as<IConfigurationRegistry>(
 		Extensions.Configuration,
 	);
+
 	registry.registerConfiguration(configuration);
 
 	registry.registerConfiguration({
@@ -1244,6 +1245,7 @@ export class DynamicSpeechAccessibilityConfiguration
 		const registry = Registry.as<IConfigurationRegistry>(
 			Extensions.Configuration,
 		);
+
 		registry.registerConfiguration({
 			...accessibilityConfigurationNodeBase,
 			properties: {
@@ -1376,30 +1378,35 @@ Registry.as<IConfigurationMigrationRegistry>(
 					{ value: volume },
 				]);
 			}
+
 			if (!!delayGeneral) {
 				result.push([
 					"accessibility.signalOptions.experimental.delays.general",
 					{ value: delayGeneral },
 				]);
 			}
+
 			if (!!delayError) {
 				result.push([
 					"accessibility.signalOptions.experimental.delays.errorAtPosition",
 					{ value: delayError },
 				]);
 			}
+
 			if (!!delayWarning) {
 				result.push([
 					"accessibility.signalOptions.experimental.delays.warningAtPosition",
 					{ value: delayWarning },
 				]);
 			}
+
 			if (!!debouncePositionChanges) {
 				result.push([
 					"accessibility.signalOptions.debouncePositionChanges",
 					{ value: debouncePositionChanges },
 				]);
 			}
+
 			result.push(["accessibility.signalOptions", { value: undefined }]);
 
 			return result;
@@ -1491,6 +1498,7 @@ Registry.as<IConfigurationMigrationRegistry>(
 			} else {
 				return [];
 			}
+
 			return [
 				[
 					AccessibilityVoiceSettingId.AutoSynthesize,
@@ -1549,10 +1557,12 @@ Registry.as<IConfigurationMigrationRegistry>(
 										: "off";
 								}
 							}
+
 							configurationKeyValuePairs.push([
 								`${item.legacySoundSettingsKey}`,
 								{ value: undefined },
 							]);
+
 							configurationKeyValuePairs.push([
 								`${item.settingsKey}`,
 								{
@@ -1595,6 +1605,7 @@ Registry.as<IConfigurationMigrationRegistry>(
 				) {
 					announcement = announcement ? "auto" : "off";
 				}
+
 				configurationKeyValuePairs.push([
 					`${item.settingsKey}`,
 					{
@@ -1604,10 +1615,12 @@ Registry.as<IConfigurationMigrationRegistry>(
 								: { sound },
 					},
 				]);
+
 				configurationKeyValuePairs.push([
 					`${item.legacyAnnouncementSettingsKey}`,
 					{ value: undefined },
 				]);
+
 				configurationKeyValuePairs.push([
 					`${item.legacySoundSettingsKey}`,
 					{ value: undefined },

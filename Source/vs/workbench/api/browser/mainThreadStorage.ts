@@ -29,7 +29,9 @@ import {
 @extHostNamedCustomer(MainContext.MainThreadStorage)
 export class MainThreadStorage implements MainThreadStorageShape {
 	private readonly _proxy: ExtHostStorageShape;
+
 	private readonly _storageListener = new DisposableStore();
+
 	private readonly _sharedStorageKeysToWatch: Map<string, boolean> = new Map<
 		string,
 		boolean
@@ -47,6 +49,7 @@ export class MainThreadStorage implements MainThreadStorageShape {
 		private readonly _logService: ILogService,
 	) {
 		this._proxy = extHostContext.getProxy(ExtHostContext.ExtHostStorage);
+
 		this._storageListener.add(
 			this._storageService.onDidChangeValue(
 				StorageScope.PROFILE,
@@ -67,9 +70,11 @@ export class MainThreadStorage implements MainThreadStorageShape {
 			}),
 		);
 	}
+
 	dispose(): void {
 		this._storageListener.dispose();
 	}
+
 	async $initializeExtensionStorage(
 		shared: boolean,
 		extensionId: string,
@@ -79,11 +84,13 @@ export class MainThreadStorage implements MainThreadStorageShape {
 		if (shared) {
 			this._sharedStorageKeysToWatch.set(extensionId, true);
 		}
+
 		return this._extensionStorageService.getExtensionStateRaw(
 			extensionId,
 			shared,
 		);
 	}
+
 	async $setValue(
 		shared: boolean,
 		key: string,
@@ -97,6 +104,7 @@ export class MainThreadStorage implements MainThreadStorageShape {
 	): void {
 		this._extensionStorageService.setKeysForSync(extension, keys);
 	}
+
 	private async checkAndMigrateExtensionStorage(
 		extensionId: string,
 		shared: boolean,
@@ -117,6 +125,7 @@ export class MainThreadStorage implements MainThreadStorageShape {
 			) {
 				sourceExtensionId = extensionId.toLowerCase();
 			}
+
 			if (sourceExtensionId) {
 				// TODO: @sandy081 - Remove it after 6 months
 				// In Web, extension state was used to be stored in lower case extension id.
@@ -136,6 +145,7 @@ export class MainThreadStorage implements MainThreadStorageShape {
 				) {
 					sourceExtensionId = sourceExtensionId.toLowerCase();
 				}
+
 				await migrateExtensionStorage(
 					sourceExtensionId,
 					extensionId,

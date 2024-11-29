@@ -168,6 +168,7 @@ export class HideTestAction extends Action2 {
 		for (const element of elements) {
 			service.excluded.toggle(element.test, true);
 		}
+
 		return Promise.resolve();
 	}
 }
@@ -196,6 +197,7 @@ export class UnhideTestAction extends Action2 {
 				service.excluded.toggle(element.test, false);
 			}
 		}
+
 		return Promise.resolve();
 	}
 }
@@ -210,6 +212,7 @@ export class UnhideAllTestsAction extends Action2 {
 
 	public override run(accessor: ServicesAccessor) {
 		const service = accessor.get(ITestService);
+
 		service.excluded.clear();
 
 		return Promise.resolve();
@@ -588,6 +591,7 @@ function selectContinuousRunProfiles(
 	profilesToPickFrom: Iterable<
 		Readonly<{
 			controller?: IMainThreadTestController;
+
 			profiles: ITestRunProfile[];
 		}>
 	>,
@@ -661,19 +665,25 @@ function selectContinuousRunProfiles(
 			IQuickPickItem & { profile: ITestRunProfile }
 		>({ useSeparators: true }),
 	);
+
 	quickpick.title = localize(
 		"testing.selectContinuousProfiles",
 		"Select profiles to run when files change:",
 	);
+
 	quickpick.canSelectMany = true;
+
 	quickpick.items = qpItems;
+
 	quickpick.selectedItems = selectedItems;
+
 	quickpick.show();
 
 	return new Promise((resolve) => {
 		disposables.add(
 			quickpick.onDidAccept(() => {
 				resolve(quickpick.selectedItems.map((i) => i.profile));
+
 				disposables.dispose();
 			}),
 		);
@@ -681,6 +691,7 @@ function selectContinuousRunProfiles(
 		disposables.add(
 			quickpick.onDidHide(() => {
 				resolve([]);
+
 				disposables.dispose();
 			}),
 		);
@@ -697,6 +708,7 @@ class StartContinuousRunAction extends Action2 {
 			menu: continuousMenus(false),
 		});
 	}
+
 	async run(accessor: ServicesAccessor, ...args: any[]): Promise<void> {
 		const crs = accessor.get(ITestingContinuousRunService);
 
@@ -1208,6 +1220,7 @@ export class ShowMostRecentOutputAction extends Action2 {
 			Testing.ResultsViewId,
 			true,
 		);
+
 		testView?.showLatestRun();
 	}
 }
@@ -1306,6 +1319,7 @@ export class GoToTest extends Action2 {
 				.getActiveViewWithId<TestingExplorerView>(
 					Testing.ExplorerViewId,
 				);
+
 			element = view?.focusedTreeElements[0];
 		}
 
@@ -1367,6 +1381,7 @@ async function getTestsAtCursor(
 				}
 			} else {
 				bestRange = irange;
+
 				bestNodes = [test];
 			}
 		} else if (Position.isBefore(irange.getStartPosition(), position)) {
@@ -1377,6 +1392,7 @@ async function getTestsAtCursor(
 					.isBefore(irange.getStartPosition())
 			) {
 				bestRangeBefore = irange;
+
 				bestNodesBefore = [test];
 			} else if (
 				irange.equalsRange(bestRangeBefore) &&
@@ -1477,6 +1493,7 @@ abstract class ExecuteTestAtCursor extends Action2 {
 				editor: activeEditorPane.input,
 				groupId: activeEditorPane.group.id,
 			});
+
 			await testService.syncTests();
 		}
 
@@ -1732,9 +1749,11 @@ abstract class ExecuteTestsInCurrentFile extends Action2 {
 		if (!editor) {
 			return;
 		}
+
 		if (editor instanceof EmbeddedCodeEditorWidget) {
 			editor = editor.getParentEditor();
 		}
+
 		const position = editor?.getPosition();
 
 		const model = editor?.getModel();
@@ -1878,6 +1897,7 @@ abstract class RunOrDebugExtsByPath extends Action2 {
 	 */
 	public async run(accessor: ServicesAccessor, ...args: unknown[]) {
 		const testService = accessor.get(ITestService);
+
 		await discoverAndRunTests(
 			accessor.get(ITestService).collection,
 			accessor.get(IProgressService),
@@ -1980,6 +2000,7 @@ abstract class RunOrDebugLastRun extends Action2 {
 
 		const profileExists = (t: {
 			controllerId: string;
+
 			profileId: number;
 		}) =>
 			profileService
@@ -2201,6 +2222,7 @@ export class ToggleInlineTestOutput extends Action2 {
 
 	public async run(accessor: ServicesAccessor) {
 		const testService = accessor.get(ITestService);
+
 		testService.showInlineOutput.value =
 			!testService.showInlineOutput.value;
 	}
@@ -2346,6 +2368,7 @@ export class OpenCoverage extends Action2 {
 
 		if (!task) {
 			const notificationService = accessor.get(INotificationService);
+
 			notificationService.info(
 				localize(
 					"testing.noCoverage",
@@ -2370,6 +2393,7 @@ abstract class TestNavigationAction extends SymbolNavigationAction {
 		...args: any[]
 	) {
 		this.testService = accessor.get(ITestService);
+
 		this.uriIdentityService = accessor.get(IUriIdentityService);
 
 		return super.runEditorCommand(accessor, editor, ...args);
@@ -2381,6 +2405,7 @@ abstract class TestNavigationAction extends SymbolNavigationAction {
 		return editor.getOption(EditorOption.gotoLocation)
 			.alternativeTestsCommand;
 	}
+
 	protected override _getGoToPreference(
 		editor: IActiveCodeEditor,
 	): GoToLocationValues {

@@ -83,12 +83,19 @@ export enum ProfileSessionState {
 }
 export interface IExtensionHostProfileService {
 	readonly _serviceBrand: undefined;
+
 	readonly onDidChangeState: Event<void>;
+
 	readonly onDidChangeLastProfile: Event<void>;
+
 	readonly state: ProfileSessionState;
+
 	readonly lastProfile: IExtensionHostProfile | null;
+
 	lastProfileSavedTo: URI | undefined;
+
 	startProfiling(): void;
+
 	stopProfiling(): void;
 
 	getUnresponsiveProfile(
@@ -102,7 +109,9 @@ export interface IExtensionHostProfileService {
 }
 export class RuntimeExtensionsEditor extends AbstractRuntimeExtensionsEditor {
 	private _profileInfo: IExtensionHostProfile | null;
+
 	private _extensionsHostRecorded: IContextKey<boolean>;
+
 	private _profileSessionState: IContextKey<string>;
 
 	constructor(
@@ -158,31 +167,41 @@ export class RuntimeExtensionsEditor extends AbstractRuntimeExtensionsEditor {
 			hoverService,
 			menuService,
 		);
+
 		this._profileInfo = this._extensionHostProfileService.lastProfile;
+
 		this._extensionsHostRecorded =
 			CONTEXT_EXTENSION_HOST_PROFILE_RECORDED.bindTo(contextKeyService);
+
 		this._profileSessionState =
 			CONTEXT_PROFILE_SESSION_STATE.bindTo(contextKeyService);
+
 		this._register(
 			this._extensionHostProfileService.onDidChangeLastProfile(() => {
 				this._profileInfo =
 					this._extensionHostProfileService.lastProfile;
+
 				this._extensionsHostRecorded.set(!!this._profileInfo);
+
 				this._updateExtensions();
 			}),
 		);
+
 		this._register(
 			this._extensionHostProfileService.onDidChangeState(() => {
 				const state = this._extensionHostProfileService.state;
+
 				this._profileSessionState.set(
 					ProfileSessionState[state].toLowerCase(),
 				);
 			}),
 		);
 	}
+
 	protected _getProfileInfo(): IExtensionHostProfile | null {
 		return this._profileInfo;
 	}
+
 	protected _getUnresponsiveProfile(
 		extensionId: ExtensionIdentifier,
 	): IExtensionHostProfile | undefined {
@@ -190,6 +209,7 @@ export class RuntimeExtensionsEditor extends AbstractRuntimeExtensionsEditor {
 			extensionId,
 		);
 	}
+
 	protected _createSlowExtensionAction(
 		element: IRuntimeExtension,
 	): Action | null {
@@ -200,8 +220,10 @@ export class RuntimeExtensionsEditor extends AbstractRuntimeExtensionsEditor {
 				element.unresponsiveProfile,
 			);
 		}
+
 		return null;
 	}
+
 	protected _createReportExtensionIssueAction(
 		element: IRuntimeExtension,
 	): Action | null {
@@ -211,11 +233,13 @@ export class RuntimeExtensionsEditor extends AbstractRuntimeExtensionsEditor {
 				element.description,
 			);
 		}
+
 		return null;
 	}
 }
 export class StartExtensionHostProfileAction extends Action2 {
 	static readonly ID = "workbench.extensions.action.extensionHostProfile";
+
 	static readonly LABEL = nls.localize(
 		"extensionHostProfileStart",
 		"Start Extension Host Profile",
@@ -249,10 +273,12 @@ export class StartExtensionHostProfileAction extends Action2 {
 			],
 		});
 	}
+
 	run(accessor: ServicesAccessor): Promise<any> {
 		const extensionHostProfileService = accessor.get(
 			IExtensionHostProfileService,
 		);
+
 		extensionHostProfileService.startProfiling();
 
 		return Promise.resolve();
@@ -260,6 +286,7 @@ export class StartExtensionHostProfileAction extends Action2 {
 }
 export class StopExtensionHostProfileAction extends Action2 {
 	static readonly ID = "workbench.extensions.action.stopExtensionHostProfile";
+
 	static readonly LABEL = nls.localize(
 		"stopExtensionHostProfileStart",
 		"Stop Extension Host Profile",
@@ -292,10 +319,12 @@ export class StopExtensionHostProfileAction extends Action2 {
 			],
 		});
 	}
+
 	run(accessor: ServicesAccessor): Promise<any> {
 		const extensionHostProfileService = accessor.get(
 			IExtensionHostProfileService,
 		);
+
 		extensionHostProfileService.stopProfiling();
 
 		return Promise.resolve();
@@ -306,6 +335,7 @@ export class OpenExtensionHostProfileACtion extends Action2 {
 		"openExtensionHostProfile",
 		"Open Extension Host Profile",
 	);
+
 	static readonly ID = "workbench.extensions.action.openExtensionHostProfile";
 
 	constructor() {
@@ -335,6 +365,7 @@ export class OpenExtensionHostProfileACtion extends Action2 {
 			],
 		});
 	}
+
 	async run(accessor: ServicesAccessor): Promise<void> {
 		const extensionHostProfileService = accessor.get(
 			IExtensionHostProfileService,
@@ -349,9 +380,11 @@ export class OpenExtensionHostProfileACtion extends Action2 {
 				SaveExtensionHostProfileAction.ID,
 			);
 		}
+
 		if (!extensionHostProfileService.lastProfileSavedTo) {
 			return;
 		}
+
 		await editorService.openEditor(
 			{
 				resource: extensionHostProfileService.lastProfileSavedTo,
@@ -369,6 +402,7 @@ export class SaveExtensionHostProfileAction extends Action2 {
 		"saveExtensionHostProfile",
 		"Save Extension Host Profile",
 	);
+
 	static readonly ID = "workbench.extensions.action.saveExtensionHostProfile";
 
 	constructor() {
@@ -398,6 +432,7 @@ export class SaveExtensionHostProfileAction extends Action2 {
 			],
 		});
 	}
+
 	run(accessor: ServicesAccessor): Promise<any> {
 		const environmentService = accessor.get(IWorkbenchEnvironmentService);
 
@@ -416,6 +451,7 @@ export class SaveExtensionHostProfileAction extends Action2 {
 			fileDialogService,
 		);
 	}
+
 	private async _asyncRun(
 		environmentService: IWorkbenchEnvironmentService,
 		extensionHostProfileService: IExtensionHostProfileService,
@@ -443,6 +479,7 @@ export class SaveExtensionHostProfileAction extends Action2 {
 		if (!picked) {
 			return;
 		}
+
 		const profileInfo = extensionHostProfileService.lastProfile;
 
 		let dataToWrite: object = profileInfo ? profileInfo.data : {};
@@ -458,9 +495,12 @@ export class SaveExtensionHostProfileAction extends Action2 {
 				dataToWrite as IV8Profile,
 				"piiRemoved",
 			);
+
 			savePath = savePath + ".txt";
 		}
+
 		const saveURI = URI.file(savePath);
+
 		extensionHostProfileService.lastProfileSavedTo = saveURI;
 
 		return fileService.writeFile(

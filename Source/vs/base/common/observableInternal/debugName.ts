@@ -25,6 +25,7 @@ export class DebugNameData {
 		public readonly debugNameSource: DebugNameSource | undefined,
 		public readonly referenceFn: Function | undefined,
 	) {}
+
 	public getDebugName(target: object): string | undefined {
 		return getDebugName(target, this);
 	}
@@ -50,18 +51,23 @@ export function getDebugName(
 	if (cached) {
 		return cached;
 	}
+
 	const dbgName = computeDebugName(target, data);
 
 	if (dbgName) {
 		let count = countPerName.get(dbgName) ?? 0;
+
 		count++;
+
 		countPerName.set(dbgName, count);
 
 		const result = count === 1 ? dbgName : `${dbgName}#${count}`;
+
 		cachedDebugName.set(target, result);
 
 		return result;
 	}
+
 	return undefined;
 }
 function computeDebugName(
@@ -73,6 +79,7 @@ function computeDebugName(
 	if (cached) {
 		return cached;
 	}
+
 	const ownerStr = data.owner ? formatOwner(data.owner) + `.` : "";
 
 	let result: string | undefined;
@@ -90,6 +97,7 @@ function computeDebugName(
 			return ownerStr + debugNameSource;
 		}
 	}
+
 	const referenceFn = data.referenceFn;
 
 	if (referenceFn !== undefined) {
@@ -99,6 +107,7 @@ function computeDebugName(
 			return ownerStr + result;
 		}
 	}
+
 	if (data.owner !== undefined) {
 		const key = findKey(data.owner, self);
 
@@ -106,6 +115,7 @@ function computeDebugName(
 			return ownerStr + key;
 		}
 	}
+
 	return undefined;
 }
 function findKey(obj: object, value: object): string | undefined {
@@ -114,6 +124,7 @@ function findKey(obj: object, value: object): string | undefined {
 			return key;
 		}
 	}
+
 	return undefined;
 }
 
@@ -126,13 +137,17 @@ function formatOwner(owner: object): string {
 	if (id) {
 		return id;
 	}
+
 	const className = getClassName(owner);
 
 	let count = countPerClassName.get(className) ?? 0;
+
 	count++;
+
 	countPerClassName.set(className, count);
 
 	const result = count === 1 ? className : `${className}#${count}`;
+
 	ownerId.set(owner, result);
 
 	return result;
@@ -143,6 +158,7 @@ function getClassName(obj: object): string {
 	if (ctor) {
 		return ctor.name;
 	}
+
 	return "Object";
 }
 export function getFunctionName(fn: Function): string | undefined {

@@ -56,20 +56,29 @@ export const CONTEXT_ACTIVE_WEBVIEW_PANEL_ID = new RawContextKey<string>(
 
 export class WebviewEditor extends EditorPane {
 	public static readonly ID = "WebviewEditor";
+
 	private _element?: HTMLElement;
+
 	private _dimension?: DOM.Dimension;
+
 	private _visible = false;
+
 	private _isDisposed = false;
+
 	private readonly _webviewVisibleDisposables = this._register(
 		new DisposableStore(),
 	);
+
 	private readonly _onFocusWindowHandler = this._register(
 		new MutableDisposable(),
 	);
+
 	private readonly _onDidFocusWebview = this._register(new Emitter<void>());
+
 	public override get onDidFocus(): Event<any> {
 		return this._onDidFocusWebview.event;
 	}
+
 	private readonly _scopedContextKeyService = this._register(
 		new MutableDisposable<IScopedContextKeyService>(),
 	);
@@ -102,6 +111,7 @@ export class WebviewEditor extends EditorPane {
 		);
 
 		const part = _editorGroupsService.getPart(group);
+
 		this._register(
 			Event.any(
 				part.onDidScroll,
@@ -115,30 +125,41 @@ export class WebviewEditor extends EditorPane {
 			}),
 		);
 	}
+
 	private get webview(): IOverlayWebview | undefined {
 		return this.input instanceof WebviewInput
 			? this.input.webview
 			: undefined;
 	}
+
 	override get scopedContextKeyService(): IContextKeyService | undefined {
 		return this._scopedContextKeyService.value;
 	}
+
 	protected createEditor(parent: HTMLElement): void {
 		const element = document.createElement("div");
+
 		this._element = element;
+
 		this._element.id = `webview-editor-element-${generateUuid()}`;
+
 		parent.appendChild(element);
+
 		this._scopedContextKeyService.value = this._register(
 			this._contextKeyService.createScoped(element),
 		);
 	}
+
 	public override dispose(): void {
 		this._isDisposed = true;
+
 		this._element?.remove();
+
 		this._element = undefined;
 
 		super.dispose();
 	}
+
 	public override layout(dimension: DOM.Dimension): void {
 		this._dimension = dimension;
 
@@ -146,6 +167,7 @@ export class WebviewEditor extends EditorPane {
 			this.synchronizeWebviewContainerDimensions(this.webview, dimension);
 		}
 	}
+
 	public override focus(): void {
 		super.focus();
 
@@ -162,8 +184,10 @@ export class WebviewEditor extends EditorPane {
 					}
 				});
 		}
+
 		this.webview?.focus();
 	}
+
 	protected override setEditorVisible(visible: boolean): void {
 		this._visible = visible;
 
@@ -174,15 +198,20 @@ export class WebviewEditor extends EditorPane {
 				this.webview.release(this);
 			}
 		}
+
 		super.setEditorVisible(visible);
 	}
+
 	public override clearInput() {
 		if (this.webview) {
 			this.webview.release(this);
+
 			this._webviewVisibleDisposables.clear();
 		}
+
 		super.clearInput();
 	}
+
 	public override async setInput(
 		input: EditorInput,
 		options: IEditorOptions,
@@ -192,29 +221,35 @@ export class WebviewEditor extends EditorPane {
 		if (this.input && input.matches(this.input)) {
 			return;
 		}
+
 		const alreadyOwnsWebview =
 			input instanceof WebviewInput && input.webview === this.webview;
 
 		if (this.webview && !alreadyOwnsWebview) {
 			this.webview.release(this);
 		}
+
 		await super.setInput(input, options, context, token);
+
 		await input.resolve();
 
 		if (token.isCancellationRequested || this._isDisposed) {
 			return;
 		}
+
 		if (input instanceof WebviewInput) {
 			input.updateGroup(this.group.id);
 
 			if (!alreadyOwnsWebview) {
 				this.claimWebview(input);
 			}
+
 			if (this._dimension) {
 				this.layout(this._dimension);
 			}
 		}
 	}
+
 	private claimWebview(input: WebviewInput): void {
 		input.claim(this, this.window, this.scopedContextKeyService);
 
@@ -223,8 +258,10 @@ export class WebviewEditor extends EditorPane {
 				"aria-flowto",
 				input.webview.container.id,
 			);
+
 			DOM.setParentFlowTo(input.webview.container, this._element);
 		}
+
 		this._webviewVisibleDisposables.clear();
 		// Webviews are not part of the normal editor dom, so we have to register our own drag and drop handler on them.
 		this._webviewVisibleDisposables.add(
@@ -235,12 +272,16 @@ export class WebviewEditor extends EditorPane {
 				},
 			),
 		);
+
 		this._webviewVisibleDisposables.add(
 			new WebviewWindowDragMonitor(this.window, () => this.webview),
 		);
+
 		this.synchronizeWebviewContainerDimensions(input.webview);
+
 		this._webviewVisibleDisposables.add(this.trackFocus(input.webview));
 	}
+
 	private synchronizeWebviewContainerDimensions(
 		webview: IOverlayWebview,
 		dimension?: DOM.Dimension,
@@ -248,21 +289,26 @@ export class WebviewEditor extends EditorPane {
 		if (!this._element?.isConnected) {
 			return;
 		}
+
 		const rootContainer = this._workbenchLayoutService.getContainer(
 			this.window,
 			Parts.EDITOR_PART,
 		);
+
 		webview.layoutWebviewOverElement(
 			this._element.parentElement!,
 			dimension,
 			rootContainer,
 		);
 	}
+
 	private trackFocus(webview: IOverlayWebview): IDisposable {
 		const store = new DisposableStore();
 		// Track focus in webview content
 		const webviewContentFocusTracker = DOM.trackFocus(webview.container);
+
 		store.add(webviewContentFocusTracker);
+
 		store.add(
 			webviewContentFocusTracker.onDidFocus(() =>
 				this._onDidFocusWebview.fire(),

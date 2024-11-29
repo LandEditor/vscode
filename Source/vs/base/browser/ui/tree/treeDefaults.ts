@@ -18,9 +18,12 @@ export class CollapseAllAction<TInput, T, TFilterData = void> extends Action {
 			enabled,
 		);
 	}
+
 	override async run(): Promise<void> {
 		this.viewer.collapseAll();
+
 		this.viewer.setSelection([]);
+
 		this.viewer.setFocus([]);
 	}
 }

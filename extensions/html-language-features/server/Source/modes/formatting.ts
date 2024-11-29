@@ -46,6 +46,7 @@ export async function format(
 		while (isEOL(content, endOffset - 1) && endOffset > prevLineStart) {
 			endOffset--;
 		}
+
 		formatRange = Range.create(
 			formatRange.start,
 			document.positionAt(endOffset),
@@ -77,11 +78,15 @@ export async function format(
 				formattingOptions,
 				settings,
 			);
+
 			pushAll(result, edits);
 		}
+
 		startPos = range.end;
+
 		i++;
 	}
+
 	if (i === allRanges.length) {
 		return result;
 	}
@@ -105,8 +110,10 @@ export async function format(
 		!htmlFormattedContent.endsWith("\n")
 	) {
 		htmlFormattedContent = htmlFormattedContent + "\n";
+
 		htmlEdits.push(TextEdit.insert(endPos, "\n"));
 	}
+
 	const newDocument = TextDocument.create(
 		document.uri + ".tmp",
 		document.languageId,
@@ -153,6 +160,7 @@ export async function format(
 				}
 			}
 		}
+
 		if (embeddedEdits.length === 0) {
 			pushAll(result, htmlEdits);
 
@@ -168,6 +176,7 @@ export async function format(
 			document.offsetAt(formatRange.start),
 			resultContent.length - afterFormatRangeLength,
 		);
+
 		result.push(TextEdit.replace(formatRange, resultReplaceText));
 
 		return result;

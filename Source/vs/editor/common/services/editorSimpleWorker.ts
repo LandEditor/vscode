@@ -68,6 +68,7 @@ import {
 
 export interface IMirrorModel extends IMirrorTextModel {
 	readonly uri: URI;
+
 	readonly version: number;
 
 	getValue(): string;
@@ -110,26 +111,34 @@ export class BaseEditorSimpleWorker
 	implements IDisposable, IWorkerTextModelSyncChannelServer, IRequestHandler
 {
 	_requestHandlerBrand: any;
+
 	private readonly _workerTextModelSyncServer =
 		new WorkerTextModelSyncServer();
 
 	constructor() {}
+
 	dispose(): void {}
+
 	protected _getModel(uri: string): ICommonModel | undefined {
 		return this._workerTextModelSyncServer.getModel(uri);
 	}
+
 	protected _getModels(): ICommonModel[] {
 		return this._workerTextModelSyncServer.getModels();
 	}
+
 	public $acceptNewModel(data: IRawModelData): void {
 		this._workerTextModelSyncServer.$acceptNewModel(data);
 	}
+
 	public $acceptModelChanged(uri: string, e: IModelChangedEvent): void {
 		this._workerTextModelSyncServer.$acceptModelChanged(uri, e);
 	}
+
 	public $acceptRemovedModel(uri: string): void {
 		this._workerTextModelSyncServer.$acceptRemovedModel(uri);
 	}
+
 	public async $computeUnicodeHighlights(
 		url: string,
 		options: UnicodeHighlighterOptions,
@@ -146,12 +155,14 @@ export class BaseEditorSimpleWorker
 				nonBasicAsciiCharacterCount: 0,
 			};
 		}
+
 		return UnicodeTextModelHighlighter.computeUnicodeHighlights(
 			model,
 			options,
 			range,
 		);
 	}
+
 	public async $findSectionHeaders(
 		url: string,
 		options: FindSectionHeaderOptions,
@@ -161,6 +172,7 @@ export class BaseEditorSimpleWorker
 		if (!model) {
 			return [];
 		}
+
 		return findSectionHeaders(model, options);
 	}
 	// ---- BEGIN diff --------------------------------------------------------------------------
@@ -177,6 +189,7 @@ export class BaseEditorSimpleWorker
 		if (!original || !modified) {
 			return null;
 		}
+
 		const result = EditorSimpleWorker.computeDiff(
 			original,
 			modified,
@@ -186,6 +199,7 @@ export class BaseEditorSimpleWorker
 
 		return result;
 	}
+
 	private static computeDiff(
 		originalTextModel: ICommonModel | ITextModel,
 		modifiedTextModel: ICommonModel | ITextModel,
@@ -235,6 +249,7 @@ export class BaseEditorSimpleWorker
 				]),
 			]);
 		}
+
 		return {
 			identical,
 			quitEarly: result.hitTimeout,
@@ -248,6 +263,7 @@ export class BaseEditorSimpleWorker
 			]),
 		};
 	}
+
 	private static _modelsAreIdentical(
 		original: ICommonModel | ITextModel,
 		modified: ICommonModel | ITextModel,
@@ -259,6 +275,7 @@ export class BaseEditorSimpleWorker
 		if (originalLineCount !== modifiedLineCount) {
 			return false;
 		}
+
 		for (let line = 1; line <= originalLineCount; line++) {
 			const originalLine = original.getLineContent(line);
 
@@ -268,8 +285,10 @@ export class BaseEditorSimpleWorker
 				return false;
 			}
 		}
+
 		return true;
 	}
+
 	public async $computeDirtyDiff(
 		originalUrl: string,
 		modifiedUrl: string,
@@ -282,6 +301,7 @@ export class BaseEditorSimpleWorker
 		if (!original || !modified) {
 			return null;
 		}
+
 		const originalLines = original.getLinesContent();
 
 		const modifiedLines = modified.getLinesContent();
@@ -299,6 +319,7 @@ export class BaseEditorSimpleWorker
 	// ---- END diff --------------------------------------------------------------------------
 	// ---- BEGIN minimal edits ---------------------------------------------------------------
 	private static readonly _diffLimit = 100000;
+
 	public async $computeMoreMinimalEdits(
 		modelUrl: string,
 		edits: TextEdit[],
@@ -309,9 +330,11 @@ export class BaseEditorSimpleWorker
 		if (!model) {
 			return edits;
 		}
+
 		const result: TextEdit[] = [];
 
 		let lastEol: EndOfLineSequence | undefined = undefined;
+
 		edits = edits.slice(0).sort((a, b) => {
 			if (a.range && b.range) {
 				return Range.compareRangesUsingStarts(a.range, b.range);
@@ -336,23 +359,29 @@ export class BaseEditorSimpleWorker
 					Range.getStartPosition(edits[writeIndex].range),
 					Range.getEndPosition(edits[readIndex].range),
 				);
+
 				edits[writeIndex].text += edits[readIndex].text;
 			} else {
 				writeIndex++;
+
 				edits[writeIndex] = edits[readIndex];
 			}
 		}
+
 		edits.length = writeIndex + 1;
 
 		for (let { range, text, eol } of edits) {
 			if (typeof eol === "number") {
 				lastEol = eol;
 			}
+
 			if (Range.isEmpty(range) && !text) {
 				// empty change
 				continue;
 			}
+
 			const original = model.getValueInRange(range);
+
 			text = text.replace(/\r\n|\n|\r/g, model.eol);
 
 			if (original === text) {
@@ -402,6 +431,7 @@ export class BaseEditorSimpleWorker
 				}
 			}
 		}
+
 		if (typeof lastEol === "number") {
 			result.push({
 				eol: lastEol,
@@ -414,8 +444,10 @@ export class BaseEditorSimpleWorker
 				},
 			});
 		}
+
 		return result;
 	}
+
 	public $computeHumanReadableDiff(
 		modelUrl: string,
 		edits: TextEdit[],
@@ -426,9 +458,11 @@ export class BaseEditorSimpleWorker
 		if (!model) {
 			return edits;
 		}
+
 		const result: TextEdit[] = [];
 
 		let lastEol: EndOfLineSequence | undefined = undefined;
+
 		edits = edits.slice(0).sort((a, b) => {
 			if (a.range && b.range) {
 				return Range.compareRangesUsingStarts(a.range, b.range);
@@ -445,11 +479,14 @@ export class BaseEditorSimpleWorker
 			if (typeof eol === "number") {
 				lastEol = eol;
 			}
+
 			if (Range.isEmpty(range) && !text) {
 				// empty change
 				continue;
 			}
+
 			const original = model.getValueInRange(range);
+
 			text = text.replace(/\r\n|\n|\r/g, model.eol);
 
 			if (original === text) {
@@ -484,12 +521,15 @@ export class BaseEditorSimpleWorker
 						: pos2.column,
 				);
 			}
+
 			function getText(lines: string[], range: Range): string[] {
 				const result: string[] = [];
 
 				for (
 					let i = range.startLineNumber;
+
 					i <= range.endLineNumber;
+
 					i++
 				) {
 					const line = lines[i - 1];
@@ -512,8 +552,10 @@ export class BaseEditorSimpleWorker
 						result.push(line);
 					}
 				}
+
 				return result;
 			}
+
 			for (const c of diff.changes) {
 				if (c.innerChanges) {
 					for (const x of c.innerChanges) {
@@ -540,6 +582,7 @@ export class BaseEditorSimpleWorker
 				}
 			}
 		}
+
 		if (typeof lastEol === "number") {
 			result.push({
 				eol: lastEol,
@@ -552,6 +595,7 @@ export class BaseEditorSimpleWorker
 				},
 			});
 		}
+
 		return result;
 	}
 	// ---- END minimal edits ---------------------------------------------------------------
@@ -561,6 +605,7 @@ export class BaseEditorSimpleWorker
 		if (!model) {
 			return null;
 		}
+
 		return computeLinks(model);
 	}
 	// --- BEGIN default document colors -----------------------------------------------------------
@@ -572,10 +617,12 @@ export class BaseEditorSimpleWorker
 		if (!model) {
 			return null;
 		}
+
 		return computeDefaultDocumentColors(model);
 	}
 	// ---- BEGIN suggest --------------------------------------------------------------------------
 	private static readonly _suggestionsLimit = 10000;
+
 	public async $textualSuggest(
 		modelUrls: string[],
 		leadingWord: string | undefined,
@@ -583,6 +630,7 @@ export class BaseEditorSimpleWorker
 		wordDefFlags: string,
 	): Promise<{
 		words: string[];
+
 		duration: number;
 	} | null> {
 		const sw = new StopWatch();
@@ -590,16 +638,19 @@ export class BaseEditorSimpleWorker
 		const wordDefRegExp = new RegExp(wordDef, wordDefFlags);
 
 		const seen = new Set<string>();
+
 		outer: for (const url of modelUrls) {
 			const model = this._getModel(url);
 
 			if (!model) {
 				continue;
 			}
+
 			for (const word of model.words(wordDefRegExp)) {
 				if (word === leadingWord || !isNaN(Number(word))) {
 					continue;
 				}
+
 				seen.add(word);
 
 				if (seen.size > EditorSimpleWorker._suggestionsLimit) {
@@ -607,6 +658,7 @@ export class BaseEditorSimpleWorker
 				}
 			}
 		}
+
 		return { words: Array.from(seen), duration: sw.elapsed() };
 	}
 	// ---- END suggest --------------------------------------------------------------------------
@@ -624,6 +676,7 @@ export class BaseEditorSimpleWorker
 		if (!model) {
 			return Object.create(null);
 		}
+
 		const wordDefRegExp = new RegExp(wordDef, wordDefFlags);
 
 		const result: {
@@ -632,7 +685,9 @@ export class BaseEditorSimpleWorker
 
 		for (
 			let line = range.startLineNumber;
+
 			line < range.endLineNumber;
+
 			line++
 		) {
 			const words = model.getLineWords(line, wordDefRegExp);
@@ -641,12 +696,15 @@ export class BaseEditorSimpleWorker
 				if (!isNaN(Number(word.word))) {
 					continue;
 				}
+
 				let array = result[word.word];
 
 				if (!array) {
 					array = [];
+
 					result[word.word] = array;
 				}
+
 				array.push({
 					startLineNumber: line,
 					startColumn: word.startColumn,
@@ -655,6 +713,7 @@ export class BaseEditorSimpleWorker
 				});
 			}
 		}
+
 		return result;
 	}
 	//#endregion
@@ -670,6 +729,7 @@ export class BaseEditorSimpleWorker
 		if (!model) {
 			return null;
 		}
+
 		const wordDefRegExp = new RegExp(wordDef, wordDefFlags);
 
 		if (range.startColumn === range.endColumn) {
@@ -680,6 +740,7 @@ export class BaseEditorSimpleWorker
 				endColumn: range.endColumn + 1,
 			};
 		}
+
 		const selectionText = model.getValueInRange(range);
 
 		const wordRange = model.getWordAtPosition(
@@ -690,6 +751,7 @@ export class BaseEditorSimpleWorker
 		if (!wordRange) {
 			return null;
 		}
+
 		const word = model.getValueInRange(wordRange);
 
 		const result = BasicInplaceReplace.INSTANCE.navigateValueSet(
@@ -715,6 +777,7 @@ export class EditorSimpleWorker extends BaseEditorSimpleWorker {
 	) {
 		super();
 	}
+
 	public async $ping() {
 		return "pong";
 	}
@@ -748,11 +811,13 @@ export class EditorSimpleWorker extends BaseEditorSimpleWorker {
 			// static foreing module
 			return Promise.resolve(getAllMethodNames(this._foreignModule));
 		}
+
 		return new Promise<any>((resolve, reject) => {
 			const onModuleCallback = (foreignModule: {
 				create: IForeignModuleFactory;
 			}) => {
 				this._foreignModule = foreignModule.create(ctx, createData);
+
 				resolve(getAllMethodNames(this._foreignModule));
 			};
 
@@ -773,6 +838,7 @@ export class EditorSimpleWorker extends BaseEditorSimpleWorker {
 				new Error("Missing requestHandler or method: " + method),
 			);
 		}
+
 		try {
 			return Promise.resolve(
 				this._foreignModule[method].apply(this._foreignModule, args),

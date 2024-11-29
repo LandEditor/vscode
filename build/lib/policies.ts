@@ -16,6 +16,7 @@ const product = require("../../product.json");
 const packageJson = require("../../package.json");
 type NlsString = {
 	value: string;
+
 	nlsKey: string;
 };
 function isNlsString(
@@ -31,6 +32,7 @@ function isNlsStringArray(value: (string | NlsString)[]): value is NlsString[] {
 }
 interface Category {
 	readonly moduleName: string;
+
 	readonly name: NlsString;
 }
 enum PolicyType {
@@ -38,9 +40,13 @@ enum PolicyType {
 }
 interface Policy {
 	readonly category: Category;
+
 	readonly minimumVersion: string;
+
 	renderADMX(regKey: string): string[];
+
 	renderADMLStrings(translations?: LanguageTranslations): string[];
+
 	renderADMLPresentation(): string;
 }
 function renderADMLString(
@@ -58,6 +64,7 @@ function renderADMLString(
 			value = moduleTranslations[nlsString.nlsKey];
 		}
 	}
+
 	if (!value) {
 		value = nlsString.value;
 	}
@@ -73,6 +80,7 @@ abstract class BasePolicy implements Policy {
 		protected description: NlsString,
 		protected moduleName: string,
 	) {}
+
 	protected renderADMLString(
 		nlsString: NlsString,
 		translations?: LanguageTranslations,
@@ -84,6 +92,7 @@ abstract class BasePolicy implements Policy {
 			translations,
 		);
 	}
+
 	renderADMX(regKey: string) {
 		return [
 			`<policy name="${this.name}" class="Both" displayName="$(string.${this.name})" explainText="$(string.${this.name}_${this.description.nlsKey.replace(/\./g, "_")})" key="Software\\Policies\\Microsoft\\${regKey}" presentation="$(presentation.${this.name})">`,
@@ -95,16 +104,20 @@ abstract class BasePolicy implements Policy {
 			`</policy>`,
 		];
 	}
+
 	protected abstract renderADMXElements(): string[];
+
 	renderADMLStrings(translations?: LanguageTranslations) {
 		return [
 			`<string id="${this.name}">${this.name}</string>`,
 			this.renderADMLString(this.description, translations),
 		];
 	}
+
 	renderADMLPresentation(): string {
 		return `<presentation id="${this.name}">${this.renderADMLPresentationContents()}</presentation>`;
 	}
+
 	protected abstract renderADMLPresentationContents(): string;
 }
 class BooleanPolicy extends BasePolicy {
@@ -121,6 +134,7 @@ class BooleanPolicy extends BasePolicy {
 		if (type !== "boolean") {
 			return undefined;
 		}
+
 		return new BooleanPolicy(
 			name,
 			category,
@@ -129,6 +143,7 @@ class BooleanPolicy extends BasePolicy {
 			moduleName,
 		);
 	}
+
 	private constructor(
 		name: string,
 		category: Category,
@@ -145,6 +160,7 @@ class BooleanPolicy extends BasePolicy {
 			moduleName,
 		);
 	}
+
 	protected renderADMXElements(): string[] {
 		return [
 			`<boolean id="${this.name}" valueName="${this.name}">`,
@@ -152,6 +168,7 @@ class BooleanPolicy extends BasePolicy {
 			`</boolean>`,
 		];
 	}
+
 	renderADMLPresentationContents() {
 		return `<checkBox refId="${this.name}">${this.name}</checkBox>`;
 	}
@@ -170,11 +187,13 @@ class IntPolicy extends BasePolicy {
 		if (type !== "number") {
 			return undefined;
 		}
+
 		const defaultValue = getIntProperty(settingNode, "default");
 
 		if (typeof defaultValue === "undefined") {
 			throw new Error(`Missing required 'default' property.`);
 		}
+
 		return new IntPolicy(
 			name,
 			category,
@@ -184,6 +203,7 @@ class IntPolicy extends BasePolicy {
 			defaultValue,
 		);
 	}
+
 	private constructor(
 		name: string,
 		category: Category,
@@ -201,12 +221,14 @@ class IntPolicy extends BasePolicy {
 			moduleName,
 		);
 	}
+
 	protected renderADMXElements(): string[] {
 		return [
 			`<decimal id="${this.name}" valueName="${this.name}" />`,
 			// `<decimal id="Quarantine_PurgeItemsAfterDelay" valueName="PurgeItemsAfterDelay" minValue="0" maxValue="10000000" />`
 		];
 	}
+
 	renderADMLPresentationContents() {
 		return `<decimalTextBox refId="${this.name}" defaultValue="${this.defaultValue}">${this.name}</decimalTextBox>`;
 	}
@@ -225,6 +247,7 @@ class StringPolicy extends BasePolicy {
 		if (type !== "string") {
 			return undefined;
 		}
+
 		return new StringPolicy(
 			name,
 			category,
@@ -233,6 +256,7 @@ class StringPolicy extends BasePolicy {
 			moduleName,
 		);
 	}
+
 	private constructor(
 		name: string,
 		category: Category,
@@ -249,11 +273,13 @@ class StringPolicy extends BasePolicy {
 			moduleName,
 		);
 	}
+
 	protected renderADMXElements(): string[] {
 		return [
 			`<text id="${this.name}" valueName="${this.name}" required="true" />`,
 		];
 	}
+
 	renderADMLPresentationContents() {
 		return `<textBox refId="${this.name}"><label>${this.name}:</label></textBox>`;
 	}
@@ -325,14 +351,17 @@ class StringEnumPolicy extends BasePolicy {
 		if (type !== "string") {
 			return undefined;
 		}
+
 		const enum_ = getStringArrayProperty(settingNode, "enum");
 
 		if (!enum_) {
 			return undefined;
 		}
+
 		if (!isStringArray(enum_)) {
 			throw new Error(`Property 'enum' should not be localized.`);
 		}
+
 		const enumDescriptions = getStringArrayProperty(
 			settingNode,
 			"enumDescriptions",
@@ -343,6 +372,7 @@ class StringEnumPolicy extends BasePolicy {
 		} else if (!isNlsStringArray(enumDescriptions)) {
 			throw new Error(`Property 'enumDescriptions' should be localized.`);
 		}
+
 		return new StringEnumPolicy(
 			name,
 			category,
@@ -353,6 +383,7 @@ class StringEnumPolicy extends BasePolicy {
 			enumDescriptions,
 		);
 	}
+
 	private constructor(
 		name: string,
 		category: Category,
@@ -371,6 +402,7 @@ class StringEnumPolicy extends BasePolicy {
 			moduleName,
 		);
 	}
+
 	protected renderADMXElements(): string[] {
 		return [
 			`<enum id="${this.name}" valueName="${this.name}">`,
@@ -381,6 +413,7 @@ class StringEnumPolicy extends BasePolicy {
 			`</enum>`,
 		];
 	}
+
 	renderADMLStrings(translations?: LanguageTranslations) {
 		return [
 			...super.renderADMLStrings(translations),
@@ -389,12 +422,14 @@ class StringEnumPolicy extends BasePolicy {
 			),
 		];
 	}
+
 	renderADMLPresentationContents() {
 		return `<dropdownList refId="${this.name}" />`;
 	}
 }
 interface QType<T> {
 	Q: string;
+
 	value(matches: Parser.QueryMatch[]): T | undefined;
 }
 
@@ -406,12 +441,14 @@ const IntQ: QType<number> = {
 		if (!match) {
 			return undefined;
 		}
+
 		const value = match.captures.filter((c) => c.name === "value")[0]?.node
 			.text;
 
 		if (!value) {
 			throw new Error(`Missing required 'value' property.`);
 		}
+
 		return parseInt(value);
 	},
 };
@@ -427,12 +464,14 @@ const StringQ: QType<string | NlsString> = {
 		if (!match) {
 			return undefined;
 		}
+
 		const value = match.captures.filter((c) => c.name === "value")[0]?.node
 			.text;
 
 		if (!value) {
 			throw new Error(`Missing required 'value' property.`);
 		}
+
 		const nlsKey = match.captures.filter((c) => c.name === "nlsKey")[0]
 			?.node.text;
 
@@ -450,6 +489,7 @@ const StringArrayQ: QType<(string | NlsString)[]> = {
 		if (matches.length === 0) {
 			return undefined;
 		}
+
 		return matches.map((match) => {
 			return StringQ.value([match]) as string | NlsString;
 		});
@@ -514,6 +554,7 @@ function getPolicy(
 	} else if (isNlsString(name)) {
 		throw new Error(`Property 'name' should be a literal string.`);
 	}
+
 	const categoryName = getStringProperty(configurationNode, "title");
 
 	if (!categoryName) {
@@ -521,14 +562,17 @@ function getPolicy(
 	} else if (!isNlsString(categoryName)) {
 		throw new Error(`Property 'title' should be localized.`);
 	}
+
 	const categoryKey = `${categoryName.nlsKey}:${categoryName.value}`;
 
 	let category = categories.get(categoryKey);
 
 	if (!category) {
 		category = { moduleName, name: categoryName };
+
 		categories.set(categoryKey, category);
 	}
+
 	const minimumVersion = getStringProperty(policyNode, "minimumVersion");
 
 	if (!minimumVersion) {
@@ -538,14 +582,17 @@ function getPolicy(
 			`Property 'minimumVersion' should be a literal string.`,
 		);
 	}
+
 	const description = getStringProperty(settingNode, "description");
 
 	if (!description) {
 		throw new Error(`Missing required 'description' property.`);
 	}
+
 	if (!isNlsString(description)) {
 		throw new Error(`Property 'description' should be localized.`);
 	}
+
 	let result: Policy | undefined;
 
 	for (const policyType of PolicyTypes) {
@@ -562,9 +609,11 @@ function getPolicy(
 			break;
 		}
 	}
+
 	if (!result) {
 		throw new Error(`Failed to parse policy '${name}'.`);
 	}
+
 	return result;
 }
 function getPolicies(moduleName: string, node: Parser.SyntaxNode): Policy[] {
@@ -626,8 +675,11 @@ async function getFiles(root: string): Promise<string[]> {
 		]);
 
 		const stream = byline(rg.stdout.setEncoding("utf8"));
+
 		stream.on("data", (path) => result.push(path));
+
 		stream.on("error", (err) => e(err));
+
 		stream.on("end", () => c(result));
 	});
 }
@@ -745,6 +797,7 @@ type LanguageTranslations = {
 };
 type Translations = {
 	languageId: string;
+
 	languageTranslations: LanguageTranslations;
 }[];
 type Version = [number, number, number];
@@ -772,6 +825,7 @@ async function getSpecificNLS(
 			`[${res.status}] Error downloading language pack ${languageId}@${version}`,
 		);
 	}
+
 	const { contents: result } = (await res.json()) as {
 		contents: LanguageTranslations;
 	};
@@ -787,9 +841,11 @@ function compareVersions(a: Version, b: Version): number {
 	if (a[0] !== b[0]) {
 		return a[0] - b[0];
 	}
+
 	if (a[1] !== b[1]) {
 		return a[1] - b[1];
 	}
+
 	return a[2] - b[2];
 }
 async function queryVersions(
@@ -823,6 +879,7 @@ async function queryVersions(
 			`[${res.status}] Error querying for extension: ${languageId}`,
 		);
 	}
+
 	const result = (await res.json()) as {
 		results: [
 			{
@@ -862,6 +919,7 @@ async function getNLS(
 			`No compatible language pack found for ${languageId} for version ${version}`,
 		);
 	}
+
 	return await getSpecificNLS(
 		resourceUrlTemplate,
 		languageId,
@@ -870,6 +928,7 @@ async function getNLS(
 }
 async function parsePolicies(): Promise<Policy[]> {
 	const parser = new Parser();
+
 	parser.setLanguage(typescript);
 
 	const files = await getFiles(process.cwd());
@@ -887,8 +946,10 @@ async function parsePolicies(): Promise<Policy[]> {
 		const contents = await fs.readFile(file, { encoding: "utf8" });
 
 		const tree = parser.parse(contents);
+
 		policies.push(...getPolicies(moduleName, tree.rootNode));
 	}
+
 	return policies;
 }
 async function getTranslations(): Promise<Translations> {
@@ -901,6 +962,7 @@ async function getTranslations(): Promise<Translations> {
 
 		return [];
 	}
+
 	const resourceUrlTemplate = product.extensionsGallery?.resourceUrlTemplate;
 
 	if (!resourceUrlTemplate) {
@@ -910,6 +972,7 @@ async function getTranslations(): Promise<Translations> {
 
 		return [];
 	}
+
 	const version = parseVersion(packageJson.version);
 
 	const languageIds = Object.keys(Languages);
@@ -937,8 +1000,11 @@ async function main() {
 	const { admx, adml } = await renderGP(policies, translations);
 
 	const root = ".build/policies/win32";
+
 	await fs.rm(root, { recursive: true, force: true });
+
 	await fs.mkdir(root, { recursive: true });
+
 	await fs.writeFile(
 		path.join(root, `${product.win32RegValueName}.admx`),
 		admx.replace(/\r?\n/g, "\n"),
@@ -951,7 +1017,9 @@ async function main() {
 				? "en-us"
 				: Languages[languageId as keyof typeof Languages],
 		);
+
 		await fs.mkdir(languagePath, { recursive: true });
+
 		await fs.writeFile(
 			path.join(languagePath, `${product.win32RegValueName}.adml`),
 			contents.replace(/\r?\n/g, "\n"),
@@ -961,6 +1029,7 @@ async function main() {
 if (require.main === module) {
 	main().catch((err) => {
 		console.error(err);
+
 		process.exit(1);
 	});
 }

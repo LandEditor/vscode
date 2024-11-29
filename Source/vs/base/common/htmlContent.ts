@@ -13,10 +13,15 @@ export interface MarkdownStringTrustedOptions {
 }
 export interface IMarkdownString {
 	readonly value: string;
+
 	readonly isTrusted?: boolean | MarkdownStringTrustedOptions;
+
 	readonly supportThemeIcons?: boolean;
+
 	readonly supportHtml?: boolean;
+
 	readonly baseUri?: UriComponents;
+
 	uris?: {
 		[href: string]: UriComponents;
 	};
@@ -27,9 +32,13 @@ export const enum MarkdownStringTextNewlineStyle {
 }
 export class MarkdownString implements IMarkdownString {
 	public value: string;
+
 	public isTrusted?: boolean | MarkdownStringTrustedOptions;
+
 	public supportThemeIcons?: boolean;
+
 	public supportHtml?: boolean;
+
 	public baseUri?: URI;
 
 	constructor(
@@ -38,7 +47,9 @@ export class MarkdownString implements IMarkdownString {
 			| boolean
 			| {
 					isTrusted?: boolean | MarkdownStringTrustedOptions;
+
 					supportThemeIcons?: boolean;
+
 					supportHtml?: boolean;
 			  } = false,
 	) {
@@ -47,17 +58,23 @@ export class MarkdownString implements IMarkdownString {
 		if (typeof this.value !== "string") {
 			throw illegalArgument("value");
 		}
+
 		if (typeof isTrustedOrOptions === "boolean") {
 			this.isTrusted = isTrustedOrOptions;
+
 			this.supportThemeIcons = false;
+
 			this.supportHtml = false;
 		} else {
 			this.isTrusted = isTrustedOrOptions.isTrusted ?? undefined;
+
 			this.supportThemeIcons =
 				isTrustedOrOptions.supportThemeIcons ?? false;
+
 			this.supportHtml = isTrustedOrOptions.supportHtml ?? false;
 		}
 	}
+
 	appendText(
 		value: string,
 		newlineStyle: MarkdownStringTextNewlineStyle = MarkdownStringTextNewlineStyle.Paragraph,
@@ -75,33 +92,41 @@ export class MarkdownString implements IMarkdownString {
 			); // CodeQL [SM02383] The Markdown is fully sanitized after being rendered.
 		return this;
 	}
+
 	appendMarkdown(value: string): MarkdownString {
 		this.value += value;
 
 		return this;
 	}
+
 	appendCodeblock(langId: string, code: string): MarkdownString {
 		this.value += `\n${appendEscapedMarkdownCodeBlockFence(code, langId)}\n`;
 
 		return this;
 	}
+
 	appendLink(
 		target: URI | string,
 		label: string,
 		title?: string,
 	): MarkdownString {
 		this.value += "[";
+
 		this.value += this._escape(label, "]");
+
 		this.value += "](";
+
 		this.value += this._escape(String(target), ")");
 
 		if (title) {
 			this.value += ` "${this._escape(this._escape(title, '"'), ")")}"`;
 		}
+
 		this.value += ")";
 
 		return this;
 	}
+
 	private _escape(value: string, ch: string): string {
 		const r = new RegExp(escapeRegExpCharacters(ch), "g");
 
@@ -138,6 +163,7 @@ export function isMarkdownString(thing: any): thing is IMarkdownString {
 				(<IMarkdownString>thing).supportThemeIcons === undefined)
 		);
 	}
+
 	return false;
 }
 export function markdownStringEqual(
@@ -192,15 +218,18 @@ export function removeMarkdownEscapes(text: string): string {
 	if (!text) {
 		return text;
 	}
+
 	return text.replace(/\\([\\`*_{}[\]()#+\-.!~])/g, "$1");
 }
 export function parseHrefAndDimensions(href: string): {
 	href: string;
+
 	dimensions: string[];
 } {
 	const dimensions: string[] = [];
 
 	const splitted = href.split("|").map((s) => s.trim());
+
 	href = splitted[0];
 
 	const parameters = splitted[1];
@@ -221,9 +250,11 @@ export function parseHrefAndDimensions(href: string): {
 		if (widthIsFinite) {
 			dimensions.push(`width="${width}"`);
 		}
+
 		if (heightIsFinite) {
 			dimensions.push(`height="${height}"`);
 		}
 	}
+
 	return { href, dimensions };
 }

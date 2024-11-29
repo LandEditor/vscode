@@ -34,28 +34,34 @@ export function provideDecorations(
 			color: listInvalidItemForeground,
 		};
 	}
+
 	if (fileStat.isSymbolicLink) {
 		return {
 			tooltip: localize("symbolicLlink", "Symbolic Link"),
 			letter: "\u2937",
 		};
 	}
+
 	if (fileStat.isUnknown) {
 		return {
 			tooltip: localize("unknown", "Unknown File Type"),
 			letter: "?",
 		};
 	}
+
 	if (fileStat.isExcluded) {
 		return {
 			color: listDeemphasizedForeground,
 		};
 	}
+
 	return undefined;
 }
 export class ExplorerDecorationsProvider implements IDecorationsProvider {
 	readonly label: string = localize("label", "Explorer");
+
 	private readonly _onDidChange = new Emitter<URI[]>();
+
 	private readonly toDispose = new DisposableStore();
 
 	constructor(
@@ -65,6 +71,7 @@ export class ExplorerDecorationsProvider implements IDecorationsProvider {
 		contextService: IWorkspaceContextService,
 	) {
 		this.toDispose.add(this._onDidChange);
+
 		this.toDispose.add(
 			contextService.onDidChangeWorkspaceFolders((e) => {
 				this._onDidChange.fire(
@@ -72,15 +79,18 @@ export class ExplorerDecorationsProvider implements IDecorationsProvider {
 				);
 			}),
 		);
+
 		this.toDispose.add(
 			explorerRootErrorEmitter.event((resource) => {
 				this._onDidChange.fire([resource]);
 			}),
 		);
 	}
+
 	get onDidChange(): Event<URI[]> {
 		return this._onDidChange.event;
 	}
+
 	async provideDecorations(
 		resource: URI,
 	): Promise<IDecorationData | undefined> {
@@ -89,8 +99,10 @@ export class ExplorerDecorationsProvider implements IDecorationsProvider {
 		if (!fileStat) {
 			throw new Error("ExplorerItem not found");
 		}
+
 		return provideDecorations(fileStat);
 	}
+
 	dispose(): void {
 		this.toDispose.dispose();
 	}

@@ -42,10 +42,12 @@ export class MergeEditorOpenContentsFromJSON extends Action2 {
 			f1: true,
 		});
 	}
+
 	async run(
 		accessor: ServicesAccessor,
 		args?: {
 			data?: MergeEditorContents;
+
 			resultState?: "initial" | "current";
 		},
 	): Promise<void> {
@@ -64,6 +66,7 @@ export class MergeEditorOpenContentsFromJSON extends Action2 {
 		if (!args) {
 			args = {};
 		}
+
 		let content: MergeEditorContents;
 
 		if (!args.data) {
@@ -75,6 +78,7 @@ export class MergeEditorOpenContentsFromJSON extends Action2 {
 			if (result === undefined) {
 				return;
 			}
+
 			content =
 				result !== ""
 					? JSON.parse(result)
@@ -88,6 +92,7 @@ export class MergeEditorOpenContentsFromJSON extends Action2 {
 		} else {
 			content = args.data;
 		}
+
 		const targetDir = URI.joinPath(env.tmpDir, randomPath());
 
 		const extension =
@@ -109,10 +114,12 @@ export class MergeEditorOpenContentsFromJSON extends Action2 {
 		async function writeFile(uri: URI, content: string): Promise<void> {
 			await fileService.writeFile(uri, VSBuffer.fromString(content));
 		}
+
 		const shouldOpenInitial = await promptOpenInitial(
 			quickInputService,
 			args.resultState,
 		);
+
 		await Promise.all([
 			writeFile(baseUri, content.base),
 			writeFile(input1Uri, content.input1),
@@ -142,6 +149,7 @@ export class MergeEditorOpenContentsFromJSON extends Action2 {
 			},
 			result: { resource: resultUri },
 		};
+
 		editorService.openEditor(input);
 	}
 }
@@ -152,6 +160,7 @@ async function promptOpenInitial(
 	if (resultStateOverride) {
 		return resultStateOverride === "initial";
 	}
+
 	const result = await quickInputService.pick(
 		[
 			{ label: "result", result: false },
@@ -166,6 +175,7 @@ abstract class MergeEditorAction extends Action2 {
 	constructor(desc: Readonly<IAction2Options>) {
 		super(desc);
 	}
+
 	run(accessor: ServicesAccessor): void {
 		const { activeEditorPane } = accessor.get(IEditorService);
 
@@ -175,9 +185,11 @@ abstract class MergeEditorAction extends Action2 {
 			if (!vm) {
 				return;
 			}
+
 			this.runWithViewModel(vm, accessor);
 		}
 	}
+
 	abstract runWithViewModel(
 		viewModel: MergeEditorViewModel,
 		accessor: ServicesAccessor,
@@ -196,6 +208,7 @@ export class OpenSelectionInTemporaryMergeEditor extends MergeEditorAction {
 			f1: true,
 		});
 	}
+
 	override async runWithViewModel(
 		viewModel: MergeEditorViewModel,
 		accessor: ServicesAccessor,
@@ -205,6 +218,7 @@ export class OpenSelectionInTemporaryMergeEditor extends MergeEditorAction {
 		if (!rangesInBase || rangesInBase.length === 0) {
 			return;
 		}
+
 		const base = rangesInBase
 			.map((r) => viewModel.model.base.getValueInRange(r))
 			.join("\n");
@@ -238,6 +252,7 @@ export class OpenSelectionInTemporaryMergeEditor extends MergeEditorAction {
 					),
 			)
 			.join("\n");
+
 		new MergeEditorOpenContentsFromJSON().run(accessor, {
 			data: {
 				base,

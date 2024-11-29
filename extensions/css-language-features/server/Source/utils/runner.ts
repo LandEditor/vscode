@@ -20,6 +20,7 @@ export function formatError(message: string, err: any): string {
 	} else if (err) {
 		return `${message}: ${err.toString()}`;
 	}
+
 	return message;
 }
 export function runSafeAsync<T>(
@@ -36,6 +37,7 @@ export function runSafeAsync<T>(
 
 				return;
 			}
+
 			return func().then(
 				(result) => {
 					if (token.isCancellationRequested) {
@@ -48,6 +50,7 @@ export function runSafeAsync<T>(
 				},
 				(e) => {
 					console.error(formatError(errorMessage, e));
+
 					resolve(errorVal);
 				},
 			);

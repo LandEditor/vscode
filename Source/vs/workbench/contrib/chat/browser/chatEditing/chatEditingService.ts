@@ -105,12 +105,14 @@ export class ChatEditingService
 
 	private readonly _currentSessionObs =
 		observableValue<ChatEditingSession | null>(this, null);
+
 	private readonly _currentSessionDisposables = this._register(
 		new DisposableStore(),
 	);
 
 	private readonly _currentAutoApplyOperationObs =
 		observableValue<CancellationTokenSource | null>(this, null);
+
 	get currentAutoApplyOperation(): CancellationTokenSource | null {
 		return this._currentAutoApplyOperationObs.get();
 	}
@@ -126,6 +128,7 @@ export class ChatEditingService
 	private readonly _onDidCreateEditingSession = this._register(
 		new Emitter<IChatEditingSession>(),
 	);
+
 	get onDidCreateEditingSession() {
 		return this._onDidCreateEditingSession.event;
 	}
@@ -133,11 +136,14 @@ export class ChatEditingService
 	private readonly _onDidChangeEditingSession = this._register(
 		new Emitter<void>(),
 	);
+
 	public readonly onDidChangeEditingSession =
 		this._onDidChangeEditingSession.event;
 
 	private _editingSessionFileLimitPromise: Promise<number>;
+
 	private _editingSessionFileLimit: number | undefined;
+
 	get editingSessionFileLimit() {
 		return this._editingSessionFileLimit ?? defaultChatEditingMaxFileLimit;
 	}
@@ -168,9 +174,12 @@ export class ChatEditingService
 		private readonly _workbenchAssignmentService: IWorkbenchAssignmentService,
 	) {
 		super();
+
 		this._applyingChatEditsFailedContextKey =
 			applyingChatEditsFailedContextKey.bindTo(contextKeyService);
+
 		this._applyingChatEditsFailedContextKey.set(false);
+
 		this._register(
 			decorationsService.registerDecorationsProvider(
 				_instantiationService.createInstance(
@@ -179,6 +188,7 @@ export class ChatEditingService
 				),
 			),
 		);
+
 		this._register(
 			multiDiffSourceResolverService.registerResolver(
 				_instantiationService.createInstance(
@@ -187,6 +197,7 @@ export class ChatEditingService
 				),
 			),
 		);
+
 		textModelService.registerTextModelContentProvider(
 			ChatEditingTextModelContentProvider.scheme,
 			_instantiationService.createInstance(
@@ -194,6 +205,7 @@ export class ChatEditingService
 				this._currentSessionObs,
 			),
 		);
+
 		textModelService.registerTextModelContentProvider(
 			ChatEditingSnapshotTextModelContentProvider.scheme,
 			_instantiationService.createInstance(
@@ -201,58 +213,73 @@ export class ChatEditingService
 				this._currentSessionObs,
 			),
 		);
+
 		this._register(
 			bindContextKey(
 				decidedChatEditingResourceContextKey,
 				contextKeyService,
 				(reader) => {
 					const currentSession = this._currentSessionObs.read(reader);
+
 					if (!currentSession) {
 						return;
 					}
+
 					const entries = currentSession.entries.read(reader);
+
 					const decidedEntries = entries.filter(
 						(entry) =>
 							entry.state.read(reader) !==
 							WorkingSetEntryState.Modified,
 					);
+
 					return decidedEntries.map((entry) => entry.entryId);
 				},
 			),
 		);
+
 		this._register(
 			bindContextKey(
 				hasUndecidedChatEditingResourceContextKey,
 				contextKeyService,
 				(reader) => {
 					const currentSession = this._currentSessionObs.read(reader);
+
 					if (!currentSession) {
 						return;
 					}
+
 					const entries = currentSession.entries.read(reader);
+
 					const decidedEntries = entries.filter(
 						(entry) =>
 							entry.state.read(reader) ===
 							WorkingSetEntryState.Modified,
 					);
+
 					return decidedEntries.length > 0;
 				},
 			),
 		);
+
 		this._register(
 			bindContextKey(
 				hasAppliedChatEditsContextKey,
 				contextKeyService,
 				(reader) => {
 					const currentSession = this._currentSessionObs.read(reader);
+
 					if (!currentSession) {
 						return false;
 					}
+
 					const entries = currentSession.entries.read(reader);
+
 					return entries.length > 0;
 				},
 			),
 		);
+
 		this._register(
 			bindContextKey(
 				inChatEditingSessionContextKey,
@@ -262,6 +289,7 @@ export class ChatEditingService
 				},
 			),
 		);
+
 		this._register(
 			bindContextKey(
 				applyingChatEditsContextKey,
@@ -273,6 +301,7 @@ export class ChatEditingService
 				},
 			),
 		);
+
 		this._register(
 			bindContextKey(
 				ChatContextKeys.chatEditingCanUndo,
@@ -285,6 +314,7 @@ export class ChatEditingService
 				},
 			),
 		);
+
 		this._register(
 			bindContextKey(
 				ChatContextKeys.chatEditingCanRedo,
@@ -297,6 +327,7 @@ export class ChatEditingService
 				},
 			),
 		);
+
 		this._register(
 			this._chatService.onDidDisposeSession((e) => {
 				if (
@@ -304,6 +335,7 @@ export class ChatEditingService
 					this._currentSessionObs.get()?.chatSessionId === e.sessionId
 				) {
 					this._applyingChatEditsFailedContextKey.set(false);
+
 					void this._currentSessionObs.get()?.stop();
 				}
 			}),
@@ -312,6 +344,7 @@ export class ChatEditingService
 		this._register(
 			this.lifecycleService.onWillShutdown((e) => {
 				const session = this._currentSessionObs.get();
+
 				if (session) {
 					e.join(session.storeState(), {
 						id: "join.chatEditingSession",
@@ -329,35 +362,44 @@ export class ChatEditingService
 			.then((value) => {
 				this._editingSessionFileLimit =
 					value ?? defaultChatEditingMaxFileLimit;
+
 				return this._editingSessionFileLimit;
 			});
+
 		void this._editingSessionFileLimitPromise;
 	}
 
 	getSnapshotUri(id: string, uri: URI) {
 		const session = this._currentSessionObs.get();
+
 		if (!session) {
 			return undefined;
 		}
+
 		return session.getSnapshot(id, uri)?.snapshotUri;
 	}
 
 	getEditingSession(resource: URI): IChatEditingSession | null {
 		const session = this.currentEditingSession;
+
 		if (!session) {
 			return null;
 		}
+
 		const entries = session.entries.get();
+
 		for (const entry of entries) {
 			if (entry.modifiedURI.toString() === resource.toString()) {
 				return session;
 			}
 		}
+
 		return null;
 	}
 
 	override dispose(): void {
 		this._currentSessionObs.get()?.dispose();
+
 		super.dispose();
 	}
 
@@ -365,6 +407,7 @@ export class ChatEditingService
 		chatSessionId: string,
 	): Promise<IChatEditingSession> {
 		const session = this._currentSessionObs.get();
+
 		if (session) {
 			if (session.chatSessionId === chatSessionId) {
 				return session;
@@ -372,6 +415,7 @@ export class ChatEditingService
 				await session.stop();
 			}
 		}
+
 		return this._createEditingSession(chatSessionId);
 	}
 
@@ -402,10 +446,13 @@ export class ChatEditingService
 		this._currentSessionDisposables.add(
 			session.onDidDispose(() => {
 				this._currentSessionDisposables.clear();
+
 				this._currentSessionObs.set(null, undefined);
+
 				this._onDidChangeEditingSession.fire();
 			}),
 		);
+
 		this._currentSessionDisposables.add(
 			session.onDidChange(() => {
 				this._onDidChangeEditingSession.fire();
@@ -413,8 +460,11 @@ export class ChatEditingService
 		);
 
 		this._currentSessionObs.set(session, undefined);
+
 		this._onDidCreateEditingSession.fire(session);
+
 		this._onDidChangeEditingSession.fire();
+
 		return session;
 	}
 
@@ -428,6 +478,7 @@ export class ChatEditingService
 
 	private installAutoApplyObserver(session: ChatEditingSession): IDisposable {
 		const chatModel = this._chatService.getSession(session.chatSessionId);
+
 		if (!chatModel) {
 			throw new Error(
 				`Edit session was created for a non-existing chat session: ${session.chatSessionId}`,
@@ -437,8 +488,11 @@ export class ChatEditingService
 		const observerDisposables = new DisposableStore();
 
 		let editsSource: AsyncIterableSource<IChatTextEditGroup> | undefined;
+
 		let editsPromise: Promise<void> | undefined;
+
 		const editsSeen = new ResourceMap<{ seen: number }>();
+
 		const editedFilesExist = new ResourceMap<Promise<boolean>>();
 
 		const onResponseComplete = (responseModel: IChatResponseModel) => {
@@ -448,12 +502,16 @@ export class ChatEditingService
 			) {
 				// Roll back everything
 				session.restoreSnapshot(responseModel.requestId);
+
 				this._applyingChatEditsFailedContextKey.set(true);
 			}
 
 			editsSource?.resolve();
+
 			editsSource = undefined;
+
 			editsSeen.clear();
+
 			editedFilesExist.clear();
 		};
 
@@ -480,6 +538,7 @@ export class ChatEditingService
 										},
 									});
 								}
+
 								return e;
 							}),
 						);
@@ -487,18 +546,24 @@ export class ChatEditingService
 
 					// get new edits and start editing session
 					const first = editsSeen.size === 0;
+
 					let entry = editsSeen.get(part.uri);
+
 					if (!entry) {
 						entry = { seen: 0 };
+
 						editsSeen.set(part.uri, entry);
 					}
 
 					const allEdits: TextEdit[][] =
 						part.kind === "textEditGroup" ? part.edits : [];
+
 					const newEdits = allEdits.slice(entry.seen);
+
 					entry.seen += newEdits.length;
 
 					editsSource ??= new AsyncIterableSource();
+
 					editsSource.emitOne({
 						uri: part.uri,
 						edits: newEdits,
@@ -517,14 +582,19 @@ export class ChatEditingService
 									if (token.isCancellationRequested) {
 										break;
 									}
+
 									for (
 										let i = 0;
+
 										i < item.edits.length;
+
 										i++
 									) {
 										const group = item.edits[i];
+
 										const isLastGroup =
 											i === item.edits.length - 1;
+
 										builder.textEdits(
 											item.uri,
 											group,
@@ -546,18 +616,24 @@ export class ChatEditingService
 			chatModel.onDidChange(async (e) => {
 				if (e.kind === "addRequest") {
 					session.createSnapshot(e.request.id);
+
 					this._applyingChatEditsFailedContextKey.set(false);
+
 					const responseModel = e.request.response;
+
 					if (responseModel) {
 						if (responseModel.isComplete) {
 							await handleResponseParts(responseModel);
+
 							onResponseComplete(responseModel);
 						} else {
 							const disposable = responseModel.onDidChange(
 								async () => {
 									await handleResponseParts(responseModel);
+
 									if (responseModel.isComplete) {
 										onResponseComplete(responseModel);
+
 										disposable.dispose();
 									} else if (
 										responseModel.isCanceled ||
@@ -572,9 +648,11 @@ export class ChatEditingService
 				}
 			}),
 		);
+
 		observerDisposables.add(
 			chatModel.onDidDispose(() => observerDisposables.dispose()),
 		);
+
 		return observerDisposables;
 	}
 
@@ -606,12 +684,16 @@ export class ChatEditingService
 				);
 			},
 		};
+
 		session.acceptStreamingEditsStart();
+
 		const cancellationTokenSource = new CancellationTokenSource();
+
 		this._currentAutoApplyOperationObs.set(
 			cancellationTokenSource,
 			undefined,
 		);
+
 		try {
 			await this._progressService.withProgress(
 				{
@@ -628,7 +710,9 @@ export class ChatEditingService
 			);
 		} finally {
 			cancellationTokenSource.dispose();
+
 			this._currentAutoApplyOperationObs.set(null, undefined);
+
 			session.resolve();
 		}
 	}
@@ -642,6 +726,7 @@ export class ChatEditingService
 		provider: IChatRelatedFilesProvider,
 	): IDisposable {
 		this._chatRelatedFilesProviders.set(handle, provider);
+
 		return toDisposable(() => {
 			this._chatRelatedFilesProviders.delete(handle);
 		});
@@ -653,10 +738,13 @@ export class ChatEditingService
 		token: CancellationToken,
 	): Promise<{ group: string; files: IChatRelatedFile[] }[] | undefined> {
 		const currentSession = this._currentSessionObs.get();
+
 		if (!currentSession || chatSessionId !== currentSession.chatSessionId) {
 			return undefined;
 		}
+
 		const userAddedWorkingSetEntries: URI[] = [];
+
 		for (const entry of currentSession.workingSet) {
 			// Don't incorporate suggested files into the related files request
 			// but do consider transient entries like open editors
@@ -666,6 +754,7 @@ export class ChatEditingService
 		}
 
 		const providers = Array.from(this._chatRelatedFilesProviders.values());
+
 		const result = await Promise.all(
 			providers.map(async (provider) => {
 				try {
@@ -673,12 +762,14 @@ export class ChatEditingService
 						{ prompt, files: userAddedWorkingSetEntries },
 						token,
 					);
+
 					if (relatedFiles?.length) {
 						return {
 							group: provider.description,
 							files: relatedFiles,
 						};
 					}
+
 					return undefined;
 				} catch (e) {
 					return undefined;
@@ -699,15 +790,19 @@ function observeArrayChanges<T>(
 	store: DisposableStore,
 ): Event<T[]> {
 	const emitter = store.add(new Emitter<T[]>());
+
 	store.add(
 		runOnChange(obs, (newArr, oldArr) => {
 			const change = delta(oldArr || [], newArr, compare);
+
 			const changedElements = ([] as T[])
 				.concat(change.added)
 				.concat(change.removed);
+
 			emitter.fire(changedElements);
 		}),
 	);
+
 	return emitter.event;
 }
 
@@ -721,19 +816,24 @@ class ChatDecorationsProvider
 		this,
 		(r) => {
 			const session = this._session.read(r);
+
 			if (!session) {
 				return [];
 			}
+
 			const state = session.state.read(r);
+
 			if (state === ChatEditingSessionState.Disposed) {
 				return [];
 			}
+
 			return session.entries.read(r);
 		},
 	);
 
 	private readonly _currentlyEditingUris = derived<URI[]>(this, (r) => {
 		const uri = this._currentEntries.read(r);
+
 		return uri
 			.filter((entry) => entry.isCurrentlyBeingModified.read(r))
 			.map((entry) => entry.modifiedURI);
@@ -741,6 +841,7 @@ class ChatDecorationsProvider
 
 	private readonly _modifiedUris = derived<URI[]>(this, (r) => {
 		const uri = this._currentEntries.read(r);
+
 		return uri
 			.filter(
 				(entry) =>
@@ -778,6 +879,7 @@ class ChatDecorationsProvider
 		const isCurrentlyBeingModified = this._currentlyEditingUris
 			.get()
 			.some((e) => e.toString() === uri.toString());
+
 		if (isCurrentlyBeingModified) {
 			return {
 				weight: 1000,
@@ -785,13 +887,16 @@ class ChatDecorationsProvider
 				bubble: false,
 			};
 		}
+
 		const isModified = this._modifiedUris
 			.get()
 			.some((e) => e.toString() === uri.toString());
+
 		if (isModified) {
 			const defaultAgentName = this._chatAgentService.getDefaultAgent(
 				ChatAgentLocation.EditingSession,
 			)?.fullName;
+
 			return {
 				weight: 1000,
 				letter: Codicon.diffModified,
@@ -808,6 +913,7 @@ class ChatDecorationsProvider
 				bubble: true,
 			};
 		}
+
 		return undefined;
 	}
 }
@@ -848,10 +954,13 @@ class ChatEditingMultiDiffSource implements IResolvedMultiDiffSource {
 		this,
 		(reader) => {
 			const currentSession = this._currentSession.read(reader);
+
 			if (!currentSession) {
 				return [];
 			}
+
 			const entries = currentSession.entries.read(reader);
+
 			return entries.map((entry) => {
 				return new MultiDiffEditorItem(
 					entry.originalURI,
@@ -865,6 +974,7 @@ class ChatEditingMultiDiffSource implements IResolvedMultiDiffSource {
 			});
 		},
 	);
+
 	readonly resources = new ValueWithChangeEventFromObservable(
 		this._resources,
 	);

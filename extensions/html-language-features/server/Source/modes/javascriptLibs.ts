@@ -32,13 +32,17 @@ export function loadLibrary(name: string) {
 		} else {
 			libPath = join(TYPESCRIPT_LIB_SOURCE, name); // from source
 		}
+
 		try {
 			content = readFileSync(libPath).toString();
 		} catch (e) {
 			console.log(`Unable to load library ${name} at ${libPath}`);
+
 			content = "";
 		}
+
 		contents[name] = content;
 	}
+
 	return content;
 }

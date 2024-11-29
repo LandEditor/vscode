@@ -29,9 +29,12 @@ declare module "vscode" {
 
 	export interface TerminalCommandMatchResult {
 		commandLine: string;
+
 		commandLineMatch: RegExpMatchArray;
+
 		outputMatch?: {
 			regexMatch: RegExpMatchArray;
+
 			outputLines: string[];
 		};
 	}
@@ -59,6 +62,7 @@ declare module "vscode" {
 
 		constructor(terminalCommand: string, shouldExecute?: boolean);
 	}
+
 	export class TerminalQuickFixOpener {
 		/**
 		 * The uri to open

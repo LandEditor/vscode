@@ -89,6 +89,7 @@ const panelOffIcon = registerIcon(
 
 export class TogglePanelAction extends Action2 {
 	static readonly ID = "workbench.action.togglePanel";
+
 	static readonly LABEL = localize2(
 		"togglePanelVisibility",
 		"Toggle Panel Visibility",
@@ -132,6 +133,7 @@ export class TogglePanelAction extends Action2 {
 
 	override async run(accessor: ServicesAccessor): Promise<void> {
 		const layoutService = accessor.get(IWorkbenchLayoutService);
+
 		layoutService.setPartHidden(
 			layoutService.isVisible(Parts.PANEL_PART),
 			Parts.PANEL_PART,
@@ -144,6 +146,7 @@ registerAction2(TogglePanelAction);
 registerAction2(
 	class extends Action2 {
 		static readonly ID = "workbench.action.focusPanel";
+
 		static readonly LABEL = localize("focusPanel", "Focus into Panel");
 
 		constructor() {
@@ -171,6 +174,7 @@ registerAction2(
 			const panel = paneCompositeService.getActivePaneComposite(
 				ViewContainerLocation.Panel,
 			);
+
 			panel?.focus();
 		}
 	},
@@ -192,9 +196,13 @@ const AlignPanelActionId = {
 
 interface PanelActionConfig<T> {
 	id: string;
+
 	when: ContextKeyExpression;
+
 	title: ICommandActionTitle;
+
 	shortLabel: string;
+
 	value: T;
 }
 
@@ -318,8 +326,10 @@ PositionPanelActionConfigs.forEach((positionPanelAction, index) => {
 					f1: true,
 				});
 			}
+
 			run(accessor: ServicesAccessor): void {
 				const layoutService = accessor.get(IWorkbenchLayoutService);
+
 				layoutService.setPanelPosition(
 					value === undefined ? Position.BOTTOM : value,
 				);
@@ -346,6 +356,7 @@ MenuRegistry.appendMenuItem(MenuId.MenubarAppearanceMenu, {
 
 AlignPanelActionConfigs.forEach((alignPanelAction) => {
 	const { id, title, shortLabel, value, when } = alignPanelAction;
+
 	registerAction2(
 		class extends Action2 {
 			constructor() {
@@ -357,8 +368,10 @@ AlignPanelActionConfigs.forEach((alignPanelAction) => {
 					f1: true,
 				});
 			}
+
 			run(accessor: ServicesAccessor): void {
 				const layoutService = accessor.get(IWorkbenchLayoutService);
+
 				layoutService.setPanelAlignment(
 					value === undefined ? "center" : value,
 				);
@@ -456,6 +469,7 @@ registerAction2(
 				],
 			});
 		}
+
 		run(accessor: ServicesAccessor) {
 			const layoutService = accessor.get(IWorkbenchLayoutService);
 
@@ -509,6 +523,7 @@ registerAction2(
 				],
 			});
 		}
+
 		run(accessor: ServicesAccessor) {
 			accessor
 				.get(IWorkbenchLayoutService)
@@ -545,6 +560,7 @@ registerAction2(
 				],
 			});
 		}
+
 		run(accessor: ServicesAccessor) {
 			accessor
 				.get(IWorkbenchLayoutService)
@@ -633,6 +649,7 @@ class MoveViewsBetweenPanelsAction extends Action2 {
 					this.desc.id,
 				),
 			);
+
 			layoutService.setPartHidden(
 				false,
 				this.destination === ViewContainerLocation.Panel

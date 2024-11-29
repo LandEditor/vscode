@@ -38,12 +38,14 @@ export interface IRelativePathProvider {
 	getWorkspace(): {
 		folders: {
 			uri: URI;
+
 			name?: string;
 		}[];
 	};
 
 	getWorkspaceFolder(resource: URI): {
 		uri: URI;
+
 		name?: string;
 	} | null;
 }
@@ -93,6 +95,7 @@ export function getPathLabel(
 		} else {
 			userHomeCandidate = absolutePath;
 		}
+
 		absolutePath = tildify(userHomeCandidate, userHome, os);
 	}
 	// normalize
@@ -130,11 +133,13 @@ function getRelativePathLabel(
 	) {
 		resource = firstFolder.uri.with({ path: resource.path });
 	}
+
 	const folder = relativePathProvider.getWorkspaceFolder(resource);
 
 	if (!folder) {
 		return undefined;
 	}
+
 	let relativePathLabel: string | undefined = undefined;
 
 	if (extUriLib.isEqual(folder.uri, resource)) {
@@ -151,10 +156,12 @@ function getRelativePathLabel(
 		const rootName = folder.name
 			? folder.name
 			: extUriLib.basenameOrAuthority(folder.uri);
+
 		relativePathLabel = relativePathLabel
 			? `${rootName} • ${relativePathLabel}`
 			: rootName;
 	}
+
 	return relativePathLabel;
 }
 export function normalizeDriveLetter(
@@ -164,10 +171,12 @@ export function normalizeDriveLetter(
 	if (hasDriveLetter(path, isWindowsOS)) {
 		return path.charAt(0).toUpperCase() + path.slice(1);
 	}
+
 	return path;
 }
 let normalizedUserHomeCached: {
 	original: string;
+
 	normalized: string;
 } = Object.create(null);
 
@@ -175,6 +184,7 @@ export function tildify(path: string, userHome: string, os = OS): string {
 	if (os === OperatingSystem.Windows || !path || !userHome) {
 		return path; // unsupported on Windows
 	}
+
 	let normalizedUserHome =
 		normalizedUserHomeCached.original === userHome
 			? normalizedUserHomeCached.normalized
@@ -186,12 +196,15 @@ export function tildify(path: string, userHome: string, os = OS): string {
 		if (isWindows) {
 			normalizedUserHome = toSlashes(normalizedUserHome); // make sure that the path is POSIX normalized on Windows
 		}
+
 		normalizedUserHome = `${rtrim(normalizedUserHome, posix.sep)}${posix.sep}`;
+
 		normalizedUserHomeCached = {
 			original: userHome,
 			normalized: normalizedUserHome,
 		};
 	}
+
 	let normalizedPath = path;
 
 	if (isWindows) {
@@ -205,6 +218,7 @@ export function tildify(path: string, userHome: string, os = OS): string {
 	) {
 		return `~/${normalizedPath.substr(normalizedUserHome.length)}`;
 	}
+
 	return path;
 }
 export function untildify(path: string, userHome: string): string {
@@ -261,11 +275,13 @@ export function shorten(
 
 			continue;
 		}
+
 		if (!originalPath) {
 			shortenedPaths[pathIndex] = originalPath;
 
 			continue;
 		}
+
 		match = true;
 		// trim for now and concatenate unc path (e.g. \\network) or root path (/etc, ~/etc) later
 		let prefix = "";
@@ -277,6 +293,7 @@ export function shorten(
 				0,
 				trimmedPath.indexOf(unc) + unc.length,
 			);
+
 			trimmedPath = trimmedPath.substr(
 				trimmedPath.indexOf(unc) + unc.length,
 			);
@@ -285,6 +302,7 @@ export function shorten(
 				0,
 				trimmedPath.indexOf(pathSeparator) + pathSeparator.length,
 			);
+
 			trimmedPath = trimmedPath.substr(
 				trimmedPath.indexOf(pathSeparator) + pathSeparator.length,
 			);
@@ -293,6 +311,7 @@ export function shorten(
 				0,
 				trimmedPath.indexOf(home) + home.length,
 			);
+
 			trimmedPath = trimmedPath.substr(
 				trimmedPath.indexOf(home) + home.length,
 			);
@@ -302,12 +321,16 @@ export function shorten(
 
 		for (
 			let subpathLength = 1;
+
 			match && subpathLength <= segments.length;
+
 			subpathLength++
 		) {
 			for (
 				let start = segments.length - subpathLength;
+
 				match && start >= 0;
+
 				start--
 			) {
 				match = false;
@@ -319,6 +342,7 @@ export function shorten(
 				for (
 					let otherPathIndex = 0;
 					!match && otherPathIndex < paths.length;
+
 					otherPathIndex++
 				) {
 					// suffix subpath treated specially as we consider no match 'x' and 'x/...'
@@ -339,6 +363,7 @@ export function shorten(
 
 						const isOtherPathEnding: boolean =
 							paths[otherPathIndex].endsWith(subpathWithSep);
+
 						match = !isSubpathEnding || isOtherPathEnding;
 					}
 				}
@@ -350,31 +375,39 @@ export function shorten(
 						if (start === 1) {
 							// extend subpath to include disk drive prefix
 							start = 0;
+
 							subpathLength++;
+
 							subpath = segments[0] + pathSeparator + subpath;
 						}
+
 						if (start > 0) {
 							result = segments[0] + pathSeparator;
 						}
+
 						result = prefix + result;
 					}
 					// add ellipsis at the beginning if needed
 					if (start > 0) {
 						result = result + ellipsis + pathSeparator;
 					}
+
 					result = result + subpath;
 					// add ellipsis at the end if needed
 					if (start + subpathLength < segments.length) {
 						result = result + pathSeparator + ellipsis;
 					}
+
 					shortenedPaths[pathIndex] = result;
 				}
 			}
 		}
+
 		if (match) {
 			shortenedPaths[pathIndex] = originalPath; // use original path if no unique subpaths found
 		}
 	}
+
 	return shortenedPaths;
 }
 export interface ISeparator {
@@ -387,6 +420,7 @@ enum Type {
 }
 interface ISegment {
 	value: string;
+
 	type: Type;
 }
 /**
@@ -413,7 +447,9 @@ export function template(
 			if (curVal) {
 				segments.push({ value: curVal, type: Type.TEXT });
 			}
+
 			curVal = "";
+
 			inVariable = true;
 		}
 		// End of variable
@@ -436,7 +472,9 @@ export function template(
 					}); // prevent duplicate separators
 				}
 			}
+
 			curVal = "";
+
 			inVariable = false;
 		}
 		// Text or Variable Name
@@ -448,6 +486,7 @@ export function template(
 	if (curVal && !inVariable) {
 		segments.push({ value: curVal, type: Type.TEXT });
 	}
+
 	return segments
 		.filter((segment, index) => {
 			// Only keep separator if we have values to the left and right
@@ -485,6 +524,7 @@ export function mnemonicMenuLabel(
 			.replace(/\(&&\w\)|&&/g, "")
 			.replace(/&/g, isMacintosh ? "&" : "&&");
 	}
+
 	return label.replace(/&&|&/g, (m) => (m === "&" ? "&&" : "&"));
 }
 /**
@@ -500,9 +540,11 @@ export function mnemonicButtonLabel(
 	if (isMacintosh || forceDisableMnemonics) {
 		return label.replace(/\(&&\w\)|&&/g, "");
 	}
+
 	if (isWindows) {
 		return label.replace(/&&|&/g, (m) => (m === "&" ? "&&" : "&"));
 	}
+
 	return label.replace(/&&/g, "_");
 }
 export function unmnemonicLabel(label: string): string {
@@ -514,6 +556,7 @@ export function unmnemonicLabel(label: string): string {
  */
 export function splitRecentLabel(recentLabel: string): {
 	name: string;
+
 	parentPath: string;
 } {
 	if (recentLabel.endsWith("]")) {
@@ -538,10 +581,12 @@ export function splitRecentLabel(recentLabel: string): {
 			};
 		}
 	}
+
 	return splitName(recentLabel);
 }
 function splitName(fullPath: string): {
 	name: string;
+
 	parentPath: string;
 } {
 	const p = fullPath.indexOf("/") !== -1 ? posix : win32;

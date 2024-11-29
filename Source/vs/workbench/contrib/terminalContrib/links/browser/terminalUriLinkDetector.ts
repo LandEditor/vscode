@@ -56,6 +56,7 @@ export class TerminalUriLinkDetector implements ITerminalLinkDetector {
 		@IWorkspaceContextService
 		private readonly _workspaceContextService: IWorkspaceContextService,
 	) {}
+
 	async detect(
 		lines: IBufferLine[],
 		startLine: number,
@@ -72,6 +73,7 @@ export class TerminalUriLinkDetector implements ITerminalLinkDetector {
 		const computedLinks = LinkComputer.computeLinks(linkComputerTarget);
 
 		let resolvedLinkCount = 0;
+
 		this._logService.trace(
 			"terminalUriLinkDetector#detect computedLinks",
 			computedLinks,
@@ -94,6 +96,7 @@ export class TerminalUriLinkDetector implements ITerminalLinkDetector {
 			if (!uri) {
 				continue;
 			}
+
 			const text = computedLink.url?.toString() || "";
 			// Don't try resolve any links of excessive length
 			if (text.length > this.maxLinkLength) {
@@ -149,6 +152,7 @@ export class TerminalUriLinkDetector implements ITerminalLinkDetector {
 					} else {
 						type = TerminalBuiltinLinkType.LocalFile;
 					}
+
 					const simpleLink: ITerminalSimpleLink = {
 						// Use computedLink.url if it's a string to retain the line/col suffix
 						text:
@@ -159,11 +163,14 @@ export class TerminalUriLinkDetector implements ITerminalLinkDetector {
 						bufferRange,
 						type,
 					};
+
 					this._logService.trace(
 						"terminalUriLinkDetector#detect verified link",
 						simpleLink,
 					);
+
 					links.push(simpleLink);
+
 					resolvedLinkCount++;
 
 					break;
@@ -174,8 +181,10 @@ export class TerminalUriLinkDetector implements ITerminalLinkDetector {
 				break;
 			}
 		}
+
 		return links;
 	}
+
 	private _isDirectoryInsideWorkspace(uri: URI) {
 		const folders = this._workspaceContextService.getWorkspace().folders;
 
@@ -189,8 +198,10 @@ export class TerminalUriLinkDetector implements ITerminalLinkDetector {
 				return true;
 			}
 		}
+
 		return false;
 	}
+
 	private _excludeLineAndColSuffix(path: string): string {
 		return path.replace(/:\d+(:\d+)?$/, "");
 	}
@@ -201,9 +212,11 @@ class TerminalLinkAdapter implements ILinkComputerTarget {
 		private _lineStart: number,
 		private _lineEnd: number,
 	) {}
+
 	getLineCount(): number {
 		return 1;
 	}
+
 	getLineContent(): string {
 		return getXtermLineContent(
 			this._xterm.buffer.active,

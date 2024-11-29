@@ -110,6 +110,7 @@ export class FoldingDecorationProvider implements IDecorationProvider {
 			firstLineDecorationClassName:
 				ThemeIcon.asClassName(foldingCollapsedIcon),
 		});
+
 	private static readonly COLLAPSED_HIGHLIGHTED_VISUAL_DECORATION =
 		ModelDecorationOptions.register({
 			description: "folding-collapsed-highlighted-visual-decoration",
@@ -122,6 +123,7 @@ export class FoldingDecorationProvider implements IDecorationProvider {
 			firstLineDecorationClassName:
 				ThemeIcon.asClassName(foldingCollapsedIcon),
 		});
+
 	private static readonly MANUALLY_COLLAPSED_VISUAL_DECORATION =
 		ModelDecorationOptions.register({
 			description: "folding-manually-collapsed-visual-decoration",
@@ -133,6 +135,7 @@ export class FoldingDecorationProvider implements IDecorationProvider {
 				foldingManualCollapsedIcon,
 			),
 		});
+
 	private static readonly MANUALLY_COLLAPSED_HIGHLIGHTED_VISUAL_DECORATION =
 		ModelDecorationOptions.register({
 			description:
@@ -147,6 +150,7 @@ export class FoldingDecorationProvider implements IDecorationProvider {
 				foldingManualCollapsedIcon,
 			),
 		});
+
 	private static readonly NO_CONTROLS_COLLAPSED_RANGE_DECORATION =
 		ModelDecorationOptions.register({
 			description: "folding-no-controls-range-decoration",
@@ -155,6 +159,7 @@ export class FoldingDecorationProvider implements IDecorationProvider {
 			isWholeLine: true,
 			linesDecorationsTooltip: collapsed,
 		});
+
 	private static readonly NO_CONTROLS_COLLAPSED_HIGHLIGHTED_RANGE_DECORATION =
 		ModelDecorationOptions.register({
 			description: "folding-no-controls-range-decoration",
@@ -165,6 +170,7 @@ export class FoldingDecorationProvider implements IDecorationProvider {
 			isWholeLine: true,
 			linesDecorationsTooltip: collapsed,
 		});
+
 	private static readonly EXPANDED_VISUAL_DECORATION =
 		ModelDecorationOptions.register({
 			description: "folding-expanded-visual-decoration",
@@ -175,6 +181,7 @@ export class FoldingDecorationProvider implements IDecorationProvider {
 				ThemeIcon.asClassName(foldingExpandedIcon),
 			linesDecorationsTooltip: expanded,
 		});
+
 	private static readonly EXPANDED_AUTO_HIDE_VISUAL_DECORATION =
 		ModelDecorationOptions.register({
 			description: "folding-expanded-auto-hide-visual-decoration",
@@ -184,6 +191,7 @@ export class FoldingDecorationProvider implements IDecorationProvider {
 				ThemeIcon.asClassName(foldingExpandedIcon),
 			linesDecorationsTooltip: expanded,
 		});
+
 	private static readonly MANUALLY_EXPANDED_VISUAL_DECORATION =
 		ModelDecorationOptions.register({
 			description: "folding-manually-expanded-visual-decoration",
@@ -194,6 +202,7 @@ export class FoldingDecorationProvider implements IDecorationProvider {
 				ThemeIcon.asClassName(foldingManualExpandedIcon),
 			linesDecorationsTooltip: expanded,
 		});
+
 	private static readonly MANUALLY_EXPANDED_AUTO_HIDE_VISUAL_DECORATION =
 		ModelDecorationOptions.register({
 			description:
@@ -205,21 +214,26 @@ export class FoldingDecorationProvider implements IDecorationProvider {
 			),
 			linesDecorationsTooltip: expanded,
 		});
+
 	private static readonly NO_CONTROLS_EXPANDED_RANGE_DECORATION =
 		ModelDecorationOptions.register({
 			description: "folding-no-controls-range-decoration",
 			stickiness: TrackedRangeStickiness.AlwaysGrowsWhenTypingAtEdges,
 			isWholeLine: true,
 		});
+
 	private static readonly HIDDEN_RANGE_DECORATION =
 		ModelDecorationOptions.register({
 			description: "folding-hidden-range-decoration",
 			stickiness: TrackedRangeStickiness.NeverGrowsWhenTypingAtEdges,
 		});
+
 	public showFoldingControls: "always" | "never" | "mouseover" = "mouseover";
+
 	public showFoldingHighlights: boolean = true;
 
 	constructor(private readonly editor: ICodeEditor) {}
+
 	getDecorationOption(
 		isCollapsed: boolean,
 		isHidden: boolean,
@@ -229,14 +243,17 @@ export class FoldingDecorationProvider implements IDecorationProvider {
 			// is inside another collapsed region
 			return FoldingDecorationProvider.HIDDEN_RANGE_DECORATION;
 		}
+
 		if (this.showFoldingControls === "never") {
 			if (isCollapsed) {
 				return this.showFoldingHighlights
 					? FoldingDecorationProvider.NO_CONTROLS_COLLAPSED_HIGHLIGHTED_RANGE_DECORATION
 					: FoldingDecorationProvider.NO_CONTROLS_COLLAPSED_RANGE_DECORATION;
 			}
+
 			return FoldingDecorationProvider.NO_CONTROLS_EXPANDED_RANGE_DECORATION;
 		}
+
 		if (isCollapsed) {
 			return isManual
 				? this.showFoldingHighlights
@@ -255,11 +272,13 @@ export class FoldingDecorationProvider implements IDecorationProvider {
 				: FoldingDecorationProvider.EXPANDED_VISUAL_DECORATION;
 		}
 	}
+
 	changeDecorations<T>(
 		callback: (changeAccessor: IModelDecorationsChangeAccessor) => T,
 	): T {
 		return this.editor.changeDecorations(callback);
 	}
+
 	removeDecorations(decorationIds: string[]): void {
 		this.editor.removeDecorations(decorationIds);
 	}

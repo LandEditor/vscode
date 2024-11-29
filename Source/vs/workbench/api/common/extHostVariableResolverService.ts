@@ -57,6 +57,7 @@ class ExtHostVariableResolverService extends AbstractVariableResolverService {
 				if (activeEditor) {
 					return activeEditor.document.uri;
 				}
+
 				const activeTab = editorTabs.tabGroups.all.find(
 					(group) => group.isActive,
 				)?.activeTab;
@@ -77,8 +78,10 @@ class ExtHostVariableResolverService extends AbstractVariableResolverService {
 					}
 				}
 			}
+
 			return undefined;
 		}
+
 		super(
 			{
 				getFolderUri: (folderName: string): URI | undefined => {
@@ -89,6 +92,7 @@ class ExtHostVariableResolverService extends AbstractVariableResolverService {
 					if (found && found.length > 0) {
 						return found[0].uri;
 					}
+
 					return undefined;
 				},
 				getWorkspaceFolderCount: (): number => {
@@ -114,6 +118,7 @@ class ExtHostVariableResolverService extends AbstractVariableResolverService {
 					if (activeUri) {
 						return path.normalize(activeUri.fsPath);
 					}
+
 					return undefined;
 				},
 				getWorkspaceFolderPathForFile: (): string | undefined => {
@@ -129,6 +134,7 @@ class ExtHostVariableResolverService extends AbstractVariableResolverService {
 							}
 						}
 					}
+
 					return undefined;
 				},
 				getSelectedText: (): string | undefined => {
@@ -141,6 +147,7 @@ class ExtHostVariableResolverService extends AbstractVariableResolverService {
 							);
 						}
 					}
+
 					return undefined;
 				},
 				getLineNumber: (): string | undefined => {
@@ -151,6 +158,7 @@ class ExtHostVariableResolverService extends AbstractVariableResolverService {
 							return String(activeEditor.selection.end.line + 1);
 						}
 					}
+
 					return undefined;
 				},
 				getExtension: (id) => {
@@ -168,6 +176,7 @@ export class ExtHostVariableResolverProviderService
 	implements IExtHostVariableResolverProvider
 {
 	declare readonly _serviceBrand: undefined;
+
 	private _resolver = new Lazy(async () => {
 		const configProvider =
 			await this.configurationService.getConfigProvider();
@@ -176,6 +185,7 @@ export class ExtHostVariableResolverProviderService
 			(await this.workspaceService.getWorkspaceFolders2()) || [];
 
 		const dynamic: DynamicContext = { folders };
+
 		this._register(
 			this.workspaceService.onDidChangeWorkspace(async (e) => {
 				dynamic.folders =
@@ -208,9 +218,11 @@ export class ExtHostVariableResolverProviderService
 	) {
 		super();
 	}
+
 	public getResolver(): Promise<IConfigurationResolverService> {
 		return this._resolver.value;
 	}
+
 	protected homeDir(): string | undefined {
 		return undefined;
 	}

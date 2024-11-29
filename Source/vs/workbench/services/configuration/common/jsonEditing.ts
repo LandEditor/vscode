@@ -25,9 +25,11 @@ export class JSONEditingError extends Error {
 }
 export interface IJSONValue {
 	path: JSONPath;
+
 	value: any;
 }
 export interface IJSONEditingService {
 	readonly _serviceBrand: undefined;
+
 	write(resource: URI, values: IJSONValue[], save: boolean): Promise<void>;
 }

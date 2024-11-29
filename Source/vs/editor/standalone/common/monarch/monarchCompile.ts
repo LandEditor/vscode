@@ -21,26 +21,31 @@ function isArrayOf(elemType: (x: any) => boolean, obj: any): boolean {
 	if (!obj) {
 		return false;
 	}
+
 	if (!Array.isArray(obj)) {
 		return false;
 	}
+
 	for (const el of obj) {
 		if (!elemType(el)) {
 			return false;
 		}
 	}
+
 	return true;
 }
 function bool(prop: any, defValue: boolean): boolean {
 	if (typeof prop === "boolean") {
 		return prop;
 	}
+
 	return defValue;
 }
 function string(prop: any, defValue: string): string {
 	if (typeof prop === "string") {
 		return prop;
 	}
+
 	return defValue;
 }
 function arrayToHash(array: string[]): {
@@ -51,6 +56,7 @@ function arrayToHash(array: string[]): {
 	for (const e of array) {
 		result[e] = true;
 	}
+
 	return result;
 }
 function createKeywordMatcher(
@@ -62,6 +68,7 @@ function createKeywordMatcher(
 			return x.toLowerCase();
 		});
 	}
+
 	const hash = arrayToHash(arr);
 
 	if (caseInsensitive) {
@@ -104,6 +111,7 @@ function compileRegExp(
 
 	do {
 		hadExpansion = false;
+
 		str = str.replace(/@(\w+)/g, function (s, attr?) {
 			hadExpansion = true;
 
@@ -132,8 +140,10 @@ function compileRegExp(
 					);
 				}
 			}
+
 			return monarchCommon.empty(sub) ? "" : "(?:" + sub + ")";
 		});
+
 		n++;
 	} while (hadExpansion && n < 5);
 	// handle escaped @@
@@ -153,7 +163,9 @@ function compileRegExp(
 				if (lastRegEx && lastState === state) {
 					return lastRegEx;
 				}
+
 				lastState = state;
+
 				lastRegEx = new RegExp(
 					monarchCommon.substituteMatchesRe(lexer, str, state),
 					flags,
@@ -163,6 +175,7 @@ function compileRegExp(
 			};
 		}
 	}
+
 	return new RegExp(str, flags);
 }
 /**
@@ -179,19 +192,23 @@ function selectScrutinee(
 	if (num < 0) {
 		return id;
 	}
+
 	if (num < matches.length) {
 		return matches[num];
 	}
+
 	if (num >= 100) {
 		num = num - 100;
 
 		const parts = state.split(".");
+
 		parts.unshift(state);
 
 		if (num < parts.length) {
 			return parts[num];
 		}
 	}
+
 	return null;
 }
 function createGuard(
@@ -215,6 +232,7 @@ function createGuard(
 				scrut = scrut + 100; // if [sS] present
 			}
 		}
+
 		oppat = matches[4];
 	}
 	// get operator
@@ -224,6 +242,7 @@ function createGuard(
 
 	if (!oppat || oppat.length === 0) {
 		op = "!=";
+
 		pat = "";
 	} else if (/^\w*$/.test(pat)) {
 		// just a word
@@ -233,6 +252,7 @@ function createGuard(
 
 		if (matches) {
 			op = matches[1];
+
 			pat = matches[2];
 		}
 	}
@@ -247,6 +267,7 @@ function createGuard(
 	// special case a regexp that matches just words
 	if ((op === "~" || op === "!~") && /^(\w|\|)*$/.test(pat)) {
 		const inWords = createKeywordMatcher(pat.split("|"), lexer.ignoreCase);
+
 		tester = function (s) {
 			return op === "~" ? inWords(s) : !inWords(s);
 		};
@@ -262,6 +283,7 @@ function createGuard(
 					ruleName,
 			);
 		}
+
 		if (
 			!isArrayOf(function (elem) {
 				return typeof elem === "string";
@@ -275,7 +297,9 @@ function createGuard(
 					ruleName,
 			);
 		}
+
 		const inWords = createKeywordMatcher(words, lexer.ignoreCase);
+
 		tester = function (s) {
 			return op === "@" ? inWords(s) : !inWords(s);
 		};
@@ -283,6 +307,7 @@ function createGuard(
 		if (pat.indexOf("$") < 0) {
 			// precompile regular expression
 			const re = compileRegExp(lexer, "^" + pat + "$", false);
+
 			tester = function (s) {
 				return op === "~" ? re.test(s) : !re.test(s);
 			};
@@ -309,11 +334,13 @@ function createGuard(
 		// if (op==='==' || op==='!=') {
 		if (pat.indexOf("$") < 0) {
 			const patx = monarchCommon.fixCase(lexer, pat);
+
 			tester = function (s) {
 				return op === "==" ? s === patx : s !== patx;
 			};
 		} else {
 			const patx = monarchCommon.fixCase(lexer, pat);
+
 			tester = function (s, id, matches, state, eos) {
 				const patexp = monarchCommon.substituteMatches(
 					lexer,
@@ -385,6 +412,7 @@ function compileAction(
 			if (action.token.indexOf("$") >= 0) {
 				newAction.tokenSubst = true;
 			}
+
 			if (typeof action.bracket === "string") {
 				if (action.bracket === "@open") {
 					newAction.bracket = monarchCommon.MonarchBracket.Open;
@@ -398,6 +426,7 @@ function compileAction(
 					);
 				}
 			}
+
 			if (action.next) {
 				if (typeof action.next !== "string") {
 					throw monarchCommon.createError(
@@ -412,6 +441,7 @@ function compileAction(
 						if (next[0] === "@") {
 							next = next.substr(1); // peel off starting @ sign
 						}
+
 						if (next.indexOf("$") < 0) {
 							// no dollar substitution, we can check if the state exists
 							if (
@@ -436,22 +466,29 @@ function compileAction(
 							}
 						}
 					}
+
 					newAction.next = next;
 				}
 			}
+
 			if (typeof action.goBack === "number") {
 				newAction.goBack = action.goBack;
 			}
+
 			if (typeof action.switchTo === "string") {
 				newAction.switchTo = action.switchTo;
 			}
+
 			if (typeof action.log === "string") {
 				newAction.log = action.log;
 			}
+
 			if (typeof action.nextEmbedded === "string") {
 				newAction.nextEmbedded = action.nextEmbedded;
+
 				lexer.usesEmbedded = true;
 			}
+
 			return newAction;
 		}
 	} else if (Array.isArray(action)) {
@@ -460,6 +497,7 @@ function compileAction(
 		for (let i = 0, len = action.length; i < len; i++) {
 			results[i] = compileAction(lexer, ruleName, action[i]);
 		}
+
 		return { group: results };
 	} else if (action.cases) {
 		// build an array of test cases
@@ -497,6 +535,7 @@ function compileAction(
 						return _case.value;
 					}
 				}
+
 				return def;
 			},
 		};
@@ -514,13 +553,17 @@ type DynamicRegExp = (state: string) => RegExp;
  */
 class Rule implements monarchCommon.IRule {
 	private regex: RegExp | DynamicRegExp = new RegExp("");
+
 	public action: monarchCommon.FuzzyAction = { token: "" };
+
 	public matchOnlyAtLineStart: boolean = false;
+
 	public name: string = "";
 
 	constructor(name: string) {
 		this.name = name;
 	}
+
 	public setRegex(lexer: monarchCommon.ILexerMin, re: string | RegExp): void {
 		let sregex: string;
 
@@ -535,8 +578,11 @@ class Rule implements monarchCommon.IRule {
 					this.name,
 			);
 		}
+
 		this.matchOnlyAtLineStart = sregex.length > 0 && sregex[0] === "^";
+
 		this.name = this.name + ": " + sregex;
+
 		this.regex = compileRegExp(
 			lexer,
 			"^(?:" +
@@ -545,12 +591,14 @@ class Rule implements monarchCommon.IRule {
 			true,
 		);
 	}
+
 	public setAction(
 		lexer: monarchCommon.ILexerMin,
 		act: monarchCommon.IAction,
 	) {
 		this.action = compileAction(lexer, this.name, act);
 	}
+
 	public resolveRegex(state: string): RegExp {
 		if (this.regex instanceof RegExp) {
 			return this.regex;
@@ -593,13 +641,21 @@ export function compile(
 	};
 	// For calling compileAction later on
 	const lexerMin: monarchCommon.ILexerMin = <any>json;
+
 	lexerMin.languageId = languageId;
+
 	lexerMin.includeLF = lexer.includeLF;
+
 	lexerMin.ignoreCase = lexer.ignoreCase;
+
 	lexerMin.unicode = lexer.unicode;
+
 	lexerMin.noThrow = lexer.noThrow;
+
 	lexerMin.usesEmbedded = lexer.usesEmbedded;
+
 	lexerMin.stateNames = json.tokenizer;
+
 	lexerMin.defaultToken = lexer.defaultToken;
 	// Compile an array of rules into newrules where RegExp objects are created.
 	function addRules(
@@ -617,9 +673,11 @@ export function compile(
 						"an 'include' attribute must be a string at: " + state,
 					);
 				}
+
 				if (include[0] === "@") {
 					include = include.substr(1); // peel off starting @
 				}
+
 				if (!json.tokenizer[include]) {
 					throw monarchCommon.createError(
 						lexer,
@@ -629,6 +687,7 @@ export function compile(
 							state,
 					);
 				}
+
 				addRules(
 					state + "." + include,
 					newrules,
@@ -652,7 +711,9 @@ export function compile(
 							});
 						} else if (typeof rule[1] === "object") {
 							const rule1 = rule[1];
+
 							rule1.next = rule[2];
+
 							newrule.setAction(lexerMin, rule1);
 						} else {
 							throw monarchCommon.createError(
@@ -672,20 +733,25 @@ export function compile(
 								state,
 						);
 					}
+
 					if (rule.name) {
 						if (typeof rule.name === "string") {
 							newrule.name = rule.name;
 						}
 					}
+
 					if (rule.matchOnlyAtStart) {
 						newrule.matchOnlyAtLineStart = bool(
 							rule.matchOnlyAtLineStart,
 							false,
 						);
 					}
+
 					newrule.setRegex(lexerMin, rule.regex);
+
 					newrule.setAction(lexerMin, rule.action);
 				}
+
 				newrules.push(newrule);
 			}
 		}
@@ -697,6 +763,7 @@ export function compile(
 			"a language definition must define the 'tokenizer' attribute as an object",
 		);
 	}
+
 	lexer.tokenizer = <any>[];
 
 	for (const key in json.tokenizer) {
@@ -704,11 +771,15 @@ export function compile(
 			if (!lexer.start) {
 				lexer.start = key;
 			}
+
 			const rules = json.tokenizer[key];
+
 			lexer.tokenizer[key] = new Array();
+
 			addRules("tokenizer." + key, lexer.tokenizer[key], rules);
 		}
 	}
+
 	lexer.usesEmbedded = lexerMin.usesEmbedded; // can be set during compileAction
 	// Set simple brackets
 	if (json.brackets) {
@@ -726,6 +797,7 @@ export function compile(
 			{ open: "<", close: ">", token: "delimiter.angle" },
 		];
 	}
+
 	const brackets: IMonarchLanguageBracket[] = [];
 
 	for (const el of json.brackets) {
@@ -734,6 +806,7 @@ export function compile(
 		if (desc && Array.isArray(desc) && desc.length === 3) {
 			desc = { token: desc[2], open: desc[0], close: desc[1] };
 		}
+
 		if (desc.open === desc.close) {
 			throw monarchCommon.createError(
 				lexer,
@@ -742,6 +815,7 @@ export function compile(
 					"\n hint: use the 'bracket' attribute if matching on equal brackets is required.",
 			);
 		}
+
 		if (
 			typeof desc.open === "string" &&
 			typeof desc.token === "string" &&
@@ -759,6 +833,7 @@ export function compile(
 			);
 		}
 	}
+
 	lexer.brackets = brackets;
 	// Disable throw so the syntax highlighter goes, no matter what
 	lexer.noThrow = true;

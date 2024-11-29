@@ -37,13 +37,19 @@ import { WindowIgnoreMenuShortcutsManager } from "./windowIgnoreMenuShortcutsMan
  */
 export class ElectronWebviewElement extends WebviewElement {
 	private readonly _webviewKeyboardHandler: WindowIgnoreMenuShortcutsManager;
+
 	private _findStarted: boolean = false;
+
 	private _cachedHtmlContent: string | undefined;
+
 	private readonly _webviewMainService: IWebviewManagerService;
+
 	private readonly _iframeDelayer = this._register(new Delayer<void>(200));
+
 	protected override get platform() {
 		return "electron";
 	}
+
 	constructor(
 		initInfo: WebviewInitInfo,
 		webviewThemeDataProvider: WebviewThemeDataProvider,
@@ -89,11 +95,13 @@ export class ElectronWebviewElement extends WebviewElement {
 			instantiationService,
 			accessibilityService,
 		);
+
 		this._webviewKeyboardHandler = new WindowIgnoreMenuShortcutsManager(
 			configurationService,
 			mainProcessService,
 			_nativeHostService,
 		);
+
 		this._webviewMainService =
 			ProxyChannel.toService<IWebviewManagerService>(
 				mainProcessService.getChannel("webview"),
@@ -107,10 +115,12 @@ export class ElectronWebviewElement extends WebviewElement {
 						this._cachedHtmlContent !== newContent
 					) {
 						this.stopFind(false);
+
 						this._cachedHtmlContent = newContent;
 					}
 				}),
 			);
+
 			this._register(
 				this._webviewMainService.onFoundInFrame((result) => {
 					this._hasFindResult.fire(result.matches > 0);
@@ -118,15 +128,18 @@ export class ElectronWebviewElement extends WebviewElement {
 			);
 		}
 	}
+
 	override dispose(): void {
 		// Make sure keyboard handler knows it closed (#71800)
 		this._webviewKeyboardHandler.didBlur();
 
 		super.dispose();
 	}
+
 	protected override webviewContentEndpoint(iframeId: string): string {
 		return `${Schemas.vscodeWebview}://${iframeId}`;
 	}
+
 	protected override streamToBuffer(
 		stream: VSBufferReadableStream,
 	): Promise<ArrayBufferLike> {
@@ -148,8 +161,10 @@ export class ElectronWebviewElement extends WebviewElement {
 
 				for (const element of buffers) {
 					view.set(element.buffer, offset);
+
 					offset += element.byteLength;
 				}
+
 				return ret;
 			},
 		);
@@ -165,6 +180,7 @@ export class ElectronWebviewElement extends WebviewElement {
 		if (!this.element) {
 			return;
 		}
+
 		if (!this._findStarted) {
 			this.updateFind(value);
 		} else {
@@ -174,6 +190,7 @@ export class ElectronWebviewElement extends WebviewElement {
 				findNext: false,
 				matchCase: false,
 			};
+
 			this._webviewMainService.findInFrame(
 				{ windowId: this._nativeHostService.windowId },
 				this.id,
@@ -182,6 +199,7 @@ export class ElectronWebviewElement extends WebviewElement {
 			);
 		}
 	}
+
 	public override updateFind(value: string) {
 		if (!value || !this.element) {
 			return;
@@ -192,8 +210,10 @@ export class ElectronWebviewElement extends WebviewElement {
 			findNext: true,
 			matchCase: false,
 		};
+
 		this._iframeDelayer.trigger(() => {
 			this._findStarted = true;
+
 			this._webviewMainService.findInFrame(
 				{ windowId: this._nativeHostService.windowId },
 				this.id,
@@ -202,12 +222,16 @@ export class ElectronWebviewElement extends WebviewElement {
 			);
 		});
 	}
+
 	public override stopFind(keepSelection?: boolean): void {
 		if (!this.element) {
 			return;
 		}
+
 		this._iframeDelayer.cancel();
+
 		this._findStarted = false;
+
 		this._webviewMainService.stopFindInFrame(
 			{ windowId: this._nativeHostService.windowId },
 			this.id,
@@ -215,8 +239,10 @@ export class ElectronWebviewElement extends WebviewElement {
 				keepSelection,
 			},
 		);
+
 		this._onDidStopFind.fire();
 	}
+
 	protected override handleFocusChange(isFocused: boolean): void {
 		super.handleFocusChange(isFocused);
 

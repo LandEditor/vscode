@@ -95,29 +95,45 @@ export const COMMENTS_VIEW_TITLE: ILocalizedString = nls.localize2(
 
 interface IResourceTemplateData {
 	resourceLabel: IResourceLabel;
+
 	separator: HTMLElement;
+
 	owner: HTMLElement;
 }
 
 interface ICommentThreadTemplateData {
 	threadMetadata: {
 		relevance: HTMLElement;
+
 		icon: HTMLElement;
+
 		userNames: HTMLSpanElement;
+
 		timestamp: TimestampWidget;
+
 		separator: HTMLElement;
+
 		commentPreview: HTMLSpanElement;
+
 		range: HTMLSpanElement;
 	};
+
 	repliesMetadata: {
 		container: HTMLElement;
+
 		icon: HTMLElement;
+
 		count: HTMLSpanElement;
+
 		lastReplyDetail: HTMLSpanElement;
+
 		separator: HTMLElement;
+
 		timestamp: TimestampWidget;
 	};
+
 	actionBar: ActionBar;
+
 	disposables: IDisposable[];
 }
 
@@ -125,12 +141,14 @@ class CommentsModelVirtualDelegate
 	implements IListVirtualDelegate<ResourceWithCommentThreads | CommentNode>
 {
 	private static readonly RESOURCE_ID = "resource-with-comments";
+
 	private static readonly COMMENT_ID = "comment-node";
 
 	getHeight(element: any): number {
 		if (element instanceof CommentNode && element.hasReply()) {
 			return 44;
 		}
+
 		return 22;
 	}
 
@@ -138,6 +156,7 @@ class CommentsModelVirtualDelegate
 		if (element instanceof ResourceWithCommentThreads) {
 			return CommentsModelVirtualDelegate.RESOURCE_ID;
 		}
+
 		if (element instanceof CommentNode) {
 			return CommentsModelVirtualDelegate.COMMENT_ID;
 		}
@@ -179,13 +198,16 @@ export class ResourceWithCommentsRenderer
 		height: number | undefined,
 	): void {
 		templateData.resourceLabel.setFile(node.element.resource);
+
 		templateData.separator.innerText = "\u00b7";
 
 		if (node.element.ownerLabel) {
 			templateData.owner.innerText = node.element.ownerLabel;
+
 			templateData.separator.style.display = "inline";
 		} else {
 			templateData.owner.innerText = "";
+
 			templateData.separator.style.display = "none";
 		}
 	}
@@ -294,6 +316,7 @@ export class CommentNodeRenderer
 			commentPreview: dom.append(metadata, dom.$(".text")),
 			range: dom.append(metadata, dom.$(".range")),
 		};
+
 		threadMetadata.separator.innerText = "\u00b7";
 
 		const actionsContainer = dom.append(
@@ -325,7 +348,9 @@ export class CommentNodeRenderer
 				dom.append(snippetContainer, dom.$(".timestamp-container")),
 			),
 		};
+
 		repliesMetadata.separator.innerText = "\u00b7";
+
 		repliesMetadata.icon.classList.add(
 			...ThemeIcon.asClassNameArray(Codicon.indent),
 		);
@@ -375,11 +400,14 @@ export class CommentNodeRenderer
 			const image = images[i];
 
 			const textDescription = dom.$("");
+
 			textDescription.textContent = image.alt
 				? nls.localize("imageWithLabel", "Image: {0}", image.alt)
 				: nls.localize("image", "Image");
+
 			image.parentNode!.replaceChild(textDescription, image);
 		}
+
 		while (
 			renderedComment.element.children.length > 1 &&
 			renderedComment.element.firstElementChild?.tagName === "HR"
@@ -388,6 +416,7 @@ export class CommentNodeRenderer
 				renderedComment.element.firstElementChild,
 			);
 		}
+
 		return renderedComment;
 	}
 
@@ -413,14 +442,18 @@ export class CommentNodeRenderer
 			node.element.threadRelevance === CommentThreadApplicability.Outdated
 		) {
 			templateData.threadMetadata.relevance.style.display = "";
+
 			templateData.threadMetadata.relevance.innerText = nls.localize(
 				"outdated",
 				"Outdated",
 			);
+
 			templateData.threadMetadata.separator.style.display = "none";
 		} else {
 			templateData.threadMetadata.relevance.innerText = "";
+
 			templateData.threadMetadata.relevance.style.display = "none";
+
 			templateData.threadMetadata.separator.style.display = "";
 		}
 
@@ -429,6 +462,7 @@ export class CommentNodeRenderer
 				templateData.threadMetadata.icon.classList.values(),
 			).filter((value) => value.startsWith("codicon")),
 		);
+
 		templateData.threadMetadata.icon.classList.add(
 			...ThemeIcon.asClassNameArray(
 				this.getIcon(node.element.threadState),
@@ -440,14 +474,18 @@ export class CommentNodeRenderer
 				node.element.threadState,
 				this.themeService.getColorTheme(),
 			);
+
 			templateData.threadMetadata.icon.style.setProperty(
 				commentViewThreadStateColorVar,
 				`${color}`,
 			);
+
 			templateData.threadMetadata.icon.style.color = `var(${commentViewThreadStateColorVar})`;
 		}
+
 		templateData.threadMetadata.userNames.textContent =
 			node.element.comment.userName;
+
 		templateData.threadMetadata.timestamp.setTimestamp(
 			node.element.comment.timestamp
 				? new Date(node.element.comment.timestamp)
@@ -457,6 +495,7 @@ export class CommentNodeRenderer
 		const originalComment = node.element;
 
 		templateData.threadMetadata.commentPreview.innerText = "";
+
 		templateData.threadMetadata.commentPreview.style.height = "22px";
 
 		if (typeof originalComment.comment.body === "string") {
@@ -464,17 +503,21 @@ export class CommentNodeRenderer
 				originalComment.comment.body;
 		} else {
 			const disposables = new DisposableStore();
+
 			templateData.disposables.push(disposables);
 
 			const renderedComment = this.getRenderedComment(
 				originalComment.comment.body,
 				disposables,
 			);
+
 			templateData.disposables.push(renderedComment);
+
 			templateData.threadMetadata.commentPreview.appendChild(
 				renderedComment.element.firstElementChild ??
 					renderedComment.element,
 			);
+
 			templateData.disposables.push(
 				this.hoverService.setupManagedHover(
 					getDefaultHoverDelegate("mouse"),
@@ -505,10 +548,12 @@ export class CommentNodeRenderer
 		}
 
 		const menuActions = this.menus.getResourceActions(node.element);
+
 		templateData.actionBar.push(menuActions.actions, {
 			icon: true,
 			label: false,
 		});
+
 		templateData.actionBar.context = {
 			commentControlHandle: node.element.controllerHandle,
 			commentThreadHandle: node.element.threadHandle,
@@ -522,16 +567,19 @@ export class CommentNodeRenderer
 		}
 
 		templateData.repliesMetadata.container.style.display = "";
+
 		templateData.repliesMetadata.count.textContent =
 			this.getCountString(commentCount);
 
 		const lastComment =
 			node.element.replies[node.element.replies.length - 1].comment;
+
 		templateData.repliesMetadata.lastReplyDetail.textContent = nls.localize(
 			"lastReplyFrom",
 			"Last reply from {0}",
 			lastComment.userName,
 		);
+
 		templateData.repliesMetadata.timestamp.setTimestamp(
 			lastComment.timestamp ? new Date(lastComment.timestamp) : undefined,
 		);
@@ -550,6 +598,7 @@ export class CommentNodeRenderer
 		templateData.disposables.forEach((disposeable) =>
 			disposeable.dispose(),
 		);
+
 		templateData.actionBar.dispose();
 	}
 }
@@ -566,11 +615,13 @@ const enum FilterDataType {
 
 interface ResourceFilterData {
 	type: FilterDataType.Resource;
+
 	uriMatches: IMatch[];
 }
 
 interface CommentFilterData {
 	type: FilterDataType.Comment;
+
 	textMatches: IMatch[];
 }
 
@@ -736,6 +787,7 @@ export class CommentsList extends WorkbenchObjectTree<
 		);
 
 		const menus = instantiationService.createInstance(CommentsMenus);
+
 		menus.setContextKeyService(contextKeyService);
 
 		const renderers = [
@@ -762,15 +814,18 @@ export class CommentsList extends WorkbenchObjectTree<
 						if (element instanceof CommentsModel) {
 							return "root";
 						}
+
 						if (element instanceof ResourceWithCommentThreads) {
 							return `${element.uniqueOwner}-${element.id}`;
 						}
+
 						if (element instanceof CommentNode) {
 							return (
 								`${element.uniqueOwner}-${element.resource.toString()}-${element.threadId}-${element.comment.uniqueIdInThread}` +
 								(element.isRoot ? "-root" : "")
 							);
 						}
+
 						return "";
 					},
 				},
@@ -787,7 +842,9 @@ export class CommentsList extends WorkbenchObjectTree<
 			listService,
 			configurationService,
 		);
+
 		this.menus = menus;
+
 		this.disposables.add(
 			this.onContextMenu((e) => this.commentsOnContextMenu(e)),
 		);
@@ -807,9 +864,11 @@ export class CommentsList extends WorkbenchObjectTree<
 		if (!(node instanceof CommentNode)) {
 			return;
 		}
+
 		const event: UIEvent = treeEvent.browserEvent;
 
 		event.preventDefault();
+
 		event.stopPropagation();
 
 		this.setFocus([node]);
@@ -819,6 +878,7 @@ export class CommentsList extends WorkbenchObjectTree<
 		if (!actions.length) {
 			return;
 		}
+
 		this.contextMenuService.showContextMenu({
 			getAnchor: () => treeEvent.anchor,
 			getActions: () => actions,
@@ -833,6 +893,7 @@ export class CommentsList extends WorkbenchObjectTree<
 						keybinding: keybinding.getLabel(),
 					});
 				}
+
 				return undefined;
 			},
 			onHide: (wasCancelled?: boolean) => {

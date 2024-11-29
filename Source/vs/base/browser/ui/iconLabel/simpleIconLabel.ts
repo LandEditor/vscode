@@ -13,9 +13,11 @@ export class SimpleIconLabel implements IDisposable {
 	private hover?: IManagedHover;
 
 	constructor(private readonly _container: HTMLElement) {}
+
 	set text(text: string) {
 		reset(this._container, ...renderLabelWithIcons(text ?? ""));
 	}
+
 	set title(title: string) {
 		if (!this.hover && title) {
 			this.hover = getBaseLayerHoverDelegate().setupManagedHover(
@@ -27,6 +29,7 @@ export class SimpleIconLabel implements IDisposable {
 			this.hover.update(title);
 		}
 	}
+
 	dispose(): void {
 		this.hover?.dispose();
 	}

@@ -12,9 +12,11 @@ export function equals<T>(
 	if (a === b) {
 		return true;
 	}
+
 	if (a.length !== b.length) {
 		return false;
 	}
+
 	return a.every((x, i) => itemEquals(x, b[i]));
 }
 export function coalesce<T>(array: ReadonlyArray<T | undefined>): T[] {

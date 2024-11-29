@@ -36,14 +36,17 @@ export class QuickAccessController
 	private readonly registry = Registry.as<IQuickAccessRegistry>(
 		Extensions.Quickaccess,
 	);
+
 	private readonly mapProviderToDescriptor = new Map<
 		IQuickAccessProviderDescriptor,
 		IQuickAccessProvider
 	>();
+
 	private readonly lastAcceptedPickerValues = new Map<
 		IQuickAccessProviderDescriptor,
 		string
 	>();
+
 	private visibleQuickAccess:
 		| {
 				readonly picker: IQuickPick<
@@ -52,7 +55,9 @@ export class QuickAccessController
 						useSeparators: true;
 					}
 				>;
+
 				readonly descriptor: IQuickAccessProviderDescriptor | undefined;
+
 				readonly value: string;
 		  }
 		| undefined = undefined;
@@ -65,25 +70,30 @@ export class QuickAccessController
 	) {
 		super();
 	}
+
 	pick(
 		value = "",
 		options?: IQuickAccessOptions,
 	): Promise<IQuickPickItem[] | undefined> {
 		return this.doShowOrPick(value, true, options);
 	}
+
 	show(value = "", options?: IQuickAccessOptions): void {
 		this.doShowOrPick(value, false, options);
 	}
+
 	private doShowOrPick(
 		value: string,
 		pick: true,
 		options?: IQuickAccessOptions,
 	): Promise<IQuickPickItem[] | undefined>;
+
 	private doShowOrPick(
 		value: string,
 		pick: false,
 		options?: IQuickAccessOptions,
 	): void;
+
 	private doShowOrPick(
 		value: string,
 		pick: boolean,
@@ -147,6 +157,7 @@ export class QuickAccessController
 					newValue = `${descriptor.prefix}${defaultFilterValue}`;
 				}
 			}
+
 			if (typeof newValue === "string") {
 				value = newValue;
 			}
@@ -162,10 +173,15 @@ export class QuickAccessController
 		const picker = disposables.add(
 			this.quickInputService.createQuickPick({ useSeparators: true }),
 		);
+
 		picker.value = value;
+
 		this.adjustValueSelection(picker, descriptor, options);
+
 		picker.placeholder = options?.placeholder ?? descriptor?.placeholder;
+
 		picker.quickNavigate = options?.quickNavigateConfiguration;
+
 		picker.hideInput = !!picker.quickNavigate && !visibleQuickAccess; // only hide input if there was no picker opened already
 		if (
 			typeof options?.itemActivation === "number" ||
@@ -175,7 +191,9 @@ export class QuickAccessController
 				options?.itemActivation ??
 				ItemActivation.SECOND /* quick nav is always second */;
 		}
+
 		picker.contextKey = descriptor?.contextKey;
+
 		picker.filterValue = (value: string) =>
 			value.substring(descriptor ? descriptor.prefix.length : 0);
 		// Pick mode: setup a promise that can be resolved
@@ -185,9 +203,11 @@ export class QuickAccessController
 
 		if (pick) {
 			pickPromise = new DeferredPromise<IQuickPickItem[]>();
+
 			disposables.add(
 				Event.once(picker.onWillAccept)((e) => {
 					e.veto();
+
 					picker.hide();
 				}),
 			);
@@ -236,6 +256,7 @@ export class QuickAccessController
 			return pickPromise?.p;
 		}
 	}
+
 	private adjustValueSelection(
 		picker: IQuickPick<
 			IQuickPickItem,
@@ -258,8 +279,10 @@ export class QuickAccessController
 				picker.value.length,
 			];
 		}
+
 		picker.valueSelection = valueSelection;
 	}
+
 	private registerPickerListeners(
 		picker: IQuickPick<
 			IQuickPickItem,
@@ -279,6 +302,7 @@ export class QuickAccessController
 			descriptor,
 			value,
 		});
+
 		disposables.add(
 			toDisposable(() => {
 				if (visibleQuickAccess === this.visibleQuickAccess) {
@@ -317,8 +341,10 @@ export class QuickAccessController
 				}),
 			);
 		}
+
 		return disposables;
 	}
+
 	private getOrInstantiateProvider(
 		value: string,
 		enabledProviderPrefixes?: string[],
@@ -335,14 +361,17 @@ export class QuickAccessController
 		) {
 			return [undefined, undefined];
 		}
+
 		let provider = this.mapProviderToDescriptor.get(providerDescriptor);
 
 		if (!provider) {
 			provider = this.instantiationService.createInstance(
 				providerDescriptor.ctor,
 			);
+
 			this.mapProviderToDescriptor.set(providerDescriptor, provider);
 		}
+
 		return [provider, providerDescriptor];
 	}
 }

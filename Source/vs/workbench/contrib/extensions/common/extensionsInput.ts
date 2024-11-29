@@ -29,32 +29,41 @@ const ExtensionEditorIcon = registerIcon(
 
 export interface IExtensionEditorOptions extends IEditorOptions {
 	showPreReleaseVersion?: boolean;
+
 	tab?: ExtensionEditorTab;
+
 	feature?: string;
+
 	sideByside?: boolean;
 }
 export class ExtensionsInput extends EditorInput {
 	static readonly ID = "workbench.extensions.input2";
+
 	override get typeId(): string {
 		return ExtensionsInput.ID;
 	}
+
 	override get capabilities(): EditorInputCapabilities {
 		return (
 			EditorInputCapabilities.Readonly | EditorInputCapabilities.Singleton
 		);
 	}
+
 	override get resource() {
 		return URI.from({
 			scheme: Schemas.extension,
 			path: join(this._extension.identifier.id, "extension"),
 		});
 	}
+
 	constructor(private _extension: IExtension) {
 		super();
 	}
+
 	get extension(): IExtension {
 		return this._extension;
 	}
+
 	override getName(): string {
 		return localize(
 			"extensionsInputName",
@@ -62,13 +71,16 @@ export class ExtensionsInput extends EditorInput {
 			this._extension.displayName,
 		);
 	}
+
 	override getIcon(): ThemeIcon | undefined {
 		return ExtensionEditorIcon;
 	}
+
 	override matches(other: EditorInput | IUntypedEditorInput): boolean {
 		if (super.matches(other)) {
 			return true;
 		}
+
 		return (
 			other instanceof ExtensionsInput &&
 			areSameExtensions(

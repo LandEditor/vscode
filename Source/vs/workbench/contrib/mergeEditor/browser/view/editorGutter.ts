@@ -28,23 +28,28 @@ export class EditorGutter<
 		(e) =>
 			/** @description editor.onDidScrollChange */ this._editor.getScrollTop(),
 	);
+
 	private readonly isScrollTopZero = this.scrollTop.map(
 		(scrollTop) => /** @description isScrollTopZero */ scrollTop === 0,
 	);
+
 	private readonly modelAttached = observableFromEvent(
 		this,
 		this._editor.onDidChangeModel,
 		(e) =>
 			/** @description editor.onDidChangeModel */ this._editor.hasModel(),
 	);
+
 	private readonly editorOnDidChangeViewZones = observableSignalFromEvent(
 		"onDidChangeViewZones",
 		this._editor.onDidChangeViewZones,
 	);
+
 	private readonly editorOnDidContentSizeChange = observableSignalFromEvent(
 		"onDidContentSizeChange",
 		this._editor.onDidContentSizeChange,
 	);
+
 	private readonly domNodeSizeChanged =
 		observableSignal("domNodeSizeChanged");
 
@@ -54,6 +59,7 @@ export class EditorGutter<
 		private readonly itemProvider: IGutterItemProvider<T>,
 	) {
 		super();
+
 		this._domNode.className = "gutter monaco-editor";
 
 		const scrollDecoration = this._domNode.appendChild(
@@ -70,8 +76,11 @@ export class EditorGutter<
 				this.domNodeSizeChanged.trigger(tx);
 			});
 		});
+
 		o.observe(this._domNode);
+
 		this._register(toDisposable(() => o.disconnect()));
+
 		this._register(
 			autorun((reader) => {
 				/** @description update scroll decoration */
@@ -80,23 +89,31 @@ export class EditorGutter<
 					: "scroll-decoration";
 			}),
 		);
+
 		this._register(
 			autorun((reader) =>
 				/** @description EditorGutter.Render */ this.render(reader),
 			),
 		);
 	}
+
 	override dispose(): void {
 		super.dispose();
+
 		reset(this._domNode);
 	}
+
 	private readonly views = new Map<string, ManagedGutterItemView>();
+
 	private render(reader: IReader): void {
 		if (!this.modelAttached.read(reader)) {
 			return;
 		}
+
 		this.domNodeSizeChanged.read(reader);
+
 		this.editorOnDidChangeViewZones.read(reader);
+
 		this.editorOnDidContentSizeChange.read(reader);
 
 		const scrollTop = this.scrollTop.read(reader);
@@ -122,23 +139,28 @@ export class EditorGutter<
 				if (!gutterItem.range.touches(visibleRange2)) {
 					continue;
 				}
+
 				unusedIds.delete(gutterItem.id);
 
 				let view = this.views.get(gutterItem.id);
 
 				if (!view) {
 					const viewDomNode = document.createElement("div");
+
 					this._domNode.appendChild(viewDomNode);
 
 					const itemView = this.itemProvider.createView(
 						gutterItem,
 						viewDomNode,
 					);
+
 					view = new ManagedGutterItemView(itemView, viewDomNode);
+
 					this.views.set(gutterItem.id, view);
 				} else {
 					view.gutterItemView.update(gutterItem);
 				}
+
 				const top =
 					gutterItem.range.startLineNumber <=
 					this._editor.getModel()!.getLineCount()
@@ -158,8 +180,11 @@ export class EditorGutter<
 					) - scrollTop;
 
 				const height = bottom - top;
+
 				view.domNode.style.top = `${top}px`;
+
 				view.domNode.style.height = `${height}px`;
+
 				view.gutterItemView.layout(
 					top,
 					height,
@@ -168,10 +193,14 @@ export class EditorGutter<
 				);
 			}
 		}
+
 		for (const id of unusedIds) {
 			const view = this.views.get(id)!;
+
 			view.gutterItemView.dispose();
+
 			view.domNode.remove();
+
 			this.views.delete(id);
 		}
 	}
@@ -184,15 +213,18 @@ class ManagedGutterItemView {
 }
 export interface IGutterItemProvider<TItem extends IGutterItemInfo> {
 	getIntersectingGutterItems(range: LineRange, reader: IReader): TItem[];
+
 	createView(item: TItem, target: HTMLElement): IGutterItemView<TItem>;
 }
 export interface IGutterItemInfo {
 	id: string;
+
 	range: LineRange;
 }
 export interface IGutterItemView<T extends IGutterItemInfo>
 	extends IDisposable {
 	update(item: T): void;
+
 	layout(
 		top: number,
 		height: number,

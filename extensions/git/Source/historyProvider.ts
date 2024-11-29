@@ -85,6 +85,7 @@ function compareSourceControlHistoryItemRef(
 		} else if (ref.id.startsWith("refs/tags/")) {
 			return 3;
 		}
+
 		return 99;
 	};
 
@@ -95,6 +96,7 @@ function compareSourceControlHistoryItemRef(
 	if (ref1Order !== ref2Order) {
 		return ref1Order - ref2Order;
 	}
+
 	return ref1.name.localeCompare(ref2.name);
 }
 export class GitHistoryProvider
@@ -104,13 +106,16 @@ export class GitHistoryProvider
 		IDisposable
 {
 	private readonly _onDidChangeDecorations = new EventEmitter<Uri[]>();
+
 	readonly onDidChangeFileDecorations: Event<Uri[]> =
 		this._onDidChangeDecorations.event;
+
 	private _currentHistoryItemRef: SourceControlHistoryItemRef | undefined;
 
 	get currentHistoryItemRef(): SourceControlHistoryItemRef | undefined {
 		return this._currentHistoryItemRef;
 	}
+
 	private _currentHistoryItemRemoteRef:
 		| SourceControlHistoryItemRef
 		| undefined;
@@ -118,22 +123,31 @@ export class GitHistoryProvider
 	get currentHistoryItemRemoteRef(): SourceControlHistoryItemRef | undefined {
 		return this._currentHistoryItemRemoteRef;
 	}
+
 	private _currentHistoryItemBaseRef: SourceControlHistoryItemRef | undefined;
 
 	get currentHistoryItemBaseRef(): SourceControlHistoryItemRef | undefined {
 		return this._currentHistoryItemBaseRef;
 	}
+
 	private readonly _onDidChangeCurrentHistoryItemRefs =
 		new EventEmitter<void>();
+
 	readonly onDidChangeCurrentHistoryItemRefs: Event<void> =
 		this._onDidChangeCurrentHistoryItemRefs.event;
+
 	private readonly _onDidChangeHistoryItemRefs =
 		new EventEmitter<SourceControlHistoryItemRefsChangeEvent>();
+
 	readonly onDidChangeHistoryItemRefs: Event<SourceControlHistoryItemRefsChangeEvent> =
 		this._onDidChangeHistoryItemRefs.event;
+
 	private _HEAD: Branch | undefined;
+
 	private historyItemRefs: SourceControlHistoryItemRef[] = [];
+
 	private historyItemDecorations = new Map<string, FileDecoration>();
+
 	private disposables: Disposable[] = [];
 
 	constructor(
@@ -144,11 +158,14 @@ export class GitHistoryProvider
 			repository.onDidRunOperation,
 			(e) => !e.operation.readOnly,
 		);
+
 		this.disposables.push(
 			onDidRunWriteOperation(this.onDidRunWriteOperation, this),
 		);
+
 		this.disposables.push(window.registerFileDecorationProvider(this));
 	}
+
 	private async onDidRunWriteOperation(
 		result: OperationResult,
 	): Promise<void> {
@@ -156,14 +173,17 @@ export class GitHistoryProvider
 			this.logger.trace(
 				"[GitHistoryProvider][onDidRunWriteOperation] repository.HEAD is undefined",
 			);
+
 			this._currentHistoryItemRef =
 				this._currentHistoryItemRemoteRef =
 				this._currentHistoryItemBaseRef =
 					undefined;
+
 			this._onDidChangeCurrentHistoryItemRefs.fire();
 
 			return;
 		}
+
 		let historyItemRefId = "";
 
 		let historyItemRefName = "";
@@ -173,6 +193,7 @@ export class GitHistoryProvider
 				if (this.repository.HEAD.name !== undefined) {
 					// Branch
 					historyItemRefId = `refs/heads/${this.repository.HEAD.name}`;
+
 					historyItemRefName = this.repository.HEAD.name;
 					// Remote
 					this._currentHistoryItemRemoteRef = this.repository.HEAD
@@ -187,6 +208,7 @@ export class GitHistoryProvider
 					// Base - compute only if the branch has changed
 					if (this._HEAD?.name !== this.repository.HEAD.name) {
 						const mergeBase = await this.resolveHEADMergeBase();
+
 						this._currentHistoryItemBaseRef =
 							mergeBase &&
 							(mergeBase.remote !==
@@ -204,39 +226,53 @@ export class GitHistoryProvider
 				} else {
 					// Detached commit
 					historyItemRefId = this.repository.HEAD.commit ?? "";
+
 					historyItemRefName = this.repository.HEAD.commit ?? "";
+
 					this._currentHistoryItemRemoteRef = undefined;
+
 					this._currentHistoryItemBaseRef = undefined;
 				}
+
 				break;
 			}
+
 			case RefType.Tag: {
 				// Tag
 				historyItemRefId = `refs/tags/${this.repository.HEAD.name}`;
+
 				historyItemRefName =
 					this.repository.HEAD.name ??
 					this.repository.HEAD.commit ??
 					"";
+
 				this._currentHistoryItemRemoteRef = undefined;
+
 				this._currentHistoryItemBaseRef = undefined;
 
 				break;
 			}
 		}
+
 		this._HEAD = this.repository.HEAD;
+
 		this._currentHistoryItemRef = {
 			id: historyItemRefId,
 			name: historyItemRefName,
 			revision: this.repository.HEAD.commit,
 			icon: new ThemeIcon("target"),
 		};
+
 		this._onDidChangeCurrentHistoryItemRefs.fire();
+
 		this.logger.trace(
 			`[GitHistoryProvider][onDidRunWriteOperation] currentHistoryItemRef: ${JSON.stringify(this._currentHistoryItemRef)}`,
 		);
+
 		this.logger.trace(
 			`[GitHistoryProvider][onDidRunWriteOperation] currentHistoryItemRemoteRef: ${JSON.stringify(this._currentHistoryItemRemoteRef)}`,
 		);
+
 		this.logger.trace(
 			`[GitHistoryProvider][onDidRunWriteOperation] currentHistoryItemBaseRef: ${JSON.stringify(this._currentHistoryItemBaseRef)}`,
 		);
@@ -253,7 +289,9 @@ export class GitHistoryProvider
 			this.historyItemRefs,
 			historyItemRefs,
 		);
+
 		this._onDidChangeHistoryItemRefs.fire({ ...delta, silent });
+
 		this.historyItemRefs = historyItemRefs;
 
 		const deltaLog = {
@@ -262,10 +300,12 @@ export class GitHistoryProvider
 			removed: delta.removed.map((ref) => ref.id),
 			silent,
 		};
+
 		this.logger.trace(
 			`[GitHistoryProvider][onDidRunWriteOperation] historyItemRefs: ${JSON.stringify(deltaLog)}`,
 		);
 	}
+
 	async provideHistoryItemRefs(
 		historyItemRefs: string[] | undefined,
 	): Promise<SourceControlHistoryItemRef[]> {
@@ -297,8 +337,10 @@ export class GitHistoryProvider
 					break;
 			}
 		}
+
 		return [...branches, ...remoteBranches, ...tags];
 	}
+
 	async provideHistoryItems(
 		options: SourceControlHistoryOptions,
 	): Promise<SourceControlHistoryItem[]> {
@@ -326,15 +368,19 @@ export class GitHistoryProvider
 					commit.parents.length > 0
 						? commit.parents[0]
 						: await this.repository.getEmptyTree();
+
 				logOptions = { ...logOptions, range: `${commitParentId}..` };
 			}
+
 			if (typeof options.skip === "number") {
 				logOptions = { ...logOptions, skip: options.skip };
 			}
+
 			const commits = await this.repository.log({
 				...logOptions,
 				silent: true,
 			});
+
 			await ensureEmojis();
 
 			return commits.map((commit) => {
@@ -365,6 +411,7 @@ export class GitHistoryProvider
 			return [];
 		}
 	}
+
 	async provideHistoryItemChanges(
 		historyItemId: string,
 		historyItemParentId: string | undefined,
@@ -400,16 +447,20 @@ export class GitHistoryProvider
 			const color = Resource.getStatusColor(change.status);
 
 			const fileDecoration = new FileDecoration(letter, tooltip, color);
+
 			this.historyItemDecorations.set(
 				historyItemUri.toString(),
 				fileDecoration,
 			);
+
 			historyItemChangesUri.push(historyItemUri);
 		}
+
 		this._onDidChangeDecorations.fire(historyItemChangesUri);
 
 		return historyItemChanges;
 	}
+
 	async resolveHistoryItemRefsCommonAncestor(
 		historyItemRefs: string[],
 	): Promise<string | undefined> {
@@ -462,11 +513,14 @@ export class GitHistoryProvider
 				`[GitHistoryProvider][resolveHistoryItemRefsCommonAncestor] Failed to resolve common ancestor for ${historyItemRefs.join(",")}: ${err}`,
 			);
 		}
+
 		return undefined;
 	}
+
 	provideFileDecoration(uri: Uri): FileDecoration | undefined {
 		return this.historyItemDecorations.get(uri.toString());
 	}
+
 	private _resolveHistoryItemRefs(
 		commit: Commit,
 	): SourceControlHistoryItemRef[] {
@@ -515,8 +569,10 @@ export class GitHistoryProvider
 					break;
 			}
 		}
+
 		return references.sort(compareSourceControlHistoryItemRef);
 	}
+
 	private async resolveHEADMergeBase(): Promise<Branch | undefined> {
 		try {
 			if (
@@ -525,6 +581,7 @@ export class GitHistoryProvider
 			) {
 				return undefined;
 			}
+
 			const mergeBase = await this.repository.getBranchBase(
 				this.repository.HEAD.name,
 			);
@@ -538,6 +595,7 @@ export class GitHistoryProvider
 			return undefined;
 		}
 	}
+
 	dispose(): void {
 		dispose(this.disposables);
 	}

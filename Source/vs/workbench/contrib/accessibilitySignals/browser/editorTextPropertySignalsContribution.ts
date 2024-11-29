@@ -62,6 +62,7 @@ export class EditorTextPropertySignalsContribution
 		this._instantiationService.createInstance(FoldedAreaTextProperty),
 		this._instantiationService.createInstance(BreakpointTextProperty),
 	];
+
 	private readonly _someAccessibilitySignalIsEnabled = derived(
 		this,
 		(reader) =>
@@ -78,6 +79,7 @@ export class EditorTextPropertySignalsContribution
 					).read(reader),
 				),
 	);
+
 	private readonly _activeEditorObservable = observableFromEvent(
 		this,
 		this._editorService.onDidActiveEditorChange,
@@ -106,12 +108,14 @@ export class EditorTextPropertySignalsContribution
 		private readonly _accessibilitySignalService: IAccessibilitySignalService,
 	) {
 		super();
+
 		this._register(
 			autorunWithStore((reader, store) => {
 				/** @description updateSignalsEnabled */
 				if (!this._someAccessibilitySignalIsEnabled.read(reader)) {
 					return;
 				}
+
 				const activeEditor = this._activeEditorObservable.read(reader);
 
 				if (activeEditor) {
@@ -124,6 +128,7 @@ export class EditorTextPropertySignalsContribution
 			}),
 		);
 	}
+
 	private _registerAccessibilitySignalsForEditor(
 		editor: ICodeEditor,
 		editorModel: ITextModel,
@@ -145,6 +150,7 @@ export class EditorTextPropertySignalsContribution
 			100,
 			store,
 		);
+
 		store.add(
 			editor.onDidChangeCursorPosition((args) => {
 				timeouts.clear();
@@ -159,6 +165,7 @@ export class EditorTextPropertySignalsContribution
 
 					return;
 				}
+
 				const trigger = (
 					property: TextProperty,
 					source: TextPropertySource,
@@ -179,6 +186,7 @@ export class EditorTextPropertySignalsContribution
 					) {
 						return;
 					}
+
 					for (const modality of [
 						"sound",
 						"announcement",
@@ -196,6 +204,7 @@ export class EditorTextPropertySignalsContribution
 									modality,
 									mode,
 								) + (didType.get() ? 1000 : 0);
+
 							timeouts.add(
 								disposableTimeout(() => {
 									if (
@@ -216,6 +225,7 @@ export class EditorTextPropertySignalsContribution
 												{ modality },
 											);
 										}
+
 										ignoredLineSignalsForCurrentLine.add(
 											property,
 										);
@@ -232,12 +242,14 @@ export class EditorTextPropertySignalsContribution
 
 				if (lineNumber !== lastLine) {
 					ignoredLineSignalsForCurrentLine.clear();
+
 					lastLine = lineNumber;
 
 					for (const p of propertySources) {
 						trigger(p.property, p.source, "line");
 					}
 				}
+
 				for (const p of propertySources) {
 					trigger(p.property, p.source, "positional");
 				}
@@ -258,9 +270,11 @@ export class EditorTextPropertySignalsContribution
 					) {
 						return;
 					}
+
 					let lastValueAtPosition: boolean | undefined = undefined;
 
 					let lastValueOnLine: boolean | undefined = undefined;
+
 					timeouts.add(
 						autorun((reader) => {
 							const newValueAtPosition =
@@ -284,11 +298,14 @@ export class EditorTextPropertySignalsContribution
 								) {
 									trigger(s.property, s.source, "positional");
 								}
+
 								if (!lastValueOnLine && newValueOnLine) {
 									trigger(s.property, s.source, "line");
 								}
 							}
+
 							lastValueAtPosition = newValueAtPosition;
+
 							lastValueOnLine = newValueOnLine;
 						}),
 					);
@@ -299,8 +316,11 @@ export class EditorTextPropertySignalsContribution
 }
 interface TextProperty {
 	readonly positionSignal?: AccessibilitySignal;
+
 	readonly lineSignal?: AccessibilitySignal;
+
 	readonly debounceWhileTyping?: boolean;
+
 	createSource(editor: ICodeEditor, model: ITextModel): TextPropertySource;
 }
 class TextPropertySource {
@@ -308,10 +328,12 @@ class TextPropertySource {
 		isPresentAtPosition: () => false,
 		isPresentOnLine: () => false,
 	});
+
 	public readonly isPresentOnLine: (
 		lineNumber: number,
 		reader: IReader | undefined,
 	) => boolean;
+
 	public readonly isPresentAtPosition: (
 		position: Position,
 		reader: IReader | undefined,
@@ -322,14 +344,17 @@ class TextPropertySource {
 			lineNumber: number,
 			reader: IReader | undefined,
 		) => boolean;
+
 		isPresentAtPosition?: (
 			position: Position,
 			reader: IReader | undefined,
 		) => boolean;
 	}) {
 		this.isPresentOnLine = options.isPresentOnLine;
+
 		this.isPresentAtPosition = options.isPresentAtPosition ?? (() => false);
 	}
+
 	public isPresent(
 		position: Position,
 		mode: "line" | "positional",
@@ -350,6 +375,7 @@ class MarkerTextProperty implements TextProperty {
 		@IMarkerService
 		private readonly markerService: IMarkerService,
 	) {}
+
 	createSource(editor: ICodeEditor, model: ITextModel): TextPropertySource {
 		const obs = observableSignalFromEvent(
 			"onMarkerChanged",
@@ -392,12 +418,14 @@ class MarkerTextProperty implements TextProperty {
 }
 class FoldedAreaTextProperty implements TextProperty {
 	public readonly lineSignal = AccessibilitySignal.foldedArea;
+
 	createSource(editor: ICodeEditor, _model: ITextModel): TextPropertySource {
 		const foldingController = FoldingController.get(editor);
 
 		if (!foldingController) {
 			return TextPropertySource.notPresent;
 		}
+
 		const foldingModel = observableFromPromise(
 			foldingController.getFoldingModel() ?? Promise.resolve(undefined),
 		);
@@ -425,6 +453,7 @@ class BreakpointTextProperty implements TextProperty {
 		@IDebugService
 		private readonly debugService: IDebugService,
 	) {}
+
 	createSource(editor: ICodeEditor, model: ITextModel): TextPropertySource {
 		const signal = observableSignalFromEvent(
 			"onDidChangeBreakpoints",

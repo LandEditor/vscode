@@ -79,6 +79,7 @@ registerAction2(
 				f1: true,
 			});
 		}
+
 		run(servicesAccessor: ServicesAccessor): Promise<void> {
 			return servicesAccessor
 				.get(IInstantiationService)
@@ -103,6 +104,7 @@ registerAction2(
 				category: Categories.Developer,
 			});
 		}
+
 		run(
 			servicesAccessor: ServicesAccessor,
 			logLevel: LogLevel,
@@ -116,8 +118,10 @@ registerAction2(
 );
 class LogOutputChannels extends Disposable implements IWorkbenchContribution {
 	private readonly contextKeys = new CounterSet<string>();
+
 	private readonly outputChannelRegistry =
 		Registry.as<IOutputChannelRegistry>(Extensions.OutputChannels);
+
 	private readonly loggerDisposables = this._register(new DisposableMap());
 
 	constructor(
@@ -135,7 +139,9 @@ class LogOutputChannels extends Disposable implements IWorkbenchContribution {
 		super();
 
 		const contextKey = CONTEXT_LOG_LEVEL.bindTo(contextKeyService);
+
 		contextKey.set(LogLevelToString(loggerService.getLogLevel()));
+
 		this._register(
 			loggerService.onDidChangeLogLevel((e) => {
 				if (isLogLevel(e)) {
@@ -145,13 +151,17 @@ class LogOutputChannels extends Disposable implements IWorkbenchContribution {
 				}
 			}),
 		);
+
 		this.onDidAddLoggers(loggerService.getRegisteredLoggers());
+
 		this._register(
 			loggerService.onDidChangeLoggers(({ added, removed }) => {
 				this.onDidAddLoggers(added);
+
 				this.onDidRemoveLoggers(removed);
 			}),
 		);
+
 		this._register(
 			loggerService.onDidChangeVisibility(([resource, visibility]) => {
 				const logger = loggerService.getRegisteredLogger(resource);
@@ -165,13 +175,16 @@ class LogOutputChannels extends Disposable implements IWorkbenchContribution {
 				}
 			}),
 		);
+
 		this.registerShowWindowLogAction();
+
 		this._register(
 			Event.filter(contextKeyService.onDidChangeContext, (e) =>
 				e.affectsSome(this.contextKeys),
 			)(() => this.onDidChangeContext()),
 		);
 	}
+
 	private onDidAddLoggers(loggers: Iterable<ILoggerResource>): void {
 		for (const logger of loggers) {
 			if (logger.when) {
@@ -181,6 +194,7 @@ class LogOutputChannels extends Disposable implements IWorkbenchContribution {
 					for (const key of contextKeyExpr.keys()) {
 						this.contextKeys.add(key);
 					}
+
 					if (
 						!this.contextKeyService.contextMatchesRules(
 							contextKeyExpr,
@@ -190,12 +204,15 @@ class LogOutputChannels extends Disposable implements IWorkbenchContribution {
 					}
 				}
 			}
+
 			if (logger.hidden) {
 				continue;
 			}
+
 			this.registerLogChannel(logger);
 		}
 	}
+
 	private onDidChangeContext(): void {
 		for (const logger of this.loggerService.getRegisteredLoggers()) {
 			if (logger.when) {
@@ -211,6 +228,7 @@ class LogOutputChannels extends Disposable implements IWorkbenchContribution {
 			}
 		}
 	}
+
 	private onDidRemoveLoggers(loggers: Iterable<ILoggerResource>): void {
 		for (const logger of loggers) {
 			if (logger.when) {
@@ -222,9 +240,11 @@ class LogOutputChannels extends Disposable implements IWorkbenchContribution {
 					}
 				}
 			}
+
 			this.deregisterLogChannel(logger);
 		}
 	}
+
 	private registerLogChannel(logger: ILoggerResource): void {
 		const channel = this.outputChannelRegistry.getChannel(logger.id);
 
@@ -237,6 +257,7 @@ class LogOutputChannels extends Disposable implements IWorkbenchContribution {
 		) {
 			return;
 		}
+
 		const disposables = new DisposableStore();
 
 		const promise = createCancelablePromise(async (token) => {
@@ -259,6 +280,7 @@ class LogOutputChannels extends Disposable implements IWorkbenchContribution {
 				if (remoteLogger) {
 					this.deregisterLogChannel(remoteLogger);
 				}
+
 				const hasToAppendRemote =
 					existingChannel &&
 					logger.resource.scheme === Schemas.vscodeRemote;
@@ -274,6 +296,7 @@ class LogOutputChannels extends Disposable implements IWorkbenchContribution {
 							logger.name ?? logger.id,
 						)
 					: (logger.name ?? logger.id);
+
 				this.outputChannelRegistry.registerChannel({
 					id,
 					label,
@@ -281,6 +304,7 @@ class LogOutputChannels extends Disposable implements IWorkbenchContribution {
 					log: true,
 					extensionId: logger.extensionId,
 				});
+
 				disposables.add(
 					toDisposable(() =>
 						this.outputChannelRegistry.removeChannel(id),
@@ -300,12 +324,16 @@ class LogOutputChannels extends Disposable implements IWorkbenchContribution {
 				}
 			}
 		});
+
 		disposables.add(toDisposable(() => promise.cancel()));
+
 		this.loggerDisposables.set(logger.resource.toString(), disposables);
 	}
+
 	private deregisterLogChannel(logger: ILoggerResource): void {
 		this.loggerDisposables.deleteAndDispose(logger.resource.toString());
 	}
+
 	private async whenFileExists(
 		file: URI,
 		trial: number,
@@ -316,19 +344,25 @@ class LogOutputChannels extends Disposable implements IWorkbenchContribution {
 		if (exists) {
 			return;
 		}
+
 		if (token.isCancellationRequested) {
 			throw new CancellationError();
 		}
+
 		if (trial > 10) {
 			throw new Error(`Timed out while waiting for file to be created`);
 		}
+
 		this.logService.debug(
 			`[Registering Log Channel] File does not exist. Waiting for 1s to retry.`,
 			file.toString(),
 		);
+
 		await timeout(1000, token);
+
 		await this.whenFileExists(file, trial + 1, token);
 	}
+
 	private registerShowWindowLogAction(): void {
 		this._register(
 			registerAction2(
@@ -344,11 +378,13 @@ class LogOutputChannels extends Disposable implements IWorkbenchContribution {
 							f1: true,
 						});
 					}
+
 					async run(
 						servicesAccessor: ServicesAccessor,
 					): Promise<void> {
 						const outputService =
 							servicesAccessor.get(IOutputService);
+
 						outputService.showChannel(windowLogId);
 					}
 				},

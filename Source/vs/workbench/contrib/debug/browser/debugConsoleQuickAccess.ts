@@ -34,6 +34,7 @@ export class DebugConsoleQuickAccess extends PickerQuickAccessProvider<IPickerQu
 			canAcceptInBackground: true,
 		});
 	}
+
 	protected _getPicks(
 		filter: string,
 		disposables: DisposableStore,
@@ -46,6 +47,7 @@ export class DebugConsoleQuickAccess extends PickerQuickAccessProvider<IPickerQu
 		const debugConsolePicks: Array<
 			IPickerQuickAccessItem | IQuickPickSeparator
 		> = [];
+
 		this._debugService
 			.getModel()
 			.getSessions(true)
@@ -61,10 +63,12 @@ export class DebugConsoleQuickAccess extends PickerQuickAccessProvider<IPickerQu
 		if (debugConsolePicks.length > 0) {
 			debugConsolePicks.push({ type: "separator" });
 		}
+
 		const createTerminalLabel = localize(
 			"workbench.action.debug.startDebug",
 			"Start a New Debug Session",
 		);
+
 		debugConsolePicks.push({
 			label: `$(plus) ${createTerminalLabel}`,
 			ariaLabel: createTerminalLabel,
@@ -74,6 +78,7 @@ export class DebugConsoleQuickAccess extends PickerQuickAccessProvider<IPickerQu
 
 		return debugConsolePicks;
 	}
+
 	private _createPick(
 		session: IDebugSession,
 		sessionIndex: number,
@@ -101,6 +106,7 @@ export class DebugConsoleQuickAccess extends PickerQuickAccessProvider<IPickerQu
 				},
 			};
 		}
+
 		return undefined;
 	}
 }

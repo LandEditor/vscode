@@ -18,9 +18,11 @@ function spawnAsPromised(command: string, args: string[]): Promise<string> {
 				stdout += data.toString();
 			});
 		}
+
 		child.on("error", (err) => {
 			reject(err);
 		});
+
 		child.on("close", (code) => {
 			resolve(stdout);
 		});
@@ -95,6 +97,7 @@ export function prepareCommand(
 	} else {
 		shellType = ShellType.bash; // pick a good default for anything else
 	}
+
 	let quote: (s: string) => string;
 	// begin command with a space to avoid polluting shell history
 	let command = " ";
@@ -107,6 +110,7 @@ export function prepareCommand(
 				if (s.length > 0 && s.charAt(s.length - 1) === "\\") {
 					return `'${s}\\'`;
 				}
+
 				return `'${s}'`;
 			};
 
@@ -116,8 +120,10 @@ export function prepareCommand(
 				if (driveLetter) {
 					command += `${driveLetter}:; `;
 				}
+
 				command += `cd ${quote(cwd)}; `;
 			}
+
 			if (env) {
 				for (const key in env) {
 					const value = env[key];
@@ -129,10 +135,12 @@ export function prepareCommand(
 					}
 				}
 			}
+
 			if (args.length > 0) {
 				const arg = args.shift()!;
 
 				const cmd = argsCanBeInterpretedByShell ? arg : quote(arg);
+
 				command += cmd[0] === "'" ? `& ${cmd} ` : `${cmd} `;
 
 				for (const a of args) {
@@ -140,9 +148,11 @@ export function prepareCommand(
 						a === "<" || a === ">" || argsCanBeInterpretedByShell
 							? a
 							: quote(a);
+
 					command += " ";
 				}
 			}
+
 			break;
 
 		case ShellType.cmd:
@@ -152,6 +162,7 @@ export function prepareCommand(
 				// cmd /C "node -e "console.log(process.argv)" "foo^> bar"" # prints foo> bar
 				// Outside of the cmd /C, it could be a simple quoting, but here, the ^ is needed too
 				s = s.replace(/\"/g, '""');
+
 				s = s.replace(/([><!^&|])/g, "^$1");
 
 				return ' "'.split("").some((char) => s.includes(char)) ||
@@ -166,8 +177,10 @@ export function prepareCommand(
 				if (driveLetter) {
 					command += `${driveLetter}: && `;
 				}
+
 				command += `cd ${quote(cwd)} && `;
 			}
+
 			if (env) {
 				command += 'cmd /C "';
 
@@ -178,20 +191,25 @@ export function prepareCommand(
 						command += `set "${key}=" && `;
 					} else {
 						value = value.replace(/[&^|<>]/g, (s) => `^${s}`);
+
 						command += `set "${key}=${value}" && `;
 					}
 				}
 			}
+
 			for (const a of args) {
 				command +=
 					a === "<" || a === ">" || argsCanBeInterpretedByShell
 						? a
 						: quote(a);
+
 				command += " ";
 			}
+
 			if (env) {
 				command += '"';
 			}
+
 			break;
 
 		case ShellType.bash: {
@@ -210,6 +228,7 @@ export function prepareCommand(
 			if (cwd) {
 				command += `cd ${quote(cwd)} ; `;
 			}
+
 			if (env) {
 				command += "/usr/bin/env";
 
@@ -222,17 +241,22 @@ export function prepareCommand(
 						command += ` ${hardQuote(`${key}=${value}`)}`;
 					}
 				}
+
 				command += " ";
 			}
+
 			for (const a of args) {
 				command +=
 					a === "<" || a === ">" || argsCanBeInterpretedByShell
 						? a
 						: quote(a);
+
 				command += " ";
 			}
+
 			break;
 		}
 	}
+
 	return command;
 }

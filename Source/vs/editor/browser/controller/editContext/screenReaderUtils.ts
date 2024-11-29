@@ -21,6 +21,7 @@ export interface ISimpleModel {
 	getValueInRange(range: Range, eol: EndOfLinePreference): string;
 
 	getValueLengthInRange(range: Range, eol: EndOfLinePreference): number;
+
 	modifyPosition(position: Position, offset: number): Position;
 }
 export interface ScreenReaderContentState {
@@ -43,6 +44,7 @@ export class PagedScreenReaderStrategy {
 	): number {
 		return Math.floor((lineNumber - 1) / linesPerPage);
 	}
+
 	private static _getRangeForPage(page: number, linesPerPage: number): Range {
 		const offset = page * linesPerPage;
 
@@ -52,6 +54,7 @@ export class PagedScreenReaderStrategy {
 
 		return new Range(startLineNumber, 1, endLineNumber + 1, 1);
 	}
+
 	public static fromEditorSelection(
 		model: ISimpleModel,
 		selection: Range,
@@ -97,11 +100,13 @@ export class PagedScreenReaderStrategy {
 				pretextRange.getEndPosition(),
 				-LIMIT_CHARS,
 			);
+
 			pretextRange = Range.fromPositions(
 				pretextStart,
 				pretextRange.getEndPosition(),
 			);
 		}
+
 		const pretext = model.getValueInRange(
 			pretextRange,
 			EndOfLinePreference.LF,
@@ -129,11 +134,13 @@ export class PagedScreenReaderStrategy {
 				posttextRange.getStartPosition(),
 				LIMIT_CHARS,
 			);
+
 			posttextRange = Range.fromPositions(
 				posttextRange.getStartPosition(),
 				posttextEnd,
 			);
 		}
+
 		const posttext = model.getValueInRange(
 			posttextRange,
 			EndOfLinePreference.LF,
@@ -153,17 +160,20 @@ export class PagedScreenReaderStrategy {
 
 			const selectionRange2 =
 				selectionEndPageRange.intersectRanges(selection)!;
+
 			text =
 				model.getValueInRange(selectionRange1, EndOfLinePreference.LF) +
 				String.fromCharCode(8230) +
 				model.getValueInRange(selectionRange2, EndOfLinePreference.LF);
 		}
+
 		if (trimLongText && text.length > 2 * LIMIT_CHARS) {
 			text =
 				text.substring(0, LIMIT_CHARS) +
 				String.fromCharCode(8230) +
 				text.substring(text.length - LIMIT_CHARS, text.length);
 		}
+
 		return {
 			value: pretext + text + posttext,
 			selection: selection,
@@ -227,6 +237,7 @@ export function ariaLabelForScreenReaderContent(
 			return editorNotAccessibleMessage;
 		}
 	}
+
 	return options.get(EditorOption.ariaLabel);
 }
 export function newlinecount(text: string): number {
@@ -240,6 +251,7 @@ export function newlinecount(text: string): number {
 		if (startIndex === -1) {
 			break;
 		}
+
 		result++;
 	} while (true);
 

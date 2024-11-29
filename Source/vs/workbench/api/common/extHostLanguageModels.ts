@@ -57,7 +57,9 @@ export const IExtHostLanguageModels = createDecorator<IExtHostLanguageModels>(
 
 type LanguageModelData = {
 	readonly languageModelId: string;
+
 	readonly extension: ExtensionIdentifier;
+
 	readonly provider: vscode.ChatResponseProvider;
 };
 
@@ -87,13 +89,16 @@ class LanguageModelResponse {
 		number,
 		LanguageModelResponseStream
 	>();
+
 	private readonly _defaultStream = new AsyncIterableSource<
 		vscode.LanguageModelTextPart | vscode.LanguageModelToolCallPart
 	>();
+
 	private _isDone: boolean = false;
 
 	constructor() {
 		const that = this;
+
 		this.apiObject = {
 			// result: promise,
 			get stream() {
@@ -130,6 +135,7 @@ class LanguageModelResponse {
 		if (this._isDone) {
 			return;
 		}
+
 		let res = this._responseStreams.get(fragment.index);
 
 		if (!res) {
@@ -142,6 +148,7 @@ class LanguageModelResponse {
 			} else {
 				res = new LanguageModelResponseStream(fragment.index);
 			}
+
 			this._responseStreams.set(fragment.index, res);
 		}
 
@@ -158,6 +165,7 @@ class LanguageModelResponse {
 				fragment.part.parameters,
 			);
 		}
+
 		res.stream.emitOne(out);
 	}
 
@@ -184,27 +192,35 @@ export class ExtHostLanguageModels implements ExtHostLanguageModelsShape {
 	private static _idPool = 1;
 
 	private readonly _proxy: MainThreadLanguageModelsShape;
+
 	private readonly _onDidChangeModelAccess = new Emitter<{
 		from: ExtensionIdentifier;
+
 		to: ExtensionIdentifier;
 	}>();
+
 	private readonly _onDidChangeProviders = new Emitter<void>();
+
 	readonly onDidChangeProviders = this._onDidChangeProviders.event;
 
 	private readonly _languageModels = new Map<number, LanguageModelData>();
+
 	private readonly _allLanguageModelData = new Map<
 		string,
 		{
 			metadata: ILanguageModelChatMetadata;
+
 			apiObjects: ExtensionIdentifierMap<vscode.LanguageModelChat>;
 		}
 	>(); // these are ALL models, not just the one in this EH
 	private readonly _modelAccessList =
 		new ExtensionIdentifierMap<ExtensionIdentifierSet>();
+
 	private readonly _pendingRequest = new Map<
 		number,
 		{ languageModelId: string; res: LanguageModelResponse }
 	>();
+
 	private readonly _ignoredFileProviders = new Map<
 		number,
 		vscode.LanguageModelIgnoredFileProvider
@@ -221,6 +237,7 @@ export class ExtHostLanguageModels implements ExtHostLanguageModelsShape {
 
 	dispose(): void {
 		this._onDidChangeModelAccess.dispose();
+
 		this._onDidChangeProviders.dispose();
 	}
 
@@ -231,6 +248,7 @@ export class ExtHostLanguageModels implements ExtHostLanguageModelsShape {
 		metadata: vscode.ChatResponseProviderMetadata,
 	): IDisposable {
 		const handle = ExtHostLanguageModels._idPool++;
+
 		this._languageModels.set(handle, {
 			extension: extension.identifier,
 			provider,
@@ -248,6 +266,7 @@ export class ExtHostLanguageModels implements ExtHostLanguageModelsShape {
 						: undefined,
 			};
 		}
+
 		this._proxy.$registerLanguageModelProvider(
 			handle,
 			`${ExtensionIdentifier.toKey(extension.identifier)}/${identifier}`,
@@ -283,7 +302,9 @@ export class ExtHostLanguageModels implements ExtHostLanguageModelsShape {
 
 		return toDisposable(() => {
 			this._languageModels.delete(handle);
+
 			this._proxy.$unregisterProvider(handle);
+
 			responseReceivedListener?.dispose();
 		});
 	}
@@ -301,6 +322,7 @@ export class ExtHostLanguageModels implements ExtHostLanguageModelsShape {
 		if (!data) {
 			throw new Error("Provider not found");
 		}
+
 		const progress = new Progress<vscode.ChatResponseFragment2>(
 			async (fragment) => {
 				if (token.isCancellationRequested) {
@@ -393,6 +415,7 @@ export class ExtHostLanguageModels implements ExtHostLanguageModelsShape {
 		if (!data) {
 			return Promise.resolve(0);
 		}
+
 		return Promise.resolve(data.provider.provideTokenCount(value, token));
 	}
 
@@ -402,6 +425,7 @@ export class ExtHostLanguageModels implements ExtHostLanguageModelsShape {
 		added?:
 			| { identifier: string; metadata: ILanguageModelChatMetadata }[]
 			| undefined;
+
 		removed?: string[] | undefined;
 	}): void {
 		if (data.added) {
@@ -412,6 +436,7 @@ export class ExtHostLanguageModels implements ExtHostLanguageModelsShape {
 				});
 			}
 		}
+
 		if (data.removed) {
 			for (const id of data.removed) {
 				// clean up
@@ -421,6 +446,7 @@ export class ExtHostLanguageModels implements ExtHostLanguageModelsShape {
 				for (const [key, value] of this._pendingRequest) {
 					if (value.languageModelId === id) {
 						value.res.reject(new CancellationError());
+
 						this._pendingRequest.delete(key);
 					}
 				}
@@ -468,6 +494,7 @@ export class ExtHostLanguageModels implements ExtHostLanguageModelsShape {
 
 		if (!apiObject) {
 			const that = this;
+
 			apiObject = {
 				id: data.metadata.id,
 				vendor: data.metadata.vendor,
@@ -481,6 +508,7 @@ export class ExtHostLanguageModels implements ExtHostLanguageModelsShape {
 							identifier,
 						);
 					}
+
 					return that._computeTokenLength(
 						identifier,
 						text,
@@ -493,6 +521,7 @@ export class ExtHostLanguageModels implements ExtHostLanguageModelsShape {
 							identifier,
 						);
 					}
+
 					return that._sendChatRequest(
 						extension,
 						identifier,
@@ -504,6 +533,7 @@ export class ExtHostLanguageModels implements ExtHostLanguageModelsShape {
 			};
 
 			Object.freeze(apiObject);
+
 			data.apiObjects.set(extension.identifier, apiObject);
 		}
 
@@ -584,6 +614,7 @@ export class ExtHostLanguageModels implements ExtHostLanguageModelsShape {
 			const requestId = (Math.random() * 1e6) | 0;
 
 			const res = new LanguageModelResponse();
+
 			this._pendingRequest.set(requestId, { languageModelId, res });
 
 			try {
@@ -608,6 +639,7 @@ export class ExtHostLanguageModels implements ExtHostLanguageModelsShape {
 			if (error.name === extHostTypes.LanguageModelError.name) {
 				throw error;
 			}
+
 			throw new extHostTypes.LanguageModelError(
 				`Language model '${languageModelId}' errored: ${toErrorMessage(error)}`,
 				"Unknown",
@@ -629,10 +661,12 @@ export class ExtHostLanguageModels implements ExtHostLanguageModelsShape {
 			) {
 				checkProposedApiEnabled(extension, "languageModelSystem");
 			}
+
 			internalMessages.push(
 				typeConvert.LanguageModelChatMessage.from(message),
 			);
 		}
+
 		return internalMessages;
 	}
 
@@ -656,6 +690,7 @@ export class ExtHostLanguageModels implements ExtHostLanguageModelsShape {
 		if (!data) {
 			return;
 		}
+
 		this._pendingRequest.delete(requestId);
 
 		if (error) {
@@ -705,9 +740,11 @@ export class ExtHostLanguageModels implements ExtHostLanguageModelsShape {
 						justification,
 					)
 				: undefined;
+
 			await this._extHostAuthentication.getSession(from, providerId, [], {
 				forceNewSession: { detail },
 			});
+
 			this.$updateModelAccesslist([
 				{ from: from.identifier, to: to.identifier, enabled: true },
 			]);
@@ -750,6 +787,7 @@ export class ExtHostLanguageModels implements ExtHostLanguageModelsShape {
 				);
 			} catch (err) {
 				this._logService.error("Fake Auth request failed");
+
 				this._logService.error(err);
 			}
 		}
@@ -790,12 +828,15 @@ export class ExtHostLanguageModels implements ExtHostLanguageModelsShape {
 	$updateModelAccesslist(
 		data: {
 			from: ExtensionIdentifier;
+
 			to: ExtensionIdentifier;
+
 			enabled: boolean;
 		}[],
 	): void {
 		const updated = new Array<{
 			from: ExtensionIdentifier;
+
 			to: ExtensionIdentifier;
 		}>();
 
@@ -811,10 +852,13 @@ export class ExtHostLanguageModels implements ExtHostLanguageModelsShape {
 				} else {
 					set.delete(to);
 				}
+
 				this._modelAccessList.set(from, set);
 
 				const newItem = { from, to };
+
 				updated.push(newItem);
+
 				this._onDidChangeModelAccess.fire(newItem);
 			}
 		}
@@ -857,9 +901,11 @@ export class ExtHostLanguageModels implements ExtHostLanguageModelsShape {
 						}
 					}
 				}
+
 				if (!metadata) {
 					return undefined;
 				}
+
 				if (!that._isUsingAuth(from.identifier, metadata)) {
 					return true;
 				}
@@ -869,6 +915,7 @@ export class ExtHostLanguageModels implements ExtHostLanguageModelsShape {
 				if (!list) {
 					return undefined;
 				}
+
 				return list.has(metadata.extension);
 			},
 		};
@@ -907,11 +954,14 @@ export class ExtHostLanguageModels implements ExtHostLanguageModelsShape {
 		checkProposedApiEnabled(extension, "chatParticipantPrivate");
 
 		const handle = ExtHostLanguageModels._idPool++;
+
 		this._proxy.$registerFileIgnoreProvider(handle);
+
 		this._ignoredFileProviders.set(handle, provider);
 
 		return toDisposable(() => {
 			this._proxy.$unregisterFileIgnoreProvider(handle);
+
 			this._ignoredFileProviders.delete(handle);
 		});
 	}

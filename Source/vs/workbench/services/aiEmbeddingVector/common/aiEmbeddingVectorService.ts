@@ -23,6 +23,7 @@ export const IAiEmbeddingVectorService =
 
 export interface IAiEmbeddingVectorService {
 	readonly _serviceBrand: undefined;
+
 	isEnabled(): boolean;
 
 	getEmbeddingVector(
@@ -34,6 +35,7 @@ export interface IAiEmbeddingVectorService {
 		strings: string[],
 		token: CancellationToken,
 	): Promise<number[][]>;
+
 	registerAiEmbeddingVectorProvider(
 		model: string,
 		provider: IAiEmbeddingVectorProvider,
@@ -47,6 +49,7 @@ export interface IAiEmbeddingVectorProvider {
 }
 export class AiEmbeddingVectorService implements IAiEmbeddingVectorService {
 	readonly _serviceBrand: undefined;
+
 	static readonly DEFAULT_TIMEOUT = 1000 * 10; // 10 seconds
 	private readonly _providers: IAiEmbeddingVectorProvider[] = [];
 
@@ -54,9 +57,11 @@ export class AiEmbeddingVectorService implements IAiEmbeddingVectorService {
 		@ILogService
 		private readonly logService: ILogService,
 	) {}
+
 	isEnabled(): boolean {
 		return this._providers.length > 0;
 	}
+
 	registerAiEmbeddingVectorProvider(
 		model: string,
 		provider: IAiEmbeddingVectorProvider,
@@ -73,6 +78,7 @@ export class AiEmbeddingVectorService implements IAiEmbeddingVectorService {
 			},
 		};
 	}
+
 	getEmbeddingVector(
 		str: string,
 		token: CancellationToken,
@@ -90,6 +96,7 @@ export class AiEmbeddingVectorService implements IAiEmbeddingVectorService {
 		if (this._providers.length === 0) {
 			throw new Error("No embedding vector providers registered");
 		}
+
 		const stopwatch = StopWatch.create();
 
 		const cancellablePromises: Array<CancelablePromise<number[][]>> = [];
@@ -98,6 +105,7 @@ export class AiEmbeddingVectorService implements IAiEmbeddingVectorService {
 
 		const disposable = token.onCancellationRequested(() => {
 			disposable.dispose();
+
 			timer.cancel();
 		});
 
@@ -121,12 +129,15 @@ export class AiEmbeddingVectorService implements IAiEmbeddingVectorService {
 				}),
 			);
 		}
+
 		cancellablePromises.push(
 			createCancelablePromise(async (t) => {
 				const disposable = t.onCancellationRequested(() => {
 					timer.cancel();
+
 					disposable.dispose();
 				});
+
 				await timer;
 
 				throw new Error("Embedding vector provider timed out");
@@ -140,9 +151,11 @@ export class AiEmbeddingVectorService implements IAiEmbeddingVectorService {
 			if (result.length === 1) {
 				return result[0];
 			}
+
 			return result;
 		} finally {
 			stopwatch.stop();
+
 			this.logService.trace(
 				`[AiEmbeddingVectorService]: getEmbeddingVector took ${stopwatch.elapsed()}ms`,
 			);

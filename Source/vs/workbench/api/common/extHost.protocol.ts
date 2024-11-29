@@ -281,32 +281,51 @@ export interface MainThreadCommandsShape extends IDisposable {
 
 export interface CommentProviderFeatures {
 	reactionGroup?: languages.CommentReaction[];
+
 	reactionHandler?: boolean;
+
 	options?: languages.CommentOptions;
 }
 
 export interface CommentChanges {
 	readonly uniqueIdInThread: number;
+
 	readonly body: string | IMarkdownString;
+
 	readonly userName: string;
+
 	readonly userIconPath?: UriComponents;
+
 	readonly contextValue?: string;
+
 	readonly commentReactions?: languages.CommentReaction[];
+
 	readonly label?: string;
+
 	readonly mode?: languages.CommentMode;
+
 	readonly state?: languages.CommentState;
+
 	readonly timestamp?: string;
 }
 
 export type CommentThreadChanges<T = IRange> = Partial<{
 	range: T | undefined;
+
 	label: string;
+
 	contextValue: string | null;
+
 	comments: CommentChanges[];
+
 	collapseState: languages.CommentThreadCollapsibleState;
+
 	canReply: boolean;
+
 	state: languages.CommentThreadState;
+
 	applicability: languages.CommentThreadApplicability;
+
 	isTemplate: boolean;
 }>;
 
@@ -356,6 +375,7 @@ export interface MainThreadCommentsShape extends IDisposable {
 
 export interface AuthenticationForceNewSessionOptions {
 	detail?: string;
+
 	sessionToRecreate?: AuthenticationSession;
 }
 
@@ -378,7 +398,9 @@ export interface MainThreadAuthenticationShape extends IDisposable {
 		extensionName: string,
 		options: {
 			createIfNone?: boolean;
+
 			forceNewSession?: boolean | AuthenticationForceNewSessionOptions;
+
 			clearSessionPreference?: boolean;
 		},
 	): Promise<AuthenticationSession | undefined>;
@@ -424,19 +446,29 @@ export interface MainThreadDiagnosticsShape extends IDisposable {
 
 export interface MainThreadDialogOpenOptions {
 	defaultUri?: UriComponents;
+
 	openLabel?: string;
+
 	canSelectFiles?: boolean;
+
 	canSelectFolders?: boolean;
+
 	canSelectMany?: boolean;
+
 	filters?: { [name: string]: string[] };
+
 	title?: string;
+
 	allowUIResources?: boolean;
 }
 
 export interface MainThreadDialogSaveOptions {
 	defaultUri?: UriComponents;
+
 	saveLabel?: string;
+
 	filters?: { [name: string]: string[] };
+
 	title?: string;
 }
 
@@ -464,6 +496,7 @@ export interface MainThreadDocumentContentProvidersShape extends IDisposable {
 export interface MainThreadDocumentsShape extends IDisposable {
 	$tryCreateDocument(options?: {
 		language?: string;
+
 		content?: string;
 	}): Promise<UriComponents>;
 	$tryOpenDocument(uri: UriComponents): Promise<UriComponents>;
@@ -472,18 +505,27 @@ export interface MainThreadDocumentsShape extends IDisposable {
 
 export interface ITextEditorConfigurationUpdate {
 	tabSize?: number | "auto";
+
 	indentSize?: number | "tabSize";
+
 	insertSpaces?: boolean | "auto";
+
 	cursorStyle?: TextEditorCursorStyle;
+
 	lineNumbers?: RenderLineNumbersType;
 }
 
 export interface IResolvedTextEditorConfiguration {
 	tabSize: number;
+
 	indentSize: number;
+
 	originalIndentSize: number | "tabSize";
+
 	insertSpaces: boolean;
+
 	cursorStyle: TextEditorCursorStyle;
+
 	lineNumbers: RenderLineNumbersType;
 }
 
@@ -496,6 +538,7 @@ export enum TextEditorRevealType {
 
 export interface IUndoStopOptions {
 	undoStopBefore: boolean;
+
 	undoStopAfter: boolean;
 }
 
@@ -505,8 +548,11 @@ export interface IApplyEditsOptions extends IUndoStopOptions {
 
 export interface ITextDocumentShowOptions {
 	position?: EditorGroupColumn;
+
 	preserveFocus?: boolean;
+
 	pinned?: boolean;
+
 	selection?: IRange;
 }
 
@@ -572,11 +618,17 @@ export interface MainThreadTreeViewsShape extends IDisposable {
 		treeViewId: string,
 		options: {
 			showCollapseAll: boolean;
+
 			canSelectMany: boolean;
+
 			dropMimeTypes: readonly string[];
+
 			dragMimeTypes: readonly string[];
+
 			hasHandleDrag: boolean;
+
 			hasHandleDrop: boolean;
+
 			manuallyManageCheckboxes: boolean;
 		},
 	): Promise<void>;
@@ -618,45 +670,67 @@ export interface MainThreadConsoleShape extends IDisposable {
 
 export interface IRegExpDto {
 	pattern: string;
+
 	flags?: string;
 }
 export interface IIndentationRuleDto {
 	decreaseIndentPattern: IRegExpDto;
+
 	increaseIndentPattern: IRegExpDto;
+
 	indentNextLinePattern?: IRegExpDto;
+
 	unIndentedLinePattern?: IRegExpDto;
 }
 export interface IOnEnterRuleDto {
 	beforeText: IRegExpDto;
+
 	afterText?: IRegExpDto;
+
 	previousLineText?: IRegExpDto;
+
 	action: EnterAction;
 }
 export interface ILanguageConfigurationDto {
 	comments?: CommentRule;
+
 	brackets?: CharacterPair[];
+
 	wordPattern?: IRegExpDto;
+
 	indentationRules?: IIndentationRuleDto;
+
 	onEnterRules?: IOnEnterRuleDto[];
+
 	__electricCharacterSupport?: {
 		brackets?: any;
+
 		docComment?: {
 			scope: string;
+
 			open: string;
+
 			lineStart: string;
+
 			close?: string;
 		};
 	};
+
 	__characterPairSupport?: {
 		autoClosingPairs: {
 			open: string;
+
 			close: string;
+
 			notIn?: string[];
 		}[];
 	};
+
 	autoClosingPairs?: {
 		open: string;
+
 		close: string;
+
 		notIn?: string[];
 	}[];
 }
@@ -669,43 +743,57 @@ export interface IRelativePatternDto extends IRelativePattern {
 
 export interface IDocumentFilterDto {
 	$serialized: true;
+
 	language?: string;
+
 	scheme?: string;
+
 	pattern?: string | IRelativePattern;
+
 	exclusive?: boolean;
+
 	notebookType?: string;
+
 	isBuiltin?: boolean;
 }
 
 export interface IShareableItemDto {
 	resourceUri: UriComponents;
+
 	selection?: IRange;
 }
 
 export interface IDocumentContextItemDto {
 	readonly uri: UriComponents;
+
 	readonly version: number;
+
 	readonly ranges: IRange[];
 }
 
 export interface IConversationItemDto {
 	readonly type: "request" | "response";
+
 	readonly message: string;
+
 	readonly references?: IDocumentContextItemDto[];
 }
 
 export interface IMappedEditsContextDto {
 	documents: IDocumentContextItemDto[][];
+
 	conversation?: IConversationItemDto[];
 }
 
 export interface ICodeBlockDto {
 	code: string;
+
 	resource: UriComponents;
 }
 
 export interface IMappedEditsRequestDto {
 	readonly codeBlocks: ICodeBlockDto[];
+
 	readonly conversation?: IConversationItemDto[];
 }
 
@@ -715,6 +803,7 @@ export interface IMappedEditsResultDto {
 
 export interface ISignatureHelpProviderMetadataDto {
 	readonly triggerCharacters: readonly string[];
+
 	readonly retriggerCharacters: readonly string[];
 }
 
@@ -947,8 +1036,11 @@ export interface MainThreadLanguagesShape extends IDisposable {
 
 export interface MainThreadMessageOptions {
 	source?: { identifier: ExtensionIdentifier; label: string };
+
 	modal?: boolean;
+
 	detail?: string;
+
 	useCustom?: boolean;
 }
 
@@ -959,7 +1051,9 @@ export interface MainThreadMessageServiceShape extends IDisposable {
 		options: MainThreadMessageOptions,
 		commands: {
 			title: string;
+
 			isCloseAffordance: boolean;
+
 			handle: number;
 		}[],
 	): Promise<number | undefined>;
@@ -1004,26 +1098,43 @@ export type ExtHostTerminalIdentifier = number | string;
 
 export interface TerminalLaunchConfig {
 	name?: string;
+
 	shellPath?: string;
+
 	shellArgs?: string[] | string;
+
 	cwd?: string | UriComponents;
+
 	env?: ITerminalEnvironment;
+
 	icon?: URI | { light: URI; dark: URI } | ThemeIcon;
+
 	color?: string;
+
 	initialText?: string;
+
 	waitOnExit?: boolean;
+
 	strictEnv?: boolean;
+
 	hideFromUser?: boolean;
+
 	isExtensionCustomPtyTerminal?: boolean;
+
 	forceShellIntegration?: boolean;
+
 	isFeatureTerminal?: boolean;
+
 	isExtensionOwnedTerminal?: boolean;
+
 	useShellEnvironment?: boolean;
+
 	location?:
 		| TerminalLocation
 		| { viewColumn: number; preserveFocus?: boolean }
 		| { parentTerminal: ExtHostTerminalIdentifier }
 		| { splitActiveTerminal: boolean };
+
 	isTransient?: boolean;
 }
 
@@ -1094,13 +1205,21 @@ export interface TransferQuickPickItem {
 
 	// shared properties from IQuickPickItem
 	type?: "item";
+
 	label: string;
+
 	iconPath?: { light?: URI; dark: URI };
+
 	iconClass?: string;
+
 	description?: string;
+
 	detail?: string;
+
 	picked?: boolean;
+
 	alwaysShow?: boolean;
+
 	buttons?: TransferQuickInputButton[];
 }
 
@@ -1172,11 +1291,17 @@ export interface TransferInputBox extends BaseTransferQuickInput {
 
 export interface IInputBoxOptions {
 	title?: string;
+
 	value?: string;
+
 	valueSelection?: Readonly<[number, number]>;
+
 	prompt?: string;
+
 	placeHolder?: string;
+
 	password?: boolean;
+
 	ignoreFocusOut?: boolean;
 }
 
@@ -1220,12 +1345,19 @@ export interface MainThreadStatusBarShape extends IDisposable {
 
 export type StatusBarItemDto = {
 	entryId: string;
+
 	alignLeft: boolean;
+
 	priority?: number;
+
 	name: string;
+
 	text: string;
+
 	tooltip?: string;
+
 	command?: string;
+
 	accessibilityInformation?: IAccessibilityInformation;
 };
 
@@ -1313,50 +1445,67 @@ export interface UnknownInputDto {
 
 export interface TextInputDto {
 	kind: TabInputKind.TextInput;
+
 	uri: UriComponents;
 }
 
 export interface TextDiffInputDto {
 	kind: TabInputKind.TextDiffInput;
+
 	original: UriComponents;
+
 	modified: UriComponents;
 }
 
 export interface TextMergeInputDto {
 	kind: TabInputKind.TextMergeInput;
+
 	base: UriComponents;
+
 	input1: UriComponents;
+
 	input2: UriComponents;
+
 	result: UriComponents;
 }
 
 export interface NotebookInputDto {
 	kind: TabInputKind.NotebookInput;
+
 	notebookType: string;
+
 	uri: UriComponents;
 }
 
 export interface NotebookDiffInputDto {
 	kind: TabInputKind.NotebookDiffInput;
+
 	notebookType: string;
+
 	original: UriComponents;
+
 	modified: UriComponents;
 }
 
 export interface CustomInputDto {
 	kind: TabInputKind.CustomEditorInput;
+
 	viewType: string;
+
 	uri: UriComponents;
 }
 
 export interface WebviewInputDto {
 	kind: TabInputKind.WebviewEditorInput;
+
 	viewType: string;
 }
 
 export interface InteractiveEditorInputDto {
 	kind: TabInputKind.InteractiveEditorInput;
+
 	uri: UriComponents;
+
 	inputBoxUri: UriComponents;
 }
 
@@ -1366,6 +1515,7 @@ export interface ChatEditorInputDto {
 
 export interface MultiDiffEditorInputDto {
 	kind: TabInputKind.MultiDiffEditorInput;
+
 	diffEditors: TextDiffInputDto[];
 }
 
@@ -1401,10 +1551,12 @@ export interface MainThreadEditorTabsShape extends IDisposable {
 
 export interface IEditorTabGroupDto {
 	isActive: boolean;
+
 	viewColumn: EditorGroupColumn;
 	// Decided not to go with simple index here due to opening and closing causing index shifts
 	// This allows us to patch the model without having to do full rebuilds
 	tabs: IEditorTabDto[];
+
 	groupId: number;
 }
 
@@ -1416,19 +1568,29 @@ export interface TabOperation {
 		| TabModelOperationKind.TAB_MOVE;
 	// TODO @lramos15 Possibly get rid of index for tab update, it's only needed for open and close
 	readonly index: number;
+
 	readonly tabDto: IEditorTabDto;
+
 	readonly groupId: number;
+
 	readonly oldIndex?: number;
 }
 
 export interface IEditorTabDto {
 	id: string;
+
 	label: string;
+
 	input: AnyInputDto;
+
 	editorId?: string;
+
 	isActive: boolean;
+
 	isPinned: boolean;
+
 	isPreview: boolean;
+
 	isDirty: boolean;
 }
 
@@ -1447,11 +1609,13 @@ export type WebviewHandle = string;
 
 export interface WebviewPanelShowOptions {
 	readonly viewColumn?: EditorGroupColumn;
+
 	readonly preserveFocus?: boolean;
 }
 
 export interface WebviewExtensionDescription {
 	readonly id: ExtensionIdentifier;
+
 	readonly location: UriComponents;
 }
 
@@ -1462,19 +1626,25 @@ export enum WebviewEditorCapabilities {
 
 export interface IWebviewPortMapping {
 	readonly webviewPort: number;
+
 	readonly extensionHostPort: number;
 }
 
 export interface IWebviewContentOptions {
 	readonly enableScripts?: boolean;
+
 	readonly enableForms?: boolean;
+
 	readonly enableCommandUris?: boolean | readonly string[];
+
 	readonly localResourceRoots?: readonly UriComponents[];
+
 	readonly portMapping?: readonly IWebviewPortMapping[];
 }
 
 export interface IWebviewPanelOptions {
 	readonly enableFindWidget?: boolean;
+
 	readonly retainContextWhenHidden?: boolean;
 }
 
@@ -1506,7 +1676,9 @@ export interface WebviewMessageArrayBufferReference {
 	 */
 	readonly view?: {
 		readonly type: WebviewMessageArrayBufferViewType;
+
 		readonly byteLength: number;
+
 		readonly byteOffset: number;
 	};
 }
@@ -1523,13 +1695,17 @@ export interface MainThreadWebviewsShape extends IDisposable {
 
 export interface IWebviewIconPath {
 	readonly light: UriComponents;
+
 	readonly dark: UriComponents;
 }
 
 export interface IWebviewInitData {
 	readonly title: string;
+
 	readonly webviewOptions: IWebviewContentOptions;
+
 	readonly panelOptions: IWebviewPanelOptions;
+
 	readonly serializeBuffersForPostMessage: boolean;
 }
 
@@ -1588,6 +1764,7 @@ export interface MainThreadWebviewViewsShape extends IDisposable {
 		viewType: string,
 		options: {
 			retainContextWhenHidden?: boolean;
+
 			serializeBuffersForPostMessage: boolean;
 		},
 	): void;
@@ -1612,7 +1789,9 @@ export interface MainThreadWebviewViewsShape extends IDisposable {
 export interface WebviewPanelViewStateData {
 	[handle: string]: {
 		readonly active: boolean;
+
 		readonly visible: boolean;
+
 		readonly position: EditorGroupColumn;
 	};
 }
@@ -1636,9 +1815,13 @@ export interface ExtHostWebviewPanelsShape {
 		viewType: string,
 		initData: {
 			title: string;
+
 			state: any;
+
 			webviewOptions: IWebviewContentOptions;
+
 			panelOptions: IWebviewPanelOptions;
+
 			active: boolean;
 		},
 		position: EditorGroupColumn,
@@ -1652,8 +1835,11 @@ export interface ExtHostCustomEditorsShape {
 		viewType: string,
 		initData: {
 			title: string;
+
 			contentOptions: IWebviewContentOptions;
+
 			options: IWebviewPanelOptions;
+
 			active: boolean;
 		},
 		position: EditorGroupColumn,
@@ -1766,9 +1952,13 @@ export enum NotebookEditorRevealType {
 
 export interface INotebookDocumentShowOptions {
 	position?: EditorGroupColumn;
+
 	preserveFocus?: boolean;
+
 	pinned?: boolean;
+
 	selections?: ICellRange[];
+
 	label?: string;
 }
 
@@ -1777,6 +1967,7 @@ export type INotebookCellStatusBarEntryDto =
 
 export interface INotebookCellStatusBarListDto {
 	items: INotebookCellStatusBarEntryDto[];
+
 	cacheId: number;
 }
 
@@ -1819,6 +2010,7 @@ export interface MainThreadNotebookEditorsShape extends IDisposable {
 export interface MainThreadNotebookDocumentsShape extends IDisposable {
 	$tryCreateNotebook(options: {
 		viewType: string;
+
 		content?: NotebookDataDto;
 	}): Promise<UriComponents>;
 	$tryOpenNotebook(uriComponents: UriComponents): Promise<UriComponents>;
@@ -1827,41 +2019,65 @@ export interface MainThreadNotebookDocumentsShape extends IDisposable {
 
 export interface INotebookKernelDto2 {
 	id: string;
+
 	notebookType: string;
+
 	extensionId: ExtensionIdentifier;
+
 	extensionLocation: UriComponents;
+
 	label: string;
+
 	detail?: string;
+
 	description?: string;
+
 	supportedLanguages?: string[];
+
 	supportsInterrupt?: boolean;
+
 	supportsExecutionOrder?: boolean;
+
 	preloads?: { uri: UriComponents; provides: readonly string[] }[];
+
 	hasVariableProvider?: boolean;
 }
 
 export interface INotebookProxyKernelDto {
 	id: string;
+
 	notebookType: string;
+
 	extensionId: ExtensionIdentifier;
+
 	extensionLocation: UriComponents;
+
 	label: string;
+
 	detail?: string;
+
 	description?: string;
+
 	kind?: string;
 }
 
 export interface ICellExecuteOutputEditDto {
 	editType: CellExecutionUpdateType.Output;
+
 	cellHandle: number;
+
 	append?: boolean;
+
 	outputs: NotebookOutputDto[];
 }
 
 export interface ICellExecuteOutputItemEditDto {
 	editType: CellExecutionUpdateType.OutputItems;
+
 	append?: boolean;
+
 	outputId: string;
+
 	items: NotebookOutputItemDto[];
 }
 
@@ -1877,13 +2093,21 @@ export type ICellExecuteUpdateDto =
 
 export interface VariablesResult {
 	id: number;
+
 	name: string;
+
 	value: string;
+
 	type?: string;
+
 	language?: string;
+
 	expression?: string;
+
 	hasNamedChildren: boolean;
+
 	indexedChildrenCount: number;
+
 	extensionId: string;
 }
 
@@ -2042,7 +2266,9 @@ export interface ExtHostLanguageModelsShape {
 	$updateModelAccesslist(
 		data: {
 			from: ExtensionIdentifier;
+
 			to: ExtensionIdentifier;
+
 			enabled: boolean;
 		}[],
 	): void;
@@ -2099,8 +2325,11 @@ export interface IExtensionChatAgentMetadata extends Dto<IChatAgentMetadata> {
 
 export interface IDynamicChatAgentProps {
 	name: string;
+
 	publisherName: string;
+
 	description?: string;
+
 	fullName?: string;
 }
 
@@ -2146,6 +2375,7 @@ export interface MainThreadChatAgentsShape2 extends IDisposable {
 
 export interface ICodeMapperTextEdit {
 	uri: URI;
+
 	edits: languages.TextEdit[];
 }
 
@@ -2162,13 +2392,21 @@ export interface MainThreadCodeMapperShape extends IDisposable {
 
 export interface IChatAgentCompletionItem {
 	id: string;
+
 	fullName?: string;
+
 	icon?: string;
+
 	insertText?: string;
+
 	label: string | languages.CompletionItemLabel;
+
 	value: IChatRequestVariableValueDto;
+
 	detail?: string;
+
 	documentation?: string | IMarkdownString;
+
 	command?: ICommandDto;
 }
 
@@ -2178,7 +2416,9 @@ export type IChatContentProgressDto =
 
 export type IChatAgentHistoryEntryDto = {
 	request: IChatAgentRequest;
+
 	response: ReadonlyArray<IChatContentProgressDto>;
+
 	result: IChatAgentResult;
 };
 
@@ -2232,6 +2472,7 @@ export interface ExtHostChatAgentsShape2 {
 		context: { history: IChatAgentHistoryEntryDto[] },
 		options: {
 			participants: IChatParticipantMetadata[];
+
 			location: ChatAgentLocation;
 		},
 		token: CancellationToken,
@@ -2244,16 +2485,21 @@ export interface ExtHostChatAgentsShape2 {
 }
 export interface IChatParticipantMetadata {
 	participant: string;
+
 	command?: string;
+
 	disambiguation: {
 		category: string;
+
 		description: string;
+
 		examples: string[];
 	}[];
 }
 
 export interface IChatParticipantDetectionResult {
 	participant: string;
+
 	command?: string;
 }
 
@@ -2330,26 +2576,33 @@ export interface IChatDto {}
 
 export interface IChatRequestDto {
 	message: string;
+
 	variables?: Record<string, IChatRequestVariableValue[]>;
 }
 
 export interface IChatResponseDto {
 	errorDetails?: IChatResponseErrorDetails;
+
 	timings: {
 		firstProgress: number;
+
 		totalElapsed: number;
 	};
 }
 
 export interface IChatResponseProgressFileTreeData {
 	label: string;
+
 	uri: URI;
+
 	children?: IChatResponseProgressFileTreeData[];
 }
 
 export type IDocumentContextDto = {
 	uri: UriComponents;
+
 	version: number;
+
 	ranges: IRange[];
 };
 
@@ -2410,6 +2663,7 @@ export interface ExtHostProfileContentHandlersShape {
 
 export interface ITextSearchComplete {
 	limitHit?: boolean;
+
 	message?: TextSearchCompleteMessage | TextSearchCompleteMessage[];
 }
 
@@ -2457,6 +2711,7 @@ export interface MainThreadWorkspaceShape extends IDisposable {
 
 export interface IFileChangeDto {
 	resource: UriComponents;
+
 	type: files.FileChangeType;
 }
 
@@ -2593,18 +2848,27 @@ export interface MainThreadExtensionServiceShape extends IDisposable {
 
 export interface SCMProviderFeatures {
 	hasHistoryProvider?: boolean;
+
 	hasQuickDiffProvider?: boolean;
+
 	quickDiffLabel?: string;
+
 	count?: number;
+
 	commitTemplate?: string;
+
 	acceptInputCommand?: languages.Command;
+
 	actionButton?: SCMActionButtonDto;
+
 	statusBarCommands?: ICommandDto[];
 }
 
 export interface SCMActionButtonDto {
 	command: ICommandDto & { shortTitle?: string };
+
 	secondaryCommands?: ICommandDto[][];
+
 	enabled: boolean;
 }
 
@@ -2638,10 +2902,15 @@ export type SCMRawResourceSplices = [number /*handle*/, SCMRawResourceSplice[]];
 
 export interface SCMHistoryItemRefDto {
 	readonly id: string;
+
 	readonly name: string;
+
 	readonly revision?: string;
+
 	readonly category?: string;
+
 	readonly description?: string;
+
 	readonly icon?:
 		| UriComponents
 		| { light: UriComponents; dark: UriComponents }
@@ -2650,30 +2919,45 @@ export interface SCMHistoryItemRefDto {
 
 export interface SCMHistoryItemRefsChangeEventDto {
 	readonly added: readonly SCMHistoryItemRefDto[];
+
 	readonly modified: readonly SCMHistoryItemRefDto[];
+
 	readonly removed: readonly SCMHistoryItemRefDto[];
+
 	readonly silent: boolean;
 }
 
 export interface SCMHistoryItemDto {
 	readonly id: string;
+
 	readonly parentIds: string[];
+
 	readonly message: string;
+
 	readonly displayId?: string;
+
 	readonly author?: string;
+
 	readonly timestamp?: number;
+
 	readonly statistics?: {
 		readonly files: number;
+
 		readonly insertions: number;
+
 		readonly deletions: number;
 	};
+
 	readonly references?: SCMHistoryItemRefDto[];
 }
 
 export interface SCMHistoryItemChangeDto {
 	readonly uri: UriComponents;
+
 	readonly originalUri: UriComponents | undefined;
+
 	readonly modifiedUri: UriComponents | undefined;
+
 	readonly renameUri: UriComponents | undefined;
 }
 
@@ -2775,21 +3059,32 @@ export type DebugSessionUUID = string;
 
 export interface IDebugConfiguration {
 	type: string;
+
 	name: string;
+
 	request: string;
 	[key: string]: any;
 }
 
 export interface IStartDebuggingOptions {
 	parentSessionID?: DebugSessionUUID;
+
 	lifecycleManagedByParent?: boolean;
+
 	repl?: IDebugSessionReplMode;
+
 	noDebug?: boolean;
+
 	compact?: boolean;
+
 	suppressDebugToolbar?: boolean;
+
 	suppressDebugStatusbar?: boolean;
+
 	suppressDebugView?: boolean;
+
 	suppressSaveBeforeStart?: boolean;
+
 	testRun?: IDebugTestRunReference;
 }
 
@@ -2862,6 +3157,7 @@ export interface MainThreadDebugServiceShape extends IDisposable {
 
 export interface IOpenUriOptions {
 	readonly allowTunneling?: boolean;
+
 	readonly allowContributedOpeners?: boolean | string;
 }
 
@@ -2887,6 +3183,7 @@ export enum CandidatePortSource {
 
 export interface PortAttributesSelector {
 	portRange?: [number, number] | number;
+
 	commandPattern?: RegExp;
 }
 
@@ -2936,11 +3233,15 @@ export interface ICommandMetadataDto {
 	 * - when searching for commands in the Command Palette
 	 */
 	readonly description: ILocalizedString | string;
+
 	readonly args?: ReadonlyArray<{
 		readonly name: string;
+
 		readonly isOptional?: boolean;
+
 		readonly description?: string;
 	}>;
+
 	readonly returns?: string;
 }
 
@@ -2984,10 +3285,15 @@ export interface ExtHostDocumentContentProvidersShape {
 
 export interface IModelAddedData {
 	uri: UriComponents;
+
 	versionId: number;
+
 	lines: string[];
+
 	EOL: string;
+
 	languageId: string;
+
 	isDirty: boolean;
 }
 export interface ExtHostDocumentsShape {
@@ -3013,10 +3319,15 @@ export interface ExtHostDocumentSaveParticipantShape {
 
 export interface ITextEditorAddData {
 	id: string;
+
 	documentUri: UriComponents;
+
 	options: IResolvedTextEditorConfiguration;
+
 	selections: ISelection[];
+
 	visibleRanges: IRange[];
+
 	editorPosition: EditorGroupColumn | undefined;
 }
 export interface ITextEditorPositionData {
@@ -3032,18 +3343,24 @@ export type ITextEditorChange = [
 
 export interface ITextEditorDiffInformation {
 	readonly documentVersion: number;
+
 	readonly original: UriComponents | undefined;
+
 	readonly modified: UriComponents;
+
 	readonly changes: readonly ITextEditorChange[];
 }
 
 export interface IEditorPropertiesChangeData {
 	options: IResolvedTextEditorConfiguration | null;
+
 	selections: ISelectionChangeEvent | null;
+
 	visibleRanges: IRange[] | null;
 }
 export interface ISelectionChangeEvent {
 	selections: Selection[];
+
 	source?: string;
 }
 
@@ -3061,9 +3378,13 @@ export interface ExtHostEditorsShape {
 
 export interface IDocumentsAndEditorsDelta {
 	removedDocuments?: UriComponents[];
+
 	addedDocuments?: IModelAddedData[];
+
 	removedEditors?: string[];
+
 	addedEditors?: ITextEditorAddData[];
+
 	newActiveEditor?: string | null;
 }
 
@@ -3073,13 +3394,17 @@ export interface ExtHostDocumentsAndEditorsShape {
 
 export interface IDataTransferFileDTO {
 	readonly id: string;
+
 	readonly name: string;
+
 	readonly uri?: UriComponents;
 }
 
 export interface DataTransferItemDTO {
 	readonly asString: string;
+
 	readonly fileData: IDataTransferFileDTO | undefined;
+
 	readonly uriListData?: ReadonlyArray<string | UriComponents>;
 }
 
@@ -3089,6 +3414,7 @@ export interface DataTransferDTO {
 
 export interface CheckboxUpdate {
 	treeItemHandle: string;
+
 	newState: boolean;
 }
 
@@ -3302,6 +3628,7 @@ export interface MainThreadAiEmbeddingVectorShape {
 export interface ExtHostSecretStateShape {
 	$onDidChangePassword(e: {
 		extensionId: string;
+
 		key: string;
 	}): Promise<void>;
 }
@@ -3370,18 +3697,23 @@ export interface ExtHostExtensionServiceShape {
 
 export interface FileSystemEvents {
 	session?: number;
+
 	created: UriComponents[];
+
 	changed: UriComponents[];
+
 	deleted: UriComponents[];
 }
 
 export interface SourceTargetPair {
 	source?: UriComponents;
+
 	target: UriComponents;
 }
 
 export interface IWillRunFileOperationParticipation {
 	edit: IWorkspaceEditDto;
+
 	extensionNames: string[];
 }
 
@@ -3408,14 +3740,18 @@ export interface ExtHostHeapServiceShape {
 }
 export interface IRawColorInfo {
 	color: [number, number, number, number];
+
 	range: IRange;
 }
 
 export class IdObject {
 	_id?: number;
+
 	private static _n = 0;
+
 	static mixin<T extends object>(object: T): T & IdObject {
 		(<any>object)._id = IdObject._n++;
+
 		return <any>object;
 	}
 }
@@ -3473,20 +3809,27 @@ export interface ISuggestResultDto {
 	[ISuggestResultDtoField.completions]: ISuggestDataDto[];
 	[ISuggestResultDtoField.isIncomplete]: undefined | true;
 	[ISuggestResultDtoField.duration]: number;
+
 	x?: number;
 }
 
 export interface ISignatureHelpDto {
 	id: CacheId;
+
 	signatures: languages.SignatureInformation[];
+
 	activeSignature: number;
+
 	activeParameter: number;
 }
 
 export interface ISignatureHelpContextDto {
 	readonly triggerKind: languages.SignatureHelpTriggerKind;
+
 	readonly triggerCharacter: string | undefined;
+
 	readonly isRetrigger: boolean;
+
 	readonly activeSignatureHelp: ISignatureHelpDto | undefined;
 }
 
@@ -3506,8 +3849,11 @@ export type IWorkspaceSymbolsDto = CachedSession<{
 
 export interface IWorkspaceEditEntryMetadataDto {
 	needsConfirmation: boolean;
+
 	label: string;
+
 	description?: string;
+
 	iconPath?:
 		| { id: string }
 		| UriComponents
@@ -3519,8 +3865,11 @@ export type ICellEditOperationDto =
 	| notebookCommon.IDocumentMetadataEdit
 	| {
 			editType: notebookCommon.CellEditType.Replace;
+
 			index: number;
+
 			count: number;
+
 			cells: NotebookCellDataDto[];
 	  };
 
@@ -3550,26 +3899,38 @@ export type ICommandDto = { $ident?: string } & languages.Command;
 
 export interface ICodeActionDto {
 	cacheId?: ChainedCacheId;
+
 	title: string;
+
 	edit?: IWorkspaceEditDto;
+
 	diagnostics?: Dto<IMarkerData[]>;
+
 	command?: ICommandDto;
+
 	kind?: string;
+
 	isPreferred?: boolean;
+
 	isAI?: boolean;
+
 	disabled?: string;
+
 	ranges?: IRange[];
 }
 
 export interface ICodeActionListDto {
 	cacheId: CacheId;
+
 	actions: ReadonlyArray<ICodeActionDto>;
 }
 
 export interface ICodeActionProviderMetadataDto {
 	readonly providedKinds?: readonly string[];
+
 	readonly documentation?: ReadonlyArray<{
 		readonly kind: string;
+
 		readonly command: ICommandDto;
 	}>;
 }
@@ -3593,27 +3954,33 @@ export type ICallHierarchyItemDto = Dto<CallHierarchyItem>;
 
 export interface IIncomingCallDto {
 	from: ICallHierarchyItemDto;
+
 	fromRanges: IRange[];
 }
 
 export interface IOutgoingCallDto {
 	fromRanges: IRange[];
+
 	to: ICallHierarchyItemDto;
 }
 
 export interface ILanguageWordDefinitionDto {
 	languageId: string;
+
 	regexSource: string;
+
 	regexFlags: string;
 }
 
 export interface ILinkedEditingRangesDto {
 	ranges: IRange[];
+
 	wordPattern?: IRegExpDto;
 }
 
 export interface IInlineValueContextDto {
 	frameId: number;
+
 	stoppedLocation: IRange;
 }
 
@@ -3621,25 +3988,35 @@ export type ITypeHierarchyItemDto = Dto<TypeHierarchyItem>;
 
 export interface IPasteEditProviderMetadataDto {
 	readonly supportsCopy: boolean;
+
 	readonly supportsPaste: boolean;
+
 	readonly supportsResolve: boolean;
 
 	readonly providedPasteEditKinds?: readonly string[];
+
 	readonly copyMimeTypes?: readonly string[];
+
 	readonly pasteMimeTypes?: readonly string[];
 }
 
 export interface IDocumentPasteContextDto {
 	readonly only: string | undefined;
+
 	readonly triggerKind: languages.DocumentPasteTriggerKind;
 }
 
 export interface IPasteEditDto {
 	_cacheId?: ChainedCacheId;
+
 	title: string;
+
 	kind: { value: string } | undefined;
+
 	insertText: string | { snippet: string };
+
 	additionalEdit?: IWorkspaceEditDto;
+
 	yieldTo?: readonly string[];
 }
 
@@ -3647,15 +4024,21 @@ export interface IDocumentDropEditProviderMetadata {
 	readonly supportsResolve: boolean;
 
 	readonly dropMimeTypes: readonly string[];
+
 	readonly providedDropKinds?: readonly string[];
 }
 
 export interface IDocumentDropEditDto {
 	_cacheId?: ChainedCacheId;
+
 	title: string;
+
 	kind: string | undefined;
+
 	insertText: string | { snippet: string };
+
 	additionalEdit?: IWorkspaceEditDto;
+
 	yieldTo?: readonly string[];
 }
 
@@ -4061,6 +4444,7 @@ export interface ITerminalLinkDto {
 
 export interface ITerminalDimensionsDto {
 	columns: number;
+
 	rows: number;
 }
 
@@ -4068,6 +4452,7 @@ type SingleOrMany<T> = T[] | T;
 
 export interface ITerminalQuickFixTerminalCommandDto {
 	terminalCommand: string;
+
 	shouldExecute?: boolean;
 }
 
@@ -4082,22 +4467,29 @@ export type TerminalQuickFix =
 
 export interface TerminalCommandMatchResultDto {
 	commandLine: string;
+
 	commandLineMatch: RegExpMatchArray;
+
 	outputMatch?: {
 		regexMatch: RegExpMatchArray;
+
 		outputLines: string[];
 	};
 }
 
 export interface ITerminalCommandDto {
 	commandLine: string | undefined;
+
 	cwd: URI | string | undefined;
+
 	exitCode: number | undefined;
+
 	output: string | undefined;
 }
 
 export interface ITerminalCompletionContextDto {
 	commandLine: string;
+
 	cursorPosition: number;
 }
 
@@ -4264,6 +4656,7 @@ export interface ExtHostTaskShape {
 		workspaceFolder: UriComponents,
 		toResolve: {
 			process?: { name: string; cwd?: string };
+
 			variables: string[];
 		},
 	): Promise<{ process?: string; variables: { [key: string]: string } }>;
@@ -4277,34 +4670,51 @@ export interface ExtHostTaskShape {
 
 export interface IBreakpointDto {
 	type: string;
+
 	id?: string;
+
 	enabled: boolean;
+
 	condition?: string;
+
 	hitCondition?: string;
+
 	logMessage?: string;
+
 	mode?: string;
 }
 
 export interface IFunctionBreakpointDto extends IBreakpointDto {
 	type: "function";
+
 	functionName: string;
+
 	mode?: string;
 }
 
 export interface IDataBreakpointDto extends IBreakpointDto {
 	type: "data";
+
 	dataId: string;
+
 	canPersist: boolean;
+
 	label: string;
+
 	accessTypes?: DebugProtocol.DataBreakpointAccessType[];
+
 	accessType: DebugProtocol.DataBreakpointAccessType;
+
 	mode?: string;
 }
 
 export interface ISourceBreakpointDto extends IBreakpointDto {
 	type: "source";
+
 	uri: UriComponents;
+
 	line: number;
+
 	character: number;
 }
 
@@ -4312,7 +4722,9 @@ export interface IBreakpointsDeltaDto {
 	added?: Array<
 		ISourceBreakpointDto | IFunctionBreakpointDto | IDataBreakpointDto
 	>;
+
 	removed?: string[];
+
 	changed?: Array<
 		ISourceBreakpointDto | IFunctionBreakpointDto | IDataBreakpointDto
 	>;
@@ -4320,25 +4732,39 @@ export interface IBreakpointsDeltaDto {
 
 export interface ISourceMultiBreakpointDto {
 	type: "sourceMulti";
+
 	uri: UriComponents;
+
 	lines: {
 		id: string;
+
 		enabled: boolean;
+
 		condition?: string;
+
 		hitCondition?: string;
+
 		logMessage?: string;
+
 		line: number;
+
 		character: number;
+
 		mode?: string;
 	}[];
 }
 
 export interface IDebugSessionFullDto {
 	id: DebugSessionUUID;
+
 	type: string;
+
 	name: string;
+
 	parent: DebugSessionUUID | undefined;
+
 	folderUri: UriComponents | undefined;
+
 	configuration: IConfig;
 }
 
@@ -4346,14 +4772,19 @@ export type IDebugSessionDto = IDebugSessionFullDto | DebugSessionUUID;
 
 export interface IThreadFocusDto {
 	kind: "thread";
+
 	sessionId: string;
+
 	threadId: number;
 }
 
 export interface IStackFrameFocusDto {
 	kind: "stackFrame";
+
 	sessionId: string;
+
 	threadId: number;
+
 	frameId: number;
 }
 
@@ -4436,6 +4867,7 @@ export interface ExtHostDebugServiceShape {
 
 export interface DecorationRequest {
 	readonly id: number;
+
 	readonly uri: UriComponents;
 }
 
@@ -4529,6 +4961,7 @@ export interface INotebookVisibleRangesEvent {
 
 export interface INotebookEditorPropertiesChangeData {
 	visibleRanges?: INotebookVisibleRangesEvent;
+
 	selections?: INotebookSelectionChangeEvent;
 }
 
@@ -4538,66 +4971,99 @@ export interface INotebookDocumentPropertiesChangeData {
 
 export interface INotebookModelAddedData {
 	uri: UriComponents;
+
 	versionId: number;
+
 	cells: NotebookCellDto[];
+
 	viewType: string;
+
 	metadata?: notebookCommon.NotebookDocumentMetadata;
 }
 
 export interface INotebookEditorAddData {
 	id: string;
+
 	documentUri: UriComponents;
+
 	selections: ICellRange[];
+
 	visibleRanges: ICellRange[];
+
 	viewColumn?: number;
+
 	viewType: string;
 }
 
 export interface INotebookDocumentsAndEditorsDelta {
 	removedDocuments?: UriComponents[];
+
 	addedDocuments?: INotebookModelAddedData[];
+
 	removedEditors?: string[];
+
 	addedEditors?: INotebookEditorAddData[];
+
 	newActiveEditor?: string | null;
+
 	visibleEditors?: string[];
 }
 
 export interface NotebookOutputItemDto {
 	readonly mime: string;
+
 	readonly valueBytes: VSBuffer;
 }
 
 export interface NotebookOutputDto {
 	items: NotebookOutputItemDto[];
+
 	outputId: string;
+
 	metadata?: Record<string, any>;
 }
 
 export interface NotebookCellDataDto {
 	source: string;
+
 	language: string;
+
 	mime: string | undefined;
+
 	cellKind: notebookCommon.CellKind;
+
 	outputs: NotebookOutputDto[];
+
 	metadata?: notebookCommon.NotebookCellMetadata;
+
 	internalMetadata?: notebookCommon.NotebookCellInternalMetadata;
 }
 
 export interface NotebookDataDto {
 	readonly cells: NotebookCellDataDto[];
+
 	readonly metadata: notebookCommon.NotebookDocumentMetadata;
 }
 
 export interface NotebookCellDto {
 	handle: number;
+
 	uri: UriComponents;
+
 	eol: string;
+
 	source: string[];
+
 	language: string;
+
 	mime?: string;
+
 	cellKind: notebookCommon.CellKind;
+
 	outputs: NotebookOutputDto[];
+
 	metadata?: notebookCommon.NotebookCellMetadata;
+
 	internalMetadata?: notebookCommon.NotebookCellInternalMetadata;
 }
 
@@ -4669,24 +5135,34 @@ export type NotebookRawContentEventDto =
 	// notebookCommon.NotebookCellsInitializeEvent<NotebookCellDto>
 	| {
 			readonly kind: notebookCommon.NotebookCellsChangeType.ModelChange;
+
 			readonly changes: notebookCommon.NotebookCellTextModelSplice<NotebookCellDto>[];
 	  }
 	| {
 			readonly kind: notebookCommon.NotebookCellsChangeType.Move;
+
 			readonly index: number;
+
 			readonly length: number;
+
 			readonly newIdx: number;
 	  }
 	| {
 			readonly kind: notebookCommon.NotebookCellsChangeType.Output;
+
 			readonly index: number;
+
 			readonly outputs: NotebookOutputDto[];
 	  }
 	| {
 			readonly kind: notebookCommon.NotebookCellsChangeType.OutputItem;
+
 			readonly index: number;
+
 			readonly outputId: string;
+
 			readonly outputItems: NotebookOutputItemDto[];
+
 			readonly append: boolean;
 	  }
 	| notebookCommon.NotebookCellsChangeLanguageEvent
@@ -4699,6 +5175,7 @@ export type NotebookRawContentEventDto =
 
 export type NotebookCellsChangedEventDto = {
 	readonly rawEvents: NotebookRawContentEventDto[];
+
 	readonly versionId: number;
 };
 
@@ -4800,9 +5277,13 @@ export interface MainThreadLocalizationShape extends IDisposable {
 
 export interface TunnelDto {
 	remoteAddress: { port: number; host: string };
+
 	localAddress: { port: number; host: string } | string;
+
 	public: boolean;
+
 	privacy: TunnelPrivacyId | string;
+
 	protocol: string | undefined;
 }
 
@@ -4908,8 +5389,11 @@ export interface ExtHostTestingShape {
 
 export interface ExtHostLocalizationShape {
 	getMessage(extensionId: string, details: IStringDetails): string;
+
 	getBundle(extensionId: string): { [key: string]: string } | undefined;
+
 	getBundleUri(extensionId: string): URI | undefined;
+
 	initializeLocalizedMessages(
 		extension: IExtensionDescription,
 	): Promise<void>;
@@ -4917,12 +5401,15 @@ export interface ExtHostLocalizationShape {
 
 export interface IStringDetails {
 	message: string;
+
 	args?: Record<string | number, any>;
+
 	comment?: string | string[];
 }
 
 export interface ITestControllerPatch {
 	label?: string;
+
 	capabilities?: TestControllerCapability;
 }
 

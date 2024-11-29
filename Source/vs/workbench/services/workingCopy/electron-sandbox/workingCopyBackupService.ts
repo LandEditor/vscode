@@ -40,8 +40,10 @@ export class NativeWorkingCopyBackupService extends WorkingCopyBackupService {
 			fileService,
 			logService,
 		);
+
 		this.registerListeners();
 	}
+
 	private registerListeners(): void {
 		// Lifecycle: ensure to prolong the shutdown for as long
 		// as pending backup operations have not finished yet.

@@ -29,57 +29,83 @@ import { IHoverService } from "../../hover/browser/hover.js";
 
 export interface ILinkDescriptor {
 	readonly label: string | HTMLElement;
+
 	readonly href: string;
+
 	readonly title?: string;
+
 	readonly tabIndex?: number;
 }
 export interface ILinkOptions {
 	readonly opener?: (href: string) => void;
+
 	readonly hoverDelegate?: IHoverDelegate;
+
 	readonly textLinkForeground?: string;
 }
 export class Link extends Disposable {
 	private el: HTMLAnchorElement;
+
 	private hover?: IManagedHover;
+
 	private hoverDelegate: IHoverDelegate;
+
 	private _enabled: boolean = true;
 
 	get enabled(): boolean {
 		return this._enabled;
 	}
+
 	set enabled(enabled: boolean) {
 		if (enabled) {
 			this.el.setAttribute("aria-disabled", "false");
+
 			this.el.tabIndex = 0;
+
 			this.el.style.pointerEvents = "auto";
+
 			this.el.style.opacity = "1";
+
 			this.el.style.cursor = "pointer";
+
 			this._enabled = false;
 		} else {
 			this.el.setAttribute("aria-disabled", "true");
+
 			this.el.tabIndex = -1;
+
 			this.el.style.pointerEvents = "none";
+
 			this.el.style.opacity = "0.4";
+
 			this.el.style.cursor = "default";
+
 			this._enabled = true;
 		}
+
 		this._enabled = enabled;
 	}
+
 	set link(link: ILinkDescriptor) {
 		if (typeof link.label === "string") {
 			this.el.textContent = link.label;
 		} else {
 			clearNode(this.el);
+
 			this.el.appendChild(link.label);
 		}
+
 		this.el.href = link.href;
 
 		if (typeof link.tabIndex !== "undefined") {
 			this.el.tabIndex = link.tabIndex;
 		}
+
 		this.setTooltip(link.title);
+
 		this._link = link;
 	}
+
 	constructor(
 		container: HTMLElement,
 		private _link: ILinkDescriptor,
@@ -90,6 +116,7 @@ export class Link extends Disposable {
 		openerService: IOpenerService,
 	) {
 		super();
+
 		this.el = append(
 			container,
 			$(
@@ -101,9 +128,12 @@ export class Link extends Disposable {
 				_link.label,
 			),
 		);
+
 		this.hoverDelegate =
 			options.hoverDelegate ?? getDefaultHoverDelegate("mouse");
+
 		this.setTooltip(_link.title);
+
 		this.el.setAttribute("role", "button");
 
 		const onClickEmitter = this._register(new DomEmitter(this.el, "click"));
@@ -119,6 +149,7 @@ export class Link extends Disposable {
 		const onTap = this._register(
 			new DomEmitter(this.el, TouchEventType.Tap),
 		).event;
+
 		this._register(Gesture.addTarget(this.el));
 
 		const onOpen = Event.any<EventLike>(
@@ -126,11 +157,13 @@ export class Link extends Disposable {
 			onEnterPress,
 			onTap,
 		);
+
 		this._register(
 			onOpen((e) => {
 				if (!this.enabled) {
 					return;
 				}
+
 				EventHelper.stop(e, true);
 
 				if (options?.opener) {
@@ -142,8 +175,10 @@ export class Link extends Disposable {
 				}
 			}),
 		);
+
 		this.enabled = true;
 	}
+
 	private setTooltip(title: string | undefined): void {
 		if (this.hoverDelegate.showNativeHover) {
 			this.el.title = title ?? "";

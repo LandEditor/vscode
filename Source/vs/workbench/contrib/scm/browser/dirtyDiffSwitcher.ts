@@ -37,6 +37,7 @@ export class SwitchQuickDiffViewItem extends SelectActionViewItem<IQuickDiffSele
 		if (startingSelection === -1) {
 			startingSelection = 0;
 		}
+
 		const styles = { ...defaultSelectBoxStyles };
 
 		const theme = themeService.getColorTheme();
@@ -48,6 +49,7 @@ export class SwitchQuickDiffViewItem extends SelectActionViewItem<IQuickDiffSele
 		const opaqueTitleColor =
 			peekTitleColor?.makeOpaque(editorBackgroundColor!) ??
 			editorBackgroundColor!;
+
 		styles.selectBackground = opaqueTitleColor.lighten(0.6).toString();
 
 		super(
@@ -59,27 +61,34 @@ export class SwitchQuickDiffViewItem extends SelectActionViewItem<IQuickDiffSele
 			styles,
 			{ ariaLabel: nls.localize("remotes", "Switch quick diff base") },
 		);
+
 		this.optionsItems = items;
 	}
+
 	public setSelection(provider: string) {
 		const index = this.optionsItems.findIndex(
 			(item) => item.provider === provider,
 		);
+
 		this.select(index);
 	}
+
 	protected override getActionContext(
 		_: string,
 		index: number,
 	): IQuickDiffSelectItem {
 		return this.optionsItems[index];
 	}
+
 	override render(container: HTMLElement): void {
 		super.render(container);
+
 		this.setFocusable(true);
 	}
 }
 export class SwitchQuickDiffBaseAction extends Action {
 	public static readonly ID = "quickDiff.base.switch";
+
 	public static readonly LABEL = nls.localize(
 		"quickDiff.base.switch",
 		"Switch Quick Diff Base",
@@ -95,6 +104,7 @@ export class SwitchQuickDiffBaseAction extends Action {
 			undefined,
 		);
 	}
+
 	override async run(event?: IQuickDiffSelectItem): Promise<void> {
 		return this.callback(event);
 	}

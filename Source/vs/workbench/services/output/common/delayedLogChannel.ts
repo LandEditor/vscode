@@ -26,8 +26,10 @@ export class DelayedLogChannel {
 			hidden: true,
 		});
 	}
+
 	log(level: LogLevel, message: string): void {
 		this.loggerService.setVisibility(this.file, true);
+
 		log(this.logger, level, message);
 	}
 }

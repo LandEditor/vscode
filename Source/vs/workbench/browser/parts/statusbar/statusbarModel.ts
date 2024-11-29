@@ -22,27 +22,38 @@ import {
 
 export interface IStatusbarViewModelEntry {
 	readonly id: string;
+
 	readonly name: string;
+
 	readonly hasCommand: boolean;
+
 	readonly alignment: StatusbarAlignment;
+
 	readonly priority: IStatusbarEntryPriority;
+
 	readonly container: HTMLElement;
+
 	readonly labelContainer: HTMLElement;
 }
 export class StatusbarViewModel extends Disposable {
 	private static readonly HIDDEN_ENTRIES_KEY = "workbench.statusbar.hidden";
+
 	private readonly _onDidChangeEntryVisibility = this._register(
 		new Emitter<{
 			id: string;
+
 			visible: boolean;
 		}>(),
 	);
+
 	readonly onDidChangeEntryVisibility =
 		this._onDidChangeEntryVisibility.event;
+
 	private _entries: IStatusbarViewModelEntry[] = []; // Intentionally not using a map here since multiple entries can have the same ID
 	get entries(): IStatusbarViewModelEntry[] {
 		return this._entries.slice(0);
 	}
+
 	private _lastFocusedEntry: IStatusbarViewModelEntry | undefined;
 
 	get lastFocusedEntry(): IStatusbarViewModelEntry | undefined {
@@ -51,13 +62,17 @@ export class StatusbarViewModel extends Disposable {
 			? this._lastFocusedEntry
 			: undefined;
 	}
+
 	private hidden = new Set<string>();
 
 	constructor(private readonly storageService: IStorageService) {
 		super();
+
 		this.restoreState();
+
 		this.registerListeners();
 	}
+
 	private restoreState(): void {
 		const hiddenRaw = this.storageService.get(
 			StatusbarViewModel.HIDDEN_ENTRIES_KEY,
@@ -72,6 +87,7 @@ export class StatusbarViewModel extends Disposable {
 			}
 		}
 	}
+
 	private registerListeners(): void {
 		this._register(
 			this.storageService.onDidChangeValue(
@@ -81,11 +97,13 @@ export class StatusbarViewModel extends Disposable {
 			)(() => this.onDidStorageValueChange()),
 		);
 	}
+
 	private onDidStorageValueChange(): void {
 		// Keep current hidden entries
 		const currentlyHidden = new Set(this.hidden);
 		// Load latest state of hidden entries
 		this.hidden.clear();
+
 		this.restoreState();
 
 		const changed = new Set<string>();
@@ -106,11 +124,13 @@ export class StatusbarViewModel extends Disposable {
 			for (const entry of this._entries) {
 				if (changed.has(entry.id)) {
 					this.updateVisibility(entry.id, true);
+
 					changed.delete(entry.id);
 				}
 			}
 		}
 	}
+
 	add(entry: IStatusbarViewModelEntry): void {
 		// Add to set of entries
 		this._entries.push(entry);
@@ -121,6 +141,7 @@ export class StatusbarViewModel extends Disposable {
 		// Mark first/last visible entry
 		this.markFirstLastVisibleEntry();
 	}
+
 	remove(entry: IStatusbarViewModelEntry): void {
 		const index = this._entries.indexOf(entry);
 
@@ -142,43 +163,57 @@ export class StatusbarViewModel extends Disposable {
 			this.markFirstLastVisibleEntry();
 		}
 	}
+
 	isHidden(id: string): boolean {
 		return this.hidden.has(id);
 	}
+
 	hide(id: string): void {
 		if (!this.hidden.has(id)) {
 			this.hidden.add(id);
+
 			this.updateVisibility(id, true);
+
 			this.saveState();
 		}
 	}
+
 	show(id: string): void {
 		if (this.hidden.has(id)) {
 			this.hidden.delete(id);
+
 			this.updateVisibility(id, true);
+
 			this.saveState();
 		}
 	}
+
 	findEntry(container: HTMLElement): IStatusbarViewModelEntry | undefined {
 		return this._entries.find((entry) => entry.container === container);
 	}
+
 	getEntries(alignment: StatusbarAlignment): IStatusbarViewModelEntry[] {
 		return this._entries.filter((entry) => entry.alignment === alignment);
 	}
+
 	focusNextEntry(): void {
 		this.focusEntry(+1, 0);
 	}
+
 	focusPreviousEntry(): void {
 		this.focusEntry(-1, this.entries.length - 1);
 	}
+
 	isEntryFocused(): boolean {
 		return !!this.getFocusedEntry();
 	}
+
 	private getFocusedEntry(): IStatusbarViewModelEntry | undefined {
 		return this._entries.find((entry) =>
 			isAncestorOfActiveElement(entry.container),
 		);
 	}
+
 	private focusEntry(delta: number, restartPosition: number): void {
 		const getVisibleEntry = (start: number) => {
 			let indexToFocus = start;
@@ -190,11 +225,13 @@ export class StatusbarViewModel extends Disposable {
 
 			while (entry && this.isHidden(entry.id)) {
 				indexToFocus += delta;
+
 				entry =
 					indexToFocus >= 0 && indexToFocus < this._entries.length
 						? this._entries[indexToFocus]
 						: undefined;
 			}
+
 			return entry;
 		};
 
@@ -207,23 +244,29 @@ export class StatusbarViewModel extends Disposable {
 
 			if (entry) {
 				this._lastFocusedEntry = entry;
+
 				entry.labelContainer.focus();
 
 				return;
 			}
 		}
+
 		const entry = getVisibleEntry(restartPosition);
 
 		if (entry) {
 			this._lastFocusedEntry = entry;
+
 			entry.labelContainer.focus();
 		}
 	}
+
 	private updateVisibility(id: string, trigger: boolean): void;
+
 	private updateVisibility(
 		entry: IStatusbarViewModelEntry,
 		trigger: boolean,
 	): void;
+
 	private updateVisibility(
 		arg1: string | IStatusbarViewModelEntry,
 		trigger: boolean,
@@ -249,6 +292,7 @@ export class StatusbarViewModel extends Disposable {
 			} else {
 				show(entry.container);
 			}
+
 			if (trigger) {
 				this._onDidChangeEntryVisibility.fire({
 					id: entry.id,
@@ -259,6 +303,7 @@ export class StatusbarViewModel extends Disposable {
 			this.markFirstLastVisibleEntry();
 		}
 	}
+
 	private saveState(): void {
 		if (this.hidden.size > 0) {
 			this.storageService.store(
@@ -274,6 +319,7 @@ export class StatusbarViewModel extends Disposable {
 			);
 		}
 	}
+
 	private sort(): void {
 		// Split up entries into 2 buckets:
 		// - those with `priority: number` that can be compared
@@ -311,14 +357,17 @@ export class StatusbarViewModel extends Disposable {
 							break;
 						}
 					}
+
 					if (!entries) {
 						entries = new Map();
+
 						mapEntryWithRelativePriority.set(
 							referenceEntryId,
 							entries,
 						);
 					}
 				}
+
 				entries.set(entry.id, entry);
 			}
 		}
@@ -326,6 +375,7 @@ export class StatusbarViewModel extends Disposable {
 		const sortedEntriesWithNumberedPriority = Array.from(
 			mapEntryWithNumberedPriorityToIndex.keys(),
 		);
+
 		sortedEntriesWithNumberedPriority.sort((entryA, entryB) => {
 			if (entryA.alignment === entryB.alignment) {
 				// Sort by primary/secondary priority: higher values move towards the left
@@ -335,6 +385,7 @@ export class StatusbarViewModel extends Disposable {
 						Number(entryA.priority.primary)
 					);
 				}
+
 				if (entryA.priority.secondary !== entryB.priority.secondary) {
 					return (
 						entryB.priority.secondary - entryA.priority.secondary
@@ -346,12 +397,15 @@ export class StatusbarViewModel extends Disposable {
 					mapEntryWithNumberedPriorityToIndex.get(entryB)!
 				);
 			}
+
 			if (entryA.alignment === StatusbarAlignment.LEFT) {
 				return -1;
 			}
+
 			if (entryB.alignment === StatusbarAlignment.LEFT) {
 				return 1;
 			}
+
 			return 0;
 		});
 
@@ -412,14 +466,17 @@ export class StatusbarViewModel extends Disposable {
 		// Take over as new truth of entries
 		this._entries = sortedEntries;
 	}
+
 	private markFirstLastVisibleEntry(): void {
 		this.doMarkFirstLastVisibleStatusbarItem(
 			this.getEntries(StatusbarAlignment.LEFT),
 		);
+
 		this.doMarkFirstLastVisibleStatusbarItem(
 			this.getEntries(StatusbarAlignment.RIGHT),
 		);
 	}
+
 	private doMarkFirstLastVisibleStatusbarItem(
 		entries: IStatusbarViewModelEntry[],
 	): void {
@@ -440,6 +497,7 @@ export class StatusbarViewModel extends Disposable {
 				if (!firstVisibleItem) {
 					firstVisibleItem = entry;
 				}
+
 				lastVisibleItem = entry;
 			}
 		}

@@ -90,7 +90,9 @@ export function updateContributedOpeners(
 	enumDescriptions: string[],
 ): void {
 	externalUriOpenerIdSchemaAddition.enum = enumValues;
+
 	externalUriOpenerIdSchemaAddition.enumDescriptions = enumDescriptions;
+
 	Registry.as<IConfigurationRegistry>(
 		Extensions.Configuration,
 	).notifyConfigurationSchemaUpdated(externalUriOpenersConfigurationNode);

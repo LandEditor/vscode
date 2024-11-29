@@ -21,7 +21,9 @@ export class CellDiagnostics extends Disposable implements INotebookEditorContri
 	static ID: string = 'workbench.notebook.cellDiagnostics';
 
 	private enabled = false;
+
 	private listening = false;
+
 	private diagnosticsByHandle: Map<number, IDisposable[]> = new Map();
 
 	constructor(
@@ -36,6 +38,7 @@ export class CellDiagnostics extends Disposable implements INotebookEditorContri
 		this.updateEnabled();
 
 		this._register(chatAgentService.onDidChangeAgents(() => this.updateEnabled()));
+
 		this._register(configurationService.onDidChangeConfiguration((e) => {
 			if (e.affectsConfiguration(NotebookSetting.cellFailureDiagnostics)) {
 				this.updateEnabled();
@@ -45,13 +48,17 @@ export class CellDiagnostics extends Disposable implements INotebookEditorContri
 
 	private updateEnabled() {
 		const settingEnabled = this.configurationService.getValue(NotebookSetting.cellFailureDiagnostics);
+
 		if (this.enabled && (!settingEnabled || Iterable.isEmpty(this.chatAgentService.getAgents()))) {
 			this.enabled = false;
+
 			this.clearAll();
 		} else if (!this.enabled && settingEnabled && !Iterable.isEmpty(this.chatAgentService.getAgents())) {
 			this.enabled = true;
+
 			if (!this.listening) {
 				this.listening = true;
+
 				this._register(Event.accumulate<ICellExecutionStateChangedEvent | IExecutionStateChangedEvent>(
 					this.notebookExecutionStateService.onDidChangeExecution, 200
 				)((e) => this.handleChangeExecutionState(e)));
@@ -65,11 +72,14 @@ export class CellDiagnostics extends Disposable implements INotebookEditorContri
 		}
 
 		const handled = new Set<number>();
+
 		for (const e of changes.reverse()) {
 
 			const notebookUri = this.notebookEditor.textModel?.uri;
+
 			if (e.type === NotebookExecutionType.cell && notebookUri && e.affectsNotebook(notebookUri) && !handled.has(e.cellHandle)) {
 				handled.add(e.cellHandle);
+
 				if (!!e.changed) {
 					// cell is running
 					this.clear(e.cellHandle);
@@ -88,10 +98,12 @@ export class CellDiagnostics extends Disposable implements INotebookEditorContri
 
 	public clear(cellHandle: number) {
 		const disposables = this.diagnosticsByHandle.get(cellHandle);
+
 		if (disposables) {
 			for (const disposable of disposables) {
 				disposable.dispose();
 			}
+
 			this.diagnosticsByHandle.delete(cellHandle);
 		}
 	}
@@ -103,27 +115,38 @@ export class CellDiagnostics extends Disposable implements INotebookEditorContri
 		}
 
 		const cell = this.notebookEditor.getCellByHandle(cellHandle);
+
 		if (!cell || cell.cellKind !== CellKind.Code) {
 			return;
 		}
 
 		const metadata = cell.model.internalMetadata;
+
 		if (cell instanceof CodeCellViewModel && !metadata.lastRunSuccess && metadata?.error?.location) {
 			const disposables: IDisposable[] = [];
+
 			const errorLabel = metadata.error.name ? `${metadata.error.name}: ${metadata.error.message}` : metadata.error.message;
+
 			const marker = this.createMarkerData(errorLabel, metadata.error.location);
+
 			this.markerService.changeOne(CellDiagnostics.ID, cell.uri, [marker]);
+
 			disposables.push(toDisposable(() => this.markerService.changeOne(CellDiagnostics.ID, cell.uri, [])));
+
 			cell.executionErrorDiagnostic.set(metadata.error, undefined);
+
 			disposables.push(toDisposable(() => cell.executionErrorDiagnostic.set(undefined, undefined)));
+
 			disposables.push(cell.model.onDidChangeOutputs(() => {
 				if (cell.model.outputs.length === 0) {
 					this.clear(cellHandle);
 				}
 			}));
+
 			disposables.push(cell.model.onDidChangeContent(() => {
 				this.clear(cellHandle);
 			}));
+
 			this.diagnosticsByHandle.set(cellHandle, disposables);
 		}
 	}
@@ -142,6 +165,7 @@ export class CellDiagnostics extends Disposable implements INotebookEditorContri
 
 	override dispose() {
 		super.dispose();
+
 		this.clearAll();
 	}
 

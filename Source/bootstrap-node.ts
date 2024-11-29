@@ -18,12 +18,14 @@ if (!process.env["VSCODE_HANDLES_SIGPIPE"]) {
 	// Workaround for Electron not installing a handler to ignore SIGPIPE
 	// (https://github.com/electron/electron/issues/13254)
 	let didLogAboutSIGPIPE = false;
+
 	process.on("SIGPIPE", () => {
 		// See https://github.com/microsoft/vscode-remote-release/issues/6543
 		// In certain situations, the console itself can be in a broken pipe state
 		// so logging SIGPIPE to the console will cause an infinite async loop
 		if (!didLogAboutSIGPIPE) {
 			didLogAboutSIGPIPE = true;
+
 			console.error(new Error(`Unexpected SIGPIPE`));
 		}
 	});
@@ -58,11 +60,13 @@ export function devInjectNodeModuleLookupPath(injectPath: string): void {
 	if (!process.env["VSCODE_DEV"]) {
 		return; // only applies running out of sources
 	}
+
 	if (!injectPath) {
 		throw new Error("Missing injectPath");
 	}
 	// register a loader hook
 	const Module = require("node:module");
+
 	Module.register("./bootstrap-import.js", {
 		parentURL: import.meta.url,
 		data: injectPath,
@@ -72,11 +76,13 @@ export function removeGlobalNodeJsModuleLookupPaths(): void {
 	if (typeof process?.versions?.electron === "string") {
 		return; // Electron disables global search paths in https://github.com/electron/electron/blob/3186c2f0efa92d275dc3d57b5a14a60ed3846b0e/shell/common/node_bindings.cc#L653
 	}
+
 	const Module = require("module");
 
 	const globalPaths = Module.globalPaths;
 
 	const originalResolveLookupPaths = Module._resolveLookupPaths;
+
 	Module._resolveLookupPaths = function (
 		moduleName: string,
 		parent: any,
@@ -93,8 +99,10 @@ export function removeGlobalNodeJsModuleLookupPaths(): void {
 			) {
 				commonSuffixLength++;
 			}
+
 			return paths.slice(0, paths.length - commonSuffixLength);
 		}
+
 		return paths;
 	};
 }
@@ -103,6 +111,7 @@ export function removeGlobalNodeJsModuleLookupPaths(): void {
  */
 export function configurePortable(product: Partial<IProductConfiguration>): {
 	portableDataPath: string;
+
 	isPortable: boolean;
 } {
 	const appRoot = path.dirname(__dirname);
@@ -111,23 +120,29 @@ export function configurePortable(product: Partial<IProductConfiguration>): {
 		if (process.env["VSCODE_DEV"]) {
 			return appRoot;
 		}
+
 		if (process.platform === "darwin") {
 			return path.dirname(path.dirname(path.dirname(appRoot)));
 		}
+
 		return path.dirname(path.dirname(appRoot));
 	}
+
 	function getPortableDataPath(): string {
 		if (process.env["VSCODE_PORTABLE"]) {
 			return process.env["VSCODE_PORTABLE"];
 		}
+
 		if (process.platform === "win32" || process.platform === "linux") {
 			return path.join(getApplicationPath(), "data");
 		}
+
 		const portableDataName =
 			product.portable || `${product.applicationName}-portable-data`;
 
 		return path.join(path.dirname(getApplicationPath()), portableDataName);
 	}
+
 	const portableDataPath = getPortableDataPath();
 
 	const isPortable =
@@ -142,14 +157,17 @@ export function configurePortable(product: Partial<IProductConfiguration>): {
 	} else {
 		delete process.env["VSCODE_PORTABLE"];
 	}
+
 	if (isTempPortable) {
 		if (process.platform === "win32") {
 			process.env["TMP"] = portableTempPath;
+
 			process.env["TEMP"] = portableTempPath;
 		} else {
 			process.env["TMPDIR"] = portableTempPath;
 		}
 	}
+
 	return {
 		portableDataPath,
 		isPortable,

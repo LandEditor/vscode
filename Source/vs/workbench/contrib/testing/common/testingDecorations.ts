@@ -62,12 +62,14 @@ export interface ITestDecoration {
 
 	getContextMenuActions(): {
 		object: IAction[];
+
 		dispose(): void;
 	};
 }
 export class TestDecorations<
 	T extends {
 		id: string;
+
 		line: number;
 	} = ITestDecoration,
 > {
@@ -81,6 +83,7 @@ export class TestDecorations<
 			value,
 			(a, b) => a.line - b.line,
 		);
+
 		this.value.splice(
 			searchIndex < 0 ? ~searchIndex : searchIndex,
 			0,
@@ -94,6 +97,7 @@ export class TestDecorations<
 		if (!this.value.length) {
 			return;
 		}
+
 		let startIndex = 0;
 
 		let startLine = this.value[0].line;
@@ -103,10 +107,13 @@ export class TestDecorations<
 
 			if (v.line !== startLine) {
 				yield [startLine, this.value.slice(startIndex, i)];
+
 				startLine = v.line;
+
 				startIndex = i;
 			}
 		}
+
 		yield [startLine, this.value.slice(startIndex)];
 	}
 }

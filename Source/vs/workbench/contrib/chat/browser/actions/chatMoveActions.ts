@@ -56,6 +56,7 @@ export function registerMoveActions() {
 
 			async run(accessor: ServicesAccessor, ...args: any[]) {
 				const context = args[0];
+
 				executeMoveToAction(
 					accessor,
 					MoveToNewLocation.Editor,
@@ -90,6 +91,7 @@ export function registerMoveActions() {
 
 			async run(accessor: ServicesAccessor, ...args: any[]) {
 				const context = args[0];
+
 				executeMoveToAction(
 					accessor,
 					MoveToNewLocation.Window,
@@ -169,6 +171,7 @@ async function executeMoveToAction(
 	const sessionId = viewModel.sessionId;
 
 	const viewState = widget.getViewState();
+
 	widget.clear();
 
 	const options: IChatEditorOptions = {
@@ -176,6 +179,7 @@ async function executeMoveToAction(
 		pinned: true,
 		viewState: viewState,
 	};
+
 	await editorService.openEditor(
 		{ resource: ChatEditorInput.getNewEditorUri(), options },
 		moveTo === MoveToNewLocation.Window ? AUX_WINDOW_GROUP : ACTIVE_GROUP,
@@ -204,7 +208,9 @@ async function moveToSidebar(accessor: ServicesAccessor): Promise<void> {
 			editor: chatEditor.input,
 			groupId: editorGroupService.activeGroup.id,
 		});
+
 		view = (await viewsService.openView(ChatViewId)) as ChatViewPane;
+
 		view.loadSession(chatEditorInput.sessionId, chatEditor.getViewState());
 	} else {
 		view = (await viewsService.openView(ChatViewId)) as ChatViewPane;

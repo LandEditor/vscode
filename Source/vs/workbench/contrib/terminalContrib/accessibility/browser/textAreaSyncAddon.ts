@@ -23,11 +23,15 @@ import {
 
 export class TextAreaSyncAddon extends Disposable implements ITerminalAddon {
 	private _terminal: Terminal | undefined;
+
 	private readonly _listeners = this._register(new MutableDisposable());
+
 	activate(terminal: Terminal): void {
 		this._terminal = terminal;
+
 		this._refreshListeners();
 	}
+
 	constructor(
 		private readonly _capabilities: ITerminalCapabilityStore,
 		@IAccessibilityService
@@ -38,6 +42,7 @@ export class TextAreaSyncAddon extends Disposable implements ITerminalAddon {
 		private readonly _logService: ITerminalLogService,
 	) {
 		super();
+
 		this._register(
 			Event.runAndSubscribe(
 				Event.any(
@@ -51,6 +56,7 @@ export class TextAreaSyncAddon extends Disposable implements ITerminalAddon {
 			),
 		);
 	}
+
 	private _refreshListeners(): void {
 		const commandDetection = this._capabilities.get(
 			TerminalCapability.CommandDetection,
@@ -71,6 +77,7 @@ export class TextAreaSyncAddon extends Disposable implements ITerminalAddon {
 			this._listeners.clear();
 		}
 	}
+
 	private _shouldBeActive(): boolean {
 		return (
 			this._accessibilityService.isScreenReaderOptimized() ||
@@ -86,10 +93,14 @@ export class TextAreaSyncAddon extends Disposable implements ITerminalAddon {
 		if (!commandCapability) {
 			return;
 		}
+
 		textArea.value = commandCapability.promptInputModel.value;
+
 		textArea.selectionStart =
 			commandCapability.promptInputModel.cursorIndex;
+
 		textArea.selectionEnd = commandCapability.promptInputModel.cursorIndex;
+
 		this._logService.debug(
 			`TextAreaSyncAddon#sync: text changed to "${textArea.value}"`,
 		);

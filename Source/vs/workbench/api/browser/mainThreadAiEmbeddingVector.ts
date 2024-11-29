@@ -25,6 +25,7 @@ export class MainThreadAiEmbeddingVector
 	implements MainThreadAiEmbeddingVectorShape
 {
 	private readonly _proxy: ExtHostAiEmbeddingVectorShape;
+
 	private readonly _registrations = this._register(
 		new DisposableMap<number>(),
 	);
@@ -35,6 +36,7 @@ export class MainThreadAiEmbeddingVector
 		private readonly _AiEmbeddingVectorService: IAiEmbeddingVectorService,
 	) {
 		super();
+
 		this._proxy = context.getProxy(ExtHostContext.ExtHostAiEmbeddingVector);
 	}
 	$registerAiEmbeddingVectorProvider(model: string, handle: number): void {
@@ -50,6 +52,7 @@ export class MainThreadAiEmbeddingVector
 				);
 			},
 		};
+
 		this._registrations.set(
 			handle,
 			this._AiEmbeddingVectorService.registerAiEmbeddingVectorProvider(

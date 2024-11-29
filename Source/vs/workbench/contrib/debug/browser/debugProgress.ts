@@ -28,8 +28,10 @@ export class DebugProgressContribution implements IWorkbenchContribution {
 		const listenOnProgress = (session: IDebugSession | undefined) => {
 			if (progressListener) {
 				progressListener.dispose();
+
 				progressListener = undefined;
 			}
+
 			if (session) {
 				progressListener = session.onDidProgressStart(
 					async (progressStartEvent) => {
@@ -45,6 +47,7 @@ export class DebugProgressContribution implements IWorkbenchContribution {
 								session.onDidEndAdapter,
 							)(() => {
 								listener.dispose();
+
 								r();
 							});
 						});
@@ -55,9 +58,11 @@ export class DebugProgressContribution implements IWorkbenchContribution {
 								() => promise,
 							);
 						}
+
 						const source = debugService
 							.getAdapterManager()
 							.getDebuggerLabel(session.configuration.type);
+
 						progressService.withProgress(
 							{
 								location: ProgressLocation.Notification,
@@ -72,6 +77,7 @@ export class DebugProgressContribution implements IWorkbenchContribution {
 
 								const reportProgress = (progress: {
 									message?: string;
+
 									percentage?: number;
 								}) => {
 									let increment = undefined;
@@ -80,8 +86,10 @@ export class DebugProgressContribution implements IWorkbenchContribution {
 										typeof progress.percentage === "number"
 									) {
 										increment = progress.percentage - total;
+
 										total += increment;
 									}
+
 									progressStep.report({
 										message: progress.message,
 										increment,
@@ -95,6 +103,7 @@ export class DebugProgressContribution implements IWorkbenchContribution {
 								if (progressStartEvent.body.message) {
 									reportProgress(progressStartEvent.body);
 								}
+
 								const progressUpdateListener =
 									session.onDidProgressUpdate((e) => {
 										if (
@@ -118,10 +127,13 @@ export class DebugProgressContribution implements IWorkbenchContribution {
 				);
 			}
 		};
+
 		this.toDispose.push(
 			debugService.getViewModel().onDidFocusSession(listenOnProgress),
 		);
+
 		listenOnProgress(debugService.getViewModel().focusedSession);
+
 		this.toDispose.push(
 			debugService.onWillNewSession((session) => {
 				if (!progressListener) {
@@ -130,6 +142,7 @@ export class DebugProgressContribution implements IWorkbenchContribution {
 			}),
 		);
 	}
+
 	dispose(): void {
 		dispose(this.toDispose);
 	}

@@ -21,11 +21,13 @@ export function reflectCssValue(): Thenable<boolean> | undefined {
 
 		return;
 	}
+
 	const node = getCssPropertyFromDocument(editor, editor.selection.active);
 
 	if (!node) {
 		return;
 	}
+
 	return updateCSSNode(editor, node);
 }
 function updateCSSNode(
@@ -43,6 +45,7 @@ function updateCSSNode(
 			break;
 		}
 	}
+
 	const propertyName = property.name.substr(currentPrefix.length);
 
 	const propertyValue = property.value;
@@ -53,6 +56,7 @@ function updateCSSNode(
 			if (prefix === currentPrefix) {
 				return;
 			}
+
 			const vendorProperty = getCssPropertyFromRule(
 				rule,
 				prefix + propertyName,
@@ -64,6 +68,7 @@ function updateCSSNode(
 					vendorProperty.valueToken.start,
 					vendorProperty.valueToken.end,
 				);
+
 				builder.replace(rangeToReplace, propertyValue);
 			}
 		});

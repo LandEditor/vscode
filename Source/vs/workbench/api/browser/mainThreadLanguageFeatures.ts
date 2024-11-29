@@ -95,6 +95,7 @@ export class MainThreadLanguageFeatures
 	implements MainThreadLanguageFeaturesShape
 {
 	private readonly _proxy: ExtHostLanguageFeaturesShape;
+
 	private readonly _registrations = this._register(
 		new DisposableMap<number>(),
 	);
@@ -123,14 +124,17 @@ export class MainThreadLanguageFeatures
 					const wordDefinition = this._languageConfigurationService
 						.getLanguageConfiguration(languageId)
 						.getWordDefinition();
+
 					wordDefinitionDtos.push({
 						languageId: languageId,
 						regexSource: wordDefinition.source,
 						regexFlags: wordDefinition.flags,
 					});
 				}
+
 				this._proxy.$setWordDefinitions(wordDefinitionDtos);
 			};
+
 			this._register(
 				this._languageConfigurationService.onDidChange((e) => {
 					if (!e.languageId) {
@@ -140,6 +144,7 @@ export class MainThreadLanguageFeatures
 							this._languageConfigurationService
 								.getLanguageConfiguration(e.languageId)
 								.getWordDefinition();
+
 						this._proxy.$setWordDefinitions([
 							{
 								languageId: e.languageId,
@@ -150,6 +155,7 @@ export class MainThreadLanguageFeatures
 					}
 				}),
 			);
+
 			updateAllWordDefinitions();
 		}
 	}
@@ -161,9 +167,11 @@ export class MainThreadLanguageFeatures
 	//#region --- revive functions
 
 	private static _reviveLocationDto(data?: ILocationDto): languages.Location;
+
 	private static _reviveLocationDto(
 		data?: ILocationDto[],
 	): languages.Location[];
+
 	private static _reviveLocationDto(
 		data: ILocationDto | ILocationDto[] | undefined,
 	): languages.Location | languages.Location[] | undefined {
@@ -185,9 +193,11 @@ export class MainThreadLanguageFeatures
 	private static _reviveLocationLinkDto(
 		data: ILocationLinkDto,
 	): languages.LocationLink;
+
 	private static _reviveLocationLinkDto(
 		data: ILocationLinkDto[],
 	): languages.LocationLink[];
+
 	private static _reviveLocationLinkDto(
 		data: ILocationLinkDto | ILocationLinkDto[],
 	): languages.LocationLink | languages.LocationLink[] {
@@ -209,10 +219,13 @@ export class MainThreadLanguageFeatures
 	private static _reviveWorkspaceSymbolDto(
 		data: IWorkspaceSymbolDto,
 	): search.IWorkspaceSymbol;
+
 	private static _reviveWorkspaceSymbolDto(
 		data: IWorkspaceSymbolDto[],
 	): search.IWorkspaceSymbol[];
+
 	private static _reviveWorkspaceSymbolDto(data: undefined): undefined;
+
 	private static _reviveWorkspaceSymbolDto(
 		data: IWorkspaceSymbolDto | IWorkspaceSymbolDto[] | undefined,
 	): search.IWorkspaceSymbol | search.IWorkspaceSymbol[] | undefined {
@@ -246,6 +259,7 @@ export class MainThreadLanguageFeatures
 		if (data.url && typeof data.url !== "string") {
 			data.url = URI.revive(data.url);
 		}
+
 		return <languages.ILink>data;
 	}
 
@@ -255,6 +269,7 @@ export class MainThreadLanguageFeatures
 		if (data) {
 			data.uri = URI.revive(data.uri);
 		}
+
 		return data as callh.CallHierarchyItem;
 	}
 
@@ -264,6 +279,7 @@ export class MainThreadLanguageFeatures
 		if (data) {
 			data.uri = URI.revive(data.uri);
 		}
+
 		return data as typeh.TypeHierarchyItem;
 	}
 
@@ -318,6 +334,7 @@ export class MainThreadLanguageFeatures
 				if (!listDto) {
 					return undefined;
 				}
+
 				return {
 					lenses: listDto.lenses,
 					dispose: () =>
@@ -339,6 +356,7 @@ export class MainThreadLanguageFeatures
 				if (!result) {
 					return undefined;
 				}
+
 				return {
 					...result,
 					range: model.validateRange(result.range),
@@ -348,7 +366,9 @@ export class MainThreadLanguageFeatures
 
 		if (typeof eventHandle === "number") {
 			const emitter = new Emitter<languages.CodeLensProvider>();
+
 			this._registrations.set(eventHandle, emitter);
+
 			provider.onDidChange = emitter.event;
 		}
 
@@ -591,7 +611,9 @@ export class MainThreadLanguageFeatures
 
 		if (typeof eventHandle === "number") {
 			const emitter = new Emitter<void>();
+
 			this._registrations.set(eventHandle, emitter);
+
 			provider.onDidChangeInlineValues = emitter.event;
 		}
 
@@ -672,9 +694,11 @@ export class MainThreadLanguageFeatures
 								if (dto === undefined || dto === null) {
 									return undefined;
 								}
+
 								const result = new ResourceMap<
 									languages.DocumentHighlight[]
 								>();
+
 								dto?.forEach((value) => {
 									// check if the URI exists already, if so, combine the highlights, otherwise create a new entry
 									const uri = URI.revive(value.uri);
@@ -730,6 +754,7 @@ export class MainThreadLanguageFeatures
 									: undefined,
 							};
 						}
+
 						return undefined;
 					},
 				},
@@ -794,6 +819,7 @@ export class MainThreadLanguageFeatures
 				if (!listDto) {
 					return undefined;
 				}
+
 				return {
 					actions: MainThreadLanguageFeatures._reviveCodeActionDto(
 						listDto.actions,
@@ -868,7 +894,9 @@ export class MainThreadLanguageFeatures
 			metadata,
 			this._uriIdentService,
 		);
+
 		this._pasteEditProviders.set(handle, provider);
+
 		this._registrations.set(
 			handle,
 			combinedDisposable(
@@ -891,6 +919,7 @@ export class MainThreadLanguageFeatures
 		if (!provider) {
 			throw new Error("Could not find provider");
 		}
+
 		return provider.resolveFileData(requestId, dataId);
 	}
 
@@ -1026,6 +1055,7 @@ export class MainThreadLanguageFeatures
 				if (lastResultId !== undefined) {
 					this._proxy.$releaseWorkspaceSymbols(handle, lastResultId);
 				}
+
 				lastResultId = result.cacheId;
 
 				return MainThreadLanguageFeatures._reviveWorkspaceSymbolDto(
@@ -1053,6 +1083,7 @@ export class MainThreadLanguageFeatures
 				);
 			};
 		}
+
 		this._registrations.set(
 			handle,
 			search.WorkspaceSymbolProviderRegistry.register(provider),
@@ -1148,9 +1179,12 @@ export class MainThreadLanguageFeatures
 
 		if (typeof eventHandle === "number") {
 			const emitter = new Emitter<void>();
+
 			this._registrations.set(eventHandle, emitter);
+
 			event = emitter.event;
 		}
+
 		this._registrations.set(
 			handle,
 			this._languageFeaturesService.documentSemanticTokensProvider.register(
@@ -1273,6 +1307,7 @@ export class MainThreadLanguageFeatures
 				if (!result) {
 					return result;
 				}
+
 				return {
 					suggestions: result[ISuggestResultDtoField.completions].map(
 						(d) =>
@@ -1317,6 +1352,7 @@ export class MainThreadLanguageFeatures
 					});
 			};
 		}
+
 		this._registrations.set(
 			handle,
 			this._languageFeaturesService.completionProvider.register(
@@ -1407,6 +1443,7 @@ export class MainThreadLanguageFeatures
 					return `InlineCompletionsProvider(${extensionId})`;
 				},
 			};
+
 		this._registrations.set(
 			handle,
 			this._languageFeaturesService.inlineCompletionsProvider.register(
@@ -1438,6 +1475,7 @@ export class MainThreadLanguageFeatures
 				this._proxy.$freeInlineEdit(handle, edit.pid);
 			},
 		};
+
 		this._registrations.set(
 			handle,
 			this._languageFeaturesService.inlineEditProvider.register(
@@ -1480,6 +1518,7 @@ export class MainThreadLanguageFeatures
 						if (!result) {
 							return undefined;
 						}
+
 						return {
 							value: result,
 							dispose: () => {
@@ -1521,6 +1560,7 @@ export class MainThreadLanguageFeatures
 				if (!result) {
 					return;
 				}
+
 				return {
 					hints: revive(result.hints),
 					dispose: () => {
@@ -1542,6 +1582,7 @@ export class MainThreadLanguageFeatures
 				if (!dto.cacheId) {
 					return hint;
 				}
+
 				const result = await this._proxy.$resolveInlayHint(
 					handle,
 					dto.cacheId,
@@ -1551,9 +1592,11 @@ export class MainThreadLanguageFeatures
 				if (token.isCancellationRequested) {
 					throw new CancellationError();
 				}
+
 				if (!result) {
 					return hint;
 				}
+
 				return {
 					...hint,
 					tooltip: result.tooltip,
@@ -1564,9 +1607,12 @@ export class MainThreadLanguageFeatures
 				};
 			};
 		}
+
 		if (typeof eventHandle === "number") {
 			const emitter = new Emitter<void>();
+
 			this._registrations.set(eventHandle, emitter);
+
 			provider.onDidChangeInlayHints = emitter.event;
 		}
 
@@ -1602,6 +1648,7 @@ export class MainThreadLanguageFeatures
 						if (!dto) {
 							return undefined;
 						}
+
 						return {
 							links: dto.links.map(
 								MainThreadLanguageFeatures._reviveLinkDTO,
@@ -1626,6 +1673,7 @@ export class MainThreadLanguageFeatures
 				if (!dto.cacheId) {
 					return link;
 				}
+
 				return this._proxy
 					.$resolveDocumentLink(handle, dto.cacheId, token)
 					.then((obj) => {
@@ -1636,6 +1684,7 @@ export class MainThreadLanguageFeatures
 					});
 			};
 		}
+
 		this._registrations.set(
 			handle,
 			this._languageFeaturesService.linkProvider.register(
@@ -1652,6 +1701,7 @@ export class MainThreadLanguageFeatures
 		selector: IDocumentFilterDto[],
 	): void {
 		const proxy = this._proxy;
+
 		this._registrations.set(
 			handle,
 			this._languageFeaturesService.colorProvider.register(selector, {
@@ -1720,7 +1770,9 @@ export class MainThreadLanguageFeatures
 
 		if (typeof eventHandle === "number") {
 			const emitter = new Emitter<languages.FoldingRangeProvider>();
+
 			this._registrations.set(eventHandle, emitter);
+
 			provider.onDidChange = emitter.event;
 		}
 
@@ -1785,6 +1837,7 @@ export class MainThreadLanguageFeatures
 					if (!items || items.length === 0) {
 						return undefined;
 					}
+
 					return {
 						dispose: () => {
 							for (const item of items) {
@@ -1812,6 +1865,7 @@ export class MainThreadLanguageFeatures
 					if (!outgoing) {
 						return outgoing;
 					}
+
 					outgoing.forEach((value) => {
 						value.to =
 							MainThreadLanguageFeatures._reviveCallHierarchyItemDto(
@@ -1833,6 +1887,7 @@ export class MainThreadLanguageFeatures
 					if (!incoming) {
 						return incoming;
 					}
+
 					incoming.forEach((value) => {
 						value.from =
 							MainThreadLanguageFeatures._reviveCallHierarchyItemDto(
@@ -1985,6 +2040,7 @@ export class MainThreadLanguageFeatures
 					if (!items) {
 						return undefined;
 					}
+
 					return {
 						dispose: () => {
 							for (const item of items) {
@@ -2012,6 +2068,7 @@ export class MainThreadLanguageFeatures
 					if (!supertypes) {
 						return supertypes;
 					}
+
 					return supertypes.map(
 						MainThreadLanguageFeatures._reviveTypeHierarchyItemDto,
 					);
@@ -2028,6 +2085,7 @@ export class MainThreadLanguageFeatures
 					if (!subtypes) {
 						return subtypes;
 					}
+
 					return subtypes.map(
 						MainThreadLanguageFeatures._reviveTypeHierarchyItemDto,
 					);
@@ -2054,7 +2112,9 @@ export class MainThreadLanguageFeatures
 			metadata,
 			this._uriIdentService,
 		);
+
 		this._documentOnDropEditProviders.set(handle, provider);
+
 		this._registrations.set(
 			handle,
 			combinedDisposable(
@@ -2079,6 +2139,7 @@ export class MainThreadLanguageFeatures
 		if (!provider) {
 			throw new Error("Could not find provider");
 		}
+
 		return provider.resolveDocumentOnDropFileData(requestId, dataId);
 	}
 
@@ -2095,6 +2156,7 @@ export class MainThreadLanguageFeatures
 			this._proxy,
 			this._uriIdentService,
 		);
+
 		this._registrations.set(
 			handle,
 			this._languageFeaturesService.mappedEditsProvider.register(
@@ -2111,11 +2173,15 @@ class MainThreadPasteEditProvider
 	private readonly dataTransfers = new DataTransferFileCache();
 
 	public readonly copyMimeTypes: readonly string[];
+
 	public readonly pasteMimeTypes: readonly string[];
+
 	public readonly providedPasteEditKinds: readonly HierarchicalKind[];
 
 	readonly prepareDocumentPaste?: languages.DocumentPasteEditProvider["prepareDocumentPaste"];
+
 	readonly provideDocumentPasteEdits?: languages.DocumentPasteEditProvider["provideDocumentPasteEdits"];
+
 	readonly resolveDocumentPasteEdit?: languages.DocumentPasteEditProvider["resolveDocumentPasteEdit"];
 
 	constructor(
@@ -2126,7 +2192,9 @@ class MainThreadPasteEditProvider
 		private readonly _uriIdentService: IUriIdentityService,
 	) {
 		this.copyMimeTypes = metadata.copyMimeTypes ?? [];
+
 		this.pasteMimeTypes = metadata.pasteMimeTypes ?? [];
+
 		this.providedPasteEditKinds =
 			metadata.providedPasteEditKinds?.map(
 				(kind) => new HierarchicalKind(kind),
@@ -2166,6 +2234,7 @@ class MainThreadPasteEditProvider
 						createStringDataTransferItem(item.asString),
 					);
 				}
+
 				return dataTransferOut;
 			};
 		}
@@ -2242,6 +2311,7 @@ class MainThreadPasteEditProvider
 				}
 			};
 		}
+
 		if (metadata.supportsResolve) {
 			this.resolveDocumentPasteEdit = async (
 				edit: languages.DocumentPasteEdit,
@@ -2259,6 +2329,7 @@ class MainThreadPasteEditProvider
 						this._uriIdentService,
 					);
 				}
+
 				return edit;
 			};
 		}
@@ -2288,6 +2359,7 @@ class MainThreadDocumentOnDropEditProvider
 		private readonly _uriIdentService: IUriIdentityService,
 	) {
 		this.dropMimeTypes = metadata?.dropMimeTypes ?? ["*/*"];
+
 		this.providedDropEditKinds = metadata?.providedDropKinds?.map(
 			(kind) => new HierarchicalKind(kind),
 		);
@@ -2306,6 +2378,7 @@ class MainThreadDocumentOnDropEditProvider
 						this._uriIdentService,
 					);
 				}
+
 				return edit;
 			};
 		}
@@ -2423,9 +2496,11 @@ export class MainThreadDocumentSemanticTokensProvider
 		if (!encodedDto) {
 			return null;
 		}
+
 		if (token.isCancellationRequested) {
 			return null;
 		}
+
 		const dto = decodeSemanticTokensDto(encodedDto);
 
 		if (dto.type === "full") {
@@ -2434,6 +2509,7 @@ export class MainThreadDocumentSemanticTokensProvider
 				data: dto.data,
 			};
 		}
+
 		return {
 			resultId: String(dto.id),
 			edits: dto.deltas,
@@ -2470,9 +2546,11 @@ export class MainThreadDocumentRangeSemanticTokensProvider
 		if (!encodedDto) {
 			return null;
 		}
+
 		if (token.isCancellationRequested) {
 			return null;
 		}
+
 		const dto = decodeSemanticTokensDto(encodedDto);
 
 		if (dto.type === "full") {
@@ -2481,6 +2559,7 @@ export class MainThreadDocumentRangeSemanticTokensProvider
 				data: dto.data,
 			};
 		}
+
 		throw new Error(`Unexpected`);
 	}
 }

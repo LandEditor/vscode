@@ -33,25 +33,31 @@ export class ExtensionActivationProgress implements IWorkbenchContribution {
 		let deferred: DeferredPromise<any> | undefined;
 
 		let count = 0;
+
 		this._listener = extensionService.onWillActivateByEvent((e) => {
 			logService.trace("onWillActivateByEvent: ", e.event);
 
 			if (!deferred) {
 				deferred = new DeferredPromise();
+
 				progressService.withProgress(options, (_) => deferred!.p);
 			}
+
 			count++;
+
 			Promise.race([
 				e.activation,
 				timeout(5000, CancellationToken.None),
 			]).finally(() => {
 				if (--count === 0) {
 					deferred!.complete(undefined);
+
 					deferred = undefined;
 				}
 			});
 		});
 	}
+
 	dispose(): void {
 		this._listener.dispose();
 	}

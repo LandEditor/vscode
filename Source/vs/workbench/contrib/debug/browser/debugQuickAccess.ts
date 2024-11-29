@@ -44,6 +44,7 @@ export class StartDebugQuickAccessProvider extends PickerQuickAccessProvider<IPi
 			},
 		});
 	}
+
 	protected async _getPicks(
 		filter: string,
 	): Promise<(IQuickPickSeparator | IPickerQuickAccessItem)[]> {
@@ -52,6 +53,7 @@ export class StartDebugQuickAccessProvider extends PickerQuickAccessProvider<IPi
 		if (!this.debugService.getAdapterManager().hasEnabledDebuggers()) {
 			return [];
 		}
+
 		picks.push({ type: "separator", label: "launch.json" });
 
 		const configManager = this.debugService.getConfigurationManager();
@@ -65,6 +67,7 @@ export class StartDebugQuickAccessProvider extends PickerQuickAccessProvider<IPi
 				// Separator
 				if (lastGroup !== config.presentation?.group) {
 					picks.push({ type: "separator" });
+
 					lastGroup = config.presentation?.group;
 				}
 				// Launch entry
@@ -126,6 +129,7 @@ export class StartDebugQuickAccessProvider extends PickerQuickAccessProvider<IPi
 				),
 			});
 		}
+
 		configManager
 			.getRecentDynamicConfigurations()
 			.forEach(({ name, type }) => {
@@ -166,6 +170,7 @@ export class StartDebugQuickAccessProvider extends PickerQuickAccessProvider<IPi
 									configManager.selectedConfiguration;
 
 								const config = await getConfig();
+
 								await this.debugService.startDebugging(
 									launch,
 									config,
@@ -178,6 +183,7 @@ export class StartDebugQuickAccessProvider extends PickerQuickAccessProvider<IPi
 					});
 				}
 			});
+
 		dynamicProviders.forEach((provider) => {
 			picks.push({
 				label: `$(folder) ${provider.label}...`,
@@ -202,6 +208,7 @@ export class StartDebugQuickAccessProvider extends PickerQuickAccessProvider<IPi
 							pick.config,
 							{ type: provider.type },
 						);
+
 						this.debugService.startDebugging(
 							pick.launch,
 							pick.config,
@@ -222,6 +229,7 @@ export class StartDebugQuickAccessProvider extends PickerQuickAccessProvider<IPi
 				label: localize("configure", "configure"),
 			});
 		}
+
 		for (const launch of visibleLaunches) {
 			const label =
 				this.contextService.getWorkbenchState() ===
@@ -250,6 +258,7 @@ export class StartDebugQuickAccessProvider extends PickerQuickAccessProvider<IPi
 					),
 			});
 		}
+
 		return picks;
 	}
 }

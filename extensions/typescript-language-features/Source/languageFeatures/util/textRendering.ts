@@ -29,8 +29,10 @@ function getTagBodyText(
 		if (/^\s*[~`]{3}/m.test(text)) {
 			return text;
 		}
+
 		return '```tsx\n' + text + '\n```';
 	}
+
 	let text = convertLinkTags(tag.text, filePathConverter);
 
 	switch (tag.name) {
@@ -53,6 +55,7 @@ function getTagBodyText(
 				return makeCodeblock(text);
 			}
 		}
+
 		case "author": {
 			// fix obsucated email address, #80898
 			const emailMatch = text.match(/(.+)\s<([-.\w]+@[-.\w]+)>/);
@@ -63,9 +66,11 @@ function getTagBodyText(
 				return `${emailMatch[1]} ${emailMatch[2]}`;
 			}
 		}
+
 		case "default": {
 			return makeCodeblock(text);
 		}
+
 		default: {
 			return text;
 		}
@@ -92,19 +97,23 @@ function getTagDocumentation(
 				if (!doc) {
 					return label;
 				}
+
 				return (
 					label +
 					(doc.match(/\r\n|\n/g) ? "  \n" + doc : ` \u2014 ${doc}`)
 				);
 			}
+
 			break;
 		}
+
 		case "return":
 		case "returns": {
 			// For return(s), we require a non-empty body
 			if (!tag.text?.length) {
 				return undefined;
 			}
+
 			break;
 		}
 	}
@@ -116,6 +125,7 @@ function getTagDocumentation(
 	if (!text) {
 		return label;
 	}
+
 	return label + (text.match(/\r\n|\n/g) ? "  \n" + text : ` \u2014 ${text}`);
 }
 function getTagBody(
@@ -144,6 +154,7 @@ function getTagBody(
 			return params ? ["", params, docs] : undefined;
 		}
 	}
+
 	return convertLinkTags(tag.text, filePathConverter).split(/^(\S+)\s*-?\s*/);
 }
 function asPlainText(
@@ -152,6 +163,7 @@ function asPlainText(
 	if (typeof parts === "string") {
 		return parts;
 	}
+
 	return parts.map((part) => part.text).join("");
 }
 export function asPlainTextWithLinks(
@@ -170,16 +182,21 @@ function convertLinkTags(
 	if (!parts) {
 		return "";
 	}
+
 	if (typeof parts === "string") {
 		return parts;
 	}
+
 	const out: string[] = [];
 
 	let currentLink:
 		| {
 				name?: string;
+
 				target?: Proto.FileSpan;
+
 				text?: string;
+
 				readonly linkcode: boolean;
 		  }
 		| undefined;
@@ -207,6 +224,7 @@ function convertLinkTags(
 							: escapeMarkdownSyntaxTokensForCode(
 									currentLink.name ?? "",
 								);
+
 						out.push(
 							`[${currentLink.linkcode ? "`" + linkText + "`" : linkText}](${command})`,
 						);
@@ -227,6 +245,7 @@ function convertLinkTags(
 										parts.length > 1
 											? parts.slice(1).join(" ")
 											: parts[0];
+
 									out.push(
 										`[${currentLink.linkcode ? "`" + escapeMarkdownSyntaxTokensForCode(linkText) + "`" : linkText}](${parts[0]})`,
 									);
@@ -238,27 +257,32 @@ function convertLinkTags(
 							}
 						}
 					}
+
 					currentLink = undefined;
 				} else {
 					currentLink = {
 						linkcode: part.text === "{@linkcode ",
 					};
 				}
+
 				break;
 
 			case "linkName":
 				if (currentLink) {
 					currentLink.name = part.text;
+
 					currentLink.target = (
 						part as Proto.JSDocLinkDisplayPart
 					).target;
 				}
+
 				break;
 
 			case "linkText":
 				if (currentLink) {
 					currentLink.text = part.text;
 				}
+
 				break;
 
 			default:
@@ -267,6 +291,7 @@ function convertLinkTags(
 				break;
 		}
 	}
+
 	return out.join("");
 }
 function escapeMarkdownSyntaxTokensForCode(text: string): string {
@@ -287,8 +312,11 @@ export function documentationToMarkdown(
 	baseUri: vscode.Uri | undefined,
 ): vscode.MarkdownString {
 	const out = new vscode.MarkdownString();
+
 	appendDocumentationAsMarkdown(out, documentation, tags, filePathConverter);
+
 	out.baseUri = baseUri;
+
 	out.isTrusted = { enabledCommands: [OpenJsDocLinkCommand.id] };
 
 	return out;
@@ -302,6 +330,7 @@ export function appendDocumentationAsMarkdown(
 	if (documentation) {
 		out.appendMarkdown(asPlainTextWithLinks(documentation, converter));
 	}
+
 	if (tags) {
 		const tagsPreview = tagsToMarkdown(tags, converter);
 
@@ -309,6 +338,7 @@ export function appendDocumentationAsMarkdown(
 			out.appendMarkdown("\n\n" + tagsPreview);
 		}
 	}
+
 	out.isTrusted = { enabledCommands: [OpenJsDocLinkCommand.id] };
 
 	return out;

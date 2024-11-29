@@ -57,6 +57,7 @@ export class TasksQuickAccessProvider extends PickerQuickAccessProvider<IPickerQ
 			},
 		});
 	}
+
 	protected async _getPicks(
 		filter: string,
 		disposables: DisposableStore,
@@ -65,6 +66,7 @@ export class TasksQuickAccessProvider extends PickerQuickAccessProvider<IPickerQ
 		if (token.isCancellationRequested) {
 			return [];
 		}
+
 		const taskQuickPick = new TaskQuickPick(
 			this._taskService,
 			this._configurationService,
@@ -86,9 +88,11 @@ export class TasksQuickAccessProvider extends PickerQuickAccessProvider<IPickerQ
 			if (!highlights) {
 				continue;
 			}
+
 			if (entry.type === "separator") {
 				taskPicks.push(entry);
 			}
+
 			const task: Task | ConfiguringTask | string = (<
 				ITaskTwoLevelQuickPickEntry
 			>entry).task!;
@@ -96,7 +100,9 @@ export class TasksQuickAccessProvider extends PickerQuickAccessProvider<IPickerQ
 			const quickAccessEntry: IPickerQuickAccessItem = <
 				ITaskTwoLevelQuickPickEntry
 			>entry;
+
 			quickAccessEntry.highlights = { label: highlights };
+
 			quickAccessEntry.trigger = (index) => {
 				if (index === 1 && quickAccessEntry.buttons?.length === 2) {
 					const key =
@@ -105,6 +111,7 @@ export class TasksQuickAccessProvider extends PickerQuickAccessProvider<IPickerQ
 					if (key) {
 						this._taskService.removeRecentlyUsedTask(key);
 					}
+
 					return TriggerAction.REFRESH_PICKER;
 				} else {
 					if (ContributedTask.is(task)) {
@@ -112,9 +119,11 @@ export class TasksQuickAccessProvider extends PickerQuickAccessProvider<IPickerQ
 					} else if (CustomTask.is(task)) {
 						this._taskService.openConfig(task);
 					}
+
 					return TriggerAction.CLOSE_PICKER;
 				}
 			};
+
 			quickAccessEntry.accept = async () => {
 				if (isString(task)) {
 					// switch to quick pick and show second level
@@ -138,16 +147,20 @@ export class TasksQuickAccessProvider extends PickerQuickAccessProvider<IPickerQ
 					});
 				}
 			};
+
 			taskPicks.push(quickAccessEntry);
 		}
+
 		return taskPicks;
 	}
+
 	private async _toTask(
 		task: Task | ConfiguringTask,
 	): Promise<Task | undefined> {
 		if (!ConfiguringTask.is(task)) {
 			return task;
 		}
+
 		return this._taskService.tryResolveTask(task);
 	}
 }

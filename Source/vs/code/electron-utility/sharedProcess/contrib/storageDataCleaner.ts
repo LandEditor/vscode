@@ -34,8 +34,10 @@ export class UnusedWorkspaceStorageDataCleaner extends Disposable {
 				this.cleanUpStorage();
 			}, 30 * 1000 /* after 30s */),
 		);
+
 		scheduler.schedule();
 	}
+
 	private async cleanUpStorage(): Promise<void> {
 		this.logService.trace(
 			"[storage cleanup]: Starting to clean up workspace storage folders for unused empty workspaces.",
@@ -53,6 +55,7 @@ export class UnusedWorkspaceStorageDataCleaner extends Disposable {
 			const storageClient = new StorageClient(
 				this.mainProcessService.getChannel("storage"),
 			);
+
 			await Promise.all(
 				workspaceStorageFolders.map(async (workspaceStorageFolder) => {
 					const workspaceStoragePath = join(
@@ -66,12 +69,14 @@ export class UnusedWorkspaceStorageDataCleaner extends Disposable {
 					) {
 						return; // keep workspace storage for folders/workspaces that can be accessed still
 					}
+
 					if (
 						workspaceStorageFolder ===
 						EXTENSION_DEVELOPMENT_EMPTY_WINDOW_WORKSPACE.id
 					) {
 						return; // keep workspace storage for empty extension development workspaces
 					}
+
 					const windows = await this.nativeHostService.getWindows({
 						includeAuxiliaryWindows: false,
 					});
@@ -84,15 +89,18 @@ export class UnusedWorkspaceStorageDataCleaner extends Disposable {
 					) {
 						return; // keep workspace storage for empty workspaces opened as window
 					}
+
 					const isStorageUsed =
 						await storageClient.isUsed(workspaceStoragePath);
 
 					if (isStorageUsed) {
 						return; // keep workspace storage for empty workspaces that are in use
 					}
+
 					this.logService.trace(
 						`[storage cleanup]: Deleting workspace storage folder ${workspaceStorageFolder} as it seems to be an unused empty workspace.`,
 					);
+
 					await Promises.rm(workspaceStoragePath);
 				}),
 			);

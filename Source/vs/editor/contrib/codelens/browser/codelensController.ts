@@ -56,19 +56,25 @@ export class CodeLensContribution implements IEditorContribution {
 	static readonly ID: string = "css.editor.codeLens";
 
 	private readonly _disposables = new DisposableStore();
+
 	private readonly _localToDispose = new DisposableStore();
 
 	private readonly _lenses: CodeLensWidget[] = [];
 
 	private readonly _provideCodeLensDebounce: IFeatureDebounceInformation;
+
 	private readonly _resolveCodeLensesDebounce: IFeatureDebounceInformation;
+
 	private readonly _resolveCodeLensesScheduler: RunOnceScheduler;
 
 	private _getCodeLensModelPromise:
 		| CancelablePromise<CodeLensModel>
 		| undefined;
+
 	private readonly _oldCodeLensModels = new DisposableStore();
+
 	private _currentCodeLensModel: CodeLensModel | undefined;
+
 	private _resolveCodeLensesPromise: CancelablePromise<any> | undefined;
 
 	constructor(
@@ -87,11 +93,13 @@ export class CodeLensContribution implements IEditorContribution {
 			"CodeLensProvide",
 			{ min: 250 },
 		);
+
 		this._resolveCodeLensesDebounce = debounceService.for(
 			_languageFeaturesService.codeLensProvider,
 			"CodeLensResolve",
 			{ min: 250, salt: "resolve" },
 		);
+
 		this._resolveCodeLensesScheduler = new RunOnceScheduler(
 			() => this._resolveCodeLensesInViewport(),
 			this._resolveCodeLensesDebounce.default(),
@@ -100,9 +108,11 @@ export class CodeLensContribution implements IEditorContribution {
 		this._disposables.add(
 			this._editor.onDidChangeModel(() => this._onModelChange()),
 		);
+
 		this._disposables.add(
 			this._editor.onDidChangeModelLanguage(() => this._onModelChange()),
 		);
+
 		this._disposables.add(
 			this._editor.onDidChangeConfiguration((e) => {
 				if (
@@ -112,17 +122,20 @@ export class CodeLensContribution implements IEditorContribution {
 				) {
 					this._updateLensStyle();
 				}
+
 				if (e.hasChanged(EditorOption.codeLens)) {
 					this._onModelChange();
 				}
 			}),
 		);
+
 		this._disposables.add(
 			_languageFeaturesService.codeLensProvider.onDidChange(
 				this._onModelChange,
 				this,
 			),
 		);
+
 		this._onModelChange();
 
 		this._updateLensStyle();
@@ -130,8 +143,11 @@ export class CodeLensContribution implements IEditorContribution {
 
 	dispose(): void {
 		this._localDispose();
+
 		this._disposables.dispose();
+
 		this._oldCodeLensModels.dispose();
+
 		this._currentCodeLensModel?.dispose();
 	}
 
@@ -148,6 +164,7 @@ export class CodeLensContribution implements IEditorContribution {
 			fontSize =
 				(this._editor.getOption(EditorOption.fontSize) * 0.9) | 0;
 		}
+
 		return {
 			fontSize,
 			codeLensHeight: (fontSize * lineHeightFactor) | 0,
@@ -169,7 +186,9 @@ export class CodeLensContribution implements IEditorContribution {
 			"--vscode-editorCodeLens-lineHeight",
 			`${codeLensHeight}px`,
 		);
+
 		style.setProperty("--vscode-editorCodeLens-fontSize", `${fontSize}px`);
+
 		style.setProperty(
 			"--vscode-editorCodeLens-fontFeatureSettings",
 			editorFontInfo.fontFeatureSettings,
@@ -177,6 +196,7 @@ export class CodeLensContribution implements IEditorContribution {
 
 		if (fontFamily) {
 			style.setProperty("--vscode-editorCodeLens-fontFamily", fontFamily);
+
 			style.setProperty(
 				"--vscode-editorCodeLens-fontFamilyDefault",
 				EDITOR_FONT_DEFAULTS.fontFamily,
@@ -193,11 +213,17 @@ export class CodeLensContribution implements IEditorContribution {
 
 	private _localDispose(): void {
 		this._getCodeLensModelPromise?.cancel();
+
 		this._getCodeLensModelPromise = undefined;
+
 		this._resolveCodeLensesPromise?.cancel();
+
 		this._resolveCodeLensesPromise = undefined;
+
 		this._localToDispose.clear();
+
 		this._oldCodeLensModels.clear();
+
 		this._currentCodeLensModel?.dispose();
 	}
 
@@ -233,6 +259,7 @@ export class CodeLensContribution implements IEditorContribution {
 
 						if (cachedLenses === cachedLensesNow) {
 							this._codeLensCache.delete(model);
+
 							this._onModelChange();
 						}
 					},
@@ -240,6 +267,7 @@ export class CodeLensContribution implements IEditorContribution {
 					this._localToDispose,
 				);
 			}
+
 			return;
 		}
 
@@ -250,6 +278,7 @@ export class CodeLensContribution implements IEditorContribution {
 				const registration = provider.onDidChange(() =>
 					scheduler.schedule(),
 				);
+
 				this._localToDispose.add(registration);
 			}
 		}
@@ -258,6 +287,7 @@ export class CodeLensContribution implements IEditorContribution {
 			const t1 = Date.now();
 
 			this._getCodeLensModelPromise?.cancel();
+
 			this._getCodeLensModelPromise = createCancelablePromise((token) =>
 				getCodeLensModel(
 					this._languageFeaturesService.codeLensProvider,
@@ -270,6 +300,7 @@ export class CodeLensContribution implements IEditorContribution {
 				if (this._currentCodeLensModel) {
 					this._oldCodeLensModels.add(this._currentCodeLensModel);
 				}
+
 				this._currentCodeLensModel = result;
 
 				// cache model to reduce flicker
@@ -280,19 +311,23 @@ export class CodeLensContribution implements IEditorContribution {
 					model,
 					Date.now() - t1,
 				);
+
 				scheduler.delay = newDelay;
 
 				// render lenses
 				this._renderCodeLensSymbols(result);
 				// dom.scheduleAtNextAnimationFrame(() => this._resolveCodeLensesInViewport());
+
 				this._resolveCodeLensesInViewportSoon();
 			}, onUnexpectedError);
 		}, this._provideCodeLensDebounce.get(model));
 
 		this._localToDispose.add(scheduler);
+
 		this._localToDispose.add(
 			toDisposable(() => this._resolveCodeLensesScheduler.cancel()),
 		);
+
 		this._localToDispose.add(
 			this._editor.onDidChangeModelContent(() => {
 				this._editor.changeDecorations((decorationsAccessor) => {
@@ -311,15 +346,19 @@ export class CodeLensContribution implements IEditorContribution {
 								toDispose.push(lens);
 							} else {
 								lens.update(viewZonesAccessor);
+
 								lastLensLineNumber = lens.getLineNumber();
 							}
 						});
 
 						const helper = new CodeLensHelper();
+
 						toDispose.forEach((l) => {
 							l.dispose(helper, viewZonesAccessor);
+
 							this._lenses.splice(this._lenses.indexOf(l), 1);
 						});
+
 						helper.commit(decorationsAccessor);
 					});
 				});
@@ -329,20 +368,25 @@ export class CodeLensContribution implements IEditorContribution {
 
 				// Cancel pending and active resolve requests
 				this._resolveCodeLensesScheduler.cancel();
+
 				this._resolveCodeLensesPromise?.cancel();
+
 				this._resolveCodeLensesPromise = undefined;
 			}),
 		);
+
 		this._localToDispose.add(
 			this._editor.onDidFocusEditorText(() => {
 				scheduler.schedule();
 			}),
 		);
+
 		this._localToDispose.add(
 			this._editor.onDidBlurEditorText(() => {
 				scheduler.cancel();
 			}),
 		);
+
 		this._localToDispose.add(
 			this._editor.onDidScrollChange((e) => {
 				if (e.scrollTopChanged && this._lenses.length > 0) {
@@ -350,17 +394,20 @@ export class CodeLensContribution implements IEditorContribution {
 				}
 			}),
 		);
+
 		this._localToDispose.add(
 			this._editor.onDidLayoutChange(() => {
 				this._resolveCodeLensesInViewportSoon();
 			}),
 		);
+
 		this._localToDispose.add(
 			toDisposable(() => {
 				if (this._editor.getModel()) {
 					const scrollState = StableEditorScrollState.capture(
 						this._editor,
 					);
+
 					this._editor.changeDecorations((decorationsAccessor) => {
 						this._editor.changeViewZones((viewZonesAccessor) => {
 							this._disposeAllLenses(
@@ -369,6 +416,7 @@ export class CodeLensContribution implements IEditorContribution {
 							);
 						});
 					});
+
 					scrollState.restore(this._editor);
 				} else {
 					// No accessors available
@@ -376,16 +424,19 @@ export class CodeLensContribution implements IEditorContribution {
 				}
 			}),
 		);
+
 		this._localToDispose.add(
 			this._editor.onMouseDown((e) => {
 				if (e.target.type !== MouseTargetType.CONTENT_WIDGET) {
 					return;
 				}
+
 				let target = e.target.element;
 
 				if (target?.tagName === "SPAN") {
 					target = target.parentElement;
 				}
+
 				if (target?.tagName === "A") {
 					for (const lens of this._lenses) {
 						const command = lens.getCommand(
@@ -408,6 +459,7 @@ export class CodeLensContribution implements IEditorContribution {
 				}
 			}),
 		);
+
 		scheduler.schedule();
 	}
 
@@ -420,9 +472,11 @@ export class CodeLensContribution implements IEditorContribution {
 		for (const lens of this._lenses) {
 			lens.dispose(helper, viewZoneChangeAccessor);
 		}
+
 		if (decChangeAccessor) {
 			helper.commit(decChangeAccessor);
 		}
+
 		this._lenses.length = 0;
 	}
 
@@ -453,6 +507,7 @@ export class CodeLensContribution implements IEditorContribution {
 			} else {
 				// on later line as previous
 				lastGroup = [symbol];
+
 				groups.push(lastGroup);
 			}
 		}
@@ -489,13 +544,16 @@ export class CodeLensContribution implements IEditorContribution {
 							helper,
 							viewZoneAccessor,
 						);
+
 						this._lenses.splice(codeLensIndex, 1);
 					} else if (codeLensLineNumber === symbolsLineNumber) {
 						this._lenses[codeLensIndex].updateCodeLensSymbols(
 							groups[groupsIndex],
 							helper,
 						);
+
 						groupsIndex++;
+
 						codeLensIndex++;
 					} else {
 						this._lenses.splice(
@@ -510,7 +568,9 @@ export class CodeLensContribution implements IEditorContribution {
 								() => this._resolveCodeLensesInViewportSoon(),
 							),
 						);
+
 						codeLensIndex++;
+
 						groupsIndex++;
 					}
 				}
@@ -521,6 +581,7 @@ export class CodeLensContribution implements IEditorContribution {
 						helper,
 						viewZoneAccessor,
 					);
+
 					this._lenses.splice(codeLensIndex, 1);
 				}
 
@@ -536,6 +597,7 @@ export class CodeLensContribution implements IEditorContribution {
 							() => this._resolveCodeLensesInViewportSoon(),
 						),
 					);
+
 					groupsIndex++;
 				}
 
@@ -556,6 +618,7 @@ export class CodeLensContribution implements IEditorContribution {
 
 	private _resolveCodeLensesInViewport(): void {
 		this._resolveCodeLensesPromise?.cancel();
+
 		this._resolveCodeLensesPromise = undefined;
 
 		const model = this._editor.getModel();
@@ -567,11 +630,13 @@ export class CodeLensContribution implements IEditorContribution {
 		const toResolve: CodeLensItem[][] = [];
 
 		const lenses: CodeLensWidget[] = [];
+
 		this._lenses.forEach((lens) => {
 			const request = lens.computeIfNecessary(model);
 
 			if (request) {
 				toResolve.push(request);
+
 				lenses.push(lens);
 			}
 		});
@@ -621,6 +686,7 @@ export class CodeLensContribution implements IEditorContribution {
 
 			return Promise.all(promises);
 		});
+
 		this._resolveCodeLensesPromise = resolvePromise;
 
 		this._resolveCodeLensesPromise.then(
@@ -630,12 +696,14 @@ export class CodeLensContribution implements IEditorContribution {
 					model,
 					Date.now() - t1,
 				);
+
 				this._resolveCodeLensesScheduler.delay = newDelay;
 
 				if (this._currentCodeLensModel) {
 					// update the cached state with new resolved items
 					this._codeLensCache.put(model, this._currentCodeLensModel);
 				}
+
 				this._oldCodeLensModels.clear(); // dispose old models once we have updated the UI with the current model
 				if (resolvePromise === this._resolveCodeLensesPromise) {
 					this._resolveCodeLensesPromise = undefined;
@@ -652,6 +720,7 @@ export class CodeLensContribution implements IEditorContribution {
 
 	async getModel(): Promise<CodeLensModel | undefined> {
 		await this._getCodeLensModelPromise;
+
 		await this._resolveCodeLensesPromise;
 
 		return !this._currentCodeLensModel?.isDisposed
@@ -757,6 +826,7 @@ registerEditorAction(
 				if (!newLens || !newLens.symbol.command) {
 					return;
 				}
+
 				command = newLens.symbol.command;
 			}
 

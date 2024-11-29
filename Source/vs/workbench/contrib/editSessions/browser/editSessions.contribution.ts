@@ -217,6 +217,7 @@ registerAction2(
 		constructor() {
 			super({ ...installAdditionalContinueOnOptionsCommand, f1: false });
 		}
+
 		async run(accessor: ServicesAccessor): Promise<void> {
 			return accessor
 				.get(IExtensionsWorkbenchService)
@@ -241,15 +242,22 @@ export class EditSessionsContribution
 	implements IWorkbenchContribution
 {
 	private continueEditSessionOptions: ContinueEditSessionItem[] = [];
+
 	private readonly shouldShowViewsContext: IContextKey<boolean>;
+
 	private readonly pendingEditSessionsContext: IContextKey<boolean>;
+
 	private static APPLICATION_LAUNCHED_VIA_CONTINUE_ON_STORAGE_KEY =
 		"applicationLaunchedViaContinueOn";
+
 	private readonly accountsMenuBadgeDisposable = this._register(
 		new MutableDisposable(),
 	);
+
 	private registeredCommands = new Set<string>();
+
 	private workspaceStateSynchronizer: IUserDataSynchroniser | undefined;
+
 	private editSessionsStorageClient: EditSessionsStoreClient | undefined;
 
 	constructor(
@@ -313,17 +321,21 @@ export class EditSessionsContribution
 		private readonly workspaceIdentityService: IWorkspaceIdentityService,
 	) {
 		super();
+
 		this.shouldShowViewsContext = EDIT_SESSIONS_SHOW_VIEW.bindTo(
 			this.contextKeyService,
 		);
+
 		this.pendingEditSessionsContext = EDIT_SESSIONS_PENDING.bindTo(
 			this.contextKeyService,
 		);
+
 		this.pendingEditSessionsContext.set(false);
 
 		if (!this.productService["editSessions.store"]?.url) {
 			return;
 		}
+
 		this.editSessionsStorageClient = new EditSessionsStoreClient(
 			URI.parse(this.productService["editSessions.store"].url),
 			this.productService,
@@ -333,8 +345,10 @@ export class EditSessionsContribution
 			this.fileService,
 			this.storageService,
 		);
+
 		this.editSessionsStorageService.storeClient =
 			this.editSessionsStorageClient;
+
 		this.workspaceStateSynchronizer = new WorkspaceStateSynchroniser(
 			this.userDataProfilesService.defaultProfile,
 			undefined,
@@ -349,10 +363,15 @@ export class EditSessionsContribution
 			this.workspaceIdentityService,
 			this.editSessionsStorageService,
 		);
+
 		this.autoResumeEditSession();
+
 		this.registerActions();
+
 		this.registerViews();
+
 		this.registerContributedEditSessionOptions();
+
 		this._register(
 			this.fileService.registerProvider(
 				EditSessionsFileSystemProvider.SCHEMA,
@@ -361,6 +380,7 @@ export class EditSessionsContribution
 				),
 			),
 		);
+
 		this.lifecycleService.onWillShutdown((e) => {
 			if (
 				e.reason !== ShutdownReason.RELOAD &&
@@ -379,17 +399,20 @@ export class EditSessionsContribution
 				});
 			}
 		});
+
 		this._register(
 			this.editSessionsStorageService.onDidSignIn(() =>
 				this.updateAccountsMenuBadge(),
 			),
 		);
+
 		this._register(
 			this.editSessionsStorageService.onDidSignOut(() =>
 				this.updateAccountsMenuBadge(),
 			),
 		);
 	}
+
 	private async autoResumeEditSession() {
 		const shouldAutoResumeOnReload =
 			this.configurationService.getValue(
@@ -400,6 +423,7 @@ export class EditSessionsContribution
 			this.logService.info(
 				`Resuming cloud changes, reason: found editSessionId ${this.environmentService.editSessionId} in environment service...`,
 			);
+
 			await this.progressService.withProgress(
 				resumeProgressOptions,
 				async (progress) =>
@@ -443,6 +467,7 @@ export class EditSessionsContribution
 					StorageScope.APPLICATION,
 					false,
 				);
+
 			this.logService.info(
 				`Prompting to enable cloud changes, has application previously launched from Continue On flow: ${hasApplicationLaunchedFromContinueOnFlow}`,
 			);
@@ -452,15 +477,19 @@ export class EditSessionsContribution
 				this.logService.info(
 					"Showing badge to enable cloud changes in accounts menu...",
 				);
+
 				this.updateAccountsMenuBadge();
+
 				this.pendingEditSessionsContext.set(true);
 				// attempt a resume if we are in a pending state and the user just signed in
 				const disposable = this.editSessionsStorageService.onDidSignIn(
 					async () => {
 						disposable.dispose();
+
 						this.logService.info(
 							"Showing badge to enable cloud changes in accounts menu succeeded, resuming cloud changes...",
 						);
+
 						await this.progressService.withProgress(
 							resumeProgressOptions,
 							async (progress) =>
@@ -472,10 +501,12 @@ export class EditSessionsContribution
 									progress,
 								),
 						);
+
 						this.storageService.remove(
 							EditSessionsContribution.APPLICATION_LAUNCHED_VIA_CONTINUE_ON_STORAGE_KEY,
 							StorageScope.APPLICATION,
 						);
+
 						this.environmentService.continueOn = undefined;
 					},
 				);
@@ -494,13 +525,16 @@ export class EditSessionsContribution
 					StorageScope.APPLICATION,
 					StorageTarget.MACHINE,
 				);
+
 				this.logService.info("Prompting to enable cloud changes...");
+
 				await this.editSessionsStorageService.initialize("read");
 
 				if (this.editSessionsStorageService.isSignedIn) {
 					this.logService.info(
 						"Prompting to enable cloud changes succeeded, resuming cloud changes...",
 					);
+
 					await this.progressService.withProgress(
 						resumeProgressOptions,
 						async (progress) =>
@@ -526,21 +560,26 @@ export class EditSessionsContribution
 			this.logService.debug("Auto resuming cloud changes disabled.");
 		}
 	}
+
 	private updateAccountsMenuBadge() {
 		if (this.editSessionsStorageService.isSignedIn) {
 			return this.accountsMenuBadgeDisposable.clear();
 		}
+
 		const badge = new NumberBadge(1, () =>
 			localize(
 				"check for pending cloud changes",
 				"Check for pending cloud changes",
 			),
 		);
+
 		this.accountsMenuBadgeDisposable.value =
 			this.activityService.showAccountsActivity({ badge });
 	}
+
 	private async autoStoreEditSession() {
 		const cancellationTokenSource = new CancellationTokenSource();
+
 		await this.progressService.withProgress(
 			{
 				location: ProgressLocation.Window,
@@ -554,10 +593,12 @@ export class EditSessionsContribution
 				this.storeEditSession(false, cancellationTokenSource.token),
 			() => {
 				cancellationTokenSource.cancel();
+
 				cancellationTokenSource.dispose();
 			},
 		);
 	}
+
 	private registerViews() {
 		const container = Registry.as<IViewContainersRegistry>(
 			ViewExtensions.ViewContainersRegistry,
@@ -575,6 +616,7 @@ export class EditSessionsContribution
 			ViewContainerLocation.Sidebar,
 			{ doNotRegisterOpenCommand: true },
 		);
+
 		this._register(
 			this.instantiationService.createInstance(
 				EditSessionsDataViews,
@@ -582,14 +624,21 @@ export class EditSessionsContribution
 			),
 		);
 	}
+
 	private registerActions() {
 		this.registerContinueEditSessionAction();
+
 		this.registerResumeLatestEditSessionAction();
+
 		this.registerStoreLatestEditSessionAction();
+
 		this.registerContinueInLocalFolderAction();
+
 		this.registerShowEditSessionViewAction();
+
 		this.registerShowEditSessionOutputChannelAction();
 	}
+
 	private registerShowEditSessionOutputChannelAction() {
 		this._register(
 			registerAction2(
@@ -597,16 +646,20 @@ export class EditSessionsContribution
 					constructor() {
 						super(showOutputChannelCommand);
 					}
+
 					run(accessor: ServicesAccessor, ...args: any[]) {
 						const outputChannel = accessor.get(IOutputService);
+
 						void outputChannel.showChannel(editSessionsLogId);
 					}
 				},
 			),
 		);
 	}
+
 	private registerShowEditSessionViewAction() {
 		const that = this;
+
 		this._register(
 			registerAction2(
 				class ShowEditSessionView extends Action2 {
@@ -621,24 +674,29 @@ export class EditSessionsContribution
 							f1: true,
 						});
 					}
+
 					async run(accessor: ServicesAccessor) {
 						that.shouldShowViewsContext.set(true);
 
 						const viewsService = accessor.get(IViewsService);
+
 						await viewsService.openView(EDIT_SESSIONS_DATA_VIEW_ID);
 					}
 				},
 			),
 		);
 	}
+
 	private registerContinueEditSessionAction() {
 		const that = this;
+
 		this._register(
 			registerAction2(
 				class ContinueEditSessionAction extends Action2 {
 					constructor() {
 						super(continueWorkingOnCommand);
 					}
+
 					async run(
 						accessor: ServicesAccessor,
 						workspaceUri: URI | undefined,
@@ -646,19 +704,28 @@ export class EditSessionsContribution
 					): Promise<void> {
 						type ContinueOnEventOutcome = {
 							outcome: string;
+
 							hashedId?: string;
 						};
+
 						type ContinueOnClassificationOutcome = {
 							owner: "joyceerhl";
+
 							comment: "Reporting the outcome of invoking the Continue On action.";
+
 							outcome: {
 								classification: "SystemMetaData";
+
 								purpose: "FeatureInsight";
+
 								comment: "The outcome of invoking continue edit session.";
 							};
+
 							hashedId?: {
 								classification: "SystemMetaData";
+
 								purpose: "FeatureInsight";
+
 								comment: "The hash of the stored edit session id, for correlating success of stores and resumes.";
 							};
 						};
@@ -689,10 +756,13 @@ export class EditSessionsContribution
 
 						if (shouldStoreEditSession) {
 							type ContinueWithEditSessionEvent = {};
+
 							type ContinueWithEditSessionClassification = {
 								owner: "joyceerhl";
+
 								comment: "Reporting when storing an edit session as part of the Continue On flow.";
 							};
+
 							that.telemetryService.publicLog2<
 								ContinueWithEditSessionEvent,
 								ContinueWithEditSessionClassification
@@ -741,11 +811,14 @@ export class EditSessionsContribution
 												{ outcome: "storeSkipped" },
 											);
 										}
+
 										return ref;
 									},
 									() => {
 										cancellationTokenSource.cancel();
+
 										cancellationTokenSource.dispose();
+
 										that.telemetryService.publicLog2<
 											ContinueOnEventOutcome,
 											ContinueOnClassificationOutcome
@@ -774,8 +847,10 @@ export class EditSessionsContribution
 						if (uri === undefined) {
 							return;
 						}
+
 						if (ref !== undefined && uri !== "noDestinationUri") {
 							const encodedRef = encodeURIComponent(ref);
+
 							uri = uri.with({
 								query:
 									uri.query.length > 0
@@ -785,6 +860,7 @@ export class EditSessionsContribution
 							});
 							// Open the URI
 							that.logService.info(`Opening ${uri.toString()}`);
+
 							await that.openerService.open(uri, {
 								openExternal: true,
 							});
@@ -794,6 +870,7 @@ export class EditSessionsContribution
 						) {
 							// Open the URI without an edit session ref
 							that.logService.info(`Opening ${uri.toString()}`);
+
 							await that.openerService.open(uri, {
 								openExternal: true,
 							});
@@ -810,8 +887,10 @@ export class EditSessionsContribution
 			),
 		);
 	}
+
 	private registerResumeLatestEditSessionAction(): void {
 		const that = this;
+
 		this._register(
 			registerAction2(
 				class ResumeLatestEditSessionAction extends Action2 {
@@ -826,6 +905,7 @@ export class EditSessionsContribution
 							f1: true,
 						});
 					}
+
 					async run(
 						accessor: ServicesAccessor,
 						editSessionId?: string,
@@ -847,6 +927,7 @@ export class EditSessionsContribution
 				},
 			),
 		);
+
 		this._register(
 			registerAction2(
 				class ResumeLatestEditSessionAction extends Action2 {
@@ -861,6 +942,7 @@ export class EditSessionsContribution
 							f1: true,
 						});
 					}
+
 					async run(
 						accessor: ServicesAccessor,
 						editSessionId?: string,
@@ -875,6 +957,7 @@ export class EditSessionsContribution
 								{ content: data, ref: "" },
 							);
 						}
+
 						await that.progressService.withProgress(
 							{
 								...resumeProgressOptions,
@@ -895,8 +978,10 @@ export class EditSessionsContribution
 			),
 		);
 	}
+
 	private registerStoreLatestEditSessionAction(): void {
 		const that = this;
+
 		this._register(
 			registerAction2(
 				class StoreLatestEditSessionAction extends Action2 {
@@ -911,9 +996,11 @@ export class EditSessionsContribution
 							f1: true,
 						});
 					}
+
 					async run(accessor: ServicesAccessor): Promise<void> {
 						const cancellationTokenSource =
 							new CancellationTokenSource();
+
 						await that.progressService.withProgress(
 							{
 								location: ProgressLocation.Notification,
@@ -924,14 +1011,18 @@ export class EditSessionsContribution
 							},
 							async () => {
 								type StoreEvent = {};
+
 								type StoreClassification = {
 									owner: "joyceerhl";
+
 									comment: "Reporting when the store edit session action is invoked.";
 								};
+
 								that.telemetryService.publicLog2<
 									StoreEvent,
 									StoreClassification
 								>("editSessions.store");
+
 								await that.storeEditSession(
 									true,
 									cancellationTokenSource.token,
@@ -939,6 +1030,7 @@ export class EditSessionsContribution
 							},
 							() => {
 								cancellationTokenSource.cancel();
+
 								cancellationTokenSource.dispose();
 							},
 						);
@@ -947,6 +1039,7 @@ export class EditSessionsContribution
 			),
 		);
 	}
+
 	async resumeEditSession(
 		ref?: string,
 		silent?: boolean,
@@ -962,6 +1055,7 @@ export class EditSessionsContribution
 		if (this.contextService.getWorkbenchState() === WorkbenchState.EMPTY) {
 			return;
 		}
+
 		this.logService.info(
 			ref !== undefined
 				? `Resuming changes from cloud with ref ${ref}...`
@@ -974,28 +1068,41 @@ export class EditSessionsContribution
 		) {
 			return;
 		}
+
 		type ResumeEvent = {
 			outcome: string;
+
 			hashedId?: string;
 		};
+
 		type ResumeClassification = {
 			owner: "joyceerhl";
+
 			comment: "Reporting when an edit session is resumed from an edit session identifier.";
+
 			outcome: {
 				classification: "SystemMetaData";
+
 				purpose: "FeatureInsight";
+
 				comment: "The outcome of resuming the edit session.";
 			};
+
 			hashedId?: {
 				classification: "SystemMetaData";
+
 				purpose: "FeatureInsight";
+
 				comment: "The hash of the stored edit session id, for correlating success of stores and resumes.";
 			};
 		};
+
 		this.telemetryService.publicLog2<ResumeEvent, ResumeClassification>(
 			"editSessions.resume",
 		);
+
 		performance.mark("code/willResumeEditSessionFromIdentifier");
+
 		progress?.report({
 			message: localize(
 				"checkingForWorkingChanges",
@@ -1024,6 +1131,7 @@ export class EditSessionsContribution
 					),
 				);
 			}
+
 			this.logService.info(
 				ref !== undefined
 					? `Aborting resuming changes from cloud as no edit session content is available to be applied from ref ${ref}.`
@@ -1032,9 +1140,11 @@ export class EditSessionsContribution
 
 			return;
 		}
+
 		progress?.report({ message: resumeProgressOptionsTitle });
 
 		const editSession = JSON.parse(data.content);
+
 		ref = data.ref;
 
 		if (editSession.version > EditSessionSchemaVersion) {
@@ -1045,6 +1155,7 @@ export class EditSessionsContribution
 					this.productService.nameLong,
 				),
 			);
+
 			this.telemetryService.publicLog2<ResumeEvent, ResumeClassification>(
 				"editSessions.resume.outcome",
 				{
@@ -1055,6 +1166,7 @@ export class EditSessionsContribution
 
 			return;
 		}
+
 		try {
 			const { changes, conflictingChanges } = await this.generateChanges(
 				editSession,
@@ -1095,6 +1207,7 @@ export class EditSessionsContribution
 					return;
 				}
 			}
+
 			for (const { uri, type, contents } of changes) {
 				if (type === ChangeType.Addition) {
 					await this.fileService.writeFile(
@@ -1111,12 +1224,17 @@ export class EditSessionsContribution
 					await this.fileService.del(uri);
 				}
 			}
+
 			await this.workspaceStateSynchronizer?.apply(false, {});
+
 			this.logService.info(
 				`Deleting edit session with ref ${ref} after successfully applying it to current workspace...`,
 			);
+
 			await this.editSessionsStorageService.delete("editSessions", ref);
+
 			this.logService.info(`Deleted edit session with ref ${ref}.`);
+
 			this.telemetryService.publicLog2<ResumeEvent, ResumeClassification>(
 				"editSessions.resume.outcome",
 				{
@@ -1129,6 +1247,7 @@ export class EditSessionsContribution
 				"Failed to resume edit session, reason: ",
 				(ex as Error).toString(),
 			);
+
 			this.notificationService.error(
 				localize(
 					"resume failed",
@@ -1136,8 +1255,10 @@ export class EditSessionsContribution
 				),
 			);
 		}
+
 		performance.mark("code/didResumeEditSessionFromIdentifier");
 	}
+
 	private async generateChanges(
 		editSession: EditSession,
 		ref: string,
@@ -1146,7 +1267,9 @@ export class EditSessionsContribution
 	) {
 		const changes: {
 			uri: URI;
+
 			type: ChangeType;
+
 			contents: string | undefined;
 		}[] = [];
 
@@ -1167,6 +1290,7 @@ export class EditSessionsContribution
 							f,
 							cancellationTokenSource.token,
 						);
+
 					this.logService.info(
 						`Matching identity ${identity} against edit session folder identity ${folder.canonicalIdentity}...`,
 					);
@@ -1179,6 +1303,7 @@ export class EditSessionsContribution
 
 						break;
 					}
+
 					if (identity !== undefined) {
 						const match =
 							await this.editSessionIdentityService.provideEditSessionIdentityMatch(
@@ -1232,6 +1357,7 @@ export class EditSessionsContribution
 					(f) => f.name === folder.name,
 				);
 			}
+
 			if (!folderRoot) {
 				this.logService.info(
 					`Skipping applying ${folder.workingChanges.length} changes from edit session with ref ${ref} as no matching workspace folder was found.`,
@@ -1243,6 +1369,7 @@ export class EditSessionsContribution
 					contributedStateHandlers: [],
 				};
 			}
+
 			const localChanges = new Set<string>();
 
 			for (const repository of this.scmService.repositories) {
@@ -1254,13 +1381,16 @@ export class EditSessionsContribution
 				) {
 					const repositoryChanges =
 						this.getChangedResources(repository);
+
 					repositoryChanges.forEach((change) =>
 						localChanges.add(change.toString()),
 					);
 				}
 			}
+
 			for (const change of folder.workingChanges) {
 				const uri = joinPath(folderRoot.uri, change.relativeFilePath);
+
 				changes.push({
 					uri,
 					type: change.type,
@@ -1282,8 +1412,10 @@ export class EditSessionsContribution
 				}
 			}
 		}
+
 		return { changes, conflictingChanges };
 	}
+
 	private async willChangeLocalContents(
 		localChanges: Set<string>,
 		uriWithIncomingChanges: URI,
@@ -1292,6 +1424,7 @@ export class EditSessionsContribution
 		if (!localChanges.has(uriWithIncomingChanges.toString())) {
 			return false;
 		}
+
 		const { contents, type } = incomingChange;
 
 		switch (type) {
@@ -1311,13 +1444,16 @@ export class EditSessionsContribution
 
 				return originalContents !== incomingContents;
 			}
+
 			case ChangeType.Deletion: {
 				return await this.fileService.exists(uriWithIncomingChanges);
 			}
+
 			default:
 				throw new Error("Unhandled change type.");
 		}
 	}
+
 	async storeEditSession(
 		fromStoreCommand: boolean,
 		cancellationToken: CancellationToken,
@@ -1354,10 +1490,12 @@ export class EditSessionsContribution
 
 					continue;
 				}
+
 				await this.editSessionIdentityService.onWillCreateEditSessionIdentity(
 					workspaceFolder,
 					cancellationToken,
 				);
+
 				name = name ?? workspaceFolder.name;
 
 				const relativeFilePath =
@@ -1368,12 +1506,14 @@ export class EditSessionsContribution
 						continue;
 					}
 				} catch {}
+
 				hasEdits = true;
 
 				if (await this.fileService.exists(uri)) {
 					const contents = encodeBase64(
 						(await this.fileService.readFile(uri)).value,
 					);
+
 					editSessionSize += contents.length;
 
 					if (
@@ -1389,6 +1529,7 @@ export class EditSessionsContribution
 
 						return undefined;
 					}
+
 					workingChanges.push({
 						type: ChangeType.Addition,
 						fileType: FileType.File,
@@ -1405,6 +1546,7 @@ export class EditSessionsContribution
 					});
 				}
 			}
+
 			let canonicalIdentity = undefined;
 
 			if (workspaceFolder !== null && workspaceFolder !== undefined) {
@@ -1438,8 +1580,10 @@ export class EditSessionsContribution
 					),
 				);
 			}
+
 			return undefined;
 		}
+
 		const data: EditSession = {
 			folders,
 			version: 2,
@@ -1456,6 +1600,7 @@ export class EditSessionsContribution
 				"editSessions",
 				data,
 			);
+
 			this.logService.info(`Stored edit session with ref ${ref}.`);
 
 			return ref;
@@ -1464,15 +1609,21 @@ export class EditSessionsContribution
 				`Failed to store edit session, reason: `,
 				(ex as Error).toString(),
 			);
+
 			type UploadFailedEvent = {
 				reason: string;
 			};
+
 			type UploadFailedClassification = {
 				owner: "joyceerhl";
+
 				comment: "Reporting when Continue On server request fails.";
+
 				reason?: {
 					classification: "SystemMetaData";
+
 					purpose: "FeatureInsight";
+
 					comment: "The reason that the server request failed.";
 				};
 			};
@@ -1485,6 +1636,7 @@ export class EditSessionsContribution
 							UploadFailedEvent,
 							UploadFailedClassification
 						>("editSessions.upload.failed", { reason: "TooLarge" });
+
 						this.notificationService.error(
 							localize(
 								"payload too large",
@@ -1499,6 +1651,7 @@ export class EditSessionsContribution
 							UploadFailedEvent,
 							UploadFailedClassification
 						>("editSessions.upload.failed", { reason: "unknown" });
+
 						this.notificationService.error(
 							localize(
 								"payload failed",
@@ -1510,8 +1663,10 @@ export class EditSessionsContribution
 				}
 			}
 		}
+
 		return undefined;
 	}
+
 	private getChangedResources(repository: ISCMRepository) {
 		return repository.provider.groups.reduce(
 			(resources, resourceGroups) => {
@@ -1524,24 +1679,32 @@ export class EditSessionsContribution
 			new Set<URI>(),
 		); // A URI might appear in more than one resource group
 	}
+
 	private hasEditSession() {
 		for (const repository of this.scmService.repositories) {
 			if (this.getChangedResources(repository).size > 0) {
 				return true;
 			}
 		}
+
 		return false;
 	}
+
 	private async shouldContinueOnWithEditSession(): Promise<boolean> {
 		type EditSessionsAuthCheckEvent = {
 			outcome: string;
 		};
+
 		type EditSessionsAuthCheckClassification = {
 			owner: "joyceerhl";
+
 			comment: "Reporting whether we can and should store edit session as part of Continue On.";
+
 			outcome: {
 				classification: "SystemMetaData";
+
 				purpose: "FeatureInsight";
+
 				comment: "The outcome of checking whether we can store an edit session as part of the Continue On flow.";
 			};
 		};
@@ -1571,11 +1734,14 @@ export class EditSessionsContribution
 			const quickpick = disposables.add(
 				this.quickInputService.createQuickPick<IQuickPickItem>(),
 			);
+
 			quickpick.placeholder = localize(
 				"continue with cloud changes",
 				"Select whether to bring your working changes with you",
 			);
+
 			quickpick.ok = false;
+
 			quickpick.ignoreFocusOut = true;
 
 			const withCloudChanges = {
@@ -1591,6 +1757,7 @@ export class EditSessionsContribution
 					"No, continue without my working changes",
 				),
 			};
+
 			quickpick.items = [withCloudChanges, withoutCloudChanges];
 
 			const continueWithCloudChanges = await new Promise<boolean>(
@@ -1600,15 +1767,19 @@ export class EditSessionsContribution
 							resolve(
 								quickpick.selectedItems[0] === withCloudChanges,
 							);
+
 							disposables.dispose();
 						}),
 					);
+
 					disposables.add(
 						quickpick.onDidHide(() => {
 							reject(new CancellationError());
+
 							disposables.dispose();
 						}),
 					);
+
 					quickpick.show();
 				},
 			);
@@ -1623,6 +1794,7 @@ export class EditSessionsContribution
 
 				return continueWithCloudChanges;
 			}
+
 			const initialized =
 				await this.editSessionsStorageService.initialize("write");
 
@@ -1634,8 +1806,10 @@ export class EditSessionsContribution
 					outcome: "didNotEnableEditSessionsWhenPrompted",
 				});
 			}
+
 			return initialized;
 		}
+
 		return false;
 	}
 	//#region Continue Edit Session extension contribution point
@@ -1652,9 +1826,11 @@ export class EditSessionsContribution
 				) {
 					continue;
 				}
+
 				if (!Array.isArray(extension.value)) {
 					continue;
 				}
+
 				for (const contribution of extension.value) {
 					const command = MenuRegistry.getCommand(
 						contribution.command,
@@ -1663,6 +1839,7 @@ export class EditSessionsContribution
 					if (!command) {
 						return;
 					}
+
 					const icon = command.icon;
 
 					const title =
@@ -1695,9 +1872,11 @@ export class EditSessionsContribution
 					}
 				}
 			}
+
 			this.continueEditSessionOptions = continueEditSessionOptions;
 		});
 	}
+
 	private generateStandaloneOptionCommand(
 		commandId: string,
 		qualifiedName: string,
@@ -1718,12 +1897,14 @@ export class EditSessionsContribution
 
 		if (!this.registeredCommands.has(command.id)) {
 			this.registeredCommands.add(command.id);
+
 			this._register(
 				registerAction2(
 					class StandaloneContinueOnOption extends Action2 {
 						constructor() {
 							super(command);
 						}
+
 						async run(accessor: ServicesAccessor): Promise<void> {
 							return accessor
 								.get(ICommandService)
@@ -1749,14 +1930,17 @@ export class EditSessionsContribution
 			}
 		}
 	}
+
 	private registerContinueInLocalFolderAction(): void {
 		const that = this;
+
 		this._register(
 			registerAction2(
 				class ContinueInLocalFolderAction extends Action2 {
 					constructor() {
 						super(openLocalFolderCommand);
 					}
+
 					async run(
 						accessor: ServicesAccessor,
 					): Promise<URI | undefined> {
@@ -1801,6 +1985,7 @@ export class EditSessionsContribution
 			);
 		}
 	}
+
 	private async pickContinueEditSessionDestination(): Promise<
 		string | undefined
 	> {
@@ -1819,12 +2004,15 @@ export class EditSessionsContribution
 						.getWorkspace()
 						.folders.map((folder) => folder.name)
 						.join(", ");
+
 		quickPick.placeholder = localize(
 			"continueEditSessionPick.title.v2",
 			"Select a development environment to continue working on {0} in",
 			`'${workspaceContext}'`,
 		);
+
 		quickPick.items = this.createPickItems();
+
 		this.extensionService.onDidChangeExtensions(() => {
 			quickPick.items = this.createPickItems();
 		});
@@ -1834,9 +2022,11 @@ export class EditSessionsContribution
 				disposables.add(
 					quickPick.onDidHide(() => {
 						disposables.dispose();
+
 						resolve(undefined);
 					}),
 				);
+
 				disposables.add(
 					quickPick.onDidAccept((e) => {
 						const selection = quickPick.activeItems[0].command;
@@ -1850,11 +2040,14 @@ export class EditSessionsContribution
 							);
 						} else {
 							resolve(selection);
+
 							quickPick.hide();
 						}
 					}),
 				);
+
 				quickPick.show();
+
 				disposables.add(
 					quickPick.onDidTriggerItemButton(async (e) => {
 						if (e.item.documentation !== undefined) {
@@ -1863,6 +2056,7 @@ export class EditSessionsContribution
 								: await this.commandService.executeCommand(
 										e.item.documentation,
 									);
+
 							void this.openerService.open(uri, {
 								openExternal: true,
 							});
@@ -1871,28 +2065,39 @@ export class EditSessionsContribution
 				);
 			},
 		);
+
 		quickPick.dispose();
 
 		return command;
 	}
+
 	private async resolveDestination(
 		command: string,
 	): Promise<URI | "noDestinationUri" | undefined> {
 		type EvaluateContinueOnDestinationEvent = {
 			outcome: string;
+
 			selection: string;
 		};
+
 		type EvaluateContinueOnDestinationClassification = {
 			owner: "joyceerhl";
+
 			comment: "Reporting the outcome of evaluating a selected Continue On destination option.";
+
 			selection: {
 				classification: "SystemMetaData";
+
 				purpose: "FeatureInsight";
+
 				comment: "The selected Continue On destination option.";
 			};
+
 			outcome: {
 				classification: "SystemMetaData";
+
 				purpose: "FeatureInsight";
+
 				comment: "The outcome of evaluating the selected Continue On destination option.";
 			};
 		};
@@ -1913,6 +2118,7 @@ export class EditSessionsContribution
 
 				return "noDestinationUri";
 			}
+
 			if (URI.isUri(uri)) {
 				this.telemetryService.publicLog2<
 					EvaluateContinueOnDestinationEvent,
@@ -1924,6 +2130,7 @@ export class EditSessionsContribution
 
 				return uri;
 			}
+
 			this.telemetryService.publicLog2<
 				EvaluateContinueOnDestinationEvent,
 				EvaluateContinueOnDestinationClassification
@@ -1951,9 +2158,11 @@ export class EditSessionsContribution
 					outcome: "unknownError",
 				});
 			}
+
 			return undefined;
 		}
 	}
+
 	private createPickItems(): (
 		| ContinueEditSessionItem
 		| IQuickPickSeparator
@@ -1981,6 +2190,7 @@ export class EditSessionsContribution
 				),
 			);
 		}
+
 		const sortedItems: (ContinueEditSessionItem | IQuickPickSeparator)[] =
 			items.sort((item1, item2) =>
 				item1.label.localeCompare(item2.label),
@@ -2019,12 +2229,17 @@ class ContinueEditSessionItem implements IQuickPickItem {
 }
 interface ICommand {
 	command: string;
+
 	group: string;
+
 	when: string;
 
 	documentation?: string;
+
 	qualifiedName?: string;
+
 	category?: string;
+
 	remoteGroup?: string;
 }
 

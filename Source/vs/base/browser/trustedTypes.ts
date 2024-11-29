@@ -27,6 +27,7 @@ export function createTrustedTypesPolicy<
 					| Extract<keyof Options, keyof TrustedTypePolicyOptions>
 			  >;
 	}
+
 	const monacoEnvironment: IMonacoEnvironment | undefined = (
 		globalThis as any
 	).MonacoEnvironment;
@@ -43,6 +44,7 @@ export function createTrustedTypesPolicy<
 			return undefined;
 		}
 	}
+
 	try {
 		return (globalThis as any).trustedTypes?.createPolicy(
 			policyName,

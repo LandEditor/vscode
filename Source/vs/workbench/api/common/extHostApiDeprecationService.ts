@@ -10,6 +10,7 @@ import { IExtHostRpcService } from "./extHostRpcService.js";
 
 export interface IExtHostApiDeprecationService {
 	readonly _serviceBrand: undefined;
+
 	report(
 		apiId: string,
 		extension: IExtensionDescription,
@@ -25,7 +26,9 @@ export class ExtHostApiDeprecationService
 	implements IExtHostApiDeprecationService
 {
 	declare readonly _serviceBrand: undefined;
+
 	private readonly _reportedUsages = new Set<string>();
+
 	private readonly _telemetryShape: extHostProtocol.MainThreadTelemetryShape;
 
 	constructor(
@@ -38,6 +41,7 @@ export class ExtHostApiDeprecationService
 			extHostProtocol.MainContext.MainThreadTelemetry,
 		);
 	}
+
 	public report(
 		apiId: string,
 		extension: IExtensionDescription,
@@ -48,6 +52,7 @@ export class ExtHostApiDeprecationService
 		if (this._reportedUsages.has(key)) {
 			return;
 		}
+
 		this._reportedUsages.add(key);
 
 		if (extension.isUnderDevelopment) {
@@ -55,24 +60,35 @@ export class ExtHostApiDeprecationService
 				`[Deprecation Warning] '${apiId}' is deprecated. ${migrationSuggestion}`,
 			);
 		}
+
 		type DeprecationTelemetry = {
 			extensionId: string;
+
 			apiId: string;
 		};
+
 		type DeprecationTelemetryMeta = {
 			extensionId: {
 				classification: "SystemMetaData";
+
 				purpose: "PerformanceAndHealth";
+
 				comment: "The id of the extension that is using the deprecated API";
 			};
+
 			apiId: {
 				classification: "SystemMetaData";
+
 				purpose: "PerformanceAndHealth";
+
 				comment: "The id of the deprecated API";
 			};
+
 			owner: "mjbvz";
+
 			comment: "Helps us gain insights on extensions using deprecated API so we can assist in migration to new API";
 		};
+
 		this._telemetryShape.$publicLog2<
 			DeprecationTelemetry,
 			DeprecationTelemetryMeta
@@ -81,6 +97,7 @@ export class ExtHostApiDeprecationService
 			apiId: apiId,
 		});
 	}
+
 	private getUsageKey(
 		apiId: string,
 		extension: IExtensionDescription,
@@ -91,6 +108,7 @@ export class ExtHostApiDeprecationService
 export const NullApiDeprecationService = Object.freeze(
 	new (class implements IExtHostApiDeprecationService {
 		declare readonly _serviceBrand: undefined;
+
 		public report(
 			_apiId: string,
 			_extension: IExtensionDescription,

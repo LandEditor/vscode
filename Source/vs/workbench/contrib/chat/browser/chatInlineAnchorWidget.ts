@@ -53,7 +53,9 @@ type ContentRefData =
 	| { readonly kind: 'symbol'; readonly symbol: IWorkspaceSymbol }
 	| {
 		readonly kind?: undefined;
+
 		readonly uri: URI;
+
 		readonly range?: IRange;
 	};
 
@@ -94,6 +96,7 @@ export class InlineAnchorWidget extends Disposable {
 				: { uri: inlineReference.inlineReference };
 
 		const contextKeyService = this._register(originalContextKeyService.createScoped(element));
+
 		this._chatResourceContext = chatResourceContextKey.bindTo(contextKeyService);
 
 		const anchorId = new Lazy(generateUuid);
@@ -101,19 +104,26 @@ export class InlineAnchorWidget extends Disposable {
 		element.classList.add(InlineAnchorWidget.className, 'show-file-icons');
 
 		let iconText: string;
+
 		let iconClasses: string[];
 
 		let location: { readonly uri: URI; readonly range?: IRange };
+
 		let contextMenuId: MenuId;
+
 		let contextMenuArg: URI | { readonly uri: URI; readonly range?: IRange };
 
 		let updateContextKeys: (() => Promise<void>) | undefined;
+
 		if (this.data.kind === 'symbol') {
 			location = this.data.symbol.location;
+
 			contextMenuId = MenuId.ChatInlineSymbolAnchorContext;
+
 			contextMenuArg = location;
 
 			iconText = this.data.symbol.name;
+
 			iconClasses = ['codicon', ...getIconClasses(modelService, languageService, undefined, undefined, SymbolKinds.toIcon(this.data.symbol.kind))];
 
 			const providerContexts: ReadonlyArray<[IContextKey<boolean>, LanguageFeatureRegistry<unknown>]> = [
@@ -125,12 +135,14 @@ export class InlineAnchorWidget extends Disposable {
 
 			updateContextKeys = async () => {
 				const modelRef = await textModelService.createModelReference(location.uri);
+
 				try {
 					if (this._isDisposed) {
 						return;
 					}
 
 					const model = modelRef.object.textEditorModel;
+
 					for (const [contextKey, registry] of providerContexts) {
 						contextKey.set(registry.has(model));
 					}
@@ -144,7 +156,9 @@ export class InlineAnchorWidget extends Disposable {
 					anchorId: string;
 				}, {
 					anchorId: { classification: 'SystemMetaData'; purpose: 'FeatureInsight'; comment: 'Unique identifier for the current anchor.' };
+
 					owner: 'mjbvz';
+
 					comment: 'Provides insight into the usage of Chat features.';
 				}>('chat.inlineAnchor.openSymbol', {
 					anchorId: anchorId.value
@@ -152,18 +166,23 @@ export class InlineAnchorWidget extends Disposable {
 			}));
 		} else {
 			location = this.data;
+
 			contextMenuId = MenuId.ChatInlineResourceAnchorContext;
+
 			contextMenuArg = location.uri;
 
 			const label = labelService.getUriBasenameLabel(location.uri);
+
 			iconText = location.range && this.data.kind !== 'symbol' ?
 				`${label}#${location.range.startLineNumber}-${location.range.endLineNumber}` :
 				label;
 
 			const fileKind = location.uri.path.endsWith('/') ? FileKind.FOLDER : FileKind.FILE;
+
 			iconClasses = getIconClasses(modelService, languageService, location.uri, fileKind);
 
 			const isFolderContext = ExplorerFolderContext.bindTo(contextKeyService);
+
 			fileService.stat(location.uri)
 				.then(stat => {
 					isFolderContext.set(stat.isDirectory);
@@ -175,7 +194,9 @@ export class InlineAnchorWidget extends Disposable {
 					anchorId: string;
 				}, {
 					anchorId: { classification: 'SystemMetaData'; purpose: 'FeatureInsight'; comment: 'Unique identifier for the current anchor.' };
+
 					owner: 'mjbvz';
+
 					comment: 'Provides insight into the usage of Chat features.';
 				}>('chat.inlineAnchor.openResource', {
 					anchorId: anchorId.value
@@ -184,19 +205,25 @@ export class InlineAnchorWidget extends Disposable {
 		}
 
 		const resourceContextKey = this._register(new ResourceContextKey(contextKeyService, fileService, languageService, modelService));
+
 		resourceContextKey.set(location.uri);
+
 		this._chatResourceContext.set(location.uri.toString());
 
 		const iconEl = dom.$('span.icon');
+
 		iconEl.classList.add(...iconClasses);
+
 		element.replaceChildren(iconEl, dom.$('span.icon-label', {}, iconText));
 
 		const fragment = location.range ? `${location.range.startLineNumber},${location.range.startColumn}` : '';
+
 		element.setAttribute('data-href', (fragment ? location.uri.with({ fragment }) : location.uri).toString());
 
 		// Context menu
 		this._register(dom.addDisposableListener(element, dom.EventType.CONTEXT_MENU, async domEvent => {
 			const event = new StandardMouseEvent(dom.getWindow(domEvent), domEvent);
+
 			dom.EventHelper.stop(domEvent, true);
 
 			try {
@@ -214,6 +241,7 @@ export class InlineAnchorWidget extends Disposable {
 				getAnchor: () => event,
 				getActions: () => {
 					const menu = menuService.getMenuActions(contextMenuId, contextKeyService, { arg: contextMenuArg });
+
 					return getFlatContextMenuActions(menu);
 				},
 			});
@@ -221,15 +249,18 @@ export class InlineAnchorWidget extends Disposable {
 
 		// Hover
 		const relativeLabel = labelService.getUriLabel(location.uri, { relative: true });
+
 		this._register(hoverService.setupManagedHover(getDefaultHoverDelegate('element'), element, relativeLabel));
 
 		// Drag and drop
 		element.draggable = true;
+
 		this._register(dom.addDisposableListener(element, 'dragstart', e => {
 			const stat: IResourceStat = {
 				resource: location.uri,
 				selection: location.range,
 			};
+
 			instantiationService.invokeFunction(accessor => fillEditorsDragData(accessor, [stat], e));
 
 			if (this.data.kind === 'symbol') {
@@ -247,6 +278,7 @@ export class InlineAnchorWidget extends Disposable {
 
 	override dispose(): void {
 		this._isDisposed = true;
+
 		super.dispose();
 	}
 
@@ -276,9 +308,11 @@ registerAction2(class AddFileToChatAction extends Action2 {
 
 	override async run(accessor: ServicesAccessor, resource: URI): Promise<void> {
 		const chatWidgetService = accessor.get(IChatWidgetService);
+
 		const variablesService = accessor.get(IChatVariablesService);
 
 		const widget = chatWidgetService.lastFocusedWidget;
+
 		if (!widget) {
 			return;
 		}
@@ -310,9 +344,11 @@ registerAction2(class CopyResourceAction extends Action2 {
 
 	override async run(accessor: ServicesAccessor): Promise<void> {
 		const chatWidgetService = accessor.get(IChatMarkdownAnchorService);
+
 		const clipboardService = accessor.get(IClipboardService);
 
 		const anchor = chatWidgetService.lastFocusedAnchor;
+
 		if (!anchor) {
 			return;
 		}
@@ -320,6 +356,7 @@ registerAction2(class CopyResourceAction extends Action2 {
 		// TODO: we should also write out the standard mime types so that external programs can use them
 		// like how `fillEditorsDragData` works but without having an event to work with.
 		const resource = anchor.data.kind === 'symbol' ? anchor.data.symbol.location.uri : anchor.data.uri;
+
 		clipboardService.writeResources([resource]);
 	}
 });
@@ -351,9 +388,11 @@ registerAction2(class OpenToSideResourceAction extends Action2 {
 
 	override async run(accessor: ServicesAccessor): Promise<void> {
 		const chatWidgetService = accessor.get(IChatMarkdownAnchorService);
+
 		const editorService = accessor.get(IEditorService);
 
 		const anchor = chatWidgetService.lastFocusedAnchor;
+
 		if (!anchor) {
 			return;
 		}
@@ -403,6 +442,7 @@ registerAction2(class GoToDefinitionAction extends Action2 {
 		await openEditorWithSelection(editorService, location);
 
 		const action = new DefinitionAction({ openToSide: false, openInPeek: false, muteMessage: true }, { title: { value: '', original: '' }, id: '', precondition: undefined });
+
 		return action.run(accessor);
 	}
 });
@@ -420,6 +460,7 @@ async function openEditorWithSelection(editorService: ICodeEditorService, locati
 
 async function runGoToCommand(accessor: ServicesAccessor, command: string, location: Location) {
 	const editorService = accessor.get(ICodeEditorService);
+
 	const commandService = accessor.get(ICommandService);
 
 	await openEditorWithSelection(editorService, location);

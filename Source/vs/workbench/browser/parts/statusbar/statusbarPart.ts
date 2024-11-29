@@ -104,6 +104,7 @@ export interface IStatusbarEntryContainer extends IDisposable {
 	 */
 	readonly onDidChangeEntryVisibility: Event<{
 		id: string;
+
 		visible: boolean;
 	}>;
 
@@ -122,6 +123,7 @@ export interface IStatusbarEntryContainer extends IDisposable {
 		alignment: StatusbarAlignment,
 		priority?: number | IStatusbarEntryPriority,
 	): IStatusbarEntryAccessor;
+
 	addEntry(
 		entry: IStatusbarEntry,
 		id: string,
@@ -182,10 +184,13 @@ export interface IStatusbarEntryContainer extends IDisposable {
 
 interface IPendingStatusbarEntry {
 	readonly id: string;
+
 	readonly alignment: StatusbarAlignment;
+
 	readonly priority: IStatusbarEntryPriority;
 
 	entry: IStatusbarEntry;
+
 	accessor?: IStatusbarEntryAccessor;
 }
 
@@ -195,8 +200,11 @@ class StatusbarPart extends Part implements IStatusbarEntryContainer {
 	//#region IView
 
 	readonly minimumWidth: number = 0;
+
 	readonly maximumWidth: number = Number.POSITIVE_INFINITY;
+
 	readonly minimumHeight: number = StatusbarPart.HEIGHT;
+
 	readonly maximumHeight: number = StatusbarPart.HEIGHT;
 
 	//#endregion
@@ -213,9 +221,11 @@ class StatusbarPart extends Part implements IStatusbarEntryContainer {
 		this.viewModel.onDidChangeEntryVisibility;
 
 	private readonly _onWillDispose = this._register(new Emitter<void>());
+
 	readonly onWillDispose = this._onWillDispose.event;
 
 	private leftItemsContainer: HTMLElement | undefined;
+
 	private rightItemsContainer: HTMLElement | undefined;
 
 	private readonly hoverDelegate = this._register(
@@ -235,6 +245,7 @@ class StatusbarPart extends Part implements IStatusbarEntryContainer {
 	private readonly compactEntriesDisposable = this._register(
 		new MutableDisposable<DisposableStore>(),
 	);
+
 	private readonly styleOverrides = new Set<IStatusbarStyleOverride>();
 
 	constructor(
@@ -318,6 +329,7 @@ class StatusbarPart extends Part implements IStatusbarEntryContainer {
 			alignment,
 			priority,
 		};
+
 		this.pendingEntries.push(pendingEntry);
 
 		const accessor: IStatusbarEntryAccessor = {
@@ -364,14 +376,19 @@ class StatusbarPart extends Part implements IStatusbarEntryContainer {
 			implements IStatusbarViewModelEntry
 		{
 			readonly id = id;
+
 			readonly alignment = alignment;
+
 			readonly priority = priority;
+
 			readonly container = itemContainer;
+
 			readonly labelContainer = item.labelContainer;
 
 			get name() {
 				return item.name;
 			}
+
 			get hasCommand() {
 				return item.hasCommand;
 			}
@@ -404,6 +421,7 @@ class StatusbarPart extends Part implements IStatusbarEntryContainer {
 				} else {
 					itemContainer.remove();
 				}
+
 				dispose(item);
 			},
 		};
@@ -415,6 +433,7 @@ class StatusbarPart extends Part implements IStatusbarEntryContainer {
 		...extraClasses: string[]
 	): HTMLElement {
 		const itemContainer = document.createElement("div");
+
 		itemContainer.id = id;
 
 		itemContainer.classList.add("statusbar-item");
@@ -444,6 +463,7 @@ class StatusbarPart extends Part implements IStatusbarEntryContainer {
 		} else {
 			this.viewModel.remove(entry);
 		}
+
 		const entriesAfter = this.viewModel.entries;
 
 		// Apply operation onto the entries from before
@@ -500,20 +520,26 @@ class StatusbarPart extends Part implements IStatusbarEntryContainer {
 		const scopedContextKeyService = this._register(
 			this.contextKeyService.createScoped(this.element),
 		);
+
 		StatusBarFocused.bindTo(scopedContextKeyService).set(true);
 
 		// Left items container
 		this.leftItemsContainer = document.createElement("div");
+
 		this.leftItemsContainer.classList.add("left-items", "items-container");
+
 		this.element.appendChild(this.leftItemsContainer);
+
 		this.element.tabIndex = 0;
 
 		// Right items container
 		this.rightItemsContainer = document.createElement("div");
+
 		this.rightItemsContainer.classList.add(
 			"right-items",
 			"items-container",
 		);
+
 		this.element.appendChild(this.rightItemsContainer);
 
 		// Context menu support
@@ -522,7 +548,9 @@ class StatusbarPart extends Part implements IStatusbarEntryContainer {
 				this.showContextMenu(e),
 			),
 		);
+
 		this._register(Gesture.addTarget(parent));
+
 		this._register(
 			addDisposableListener(parent, TouchEventType.Contextmenu, (e) =>
 				this.showContextMenu(e),
@@ -561,6 +589,7 @@ class StatusbarPart extends Part implements IStatusbarEntryContainer {
 
 		// Clear containers
 		clearNode(leftItemsContainer);
+
 		clearNode(rightItemsContainer);
 
 		// Append all
@@ -659,10 +688,13 @@ class StatusbarPart extends Part implements IStatusbarEntryContainer {
 							string,
 							IStatusbarViewModelEntry
 						>();
+
 						compactEntryGroups.set(locationId, compactEntryGroup);
 					}
 				}
+
 				compactEntryGroup.set(entry.id, entry);
+
 				compactEntryGroup.set(location.id, location);
 
 				// Adjust CSS classes to move compact items closer together
@@ -670,9 +702,11 @@ class StatusbarPart extends Part implements IStatusbarEntryContainer {
 					entry.priority.primary.alignment === StatusbarAlignment.LEFT
 				) {
 					location.container.classList.add("compact-left");
+
 					entry.container.classList.add("compact-right");
 				} else {
 					location.container.classList.add("compact-right");
+
 					entry.container.classList.add("compact-left");
 				}
 			}
@@ -687,6 +721,7 @@ class StatusbarPart extends Part implements IStatusbarEntryContainer {
 		const statusBarItemCompactHoverBackground = this.getColor(
 			STATUS_BAR_ITEM_COMPACT_HOVER_BACKGROUND,
 		);
+
 		this.compactEntriesDisposable.value = new DisposableStore();
 
 		if (
@@ -710,6 +745,7 @@ class StatusbarPart extends Part implements IStatusbarEntryContainer {
 										(compactEntry.labelContainer.style.backgroundColor =
 											statusBarItemHoverBackground),
 								);
+
 								compactEntry.labelContainer.style.backgroundColor =
 									statusBarItemCompactHoverBackground;
 							},
@@ -740,6 +776,7 @@ class StatusbarPart extends Part implements IStatusbarEntryContainer {
 		const event = new StandardMouseEvent(getWindow(this.element), e);
 
 		let actions: IAction[] | undefined = undefined;
+
 		this.contextMenuService.showContextMenu({
 			getAnchor: () => event,
 			getActions: () => {
@@ -769,6 +806,7 @@ class StatusbarPart extends Part implements IStatusbarEntryContainer {
 					),
 			}),
 		);
+
 		actions.push(new Separator());
 
 		// Show an entry per known status entry
@@ -786,6 +824,7 @@ class StatusbarPart extends Part implements IStatusbarEntryContainer {
 						this.viewModel,
 					),
 				);
+
 				handledEntries.add(entry.id);
 			}
 		}
@@ -796,7 +835,9 @@ class StatusbarPart extends Part implements IStatusbarEntryContainer {
 
 		for (
 			let element: HTMLElement | null = event.target;
+
 			element;
+
 			element = element.parentElement
 		) {
 			const entry = this.viewModel.findEntry(element);
@@ -810,6 +851,7 @@ class StatusbarPart extends Part implements IStatusbarEntryContainer {
 
 		if (statusEntryUnderMouse) {
 			actions.push(new Separator());
+
 			actions.push(
 				new HideStatusbarEntryAction(
 					statusEntryUnderMouse.id,
@@ -840,6 +882,7 @@ class StatusbarPart extends Part implements IStatusbarEntryContainer {
 						? STATUS_BAR_BACKGROUND
 						: STATUS_BAR_NO_FOLDER_BACKGROUND),
 			) || "";
+
 		container.style.backgroundColor = backgroundColor;
 
 		const foregroundColor =
@@ -850,6 +893,7 @@ class StatusbarPart extends Part implements IStatusbarEntryContainer {
 						? STATUS_BAR_FOREGROUND
 						: STATUS_BAR_NO_FOLDER_FOREGROUND),
 			) || "";
+
 		container.style.color = foregroundColor;
 
 		const itemBorderColor = this.getColor(STATUS_BAR_ITEM_FOCUS_BORDER);
@@ -866,12 +910,14 @@ class StatusbarPart extends Part implements IStatusbarEntryContainer {
 
 		if (borderColor) {
 			container.classList.add("status-border-top");
+
 			container.style.setProperty(
 				"--status-border-top-color",
 				borderColor,
 			);
 		} else {
 			container.classList.remove("status-border-top");
+
 			container.style.removeProperty("--status-border-top-color");
 		}
 
@@ -893,6 +939,7 @@ class StatusbarPart extends Part implements IStatusbarEntryContainer {
 				/* Status bar item focus outline */
 				.monaco-workbench .part.statusbar > .items-container > .statusbar-item a:focus-visible {
 					outline: 1px solid ${this.getColor(activeContrastBorder) ?? itemBorderColor};
+
 					outline-offset: ${borderColor ? "-2px" : "-1px"};
 				}
 
@@ -916,10 +963,12 @@ class StatusbarPart extends Part implements IStatusbarEntryContainer {
 
 	overrideStyle(style: IStatusbarStyleOverride): IDisposable {
 		this.styleOverrides.add(style);
+
 		this.updateStyles();
 
 		return toDisposable(() => {
 			this.styleOverrides.delete(style);
+
 			this.updateStyles();
 		});
 	}
@@ -964,6 +1013,7 @@ export interface IAuxiliaryStatusbarPart
 	extends IStatusbarEntryContainer,
 		IView {
 	readonly container: HTMLElement;
+
 	readonly height: number;
 }
 
@@ -1013,6 +1063,7 @@ export class StatusbarService
 	private readonly _onDidCreateAuxiliaryStatusbarPart = this._register(
 		new Emitter<AuxiliaryStatusbarPart>(),
 	);
+
 	private readonly onDidCreateAuxiliaryStatusbarPart =
 		this._onDidCreateAuxiliaryStatusbarPart.event;
 
@@ -1034,11 +1085,17 @@ export class StatusbarService
 	): IAuxiliaryStatusbarPart {
 		// Container
 		const statusbarPartContainer = document.createElement("footer");
+
 		statusbarPartContainer.classList.add("part", "statusbar");
+
 		statusbarPartContainer.setAttribute("role", "status");
+
 		statusbarPartContainer.style.position = "relative";
+
 		statusbarPartContainer.setAttribute("aria-live", "off");
+
 		statusbarPartContainer.setAttribute("tabindex", "0");
+
 		container.appendChild(statusbarPartContainer);
 
 		// Statusbar Part
@@ -1114,6 +1171,7 @@ export class StatusbarService
 
 		function addEntry(part: StatusbarPart | AuxiliaryStatusbarPart): void {
 			const partDisposables = new DisposableStore();
+
 			partDisposables.add(
 				part.onWillDispose(() => partDisposables.dispose()),
 			);
@@ -1121,10 +1179,13 @@ export class StatusbarService
 			const accessor = partDisposables.add(
 				part.addEntry(entry, id, alignment, priorityOrLocation),
 			);
+
 			accessors.add(accessor);
+
 			partDisposables.add(toDisposable(() => accessors.delete(accessor)));
 
 			entryDisposables.add(partDisposables);
+
 			partDisposables.add(
 				toDisposable(() => entryDisposables.delete(partDisposables)),
 			);

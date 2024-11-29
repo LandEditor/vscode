@@ -49,15 +49,21 @@ export class LocalHistoryTimeline
 	implements IWorkbenchContribution, TimelineProvider
 {
 	static readonly ID = "workbench.contrib.localHistoryTimeline";
+
 	private static readonly LOCAL_HISTORY_ENABLED_SETTINGS_KEY =
 		"workbench.localHistory.enabled";
+
 	readonly id = "timeline.localHistory";
+
 	readonly label = localize("localHistory", "Local History");
+
 	readonly scheme = "*"; // we try to show local history for all schemes if possible
 	private readonly _onDidChange = this._register(
 		new Emitter<TimelineChangeEvent>(),
 	);
+
 	readonly onDidChange = this._onDidChange.event;
+
 	private readonly timelineProviderDisposable = this._register(
 		new MutableDisposable(),
 	);
@@ -79,9 +85,12 @@ export class LocalHistoryTimeline
 		private readonly contextService: IWorkspaceContextService,
 	) {
 		super();
+
 		this.registerComponents();
+
 		this.registerListeners();
 	}
+
 	private registerComponents(): void {
 		// Timeline (if enabled)
 		this.updateTimelineRegistration();
@@ -93,6 +102,7 @@ export class LocalHistoryTimeline
 			),
 		);
 	}
+
 	private updateTimelineRegistration(): void {
 		if (
 			this.configurationService.getValue<boolean>(
@@ -105,6 +115,7 @@ export class LocalHistoryTimeline
 			this.timelineProviderDisposable.clear();
 		}
 	}
+
 	private registerListeners(): void {
 		// History changes
 		this._register(
@@ -112,21 +123,25 @@ export class LocalHistoryTimeline
 				this.onDidChangeWorkingCopyHistoryEntry(e.entry),
 			),
 		);
+
 		this._register(
 			this.workingCopyHistoryService.onDidChangeEntry((e) =>
 				this.onDidChangeWorkingCopyHistoryEntry(e.entry),
 			),
 		);
+
 		this._register(
 			this.workingCopyHistoryService.onDidReplaceEntry((e) =>
 				this.onDidChangeWorkingCopyHistoryEntry(e.entry),
 			),
 		);
+
 		this._register(
 			this.workingCopyHistoryService.onDidRemoveEntry((e) =>
 				this.onDidChangeWorkingCopyHistoryEntry(e.entry),
 			),
 		);
+
 		this._register(
 			this.workingCopyHistoryService.onDidRemoveEntries(() =>
 				this.onDidChangeWorkingCopyHistoryEntry(
@@ -134,6 +149,7 @@ export class LocalHistoryTimeline
 				),
 			),
 		);
+
 		this._register(
 			this.workingCopyHistoryService.onDidMoveEntries(() =>
 				this.onDidChangeWorkingCopyHistoryEntry(
@@ -154,6 +170,7 @@ export class LocalHistoryTimeline
 			}),
 		);
 	}
+
 	private onDidChangeWorkingCopyHistoryEntry(
 		entry: IWorkingCopyHistoryEntry | undefined,
 	): void {
@@ -164,6 +181,7 @@ export class LocalHistoryTimeline
 			reset: true, // there is no other way to indicate that items might have been replaced/removed
 		});
 	}
+
 	async provideTimeline(
 		uri: URI,
 		options: TimelineOptions,
@@ -204,6 +222,7 @@ export class LocalHistoryTimeline
 				path: uri.path,
 			});
 		}
+
 		if (resource) {
 			// Retrieve from working copy history
 			const entries = await this.workingCopyHistoryService.getEntries(
@@ -215,11 +234,13 @@ export class LocalHistoryTimeline
 				items.push(this.toTimelineItem(entry));
 			}
 		}
+
 		return {
 			source: this.id,
 			items,
 		};
 	}
+
 	private toTimelineItem(entry: IWorkingCopyHistoryEntry): TimelineItem {
 		return {
 			handle: entry.id,

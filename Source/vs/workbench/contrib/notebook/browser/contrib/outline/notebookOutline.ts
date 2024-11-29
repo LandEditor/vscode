@@ -177,14 +177,23 @@ class NotebookOutlineRenderer
 		const elementDisposables = new DisposableStore();
 
 		container.classList.add("notebook-outline-element", "show-file-icons");
+
 		const iconClass = document.createElement("div");
+
 		container.append(iconClass);
+
 		const iconLabel = new IconLabel(container, { supportHighlights: true });
+
 		const decoration = document.createElement("div");
+
 		decoration.className = "element-decoration";
+
 		container.append(decoration);
+
 		const actionMenu = document.createElement("div");
+
 		actionMenu.className = "action-menu";
+
 		container.append(actionMenu);
 
 		return new NotebookOutlineTemplate(
@@ -204,6 +213,7 @@ class NotebookOutlineRenderer
 		_height: number | undefined,
 	): void {
 		const extraClasses: string[] = [];
+
 		const options: IIconLabelValueOptions = {
 			matches: createMatches(node.filterData),
 			labelEscapeNewLines: true,
@@ -211,6 +221,7 @@ class NotebookOutlineRenderer
 		};
 
 		const isCodeCell = node.element.cell.cellKind === CellKind.Code;
+
 		if (node.element.level >= 8) {
 			// symbol
 			template.iconClass.className =
@@ -222,6 +233,7 @@ class NotebookOutlineRenderer
 			!node.element.isExecuting
 		) {
 			template.iconClass.className = "";
+
 			extraClasses.push(
 				...getIconClassesForLanguageId(
 					node.element.cell.language ?? "",
@@ -242,26 +254,33 @@ class NotebookOutlineRenderer
 		const { markerInfo } = node.element;
 
 		template.container.style.removeProperty("--outline-element-color");
+
 		template.decoration.innerText = "";
+
 		if (markerInfo) {
 			const problem = this._configurationService.getValue(
 				"problems.visibility",
 			);
+
 			const useBadges = this._configurationService.getValue(
 				OutlineConfigKeys.problemsBadges,
 			);
 
 			if (!useBadges || !problem) {
 				template.decoration.classList.remove("bubble");
+
 				template.decoration.innerText = "";
 			} else if (markerInfo.count === 0) {
 				template.decoration.classList.add("bubble");
+
 				template.decoration.innerText = "\uea71";
 			} else {
 				template.decoration.classList.remove("bubble");
+
 				template.decoration.innerText =
 					markerInfo.count > 9 ? "9+" : String(markerInfo.count);
 			}
+
 			const color = this._themeService
 				.getColorTheme()
 				.getColor(
@@ -269,16 +288,20 @@ class NotebookOutlineRenderer
 						? listErrorForeground
 						: listWarningForeground,
 				);
+
 			if (problem === undefined) {
 				return;
 			}
+
 			const useColors = this._configurationService.getValue(
 				OutlineConfigKeys.problemsColors,
 			);
+
 			if (!useColors || !problem) {
 				template.container.style.removeProperty(
 					"--outline-element-color",
 				);
+
 				template.decoration.style.setProperty(
 					"--outline-element-color",
 					color?.toString() ?? "inherit",
@@ -297,31 +320,40 @@ class NotebookOutlineRenderer
 			}
 
 			const nbCell = node.element.cell;
+
 			const nbViewModel = this._editor.getViewModel();
+
 			if (!nbViewModel) {
 				return;
 			}
+
 			const idx = nbViewModel.getCellIndex(nbCell);
+
 			const length = isCodeCell ? 0 : nbViewModel.getFoldedLength(idx);
 
 			const scopedContextKeyService = template.elementDisposables.add(
 				this._contextKeyService.createScoped(template.container),
 			);
+
 			NotebookOutlineContext.CellKind.bindTo(scopedContextKeyService).set(
 				isCodeCell ? CellKind.Code : CellKind.Markup,
 			);
+
 			NotebookOutlineContext.CellHasChildren.bindTo(
 				scopedContextKeyService,
 			).set(length > 0);
+
 			NotebookOutlineContext.CellHasHeader.bindTo(
 				scopedContextKeyService,
 			).set(
 				node.element.level !==
 					NotebookOutlineConstants.NonHeaderOutlineLevel,
 			);
+
 			NotebookOutlineContext.OutlineElementTarget.bindTo(
 				scopedContextKeyService,
 			).set(this._target);
+
 			this.setupFolding(
 				isCodeCell,
 				nbViewModel,
@@ -340,6 +372,7 @@ class NotebookOutlineRenderer
 								undefined,
 							);
 						}
+
 						return undefined;
 					},
 				}),
@@ -351,10 +384,12 @@ class NotebookOutlineRenderer
 					scopedContextKeyService,
 				),
 			);
+
 			const actions = getOutlineToolbarActions(menu, {
 				notebookEditor: this._editor,
 				outlineEntry: node.element,
 			});
+
 			outlineEntryToolbar.setActions(actions.primary, actions.secondary);
 
 			this.setupToolbarListeners(
@@ -365,12 +400,14 @@ class NotebookOutlineRenderer
 				node.element,
 				template,
 			);
+
 			template.actionMenu.style.padding = "0 0.8em 0 0.4em";
 		}
 	}
 
 	disposeTemplate(templateData: NotebookOutlineTemplate): void {
 		templateData.iconLabel.dispose();
+
 		templateData.elementDisposables.clear();
 	}
 
@@ -381,6 +418,7 @@ class NotebookOutlineRenderer
 		height: number | undefined,
 	): void {
 		templateData.elementDisposables.clear();
+
 		DOM.clearNode(templateData.actionMenu);
 	}
 
@@ -394,9 +432,11 @@ class NotebookOutlineRenderer
 		const foldingState = isCodeCell
 			? CellFoldingState.None
 			: (nbCell as MarkupCellViewModel).foldingState;
+
 		const foldingStateCtx = NotebookOutlineContext.CellFoldingState.bindTo(
 			scopedContextKeyService,
 		);
+
 		foldingStateCtx.set(foldingState);
 
 		if (!isCodeCell) {
@@ -404,9 +444,11 @@ class NotebookOutlineRenderer
 				nbViewModel.onDidFoldingStateChanged(() => {
 					const foldingState = (nbCell as MarkupCellViewModel)
 						.foldingState;
+
 					NotebookOutlineContext.CellFoldingState.bindTo(
 						scopedContextKeyService,
 					).set(foldingState);
+
 					foldingStateCtx.set(foldingState);
 				}),
 			);
@@ -423,9 +465,11 @@ class NotebookOutlineRenderer
 	): void {
 		// same fix as in cellToolbars setupListeners re #103926
 		let dropdownIsVisible = false;
+
 		let deferredUpdate: (() => void) | undefined;
 
 		toolbar.setActions(initActions.primary, initActions.secondary);
+
 		templateData.elementDisposables.add(
 			menu.onDidChange(() => {
 				if (dropdownIsVisible) {
@@ -433,6 +477,7 @@ class NotebookOutlineRenderer
 						notebookEditor: editor,
 						outlineEntry: entry,
 					});
+
 					deferredUpdate = () =>
 						toolbar.setActions(actions.primary, actions.secondary);
 
@@ -443,6 +488,7 @@ class NotebookOutlineRenderer
 					notebookEditor: editor,
 					outlineEntry: entry,
 				});
+
 				toolbar.setActions(actions.primary, actions.secondary);
 			}),
 		);
@@ -450,9 +496,11 @@ class NotebookOutlineRenderer
 		templateData.container.classList.remove(
 			"notebook-outline-toolbar-dropdown-active",
 		);
+
 		templateData.elementDisposables.add(
 			toolbar.onDidChangeDropdownVisibility((visible) => {
 				dropdownIsVisible = visible;
+
 				if (visible) {
 					templateData.container.classList.add(
 						"notebook-outline-toolbar-dropdown-active",
@@ -495,6 +543,7 @@ class NotebookOutlineAccessibility
 	getAriaLabel(element: OutlineEntry): string | null {
 		return element.label;
 	}
+
 	getWidgetAriaLabel(): string {
 		return "";
 	}
@@ -563,19 +612,24 @@ export class NotebookQuickPickProvider
 
 	getQuickPickElements(): IQuickPickOutlineElement<OutlineEntry>[] {
 		const bucket: OutlineEntry[] = [];
+
 		for (const entry of this.notebookCellOutlineDataSourceRef?.object
 			?.entries ?? []) {
 			entry.asFlatList(bucket);
 		}
+
 		const result: IQuickPickOutlineElement<OutlineEntry>[] = [];
+
 		const { hasFileIcons } = this._themeService.getFileIconTheme();
 
 		const isSymbol = (element: OutlineEntry) => !!element.symbolKind;
+
 		const isCodeCell = (element: OutlineEntry) =>
 			element.cell.cellKind === CellKind.Code &&
 			element.level === NotebookOutlineConstants.NonHeaderOutlineLevel; // code cell entries are exactly level 7 by this constant
 		for (let i = 0; i < bucket.length; i++) {
 			const element = bucket[i];
+
 			const nextElement = bucket[i + 1]; // can be undefined
 
 			if (!this.gotoShowCodeCellSymbols && isSymbol(element)) {
@@ -605,6 +659,7 @@ export class NotebookQuickPickProvider
 					: undefined,
 			});
 		}
+
 		return result;
 	}
 
@@ -619,7 +674,9 @@ export class NotebookOutlinePaneProvider
 	private readonly _disposables = new DisposableStore();
 
 	private showCodeCells: boolean;
+
 	private showCodeCellSymbols: boolean;
+
 	private showMarkdownHeadersOnly: boolean;
 
 	constructor(
@@ -632,9 +689,11 @@ export class NotebookOutlinePaneProvider
 		this.showCodeCells = this._configurationService.getValue<boolean>(
 			NotebookSetting.outlineShowCodeCells,
 		);
+
 		this.showCodeCellSymbols = this._configurationService.getValue<boolean>(
 			NotebookSetting.outlineShowCodeCellSymbols,
 		);
+
 		this.showMarkdownHeadersOnly =
 			this._configurationService.getValue<boolean>(
 				NotebookSetting.outlineShowMarkdownHeadersOnly,
@@ -650,6 +709,7 @@ export class NotebookOutlinePaneProvider
 							NotebookSetting.outlineShowCodeCells,
 						);
 				}
+
 				if (
 					e.affectsConfiguration(
 						NotebookSetting.outlineShowCodeCellSymbols,
@@ -660,6 +720,7 @@ export class NotebookOutlinePaneProvider
 							NotebookSetting.outlineShowCodeCellSymbols,
 						);
 				}
+
 				if (
 					e.affectsConfiguration(
 						NotebookSetting.outlineShowMarkdownHeadersOnly,
@@ -676,6 +737,7 @@ export class NotebookOutlinePaneProvider
 
 	public getActiveEntry(): OutlineEntry | undefined {
 		const newActive = this.outlineDataSourceRef?.object?.activeElement;
+
 		if (!newActive) {
 			return undefined;
 		}
@@ -686,6 +748,7 @@ export class NotebookOutlinePaneProvider
 
 		// find a valid parent
 		let parent = newActive.parent;
+
 		while (parent) {
 			if (this.filterEntry(parent)) {
 				parent = parent.parent;
@@ -726,6 +789,7 @@ export class NotebookOutlinePaneProvider
 		element: NotebookCellOutline | OutlineEntry,
 	): Iterable<OutlineEntry> {
 		const isOutline = element instanceof NotebookCellOutline;
+
 		const entries = isOutline
 			? (this.outlineDataSourceRef?.object?.entries ?? [])
 			: element.children;
@@ -777,6 +841,7 @@ export class NotebookBreadcrumbsProvider
 		this.showCodeCells = this._configurationService.getValue<boolean>(
 			NotebookSetting.breadcrumbsShowCodeCells,
 		);
+
 		this._disposables.add(
 			this._configurationService.onDidChangeConfiguration((e) => {
 				if (
@@ -795,7 +860,9 @@ export class NotebookBreadcrumbsProvider
 
 	getBreadcrumbElements(): readonly OutlineEntry[] {
 		const result: OutlineEntry[] = [];
+
 		let candidate = this.outlineDataSourceRef?.object?.activeElement;
+
 		while (candidate) {
 			if (
 				this.showCodeCells ||
@@ -803,8 +870,10 @@ export class NotebookBreadcrumbsProvider
 			) {
 				result.unshift(candidate);
 			}
+
 			candidate = candidate.parent;
 		}
+
 		return result;
 	}
 
@@ -822,12 +891,14 @@ class NotebookComparator implements IOutlineComparator<OutlineEntry> {
 	compareByPosition(a: OutlineEntry, b: OutlineEntry): number {
 		return a.index - b.index;
 	}
+
 	compareByType(a: OutlineEntry, b: OutlineEntry): number {
 		return (
 			a.cell.cellKind - b.cell.cellKind ||
 			this._collator.value.compare(a.label, b.label)
 		);
 	}
+
 	compareByName(a: OutlineEntry, b: OutlineEntry): number {
 		return this._collator.value.compare(a.label, b.label);
 	}
@@ -837,14 +908,18 @@ export class NotebookCellOutline implements IOutline<OutlineEntry> {
 	readonly outlineKind = "notebookCells";
 
 	private readonly _disposables = new DisposableStore();
+
 	private readonly _modelDisposables = new DisposableStore();
+
 	private readonly _dataSourceDisposables = new DisposableStore();
 
 	private readonly _onDidChange = new Emitter<OutlineChangeEvent>();
+
 	readonly onDidChange: Event<OutlineChangeEvent> = this._onDidChange.event;
 
 	private readonly delayerRecomputeState: Delayer<void> =
 		this._disposables.add(new Delayer<void>(300));
+
 	private readonly delayerRecomputeActive: Delayer<void> =
 		this._disposables.add(new Delayer<void>(200));
 	// this can be long, because it will force a recompute at the end, so ideally we only do this once all nb language features are registered
@@ -852,12 +927,15 @@ export class NotebookCellOutline implements IOutline<OutlineEntry> {
 		this._disposables.add(new Delayer<void>(2000));
 
 	readonly config: IOutlineListConfig<OutlineEntry>;
+
 	private _outlineDataSourceReference:
 		| IReference<NotebookCellOutlineDataSource>
 		| undefined;
 	// These three fields will always be set via setDataSources() on L475
 	private _treeDataSource!: IDataSource<NotebookCellOutline, OutlineEntry>;
+
 	private _quickPickDataSource!: IQuickPickDataSource<OutlineEntry>;
+
 	private _breadcrumbsDataSource!: IBreadcrumbsDataSource<OutlineEntry>;
 
 	// view settings
@@ -866,6 +944,7 @@ export class NotebookCellOutline implements IOutline<OutlineEntry> {
 	// getters
 	get activeElement(): OutlineEntry | undefined {
 		this.checkDelayer();
+
 		if (this._target === OutlineTarget.OutlinePane) {
 			return (
 				this.config.treeDataSource as NotebookOutlinePaneProvider
@@ -874,16 +953,21 @@ export class NotebookCellOutline implements IOutline<OutlineEntry> {
 			console.error(
 				"activeElement should not be called outside of the OutlinePane",
 			);
+
 			return undefined;
 		}
 	}
+
 	get entries(): OutlineEntry[] {
 		this.checkDelayer();
+
 		return this._outlineDataSourceReference?.object?.entries ?? [];
 	}
+
 	get uri(): URI | undefined {
 		return this._outlineDataSourceReference?.object?.uri;
 	}
+
 	get isEmpty(): boolean {
 		return this._outlineDataSourceReference?.object?.isEmpty ?? true;
 	}
@@ -891,6 +975,7 @@ export class NotebookCellOutline implements IOutline<OutlineEntry> {
 	private checkDelayer() {
 		if (this.delayerRecomputeState.isTriggered()) {
 			this.delayerRecomputeState.cancel();
+
 			this.recomputeState();
 		}
 	}
@@ -917,6 +1002,7 @@ export class NotebookCellOutline implements IOutline<OutlineEntry> {
 		this.initializeOutline();
 
 		const delegate = new NotebookOutlineVirtualDelegate();
+
 		const renderers = [
 			this._instantiationService.createInstance(
 				NotebookOutlineRenderer,
@@ -924,6 +1010,7 @@ export class NotebookCellOutline implements IOutline<OutlineEntry> {
 				this._target,
 			),
 		];
+
 		const comparator = new NotebookComparator();
 
 		const options: IWorkbenchDataTreeOptions<OutlineEntry, FuzzyScore> = {
@@ -957,13 +1044,16 @@ export class NotebookCellOutline implements IOutline<OutlineEntry> {
 	private initializeOutline() {
 		// initial setup
 		this.setDataSources();
+
 		this.setModelListeners();
 
 		// reset the data sources + model listeners when we get a new notebook model
 		this._disposables.add(
 			this._editor.onDidChangeModel(() => {
 				this.setDataSources();
+
 				this.setModelListeners();
+
 				this.computeSymbols();
 			}),
 		);
@@ -1031,6 +1121,7 @@ export class NotebookCellOutline implements IOutline<OutlineEntry> {
 						this._configurationService.getValue<boolean>(
 							NotebookSetting.outlineShowCodeCellSymbols,
 						);
+
 					this.computeSymbols();
 				}
 			}),
@@ -1052,7 +1143,9 @@ export class NotebookCellOutline implements IOutline<OutlineEntry> {
 	 */
 	private setDataSources(): void {
 		const notebookEditor = this._editor.getControl();
+
 		this._outlineDataSourceReference?.dispose();
+
 		this._dataSourceDisposables.clear();
 
 		if (!notebookEditor?.hasModel()) {
@@ -1080,12 +1173,14 @@ export class NotebookCellOutline implements IOutline<OutlineEntry> {
 				this._outlineDataSourceReference,
 			),
 		);
+
 		this._quickPickDataSource = this._dataSourceDisposables.add(
 			this._instantiationService.createInstance(
 				NotebookQuickPickProvider,
 				this._outlineDataSourceReference,
 			),
 		);
+
 		this._breadcrumbsDataSource = this._dataSourceDisposables.add(
 			this._instantiationService.createInstance(
 				NotebookBreadcrumbsProvider,
@@ -1099,6 +1194,7 @@ export class NotebookCellOutline implements IOutline<OutlineEntry> {
 	 */
 	private setModelListeners(): void {
 		this._modelDisposables.clear();
+
 		if (!this._editor.textModel) {
 			return;
 		}
@@ -1139,6 +1235,7 @@ export class NotebookCellOutline implements IOutline<OutlineEntry> {
 			void this.doComputeSymbols(cancelToken);
 		}
 	}
+
 	public async doComputeSymbols(
 		cancelToken: CancellationToken,
 	): Promise<void> {
@@ -1146,9 +1243,12 @@ export class NotebookCellOutline implements IOutline<OutlineEntry> {
 			cancelToken,
 		);
 	}
+
 	private async delayedComputeSymbols() {
 		this.delayerRecomputeState.cancel();
+
 		this.delayerRecomputeActive.cancel();
+
 		this.delayerRecomputeSymbols.trigger(() => {
 			this.computeSymbols();
 		});
@@ -1157,6 +1257,7 @@ export class NotebookCellOutline implements IOutline<OutlineEntry> {
 	private recomputeState() {
 		this._outlineDataSourceReference?.object?.recomputeState();
 	}
+
 	private delayedRecomputeState() {
 		this.delayerRecomputeActive.cancel(); // Active is always recomputed after a recomputing the State.
 		this.delayerRecomputeState.trigger(() => {
@@ -1167,6 +1268,7 @@ export class NotebookCellOutline implements IOutline<OutlineEntry> {
 	private recomputeActive() {
 		this._outlineDataSourceReference?.object?.recomputeActive();
 	}
+
 	private delayedRecomputeActive() {
 		this.delayerRecomputeActive.trigger(() => {
 			this.recomputeActive();
@@ -1185,6 +1287,7 @@ export class NotebookCellOutline implements IOutline<OutlineEntry> {
 			selection: entry.position,
 			viewState: undefined,
 		};
+
 		await this._editorService.openEditor(
 			{
 				resource: entry.cell.uri,
@@ -1196,12 +1299,14 @@ export class NotebookCellOutline implements IOutline<OutlineEntry> {
 
 	preview(entry: OutlineEntry): IDisposable {
 		const widget = this._editor.getControl();
+
 		if (!widget) {
 			return Disposable.None;
 		}
 
 		if (entry.range) {
 			const range = Range.lift(entry.range);
+
 			widget.revealRangeInCenterIfOutsideViewportAsync(entry.cell, range);
 		} else {
 			widget.revealInCenterIfOutsideViewport(entry.cell);
@@ -1221,6 +1326,7 @@ export class NotebookCellOutline implements IOutline<OutlineEntry> {
 		);
 
 		let editorDecorations: ICellModelDecorations[];
+
 		widget.changeModelDecorations((accessor) => {
 			if (entry.range) {
 				const decorations: IModelDeltaDecoration[] = [
@@ -1234,6 +1340,7 @@ export class NotebookCellOutline implements IOutline<OutlineEntry> {
 						},
 					},
 				];
+
 				const deltaDecoration: ICellModelDeltaDecorations = {
 					ownerId: entry.cell.handle,
 					decorations: decorations,
@@ -1248,6 +1355,7 @@ export class NotebookCellOutline implements IOutline<OutlineEntry> {
 
 		return toDisposable(() => {
 			widget.deltaCellDecorations(ids, []);
+
 			if (editorDecorations?.length) {
 				widget.changeModelDecorations((accessor) => {
 					accessor.deltaDecorations(editorDecorations, []);
@@ -1258,7 +1366,9 @@ export class NotebookCellOutline implements IOutline<OutlineEntry> {
 
 	captureViewState(): IDisposable {
 		const widget = this._editor.getControl();
+
 		const viewState = widget?.getEditorViewState();
+
 		return toDisposable(() => {
 			if (viewState) {
 				widget?.restoreListViewState(viewState);
@@ -1268,9 +1378,13 @@ export class NotebookCellOutline implements IOutline<OutlineEntry> {
 
 	dispose(): void {
 		this._onDidChange.dispose();
+
 		this._disposables.dispose();
+
 		this._modelDisposables.dispose();
+
 		this._dataSourceDisposables.dispose();
+
 		this._outlineDataSourceReference?.dispose();
 	}
 }
@@ -1286,6 +1400,7 @@ export class NotebookOutlineCreator
 		private readonly _instantiationService: IInstantiationService,
 	) {
 		const reg = outlineService.registerOutlineCreator(this);
+
 		this.dispose = () => reg.dispose();
 	}
 
@@ -1303,11 +1418,13 @@ export class NotebookOutlineCreator
 			editor,
 			target,
 		);
+
 		if (target === OutlineTarget.QuickPick) {
 			// The quickpick creates the outline on demand
 			// so we need to ensure the symbols are pre-cached before the entries are syncronously requested
 			await outline.doComputeSymbols(cancelToken);
 		}
+
 		return outline;
 	}
 }
@@ -1423,10 +1540,12 @@ registerAction2(
 
 		run(accessor: ServicesAccessor, ...args: any[]) {
 			const configurationService = accessor.get(IConfigurationService);
+
 			const showMarkdownHeadersOnly =
 				configurationService.getValue<boolean>(
 					NotebookSetting.outlineShowMarkdownHeadersOnly,
 				);
+
 			configurationService.updateValue(
 				NotebookSetting.outlineShowMarkdownHeadersOnly,
 				!showMarkdownHeadersOnly,
@@ -1458,9 +1577,11 @@ registerAction2(
 
 		run(accessor: ServicesAccessor, ...args: any[]) {
 			const configurationService = accessor.get(IConfigurationService);
+
 			const showCodeCells = configurationService.getValue<boolean>(
 				NotebookSetting.outlineShowCodeCells,
 			);
+
 			configurationService.updateValue(
 				NotebookSetting.outlineShowCodeCells,
 				!showCodeCells,
@@ -1492,9 +1613,11 @@ registerAction2(
 
 		run(accessor: ServicesAccessor, ...args: any[]) {
 			const configurationService = accessor.get(IConfigurationService);
+
 			const showCodeCellSymbols = configurationService.getValue<boolean>(
 				NotebookSetting.outlineShowCodeCellSymbols,
 			);
+
 			configurationService.updateValue(
 				NotebookSetting.outlineShowCodeCellSymbols,
 				!showCodeCellSymbols,

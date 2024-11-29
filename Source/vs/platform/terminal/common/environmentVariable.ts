@@ -12,17 +12,23 @@ export enum EnvironmentVariableMutatorType {
 }
 export interface IEnvironmentVariableMutator {
 	readonly variable: string;
+
 	readonly value: string;
+
 	readonly type: EnvironmentVariableMutatorType;
+
 	readonly scope?: EnvironmentVariableScope;
+
 	readonly options?: IEnvironmentVariableMutatorOptions;
 }
 export interface IEnvironmentVariableCollectionDescription {
 	readonly description: string | undefined;
+
 	readonly scope?: EnvironmentVariableScope;
 }
 export interface IEnvironmentVariableMutatorOptions {
 	applyAtProcessCreation?: boolean;
+
 	applyAtShellIntegration?: boolean;
 }
 export type EnvironmentVariableScope = {
@@ -31,6 +37,7 @@ export type EnvironmentVariableScope = {
 
 export interface IEnvironmentVariableCollection {
 	readonly map: ReadonlyMap<string, IEnvironmentVariableMutator>;
+
 	readonly descriptionMap?: ReadonlyMap<
 		string,
 		IEnvironmentVariableCollectionDescription
@@ -64,7 +71,9 @@ export interface IExtensionOwnedEnvironmentVariableMutator
 }
 export interface IMergedEnvironmentVariableCollectionDiff {
 	added: ReadonlyMap<string, IExtensionOwnedEnvironmentVariableMutator[]>;
+
 	changed: ReadonlyMap<string, IExtensionOwnedEnvironmentVariableMutator[]>;
+
 	removed: ReadonlyMap<string, IExtensionOwnedEnvironmentVariableMutator[]>;
 }
 type VariableResolver = (str: string) => Promise<string>;

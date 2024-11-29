@@ -20,7 +20,9 @@ import { ITextModel } from "../../../common/model.js";
 
 export class BlockCommentCommand implements ICommand {
 	private readonly _selection: Selection;
+
 	private readonly _insertSpace: boolean;
+
 	private _usedEndToken: string | null;
 
 	constructor(
@@ -29,9 +31,12 @@ export class BlockCommentCommand implements ICommand {
 		private readonly languageConfigurationService: ILanguageConfigurationService,
 	) {
 		this._selection = selection;
+
 		this._insertSpace = insertSpace;
+
 		this._usedEndToken = null;
 	}
+
 	public static _haystackHasNeedleAtOffset(
 		haystack: string,
 		needle: string,
@@ -40,6 +45,7 @@ export class BlockCommentCommand implements ICommand {
 		if (offset < 0) {
 			return false;
 		}
+
 		const needleLength = needle.length;
 
 		const haystackLength = haystack.length;
@@ -47,6 +53,7 @@ export class BlockCommentCommand implements ICommand {
 		if (offset + needleLength > haystackLength) {
 			return false;
 		}
+
 		for (let i = 0; i < needleLength; i++) {
 			const codeA = haystack.charCodeAt(offset + i);
 
@@ -55,6 +62,7 @@ export class BlockCommentCommand implements ICommand {
 			if (codeA === codeB) {
 				continue;
 			}
+
 			if (
 				codeA >= CharCode.A &&
 				codeA <= CharCode.Z &&
@@ -63,6 +71,7 @@ export class BlockCommentCommand implements ICommand {
 				// codeA is upper-case variant of codeB
 				continue;
 			}
+
 			if (
 				codeB >= CharCode.A &&
 				codeB <= CharCode.Z &&
@@ -71,10 +80,13 @@ export class BlockCommentCommand implements ICommand {
 				// codeB is upper-case variant of codeA
 				continue;
 			}
+
 			return false;
 		}
+
 		return true;
 	}
+
 	private _createOperationsForBlockComment(
 		selection: Range,
 		startToken: string,
@@ -115,6 +127,7 @@ export class BlockCommentCommand implements ICommand {
 				if (lineBetweenTokens.indexOf(endToken) >= 0) {
 					// force to add a block comment
 					startTokenIndex = -1;
+
 					endTokenIndex = -1;
 				}
 			} else {
@@ -133,10 +146,12 @@ export class BlockCommentCommand implements ICommand {
 				) {
 					// force to add a block comment
 					startTokenIndex = -1;
+
 					endTokenIndex = -1;
 				}
 			}
 		}
+
 		let ops: ISingleEditOperation[];
 
 		if (startTokenIndex !== -1 && endTokenIndex !== -1) {
@@ -151,6 +166,7 @@ export class BlockCommentCommand implements ICommand {
 				// Pretend the start token contains a trailing space
 				startToken = startToken + " ";
 			}
+
 			if (
 				insertSpace &&
 				endTokenIndex > 0 &&
@@ -158,8 +174,10 @@ export class BlockCommentCommand implements ICommand {
 			) {
 				// Pretend the end token contains a leading space
 				endToken = " " + endToken;
+
 				endTokenIndex -= 1;
 			}
+
 			ops = BlockCommentCommand._createRemoveBlockCommentOperations(
 				new Range(
 					startLineNumber,
@@ -177,12 +195,15 @@ export class BlockCommentCommand implements ICommand {
 				endToken,
 				this._insertSpace,
 			);
+
 			this._usedEndToken = ops.length === 1 ? endToken : null;
 		}
+
 		for (const op of ops) {
 			builder.addTrackedEditOperation(op.range, op.text);
 		}
 	}
+
 	public static _createRemoveBlockCommentOperations(
 		r: Range,
 		startToken: string,
@@ -226,8 +247,10 @@ export class BlockCommentCommand implements ICommand {
 				),
 			);
 		}
+
 		return res;
 	}
+
 	public static _createAddBlockCommentOperations(
 		r: Range,
 		startToken: string,
@@ -265,8 +288,10 @@ export class BlockCommentCommand implements ICommand {
 				),
 			);
 		}
+
 		return res;
 	}
+
 	public getEditOperations(
 		model: ITextModel,
 		builder: IEditOperationBuilder,
@@ -274,6 +299,7 @@ export class BlockCommentCommand implements ICommand {
 		const startLineNumber = this._selection.startLineNumber;
 
 		const startColumn = this._selection.startColumn;
+
 		model.tokenization.tokenizeIfCheap(startLineNumber);
 
 		const languageId = model.getLanguageIdAtPosition(
@@ -294,6 +320,7 @@ export class BlockCommentCommand implements ICommand {
 			// Mode does not support block comments
 			return;
 		}
+
 		this._createOperationsForBlockComment(
 			this._selection,
 			config.blockCommentStartToken,
@@ -303,6 +330,7 @@ export class BlockCommentCommand implements ICommand {
 			builder,
 		);
 	}
+
 	public computeCursorState(
 		model: ITextModel,
 		helper: ICursorStateComputerData,

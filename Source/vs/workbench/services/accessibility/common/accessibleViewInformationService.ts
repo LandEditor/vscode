@@ -12,6 +12,7 @@ import {
 
 export interface IAccessibleViewInformationService {
 	_serviceBrand: undefined;
+
 	hasShownAccessibleView(viewId: string): boolean;
 }
 export const IAccessibleViewInformationService =
@@ -31,6 +32,7 @@ export class AccessibleViewInformationService
 	) {
 		super();
 	}
+
 	hasShownAccessibleView(viewId: string): boolean {
 		return (
 			this._storageService.getBoolean(

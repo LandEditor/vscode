@@ -32,6 +32,7 @@ export class UtilityProcessWorkerMainService
 	implements IUtilityProcessWorkerMainService
 {
 	declare readonly _serviceBrand: undefined;
+
 	private readonly workers = new Map<number /* id */, UtilityProcessWorker>();
 
 	constructor(
@@ -46,10 +47,12 @@ export class UtilityProcessWorkerMainService
 	) {
 		super();
 	}
+
 	async createWorker(
 		configuration: IUtilityProcessWorkerCreateConfiguration,
 	): Promise<IOnDidTerminateUtilityrocessWorkerProcess> {
 		const workerLogId = `window: ${configuration.reply.windowId}, moduleId: ${configuration.process.moduleId}`;
+
 		this.logService.trace(
 			`[UtilityProcessWorker]: createWorker(${workerLogId})`,
 		);
@@ -60,6 +63,7 @@ export class UtilityProcessWorkerMainService
 			this.logService.warn(
 				`[UtilityProcessWorker]: createWorker() found an existing worker that will be terminated (${workerLogId})`,
 			);
+
 			this.disposeWorker(configuration);
 		}
 		// Create new worker
@@ -74,10 +78,12 @@ export class UtilityProcessWorkerMainService
 		if (!worker.spawn()) {
 			return { reason: { code: 1, signal: "EINVALID" } };
 		}
+
 		this.workers.set(workerId, worker);
 
 		const onDidTerminate =
 			new DeferredPromise<IOnDidTerminateUtilityrocessWorkerProcess>();
+
 		Event.once(worker.onDidTerminate)((reason) => {
 			if (reason.code === 0) {
 				this.logService.trace(
@@ -88,18 +94,22 @@ export class UtilityProcessWorkerMainService
 					`[UtilityProcessWorker]: terminated unexpectedly with code ${reason.code}, signal: ${reason.signal}`,
 				);
 			}
+
 			this.workers.delete(workerId);
+
 			onDidTerminate.complete({ reason });
 		});
 
 		return onDidTerminate.p;
 	}
+
 	private hash(configuration: IUtilityProcessWorkerConfiguration): number {
 		return hash({
 			moduleId: configuration.process.moduleId,
 			windowId: configuration.reply.windowId,
 		});
 	}
+
 	async disposeWorker(
 		configuration: IUtilityProcessWorkerConfiguration,
 	): Promise<void> {
@@ -110,11 +120,15 @@ export class UtilityProcessWorkerMainService
 		if (!worker) {
 			return;
 		}
+
 		this.logService.trace(
 			`[UtilityProcessWorker]: disposeWorker(window: ${configuration.reply.windowId}, moduleId: ${configuration.process.moduleId})`,
 		);
+
 		worker.kill();
+
 		worker.dispose();
+
 		this.workers.delete(workerId);
 	}
 }
@@ -122,7 +136,9 @@ class UtilityProcessWorker extends Disposable {
 	private readonly _onDidTerminate = this._register(
 		new Emitter<IUtilityProcessWorkerProcessExit>(),
 	);
+
 	readonly onDidTerminate = this._onDidTerminate.event;
+
 	private readonly utilityProcess = this._register(
 		new WindowUtilityProcess(
 			this.logService,
@@ -144,20 +160,24 @@ class UtilityProcessWorker extends Disposable {
 		private readonly configuration: IUtilityProcessWorkerCreateConfiguration,
 	) {
 		super();
+
 		this.registerListeners();
 	}
+
 	private registerListeners(): void {
 		this._register(
 			this.utilityProcess.onExit((e) =>
 				this._onDidTerminate.fire({ code: e.code, signal: e.signal }),
 			),
 		);
+
 		this._register(
 			this.utilityProcess.onCrash((e) =>
 				this._onDidTerminate.fire({ code: e.code, signal: "ECRASH" }),
 			),
 		);
 	}
+
 	spawn(): boolean {
 		const window = this.windowsMainService.getWindowById(
 			this.configuration.reply.windowId,
@@ -176,6 +196,7 @@ class UtilityProcessWorker extends Disposable {
 			responseNonce: this.configuration.reply.nonce,
 		});
 	}
+
 	kill() {
 		this.utilityProcess.kill();
 	}

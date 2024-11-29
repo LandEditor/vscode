@@ -32,6 +32,7 @@ class DiskFileSystemProviderAdapter implements vscode.FileSystemProvider {
 	private readonly impl = new DiskFileSystemProvider(this.logService);
 
 	constructor(private readonly logService: ILogService) {}
+
 	async stat(uri: vscode.Uri): Promise<vscode.FileStat> {
 		const stat = await this.impl.stat(uri);
 
@@ -44,20 +45,25 @@ class DiskFileSystemProviderAdapter implements vscode.FileSystemProvider {
 				stat.permissions === FilePermission.Readonly ? 1 : undefined,
 		};
 	}
+
 	readDirectory(uri: vscode.Uri): Promise<[string, vscode.FileType][]> {
 		return this.impl.readdir(uri);
 	}
+
 	createDirectory(uri: vscode.Uri): Promise<void> {
 		return this.impl.mkdir(uri);
 	}
+
 	readFile(uri: vscode.Uri): Promise<Uint8Array> {
 		return this.impl.readFile(uri);
 	}
+
 	writeFile(
 		uri: vscode.Uri,
 		content: Uint8Array,
 		options: {
 			readonly create: boolean;
+
 			readonly overwrite: boolean;
 		},
 	): Promise<void> {
@@ -67,6 +73,7 @@ class DiskFileSystemProviderAdapter implements vscode.FileSystemProvider {
 			atomic: false,
 		});
 	}
+
 	delete(
 		uri: vscode.Uri,
 		options: {
@@ -79,6 +86,7 @@ class DiskFileSystemProviderAdapter implements vscode.FileSystemProvider {
 			atomic: false,
 		});
 	}
+
 	rename(
 		oldUri: vscode.Uri,
 		newUri: vscode.Uri,
@@ -88,6 +96,7 @@ class DiskFileSystemProviderAdapter implements vscode.FileSystemProvider {
 	): Promise<void> {
 		return this.impl.rename(oldUri, newUri, options);
 	}
+
 	copy(
 		source: vscode.Uri,
 		destination: vscode.Uri,
@@ -101,10 +110,12 @@ class DiskFileSystemProviderAdapter implements vscode.FileSystemProvider {
 	get onDidChangeFile(): never {
 		throw new Error("Method not implemented.");
 	}
+
 	watch(
 		uri: vscode.Uri,
 		options: {
 			readonly recursive: boolean;
+
 			readonly excludes: readonly string[];
 		},
 	): vscode.Disposable {

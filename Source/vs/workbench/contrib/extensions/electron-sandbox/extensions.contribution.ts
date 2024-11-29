@@ -73,9 +73,11 @@ class RuntimeExtensionsInputSerializer implements IEditorSerializer {
 	canSerialize(editorInput: EditorInput): boolean {
 		return true;
 	}
+
 	serialize(editorInput: EditorInput): string {
 		return "";
 	}
+
 	deserialize(instantiationService: IInstantiationService): EditorInput {
 		return RuntimeExtensionsInput.instance;
 	}
@@ -98,13 +100,16 @@ class ExtensionsContributions
 		sharedProcessService: ISharedProcessService,
 	) {
 		super();
+
 		sharedProcessService.registerChannel(
 			"extensionRecommendationNotification",
 			new ExtensionRecommendationNotificationServiceChannel(
 				extensionRecommendationNotificationService,
 			),
 		);
+
 		this._register(registerAction2(OpenExtensionsFolderAction));
+
 		this._register(registerAction2(CleanUpExtensionsFolderAction));
 	}
 }

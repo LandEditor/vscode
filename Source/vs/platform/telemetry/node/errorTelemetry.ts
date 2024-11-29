@@ -17,6 +17,7 @@ export default class ErrorTelemetry extends BaseErrorTelemetry {
 		// see https://nodejs.org/api/process.html#process_event_unhandledrejection
 		// and https://nodejs.org/api/process.html#process_event_rejectionhandled
 		const unhandledPromises: Promise<any>[] = [];
+
 		process.on(
 			"unhandledRejection",
 			(reason: any, promise: Promise<any>) => {
@@ -37,6 +38,7 @@ export default class ErrorTelemetry extends BaseErrorTelemetry {
 								if (e.stack) {
 									console.warn(`stack trace: ${e.stack}`);
 								}
+
 								if (reason) {
 									onUnexpectedError(reason);
 								}
@@ -46,6 +48,7 @@ export default class ErrorTelemetry extends BaseErrorTelemetry {
 				}, 1000);
 			},
 		);
+
 		process.on("rejectionHandled", (promise: Promise<any>) => {
 			const idx = unhandledPromises.indexOf(promise);
 
@@ -60,6 +63,7 @@ export default class ErrorTelemetry extends BaseErrorTelemetry {
 				if (isSigPipeError(err)) {
 					return;
 				}
+
 				onUnexpectedError(err);
 			},
 		);

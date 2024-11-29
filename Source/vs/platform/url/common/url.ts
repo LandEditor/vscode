@@ -16,6 +16,7 @@ export interface IOpenURLOptions {
 	 * might be shown to the user.
 	 */
 	trusted?: boolean;
+
 	originalUrl?: string;
 }
 export interface IURLHandler {
@@ -29,6 +30,8 @@ export interface IURLService {
 	 * any of the provided IURLCreateOption values.
 	 */
 	create(options?: Partial<UriComponents>): URI;
+
 	open(url: URI, options?: IOpenURLOptions): Promise<boolean>;
+
 	registerHandler(handler: IURLHandler): IDisposable;
 }

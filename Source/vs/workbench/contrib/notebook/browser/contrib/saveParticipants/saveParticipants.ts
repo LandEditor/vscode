@@ -89,12 +89,14 @@ abstract class NotebookSaveParticipant
 	implements IStoredFileWorkingCopySaveParticipant
 {
 	constructor(private readonly _editorService: IEditorService) {}
+
 	abstract participate(
 		workingCopy: IStoredFileWorkingCopy<IStoredFileWorkingCopyModel>,
 		context: IStoredFileWorkingCopySaveParticipantContext,
 		progress: IProgress<IProgressStep>,
 		token: CancellationToken,
 	): Promise<void>;
+
 	protected canParticipate(): boolean {
 		const editor = getNotebookEditorFromEditorPane(
 			this._editorService.activeEditorPane,
@@ -108,6 +110,7 @@ abstract class NotebookSaveParticipant
 		if (!controller) {
 			return true;
 		}
+
 		return controller.getState() !== NotebookMultiCursorState.Editing;
 	}
 }
@@ -126,6 +129,7 @@ class FormatOnSaveParticipant implements IStoredFileWorkingCopySaveParticipant {
 		@IConfigurationService
 		private readonly configurationService: IConfigurationService,
 	) {}
+
 	async participate(
 		workingCopy: IStoredFileWorkingCopy<IStoredFileWorkingCopyModel>,
 		context: IStoredFileWorkingCopySaveParticipantContext,
@@ -138,9 +142,11 @@ class FormatOnSaveParticipant implements IStoredFileWorkingCopySaveParticipant {
 		) {
 			return;
 		}
+
 		if (context.reason === SaveReason.AUTO) {
 			return undefined;
 		}
+
 		const enabled = this.configurationService.getValue<boolean>(
 			NotebookSetting.formatOnSave,
 		);
@@ -148,6 +154,7 @@ class FormatOnSaveParticipant implements IStoredFileWorkingCopySaveParticipant {
 		if (!enabled) {
 			return undefined;
 		}
+
 		progress.report({
 			message: localize("notebookFormatSave.formatting", "Formatting"),
 		});
@@ -172,6 +179,7 @@ class FormatOnSaveParticipant implements IStoredFileWorkingCopySaveParticipant {
 							await this.textModelService.createModelReference(
 								cell.uri,
 							);
+
 						disposable.add(ref);
 
 						const model = ref.object.textEditorModel;
@@ -201,9 +209,11 @@ class FormatOnSaveParticipant implements IStoredFileWorkingCopySaveParticipant {
 
 							return edits;
 						}
+
 						return [];
 					}),
 				);
+
 				await this.bulkEditService.apply(
 					/* edit */ allCellEdits.flat(),
 					{
@@ -214,6 +224,7 @@ class FormatOnSaveParticipant implements IStoredFileWorkingCopySaveParticipant {
 			}
 		} finally {
 			progress.report({ increment: 100 });
+
 			disposable.dispose();
 		}
 	}
@@ -231,6 +242,7 @@ class TrimWhitespaceParticipant extends NotebookSaveParticipant {
 	) {
 		super(editorService);
 	}
+
 	async participate(
 		workingCopy: IStoredFileWorkingCopy<IStoredFileWorkingCopyModel>,
 		context: IStoredFileWorkingCopySaveParticipantContext,
@@ -256,6 +268,7 @@ class TrimWhitespaceParticipant extends NotebookSaveParticipant {
 			);
 		}
 	}
+
 	private async doTrimTrailingWhitespace(
 		workingCopy: IStoredFileWorkingCopy<IStoredFileWorkingCopyModel>,
 		isAutoSaved: boolean,
@@ -268,6 +281,7 @@ class TrimWhitespaceParticipant extends NotebookSaveParticipant {
 		) {
 			return;
 		}
+
 		const disposable = new DisposableStore();
 
 		const notebook = workingCopy.model.notebookModel;
@@ -284,10 +298,12 @@ class TrimWhitespaceParticipant extends NotebookSaveParticipant {
 					if (cell.cellKind !== CellKind.Code) {
 						return [];
 					}
+
 					const ref =
 						await this.textModelService.createModelReference(
 							cell.uri,
 						);
+
 					disposable.add(ref);
 
 					const model = ref.object.textEditorModel;
@@ -311,7 +327,9 @@ class TrimWhitespaceParticipant extends NotebookSaveParticipant {
 								for (
 									let lineNumber =
 										snippetsRange.startLineNumber;
+
 									lineNumber <= snippetsRange.endLineNumber;
+
 									lineNumber++
 								) {
 									cursors.push(
@@ -324,6 +342,7 @@ class TrimWhitespaceParticipant extends NotebookSaveParticipant {
 							}
 						}
 					}
+
 					const ops = trimTrailingWhitespace(
 						model,
 						cursors,
@@ -333,6 +352,7 @@ class TrimWhitespaceParticipant extends NotebookSaveParticipant {
 					if (!ops.length) {
 						return []; // Nothing to do
 					}
+
 					return ops.map(
 						(op) =>
 							new ResourceTextEdit(
@@ -347,6 +367,7 @@ class TrimWhitespaceParticipant extends NotebookSaveParticipant {
 			const filteredEdits = allCellEdits
 				.flat()
 				.filter((edit) => edit !== undefined) as ResourceEdit[];
+
 			await this.bulkEditService.apply(filteredEdits, {
 				label: localize(
 					"trimNotebookWhitespace",
@@ -356,6 +377,7 @@ class TrimWhitespaceParticipant extends NotebookSaveParticipant {
 			});
 		} finally {
 			progress.report({ increment: 100 });
+
 			disposable.dispose();
 		}
 	}
@@ -371,6 +393,7 @@ class TrimFinalNewLinesParticipant extends NotebookSaveParticipant {
 	) {
 		super(editorService);
 	}
+
 	async participate(
 		workingCopy: IStoredFileWorkingCopy<IStoredFileWorkingCopyModel>,
 		context: IStoredFileWorkingCopySaveParticipantContext,
@@ -396,7 +419,9 @@ class TrimFinalNewLinesParticipant extends NotebookSaveParticipant {
 	private findLastNonEmptyLine(textBuffer: IReadonlyTextBuffer): number {
 		for (
 			let lineNumber = textBuffer.getLineCount();
+
 			lineNumber >= 1;
+
 			lineNumber--
 		) {
 			const lineLength = textBuffer.getLineLength(lineNumber);
@@ -409,6 +434,7 @@ class TrimFinalNewLinesParticipant extends NotebookSaveParticipant {
 		// no line has content
 		return 0;
 	}
+
 	private async doTrimFinalNewLines(
 		workingCopy: IStoredFileWorkingCopy<IStoredFileWorkingCopyModel>,
 		isAutoSaved: boolean,
@@ -420,6 +446,7 @@ class TrimFinalNewLinesParticipant extends NotebookSaveParticipant {
 		) {
 			return;
 		}
+
 		const disposable = new DisposableStore();
 
 		const notebook = workingCopy.model.notebookModel;
@@ -451,6 +478,7 @@ class TrimFinalNewLinesParticipant extends NotebookSaveParticipant {
 							);
 						}
 					}
+
 					const textBuffer = cell.textBuffer;
 
 					const lastNonEmptyLine =
@@ -464,6 +492,7 @@ class TrimFinalNewLinesParticipant extends NotebookSaveParticipant {
 					if (deleteFromLineNumber > textBuffer.getLineCount()) {
 						return;
 					}
+
 					const deletionRange = new Range(
 						deleteFromLineNumber,
 						1,
@@ -488,12 +517,14 @@ class TrimFinalNewLinesParticipant extends NotebookSaveParticipant {
 			const filteredEdits = allCellEdits
 				.flat()
 				.filter((edit) => edit !== undefined) as ResourceEdit[];
+
 			await this.bulkEditService.apply(filteredEdits, {
 				label: localize("trimNotebookNewlines", "Trim Final New Lines"),
 				code: "undoredo.trimFinalNewLines",
 			});
 		} finally {
 			progress.report({ increment: 100 });
+
 			disposable.dispose();
 		}
 	}
@@ -509,6 +540,7 @@ class InsertFinalNewLineParticipant extends NotebookSaveParticipant {
 	) {
 		super(editorService);
 	}
+
 	async participate(
 		workingCopy: IStoredFileWorkingCopy<IStoredFileWorkingCopyModel>,
 		context: IStoredFileWorkingCopySaveParticipantContext,
@@ -530,6 +562,7 @@ class InsertFinalNewLineParticipant extends NotebookSaveParticipant {
 			);
 		}
 	}
+
 	private async doInsertFinalNewLine(
 		workingCopy: IStoredFileWorkingCopy<IStoredFileWorkingCopyModel>,
 		isAutoSaved: boolean,
@@ -541,6 +574,7 @@ class InsertFinalNewLineParticipant extends NotebookSaveParticipant {
 		) {
 			return;
 		}
+
 		const disposable = new DisposableStore();
 
 		const notebook = workingCopy.model.notebookModel;
@@ -552,12 +586,14 @@ class InsertFinalNewLineParticipant extends NotebookSaveParticipant {
 		if (activeCellEditor) {
 			selections = activeCellEditor.getSelections() ?? [];
 		}
+
 		try {
 			const allCellEdits = await Promise.all(
 				notebook.cells.map(async (cell) => {
 					if (cell.cellKind !== CellKind.Code) {
 						return;
 					}
+
 					const lineCount = cell.textBuffer.getLineCount();
 
 					const lastLineIsEmptyOrWhitespace =
@@ -568,6 +604,7 @@ class InsertFinalNewLineParticipant extends NotebookSaveParticipant {
 					if (!lineCount || lastLineIsEmptyOrWhitespace) {
 						return;
 					}
+
 					return new ResourceTextEdit(
 						cell.uri,
 						{
@@ -587,6 +624,7 @@ class InsertFinalNewLineParticipant extends NotebookSaveParticipant {
 			const filteredEdits = allCellEdits.filter(
 				(edit) => edit !== undefined,
 			) as ResourceEdit[];
+
 			await this.bulkEditService.apply(filteredEdits, {
 				label: localize("insertFinalNewLine", "Insert Final New Line"),
 				code: "undoredo.insertFinalNewLine",
@@ -597,6 +635,7 @@ class InsertFinalNewLineParticipant extends NotebookSaveParticipant {
 			}
 		} finally {
 			progress.report({ increment: 100 });
+
 			disposable.dispose();
 		}
 	}
@@ -616,6 +655,7 @@ class CodeActionOnSaveParticipant
 		@IInstantiationService
 		private readonly instantiationService: IInstantiationService,
 	) {}
+
 	async participate(
 		workingCopy: IStoredFileWorkingCopy<IStoredFileWorkingCopyModel>,
 		context: IStoredFileWorkingCopySaveParticipantContext,
@@ -628,12 +668,14 @@ class CodeActionOnSaveParticipant
 		if (!isTrusted) {
 			return;
 		}
+
 		if (
 			!workingCopy.model ||
 			!(workingCopy.model instanceof NotebookFileWorkingCopyModel)
 		) {
 			return;
 		}
+
 		let saveTrigger = "";
 
 		if (context.reason === SaveReason.AUTO) {
@@ -647,6 +689,7 @@ class CodeActionOnSaveParticipant
 			// 	SaveReason.FOCUS_CHANGE, WINDOW_CHANGE need to be addressed when autosaves are enabled
 			return undefined;
 		}
+
 		const notebookModel = workingCopy.model.notebookModel;
 
 		const setting = this.configurationService.getValue<{
@@ -678,6 +721,7 @@ class CodeActionOnSaveParticipant
 		// run notebook code actions
 		if (notebookCodeActionsOnSave.length) {
 			const nbDisposable = new DisposableStore();
+
 			progress.report({
 				message: localize(
 					"notebookSaveParticipants.notebookCodeActions",
@@ -691,9 +735,11 @@ class CodeActionOnSaveParticipant
 				const ref = await this.textModelService.createModelReference(
 					cell.uri,
 				);
+
 				nbDisposable.add(ref);
 
 				const textEditorModel = ref.object.textEditorModel;
+
 				await this.instantiationService.invokeFunction(
 					CodeActionParticipantUtils.applyOnSaveGenericCodeActions,
 					textEditorModel,
@@ -708,6 +754,7 @@ class CodeActionOnSaveParticipant
 				);
 			} finally {
 				progress.report({ increment: 100 });
+
 				nbDisposable.dispose();
 			}
 		}
@@ -720,15 +767,20 @@ class CodeActionOnSaveParticipant
 						if (CodeActionKind.SourceFixAll.contains(b)) {
 							return 0;
 						}
+
 						return -1;
 					}
+
 					if (CodeActionKind.SourceFixAll.contains(b)) {
 						return 1;
 					}
+
 					return 0;
 				});
 			}
+
 			const cellDisposable = new DisposableStore();
+
 			progress.report({
 				message: localize(
 					"notebookSaveParticipants.cellCodeActions",
@@ -743,9 +795,11 @@ class CodeActionOnSaveParticipant
 							await this.textModelService.createModelReference(
 								cell.uri,
 							);
+
 						cellDisposable.add(ref);
 
 						const textEditorModel = ref.object.textEditorModel;
+
 						await this.instantiationService.invokeFunction(
 							CodeActionParticipantUtils.applyOnSaveGenericCodeActions,
 							textEditorModel,
@@ -760,10 +814,12 @@ class CodeActionOnSaveParticipant
 				this.logService.error("Failed to apply code action on save");
 			} finally {
 				progress.report({ increment: 100 });
+
 				cellDisposable.dispose();
 			}
 		}
 	}
+
 	private createCodeActionsOnSave(
 		settingItems: readonly string[],
 	): HierarchicalKind[] {
@@ -800,6 +856,7 @@ export class CodeActionParticipantUtils {
 		const formatDisposable = new DisposableStore();
 
 		let formatResult: boolean = false;
+
 		progress.report({
 			message: localize(
 				"notebookSaveParticipants.formatCodeActions",
@@ -836,8 +893,10 @@ export class CodeActionParticipantUtils {
 
 			formatDisposable.dispose();
 		}
+
 		return formatResult;
 	}
+
 	static async applyOnSaveGenericCodeActions(
 		accessor: ServicesAccessor,
 		model: ITextModel,
@@ -860,6 +919,7 @@ export class CodeActionParticipantUtils {
 			implements IProgress<CodeActionProvider>
 		{
 			private _names = new Set<string>();
+
 			private _report(): void {
 				progress.report({
 					message: localize(
@@ -875,12 +935,14 @@ export class CodeActionParticipantUtils {
 					),
 				});
 			}
+
 			report(provider: CodeActionProvider) {
 				if (
 					provider.displayName &&
 					!this._names.has(provider.displayName)
 				) {
 					this._names.add(provider.displayName);
+
 					this._report();
 				}
 			}
@@ -902,6 +964,7 @@ export class CodeActionParticipantUtils {
 
 				return;
 			}
+
 			try {
 				for (const action of actionsToRun.validActions) {
 					const codeActionEdits = action.action.edit?.edits;
@@ -926,6 +989,7 @@ export class CodeActionParticipantUtils {
 							}
 						}
 					}
+
 					if (breakFlag) {
 						logService.warn(
 							"Failed to apply code action on save, applied to multiple resources.",
@@ -933,6 +997,7 @@ export class CodeActionParticipantUtils {
 
 						continue;
 					}
+
 					progress.report({
 						message: localize(
 							"codeAction.apply",
@@ -940,6 +1005,7 @@ export class CodeActionParticipantUtils {
 							action.action.title,
 						),
 					});
+
 					await instantiationService.invokeFunction(
 						applyCodeAction,
 						action,
@@ -959,6 +1025,7 @@ export class CodeActionParticipantUtils {
 			}
 		}
 	}
+
 	static async applyOnSaveFormatCodeAction(
 		accessor: ServicesAccessor,
 		model: ITextModel,
@@ -982,6 +1049,7 @@ export class CodeActionParticipantUtils {
 			implements IProgress<CodeActionProvider>
 		{
 			private _names = new Set<string>();
+
 			private _report(): void {
 				progress.report({
 					message: localize(
@@ -997,12 +1065,14 @@ export class CodeActionParticipantUtils {
 					),
 				});
 			}
+
 			report(provider: CodeActionProvider) {
 				if (
 					provider.displayName &&
 					!this._names.has(provider.displayName)
 				) {
 					this._names.add(provider.displayName);
+
 					this._report();
 				}
 			}
@@ -1023,11 +1093,13 @@ export class CodeActionParticipantUtils {
 				"More than one format code action is provided, the 0th one will be used. A default can be specified via `notebook.defaultFormatter` in your settings.",
 			);
 		}
+
 		if (token.isCancellationRequested) {
 			providedActions.dispose();
 
 			return false;
 		}
+
 		try {
 			const action: CodeActionItem | undefined = extensionId
 				? providedActions.validActions.find(
@@ -1039,6 +1111,7 @@ export class CodeActionParticipantUtils {
 			if (!action) {
 				return false;
 			}
+
 			progress.report({
 				message: localize(
 					"codeAction.apply",
@@ -1046,6 +1119,7 @@ export class CodeActionParticipantUtils {
 					action.action.title,
 				),
 			});
+
 			await instantiationService.invokeFunction(
 				applyCodeAction,
 				action,
@@ -1066,6 +1140,7 @@ export class CodeActionParticipantUtils {
 		} finally {
 			providedActions.dispose();
 		}
+
 		return true;
 	}
 	// @Yoyokrazy this could likely be modified to leverage the extensionID, therefore not getting actions from providers unnecessarily -- future work
@@ -1117,8 +1192,10 @@ export class SaveParticipantsContribution
 		private readonly workingCopyFileService: IWorkingCopyFileService,
 	) {
 		super();
+
 		this.registerSaveParticipants();
 	}
+
 	private registerSaveParticipants(): void {
 		this._register(
 			this.workingCopyFileService.addSaveParticipant(
@@ -1127,6 +1204,7 @@ export class SaveParticipantsContribution
 				),
 			),
 		);
+
 		this._register(
 			this.workingCopyFileService.addSaveParticipant(
 				this.instantiationService.createInstance(
@@ -1134,6 +1212,7 @@ export class SaveParticipantsContribution
 				),
 			),
 		);
+
 		this._register(
 			this.workingCopyFileService.addSaveParticipant(
 				this.instantiationService.createInstance(
@@ -1141,6 +1220,7 @@ export class SaveParticipantsContribution
 				),
 			),
 		);
+
 		this._register(
 			this.workingCopyFileService.addSaveParticipant(
 				this.instantiationService.createInstance(
@@ -1148,6 +1228,7 @@ export class SaveParticipantsContribution
 				),
 			),
 		);
+
 		this._register(
 			this.workingCopyFileService.addSaveParticipant(
 				this.instantiationService.createInstance(

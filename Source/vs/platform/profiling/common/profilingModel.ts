@@ -8,61 +8,86 @@ import type { IV8Profile, IV8ProfileNode } from "./profiling.js";
 // https://github.com/microsoft/vscode-js-profile-visualizer/blob/6e7401128ee860be113a916f80fcfe20ac99418e/packages/vscode-js-profile-core/src/cpu/model.ts#L4
 export interface IProfileModel {
 	nodes: ReadonlyArray<IComputedNode>;
+
 	locations: ReadonlyArray<ILocation>;
+
 	samples: ReadonlyArray<number>;
+
 	timeDeltas: ReadonlyArray<number>;
+
 	rootPath?: string;
+
 	duration: number;
 }
 export interface IComputedNode {
 	id: number;
+
 	selfTime: number;
+
 	aggregateTime: number;
+
 	children: number[];
+
 	parent?: number;
+
 	locationId: number;
 }
 export interface ISourceLocation {
 	lineNumber: number;
+
 	columnNumber: number;
 	//   source: Dap.Source;
+
 	relativePath?: string;
 }
 export interface CdpCallFrame {
 	functionName: string;
+
 	scriptId: string;
+
 	url: string;
+
 	lineNumber: number;
+
 	columnNumber: number;
 }
 export interface CdpPositionTickInfo {
 	line: number;
+
 	ticks: number;
 }
 export interface INode {
 	id: number;
 	//   category: Category;
+
 	callFrame: CdpCallFrame;
+
 	src?: ISourceLocation;
 }
 export interface ILocation extends INode {
 	selfTime: number;
+
 	aggregateTime: number;
+
 	ticks: number;
 }
 export interface IAnnotationLocation {
 	callFrame: CdpCallFrame;
+
 	locations: ISourceLocation[];
 }
 export interface IProfileNode extends IV8ProfileNode {
 	locationId?: number;
+
 	positionTicks?: (CdpPositionTickInfo & {
 		startLocationId?: number;
+
 		endLocationId?: number;
 	})[];
 }
 export interface ICpuProfileRaw extends IV8Profile {
 	//   $vscode?: IJsDebugAnnotations;
+
 	nodes: IProfileNode[];
 }
 /**
@@ -78,11 +103,13 @@ const computeAggregateTime = (
 	if (row.aggregateTime) {
 		return row.aggregateTime;
 	}
+
 	let total = row.selfTime;
 
 	for (const child of row.children) {
 		total += computeAggregateTime(child, nodes);
 	}
+
 	return (row.aggregateTime = total);
 };
 
@@ -95,7 +122,9 @@ const ensureSourceLocations = (
 		string,
 		{
 			id: number;
+
 			callFrame: CdpCallFrame;
+
 			location: ISourceLocation;
 		}
 	>();
@@ -114,7 +143,9 @@ const ensureSourceLocations = (
 		if (existing) {
 			return existing.id;
 		}
+
 		const id = locationIdCounter++;
+
 		locationsByRef.set(ref, {
 			id,
 			callFrame,
@@ -134,6 +165,7 @@ const ensureSourceLocations = (
 
 	for (const node of profile.nodes) {
 		node.locationId = getLocationIdFor(node.callFrame);
+
 		node.positionTicks = node.positionTicks?.map((tick) => ({
 			...tick,
 			// weirdly, line numbers here are 1-based, not 0-based. The position tick
@@ -151,6 +183,7 @@ const ensureSourceLocations = (
 			}),
 		}));
 	}
+
 	return [...locationsByRef.values()]
 		.sort((a, b) => a.id - b.id)
 		.map((l) => ({ locations: [l.location], callFrame: l.callFrame }));
@@ -169,6 +202,7 @@ export const buildModel = (profile: ICpuProfileRaw): IProfileModel => {
 			duration: profile.endTime - profile.startTime,
 		};
 	}
+
 	const { samples, timeDeltas } = profile;
 
 	const sourceLocations = ensureSourceLocations(profile);
@@ -197,8 +231,10 @@ export const buildModel = (profile: ICpuProfileRaw): IProfileModel => {
 
 		if (id === undefined) {
 			id = idMap.size;
+
 			idMap.set(nodeId, id);
 		}
+
 		return id;
 	};
 	// 1. Created a sorted list of nodes. It seems that the profile always has
@@ -209,6 +245,7 @@ export const buildModel = (profile: ICpuProfileRaw): IProfileModel => {
 		const node = profile.nodes[i];
 		// make them 0-based:
 		const id = mapId(node.id);
+
 		nodes[id] = {
 			id,
 			selfTime: 0,
@@ -223,6 +260,7 @@ export const buildModel = (profile: ICpuProfileRaw): IProfileModel => {
 			}
 		}
 	}
+
 	for (const node of nodes) {
 		for (const child of node.children) {
 			nodes[child].parent = node.id;
@@ -236,7 +274,9 @@ export const buildModel = (profile: ICpuProfileRaw): IProfileModel => {
 
 	for (let i = 0; i < timeDeltas.length - 1; i++) {
 		const d = timeDeltas[i + 1];
+
 		nodes[mapId(samples[i])].selfTime += d;
+
 		lastNodeTime -= d;
 	}
 	// Add in an extra time delta for the last sample. `timeDeltas[0]` is the
@@ -245,6 +285,7 @@ export const buildModel = (profile: ICpuProfileRaw): IProfileModel => {
 	// some work by calculating it here.
 	if (nodes.length) {
 		nodes[mapId(samples[timeDeltas.length - 1])].selfTime += lastNodeTime;
+
 		timeDeltas.push(lastNodeTime);
 	}
 	// 3. Add the aggregate times for all node children and locations
@@ -252,9 +293,12 @@ export const buildModel = (profile: ICpuProfileRaw): IProfileModel => {
 		const node = nodes[i];
 
 		const location = locations[node.locationId];
+
 		location.aggregateTime += computeAggregateTime(i, nodes);
+
 		location.selfTime += node.selfTime;
 	}
+
 	return {
 		nodes,
 		locations,
@@ -281,28 +325,39 @@ export class BottomUpNode {
 			},
 		});
 	}
+
 	public children: {
 		[id: number]: BottomUpNode;
 	} = {};
+
 	public aggregateTime = 0;
+
 	public selfTime = 0;
+
 	public ticks = 0;
+
 	public childrenSize = 0;
+
 	public get id() {
 		return this.location.id;
 	}
+
 	public get callFrame() {
 		return this.location.callFrame;
 	}
+
 	public get src() {
 		return this.location.src;
 	}
+
 	constructor(
 		public readonly location: ILocation,
 		public readonly parent?: BottomUpNode,
 	) {}
+
 	public addNode(node: IComputedNode) {
 		this.selfTime += node.selfTime;
+
 		this.aggregateTime += node.aggregateTime;
 	}
 }
@@ -316,9 +371,12 @@ export const processNode = (
 
 	if (!child) {
 		child = new BottomUpNode(model.locations[node.locationId], aggregate);
+
 		aggregate.childrenSize++;
+
 		aggregate.children[node.locationId] = child;
 	}
+
 	child.addNode(initialNode);
 
 	if (node.parent) {
@@ -328,15 +386,24 @@ export const processNode = (
 //#endregion
 export interface BottomUpSample {
 	selfTime: number;
+
 	totalTime: number;
+
 	location: string;
+
 	absLocation: string;
+
 	url: string;
+
 	caller: {
 		percentage: number;
+
 		absLocation: string;
+
 		location: string;
 	}[];
+
 	percentage: number;
+
 	isSpecial: boolean;
 }

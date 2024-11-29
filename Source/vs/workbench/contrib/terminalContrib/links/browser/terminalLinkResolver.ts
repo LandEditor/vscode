@@ -30,6 +30,7 @@ export class TerminalLinkResolver implements ITerminalLinkResolver {
 		@IFileService
 		private readonly _fileService: IFileService,
 	) {}
+
 	async resolveLink(
 		processManager: Pick<
 			ITerminalProcessManager,
@@ -58,6 +59,7 @@ export class TerminalLinkResolver implements ITerminalLinkResolver {
 
 		if (!cache) {
 			cache = new LinkCache();
+
 			this._resolvedLinkCaches.set(
 				processManager.remoteAuthority ?? "",
 				cache,
@@ -69,11 +71,13 @@ export class TerminalLinkResolver implements ITerminalLinkResolver {
 		if (cached !== undefined) {
 			return cached;
 		}
+
 		if (uri) {
 			try {
 				const stat = await this._fileService.stat(uri);
 
 				const result = { uri, link, isDirectory: stat.isDirectory };
+
 				cache.set(uri, result);
 
 				return result;
@@ -127,8 +131,10 @@ export class TerminalLinkResolver implements ITerminalLinkResolver {
 
 				return null;
 			}
+
 			linkUrl = preprocessedLink;
 		}
+
 		try {
 			let uri: URI;
 
@@ -141,10 +147,12 @@ export class TerminalLinkResolver implements ITerminalLinkResolver {
 			} else {
 				uri = URI.file(linkUrl);
 			}
+
 			try {
 				const stat = await this._fileService.stat(uri);
 
 				const result = { uri, link, isDirectory: stat.isDirectory };
+
 				cache.set(link, result);
 
 				return result;
@@ -161,6 +169,7 @@ export class TerminalLinkResolver implements ITerminalLinkResolver {
 			return null;
 		}
 	}
+
 	protected _preprocessPath(
 		link: string,
 		initialCwd: string,
@@ -174,6 +183,7 @@ export class TerminalLinkResolver implements ITerminalLinkResolver {
 			if (!userHome) {
 				return null;
 			}
+
 			link = osPath.join(userHome, link.substring(1));
 		} else if (link.charAt(0) !== "/" && link.charAt(0) !== "~") {
 			// Resolve workspace path . | .. | <relative_path> -> <path>/. | <path>/.. | <path>/<relative_path>
@@ -186,6 +196,7 @@ export class TerminalLinkResolver implements ITerminalLinkResolver {
 						// Abort if no workspace is open
 						return null;
 					}
+
 					link = osPath.join(initialCwd, link);
 				} else {
 					// Remove \\?\ from paths so that they share the same underlying
@@ -197,13 +208,16 @@ export class TerminalLinkResolver implements ITerminalLinkResolver {
 					// Abort if no workspace is open
 					return null;
 				}
+
 				link = osPath.join(initialCwd, link);
 			}
 		}
+
 		link = osPath.normalize(link);
 
 		return link;
 	}
+
 	private _getOsPath(os: OperatingSystem | undefined): IPath {
 		return (os ?? OS) === OperatingSystem.Windows ? win32 : posix;
 	}
@@ -218,6 +232,7 @@ const enum LinkCacheConstants {
 }
 class LinkCache {
 	private readonly _cache = new Map<string, ResolvedLink>();
+
 	private _cacheTilTimeout = 0;
 
 	set(link: string | URI, value: ResolvedLink) {
@@ -225,19 +240,24 @@ class LinkCache {
 		if (this._cacheTilTimeout) {
 			mainWindow.clearTimeout(this._cacheTilTimeout);
 		}
+
 		this._cacheTilTimeout = mainWindow.setTimeout(
 			() => this._cache.clear(),
 			LinkCacheConstants.TTL,
 		);
+
 		this._cache.set(this._getKey(link), value);
 	}
+
 	get(link: string | URI): ResolvedLink | undefined {
 		return this._cache.get(this._getKey(link));
 	}
+
 	private _getKey(link: string | URI): string {
 		if (URI.isUri(link)) {
 			return link.toString();
 		}
+
 		return link;
 	}
 }

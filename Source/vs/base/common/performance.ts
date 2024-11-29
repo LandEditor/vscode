@@ -10,6 +10,7 @@ function _definePolyfillMarks(timeOrigin?: number) {
 	if (typeof timeOrigin === "number") {
 		_data.push("code/timeOrigin", timeOrigin);
 	}
+
 	function mark(
 		name: string,
 		markOptions?: {
@@ -18,6 +19,7 @@ function _definePolyfillMarks(timeOrigin?: number) {
 	) {
 		_data.push(name, markOptions?.startTime ?? Date.now());
 	}
+
 	function getMarks() {
 		const result = [];
 
@@ -27,8 +29,10 @@ function _definePolyfillMarks(timeOrigin?: number) {
 				startTime: _data[i + 1],
 			});
 		}
+
 		return result;
 	}
+
 	return { mark, getMarks };
 }
 declare const process: INodeProcess;
@@ -68,6 +72,7 @@ function _define() {
 							performance.timing.redirectStart ||
 							performance.timing.fetchStart;
 					}
+
 					const result = [
 						{
 							name: "code/timeOrigin",
@@ -81,6 +86,7 @@ function _define() {
 							startTime: Math.round(timeOrigin + entry.startTime),
 						});
 					}
+
 					return result;
 				},
 			};
@@ -102,6 +108,7 @@ function _factory(sharedObj: any) {
 	if (!sharedObj.MonacoPerformanceMarks) {
 		sharedObj.MonacoPerformanceMarks = _define();
 	}
+
 	return sharedObj.MonacoPerformanceMarks;
 }
 
@@ -116,6 +123,7 @@ export const mark: (
 
 export interface PerformanceMark {
 	readonly name: string;
+
 	readonly startTime: number;
 }
 /**

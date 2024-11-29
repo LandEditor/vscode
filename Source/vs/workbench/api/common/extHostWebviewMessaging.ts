@@ -7,13 +7,16 @@ import * as extHostProtocol from "./extHost.protocol.js";
 
 class ArrayBufferSet {
 	public readonly buffers: ArrayBuffer[] = [];
+
 	public add(buffer: ArrayBuffer): number {
 		let index = this.buffers.indexOf(buffer);
 
 		if (index < 0) {
 			index = this.buffers.length;
+
 			this.buffers.push(buffer);
 		}
+
 		return index;
 	}
 }
@@ -24,6 +27,7 @@ export function serializeWebviewMessage(
 	},
 ): {
 	message: string;
+
 	buffers: VSBuffer[];
 } {
 	if (options.serializeBuffersForPostMessage) {
@@ -55,6 +59,7 @@ export function serializeWebviewMessage(
 					} satisfies extHostProtocol.WebviewMessageArrayBufferReference;
 				}
 			}
+
 			return value;
 		};
 
@@ -115,6 +120,7 @@ function getTypedArrayType(
 			return extHostProtocol.WebviewMessageArrayBufferViewType
 				.BigUint64Array;
 	}
+
 	return undefined;
 }
 export function deserializeWebviewMessage(
@@ -122,12 +128,14 @@ export function deserializeWebviewMessage(
 	buffers: VSBuffer[],
 ): {
 	message: any;
+
 	arrayBuffers: ArrayBuffer[];
 } {
 	const arrayBuffers: ArrayBuffer[] = buffers.map((buffer) => {
 		const arrayBuffer = new ArrayBuffer(buffer.byteLength);
 
 		const uint8Array = new Uint8Array(arrayBuffer);
+
 		uint8Array.set(buffer.buffer);
 
 		return arrayBuffer;
@@ -260,8 +268,10 @@ export function deserializeWebviewMessage(
 								);
 						}
 					}
+
 					return arrayBuffer;
 				}
+
 				return value;
 			};
 

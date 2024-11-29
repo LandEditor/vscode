@@ -22,14 +22,20 @@ export class NotebookCellStatusBarService
 	implements INotebookCellStatusBarService
 {
 	readonly _serviceBrand: undefined;
+
 	private readonly _onDidChangeProviders = this._register(
 		new Emitter<void>(),
 	);
+
 	readonly onDidChangeProviders: Event<void> =
 		this._onDidChangeProviders.event;
+
 	private readonly _onDidChangeItems = this._register(new Emitter<void>());
+
 	readonly onDidChangeItems: Event<void> = this._onDidChangeItems.event;
+
 	private readonly _providers: INotebookCellStatusBarItemProvider[] = [];
+
 	registerCellStatusBarItemProvider(
 		provider: INotebookCellStatusBarItemProvider,
 	): IDisposable {
@@ -42,15 +48,18 @@ export class NotebookCellStatusBarService
 				this._onDidChangeItems.fire(),
 			);
 		}
+
 		this._onDidChangeProviders.fire();
 
 		return toDisposable(() => {
 			changeListener?.dispose();
 
 			const idx = this._providers.findIndex((p) => p === provider);
+
 			this._providers.splice(idx, 1);
 		});
 	}
+
 	async getStatusBarItemsForCell(
 		docUri: URI,
 		cellIndex: number,

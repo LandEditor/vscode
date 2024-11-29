@@ -22,6 +22,7 @@ export function registerContributions(): void {
 		ReplaceService,
 		InstantiationType.Delayed,
 	);
+
 	registerWorkbenchContribution2(
 		ReplacePreviewContentProvider.ID,
 		ReplacePreviewContentProvider,

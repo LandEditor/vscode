@@ -19,9 +19,13 @@ interface LanguageParticipantContribution {
 }
 export interface LanguageParticipants {
 	readonly onDidChange: Event<void>;
+
 	readonly documentSelector: string[];
+
 	hasLanguage(languageId: string): boolean;
+
 	useAutoInsert(languageId: string): boolean;
+
 	dispose(): void;
 }
 export function getLanguageParticipants(): LanguageParticipants {
@@ -34,9 +38,13 @@ export function getLanguageParticipants(): LanguageParticipants {
 	function update() {
 		const oldLanguages = languages,
 			oldAutoInsert = autoInsert;
+
 		languages = new Set();
+
 		languages.add("html");
+
 		autoInsert = new Set();
+
 		autoInsert.add("html");
 
 		for (const extension of extensions.allAcrossExtensionHosts) {
@@ -57,11 +65,13 @@ export function getLanguageParticipants(): LanguageParticipants {
 				}
 			}
 		}
+
 		return (
 			!isEqualSet(languages, oldLanguages) ||
 			!isEqualSet(autoInsert, oldAutoInsert)
 		);
 	}
+
 	update();
 
 	const changeListener = extensions.onDidChange((_) => {
@@ -88,10 +98,12 @@ function isEqualSet<T>(s1: Set<T>, s2: Set<T>) {
 	if (s1.size !== s2.size) {
 		return false;
 	}
+
 	for (const e of s1) {
 		if (!s2.has(e)) {
 			return false;
 		}
 	}
+
 	return true;
 }

@@ -24,6 +24,7 @@ const $ = dom.$;
 
 export class QuickInputBox extends Disposable {
 	private container: HTMLElement;
+
 	private findInput: FindInput;
 
 	constructor(
@@ -32,7 +33,9 @@ export class QuickInputBox extends Disposable {
 		toggleStyles: IToggleStyles,
 	) {
 		super();
+
 		this.container = dom.append(this.parent, $(".quick-input-box"));
+
 		this.findInput = this._register(
 			new FindInput(this.container, undefined, {
 				label: "",
@@ -42,11 +45,16 @@ export class QuickInputBox extends Disposable {
 		);
 
 		const input = this.findInput.inputBox.inputElement;
+
 		input.role = "combobox";
+
 		input.ariaHasPopup = "menu";
+
 		input.ariaAutoComplete = "list";
+
 		input.ariaExpanded = "true";
 	}
+
 	onKeyDown = (
 		handler: (event: StandardKeyboardEvent) => void,
 	): IDisposable => {
@@ -56,6 +64,7 @@ export class QuickInputBox extends Disposable {
 			handler,
 		);
 	};
+
 	onMouseDown = (
 		handler: (event: StandardMouseEvent) => void,
 	): IDisposable => {
@@ -65,6 +74,7 @@ export class QuickInputBox extends Disposable {
 			handler,
 		);
 	};
+
 	onDidChange = (handler: (event: string) => void): IDisposable => {
 		return this.findInput.onDidChange(handler);
 	};
@@ -72,38 +82,48 @@ export class QuickInputBox extends Disposable {
 	get value() {
 		return this.findInput.getValue();
 	}
+
 	set value(value: string) {
 		this.findInput.setValue(value);
 	}
+
 	select(range: IRange | null = null): void {
 		this.findInput.inputBox.select(range);
 	}
+
 	getSelection(): IRange | null {
 		return this.findInput.inputBox.getSelection();
 	}
+
 	isSelectionAtEnd(): boolean {
 		return this.findInput.inputBox.isSelectionAtEnd();
 	}
+
 	setPlaceholder(placeholder: string): void {
 		this.findInput.inputBox.setPlaceHolder(placeholder);
 	}
+
 	get placeholder() {
 		return (
 			this.findInput.inputBox.inputElement.getAttribute("placeholder") ||
 			""
 		);
 	}
+
 	set placeholder(placeholder: string) {
 		this.findInput.inputBox.setPlaceHolder(placeholder);
 	}
+
 	get password() {
 		return this.findInput.inputBox.inputElement.type === "password";
 	}
+
 	set password(password: boolean) {
 		this.findInput.inputBox.inputElement.type = password
 			? "password"
 			: "text";
 	}
+
 	set enabled(enabled: boolean) {
 		// We can't disable the input box because it is still used for
 		// navigating the list. Instead, we disable the list and the OK
@@ -118,18 +138,23 @@ export class QuickInputBox extends Disposable {
 		// so things like this can be done in CSS
 		// this.findInput.inputBox.inputElement.classList.toggle('disabled', !enabled);
 	}
+
 	set toggles(toggles: Toggle[] | undefined) {
 		this.findInput.setAdditionalToggles(toggles);
 	}
+
 	hasFocus(): boolean {
 		return this.findInput.inputBox.hasFocus();
 	}
+
 	setAttribute(name: string, value: string): void {
 		this.findInput.inputBox.inputElement.setAttribute(name, value);
 	}
+
 	removeAttribute(name: string): void {
 		this.findInput.inputBox.inputElement.removeAttribute(name);
 	}
+
 	showDecoration(decoration: Severity): void {
 		if (decoration === Severity.Ignore) {
 			this.findInput.clearMessage();
@@ -145,6 +170,7 @@ export class QuickInputBox extends Disposable {
 			});
 		}
 	}
+
 	stylesForType(decoration: Severity) {
 		return this.findInput.inputBox.stylesForType(
 			decoration === Severity.Info
@@ -154,9 +180,11 @@ export class QuickInputBox extends Disposable {
 					: MessageType.ERROR,
 		);
 	}
+
 	setFocus(): void {
 		this.findInput.focus();
 	}
+
 	layout(): void {
 		this.findInput.inputBox.layout();
 	}

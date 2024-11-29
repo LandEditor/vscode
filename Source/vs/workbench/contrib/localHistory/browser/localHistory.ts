@@ -26,6 +26,7 @@ export function getLocalHistoryDateFormatter(): ILocalHistoryDateFormatter {
 		};
 
 		const formatter = safeIntl.DateTimeFormat(language, options);
+
 		localHistoryDateFormatter = {
 			format: (date) => formatter.format(date),
 		};

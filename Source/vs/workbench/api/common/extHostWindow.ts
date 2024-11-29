@@ -20,11 +20,15 @@ export class ExtHostWindow implements ExtHostWindowShape {
 		focused: true,
 		active: true,
 	};
+
 	private _proxy: MainThreadWindowShape;
+
 	private readonly _onDidChangeWindowState = new Emitter<WindowState>();
+
 	readonly onDidChangeWindowState: Event<WindowState> = this._onDidChangeWindowState.event;
 
 	private _nativeHandle: Uint8Array | undefined;
+
 	private _state = ExtHostWindow.InitialState;
 
 	getState(): WindowState {
@@ -48,9 +52,12 @@ export class ExtHostWindow implements ExtHostWindowShape {
 		if (initData.handle) {
 			this._nativeHandle = decodeBase64(initData.handle).buffer;
 		}
+
 		this._proxy = extHostRpc.getProxy(MainContext.MainThreadWindow);
+
 		this._proxy.$getInitialState().then(({ isFocused, isActive }) => {
 			this.onDidChangeWindowProperty("focused", isFocused);
+
 			this.onDidChangeWindowProperty("active", isActive);
 		});
 	}
@@ -69,6 +76,7 @@ export class ExtHostWindow implements ExtHostWindowShape {
 	$onDidChangeWindowActive(value: boolean) {
 		this.onDidChangeWindowProperty("active", value);
 	}
+
 	onDidChangeWindowProperty(
 		property: keyof WindowState,
 		value: boolean,
@@ -76,9 +84,12 @@ export class ExtHostWindow implements ExtHostWindowShape {
 		if (value === this._state[property]) {
 			return;
 		}
+
 		this._state = { ...this._state, [property]: value };
+
 		this._onDidChangeWindowState.fire(this._state);
 	}
+
 	openUri(
 		stringOrUri: string | URI,
 		options: IOpenUriOptions,
@@ -94,17 +105,21 @@ export class ExtHostWindow implements ExtHostWindowShape {
 				return Promise.reject(`Invalid uri - '${stringOrUri}'`);
 			}
 		}
+
 		if (isFalsyOrWhitespace(stringOrUri.scheme)) {
 			return Promise.reject("Invalid scheme - cannot be empty");
 		} else if (stringOrUri.scheme === Schemas.command) {
 			return Promise.reject(`Invalid scheme '${stringOrUri.scheme}'`);
 		}
+
 		return this._proxy.$openUri(stringOrUri, uriAsString, options);
 	}
+
 	async asExternalUri(uri: URI, options: IOpenUriOptions): Promise<URI> {
 		if (isFalsyOrWhitespace(uri.scheme)) {
 			return Promise.reject("Invalid scheme - cannot be empty");
 		}
+
 		const result = await this._proxy.$asExternalUri(uri, options);
 
 		return URI.from(result);

@@ -7,7 +7,9 @@ import { CommentThread } from "../../editor/common/languages.js";
 
 export interface MarshalledCommentThread {
 	$mid: MarshalledId.CommentThread;
+
 	commentControlHandle: number;
+
 	commentThreadHandle: number;
 }
 export interface MarshalledCommentThreadInternal

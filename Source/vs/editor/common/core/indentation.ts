@@ -19,19 +19,23 @@ function _normalizeIndentationFromWhitespace(
 			spacesCnt++;
 		}
 	}
+
 	let result = "";
 
 	if (!insertSpaces) {
 		const tabsCnt = Math.floor(spacesCnt / indentSize);
+
 		spacesCnt = spacesCnt % indentSize;
 
 		for (let i = 0; i < tabsCnt; i++) {
 			result += "\t";
 		}
 	}
+
 	for (let i = 0; i < spacesCnt; i++) {
 		result += " ";
 	}
+
 	return result;
 }
 export function normalizeIndentation(
@@ -44,6 +48,7 @@ export function normalizeIndentation(
 	if (firstNonWhitespaceIndex === -1) {
 		firstNonWhitespaceIndex = str.length;
 	}
+
 	return (
 		_normalizeIndentationFromWhitespace(
 			str.substring(0, firstNonWhitespaceIndex),

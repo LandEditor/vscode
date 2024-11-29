@@ -29,6 +29,7 @@ export const IVoiceChatService =
 
 export interface IVoiceChatSessionOptions {
 	readonly usesAgents?: boolean;
+
 	readonly model?: IChatModel;
 }
 export interface IVoiceChatService {
@@ -57,6 +58,7 @@ export interface IVoiceChatSession {
 }
 interface IPhraseValue {
 	readonly agent: string;
+
 	readonly command?: string;
 }
 enum PhraseTextType {
@@ -78,22 +80,29 @@ export const VoiceChatInProgress = new RawContextKey<boolean>(
 
 export class VoiceChatService extends Disposable implements IVoiceChatService {
 	readonly _serviceBrand: undefined;
+
 	private static readonly AGENT_PREFIX = chatAgentLeader;
+
 	private static readonly COMMAND_PREFIX = chatSubcommandLeader;
+
 	private static readonly PHRASES_LOWER = {
 		[this.AGENT_PREFIX]: "at",
 		[this.COMMAND_PREFIX]: "slash",
 	};
+
 	private static readonly PHRASES_UPPER = {
 		[this.AGENT_PREFIX]: "At",
 		[this.COMMAND_PREFIX]: "Slash",
 	};
+
 	private static readonly CHAT_AGENT_ALIAS = new Map<string, string>([
 		["vscode", "code"],
 	]);
+
 	private readonly voiceChatInProgress = VoiceChatInProgress.bindTo(
 		this.contextKeyService,
 	);
+
 	private activeVoiceChatSessions = 0;
 
 	constructor(
@@ -106,17 +115,20 @@ export class VoiceChatService extends Disposable implements IVoiceChatService {
 	) {
 		super();
 	}
+
 	private createPhrases(model?: IChatModel): Map<string, IPhraseValue> {
 		const phrases = new Map<string, IPhraseValue>();
 
 		for (const agent of this.chatAgentService.getActivatedAgents()) {
 			const agentPhrase =
 				`${VoiceChatService.PHRASES_LOWER[VoiceChatService.AGENT_PREFIX]} ${VoiceChatService.CHAT_AGENT_ALIAS.get(agent.name) ?? agent.name}`.toLowerCase();
+
 			phrases.set(agentPhrase, { agent: agent.name });
 
 			for (const slashCommand of agent.slashCommands) {
 				const slashCommandPhrase =
 					`${VoiceChatService.PHRASES_LOWER[VoiceChatService.COMMAND_PREFIX]} ${slashCommand.name}`.toLowerCase();
+
 				phrases.set(slashCommandPhrase, {
 					agent: agent.name,
 					command: slashCommand.name,
@@ -124,14 +136,17 @@ export class VoiceChatService extends Disposable implements IVoiceChatService {
 
 				const agentSlashCommandPhrase =
 					`${agentPhrase} ${slashCommandPhrase}`.toLowerCase();
+
 				phrases.set(agentSlashCommandPhrase, {
 					agent: agent.name,
 					command: slashCommand.name,
 				});
 			}
 		}
+
 		return phrases;
 	}
+
 	private toText(value: IPhraseValue, type: PhraseTextType): string {
 		switch (type) {
 			case PhraseTextType.AGENT:
@@ -144,6 +159,7 @@ export class VoiceChatService extends Disposable implements IVoiceChatService {
 				return `${VoiceChatService.AGENT_PREFIX}${value.agent} ${VoiceChatService.COMMAND_PREFIX}${value.command}`;
 		}
 	}
+
 	async createVoiceChatSession(
 		token: CancellationToken,
 		options: IVoiceChatSessionOptions,
@@ -159,10 +175,12 @@ export class VoiceChatService extends Disposable implements IVoiceChatService {
 			if (this.activeVoiceChatSessions === 0) {
 				this.voiceChatInProgress.reset();
 			}
+
 			if (dispose) {
 				disposables.dispose();
 			}
 		};
+
 		disposables.add(
 			token.onCancellationRequested(() =>
 				onSessionStoppedOrCanceled(true),
@@ -183,7 +201,9 @@ export class VoiceChatService extends Disposable implements IVoiceChatService {
 		if (token.isCancellationRequested) {
 			onSessionStoppedOrCanceled(true);
 		}
+
 		const phrases = this.createPhrases(options.model);
+
 		disposables.add(
 			session.onDidChange((e) => {
 				switch (e.status) {
@@ -247,6 +267,7 @@ export class VoiceChatService extends Disposable implements IVoiceChatService {
 											),
 											...originalWords.slice(4),
 										];
+
 										waitingForInput =
 											originalWords.length === 4;
 
@@ -255,6 +276,7 @@ export class VoiceChatService extends Disposable implements IVoiceChatService {
 											SpeechToTextStatus.Recognized
 										) {
 											detectedAgent = true;
+
 											detectedSlashCommand = true;
 										}
 									}
@@ -284,6 +306,7 @@ export class VoiceChatService extends Disposable implements IVoiceChatService {
 											),
 											...originalWords.slice(2),
 										];
+
 										waitingForInput =
 											originalWords.length === 2;
 
@@ -322,6 +345,7 @@ export class VoiceChatService extends Disposable implements IVoiceChatService {
 											),
 											...originalWords.slice(2),
 										];
+
 										waitingForInput =
 											originalWords.length === 2;
 
@@ -333,6 +357,7 @@ export class VoiceChatService extends Disposable implements IVoiceChatService {
 										}
 									}
 								}
+
 								massagedEvent = {
 									status: e.status,
 									text: (
@@ -342,19 +367,24 @@ export class VoiceChatService extends Disposable implements IVoiceChatService {
 								};
 							}
 						}
+
 						emitter.fire(massagedEvent);
 
 						break;
 					}
+
 					case SpeechToTextStatus.Started:
 						this.activeVoiceChatSessions++;
+
 						this.voiceChatInProgress.set(true);
+
 						emitter.fire(e);
 
 						break;
 
 					case SpeechToTextStatus.Stopped:
 						onSessionStoppedOrCanceled(false);
+
 						emitter.fire(e);
 
 						break;
@@ -371,9 +401,12 @@ export class VoiceChatService extends Disposable implements IVoiceChatService {
 			onDidChange: emitter.event,
 		};
 	}
+
 	private normalizeWord(word: string): string {
 		word = rtrim(word, ".");
+
 		word = rtrim(word, ",");
+
 		word = rtrim(word, "?");
 
 		return word.toLowerCase();

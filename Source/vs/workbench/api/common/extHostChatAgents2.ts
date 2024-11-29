@@ -75,8 +75,11 @@ import * as extHostTypes from "./extHostTypes.js";
 
 class ChatAgentResponseStream {
 	private _stopWatch = StopWatch.create(false);
+
 	private _isClosed: boolean = false;
+
 	private _firstProgress: number | undefined;
+
 	private _apiObject: vscode.ChatResponseStream | undefined;
 
 	constructor(
@@ -101,11 +104,13 @@ class ChatAgentResponseStream {
 	get apiObject() {
 		if (!this._apiObject) {
 			const that = this;
+
 			this._stopWatch.reset();
 
 			function throwIfDone(source: Function | undefined) {
 				if (that._isClosed) {
 					const err = new Error("Response stream has been closed");
+
 					Error.captureStackTrace(err, source);
 
 					throw err;
@@ -204,6 +209,7 @@ class ChatAgentResponseStream {
 					);
 
 					const dto = typeConvert.ChatResponseMarkdownPart.from(part);
+
 					_report(dto);
 
 					return this;
@@ -228,12 +234,14 @@ class ChatAgentResponseStream {
 						typeConvert.ChatResponseMarkdownWithVulnerabilitiesPart.from(
 							part,
 						);
+
 					_report(dto);
 
 					return this;
 				},
 				codeblockUri(value) {
 					throwIfDone(this.codeblockUri);
+
 					checkProposedApiEnabled(
 						that._extension,
 						"chatParticipantAdditions",
@@ -245,6 +253,7 @@ class ChatAgentResponseStream {
 
 					const dto =
 						typeConvert.ChatResponseCodeblockUriPart.from(part);
+
 					_report(dto);
 
 					return this;
@@ -258,6 +267,7 @@ class ChatAgentResponseStream {
 					);
 
 					const dto = typeConvert.ChatResponseFilesPart.from(part);
+
 					_report(dto);
 
 					return this;
@@ -282,6 +292,7 @@ class ChatAgentResponseStream {
 						that._commandsConverter,
 						that._sessionDisposables,
 					);
+
 					_report(dto);
 
 					return this;
@@ -302,12 +313,14 @@ class ChatAgentResponseStream {
 					const dto = task
 						? typeConvert.ChatTask.from(part)
 						: typeConvert.ChatResponseProgressPart.from(part);
+
 					_report(dto, task);
 
 					return this;
 				},
 				warning(value) {
 					throwIfDone(this.progress);
+
 					checkProposedApiEnabled(
 						that._extension,
 						"chatParticipantAdditions",
@@ -318,6 +331,7 @@ class ChatAgentResponseStream {
 					);
 
 					const dto = typeConvert.ChatResponseWarningPart.from(part);
+
 					_report(dto);
 
 					return this;
@@ -378,6 +392,7 @@ class ChatAgentResponseStream {
 									typeConvert.ChatResponseReferencePart.from(
 										part,
 									);
+
 								references = [dto];
 							}
 
@@ -396,6 +411,7 @@ class ChatAgentResponseStream {
 
 						const dto =
 							typeConvert.ChatResponseReferencePart.from(part);
+
 						_report(dto);
 					}
 
@@ -407,6 +423,7 @@ class ChatAgentResponseStream {
 					snippet: string,
 				): void {
 					throwIfDone(this.codeCitation);
+
 					checkProposedApiEnabled(
 						that._extension,
 						"chatParticipantAdditions",
@@ -420,10 +437,12 @@ class ChatAgentResponseStream {
 
 					const dto =
 						typeConvert.ChatResponseCodeCitationPart.from(part);
+
 					_report(dto);
 				},
 				textEdit(target, edits) {
 					throwIfDone(this.textEdit);
+
 					checkProposedApiEnabled(
 						that._extension,
 						"chatParticipantAdditions",
@@ -433,15 +452,18 @@ class ChatAgentResponseStream {
 						target,
 						Array.isArray(edits) ? edits : [],
 					);
+
 					part.isDone = edits === true ? true : undefined;
 
 					const dto = typeConvert.ChatResponseTextEditPart.from(part);
+
 					_report(dto);
 
 					return this;
 				},
 				detectedParticipant(participant, command) {
 					throwIfDone(this.detectedParticipant);
+
 					checkProposedApiEnabled(
 						that._extension,
 						"chatParticipantAdditions",
@@ -457,12 +479,14 @@ class ChatAgentResponseStream {
 						typeConvert.ChatResponseDetectedParticipantPart.from(
 							part,
 						);
+
 					_report(dto);
 
 					return this;
 				},
 				confirmation(title, message, data, buttons) {
 					throwIfDone(this.confirmation);
+
 					checkProposedApiEnabled(
 						that._extension,
 						"chatParticipantAdditions",
@@ -477,6 +501,7 @@ class ChatAgentResponseStream {
 
 					const dto =
 						typeConvert.ChatResponseConfirmationPart.from(part);
+
 					_report(dto);
 
 					return this;
@@ -519,6 +544,7 @@ class ChatAgentResponseStream {
 						const dto = part.task
 							? typeConvert.ChatTask.from(part)
 							: typeConvert.ChatResponseProgressPart.from(part);
+
 						_report(dto, part.task);
 					} else if (
 						part instanceof extHostTypes.ChatResponseAnchorPart
@@ -535,12 +561,14 @@ class ChatAgentResponseStream {
 							dto.resolveId = generateUuid();
 
 							const cts = new CancellationTokenSource();
+
 							part.resolve(cts.token)
 								.then(() => {
 									const resolvedDto =
 										typeConvert.ChatResponseAnchorPart.from(
 											part,
 										);
+
 									that._proxy.$handleAnchorResolve(
 										that._request.requestId,
 										dto.resolveId!,
@@ -551,10 +579,12 @@ class ChatAgentResponseStream {
 									() => cts.dispose(),
 									() => cts.dispose(),
 								);
+
 							that._sessionDisposables.add(
 								toDisposable(() => cts.dispose(true)),
 							);
 						}
+
 						_report(dto);
 					} else {
 						const dto = typeConvert.ChatResponsePart.from(
@@ -562,6 +592,7 @@ class ChatAgentResponseStream {
 							that._commandsConverter,
 							that._sessionDisposables,
 						);
+
 						_report(dto);
 					}
 
@@ -581,15 +612,18 @@ export class ExtHostChatAgents2
 	private static _idPool = 0;
 
 	private readonly _agents = new Map<number, ExtHostChatAgent>();
+
 	private readonly _proxy: MainThreadChatAgentsShape2;
 
 	private static _participantDetectionProviderIdPool = 0;
+
 	private readonly _participantDetectionProviders = new Map<
 		number,
 		ExtHostParticipantDetector
 	>();
 
 	private static _relatedFilesProviderIdPool = 0;
+
 	private readonly _relatedFilesProviders = new Map<
 		number,
 		ExtHostRelatedFilesProvider
@@ -599,6 +633,7 @@ export class ExtHostChatAgents2
 		string,
 		DisposableStore
 	> = this._register(new DisposableMap());
+
 	private readonly _completionDisposables: DisposableMap<
 		number,
 		DisposableStore
@@ -612,6 +647,7 @@ export class ExtHostChatAgents2
 		private readonly _languageModels: ExtHostLanguageModels,
 	) {
 		super();
+
 		this._proxy = mainContext.getProxy(MainContext.MainThreadChatAgents2);
 
 		_commands.registerArgumentProcessor({
@@ -644,6 +680,7 @@ export class ExtHostChatAgents2
 			handle,
 			handler,
 		);
+
 		this._agents.set(handle, agent);
 
 		this._proxy.$registerAgent(
@@ -672,6 +709,7 @@ export class ExtHostChatAgents2
 			handle,
 			handler,
 		);
+
 		this._agents.set(handle, agent);
 
 		this._proxy.$registerAgent(
@@ -690,14 +728,17 @@ export class ExtHostChatAgents2
 		provider: vscode.ChatParticipantDetectionProvider,
 	): vscode.Disposable {
 		const handle = ExtHostChatAgents2._participantDetectionProviderIdPool++;
+
 		this._participantDetectionProviders.set(
 			handle,
 			new ExtHostParticipantDetector(extension, provider),
 		);
+
 		this._proxy.$registerChatParticipantDetectionProvider(handle);
 
 		return toDisposable(() => {
 			this._participantDetectionProviders.delete(handle);
+
 			this._proxy.$unregisterChatParticipantDetectionProvider(handle);
 		});
 	}
@@ -708,14 +749,17 @@ export class ExtHostChatAgents2
 		metadata: vscode.ChatRelatedFilesProviderMetadata,
 	): vscode.Disposable {
 		const handle = ExtHostChatAgents2._relatedFilesProviderIdPool++;
+
 		this._relatedFilesProviders.set(
 			handle,
 			new ExtHostRelatedFilesProvider(extension, provider),
 		);
+
 		this._proxy.$registerRelatedFilesProvider(handle, metadata);
 
 		return toDisposable(() => {
 			this._relatedFilesProviders.delete(handle);
+
 			this._proxy.$unregisterRelatedFilesProvider(handle);
 		});
 	}
@@ -747,6 +791,7 @@ export class ExtHostChatAgents2
 		context: { history: IChatAgentHistoryEntryDto[] },
 		options: {
 			location: ChatAgentLocation;
+
 			participants?: vscode.ChatParticipantMetadata[];
 		},
 		token: CancellationToken,
@@ -806,6 +851,7 @@ export class ExtHostChatAgents2
 			const document = this._documents.getDocument(
 				request.locationData.document,
 			);
+
 			location = new extHostTypes.ChatRequestEditorData(
 				document,
 				typeConvert.Selection.to(request.locationData.selection),
@@ -816,6 +862,7 @@ export class ExtHostChatAgents2
 			const cell = this._documents.getDocument(
 				request.locationData.sessionInputUri,
 			);
+
 			location = new extHostTypes.ChatRequestNotebookData(cell);
 		} else if (request.locationData?.type === ChatAgentLocation.Terminal) {
 			// TBD
@@ -836,6 +883,7 @@ export class ExtHostChatAgents2
 				request.userSelectedModelId,
 			);
 		}
+
 		if (!model) {
 			model =
 				await this._languageModels.getDefaultLanguageModel(extension);
@@ -877,6 +925,7 @@ export class ExtHostChatAgents2
 
 			if (!sessionDisposables) {
 				sessionDisposables = new DisposableStore();
+
 				this._sessionDisposables.set(
 					request.sessionId,
 					sessionDisposables,
@@ -916,6 +965,7 @@ export class ExtHostChatAgents2
 							JSON.stringify(result.metadata);
 						} catch (err) {
 							const msg = `result.metadata MUST be JSON.stringify-able. Got error: ${err.message}`;
+
 							this._logService.error(
 								`[${agent.extension.identifier.value}] [@${agent.id}] ${msg}`,
 								agent.extension,
@@ -928,6 +978,7 @@ export class ExtHostChatAgents2
 							};
 						}
 					}
+
 					let errorDetails: IChatResponseErrorDetails | undefined;
 
 					if (result?.errorDetails) {
@@ -936,6 +987,7 @@ export class ExtHostChatAgents2
 							responseIsIncomplete: true,
 						};
 					}
+
 					if (errorDetails?.responseIsRedacted) {
 						checkProposedApiEnabled(
 							agent.extension,
@@ -1000,6 +1052,7 @@ export class ExtHostChatAgents2
 				h.request.agentId,
 				toolReferences,
 			);
+
 			res.push(turn);
 
 			// RESPONSE turn
@@ -1011,6 +1064,7 @@ export class ExtHostChatAgents2
 					),
 				),
 			);
+
 			res.push(
 				new extHostTypes.ChatResponseTurn(
 					parts,
@@ -1076,6 +1130,7 @@ export class ExtHostChatAgents2
 						`[@${agent.id}] ChatFollowup refers to an unknown participant: ${f.participant}`,
 					);
 				}
+
 				return isValid;
 			})
 			.map((f) => typeConvert.ChatFollowup.from(f, request));
@@ -1118,6 +1173,7 @@ export class ExtHostChatAgents2
 				? voteAction.reason
 				: undefined,
 		};
+
 		agent.acceptFeedback(Object.freeze(feedback));
 	}
 
@@ -1131,6 +1187,7 @@ export class ExtHostChatAgents2
 		if (!agent) {
 			return;
 		}
+
 		if (event.action.kind === "vote") {
 			// handled by $acceptFeedback
 			return;
@@ -1165,6 +1222,7 @@ export class ExtHostChatAgents2
 			disposables.clear();
 		} else {
 			disposables = new DisposableStore();
+
 			this._completionDisposables.set(handle, disposables);
 		}
 
@@ -1246,30 +1304,44 @@ class ExtHostRelatedFilesProvider {
 
 class ExtHostChatAgent {
 	private _followupProvider: vscode.ChatFollowupProvider | undefined;
+
 	private _iconPath:
 		| vscode.Uri
 		| { light: vscode.Uri; dark: vscode.Uri }
 		| vscode.ThemeIcon
 		| undefined;
+
 	private _helpTextPrefix: string | vscode.MarkdownString | undefined;
+
 	private _helpTextVariablesPrefix:
 		| string
 		| vscode.MarkdownString
 		| undefined;
+
 	private _helpTextPostfix: string | vscode.MarkdownString | undefined;
+
 	private _isSecondary: boolean | undefined;
+
 	private _onDidReceiveFeedback = new Emitter<vscode.ChatResultFeedback>();
+
 	private _onDidPerformAction = new Emitter<vscode.ChatUserActionEvent>();
+
 	private _supportIssueReporting: boolean | undefined;
+
 	private _agentVariableProvider?: {
 		provider: vscode.ChatParticipantCompletionItemProvider;
+
 		triggerCharacters: string[];
 	};
+
 	private _welcomeMessageProvider?:
 		| vscode.ChatWelcomeMessageProvider
 		| undefined;
+
 	private _titleProvider?: vscode.ChatTitleProvider | undefined;
+
 	private _requester: vscode.ChatRequesterInformation | undefined;
+
 	private _supportsSlowReferences: boolean | undefined;
 
 	constructor(
@@ -1322,6 +1394,7 @@ class ExtHostChatAgent {
 		if (!followups) {
 			return [];
 		}
+
 		return (
 			followups
 				// Filter out "command followups" from older providers
@@ -1377,6 +1450,7 @@ class ExtHostChatAgent {
 		) {
 			return [];
 		}
+
 		const content =
 			await this._welcomeMessageProvider.provideSampleQuestions(
 				location,
@@ -1399,10 +1473,13 @@ class ExtHostChatAgent {
 			if (disposed) {
 				return;
 			}
+
 			if (updateScheduled) {
 				return;
 			}
+
 			updateScheduled = true;
+
 			queueMicrotask(() => {
 				this._proxy.$updateAgent(this._handle, {
 					icon: !this._iconPath
@@ -1448,6 +1525,7 @@ class ExtHostChatAgent {
 					requester: this._requester,
 					supportsSlowVariables: this._supportsSlowReferences,
 				});
+
 				updateScheduled = false;
 			});
 		};
@@ -1463,6 +1541,7 @@ class ExtHostChatAgent {
 			},
 			set iconPath(v) {
 				that._iconPath = v;
+
 				updateMetadataSoon();
 			},
 			get requestHandler() {
@@ -1470,6 +1549,7 @@ class ExtHostChatAgent {
 			},
 			set requestHandler(v) {
 				assertType(typeof v === "function", "Invalid request handler");
+
 				that._requestHandler = v;
 			},
 			get followupProvider() {
@@ -1477,6 +1557,7 @@ class ExtHostChatAgent {
 			},
 			set followupProvider(v) {
 				that._followupProvider = v;
+
 				updateMetadataSoon();
 			},
 			get helpTextPrefix() {
@@ -1492,7 +1573,9 @@ class ExtHostChatAgent {
 					that.extension,
 					"defaultChatParticipant",
 				);
+
 				that._helpTextPrefix = v;
+
 				updateMetadataSoon();
 			},
 			get helpTextVariablesPrefix() {
@@ -1508,7 +1591,9 @@ class ExtHostChatAgent {
 					that.extension,
 					"defaultChatParticipant",
 				);
+
 				that._helpTextVariablesPrefix = v;
+
 				updateMetadataSoon();
 			},
 			get helpTextPostfix() {
@@ -1524,7 +1609,9 @@ class ExtHostChatAgent {
 					that.extension,
 					"defaultChatParticipant",
 				);
+
 				that._helpTextPostfix = v;
+
 				updateMetadataSoon();
 			},
 			get isSecondary() {
@@ -1540,7 +1627,9 @@ class ExtHostChatAgent {
 					that.extension,
 					"defaultChatParticipant",
 				);
+
 				that._isSecondary = v;
+
 				updateMetadataSoon();
 			},
 			get supportIssueReporting() {
@@ -1556,7 +1645,9 @@ class ExtHostChatAgent {
 					that.extension,
 					"chatParticipantPrivate",
 				);
+
 				that._supportIssueReporting = v;
+
 				updateMetadataSoon();
 			},
 			get onDidReceiveFeedback() {
@@ -1567,6 +1658,7 @@ class ExtHostChatAgent {
 					that.extension,
 					"chatParticipantAdditions",
 				);
+
 				that._agentVariableProvider = v;
 
 				if (v) {
@@ -1599,7 +1691,9 @@ class ExtHostChatAgent {
 					that.extension,
 					"defaultChatParticipant",
 				);
+
 				that._welcomeMessageProvider = v;
+
 				updateMetadataSoon();
 			},
 			get welcomeMessageProvider() {
@@ -1615,7 +1709,9 @@ class ExtHostChatAgent {
 					that.extension,
 					"defaultChatParticipant",
 				);
+
 				that._titleProvider = v;
+
 				updateMetadataSoon();
 			},
 			get titleProvider() {
@@ -1634,6 +1730,7 @@ class ExtHostChatAgent {
 				: this._onDidPerformAction.event,
 			set requester(v) {
 				that._requester = v;
+
 				updateMetadataSoon();
 			},
 			get requester() {
@@ -1644,7 +1741,9 @@ class ExtHostChatAgent {
 					that.extension,
 					"chatParticipantPrivate",
 				);
+
 				that._supportsSlowReferences = v;
+
 				updateMetadataSoon();
 			},
 			get supportsSlowReferences() {
@@ -1657,8 +1756,11 @@ class ExtHostChatAgent {
 			},
 			dispose() {
 				disposed = true;
+
 				that._followupProvider = undefined;
+
 				that._onDidReceiveFeedback.dispose();
+
 				that._proxy.$unregisterAgent(that._handle);
 			},
 		} satisfies vscode.ChatParticipant;

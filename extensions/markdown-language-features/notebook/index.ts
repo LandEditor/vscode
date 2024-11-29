@@ -134,23 +134,31 @@ export const activate: ActivationFunction<void> = (ctx) => {
 			if (lang) {
 				return `<div class="vscode-code-block" data-vscode-code-block-lang="${markdownIt.utils.escapeHtml(lang)}">${markdownIt.utils.escapeHtml(str)}</div>`;
 			}
+
 			return markdownIt.utils.escapeHtml(str);
 		},
 	});
+
 	markdownIt.linkify.set({ fuzzyLink: false });
+
 	addNamedHeaderRendering(markdownIt);
+
 	addLinkRenderer(markdownIt);
 
 	const style = document.createElement("style");
+
 	style.textContent = `
 		.emptyMarkdownCell::before {
 			content: "${document.documentElement.style.getPropertyValue("--notebook-cell-markup-empty-content")}";
+
 			font-style: italic;
+
 			opacity: 0.6;
 		}
 
 		img {
 			max-width: 100%;
+
 			max-height: 100%;
 		}
 
@@ -167,12 +175,15 @@ export const activate: ActivationFunction<void> = (ctx) => {
 		select:focus,
 		textarea:focus {
 			outline: 1px solid -webkit-focus-ring-color;
+
 			outline-offset: -1px;
 		}
 
 		hr {
 			border: 0;
+
 			height: 2px;
+
 			border-bottom: 2px solid;
 		}
 
@@ -228,6 +239,7 @@ export const activate: ActivationFunction<void> = (ctx) => {
 		#preview > *:only-child,
 		#preview > *:last-child {
 			margin-bottom: 0;
+
 			padding-bottom: 0;
 		}
 
@@ -238,6 +250,7 @@ export const activate: ActivationFunction<void> = (ctx) => {
 
 		table {
 			border-collapse: collapse;
+
 			border-spacing: 0;
 		}
 
@@ -248,6 +261,7 @@ export const activate: ActivationFunction<void> = (ctx) => {
 
 		table > thead > tr > th {
 			text-align: left;
+
 			border-bottom: 1px solid;
 		}
 
@@ -264,19 +278,25 @@ export const activate: ActivationFunction<void> = (ctx) => {
 
 		blockquote {
 			margin: 0 7px 0 5px;
+
 			padding: 0 16px 0 10px;
+
 			border-left-width: 5px;
+
 			border-left-style: solid;
 		}
 
 		code {
 			font-size: 1em;
+
 			font-family: var(--vscode-editor-font-family);
 		}
 
 		pre code {
 			line-height: 1.357em;
+
 			white-space: pre-wrap;
+
 			padding: 0;
 		}
 
@@ -291,7 +311,9 @@ export const activate: ActivationFunction<void> = (ctx) => {
 	`;
 
 	const template = document.createElement("template");
+
 	template.classList.add("markdown-style");
+
 	template.content.appendChild(style);
 
 	document.head.appendChild(template);
@@ -307,6 +329,7 @@ export const activate: ActivationFunction<void> = (ctx) => {
 				const defaultStyles = document.getElementById(
 					"_defaultStyles",
 				) as HTMLStyleElement;
+
 				previewRoot.appendChild(defaultStyles.cloneNode(true));
 				// And then contributed styles
 				for (const element of document.getElementsByClassName(
@@ -320,16 +343,21 @@ export const activate: ActivationFunction<void> = (ctx) => {
 						previewRoot.appendChild(element.cloneNode(true));
 					}
 				}
+
 				previewNode = document.createElement("div");
+
 				previewNode.id = "preview";
+
 				previewRoot.appendChild(previewNode);
 			} else {
 				previewNode = element.shadowRoot.getElementById("preview")!;
 			}
+
 			const text = outputInfo.text();
 
 			if (text.trim().length === 0) {
 				previewNode.innerText = "";
+
 				previewNode.classList.add("emptyMarkdownCell");
 			} else {
 				previewNode.classList.remove("emptyMarkdownCell");
@@ -346,6 +374,7 @@ export const activate: ActivationFunction<void> = (ctx) => {
 						outputItem: outputInfo,
 					},
 				);
+
 				previewNode.innerHTML = (
 					ctx.workspace.isTrusted
 						? unsanitizedRenderedMarkdown
@@ -369,6 +398,7 @@ function addNamedHeaderRendering(md: InstanceType<typeof MarkdownIt>): void {
 	const slugCounter = new Map<string, number>();
 
 	const originalHeaderOpen = md.renderer.rules.heading_open;
+
 	md.renderer.rules.heading_open = (
 		tokens: MarkdownItToken[],
 		idx: number,
@@ -385,11 +415,14 @@ function addNamedHeaderRendering(md: InstanceType<typeof MarkdownIt>): void {
 
 		if (slugCounter.has(slug)) {
 			const count = slugCounter.get(slug)!;
+
 			slugCounter.set(slug, count + 1);
+
 			slug = slugify(slug + "-" + (count + 1));
 		} else {
 			slugCounter.set(slug, 0);
 		}
+
 		tokens[idx].attrSet("id", slug);
 
 		if (originalHeaderOpen) {
@@ -400,6 +433,7 @@ function addNamedHeaderRendering(md: InstanceType<typeof MarkdownIt>): void {
 	};
 
 	const originalRender = md.render;
+
 	md.render = function () {
 		slugCounter.clear();
 
@@ -408,6 +442,7 @@ function addNamedHeaderRendering(md: InstanceType<typeof MarkdownIt>): void {
 }
 function addLinkRenderer(md: MarkdownIt): void {
 	const original = md.renderer.rules.link_open;
+
 	md.renderer.rules.link_open = (
 		tokens: MarkdownItToken[],
 		idx: number,
@@ -422,6 +457,7 @@ function addLinkRenderer(md: MarkdownIt): void {
 		if (typeof href === "string" && href.startsWith("#")) {
 			token.attrSet("href", "#" + slugify(href.slice(1)));
 		}
+
 		if (original) {
 			return original(tokens, idx, options, env, self);
 		} else {

@@ -15,6 +15,7 @@ export async function buildTelemetryMessage(
 	// Simple function to merge the telemetry into one json object
 	const mergeTelemetry = (contents: string, dirName: string) => {
 		const telemetryData = JSON.parse(contents);
+
 		mergedTelemetry[dirName] = telemetryData;
 	};
 
@@ -36,6 +37,7 @@ export async function buildTelemetryMessage(
 				// This handles case where broken symbolic links can cause statSync to throw and error
 			}
 		}
+
 		const telemetryJsonFolders: string[] = [];
 
 		for (const dir of dirs) {
@@ -47,22 +49,28 @@ export async function buildTelemetryMessage(
 				telemetryJsonFolders.push(dir); // // We know it contains a telemetry.json file so we add it to the list of folders which have one
 			}
 		}
+
 		for (const folder of telemetryJsonFolders) {
 			const contents = (
 				await fs.promises.readFile(
 					join(extensionsPath, folder, "telemetry.json"),
 				)
 			).toString();
+
 			mergeTelemetry(contents, folder);
 		}
 	}
+
 	let contents = (
 		await fs.promises.readFile(join(appRoot, "telemetry-core.json"))
 	).toString();
+
 	mergeTelemetry(contents, "vscode-core");
+
 	contents = (
 		await fs.promises.readFile(join(appRoot, "telemetry-extensions.json"))
 	).toString();
+
 	mergeTelemetry(contents, "vscode-extensions");
 
 	return JSON.stringify(mergedTelemetry, null, 4);

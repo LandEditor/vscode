@@ -38,6 +38,7 @@ export class UnsupportedExtensionsMigrationContrib
 				logService,
 			);
 		}
+
 		if (extensionManagementServerService.webExtensionManagementServer) {
 			migrateUnsupportedExtensions(
 				extensionManagementServerService.webExtensionManagementServer

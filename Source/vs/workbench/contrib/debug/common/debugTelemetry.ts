@@ -12,6 +12,7 @@ export class DebugTelemetry {
 		@ITelemetryService
 		private readonly telemetryService: ITelemetryService,
 	) {}
+
 	logDebugSessionStart(dbgr: Debugger, launchJsonExists: boolean) {
 		const extension = dbgr.getMainExtensionDescriptor();
 		/* __GDPR__
@@ -36,6 +37,7 @@ export class DebugTelemetry {
 			launchJsonExists,
 		});
 	}
+
 	logDebugSessionStop(
 		session: IDebugSession,
 		adapterExitEvent: AdapterEndEvent,

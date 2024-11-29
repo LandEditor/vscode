@@ -20,8 +20,11 @@ import { IAuthenticationService } from "../common/authentication.js";
 
 export interface IAccountUsage {
 	extensionId: string;
+
 	extensionName: string;
+
 	lastUsed: number;
+
 	scopes?: string[];
 }
 export const IAuthenticationUsageService =
@@ -70,7 +73,9 @@ export class AuthenticationUsageService
 	implements IAuthenticationUsageService
 {
 	_serviceBrand: undefined;
+
 	private _queue = new Queue();
+
 	private _extensionsUsingAuth = new Set<string>();
 
 	constructor(
@@ -101,6 +106,7 @@ export class AuthenticationUsageService
 				}
 			}
 		}
+
 		this._authenticationService.onDidRegisterAuthenticationProvider(
 			(provider) =>
 				this._queue.queue(() =>
@@ -108,6 +114,7 @@ export class AuthenticationUsageService
 				),
 		);
 	}
+
 	async initializeExtensionUsageCache(): Promise<void> {
 		await this._queue.queue(() =>
 			Promise.all(
@@ -119,11 +126,13 @@ export class AuthenticationUsageService
 			),
 		);
 	}
+
 	async extensionUsesAuth(extensionId: string): Promise<boolean> {
 		await this._queue.whenIdle();
 
 		return this._extensionsUsingAuth.has(extensionId);
 	}
+
 	readAccountUsages(
 		providerId: string,
 		accountName: string,
@@ -144,12 +153,16 @@ export class AuthenticationUsageService
 				// ignore
 			}
 		}
+
 		return usages;
 	}
+
 	removeAccountUsage(providerId: string, accountName: string): void {
 		const accountKey = `${providerId}-${accountName}-usages`;
+
 		this._storageService.remove(accountKey, StorageScope.APPLICATION);
 	}
+
 	addAccountUsage(
 		providerId: string,
 		accountName: string,
@@ -180,14 +193,17 @@ export class AuthenticationUsageService
 				lastUsed: Date.now(),
 			});
 		}
+
 		this._storageService.store(
 			accountKey,
 			JSON.stringify(usages),
 			StorageScope.APPLICATION,
 			StorageTarget.MACHINE,
 		);
+
 		this._extensionsUsingAuth.add(extensionId);
 	}
+
 	private async _addExtensionsToCache(providerId: string) {
 		try {
 			const accounts =

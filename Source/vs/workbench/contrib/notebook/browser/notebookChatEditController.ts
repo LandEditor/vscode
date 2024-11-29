@@ -139,6 +139,7 @@ export class NotebookChatEditorControllerContrib
 {
 	public static readonly ID: string =
 		"workbench.notebook.chatEditorController";
+
 	readonly _serviceBrand: undefined;
 
 	constructor(
@@ -165,6 +166,7 @@ export class NotebookChatEditorControllerContrib
 
 class NotebookChatEditorController extends Disposable {
 	private readonly deletedCellDecorator: NotebookDeletedCellDecorator;
+
 	private readonly insertedCellDecorator: NotebookInsertedCellDecorator;
 
 	constructor(
@@ -177,12 +179,14 @@ class NotebookChatEditorController extends Disposable {
 		private readonly instantiationService: IInstantiationService,
 	) {
 		super();
+
 		this.deletedCellDecorator = this._register(
 			instantiationService.createInstance(
 				NotebookDeletedCellDecorator,
 				notebookEditor,
 			),
 		);
+
 		this.insertedCellDecorator = this._register(
 			instantiationService.createInstance(
 				NotebookInsertedCellDecorator,
@@ -208,11 +212,13 @@ class NotebookChatEditorController extends Disposable {
 			"originalModel",
 			undefined,
 		);
+
 		this._register(
 			toDisposable(() => {
 				disposeDecorators();
 			}),
 		);
+
 		this._register(
 			autorun((r) => {
 				const session =
@@ -223,6 +229,7 @@ class NotebookChatEditorController extends Disposable {
 				if (!model || !session) {
 					return;
 				}
+
 				const entry = session.entries
 					.read(r)
 					.find((e) => isEqual(e.modifiedURI, model.uri));
@@ -240,6 +247,7 @@ class NotebookChatEditorController extends Disposable {
 				if (entryObs.read(r) && entryObs.read(r) !== entry) {
 					disposeDecorators();
 				}
+
 				entryObs.set(entry, undefined);
 			}),
 		);
@@ -253,6 +261,7 @@ class NotebookChatEditorController extends Disposable {
 				if (!entry || !model) {
 					return;
 				}
+
 				const notebookSynchronizer = store.add(
 					this.instantiationService.createInstance(
 						NotebookModelSynchronizer,
@@ -261,28 +270,39 @@ class NotebookChatEditorController extends Disposable {
 						model.viewType,
 					),
 				);
+
 				notebookDiff.set(undefined, undefined);
+
 				await notebookSynchronizer.createSnapshot();
+
 				store.add(
 					notebookSynchronizer.onDidUpdateNotebookModel((e) => {
 						notebookDiff.set(e, undefined);
 					}),
 				);
+
 				store.add(
 					notebookSynchronizer.onDidRevert((e) => {
 						if (e) {
 							notebookDiff.set(undefined, undefined);
+
 							disposeDecorators();
+
 							this.deletedCellDecorator.clear();
+
 							this.insertedCellDecorator.clear();
 						}
 					}),
 				);
+
 				store.add(
 					notebookSynchronizer.onDidAccept(() => {
 						notebookDiff.set(undefined, undefined);
+
 						disposeDecorators();
+
 						this.deletedCellDecorator.clear();
+
 						this.insertedCellDecorator.clear();
 					}),
 				);
@@ -293,6 +313,7 @@ class NotebookChatEditorController extends Disposable {
 						model.viewType,
 					),
 				);
+
 				originalModel.set(result.object, undefined);
 			}),
 		);
@@ -309,8 +330,10 @@ class NotebookChatEditorController extends Disposable {
 
 		const disposeDecorators = () => {
 			dispose(Array.from(decorators.values()));
+
 			decorators.clear();
 		};
+
 		this._register(
 			autorun((r) => {
 				const entry = entryObs.read(r);
@@ -320,6 +343,7 @@ class NotebookChatEditorController extends Disposable {
 				const modified = notebookModel.read(r);
 
 				const original = originalModel.read(r);
+
 				onDidChangeVisibleRanges.read(r);
 
 				if (
@@ -357,7 +381,9 @@ class NotebookChatEditorController extends Disposable {
 									originalCellValue,
 									modifiedCell.cellKind,
 								);
+
 							decorators.set(modifiedCell, decorator);
+
 							this._register(
 								editor.onDidDispose(() => {
 									decorator.dispose();
@@ -375,6 +401,7 @@ class NotebookChatEditorController extends Disposable {
 				});
 			}),
 		);
+
 		this._register(
 			autorun((r) => {
 				const entry = entryObs.read(r);
@@ -393,14 +420,18 @@ class NotebookChatEditorController extends Disposable {
 				) {
 					return;
 				}
+
 				if (!diffInfo) {
 					// User reverted or accepted the changes, hence original === modified.
 					this.deletedCellDecorator.clear();
+
 					this.insertedCellDecorator.clear();
 
 					return;
 				}
+
 				this.insertedCellDecorator.apply(diffInfo.cellDiff);
+
 				this.deletedCellDecorator.apply(diffInfo.cellDiff, original);
 			}),
 		);
@@ -409,7 +440,9 @@ class NotebookChatEditorController extends Disposable {
 
 class NotebookCellDiffDecorator extends DisposableStore {
 	private readonly _decorations = this.editor.createDecorationsCollection();
+
 	private _viewZones: string[] = [];
+
 	private readonly throttledDecorator = new ThrottledDelayer(100);
 
 	constructor(
@@ -424,7 +457,9 @@ class NotebookCellDiffDecorator extends DisposableStore {
 		@ILanguageService private readonly _languageService: ILanguageService,
 	) {
 		super();
+
 		this.add(this.editor.onDidChangeModel(() => this.update()));
+
 		this.add(
 			this.editor.onDidChangeConfiguration((e) => {
 				if (
@@ -446,6 +481,7 @@ class NotebookCellDiffDecorator extends DisposableStore {
 			) {
 				return false;
 			}
+
 			return value.entries
 				.read(r)
 				.some((e) =>
@@ -465,6 +501,7 @@ class NotebookCellDiffDecorator extends DisposableStore {
 					actualReadonly ??= this.editor.getOption(
 						EditorOption.readOnly,
 					);
+
 					actualDeco ??= this.editor.getOption(
 						EditorOption.renderValidationDecorations,
 					);
@@ -482,12 +519,15 @@ class NotebookCellDiffDecorator extends DisposableStore {
 							readOnly: actualReadonly,
 							renderValidationDecorations: actualDeco,
 						});
+
 						actualReadonly = undefined;
+
 						actualDeco = undefined;
 					}
 				}
 			}),
 		);
+
 		this.update();
 	}
 
@@ -505,16 +545,19 @@ class NotebookCellDiffDecorator extends DisposableStore {
 		if (this.isDisposed) {
 			return;
 		}
+
 		if (!this.editor.hasModel()) {
 			this._clearRendering();
 
 			return;
 		}
+
 		if (this.editor.getOption(EditorOption.inDiffEditor)) {
 			this._clearRendering();
 
 			return;
 		}
+
 		const model = this.editor.getModel();
 
 		if (!model) {
@@ -551,20 +594,25 @@ class NotebookCellDiffDecorator extends DisposableStore {
 				viewZoneChangeAccessor.removeZone(id);
 			}
 		});
+
 		this._viewZones = [];
+
 		this._decorations.clear();
 	}
 
 	private _originalModel?: ITextModel;
+
 	private getOrCreateOriginalModel() {
 		if (this._originalModel) {
 			return this._originalModel;
 		}
+
 		const model = this.editor.getModel();
 
 		if (!model) {
 			return;
 		}
+
 		const cellUri = model.uri;
 
 		const languageId = model.getLanguageId();
@@ -592,12 +640,14 @@ class NotebookCellDiffDecorator extends DisposableStore {
 			),
 		));
 	}
+
 	private async computeDiff() {
 		const model = this.editor.getModel();
 
 		if (!model) {
 			return;
 		}
+
 		const originalModel = this.getOrCreateOriginalModel();
 
 		if (!originalModel) {
@@ -667,6 +717,7 @@ class NotebookCellDiffDecorator extends DisposableStore {
 			for (const id of this._viewZones) {
 				viewZoneChangeAccessor.removeZone(id);
 			}
+
 			this._viewZones = [];
 
 			const modifiedDecorations: IModelDeltaDecoration[] = [];
@@ -686,6 +737,7 @@ class NotebookCellDiffDecorator extends DisposableStore {
 						Math.max(1, originalRange.endLineNumberExclusive - 1),
 					);
 				}
+
 				const source = new LineSource(
 					originalRange.length && originalModel
 						? originalRange.mapToLineArray((l) =>
@@ -709,11 +761,13 @@ class NotebookCellDiffDecorator extends DisposableStore {
 							InlineDecorationType.Regular,
 						),
 					);
+
 					modifiedDecorations.push({
 						range: i.modifiedRange,
 						options: chatDiffAddDecoration,
 					});
 				}
+
 				if (!diffEntry.modified.isEmpty) {
 					modifiedDecorations.push({
 						range: diffEntry.modified.toInclusiveRange()!,
@@ -745,6 +799,7 @@ class NotebookCellDiffDecorator extends DisposableStore {
 						options: modifiedDecoration,
 					});
 				}
+
 				const domNode = document.createElement("div");
 
 				domNode.className =
@@ -787,12 +842,14 @@ class NotebookInsertedCellDecorator extends Disposable {
 	constructor(private readonly notebookEditor: INotebookEditor) {
 		super();
 	}
+
 	public apply(diffInfo: CellDiffInfo[]) {
 		const model = this.notebookEditor.textModel;
 
 		if (!model) {
 			return;
 		}
+
 		const cells = diffInfo
 			.filter((diff) => diff.type === "insert")
 			.map((diff) => model.cells[diff.modifiedCellIndex]);
@@ -807,7 +864,9 @@ class NotebookInsertedCellDecorator extends Disposable {
 				},
 			})),
 		);
+
 		this.clear();
+
 		this.decorators.add(
 			toDisposable(() => {
 				if (!this.notebookEditor.isDisposed) {
@@ -816,6 +875,7 @@ class NotebookInsertedCellDecorator extends Disposable {
 			}),
 		);
 	}
+
 	public clear() {
 		this.decorators.clear();
 	}
@@ -823,16 +883,24 @@ class NotebookInsertedCellDecorator extends Disposable {
 
 class NotebookModelSynchronizer extends Disposable {
 	private readonly throttledUpdateNotebookModel = new ThrottledDelayer(200);
+
 	private readonly _onDidUpdateNotebookModel = this._register(
 		new Emitter<{ cellDiff: CellDiffInfo[]; modelVersion: number }>(),
 	);
+
 	public readonly onDidUpdateNotebookModel =
 		this._onDidUpdateNotebookModel.event;
+
 	private readonly _onDidRevert = this._register(new Emitter<boolean>());
+
 	public readonly onDidRevert = this._onDidRevert.event;
+
 	private readonly _onDidAccept = this._register(new Emitter<void>());
+
 	public readonly onDidAccept = this._onDidAccept.event;
+
 	private snapshot?: { bytes: VSBuffer; dirty: boolean };
+
 	private isEditFromUs: boolean = false;
 
 	constructor(
@@ -861,7 +929,9 @@ class NotebookModelSynchronizer extends Disposable {
 				) {
 					if (e.action.outcome === "accepted") {
 						await this.accept();
+
 						await this.createSnapshot();
+
 						this._onDidAccept.fire();
 					} else if (e.action.outcome === "rejected") {
 						if (await this.revert()) {
@@ -895,6 +965,7 @@ class NotebookModelSynchronizer extends Disposable {
 
 		const modifiedModel = (entry as ChatEditingModifiedFileEntry)
 			.modifiedModel;
+
 		this._register(
 			modifiedModel.onDidChangeContent(async () => {
 				cancellationTokenStore.clear();
@@ -907,14 +978,18 @@ class NotebookModelSynchronizer extends Disposable {
 					if (await this.revert()) {
 						this._onDidRevert.fire(true);
 					}
+
 					return;
 				}
+
 				cancellationToken = cancellationTokenStore.add(
 					new CancellationTokenSource(),
 				);
+
 				updateNotebookModel(entry, viewType, cancellationToken.token);
 			}),
 		);
+
 		this._register(
 			autorunWithStore((r, store) => {
 				const model = modelObs.read(r);
@@ -941,6 +1016,7 @@ class NotebookModelSynchronizer extends Disposable {
 		if (!model) {
 			return;
 		}
+
 		const [serializer, ref] = await Promise.all([
 			this.getNotebookSerializer(),
 			this.notebookModelResolverService.resolve(
@@ -989,6 +1065,7 @@ class NotebookModelSynchronizer extends Disposable {
 				cellData.outputs = !serializer.options.transientOutputs
 					? cell.outputs
 					: [];
+
 				cellData.metadata = filter(
 					cell.metadata,
 					(key) => !serializer.options.transientCellMetadata[key],
@@ -998,6 +1075,7 @@ class NotebookModelSynchronizer extends Disposable {
 			}
 
 			const bytes = await serializer.notebookToData(data);
+
 			this.snapshot = { bytes, dirty: ref.object.isDirty() };
 		} finally {
 			ref.dispose();
@@ -1008,6 +1086,7 @@ class NotebookModelSynchronizer extends Disposable {
 		if (!this.snapshot) {
 			return false;
 		}
+
 		await this.updateNotebook(this.snapshot.bytes, !this.snapshot.dirty);
 
 		return true;
@@ -1026,6 +1105,7 @@ class NotebookModelSynchronizer extends Disposable {
 			const serializer = await this.getNotebookSerializer();
 
 			const data = await serializer.dataToNotebook(bytes);
+
 			this.notebookEditor.textModel.reset(
 				data.cells,
 				data.metadata,
@@ -1036,6 +1116,7 @@ class NotebookModelSynchronizer extends Disposable {
 				// save the file after discarding so that the dirty indicator goes away
 				// and so that an intermediate saved state gets reverted
 				// await this.notebookEditor.textModel.save({ reason: SaveReason.EXPLICIT });
+
 				await ref.object.save({ reason: SaveReason.EXPLICIT });
 			}
 		} finally {
@@ -1048,6 +1129,7 @@ class NotebookModelSynchronizer extends Disposable {
 			.modifiedModel;
 
 		const content = modifiedModel.getValue();
+
 		await this.updateNotebook(VSBuffer.fromString(content), false);
 	}
 
@@ -1081,6 +1163,7 @@ class NotebookModelSynchronizer extends Disposable {
 		if (!model || token.isCancellationRequested || !original) {
 			return;
 		}
+
 		const cellDiffInfo = (await this.computeDiff(original, model, token))
 			?.cellDiffInfo;
 
@@ -1096,6 +1179,7 @@ class NotebookModelSynchronizer extends Disposable {
 		) {
 			return;
 		}
+
 		if (cellDiffInfo.every((d) => d.type === "unchanged")) {
 			return;
 		}
@@ -1110,9 +1194,11 @@ class NotebookModelSynchronizer extends Disposable {
 
 			// First Delete.
 			const deletedIndexes: number[] = [];
+
 			cellDiffInfo.reverse().forEach((diff) => {
 				if (diff.type === "delete") {
 					deletedIndexes.push(diff.originalCellIndex);
+
 					edits.push({
 						editType: CellEditType.Replace,
 						index: diff.originalCellIndex,
@@ -1131,6 +1217,7 @@ class NotebookModelSynchronizer extends Disposable {
 					undefined,
 					false,
 				);
+
 				edits.length = 0;
 			}
 
@@ -1142,9 +1229,11 @@ class NotebookModelSynchronizer extends Disposable {
 						diff.originalCellIndex,
 					);
 				}
+
 				if (diff.type === "insert") {
 					const originalIndex =
 						mappings.get(diff.modifiedCellIndex - 1) ?? 0;
+
 					mappings.set(diff.modifiedCellIndex, originalIndex);
 
 					const cell = model.cells[diff.modifiedCellIndex];
@@ -1159,6 +1248,7 @@ class NotebookModelSynchronizer extends Disposable {
 						collapseState: cell.collapseState,
 						internalMetadata: cell.internalMetadata,
 					};
+
 					edits.push({
 						editType: CellEditType.Replace,
 						index: originalIndex + 1,
@@ -1177,6 +1267,7 @@ class NotebookModelSynchronizer extends Disposable {
 					undefined,
 					false,
 				);
+
 				edits.length = 0;
 			}
 
@@ -1190,6 +1281,7 @@ class NotebookModelSynchronizer extends Disposable {
 					if (textModel) {
 						const newText =
 							model.cells[diff.modifiedCellIndex].getValue();
+
 						textModel.pushEditOperations(
 							null,
 							[
@@ -1214,7 +1306,9 @@ class NotebookModelSynchronizer extends Disposable {
 					false,
 				);
 			}
+
 			this._onDidRevert.fire(false);
+
 			this._onDidUpdateNotebookModel.fire({
 				cellDiff: cellDiffInfo,
 				modelVersion: original.versionId,
@@ -1223,6 +1317,7 @@ class NotebookModelSynchronizer extends Disposable {
 			this.isEditFromUs = false;
 		}
 	}
+
 	private previousUriOfModelForDiff?: URI;
 
 	private async getModifiedModelForDiff(
@@ -1247,6 +1342,7 @@ class NotebookModelSynchronizer extends Disposable {
 				.getNotebookTextModel(this.previousUriOfModelForDiff)
 				?.dispose();
 		}
+
 		this.previousUriOfModelForDiff = uri;
 
 		try {
@@ -1261,6 +1357,7 @@ class NotebookModelSynchronizer extends Disposable {
 
 				return;
 			}
+
 			this._register(model);
 
 			return model;
@@ -1269,6 +1366,7 @@ class NotebookModelSynchronizer extends Disposable {
 				"NotebookChatEdit",
 				`Failed to deserialize Notebook for ${uri.toString}, ${ex.message}`,
 			);
+
 			this.logService.debug("NotebookChatEdit", ex.toString());
 
 			return;
@@ -1305,6 +1403,7 @@ const ttPolicy = createTrustedTypesPolicy("notebookChatEditController", {
 
 class NotebookDeletedCellDecorator extends Disposable {
 	private readonly zoneRemover = this._register(new DisposableStore());
+
 	private readonly createdViewZones = new Map<number, string>();
 
 	constructor(
@@ -1321,14 +1420,17 @@ class NotebookDeletedCellDecorator extends Disposable {
 
 		const deletedCellsToRender: {
 			cells: NotebookCellTextModel[];
+
 			index: number;
 		} = { cells: [], index: 0 };
+
 		diffInfo.forEach((diff) => {
 			if (diff.type === "delete") {
 				const deletedCell = original.cells[diff.originalCellIndex];
 
 				if (deletedCell) {
 					deletedCellsToRender.cells.push(deletedCell);
+
 					deletedCellsToRender.index = currentIndex;
 				}
 			} else {
@@ -1337,8 +1439,10 @@ class NotebookDeletedCellDecorator extends Disposable {
 						deletedCellsToRender.index + 1,
 						deletedCellsToRender.cells,
 					);
+
 					deletedCellsToRender.cells.length = 0;
 				}
+
 				currentIndex = diff.modifiedCellIndex;
 			}
 		});
@@ -1358,6 +1462,7 @@ class NotebookDeletedCellDecorator extends Disposable {
 	private _createWidget(index: number, cells: NotebookCellTextModel[]) {
 		this._createWidgetImpl(index, cells);
 	}
+
 	private async _createWidgetImpl(
 		index: number,
 		cells: NotebookCellTextModel[],
@@ -1390,16 +1495,21 @@ class NotebookDeletedCellDecorator extends Disposable {
 			};
 
 			const id = accessor.addZone(notebookViewZone);
+
 			accessor.layoutZone(id);
+
 			this.createdViewZones.set(index, id);
+
 			this.zoneRemover.add(
 				toDisposable(() => {
 					if (this.createdViewZones.get(index) === id) {
 						this.createdViewZones.delete(index);
 					}
+
 					if (!this._notebookEditor.isDisposed) {
 						this._notebookEditor.changeViewZones((accessor) => {
 							accessor.removeZone(id);
+
 							dispose(widgets);
 						});
 					}
@@ -1434,6 +1544,7 @@ export class OriginalNotebookModelReferenceCollection extends ReferenceCollectio
 		if (model) {
 			return model;
 		}
+
 		const bytes = VSBuffer.fromString(fileEntry.originalModel.getValue());
 
 		const stream = bufferToStream(bytes);
@@ -1444,6 +1555,7 @@ export class OriginalNotebookModelReferenceCollection extends ReferenceCollectio
 			stream,
 		);
 	}
+
 	protected override destroyReferencedObject(
 		key: string,
 		modelPromise: Promise<NotebookTextModel>,
@@ -1482,7 +1594,9 @@ class NotebookDeletedCellWidget extends Disposable {
 		@ILanguageService private readonly languageService: ILanguageService,
 	) {
 		super();
+
 		this.container = DOM.append(container, document.createElement("div"));
+
 		this._register(
 			toDisposable(() => {
 				container.removeChild(this.container);
@@ -1530,6 +1644,7 @@ class NotebookDeletedCellWidget extends Disposable {
 					: "" + `white-space: pre;`;
 
 		const rootContainer = this.container;
+
 		rootContainer.classList.add("code-cell-row");
 
 		const container = DOM.append(
@@ -1545,6 +1660,7 @@ class NotebookDeletedCellWidget extends Disposable {
 		);
 
 		const cellContainer = DOM.append(container, DOM.$(".cell.code"));
+
 		DOM.append(focusIndicatorLeft, DOM.$("div.execution-count-label"));
 
 		const editorPart = DOM.append(
@@ -1556,6 +1672,7 @@ class NotebookDeletedCellWidget extends Disposable {
 			editorPart,
 			DOM.$(".cell-editor-container"),
 		);
+
 		editorContainer = DOM.append(
 			editorContainer,
 			DOM.$(".code", { style }),
@@ -1567,18 +1684,21 @@ class NotebookDeletedCellWidget extends Disposable {
 				fontInfo.fontFamily,
 			);
 		}
+
 		if (fontInfo.fontSize) {
 			editorContainer.style.setProperty(
 				fontSizeVar,
 				`${fontInfo.fontSize}px`,
 			);
 		}
+
 		if (fontInfo.fontWeight) {
 			editorContainer.style.setProperty(
 				fontWeightVar,
 				fontInfo.fontWeight,
 			);
 		}
+
 		editorContainer.innerHTML = (ttPolicy?.createHTML(codeHtml) ||
 			codeHtml) as string;
 
@@ -1597,10 +1717,12 @@ export class NotebookOriginalModelReferenceFactory
 	implements INotebookOriginalModelReferenceFactory
 {
 	readonly _serviceBrand: undefined;
+
 	private _resourceModelCollection:
 		| (OriginalNotebookModelReferenceCollection &
 				ReferenceCollection<Promise<NotebookTextModel>>) /* TS Fail */
 		| undefined = undefined;
+
 	private get resourceModelCollection() {
 		if (!this._resourceModelCollection) {
 			this._resourceModelCollection =
@@ -1615,6 +1737,7 @@ export class NotebookOriginalModelReferenceFactory
 	private _asyncModelCollection:
 		| AsyncReferenceCollection<NotebookTextModel>
 		| undefined = undefined;
+
 	private get asyncModelCollection() {
 		if (!this._asyncModelCollection) {
 			this._asyncModelCollection = new AsyncReferenceCollection(

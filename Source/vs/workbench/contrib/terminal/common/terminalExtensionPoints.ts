@@ -20,6 +20,7 @@ const terminalsExtPoint =
 
 export interface ITerminalContributionService {
 	readonly _serviceBrand: undefined;
+
 	readonly terminalProfiles: ReadonlyArray<IExtensionTerminalProfile>;
 }
 export const ITerminalContributionService =
@@ -31,11 +32,13 @@ export class TerminalContributionService
 	implements ITerminalContributionService
 {
 	declare _serviceBrand: undefined;
+
 	private _terminalProfiles: ReadonlyArray<IExtensionTerminalProfile> = [];
 
 	get terminalProfiles() {
 		return this._terminalProfiles;
 	}
+
 	constructor() {
 		terminalsExtPoint.setHandler((contributions) => {
 			this._terminalProfiles = contributions

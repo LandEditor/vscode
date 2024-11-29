@@ -34,6 +34,7 @@ function getWordDefinitionFor(languageId: string): RegExp | undefined {
 }
 export class ExtHostDocumentData extends MirrorTextModel {
 	private _document?: vscode.TextDocument;
+
 	private _isDisposed: boolean = false;
 
 	constructor(
@@ -53,15 +54,20 @@ export class ExtHostDocumentData extends MirrorTextModel {
 		// extensions still read from them. some
 		// operations, live saving, will now error tho
 		ok(!this._isDisposed);
+
 		this._isDisposed = true;
+
 		this._isDirty = false;
 	}
+
 	equalLines(lines: readonly string[]): boolean {
 		return equals(this._lines, lines);
 	}
+
 	get document(): vscode.TextDocument {
 		if (!this._document) {
 			const that = this;
+
 			this._document = {
 				get uri() {
 					return that._uri;
@@ -119,38 +125,49 @@ export class ExtHostDocumentData extends MirrorTextModel {
 				},
 			};
 		}
+
 		return Object.freeze(this._document);
 	}
+
 	_acceptLanguageId(newLanguageId: string): void {
 		ok(!this._isDisposed);
+
 		this._languageId = newLanguageId;
 	}
+
 	_acceptIsDirty(isDirty: boolean): void {
 		ok(!this._isDisposed);
+
 		this._isDirty = isDirty;
 	}
+
 	private _save(): Promise<boolean> {
 		if (this._isDisposed) {
 			return Promise.reject(new Error("Document has been closed"));
 		}
+
 		return this._proxy.$trySaveDocument(this._uri);
 	}
+
 	private _getTextInRange(_range: vscode.Range): string {
 		const range = this._validateRange(_range);
 
 		if (range.isEmpty) {
 			return "";
 		}
+
 		if (range.isSingleLine) {
 			return this._lines[range.start.line].substring(
 				range.start.character,
 				range.end.character,
 			);
 		}
+
 		const lineEnding = this._eol,
 			startLineIndex = range.start.line,
 			endLineIndex = range.end.line,
 			resultLines: string[] = [];
+
 		resultLines.push(
 			this._lines[startLineIndex].substring(range.start.character),
 		);
@@ -158,12 +175,14 @@ export class ExtHostDocumentData extends MirrorTextModel {
 		for (let i = startLineIndex + 1; i < endLineIndex; i++) {
 			resultLines.push(this._lines[i]);
 		}
+
 		resultLines.push(
 			this._lines[endLineIndex].substring(0, range.end.character),
 		);
 
 		return resultLines.join(lineEnding);
 	}
+
 	private _lineAt(lineOrPosition: number | vscode.Position): vscode.TextLine {
 		let line: number | undefined;
 
@@ -172,6 +191,7 @@ export class ExtHostDocumentData extends MirrorTextModel {
 		} else if (typeof lineOrPosition === "number") {
 			line = lineOrPosition;
 		}
+
 		if (
 			typeof line !== "number" ||
 			line < 0 ||
@@ -180,14 +200,17 @@ export class ExtHostDocumentData extends MirrorTextModel {
 		) {
 			throw new Error("Illegal value for `line`");
 		}
+
 		return new ExtHostDocumentLine(
 			line,
 			this._lines[line],
 			line === this._lines.length - 1,
 		);
 	}
+
 	private _offsetAt(position: vscode.Position): number {
 		position = this._validatePosition(position);
+
 		this._ensureLineStarts();
 
 		return (
@@ -195,9 +218,12 @@ export class ExtHostDocumentData extends MirrorTextModel {
 			position.character
 		);
 	}
+
 	private _positionAt(offset: number): vscode.Position {
 		offset = Math.floor(offset);
+
 		offset = Math.max(0, offset);
+
 		this._ensureLineStarts();
 
 		const out = this._lineStarts!.getIndexOf(offset);
@@ -211,6 +237,7 @@ export class ExtHostDocumentData extends MirrorTextModel {
 		if (!(range instanceof Range)) {
 			throw new Error("Invalid argument");
 		}
+
 		const start = this._validatePosition(range.start);
 
 		const end = this._validatePosition(range.end);
@@ -218,43 +245,56 @@ export class ExtHostDocumentData extends MirrorTextModel {
 		if (start === range.start && end === range.end) {
 			return range;
 		}
+
 		return new Range(start.line, start.character, end.line, end.character);
 	}
+
 	private _validatePosition(position: vscode.Position): vscode.Position {
 		if (!(position instanceof Position)) {
 			throw new Error("Invalid argument");
 		}
+
 		if (this._lines.length === 0) {
 			return position.with(0, 0);
 		}
+
 		let { line, character } = position;
 
 		let hasChanged = false;
 
 		if (line < 0) {
 			line = 0;
+
 			character = 0;
+
 			hasChanged = true;
 		} else if (line >= this._lines.length) {
 			line = this._lines.length - 1;
+
 			character = this._lines[line].length;
+
 			hasChanged = true;
 		} else {
 			const maxCharacter = this._lines[line].length;
 
 			if (character < 0) {
 				character = 0;
+
 				hasChanged = true;
 			} else if (character > maxCharacter) {
 				character = maxCharacter;
+
 				hasChanged = true;
 			}
 		}
+
 		if (!hasChanged) {
 			return position;
 		}
+
 		return new Position(line, character);
 	}
+
 	private _getWordRangeAtPosition(
 		_position: vscode.Position,
 		regexp?: RegExp,
@@ -270,6 +310,7 @@ export class ExtHostDocumentData extends MirrorTextModel {
 				`[getWordRangeAtPosition]: ignoring custom regexp '${regexp.source}' because it matches the empty string.`,
 			);
 		}
+
 		const wordAtText = getWordAtText(
 			position.character + 1,
 			ensureValidWordDefinition(regexp),
@@ -285,38 +326,50 @@ export class ExtHostDocumentData extends MirrorTextModel {
 				wordAtText.endColumn - 1,
 			);
 		}
+
 		return undefined;
 	}
 }
 export class ExtHostDocumentLine implements vscode.TextLine {
 	private readonly _line: number;
+
 	private readonly _text: string;
+
 	private readonly _isLastLine: boolean;
 
 	constructor(line: number, text: string, isLastLine: boolean) {
 		this._line = line;
+
 		this._text = text;
+
 		this._isLastLine = isLastLine;
 	}
+
 	public get lineNumber(): number {
 		return this._line;
 	}
+
 	public get text(): string {
 		return this._text;
 	}
+
 	public get range(): Range {
 		return new Range(this._line, 0, this._line, this._text.length);
 	}
+
 	public get rangeIncludingLineBreak(): Range {
 		if (this._isLastLine) {
 			return this.range;
 		}
+
 		return new Range(this._line, 0, this._line + 1, 0);
 	}
+
 	public get firstNonWhitespaceCharacterIndex(): number {
 		//TODO@api, rename to 'leadingWhitespaceLength'
 		return /^(\s*)/.exec(this._text)![1].length;
 	}
+
 	public get isEmptyOrWhitespace(): boolean {
 		return this.firstNonWhitespaceCharacterIndex === this._text.length;
 	}

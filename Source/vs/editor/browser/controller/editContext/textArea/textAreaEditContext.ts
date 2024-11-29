@@ -78,6 +78,7 @@ import {
 
 export interface IVisibleRangeProvider {
 	visibleRangeForPosition(position: Position): HorizontalPosition | null;
+
 	linesVisibleRangesForRange(
 		range: Range,
 		includeNewLines: boolean,
@@ -88,9 +89,11 @@ class VisibleTextAreaData {
 	_visibleTextAreaBrand: void = undefined;
 
 	public startPosition: Position | null = null;
+
 	public endPosition: Position | null = null;
 
 	public visibleTextareaStart: HorizontalPosition | null = null;
+
 	public visibleTextareaEnd: HorizontalPosition | null = null;
 
 	/**
@@ -126,6 +129,7 @@ class VisibleTextAreaData {
 			this._context.viewModel.coordinatesConverter.convertModelPositionToViewPosition(
 				startModelPosition,
 			);
+
 		this.endPosition =
 			this._context.viewModel.coordinatesConverter.convertModelPositionToViewPosition(
 				endModelPosition,
@@ -136,11 +140,13 @@ class VisibleTextAreaData {
 				visibleRangeProvider.visibleRangeForPosition(
 					this.startPosition,
 				);
+
 			this.visibleTextareaEnd =
 				visibleRangeProvider.visibleRangeForPosition(this.endPosition);
 		} else {
 			// TODO: what if the view positions are not on the same line?
 			this.visibleTextareaStart = null;
+
 			this.visibleTextareaEnd = null;
 		}
 	}
@@ -162,6 +168,7 @@ class VisibleTextAreaData {
 				};
 			}
 		}
+
 		return this._previousPresentation;
 	}
 }
@@ -170,27 +177,42 @@ const canUseZeroSizeTextarea = browser.isFirefox;
 
 export class TextAreaEditContext extends AbstractEditContext {
 	private readonly _viewController: ViewController;
+
 	private readonly _visibleRangeProvider: IVisibleRangeProvider;
+
 	private _scrollLeft: number;
+
 	private _scrollTop: number;
 
 	private _accessibilitySupport!: AccessibilitySupport;
+
 	private _accessibilityPageSize!: number;
+
 	private _textAreaWrapping!: boolean;
+
 	private _textAreaWidth!: number;
+
 	private _contentLeft: number;
+
 	private _contentWidth: number;
+
 	private _contentHeight: number;
+
 	private _fontInfo: FontInfo;
+
 	private _lineHeight: number;
+
 	private _emptySelectionClipboard: boolean;
+
 	private _copyWithSyntaxHighlighting: boolean;
 
 	/**
 	 * Defined only when the text area is visible (composition case).
 	 */
 	private _visibleTextArea: VisibleTextAreaData | null;
+
 	private _selections: Selection[];
+
 	private _modelSelections: Selection[];
 
 	/**
@@ -200,7 +222,9 @@ export class TextAreaEditContext extends AbstractEditContext {
 	private _lastRenderPosition: Position | null;
 
 	public readonly textArea: FastDomNode<HTMLTextAreaElement>;
+
 	public readonly textAreaCover: FastDomNode<HTMLElement>;
+
 	private readonly _textAreaInput: TextAreaInput;
 
 	constructor(
@@ -216,8 +240,11 @@ export class TextAreaEditContext extends AbstractEditContext {
 		super(context);
 
 		this._viewController = viewController;
+
 		this._visibleRangeProvider = visibleRangeProvider;
+
 		this._scrollLeft = 0;
+
 		this._scrollTop = 0;
 
 		const options = this._context.configuration.options;
@@ -225,58 +252,83 @@ export class TextAreaEditContext extends AbstractEditContext {
 		const layoutInfo = options.get(EditorOption.layoutInfo);
 
 		this._setAccessibilityOptions(options);
+
 		this._contentLeft = layoutInfo.contentLeft;
+
 		this._contentWidth = layoutInfo.contentWidth;
+
 		this._contentHeight = layoutInfo.height;
+
 		this._fontInfo = options.get(EditorOption.fontInfo);
+
 		this._lineHeight = options.get(EditorOption.lineHeight);
+
 		this._emptySelectionClipboard = options.get(
 			EditorOption.emptySelectionClipboard,
 		);
+
 		this._copyWithSyntaxHighlighting = options.get(
 			EditorOption.copyWithSyntaxHighlighting,
 		);
 
 		this._visibleTextArea = null;
+
 		this._selections = [new Selection(1, 1, 1, 1)];
+
 		this._modelSelections = [new Selection(1, 1, 1, 1)];
+
 		this._lastRenderPosition = null;
 
 		// Text Area (The focus will always be in the textarea when the cursor is blinking)
 		this.textArea = createFastDomNode(document.createElement("textarea"));
+
 		PartFingerprints.write(this.textArea, PartFingerprint.TextArea);
+
 		this.textArea.setClassName(
 			`inputarea ${MOUSE_CURSOR_TEXT_CSS_CLASS_NAME}`,
 		);
+
 		this.textArea.setAttribute(
 			"wrap",
 			this._textAreaWrapping && !this._visibleTextArea ? "on" : "off",
 		);
 
 		const { tabSize } = this._context.viewModel.model.getOptions();
+
 		this.textArea.domNode.style.tabSize = `${tabSize * this._fontInfo.spaceWidth}px`;
+
 		this.textArea.setAttribute("autocorrect", "off");
+
 		this.textArea.setAttribute("autocapitalize", "off");
+
 		this.textArea.setAttribute("autocomplete", "off");
+
 		this.textArea.setAttribute("spellcheck", "false");
+
 		this.textArea.setAttribute(
 			"aria-label",
 			ariaLabelForScreenReaderContent(options, this._keybindingService),
 		);
+
 		this.textArea.setAttribute(
 			"aria-required",
 			options.get(EditorOption.ariaRequired) ? "true" : "false",
 		);
+
 		this.textArea.setAttribute(
 			"tabindex",
 			String(options.get(EditorOption.tabIndex)),
 		);
+
 		this.textArea.setAttribute("role", "textbox");
+
 		this.textArea.setAttribute(
 			"aria-roledescription",
 			nls.localize("editor", "editor"),
 		);
+
 		this.textArea.setAttribute("aria-multiline", "true");
+
 		this.textArea.setAttribute(
 			"aria-autocomplete",
 			options.get(EditorOption.readOnly) ? "none" : "both",
@@ -285,9 +337,11 @@ export class TextAreaEditContext extends AbstractEditContext {
 		this._ensureReadOnlyAttribute();
 
 		this.textAreaCover = createFastDomNode(document.createElement("div"));
+
 		this.textAreaCover.setPosition("absolute");
 
 		overflowGuardContainer.appendChild(this.textArea);
+
 		overflowGuardContainer.appendChild(this.textAreaCover);
 
 		const simpleModel: ISimpleModel = {
@@ -424,6 +478,7 @@ export class TextAreaEditContext extends AbstractEditContext {
 							);
 						}
 					}
+
 					return TextAreaState.EMPTY;
 				}
 
@@ -457,6 +512,7 @@ export class TextAreaEditContext extends AbstractEditContext {
 		const textAreaWrapper = this._register(
 			new TextAreaWrapper(this.textArea.domNode),
 		);
+
 		this._textAreaInput = this._register(
 			this._instantiationService.createInstance(
 				TextAreaInput,
@@ -496,12 +552,15 @@ export class TextAreaEditContext extends AbstractEditContext {
 					pasteOnNewLine =
 						this._emptySelectionClipboard &&
 						!!e.metadata.isFromEmptySelection;
+
 					multicursorText =
 						typeof e.metadata.multicursorText !== "undefined"
 							? e.metadata.multicursorText
 							: null;
+
 					mode = e.metadata.mode;
 				}
+
 				this._viewController.paste(
 					e.text,
 					pasteOnNewLine,
@@ -530,6 +589,7 @@ export class TextAreaEditContext extends AbstractEditContext {
 							` => compositionType: <<${e.text}>>, ${e.replacePrevCharCnt}, ${e.replaceNextCharCnt}, ${e.positionDelta}`,
 						);
 					}
+
 					this._viewController.compositionType(
 						e.text,
 						e.replacePrevCharCnt,
@@ -540,6 +600,7 @@ export class TextAreaEditContext extends AbstractEditContext {
 					if (_debugComposition) {
 						console.log(` => type: <<${e.text}>>`);
 					}
+
 					this._viewController.type(e.text);
 				}
 			}),
@@ -700,6 +761,7 @@ export class TextAreaEditContext extends AbstractEditContext {
 				);
 
 				this._visibleTextArea.prepareRender(this._visibleRangeProvider);
+
 				this._render();
 
 				// Show the textarea
@@ -708,6 +770,7 @@ export class TextAreaEditContext extends AbstractEditContext {
 				);
 
 				this._viewController.compositionStart();
+
 				this._context.viewModel.onCompositionStart();
 			}),
 		);
@@ -719,6 +782,7 @@ export class TextAreaEditContext extends AbstractEditContext {
 				}
 
 				this._visibleTextArea.prepareRender(this._visibleRangeProvider);
+
 				this._render();
 			}),
 		);
@@ -740,7 +804,9 @@ export class TextAreaEditContext extends AbstractEditContext {
 				this.textArea.setClassName(
 					`inputarea ${MOUSE_CURSOR_TEXT_CSS_CLASS_NAME}`,
 				);
+
 				this._viewController.compositionEnd();
+
 				this._context.viewModel.onCompositionEnd();
 			}),
 		);
@@ -778,7 +844,9 @@ export class TextAreaEditContext extends AbstractEditContext {
 
 	public override dispose(): void {
 		super.dispose();
+
 		this.textArea.domNode.remove();
+
 		this.textAreaCover.domNode.remove();
 	}
 
@@ -808,6 +876,7 @@ export class TextAreaEditContext extends AbstractEditContext {
 			if (goingLeft && startColumn <= 1) {
 				goingLeft = false;
 			}
+
 			if (goingLeft) {
 				const charCode = lineContent.charCodeAt(startColumn - 2);
 
@@ -819,9 +888,11 @@ export class TextAreaEditContext extends AbstractEditContext {
 					startColumn--;
 				}
 			}
+
 			if (goingRight && endColumn > lineContent.length) {
 				goingRight = false;
 			}
+
 			if (goingRight) {
 				const charCode = lineContent.charCodeAt(endColumn - 1);
 
@@ -833,6 +904,7 @@ export class TextAreaEditContext extends AbstractEditContext {
 					endColumn++;
 				}
 			}
+
 			distance++;
 		}
 
@@ -866,9 +938,12 @@ export class TextAreaEditContext extends AbstractEditContext {
 			if (charClass !== WordCharacterClass.Regular || distance > 50) {
 				return lineContent.substring(column - 1, position.column - 1);
 			}
+
 			distance++;
+
 			column--;
 		}
+
 		return lineContent.substring(0, position.column - 1);
 	}
 
@@ -884,6 +959,7 @@ export class TextAreaEditContext extends AbstractEditContext {
 				return charBefore;
 			}
 		}
+
 		return "";
 	}
 
@@ -920,12 +996,15 @@ export class TextAreaEditContext extends AbstractEditContext {
 			this._accessibilitySupport !== AccessibilitySupport.Disabled
 		) {
 			const fontInfo = options.get(EditorOption.fontInfo);
+
 			this._textAreaWrapping = true;
+
 			this._textAreaWidth = Math.round(
 				wrappingColumn * fontInfo.typicalHalfwidthCharacterWidth,
 			);
 		} else {
 			this._textAreaWrapping = false;
+
 			this._textAreaWidth = canUseZeroSizeTextarea ? 0 : 1;
 		}
 	}
@@ -940,32 +1019,44 @@ export class TextAreaEditContext extends AbstractEditContext {
 		const layoutInfo = options.get(EditorOption.layoutInfo);
 
 		this._setAccessibilityOptions(options);
+
 		this._contentLeft = layoutInfo.contentLeft;
+
 		this._contentWidth = layoutInfo.contentWidth;
+
 		this._contentHeight = layoutInfo.height;
+
 		this._fontInfo = options.get(EditorOption.fontInfo);
+
 		this._lineHeight = options.get(EditorOption.lineHeight);
+
 		this._emptySelectionClipboard = options.get(
 			EditorOption.emptySelectionClipboard,
 		);
+
 		this._copyWithSyntaxHighlighting = options.get(
 			EditorOption.copyWithSyntaxHighlighting,
 		);
+
 		this.textArea.setAttribute(
 			"wrap",
 			this._textAreaWrapping && !this._visibleTextArea ? "on" : "off",
 		);
 
 		const { tabSize } = this._context.viewModel.model.getOptions();
+
 		this.textArea.domNode.style.tabSize = `${tabSize * this._fontInfo.spaceWidth}px`;
+
 		this.textArea.setAttribute(
 			"aria-label",
 			ariaLabelForScreenReaderContent(options, this._keybindingService),
 		);
+
 		this.textArea.setAttribute(
 			"aria-required",
 			options.get(EditorOption.ariaRequired) ? "true" : "false",
 		);
+
 		this.textArea.setAttribute(
 			"tabindex",
 			String(options.get(EditorOption.tabIndex)),
@@ -984,10 +1075,12 @@ export class TextAreaEditContext extends AbstractEditContext {
 
 		return true;
 	}
+
 	public override onCursorStateChanged(
 		e: viewEvents.ViewCursorStateChangedEvent,
 	): boolean {
 		this._selections = e.selections.slice(0);
+
 		this._modelSelections = e.modelSelections.slice(0);
 		// We must update the <textarea> synchronously, otherwise long press IME on macos breaks.
 		// See https://github.com/microsoft/vscode/issues/165821
@@ -995,38 +1088,46 @@ export class TextAreaEditContext extends AbstractEditContext {
 
 		return true;
 	}
+
 	public override onDecorationsChanged(
 		e: viewEvents.ViewDecorationsChangedEvent,
 	): boolean {
 		// true for inline decorations that can end up relayouting text
 		return true;
 	}
+
 	public override onFlushed(e: viewEvents.ViewFlushedEvent): boolean {
 		return true;
 	}
+
 	public override onLinesChanged(
 		e: viewEvents.ViewLinesChangedEvent,
 	): boolean {
 		return true;
 	}
+
 	public override onLinesDeleted(
 		e: viewEvents.ViewLinesDeletedEvent,
 	): boolean {
 		return true;
 	}
+
 	public override onLinesInserted(
 		e: viewEvents.ViewLinesInsertedEvent,
 	): boolean {
 		return true;
 	}
+
 	public override onScrollChanged(
 		e: viewEvents.ViewScrollChangedEvent,
 	): boolean {
 		this._scrollLeft = e.scrollLeft;
+
 		this._scrollTop = e.scrollTop;
 
 		return true;
 	}
+
 	public override onZonesChanged(
 		e: viewEvents.ViewZonesChangedEvent,
 	): boolean {
@@ -1056,16 +1157,21 @@ export class TextAreaEditContext extends AbstractEditContext {
 	public setAriaOptions(options: IEditorAriaOptions): void {
 		if (options.activeDescendant) {
 			this.textArea.setAttribute("aria-haspopup", "true");
+
 			this.textArea.setAttribute("aria-autocomplete", "list");
+
 			this.textArea.setAttribute(
 				"aria-activedescendant",
 				options.activeDescendant,
 			);
 		} else {
 			this.textArea.setAttribute("aria-haspopup", "false");
+
 			this.textArea.setAttribute("aria-autocomplete", "both");
+
 			this.textArea.removeAttribute("aria-activedescendant");
 		}
+
 		if (options.role) {
 			this.textArea.setAttribute("role", options.role);
 		}
@@ -1090,6 +1196,7 @@ export class TextAreaEditContext extends AbstractEditContext {
 	}
 
 	private _primaryCursorPosition: Position = new Position(1, 1);
+
 	private _primaryCursorVisibleRange: HorizontalPosition | null = null;
 
 	public prepareRender(ctx: RenderingContext): void {
@@ -1097,14 +1204,17 @@ export class TextAreaEditContext extends AbstractEditContext {
 			this._selections[0].positionLineNumber,
 			this._selections[0].positionColumn,
 		);
+
 		this._primaryCursorVisibleRange = ctx.visibleRangeForPosition(
 			this._primaryCursorPosition,
 		);
+
 		this._visibleTextArea?.prepareRender(ctx);
 	}
 
 	public render(ctx: RestrictedRenderingContext): void {
 		this._textAreaInput.writeNativeTextAreaContent("render");
+
 		this._render();
 	}
 
@@ -1159,10 +1269,14 @@ export class TextAreaEditContext extends AbstractEditContext {
 					// so reduce its width. We use the same technique as
 					// for hiding text before
 					const delta = this._contentLeft - left;
+
 					left += delta;
+
 					scrollLeft += delta;
+
 					width -= delta;
 				}
+
 				if (width > this._contentWidth) {
 					// the textarea would be wider than the content width,
 					// so reduce its width.
@@ -1194,6 +1308,7 @@ export class TextAreaEditContext extends AbstractEditContext {
 				);
 
 				this.textArea.domNode.scrollTop = lineCount * this._lineHeight;
+
 				this.textArea.domNode.scrollLeft = scrollLeft;
 
 				this._doRender({
@@ -1212,6 +1327,7 @@ export class TextAreaEditContext extends AbstractEditContext {
 					strikethrough: presentation.strikethrough,
 				});
 			}
+
 			return;
 		}
 
@@ -1278,6 +1394,7 @@ export class TextAreaEditContext extends AbstractEditContext {
 						this.textArea.domNode.selectionStart,
 					),
 				);
+
 			this.textArea.domNode.scrollTop = lineCount * this._lineHeight;
 
 			return;
@@ -1314,9 +1431,13 @@ export class TextAreaEditContext extends AbstractEditContext {
 		const tac = this.textAreaCover;
 
 		applyFontInfo(ta, this._fontInfo);
+
 		ta.setTop(renderData.top);
+
 		ta.setLeft(renderData.left);
+
 		ta.setWidth(renderData.width);
+
 		ta.setHeight(renderData.height);
 
 		ta.setColor(
@@ -1324,19 +1445,24 @@ export class TextAreaEditContext extends AbstractEditContext {
 				? Color.Format.CSS.formatHex(renderData.color)
 				: "",
 		);
+
 		ta.setFontStyle(renderData.italic ? "italic" : "");
 
 		if (renderData.bold) {
 			// fontWeight is also set by `applyFontInfo`, so only overwrite it if necessary
 			ta.setFontWeight("bold");
 		}
+
 		ta.setTextDecoration(
 			`${renderData.underline ? " underline" : ""}${renderData.strikethrough ? " line-through" : ""}`,
 		);
 
 		tac.setTop(renderData.useCover ? renderData.top : 0);
+
 		tac.setLeft(renderData.useCover ? renderData.left : 0);
+
 		tac.setWidth(renderData.useCover ? renderData.width : 0);
+
 		tac.setHeight(renderData.useCover ? renderData.height : 0);
 
 		const options = this._context.configuration.options;
@@ -1364,16 +1490,25 @@ export class TextAreaEditContext extends AbstractEditContext {
 
 interface IRenderData {
 	lastRenderPosition: Position | null;
+
 	top: number;
+
 	left: number;
+
 	width: number;
+
 	height: number;
+
 	useCover: boolean;
 
 	color?: Color | null;
+
 	italic?: boolean;
+
 	bold?: boolean;
+
 	underline?: boolean;
+
 	strikethrough?: boolean;
 }
 
@@ -1388,15 +1523,21 @@ function measureText(
 	}
 
 	const container = targetDocument.createElement("div");
+
 	container.style.position = "absolute";
+
 	container.style.top = "-50000px";
+
 	container.style.width = "50000px";
 
 	const regularDomNode = targetDocument.createElement("span");
+
 	applyFontInfo(regularDomNode, fontInfo);
+
 	regularDomNode.style.whiteSpace = "pre"; // just like the textarea
 	regularDomNode.style.tabSize = `${tabSize * fontInfo.spaceWidth}px`; // just like the textarea
 	regularDomNode.append(text);
+
 	container.appendChild(regularDomNode);
 
 	targetDocument.body.appendChild(container);

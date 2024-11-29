@@ -102,6 +102,7 @@ export function getExtensionForMimeType(mimeType: string): string | undefined {
 			return extension;
 		}
 	}
+
 	return undefined;
 }
 

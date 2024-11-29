@@ -26,6 +26,7 @@ export class MyersDiffAlgorithm implements IDiffAlgorithm {
 		if (seq1.length === 0 || seq2.length === 0) {
 			return DiffAlgorithmResult.trivial(seq1, seq2);
 		}
+
 		const seqX = seq1; // Text on the x axis
 		const seqY = seq2; // Text on the y axis
 		function getXAfterSnake(x: number, y: number): number {
@@ -35,25 +36,31 @@ export class MyersDiffAlgorithm implements IDiffAlgorithm {
 				seqX.getElement(x) === seqY.getElement(y)
 			) {
 				x++;
+
 				y++;
 			}
+
 			return x;
 		}
+
 		let d = 0;
 		// V[k]: X value of longest d-line that ends in diagonal k.
 		// d-line: path from (0,0) to (x,y) that uses exactly d non-diagonals.
 		// diagonal k: Set of points (x,y) with x-y = k.
 		// k=1 -> (1,0),(2,1)
 		const V = new FastInt32Array();
+
 		V.set(0, getXAfterSnake(0, 0));
 
 		const paths = new FastArrayNegativeIndices<SnakePath | null>();
+
 		paths.set(
 			0,
 			V.get(0) === 0 ? null : new SnakePath(null, 0, 0, V.get(0)),
 		);
 
 		let k = 0;
+
 		loop: while (true) {
 			d++;
 
@@ -79,6 +86,7 @@ export class MyersDiffAlgorithm implements IDiffAlgorithm {
 				);
 
 				const y = x - k;
+
 				step++;
 
 				if (x > seqX.length || y > seqY.length) {
@@ -86,11 +94,14 @@ export class MyersDiffAlgorithm implements IDiffAlgorithm {
 					// TODO: Don't pay the cost for this in the next iteration.
 					continue;
 				}
+
 				const newMaxX = getXAfterSnake(x, y);
+
 				V.set(k, newMaxX);
 
 				const lastPath =
 					x === maxXofDLineTop ? paths.get(k + 1) : paths.get(k - 1);
+
 				paths.set(
 					k,
 					newMaxX !== x
@@ -103,6 +114,7 @@ export class MyersDiffAlgorithm implements IDiffAlgorithm {
 				}
 			}
 		}
+
 		let path = paths.get(k);
 
 		const result: SequenceDiff[] = [];
@@ -124,13 +136,18 @@ export class MyersDiffAlgorithm implements IDiffAlgorithm {
 					),
 				);
 			}
+
 			if (!path) {
 				break;
 			}
+
 			lastAligningPosS1 = path.x;
+
 			lastAligningPosS2 = path.y;
+
 			path = path.prev;
 		}
+
 		result.reverse();
 
 		return new DiffAlgorithmResult(result, false);
@@ -149,6 +166,7 @@ class SnakePath {
  */
 class FastInt32Array {
 	private positiveArr: Int32Array = new Int32Array(10);
+
 	private negativeArr: Int32Array = new Int32Array(10);
 
 	get(idx: number): number {
@@ -160,22 +178,29 @@ class FastInt32Array {
 			return this.positiveArr[idx];
 		}
 	}
+
 	set(idx: number, value: number): void {
 		if (idx < 0) {
 			idx = -idx - 1;
 
 			if (idx >= this.negativeArr.length) {
 				const arr = this.negativeArr;
+
 				this.negativeArr = new Int32Array(arr.length * 2);
+
 				this.negativeArr.set(arr);
 			}
+
 			this.negativeArr[idx] = value;
 		} else {
 			if (idx >= this.positiveArr.length) {
 				const arr = this.positiveArr;
+
 				this.positiveArr = new Int32Array(arr.length * 2);
+
 				this.positiveArr.set(arr);
 			}
+
 			this.positiveArr[idx] = value;
 		}
 	}
@@ -185,6 +210,7 @@ class FastInt32Array {
  */
 class FastArrayNegativeIndices<T> {
 	private readonly positiveArr: T[] = [];
+
 	private readonly negativeArr: T[] = [];
 
 	get(idx: number): T {
@@ -196,9 +222,11 @@ class FastArrayNegativeIndices<T> {
 			return this.positiveArr[idx];
 		}
 	}
+
 	set(idx: number, value: T): void {
 		if (idx < 0) {
 			idx = -idx - 1;
+
 			this.negativeArr[idx] = value;
 		} else {
 			this.positiveArr[idx] = value;

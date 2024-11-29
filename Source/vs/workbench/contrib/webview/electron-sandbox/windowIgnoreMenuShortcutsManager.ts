@@ -12,6 +12,7 @@ import { hasNativeTitlebar } from "../../../../platform/window/common/window.js"
 
 export class WindowIgnoreMenuShortcutsManager {
 	private readonly _isUsingNativeTitleBars: boolean;
+
 	private readonly _webviewMainService: IWebviewManagerService;
 
 	constructor(
@@ -20,20 +21,25 @@ export class WindowIgnoreMenuShortcutsManager {
 		private readonly _nativeHostService: INativeHostService,
 	) {
 		this._isUsingNativeTitleBars = hasNativeTitlebar(configurationService);
+
 		this._webviewMainService =
 			ProxyChannel.toService<IWebviewManagerService>(
 				mainProcessService.getChannel("webview"),
 			);
 	}
+
 	public didFocus(): void {
 		this.setIgnoreMenuShortcuts(true);
 	}
+
 	public didBlur(): void {
 		this.setIgnoreMenuShortcuts(false);
 	}
+
 	private get _shouldToggleMenuShortcutsEnablement() {
 		return isMacintosh || this._isUsingNativeTitleBars;
 	}
+
 	protected setIgnoreMenuShortcuts(value: boolean) {
 		if (this._shouldToggleMenuShortcutsEnablement) {
 			this._webviewMainService.setIgnoreMenuShortcuts(

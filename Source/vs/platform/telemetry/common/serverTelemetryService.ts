@@ -43,26 +43,33 @@ export class ServerTelemetryService
 		_productService: IProductService,
 	) {
 		super(config, _configurationService, _productService);
+
 		this._injectedTelemetryLevel = injectedTelemetryLevel;
 	}
+
 	override publicLog(eventName: string, data?: ITelemetryData) {
 		if (this._injectedTelemetryLevel < TelemetryLevel.USAGE) {
 			return;
 		}
+
 		return super.publicLog(eventName, data);
 	}
+
 	override publicLog2<
 		E extends ClassifiedEvent<OmitMetadata<T>> = never,
 		T extends IGDPRProperty = never,
 	>(eventName: string, data?: StrictPropertyCheck<T, E>) {
 		return this.publicLog(eventName, data as ITelemetryData | undefined);
 	}
+
 	override publicLogError(errorEventName: string, data?: ITelemetryData) {
 		if (this._injectedTelemetryLevel < TelemetryLevel.ERROR) {
 			return Promise.resolve(undefined);
 		}
+
 		return super.publicLogError(errorEventName, data);
 	}
+
 	override publicLogError2<
 		E extends ClassifiedEvent<OmitMetadata<T>> = never,
 		T extends IGDPRProperty = never,
@@ -72,6 +79,7 @@ export class ServerTelemetryService
 			data as ITelemetryData | undefined,
 		);
 	}
+
 	async updateInjectedTelemetryLevel(
 		telemetryLevel: TelemetryLevel,
 	): Promise<void> {

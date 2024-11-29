@@ -8,23 +8,31 @@ export interface MessagePortMain extends NodeJS.EventEmitter {
 	 * Emitted when the remote end of a MessagePortMain object becomes disconnected.
 	 */
 	on(event: "close", listener: Function): this;
+
 	off(event: "close", listener: Function): this;
+
 	once(event: "close", listener: Function): this;
+
 	addListener(event: "close", listener: Function): this;
+
 	removeListener(event: "close", listener: Function): this;
 	/**
 	 * Emitted when a MessagePortMain object receives a message.
 	 */
 	on(event: "message", listener: (messageEvent: MessageEvent) => void): this;
+
 	off(event: "message", listener: (messageEvent: MessageEvent) => void): this;
+
 	once(
 		event: "message",
 		listener: (messageEvent: MessageEvent) => void,
 	): this;
+
 	addListener(
 		event: "message",
 		listener: (messageEvent: MessageEvent) => void,
 	): this;
+
 	removeListener(
 		event: "message",
 		listener: (messageEvent: MessageEvent) => void,
@@ -46,6 +54,7 @@ export interface MessagePortMain extends NodeJS.EventEmitter {
 }
 export interface MessageEvent {
 	data: any;
+
 	ports: MessagePortMain[];
 }
 export interface ParentPort extends NodeJS.EventEmitter {
@@ -55,15 +64,19 @@ export interface ParentPort extends NodeJS.EventEmitter {
 	 * be queued up until a handler is registered for this event.
 	 */
 	on(event: "message", listener: (messageEvent: MessageEvent) => void): this;
+
 	off(event: "message", listener: (messageEvent: MessageEvent) => void): this;
+
 	once(
 		event: "message",
 		listener: (messageEvent: MessageEvent) => void,
 	): this;
+
 	addListener(
 		event: "message",
 		listener: (messageEvent: MessageEvent) => void,
 	): this;
+
 	removeListener(
 		event: "message",
 		listener: (messageEvent: MessageEvent) => void,

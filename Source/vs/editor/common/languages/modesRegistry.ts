@@ -20,15 +20,19 @@ export const Extensions = {
 
 export class EditorModesRegistry {
 	private readonly _languages: ILanguageExtensionPoint[];
+
 	private readonly _onDidChangeLanguages = new Emitter<void>();
+
 	public readonly onDidChangeLanguages: Event<void> =
 		this._onDidChangeLanguages.event;
 
 	constructor() {
 		this._languages = [];
 	}
+
 	public registerLanguage(def: ILanguageExtensionPoint): IDisposable {
 		this._languages.push(def);
+
 		this._onDidChangeLanguages.fire(undefined);
 
 		return {
@@ -43,6 +47,7 @@ export class EditorModesRegistry {
 			},
 		};
 	}
+
 	public getLanguages(): ReadonlyArray<ILanguageExtensionPoint> {
 		return this._languages;
 	}

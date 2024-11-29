@@ -26,9 +26,12 @@ export class DebugTitleContribution implements IWorkbenchContribution {
 				titleService.updateProperties({ prefix: "" });
 			}
 		};
+
 		this.toDispose.push(debugService.onDidChangeState(updateTitle));
+
 		this.toDispose.push(hostService.onDidChangeFocus(updateTitle));
 	}
+
 	dispose(): void {
 		dispose(this.toDispose);
 	}

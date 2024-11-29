@@ -32,6 +32,7 @@ export class TextInputActionsProvider
 	implements IWorkbenchContribution
 {
 	static readonly ID = "workbench.contrib.textInputActionsProvider";
+
 	private readonly textInputActions = new Lazy<IAction[]>(() =>
 		this.createActions(),
 	);
@@ -45,8 +46,10 @@ export class TextInputActionsProvider
 		private readonly clipboardService: IClipboardService,
 	) {
 		super();
+
 		this.registerListeners();
 	}
+
 	private createActions(): IAction[] {
 		return [
 			// Undo/Redo
@@ -102,10 +105,14 @@ export class TextInputActionsProvider
 							const selectionStart = element.selectionStart || 0;
 
 							const selectionEnd = element.selectionEnd || 0;
+
 							element.value = `${element.value.substring(0, selectionStart)}${clipboardText}${element.value.substring(selectionEnd, element.value.length)}`;
+
 							element.selectionStart =
 								selectionStart + clipboardText.length;
+
 							element.selectionEnd = element.selectionStart;
+
 							element.dispatchEvent(
 								new Event("input", {
 									bubbles: true,
@@ -127,6 +134,7 @@ export class TextInputActionsProvider
 			),
 		];
 	}
+
 	private registerListeners(): void {
 		// Context menu support in input/textarea
 		this._register(
@@ -146,10 +154,12 @@ export class TextInputActionsProvider
 			),
 		);
 	}
+
 	private onContextMenu(targetWindow: Window, e: MouseEvent): void {
 		if (e.defaultPrevented) {
 			return; // make sure to not show these actions by accident if component indicated to prevent
 		}
+
 		const target = e.target;
 
 		if (
@@ -159,9 +169,11 @@ export class TextInputActionsProvider
 		) {
 			return; // only for inputs or textareas
 		}
+
 		EventHelper.stop(e, true);
 
 		const event = new StandardMouseEvent(targetWindow, e);
+
 		this.contextMenuService.showContextMenu({
 			getAnchor: () => event,
 			getActions: () => this.textInputActions.value,

@@ -9,6 +9,7 @@ export interface IItem {
 }
 export interface IRangedGroup {
 	range: IRange;
+
 	size: number;
 }
 /**
@@ -25,19 +26,23 @@ export function groupIntersect(
 		if (range.start >= r.range.end) {
 			continue;
 		}
+
 		if (range.end < r.range.start) {
 			break;
 		}
+
 		const intersection = Range.intersect(range, r.range);
 
 		if (Range.isEmpty(intersection)) {
 			continue;
 		}
+
 		result.push({
 			range: intersection,
 			size: r.size,
 		});
 	}
+
 	return result;
 }
 /**
@@ -69,9 +74,12 @@ export function consolidate(groups: IRangedGroup[]): IRangedGroup[] {
 
 			continue;
 		}
+
 		previousGroup = { range: { start, end }, size };
+
 		result.push(previousGroup);
 	}
+
 	return result;
 }
 /**
@@ -83,29 +91,42 @@ function concat(...groups: IRangedGroup[][]): IRangedGroup[] {
 }
 export interface IRangeMap {
 	readonly size: number;
+
 	readonly count: number;
+
 	paddingTop: number;
+
 	splice(index: number, deleteCount: number, items?: IItem[]): void;
+
 	indexAt(position: number): number;
+
 	indexAfter(position: number): number;
+
 	positionAt(index: number): number;
 }
 export class RangeMap implements IRangeMap {
 	private groups: IRangedGroup[] = [];
+
 	private _size = 0;
+
 	private _paddingTop = 0;
 
 	get paddingTop() {
 		return this._paddingTop;
 	}
+
 	set paddingTop(paddingTop: number) {
 		this._size = this._size + paddingTop - this._paddingTop;
+
 		this._paddingTop = paddingTop;
 	}
+
 	constructor(topPadding?: number) {
 		this._paddingTop = topPadding ?? 0;
+
 		this._size = this._paddingTop;
 	}
+
 	splice(index: number, deleteCount: number, items: IItem[] = []): void {
 		const diff = items.length - deleteCount;
 
@@ -123,7 +144,9 @@ export class RangeMap implements IRangeMap {
 			range: { start: index + i, end: index + i + 1 },
 			size: item.size,
 		}));
+
 		this.groups = concat(before, middle, after);
+
 		this._size =
 			this._paddingTop +
 			this.groups.reduce(
@@ -140,6 +163,7 @@ export class RangeMap implements IRangeMap {
 		if (!len) {
 			return 0;
 		}
+
 		return this.groups[len - 1].range.end;
 	}
 	/**
@@ -155,9 +179,11 @@ export class RangeMap implements IRangeMap {
 		if (position < 0) {
 			return -1;
 		}
+
 		if (position < this._paddingTop) {
 			return 0;
 		}
+
 		let index = 0;
 
 		let size = this._paddingTop;
@@ -170,9 +196,12 @@ export class RangeMap implements IRangeMap {
 			if (position < newSize) {
 				return index + Math.floor((position - size) / group.size);
 			}
+
 			index += count;
+
 			size = newSize;
 		}
+
 		return index;
 	}
 	/**
@@ -189,6 +218,7 @@ export class RangeMap implements IRangeMap {
 		if (index < 0) {
 			return -1;
 		}
+
 		let position = 0;
 
 		let count = 0;
@@ -203,9 +233,12 @@ export class RangeMap implements IRangeMap {
 					this._paddingTop + position + (index - count) * group.size
 				);
 			}
+
 			position += groupCount * group.size;
+
 			count = newCount;
 		}
+
 		return -1;
 	}
 }

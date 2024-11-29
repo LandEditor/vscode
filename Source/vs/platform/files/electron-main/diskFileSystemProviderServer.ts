@@ -39,9 +39,11 @@ export class DiskFileSystemProviderChannel extends AbstractDiskFileSystemProvide
 	) {
 		super(provider, logService);
 	}
+
 	protected override getUriTransformer(ctx: unknown): IURITransformer {
 		return DefaultURITransformer;
 	}
+
 	protected override transformIncoming(
 		uriTransformer: IURITransformer,
 		_resource: UriComponents,
@@ -57,6 +59,7 @@ export class DiskFileSystemProviderChannel extends AbstractDiskFileSystemProvide
 		if (!opts.useTrash) {
 			return super.delete(uriTransformer, _resource, opts);
 		}
+
 		const resource = this.transformIncoming(uriTransformer, _resource);
 
 		const filePath = normalize(resource.fsPath);
@@ -108,6 +111,7 @@ class SessionFileWatcher extends AbstractSessionFileWatcher {
 				FileSystemProviderErrorCode.Unavailable,
 			);
 		}
+
 		return super.watch(req, resource, opts);
 	}
 }

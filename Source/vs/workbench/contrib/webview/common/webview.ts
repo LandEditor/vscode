@@ -8,6 +8,7 @@ import { URI } from "../../../../base/common/uri.js";
 
 export interface WebviewRemoteInfo {
 	readonly isRemote: boolean;
+
 	readonly authority: string | undefined;
 }
 /**
@@ -41,6 +42,7 @@ export function asWebviewUri(
 	if (resource.scheme === Schemas.http || resource.scheme === Schemas.https) {
 		return resource;
 	}
+
 	if (
 		remoteInfo &&
 		remoteInfo.authority &&
@@ -53,6 +55,7 @@ export function asWebviewUri(
 			path: resource.path,
 		});
 	}
+
 	return URI.from({
 		scheme: Schemas.https,
 		authority: `${resource.scheme}+${encodeAuthority(resource.authority)}.${webviewRootResourceAuthority}`,
@@ -72,6 +75,7 @@ function encodeAuthority(authority: string): string {
 		) {
 			return char;
 		}
+
 		return "-" + code.toString(16).padStart(4, "0");
 	});
 }

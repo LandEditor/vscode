@@ -31,30 +31,37 @@ export const IDialogMainService =
 
 export interface IDialogMainService {
 	readonly _serviceBrand: undefined;
+
 	pickFileFolder(
 		options: INativeOpenDialogOptions,
 		window?: electron.BrowserWindow,
 	): Promise<string[] | undefined>;
+
 	pickFolder(
 		options: INativeOpenDialogOptions,
 		window?: electron.BrowserWindow,
 	): Promise<string[] | undefined>;
+
 	pickFile(
 		options: INativeOpenDialogOptions,
 		window?: electron.BrowserWindow,
 	): Promise<string[] | undefined>;
+
 	pickWorkspace(
 		options: INativeOpenDialogOptions,
 		window?: electron.BrowserWindow,
 	): Promise<string[] | undefined>;
+
 	showMessageBox(
 		options: electron.MessageBoxOptions,
 		window?: electron.BrowserWindow,
 	): Promise<electron.MessageBoxReturnValue>;
+
 	showSaveDialog(
 		options: electron.SaveDialogOptions,
 		window?: electron.BrowserWindow,
 	): Promise<electron.SaveDialogReturnValue>;
+
 	showOpenDialog(
 		options: electron.OpenDialogOptions,
 		window?: electron.BrowserWindow,
@@ -62,14 +69,20 @@ export interface IDialogMainService {
 }
 interface IInternalNativeOpenDialogOptions extends INativeOpenDialogOptions {
 	readonly pickFolders?: boolean;
+
 	readonly pickFiles?: boolean;
+
 	readonly title: string;
+
 	readonly buttonLabel?: string;
+
 	readonly filters?: electron.FileFilter[];
 }
 export class DialogMainService implements IDialogMainService {
 	declare readonly _serviceBrand: undefined;
+
 	private readonly windowFileDialogLocks = new Map<number, Set<number>>();
+
 	private readonly windowDialogQueues = new Map<
 		number,
 		Queue<
@@ -78,6 +91,7 @@ export class DialogMainService implements IDialogMainService {
 			| electron.OpenDialogReturnValue
 		>
 	>();
+
 	private readonly noWindowDialogueQueue = new Queue<
 		| electron.MessageBoxReturnValue
 		| electron.SaveDialogReturnValue
@@ -90,6 +104,7 @@ export class DialogMainService implements IDialogMainService {
 		@IProductService
 		private readonly productService: IProductService,
 	) {}
+
 	pickFileFolder(
 		options: INativeOpenDialogOptions,
 		window?: electron.BrowserWindow,
@@ -104,6 +119,7 @@ export class DialogMainService implements IDialogMainService {
 			window,
 		);
 	}
+
 	pickFolder(
 		options: INativeOpenDialogOptions,
 		window?: electron.BrowserWindow,
@@ -117,6 +133,7 @@ export class DialogMainService implements IDialogMainService {
 			window,
 		);
 	}
+
 	pickFile(
 		options: INativeOpenDialogOptions,
 		window?: electron.BrowserWindow,
@@ -130,6 +147,7 @@ export class DialogMainService implements IDialogMainService {
 			window,
 		);
 	}
+
 	pickWorkspace(
 		options: INativeOpenDialogOptions,
 		window?: electron.BrowserWindow,
@@ -153,6 +171,7 @@ export class DialogMainService implements IDialogMainService {
 			window,
 		);
 	}
+
 	private async doPick(
 		options: IInternalNativeOpenDialogOptions,
 		window?: electron.BrowserWindow,
@@ -179,6 +198,7 @@ export class DialogMainService implements IDialogMainService {
 				];
 			}
 		}
+
 		if (!dialogOptions.properties) {
 			dialogOptions.properties = [
 				"multiSelections",
@@ -186,6 +206,7 @@ export class DialogMainService implements IDialogMainService {
 				"createDirectory",
 			];
 		}
+
 		if (isMacintosh) {
 			dialogOptions.properties.push("treatPackageAsDirectory"); // always drill into .app files
 		}
@@ -198,8 +219,10 @@ export class DialogMainService implements IDialogMainService {
 		if (result && result.filePaths && result.filePaths.length > 0) {
 			return result.filePaths;
 		}
+
 		return undefined;
 	}
+
 	private getWindowDialogQueue<
 		T extends
 			| electron.MessageBoxReturnValue
@@ -217,13 +240,16 @@ export class DialogMainService implements IDialogMainService {
 					| electron.SaveDialogReturnValue
 					| electron.OpenDialogReturnValue
 				>();
+
 				this.windowDialogQueues.set(window.id, windowDialogQueue);
 			}
+
 			return windowDialogQueue as unknown as Queue<T>;
 		} else {
 			return this.noWindowDialogueQueue as unknown as Queue<T>;
 		}
 	}
+
 	showMessageBox(
 		rawOptions: electron.MessageBoxOptions,
 		window?: electron.BrowserWindow,
@@ -243,12 +269,14 @@ export class DialogMainService implements IDialogMainService {
 			} else {
 				result = await electron.dialog.showMessageBox(options);
 			}
+
 			return {
 				response: buttonIndeces[result.response],
 				checkboxChecked: result.checkboxChecked,
 			};
 		});
 	}
+
 	async showSaveDialog(
 		options: electron.SaveDialogOptions,
 		window?: electron.BrowserWindow,
@@ -263,6 +291,7 @@ export class DialogMainService implements IDialogMainService {
 
 			return { canceled: true, filePath: "" };
 		}
+
 		try {
 			return await this.getWindowDialogQueue<electron.SaveDialogReturnValue>(
 				window,
@@ -277,6 +306,7 @@ export class DialogMainService implements IDialogMainService {
 				} else {
 					result = await electron.dialog.showSaveDialog(options);
 				}
+
 				result.filePath = this.normalizePath(result.filePath);
 
 				return result;
@@ -285,17 +315,23 @@ export class DialogMainService implements IDialogMainService {
 			dispose(fileDialogLock);
 		}
 	}
+
 	private normalizePath(path: string): string;
+
 	private normalizePath(path: string | undefined): string | undefined;
+
 	private normalizePath(path: string | undefined): string | undefined {
 		if (path && isMacintosh) {
 			path = normalizeNFC(path); // macOS only: normalize paths to NFC form
 		}
+
 		return path;
 	}
+
 	private normalizePaths(paths: string[]): string[] {
 		return paths.map((path) => this.normalizePath(path));
 	}
+
 	async showOpenDialog(
 		options: electron.OpenDialogOptions,
 		window?: electron.BrowserWindow,
@@ -318,6 +354,7 @@ export class DialogMainService implements IDialogMainService {
 
 			return { canceled: true, filePaths: [] };
 		}
+
 		try {
 			return await this.getWindowDialogQueue<electron.OpenDialogReturnValue>(
 				window,
@@ -332,6 +369,7 @@ export class DialogMainService implements IDialogMainService {
 				} else {
 					result = await electron.dialog.showOpenDialog(options);
 				}
+
 				result.filePaths = this.normalizePaths(result.filePaths);
 
 				return result;
@@ -340,6 +378,7 @@ export class DialogMainService implements IDialogMainService {
 			dispose(fileDialogLock);
 		}
 	}
+
 	private acquireFileDialogLock(
 		options: electron.SaveDialogOptions | electron.OpenDialogOptions,
 		window?: electron.BrowserWindow,
@@ -364,17 +403,21 @@ export class DialogMainService implements IDialogMainService {
 
 		if (!windowFileDialogLocks) {
 			windowFileDialogLocks = new Set();
+
 			this.windowFileDialogLocks.set(window.id, windowFileDialogLocks);
 		}
+
 		const optionsHash = hash(options);
 
 		if (windowFileDialogLocks.has(optionsHash)) {
 			return undefined; // prevent duplicates, return
 		}
+
 		this.logService.trace(
 			"[DialogMainService]: new file dialog lock created",
 			options,
 		);
+
 		windowFileDialogLocks.add(optionsHash);
 
 		return toDisposable(() => {
@@ -382,6 +425,7 @@ export class DialogMainService implements IDialogMainService {
 				"[DialogMainService]: file dialog lock disposed",
 				options,
 			);
+
 			windowFileDialogLocks?.delete(optionsHash);
 			// If the window has no more dialog locks, delete it from the set of locks
 			if (windowFileDialogLocks?.size === 0) {

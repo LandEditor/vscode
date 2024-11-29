@@ -55,6 +55,7 @@ export function mergeEnvironments(
 					break;
 				}
 			}
+
 			const value = other[configKey];
 
 			if (value !== undefined) {
@@ -93,9 +94,11 @@ export function addTerminalEnvironmentKeys(
 	if (version) {
 		env["TERM_PROGRAM_VERSION"] = version;
 	}
+
 	if (shouldSetLangEnvVariable(env, detectLocale)) {
 		env["LANG"] = getLangEnvVariable(locale);
 	}
+
 	env["COLORTERM"] = "truecolor";
 }
 function mergeNonNullKeys(
@@ -105,6 +108,7 @@ function mergeNonNullKeys(
 	if (!other) {
 		return;
 	}
+
 	for (const key of Object.keys(other)) {
 		const value = other[key];
 
@@ -138,6 +142,7 @@ export function shouldSetLangEnvVariable(
 	if (detectLocale === "on") {
 		return true;
 	}
+
 	if (detectLocale === "auto") {
 		const lang = env["LANG"];
 
@@ -148,6 +153,7 @@ export function shouldSetLangEnvVariable(
 				lang.search(/\.euc.+/) === -1)
 		);
 	}
+
 	return false; // 'off'
 }
 export function getLangEnvVariable(locale?: string): string {
@@ -159,6 +165,7 @@ export function getLangEnvVariable(locale?: string): string {
 		// Fallback to en_US if the locale is unknown
 		return "en_US.UTF-8";
 	}
+
 	if (n === 1) {
 		// The local may only contain the language, not the variant, if this is the case guess the
 		// variant such that it can be used as a valid $LANG variable. The language variant chosen
@@ -228,6 +235,7 @@ export function getLangEnvVariable(locale?: string): string {
 		// Ensure the variant is uppercase to be a valid $LANG
 		parts[1] = parts[1].toUpperCase();
 	}
+
 	return parts.join("_") + ".UTF-8";
 }
 export async function getCwd(
@@ -246,6 +254,7 @@ export async function getCwd(
 
 		return sanitizeCwd(resolved || unresolved);
 	}
+
 	let cwd: string | undefined;
 
 	if (!shell.ignoreConfigurationCwd && customCwd) {
@@ -256,6 +265,7 @@ export async function getCwd(
 				logService,
 			);
 		}
+
 		if (customCwd) {
 			if (path.isAbsolute(customCwd)) {
 				cwd = customCwd;
@@ -268,6 +278,7 @@ export async function getCwd(
 	if (!cwd) {
 		cwd = root ? root.fsPath : userHome || "";
 	}
+
 	return sanitizeCwd(cwd);
 }
 async function _resolveCwd(
@@ -284,6 +295,7 @@ async function _resolveCwd(
 			return undefined;
 		}
 	}
+
 	return cwd;
 }
 export type VariableResolver = (str: string) => Promise<string>;
@@ -296,6 +308,7 @@ export function createVariableResolver(
 	if (!configurationResolverService) {
 		return undefined;
 	}
+
 	return (str) =>
 		configurationResolverService.resolveWithEnvironment(
 			env,
@@ -330,6 +343,7 @@ export async function createTerminalEnvironment(
 					allowedEnvFromConfig,
 				);
 			}
+
 			if (shellLaunchConfig.env) {
 				await resolveConfigurationVariables(
 					variableResolver,
@@ -347,12 +361,14 @@ export async function createTerminalEnvironment(
 			// Restore NODE_OPTIONS if it was set
 			if (env["VSCODE_NODE_OPTIONS"]) {
 				env["NODE_OPTIONS"] = env["VSCODE_NODE_OPTIONS"];
+
 				delete env["VSCODE_NODE_OPTIONS"];
 			}
 			// Restore NODE_REPL_EXTERNAL_MODULE if it was set
 			if (env["VSCODE_NODE_REPL_EXTERNAL_MODULE"]) {
 				env["NODE_REPL_EXTERNAL_MODULE"] =
 					env["VSCODE_NODE_REPL_EXTERNAL_MODULE"];
+
 				delete env["VSCODE_NODE_REPL_EXTERNAL_MODULE"];
 			}
 		}
@@ -361,10 +377,12 @@ export async function createTerminalEnvironment(
 		sanitizeProcessEnvironment(env, "VSCODE_IPC_HOOK_CLI");
 		// Merge config (settings) and ShellLaunchConfig environments
 		mergeEnvironments(env, allowedEnvFromConfig);
+
 		mergeEnvironments(env, shellLaunchConfig.env);
 		// Adding other env keys necessary to create the process
 		addTerminalEnvironmentKeys(env, version, language, detectLocale);
 	}
+
 	return env;
 }
 /**
@@ -402,9 +420,11 @@ export async function preparePathForShell(
 			originalPath = originalPath.replace(/\//g, "\\");
 		}
 	}
+
 	if (!executable) {
 		return originalPath;
 	}
+
 	const hasSpace = originalPath.includes(" ");
 
 	const hasParens = originalPath.includes("(") || originalPath.includes(")");
@@ -420,9 +440,11 @@ export async function preparePathForShell(
 	if (isPowerShell && (hasSpace || originalPath.includes("'"))) {
 		return `& '${originalPath.replace(/'/g, "''")}'`;
 	}
+
 	if (hasParens && isPowerShell) {
 		return `& '${originalPath}'`;
 	}
+
 	if (os === OperatingSystem.Windows) {
 		// 17063 is the build number where wsl path was introduced.
 		// Update Windows uriPath to be executed in WSL.
@@ -437,8 +459,10 @@ export async function preparePathForShell(
 			} else if (hasSpace) {
 				return `"${originalPath}"`;
 			}
+
 			return originalPath;
 		}
+
 		const lowerExecutable = executable.toLowerCase();
 
 		if (
@@ -452,8 +476,10 @@ export async function preparePathForShell(
 		} else if (hasSpace) {
 			return `"${originalPath}"`;
 		}
+
 		return originalPath;
 	}
+
 	return escapeNonWindowsPath(originalPath);
 }
 export function getWorkspaceForTerminal(
@@ -472,11 +498,13 @@ export function getWorkspaceForTerminal(
 		// TOOD: last active workspace is known to be unreliable, we should remove this fallback eventually
 		const activeWorkspaceRootUri =
 			historyService.getLastActiveWorkspaceRoot();
+
 		workspaceFolder = activeWorkspaceRootUri
 			? (workspaceContextService.getWorkspaceFolder(
 					activeWorkspaceRootUri,
 				) ?? undefined)
 			: undefined;
 	}
+
 	return workspaceFolder;
 }

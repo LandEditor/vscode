@@ -33,6 +33,7 @@ namespace ISnippetPick {
 }
 interface ISnippetPick extends IQuickPickItem {
 	filepath: URI;
+
 	hint?: true;
 }
 async function computePicks(
@@ -51,6 +52,7 @@ async function computePicks(
 		string,
 		{
 			snippet: ISnippetPick;
+
 			detail: string;
 		}
 	>();
@@ -60,16 +62,19 @@ async function computePicks(
 			// skip extension snippets
 			continue;
 		}
+
 		if (file.isGlobalSnippets) {
 			await file.load();
 			// list scopes for global snippets
 			const names = new Set<string>();
 
 			let source: string | undefined;
+
 			outer: for (const snippet of file.data) {
 				if (!source) {
 					source = snippet.source;
 				}
+
 				for (const scope of snippet.scopes) {
 					const name = languageService.getLanguageName(scope);
 
@@ -84,6 +89,7 @@ async function computePicks(
 					}
 				}
 			}
+
 			const snippet: ISnippetPick = {
 				label: basename(file.location),
 				filepath: file.location,
@@ -96,11 +102,13 @@ async function computePicks(
 								[...names].join(", "),
 							),
 			};
+
 			existing.push(snippet);
 
 			if (!source) {
 				continue;
 			}
+
 			const detail = nls.localize(
 				"detail.label",
 				"({0}) {1}",
@@ -112,20 +120,25 @@ async function computePicks(
 
 			if (lastItem) {
 				snippet.detail = detail;
+
 				lastItem.snippet.detail = lastItem.detail;
 			}
+
 			added.set(basename(file.location), { snippet, detail });
 		} else {
 			// language snippet
 			const mode = basename(file.location).replace(/\.json$/, "");
+
 			existing.push({
 				label: basename(file.location),
 				description: `(${languageService.getLanguageName(mode)})`,
 				filepath: file.location,
 			});
+
 			seen.add(mode);
 		}
 	}
+
 	const dir = userDataProfileService.currentProfile.snippetsHome;
 
 	for (const languageId of languageService.getRegisteredLanguageIds()) {
@@ -141,6 +154,7 @@ async function computePicks(
 			});
 		}
 	}
+
 	existing.sort((a, b) => {
 		const a_ext = extname(a.filepath.path);
 
@@ -154,6 +168,7 @@ async function computePicks(
 			return 1;
 		}
 	});
+
 	future.sort((a, b) => {
 		return a.label.localeCompare(b.label);
 	});
@@ -176,6 +191,7 @@ async function createSnippetFile(
 
 		return joinPath(defaultPath, filename);
 	}
+
 	await fileService.createFolder(defaultPath);
 
 	const input = await quickInputService.input({
@@ -184,6 +200,7 @@ async function createSnippetFile(
 			if (!input) {
 				return nls.localize("bad_name1", "Invalid file name");
 			}
+
 			if (!isValidBasename(input)) {
 				return nls.localize(
 					"bad_name2",
@@ -191,9 +208,11 @@ async function createSnippetFile(
 					input,
 				);
 			}
+
 			if (await fileService.exists(createSnippetUri(input))) {
 				return nls.localize("bad_name3", "'{0}' already exists", input);
 			}
+
 			return undefined;
 		},
 	});
@@ -201,7 +220,9 @@ async function createSnippetFile(
 	if (!input) {
 		return undefined;
 	}
+
 	const resource = createSnippetUri(input);
+
 	await textFileService.write(
 		resource,
 		[
@@ -227,6 +248,7 @@ async function createSnippetFile(
 			"}",
 		].join("\n"),
 	);
+
 	await opener.open(resource);
 
 	return undefined;
@@ -239,6 +261,7 @@ async function createLanguageSnippetFile(
 	if (await fileService.exists(pick.filepath)) {
 		return;
 	}
+
 	const contents = [
 		"{",
 		"\t// Place your snippets for " +
@@ -258,6 +281,7 @@ async function createLanguageSnippetFile(
 		"\t// }",
 		"}",
 	].join("\n");
+
 	await textFileService.write(pick.filepath, contents);
 }
 export class ConfigureSnippetsAction extends SnippetsAction {
@@ -290,6 +314,7 @@ export class ConfigureSnippetsAction extends SnippetsAction {
 			],
 		});
 	}
+
 	async run(accessor: ServicesAccessor): Promise<any> {
 		const snippetService = accessor.get(ISnippetsService);
 
@@ -317,6 +342,7 @@ export class ConfigureSnippetsAction extends SnippetsAction {
 		);
 
 		const existing: QuickPickInput[] = picks.existing;
+
 		type SnippetPick = IQuickPickItem & {
 			uri: URI;
 		} & {
@@ -351,11 +377,13 @@ export class ConfigureSnippetsAction extends SnippetsAction {
 				uri: folder.toResource(".vscode"),
 			});
 		}
+
 		if (existing.length > 0) {
 			existing.unshift({
 				type: "separator",
 				label: nls.localize("group.global", "Existing Snippets"),
 			});
+
 			existing.push({
 				type: "separator",
 				label: nls.localize("new.global.sep", "New Snippets"),
@@ -366,6 +394,7 @@ export class ConfigureSnippetsAction extends SnippetsAction {
 				label: nls.localize("new.global.sep", "New Snippets"),
 			});
 		}
+
 		const pick = await quickInputService.pick(
 			([] as QuickPickInput[]).concat(
 				existing,
@@ -408,6 +437,7 @@ export class ConfigureSnippetsAction extends SnippetsAction {
 					textFileService,
 				);
 			}
+
 			return opener.open(pick.filepath);
 		}
 	}

@@ -19,6 +19,7 @@ export async function request(
 	if (token.isCancellationRequested) {
 		throw canceled();
 	}
+
 	const cancellation = new AbortController();
 
 	const disposable = token.onCancellationRequested(() =>
@@ -53,12 +54,15 @@ export async function request(
 		if (!navigator.onLine) {
 			throw new OfflineError();
 		}
+
 		if (err?.name === "AbortError") {
 			throw canceled();
 		}
+
 		if (err?.name === "TimeoutError") {
 			throw new Error(`Fetch timeout: ${options.timeout}ms`);
 		}
+
 		throw err;
 	} finally {
 		disposable.dispose();
@@ -72,6 +76,7 @@ function getRequestHeaders(options: IRequestOptions) {
 		options.proxyAuthorization
 	) {
 		const headers: HeadersInit = new Headers();
+
 		outer: for (const k in options.headers) {
 			switch (k.toLowerCase()) {
 				case "user-agent":
@@ -80,6 +85,7 @@ function getRequestHeaders(options: IRequestOptions) {
 					// unsafe headers
 					continue outer;
 			}
+
 			const header = options.headers[k];
 
 			if (typeof header === "string") {
@@ -90,6 +96,7 @@ function getRequestHeaders(options: IRequestOptions) {
 				}
 			}
 		}
+
 		if (options.user || options.password) {
 			headers.set(
 				"Authorization",
@@ -97,15 +104,19 @@ function getRequestHeaders(options: IRequestOptions) {
 					btoa(`${options.user || ""}:${options.password || ""}`),
 			);
 		}
+
 		if (options.proxyAuthorization) {
 			headers.set("Proxy-Authorization", options.proxyAuthorization);
 		}
+
 		return headers;
 	}
+
 	return undefined;
 }
 function getResponseHeaders(res: Response): IHeaders {
 	const headers: IHeaders = Object.create(null);
+
 	res.headers.forEach((value, key) => {
 		if (headers[key]) {
 			if (Array.isArray(headers[key])) {

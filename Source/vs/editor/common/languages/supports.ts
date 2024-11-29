@@ -24,6 +24,7 @@ export function createScopedLineTokens(
 	) {
 		lastTokenIndex++;
 	}
+
 	let firstTokenIndex = tokenIndex;
 
 	while (
@@ -32,6 +33,7 @@ export function createScopedLineTokens(
 	) {
 		firstTokenIndex--;
 	}
+
 	return new ScopedLineTokens(
 		context,
 		desiredLanguageId,
@@ -43,12 +45,19 @@ export function createScopedLineTokens(
 }
 export class ScopedLineTokens {
 	_scopedLineTokensBrand: void = undefined;
+
 	public readonly languageIdCodec: ILanguageIdCodec;
+
 	public readonly languageId: string;
+
 	private readonly _actual: LineTokens;
+
 	private readonly _firstTokenIndex: number;
+
 	private readonly _lastTokenIndex: number;
+
 	public readonly firstCharOffset: number;
+
 	private readonly _lastCharOffset: number;
 
 	constructor(
@@ -60,13 +69,20 @@ export class ScopedLineTokens {
 		lastCharOffset: number,
 	) {
 		this._actual = actual;
+
 		this.languageId = languageId;
+
 		this._firstTokenIndex = firstTokenIndex;
+
 		this._lastTokenIndex = lastTokenIndex;
+
 		this.firstCharOffset = firstCharOffset;
+
 		this._lastCharOffset = lastCharOffset;
+
 		this.languageIdCodec = actual.languageIdCodec;
 	}
+
 	public getLineContent(): string {
 		const actualLineContent = this._actual.getLineContent();
 
@@ -75,28 +91,34 @@ export class ScopedLineTokens {
 			this._lastCharOffset,
 		);
 	}
+
 	public getLineLength(): number {
 		return this._lastCharOffset - this.firstCharOffset;
 	}
+
 	public getActualLineContentBefore(offset: number): string {
 		const actualLineContent = this._actual.getLineContent();
 
 		return actualLineContent.substring(0, this.firstCharOffset + offset);
 	}
+
 	public getTokenCount(): number {
 		return this._lastTokenIndex - this._firstTokenIndex;
 	}
+
 	public findTokenIndexAtOffset(offset: number): number {
 		return (
 			this._actual.findTokenIndexAtOffset(offset + this.firstCharOffset) -
 			this._firstTokenIndex
 		);
 	}
+
 	public getStandardTokenType(tokenIndex: number): StandardTokenType {
 		return this._actual.getStandardTokenType(
 			tokenIndex + this._firstTokenIndex,
 		);
 	}
+
 	public toIViewLineTokens(): IViewLineTokens {
 		return this._actual.sliceAndInflate(
 			this.firstCharOffset,

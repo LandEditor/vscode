@@ -17,7 +17,9 @@ class JsDocCompletionItem extends vscode.CompletionItem {
 		public readonly position: vscode.Position,
 	) {
 		super("/** */", vscode.CompletionItemKind.Text);
+
 		this.detail = vscode.l10n.t("JSDoc comment");
+
 		this.sortText = "\0";
 
 		const line = document.lineAt(position.line).text;
@@ -32,6 +34,7 @@ class JsDocCompletionItem extends vscode.CompletionItem {
 			start,
 			position.translate(0, suffix ? suffix[0].length : 0),
 		);
+
 		this.range = { inserting: range, replacing: range };
 	}
 }
@@ -41,6 +44,7 @@ class JsDocCompletionProvider implements vscode.CompletionItemProvider {
 		private readonly language: LanguageDescription,
 		private readonly fileConfigurationManager: FileConfigurationManager,
 	) {}
+
 	public async provideCompletionItems(
 		document: vscode.TextDocument,
 		position: vscode.Position,
@@ -53,14 +57,17 @@ class JsDocCompletionProvider implements vscode.CompletionItemProvider {
 		) {
 			return undefined;
 		}
+
 		const file = this.client.toOpenTsFilePath(document);
 
 		if (!file) {
 			return undefined;
 		}
+
 		if (!this.isPotentiallyValidDocCompletionPosition(document, position)) {
 			return undefined;
 		}
+
 		const response = await this.client.interruptGetErr(async () => {
 			await this.fileConfigurationManager.ensureConfigurationForDocument(
 				document,
@@ -78,6 +85,7 @@ class JsDocCompletionProvider implements vscode.CompletionItemProvider {
 		if (response.type !== "response" || !response.body) {
 			return undefined;
 		}
+
 		const item = new JsDocCompletionItem(document, position);
 		// Workaround for #43619
 		// docCommentTemplate previously returned undefined for empty jsdoc templates.
@@ -87,8 +95,10 @@ class JsDocCompletionProvider implements vscode.CompletionItemProvider {
 		} else {
 			item.insertText = templateToSnippet(response.body.newText);
 		}
+
 		return [item];
 	}
+
 	private isPotentiallyValidDocCompletionPosition(
 		document: vscode.TextDocument,
 		position: vscode.Position,
@@ -111,9 +121,12 @@ class JsDocCompletionProvider implements vscode.CompletionItemProvider {
 export function templateToSnippet(template: string): vscode.SnippetString {
 	// TODO: use append placeholder
 	let snippetIndex = 1;
+
 	template = template.replace(/\$/g, "\\$"); // CodeQL [SM02383] This is only used for text which is put into the editor. It is not for rendered html
 	template = template.replace(/^[ \t]*(?=(\/|[ ]\*))/gm, "");
+
 	template = template.replace(/^(\/\*\*\s*\*[ ]*)$/m, (x) => x + `\$0`);
+
 	template = template.replace(
 		/\* @param([ ]\{\S+\})?\s+(\S+)[ \t]*$/gm,
 		(_param, type, post) => {
@@ -124,11 +137,13 @@ export function templateToSnippet(template: string): vscode.SnippetString {
 			} else if (type) {
 				out += type + " ";
 			}
+
 			out += post + ` \${${snippetIndex++}}`;
 
 			return out;
 		},
 	);
+
 	template = template.replace(
 		/\* @returns[ \t]*$/gm,
 		`* @returns \${${snippetIndex++}}`,

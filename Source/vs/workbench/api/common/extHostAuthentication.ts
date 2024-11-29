@@ -25,19 +25,25 @@ export const IExtHostAuthentication = createDecorator<IExtHostAuthentication>(
 );
 interface ProviderWithMetadata {
 	label: string;
+
 	provider: vscode.AuthenticationProvider;
+
 	options: vscode.AuthenticationProviderOptions;
 }
 export class ExtHostAuthentication implements ExtHostAuthenticationShape {
 	declare _serviceBrand: undefined;
+
 	private _proxy: MainThreadAuthenticationShape;
+
 	private _authenticationProviders: Map<string, ProviderWithMetadata> =
 		new Map<string, ProviderWithMetadata>();
+
 	private _onDidChangeSessions = new Emitter<
 		vscode.AuthenticationSessionsChangeEvent & {
 			extensionIdFilter?: string[];
 		}
 	>();
+
 	private _getSessionTaskSingler = new TaskSingler<
 		vscode.AuthenticationSession | undefined
 	>();
@@ -67,6 +73,7 @@ export class ExtHostAuthentication implements ExtHostAuthenticationShape {
 			).map((e) => ({ provider: e.provider })),
 		);
 	}
+
 	async getSession(
 		requestingExtension: IExtensionDescription,
 		providerId: string,
@@ -140,19 +147,23 @@ export class ExtHostAuthentication implements ExtHostAuthenticationShape {
 			},
 		);
 	}
+
 	async getAccounts(providerId: string) {
 		await this._proxy.$ensureProvider(providerId);
 
 		return await this._proxy.$getAccounts(providerId);
 	}
+
 	async removeSession(providerId: string, sessionId: string): Promise<void> {
 		const providerData = this._authenticationProviders.get(providerId);
 
 		if (!providerData) {
 			return this._proxy.$removeSession(providerId, sessionId);
 		}
+
 		return providerData.provider.removeSession(sessionId);
 	}
+
 	registerAuthenticationProvider(
 		id: string,
 		label: string,
@@ -164,6 +175,7 @@ export class ExtHostAuthentication implements ExtHostAuthenticationShape {
 				`An authentication provider with id '${id}' is already registered.`,
 			);
 		}
+
 		this._authenticationProviders.set(id, {
 			label,
 			provider,
@@ -173,6 +185,7 @@ export class ExtHostAuthentication implements ExtHostAuthenticationShape {
 		const listener = provider.onDidChangeSessions((e) =>
 			this._proxy.$sendDidChangeSessions(id, e),
 		);
+
 		this._proxy.$registerAuthenticationProvider(
 			id,
 			label,
@@ -181,10 +194,13 @@ export class ExtHostAuthentication implements ExtHostAuthenticationShape {
 
 		return new Disposable(() => {
 			listener.dispose();
+
 			this._authenticationProviders.delete(id);
+
 			this._proxy.$unregisterAuthenticationProvider(id);
 		});
 	}
+
 	async $createSession(
 		providerId: string,
 		scopes: string[],
@@ -195,20 +211,24 @@ export class ExtHostAuthentication implements ExtHostAuthenticationShape {
 		if (providerData) {
 			return await providerData.provider.createSession(scopes, options);
 		}
+
 		throw new Error(
 			`Unable to find authentication provider with handle: ${providerId}`,
 		);
 	}
+
 	async $removeSession(providerId: string, sessionId: string): Promise<void> {
 		const providerData = this._authenticationProviders.get(providerId);
 
 		if (providerData) {
 			return await providerData.provider.removeSession(sessionId);
 		}
+
 		throw new Error(
 			`Unable to find authentication provider with handle: ${providerId}`,
 		);
 	}
+
 	async $getSessions(
 		providerId: string,
 		scopes: ReadonlyArray<string> | undefined,
@@ -219,6 +239,7 @@ export class ExtHostAuthentication implements ExtHostAuthenticationShape {
 		if (providerData) {
 			return await providerData.provider.getSessions(scopes, options);
 		}
+
 		throw new Error(
 			`Unable to find authentication provider with handle: ${providerId}`,
 		);
@@ -235,6 +256,7 @@ export class ExtHostAuthentication implements ExtHostAuthenticationShape {
 				extensionIdFilter,
 			});
 		}
+
 		return Promise.resolve();
 	}
 }
@@ -247,9 +269,11 @@ class TaskSingler<T> {
 		if (inFlight) {
 			return inFlight;
 		}
+
 		const promise = promiseFactory().finally(() =>
 			this._inFlightPromises.delete(key),
 		);
+
 		this._inFlightPromises.set(key, promise);
 
 		return promise;

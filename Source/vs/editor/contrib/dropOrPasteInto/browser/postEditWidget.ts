@@ -51,11 +51,13 @@ import "./postEditWidget.css";
 
 interface EditSet<Edit extends DocumentPasteEdit | DocumentDropEdit> {
 	readonly activeEditIndex: number;
+
 	readonly allEdits: ReadonlyArray<Edit>;
 }
 
 interface ShowCommand {
 	readonly id: string;
+
 	readonly label: string;
 }
 
@@ -66,9 +68,11 @@ class PostEditWidget<T extends DocumentPasteEdit | DocumentDropEdit>
 	private static readonly baseId = "editor.widget.postEditWidget";
 
 	readonly allowEditorOverflow = true;
+
 	readonly suppressMouseDown = true;
 
 	private domNode!: HTMLElement;
+
 	private button!: Button;
 
 	private readonly visibleContext: IContextKey<boolean>;
@@ -93,10 +97,13 @@ class PostEditWidget<T extends DocumentPasteEdit | DocumentDropEdit>
 		this.create();
 
 		this.visibleContext = visibleContext.bindTo(contextKeyService);
+
 		this.visibleContext.set(true);
+
 		this._register(toDisposable(() => this.visibleContext.reset()));
 
 		this.editor.addContentWidget(this);
+
 		this.editor.layoutContentWidget(this);
 
 		this._register(
@@ -123,6 +130,7 @@ class PostEditWidget<T extends DocumentPasteEdit | DocumentDropEdit>
 		const binding = this._keybindingService
 			.lookupKeybinding(this.showCommand.id)
 			?.getLabel();
+
 		this.button.element.title =
 			this.showCommand.label + (binding ? ` (${binding})` : "");
 	}
@@ -135,6 +143,7 @@ class PostEditWidget<T extends DocumentPasteEdit | DocumentDropEdit>
 				supportIcons: true,
 			}),
 		);
+
 		this.button.label = "$(insert)";
 
 		this._register(
@@ -258,6 +267,7 @@ export class PostEditWidgetManager<
 			}
 
 			await model.undo();
+
 			this.applyEditAndShowIfNeeded(
 				ranges,
 				{ activeEditIndex: newEditIndex, allEdits: edits.allEdits },
@@ -333,6 +343,7 @@ export class PostEditWidgetManager<
 				combinedWorkspaceEdit,
 				{ editor: this._editor, token },
 			);
+
 			editRange = model.getDecorationRange(editTrackingDecoration[0]);
 		} catch (e) {
 			return handleError(

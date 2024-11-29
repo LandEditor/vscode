@@ -17,8 +17,11 @@ import {
 
 export class TimestampWidget extends Disposable {
 	private _date: HTMLElement;
+
 	private _timestamp: Date | undefined;
+
 	private _useRelativeTime: boolean;
+
 	private hover: IManagedHover;
 
 	constructor(
@@ -28,9 +31,13 @@ export class TimestampWidget extends Disposable {
 		timeStamp?: Date,
 	) {
 		super();
+
 		this._date = dom.append(container, dom.$("span.timestamp"));
+
 		this._date.style.display = "none";
+
 		this._useRelativeTime = this.useRelativeTimeSetting;
+
 		this.hover = this._register(
 			hoverService.setupManagedHover(
 				getDefaultHoverDelegate("mouse"),
@@ -38,13 +45,16 @@ export class TimestampWidget extends Disposable {
 				"",
 			),
 		);
+
 		this.setTimestamp(timeStamp);
 	}
+
 	private get useRelativeTimeSetting(): boolean {
 		return this.configurationService.getValue<ICommentsConfiguration>(
 			COMMENTS_SECTION,
 		).useRelativeTime;
 	}
+
 	public async setTimestamp(timestamp: Date | undefined) {
 		if (
 			timestamp !== this._timestamp ||
@@ -52,12 +62,16 @@ export class TimestampWidget extends Disposable {
 		) {
 			this.updateDate(timestamp);
 		}
+
 		this._timestamp = timestamp;
+
 		this._useRelativeTime = this.useRelativeTimeSetting;
 	}
+
 	private updateDate(timestamp?: Date) {
 		if (!timestamp) {
 			this._date.textContent = "";
+
 			this._date.style.display = "none";
 		} else if (
 			timestamp !== this._timestamp ||
@@ -71,17 +85,22 @@ export class TimestampWidget extends Disposable {
 
 			if (this.useRelativeTimeSetting) {
 				textContent = this.getRelative(timestamp);
+
 				tooltip = this.getDateString(timestamp);
 			} else {
 				textContent = this.getDateString(timestamp);
 			}
+
 			this._date.textContent = textContent;
+
 			this.hover.update(tooltip ?? "");
 		}
 	}
+
 	private getRelative(date: Date): string {
 		return fromNow(date, true, true);
 	}
+
 	private getDateString(date: Date): string {
 		return date.toLocaleString(language);
 	}

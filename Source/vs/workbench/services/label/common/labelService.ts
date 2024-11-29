@@ -171,9 +171,11 @@ class ResourceLabelFormattersHandler implements IWorkbenchContribution {
 					if (typeof formatter.formatting.label !== "string") {
 						formatter.formatting.label = "${authority}${path}";
 					}
+
 					if (typeof formatter.formatting.separator !== `string`) {
 						formatter.formatting.separator = sep;
 					}
+
 					if (
 						!isProposedApiEnabled(
 							added.description,
@@ -183,12 +185,14 @@ class ResourceLabelFormattersHandler implements IWorkbenchContribution {
 					) {
 						formatter.formatting.workspaceTooltip = undefined; // workspaceTooltip is only proposed
 					}
+
 					this.formattersDisposables.set(
 						formatter,
 						labelService.registerFormatter(formatter),
 					);
 				}
 			}
+
 			for (const removed of delta.removed) {
 				for (const formatter of removed.value) {
 					dispose(this.formattersDisposables.get(formatter));
@@ -207,18 +211,26 @@ Registry.as<IWorkbenchContributionsRegistry>(
 const FORMATTER_CACHE_SIZE = 50;
 interface IStoredFormatters {
 	formatters?: ResourceLabelFormatter[];
+
 	i?: number;
 }
 export class LabelService extends Disposable implements ILabelService {
 	declare readonly _serviceBrand: undefined;
+
 	private formatters: ResourceLabelFormatter[];
+
 	private readonly _onDidChangeFormatters = this._register(
 		new Emitter<IFormatterChangeEvent>({ leakWarningThreshold: 400 }),
 	);
+
 	readonly onDidChangeFormatters = this._onDidChangeFormatters.event;
+
 	private readonly storedFormattersMemento: Memento;
+
 	private readonly storedFormatters: IStoredFormatters;
+
 	private os: OperatingSystem;
+
 	private userHome: URI | undefined;
 
 	constructor(
@@ -241,6 +253,7 @@ export class LabelService extends Disposable implements ILabelService {
 		// and by taking the local `userHome` if we run on a local
 		// file scheme.
 		this.os = OS;
+
 		this.userHome =
 			pathService.defaultUriScheme === Schemas.file
 				? this.pathService.userHome({ preferLocal: true })
@@ -250,21 +263,26 @@ export class LabelService extends Disposable implements ILabelService {
 			"cachedResourceLabelFormatters2",
 			storageService,
 		));
+
 		this.storedFormatters = memento.getMemento(
 			StorageScope.PROFILE,
 			StorageTarget.MACHINE,
 		);
+
 		this.formatters = this.storedFormatters?.formatters?.slice() || [];
 		// Remote environment is potentially long running
 		this.resolveRemoteEnvironment();
 	}
+
 	private async resolveRemoteEnvironment(): Promise<void> {
 		// OS
 		const env = await this.remoteAgentService.getEnvironment();
+
 		this.os = env?.os ?? OS;
 		// User home
 		this.userHome = await this.pathService.userHome();
 	}
+
 	findFormatting(resource: URI): ResourceLabelFormatting | undefined {
 		let bestResult: ResourceLabelFormatter | undefined;
 
@@ -278,9 +296,11 @@ export class LabelService extends Disposable implements ILabelService {
 
 					continue;
 				}
+
 				if (!formatter.authority) {
 					continue;
 				}
+
 				if (
 					match(
 						formatter.authority.toLowerCase(),
@@ -298,13 +318,17 @@ export class LabelService extends Disposable implements ILabelService {
 				}
 			}
 		}
+
 		return bestResult ? bestResult.formatting : undefined;
 	}
+
 	getUriLabel(
 		resource: URI,
 		options: {
 			relative?: boolean;
+
 			noPrefix?: boolean;
+
 			separator?: "/" | "\\";
 		} = {},
 	): string {
@@ -314,19 +338,23 @@ export class LabelService extends Disposable implements ILabelService {
 			// mixin separator if defined from the outside
 			formatting = { ...formatting, separator: options.separator };
 		}
+
 		const label = this.doGetUriLabel(resource, formatting, options);
 		// Without formatting we still need to support the separator
 		// as provided in options (https://github.com/microsoft/vscode/issues/130019)
 		if (!formatting && options.separator) {
 			return label.replace(sepRegexp, options.separator);
 		}
+
 		return label;
 	}
+
 	private doGetUriLabel(
 		resource: URI,
 		formatting?: ResourceLabelFormatting,
 		options: {
 			relative?: boolean;
+
 			noPrefix?: boolean;
 		} = {},
 	): string {
@@ -373,6 +401,7 @@ export class LabelService extends Disposable implements ILabelService {
 					);
 				}
 			}
+
 			if (folder) {
 				const folderLabel = this.formatUri(
 					folder.uri,
@@ -394,6 +423,7 @@ export class LabelService extends Disposable implements ILabelService {
 				) {
 					overlap++;
 				}
+
 				if (
 					!relativeLabel[overlap] ||
 					relativeLabel[overlap] === formatting.separator
@@ -412,16 +442,19 @@ export class LabelService extends Disposable implements ILabelService {
 				if (hasMultipleRoots && !options.noPrefix) {
 					const rootName =
 						folder?.name ?? basenameOrAuthority(folder.uri);
+
 					relativeLabel = relativeLabel
 						? `${rootName} • ${relativeLabel}`
 						: rootName;
 				}
+
 				return relativeLabel;
 			}
 		}
 		// Absolute label
 		return this.formatUri(resource, formatting, options.noPrefix);
 	}
+
 	getUriBasenameLabel(resource: URI): string {
 		const formatting = this.findFormatting(resource);
 
@@ -436,8 +469,10 @@ export class LabelService extends Disposable implements ILabelService {
 		} else {
 			pathLib = this.os === OperatingSystem.Windows ? win32 : posix;
 		}
+
 		return pathLib.basename(label);
 	}
+
 	getWorkspaceLabel(
 		workspace:
 			| IWorkspace
@@ -457,6 +492,7 @@ export class LabelService extends Disposable implements ILabelService {
 			) {
 				return this.getWorkspaceLabel(identifier, options);
 			}
+
 			return "";
 		}
 		// Workspace: Single Folder (as URI)
@@ -471,8 +507,10 @@ export class LabelService extends Disposable implements ILabelService {
 		if (isWorkspaceIdentifier(workspace)) {
 			return this.doGetWorkspaceLabel(workspace.configPath, options);
 		}
+
 		return "";
 	}
+
 	private doGetWorkspaceLabel(
 		workspaceUri: URI,
 		options?: {
@@ -496,6 +534,7 @@ export class LabelService extends Disposable implements ILabelService {
 				filename.length - WORKSPACE_EXTENSION.length - 1,
 			);
 		}
+
 		let label: string;
 
 		switch (options?.verbose) {
@@ -518,11 +557,14 @@ export class LabelService extends Disposable implements ILabelService {
 
 				break;
 		}
+
 		if (options?.verbose === Verbosity.SHORT) {
 			return label; // skip suffix for short label
 		}
+
 		return this.appendWorkspaceSuffix(label, workspaceUri);
 	}
+
 	private doGetSingleFolderWorkspaceLabel(
 		folderUri: URI,
 		options?: {
@@ -544,26 +586,32 @@ export class LabelService extends Disposable implements ILabelService {
 
 				break;
 		}
+
 		if (options?.verbose === Verbosity.SHORT) {
 			return label; // skip suffix for short label
 		}
+
 		return this.appendWorkspaceSuffix(label, folderUri);
 	}
+
 	getSeparator(scheme: string, authority?: string): "/" | "\\" {
 		const formatter = this.findFormatting(URI.from({ scheme, authority }));
 
 		return formatter?.separator || posix.sep;
 	}
+
 	getHostLabel(scheme: string, authority?: string): string {
 		const formatter = this.findFormatting(URI.from({ scheme, authority }));
 
 		return formatter?.workspaceSuffix || authority || "";
 	}
+
 	getHostTooltip(scheme: string, authority?: string): string | undefined {
 		const formatter = this.findFormatting(URI.from({ scheme, authority }));
 
 		return formatter?.workspaceTooltip;
 	}
+
 	registerCachedFormatter(formatter: ResourceLabelFormatter): IDisposable {
 		const list = (this.storedFormatters.formatters ??= []);
 
@@ -576,20 +624,25 @@ export class LabelService extends Disposable implements ILabelService {
 		if (replace === -1 && list.length >= FORMATTER_CACHE_SIZE) {
 			replace = FORMATTER_CACHE_SIZE - 1; // at max capacity, replace the last element
 		}
+
 		if (replace === -1) {
 			list.unshift(formatter);
 		} else {
 			for (let i = replace; i > 0; i--) {
 				list[i] = list[i - 1];
 			}
+
 			list[0] = formatter;
 		}
+
 		this.storedFormattersMemento.saveMemento();
 
 		return this.registerFormatter(formatter);
 	}
+
 	registerFormatter(formatter: ResourceLabelFormatter): IDisposable {
 		this.formatters.push(formatter);
+
 		this._onDidChangeFormatters.fire({ scheme: formatter.scheme });
 
 		return {
@@ -597,10 +650,12 @@ export class LabelService extends Disposable implements ILabelService {
 				this.formatters = this.formatters.filter(
 					(f) => f !== formatter,
 				);
+
 				this._onDidChangeFormatters.fire({ scheme: formatter.scheme });
 			},
 		};
 	}
+
 	private formatUri(
 		resource: URI,
 		formatting: ResourceLabelFormatting,
@@ -623,6 +678,7 @@ export class LabelService extends Disposable implements ILabelService {
 							? resource.authority
 							: resource.authority.slice(i + 1);
 					}
+
 					case "path":
 						return formatting.stripPathStartingSeparator
 							? resource.path.slice(
@@ -646,6 +702,7 @@ export class LabelService extends Disposable implements ILabelService {
 								} catch {}
 							}
 						}
+
 						return "";
 					}
 				}
@@ -658,16 +715,20 @@ export class LabelService extends Disposable implements ILabelService {
 		) {
 			label = label.charAt(1).toUpperCase() + label.substr(2);
 		}
+
 		if (formatting.tildify && !forceNoTildify) {
 			if (this.userHome) {
 				label = tildify(label, this.userHome.fsPath, this.os);
 			}
 		}
+
 		if (formatting.authorityPrefix && resource.authority) {
 			label = formatting.authorityPrefix + label;
 		}
+
 		return label.replace(sepRegexp, formatting.separator);
 	}
+
 	private appendWorkspaceSuffix(label: string, uri: URI): string {
 		const formatting = this.findFormatting(uri);
 

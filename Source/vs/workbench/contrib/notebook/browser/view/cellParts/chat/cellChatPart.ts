@@ -14,19 +14,24 @@ export class CellChatPart extends CellContentPart {
 	get activeCell() {
 		return this.currentCell;
 	}
+
 	constructor(
 		_notebookEditor: INotebookEditorDelegate,
 		_partContainer: HTMLElement,
 	) {
 		super();
 	}
+
 	override didRenderCell(element: ICellViewModel): void {
 		super.didRenderCell(element);
 	}
+
 	override unrenderCell(element: ICellViewModel): void {
 		super.unrenderCell(element);
 	}
+
 	override updateInternalLayoutNow(element: ICellViewModel): void {}
+
 	override dispose() {
 		super.dispose();
 	}

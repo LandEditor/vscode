@@ -22,10 +22,12 @@ import { documentationToMarkdown } from "./util/textRendering";
 
 class TypeScriptHoverProvider implements vscode.HoverProvider {
 	private lastHoverAndLevel: [vscode.Hover, number] | undefined;
+
 	public constructor(
 		private readonly client: ITypeScriptServiceClient,
 		private readonly fileConfigurationManager: FileConfigurationManager,
 	) {}
+
 	public async provideHover(
 		document: vscode.TextDocument,
 		position: vscode.Position,
@@ -37,6 +39,7 @@ class TypeScriptHoverProvider implements vscode.HoverProvider {
 		if (!filepath) {
 			return undefined;
 		}
+
 		const enableExpandableHover = vscode.workspace
 			.getConfiguration("typescript")
 			.get("experimental.expandableHover");
@@ -50,6 +53,7 @@ class TypeScriptHoverProvider implements vscode.HoverProvider {
 					(context?.verbosityDelta ?? 0),
 			);
 		}
+
 		const args = {
 			...typeConverters.Position.toFileLocationRequestArgs(
 				filepath,
@@ -70,6 +74,7 @@ class TypeScriptHoverProvider implements vscode.HoverProvider {
 		if (response.type !== "response" || !response.body) {
 			return undefined;
 		}
+
 		const contents = this.getContents(
 			document.uri,
 			response.body,
@@ -92,8 +97,10 @@ class TypeScriptHoverProvider implements vscode.HoverProvider {
 		if (verbosityLevel !== undefined) {
 			this.lastHoverAndLevel = [hover, verbosityLevel];
 		}
+
 		return hover;
 	}
+
 	private getContents(
 		resource: vscode.Uri,
 		data: Proto.QuickInfoResponseBody,
@@ -120,7 +127,9 @@ class TypeScriptHoverProvider implements vscode.HoverProvider {
 					}),
 				);
 			}
+
 			displayParts.push(data.displayString);
+
 			parts.push(
 				new vscode.MarkdownString().appendCodeblock(
 					displayParts.join(" "),
@@ -128,16 +137,19 @@ class TypeScriptHoverProvider implements vscode.HoverProvider {
 				),
 			);
 		}
+
 		const md = documentationToMarkdown(
 			data.documentation,
 			data.tags,
 			this.client,
 			resource,
 		);
+
 		parts.push(md);
 
 		return parts;
 	}
+
 	private getPreviousLevel(previousHover: vscode.Hover | undefined): number {
 		if (
 			previousHover &&
@@ -146,6 +158,7 @@ class TypeScriptHoverProvider implements vscode.HoverProvider {
 		) {
 			return this.lastHoverAndLevel[1];
 		}
+
 		return 0;
 	}
 }

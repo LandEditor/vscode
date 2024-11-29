@@ -18,6 +18,7 @@ import {
 registerThemingParticipant((theme, collector) => {
 	// Background (helps for subpixel-antialiasing on Windows)
 	const workbenchBackground = WORKBENCH_BACKGROUND(theme);
+
 	collector.addRule(
 		`.monaco-workbench { background-color: ${workbenchBackground}; }`,
 	);
@@ -42,9 +43,12 @@ registerThemingParticipant((theme, collector) => {
 
 			if (!metaElement) {
 				metaElement = createMetaElement();
+
 				metaElement.name = "theme-color";
+
 				metaElement.id = metaElementId;
 			}
+
 			metaElement.content = titleBackground.toString();
 		}
 	}

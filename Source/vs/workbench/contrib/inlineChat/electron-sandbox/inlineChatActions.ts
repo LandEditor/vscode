@@ -50,6 +50,7 @@ export class HoldToSpeak extends AbstractInlineChatAction {
 			},
 		});
 	}
+
 	override runInlineChatCommand(
 		accessor: ServicesAccessor,
 		ctrl: InlineChatController,
@@ -80,11 +81,13 @@ function holdForSpeech(
 	) {
 		return;
 	}
+
 	const holdMode = keybindingService.enableKeybindingHoldMode(action.desc.id);
 
 	if (!holdMode) {
 		return;
 	}
+
 	let listening = false;
 
 	const handle = disposableTimeout(() => {
@@ -92,8 +95,10 @@ function holdForSpeech(
 		commandService.executeCommand(StartVoiceChatAction.ID, {
 			voice: { disableTimeout: true },
 		} satisfies IChatExecuteActionContext);
+
 		listening = true;
 	}, VOICE_KEY_HOLD_THRESHOLD);
+
 	holdMode.finally(() => {
 		if (listening) {
 			commandService
@@ -102,6 +107,7 @@ function holdForSpeech(
 					ctrl.acceptInput();
 				});
 		}
+
 		handle.dispose();
 	});
 }

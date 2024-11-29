@@ -50,20 +50,28 @@ import {
 
 type RemoteTunnelEnablementClassification = {
 	owner: "aeschli";
+
 	comment: "Reporting when Remote Tunnel access is turned on or off";
+
 	enabled?: {
 		classification: "SystemMetaData";
+
 		purpose: "FeatureInsight";
+
 		comment: "Flag indicating if Remote Tunnel Access is enabled or not";
 	};
+
 	service?: {
 		classification: "SystemMetaData";
+
 		purpose: "FeatureInsight";
+
 		comment: "Flag indicating if Remote Tunnel Access is installed as a service";
 	};
 };
 type RemoteTunnelEnablementEvent = {
 	enabled: boolean;
+
 	service: boolean;
 };
 
@@ -86,16 +94,23 @@ export class RemoteTunnelService
 	implements IRemoteTunnelService
 {
 	declare readonly _serviceBrand: undefined;
+
 	private readonly _onDidTokenFailedEmitter = new Emitter<
 		IRemoteTunnelSession | undefined
 	>();
+
 	public readonly onDidTokenFailed = this._onDidTokenFailedEmitter.event;
+
 	private readonly _onDidChangeTunnelStatusEmitter =
 		new Emitter<TunnelStatus>();
+
 	public readonly onDidChangeTunnelStatus =
 		this._onDidChangeTunnelStatusEmitter.event;
+
 	private readonly _onDidChangeModeEmitter = new Emitter<TunnelMode>();
+
 	public readonly onDidChangeMode = this._onDidChangeModeEmitter.event;
+
 	private readonly _logger: ILogger;
 	/**
 	 * "Mode" in the terminal state we want to get to -- started, stopped, and
@@ -105,10 +120,15 @@ export class RemoteTunnelService
 	 * state that reflects the desired `mode`.
 	 */
 	private _mode: TunnelMode = INACTIVE_TUNNEL_MODE;
+
 	private _tunnelProcess: CancelablePromise<any> | undefined;
+
 	private _tunnelStatus: TunnelStatus;
+
 	private _startTunnelProcessDelayer: Delayer<void>;
+
 	private _tunnelCommand: string | undefined;
+
 	private _initialized = false;
 
 	constructor(
@@ -128,13 +148,16 @@ export class RemoteTunnelService
 		private readonly storageService: IStorageService,
 	) {
 		super();
+
 		this._logger = this._register(
 			loggerService.createLogger(
 				joinPath(environmentService.logsHome, `${LOG_ID}.log`),
 				{ id: LOG_ID, name: LOGGER_NAME },
 			),
 		);
+
 		this._startTunnelProcessDelayer = new Delayer(100);
+
 		this._register(
 			this._logger.onDidChangeLogLevel((l) =>
 				this._logger.info(
@@ -142,13 +165,17 @@ export class RemoteTunnelService
 				),
 			),
 		);
+
 		this._register(
 			sharedProcessLifecycleService.onWillShutdown(() => {
 				this._tunnelProcess?.cancel();
+
 				this._tunnelProcess = undefined;
+
 				this.dispose();
 			}),
 		);
+
 		this._register(
 			configurationService.onDidChangeConfiguration((e) => {
 				if (
@@ -162,22 +189,31 @@ export class RemoteTunnelService
 				}
 			}),
 		);
+
 		this._mode = this._restoreMode();
+
 		this._tunnelStatus = TunnelStates.uninitialized;
 	}
+
 	public async getTunnelStatus(): Promise<TunnelStatus> {
 		return this._tunnelStatus;
 	}
+
 	private setTunnelStatus(tunnelStatus: TunnelStatus) {
 		this._tunnelStatus = tunnelStatus;
+
 		this._onDidChangeTunnelStatusEmitter.fire(tunnelStatus);
 	}
+
 	private setMode(mode: TunnelMode) {
 		if (isSameMode(this._mode, mode)) {
 			return;
 		}
+
 		this._mode = mode;
+
 		this._storeMode(mode);
+
 		this._onDidChangeModeEmitter.fire(this._mode);
 
 		if (mode.active) {
@@ -194,14 +230,18 @@ export class RemoteTunnelService
 			this._logger.info(`Session reset`);
 		}
 	}
+
 	getMode(): Promise<TunnelMode> {
 		return Promise.resolve(this._mode);
 	}
+
 	async initialize(mode: TunnelMode): Promise<TunnelStatus> {
 		if (this._initialized) {
 			return this._tunnelStatus;
 		}
+
 		this._initialized = true;
+
 		this.setMode(mode);
 
 		try {
@@ -211,8 +251,10 @@ export class RemoteTunnelService
 		} catch (e) {
 			this._logger.error(e);
 		}
+
 		return this._tunnelStatus;
 	}
+
 	private readonly defaultOnOutput = (a: string, isErr: boolean) => {
 		if (isErr) {
 			this._logger.error(a);
@@ -220,6 +262,7 @@ export class RemoteTunnelService
 			this._logger.info(a);
 		}
 	};
+
 	private getTunnelCommandLocation() {
 		if (!this._tunnelCommand) {
 			let binParentLocation;
@@ -237,14 +280,17 @@ export class RemoteTunnelService
 					dirname(this.environmentService.appRoot),
 				);
 			}
+
 			this._tunnelCommand = join(
 				binParentLocation,
 				"bin",
 				`${this.productService.tunnelApplicationName}${isWindows ? ".exe" : ""}`,
 			);
 		}
+
 		return this._tunnelCommand;
 	}
+
 	async startTunnel(mode: ActiveTunnelMode): Promise<TunnelStatus> {
 		if (
 			isSameMode(this._mode, mode) &&
@@ -252,6 +298,7 @@ export class RemoteTunnelService
 		) {
 			return this._tunnelStatus;
 		}
+
 		this.setMode(mode);
 
 		try {
@@ -261,16 +308,21 @@ export class RemoteTunnelService
 		} catch (e) {
 			this._logger.error(e);
 		}
+
 		return this._tunnelStatus;
 	}
+
 	async stopTunnel(): Promise<void> {
 		if (this._tunnelProcess) {
 			this._tunnelProcess.cancel();
+
 			this._tunnelProcess = undefined;
 		}
+
 		if (this._mode.active) {
 			// Be careful to only uninstall the service if we're the ones who installed it:
 			const needsServiceUninstall = this._mode.asService;
+
 			this.setMode(INACTIVE_TUNNEL_MODE);
 
 			try {
@@ -284,13 +336,16 @@ export class RemoteTunnelService
 				this._logger.error(e);
 			}
 		}
+
 		try {
 			await this.runCodeTunnelCommand("stop", ["kill"]);
 		} catch (e) {
 			this._logger.error(e);
 		}
+
 		this.setTunnelStatus(TunnelStates.disconnected());
 	}
+
 	private async updateTunnelProcess(): Promise<void> {
 		this.telemetryService.publicLog2<
 			RemoteTunnelEnablementEvent,
@@ -302,8 +357,10 @@ export class RemoteTunnelService
 
 		if (this._tunnelProcess) {
 			this._tunnelProcess.cancel();
+
 			this._tunnelProcess = undefined;
 		}
+
 		let output = "";
 
 		let isServiceInstalled = false;
@@ -314,6 +371,7 @@ export class RemoteTunnelService
 			} else {
 				output += a;
 			}
+
 			if (
 				!this.environmentService.isBuilt &&
 				a.startsWith("   Compiling")
@@ -334,6 +392,7 @@ export class RemoteTunnelService
 			["status"],
 			onOutput,
 		);
+
 		this._tunnelProcess = statusProcess;
 
 		try {
@@ -346,6 +405,7 @@ export class RemoteTunnelService
 			// added by cargo to the output.
 			let status: {
 				service_installed: boolean;
+
 				tunnel: object | null;
 			};
 
@@ -360,11 +420,14 @@ export class RemoteTunnelService
 				this._logger.error(
 					`Could not parse status output: ${JSON.stringify(output.trim())}`,
 				);
+
 				this.setTunnelStatus(TunnelStates.disconnected());
 
 				return;
 			}
+
 			isServiceInstalled = status.service_installed;
+
 			this._logger.info(
 				status.tunnel
 					? "Other tunnel running, attaching..."
@@ -379,6 +442,7 @@ export class RemoteTunnelService
 			}
 		} catch (e) {
 			this._logger.error(e);
+
 			this.setTunnelStatus(TunnelStates.disconnected());
 
 			return;
@@ -387,10 +451,12 @@ export class RemoteTunnelService
 				this._tunnelProcess = undefined;
 			}
 		}
+
 		const session = this._mode.active ? this._mode.session : undefined;
 
 		if (session && session.token) {
 			const token = session.token;
+
 			this.setTunnelStatus(
 				TunnelStates.connecting(
 					localize(
@@ -409,6 +475,7 @@ export class RemoteTunnelService
 
 			const onLoginOutput = (a: string, isErr: boolean) => {
 				a = a.replaceAll(token, "*".repeat(4));
+
 				onOutput(a, isErr);
 			};
 
@@ -425,6 +492,7 @@ export class RemoteTunnelService
 				onLoginOutput,
 				{ VSCODE_CLI_ACCESS_TOKEN: token },
 			);
+
 			this._tunnelProcess = loginProcess;
 
 			try {
@@ -435,13 +503,17 @@ export class RemoteTunnelService
 				}
 			} catch (e) {
 				this._logger.error(e);
+
 				this._tunnelProcess = undefined;
+
 				this._onDidTokenFailedEmitter.fire(session);
+
 				this.setTunnelStatus(TunnelStates.disconnected(session));
 
 				return;
 			}
 		}
+
 		const hostName = this._getTunnelName();
 
 		if (hostName) {
@@ -467,6 +539,7 @@ export class RemoteTunnelService
 				),
 			);
 		}
+
 		const args = [
 			"--accept-server-license-terms",
 			"--log",
@@ -478,6 +551,7 @@ export class RemoteTunnelService
 		} else {
 			args.push("--random-name");
 		}
+
 		let serviceInstallFailed = false;
 
 		if (this._mode.active && this._mode.asService && !isServiceInstalled) {
@@ -488,8 +562,10 @@ export class RemoteTunnelService
 			serviceInstallFailed =
 				(await this.installTunnelService(args)) === false;
 		}
+
 		return this.serverOrAttachTunnel(session, args, serviceInstallFailed);
 	}
+
 	private async installTunnelService(args: readonly string[]) {
 		let status: number;
 
@@ -501,20 +577,26 @@ export class RemoteTunnelService
 			]);
 		} catch (e) {
 			this._logger.error(e);
+
 			status = 1;
 		}
+
 		if (status !== 0) {
 			const msg = localize(
 				"remoteTunnelService.serviceInstallFailed",
 				"Failed to install tunnel as a service, starting in session...",
 			);
+
 			this._logger.warn(msg);
+
 			this.setTunnelStatus(TunnelStates.connecting(msg));
 
 			return false;
 		}
+
 		return true;
 	}
+
 	private async serverOrAttachTunnel(
 		session: IRemoteTunnelSession | undefined,
 		args: string[],
@@ -525,6 +607,7 @@ export class RemoteTunnelService
 		if (this._preventSleep()) {
 			args.push("--no-sleep");
 		}
+
 		let isAttached = false;
 
 		const serveCommand = this.runCodeTunnelCommand(
@@ -536,11 +619,13 @@ export class RemoteTunnelService
 				} else {
 					this._logger.info(message);
 				}
+
 				if (
 					message.includes("Connected to an existing tunnel process")
 				) {
 					isAttached = true;
 				}
+
 				const m = message.match(
 					/Open this link in your browser (https:\/\/([^\/\s]+)\/([^\/\s]+)\/([^\/\s]+))/,
 				);
@@ -552,27 +637,36 @@ export class RemoteTunnelService
 						tunnelName: m[4],
 						isAttached,
 					};
+
 					this.setTunnelStatus(
 						TunnelStates.connected(info, serviceInstallFailed),
 					);
 				} else if (message.match(/error refreshing token/)) {
 					serveCommand.cancel();
+
 					this._onDidTokenFailedEmitter.fire(session);
+
 					this.setTunnelStatus(TunnelStates.disconnected(session));
 				}
 			},
 		);
+
 		this._tunnelProcess = serveCommand;
+
 		serveCommand.finally(() => {
 			if (serveCommand === this._tunnelProcess) {
 				// process exited unexpectedly
 				this._logger.info(`tunnel process terminated`);
+
 				this._tunnelProcess = undefined;
+
 				this._mode = INACTIVE_TUNNEL_MODE;
+
 				this.setTunnelStatus(TunnelStates.disconnected());
 			}
 		});
 	}
+
 	private runCodeTunnelCommand(
 		logLabel: string,
 		commandArgs: string[],
@@ -585,14 +679,17 @@ export class RemoteTunnelService
 				if (token.isCancellationRequested) {
 					resolve(-1);
 				}
+
 				let tunnelProcess: ChildProcess | undefined;
 
 				const stdio: StdioOptions = ["ignore", "pipe", "pipe"];
+
 				token.onCancellationRequested(() => {
 					if (tunnelProcess) {
 						this._logger.info(
 							`${logLabel} terminating(${tunnelProcess.pid})`,
 						);
+
 						tunnelProcess.kill();
 					}
 				});
@@ -602,10 +699,12 @@ export class RemoteTunnelService
 						"Building tunnel CLI from sources and run\n",
 						false,
 					);
+
 					onOutput(
 						`${logLabel} Spawning: cargo run -- tunnel ${commandArgs.join(" ")}\n`,
 						false,
 					);
+
 					tunnelProcess = spawn(
 						"cargo",
 						["run", "--", "tunnel", ...commandArgs],
@@ -623,10 +722,12 @@ export class RemoteTunnelService
 					onOutput("Running tunnel CLI\n", false);
 
 					const tunnelCommand = this.getTunnelCommandLocation();
+
 					onOutput(
 						`${logLabel} Spawning: ${tunnelCommand} tunnel ${commandArgs.join(" ")}\n`,
 						false,
 					);
+
 					tunnelProcess = spawn(
 						tunnelCommand,
 						["tunnel", ...commandArgs],
@@ -637,58 +738,72 @@ export class RemoteTunnelService
 						},
 					);
 				}
+
 				tunnelProcess
 					.stdout!.pipe(new StreamSplitter("\n"))
 					.on("data", (data) => {
 						if (tunnelProcess) {
 							const message = data.toString();
+
 							onOutput(message, false);
 						}
 					});
+
 				tunnelProcess
 					.stderr!.pipe(new StreamSplitter("\n"))
 					.on("data", (data) => {
 						if (tunnelProcess) {
 							const message = data.toString();
+
 							onOutput(message, true);
 						}
 					});
+
 				tunnelProcess.on("exit", (e) => {
 					if (tunnelProcess) {
 						onOutput(
 							`${logLabel} exit(${tunnelProcess.pid}): + ${e} `,
 							false,
 						);
+
 						tunnelProcess = undefined;
+
 						resolve(e || 0);
 					}
 				});
+
 				tunnelProcess.on("error", (e) => {
 					if (tunnelProcess) {
 						onOutput(
 							`${logLabel} error(${tunnelProcess.pid}): + ${e} `,
 							true,
 						);
+
 						tunnelProcess = undefined;
+
 						reject();
 					}
 				});
 			});
 		});
 	}
+
 	public async getTunnelName(): Promise<string | undefined> {
 		return this._getTunnelName();
 	}
+
 	private _preventSleep() {
 		return !!this.configurationService.getValue<boolean>(
 			CONFIGURATION_KEY_PREVENT_SLEEP,
 		);
 	}
+
 	private _getTunnelName(): string | undefined {
 		let name =
 			this.configurationService.getValue<string>(
 				CONFIGURATION_KEY_HOST_NAME,
 			) || hostname();
+
 		name = name
 			.replace(/^-+/g, "")
 			.replace(/[^\w-]/g, "")
@@ -696,6 +811,7 @@ export class RemoteTunnelService
 
 		return name || undefined;
 	}
+
 	private _restoreMode(): TunnelMode {
 		try {
 			const tunnelAccessSession = this.storageService.get(
@@ -722,6 +838,7 @@ export class RemoteTunnelService
 				) {
 					return { active: true, session, asService };
 				}
+
 				this._logger.error(
 					"Problems restoring session from storage, invalid format",
 					session,
@@ -730,8 +847,10 @@ export class RemoteTunnelService
 		} catch (e) {
 			this._logger.error("Problems restoring session from storage", e);
 		}
+
 		return INACTIVE_TUNNEL_MODE;
 	}
+
 	private _storeMode(mode: TunnelMode): void {
 		if (mode.active) {
 			const sessionWithoutToken = {
@@ -739,12 +858,14 @@ export class RemoteTunnelService
 				sessionId: mode.session.sessionId,
 				accountLabel: mode.session.accountLabel,
 			};
+
 			this.storageService.store(
 				TUNNEL_ACCESS_SESSION,
 				JSON.stringify(sessionWithoutToken),
 				StorageScope.APPLICATION,
 				StorageTarget.MACHINE,
 			);
+
 			this.storageService.store(
 				TUNNEL_ACCESS_IS_SERVICE,
 				mode.asService,
@@ -756,6 +877,7 @@ export class RemoteTunnelService
 				TUNNEL_ACCESS_SESSION,
 				StorageScope.APPLICATION,
 			);
+
 			this.storageService.remove(
 				TUNNEL_ACCESS_IS_SERVICE,
 				StorageScope.APPLICATION,
@@ -774,6 +896,7 @@ function isSameSession(
 			a1.token === a2.token
 		);
 	}
+
 	return a1 === a2;
 }
 

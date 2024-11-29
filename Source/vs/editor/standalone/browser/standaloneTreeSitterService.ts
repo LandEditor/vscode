@@ -25,21 +25,26 @@ export class StandaloneTreeSitterParserService
 	): ITextModelTreeSitter | undefined {
 		return undefined;
 	}
+
 	async getTree(
 		content: string,
 		languageId: string,
 	): Promise<Parser.Tree | undefined> {
 		return undefined;
 	}
+
 	onDidUpdateTree: Event<{ textModel: ITextModel; ranges: Range[] }> =
 		Event.None;
+
 	readonly _serviceBrand: undefined;
+
 	onDidAddLanguage: Event<{ id: string; language: Parser.Language }> =
 		Event.None;
 
 	getOrInitLanguage(_languageId: string): Parser.Language | undefined {
 		return undefined;
 	}
+
 	getParseResult(textModel: ITextModel): ITreeSitterParseResult | undefined {
 		return undefined;
 	}

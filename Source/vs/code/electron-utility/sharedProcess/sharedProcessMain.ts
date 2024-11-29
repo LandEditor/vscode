@@ -245,15 +245,19 @@ class SharedProcessMain extends Disposable implements IClientConnectionFilter {
 	private registerListeners(): void {
 		// Shared process lifecycle
 		let didExit = false;
+
 		const onExit = () => {
 			if (!didExit) {
 				didExit = true;
 
 				this.lifecycleService?.fireOnWillShutdown();
+
 				this.dispose();
 			}
 		};
+
 		process.once("exit", onExit);
+
 		once(process.parentPort, SharedProcessLifecycle.exit, onExit);
 	}
 
@@ -266,7 +270,9 @@ class SharedProcessMain extends Disposable implements IClientConnectionFilter {
 
 		instantiationService.invokeFunction((accessor) => {
 			const logService = accessor.get(ILogService);
+
 			const telemetryService = accessor.get(ITelemetryService);
+
 			const userDataProfilesService = accessor.get(
 				IUserDataProfilesService,
 			);
@@ -285,6 +291,7 @@ class SharedProcessMain extends Disposable implements IClientConnectionFilter {
 
 			// Report Profiles Info
 			this.reportProfilesInfo(telemetryService, userDataProfilesService);
+
 			this._register(
 				userDataProfilesService.onDidChangeProfiles(() =>
 					this.reportProfilesInfo(
@@ -327,14 +334,17 @@ class SharedProcessMain extends Disposable implements IClientConnectionFilter {
 
 		// Product
 		const productService = { _serviceBrand: undefined, ...product };
+
 		services.set(IProductService, productService);
 
 		// Main Process
 		const mainRouter = new StaticRouter((ctx) => ctx === "main");
+
 		const mainProcessService = new MainProcessService(
 			this.server,
 			mainRouter,
 		);
+
 		services.set(IMainProcessService, mainProcessService);
 
 		// Policies
@@ -344,6 +354,7 @@ class SharedProcessMain extends Disposable implements IClientConnectionFilter {
 					mainProcessService.getChannel("policy"),
 				)
 			: new NullPolicyService();
+
 		services.set(IPolicyService, policyService);
 
 		// Environment
@@ -351,6 +362,7 @@ class SharedProcessMain extends Disposable implements IClientConnectionFilter {
 			this.configuration.args,
 			productService,
 		);
+
 		services.set(INativeEnvironmentService, environmentService);
 
 		// Logger
@@ -364,6 +376,7 @@ class SharedProcessMain extends Disposable implements IClientConnectionFilter {
 			})),
 			mainProcessService.getChannel("logger"),
 		);
+
 		services.set(ILoggerService, loggerService);
 
 		// Log
@@ -372,31 +385,38 @@ class SharedProcessMain extends Disposable implements IClientConnectionFilter {
 				name: localize("sharedLog", "Shared"),
 			}),
 		);
+
 		const consoleLogger = this._register(
 			new ConsoleLogger(logger.getLevel()),
 		);
+
 		const logService = this._register(
 			new LogService(logger, [consoleLogger]),
 		);
+
 		services.set(ILogService, logService);
 
 		// Lifecycle
 		this.lifecycleService = this._register(
 			new SharedProcessLifecycleService(logService),
 		);
+
 		services.set(ISharedProcessLifecycleService, this.lifecycleService);
 
 		// Files
 		const fileService = this._register(new FileService(logService));
+
 		services.set(IFileService, fileService);
 
 		const diskFileSystemProvider = this._register(
 			new DiskFileSystemProvider(logService),
 		);
+
 		fileService.registerProvider(Schemas.file, diskFileSystemProvider);
 
 		// URI Identity
 		const uriIdentityService = new UriIdentityService(fileService);
+
 		services.set(IUriIdentityService, uriIdentityService);
 
 		// User Data Profiles
@@ -409,6 +429,7 @@ class SharedProcessMain extends Disposable implements IClientConnectionFilter {
 				mainProcessService.getChannel("userDataProfiles"),
 			),
 		);
+
 		services.set(IUserDataProfilesService, userDataProfilesService);
 
 		const userDataFileSystemProvider = this._register(
@@ -432,6 +453,7 @@ class SharedProcessMain extends Disposable implements IClientConnectionFilter {
 				logService,
 			),
 		);
+
 		fileService.registerProvider(
 			Schemas.vscodeUserData,
 			userDataFileSystemProvider,
@@ -446,6 +468,7 @@ class SharedProcessMain extends Disposable implements IClientConnectionFilter {
 				logService,
 			),
 		);
+
 		services.set(IConfigurationService, configurationService);
 
 		// Storage (global access only)
@@ -458,7 +481,9 @@ class SharedProcessMain extends Disposable implements IClientConnectionFilter {
 			mainProcessService,
 			environmentService,
 		);
+
 		services.set(IStorageService, storageService);
+
 		this._register(toDisposable(() => storageService.flush()));
 
 		// Initialize config & storage in parallel
@@ -473,6 +498,7 @@ class SharedProcessMain extends Disposable implements IClientConnectionFilter {
 			environmentService,
 			logService,
 		);
+
 		services.set(IRequestService, requestService);
 
 		// Checksum
@@ -500,6 +526,7 @@ class SharedProcessMain extends Disposable implements IClientConnectionFilter {
 			-1 /* we are not running in a browser window context */,
 			mainProcessService,
 		) as INativeHostService;
+
 		services.set(INativeHostService, nativeHostService);
 
 		// Download
@@ -512,9 +539,11 @@ class SharedProcessMain extends Disposable implements IClientConnectionFilter {
 		const activeWindowManager = this._register(
 			new ActiveWindowManager(nativeHostService),
 		);
+
 		const activeWindowRouter = new StaticRouter((ctx) =>
 			activeWindowManager.getActiveClientId().then((id) => ctx === id),
 		);
+
 		services.set(
 			IExtensionRecommendationNotificationService,
 			new ExtensionRecommendationNotificationServiceChannelClient(
@@ -527,11 +556,14 @@ class SharedProcessMain extends Disposable implements IClientConnectionFilter {
 
 		// Telemetry
 		let telemetryService: ITelemetryService;
+
 		const appenders: ITelemetryAppender[] = [];
+
 		const internalTelemetry = isInternalTelemetry(
 			productService,
 			configurationService,
 		);
+
 		if (supportsTelemetry(productService, environmentService)) {
 			const logAppender = new TelemetryLogAppender(
 				logService,
@@ -539,7 +571,9 @@ class SharedProcessMain extends Disposable implements IClientConnectionFilter {
 				environmentService,
 				productService,
 			);
+
 			appenders.push(logAppender);
+
 			if (
 				!isLoggingOnly(productService, environmentService) &&
 				productService.aiConfig?.ariaKey
@@ -551,6 +585,7 @@ class SharedProcessMain extends Disposable implements IClientConnectionFilter {
 					null,
 					productService.aiConfig.ariaKey,
 				);
+
 				this._register(toDisposable(() => collectorAppender.flush())); // Ensure the 1DS appender is disposed so that it flushes remaining data
 				appenders.push(collectorAppender);
 			}
@@ -577,7 +612,9 @@ class SharedProcessMain extends Disposable implements IClientConnectionFilter {
 			);
 		} else {
 			telemetryService = NullTelemetryService;
+
 			const nullAppender = NullAppender;
+
 			appenders.push(nullAppender);
 		}
 
@@ -585,6 +622,7 @@ class SharedProcessMain extends Disposable implements IClientConnectionFilter {
 			"telemetryAppender",
 			new TelemetryAppenderChannel(appenders),
 		);
+
 		services.set(ITelemetryService, telemetryService);
 
 		// Custom Endpoint Telemetry
@@ -597,6 +635,7 @@ class SharedProcessMain extends Disposable implements IClientConnectionFilter {
 				environmentService,
 				productService,
 			);
+
 		services.set(
 			ICustomEndpointTelemetryService,
 			customEndpointTelemetryService,
@@ -611,10 +650,12 @@ class SharedProcessMain extends Disposable implements IClientConnectionFilter {
 				true,
 			),
 		);
+
 		services.set(
 			IExtensionsScannerService,
 			new SyncDescriptor(ExtensionsScannerService, undefined, true),
 		);
+
 		services.set(
 			IExtensionSignatureVerificationService,
 			new SyncDescriptor(
@@ -623,10 +664,12 @@ class SharedProcessMain extends Disposable implements IClientConnectionFilter {
 				true,
 			),
 		);
+
 		services.set(
 			IAllowedExtensionsService,
 			new SyncDescriptor(AllowedExtensionsService, undefined, true),
 		);
+
 		services.set(
 			INativeServerExtensionManagementService,
 			new SyncDescriptor(ExtensionManagementService, undefined, true),
@@ -673,10 +716,12 @@ class SharedProcessMain extends Disposable implements IClientConnectionFilter {
 			IUserDataSyncAccountService,
 			new SyncDescriptor(UserDataSyncAccountService, undefined, true),
 		);
+
 		services.set(
 			IUserDataSyncLogService,
 			new SyncDescriptor(UserDataSyncLogService, undefined, true),
 		);
+
 		services.set(
 			IUserDataSyncUtilService,
 			ProxyChannel.toService(
@@ -686,6 +731,7 @@ class SharedProcessMain extends Disposable implements IClientConnectionFilter {
 				),
 			),
 		);
+
 		services.set(
 			IGlobalExtensionEnablementService,
 			new SyncDescriptor(
@@ -694,6 +740,7 @@ class SharedProcessMain extends Disposable implements IClientConnectionFilter {
 				false /* Eagerly resets installed extensions */,
 			),
 		);
+
 		services.set(
 			IIgnoredExtensionsManagementService,
 			new SyncDescriptor(
@@ -702,10 +749,12 @@ class SharedProcessMain extends Disposable implements IClientConnectionFilter {
 				true,
 			),
 		);
+
 		services.set(
 			IExtensionStorageService,
 			new SyncDescriptor(ExtensionStorageService),
 		);
+
 		services.set(
 			IUserDataSyncStoreManagementService,
 			new SyncDescriptor(
@@ -714,14 +763,17 @@ class SharedProcessMain extends Disposable implements IClientConnectionFilter {
 				true,
 			),
 		);
+
 		services.set(
 			IUserDataSyncStoreService,
 			new SyncDescriptor(UserDataSyncStoreService, undefined, true),
 		);
+
 		services.set(
 			IUserDataSyncMachinesService,
 			new SyncDescriptor(UserDataSyncMachinesService, undefined, true),
 		);
+
 		services.set(
 			IUserDataSyncLocalStoreService,
 			new SyncDescriptor(
@@ -730,10 +782,12 @@ class SharedProcessMain extends Disposable implements IClientConnectionFilter {
 				false /* Eagerly cleans up old backups */,
 			),
 		);
+
 		services.set(
 			IUserDataSyncEnablementService,
 			new SyncDescriptor(UserDataSyncEnablementService, undefined, true),
 		);
+
 		services.set(
 			IUserDataSyncService,
 			new SyncDescriptor(
@@ -742,6 +796,7 @@ class SharedProcessMain extends Disposable implements IClientConnectionFilter {
 				false /* Initializes the Sync State */,
 			),
 		);
+
 		services.set(
 			IUserDataProfileStorageService,
 			new SyncDescriptor(
@@ -750,6 +805,7 @@ class SharedProcessMain extends Disposable implements IClientConnectionFilter {
 				true,
 			),
 		);
+
 		services.set(
 			IUserDataSyncResourceProviderService,
 			new SyncDescriptor(
@@ -771,15 +827,19 @@ class SharedProcessMain extends Disposable implements IClientConnectionFilter {
 
 		// Tunnel
 		const remoteSocketFactoryService = new RemoteSocketFactoryService();
+
 		services.set(IRemoteSocketFactoryService, remoteSocketFactoryService);
+
 		remoteSocketFactoryService.register(
 			RemoteConnectionType.WebSocket,
 			nodeSocketFactory,
 		);
+
 		services.set(
 			ISharedTunnelsService,
 			new SyncDescriptor(SharedTunnelsService),
 		);
+
 		services.set(
 			ISharedProcessTunnelService,
 			new SyncDescriptor(SharedProcessTunnelService),
@@ -802,6 +862,7 @@ class SharedProcessMain extends Disposable implements IClientConnectionFilter {
 			accessor.get(IExtensionManagementService),
 			() => null,
 		);
+
 		this.server.registerChannel("extensions", channel);
 
 		// Language Packs
@@ -809,6 +870,7 @@ class SharedProcessMain extends Disposable implements IClientConnectionFilter {
 			accessor.get(ILanguagePackService),
 			this._store,
 		);
+
 		this.server.registerChannel("languagePacks", languagePacksChannel);
 
 		// Diagnostics
@@ -816,12 +878,14 @@ class SharedProcessMain extends Disposable implements IClientConnectionFilter {
 			accessor.get(IDiagnosticsService),
 			this._store,
 		);
+
 		this.server.registerChannel("diagnostics", diagnosticsChannel);
 
 		// Extension Tips
 		const extensionTipsChannel = new ExtensionTipsChannel(
 			accessor.get(IExtensionTipsService),
 		);
+
 		this.server.registerChannel(
 			"extensionTipsService",
 			extensionTipsChannel,
@@ -832,6 +896,7 @@ class SharedProcessMain extends Disposable implements IClientConnectionFilter {
 			accessor.get(IChecksumService),
 			this._store,
 		);
+
 		this.server.registerChannel("checksum", checksumChannel);
 
 		// Profiling
@@ -839,6 +904,7 @@ class SharedProcessMain extends Disposable implements IClientConnectionFilter {
 			accessor.get(IV8InspectProfilingService),
 			this._store,
 		);
+
 		this.server.registerChannel("v8InspectProfiling", profilingChannel);
 
 		// Settings Sync
@@ -846,6 +912,7 @@ class SharedProcessMain extends Disposable implements IClientConnectionFilter {
 			accessor.get(IUserDataSyncMachinesService),
 			this._store,
 		);
+
 		this.server.registerChannel(
 			"userDataSyncMachines",
 			userDataSyncMachineChannel,
@@ -856,6 +923,7 @@ class SharedProcessMain extends Disposable implements IClientConnectionFilter {
 			accessor.get(ICustomEndpointTelemetryService),
 			this._store,
 		);
+
 		this.server.registerChannel(
 			"customEndpointTelemetry",
 			customEndpointTelemetryChannel,
@@ -865,6 +933,7 @@ class SharedProcessMain extends Disposable implements IClientConnectionFilter {
 			new UserDataSyncAccountServiceChannel(
 				accessor.get(IUserDataSyncAccountService),
 			);
+
 		this.server.registerChannel(
 			"userDataSyncAccount",
 			userDataSyncAccountChannel,
@@ -874,6 +943,7 @@ class SharedProcessMain extends Disposable implements IClientConnectionFilter {
 			new UserDataSyncStoreManagementServiceChannel(
 				accessor.get(IUserDataSyncStoreManagementService),
 			);
+
 		this.server.registerChannel(
 			"userDataSyncStoreManagement",
 			userDataSyncStoreManagementChannel,
@@ -884,6 +954,7 @@ class SharedProcessMain extends Disposable implements IClientConnectionFilter {
 			accessor.get(IUserDataProfilesService),
 			accessor.get(ILogService),
 		);
+
 		this.server.registerChannel("userDataSync", userDataSyncChannel);
 
 		const userDataAutoSync = this._register(
@@ -891,6 +962,7 @@ class SharedProcessMain extends Disposable implements IClientConnectionFilter {
 				.get(IInstantiationService)
 				.createInstance(UserDataAutoSyncService),
 		);
+
 		this.server.registerChannel(
 			"userDataAutoSync",
 			ProxyChannel.fromService(userDataAutoSync, this._store),
@@ -909,6 +981,7 @@ class SharedProcessMain extends Disposable implements IClientConnectionFilter {
 			accessor.get(ISharedProcessTunnelService),
 			this._store,
 		);
+
 		this.server.registerChannel(
 			ipcSharedProcessTunnelChannelName,
 			sharedProcessTunnelChannel,
@@ -919,12 +992,14 @@ class SharedProcessMain extends Disposable implements IClientConnectionFilter {
 			accessor.get(IRemoteTunnelService),
 			this._store,
 		);
+
 		this.server.registerChannel("remoteTunnel", remoteTunnelChannel);
 	}
 
 	private registerErrorHandler(logService: ILogService): void {
 		// Listen on global error events
 		process.on("uncaughtException", (error) => onUnexpectedError(error));
+
 		process.on("unhandledRejection", (reason: unknown) =>
 			onUnexpectedError(reason),
 		);
@@ -932,6 +1007,7 @@ class SharedProcessMain extends Disposable implements IClientConnectionFilter {
 		// Install handler for unexpected errors
 		setUnexpectedErrorHandler((error) => {
 			const message = toErrorMessage(error, true);
+
 			if (!message) {
 				return;
 			}
@@ -948,16 +1024,22 @@ class SharedProcessMain extends Disposable implements IClientConnectionFilter {
 	): void {
 		type ProfilesInfoClassification = {
 			owner: "sandy081";
+
 			comment: "Report profiles information";
+
 			count: {
 				classification: "SystemMetaData";
+
 				purpose: "FeatureInsight";
+
 				comment: "Number of profiles";
 			};
 		};
+
 		type ProfilesInfoEvent = {
 			count: number;
 		};
+
 		telemetryService.publicLog2<
 			ProfilesInfoEvent,
 			ProfilesInfoClassification
@@ -975,54 +1057,83 @@ class SharedProcessMain extends Disposable implements IClientConnectionFilter {
 				getOSReleaseInfo(logService.error.bind(logService)),
 				getDisplayProtocol(logService.error.bind(logService)),
 			]);
+
 			const desktopEnvironment = getDesktopEnvironment();
+
 			const codeSessionType = getCodeDisplayProtocol(
 				displayProtocol,
 				this.configuration.args["ozone-platform"],
 			);
+
 			if (releaseInfo) {
 				type ClientPlatformInfoClassification = {
 					platformId: {
 						classification: "SystemMetaData";
+
 						purpose: "FeatureInsight";
+
 						comment: "A string identifying the operating system without any version information.";
 					};
+
 					platformVersionId: {
 						classification: "SystemMetaData";
+
 						purpose: "FeatureInsight";
+
 						comment: "A string identifying the operating system version excluding any name information or release code.";
 					};
+
 					platformIdLike: {
 						classification: "SystemMetaData";
+
 						purpose: "FeatureInsight";
+
 						comment: "A string identifying the operating system the current OS derivate is closely related to.";
 					};
+
 					desktopEnvironment: {
 						classification: "SystemMetaData";
+
 						purpose: "FeatureInsight";
+
 						comment: "A string identifying the desktop environment the user is using.";
 					};
+
 					displayProtocol: {
 						classification: "SystemMetaData";
+
 						purpose: "FeatureInsight";
+
 						comment: "A string identifying the users display protocol type.";
 					};
+
 					codeDisplayProtocol: {
 						classification: "SystemMetaData";
+
 						purpose: "FeatureInsight";
+
 						comment: "A string identifying the vscode display protocol type.";
 					};
+
 					owner: "benibenj";
+
 					comment: "Provides insight into the distro and desktop environment information on Linux.";
 				};
+
 				type ClientPlatformInfoEvent = {
 					platformId: string;
+
 					platformVersionId: string | undefined;
+
 					platformIdLike: string | undefined;
+
 					desktopEnvironment: string | undefined;
+
 					displayProtocol: string | undefined;
+
 					codeDisplayProtocol: string | undefined;
 				};
+
 				telemetryService.publicLog2<
 					ClientPlatformInfoEvent,
 					ClientPlatformInfoClassification
@@ -1049,6 +1160,7 @@ class SharedProcessMain extends Disposable implements IClientConnectionFilter {
 		}
 
 		const port = e.ports.at(0);
+
 		if (port) {
 			this.onDidWindowConnectRaw.fire(port);
 
@@ -1067,6 +1179,7 @@ export async function main(
 
 	try {
 		const sharedProcess = new SharedProcessMain(configuration);
+
 		process.parentPort.postMessage(SharedProcessLifecycle.ipcReady);
 
 		// await initialization and signal this back to electron-main
@@ -1086,5 +1199,6 @@ const handle = setTimeout(() => {
 
 process.parentPort.once("message", (e: Electron.MessageEvent) => {
 	clearTimeout(handle);
+
 	main(e.data as ISharedProcessConfiguration);
 });

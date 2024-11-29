@@ -65,34 +65,45 @@ import {
 
 export class NotebookMultiTextDiffEditor extends EditorPane {
 	private _multiDiffEditorWidget?: MultiDiffEditorWidget;
+
 	static readonly ID: string = NOTEBOOK_MULTI_DIFF_EDITOR_ID;
+
 	private _fontInfo: FontInfo | undefined;
+
 	protected _scopeContextKeyService!: IContextKeyService;
+
 	private readonly modelSpecificResources = this._register(
 		new DisposableStore(),
 	);
+
 	private _model?: INotebookDiffEditorModel;
+
 	private viewModel?: NotebookDiffViewModel;
+
 	private widgetViewModel?: MultiDiffEditorViewModel;
 
 	get textModel() {
 		return this._model?.modified.notebook;
 	}
+
 	private _notebookOptions: NotebookOptions;
 
 	get notebookOptions() {
 		return this._notebookOptions;
 	}
+
 	private readonly ctxAllCollapsed =
 		this._parentContextKeyService.createKey<boolean>(
 			NOTEBOOK_DIFF_CELLS_COLLAPSED.key,
 			false,
 		);
+
 	private readonly ctxHasUnchangedCells =
 		this._parentContextKeyService.createKey<boolean>(
 			NOTEBOOK_DIFF_HAS_UNCHANGED_CELLS.key,
 			false,
 		);
+
 	private readonly ctxHiddenUnchangedCells =
 		this._parentContextKeyService.createKey<boolean>(
 			NOTEBOOK_DIFF_UNCHANGED_CELLS_HIDDEN.key,
@@ -125,26 +136,32 @@ export class NotebookMultiTextDiffEditor extends EditorPane {
 			themeService,
 			storageService,
 		);
+
 		this._notebookOptions = instantiationService.createInstance(
 			NotebookOptions,
 			this.window,
 			false,
 			undefined,
 		);
+
 		this._register(this._notebookOptions);
 	}
+
 	private get fontInfo() {
 		if (!this._fontInfo) {
 			this._fontInfo = this.createFontInfo();
 		}
+
 		return this._fontInfo;
 	}
+
 	override layout(
 		dimension: DOM.Dimension,
 		position?: DOM.IDomPosition,
 	): void {
 		this._multiDiffEditorWidget!.layout(dimension);
 	}
+
 	private createFontInfo() {
 		const editorOptions =
 			this.configurationService.getValue<ICodeEditorOptions>("editor");
@@ -157,6 +174,7 @@ export class NotebookMultiTextDiffEditor extends EditorPane {
 			),
 		);
 	}
+
 	protected createEditor(parent: HTMLElement): void {
 		this._multiDiffEditorWidget = this._register(
 			this.instantiationService.createInstance(
@@ -167,12 +185,14 @@ export class NotebookMultiTextDiffEditor extends EditorPane {
 				),
 			),
 		);
+
 		this._register(
 			this._multiDiffEditorWidget.onDidChangeActiveControl(() => {
 				this._onDidChangeControl.fire();
 			}),
 		);
 	}
+
 	override async setInput(
 		input: NotebookMultiDiffEditorInput,
 		options: IMultiDiffEditorOptions | undefined,
@@ -185,8 +205,10 @@ export class NotebookMultiTextDiffEditor extends EditorPane {
 
 		if (this._model !== model) {
 			this._detachModel();
+
 			this._model = model;
 		}
+
 		const eventDispatcher = this.modelSpecificResources.add(
 			new NotebookDiffEditorEventDispatcher(),
 		);
@@ -196,6 +218,7 @@ export class NotebookMultiTextDiffEditor extends EditorPane {
 				DiffEditorHeightCalculatorService,
 				this.fontInfo.lineHeight,
 			);
+
 		this.viewModel = this.modelSpecificResources.add(
 			new NotebookDiffViewModel(
 				model,
@@ -208,11 +231,14 @@ export class NotebookMultiTextDiffEditor extends EditorPane {
 				true,
 			),
 		);
+
 		await this.viewModel.computeDiff(
 			this.modelSpecificResources.add(new CancellationTokenSource())
 				.token,
 		);
+
 		this.ctxHasUnchangedCells.set(this.viewModel.hasUnchangedCells);
+
 		this.ctxHasUnchangedCells.set(this.viewModel.hasUnchangedCells);
 
 		const widgetInput = this.modelSpecificResources.add(
@@ -221,17 +247,20 @@ export class NotebookMultiTextDiffEditor extends EditorPane {
 				this.instantiationService,
 			),
 		);
+
 		this.widgetViewModel = this.modelSpecificResources.add(
 			await widgetInput.getViewModel(),
 		);
 
 		const itemsWeHaveSeen = new WeakSet<DocumentDiffItemViewModel>();
+
 		this.modelSpecificResources.add(
 			autorun((reader) => {
 				/** @description NotebookDiffEditor => Collapse unmodified items */
 				if (!this.widgetViewModel || !this.viewModel) {
 					return;
 				}
+
 				const items = this.widgetViewModel.items.read(reader);
 
 				const diffItems = this.viewModel.value;
@@ -247,6 +276,7 @@ export class NotebookMultiTextDiffEditor extends EditorPane {
 						if (itemsWeHaveSeen.has(item)) {
 							return;
 						}
+
 						itemsWeHaveSeen.add(item);
 
 						const diffItem = diffItems.find(
@@ -264,65 +294,88 @@ export class NotebookMultiTextDiffEditor extends EditorPane {
 				});
 			}),
 		);
+
 		this._multiDiffEditorWidget!.setViewModel(this.widgetViewModel);
 	}
+
 	private _detachModel() {
 		this.viewModel = undefined;
+
 		this.modelSpecificResources.clear();
 	}
+
 	_generateFontFamily(): string {
 		return (
 			this.fontInfo.fontFamily ??
 			`"SF Mono", Monaco, Menlo, Consolas, "Ubuntu Mono", "Liberation Mono", "DejaVu Sans Mono", "Courier New", monospace`
 		);
 	}
+
 	override setOptions(options: IMultiDiffEditorOptions | undefined): void {
 		super.setOptions(options);
 	}
+
 	override getControl() {
 		return this._multiDiffEditorWidget!.getActiveControl();
 	}
+
 	override focus(): void {
 		super.focus();
+
 		this._multiDiffEditorWidget?.getActiveControl()?.focus();
 	}
+
 	override hasFocus(): boolean {
 		return (
 			this._multiDiffEditorWidget?.getActiveControl()?.hasTextFocus() ||
 			super.hasFocus()
 		);
 	}
+
 	override clearInput(): void {
 		super.clearInput();
+
 		this._multiDiffEditorWidget!.setViewModel(undefined);
+
 		this.modelSpecificResources.clear();
+
 		this.viewModel = undefined;
+
 		this.widgetViewModel = undefined;
 	}
+
 	public expandAll() {
 		if (this.widgetViewModel) {
 			this.widgetViewModel.expandAll();
+
 			this.ctxAllCollapsed.set(false);
 		}
 	}
+
 	public collapseAll() {
 		if (this.widgetViewModel) {
 			this.widgetViewModel.collapseAll();
+
 			this.ctxAllCollapsed.set(true);
 		}
 	}
+
 	public hideUnchanged() {
 		if (this.viewModel) {
 			this.viewModel.includeUnchanged = false;
+
 			this.ctxHiddenUnchangedCells.set(true);
 		}
 	}
+
 	public showUnchanged() {
 		if (this.viewModel) {
 			this.viewModel.includeUnchanged = true;
+
 			this.ctxHiddenUnchangedCells.set(false);
 		}
 	}
+
 	public getDiffElementViewModel(
 		uri: URI,
 	): IDiffElementViewModelBase | undefined {
@@ -338,6 +391,7 @@ export class NotebookMultiTextDiffEditor extends EditorPane {
 				uri = CellUri.generate(data.notebook, data.handle);
 			}
 		}
+
 		if (uri.scheme === Schemas.vscodeNotebookMetadata) {
 			return this.viewModel?.items.find(
 				(item) =>
@@ -345,6 +399,7 @@ export class NotebookMultiTextDiffEditor extends EditorPane {
 					item.type === "unchangedMetadata",
 			);
 		}
+
 		return this.viewModel?.items.find((c) => {
 			switch (c.type) {
 				case "delete":
@@ -375,6 +430,7 @@ class WorkbenchUIElementFactory implements IWorkbenchUIElementFactory {
 		@INotebookService
 		private readonly notebookService: INotebookService,
 	) {}
+
 	createResourceLabel(element: HTMLElement): IResourceLabel {
 		const label = this._instantiationService.createInstance(
 			ResourceLabel,
@@ -424,6 +480,7 @@ class WorkbenchUIElementFactory implements IWorkbenchUIElementFactory {
 								nb && cellIndex !== undefined
 									? nb.cells[cellIndex].language
 									: undefined;
+
 							extraClasses = cellLanguage
 								? getIconClassesForLanguageId(cellLanguage)
 								: undefined;
@@ -445,6 +502,7 @@ class WorkbenchUIElementFactory implements IWorkbenchUIElementFactory {
 							"Output",
 						);
 					}
+
 					label.element.setResource(
 						{ name, description },
 						{

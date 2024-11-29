@@ -15,8 +15,11 @@ import { ExtHostSecretState } from "./extHostSecretState.js";
 
 export class ExtensionSecrets implements vscode.SecretStorage {
 	protected readonly _id: string;
+
 	readonly #secretState: ExtHostSecretState;
+
 	readonly onDidChange: Event<vscode.SecretStorageChangeEvent>;
+
 	readonly disposables = new DisposableStore();
 
 	constructor(
@@ -24,7 +27,9 @@ export class ExtensionSecrets implements vscode.SecretStorage {
 		secretState: ExtHostSecretState,
 	) {
 		this._id = ExtensionIdentifier.toKey(extensionDescription.identifier);
+
 		this.#secretState = secretState;
+
 		this.onDidChange = Event.map(
 			Event.filter(
 				this.#secretState.onDidChangePassword,
@@ -34,15 +39,19 @@ export class ExtensionSecrets implements vscode.SecretStorage {
 			this.disposables,
 		);
 	}
+
 	dispose() {
 		this.disposables.dispose();
 	}
+
 	get(key: string): Promise<string | undefined> {
 		return this.#secretState.get(this._id, key);
 	}
+
 	store(key: string, value: string): Promise<void> {
 		return this.#secretState.store(this._id, key, value);
 	}
+
 	delete(key: string): Promise<void> {
 		return this.#secretState.delete(this._id, key);
 	}

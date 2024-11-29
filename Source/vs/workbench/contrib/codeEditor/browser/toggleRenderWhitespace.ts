@@ -45,6 +45,7 @@ class ToggleRenderWhitespaceAction extends Action2 {
 			},
 		});
 	}
+
 	override run(accessor: ServicesAccessor): Promise<void> {
 		const configurationService = accessor.get(IConfigurationService);
 
@@ -59,6 +60,7 @@ class ToggleRenderWhitespaceAction extends Action2 {
 		} else {
 			newRenderWhitespace = "none";
 		}
+
 		return configurationService.updateValue(
 			"editor.renderWhitespace",
 			newRenderWhitespace,

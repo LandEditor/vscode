@@ -24,6 +24,7 @@ import {
 
 export class EmbeddedDiffEditorWidget extends DiffEditorWidget {
 	private readonly _parentEditor: ICodeEditor;
+
 	private readonly _overwriteOptions: IDiffEditorOptions;
 
 	constructor(
@@ -52,24 +53,30 @@ export class EmbeddedDiffEditorWidget extends DiffEditorWidget {
 			accessibilitySignalService,
 			editorProgressService,
 		);
+
 		this._parentEditor = parentEditor;
+
 		this._overwriteOptions = options;
 		// Overwrite parent's options
 		super.updateOptions(this._overwriteOptions);
+
 		this._register(
 			parentEditor.onDidChangeConfiguration((e) =>
 				this._onParentConfigurationChanged(e),
 			),
 		);
 	}
+
 	getParentEditor(): ICodeEditor {
 		return this._parentEditor;
 	}
+
 	private _onParentConfigurationChanged(e: ConfigurationChangedEvent): void {
 		super.updateOptions(this._parentEditor.getRawOptions());
 
 		super.updateOptions(this._overwriteOptions);
 	}
+
 	override updateOptions(newOptions: IEditorOptions): void {
 		objects.mixin(this._overwriteOptions, newOptions, true);
 

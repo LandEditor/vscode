@@ -13,16 +13,19 @@ import {
 
 export class NodeRequestCanceller implements OngoingRequestCanceller {
 	public readonly cancellationPipeName: string;
+
 	public constructor(
 		private readonly _serverId: string,
 		private readonly _tracer: Tracer,
 	) {
 		this.cancellationPipeName = getTempFile("tscancellation");
 	}
+
 	public tryCancelOngoingRequest(seq: number): boolean {
 		if (!this.cancellationPipeName) {
 			return false;
 		}
+
 		this._tracer.trace(
 			this._serverId,
 			`TypeScript Server: trying to cancel ongoing request with sequence number ${seq}`,
@@ -33,6 +36,7 @@ export class NodeRequestCanceller implements OngoingRequestCanceller {
 		} catch {
 			// noop
 		}
+
 		return true;
 	}
 }

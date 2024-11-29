@@ -40,11 +40,13 @@ export class DomActivityTracker extends Disposable {
 		const intervalTimer = this._register(new dom.WindowIntervalTimer());
 
 		const activeMutex = this._register(new MutableDisposable());
+
 		activeMutex.value = userActivityService.markActive();
 
 		const onInterval = () => {
 			if (++intervalsWithoutActivity === MIN_INTERVALS_WITHOUT_ACTIVITY) {
 				activeMutex.clear();
+
 				intervalTimer.cancel();
 			}
 		};
@@ -53,14 +55,17 @@ export class DomActivityTracker extends Disposable {
 			// if was inactive, they've now returned
 			if (intervalsWithoutActivity === MIN_INTERVALS_WITHOUT_ACTIVITY) {
 				activeMutex.value = userActivityService.markActive();
+
 				intervalTimer.cancelAndSet(
 					onInterval,
 					CHECK_INTERVAL,
 					targetWindow,
 				);
 			}
+
 			intervalsWithoutActivity = 0;
 		};
+
 		this._register(
 			Event.runAndSubscribe(
 				dom.onDidRegisterWindow,
@@ -73,6 +78,7 @@ export class DomActivityTracker extends Disposable {
 							eventListenerOptions,
 						),
 					);
+
 					disposables.add(
 						dom.addDisposableListener(
 							window.document,
@@ -81,6 +87,7 @@ export class DomActivityTracker extends Disposable {
 							eventListenerOptions,
 						),
 					);
+
 					disposables.add(
 						dom.addDisposableListener(
 							window.document,
@@ -93,6 +100,7 @@ export class DomActivityTracker extends Disposable {
 				{ window: mainWindow, disposables: this._store },
 			),
 		);
+
 		onActivity(mainWindow);
 	}
 }

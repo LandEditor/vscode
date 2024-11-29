@@ -29,6 +29,7 @@ export class InlayHintAnchor {
 }
 export class InlayHintItem {
 	private _isResolved: boolean = false;
+
 	private _currentResolve?: Promise<void>;
 
 	constructor(
@@ -36,21 +37,26 @@ export class InlayHintItem {
 		readonly anchor: InlayHintAnchor,
 		readonly provider: InlayHintsProvider,
 	) {}
+
 	with(delta: { anchor: InlayHintAnchor }): InlayHintItem {
 		const result = new InlayHintItem(
 			this.hint,
 			delta.anchor,
 			this.provider,
 		);
+
 		result._isResolved = this._isResolved;
+
 		result._currentResolve = this._currentResolve;
 
 		return result;
 	}
+
 	async resolve(token: CancellationToken): Promise<void> {
 		if (typeof this.provider.resolveInlayHint !== "function") {
 			return;
 		}
+
 		if (this._currentResolve) {
 			// wait for an active resolve operation and try again
 			// when that's done.
@@ -59,26 +65,35 @@ export class InlayHintItem {
 			if (token.isCancellationRequested) {
 				return;
 			}
+
 			return this.resolve(token);
 		}
+
 		if (!this._isResolved) {
 			this._currentResolve = this._doResolve(token).finally(
 				() => (this._currentResolve = undefined),
 			);
 		}
+
 		await this._currentResolve;
 	}
+
 	private async _doResolve(token: CancellationToken) {
 		try {
 			const newHint = await Promise.resolve(
 				this.provider.resolveInlayHint!(this.hint, token),
 			);
+
 			this.hint.tooltip = newHint?.tooltip ?? this.hint.tooltip;
+
 			this.hint.label = newHint?.label ?? this.hint.label;
+
 			this.hint.textEdits = newHint?.textEdits ?? this.hint.textEdits;
+
 			this._isResolved = true;
 		} catch (err) {
 			onUnexpectedExternalError(err);
+
 			this._isResolved = false;
 		}
 	}
@@ -88,6 +103,7 @@ export class InlayHintsFragments {
 		dispose() {},
 		hints: [],
 	});
+
 	static async create(
 		registry: LanguageFeatureRegistry<InlayHintsProvider>,
 		model: ITextModel,
@@ -123,29 +139,38 @@ export class InlayHintsFragments {
 					}
 				}),
 			);
+
 		await Promise.all(promises.flat());
 
 		if (token.isCancellationRequested || model.isDisposed()) {
 			throw new CancellationError();
 		}
+
 		return new InlayHintsFragments(ranges, data, model);
 	}
+
 	private readonly _disposables = new DisposableStore();
+
 	readonly items: readonly InlayHintItem[];
+
 	readonly ranges: readonly Range[];
+
 	readonly provider: Set<InlayHintsProvider>;
+
 	private constructor(
 		ranges: Range[],
 		data: [InlayHintList, InlayHintsProvider][],
 		model: ITextModel,
 	) {
 		this.ranges = ranges;
+
 		this.provider = new Set();
 
 		const items: InlayHintItem[] = [];
 
 		for (const [list, provider] of data) {
 			this._disposables.add(list);
+
 			this.provider.add(provider);
 
 			for (const hint of list.hints) {
@@ -166,14 +191,17 @@ export class InlayHintsFragments {
 						wordRange.getStartPosition(),
 						position,
 					);
+
 					direction = "after";
 				} else {
 					range = Range.fromPositions(
 						position,
 						wordRange.getEndPosition(),
 					);
+
 					direction = "before";
 				}
+
 				items.push(
 					new InlayHintItem(
 						hint,
@@ -183,13 +211,16 @@ export class InlayHintsFragments {
 				);
 			}
 		}
+
 		this.items = items.sort((a, b) =>
 			Position.compare(a.hint.position, b.hint.position),
 		);
 	}
+
 	dispose(): void {
 		this._disposables.dispose();
 	}
+
 	private static _getRangeAtPosition(
 		model: ITextModel,
 		position: IPosition,
@@ -202,6 +233,7 @@ export class InlayHintsFragments {
 			// always prefer the word range
 			return new Range(line, word.startColumn, line, word.endColumn);
 		}
+
 		model.tokenization.tokenizeIfCheap(line);
 
 		const tokens = model.tokenization.getLineTokens(line);
@@ -219,13 +251,16 @@ export class InlayHintsFragments {
 			if (start === offset && idx > 1) {
 				// leading token
 				start = tokens.getStartOffset(idx - 1);
+
 				end = tokens.getEndOffset(idx - 1);
 			} else if (end === offset && idx < tokens.getCount() - 1) {
 				// trailing token
 				start = tokens.getStartOffset(idx + 1);
+
 				end = tokens.getEndOffset(idx + 1);
 			}
 		}
+
 		return new Range(line, start + 1, line, end + 1);
 	}
 }

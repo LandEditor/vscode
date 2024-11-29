@@ -22,6 +22,7 @@ export abstract class Widget extends Disposable {
 			),
 		);
 	}
+
 	protected onmousedown(
 		domNode: HTMLElement,
 		listener: (e: IMouseEvent) => void,
@@ -35,6 +36,7 @@ export abstract class Widget extends Disposable {
 			),
 		);
 	}
+
 	protected onmouseover(
 		domNode: HTMLElement,
 		listener: (e: IMouseEvent) => void,
@@ -48,6 +50,7 @@ export abstract class Widget extends Disposable {
 			),
 		);
 	}
+
 	protected onmouseleave(
 		domNode: HTMLElement,
 		listener: (e: IMouseEvent) => void,
@@ -61,6 +64,7 @@ export abstract class Widget extends Disposable {
 			),
 		);
 	}
+
 	protected onkeydown(
 		domNode: HTMLElement,
 		listener: (e: IKeyboardEvent) => void,
@@ -73,6 +77,7 @@ export abstract class Widget extends Disposable {
 			),
 		);
 	}
+
 	protected onkeyup(
 		domNode: HTMLElement,
 		listener: (e: IKeyboardEvent) => void,
@@ -85,6 +90,7 @@ export abstract class Widget extends Disposable {
 			),
 		);
 	}
+
 	protected oninput(
 		domNode: HTMLElement,
 		listener: (e: Event) => void,
@@ -93,11 +99,13 @@ export abstract class Widget extends Disposable {
 			dom.addDisposableListener(domNode, dom.EventType.INPUT, listener),
 		);
 	}
+
 	protected onblur(domNode: HTMLElement, listener: (e: Event) => void): void {
 		this._register(
 			dom.addDisposableListener(domNode, dom.EventType.BLUR, listener),
 		);
 	}
+
 	protected onfocus(
 		domNode: HTMLElement,
 		listener: (e: Event) => void,
@@ -106,6 +114,7 @@ export abstract class Widget extends Disposable {
 			dom.addDisposableListener(domNode, dom.EventType.FOCUS, listener),
 		);
 	}
+
 	protected onchange(
 		domNode: HTMLElement,
 		listener: (e: Event) => void,
@@ -114,6 +123,7 @@ export abstract class Widget extends Disposable {
 			dom.addDisposableListener(domNode, dom.EventType.CHANGE, listener),
 		);
 	}
+
 	protected ignoreGesture(domNode: HTMLElement): IDisposable {
 		return Gesture.ignoreTarget(domNode);
 	}

@@ -41,6 +41,7 @@ export class TasksResourceInitializer implements IProfileResourceInitializer {
 		@ILogService
 		private readonly logService: ILogService,
 	) {}
+
 	async initialize(content: string): Promise<void> {
 		const tasksContent: ITasksResourceContent = JSON.parse(content);
 
@@ -49,6 +50,7 @@ export class TasksResourceInitializer implements IProfileResourceInitializer {
 
 			return;
 		}
+
 		await this.fileService.writeFile(
 			this.userDataProfileService.currentProfile.tasksResource,
 			VSBuffer.fromString(tasksContent.tasks),
@@ -62,11 +64,13 @@ export class TasksResource implements IProfileResource {
 		@ILogService
 		private readonly logService: ILogService,
 	) {}
+
 	async getContent(profile: IUserDataProfile): Promise<string> {
 		const tasksContent = await this.getTasksResourceContent(profile);
 
 		return JSON.stringify(tasksContent);
 	}
+
 	async getTasksResourceContent(
 		profile: IUserDataProfile,
 	): Promise<ITasksResourceContent> {
@@ -74,6 +78,7 @@ export class TasksResource implements IProfileResource {
 
 		return { tasks: tasksContent };
 	}
+
 	async apply(content: string, profile: IUserDataProfile): Promise<void> {
 		const tasksContent: ITasksResourceContent = JSON.parse(content);
 
@@ -84,11 +89,13 @@ export class TasksResource implements IProfileResource {
 
 			return;
 		}
+
 		await this.fileService.writeFile(
 			profile.tasksResource,
 			VSBuffer.fromString(tasksContent.tasks),
 		);
 	}
+
 	private async getTasksContent(
 		profile: IUserDataProfile,
 	): Promise<string | null> {
@@ -113,9 +120,13 @@ export class TasksResource implements IProfileResource {
 }
 export class TasksResourceTreeItem implements IProfileResourceTreeItem {
 	readonly type = ProfileResourceType.Tasks;
+
 	readonly handle = ProfileResourceType.Tasks;
+
 	readonly label = { label: localize("tasks", "Tasks") };
+
 	readonly collapsibleState = TreeItemCollapsibleState.Expanded;
+
 	checkbox: ITreeItemCheckboxState | undefined;
 
 	constructor(
@@ -125,6 +136,7 @@ export class TasksResourceTreeItem implements IProfileResourceTreeItem {
 		@IInstantiationService
 		private readonly instantiationService: IInstantiationService,
 	) {}
+
 	async getChildren(): Promise<IProfileResourceChildTreeItem[]> {
 		return [
 			{
@@ -149,6 +161,7 @@ export class TasksResourceTreeItem implements IProfileResourceTreeItem {
 			},
 		];
 	}
+
 	async hasContent(): Promise<boolean> {
 		const tasksContent = await this.instantiationService
 			.createInstance(TasksResource)
@@ -156,11 +169,13 @@ export class TasksResourceTreeItem implements IProfileResourceTreeItem {
 
 		return tasksContent.tasks !== null;
 	}
+
 	async getContent(): Promise<string> {
 		return this.instantiationService
 			.createInstance(TasksResource)
 			.getContent(this.profile);
 	}
+
 	isFromDefaultProfile(): boolean {
 		return !this.profile.isDefault && !!this.profile.useDefaultFlags?.tasks;
 	}

@@ -44,16 +44,21 @@ export interface IEditorTitleControlDimensions {
 }
 export class EditorTitleControl extends Themable {
 	private editorTabsControl: IEditorTabsControl;
+
 	private readonly editorTabsControlDisposable = this._register(
 		new DisposableStore(),
 	);
+
 	private breadcrumbsControlFactory: BreadcrumbsControlFactory | undefined;
+
 	private readonly breadcrumbsControlDisposables = this._register(
 		new DisposableStore(),
 	);
+
 	private get breadcrumbsControl() {
 		return this.breadcrumbsControlFactory?.control;
 	}
+
 	constructor(
 		private readonly parent: HTMLElement,
 		private readonly editorPartsView: IEditorPartsView,
@@ -66,9 +71,12 @@ export class EditorTitleControl extends Themable {
 		themeService: IThemeService,
 	) {
 		super(themeService);
+
 		this.editorTabsControl = this.createEditorTabsControl();
+
 		this.breadcrumbsControlFactory = this.createBreadcrumbsControl();
 	}
+
 	private createEditorTabsControl(): IEditorTabsControl {
 		let tabsControlType;
 
@@ -92,6 +100,7 @@ export class EditorTitleControl extends Themable {
 
 				break;
 		}
+
 		const control = this.instantiationService.createInstance(
 			tabsControlType,
 			this.parent,
@@ -103,13 +112,16 @@ export class EditorTitleControl extends Themable {
 
 		return this.editorTabsControlDisposable.add(control);
 	}
+
 	private createBreadcrumbsControl(): BreadcrumbsControlFactory | undefined {
 		if (this.groupsView.partOptions.showTabs === "single") {
 			return undefined; // Single tabs have breadcrumbs inlined. No tabs have no breadcrumbs.
 		}
 		// Breadcrumbs container
 		const breadcrumbsContainer = document.createElement("div");
+
 		breadcrumbsContainer.classList.add("breadcrumbs-below-tabs");
+
 		this.parent.appendChild(breadcrumbsContainer);
 
 		const breadcrumbsControlFactory =
@@ -133,6 +145,7 @@ export class EditorTitleControl extends Themable {
 				this.groupView.relayout(),
 			),
 		);
+
 		this.breadcrumbsControlDisposables.add(
 			breadcrumbsControlFactory.onDidVisibilityChange(() =>
 				this.groupView.relayout(),
@@ -141,17 +154,22 @@ export class EditorTitleControl extends Themable {
 
 		return breadcrumbsControlFactory;
 	}
+
 	openEditor(
 		editor: EditorInput,
 		options?: IInternalEditorOpenOptions,
 	): void {
 		const didChange = this.editorTabsControl.openEditor(editor, options);
+
 		this.handleOpenedEditors(didChange);
 	}
+
 	openEditors(editors: EditorInput[]): void {
 		const didChange = this.editorTabsControl.openEditors(editors);
+
 		this.handleOpenedEditors(didChange);
 	}
+
 	private handleOpenedEditors(didChange: boolean): void {
 		if (didChange) {
 			this.breadcrumbsControl?.update();
@@ -159,22 +177,29 @@ export class EditorTitleControl extends Themable {
 			this.breadcrumbsControl?.revealLast();
 		}
 	}
+
 	beforeCloseEditor(editor: EditorInput): void {
 		return this.editorTabsControl.beforeCloseEditor(editor);
 	}
+
 	closeEditor(editor: EditorInput): void {
 		this.editorTabsControl.closeEditor(editor);
+
 		this.handleClosedEditors();
 	}
+
 	closeEditors(editors: EditorInput[]): void {
 		this.editorTabsControl.closeEditors(editors);
+
 		this.handleClosedEditors();
 	}
+
 	private handleClosedEditors(): void {
 		if (!this.groupView.activeEditor) {
 			this.breadcrumbsControl?.update();
 		}
 	}
+
 	moveEditor(
 		editor: EditorInput,
 		fromIndex: number,
@@ -188,27 +213,35 @@ export class EditorTitleControl extends Themable {
 			stickyStateChange,
 		);
 	}
+
 	pinEditor(editor: EditorInput): void {
 		return this.editorTabsControl.pinEditor(editor);
 	}
+
 	stickEditor(editor: EditorInput): void {
 		return this.editorTabsControl.stickEditor(editor);
 	}
+
 	unstickEditor(editor: EditorInput): void {
 		return this.editorTabsControl.unstickEditor(editor);
 	}
+
 	setActive(isActive: boolean): void {
 		return this.editorTabsControl.setActive(isActive);
 	}
+
 	updateEditorSelections(): void {
 		this.editorTabsControl.updateEditorSelections();
 	}
+
 	updateEditorLabel(editor: EditorInput): void {
 		return this.editorTabsControl.updateEditorLabel(editor);
 	}
+
 	updateEditorDirty(editor: EditorInput): void {
 		return this.editorTabsControl.updateEditorDirty(editor);
 	}
+
 	updateOptions(
 		oldOptions: IEditorPartOptions,
 		newOptions: IEditorPartOptions,
@@ -222,10 +255,13 @@ export class EditorTitleControl extends Themable {
 		) {
 			// Clear old
 			this.editorTabsControlDisposable.clear();
+
 			this.breadcrumbsControlDisposables.clear();
+
 			clearNode(this.parent);
 			// Create new
 			this.editorTabsControl = this.createEditorTabsControl();
+
 			this.breadcrumbsControlFactory = this.createBreadcrumbsControl();
 		}
 		// Forward into editor tabs control
@@ -233,6 +269,7 @@ export class EditorTitleControl extends Themable {
 			this.editorTabsControl.updateOptions(oldOptions, newOptions);
 		}
 	}
+
 	layout(dimensions: IEditorTitleControlDimensions): Dimension {
 		// Layout tabs control
 		const tabsControlDimension = this.editorTabsControl.layout(dimensions);
@@ -244,8 +281,10 @@ export class EditorTitleControl extends Themable {
 				dimensions.container.width,
 				BreadcrumbsControl.HEIGHT,
 			);
+
 			this.breadcrumbsControl.layout(breadcrumbsControlDimension);
 		}
+
 		return new Dimension(
 			dimensions.container.width,
 			tabsControlDimension.height +
@@ -254,6 +293,7 @@ export class EditorTitleControl extends Themable {
 					: 0),
 		);
 	}
+
 	getHeight(): IEditorGroupTitleHeight {
 		const tabsControlHeight = this.editorTabsControl.getHeight();
 

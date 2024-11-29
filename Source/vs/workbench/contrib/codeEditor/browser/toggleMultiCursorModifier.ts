@@ -28,6 +28,7 @@ import { LifecyclePhase } from "../../../services/lifecycle/common/lifecycle.js"
 
 export class ToggleMultiCursorModifierAction extends Action2 {
 	static readonly ID = "workbench.action.toggleMultiCursorModifier";
+
 	private static readonly multiCursorModifierConfigurationKey =
 		"editor.multiCursorModifier";
 
@@ -38,6 +39,7 @@ export class ToggleMultiCursorModifierAction extends Action2 {
 			f1: true,
 		});
 	}
+
 	override run(accessor: ServicesAccessor): Promise<void> {
 		const configurationService = accessor.get(IConfigurationService);
 
@@ -72,9 +74,12 @@ class MultiCursorModifierContextKeyController
 		contextKeyService: IContextKeyService,
 	) {
 		super();
+
 		this._multiCursorModifier =
 			multiCursorModifier.bindTo(contextKeyService);
+
 		this._update();
+
 		this._register(
 			configurationService.onDidChangeConfiguration((e) => {
 				if (e.affectsConfiguration("editor.multiCursorModifier")) {
@@ -83,6 +88,7 @@ class MultiCursorModifierContextKeyController
 			}),
 		);
 	}
+
 	private _update(): void {
 		const editorConf = this.configurationService.getValue<{
 			multiCursorModifier: "ctrlCmd" | "alt";
@@ -90,6 +96,7 @@ class MultiCursorModifierContextKeyController
 
 		const value =
 			editorConf.multiCursorModifier === "ctrlCmd" ? "ctrlCmd" : "altKey";
+
 		this._multiCursorModifier.set(value);
 	}
 }

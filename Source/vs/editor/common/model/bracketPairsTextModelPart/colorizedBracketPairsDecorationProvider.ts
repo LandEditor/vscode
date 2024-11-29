@@ -30,14 +30,19 @@ export class ColorizedBracketPairsDecorationProvider
 	implements DecorationProvider
 {
 	private colorizationOptions: BracketPairColorizationOptions;
+
 	private readonly colorProvider = new ColorProvider();
+
 	private readonly onDidChangeEmitter = new Emitter<void>();
+
 	public readonly onDidChange = this.onDidChangeEmitter.event;
 
 	constructor(private readonly textModel: TextModel) {
 		super();
+
 		this.colorizationOptions =
 			textModel.getOptions().bracketPairColorizationOptions;
+
 		this._register(
 			textModel.bracketPairs.onDidChange((e) => {
 				this.onDidChangeEmitter.fire();
@@ -60,12 +65,15 @@ export class ColorizedBracketPairsDecorationProvider
 			// Bracket pair colorization decorations are not rendered in the minimap
 			return [];
 		}
+
 		if (ownerId === undefined) {
 			return [];
 		}
+
 		if (!this.colorizationOptions.enabled) {
 			return [];
 		}
+
 		const result = this.textModel.bracketPairs
 			.getBracketsInRange(range, true)
 			.map<IModelDecoration>((bracket) => ({
@@ -85,6 +93,7 @@ export class ColorizedBracketPairsDecorationProvider
 
 		return result;
 	}
+
 	getAllDecorations(
 		ownerId?: number,
 		filterOutValidation?: boolean,
@@ -92,9 +101,11 @@ export class ColorizedBracketPairsDecorationProvider
 		if (ownerId === undefined) {
 			return [];
 		}
+
 		if (!this.colorizationOptions.enabled) {
 			return [];
 		}
+
 		return this.getDecorationsInRange(
 			new Range(1, 1, this.textModel.getLineCount(), 1),
 			ownerId,
@@ -113,12 +124,14 @@ class ColorProvider {
 		if (bracket.isInvalid) {
 			return this.unexpectedClosingBracketClassName;
 		}
+
 		return this.getInlineClassNameOfLevel(
 			independentColorPoolPerBracketType
 				? bracket.nestingLevelOfEqualBracketType
 				: bracket.nestingLevel,
 		);
 	}
+
 	getInlineClassNameOfLevel(level: number): string {
 		// To support a dynamic amount of colors up to 6 colors,
 		// we use a number that is a lcm of all numbers from 1 to 6.
@@ -136,6 +149,7 @@ registerThemingParticipant((theme, collector) => {
 	];
 
 	const colorProvider = new ColorProvider();
+
 	collector.addRule(
 		`.monaco-editor .${colorProvider.unexpectedClosingBracketClassName} { color: ${theme.getColor(editorBracketHighlightingUnexpectedBracketForeground)}; }`,
 	);
@@ -147,6 +161,7 @@ registerThemingParticipant((theme, collector) => {
 
 	for (let level = 0; level < 30; level++) {
 		const color = colorValues[level % colorValues.length];
+
 		collector.addRule(
 			`.monaco-editor .${colorProvider.getInlineClassNameOfLevel(level)} { color: ${color}; }`,
 		);

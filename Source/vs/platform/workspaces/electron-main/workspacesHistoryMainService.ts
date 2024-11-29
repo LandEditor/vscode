@@ -57,11 +57,15 @@ export const IWorkspacesHistoryMainService =
 
 export interface IWorkspacesHistoryMainService {
 	readonly _serviceBrand: undefined;
+
 	readonly onDidChangeRecentlyOpened: CommonEvent<void>;
+
 	addRecentlyOpened(recents: IRecent[]): Promise<void>;
 
 	getRecentlyOpened(): Promise<IRecentlyOpened>;
+
 	removeRecentlyOpened(paths: URI[]): Promise<void>;
+
 	clearRecentlyOpened(options?: { confirm?: boolean }): Promise<void>;
 }
 export class WorkspacesHistoryMainService
@@ -69,12 +73,16 @@ export class WorkspacesHistoryMainService
 	implements IWorkspacesHistoryMainService
 {
 	private static readonly MAX_TOTAL_RECENT_ENTRIES = 500;
+
 	private static readonly RECENTLY_OPENED_STORAGE_KEY =
 		"history.recentlyOpenedPathsList";
+
 	declare readonly _serviceBrand: undefined;
+
 	private readonly _onDidChangeRecentlyOpened = this._register(
 		new Emitter<void>(),
 	);
+
 	readonly onDidChangeRecentlyOpened = this._onDidChangeRecentlyOpened.event;
 
 	constructor(
@@ -90,8 +98,10 @@ export class WorkspacesHistoryMainService
 		private readonly dialogMainService: IDialogMainService,
 	) {
 		super();
+
 		this.registerListeners();
 	}
+
 	private registerListeners(): void {
 		// Install window jump list delayed after opening window
 		// because perf measurements have shown this to be slow
@@ -156,11 +166,14 @@ export class WorkspacesHistoryMainService
 				}
 			}
 		}
+
 		const mergedEntries = await this.mergeEntriesFromStorage({
 			workspaces,
 			files,
 		});
+
 		workspaces = mergedEntries.workspaces;
+
 		files = mergedEntries.files;
 
 		if (
@@ -170,13 +183,16 @@ export class WorkspacesHistoryMainService
 			workspaces.length =
 				WorkspacesHistoryMainService.MAX_TOTAL_RECENT_ENTRIES;
 		}
+
 		if (
 			files.length > WorkspacesHistoryMainService.MAX_TOTAL_RECENT_ENTRIES
 		) {
 			files.length =
 				WorkspacesHistoryMainService.MAX_TOTAL_RECENT_ENTRIES;
 		}
+
 		await this.saveRecentlyOpened({ workspaces, files });
+
 		this._onDidChangeRecentlyOpened.fire();
 		// Schedule update to recent documents on macOS dock
 		if (isMacintosh) {
@@ -185,6 +201,7 @@ export class WorkspacesHistoryMainService
 			);
 		}
 	}
+
 	async removeRecentlyOpened(recentToRemove: URI[]): Promise<void> {
 		const keep = (recent: IRecent) => {
 			const uri = this.location(recent);
@@ -194,6 +211,7 @@ export class WorkspacesHistoryMainService
 					return false;
 				}
 			}
+
 			return true;
 		};
 
@@ -208,6 +226,7 @@ export class WorkspacesHistoryMainService
 			files.length !== mru.files.length
 		) {
 			await this.saveRecentlyOpened({ files, workspaces });
+
 			this._onDidChangeRecentlyOpened.fire();
 			// Schedule update to recent documents on macOS dock
 			if (isMacintosh) {
@@ -217,6 +236,7 @@ export class WorkspacesHistoryMainService
 			}
 		}
 	}
+
 	async clearRecentlyOpened(options?: { confirm?: boolean }): Promise<void> {
 		if (options?.confirm) {
 			const { response } = await this.dialogMainService.showMessageBox({
@@ -249,14 +269,18 @@ export class WorkspacesHistoryMainService
 				return;
 			}
 		}
+
 		await this.saveRecentlyOpened({ workspaces: [], files: [] });
+
 		app.clearRecentDocuments();
 		// Event
 		this._onDidChangeRecentlyOpened.fire();
 	}
+
 	async getRecentlyOpened(): Promise<IRecentlyOpened> {
 		return this.mergeEntriesFromStorage();
 	}
+
 	private async mergeEntriesFromStorage(
 		existingEntries?: IRecentlyOpened,
 	): Promise<IRecentlyOpened> {
@@ -274,6 +298,7 @@ export class WorkspacesHistoryMainService
 				);
 			}
 		}
+
 		const mapFileIdToFile = new ResourceMap<IRecentFile>((uri) =>
 			extUriBiasedIgnorePathCase.getComparisonKey(uri),
 		);
@@ -302,6 +327,7 @@ export class WorkspacesHistoryMainService
 				);
 			}
 		}
+
 		for (const recentFileFromStorage of recentFromStorage.files) {
 			const existingRecentFile = mapFileIdToFile.get(
 				this.location(recentFileFromStorage),
@@ -317,11 +343,13 @@ export class WorkspacesHistoryMainService
 				);
 			}
 		}
+
 		return {
 			workspaces: [...mapWorkspaceIdToWorkspace.values()],
 			files: [...mapFileIdToFile.values()],
 		};
 	}
+
 	private async getRecentlyOpenedFromStorage(): Promise<IRecentlyOpened> {
 		// Wait for global storage to be ready
 		await this.applicationStorageMainService.whenReady;
@@ -343,8 +371,10 @@ export class WorkspacesHistoryMainService
 				);
 			}
 		}
+
 		return restoreRecentlyOpened(storedRecentlyOpened, this.logService);
 	}
+
 	private async saveRecentlyOpened(recent: IRecentlyOpened): Promise<void> {
 		// Wait for global storage to be ready
 		await this.applicationStorageMainService.whenReady;
@@ -356,15 +386,19 @@ export class WorkspacesHistoryMainService
 			StorageTarget.MACHINE,
 		);
 	}
+
 	private location(recent: IRecent): URI {
 		if (isRecentFolder(recent)) {
 			return recent.folderUri;
 		}
+
 		if (isRecentFile(recent)) {
 			return recent.fileUri;
 		}
+
 		return recent.workspace.configPath;
 	}
+
 	private containsWorkspace(
 		recents: IRecent[],
 		candidate: IWorkspaceIdentifier,
@@ -375,6 +409,7 @@ export class WorkspacesHistoryMainService
 				recent.workspace.id === candidate.id,
 		);
 	}
+
 	private containsFolder(recents: IRecent[], candidate: URI): boolean {
 		return !!recents.find(
 			(recent) =>
@@ -382,6 +417,7 @@ export class WorkspacesHistoryMainService
 				extUriBiasedIgnorePathCase.isEqual(recent.folderUri, candidate),
 		);
 	}
+
 	private containsFile(recents: IRecentFile[], candidate: URI): boolean {
 		return !!recents.find((recent) =>
 			extUriBiasedIgnorePathCase.isEqual(recent.fileUri, candidate),
@@ -398,22 +434,28 @@ export class WorkspacesHistoryMainService
 		"MERGE_MSG",
 		"git-rebase-todo",
 	];
+
 	private readonly macOSRecentDocumentsUpdater = this._register(
 		new ThrottledDelayer<void>(800),
 	);
+
 	private async handleWindowsJumpList(): Promise<void> {
 		if (!isWindows) {
 			return; // only on windows
 		}
+
 		await this.updateWindowsJumpList();
+
 		this._register(
 			this.onDidChangeRecentlyOpened(() => this.updateWindowsJumpList()),
 		);
 	}
+
 	private async updateWindowsJumpList(): Promise<void> {
 		if (!isWindows) {
 			return; // only on windows
 		}
+
 		const jumpList: JumpListCategory[] = [];
 		// Tasks
 		jumpList.push({
@@ -454,6 +496,7 @@ export class WorkspacesHistoryMainService
 					}
 				}
 			}
+
 			await this.removeRecentlyOpened(toRemove);
 			// Add entries
 			let hasWorkspaces = false;
@@ -481,8 +524,10 @@ export class WorkspacesHistoryMainService
 							args = `--folder-uri "${workspace.toString()}"`;
 						} else {
 							hasWorkspaces = true;
+
 							args = `--file-uri "${workspace.configPath.toString()}"`;
 						}
+
 						return {
 							type: "task",
 							title: title.substr(0, 255), // Windows seems to be picky around the length of entries
@@ -525,11 +570,13 @@ export class WorkspacesHistoryMainService
 			this.logService.warn("updateWindowsJumpList#setJumpList", error); // since setJumpList is relatively new API, make sure to guard for errors
 		}
 	}
+
 	private getWindowsJumpListLabel(
 		workspace: IWorkspaceIdentifier | URI,
 		recentLabel: string | undefined,
 	): {
 		title: string;
+
 		description: string;
 	} {
 		// Prefer recent label
@@ -564,6 +611,7 @@ export class WorkspacesHistoryMainService
 				filename.length - WORKSPACE_EXTENSION.length - 1,
 			);
 		}
+
 		return {
 			title: localize("workspaceName", "{0} (Workspace)", filename),
 			description: this.renderJumpListPathDescription(
@@ -571,11 +619,13 @@ export class WorkspacesHistoryMainService
 			),
 		};
 	}
+
 	private renderJumpListPathDescription(uri: URI) {
 		return uri.scheme === "file"
 			? normalizeDriveLetter(uri.fsPath)
 			: uri.toString();
 	}
+
 	private async updateMacOSRecentDocuments(): Promise<void> {
 		if (!isMacintosh) {
 			return;
@@ -592,9 +642,11 @@ export class WorkspacesHistoryMainService
 
 		for (
 			let i = 0;
+
 			i < mru.workspaces.length &&
 			entries <
 				WorkspacesHistoryMainService.MAX_MACOS_DOCK_RECENT_WORKSPACES;
+
 			i++
 		) {
 			const loc = this.location(mru.workspaces[i]);
@@ -604,6 +656,7 @@ export class WorkspacesHistoryMainService
 
 				if (await Promises.exists(workspacePath)) {
 					workspaceEntries.push(workspacePath);
+
 					entries++;
 				}
 			}
@@ -613,9 +666,11 @@ export class WorkspacesHistoryMainService
 
 		for (
 			let i = 0;
+
 			i < mru.files.length &&
 			entries <
 				WorkspacesHistoryMainService.MAX_MACOS_DOCK_RECENT_ENTRIES_TOTAL;
+
 			i++
 		) {
 			const loc = this.location(mru.files[i]);
@@ -631,8 +686,10 @@ export class WorkspacesHistoryMainService
 				) {
 					continue;
 				}
+
 				if (await Promises.exists(filePath)) {
 					fileEntries.push(filePath);
+
 					entries++;
 				}
 			}
@@ -650,6 +707,7 @@ export class WorkspacesHistoryMainService
 		fileEntries
 			.reverse()
 			.forEach((fileEntry) => app.addRecentDocument(fileEntry));
+
 		workspaceEntries
 			.reverse()
 			.forEach((workspaceEntry) => app.addRecentDocument(workspaceEntry));

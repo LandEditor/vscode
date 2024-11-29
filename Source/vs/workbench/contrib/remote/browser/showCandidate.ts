@@ -46,11 +46,13 @@ export class ShowCandidateContribution
 						if (filters.length !== candidates.length) {
 							return candidates;
 						}
+
 						for (let i = 0; i < candidates.length; i++) {
 							if (filters[i]) {
 								filteredCandidates.push(candidates[i]);
 							}
 						}
+
 						return filteredCandidates;
 					},
 				),

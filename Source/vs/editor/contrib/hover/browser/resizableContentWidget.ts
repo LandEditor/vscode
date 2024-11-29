@@ -23,11 +23,15 @@ export abstract class ResizableContentWidget
 	implements IContentWidget
 {
 	readonly allowEditorOverflow: boolean = true;
+
 	readonly suppressMouseDown: boolean = false;
+
 	protected readonly _resizableNode = this._register(
 		new ResizableHTMLElement(),
 	);
+
 	protected _contentPosition: IContentWidgetPosition | null = null;
+
 	private _isResizing: boolean = false;
 
 	constructor(
@@ -35,10 +39,15 @@ export abstract class ResizableContentWidget
 		minimumSize: dom.IDimension = new dom.Dimension(10, 10),
 	) {
 		super();
+
 		this._resizableNode.domNode.style.position = "absolute";
+
 		this._resizableNode.minSize = dom.Dimension.lift(minimumSize);
+
 		this._resizableNode.layout(minimumSize.height, minimumSize.width);
+
 		this._resizableNode.enableSashes(true, true, true, true);
+
 		this._register(
 			this._resizableNode.onDidResize((e) => {
 				this._resize(
@@ -50,28 +59,34 @@ export abstract class ResizableContentWidget
 				}
 			}),
 		);
+
 		this._register(
 			this._resizableNode.onDidWillResize(() => {
 				this._isResizing = true;
 			}),
 		);
 	}
+
 	get isResizing() {
 		return this._isResizing;
 	}
+
 	abstract getId(): string;
 
 	getDomNode(): HTMLElement {
 		return this._resizableNode.domNode;
 	}
+
 	getPosition(): IContentWidgetPosition | null {
 		return this._contentPosition;
 	}
+
 	get position(): Position | undefined {
 		return this._contentPosition?.position
 			? Position.lift(this._contentPosition.position)
 			: undefined;
 	}
+
 	protected _availableVerticalSpaceAbove(
 		position: IPosition,
 	): number | undefined {
@@ -82,10 +97,12 @@ export abstract class ResizableContentWidget
 		if (!editorDomNode || !mouseBox) {
 			return;
 		}
+
 		const editorBox = dom.getDomNodePagePosition(editorDomNode);
 
 		return editorBox.top + mouseBox.top - TOP_HEIGHT;
 	}
+
 	protected _availableVerticalSpaceBelow(
 		position: IPosition,
 	): number | undefined {
@@ -96,6 +113,7 @@ export abstract class ResizableContentWidget
 		if (!editorDomNode || !mouseBox) {
 			return;
 		}
+
 		const editorBox = dom.getDomNodePagePosition(editorDomNode);
 
 		const bodyBox = dom.getClientArea(editorDomNode.ownerDocument.body);
@@ -104,6 +122,7 @@ export abstract class ResizableContentWidget
 
 		return bodyBox.height - mouseBottom - BOTTOM_HEIGHT;
 	}
+
 	protected _findPositionPreference(
 		widgetHeight: number,
 		showAtPosition: IPosition,
@@ -138,13 +157,16 @@ export abstract class ResizableContentWidget
 					? ContentWidgetPositionPreference.BELOW
 					: ContentWidgetPositionPreference.ABOVE;
 		}
+
 		if (renderingAbove === ContentWidgetPositionPreference.ABOVE) {
 			this._resizableNode.enableSashes(true, true, false, false);
 		} else {
 			this._resizableNode.enableSashes(false, true, true, false);
 		}
+
 		return renderingAbove;
 	}
+
 	protected _resize(dimension: dom.Dimension): void {
 		this._resizableNode.layout(dimension.height, dimension.width);
 	}

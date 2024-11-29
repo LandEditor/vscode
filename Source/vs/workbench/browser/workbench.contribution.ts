@@ -249,6 +249,7 @@ const registry = Registry.as<IConfigurationRegistry>(
 						"workbench.editor.label.patterns",
 						"Controls the rendering of the editor label. Each __Item__ is a pattern that matches a file path. Both relative and absolute file paths are supported. The relative path must include the WORKSPACE_FOLDER (e.g `WORKSPACE_FOLDER/src/**.tsx` or `*/src/**.tsx`). Absolute patterns must start with a `/`. In case multiple patterns match, the longest matching path will be picked. Each __Value__ is the template for the rendered editor when the __Item__ matches. Variables are substituted based on the context:",
 					);
+
 					customEditorLabelDescription +=
 						"\n- " +
 						[
@@ -1302,6 +1303,7 @@ const registry = Registry.as<IConfigurationRegistry>(
 		"windowTitle",
 		"Controls the window title based on the current context such as the opened workspace or active editor. Variables are substituted based on the context:",
 	);
+
 	windowTitleDescription +=
 		"\n- " +
 		[
@@ -1720,12 +1722,14 @@ Registry.as<IConfigurationMigrationRegistry>(
 					{ value: undefined },
 				]);
 			}
+
 			if (value === false) {
 				result.push([
 					LayoutSettings.ACTIVITY_BAR_LOCATION,
 					{ value: ActivityBarPosition.HIDDEN },
 				]);
 			}
+
 			return result;
 		},
 	},
@@ -1745,6 +1749,7 @@ Registry.as<IConfigurationMigrationRegistry>(
 					{ value: ActivityBarPosition.DEFAULT },
 				]);
 			}
+
 			return results;
 		},
 	},
@@ -1760,11 +1765,13 @@ Registry.as<IConfigurationMigrationRegistry>(
 
 			if (typeof value === "boolean") {
 				value = value ? "expand" : "off";
+
 				results.push([
 					"workbench.editor.doubleClickTabToToggleEditorGroupSizes",
 					{ value },
 				]);
 			}
+
 			return results;
 		},
 	},
@@ -1775,8 +1782,10 @@ Registry.as<IConfigurationMigrationRegistry>(
 
 			if (typeof value === "boolean") {
 				value = value ? EditorTabsMode.MULTIPLE : EditorTabsMode.SINGLE;
+
 				results.push([LayoutSettings.EDITOR_TABS_MODE, { value }]);
 			}
+
 			return results;
 		},
 	},
@@ -1793,6 +1802,7 @@ Registry.as<IConfigurationMigrationRegistry>(
 					{ value: false },
 				]);
 			}
+
 			return result;
 		},
 	},
@@ -1806,6 +1816,7 @@ Registry.as<IConfigurationMigrationRegistry>(
 			if (value === true) {
 				result.push(["zenMode.showTabs", { value: "single" }]);
 			}
+
 			return result;
 		},
 	},

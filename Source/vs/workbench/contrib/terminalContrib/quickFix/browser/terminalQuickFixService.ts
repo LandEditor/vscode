@@ -20,21 +20,30 @@ import {
 
 export class TerminalQuickFixService implements ITerminalQuickFixService {
 	declare _serviceBrand: undefined;
+
 	private _selectors: Map<string, ITerminalCommandSelector> = new Map();
+
 	private _providers: Map<string, ITerminalQuickFixProvider> = new Map();
 
 	get providers(): Map<string, ITerminalQuickFixProvider> {
 		return this._providers;
 	}
+
 	private readonly _onDidRegisterProvider =
 		new Emitter<ITerminalQuickFixProviderSelector>();
+
 	readonly onDidRegisterProvider = this._onDidRegisterProvider.event;
+
 	private readonly _onDidRegisterCommandSelector =
 		new Emitter<ITerminalCommandSelector>();
+
 	readonly onDidRegisterCommandSelector =
 		this._onDidRegisterCommandSelector.event;
+
 	private readonly _onDidUnregisterProvider = new Emitter<string>();
+
 	readonly onDidUnregisterProvider = this._onDidUnregisterProvider.event;
+
 	readonly extensionQuickFixes: Promise<Array<ITerminalCommandSelector>>;
 
 	constructor(
@@ -55,6 +64,7 @@ export class TerminalQuickFixService implements ITerminalQuickFixService {
 							if (!c.value) {
 								return [];
 							}
+
 							return c.value.map((fix) => {
 								return {
 									...fix,
@@ -67,16 +77,20 @@ export class TerminalQuickFixService implements ITerminalQuickFixService {
 				);
 			}),
 		);
+
 		this.extensionQuickFixes.then((selectors) => {
 			for (const selector of selectors) {
 				this.registerCommandSelector(selector);
 			}
 		});
 	}
+
 	registerCommandSelector(selector: ITerminalCommandSelector): void {
 		this._selectors.set(selector.id, selector);
+
 		this._onDidRegisterCommandSelector.fire(selector);
 	}
+
 	registerQuickFixProvider(
 		id: string,
 		provider: ITerminalQuickFixProvider,
@@ -85,10 +99,12 @@ export class TerminalQuickFixService implements ITerminalQuickFixService {
 		// IDisposable synchronously but we must await ITerminalContributionService.quickFixes
 		// asynchronously before actually registering the provider.
 		let disposed = false;
+
 		this.extensionQuickFixes.then(() => {
 			if (disposed) {
 				return;
 			}
+
 			this._providers.set(id, provider);
 
 			const selector = this._selectors.get(id);
@@ -98,17 +114,20 @@ export class TerminalQuickFixService implements ITerminalQuickFixService {
 
 				return;
 			}
+
 			this._onDidRegisterProvider.fire({ selector, provider });
 		});
 
 		return toDisposable(() => {
 			disposed = true;
+
 			this._providers.delete(id);
 
 			const selector = this._selectors.get(id);
 
 			if (selector) {
 				this._selectors.delete(id);
+
 				this._onDidUnregisterProvider.fire(selector.id);
 			}
 		});

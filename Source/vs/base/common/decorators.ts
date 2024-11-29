@@ -16,14 +16,18 @@ function createDecorator(
 
 		if (typeof descriptor.value === "function") {
 			fnKey = "value";
+
 			fn = descriptor.value;
 		} else if (typeof descriptor.get === "function") {
 			fnKey = "get";
+
 			fn = descriptor.get;
 		}
+
 		if (!fn || typeof key === "symbol") {
 			throw new Error("not supported");
 		}
+
 		descriptor[fnKey!] = mapFn(fn, key);
 	};
 }
@@ -38,6 +42,7 @@ export function memoize(
 
 	if (typeof descriptor.value === "function") {
 		fnKey = "value";
+
 		fn = descriptor.value;
 
 		if (fn!.length !== 0) {
@@ -47,12 +52,16 @@ export function memoize(
 		}
 	} else if (typeof descriptor.get === "function") {
 		fnKey = "get";
+
 		fn = descriptor.get;
 	}
+
 	if (!fn) {
 		throw new Error("not supported");
 	}
+
 	const memoizeKey = `$memoize$${key}`;
+
 	descriptor[fnKey!] = function (...args: any[]) {
 		if (!this.hasOwnProperty(memoizeKey)) {
 			Object.defineProperty(this, memoizeKey, {
@@ -62,6 +71,7 @@ export function memoize(
 				value: fn.apply(this, args),
 			});
 		}
+
 		return (this as any)[memoizeKey];
 	};
 }
@@ -84,14 +94,18 @@ export function debounce<T>(
 					? initialValueProvider()
 					: undefined;
 			}
+
 			clearTimeout(this[timerKey]);
 
 			if (reducer) {
 				this[resultKey] = reducer(this[resultKey], ...args);
+
 				args = [this[resultKey]];
 			}
+
 			this[timerKey] = setTimeout(() => {
 				fn.apply(this, args);
+
 				this[resultKey] = initialValueProvider
 					? initialValueProvider()
 					: undefined;
@@ -119,29 +133,39 @@ export function throttle<T>(
 					? initialValueProvider()
 					: undefined;
 			}
+
 			if (this[lastRunKey] === null || this[lastRunKey] === undefined) {
 				this[lastRunKey] = -Number.MAX_VALUE;
 			}
+
 			if (reducer) {
 				this[resultKey] = reducer(this[resultKey], ...args);
 			}
+
 			if (this[pendingKey]) {
 				return;
 			}
+
 			const nextTime = this[lastRunKey] + delay;
 
 			if (nextTime <= Date.now()) {
 				this[lastRunKey] = Date.now();
+
 				fn.apply(this, [this[resultKey]]);
+
 				this[resultKey] = initialValueProvider
 					? initialValueProvider()
 					: undefined;
 			} else {
 				this[pendingKey] = true;
+
 				this[timerKey] = setTimeout(() => {
 					this[pendingKey] = false;
+
 					this[lastRunKey] = Date.now();
+
 					fn.apply(this, [this[resultKey]]);
+
 					this[resultKey] = initialValueProvider
 						? initialValueProvider()
 						: undefined;

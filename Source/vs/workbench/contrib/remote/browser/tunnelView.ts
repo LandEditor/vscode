@@ -178,14 +178,19 @@ class TunnelTreeVirtualDelegate implements ITableVirtualDelegate<ITunnelItem> {
 
 interface ITunnelViewModel {
 	readonly onForwardedPortsChanged: Event<void>;
+
 	readonly all: TunnelItem[];
+
 	readonly input: TunnelItem;
+
 	isEmpty(): boolean;
 }
 
 export class TunnelViewModel implements ITunnelViewModel {
 	readonly onForwardedPortsChanged: Event<void>;
+
 	private model: TunnelModel;
+
 	private _candidates: Map<string, CandidatePort> = new Map();
 
 	readonly input = {
@@ -218,6 +223,7 @@ export class TunnelViewModel implements ITunnelViewModel {
 		@ITunnelService private readonly tunnelService: ITunnelService,
 	) {
 		this.model = remoteExplorerService.tunnelModel;
+
 		this.onForwardedPortsChanged = Event.any(
 			this.model.onForwardPort,
 			this.model.onClosePort,
@@ -228,7 +234,9 @@ export class TunnelViewModel implements ITunnelViewModel {
 
 	get all(): TunnelItem[] {
 		const result: TunnelItem[] = [];
+
 		this._candidates = new Map();
+
 		this.model.candidates.forEach((candidate) => {
 			this._candidates.set(
 				makeAddress(candidate.host, candidate.port),
@@ -242,6 +250,7 @@ export class TunnelViewModel implements ITunnelViewModel {
 		) {
 			result.push(...this.forwarded);
 		}
+
 		if (this.model.detected.size > 0) {
 			result.push(...this.detected);
 		}
@@ -267,6 +276,7 @@ export class TunnelViewModel implements ITunnelViewModel {
 					this.tunnelService,
 					tunnel,
 				);
+
 				this.addProcessInfoFromCandidate(tunnelItem);
 
 				return tunnelItem;
@@ -291,6 +301,7 @@ export class TunnelViewModel implements ITunnelViewModel {
 				TunnelType.Detected,
 				false,
 			);
+
 			this.addProcessInfoFromCandidate(tunnelItem);
 
 			return tunnelItem;
@@ -314,11 +325,17 @@ function emptyCell(item: ITunnelItem): ActionBarCell {
 
 class IconColumn implements ITableColumn<ITunnelItem, ActionBarCell> {
 	readonly label: string = "";
+
 	readonly tooltip: string = "";
+
 	readonly weight: number = 1;
+
 	readonly minimumWidth = 40;
+
 	readonly maximumWidth = 40;
+
 	readonly templateId: string = "actionbar";
+
 	project(row: ITunnelItem): ActionBarCell {
 		if (row.tunnelType === TunnelType.Add) {
 			return emptyCell(row);
@@ -333,6 +350,7 @@ class IconColumn implements ITableColumn<ITunnelItem, ActionBarCell> {
 		if (row instanceof TunnelItem) {
 			tooltip = `${row.iconTooltip} ${row.tooltipPostfix}`;
 		}
+
 		return {
 			label: "",
 			icon,
@@ -345,12 +363,16 @@ class IconColumn implements ITableColumn<ITunnelItem, ActionBarCell> {
 
 class PortColumn implements ITableColumn<ITunnelItem, ActionBarCell> {
 	readonly label: string = nls.localize("tunnel.portColumn.label", "Port");
+
 	readonly tooltip: string = nls.localize(
 		"tunnel.portColumn.tooltip",
 		"The label and remote port number of the forwarded port.",
 	);
+
 	readonly weight: number = 1;
+
 	readonly templateId: string = "actionbar";
+
 	project(row: ITunnelItem): ActionBarCell {
 		const isAdd = row.tunnelType === TunnelType.Add;
 
@@ -363,6 +385,7 @@ class PortColumn implements ITableColumn<ITunnelItem, ActionBarCell> {
 		} else {
 			tooltip = label;
 		}
+
 		return {
 			label,
 			tunnel: row,
@@ -381,12 +404,16 @@ class LocalAddressColumn implements ITableColumn<ITunnelItem, ActionBarCell> {
 		"tunnel.addressColumn.label",
 		"Forwarded Address",
 	);
+
 	readonly tooltip: string = nls.localize(
 		"tunnel.addressColumn.tooltip",
 		"The address that the forwarded port is available at.",
 	);
+
 	readonly weight: number = 1;
+
 	readonly templateId: string = "actionbar";
+
 	project(row: ITunnelItem): ActionBarCell {
 		if (row.tunnelType === TunnelType.Add) {
 			return emptyCell(row);
@@ -399,6 +426,7 @@ class LocalAddressColumn implements ITableColumn<ITunnelItem, ActionBarCell> {
 		if (row instanceof TunnelItem) {
 			tooltip = row.tooltipPostfix;
 		}
+
 		return {
 			label,
 			menuId: MenuId.TunnelLocalAddressInline,
@@ -463,12 +491,16 @@ class RunningProcessColumn implements ITableColumn<ITunnelItem, ActionBarCell> {
 		"tunnel.processColumn.label",
 		"Running Process",
 	);
+
 	readonly tooltip: string = nls.localize(
 		"tunnel.processColumn.tooltip",
 		"The command line of the process that is using the port.",
 	);
+
 	readonly weight: number = 2;
+
 	readonly templateId: string = "actionbar";
+
 	project(row: ITunnelItem): ActionBarCell {
 		if (row.tunnelType === TunnelType.Add) {
 			return emptyCell(row);
@@ -490,12 +522,16 @@ class OriginColumn implements ITableColumn<ITunnelItem, ActionBarCell> {
 		"tunnel.originColumn.label",
 		"Origin",
 	);
+
 	readonly tooltip: string = nls.localize(
 		"tunnel.originColumn.tooltip",
 		"The source that a forwarded port originates from. Can be an extension, user forwarded, statically forwarded, or automatically forwarded.",
 	);
+
 	readonly weight: number = 1;
+
 	readonly templateId: string = "actionbar";
+
 	project(row: ITunnelItem): ActionBarCell {
 		if (row.tunnelType === TunnelType.Add) {
 			return emptyCell(row);
@@ -520,12 +556,16 @@ class PrivacyColumn implements ITableColumn<ITunnelItem, ActionBarCell> {
 		"tunnel.privacyColumn.label",
 		"Visibility",
 	);
+
 	readonly tooltip: string = nls.localize(
 		"tunnel.privacyColumn.tooltip",
 		"The availability of the forwarded port.",
 	);
+
 	readonly weight: number = 1;
+
 	readonly templateId: string = "actionbar";
+
 	project(row: ITunnelItem): ActionBarCell {
 		if (row.tunnelType === TunnelType.Add) {
 			return emptyCell(row);
@@ -538,6 +578,7 @@ class PrivacyColumn implements ITableColumn<ITunnelItem, ActionBarCell> {
 		if (row instanceof TunnelItem) {
 			tooltip = `${row.privacy.label} ${row.tooltipPostfix}`;
 		}
+
 		return {
 			label,
 			tunnel: row,
@@ -550,22 +591,33 @@ class PrivacyColumn implements ITableColumn<ITunnelItem, ActionBarCell> {
 
 interface IActionBarTemplateData {
 	elementDisposable: IDisposable;
+
 	container: HTMLElement;
+
 	label: IconLabel;
+
 	button?: Button;
+
 	icon: HTMLElement;
+
 	actionBar: ActionBar;
 }
 
 interface ActionBarCell {
 	label: string;
+
 	icon?: ThemeIcon;
+
 	tooltip: string;
+
 	markdownTooltip?: (
 		configurationService: IConfigurationService,
 	) => IMarkdownString;
+
 	menuId?: MenuId;
+
 	tunnel: ITunnelItem;
+
 	editId: TunnelEditId;
 }
 
@@ -574,8 +626,11 @@ class ActionBarRenderer
 	implements ITableRenderer<ActionBarCell, IActionBarTemplateData>
 {
 	readonly templateId = "actionbar";
+
 	private inputDone?: (success: boolean, finishEditing: boolean) => void;
+
 	private _actionRunner: ActionRunner | undefined;
+
 	private readonly _hoverDelegate: IHoverDelegate;
 
 	constructor(
@@ -637,17 +692,25 @@ class ActionBarRenderer
 	): void {
 		// reset
 		templateData.actionBar.clear();
+
 		templateData.icon.className = "ports-view-actionbar-cell-icon";
+
 		templateData.icon.style.display = "none";
+
 		templateData.label.setLabel("");
+
 		templateData.label.element.style.display = "none";
+
 		templateData.container.style.height = "22px";
 
 		if (templateData.button) {
 			templateData.button.element.style.display = "none";
+
 			templateData.button.dispose();
 		}
+
 		templateData.container.style.paddingLeft = "0px";
+
 		templateData.elementDisposable.dispose();
 
 		let editableData: IEditableData | undefined;
@@ -682,12 +745,17 @@ class ActionBarRenderer
 		templateData: IActionBarTemplateData,
 	): void {
 		templateData.container.style.paddingLeft = "7px";
+
 		templateData.container.style.height = "28px";
+
 		templateData.button = this._register(
 			new Button(templateData.container, defaultButtonStyles),
 		);
+
 		templateData.button.label = element.label;
+
 		templateData.button.element.title = element.tooltip;
+
 		this._register(
 			templateData.button.onDidClick(() => {
 				this.commandService.executeCommand(ForwardPortAction.INLINE_ID);
@@ -701,6 +769,7 @@ class ActionBarRenderer
 		if (tunnel instanceof TunnelItem) {
 			context = tunnel.strip();
 		}
+
 		if (!context) {
 			context = {
 				tunnelType: tunnel.tunnelType,
@@ -718,6 +787,7 @@ class ActionBarRenderer
 				label: tunnel.label,
 			};
 		}
+
 		return context;
 	}
 
@@ -726,6 +796,7 @@ class ActionBarRenderer
 		templateData: IActionBarTemplateData,
 	): void {
 		templateData.label.element.style.display = "flex";
+
 		templateData.label.setLabel(element.label, undefined, {
 			title: element.markdownTooltip
 				? {
@@ -740,7 +811,9 @@ class ActionBarRenderer
 					? ["ports-view-actionbar-cell-localaddress"]
 					: undefined,
 		});
+
 		templateData.actionBar.context = this.tunnelContext(element.tunnel);
+
 		templateData.container.style.paddingLeft = "10px";
 
 		const context: [string, any][] = [
@@ -754,6 +827,7 @@ class ActionBarRenderer
 		const contextKeyService = this.contextKeyService.createOverlay(context);
 
 		const disposableStore = new DisposableStore();
+
 		templateData.elementDisposable = disposableStore;
 
 		if (element.menuId) {
@@ -774,11 +848,14 @@ class ActionBarRenderer
 					labelActions.sort(
 						(a, b) => a.label.length - b.label.length,
 					);
+
 					labelActions.pop();
+
 					actions = actions.filter(
 						(action) => labelActions.indexOf(action) < 0,
 					);
 				}
+
 				templateData.actionBar.push(actions, {
 					icon: true,
 					label: false,
@@ -789,9 +866,12 @@ class ActionBarRenderer
 				}
 			}
 		}
+
 		if (element.icon) {
 			templateData.icon.className = `ports-view-actionbar-cell-icon ${ThemeIcon.asClassName(element.icon)}`;
+
 			templateData.icon.title = element.tooltip;
+
 			templateData.icon.style.display = "inline";
 		}
 	}
@@ -803,8 +883,10 @@ class ActionBarRenderer
 		// Required for FireFox. The blur event doesn't fire on FireFox when you just mash the "+" button to forward a port.
 		if (this.inputDone) {
 			this.inputDone(false, false);
+
 			this.inputDone = undefined;
 		}
+
 		container.style.paddingLeft = "5px";
 
 		const value = editableData.startingValue || "";
@@ -835,8 +917,11 @@ class ActionBarRenderer
 			placeholder: editableData.placeholder || "",
 			inputBoxStyles: defaultInputBoxStyles,
 		});
+
 		inputBox.value = value;
+
 		inputBox.focus();
+
 		inputBox.select({
 			start: 0,
 			end: editableData.startingValue
@@ -851,6 +936,7 @@ class ActionBarRenderer
 				if (this.inputDone) {
 					this.inputDone = undefined;
 				}
+
 				inputBox.element.style.display = "none";
 
 				const inputValue = inputBox.value;
@@ -860,6 +946,7 @@ class ActionBarRenderer
 				}
 			},
 		);
+
 		this.inputDone = done;
 
 		const toDispose = [
@@ -878,6 +965,7 @@ class ActionBarRenderer
 						}
 					} else if (e.equals(KeyCode.Escape)) {
 						e.preventDefault();
+
 						e.stopPropagation();
 
 						return done(false, true);
@@ -912,8 +1000,11 @@ class ActionBarRenderer
 
 	disposeTemplate(templateData: IActionBarTemplateData): void {
 		templateData.label.dispose();
+
 		templateData.actionBar.dispose();
+
 		templateData.elementDisposable.dispose();
+
 		templateData.button?.dispose();
 	}
 }
@@ -992,6 +1083,7 @@ class TunnelItem implements ITunnelItem {
 		if (this.tunnelType === TunnelType.Add && this.name) {
 			return this.name;
 		}
+
 		const portNumberLabel =
 			isLocalhost(this.remoteHost) || isAllInterfaces(this.remoteHost)
 				? `${this.remotePort}`
@@ -1023,6 +1115,7 @@ class TunnelItem implements ITunnelItem {
 			} else {
 				description = this.runningProcess.replace(/\0/g, " ").trim();
 			}
+
 			if (this.pid) {
 				description += ` (${this.pid})`;
 			}
@@ -1180,32 +1273,47 @@ const ProtocolChangeableContextKey = new RawContextKey<boolean>(
 
 export class TunnelPanel extends ViewPane {
 	static readonly ID = TUNNEL_VIEW_ID;
+
 	static readonly TITLE: ILocalizedString = nls.localize2(
 		"remote.tunnel",
 		"Ports",
 	);
 
 	private panelContainer: HTMLElement | undefined;
+
 	private table: WorkbenchTable<ITunnelItem> | undefined;
+
 	private readonly tableDisposables: DisposableStore = this._register(
 		new DisposableStore(),
 	);
+
 	private tunnelTypeContext: IContextKey<TunnelType>;
+
 	private tunnelCloseableContext: IContextKey<boolean>;
+
 	private tunnelPrivacyContext: IContextKey<
 		TunnelPrivacyId | string | undefined
 	>;
+
 	private tunnelPrivacyEnabledContext: IContextKey<boolean>;
+
 	private tunnelProtocolContext: IContextKey<TunnelProtocol | undefined>;
+
 	private tunnelViewFocusContext: IContextKey<boolean>;
+
 	private tunnelViewSelectionContext: IContextKey<string | undefined>;
+
 	private tunnelViewMultiSelectionContext: IContextKey<string[] | undefined>;
+
 	private portChangableContextKey: IContextKey<boolean>;
+
 	private protocolChangableContextKey: IContextKey<boolean>;
+
 	private isEditing: boolean = false;
 	// TODO: Should this be removed?
 	//@ts-expect-error
 	private titleActions: IAction[] = [];
+
 	private lastFocus: number[] = [];
 
 	constructor(
@@ -1243,25 +1351,37 @@ export class TunnelPanel extends ViewPane {
 			telemetryService,
 			hoverService,
 		);
+
 		this.tunnelTypeContext = TunnelTypeContextKey.bindTo(contextKeyService);
+
 		this.tunnelCloseableContext =
 			TunnelCloseableContextKey.bindTo(contextKeyService);
+
 		this.tunnelPrivacyContext =
 			TunnelPrivacyContextKey.bindTo(contextKeyService);
+
 		this.tunnelPrivacyEnabledContext =
 			TunnelPrivacyEnabledContextKey.bindTo(contextKeyService);
+
 		this.tunnelPrivacyEnabledContext.set(tunnelService.canChangePrivacy);
+
 		this.protocolChangableContextKey =
 			ProtocolChangeableContextKey.bindTo(contextKeyService);
+
 		this.protocolChangableContextKey.set(tunnelService.canChangeProtocol);
+
 		this.tunnelProtocolContext =
 			TunnelProtocolContextKey.bindTo(contextKeyService);
+
 		this.tunnelViewFocusContext =
 			TunnelViewFocusContextKey.bindTo(contextKeyService);
+
 		this.tunnelViewSelectionContext =
 			TunnelViewSelectionContextKey.bindTo(contextKeyService);
+
 		this.tunnelViewMultiSelectionContext =
 			TunnelViewMultiSelectionContextKey.bindTo(contextKeyService);
+
 		this.portChangableContextKey =
 			PortChangableContextKey.bindTo(contextKeyService);
 
@@ -1278,10 +1398,12 @@ export class TunnelPanel extends ViewPane {
 
 		const updateActions = () => {
 			this.titleActions = getFlatActionBarActions(titleMenu.getActions());
+
 			this.updateActions();
 		};
 
 		this._register(titleMenu.onDidChange(updateActions));
+
 		updateActions();
 
 		this._register(
@@ -1291,6 +1413,7 @@ export class TunnelPanel extends ViewPane {
 		);
 
 		this.registerPrivacyActions();
+
 		this._register(
 			Event.once(this.tunnelService.onAddedTunnelProvider)(() => {
 				let updated = false;
@@ -1299,18 +1422,25 @@ export class TunnelPanel extends ViewPane {
 					this.tunnelPrivacyEnabledContext.set(
 						tunnelService.canChangePrivacy,
 					);
+
 					updated = true;
 				}
+
 				if (this.protocolChangableContextKey.get() === true) {
 					this.protocolChangableContextKey.set(
 						tunnelService.canChangeProtocol,
 					);
+
 					updated = true;
 				}
+
 				if (updated) {
 					updateActions();
+
 					this.registerPrivacyActions();
+
 					this.createTable();
+
 					this.table?.layout(this.height, this.width);
 				}
 			}),
@@ -1320,10 +1450,12 @@ export class TunnelPanel extends ViewPane {
 	private registerPrivacyActions() {
 		for (const privacyOption of this.tunnelService.privacyOptions) {
 			const optionId = `remote.tunnel.privacy${privacyOption.id}`;
+
 			CommandsRegistry.registerCommand(
 				optionId,
 				ChangeTunnelPrivacyAction.handler(privacyOption.id),
 			);
+
 			MenuRegistry.appendMenuItem(MenuId.TunnelPrivacy, {
 				order: 0,
 				command: {
@@ -1348,6 +1480,7 @@ export class TunnelPanel extends ViewPane {
 		if (!this.panelContainer) {
 			return;
 		}
+
 		this.tableDisposables.clear();
 
 		dom.clearNode(this.panelContainer);
@@ -1356,7 +1489,9 @@ export class TunnelPanel extends ViewPane {
 			this.panelContainer,
 			dom.$(".customview-tree"),
 		);
+
 		widgetContainer.classList.add("ports-view");
+
 		widgetContainer.classList.add(
 			"file-icon-themable-tree",
 			"show-file-icons",
@@ -1382,6 +1517,7 @@ export class TunnelPanel extends ViewPane {
 		if (this.tunnelService.canChangePrivacy) {
 			columns.push(new PrivacyColumn());
 		}
+
 		columns.push(new OriginColumn());
 
 		this.table = this.instantiationService.createInstance(
@@ -1414,26 +1550,33 @@ export class TunnelPanel extends ViewPane {
 		) as WorkbenchTable<ITunnelItem>;
 
 		const actionRunner: ActionRunner = new ActionRunner();
+
 		actionBarRenderer.actionRunner = actionRunner;
 
 		this.tableDisposables.add(this.table);
+
 		this.tableDisposables.add(
 			this.table.onContextMenu((e) =>
 				this.onContextMenu(e, actionRunner),
 			),
 		);
+
 		this.tableDisposables.add(
 			this.table.onMouseDblClick((e) => this.onMouseDblClick(e)),
 		);
+
 		this.tableDisposables.add(
 			this.table.onDidChangeFocus((e) => this.onFocusChanged(e)),
 		);
+
 		this.tableDisposables.add(
 			this.table.onDidChangeSelection((e) => this.onSelectionChanged(e)),
 		);
+
 		this.tableDisposables.add(
 			this.table.onDidFocus(() => this.tunnelViewFocusContext.set(true)),
 		);
+
 		this.tableDisposables.add(
 			this.table.onDidBlur(() => this.tunnelViewFocusContext.set(false)),
 		);
@@ -1444,6 +1587,7 @@ export class TunnelPanel extends ViewPane {
 		rerender();
 
 		let lastPortCount = this.portCount;
+
 		this.tableDisposables.add(
 			Event.debounce(
 				this.viewModel.onForwardedPortsChanged,
@@ -1458,7 +1602,9 @@ export class TunnelPanel extends ViewPane {
 				) {
 					this._onDidChangeViewWelcomeState.fire();
 				}
+
 				lastPortCount = newPortCount;
+
 				rerender();
 			}),
 		);
@@ -1489,6 +1635,7 @@ export class TunnelPanel extends ViewPane {
 				) {
 					return;
 				}
+
 				if (e.browserEvent?.type === "dblclick") {
 					this.commandService.executeCommand(LabelTunnelAction.ID);
 				}
@@ -1501,6 +1648,7 @@ export class TunnelPanel extends ViewPane {
 					e?.tunnel,
 					e?.editId,
 				);
+
 				this._onDidChangeViewWelcomeState.fire();
 
 				if (!this.isEditing) {
@@ -1522,6 +1670,7 @@ export class TunnelPanel extends ViewPane {
 					if (e && e.tunnel.tunnelType !== TunnelType.Add) {
 						this.table?.setFocus(this.lastFocus);
 					}
+
 					this.focus();
 				}
 			}),
@@ -1535,6 +1684,7 @@ export class TunnelPanel extends ViewPane {
 			container,
 			dom.$(".tree-explorer-viewlet-tree-view"),
 		);
+
 		this.createTable();
 	}
 
@@ -1544,6 +1694,7 @@ export class TunnelPanel extends ViewPane {
 
 	override focus(): void {
 		super.focus();
+
 		this.table?.domFocus();
 	}
 
@@ -1551,6 +1702,7 @@ export class TunnelPanel extends ViewPane {
 		if (event.indexes.length > 0 && event.elements.length > 0) {
 			this.lastFocus = [...event.indexes];
 		}
+
 		const elements = event.elements;
 
 		const item = elements && elements.length ? elements[0] : undefined;
@@ -1559,21 +1711,31 @@ export class TunnelPanel extends ViewPane {
 			this.tunnelViewSelectionContext.set(
 				makeAddress(item.remoteHost, item.remotePort),
 			);
+
 			this.tunnelTypeContext.set(item.tunnelType);
+
 			this.tunnelCloseableContext.set(!!item.closeable);
+
 			this.tunnelPrivacyContext.set(item.privacy.id);
+
 			this.tunnelProtocolContext.set(
 				item.protocol === TunnelProtocol.Https
 					? TunnelProtocol.Https
 					: TunnelProtocol.Https,
 			);
+
 			this.portChangableContextKey.set(!!item.localPort);
 		} else {
 			this.tunnelTypeContext.reset();
+
 			this.tunnelViewSelectionContext.reset();
+
 			this.tunnelCloseableContext.reset();
+
 			this.tunnelPrivacyContext.reset();
+
 			this.tunnelProtocolContext.reset();
+
 			this.portChangableContextKey.reset();
 		}
 	}
@@ -1594,6 +1756,7 @@ export class TunnelPanel extends ViewPane {
 				modifierKey = e.ctrlKey;
 			}
 		}
+
 		return modifierKey;
 	}
 
@@ -1623,22 +1786,32 @@ export class TunnelPanel extends ViewPane {
 		}
 
 		event.browserEvent.preventDefault();
+
 		event.browserEvent.stopPropagation();
 
 		const node: TunnelItem | undefined = event.element;
 
 		if (node) {
 			this.table?.setFocus([this.table.indexOf(node)]);
+
 			this.tunnelTypeContext.set(node.tunnelType);
+
 			this.tunnelCloseableContext.set(!!node.closeable);
+
 			this.tunnelPrivacyContext.set(node.privacy.id);
+
 			this.tunnelProtocolContext.set(node.protocol);
+
 			this.portChangableContextKey.set(!!node.localPort);
 		} else {
 			this.tunnelTypeContext.set(TunnelType.Add);
+
 			this.tunnelCloseableContext.set(false);
+
 			this.tunnelPrivacyContext.set(undefined);
+
 			this.tunnelProtocolContext.set(undefined);
+
 			this.portChangableContextKey.set(false);
 		}
 
@@ -1658,6 +1831,7 @@ export class TunnelPanel extends ViewPane {
 						keybinding: keybinding.getLabel(),
 					});
 				}
+
 				return undefined;
 			},
 			onHide: (wasCancelled?: boolean) => {
@@ -1677,28 +1851,39 @@ export class TunnelPanel extends ViewPane {
 	}
 
 	private height = 0;
+
 	private width = 0;
+
 	protected override layoutBody(height: number, width: number): void {
 		this.height = height;
+
 		this.width = width;
 
 		super.layoutBody(height, width);
+
 		this.table?.layout(height, width);
 	}
 }
 
 export class TunnelPanelDescriptor implements IViewDescriptor {
 	readonly id = TunnelPanel.ID;
+
 	readonly name: ILocalizedString = TunnelPanel.TITLE;
+
 	readonly ctorDescriptor: SyncDescriptor<TunnelPanel>;
+
 	readonly canToggleVisibility = true;
+
 	readonly hideByDefault = false;
 	// group is not actually used for views that are not extension contributed. Use order instead.
 	readonly group = "details@0";
 	// -500 comes from the remote explorer viewOrderDelegate
 	readonly order = -500;
+
 	readonly remoteAuthority?: string | string[];
+
 	readonly canMoveView = true;
+
 	readonly containerIcon = portsViewIcon;
 
 	constructor(
@@ -1706,6 +1891,7 @@ export class TunnelPanelDescriptor implements IViewDescriptor {
 		environmentService: IWorkbenchEnvironmentService,
 	) {
 		this.ctorDescriptor = new SyncDescriptor(TunnelPanel, [viewModel]);
+
 		this.remoteAuthority = environmentService.remoteAuthority
 			? environmentService.remoteAuthority.split("+")[0]
 			: undefined;
@@ -1747,6 +1933,7 @@ namespace LabelTunnelAction {
 
 				if (tunnel) {
 					const tunnelService = accessor.get(ITunnelService);
+
 					tunnelContext = TunnelItem.createFromTunnel(
 						remoteExplorerService,
 						tunnelService,
@@ -1754,6 +1941,7 @@ namespace LabelTunnelAction {
 					);
 				}
 			}
+
 			if (tunnelContext) {
 				const tunnelItem: ITunnelItem = tunnelContext;
 
@@ -1761,12 +1949,14 @@ namespace LabelTunnelAction {
 					const startingValue = tunnelItem.name
 						? tunnelItem.name
 						: `${tunnelItem.remotePort}`;
+
 					remoteExplorerService.setEditable(
 						tunnelItem,
 						TunnelEditId.Label,
 						{
 							onFinish: async (value, success) => {
 								value = value.trim();
+
 								remoteExplorerService.setEditable(
 									tunnelItem,
 									TunnelEditId.Label,
@@ -1783,6 +1973,7 @@ namespace LabelTunnelAction {
 										value,
 									);
 								}
+
 								resolve(
 									changed
 										? {
@@ -1802,6 +1993,7 @@ namespace LabelTunnelAction {
 					);
 				});
 			}
+
 			return undefined;
 		};
 	}
@@ -1876,6 +2068,7 @@ export namespace ForwardPortAction {
 		) {
 			return { content: alreadyForwarded, severity: Severity.Error };
 		}
+
 		return null;
 	}
 
@@ -1914,6 +2107,7 @@ export namespace ForwardPortAction {
 			const notificationService = accessor.get(INotificationService);
 
 			const tunnelService = accessor.get(ITunnelService);
+
 			remoteExplorerService.setEditable(undefined, TunnelEditId.New, {
 				onFinish: async (value, success) => {
 					remoteExplorerService.setEditable(
@@ -1966,6 +2160,7 @@ export namespace ForwardPortAction {
 			const quickInputService = accessor.get(IQuickInputService);
 
 			const tunnelService = accessor.get(ITunnelService);
+
 			await viewsService.openView(TunnelPanel.ID, true);
 
 			const value = await quickInputService.input({
@@ -2036,6 +2231,7 @@ function makeTunnelPicks(
 			),
 		});
 	}
+
 	return picks;
 }
 
@@ -2091,6 +2287,7 @@ namespace ClosePortAction {
 			if (!ports || ports.length === 0) {
 				return;
 			}
+
 			return Promise.all(
 				ports.map((port) =>
 					remoteExplorerService.close(
@@ -2158,6 +2355,7 @@ export namespace OpenPortInBrowserAction {
 			} else if (arg.tunnelRemoteHost && arg.tunnelRemotePort) {
 				key = makeAddress(arg.tunnelRemoteHost, arg.tunnelRemotePort);
 			}
+
 			if (key) {
 				const model = accessor.get(IRemoteExplorerService).tunnelModel;
 
@@ -2180,6 +2378,7 @@ export namespace OpenPortInBrowserAction {
 				allowContributedOpeners: false,
 			});
 		}
+
 		return Promise.resolve();
 	}
 }
@@ -2201,6 +2400,7 @@ export namespace OpenPortInPreviewAction {
 			} else if (arg.tunnelRemoteHost && arg.tunnelRemotePort) {
 				key = makeAddress(arg.tunnelRemoteHost, arg.tunnelRemotePort);
 			}
+
 			if (key) {
 				const model = accessor.get(IRemoteExplorerService).tunnelModel;
 
@@ -2245,8 +2445,10 @@ export namespace OpenPortInPreviewAction {
 					CancellationToken.None,
 				);
 			}
+
 			return openerService.open(tunnel.localUri);
 		}
+
 		return Promise.resolve();
 	}
 }
@@ -2309,6 +2511,7 @@ namespace OpenPortInBrowserCommandPaletteAction {
 					),
 				});
 			}
+
 			const picked = await quickPickService.pick<QuickPickTunnel>(
 				options,
 				{
@@ -2379,10 +2582,12 @@ namespace CopyAddressAction {
 					.getContextKeyValue<
 						string | undefined
 					>(TunnelViewSelectionKeyName);
+
 				tunnelItem = context
 					? remoteExplorerService.tunnelModel.forwarded.get(context)
 					: undefined;
 			}
+
 			if (tunnelItem) {
 				return copyAddress(
 					remoteExplorerService,
@@ -2468,6 +2673,7 @@ namespace ChangeLocalPortAction {
 		) {
 			return { content: requiresSudoString, severity: Severity.Info };
 		}
+
 		return null;
 	}
 
@@ -2496,6 +2702,7 @@ namespace ChangeLocalPortAction {
 
 				if (tunnel) {
 					const tunnelService = accessor.get(ITunnelService);
+
 					tunnelContext = TunnelItem.createFromTunnel(
 						remoteExplorerService,
 						tunnelService,
@@ -2506,6 +2713,7 @@ namespace ChangeLocalPortAction {
 
 			if (tunnelContext) {
 				const tunnelItem: ITunnelItem = tunnelContext;
+
 				remoteExplorerService.setEditable(
 					tunnelItem,
 					TunnelEditId.LocalPort,
@@ -2581,6 +2789,7 @@ namespace ChangeTunnelPrivacyAction {
 				const remoteExplorerService = accessor.get(
 					IRemoteExplorerService,
 				);
+
 				await remoteExplorerService.close(
 					{ host: arg.remoteHost, port: arg.remotePort },
 					TunnelCloseReason.Other,

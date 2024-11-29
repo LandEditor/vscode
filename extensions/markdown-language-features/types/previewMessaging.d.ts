@@ -10,25 +10,31 @@ interface BaseMessage {
 export namespace FromWebviewMessage {
 	export interface CacheImageSizes extends BaseMessage {
 		readonly type: "cacheImageSizes";
+
 		readonly imageData: ReadonlyArray<{
 			id: string;
+
 			width: number;
+
 			height: number;
 		}>;
 	}
 
 	export interface RevealLine extends BaseMessage {
 		readonly type: "revealLine";
+
 		readonly line: number;
 	}
 
 	export interface DidClick extends BaseMessage {
 		readonly type: "didClick";
+
 		readonly line: number;
 	}
 
 	export interface ClickLink extends BaseMessage {
 		readonly type: "openLink";
+
 		readonly href: string;
 	}
 
@@ -38,6 +44,7 @@ export namespace FromWebviewMessage {
 
 	export interface PreviewStyleLoadError extends BaseMessage {
 		readonly type: "previewStyleLoadError";
+
 		readonly unloadedStyles: readonly string[];
 	}
 
@@ -53,23 +60,29 @@ export namespace FromWebviewMessage {
 export namespace ToWebviewMessage {
 	export interface OnDidChangeTextEditorSelection extends BaseMessage {
 		readonly type: "onDidChangeTextEditorSelection";
+
 		readonly line: number;
 	}
 
 	export interface UpdateView extends BaseMessage {
 		readonly type: "updateView";
+
 		readonly line: number;
+
 		readonly source: string;
 	}
 
 	export interface UpdateContent extends BaseMessage {
 		readonly type: "updateContent";
+
 		readonly content: string;
 	}
 
 	export interface CopyImageContent extends BaseMessage {
 		readonly type: "copyImage";
+
 		readonly source: string;
+
 		readonly id: string;
 	}
 

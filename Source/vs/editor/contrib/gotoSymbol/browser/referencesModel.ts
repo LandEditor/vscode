@@ -27,6 +27,7 @@ import {
 
 export class OneReference {
 	readonly id: string = defaultGenerator.nextId();
+
 	private _range?: IRange;
 
 	constructor(
@@ -35,16 +36,21 @@ export class OneReference {
 		readonly link: LocationLink,
 		private _rangeCallback: (ref: OneReference) => void,
 	) {}
+
 	get uri() {
 		return this.link.uri;
 	}
+
 	get range(): IRange {
 		return this._range ?? this.link.targetSelectionRange ?? this.link.range;
 	}
+
 	set range(value: IRange) {
 		this._range = value;
+
 		this._rangeCallback(this);
 	}
+
 	get ariaMessage(): string {
 		const preview = this.parent.getPreview(this)?.preview(this.range);
 
@@ -77,15 +83,18 @@ export class FilePreview implements IDisposable {
 	constructor(
 		private readonly _modelReference: IReference<ITextEditorModel>,
 	) {}
+
 	dispose(): void {
 		this._modelReference.dispose();
 	}
+
 	preview(
 		range: IRange,
 		n: number = 8,
 	):
 		| {
 				value: string;
+
 				highlight: IMatch;
 		  }
 		| undefined {
@@ -94,6 +103,7 @@ export class FilePreview implements IDisposable {
 		if (!model) {
 			return undefined;
 		}
+
 		const { startLineNumber, startColumn, endLineNumber, endColumn } =
 			range;
 
@@ -133,19 +143,24 @@ export class FilePreview implements IDisposable {
 }
 export class FileReferences implements IDisposable {
 	readonly children: OneReference[] = [];
+
 	private _previews = new ResourceMap<FilePreview>();
 
 	constructor(
 		readonly parent: ReferencesModel,
 		readonly uri: URI,
 	) {}
+
 	dispose(): void {
 		dispose(this._previews.values());
+
 		this._previews.clear();
 	}
+
 	getPreview(child: OneReference): FilePreview | undefined {
 		return this._previews.get(child.uri);
 	}
+
 	get ariaMessage(): string {
 		const len = this.children.length;
 
@@ -166,42 +181,54 @@ export class FileReferences implements IDisposable {
 			);
 		}
 	}
+
 	async resolve(
 		textModelResolverService: ITextModelService,
 	): Promise<FileReferences> {
 		if (this._previews.size !== 0) {
 			return this;
 		}
+
 		for (const child of this.children) {
 			if (this._previews.has(child.uri)) {
 				continue;
 			}
+
 			try {
 				const ref = await textModelResolverService.createModelReference(
 					child.uri,
 				);
+
 				this._previews.set(child.uri, new FilePreview(ref));
 			} catch (err) {
 				onUnexpectedError(err);
 			}
 		}
+
 		return this;
 	}
 }
 export class ReferencesModel implements IDisposable {
 	private readonly _links: LocationLink[];
+
 	private readonly _title: string;
+
 	readonly groups: FileReferences[] = [];
+
 	readonly references: OneReference[] = [];
+
 	readonly _onDidChangeReferenceRange = new Emitter<OneReference>();
+
 	readonly onDidChangeReferenceRange: Event<OneReference> =
 		this._onDidChangeReferenceRange.event;
 
 	constructor(links: LocationLink[], title: string) {
 		this._links = links;
+
 		this._title = title;
 		// grouping and sorting
 		const [providersFirst] = links;
+
 		links.sort(ReferencesModel._compareReferences);
 
 		let current: FileReferences | undefined;
@@ -210,6 +237,7 @@ export class ReferencesModel implements IDisposable {
 			if (!current || !extUri.isEqual(current.uri, link.uri, true)) {
 				// new group
 				current = new FileReferences(this, link.uri);
+
 				this.groups.push(current);
 			}
 			// append, check for equality first!
@@ -226,25 +254,34 @@ export class ReferencesModel implements IDisposable {
 					link,
 					(ref) => this._onDidChangeReferenceRange.fire(ref),
 				);
+
 				this.references.push(oneRef);
+
 				current.children.push(oneRef);
 			}
 		}
 	}
+
 	dispose(): void {
 		dispose(this.groups);
+
 		this._onDidChangeReferenceRange.dispose();
+
 		this.groups.length = 0;
 	}
+
 	clone(): ReferencesModel {
 		return new ReferencesModel(this._links, this._title);
 	}
+
 	get title(): string {
 		return this._title;
 	}
+
 	get isEmpty(): boolean {
 		return this.groups.length === 0;
 	}
+
 	get ariaMessage(): string {
 		if (this.isEmpty) {
 			return localize("aria.result.0", "No results found");
@@ -270,6 +307,7 @@ export class ReferencesModel implements IDisposable {
 			);
 		}
 	}
+
 	nextOrPreviousReference(
 		reference: OneReference,
 		next: boolean,
@@ -293,8 +331,10 @@ export class ReferencesModel implements IDisposable {
 			} else {
 				idx = (idx + childCount - 1) % childCount;
 			}
+
 			return parent.children[idx];
 		}
+
 		idx = parent.parent.groups.indexOf(parent);
 
 		if (next) {
@@ -309,6 +349,7 @@ export class ReferencesModel implements IDisposable {
 			];
 		}
 	}
+
 	nearestReference(
 		resource: URI,
 		position: Position,
@@ -346,8 +387,10 @@ export class ReferencesModel implements IDisposable {
 		if (nearest) {
 			return this.references[nearest.idx];
 		}
+
 		return undefined;
 	}
+
 	referenceAt(resource: URI, position: Position): OneReference | undefined {
 		for (const ref of this.references) {
 			if (ref.uri.toString() === resource.toString()) {
@@ -356,16 +399,20 @@ export class ReferencesModel implements IDisposable {
 				}
 			}
 		}
+
 		return undefined;
 	}
+
 	firstReference(): OneReference | undefined {
 		for (const ref of this.references) {
 			if (ref.isProviderFirst) {
 				return ref;
 			}
 		}
+
 		return this.references[0];
 	}
+
 	private static _compareReferences(a: Location, b: Location): number {
 		return (
 			extUri.compare(a.uri, b.uri) ||

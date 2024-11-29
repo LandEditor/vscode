@@ -26,12 +26,15 @@ function _divideAndMerge<T>(data: T[], compare: (a: T, b: T) => number): void {
 		// sorted
 		return;
 	}
+
 	const p = (data.length / 2) | 0;
 
 	const left = data.slice(0, p);
 
 	const right = data.slice(p);
+
 	_divideAndMerge(left, compare);
+
 	_divideAndMerge(right, compare);
 
 	let leftIdx = 0;
@@ -51,9 +54,11 @@ function _divideAndMerge<T>(data: T[], compare: (a: T, b: T) => number): void {
 			data[i++] = right[rightIdx++];
 		}
 	}
+
 	while (leftIdx < left.length) {
 		data[i++] = left[leftIdx++];
 	}
+
 	while (rightIdx < right.length) {
 		data[i++] = right[rightIdx++];
 	}
@@ -79,5 +84,6 @@ export function binarySearch<T>(
 			return mid;
 		}
 	}
+
 	return -(low + 1);
 }

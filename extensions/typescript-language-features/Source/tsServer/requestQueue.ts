@@ -23,16 +23,22 @@ export enum RequestQueueingType {
 }
 export interface RequestItem {
 	readonly request: Proto.Request;
+
 	readonly expectsResponse: boolean;
+
 	readonly isAsync: boolean;
+
 	readonly queueingType: RequestQueueingType;
 }
 export class RequestQueue {
 	private readonly queue: RequestItem[] = [];
+
 	private sequenceNumber: number = 0;
+
 	public get length(): number {
 		return this.queue.length;
 	}
+
 	public enqueue(item: RequestItem): void {
 		if (item.queueingType === RequestQueueingType.Normal) {
 			let index = this.queue.length - 1;
@@ -46,15 +52,18 @@ export class RequestQueue {
 				}
 				--index;
 			}
+
 			this.queue.splice(index + 1, 0, item);
 		} else {
 			// Only normal priority requests can be reordered. All other requests just go to the end.
 			this.queue.push(item);
 		}
 	}
+
 	public dequeue(): RequestItem | undefined {
 		return this.queue.shift();
 	}
+
 	public tryDeletePendingRequest(seq: number): boolean {
 		for (let i = 0; i < this.queue.length; i++) {
 			if (this.queue[i].request.seq === seq) {
@@ -63,8 +72,10 @@ export class RequestQueue {
 				return true;
 			}
 		}
+
 		return false;
 	}
+
 	public createRequest(command: string, args: any): Proto.Request {
 		return {
 			seq: this.sequenceNumber++,

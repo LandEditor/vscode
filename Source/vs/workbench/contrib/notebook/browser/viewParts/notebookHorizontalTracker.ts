@@ -19,6 +19,7 @@ export class NotebookHorizontalTracker extends Disposable {
 		private readonly _listViewScrollablement: HTMLElement,
 	) {
 		super();
+
 		this._register(
 			addDisposableListener(
 				this._listViewScrollablement,
@@ -38,13 +39,18 @@ export class NotebookHorizontalTracker extends Disposable {
 
 					if (shiftConvert && !deltaX) {
 						deltaX = deltaY;
+
 						deltaY = 0;
+
 						wheelDeltaX = wheelDeltaY;
+
 						wheelDeltaY = 0;
 					}
+
 					if (deltaX === 0) {
 						return;
 					}
+
 					const hoveringOnEditor =
 						this._notebookEditor.codeEditors.find((editor) => {
 							const editorLayout = editor[1].getLayoutInfo();
@@ -55,6 +61,7 @@ export class NotebookHorizontalTracker extends Disposable {
 								// no overflow
 								return false;
 							}
+
 							const editorDOM = editor[1].getDomNode();
 
 							if (
@@ -63,12 +70,14 @@ export class NotebookHorizontalTracker extends Disposable {
 							) {
 								return true;
 							}
+
 							return false;
 						});
 
 					if (!hoveringOnEditor) {
 						return;
 					}
+
 					const targetWindow = getWindow(event);
 
 					const evt = {

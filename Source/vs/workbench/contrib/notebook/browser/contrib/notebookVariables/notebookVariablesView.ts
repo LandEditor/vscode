@@ -40,11 +40,15 @@ export type contextMenuArg = { source: string; name: string; type?: string; valu
 export class NotebookVariablesView extends ViewPane {
 
 	static readonly ID = 'notebookVariablesView';
+
 	static readonly NOTEBOOK_TITLE: ILocalizedString = nls.localize2('notebook.notebookVariables', "Notebook Variables");
+
 	static readonly REPL_TITLE: ILocalizedString = nls.localize2('notebook.ReplVariables', "REPL Variables");
 
 	private tree: WorkbenchAsyncDataTree<INotebookScope | IEmptyScope, INotebookVariableElement> | undefined;
+
 	private activeNotebook: NotebookTextModel | undefined;
+
 	private readonly dataSource: NotebookVariableDataSource;
 
 	private updateScheduler: RunOnceScheduler;
@@ -71,18 +75,23 @@ export class NotebookVariablesView extends ViewPane {
 		super(options, keybindingService, contextMenuService, configurationService, contextKeyService, viewDescriptorService, instantiationService, openerService, themeService, telemetryService, hoverService);
 
 		this._register(this.editorService.onDidActiveEditorChange(() => this.handleActiveEditorChange()));
+
 		this._register(this.notebookKernelService.onDidNotebookVariablesUpdate(this.handleVariablesChanged.bind(this)));
+
 		this._register(this.notebookExecutionStateService.onDidChangeExecution(this.handleExecutionStateChange.bind(this)));
+
 		this._register(this.editorService.onDidCloseEditor((e) => this.handleCloseEditor(e)));
 
 		this.handleActiveEditorChange(false);
 
 		this.dataSource = new NotebookVariableDataSource(this.notebookKernelService);
+
 		this.updateScheduler = new RunOnceScheduler(() => this.tree?.updateChildren(), 100);
 	}
 
 	protected override renderBody(container: HTMLElement): void {
 		super.renderBody(container);
+
 		this.element.classList.add('debug-pane');
 
 		this.tree = this.instantiationService.createInstance(
@@ -98,6 +107,7 @@ export class NotebookVariablesView extends ViewPane {
 			});
 
 		this.tree.layout();
+
 		if (this.activeNotebook) {
 			this.tree.setInput({ kind: 'root', notebook: this.activeNotebook });
 		}
@@ -109,6 +119,7 @@ export class NotebookVariablesView extends ViewPane {
 		if (!e.element) {
 			return;
 		}
+
 		const element = e.element;
 
 		const arg: contextMenuArg = {
@@ -129,8 +140,11 @@ export class NotebookVariablesView extends ViewPane {
 			[CONTEXT_VARIABLE_LANGUAGE.key, element.language],
 			[CONTEXT_VARIABLE_EXTENSIONID.key, element.extensionId]
 		]);
+
 		const menuActions = this.menuService.getMenuActions(MenuId.NotebookVariablesContext, overlayedContext, { arg, shouldForwardArgs: true });
+
 		const actions = getFlatContextMenuActions(menuActions);
+
 		this.contextMenuService.showContextMenu({
 			getAnchor: () => e.anchor,
 			getActions: () => actions
@@ -139,11 +153,13 @@ export class NotebookVariablesView extends ViewPane {
 
 	override focus(): void {
 		super.focus();
+
 		this.tree?.domFocus();
 	}
 
 	protected override layoutBody(height: number, width: number): void {
 		super.layoutBody(height, width);
+
 		this.tree?.layout(height, width);
 	}
 
@@ -158,25 +174,30 @@ export class NotebookVariablesView extends ViewPane {
 
 		if (doUpdate) {
 			this.tree?.setInput({ kind: 'root', notebook: notebookDocument });
+
 			this.updateScheduler.schedule();
 		}
 	}
 
 	private getActiveNotebook() {
 		const notebookEditor = this.editorService.activeEditorPane;
+
 		const notebookDocument = getNotebookEditorFromEditorPane(notebookEditor)?.textModel;
+
 		return notebookDocument && notebookEditor ? { notebookDocument, notebookEditor } : undefined;
 	}
 
 	private handleCloseEditor(e: IEditorCloseEvent) {
 		if (e.editor.resource && e.editor.resource.toString() === this.activeNotebook?.uri.toString()) {
 			this.tree?.setInput({ kind: 'empty' });
+
 			this.updateScheduler.schedule();
 		}
 	}
 
 	private handleActiveEditorChange(doUpdate = true) {
 		const found = this.getActiveNotebook();
+
 		if (found && found.notebookDocument !== this.activeNotebook) {
 			this.setActiveNotebook(found.notebookDocument, found.notebookEditor, doUpdate);
 		}
@@ -191,6 +212,7 @@ export class NotebookVariablesView extends ViewPane {
 			if (event.changed === undefined) {
 				this.updateScheduler.schedule();
 			}
+
 			else {
 				this.updateScheduler.cancel();
 			}
@@ -198,6 +220,7 @@ export class NotebookVariablesView extends ViewPane {
 			// check if the updated variables are for a visible notebook
 			this.editorService.visibleEditorPanes.forEach(editor => {
 				const notebookDocument = getNotebookEditorFromEditorPane(editor)?.textModel;
+
 				if (notebookDocument && event.affectsNotebook(notebookDocument.uri)) {
 					this.setActiveNotebook(notebookDocument, editor);
 				}
@@ -212,6 +235,7 @@ export class NotebookVariablesView extends ViewPane {
 			// check if the updated variables are for a visible notebook
 			this.editorService.visibleEditorPanes.forEach(editor => {
 				const notebookDocument = getNotebookEditorFromEditorPane(editor)?.textModel;
+
 				if (notebookDocument && notebookDocument.uri.toString() === notebookUri.toString()) {
 					this.setActiveNotebook(notebookDocument, editor);
 				}

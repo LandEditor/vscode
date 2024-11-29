@@ -43,9 +43,13 @@ export class ChatTreeContentPart
 	implements IChatContentPart
 {
 	public readonly domNode: HTMLElement;
+
 	private readonly _onDidChangeHeight = this._register(new Emitter<void>());
+
 	public readonly onDidChangeHeight = this._onDidChangeHeight.event;
+
 	public readonly onDidFocus: Event<void>;
+
 	private tree: WorkbenchCompressibleAsyncDataTree<
 		IChatResponseProgressFileTreeData,
 		IChatResponseProgressFileTreeData,
@@ -63,8 +67,11 @@ export class ChatTreeContentPart
 		super();
 
 		const ref = this._register(treePool.get());
+
 		this.tree = ref.object;
+
 		this.onDidFocus = this.tree.onDidFocus;
+
 		this._register(
 			this.tree.onDidOpen((e) => {
 				if (e.element && !("children" in e.element)) {
@@ -72,32 +79,41 @@ export class ChatTreeContentPart
 				}
 			}),
 		);
+
 		this._register(
 			this.tree.onDidChangeCollapseState(() => {
 				this._onDidChangeHeight.fire();
 			}),
 		);
+
 		this._register(
 			this.tree.onContextMenu((e) => {
 				e.browserEvent.preventDefault();
+
 				e.browserEvent.stopPropagation();
 			}),
 		);
+
 		this.tree.setInput(data).then(() => {
 			if (!ref.isStale()) {
 				this.tree.layout();
+
 				this._onDidChangeHeight.fire();
 			}
 		});
+
 		this.domNode = this.tree.getHTMLElement().parentElement!;
 	}
+
 	domFocus() {
 		this.tree.domFocus();
 	}
+
 	hasSameContent(other: IChatProgressRenderableResponseContent): boolean {
 		// No other change allowed for this content type
 		return other.kind === "treeData";
 	}
+
 	addDisposable(disposable: IDisposable): void {
 		this._register(disposable);
 	}
@@ -110,6 +126,7 @@ export class TreePool extends Disposable {
 			void
 		>
 	>;
+
 	public get inUse(): ReadonlySet<
 		WorkbenchCompressibleAsyncDataTree<
 			IChatResponseProgressFileTreeData,
@@ -119,6 +136,7 @@ export class TreePool extends Disposable {
 	> {
 		return this._pool.inUse;
 	}
+
 	constructor(
 		private _onDidChangeVisibility: Event<boolean>,
 		@IInstantiationService
@@ -129,8 +147,10 @@ export class TreePool extends Disposable {
 		private readonly themeService: IThemeService,
 	) {
 		super();
+
 		this._pool = this._register(new ResourcePool(() => this.treeFactory()));
 	}
+
 	private treeFactory(): WorkbenchCompressibleAsyncDataTree<
 		IChatResponseProgressFileTreeData,
 		IChatResponseProgressFileTreeData,
@@ -143,6 +163,7 @@ export class TreePool extends Disposable {
 		);
 
 		const container = $(".interactive-response-progress-tree");
+
 		this._register(
 			createFileIconThemableTreeContainerScope(
 				container,
@@ -186,6 +207,7 @@ export class TreePool extends Disposable {
 
 		return tree;
 	}
+
 	get(): IDisposableReference<
 		WorkbenchCompressibleAsyncDataTree<
 			IChatResponseProgressFileTreeData,
@@ -202,6 +224,7 @@ export class TreePool extends Disposable {
 			isStale: () => stale,
 			dispose: () => {
 				stale = true;
+
 				this._pool.release(object);
 			},
 		};
@@ -215,6 +238,7 @@ class ChatListTreeDelegate
 	getHeight(element: IChatResponseProgressFileTreeData): number {
 		return ChatListTreeDelegate.ITEM_HEIGHT;
 	}
+
 	getTemplateId(element: IChatResponseProgressFileTreeData): string {
 		return "chatListTreeTemplate";
 	}
@@ -228,6 +252,7 @@ class ChatListTreeCompressionDelegate
 }
 interface IChatListTreeRendererTemplate {
 	templateDisposables: DisposableStore;
+
 	label: IResourceLabel;
 }
 class ChatListTreeRenderer
@@ -244,6 +269,7 @@ class ChatListTreeRenderer
 		private labels: ResourceLabels,
 		private decorations: IFilesConfiguration["explorer"]["decorations"],
 	) {}
+
 	renderCompressedElements(
 		element: ITreeNode<
 			ICompressedTreeNode<IChatResponseProgressFileTreeData>,
@@ -256,6 +282,7 @@ class ChatListTreeRenderer
 		templateData.label.element.style.display = "flex";
 
 		const label = element.element.elements.map((e) => e.label);
+
 		templateData.label.setResource(
 			{ resource: element.element.elements[0].uri, name: label },
 			{
@@ -266,6 +293,7 @@ class ChatListTreeRenderer
 			},
 		);
 	}
+
 	renderTemplate(container: HTMLElement): IChatListTreeRendererTemplate {
 		const templateDisposables = new DisposableStore();
 
@@ -275,6 +303,7 @@ class ChatListTreeRenderer
 
 		return { templateDisposables, label };
 	}
+
 	renderElement(
 		element: ITreeNode<IChatResponseProgressFileTreeData, void>,
 		index: number,
@@ -303,6 +332,7 @@ class ChatListTreeRenderer
 			);
 		}
 	}
+
 	disposeTemplate(templateData: IChatListTreeRendererTemplate): void {
 		templateData.templateDisposables.dispose();
 	}
@@ -317,6 +347,7 @@ class ChatListTreeDataSource
 	hasChildren(element: IChatResponseProgressFileTreeData): boolean {
 		return !!element.children;
 	}
+
 	async getChildren(
 		element: IChatResponseProgressFileTreeData,
 	): Promise<Iterable<IChatResponseProgressFileTreeData>> {

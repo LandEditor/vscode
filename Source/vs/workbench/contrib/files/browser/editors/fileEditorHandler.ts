@@ -23,16 +23,22 @@ import { FileEditorInput } from "./fileEditorInput.js";
 
 interface ISerializedFileEditorInput {
 	resourceJSON: UriComponents;
+
 	preferredResourceJSON?: UriComponents;
+
 	name?: string;
+
 	description?: string;
+
 	encoding?: string;
+
 	modeId?: string; // should be `languageId` but is kept for backwards compatibility
 }
 export class FileEditorInputSerializer implements IEditorSerializer {
 	canSerialize(editorInput: EditorInput): boolean {
 		return true;
 	}
+
 	serialize(editorInput: EditorInput): string {
 		const fileEditorInput = editorInput as FileEditorInput;
 
@@ -53,6 +59,7 @@ export class FileEditorInputSerializer implements IEditorSerializer {
 
 		return JSON.stringify(serializedFileEditorInput);
 	}
+
 	deserialize(
 		instantiationService: IInstantiationService,
 		serializedEditorInput: string,
@@ -89,6 +96,7 @@ export class FileEditorInputSerializer implements IEditorSerializer {
 			if (preferredResource) {
 				fileEditorInput.setPreferredResource(preferredResource);
 			}
+
 			return fileEditorInput;
 		});
 	}
@@ -108,20 +116,24 @@ export class FileEditorWorkingCopyEditorHandler
 		private readonly fileService: IFileService,
 	) {
 		super();
+
 		this._register(workingCopyEditorService.registerHandler(this));
 	}
+
 	handles(workingCopy: IWorkingCopyIdentifier): boolean | Promise<boolean> {
 		return (
 			workingCopy.typeId === NO_TYPE_ID &&
 			this.fileService.canHandleResource(workingCopy.resource)
 		);
 	}
+
 	private handlesSync(workingCopy: IWorkingCopyIdentifier): boolean {
 		return (
 			workingCopy.typeId === NO_TYPE_ID &&
 			this.fileService.hasProvider(workingCopy.resource)
 		);
 	}
+
 	isOpen(workingCopy: IWorkingCopyIdentifier, editor: EditorInput): boolean {
 		if (!this.handlesSync(workingCopy)) {
 			return false;
@@ -131,6 +143,7 @@ export class FileEditorWorkingCopyEditorHandler
 		// we need to do a weaker check by only comparing for the resource
 		return isEqual(workingCopy.resource, editor.resource);
 	}
+
 	createEditor(workingCopy: IWorkingCopyIdentifier): EditorInput {
 		return this.textEditorService.createTextEditor({
 			resource: workingCopy.resource,

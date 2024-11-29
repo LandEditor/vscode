@@ -32,26 +32,36 @@ export function registerBaseCommands(
 	commandManager.register(
 		new ReloadTypeScriptProjectsCommand(lazyClientHost),
 	);
+
 	commandManager.register(
 		new ReloadJavaScriptProjectsCommand(lazyClientHost),
 	);
+
 	commandManager.register(new SelectTypeScriptVersionCommand(lazyClientHost));
+
 	commandManager.register(new OpenTsServerLogCommand(lazyClientHost));
+
 	commandManager.register(new RestartTsServerCommand(lazyClientHost));
+
 	commandManager.register(
 		new TypeScriptGoToProjectConfigCommand(
 			activeJsTsEditorTracker,
 			lazyClientHost,
 		),
 	);
+
 	commandManager.register(
 		new JavaScriptGoToProjectConfigCommand(
 			activeJsTsEditorTracker,
 			lazyClientHost,
 		),
 	);
+
 	commandManager.register(new ConfigurePluginCommand(pluginManager));
+
 	commandManager.register(new LearnMoreAboutRefactoringsCommand());
+
 	commandManager.register(new TSServerRequestCommand(lazyClientHost));
+
 	commandManager.register(new OpenJsDocLinkCommand());
 }

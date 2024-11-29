@@ -15,12 +15,14 @@ export class DelayedDragHandler extends Disposable {
 
 	constructor(container: HTMLElement, callback: () => void) {
 		super();
+
 		this._register(
 			addDisposableListener(container, "dragover", (e) => {
 				e.preventDefault(); // needed so that the drop event fires (https://stackoverflow.com/questions/21339924/drop-event-not-firing-in-chrome)
 				if (!this.timeout) {
 					this.timeout = setTimeout(() => {
 						callback();
+
 						this.timeout = null;
 					}, 800);
 				}
@@ -34,14 +36,18 @@ export class DelayedDragHandler extends Disposable {
 			);
 		});
 	}
+
 	private clearDragTimeout(): void {
 		if (this.timeout) {
 			clearTimeout(this.timeout);
+
 			this.timeout = null;
 		}
 	}
+
 	override dispose(): void {
 		super.dispose();
+
 		this.clearDragTimeout();
 	}
 }
@@ -79,18 +85,24 @@ export function applyDragImage(
 	foregroundColor?: string | null,
 ): void {
 	const dragImage = document.createElement("div");
+
 	dragImage.className = clazz;
+
 	dragImage.textContent = label;
 
 	if (foregroundColor) {
 		dragImage.style.color = foregroundColor;
 	}
+
 	if (backgroundColor) {
 		dragImage.style.background = backgroundColor;
 	}
+
 	if (event.dataTransfer) {
 		const ownerDocument = getWindow(event).document;
+
 		ownerDocument.body.appendChild(dragImage);
+
 		event.dataTransfer.setDragImage(dragImage, -10, -10);
 		// Removes the element when the DND operation is done
 		setTimeout(() => dragImage.remove(), 0);

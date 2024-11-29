@@ -28,6 +28,7 @@ declare namespace semver {
 
 	export interface Options {
 		loose?: boolean;
+
 		includePrerelease?: boolean;
 	}
 
@@ -367,17 +368,25 @@ declare namespace semver {
 		);
 
 		raw: string;
+
 		loose: boolean;
+
 		options: Options;
 
 		format(): string;
+
 		inspect(): string;
 
 		major: number;
+
 		minor: number;
+
 		patch: number;
+
 		version: string;
+
 		build: ReadonlyArray<string>;
+
 		prerelease: ReadonlyArray<string | number>;
 
 		/**
@@ -430,12 +439,19 @@ declare namespace semver {
 		);
 
 		semver: SemVer;
+
 		operator: "" | "=" | "<" | ">" | "<=" | ">=";
+
 		value: string;
+
 		loose: boolean;
+
 		options: Options;
+
 		parse(comp: string): void;
+
 		test(version: string | SemVer): boolean;
+
 		intersects(
 			comp: Comparator,
 			optionsOrLoose?: boolean | Options,
@@ -446,17 +462,25 @@ declare namespace semver {
 		constructor(range: string | Range, optionsOrLoose?: boolean | Options);
 
 		range: string;
+
 		raw: string;
+
 		loose: boolean;
+
 		options: Options;
+
 		includePrerelease: boolean;
 
 		format(): string;
+
 		inspect(): string;
 
 		set: ReadonlyArray<ReadonlyArray<Comparator>>;
+
 		parseRange(range: string): ReadonlyArray<Comparator>;
+
 		test(version: string | SemVer): boolean;
+
 		intersects(range: Range, optionsOrLoose?: boolean | Options): boolean;
 	}
 }

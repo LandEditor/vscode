@@ -125,6 +125,7 @@ export interface IndentationRule {
  */
 export interface FoldingMarkers {
 	start: RegExp;
+
 	end: RegExp;
 }
 /**
@@ -185,6 +186,7 @@ export type CharacterPair = [string, string];
 
 export interface IAutoClosingPair {
 	open: string;
+
 	close: string;
 }
 export interface IAutoClosingPairConditional extends IAutoClosingPair {
@@ -256,19 +258,28 @@ export interface CompleteEnterAction {
  */
 export class StandardAutoClosingPairConditional {
 	readonly open: string;
+
 	readonly close: string;
+
 	private readonly _inString: boolean;
+
 	private readonly _inComment: boolean;
+
 	private readonly _inRegEx: boolean;
+
 	private _neutralCharacter: string | null = null;
+
 	private _neutralCharacterSearched: boolean = false;
 
 	constructor(source: IAutoClosingPairConditional) {
 		this.open = source.open;
+
 		this.close = source.close;
 		// initially allowed in all tokens
 		this._inString = true;
+
 		this._inComment = true;
+
 		this._inRegEx = true;
 
 		if (Array.isArray(source.notIn)) {
@@ -294,6 +305,7 @@ export class StandardAutoClosingPairConditional {
 			}
 		}
 	}
+
 	public isOK(standardToken: StandardTokenType): boolean {
 		switch (standardToken) {
 			case StandardTokenType.Other:
@@ -309,17 +321,20 @@ export class StandardAutoClosingPairConditional {
 				return this._inRegEx;
 		}
 	}
+
 	public shouldAutoClose(context: ScopedLineTokens, column: number): boolean {
 		// Always complete on empty line
 		if (context.getTokenCount() === 0) {
 			return true;
 		}
+
 		const tokenIndex = context.findTokenIndexAtOffset(column - 2);
 
 		const standardTokenType = context.getStandardTokenType(tokenIndex);
 
 		return this.isOK(standardTokenType);
 	}
+
 	private _findNeutralCharacterInRange(
 		fromCharCode: number,
 		toCharCode: number,
@@ -334,6 +349,7 @@ export class StandardAutoClosingPairConditional {
 				return character;
 			}
 		}
+
 		return null;
 	}
 	/**
@@ -349,12 +365,14 @@ export class StandardAutoClosingPairConditional {
 					CharCode.Digit9,
 				);
 			}
+
 			if (!this._neutralCharacter) {
 				this._neutralCharacter = this._findNeutralCharacterInRange(
 					CharCode.a,
 					CharCode.z,
 				);
 			}
+
 			if (!this._neutralCharacter) {
 				this._neutralCharacter = this._findNeutralCharacterInRange(
 					CharCode.A,
@@ -362,6 +380,7 @@ export class StandardAutoClosingPairConditional {
 				);
 			}
 		}
+
 		return this._neutralCharacter;
 	}
 }
@@ -401,18 +420,22 @@ export class AutoClosingPairs {
 			string,
 			StandardAutoClosingPairConditional[]
 		>();
+
 		this.autoClosingPairsOpenByEnd = new Map<
 			string,
 			StandardAutoClosingPairConditional[]
 		>();
+
 		this.autoClosingPairsCloseByStart = new Map<
 			string,
 			StandardAutoClosingPairConditional[]
 		>();
+
 		this.autoClosingPairsCloseByEnd = new Map<
 			string,
 			StandardAutoClosingPairConditional[]
 		>();
+
 		this.autoClosingPairsCloseSingleChar = new Map<
 			string,
 			StandardAutoClosingPairConditional[]
@@ -424,16 +447,19 @@ export class AutoClosingPairs {
 				pair.open.charAt(0),
 				pair,
 			);
+
 			appendEntry(
 				this.autoClosingPairsOpenByEnd,
 				pair.open.charAt(pair.open.length - 1),
 				pair,
 			);
+
 			appendEntry(
 				this.autoClosingPairsCloseByStart,
 				pair.close.charAt(0),
 				pair,
 			);
+
 			appendEntry(
 				this.autoClosingPairsCloseByEnd,
 				pair.close.charAt(pair.close.length - 1),

@@ -36,6 +36,7 @@ export class NotebookExecutionService
 	implements INotebookExecutionService, IDisposable
 {
 	declare _serviceBrand: undefined;
+
 	private _activeProxyKernelExecutionToken:
 		| CancellationTokenSource
 		| undefined;
@@ -54,6 +55,7 @@ export class NotebookExecutionService
 		@INotebookExecutionStateService
 		private readonly _notebookExecutionStateService: INotebookExecutionStateService,
 	) {}
+
 	async executeNotebookCells(
 		notebook: INotebookTextModel,
 		cells: Iterable<NotebookCellTextModel>,
@@ -66,6 +68,7 @@ export class NotebookExecutionService
 		if (!cellsArr.length) {
 			return;
 		}
+
 		this._logService.debug(
 			`Execution`,
 			`${JSON.stringify(cellsArr.map((c) => c.handle))}`,
@@ -97,6 +100,7 @@ export class NotebookExecutionService
 			if (!!cellExe) {
 				continue;
 			}
+
 			cellExecutions.push([
 				cell,
 				this._notebookExecutionStateService.createCellExecution(
@@ -105,6 +109,7 @@ export class NotebookExecutionService
 				),
 			]);
 		}
+
 		const kernel = await KernelPickerMRUStrategy.resolveKernel(
 			notebook,
 			this._notebookKernelService,
@@ -118,6 +123,7 @@ export class NotebookExecutionService
 
 			return;
 		}
+
 		this._notebookKernelHistoryService.addMostRecentKernel(kernel);
 		// filter cell executions based on selected kernel
 		const validCellExecutions: INotebookCellExecution[] = [];
@@ -132,10 +138,12 @@ export class NotebookExecutionService
 		// request execution
 		if (validCellExecutions.length > 0) {
 			await this.runExecutionParticipants(validCellExecutions);
+
 			this._notebookKernelService.selectKernelForNotebook(
 				kernel,
 				notebook,
 			);
+
 			await kernel.executeNotebookCellsRequest(
 				notebook.uri,
 				validCellExecutions.map((c) => c.cellHandle),
@@ -150,19 +158,23 @@ export class NotebookExecutionService
 					`Execution`,
 					`Completing unconfirmed executions ${JSON.stringify(unconfirmed.map((exe) => exe.cellHandle))}`,
 				);
+
 				unconfirmed.forEach((exe) => exe.complete({}));
 			}
+
 			this._logService.debug(
 				`Execution`,
 				`Completed executions ${JSON.stringify(validCellExecutions.map((exe) => exe.cellHandle))}`,
 			);
 		}
 	}
+
 	async cancelNotebookCellHandles(
 		notebook: INotebookTextModel,
 		cells: Iterable<number>,
 	): Promise<void> {
 		const cellsArr = Array.from(cells);
+
 		this._logService.debug(
 			`Execution`,
 			`CancelNotebookCellHandles ${JSON.stringify(cellsArr)}`,
@@ -175,6 +187,7 @@ export class NotebookExecutionService
 			await kernel.cancelNotebookCellExecution(notebook.uri, cellsArr);
 		}
 	}
+
 	async cancelNotebookCells(
 		notebook: INotebookTextModel,
 		cells: Iterable<NotebookCellTextModel>,
@@ -184,8 +197,10 @@ export class NotebookExecutionService
 			Array.from(cells, (cell) => cell.handle),
 		);
 	}
+
 	private readonly cellExecutionParticipants =
 		new Set<ICellExecutionParticipant>();
+
 	registerExecutionParticipant(participant: ICellExecutionParticipant) {
 		this.cellExecutionParticipants.add(participant);
 
@@ -193,14 +208,17 @@ export class NotebookExecutionService
 			this.cellExecutionParticipants.delete(participant),
 		);
 	}
+
 	private async runExecutionParticipants(
 		executions: INotebookCellExecution[],
 	): Promise<void> {
 		for (const participant of this.cellExecutionParticipants) {
 			await participant.onWillExecuteCell(executions);
 		}
+
 		return;
 	}
+
 	dispose() {
 		this._activeProxyKernelExecutionToken?.dispose(true);
 	}

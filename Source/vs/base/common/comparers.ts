@@ -11,6 +11,7 @@ import { sep } from "./path.js";
 // A collator with numeric sorting enabled, and no sensitivity to case, accents or diacritics.
 const intlFileNameCollatorBaseNumeric: Lazy<{
 	collator: Intl.Collator;
+
 	collatorIsNumeric: boolean;
 }> = new Lazy(() => {
 	const collator = new Intl.Collator(undefined, {
@@ -65,6 +66,7 @@ export function compareFileNames(
 	) {
 		return a < b ? -1 : 1;
 	}
+
 	return result;
 }
 /** Compares full filenames without grouping by case. */
@@ -73,7 +75,9 @@ export function compareFileNamesDefault(
 	other: string | null,
 ): number {
 	const collatorNumeric = intlFileNameCollatorNumeric.value.collator;
+
 	one = one || "";
+
 	other = other || "";
 
 	return compareAndDisambiguateByLength(collatorNumeric, one, other);
@@ -84,7 +88,9 @@ export function compareFileNamesUpper(
 	other: string | null,
 ) {
 	const collatorNumeric = intlFileNameCollatorNumeric.value.collator;
+
 	one = one || "";
+
 	other = other || "";
 
 	return (
@@ -98,7 +104,9 @@ export function compareFileNamesLower(
 	other: string | null,
 ) {
 	const collatorNumeric = intlFileNameCollatorNumeric.value.collator;
+
 	one = one || "";
+
 	other = other || "";
 
 	return (
@@ -112,11 +120,13 @@ export function compareFileNamesUnicode(
 	other: string | null,
 ) {
 	one = one || "";
+
 	other = other || "";
 
 	if (one === other) {
 		return 0;
 	}
+
 	return one < other ? -1 : 1;
 }
 /** Compares filenames by extension, then by name. Disambiguates by unicode comparison. */
@@ -155,6 +165,7 @@ export function compareFileExtensions(
 			return oneName < otherName ? -1 : 1;
 		}
 	}
+
 	return result;
 }
 /** Compares filenames by extension, then by full filename. Mixes uppercase and lowercase names together. */
@@ -163,6 +174,7 @@ export function compareFileExtensionsDefault(
 	other: string | null,
 ): number {
 	one = one || "";
+
 	other = other || "";
 
 	const oneExtension = extractExtension(one);
@@ -188,6 +200,7 @@ export function compareFileExtensionsUpper(
 	other: string | null,
 ): number {
 	one = one || "";
+
 	other = other || "";
 
 	const oneExtension = extractExtension(one);
@@ -215,6 +228,7 @@ export function compareFileExtensionsLower(
 	other: string | null,
 ): number {
 	one = one || "";
+
 	other = other || "";
 
 	const oneExtension = extractExtension(one);
@@ -242,6 +256,7 @@ export function compareFileExtensionsUnicode(
 	other: string | null,
 ) {
 	one = one || "";
+
 	other = other || "";
 
 	const oneExtension = extractExtension(one).toLowerCase();
@@ -255,6 +270,7 @@ export function compareFileExtensionsUnicode(
 	if (one !== other) {
 		return one < other ? -1 : 1;
 	}
+
 	return 0;
 }
 
@@ -281,6 +297,7 @@ function extractNameAndExtension(
 	) {
 		result = [result[0] + "." + result[1], ""];
 	}
+
 	return result;
 }
 /** Extracts the extension from a full filename. Treats dotfiles as names, not extensions. */
@@ -307,6 +324,7 @@ function compareAndDisambiguateByLength(
 	if (one.length !== other.length) {
 		return one.length < other.length ? -1 : 1;
 	}
+
 	return 0;
 }
 /** @returns `true` if the string is starts with a lowercase letter. Otherwise, `false`. */
@@ -335,6 +353,7 @@ function compareCaseLowerFirst(one: string, other: string): number {
 	if (startsWithLower(one) && startsWithUpper(other)) {
 		return -1;
 	}
+
 	return startsWithUpper(one) && startsWithLower(other) ? 1 : 0;
 }
 /**
@@ -351,6 +370,7 @@ function compareCaseUpperFirst(one: string, other: string): number {
 	if (startsWithUpper(one) && startsWithLower(other)) {
 		return -1;
 	}
+
 	return startsWithLower(one) && startsWithUpper(other) ? 1 : 0;
 }
 function comparePathComponents(
@@ -360,11 +380,14 @@ function comparePathComponents(
 ): number {
 	if (!caseSensitive) {
 		one = one && one.toLowerCase();
+
 		other = other && other.toLowerCase();
 	}
+
 	if (one === other) {
 		return 0;
 	}
+
 	return one < other ? -1 : 1;
 }
 export function comparePaths(
@@ -384,6 +407,7 @@ export function comparePaths(
 
 	for (let i = 0; ; i++) {
 		endOne = lastOne === i;
+
 		endOther = lastOther === i;
 
 		if (endOne && endOther) {
@@ -393,6 +417,7 @@ export function comparePaths(
 		} else if (endOther) {
 			return 1;
 		}
+
 		const result = comparePathComponents(
 			oneParts[i],
 			otherParts[i],
@@ -456,9 +481,11 @@ export function compareByPrefix(
 		if (elementAName.length < elementBName.length) {
 			return -1;
 		}
+
 		if (elementAName.length > elementBName.length) {
 			return 1;
 		}
 	}
+
 	return 0;
 }

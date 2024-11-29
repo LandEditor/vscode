@@ -76,6 +76,7 @@ export function detectAvailableProfiles(
 			variableResolver,
 		);
 	}
+
 	return detectAvailableUnixProfiles(
 		fsProvider,
 		logService,
@@ -129,6 +130,7 @@ async function detectAvailableWindowsProfiles(
 	if (getWindowsBuildNumber() >= 16299) {
 		useWSLexe = true;
 	}
+
 	await initializeWindowsProfiles(testPwshSourcePaths);
 
 	const detectedProfiles: Map<string, IUnresolvedTerminalProfile> = new Map();
@@ -139,20 +141,24 @@ async function detectAvailableWindowsProfiles(
 			icon: Codicon.terminalPowershell,
 			isAutoDetected: true,
 		});
+
 		detectedProfiles.set("Windows PowerShell", {
 			path: `${system32Path}\\WindowsPowerShell\\v1.0\\powershell.exe`,
 			icon: Codicon.terminalPowershell,
 			isAutoDetected: true,
 		});
+
 		detectedProfiles.set("Git Bash", {
 			source: ProfileSource.GitBash,
 			isAutoDetected: true,
 		});
+
 		detectedProfiles.set("Command Prompt", {
 			path: `${system32Path}\\cmd.exe`,
 			icon: Codicon.terminalCmd,
 			isAutoDetected: true,
 		});
+
 		detectedProfiles.set("Cygwin", {
 			path: [
 				{
@@ -167,6 +173,7 @@ async function detectAvailableWindowsProfiles(
 			args: ["--login"],
 			isAutoDetected: true,
 		});
+
 		detectedProfiles.set("bash (MSYS2)", {
 			path: [
 				{
@@ -182,6 +189,7 @@ async function detectAvailableWindowsProfiles(
 		});
 
 		const cmderPath = `${process.env["CMDER_ROOT"] || `${process.env["HOMEDRIVE"]}\\cmder`}\\vendor\\bin\\vscode_init.cmd`;
+
 		detectedProfiles.set("Cmder", {
 			path: `${system32Path}\\cmd.exe`,
 			args: ["/K", cmderPath],
@@ -192,6 +200,7 @@ async function detectAvailableWindowsProfiles(
 			isAutoDetected: true,
 		});
 	}
+
 	applyConfigProfilesToMap(configProfiles, detectedProfiles);
 
 	const resultProfiles: ITerminalProfile[] =
@@ -224,10 +233,12 @@ async function detectAvailableWindowsProfiles(
 				logService?.trace(
 					"WSL is not installed, so could not detect WSL profiles",
 				);
+
 				logIfWslNotInstalled = false;
 			}
 		}
 	}
+
 	return resultProfiles;
 }
 async function transformToTerminalProfiles(
@@ -253,6 +264,7 @@ async function transformToTerminalProfiles(
 			),
 		);
 	}
+
 	return (await Promise.all(promises)).filter(
 		(e) => !!e,
 	) as ITerminalProfile[];
@@ -269,6 +281,7 @@ async function getValidatedProfile(
 	if (profile === null) {
 		return undefined;
 	}
+
 	let originalPaths: (string | ITerminalUnsafePath)[];
 
 	let args: string[] | string | undefined;
@@ -278,6 +291,7 @@ async function getValidatedProfile(
 		| URI
 		| {
 				light: URI;
+
 				dark: URI;
 		  }
 		| undefined = undefined;
@@ -288,6 +302,7 @@ async function getValidatedProfile(
 		if (!source) {
 			return undefined;
 		}
+
 		originalPaths = source.paths;
 		// if there are configured args, override the default ones
 		args = profile.args || source.args;
@@ -301,13 +316,16 @@ async function getValidatedProfile(
 		originalPaths = Array.isArray(profile.path)
 			? profile.path
 			: [profile.path];
+
 		args = isWindows
 			? profile.args
 			: Array.isArray(profile.args)
 				? profile.args
 				: undefined;
+
 		icon = validateIcon(profile.icon);
 	}
+
 	let paths: (string | ITerminalUnsafePath)[];
 
 	if (variableResolver) {
@@ -333,6 +351,7 @@ async function getValidatedProfile(
 	} else {
 		paths = originalPaths.slice();
 	}
+
 	let requiresUnsafePath: string | undefined;
 
 	if (profile.requiresPath) {
@@ -348,12 +367,14 @@ async function getValidatedProfile(
 				requiresUnsafePath = actualRequiredPath;
 			}
 		}
+
 		const result = await fsProvider.existsFile(actualRequiredPath);
 
 		if (!result) {
 			return;
 		}
 	}
+
 	const validatedProfile = await validateProfilePaths(
 		profileName,
 		defaultProfileName,
@@ -376,8 +397,11 @@ async function getValidatedProfile(
 
 		return undefined;
 	}
+
 	validatedProfile.isAutoDetected = profile.isAutoDetected;
+
 	validatedProfile.icon = icon;
+
 	validatedProfile.color = profile.color;
 
 	return validatedProfile;
@@ -388,6 +412,7 @@ function validateIcon(
 	if (typeof icon === "string") {
 		return { id: icon };
 	}
+
 	return icon;
 }
 async function initializeWindowsProfiles(
@@ -396,16 +421,20 @@ async function initializeWindowsProfiles(
 	if (profileSources && !testPwshSourcePaths) {
 		return;
 	}
+
 	const [gitBashPaths, pwshPaths] = await Promise.all([
 		getGitBashPaths(),
 		testPwshSourcePaths || getPowershellPaths(),
 	]);
+
 	profileSources = new Map();
+
 	profileSources.set(ProfileSource.GitBash, {
 		profileName: "Git Bash",
 		paths: gitBashPaths,
 		args: ["--login", "-i"],
 	});
+
 	profileSources.set(ProfileSource.Pwsh, {
 		profileName: "PowerShell",
 		paths: pwshPaths,
@@ -421,8 +450,10 @@ async function getGitBashPaths(): Promise<string[]> {
 
 	if (gitExePath) {
 		const gitExeDir = dirname(gitExePath);
+
 		gitDirs.add(resolve(gitExeDir, "../.."));
 	}
+
 	function addTruthy<T>(set: Set<T>, value: T | undefined): void {
 		if (value) {
 			set.add(value);
@@ -430,8 +461,11 @@ async function getGitBashPaths(): Promise<string[]> {
 	}
 	// Add common git install locations
 	addTruthy(gitDirs, process.env["ProgramW6432"]);
+
 	addTruthy(gitDirs, process.env["ProgramFiles"]);
+
 	addTruthy(gitDirs, process.env["ProgramFiles(X86)"]);
+
 	addTruthy(gitDirs, `${process.env["LocalAppData"]}\\Program`);
 
 	const gitBashPaths: string[] = [];
@@ -447,6 +481,7 @@ async function getGitBashPaths(): Promise<string[]> {
 	gitBashPaths.push(
 		`${process.env["UserProfile"]}\\scoop\\apps\\git\\current\\bin\\bash.exe`,
 	);
+
 	gitBashPaths.push(
 		`${process.env["UserProfile"]}\\scoop\\apps\\git-with-openssh\\current\\bin\\bash.exe`,
 	);
@@ -459,6 +494,7 @@ async function getPowershellPaths(): Promise<string[]> {
 	for await (const pwshExe of enumeratePowerShellInstallations()) {
 		paths.push(pwshExe.exePath);
 	}
+
 	return paths;
 }
 async function getWslProfiles(
@@ -476,6 +512,7 @@ async function getWslProfiles(
 				if (err) {
 					return reject("Problem occurred when getting wsl distros");
 				}
+
 				resolve(stdout);
 			},
 		);
@@ -484,6 +521,7 @@ async function getWslProfiles(
 	if (!distroOutput) {
 		return [];
 	}
+
 	const regex = new RegExp(/[\r?\n]/);
 
 	const distroNames = distroOutput
@@ -514,6 +552,7 @@ async function getWslProfiles(
 		// Add the profile
 		profiles.push(profile);
 	}
+
 	return profiles;
 }
 function getWslIcon(distroName: string): ThemeIcon {
@@ -561,18 +600,22 @@ async function detectAvailableUnixProfiles(
 			let profileName = basename(profile);
 
 			let count = counts.get(profileName) || 0;
+
 			count++;
 
 			if (count > 1) {
 				profileName = `${profileName} (${count})`;
 			}
+
 			counts.set(profileName, count);
+
 			detectedProfiles.set(profileName, {
 				path: profile,
 				isAutoDetected: true,
 			});
 		}
 	}
+
 	applyConfigProfilesToMap(configProfiles, detectedProfiles);
 
 	return await transformToTerminalProfiles(
@@ -595,6 +638,7 @@ function applyConfigProfilesToMap(
 	if (!configProfiles) {
 		return;
 	}
+
 	for (const [profileName, value] of Object.entries(configProfiles)) {
 		if (
 			value === null ||
@@ -604,6 +648,7 @@ function applyConfigProfilesToMap(
 			profilesMap.delete(profileName);
 		} else {
 			value.icon = value.icon || profilesMap.get(profileName)?.icon;
+
 			profilesMap.set(profileName, value);
 		}
 	}
@@ -623,6 +668,7 @@ async function validateProfilePaths(
 	if (potentialPaths.length === 0) {
 		return Promise.resolve(undefined);
 	}
+
 	const path = potentialPaths.shift()!;
 
 	if (path === "") {
@@ -638,6 +684,7 @@ async function validateProfilePaths(
 			isAutoDetected,
 		);
 	}
+
 	const isUnsafePath = typeof path !== "string" && path.isUnsafe;
 
 	const actualPath = typeof path === "string" ? path : path.path;
@@ -678,16 +725,20 @@ async function validateProfilePaths(
 				args,
 			);
 		}
+
 		profile.path = executable;
+
 		profile.isFromPath = true;
 
 		return profile;
 	}
+
 	const result = await fsProvider.existsFile(normalize(actualPath));
 
 	if (result) {
 		return profile;
 	}
+
 	return validateProfilePaths(
 		profileName,
 		defaultProfileName,
@@ -702,17 +753,22 @@ async function validateProfilePaths(
 }
 export interface IFsProvider {
 	existsFile(path: string): Promise<boolean>;
+
 	readFile(path: string): Promise<Buffer>;
 }
 interface IPotentialTerminalProfile {
 	profileName: string;
+
 	paths: string[];
+
 	args?: string[];
+
 	icon?:
 		| ThemeIcon
 		| URI
 		| {
 				light: URI;
+
 				dark: URI;
 		  };
 }

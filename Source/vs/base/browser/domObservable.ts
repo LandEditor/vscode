@@ -13,6 +13,7 @@ export function createStyleSheetFromObservable(
 	const store = new DisposableStore();
 
 	const w = store.add(createStyleSheet2());
+
 	store.add(
 		autorun((reader) => {
 			w.setStyle(css.read(reader));

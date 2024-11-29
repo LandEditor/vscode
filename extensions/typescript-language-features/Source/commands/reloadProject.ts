@@ -8,18 +8,22 @@ import { Command } from "./commandManager";
 
 export class ReloadTypeScriptProjectsCommand implements Command {
 	public readonly id = "typescript.reloadProjects";
+
 	public constructor(
 		private readonly lazyClientHost: Lazy<TypeScriptServiceClientHost>,
 	) {}
+
 	public execute() {
 		this.lazyClientHost.value.reloadProjects();
 	}
 }
 export class ReloadJavaScriptProjectsCommand implements Command {
 	public readonly id = "javascript.reloadProjects";
+
 	public constructor(
 		private readonly lazyClientHost: Lazy<TypeScriptServiceClientHost>,
 	) {}
+
 	public execute() {
 		this.lazyClientHost.value.reloadProjects();
 	}

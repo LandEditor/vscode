@@ -33,11 +33,15 @@ import {
 
 export class NotificationsStatus extends Disposable {
 	private notificationsCenterStatusItem: IStatusbarEntryAccessor | undefined;
+
 	private newNotificationsCount = 0;
+
 	private currentStatusMessage:
 		| [IStatusMessageViewItem, IDisposable]
 		| undefined;
+
 	private isNotificationsCenterVisible: boolean = false;
+
 	private isNotificationsToastsVisible: boolean = false;
 
 	constructor(
@@ -48,30 +52,36 @@ export class NotificationsStatus extends Disposable {
 		private readonly notificationService: INotificationService,
 	) {
 		super();
+
 		this.updateNotificationsCenterStatusItem();
 
 		if (model.statusMessage) {
 			this.doSetStatusMessage(model.statusMessage);
 		}
+
 		this.registerListeners();
 	}
+
 	private registerListeners(): void {
 		this._register(
 			this.model.onDidChangeNotification((e) =>
 				this.onDidChangeNotification(e),
 			),
 		);
+
 		this._register(
 			this.model.onDidChangeStatusMessage((e) =>
 				this.onDidChangeStatusMessage(e),
 			),
 		);
+
 		this._register(
 			this.notificationService.onDidChangeFilter(() =>
 				this.updateNotificationsCenterStatusItem(),
 			),
 		);
 	}
+
 	private onDidChangeNotification(e: INotificationChangeEvent): void {
 		// Consider a notification as unread as long as it only
 		// appeared as toast and not in the notification center
@@ -88,6 +98,7 @@ export class NotificationsStatus extends Disposable {
 		// Update in status bar
 		this.updateNotificationsCenterStatusItem();
 	}
+
 	private updateNotificationsCenterStatusItem(): void {
 		// Figure out how many notifications have progress only if neither
 		// toasts are visible nor center is visible. In that case we still
@@ -129,6 +140,7 @@ export class NotificationsStatus extends Disposable {
 				),
 			};
 		}
+
 		if (!this.notificationsCenterStatusItem) {
 			this.notificationsCenterStatusItem = this.statusbarService.addEntry(
 				statusProperties,
@@ -140,20 +152,25 @@ export class NotificationsStatus extends Disposable {
 			this.notificationsCenterStatusItem.update(statusProperties);
 		}
 	}
+
 	private getTooltip(notificationsInProgress: number): string {
 		if (this.isNotificationsCenterVisible) {
 			return localize("hideNotifications", "Hide Notifications");
 		}
+
 		if (this.model.notifications.length === 0) {
 			return localize("zeroNotifications", "No Notifications");
 		}
+
 		if (notificationsInProgress === 0) {
 			if (this.newNotificationsCount === 0) {
 				return localize("noNotifications", "No New Notifications");
 			}
+
 			if (this.newNotificationsCount === 1) {
 				return localize("oneNotification", "1 New Notification");
 			}
+
 			return localize(
 				{
 					key: "notifications",
@@ -163,6 +180,7 @@ export class NotificationsStatus extends Disposable {
 				this.newNotificationsCount,
 			);
 		}
+
 		if (this.newNotificationsCount === 0) {
 			return localize(
 				{
@@ -173,6 +191,7 @@ export class NotificationsStatus extends Disposable {
 				notificationsInProgress,
 			);
 		}
+
 		if (this.newNotificationsCount === 1) {
 			return localize(
 				{
@@ -183,6 +202,7 @@ export class NotificationsStatus extends Disposable {
 				notificationsInProgress,
 			);
 		}
+
 		return localize(
 			{
 				key: "notificationsWithProgress",
@@ -193,16 +213,20 @@ export class NotificationsStatus extends Disposable {
 			notificationsInProgress,
 		);
 	}
+
 	update(isCenterVisible: boolean, isToastsVisible: boolean): void {
 		let updateNotificationsCenterStatusItem = false;
 
 		if (this.isNotificationsCenterVisible !== isCenterVisible) {
 			this.isNotificationsCenterVisible = isCenterVisible;
+
 			this.newNotificationsCount = 0; // Showing the notification center resets the unread counter to 0
 			updateNotificationsCenterStatusItem = true;
 		}
+
 		if (this.isNotificationsToastsVisible !== isToastsVisible) {
 			this.isNotificationsToastsVisible = isToastsVisible;
+
 			updateNotificationsCenterStatusItem = true;
 		}
 		// Update in status bar as needed
@@ -210,6 +234,7 @@ export class NotificationsStatus extends Disposable {
 			this.updateNotificationsCenterStatusItem();
 		}
 	}
+
 	private onDidChangeStatusMessage(e: IStatusMessageChangeEvent): void {
 		const statusItem = e.item;
 
@@ -226,11 +251,14 @@ export class NotificationsStatus extends Disposable {
 					this.currentStatusMessage[0] === statusItem
 				) {
 					dispose(this.currentStatusMessage[1]);
+
 					this.currentStatusMessage = undefined;
 				}
+
 				break;
 		}
 	}
+
 	private doSetStatusMessage(item: IStatusMessageViewItem): void {
 		const message = item.message;
 
@@ -261,6 +289,7 @@ export class NotificationsStatus extends Disposable {
 				StatusbarAlignment.LEFT,
 				-Number.MAX_VALUE /* far right on left hand side */,
 			);
+
 			showHandle = null;
 		}, showAfter);
 		// Dispose function takes care of timeouts and actual entry
@@ -271,9 +300,11 @@ export class NotificationsStatus extends Disposable {
 				if (showHandle) {
 					clearTimeout(showHandle);
 				}
+
 				if (hideHandle) {
 					clearTimeout(hideHandle);
 				}
+
 				statusMessageEntry?.dispose();
 			},
 		};

@@ -74,20 +74,33 @@ export enum TunnelType {
 }
 export interface ITunnelItem {
 	tunnelType: TunnelType;
+
 	remoteHost: string;
+
 	remotePort: number;
+
 	localAddress?: string;
+
 	protocol: TunnelProtocol;
+
 	localUri?: URI;
+
 	localPort?: number;
+
 	name?: string;
+
 	closeable?: boolean;
+
 	source: {
 		source: TunnelSource;
+
 		description: string;
 	};
+
 	privacy: TunnelPrivacy;
+
 	processDescription?: string;
+
 	readonly label: string;
 }
 export enum TunnelEditId {
@@ -106,9 +119,13 @@ export interface HelpInformation {
 		  };
 
 	documentation?: string;
+
 	issues?: string;
+
 	reportIssue?: string;
+
 	remoteName?: string[] | string;
+
 	virtualWorkspace?: string;
 }
 
@@ -187,16 +204,23 @@ export enum PortsEnablement {
 }
 export interface IRemoteExplorerService {
 	readonly _serviceBrand: undefined;
+
 	onDidChangeTargetType: Event<string[]>;
+
 	targetType: string[];
+
 	onDidChangeHelpInformation: Event<
 		readonly IExtensionPointUser<HelpInformation>[]
 	>;
+
 	helpInformation: IExtensionPointUser<HelpInformation>[];
+
 	readonly tunnelModel: TunnelModel;
+
 	onDidChangeEditable: Event<
 		| {
 				tunnel: ITunnelItem;
+
 				editId: TunnelEditId;
 		  }
 		| undefined
@@ -217,9 +241,11 @@ export interface IRemoteExplorerService {
 		tunnelProperties: TunnelProperties,
 		attributes?: Attributes | null,
 	): Promise<RemoteTunnel | string | undefined>;
+
 	close(
 		remote: {
 			host: string;
+
 			port: number;
 		},
 		reason: TunnelCloseReason,
@@ -234,54 +260,78 @@ export interface IRemoteExplorerService {
 			| ((candidates: CandidatePort[]) => Promise<CandidatePort[]>)
 			| undefined,
 	): IDisposable;
+
 	onFoundNewCandidates(candidates: CandidatePort[]): void;
+
 	restore(): Promise<void>;
+
 	enablePortsFeatures(viewOnly: boolean): void;
+
 	onEnabledPortsFeatures: Event<void>;
+
 	portsFeaturesEnabled: PortsEnablement;
+
 	readonly namedProcesses: Map<number, string>;
 }
 class RemoteExplorerService implements IRemoteExplorerService {
 	public _serviceBrand: undefined;
+
 	private _targetType: string[] = [];
+
 	private readonly _onDidChangeTargetType: Emitter<string[]> = new Emitter<
 		string[]
 	>();
+
 	public readonly onDidChangeTargetType: Event<string[]> =
 		this._onDidChangeTargetType.event;
+
 	private readonly _onDidChangeHelpInformation: Emitter<
 		readonly IExtensionPointUser<HelpInformation>[]
 	> = new Emitter();
+
 	public readonly onDidChangeHelpInformation: Event<
 		readonly IExtensionPointUser<HelpInformation>[]
 	> = this._onDidChangeHelpInformation.event;
+
 	private _helpInformation: IExtensionPointUser<HelpInformation>[] = [];
+
 	private _tunnelModel: TunnelModel;
+
 	private _editable:
 		| {
 				tunnelItem: ITunnelItem | undefined;
+
 				editId: TunnelEditId;
+
 				data: IEditableData;
 		  }
 		| undefined;
+
 	private readonly _onDidChangeEditable: Emitter<
 		| {
 				tunnel: ITunnelItem;
+
 				editId: TunnelEditId;
 		  }
 		| undefined
 	> = new Emitter();
+
 	public readonly onDidChangeEditable: Event<
 		| {
 				tunnel: ITunnelItem;
+
 				editId: TunnelEditId;
 		  }
 		| undefined
 	> = this._onDidChangeEditable.event;
+
 	private readonly _onEnabledPortsFeatures: Emitter<void> = new Emitter();
+
 	public readonly onEnabledPortsFeatures: Event<void> =
 		this._onEnabledPortsFeatures.event;
+
 	private _portsFeaturesEnabled: PortsEnablement = PortsEnablement.Disabled;
+
 	public readonly namedProcesses = new Map<number, string>();
 
 	constructor(
@@ -293,14 +343,18 @@ class RemoteExplorerService implements IRemoteExplorerService {
 		instantiationService: IInstantiationService,
 	) {
 		this._tunnelModel = instantiationService.createInstance(TunnelModel);
+
 		remoteHelpExtPoint.setHandler((extensions) => {
 			this._helpInformation.push(...extensions);
+
 			this._onDidChangeHelpInformation.fire(extensions);
 		});
 	}
+
 	get helpInformation(): IExtensionPointUser<HelpInformation>[] {
 		return this._helpInformation;
 	}
+
 	set targetType(name: string[]) {
 		// Can just compare the first element of the array since there are no target overlaps
 		const current: string =
@@ -310,52 +364,63 @@ class RemoteExplorerService implements IRemoteExplorerService {
 
 		if (current !== newName) {
 			this._targetType = name;
+
 			this.storageService.store(
 				REMOTE_EXPLORER_TYPE_KEY,
 				this._targetType.toString(),
 				StorageScope.WORKSPACE,
 				StorageTarget.MACHINE,
 			);
+
 			this.storageService.store(
 				REMOTE_EXPLORER_TYPE_KEY,
 				this._targetType.toString(),
 				StorageScope.PROFILE,
 				StorageTarget.USER,
 			);
+
 			this._onDidChangeTargetType.fire(this._targetType);
 		}
 	}
+
 	get targetType(): string[] {
 		return this._targetType;
 	}
+
 	get tunnelModel(): TunnelModel {
 		return this._tunnelModel;
 	}
+
 	forward(
 		tunnelProperties: TunnelProperties,
 		attributes?: Attributes | null,
 	): Promise<RemoteTunnel | string | undefined> {
 		return this.tunnelModel.forward(tunnelProperties, attributes);
 	}
+
 	close(
 		remote: {
 			host: string;
+
 			port: number;
 		},
 		reason: TunnelCloseReason,
 	): Promise<void> {
 		return this.tunnelModel.close(remote.host, remote.port, reason);
 	}
+
 	setTunnelInformation(
 		tunnelInformation: TunnelInformation | undefined,
 	): void {
 		if (tunnelInformation?.features) {
 			this.tunnelService.setTunnelFeatures(tunnelInformation.features);
 		}
+
 		this.tunnelModel.addEnvironmentTunnels(
 			tunnelInformation?.environmentTunnels,
 		);
 	}
+
 	setEditable(
 		tunnelItem: ITunnelItem | undefined,
 		editId: TunnelEditId,
@@ -366,10 +431,12 @@ class RemoteExplorerService implements IRemoteExplorerService {
 		} else {
 			this._editable = { tunnelItem, data, editId };
 		}
+
 		this._onDidChangeEditable.fire(
 			tunnelItem ? { tunnel: tunnelItem, editId } : undefined,
 		);
 	}
+
 	getEditableData(
 		tunnelItem: ITunnelItem | undefined,
 		editId: TunnelEditId,
@@ -385,6 +452,7 @@ class RemoteExplorerService implements IRemoteExplorerService {
 			? this._editable.data
 			: undefined;
 	}
+
 	setCandidateFilter(
 		filter: (candidates: CandidatePort[]) => Promise<CandidatePort[]>,
 	): IDisposable {
@@ -393,6 +461,7 @@ class RemoteExplorerService implements IRemoteExplorerService {
 				dispose: () => {},
 			};
 		}
+
 		this.tunnelModel.setCandidateFilter(filter);
 
 		return {
@@ -401,18 +470,23 @@ class RemoteExplorerService implements IRemoteExplorerService {
 			},
 		};
 	}
+
 	onFoundNewCandidates(candidates: CandidatePort[]): void {
 		this.tunnelModel.setCandidates(candidates);
 	}
+
 	restore(): Promise<void> {
 		return this.tunnelModel.restoreForwarded();
 	}
+
 	enablePortsFeatures(viewOnly: boolean): void {
 		this._portsFeaturesEnabled = viewOnly
 			? PortsEnablement.ViewOnly
 			: PortsEnablement.AdditionalFeatures;
+
 		this._onEnabledPortsFeatures.fire();
 	}
+
 	get portsFeaturesEnabled(): PortsEnablement {
 		return this._portsFeaturesEnabled;
 	}

@@ -31,13 +31,19 @@ import { CellEditorOptions } from "./cellParts/cellEditorOptions.js";
 
 export class NotebookCellEditorPool extends Disposable {
 	private readonly _focusedEditorDOM: HTMLElement;
+
 	private readonly _editorDisposable = this._register(
 		new MutableDisposable(),
 	);
+
 	private _editorContextKeyService!: IScopedContextKeyService;
+
 	private _editor!: CodeEditorWidget;
+
 	private _focusEditorCancellablePromise: CancelablePromise<void> | undefined;
+
 	private _isInitialized = false;
+
 	private _isDisposed = false;
 
 	constructor(
@@ -53,14 +59,20 @@ export class NotebookCellEditorPool extends Disposable {
 		private readonly _instantiationService: IInstantiationService,
 	) {
 		super();
+
 		this._focusedEditorDOM = this.notebookEditor
 			.getDomNode()
 			.appendChild(DOM.$(".cell-editor-part-cache"));
+
 		this._focusedEditorDOM.style.position = "absolute";
+
 		this._focusedEditorDOM.style.top = "-50000px";
+
 		this._focusedEditorDOM.style.width = "1px";
+
 		this._focusedEditorDOM.style.height = "1px";
 	}
+
 	private _initializeEditor(cell: ICellViewModel) {
 		this._editorContextKeyService = this._register(
 			this.contextKeyServiceProvider(this._focusedEditorDOM),
@@ -79,6 +91,7 @@ export class NotebookCellEditorPool extends Disposable {
 				]),
 			),
 		);
+
 		EditorContextKeys.inCompositeEditor
 			.bindTo(this._editorContextKeyService)
 			.set(true);
@@ -88,6 +101,7 @@ export class NotebookCellEditorPool extends Disposable {
 			this.notebookEditor.notebookOptions,
 			this._configurationService,
 		);
+
 		this._editor = this._register(
 			editorInstaService.createInstance(
 				CodeEditorWidget,
@@ -112,14 +126,19 @@ export class NotebookCellEditorPool extends Disposable {
 				},
 			),
 		);
+
 		this._isInitialized = true;
 	}
+
 	preserveFocusedEditor(cell: ICellViewModel): void {
 		if (!this._isInitialized) {
 			this._initializeEditor(cell);
 		}
+
 		this._editorDisposable.clear();
+
 		this._focusEditorCancellablePromise?.cancel();
+
 		this._focusEditorCancellablePromise = createCancelablePromise(
 			async (token) => {
 				const ref = await this.textModelService.createModelReference(
@@ -131,10 +150,15 @@ export class NotebookCellEditorPool extends Disposable {
 
 					return;
 				}
+
 				const editorDisposable = new DisposableStore();
+
 				editorDisposable.add(ref);
+
 				this._editor.setModel(ref.object.textEditorModel);
+
 				this._editor.setSelections(cell.getSelections());
+
 				this._editor.focus();
 
 				const _update = () => {
@@ -143,15 +167,20 @@ export class NotebookCellEditorPool extends Disposable {
 					if (editorSelections) {
 						cell.setSelections(editorSelections);
 					}
+
 					this.notebookEditor.revealInView(cell);
+
 					this._editor.setModel(null);
+
 					ref.dispose();
 				};
+
 				editorDisposable.add(
 					this._editor.onDidChangeModelContent((e) => {
 						_update();
 					}),
 				);
+
 				editorDisposable.add(
 					this._editor.onDidChangeCursorSelection((e) => {
 						if (e.source === "keyboard" || e.source === "mouse") {
@@ -159,6 +188,7 @@ export class NotebookCellEditorPool extends Disposable {
 						}
 					}),
 				);
+
 				editorDisposable.add(
 					this.notebookEditor.onDidChangeActiveEditor(() => {
 						const latestActiveCell =
@@ -171,17 +201,22 @@ export class NotebookCellEditorPool extends Disposable {
 							// focus moves to another cell or cell container
 							// we should stop preserving the editor
 							this._editorDisposable.clear();
+
 							this._editor.setModel(null);
+
 							ref.dispose();
 						}
 					}),
 				);
+
 				this._editorDisposable.value = editorDisposable;
 			},
 		);
 	}
+
 	override dispose() {
 		this._isDisposed = true;
+
 		this._focusEditorCancellablePromise?.cancel();
 
 		super.dispose();

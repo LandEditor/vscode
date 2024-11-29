@@ -20,10 +20,13 @@ export class DefaultConfiguration extends Disposable {
 	private readonly _onDidChangeConfiguration = this._register(
 		new Emitter<{
 			defaults: ConfigurationModel;
+
 			properties: string[];
 		}>(),
 	);
+
 	readonly onDidChangeConfiguration = this._onDidChangeConfiguration.event;
+
 	private _configurationModel = ConfigurationModel.createEmptyModel(
 		this.logService,
 	);
@@ -31,11 +34,14 @@ export class DefaultConfiguration extends Disposable {
 	get configurationModel(): ConfigurationModel {
 		return this._configurationModel;
 	}
+
 	constructor(private readonly logService: ILogService) {
 		super();
 	}
+
 	async initialize(): Promise<ConfigurationModel> {
 		this.resetConfigurationModel();
+
 		this._register(
 			Registry.as<IConfigurationRegistry>(
 				Extensions.Configuration,
@@ -49,11 +55,13 @@ export class DefaultConfiguration extends Disposable {
 
 		return this.configurationModel;
 	}
+
 	reload(): ConfigurationModel {
 		this.resetConfigurationModel();
 
 		return this.configurationModel;
 	}
+
 	protected onDidUpdateConfiguration(
 		properties: string[],
 		defaultsOverrides?: boolean,
@@ -64,14 +72,17 @@ export class DefaultConfiguration extends Disposable {
 				Extensions.Configuration,
 			).getConfigurationProperties(),
 		);
+
 		this._onDidChangeConfiguration.fire({
 			defaults: this.configurationModel,
 			properties,
 		});
 	}
+
 	protected getConfigurationDefaultOverrides(): IStringDictionary<any> {
 		return {};
 	}
+
 	private resetConfigurationModel(): void {
 		this._configurationModel = ConfigurationModel.createEmptyModel(
 			this.logService,
@@ -80,8 +91,10 @@ export class DefaultConfiguration extends Disposable {
 		const properties = Registry.as<IConfigurationRegistry>(
 			Extensions.Configuration,
 		).getConfigurationProperties();
+
 		this.updateConfigurationModel(Object.keys(properties), properties);
 	}
+
 	private updateConfigurationModel(
 		properties: string[],
 		configurationProperties: IStringDictionary<IRegisteredConfigurationPropertySchema>,
@@ -106,11 +119,14 @@ export class DefaultConfiguration extends Disposable {
 }
 export interface IPolicyConfiguration {
 	readonly onDidChangeConfiguration: Event<ConfigurationModel>;
+
 	readonly configurationModel: ConfigurationModel;
+
 	initialize(): Promise<ConfigurationModel>;
 }
 export class NullPolicyConfiguration implements IPolicyConfiguration {
 	readonly onDidChangeConfiguration = Event.None;
+
 	readonly configurationModel = ConfigurationModel.createEmptyModel(
 		new NullLogService(),
 	);
@@ -126,7 +142,9 @@ export class PolicyConfiguration
 	private readonly _onDidChangeConfiguration = this._register(
 		new Emitter<ConfigurationModel>(),
 	);
+
 	readonly onDidChangeConfiguration = this._onDidChangeConfiguration.event;
+
 	private _configurationModel = ConfigurationModel.createEmptyModel(
 		this.logService,
 	);
@@ -134,6 +152,7 @@ export class PolicyConfiguration
 	get configurationModel() {
 		return this._configurationModel;
 	}
+
 	constructor(
 		private readonly defaultConfiguration: DefaultConfiguration,
 		@IPolicyService
@@ -143,19 +162,23 @@ export class PolicyConfiguration
 	) {
 		super();
 	}
+
 	async initialize(): Promise<ConfigurationModel> {
 		this.logService.trace("PolicyConfiguration#initialize");
+
 		this.update(
 			await this.updatePolicyDefinitions(
 				this.defaultConfiguration.configurationModel.keys,
 			),
 			false,
 		);
+
 		this._register(
 			this.policyService.onDidChange((policyNames) =>
 				this.onDidChangePolicies(policyNames),
 			),
 		);
+
 		this._register(
 			this.defaultConfiguration.onDidChangeConfiguration(
 				async ({ properties }) =>
@@ -168,6 +191,7 @@ export class PolicyConfiguration
 
 		return this._configurationModel;
 	}
+
 	private async updatePolicyDefinitions(
 		properties: string[],
 	): Promise<string[]> {
@@ -193,20 +217,27 @@ export class PolicyConfiguration
 
 				continue;
 			}
+
 			if (config.policy) {
 				if (config.type !== 'string' && config.type !== 'number' && config.type !== 'array' && config.type !== 'object') {
 					this.logService.warn(`Policy ${config.policy.name} has unsupported type ${config.type}`);
+
 					continue;
 				}
+
 				keys.push(key);
+
 				policyDefinitions[config.policy.name] = { type: config.type === 'number' ? 'number' : 'string' };
 			}
 		}
+
 		if (!isEmptyObject(policyDefinitions)) {
 			await this.policyService.updatePolicyDefinitions(policyDefinitions);
 		}
+
 		return keys;
 	}
+
 	private onDidChangePolicies(policyNames: readonly PolicyName[]): void {
 		this.logService.trace(
 			"PolicyConfiguration#onDidChangePolicies",
@@ -222,27 +253,37 @@ export class PolicyConfiguration
 				policyConfigurations.get(policyName),
 			),
 		);
+
 		this.update(keys, true);
 	}
+
 	private update(keys: string[], trigger: boolean): void {
 		this.logService.trace('PolicyConfiguration#update', keys);
+
 		const configurationProperties = Registry.as<IConfigurationRegistry>(Extensions.Configuration).getConfigurationProperties();
+
 		const changed: [string, any][] = [];
+
 		const wasEmpty = this._configurationModel.isEmpty();
 
 		for (const key of keys) {
 			const proprety = configurationProperties[key];
+
 			const policyName = proprety?.policy?.name;
+
 			if (policyName) {
 				let policyValue = this.policyService.getPolicyValue(policyName);
+
 				if (isString(policyValue) && proprety.type !== 'string') {
 					try {
 						policyValue = JSON.parse(policyValue);
 					} catch (e) {
 						this.logService.error(`Error parsing policy value ${policyName}:`, getErrorMessage(e));
+
 						continue;
 					}
 				}
+
 				if (wasEmpty ? policyValue !== undefined : !equals(this._configurationModel.getValue(key), policyValue)) {
 					changed.push([key, policyValue]);
 				}
@@ -252,10 +293,12 @@ export class PolicyConfiguration
 				}
 			}
 		}
+
 		if (changed.length) {
 			this.logService.trace("PolicyConfiguration#changed", changed);
 
 			const old = this._configurationModel;
+
 			this._configurationModel = ConfigurationModel.createEmptyModel(
 				this.logService,
 			);
@@ -263,6 +306,7 @@ export class PolicyConfiguration
 			for (const key of old.keys) {
 				this._configurationModel.setValue(key, old.getValue(key));
 			}
+
 			for (const [key, policyValue] of changed) {
 				if (policyValue === undefined) {
 					this._configurationModel.removeValue(key);
@@ -270,6 +314,7 @@ export class PolicyConfiguration
 					this._configurationModel.setValue(key, policyValue);
 				}
 			}
+
 			if (trigger) {
 				this._onDidChangeConfiguration.fire(this._configurationModel);
 			}

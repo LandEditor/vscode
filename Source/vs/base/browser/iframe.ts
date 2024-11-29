@@ -40,6 +40,7 @@ function getParentWindowIfSameOrigin(w: Window): Window | null {
 	} catch (e) {
 		return null;
 	}
+
 	return w.parent;
 }
 export class IframeUtils {
@@ -54,6 +55,7 @@ export class IframeUtils {
 
 		if (!windowChainCache) {
 			windowChainCache = [];
+
 			sameOriginWindowChainCache.set(targetWindow, windowChainCache);
 
 			let w: Window | null = targetWindow;
@@ -74,9 +76,11 @@ export class IframeUtils {
 						iframeElement: null,
 					});
 				}
+
 				w = parent;
 			} while (w);
 		}
+
 		return windowChainCache.slice(0);
 	}
 	/**
@@ -92,6 +96,7 @@ export class IframeUtils {
 				left: 0,
 			};
 		}
+
 		let top = 0,
 			left = 0;
 
@@ -99,20 +104,27 @@ export class IframeUtils {
 
 		for (const windowChainEl of windowChain) {
 			const windowInChain = windowChainEl.window.deref();
+
 			top += windowInChain?.scrollY ?? 0;
+
 			left += windowInChain?.scrollX ?? 0;
 
 			if (windowInChain === ancestorWindow) {
 				break;
 			}
+
 			if (!windowChainEl.iframeElement) {
 				break;
 			}
+
 			const boundingRect =
 				windowChainEl.iframeElement.getBoundingClientRect();
+
 			top += boundingRect.top;
+
 			left += boundingRect.left;
 		}
+
 		return {
 			top: top,
 			left: left,
@@ -132,6 +144,7 @@ export async function parentOriginHash(
 			`'crypto.subtle' is not available so webviews will not work. This is likely because the editor is not running in a secure context (https://developer.mozilla.org/en-US/docs/Web/Security/Secure_Contexts).`,
 		);
 	}
+
 	const strData = JSON.stringify({ parentOrigin, salt });
 
 	const encoder = new TextEncoder();

@@ -24,6 +24,7 @@ export class TextResourcePropertiesService
 	implements ITextResourcePropertiesService
 {
 	declare readonly _serviceBrand: undefined;
+
 	private remoteEnvironment: IRemoteAgentEnvironment | null = null;
 
 	constructor(
@@ -40,6 +41,7 @@ export class TextResourcePropertiesService
 			.getEnvironment()
 			.then((remoteEnv) => (this.remoteEnvironment = remoteEnv));
 	}
+
 	getEOL(resource?: URI, language?: string): string {
 		const eol = this.configurationService.getValue("files.eol", {
 			overrideIdentifier: language,
@@ -49,12 +51,14 @@ export class TextResourcePropertiesService
 		if (eol && typeof eol === "string" && eol !== "auto") {
 			return eol;
 		}
+
 		const os = this.getOS(resource);
 
 		return os === OperatingSystem.Linux || os === OperatingSystem.Macintosh
 			? "\n"
 			: "\r\n";
 	}
+
 	private getOS(resource?: URI): OperatingSystem {
 		let os = OS;
 
@@ -63,6 +67,7 @@ export class TextResourcePropertiesService
 		if (remoteAuthority) {
 			if (resource && resource.scheme !== Schemas.file) {
 				const osCacheKey = `resource.authority.os.${remoteAuthority}`;
+
 				os = this.remoteEnvironment
 					? this.remoteEnvironment.os
 					: /* Get it from cache */ this.storageService.getNumber(
@@ -70,6 +75,7 @@ export class TextResourcePropertiesService
 							StorageScope.WORKSPACE,
 							OS,
 						);
+
 				this.storageService.store(
 					osCacheKey,
 					os,
@@ -78,6 +84,7 @@ export class TextResourcePropertiesService
 				);
 			}
 		}
+
 		return os;
 	}
 }

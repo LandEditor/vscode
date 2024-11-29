@@ -13,15 +13,19 @@ export function getCustomDataSource(runtime: Runtime, toDispose: Disposable[]) {
 	let externalExtensionUris = new Set<string>();
 
 	const workspaceUris = new Set<string>();
+
 	collectInWorkspaces(workspaceUris);
+
 	collectInExtensions(localExtensionUris, externalExtensionUris);
 
 	const onChange = new EventEmitter<void>();
+
 	toDispose.push(
 		extensions.onDidChange((_) => {
 			const newLocalExtensionUris = new Set<string>();
 
 			const newExternalExtensionUris = new Set<string>();
+
 			collectInExtensions(
 				newLocalExtensionUris,
 				newExternalExtensionUris,
@@ -32,20 +36,26 @@ export function getCustomDataSource(runtime: Runtime, toDispose: Disposable[]) {
 				hasChanges(newExternalExtensionUris, externalExtensionUris)
 			) {
 				localExtensionUris = newLocalExtensionUris;
+
 				externalExtensionUris = newExternalExtensionUris;
+
 				onChange.fire();
 			}
 		}),
 	);
+
 	toDispose.push(
 		workspace.onDidChangeConfiguration((e) => {
 			if (e.affectsConfiguration("html.customData")) {
 				workspaceUris.clear();
+
 				collectInWorkspaces(workspaceUris);
+
 				onChange.fire();
 			}
 		}),
 	);
+
 	toDispose.push(
 		workspace.onDidChangeTextDocument((e) => {
 			const path = e.document.uri.toString();
@@ -74,6 +84,7 @@ export function getCustomDataSource(runtime: Runtime, toDispose: Disposable[]) {
 					return new runtime.TextDecoder().decode(buffer);
 				});
 			}
+
 			return workspace.openTextDocument(uri).then((doc) => {
 				return doc.getText();
 			});
@@ -84,11 +95,13 @@ function hasChanges(s1: Set<string>, s2: Set<string>) {
 	if (s1.size !== s2.size) {
 		return true;
 	}
+
 	for (const uri of s1) {
 		if (!s2.has(uri)) {
 			return true;
 		}
 	}
+
 	return false;
 }
 function isURI(uriOrPath: string) {
@@ -102,6 +115,7 @@ function collectInWorkspaces(workspaceUris: Set<string>): Set<string> {
 	if (!workspaceFolders) {
 		return dataPaths;
 	}
+
 	const collect = (uriOrPaths: string[] | undefined, rootFolder: Uri) => {
 		if (Array.isArray(uriOrPaths)) {
 			for (const uriOrPath of uriOrPaths) {
@@ -137,10 +151,12 @@ function collectInWorkspaces(workspaceUris: Set<string>): Set<string> {
 						workspace.workspaceFile,
 					);
 				}
+
 				collect(customDataInspect.globalValue, folderUri);
 			}
 		}
 	}
+
 	return dataPaths;
 }
 function collectInExtensions(

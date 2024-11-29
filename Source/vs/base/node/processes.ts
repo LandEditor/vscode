@@ -59,15 +59,19 @@ export function createQueuedSender(
 			msgQueue.push(msg); // add to the queue if the process cannot handle more messages
 			return;
 		}
+
 		const result = childProcess.send(msg, (error: Error | null) => {
 			if (error) {
 				console.error(error); // unlikely to happen, best we can do is log this error
 			}
+
 			useQueue = false; // we are good again to send directly without queue
 			// now send all the messages that we have in our queue and did not send yet
 			if (msgQueue.length > 0) {
 				const msgQueueCopy = msgQueue.slice(0);
+
 				msgQueue = [];
+
 				msgQueueCopy.forEach((entry) => send(entry));
 			}
 		});
@@ -92,9 +96,11 @@ export namespace win32 {
 		if (path.isAbsolute(command)) {
 			return command;
 		}
+
 		if (cwd === undefined) {
 			cwd = process.cwd();
 		}
+
 		const dir = path.dirname(command);
 
 		if (dir !== ".") {
@@ -102,6 +108,7 @@ export namespace win32 {
 			// to the current working directory.
 			return path.join(cwd, command);
 		}
+
 		if (paths === undefined && Types.isString(process.env["PATH"])) {
 			paths = process.env["PATH"].split(path.delimiter);
 		}
@@ -109,6 +116,7 @@ export namespace win32 {
 		if (paths === undefined || paths.length === 0) {
 			return path.join(cwd, command);
 		}
+
 		async function fileExists(path: string): Promise<boolean> {
 			if (await pfs.Promises.exists(path)) {
 				let statValue: Stats | undefined;
@@ -121,8 +129,10 @@ export namespace win32 {
 						statValue = await promises.lstat(path);
 					}
 				}
+
 				return statValue ? !statValue.isDirectory() : false;
 			}
+
 			return false;
 		}
 		// We have a simple file name. We get the path variable from the env
@@ -136,20 +146,24 @@ export namespace win32 {
 			} else {
 				fullPath = path.join(cwd, pathEntry, command);
 			}
+
 			if (await fileExists(fullPath)) {
 				return fullPath;
 			}
+
 			let withExtension = fullPath + ".com";
 
 			if (await fileExists(withExtension)) {
 				return withExtension;
 			}
+
 			withExtension = fullPath + ".exe";
 
 			if (await fileExists(withExtension)) {
 				return withExtension;
 			}
 		}
+
 		return path.join(cwd, command);
 	}
 }

@@ -12,5 +12,6 @@ export const ISearchViewModelWorkbenchService =
 
 export interface ISearchViewModelWorkbenchService {
 	readonly _serviceBrand: undefined;
+
 	searchModel: ISearchModel;
 }

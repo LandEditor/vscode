@@ -126,22 +126,35 @@ export const enum FindStartFocusAction {
 
 export interface IFindStartOptions {
 	forceRevealReplace: boolean;
+
 	seedSearchStringFromSelection: "none" | "single" | "multiple";
+
 	seedSearchStringFromNonEmptySelection: boolean;
+
 	seedSearchStringFromGlobalClipboard: boolean;
+
 	shouldFocus: FindStartFocusAction;
+
 	shouldAnimate: boolean;
+
 	updateSearchScope: boolean;
+
 	loop: boolean;
 }
 
 export interface IFindStartArguments {
 	searchString?: string;
+
 	replaceString?: string;
+
 	isRegex?: boolean;
+
 	matchWholeWord?: boolean;
+
 	isCaseSensitive?: boolean;
+
 	preserveCase?: boolean;
+
 	findInSelection?: boolean;
 }
 
@@ -152,14 +165,23 @@ export class CommonFindController
 	public static readonly ID = "editor.contrib.findController";
 
 	protected _editor: ICodeEditor;
+
 	private readonly _findWidgetVisible: IContextKey<boolean>;
+
 	protected _state: FindReplaceState;
+
 	protected _updateHistoryDelayer: Delayer<void>;
+
 	private _model: FindModelBoundToEditorModel | null;
+
 	protected readonly _storageService: IStorageService;
+
 	private readonly _clipboardService: IClipboardService;
+
 	protected readonly _contextKeyService: IContextKeyService;
+
 	protected readonly _notificationService: INotificationService;
+
 	protected readonly _hoverService: IHoverService;
 
 	get editor() {
@@ -181,18 +203,28 @@ export class CommonFindController
 		@IHoverService hoverService: IHoverService,
 	) {
 		super();
+
 		this._editor = editor;
+
 		this._findWidgetVisible =
 			CONTEXT_FIND_WIDGET_VISIBLE.bindTo(contextKeyService);
+
 		this._contextKeyService = contextKeyService;
+
 		this._storageService = storageService;
+
 		this._clipboardService = clipboardService;
+
 		this._notificationService = notificationService;
+
 		this._hoverService = hoverService;
 
 		this._updateHistoryDelayer = new Delayer<void>(500);
+
 		this._state = this._register(new FindReplaceState());
+
 		this.loadQueryState();
+
 		this._register(
 			this._state.onFindReplaceStateChange((e) =>
 				this._onStateChanged(e),
@@ -260,6 +292,7 @@ export class CommonFindController
 	private disposeModel(): void {
 		if (this._model) {
 			this._model.dispose();
+
 			this._model = null;
 		}
 	}
@@ -272,9 +305,11 @@ export class CommonFindController
 				this._findWidgetVisible.set(true);
 			} else {
 				this._findWidgetVisible.reset();
+
 				this.disposeModel();
 			}
 		}
+
 		if (e.searchString) {
 			this.setGlobalBufferTerm(this._state.searchString);
 		}
@@ -289,6 +324,7 @@ export class CommonFindController
 				StorageTarget.MACHINE,
 			);
 		}
+
 		if (e.wholeWord) {
 			this._storageService.store(
 				"editor.wholeWord",
@@ -297,6 +333,7 @@ export class CommonFindController
 				StorageTarget.MACHINE,
 			);
 		}
+
 		if (e.matchCase) {
 			this._storageService.store(
 				"editor.matchCase",
@@ -305,6 +342,7 @@ export class CommonFindController
 				StorageTarget.MACHINE,
 			);
 		}
+
 		if (e.preserveCase) {
 			this._storageService.store(
 				"editor.preserveCase",
@@ -359,6 +397,7 @@ export class CommonFindController
 			},
 			false,
 		);
+
 		this._editor.focus();
 	}
 
@@ -400,6 +439,7 @@ export class CommonFindController
 		} else {
 			if (this._editor.hasModel()) {
 				let selections = this._editor.getSelections();
+
 				selections = selections
 					.map((selection) => {
 						if (
@@ -415,9 +455,11 @@ export class CommonFindController
 									),
 							);
 						}
+
 						if (!selection.isEmpty()) {
 							return selection;
 						}
+
 						return null;
 					})
 					.filter((element): element is Selection => !!element);
@@ -433,6 +475,7 @@ export class CommonFindController
 		if (this._state.isRegex) {
 			searchString = strings.escapeRegExpCharacters(searchString);
 		}
+
 		this._state.change({ searchString: searchString }, false);
 	}
 
@@ -542,6 +585,7 @@ export class CommonFindController
 
 			return true;
 		}
+
 		return false;
 	}
 
@@ -551,6 +595,7 @@ export class CommonFindController
 
 			return true;
 		}
+
 		return false;
 	}
 
@@ -560,6 +605,7 @@ export class CommonFindController
 
 			return true;
 		}
+
 		return false;
 	}
 
@@ -569,6 +615,7 @@ export class CommonFindController
 
 			return true;
 		}
+
 		return false;
 	}
 
@@ -584,20 +631,24 @@ export class CommonFindController
 
 				return false;
 			}
+
 			this._model.replaceAll();
 
 			return true;
 		}
+
 		return false;
 	}
 
 	public selectAllMatches(): boolean {
 		if (this._model) {
 			this._model.selectAllMatches();
+
 			this._editor.focus();
 
 			return true;
 		}
+
 		return false;
 	}
 
@@ -609,6 +660,7 @@ export class CommonFindController
 		) {
 			return this._clipboardService.readFindText();
 		}
+
 		return "";
 	}
 
@@ -629,6 +681,7 @@ export class FindController
 	implements IFindController
 {
 	private _widget: FindWidget | null;
+
 	private _findOptionsWidget: FindOptionsWidget | null;
 
 	constructor(
@@ -652,7 +705,9 @@ export class FindController
 			notificationService,
 			hoverService,
 		);
+
 		this._widget = null;
+
 		this._findOptionsWidget = null;
 	}
 
@@ -683,10 +738,12 @@ export class FindController
 				const isSelectionMultipleLine =
 					!!selection &&
 					selection.startLineNumber !== selection.endLineNumber;
+
 				updateSearchScope = isSelectionMultipleLine;
 
 				break;
 			}
+
 			default:
 				break;
 		}
@@ -712,6 +769,7 @@ export class FindController
 		if (!this._widget) {
 			this._createFindWidget();
 		}
+
 		if (this._state.isRevealed && !ignoreWhenVisible) {
 			this._widget!.highlightFindOptions();
 		} else {
@@ -734,6 +792,7 @@ export class FindController
 				this._hoverService,
 			),
 		);
+
 		this._findOptionsWidget = this._register(
 			new FindOptionsWidget(
 				this._editor,
@@ -789,6 +848,7 @@ StartFindAction.addImplementation(
 		if (!controller) {
 			return false;
 		}
+
 		return controller.start({
 			forceRevealReplace: false,
 			seedSearchStringFromSelection:
@@ -965,6 +1025,7 @@ export abstract class MatchFindAction extends EditorAction {
 				updateSearchScope: false,
 				loop: editor.getOption(EditorOption.find).loop,
 			});
+
 			this._run(controller);
 		}
 	}
@@ -1072,6 +1133,7 @@ export class MoveToMatchFindAction extends EditorAction {
 
 		if (matchesCount < 1) {
 			const notificationService = accessor.get(INotificationService);
+
 			notificationService.notify({
 				severity: Severity.Warning,
 				message: nls.localize(
@@ -1088,6 +1150,7 @@ export class MoveToMatchFindAction extends EditorAction {
 		const disposables = new DisposableStore();
 
 		const inputBox = disposables.add(quickInputService.createInputBox());
+
 		inputBox.placeholder = nls.localize(
 			"findMatchAction.inputPlaceHolder",
 			"Type a number to go to a specific match (between 1 and {0})",
@@ -1118,6 +1181,7 @@ export class MoveToMatchFindAction extends EditorAction {
 			if (typeof index === "number") {
 				// valid
 				inputBox.validationMessage = undefined;
+
 				controller.goToMatch(index);
 
 				const currentMatch = controller.getState().currentMatch;
@@ -1131,9 +1195,11 @@ export class MoveToMatchFindAction extends EditorAction {
 					"Please type a number between 1 and {0}",
 					controller.getState().matchesCount,
 				);
+
 				this.clearDecorations(editor);
 			}
 		};
+
 		disposables.add(
 			inputBox.onDidChangeValue((value) => {
 				updatePickerAndEditor(value);
@@ -1146,6 +1212,7 @@ export class MoveToMatchFindAction extends EditorAction {
 
 				if (typeof index === "number") {
 					controller.goToMatch(index);
+
 					inputBox.hide();
 				} else {
 					inputBox.validationMessage = nls.localize(
@@ -1160,6 +1227,7 @@ export class MoveToMatchFindAction extends EditorAction {
 		disposables.add(
 			inputBox.onDidHide(() => {
 				this.clearDecorations(editor);
+
 				disposables.dispose();
 			}),
 		);
@@ -1229,6 +1297,7 @@ export abstract class SelectionMatchFindAction extends EditorAction {
 		if (selectionSearchString) {
 			controller.setSearchString(selectionSearchString);
 		}
+
 		if (!this._run(controller)) {
 			await controller.start({
 				forceRevealReplace: false,
@@ -1240,6 +1309,7 @@ export abstract class SelectionMatchFindAction extends EditorAction {
 				updateSearchScope: false,
 				loop: editor.getOption(EditorOption.find).loop,
 			});
+
 			this._run(controller);
 		}
 	}
@@ -1327,6 +1397,7 @@ StartFindReplaceAction.addImplementation(
 		if (!editor.hasModel() || editor.getOption(EditorOption.readOnly)) {
 			return false;
 		}
+
 		const controller = CommonFindController.get(editor);
 
 		if (!controller) {

@@ -25,7 +25,9 @@ interface IResponseData {
 	headers: {
 		[headerName: string]: string;
 	};
+
 	statusCode: number;
+
 	responseData: string;
 }
 /**
@@ -82,11 +84,13 @@ async function makeLegacyTelemetryRequest(
 				reject(err);
 			});
 		});
+
 		req.write(options.data, (err) => {
 			if (err) {
 				reject(err);
 			}
 		});
+
 		req.end();
 	});
 
@@ -117,6 +121,7 @@ async function sendPostAsync(
 		const responseData = requestService
 			? await makeTelemetryRequest(requestOptions, requestService)
 			: await makeLegacyTelemetryRequest(requestOptions);
+
 		oncomplete(
 			responseData.statusCode,
 			responseData.headers,

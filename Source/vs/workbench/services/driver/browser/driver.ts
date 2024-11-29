@@ -36,13 +36,17 @@ export class BrowserWindowDriver implements IWindowDriver {
 		this.logService.info(
 			"[driver] Waiting for restored lifecycle phase...",
 		);
+
 		await this.lifecycleService.when(LifecyclePhase.Restored);
+
 		this.logService.info(
 			"[driver] Restored lifecycle phase reached. Waiting for contributions...",
 		);
+
 		await Registry.as<IWorkbenchContributionsRegistry>(
 			WorkbenchExtensions.Workbench,
 		).whenRestored;
+
 		this.logService.info("[driver] Workbench contributions created.");
 	}
 
@@ -54,9 +58,11 @@ export class BrowserWindowDriver implements IWindowDriver {
 		}
 
 		const inputElement = element as HTMLInputElement;
+
 		inputElement.value = text;
 
 		const event = new Event("input", { bubbles: true, cancelable: true });
+
 		inputElement.dispatchEvent(event);
 	}
 
@@ -78,6 +84,7 @@ export class BrowserWindowDriver implements IWindowDriver {
 				)
 					.map((c) => `.${c}`)
 					.join("");
+
 				chain.unshift(`${tagName}${id}${classes}`);
 
 				el = el.parentElement;
@@ -101,6 +108,7 @@ export class BrowserWindowDriver implements IWindowDriver {
 
 		for (let i = 0; i < query.length; i++) {
 			const element = query.item(i);
+
 			result.push(this.serializeElement(element, recursive));
 		}
 
@@ -164,15 +172,21 @@ export class BrowserWindowDriver implements IWindowDriver {
 		}
 
 		const textarea = element as HTMLTextAreaElement;
+
 		const start = textarea.selectionStart;
+
 		const newStart = start + text.length;
+
 		const value = textarea.value;
+
 		const newValue = value.substr(0, start) + text + value.substr(start);
 
 		textarea.value = newValue;
+
 		textarea.setSelectionRange(newStart, newStart);
 
 		const event = new Event('input', { 'bubbles': true, 'cancelable': true });
+
 		textarea.dispatchEvent(event);
 	}
 
@@ -247,13 +261,16 @@ export class BrowserWindowDriver implements IWindowDriver {
 
 		if (offset) {
 			x = left + offset.x;
+
 			y = top + offset.y;
 		} else {
 			x = left + width / 2;
+
 			y = top + height / 2;
 		}
 
 		x = Math.round(x);
+
 		y = Math.round(y);
 
 		return { x, y };

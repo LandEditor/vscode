@@ -63,6 +63,7 @@ registerAction2(
 				},
 			});
 		}
+
 		async run(accessor: ServicesAccessor): Promise<boolean> {
 			return assertIsDefined(NewFileTemplatesManager.Instance).run();
 		}
@@ -70,13 +71,18 @@ registerAction2(
 );
 type NewFileItem = {
 	commandID: string;
+
 	title: string;
+
 	from: string;
+
 	group: string;
+
 	commandArgs?: any;
 };
 class NewFileTemplatesManager extends Disposable {
 	static Instance: NewFileTemplatesManager | undefined;
+
 	private menu: IMenu;
 
 	constructor(
@@ -92,7 +98,9 @@ class NewFileTemplatesManager extends Disposable {
 		menuService: IMenuService,
 	) {
 		super();
+
 		NewFileTemplatesManager.Instance = this;
+
 		this._register({
 			dispose() {
 				if (NewFileTemplatesManager.Instance === this) {
@@ -100,8 +108,10 @@ class NewFileTemplatesManager extends Disposable {
 				}
 			},
 		});
+
 		this.menu = menuService.createMenu(MenuId.NewFile, contextKeyService);
 	}
+
 	private allEntries(): NewFileItem[] {
 		const items: NewFileItem[] = [];
 
@@ -119,8 +129,10 @@ class NewFileTemplatesManager extends Disposable {
 				}
 			}
 		}
+
 		return items;
 	}
+
 	async run(): Promise<boolean> {
 		const entries = this.allEntries();
 
@@ -134,6 +146,7 @@ class NewFileTemplatesManager extends Disposable {
 			return this.selectNewEntry(entries);
 		}
 	}
+
 	private async selectNewEntry(entries: NewFileItem[]): Promise<boolean> {
 		const { promise: resultPromise, resolve: resolveResult } =
 			promiseWithResolvers<boolean>();
@@ -143,13 +156,18 @@ class NewFileTemplatesManager extends Disposable {
 		const qp = this.quickInputService.createQuickPick({
 			useSeparators: true,
 		});
+
 		qp.title = localize("newFileTitle", "New File...");
+
 		qp.placeholder = localize(
 			"newFilePlaceholder",
 			"Select File Type or Enter File Name...",
 		);
+
 		qp.sortByLabel = false;
+
 		qp.matchOnDetail = true;
+
 		qp.matchOnDescription = true;
 
 		const sortCategories = (a: NewFileItem, b: NewFileItem): number => {
@@ -169,12 +187,15 @@ class NewFileTemplatesManager extends Disposable {
 			} else if (categoryPriority[b.group]) {
 				return -1;
 			}
+
 			if (a.from === builtInSource) {
 				return 1;
 			}
+
 			if (b.from === builtInSource) {
 				return -1;
 			}
+
 			return a.from.localeCompare(b.from);
 		};
 
@@ -190,6 +211,7 @@ class NewFileTemplatesManager extends Disposable {
 			)[] = [];
 
 			let lastSeparator: string | undefined;
+
 			entries
 				.sort((a, b) => -sortCategories(a, b))
 				.forEach((entry) => {
@@ -205,8 +227,10 @@ class NewFileTemplatesManager extends Disposable {
 							type: "separator",
 							label: displayCategory[entry.group] ?? entry.group,
 						});
+
 						lastSeparator = entry.group;
 					}
+
 					items.push({
 						...entry,
 						label: entry.title,
@@ -227,12 +251,16 @@ class NewFileTemplatesManager extends Disposable {
 						description: entry.from,
 					});
 				});
+
 			qp.items = items;
 		};
+
 		refreshQp(entries);
+
 		disposables.add(
 			this.menu.onDidChange(() => refreshQp(this.allEntries())),
 		);
+
 		disposables.add(
 			qp.onDidChangeValue((val: string) => {
 				if (val === "") {
@@ -240,6 +268,7 @@ class NewFileTemplatesManager extends Disposable {
 
 					return;
 				}
+
 				const currentTextEntry: NewFileItem = {
 					commandID: "workbench.action.files.newFile",
 					commandArgs: {
@@ -255,14 +284,18 @@ class NewFileTemplatesManager extends Disposable {
 					group: "file",
 					from: builtInSource,
 				};
+
 				refreshQp([currentTextEntry, ...entries]);
 			}),
 		);
+
 		disposables.add(
 			qp.onDidAccept(async (e) => {
 				const selected = qp.selectedItems[0] as IQuickPickItem &
 					NewFileItem;
+
 				resolveResult(!!selected);
+
 				qp.hide();
 
 				if (selected) {
@@ -273,23 +306,30 @@ class NewFileTemplatesManager extends Disposable {
 				}
 			}),
 		);
+
 		disposables.add(
 			qp.onDidHide(() => {
 				qp.dispose();
+
 				disposables.dispose();
+
 				resolveResult(false);
 			}),
 		);
+
 		disposables.add(
 			qp.onDidTriggerItemButton((e) => {
 				qp.hide();
+
 				this.commandService.executeCommand(
 					"workbench.action.openGlobalKeybindings",
 					(e.item as IQuickPickItem & NewFileItem).commandID,
 				);
+
 				resolveResult(false);
 			}),
 		);
+
 		qp.show();
 
 		return resultPromise;

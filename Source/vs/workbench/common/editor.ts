@@ -174,6 +174,7 @@ export interface IEditorPane extends IComposite {
 	readonly onDidChangeSizeConstraints: Event<
 		| {
 				width: number;
+
 				height: number;
 		  }
 		| undefined
@@ -359,6 +360,7 @@ export function isEditorPaneWithScrolling(
  */
 export interface IEditorPaneScrollPosition {
 	readonly scrollTop: number;
+
 	readonly scrollLeft?: number;
 }
 /**
@@ -378,6 +380,7 @@ export function findViewStateForEditor(
 			return editorPane.getViewState();
 		}
 	}
+
 	return undefined;
 }
 /**
@@ -610,6 +613,7 @@ export function isResourceEditorInput(
 	if (isEditorInput(editor)) {
 		return false; // make sure to not accidentally match on typed editor inputs
 	}
+
 	const candidate = editor as IResourceEditorInput | undefined;
 
 	return URI.isUri(candidate?.resource);
@@ -620,6 +624,7 @@ export function isResourceDiffEditorInput(
 	if (isEditorInput(editor)) {
 		return false; // make sure to not accidentally match on typed editor inputs
 	}
+
 	const candidate = editor as IResourceDiffEditorInput | undefined;
 
 	return (
@@ -632,14 +637,17 @@ export function isResourceMultiDiffEditorInput(
 	if (isEditorInput(editor)) {
 		return false; // make sure to not accidentally match on typed editor inputs
 	}
+
 	const candidate = editor as IResourceMultiDiffEditorInput | undefined;
 
 	if (!candidate) {
 		return false;
 	}
+
 	if (candidate.resources && !Array.isArray(candidate.resources)) {
 		return false;
 	}
+
 	return !!candidate.resources || !!candidate.multiDiffSource;
 }
 export function isResourceSideBySideEditorInput(
@@ -648,9 +656,11 @@ export function isResourceSideBySideEditorInput(
 	if (isEditorInput(editor)) {
 		return false; // make sure to not accidentally match on typed editor inputs
 	}
+
 	if (isResourceDiffEditorInput(editor)) {
 		return false; // make sure to not accidentally match on diff editors
 	}
+
 	const candidate = editor as IResourceSideBySideEditorInput | undefined;
 
 	return (
@@ -663,11 +673,13 @@ export function isUntitledResourceEditorInput(
 	if (isEditorInput(editor)) {
 		return false; // make sure to not accidentally match on typed editor inputs
 	}
+
 	const candidate = editor as IUntitledTextResourceEditorInput | undefined;
 
 	if (!candidate) {
 		return false;
 	}
+
 	return (
 		candidate.resource === undefined ||
 		candidate.resource.scheme === Schemas.untitled ||
@@ -680,6 +692,7 @@ export function isResourceMergeEditorInput(
 	if (isEditorInput(editor)) {
 		return false; // make sure to not accidentally match on typed editor inputs
 	}
+
 	const candidate = editor as IResourceMergeEditorInput | undefined;
 
 	return (
@@ -715,6 +728,7 @@ export const enum SaveReason {
 export type SaveSource = string;
 interface ISaveSourceDescriptor {
 	source: SaveSource;
+
 	label: string;
 }
 class SaveSourceFactory {
@@ -731,10 +745,13 @@ class SaveSourceFactory {
 
 		if (!sourceDescriptor) {
 			sourceDescriptor = { source: id, label };
+
 			this.mapIdToSaveSource.set(id, sourceDescriptor);
 		}
+
 		return sourceDescriptor.source;
 	}
+
 	getSourceLabel(source: SaveSource): string {
 		return this.mapIdToSaveSource.get(source)?.label ?? source;
 	}
@@ -783,6 +800,7 @@ export interface IRevertOptions {
 }
 export interface IMoveResult {
 	editor: EditorInput | IUntypedEditorInput;
+
 	options?: IEditorOptions;
 }
 export const enum EditorInputCapabilities {
@@ -1004,6 +1022,7 @@ export function createTooLargeFileError(
 							size: Number.MAX_VALUE,
 						},
 					};
+
 					group.openEditor(input, fileEditorOptions);
 				},
 			}),
@@ -1028,6 +1047,7 @@ export function createTooLargeFileError(
 }
 export interface EditorInputWithOptions {
 	editor: EditorInput;
+
 	options?: IEditorOptions;
 }
 export interface EditorInputWithOptionsAndGroup extends EditorInputWithOptions {
@@ -1063,6 +1083,7 @@ export interface IEditorOpenContext {
 }
 export interface IEditorIdentifier {
 	groupId: GroupIdentifier;
+
 	editor: EditorInput;
 }
 export function isEditorIdentifier(
@@ -1082,7 +1103,9 @@ export function isEditorIdentifier(
  */
 export interface IEditorCommandsContext {
 	groupId: GroupIdentifier;
+
 	editorIndex?: number;
+
 	preserveFocus?: boolean;
 }
 export function isEditorCommandsContext(
@@ -1175,63 +1198,105 @@ export const enum GroupModelChangeKind {
 export interface IWorkbenchEditorConfiguration {
 	workbench?: {
 		editor?: IEditorPartConfiguration;
+
 		iconTheme?: string;
 	};
 }
 interface IEditorPartLimitConfiguration {
 	enabled?: boolean;
+
 	excludeDirty?: boolean;
+
 	value?: number;
+
 	perEditorGroup?: boolean;
 }
 export interface IEditorPartLimitOptions
 	extends Required<IEditorPartLimitConfiguration> {}
 interface IEditorPartDecorationsConfiguration {
 	badges?: boolean;
+
 	colors?: boolean;
 }
 export interface IEditorPartDecorationOptions
 	extends Required<IEditorPartDecorationsConfiguration> {}
 interface IEditorPartConfiguration {
 	showTabs?: "multiple" | "single" | "none";
+
 	wrapTabs?: boolean;
+
 	scrollToSwitchTabs?: boolean;
+
 	highlightModifiedTabs?: boolean;
+
 	tabActionLocation?: "left" | "right";
+
 	tabActionCloseVisibility?: boolean;
+
 	tabActionUnpinVisibility?: boolean;
+
 	alwaysShowEditorActions?: boolean;
+
 	tabSizing?: "fit" | "shrink" | "fixed";
+
 	tabSizingFixedMinWidth?: number;
+
 	tabSizingFixedMaxWidth?: number;
+
 	pinnedTabSizing?: "normal" | "compact" | "shrink";
+
 	pinnedTabsOnSeparateRow?: boolean;
+
 	tabHeight?: "default" | "compact";
+
 	preventPinnedEditorClose?: PreventPinnedEditorClose;
+
 	titleScrollbarSizing?: "default" | "large";
+
 	focusRecentEditorAfterClose?: boolean;
+
 	showIcons?: boolean;
+
 	enablePreview?: boolean;
+
 	enablePreviewFromQuickOpen?: boolean;
+
 	enablePreviewFromCodeNavigation?: boolean;
+
 	closeOnFileDelete?: boolean;
+
 	openPositioning?: "left" | "right" | "first" | "last";
+
 	openSideBySideDirection?: "right" | "down";
+
 	closeEmptyGroups?: boolean;
+
 	autoLockGroups?: Set<string>;
+
 	revealIfOpen?: boolean;
+
 	mouseBackForwardToNavigate?: boolean;
+
 	labelFormat?: "default" | "short" | "medium" | "long";
+
 	restoreViewState?: boolean;
+
 	splitInGroupLayout?: "vertical" | "horizontal";
+
 	splitSizing?: "auto" | "split" | "distribute";
+
 	splitOnDragAndDrop?: boolean;
+
 	dragToOpenWindow?: boolean;
+
 	centeredLayoutFixedWidth?: boolean;
 
 	doubleClickTabToToggleEditorGroupSizes?: "maximize" | "expand" | "off";
+
 	editorActionsLocation?: "default" | "titleBar" | "hidden";
+
 	limit?: IEditorPartLimitConfiguration;
+
 	decorations?: IEditorPartDecorationsConfiguration;
 }
 export interface IEditorPartOptions
@@ -1240,6 +1305,7 @@ export interface IEditorPartOptions
 }
 export interface IEditorPartOptionsChangeEvent {
 	oldPartOptions: IEditorPartOptions;
+
 	newPartOptions: IEditorPartOptions;
 }
 export enum SideBySideEditor {
@@ -1326,6 +1392,7 @@ class EditorResourceAccessorImpl {
 		| URI
 		| {
 				primary?: URI;
+
 				secondary?: URI;
 		  }
 		| undefined;
@@ -1337,6 +1404,7 @@ class EditorResourceAccessorImpl {
 		| URI
 		| {
 				primary?: URI;
+
 				secondary?: URI;
 		  }
 		| undefined;
@@ -1348,6 +1416,7 @@ class EditorResourceAccessorImpl {
 		| URI
 		| {
 				primary?: URI;
+
 				secondary?: URI;
 		  }
 		| undefined {
@@ -1387,12 +1456,14 @@ class EditorResourceAccessorImpl {
 						})
 					);
 				}
+
 				editor =
 					options.supportSideBySide === SideBySideEditor.PRIMARY
 						? primary
 						: secondary;
 			}
 		}
+
 		if (
 			isResourceDiffEditorInput(editor) ||
 			isResourceMultiDiffEditorInput(editor) ||
@@ -1409,10 +1480,13 @@ class EditorResourceAccessorImpl {
 		if (!originalResource || !options || !options.filterByScheme) {
 			return originalResource;
 		}
+
 		return this.filterUri(originalResource, options.filterByScheme);
 	}
+
 	private getSideEditors(editor: EditorInput | IUntypedEditorInput): {
 		primary: EditorInput | IUntypedEditorInput | undefined;
+
 		secondary: EditorInput | IUntypedEditorInput | undefined;
 	} {
 		if (
@@ -1421,9 +1495,11 @@ class EditorResourceAccessorImpl {
 		) {
 			return { primary: editor.primary, secondary: editor.secondary };
 		}
+
 		if (isDiffEditorInput(editor) || isResourceDiffEditorInput(editor)) {
 			return { primary: editor.modified, secondary: editor.original };
 		}
+
 		return { primary: undefined, secondary: undefined };
 	}
 	/**
@@ -1462,6 +1538,7 @@ class EditorResourceAccessorImpl {
 		| URI
 		| {
 				primary?: URI;
+
 				secondary?: URI;
 		  }
 		| undefined;
@@ -1473,6 +1550,7 @@ class EditorResourceAccessorImpl {
 		| URI
 		| {
 				primary?: URI;
+
 				secondary?: URI;
 		  }
 		| undefined;
@@ -1484,6 +1562,7 @@ class EditorResourceAccessorImpl {
 		| URI
 		| {
 				primary?: URI;
+
 				secondary?: URI;
 		  }
 		| undefined {
@@ -1523,12 +1602,14 @@ class EditorResourceAccessorImpl {
 						})
 					);
 				}
+
 				editor =
 					options.supportSideBySide === SideBySideEditor.PRIMARY
 						? primary
 						: secondary;
 			}
 		}
+
 		if (
 			isResourceDiffEditorInput(editor) ||
 			isResourceMultiDiffEditorInput(editor) ||
@@ -1543,8 +1624,10 @@ class EditorResourceAccessorImpl {
 		if (!canonicalResource || !options || !options.filterByScheme) {
 			return canonicalResource;
 		}
+
 		return this.filterUri(canonicalResource, options.filterByScheme);
 	}
+
 	private filterUri(
 		resource: URI,
 		filter: string | string[],
@@ -1561,6 +1644,7 @@ class EditorResourceAccessorImpl {
 				return resource;
 			}
 		}
+
 		return undefined;
 	}
 }
@@ -1585,6 +1669,7 @@ export function preventEditorClose(
 	if (!group.isSticky(editor)) {
 		return false; // only interested in sticky editors
 	}
+
 	switch (configuration.preventPinnedEditorClose) {
 		case "keyboardAndMouse":
 			return (
@@ -1598,6 +1683,7 @@ export function preventEditorClose(
 		case "keyboard":
 			return method === EditorCloseMethod.KEYBOARD;
 	}
+
 	return false;
 }
 export const EditorResourceAccessor = new EditorResourceAccessorImpl();
@@ -1608,25 +1694,36 @@ export const enum CloseDirection {
 }
 export interface IEditorMemento<T> {
 	saveEditorState(group: IEditorGroup, resource: URI, state: T): void;
+
 	saveEditorState(group: IEditorGroup, editor: EditorInput, state: T): void;
+
 	loadEditorState(group: IEditorGroup, resource: URI): T | undefined;
+
 	loadEditorState(group: IEditorGroup, editor: EditorInput): T | undefined;
+
 	clearEditorState(resource: URI, group?: IEditorGroup): void;
+
 	clearEditorState(editor: EditorInput, group?: IEditorGroup): void;
+
 	clearEditorStateOnDispose(resource: URI, editor: EditorInput): void;
+
 	moveEditorState(source: URI, target: URI, comparer: IExtUri): void;
 }
 class EditorFactoryRegistry implements IEditorFactoryRegistry {
 	private instantiationService: IInstantiationService | undefined;
+
 	private fileEditorFactory: IFileEditorFactory | undefined;
+
 	private readonly editorSerializerConstructors = new Map<
 		string /* Type ID */,
 		IConstructorSignature<IEditorSerializer>
 	>();
+
 	private readonly editorSerializerInstances = new Map<
 		string /* Type ID */,
 		IEditorSerializer
 	>();
+
 	start(accessor: ServicesAccessor): void {
 		const instantiationService = (this.instantiationService = accessor.get(
 			IInstantiationService,
@@ -1635,25 +1732,32 @@ class EditorFactoryRegistry implements IEditorFactoryRegistry {
 		for (const [key, ctor] of this.editorSerializerConstructors) {
 			this.createEditorSerializer(key, ctor, instantiationService);
 		}
+
 		this.editorSerializerConstructors.clear();
 	}
+
 	private createEditorSerializer(
 		editorTypeId: string,
 		ctor: IConstructorSignature<IEditorSerializer>,
 		instantiationService: IInstantiationService,
 	): void {
 		const instance = instantiationService.createInstance(ctor);
+
 		this.editorSerializerInstances.set(editorTypeId, instance);
 	}
+
 	registerFileEditorFactory(factory: IFileEditorFactory): void {
 		if (this.fileEditorFactory) {
 			throw new Error("Can only register one file editor factory.");
 		}
+
 		this.fileEditorFactory = factory;
 	}
+
 	getFileEditorFactory(): IFileEditorFactory {
 		return assertIsDefined(this.fileEditorFactory);
 	}
+
 	registerEditorSerializer(
 		editorTypeId: string,
 		ctor: IConstructorSignature<IEditorSerializer>,
@@ -1666,6 +1770,7 @@ class EditorFactoryRegistry implements IEditorFactoryRegistry {
 				`A editor serializer with type ID '${editorTypeId}' was already registered.`,
 			);
 		}
+
 		if (!this.instantiationService) {
 			this.editorSerializerConstructors.set(editorTypeId, ctor);
 		} else {
@@ -1675,11 +1780,14 @@ class EditorFactoryRegistry implements IEditorFactoryRegistry {
 				this.instantiationService,
 			);
 		}
+
 		return toDisposable(() => {
 			this.editorSerializerConstructors.delete(editorTypeId);
+
 			this.editorSerializerInstances.delete(editorTypeId);
 		});
 	}
+
 	getEditorSerializer(editor: EditorInput): IEditorSerializer | undefined;
 
 	getEditorSerializer(editorTypeId: string): IEditorSerializer | undefined;
@@ -1706,6 +1814,7 @@ export async function pathsToEditors(
 	if (!paths || !paths.length) {
 		return [];
 	}
+
 	return await Promise.all(
 		paths.map(async (path) => {
 			const resource = URI.revive(path.fileUri);
@@ -1718,6 +1827,7 @@ export async function pathsToEditors(
 
 				return undefined;
 			}
+
 			const canHandleResource =
 				await fileService.canHandleResource(resource);
 
@@ -1729,6 +1839,7 @@ export async function pathsToEditors(
 
 				return undefined;
 			}
+
 			let exists = path.exists;
 
 			let type = path.type;
@@ -1738,12 +1849,15 @@ export async function pathsToEditors(
 					type = (await fileService.stat(resource)).isDirectory
 						? FileType.Directory
 						: FileType.Unknown;
+
 					exists = true;
 				} catch (error) {
 					logService.error(error);
+
 					exists = false;
 				}
 			}
+
 			if (!exists && path.openOnlyIfExists) {
 				logService.info(
 					"Cannot resolve the path because it does not exist",
@@ -1752,6 +1866,7 @@ export async function pathsToEditors(
 
 				return undefined;
 			}
+
 			if (type === FileType.Directory) {
 				logService.info(
 					"Cannot resolve the path because it is a directory",
@@ -1760,6 +1875,7 @@ export async function pathsToEditors(
 
 				return undefined;
 			}
+
 			const options: IEditorOptions = {
 				...path.options,
 				pinned: true,
@@ -1768,6 +1884,7 @@ export async function pathsToEditors(
 			if (!exists) {
 				return { resource, options, forceUntitled: true };
 			}
+
 			return { resource, options };
 		}),
 	);
@@ -1790,11 +1907,13 @@ export function isTextEditorViewState(
 	if (!viewState) {
 		return false;
 	}
+
 	const diffEditorViewState = viewState as IDiffEditorViewState;
 
 	if (diffEditorViewState.modified) {
 		return isTextEditorViewState(diffEditorViewState.modified);
 	}
+
 	const codeEditorViewState = viewState as ICodeEditorViewState;
 
 	return !!(
@@ -1837,13 +1956,17 @@ export function createEditorOpenError(
 		messageOrError,
 		actions,
 	);
+
 	error.forceMessage = options?.forceMessage;
+
 	error.forceSeverity = options?.forceSeverity;
+
 	error.allowDialog = options?.allowDialog;
 
 	return error;
 }
 export interface IToolbarActions {
 	readonly primary: IAction[];
+
 	readonly secondary: IAction[];
 }

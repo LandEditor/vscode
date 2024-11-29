@@ -23,6 +23,7 @@ import {
  */
 export interface IExtensionModule {
 	activate?(ctx: vscode.ExtensionContext): Promise<IExtensionAPI>;
+
 	deactivate?(): void;
 }
 /**
@@ -32,22 +33,33 @@ export interface IExtensionAPI {}
 export type ExtensionActivationTimesFragment = {
 	startup?: {
 		classification: "SystemMetaData";
+
 		purpose: "PerformanceAndHealth";
+
 		comment: "Activation occurred during startup";
 	};
+
 	codeLoadingTime?: {
 		classification: "SystemMetaData";
+
 		purpose: "PerformanceAndHealth";
+
 		comment: "Time it took to load the extension's code";
 	};
+
 	activateCallTime?: {
 		classification: "SystemMetaData";
+
 		purpose: "PerformanceAndHealth";
+
 		comment: "Time it took to call activate";
 	};
+
 	activateResolvedTime?: {
 		classification: "SystemMetaData";
+
 		purpose: "PerformanceAndHealth";
+
 		comment: "Time it took for async-activation to finish";
 	};
 };
@@ -59,9 +71,13 @@ export class ExtensionActivationTimes {
 		-1,
 		-1,
 	);
+
 	public readonly startup: boolean;
+
 	public readonly codeLoadingTime: number;
+
 	public readonly activateCallTime: number;
+
 	public readonly activateResolvedTime: number;
 
 	constructor(
@@ -71,35 +87,53 @@ export class ExtensionActivationTimes {
 		activateResolvedTime: number,
 	) {
 		this.startup = startup;
+
 		this.codeLoadingTime = codeLoadingTime;
+
 		this.activateCallTime = activateCallTime;
+
 		this.activateResolvedTime = activateResolvedTime;
 	}
 }
 export class ExtensionActivationTimesBuilder {
 	private readonly _startup: boolean;
+
 	private _codeLoadingStart: number;
+
 	private _codeLoadingStop: number;
+
 	private _activateCallStart: number;
+
 	private _activateCallStop: number;
+
 	private _activateResolveStart: number;
+
 	private _activateResolveStop: number;
 
 	constructor(startup: boolean) {
 		this._startup = startup;
+
 		this._codeLoadingStart = -1;
+
 		this._codeLoadingStop = -1;
+
 		this._activateCallStart = -1;
+
 		this._activateCallStop = -1;
+
 		this._activateResolveStart = -1;
+
 		this._activateResolveStop = -1;
 	}
+
 	private _delta(start: number, stop: number): number {
 		if (start === -1 || stop === -1) {
 			return -1;
 		}
+
 		return stop - start;
 	}
+
 	public build(): ExtensionActivationTimes {
 		return new ExtensionActivationTimes(
 			this._startup,
@@ -108,31 +142,42 @@ export class ExtensionActivationTimesBuilder {
 			this._delta(this._activateResolveStart, this._activateResolveStop),
 		);
 	}
+
 	public codeLoadingStart(): void {
 		this._codeLoadingStart = Date.now();
 	}
+
 	public codeLoadingStop(): void {
 		this._codeLoadingStop = Date.now();
 	}
+
 	public activateCallStart(): void {
 		this._activateCallStart = Date.now();
 	}
+
 	public activateCallStop(): void {
 		this._activateCallStop = Date.now();
 	}
+
 	public activateResolveStart(): void {
 		this._activateResolveStart = Date.now();
 	}
+
 	public activateResolveStop(): void {
 		this._activateResolveStop = Date.now();
 	}
 }
 export class ActivatedExtension {
 	public readonly activationFailed: boolean;
+
 	public readonly activationFailedError: Error | null;
+
 	public readonly activationTimes: ExtensionActivationTimes;
+
 	public readonly module: IExtensionModule;
+
 	public readonly exports: IExtensionAPI | undefined;
+
 	public readonly disposable: IDisposable;
 
 	constructor(
@@ -144,10 +189,15 @@ export class ActivatedExtension {
 		disposable: IDisposable,
 	) {
 		this.activationFailed = activationFailed;
+
 		this.activationFailedError = activationFailedError;
+
 		this.activationTimes = activationTimes;
+
 		this.module = module;
+
 		this.exports = exports;
+
 		this.disposable = disposable;
 	}
 }
@@ -193,6 +243,7 @@ export interface IExtensionsActivatorHost {
 		error: Error | null,
 		missingExtensionDependency: MissingExtensionDependency | null,
 	): void;
+
 	actualActivateExtension(
 		extensionId: ExtensionIdentifier,
 		reason: ExtensionActivationReason,
@@ -200,13 +251,17 @@ export interface IExtensionsActivatorHost {
 }
 type ActivationIdAndReason = {
 	id: ExtensionIdentifier;
+
 	reason: ExtensionActivationReason;
 };
 
 export class ExtensionsActivator implements IDisposable {
 	private readonly _registry: ExtensionDescriptionRegistry;
+
 	private readonly _globalRegistry: ExtensionDescriptionRegistry;
+
 	private readonly _host: IExtensionsActivatorHost;
+
 	private readonly _operations: ExtensionIdentifierMap<ActivationOperation>;
 	/**
 	 * A map of already activated events to speed things up if the same activation event is triggered multiple times.
@@ -223,29 +278,38 @@ export class ExtensionsActivator implements IDisposable {
 		private readonly _logService: ILogService,
 	) {
 		this._registry = registry;
+
 		this._globalRegistry = globalRegistry;
+
 		this._host = host;
+
 		this._operations = new ExtensionIdentifierMap<ActivationOperation>();
+
 		this._alreadyActivatedEvents = Object.create(null);
 	}
+
 	public dispose(): void {
 		for (const [_, op] of this._operations) {
 			op.dispose();
 		}
 	}
+
 	public async waitForActivatingExtensions(): Promise<void> {
 		const res: Promise<boolean>[] = [];
 
 		for (const [_, op] of this._operations) {
 			res.push(op.wait());
 		}
+
 		await Promise.all(res);
 	}
+
 	public isActivated(extensionId: ExtensionIdentifier): boolean {
 		const op = this._operations.get(extensionId);
 
 		return Boolean(op && op.value);
 	}
+
 	public getActivatedExtension(
 		extensionId: ExtensionIdentifier,
 	): ActivatedExtension {
@@ -256,8 +320,10 @@ export class ExtensionsActivator implements IDisposable {
 				`Extension '${extensionId.value}' is not known or not activated`,
 			);
 		}
+
 		return op.value;
 	}
+
 	public async activateByEvent(
 		activationEvent: string,
 		startup: boolean,
@@ -265,18 +331,22 @@ export class ExtensionsActivator implements IDisposable {
 		if (this._alreadyActivatedEvents[activationEvent]) {
 			return;
 		}
+
 		const activateExtensions =
 			this._registry.getExtensionDescriptionsForActivationEvent(
 				activationEvent,
 			);
+
 		await this._activateExtensions(
 			activateExtensions.map((e) => ({
 				id: e.identifier,
 				reason: { startup, extensionId: e.identifier, activationEvent },
 			})),
 		);
+
 		this._alreadyActivatedEvents[activationEvent] = true;
 	}
+
 	public activateById(
 		extensionId: ExtensionIdentifier,
 		reason: ExtensionActivationReason,
@@ -286,14 +356,17 @@ export class ExtensionsActivator implements IDisposable {
 		if (!desc) {
 			throw new Error(`Extension '${extensionId.value}' is not known`);
 		}
+
 		return this._activateExtensions([{ id: desc.identifier, reason }]);
 	}
+
 	private async _activateExtensions(
 		extensions: ActivationIdAndReason[],
 	): Promise<void> {
 		const operations = extensions
 			.filter((p) => !this.isActivated(p.id))
 			.map((ext) => this._handleActivationRequest(ext));
+
 		await Promise.all(operations.map((op) => op.wait()));
 	}
 	/**
@@ -306,6 +379,7 @@ export class ExtensionsActivator implements IDisposable {
 		if (this._operations.has(currentActivation.id)) {
 			return this._operations.get(currentActivation.id)!;
 		}
+
 		if (this._isHostExtension(currentActivation.id)) {
 			return this._createAndSaveOperation(
 				currentActivation,
@@ -314,6 +388,7 @@ export class ExtensionsActivator implements IDisposable {
 				null,
 			);
 		}
+
 		const currentExtension = this._registry.getExtensionDescription(
 			currentActivation.id,
 		);
@@ -330,6 +405,7 @@ export class ExtensionsActivator implements IDisposable {
 				[],
 				new FailedExtension(error),
 			);
+
 			this._host.onExtensionActivationError(
 				currentActivation.id,
 				error,
@@ -338,6 +414,7 @@ export class ExtensionsActivator implements IDisposable {
 
 			return result;
 		}
+
 		const deps: ActivationOperation[] = [];
 
 		const depIds =
@@ -350,6 +427,7 @@ export class ExtensionsActivator implements IDisposable {
 				// This dependency is already resolved
 				continue;
 			}
+
 			const dep = this._operations.get(depId);
 
 			if (dep) {
@@ -357,6 +435,7 @@ export class ExtensionsActivator implements IDisposable {
 
 				continue;
 			}
+
 			if (this._isHostExtension(depId)) {
 				// must first wait for the dependency to activate
 				deps.push(
@@ -369,6 +448,7 @@ export class ExtensionsActivator implements IDisposable {
 
 				continue;
 			}
+
 			const depDesc = this._registry.getExtensionDescription(depId);
 
 			if (depDesc) {
@@ -401,6 +481,7 @@ export class ExtensionsActivator implements IDisposable {
 				[],
 				new FailedExtension(error),
 			);
+
 			this._host.onExtensionActivationError(
 				currentExtension.identifier,
 				error,
@@ -409,6 +490,7 @@ export class ExtensionsActivator implements IDisposable {
 
 			return result;
 		}
+
 		return this._createAndSaveOperation(
 			currentActivation,
 			currentExtension.displayName,
@@ -416,6 +498,7 @@ export class ExtensionsActivator implements IDisposable {
 			null,
 		);
 	}
+
 	private _createAndSaveOperation(
 		activation: ActivationIdAndReason,
 		displayName: string | null | undefined,
@@ -431,10 +514,12 @@ export class ExtensionsActivator implements IDisposable {
 			this._host,
 			this._logService,
 		);
+
 		this._operations.set(activation.id, operation);
 
 		return operation;
 	}
+
 	private _isHostExtension(
 		extensionId: ExtensionIdentifier | string,
 	): boolean {
@@ -444,6 +529,7 @@ export class ExtensionsActivator implements IDisposable {
 			this._globalRegistry,
 		);
 	}
+
 	private _isResolvedExtension(
 		extensionId: ExtensionIdentifier | string,
 	): boolean {
@@ -454,18 +540,23 @@ export class ExtensionsActivator implements IDisposable {
 			// unknown extension
 			return false;
 		}
+
 		return !extensionDescription.main && !extensionDescription.browser;
 	}
 }
 class ActivationOperation {
 	private readonly _barrier = new Barrier();
+
 	private _isDisposed = false;
+
 	public get value(): ActivatedExtension | null {
 		return this._value;
 	}
+
 	public get friendlyName(): string {
 		return this._displayName || this._id.value;
 	}
+
 	constructor(
 		private readonly _id: ExtensionIdentifier,
 		private readonly _displayName: string | null | undefined,
@@ -478,21 +569,27 @@ class ActivationOperation {
 	) {
 		this._initialize();
 	}
+
 	public dispose(): void {
 		this._isDisposed = true;
 	}
+
 	public wait() {
 		return this._barrier.wait();
 	}
+
 	private async _initialize(): Promise<void> {
 		await this._waitForDepsThenActivate();
+
 		this._barrier.open();
 	}
+
 	private async _waitForDepsThenActivate(): Promise<void> {
 		if (this._value) {
 			// this operation is already finished
 			return;
 		}
+
 		while (this._deps.length > 0) {
 			// remove completed deps
 			for (let i = 0; i < this._deps.length; i++) {
@@ -501,17 +598,21 @@ class ActivationOperation {
 				if (dep.value && !dep.value.activationFailed) {
 					// the dependency is already activated OK
 					this._deps.splice(i, 1);
+
 					i--;
 
 					continue;
 				}
+
 				if (dep.value && dep.value.activationFailed) {
 					// Error condition 2: a dependency has already failed activation
 					const error = new Error(
 						`Cannot activate the '${this.friendlyName}' extension because its dependency '${dep.friendlyName}' failed to activate`,
 					);
 					(<any>error).detail = dep.value.activationFailedError;
+
 					this._value = new FailedExtension(error);
+
 					this._host.onExtensionActivationError(
 						this._id,
 						error,
@@ -521,13 +622,16 @@ class ActivationOperation {
 					return;
 				}
 			}
+
 			if (this._deps.length > 0) {
 				// wait for one dependency
 				await Promise.race(this._deps.map((dep) => dep.wait()));
 			}
 		}
+
 		await this._activate();
 	}
+
 	private async _activate(): Promise<void> {
 		try {
 			this._value = await this._host.actualActivateExtension(
@@ -540,11 +644,13 @@ class ActivationOperation {
 			if (err && err.name) {
 				error.name = err.name;
 			}
+
 			if (err && err.message) {
 				error.message = `Activating extension '${this._id.value}' failed: ${err.message}.`;
 			} else {
 				error.message = `Activating extension '${this._id.value}' failed: ${err}.`;
 			}
+
 			if (err && err.stack) {
 				error.stack = err.stack;
 			}
@@ -556,10 +662,13 @@ class ActivationOperation {
 				// So simply ignore and don't log canceled errors in this case
 				return;
 			}
+
 			this._host.onExtensionActivationError(this._id, error, null);
+
 			this._logService.error(
 				`Activating extension ${this._id.value} failed due to an error:`,
 			);
+
 			this._logService.error(err);
 		}
 	}

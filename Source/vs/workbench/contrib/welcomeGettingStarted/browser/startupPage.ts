@@ -53,7 +53,9 @@ export const restoreWalkthroughsConfigurationKey =
 
 export type RestoreWalkthroughsConfigurationValue = {
 	folder: string;
+
 	category?: string;
+
 	step?: string;
 };
 
@@ -138,16 +140,20 @@ export class StartupPageRunnerContribution
 		private readonly notificationService: INotificationService,
 	) {
 		super();
+
 		this.run().then(undefined, onUnexpectedError);
+
 		this._register(
 			this.editorService.onDidCloseEditor((e) => {
 				if (e.editor instanceof GettingStartedInput) {
 					e.editor.selectedCategory = undefined;
+
 					e.editor.selectedStep = undefined;
 				}
 			}),
 		);
 	}
+
 	private async run() {
 		// Wait for resolving startup editor until we are restored to reduce startup pressure
 		await this.lifecycleService.when(LifecyclePhase.Restored);
@@ -169,13 +175,16 @@ export class StartupPageRunnerContribution
 				StorageScope.PROFILE,
 				StorageTarget.USER,
 			);
+
 			await this.openGettingStarted(true);
 
 			return;
 		}
+
 		if (this.tryOpenWalkthroughForFolder()) {
 			return;
 		}
+
 		const enabled = isStartupPageEnabled(
 			this.configurationService,
 			this.contextService,
@@ -218,6 +227,7 @@ export class StartupPageRunnerContribution
 						`Warning: 'workbench.startupEditor: readme' setting ignored due to being set somewhere other than user or default settings (user=${startupEditorSetting.userValue}, default=${startupEditorSetting.defaultValue})`,
 					);
 				}
+
 				const openWithReadme =
 					isStartupEditorReadme &&
 					(isStartupEditorUserReadme || isStartupEditorDefaultReadme);
@@ -237,6 +247,7 @@ export class StartupPageRunnerContribution
 			}
 		}
 	}
+
 	private tryOpenWalkthroughForFolder(): boolean {
 		const toRestore = this.storageService.get(
 			restoreWalkthroughsConfigurationKey,
@@ -261,10 +272,12 @@ export class StartupPageRunnerContribution
 					selectedStep: restoreData.step,
 					pinned: false,
 				};
+
 				this.editorService.openEditor({
 					resource: GettingStartedInput.RESOURCE,
 					options,
 				});
+
 				this.storageService.remove(
 					restoreWalkthroughsConfigurationKey,
 					StorageScope.PROFILE,
@@ -273,8 +286,10 @@ export class StartupPageRunnerContribution
 				return true;
 			}
 		}
+
 		return false;
 	}
+
 	private async openReadme() {
 		const readmes = arrays.coalesce(
 			await Promise.all(
@@ -314,6 +329,7 @@ export class StartupPageRunnerContribution
 			if (readmes.length) {
 				const isMarkDown = (readme: URI) =>
 					readme.path.toLowerCase().endsWith(".md");
+
 				await Promise.all([
 					this.commandService
 						.executeCommand(
@@ -343,6 +359,7 @@ export class StartupPageRunnerContribution
 			}
 		}
 	}
+
 	private async openGettingStarted(showTelemetryNotice?: boolean) {
 		const startupEditorTypeID = gettingStartedInputTypeId;
 
@@ -356,6 +373,7 @@ export class StartupPageRunnerContribution
 		) {
 			return;
 		}
+
 		const options: GettingStartedEditorOptions = editor
 			? { pinned: false, index: 0, showTelemetryNotice }
 			: { pinned: false, showTelemetryNotice };
@@ -376,6 +394,7 @@ function isStartupPageEnabled(
 	if (environmentService.skipWelcome) {
 		return false;
 	}
+
 	const startupEditor =
 		configurationService.inspect<string>(configurationKey);
 
@@ -390,6 +409,7 @@ function isStartupPageEnabled(
 			return welcomeEnabled.value;
 		}
 	}
+
 	return (
 		startupEditor.value === "welcomePage" ||
 		(startupEditor.value === "readme" &&

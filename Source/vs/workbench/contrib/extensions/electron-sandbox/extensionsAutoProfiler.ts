@@ -47,8 +47,11 @@ import { IExtensionHostProfileService } from "./runtimeExtensionsEditor.js";
 
 export class ExtensionsAutoProfiler implements IWorkbenchContribution {
 	private readonly _blame = new ExtensionIdentifierSet();
+
 	private _session: CancellationTokenSource | undefined;
+
 	private _unresponsiveListener: IDisposable | undefined;
+
 	private _perfBaseline: number = -1;
 
 	constructor(
@@ -81,7 +84,9 @@ export class ExtensionsAutoProfiler implements IWorkbenchContribution {
 			if (value < 0) {
 				return; // too slow for profiling
 			}
+
 			this._perfBaseline = value;
+
 			this._unresponsiveListener =
 				_extensionService.onDidChangeResponsiveChange(
 					this._onDidChangeResponsiveChange,
@@ -89,30 +94,37 @@ export class ExtensionsAutoProfiler implements IWorkbenchContribution {
 				);
 		});
 	}
+
 	dispose(): void {
 		this._unresponsiveListener?.dispose();
+
 		this._session?.dispose(true);
 	}
+
 	private async _onDidChangeResponsiveChange(
 		event: IResponsiveStateChangeEvent,
 	): Promise<void> {
 		if (event.extensionHostKind !== ExtensionHostKind.LocalProcess) {
 			return;
 		}
+
 		const listener = await event.getInspectListener(true);
 
 		if (!listener) {
 			return;
 		}
+
 		if (event.isResponsive && this._session) {
 			// stop profiling when responsive again
 			this._session.cancel();
+
 			this._logService.info(
 				"UNRESPONSIVE extension host: received responsive event and cancelling profiling session",
 			);
 		} else if (!event.isResponsive && !this._session) {
 			// start profiling if not yet profiling
 			const cts = new CancellationTokenSource();
+
 			this._session = cts;
 
 			let session: ProfileSession;
@@ -132,6 +144,7 @@ export class ExtensionsAutoProfiler implements IWorkbenchContribution {
 				// connected already
 				return;
 			}
+
 			this._logService.info(
 				"UNRESPONSIVE extension host: starting to profile NOW",
 			);
@@ -143,6 +156,7 @@ export class ExtensionsAutoProfiler implements IWorkbenchContribution {
 				// OK, we stop profiling and analyse the
 				// profile anyways
 			}
+
 			try {
 				// stop profiling and analyse results
 				this._processCpuProfile(await session.stop());
@@ -153,6 +167,7 @@ export class ExtensionsAutoProfiler implements IWorkbenchContribution {
 			}
 		}
 	}
+
 	private async _processCpuProfile(profile: IExtensionHostProfile) {
 		// get all extensions
 		await this._extensionService.whenInstalledExtensionsRegistered();
@@ -164,12 +179,14 @@ export class ExtensionsAutoProfiler implements IWorkbenchContribution {
 		) {
 			const searchTree =
 				TernarySearchTree.forUris<IExtensionDescription>();
+
 			searchTree.fill(
 				this._extensionService.extensions.map((e) => [
 					e.extensionLocation,
 					e,
 				]),
 			);
+
 			await this._profileAnalysisService.analyseBottomUp(
 				profile.data,
 				(url) =>
@@ -204,9 +221,11 @@ export class ExtensionsAutoProfiler implements IWorkbenchContribution {
 
 			if (aggregated > topAggregated) {
 				topAggregated = aggregated;
+
 				top = category;
 			}
 		}
+
 		const topPercentage = topAggregated / (overall / 100);
 		// associate extensions to profile node
 		const extension = await this._extensionService.getExtension(top);
@@ -215,49 +234,71 @@ export class ExtensionsAutoProfiler implements IWorkbenchContribution {
 			// not an extension => idle, gc, self?
 			return;
 		}
+
 		const sessionId = generateUuid();
 		// print message to log
 		const path = joinPath(
 			this._environmentServie.tmpDir,
 			`exthost-${Math.random().toString(16).slice(2, 8)}.cpuprofile`,
 		);
+
 		await this._fileService.writeFile(
 			path,
 			VSBuffer.fromString(JSON.stringify(profile.data)),
 		);
+
 		this._logService.warn(
 			`UNRESPONSIVE extension host: '${top}' took ${topPercentage}% of ${topAggregated / 1e3}ms, saved PROFILE here: '${path}'`,
 		);
+
 		type UnresponsiveData = {
 			duration: number;
+
 			sessionId: string;
+
 			data: string[];
+
 			id: string;
 		};
+
 		type UnresponsiveDataClassification = {
 			owner: "jrieken";
+
 			comment: "Profiling data that was collected while the extension host was unresponsive";
+
 			sessionId: {
 				classification: "SystemMetaData";
+
 				purpose: "PerformanceAndHealth";
+
 				comment: "Identifier of a profiling session";
 			};
+
 			duration: {
 				classification: "SystemMetaData";
+
 				purpose: "PerformanceAndHealth";
+
 				comment: "Duration for which the extension host was unresponsive";
 			};
+
 			data: {
 				classification: "SystemMetaData";
+
 				purpose: "PerformanceAndHealth";
+
 				comment: "Extensions ids and core parts that were active while the extension host was frozen";
 			};
+
 			id: {
 				classification: "SystemMetaData";
+
 				purpose: "PerformanceAndHealth";
+
 				comment: "Top extensions id that took most of the duration";
 			};
 		};
+
 		this._telemetryService.publicLog2<
 			UnresponsiveData,
 			UnresponsiveDataClassification
@@ -276,6 +317,7 @@ export class ExtensionsAutoProfiler implements IWorkbenchContribution {
 		if (!(topPercentage >= 95 && topAggregated >= 5e6)) {
 			return;
 		}
+
 		const action = await this._instantiationService.invokeFunction(
 			createSlowExtensionAction,
 			extension,
@@ -290,6 +332,7 @@ export class ExtensionsAutoProfiler implements IWorkbenchContribution {
 		if (this._blame.has(extension.identifier) || this._blame.size >= 3) {
 			return;
 		}
+
 		this._blame.add(extension.identifier);
 		// user-facing message when very bad...
 		this._notificationService.prompt(

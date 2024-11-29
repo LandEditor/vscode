@@ -409,15 +409,18 @@ class DebuggersDataRenderer
 	implements IExtensionFeatureTableRenderer
 {
 	readonly type = "table";
+
 	shouldRender(manifest: IExtensionManifest): boolean {
 		return !!manifest.contributes?.debuggers;
 	}
+
 	render(manifest: IExtensionManifest): IRenderedData<ITableData> {
 		const contrib = manifest.contributes?.debuggers || [];
 
 		if (!contrib.length) {
 			return { data: { headers: [], rows: [] }, dispose: () => {} };
 		}
+
 		const headers = [
 			nls.localize("debugger name", "Name"),
 			nls.localize("debugger type", "Type"),

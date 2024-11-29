@@ -71,6 +71,7 @@ export function extractEditorsDropData(
 				const rawResourcesData = e.dataTransfer.getData(
 					DataTransfers.RESOURCES,
 				);
+
 				editors.push(
 					...createDraggedEditorInputFromRawResourcesData(
 						rawResourcesData,
@@ -145,9 +146,11 @@ export function extractEditorsDropData(
 			coalescedEditors.push(editor);
 		} else if (!seen.has(editor.resource)) {
 			coalescedEditors.push(editor);
+
 			seen.set(editor.resource, true);
 		}
 	}
+
 	return coalescedEditors;
 }
 export async function extractEditorsAndFilesDropData(
@@ -176,6 +179,7 @@ export async function extractEditorsAndFilesDropData(
 			}
 		}
 	}
+
 	return editors;
 }
 export function createDraggedEditorInputFromRawResourcesData(
@@ -192,15 +196,19 @@ export function createDraggedEditorInputFromRawResourcesData(
 				const { selection, uri } = extractSelection(
 					URI.parse(resourceRaw),
 				);
+
 				editors.push({ resource: uri, options: { selection } });
 			}
 		}
 	}
+
 	return editors;
 }
 interface IFileTransferData {
 	resource: URI;
+
 	isDirectory?: boolean;
+
 	contents?: VSBuffer;
 }
 async function extractFilesDropData(
@@ -221,6 +229,7 @@ async function extractFilesDropData(
 	if (!files) {
 		return [];
 	}
+
 	return extractFileListData(accessor, files);
 }
 async function extractFileTransferData(
@@ -234,6 +243,7 @@ async function extractFileTransferData(
 	if (!(fileSystemProvider instanceof HTMLFileSystemProvider)) {
 		return []; // only supported when running in web
 	}
+
 	const results: DeferredPromise<IFileTransferData | undefined>[] = [];
 
 	for (let i = 0; i < items.length; i++) {
@@ -241,6 +251,7 @@ async function extractFileTransferData(
 
 		if (file) {
 			const result = new DeferredPromise<IFileTransferData | undefined>();
+
 			results.push(result);
 			(async () => {
 				try {
@@ -251,6 +262,7 @@ async function extractFileTransferData(
 
 						return;
 					}
+
 					if (WebFileSystemAccess.isFileSystemFileHandle(handle)) {
 						result.complete({
 							resource:
@@ -278,6 +290,7 @@ async function extractFileTransferData(
 			})();
 		}
 	}
+
 	return coalesce(await Promise.all(results.map((result) => result.p)));
 }
 export async function extractFileListData(
@@ -303,12 +316,17 @@ export async function extractFileListData(
 
 				continue;
 			}
+
 			const result = new DeferredPromise<IFileTransferData | undefined>();
+
 			results.push(result);
 
 			const reader = new FileReader();
+
 			reader.onerror = () => result.complete(undefined);
+
 			reader.onabort = () => result.complete(undefined);
+
 			reader.onload = async (event) => {
 				const name = file.name;
 
@@ -322,6 +340,7 @@ export async function extractFileListData(
 
 					return;
 				}
+
 				result.complete({
 					resource: URI.from({
 						scheme: Schemas.untitled,
@@ -337,6 +356,7 @@ export async function extractFileListData(
 			reader.readAsArrayBuffer(file);
 		}
 	}
+
 	return coalesce(await Promise.all(results.map((result) => result.p)));
 }
 //#endregion
@@ -347,6 +367,7 @@ export function containsDragType(
 	if (!event.dataTransfer) {
 		return false;
 	}
+
 	const dragTypes = event.dataTransfer.types;
 
 	const lowercaseDragTypes: string[] = [];
@@ -354,17 +375,21 @@ export function containsDragType(
 	for (let i = 0; i < dragTypes.length; i++) {
 		lowercaseDragTypes.push(dragTypes[i].toLowerCase()); // somehow the types are lowercase
 	}
+
 	for (const dragType of dragTypesToFind) {
 		if (lowercaseDragTypes.indexOf(dragType.toLowerCase()) >= 0) {
 			return true;
 		}
 	}
+
 	return false;
 }
 //#region DND contributions
 export interface IResourceStat {
 	readonly resource: URI;
+
 	readonly isDirectory?: boolean;
+
 	readonly selection?: ITextEditorSelection;
 }
 export interface IDragAndDropContributionRegistry {
@@ -394,14 +419,17 @@ class DragAndDropContributionRegistry
 		string,
 		IDragAndDropContribution
 	>();
+
 	register(contribution: IDragAndDropContribution): void {
 		if (this._contributions.has(contribution.dataFormatKey)) {
 			throw new Error(
 				`A drag and drop contributiont with key '${contribution.dataFormatKey}' was already registered.`,
 			);
 		}
+
 		this._contributions.set(contribution.dataFormatKey, contribution);
 	}
+
 	getAll(): IterableIterator<IDragAndDropContribution> {
 		return this._contributions.values();
 	}
@@ -420,32 +448,43 @@ Registry.add(
  */
 export class LocalSelectionTransfer<T> {
 	private static readonly INSTANCE = new LocalSelectionTransfer();
+
 	private data?: T[];
+
 	private proto?: T;
+
 	private constructor() {
 		// protect against external instantiation
 	}
+
 	static getInstance<T>(): LocalSelectionTransfer<T> {
 		return LocalSelectionTransfer.INSTANCE as LocalSelectionTransfer<T>;
 	}
+
 	hasData(proto: T): boolean {
 		return proto && proto === this.proto;
 	}
+
 	clearData(proto: T): void {
 		if (this.hasData(proto)) {
 			this.proto = undefined;
+
 			this.data = undefined;
 		}
 	}
+
 	getData(proto: T): T[] | undefined {
 		if (this.hasData(proto)) {
 			return this.data;
 		}
+
 		return undefined;
 	}
+
 	setData(data: T[], proto: T): void {
 		if (proto) {
 			this.data = data;
+
 			this.proto = proto;
 		}
 	}
@@ -453,13 +492,19 @@ export class LocalSelectionTransfer<T> {
 
 export interface DocumentSymbolTransferData {
 	name: string;
+
 	fsPath: string;
+
 	range: {
 		startLineNumber: number;
+
 		startColumn: number;
+
 		endLineNumber: number;
+
 		endColumn: number;
 	};
+
 	kind: number;
 }
 
@@ -467,6 +512,7 @@ export function extractSymbolDropData(
 	e: DragEvent,
 ): DocumentSymbolTransferData[] {
 	const rawSymbolsData = e.dataTransfer?.getData(CodeDataTransfers.SYMBOLS);
+
 	if (rawSymbolsData) {
 		try {
 			return JSON.parse(rawSymbolsData);
@@ -494,6 +540,7 @@ export function getPathForFile(file: File): string | undefined {
 	) {
 		return (globalThis as any).vscode.webUtils.getPathForFile(file);
 	}
+
 	return undefined;
 }
 //#endregion

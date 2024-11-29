@@ -13,6 +13,7 @@ import { Variable } from '../common/debugModel.js';
 
 type ParsedQuery = {
 	type: 'include' | 'exclude';
+
 	query: string;
 };
 
@@ -21,12 +22,15 @@ export class ReplFilter implements ITreeFilter<IReplElement, FuzzyScore> {
 	static matchQuery = matchesFuzzy;
 
 	private _parsedQueries: ParsedQuery[] = [];
+
 	set filterQuery(query: string) {
 		this._parsedQueries = [];
+
 		query = query.trim();
 
 		if (query && query !== '') {
 			const filters = splitGlobAware(query, ',').map(s => s.trim()).filter(s => !!s.length);
+
 			for (const f of filters) {
 				if (f.startsWith('\\')) {
 					this._parsedQueries.push({ type: 'include', query: f.slice(1) });
@@ -46,6 +50,7 @@ export class ReplFilter implements ITreeFilter<IReplElement, FuzzyScore> {
 		}
 
 		let includeQueryPresent = false;
+
 		let includeQueryMatched = false;
 
 		const text = element.toString(true);
@@ -56,6 +61,7 @@ export class ReplFilter implements ITreeFilter<IReplElement, FuzzyScore> {
 				return false;
 			} else if (type === 'include') {
 				includeQueryPresent = true;
+
 				if (ReplFilter.matchQuery(query, text)) {
 					includeQueryMatched = true;
 				}

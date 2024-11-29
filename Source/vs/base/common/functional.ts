@@ -20,6 +20,7 @@ export function createSingleCallFunction<T extends Function>(
 		if (didCall) {
 			return result;
 		}
+
 		didCall = true;
 
 		if (fnDidRunCallback) {
@@ -31,6 +32,7 @@ export function createSingleCallFunction<T extends Function>(
 		} else {
 			result = fn.apply(_this, arguments);
 		}
+
 		return result;
 	} as unknown as T;
 }

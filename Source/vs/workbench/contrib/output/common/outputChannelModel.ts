@@ -41,22 +41,31 @@ import { OutputChannelUpdateMode } from "../../../services/output/common/output.
 
 export interface IOutputChannelModel extends IDisposable {
 	readonly onDispose: Event<void>;
+
 	append(output: string): void;
+
 	update(
 		mode: OutputChannelUpdateMode,
 		till: number | undefined,
 		immediate: boolean,
 	): void;
+
 	loadModel(): Promise<ITextModel>;
+
 	clear(): void;
+
 	replace(value: string): void;
 }
 class OutputFileListener extends Disposable {
 	private readonly _onDidContentChange = new Emitter<number | undefined>();
+
 	readonly onDidContentChange: Event<number | undefined> =
 		this._onDidContentChange.event;
+
 	private watching: boolean = false;
+
 	private syncDelayer: ThrottledDelayer<void>;
+
 	private etag: string | undefined;
 
 	constructor(
@@ -65,39 +74,52 @@ class OutputFileListener extends Disposable {
 		private readonly logService: ILogService,
 	) {
 		super();
+
 		this.syncDelayer = new ThrottledDelayer<void>(500);
 	}
+
 	watch(eTag: string | undefined): void {
 		if (!this.watching) {
 			this.etag = eTag;
+
 			this.poll();
+
 			this.logService.trace("Started polling", this.file.toString());
+
 			this.watching = true;
 		}
 	}
+
 	private poll(): void {
 		const loop = () => this.doWatch().then(() => this.poll());
+
 		this.syncDelayer.trigger(loop).catch((error) => {
 			if (!isCancellationError(error)) {
 				throw error;
 			}
 		});
 	}
+
 	private async doWatch(): Promise<void> {
 		const stat = await this.fileService.stat(this.file);
 
 		if (stat.etag !== this.etag) {
 			this.etag = stat.etag;
+
 			this._onDidContentChange.fire(stat.size);
 		}
 	}
+
 	unwatch(): void {
 		if (this.watching) {
 			this.syncDelayer.cancel();
+
 			this.watching = false;
+
 			this.logService.trace("Stopped polling", this.file.toString());
 		}
 	}
+
 	override dispose(): void {
 		this.unwatch();
 
@@ -109,20 +131,31 @@ export class FileOutputChannelModel
 	implements IOutputChannelModel
 {
 	private readonly _onDispose = this._register(new Emitter<void>());
+
 	readonly onDispose: Event<void> = this._onDispose.event;
+
 	private readonly fileHandler: OutputFileListener;
+
 	private etag: string | undefined = "";
+
 	private loadModelPromise: Promise<ITextModel> | null = null;
+
 	private model: ITextModel | null = null;
+
 	private modelUpdateInProgress: boolean = false;
+
 	private readonly modelUpdateCancellationSource = this._register(
 		new MutableDisposable<CancellationTokenSource>(),
 	);
+
 	private readonly appendThrottler = this._register(
 		new ThrottledDelayer(300),
 	);
+
 	private replacePromise: Promise<void> | undefined;
+
 	private startOffset: number = 0;
+
 	private endOffset: number = 0;
 
 	constructor(
@@ -139,25 +172,32 @@ export class FileOutputChannelModel
 		private readonly editorWorkerService: IEditorWorkerService,
 	) {
 		super();
+
 		this.fileHandler = this._register(
 			new OutputFileListener(this.file, this.fileService, logService),
 		);
+
 		this._register(
 			this.fileHandler.onDidContentChange((size) =>
 				this.onDidContentChange(size),
 			),
 		);
+
 		this._register(toDisposable(() => this.fileHandler.unwatch()));
 	}
+
 	append(message: string): void {
 		throw new Error("Not supported");
 	}
+
 	replace(message: string): void {
 		throw new Error("Not supported");
 	}
+
 	clear(): void {
 		this.update(OutputChannelUpdateMode.Clear, this.endOffset, true);
 	}
+
 	update(
 		mode: OutputChannelUpdateMode,
 		till: number | undefined,
@@ -166,8 +206,10 @@ export class FileOutputChannelModel
 		const loadModelPromise: Promise<any> = this.loadModelPromise
 			? this.loadModelPromise
 			: Promise.resolve();
+
 		loadModelPromise.then(() => this.doUpdate(mode, till, immediate));
 	}
+
 	loadModel(): Promise<ITextModel> {
 		this.loadModelPromise = Promises.withAsyncBody<ITextModel>(
 			async (c, e) => {
@@ -179,14 +221,19 @@ export class FileOutputChannelModel
 							this.file,
 							{ position: this.startOffset },
 						);
+
 						this.endOffset =
 							this.startOffset + fileContent.value.byteLength;
+
 						this.etag = fileContent.etag;
+
 						content = fileContent.value.toString();
 					} else {
 						this.startOffset = 0;
+
 						this.endOffset = 0;
 					}
+
 					c(this.createModel(content));
 				} catch (error) {
 					e(error);
@@ -196,6 +243,7 @@ export class FileOutputChannelModel
 
 		return this.loadModelPromise;
 	}
+
 	private createModel(content: string): ITextModel {
 		if (this.model) {
 			this.model.setValue(content);
@@ -205,17 +253,23 @@ export class FileOutputChannelModel
 				this.language,
 				this.modelUri,
 			);
+
 			this.fileHandler.watch(this.etag);
 
 			const disposable = this.model.onWillDispose(() => {
 				this.cancelModelUpdate();
+
 				this.fileHandler.unwatch();
+
 				this.model = null;
+
 				dispose(disposable);
 			});
 		}
+
 		return this.model;
 	}
+
 	private doUpdate(
 		mode: OutputChannelUpdateMode,
 		till: number | undefined,
@@ -228,17 +282,21 @@ export class FileOutputChannelModel
 			this.startOffset = this.endOffset = isNumber(till)
 				? till
 				: this.endOffset;
+
 			this.cancelModelUpdate();
 		}
+
 		if (!this.model) {
 			return;
 		}
+
 		this.modelUpdateInProgress = true;
 
 		if (!this.modelUpdateCancellationSource.value) {
 			this.modelUpdateCancellationSource.value =
 				new CancellationTokenSource();
 		}
+
 		const token = this.modelUpdateCancellationSource.value.token;
 
 		if (mode === OutputChannelUpdateMode.Clear) {
@@ -252,6 +310,7 @@ export class FileOutputChannelModel
 			this.appendContent(this.model, immediate, token);
 		}
 	}
+
 	private clearContent(model: ITextModel): void {
 		this.doUpdateModel(
 			model,
@@ -259,6 +318,7 @@ export class FileOutputChannelModel
 			VSBuffer.fromString(""),
 		);
 	}
+
 	private appendContent(
 		model: ITextModel,
 		immediate: boolean,
@@ -300,6 +360,7 @@ export class FileOutputChannelModel
 							contentToAppend.toString(),
 						),
 					];
+
 					this.doUpdateModel(model, edits, contentToAppend);
 				},
 				immediate ? 0 : undefined,
@@ -310,6 +371,7 @@ export class FileOutputChannelModel
 				}
 			});
 	}
+
 	private async replaceContent(
 		model: ITextModel,
 		token: CancellationToken,
@@ -332,6 +394,7 @@ export class FileOutputChannelModel
 		/* Apply Edits */
 		this.doUpdateModel(model, edits, contentToReplace);
 	}
+
 	private async getReplaceEdits(
 		model: ITextModel,
 		contentToReplace: string,
@@ -339,6 +402,7 @@ export class FileOutputChannelModel
 		if (!contentToReplace) {
 			return [EditOperation.delete(model.getFullModelRange())];
 		}
+
 		if (contentToReplace !== model.getValue()) {
 			const edits =
 				await this.editorWorkerService.computeMoreMinimalEdits(
@@ -357,8 +421,10 @@ export class FileOutputChannelModel
 				);
 			}
 		}
+
 		return [];
 	}
+
 	private doUpdateModel(
 		model: ITextModel,
 		edits: ISingleEditOperation[],
@@ -367,24 +433,34 @@ export class FileOutputChannelModel
 		if (edits.length) {
 			model.applyEdits(edits);
 		}
+
 		this.endOffset = this.endOffset + content.byteLength;
+
 		this.modelUpdateInProgress = false;
 	}
+
 	protected cancelModelUpdate(): void {
 		this.modelUpdateCancellationSource.value?.cancel();
+
 		this.modelUpdateCancellationSource.value = undefined;
+
 		this.appendThrottler.cancel();
+
 		this.replacePromise = undefined;
+
 		this.modelUpdateInProgress = false;
 	}
+
 	private async getContentToUpdate(): Promise<VSBuffer> {
 		const content = await this.fileService.readFile(this.file, {
 			position: this.endOffset,
 		});
+
 		this.etag = content.etag;
 
 		return content.value;
 	}
+
 	private onDidContentChange(size: number | undefined): void {
 		if (this.model) {
 			if (!this.modelUpdateInProgress) {
@@ -393,6 +469,7 @@ export class FileOutputChannelModel
 					this.update(OutputChannelUpdateMode.Clear, 0, true);
 				}
 			}
+
 			this.update(
 				OutputChannelUpdateMode.Append,
 				undefined,
@@ -400,9 +477,11 @@ export class FileOutputChannelModel
 			);
 		}
 	}
+
 	protected isVisible(): boolean {
 		return !!this.model;
 	}
+
 	override dispose(): void {
 		this._onDispose.fire();
 
@@ -414,6 +493,7 @@ class OutputChannelBackedByFile
 	implements IOutputChannelModel
 {
 	private logger: ILogger;
+
 	private _offset: number;
 
 	constructor(
@@ -448,23 +528,31 @@ class OutputChannelBackedByFile
 			donotUseFormatters: true,
 			hidden: true,
 		});
+
 		this._offset = 0;
 	}
+
 	override append(message: string): void {
 		this.write(message);
+
 		this.update(
 			OutputChannelUpdateMode.Append,
 			undefined,
 			this.isVisible(),
 		);
 	}
+
 	override replace(message: string): void {
 		const till = this._offset;
+
 		this.write(message);
+
 		this.update(OutputChannelUpdateMode.Replace, till, true);
 	}
+
 	private write(content: string): void {
 		this._offset += VSBuffer.fromString(content).byteLength;
+
 		this.logger.info(content);
 
 		if (this.isVisible()) {
@@ -479,7 +567,9 @@ export class DelegatedOutputChannelModel
 	private readonly _onDispose: Emitter<void> = this._register(
 		new Emitter<void>(),
 	);
+
 	readonly onDispose: Event<void> = this._onDispose.event;
+
 	private readonly outputChannelModel: Promise<IOutputChannelModel>;
 
 	constructor(
@@ -493,6 +583,7 @@ export class DelegatedOutputChannelModel
 		private readonly fileService: IFileService,
 	) {
 		super();
+
 		this.outputChannelModel = this.createOutputChannelModel(
 			id,
 			modelUri,
@@ -500,6 +591,7 @@ export class DelegatedOutputChannelModel
 			outputDir,
 		);
 	}
+
 	private async createOutputChannelModel(
 		id: string,
 		modelUri: URI,
@@ -512,6 +604,7 @@ export class DelegatedOutputChannelModel
 			outputDir,
 			`${id.replace(/[\\/:\*\?"<>\|]/g, "")}.log`,
 		);
+
 		await this.fileService.createFile(file);
 
 		const outputChannelModel = this._register(
@@ -523,17 +616,20 @@ export class DelegatedOutputChannelModel
 				file,
 			),
 		);
+
 		this._register(
 			outputChannelModel.onDispose(() => this._onDispose.fire()),
 		);
 
 		return outputChannelModel;
 	}
+
 	append(output: string): void {
 		this.outputChannelModel.then((outputChannelModel) =>
 			outputChannelModel.append(output),
 		);
 	}
+
 	update(
 		mode: OutputChannelUpdateMode,
 		till: number | undefined,
@@ -543,16 +639,19 @@ export class DelegatedOutputChannelModel
 			outputChannelModel.update(mode, till, immediate),
 		);
 	}
+
 	loadModel(): Promise<ITextModel> {
 		return this.outputChannelModel.then((outputChannelModel) =>
 			outputChannelModel.loadModel(),
 		);
 	}
+
 	clear(): void {
 		this.outputChannelModel.then((outputChannelModel) =>
 			outputChannelModel.clear(),
 		);
 	}
+
 	replace(value: string): void {
 		this.outputChannelModel.then((outputChannelModel) =>
 			outputChannelModel.replace(value),

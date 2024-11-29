@@ -16,6 +16,7 @@ export namespace _util {
 
 	export function getServiceDependencies(ctor: any): {
 		id: ServiceIdentifier<any>;
+
 		index: number;
 	}[] {
 		return ctor[DI_DEPENDENCIES] || [];
@@ -51,6 +52,7 @@ export interface IInstantiationService {
 	 * Synchronously creates an instance that is denoted by the descriptor
 	 */
 	createInstance<T>(descriptor: descriptors.SyncDescriptor0<T>): T;
+
 	createInstance<
 		Ctor extends new (...args: any[]) => unknown,
 		R extends InstanceType<Ctor>,
@@ -91,6 +93,7 @@ export interface IInstantiationService {
  */
 export interface ServiceIdentifier<T> {
 	(...args: any[]): void;
+
 	type: T;
 }
 function storeServiceDependency(
@@ -112,15 +115,19 @@ export function createDecorator<T>(serviceId: string): ServiceIdentifier<T> {
 	if (_util.serviceIds.has(serviceId)) {
 		return _util.serviceIds.get(serviceId)!;
 	}
+
 	const id = <any>function (target: Function, key: string, index: number) {
 		if (arguments.length !== 3) {
 			throw new Error(
 				"@IServiceName-decorator can only be used to decorate a parameter",
 			);
 		}
+
 		storeServiceDependency(id, target, index);
 	};
+
 	id.toString = () => serviceId;
+
 	_util.serviceIds.set(serviceId, id);
 
 	return id;

@@ -31,15 +31,22 @@ import { IWindowsMainService } from "./windows.js";
 
 export interface IWindowState {
 	readonly windowId?: number;
+
 	workspace?: IWorkspaceIdentifier;
+
 	folderUri?: URI;
+
 	backupPath?: string;
+
 	remoteAuthority?: string;
+
 	uiState: IWindowUIState;
 }
 export interface IWindowsState {
 	lastActiveWindow?: IWindowState;
+
 	lastPluginDevelopmentHostWindow?: IWindowState;
+
 	openedWindows: IWindowState[];
 }
 interface INewWindowState extends IWindowUIState {
@@ -47,17 +54,24 @@ interface INewWindowState extends IWindowUIState {
 }
 interface ISerializedWindowsState {
 	readonly lastActiveWindow?: ISerializedWindowState;
+
 	readonly lastPluginDevelopmentHostWindow?: ISerializedWindowState;
+
 	readonly openedWindows: ISerializedWindowState[];
 }
 interface ISerializedWindowState {
 	readonly workspaceIdentifier?: {
 		id: string;
+
 		configURIPath: string;
 	};
+
 	readonly folder?: string;
+
 	readonly backupPath?: string;
+
 	readonly remoteAuthority?: string;
+
 	readonly uiState: IWindowUIState;
 }
 export class WindowsStateHandler extends Disposable {
@@ -66,12 +80,15 @@ export class WindowsStateHandler extends Disposable {
 	get state() {
 		return this._state;
 	}
+
 	private readonly _state = restoreWindowsState(
 		this.stateService.getItem<ISerializedWindowsState>(
 			WindowsStateHandler.windowsStateStorageKey,
 		),
 	);
+
 	private lastClosedState: IWindowState | undefined = undefined;
+
 	private shuttingDown = false;
 
 	constructor(
@@ -87,8 +104,10 @@ export class WindowsStateHandler extends Disposable {
 		private readonly configurationService: IConfigurationService,
 	) {
 		super();
+
 		this.registerListeners();
 	}
+
 	private registerListeners(): void {
 		// When a window looses focus, save all windows state. This allows to
 		// prevent loss of window-state data when OS is restarted without properly
@@ -104,11 +123,13 @@ export class WindowsStateHandler extends Disposable {
 				this.onBeforeCloseWindow(window),
 			),
 		);
+
 		this._register(
 			this.lifecycleMainService.onBeforeShutdown(() =>
 				this.onBeforeShutdown(),
 			),
 		);
+
 		this._register(
 			this.windowsMainService.onDidChangeWindowsCount((e) => {
 				if (e.newCount - e.oldCount > 0) {
@@ -165,8 +186,10 @@ export class WindowsStateHandler extends Disposable {
 	//
 	private onBeforeShutdown(): void {
 		this.shuttingDown = true;
+
 		this.saveWindowsState();
 	}
+
 	private saveWindowsState(): void {
 		// TODO@electron workaround for Electron not being able to restore
 		// multiple (native) fullscreen windows on the same display at once
@@ -189,6 +212,7 @@ export class WindowsStateHandler extends Disposable {
 					.getWindows()
 					.find((window) => !window.isExtensionDevelopmentHost);
 			}
+
 			if (activeWindow) {
 				currentWindowsState.lastActiveWindow =
 					this.toWindowState(activeWindow);
@@ -274,11 +298,13 @@ export class WindowsStateHandler extends Disposable {
 							);
 						}
 					}
+
 					return windowState;
 				});
 		}
 		// Persist
 		const state = getWindowsStateStoreData(currentWindowsState);
+
 		this.stateService.setItem(
 			WindowsStateHandler.windowsStateStorageKey,
 			state,
@@ -330,6 +356,7 @@ export class WindowsStateHandler extends Disposable {
 			this.lastClosedState = state;
 		}
 	}
+
 	private toWindowState(window: ICodeWindow): IWindowState {
 		return {
 			windowId: window.id,
@@ -344,6 +371,7 @@ export class WindowsStateHandler extends Disposable {
 			uiState: window.serializeWindowState(),
 		};
 	}
+
 	getNewWindowState(
 		configuration: INativeWindowConfiguration,
 	): INewWindowState {
@@ -372,12 +400,15 @@ export class WindowsStateHandler extends Disposable {
 					windowConfig?.restoreFullscreen
 				);
 			}
+
 			if (!allowFullscreen) {
 				state.mode = WindowMode.Normal;
 			}
 		}
+
 		return state;
 	}
+
 	private doGetNewWindowState(
 		configuration: INativeWindowConfiguration,
 	): INewWindowState {
@@ -462,6 +493,7 @@ export class WindowsStateHandler extends Disposable {
 			// on mac there is 1 menu per window so we need to use the monitor where the cursor currently is
 			if (isMacintosh) {
 				const cursorPoint = electron.screen.getCursorScreenPoint();
+
 				displayToUse =
 					electron.screen.getDisplayNearestPoint(cursorPoint);
 			}
@@ -481,11 +513,13 @@ export class WindowsStateHandler extends Disposable {
 		// Note: important to use Math.round() because Electron does not seem to be too happy about
 		// display coordinates that are not absolute numbers.
 		let state = defaultWindowState();
+
 		state.x = Math.round(
 			displayToUse.bounds.x +
 				displayToUse.bounds.width / 2 -
 				state.width! / 2,
 		);
+
 		state.y = Math.round(
 			displayToUse.bounds.y +
 				displayToUse.bounds.height / 2 -
@@ -501,9 +535,11 @@ export class WindowsStateHandler extends Disposable {
 		if (windowConfig?.newWindowDimensions) {
 			if (windowConfig.newWindowDimensions === "maximized") {
 				state.mode = WindowMode.Maximized;
+
 				ensureNoOverlap = false;
 			} else if (windowConfig.newWindowDimensions === "fullscreen") {
 				state.mode = WindowMode.Fullscreen;
+
 				ensureNoOverlap = false;
 			} else if (
 				(windowConfig.newWindowDimensions === "inherit" ||
@@ -520,22 +556,27 @@ export class WindowsStateHandler extends Disposable {
 						zoomLevel: undefined, // do not inherit zoom level
 					};
 				}
+
 				ensureNoOverlap =
 					state.mode !== WindowMode.Fullscreen &&
 					windowConfig.newWindowDimensions === "offset";
 			}
 		}
+
 		if (ensureNoOverlap) {
 			state = this.ensureNoOverlap(state);
 		}
 		(state as INewWindowState).hasDefaultState = true; // flag as default state
 		return state;
 	}
+
 	private ensureNoOverlap(state: IWindowUIState): IWindowUIState {
 		if (this.windowsMainService.getWindows().length === 0) {
 			return state;
 		}
+
 		state.x = typeof state.x === "number" ? state.x : 0;
+
 		state.y = typeof state.y === "number" ? state.y : 0;
 
 		const existingWindowBounds = this.windowsMainService
@@ -548,8 +589,10 @@ export class WindowsStateHandler extends Disposable {
 			)
 		) {
 			state.x += 30;
+
 			state.y += 30;
 		}
+
 		return state;
 	}
 }
@@ -565,16 +608,19 @@ export function restoreWindowsState(
 			windowsState.lastActiveWindow,
 		);
 	}
+
 	if (windowsState.lastPluginDevelopmentHostWindow) {
 		result.lastPluginDevelopmentHostWindow = restoreWindowState(
 			windowsState.lastPluginDevelopmentHostWindow,
 		);
 	}
+
 	if (Array.isArray(windowsState.openedWindows)) {
 		result.openedWindows = windowsState.openedWindows.map((windowState) =>
 			restoreWindowState(windowState),
 		);
 	}
+
 	return result;
 }
 function restoreWindowState(windowState: ISerializedWindowState): IWindowState {
@@ -583,12 +629,15 @@ function restoreWindowState(windowState: ISerializedWindowState): IWindowState {
 	if (windowState.backupPath) {
 		result.backupPath = windowState.backupPath;
 	}
+
 	if (windowState.remoteAuthority) {
 		result.remoteAuthority = windowState.remoteAuthority;
 	}
+
 	if (windowState.folder) {
 		result.folderUri = URI.parse(windowState.folder);
 	}
+
 	if (windowState.workspaceIdentifier) {
 		result.workspace = {
 			id: windowState.workspaceIdentifier.id,
@@ -597,6 +646,7 @@ function restoreWindowState(windowState: ISerializedWindowState): IWindowState {
 			),
 		};
 	}
+
 	return result;
 }
 export function getWindowsStateStoreData(

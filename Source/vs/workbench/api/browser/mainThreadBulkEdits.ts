@@ -38,6 +38,7 @@ export class MainThreadBulkEdits implements MainThreadBulkEditsShape {
 		@IUriIdentityService
 		private readonly _uriIdentService: IUriIdentityService,
 	) {}
+
 	dispose(): void {}
 	$tryApplyWorkspaceEdit(
 		dto: SerializableObjectWithBuffers<IWorkspaceEditDto>,
@@ -81,12 +82,14 @@ export function reviveWorkspaceEditDto(
 	if (!data || !data.edits) {
 		return <WorkspaceEdit>data;
 	}
+
 	const result = revive<WorkspaceEdit>(data);
 
 	for (const edit of result.edits) {
 		if (ResourceTextEdit.is(edit)) {
 			edit.resource = uriIdentityService.asCanonicalUri(edit.resource);
 		}
+
 		if (ResourceFileEdit.is(edit)) {
 			if (edit.options) {
 				const inContents = (edit as IWorkspaceFileEditDto).options
@@ -110,13 +113,16 @@ export function reviveWorkspaceEditDto(
 					}
 				}
 			}
+
 			edit.newResource =
 				edit.newResource &&
 				uriIdentityService.asCanonicalUri(edit.newResource);
+
 			edit.oldResource =
 				edit.oldResource &&
 				uriIdentityService.asCanonicalUri(edit.oldResource);
 		}
+
 		if (ResourceNotebookCellEdit.is(edit)) {
 			edit.resource = uriIdentityService.asCanonicalUri(edit.resource);
 
@@ -141,5 +147,6 @@ export function reviveWorkspaceEditDto(
 			}
 		}
 	}
+
 	return <WorkspaceEdit>data;
 }

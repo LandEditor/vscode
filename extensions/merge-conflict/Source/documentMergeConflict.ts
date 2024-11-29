@@ -11,10 +11,15 @@ export class DocumentMergeConflict
 	implements interfaces.IDocumentMergeConflict
 {
 	public range: vscode.Range;
+
 	public current: interfaces.IMergeRegion;
+
 	public incoming: interfaces.IMergeRegion;
+
 	public commonAncestors: interfaces.IMergeRegion[];
+
 	public splitter: vscode.Range;
+
 	private applied = false;
 
 	constructor(
@@ -22,11 +27,16 @@ export class DocumentMergeConflict
 		private readonly telemetryReporter: TelemetryReporter,
 	) {
 		this.range = descriptor.range;
+
 		this.current = descriptor.current;
+
 		this.incoming = descriptor.incoming;
+
 		this.commonAncestors = descriptor.commonAncestors;
+
 		this.splitter = descriptor.splitter;
 	}
+
 	public commitEdit(
 		type: interfaces.CommitType,
 		editor: vscode.TextEditor,
@@ -60,10 +70,12 @@ export class DocumentMergeConflict
 
 			return Promise.resolve(true);
 		}
+
 		return editor.edit((edit) =>
 			this.applyEdit(type, editor.document, edit),
 		);
 	}
+
 	public applyEdit(
 		type: interfaces.CommitType,
 		document: vscode.TextDocument,
@@ -74,6 +86,7 @@ export class DocumentMergeConflict
 		if (this.applied) {
 			return;
 		}
+
 		this.applied = true;
 		// Each conflict is a set of ranges as follows, note placements or newlines
 		// which may not in spans
@@ -87,18 +100,22 @@ export class DocumentMergeConflict
 		if (type === interfaces.CommitType.Current) {
 			// Replace [ Conflict Range ] with [ Current Content ]
 			const content = document.getText(this.current.content);
+
 			this.replaceRangeWithContent(content, edit);
 		} else if (type === interfaces.CommitType.Incoming) {
 			const content = document.getText(this.incoming.content);
+
 			this.replaceRangeWithContent(content, edit);
 		} else if (type === interfaces.CommitType.Both) {
 			// Replace [ Conflict Range ] with [ Current Content ] + \n + [ Incoming Content ]
 			const currentContent = document.getText(this.current.content);
 
 			const incomingContent = document.getText(this.incoming.content);
+
 			edit.replace(this.range, currentContent.concat(incomingContent));
 		}
 	}
+
 	private replaceRangeWithContent(
 		content: string,
 		edit: {
@@ -113,6 +130,7 @@ export class DocumentMergeConflict
 		// Replace [ Conflict Range ] with [ Current Content ]
 		edit.replace(this.range, content);
 	}
+
 	private isNewlineOnly(text: string) {
 		return text === "\n" || text === "\r\n";
 	}

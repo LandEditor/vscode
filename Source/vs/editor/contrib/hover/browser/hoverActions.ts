@@ -145,6 +145,7 @@ export class ShowOrFocusHoverAction extends EditorAction {
 				position.lineNumber,
 				position.column,
 			);
+
 			controller.showContentHover(
 				range,
 				HoverStartMode.Immediate,
@@ -202,6 +203,7 @@ export class ShowDefinitionPreviewHoverAction extends EditorAction {
 		if (!controller) {
 			return;
 		}
+
 		const position = editor.getPosition();
 
 		if (!position) {
@@ -222,6 +224,7 @@ export class ShowDefinitionPreviewHoverAction extends EditorAction {
 		}
 
 		const promise = goto.startFindDefinitionFromCursor(position);
+
 		promise.then(() => {
 			controller.showContentHover(
 				range,
@@ -267,6 +270,7 @@ export class ScrollUpHoverAction extends EditorAction {
 		if (!controller) {
 			return;
 		}
+
 		controller.scrollUp();
 	}
 }
@@ -305,6 +309,7 @@ export class ScrollDownHoverAction extends EditorAction {
 		if (!controller) {
 			return;
 		}
+
 		controller.scrollDown();
 	}
 }
@@ -343,6 +348,7 @@ export class ScrollLeftHoverAction extends EditorAction {
 		if (!controller) {
 			return;
 		}
+
 		controller.scrollLeft();
 	}
 }
@@ -381,6 +387,7 @@ export class ScrollRightHoverAction extends EditorAction {
 		if (!controller) {
 			return;
 		}
+
 		controller.scrollRight();
 	}
 }
@@ -420,6 +427,7 @@ export class PageUpHoverAction extends EditorAction {
 		if (!controller) {
 			return;
 		}
+
 		controller.pageUp();
 	}
 }
@@ -459,6 +467,7 @@ export class PageDownHoverAction extends EditorAction {
 		if (!controller) {
 			return;
 		}
+
 		controller.pageDown();
 	}
 }
@@ -498,6 +507,7 @@ export class GoToTopHoverAction extends EditorAction {
 		if (!controller) {
 			return;
 		}
+
 		controller.goToTop();
 	}
 }
@@ -537,6 +547,7 @@ export class GoToBottomHoverAction extends EditorAction {
 		if (!controller) {
 			return;
 		}
+
 		controller.goToBottom();
 	}
 }
@@ -561,10 +572,12 @@ export class IncreaseHoverVerbosityLevel extends EditorAction {
 		if (!hoverController) {
 			return;
 		}
+
 		const index =
 			args?.index !== undefined
 				? args.index
 				: hoverController.focusedHoverPartIndex();
+
 		hoverController.updateHoverVerbosityLevel(
 			HoverVerbosityAction.Increase,
 			index,
@@ -593,10 +606,12 @@ export class DecreaseHoverVerbosityLevel extends EditorAction {
 		if (!hoverController) {
 			return;
 		}
+
 		const index =
 			args?.index !== undefined
 				? args.index
 				: hoverController.focusedHoverPartIndex();
+
 		ContentHoverController.get(editor)?.updateHoverVerbosityLevel(
 			HoverVerbosityAction.Decrease,
 			index,

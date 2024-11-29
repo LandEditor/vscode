@@ -28,14 +28,19 @@ export class PaneCompositePartService
 	implements IPaneCompositePartService
 {
 	declare readonly _serviceBrand: undefined;
+
 	readonly onDidPaneCompositeOpen: Event<{
 		composite: IPaneComposite;
+
 		viewContainerLocation: ViewContainerLocation;
 	}>;
+
 	readonly onDidPaneCompositeClose: Event<{
 		composite: IPaneComposite;
+
 		viewContainerLocation: ViewContainerLocation;
 	}>;
+
 	private readonly paneCompositeParts = new Map<
 		ViewContainerLocation,
 		IPaneCompositePart
@@ -53,14 +58,18 @@ export class PaneCompositePartService
 
 		const auxiliaryBarPart =
 			instantiationService.createInstance(AuxiliaryBarPart);
+
 		this.paneCompositeParts.set(ViewContainerLocation.Panel, panelPart);
+
 		this.paneCompositeParts.set(ViewContainerLocation.Sidebar, sideBarPart);
+
 		this.paneCompositeParts.set(
 			ViewContainerLocation.AuxiliaryBar,
 			auxiliaryBarPart,
 		);
 
 		const eventDisposables = this._register(new DisposableStore());
+
 		this.onDidPaneCompositeOpen = Event.any(
 			...ViewContainerLocations.map((loc) =>
 				Event.map(
@@ -72,6 +81,7 @@ export class PaneCompositePartService
 				),
 			),
 		);
+
 		this.onDidPaneCompositeClose = Event.any(
 			...ViewContainerLocations.map((loc) =>
 				Event.map(
@@ -84,6 +94,7 @@ export class PaneCompositePartService
 			),
 		);
 	}
+
 	openPaneComposite(
 		id: string | undefined,
 		viewContainerLocation: ViewContainerLocation,
@@ -94,6 +105,7 @@ export class PaneCompositePartService
 			focus,
 		);
 	}
+
 	getActivePaneComposite(
 		viewContainerLocation: ViewContainerLocation,
 	): IPaneComposite | undefined {
@@ -101,6 +113,7 @@ export class PaneCompositePartService
 			viewContainerLocation,
 		).getActivePaneComposite();
 	}
+
 	getPaneComposite(
 		id: string,
 		viewContainerLocation: ViewContainerLocation,
@@ -109,6 +122,7 @@ export class PaneCompositePartService
 			id,
 		);
 	}
+
 	getPaneComposites(
 		viewContainerLocation: ViewContainerLocation,
 	): PaneCompositeDescriptor[] {
@@ -116,6 +130,7 @@ export class PaneCompositePartService
 			viewContainerLocation,
 		).getPaneComposites();
 	}
+
 	getPinnedPaneCompositeIds(
 		viewContainerLocation: ViewContainerLocation,
 	): string[] {
@@ -123,6 +138,7 @@ export class PaneCompositePartService
 			viewContainerLocation,
 		).getPinnedPaneCompositeIds();
 	}
+
 	getVisiblePaneCompositeIds(
 		viewContainerLocation: ViewContainerLocation,
 	): string[] {
@@ -130,6 +146,7 @@ export class PaneCompositePartService
 			viewContainerLocation,
 		).getVisiblePaneCompositeIds();
 	}
+
 	getPaneCompositeIds(
 		viewContainerLocation: ViewContainerLocation,
 	): string[] {
@@ -137,6 +154,7 @@ export class PaneCompositePartService
 			viewContainerLocation,
 		).getPaneCompositeIds();
 	}
+
 	getProgressIndicator(
 		id: string,
 		viewContainerLocation: ViewContainerLocation,
@@ -145,11 +163,13 @@ export class PaneCompositePartService
 			viewContainerLocation,
 		).getProgressIndicator(id);
 	}
+
 	hideActivePaneComposite(
 		viewContainerLocation: ViewContainerLocation,
 	): void {
 		this.getPartByLocation(viewContainerLocation).hideActivePaneComposite();
 	}
+
 	getLastActivePaneCompositeId(
 		viewContainerLocation: ViewContainerLocation,
 	): string {
@@ -157,6 +177,7 @@ export class PaneCompositePartService
 			viewContainerLocation,
 		).getLastActivePaneCompositeId();
 	}
+
 	private getPartByLocation(
 		viewContainerLocation: ViewContainerLocation,
 	): IPaneCompositePart {

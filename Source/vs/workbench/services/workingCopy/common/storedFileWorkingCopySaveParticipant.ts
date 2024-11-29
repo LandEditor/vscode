@@ -42,6 +42,7 @@ export class StoredFileWorkingCopySaveParticipant extends Disposable {
 	get length(): number {
 		return this.saveParticipants.size;
 	}
+
 	constructor(
 		@ILogService
 		private readonly logService: ILogService,
@@ -50,6 +51,7 @@ export class StoredFileWorkingCopySaveParticipant extends Disposable {
 	) {
 		super();
 	}
+
 	addSaveParticipant(
 		participant: IStoredFileWorkingCopySaveParticipant,
 	): IDisposable {
@@ -57,6 +59,7 @@ export class StoredFileWorkingCopySaveParticipant extends Disposable {
 
 		return toDisposable(() => remove());
 	}
+
 	async participate(
 		workingCopy: IStoredFileWorkingCopy<IStoredFileWorkingCopyModel>,
 		context: IStoredFileWorkingCopySaveParticipantContext,
@@ -91,6 +94,7 @@ export class StoredFileWorkingCopySaveParticipant extends Disposable {
 					) {
 						break;
 					}
+
 					try {
 						const promise = saveParticipant.participate(
 							workingCopy,
@@ -98,6 +102,7 @@ export class StoredFileWorkingCopySaveParticipant extends Disposable {
 							progress,
 							cts.token,
 						);
+
 						await raceCancellation(promise, cts.token);
 					} catch (err) {
 						if (!isCancellationError(err)) {
@@ -106,6 +111,7 @@ export class StoredFileWorkingCopySaveParticipant extends Disposable {
 							// we see a cancellation error BUT the token didn't signal it
 							// this means the participant wants the save operation to be cancelled
 							cts.cancel();
+
 							bubbleCancel = true;
 						}
 					}
@@ -117,12 +123,14 @@ export class StoredFileWorkingCopySaveParticipant extends Disposable {
 		);
 		// undoStop after participation
 		workingCopy.model?.pushStackElement();
+
 		cts.dispose();
 
 		if (bubbleCancel) {
 			throw new CancellationError();
 		}
 	}
+
 	override dispose(): void {
 		this.saveParticipants.clear();
 

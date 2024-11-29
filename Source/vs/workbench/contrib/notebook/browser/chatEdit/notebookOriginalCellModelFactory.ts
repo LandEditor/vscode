@@ -69,6 +69,7 @@ export class OriginalNotebookCellModelReferenceCollection extends ReferenceColle
 			originalCellUri,
 		);
 	}
+
 	protected override destroyReferencedObject(
 		_key: string,
 		model: ITextModel,
@@ -81,6 +82,7 @@ export class OriginalNotebookCellModelFactory
 	implements INotebookOriginalCellModelFactory
 {
 	readonly _serviceBrand: undefined;
+
 	private readonly _data: OriginalNotebookCellModelReferenceCollection;
 
 	constructor(

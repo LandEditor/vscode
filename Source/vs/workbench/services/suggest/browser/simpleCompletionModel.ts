@@ -34,8 +34,11 @@ const enum Refilter {
 
 export class SimpleCompletionModel {
 	private _stats?: ISimpleCompletionStats;
+
 	private _filteredItems?: SimpleCompletionItem[];
+
 	private _refilterKind: Refilter = Refilter.All;
+
 	private _fuzzyScoreOptions: FuzzyScoreOptions | undefined =
 		FuzzyScoreOptions.default;
 
@@ -75,6 +78,7 @@ export class SimpleCompletionModel {
 					value.characterCountDelta && this._filteredItems
 					? Refilter.Incr
 					: Refilter.All;
+
 			this._lineContext = value;
 		}
 	}
@@ -84,6 +88,7 @@ export class SimpleCompletionModel {
 			this._createCachedState();
 		}
 	}
+
 	private _createCachedState(): void {
 		// this._providerInfo = new Map();
 
@@ -131,6 +136,7 @@ export class SimpleCompletionModel {
 
 			if (word.length !== wordLen) {
 				word = wordLen === 0 ? "" : leadingLineContent.slice(-wordLen);
+
 				wordLow = word.toLowerCase();
 			}
 
@@ -202,7 +208,9 @@ export class SimpleCompletionModel {
 					item.score = match || FuzzyScore.Default;
 				}
 			}
+
 			item.idx = i;
+
 			target.push(item);
 
 			// update stats
@@ -252,8 +260,10 @@ export class SimpleCompletionModel {
 				// Then by file extension length ascending
 				score = a.fileExtLow.length - b.fileExtLow.length;
 			}
+
 			return score;
 		});
+
 		this._refilterKind = Refilter.Nothing;
 
 		this._stats = {

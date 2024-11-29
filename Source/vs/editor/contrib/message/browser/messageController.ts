@@ -50,6 +50,7 @@ import { PositionAffinity } from "../../../common/model.js";
 
 export class MessageController implements IEditorContribution {
 	public static readonly ID = "editor.contrib.messageController";
+
 	static readonly MESSAGE_VISIBLE = new RawContextKey<boolean>(
 		"messageVisible",
 		false,
@@ -58,19 +59,27 @@ export class MessageController implements IEditorContribution {
 			"Whether the editor is currently showing an inline message",
 		),
 	);
+
 	static get(editor: ICodeEditor): MessageController | null {
 		return editor.getContribution<MessageController>(MessageController.ID);
 	}
+
 	private readonly _editor: ICodeEditor;
+
 	private readonly _visible: IContextKey<boolean>;
+
 	private readonly _messageWidget = new MutableDisposable<MessageWidget>();
+
 	private readonly _messageListeners = new DisposableStore();
+
 	private _message:
 		| {
 				element: HTMLElement;
+
 				dispose: () => void;
 		  }
 		| undefined;
+
 	private _mouseOverMessage: boolean = false;
 
 	constructor(
@@ -81,28 +90,40 @@ export class MessageController implements IEditorContribution {
 		private readonly _openerService: IOpenerService,
 	) {
 		this._editor = editor;
+
 		this._visible =
 			MessageController.MESSAGE_VISIBLE.bindTo(contextKeyService);
 	}
+
 	dispose(): void {
 		this._message?.dispose();
+
 		this._messageListeners.dispose();
+
 		this._messageWidget.dispose();
+
 		this._visible.reset();
 	}
+
 	isVisible() {
 		return this._visible.get();
 	}
+
 	showMessage(message: IMarkdownString | string, position: IPosition): void {
 		alert(isMarkdownString(message) ? message.value : message);
+
 		this._visible.set(true);
+
 		this._messageWidget.clear();
+
 		this._messageListeners.clear();
+
 		this._message = isMarkdownString(message)
 			? renderMarkdown(message, {
 					actionHandler: {
 						callback: (url) => {
 							this.closeMessage();
+
 							openLinkFromMarkdown(
 								this._openerService,
 								url,
@@ -115,6 +136,7 @@ export class MessageController implements IEditorContribution {
 					},
 				})
 			: undefined;
+
 		this._messageWidget.value = new MessageWidget(
 			this._editor,
 			position,
@@ -130,6 +152,7 @@ export class MessageController implements IEditorContribution {
 				if (this._mouseOverMessage) {
 					return; // override when mouse over message
 				}
+
 				if (
 					this._messageWidget.value &&
 					dom.isAncestor(
@@ -139,18 +162,23 @@ export class MessageController implements IEditorContribution {
 				) {
 					return; // override when focus is inside the message
 				}
+
 				this.closeMessage();
 			}),
 		);
+
 		this._messageListeners.add(
 			this._editor.onDidChangeCursorPosition(() => this.closeMessage()),
 		);
+
 		this._messageListeners.add(
 			this._editor.onDidDispose(() => this.closeMessage()),
 		);
+
 		this._messageListeners.add(
 			this._editor.onDidChangeModel(() => this.closeMessage()),
 		);
+
 		this._messageListeners.add(
 			dom.addDisposableListener(
 				this._messageWidget.value.getDomNode(),
@@ -159,6 +187,7 @@ export class MessageController implements IEditorContribution {
 				true,
 			),
 		);
+
 		this._messageListeners.add(
 			dom.addDisposableListener(
 				this._messageWidget.value.getDomNode(),
@@ -169,12 +198,14 @@ export class MessageController implements IEditorContribution {
 		);
 		// close on mouse move
 		let bounds: Range;
+
 		this._messageListeners.add(
 			this._editor.onMouseMove((e) => {
 				// outside the text area
 				if (!e.target.position) {
 					return;
 				}
+
 				if (!bounds) {
 					// define bounding box around position and first mouse occurance
 					bounds = new Range(
@@ -190,8 +221,10 @@ export class MessageController implements IEditorContribution {
 			}),
 		);
 	}
+
 	closeMessage(): void {
 		this._visible.reset();
+
 		this._messageListeners.clear();
 
 		if (this._messageWidget.value) {
@@ -219,71 +252,99 @@ registerEditorCommand(
 class MessageWidget implements IContentWidget {
 	// Editor.IContentWidget.allowEditorOverflow
 	readonly allowEditorOverflow = true;
+
 	readonly suppressMouseDown = false;
+
 	private readonly _editor: ICodeEditor;
+
 	private readonly _position: IPosition;
+
 	private readonly _domNode: HTMLDivElement;
+
 	static fadeOut(messageWidget: MessageWidget): IDisposable {
 		const dispose = () => {
 			messageWidget.dispose();
+
 			clearTimeout(handle);
+
 			messageWidget
 				.getDomNode()
 				.removeEventListener("animationend", dispose);
 		};
 
 		const handle = setTimeout(dispose, 110);
+
 		messageWidget.getDomNode().addEventListener("animationend", dispose);
+
 		messageWidget.getDomNode().classList.add("fadeOut");
 
 		return { dispose };
 	}
+
 	constructor(
 		editor: ICodeEditor,
 		{ lineNumber, column }: IPosition,
 		text: HTMLElement | string,
 	) {
 		this._editor = editor;
+
 		this._editor.revealLinesInCenterIfOutsideViewport(
 			lineNumber,
 			lineNumber,
 			ScrollType.Smooth,
 		);
+
 		this._position = { lineNumber, column };
+
 		this._domNode = document.createElement("div");
+
 		this._domNode.classList.add("monaco-editor-overlaymessage");
+
 		this._domNode.style.marginLeft = "-6px";
 
 		const anchorTop = document.createElement("div");
+
 		anchorTop.classList.add("anchor", "top");
+
 		this._domNode.appendChild(anchorTop);
 
 		const message = document.createElement("div");
 
 		if (typeof text === "string") {
 			message.classList.add("message");
+
 			message.textContent = text;
 		} else {
 			text.classList.add("message");
+
 			message.appendChild(text);
 		}
+
 		this._domNode.appendChild(message);
 
 		const anchorBottom = document.createElement("div");
+
 		anchorBottom.classList.add("anchor", "below");
+
 		this._domNode.appendChild(anchorBottom);
+
 		this._editor.addContentWidget(this);
+
 		this._domNode.classList.add("fadeIn");
 	}
+
 	dispose() {
 		this._editor.removeContentWidget(this);
 	}
+
 	getId(): string {
 		return "messageoverlay";
 	}
+
 	getDomNode(): HTMLElement {
 		return this._domNode;
 	}
+
 	getPosition(): IContentWidgetPosition {
 		return {
 			position: this._position,
@@ -294,6 +355,7 @@ class MessageWidget implements IContentWidget {
 			positionAffinity: PositionAffinity.Right,
 		};
 	}
+
 	afterRender(position: ContentWidgetPositionPreference | null): void {
 		this._domNode.classList.toggle(
 			"below",

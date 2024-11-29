@@ -29,10 +29,12 @@ export class MainThreadDocumentContentProviders
 	implements MainThreadDocumentContentProvidersShape
 {
 	private readonly _resourceContentProvider = new DisposableMap<number>();
+
 	private readonly _pendingUpdate = new Map<
 		string,
 		CancellationTokenSource
 	>();
+
 	private readonly _proxy: ExtHostDocumentContentProvidersShape;
 
 	constructor(
@@ -50,8 +52,10 @@ export class MainThreadDocumentContentProviders
 			ExtHostContext.ExtHostDocumentContentProviders,
 		);
 	}
+
 	dispose(): void {
 		this._resourceContentProvider.dispose();
+
 		dispose(this._pendingUpdate.values());
 	}
 	$registerTextContentProvider(handle: number, scheme: string): void {
@@ -83,16 +87,19 @@ export class MainThreadDocumentContentProviders
 										uri,
 									);
 								}
+
 								return null;
 							});
 					},
 				},
 			);
+
 		this._resourceContentProvider.set(handle, registration);
 	}
 	$unregisterTextContentProvider(handle: number): void {
 		this._resourceContentProvider.deleteAndDispose(handle);
 	}
+
 	async $onVirtualDocumentChange(
 		uri: UriComponents,
 		value: string,
@@ -104,9 +111,11 @@ export class MainThreadDocumentContentProviders
 		}
 		// cancel and dispose an existing update
 		const pending = this._pendingUpdate.get(model.id);
+
 		pending?.cancel();
 		// create and keep update token
 		const myToken = new CancellationTokenSource();
+
 		this._pendingUpdate.set(model.id, myToken);
 
 		try {
@@ -122,6 +131,7 @@ export class MainThreadDocumentContentProviders
 				// ignore this
 				return;
 			}
+
 			if (edits && edits.length > 0) {
 				// use the evil-edit as these models show in readonly-editor only
 				model.applyEdits(

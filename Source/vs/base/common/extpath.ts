@@ -30,10 +30,12 @@ export function toPosixPath(osPath: string) {
 	if (osPath.indexOf("/") === -1) {
 		osPath = toSlashes(osPath);
 	}
+
 	if (/^[a-zA-Z]:(\/|$)/.test(osPath)) {
 		// starts with a drive letter
 		osPath = "/" + osPath;
 	}
+
 	return osPath;
 }
 /**
@@ -45,6 +47,7 @@ export function getRoot(path: string, sep: string = posix.sep): string {
 	if (!path) {
 		return "";
 	}
+
 	const len = path.length;
 
 	const firstLetter = path.charCodeAt(0);
@@ -63,6 +66,7 @@ export function getRoot(path: string, sep: string = posix.sep): string {
 						break;
 					}
 				}
+
 				if (
 					start !== pos &&
 					!isPathSeparator(path.charCodeAt(pos + 1))
@@ -109,6 +113,7 @@ export function getRoot(path: string, sep: string = posix.sep): string {
 			}
 		}
 	}
+
 	return "";
 }
 /**
@@ -123,20 +128,24 @@ export function isUNC(path: string): boolean {
 		// UNC is a windows concept
 		return false;
 	}
+
 	if (!path || path.length < 5) {
 		// at least \\a\b
 		return false;
 	}
+
 	let code = path.charCodeAt(0);
 
 	if (code !== CharCode.Backslash) {
 		return false;
 	}
+
 	code = path.charCodeAt(1);
 
 	if (code !== CharCode.Backslash) {
 		return false;
 	}
+
 	let pos = 2;
 
 	const start = pos;
@@ -148,14 +157,17 @@ export function isUNC(path: string): boolean {
 			break;
 		}
 	}
+
 	if (start === pos) {
 		return false;
 	}
+
 	code = path.charCodeAt(pos + 1);
 
 	if (isNaN(code) || code === CharCode.Backslash) {
 		return false;
 	}
+
 	return true;
 }
 // Reference: https://en.wikipedia.org/wiki/Filename
@@ -177,25 +189,32 @@ export function isValidBasename(
 	if (!name || name.length === 0 || /^\s+$/.test(name)) {
 		return false; // require a name that is not just whitespace
 	}
+
 	invalidFileChars.lastIndex = 0; // the holy grail of software development
 	if (invalidFileChars.test(name)) {
 		return false; // check for certain invalid file characters
 	}
+
 	if (isWindowsOS && WINDOWS_FORBIDDEN_NAMES.test(name)) {
 		return false; // check for certain invalid file names
 	}
+
 	if (name === "." || name === "..") {
 		return false; // check for reserved values
 	}
+
 	if (isWindowsOS && name[name.length - 1] === ".") {
 		return false; // Windows: file cannot end with a "."
 	}
+
 	if (isWindowsOS && name.length !== name.trim().length) {
 		return false; // Windows: file cannot end with a whitespace
 	}
+
 	if (name.length > 255) {
 		return false; // most file systems do not allow files > 255 length
 	}
+
 	return true;
 }
 /**
@@ -213,9 +232,11 @@ export function isEqual(
 	if (!ignoreCase || identityEquals) {
 		return identityEquals;
 	}
+
 	if (!pathA || !pathB) {
 		return false;
 	}
+
 	return equalsIgnoreCase(pathA, pathB);
 }
 /**
@@ -232,31 +253,39 @@ export function isEqualOrParent(
 	if (base === parentCandidate) {
 		return true;
 	}
+
 	if (!base || !parentCandidate) {
 		return false;
 	}
+
 	if (parentCandidate.length > base.length) {
 		return false;
 	}
+
 	if (ignoreCase) {
 		const beginsWith = startsWithIgnoreCase(base, parentCandidate);
 
 		if (!beginsWith) {
 			return false;
 		}
+
 		if (parentCandidate.length === base.length) {
 			return true; // same path, different casing
 		}
+
 		let sepOffset = parentCandidate.length;
 
 		if (parentCandidate.charAt(parentCandidate.length - 1) === separator) {
 			sepOffset--; // adjust the expected sep offset in case our candidate already ends in separator character
 		}
+
 		return base.charAt(sepOffset) === separator;
 	}
+
 	if (parentCandidate.charAt(parentCandidate.length - 1) !== separator) {
 		parentCandidate += separator;
 	}
+
 	return base.indexOf(parentCandidate) === 0;
 }
 export function isWindowsDriveLetter(char0: number): boolean {
@@ -293,6 +322,7 @@ export function removeTrailingPathSeparator(candidate: string): string {
 			candidate = sep;
 		}
 	}
+
 	return candidate;
 }
 export function isRootOrDriveLetter(path: string): boolean {
@@ -302,12 +332,14 @@ export function isRootOrDriveLetter(path: string): boolean {
 		if (path.length > 3) {
 			return false;
 		}
+
 		return (
 			hasDriveLetter(pathNormalized) &&
 			(path.length === 2 ||
 				pathNormalized.charCodeAt(2) === CharCode.Backslash)
 		);
 	}
+
 	return pathNormalized === posix.sep;
 }
 export function hasDriveLetter(
@@ -320,6 +352,7 @@ export function hasDriveLetter(
 			path.charCodeAt(1) === CharCode.Colon
 		);
 	}
+
 	return false;
 }
 export function getDriveLetter(
@@ -336,18 +369,24 @@ export function indexOfPath(
 	if (candidate.length > path.length) {
 		return -1;
 	}
+
 	if (path === candidate) {
 		return 0;
 	}
+
 	if (ignoreCase) {
 		path = path.toLowerCase();
+
 		candidate = candidate.toLowerCase();
 	}
+
 	return path.indexOf(candidate);
 }
 export interface IPathWithLineAndColumn {
 	path: string;
+
 	line?: number;
+
 	column?: number;
 }
 export function parseLineAndColumnAware(
@@ -371,9 +410,11 @@ export function parseLineAndColumnAware(
 			column = segmentAsNumber;
 		}
 	}
+
 	if (!path) {
 		throw new Error("Format for `--goto` should be: `FILE:LINE(:COLUMN)`");
 	}
+
 	return {
 		path,
 		line: line !== undefined ? line : undefined,
@@ -413,10 +454,12 @@ export function randomPath(
 		} else {
 			pathCharsTouse = pathChars;
 		}
+
 		suffix += pathCharsTouse.charAt(
 			Math.floor(Math.random() * pathCharsTouse.length),
 		);
 	}
+
 	let randomFileName: string;
 
 	if (prefix) {
@@ -424,8 +467,10 @@ export function randomPath(
 	} else {
 		randomFileName = suffix;
 	}
+
 	if (parent) {
 		return join(parent, randomFileName);
 	}
+
 	return randomFileName;
 }

@@ -32,13 +32,19 @@ import { BaseTextEditorModel } from "./textEditorModel.js";
 
 interface IDiffEditorInputLabels {
 	name: string;
+
 	shortDescription: string | undefined;
+
 	mediumDescription: string | undefined;
+
 	longDescription: string | undefined;
 
 	forceDescription: boolean;
+
 	shortTitle: string;
+
 	mediumTitle: string;
+
 	longTitle: string;
 }
 /**
@@ -50,23 +56,29 @@ export class DiffEditorInput
 	implements IDiffEditorInput
 {
 	static override readonly ID: string = "workbench.editors.diffEditorInput";
+
 	override get typeId(): string {
 		return DiffEditorInput.ID;
 	}
+
 	override get editorId(): string | undefined {
 		return this.modified.editorId === this.original.editorId
 			? this.modified.editorId
 			: undefined;
 	}
+
 	override get capabilities(): EditorInputCapabilities {
 		let capabilities = super.capabilities;
 		// Force description capability depends on labels
 		if (this.labels.forceDescription) {
 			capabilities |= EditorInputCapabilities.ForceDescription;
 		}
+
 		return capabilities;
 	}
+
 	private cachedModel: DiffEditorModel | undefined = undefined;
+
 	private readonly labels = this.computeLabels();
 
 	constructor(
@@ -86,6 +98,7 @@ export class DiffEditorInput
 			editorService,
 		);
 	}
+
 	private computeLabels(): IDiffEditorInputLabels {
 		// Name
 		let name: string;
@@ -98,6 +111,7 @@ export class DiffEditorInput
 			const originalName = this.original.getName();
 
 			const modifiedName = this.modified.getName();
+
 			name = localize(
 				"sideBySideLabels",
 				"{0} ↔ {1}",
@@ -116,13 +130,16 @@ export class DiffEditorInput
 
 		if (this.preferredDescription) {
 			shortDescription = this.preferredDescription;
+
 			mediumDescription = this.preferredDescription;
+
 			longDescription = this.preferredDescription;
 		} else {
 			shortDescription = this.computeLabel(
 				this.original.getDescription(Verbosity.SHORT),
 				this.modified.getDescription(Verbosity.SHORT),
 			);
+
 			longDescription = this.computeLabel(
 				this.original.getDescription(Verbosity.LONG),
 				this.modified.getDescription(Verbosity.LONG),
@@ -149,6 +166,7 @@ export class DiffEditorInput
 					originalMediumDescription,
 					modifiedMediumDescription,
 				]);
+
 				mediumDescription = this.computeLabel(
 					shortenedOriginalMediumDescription,
 					shortenedModifiedMediumDescription,
@@ -178,9 +196,12 @@ export class DiffEditorInput
 
 		if (preferredTitle) {
 			shortTitle = `${preferredTitle} (${shortTitle})`;
+
 			mediumTitle = `${preferredTitle} (${mediumTitle})`;
+
 			longTitle = `${preferredTitle} (${longTitle})`;
 		}
+
 		return {
 			name,
 			shortDescription,
@@ -192,16 +213,19 @@ export class DiffEditorInput
 			longTitle,
 		};
 	}
+
 	private computeLabel(
 		originalLabel: string,
 		modifiedLabel: string,
 		separator?: string,
 	): string;
+
 	private computeLabel(
 		originalLabel: string | undefined,
 		modifiedLabel: string | undefined,
 		separator?: string,
 	): string | undefined;
+
 	private computeLabel(
 		originalLabel: string | undefined,
 		modifiedLabel: string | undefined,
@@ -210,14 +234,18 @@ export class DiffEditorInput
 		if (!originalLabel || !modifiedLabel) {
 			return undefined;
 		}
+
 		if (originalLabel === modifiedLabel) {
 			return modifiedLabel;
 		}
+
 		return `${originalLabel}${separator}${modifiedLabel}`;
 	}
+
 	override getName(): string {
 		return this.labels.name;
 	}
+
 	override getDescription(verbosity = Verbosity.MEDIUM): string | undefined {
 		switch (verbosity) {
 			case Verbosity.SHORT:
@@ -231,6 +259,7 @@ export class DiffEditorInput
 				return this.labels.mediumDescription;
 		}
 	}
+
 	override getTitle(verbosity?: Verbosity): string {
 		switch (verbosity) {
 			case Verbosity.SHORT:
@@ -244,17 +273,21 @@ export class DiffEditorInput
 				return this.labels.mediumTitle;
 		}
 	}
+
 	override async resolve(): Promise<EditorModel> {
 		// Create Model - we never reuse our cached model if refresh is true because we cannot
 		// decide for the inputs within if the cached model can be reused or not. There may be
 		// inputs that need to be loaded again and thus we always recreate the model and dispose
 		// the previous one - if any.
 		const resolvedModel = await this.createModel();
+
 		this.cachedModel?.dispose();
+
 		this.cachedModel = resolvedModel;
 
 		return this.cachedModel;
 	}
+
 	override prefersEditorPane<T extends IEditorDescriptor<IEditorPane>>(
 		editorPanes: T[],
 	): T | undefined {
@@ -263,10 +296,12 @@ export class DiffEditorInput
 				(editorPane) => editorPane.typeId === BINARY_DIFF_EDITOR_ID,
 			);
 		}
+
 		return editorPanes.find(
 			(editorPane) => editorPane.typeId === TEXT_DIFF_EDITOR_ID,
 		);
 	}
+
 	private async createModel(): Promise<DiffEditorModel> {
 		// Join resolve call over two inputs and build diff editor model
 		const [originalEditorModel, modifiedEditorModel] = await Promise.all([
@@ -293,6 +328,7 @@ export class DiffEditorInput
 				: undefined,
 		);
 	}
+
 	override toUntyped(
 		options?: IUntypedEditorOptions,
 	): (IResourceDiffEditorInput & IResourceSideBySideEditorInput) | undefined {
@@ -305,12 +341,15 @@ export class DiffEditorInput
 				original: untyped.secondary,
 			};
 		}
+
 		return undefined;
 	}
+
 	override matches(otherInput: EditorInput | IUntypedEditorInput): boolean {
 		if (this === otherInput) {
 			return true;
 		}
+
 		if (otherInput instanceof DiffEditorInput) {
 			return (
 				this.modified.matches(otherInput.modified) &&
@@ -318,22 +357,27 @@ export class DiffEditorInput
 				otherInput.forceOpenAsBinary === this.forceOpenAsBinary
 			);
 		}
+
 		if (isResourceDiffEditorInput(otherInput)) {
 			return (
 				this.modified.matches(otherInput.modified) &&
 				this.original.matches(otherInput.original)
 			);
 		}
+
 		return false;
 	}
+
 	override dispose(): void {
 		// Free the diff editor model but do not propagate the dispose() call to the two inputs
 		// We never created the two inputs (original and modified) so we can not dispose
 		// them without sideeffects.
 		if (this.cachedModel) {
 			this.cachedModel.dispose();
+
 			this.cachedModel = undefined;
 		}
+
 		super.dispose();
 	}
 }

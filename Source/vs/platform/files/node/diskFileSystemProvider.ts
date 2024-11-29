@@ -95,6 +95,7 @@ export class DiskFileSystemProvider
 	}
 	//#region File Capabilities
 	readonly onDidChangeCapabilities = Event.None;
+
 	private _capabilities: FileSystemProviderCapabilities | undefined;
 
 	get capabilities(): FileSystemProviderCapabilities {
@@ -115,6 +116,7 @@ export class DiskFileSystemProvider
 					FileSystemProviderCapabilities.PathCaseSensitive;
 			}
 		}
+
 		return this._capabilities;
 	}
 	//#endregion
@@ -138,6 +140,7 @@ export class DiskFileSystemProvider
 			throw this.toFileSystemProviderError(error);
 		}
 	}
+
 	private async statIgnoreError(resource: URI): Promise<IStat | undefined> {
 		try {
 			return await this.stat(resource);
@@ -145,6 +148,7 @@ export class DiskFileSystemProvider
 			return undefined;
 		}
 	}
+
 	async readdir(resource: URI): Promise<[string, FileType][]> {
 		try {
 			const children = await Promises.readdir(this.toFilePath(resource), {
@@ -152,6 +156,7 @@ export class DiskFileSystemProvider
 			});
 
 			const result: [string, FileType][] = [];
+
 			await Promise.all(
 				children.map(async (child) => {
 					try {
@@ -164,6 +169,7 @@ export class DiskFileSystemProvider
 						} else {
 							type = this.toType(child);
 						}
+
 						result.push([child.name, type]);
 					} catch (error) {
 						this.logService.trace(error); // ignore errors for individual entries that can arise from permission denied
@@ -176,6 +182,7 @@ export class DiskFileSystemProvider
 			throw this.toFileSystemProviderError(error);
 		}
 	}
+
 	private toType(
 		entry: Stats | IDirent,
 		symbolicLink?: {
@@ -200,6 +207,7 @@ export class DiskFileSystemProvider
 		if (symbolicLink) {
 			type |= FileType.SymbolicLink;
 		}
+
 		return type;
 	}
 	//#endregion
@@ -207,8 +215,10 @@ export class DiskFileSystemProvider
 	private readonly resourceLocks = new ResourceMap<Barrier>((resource) =>
 		extUriBiasedIgnorePathCase.getComparisonKey(resource),
 	);
+
 	private async createResourceLock(resource: URI): Promise<IDisposable> {
 		const filePath = this.toFilePath(resource);
+
 		this.traceLock(
 			`[Disk FileSystemProvider]: createResourceLock() - request to acquire resource lock (${filePath})`,
 		);
@@ -221,11 +231,14 @@ export class DiskFileSystemProvider
 			this.traceLock(
 				`[Disk FileSystemProvider]: createResourceLock() - waiting for resource lock to be released (${filePath})`,
 			);
+
 			await existingLock.wait();
 		}
 		// Store new
 		const newLock = new Barrier();
+
 		this.resourceLocks.set(resource, newLock);
+
 		this.traceLock(
 			`[Disk FileSystemProvider]: createResourceLock() - new resource lock created (${filePath})`,
 		);
@@ -239,15 +252,18 @@ export class DiskFileSystemProvider
 				this.traceLock(
 					`[Disk FileSystemProvider]: createResourceLock() - resource lock removed from resource-lock map (${filePath})`,
 				);
+
 				this.resourceLocks.delete(resource);
 			}
 			// Open lock
 			this.traceLock(
 				`[Disk FileSystemProvider]: createResourceLock() - resource lock barrier open() (${filePath})`,
 			);
+
 			newLock.open();
 		});
 	}
+
 	async readFile(
 		resource: URI,
 		options?: IFileAtomicReadOptions,
@@ -264,6 +280,7 @@ export class DiskFileSystemProvider
 				// and lock for the duration of the read.
 				lock = await this.createResourceLock(resource);
 			}
+
 			const filePath = this.toFilePath(resource);
 
 			return await promises.readFile(filePath);
@@ -273,11 +290,13 @@ export class DiskFileSystemProvider
 			lock?.dispose();
 		}
 	}
+
 	private traceLock(msg: string): void {
 		if (DiskFileSystemProvider.TRACE_LOG_RESOURCE_LOCKS) {
 			this.logService.trace(msg);
 		}
 	}
+
 	readFileStream(
 		resource: URI,
 		opts: IFileReadStreamOptions,
@@ -287,6 +306,7 @@ export class DiskFileSystemProvider
 			(data) =>
 				VSBuffer.concat(data.map((data) => VSBuffer.wrap(data))).buffer,
 		);
+
 		readFileIntoStream(
 			this,
 			resource,
@@ -301,6 +321,7 @@ export class DiskFileSystemProvider
 
 		return stream;
 	}
+
 	async writeFile(
 		resource: URI,
 		content: Uint8Array,
@@ -324,6 +345,7 @@ export class DiskFileSystemProvider
 			return this.doWriteFile(resource, content, opts);
 		}
 	}
+
 	private async canWriteFileAtomic(resource: URI): Promise<boolean> {
 		try {
 			const filePath = this.toFilePath(resource);
@@ -341,8 +363,10 @@ export class DiskFileSystemProvider
 		} catch (error) {
 			// ignore stat errors here and just proceed trying to write
 		}
+
 		return true; // atomic writing supported
 	}
+
 	private async doWriteFileAtomic(
 		resource: URI,
 		tempResource: URI,
@@ -356,6 +380,7 @@ export class DiskFileSystemProvider
 
 		try {
 			locks.add(await this.createResourceLock(resource));
+
 			locks.add(await this.createResourceLock(tempResource));
 			// Write to temp resource first
 			await this.doWriteFile(
@@ -379,12 +404,14 @@ export class DiskFileSystemProvider
 				} catch (error) {
 					// ignore - we want the outer error to bubble up
 				}
+
 				throw error;
 			}
 		} finally {
 			locks.dispose();
 		}
 	}
+
 	private async doWriteFile(
 		resource: URI,
 		content: Uint8Array,
@@ -396,6 +423,7 @@ export class DiskFileSystemProvider
 		try {
 			const filePath = this.toFilePath(resource);
 			// Validate target unless { create: true, overwrite: true }
+
 			if (!opts.create || !opts.overwrite) {
 				const fileExists = await Promises.exists(filePath);
 
@@ -431,13 +459,19 @@ export class DiskFileSystemProvider
 			}
 		}
 	}
+
 	private readonly mapHandleToPos = new Map<number, number>();
+
 	private readonly mapHandleToLock = new Map<number, IDisposable>();
+
 	private readonly writeHandles = new Map<number, URI>();
+
 	private static canFlush: boolean = true;
+
 	static configureFlushOnWrite(enabled: boolean): void {
 		DiskFileSystemProvider.canFlush = enabled;
 	}
+
 	async open(
 		resource: URI,
 		opts: IFileOpenOptions,
@@ -452,6 +486,7 @@ export class DiskFileSystemProvider
 		if (isFileOpenForWriteOptions(opts) && !disableWriteLock) {
 			lock = await this.createResourceLock(resource);
 		}
+
 		let fd: number | undefined = undefined;
 
 		try {
@@ -503,6 +538,7 @@ export class DiskFileSystemProvider
 					}
 				}
 			}
+
 			if (typeof fd !== "number") {
 				fd = await Promises.open(
 					filePath,
@@ -541,12 +577,14 @@ export class DiskFileSystemProvider
 		if (isFileOpenForWriteOptions(opts)) {
 			this.writeHandles.set(fd, resource);
 		}
+
 		if (lock) {
 			const previousLock = this.mapHandleToLock.get(fd);
 			// Remember that this handle has an associated lock
 			this.traceLock(
 				`[Disk FileSystemProvider]: open() - storing lock for handle ${fd} (${filePath})`,
 			);
+
 			this.mapHandleToLock.set(fd, lock);
 			// There is a slight chance that a resource lock for a
 			// handle was not yet disposed when we acquire a new
@@ -558,11 +596,14 @@ export class DiskFileSystemProvider
 				this.traceLock(
 					`[Disk FileSystemProvider]: open() - disposing a previous lock that was still stored on same handle ${fd} (${filePath})`,
 				);
+
 				previousLock.dispose();
 			}
 		}
+
 		return fd;
 	}
+
 	async close(fd: number): Promise<void> {
 		// It is very important that we keep any associated lock
 		// for the file handle before attempting to call `fs.close(fd)`
@@ -587,9 +628,11 @@ export class DiskFileSystemProvider
 					// In some exotic setups it is well possible that node fails to sync
 					// In that case we disable flushing and log the error to our logger
 					DiskFileSystemProvider.configureFlushOnWrite(false);
+
 					this.logService.error(error);
 				}
 			}
+
 			return await Promises.close(fd);
 		} catch (error) {
 			throw this.toFileSystemProviderError(error);
@@ -599,15 +642,19 @@ export class DiskFileSystemProvider
 					this.traceLock(
 						`[Disk FileSystemProvider]: close() - resource lock removed from handle-lock map ${fd}`,
 					);
+
 					this.mapHandleToLock.delete(fd); // only delete from map if this is still our lock!
 				}
+
 				this.traceLock(
 					`[Disk FileSystemProvider]: close() - disposing lock for handle ${fd}`,
 				);
+
 				lockForHandle.dispose();
 			}
 		}
 	}
+
 	async read(
 		fd: number,
 		pos: number,
@@ -628,8 +675,10 @@ export class DiskFileSystemProvider
 		} finally {
 			this.updatePos(fd, normalizedPos, bytesRead);
 		}
+
 		return bytesRead;
 	}
+
 	private normalizePos(fd: number, pos: number): number | null {
 		// When calling fs.read/write we try to avoid passing in the "pos" argument and
 		// rather prefer to pass in "null" because this avoids an extra seek(pos)
@@ -641,8 +690,10 @@ export class DiskFileSystemProvider
 		if (pos === this.mapHandleToPos.get(fd)) {
 			return null;
 		}
+
 		return pos;
 	}
+
 	private updatePos(
 		fd: number,
 		pos: number | null,
@@ -686,6 +737,7 @@ export class DiskFileSystemProvider
 			}
 		}
 	}
+
 	async write(
 		fd: number,
 		pos: number,
@@ -702,6 +754,7 @@ export class DiskFileSystemProvider
 			3 /* retries */,
 		);
 	}
+
 	private async doWrite(
 		fd: number,
 		pos: number,
@@ -725,6 +778,7 @@ export class DiskFileSystemProvider
 		} finally {
 			this.updatePos(fd, normalizedPos, bytesWritten);
 		}
+
 		return bytesWritten;
 	}
 	//#endregion
@@ -736,6 +790,7 @@ export class DiskFileSystemProvider
 			throw this.toFileSystemProviderError(error);
 		}
 	}
+
 	async delete(resource: URI, opts: IFileDeleteOptions): Promise<void> {
 		try {
 			const filePath = this.toFilePath(resource);
@@ -749,6 +804,7 @@ export class DiskFileSystemProvider
 						`${basename(filePath)}${opts.atomic.postfix}`,
 					);
 				}
+
 				await Promises.rm(filePath, RimRafMode.MOVE, rmMoveToPath);
 			} else {
 				try {
@@ -767,10 +823,12 @@ export class DiskFileSystemProvider
 						try {
 							const { stat, symbolicLink } =
 								await SymlinkSupport.stat(filePath);
+
 							isDirectory = stat.isDirectory() && !symbolicLink;
 						} catch (statError) {
 							// ignore
 						}
+
 						if (isDirectory) {
 							await promises.rmdir(filePath);
 						} else {
@@ -785,6 +843,7 @@ export class DiskFileSystemProvider
 			throw this.toFileSystemProviderError(error);
 		}
 	}
+
 	async rename(
 		from: URI,
 		to: URI,
@@ -797,6 +856,7 @@ export class DiskFileSystemProvider
 		if (fromFilePath === toFilePath) {
 			return; // simulate node.js behaviour here and do a no-op if paths match
 		}
+
 		try {
 			// Validate the move operation can perform
 			await this.validateMoveCopy(from, to, "move", opts.overwrite);
@@ -820,9 +880,11 @@ export class DiskFileSystemProvider
 					),
 				);
 			}
+
 			throw this.toFileSystemProviderError(error);
 		}
 	}
+
 	async copy(from: URI, to: URI, opts: IFileOverwriteOptions): Promise<void> {
 		const fromFilePath = this.toFilePath(from);
 
@@ -831,6 +893,7 @@ export class DiskFileSystemProvider
 		if (fromFilePath === toFilePath) {
 			return; // simulate node.js behaviour here and do a no-op if paths match
 		}
+
 		try {
 			// Validate the copy operation can perform
 			await this.validateMoveCopy(from, to, "copy", opts.overwrite);
@@ -856,9 +919,11 @@ export class DiskFileSystemProvider
 					),
 				);
 			}
+
 			throw this.toFileSystemProviderError(error);
 		}
 	}
+
 	private async validateMoveCopy(
 		from: URI,
 		to: URI,
@@ -882,6 +947,7 @@ export class DiskFileSystemProvider
 				true /* ignore case */,
 			);
 		}
+
 		if (isSameResourceWithDifferentPathCase) {
 			// You cannot copy the same file to the same location with different
 			// path case unless you are on a case sensitive file system
@@ -914,11 +980,13 @@ export class DiskFileSystemProvider
 				FileSystemProviderErrorCode.FileNotFound,
 			);
 		}
+
 		const toStat = await this.statIgnoreError(to);
 
 		if (!toStat) {
 			return; // target does not exist so we are good
 		}
+
 		if (!overwrite) {
 			throw createFileSystemProviderError(
 				localize(
@@ -951,6 +1019,7 @@ export class DiskFileSystemProvider
 			false /* optimistically assume parent folders exist */,
 		);
 	}
+
 	private async doCloneFile(
 		from: URI,
 		to: URI,
@@ -974,16 +1043,19 @@ export class DiskFileSystemProvider
 
 		try {
 			locks.add(await this.createResourceLock(from));
+
 			locks.add(await this.createResourceLock(to));
 
 			if (mkdir) {
 				await promises.mkdir(dirname(toFilePath), { recursive: true });
 			}
+
 			await promises.copyFile(fromFilePath, toFilePath);
 		} catch (error) {
 			if (error.code === "ENOENT" && !mkdir) {
 				return this.doCloneFile(from, to, true);
 			}
+
 			throw this.toFileSystemProviderError(error);
 		} finally {
 			locks.dispose();
@@ -1002,6 +1074,7 @@ export class DiskFileSystemProvider
 			verboseLogging,
 		);
 	}
+
 	protected createNonRecursiveWatcher(
 		onChange: (changes: IFileChange[]) => void,
 		onLogMessage: (msg: ILogMessage) => void,
@@ -1021,6 +1094,7 @@ export class DiskFileSystemProvider
 		if (error instanceof FileSystemProviderError) {
 			return error; // avoid double conversion
 		}
+
 		let resultError: Error | string = error;
 
 		let code: FileSystemProviderErrorCode;
@@ -1054,6 +1128,7 @@ export class DiskFileSystemProvider
 
 			case "ERR_UNC_HOST_NOT_ALLOWED":
 				resultError = `${error.message}. Please update the 'security.allowedUNCHosts' setting if you want to allow this host.`;
+
 				code = FileSystemProviderErrorCode.Unknown;
 
 				break;
@@ -1061,8 +1136,10 @@ export class DiskFileSystemProvider
 			default:
 				code = FileSystemProviderErrorCode.Unknown;
 		}
+
 		return createFileSystemProviderError(resultError, code);
 	}
+
 	private async toFileSystemProviderWriteError(
 		resource: URI | undefined,
 		error: NodeJS.ErrnoException,
@@ -1099,6 +1176,7 @@ export class DiskFileSystemProvider
 				this.logService.trace(error); // ignore - return original error
 			}
 		}
+
 		return fileSystemProviderWriteError;
 	}
 }

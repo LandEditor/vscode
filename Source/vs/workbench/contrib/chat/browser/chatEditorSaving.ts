@@ -84,15 +84,19 @@ export class ChatEditorSaving
 			autorunWithStore((r, store) => {
 				const session =
 					chatEditingService.currentEditingSessionObs.read(r);
+
 				if (!session) {
 					return;
 				}
+
 				const chatSession = this._chatService.getSession(
 					session.chatSessionId,
 				);
+
 				if (!chatSession) {
 					return;
 				}
+
 				const entries = session.entries.read(r);
 
 				store.add(
@@ -100,6 +104,7 @@ export class ChatEditorSaving
 						const entry = entries.find((entry) =>
 							isEqual(entry.modifiedURI, e.model.resource),
 						);
+
 						if (
 							entry &&
 							entry.state.get() === WorkingSetEntryState.Modified
@@ -119,6 +124,7 @@ export class ChatEditorSaving
 			const alwaysSave = configService.getValue<boolean>(
 				ChatEditorSaving._config,
 			);
+
 			if (alwaysSave) {
 				return;
 			}
@@ -132,16 +138,21 @@ export class ChatEditorSaving
 
 			const saveJobs = new (class {
 				private _deferred?: DeferredPromise<void>;
+
 				private readonly _soon = new RunOnceScheduler(
 					() => this._prompt(),
 					0,
 				);
+
 				private readonly _uris = new ResourceSet();
 
 				add(uri: URI) {
 					this._uris.add(uri);
+
 					this._soon.schedule();
+
 					this._deferred ??= new DeferredPromise();
+
 					return this._deferred.p;
 				}
 
@@ -150,11 +161,13 @@ export class ChatEditorSaving
 					const alwaysSave = configService.getValue<boolean>(
 						ChatEditorSaving._config,
 					);
+
 					if (alwaysSave) {
 						return;
 					}
 
 					const uri = Iterable.first(this._uris);
+
 					if (!uri) {
 						// bogous?
 						return;
@@ -164,6 +177,7 @@ export class ChatEditorSaving
 						chatAgentService.getDefaultAgent(
 							ChatAgentLocation.EditingSession,
 						)?.fullName ?? localize("chat", "chat");
+
 					const filelabel = labelService.getUriBasenameLabel(uri);
 
 					const message =
@@ -215,6 +229,7 @@ export class ChatEditorSaving
 					} else {
 						this._deferred?.complete();
 					}
+
 					this._deferred = undefined;
 				}
 			})();
@@ -224,6 +239,7 @@ export class ChatEditorSaving
 					this._handleNewEditingSession(e, store),
 				),
 			);
+
 			store.add(
 				textFileService.files.addSaveParticipant({
 					participate: async (
@@ -241,6 +257,7 @@ export class ChatEditorSaving
 						const session = chatEditingService.getEditingSession(
 							workingCopy.resource,
 						);
+
 						if (!session) {
 							return;
 						}
@@ -270,6 +287,7 @@ export class ChatEditorSaving
 				update();
 			}
 		});
+
 		update();
 	}
 
@@ -297,16 +315,20 @@ export class ChatEditorSaving
 	) {
 		if (!session.requestInProgress) {
 			this._reportSaved(entry);
+
 			return;
 		}
 		// wait until no more request is pending
 		const d = session.onDidChange((e) => {
 			if (!session.requestInProgress) {
 				this._reportSaved(entry);
+
 				this._store.delete(d);
+
 				d.dispose();
 			}
 		});
+
 		this._store.add(d);
 	}
 
@@ -315,13 +337,17 @@ export class ChatEditorSaving
 		container: DisposableStore,
 	) {
 		const store = new DisposableStore();
+
 		container.add(store);
 
 		// disable auto save for those files involved in editing
 		const saveConfig = store.add(new MutableDisposable());
+
 		const update = () => {
 			const store = new DisposableStore();
+
 			const entries = session.entries.get();
+
 			for (const entry of entries) {
 				if (entry.state.get() === WorkingSetEntryState.Modified) {
 					store.add(
@@ -331,6 +357,7 @@ export class ChatEditorSaving
 					);
 				}
 			}
+
 			saveConfig.value = store;
 		};
 
@@ -347,6 +374,7 @@ export class ChatEditorSaving
 		store.add(
 			session.onDidDispose(() => {
 				store.dispose();
+
 				container.delete(store);
 			}),
 		);
@@ -355,6 +383,7 @@ export class ChatEditorSaving
 
 export class ChatEditingSaveAllAction extends Action2 {
 	static readonly ID = "chatEditing.saveAllFiles";
+
 	static readonly LABEL = localize("save.allFiles", "Save All");
 
 	constructor() {
@@ -412,28 +441,39 @@ export class ChatEditingSaveAllAction extends Action2 {
 
 	async run(accessor: ServicesAccessor, ...args: any[]): Promise<void> {
 		const chatEditingService = accessor.get(IChatEditingService);
+
 		const editorService = accessor.get(IEditorService);
+
 		const configService = accessor.get(IConfigurationService);
+
 		const chatAgentService = accessor.get(IChatAgentService);
+
 		const dialogService = accessor.get(IDialogService);
+
 		const labelService = accessor.get(ILabelService);
 
 		const currentEditingSession = chatEditingService.currentEditingSession;
+
 		if (!currentEditingSession) {
 			return;
 		}
 
 		const editors: IEditorIdentifier[] = [];
+
 		for (const modifiedFileEntry of currentEditingSession.entries.get()) {
 			if (
 				modifiedFileEntry.state.get() === WorkingSetEntryState.Modified
 			) {
 				const modifiedFile = modifiedFileEntry.modifiedURI;
+
 				const matchingEditors = editorService.findEditors(modifiedFile);
+
 				if (matchingEditors.length === 0) {
 					continue;
 				}
+
 				const matchingEditor = matchingEditors[0];
+
 				if (matchingEditor.editor.isDirty()) {
 					editors.push(matchingEditor);
 				}
@@ -447,17 +487,21 @@ export class ChatEditingSaveAllAction extends Action2 {
 		const alwaysSave = configService.getValue<boolean>(
 			ChatEditorSaving._config,
 		);
+
 		if (!alwaysSave) {
 			const agentName = chatAgentService.getDefaultAgent(
 				ChatAgentLocation.EditingSession,
 			)?.fullName;
 
 			let message: string;
+
 			if (editors.length === 1) {
 				const resource = editors[0].editor.resource;
+
 				if (resource) {
 					const filelabel =
 						labelService.getUriBasenameLabel(resource);
+
 					message = agentName
 						? localize(
 								"message.batched.oneFile.1",

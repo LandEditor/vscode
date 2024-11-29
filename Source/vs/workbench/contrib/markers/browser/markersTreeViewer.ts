@@ -97,6 +97,7 @@ import Messages from "./messages.js";
 
 interface IResourceMarkersTemplateData {
 	readonly resourceLabel: IResourceLabel;
+
 	readonly count: CountBadge;
 }
 
@@ -106,7 +107,9 @@ interface IMarkerTemplateData {
 
 interface IRelatedInformationTemplateData {
 	resourceLabel: HighlightedLabel;
+
 	lnCol: HTMLElement;
+
 	description: HighlightedLabel;
 }
 
@@ -134,14 +137,17 @@ export class MarkersWidgetAccessibilityProvider
 				paths.dirname(path),
 			);
 		}
+
 		if (element instanceof Marker || element instanceof MarkerTableItem) {
 			return Messages.MARKERS_TREE_ARIA_LABEL_MARKER(element);
 		}
+
 		if (element instanceof RelatedInformation) {
 			return Messages.MARKERS_TREE_ARIA_LABEL_RELATED_INFORMATION(
 				element.raw,
 			);
 		}
+
 		return null;
 	}
 }
@@ -166,6 +172,7 @@ export class VirtualDelegate implements IListVirtualDelegate<MarkerElement> {
 
 			return noOfLines * VirtualDelegate.LINE_HEIGHT;
 		}
+
 		return VirtualDelegate.LINE_HEIGHT;
 	}
 
@@ -188,19 +195,25 @@ const enum FilterDataType {
 
 interface ResourceMarkersFilterData {
 	type: FilterDataType.ResourceMarkers;
+
 	uriMatches: IMatch[];
 }
 
 interface MarkerFilterData {
 	type: FilterDataType.Marker;
+
 	lineMatches: IMatch[][];
+
 	sourceMatches: IMatch[];
+
 	codeMatches: IMatch[];
 }
 
 interface RelatedInformationFilterData {
 	type: FilterDataType.RelatedInformation;
+
 	uriMatches: IMatch[];
+
 	messageMatches: IMatch[];
 }
 
@@ -221,6 +234,7 @@ export class ResourceMarkersRenderer
 		ResourceMarkers,
 		IResourceMarkersTemplateData[]
 	>();
+
 	private readonly disposables = new DisposableStore();
 
 	constructor(
@@ -275,6 +289,7 @@ export class ResourceMarkersRenderer
 		this.updateCount(node, templateData);
 
 		const nodeRenders = this.renderedNodes.get(resourceMarkers) ?? [];
+
 		this.renderedNodes.set(resourceMarkers, [...nodeRenders, templateData]);
 	}
 
@@ -302,6 +317,7 @@ export class ResourceMarkersRenderer
 
 	disposeTemplate(templateData: IResourceMarkersTemplateData): void {
 		templateData.resourceLabel.dispose();
+
 		templateData.count.dispose();
 	}
 
@@ -348,6 +364,7 @@ export class MarkerRenderer
 
 	renderTemplate(container: HTMLElement): IMarkerTemplateData {
 		const data: IMarkerTemplateData = Object.create(null);
+
 		data.markerWidget = new MarkerWidget(
 			container,
 			this.markersViewState,
@@ -395,11 +412,13 @@ const toggleMultilineAction = "problems.action.toggleMultiline";
 class ToggleMultilineActionViewItem extends ActionViewItem {
 	override render(container: HTMLElement): void {
 		super.render(container);
+
 		this.updateExpandedAttribute();
 	}
 
 	protected override updateClass(): void {
 		super.updateClass();
+
 		this.updateExpandedAttribute();
 	}
 
@@ -413,10 +432,15 @@ class ToggleMultilineActionViewItem extends ActionViewItem {
 
 class MarkerWidget extends Disposable {
 	private readonly actionBar: ActionBar;
+
 	private readonly icon: HTMLElement;
+
 	private readonly iconContainer: HTMLElement;
+
 	private readonly messageAndDetailsContainer: HTMLElement;
+
 	private readonly messageAndDetailsContainerHover: IManagedHover;
+
 	private readonly disposables = this._register(new DisposableStore());
 
 	constructor(
@@ -427,6 +451,7 @@ class MarkerWidget extends Disposable {
 		_instantiationService: IInstantiationService,
 	) {
 		super();
+
 		this.actionBar = this._register(
 			new ActionBar(dom.append(parent, dom.$(".actions")), {
 				actionViewItemProvider: (action: IAction, options) =>
@@ -444,11 +469,14 @@ class MarkerWidget extends Disposable {
 		// list view does not have a specific color for the icon (=the color variable is invalid) it
 		// falls back to the foreground color of container (inherit)
 		this.iconContainer = dom.append(parent, dom.$(""));
+
 		this.icon = dom.append(this.iconContainer, dom.$(""));
+
 		this.messageAndDetailsContainer = dom.append(
 			parent,
 			dom.$(".marker-message-details-container"),
 		);
+
 		this.messageAndDetailsContainerHover = this._register(
 			this._hoverService.setupManagedHover(
 				getDefaultHoverDelegate("mouse"),
@@ -460,15 +488,19 @@ class MarkerWidget extends Disposable {
 
 	render(element: Marker, filterData: MarkerFilterData | undefined): void {
 		this.actionBar.clear();
+
 		this.disposables.clear();
 
 		dom.clearNode(this.messageAndDetailsContainer);
 
 		this.iconContainer.className = `marker-icon ${Severity.toString(MarkerSeverity.toSeverity(element.marker.severity))}`;
+
 		this.icon.className = `codicon ${SeverityIcon.className(MarkerSeverity.toSeverity(element.marker.severity))}`;
+
 		this.renderQuickfixActionbar(element);
 
 		this.renderMessageAndDetails(element, filterData);
+
 		this.disposables.add(
 			dom.addDisposableListener(
 				this.parent,
@@ -476,6 +508,7 @@ class MarkerWidget extends Disposable {
 				() => this.markersViewModel.onMarkerMouseHover(element),
 			),
 		);
+
 		this.disposables.add(
 			dom.addDisposableListener(
 				this.parent,
@@ -490,11 +523,14 @@ class MarkerWidget extends Disposable {
 
 		if (viewModel) {
 			const quickFixAction = viewModel.quickFixAction;
+
 			this.actionBar.push([quickFixAction], { icon: true, label: false });
+
 			this.iconContainer.classList.toggle(
 				"quickFix",
 				quickFixAction.enabled,
 			);
+
 			quickFixAction.onDidChange(
 				({ enabled }) => {
 					if (!isUndefinedOrNull(enabled)) {
@@ -507,6 +543,7 @@ class MarkerWidget extends Disposable {
 				this,
 				this.disposables,
 			);
+
 			quickFixAction.onShowQuickFixes(
 				() => {
 					const quickFixActionViewItem = <QuickFixActionViewItem>(
@@ -537,10 +574,12 @@ class MarkerWidget extends Disposable {
 							{ ...options, icon: true },
 						);
 					}
+
 					return undefined;
 				},
 			}),
 		);
+
 		this.disposables.add(toDisposable(() => multilineActionbar.dispose()));
 
 		const viewModel = this.markersViewModel.getViewModel(marker);
@@ -548,19 +587,25 @@ class MarkerWidget extends Disposable {
 		const multiline = viewModel && viewModel.multiline;
 
 		const action = new Action(toggleMultilineAction);
+
 		action.enabled = !!viewModel && marker.lines.length > 1;
+
 		action.tooltip = multiline
 			? localize("single line", "Show message in single line")
 			: localize("multi line", "Show message in multiple lines");
+
 		action.class = ThemeIcon.asClassName(
 			multiline ? expandedIcon : collapsedIcon,
 		);
+
 		action.run = () => {
 			if (viewModel) {
 				viewModel.multiline = !viewModel.multiline;
 			}
+
 			return Promise.resolve();
 		};
+
 		multilineActionbar.push([action], { icon: true, label: false });
 	}
 
@@ -575,6 +620,7 @@ class MarkerWidget extends Disposable {
 		const multiline = !viewState || viewState.multiline;
 
 		const lineMatches = (filterData && filterData.lineMatches) || [];
+
 		this.messageAndDetailsContainerHover.update(element.marker.message);
 
 		const lineElements: HTMLElement[] = [];
@@ -593,6 +639,7 @@ class MarkerWidget extends Disposable {
 			const highlightedLabel = this.disposables.add(
 				new HighlightedLabel(messageElement),
 			);
+
 			highlightedLabel.set(
 				lines[index].length > 1000
 					? `${lines[index].substring(0, 1000)}...`
@@ -603,9 +650,12 @@ class MarkerWidget extends Disposable {
 			if (lines[index] === "") {
 				lineElement.style.height = `${VirtualDelegate.LINE_HEIGHT}px`;
 			}
+
 			lineElements.push(lineElement);
 		}
+
 		this.renderDetails(marker, filterData, lineElements[0]);
+
 		this.renderMultilineActionbar(element, lineElements[0]);
 	}
 
@@ -625,6 +675,7 @@ class MarkerWidget extends Disposable {
 
 			const sourceMatches =
 				(filterData && filterData.sourceMatches) || [];
+
 			source.set(marker.source, sourceMatches);
 
 			if (marker.code) {
@@ -637,6 +688,7 @@ class MarkerWidget extends Disposable {
 
 					const codeMatches =
 						(filterData && filterData.codeMatches) || [];
+
 					code.set(marker.code, codeMatches);
 				} else {
 					const container = dom.$(".marker-code");
@@ -646,6 +698,7 @@ class MarkerWidget extends Disposable {
 					);
 
 					const link = marker.code.target.toString(true);
+
 					this.disposables.add(
 						new Link(
 							parent,
@@ -658,12 +711,14 @@ class MarkerWidget extends Disposable {
 
 					const codeMatches =
 						(filterData && filterData.codeMatches) || [];
+
 					code.set(marker.code.value, codeMatches);
 				}
 			}
 		}
 
 		const lnCol = dom.append(parent, dom.$("span.marker-line"));
+
 		lnCol.textContent = Messages.MARKERS_PANEL_AT_LINE_COL_NUMBER(
 			marker.startLineNumber,
 			marker.startColumn,
@@ -693,13 +748,16 @@ export class RelatedInformationRenderer
 		data.resourceLabel = new HighlightedLabel(
 			dom.append(container, dom.$(".related-info-resource")),
 		);
+
 		data.lnCol = dom.append(container, dom.$("span.marker-line"));
 
 		const separator = dom.append(
 			container,
 			dom.$("span.related-info-resource-separator"),
 		);
+
 		separator.textContent = ":";
+
 		separator.style.paddingRight = "4px";
 
 		data.description = new HighlightedLabel(
@@ -726,16 +784,19 @@ export class RelatedInformationRenderer
 			relatedInformation.resource,
 			{ relative: true },
 		);
+
 		templateData.resourceLabel.set(
 			basename(relatedInformation.resource),
 			uriMatches,
 			resourceLabelTitle,
 		);
+
 		templateData.lnCol.textContent =
 			Messages.MARKERS_PANEL_AT_LINE_COL_NUMBER(
 				relatedInformation.startLineNumber,
 				relatedInformation.startColumn,
 			);
+
 		templateData.description.set(
 			relatedInformation.message,
 			messageMatches,
@@ -745,6 +806,7 @@ export class RelatedInformationRenderer
 
 	disposeTemplate(templateData: IRelatedInformationTemplateData): void {
 		templateData.resourceLabel.dispose();
+
 		templateData.description.dispose();
 	}
 }
@@ -831,6 +893,7 @@ export class Filter implements ITreeFilter<MarkerElement, FilterData> {
 				this.options.textFilter.text,
 				line,
 			);
+
 			lineMatches.push(lineMatch || []);
 		}
 
@@ -947,9 +1010,11 @@ export class MarkerViewModel extends Disposable {
 	private readonly _onDidChange: Emitter<void> = this._register(
 		new Emitter<void>(),
 	);
+
 	readonly onDidChange: Event<void> = this._onDidChange.event;
 
 	private modelPromise: CancelablePromise<ITextModel> | null = null;
+
 	private codeActionsPromise: CancelablePromise<CodeActionSet> | null = null;
 
 	constructor(
@@ -962,11 +1027,13 @@ export class MarkerViewModel extends Disposable {
 		private readonly languageFeaturesService: ILanguageFeaturesService,
 	) {
 		super();
+
 		this._register(
 			toDisposable(() => {
 				if (this.modelPromise) {
 					this.modelPromise.cancel();
 				}
+
 				if (this.codeActionsPromise) {
 					this.codeActionsPromise.cancel();
 				}
@@ -983,6 +1050,7 @@ export class MarkerViewModel extends Disposable {
 	set multiline(value: boolean) {
 		if (this._multiline !== value) {
 			this._multiline = value;
+
 			this._onDidChange.fire();
 		}
 	}
@@ -998,6 +1066,7 @@ export class MarkerViewModel extends Disposable {
 				),
 			);
 		}
+
 		return this._quickFixAction;
 	}
 
@@ -1007,9 +1076,11 @@ export class MarkerViewModel extends Disposable {
 
 	private async setQuickFixes(waitForModel: boolean): Promise<void> {
 		const codeActions = await this.getCodeActions(waitForModel);
+
 		this.quickFixAction.quickFixes = codeActions
 			? this.toActions(codeActions)
 			: [];
+
 		this.quickFixAction.autoFixable(
 			!!codeActions && codeActions.hasAutoFix,
 		);
@@ -1021,6 +1092,7 @@ export class MarkerViewModel extends Disposable {
 		if (this.codeActionsPromise !== null) {
 			return this.codeActionsPromise;
 		}
+
 		return this.getModel(waitForModel).then<CodeActionSet | null>(
 			(model) => {
 				if (model) {
@@ -1053,8 +1125,10 @@ export class MarkerViewModel extends Disposable {
 							},
 						);
 					}
+
 					return this.codeActionsPromise;
 				}
+
 				return null;
 			},
 		);
@@ -1111,6 +1185,7 @@ export class MarkerViewModel extends Disposable {
 		if (model) {
 			return Promise.resolve(model);
 		}
+
 		if (waitForModel) {
 			if (!this.modelPromise) {
 				this.modelPromise = createCancelablePromise(
@@ -1129,8 +1204,10 @@ export class MarkerViewModel extends Disposable {
 					},
 				);
 			}
+
 			return this.modelPromise;
 		}
+
 		return Promise.resolve(null);
 	}
 }
@@ -1139,10 +1216,12 @@ export class MarkersViewModel extends Disposable {
 	private readonly _onDidChange: Emitter<Marker | undefined> = this._register(
 		new Emitter<Marker | undefined>(),
 	);
+
 	readonly onDidChange: Event<Marker | undefined> = this._onDidChange.event;
 
 	private readonly _onDidChangeViewMode: Emitter<MarkersViewMode> =
 		this._register(new Emitter<MarkersViewMode>());
+
 	readonly onDidChangeViewMode: Event<MarkersViewMode> =
 		this._onDidChangeViewMode.event;
 
@@ -1153,6 +1232,7 @@ export class MarkersViewModel extends Disposable {
 		string,
 		{ viewModel: MarkerViewModel; disposables: IDisposable[] }
 	>();
+
 	private readonly markersPerResource: Map<string, Marker[]> = new Map<
 		string,
 		Marker[]
@@ -1161,7 +1241,9 @@ export class MarkersViewModel extends Disposable {
 	private bulkUpdate: boolean = false;
 
 	private hoveredMarker: Marker | null = null;
+
 	private hoverDelayer: Delayer<void> = new Delayer<void>(300);
+
 	private viewModeContextKey: IContextKey<MarkersViewMode>;
 
 	constructor(
@@ -1173,13 +1255,16 @@ export class MarkersViewModel extends Disposable {
 		private readonly instantiationService: IInstantiationService,
 	) {
 		super();
+
 		this._multiline = multiline;
+
 		this._viewMode = viewMode;
 
 		this.viewModeContextKey =
 			MarkersContextKeys.MarkersViewModeContextKey.bindTo(
 				this.contextKeyService,
 			);
+
 		this.viewModeContextKey.set(viewMode);
 	}
 
@@ -1191,7 +1276,9 @@ export class MarkersViewModel extends Disposable {
 			);
 
 			const disposables: IDisposable[] = [viewModel];
+
 			viewModel.multiline = this.multiline;
+
 			viewModel.onDidChange(
 				() => {
 					if (!this.bulkUpdate) {
@@ -1201,11 +1288,14 @@ export class MarkersViewModel extends Disposable {
 				this,
 				disposables,
 			);
+
 			this.markersViewStates.set(marker.id, { viewModel, disposables });
 
 			const markers =
 				this.markersPerResource.get(marker.resource.toString()) || [];
+
 			markers.push(marker);
+
 			this.markersPerResource.set(marker.resource.toString(), markers);
 		}
 	}
@@ -1219,12 +1309,14 @@ export class MarkersViewModel extends Disposable {
 			if (value) {
 				dispose(value.disposables);
 			}
+
 			this.markersViewStates.delete(marker.id);
 
 			if (this.hoveredMarker === marker) {
 				this.hoveredMarker = null;
 			}
 		}
+
 		this.markersPerResource.delete(resource.toString());
 	}
 
@@ -1236,6 +1328,7 @@ export class MarkersViewModel extends Disposable {
 
 	onMarkerMouseHover(marker: Marker): void {
 		this.hoveredMarker = marker;
+
 		this.hoverDelayer.trigger(() => {
 			if (this.hoveredMarker) {
 				const model = this.getViewModel(this.hoveredMarker);
@@ -1264,15 +1357,20 @@ export class MarkersViewModel extends Disposable {
 
 		if (this._multiline !== value) {
 			this._multiline = value;
+
 			changed = true;
 		}
+
 		this.bulkUpdate = true;
+
 		this.markersViewStates.forEach(({ viewModel }) => {
 			if (viewModel.multiline !== value) {
 				viewModel.multiline = value;
+
 				changed = true;
 			}
 		});
+
 		this.bulkUpdate = false;
 
 		if (changed) {
@@ -1292,7 +1390,9 @@ export class MarkersViewModel extends Disposable {
 		}
 
 		this._viewMode = value;
+
 		this._onDidChangeViewMode.fire(value);
+
 		this.viewModeContextKey.set(value);
 	}
 
@@ -1300,7 +1400,9 @@ export class MarkersViewModel extends Disposable {
 		this.markersViewStates.forEach(({ disposables }) =>
 			dispose(disposables),
 		);
+
 		this.markersViewStates.clear();
+
 		this.markersPerResource.clear();
 
 		super.dispose();

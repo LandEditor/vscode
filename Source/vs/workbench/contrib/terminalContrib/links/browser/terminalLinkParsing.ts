@@ -14,20 +14,27 @@ import { OperatingSystem } from "../../../../../base/common/platform.js";
 
 export interface IParsedLink {
 	path: ILinkPartialRange;
+
 	prefix?: ILinkPartialRange;
+
 	suffix?: ILinkSuffix;
 }
 
 export interface ILinkSuffix {
 	row: number | undefined;
+
 	col: number | undefined;
+
 	rowEnd: number | undefined;
+
 	colEnd: number | undefined;
+
 	suffix: ILinkPartialRange;
 }
 
 export interface ILinkPartialRange {
 	index: number;
+
 	text: string;
 }
 
@@ -55,12 +62,15 @@ function generateLinkSuffixRegex(eolOnly: boolean) {
 	function r(): string {
 		return `(?<row${ri++}>\\d+)`;
 	}
+
 	function c(): string {
 		return `(?<col${ci++}>\\d+)`;
 	}
+
 	function re(): string {
 		return `(?<rowEnd${rei++}>\\d+)`;
 	}
+
 	function ce(): string {
 		return `(?<colEnd${cei++}>\\d+)`;
 	}
@@ -152,6 +162,7 @@ export function removeLinkSuffix(link: string): string {
 	if (!suffix) {
 		return link;
 	}
+
 	return link.substring(0, suffix.index);
 }
 
@@ -168,6 +179,7 @@ export function removeLinkQueryString(link: string): string {
 	if (index === -1) {
 		return link;
 	}
+
 	return link.substring(0, index);
 }
 
@@ -177,6 +189,7 @@ export function detectLinkSuffixes(line: string): ILinkSuffix[] {
 	let match: RegExpExecArray | null;
 
 	const results: ILinkSuffix[] = [];
+
 	linkSuffixRegex.value.lastIndex = 0;
 
 	while ((match = linkSuffixRegex.value.exec(line)) !== null) {
@@ -185,8 +198,10 @@ export function detectLinkSuffixes(line: string): ILinkSuffix[] {
 		if (suffix === null) {
 			break;
 		}
+
 		results.push(suffix);
 	}
+
 	return results;
 }
 
@@ -206,6 +221,7 @@ export function toLinkSuffix(
 	if (!groups || match.length < 1) {
 		return null;
 	}
+
 	return {
 		row: parseIntOptional(groups.row0 || groups.row1 || groups.row2),
 		col: parseIntOptional(groups.col0 || groups.col1 || groups.col2),
@@ -223,6 +239,7 @@ function parseIntOptional(value: string | undefined): number | undefined {
 	if (value === undefined) {
 		return value;
 	}
+
 	return parseInt(value);
 }
 
@@ -239,6 +256,7 @@ export function detectLinks(line: string, os: OperatingSystem) {
 
 	// 2: Detect all links without suffixes and merge non-conflicting ranges into the results
 	const noSuffixPaths = detectPathsNoSuffix(line, os);
+
 	binaryInsertList(results, noSuffixPaths);
 
 	return results;
@@ -248,6 +266,7 @@ function binaryInsertList(list: IParsedLink[], newItems: IParsedLink[]) {
 	if (list.length === 0) {
 		list.push(...newItems);
 	}
+
 	for (const item of newItems) {
 		binaryInsert(list, item, 0, list.length);
 	}
@@ -264,6 +283,7 @@ function binaryInsert(
 
 		return;
 	}
+
 	if (low > high) {
 		return;
 	}
@@ -287,8 +307,10 @@ function binaryInsert(
 		) {
 			list.splice(mid, 0, newItem);
 		}
+
 		return;
 	}
+
 	if (newItem.path.index > list[mid].path.index) {
 		binaryInsert(list, newItem, mid + 1, high);
 	} else {
@@ -328,6 +350,7 @@ function detectLinksViaSuffix(line: string): IParsedLink[] {
 					index: linkStartIndex,
 					text: prefixMatch.groups.prefix,
 				};
+
 				path = path.substring(prefix.text.length);
 
 				// Don't allow suffix links to be returned when the link itself is the empty string
@@ -353,15 +376,19 @@ function detectLinksViaSuffix(line: string): IParsedLink[] {
 					) {
 						const trimPrefixAmount =
 							prefixMatch.groups.prefix.length - 1;
+
 						prefix.index += trimPrefixAmount;
+
 						prefix.text =
 							prefixMatch.groups.prefix[
 								prefixMatch.groups.prefix.length - 1
 							];
+
 						linkStartIndex += trimPrefixAmount;
 					}
 				}
 			}
+
 			results.push({
 				path: {
 					index: linkStartIndex + (prefix?.text.length || 0),
@@ -462,6 +489,7 @@ function detectPathsNoSuffix(line: string, os: OperatingSystem): IParsedLink[] {
 				(text.startsWith("a/") || text.startsWith("b/")))
 		) {
 			text = text.substring(2);
+
 			index += 2;
 		}
 

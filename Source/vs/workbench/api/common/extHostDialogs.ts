@@ -19,6 +19,7 @@ export class ExtHostDialogs {
 	constructor(mainContext: IMainContext) {
 		this._proxy = mainContext.getProxy(MainContext.MainThreadDialogs);
 	}
+
 	showOpenDialog(
 		extension: IExtensionDescription,
 		options?: vscode.OpenDialogOptions,
@@ -26,10 +27,12 @@ export class ExtHostDialogs {
 		if (options?.allowUIResources) {
 			checkProposedApiEnabled(extension, "showLocal");
 		}
+
 		return this._proxy.$showOpenDialog(options).then((filepaths) => {
 			return filepaths ? filepaths.map((p) => URI.revive(p)) : undefined;
 		});
 	}
+
 	showSaveDialog(
 		options?: vscode.SaveDialogOptions,
 	): Promise<URI | undefined> {

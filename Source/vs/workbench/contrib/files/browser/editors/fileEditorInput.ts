@@ -74,9 +74,11 @@ export class FileEditorInput
 	override get typeId(): string {
 		return FILE_EDITOR_INPUT_ID;
 	}
+
 	override get editorId(): string | undefined {
 		return DEFAULT_EDITOR_ASSOCIATION.id;
 	}
+
 	override get capabilities(): EditorInputCapabilities {
 		let capabilities = EditorInputCapabilities.CanSplitInGroup;
 
@@ -93,21 +95,32 @@ export class FileEditorInput
 				capabilities |= EditorInputCapabilities.Untitled;
 			}
 		}
+
 		if (!(capabilities & EditorInputCapabilities.Readonly)) {
 			capabilities |= EditorInputCapabilities.CanDropIntoEditor;
 		}
+
 		return capabilities;
 	}
+
 	private preferredName: string | undefined;
+
 	private preferredDescription: string | undefined;
+
 	private preferredEncoding: string | undefined;
+
 	private preferredLanguageId: string | undefined;
+
 	private preferredContents: string | undefined;
+
 	private forceOpenAs: ForceOpenAs = ForceOpenAs.None;
+
 	private model: ITextFileEditorModel | undefined = undefined;
+
 	private cachedTextFileModelReference:
 		| IReference<ITextFileEditorModel>
 		| undefined = undefined;
+
 	private readonly modelListeners = this._register(new DisposableStore());
 
 	constructor(
@@ -150,20 +163,25 @@ export class FileEditorInput
 			textResourceConfigurationService,
 			customEditorLabelService,
 		);
+
 		this.model = this.textFileService.files.get(resource);
 
 		if (preferredName) {
 			this.setPreferredName(preferredName);
 		}
+
 		if (preferredDescription) {
 			this.setPreferredDescription(preferredDescription);
 		}
+
 		if (preferredEncoding) {
 			this.setPreferredEncoding(preferredEncoding);
 		}
+
 		if (preferredLanguageId) {
 			this.setPreferredLanguageId(preferredLanguageId);
 		}
+
 		if (typeof preferredContents === "string") {
 			this.setPreferredContents(preferredContents);
 		}
@@ -178,14 +196,17 @@ export class FileEditorInput
 			this.registerModelListeners(this.model);
 		}
 	}
+
 	private onDidCreateTextFileModel(model: ITextFileEditorModel): void {
 		// Once the text file model is created, we keep it inside
 		// the input to be able to implement some methods properly
 		if (isEqual(model.resource, this.resource)) {
 			this.model = model;
+
 			this.registerModelListeners(model);
 		}
 	}
+
 	private registerModelListeners(model: ITextFileEditorModel): void {
 		// Clear any old
 		this.modelListeners.clear();
@@ -193,6 +214,7 @@ export class FileEditorInput
 		this.modelListeners.add(
 			model.onDidChangeDirty(() => this._onDidChangeDirty.fire()),
 		);
+
 		this.modelListeners.add(
 			model.onDidChangeReadonly(() =>
 				this._onDidChangeCapabilities.fire(),
@@ -208,22 +230,28 @@ export class FileEditorInput
 		this.modelListeners.add(
 			Event.once(model.onWillDispose)(() => {
 				this.modelListeners.clear();
+
 				this.model = undefined;
 			}),
 		);
 	}
+
 	override getName(): string {
 		return this.preferredName || super.getName();
 	}
+
 	setPreferredName(name: string): void {
 		if (!this.allowLabelOverride()) {
 			return; // block for specific schemes we consider to be owning
 		}
+
 		if (this.preferredName !== name) {
 			this.preferredName = name;
+
 			this._onDidChangeLabel.fire();
 		}
 	}
+
 	private allowLabelOverride(): boolean {
 		return (
 			this.resource.scheme !== this.pathService.defaultUriScheme &&
@@ -232,29 +260,37 @@ export class FileEditorInput
 			this.resource.scheme !== Schemas.vscodeRemote
 		);
 	}
+
 	getPreferredName(): string | undefined {
 		return this.preferredName;
 	}
+
 	override isReadonly(): boolean | IMarkdownString {
 		return this.model
 			? this.model.isReadonly()
 			: this.filesConfigurationService.isReadonly(this.resource);
 	}
+
 	override getDescription(verbosity?: Verbosity): string | undefined {
 		return this.preferredDescription || super.getDescription(verbosity);
 	}
+
 	setPreferredDescription(description: string): void {
 		if (!this.allowLabelOverride()) {
 			return; // block for specific schemes we consider to be owning
 		}
+
 		if (this.preferredDescription !== description) {
 			this.preferredDescription = description;
+
 			this._onDidChangeLabel.fire();
 		}
 	}
+
 	getPreferredDescription(): string | undefined {
 		return this.preferredDescription;
 	}
+
 	override getTitle(verbosity?: Verbosity): string {
 		let title = super.getTitle(verbosity);
 
@@ -263,68 +299,88 @@ export class FileEditorInput
 		if (preferredTitle) {
 			title = `${preferredTitle} (${title})`;
 		}
+
 		return title;
 	}
+
 	protected getPreferredTitle(): string | undefined {
 		if (this.preferredName && this.preferredDescription) {
 			return `${this.preferredName} ${this.preferredDescription}`;
 		}
+
 		if (this.preferredName || this.preferredDescription) {
 			return this.preferredName ?? this.preferredDescription;
 		}
+
 		return undefined;
 	}
+
 	getEncoding(): string | undefined {
 		if (this.model) {
 			return this.model.getEncoding();
 		}
+
 		return this.preferredEncoding;
 	}
+
 	getPreferredEncoding(): string | undefined {
 		return this.preferredEncoding;
 	}
+
 	async setEncoding(encoding: string, mode: EncodingMode): Promise<void> {
 		this.setPreferredEncoding(encoding);
 
 		return this.model?.setEncoding(encoding, mode);
 	}
+
 	setPreferredEncoding(encoding: string): void {
 		this.preferredEncoding = encoding;
 		// encoding is a good hint to open the file as text
 		this.setForceOpenAsText();
 	}
+
 	getLanguageId(): string | undefined {
 		if (this.model) {
 			return this.model.getLanguageId();
 		}
+
 		return this.preferredLanguageId;
 	}
+
 	getPreferredLanguageId(): string | undefined {
 		return this.preferredLanguageId;
 	}
+
 	setLanguageId(languageId: string, source?: string): void {
 		this.setPreferredLanguageId(languageId);
+
 		this.model?.setLanguageId(languageId, source);
 	}
+
 	setPreferredLanguageId(languageId: string): void {
 		this.preferredLanguageId = languageId;
 		// languages are a good hint to open the file as text
 		this.setForceOpenAsText();
 	}
+
 	setPreferredContents(contents: string): void {
 		this.preferredContents = contents;
 		// contents is a good hint to open the file as text
 		this.setForceOpenAsText();
 	}
+
 	setForceOpenAsText(): void {
 		this.forceOpenAs = ForceOpenAs.Text;
 	}
+
 	setForceOpenAsBinary(): void {
 		this.forceOpenAs = ForceOpenAs.Binary;
 	}
+
 	override isDirty(): boolean {
 		return !!this.model?.isDirty();
 	}
+
 	override isSaving(): boolean {
 		if (
 			this.model?.hasState(TextFileEditorModelState.SAVED) ||
@@ -340,8 +396,10 @@ export class FileEditorInput
 		if (this.filesConfigurationService.hasShortAutoSaveDelay(this)) {
 			return true; // a short auto save is configured, treat this as being saved
 		}
+
 		return super.isSaving();
 	}
+
 	override prefersEditorPane<T extends IEditorDescriptor<IEditorPane>>(
 		editorPanes: T[],
 	): T | undefined {
@@ -350,10 +408,12 @@ export class FileEditorInput
 				(editorPane) => editorPane.typeId === BINARY_FILE_EDITOR_ID,
 			);
 		}
+
 		return editorPanes.find(
 			(editorPane) => editorPane.typeId === TEXT_FILE_EDITOR_ID,
 		);
 	}
+
 	override resolve(
 		options?: IFileEditorInputOptions,
 	): Promise<ITextFileEditorModel | BinaryEditorModel> {
@@ -364,6 +424,7 @@ export class FileEditorInput
 		// Resolve as text
 		return this.doResolveAsText(options);
 	}
+
 	private async doResolveAsText(
 		options?: IFileEditorInputOptions,
 	): Promise<ITextFileEditorModel | BinaryEditorModel> {
@@ -372,6 +433,7 @@ export class FileEditorInput
 			// to prevent this property to stick. We still want future
 			// `resolve` calls to fetch the contents from disk.
 			const preferredContents = this.preferredContents;
+
 			this.preferredContents = undefined;
 			// Resolve resource via text file service and only allow
 			// to open binary files if we are instructed so
@@ -397,6 +459,7 @@ export class FileEditorInput
 						this.resource,
 					)) as IReference<ITextFileEditorModel>;
 			}
+
 			const model = this.cachedTextFileModelReference.object;
 			// It is possible that this input was disposed before the model
 			// finished resolving. As such, we need to make sure to dispose
@@ -404,6 +467,7 @@ export class FileEditorInput
 			if (this.isDisposed()) {
 				this.disposeModelReference();
 			}
+
 			return model;
 		} catch (error) {
 			// Handle binary files with binary model
@@ -417,19 +481,23 @@ export class FileEditorInput
 			throw error;
 		}
 	}
+
 	private async doResolveAsBinary(): Promise<BinaryEditorModel> {
 		const model = this.instantiationService.createInstance(
 			BinaryEditorModel,
 			this.preferredResource,
 			this.getName(),
 		);
+
 		await model.resolve();
 
 		return model;
 	}
+
 	isResolved(): boolean {
 		return !!this.model;
 	}
+
 	override async rename(
 		group: GroupIdentifier,
 		target: URI,
@@ -448,6 +516,7 @@ export class FileEditorInput
 			},
 		};
 	}
+
 	override toUntyped(
 		options?: IUntypedEditorOptions,
 	): ITextResourceEditorInput {
@@ -461,7 +530,9 @@ export class FileEditorInput
 
 		if (typeof options?.preserveViewState === "number") {
 			untypedInput.encoding = this.getEncoding();
+
 			untypedInput.languageId = this.getLanguageId();
+
 			untypedInput.contents = (() => {
 				const model = this.textFileService.files.get(this.resource);
 
@@ -471,8 +542,10 @@ export class FileEditorInput
 				) {
 					return model.textEditorModel.getValue(); // only if dirty and not too large
 				}
+
 				return undefined;
 			})();
+
 			untypedInput.options = {
 				...untypedInput.options,
 				viewState: findViewStateForEditor(
@@ -482,20 +555,26 @@ export class FileEditorInput
 				),
 			};
 		}
+
 		return untypedInput;
 	}
+
 	override matches(otherInput: EditorInput | IUntypedEditorInput): boolean {
 		if (this === otherInput) {
 			return true;
 		}
+
 		if (otherInput instanceof FileEditorInput) {
 			return isEqual(otherInput.resource, this.resource);
 		}
+
 		if (isResourceEditorInput(otherInput)) {
 			return super.matches(otherInput);
 		}
+
 		return false;
 	}
+
 	override dispose(): void {
 		// Model
 		this.model = undefined;
@@ -504,8 +583,10 @@ export class FileEditorInput
 
 		super.dispose();
 	}
+
 	private disposeModelReference(): void {
 		dispose(this.cachedTextFileModelReference);
+
 		this.cachedTextFileModelReference = undefined;
 	}
 }

@@ -59,6 +59,7 @@ class MoreFiltersActionViewItem extends SubmenuEntryActionViewItem {
 	set checked(checked: boolean) {
 		if (this._checked !== checked) {
 			this._checked = checked;
+
 			this.updateChecked();
 		}
 	}
@@ -71,39 +72,54 @@ class MoreFiltersActionViewItem extends SubmenuEntryActionViewItem {
 
 	override render(container: HTMLElement): void {
 		super.render(container);
+
 		this.updateChecked();
 	}
 }
 
 export interface IFilterWidgetOptions {
 	readonly text?: string;
+
 	readonly placeholder?: string;
+
 	readonly ariaLabel?: string;
+
 	readonly history?: string[];
+
 	readonly focusContextKey?: string;
 }
 
 export class FilterWidget extends Widget {
 	readonly element: HTMLElement;
+
 	private readonly delayedFilterUpdate: Delayer<void>;
+
 	private readonly filterInputBox: HistoryInputBox;
+
 	private readonly filterBadge: HTMLElement;
+
 	private readonly toolbar: MenuWorkbenchToolBar;
+
 	private readonly focusContextKey: IContextKey<boolean> | undefined;
 
 	private readonly _onDidChangeFilterText = this._register(
 		new Emitter<string>(),
 	);
+
 	readonly onDidChangeFilterText = this._onDidChangeFilterText.event;
 
 	private moreFiltersActionViewItem: MoreFiltersActionViewItem | undefined;
+
 	private isMoreFiltersChecked: boolean = false;
+
 	private lastWidth?: number;
 
 	private focusTracker: DOM.IFocusTracker;
+
 	public get onDidFocus() {
 		return this.focusTracker.onDidFocus;
 	}
+
 	public get onDidBlur() {
 		return this.focusTracker.onDidBlur;
 	}
@@ -119,7 +135,9 @@ export class FilterWidget extends Widget {
 		private readonly keybindingService: IKeybindingService,
 	) {
 		super();
+
 		this.delayedFilterUpdate = new Delayer<void>(400);
+
 		this._register(toDisposable(() => this.delayedFilterUpdate.cancel()));
 
 		if (options.focusContextKey) {
@@ -133,14 +151,18 @@ export class FilterWidget extends Widget {
 		[this.filterInputBox, this.focusTracker] = this.createInput(
 			this.element,
 		);
+
 		this._register(this.filterInputBox);
+
 		this._register(this.focusTracker);
 
 		const controlsContainer = DOM.append(
 			this.element,
 			DOM.$(".viewpane-filter-controls"),
 		);
+
 		this.filterBadge = this.createBadge(controlsContainer);
+
 		this.toolbar = this._register(this.createToolBar(controlsContainer));
 
 		this.adjustInputBox();
@@ -160,7 +182,9 @@ export class FilterWidget extends Widget {
 
 	updateBadge(message: string | undefined): void {
 		this.filterBadge.classList.toggle("hidden", !message);
+
 		this.filterBadge.textContent = message || "";
+
 		this.adjustInputBox();
 	}
 
@@ -178,8 +202,11 @@ export class FilterWidget extends Widget {
 
 	layout(width: number): void {
 		this.element.parentElement?.classList.toggle("grow", width > 700);
+
 		this.element.classList.toggle("small", width < 400);
+
 		this.adjustInputBox();
+
 		this.lastWidth = width;
 	}
 
@@ -221,6 +248,7 @@ export class FilterWidget extends Widget {
 		if (this.options.text) {
 			inputBox.value = this.options.text;
 		}
+
 		this._register(
 			inputBox.onDidChange((filter) =>
 				this.delayedFilterUpdate.trigger(() =>
@@ -228,6 +256,7 @@ export class FilterWidget extends Widget {
 				),
 			),
 		);
+
 		this._register(
 			DOM.addStandardDisposableListener(
 				inputBox.inputElement,
@@ -235,6 +264,7 @@ export class FilterWidget extends Widget {
 				(e: any) => this.onInputKeyDown(e, inputBox),
 			),
 		);
+
 		this._register(
 			DOM.addStandardDisposableListener(
 				container,
@@ -242,6 +272,7 @@ export class FilterWidget extends Widget {
 				this.handleKeyboardEvent,
 			),
 		);
+
 		this._register(
 			DOM.addStandardDisposableListener(
 				container,
@@ -249,12 +280,14 @@ export class FilterWidget extends Widget {
 				this.handleKeyboardEvent,
 			),
 		);
+
 		this._register(
 			DOM.addStandardDisposableListener(
 				inputBox.inputElement,
 				DOM.EventType.CLICK,
 				(e) => {
 					e.stopPropagation();
+
 					e.preventDefault();
 				},
 			),
@@ -268,11 +301,14 @@ export class FilterWidget extends Widget {
 			this._register(
 				focusTracker.onDidFocus(() => this.focusContextKey!.set(true)),
 			);
+
 			this._register(
 				focusTracker.onDidBlur(() => this.focusContextKey!.set(false)),
 			);
+
 			this._register(toDisposable(() => this.focusContextKey!.reset()));
 		}
+
 		return [inputBox, focusTracker];
 	}
 
@@ -281,8 +317,11 @@ export class FilterWidget extends Widget {
 			container,
 			DOM.$(".viewpane-filter-badge.hidden"),
 		);
+
 		filterBadge.style.backgroundColor = asCssVariable(badgeBackground);
+
 		filterBadge.style.color = asCssVariable(badgeForeground);
+
 		filterBadge.style.border = `1px solid ${asCssVariable(contrastBorder)}`;
 
 		return filterBadge;
@@ -309,11 +348,13 @@ export class FilterWidget extends Widget {
 								action,
 								options,
 							);
+
 						this.moreFiltersActionViewItem.checked =
 							this.isMoreFiltersChecked;
 
 						return this.moreFiltersActionViewItem;
 					}
+
 					return undefined;
 				},
 			},
@@ -322,6 +363,7 @@ export class FilterWidget extends Widget {
 
 	private onDidInputChange(inputbox: HistoryInputBox) {
 		inputbox.addToHistory();
+
 		this._onDidChangeFilterText.fire(inputbox.value);
 	}
 
@@ -354,10 +396,13 @@ export class FilterWidget extends Widget {
 
 		if (event.equals(KeyCode.Tab) && !this.toolbar.isEmpty()) {
 			this.toolbar.focus();
+
 			handled = true;
 		}
+
 		if (handled) {
 			event.stopPropagation();
+
 			event.preventDefault();
 		}
 	}

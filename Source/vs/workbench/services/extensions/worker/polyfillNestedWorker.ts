@@ -34,6 +34,7 @@ const _bootstrapFnSource = function _bootstrapFn(workerUrl: string) {
 			},
 			// todo onerror
 		});
+
 		port.addEventListener("message", (msg) => {
 			globalThis.dispatchEvent(
 				new MessageEvent("message", {
@@ -42,6 +43,7 @@ const _bootstrapFnSource = function _bootstrapFn(workerUrl: string) {
 				}),
 			);
 		});
+
 		port.start();
 		// fake recursively nested worker
 		globalThis.Worker = <any>class {
@@ -54,15 +56,20 @@ const _bootstrapFnSource = function _bootstrapFn(workerUrl: string) {
 		// load module
 		importScripts(workerUrl);
 	};
+
 	globalThis.addEventListener("message", listener);
 }.toString();
 
 export class NestedWorker extends EventTarget implements Worker {
 	onmessage: ((this: Worker, ev: MessageEvent<any>) => any) | null = null;
+
 	onmessageerror: ((this: Worker, ev: MessageEvent<any>) => any) | null =
 		null;
+
 	onerror: ((this: AbstractWorker, ev: ErrorEvent) => any) | null = null;
+
 	readonly terminate: () => void;
+
 	readonly postMessage: (message: any, options?: any) => void;
 
 	constructor(
@@ -88,17 +95,23 @@ export class NestedWorker extends EventTarget implements Worker {
 			url: blobUrl,
 			options,
 		};
+
 		nativePostMessage(msg, [channel.port2]);
 		// worker-impl: functions
 		this.postMessage = channel.port1.postMessage.bind(channel.port1);
+
 		this.terminate = () => {
 			const msg: TerminateWorkerMessage = {
 				type: "_terminateWorker",
 				id,
 			};
+
 			nativePostMessage(msg);
+
 			URL.revokeObjectURL(blobUrl);
+
 			channel.port1.close();
+
 			channel.port2.close();
 		};
 		// worker-impl: events
@@ -121,16 +134,21 @@ export class NestedWorker extends EventTarget implements Worker {
 			},
 			// todo onerror
 		});
+
 		channel.port1.addEventListener("messageerror", (evt) => {
 			const msgEvent = new MessageEvent("messageerror", {
 				data: evt.data,
 			});
+
 			this.dispatchEvent(msgEvent);
 		});
+
 		channel.port1.addEventListener("message", (evt) => {
 			const msgEvent = new MessageEvent("message", { data: evt.data });
+
 			this.dispatchEvent(msgEvent);
 		});
+
 		channel.port1.start();
 	}
 }

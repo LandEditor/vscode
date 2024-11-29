@@ -20,42 +20,61 @@ type NotebookSelector =
 
 export interface NotebookEditorDescriptor {
 	readonly extension?: ExtensionIdentifier;
+
 	readonly id: string;
+
 	readonly displayName: string;
+
 	readonly selectors: readonly {
 		filenamePattern?: string;
+
 		excludeFileNamePattern?: string;
 	}[];
+
 	readonly priority: RegisteredEditorPriority;
+
 	readonly providerDisplayName: string;
 }
 export class NotebookProviderInfo {
 	readonly extension?: ExtensionIdentifier;
+
 	readonly id: string;
+
 	readonly displayName: string;
+
 	readonly priority: RegisteredEditorPriority;
+
 	readonly providerDisplayName: string;
+
 	private _selectors: NotebookSelector[];
 
 	get selectors() {
 		return this._selectors;
 	}
+
 	private _options: TransientOptions;
 
 	get options() {
 		return this._options;
 	}
+
 	constructor(descriptor: NotebookEditorDescriptor) {
 		this.extension = descriptor.extension;
+
 		this.id = descriptor.id;
+
 		this.displayName = descriptor.displayName;
+
 		this._selectors =
 			descriptor.selectors?.map((selector) => ({
 				include: selector.filenamePattern,
 				exclude: selector.excludeFileNamePattern || "",
 			})) || [];
+
 		this.priority = descriptor.priority;
+
 		this.providerDisplayName = descriptor.providerDisplayName;
+
 		this._options = {
 			transientCellMetadata: {},
 			transientDocumentMetadata: {},
@@ -63,22 +82,27 @@ export class NotebookProviderInfo {
 			cellContentMetadata: {},
 		};
 	}
+
 	update(args: {
 		selectors?: NotebookSelector[];
+
 		options?: TransientOptions;
 	}) {
 		if (args.selectors) {
 			this._selectors = args.selectors;
 		}
+
 		if (args.options) {
 			this._options = args.options;
 		}
 	}
+
 	matches(resource: URI): boolean {
 		return this.selectors?.some((selector) =>
 			NotebookProviderInfo.selectorMatches(selector, resource),
 		);
 	}
+
 	static selectorMatches(selector: NotebookSelector, resource: URI): boolean {
 		if (typeof selector === "string") {
 			// filenamePattern
@@ -91,14 +115,17 @@ export class NotebookProviderInfo {
 				return true;
 			}
 		}
+
 		if (glob.isRelativePattern(selector)) {
 			if (glob.match(selector, basename(resource.fsPath).toLowerCase())) {
 				return true;
 			}
 		}
+
 		if (!isDocumentExcludePattern(selector)) {
 			return false;
 		}
+
 		const filenamePattern = selector.include;
 
 		const excludeFilenamePattern = selector.exclude;
@@ -116,10 +143,13 @@ export class NotebookProviderInfo {
 					return false;
 				}
 			}
+
 			return true;
 		}
+
 		return false;
 	}
+
 	static possibleFileEnding(
 		selectors: NotebookSelector[],
 	): string | undefined {
@@ -130,8 +160,10 @@ export class NotebookProviderInfo {
 				return ending;
 			}
 		}
+
 		return undefined;
 	}
+
 	private static _possibleFileEnding(
 		selector: NotebookSelector,
 	): string | undefined {
@@ -146,6 +178,7 @@ export class NotebookProviderInfo {
 		} else if (selector.include) {
 			return NotebookProviderInfo._possibleFileEnding(selector.include);
 		}
+
 		if (candidate) {
 			const match = pattern.exec(candidate);
 
@@ -153,6 +186,7 @@ export class NotebookProviderInfo {
 				return match[1];
 			}
 		}
+
 		return undefined;
 	}
 }

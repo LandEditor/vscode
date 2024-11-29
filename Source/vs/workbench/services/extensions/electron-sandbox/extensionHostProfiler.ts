@@ -28,6 +28,7 @@ export class ExtensionHostProfiler {
 		@IV8InspectProfilingService
 		private readonly _profilingService: IV8InspectProfilingService,
 	) {}
+
 	public async start(): Promise<ProfileSession> {
 		const id = await this._profilingService.startProfiling({
 			host: this._host,
@@ -37,6 +38,7 @@ export class ExtensionHostProfiler {
 		return {
 			stop: createSingleCallFunction(async () => {
 				const profile = await this._profilingService.stopProfiling(id);
+
 				await this._extensionService.whenInstalledExtensionsRegistered();
 
 				const extensions = this._extensionService.extensions;
@@ -45,6 +47,7 @@ export class ExtensionHostProfiler {
 			}),
 		};
 	}
+
 	private _distill(
 		profile: IV8Profile,
 		extensions: readonly IExtensionDescription[],
@@ -59,6 +62,7 @@ export class ExtensionHostProfiler {
 				);
 			}
 		}
+
 		const nodes = profile.nodes;
 
 		const idsToNodes = new Map<number, IV8ProfileNode>();
@@ -68,6 +72,7 @@ export class ExtensionHostProfiler {
 		for (const node of nodes) {
 			idsToNodes.set(node.id, node);
 		}
+
 		function visit(
 			node: IV8ProfileNode,
 			segmentId: ProfileSegmentId | null,
@@ -102,10 +107,12 @@ export class ExtensionHostProfiler {
 				} catch {
 					// ignore
 				}
+
 				if (extension) {
 					segmentId = extension.identifier.value;
 				}
 			}
+
 			idsToSegmentId.set(node.id, segmentId);
 
 			if (node.children) {
@@ -118,6 +125,7 @@ export class ExtensionHostProfiler {
 				}
 			}
 		}
+
 		visit(nodes[0], null);
 
 		const samples = profile.samples || [];
@@ -140,17 +148,24 @@ export class ExtensionHostProfiler {
 			if (segmentId !== currSegmentId) {
 				if (currSegmentId) {
 					distilledIds.push(currSegmentId);
+
 					distilledDeltas.push(currSegmentTime);
 				}
+
 				currSegmentId = segmentId ?? undefined;
+
 				currSegmentTime = 0;
 			}
+
 			currSegmentTime += timeDeltas[i];
 		}
+
 		if (currSegmentId) {
 			distilledIds.push(currSegmentId);
+
 			distilledDeltas.push(currSegmentTime);
 		}
+
 		return {
 			startTime: profile.startTime,
 			endTime: profile.endTime,
@@ -162,11 +177,13 @@ export class ExtensionHostProfiler {
 
 				for (let i = 0; i < distilledIds.length; i++) {
 					const id = distilledIds[i];
+
 					segmentsToTime.set(
 						id,
 						(segmentsToTime.get(id) || 0) + distilledDeltas[i],
 					);
 				}
+
 				return segmentsToTime;
 			},
 		};

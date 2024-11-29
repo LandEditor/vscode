@@ -42,6 +42,7 @@ export class TextureAtlasPage
 	static readonly maximumGlyphCount = 5_000;
 
 	private _usedArea: IBoundingBox = { left: 0, top: 0, right: 0, bottom: 0 };
+
 	public get usedArea(): Readonly<IBoundingBox> {
 		return this._usedArea;
 	}
@@ -50,6 +51,7 @@ export class TextureAtlasPage
 
 	private readonly _glyphMap: GlyphMap<ITextureAtlasPageGlyph> =
 		new FourKeyMap();
+
 	private readonly _glyphInOrderSet: Set<ITextureAtlasPageGlyph> = new Set();
 
 	get glyphs(): IterableIterator<ITextureAtlasPageGlyph> {
@@ -57,6 +59,7 @@ export class TextureAtlasPage
 	}
 
 	private readonly _allocator: ITextureAtlasAllocator;
+
 	private _colorMap!: string[];
 
 	constructor(
@@ -69,6 +72,7 @@ export class TextureAtlasPage
 		super();
 
 		this._canvas = new OffscreenCanvas(pageSize, pageSize);
+
 		this._colorMap = themeService.getColorTheme().tokenColorMap;
 
 		switch (allocatorType) {
@@ -77,6 +81,7 @@ export class TextureAtlasPage
 					this._canvas,
 					textureIndex,
 				);
+
 				break;
 
 			case "slab":
@@ -84,10 +89,12 @@ export class TextureAtlasPage
 					this._canvas,
 					textureIndex,
 				);
+
 				break;
 
 			default:
 				this._allocator = allocatorType(this._canvas, textureIndex);
+
 				break;
 		}
 
@@ -95,6 +102,7 @@ export class TextureAtlasPage
 		this._register(
 			toDisposable(() => {
 				this._canvas.width = 1;
+
 				this._canvas.height = 1;
 			}),
 		);
@@ -137,6 +145,7 @@ export class TextureAtlasPage
 			charMetadata,
 			this._colorMap,
 		);
+
 		const glyph = this._allocator.allocate(rasterizedGlyph);
 
 		// Ensure the glyph was allocated
@@ -154,14 +163,17 @@ export class TextureAtlasPage
 			rasterizer.cacheKey,
 			glyph,
 		);
+
 		this._glyphInOrderSet.add(glyph);
 
 		// Update page version and it's tracked used area
 		this._version++;
+
 		this._usedArea.right = Math.max(
 			this._usedArea.right,
 			glyph.x + glyph.w - 1,
 		);
+
 		this._usedArea.bottom = Math.max(
 			this._usedArea.bottom,
 			glyph.y + glyph.h - 1,

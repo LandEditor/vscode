@@ -21,6 +21,7 @@ interface CopilotApi {
 	registerRelatedFilesProvider(
 		providerId: {
 			extensionId: string;
+
 			languageId: string;
 		},
 		callback: (
@@ -31,10 +32,14 @@ interface CopilotApi {
 			cancellationToken: vscode.CancellationToken,
 		) => Promise<{
 			entries: vscode.Uri[];
+
 			traits?: Array<{
 				name: string;
+
 				value: string;
+
 				includeInPrompt?: boolean;
+
 				promptTextOverride?: string;
 			}>;
 		}>,
@@ -55,6 +60,7 @@ export function register(
 			}
 
 			const disposers: vscode.Disposable[] = [];
+
 			ext.activate().then(() => {
 				const relatedAPI = ext.exports as CopilotApi | undefined;
 
@@ -63,10 +69,12 @@ export function register(
 						if (!syntax.language) {
 							continue;
 						}
+
 						const id = {
 							extensionId: "vscode.typescript-language-features",
 							languageId: syntax.language,
 						};
+
 						disposers.push(
 							relatedAPI.registerRelatedFilesProvider(
 								id,
@@ -112,6 +120,7 @@ export function register(
 									if (!file) {
 										return { entries: [] };
 									}
+
 									const response = (await client.execute(
 										"copilotRelated",
 										{ file },
@@ -124,6 +133,7 @@ export function register(
 									) {
 										return { entries: [] };
 									}
+
 									return {
 										entries: response.body.relatedFiles.map(
 											(f) => client.toResource(f),

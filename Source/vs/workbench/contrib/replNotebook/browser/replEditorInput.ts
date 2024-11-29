@@ -50,8 +50,11 @@ export class ReplEditorInput
 	static override ID: string = "workbench.editorinputs.replEditorInput";
 
 	private inputModelRef: IReference<IResolvedTextEditorModel> | undefined;
+
 	private isScratchpad: boolean;
+
 	private label: string;
+
 	private isDisposing = false;
 
 	constructor(
@@ -93,11 +96,13 @@ export class ReplEditorInput
 			textResourceConfigurationService,
 			customEditorLabelService,
 		);
+
 		this.isScratchpad =
 			resource.scheme === "untitled" &&
 			configurationService.getValue<boolean>(
 				NotebookSetting.InteractiveWindowPromptToSave,
 			) !== true;
+
 		this.label = label ?? this.createEditorLabel(resource);
 	}
 
@@ -198,6 +203,7 @@ export class ReplEditorInput
 		if (this.inputModelRef) {
 			return this.inputModelRef.object.textEditorModel;
 		}
+
 		const lastCell = notebook.cells[notebook.cells.length - 1];
 
 		if (!lastCell) {
@@ -216,7 +222,9 @@ export class ReplEditorInput
 	override dispose() {
 		if (!this.isDisposing) {
 			this.isDisposing = true;
+
 			this.editorModelReference?.object.revert({ soft: true });
+
 			this.inputModelRef?.dispose();
 
 			super.dispose();

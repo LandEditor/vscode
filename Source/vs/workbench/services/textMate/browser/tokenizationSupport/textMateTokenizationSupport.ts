@@ -26,8 +26,10 @@ export class TextMateTokenizationSupport
 	implements ITokenizationSupport
 {
 	private readonly _seenLanguages: boolean[] = [];
+
 	private readonly _onDidEncounterLanguage: Emitter<LanguageId> =
 		this._register(new Emitter<LanguageId>());
+
 	public readonly onDidEncounterLanguage: Event<LanguageId> =
 		this._onDidEncounterLanguage.event;
 
@@ -51,14 +53,17 @@ export class TextMateTokenizationSupport
 	) {
 		super();
 	}
+
 	public get backgroundTokenizerShouldOnlyVerifyTokens():
 		| boolean
 		| undefined {
 		return this._backgroundTokenizerShouldOnlyVerifyTokens();
 	}
+
 	public getInitialState(): IState {
 		return this._initialState;
 	}
+
 	public tokenize(
 		line: string,
 		hasEOL: boolean,
@@ -66,6 +71,7 @@ export class TextMateTokenizationSupport
 	): TokenizationResult {
 		throw new Error("Not supported!");
 	}
+
 	public createBackgroundTokenizer(
 		textModel: ITextModel,
 		store: IBackgroundTokenizationStore,
@@ -73,8 +79,10 @@ export class TextMateTokenizationSupport
 		if (this._createBackgroundTokenizer) {
 			return this._createBackgroundTokenizer(textModel, store);
 		}
+
 		return undefined;
 	}
+
 	public tokenizeEncoded(
 		line: string,
 		hasEOL: boolean,
@@ -99,6 +107,7 @@ export class TextMateTokenizationSupport
 				);
 			}
 		}
+
 		if (textMateResult.stoppedEarly) {
 			console.warn(
 				`Time limit reached when tokenizing line: ${line.substring(0, 100)}`,
@@ -106,6 +115,7 @@ export class TextMateTokenizationSupport
 			// return the state at the beginning of the line
 			return new EncodedTokenizationResult(textMateResult.tokens, state);
 		}
+
 		if (this._containsEmbeddedLanguages) {
 			const seenLanguages = this._seenLanguages;
 
@@ -118,10 +128,12 @@ export class TextMateTokenizationSupport
 
 				if (!seenLanguages[languageId]) {
 					seenLanguages[languageId] = true;
+
 					this._onDidEncounterLanguage.fire(languageId);
 				}
 			}
 		}
+
 		let endState: StateStack;
 		// try to save an object if possible
 		if (state.equals(textMateResult.ruleStack)) {
@@ -129,6 +141,7 @@ export class TextMateTokenizationSupport
 		} else {
 			endState = textMateResult.ruleStack;
 		}
+
 		return new EncodedTokenizationResult(textMateResult.tokens, endState);
 	}
 }

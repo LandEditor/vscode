@@ -28,15 +28,21 @@ export const IRequestService =
 
 export interface AuthInfo {
 	isProxy: boolean;
+
 	scheme: string;
+
 	host: string;
+
 	port: number;
+
 	realm: string;
+
 	attempt: number;
 }
 
 export interface Credentials {
 	username: string;
+
 	password: string;
 }
 
@@ -49,8 +55,11 @@ export interface IRequestService {
 	): Promise<IRequestContext>;
 
 	resolveProxy(url: string): Promise<string | undefined>;
+
 	lookupAuthorization(authInfo: AuthInfo): Promise<Credentials | undefined>;
+
 	lookupKerberosAuthorization(url: string): Promise<string | undefined>;
+
 	loadCertificates(): Promise<string[]>;
 }
 
@@ -73,8 +82,10 @@ class LoggableHeaders {
 					headers[key] = this.original[key];
 				}
 			}
+
 			this.headers = headers;
 		}
+
 		return this.headers;
 	}
 }
@@ -96,6 +107,7 @@ export abstract class AbstractRequestService
 		request: () => Promise<IRequestContext>,
 	): Promise<IRequestContext> {
 		const prefix = `[network] #${++this.counter}: ${options.url}`;
+
 		this.logService.trace(
 			`${prefix} - begin`,
 			options.type,
@@ -104,6 +116,7 @@ export abstract class AbstractRequestService
 
 		try {
 			const result = await request();
+
 			this.logService.trace(
 				`${prefix} - end`,
 				options.type,
@@ -127,13 +140,17 @@ export abstract class AbstractRequestService
 		options: IRequestOptions,
 		token: CancellationToken,
 	): Promise<IRequestContext>;
+
 	abstract resolveProxy(url: string): Promise<string | undefined>;
+
 	abstract lookupAuthorization(
 		authInfo: AuthInfo,
 	): Promise<Credentials | undefined>;
+
 	abstract lookupKerberosAuthorization(
 		url: string,
 	): Promise<string | undefined>;
+
 	abstract loadCertificates(): Promise<string[]>;
 }
 
@@ -154,6 +171,7 @@ export async function asText(context: IRequestContext): Promise<string | null> {
 	if (hasNoContent(context)) {
 		return null;
 	}
+
 	const buffer = await streamToBuffer(context.stream);
 
 	return buffer.toString();
@@ -165,6 +183,7 @@ export async function asTextOrError(
 	if (!isSuccess(context)) {
 		throw new Error("Server returned " + context.res.statusCode);
 	}
+
 	return asText(context);
 }
 
@@ -174,9 +193,11 @@ export async function asJson<T = {}>(
 	if (!isSuccess(context)) {
 		throw new Error("Server returned " + context.res.statusCode);
 	}
+
 	if (hasNoContent(context)) {
 		return null;
 	}
+
 	const buffer = await streamToBuffer(context.stream);
 
 	const str = buffer.toString();
@@ -203,6 +224,7 @@ function registerProxyConfigurations(scope: ConfigurationScope): void {
 	);
 
 	const oldProxyConfiguration = proxyConfiguration;
+
 	proxyConfiguration = {
 		id: "http",
 		order: 15,
@@ -324,6 +346,7 @@ function registerProxyConfigurations(scope: ConfigurationScope): void {
 			},
 		},
 	};
+
 	configurationRegistry.updateConfigurations({
 		add: [proxyConfiguration],
 		remove: oldProxyConfiguration ? [oldProxyConfiguration] : [],

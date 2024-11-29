@@ -14,14 +14,18 @@ function decorate(
 
 		if (typeof descriptor.value === "function") {
 			fnKey = "value";
+
 			fn = descriptor.value;
 		} else if (typeof descriptor.get === "function") {
 			fnKey = "get";
+
 			fn = descriptor.get;
 		}
+
 		if (!fn || !fnKey) {
 			throw new Error("not supported");
 		}
+
 		descriptor[fnKey] = decorator(fn, key);
 	};
 }
@@ -37,6 +41,7 @@ function _memoize(fn: Function, key: string): Function {
 				value: fn.apply(this, args),
 			});
 		}
+
 		return this[memoizeKey];
 	};
 }
@@ -50,6 +55,7 @@ function _throttle<T>(fn: Function, key: string): Function {
 		if (this[nextKey]) {
 			return this[nextKey];
 		}
+
 		if (this[currentKey]) {
 			this[nextKey] = done(this[currentKey]).then(() => {
 				this[nextKey] = undefined;
@@ -59,6 +65,7 @@ function _throttle<T>(fn: Function, key: string): Function {
 
 			return this[nextKey];
 		}
+
 		this[currentKey] = fn.apply(this, args) as Promise<T>;
 
 		const clear = () => (this[currentKey] = undefined);
@@ -79,6 +86,7 @@ function _sequentialize(fn: Function, key: string): Function {
 			(this[currentKey] as Promise<any>) || Promise.resolve(null);
 
 		const run = async () => await fn.apply(this, args);
+
 		this[currentKey] = currentPromise.then(run, run);
 
 		return this[currentKey];
@@ -92,6 +100,7 @@ export function debounce(delay: number): Function {
 
 		return function (this: any, ...args: any[]) {
 			clearTimeout(this[timerKey]);
+
 			this[timerKey] = setTimeout(() => fn.apply(this, args), delay);
 		};
 	});

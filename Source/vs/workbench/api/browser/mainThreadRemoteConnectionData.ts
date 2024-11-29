@@ -26,6 +26,7 @@ export class MainThreadRemoteConnectionData extends Disposable {
 		remoteAuthorityResolverService: IRemoteAuthorityResolverService,
 	) {
 		super();
+
 		this._proxy = extHostContext.getProxy(
 			ExtHostContext.ExtHostExtensionService,
 		);

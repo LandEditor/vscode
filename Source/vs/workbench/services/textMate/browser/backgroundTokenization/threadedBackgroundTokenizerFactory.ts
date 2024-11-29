@@ -46,16 +46,23 @@ import { TextMateWorkerHost } from "./worker/textMateWorkerHost.js";
 
 export class ThreadedBackgroundTokenizerFactory implements IDisposable {
 	private static _reportedMismatchingTokens = false;
+
 	private _workerProxyPromise: Promise<Proxied<TextMateTokenizationWorker> | null> | null =
 		null;
+
 	private _worker: IWorkerClient<TextMateTokenizationWorker> | null = null;
+
 	private _workerProxy: Proxied<TextMateTokenizationWorker> | null = null;
+
 	private readonly _workerTokenizerControllers = new Map<
 		/* backgroundTokenizerId */ number,
 		TextMateWorkerTokenizerController
 	>();
+
 	private _currentTheme: IRawTheme | null = null;
+
 	private _currentTokenColorMap: string[] | null = null;
+
 	private _grammarDefinitions: IValidGrammarDefinition[] = [];
 
 	constructor(
@@ -80,6 +87,7 @@ export class ThreadedBackgroundTokenizerFactory implements IDisposable {
 		@ITelemetryService
 		private readonly _telemetryService: ITelemetryService,
 	) {}
+
 	public dispose(): void {
 		this._disposeWorker();
 	}
@@ -93,6 +101,7 @@ export class ThreadedBackgroundTokenizerFactory implements IDisposable {
 		if (!this._shouldTokenizeAsync() || textModel.isTooLargeForSyncing()) {
 			return undefined;
 		}
+
 		const store = new DisposableStore();
 
 		const controllerContainer = this._getWorkerProxy().then(
@@ -100,12 +109,14 @@ export class ThreadedBackgroundTokenizerFactory implements IDisposable {
 				if (store.isDisposed || !workerProxy) {
 					return undefined;
 				}
+
 				const controllerContainer = {
 					controller: undefined as
 						| undefined
 						| TextMateWorkerTokenizerController,
 					worker: this._worker,
 				};
+
 				store.add(
 					keepAliveWhenAttached(textModel, () => {
 						const controller =
@@ -117,7 +128,9 @@ export class ThreadedBackgroundTokenizerFactory implements IDisposable {
 								this._configurationService,
 								maxTokenizationLineLength,
 							);
+
 						controllerContainer.controller = controller;
+
 						this._workerTokenizerControllers.set(
 							controller.controllerId,
 							controller,
@@ -125,9 +138,11 @@ export class ThreadedBackgroundTokenizerFactory implements IDisposable {
 
 						return toDisposable(() => {
 							controllerContainer.controller = undefined;
+
 							this._workerTokenizerControllers.delete(
 								controller.controllerId,
 							);
+
 							controller.dispose();
 						});
 					}),
@@ -161,32 +176,40 @@ export class ThreadedBackgroundTokenizerFactory implements IDisposable {
 				) {
 					return;
 				}
+
 				ThreadedBackgroundTokenizerFactory._reportedMismatchingTokens =
 					true;
+
 				this._notificationService.error({
 					message:
 						"Async Tokenization Token Mismatch in line " +
 						lineNumber,
 					name: "Async Tokenization Token Mismatch",
 				});
+
 				this._telemetryService.publicLog2<
 					{},
 					{
 						owner: "hediet";
+
 						comment: "Used to see if async tokenization is bug-free";
 					}
 				>("asyncTokenizationMismatchingTokens", {});
 			},
 		};
 	}
+
 	public setGrammarDefinitions(
 		grammarDefinitions: IValidGrammarDefinition[],
 	): void {
 		this._grammarDefinitions = grammarDefinitions;
+
 		this._disposeWorker();
 	}
+
 	public acceptTheme(theme: IRawTheme, colorMap: string[]): void {
 		this._currentTheme = theme;
+
 		this._currentTokenColorMap = colorMap;
 
 		if (
@@ -200,12 +223,15 @@ export class ThreadedBackgroundTokenizerFactory implements IDisposable {
 			);
 		}
 	}
+
 	private _getWorkerProxy(): Promise<Proxied<TextMateTokenizationWorker> | null> {
 		if (!this._workerProxyPromise) {
 			this._workerProxyPromise = this._createWorkerProxy();
 		}
+
 		return this._workerProxyPromise;
 	}
+
 	private async _createWorkerProxy(): Promise<Proxied<TextMateTokenizationWorker> | null> {
 		const onigurumaModuleLocation: AppResourcePath = `${nodeModulesPath}/vscode-oniguruma`;
 
@@ -230,6 +256,7 @@ export class ThreadedBackgroundTokenizerFactory implements IDisposable {
 				"vs/workbench/services/textMate/browser/backgroundTokenization/worker/textMateTokenizationWorker.worker",
 				"TextMateWorker",
 			));
+
 		TextMateWorkerHost.setChannel(worker, {
 			$readFile: async (_resource: UriComponents): Promise<string> => {
 				const resource = URI.revive(_resource);
@@ -274,12 +301,14 @@ export class ThreadedBackgroundTokenizerFactory implements IDisposable {
 				);
 			},
 		});
+
 		await worker.proxy.$init(createData);
 
 		if (this._worker !== worker) {
 			// disposed in the meantime
 			return null;
 		}
+
 		this._workerProxy = worker.proxy;
 
 		if (this._currentTheme && this._currentTokenColorMap) {
@@ -288,19 +317,25 @@ export class ThreadedBackgroundTokenizerFactory implements IDisposable {
 				this._currentTokenColorMap,
 			);
 		}
+
 		return worker.proxy;
 	}
+
 	private _disposeWorker(): void {
 		for (const controller of this._workerTokenizerControllers.values()) {
 			controller.dispose();
 		}
+
 		this._workerTokenizerControllers.clear();
 
 		if (this._worker) {
 			this._worker.dispose();
+
 			this._worker = null;
 		}
+
 		this._workerProxy = null;
+
 		this._workerProxyPromise = null;
 	}
 }
@@ -319,7 +354,9 @@ function keepAliveWhenAttached(
 			subStore.clear();
 		}
 	}
+
 	checkAttached();
+
 	disposableStore.add(
 		textModel.onDidChangeAttached(() => {
 			checkAttached();

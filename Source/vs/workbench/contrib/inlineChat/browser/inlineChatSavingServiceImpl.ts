@@ -39,8 +39,11 @@ import { IInlineChatSessionService } from "./inlineChatSessionService.js";
 
 interface SessionData {
 	readonly resourceUri: URI;
+
 	readonly dispose: () => void;
+
 	readonly session: Session;
+
 	readonly groupCandidate: IEditorGroup;
 }
 // TODO@jrieken this duplicates a config key
@@ -48,10 +51,13 @@ const key = "chat.editing.alwaysSaveWithGeneratedChanges";
 
 export class InlineChatSavingServiceImpl implements IInlineChatSavingService {
 	declare readonly _serviceBrand: undefined;
+
 	private readonly _store = new DisposableStore();
+
 	private readonly _saveParticipant = this._store.add(
 		new MutableDisposable(),
 	);
+
 	private readonly _sessionData = new Map<Session, SessionData>();
 
 	constructor(
@@ -80,6 +86,7 @@ export class InlineChatSavingServiceImpl implements IInlineChatSavingService {
 				this._sessionData.get(e.session)?.dispose();
 			}),
 		);
+
 		this._store.add(
 			_configService.onDidChangeConfiguration((e) => {
 				if (
@@ -90,21 +97,27 @@ export class InlineChatSavingServiceImpl implements IInlineChatSavingService {
 				) {
 					return;
 				}
+
 				if (this._isDisabled()) {
 					dispose(this._sessionData.values());
+
 					this._sessionData.clear();
 				}
 			}),
 		);
 	}
+
 	dispose(): void {
 		this._store.dispose();
+
 		dispose(this._sessionData.values());
 	}
+
 	markChanged(session: Session): void {
 		if (this._isDisabled()) {
 			return;
 		}
+
 		if (!this._sessionData.has(session)) {
 			let uri = session.targetUri;
 			// notebooks: use the notebook-uri because saving happens on the notebook-level
@@ -114,19 +127,24 @@ export class InlineChatSavingServiceImpl implements IInlineChatSavingService {
 				if (!data) {
 					return;
 				}
+
 				uri = data?.notebook;
 			}
+
 			if (this._sessionData.size === 0) {
 				this._installSaveParticpant();
 			}
+
 			const saveConfigOverride =
 				this._fileConfigService.disableAutoSave(uri);
+
 			this._sessionData.set(session, {
 				resourceUri: uri,
 				groupCandidate: this._editorGroupService.activeGroup,
 				session,
 				dispose: () => {
 					saveConfigOverride.dispose();
+
 					this._sessionData.delete(session);
 
 					if (this._sessionData.size === 0) {
@@ -136,6 +154,7 @@ export class InlineChatSavingServiceImpl implements IInlineChatSavingService {
 			});
 		}
 	}
+
 	private _installSaveParticpant(): void {
 		const queue = new Queue<void>();
 
@@ -164,8 +183,10 @@ export class InlineChatSavingServiceImpl implements IInlineChatSavingService {
 				);
 			},
 		});
+
 		this._saveParticipant.value = combinedDisposable(d1, d2, queue);
 	}
+
 	private async _participate(
 		uri: URI | undefined,
 		reason: SaveReason,
@@ -177,10 +198,12 @@ export class InlineChatSavingServiceImpl implements IInlineChatSavingService {
 			// because we have disabled auto-save for them
 			return;
 		}
+
 		if (this._isDisabled()) {
 			// disabled
 			return;
 		}
+
 		const sessions = new Map<Session, SessionData>();
 
 		for (const [session, data] of this._sessionData) {
@@ -188,9 +211,11 @@ export class InlineChatSavingServiceImpl implements IInlineChatSavingService {
 				sessions.set(session, data);
 			}
 		}
+
 		if (sessions.size === 0) {
 			return;
 		}
+
 		let message: string;
 
 		if (sessions.size === 1) {
@@ -201,6 +226,7 @@ export class InlineChatSavingServiceImpl implements IInlineChatSavingService {
 			const filelabel = this._labelService.getUriBasenameLabel(
 				session.textModelN.uri,
 			);
+
 			message = localize(
 				"message.1",
 				"Do you want to save the changes {0} made in {1}?",
@@ -215,12 +241,14 @@ export class InlineChatSavingServiceImpl implements IInlineChatSavingService {
 					),
 				),
 			);
+
 			message = localize(
 				"message.2",
 				"Do you want to save the changes inline chat made in {0}?",
 				labels.join(", "),
 			);
 		}
+
 		const result = await this._dialogService.confirm({
 			message,
 			detail: localize(
@@ -242,11 +270,13 @@ export class InlineChatSavingServiceImpl implements IInlineChatSavingService {
 			// cancel the save
 			throw new CancellationError();
 		}
+
 		if (result.checkboxChecked) {
 			// remember choice
 			this._configService.updateValue(key, true);
 		}
 	}
+
 	private _isDisabled() {
 		return (
 			this._configService.getValue<boolean>(

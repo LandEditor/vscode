@@ -94,53 +94,70 @@ export interface IExtHostDebugService extends ExtHostDebugServiceShape {
 	readonly _serviceBrand: undefined;
 
 	onDidStartDebugSession: Event<vscode.DebugSession>;
+
 	onDidTerminateDebugSession: Event<vscode.DebugSession>;
+
 	onDidChangeActiveDebugSession: Event<vscode.DebugSession | undefined>;
+
 	activeDebugSession: vscode.DebugSession | undefined;
+
 	activeDebugConsole: vscode.DebugConsole;
+
 	onDidReceiveDebugSessionCustomEvent: Event<vscode.DebugSessionCustomEvent>;
+
 	onDidChangeBreakpoints: Event<vscode.BreakpointsChangeEvent>;
 
 	breakpoints: vscode.Breakpoint[];
+
 	onDidChangeActiveStackItem: Event<
 		vscode.DebugThread | vscode.DebugStackFrame | undefined
 	>;
+
 	activeStackItem: vscode.DebugThread | vscode.DebugStackFrame | undefined;
 
 	addBreakpoints(breakpoints0: readonly vscode.Breakpoint[]): Promise<void>;
+
 	removeBreakpoints(
 		breakpoints0: readonly vscode.Breakpoint[],
 	): Promise<void>;
+
 	startDebugging(
 		folder: vscode.WorkspaceFolder | undefined,
 		nameOrConfig: string | vscode.DebugConfiguration,
 		options: vscode.DebugSessionOptions,
 	): Promise<boolean>;
+
 	stopDebugging(session?: vscode.DebugSession): Promise<void>;
+
 	registerDebugConfigurationProvider(
 		type: string,
 		provider: vscode.DebugConfigurationProvider,
 		trigger: vscode.DebugConfigurationProviderTriggerKind,
 	): vscode.Disposable;
+
 	registerDebugAdapterDescriptorFactory(
 		extension: IExtensionDescription,
 		type: string,
 		factory: vscode.DebugAdapterDescriptorFactory,
 	): vscode.Disposable;
+
 	registerDebugAdapterTrackerFactory(
 		type: string,
 		factory: vscode.DebugAdapterTrackerFactory,
 	): vscode.Disposable;
+
 	registerDebugVisualizationProvider<T extends vscode.DebugVisualization>(
 		extension: IExtensionDescription,
 		id: string,
 		provider: vscode.DebugVisualizationProvider<T>,
 	): vscode.Disposable;
+
 	registerDebugVisualizationTree<T extends vscode.DebugTreeItem>(
 		extension: IExtensionDescription,
 		id: string,
 		provider: vscode.DebugVisualizationTree<T>,
 	): vscode.Disposable;
+
 	asDebugSourceUri(
 		source: vscode.DebugProtocolSource,
 		session?: vscode.DebugSession,
@@ -154,15 +171,19 @@ export abstract class ExtHostDebugServiceBase
 	readonly _serviceBrand: undefined;
 
 	private _configProviderHandleCounter: number;
+
 	private _configProviders: ConfigProviderTuple[];
 
 	private _adapterFactoryHandleCounter: number;
+
 	private _adapterFactories: DescriptorFactoryTuple[];
 
 	private _trackerFactoryHandleCounter: number;
+
 	private _trackerFactories: TrackerFactoryTuple[];
 
 	private _debugServiceProxy: MainThreadDebugServiceShape;
+
 	private _debugSessions: Map<DebugSessionUUID, ExtHostDebugSession> =
 		new Map<DebugSessionUUID, ExtHostDebugSession>();
 
@@ -214,26 +235,32 @@ export abstract class ExtHostDebugServiceBase
 		| vscode.DebugThread
 		| vscode.DebugStackFrame
 		| undefined;
+
 	private readonly _onDidChangeActiveStackItem: Emitter<
 		vscode.DebugThread | vscode.DebugStackFrame | undefined
 	>;
 
 	private _debugAdapters: Map<number, IDebugAdapter>;
+
 	private _debugAdaptersTrackers: Map<number, vscode.DebugAdapterTracker>;
 
 	private _debugVisualizationTreeItemIdsCounter = 0;
+
 	private readonly _debugVisualizationProviders = new Map<
 		string,
 		vscode.DebugVisualizationProvider
 	>();
+
 	private readonly _debugVisualizationTrees = new Map<
 		string,
 		vscode.DebugVisualizationTree
 	>();
+
 	private readonly _debugVisualizationTreeItemIds = new WeakMap<
 		vscode.DebugTreeItem,
 		number
 	>();
+
 	private readonly _debugVisualizationElements = new Map<
 		number,
 		{ provider: string; item: vscode.DebugTreeItem; children?: number[] }
@@ -245,10 +272,13 @@ export abstract class ExtHostDebugServiceBase
 		number,
 		{
 			v: vscode.DebugVisualization;
+
 			provider: vscode.DebugVisualizationProvider;
+
 			extensionId: string;
 		}
 	>();
+
 	private _visualizerIdCounter = 0;
 
 	private _telemetryProxy: MainThreadTelemetryShape;
@@ -270,26 +300,33 @@ export abstract class ExtHostDebugServiceBase
 		super();
 
 		this._configProviderHandleCounter = 0;
+
 		this._configProviders = [];
 
 		this._adapterFactoryHandleCounter = 0;
+
 		this._adapterFactories = [];
 
 		this._trackerFactoryHandleCounter = 0;
+
 		this._trackerFactories = [];
 
 		this._debugAdapters = new Map();
+
 		this._debugAdaptersTrackers = new Map();
 
 		this._onDidStartDebugSession = this._register(
 			new Emitter<vscode.DebugSession>(),
 		);
+
 		this._onDidTerminateDebugSession = this._register(
 			new Emitter<vscode.DebugSession>(),
 		);
+
 		this._onDidChangeActiveDebugSession = this._register(
 			new Emitter<vscode.DebugSession | undefined>(),
 		);
+
 		this._onDidReceiveDebugSessionCustomEvent = this._register(
 			new Emitter<vscode.DebugSessionCustomEvent>(),
 		);
@@ -322,6 +359,7 @@ export abstract class ExtHostDebugServiceBase
 						this.registerAllDebugTypes(extensionRegistry);
 					}),
 				);
+
 				this.registerAllDebugTypes(extensionRegistry);
 			});
 
@@ -363,6 +401,7 @@ export abstract class ExtHostDebugServiceBase
 		}
 
 		this._debugVisualizationTrees.set(key, provider);
+
 		this._debugServiceProxy.$registerDebugVisualizerTree(
 			key,
 			!!provider.editItem,
@@ -370,6 +409,7 @@ export abstract class ExtHostDebugServiceBase
 
 		return toDisposable(() => {
 			this._debugServiceProxy.$unregisterDebugVisualizerTree(key);
+
 			this._debugVisualizationTrees.delete(id);
 		});
 	}
@@ -426,6 +466,7 @@ export abstract class ExtHostDebugServiceBase
 					queue.push(
 						this._debugVisualizationElements.get(child)?.children,
 					);
+
 					this._debugVisualizationElements.delete(child);
 				}
 			}
@@ -440,7 +481,9 @@ export abstract class ExtHostDebugServiceBase
 
 		if (!id) {
 			id = this._debugVisualizationTreeItemIdsCounter++;
+
 			this._debugVisualizationTreeItemIds.set(item, id);
+
 			this._debugVisualizationElements.set(id, {
 				provider: treeId,
 				item,
@@ -468,6 +511,7 @@ export abstract class ExtHostDebugServiceBase
 
 			if (session) {
 				debug += `${sep}session=${encodeURIComponent(session.id)}`;
+
 				sep = "&";
 			}
 
@@ -529,6 +573,7 @@ export abstract class ExtHostDebugServiceBase
 
 	get breakpoints(): vscode.Breakpoint[] {
 		const result: vscode.Breakpoint[] = [];
+
 		this._breakpoints.forEach((bp) => result.push(bp));
 
 		return result;
@@ -548,6 +593,7 @@ export abstract class ExtHostDebugServiceBase
 
 		if (!v.visualization) {
 			v = (await provider.resolveDebugVisualization?.(v, token)) || v;
+
 			visualizer.v = v;
 		}
 
@@ -620,6 +666,7 @@ export abstract class ExtHostDebugServiceBase
 
 		return visualizations.map((v) => {
 			const id = ++this._visualizerIdCounter;
+
 			this._visualizers.set(id, { v, provider, extensionId });
 
 			const icon = v.iconPath
@@ -669,10 +716,12 @@ export abstract class ExtHostDebugServiceBase
 		}
 
 		this._debugVisualizationProviders.set(key, provider);
+
 		this._debugServiceProxy.$registerDebugVisualizer(extensionId, id);
 
 		return toDisposable(() => {
 			this._debugServiceProxy.$unregisterDebugVisualizer(extensionId, id);
+
 			this._debugVisualizationProviders.delete(id);
 		});
 	}
@@ -687,6 +736,7 @@ export abstract class ExtHostDebugServiceBase
 
 				return true;
 			}
+
 			return false;
 		});
 
@@ -709,9 +759,12 @@ export abstract class ExtHostDebugServiceBase
 						uri: bp.location.uri,
 						lines: [],
 					} satisfies ISourceMultiBreakpointDto;
+
 					map.set(bp.location.uri.toString(), dto);
+
 					dtos.push(dto);
 				}
+
 				dto.lines.push({
 					id: bp.id,
 					enabled: bp.enabled,
@@ -823,6 +876,7 @@ export abstract class ExtHostDebugServiceBase
 		}
 
 		const handle = this._configProviderHandleCounter++;
+
 		this._configProviders.push({ type, handle, provider });
 
 		this._debugServiceProxy.$registerDebugConfigurationProvider(
@@ -868,6 +922,7 @@ export abstract class ExtHostDebugServiceBase
 		}
 
 		const handle = this._adapterFactoryHandleCounter++;
+
 		this._adapterFactories.push({ type, handle, factory });
 
 		this._debugServiceProxy.$registerDebugAdapterDescriptorFactory(
@@ -894,6 +949,7 @@ export abstract class ExtHostDebugServiceBase
 		}
 
 		const handle = this._trackerFactoryHandleCounter++;
+
 		this._trackerFactories.push({ type, handle, factory });
 
 		return new Disposable(() => {
@@ -930,6 +986,7 @@ export abstract class ExtHostDebugServiceBase
 				},
 			};
 		}
+
 		const variableResolver = await this._variableResolver.getResolver();
 
 		return variableResolver.resolveAnyAsync(ws, config);
@@ -942,6 +999,7 @@ export abstract class ExtHostDebugServiceBase
 		if (adapter instanceof DebugAdapterInlineImplementation) {
 			return new DirectDebugAdapter(adapter.implementation);
 		}
+
 		return undefined;
 	}
 
@@ -1011,16 +1069,20 @@ export abstract class ExtHostDebugServiceBase
 								const signature = await this._signService.sign(
 									request.arguments.value,
 								);
+
 								response.body = {
 									signature: signature,
 								};
+
 								debugAdapter.sendResponse(response);
 							} else {
 								throw new Error("no signer");
 							}
 						} catch (e) {
 							response.success = false;
+
 							response.message = e.message;
+
 							debugAdapter.sendResponse(response);
 						}
 					} else {
@@ -1039,6 +1101,7 @@ export abstract class ExtHostDebugServiceBase
 								((message as any).command ??
 									(message as any).event ??
 									"");
+
 							this._telemetryProxy.$publicLog2<
 								DebugProtocolMessageErrorEvent,
 								DebugProtocolMessageErrorClassification
@@ -1056,10 +1119,12 @@ export abstract class ExtHostDebugServiceBase
 						);
 					}
 				});
+
 				debugAdapter.onError((err) => {
 					if (tracker && tracker.onError) {
 						tracker.onError(err);
 					}
+
 					this._debugServiceProxy.$acceptDAError(
 						debugAdapterHandle,
 						err.name,
@@ -1067,10 +1132,12 @@ export abstract class ExtHostDebugServiceBase
 						err.stack,
 					);
 				});
+
 				debugAdapter.onExit((code: number | null) => {
 					if (tracker && tracker.onExit) {
 						tracker.onExit(code ?? undefined, undefined);
 					}
+
 					this._debugServiceProxy.$acceptDAExit(
 						debugAdapterHandle,
 						code ?? undefined,
@@ -1100,11 +1167,13 @@ export abstract class ExtHostDebugServiceBase
 		}
 
 		const da = this._debugAdapters.get(debugAdapterHandle);
+
 		da?.sendMessage(message);
 	}
 
 	public $stopDASession(debugAdapterHandle: number): Promise<void> {
 		const tracker = this._debugAdaptersTrackers.get(debugAdapterHandle);
+
 		this._debugAdaptersTrackers.delete(debugAdapterHandle);
 
 		if (tracker && tracker.onWillStopSession) {
@@ -1112,6 +1181,7 @@ export abstract class ExtHostDebugServiceBase
 		}
 
 		const da = this._debugAdapters.get(debugAdapterHandle);
+
 		this._debugAdapters.delete(debugAdapterHandle);
 
 		if (da) {
@@ -1157,6 +1227,7 @@ export abstract class ExtHostDebugServiceBase
 						);
 					} else {
 						const uri = URI.revive(bpd.uri);
+
 						bp = new SourceBreakpoint(
 							new Location(
 								uri,
@@ -1169,8 +1240,11 @@ export abstract class ExtHostDebugServiceBase
 							bpd.mode,
 						);
 					}
+
 					setBreakpointId(bp, id);
+
 					this._breakpoints.set(id, bp);
+
 					a.push(bp);
 				}
 			}
@@ -1182,6 +1256,7 @@ export abstract class ExtHostDebugServiceBase
 
 				if (bp) {
 					this._breakpoints.delete(id);
+
 					r.push(bp);
 				}
 			}
@@ -1198,25 +1273,36 @@ export abstract class ExtHostDebugServiceBase
 							bpd.type === "function"
 						) {
 							const fbp = <any>bp;
+
 							fbp.enabled = bpd.enabled;
+
 							fbp.condition = bpd.condition;
+
 							fbp.hitCondition = bpd.hitCondition;
+
 							fbp.logMessage = bpd.logMessage;
+
 							fbp.functionName = bpd.functionName;
 						} else if (
 							bp instanceof SourceBreakpoint &&
 							bpd.type === "source"
 						) {
 							const sbp = <any>bp;
+
 							sbp.enabled = bpd.enabled;
+
 							sbp.condition = bpd.condition;
+
 							sbp.hitCondition = bpd.hitCondition;
+
 							sbp.logMessage = bpd.logMessage;
+
 							sbp.location = new Location(
 								URI.revive(bpd.uri),
 								new Position(bpd.line, bpd.character),
 							);
 						}
+
 						c.push(bp);
 					}
 				}
@@ -1246,6 +1332,7 @@ export abstract class ExtHostDebugServiceBase
 		}
 
 		this._activeStackItem = focus;
+
 		this._onDidChangeActiveStackItem.fire(this._activeStackItem);
 	}
 
@@ -1261,11 +1348,13 @@ export abstract class ExtHostDebugServiceBase
 			if (!provider) {
 				throw new Error("no DebugConfigurationProvider found");
 			}
+
 			if (!provider.provideDebugConfigurations) {
 				throw new Error(
 					"DebugConfigurationProvider has no method provideDebugConfigurations",
 				);
 			}
+
 			const folder = await this.getFolder(folderUri);
 
 			return provider.provideDebugConfigurations(folder, token);
@@ -1275,6 +1364,7 @@ export abstract class ExtHostDebugServiceBase
 					"nothing returned from DebugConfigurationProvider.provideDebugConfigurations",
 				);
 			}
+
 			return debugConfigurations;
 		});
 	}
@@ -1292,11 +1382,13 @@ export abstract class ExtHostDebugServiceBase
 			if (!provider) {
 				throw new Error("no DebugConfigurationProvider found");
 			}
+
 			if (!provider.resolveDebugConfiguration) {
 				throw new Error(
 					"DebugConfigurationProvider has no method resolveDebugConfiguration",
 				);
 			}
+
 			const folder = await this.getFolder(folderUri);
 
 			return provider.resolveDebugConfiguration(
@@ -1320,11 +1412,13 @@ export abstract class ExtHostDebugServiceBase
 			if (!provider) {
 				throw new Error("no DebugConfigurationProvider found");
 			}
+
 			if (!provider.resolveDebugConfigurationWithSubstitutedVariables) {
 				throw new Error(
 					"DebugConfigurationProvider has no method resolveDebugConfigurationWithSubstitutedVariables",
 				);
 			}
+
 			const folder = await this.getFolder(folderUri);
 
 			return provider.resolveDebugConfigurationWithSubstitutedVariables(
@@ -1347,6 +1441,7 @@ export abstract class ExtHostDebugServiceBase
 				new Error("no adapter descriptor factory found for handle"),
 			);
 		}
+
 		const session = await this.getSession(sessionDto);
 
 		return this.getAdapterDescriptor(
@@ -1358,6 +1453,7 @@ export abstract class ExtHostDebugServiceBase
 					`Couldn't find a debug adapter descriptor for debug type '${session.type}'`,
 				);
 			}
+
 			return this.convertToDto(adapterDescriptor);
 		});
 	}
@@ -1366,6 +1462,7 @@ export abstract class ExtHostDebugServiceBase
 		sessionDto: IDebugSessionDto,
 	): Promise<void> {
 		const session = await this.getSession(sessionDto);
+
 		this._onDidStartDebugSession.fire(session.api);
 	}
 
@@ -1376,6 +1473,7 @@ export abstract class ExtHostDebugServiceBase
 
 		if (session) {
 			this._onDidTerminateDebugSession.fire(session.api);
+
 			this._debugSessions.delete(session.id);
 		}
 	}
@@ -1386,6 +1484,7 @@ export abstract class ExtHostDebugServiceBase
 		this._activeDebugSession = sessionDto
 			? await this.getSession(sessionDto)
 			: undefined;
+
 		this._onDidChangeActiveDebugSession.fire(this._activeDebugSession?.api);
 	}
 
@@ -1394,6 +1493,7 @@ export abstract class ExtHostDebugServiceBase
 		name: string,
 	): Promise<void> {
 		const session = await this.getSession(sessionDto);
+
 		session?._acceptNameChanged(name);
 	}
 
@@ -1408,6 +1508,7 @@ export abstract class ExtHostDebugServiceBase
 			event: event.event,
 			body: event.body,
 		};
+
 		this._onDidReceiveDebugSessionCustomEvent.fire(ee);
 	}
 
@@ -1473,6 +1574,7 @@ export abstract class ExtHostDebugServiceBase
 		if (results.length > 0) {
 			return results[0].factory;
 		}
+
 		return undefined;
 	}
 
@@ -1486,6 +1588,7 @@ export abstract class ExtHostDebugServiceBase
 		if (results.length > 0) {
 			return results[0].factory;
 		}
+
 		return undefined;
 	}
 
@@ -1499,6 +1602,7 @@ export abstract class ExtHostDebugServiceBase
 		if (results.length > 0) {
 			return results[0].provider;
 		}
+
 		return undefined;
 	}
 
@@ -1517,6 +1621,7 @@ export abstract class ExtHostDebugServiceBase
 				}
 			}
 		}
+
 		return false;
 	}
 
@@ -1544,6 +1649,7 @@ export abstract class ExtHostDebugServiceBase
 				if (trackers.length > 0) {
 					return new MultiTracker(trackers);
 				}
+
 				return undefined;
 			}),
 			new Promise<undefined>((resolve) =>
@@ -1581,6 +1687,7 @@ export abstract class ExtHostDebugServiceBase
 				if (daDescriptor) {
 					return daDescriptor;
 				}
+
 				return undefined;
 			});
 		}
@@ -1636,6 +1743,7 @@ export abstract class ExtHostDebugServiceBase
 					const parent = dto.parent
 						? this._debugSessions.get(dto.parent)
 						: undefined;
+
 					ds = new ExtHostDebugSession(
 						this._debugServiceProxy,
 						dto.id,
@@ -1645,12 +1753,16 @@ export abstract class ExtHostDebugServiceBase
 						dto.configuration,
 						parent?.api,
 					);
+
 					this._debugSessions.set(ds.id, ds);
+
 					this._debugServiceProxy.$sessionCached(ds.id);
 				}
+
 				return ds;
 			}
 		}
+
 		throw new Error("cannot find session");
 	}
 
@@ -1662,6 +1774,7 @@ export abstract class ExtHostDebugServiceBase
 
 			return this._workspaceService.resolveWorkspaceFolder(folderURI);
 		}
+
 		return Promise.resolve(undefined);
 	}
 
@@ -1716,6 +1829,7 @@ export abstract class ExtHostDebugServiceBase
 		if (iconPath instanceof ThemeIcon) {
 			return { id: iconPath.id };
 		}
+
 		const dark =
 			typeof iconPath === "object" && "dark" in iconPath
 				? iconPath.dark
@@ -1757,6 +1871,7 @@ export class ExtHostDebugSession {
 			},
 			set name(name: string) {
 				that._name = name;
+
 				that._debugServiceProxy.$setDebugSessionName(that._id, name);
 			},
 			parentSession: that._parentSession,
@@ -1814,19 +1929,25 @@ export class ExtHostDebugConsole {
 
 interface ConfigProviderTuple {
 	type: string;
+
 	handle: number;
+
 	provider: vscode.DebugConfigurationProvider;
 }
 
 interface DescriptorFactoryTuple {
 	type: string;
+
 	handle: number;
+
 	factory: vscode.DebugAdapterDescriptorFactory;
 }
 
 interface TrackerFactoryTuple {
 	type: string;
+
 	handle: number;
+
 	factory: vscode.DebugAdapterTrackerFactory;
 }
 
@@ -1930,19 +2051,27 @@ export class WorkerExtHostDebugService extends ExtHostDebugServiceBase {
 type DebugProtocolMessageErrorClassification = {
 	from: {
 		classification: "SystemMetaData";
+
 		purpose: "PerformanceAndHealth";
+
 		comment: "The type of the debug adapter that the event is from.";
 	};
+
 	type: {
 		classification: "SystemMetaData";
+
 		purpose: "PerformanceAndHealth";
+
 		comment: "The type of the event that was malformed.";
 	};
+
 	owner: "roblourens";
+
 	comment: "Sent to collect details about misbehaving debug extensions.";
 };
 
 type DebugProtocolMessageErrorEvent = {
 	from: string;
+
 	type: string;
 };

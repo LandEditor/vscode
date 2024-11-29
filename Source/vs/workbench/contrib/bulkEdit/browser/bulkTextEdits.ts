@@ -48,6 +48,7 @@ type ValidationResult =
 	  }
 	| {
 			canApply: false;
+
 			reason: URI;
 	  };
 type ISingleSnippetEditOperation = ISingleEditOperation & {
@@ -55,24 +56,31 @@ type ISingleSnippetEditOperation = ISingleEditOperation & {
 };
 class ModelEditTask implements IDisposable {
 	readonly model: ITextModel;
+
 	private _expectedModelVersionId: number | undefined;
+
 	protected _edits: ISingleSnippetEditOperation[];
+
 	protected _newEol: EndOfLineSequence | undefined;
 
 	constructor(
 		private readonly _modelReference: IReference<IResolvedTextEditorModel>,
 	) {
 		this.model = this._modelReference.object.textEditorModel;
+
 		this._edits = [];
 	}
+
 	dispose() {
 		this._modelReference.dispose();
 	}
+
 	isNoOp() {
 		if (this._edits.length > 0) {
 			// contains textual edits
 			return false;
 		}
+
 		if (
 			this._newEol !== undefined &&
 			this._newEol !== this.model.getEndOfLineSequence()
@@ -80,8 +88,10 @@ class ModelEditTask implements IDisposable {
 			// contains an eol change that is a real change
 			return false;
 		}
+
 		return true;
 	}
+
 	addEdit(resourceEdit: ResourceTextEdit): void {
 		this._expectedModelVersionId = resourceEdit.versionId;
 
@@ -91,10 +101,12 @@ class ModelEditTask implements IDisposable {
 			// honor eol-change
 			this._newEol = textEdit.eol;
 		}
+
 		if (!textEdit.range && !textEdit.text) {
 			// lacks both a range and the text
 			return;
 		}
+
 		if (Range.isEmpty(textEdit.range) && !textEdit.text) {
 			// no-op edit (replace empty range with empty text)
 			return;
@@ -107,11 +119,13 @@ class ModelEditTask implements IDisposable {
 		} else {
 			range = Range.lift(textEdit.range);
 		}
+
 		this._edits.push({
 			...EditOperation.replaceMove(range, textEdit.text),
 			insertAsSnippet: textEdit.insertAsSnippet,
 		});
 	}
+
 	validate(): ValidationResult {
 		if (
 			typeof this._expectedModelVersionId === "undefined" ||
@@ -119,11 +133,14 @@ class ModelEditTask implements IDisposable {
 		) {
 			return { canApply: true };
 		}
+
 		return { canApply: false, reason: this.model.uri };
 	}
+
 	getBeforeCursorState(): Selection[] | null {
 		return null;
 	}
+
 	apply(): void {
 		if (this._edits.length > 0) {
 			this._edits = this._edits
@@ -131,12 +148,15 @@ class ModelEditTask implements IDisposable {
 				.sort((a, b) =>
 					Range.compareRangesUsingStarts(a.range, b.range),
 				);
+
 			this.model.pushEditOperations(null, this._edits, () => null);
 		}
+
 		if (this._newEol !== undefined) {
 			this.model.pushEOL(this._newEol);
 		}
 	}
+
 	protected _transformSnippetStringToInsertText(
 		edit: ISingleSnippetEditOperation,
 	): ISingleSnippetEditOperation {
@@ -146,9 +166,11 @@ class ModelEditTask implements IDisposable {
 		if (!edit.insertAsSnippet) {
 			return edit;
 		}
+
 		if (!edit.text) {
 			return edit;
 		}
+
 		const text = SnippetParser.asInsertText(edit.text);
 
 		return { ...edit, insertAsSnippet: false, text };
@@ -162,11 +184,14 @@ class EditorEditTask extends ModelEditTask {
 		editor: ICodeEditor,
 	) {
 		super(modelReference);
+
 		this._editor = editor;
 	}
+
 	override getBeforeCursorState(): Selection[] | null {
 		return this._canUseEditor() ? this._editor.getSelections() : null;
 	}
+
 	override apply(): void {
 		// Check that the editor is still for the wanted model. It might have changed in the
 		// meantime and that means we cannot use the editor anymore (instead we perform the edit through the model)
@@ -175,6 +200,7 @@ class EditorEditTask extends ModelEditTask {
 
 			return;
 		}
+
 		if (this._edits.length > 0) {
 			const snippetCtrl = SnippetController2.get(this._editor);
 
@@ -195,6 +221,7 @@ class EditorEditTask extends ModelEditTask {
 						});
 					}
 				}
+
 				snippetCtrl.apply(snippetEdits, {
 					undoStopBefore: false,
 					undoStopAfter: false,
@@ -206,15 +233,18 @@ class EditorEditTask extends ModelEditTask {
 					.sort((a, b) =>
 						Range.compareRangesUsingStarts(a.range, b.range),
 					);
+
 				this._editor.executeEdits("", this._edits);
 			}
 		}
+
 		if (this._newEol !== undefined) {
 			if (this._editor.hasModel()) {
 				this._editor.getModel().pushEOL(this._newEol);
 			}
 		}
 	}
+
 	private _canUseEditor(): boolean {
 		return (
 			this._editor?.getModel()?.uri.toString() ===
@@ -248,11 +278,14 @@ export class BulkTextEdits {
 
 			if (!array) {
 				array = [];
+
 				this._edits.set(edit.resource, array);
 			}
+
 			array.push(edit);
 		}
 	}
+
 	private _validateBeforePrepare(): void {
 		// First check if loaded models were not changed in the meantime
 		for (const array of this._edits.values()) {
@@ -270,6 +303,7 @@ export class BulkTextEdits {
 			}
 		}
 	}
+
 	private async _createEditsTasks(): Promise<ModelEditTask[]> {
 		const tasks: ModelEditTask[] = [];
 
@@ -288,10 +322,12 @@ export class BulkTextEdits {
 						ref.object.textEditorModel.uri.toString()
 					) {
 						task = new EditorEditTask(ref, this._editor);
+
 						makeMinimal = true;
 					} else {
 						task = new ModelEditTask(ref);
 					}
+
 					tasks.push(task);
 
 					if (!makeMinimal) {
@@ -343,14 +379,18 @@ export class BulkTextEdits {
 							start = i + 1;
 						}
 					}
+
 					await makeGroupMoreMinimal(start, i);
 				});
+
 			promises.push(promise);
 		}
+
 		await Promise.all(promises);
 
 		return tasks;
 	}
+
 	private _validateTasks(tasks: ModelEditTask[]): ValidationResult {
 		for (const task of tasks) {
 			const result = task.validate();
@@ -359,8 +399,10 @@ export class BulkTextEdits {
 				return result;
 			}
 		}
+
 		return { canApply: true };
 	}
+
 	async apply(): Promise<readonly URI[]> {
 		this._validateBeforePrepare();
 
@@ -370,6 +412,7 @@ export class BulkTextEdits {
 			if (this._token.isCancellationRequested) {
 				return [];
 			}
+
 			const resources: URI[] = [];
 
 			const validation = this._validateTasks(tasks);
@@ -379,6 +422,7 @@ export class BulkTextEdits {
 					`${validation.reason.toString()} has changed in the meantime`,
 				);
 			}
+
 			if (tasks.length === 1) {
 				// This edit touches a single model => keep things simple
 				const task = tasks[0];
@@ -391,15 +435,20 @@ export class BulkTextEdits {
 							task.model,
 							task.getBeforeCursorState(),
 						);
+
 					this._undoRedoService.pushElement(
 						singleModelEditStackElement,
 						this._undoRedoGroup,
 						this._undoRedoSource,
 					);
+
 					task.apply();
+
 					singleModelEditStackElement.close();
+
 					resources.push(task.model.uri);
 				}
+
 				this._progress.report(undefined);
 			} else {
 				// prepare multi model undo element
@@ -417,6 +466,7 @@ export class BulkTextEdits {
 								),
 						),
 					);
+
 				this._undoRedoService.pushElement(
 					multiModelEditStackElement,
 					this._undoRedoGroup,
@@ -425,11 +475,15 @@ export class BulkTextEdits {
 
 				for (const task of tasks) {
 					task.apply();
+
 					this._progress.report(undefined);
+
 					resources.push(task.model.uri);
 				}
+
 				multiModelEditStackElement.close();
 			}
+
 			return resources;
 		} finally {
 			dispose(tasks);

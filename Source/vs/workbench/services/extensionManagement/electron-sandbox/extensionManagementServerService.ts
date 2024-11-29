@@ -28,9 +28,12 @@ export class ExtensionManagementServerService
 	implements IExtensionManagementServerService
 {
 	declare readonly _serviceBrand: undefined;
+
 	readonly localExtensionManagementServer: IExtensionManagementServer;
+
 	readonly remoteExtensionManagementServer: IExtensionManagementServer | null =
 		null;
+
 	readonly webExtensionManagementServer: IExtensionManagementServer | null =
 		null;
 
@@ -52,6 +55,7 @@ export class ExtensionManagementServerService
 				sharedProcessService.getChannel("extensions"),
 			),
 		);
+
 		this.localExtensionManagementServer = {
 			extensionManagementService: localExtensionManagementService,
 			id: "local",
@@ -67,6 +71,7 @@ export class ExtensionManagementServerService
 					remoteAgentConnection.getChannel<IChannel>("extensions"),
 					this.localExtensionManagementServer,
 				);
+
 			this.remoteExtensionManagementServer = {
 				id: "remote",
 				extensionManagementService,
@@ -81,20 +86,24 @@ export class ExtensionManagementServerService
 			};
 		}
 	}
+
 	getExtensionManagementServer(
 		extension: IExtension,
 	): IExtensionManagementServer {
 		if (extension.location.scheme === Schemas.file) {
 			return this.localExtensionManagementServer;
 		}
+
 		if (
 			this.remoteExtensionManagementServer &&
 			extension.location.scheme === Schemas.vscodeRemote
 		) {
 			return this.remoteExtensionManagementServer;
 		}
+
 		throw new Error(`Invalid Extension ${extension.location}`);
 	}
+
 	getExtensionInstallLocation(
 		extension: IExtension,
 	): ExtensionInstallLocation | null {

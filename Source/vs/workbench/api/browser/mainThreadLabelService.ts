@@ -41,6 +41,7 @@ export class MainThreadLabelService
 
 		const disposable =
 			this._labelService.registerCachedFormatter(formatter);
+
 		this._resourceLabelFormatters.set(handle, disposable);
 	}
 	$unregisterResourceLabelFormatter(handle: number): void {

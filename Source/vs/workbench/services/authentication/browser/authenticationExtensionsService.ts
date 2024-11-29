@@ -48,6 +48,7 @@ import { IAuthenticationUsageService } from "./authenticationUsageService.js";
 const SCOPESLIST_SEPARATOR = " ";
 interface SessionRequest {
 	disposables: IDisposable[];
+
 	requestingExtensionIds: string[];
 }
 interface SessionRequestInfo {
@@ -59,34 +60,44 @@ export class AuthenticationExtensionsService
 	implements IAuthenticationExtensionsService
 {
 	declare readonly _serviceBrand: undefined;
+
 	private _signInRequestItems = new Map<string, SessionRequestInfo>();
+
 	private _sessionAccessRequestItems = new Map<
 		string,
 		{
 			[extensionId: string]: {
 				disposables: IDisposable[];
+
 				possibleSessions: AuthenticationSession[];
 			};
 		}
 	>();
+
 	private readonly _accountBadgeDisposable = this._register(
 		new MutableDisposable(),
 	);
+
 	private _onDidAccountPreferenceChange: Emitter<{
 		providerId: string;
+
 		extensionIds: string[];
 	}> = this._register(
 		new Emitter<{
 			providerId: string;
+
 			extensionIds: string[];
 		}>(),
 	);
+
 	readonly onDidChangeAccountPreference =
 		this._onDidAccountPreferenceChange.event;
+
 	private _inheritAuthAccountPreferenceParentToChildren: Record<
 		string,
 		string[]
 	> = this._productService.inheritAuthAccountPreference || {};
+
 	private _inheritAuthAccountPreferenceChildToParent = Object.entries(
 		this._inheritAuthAccountPreferenceParentToChildren,
 	).reduce<{
@@ -118,8 +129,10 @@ export class AuthenticationExtensionsService
 		private readonly _authenticationAccessService: IAuthenticationAccessService,
 	) {
 		super();
+
 		this.registerListeners();
 	}
+
 	private registerListeners() {
 		this._register(
 			this._authenticationService.onDidChangeSessions(async (e) => {
@@ -129,20 +142,24 @@ export class AuthenticationExtensionsService
 						e.event.added,
 					);
 				}
+
 				if (e.event.removed?.length) {
 					await this.updateAccessRequests(
 						e.providerId,
 						e.event.removed,
 					);
 				}
+
 				this.updateBadgeCount();
 			}),
 		);
+
 		this._register(
 			this._authenticationService.onDidUnregisterAuthenticationProvider(
 				(e) => {
 					const accessRequests =
 						this._sessionAccessRequestItems.get(e.id) || {};
+
 					Object.keys(accessRequests).forEach((extensionId) => {
 						this.removeAccessRequest(e.id, extensionId);
 					});
@@ -150,6 +167,7 @@ export class AuthenticationExtensionsService
 			),
 		);
 	}
+
 	private async updateNewSessionRequests(
 		providerId: string,
 		addedSessions: readonly AuthenticationSession[],
@@ -160,6 +178,7 @@ export class AuthenticationExtensionsService
 		if (!existingRequestsForProvider) {
 			return;
 		}
+
 		Object.keys(existingRequestsForProvider).forEach((requestedScopes) => {
 			if (
 				addedSessions.some(
@@ -170,7 +189,9 @@ export class AuthenticationExtensionsService
 			) {
 				const sessionRequest =
 					existingRequestsForProvider[requestedScopes];
+
 				sessionRequest?.disposables.forEach((item) => item.dispose());
+
 				delete existingRequestsForProvider[requestedScopes];
 
 				if (Object.keys(existingRequestsForProvider).length === 0) {
@@ -184,6 +205,7 @@ export class AuthenticationExtensionsService
 			}
 		});
 	}
+
 	private async updateAccessRequests(
 		providerId: string,
 		removedSessions: readonly AuthenticationSession[],
@@ -214,16 +236,19 @@ export class AuthenticationExtensionsService
 			});
 		}
 	}
+
 	private updateBadgeCount(): void {
 		this._accountBadgeDisposable.clear();
 
 		let numberOfRequests = 0;
+
 		this._signInRequestItems.forEach((providerRequests) => {
 			Object.keys(providerRequests).forEach((request) => {
 				numberOfRequests +=
 					providerRequests[request].requestingExtensionIds.length;
 			});
 		});
+
 		this._sessionAccessRequestItems.forEach((accessRequest) => {
 			numberOfRequests += Object.keys(accessRequest).length;
 		});
@@ -232,17 +257,21 @@ export class AuthenticationExtensionsService
 			const badge = new NumberBadge(numberOfRequests, () =>
 				nls.localize("sign in", "Sign in requested"),
 			);
+
 			this._accountBadgeDisposable.value =
 				this.activityService.showAccountsActivity({ badge });
 		}
 	}
+
 	private removeAccessRequest(providerId: string, extensionId: string): void {
 		const providerRequests =
 			this._sessionAccessRequestItems.get(providerId) || {};
 
 		if (providerRequests[extensionId]) {
 			dispose(providerRequests[extensionId].disposables);
+
 			delete providerRequests[extensionId];
+
 			this.updateBadgeCount();
 		}
 	}
@@ -268,6 +297,7 @@ export class AuthenticationExtensionsService
 			StorageScope.WORKSPACE,
 			StorageTarget.MACHINE,
 		);
+
 		this.storageService.store(
 			key,
 			account.label,
@@ -283,8 +313,10 @@ export class AuthenticationExtensionsService
 		const extensionIds = childrenExtensions
 			? [parentExtensionId, ...childrenExtensions]
 			: [parentExtensionId];
+
 		this._onDidAccountPreferenceChange.fire({ extensionIds, providerId });
 	}
+
 	getAccountPreference(
 		extensionId: string,
 		providerId: string,
@@ -302,6 +334,7 @@ export class AuthenticationExtensionsService
 			this.storageService.get(key, StorageScope.APPLICATION)
 		);
 	}
+
 	removeAccountPreference(extensionId: string, providerId: string): void {
 		const realExtensionId = ExtensionIdentifier.toKey(extensionId);
 
@@ -315,8 +348,10 @@ export class AuthenticationExtensionsService
 		// so we really don't _need_ to remove them as they are about to be overridden anyway... but it's more correct
 		// to remove them first... and in case this gets called from somewhere else in the future.
 		this.storageService.remove(key, StorageScope.WORKSPACE);
+
 		this.storageService.remove(key, StorageScope.APPLICATION);
 	}
+
 	private _getKey(extensionId: string, providerId: string): string {
 		return `${extensionId}-${providerId}`;
 	}
@@ -341,6 +376,7 @@ export class AuthenticationExtensionsService
 			StorageScope.WORKSPACE,
 			StorageTarget.MACHINE,
 		);
+
 		this.storageService.store(
 			key,
 			session.id,
@@ -348,6 +384,7 @@ export class AuthenticationExtensionsService
 			StorageTarget.MACHINE,
 		);
 	}
+
 	getSessionPreference(
 		providerId: string,
 		extensionId: string,
@@ -365,6 +402,7 @@ export class AuthenticationExtensionsService
 			this.storageService.get(key, StorageScope.APPLICATION)
 		);
 	}
+
 	removeSessionPreference(
 		providerId: string,
 		extensionId: string,
@@ -381,14 +419,17 @@ export class AuthenticationExtensionsService
 		// so we really don't _need_ to remove them as they are about to be overridden anyway... but it's more correct
 		// to remove them first... and in case this gets called from somewhere else in the future.
 		this.storageService.remove(key, StorageScope.WORKSPACE);
+
 		this.storageService.remove(key, StorageScope.APPLICATION);
 	}
+
 	private _updateAccountAndSessionPreferences(
 		providerId: string,
 		extensionId: string,
 		session: AuthenticationSession,
 	): void {
 		this.updateAccountPreference(extensionId, providerId, session.account);
+
 		this.updateSessionPreference(providerId, extensionId, session);
 	}
 	//#endregion
@@ -403,6 +444,7 @@ export class AuthenticationExtensionsService
 			Deny = 1,
 			Cancel = 2,
 		}
+
 		const { result } = await this.dialogService.prompt<SessionPromptChoice>(
 			{
 				type: Severity.Info,
@@ -450,8 +492,10 @@ export class AuthenticationExtensionsService
 					},
 				],
 			);
+
 			this.removeAccessRequest(provider.id, extensionId);
 		}
+
 		return result === SessionPromptChoice.Allow;
 	}
 	/**
@@ -470,22 +514,28 @@ export class AuthenticationExtensionsService
 		if (!allAccounts.length) {
 			throw new Error("No accounts available");
 		}
+
 		const disposables = new DisposableStore();
 
 		const quickPick = disposables.add(
 			this.quickInputService.createQuickPick<{
 				label: string;
+
 				session?: AuthenticationSession;
+
 				account?: AuthenticationSessionAccount;
 			}>(),
 		);
+
 		quickPick.ignoreFocusOut = true;
 
 		const accountsWithSessions = new Set<string>();
 
 		const items: {
 			label: string;
+
 			session?: AuthenticationSession;
+
 			account?: AuthenticationSessionAccount;
 		}[] = availableSessions
 			// Only grab the first account
@@ -507,13 +557,16 @@ export class AuthenticationExtensionsService
 				items.push({ label: account.label, account });
 			}
 		});
+
 		items.push({
 			label: nls.localize(
 				"useOtherAccount",
 				"Sign in to another account",
 			),
 		});
+
 		quickPick.items = items;
+
 		quickPick.title = nls.localize(
 			{
 				key: "selectAccount",
@@ -525,6 +578,7 @@ export class AuthenticationExtensionsService
 			extensionName,
 			this._authenticationService.getProvider(providerId).label,
 		);
+
 		quickPick.placeholder = nls.localize(
 			"getSessionPlateholder",
 			"Select an account for '{0}' to use or Esc to cancel",
@@ -554,7 +608,9 @@ export class AuthenticationExtensionsService
 							return;
 						}
 					}
+
 					const accountName = session.account.label;
+
 					this._authenticationAccessService.updateAllowedExtensions(
 						providerId,
 						accountName,
@@ -566,26 +622,33 @@ export class AuthenticationExtensionsService
 							},
 						],
 					);
+
 					this._updateAccountAndSessionPreferences(
 						providerId,
 						extensionId,
 						session,
 					);
+
 					this.removeAccessRequest(providerId, extensionId);
+
 					resolve(session);
 				}),
 			);
+
 			disposables.add(
 				quickPick.onDidHide((_) => {
 					if (!quickPick.selectedItems[0]) {
 						reject("User did not consent to account access");
 					}
+
 					disposables.dispose();
 				}),
 			);
+
 			quickPick.show();
 		});
 	}
+
 	private async completeSessionAccessRequest(
 		provider: IAuthenticationProvider,
 		extensionId: string,
@@ -600,9 +663,11 @@ export class AuthenticationExtensionsService
 		if (!existingRequest) {
 			return;
 		}
+
 		if (!provider) {
 			return;
 		}
+
 		const possibleSessions = existingRequest.possibleSessions;
 
 		let session: AuthenticationSession | undefined;
@@ -631,6 +696,7 @@ export class AuthenticationExtensionsService
 				session = possibleSessions[0];
 			}
 		}
+
 		if (session) {
 			this._authenticationUsageService.addAccountUsage(
 				provider.id,
@@ -641,6 +707,7 @@ export class AuthenticationExtensionsService
 			);
 		}
 	}
+
 	requestSessionAccess(
 		providerId: string,
 		extensionId: string,
@@ -656,6 +723,7 @@ export class AuthenticationExtensionsService
 		if (hasExistingRequest) {
 			return;
 		}
+
 		const provider = this._authenticationService.getProvider(providerId);
 
 		const menuItem = MenuRegistry.appendMenuItem(MenuId.AccountsContext, {
@@ -687,13 +755,17 @@ export class AuthenticationExtensionsService
 				);
 			},
 		});
+
 		providerRequests[extensionId] = {
 			possibleSessions,
 			disposables: [menuItem, accessCommand],
 		};
+
 		this._sessionAccessRequestItems.set(providerId, providerRequests);
+
 		this.updateBadgeCount();
 	}
+
 	async requestNewSession(
 		providerId: string,
 		scopes: string[],
@@ -714,12 +786,14 @@ export class AuthenticationExtensionsService
 						(e) => {
 							if (e.id === providerId) {
 								dispose.dispose();
+
 								resolve();
 							}
 						},
 					);
 			});
 		}
+
 		let provider: IAuthenticationProvider;
 
 		try {
@@ -727,6 +801,7 @@ export class AuthenticationExtensionsService
 		} catch (_e) {
 			return;
 		}
+
 		const providerRequests = this._signInRequestItems.get(providerId);
 
 		const scopesList = scopes.join(SCOPESLIST_SEPARATOR);
@@ -773,11 +848,13 @@ export class AuthenticationExtensionsService
 					providerId,
 					scopes,
 				);
+
 				this._authenticationAccessService.updateAllowedExtensions(
 					providerId,
 					session.account.label,
 					[{ id: extensionId, name: extensionName, allowed: true }],
 				);
+
 				this._updateAccountAndSessionPreferences(
 					providerId,
 					extensionId,
@@ -791,6 +868,7 @@ export class AuthenticationExtensionsService
 				disposables: [],
 				requestingExtensionIds: [],
 			};
+
 			providerRequests[scopesList] = {
 				disposables: [
 					...existingRequest.disposables,
@@ -802,6 +880,7 @@ export class AuthenticationExtensionsService
 					extensionId,
 				],
 			};
+
 			this._signInRequestItems.set(providerId, providerRequests);
 		} else {
 			this._signInRequestItems.set(providerId, {
@@ -811,6 +890,7 @@ export class AuthenticationExtensionsService
 				},
 			});
 		}
+
 		this.updateBadgeCount();
 	}
 }

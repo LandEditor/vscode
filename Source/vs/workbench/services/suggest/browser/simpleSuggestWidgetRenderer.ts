@@ -26,24 +26,35 @@ export interface ISimpleSuggestionTemplateData {
 	 * <icon><label><signature><qualifier>     <type><readmore>
 	 */
 	readonly left: HTMLElement;
+
 	readonly right: HTMLElement;
+
 	readonly icon: HTMLElement;
+
 	readonly colorspan: HTMLElement;
+
 	readonly iconLabel: IconLabel;
+
 	readonly iconContainer: HTMLElement;
+
 	readonly parametersLabel: HTMLElement;
+
 	readonly qualifierLabel: HTMLElement;
 	/**
 	 * Showing either `CompletionItem#details` or `CompletionItemLabel#type`
 	 */
 	readonly detailsLabel: HTMLElement;
 	// readonly readMore: HTMLElement;
+
 	readonly disposables: DisposableStore;
 }
 export interface ISimpleSuggestWidgetFontInfo {
 	fontFamily: string;
+
 	fontSize: number;
+
 	lineHeight: number;
+
 	fontWeight: string;
 
 	letterSpacing: number;
@@ -53,19 +64,24 @@ export class SimpleSuggestWidgetItemRenderer
 		IListRenderer<SimpleCompletionItem, ISimpleSuggestionTemplateData>
 {
 	private readonly _onDidToggleDetails = new Emitter<void>();
+
 	readonly onDidToggleDetails: Event<void> = this._onDidToggleDetails.event;
+
 	readonly templateId = "suggestion";
 
 	constructor(
 		private readonly _getFontInfo: () => ISimpleSuggestWidgetFontInfo,
 	) {}
+
 	dispose(): void {
 		this._onDidToggleDetails.dispose();
 	}
+
 	renderTemplate(container: HTMLElement): ISimpleSuggestionTemplateData {
 		const disposables = new DisposableStore();
 
 		const root = container;
+
 		root.classList.add("show-file-icons");
 
 		const icon = append(container, $(".icon"));
@@ -86,6 +102,7 @@ export class SimpleSuggestWidgetItemRenderer
 			supportHighlights: true,
 			supportIcons: true,
 		});
+
 		disposables.add(iconLabel);
 
 		const parametersLabel = append(left, $("span.signature-label"));
@@ -112,17 +129,26 @@ export class SimpleSuggestWidgetItemRenderer
 			const lineHeightPx = `${lineHeight}px`;
 
 			const letterSpacingPx = `${letterSpacing}px`;
+
 			root.style.fontSize = fontSizePx;
+
 			root.style.fontWeight = fontWeight;
+
 			root.style.letterSpacing = letterSpacingPx;
+
 			main.style.fontFamily = fontFamily;
+
 			main.style.fontFeatureSettings = fontFeatureSettings;
+
 			main.style.lineHeight = lineHeightPx;
+
 			icon.style.height = lineHeightPx;
+
 			icon.style.width = lineHeightPx;
 			// readMore.style.height = lineHeightPx;
 			// readMore.style.width = lineHeightPx;
 		};
+
 		configureFont();
 		// data.disposables.add(this._editor.onDidChangeConfiguration(e => {
 		// 	if (e.hasChanged(EditorOption.fontInfo) || e.hasChanged(EditorOption.suggestFontSize) || e.hasChanged(EditorOption.suggestLineHeight)) {
@@ -144,13 +170,16 @@ export class SimpleSuggestWidgetItemRenderer
 			disposables,
 		};
 	}
+
 	renderElement(
 		element: SimpleCompletionItem,
 		index: number,
 		data: ISimpleSuggestionTemplateData,
 	): void {
 		const { completion } = element;
+
 		data.root.id = getAriaId(index);
+
 		data.colorspan.style.backgroundColor = "";
 
 		const labelOptions: IIconLabelValueOptions = {
@@ -181,7 +210,9 @@ export class SimpleSuggestWidgetItemRenderer
 		// } else {
 		// normal icon
 		data.icon.className = "icon hide";
+
 		data.iconContainer.className = "";
+
 		data.iconContainer.classList.add(
 			"suggest-icon",
 			...ThemeIcon.asClassNameArray(
@@ -193,10 +224,13 @@ export class SimpleSuggestWidgetItemRenderer
 		// 	labelOptions.extraClasses = (labelOptions.extraClasses || []).concat(['deprecated']);
 		// 	labelOptions.matches = [];
 		// }
+
 		data.iconLabel.setLabel(completion.label, undefined, labelOptions);
 		// if (typeof completion.label === 'string') {
 		data.parametersLabel.textContent = "";
+
 		data.detailsLabel.textContent = stripNewLines(completion.detail || "");
+
 		data.root.classList.add("string-label");
 		// } else {
 		// 	data.parametersLabel.textContent = stripNewLines(completion.label.detail || '');
@@ -227,6 +261,7 @@ export class SimpleSuggestWidgetItemRenderer
 		// data.readMore.onclick = null;
 		// }
 	}
+
 	disposeTemplate(templateData: ISimpleSuggestionTemplateData): void {
 		templateData.disposables.dispose();
 	}

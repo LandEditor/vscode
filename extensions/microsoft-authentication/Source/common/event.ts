@@ -28,16 +28,20 @@ export class EventBufferer {
 	private data: {
 		buffers: Function[];
 	}[] = [];
+
 	wrapEvent<T>(event: Event<T>): Event<T>;
+
 	wrapEvent<T>(
 		event: Event<T>,
 		reduce: (last: T | undefined, event: T) => T,
 	): Event<T>;
+
 	wrapEvent<T, O>(
 		event: Event<T>,
 		reduce: (last: O | undefined, event: T) => O,
 		initial: O,
 	): Event<O>;
+
 	wrapEvent<T, O>(
 		event: Event<T>,
 		reduce?: (last: T | O | undefined, event: T) => T | O,
@@ -56,6 +60,7 @@ export class EventBufferer {
 							// Not buffering case
 							listener.call(thisArgs, i);
 						}
+
 						return;
 					}
 					// Reduce scenario
@@ -78,6 +83,7 @@ export class EventBufferer {
 					}
 					// Buffering case
 					reduceData.items ??= [];
+
 					reduceData.items.push(i);
 
 					if (reduceData.buffers.length === 0) {
@@ -98,6 +104,7 @@ export class EventBufferer {
 											event: T,
 										) => T,
 									);
+
 							listener.call(thisArgs, reduceData.reducedResult);
 						});
 					}
@@ -107,18 +114,24 @@ export class EventBufferer {
 			);
 		};
 	}
+
 	bufferEvents<R = void>(fn: () => R): R {
 		const data = { buffers: new Array<Function>() };
+
 		this.data.push(data);
 
 		const r = fn();
+
 		this.data.pop();
+
 		data.buffers.forEach((flush) => flush());
 
 		return r;
 	}
+
 	async bufferEventsAsync<R = void>(fn: () => Promise<R>): Promise<R> {
 		const data = { buffers: new Array<Function>() };
+
 		this.data.push(data);
 
 		try {
@@ -127,6 +140,7 @@ export class EventBufferer {
 			return r;
 		} finally {
 			this.data.pop();
+
 			data.buffers.forEach((flush) => flush());
 		}
 	}

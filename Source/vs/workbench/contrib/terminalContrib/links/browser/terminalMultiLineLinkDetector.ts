@@ -77,6 +77,7 @@ export class TerminalMultiLineLinkDetector implements ITerminalLinkDetector {
 		@IWorkspaceContextService
 		private readonly _workspaceContextService: IWorkspaceContextService,
 	) {}
+
 	async detect(
 		lines: IBufferLine[],
 		startLine: number,
@@ -94,6 +95,7 @@ export class TerminalMultiLineLinkDetector implements ITerminalLinkDetector {
 		if (text === "" || text.length > Constants.MaxLineLength) {
 			return [];
 		}
+
 		this._logService.trace(
 			"terminalMultiLineLinkDetector#detect text",
 			text,
@@ -108,6 +110,7 @@ export class TerminalMultiLineLinkDetector implements ITerminalLinkDetector {
 			if (!group) {
 				continue;
 			}
+
 			const link = group?.link;
 
 			const line = group?.line;
@@ -121,6 +124,7 @@ export class TerminalMultiLineLinkDetector implements ITerminalLinkDetector {
 			if (link.length > Constants.MaxResolvedLinkLength) {
 				continue;
 			}
+
 			this._logService.trace(
 				"terminalMultiLineLinkDetector#detect candidate",
 				link,
@@ -133,6 +137,7 @@ export class TerminalMultiLineLinkDetector implements ITerminalLinkDetector {
 				if (this.xterm.buffer.active.getLine(index)!.isWrapped) {
 					continue;
 				}
+
 				const text = getXtermLineContent(
 					this.xterm.buffer.active,
 					index,
@@ -146,6 +151,7 @@ export class TerminalMultiLineLinkDetector implements ITerminalLinkDetector {
 					break;
 				}
 			}
+
 			if (!possiblePath) {
 				continue;
 			}
@@ -192,15 +198,18 @@ export class TerminalMultiLineLinkDetector implements ITerminalLinkDetector {
 					bufferRange: bufferRange,
 					type,
 				};
+
 				this._logService.trace(
 					"terminalMultiLineLinkDetector#detect verified link",
 					simpleLink,
 				);
+
 				links.push(simpleLink);
 				// Break on the first match
 				break;
 			}
 		}
+
 		if (links.length === 0) {
 			for (const matcher of gitDiffMatchers) {
 				const match = text.match(matcher);
@@ -210,6 +219,7 @@ export class TerminalMultiLineLinkDetector implements ITerminalLinkDetector {
 				if (!group) {
 					continue;
 				}
+
 				const link = group?.link;
 
 				const toFileLine = group?.toFileLine;
@@ -223,6 +233,7 @@ export class TerminalMultiLineLinkDetector implements ITerminalLinkDetector {
 				if (link.length > Constants.MaxResolvedLinkLength) {
 					continue;
 				}
+
 				this._logService.trace(
 					"terminalMultiLineLinkDetector#detect candidate",
 					link,
@@ -235,6 +246,7 @@ export class TerminalMultiLineLinkDetector implements ITerminalLinkDetector {
 					if (this.xterm.buffer.active.getLine(index)!.isWrapped) {
 						continue;
 					}
+
 					const text = getXtermLineContent(
 						this.xterm.buffer.active,
 						index,
@@ -250,6 +262,7 @@ export class TerminalMultiLineLinkDetector implements ITerminalLinkDetector {
 						break;
 					}
 				}
+
 				if (!possiblePath) {
 					continue;
 				}
@@ -298,18 +311,22 @@ export class TerminalMultiLineLinkDetector implements ITerminalLinkDetector {
 						bufferRange: bufferRange,
 						type,
 					};
+
 					this._logService.trace(
 						"terminalMultiLineLinkDetector#detect verified link",
 						simpleLink,
 					);
+
 					links.push(simpleLink);
 					// Break on the first match
 					break;
 				}
 			}
 		}
+
 		return links;
 	}
+
 	private _isDirectoryInsideWorkspace(uri: URI) {
 		const folders = this._workspaceContextService.getWorkspace().folders;
 
@@ -323,6 +340,7 @@ export class TerminalMultiLineLinkDetector implements ITerminalLinkDetector {
 				return true;
 			}
 		}
+
 		return false;
 	}
 }

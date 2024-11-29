@@ -14,16 +14,22 @@ import {
 
 export class MarginViewLineDecorationsOverlay extends DedupOverlay {
 	private readonly _context: ViewContext;
+
 	private _renderResult: string[] | null;
 
 	constructor(context: ViewContext) {
 		super();
+
 		this._context = context;
+
 		this._renderResult = null;
+
 		this._context.addEventHandler(this);
 	}
+
 	public override dispose(): void {
 		this._context.removeEventHandler(this);
+
 		this._renderResult = null;
 
 		super.dispose();
@@ -34,34 +40,41 @@ export class MarginViewLineDecorationsOverlay extends DedupOverlay {
 	): boolean {
 		return true;
 	}
+
 	public override onDecorationsChanged(
 		e: viewEvents.ViewDecorationsChangedEvent,
 	): boolean {
 		return true;
 	}
+
 	public override onFlushed(e: viewEvents.ViewFlushedEvent): boolean {
 		return true;
 	}
+
 	public override onLinesChanged(
 		e: viewEvents.ViewLinesChangedEvent,
 	): boolean {
 		return true;
 	}
+
 	public override onLinesDeleted(
 		e: viewEvents.ViewLinesDeletedEvent,
 	): boolean {
 		return true;
 	}
+
 	public override onLinesInserted(
 		e: viewEvents.ViewLinesInsertedEvent,
 	): boolean {
 		return true;
 	}
+
 	public override onScrollChanged(
 		e: viewEvents.ViewScrollChangedEvent,
 	): boolean {
 		return e.scrollTopChanged;
 	}
+
 	public override onZonesChanged(
 		e: viewEvents.ViewZonesChangedEvent,
 	): boolean {
@@ -92,8 +105,10 @@ export class MarginViewLineDecorationsOverlay extends DedupOverlay {
 				);
 			}
 		}
+
 		return r;
 	}
+
 	public prepareRender(ctx: RenderingContext): void {
 		const visibleStartLineNumber = ctx.visibleRange.startLineNumber;
 
@@ -109,7 +124,9 @@ export class MarginViewLineDecorationsOverlay extends DedupOverlay {
 
 		for (
 			let lineNumber = visibleStartLineNumber;
+
 			lineNumber <= visibleEndLineNumber;
+
 			lineNumber++
 		) {
 			const lineIndex = lineNumber - visibleStartLineNumber;
@@ -124,14 +141,18 @@ export class MarginViewLineDecorationsOverlay extends DedupOverlay {
 					decoration.className +
 					'" style=""></div>';
 			}
+
 			output[lineIndex] = lineOutput;
 		}
+
 		this._renderResult = output;
 	}
+
 	public render(startLineNumber: number, lineNumber: number): string {
 		if (!this._renderResult) {
 			return "";
 		}
+
 		return this._renderResult[lineNumber - startLineNumber];
 	}
 }

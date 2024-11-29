@@ -9,64 +9,96 @@ import { BottomUpSample } from "./profilingModel.js";
 
 type TelemetrySampleData = {
 	selfTime: number;
+
 	totalTime: number;
+
 	percentage: number;
+
 	perfBaseline: number;
 
 	functionName: string;
+
 	callers: string;
+
 	callersAnnotated: string;
+
 	source: string;
 };
 type TelemetrySampleDataClassification = {
 	owner: "jrieken";
+
 	comment: "A callstack that took a long time to execute";
+
 	selfTime: {
 		classification: "SystemMetaData";
+
 		purpose: "PerformanceAndHealth";
+
 		comment: "Self time of the sample";
 	};
+
 	totalTime: {
 		classification: "SystemMetaData";
+
 		purpose: "PerformanceAndHealth";
+
 		comment: "Total time of the sample";
 	};
+
 	percentage: {
 		classification: "SystemMetaData";
+
 		purpose: "PerformanceAndHealth";
+
 		comment: "Relative time (percentage) of the sample";
 	};
+
 	perfBaseline: {
 		classification: "SystemMetaData";
+
 		purpose: "PerformanceAndHealth";
+
 		comment: "Performance baseline for the machine";
 	};
 
 	functionName: {
 		classification: "SystemMetaData";
+
 		purpose: "PerformanceAndHealth";
+
 		comment: "The name of the sample";
 	};
+
 	callers: {
 		classification: "CallstackOrException";
+
 		purpose: "PerformanceAndHealth";
+
 		comment: "The heaviest call trace into this sample";
 	};
+
 	callersAnnotated: {
 		classification: "SystemMetaData";
+
 		purpose: "PerformanceAndHealth";
+
 		comment: "The heaviest call trace into this sample annotated with respective costs";
 	};
+
 	source: {
 		classification: "SystemMetaData";
+
 		purpose: "PerformanceAndHealth";
+
 		comment: "The source - either renderer or an extension";
 	};
 };
 
 export interface SampleData {
 	perfBaseline: number;
+
 	sample: BottomUpSample;
+
 	source: string;
 }
 export function reportSample(
@@ -106,13 +138,16 @@ class PerformanceError extends Error {
 
 	constructor(data: SampleData) {
 		super(`PerfSampleError: by ${data.source} in ${data.sample.location}`);
+
 		this.name = "PerfSampleError";
+
 		this.selfTime = data.sample.selfTime;
 
 		const trace = [
 			data.sample.absLocation,
 			...data.sample.caller.map((c) => c.absLocation),
 		];
+
 		this.stack = `\n\t at ${trace.join("\n\t at ")}`;
 	}
 }

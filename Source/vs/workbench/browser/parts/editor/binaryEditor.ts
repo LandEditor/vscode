@@ -28,9 +28,13 @@ export interface IOpenCallbacks {
  */
 export abstract class BaseBinaryResourceEditor extends EditorPlaceholder {
 	private readonly _onDidChangeMetadata = this._register(new Emitter<void>());
+
 	readonly onDidChangeMetadata = this._onDidChangeMetadata.event;
+
 	private readonly _onDidOpenInPlace = this._register(new Emitter<void>());
+
 	readonly onDidOpenInPlace = this._onDidOpenInPlace.event;
+
 	private metadata: string | undefined;
 
 	constructor(
@@ -44,11 +48,13 @@ export abstract class BaseBinaryResourceEditor extends EditorPlaceholder {
 	) {
 		super(id, group, telemetryService, themeService, storageService);
 	}
+
 	override getTitle(): string {
 		return this.input
 			? this.input.getName()
 			: localize("binaryEditor", "Binary Viewer");
 	}
+
 	protected async getContents(
 		input: EditorInput,
 		options: IEditorOptions,
@@ -60,6 +66,7 @@ export abstract class BaseBinaryResourceEditor extends EditorPlaceholder {
 		}
 		// Update metadata
 		const size = model.getSize();
+
 		this.handleMetadataChanged(
 			typeof size === "number" ? ByteSize.formatSize(size) : "",
 		);
@@ -83,10 +90,13 @@ export abstract class BaseBinaryResourceEditor extends EditorPlaceholder {
 			],
 		};
 	}
+
 	private handleMetadataChanged(meta: string | undefined): void {
 		this.metadata = meta;
+
 		this._onDidChangeMetadata.fire();
 	}
+
 	getMetadata(): string | undefined {
 		return this.metadata;
 	}

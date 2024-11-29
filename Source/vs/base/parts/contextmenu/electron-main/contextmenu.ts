@@ -23,6 +23,7 @@ export function registerContextMenuListener(): void {
 			options?: IPopupOptions,
 		) => {
 			const menu = createMenu(event, onClickChannel, items);
+
 			menu.popup({
 				x: options ? options.x : undefined,
 				y: options ? options.y : undefined,
@@ -48,6 +49,7 @@ function createMenu(
 	items: ISerializableContextMenuItem[],
 ): Menu {
 	const menu = new Menu();
+
 	items.forEach((item) => {
 		let menuitem: MenuItem;
 		// Separator
@@ -80,6 +82,7 @@ function createMenu(
 					),
 			});
 		}
+
 		menu.append(menuitem);
 	});
 

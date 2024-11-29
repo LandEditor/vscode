@@ -36,6 +36,7 @@ export default class PHPCompletionItemProvider
 		if (!shouldProvideCompletionItems) {
 			return Promise.resolve(result);
 		}
+
 		let range = document.getWordRangeAtPosition(position);
 
 		const prefix = range ? document.getText(range) : "";
@@ -43,6 +44,7 @@ export default class PHPCompletionItemProvider
 		if (!range) {
 			range = new Range(position, position);
 		}
+
 		if (context.triggerCharacter === ">") {
 			const twoBeforeCursor = new Position(
 				position.line,
@@ -57,6 +59,7 @@ export default class PHPCompletionItemProvider
 				return Promise.resolve(result);
 			}
 		}
+
 		const added: any = {};
 
 		const createNewProposal = function (
@@ -65,16 +68,19 @@ export default class PHPCompletionItemProvider
 			entry: phpGlobals.IEntry | null,
 		): CompletionItem {
 			const proposal: CompletionItem = new CompletionItem(name);
+
 			proposal.kind = kind;
 
 			if (entry) {
 				if (entry.description) {
 					proposal.documentation = entry.description;
 				}
+
 				if (entry.signature) {
 					proposal.detail = entry.signature;
 				}
 			}
+
 			return proposal;
 		};
 
@@ -102,21 +108,25 @@ export default class PHPCompletionItemProvider
 					"<?php",
 					null,
 				);
+
 				proposal.textEdit = new TextEdit(
 					new Range(twoBeforePosition, position),
 					"<?php",
 				);
+
 				result.push(proposal);
 
 				return Promise.resolve(result);
 			}
 		}
+
 		for (const globalvariables in phpGlobals.globalvariables) {
 			if (
 				phpGlobals.globalvariables.hasOwnProperty(globalvariables) &&
 				matches(globalvariables)
 			) {
 				added[globalvariables] = true;
+
 				result.push(
 					createNewProposal(
 						CompletionItemKind.Variable,
@@ -126,6 +136,7 @@ export default class PHPCompletionItemProvider
 				);
 			}
 		}
+
 		for (const globalfunctions in phpGlobalFunctions.globalfunctions) {
 			if (
 				phpGlobalFunctions.globalfunctions.hasOwnProperty(
@@ -134,6 +145,7 @@ export default class PHPCompletionItemProvider
 				matches(globalfunctions)
 			) {
 				added[globalfunctions] = true;
+
 				result.push(
 					createNewProposal(
 						CompletionItemKind.Function,
@@ -143,6 +155,7 @@ export default class PHPCompletionItemProvider
 				);
 			}
 		}
+
 		for (const compiletimeconstants in phpGlobals.compiletimeconstants) {
 			if (
 				phpGlobals.compiletimeconstants.hasOwnProperty(
@@ -151,6 +164,7 @@ export default class PHPCompletionItemProvider
 				matches(compiletimeconstants)
 			) {
 				added[compiletimeconstants] = true;
+
 				result.push(
 					createNewProposal(
 						CompletionItemKind.Field,
@@ -160,12 +174,14 @@ export default class PHPCompletionItemProvider
 				);
 			}
 		}
+
 		for (const keywords in phpGlobals.keywords) {
 			if (
 				phpGlobals.keywords.hasOwnProperty(keywords) &&
 				matches(keywords)
 			) {
 				added[keywords] = true;
+
 				result.push(
 					createNewProposal(
 						CompletionItemKind.Keyword,
@@ -175,6 +191,7 @@ export default class PHPCompletionItemProvider
 				);
 			}
 		}
+
 		const text = document.getText();
 
 		if (prefix[0] === "$") {
@@ -188,6 +205,7 @@ export default class PHPCompletionItemProvider
 
 				if (!added[word]) {
 					added[word] = true;
+
 					result.push(
 						createNewProposal(
 							CompletionItemKind.Variable,
@@ -198,6 +216,7 @@ export default class PHPCompletionItemProvider
 				}
 			}
 		}
+
 		const functionMatch =
 			/function\s+([a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*)\s*\(/g;
 
@@ -208,11 +227,13 @@ export default class PHPCompletionItemProvider
 
 			if (!added[word2]) {
 				added[word2] = true;
+
 				result.push(
 					createNewProposal(CompletionItemKind.Function, word2, null),
 				);
 			}
 		}
+
 		return Promise.resolve(result);
 	}
 }

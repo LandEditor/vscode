@@ -32,15 +32,18 @@ export class ChatFollowups<T extends IChatFollowup> extends Disposable {
 			container,
 			$(".interactive-session-followups"),
 		);
+
 		followups.forEach((followup) =>
 			this.renderFollowup(followupsContainer, followup),
 		);
 	}
+
 	private renderFollowup(container: HTMLElement, followup: T): void {
 		if (!this.chatAgentService.getDefaultAgent(this.location)) {
 			// No default agent yet, which affects how followups are rendered, so can't render this yet
 			return;
 		}
+
 		const tooltipPrefix = formatChatQuestion(
 			this.chatAgentService,
 			this.location,
@@ -52,6 +55,7 @@ export class ChatFollowups<T extends IChatFollowup> extends Disposable {
 		if (tooltipPrefix === undefined) {
 			return;
 		}
+
 		const baseTitle =
 			followup.kind === "reply"
 				? followup.title || followup.message
@@ -74,12 +78,15 @@ export class ChatFollowups<T extends IChatFollowup> extends Disposable {
 		} else if (followup.kind === "command") {
 			button.element.classList.add("interactive-followup-command");
 		}
+
 		button.element.ariaLabel = localize(
 			"followUpAriaLabel",
 			"Follow up question: {0}",
 			baseTitle,
 		);
+
 		button.label = new MarkdownString(baseTitle);
+
 		this._register(button.onDidClick(() => this.clickHandler(followup)));
 	}
 }

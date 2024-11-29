@@ -28,155 +28,257 @@ export type Token = MarkedToken | Tokens.Generic;
 export declare namespace Tokens {
 	interface Space {
 		type: "space";
+
 		raw: string;
 	}
+
 	interface Code {
 		type: "code";
+
 		raw: string;
+
 		codeBlockStyle?: "indented" | undefined;
+
 		lang?: string | undefined;
+
 		text: string;
+
 		escaped?: boolean;
 	}
+
 	interface Heading {
 		type: "heading";
+
 		raw: string;
+
 		depth: number;
+
 		text: string;
+
 		tokens: Token[];
 	}
+
 	interface Table {
 		type: "table";
+
 		raw: string;
+
 		align: Array<"center" | "left" | "right" | null>;
+
 		header: TableCell[];
+
 		rows: TableCell[][];
 	}
+
 	interface TableRow {
 		text: string;
 	}
+
 	interface TableCell {
 		text: string;
+
 		tokens: Token[];
+
 		header: boolean;
+
 		align: "center" | "left" | "right" | null;
 	}
+
 	interface Hr {
 		type: "hr";
+
 		raw: string;
 	}
+
 	interface Blockquote {
 		type: "blockquote";
+
 		raw: string;
+
 		text: string;
+
 		tokens: Token[];
 	}
+
 	interface List {
 		type: "list";
+
 		raw: string;
+
 		ordered: boolean;
+
 		start: number | "";
+
 		loose: boolean;
+
 		items: ListItem[];
 	}
+
 	interface ListItem {
 		type: "list_item";
+
 		raw: string;
+
 		task: boolean;
+
 		checked?: boolean | undefined;
+
 		loose: boolean;
+
 		text: string;
+
 		tokens: Token[];
 	}
+
 	interface Checkbox {
 		checked: boolean;
 	}
+
 	interface Paragraph {
 		type: "paragraph";
+
 		raw: string;
+
 		pre?: boolean | undefined;
+
 		text: string;
+
 		tokens: Token[];
 	}
+
 	interface HTML {
 		type: "html";
+
 		raw: string;
+
 		pre: boolean;
+
 		text: string;
+
 		block: boolean;
 	}
+
 	interface Text {
 		type: "text";
+
 		raw: string;
+
 		text: string;
+
 		tokens?: Token[];
 	}
+
 	interface Def {
 		type: "def";
+
 		raw: string;
+
 		tag: string;
+
 		href: string;
+
 		title: string;
 	}
+
 	interface Escape {
 		type: "escape";
+
 		raw: string;
+
 		text: string;
 	}
+
 	interface Tag {
 		type: "text" | "html";
+
 		raw: string;
+
 		inLink: boolean;
+
 		inRawBlock: boolean;
+
 		text: string;
+
 		block: boolean;
 	}
+
 	interface Link {
 		type: "link";
+
 		raw: string;
+
 		href: string;
+
 		title?: string | null;
+
 		text: string;
+
 		tokens: Token[];
 	}
+
 	interface Image {
 		type: "image";
+
 		raw: string;
+
 		href: string;
+
 		title: string | null;
+
 		text: string;
 	}
+
 	interface Strong {
 		type: "strong";
+
 		raw: string;
+
 		text: string;
+
 		tokens: Token[];
 	}
+
 	interface Em {
 		type: "em";
+
 		raw: string;
+
 		text: string;
+
 		tokens: Token[];
 	}
+
 	interface Codespan {
 		type: "codespan";
+
 		raw: string;
+
 		text: string;
 	}
+
 	interface Br {
 		type: "br";
+
 		raw: string;
 	}
+
 	interface Del {
 		type: "del";
+
 		raw: string;
+
 		text: string;
+
 		tokens: Token[];
 	}
+
 	interface Generic {
 		[index: string]: any;
+
 		type: string;
+
 		raw: string;
+
 		tokens?: Token[] | undefined;
 	}
 }
@@ -193,32 +295,53 @@ export type TokensList = Token[] & {
  */
 declare class _Renderer {
 	options: MarkedOptions;
+
 	parser: _Parser;
 
 	constructor(options?: MarkedOptions);
+
 	space(token: Tokens.Space): string;
+
 	code({ text, lang, escaped }: Tokens.Code): string;
+
 	blockquote({ tokens }: Tokens.Blockquote): string;
+
 	html({ text }: Tokens.HTML | Tokens.Tag): string;
+
 	heading({ tokens, depth }: Tokens.Heading): string;
+
 	hr(token: Tokens.Hr): string;
+
 	list(token: Tokens.List): string;
+
 	listitem(item: Tokens.ListItem): string;
+
 	checkbox({ checked }: Tokens.Checkbox): string;
+
 	paragraph({ tokens }: Tokens.Paragraph): string;
+
 	table(token: Tokens.Table): string;
+
 	tablerow({ text }: Tokens.TableRow): string;
+
 	tablecell(token: Tokens.TableCell): string;
 	/**
 	 * span level renderer
 	 */
 	strong({ tokens }: Tokens.Strong): string;
+
 	em({ tokens }: Tokens.Em): string;
+
 	codespan({ text }: Tokens.Codespan): string;
+
 	br(token: Tokens.Br): string;
+
 	del({ tokens }: Tokens.Del): string;
+
 	link({ href, title, tokens }: Tokens.Link): string;
+
 	image({ href, title, text }: Tokens.Image): string;
+
 	text(token: Tokens.Text | Tokens.Escape | Tokens.Tag): string;
 }
 /**
@@ -227,13 +350,21 @@ declare class _Renderer {
  */
 declare class _TextRenderer {
 	strong({ text }: Tokens.Strong): string;
+
 	em({ text }: Tokens.Em): string;
+
 	codespan({ text }: Tokens.Codespan): string;
+
 	del({ text }: Tokens.Del): string;
+
 	html({ text }: Tokens.HTML | Tokens.Tag): string;
+
 	text({ text }: Tokens.Text | Tokens.Escape | Tokens.Tag): string;
+
 	link({ text }: Tokens.Link): string;
+
 	image({ text }: Tokens.Image): string;
+
 	br(): string;
 }
 /**
@@ -241,7 +372,9 @@ declare class _TextRenderer {
  */
 declare class _Parser {
 	options: MarkedOptions;
+
 	renderer: _Renderer;
+
 	textRenderer: _TextRenderer;
 
 	constructor(options?: MarkedOptions);
@@ -264,40 +397,70 @@ declare class _Parser {
 }
 declare const blockNormal: {
 	blockquote: RegExp;
+
 	code: RegExp;
+
 	def: RegExp;
+
 	fences: RegExp;
+
 	heading: RegExp;
+
 	hr: RegExp;
+
 	html: RegExp;
+
 	lheading: RegExp;
+
 	list: RegExp;
+
 	newline: RegExp;
+
 	paragraph: RegExp;
+
 	table: RegExp;
+
 	text: RegExp;
 };
 
 export type BlockKeys = keyof typeof blockNormal;
 declare const inlineNormal: {
 	_backpedal: RegExp;
+
 	anyPunctuation: RegExp;
+
 	autolink: RegExp;
+
 	blockSkip: RegExp;
+
 	br: RegExp;
+
 	code: RegExp;
+
 	del: RegExp;
+
 	emStrongLDelim: RegExp;
+
 	emStrongRDelimAst: RegExp;
+
 	emStrongRDelimUnd: RegExp;
+
 	escape: RegExp;
+
 	link: RegExp;
+
 	nolink: RegExp;
+
 	punctuation: RegExp;
+
 	reflink: RegExp;
+
 	reflinkSearch: RegExp;
+
 	tag: RegExp;
+
 	text: RegExp;
+
 	url: RegExp;
 };
 
@@ -308,19 +471,32 @@ export type InlineKeys = keyof typeof inlineNormal;
 export declare const block: {
 	normal: {
 		blockquote: RegExp;
+
 		code: RegExp;
+
 		def: RegExp;
+
 		fences: RegExp;
+
 		heading: RegExp;
+
 		hr: RegExp;
+
 		html: RegExp;
+
 		lheading: RegExp;
+
 		list: RegExp;
+
 		newline: RegExp;
+
 		paragraph: RegExp;
+
 		table: RegExp;
+
 		text: RegExp;
 	};
+
 	gfm: Record<
 		| "code"
 		| "blockquote"
@@ -337,6 +513,7 @@ export declare const block: {
 		| "newline",
 		RegExp
 	>;
+
 	pedantic: Record<
 		| "code"
 		| "blockquote"
@@ -358,25 +535,44 @@ export declare const block: {
 export declare const inline: {
 	normal: {
 		_backpedal: RegExp;
+
 		anyPunctuation: RegExp;
+
 		autolink: RegExp;
+
 		blockSkip: RegExp;
+
 		br: RegExp;
+
 		code: RegExp;
+
 		del: RegExp;
+
 		emStrongLDelim: RegExp;
+
 		emStrongRDelimAst: RegExp;
+
 		emStrongRDelimUnd: RegExp;
+
 		escape: RegExp;
+
 		link: RegExp;
+
 		nolink: RegExp;
+
 		punctuation: RegExp;
+
 		reflink: RegExp;
+
 		reflinkSearch: RegExp;
+
 		tag: RegExp;
+
 		text: RegExp;
+
 		url: RegExp;
 	};
+
 	gfm: Record<
 		| "link"
 		| "code"
@@ -422,6 +618,7 @@ export declare const inline: {
 		| "reflinkSearch",
 		RegExp
 	>;
+
 	pedantic: Record<
 		| "link"
 		| "code"
@@ -448,6 +645,7 @@ export declare const inline: {
 
 export interface Rules {
 	block: Record<BlockKeys, RegExp>;
+
 	inline: Record<InlineKeys, RegExp>;
 }
 /**
@@ -455,46 +653,73 @@ export interface Rules {
  */
 declare class _Tokenizer {
 	options: MarkedOptions;
+
 	rules: Rules;
+
 	lexer: _Lexer;
 
 	constructor(options?: MarkedOptions);
+
 	space(src: string): Tokens.Space | undefined;
+
 	code(src: string): Tokens.Code | undefined;
+
 	fences(src: string): Tokens.Code | undefined;
+
 	heading(src: string): Tokens.Heading | undefined;
+
 	hr(src: string): Tokens.Hr | undefined;
+
 	blockquote(src: string): Tokens.Blockquote | undefined;
+
 	list(src: string): Tokens.List | undefined;
+
 	html(src: string): Tokens.HTML | undefined;
+
 	def(src: string): Tokens.Def | undefined;
+
 	table(src: string): Tokens.Table | undefined;
+
 	lheading(src: string): Tokens.Heading | undefined;
+
 	paragraph(src: string): Tokens.Paragraph | undefined;
+
 	text(src: string): Tokens.Text | undefined;
+
 	escape(src: string): Tokens.Escape | undefined;
+
 	tag(src: string): Tokens.Tag | undefined;
+
 	link(src: string): Tokens.Link | Tokens.Image | undefined;
+
 	reflink(
 		src: string,
 		links: Links,
 	): Tokens.Link | Tokens.Image | Tokens.Text | undefined;
+
 	emStrong(
 		src: string,
 		maskedSrc: string,
 		prevChar?: string,
 	): Tokens.Em | Tokens.Strong | undefined;
+
 	codespan(src: string): Tokens.Codespan | undefined;
+
 	br(src: string): Tokens.Br | undefined;
+
 	del(src: string): Tokens.Del | undefined;
+
 	autolink(src: string): Tokens.Link | undefined;
+
 	url(src: string): Tokens.Link | undefined;
+
 	inlineText(src: string): Tokens.Text | undefined;
 }
 declare class _Hooks {
 	options: MarkedOptions;
 
 	constructor(options?: MarkedOptions);
+
 	static passThroughHooks: Set<string>;
 	/**
 	 * Process markdown before marked
@@ -525,9 +750,13 @@ export type TokenizerStartFunction = (
 
 export interface TokenizerExtension {
 	name: string;
+
 	level: "block" | "inline";
+
 	start?: TokenizerStartFunction | undefined;
+
 	tokenizer: TokenizerExtensionFunction;
+
 	childTokens?: string[] | undefined;
 }
 export interface RendererThis {
@@ -540,6 +769,7 @@ export type RendererExtensionFunction = (
 
 export interface RendererExtension {
 	name: string;
+
 	renderer: RendererExtensionFunction;
 }
 export type TokenizerAndRendererExtension =
@@ -653,12 +883,17 @@ export interface MarkedOptions
 		renderers: {
 			[name: string]: RendererExtensionFunction;
 		};
+
 		childTokens: {
 			[name: string]: string[];
 		};
+
 		inline?: TokenizerExtensionFunction[];
+
 		block?: TokenizerExtensionFunction[];
+
 		startInline?: TokenizerStartFunction[];
+
 		startBlock?: TokenizerStartFunction[];
 	};
 	/**
@@ -673,13 +908,19 @@ export interface MarkedOptions
  */
 declare class _Lexer {
 	tokens: TokensList;
+
 	options: MarkedOptions;
+
 	state: {
 		inLink: boolean;
+
 		inRawBlock: boolean;
+
 		top: boolean;
 	};
+
 	private tokenizer;
+
 	private inlineQueue;
 
 	constructor(options?: MarkedOptions);
@@ -690,19 +931,32 @@ declare class _Lexer {
 		block: {
 			normal: {
 				blockquote: RegExp;
+
 				code: RegExp;
+
 				def: RegExp;
+
 				fences: RegExp;
+
 				heading: RegExp;
+
 				hr: RegExp;
+
 				html: RegExp;
+
 				lheading: RegExp;
+
 				list: RegExp;
+
 				newline: RegExp;
+
 				paragraph: RegExp;
+
 				table: RegExp;
+
 				text: RegExp;
 			};
+
 			gfm: Record<
 				| "code"
 				| "blockquote"
@@ -719,6 +973,7 @@ declare class _Lexer {
 				| "newline",
 				RegExp
 			>;
+
 			pedantic: Record<
 				| "code"
 				| "blockquote"
@@ -736,28 +991,48 @@ declare class _Lexer {
 				RegExp
 			>;
 		};
+
 		inline: {
 			normal: {
 				_backpedal: RegExp;
+
 				anyPunctuation: RegExp;
+
 				autolink: RegExp;
+
 				blockSkip: RegExp;
+
 				br: RegExp;
+
 				code: RegExp;
+
 				del: RegExp;
+
 				emStrongLDelim: RegExp;
+
 				emStrongRDelimAst: RegExp;
+
 				emStrongRDelimUnd: RegExp;
+
 				escape: RegExp;
+
 				link: RegExp;
+
 				nolink: RegExp;
+
 				punctuation: RegExp;
+
 				reflink: RegExp;
+
 				reflinkSearch: RegExp;
+
 				tag: RegExp;
+
 				text: RegExp;
+
 				url: RegExp;
 			};
+
 			gfm: Record<
 				| "link"
 				| "code"
@@ -803,6 +1078,7 @@ declare class _Lexer {
 				| "reflinkSearch",
 				RegExp
 			>;
+
 			pedantic: Record<
 				| "link"
 				| "code"
@@ -847,11 +1123,13 @@ declare class _Lexer {
 		tokens?: Token[],
 		lastParagraphClipped?: boolean,
 	): Token[];
+
 	blockTokens(
 		src: string,
 		tokens?: TokensList,
 		lastParagraphClipped?: boolean,
 	): TokensList;
+
 	inline(src: string, tokens?: Token[]): Token[];
 	/**
 	 * Lexing/Compiling
@@ -868,7 +1146,9 @@ export type MaybePromise = void | Promise<void>;
 
 export declare class Marked {
 	defaults: MarkedOptions;
+
 	options: (opt: MarkedOptions) => this;
+
 	parse: {
 		(
 			src: string,
@@ -887,6 +1167,7 @@ export declare class Marked {
 			options?: MarkedOptions | undefined | null,
 		): string | Promise<string>;
 	};
+
 	parseInline: {
 		(
 			src: string,
@@ -905,11 +1186,17 @@ export declare class Marked {
 			options?: MarkedOptions | undefined | null,
 		): string | Promise<string>;
 	};
+
 	Parser: typeof _Parser;
+
 	Renderer: typeof _Renderer;
+
 	TextRenderer: typeof _TextRenderer;
+
 	Lexer: typeof _Lexer;
+
 	Tokenizer: typeof _Tokenizer;
+
 	Hooks: typeof _Hooks;
 
 	constructor(...args: MarkedExtension[]);
@@ -920,12 +1207,17 @@ export declare class Marked {
 		tokens: Token[] | TokensList,
 		callback: (token: Token) => MaybePromise | MaybePromise[],
 	): MaybePromise[];
+
 	use(...args: MarkedExtension[]): this;
 
 	setOptions(opt: MarkedOptions): this;
+
 	lexer(src: string, options?: MarkedOptions): TokensList;
+
 	parser(tokens: Token[], options?: MarkedOptions): string;
+
 	private parseMarkdown;
+
 	private onError;
 }
 /**

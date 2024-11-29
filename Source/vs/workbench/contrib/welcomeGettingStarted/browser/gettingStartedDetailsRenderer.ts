@@ -23,6 +23,7 @@ import { gettingStartedContentRegistry } from "../common/gettingStartedContent.j
 
 export class GettingStartedDetailsRenderer {
 	private mdCache = new ResourceMap<string>();
+
 	private svgCache = new ResourceMap<string>();
 
 	constructor(
@@ -35,6 +36,7 @@ export class GettingStartedDetailsRenderer {
 		@ILanguageService
 		private readonly languageService: ILanguageService,
 	) {}
+
 	async renderMarkdown(path: URI, base: URI): Promise<string> {
 		const content = await this.readAndCacheStepMarkdown(path, base);
 
@@ -58,71 +60,105 @@ export class GettingStartedDetailsRenderer {
 				<style nonce="${nonce}">
 					${DEFAULT_MARKDOWN_STYLES}
 					${css}
+
 					body > img {
 						align-self: flex-start;
 					}
+
 					body > img[centered] {
 						align-self: center;
 					}
+
 					body {
 						display: flex;
+
 						flex-direction: column;
+
 						padding: 0;
+
 						height: inherit;
 					}
 					.theme-picker-row {
 						display: flex;
+
 						justify-content: center;
+
 						gap: 32px;
 					}
+
 					checklist {
 						display: flex;
+
 						gap: 32px;
+
 						flex-direction: column;
 					}
+
 					checkbox {
 						display: flex;
+
 						flex-direction: column;
+
 						align-items: center;
+
 						margin: 5px;
+
 						cursor: pointer;
 					}
+
 					checkbox > img {
 						margin-bottom: 8px !important;
 					}
+
 					checkbox.checked > img {
 						box-sizing: border-box;
 					}
+
 					checkbox.checked > img {
 						outline: 2px solid var(--vscode-focusBorder);
+
 						outline-offset: 4px;
+
 						border-radius: 4px;
 					}
 					.theme-picker-link {
 						margin-top: 16px;
+
 						color: var(--vscode-textLink-foreground);
 					}
+
 					blockquote > p:first-child {
 						margin-top: 0;
 					}
+
 					body > * {
 						margin-block-end: 0.25em;
+
 						margin-block-start: 0.25em;
 					}
+
 					vertically-centered {
 						padding-top: 5px;
+
 						padding-bottom: 5px;
+
 						display: flex;
+
 						justify-content: center;
+
 						flex-direction: column;
 					}
+
 					html {
 						height: 100%;
+
 						padding-right: 32px;
 					}
+
 					h1 {
 						font-size: 19.5px;
 					}
+
 					h2 {
 						font-size: 18.5px;
 					}
@@ -148,6 +184,7 @@ export class GettingStartedDetailsRenderer {
 					document.querySelectorAll('vertically-centered').forEach(element => {
 						element.style.marginTop = Math.max((document.body.clientHeight - element.scrollHeight) * 3/10, 0) + 'px';
 					});
+
 					ongoingLayout = undefined;
 				};
 
@@ -155,6 +192,7 @@ export class GettingStartedDetailsRenderer {
 					if (ongoingLayout) {
 						clearTimeout(ongoingLayout);
 					}
+
 					ongoingLayout = setTimeout(doLayout, 0);
 				};
 
@@ -168,6 +206,7 @@ export class GettingStartedDetailsRenderer {
 					if (event.data.layoutMeNow) {
 						layout();
 					}
+
 					if (event.data.enabledContextKeys) {
 						document.querySelectorAll('.checked').forEach(element => element.classList.remove('checked'))
 						for (const key of event.data.enabledContextKeys) {
@@ -178,6 +217,7 @@ export class GettingStartedDetailsRenderer {
 		</script>
 		</html>`;
 	}
+
 	async renderSVG(path: URI): Promise<string> {
 		const content = await this.readAndCacheSVGFile(path);
 
@@ -195,14 +235,22 @@ export class GettingStartedDetailsRenderer {
 				<style nonce="${nonce}">
 					${DEFAULT_MARKDOWN_STYLES}
 					${css}
+
 					svg {
 						position: fixed;
+
 						height: 100%;
+
 						width: 80%;
+
 						left: 50%;
+
 						top: 50%;
+
 						max-width: 530px;
+
 						min-width: 350px;
+
 						transform: translate(-50%,-50%);
 					}
 				</style>
@@ -212,13 +260,17 @@ export class GettingStartedDetailsRenderer {
 			</body>
 		</html>`;
 	}
+
 	private async readAndCacheSVGFile(path: URI): Promise<string> {
 		if (!this.svgCache.has(path)) {
 			const contents = await this.readContentsOfPath(path, false);
+
 			this.svgCache.set(path, contents);
 		}
+
 		return assertIsDefined(this.svgCache.get(path));
 	}
+
 	private async readAndCacheStepMarkdown(
 		path: URI,
 		base: URI,
@@ -232,10 +284,13 @@ export class GettingStartedDetailsRenderer {
 				this.languageService,
 				{ allowUnknownProtocols: true },
 			);
+
 			this.mdCache.set(path, markdownContents);
 		}
+
 		return assertIsDefined(this.mdCache.get(path));
 	}
+
 	private async readContentsOfPath(
 		path: URI,
 		useModuleId = true,
@@ -262,6 +317,7 @@ export class GettingStartedDetailsRenderer {
 				return contents;
 			}
 		} catch {}
+
 		try {
 			const localizedPath = path.with({
 				path: path.path.replace(/\.md$/, `.nls.${language}.md`),
@@ -319,6 +375,7 @@ const transformUris = (content: string, base: URI): string =>
 			if (src.startsWith("https://")) {
 				return `src="${src}"`;
 			}
+
 			return `src="${transformUri(src, base)}"`;
 		})
 		.replace(
@@ -327,6 +384,7 @@ const transformUris = (content: string, base: URI): string =>
 				if (src.startsWith("https://")) {
 					return `![${title}](${src})`;
 				}
+
 				return `![${title}](${transformUri(src, base)})`;
 			},
 		);

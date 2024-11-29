@@ -103,10 +103,12 @@ export class BetweenCellToolbar extends CellOverlayPart {
 
 		const updateActions = () => {
 			const actions = getCellToolbarActions(menu);
+
 			betweenCellToolbar.setActions(actions.primary, actions.secondary);
 		};
 
 		this._register(menu.onDidChange(() => updateActions()));
+
 		this._register(
 			this._notebookEditor.notebookOptions.onDidChangeOptions((e) => {
 				if (e.insertToolbarAlignment) {
@@ -135,11 +137,13 @@ export class BetweenCellToolbar extends CellOverlayPart {
 				$mid: number;
 			};
 		}
+
 		this.updateInternalLayoutNow(element);
 	}
 
 	override updateInternalLayoutNow(element: ICellViewModel) {
 		const bottomToolbarOffset = element.layoutInfo.bottomToolbarOffset;
+
 		this._bottomCellToolbarContainer.style.transform = `translateY(${bottomToolbarOffset}px)`;
 	}
 }
@@ -150,22 +154,29 @@ export interface ICssClassDelegate {
 
 interface CellTitleToolbarModel {
 	titleMenu: IMenu;
+
 	actions: { primary: IAction[]; secondary: IAction[] };
+
 	deleteMenu: IMenu;
+
 	deleteActions: { primary: IAction[]; secondary: IAction[] };
 }
 
 interface CellTitleToolbarView {
 	toolbar: ToolBar;
+
 	deleteToolbar: ToolBar;
 }
 
 export class CellTitleToolbarPart extends CellOverlayPart {
 	private _model: CellTitleToolbarModel | undefined;
+
 	private _view: CellTitleToolbarView | undefined;
+
 	private readonly _onDidUpdateActions: Emitter<void> = this._register(
 		new Emitter<void>(),
 	);
+
 	readonly onDidUpdateActions: Event<void> = this._onDidUpdateActions.event;
 
 	get hasActions(): boolean {
@@ -234,6 +245,7 @@ export class CellTitleToolbarPart extends CellOverlayPart {
 		if (this._view) {
 			return this._view;
 		}
+
 		const hoverDelegate = this._register(createInstantHoverDelegate());
 
 		const toolbar = this._register(
@@ -276,6 +288,7 @@ export class CellTitleToolbarPart extends CellOverlayPart {
 		}
 
 		this.setupChangeListeners(toolbar, model.titleMenu, model.actions);
+
 		this.setupChangeListeners(
 			deleteToolbar,
 			model.deleteMenu,
@@ -298,6 +311,7 @@ export class CellTitleToolbarPart extends CellOverlayPart {
 		const model = this._initializeModel();
 
 		const view = this._initialize(model, element);
+
 		this.cellDisposables.add(
 			registerCellToolbarStickyScroll(
 				this._notebookEditor,
@@ -328,6 +342,7 @@ export class CellTitleToolbarPart extends CellOverlayPart {
 		toolbarContext: INotebookCellActionContext,
 	) {
 		view.toolbar.context = toolbarContext;
+
 		view.deleteToolbar.context = toolbarContext;
 	}
 
@@ -342,23 +357,29 @@ export class CellTitleToolbarPart extends CellOverlayPart {
 		let deferredUpdate: (() => void) | undefined;
 
 		this.updateActions(toolbar, initActions);
+
 		this._register(
 			menu.onDidChange(() => {
 				if (dropdownIsVisible) {
 					const actions = getCellToolbarActions(menu);
+
 					deferredUpdate = () => this.updateActions(toolbar, actions);
 
 					return;
 				}
 
 				const actions = getCellToolbarActions(menu);
+
 				this.updateActions(toolbar, actions);
 			}),
 		);
+
 		this._rootClassDelegate.toggle("cell-toolbar-dropdown-active", false);
+
 		this._register(
 			toolbar.onDidChangeDropdownVisibility((visible) => {
 				dropdownIsVisible = visible;
+
 				this._rootClassDelegate.toggle(
 					"cell-toolbar-dropdown-active",
 					visible,
@@ -384,6 +405,7 @@ export class CellTitleToolbarPart extends CellOverlayPart {
 		actions: { primary: IAction[]; secondary: IAction[] },
 	) {
 		const hadFocus = DOM.isAncestorOfActiveElement(toolbar.getElement());
+
 		toolbar.setActions(actions.primary, actions.secondary);
 
 		if (hadFocus) {
@@ -392,9 +414,11 @@ export class CellTitleToolbarPart extends CellOverlayPart {
 
 		if (actions.primary.length || actions.secondary.length) {
 			this._rootClassDelegate.toggle("cell-has-toolbar-actions", true);
+
 			this._onDidUpdateActions.fire();
 		} else {
 			this._rootClassDelegate.toggle("cell-has-toolbar-actions", false);
+
 			this._onDidUpdateActions.fire();
 		}
 	}

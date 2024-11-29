@@ -28,8 +28,11 @@ import { AbstractLifecycleService } from "../common/lifecycleService.js";
 
 export class BrowserLifecycleService extends AbstractLifecycleService {
 	private beforeUnloadListener: IDisposable | undefined = undefined;
+
 	private unloadListener: IDisposable | undefined = undefined;
+
 	private ignoreBeforeUnload = false;
+
 	private didUnload = false;
 
 	constructor(
@@ -39,8 +42,10 @@ export class BrowserLifecycleService extends AbstractLifecycleService {
 		storageService: IStorageService,
 	) {
 		super(logService, storageService);
+
 		this.registerListeners();
 	}
+
 	private registerListeners(): void {
 		// Listen to `beforeUnload` to support to veto
 		this.beforeUnloadListener = addDisposableListener(
@@ -59,12 +64,14 @@ export class BrowserLifecycleService extends AbstractLifecycleService {
 			() => this.onUnload(),
 		);
 	}
+
 	private onBeforeUnload(event: BeforeUnloadEvent): void {
 		// Before unload ignored (once)
 		if (this.ignoreBeforeUnload) {
 			this.logService.info(
 				"[lifecycle] onBeforeUnload triggered but ignored once",
 			);
+
 			this.ignoreBeforeUnload = false;
 		}
 		// Before unload with veto support
@@ -72,23 +79,29 @@ export class BrowserLifecycleService extends AbstractLifecycleService {
 			this.logService.info(
 				"[lifecycle] onBeforeUnload triggered and handled with veto support",
 			);
+
 			this.doShutdown(() => this.vetoBeforeUnload(event));
 		}
 	}
+
 	private vetoBeforeUnload(event: BeforeUnloadEvent): void {
 		event.preventDefault();
+
 		event.returnValue = localize(
 			"lifecycleVeto",
 			"Changes that you made may not be saved. Please check press 'Cancel' and try again.",
 		);
 	}
+
 	withExpectedShutdown(reason: ShutdownReason): Promise<void>;
+
 	withExpectedShutdown(
 		reason: {
 			disableShutdownHandling: true;
 		},
 		callback: Function,
 	): void;
+
 	withExpectedShutdown(
 		reason:
 			| ShutdownReason
@@ -114,17 +127,20 @@ export class BrowserLifecycleService extends AbstractLifecycleService {
 			}
 		}
 	}
+
 	async shutdown(): Promise<void> {
 		this.logService.info("[lifecycle] shutdown triggered");
 		// An explicit shutdown renders our unload
 		// event handlers disabled, so dispose them.
 		this.beforeUnloadListener?.dispose();
+
 		this.unloadListener?.dispose();
 		// Ensure UI state is persisted
 		await this.storageService.flush(WillSaveStateReason.SHUTDOWN);
 		// Handle shutdown without veto support
 		this.doShutdown();
 	}
+
 	private doShutdown(vetoShutdown?: () => void): void {
 		const logService = this.logService;
 		// Optimistically trigger a UI state flush
@@ -143,16 +159,20 @@ export class BrowserLifecycleService extends AbstractLifecycleService {
 			if (typeof vetoShutdown !== "function") {
 				return; // veto handling disabled
 			}
+
 			if (vetoResult instanceof Promise) {
 				logService.error(
 					`[lifecycle] Long running operations before shutdown are unsupported in the web (id: ${id})`,
 				);
+
 				veto = true; // implicitly vetos since we cannot handle promises in web
 			}
+
 			if (vetoResult === true) {
 				logService.info(
 					`[lifecycle]: Unload was prevented (id: ${id})`,
 				);
+
 				veto = true;
 			}
 		}
@@ -173,10 +193,12 @@ export class BrowserLifecycleService extends AbstractLifecycleService {
 		// No veto, continue to shutdown
 		return this.onUnload();
 	}
+
 	private onUnload(): void {
 		if (this.didUnload) {
 			return; // only once
 		}
+
 		this.didUnload = true;
 		// Register a late `pageshow` listener specifically on unload
 		this._register(
@@ -188,6 +210,7 @@ export class BrowserLifecycleService extends AbstractLifecycleService {
 		);
 		// First indicate will-shutdown
 		const logService = this.logService;
+
 		this._onWillShutdown.fire({
 			reason: ShutdownReason.QUIT,
 			joiners: () => [], // Unsupported in web
@@ -202,6 +225,7 @@ export class BrowserLifecycleService extends AbstractLifecycleService {
 		// Finally end with did-shutdown
 		this._onDidShutdown.fire();
 	}
+
 	private onLoadAfterUnload(event: PageTransitionEvent): void {
 		// We only really care about page-show events
 		// where the browser indicates to us that the
@@ -222,6 +246,7 @@ export class BrowserLifecycleService extends AbstractLifecycleService {
 			mainWindow.location.reload(),
 		);
 	}
+
 	protected override doResolveStartupKind(): StartupKind | undefined {
 		let startupKind = super.doResolveStartupKind();
 
@@ -235,6 +260,7 @@ export class BrowserLifecycleService extends AbstractLifecycleService {
 				startupKind = StartupKind.ReloadedWindow;
 			}
 		}
+
 		return startupKind;
 	}
 }

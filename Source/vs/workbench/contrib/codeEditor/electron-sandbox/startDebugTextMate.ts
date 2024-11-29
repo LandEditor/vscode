@@ -38,16 +38,20 @@ class StartDebugTextMate extends Action2 {
 			f1: true,
 		});
 	}
+
 	private _getOrCreateModel(modelService: IModelService): ITextModel {
 		const model = modelService.getModel(StartDebugTextMate.resource);
 
 		if (model) {
 			return model;
 		}
+
 		return modelService.createModel("", null, StartDebugTextMate.resource);
 	}
+
 	private _append(model: ITextModel, str: string) {
 		const lineCount = model.getLineCount();
+
 		model.applyEdits([
 			{
 				range: new Range(
@@ -60,6 +64,7 @@ class StartDebugTextMate extends Action2 {
 			},
 		]);
 	}
+
 	async run(accessor: ServicesAccessor) {
 		const textMateService = accessor.get(ITextMateTokenizationService);
 
@@ -83,6 +88,7 @@ class StartDebugTextMate extends Action2 {
 			environmentService.tmpDir,
 			`vcode-tm-log-${generateUuid()}.txt`,
 		);
+
 		await fileService.createFile(pathInTemp);
 
 		const logger = loggerService.createLogger(pathInTemp, {
@@ -93,10 +99,14 @@ class StartDebugTextMate extends Action2 {
 
 		const append = (str: string) => {
 			this._append(model, str + "\n");
+
 			scrollEditor();
+
 			logger.info(str);
+
 			logger.flush();
 		};
+
 		await hostService.openWindow([{ fileUri: pathInTemp }], {
 			forceNewWindow: true,
 		});
@@ -109,6 +119,7 @@ class StartDebugTextMate extends Action2 {
 		if (!textEditorPane) {
 			return;
 		}
+
 		const scrollEditor = () => {
 			const editors = codeEditorService.listCodeEditors();
 
@@ -123,13 +134,19 @@ class StartDebugTextMate extends Action2 {
 				}
 			}
 		};
+
 		append(`// Open the file you want to test to the side and watch here`);
+
 		append(`// Output mirrored at ${pathInTemp}`);
+
 		textMateService.startDebugMode(
 			(str) => {
 				this._append(model, str + "\n");
+
 				scrollEditor();
+
 				logger.info(str);
+
 				logger.flush();
 			},
 			() => {},

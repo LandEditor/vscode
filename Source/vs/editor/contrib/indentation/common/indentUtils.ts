@@ -12,6 +12,7 @@ export function getSpaceCnt(str: string, tabSize: number) {
 			spacesCnt++;
 		}
 	}
+
 	return spacesCnt;
 }
 export function generateIndent(
@@ -25,14 +26,17 @@ export function generateIndent(
 
 	if (!insertSpaces) {
 		const tabsCnt = Math.floor(spacesCnt / tabSize);
+
 		spacesCnt = spacesCnt % tabSize;
 
 		for (let i = 0; i < tabsCnt; i++) {
 			result += "\t";
 		}
 	}
+
 	for (let i = 0; i < spacesCnt; i++) {
 		result += " ";
 	}
+
 	return result;
 }

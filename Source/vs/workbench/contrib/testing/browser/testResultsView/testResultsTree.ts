@@ -96,34 +96,55 @@ import {
 
 interface ITreeElement {
 	type: string;
+
 	context: unknown;
+
 	id: string;
+
 	label: string;
+
 	onDidChange: Event<void>;
+
 	labelWithIcons?: readonly (HTMLSpanElement | string)[];
+
 	icon?: ThemeIcon;
+
 	description?: string;
+
 	ariaLabel?: string;
 }
 
 interface ITreeElement {
 	type: string;
+
 	context: unknown;
+
 	id: string;
+
 	label: string;
+
 	onDidChange: Event<void>;
+
 	labelWithIcons?: readonly (HTMLSpanElement | string)[];
+
 	icon?: ThemeIcon;
+
 	description?: string;
+
 	ariaLabel?: string;
 }
 
 class TestResultElement implements ITreeElement {
 	public readonly changeEmitter = new Emitter<void>();
+
 	public readonly onDidChange = this.changeEmitter.event;
+
 	public readonly type = "result";
+
 	public readonly context = this.value.id;
+
 	public readonly id = this.value.id;
+
 	public readonly label = this.value.name;
 
 	public get icon() {
@@ -143,8 +164,11 @@ const closeCoverageLabel = localize("closeTestCoverage", "Close Test Coverage");
 
 class CoverageElement implements ITreeElement {
 	public readonly type = "coverage";
+
 	public readonly context: undefined;
+
 	public readonly id = `coverage-${this.results.id}/${this.task.id}`;
+
 	public readonly onDidChange: Event<void>;
 
 	public get label() {
@@ -170,9 +194,13 @@ class CoverageElement implements ITreeElement {
 
 class OlderResultsElement implements ITreeElement {
 	public readonly type = "older";
+
 	public readonly context: undefined;
+
 	public readonly id = `older-${this.n}`;
+
 	public readonly onDidChange = Event.None;
+
 	public readonly label: string;
 
 	constructor(private readonly n: number) {
@@ -182,11 +210,14 @@ class OlderResultsElement implements ITreeElement {
 
 class TestCaseElement implements ITreeElement {
 	public readonly type = "test";
+
 	public readonly context: ITestItemContext = {
 		$mid: MarshalledId.TestItemContext,
 		tests: [InternalTestItem.serialize(this.test)],
 	};
+
 	public readonly id = `${this.results.id}/${this.test.item.extId}`;
+
 	public readonly description?: string;
 
 	public get onDidChange() {
@@ -229,11 +260,17 @@ class TestCaseElement implements ITreeElement {
 
 class TaskElement implements ITreeElement {
 	public readonly changeEmitter = new Emitter<void>();
+
 	public readonly onDidChange = this.changeEmitter.event;
+
 	public readonly type = "task";
+
 	public readonly context: { resultId: string; taskId: string };
+
 	public readonly id: string;
+
 	public readonly label: string;
+
 	public readonly itemsCache = new CreationCache<TestCaseElement>();
 
 	public get icon() {
@@ -248,20 +285,30 @@ class TaskElement implements ITreeElement {
 		public readonly index: number,
 	) {
 		this.id = `${results.id}/${index}`;
+
 		this.task = results.tasks[index];
+
 		this.context = { resultId: results.id, taskId: this.task.id };
+
 		this.label = this.task.name;
 	}
 }
 
 class TestMessageElement implements ITreeElement {
 	public readonly type = "message";
+
 	public readonly id: string;
+
 	public readonly label: string;
+
 	public readonly uri: URI;
+
 	public readonly location?: IRichLocation;
+
 	public readonly description?: string;
+
 	public readonly contextValue?: string;
+
 	public readonly message: ITestMessage;
 
 	public get onDidChange() {
@@ -293,8 +340,10 @@ class TestMessageElement implements ITreeElement {
 		const m = (this.message = test.tasks[taskIndex].messages[messageIndex]);
 
 		this.location = m.location;
+
 		this.contextValue =
 			m.type === TestMessageType.Error ? m.contextValue : undefined;
+
 		this.uri = buildTestUri({
 			type: TestUriType.ResultMessage,
 			messageIndex,
@@ -308,6 +357,7 @@ class TestMessageElement implements ITreeElement {
 		const asPlaintext = renderTestMessageAsText(m.message);
 
 		const lines = count(asPlaintext.trimEnd(), "\n");
+
 		this.label = firstLine(asPlaintext);
 
 		if (lines > 0) {
@@ -329,11 +379,14 @@ type TreeElement =
 
 export class OutputPeekTree extends Disposable {
 	private disposed = false;
+
 	private readonly tree: WorkbenchCompressibleObjectTree<
 		TreeElement,
 		FuzzyScore
 	>;
+
 	private readonly treeActions: TreeActionsProvider;
+
 	private readonly requestReveal = this._register(
 		new Emitter<InspectSubject>(),
 	);
@@ -345,6 +398,7 @@ export class OutputPeekTree extends Disposable {
 		onDidReveal: Event<{ subject: InspectSubject; preserveFocus: boolean }>,
 		options: {
 			showRevealLocationOnMessages: boolean;
+
 			locationForProgress: string;
 		},
 		@IContextMenuService
@@ -518,6 +572,7 @@ export class OutputPeekTree extends Disposable {
 						result,
 						() => new TestResultElement(result),
 					);
+
 					older.push({
 						element,
 						incompressible: true,
@@ -562,6 +617,7 @@ export class OutputPeekTree extends Disposable {
 						);
 					}
 				}
+
 				taskChildrenToUpdate.clear();
 			}, 300),
 		);
@@ -576,6 +632,7 @@ export class OutputPeekTree extends Disposable {
 
 		const attachToResults = (result: LiveTestResult) => {
 			const disposable = new DisposableStore();
+
 			disposable.add(
 				result.onNewTask((i) => {
 					this.tree.setChildren(null, getRootChildren(), {
@@ -589,6 +646,7 @@ export class OutputPeekTree extends Disposable {
 					// note: tasks are bounded and their lifetime is equivalent to that of
 					// the test result, so this doesn't leak indefinitely.
 					const task = result.tasks[i];
+
 					disposable.add(
 						autorun((reader) => {
 							task.coverage.read(reader); // add it to the autorun
@@ -632,6 +690,7 @@ export class OutputPeekTree extends Disposable {
 									{ diffIdentityProvider },
 								);
 							}
+
 							return;
 						}
 
@@ -645,6 +704,7 @@ export class OutputPeekTree extends Disposable {
 					(
 						cc.get(result) as TestResultElement | undefined
 					)?.changeEmitter.fire();
+
 					disposable.dispose();
 				}),
 			);
@@ -675,6 +735,7 @@ export class OutputPeekTree extends Disposable {
 
 		const revealItem = (element: TreeElement, preserveFocus: boolean) => {
 			this.tree.setFocus([element]);
+
 			this.tree.setSelection([element]);
 
 			if (!preserveFocus) {
@@ -695,15 +756,18 @@ export class OutputPeekTree extends Disposable {
 									c.element.index === subject.taskIndex
 								);
 							}
+
 							if (c.element instanceof TestResultElement) {
 								return c.element.id === subject.result.id;
 							}
+
 							return false;
 						});
 
 					if (resultItem) {
 						revealItem(resultItem.element!, preserveFocus);
 					}
+
 					return;
 				}
 
@@ -722,7 +786,9 @@ export class OutputPeekTree extends Disposable {
 
 				for (
 					let parent = this.tree.getParentElement(revealElement);
+
 					parent;
+
 					parent = this.tree.getParentElement(parent)
 				) {
 					parents.unshift(parent);
@@ -764,6 +830,7 @@ export class OutputPeekTree extends Disposable {
 								mesasgeIndex,
 							),
 					);
+
 					this.requestReveal.fire(
 						message || new TestOutputSubject(t.results, 0, t.test),
 					);
@@ -773,6 +840,7 @@ export class OutputPeekTree extends Disposable {
 					if (e.element.isOpen) {
 						return coverageService.closeCoverage();
 					}
+
 					progressService.withProgress(
 						{ location: options.locationForProgress },
 						() => coverageService.openCoverage(task, true),
@@ -827,6 +895,7 @@ export class OutputPeekTree extends Disposable {
 								) {
 									this.tree.reveal(testNode.element, 0.5);
 								}
+
 								break;
 							}
 						}
@@ -874,6 +943,7 @@ export class OutputPeekTree extends Disposable {
 		}
 
 		const actions = this.treeActions.provideActionBar(evt.element);
+
 		this.contextMenuService.showContextMenu({
 			getAnchor: () => evt.anchor,
 			getActions: () =>
@@ -890,15 +960,20 @@ export class OutputPeekTree extends Disposable {
 
 	public override dispose() {
 		super.dispose();
+
 		this.disposed = true;
 	}
 }
 
 interface TemplateData {
 	label: HTMLElement;
+
 	icon: HTMLElement;
+
 	actionBar: ActionBar;
+
 	elementDisposable: DisposableStore;
+
 	templateDisposable: DisposableStore;
 }
 
@@ -907,6 +982,7 @@ class TestRunElementRenderer
 		ICompressibleTreeRenderer<ITreeElement, FuzzyScore, TemplateData>
 {
 	public static readonly ID = "testRunElementRenderer";
+
 	public readonly templateId = TestRunElementRenderer.ID;
 
 	constructor(
@@ -958,7 +1034,9 @@ class TestRunElementRenderer
 		});
 
 		const elementDisposable = new DisposableStore();
+
 		templateDisposable.add(elementDisposable);
+
 		templateDisposable.add(actionBar);
 
 		return {
@@ -991,11 +1069,13 @@ class TestRunElementRenderer
 		subjectElement?: ITreeElement,
 	) {
 		templateData.elementDisposable.clear();
+
 		templateData.elementDisposable.add(
 			element.onDidChange(() =>
 				this.doRender(element, templateData, subjectElement),
 			),
 		);
+
 		this.doRenderInner(element, templateData, subjectElement);
 	}
 
@@ -1026,11 +1106,15 @@ class TestRunElementRenderer
 		}
 
 		const icon = element.icon;
+
 		templateData.icon.className = `computed-state ${icon ? ThemeIcon.asClassName(icon) : ""}`;
 
 		const actions = this.treeActions.provideActionBar(element);
+
 		templateData.actionBar.clear();
+
 		templateData.actionBar.context = element.context;
+
 		templateData.actionBar.push(actions.primary, {
 			icon: true,
 			label: false,
@@ -1113,6 +1197,7 @@ class TreeActionsProvider {
 							),
 					),
 				);
+
 				primary.push(
 					new Action(
 						"testing.outputPeek.debug",
@@ -1273,6 +1358,7 @@ class TreeActionsProvider {
 
 		if (element instanceof TestMessageElement) {
 			id = MenuId.TestMessageContext;
+
 			contextKeys.push([
 				TestingContextKeys.testMessageContext.key,
 				element.contextValue,
@@ -1320,6 +1406,7 @@ class TreeActionsProvider {
 		const menu = this.menuService.getMenuActions(id, contextOverlay, {
 			arg: element.context,
 		});
+
 		fillInActionBarActions(menu, result, "inline");
 
 		return result;
@@ -1341,6 +1428,7 @@ class CreationCache<T> {
 		}
 
 		const fresh = factory();
+
 		this.v.set(ref, fresh);
 
 		return fresh;

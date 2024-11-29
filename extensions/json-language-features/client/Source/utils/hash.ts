@@ -13,6 +13,7 @@ export function hash(obj: any, hashVal = 0): number {
 			} else if (Array.isArray(obj)) {
 				return arrayHash(obj, hashVal);
 			}
+
 			return objectHash(obj, hashVal);
 
 		case "string":
@@ -43,6 +44,7 @@ function stringHash(s: string, hashVal: number) {
 	for (let i = 0, length = s.length; i < length; i++) {
 		hashVal = numberHash(s.charCodeAt(i), hashVal);
 	}
+
 	return hashVal;
 }
 function arrayHash(arr: any[], initialHashVal: number): number {

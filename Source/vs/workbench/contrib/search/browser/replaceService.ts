@@ -86,12 +86,14 @@ export class ReplacePreviewContentProvider
 			this,
 		);
 	}
+
 	provideTextContent(uri: URI): Promise<ITextModel> | null {
 		if (uri.fragment === REPLACE_PREVIEW) {
 			return this.instantiationService
 				.createInstance(ReplacePreviewModel)
 				.resolve(uri);
 		}
+
 		return null;
 	}
 }
@@ -110,6 +112,7 @@ class ReplacePreviewModel extends Disposable {
 	) {
 		super();
 	}
+
 	async resolve(replacePreviewUri: URI): Promise<ITextModel> {
 		const fileResource = toFileResource(replacePreviewUri);
 
@@ -137,6 +140,7 @@ class ReplacePreviewModel extends Disposable {
 			this.languageService.createById(sourceModelLanguageId),
 			replacePreviewUri,
 		);
+
 		this._register(
 			fileMatch.onChange(({ forceUpdateModel }) =>
 				this.update(
@@ -147,19 +151,23 @@ class ReplacePreviewModel extends Disposable {
 				),
 			),
 		);
+
 		this._register(
 			this.searchWorkbenchService.searchModel.onReplaceTermChanged(() =>
 				this.update(sourceModel, replacePreviewModel, fileMatch),
 			),
 		);
+
 		this._register(
 			fileMatch.onDispose(() => replacePreviewModel.dispose()),
 		); // TODO@Sandeep we should not dispose a model directly but rather the reference (depends on https://github.com/microsoft/vscode/issues/17073)
 		this._register(replacePreviewModel.onWillDispose(() => this.dispose()));
+
 		this._register(sourceModel.onWillDispose(() => this.dispose()));
 
 		return replacePreviewModel;
 	}
+
 	private update(
 		sourceModel: ITextModel,
 		replacePreviewModel: ITextModel,
@@ -173,6 +181,7 @@ class ReplacePreviewModel extends Disposable {
 }
 export class ReplaceService implements IReplaceService {
 	declare readonly _serviceBrand: undefined;
+
 	private static readonly REPLACE_SAVE_SOURCE =
 		SaveSourceRegistry.registerSource(
 			"searchReplace.source",
@@ -193,11 +202,14 @@ export class ReplaceService implements IReplaceService {
 		@INotebookEditorModelResolverService
 		private readonly notebookEditorModelResolverService: INotebookEditorModelResolverService,
 	) {}
+
 	replace(match: ISearchTreeMatch): Promise<any>;
+
 	replace(
 		files: ISearchTreeFileMatch[],
 		progress?: IProgress<IProgressStep>,
 	): Promise<any>;
+
 	replace(
 		match: FileMatchOrMatch,
 		progress?: IProgress<IProgressStep>,
@@ -210,6 +222,7 @@ export class ReplaceService implements IReplaceService {
 		resource: URI | null = null,
 	): Promise<any> {
 		const edits = this.createEdits(arg, resource);
+
 		await this.bulkEditorService.apply(edits, { progress });
 
 		const rawTextPromises = edits.map(async (e) => {
@@ -226,6 +239,7 @@ export class ReplaceService implements IReplaceService {
 							await this.notebookEditorModelResolverService.resolve(
 								notebookResource,
 							);
+
 						await ref.object.save({
 							source: ReplaceService.REPLACE_SAVE_SOURCE,
 						});
@@ -233,6 +247,7 @@ export class ReplaceService implements IReplaceService {
 						ref?.dispose();
 					}
 				}
+
 				return;
 			} else {
 				return this.textFileService.files
@@ -243,6 +258,7 @@ export class ReplaceService implements IReplaceService {
 
 		return Promises.settled(rawTextPromises);
 	}
+
 	async openReplacePreview(
 		element: FileMatchOrMatch,
 		preserveFocus?: boolean,
@@ -277,8 +293,10 @@ export class ReplaceService implements IReplaceService {
 
 		const disposable = fileMatch.onDispose(() => {
 			input?.dispose();
+
 			disposable.dispose();
 		});
+
 		await this.updateReplacePreview(fileMatch);
 
 		if (editor) {
@@ -292,6 +310,7 @@ export class ReplaceService implements IReplaceService {
 			}
 		}
 	}
+
 	async updateReplacePreview(
 		fileMatch: ISearchTreeFileMatch,
 		override: boolean = false,
@@ -318,13 +337,16 @@ export class ReplaceService implements IReplaceService {
 				} else {
 					replaceModel.undo();
 				}
+
 				this.applyEditsToPreview(fileMatch, replaceModel);
 			}
 		} finally {
 			sourceModelRef.dispose();
+
 			replaceModelRef.dispose();
 		}
 	}
+
 	private applyEditsToPreview(
 		fileMatch: ISearchTreeFileMatch,
 		replaceModel: ITextModel,
@@ -341,6 +363,7 @@ export class ReplaceService implements IReplaceService {
 				),
 			);
 		}
+
 		replaceModel.pushEditOperations(
 			[],
 			modelEdits.sort((a, b) =>
@@ -349,6 +372,7 @@ export class ReplaceService implements IReplaceService {
 			() => [],
 		);
 	}
+
 	private createEdits(
 		arg: FileMatchOrMatch | ISearchTreeFileMatch[],
 		resource: URI | null = null,
@@ -360,6 +384,7 @@ export class ReplaceService implements IReplaceService {
 				if (isIMatchInNotebook(arg)) {
 					// only apply edits if it's not a webview match, since webview matches are read-only
 					const match = arg;
+
 					edits.push(
 						this.createEdit(
 							match,
@@ -369,15 +394,18 @@ export class ReplaceService implements IReplaceService {
 					);
 				} else {
 					const match = <ISearchTreeMatch>arg;
+
 					edits.push(
 						this.createEdit(match, match.replaceString, resource),
 					);
 				}
 			}
 		}
+
 		if (isSearchTreeFileMatch(arg)) {
 			arg = [arg];
 		}
+
 		if (arg instanceof Array) {
 			arg.forEach((element) => {
 				const fileMatch = <ISearchTreeFileMatch>element;
@@ -393,8 +421,10 @@ export class ReplaceService implements IReplaceService {
 				}
 			});
 		}
+
 		return edits;
 	}
+
 	private createEdit(
 		match: ISearchTreeMatch,
 		text: string,

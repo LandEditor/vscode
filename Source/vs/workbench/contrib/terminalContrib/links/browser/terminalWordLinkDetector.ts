@@ -33,7 +33,9 @@ const enum Constants {
 }
 interface Word {
 	startIndex: number;
+
 	endIndex: number;
+
 	text: string;
 }
 export class TerminalWordLinkDetector
@@ -44,6 +46,7 @@ export class TerminalWordLinkDetector
 	// Word links typically search the workspace so it makes sense that their maximum link length is
 	// quite small.
 	readonly maxLinkLength = 100;
+
 	private _separatorRegex!: RegExp;
 
 	constructor(
@@ -54,7 +57,9 @@ export class TerminalWordLinkDetector
 		private readonly _productService: IProductService,
 	) {
 		super();
+
 		this._refreshSeparatorCodes();
+
 		this._register(
 			this._configurationService.onDidChangeConfiguration((e) => {
 				if (e.affectsConfiguration(TerminalSettingId.WordSeparators)) {
@@ -63,6 +68,7 @@ export class TerminalWordLinkDetector
 			}),
 		);
 	}
+
 	detect(
 		lines: IBufferLine[],
 		startLine: number,
@@ -87,13 +93,16 @@ export class TerminalWordLinkDetector
 			if (word.text === "") {
 				continue;
 			}
+
 			if (
 				word.text.length > 0 &&
 				word.text.charAt(word.text.length - 1) === ":"
 			) {
 				word.text = word.text.slice(0, -1);
+
 				word.endIndex--;
 			}
+
 			const bufferRange = convertLinkRangeToBuffer(
 				lines,
 				this.xterm.cols,
@@ -117,6 +126,7 @@ export class TerminalWordLinkDetector
 						type: TerminalBuiltinLinkType.Url,
 					});
 				}
+
 				continue;
 			}
 			// Search links
@@ -127,8 +137,10 @@ export class TerminalWordLinkDetector
 				contextLine: text,
 			});
 		}
+
 		return links;
 	}
+
 	private _parseWords(text: string): Word[] {
 		const words: Word[] = [];
 
@@ -142,10 +154,13 @@ export class TerminalWordLinkDetector
 				startIndex: runningIndex,
 				endIndex: runningIndex + splitWords[i].length,
 			});
+
 			runningIndex += splitWords[i].length + 1;
 		}
+
 		return words;
 	}
+
 	private _refreshSeparatorCodes(): void {
 		const separators =
 			this._configurationService.getValue<ITerminalConfiguration>(
@@ -157,6 +172,7 @@ export class TerminalWordLinkDetector
 		for (let i = 0xe0b0; i <= 0xe0bf; i++) {
 			powerlineSymbols += String.fromCharCode(i);
 		}
+
 		this._separatorRegex = new RegExp(
 			`[${escapeRegExpCharacters(separators)}${powerlineSymbols}]`,
 			"g",

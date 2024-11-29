@@ -49,6 +49,7 @@ export async function tokenizeToString(
 			fallback,
 		);
 	}
+
 	const tokenizationSupport =
 		await TokenizationRegistry.getOrCreate(languageId);
 
@@ -77,7 +78,9 @@ export function tokenizeLineToHTML(
 
 	for (
 		let tokenIndex = 0, tokenCount = viewLineTokens.getCount();
+
 		tokenIndex < tokenCount;
+
 		tokenIndex++
 	) {
 		const tokenEndIndex = viewLineTokens.getEndOffset(tokenIndex);
@@ -85,11 +88,14 @@ export function tokenizeLineToHTML(
 		if (tokenEndIndex <= startOffset) {
 			continue;
 		}
+
 		let partContent = "";
 
 		for (
 			;
+
 			charIndex < tokenEndIndex && charIndex < endOffset;
+
 			charIndex++
 		) {
 			const charCode = text.charCodeAt(charIndex);
@@ -98,40 +104,50 @@ export function tokenizeLineToHTML(
 				case CharCode.Tab: {
 					let insertSpacesCount =
 						tabSize - ((charIndex + tabsCharDelta) % tabSize);
+
 					tabsCharDelta += insertSpacesCount - 1;
 
 					while (insertSpacesCount > 0) {
 						if (useNbsp && prevIsSpace) {
 							partContent += "&#160;";
+
 							prevIsSpace = false;
 						} else {
 							partContent += " ";
+
 							prevIsSpace = true;
 						}
+
 						insertSpacesCount--;
 					}
+
 					break;
 				}
+
 				case CharCode.LessThan:
 					partContent += "&lt;";
+
 					prevIsSpace = false;
 
 					break;
 
 				case CharCode.GreaterThan:
 					partContent += "&gt;";
+
 					prevIsSpace = false;
 
 					break;
 
 				case CharCode.Ampersand:
 					partContent += "&amp;";
+
 					prevIsSpace = false;
 
 					break;
 
 				case CharCode.Null:
 					partContent += "&#00;";
+
 					prevIsSpace = false;
 
 					break;
@@ -141,6 +157,7 @@ export function tokenizeLineToHTML(
 				case CharCode.PARAGRAPH_SEPARATOR:
 				case CharCode.NEXT_LINE:
 					partContent += "\ufffd";
+
 					prevIsSpace = false;
 
 					break;
@@ -148,6 +165,7 @@ export function tokenizeLineToHTML(
 				case CharCode.CarriageReturn:
 					// zero width space, because carriage return would introduce a line break
 					partContent += "&#8203";
+
 					prevIsSpace = false;
 
 					break;
@@ -155,24 +173,30 @@ export function tokenizeLineToHTML(
 				case CharCode.Space:
 					if (useNbsp && prevIsSpace) {
 						partContent += "&#160;";
+
 						prevIsSpace = false;
 					} else {
 						partContent += " ";
+
 						prevIsSpace = true;
 					}
+
 					break;
 
 				default:
 					partContent += String.fromCharCode(charCode);
+
 					prevIsSpace = false;
 			}
 		}
+
 		result += `<span style="${viewLineTokens.getInlineStyle(tokenIndex, colorMap)}">${partContent}</span>`;
 
 		if (tokenEndIndex > endOffset || charIndex >= endOffset) {
 			break;
 		}
 	}
+
 	result += `</div>`;
 
 	return result;
@@ -194,11 +218,13 @@ export function _tokenizeToString(
 		if (i > 0) {
 			result += `<br/>`;
 		}
+
 		const tokenizationResult = tokenizationSupport.tokenizeEncoded(
 			line,
 			true,
 			currentState,
 		);
+
 		LineTokens.convertToEndOffset(tokenizationResult.tokens, line.length);
 
 		const lineTokens = new LineTokens(
@@ -215,11 +241,15 @@ export function _tokenizeToString(
 			const type = viewLineTokens.getClassName(j);
 
 			const endIndex = viewLineTokens.getEndOffset(j);
+
 			result += `<span class="${type}">${strings.escape(line.substring(startOffset, endIndex))}</span>`;
+
 			startOffset = endIndex;
 		}
+
 		currentState = tokenizationResult.endState;
 	}
+
 	result += `</div>`;
 
 	return result;

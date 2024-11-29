@@ -14,12 +14,19 @@ import {
 
 export interface ITableColumn<TRow, TCell> {
 	readonly label: string;
+
 	readonly tooltip?: string;
+
 	readonly weight: number;
+
 	readonly templateId: string;
+
 	readonly minimumWidth?: number;
+
 	readonly maximumWidth?: number;
+
 	readonly onDidChangeWidthConstraints?: Event<void>;
+
 	project(row: TRow): TCell;
 }
 export interface ITableVirtualDelegate<TRow> {

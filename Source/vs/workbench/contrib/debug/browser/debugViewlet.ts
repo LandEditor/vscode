@@ -88,8 +88,11 @@ import { WelcomeView } from "./welcomeView.js";
 
 export class DebugViewPaneContainer extends ViewPaneContainer {
 	private startDebugActionViewItem: StartDebugActionViewItem | undefined;
+
 	private progressResolve: (() => void) | undefined;
+
 	private breakpointView: ViewPane | undefined;
+
 	private paneListeners = new Map<string, IDisposable>();
 
 	private readonly stopActionViewItemDisposables = this._register(
@@ -153,6 +156,7 @@ export class DebugViewPaneContainer extends ViewPaneContainer {
 				this.updateTitleArea(),
 			),
 		);
+
 		this._register(
 			this.configurationService.onDidChangeConfiguration((e) => {
 				if (
@@ -167,6 +171,7 @@ export class DebugViewPaneContainer extends ViewPaneContainer {
 
 	override create(parent: HTMLElement): void {
 		super.create(parent);
+
 		parent.classList.add("debug-viewlet");
 	}
 
@@ -192,8 +197,10 @@ export class DebugViewPaneContainer extends ViewPaneContainer {
 					action,
 					options,
 				);
+
 			return this.startDebugActionViewItem;
 		}
+
 		if (action.id === FOCUS_SESSION_ID) {
 			return new FocusSessionActionViewItem(
 				action,
@@ -206,6 +213,7 @@ export class DebugViewPaneContainer extends ViewPaneContainer {
 
 		if (action.id === STOP_ID || action.id === DISCONNECT_ID) {
 			this.stopActionViewItemDisposables.clear();
+
 			const item = this.instantiationService.invokeFunction((accessor) =>
 				createDisconnectMenuItemAction(
 					action as MenuItemAction,
@@ -214,6 +222,7 @@ export class DebugViewPaneContainer extends ViewPaneContainer {
 					{ hoverDelegate: options.hoverDelegate },
 				),
 			);
+
 			if (item) {
 				return item;
 			}
@@ -224,6 +233,7 @@ export class DebugViewPaneContainer extends ViewPaneContainer {
 
 	focusView(id: string): void {
 		const view = this.getView(id);
+
 		if (view) {
 			view.focus();
 		}
@@ -232,6 +242,7 @@ export class DebugViewPaneContainer extends ViewPaneContainer {
 	private onDebugServiceStateChange(state: State): void {
 		if (this.progressResolve) {
 			this.progressResolve();
+
 			this.progressResolve = undefined;
 		}
 
@@ -250,8 +261,11 @@ export class DebugViewPaneContainer extends ViewPaneContainer {
 	override addPanes(
 		panes: {
 			pane: ViewPane;
+
 			size: number;
+
 			index?: number;
+
 			disposable: IDisposable;
 		}[],
 	): void {
@@ -261,6 +275,7 @@ export class DebugViewPaneContainer extends ViewPaneContainer {
 			// attach event listener to
 			if (pane.id === BREAKPOINTS_VIEW_ID) {
 				this.breakpointView = pane;
+
 				this.updateBreakpointsMaxSize();
 			} else {
 				this.paneListeners.set(
@@ -273,8 +288,10 @@ export class DebugViewPaneContainer extends ViewPaneContainer {
 
 	override removePanes(panes: ViewPane[]): void {
 		super.removePanes(panes);
+
 		for (const pane of panes) {
 			dispose(this.paneListeners.get(pane.id));
+
 			this.paneListeners.delete(pane.id);
 		}
 	}
@@ -285,6 +302,7 @@ export class DebugViewPaneContainer extends ViewPaneContainer {
 			const allOtherCollapsed = this.panes.every(
 				(view) => !view.isExpanded() || view === this.breakpointView,
 			);
+
 			this.breakpointView.maximumBodySize = allOtherCollapsed
 				? Number.POSITIVE_INFINITY
 				: this.breakpointView.minimumBodySize;
@@ -388,15 +406,20 @@ registerAction2(
 			opts?: { addNew?: boolean },
 		): Promise<void> {
 			const debugService = accessor.get(IDebugService);
+
 			const quickInputService = accessor.get(IQuickInputService);
+
 			const configurationManager = debugService.getConfigurationManager();
+
 			let launch: ILaunch | undefined;
+
 			if (configurationManager.selectedConfiguration.name) {
 				launch = configurationManager.selectedConfiguration.launch;
 			} else {
 				const launches = configurationManager
 					.getLaunches()
 					.filter((l) => !l.hidden);
+
 				if (launches.length === 1) {
 					launch = launches[0];
 				} else {
@@ -404,8 +427,10 @@ registerAction2(
 						label: l.name,
 						launch: l,
 					}));
+
 					const picked = await quickInputService.pick<{
 						label: string;
+
 						launch: ILaunch;
 					}>(picks, {
 						activeItem: picks[0],
@@ -419,6 +444,7 @@ registerAction2(
 							"Select a workspace folder to create a launch.json file in or add it to the workspace config file",
 						),
 					});
+
 					if (picked) {
 						launch = picked.launch;
 					}
@@ -429,8 +455,10 @@ registerAction2(
 				const { editor } = await launch.openConfigFile({
 					preserveFocus: false,
 				});
+
 				if (editor && opts?.addNew) {
 					const codeEditor = <ICodeEditor>editor.getControl();
+
 					if (codeEditor) {
 						await codeEditor
 							.getContribution<IDebugEditorContribution>(
@@ -466,6 +494,7 @@ registerAction2(
 
 		async run(accessor: ServicesAccessor): Promise<void> {
 			const viewsService = accessor.get(IViewsService);
+
 			if (viewsService.isViewVisible(REPL_VIEW_ID)) {
 				viewsService.closeView(REPL_VIEW_ID);
 			} else {

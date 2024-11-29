@@ -31,7 +31,9 @@ import {
 @extHostNamedCustomer(MainContext.MainThreadLanguages)
 export class MainThreadLanguages implements MainThreadLanguagesShape {
 	private readonly _disposables = new DisposableStore();
+
 	private readonly _proxy: ExtHostLanguagesShape;
+
 	private readonly _status = new DisposableMap<number>();
 
 	constructor(
@@ -46,9 +48,11 @@ export class MainThreadLanguages implements MainThreadLanguagesShape {
 		private readonly _languageStatusService: ILanguageStatusService,
 	) {
 		this._proxy = _extHostContext.getProxy(ExtHostContext.ExtHostLanguages);
+
 		this._proxy.$acceptLanguageIds(
 			_languageService.getRegisteredLanguageIds(),
 		);
+
 		this._disposables.add(
 			_languageService.onDidChange((_) => {
 				this._proxy.$acceptLanguageIds(
@@ -57,10 +61,13 @@ export class MainThreadLanguages implements MainThreadLanguagesShape {
 			}),
 		);
 	}
+
 	dispose(): void {
 		this._disposables.dispose();
+
 		this._status.dispose();
 	}
+
 	async $changeLanguage(
 		resource: UriComponents,
 		languageId: string,
@@ -70,6 +77,7 @@ export class MainThreadLanguages implements MainThreadLanguagesShape {
 				new Error(`Unknown language id: ${languageId}`),
 			);
 		}
+
 		const uri = URI.revive(resource);
 
 		const ref = await this._resolverService.createModelReference(uri);
@@ -82,6 +90,7 @@ export class MainThreadLanguages implements MainThreadLanguagesShape {
 			ref.dispose();
 		}
 	}
+
 	async $tokensAtPosition(
 		resource: UriComponents,
 		position: IPosition,
@@ -89,6 +98,7 @@ export class MainThreadLanguages implements MainThreadLanguagesShape {
 		| undefined
 		| {
 				type: StandardTokenType;
+
 				range: IRange;
 		  }
 	> {
@@ -99,6 +109,7 @@ export class MainThreadLanguages implements MainThreadLanguagesShape {
 		if (!model) {
 			return undefined;
 		}
+
 		model.tokenization.tokenizeIfCheap(position.lineNumber);
 
 		const tokens = model.tokenization.getLineTokens(position.lineNumber);
@@ -118,6 +129,7 @@ export class MainThreadLanguages implements MainThreadLanguagesShape {
 	// --- language status
 	$setLanguageStatus(handle: number, status: ILanguageStatus): void {
 		this._status.get(handle)?.dispose();
+
 		this._status.set(handle, this._languageStatusService.addStatus(status));
 	}
 	$removeLanguageStatus(handle: number): void {

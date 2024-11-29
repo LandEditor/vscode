@@ -17,8 +17,11 @@ export abstract class AbstractURLService
 	implements IURLService
 {
 	declare readonly _serviceBrand: undefined;
+
 	private handlers = new Set<IURLHandler>();
+
 	abstract create(options?: Partial<UriComponents>): URI;
+
 	open(uri: URI, options?: IOpenURLOptions): Promise<boolean> {
 		const handlers = [...this.handlers.values()];
 
@@ -28,6 +31,7 @@ export abstract class AbstractURLService
 			false,
 		).then((val) => val || false);
 	}
+
 	registerHandler(handler: IURLHandler): IDisposable {
 		this.handlers.add(handler);
 
@@ -41,6 +45,7 @@ export class NativeURLService extends AbstractURLService {
 	) {
 		super();
 	}
+
 	create(options?: Partial<UriComponents>): URI {
 		let { authority, path, query, fragment } = options
 			? options
@@ -54,6 +59,7 @@ export class NativeURLService extends AbstractURLService {
 		if (authority && path && path.indexOf("/") !== 0) {
 			path = `/${path}`; // URI validation requires a path if there is an authority
 		}
+
 		return URI.from({
 			scheme: this.productService.urlProtocol,
 			authority,

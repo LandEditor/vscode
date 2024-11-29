@@ -184,17 +184,25 @@ enum VoiceChatSessionState {
 }
 interface IVoiceChatSessionController {
 	readonly onDidAcceptInput: Event<unknown>;
+
 	readonly onDidHideInput: Event<unknown>;
+
 	readonly context: VoiceChatSessionContext;
+
 	readonly scopedContextKeyService: IContextKeyService;
+
 	updateState(state: VoiceChatSessionState): void;
+
 	focusInput(): void;
+
 	acceptInput(): Promise<IChatResponseModel | undefined>;
+
 	updateInput(text: string): void;
 
 	getInput(): string;
 
 	setInputPlaceholder(text: string): void;
+
 	clearInputPlaceholder(): void;
 }
 class VoiceChatSessionControllerFactory {
@@ -225,6 +233,7 @@ class VoiceChatSessionControllerFactory {
 					VoiceChatSessionControllerFactory.create(accessor, "view")
 				); // fallback to 'view'
 			}
+
 			case "view": {
 				const chatWidget = await showChatView(viewsService);
 
@@ -234,8 +243,10 @@ class VoiceChatSessionControllerFactory {
 						chatWidget,
 					);
 				}
+
 				break;
 			}
+
 			case "inline": {
 				const activeCodeEditor = getCodeEditor(
 					editorService.activeTextEditorControl,
@@ -249,14 +260,17 @@ class VoiceChatSessionControllerFactory {
 						if (!inlineChat.joinCurrentRun()) {
 							inlineChat.run();
 						}
+
 						return VoiceChatSessionControllerFactory.doCreateForChatWidget(
 							"inline",
 							inlineChat.chatWidget,
 						);
 					}
 				}
+
 				break;
 			}
+
 			case "quick": {
 				quickChatService.open(); // this will populate focused chat widget in the chat widget service
 				return VoiceChatSessionControllerFactory.create(
@@ -265,8 +279,10 @@ class VoiceChatSessionControllerFactory {
 				);
 			}
 		}
+
 		return undefined;
 	}
+
 	private static doCreateForFocusedChat(
 		chatWidgetService: IChatWidgetService,
 		layoutService: IWorkbenchLayoutService,
@@ -300,13 +316,16 @@ class VoiceChatSessionControllerFactory {
 			} else {
 				context = "quick";
 			}
+
 			return VoiceChatSessionControllerFactory.doCreateForChatWidget(
 				context,
 				chatWidget,
 			);
 		}
+
 		return undefined;
 	}
+
 	private static createChatContextKeyController(
 		contextKeyService: IContextKeyService,
 		context: VoiceChatSessionContext,
@@ -321,24 +340,28 @@ class VoiceChatSessionControllerFactory {
 			switch (state) {
 				case VoiceChatSessionState.GettingReady:
 					contextVoiceChatGettingReady.set(true);
+
 					contextVoiceChatInProgress.reset();
 
 					break;
 
 				case VoiceChatSessionState.Started:
 					contextVoiceChatGettingReady.reset();
+
 					contextVoiceChatInProgress.set(context);
 
 					break;
 
 				case VoiceChatSessionState.Stopped:
 					contextVoiceChatGettingReady.reset();
+
 					contextVoiceChatInProgress.reset();
 
 					break;
 			}
 		};
 	}
+
 	private static doCreateForChatWidget(
 		context: VoiceChatSessionContext,
 		chatWidget: IChatWidget,
@@ -365,17 +388,23 @@ class VoiceChatSessionControllerFactory {
 }
 interface IVoiceChatSession {
 	setTimeoutDisabled(disabled: boolean): void;
+
 	accept(): void;
+
 	stop(): void;
 }
 interface IActiveVoiceChatSession extends IVoiceChatSession {
 	readonly id: number;
+
 	readonly controller: IVoiceChatSessionController;
+
 	readonly disposables: DisposableStore;
+
 	hasRecognizedInput: boolean;
 }
 class VoiceChatSessions {
 	private static instance: VoiceChatSessions | undefined = undefined;
+
 	static getInstance(
 		instantiationService: IInstantiationService,
 	): VoiceChatSessions {
@@ -383,10 +412,13 @@ class VoiceChatSessions {
 			VoiceChatSessions.instance =
 				instantiationService.createInstance(VoiceChatSessions);
 		}
+
 		return VoiceChatSessions.instance;
 	}
+
 	private currentVoiceChatSession: IActiveVoiceChatSession | undefined =
 		undefined;
+
 	private voiceChatSessionIds = 0;
 
 	constructor(
@@ -399,12 +431,14 @@ class VoiceChatSessions {
 		@IAccessibilityService
 		private readonly accessibilityService: IAccessibilityService,
 	) {}
+
 	async start(
 		controller: IVoiceChatSessionController,
 		context?: IChatExecuteActionContext,
 	): Promise<IVoiceChatSession> {
 		// Stop running text-to-speech or speech-to-text sessions in chats
 		this.stop();
+
 		ChatSynthesizerSessions.getInstance(this.instantiationService).stop();
 
 		let disableTimeout = false;
@@ -425,18 +459,23 @@ class VoiceChatSessions {
 			});
 
 		const cts = new CancellationTokenSource();
+
 		session.disposables.add(toDisposable(() => cts.dispose(true)));
+
 		session.disposables.add(
 			controller.onDidAcceptInput(() =>
 				this.stop(sessionId, controller.context),
 			),
 		);
+
 		session.disposables.add(
 			controller.onDidHideInput(() =>
 				this.stop(sessionId, controller.context),
 			),
 		);
+
 		controller.focusInput();
+
 		controller.updateState(VoiceChatSessionState.GettingReady);
 
 		const voiceChatSession =
@@ -454,18 +493,21 @@ class VoiceChatSessions {
 		if (!isNumber(voiceChatTimeout) || voiceChatTimeout < 0) {
 			voiceChatTimeout = SpeechTimeoutDefault;
 		}
+
 		const acceptTranscriptionScheduler = session.disposables.add(
 			new RunOnceScheduler(
 				() => this.accept(sessionId),
 				voiceChatTimeout,
 			),
 		);
+
 		session.disposables.add(
 			voiceChatSession.onDidChange(
 				({ status, text, waitingForInput }) => {
 					if (cts.token.isCancellationRequested) {
 						return;
 					}
+
 					switch (status) {
 						case SpeechToTextStatus.Started:
 							this.onDidSpeechToTextSessionStart(
@@ -478,6 +520,7 @@ class VoiceChatSessions {
 						case SpeechToTextStatus.Recognizing:
 							if (text) {
 								session.hasRecognizedInput = true;
+
 								session.controller.updateInput(
 									inputValue
 										? [inputValue, text].join(" ")
@@ -492,14 +535,17 @@ class VoiceChatSessions {
 									acceptTranscriptionScheduler.cancel();
 								}
 							}
+
 							break;
 
 						case SpeechToTextStatus.Recognized:
 							if (text) {
 								session.hasRecognizedInput = true;
+
 								inputValue = inputValue
 									? [inputValue, text].join(" ")
 									: text;
+
 								session.controller.updateInput(inputValue);
 
 								if (
@@ -511,6 +557,7 @@ class VoiceChatSessions {
 									acceptTranscriptionScheduler.schedule();
 								}
 							}
+
 							break;
 
 						case SpeechToTextStatus.Stopped:
@@ -524,6 +571,7 @@ class VoiceChatSessions {
 
 		return session;
 	}
+
 	private onDidSpeechToTextSessionStart(
 		controller: IVoiceChatSessionController,
 		disposables: DisposableStore,
@@ -534,17 +582,21 @@ class VoiceChatSessions {
 
 		const updatePlaceholder = () => {
 			dotCount = (dotCount + 1) % 4;
+
 			controller.setInputPlaceholder(
 				`${localize("listening", "I'm listening")}${".".repeat(dotCount)}`,
 			);
+
 			placeholderScheduler.schedule();
 		};
 
 		const placeholderScheduler = disposables.add(
 			new RunOnceScheduler(updatePlaceholder, 500),
 		);
+
 		updatePlaceholder();
 	}
+
 	stop(
 		voiceChatSessionId = this.voiceChatSessionIds,
 		context?: VoiceChatSessionContext,
@@ -557,13 +609,18 @@ class VoiceChatSessions {
 		) {
 			return;
 		}
+
 		this.currentVoiceChatSession.controller.clearInputPlaceholder();
+
 		this.currentVoiceChatSession.controller.updateState(
 			VoiceChatSessionState.Stopped,
 		);
+
 		this.currentVoiceChatSession.disposables.dispose();
+
 		this.currentVoiceChatSession = undefined;
 	}
+
 	async accept(voiceChatSessionId = this.voiceChatSessionIds): Promise<void> {
 		if (
 			!this.currentVoiceChatSession ||
@@ -571,6 +628,7 @@ class VoiceChatSessions {
 		) {
 			return;
 		}
+
 		if (!this.currentVoiceChatSession.hasRecognizedInput) {
 			// If we have an active session but without recognized
 			// input, we do not want to just accept the input that
@@ -583,6 +641,7 @@ class VoiceChatSessions {
 
 			return;
 		}
+
 		const controller = this.currentVoiceChatSession.controller;
 
 		const response = await controller.acceptInput();
@@ -590,6 +649,7 @@ class VoiceChatSessions {
 		if (!response) {
 			return;
 		}
+
 		const autoSynthesize = this.configurationService.getValue<
 			"on" | "off" | "auto"
 		>(AccessibilityVoiceSettingId.AutoSynthesize);
@@ -609,6 +669,7 @@ class VoiceChatSessions {
 			} else {
 				context = controller;
 			}
+
 			ChatSynthesizerSessions.getInstance(
 				this.instantiationService,
 			).start(
@@ -644,6 +705,7 @@ async function startVoiceChatWithHoldMode(
 	if (!controller) {
 		return;
 	}
+
 	const session = await VoiceChatSessions.getInstance(
 		instantiationService,
 	).start(controller, context);
@@ -652,9 +714,12 @@ async function startVoiceChatWithHoldMode(
 
 	const handle = disposableTimeout(() => {
 		acceptVoice = true;
+
 		session?.setTimeoutDisabled(true); // disable accept on timeout when hold mode runs for VOICE_KEY_HOLD_THRESHOLD
 	}, VOICE_KEY_HOLD_THRESHOLD);
+
 	await holdMode;
+
 	handle.dispose();
 
 	if (acceptVoice) {
@@ -668,6 +733,7 @@ class VoiceChatWithHoldModeAction extends Action2 {
 	) {
 		super(desc);
 	}
+
 	run(
 		accessor: ServicesAccessor,
 		context?: IChatExecuteActionContext,
@@ -725,6 +791,7 @@ export class HoldToVoiceChatInChatViewAction extends Action2 {
 			},
 		});
 	}
+
 	override async run(
 		accessor: ServicesAccessor,
 		context?: IChatExecuteActionContext,
@@ -754,11 +821,14 @@ export class HoldToVoiceChatInChatViewAction extends Action2 {
 				session = await VoiceChatSessions.getInstance(
 					instantiationService,
 				).start(controller, context);
+
 				session.setTimeoutDisabled(true);
 			}
 		}, VOICE_KEY_HOLD_THRESHOLD);
 		(await showChatView(viewsService))?.focusInput();
+
 		await holdMode;
+
 		handle.dispose();
 
 		if (session) {
@@ -879,6 +949,7 @@ export class StartVoiceChatAction extends Action2 {
 			],
 		});
 	}
+
 	async run(
 		accessor: ServicesAccessor,
 		context?: IChatExecuteActionContext,
@@ -892,6 +963,7 @@ export class StartVoiceChatAction extends Action2 {
 			// is properly retrieved
 			widget.focusInput();
 		}
+
 		return startVoiceChatWithHoldMode(
 			this.desc.id,
 			accessor,
@@ -945,6 +1017,7 @@ export class StopListeningAction extends Action2 {
 			],
 		});
 	}
+
 	async run(accessor: ServicesAccessor): Promise<void> {
 		VoiceChatSessions.getInstance(
 			accessor.get(IInstantiationService),
@@ -974,6 +1047,7 @@ export class StopListeningAndSubmitAction extends Action2 {
 			precondition: GlobalVoiceChatInProgress, // need global context here because of `f1: true`
 		});
 	}
+
 	run(accessor: ServicesAccessor): void {
 		VoiceChatSessions.getInstance(
 			accessor.get(IInstantiationService),
@@ -995,7 +1069,9 @@ const ScopedChatSynthesisInProgress = new RawContextKey<boolean>(
 );
 interface IChatSynthesizerSessionController {
 	readonly onDidHideChat: Event<unknown>;
+
 	readonly contextKeyService: IContextKeyService;
+
 	readonly response: IChatResponseModel;
 }
 class ChatSynthesizerSessionController {
@@ -1017,6 +1093,7 @@ class ChatSynthesizerSessionController {
 			};
 		}
 	}
+
 	private static doCreateForFocusedChat(
 		accessor: ServicesAccessor,
 		response: IChatResponseModel,
@@ -1033,6 +1110,7 @@ class ChatSynthesizerSessionController {
 			// TODO@bpasero workaround for https://github.com/microsoft/vscode/issues/212785
 			chatWidget = chatWidgetService.lastFocusedWidget;
 		}
+
 		return {
 			onDidHideChat: chatWidget?.onDidHide ?? Event.None,
 			contextKeyService:
@@ -1043,6 +1121,7 @@ class ChatSynthesizerSessionController {
 }
 class ChatSynthesizerSessions {
 	private static instance: ChatSynthesizerSessions | undefined = undefined;
+
 	static getInstance(
 		instantiationService: IInstantiationService,
 	): ChatSynthesizerSessions {
@@ -1050,8 +1129,10 @@ class ChatSynthesizerSessions {
 			ChatSynthesizerSessions.instance =
 				instantiationService.createInstance(ChatSynthesizerSessions);
 		}
+
 		return ChatSynthesizerSessions.instance;
 	}
+
 	private activeSession: CancellationTokenSource | undefined = undefined;
 
 	constructor(
@@ -1060,15 +1141,18 @@ class ChatSynthesizerSessions {
 		@IInstantiationService
 		private readonly instantiationService: IInstantiationService,
 	) {}
+
 	async start(controller: IChatSynthesizerSessionController): Promise<void> {
 		// Stop running text-to-speech or speech-to-text sessions in chats
 		this.stop();
+
 		VoiceChatSessions.getInstance(this.instantiationService).stop();
 
 		const activeSession = (this.activeSession =
 			new CancellationTokenSource());
 
 		const disposables = new DisposableStore();
+
 		activeSession.token.onCancellationRequested(() =>
 			disposables.dispose(),
 		);
@@ -1081,13 +1165,16 @@ class ChatSynthesizerSessions {
 		if (activeSession.token.isCancellationRequested) {
 			return;
 		}
+
 		disposables.add(controller.onDidHideChat(() => this.stop()));
 
 		const scopedChatToSpeechInProgress =
 			ScopedChatSynthesisInProgress.bindTo(controller.contextKeyService);
+
 		disposables.add(
 			toDisposable(() => scopedChatToSpeechInProgress.reset()),
 		);
+
 		disposables.add(
 			session.onDidChange((e) => {
 				switch (e.status) {
@@ -1111,12 +1198,14 @@ class ChatSynthesizerSessions {
 			if (activeSession.token.isCancellationRequested) {
 				return;
 			}
+
 			await raceCancellation(
 				session.synthesize(chunk),
 				activeSession.token,
 			);
 		}
 	}
+
 	private async *nextChatResponseChunk(
 		response: IChatResponseModel,
 		token: CancellationToken,
@@ -1132,15 +1221,19 @@ class ChatSynthesizerSessions {
 				response,
 				totalOffset,
 			);
+
 			totalOffset = offset;
+
 			complete = response.isComplete;
 
 			if (chunk) {
 				yield chunk;
 			}
+
 			if (token.isCancellationRequested) {
 				return;
 			}
+
 			if (
 				!complete &&
 				responseLength === response.response.toString().length
@@ -1152,11 +1245,13 @@ class ChatSynthesizerSessions {
 			}
 		} while (!token.isCancellationRequested && !complete);
 	}
+
 	private parseNextChatResponseChunk(
 		response: IChatResponseModel,
 		offset: number,
 	): {
 		readonly chunk: string | undefined;
+
 		readonly offset: number;
 	} {
 		let chunk: string | undefined = undefined;
@@ -1165,19 +1260,25 @@ class ChatSynthesizerSessions {
 
 		if (response.isComplete) {
 			chunk = text.substring(offset);
+
 			offset = text.length + 1;
 		} else {
 			const res = parseNextChatResponseChunk(text, offset);
+
 			chunk = res.chunk;
+
 			offset = res.offset;
 		}
+
 		return {
 			chunk: chunk ? renderStringAsPlaintext({ value: chunk }) : chunk, // convert markdown to plain text
 			offset,
 		};
 	}
+
 	stop(): void {
 		this.activeSession?.dispose(true);
+
 		this.activeSession = undefined;
 	}
 }
@@ -1193,6 +1294,7 @@ export function parseNextChatResponseChunk(
 	offset: number,
 ): {
 	readonly chunk: string | undefined;
+
 	readonly offset: number;
 } {
 	let chunk: string | undefined = undefined;
@@ -1208,11 +1310,13 @@ export function parseNextChatResponseChunk(
 			lineDelimiter === cur // end of line
 		) {
 			chunk = text.substring(offset, i + 1).trim();
+
 			offset = i + 1;
 
 			break;
 		}
 	}
+
 	return { chunk, offset };
 }
 export class ReadChatResponseAloud extends Action2 {
@@ -1251,6 +1355,7 @@ export class ReadChatResponseAloud extends Action2 {
 			],
 		});
 	}
+
 	run(accessor: ServicesAccessor, ...args: any[]) {
 		const instantiationService = accessor.get(IInstantiationService);
 
@@ -1294,14 +1399,17 @@ export class ReadChatResponseAloud extends Action2 {
 				}
 			}
 		}
+
 		if (!response) {
 			return;
 		}
+
 		const controller = ChatSynthesizerSessionController.create(
 			accessor,
 			"focused",
 			response.model,
 		);
+
 		ChatSynthesizerSessions.getInstance(instantiationService).start(
 			controller,
 		);
@@ -1352,6 +1460,7 @@ export class StopReadAloud extends Action2 {
 			],
 		});
 	}
+
 	async run(accessor: ServicesAccessor) {
 		ChatSynthesizerSessions.getInstance(
 			accessor.get(IInstantiationService),
@@ -1398,6 +1507,7 @@ export class StopReadChatItemAloud extends Action2 {
 			],
 		});
 	}
+
 	async run(accessor: ServicesAccessor, ...args: any[]) {
 		ChatSynthesizerSessions.getInstance(
 			accessor.get(IInstantiationService),
@@ -1417,6 +1527,7 @@ function supportsKeywordActivation(
 	) {
 		return false;
 	}
+
 	const value = configurationService.getValue(KEYWORD_ACTIVIATION_SETTING_ID);
 
 	return (
@@ -1429,6 +1540,7 @@ export class KeywordActivationContribution
 	implements IWorkbenchContribution
 {
 	static readonly ID = "workbench.contrib.keywordActivation";
+
 	static SETTINGS_VALUE = {
 		OFF: "off",
 		INLINE_CHAT: "inlineChat",
@@ -1436,6 +1548,7 @@ export class KeywordActivationContribution
 		VIEW_CHAT: "chatInView",
 		CHAT_IN_CONTEXT: "chatInContext",
 	};
+
 	private activeSession: CancellationTokenSource | undefined = undefined;
 
 	constructor(
@@ -1455,17 +1568,21 @@ export class KeywordActivationContribution
 		private readonly chatAgentService: IChatAgentService,
 	) {
 		super();
+
 		this._register(
 			instantiationService.createInstance(KeywordActivationStatusEntry),
 		);
+
 		this.registerListeners();
 	}
+
 	private registerListeners(): void {
 		this._register(
 			Event.runAndSubscribe(
 				this.speechService.onDidChangeHasSpeechProvider,
 				() => {
 					this.updateConfiguration();
+
 					this.handleKeywordActivation();
 				},
 			),
@@ -1479,21 +1596,26 @@ export class KeywordActivationContribution
 					)
 				) {
 					this.updateConfiguration();
+
 					this.handleKeywordActivation();
+
 					onDidAddDefaultAgent.dispose();
 				}
 			}),
 		);
+
 		this._register(
 			this.speechService.onDidStartSpeechToTextSession(() =>
 				this.handleKeywordActivation(),
 			),
 		);
+
 		this._register(
 			this.speechService.onDidEndSpeechToTextSession(() =>
 				this.handleKeywordActivation(),
 			),
 		);
+
 		this._register(
 			this.configurationService.onDidChangeConfiguration((e) => {
 				if (e.affectsConfiguration(KEYWORD_ACTIVIATION_SETTING_ID)) {
@@ -1502,6 +1624,7 @@ export class KeywordActivationContribution
 			}),
 		);
 	}
+
 	private updateConfiguration(): void {
 		if (
 			!this.speechService.hasSpeechProvider ||
@@ -1509,9 +1632,11 @@ export class KeywordActivationContribution
 		) {
 			return; // these settings require a speech and chat provider
 		}
+
 		const registry = Registry.as<IConfigurationRegistry>(
 			Extensions.Configuration,
 		);
+
 		registry.registerConfiguration({
 			...accessibilityConfigurationNodeBase,
 			properties: {
@@ -1558,6 +1683,7 @@ export class KeywordActivationContribution
 			},
 		});
 	}
+
 	private handleKeywordActivation(): void {
 		const enabled =
 			supportsKeywordActivation(
@@ -1581,6 +1707,7 @@ export class KeywordActivationContribution
 			this.disableKeywordActivation();
 		}
 	}
+
 	private async enableKeywordActivation(): Promise<void> {
 		const session = (this.activeSession = new CancellationTokenSource());
 
@@ -1592,6 +1719,7 @@ export class KeywordActivationContribution
 		) {
 			return; // cancelled
 		}
+
 		this.activeSession = undefined;
 
 		if (result === KeywordRecognitionStatus.Recognized) {
@@ -1604,6 +1732,7 @@ export class KeywordActivationContribution
 			this.handleKeywordActivation();
 		}
 	}
+
 	private getKeywordCommand(): string {
 		const setting = this.configurationService.getValue(
 			KEYWORD_ACTIVIATION_SETTING_ID,
@@ -1625,14 +1754,18 @@ export class KeywordActivationContribution
 					return InlineVoiceChatAction.ID;
 				}
 			}
+
 			default:
 				return VoiceChatInChatViewAction.ID;
 		}
 	}
+
 	private disableKeywordActivation(): void {
 		this.activeSession?.dispose(true);
+
 		this.activeSession = undefined;
 	}
+
 	override dispose(): void {
 		this.activeSession?.dispose();
 
@@ -1643,15 +1776,19 @@ class KeywordActivationStatusEntry extends Disposable {
 	private readonly entry = this._register(
 		new MutableDisposable<IStatusbarEntryAccessor>(),
 	);
+
 	private static STATUS_NAME = localize(
 		"keywordActivation.status.name",
 		"Voice Keyword Activation",
 	);
+
 	private static STATUS_COMMAND = "keywordActivation.status.command";
+
 	private static STATUS_ACTIVE = localize(
 		"keywordActivation.status.active",
 		"Listening to 'Hey Code'...",
 	);
+
 	private static STATUS_INACTIVE = localize(
 		"keywordActivation.status.inactive",
 		"Waiting for voice chat to end...",
@@ -1670,6 +1807,7 @@ class KeywordActivationStatusEntry extends Disposable {
 		private readonly chatAgentService: IChatAgentService,
 	) {
 		super();
+
 		this._register(
 			CommandsRegistry.registerCommand(
 				KeywordActivationStatusEntry.STATUS_COMMAND,
@@ -1680,20 +1818,25 @@ class KeywordActivationStatusEntry extends Disposable {
 					),
 			),
 		);
+
 		this.registerListeners();
+
 		this.updateStatusEntry();
 	}
+
 	private registerListeners(): void {
 		this._register(
 			this.speechService.onDidStartKeywordRecognition(() =>
 				this.updateStatusEntry(),
 			),
 		);
+
 		this._register(
 			this.speechService.onDidEndKeywordRecognition(() =>
 				this.updateStatusEntry(),
 			),
 		);
+
 		this._register(
 			this.configurationService.onDidChangeConfiguration((e) => {
 				if (e.affectsConfiguration(KEYWORD_ACTIVIATION_SETTING_ID)) {
@@ -1702,6 +1845,7 @@ class KeywordActivationStatusEntry extends Disposable {
 			}),
 		);
 	}
+
 	private updateStatusEntry(): void {
 		const visible = supportsKeywordActivation(
 			this.configurationService,
@@ -1713,11 +1857,13 @@ class KeywordActivationStatusEntry extends Disposable {
 			if (!this.entry.value) {
 				this.createStatusEntry();
 			}
+
 			this.updateStatusLabel();
 		} else {
 			this.entry.clear();
 		}
 	}
+
 	private createStatusEntry() {
 		this.entry.value = this.statusbarService.addEntry(
 			this.getStatusEntryProperties(),
@@ -1726,6 +1872,7 @@ class KeywordActivationStatusEntry extends Disposable {
 			103,
 		);
 	}
+
 	private getStatusEntryProperties(): IStatusbarEntry {
 		return {
 			name: KeywordActivationStatusEntry.STATUS_NAME,
@@ -1743,6 +1890,7 @@ class KeywordActivationStatusEntry extends Disposable {
 			showInAllWindows: true,
 		};
 	}
+
 	private updateStatusLabel(): void {
 		this.entry.value?.update(this.getStatusEntryProperties());
 	}
@@ -1766,6 +1914,7 @@ abstract class BaseInstallSpeechProviderAction extends Action2 {
 
 		try {
 			InstallingSpeechProvider.bindTo(contextKeyService).set(true);
+
 			await extensionsWorkbenchService.install(
 				BaseInstallSpeechProviderAction.SPEECH_EXTENSION_ID,
 				{
@@ -1778,6 +1927,7 @@ abstract class BaseInstallSpeechProviderAction extends Action2 {
 			InstallingSpeechProvider.bindTo(contextKeyService).reset();
 		}
 	}
+
 	protected abstract getJustification(): string;
 }
 export class InstallSpeechProviderForVoiceChatAction extends BaseInstallSpeechProviderAction {
@@ -1826,6 +1976,7 @@ export class InstallSpeechProviderForVoiceChatAction extends BaseInstallSpeechPr
 			],
 		});
 	}
+
 	protected getJustification(): string {
 		return localize(
 			"installProviderForVoiceChat.justification",
@@ -1843,9 +1994,11 @@ registerThemingParticipant((theme, collector) => {
 		activeRecordingColor =
 			theme.getColor(ACTIVITY_BAR_BADGE_BACKGROUND) ??
 			theme.getColor(focusBorder);
+
 		activeRecordingDimmedColor = activeRecordingColor?.transparent(0.38);
 	} else {
 		activeRecordingColor = theme.getColor(contrastBorder);
+
 		activeRecordingDimmedColor = theme.getColor(contrastBorder);
 	}
 	// Show a "microphone" or "pulse" icon when speech-to-text or text-to-speech is in progress that glows via outline.
@@ -1853,36 +2006,52 @@ registerThemingParticipant((theme, collector) => {
 		.monaco-workbench:not(.reduce-motion) .interactive-input-part .monaco-action-bar .action-label.codicon-sync.codicon-modifier-spin:not(.disabled),
 		.monaco-workbench:not(.reduce-motion) .interactive-input-part .monaco-action-bar .action-label.codicon-loading.codicon-modifier-spin:not(.disabled) {
 			color: ${activeRecordingColor};
+
 			outline: 1px solid ${activeRecordingColor};
+
 			outline-offset: -1px;
+
 			animation: pulseAnimation 1s infinite;
+
 			border-radius: 50%;
 		}
 
 		.monaco-workbench:not(.reduce-motion) .interactive-input-part .monaco-action-bar .action-label.codicon-sync.codicon-modifier-spin:not(.disabled)::before,
 		.monaco-workbench:not(.reduce-motion) .interactive-input-part .monaco-action-bar .action-label.codicon-loading.codicon-modifier-spin:not(.disabled)::before {
 			position: absolute;
+
 			outline: 1px solid ${activeRecordingColor};
+
 			outline-offset: 2px;
+
 			border-radius: 50%;
+
 			width: 16px;
+
 			height: 16px;
 		}
 
 		.monaco-workbench:not(.reduce-motion) .interactive-input-part .monaco-action-bar .action-label.codicon-sync.codicon-modifier-spin:not(.disabled)::after,
 		.monaco-workbench:not(.reduce-motion) .interactive-input-part .monaco-action-bar .action-label.codicon-loading.codicon-modifier-spin:not(.disabled)::after {
 			outline: 2px solid ${activeRecordingColor};
+
 			outline-offset: -1px;
+
 			animation: pulseAnimation 1500ms cubic-bezier(0.75, 0, 0.25, 1) infinite;
 		}
 
 		.monaco-workbench:not(.reduce-motion) .interactive-input-part .monaco-action-bar .action-label.codicon-sync.codicon-modifier-spin:not(.disabled)::before,
 		.monaco-workbench:not(.reduce-motion) .interactive-input-part .monaco-action-bar .action-label.codicon-loading.codicon-modifier-spin:not(.disabled)::before {
 			position: absolute;
+
 			outline: 1px solid ${activeRecordingColor};
+
 			outline-offset: 2px;
+
 			border-radius: 50%;
+
 			width: 16px;
+
 			height: 16px;
 		}
 
@@ -1890,10 +2059,13 @@ registerThemingParticipant((theme, collector) => {
 			0% {
 				outline-width: 2px;
 			}
+
 			62% {
 				outline-width: 5px;
+
 				outline-color: ${activeRecordingDimmedColor};
 			}
+
 			100% {
 				outline-width: 2px;
 			}

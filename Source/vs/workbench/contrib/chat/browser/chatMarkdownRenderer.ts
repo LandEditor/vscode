@@ -79,6 +79,7 @@ export class ChatMarkdownRenderer extends MarkdownRenderer {
 	) {
 		super(options ?? {}, languageService, openerService);
 	}
+
 	override render(
 		markdown: IMarkdownString | undefined,
 		options?: MarkdownRenderOptions,
@@ -108,14 +109,18 @@ export class ChatMarkdownRenderer extends MarkdownRenderer {
 
 		return this.attachCustomHover(result);
 	}
+
 	private attachCustomHover(
 		result: IMarkdownRenderResult,
 	): IMarkdownRenderResult {
 		const store = new DisposableStore();
+
 		result.element.querySelectorAll("a").forEach((element) => {
 			if (element.title) {
 				const title = element.title;
+
 				element.title = "";
+
 				store.add(
 					this.hoverService.setupManagedHover(
 						getDefaultHoverDelegate("element"),
@@ -130,10 +135,12 @@ export class ChatMarkdownRenderer extends MarkdownRenderer {
 			element: result.element,
 			dispose: () => {
 				result.dispose();
+
 				store.dispose();
 			},
 		};
 	}
+
 	protected override async openMarkdownLink(
 		link: string,
 		markdown: IMarkdownString,
@@ -150,6 +157,7 @@ export class ChatMarkdownRenderer extends MarkdownRenderer {
 		} catch {
 			// noop
 		}
+
 		return super.openMarkdownLink(link, markdown);
 	}
 }

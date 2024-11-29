@@ -13,6 +13,7 @@ class GitHubCredentialProvider implements CredentialsProvider {
 		if (!/github\.com/i.test(host.authority)) {
 			return;
 		}
+
 		const session = await getSession();
 
 		return { username: session.account.id, password: session.accessToken };
@@ -20,12 +21,16 @@ class GitHubCredentialProvider implements CredentialsProvider {
 }
 export class GithubCredentialProviderManager {
 	private providerDisposable: Disposable = EmptyDisposable;
+
 	private readonly disposable: Disposable;
+
 	private _enabled = false;
+
 	private set enabled(enabled: boolean) {
 		if (this._enabled === enabled) {
 			return;
 		}
+
 		this._enabled = enabled;
 
 		if (enabled) {
@@ -36,22 +41,28 @@ export class GithubCredentialProviderManager {
 			this.providerDisposable.dispose();
 		}
 	}
+
 	constructor(private gitAPI: GitAPI) {
 		this.disposable = workspace.onDidChangeConfiguration((e) => {
 			if (e.affectsConfiguration("github")) {
 				this.refresh();
 			}
 		});
+
 		this.refresh();
 	}
+
 	private refresh(): void {
 		const config = workspace.getConfiguration("github", null);
 
 		const enabled = config.get<boolean>("gitAuthentication", true);
+
 		this.enabled = !!enabled;
 	}
+
 	dispose(): void {
 		this.enabled = false;
+
 		this.disposable.dispose();
 	}
 }

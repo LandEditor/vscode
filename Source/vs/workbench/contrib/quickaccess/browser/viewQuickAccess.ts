@@ -67,6 +67,7 @@ export class ViewQuickAccessProvider extends PickerQuickAccessProvider<IViewQuic
 			},
 		});
 	}
+
 	protected _getPicks(
 		filter: string,
 	): Array<IViewQuickPickItem | IQuickPickSeparator> {
@@ -113,15 +114,19 @@ export class ViewQuickAccessProvider extends PickerQuickAccessProvider<IViewQuic
 				} else {
 					separatorLabel = lastContainer;
 				}
+
 				filteredViewEntriesWithSeparators.push({
 					type: "separator",
 					label: separatorLabel,
 				});
 			}
+
 			filteredViewEntriesWithSeparators.push(entry);
 		}
+
 		return filteredViewEntriesWithSeparators;
 	}
+
 	private doGetViewPickItems(): Array<IViewQuickPickItem> {
 		const viewEntries: Array<IViewQuickPickItem> = [];
 
@@ -143,6 +148,7 @@ export class ViewQuickAccessProvider extends PickerQuickAccessProvider<IViewQuic
 					});
 				}
 			}
+
 			return result;
 		};
 
@@ -155,6 +161,7 @@ export class ViewQuickAccessProvider extends PickerQuickAccessProvider<IViewQuic
 
 			const visiblePaneCompositeIds =
 				this.paneCompositeService.getVisiblePaneCompositeIds(location);
+
 			paneComposites.sort((a, b) => {
 				let aIndex = visiblePaneCompositeIds.findIndex(
 					(id) => a.id === id,
@@ -169,11 +176,13 @@ export class ViewQuickAccessProvider extends PickerQuickAccessProvider<IViewQuic
 						paneComposites.indexOf(a) +
 						visiblePaneCompositeIds.length;
 				}
+
 				if (bIndex < 0) {
 					bIndex =
 						paneComposites.indexOf(b) +
 						visiblePaneCompositeIds.length;
 				}
+
 				return aIndex - bIndex;
 			});
 
@@ -206,10 +215,12 @@ export class ViewQuickAccessProvider extends PickerQuickAccessProvider<IViewQuic
 			ViewContainerLocation.Sidebar,
 			localize("views", "Side Bar"),
 		);
+
 		addPaneComposites(
 			ViewContainerLocation.Panel,
 			localize("panels", "Panel"),
 		);
+
 		addPaneComposites(
 			ViewContainerLocation.AuxiliaryBar,
 			localize("secondary side bar", "Secondary Side Bar"),
@@ -237,7 +248,9 @@ export class ViewQuickAccessProvider extends PickerQuickAccessProvider<IViewQuic
 		};
 		// Side Bar / Panel Views
 		addPaneCompositeViews(ViewContainerLocation.Sidebar);
+
 		addPaneCompositeViews(ViewContainerLocation.Panel);
+
 		addPaneCompositeViews(ViewContainerLocation.AuxiliaryBar);
 		// Terminals
 		this.terminalGroupService.groups.forEach((group, groupIndex) => {
@@ -248,11 +261,13 @@ export class ViewQuickAccessProvider extends PickerQuickAccessProvider<IViewQuic
 					`${groupIndex + 1}.${terminalIndex + 1}`,
 					terminal.title,
 				);
+
 				viewEntries.push({
 					label,
 					containerLabel: localize("terminals", "Terminal"),
 					accept: async () => {
 						await this.terminalGroupService.showPanel(true);
+
 						this.terminalService.setActiveInstance(terminal);
 					},
 				});
@@ -265,6 +280,7 @@ export class ViewQuickAccessProvider extends PickerQuickAccessProvider<IViewQuic
 			.filter((s) => s.hasSeparateRepl())
 			.forEach((session, _) => {
 				const label = session.name;
+
 				viewEntries.push({
 					label,
 					containerLabel: localize("debugConsoles", "Debug Console"),
@@ -295,8 +311,10 @@ export class ViewQuickAccessProvider extends PickerQuickAccessProvider<IViewQuic
 				accept: () => this.outputService.showChannel(channel.id),
 			});
 		}
+
 		return viewEntries;
 	}
+
 	private includeViewContainer(container: PaneCompositeDescriptor): boolean {
 		const viewContainer = this.viewDescriptorService.getViewContainerById(
 			container.id,
@@ -308,6 +326,7 @@ export class ViewQuickAccessProvider extends PickerQuickAccessProvider<IViewQuic
 					.activeViewDescriptors.length > 0
 			);
 		}
+
 		return true;
 	}
 }
@@ -323,6 +342,7 @@ export class OpenViewPickerAction extends Action2 {
 			f1: true,
 		});
 	}
+
 	async run(accessor: ServicesAccessor): Promise<void> {
 		accessor
 			.get(IQuickInputService)
@@ -331,6 +351,7 @@ export class OpenViewPickerAction extends Action2 {
 }
 export class QuickAccessViewPickerAction extends Action2 {
 	static readonly ID = "workbench.action.quickOpenView";
+
 	static readonly KEYBINDING = {
 		primary: KeyMod.CtrlCmd | KeyCode.KeyQ,
 		mac: { primary: KeyMod.WinCtrl | KeyCode.KeyQ },
@@ -350,6 +371,7 @@ export class QuickAccessViewPickerAction extends Action2 {
 			},
 		});
 	}
+
 	async run(accessor: ServicesAccessor): Promise<void> {
 		const keybindingService = accessor.get(IKeybindingService);
 
@@ -358,6 +380,7 @@ export class QuickAccessViewPickerAction extends Action2 {
 		const keys = keybindingService.lookupKeybindings(
 			QuickAccessViewPickerAction.ID,
 		);
+
 		quickInputService.quickAccess.show(ViewQuickAccessProvider.PREFIX, {
 			quickNavigateConfiguration: { keybindings: keys },
 			itemActivation: ItemActivation.FIRST,

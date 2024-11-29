@@ -276,10 +276,13 @@ export class ExtensionsViewletViewsContribution
 		private readonly contextKeyService: IContextKeyService,
 	) {
 		super();
+
 		this.container =
 			viewDescriptorService.getViewContainerById(VIEWLET_ID)!;
+
 		this.registerViews();
 	}
+
 	private registerViews(): void {
 		const viewDescriptors: IViewDescriptor[] = [];
 		/* Default views */
@@ -300,11 +303,13 @@ export class ExtensionsViewletViewsContribution
 		viewDescriptors.push(
 			...this.createOtherLocalFilteredExtensionsViewDescriptors(),
 		);
+
 		Registry.as<IViewsRegistry>(Extensions.ViewsRegistry).registerViews(
 			viewDescriptors,
 			this.container,
 		);
 	}
+
 	private createDefaultExtensionsViewDescriptors(): IViewDescriptor[] {
 		const viewDescriptors: IViewDescriptor[] = [];
 		/*
@@ -320,6 +325,7 @@ export class ExtensionsViewletViewsContribution
 					.localExtensionManagementServer,
 			);
 		}
+
 		if (
 			this.extensionManagementServerService
 				.remoteExtensionManagementServer
@@ -329,6 +335,7 @@ export class ExtensionsViewletViewsContribution
 					.remoteExtensionManagementServer,
 			);
 		}
+
 		if (
 			this.extensionManagementServerService.webExtensionManagementServer
 		) {
@@ -337,6 +344,7 @@ export class ExtensionsViewletViewsContribution
 					.webExtensionManagementServer,
 			);
 		}
+
 		const getViewName = (
 			viewTitle: string,
 			server: IExtensionManagementServer,
@@ -355,12 +363,15 @@ export class ExtensionsViewletViewsContribution
 				.remoteExtensionManagementServer
 		) {
 			const interestingContextKeys = new Set();
+
 			interestingContextKeys.add("hasInstalledWebExtensions");
+
 			installedWebExtensionsContextChangeEvent = Event.filter(
 				this.contextKeyService.onDidChangeContext,
 				(e) => e.affectsSome(interestingContextKeys),
 			);
 		}
+
 		const serverLabelChangeEvent = Event.any(
 			this.labelService.onDidChangeFormatters,
 			installedWebExtensionsContextChangeEvent,
@@ -429,6 +440,7 @@ export class ExtensionsViewletViewsContribution
 									},
 								});
 							}
+
 							run(accessor: ServicesAccessor): Promise<void> {
 								return accessor
 									.get(IInstantiationService)
@@ -442,6 +454,7 @@ export class ExtensionsViewletViewsContribution
 				);
 			}
 		}
+
 		if (
 			this.extensionManagementServerService
 				.localExtensionManagementServer &&
@@ -462,6 +475,7 @@ export class ExtensionsViewletViewsContribution
 								f1: true,
 							});
 						}
+
 						run(accessor: ServicesAccessor): Promise<void> {
 							return accessor
 								.get(IInstantiationService)
@@ -558,8 +572,10 @@ export class ExtensionsViewletViewsContribution
 				canToggleVisibility: true,
 			});
 		}
+
 		return viewDescriptors;
 	}
+
 	private createSearchExtensionsViewDescriptors(): IViewDescriptor[] {
 		const viewDescriptors: IViewDescriptor[] = [];
 		/*
@@ -663,8 +679,10 @@ export class ExtensionsViewletViewsContribution
 
 		return viewDescriptors;
 	}
+
 	private createRecommendedExtensionsViewDescriptors(): IViewDescriptor[] {
 		const viewDescriptors: IViewDescriptor[] = [];
+
 		viewDescriptors.push({
 			id: WORKSPACE_RECOMMENDATIONS_VIEW_ID,
 			name: localize2(
@@ -681,6 +699,7 @@ export class ExtensionsViewletViewsContribution
 			),
 			order: 1,
 		});
+
 		viewDescriptors.push({
 			id: "workbench.views.extensions.otherRecommendations",
 			name: localize2(
@@ -694,6 +713,7 @@ export class ExtensionsViewletViewsContribution
 
 		return viewDescriptors;
 	}
+
 	private createBuiltinExtensionsViewDescriptors(): IViewDescriptor[] {
 		const viewDescriptors: IViewDescriptor[] = [];
 
@@ -702,9 +722,11 @@ export class ExtensionsViewletViewsContribution
 		const otherCategories = EXTENSION_CATEGORIES.filter(
 			(c) => !configuredCategories.includes(c.toLowerCase()),
 		);
+
 		otherCategories.push(NONE_CATEGORY);
 
 		const otherCategoriesQuery = `${otherCategories.map((c) => `category:"${c}"`).join(" ")} ${configuredCategories.map((c) => `category:"-${c}"`).join(" ")}`;
+
 		viewDescriptors.push({
 			id: "workbench.views.extensions.builtinFeatureExtensions",
 			name: localize2("builtinFeatureExtensions", "Features"),
@@ -713,6 +735,7 @@ export class ExtensionsViewletViewsContribution
 			]),
 			when: ContextKeyExpr.has("builtInExtensions"),
 		});
+
 		viewDescriptors.push({
 			id: "workbench.views.extensions.builtinThemeExtensions",
 			name: localize2("builtInThemesExtensions", "Themes"),
@@ -721,6 +744,7 @@ export class ExtensionsViewletViewsContribution
 			]),
 			when: ContextKeyExpr.has("builtInExtensions"),
 		});
+
 		viewDescriptors.push({
 			id: "workbench.views.extensions.builtinProgrammingLanguageExtensions",
 			name: localize2(
@@ -735,8 +759,10 @@ export class ExtensionsViewletViewsContribution
 
 		return viewDescriptors;
 	}
+
 	private createUnsupportedWorkspaceExtensionsViewDescriptors(): IViewDescriptor[] {
 		const viewDescriptors: IViewDescriptor[] = [];
+
 		viewDescriptors.push({
 			id: "workbench.views.extensions.untrustedUnsupportedExtensions",
 			name: localize2(
@@ -751,6 +777,7 @@ export class ExtensionsViewletViewsContribution
 				SearchUnsupportedWorkspaceExtensionsContext,
 			),
 		});
+
 		viewDescriptors.push({
 			id: "workbench.views.extensions.untrustedPartiallySupportedExtensions",
 			name: localize2(
@@ -765,6 +792,7 @@ export class ExtensionsViewletViewsContribution
 				SearchUnsupportedWorkspaceExtensionsContext,
 			),
 		});
+
 		viewDescriptors.push({
 			id: "workbench.views.extensions.virtualUnsupportedExtensions",
 			name: localize2(
@@ -780,6 +808,7 @@ export class ExtensionsViewletViewsContribution
 				SearchUnsupportedWorkspaceExtensionsContext,
 			),
 		});
+
 		viewDescriptors.push({
 			id: "workbench.views.extensions.virtualPartiallySupportedExtensions",
 			name: localize2(
@@ -798,8 +827,10 @@ export class ExtensionsViewletViewsContribution
 
 		return viewDescriptors;
 	}
+
 	private createOtherLocalFilteredExtensionsViewDescriptors(): IViewDescriptor[] {
 		const viewDescriptors: IViewDescriptor[] = [];
+
 		viewDescriptors.push({
 			id: "workbench.views.extensions.deprecatedExtensions",
 			name: localize2("deprecated", "Deprecated"),
@@ -815,28 +846,51 @@ export class ExtensionsViewPaneContainer
 	implements IExtensionsViewPaneContainer
 {
 	private defaultViewsContextKey: IContextKey<boolean>;
+
 	private sortByContextKey: IContextKey<string>;
+
 	private searchMarketplaceExtensionsContextKey: IContextKey<boolean>;
+
 	private searchHasTextContextKey: IContextKey<boolean>;
+
 	private sortByUpdateDateContextKey: IContextKey<boolean>;
+
 	private installedExtensionsContextKey: IContextKey<boolean>;
+
 	private searchInstalledExtensionsContextKey: IContextKey<boolean>;
+
 	private searchRecentlyUpdatedExtensionsContextKey: IContextKey<boolean>;
+
 	private searchExtensionUpdatesContextKey: IContextKey<boolean>;
+
 	private searchOutdatedExtensionsContextKey: IContextKey<boolean>;
+
 	private searchEnabledExtensionsContextKey: IContextKey<boolean>;
+
 	private searchDisabledExtensionsContextKey: IContextKey<boolean>;
+
 	private hasInstalledExtensionsContextKey: IContextKey<boolean>;
+
 	private builtInExtensionsContextKey: IContextKey<boolean>;
+
 	private searchBuiltInExtensionsContextKey: IContextKey<boolean>;
+
 	private searchWorkspaceUnsupportedExtensionsContextKey: IContextKey<boolean>;
+
 	private searchDeprecatedExtensionsContextKey: IContextKey<boolean>;
+
 	private recommendedExtensionsContextKey: IContextKey<boolean>;
+
 	private searchDelayer: Delayer<void>;
+
 	private root: HTMLElement | undefined;
+
 	private header: HTMLElement | undefined;
+
 	private searchBox: SuggestEnabledInput | undefined;
+
 	private notificationContainer: HTMLElement | undefined;
+
 	private readonly searchViewletState: MementoObject;
 
 	constructor(
@@ -893,45 +947,65 @@ export class ExtensionsViewPaneContainer
 			contextService,
 			viewDescriptorService,
 		);
+
 		this.searchDelayer = new Delayer(500);
+
 		this.defaultViewsContextKey =
 			DefaultViewsContext.bindTo(contextKeyService);
+
 		this.sortByContextKey =
 			ExtensionsSortByContext.bindTo(contextKeyService);
+
 		this.searchMarketplaceExtensionsContextKey =
 			SearchMarketplaceExtensionsContext.bindTo(contextKeyService);
+
 		this.searchHasTextContextKey =
 			SearchHasTextContext.bindTo(contextKeyService);
+
 		this.sortByUpdateDateContextKey =
 			SortByUpdateDateContext.bindTo(contextKeyService);
+
 		this.installedExtensionsContextKey =
 			InstalledExtensionsContext.bindTo(contextKeyService);
+
 		this.searchInstalledExtensionsContextKey =
 			SearchInstalledExtensionsContext.bindTo(contextKeyService);
+
 		this.searchRecentlyUpdatedExtensionsContextKey =
 			SearchRecentlyUpdatedExtensionsContext.bindTo(contextKeyService);
+
 		this.searchExtensionUpdatesContextKey =
 			SearchExtensionUpdatesContext.bindTo(contextKeyService);
+
 		this.searchWorkspaceUnsupportedExtensionsContextKey =
 			SearchUnsupportedWorkspaceExtensionsContext.bindTo(
 				contextKeyService,
 			);
+
 		this.searchDeprecatedExtensionsContextKey =
 			SearchDeprecatedExtensionsContext.bindTo(contextKeyService);
+
 		this.searchOutdatedExtensionsContextKey =
 			SearchOutdatedExtensionsContext.bindTo(contextKeyService);
+
 		this.searchEnabledExtensionsContextKey =
 			SearchEnabledExtensionsContext.bindTo(contextKeyService);
+
 		this.searchDisabledExtensionsContextKey =
 			SearchDisabledExtensionsContext.bindTo(contextKeyService);
+
 		this.hasInstalledExtensionsContextKey =
 			HasInstalledExtensionsContext.bindTo(contextKeyService);
+
 		this.builtInExtensionsContextKey =
 			BuiltInExtensionsContext.bindTo(contextKeyService);
+
 		this.searchBuiltInExtensionsContextKey =
 			SearchBuiltInExtensionsContext.bindTo(contextKeyService);
+
 		this.recommendedExtensionsContextKey =
 			RecommendedExtensionsContext.bindTo(contextKeyService);
+
 		this._register(
 			this.paneCompositeService.onDidPaneCompositeOpen((e) => {
 				if (e.viewContainerLocation === ViewContainerLocation.Sidebar) {
@@ -939,27 +1013,35 @@ export class ExtensionsViewPaneContainer
 				}
 			}, this),
 		);
+
 		this._register(
 			extensionsWorkbenchService.onReset(() => this.refresh()),
 		);
+
 		this.searchViewletState = this.getMemento(
 			StorageScope.WORKSPACE,
 			StorageTarget.MACHINE,
 		);
 	}
+
 	get searchValue(): string | undefined {
 		return this.searchBox?.getValue();
 	}
+
 	override create(parent: HTMLElement): void {
 		parent.classList.add("extensions-viewlet");
+
 		this.root = parent;
 
 		const overlay = append(this.root, $(".overlay"));
 
 		const overlayBackgroundColor =
 			this.getColor(SIDE_BAR_DRAG_AND_DROP_BACKGROUND) ?? "";
+
 		overlay.style.backgroundColor = overlayBackgroundColor;
+
 		hide(overlay);
+
 		this.header = append(this.root, $(".header"));
 
 		const placeholder = localize(
@@ -975,6 +1057,7 @@ export class ExtensionsViewPaneContainer
 			this.header,
 			$(".extensions-search-container"),
 		);
+
 		this.searchBox = this._register(
 			this.instantiationService.createInstance(
 				SuggestEnabledInput,
@@ -1004,29 +1087,36 @@ export class ExtensionsViewPaneContainer
 				{ placeholderText: placeholder, value: searchValue },
 			),
 		);
+
 		this.notificationContainer = append(
 			this.header,
 			$(".notification-container.hidden", { "tabindex": "0" }),
 		);
+
 		this.renderNotificaiton();
+
 		this._register(
 			this.extensionsWorkbenchService.onDidChangeExtensionsNotification(
 				() => this.renderNotificaiton(),
 			),
 		);
+
 		this.updateInstalledExtensionsContexts();
 
 		if (this.searchBox.getValue()) {
 			this.triggerSearch();
 		}
+
 		this._register(
 			this.searchBox.onInputDidChange(() => {
 				this.sortByContextKey.set(
 					Query.parse(this.searchBox?.getValue() ?? "").sortBy,
 				);
+
 				this.triggerSearch();
 			}, this),
 		);
+
 		this._register(
 			this.searchBox.onShouldFocusResults(
 				() => this.focusListView(),
@@ -1038,6 +1128,7 @@ export class ExtensionsViewPaneContainer
 			searchContainer,
 			$(".extensions-search-actions-container"),
 		);
+
 		this._register(
 			this.instantiationService.createInstance(
 				MenuWorkbenchToolBar,
@@ -1117,6 +1208,7 @@ export class ExtensionsViewPaneContainer
 
 		const isSearchBoxFocused = () =>
 			this.searchBox?.inputWidget.hasWidgetFocus();
+
 		this._register(
 			registerNavigableContainer({
 				name: "extensionsView",
@@ -1134,18 +1226,24 @@ export class ExtensionsViewPaneContainer
 			}),
 		);
 	}
+
 	override focus(): void {
 		super.focus();
+
 		this.searchBox?.focus();
 	}
+
 	private _dimension: Dimension | undefined;
+
 	override layout(dimension: Dimension): void {
 		this._dimension = dimension;
 
 		if (this.root) {
 			this.root.classList.toggle("narrow", dimension.width <= 250);
+
 			this.root.classList.toggle("mini", dimension.width <= 200);
 		}
+
 		this.searchBox?.layout(
 			new Dimension(dimension.width - 34 - /*padding*/ 8 - 24 * 2, 20),
 		);
@@ -1158,22 +1256,27 @@ export class ExtensionsViewPaneContainer
 					searchBoxHeight +
 					10 /*margin*/
 				: searchBoxHeight;
+
 		this.header!.style.height = `${headerHeight}px`;
 
 		super.layout(
 			new Dimension(dimension.width, dimension.height - headerHeight),
 		);
 	}
+
 	override getOptimalWidth(): number {
 		return 400;
 	}
+
 	search(value: string): void {
 		if (this.searchBox && this.searchBox.getValue() !== value) {
 			this.searchBox.setValue(value);
 		}
 	}
+
 	async refresh(): Promise<void> {
 		await this.updateInstalledExtensionsContexts();
+
 		this.doSearch(true);
 
 		if (
@@ -1182,14 +1285,18 @@ export class ExtensionsViewPaneContainer
 			this.extensionsWorkbenchService.checkForUpdates();
 		}
 	}
+
 	private readonly notificationDisposables = this._register(
 		new MutableDisposable<DisposableStore>(),
 	);
+
 	private renderNotificaiton(): void {
 		if (!this.notificationContainer) {
 			return;
 		}
+
 		clearNode(this.notificationContainer);
+
 		this.notificationDisposables.value = new DisposableStore();
 
 		const status =
@@ -1208,14 +1315,17 @@ export class ExtensionsViewPaneContainer
 				"aria-label",
 				status.message,
 			);
+
 			this.notificationContainer.classList.remove("hidden");
 
 			const messageContainer = append(
 				this.notificationContainer,
 				$(".message-container"),
 			);
+
 			append(messageContainer, $("span")).className =
 				SeverityIcon.className(status.severity);
+
 			append(
 				messageContainer,
 				$("span.message", undefined, status.message),
@@ -1233,11 +1343,13 @@ export class ExtensionsViewPaneContainer
 					localize("show", "Show"),
 				),
 			);
+
 			this.notificationDisposables.value.add(
 				addDisposableListener(showAction, EventType.CLICK, () =>
 					this.search(query ?? ""),
 				),
 			);
+
 			this.notificationDisposables.value.add(
 				addDisposableListener(
 					showAction,
@@ -1253,6 +1365,7 @@ export class ExtensionsViewPaneContainer
 						) {
 							this.search(query ?? "");
 						}
+
 						standardKeyboardEvent.stopPropagation();
 					},
 				),
@@ -1270,11 +1383,13 @@ export class ExtensionsViewPaneContainer
 					},
 				),
 			);
+
 			this.notificationDisposables.value.add(
 				addDisposableListener(dismissAction, EventType.CLICK, () =>
 					status.dismiss(),
 				),
 			);
+
 			this.notificationDisposables.value.add(
 				addDisposableListener(
 					dismissAction,
@@ -1290,24 +1405,30 @@ export class ExtensionsViewPaneContainer
 						) {
 							status.dismiss();
 						}
+
 						standardKeyboardEvent.stopPropagation();
 					},
 				),
 			);
 		} else {
 			this.notificationContainer.removeAttribute("aria-label");
+
 			this.notificationContainer.classList.add("hidden");
 		}
+
 		if (this._dimension) {
 			this.layout(this._dimension);
 		}
 	}
+
 	private async updateInstalledExtensionsContexts(): Promise<void> {
 		const result = await this.extensionsWorkbenchService.queryLocal();
+
 		this.hasInstalledExtensionsContextKey.set(
 			result.some((r) => !r.isBuiltin),
 		);
 	}
+
 	private triggerSearch(): void {
 		this.searchDelayer
 			.trigger(
@@ -1316,6 +1437,7 @@ export class ExtensionsViewPaneContainer
 			)
 			.then(undefined, (err) => this.onError(err));
 	}
+
 	private normalizedQuery(): string {
 		return this.searchBox
 			? this.searchBox
@@ -1338,6 +1460,7 @@ export class ExtensionsViewPaneContainer
 					)
 			: "";
 	}
+
 	protected override saveState(): void {
 		const value = this.searchBox ? this.searchBox.getValue() : "";
 
@@ -1346,67 +1469,87 @@ export class ExtensionsViewPaneContainer
 		} else {
 			this.searchViewletState["query.value"] = "";
 		}
+
 		super.saveState();
 	}
+
 	private doSearch(refresh?: boolean): Promise<void> {
 		const value = this.normalizedQuery();
+
 		this.contextKeyService.bufferChangeEvents(() => {
 			const isRecommendedExtensionsQuery =
 				ExtensionsListView.isRecommendedExtensionsQuery(value);
+
 			this.searchHasTextContextKey.set(value.trim() !== "");
+
 			this.installedExtensionsContextKey.set(
 				ExtensionsListView.isInstalledExtensionsQuery(value),
 			);
+
 			this.searchInstalledExtensionsContextKey.set(
 				ExtensionsListView.isSearchInstalledExtensionsQuery(value),
 			);
+
 			this.searchRecentlyUpdatedExtensionsContextKey.set(
 				ExtensionsListView.isSearchRecentlyUpdatedQuery(value) &&
 					!ExtensionsListView.isSearchExtensionUpdatesQuery(value),
 			);
+
 			this.searchOutdatedExtensionsContextKey.set(
 				ExtensionsListView.isOutdatedExtensionsQuery(value) &&
 					!ExtensionsListView.isSearchExtensionUpdatesQuery(value),
 			);
+
 			this.searchExtensionUpdatesContextKey.set(
 				ExtensionsListView.isSearchExtensionUpdatesQuery(value),
 			);
+
 			this.searchEnabledExtensionsContextKey.set(
 				ExtensionsListView.isEnabledExtensionsQuery(value),
 			);
+
 			this.searchDisabledExtensionsContextKey.set(
 				ExtensionsListView.isDisabledExtensionsQuery(value),
 			);
+
 			this.searchBuiltInExtensionsContextKey.set(
 				ExtensionsListView.isSearchBuiltInExtensionsQuery(value),
 			);
+
 			this.searchWorkspaceUnsupportedExtensionsContextKey.set(
 				ExtensionsListView.isSearchWorkspaceUnsupportedExtensionsQuery(
 					value,
 				),
 			);
+
 			this.searchDeprecatedExtensionsContextKey.set(
 				ExtensionsListView.isSearchDeprecatedExtensionsQuery(value),
 			);
+
 			this.builtInExtensionsContextKey.set(
 				ExtensionsListView.isBuiltInExtensionsQuery(value),
 			);
+
 			this.recommendedExtensionsContextKey.set(
 				isRecommendedExtensionsQuery,
 			);
+
 			this.searchMarketplaceExtensionsContextKey.set(
 				!!value &&
 					!ExtensionsListView.isLocalExtensionsQuery(value) &&
 					!isRecommendedExtensionsQuery,
 			);
+
 			this.sortByUpdateDateContextKey.set(
 				ExtensionsListView.isSortUpdateDateQuery(value),
 			);
+
 			this.defaultViewsContextKey.set(
 				!value ||
 					ExtensionsListView.isSortInstalledExtensionsQuery(value),
 			);
 		});
+
 		this.renderNotificaiton();
 
 		return this.progress(
@@ -1421,10 +1564,12 @@ export class ExtensionsViewPaneContainer
 			),
 		).then(() => undefined);
 	}
+
 	protected override onDidAddViewDescriptors(
 		added: IAddedViewDescriptorRef[],
 	): ViewPane[] {
 		const addedViews = super.onDidAddViewDescriptors(added);
+
 		this.progress(
 			Promise.all(
 				addedViews.map((addedView) =>
@@ -1439,6 +1584,7 @@ export class ExtensionsViewPaneContainer
 
 		return addedViews;
 	}
+
 	private alertSearchResult(count: number, viewId: string): void {
 		const view = this.viewContainerModel.visibleViewDescriptors.find(
 			(view) => view.id === viewId,
@@ -1460,6 +1606,7 @@ export class ExtensionsViewPaneContainer
 				} else {
 					alert(localize("extensionFound", "1 extension found."));
 				}
+
 				break;
 
 			default:
@@ -1481,17 +1628,21 @@ export class ExtensionsViewPaneContainer
 						),
 					);
 				}
+
 				break;
 		}
 	}
+
 	private getFirstExpandedPane(): ExtensionsListView | undefined {
 		for (const pane of this.panes) {
 			if (pane.isExpanded() && pane instanceof ExtensionsListView) {
 				return pane;
 			}
 		}
+
 		return undefined;
 	}
+
 	private focusListView(): void {
 		const pane = this.getFirstExpandedPane();
 
@@ -1499,10 +1650,12 @@ export class ExtensionsViewPaneContainer
 			pane.focus();
 		}
 	}
+
 	private onViewletOpen(viewlet: IPaneComposite): void {
 		if (!viewlet || viewlet.getId() === VIEWLET_ID) {
 			return;
 		}
+
 		if (
 			this.configurationService.getValue<boolean>(
 				CloseExtensionDetailsOnViewChangeKey,
@@ -1515,19 +1668,23 @@ export class ExtensionsViewPaneContainer
 
 				return group.closeEditors(editors);
 			});
+
 			Promise.all(promises);
 		}
 	}
+
 	private progress<T>(promise: Promise<T>): Promise<T> {
 		return this.progressService.withProgress(
 			{ location: ProgressLocation.Extensions },
 			() => promise,
 		);
 	}
+
 	private onError(err: Error): void {
 		if (isCancellationError(err)) {
 			return;
 		}
+
 		const message = (err && err.message) || "";
 
 		if (/ECONNREFUSED/.test(message)) {
@@ -1546,12 +1703,15 @@ export class ExtensionsViewPaneContainer
 					),
 				],
 			);
+
 			this.notificationService.error(error);
 
 			return;
 		}
+
 		this.notificationService.error(err);
 	}
+
 	private isSupportedDragElement(e: DragEvent): boolean {
 		if (e.dataTransfer) {
 			const typesLowerCase = e.dataTransfer.types.map((t) =>
@@ -1560,6 +1720,7 @@ export class ExtensionsViewPaneContainer
 
 			return typesLowerCase.indexOf("files") !== -1;
 		}
+
 		return false;
 	}
 }
@@ -1580,7 +1741,9 @@ export class StatusUpdater
 		private readonly configurationService: IConfigurationService,
 	) {
 		super();
+
 		this.onServiceChange();
+
 		this._register(
 			Event.any(
 				Event.debounce(
@@ -1596,6 +1759,7 @@ export class StatusUpdater
 			)(this.onServiceChange, this),
 		);
 	}
+
 	private onServiceChange(): void {
 		this.badgeHandle.clear();
 
@@ -1647,9 +1811,11 @@ export class StatusUpdater
 									outdated,
 								);
 				}
+
 				if (outdated > 0 && actionRequired.length > 0) {
 					msg += ", ";
 				}
+
 				if (actionRequired.length) {
 					msg +=
 						actionRequired.length === 1
@@ -1664,9 +1830,11 @@ export class StatusUpdater
 									actionRequired.length,
 								);
 				}
+
 				badge = new NumberBadge(newBadgeNumber, () => msg);
 			}
 		}
+
 		if (badge) {
 			this.badgeHandle.value =
 				this.activityService.showViewContainerActivity(VIEWLET_ID, {
@@ -1692,11 +1860,13 @@ export class MaliciousExtensionChecker implements IWorkbenchContribution {
 			this.loopCheckForMaliciousExtensions();
 		}
 	}
+
 	private loopCheckForMaliciousExtensions(): void {
 		this.checkForMaliciousExtensions()
 			.then(() => timeout(1000 * 60 * 5)) // every five minutes
 			.then(() => this.loopCheckForMaliciousExtensions());
 	}
+
 	private checkForMaliciousExtensions(): Promise<void> {
 		return this.extensionsManagementService
 			.getExtensionsControlManifest()

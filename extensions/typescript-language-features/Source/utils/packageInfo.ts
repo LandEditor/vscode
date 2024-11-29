@@ -6,7 +6,9 @@ import * as vscode from "vscode";
 
 export interface PackageInfo {
 	name: string;
+
 	version: string;
+
 	aiKey: string;
 }
 export function getPackageInfo(context: vscode.ExtensionContext) {
@@ -19,5 +21,6 @@ export function getPackageInfo(context: vscode.ExtensionContext) {
 			aiKey: packageJSON.aiKey ?? "",
 		};
 	}
+
 	return null;
 }

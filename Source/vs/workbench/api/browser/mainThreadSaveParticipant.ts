@@ -35,6 +35,7 @@ class ExtHostSaveParticipant implements ITextFileSaveParticipant {
 			ExtHostContext.ExtHostDocumentSaveParticipant,
 		);
 	}
+
 	async participate(
 		editorModel: ITextFileEditorModel,
 		context: ITextFileSaveParticipantContext,
@@ -49,6 +50,7 @@ class ExtHostSaveParticipant implements ITextFileSaveParticipant {
 			// host meaning we cannot participate in its save
 			return undefined;
 		}
+
 		const p = new Promise<any>((resolve, reject) => {
 			setTimeout(
 				() =>
@@ -62,12 +64,14 @@ class ExtHostSaveParticipant implements ITextFileSaveParticipant {
 					),
 				1750,
 			);
+
 			this._proxy
 				.$participateInSave(editorModel.resource, context.reason)
 				.then((values) => {
 					if (!values.every((success) => success)) {
 						return Promise.reject(new Error("listener failed"));
 					}
+
 					return undefined;
 				})
 				.then(resolve, reject);
@@ -96,6 +100,7 @@ export class SaveParticipant {
 				),
 			);
 	}
+
 	dispose(): void {
 		this._saveParticipantDisposable.dispose();
 	}

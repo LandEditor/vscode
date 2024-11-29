@@ -9,6 +9,7 @@ import { SettingsManager } from "./settings";
 declare global {
 	interface Window {
 		cspAlerter: CspAlerter;
+
 		styleLoadingMonitor: StyleLoadingMonitor;
 	}
 }

@@ -83,14 +83,19 @@ type IExtensionResourceMergeResult = IAcceptResult & IExtensionMergeResult;
 
 interface IExtensionResourcePreview extends IResourcePreview {
 	readonly localExtensions: ILocalSyncExtension[];
+
 	readonly remoteExtensions: ISyncExtension[] | null;
+
 	readonly skippedExtensions: ISyncExtension[];
+
 	readonly builtinExtensions: IExtensionIdentifier[] | null;
+
 	readonly previewResult: IExtensionResourceMergeResult;
 }
 
 interface ILastSyncUserData extends IRemoteUserData {
 	skippedExtensions: ISyncExtension[] | undefined;
+
 	builtinExtensions: IExtensionIdentifier[] | undefined;
 }
 
@@ -111,6 +116,7 @@ async function parseAndMigrateExtensions(
 				if ((<any>extension).enabled === false) {
 					extension.disabled = true;
 				}
+
 				delete (<any>extension).enabled;
 			}
 			// #endregion
@@ -132,6 +138,7 @@ async function parseAndMigrateExtensions(
 			// #endregion
 		}
 	}
+
 	return extensions;
 }
 
@@ -147,9 +154,11 @@ export function stringify(
 		if (!e1.identifier.uuid && e2.identifier.uuid) {
 			return -1;
 		}
+
 		if (e1.identifier.uuid && !e2.identifier.uuid) {
 			return 1;
 		}
+
 		return compare(e1.identifier.id, e2.identifier.id);
 	});
 
@@ -175,18 +184,22 @@ export class ExtensionsSynchroniser
 		this.syncPreviewFolder,
 		"extensions.json",
 	);
+
 	private readonly baseResource: URI = this.previewResource.with({
 		scheme: USER_DATA_SYNC_SCHEME,
 		authority: "base",
 	});
+
 	private readonly localResource: URI = this.previewResource.with({
 		scheme: USER_DATA_SYNC_SCHEME,
 		authority: "local",
 	});
+
 	private readonly remoteResource: URI = this.previewResource.with({
 		scheme: USER_DATA_SYNC_SCHEME,
 		authority: "remote",
 	});
+
 	private readonly acceptedResource: URI = this.previewResource.with({
 		scheme: USER_DATA_SYNC_SCHEME,
 		authority: "accepted",
@@ -236,9 +249,11 @@ export class ExtensionsSynchroniser
 			configurationService,
 			uriIdentityService,
 		);
+
 		this.localExtensionsProvider = this.instantiationService.createInstance(
 			LocalExtensionsProvider,
 		);
+
 		this._register(
 			Event.any<any>(
 				Event.filter(
@@ -401,7 +416,9 @@ export class ExtensionsSynchroniser
 				idsOrUUIDs.add(identifier.uuid);
 			}
 		};
+
 		preview.forEach(({ identifier }) => addIdentifier(identifier));
+
 		removed.forEach(addIdentifier);
 
 		for (const localExtension of localExtensions) {
@@ -413,6 +430,7 @@ export class ExtensionsSynchroniser
 				// skip
 				continue;
 			}
+
 			preview.push(localExtension);
 		}
 
@@ -565,6 +583,7 @@ export class ExtensionsSynchroniser
 
 		if (localChange !== Change.None) {
 			await this.backupLocal(JSON.stringify(localExtensions));
+
 			skippedExtensions =
 				await this.localExtensionsProvider.updateLocalExtensions(
 					local.added,
@@ -582,10 +601,12 @@ export class ExtensionsSynchroniser
 			);
 
 			const content = JSON.stringify(remote.all);
+
 			remoteUserData = await this.updateRemoteUserData(
 				content,
 				force ? null : remoteUserData.ref,
 			);
+
 			this.logService.info(
 				`${this.syncResourceLogLabel}: Updated remote extensions.${remote.added.length ? ` Added: ${JSON.stringify(remote.added.map((e) => e.identifier.id))}.` : ""}${remote.updated.length ? ` Updated: ${JSON.stringify(remote.updated.map((e) => e.identifier.id))}.` : ""}${remote.removed.length ? ` Removed: ${JSON.stringify(remote.removed.map((e) => e.identifier.id))}.` : ""}`,
 			);
@@ -596,14 +617,17 @@ export class ExtensionsSynchroniser
 			this.logService.trace(
 				`${this.syncResourceLogLabel}: Updating last synchronized extensions...`,
 			);
+
 			builtinExtensions = this.computeBuiltinExtensions(
 				localExtensions,
 				builtinExtensions,
 			);
+
 			await this.updateLastSyncUserData(remoteUserData, {
 				skippedExtensions,
 				builtinExtensions,
 			});
+
 			this.logService.info(
 				`${this.syncResourceLogLabel}: Updated last synchronized extensions.${skippedExtensions.length ? ` Skipped: ${JSON.stringify(skippedExtensions.map((e) => e.identifier.id))}.` : ""}`,
 			);
@@ -625,6 +649,7 @@ export class ExtensionsSynchroniser
 				builtinExtensions.push(localExtension.identifier);
 			}
 		}
+
 		if (previousBuiltinExtensions) {
 			for (const builtinExtension of previousBuiltinExtensions) {
 				// Add previous builtin extension if it does not exist in local extensions
@@ -635,6 +660,7 @@ export class ExtensionsSynchroniser
 				}
 			}
 		}
+
 		return builtinExtensions;
 	}
 
@@ -651,6 +677,7 @@ export class ExtensionsSynchroniser
 				? this.stringify(JSON.parse(content), true)
 				: content;
 		}
+
 		return null;
 	}
 
@@ -671,6 +698,7 @@ export class ExtensionsSynchroniser
 		} catch (error) {
 			/* ignore error */
 		}
+
 		return false;
 	}
 }
@@ -693,6 +721,7 @@ export class LocalExtensionsProvider {
 
 	async getLocalExtensions(profile: IUserDataProfile): Promise<{
 		localExtensions: ILocalSyncExtension[];
+
 		ignoredExtensions: string[];
 	}> {
 		const installedExtensions =
@@ -735,6 +764,7 @@ export class LocalExtensionsProvider {
 					) {
 						syncExntesion.isApplicationScoped = isApplicationScoped;
 					}
+
 					if (
 						disabledExtensions.some((disabledExtension) =>
 							areSameExtensions(disabledExtension, identifier),
@@ -742,9 +772,11 @@ export class LocalExtensionsProvider {
 					) {
 						syncExntesion.disabled = true;
 					}
+
 					if (!isBuiltin) {
 						syncExntesion.installed = true;
 					}
+
 					try {
 						const keys = extensionStorageService.getKeysForSync({
 							id: identifier.id,
@@ -757,12 +789,14 @@ export class LocalExtensionsProvider {
 									extension,
 									true,
 								) || {};
+
 							syncExntesion.state = Object.keys(
 								extensionStorageState,
 							).reduce((state: IStringDictionary<any>, key) => {
 								if (keys.includes(key)) {
 									state[key] = extensionStorageState[key];
 								}
+
 								return state;
 							}, {});
 						}
@@ -772,6 +806,7 @@ export class LocalExtensionsProvider {
 							getErrorMessage(error),
 						);
 					}
+
 					return syncExntesion;
 				});
 			},
@@ -838,6 +873,7 @@ export class LocalExtensionsProvider {
 										extensionStorageService,
 									);
 								}
+
 								const isDisabled = extensionEnablementService
 									.getDisabledExtensions()
 									.some((disabledExtension) =>
@@ -853,9 +889,11 @@ export class LocalExtensionsProvider {
 											`${syncResourceLogLabel}: Disabling extension...`,
 											e.identifier.id,
 										);
+
 										await extensionEnablementService.disableExtension(
 											e.identifier,
 										);
+
 										this.logService.info(
 											`${syncResourceLogLabel}: Disabled extension`,
 											e.identifier.id,
@@ -865,15 +903,18 @@ export class LocalExtensionsProvider {
 											`${syncResourceLogLabel}: Enabling extension...`,
 											e.identifier.id,
 										);
+
 										await extensionEnablementService.enableExtension(
 											e.identifier,
 										);
+
 										this.logService.info(
 											`${syncResourceLogLabel}: Enabled extension`,
 											e.identifier.id,
 										);
 									}
 								}
+
 								removeFromSkipped.push(e.identifier);
 
 								return;
@@ -935,9 +976,11 @@ export class LocalExtensionsProvider {
 												e.identifier.id,
 												extension.version,
 											);
+
 											await extensionEnablementService.disableExtension(
 												extension.identifier,
 											);
+
 											this.logService.info(
 												`${syncResourceLogLabel}: Disabled extension`,
 												e.identifier.id,
@@ -949,9 +992,11 @@ export class LocalExtensionsProvider {
 												e.identifier.id,
 												extension.version,
 											);
+
 											await extensionEnablementService.enableExtension(
 												extension.identifier,
 											);
+
 											this.logService.info(
 												`${syncResourceLogLabel}: Enabled extension`,
 												e.identifier.id,
@@ -999,6 +1044,7 @@ export class LocalExtensionsProvider {
 													},
 												},
 											});
+
 											syncExtensionsToInstall.set(
 												extension.identifier.id.toLowerCase(),
 												e,
@@ -1009,12 +1055,15 @@ export class LocalExtensionsProvider {
 												extension.displayName ||
 													extension.identifier.id,
 											);
+
 											addToSkipped.push(e);
 										}
 									}
 								} catch (error) {
 									addToSkipped.push(e);
+
 									this.logService.error(error);
+
 									this.logService.info(
 										`${syncResourceLogLabel}: Skipped synchronizing extension`,
 										extension.displayName ||
@@ -1023,6 +1072,7 @@ export class LocalExtensionsProvider {
 								}
 							} else {
 								addToSkipped.push(e);
+
 								this.logService.info(
 									`${syncResourceLogLabel}: Skipped synchronizing extension because the extension is not found.`,
 									e.identifier.id,
@@ -1041,12 +1091,14 @@ export class LocalExtensionsProvider {
 					!isBuiltin &&
 					removed.some((r) => areSameExtensions(identifier, r)),
 			);
+
 			await Promises.settled(
 				extensionsToRemove.map(async (extensionToRemove) => {
 					this.logService.trace(
 						`${syncResourceLogLabel}: Uninstalling local extension...`,
 						extensionToRemove.identifier.id,
 					);
+
 					await this.extensionManagementService.uninstall(
 						extensionToRemove,
 						{
@@ -1055,10 +1107,12 @@ export class LocalExtensionsProvider {
 							profileLocation: profile.extensionsResource,
 						},
 					);
+
 					this.logService.info(
 						`${syncResourceLogLabel}: Uninstalled local extension.`,
 						extensionToRemove.identifier.id,
 					);
+
 					removeFromSkipped.push(extensionToRemove.identifier);
 				}),
 			);
@@ -1079,6 +1133,7 @@ export class LocalExtensionsProvider {
 					identifier.id,
 					gallery.version,
 				);
+
 				removeFromSkipped.push(identifier);
 			} else {
 				const e = syncExtensionsToInstall.get(
@@ -1087,11 +1142,13 @@ export class LocalExtensionsProvider {
 
 				if (e) {
 					addToSkipped.push(e);
+
 					this.logService.info(
 						`${syncResourceLogLabel}: Skipped synchronizing extension`,
 						gallery.displayName || gallery.identifier.id,
 					);
 				}
+
 				if (
 					error instanceof ExtensionManagementError &&
 					[
@@ -1121,6 +1178,7 @@ export class LocalExtensionsProvider {
 				newSkippedExtensions.push(skippedExtension);
 			}
 		}
+
 		for (const skippedExtension of addToSkipped) {
 			if (
 				!newSkippedExtensions.some((e) =>
@@ -1133,6 +1191,7 @@ export class LocalExtensionsProvider {
 				newSkippedExtensions.push(skippedExtension);
 			}
 		}
+
 		return newSkippedExtensions;
 	}
 
@@ -1161,6 +1220,7 @@ export class LocalExtensionsProvider {
 				(key) => (extensionState[key] = state[key]),
 			);
 		}
+
 		extensionStorageService.setExtensionState(
 			extension,
 			extensionState,
@@ -1216,8 +1276,11 @@ export class LocalExtensionsProvider {
 
 export interface IExtensionsInitializerPreviewResult {
 	readonly installedExtensions: ILocalExtension[];
+
 	readonly disabledExtensions: IExtensionIdentifier[];
+
 	readonly newExtensions: (IExtensionIdentifier & { preRelease: boolean })[];
+
 	readonly remoteExtensions: ISyncExtension[];
 }
 
@@ -1300,6 +1363,7 @@ export abstract class AbstractExtensionsInitializer extends AbstractInitializer 
 				}
 			}
 		}
+
 		return {
 			installedExtensions,
 			newExtensions,

@@ -17,6 +17,7 @@ export class TerminalInputSerializer implements IEditorSerializer {
 		@ITerminalEditorService
 		private readonly _terminalEditorService: ITerminalEditorService,
 	) {}
+
 	public canSerialize(
 		editorInput: TerminalEditorInput,
 	): editorInput is TerminalEditorInput & {
@@ -27,12 +28,15 @@ export class TerminalInputSerializer implements IEditorSerializer {
 				"number" && editorInput.terminalInstance.shouldPersist
 		);
 	}
+
 	public serialize(editorInput: TerminalEditorInput): string | undefined {
 		if (!this.canSerialize(editorInput)) {
 			return;
 		}
+
 		return JSON.stringify(this._toJson(editorInput.terminalInstance));
 	}
+
 	public deserialize(
 		instantiationService: IInstantiationService,
 		serializedEditorInput: string,
@@ -41,6 +45,7 @@ export class TerminalInputSerializer implements IEditorSerializer {
 
 		return this._terminalEditorService.reviveInput(terminalInstance);
 	}
+
 	private _toJson(
 		instance: ITerminalInstance,
 	): ISerializedTerminalEditorInput {

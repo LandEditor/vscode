@@ -30,6 +30,7 @@ export class WorkingCopyFileOperationParticipant extends Disposable {
 	) {
 		super();
 	}
+
 	addFileOperationParticipant(
 		participant: IWorkingCopyFileOperationParticipant,
 	): IDisposable {
@@ -37,6 +38,7 @@ export class WorkingCopyFileOperationParticipant extends Disposable {
 
 		return toDisposable(() => remove());
 	}
+
 	async participate(
 		files: SourceTargetPair[],
 		operation: FileOperation,
@@ -65,6 +67,7 @@ export class WorkingCopyFileOperationParticipant extends Disposable {
 			}
 		}
 	}
+
 	override dispose(): void {
 		this.participants.clear();
 

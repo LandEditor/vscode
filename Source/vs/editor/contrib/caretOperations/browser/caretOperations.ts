@@ -38,7 +38,9 @@ class MoveCaretAction extends EditorAction {
 		}
 
 		editor.pushUndoStop();
+
 		editor.executeCommands(this.id, commands);
+
 		editor.pushUndoStop();
 	}
 }

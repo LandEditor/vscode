@@ -33,6 +33,7 @@ export default class TypeScriptImplementationsCodeLensProvider extends TypeScrip
 		private readonly language: LanguageDescription,
 	) {
 		super(client, _cachedResponse);
+
 		this._register(
 			vscode.workspace.onDidChangeConfiguration((evt) => {
 				if (
@@ -45,6 +46,7 @@ export default class TypeScriptImplementationsCodeLensProvider extends TypeScrip
 			}),
 		);
 	}
+
 	public async resolveCodeLens(
 		codeLens: ReferencesCodeLens,
 		token: vscode.CancellationToken,
@@ -73,6 +75,7 @@ export default class TypeScriptImplementationsCodeLensProvider extends TypeScrip
 
 			return codeLens;
 		}
+
 		const locations = response.body
 			.map(
 				(reference) =>
@@ -104,10 +107,12 @@ export default class TypeScriptImplementationsCodeLensProvider extends TypeScrip
 							codeLens.range.start.character
 					),
 			);
+
 		codeLens.command = this.getCommand(locations, codeLens);
 
 		return codeLens;
 	}
+
 	private getCommand(
 		locations: vscode.Location[],
 		codeLens: ReferencesCodeLens,
@@ -118,11 +123,13 @@ export default class TypeScriptImplementationsCodeLensProvider extends TypeScrip
 			arguments: [codeLens.document, codeLens.range.start, locations],
 		};
 	}
+
 	private getTitle(locations: vscode.Location[]): string {
 		return locations.length === 1
 			? vscode.l10n.t("1 implementation")
 			: vscode.l10n.t("{0} implementations", locations.length);
 	}
+
 	protected extractSymbol(
 		document: vscode.TextDocument,
 		item: Proto.NavigationTree,
@@ -138,6 +145,7 @@ export default class TypeScriptImplementationsCodeLensProvider extends TypeScrip
 		) {
 			return getSymbolRange(document, item);
 		}
+
 		switch (item.kind) {
 			case PConst.Kind.interface:
 				return getSymbolRange(document, item);
@@ -150,8 +158,10 @@ export default class TypeScriptImplementationsCodeLensProvider extends TypeScrip
 				if (item.kindModifiers.match(/\babstract\b/g)) {
 					return getSymbolRange(document, item);
 				}
+
 				break;
 		}
+
 		return undefined;
 	}
 }

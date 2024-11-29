@@ -51,6 +51,7 @@ export const colorizeTestMessageInEditor = (
 	editor: CodeEditorWidget,
 ): IDisposable => {
 	const decos: string[] = [];
+
 	editor.changeDecorations((changeAccessor) => {
 		let start = new Position(1, 1);
 
@@ -63,6 +64,7 @@ export const colorizeTestMessageInEditor = (
 				if (!colorAttr) {
 					continue;
 				}
+
 				const n = Number(colorAttr);
 
 				if (n === 0) {
@@ -79,11 +81,13 @@ export const colorizeTestMessageInEditor = (
 					cls = cls.filter(
 						(c) => !c.startsWith(Classes.ForegroundPrefix),
 					);
+
 					cls.push(Classes.ForegroundPrefix + colorAttr);
 				} else if ((n >= 40 && n <= 49) || (n >= 100 && n <= 109)) {
 					cls = cls.filter(
 						(c) => !c.startsWith(Classes.BackgroundPrefix),
 					);
+
 					cls.push(Classes.BackgroundPrefix + colorAttr);
 				} else {
 					cls.push(Classes.Prefix + colorAttr);
@@ -98,15 +102,18 @@ export const colorizeTestMessageInEditor = (
 				for (
 					let i = 0;
 					!graphemes.eol();
+
 					i += graphemes.nextGraphemeLength()
 				) {
 					if (part.str[i] === "\n") {
 						line++;
+
 						col = 1;
 					} else {
 						col++;
 					}
 				}
+
 				const end = new Position(line, col);
 
 				if (cls.length) {
@@ -120,6 +127,7 @@ export const colorizeTestMessageInEditor = (
 						),
 					);
 				}
+
 				start = end;
 			}
 		}

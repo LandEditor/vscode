@@ -30,12 +30,14 @@ export class CursorColumns {
 		if (codePoint === CharCode.Tab) {
 			return CursorColumns.nextRenderTabStop(visibleColumn, tabSize);
 		}
+
 		if (
 			strings.isFullWidthCharacter(codePoint) ||
 			strings.isEmojiImprecise(codePoint)
 		) {
 			return visibleColumn + 2;
 		}
+
 		return visibleColumn + 1;
 	}
 	/**
@@ -61,9 +63,12 @@ export class CursorColumns {
 				textLen,
 				iterator.offset,
 			);
+
 			iterator.nextGraphemeLength();
+
 			result = this._nextVisibleColumn(codePoint, result, tabSize);
 		}
+
 		return result;
 	}
 	/**
@@ -93,6 +98,7 @@ export class CursorColumns {
 				result = result + 1;
 			}
 		}
+
 		return result + 1;
 	}
 	/**
@@ -107,6 +113,7 @@ export class CursorColumns {
 		if (visibleColumn <= 0) {
 			return 1;
 		}
+
 		const lineContentLength = lineContent.length;
 
 		const iterator = new strings.GraphemeIterator(lineContent);
@@ -121,6 +128,7 @@ export class CursorColumns {
 				lineContentLength,
 				iterator.offset,
 			);
+
 			iterator.nextGraphemeLength();
 
 			const afterVisibleColumn = this._nextVisibleColumn(
@@ -142,7 +150,9 @@ export class CursorColumns {
 					return beforeColumn;
 				}
 			}
+
 			beforeVisibleColumn = afterVisibleColumn;
+
 			beforeColumn = afterColumn;
 		}
 		// walked the entire string

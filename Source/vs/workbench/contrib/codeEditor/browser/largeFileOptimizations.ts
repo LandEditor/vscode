@@ -34,15 +34,19 @@ export class LargeFileOptimizationsWarner
 		private readonly _configurationService: IConfigurationService,
 	) {
 		super();
+
 		this._register(this._editor.onDidChangeModel((e) => this._update()));
+
 		this._update();
 	}
+
 	private _update(): void {
 		const model = this._editor.getModel();
 
 		if (!model) {
 			return;
 		}
+
 		if (model.isTooLargeForTokenization()) {
 			const message = nls.localize(
 				{
@@ -52,6 +56,7 @@ export class LargeFileOptimizationsWarner
 				"{0}: tokenization, wrapping, folding, codelens, word highlighting and sticky scroll have been turned off for this large file in order to reduce memory usage and avoid freezing or crashing.",
 				path.basename(model.uri.path),
 			);
+
 			this._notificationService.prompt(
 				Severity.Info,
 				message,

@@ -67,9 +67,13 @@ const ITroubleshootIssueService = createDecorator<ITroubleshootIssueService>(
 );
 interface ITroubleshootIssueService {
 	_serviceBrand: undefined;
+
 	isActive(): boolean;
+
 	start(): Promise<void>;
+
 	resume(): Promise<void>;
+
 	stop(): Promise<void>;
 }
 enum TroubleshootStage {
@@ -82,8 +86,10 @@ class TroubleShootState {
 		if (!raw) {
 			return undefined;
 		}
+
 		try {
 			interface Raw extends TroubleShootState {}
+
 			const data: Raw = JSON.parse(raw);
 
 			if (
@@ -96,8 +102,10 @@ class TroubleShootState {
 		} catch {
 			/* ignore */
 		}
+
 		return undefined;
 	}
+
 	constructor(
 		readonly stage: TroubleshootStage,
 		readonly profile: string,
@@ -108,7 +116,9 @@ class TroubleshootIssueService
 	implements ITroubleshootIssueService
 {
 	readonly _serviceBrand: undefined;
+
 	static readonly storageKey = "issueTroubleshootState";
+
 	private notificationHandle: INotificationHandle | undefined;
 
 	constructor(
@@ -143,13 +153,16 @@ class TroubleshootIssueService
 	) {
 		super();
 	}
+
 	isActive(): boolean {
 		return this.state !== undefined;
 	}
+
 	async start(): Promise<void> {
 		if (this.isActive()) {
 			throw new Error("invalid state");
 		}
+
 		const res = await this.dialogService.confirm({
 			message: localize("troubleshoot issue", "Troubleshoot Issue"),
 			detail: localize(
@@ -167,47 +180,63 @@ class TroubleshootIssueService
 		if (!res.confirmed) {
 			return;
 		}
+
 		const originalProfile = this.userDataProfileService.currentProfile;
+
 		await this.userDataProfileImportExportService.createTroubleshootProfile();
+
 		this.state = new TroubleShootState(
 			TroubleshootStage.EXTENSIONS,
 			originalProfile.id,
 		);
+
 		await this.resume();
 	}
+
 	async resume(): Promise<void> {
 		if (!this.isActive()) {
 			return;
 		}
+
 		if (
 			this.state?.stage === TroubleshootStage.EXTENSIONS &&
 			!this.extensionBisectService.isActive
 		) {
 			await this.reproduceIssueWithExtensionsDisabled();
 		}
+
 		if (this.state?.stage === TroubleshootStage.WORKBENCH) {
 			await this.reproduceIssueWithEmptyProfile();
 		}
+
 		await this.stop();
 	}
+
 	async stop(): Promise<void> {
 		if (!this.isActive()) {
 			return;
 		}
+
 		if (this.notificationHandle) {
 			this.notificationHandle.close();
+
 			this.notificationHandle = undefined;
 		}
+
 		if (this.extensionBisectService.isActive) {
 			await this.extensionBisectService.reset();
 		}
+
 		const profile =
 			this.userDataProfilesService.profiles.find(
 				(p) => p.id === this.state?.profile,
 			) ?? this.userDataProfilesService.defaultProfile;
+
 		this.state = undefined;
+
 		await this.userDataProfileManagementService.switchProfile(profile);
 	}
+
 	private async reproduceIssueWithExtensionsDisabled(): Promise<void> {
 		if (
 			!(
@@ -223,6 +252,7 @@ class TroubleshootIssueService
 
 			return;
 		}
+
 		const result = await this.askToReproduceIssue(
 			localize(
 				"profile.extensions.disabled",
@@ -235,20 +265,25 @@ class TroubleshootIssueService
 				this.userDataProfilesService.profiles.find(
 					(p) => p.id === this.state!.profile,
 				) ?? this.userDataProfilesService.defaultProfile;
+
 			await this.reproduceIssueWithExtensionsBisect(profile);
 		}
+
 		if (result === "bad") {
 			this.state = new TroubleShootState(
 				TroubleshootStage.WORKBENCH,
 				this.state!.profile,
 			);
 		}
+
 		if (result === "stop") {
 			await this.stop();
 		}
 	}
+
 	private async reproduceIssueWithEmptyProfile(): Promise<void> {
 		await this.userDataProfileManagementService.createAndEnterTransientProfile();
+
 		this.updateState(this.state);
 
 		const result = await this.askToReproduceIssue(
@@ -261,6 +296,7 @@ class TroubleshootIssueService
 		if (result === "stop") {
 			await this.stop();
 		}
+
 		if (result === "good") {
 			await this.askToReportIssue(
 				localize(
@@ -269,6 +305,7 @@ class TroubleshootIssueService
 				),
 			);
 		}
+
 		if (result === "bad") {
 			await this.askToReportIssue(
 				localize(
@@ -279,6 +316,7 @@ class TroubleshootIssueService
 			);
 		}
 	}
+
 	private async reproduceIssueWithExtensionsBisect(
 		profile: IUserDataProfile,
 	): Promise<void> {
@@ -289,9 +327,12 @@ class TroubleshootIssueService
 				ExtensionType.User,
 			)
 		).filter((ext) => this.extensionEnablementService.isEnabled(ext));
+
 		await this.extensionBisectService.start(extensions);
+
 		await this.hostService.reload();
 	}
+
 	private askToReproduceIssue(message: string): Promise<TroubleShootResult> {
 		return new Promise((c, e) => {
 			const goodPrompt: IPromptChoice = {
@@ -308,6 +349,7 @@ class TroubleshootIssueService
 				label: localize("Stop", "Stop"),
 				run: () => c("stop"),
 			};
+
 			this.notificationHandle = this.notificationService.prompt(
 				Severity.Info,
 				message,
@@ -316,6 +358,7 @@ class TroubleshootIssueService
 			);
 		});
 	}
+
 	private async askToReportIssue(message: string): Promise<void> {
 		let isCheckedInInsiders = false;
 
@@ -339,19 +382,23 @@ class TroubleshootIssueService
 
 				return;
 			}
+
 			if (res === "stop") {
 				await this.stop();
 
 				return;
 			}
+
 			if (res === "bad") {
 				isCheckedInInsiders = true;
 			}
 		}
+
 		await this.issueService.openReporter({
 			issueBody: `> ${message} ${isCheckedInInsiders ? `It is confirmed that the issue exists in ${this.productService.nameLong} Insiders` : ""}`,
 		});
 	}
+
 	private async askToReproduceIssueWithInsiders(): Promise<
 		TroubleShootResult | undefined
 	> {
@@ -377,6 +424,7 @@ class TroubleshootIssueService
 		if (!confirmRes.confirmed) {
 			return undefined;
 		}
+
 		const opened = await this.openerService.open(
 			URI.parse("https://aka.ms/vscode-insiders"),
 		);
@@ -384,6 +432,7 @@ class TroubleshootIssueService
 		if (!opened) {
 			return undefined;
 		}
+
 		const res = await this.dialogService.prompt<TroubleShootResult>({
 			type: "info",
 			message: localize("troubleshoot issue", "Troubleshoot Issue"),
@@ -413,6 +462,7 @@ class TroubleshootIssueService
 
 		return res.result;
 	}
+
 	private _state: TroubleShootState | undefined | null;
 
 	get state(): TroubleShootState | undefined {
@@ -421,14 +471,19 @@ class TroubleshootIssueService
 				TroubleshootIssueService.storageKey,
 				StorageScope.PROFILE,
 			);
+
 			this._state = TroubleShootState.fromJSON(raw);
 		}
+
 		return this._state || undefined;
 	}
+
 	set state(state: TroubleShootState | undefined) {
 		this._state = state ?? null;
+
 		this.updateState(state);
 	}
+
 	private updateState(state: TroubleShootState | undefined) {
 		if (state) {
 			this.storageService.store(
@@ -460,11 +515,13 @@ class IssueTroubleshootUi extends Disposable {
 		storageService: IStorageService,
 	) {
 		super();
+
 		this.updateContext();
 
 		if (troubleshootIssueService.isActive()) {
 			troubleshootIssueService.resume();
 		}
+
 		this._register(
 			storageService.onDidChangeValue(
 				StorageScope.PROFILE,
@@ -475,6 +532,7 @@ class IssueTroubleshootUi extends Disposable {
 			}),
 		);
 	}
+
 	private updateContext(): void {
 		IssueTroubleshootUi.ctxIsTroubleshootActive
 			.bindTo(this.contextKeyService)
@@ -499,6 +557,7 @@ registerAction2(
 				),
 			});
 		}
+
 		run(accessor: ServicesAccessor): Promise<void> {
 			return accessor.get(ITroubleshootIssueService).start();
 		}
@@ -515,6 +574,7 @@ registerAction2(
 				precondition: IssueTroubleshootUi.ctxIsTroubleshootActive,
 			});
 		}
+
 		async run(accessor: ServicesAccessor): Promise<void> {
 			return accessor.get(ITroubleshootIssueService).stop();
 		}

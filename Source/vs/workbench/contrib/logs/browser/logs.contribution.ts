@@ -31,10 +31,13 @@ class WebLogOutputChannels
 		private readonly instantiationService: IInstantiationService,
 	) {
 		super();
+
 		this.registerWebContributions();
 	}
+
 	private registerWebContributions(): void {
 		this.instantiationService.createInstance(LogsDataCleaner);
+
 		this._register(
 			registerAction2(
 				class extends Action2 {
@@ -46,6 +49,7 @@ class WebLogOutputChannels
 							f1: true,
 						});
 					}
+
 					run(servicesAccessor: ServicesAccessor): Promise<void> {
 						return servicesAccessor
 							.get(IInstantiationService)

@@ -26,26 +26,37 @@ import { ViewPart } from "../../view/viewPart.js";
  */
 export class Rulers extends ViewPart {
 	public domNode: FastDomNode<HTMLElement>;
+
 	private readonly _renderedRulers: FastDomNode<HTMLElement>[];
+
 	private _rulers: IRulerOption[];
+
 	private _typicalHalfwidthCharacterWidth: number;
 
 	constructor(context: ViewContext) {
 		super(context);
+
 		this.domNode = createFastDomNode<HTMLElement>(
 			document.createElement("div"),
 		);
+
 		this.domNode.setAttribute("role", "presentation");
+
 		this.domNode.setAttribute("aria-hidden", "true");
+
 		this.domNode.setClassName("view-rulers");
+
 		this._renderedRulers = [];
 
 		const options = this._context.configuration.options;
+
 		this._rulers = options.get(EditorOption.rulers);
+
 		this._typicalHalfwidthCharacterWidth = options.get(
 			EditorOption.fontInfo,
 		).typicalHalfwidthCharacterWidth;
 	}
+
 	public override dispose(): void {
 		super.dispose();
 	}
@@ -54,13 +65,16 @@ export class Rulers extends ViewPart {
 		e: viewEvents.ViewConfigurationChangedEvent,
 	): boolean {
 		const options = this._context.configuration.options;
+
 		this._rulers = options.get(EditorOption.rulers);
+
 		this._typicalHalfwidthCharacterWidth = options.get(
 			EditorOption.fontInfo,
 		).typicalHalfwidthCharacterWidth;
 
 		return true;
 	}
+
 	public override onScrollChanged(
 		e: viewEvents.ViewScrollChangedEvent,
 	): boolean {
@@ -70,6 +84,7 @@ export class Rulers extends ViewPart {
 	public prepareRender(ctx: RenderingContext): void {
 		// Nothing to read
 	}
+
 	private _ensureRulersCount(): void {
 		const currentCount = this._renderedRulers.length;
 
@@ -79,6 +94,7 @@ export class Rulers extends ViewPart {
 			// Nothing to do
 			return;
 		}
+
 		if (currentCount < desiredCount) {
 			const { tabSize } = this._context.viewModel.model.getOptions();
 
@@ -88,22 +104,32 @@ export class Rulers extends ViewPart {
 
 			while (addCount > 0) {
 				const node = createFastDomNode(document.createElement("div"));
+
 				node.setClassName("view-ruler");
+
 				node.setWidth(rulerWidth);
+
 				this.domNode.appendChild(node);
+
 				this._renderedRulers.push(node);
+
 				addCount--;
 			}
+
 			return;
 		}
+
 		let removeCount = currentCount - desiredCount;
 
 		while (removeCount > 0) {
 			const node = this._renderedRulers.pop()!;
+
 			this.domNode.removeChild(node);
+
 			removeCount--;
 		}
 	}
+
 	public render(ctx: RestrictedRenderingContext): void {
 		this._ensureRulersCount();
 
@@ -111,10 +137,13 @@ export class Rulers extends ViewPart {
 			const node = this._renderedRulers[i];
 
 			const ruler = this._rulers[i];
+
 			node.setBoxShadow(
 				ruler.color ? `1px 0 0 0 ${ruler.color} inset` : ``,
 			);
+
 			node.setHeight(Math.min(ctx.scrollHeight, 1000000));
+
 			node.setLeft(ruler.column * this._typicalHalfwidthCharacterWidth);
 		}
 	}

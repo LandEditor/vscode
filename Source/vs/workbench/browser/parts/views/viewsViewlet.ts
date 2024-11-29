@@ -27,7 +27,9 @@ export interface IViewletViewOptions extends IViewPaneOptions {
 }
 export abstract class FilterViewPaneContainer extends ViewPaneContainer {
 	private constantViewDescriptors: Map<string, IViewDescriptor> = new Map();
+
 	private allViews: Map<string, Map<string, IViewDescriptor>> = new Map();
+
 	private filterValue: string[] | undefined;
 
 	constructor(
@@ -68,12 +70,15 @@ export abstract class FilterViewPaneContainer extends ViewPaneContainer {
 			contextService,
 			viewDescriptorService,
 		);
+
 		this._register(
 			onDidChangeFilterValue((newFilterValue) => {
 				this.filterValue = newFilterValue;
+
 				this.onFilterChanged(newFilterValue);
 			}),
 		);
+
 		this._register(
 			this.viewContainerModel.onDidChangeActiveViewDescriptors(() => {
 				this.updateAllViews(
@@ -82,6 +87,7 @@ export abstract class FilterViewPaneContainer extends ViewPaneContainer {
 			}),
 		);
 	}
+
 	private updateAllViews(viewDescriptors: ReadonlyArray<IViewDescriptor>) {
 		viewDescriptors.forEach((descriptor) => {
 			const filterOnValue = this.getFilterOn(descriptor);
@@ -89,9 +95,11 @@ export abstract class FilterViewPaneContainer extends ViewPaneContainer {
 			if (!filterOnValue) {
 				return;
 			}
+
 			if (!this.allViews.has(filterOnValue)) {
 				this.allViews.set(filterOnValue, new Map());
 			}
+
 			this.allViews.get(filterOnValue)!.set(descriptor.id, descriptor);
 
 			if (
@@ -103,6 +111,7 @@ export abstract class FilterViewPaneContainer extends ViewPaneContainer {
 			}
 		});
 	}
+
 	protected addConstantViewDescriptors(
 		constantViewDescriptors: IViewDescriptor[],
 	) {
@@ -110,21 +119,27 @@ export abstract class FilterViewPaneContainer extends ViewPaneContainer {
 			this.constantViewDescriptors.set(viewDescriptor.id, viewDescriptor),
 		);
 	}
+
 	protected abstract getFilterOn(
 		viewDescriptor: IViewDescriptor,
 	): string | undefined;
+
 	protected abstract setFilter(viewDescriptor: IViewDescriptor): void;
+
 	private onFilterChanged(newFilterValue: string[]) {
 		if (this.allViews.size === 0) {
 			this.updateAllViews(this.viewContainerModel.activeViewDescriptors);
 		}
+
 		this.getViewsNotForTarget(newFilterValue).forEach((item) =>
 			this.viewContainerModel.setVisible(item.id, false),
 		);
+
 		this.getViewsForTarget(newFilterValue).forEach((item) =>
 			this.viewContainerModel.setVisible(item.id, true),
 		);
 	}
+
 	private getViewsForTarget(target: string[]): IViewDescriptor[] {
 		const views: IViewDescriptor[] = [];
 
@@ -135,8 +150,10 @@ export abstract class FilterViewPaneContainer extends ViewPaneContainer {
 				);
 			}
 		}
+
 		return views;
 	}
+
 	private getViewsNotForTarget(target: string[]): IViewDescriptor[] {
 		const iterable = this.allViews.keys();
 
@@ -146,6 +163,7 @@ export abstract class FilterViewPaneContainer extends ViewPaneContainer {
 
 		while (!key.done) {
 			let isForTarget: boolean = false;
+
 			target.forEach((value) => {
 				if (key.value === value) {
 					isForTarget = true;
@@ -155,10 +173,13 @@ export abstract class FilterViewPaneContainer extends ViewPaneContainer {
 			if (!isForTarget) {
 				views = views.concat(this.getViewsForTarget([key.value]));
 			}
+
 			key = iterable.next();
 		}
+
 		return views;
 	}
+
 	protected override onDidAddViewDescriptors(
 		added: IAddedViewDescriptorRef[],
 	): ViewPane[] {
@@ -173,8 +194,10 @@ export abstract class FilterViewPaneContainer extends ViewPaneContainer {
 		if (this.allViews.size === 0) {
 			this.updateAllViews(this.viewContainerModel.activeViewDescriptors);
 		}
+
 		return panes;
 	}
+
 	override openView(id: string, focus?: boolean): IView | undefined {
 		const result = super.openView(id, focus);
 
@@ -190,7 +213,9 @@ export abstract class FilterViewPaneContainer extends ViewPaneContainer {
 				this.setFilter(descriptorMap[1].get(id)!);
 			}
 		}
+
 		return result;
 	}
+
 	abstract override getTitle(): string;
 }

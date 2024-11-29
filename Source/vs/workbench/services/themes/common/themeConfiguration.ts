@@ -413,16 +413,19 @@ export function updateColorThemeConfigurationSchemas(
 ) {
 	// updates enum for the 'workbench.colorTheme` setting
 	themes.sort((a, b) => a.label.localeCompare(b.label));
+
 	colorThemeSettingEnum.splice(
 		0,
 		colorThemeSettingEnum.length,
 		...themes.map((t) => t.settingsId),
 	);
+
 	colorThemeSettingEnumDescriptions.splice(
 		0,
 		colorThemeSettingEnumDescriptions.length,
 		...themes.map((t) => t.description || ""),
 	);
+
 	colorThemeSettingEnumItemLabels.splice(
 		0,
 		colorThemeSettingEnumItemLabels.length,
@@ -448,24 +451,34 @@ export function updateColorThemeConfigurationSchemas(
 	for (const t of themes) {
 		// add theme specific color customization ("[Abyss]":{ ... })
 		const themeId = `[${t.settingsId}]`;
+
 		themeSpecificWorkbenchColors.properties![themeId] = workbenchColors;
+
 		themeSpecificTokenColors.properties![themeId] = tokenColors;
+
 		themeSpecificSemanticTokenColors.properties![themeId] =
 			semanticTokenColorSchema;
 	}
+
 	themeSpecificWorkbenchColors.patternProperties = {
 		[themeSpecificSettingKey]: workbenchColors,
 	};
+
 	themeSpecificTokenColors.patternProperties = {
 		[themeSpecificSettingKey]: tokenColors,
 	};
+
 	themeSpecificSemanticTokenColors.patternProperties = {
 		[themeSpecificSettingKey]: semanticTokenColorSchema,
 	};
+
 	colorCustomizationsSchema.allOf![1] = themeSpecificWorkbenchColors;
+
 	tokenColorCustomizationSchema.allOf![1] = themeSpecificTokenColors;
+
 	semanticTokenColorCustomizationSchema.allOf![1] =
 		themeSpecificSemanticTokenColors;
+
 	configurationRegistry.notifyConfigurationSchemaUpdated(
 		themeSettingsConfiguration,
 		tokenColorCustomizationConfiguration,
@@ -479,16 +492,19 @@ export function updateFileIconThemeConfigurationSchemas(
 		Number.MAX_VALUE,
 		...themes.map((t) => t.settingsId),
 	);
+
 	fileIconThemeSettingSchema.enumItemLabels!.splice(
 		1,
 		Number.MAX_VALUE,
 		...themes.map((t) => t.label),
 	);
+
 	fileIconThemeSettingSchema.enumDescriptions!.splice(
 		1,
 		Number.MAX_VALUE,
 		...themes.map((t) => t.description || ""),
 	);
+
 	configurationRegistry.notifyConfigurationSchemaUpdated(
 		themeSettingsConfiguration,
 	);
@@ -501,16 +517,19 @@ export function updateProductIconThemeConfigurationSchemas(
 		Number.MAX_VALUE,
 		...themes.map((t) => t.settingsId),
 	);
+
 	productIconThemeSettingSchema.enumItemLabels!.splice(
 		1,
 		Number.MAX_VALUE,
 		...themes.map((t) => t.label),
 	);
+
 	productIconThemeSettingSchema.enumDescriptions!.splice(
 		1,
 		Number.MAX_VALUE,
 		...themes.map((t) => t.description || ""),
 	);
+
 	configurationRegistry.notifyConfigurationSchemaUpdated(
 		themeSettingsConfiguration,
 	);
@@ -528,21 +547,25 @@ export class ThemeConfiguration {
 		private configurationService: IConfigurationService,
 		private hostColorService: IHostColorSchemeService,
 	) {}
+
 	public get colorTheme(): string {
 		return this.configurationService.getValue<string>(
 			this.getColorThemeSettingId(),
 		);
 	}
+
 	public get fileIconTheme(): string | null {
 		return this.configurationService.getValue<string | null>(
 			ThemeSettings.FILE_ICON_THEME,
 		);
 	}
+
 	public get productIconTheme(): string {
 		return this.configurationService.getValue<string>(
 			ThemeSettings.PRODUCT_ICON_THEME,
 		);
 	}
+
 	public get colorCustomizations(): IColorCustomizations {
 		return (
 			this.configurationService.getValue<IColorCustomizations>(
@@ -550,6 +573,7 @@ export class ThemeConfiguration {
 			) || {}
 		);
 	}
+
 	public get tokenColorCustomizations(): ITokenColorCustomizations {
 		return (
 			this.configurationService.getValue<ITokenColorCustomizations>(
@@ -557,6 +581,7 @@ export class ThemeConfiguration {
 			) || {}
 		);
 	}
+
 	public get semanticTokenColorCustomizations():
 		| ISemanticTokenColorCustomizations
 		| undefined {
@@ -564,6 +589,7 @@ export class ThemeConfiguration {
 			ThemeSettings.SEMANTIC_TOKEN_COLOR_CUSTOMIZATIONS,
 		);
 	}
+
 	public getPreferredColorScheme(): ColorScheme | undefined {
 		if (
 			this.configurationService.getValue(ThemeSettings.DETECT_HC) &&
@@ -573,6 +599,7 @@ export class ThemeConfiguration {
 				? ColorScheme.HIGH_CONTRAST_DARK
 				: ColorScheme.HIGH_CONTRAST_LIGHT;
 		}
+
 		if (
 			this.configurationService.getValue(
 				ThemeSettings.DETECT_COLOR_SCHEME,
@@ -582,13 +609,16 @@ export class ThemeConfiguration {
 				? ColorScheme.DARK
 				: ColorScheme.LIGHT;
 		}
+
 		return undefined;
 	}
+
 	public isDetectingColorScheme(): boolean {
 		return this.configurationService.getValue(
 			ThemeSettings.DETECT_COLOR_SCHEME,
 		);
 	}
+
 	public getColorThemeSettingId(): ThemeSettings {
 		const preferredScheme = this.getPreferredColorScheme();
 
@@ -596,6 +626,7 @@ export class ThemeConfiguration {
 			? colorSchemeToPreferred[preferredScheme]
 			: ThemeSettings.COLOR_THEME;
 	}
+
 	public async setColorTheme(
 		theme: IWorkbenchColorTheme,
 		settingsTarget: ThemeSettingTarget,
@@ -608,6 +639,7 @@ export class ThemeConfiguration {
 
 		return theme;
 	}
+
 	public async setFileIconTheme(
 		theme: IWorkbenchFileIconTheme,
 		settingsTarget: ThemeSettingTarget,
@@ -620,6 +652,7 @@ export class ThemeConfiguration {
 
 		return theme;
 	}
+
 	public async setProductIconTheme(
 		theme: IWorkbenchProductIconTheme,
 		settingsTarget: ThemeSettingTarget,
@@ -632,6 +665,7 @@ export class ThemeConfiguration {
 
 		return theme;
 	}
+
 	public isDefaultColorTheme(): boolean {
 		const settings = this.configurationService.inspect(
 			this.getColorThemeSettingId(),
@@ -639,6 +673,7 @@ export class ThemeConfiguration {
 
 		return settings && settings.default?.value === settings.value;
 	}
+
 	public findAutoConfigurationTarget(key: string) {
 		const settings = this.configurationService.inspect(key);
 
@@ -649,8 +684,10 @@ export class ThemeConfiguration {
 		} else if (!types.isUndefined(settings.userRemote)) {
 			return ConfigurationTarget.USER_REMOTE;
 		}
+
 		return ConfigurationTarget.USER;
 	}
+
 	private async writeConfiguration(
 		key: string,
 		value: any,
@@ -659,11 +696,13 @@ export class ThemeConfiguration {
 		if (settingsTarget === undefined || settingsTarget === "preview") {
 			return;
 		}
+
 		const settings = this.configurationService.inspect(key);
 
 		if (settingsTarget === "auto") {
 			return this.configurationService.updateValue(key, value);
 		}
+
 		if (settingsTarget === ConfigurationTarget.USER) {
 			if (value === settings.userValue) {
 				return Promise.resolve(undefined); // nothing to do
@@ -671,6 +710,7 @@ export class ThemeConfiguration {
 				if (types.isUndefined(settings.userValue)) {
 					return Promise.resolve(undefined); // nothing to do
 				}
+
 				value = undefined; // remove configuration from user settings
 			}
 		} else if (
@@ -682,6 +722,7 @@ export class ThemeConfiguration {
 				return Promise.resolve(undefined); // nothing to do
 			}
 		}
+
 		return this.configurationService.updateValue(
 			key,
 			value,

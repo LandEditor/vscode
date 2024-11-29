@@ -96,6 +96,7 @@ class ManagedCodeActionSet extends Disposable implements CodeActionSet {
 		} else if (!a.isAI && b.isAI) {
 			return -1;
 		}
+
 		if (isNonEmptyArray(a.diagnostics)) {
 			return isNonEmptyArray(b.diagnostics)
 				? ManagedCodeActionSet.codeActionsPreferredComparator(a, b)
@@ -108,6 +109,7 @@ class ManagedCodeActionSet extends Disposable implements CodeActionSet {
 	}
 
 	public readonly validActions: readonly CodeActionItem[];
+
 	public readonly allActions: readonly CodeActionItem[];
 
 	public constructor(
@@ -122,6 +124,7 @@ class ManagedCodeActionSet extends Disposable implements CodeActionSet {
 		this.allActions = [...actions].sort(
 			ManagedCodeActionSet.codeActionsComparator,
 		);
+
 		this.validActions = this.allActions.filter(
 			({ action }) => !action.disabled,
 		);
@@ -224,6 +227,7 @@ export async function getCodeActions(
 			if (isCancellationError(err)) {
 				throw err;
 			}
+
 			onUnexpectedExternalError(err);
 
 			return emptyCodeActionsResponse;
@@ -262,6 +266,7 @@ export async function getCodeActions(
 		);
 	} finally {
 		listener.dispose();
+
 		cts.dispose();
 	}
 }
@@ -280,6 +285,7 @@ function getCodeActionProviders(
 					// We don't know what type of actions this provider will return.
 					return true;
 				}
+
 				return provider.providedCodeActionKinds.some((kind) =>
 					mayIncludeActionsOfKind(filter, new HierarchicalKind(kind)),
 				);
@@ -326,6 +332,7 @@ function getDocumentationFromProvider(
 		let currentBest:
 			| {
 					readonly kind: HierarchicalKind;
+
 					readonly command: languages.Command;
 			  }
 			| undefined;
@@ -342,6 +349,7 @@ function getDocumentationFromProvider(
 				}
 			}
 		}
+
 		if (currentBest) {
 			return currentBest?.command;
 		}
@@ -359,6 +367,7 @@ function getDocumentationFromProvider(
 			}
 		}
 	}
+
 	return undefined;
 }
 
@@ -391,32 +400,49 @@ export async function applyCodeAction(
 
 	type ApplyCodeActionEvent = {
 		codeActionTitle: string;
+
 		codeActionKind: string | undefined;
+
 		codeActionIsPreferred: boolean;
+
 		reason: ApplyCodeActionReason;
 	};
+
 	type ApplyCodeEventClassification = {
 		codeActionTitle: {
 			classification: "SystemMetaData";
+
 			purpose: "FeatureInsight";
+
 			comment: "The display label of the applied code action";
 		};
+
 		codeActionKind: {
 			classification: "SystemMetaData";
+
 			purpose: "FeatureInsight";
+
 			comment: "The kind (refactor, quickfix) of the applied code action";
 		};
+
 		codeActionIsPreferred: {
 			classification: "SystemMetaData";
+
 			purpose: "FeatureInsight";
+
 			comment: "Was the code action marked as being a preferred action?";
 		};
+
 		reason: {
 			classification: "SystemMetaData";
+
 			purpose: "FeatureInsight";
+
 			comment: "The kind of action used to trigger apply code action.";
 		};
+
 		owner: "justschen";
+
 		comment: "Event used to gain insights into which code actions are being triggered";
 	};
 
@@ -429,9 +455,11 @@ export async function applyCodeAction(
 		codeActionIsPreferred: !!item.action.isPreferred,
 		reason: codeActionReason,
 	});
+
 	accessibilitySignalService.playSignal(
 		AccessibilitySignal.codeActionTriggered,
 	);
+
 	await item.resolve(token);
 
 	if (token.isCancellationRequested) {
@@ -462,6 +490,7 @@ export async function applyCodeAction(
 			);
 		} catch (err) {
 			const message = asMessage(err);
+
 			notificationService.error(
 				typeof message === "string"
 					? message

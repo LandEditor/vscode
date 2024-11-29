@@ -74,10 +74,13 @@ export class SelectionClipboard
 					if (!editor.hasModel()) {
 						return;
 					}
+
 					const model = editor.getModel();
 
 					let selections = editor.getSelections();
+
 					selections = selections.slice(0);
+
 					selections.sort(Range.compareRangesUsingStarts);
 
 					let resultLength = 0;
@@ -87,6 +90,7 @@ export class SelectionClipboard
 							// Only write if all cursors have selection
 							return;
 						}
+
 						resultLength += model.getValueLengthInRange(sel);
 					}
 
@@ -110,6 +114,7 @@ export class SelectionClipboard
 					}
 
 					const textToCopy = result.join(model.getEOL());
+
 					clipboardService.writeText(textToCopy, "selection");
 				}, 100),
 			);
@@ -120,11 +125,13 @@ export class SelectionClipboard
 						if (!isEnabled) {
 							return;
 						}
+
 						if (e.source === "restoreState") {
 							// do not set selection to clipboard if this selection change
 							// was caused by restoring editors...
 							return;
 						}
+
 						setSelectionToClipboard.schedule();
 					},
 				),

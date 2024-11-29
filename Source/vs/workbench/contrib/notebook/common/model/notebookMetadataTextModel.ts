@@ -44,6 +44,7 @@ export function getFormattedNotebookMetadataJSON(
 	} else {
 		filteredMetadata = metadata;
 	}
+
 	const metadataSource = toFormattedString(filteredMetadata, {});
 
 	return metadataSource;
@@ -53,25 +54,33 @@ export class NotebookDocumentMetadataTextModel
 	implements INotebookDocumentMetadataTextModel
 {
 	public readonly uri: URI;
+
 	public get metadata(): NotebookDocumentMetadata {
 		return this.notebookModel.metadata;
 	}
+
 	private readonly _onDidChange = this._register(new Emitter<void>());
+
 	public readonly onDidChange = this._onDidChange.event;
+
 	private _textBufferHash: string | null = null;
+
 	private _textBuffer?: ITextBuffer;
 
 	get textBuffer() {
 		if (this._textBuffer) {
 			return this._textBuffer;
 		}
+
 		const source = getFormattedNotebookMetadataJSON(
 			this.notebookModel.transientOptions.transientDocumentMetadata,
 			this.metadata,
 		);
+
 		this._textBuffer = this._register(
 			createTextBuffer(source, DefaultEndOfLine.LF).textBuffer,
 		);
+
 		this._register(
 			this._textBuffer.onDidChangeContent(() => {
 				this._onDidChange.fire();
@@ -80,9 +89,12 @@ export class NotebookDocumentMetadataTextModel
 
 		return this._textBuffer;
 	}
+
 	constructor(public readonly notebookModel: INotebookTextModel) {
 		super();
+
 		this.uri = NotebookMetadataUri.generate(this.notebookModel.uri);
+
 		this._register(
 			this.notebookModel.onDidChangeContent((e) => {
 				if (
@@ -94,17 +106,22 @@ export class NotebookDocumentMetadataTextModel
 					)
 				) {
 					this._textBuffer?.dispose();
+
 					this._textBuffer = undefined;
+
 					this._textBufferHash = null;
+
 					this._onDidChange.fire();
 				}
 			}),
 		);
 	}
+
 	getHash() {
 		if (this._textBufferHash !== null) {
 			return this._textBufferHash;
 		}
+
 		const shaComputer = new StringSHA1();
 
 		const snapshot = this.textBuffer.createSnapshot(false);
@@ -114,10 +131,12 @@ export class NotebookDocumentMetadataTextModel
 		while ((text = snapshot.read())) {
 			shaComputer.update(text);
 		}
+
 		this._textBufferHash = shaComputer.digest();
 
 		return this._textBufferHash;
 	}
+
 	public getValue() {
 		const fullRange = this.getFullModelRange();
 
@@ -135,6 +154,7 @@ export class NotebookDocumentMetadataTextModel
 			);
 		}
 	}
+
 	private getFullModelRange() {
 		const lineCount = this.textBuffer.getLineCount();
 

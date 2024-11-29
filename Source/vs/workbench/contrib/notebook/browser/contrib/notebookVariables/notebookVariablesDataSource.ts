@@ -18,22 +18,36 @@ export interface IEmptyScope {
 }
 export interface INotebookScope {
 	kind: "root";
+
 	readonly notebook: NotebookTextModel;
 }
 export interface INotebookVariableElement {
 	kind: "variable";
+
 	readonly id: string;
+
 	readonly extHostId: number;
+
 	readonly name: string;
+
 	readonly value: string;
+
 	readonly type?: string;
+
 	readonly interfaces?: string[];
+
 	readonly expression?: string;
+
 	readonly language?: string;
+
 	readonly indexedChildrenCount: number;
+
 	readonly indexStart?: number;
+
 	readonly hasNamedChildren: boolean;
+
 	readonly notebook: NotebookTextModel;
+
 	readonly extensionId?: string;
 }
 export class NotebookVariableDataSource
@@ -46,6 +60,7 @@ export class NotebookVariableDataSource
 	) {
 		this.cancellationTokenSource = new CancellationTokenSource();
 	}
+
 	hasChildren(element: INotebookScope | INotebookVariableElement): boolean {
 		return (
 			element.kind === "root" ||
@@ -53,11 +68,15 @@ export class NotebookVariableDataSource
 			element.indexedChildrenCount > 0
 		);
 	}
+
 	public cancel(): void {
 		this.cancellationTokenSource.cancel();
+
 		this.cancellationTokenSource.dispose();
+
 		this.cancellationTokenSource = new CancellationTokenSource();
 	}
+
 	async getChildren(
 		element: INotebookScope | INotebookVariableElement | IEmptyScope,
 	): Promise<Array<INotebookVariableElement>> {
@@ -69,6 +88,7 @@ export class NotebookVariableDataSource
 			return this.getVariables(element);
 		}
 	}
+
 	private async getVariables(
 		parent: INotebookVariableElement,
 	): Promise<INotebookVariableElement[]> {
@@ -96,19 +116,25 @@ export class NotebookVariableDataSource
 						);
 					})
 					.toPromise();
+
 				children = children.concat(childNodes);
 			}
+
 			if (parent.indexedChildrenCount > 0) {
 				const childNodes = await this.getIndexedChildren(
 					parent,
 					selectedKernel,
 				);
+
 				children = children.concat(childNodes);
 			}
+
 			return children;
 		}
+
 		return [];
 	}
+
 	private async getIndexedChildren(
 		parent: INotebookVariableElement,
 		kernel: INotebookKernel,
@@ -134,6 +160,7 @@ export class NotebookVariableDataSource
 				if (end > last) {
 					end = last;
 				}
+
 				childNodes.push({
 					kind: "variable",
 					notebook: parent.notebook,
@@ -146,6 +173,7 @@ export class NotebookVariableDataSource
 					hasNamedChildren: false,
 				});
 			}
+
 			if (parent.indexedChildrenCount > indexedChildCountLimit) {
 				childNodes.push({
 					kind: "variable",
@@ -180,8 +208,10 @@ export class NotebookVariableDataSource
 				}
 			}
 		}
+
 		return childNodes;
 	}
+
 	private async getRootVariables(
 		notebook: NotebookTextModel,
 	): Promise<INotebookVariableElement[]> {
@@ -203,8 +233,10 @@ export class NotebookVariableDataSource
 				})
 				.toPromise();
 		}
+
 		return [];
 	}
+
 	private createVariableElement(
 		variable: VariablesResult,
 		notebook: NotebookTextModel,

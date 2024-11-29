@@ -21,6 +21,7 @@ export class GlyphRasterizer extends Disposable implements IGlyphRasterizer {
 	}
 
 	private _canvas: OffscreenCanvas;
+
 	private _ctx: OffscreenCanvasRenderingContext2D;
 
 	private readonly _textMetrics: TextMetrics;
@@ -40,9 +41,12 @@ export class GlyphRasterizer extends Disposable implements IGlyphRasterizer {
 		fontBoundingBoxAscent: 0,
 		fontBoundingBoxDescent: 0,
 	};
+
 	private _workGlyphConfig: {
 		chars: string | undefined;
+
 		tokenMetadata: number;
+
 		charMetadata: number;
 	} = { chars: undefined, tokenMetadata: 0, charMetadata: 0 };
 
@@ -54,13 +58,19 @@ export class GlyphRasterizer extends Disposable implements IGlyphRasterizer {
 		super();
 
 		const devicePixelFontSize = Math.ceil(this.fontSize * devicePixelRatio);
+
 		this._canvas = new OffscreenCanvas(devicePixelFontSize * 3, devicePixelFontSize * 3);
+
 		this._ctx = ensureNonNullable(this._canvas.getContext('2d', {
 			willReadFrequently: true
 		}));
+
 		this._ctx.textBaseline = 'top';
+
 		this._ctx.fillStyle = '#FFFFFF';
+
 		this._ctx.font = `${devicePixelFontSize}px ${this.fontFamily}`;
+
 		this._textMetrics = this._ctx.measureText('A');
 	}
 
@@ -94,9 +104,13 @@ export class GlyphRasterizer extends Disposable implements IGlyphRasterizer {
 		) {
 			return this._workGlyph;
 		}
+
 		this._workGlyphConfig.chars = chars;
+
 		this._workGlyphConfig.tokenMetadata = tokenMetadata;
+
 		this._workGlyphConfig.charMetadata = charMetadata;
+
 		return this._rasterizeGlyph(
 			chars,
 			tokenMetadata,
@@ -112,10 +126,12 @@ export class GlyphRasterizer extends Disposable implements IGlyphRasterizer {
 		colorMap: string[],
 	): Readonly<IRasterizedGlyph> {
 		const devicePixelFontSize = Math.ceil(this.fontSize * this.devicePixelRatio);
+
 		const canvasDim = devicePixelFontSize * 3;
 
 		if (this._canvas.width !== canvasDim) {
 			this._canvas.width = canvasDim;
+
 			this._canvas.height = canvasDim;
 		}
 
@@ -129,10 +145,13 @@ export class GlyphRasterizer extends Disposable implements IGlyphRasterizer {
 		if (fontStyle & FontStyle.Italic) {
 			fontSb.appendString("italic ");
 		}
+
 		if (fontStyle & FontStyle.Bold) {
 			fontSb.appendString("bold ");
 		}
+
 		fontSb.appendString(`${devicePixelFontSize}px ${this.fontFamily}`);
+
 		this._ctx.font = fontSb.build();
 
 		// TODO: Support FontStyle.Strikethrough and FontStyle.Underline text decorations, these
@@ -142,12 +161,14 @@ export class GlyphRasterizer extends Disposable implements IGlyphRasterizer {
 		const originX = devicePixelFontSize;
 
 		const originY = devicePixelFontSize;
+
 		if (charMetadata) {
 			this._ctx.fillStyle = `#${charMetadata.toString(16).padStart(8, "0")}`;
 		} else {
 			this._ctx.fillStyle =
 				colorMap[TokenMetadata.getForeground(metadata)];
 		}
+
 		this._ctx.textBaseline = 'top';
 
 		this._ctx.fillText(chars, originX, originY);
@@ -158,6 +179,7 @@ export class GlyphRasterizer extends Disposable implements IGlyphRasterizer {
 			this._canvas.width,
 			this._canvas.height,
 		);
+
 		this._findGlyphBoundingBox(imageData, this._workGlyph.boundingBox);
 		// const offset = {
 		// 	x: textMetrics.actualBoundingBoxLeft,
@@ -170,10 +192,15 @@ export class GlyphRasterizer extends Disposable implements IGlyphRasterizer {
 		// 	yInt: Math.ceil(textMetrics.actualBoundingBoxDescent + textMetrics.actualBoundingBoxAscent),
 		// };
 		// console.log(`${chars}_${fg}`, textMetrics, boundingBox, originX, originY, { width: boundingBox.right - boundingBox.left, height: boundingBox.bottom - boundingBox.top });
+
 		this._workGlyph.source = this._canvas;
+
 		this._workGlyph.originOffset.x = this._workGlyph.boundingBox.left - originX;
+
 		this._workGlyph.originOffset.y = this._workGlyph.boundingBox.top - originY;
+
 		this._workGlyph.fontBoundingBoxAscent = this._textMetrics.fontBoundingBoxAscent;
+
 		this._workGlyph.fontBoundingBoxDescent = this._textMetrics.fontBoundingBoxDescent;
 
 		// const result2: IRasterizedGlyph = {
@@ -228,16 +255,20 @@ export class GlyphRasterizer extends Disposable implements IGlyphRasterizer {
 
 				if (imageData.data[alphaOffset] !== 0) {
 					outBoundingBox.top = y;
+
 					found = true;
 
 					break;
 				}
 			}
+
 			if (found) {
 				break;
 			}
 		}
+
 		outBoundingBox.left = 0;
+
 		found = false;
 
 		for (let x = 0; x < width; x++) {
@@ -246,16 +277,20 @@ export class GlyphRasterizer extends Disposable implements IGlyphRasterizer {
 
 				if (imageData.data[alphaOffset] !== 0) {
 					outBoundingBox.left = x;
+
 					found = true;
 
 					break;
 				}
 			}
+
 			if (found) {
 				break;
 			}
 		}
+
 		outBoundingBox.right = width;
+
 		found = false;
 
 		for (let x = width - 1; x >= outBoundingBox.left; x--) {
@@ -264,16 +299,20 @@ export class GlyphRasterizer extends Disposable implements IGlyphRasterizer {
 
 				if (imageData.data[alphaOffset] !== 0) {
 					outBoundingBox.right = x;
+
 					found = true;
 
 					break;
 				}
 			}
+
 			if (found) {
 				break;
 			}
 		}
+
 		outBoundingBox.bottom = outBoundingBox.top;
+
 		found = false;
 
 		for (let y = height - 1; y >= 0; y--) {
@@ -282,11 +321,13 @@ export class GlyphRasterizer extends Disposable implements IGlyphRasterizer {
 
 				if (imageData.data[alphaOffset] !== 0) {
 					outBoundingBox.bottom = y;
+
 					found = true;
 
 					break;
 				}
 			}
+
 			if (found) {
 				break;
 			}

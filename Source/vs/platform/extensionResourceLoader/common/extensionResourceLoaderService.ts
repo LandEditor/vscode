@@ -45,6 +45,7 @@ export class ExtensionResourceLoaderService extends AbstractExtensionResourceLoa
 			configurationService,
 		);
 	}
+
 	async readExtensionResource(uri: URI): Promise<string> {
 		if (this.isExtensionGalleryResource(uri)) {
 			const headers = await this.getExtensionGalleryRequestHeaders();
@@ -56,6 +57,7 @@ export class ExtensionResourceLoaderService extends AbstractExtensionResourceLoa
 
 			return (await asTextOrError(requestContext)) || "";
 		}
+
 		const result = await this._fileService.readFile(uri);
 
 		return result.value.toString();

@@ -11,9 +11,13 @@ import { TextDocument } from "vscode";
  */
 export class DocumentStreamReader {
 	private document: TextDocument;
+
 	private start: number;
+
 	private _eof: number;
+
 	private _sof: number;
+
 	public pos: number;
 
 	constructor(
@@ -22,8 +26,11 @@ export class DocumentStreamReader {
 		limit?: [number, number],
 	) {
 		this.document = document;
+
 		this.start = this.pos = pos ? pos : 0;
+
 		this._sof = limit ? limit[0] : 0;
+
 		this._eof = limit ? limit[1] : document.getText().length;
 	}
 	/**
@@ -52,6 +59,7 @@ export class DocumentStreamReader {
 		if (this.eof()) {
 			return NaN;
 		}
+
 		return this.document.getText().charCodeAt(this.pos);
 	}
 	/**
@@ -62,13 +70,16 @@ export class DocumentStreamReader {
 		if (this.eof()) {
 			return NaN;
 		}
+
 		const code = this.document.getText().charCodeAt(this.pos);
+
 		this.pos++;
 
 		if (this.eof()) {
 			// restrict pos to eof, if in case it got moved beyond eof
 			this.pos = this._eof;
 		}
+
 		return code;
 	}
 	/**
@@ -81,6 +92,7 @@ export class DocumentStreamReader {
 		if (this.pos < 0) {
 			this.pos = 0;
 		}
+
 		return this.peek();
 	}
 	/**
@@ -118,6 +130,7 @@ export class DocumentStreamReader {
 		if (ok) {
 			this.next();
 		}
+
 		return ok;
 	}
 	/**
@@ -128,6 +141,7 @@ export class DocumentStreamReader {
 		const start = this.pos;
 
 		while (!this.eof() && this.eat(match)) {}
+
 		return this.pos !== start;
 	}
 }

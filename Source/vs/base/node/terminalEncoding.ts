@@ -56,6 +56,7 @@ export async function resolveTerminalEncoding(
 				`Found VSCODE_CLI_ENCODING variable: ${cliEncodingEnv}`,
 			);
 		}
+
 		rawEncodingPromise = Promise.resolve(cliEncodingEnv);
 	}
 	// Windows: educated guess
@@ -64,11 +65,13 @@ export async function resolveTerminalEncoding(
 			if (verbose) {
 				console.log('Running "chcp" to detect terminal encoding...');
 			}
+
 			exec("chcp", (err, stdout, stderr) => {
 				if (stdout) {
 					if (verbose) {
 						console.log(`Output from "chcp" command is: ${stdout}`);
 					}
+
 					const windowsTerminalEncodingKeys = Object.keys(
 						windowsTerminalEncodings,
 					) as Array<keyof typeof windowsTerminalEncodings>;
@@ -79,6 +82,7 @@ export async function resolveTerminalEncoding(
 						}
 					}
 				}
+
 				return resolve(undefined);
 			});
 		});
@@ -91,14 +95,17 @@ export async function resolveTerminalEncoding(
 					'Running "locale charmap" to detect terminal encoding...',
 				);
 			}
+
 			exec("locale charmap", (err, stdout, stderr) => resolve(stdout));
 		});
 	}
+
 	const rawEncoding = await rawEncodingPromise;
 
 	if (verbose) {
 		console.log(`Detected raw terminal encoding: ${rawEncoding}`);
 	}
+
 	if (
 		!rawEncoding ||
 		rawEncoding.toLowerCase() === "utf-8" ||
@@ -106,5 +113,6 @@ export async function resolveTerminalEncoding(
 	) {
 		return UTF8;
 	}
+
 	return toIconvLiteEncoding(rawEncoding);
 }

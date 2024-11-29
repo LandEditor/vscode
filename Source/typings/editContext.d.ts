@@ -7,9 +7,13 @@ type DOMString = string;
 
 interface EditContext extends EventTarget {
 	updateText(rangeStart: number, rangeEnd: number, text: DOMString): void;
+
 	updateSelection(start: number, end: number): void;
+
 	updateControlBounds(controlBounds: DOMRect): void;
+
 	updateSelectionBounds(selectionBounds: DOMRect): void;
+
 	updateCharacterBounds(rangeStart: number, characterBounds: DOMRect[]): void;
 
 	attachedElements(): HTMLElement[];
@@ -21,6 +25,7 @@ interface EditContext extends EventTarget {
 	get selectionEnd(): number;
 
 	get characterBoundsRangeStart(): number;
+
 	characterBounds(): DOMRect[];
 
 	get ontextupdate(): EventHandler<TextUpdateEvent> | null;
@@ -51,11 +56,13 @@ interface EditContext extends EventTarget {
 		) => any,
 		options?: boolean | AddEventListenerOptions,
 	): void;
+
 	addEventListener(
 		type: string,
 		listener: EventListenerOrEventListenerObject,
 		options?: boolean | AddEventListenerOptions,
 	): void;
+
 	removeEventListener<K extends keyof EditContextEventHandlersEventMap>(
 		type: K,
 		listener: (
@@ -64,6 +71,7 @@ interface EditContext extends EventTarget {
 		) => any,
 		options?: boolean | EventListenerOptions,
 	): void;
+
 	removeEventListener(
 		type: string,
 		listener: EventListenerOrEventListenerObject,
@@ -73,15 +81,21 @@ interface EditContext extends EventTarget {
 
 interface EditContextInit {
 	text: DOMString;
+
 	selectionStart: number;
+
 	selectionEnd: number;
 }
 
 interface EditContextEventHandlersEventMap {
 	textupdate: TextUpdateEvent;
+
 	textformatupdate: TextFormatUpdateEvent;
+
 	characterboundsupdate: CharacterBoundsUpdateEvent;
+
 	compositionstart: Event;
+
 	compositionend: Event;
 }
 
@@ -91,19 +105,29 @@ interface TextUpdateEvent extends Event {
 	new (type: DOMString, options?: TextUpdateEventInit): TextUpdateEvent;
 
 	readonly updateRangeStart: number;
+
 	readonly updateRangeEnd: number;
+
 	readonly text: DOMString;
+
 	readonly selectionStart: number;
+
 	readonly selectionEnd: number;
 }
 
 interface TextUpdateEventInit extends EventInit {
 	updateRangeStart: number;
+
 	updateRangeEnd: number;
+
 	text: DOMString;
+
 	selectionStart: number;
+
 	selectionEnd: number;
+
 	compositionStart: number;
+
 	compositionEnd: number;
 }
 
@@ -111,15 +135,21 @@ interface TextFormat {
 	new (options?: TextFormatInit): TextFormat;
 
 	readonly rangeStart: number;
+
 	readonly rangeEnd: number;
+
 	readonly underlineStyle: UnderlineStyle;
+
 	readonly underlineThickness: UnderlineThickness;
 }
 
 interface TextFormatInit {
 	rangeStart: number;
+
 	rangeEnd: number;
+
 	underlineStyle: UnderlineStyle;
+
 	underlineThickness: UnderlineThickness;
 }
 
@@ -146,11 +176,13 @@ interface CharacterBoundsUpdateEvent extends Event {
 	): CharacterBoundsUpdateEvent;
 
 	readonly rangeStart: number;
+
 	readonly rangeEnd: number;
 }
 
 interface CharacterBoundsUpdateEventInit extends EventInit {
 	rangeStart: number;
+
 	rangeEnd: number;
 }
 

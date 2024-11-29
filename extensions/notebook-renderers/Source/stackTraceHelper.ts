@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 export function formatStackTrace(stack: string): {
 	formattedStack: string;
+
 	errorLocation?: string;
 } {
 	let cleaned: string;
@@ -28,6 +29,7 @@ export function formatStackTrace(stack: string): {
 	if (isIpythonStackTrace(cleaned)) {
 		return linkifyStack(cleaned);
 	}
+
 	return { formattedStack: cleaned };
 }
 
@@ -52,15 +54,18 @@ function stripFormatting(text: string) {
 }
 type cellLocation = {
 	kind: "cell";
+
 	path: string;
 };
 type fileLocation = {
 	kind: "file";
+
 	path: string;
 };
 type location = cellLocation | fileLocation;
 function linkifyStack(stack: string): {
 	formattedStack: string;
+
 	errorLocation?: string;
 } {
 	const lines = stack.split("\n");
@@ -74,6 +79,7 @@ function linkifyStack(stack: string): {
 
 		if (fileRegex.test(original)) {
 			const fileMatch = lines[i].match(fileRegex);
+
 			fileOrCell = { kind: "file", path: stripFormatting(fileMatch![1]) };
 
 			continue;
@@ -92,7 +98,9 @@ function linkifyStack(stack: string): {
 				cellRegex,
 				`<a href=\'${fileOrCell.path}&line=$<lineNumber>\'>line $<lineNumber></a>`,
 			);
+
 			lines[i] = original.replace(cellRegex, `$<prefix>${link}`);
+
 			locationLink = locationLink || link;
 
 			continue;
@@ -111,6 +119,7 @@ function linkifyStack(stack: string): {
 				inputRegex,
 				`<a href=\'${fileOrCell.path}\'>$<cellLabel></a>`,
 			);
+
 			lines[i] = original.replace(inputRegex, `Input ${link}$<postfix>`);
 
 			continue;
@@ -132,6 +141,7 @@ function linkifyStack(stack: string): {
 			continue;
 		}
 	}
+
 	const errorLocation = locationLink;
 
 	return { formattedStack: lines.join("\n"), errorLocation };

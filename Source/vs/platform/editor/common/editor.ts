@@ -302,8 +302,11 @@ export interface IEditorOptions {
 
 export interface ITextEditorSelection {
 	readonly startLineNumber: number;
+
 	readonly startColumn: number;
+
 	readonly endLineNumber?: number;
+
 	readonly endColumn?: number;
 }
 
@@ -381,8 +384,11 @@ export type ITextEditorChange = [
 
 export interface ITextEditorDiffInformation {
 	readonly documentVersion: number;
+
 	readonly original: URI | undefined;
+
 	readonly modified: URI;
+
 	readonly changes: readonly ITextEditorChange[];
 }
 

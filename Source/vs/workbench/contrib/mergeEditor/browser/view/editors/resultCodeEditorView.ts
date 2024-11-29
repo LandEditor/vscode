@@ -51,16 +51,22 @@ export class ResultCodeEditorView extends CodeEditorView {
 		configurationService: IConfigurationService,
 	) {
 		super(instantiationService, viewModel, configurationService);
+
 		this.editor.invokeWithinContext((accessor) => {
 			const contextKeyService = accessor.get(IContextKeyService);
 
 			const isMergeResultEditor =
 				ctxIsMergeResultEditor.bindTo(contextKeyService);
+
 			isMergeResultEditor.set(true);
+
 			this._register(toDisposable(() => isMergeResultEditor.reset()));
 		});
+
 		this.htmlElements.gutterDiv.style.width = "5px";
+
 		this.htmlElements.root.classList.add(`result`);
+
 		this._register(
 			autorunWithStore((reader, store) => {
 				/** @description update checkboxes */
@@ -83,6 +89,7 @@ export class ResultCodeEditorView extends CodeEditorView {
 				}
 			}),
 		);
+
 		this._register(
 			autorun((reader) => {
 				/** @description update labels & text model */
@@ -91,11 +98,14 @@ export class ResultCodeEditorView extends CodeEditorView {
 				if (!vm) {
 					return;
 				}
+
 				this.editor.setModel(vm.model.resultTextModel);
+
 				reset(
 					this.htmlElements.title,
 					...renderLabelWithIcons(localize("result", "Result")),
 				);
+
 				reset(
 					this.htmlElements.description,
 					...renderLabelWithIcons(
@@ -111,6 +121,7 @@ export class ResultCodeEditorView extends CodeEditorView {
 		const remainingConflictsActionBar = this._register(
 			new ActionBar(this.htmlElements.detail),
 		);
+
 		this._register(
 			autorun((reader) => {
 				/** @description update remainingConflicts label */
@@ -119,11 +130,13 @@ export class ResultCodeEditorView extends CodeEditorView {
 				if (!vm) {
 					return;
 				}
+
 				const model = vm.model;
 
 				if (!model) {
 					return;
 				}
+
 				const count = model.unhandledConflictsCount.read(reader);
 
 				const text =
@@ -138,7 +151,9 @@ export class ResultCodeEditorView extends CodeEditorView {
 								"{0} Conflicts Remaining ",
 								count,
 							);
+
 				remainingConflictsActionBar.clear();
+
 				remainingConflictsActionBar.push({
 					class: undefined,
 					enabled: count > 0,
@@ -146,6 +161,7 @@ export class ResultCodeEditorView extends CodeEditorView {
 					label: text,
 					run() {
 						vm.model.telemetry.reportConflictCounterClicked();
+
 						vm.goToNextModifiedBaseRange(
 							(m) => !model.isHandled(m).get(),
 						);
@@ -163,14 +179,17 @@ export class ResultCodeEditorView extends CodeEditorView {
 				});
 			}),
 		);
+
 		this._register(
 			applyObservableDecorations(this.editor, this.decorations),
 		);
+
 		this._register(
 			createSelectionsAutorun(this, (baseRange, viewModel) =>
 				viewModel.model.translateBaseRangeToResult(baseRange),
 			),
 		);
+
 		this._register(
 			instantiationService.createInstance(
 				TitleMenu,
@@ -179,12 +198,14 @@ export class ResultCodeEditorView extends CodeEditorView {
 			),
 		);
 	}
+
 	private readonly decorations = derived(this, (reader) => {
 		const viewModel = this.viewModel.read(reader);
 
 		if (!viewModel) {
 			return [];
 		}
+
 		const model = viewModel.model;
 
 		const textModel = model.resultTextModel;
@@ -229,13 +250,17 @@ export class ResultCodeEditorView extends CodeEditorView {
 				if (isHandled) {
 					blockClassNames.push("handled");
 				}
+
 				if (modifiedBaseRange === activeModifiedBaseRange) {
 					blockClassNames.push("focused");
+
 					blockPadding = [0, 2, 0, 2];
 				}
+
 				if (modifiedBaseRange.isConflicting) {
 					blockClassNames.push("conflicting");
 				}
+
 				blockClassNames.push("result");
 
 				if (
@@ -245,10 +270,12 @@ export class ResultCodeEditorView extends CodeEditorView {
 				) {
 					continue;
 				}
+
 				const range = model.getLineRangeInResult(
 					modifiedBaseRange.baseRange,
 					reader,
 				);
+
 				result.push({
 					range: range.toInclusiveRangeOrEmpty(),
 					options: {
@@ -279,6 +306,7 @@ export class ResultCodeEditorView extends CodeEditorView {
 					},
 				});
 			}
+
 			if (!modifiedBaseRange || modifiedBaseRange.isConflicting) {
 				for (const diff of m.rights) {
 					const range = diff.outputRange.toInclusiveRange();
@@ -293,6 +321,7 @@ export class ResultCodeEditorView extends CodeEditorView {
 							},
 						});
 					}
+
 					if (diff.rangeMappings) {
 						for (const d of diff.rangeMappings) {
 							result.push({
@@ -307,6 +336,7 @@ export class ResultCodeEditorView extends CodeEditorView {
 				}
 			}
 		}
+
 		return result;
 	});
 }

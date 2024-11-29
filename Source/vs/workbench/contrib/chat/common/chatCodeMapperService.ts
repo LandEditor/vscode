@@ -24,21 +24,28 @@ export interface ICodeMapperResponse {
 }
 export interface ICodeMapperCodeBlock {
 	readonly code: string;
+
 	readonly resource: URI;
+
 	readonly markdownBeforeBlock?: string;
 }
 export interface ConversationRequest {
 	readonly type: "request";
+
 	readonly message: string;
 }
 export interface ConversationResponse {
 	readonly type: "response";
+
 	readonly message: string;
+
 	readonly result?: IChatAgentResult;
+
 	readonly references?: DocumentContextItem[];
 }
 export interface ICodeMapperRequest {
 	readonly codeBlocks: ICodeMapperCodeBlock[];
+
 	readonly conversation: (ConversationResponse | ConversationRequest)[];
 }
 export interface ICodeMapperResult {
@@ -56,15 +63,18 @@ export const ICodeMapperService =
 
 export interface ICodeMapperService {
 	readonly _serviceBrand: undefined;
+
 	registerCodeMapperProvider(
 		handle: number,
 		provider: ICodeMapperProvider,
 	): IDisposable;
+
 	mapCode(
 		request: ICodeMapperRequest,
 		response: ICodeMapperResponse,
 		token: CancellationToken,
 	): Promise<ICodeMapperResult | undefined>;
+
 	mapCodeFromResponse(
 		responseModel: IChatResponseModel,
 		response: ICodeMapperResponse,
@@ -73,7 +83,9 @@ export interface ICodeMapperService {
 }
 export class CodeMapperService implements ICodeMapperService {
 	_serviceBrand: undefined;
+
 	private readonly providers: ICodeMapperProvider[] = [];
+
 	registerCodeMapperProvider(
 		handle: number,
 		provider: ICodeMapperProvider,
@@ -90,6 +102,7 @@ export class CodeMapperService implements ICodeMapperService {
 			},
 		};
 	}
+
 	async mapCode(
 		request: ICodeMapperRequest,
 		response: ICodeMapperResponse,
@@ -102,8 +115,10 @@ export class CodeMapperService implements ICodeMapperService {
 				return result;
 			}
 		}
+
 		return undefined;
 	}
+
 	async mapCodeFromResponse(
 		responseModel: IChatResponseModel,
 		response: ICodeMapperResponse,
@@ -142,8 +157,11 @@ export class CodeMapperService implements ICodeMapperService {
 								markdownBeforeBlock:
 									markdownBeforeBlock.join(""),
 							});
+
 							currentBlock.length = 0;
+
 							markdownBeforeBlock.length = 0;
+
 							currentBlockUri = undefined;
 						}
 					} else {
@@ -161,6 +179,7 @@ export class CodeMapperService implements ICodeMapperService {
 				currentBlockUri = lineOrUri;
 			}
 		}
+
 		const conversation: (ConversationRequest | ConversationResponse)[] = [];
 
 		for (const request of responseModel.session.getRequests()) {
@@ -169,10 +188,12 @@ export class CodeMapperService implements ICodeMapperService {
 			if (!response || response === responseModel) {
 				break;
 			}
+
 			conversation.push({
 				type: "request",
 				message: request.message.text,
 			});
+
 			conversation.push({
 				type: "response",
 				message: response.response.getMarkdown(),
@@ -182,6 +203,7 @@ export class CodeMapperService implements ICodeMapperService {
 				),
 			});
 		}
+
 		return this.mapCode({ codeBlocks, conversation }, response, token);
 	}
 }
@@ -205,6 +227,7 @@ function iterateLinesOrUris(
 						if (lastIncompleteLine !== undefined) {
 							lines[0] = lastIncompleteLine + lines[0]; // merge the last incomplete line with the first markdown line
 						}
+
 						lastIncompleteLine = isLineIncomplete(
 							lines[lines.length - 1],
 						)
@@ -219,6 +242,7 @@ function iterateLinesOrUris(
 					yield part.uri;
 				}
 			}
+
 			if (lastIncompleteLine !== undefined) {
 				yield lastIncompleteLine;
 			}
@@ -246,8 +270,10 @@ export function getReferencesAsDocumentContext(
 			uri = r.reference;
 		} else if (isLocation(r.reference)) {
 			uri = r.reference.uri;
+
 			range = r.reference.range;
 		}
+
 		if (uri) {
 			const item = map.get(uri);
 
@@ -264,5 +290,6 @@ export function getReferencesAsDocumentContext(
 			}
 		}
 	}
+
 	return [...map.values()];
 }

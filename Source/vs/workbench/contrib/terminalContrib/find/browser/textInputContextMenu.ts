@@ -27,6 +27,7 @@ export function openContextMenu(
 	const standardEvent = new StandardMouseEvent(targetWindow, event);
 	// Actions from workbench/browser/actions/textInputActions
 	const actions: IAction[] = [];
+
 	actions.push(
 		// Undo/Redo
 		new Action(
@@ -80,9 +81,12 @@ export function openContextMenu(
 						const selectionStart = element.selectionStart || 0;
 
 						const selectionEnd = element.selectionEnd || 0;
+
 						element.value = `${element.value.substring(0, selectionStart)}${clipboardText}${element.value.substring(selectionEnd, element.value.length)}`;
+
 						element.selectionStart =
 							selectionStart + clipboardText.length;
+
 						element.selectionEnd = element.selectionStart;
 					}
 				}
@@ -98,6 +102,7 @@ export function openContextMenu(
 			async () => getActiveWindow().document.execCommand("selectAll"),
 		),
 	);
+
 	contextMenuService.showContextMenu({
 		getAnchor: () => standardEvent,
 		getActions: () => actions,

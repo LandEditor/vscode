@@ -13,6 +13,7 @@ export interface IFilter {
 }
 export interface IMatch {
 	start: number;
+
 	end: number;
 }
 // Combined filters
@@ -34,6 +35,7 @@ export function or(...filter: IFilter[]): IFilter {
 				return match;
 			}
 		}
+
 		return null;
 	};
 }
@@ -52,6 +54,7 @@ function _matchesPrefix(
 	if (!wordToMatchAgainst || wordToMatchAgainst.length < word.length) {
 		return null;
 	}
+
 	let matches: boolean;
 
 	if (ignoreCase) {
@@ -59,9 +62,11 @@ function _matchesPrefix(
 	} else {
 		matches = wordToMatchAgainst.indexOf(word) === 0;
 	}
+
 	if (!matches) {
 		return null;
 	}
+
 	return word.length > 0 ? [{ start: 0, end: word.length }] : [];
 }
 // Contiguous Substring
@@ -74,6 +79,7 @@ export function matchesContiguousSubString(
 	if (index === -1) {
 		return null;
 	}
+
 	return [{ start: index, end: index + word.length }];
 }
 // Substring
@@ -112,8 +118,10 @@ function _matchesSubString(
 			) {
 				return join({ start: j, end: j + 1 }, result);
 			}
+
 			return null;
 		}
+
 		return _matchesSubString(word, wordToMatchAgainst, i, j + 1);
 	}
 }
@@ -175,6 +183,7 @@ function getAlternateCodes(code: number): ArrayLike<number> | undefined {
 	if (codes) {
 		result = codes;
 	}
+
 	alternateCharsCache.set(code, result);
 
 	return result;
@@ -190,6 +199,7 @@ function join(head: IMatch, tail: IMatch[]): IMatch[] {
 	} else {
 		tail.unshift(head);
 	}
+
 	return tail;
 }
 function nextAnchor(camelCaseWord: string, start: number): number {
@@ -204,6 +214,7 @@ function nextAnchor(camelCaseWord: string, start: number): number {
 			return i;
 		}
 	}
+
 	return camelCaseWord.length;
 }
 function _matchesCamelCase(
@@ -222,6 +233,7 @@ function _matchesCamelCase(
 		let result: IMatch[] | null = null;
 
 		let nextUpperIndex = j + 1;
+
 		result = _matchesCamelCase(word, camelCaseWord, i + 1, j + 1);
 
 		while (
@@ -235,15 +247,20 @@ function _matchesCamelCase(
 				i + 1,
 				nextUpperIndex,
 			);
+
 			nextUpperIndex++;
 		}
+
 		return result === null ? null : join({ start: j, end: j + 1 }, result);
 	}
 }
 interface ICamelCaseAnalysis {
 	upperPercent: number;
+
 	lowerPercent: number;
+
 	alphaPercent: number;
+
 	numericPercent: number;
 }
 // Heuristic to avoid computing camel case matcher for words that don't
@@ -261,16 +278,20 @@ function analyzeCamelCaseWord(word: string): ICamelCaseAnalysis {
 		if (isUpper(code)) {
 			upper++;
 		}
+
 		if (isLower(code)) {
 			lower++;
 		}
+
 		if (isAlphanumeric(code)) {
 			alpha++;
 		}
+
 		if (isNumber(code)) {
 			numeric++;
 		}
 	}
+
 	const upperPercent = upper / word.length;
 
 	const lowerPercent = lower / word.length;
@@ -311,13 +332,16 @@ function isCamelCasePattern(word: string): boolean {
 		if (isUpper(code)) {
 			upper++;
 		}
+
 		if (isLower(code)) {
 			lower++;
 		}
+
 		if (isWhitespace(code)) {
 			whitespace++;
 		}
 	}
+
 	if ((upper === 0 || lower === 0) && whitespace === 0) {
 		return word.length <= 30;
 	} else {
@@ -331,11 +355,13 @@ export function matchesCamelCase(
 	if (!camelCaseWord) {
 		return null;
 	}
+
 	camelCaseWord = camelCaseWord.trim();
 
 	if (camelCaseWord.length === 0) {
 		return null;
 	}
+
 	if (!isCamelCasePattern(word)) {
 		return null;
 	}
@@ -343,17 +369,21 @@ export function matchesCamelCase(
 	if (camelCaseWord.length > 60) {
 		camelCaseWord = camelCaseWord.substring(0, 60);
 	}
+
 	const analysis = analyzeCamelCaseWord(camelCaseWord);
 
 	if (!isCamelCaseWord(analysis)) {
 		if (!isUpperCaseWord(analysis)) {
 			return null;
 		}
+
 		camelCaseWord = camelCaseWord.toLowerCase();
 	}
+
 	let result: IMatch[] | null = null;
 
 	let i = 0;
+
 	word = word.toLowerCase();
 
 	while (
@@ -362,6 +392,7 @@ export function matchesCamelCase(
 	) {
 		i = nextAnchor(camelCaseWord, i + 1);
 	}
+
 	return result;
 }
 // Matches beginning of words supporting non-ASCII languages
@@ -376,10 +407,13 @@ export function matchesWords(
 	if (!target || target.length === 0) {
 		return null;
 	}
+
 	let result: IMatch[] | null = null;
 
 	let targetIndex = 0;
+
 	word = word.toLowerCase();
+
 	target = target.toLowerCase();
 
 	while (targetIndex < target.length) {
@@ -388,8 +422,10 @@ export function matchesWords(
 		if (result !== null) {
 			break;
 		}
+
 		targetIndex = nextWord(target, targetIndex + 1);
 	}
+
 	return result;
 }
 function _matchesWords(
@@ -417,6 +453,7 @@ function _matchesWords(
 		if (!altChars) {
 			return null;
 		}
+
 		for (let k = 0; k < altChars.length; k++) {
 			if (
 				!charactersMatch(
@@ -427,11 +464,14 @@ function _matchesWords(
 				return null;
 			}
 		}
+
 		targetIndexOffset += altChars.length - 1;
 	}
+
 	let result: IMatch[] | null = null;
 
 	let nextWordIndex = targetIndex + targetIndexOffset + 1;
+
 	result = _matchesWords(
 		word,
 		target,
@@ -452,9 +492,11 @@ function _matchesWords(
 				nextWordIndex,
 				contiguous,
 			);
+
 			nextWordIndex++;
 		}
 	}
+
 	if (!result) {
 		return null;
 	}
@@ -467,12 +509,14 @@ function _matchesWords(
 		if (!altChars) {
 			return result;
 		}
+
 		for (let k = 0; k < altChars.length; k++) {
 			if (altChars[k] !== target.charCodeAt(targetIndex + k)) {
 				return result;
 			}
 		}
 	}
+
 	return join(
 		{ start: targetIndex, end: targetIndex + targetIndexOffset + 1 },
 		result,
@@ -487,6 +531,7 @@ function nextWord(word: string, start: number): number {
 			return i;
 		}
 	}
+
 	return word.length;
 }
 // Fuzzy
@@ -516,6 +561,7 @@ export function matchesFuzzy(
 
 	if (!regexp) {
 		regexp = new RegExp(strings.convertSimple2RegExpPattern(word), "i");
+
 		fuzzyRegExpCache.set(word, regexp);
 	}
 	// RegExp Filter
@@ -571,6 +617,7 @@ export function anyScore(
 			return result;
 		}
 	}
+
 	return [0, wordPos];
 }
 //#region --- fuzzyScore ---
@@ -578,6 +625,7 @@ export function createMatches(score: undefined | FuzzyScore): IMatch[] {
 	if (typeof score === "undefined") {
 		return [];
 	}
+
 	const res: IMatch[] = [];
 
 	const wordPos = score[1];
@@ -593,6 +641,7 @@ export function createMatches(score: undefined | FuzzyScore): IMatch[] {
 			res.push({ start: pos, end: pos + 1 });
 		}
 	}
+
 	return res;
 }
 
@@ -605,9 +654,11 @@ function initTable() {
 	for (let i = 0; i <= _maxLen; i++) {
 		row[i] = 0;
 	}
+
 	for (let i = 0; i <= _maxLen; i++) {
 		table.push(row.slice(0));
 	}
+
 	return table;
 }
 function initArr(maxLen: number) {
@@ -616,6 +667,7 @@ function initArr(maxLen: number) {
 	for (let i = 0; i <= maxLen; i++) {
 		row[i] = 0;
 	}
+
 	return row;
 }
 
@@ -638,8 +690,10 @@ function printTable(
 		while (s.length < n) {
 			s = pad + s;
 		}
+
 		return s;
 	}
+
 	let ret = ` |   |${word
 		.split("")
 		.map((c) => pad(c, 3))
@@ -651,12 +705,14 @@ function printTable(
 		} else {
 			ret += `${pattern[i - 1]}|`;
 		}
+
 		ret +=
 			table[i]
 				.slice(0, wordLen + 1)
 				.map((n) => pad(n.toString(), 3))
 				.join("|") + "\n";
 	}
+
 	return ret;
 }
 function printTables(
@@ -666,17 +722,22 @@ function printTables(
 	wordStart: number,
 ): void {
 	pattern = pattern.substr(patternStart);
+
 	word = word.substr(wordStart);
+
 	console.log(printTable(_table, pattern, pattern.length, word, word.length));
+
 	console.log(
 		printTable(_arrows, pattern, pattern.length, word, word.length),
 	);
+
 	console.log(printTable(_diag, pattern, pattern.length, word, word.length));
 }
 function isSeparatorAtPos(value: string, index: number): boolean {
 	if (index < 0 || index >= value.length) {
 		return false;
 	}
+
 	const code = value.codePointAt(index);
 
 	switch (code) {
@@ -707,6 +768,7 @@ function isSeparatorAtPos(value: string, index: number): boolean {
 			if (strings.isEmojiImprecise(code)) {
 				return true;
 			}
+
 			return false;
 	}
 }
@@ -714,6 +776,7 @@ function isWhitespaceAtPos(value: string, index: number): boolean {
 	if (index < 0 || index >= value.length) {
 		return false;
 	}
+
 	const code = value.charCodeAt(index);
 
 	switch (code) {
@@ -743,10 +806,13 @@ export function isPatternInWord(
 				// Remember the min word position for each pattern position
 				_minWordMatchPos[patternPos] = wordPos;
 			}
+
 			patternPos += 1;
 		}
+
 		wordPos += 1;
 	}
+
 	return patternPos === patternLen; // pattern must be exhausted
 }
 
@@ -861,7 +927,9 @@ export function fuzzyScore(
 	// There will be a match, fill in tables
 	for (
 		row = 1, patternPos = patternStart;
+
 		patternPos < patternLen;
+
 		row++, patternPos++
 	) {
 		// Reduce search space to possible matching word positions and to possible access from next row
@@ -876,7 +944,9 @@ export function fuzzyScore(
 
 		for (
 			column = minWordMatchPos - wordStart + 1, wordPos = minWordMatchPos;
+
 			wordPos < nextMaxWordMatchPos;
+
 			column++, wordPos++
 		) {
 			let score = Number.MIN_SAFE_INTEGER;
@@ -898,12 +968,15 @@ export function fuzzyScore(
 					hasStrongFirstMatch,
 				);
 			}
+
 			let diagScore = 0;
 
 			if (score !== Number.MAX_SAFE_INTEGER) {
 				canComeDiag = true;
+
 				diagScore = score + _table[row - 1][column - 1];
 			}
+
 			const canComeLeft = wordPos > minWordMatchPos;
 
 			const leftScore = canComeLeft
@@ -924,7 +997,9 @@ export function fuzzyScore(
 			) {
 				// always prefer choosing left left to jump over a diagonal because that means a match is earlier in the word
 				_table[row][column] = leftLeftScore;
+
 				_arrows[row][column] = Arrow.LeftLeft;
+
 				_diag[row][column] = 0;
 			} else if (
 				canComeLeft &&
@@ -932,24 +1007,32 @@ export function fuzzyScore(
 			) {
 				// always prefer choosing left since that means a match is earlier in the word
 				_table[row][column] = leftScore;
+
 				_arrows[row][column] = Arrow.Left;
+
 				_diag[row][column] = 0;
 			} else if (canComeDiag) {
 				_table[row][column] = diagScore;
+
 				_arrows[row][column] = Arrow.Diag;
+
 				_diag[row][column] = _diag[row - 1][column - 1] + 1;
 			} else {
 				throw new Error(`not possible`);
 			}
 		}
 	}
+
 	if (_debug) {
 		printTables(pattern, patternStart, word, wordStart);
 	}
+
 	if (!hasStrongFirstMatch[0] && !options.firstMatchCanBeWeak) {
 		return undefined;
 	}
+
 	row--;
+
 	column--;
 
 	const result: FuzzyScore = [_table[row][column], wordStart];
@@ -984,20 +1067,26 @@ export function fuzzyScore(
 		) {
 			diagColumn = column;
 		}
+
 		if (diagColumn === column) {
 			// this is a contiguous match
 			backwardsDiagLength++;
 		} else {
 			backwardsDiagLength = 1;
 		}
+
 		if (!maxMatchColumn) {
 			// remember the last matched column
 			maxMatchColumn = diagColumn;
 		}
+
 		row--;
+
 		column = diagColumn - 1;
+
 		result.push(column);
 	}
+
 	if (wordLen - wordStart === patternLen && options.boostFullMatch) {
 		// the word matches the pattern with all characters!
 		// giving the score a total match boost (to come up ahead other words)
@@ -1005,6 +1094,7 @@ export function fuzzyScore(
 	}
 	// Add 1 penalty for each skipped character in the word
 	const skippedCharsCount = maxMatchColumn - patternLen;
+
 	result[0] -= skippedCharsCount;
 
 	return result;
@@ -1024,8 +1114,10 @@ function _fillInMaxWordMatchPos(
 	while (patternPos >= patternStart && wordPos >= wordStart) {
 		if (patternLow[patternPos] === wordLow[wordPos]) {
 			_maxWordMatchPos[patternPos] = wordPos;
+
 			patternPos--;
 		}
+
 		wordPos--;
 	}
 }
@@ -1045,6 +1137,7 @@ function _doScore(
 	if (patternLow[patternPos] !== wordLow[wordPos]) {
 		return Number.MIN_SAFE_INTEGER;
 	}
+
 	let score = 1;
 
 	let isGapLocation = false;
@@ -1060,6 +1153,7 @@ function _doScore(
 		// hitting upper-case: `foo <-> forOthers`
 		//                              ^^ ^
 		score = pattern[patternPos] === word[wordPos] ? 7 : 5;
+
 		isGapLocation = true;
 	} else if (
 		isSeparatorAtPos(wordLow, wordPos) &&
@@ -1075,11 +1169,14 @@ function _doScore(
 		// post separator: `foo <-> bar_foo`
 		//                              ^^^
 		score = 5;
+
 		isGapLocation = true;
 	}
+
 	if (score > 1 && patternPos === patternStart) {
 		outFirstMatchStrong[0] = true;
 	}
+
 	if (!isGapLocation) {
 		isGapLocation =
 			isUpperCaseAtPos(wordPos, word, wordLow) ||
@@ -1103,11 +1200,13 @@ function _doScore(
 			score += isGapLocation ? 0 : 1;
 		}
 	}
+
 	if (wordPos + 1 === wordLen) {
 		// we always penalize gaps, but this gives unfair advantages to a match that would match the last character in the word
 		// so pretend there is a gap after the last character in the word to normalize things
 		score -= isGapLocation ? 3 : 5;
 	}
+
 	return score;
 }
 //#endregion
@@ -1178,6 +1277,7 @@ function fuzzyScoreWithPermutations(
 		// a better alignment, e.g. `cno` -> `^co^ns^ole` or `^c^o^nsole`.
 		return top;
 	}
+
 	if (pattern.length >= 3) {
 		// When the pattern is long enough then try a few (max 7)
 		// permutations of the pattern to find a better match. The
@@ -1187,7 +1287,9 @@ function fuzzyScoreWithPermutations(
 
 		for (
 			let movingPatternPos = patternPos + 1;
+
 			movingPatternPos < tries;
+
 			movingPatternPos++
 		) {
 			const newPattern = nextTypoPermutation(pattern, movingPatternPos);
@@ -1212,6 +1314,7 @@ function fuzzyScoreWithPermutations(
 			}
 		}
 	}
+
 	return top;
 }
 function nextTypoPermutation(
@@ -1221,6 +1324,7 @@ function nextTypoPermutation(
 	if (patternPos + 1 >= pattern.length) {
 		return undefined;
 	}
+
 	const swap1 = pattern[patternPos];
 
 	const swap2 = pattern[patternPos + 1];
@@ -1228,6 +1332,7 @@ function nextTypoPermutation(
 	if (swap1 === swap2) {
 		return undefined;
 	}
+
 	return (
 		pattern.slice(0, patternPos) +
 		swap2 +

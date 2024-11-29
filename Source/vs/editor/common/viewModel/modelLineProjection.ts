@@ -79,6 +79,7 @@ export interface IModelLineProjection {
 		deltaLineNumber: number,
 		inputColumn: number,
 	): number;
+
 	normalizePosition(
 		outputLineIndex: number,
 		outputPosition: Position,
@@ -114,6 +115,7 @@ export function createModelLineProjection(
 		if (isVisible) {
 			return IdentityModelLineProjection.INSTANCE;
 		}
+
 		return HiddenModelLineProjection.INSTANCE;
 	} else {
 		return new ModelLineProjection(lineBreakData, isVisible);
@@ -126,29 +128,37 @@ export function createModelLineProjection(
  */
 class ModelLineProjection implements IModelLineProjection {
 	private readonly _projectionData: ModelLineProjectionData;
+
 	private _isVisible: boolean;
 
 	constructor(lineBreakData: ModelLineProjectionData, isVisible: boolean) {
 		this._projectionData = lineBreakData;
+
 		this._isVisible = isVisible;
 	}
+
 	public isVisible(): boolean {
 		return this._isVisible;
 	}
+
 	public setVisible(isVisible: boolean): IModelLineProjection {
 		this._isVisible = isVisible;
 
 		return this;
 	}
+
 	public getProjectionData(): ModelLineProjectionData | null {
 		return this._projectionData;
 	}
+
 	public getViewLineCount(): number {
 		if (!this._isVisible) {
 			return 0;
 		}
+
 		return this._projectionData.getOutputLineCount();
 	}
+
 	public getViewLineContent(
 		model: ISimpleModel,
 		modelLineNumber: number,
@@ -182,6 +192,7 @@ class ModelLineProjection implements IModelLineProjection {
 				model.getLineContent(modelLineNumber),
 				injectedTexts,
 			);
+
 			r = lineWithInjections.substring(
 				startOffsetInInputWithInjections,
 				endOffsetInInputWithInjections,
@@ -194,11 +205,14 @@ class ModelLineProjection implements IModelLineProjection {
 				endColumn: endOffsetInInputWithInjections + 1,
 			});
 		}
+
 		if (outputLineIndex > 0) {
 			r = spaces(this._projectionData.wrappedTextIndentLength) + r;
 		}
+
 		return r;
 	}
+
 	public getViewLineLength(
 		model: ISimpleModel,
 		modelLineNumber: number,
@@ -208,6 +222,7 @@ class ModelLineProjection implements IModelLineProjection {
 
 		return this._projectionData.getLineLength(outputLineIndex);
 	}
+
 	public getViewLineMinColumn(
 		_model: ITextModel,
 		_modelLineNumber: number,
@@ -217,6 +232,7 @@ class ModelLineProjection implements IModelLineProjection {
 
 		return this._projectionData.getMinOutputOffset(outputLineIndex) + 1;
 	}
+
 	public getViewLineMaxColumn(
 		model: ISimpleModel,
 		modelLineNumber: number,
@@ -235,6 +251,7 @@ class ModelLineProjection implements IModelLineProjection {
 		outputLineIndex: number,
 	): ViewLineData {
 		const arr = new Array<ViewLineData>();
+
 		this.getViewLinesData(
 			model,
 			modelLineNumber,
@@ -247,6 +264,7 @@ class ModelLineProjection implements IModelLineProjection {
 
 		return arr[0];
 	}
+
 	public getViewLinesData(
 		model: ISimpleModel,
 		modelLineNumber: number,
@@ -277,11 +295,14 @@ class ModelLineProjection implements IModelLineProjection {
 
 			for (
 				let outputLineIndex = 0;
+
 				outputLineIndex < lineBreakData.getOutputLineCount();
+
 				outputLineIndex++
 			) {
 				const inlineDecorations =
 					new Array<SingleLineInlineDecoration>();
+
 				inlineDecorationsPerOutputLine[outputLineIndex] =
 					inlineDecorations;
 
@@ -311,6 +332,7 @@ class ModelLineProjection implements IModelLineProjection {
 						// Injected text only starts in later wrapped lines.
 						break;
 					}
+
 					if (
 						lineStartOffsetInInputWithInjections <
 						injectedTextEndOffsetInInputWithInjections
@@ -354,11 +376,13 @@ class ModelLineProjection implements IModelLineProjection {
 							}
 						}
 					}
+
 					if (
 						injectedTextEndOffsetInInputWithInjections <=
 						lineEndOffsetInInputWithInjections
 					) {
 						totalInjectedTextLengthBefore += length;
+
 						currentInjectedOffset++;
 					} else {
 						// injected text breaks into next line, process it again
@@ -367,12 +391,15 @@ class ModelLineProjection implements IModelLineProjection {
 				}
 			}
 		}
+
 		let lineWithInjections: LineTokens;
 
 		if (injectionOffsets) {
 			const tokensToInsert: {
 				offset: number;
+
 				text: string;
+
 				tokenMetadata: number;
 			}[] = [];
 
@@ -399,6 +426,7 @@ class ModelLineProjection implements IModelLineProjection {
 					});
 				}
 			}
+
 			lineWithInjections = model.tokenization
 				.getLineTokens(modelLineNumber)
 				.withInserted(tokensToInsert);
@@ -406,9 +434,12 @@ class ModelLineProjection implements IModelLineProjection {
 			lineWithInjections =
 				model.tokenization.getLineTokens(modelLineNumber);
 		}
+
 		for (
 			let outputLineIndex = outputLineIdx;
+
 			outputLineIndex < outputLineIdx + lineCount;
+
 			outputLineIndex++
 		) {
 			const globalIndex =
@@ -419,6 +450,7 @@ class ModelLineProjection implements IModelLineProjection {
 
 				continue;
 			}
+
 			result[globalIndex] = this._getViewLineData(
 				lineWithInjections,
 				inlineDecorationsPerOutputLine
@@ -428,6 +460,7 @@ class ModelLineProjection implements IModelLineProjection {
 			);
 		}
 	}
+
 	private _getViewLineData(
 		lineWithInjections: LineTokens,
 		inlineDecorations: null | SingleLineInlineDecoration[],
@@ -460,6 +493,7 @@ class ModelLineProjection implements IModelLineProjection {
 			lineContent =
 				spaces(lineBreakData.wrappedTextIndentLength) + lineContent;
 		}
+
 		const minColumn =
 			this._projectionData.getMinOutputOffset(outputLineIndex) + 1;
 
@@ -483,6 +517,7 @@ class ModelLineProjection implements IModelLineProjection {
 			inlineDecorations,
 		);
 	}
+
 	public getModelColumnOfViewPosition(
 		outputLineIndex: number,
 		outputColumn: number,
@@ -496,6 +531,7 @@ class ModelLineProjection implements IModelLineProjection {
 			) + 1
 		);
 	}
+
 	public getViewPositionOfModelPosition(
 		deltaLineNumber: number,
 		inputColumn: number,
@@ -510,6 +546,7 @@ class ModelLineProjection implements IModelLineProjection {
 
 		return r.toPosition(deltaLineNumber);
 	}
+
 	public getViewLineNumberOfModelPosition(
 		deltaLineNumber: number,
 		inputColumn: number,
@@ -522,6 +559,7 @@ class ModelLineProjection implements IModelLineProjection {
 
 		return deltaLineNumber + r.outputLineIndex;
 	}
+
 	public normalizePosition(
 		outputLineIndex: number,
 		outputPosition: Position,
@@ -540,6 +578,7 @@ class ModelLineProjection implements IModelLineProjection {
 
 		return result;
 	}
+
 	public getInjectedTextAt(
 		outputLineIndex: number,
 		outputColumn: number,
@@ -549,6 +588,7 @@ class ModelLineProjection implements IModelLineProjection {
 			outputColumn - 1,
 		);
 	}
+
 	private _assertVisible() {
 		if (!this._isVisible) {
 			throw new Error("Not supported");
@@ -560,22 +600,29 @@ class ModelLineProjection implements IModelLineProjection {
  */
 class IdentityModelLineProjection implements IModelLineProjection {
 	public static readonly INSTANCE = new IdentityModelLineProjection();
+
 	private constructor() {}
+
 	public isVisible(): boolean {
 		return true;
 	}
+
 	public setVisible(isVisible: boolean): IModelLineProjection {
 		if (isVisible) {
 			return this;
 		}
+
 		return HiddenModelLineProjection.INSTANCE;
 	}
+
 	public getProjectionData(): ModelLineProjectionData | null {
 		return null;
 	}
+
 	public getViewLineCount(): number {
 		return 1;
 	}
+
 	public getViewLineContent(
 		model: ISimpleModel,
 		modelLineNumber: number,
@@ -583,6 +630,7 @@ class IdentityModelLineProjection implements IModelLineProjection {
 	): string {
 		return model.getLineContent(modelLineNumber);
 	}
+
 	public getViewLineLength(
 		model: ISimpleModel,
 		modelLineNumber: number,
@@ -590,6 +638,7 @@ class IdentityModelLineProjection implements IModelLineProjection {
 	): number {
 		return model.getLineLength(modelLineNumber);
 	}
+
 	public getViewLineMinColumn(
 		model: ISimpleModel,
 		modelLineNumber: number,
@@ -597,6 +646,7 @@ class IdentityModelLineProjection implements IModelLineProjection {
 	): number {
 		return model.getLineMinColumn(modelLineNumber);
 	}
+
 	public getViewLineMaxColumn(
 		model: ISimpleModel,
 		modelLineNumber: number,
@@ -604,6 +654,7 @@ class IdentityModelLineProjection implements IModelLineProjection {
 	): number {
 		return model.getLineMaxColumn(modelLineNumber);
 	}
+
 	public getViewLineData(
 		model: ISimpleModel,
 		modelLineNumber: number,
@@ -623,6 +674,7 @@ class IdentityModelLineProjection implements IModelLineProjection {
 			null,
 		);
 	}
+
 	public getViewLinesData(
 		model: ISimpleModel,
 		modelLineNumber: number,
@@ -637,30 +689,35 @@ class IdentityModelLineProjection implements IModelLineProjection {
 
 			return;
 		}
+
 		result[globalStartIndex] = this.getViewLineData(
 			model,
 			modelLineNumber,
 			0,
 		);
 	}
+
 	public getModelColumnOfViewPosition(
 		_outputLineIndex: number,
 		outputColumn: number,
 	): number {
 		return outputColumn;
 	}
+
 	public getViewPositionOfModelPosition(
 		deltaLineNumber: number,
 		inputColumn: number,
 	): Position {
 		return new Position(deltaLineNumber, inputColumn);
 	}
+
 	public getViewLineNumberOfModelPosition(
 		deltaLineNumber: number,
 		_inputColumn: number,
 	): number {
 		return deltaLineNumber;
 	}
+
 	public normalizePosition(
 		outputLineIndex: number,
 		outputPosition: Position,
@@ -668,6 +725,7 @@ class IdentityModelLineProjection implements IModelLineProjection {
 	): Position {
 		return outputPosition;
 	}
+
 	public getInjectedTextAt(
 		_outputLineIndex: number,
 		_outputColumn: number,
@@ -680,22 +738,29 @@ class IdentityModelLineProjection implements IModelLineProjection {
  */
 class HiddenModelLineProjection implements IModelLineProjection {
 	public static readonly INSTANCE = new HiddenModelLineProjection();
+
 	private constructor() {}
+
 	public isVisible(): boolean {
 		return false;
 	}
+
 	public setVisible(isVisible: boolean): IModelLineProjection {
 		if (!isVisible) {
 			return this;
 		}
+
 		return IdentityModelLineProjection.INSTANCE;
 	}
+
 	public getProjectionData(): ModelLineProjectionData | null {
 		return null;
 	}
+
 	public getViewLineCount(): number {
 		return 0;
 	}
+
 	public getViewLineContent(
 		_model: ISimpleModel,
 		_modelLineNumber: number,
@@ -703,6 +768,7 @@ class HiddenModelLineProjection implements IModelLineProjection {
 	): string {
 		throw new Error("Not supported");
 	}
+
 	public getViewLineLength(
 		_model: ISimpleModel,
 		_modelLineNumber: number,
@@ -710,6 +776,7 @@ class HiddenModelLineProjection implements IModelLineProjection {
 	): number {
 		throw new Error("Not supported");
 	}
+
 	public getViewLineMinColumn(
 		_model: ISimpleModel,
 		_modelLineNumber: number,
@@ -717,6 +784,7 @@ class HiddenModelLineProjection implements IModelLineProjection {
 	): number {
 		throw new Error("Not supported");
 	}
+
 	public getViewLineMaxColumn(
 		_model: ISimpleModel,
 		_modelLineNumber: number,
@@ -724,6 +792,7 @@ class HiddenModelLineProjection implements IModelLineProjection {
 	): number {
 		throw new Error("Not supported");
 	}
+
 	public getViewLineData(
 		_model: ISimpleModel,
 		_modelLineNumber: number,
@@ -731,6 +800,7 @@ class HiddenModelLineProjection implements IModelLineProjection {
 	): ViewLineData {
 		throw new Error("Not supported");
 	}
+
 	public getViewLinesData(
 		_model: ISimpleModel,
 		_modelLineNumber: number,
@@ -742,24 +812,28 @@ class HiddenModelLineProjection implements IModelLineProjection {
 	): void {
 		throw new Error("Not supported");
 	}
+
 	public getModelColumnOfViewPosition(
 		_outputLineIndex: number,
 		_outputColumn: number,
 	): number {
 		throw new Error("Not supported");
 	}
+
 	public getViewPositionOfModelPosition(
 		_deltaLineNumber: number,
 		_inputColumn: number,
 	): Position {
 		throw new Error("Not supported");
 	}
+
 	public getViewLineNumberOfModelPosition(
 		_deltaLineNumber: number,
 		_inputColumn: number,
 	): number {
 		throw new Error("Not supported");
 	}
+
 	public normalizePosition(
 		outputLineIndex: number,
 		outputPosition: Position,
@@ -767,6 +841,7 @@ class HiddenModelLineProjection implements IModelLineProjection {
 	): Position {
 		throw new Error("Not supported");
 	}
+
 	public getInjectedTextAt(
 		_outputLineIndex: number,
 		_outputColumn: number,
@@ -782,6 +857,7 @@ function spaces(count: number): string {
 			_spaces[i] = _makeSpaces(i);
 		}
 	}
+
 	return _spaces[count];
 }
 function _makeSpaces(count: number): string {

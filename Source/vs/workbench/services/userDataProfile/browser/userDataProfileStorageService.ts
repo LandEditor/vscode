@@ -32,6 +32,7 @@ export class UserDataProfileStorageService
 	private readonly _onDidChange = this._register(
 		new Emitter<IProfileStorageChanges>(),
 	);
+
 	readonly onDidChange: Event<IProfileStorageChanges> =
 		this._onDidChange.event;
 
@@ -46,6 +47,7 @@ export class UserDataProfileStorageService
 		super(true, storageService);
 
 		const disposables = this._register(new DisposableStore());
+
 		this._register(
 			Event.filter(
 				storageService.onDidChangeTarget,
@@ -53,6 +55,7 @@ export class UserDataProfileStorageService
 				disposables,
 			)(() => this.onDidChangeStorageTargetInCurrentProfile()),
 		);
+
 		this._register(
 			storageService.onDidChangeValue(
 				StorageScope.PROFILE,
@@ -61,6 +64,7 @@ export class UserDataProfileStorageService
 			)((e) => this.onDidChangeStorageValueInCurrentProfile(e)),
 		);
 	}
+
 	private onDidChangeStorageTargetInCurrentProfile(): void {
 		// Not broadcasting changes to other windows/tabs as it is not required in web.
 		// Revisit if needed in future.
@@ -69,6 +73,7 @@ export class UserDataProfileStorageService
 			valueChanges: [],
 		});
 	}
+
 	private onDidChangeStorageValueInCurrentProfile(
 		e: IProfileStorageValueChangeEvent,
 	): void {
@@ -84,6 +89,7 @@ export class UserDataProfileStorageService
 			],
 		});
 	}
+
 	protected createStorageDatabase(
 		profile: IUserDataProfile,
 	): Promise<IStorageDatabase> {

@@ -19,9 +19,11 @@ export class ExtensionRecommendationNotificationServiceChannelClient
 	declare readonly _serviceBrand: undefined;
 
 	constructor(private readonly channel: IChannel) {}
+
 	get ignoredRecommendations(): string[] {
 		throw new Error("not supported");
 	}
+
 	promptImportantExtensionsInstallNotification(
 		extensionRecommendations: IExtensionRecommendations,
 	): Promise<RecommendationsNotificationResult> {
@@ -30,9 +32,11 @@ export class ExtensionRecommendationNotificationServiceChannelClient
 			[extensionRecommendations],
 		);
 	}
+
 	promptWorkspaceRecommendations(recommendations: string[]): Promise<void> {
 		throw new Error("not supported");
 	}
+
 	hasToIgnoreRecommendationNotifications(): boolean {
 		throw new Error("not supported");
 	}
@@ -41,9 +45,11 @@ export class ExtensionRecommendationNotificationServiceChannel
 	implements IServerChannel
 {
 	constructor(private service: IExtensionRecommendationNotificationService) {}
+
 	listen(_: unknown, event: string): Event<any> {
 		throw new Error(`Event not found: ${event}`);
 	}
+
 	call(_: unknown, command: string, args?: any): Promise<any> {
 		switch (command) {
 			case "promptImportantExtensionsInstallNotification":
@@ -51,6 +57,7 @@ export class ExtensionRecommendationNotificationServiceChannel
 					args[0],
 				);
 		}
+
 		throw new Error(`Call not found: ${command}`);
 	}
 }

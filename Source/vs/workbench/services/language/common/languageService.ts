@@ -50,15 +50,24 @@ import {
 
 export interface IRawLanguageExtensionPoint {
 	id: string;
+
 	extensions: string[];
+
 	filenames: string[];
+
 	filenamePatterns: string[];
+
 	firstLine: string;
+
 	aliases: string[];
+
 	mimetypes: string[];
+
 	configuration: string;
+
 	icon: {
 		light: string;
+
 		dark: string;
 	};
 }
@@ -199,9 +208,11 @@ class LanguageTableRenderer
 	implements IExtensionFeatureTableRenderer
 {
 	readonly type = "table";
+
 	shouldRender(manifest: IExtensionManifest): boolean {
 		return !!manifest.contributes?.languages;
 	}
+
 	render(manifest: IExtensionManifest): IRenderedData<ITableData> {
 		const contributes = manifest.contributes;
 
@@ -209,9 +220,13 @@ class LanguageTableRenderer
 
 		const languages: {
 			id: string;
+
 			name: string;
+
 			extensions: string[];
+
 			hasGrammar: boolean;
+
 			hasSnippets: boolean;
 		}[] = [];
 
@@ -226,14 +241,17 @@ class LanguageTableRenderer
 				});
 			}
 		}
+
 		const byId = index(languages, (l) => l.id);
 
 		const grammars = contributes?.grammars || [];
+
 		grammars.forEach((grammar) => {
 			if (!isString(grammar.language)) {
 				// ignore the grammars that are only used as includes in other grammars
 				return;
 			}
+
 			let language = byId[grammar.language];
 
 			if (language) {
@@ -246,17 +264,21 @@ class LanguageTableRenderer
 					hasGrammar: true,
 					hasSnippets: false,
 				};
+
 				byId[language.id] = language;
+
 				languages.push(language);
 			}
 		});
 
 		const snippets = contributes?.snippets || [];
+
 		snippets.forEach((snippet) => {
 			if (!isString(snippet.language)) {
 				// ignore invalid snippets
 				return;
 			}
+
 			let language = byId[snippet.language];
 
 			if (language) {
@@ -269,7 +291,9 @@ class LanguageTableRenderer
 					hasGrammar: false,
 					hasSnippets: true,
 				};
+
 				byId[language.id] = language;
+
 				languages.push(language);
 			}
 		});
@@ -277,6 +301,7 @@ class LanguageTableRenderer
 		if (!languages.length) {
 			return { data: { headers: [], rows: [] }, dispose: () => {} };
 		}
+
 		const headers = [
 			localize("language id", "ID"),
 			localize("language name", "Name"),
@@ -321,6 +346,7 @@ Registry.as<IExtensionFeaturesRegistry>(
 
 export class WorkbenchLanguageService extends LanguageService {
 	private _configurationService: IConfigurationService;
+
 	private _extensionService: IExtensionService;
 
 	constructor(
@@ -338,8 +364,11 @@ export class WorkbenchLanguageService extends LanguageService {
 				environmentService.isExtensionDevelopment ||
 				!environmentService.isBuilt,
 		);
+
 		this._configurationService = configurationService;
+
 		this._extensionService = extensionService;
+
 		languagesExtPoint.setHandler(
 			(
 				extensions: readonly IExtensionPointUser<
@@ -362,9 +391,12 @@ export class WorkbenchLanguageService extends LanguageService {
 
 						continue;
 					}
+
 					for (
 						let j = 0, lenJ = extension.value.length;
+
 						j < lenJ;
+
 						j++
 					) {
 						const ext = extension.value[j];
@@ -383,6 +415,7 @@ export class WorkbenchLanguageService extends LanguageService {
 									ext.configuration,
 								);
 							}
+
 							allValidLanguages.push({
 								id: ext.id,
 								extensions: ext.extensions,
@@ -406,10 +439,13 @@ export class WorkbenchLanguageService extends LanguageService {
 						}
 					}
 				}
+
 				this._registry.setDynamicLanguages(allValidLanguages);
 			},
 		);
+
 		this.updateMime();
+
 		this._register(
 			this._configurationService.onDidChangeConfiguration((e) => {
 				if (e.affectsConfiguration(FILES_ASSOCIATIONS_CONFIG)) {
@@ -417,19 +453,23 @@ export class WorkbenchLanguageService extends LanguageService {
 				}
 			}),
 		);
+
 		this._extensionService.whenInstalledExtensionsRegistered().then(() => {
 			this.updateMime();
 		});
+
 		this._register(
 			this.onDidRequestRichLanguageFeatures((languageId) => {
 				// extension activation
 				this._extensionService.activateByEvent(
 					`onLanguage:${languageId}`,
 				);
+
 				this._extensionService.activateByEvent(`onLanguage`);
 			}),
 		);
 	}
+
 	private updateMime(): void {
 		const configuration =
 			this._configurationService.getValue<IFilesConfiguration>();
@@ -447,7 +487,9 @@ export class WorkbenchLanguageService extends LanguageService {
 
 					return; // https://github.com/microsoft/vscode/issues/147284
 				}
+
 				const mimeType = this.getMimeType(langId) || `text/x-${langId}`;
+
 				registerConfiguredLanguageAssociation({
 					id: langId,
 					mime: mimeType,
@@ -455,6 +497,7 @@ export class WorkbenchLanguageService extends LanguageService {
 				});
 			});
 		}
+
 		this._onDidChange.fire();
 	}
 }
@@ -462,9 +505,11 @@ function isUndefinedOrStringArray(value: string[]): boolean {
 	if (typeof value === "undefined") {
 		return true;
 	}
+
 	if (!Array.isArray(value)) {
 		return false;
 	}
+
 	return value.every((item) => typeof item === "string");
 }
 function isValidLanguageExtensionPoint(
@@ -482,6 +527,7 @@ function isValidLanguageExtensionPoint(
 
 		return false;
 	}
+
 	if (typeof value.id !== "string") {
 		collector?.error(
 			localize(
@@ -493,6 +539,7 @@ function isValidLanguageExtensionPoint(
 
 		return false;
 	}
+
 	if (!isUndefinedOrStringArray(value.extensions)) {
 		collector?.error(
 			localize(
@@ -504,6 +551,7 @@ function isValidLanguageExtensionPoint(
 
 		return false;
 	}
+
 	if (!isUndefinedOrStringArray(value.filenames)) {
 		collector?.error(
 			localize(
@@ -515,6 +563,7 @@ function isValidLanguageExtensionPoint(
 
 		return false;
 	}
+
 	if (
 		typeof value.firstLine !== "undefined" &&
 		typeof value.firstLine !== "string"
@@ -529,6 +578,7 @@ function isValidLanguageExtensionPoint(
 
 		return false;
 	}
+
 	if (
 		typeof value.configuration !== "undefined" &&
 		typeof value.configuration !== "string"
@@ -543,6 +593,7 @@ function isValidLanguageExtensionPoint(
 
 		return false;
 	}
+
 	if (!isUndefinedOrStringArray(value.aliases)) {
 		collector?.error(
 			localize(
@@ -554,6 +605,7 @@ function isValidLanguageExtensionPoint(
 
 		return false;
 	}
+
 	if (!isUndefinedOrStringArray(value.mimetypes)) {
 		collector?.error(
 			localize(
@@ -565,6 +617,7 @@ function isValidLanguageExtensionPoint(
 
 		return false;
 	}
+
 	if (typeof value.icon !== "undefined") {
 		if (
 			typeof value.icon !== "object" ||
@@ -584,6 +637,7 @@ function isValidLanguageExtensionPoint(
 			return false;
 		}
 	}
+
 	return true;
 }
 registerSingleton(

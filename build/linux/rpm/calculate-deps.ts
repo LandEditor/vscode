@@ -13,6 +13,7 @@ export function generatePackageDeps(files: string[]): Set<string>[] {
 	);
 
 	const additionalDepsSet = new Set(additionalDeps);
+
 	dependencies.push(additionalDepsSet);
 
 	return dependencies;
@@ -29,6 +30,7 @@ function calculatePackageDeps(binaryPath: string): Set<string> {
 		// The package might not exist. Don't re-throw the error here.
 		console.error("Tried to stat " + binaryPath + " but failed.");
 	}
+
 	const findRequiresResult = spawnSync("/usr/lib/rpm/find-requires", {
 		input: binaryPath + "\n",
 	});
@@ -38,6 +40,7 @@ function calculatePackageDeps(binaryPath: string): Set<string> {
 			`find-requires failed with exit code ${findRequiresResult.status}.\nstderr: ${findRequiresResult.stderr}`,
 		);
 	}
+
 	const requires = new Set(
 		findRequiresResult.stdout.toString("utf-8").trimEnd().split("\n"),
 	);

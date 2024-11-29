@@ -89,6 +89,7 @@ namespace AutoInsertRequest {
 // experimental: semantic tokens
 interface SemanticTokenParams {
 	textDocument: TextDocumentIdentifier;
+
 	ranges?: Range[];
 }
 namespace SemanticTokenRequest {
@@ -99,6 +100,7 @@ namespace SemanticTokenLegendRequest {
 	export const type: RequestType0<
 		{
 			types: string[];
+
 			modifiers: string[];
 		} | null,
 		any
@@ -106,7 +108,9 @@ namespace SemanticTokenLegendRequest {
 }
 export interface RuntimeEnvironment {
 	fileFs?: FileSystemProvider;
+
 	configureHttpRequests?(proxy: string | undefined, strictSSL: boolean): void;
+
 	readonly timer: {
 		setImmediate(
 			callback: (...args: any[]) => void,
@@ -182,6 +186,7 @@ export function startServer(
 				const configRequestParam: ConfigurationParams = {
 					items: sections.map((section) => ({ scopeUri, section })),
 				};
+
 				promise = connection
 					.sendRequest(ConfigurationRequest.type, configRequestParam)
 					.then((s) => ({
@@ -193,8 +198,10 @@ export function startServer(
 
 				documentSettings[textDocument.uri] = promise;
 			}
+
 			return promise;
 		}
+
 		return Promise.resolve(undefined);
 	}
 	// After the server has started the client sends an initialize request. The server receives
@@ -202,6 +209,7 @@ export function startServer(
 	connection.onInitialize((params: InitializeParams): InitializeResult => {
 		const initializationOptions =
 			(params.initializationOptions as any) || {};
+
 		workspaceFolders = (<any>params).workspaceFolders;
 
 		if (!Array.isArray(workspaceFolders)) {
@@ -214,6 +222,7 @@ export function startServer(
 				});
 			}
 		}
+
 		const handledSchemas =
 			(initializationOptions?.handledSchemas as string[]) ?? ["file"];
 
@@ -231,6 +240,7 @@ export function startServer(
 				return workspaceFolders;
 			},
 		};
+
 		languageModes = getLanguageModes(
 			initializationOptions?.embeddedLanguages || {
 				css: true,
@@ -242,6 +252,7 @@ export function startServer(
 		);
 
 		const dataPaths: string[] = initializationOptions?.dataPaths || [];
+
 		fetchHTMLDataProviders(dataPaths, customDataRequestService).then(
 			(dataProviders) => {
 				languageModes.updateDataProviders(dataProviders);
@@ -251,6 +262,7 @@ export function startServer(
 		documents.onDidClose((e) => {
 			languageModes.onDocumentRemoved(e.document);
 		});
+
 		connection.onShutdown(() => {
 			languageModes.dispose();
 		});
@@ -264,27 +276,34 @@ export function startServer(
 				if (!c.hasOwnProperty(keys[i])) {
 					return def;
 				}
+
 				c = c[keys[i]];
 			}
+
 			return c;
 		}
+
 		clientSnippetSupport = getClientCapability(
 			"textDocument.completion.completionItem.snippetSupport",
 			false,
 		);
+
 		dynamicFormatterRegistration =
 			getClientCapability(
 				"textDocument.rangeFormatting.dynamicRegistration",
 				false,
 			) && typeof initializationOptions?.provideFormatter !== "boolean";
+
 		scopedSettingsSupport = getClientCapability(
 			"workspace.configuration",
 			false,
 		);
+
 		workspaceFoldersSupport = getClientCapability(
 			"workspace.workspaceFolders",
 			false,
 		);
+
 		foldingRangeLimit = getClientCapability(
 			"textDocument.foldingRange.rangeLimit",
 			Number.MAX_VALUE,
@@ -314,6 +333,7 @@ export function startServer(
 				validateTextDocument,
 			);
 		}
+
 		const capabilities: ServerCapabilities = {
 			textDocumentSync: TextDocumentSyncKind.Incremental,
 			completionProvider: clientSnippetSupport
@@ -347,11 +367,13 @@ export function startServer(
 
 		return { capabilities };
 	});
+
 	connection.onInitialized(() => {
 		if (workspaceFoldersSupport) {
 			connection.client.register(
 				DidChangeWorkspaceFoldersNotification.type,
 			);
+
 			connection.onNotification(
 				DidChangeWorkspaceFoldersNotification.type,
 				(e) => {
@@ -371,7 +393,9 @@ export function startServer(
 							}
 						}
 					}
+
 					workspaceFolders = updatedFolders.concat(toAdd);
+
 					diagnosticsSupport?.requestRefresh();
 				},
 			);
@@ -435,8 +459,10 @@ export function startServer(
 					validationSettings.scripts !== false)
 			);
 		}
+
 		return true;
 	}
+
 	async function validateTextDocument(
 		textDocument: TextDocument,
 	): Promise<Diagnostic[]> {
@@ -473,6 +499,7 @@ export function startServer(
 							);
 						}
 					}
+
 					return diagnostics;
 				}
 			}
@@ -481,8 +508,10 @@ export function startServer(
 				formatError(`Error while validating ${textDocument.uri}`, e),
 			);
 		}
+
 		return [];
 	}
+
 	connection.onCompletion(async (textDocumentPosition, token) => {
 		return runSafe(
 			runtime,
@@ -494,6 +523,7 @@ export function startServer(
 				if (!document) {
 					return null;
 				}
+
 				const mode = languageModes.getModeAtPosition(
 					document,
 					textDocumentPosition.position,
@@ -502,6 +532,7 @@ export function startServer(
 				if (!mode || !mode.doComplete) {
 					return { isIncomplete: true, items: [] };
 				}
+
 				const doComplete = mode.doComplete;
 
 				const settings = await getDocumentSettings(
@@ -526,6 +557,7 @@ export function startServer(
 			token,
 		);
 	});
+
 	connection.onCompletionResolve((item, token) => {
 		return runSafe(
 			runtime,
@@ -541,6 +573,7 @@ export function startServer(
 						return mode.doResolve(document, item);
 					}
 				}
+
 				return item;
 			},
 			item,
@@ -548,6 +581,7 @@ export function startServer(
 			token,
 		);
 	});
+
 	connection.onHover((textDocumentPosition, token) => {
 		return runSafe(
 			runtime,
@@ -577,6 +611,7 @@ export function startServer(
 						);
 					}
 				}
+
 				return null;
 			},
 			null,
@@ -584,6 +619,7 @@ export function startServer(
 			token,
 		);
 	});
+
 	connection.onDocumentHighlight((documentHighlightParams, token) => {
 		return runSafe(
 			runtime,
@@ -605,6 +641,7 @@ export function startServer(
 						);
 					}
 				}
+
 				return [];
 			},
 			[],
@@ -612,6 +649,7 @@ export function startServer(
 			token,
 		);
 	});
+
 	connection.onDefinition((definitionParams, token) => {
 		return runSafe(
 			runtime,
@@ -633,6 +671,7 @@ export function startServer(
 						);
 					}
 				}
+
 				return [];
 			},
 			null,
@@ -640,6 +679,7 @@ export function startServer(
 			token,
 		);
 	});
+
 	connection.onReferences((referenceParams, token) => {
 		return runSafe(
 			runtime,
@@ -661,6 +701,7 @@ export function startServer(
 						);
 					}
 				}
+
 				return [];
 			},
 			[],
@@ -668,6 +709,7 @@ export function startServer(
 			token,
 		);
 	});
+
 	connection.onSignatureHelp((signatureHelpParms, token) => {
 		return runSafe(
 			runtime,
@@ -689,6 +731,7 @@ export function startServer(
 						);
 					}
 				}
+
 				return null;
 			},
 			null,
@@ -710,6 +753,7 @@ export function startServer(
 			if (!settings) {
 				settings = globalSettings;
 			}
+
 			const unformattedTags: string =
 				(settings &&
 					settings.html &&
@@ -736,10 +780,13 @@ export function startServer(
 
 				return [TextEdit.replace(getFullRange(document), newText)];
 			}
+
 			return edits;
 		}
+
 		return [];
 	}
+
 	connection.onDocumentRangeFormatting((formatParams, token) => {
 		return runSafe(
 			runtime,
@@ -754,6 +801,7 @@ export function startServer(
 			token,
 		);
 	});
+
 	connection.onDocumentFormatting((formatParams, token) => {
 		return runSafe(
 			runtime,
@@ -768,6 +816,7 @@ export function startServer(
 			token,
 		);
 	});
+
 	connection.onDocumentLinks((documentLinkParam, token) => {
 		return runSafe(
 			runtime,
@@ -798,6 +847,7 @@ export function startServer(
 						}
 					}
 				}
+
 				return links;
 			},
 			[],
@@ -805,6 +855,7 @@ export function startServer(
 			token,
 		);
 	});
+
 	connection.onDocumentSymbol((documentSymbolParms, token) => {
 		return runSafe(
 			runtime,
@@ -827,6 +878,7 @@ export function startServer(
 						}
 					}
 				}
+
 				return symbols;
 			},
 			[],
@@ -834,6 +886,7 @@ export function startServer(
 			token,
 		);
 	});
+
 	connection.onRequest(DocumentColorRequest.type, (params, token) => {
 		return runSafe(
 			runtime,
@@ -854,6 +907,7 @@ export function startServer(
 						}
 					}
 				}
+
 				return infos;
 			},
 			[],
@@ -861,6 +915,7 @@ export function startServer(
 			token,
 		);
 	});
+
 	connection.onRequest(ColorPresentationRequest.type, (params, token) => {
 		return runSafe(
 			runtime,
@@ -881,6 +936,7 @@ export function startServer(
 						);
 					}
 				}
+
 				return [];
 			},
 			[],
@@ -888,6 +944,7 @@ export function startServer(
 			token,
 		);
 	});
+
 	connection.onRequest(AutoInsertRequest.type, (params, token) => {
 		return runSafe(
 			runtime,
@@ -912,6 +969,7 @@ export function startServer(
 						}
 					}
 				}
+
 				return null;
 			},
 			null,
@@ -919,6 +977,7 @@ export function startServer(
 			token,
 		);
 	});
+
 	connection.onFoldingRanges((params, token) => {
 		return runSafe(
 			runtime,
@@ -933,6 +992,7 @@ export function startServer(
 						token,
 					);
 				}
+
 				return null;
 			},
 			null,
@@ -940,6 +1000,7 @@ export function startServer(
 			token,
 		);
 	});
+
 	connection.onSelectionRanges((params, token) => {
 		return runSafe(
 			runtime,
@@ -953,6 +1014,7 @@ export function startServer(
 						params.positions,
 					);
 				}
+
 				return [];
 			},
 			[],
@@ -960,6 +1022,7 @@ export function startServer(
 			token,
 		);
 	});
+
 	connection.onRenameRequest((params, token) => {
 		return runSafe(
 			runtime,
@@ -982,6 +1045,7 @@ export function startServer(
 						);
 					}
 				}
+
 				return null;
 			},
 			null,
@@ -989,6 +1053,7 @@ export function startServer(
 			token,
 		);
 	});
+
 	connection.languages.onLinkedEditingRange((params, token) => {
 		return <any>runSafe(
 			runtime,
@@ -1016,6 +1081,7 @@ export function startServer(
 						}
 					}
 				}
+
 				return null;
 			},
 			null,
@@ -1030,8 +1096,10 @@ export function startServer(
 		if (!semanticTokensProvider) {
 			semanticTokensProvider = newSemanticTokenProvider(languageModes);
 		}
+
 		return semanticTokensProvider;
 	}
+
 	connection.onRequest(SemanticTokenRequest.type, (params, token) => {
 		return runSafe(
 			runtime,
@@ -1044,6 +1112,7 @@ export function startServer(
 						params.ranges,
 					);
 				}
+
 				return null;
 			},
 			null,
@@ -1051,6 +1120,7 @@ export function startServer(
 			token,
 		);
 	});
+
 	connection.onRequest(SemanticTokenLegendRequest.type, (token) => {
 		return runSafe(
 			runtime,
@@ -1062,6 +1132,7 @@ export function startServer(
 			token,
 		);
 	});
+
 	connection.onNotification(
 		CustomDataChangedNotification.type,
 		(dataPaths) => {

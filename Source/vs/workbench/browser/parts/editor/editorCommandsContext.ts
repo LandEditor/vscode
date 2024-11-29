@@ -23,8 +23,10 @@ import { IEditorService } from "../../../services/editor/common/editorService.js
 export interface IResolvedEditorCommandsContext {
 	readonly groupedEditors: {
 		readonly group: IEditorGroup;
+
 		readonly editors: EditorInput[];
 	}[];
+
 	readonly preserveFocus: boolean;
 }
 export function resolveCommandsContext(
@@ -58,6 +60,7 @@ export function resolveCommandsContext(
 		if (!groupAndEditor) {
 			continue;
 		}
+
 		const { group, editor } = groupAndEditor;
 		// Find group context if already added
 		let groupContext = undefined;
@@ -72,6 +75,7 @@ export function resolveCommandsContext(
 		// Otherwise add new group context
 		if (!groupContext) {
 			groupContext = { group, editors: [] };
+
 			resolvedContext.groupedEditors.push(groupContext);
 		}
 		// Add editor to group context
@@ -79,6 +83,7 @@ export function resolveCommandsContext(
 			groupContext.editors.push(editor);
 		}
 	}
+
 	return resolvedContext;
 }
 function getCommandsContext(
@@ -105,14 +110,17 @@ function getCommandsContext(
 		const activeGroup = editorGroupsService.activeGroup;
 
 		const activeEditor = activeGroup.activeEditor;
+
 		editorContext = {
 			groupId: activeGroup.id,
 			editorIndex: activeEditor
 				? activeGroup.getIndexOfEditor(activeEditor)
 				: undefined,
 		};
+
 		isListAction = false;
 	}
+
 	const multiEditorContext = getMultiSelectContext(
 		editorContext,
 		isListAction,
@@ -130,6 +138,7 @@ function moveCurrentEditorContextToFront(
 	if (multiEditorContext.length <= 1) {
 		return multiEditorContext;
 	}
+
 	const editorContextIndex = multiEditorContext.findIndex(
 		(context) =>
 			context.groupId === editorContext.groupId &&
@@ -138,12 +147,14 @@ function moveCurrentEditorContextToFront(
 
 	if (editorContextIndex !== -1) {
 		multiEditorContext.splice(editorContextIndex, 1);
+
 		multiEditorContext.unshift(editorContext);
 	} else if (editorContext.editorIndex === undefined) {
 		multiEditorContext.unshift(editorContext);
 	} else {
 		throw new Error("Editor context not found in multi editor context");
 	}
+
 	return multiEditorContext;
 }
 function getEditorContextFromCommandArgs(
@@ -195,6 +206,7 @@ function getEditorContextFromCommandArgs(
 			}
 		}
 	}
+
 	return undefined;
 }
 function getMultiSelectContext(
@@ -219,6 +231,7 @@ function getMultiSelectContext(
 				),
 			);
 		}
+
 		if (selection.length === 0) {
 			// TODO@benibenj workaround for https://github.com/microsoft/vscode/issues/224050
 			// Explainer: the `isListAction` flag can be a false positive in certain cases because
@@ -264,6 +277,7 @@ function groupOrEditorToEditorContext(
 	if (isEditorGroup(element)) {
 		return { groupId: element.id, editorIndex: undefined, preserveFocus };
 	}
+
 	const group = editorGroupsService.getGroup(element.groupId);
 
 	return {
@@ -283,6 +297,7 @@ function getEditorAndGroupFromContext(
 ):
 	| {
 			group: IEditorGroup;
+
 			editor: EditorInput | undefined;
 	  }
 	| undefined {
@@ -291,9 +306,11 @@ function getEditorAndGroupFromContext(
 	if (!group) {
 		return undefined;
 	}
+
 	if (commandContext.editorIndex === undefined) {
 		return { group, editor: undefined };
 	}
+
 	const editor = group.getEditorByIndex(commandContext.editorIndex);
 
 	return { group, editor };

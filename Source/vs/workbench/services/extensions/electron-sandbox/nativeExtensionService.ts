@@ -145,6 +145,7 @@ export class NativeExtensionService
 	implements IExtensionService
 {
 	private readonly _extensionScanner: CachedExtensionScanner;
+
 	private readonly _localCrashTracker = new ExtensionHostCrashTracker();
 
 	constructor(
@@ -295,6 +296,7 @@ export class NativeExtensionService
 									(accessor) => {
 										const hostService =
 											accessor.get(IHostService);
+
 										hostService.restart();
 									},
 								);
@@ -307,6 +309,7 @@ export class NativeExtensionService
 			}
 
 			this._logExtensionHostCrash(extensionHost);
+
 			this._sendExtensionHostCrashTelemetry(
 				code,
 				signal,
@@ -319,6 +322,7 @@ export class NativeExtensionService
 				this._logService.info(
 					`Automatically restarting the extension host.`,
 				);
+
 				this._notificationService.status(
 					nls.localize(
 						"extensionService.autoRestart",
@@ -326,6 +330,7 @@ export class NativeExtensionService
 					),
 					{ hideAfter: 5000 },
 				);
+
 				this.startExtensionHosts();
 			} else {
 				const choices: IPromptChoice[] = [];
@@ -341,6 +346,7 @@ export class NativeExtensionService
 								(accessor) => {
 									const commandService =
 										accessor.get(ICommandService);
+
 									commandService.executeCommand(
 										"extension.bisect.start",
 									);
@@ -368,6 +374,7 @@ export class NativeExtensionService
 								(accessor) => {
 									const openerService =
 										accessor.get(IOpenerService);
+
 									openerService.open(
 										"https://aka.ms/vscode-extension-bisect",
 									);
@@ -396,28 +403,42 @@ export class NativeExtensionService
 	): void {
 		type ExtensionHostCrashClassification = {
 			owner: "alexdima";
+
 			comment: "The extension host has terminated unexpectedly";
+
 			code: {
 				classification: "SystemMetaData";
+
 				purpose: "PerformanceAndHealth";
+
 				comment: "The exit code of the extension host process.";
 			};
+
 			signal: {
 				classification: "SystemMetaData";
+
 				purpose: "PerformanceAndHealth";
+
 				comment: "The signal that caused the extension host process to exit.";
 			};
+
 			extensionIds: {
 				classification: "SystemMetaData";
+
 				purpose: "PerformanceAndHealth";
+
 				comment: "The list of loaded extensions.";
 			};
 		};
+
 		type ExtensionHostCrashEvent = {
 			code: number;
+
 			signal: string | null;
+
 			extensionIds: string[];
 		};
+
 		this._telemetryService.publicLog2<
 			ExtensionHostCrashEvent,
 			ExtensionHostCrashClassification
@@ -430,28 +451,42 @@ export class NativeExtensionService
 		for (const extensionId of activatedExtensions) {
 			type ExtensionHostCrashExtensionClassification = {
 				owner: "alexdima";
+
 				comment: "The extension host has terminated unexpectedly";
+
 				code: {
 					classification: "SystemMetaData";
+
 					purpose: "PerformanceAndHealth";
+
 					comment: "The exit code of the extension host process.";
 				};
+
 				signal: {
 					classification: "SystemMetaData";
+
 					purpose: "PerformanceAndHealth";
+
 					comment: "The signal that caused the extension host process to exit.";
 				};
+
 				extensionId: {
 					classification: "SystemMetaData";
+
 					purpose: "PerformanceAndHealth";
+
 					comment: "The identifier of the extension.";
 				};
 			};
+
 			type ExtensionHostCrashExtensionEvent = {
 				code: number;
+
 				signal: string | null;
+
 				extensionId: string;
 			};
+
 			this._telemetryService.publicLog2<
 				ExtensionHostCrashExtensionEvent,
 				ExtensionHostCrashExtensionClassification
@@ -558,6 +593,7 @@ export class NativeExtensionService
 						// The current remote authority resolver cannot give the canonical URI for this URI
 						return uri;
 					}
+
 					performance.mark(
 						`code/willGetCanonicalURI/${getRemoteAuthorityPrefix(remoteAuthority)}`,
 					);
@@ -567,6 +603,7 @@ export class NativeExtensionService
 							`Invoking getCanonicalURI for authority ${getRemoteAuthorityPrefix(remoteAuthority)}...`,
 						);
 					}
+
 					try {
 						return this._getCanonicalURI(remoteAuthority, uri);
 					} finally {
@@ -626,6 +663,7 @@ export class NativeExtensionService
 						);
 					}
 				}
+
 				this._remoteAuthorityResolverService._setResolvedAuthorityError(
 					remoteAuthority,
 					err,
@@ -640,6 +678,7 @@ export class NativeExtensionService
 				resolverResult.authority,
 				resolverResult.options,
 			);
+
 			this._remoteExplorerService.setTunnelInformation(
 				resolverResult.tunnelInformation,
 			);
@@ -657,6 +696,7 @@ export class NativeExtensionService
 						);
 					}
 				});
+
 				connection.onReconnecting(() => this._resolveAuthorityAgain());
 			}
 
@@ -715,6 +755,7 @@ export class NativeExtensionService
 
 		// Dispose the management connection to avoid reconnecting after the extension host exits
 		const connection = this._remoteAgentService.getConnection();
+
 		connection?.dispose();
 
 		if (
@@ -727,6 +768,7 @@ export class NativeExtensionService
 					`Asking native host service to exit with code ${code}.`,
 				);
 			}
+
 			this._nativeHostService.exit(code);
 		} else {
 			// Expected development extension termination: When the extension host goes down we also shutdown the window
@@ -745,6 +787,7 @@ export class NativeExtensionService
 		if (!recommendation) {
 			return false;
 		}
+
 		const sendTelemetry = (
 			userReaction: "install" | "enable" | "cancel",
 		) => {
@@ -783,6 +826,7 @@ export class NativeExtensionService
 					"Extension '{0}' is required to open the remote window.\nOK to enable?",
 					recommendation.friendlyName,
 				);
+
 				this._notificationService.prompt(
 					Severity.Info,
 					message,
@@ -791,10 +835,12 @@ export class NativeExtensionService
 							label: nls.localize("enable", "Enable and Reload"),
 							run: async () => {
 								sendTelemetry("enable");
+
 								await this._extensionEnablementService.setEnablement(
 									[toExtension(extension)],
 									EnablementState.EnabledGlobally,
 								);
+
 								await this._hostService.reload();
 							},
 						},
@@ -812,6 +858,7 @@ export class NativeExtensionService
 				"Extension '{0}' is required to open the remote window.\nDo you want to install the extension?",
 				recommendation.friendlyName,
 			);
+
 			this._notificationService.prompt(
 				Severity.Info,
 				message,
@@ -831,6 +878,7 @@ export class NativeExtensionService
 								await this._extensionManagementService.installFromGallery(
 									galleryExtension,
 								);
+
 								await this._hostService.reload();
 							} else {
 								this._notificationService.error(
@@ -850,6 +898,7 @@ export class NativeExtensionService
 				},
 			);
 		}
+
 		return true;
 	}
 }
@@ -903,6 +952,7 @@ class NativeExtensionHostFactory implements IExtensionHostFactory {
 					),
 				);
 			}
+
 			case ExtensionHostKind.LocalWebWorker: {
 				if (
 					this._webWorkerExtHostEnablement !==
@@ -925,8 +975,10 @@ class NativeExtensionHostFactory implements IExtensionHostFactory {
 						),
 					);
 				}
+
 				return null;
 			}
+
 			case ExtensionHostKind.Remote: {
 				const remoteAgentConnection =
 					this._remoteAgentService.getConnection();
@@ -941,6 +993,7 @@ class NativeExtensionHostFactory implements IExtensionHostFactory {
 						),
 					);
 				}
+
 				return null;
 			}
 		}
@@ -1008,6 +1061,7 @@ class NativeExtensionHostFactory implements IExtensionHostFactory {
 								`NativeExtensionHostFactory._createLocalProcessExtensionHostDataProvider.myExtensions: ${myExtensions.map((ext) => ext.identifier.value).join(",")}`,
 							);
 						}
+
 						return { extensions };
 					} else {
 						// restart case
@@ -1139,6 +1193,7 @@ const enum LocalWebWorkerExtHostEnablement {
 
 export class NativeExtensionHostKindPicker implements IExtensionHostKindPicker {
 	private readonly _hasRemoteExtHost: boolean;
+
 	private readonly _hasWebWorkerExtHost: boolean;
 
 	constructor(
@@ -1154,6 +1209,7 @@ export class NativeExtensionHostKindPicker implements IExtensionHostKindPicker {
 				environmentService,
 				configurationService,
 			);
+
 		this._hasWebWorkerExtHost =
 			webWorkerExtHostEnablement !==
 			LocalWebWorkerExtHostEnablement.Disabled;
@@ -1174,6 +1230,7 @@ export class NativeExtensionHostKindPicker implements IExtensionHostKindPicker {
 			this._hasRemoteExtHost,
 			this._hasWebWorkerExtHost,
 		);
+
 		this._logService.trace(
 			`pickRunningLocation for ${extensionId.value}, extension kinds: [${extensionKinds.join(", ")}], isInstalledLocally: ${isInstalledLocally}, isInstalledRemotely: ${isInstalledRemotely}, preference: ${extensionRunningPreferenceToString(preference)} => ${extensionHostKindToString(result)}`,
 		);
@@ -1203,6 +1260,7 @@ export class NativeExtensionHostKindPicker implements IExtensionHostKindPicker {
 					result.push(ExtensionHostKind.LocalProcess);
 				}
 			}
+
 			if (extensionKind === "workspace" && isInstalledRemotely) {
 				// workspace extensions run remotely if possible
 				if (
@@ -1214,6 +1272,7 @@ export class NativeExtensionHostKindPicker implements IExtensionHostKindPicker {
 					result.push(ExtensionHostKind.Remote);
 				}
 			}
+
 			if (extensionKind === "workspace" && !hasRemoteExtHost) {
 				// workspace extensions also run locally if there is no remote
 				if (
@@ -1225,6 +1284,7 @@ export class NativeExtensionHostKindPicker implements IExtensionHostKindPicker {
 					result.push(ExtensionHostKind.LocalProcess);
 				}
 			}
+
 			if (
 				extensionKind === "web" &&
 				isInstalledLocally &&
@@ -1241,6 +1301,7 @@ export class NativeExtensionHostKindPicker implements IExtensionHostKindPicker {
 				}
 			}
 		}
+
 		return result.length > 0 ? result[0] : null;
 	}
 }

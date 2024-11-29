@@ -26,6 +26,7 @@ export class DiagnosticCellStatusBarContrib extends Disposable implements INoteb
 		@IInstantiationService instantiationService: IInstantiationService
 	) {
 		super();
+
 		this._register(new NotebookStatusBarController(notebookEditor, (vm, cell) =>
 			cell instanceof CodeCellViewModel ?
 				instantiationService.createInstance(DiagnosticCellStatusBarItem, vm, cell) :
@@ -46,6 +47,7 @@ class DiagnosticCellStatusBarItem extends Disposable {
 		@IChatAgentService private readonly chatAgentService: IChatAgentService,
 	) {
 		super();
+
 		this._register(autorun((reader) => this.updateSparkleItem(reader.readObservable(cell.executionErrorDiagnostic))));
 	}
 
@@ -54,6 +56,7 @@ class DiagnosticCellStatusBarItem extends Disposable {
 
 		if (error?.location && !Iterable.isEmpty(this.chatAgentService.getAgents())) {
 			const keybinding = this.keybindingService.lookupKeybinding(OPEN_CELL_FAILURE_ACTIONS_COMMAND_ID)?.getLabel();
+
 			const tooltip = localize('notebook.cell.status.diagnostic', "Quick Actions {0}", `(${keybinding})`);
 
 			item = {
@@ -66,11 +69,13 @@ class DiagnosticCellStatusBarItem extends Disposable {
 		}
 
 		const items = item ? [item] : [];
+
 		this._currentItemIds = this._notebookViewModel.deltaCellStatusBarItems(this._currentItemIds, [{ handle: this.cell.handle, items }]);
 	}
 
 	override dispose() {
 		super.dispose();
+
 		this._notebookViewModel.deltaCellStatusBarItems(this._currentItemIds, [{ handle: this.cell.handle, items: [] }]);
 	}
 }

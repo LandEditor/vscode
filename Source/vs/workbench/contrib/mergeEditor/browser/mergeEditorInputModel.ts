@@ -52,8 +52,11 @@ import { MergeEditorTelemetry } from "./telemetry.js";
 
 export interface MergeEditorArgs {
 	base: URI;
+
 	input1: MergeEditorInputData;
+
 	input2: MergeEditorInputData;
+
 	result: URI;
 }
 export interface IMergeEditorInputModelFactory {
@@ -61,14 +64,19 @@ export interface IMergeEditorInputModelFactory {
 }
 export interface IMergeEditorInputModel extends IDisposable {
 	readonly resultUri: URI;
+
 	readonly model: MergeEditorModel;
+
 	readonly isDirty: IObservable<boolean>;
+
 	save(options?: ITextFileSaveOptions): Promise<void>;
 	/**
 	 * If save resets the dirty state, revert must do so too.
 	 */
 	revert(options?: IRevertOptions): Promise<void>;
+
 	shouldConfirmClose(): boolean;
+
 	confirmClose(inputModels: IMergeEditorInputModel[]): Promise<ConfirmResult>;
 	/**
 	 * Marks the merge as done. The merge editor must be closed afterwards.
@@ -88,6 +96,7 @@ export class TempFileMergeEditorModeFactory
 		@IModelService
 		private readonly _modelService: IModelService,
 	) {}
+
 	async createInputModel(
 		args: MergeEditorArgs,
 	): Promise<IMergeEditorInputModel> {
@@ -99,7 +108,9 @@ export class TempFileMergeEditorModeFactory
 			toInputData(args.input1, this._textModelService, store),
 			toInputData(args.input2, this._textModelService, store),
 		]);
+
 		store.add(base);
+
 		store.add(result);
 
 		const tempResultUri = result.object.textEditorModel.uri.with({
@@ -114,6 +125,7 @@ export class TempFileMergeEditorModeFactory
 			},
 			tempResultUri,
 		);
+
 		store.add(temporaryResultModel);
 
 		const mergeDiffComputer =
@@ -131,7 +143,9 @@ export class TempFileMergeEditorModeFactory
 			},
 			this._mergeEditorTelemetry,
 		);
+
 		store.add(model);
+
 		await model.onInitialized;
 
 		return this._instantiationService.createInstance(
@@ -151,18 +165,21 @@ class TempFileMergeEditorInputModel
 		this,
 		this.model.resultTextModel.getAlternativeVersionId(),
 	);
+
 	private readonly altVersionId = observableFromEvent(
 		this,
 		(e) => this.model.resultTextModel.onDidChangeContent(e),
 		() =>
 			/** @description getAlternativeVersionId */ this.model.resultTextModel.getAlternativeVersionId(),
 	);
+
 	public readonly isDirty = derived(
 		this,
 		(reader) =>
 			this.altVersionId.read(reader) !==
 			this.savedAltVersionId.read(reader),
 	);
+
 	private finished = false;
 
 	constructor(
@@ -179,32 +196,43 @@ class TempFileMergeEditorInputModel
 	) {
 		super();
 	}
+
 	override dispose(): void {
 		this.disposable.dispose();
 
 		super.dispose();
 	}
+
 	async accept(): Promise<void> {
 		const value = await this.model.resultTextModel.getValue();
+
 		this.result.textEditorModel.setValue(value);
+
 		this.savedAltVersionId.set(
 			this.model.resultTextModel.getAlternativeVersionId(),
 			undefined,
 		);
+
 		await this.textFileService.save(this.result.textEditorModel.uri);
+
 		this.finished = true;
 	}
+
 	private async _discard(): Promise<void> {
 		await this.textFileService.revert(this.model.resultTextModel.uri);
+
 		this.savedAltVersionId.set(
 			this.model.resultTextModel.getAlternativeVersionId(),
 			undefined,
 		);
+
 		this.finished = true;
 	}
+
 	public shouldConfirmClose(): boolean {
 		return true;
 	}
+
 	public async confirmClose(
 		inputModels: TempFileMergeEditorInputModel[],
 	): Promise<ConfirmResult> {
@@ -260,6 +288,7 @@ class TempFileMergeEditorInputModel
 					run: () => ConfirmResult.DONT_SAVE,
 				},
 			];
+
 			choice = (
 				await this.dialogService.prompt<ConfirmResult>({
 					type: Severity.Info,
@@ -292,6 +321,7 @@ class TempFileMergeEditorInputModel
 		} else {
 			choice = ConfirmResult.DONT_SAVE;
 		}
+
 		if (choice === ConfirmResult.SAVE) {
 			// save with conflicts
 			await Promise.all(inputModels.map((m) => m.accept()));
@@ -301,8 +331,10 @@ class TempFileMergeEditorInputModel
 		} else {
 			// cancel: stay in editor
 		}
+
 		return choice;
 	}
+
 	public async save(options?: ITextFileSaveOptions): Promise<void> {
 		if (this.finished) {
 			return;
@@ -331,10 +363,12 @@ class TempFileMergeEditorInputModel
 				const editors = this.editorService
 					.findEditors(this.resultUri)
 					.filter((e) => e.editor.typeId === "mergeEditor.Input");
+
 				await this.editorService.closeEditors(editors);
 			}
 		})();
 	}
+
 	public async revert(options?: IRevertOptions): Promise<void> {
 		// no op
 	}
@@ -352,6 +386,7 @@ export class WorkspaceMergeEditorModeFactory
 		@ITextFileService
 		private readonly textFileService: ITextFileService,
 	) {}
+
 	private static readonly FILE_SAVED_SOURCE =
 		SaveSourceRegistry.registerSource(
 			"merge-editor.source",
@@ -360,6 +395,7 @@ export class WorkspaceMergeEditorModeFactory
 				"Before Resolving Conflicts In Merge Editor",
 			),
 		);
+
 	public async createInputModel(
 		args: MergeEditorArgs,
 	): Promise<IMergeEditorInputModel> {
@@ -372,12 +408,15 @@ export class WorkspaceMergeEditorModeFactory
 		const handleDidCreate = (model: ITextFileEditorModel) => {
 			if (isEqual(args.result, model.resource)) {
 				modelListener.clear();
+
 				resultTextFileModel = model;
 			}
 		};
+
 		modelListener.add(
 			this.textFileService.files.onDidCreate(handleDidCreate),
 		);
+
 		this.textFileService.files.models.forEach(handleDidCreate);
 
 		const [base, result, input1Data, input2Data] = await Promise.all([
@@ -386,7 +425,9 @@ export class WorkspaceMergeEditorModeFactory
 			toInputData(args.input1, this._textModelService, store),
 			toInputData(args.input2, this._textModelService, store),
 		]);
+
 		store.add(base);
+
 		store.add(result);
 
 		if (!resultTextFileModel) {
@@ -420,7 +461,9 @@ export class WorkspaceMergeEditorModeFactory
 			},
 			this._mergeEditorTelemetry,
 		);
+
 		store.add(model);
+
 		await model.onInitialized;
 
 		return this._instantiationService.createInstance(
@@ -444,7 +487,9 @@ class WorkspaceMergeEditorInputModel
 		),
 		() => /** @description isDirty */ this.resultTextFileModel.isDirty(),
 	);
+
 	private reported = false;
+
 	private readonly dateTimeOpened = new Date();
 
 	constructor(
@@ -459,12 +504,15 @@ class WorkspaceMergeEditorInputModel
 	) {
 		super();
 	}
+
 	public override dispose(): void {
 		this.disposableStore.dispose();
 
 		super.dispose();
+
 		this.reportClose(false);
 	}
+
 	private reportClose(accepted: boolean): void {
 		if (!this.reported) {
 			const remainingConflictCount =
@@ -472,6 +520,7 @@ class WorkspaceMergeEditorInputModel
 
 			const durationOpenedMs =
 				new Date().getTime() - this.dateTimeOpened.getTime();
+
 			this.telemetry.reportMergeEditorClosed({
 				durationOpenedSecs: durationOpenedMs / 1000,
 				remainingConflictCount,
@@ -509,16 +558,21 @@ class WorkspaceMergeEditorInputModel
 					this.model
 						.manuallySolvedConflictCountThatEqualNoneAndStartedWithBothSmart,
 			});
+
 			this.reported = true;
 		}
 	}
+
 	public async accept(): Promise<void> {
 		this.reportClose(true);
+
 		await this.resultTextFileModel.save();
 	}
+
 	get resultUri(): URI {
 		return this.resultTextFileModel.resource;
 	}
+
 	async save(options?: ITextFileSaveOptions): Promise<void> {
 		await this.resultTextFileModel.save(options);
 	}
@@ -528,10 +582,12 @@ class WorkspaceMergeEditorInputModel
 	async revert(options?: IRevertOptions): Promise<void> {
 		await this.resultTextFileModel.revert(options);
 	}
+
 	shouldConfirmClose(): boolean {
 		// Always confirm
 		return true;
 	}
+
 	async confirmClose(
 		inputModels: IMergeEditorInputModel[],
 	): Promise<ConfirmResult> {
@@ -674,6 +730,7 @@ class WorkspaceMergeEditorInputModel
 					StorageTarget.USER,
 				);
 			}
+
 			return confirmed ? ConfirmResult.SAVE : ConfirmResult.CANCEL;
 		} else {
 			// This shouldn't do anything
@@ -688,6 +745,7 @@ async function toInputData(
 	store: DisposableStore,
 ): Promise<InputData> {
 	const ref = await textModelService.createModelReference(data.uri);
+
 	store.add(ref);
 
 	return {

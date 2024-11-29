@@ -11,7 +11,10 @@ export interface IWorkerTextModelSyncChannelServer {
 }
 export interface IRawModelData {
 	url: string;
+
 	versionId: number;
+
 	lines: string[];
+
 	EOL: string;
 }

@@ -4,7 +4,9 @@
  *--------------------------------------------------------------------------------------------*/
 export class SyncDescriptor<T> {
 	readonly ctor: any;
+
 	readonly staticArguments: any[];
+
 	readonly supportsDelayedInstantiation: boolean;
 
 	constructor(
@@ -13,7 +15,9 @@ export class SyncDescriptor<T> {
 		supportsDelayedInstantiation: boolean = false,
 	) {
 		this.ctor = ctor;
+
 		this.staticArguments = staticArguments;
+
 		this.supportsDelayedInstantiation = supportsDelayedInstantiation;
 	}
 }

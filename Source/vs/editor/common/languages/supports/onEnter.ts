@@ -14,26 +14,34 @@ import {
 
 export interface IOnEnterSupportOptions {
 	brackets?: CharacterPair[];
+
 	onEnterRules?: OnEnterRule[];
 }
 interface IProcessedBracketPair {
 	open: string;
+
 	close: string;
+
 	openRegExp: RegExp;
+
 	closeRegExp: RegExp;
 }
 export class OnEnterSupport {
 	private readonly _brackets: IProcessedBracketPair[];
+
 	private readonly _regExpRules: OnEnterRule[];
 
 	constructor(opts: IOnEnterSupportOptions) {
 		opts = opts || {};
+
 		opts.brackets = opts.brackets || [
 			["(", ")"],
 			["{", "}"],
 			["[", "]"],
 		];
+
 		this._brackets = [];
+
 		opts.brackets.forEach((bracket) => {
 			const openRegExp = OnEnterSupport._createOpenBracketRegExp(
 				bracket[0],
@@ -52,8 +60,10 @@ export class OnEnterSupport {
 				});
 			}
 		});
+
 		this._regExpRules = opts.onEnterRules || [];
 	}
+
 	public onEnter(
 		autoIndent: EditorAutoIndentStrategy,
 		previousLineText: string,
@@ -82,6 +92,7 @@ export class OnEnterSupport {
 					if (!obj.reg) {
 						return true;
 					}
+
 					obj.reg.lastIndex = 0; // To disable the effect of the "g" flag.
 					return obj.reg.test(obj.text);
 				});
@@ -118,28 +129,34 @@ export class OnEnterSupport {
 				}
 			}
 		}
+
 		return null;
 	}
+
 	private static _createOpenBracketRegExp(bracket: string): RegExp | null {
 		let str = strings.escapeRegExpCharacters(bracket);
 
 		if (!/\B/.test(str.charAt(0))) {
 			str = "\\b" + str;
 		}
+
 		str += "\\s*$";
 
 		return OnEnterSupport._safeRegExp(str);
 	}
+
 	private static _createCloseBracketRegExp(bracket: string): RegExp | null {
 		let str = strings.escapeRegExpCharacters(bracket);
 
 		if (!/\B/.test(str.charAt(str.length - 1))) {
 			str = str + "\\b";
 		}
+
 		str = "^\\s*" + str;
 
 		return OnEnterSupport._safeRegExp(str);
 	}
+
 	private static _safeRegExp(def: string): RegExp | null {
 		try {
 			return new RegExp(def);

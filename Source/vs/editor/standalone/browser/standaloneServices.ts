@@ -253,38 +253,51 @@ import { StandaloneTreeSitterParserService } from "./standaloneTreeSitterService
 
 class SimpleModel implements IResolvedTextEditorModel {
 	private readonly model: ITextModel;
+
 	private readonly _onWillDispose: Emitter<void>;
 
 	constructor(model: ITextModel) {
 		this.model = model;
+
 		this._onWillDispose = new Emitter<void>();
 	}
+
 	public get onWillDispose(): Event<void> {
 		return this._onWillDispose.event;
 	}
+
 	public resolve(): Promise<void> {
 		return Promise.resolve();
 	}
+
 	public get textEditorModel(): ITextModel {
 		return this.model;
 	}
+
 	public createSnapshot(): ITextSnapshot {
 		return this.model.createSnapshot();
 	}
+
 	public isReadonly(): boolean {
 		return false;
 	}
+
 	private disposed = false;
+
 	public dispose(): void {
 		this.disposed = true;
+
 		this._onWillDispose.fire();
 	}
+
 	public isDisposed(): boolean {
 		return this.disposed;
 	}
+
 	public isResolved(): boolean {
 		return true;
 	}
+
 	public getLanguageId(): string | undefined {
 		return this.model.getLanguageId();
 	}
@@ -296,6 +309,7 @@ class StandaloneTextModelService implements ITextModelService {
 		@IModelService
 		private readonly modelService: IModelService,
 	) {}
+
 	public createModelReference(
 		resource: URI,
 	): Promise<IReference<IResolvedTextEditorModel>> {
@@ -304,8 +318,10 @@ class StandaloneTextModelService implements ITextModelService {
 		if (!model) {
 			return Promise.reject(new Error(`Model not found`));
 		}
+
 		return Promise.resolve(new ImmortalReference(new SimpleModel(model)));
 	}
+
 	public registerTextModelContentProvider(
 		scheme: string,
 		provider: ITextModelContentProvider,
@@ -314,28 +330,35 @@ class StandaloneTextModelService implements ITextModelService {
 			dispose: function () {},
 		};
 	}
+
 	public canHandleResource(resource: URI): boolean {
 		return false;
 	}
 }
 class StandaloneEditorProgressService implements IEditorProgressService {
 	declare readonly _serviceBrand: undefined;
+
 	private static NULL_PROGRESS_RUNNER: IProgressRunner = {
 		done: () => {},
 		total: () => {},
 		worked: () => {},
 	};
+
 	show(infinite: true, delay?: number): IProgressRunner;
+
 	show(total: number, delay?: number): IProgressRunner;
+
 	show(): IProgressRunner {
 		return StandaloneEditorProgressService.NULL_PROGRESS_RUNNER;
 	}
+
 	async showWhile(promise: Promise<any>, delay?: number): Promise<void> {
 		await promise;
 	}
 }
 class StandaloneProgressService implements IProgressService {
 	declare readonly _serviceBrand: undefined;
+
 	withProgress<R>(
 		_options:
 			| IProgressOptions
@@ -353,73 +376,102 @@ class StandaloneProgressService implements IProgressService {
 }
 class StandaloneEnvironmentService implements IEnvironmentService {
 	declare readonly _serviceBrand: undefined;
+
 	readonly stateResource: URI = URI.from({
 		scheme: "monaco",
 		authority: "stateResource",
 	});
+
 	readonly userRoamingDataHome: URI = URI.from({
 		scheme: "monaco",
 		authority: "userRoamingDataHome",
 	});
+
 	readonly keyboardLayoutResource: URI = URI.from({
 		scheme: "monaco",
 		authority: "keyboardLayoutResource",
 	});
+
 	readonly argvResource: URI = URI.from({
 		scheme: "monaco",
 		authority: "argvResource",
 	});
+
 	readonly untitledWorkspacesHome: URI = URI.from({
 		scheme: "monaco",
 		authority: "untitledWorkspacesHome",
 	});
+
 	readonly workspaceStorageHome: URI = URI.from({
 		scheme: "monaco",
 		authority: "workspaceStorageHome",
 	});
+
 	readonly localHistoryHome: URI = URI.from({
 		scheme: "monaco",
 		authority: "localHistoryHome",
 	});
+
 	readonly cacheHome: URI = URI.from({
 		scheme: "monaco",
 		authority: "cacheHome",
 	});
+
 	readonly userDataSyncHome: URI = URI.from({
 		scheme: "monaco",
 		authority: "userDataSyncHome",
 	});
+
 	readonly sync: "on" | "off" | undefined = undefined;
+
 	readonly continueOn?: string | undefined = undefined;
+
 	readonly editSessionId?: string | undefined = undefined;
+
 	readonly debugExtensionHost: IExtensionHostDebugParams = {
 		port: null,
 		break: false,
 	};
+
 	readonly isExtensionDevelopment: boolean = false;
+
 	readonly disableExtensions: boolean | string[] = false;
+
 	readonly enableExtensions?: readonly string[] | undefined = undefined;
+
 	readonly extensionDevelopmentLocationURI?: URI[] | undefined = undefined;
+
 	readonly extensionDevelopmentKind?: ExtensionKind[] | undefined = undefined;
+
 	readonly extensionTestsLocationURI?: URI | undefined = undefined;
+
 	readonly logsHome: URI = URI.from({
 		scheme: "monaco",
 		authority: "logsHome",
 	});
+
 	readonly logLevel?: string | undefined = undefined;
+
 	readonly extensionLogLevel?: [string, string][] | undefined = undefined;
+
 	readonly verbose: boolean = false;
+
 	readonly isBuilt: boolean = false;
+
 	readonly disableTelemetry: boolean = false;
+
 	readonly serviceMachineIdResource: URI = URI.from({
 		scheme: "monaco",
 		authority: "serviceMachineIdResource",
 	});
+
 	readonly policyFile?: URI | undefined = undefined;
 }
 class StandaloneDialogService implements IDialogService {
 	_serviceBrand: undefined;
+
 	readonly onWillShowDialog = Event.None;
+
 	readonly onDidShowDialog = Event.None;
 
 	async confirm(confirmation: IConfirmation): Promise<IConfirmationResult> {
@@ -433,18 +485,23 @@ class StandaloneDialogService implements IDialogService {
 			checkboxChecked: false, // unsupported
 		};
 	}
+
 	private doConfirm(message: string, detail?: string): boolean {
 		let messageText = message;
 
 		if (detail) {
 			messageText = messageText + "\n\n" + detail;
 		}
+
 		return mainWindow.confirm(messageText);
 	}
+
 	prompt<T>(
 		prompt: IPromptWithCustomCancel<T>,
 	): Promise<IPromptResultWithCancel<T>>;
+
 	prompt<T>(prompt: IPrompt<T>): Promise<IPromptResult<T>>;
+
 	prompt<T>(prompt: IPromptWithDefaultCancel<T>): Promise<IPromptResult<T>>;
 
 	async prompt<T>(
@@ -466,41 +523,56 @@ class StandaloneDialogService implements IDialogService {
 			) {
 				promptButtons.push(prompt.cancelButton);
 			}
+
 			result = await promptButtons[0]?.run({ checkboxChecked: false });
 		}
+
 		return { result };
 	}
+
 	async info(message: string, detail?: string): Promise<void> {
 		await this.prompt({ type: Severity.Info, message, detail });
 	}
+
 	async warn(message: string, detail?: string): Promise<void> {
 		await this.prompt({ type: Severity.Warning, message, detail });
 	}
+
 	async error(message: string, detail?: string): Promise<void> {
 		await this.prompt({ type: Severity.Error, message, detail });
 	}
+
 	input(): Promise<IInputResult> {
 		return Promise.resolve({ confirmed: false }); // unsupported
 	}
+
 	about(): Promise<void> {
 		return Promise.resolve(undefined);
 	}
 }
 export class StandaloneNotificationService implements INotificationService {
 	readonly onDidAddNotification: Event<INotification> = Event.None;
+
 	readonly onDidRemoveNotification: Event<INotification> = Event.None;
+
 	readonly onDidChangeFilter: Event<void> = Event.None;
+
 	public _serviceBrand: undefined;
+
 	private static readonly NO_OP: INotificationHandle = new NoOpNotification();
+
 	public info(message: string): INotificationHandle {
 		return this.notify({ severity: Severity.Info, message });
 	}
+
 	public warn(message: string): INotificationHandle {
 		return this.notify({ severity: Severity.Warning, message });
 	}
+
 	public error(error: string | Error): INotificationHandle {
 		return this.notify({ severity: Severity.Error, message: error });
 	}
+
 	public notify(notification: INotification): INotificationHandle {
 		switch (notification.severity) {
 			case Severity.Error:
@@ -518,8 +590,10 @@ export class StandaloneNotificationService implements INotificationService {
 
 				break;
 		}
+
 		return StandaloneNotificationService.NO_OP;
 	}
+
 	public prompt(
 		severity: Severity,
 		message: string,
@@ -528,30 +602,40 @@ export class StandaloneNotificationService implements INotificationService {
 	): INotificationHandle {
 		return StandaloneNotificationService.NO_OP;
 	}
+
 	public status(
 		message: string | Error,
 		options?: IStatusMessageOptions,
 	): IDisposable {
 		return Disposable.None;
 	}
+
 	public setFilter(
 		filter: NotificationsFilter | INotificationSourceFilter,
 	): void {}
+
 	public getFilter(source?: INotificationSource): NotificationsFilter {
 		return NotificationsFilter.OFF;
 	}
+
 	public getFilters(): INotificationSourceFilter[] {
 		return [];
 	}
+
 	public removeFilter(sourceId: string): void {}
 }
 export class StandaloneCommandService implements ICommandService {
 	declare readonly _serviceBrand: undefined;
+
 	private readonly _instantiationService: IInstantiationService;
+
 	private readonly _onWillExecuteCommand = new Emitter<ICommandEvent>();
+
 	private readonly _onDidExecuteCommand = new Emitter<ICommandEvent>();
+
 	public readonly onWillExecuteCommand: Event<ICommandEvent> =
 		this._onWillExecuteCommand.event;
+
 	public readonly onDidExecuteCommand: Event<ICommandEvent> =
 		this._onDidExecuteCommand.event;
 
@@ -561,12 +645,14 @@ export class StandaloneCommandService implements ICommandService {
 	) {
 		this._instantiationService = instantiationService;
 	}
+
 	public executeCommand<T>(id: string, ...args: any[]): Promise<T> {
 		const command = CommandsRegistry.getCommand(id);
 
 		if (!command) {
 			return Promise.reject(new Error(`command '${id}' not found`));
 		}
+
 		try {
 			this._onWillExecuteCommand.fire({ commandId: id, args });
 
@@ -574,6 +660,7 @@ export class StandaloneCommandService implements ICommandService {
 				this._instantiationService,
 				[command.handler, ...args],
 			) as T;
+
 			this._onDidExecuteCommand.fire({ commandId: id, args });
 
 			return Promise.resolve(result);
@@ -584,13 +671,18 @@ export class StandaloneCommandService implements ICommandService {
 }
 export interface IKeybindingRule {
 	keybinding: number;
+
 	command?: string | null;
+
 	commandArgs?: any;
+
 	when?: ContextKeyExpression | null;
 }
 export class StandaloneKeybindingService extends AbstractKeybindingService {
 	private _cachedResolver: KeybindingResolver | null;
+
 	private _dynamicKeybindings: IKeybindingItem[];
+
 	private readonly _domNodeListeners: DomNodeListeners[];
 
 	constructor(
@@ -614,8 +706,11 @@ export class StandaloneKeybindingService extends AbstractKeybindingService {
 			notificationService,
 			logService,
 		);
+
 		this._cachedResolver = null;
+
 		this._dynamicKeybindings = [];
+
 		this._domNodeListeners = [];
 
 		const addContainer = (domNode: HTMLElement) => {
@@ -635,6 +730,7 @@ export class StandaloneKeybindingService extends AbstractKeybindingService {
 
 						if (shouldPreventDefault) {
 							keyEvent.preventDefault();
+
 							keyEvent.stopPropagation();
 						}
 					},
@@ -660,6 +756,7 @@ export class StandaloneKeybindingService extends AbstractKeybindingService {
 					},
 				),
 			);
+
 			this._domNodeListeners.push(
 				new DomNodeListeners(domNode, disposables),
 			);
@@ -681,6 +778,7 @@ export class StandaloneKeybindingService extends AbstractKeybindingService {
 			if (codeEditor.getOption(EditorOption.inDiffEditor)) {
 				return;
 			}
+
 			addContainer(codeEditor.getContainerDomNode());
 		};
 
@@ -688,10 +786,14 @@ export class StandaloneKeybindingService extends AbstractKeybindingService {
 			if (codeEditor.getOption(EditorOption.inDiffEditor)) {
 				return;
 			}
+
 			removeContainer(codeEditor.getContainerDomNode());
 		};
+
 		this._register(codeEditorService.onCodeEditorAdd(addCodeEditor));
+
 		this._register(codeEditorService.onCodeEditorRemove(removeCodeEditor));
+
 		codeEditorService.listCodeEditors().forEach(addCodeEditor);
 
 		const addDiffEditor = (diffEditor: IDiffEditor) => {
@@ -701,10 +803,14 @@ export class StandaloneKeybindingService extends AbstractKeybindingService {
 		const removeDiffEditor = (diffEditor: IDiffEditor) => {
 			removeContainer(diffEditor.getContainerDomNode());
 		};
+
 		this._register(codeEditorService.onDiffEditorAdd(addDiffEditor));
+
 		this._register(codeEditorService.onDiffEditorRemove(removeDiffEditor));
+
 		codeEditorService.listDiffEditors().forEach(addDiffEditor);
 	}
+
 	public addDynamicKeybinding(
 		command: string,
 		keybinding: number,
@@ -722,6 +828,7 @@ export class StandaloneKeybindingService extends AbstractKeybindingService {
 			]),
 		);
 	}
+
 	public addDynamicKeybindings(rules: IKeybindingRule[]): IDisposable {
 		const entries: IKeybindingItem[] = rules.map((rule) => {
 			const keybinding = decodeKeybinding(rule.keybinding, OS);
@@ -737,7 +844,9 @@ export class StandaloneKeybindingService extends AbstractKeybindingService {
 				isBuiltinExtension: false,
 			};
 		});
+
 		this._dynamicKeybindings = this._dynamicKeybindings.concat(entries);
+
 		this.updateResolver();
 
 		return toDisposable(() => {
@@ -745,6 +854,7 @@ export class StandaloneKeybindingService extends AbstractKeybindingService {
 			for (let i = 0; i < this._dynamicKeybindings.length; i++) {
 				if (this._dynamicKeybindings[i] === entries[0]) {
 					this._dynamicKeybindings.splice(i, entries.length);
+
 					this.updateResolver();
 
 					return;
@@ -752,10 +862,13 @@ export class StandaloneKeybindingService extends AbstractKeybindingService {
 			}
 		});
 	}
+
 	private updateResolver(): void {
 		this._cachedResolver = null;
+
 		this._onDidUpdateKeybindings.fire();
 	}
+
 	protected _getResolver(): KeybindingResolver {
 		if (!this._cachedResolver) {
 			const defaults = this._toNormalizedKeybindingItems(
@@ -767,17 +880,21 @@ export class StandaloneKeybindingService extends AbstractKeybindingService {
 				this._dynamicKeybindings,
 				false,
 			);
+
 			this._cachedResolver = new KeybindingResolver(
 				defaults,
 				overrides,
 				(str) => this._log(str),
 			);
 		}
+
 		return this._cachedResolver;
 	}
+
 	protected _documentHasFocus(): boolean {
 		return mainWindow.document.hasFocus();
 	}
+
 	private _toNormalizedKeybindingItems(
 		items: IKeybindingItem[],
 		isDefault: boolean,
@@ -822,11 +939,14 @@ export class StandaloneKeybindingService extends AbstractKeybindingService {
 				}
 			}
 		}
+
 		return result;
 	}
+
 	public resolveKeybinding(keybinding: Keybinding): ResolvedKeybinding[] {
 		return USLayoutResolvedKeybinding.resolveKeybinding(keybinding, OS);
 	}
+
 	public resolveKeyboardEvent(
 		keyboardEvent: IKeyboardEvent,
 	): ResolvedKeybinding {
@@ -840,15 +960,19 @@ export class StandaloneKeybindingService extends AbstractKeybindingService {
 
 		return new USLayoutResolvedKeybinding([chord], OS);
 	}
+
 	public resolveUserBinding(userBinding: string): ResolvedKeybinding[] {
 		return [];
 	}
+
 	public _dumpDebugInfo(): string {
 		return "";
 	}
+
 	public _dumpDebugInfoJSON(): string {
 		return "";
 	}
+
 	public registerSchemaContribution(
 		contribution: KeybindingsSchemaContribution,
 	): void {
@@ -869,6 +993,7 @@ class DomNodeListeners extends Disposable {
 		disposables: DisposableStore,
 	) {
 		super();
+
 		this._register(disposables);
 	}
 }
@@ -885,10 +1010,13 @@ function isConfigurationOverrides(
 }
 export class StandaloneConfigurationService implements IConfigurationService {
 	declare readonly _serviceBrand: undefined;
+
 	private readonly _onDidChangeConfiguration =
 		new Emitter<IConfigurationChangeEvent>();
+
 	public readonly onDidChangeConfiguration: Event<IConfigurationChangeEvent> =
 		this._onDidChangeConfiguration.event;
+
 	private readonly _configuration: Configuration;
 
 	constructor(
@@ -896,6 +1024,7 @@ export class StandaloneConfigurationService implements IConfigurationService {
 		private readonly logService: ILogService,
 	) {
 		const defaultConfiguration = new DefaultConfiguration(logService);
+
 		this._configuration = new Configuration(
 			defaultConfiguration.reload(),
 			ConfigurationModel.createEmptyModel(logService),
@@ -911,6 +1040,7 @@ export class StandaloneConfigurationService implements IConfigurationService {
 
 		defaultConfiguration.dispose();
 	}
+
 	getValue<T>(): T;
 
 	getValue<T>(section: string): T;
@@ -930,6 +1060,7 @@ export class StandaloneConfigurationService implements IConfigurationService {
 
 		return this._configuration.getValue(section, overrides, undefined);
 	}
+
 	public updateValues(values: [string, any][]): Promise<void> {
 		const previous = { data: this._configuration.toData() };
 
@@ -941,9 +1072,12 @@ export class StandaloneConfigurationService implements IConfigurationService {
 			if (this.getValue(key) === value) {
 				continue;
 			}
+
 			this._configuration.updateValue(key, value);
+
 			changedKeys.push(key);
 		}
+
 		if (changedKeys.length > 0) {
 			const configurationChangeEvent = new ConfigurationChangeEvent(
 				{ keys: changedKeys, overrides: [] },
@@ -952,11 +1086,15 @@ export class StandaloneConfigurationService implements IConfigurationService {
 				undefined,
 				this.logService,
 			);
+
 			configurationChangeEvent.source = ConfigurationTarget.MEMORY;
+
 			this._onDidChangeConfiguration.fire(configurationChangeEvent);
 		}
+
 		return Promise.resolve();
 	}
+
 	public updateValue(
 		key: string,
 		value: any,
@@ -965,18 +1103,22 @@ export class StandaloneConfigurationService implements IConfigurationService {
 	): Promise<void> {
 		return this.updateValues([[key, value]]);
 	}
+
 	public inspect<C>(
 		key: string,
 		options: IConfigurationOverrides = {},
 	): IConfigurationValue<C> {
 		return this._configuration.inspect<C>(key, options, undefined);
 	}
+
 	public keys() {
 		return this._configuration.keys(undefined);
 	}
+
 	public reloadConfiguration(): Promise<void> {
 		return Promise.resolve(undefined);
 	}
+
 	public getConfigurationData(): IConfigurationData | null {
 		const emptyModel: IConfigurationModel = {
 			contents: {},
@@ -998,8 +1140,10 @@ class StandaloneResourceConfigurationService
 	implements ITextResourceConfigurationService
 {
 	declare readonly _serviceBrand: undefined;
+
 	private readonly _onDidChangeConfiguration =
 		new Emitter<ITextResourceConfigurationChangeEvent>();
+
 	public readonly onDidChangeConfiguration =
 		this._onDidChangeConfiguration.event;
 
@@ -1019,6 +1163,7 @@ class StandaloneResourceConfigurationService
 			});
 		});
 	}
+
 	getValue<T>(resource: URI, section?: string): T;
 
 	getValue<T>(resource: URI, position?: IPosition, section?: string): T;
@@ -1044,11 +1189,13 @@ class StandaloneResourceConfigurationService
 				overrideIdentifier: language,
 			});
 		}
+
 		return this.configurationService.getValue<T>(section, {
 			resource,
 			overrideIdentifier: language,
 		});
 	}
+
 	inspect<T>(
 		resource: URI | undefined,
 		position: IPosition | null,
@@ -1063,6 +1210,7 @@ class StandaloneResourceConfigurationService
 			overrideIdentifier: language,
 		});
 	}
+
 	private getLanguage(
 		resource: URI,
 		position: IPosition | null,
@@ -1077,10 +1225,12 @@ class StandaloneResourceConfigurationService
 					)
 				: model.getLanguageId();
 		}
+
 		return this.languageService.guessLanguageIdByFilepathOrFirstLine(
 			resource,
 		);
 	}
+
 	updateValue(
 		resource: URI,
 		key: string,
@@ -1104,6 +1254,7 @@ class StandaloneResourcePropertiesService
 		@IConfigurationService
 		private readonly configurationService: IConfigurationService,
 	) {}
+
 	getEOL(resource: URI, language?: string): string {
 		const eol = this.configurationService.getValue("files.eol", {
 			overrideIdentifier: language,
@@ -1113,43 +1264,66 @@ class StandaloneResourcePropertiesService
 		if (eol && typeof eol === "string" && eol !== "auto") {
 			return eol;
 		}
+
 		return isLinux || isMacintosh ? "\n" : "\r\n";
 	}
 }
 class StandaloneTelemetryService implements ITelemetryService {
 	declare readonly _serviceBrand: undefined;
+
 	readonly telemetryLevel = TelemetryLevel.NONE;
+
 	readonly sessionId = "someValue.sessionId";
+
 	readonly machineId = "someValue.machineId";
+
 	readonly sqmId = "someValue.sqmId";
+
 	readonly devDeviceId = "someValue.devDeviceId";
+
 	readonly firstSessionDate = "someValue.firstSessionDate";
+
 	readonly sendErrorTelemetry = false;
 
 	setEnabled(): void {}
+
 	setExperimentProperty(): void {}
+
 	publicLog() {}
+
 	publicLog2() {}
+
 	publicLogError() {}
+
 	publicLogError2() {}
 }
 class StandaloneWorkspaceContextService implements IWorkspaceContextService {
 	public _serviceBrand: undefined;
+
 	private static readonly SCHEME = "inmemory";
+
 	private readonly _onDidChangeWorkspaceName = new Emitter<void>();
+
 	public readonly onDidChangeWorkspaceName: Event<void> =
 		this._onDidChangeWorkspaceName.event;
+
 	private readonly _onWillChangeWorkspaceFolders =
 		new Emitter<IWorkspaceFoldersWillChangeEvent>();
+
 	public readonly onWillChangeWorkspaceFolders: Event<IWorkspaceFoldersWillChangeEvent> =
 		this._onWillChangeWorkspaceFolders.event;
+
 	private readonly _onDidChangeWorkspaceFolders =
 		new Emitter<IWorkspaceFoldersChangeEvent>();
+
 	public readonly onDidChangeWorkspaceFolders: Event<IWorkspaceFoldersChangeEvent> =
 		this._onDidChangeWorkspaceFolders.event;
+
 	private readonly _onDidChangeWorkbenchState = new Emitter<WorkbenchState>();
+
 	public readonly onDidChangeWorkbenchState: Event<WorkbenchState> =
 		this._onDidChangeWorkbenchState.event;
+
 	private readonly workspace: IWorkspace;
 
 	constructor() {
@@ -1158,6 +1332,7 @@ class StandaloneWorkspaceContextService implements IWorkspaceContextService {
 			authority: "model",
 			path: "/",
 		});
+
 		this.workspace = {
 			id: STANDALONE_EDITOR_WORKSPACE_ID,
 			folders: [
@@ -1165,33 +1340,41 @@ class StandaloneWorkspaceContextService implements IWorkspaceContextService {
 			],
 		};
 	}
+
 	getCompleteWorkspace(): Promise<IWorkspace> {
 		return Promise.resolve(this.getWorkspace());
 	}
+
 	public getWorkspace(): IWorkspace {
 		return this.workspace;
 	}
+
 	public getWorkbenchState(): WorkbenchState {
 		if (this.workspace) {
 			if (this.workspace.configuration) {
 				return WorkbenchState.WORKSPACE;
 			}
+
 			return WorkbenchState.FOLDER;
 		}
+
 		return WorkbenchState.EMPTY;
 	}
+
 	public getWorkspaceFolder(resource: URI): IWorkspaceFolder | null {
 		return resource &&
 			resource.scheme === StandaloneWorkspaceContextService.SCHEME
 			? this.workspace.folders[0]
 			: null;
 	}
+
 	public isInsideWorkspace(resource: URI): boolean {
 		return (
 			resource &&
 			resource.scheme === StandaloneWorkspaceContextService.SCHEME
 		);
 	}
+
 	public isCurrentWorkspace(
 		workspaceIdOrFolder:
 			| IWorkspaceIdentifier
@@ -1209,14 +1392,18 @@ export function updateConfigurationService(
 	if (!source) {
 		return;
 	}
+
 	if (!(configurationService instanceof StandaloneConfigurationService)) {
 		return;
 	}
+
 	const toUpdate: [string, any][] = [];
+
 	Object.keys(source).forEach((key) => {
 		if (isEditorConfigurationKey(key)) {
 			toUpdate.push([`editor.${key}`, source[key]]);
 		}
+
 		if (isDiffEditor && isDiffEditorConfigurationKey(key)) {
 			toUpdate.push([`diffEditor.${key}`, source[key]]);
 		}
@@ -1235,12 +1422,15 @@ class StandaloneBulkEditService implements IBulkEditService {
 	) {
 		//
 	}
+
 	hasPreviewHandler(): false {
 		return false;
 	}
+
 	setPreviewHandler(): IDisposable {
 		return Disposable.None;
 	}
+
 	async apply(
 		editsIn: ResourceEdit[] | WorkspaceEdit,
 		_options?: IBulkEditOptions,
@@ -1255,23 +1445,28 @@ class StandaloneBulkEditService implements IBulkEditService {
 			if (!(edit instanceof ResourceTextEdit)) {
 				throw new Error("bad edit - only text edits are supported");
 			}
+
 			const model = this._modelService.getModel(edit.resource);
 
 			if (!model) {
 				throw new Error("bad edit - model not found");
 			}
+
 			if (
 				typeof edit.versionId === "number" &&
 				model.getVersionId() !== edit.versionId
 			) {
 				throw new Error("bad state - model changed in the meantime");
 			}
+
 			let array = textEdits.get(model);
 
 			if (!array) {
 				array = [];
+
 				textEdits.set(model, array);
 			}
+
 			array.push(
 				EditOperation.replaceMove(
 					Range.lift(edit.textEdit.range),
@@ -1279,17 +1474,23 @@ class StandaloneBulkEditService implements IBulkEditService {
 				),
 			);
 		}
+
 		let totalEdits = 0;
 
 		let totalFiles = 0;
 
 		for (const [model, edits] of textEdits) {
 			model.pushStackElement();
+
 			model.pushEditOperations([], edits, () => []);
+
 			model.pushStackElement();
+
 			totalFiles += 1;
+
 			totalEdits += edits.length;
 		}
+
 		return {
 			ariaSummary: strings.format(
 				StandaloneServicesNLS.bulkEditServiceSummary,
@@ -1302,8 +1503,10 @@ class StandaloneBulkEditService implements IBulkEditService {
 }
 class StandaloneUriLabelService implements ILabelService {
 	declare readonly _serviceBrand: undefined;
+
 	public readonly onDidChangeFormatters: Event<IFormatterChangeEvent> =
 		Event.None;
+
 	public getUriLabel(
 		resource: URI,
 		options?: {
@@ -1315,11 +1518,14 @@ class StandaloneUriLabelService implements ILabelService {
 		if (resource.scheme === "file") {
 			return resource.fsPath;
 		}
+
 		return resource.path;
 	}
+
 	getUriBasenameLabel(resource: URI): string {
 		return basename(resource);
 	}
+
 	public getWorkspaceLabel(
 		workspace:
 			| IWorkspaceIdentifier
@@ -1332,20 +1538,25 @@ class StandaloneUriLabelService implements ILabelService {
 	): string {
 		return "";
 	}
+
 	public getSeparator(scheme: string, authority?: string): "/" | "\\" {
 		return "/";
 	}
+
 	public registerFormatter(formatter: ResourceLabelFormatter): IDisposable {
 		throw new Error("Not implemented");
 	}
+
 	public registerCachedFormatter(
 		formatter: ResourceLabelFormatter,
 	): IDisposable {
 		return this.registerFormatter(formatter);
 	}
+
 	public getHostLabel(): string {
 		return "";
 	}
+
 	public getHostTooltip(): string | undefined {
 		return undefined;
 	}
@@ -1359,6 +1570,7 @@ class StandaloneContextViewService extends ContextViewService {
 	) {
 		super(layoutService);
 	}
+
 	override showContextView(
 		delegate: IContextViewDelegate,
 		container?: HTMLElement,
@@ -1373,6 +1585,7 @@ class StandaloneContextViewService extends ContextViewService {
 				container = codeEditor.getContainerDomNode();
 			}
 		}
+
 		return super.showContextView(delegate, container, shadowRoot);
 	}
 }
@@ -1380,42 +1593,59 @@ class StandaloneWorkspaceTrustManagementService
 	implements IWorkspaceTrustManagementService
 {
 	_serviceBrand: undefined;
+
 	private _neverEmitter = new Emitter<never>();
+
 	public readonly onDidChangeTrust: Event<boolean> = this._neverEmitter.event;
+
 	onDidChangeTrustedFolders: Event<void> = this._neverEmitter.event;
+
 	public readonly workspaceResolved = Promise.resolve();
+
 	public readonly workspaceTrustInitialized = Promise.resolve();
+
 	public readonly acceptsOutOfWorkspaceFiles = true;
+
 	isWorkspaceTrusted(): boolean {
 		return true;
 	}
+
 	isWorkspaceTrustForced(): boolean {
 		return false;
 	}
+
 	canSetParentFolderTrust(): boolean {
 		return false;
 	}
+
 	async setParentFolderTrust(trusted: boolean): Promise<void> {
 		// noop
 	}
+
 	canSetWorkspaceTrust(): boolean {
 		return false;
 	}
+
 	async setWorkspaceTrust(trusted: boolean): Promise<void> {
 		// noop
 	}
+
 	getUriTrustInfo(uri: URI): Promise<IWorkspaceTrustUriInfo> {
 		throw new Error("Method not supported.");
 	}
+
 	async setUrisTrust(uri: URI[], trusted: boolean): Promise<void> {
 		// noop
 	}
+
 	getTrustedUris(): URI[] {
 		return [];
 	}
+
 	async setTrustedUris(uris: URI[]): Promise<void> {
 		// noop
 	}
+
 	addWorkspaceTrustTransitionParticipant(
 		participant: IWorkspaceTrustTransitionParticipant,
 	): IDisposable {
@@ -1455,6 +1685,7 @@ class StandaloneContextMenuService extends ContextMenuService {
 			menuService,
 			contextKeyService,
 		);
+
 		this.configure({ blockMouse: false }); // we do not want that in the standalone editor
 	}
 }
@@ -1492,7 +1723,9 @@ class StandaloneAccessbilitySignalService
 	_serviceBrand: undefined;
 
 	async playSignal(cue: AccessibilitySignal, options: {}): Promise<void> {}
+
 	async playSignals(cues: AccessibilitySignal[]): Promise<void> {}
+
 	getEnabledState(
 		signal: AccessibilitySignal,
 		userGesture: boolean,
@@ -1500,25 +1733,31 @@ class StandaloneAccessbilitySignalService
 	): IValueWithChangeEvent<boolean> {
 		return ValueWithChangeEvent.const(false);
 	}
+
 	getDelayMs(
 		signal: AccessibilitySignal,
 		modality: AccessibilityModality,
 	): number {
 		return 0;
 	}
+
 	isSoundEnabled(cue: AccessibilitySignal): boolean {
 		return false;
 	}
+
 	isAnnouncementEnabled(cue: AccessibilitySignal): boolean {
 		return false;
 	}
+
 	onSoundEnabledChanged(cue: AccessibilitySignal): Event<void> {
 		return Event.None;
 	}
+
 	async playSound(
 		cue: Sound,
 		allowManyInParallel?: boolean | undefined,
 	): Promise<void> {}
+
 	playSignalLoop(cue: AccessibilitySignal): IDisposable {
 		return toDisposable(() => {});
 	}
@@ -1687,21 +1926,25 @@ export module StandaloneServices {
 	for (const [id, descriptor] of getSingletonServiceDescriptors()) {
 		serviceCollection.set(id, descriptor);
 	}
+
 	const instantiationService = new InstantiationService(
 		serviceCollection,
 		true,
 	);
+
 	serviceCollection.set(IInstantiationService, instantiationService);
 
 	export function get<T>(serviceId: ServiceIdentifier<T>): T {
 		if (!initialized) {
 			initialize({});
 		}
+
 		const r = serviceCollection.get(serviceId);
 
 		if (!r) {
 			throw new Error("Missing service " + serviceId);
 		}
+
 		if (r instanceof SyncDescriptor) {
 			return instantiationService.invokeFunction((accessor) =>
 				accessor.get(serviceId),
@@ -1710,6 +1953,7 @@ export module StandaloneServices {
 			return r;
 		}
 	}
+
 	let initialized = false;
 
 	const onDidInitialize = new Emitter<void>();
@@ -1720,6 +1964,7 @@ export module StandaloneServices {
 		if (initialized) {
 			return instantiationService;
 		}
+
 		initialized = true;
 		// Add singletons that were registered after this module loaded
 		for (const [id, descriptor] of getSingletonServiceDescriptors()) {
@@ -1753,6 +1998,7 @@ export module StandaloneServices {
 				onUnexpectedError(err);
 			}
 		}
+
 		onDidInitialize.fire();
 
 		return instantiationService;
@@ -1764,11 +2010,13 @@ export module StandaloneServices {
 		if (initialized) {
 			return callback();
 		}
+
 		const disposable = new DisposableStore();
 
 		const listener = disposable.add(
 			onDidInitialize.event(() => {
 				listener.dispose();
+
 				disposable.add(callback());
 			}),
 		);

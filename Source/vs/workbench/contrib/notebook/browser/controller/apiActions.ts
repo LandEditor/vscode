@@ -19,17 +19,23 @@ CommandsRegistry.registerCommand(
 		accessor,
 	): {
 		viewType: string;
+
 		displayName: string;
+
 		options: {
 			transientOutputs: boolean;
+
 			transientCellMetadata: TransientCellMetadata;
+
 			transientDocumentMetadata: TransientDocumentMetadata;
 		};
+
 		filenamePattern: (
 			| string
 			| glob.IRelativePattern
 			| {
 					include: string | glob.IRelativePattern;
+
 					exclude: string | glob.IRelativePattern;
 			  }
 		)[];
@@ -45,15 +51,18 @@ CommandsRegistry.registerCommand(
 					if (typeof selector === "string") {
 						return selector;
 					}
+
 					if (glob.isRelativePattern(selector)) {
 						return selector;
 					}
+
 					if (isDocumentExcludePattern(selector)) {
 						return {
 							include: selector.include,
 							exclude: selector.exclude,
 						};
 					}
+
 					return null;
 				})
 				.filter((pattern) => pattern !== null) as (
@@ -61,6 +70,7 @@ CommandsRegistry.registerCommand(
 				| glob.IRelativePattern
 				| {
 						include: string | glob.IRelativePattern;
+
 						exclude: string | glob.IRelativePattern;
 				  }
 			)[];
@@ -86,15 +96,21 @@ CommandsRegistry.registerCommand(
 		accessor,
 		args: {
 			viewType: string;
+
 			uri: UriComponents;
 		},
 	): Promise<
 		{
 			id?: string;
+
 			label: string;
+
 			description?: string;
+
 			detail?: string;
+
 			isPreferred?: boolean;
+
 			preloads?: URI[];
 		}[]
 	> => {

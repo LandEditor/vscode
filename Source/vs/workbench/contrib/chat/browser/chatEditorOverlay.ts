@@ -34,10 +34,13 @@ class ChatEditorOverlayWidget implements IOverlayWidget {
 	readonly allowEditorOverflow = false;
 
 	private readonly _domNode: HTMLElement;
+
 	private readonly _progressNode: HTMLElement;
+
 	private readonly _toolbar: WorkbenchToolBar;
 
 	private _isAdded: boolean = false;
+
 	private readonly _showStore = new DisposableStore();
 
 	private readonly _entry = observableValue<{ entry: IModifiedFileEntry; next: IModifiedFileEntry } | undefined>(this, undefined);
@@ -50,14 +53,19 @@ class ChatEditorOverlayWidget implements IOverlayWidget {
 		@IInstantiationService instaService: IInstantiationService,
 	) {
 		this._domNode = document.createElement('div');
+
 		this._domNode.classList.add('chat-editor-overlay-widget');
 
 		this._progressNode = document.createElement('div');
+
 		this._progressNode.classList.add('chat-editor-overlay-progress');
+
 		this._domNode.appendChild(this._progressNode);
 
 		const toolbarNode = document.createElement('div');
+
 		toolbarNode.classList.add('chat-editor-overlay-toolbar');
+
 		this._domNode.appendChild(toolbarNode);
 
 		this._toolbar = instaService.createInstance(MenuWorkbenchToolBar, toolbarNode, MenuId.ChatEditingEditorContent, {
@@ -87,8 +95,11 @@ class ChatEditorOverlayWidget implements IOverlayWidget {
 								assertType(this.label);
 
 								const { changeCount, activeIdx } = that._navigationBearings.read(r);
+
 								const n = activeIdx === -1 ? '?' : `${activeIdx + 1}`;
+
 								const m = changeCount === -1 ? '?' : `${changeCount}`;
+
 								this.label.innerText = localize('nOfM', "{0} of {1}", n, m);
 
 								this.updateTooltip();
@@ -97,6 +108,7 @@ class ChatEditorOverlayWidget implements IOverlayWidget {
 
 						protected override getTooltip(): string | undefined {
 							const { changeCount, entriesCount } = that._navigationBearings.get();
+
 							if (changeCount === -1 || entriesCount === -1) {
 								return undefined;
 							} else if (changeCount === 1 && entriesCount === 1) {
@@ -120,6 +132,7 @@ class ChatEditorOverlayWidget implements IOverlayWidget {
 						constructor() {
 							super(undefined, action, { ...options, icon: false, label: true, keybindingNotRenderedWithLabel: true });
 						}
+
 						override set actionRunner(actionRunner: IActionRunner) {
 							super.actionRunner = actionRunner;
 
@@ -133,11 +146,15 @@ class ChatEditorOverlayWidget implements IOverlayWidget {
 								if (e.action !== this.action) {
 									return;
 								}
+
 								const d = that._entry.get();
+
 								if (!d || d.entry === d.next) {
 									return;
 								}
+
 								const change = d.next.diffInfo.get().changes.at(0);
+
 								return editorService.openEditor({
 									resource: d.next.modifiedURI,
 									options: {
@@ -150,11 +167,13 @@ class ChatEditorOverlayWidget implements IOverlayWidget {
 
 							this._reveal.value = store;
 						}
+
 						override get actionRunner(): IActionRunner {
 							return super.actionRunner;
 						}
 					};
 				}
+
 				return undefined;
 			}
 		});
@@ -162,7 +181,9 @@ class ChatEditorOverlayWidget implements IOverlayWidget {
 
 	dispose() {
 		this.hide();
+
 		this._showStore.dispose();
+
 		this._toolbar.dispose();
 	}
 
@@ -186,21 +207,27 @@ class ChatEditorOverlayWidget implements IOverlayWidget {
 
 		this._showStore.add(autorun(r => {
 			const busy = activeEntry.isCurrentlyBeingModified.read(r);
+
 			this._domNode.classList.toggle('busy', busy);
 		}));
 
 		const slickRatio = ObservableAnimatedValue.const(0);
+
 		let t = Date.now();
+
 		this._showStore.add(autorun(r => {
 			const value = activeEntry.rewriteRatio.read(r);
 
 			slickRatio.changeAnimation(prev => {
 				const result = new AnimatedValue(prev.getValue(), value, Date.now() - t);
+
 				t = Date.now();
+
 				return result;
 			}, undefined);
 
 			const value2 = slickRatio.getValue(r);
+
 			reset(this._progressNode, value === 0
 				? renderIcon(ThemeIcon.modify(Codicon.loading, 'spin'))
 				: `${Math.round(value2 * 100)}%`
@@ -210,10 +237,13 @@ class ChatEditorOverlayWidget implements IOverlayWidget {
 		this._showStore.add(autorun(r => {
 
 			const position = ChatEditorController.get(this._editor)?.currentChange.read(r);
+
 			const entries = session.entries.read(r);
 
 			let changes = 0;
+
 			let activeIdx = -1;
+
 			for (const entry of entries) {
 				const diffInfo = entry.diffInfo.read(r);
 
@@ -226,6 +256,7 @@ class ChatEditorOverlayWidget implements IOverlayWidget {
 						if (position && change.modified.includes(position.lineNumber)) {
 							activeIdx = changes;
 						}
+
 						changes += 1;
 					}
 				}
@@ -236,6 +267,7 @@ class ChatEditorOverlayWidget implements IOverlayWidget {
 
 		if (!this._isAdded) {
 			this._editor.addOverlayWidget(this);
+
 			this._isAdded = true;
 		}
 	}
@@ -244,12 +276,15 @@ class ChatEditorOverlayWidget implements IOverlayWidget {
 
 		transaction(tx => {
 			this._entry.set(undefined, tx);
+
 			this._navigationBearings.set({ changeCount: -1, activeIdx: -1, entriesCount: -1 }, tx);
 		});
 
 		if (this._isAdded) {
 			this._editor.removeOverlayWidget(this);
+
 			this._isAdded = false;
+
 			this._showStore.clear();
 		}
 	}
@@ -288,14 +323,17 @@ export class ObservableAnimatedValue {
 
 	changeAnimation(fn: (prev: AnimatedValue) => AnimatedValue, tx: ITransaction | undefined): void {
 		const value = fn(this._value.get());
+
 		this._value.set(value, tx);
 	}
 
 	getValue(reader: IReader | undefined): number {
 		const value = this._value.read(reader);
+
 		if (!value.isFinished()) {
 			Scheduler.instance.invalidateOnNextAnimationFrame(reader);
 		}
+
 		return value.getValue();
 	}
 }
@@ -309,10 +347,13 @@ class Scheduler {
 
 	invalidateOnNextAnimationFrame(reader: IReader | undefined): void {
 		this._signal.read(reader);
+
 		if (!this._isScheduled) {
 			this._isScheduled = true;
+
 			scheduleAtNextAnimationFrame(getWindow(undefined), () => {
 				this._isScheduled = false;
+
 				this._signal.trigger(undefined);
 			});
 		}
@@ -343,10 +384,13 @@ export class AnimatedValue {
 
 	getValue(): number {
 		const timePassed = Date.now() - this.startTimeMs;
+
 		if (timePassed >= this.durationMs) {
 			return this.endValue;
 		}
+
 		const value = easeOutExpo(timePassed, this.startValue, this.endValue - this.startValue, this.durationMs);
+
 		return value;
 	}
 }
@@ -374,6 +418,7 @@ export class ChatEditorOverlayController implements IEditorContribution {
 		@IInstantiationService instaService: IInstantiationService,
 	) {
 		const modelObs = observableFromEvent(this._editor.onDidChangeModel, () => this._editor.getModel());
+
 		const widget = this._store.add(instaService.createInstance(ChatEditorOverlayWidget, this._editor));
 
 		if (this._editor.getOption(EditorOption.inDiffEditor)) {
@@ -382,32 +427,43 @@ export class ChatEditorOverlayController implements IEditorContribution {
 
 		this._store.add(autorun(r => {
 			const model = modelObs.read(r);
+
 			const session = chatEditingService.currentEditingSessionObs.read(r);
+
 			if (!session || !model) {
 				widget.hide();
+
 				return;
 			}
 
 			const state = session.state.read(r);
+
 			if (state === ChatEditingSessionState.Disposed) {
 				widget.hide();
+
 				return;
 			}
 
 			const entries = session.entries.read(r);
+
 			const idx = entries.findIndex(e => isEqual(e.modifiedURI, model.uri));
+
 			if (idx < 0) {
 				widget.hide();
+
 				return;
 			}
 
 			const isModifyingOrModified = entries.some(e => e.state.read(r) === WorkingSetEntryState.Modified || e.isCurrentlyBeingModified.read(r));
+
 			if (!isModifyingOrModified) {
 				widget.hide();
+
 				return;
 			}
 
 			const entry = entries[idx];
+
 			widget.show(session, entry, entries[(idx + 1) % entries.length]);
 
 		}));

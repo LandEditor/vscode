@@ -58,12 +58,14 @@ export class InitialRemoteConnectionHealthContribution
 			this._checkInitialRemoteConnectionHealth();
 		}
 	}
+
 	private async _confirmConnection(): Promise<boolean> {
 		const enum ConnectionChoice {
 			Allow = 1,
 			LearnMore = 2,
 			Cancel = 0,
 		}
+
 		const { result, checkboxChecked } =
 			await this.dialogService.prompt<ConnectionChoice>({
 				type: Severity.Warning,
@@ -95,6 +97,7 @@ export class InitialRemoteConnectionHealthContribution
 							await this.openerService.open(
 								"https://aka.ms/vscode-remote/faq/old-linux",
 							);
+
 							return ConnectionChoice.LearnMore;
 						},
 					},
@@ -110,6 +113,7 @@ export class InitialRemoteConnectionHealthContribution
 		if (result === ConnectionChoice.LearnMore) {
 			return await this._confirmConnection();
 		}
+
 		const allowed = result === ConnectionChoice.Allow;
 
 		if (allowed && checkboxChecked) {
@@ -120,8 +124,10 @@ export class InitialRemoteConnectionHealthContribution
 				StorageTarget.MACHINE,
 			);
 		}
+
 		return allowed;
 	}
+
 	private async _checkInitialRemoteConnectionHealth(): Promise<void> {
 		try {
 			const environment =
@@ -136,6 +142,7 @@ export class InitialRemoteConnectionHealthContribution
 				if (allowed === undefined) {
 					allowed = await this._confirmConnection();
 				}
+
 				if (allowed) {
 					const bannerDismissedVersion =
 						this.storageService.get(
@@ -163,6 +170,7 @@ export class InitialRemoteConnectionHealthContribution
 								href: "https://aka.ms/vscode-remote/faq/old-linux",
 							},
 						];
+
 						this.bannerService.show({
 							id: "unsupportedGlibcWarning.banner",
 							message: localize(
@@ -192,30 +200,45 @@ export class InitialRemoteConnectionHealthContribution
 					return;
 				}
 			}
+
 			type RemoteConnectionSuccessClassification = {
 				owner: "alexdima";
+
 				comment: "The initial connection succeeded";
+
 				web: {
 					classification: "SystemMetaData";
+
 					purpose: "PerformanceAndHealth";
+
 					comment: "Is web ui.";
 				};
+
 				connectionTimeMs: {
 					classification: "SystemMetaData";
+
 					purpose: "PerformanceAndHealth";
+
 					comment: "Time, in ms, until connected";
 				};
+
 				remoteName: {
 					classification: "SystemMetaData";
+
 					purpose: "PerformanceAndHealth";
+
 					comment: "The name of the resolver.";
 				};
 			};
+
 			type RemoteConnectionSuccessEvent = {
 				web: boolean;
+
 				connectionTimeMs: number | undefined;
+
 				remoteName: string | undefined;
 			};
+
 			this._telemetryService.publicLog2<
 				RemoteConnectionSuccessEvent,
 				RemoteConnectionSuccessClassification
@@ -228,38 +251,57 @@ export class InitialRemoteConnectionHealthContribution
 					this._environmentService.remoteAuthority,
 				),
 			});
+
 			await this._measureExtHostLatency();
 		} catch (err) {
 			type RemoteConnectionFailureClassification = {
 				owner: "alexdima";
+
 				comment: "The initial connection failed";
+
 				web: {
 					classification: "SystemMetaData";
+
 					purpose: "PerformanceAndHealth";
+
 					comment: "Is web ui.";
 				};
+
 				remoteName: {
 					classification: "SystemMetaData";
+
 					purpose: "PerformanceAndHealth";
+
 					comment: "The name of the resolver.";
 				};
+
 				connectionTimeMs: {
 					classification: "SystemMetaData";
+
 					purpose: "PerformanceAndHealth";
+
 					comment: "Time, in ms, until connection failure";
 				};
+
 				message: {
 					classification: "SystemMetaData";
+
 					purpose: "PerformanceAndHealth";
+
 					comment: "Error message";
 				};
 			};
+
 			type RemoteConnectionFailureEvent = {
 				web: boolean;
+
 				remoteName: string | undefined;
+
 				connectionTimeMs: number | undefined;
+
 				message: string;
 			};
+
 			this._telemetryService.publicLog2<
 				RemoteConnectionFailureEvent,
 				RemoteConnectionFailureClassification
@@ -275,6 +317,7 @@ export class InitialRemoteConnectionHealthContribution
 			});
 		}
 	}
+
 	private async _measureExtHostLatency() {
 		const measurement = await remoteConnectionLatencyMeasurer.measure(
 			this._remoteAgentService,
@@ -283,30 +326,45 @@ export class InitialRemoteConnectionHealthContribution
 		if (measurement === undefined) {
 			return;
 		}
+
 		type RemoteConnectionLatencyClassification = {
 			owner: "connor4312";
+
 			comment: "The latency to the remote extension host";
+
 			web: {
 				classification: "SystemMetaData";
+
 				purpose: "PerformanceAndHealth";
+
 				comment: "Whether this is running on web";
 			};
+
 			remoteName: {
 				classification: "SystemMetaData";
+
 				purpose: "PerformanceAndHealth";
+
 				comment: "Anonymized remote name";
 			};
+
 			latencyMs: {
 				classification: "SystemMetaData";
+
 				purpose: "PerformanceAndHealth";
+
 				comment: "Latency to the remote, in milliseconds";
 			};
 		};
+
 		type RemoteConnectionLatencyEvent = {
 			web: boolean;
+
 			remoteName: string | undefined;
+
 			latencyMs: number;
 		};
+
 		this._telemetryService.publicLog2<
 			RemoteConnectionLatencyEvent,
 			RemoteConnectionLatencyClassification

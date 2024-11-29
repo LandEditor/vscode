@@ -11,10 +11,12 @@ import { isMarkdownFile } from "../util/file";
 
 export class ShowPreviewSecuritySelectorCommand implements Command {
 	public readonly id = "markdown.showPreviewSecuritySelector";
+
 	public constructor(
 		private readonly _previewSecuritySelector: PreviewSecuritySelector,
 		private readonly _previewManager: MarkdownPreviewManager,
 	) {}
+
 	public execute(resource: string | undefined) {
 		if (this._previewManager.activePreviewResource) {
 			this._previewSecuritySelector.showSecuritySelectorForResource(
@@ -22,6 +24,7 @@ export class ShowPreviewSecuritySelectorCommand implements Command {
 			);
 		} else if (resource) {
 			const source = vscode.Uri.parse(resource);
+
 			this._previewSecuritySelector.showSecuritySelectorForResource(
 				source.query ? vscode.Uri.parse(source.query) : source,
 			);

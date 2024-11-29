@@ -48,16 +48,20 @@ export class ContentHoverWidgetWrapper
 	implements IHoverWidget
 {
 	private _currentResult: ContentHoverResult | null = null;
+
 	private _renderedContentHover: RenderedContentHover | undefined;
 
 	private readonly _contentHoverWidget: ContentHoverWidget;
+
 	private readonly _participants: IEditorHoverParticipant[];
+
 	private readonly _hoverOperation: HoverOperation<
 		ContentHoverComputerOptions,
 		IHoverPart
 	>;
 
 	private readonly _onContentsChanged = this._register(new Emitter<void>());
+
 	public readonly onContentsChanged = this._onContentsChanged.event;
 
 	constructor(
@@ -69,19 +73,23 @@ export class ContentHoverWidgetWrapper
 		@IHoverService private readonly _hoverService: IHoverService,
 	) {
 		super();
+
 		this._contentHoverWidget = this._register(
 			this._instantiationService.createInstance(
 				ContentHoverWidget,
 				this._editor,
 			),
 		);
+
 		this._participants = this._initializeHoverParticipants();
+
 		this._hoverOperation = this._register(
 			new HoverOperation(
 				this._editor,
 				new ContentHoverComputer(this._editor, this._participants),
 			),
 		);
+
 		this._registerListeners();
 	}
 
@@ -94,9 +102,12 @@ export class ContentHoverWidgetWrapper
 					participant,
 					this._editor,
 				);
+
 			participants.push(participantInstance);
 		}
+
 		participants.sort((p1, p2) => p1.hoverOrdinal - p2.hoverOrdinal);
+
 		this._register(
 			this._contentHoverWidget.onDidResize(() => {
 				this._participants.forEach((participant) =>
@@ -114,6 +125,7 @@ export class ContentHoverWidgetWrapper
 				const messages = result.hasLoadingMessage
 					? this._addLoadingMessage(result)
 					: result.value;
+
 				this._withResult(
 					new ContentHoverResult(
 						messages,
@@ -125,6 +137,7 @@ export class ContentHoverWidgetWrapper
 		);
 
 		const contentHoverWidgetNode = this._contentHoverWidget.getDomNode();
+
 		this._register(
 			dom.addStandardDisposableListener(
 				contentHoverWidgetNode,
@@ -136,6 +149,7 @@ export class ContentHoverWidgetWrapper
 				},
 			),
 		);
+
 		this._register(
 			dom.addStandardDisposableListener(
 				contentHoverWidgetNode,
@@ -145,6 +159,7 @@ export class ContentHoverWidgetWrapper
 				},
 			),
 		);
+
 		this._register(
 			TokenizationRegistry.onDidChange(() => {
 				if (this._contentHoverWidget.position && this._currentResult) {
@@ -179,8 +194,10 @@ export class ContentHoverWidgetWrapper
 
 				return true;
 			}
+
 			return false;
 		}
+
 		const isHoverSticky = this._editor.getOption(EditorOption.hover).sticky;
 
 		const isMouseGettingCloser =
@@ -204,6 +221,7 @@ export class ContentHoverWidgetWrapper
 					true,
 				);
 			}
+
 			return true;
 		}
 		// If mouse is not getting closer and anchor not defined, hide the hover
@@ -230,6 +248,7 @@ export class ContentHoverWidgetWrapper
 
 		if (!currentAnchorCompatibleWithPreviousAnchor) {
 			this._setCurrentResult(null);
+
 			this._startHoverOperationIfNecessary(
 				anchor,
 				mode,
@@ -245,6 +264,7 @@ export class ContentHoverWidgetWrapper
 		if (this._currentResult) {
 			this._setCurrentResult(this._currentResult.filter(anchor));
 		}
+
 		this._startHoverOperationIfNecessary(
 			anchor,
 			mode,
@@ -270,6 +290,7 @@ export class ContentHoverWidgetWrapper
 		if (currentAnchorEqualToPreviousHover) {
 			return;
 		}
+
 		this._hoverOperation.cancel();
 
 		const contentHoverComputerOptions: ContentHoverComputerOptions = {
@@ -278,6 +299,7 @@ export class ContentHoverWidgetWrapper
 			shouldFocus,
 			insistOnKeepingHoverVisible,
 		};
+
 		this._hoverOperation.start(mode, contentHoverComputerOptions);
 	}
 
@@ -290,12 +312,14 @@ export class ContentHoverWidgetWrapper
 		if (currentResultEqualToPreviousResult) {
 			return;
 		}
+
 		const currentHoverResultIsEmpty =
 			currentHoverResult && currentHoverResult.hoverParts.length === 0;
 
 		if (currentHoverResultIsEmpty) {
 			currentHoverResult = null;
 		}
+
 		this._currentResult = currentHoverResult;
 
 		if (this._currentResult) {
@@ -312,6 +336,7 @@ export class ContentHoverWidgetWrapper
 			if (!participant.createLoadingMessage) {
 				continue;
 			}
+
 			const loadingMessage = participant.createLoadingMessage(
 				hoverResult.options.anchor,
 			);
@@ -319,8 +344,10 @@ export class ContentHoverWidgetWrapper
 			if (!loadingMessage) {
 				continue;
 			}
+
 			return hoverResult.value.slice(0).concat([loadingMessage]);
 		}
+
 		return hoverResult.value;
 	}
 
@@ -340,6 +367,7 @@ export class ContentHoverWidgetWrapper
 			// Instead of rendering the new partial result, we wait for the result to be complete.
 			return;
 		}
+
 		const currentHoverResultIsEmpty = hoverResult.hoverParts.length === 0;
 
 		const insistOnKeepingPreviousHoverVisible =
@@ -352,11 +380,13 @@ export class ContentHoverWidgetWrapper
 			// The hover would now hide normally, so we'll keep the previous messages
 			return;
 		}
+
 		this._setCurrentResult(hoverResult);
 	}
 
 	private _showHover(hoverResult: ContentHoverResult): void {
 		const context = this._getHoverContext();
+
 		this._renderedContentHover = new RenderedContentHover(
 			this._editor,
 			hoverResult,
@@ -375,6 +405,7 @@ export class ContentHoverWidgetWrapper
 
 	private _hideHover(): void {
 		this._contentHoverWidget.hide();
+
 		this._participants.forEach((participant) => participant.handleHide?.());
 	}
 
@@ -385,6 +416,7 @@ export class ContentHoverWidgetWrapper
 
 		const onContentsChanged = () => {
 			this._onContentsChanged.fire();
+
 			this._contentHoverWidget.onContentsChanged();
 		};
 
@@ -401,6 +433,7 @@ export class ContentHoverWidgetWrapper
 		if (isContentWidgetResizing) {
 			return true;
 		}
+
 		const anchorCandidates: HoverAnchor[] =
 			this._findHoverAnchorCandidates(mouseEvent);
 
@@ -415,6 +448,7 @@ export class ContentHoverWidgetWrapper
 				mouseEvent,
 			);
 		}
+
 		const anchor = anchorCandidates[0];
 
 		return this._startShowingOrUpdateHover(
@@ -435,13 +469,16 @@ export class ContentHoverWidgetWrapper
 			if (!participant.suggestHoverAnchor) {
 				continue;
 			}
+
 			const anchor = participant.suggestHoverAnchor(mouseEvent);
 
 			if (!anchor) {
 				continue;
 			}
+
 			anchorCandidates.push(anchor);
 		}
+
 		const target = mouseEvent.target;
 
 		switch (target.type) {
@@ -457,6 +494,7 @@ export class ContentHoverWidgetWrapper
 
 				break;
 			}
+
 			case MouseTargetType.CONTENT_EMPTY: {
 				const epsilon =
 					this._editor.getOption(EditorOption.fontInfo)
@@ -471,6 +509,7 @@ export class ContentHoverWidgetWrapper
 				if (!mouseIsWithinLinesAndCloseToHover) {
 					break;
 				}
+
 				anchorCandidates.push(
 					new HoverRangeAnchor(
 						0,
@@ -483,6 +522,7 @@ export class ContentHoverWidgetWrapper
 				break;
 			}
 		}
+
 		anchorCandidates.sort((a, b) => b.priority - a.priority);
 
 		return anchorCandidates;
@@ -521,6 +561,7 @@ export class ContentHoverWidgetWrapper
 		if (!node.textContent) {
 			return undefined;
 		}
+
 		return node.textContent;
 	}
 
@@ -612,6 +653,7 @@ export class ContentHoverWidgetWrapper
 
 	public hide(): void {
 		this._hoverOperation.cancel();
+
 		this._setCurrentResult(null);
 	}
 

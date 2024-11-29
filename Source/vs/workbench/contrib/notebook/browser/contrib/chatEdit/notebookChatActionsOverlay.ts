@@ -91,6 +91,7 @@ export class NotebookChatActionsOverlayController extends Disposable {
 
 					const previousEntry =
 						entries[(idx - 1 + entries.length) % entries.length];
+
 					store.add(
 						instantiationService.createInstance(
 							NotebookChatActionsOverlay,
@@ -138,6 +139,7 @@ export class NotebookChatActionsOverlay extends Disposable {
 				}
 			}),
 		);
+
 		this._register(
 			notebookEditor.onDidChangeActiveEditor((e) => {
 				if (e !== notebookEditor) {
@@ -147,7 +149,9 @@ export class NotebookChatActionsOverlay extends Disposable {
 		);
 
 		const toolbarNode = $("div");
+
 		toolbarNode.classList.add("notebook-chat-editor-overlay-widget");
+
 		notebookEditor.getDomNode().appendChild(toolbarNode);
 
 		this._register(
@@ -190,6 +194,7 @@ export class NotebookChatActionsOverlay extends Disposable {
 									keybindingNotRenderedWithLabel: true,
 								});
 							}
+
 							override set actionRunner(
 								actionRunner: IActionRunner,
 							) {
@@ -202,14 +207,17 @@ export class NotebookChatActionsOverlay extends Disposable {
 										notebookEditor.focus();
 									}),
 								);
+
 								store.add(
 									actionRunner.onDidRun((e) => {
 										if (e.action !== this.action) {
 											return;
 										}
+
 										if (entry === nextEntry) {
 											return;
 										}
+
 										const change = nextEntry.diffInfo
 											.get()
 											.changes.at(0);
@@ -237,6 +245,7 @@ export class NotebookChatActionsOverlay extends Disposable {
 
 								this._reveal.value = store;
 							}
+
 							override get actionRunner(): IActionRunner {
 								return super.actionRunner;
 							}
@@ -256,6 +265,7 @@ export class NotebookChatActionsOverlay extends Disposable {
 									keybindingNotRenderedWithLabel: true,
 								});
 							}
+
 							override set actionRunner(_: IActionRunner) {
 								const next =
 									action.id ===
@@ -281,11 +291,13 @@ export class NotebookChatActionsOverlay extends Disposable {
 										focusedDiff,
 									);
 							}
+
 							override get actionRunner(): IActionRunner {
 								return super.actionRunner;
 							}
 						})();
 					}
+
 					return undefined;
 				},
 			},
@@ -313,6 +325,7 @@ class NextPreviousChangeActionRunner extends ActionRunner {
 	) {
 		super();
 	}
+
 	protected override async runAction(
 		_action: IAction,
 		_context?: unknown,
@@ -351,21 +364,26 @@ class NextPreviousChangeActionRunner extends ActionRunner {
 
 			if (typeof top === "number") {
 				this.focusedDiff.set(diff, undefined);
+
 				this.notebookEditor.setScrollTop(top);
 
 				return true;
 			}
 		} else {
 			const index = diff.modifiedCellIndex;
+
 			this.focusedDiff.set(diff, undefined);
+
 			await this.notebookEditor.focusNotebookCell(
 				viewModel.viewCells[index],
 				"container",
 			);
+
 			this.notebookEditor.revealInViewAtTop(viewModel.viewCells[index]);
 
 			return true;
 		}
+
 		return false;
 	}
 
@@ -401,14 +419,17 @@ class NextPreviousChangeActionRunner extends ActionRunner {
 			let currentIndex = 0;
 
 			let next: CellDiffInfo | undefined;
+
 			cellDiffInfo.forEach((d, i) => {
 				if (next) {
 					return;
 				}
+
 				if (d.type === "insert" || d.type === "modified") {
 					if (d.modifiedCellIndex > currentCellIndex) {
 						next = d;
 					}
+
 					currentIndex = d.modifiedCellIndex;
 				} else if (d.type === "unchanged") {
 					currentIndex = d.modifiedCellIndex;
@@ -424,11 +445,13 @@ class NextPreviousChangeActionRunner extends ActionRunner {
 			let currentIndex = 0;
 
 			let previous: CellDiffInfo | undefined;
+
 			cellDiffInfo.forEach((d, i) => {
 				if (d.type === "insert" || d.type === "modified") {
 					if (d.modifiedCellIndex < currentCellIndex) {
 						previous = d;
 					}
+
 					currentIndex = d.modifiedCellIndex;
 				} else if (d.type === "unchanged") {
 					currentIndex = d.modifiedCellIndex;
@@ -461,7 +484,9 @@ class NextPreviousChangeActionRunner extends ActionRunner {
 		}
 		// For now just go to next/previous file.
 		const change = this.next.diffInfo.get().changes.at(0);
+
 		this.focusedDiff.set(undefined, undefined);
+
 		await this.editorService.openEditor(
 			{
 				resource: this.next.modifiedURI,

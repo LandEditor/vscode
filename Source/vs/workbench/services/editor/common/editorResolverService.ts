@@ -42,6 +42,7 @@ export const IEditorResolverService = createDecorator<IEditorResolverService>(
 // Static values for registered editors
 export type EditorAssociation = {
 	readonly viewType: string;
+
 	readonly filenamePattern?: string;
 };
 
@@ -71,7 +72,9 @@ const editorAssociationsConfigurationNode: IConfigurationNode = {
 
 export interface IEditorType {
 	readonly id: string;
+
 	readonly displayName: string;
+
 	readonly providerDisplayName: string;
 }
 configurationRegistry.registerConfiguration(
@@ -110,8 +113,11 @@ export type RegisteredEditorOptions = {
 
 export type RegisteredEditorInfo = {
 	id: string;
+
 	label: string;
+
 	detail?: string;
+
 	priority: RegisteredEditorPriority;
 };
 type EditorInputFactoryResult =
@@ -144,9 +150,13 @@ export type MergeEditorInputFactoryFunction = (
 ) => EditorInputFactoryResult;
 type EditorInputFactories = {
 	createEditorInput?: EditorInputFactoryFunction;
+
 	createUntitledEditorInput?: UntitledEditorInputFactoryFunction;
+
 	createDiffEditorInput?: DiffEditorInputFactoryFunction;
+
 	createMultiDiffEditorInput?: MultiDiffEditorInputFactoryFunction;
+
 	createMergeEditorInput?: MergeEditorInputFactoryFunction;
 };
 
@@ -245,6 +255,7 @@ export function globMatchesResource(
 	if (excludedSchemes.has(resource.scheme)) {
 		return false;
 	}
+
 	const matchOnPath =
 		typeof globPattern === "string" && globPattern.indexOf(posix.sep) >= 0;
 

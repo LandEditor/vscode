@@ -31,7 +31,9 @@ import {
 
 interface QuickInputSession {
 	input: IQuickInput;
+
 	handlesToItems: Map<number, TransferQuickPickItem>;
+
 	store: DisposableStore;
 }
 function reviveIconPathUris(iconPath: { dark: URI; light?: URI | undefined }) {
@@ -44,11 +46,14 @@ function reviveIconPathUris(iconPath: { dark: URI; light?: URI | undefined }) {
 @extHostNamedCustomer(MainContext.MainThreadQuickOpen)
 export class MainThreadQuickOpen implements MainThreadQuickOpenShape {
 	private readonly _proxy: ExtHostQuickOpenShape;
+
 	private readonly _quickInputService: IQuickInputService;
+
 	private readonly _items: Record<
 		number,
 		{
 			resolve(items: TransferQuickPickItemOrSeparator[]): void;
+
 			reject(error: Error): void;
 		}
 	> = {};
@@ -59,8 +64,10 @@ export class MainThreadQuickOpen implements MainThreadQuickOpenShape {
 		quickInputService: IQuickInputService,
 	) {
 		this._proxy = extHostContext.getProxy(ExtHostContext.ExtHostQuickOpen);
+
 		this._quickInputService = quickInputService;
 	}
+
 	public dispose(): void {
 		for (const [_id, session] of this.sessions) {
 			session.store.dispose();
@@ -76,6 +83,7 @@ export class MainThreadQuickOpen implements MainThreadQuickOpenShape {
 				this._items[instance] = { resolve, reject };
 			},
 		);
+
 		options = {
 			...options,
 			onDidFocus: (el) => {
@@ -100,6 +108,7 @@ export class MainThreadQuickOpen implements MainThreadQuickOpenShape {
 					if (items) {
 						return items.map((item) => item.handle);
 					}
+
 					return undefined;
 				});
 		} else {
@@ -109,6 +118,7 @@ export class MainThreadQuickOpen implements MainThreadQuickOpenShape {
 					if (item) {
 						return item.handle;
 					}
+
 					return undefined;
 				});
 		}
@@ -119,15 +129,19 @@ export class MainThreadQuickOpen implements MainThreadQuickOpenShape {
 	): Promise<void> {
 		if (this._items[instance]) {
 			this._items[instance].resolve(items);
+
 			delete this._items[instance];
 		}
+
 		return Promise.resolve();
 	}
 	$setError(instance: number, error: Error): Promise<void> {
 		if (this._items[instance]) {
 			this._items[instance].reject(error);
+
 			delete this._items[instance];
 		}
+
 		return Promise.resolve();
 	}
 	// ---- input
@@ -140,18 +154,26 @@ export class MainThreadQuickOpen implements MainThreadQuickOpenShape {
 
 		if (options) {
 			inputOptions.title = options.title;
+
 			inputOptions.password = options.password;
+
 			inputOptions.placeHolder = options.placeHolder;
+
 			inputOptions.valueSelection = options.valueSelection;
+
 			inputOptions.prompt = options.prompt;
+
 			inputOptions.value = options.value;
+
 			inputOptions.ignoreFocusLost = options.ignoreFocusOut;
 		}
+
 		if (validateInput) {
 			inputOptions.validateInput = (value) => {
 				return this._proxy.$validateInput(value);
 			};
 		}
+
 		return this._quickInputService.input(inputOptions, token);
 	}
 	// ---- QuickInput
@@ -168,12 +190,15 @@ export class MainThreadQuickOpen implements MainThreadQuickOpenShape {
 				params.type === "quickPick"
 					? this._quickInputService.createQuickPick()
 					: this._quickInputService.createInputBox();
+
 			store.add(input);
+
 			store.add(
 				input.onDidAccept(() => {
 					this._proxy.$onDidAccept(sessionId);
 				}),
 			);
+
 			store.add(
 				input.onDidTriggerButton((button) => {
 					this._proxy.$onDidTriggerButton(
@@ -182,11 +207,13 @@ export class MainThreadQuickOpen implements MainThreadQuickOpenShape {
 					);
 				}),
 			);
+
 			store.add(
 				input.onDidChangeValue((value) => {
 					this._proxy.$onDidChangeValue(sessionId, value);
 				}),
 			);
+
 			store.add(
 				input.onDidHide(() => {
 					this._proxy.$onDidHide(sessionId);
@@ -196,6 +223,7 @@ export class MainThreadQuickOpen implements MainThreadQuickOpenShape {
 			if (params.type === "quickPick") {
 				// Add extra events specific for quickpick
 				const quickpick = input as IQuickPick<IQuickPickItem>;
+
 				store.add(
 					quickpick.onDidChangeActive((items) => {
 						this._proxy.$onDidChangeActive(
@@ -207,6 +235,7 @@ export class MainThreadQuickOpen implements MainThreadQuickOpenShape {
 						);
 					}),
 				);
+
 				store.add(
 					quickpick.onDidChangeSelection((items) => {
 						this._proxy.$onDidChangeSelection(
@@ -218,6 +247,7 @@ export class MainThreadQuickOpen implements MainThreadQuickOpenShape {
 						);
 					}),
 				);
+
 				store.add(
 					quickpick.onDidTriggerItemButton((e) => {
 						this._proxy.$onDidTriggerItemButton(
@@ -228,19 +258,23 @@ export class MainThreadQuickOpen implements MainThreadQuickOpenShape {
 					}),
 				);
 			}
+
 			session = {
 				input,
 				handlesToItems: new Map(),
 				store,
 			};
+
 			this.sessions.set(sessionId, session);
 		}
+
 		const { input, handlesToItems } = session;
 
 		for (const param in params) {
 			if (param === "id" || param === "type") {
 				continue;
 			}
+
 			if (param === "visible") {
 				if (params.visible) {
 					input.show();
@@ -249,21 +283,25 @@ export class MainThreadQuickOpen implements MainThreadQuickOpenShape {
 				}
 			} else if (param === "items") {
 				handlesToItems.clear();
+
 				params[param].forEach(
 					(item: TransferQuickPickItemOrSeparator) => {
 						if (item.type === "separator") {
 							return;
 						}
+
 						if (item.buttons) {
 							item.buttons = item.buttons.map(
 								(button: TransferQuickInputButton) => {
 									if (button.iconPath) {
 										reviveIconPathUris(button.iconPath);
 									}
+
 									return button;
 								},
 							);
 						}
+
 						handlesToItems.set(item.handle, item);
 					},
 				);
@@ -277,15 +315,18 @@ export class MainThreadQuickOpen implements MainThreadQuickOpenShape {
 					if (button.handle === -1) {
 						return this._quickInputService.backButton;
 					}
+
 					if (button.iconPath) {
 						reviveIconPathUris(button.iconPath);
 					}
+
 					return button;
 				});
 			} else {
 				(input as any)[param] = params[param];
 			}
 		}
+
 		return Promise.resolve(undefined);
 	}
 	$dispose(sessionId: number): Promise<void> {
@@ -293,8 +334,10 @@ export class MainThreadQuickOpen implements MainThreadQuickOpenShape {
 
 		if (session) {
 			session.store.dispose();
+
 			this.sessions.delete(sessionId);
 		}
+
 		return Promise.resolve(undefined);
 	}
 }

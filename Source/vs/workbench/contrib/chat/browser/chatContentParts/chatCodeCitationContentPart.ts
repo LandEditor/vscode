@@ -21,6 +21,7 @@ import {
 
 type ChatCodeCitationOpenedClassification = {
 	owner: "roblourens";
+
 	comment: "Indicates when a user opens chat code citations";
 };
 
@@ -46,6 +47,7 @@ export class ChatCodeCitationContentPart
 			dom.h("span.chat-code-citation-label@label"),
 			dom.h(".chat-code-citation-button-container@button"),
 		]);
+
 		elements.label.textContent = label + " - ";
 
 		const button = this._register(
@@ -60,7 +62,9 @@ export class ChatCodeCitationContentPart
 				buttonSeparator: undefined,
 			}),
 		);
+
 		button.label = localize("viewMatches", "View matches");
+
 		this._register(
 			button.onDidClick(() => {
 				const citationText =
@@ -71,19 +75,23 @@ export class ChatCodeCitationContentPart
 								`## License: ${c.license}\n${c.value.toString()}\n\n\`\`\`\n${c.snippet}\n\`\`\`\n\n`,
 						)
 						.join("\n");
+
 				this.editorService.openEditor({
 					resource: undefined,
 					contents: citationText,
 					languageId: "markdown",
 				});
+
 				this.telemetryService.publicLog2<
 					{},
 					ChatCodeCitationOpenedClassification
 				>("openedChatCodeCitations");
 			}),
 		);
+
 		this.domNode = elements.root;
 	}
+
 	hasSameContent(
 		other: IChatRendererContent,
 		followingContent: IChatRendererContent[],

@@ -66,6 +66,7 @@ export class NativeIssueService implements IWorkbenchIssueService {
 		@IIntegrityService
 		private readonly integrityService: IIntegrityService,
 	) {}
+
 	async openReporter(
 		dataOverrides: Partial<IssueReporterData> = {},
 	): Promise<void> {
@@ -81,6 +82,7 @@ export class NativeIssueService implements IWorkbenchIssueService {
 					(dataOverrides.extensionId &&
 						extension.identifier.id === dataOverrides.extensionId),
 			);
+
 			extensionData.push(
 				...enabledExtensions.map(
 					(extension): IssueReporterExtensionData => {
@@ -131,6 +133,7 @@ export class NativeIssueService implements IWorkbenchIssueService {
 				isBuiltin: true,
 			});
 		}
+
 		const experiments =
 			await this.experimentService.getCurrentExperiments();
 
@@ -143,6 +146,7 @@ export class NativeIssueService implements IWorkbenchIssueService {
 			const potentialSessions = githubSessions.filter((session) =>
 				session.scopes.includes("repo"),
 			);
+
 			githubAccessToken = potentialSessions[0]?.accessToken;
 		} catch (e) {
 			// Ignore
@@ -155,6 +159,7 @@ export class NativeIssueService implements IWorkbenchIssueService {
 		} catch (e) {
 			// Ignore
 		}
+
 		const theme = this.themeService.getColorTheme();
 
 		const issueReporterData: IssueReporterData = Object.assign(

@@ -29,9 +29,11 @@ export class MainThreadDialogs implements MainThreadDiaglogsShape {
 	) {
 		//
 	}
+
 	dispose(): void {
 		//
 	}
+
 	async $showOpenDialog(
 		options?: MainThreadDialogOpenOptions,
 	): Promise<URI[] | undefined> {
@@ -41,10 +43,12 @@ export class MainThreadDialogs implements MainThreadDiaglogsShape {
 			convertedOptions.defaultUri =
 				await this._fileDialogService.defaultFilePath();
 		}
+
 		return Promise.resolve(
 			this._fileDialogService.showOpenDialog(convertedOptions),
 		);
 	}
+
 	async $showSaveDialog(
 		options?: MainThreadDialogSaveOptions,
 	): Promise<URI | undefined> {
@@ -54,10 +58,12 @@ export class MainThreadDialogs implements MainThreadDiaglogsShape {
 			convertedOptions.defaultUri =
 				await this._fileDialogService.defaultFilePath();
 		}
+
 		return Promise.resolve(
 			this._fileDialogService.showSaveDialog(convertedOptions),
 		);
 	}
+
 	private static _convertOpenOptions(
 		options?: MainThreadDialogOpenOptions,
 	): IOpenDialogOptions {
@@ -84,8 +90,10 @@ export class MainThreadDialogs implements MainThreadDiaglogsShape {
 				result.filters.push({ name: key, extensions: value });
 			}
 		}
+
 		return result;
 	}
+
 	private static _convertSaveOptions(
 		options?: MainThreadDialogSaveOptions,
 	): ISaveDialogOptions {
@@ -104,6 +112,7 @@ export class MainThreadDialogs implements MainThreadDiaglogsShape {
 				result.filters.push({ name: key, extensions: value });
 			}
 		}
+
 		return result;
 	}
 }

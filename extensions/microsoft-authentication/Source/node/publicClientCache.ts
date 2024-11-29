@@ -21,6 +21,7 @@ import { CachedPublicClientApplication } from "./cachedPublicClientApplication";
 
 export interface IPublicClientApplicationInfo {
 	clientId: string;
+
 	authority: string;
 }
 
@@ -29,16 +30,21 @@ export class CachedPublicClientApplicationManager
 {
 	// The key is the clientId and authority JSON stringified
 	private readonly _pcas = new Map<string, CachedPublicClientApplication>();
+
 	private readonly _pcaDisposables = new Map<string, Disposable>();
 
 	private _disposable: Disposable;
+
 	private _pcasSecretStorage: PublicClientApplicationsSecretStorage;
 
 	private readonly _onDidAccountsChangeEmitter = new EventEmitter<{
 		added: AccountInfo[];
+
 		changed: AccountInfo[];
+
 		deleted: AccountInfo[];
 	}>();
+
 	readonly onDidAccountsChange = this._onDidAccountsChangeEmitter.event;
 
 	constructor(
@@ -51,6 +57,7 @@ export class CachedPublicClientApplicationManager
 			_secretStorage,
 			_cloudName,
 		);
+
 		this._disposable = Disposable.from(
 			this._pcasSecretStorage,
 			this._registerSecretStorageHandler(),
@@ -79,8 +86,10 @@ export class CachedPublicClientApplicationManager
 				"[initialize] Error initializing PublicClientApplicationManager:",
 				e,
 			);
+
 			await this._pcasSecretStorage.delete();
 		}
+
 		if (!keys) {
 			return;
 		}
@@ -126,18 +135,24 @@ export class CachedPublicClientApplicationManager
 						clientId: result.value.clientId,
 						authority: result.value.authority,
 					});
+
 					this._pcaDisposables.get(pcaKey)?.dispose();
+
 					this._pcaDisposables.delete(pcaKey);
+
 					this._pcas.delete(pcaKey);
+
 					this._logger.debug(
 						`[initialize] [${result.value.clientId}] [${result.value.authority}] PCA disposed because it's empty.`,
 					);
 				}
 			}
 		}
+
 		if (pcasChanged) {
 			await this._storePublicClientApplications();
 		}
+
 		this._logger.debug(
 			"[initialize] PublicClientApplicationManager initialized",
 		);
@@ -145,6 +160,7 @@ export class CachedPublicClientApplicationManager
 
 	dispose() {
 		this._disposable.dispose();
+
 		Disposable.from(...this._pcaDisposables.values()).dispose();
 	}
 
@@ -166,12 +182,15 @@ export class CachedPublicClientApplicationManager
 			this._logger.debug(
 				`[getOrCreate] [${clientId}] [${authority}] PublicClientApplicationManager cache miss, creating new PCA...`,
 			);
+
 			pca = await this._doCreatePublicClientApplication(
 				clientId,
 				authority,
 				pcasKey,
 			);
+
 			await this._storePublicClientApplications();
+
 			this._logger.debug(
 				`[getOrCreate] [${clientId}] [${authority}] PCA created.`,
 			);
@@ -208,6 +227,7 @@ export class CachedPublicClientApplicationManager
 			// reinitialize the PCA so the account is properly cached
 			await pca.initialize();
 		}
+
 		return pca;
 	}
 
@@ -224,6 +244,7 @@ export class CachedPublicClientApplicationManager
 			this._secretStorage,
 			this._logger,
 		);
+
 		this._pcas.set(pcasKey, pca);
 
 		const disposable = Disposable.from(
@@ -235,14 +256,19 @@ export class CachedPublicClientApplicationManager
 				// The PCA has no more accounts, so we can dispose it so we're not keeping it
 				// around forever.
 				disposable.dispose();
+
 				this._pcaDisposables.delete(pcasKey);
+
 				this._pcas.delete(pcasKey);
+
 				this._logger.debug(
 					`[_doCreatePublicClientApplication] [${clientId}] [${authority}] PCA disposed. Firing off storing of PCAs...`,
 				);
+
 				void this._storePublicClientApplications();
 			}),
 		);
+
 		this._pcaDisposables.set(pcasKey, disposable);
 		// Intialize the PCA after the `onDidAccountsChange` is set so we get initial state.
 		await pca.initialize();
@@ -270,13 +296,18 @@ export class CachedPublicClientApplicationManager
 
 			return;
 		}
+
 		if (!result) {
 			this._logger.debug(
 				`[_handleSecretStorageChange] PCAs deleted in secret storage. Disposing all...`,
 			);
+
 			Disposable.from(...this._pcaDisposables.values()).dispose();
+
 			this._pcas.clear();
+
 			this._pcaDisposables.clear();
+
 			this._logger.debug(
 				`[_handleSecretStorageChange] Finished PCAs secret storage change.`,
 			);
@@ -298,14 +329,17 @@ export class CachedPublicClientApplicationManager
 		for (const newPca of pcaKeysFromStorage) {
 			try {
 				const { clientId, authority } = JSON.parse(newPca);
+
 				this._logger.debug(
 					`[_handleSecretStorageChange] [${clientId}] [${authority}] Creating new PCA that was created in another window...`,
 				);
+
 				await this._doCreatePublicClientApplication(
 					clientId,
 					authority,
 					newPca,
 				);
+
 				this._logger.debug(
 					`[_handleSecretStorageChange] [${clientId}] [${authority}] PCA created.`,
 				);
@@ -333,6 +367,7 @@ class PublicClientApplicationsSecretStorage {
 	private _disposable: Disposable;
 
 	private readonly _onDidChangeEmitter = new EventEmitter<void>();
+
 	readonly onDidChange: Event<void> = this._onDidChangeEmitter.event;
 
 	private readonly _key = `publicClientApplications-${this._cloudName}`;
@@ -357,6 +392,7 @@ class PublicClientApplicationsSecretStorage {
 		if (!value) {
 			return undefined;
 		}
+
 		return JSON.parse(value);
 	}
 

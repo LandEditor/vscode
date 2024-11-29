@@ -48,14 +48,19 @@ export class UntitledTextEditorInput
 	implements IEncodingSupport, ILanguageSupport
 {
 	static readonly ID: string = "workbench.editors.untitledEditorInput";
+
 	override get typeId(): string {
 		return UntitledTextEditorInput.ID;
 	}
+
 	override get editorId(): string | undefined {
 		return DEFAULT_EDITOR_ASSOCIATION.id;
 	}
+
 	private modelResolve: Promise<void> | undefined = undefined;
+
 	private readonly modelDisposables = this._register(new DisposableStore());
+
 	private cachedUntitledTextEditorModelReference:
 		| IReference<IUntitledTextEditorModel>
 		| undefined = undefined;
@@ -94,25 +99,30 @@ export class UntitledTextEditorInput
 			textResourceConfigurationService,
 			customEditorLabelService,
 		);
+
 		this.registerModelListeners(model);
+
 		this._register(
 			this.textFileService.untitled.onDidCreate((model) =>
 				this.onDidCreateUntitledModel(model),
 			),
 		);
 	}
+
 	private registerModelListeners(model: IUntitledTextEditorModel): void {
 		this.modelDisposables.clear();
 		// re-emit some events from the model
 		this.modelDisposables.add(
 			model.onDidChangeDirty(() => this._onDidChangeDirty.fire()),
 		);
+
 		this.modelDisposables.add(
 			model.onDidChangeName(() => this._onDidChangeLabel.fire()),
 		);
 		// a reverted untitled text editor model renders this input disposed
 		this.modelDisposables.add(model.onDidRevert(() => this.dispose()));
 	}
+
 	private onDidCreateUntitledModel(model: IUntitledTextEditorModel): void {
 		if (
 			isEqual(model.resource, this.model.resource) &&
@@ -122,12 +132,15 @@ export class UntitledTextEditorInput
 			// the actual model from the service so that we
 			// never get out of sync with the truth.
 			this.model = model;
+
 			this.registerModelListeners(model);
 		}
 	}
+
 	override getName(): string {
 		return this.model.name;
 	}
+
 	override getDescription(verbosity = Verbosity.MEDIUM): string | undefined {
 		// Without associated path: only use if name and description differ
 		if (!this.model.hasAssociatedFilePath) {
@@ -136,11 +149,13 @@ export class UntitledTextEditorInput
 			if (descriptionCandidate !== this.getName()) {
 				return descriptionCandidate;
 			}
+
 			return undefined;
 		}
 		// With associated path: delegate to parent
 		return super.getDescription(verbosity);
 	}
+
 	override getTitle(verbosity: Verbosity): string {
 		// Without associated path: check if name and description differ to decide
 		// if description should appear besides the name to distinguish better
@@ -152,35 +167,44 @@ export class UntitledTextEditorInput
 			if (description && description !== name) {
 				return `${name} • ${description}`;
 			}
+
 			return name;
 		}
 		// With associated path: delegate to parent
 		return super.getTitle(verbosity);
 	}
+
 	override isDirty(): boolean {
 		return this.model.isDirty();
 	}
+
 	getEncoding(): string | undefined {
 		return this.model.getEncoding();
 	}
+
 	setEncoding(
 		encoding: string,
 		mode: EncodingMode /* ignored, we only have Encode */,
 	): Promise<void> {
 		return this.model.setEncoding(encoding);
 	}
+
 	get hasLanguageSetExplicitly() {
 		return this.model.hasLanguageSetExplicitly;
 	}
+
 	get hasAssociatedFilePath() {
 		return this.model.hasAssociatedFilePath;
 	}
+
 	setLanguageId(languageId: string, source?: string): void {
 		this.model.setLanguageId(languageId, source);
 	}
+
 	getLanguageId(): string | undefined {
 		return this.model.getLanguageId();
 	}
+
 	override async resolve(): Promise<IUntitledTextEditorModel> {
 		if (!this.modelResolve) {
 			this.modelResolve = (async () => {
@@ -191,6 +215,7 @@ export class UntitledTextEditorInput
 					)) as IReference<IUntitledTextEditorModel>;
 			})();
 		}
+
 		await this.modelResolve;
 		// It is possible that this input was disposed before the model
 		// finished resolving. As such, we need to make sure to dispose
@@ -198,13 +223,16 @@ export class UntitledTextEditorInput
 		if (this.isDisposed()) {
 			this.disposeModelReference();
 		}
+
 		return this.model;
 	}
+
 	override toUntyped(
 		options?: IUntypedEditorOptions,
 	): IUntitledTextResourceEditorInput {
 		const untypedInput: IUntitledTextResourceEditorInput & {
 			resource: URI | undefined;
+
 			options: ITextEditorOptions;
 		} = {
 			resource: this.model.hasAssociatedFilePath
@@ -222,10 +250,13 @@ export class UntitledTextEditorInput
 
 		if (typeof options?.preserveViewState === "number") {
 			untypedInput.encoding = this.getEncoding();
+
 			untypedInput.languageId = this.getLanguageId();
+
 			untypedInput.contents = this.model.isModified()
 				? this.model.textEditorModel?.getValue()
 				: undefined;
+
 			untypedInput.options.viewState = findViewStateForEditor(
 				this,
 				options.preserveViewState,
@@ -248,20 +279,26 @@ export class UntitledTextEditorInput
 				untypedInput.resource = undefined;
 			}
 		}
+
 		return untypedInput;
 	}
+
 	override matches(otherInput: EditorInput | IUntypedEditorInput): boolean {
 		if (this === otherInput) {
 			return true;
 		}
+
 		if (otherInput instanceof UntitledTextEditorInput) {
 			return isEqual(otherInput.resource, this.resource);
 		}
+
 		if (isUntitledResourceEditorInput(otherInput)) {
 			return super.matches(otherInput);
 		}
+
 		return false;
 	}
+
 	override dispose(): void {
 		// Model
 		this.modelResolve = undefined;
@@ -270,8 +307,10 @@ export class UntitledTextEditorInput
 
 		super.dispose();
 	}
+
 	private disposeModelReference(): void {
 		dispose(this.cachedUntitledTextEditorModelReference);
+
 		this.cachedUntitledTextEditorModelReference = undefined;
 	}
 }

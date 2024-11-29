@@ -53,17 +53,27 @@ const $ = DOM.$;
 
 export class CellEditorStatusBar extends CellContentPart {
 	readonly statusBarContainer: HTMLElement;
+
 	private readonly leftItemsContainer: HTMLElement;
+
 	private readonly rightItemsContainer: HTMLElement;
+
 	private readonly itemsDisposable: DisposableStore;
+
 	private leftItems: CellStatusBarItem[] = [];
+
 	private rightItems: CellStatusBarItem[] = [];
+
 	private width: number = 0;
+
 	private currentContext: INotebookCellActionContext | undefined;
+
 	protected readonly _onDidClick: Emitter<IClickTarget> = this._register(
 		new Emitter<IClickTarget>(),
 	);
+
 	readonly onDidClick: Event<IClickTarget> = this._onDidClick.event;
+
 	private readonly hoverDelegate: IHoverDelegate;
 
 	constructor(
@@ -81,10 +91,12 @@ export class CellEditorStatusBar extends CellContentPart {
 		private readonly _themeService: IThemeService,
 	) {
 		super();
+
 		this.statusBarContainer = DOM.append(
 			editorPart,
 			$(".cell-statusbar-container"),
 		);
+
 		this.statusBarContainer.tabIndex = -1;
 
 		const leftItemsContainer = DOM.append(
@@ -96,23 +108,30 @@ export class CellEditorStatusBar extends CellContentPart {
 			this.statusBarContainer,
 			$(".cell-status-right"),
 		);
+
 		this.leftItemsContainer = DOM.append(
 			leftItemsContainer,
 			$(".cell-contributed-items.cell-contributed-items-left"),
 		);
+
 		this.rightItemsContainer = DOM.append(
 			rightItemsContainer,
 			$(".cell-contributed-items.cell-contributed-items-right"),
 		);
+
 		this.itemsDisposable = this._register(new DisposableStore());
+
 		this.hoverDelegate = new (class implements IHoverDelegate {
 			private _lastHoverHideTime: number = 0;
+
 			readonly showHover = (options: IHoverDelegateOptions) => {
 				options.position = options.position ?? {};
+
 				options.position.hoverPosition = HoverPosition.ABOVE;
 
 				return hoverService.showHover(options);
 			};
+
 			readonly placement = "element";
 
 			get delay(): number {
@@ -122,10 +141,12 @@ export class CellEditorStatusBar extends CellContentPart {
 							"workbench.hover.delay",
 						);
 			}
+
 			onDidHideHover() {
 				this._lastHoverHideTime = Date.now();
 			}
 		})();
+
 		this._register(
 			this._themeService.onDidColorThemeChange(
 				() =>
@@ -133,6 +154,7 @@ export class CellEditorStatusBar extends CellContentPart {
 					this.updateContext(this.currentContext),
 			),
 		);
+
 		this._register(
 			DOM.addDisposableListener(
 				this.statusBarContainer,
@@ -171,6 +193,7 @@ export class CellEditorStatusBar extends CellContentPart {
 								itemHasCommand = true;
 							}
 						}
+
 						if (itemHasCommand) {
 							this._onDidClick.fire({
 								type: ClickTargetType.ContributedCommandItem,
@@ -188,6 +211,7 @@ export class CellEditorStatusBar extends CellContentPart {
 			),
 		);
 	}
+
 	override didRenderCell(element: ICellViewModel): void {
 		if (this._notebookEditor.hasModel()) {
 			const context: INotebookCellActionContext & {
@@ -198,8 +222,10 @@ export class CellEditorStatusBar extends CellContentPart {
 				notebookEditor: this._notebookEditor,
 				$mid: MarshalledId.NotebookCellActionContext,
 			};
+
 			this.updateContext(context);
 		}
+
 		if (this._editor) {
 			// Focus Mode
 			const updateFocusModeForEditorEvent = () => {
@@ -228,11 +254,13 @@ export class CellEditorStatusBar extends CellContentPart {
 					}
 				}
 			};
+
 			this.cellDisposables.add(
 				this._editor.onDidFocusEditorWidget(() => {
 					updateFocusModeForEditorEvent();
 				}),
 			);
+
 			this.cellDisposables.add(
 				this._editor.onDidBlurEditorWidget(() => {
 					// this is for a special case:
@@ -272,6 +300,7 @@ export class CellEditorStatusBar extends CellContentPart {
 
 						if (target?.position) {
 							this._editor.setPosition(target.position);
+
 							this._editor.focus();
 						}
 					}
@@ -279,6 +308,7 @@ export class CellEditorStatusBar extends CellContentPart {
 			);
 		}
 	}
+
 	override updateInternalLayoutNow(element: ICellViewModel): void {
 		// todo@rebornix layer breaker
 		this._cellContainer.classList.toggle(
@@ -296,23 +326,31 @@ export class CellEditorStatusBar extends CellContentPart {
 		if (!width) {
 			return;
 		}
+
 		this.width = width;
+
 		this.statusBarContainer.style.width = `${width}px`;
 
 		const maxItemWidth = this.getMaxItemWidth();
+
 		this.leftItems.forEach((item) => (item.maxWidth = maxItemWidth));
+
 		this.rightItems.forEach((item) => (item.maxWidth = maxItemWidth));
 	}
+
 	private getMaxItemWidth() {
 		return this.width / 2;
 	}
+
 	updateContext(context: INotebookCellActionContext) {
 		this.currentContext = context;
+
 		this.itemsDisposable.clear();
 
 		if (!this.currentContext) {
 			return;
 		}
+
 		this.itemsDisposable.add(
 			this.currentContext.cell.onDidChangeLayout(() => {
 				if (this.currentContext) {
@@ -320,31 +358,40 @@ export class CellEditorStatusBar extends CellContentPart {
 				}
 			}),
 		);
+
 		this.itemsDisposable.add(
 			this.currentContext.cell.onDidChangeCellStatusBarItems(() =>
 				this.updateRenderedItems(),
 			),
 		);
+
 		this.itemsDisposable.add(
 			this.currentContext.notebookEditor.onDidChangeActiveCell(() =>
 				this.updateActiveCell(),
 			),
 		);
+
 		this.updateInternalLayoutNow(this.currentContext.cell);
+
 		this.updateActiveCell();
+
 		this.updateRenderedItems();
 	}
+
 	private updateActiveCell(): void {
 		const isActiveCell =
 			this.currentContext!.notebookEditor.getActiveCell() ===
 			this.currentContext?.cell;
+
 		this.statusBarContainer.classList.toggle(
 			"is-active-cell",
 			isActiveCell,
 		);
 	}
+
 	private updateRenderedItems(): void {
 		const items = this.currentContext!.cell.getCellStatusBarItems();
+
 		items.sort((itemA, itemB) => {
 			return (itemB.priority ?? 0) - (itemA.priority ?? 0);
 		});
@@ -372,9 +419,11 @@ export class CellEditorStatusBar extends CellContentPart {
 
 				for (const deletedItem of deleted) {
 					deletedItem.container.remove();
+
 					deletedItem.dispose();
 				}
 			}
+
 			newItems.forEach((newLeftItem, i) => {
 				const existingItem = renderedItems[i];
 
@@ -389,17 +438,24 @@ export class CellEditorStatusBar extends CellContentPart {
 						newLeftItem,
 						maxItemWidth,
 					);
+
 					renderedItems.push(item);
+
 					container.appendChild(item.container);
 				}
 			});
 		};
+
 		updateItems(this.leftItems, newLeftItems, this.leftItemsContainer);
+
 		updateItems(this.rightItems, newRightItems, this.rightItemsContainer);
 	}
+
 	override dispose() {
 		super.dispose();
+
 		dispose(this.leftItems);
+
 		dispose(this.rightItems);
 	}
 }
@@ -409,7 +465,9 @@ class CellStatusBarItem extends Disposable {
 	set maxWidth(v: number) {
 		this.container.style.maxWidth = v + "px";
 	}
+
 	private _currentItem!: INotebookCellStatusBarItem;
+
 	private readonly _itemDisposables = this._register(new DisposableStore());
 
 	constructor(
@@ -430,8 +488,10 @@ class CellStatusBarItem extends Disposable {
 		private readonly _hoverService: IHoverService,
 	) {
 		super();
+
 		this.updateItem(itemModel, maxWidth);
 	}
+
 	updateItem(item: INotebookCellStatusBarItem, maxWidth: number | undefined) {
 		this._itemDisposables.clear();
 
@@ -440,6 +500,7 @@ class CellStatusBarItem extends Disposable {
 				new SimpleIconLabel(this.container),
 			).text = item.text.replace(/\n/g, " ");
 		}
+
 		const resolveColor = (color: ThemeColor | string) => {
 			return isThemeColor(color)
 				? this._themeService
@@ -448,11 +509,15 @@ class CellStatusBarItem extends Disposable {
 						?.toString() || ""
 				: color;
 		};
+
 		this.container.style.color = item.color ? resolveColor(item.color) : "";
+
 		this.container.style.backgroundColor = item.backgroundColor
 			? resolveColor(item.backgroundColor)
 			: "";
+
 		this.container.style.opacity = item.opacity ? item.opacity : "";
+
 		this.container.classList.toggle(
 			"cell-status-item-show-when-active",
 			!!item.onlyShowWhenActive,
@@ -461,17 +526,21 @@ class CellStatusBarItem extends Disposable {
 		if (typeof maxWidth === "number") {
 			this.maxWidth = maxWidth;
 		}
+
 		let ariaLabel: string;
 
 		let role: string | undefined;
 
 		if (item.accessibilityInformation) {
 			ariaLabel = item.accessibilityInformation.label;
+
 			role = item.accessibilityInformation.role;
 		} else {
 			ariaLabel = item.text ? stripIcons(item.text).trim() : "";
 		}
+
 		this.container.setAttribute("aria-label", ariaLabel);
+
 		this.container.setAttribute("role", role || "");
 
 		if (item.tooltip) {
@@ -482,6 +551,7 @@ class CellStatusBarItem extends Disposable {
 							markdown: item.tooltip,
 							markdownNotSupportedFallback: undefined,
 						} satisfies IManagedHoverTooltipMarkdownString);
+
 			this._itemDisposables.add(
 				this._hoverService.setupManagedHover(
 					this._hoverDelegate,
@@ -490,6 +560,7 @@ class CellStatusBarItem extends Disposable {
 				),
 			);
 		}
+
 		this.container.classList.toggle(
 			"cell-status-item-has-command",
 			!!item.command,
@@ -497,6 +568,7 @@ class CellStatusBarItem extends Disposable {
 
 		if (item.command) {
 			this.container.tabIndex = 0;
+
 			this._itemDisposables.add(
 				DOM.addDisposableListener(
 					this.container,
@@ -506,6 +578,7 @@ class CellStatusBarItem extends Disposable {
 					},
 				),
 			);
+
 			this._itemDisposables.add(
 				DOM.addDisposableListener(
 					this.container,
@@ -525,14 +598,17 @@ class CellStatusBarItem extends Disposable {
 		} else {
 			this.container.removeAttribute("tabIndex");
 		}
+
 		this._currentItem = item;
 	}
+
 	private async executeCommand(): Promise<void> {
 		const command = this._currentItem.command;
 
 		if (!command) {
 			return;
 		}
+
 		const id = typeof command === "string" ? command : command.id;
 
 		const args =
@@ -546,6 +622,7 @@ class CellStatusBarItem extends Disposable {
 		) {
 			args.unshift(this._context);
 		}
+
 		this._telemetryService.publicLog2<
 			WorkbenchActionExecutedEvent,
 			WorkbenchActionExecutedClassification
@@ -553,6 +630,7 @@ class CellStatusBarItem extends Disposable {
 
 		try {
 			this._editor?.focus();
+
 			await this._commandService.executeCommand(id, ...args);
 		} catch (error) {
 			this._notificationService.error(toErrorMessage(error));

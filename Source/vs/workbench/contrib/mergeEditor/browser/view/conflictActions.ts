@@ -36,6 +36,7 @@ import { MergeEditorViewModel } from "./viewModel.js";
 
 export class ConflictActionsFactory extends Disposable {
 	private readonly _styleClassName: string;
+
 	private readonly _styleElement: HTMLStyleElement;
 
 	constructor(private readonly _editor: ICodeEditor) {
@@ -56,6 +57,7 @@ export class ConflictActionsFactory extends Disposable {
 		this._styleClassName =
 			"_conflictActionsFactory_" +
 			hash(this._editor.getId()).toString(16);
+
 		this._styleElement = createStyleSheet(
 			isInShadowDOM(this._editor.getContainerDomNode())
 				? this._editor.getContainerDomNode()
@@ -88,10 +90,13 @@ export class ConflictActionsFactory extends Disposable {
 		if (fontFamily) {
 			newStyle += `${this._styleClassName} { font-family: var(${fontFamilyVar}), ${EDITOR_FONT_DEFAULTS.fontFamily}}`;
 		}
+
 		this._styleElement.textContent = newStyle;
+
 		this._editor
 			.getContainerDomNode()
 			.style?.setProperty(fontFamilyVar, fontFamily ?? "inherit");
+
 		this._editor
 			.getContainerDomNode()
 			.style?.setProperty(
@@ -113,6 +118,7 @@ export class ConflictActionsFactory extends Disposable {
 			fontSize =
 				(this._editor.getOption(EditorOption.fontSize) * 0.9) | 0;
 		}
+
 		return {
 			fontSize,
 			codeLensHeight: (fontSize * lineHeightFactor) | 0,
@@ -211,6 +217,7 @@ export class ActionsSource {
 										inputNumber,
 										tx,
 									);
+
 									model.telemetry.reportAcceptInvoked(
 										inputNumber,
 										state.includesInput(otherInputNumber),
@@ -254,6 +261,7 @@ export class ActionsSource {
 											true,
 											tx,
 										);
+
 										model.telemetry.reportSmartCombinationInvoked(
 											state.includesInput(
 												otherInputNumber,
@@ -284,6 +292,7 @@ export class ActionsSource {
 										inputNumber,
 										tx,
 									);
+
 									model.telemetry.reportAcceptInvoked(
 										inputNumber,
 										state.includesInput(otherInputNumber),
@@ -318,6 +327,7 @@ export class ActionsSource {
 											inputNumber,
 											tx,
 										);
+
 										model.telemetry.reportSmartCombinationInvoked(
 											state.includesInput(
 												otherInputNumber,
@@ -360,11 +370,13 @@ export class ActionsSource {
 					);
 				}
 			}
+
 			return result;
 		});
 	}
 
 	public readonly itemsInput1 = this.getItemsInput(1);
+
 	public readonly itemsInput2 = this.getItemsInput(2);
 
 	public readonly resultItems = derived(this, (reader) => {
@@ -400,15 +412,18 @@ export class ActionsSource {
 			if (state.includesInput1) {
 				labels.push(model.input1.title);
 			}
+
 			if (state.includesInput2) {
 				labels.push(model.input2.title);
 			}
+
 			if (
 				state.kind === ModifiedBaseRangeStateKind.both &&
 				state.firstInput === 2
 			) {
 				labels.reverse();
 			}
+
 			result.push({
 				text: `${labels.join(" + ")}`,
 			});
@@ -428,6 +443,7 @@ export class ActionsSource {
 								true,
 								tx,
 							);
+
 							model.telemetry.reportRemoveInvoked(
 								1,
 								state.includesInput(2),
@@ -442,6 +458,7 @@ export class ActionsSource {
 				),
 			);
 		}
+
 		if (state.includesInput2) {
 			stateToggles.push(
 				command(
@@ -454,6 +471,7 @@ export class ActionsSource {
 								true,
 								tx,
 							);
+
 							model.telemetry.reportRemoveInvoked(
 								2,
 								state.includesInput(1),
@@ -468,12 +486,14 @@ export class ActionsSource {
 				),
 			);
 		}
+
 		if (
 			state.kind === ModifiedBaseRangeStateKind.both &&
 			state.firstInput === 2
 		) {
 			stateToggles.reverse();
 		}
+
 		result.push(...stateToggles);
 
 		if (state.kind === ModifiedBaseRangeStateKind.unrecognized) {
@@ -488,6 +508,7 @@ export class ActionsSource {
 								true,
 								tx,
 							);
+
 							model.telemetry.reportResetToBaseInvoked();
 						});
 					},
@@ -534,7 +555,9 @@ function command(
 
 export interface IContentWidgetAction {
 	text: string;
+
 	tooltip?: string;
+
 	action?: () => Promise<void>;
 }
 
@@ -567,6 +590,7 @@ class ActionsContentWidget extends FixedZoneWidget {
 			autorun((reader) => {
 				/** @description update commands */
 				const i = items.read(reader);
+
 				this.setState(i);
 			}),
 		);
@@ -583,6 +607,7 @@ class ActionsContentWidget extends FixedZoneWidget {
 			} else {
 				children.push($("span", undefined, "\u00a0|\u00a0"));
 			}
+
 			const title = renderLabelWithIcons(item.text);
 
 			if (item.action) {

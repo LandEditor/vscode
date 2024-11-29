@@ -23,7 +23,9 @@ import { CommentCommandId } from "../common/commentCommandIds.js";
 
 export class CommentFormActions implements IDisposable {
 	private _buttonElements: HTMLElement[] = [];
+
 	private readonly _toDispose = new DisposableStore();
+
 	private _actions: IAction[] = [];
 
 	constructor(
@@ -35,9 +37,12 @@ export class CommentFormActions implements IDisposable {
 		private readonly maxActions?: number,
 		private readonly supportDropdowns?: boolean,
 	) {}
+
 	setActions(menu: IMenu, hasOnlySecondaryActions: boolean = false) {
 		this._toDispose.clear();
+
 		this._buttonElements.forEach((b) => b.remove());
+
 		this._buttonElements = [];
 
 		const groups = menu.getActions({ shouldForwardArgs: true });
@@ -46,6 +51,7 @@ export class CommentFormActions implements IDisposable {
 
 		for (const group of groups) {
 			const [, actions] = group;
+
 			this._actions = actions;
 
 			for (const current of actions) {
@@ -71,6 +77,7 @@ export class CommentFormActions implements IDisposable {
 						)
 						?.getLabel();
 				}
+
 				const title = keybinding
 					? `${action.label} (${keybinding})`
 					: action.label;
@@ -99,13 +106,19 @@ export class CommentFormActions implements IDisposable {
 							title,
 							...defaultButtonStyles,
 						});
+
 				isPrimary = false;
+
 				this._buttonElements.push(button.element);
+
 				this._toDispose.add(button);
+
 				this._toDispose.add(
 					button.onDidClick(() => this.actionHandler(action)),
 				);
+
 				button.enabled = action.enabled;
+
 				button.label = action.label;
 
 				if (
@@ -121,6 +134,7 @@ export class CommentFormActions implements IDisposable {
 			}
 		}
 	}
+
 	triggerDefaultAction() {
 		if (this._actions.length) {
 			const lastAction = this._actions[0];
@@ -130,6 +144,7 @@ export class CommentFormActions implements IDisposable {
 			}
 		}
 	}
+
 	dispose() {
 		this._toDispose.dispose();
 	}

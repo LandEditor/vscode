@@ -33,6 +33,7 @@ export function createCombinedWorkspaceEdit(
 			edits: edit.additionalEdit?.edits ?? [],
 		};
 	}
+
 	return {
 		edits: [
 			...ranges.map(
@@ -53,7 +54,9 @@ export function createCombinedWorkspaceEdit(
 export function sortEditsByYieldTo<
 	T extends {
 		readonly kind: HierarchicalKind | undefined;
+
 		readonly handledMimeType?: string;
+
 		readonly yieldTo?: readonly DropYieldTo[];
 	},
 >(edits: readonly T[]): T[] {
@@ -61,6 +64,7 @@ export function sortEditsByYieldTo<
 		if ("mimeType" in yTo) {
 			return yTo.mimeType === other.handledMimeType;
 		}
+
 		return !!other.kind && yTo.kind.contains(other.kind);
 	}
 	// Build list of nodes each node yields to
@@ -72,6 +76,7 @@ export function sortEditsByYieldTo<
 				if (other === edit) {
 					continue;
 				}
+
 				if (yieldsTo(yTo, other)) {
 					let arr = yieldsToMap.get(edit);
 
@@ -80,11 +85,13 @@ export function sortEditsByYieldTo<
 
 						yieldsToMap.set(edit, arr);
 					}
+
 					arr.push(other);
 				}
 			}
 		}
 	}
+
 	if (!yieldsToMap.size) {
 		return Array.from(edits);
 	}
@@ -97,6 +104,7 @@ export function sortEditsByYieldTo<
 		if (!nodes.length) {
 			return [];
 		}
+
 		const node = nodes[0];
 
 		if (tempStack.includes(node)) {
@@ -104,21 +112,27 @@ export function sortEditsByYieldTo<
 
 			return nodes;
 		}
+
 		if (visited.has(node)) {
 			return visit(nodes.slice(1));
 		}
+
 		let pre: T[] = [];
 
 		const yTo = yieldsToMap.get(node);
 
 		if (yTo) {
 			tempStack.push(node);
+
 			pre = visit(yTo);
+
 			tempStack.pop();
 		}
+
 		visited.add(node);
 
 		return [...pre, node, ...visit(nodes.slice(1))];
 	}
+
 	return visit(Array.from(edits));
 }

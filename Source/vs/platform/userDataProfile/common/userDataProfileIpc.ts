@@ -31,6 +31,7 @@ export class RemoteUserDataProfilesServiceChannel implements IServerChannel {
 			requestContext: any,
 		) => IURITransformer,
 	) {}
+
 	listen(context: any, event: string): Event<any> {
 		const uriTransformer = this.getUriTransformer(context);
 
@@ -56,8 +57,10 @@ export class RemoteUserDataProfilesServiceChannel implements IServerChannel {
 					};
 				});
 		}
+
 		throw new Error(`Invalid listen ${event}`);
 	}
+
 	async call(context: any, command: string, args?: any): Promise<any> {
 		const uriTransformer = this.getUriTransformer(context);
 
@@ -71,15 +74,18 @@ export class RemoteUserDataProfilesServiceChannel implements IServerChannel {
 
 				return transformOutgoingURIs({ ...profile }, uriTransformer);
 			}
+
 			case "updateProfile": {
 				let profile = reviveProfile(
 					transformIncomingURIs(args[0], uriTransformer),
 					this.service.profilesHome.scheme,
 				);
+
 				profile = await this.service.updateProfile(profile, args[1]);
 
 				return transformOutgoingURIs({ ...profile }, uriTransformer);
 			}
+
 			case "removeProfile": {
 				const profile = reviveProfile(
 					transformIncomingURIs(args[0], uriTransformer),
@@ -89,6 +95,7 @@ export class RemoteUserDataProfilesServiceChannel implements IServerChannel {
 				return this.service.removeProfile(profile);
 			}
 		}
+
 		throw new Error(`Invalid call ${command}`);
 	}
 }
@@ -101,15 +108,19 @@ export class UserDataProfilesService
 	get defaultProfile(): IUserDataProfile {
 		return this.profiles[0];
 	}
+
 	private _profiles: IUserDataProfile[] = [];
 
 	get profiles(): IUserDataProfile[] {
 		return this._profiles;
 	}
+
 	private readonly _onDidChangeProfiles = this._register(
 		new Emitter<DidChangeProfilesEvent>(),
 	);
+
 	readonly onDidChangeProfiles = this._onDidChangeProfiles.event;
+
 	readonly onDidResetWorkspaces: Event<void>;
 
 	constructor(
@@ -118,9 +129,11 @@ export class UserDataProfilesService
 		private readonly channel: IChannel,
 	) {
 		super();
+
 		this._profiles = profiles.map((profile) =>
 			reviveProfile(profile, this.profilesHome.scheme),
 		);
+
 		this._register(
 			this.channel.listen<DidChangeProfilesEvent>("onDidChangeProfiles")(
 				(e) => {
@@ -135,9 +148,11 @@ export class UserDataProfilesService
 					const updated = e.updated.map((profile) =>
 						reviveProfile(profile, this.profilesHome.scheme),
 					);
+
 					this._profiles = e.all.map((profile) =>
 						reviveProfile(profile, this.profilesHome.scheme),
 					);
+
 					this._onDidChangeProfiles.fire({
 						added,
 						removed,
@@ -147,10 +162,12 @@ export class UserDataProfilesService
 				},
 			),
 		);
+
 		this.onDidResetWorkspaces = this.channel.listen<void>(
 			"onDidResetWorkspaces",
 		);
 	}
+
 	async createNamedProfile(
 		name: string,
 		options?: IUserDataProfileOptions,
@@ -163,6 +180,7 @@ export class UserDataProfilesService
 
 		return reviveProfile(result, this.profilesHome.scheme);
 	}
+
 	async createProfile(
 		id: string,
 		name: string,
@@ -176,6 +194,7 @@ export class UserDataProfilesService
 
 		return reviveProfile(result, this.profilesHome.scheme);
 	}
+
 	async createTransientProfile(
 		workspaceIdentifier?: IAnyWorkspaceIdentifier,
 	): Promise<IUserDataProfile> {
@@ -186,6 +205,7 @@ export class UserDataProfilesService
 
 		return reviveProfile(result, this.profilesHome.scheme);
 	}
+
 	async setProfileForWorkspace(
 		workspaceIdentifier: IAnyWorkspaceIdentifier,
 		profile: IUserDataProfile,
@@ -195,9 +215,11 @@ export class UserDataProfilesService
 			[workspaceIdentifier, profile],
 		);
 	}
+
 	removeProfile(profile: IUserDataProfile): Promise<void> {
 		return this.channel.call("removeProfile", [profile]);
 	}
+
 	async updateProfile(
 		profile: IUserDataProfile,
 		updateOptions: IUserDataProfileUpdateOptions,
@@ -209,12 +231,15 @@ export class UserDataProfilesService
 
 		return reviveProfile(result, this.profilesHome.scheme);
 	}
+
 	resetWorkspaces(): Promise<void> {
 		return this.channel.call("resetWorkspaces");
 	}
+
 	cleanUp(): Promise<void> {
 		return this.channel.call("cleanUp");
 	}
+
 	cleanUpTransientProfiles(): Promise<void> {
 		return this.channel.call("cleanUpTransientProfiles");
 	}

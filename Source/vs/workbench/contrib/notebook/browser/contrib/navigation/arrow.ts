@@ -228,6 +228,7 @@ registerAction2(
 					newCell.getEditState() === CellEditState.Preview
 						? "container"
 						: "editor";
+
 				await editor.focusNotebookCell(newCell, newFocusMode, {
 					focusEditorLine: 1,
 				});
@@ -327,6 +328,7 @@ registerAction2(
 					: "editor";
 
 			const focusEditorLine = newCell.textBuffer.getLineCount();
+
 			await editor.focusNotebookCell(newCell, newFocusMode, {
 				focusEditorLine: focusEditorLine,
 			});
@@ -388,6 +390,7 @@ registerAction2(
 			}
 
 			const firstCell = editor.cellAt(0);
+
 			await editor.focusNotebookCell(firstCell, "container");
 		}
 	},
@@ -440,6 +443,7 @@ registerAction2(
 
 			if (lastVisibleIdx) {
 				const cell = editor.cellAt(lastVisibleIdx);
+
 				await editor.focusNotebookCell(cell, "container");
 			}
 		}
@@ -526,6 +530,7 @@ registerAction2(
 			const editor = context.notebookEditor;
 
 			const activeCell = context.cell;
+
 			await editor.focusNotebookCell(activeCell, "editor");
 		}
 	},

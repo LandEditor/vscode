@@ -19,16 +19,24 @@ export const IExtensionStoragePaths = createDecorator<IExtensionStoragePaths>(
 
 export interface IExtensionStoragePaths {
 	readonly _serviceBrand: undefined;
+
 	whenReady: Promise<any>;
+
 	workspaceValue(extension: IExtensionDescription): URI | undefined;
+
 	globalValue(extension: IExtensionDescription): URI;
+
 	onWillDeactivateAll(): void;
 }
 export class ExtensionStoragePaths implements IExtensionStoragePaths {
 	readonly _serviceBrand: undefined;
+
 	private readonly _workspace?: IStaticWorkspaceData;
+
 	protected readonly _environment: IEnvironment;
+
 	readonly whenReady: Promise<URI | undefined>;
+
 	private _value?: URI;
 
 	constructor(
@@ -40,27 +48,33 @@ export class ExtensionStoragePaths implements IExtensionStoragePaths {
 		private readonly _extHostFileSystem: IExtHostConsumerFileSystem,
 	) {
 		this._workspace = initData.workspace ?? undefined;
+
 		this._environment = initData.environment;
+
 		this.whenReady = this._getOrCreateWorkspaceStoragePath().then(
 			(value) => (this._value = value),
 		);
 	}
+
 	protected async _getWorkspaceStorageURI(storageName: string): Promise<URI> {
 		return URI.joinPath(
 			this._environment.workspaceStorageHome,
 			storageName,
 		);
 	}
+
 	private async _getOrCreateWorkspaceStoragePath(): Promise<URI | undefined> {
 		if (!this._workspace) {
 			return Promise.resolve(undefined);
 		}
+
 		const storageName = this._workspace.id;
 
 		const storageUri = await this._getWorkspaceStorageURI(storageName);
 
 		try {
 			await this._extHostFileSystem.value.stat(storageUri);
+
 			this._logService.trace(
 				"[ExtHostStorage] storage dir already exists",
 				storageUri,
@@ -70,12 +84,15 @@ export class ExtensionStoragePaths implements IExtensionStoragePaths {
 		} catch {
 			// doesn't exist, that's OK
 		}
+
 		try {
 			this._logService.trace(
 				"[ExtHostStorage] creating dir and metadata-file",
 				storageUri,
 			);
+
 			await this._extHostFileSystem.value.createDirectory(storageUri);
+
 			await this._extHostFileSystem.value.writeFile(
 				URI.joinPath(storageUri, "meta.json"),
 				new TextEncoder().encode(
@@ -100,17 +117,21 @@ export class ExtensionStoragePaths implements IExtensionStoragePaths {
 			return undefined;
 		}
 	}
+
 	workspaceValue(extension: IExtensionDescription): URI | undefined {
 		if (this._value) {
 			return URI.joinPath(this._value, extension.identifier.value);
 		}
+
 		return undefined;
 	}
+
 	globalValue(extension: IExtensionDescription): URI {
 		return URI.joinPath(
 			this._environment.globalStorageHome,
 			extension.identifier.value.toLowerCase(),
 		);
 	}
+
 	onWillDeactivateAll(): void {}
 }

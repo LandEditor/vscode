@@ -63,51 +63,76 @@ export class TextFileEditorModelManager
 			leakWarningThreshold: 500 /* increased for users with hundreds of inputs opened */,
 		}),
 	);
+
 	readonly onDidCreate = this._onDidCreate.event;
+
 	private readonly _onDidResolve = this._register(
 		new Emitter<ITextFileResolveEvent>(),
 	);
+
 	readonly onDidResolve = this._onDidResolve.event;
+
 	private readonly _onDidRemove = this._register(new Emitter<URI>());
+
 	readonly onDidRemove = this._onDidRemove.event;
+
 	private readonly _onDidChangeDirty = this._register(
 		new Emitter<TextFileEditorModel>(),
 	);
+
 	readonly onDidChangeDirty = this._onDidChangeDirty.event;
+
 	private readonly _onDidChangeReadonly = this._register(
 		new Emitter<TextFileEditorModel>(),
 	);
+
 	readonly onDidChangeReadonly = this._onDidChangeReadonly.event;
+
 	private readonly _onDidChangeOrphaned = this._register(
 		new Emitter<TextFileEditorModel>(),
 	);
+
 	readonly onDidChangeOrphaned = this._onDidChangeOrphaned.event;
+
 	private readonly _onDidSaveError = this._register(
 		new Emitter<TextFileEditorModel>(),
 	);
+
 	readonly onDidSaveError = this._onDidSaveError.event;
+
 	private readonly _onDidSave = this._register(
 		new Emitter<ITextFileSaveEvent>(),
 	);
+
 	readonly onDidSave = this._onDidSave.event;
+
 	private readonly _onDidRevert = this._register(
 		new Emitter<TextFileEditorModel>(),
 	);
+
 	readonly onDidRevert = this._onDidRevert.event;
+
 	private readonly _onDidChangeEncoding = this._register(
 		new Emitter<TextFileEditorModel>(),
 	);
+
 	readonly onDidChangeEncoding = this._onDidChangeEncoding.event;
+
 	private readonly mapResourceToModel =
 		new ResourceMap<TextFileEditorModel>();
+
 	private readonly mapResourceToModelListeners =
 		new ResourceMap<IDisposable>();
+
 	private readonly mapResourceToDisposeListener =
 		new ResourceMap<IDisposable>();
+
 	private readonly mapResourceToPendingModelResolvers = new ResourceMap<
 		Promise<void>
 	>();
+
 	private readonly modelResolveQueue = this._register(new ResourceQueue());
+
 	saveErrorHandler = (() => {
 		const notificationService = this.notificationService;
 
@@ -133,6 +158,7 @@ export class TextFileEditorModelManager
 	get models(): TextFileEditorModel[] {
 		return [...this.mapResourceToModel.values()];
 	}
+
 	constructor(
 		@IInstantiationService
 		private readonly instantiationService: IInstantiationService,
@@ -146,8 +172,10 @@ export class TextFileEditorModelManager
 		private readonly uriIdentityService: IUriIdentityService,
 	) {
 		super();
+
 		this.registerListeners();
 	}
+
 	private registerListeners(): void {
 		// Update models from file change events
 		this._register(
@@ -159,6 +187,7 @@ export class TextFileEditorModelManager
 				this.onDidChangeFileSystemProviderCapabilities(e),
 			),
 		);
+
 		this._register(
 			this.fileService.onDidChangeFileSystemProviderRegistrations((e) =>
 				this.onDidChangeFileSystemProviderRegistrations(e),
@@ -170,17 +199,20 @@ export class TextFileEditorModelManager
 				this.onWillRunWorkingCopyFileOperation(e),
 			),
 		);
+
 		this._register(
 			this.workingCopyFileService.onDidFailWorkingCopyFileOperation((e) =>
 				this.onDidFailWorkingCopyFileOperation(e),
 			),
 		);
+
 		this._register(
 			this.workingCopyFileService.onDidRunWorkingCopyFileOperation((e) =>
 				this.onDidRunWorkingCopyFileOperation(e),
 			),
 		);
 	}
+
 	private onDidFilesChange(e: FileChangesEvent): void {
 		for (const model of this.models) {
 			if (model.isDirty()) {
@@ -200,6 +232,7 @@ export class TextFileEditorModelManager
 			}
 		}
 	}
+
 	private onDidChangeFileSystemProviderCapabilities(
 		e: IFileSystemProviderCapabilitiesChangeEvent,
 	): void {
@@ -208,6 +241,7 @@ export class TextFileEditorModelManager
 		// into all models.
 		this.queueModelReloads(e.scheme);
 	}
+
 	private onDidChangeFileSystemProviderRegistrations(
 		e: IFileSystemProviderRegistrationEvent,
 	): void {
@@ -221,16 +255,19 @@ export class TextFileEditorModelManager
 		// metadata (e.g. readonly) into all models.
 		this.queueModelReloads(e.scheme);
 	}
+
 	private queueModelReloads(scheme: string): void {
 		for (const model of this.models) {
 			if (model.isDirty()) {
 				continue; // never reload dirty models
 			}
+
 			if (scheme === model.resource.scheme) {
 				this.queueModelReload(model);
 			}
 		}
 	}
+
 	private queueModelReload(model: TextFileEditorModel): void {
 		// Resolve model to update (use a queue to prevent accumulation of resolves
 		// when the resolve actually takes long. At most we only want the queue
@@ -247,16 +284,22 @@ export class TextFileEditorModelManager
 			});
 		}
 	}
+
 	private readonly mapCorrelationIdToModelsToRestore = new Map<
 		number,
 		{
 			source: URI;
+
 			target: URI;
+
 			snapshot?: ITextSnapshot;
+
 			languageId?: string;
+
 			encoding?: string;
 		}[]
 	>();
+
 	private onWillRunWorkingCopyFileOperation(e: WorkingCopyFileEvent): void {
 		// Move / Copy: remember models to restore after the operation
 		if (
@@ -265,9 +308,13 @@ export class TextFileEditorModelManager
 		) {
 			const modelsToRestore: {
 				source: URI;
+
 				target: URI;
+
 				snapshot?: ITextSnapshot;
+
 				languageId?: string;
+
 				encoding?: string;
 			}[] = [];
 
@@ -316,6 +363,7 @@ export class TextFileEditorModelManager
 								),
 							);
 						}
+
 						modelsToRestore.push({
 							source: sourceModelResource,
 							target: targetModelResource,
@@ -328,12 +376,14 @@ export class TextFileEditorModelManager
 					}
 				}
 			}
+
 			this.mapCorrelationIdToModelsToRestore.set(
 				e.correlationId,
 				modelsToRestore,
 			);
 		}
 	}
+
 	private onDidFailWorkingCopyFileOperation(e: WorkingCopyFileEvent): void {
 		// Move / Copy: restore dirty flag on models to restore that were dirty
 		if (
@@ -346,6 +396,7 @@ export class TextFileEditorModelManager
 
 			if (modelsToRestore) {
 				this.mapCorrelationIdToModelsToRestore.delete(e.correlationId);
+
 				modelsToRestore.forEach((model) => {
 					// snapshot presence means this model used to be dirty and so we restore that
 					// flag. we do NOT have to restore the content because the model was only soft
@@ -357,6 +408,7 @@ export class TextFileEditorModelManager
 			}
 		}
 	}
+
 	private onDidRunWorkingCopyFileOperation(e: WorkingCopyFileEvent): void {
 		switch (e.operation) {
 			// Create: Revert existing models
@@ -388,6 +440,7 @@ export class TextFileEditorModelManager
 							this.mapCorrelationIdToModelsToRestore.delete(
 								e.correlationId,
 							);
+
 							await Promises.settled(
 								modelsToRestore.map(async (modelToRestore) => {
 									// From this moment on, only operate on the canonical resource
@@ -439,12 +492,15 @@ export class TextFileEditorModelManager
 				break;
 		}
 	}
+
 	get(resource: URI): TextFileEditorModel | undefined {
 		return this.mapResourceToModel.get(resource);
 	}
+
 	private has(resource: URI): boolean {
 		return this.mapResourceToModel.has(resource);
 	}
+
 	private async reload(model: TextFileEditorModel): Promise<void> {
 		// Await a pending model resolve first before proceeding
 		// to ensure that we never resolve a model more than once
@@ -461,6 +517,7 @@ export class TextFileEditorModelManager
 		// Trigger reload
 		await this.doResolve(model, { reload: { async: false } });
 	}
+
 	async resolve(
 		resource: URI,
 		options?: ITextFileEditorModelResolveOrCreateOptions,
@@ -476,6 +533,7 @@ export class TextFileEditorModelManager
 		// Trigger resolve
 		return this.doResolve(resource, options);
 	}
+
 	private async doResolve(
 		resourceOrModel: URI | TextFileEditorModel,
 		options?: ITextFileEditorModelResolveOrCreateOptions,
@@ -486,11 +544,14 @@ export class TextFileEditorModelManager
 
 		if (URI.isUri(resourceOrModel)) {
 			resource = resourceOrModel;
+
 			model = this.get(resource);
 		} else {
 			resource = resourceOrModel.resource;
+
 			model = resourceOrModel;
 		}
+
 		let modelResolve: Promise<void>;
 
 		let didCreateModel = false;
@@ -533,7 +594,9 @@ export class TextFileEditorModelManager
 				options ? options.encoding : undefined,
 				options ? options.languageId : undefined,
 			));
+
 			modelResolve = model.resolve(options);
+
 			this.registerModel(newModel);
 		}
 		// Store pending resolves to avoid race conditions
@@ -549,6 +612,7 @@ export class TextFileEditorModelManager
 				this._onDidChangeDirty.fire(model);
 			}
 		}
+
 		try {
 			await modelResolve;
 		} catch (error) {
@@ -558,6 +622,7 @@ export class TextFileEditorModelManager
 			if (didCreateModel) {
 				model.dispose();
 			}
+
 			throw error;
 		} finally {
 			// Remove from pending resolves
@@ -572,8 +637,10 @@ export class TextFileEditorModelManager
 		if (didCreateModel && model.isDirty()) {
 			this._onDidChangeDirty.fire(model);
 		}
+
 		return model;
 	}
+
 	private joinPendingResolves(resource: URI): Promise<void> | undefined {
 		const pendingModelResolve =
 			this.mapResourceToPendingModelResolvers.get(resource);
@@ -581,8 +648,10 @@ export class TextFileEditorModelManager
 		if (!pendingModelResolve) {
 			return;
 		}
+
 		return this.doJoinPendingResolves(resource);
 	}
+
 	private async doJoinPendingResolves(resource: URI): Promise<void> {
 		// While we have pending model resolves, ensure
 		// to await the last one finishing before returning.
@@ -598,6 +667,7 @@ export class TextFileEditorModelManager
 			if (nextPendingModelResolve === currentModelCopyResolve) {
 				return; // already awaited on - return
 			}
+
 			currentModelCopyResolve = nextPendingModelResolve;
 
 			try {
@@ -607,36 +677,45 @@ export class TextFileEditorModelManager
 			}
 		}
 	}
+
 	private registerModel(model: TextFileEditorModel): void {
 		// Install model listeners
 		const modelListeners = new DisposableStore();
+
 		modelListeners.add(
 			model.onDidResolve((reason) =>
 				this._onDidResolve.fire({ model, reason }),
 			),
 		);
+
 		modelListeners.add(
 			model.onDidChangeDirty(() => this._onDidChangeDirty.fire(model)),
 		);
+
 		modelListeners.add(
 			model.onDidChangeReadonly(() =>
 				this._onDidChangeReadonly.fire(model),
 			),
 		);
+
 		modelListeners.add(
 			model.onDidChangeOrphaned(() =>
 				this._onDidChangeOrphaned.fire(model),
 			),
 		);
+
 		modelListeners.add(
 			model.onDidSaveError(() => this._onDidSaveError.fire(model)),
 		);
+
 		modelListeners.add(
 			model.onDidSave((e) => this._onDidSave.fire({ model, ...e })),
 		);
+
 		modelListeners.add(
 			model.onDidRevert(() => this._onDidRevert.fire(model)),
 		);
+
 		modelListeners.add(
 			model.onDidChangeEncoding(() =>
 				this._onDidChangeEncoding.fire(model),
@@ -645,6 +724,7 @@ export class TextFileEditorModelManager
 		// Keep for disposal
 		this.mapResourceToModelListeners.set(model.resource, modelListeners);
 	}
+
 	add(resource: URI, model: TextFileEditorModel): void {
 		const knownModel = this.mapResourceToModel.get(resource);
 
@@ -653,14 +733,17 @@ export class TextFileEditorModelManager
 		}
 		// dispose any previously stored dispose listener for this resource
 		const disposeListener = this.mapResourceToDisposeListener.get(resource);
+
 		disposeListener?.dispose();
 		// store in cache but remove when model gets disposed
 		this.mapResourceToModel.set(resource, model);
+
 		this.mapResourceToDisposeListener.set(
 			resource,
 			model.onWillDispose(() => this.remove(resource)),
 		);
 	}
+
 	remove(resource: URI): void {
 		const removed = this.mapResourceToModel.delete(resource);
 
@@ -668,14 +751,18 @@ export class TextFileEditorModelManager
 
 		if (disposeListener) {
 			dispose(disposeListener);
+
 			this.mapResourceToDisposeListener.delete(resource);
 		}
+
 		const modelListener = this.mapResourceToModelListeners.get(resource);
 
 		if (modelListener) {
 			dispose(modelListener);
+
 			this.mapResourceToModelListeners.delete(resource);
 		}
+
 		if (removed) {
 			this._onDidRemove.fire(resource);
 		}
@@ -684,9 +771,11 @@ export class TextFileEditorModelManager
 	private readonly saveParticipants = this._register(
 		this.instantiationService.createInstance(TextFileSaveParticipant),
 	);
+
 	addSaveParticipant(participant: ITextFileSaveParticipant): IDisposable {
 		return this.saveParticipants.addSaveParticipant(participant);
 	}
+
 	runSaveParticipants(
 		model: ITextFileEditorModel,
 		context: IStoredFileWorkingCopySaveParticipantContext,
@@ -713,6 +802,7 @@ export class TextFileEditorModelManager
 		// promise based return in all other cases
 		return this.doCanDispose(model);
 	}
+
 	private async doCanDispose(model: TextFileEditorModel): Promise<true> {
 		// Await any pending resolves first before proceeding
 		const pendingResolve = this.joinPendingResolves(model.resource);
@@ -730,18 +820,23 @@ export class TextFileEditorModelManager
 
 			return this.canDispose(model);
 		}
+
 		return true;
 	}
+
 	override dispose(): void {
 		super.dispose();
 		// model caches
 		this.mapResourceToModel.clear();
+
 		this.mapResourceToPendingModelResolvers.clear();
 		// dispose the dispose listeners
 		dispose(this.mapResourceToDisposeListener.values());
+
 		this.mapResourceToDisposeListener.clear();
 		// dispose the model change listeners
 		dispose(this.mapResourceToModelListeners.values());
+
 		this.mapResourceToModelListeners.clear();
 	}
 }

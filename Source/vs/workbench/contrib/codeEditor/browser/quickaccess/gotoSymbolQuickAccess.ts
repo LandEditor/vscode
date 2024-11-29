@@ -104,6 +104,7 @@ export class GotoSymbolQuickAccessProvider extends AbstractGotoSymbolQuickAccess
 			openSideBySideDirection: editorConfig?.openSideBySideDirection,
 		};
 	}
+
 	protected get activeTextEditorControl() {
 		// TODO: this distinction should go away by adopting `IOutlineService`
 		// for all editors (either text based ones or not). Currently text based
@@ -114,15 +115,19 @@ export class GotoSymbolQuickAccessProvider extends AbstractGotoSymbolQuickAccess
 		) {
 			return undefined;
 		}
+
 		return this.editorService.activeTextEditorControl;
 	}
+
 	protected override gotoLocation(
 		context: IQuickAccessTextEditorContext,
 		options: {
 			range: IRange;
+
 			keyMods: IKeyMods;
 
 			forceSideBySide?: boolean;
+
 			preserveFocus?: boolean;
 		},
 	): void {
@@ -142,6 +147,7 @@ export class GotoSymbolQuickAccessProvider extends AbstractGotoSymbolQuickAccess
 					this.configuration.openEditorPinned,
 				preserveFocus: options.preserveFocus,
 			};
+
 			this.editorGroupService.sideGroup.openEditor(
 				this.editorService.activeEditor,
 				editorOptions,
@@ -177,6 +183,7 @@ export class GotoSymbolQuickAccessProvider extends AbstractGotoSymbolQuickAccess
 		if (!result || token.isCancellationRequested) {
 			return [];
 		}
+
 		return this.doGetSymbolPicks(
 			this.getDocumentSymbols(model, token),
 			prepareQuery(filter),
@@ -197,8 +204,10 @@ export class GotoSymbolQuickAccessProvider extends AbstractGotoSymbolQuickAccess
 		if (this.canPickWithOutlineService()) {
 			return this.doGetOutlinePicks(picker);
 		}
+
 		return super.provideWithoutTextEditor(picker);
 	}
+
 	private canPickWithOutlineService(): boolean {
 		return this.editorService.activeEditorPane
 			? this.outlineService.canCreateOutline(
@@ -206,6 +215,7 @@ export class GotoSymbolQuickAccessProvider extends AbstractGotoSymbolQuickAccess
 				)
 			: false;
 	}
+
 	private doGetOutlinePicks(
 		picker: IQuickPick<
 			IGotoSymbolQuickPickItem,
@@ -219,25 +229,32 @@ export class GotoSymbolQuickAccessProvider extends AbstractGotoSymbolQuickAccess
 		if (!pane) {
 			return Disposable.None;
 		}
+
 		const cts = new CancellationTokenSource();
 
 		const disposables = new DisposableStore();
+
 		disposables.add(toDisposable(() => cts.dispose(true)));
+
 		picker.busy = true;
+
 		this.outlineService
 			.createOutline(pane, OutlineTarget.QuickPick, cts.token)
 			.then((outline) => {
 				if (!outline) {
 					return;
 				}
+
 				if (cts.token.isCancellationRequested) {
 					outline.dispose();
 
 					return;
 				}
+
 				disposables.add(outline);
 
 				const viewState = outline.captureViewState();
+
 				disposables.add(
 					toDisposable(() => {
 						if (picker.selectedItems.length === 0) {
@@ -262,6 +279,7 @@ export class GotoSymbolQuickAccessProvider extends AbstractGotoSymbolQuickAccess
 						};
 					},
 				);
+
 				disposables.add(
 					picker.onDidAccept(() => {
 						picker.hide();
@@ -284,10 +302,12 @@ export class GotoSymbolQuickAccessProvider extends AbstractGotoSymbolQuickAccess
 						if (picker.value === "@") {
 							// default, no filtering, scoring...
 							item.score = 0;
+
 							item.highlights = undefined;
 
 							return true;
 						}
+
 						const trimmedQuery = picker.value
 							.substring(
 								AbstractGotoSymbolQuickAccessProvider.PREFIX
@@ -310,7 +330,9 @@ export class GotoSymbolQuickAccessProvider extends AbstractGotoSymbolQuickAccess
 						if (!score) {
 							return false;
 						}
+
 						item.score = score[1];
+
 						item.highlights = {
 							label:
 								matchesFuzzyIconAware(
@@ -324,19 +346,25 @@ export class GotoSymbolQuickAccessProvider extends AbstractGotoSymbolQuickAccess
 
 					if (filteredItems.length === 0) {
 						const label = localize("empty", "No matching entries");
+
 						picker.items = [
 							{ label, index: -1, kind: SymbolKind.String },
 						];
+
 						picker.ariaLabel = label;
 					} else {
 						picker.items = filteredItems;
 					}
 				};
+
 				updatePickerItems();
+
 				disposables.add(picker.onDidChangeValue(updatePickerItems));
 
 				const previewDisposable = new MutableDisposable();
+
 				disposables.add(previewDisposable);
+
 				disposables.add(
 					picker.onDidChangeActive(() => {
 						const [entry] = picker.activeItems;
@@ -353,6 +381,7 @@ export class GotoSymbolQuickAccessProvider extends AbstractGotoSymbolQuickAccess
 			})
 			.catch((err) => {
 				onUnexpectedError(err);
+
 				picker.hide();
 			})
 			.finally(() => {
@@ -396,6 +425,7 @@ class GotoSymbolAction extends Action2 {
 			],
 		});
 	}
+
 	run(accessor: ServicesAccessor) {
 		accessor
 			.get(IQuickInputService)

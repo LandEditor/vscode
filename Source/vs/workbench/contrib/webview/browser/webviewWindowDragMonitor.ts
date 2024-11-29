@@ -27,6 +27,7 @@ export class WebviewWindowDragMonitor extends Disposable {
 		const onDragEnd = () => {
 			getWebview()?.windowDidDragEnd();
 		};
+
 		this._register(
 			DOM.addDisposableListener(
 				targetWindow,
@@ -36,6 +37,7 @@ export class WebviewWindowDragMonitor extends Disposable {
 				},
 			),
 		);
+
 		this._register(
 			DOM.addDisposableListener(
 				targetWindow,
@@ -43,6 +45,7 @@ export class WebviewWindowDragMonitor extends Disposable {
 				onDragEnd,
 			),
 		);
+
 		this._register(
 			DOM.addDisposableListener(
 				targetWindow,
@@ -54,6 +57,7 @@ export class WebviewWindowDragMonitor extends Disposable {
 				},
 			),
 		);
+
 		this._register(
 			DOM.addDisposableListener(
 				targetWindow,
@@ -67,6 +71,7 @@ export class WebviewWindowDragMonitor extends Disposable {
 				},
 			),
 		);
+
 		this._register(
 			DOM.addDisposableListener(
 				targetWindow,

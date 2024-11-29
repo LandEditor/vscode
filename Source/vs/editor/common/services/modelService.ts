@@ -57,29 +57,40 @@ class ModelData implements IDisposable {
 		) => void,
 	) {
 		this.model = model;
+
 		this._modelEventListeners.add(
 			model.onWillDispose(() => onWillDispose(model)),
 		);
+
 		this._modelEventListeners.add(
 			model.onDidChangeLanguage((e) => onDidChangeLanguage(model, e)),
 		);
 	}
+
 	public dispose(): void {
 		this._modelEventListeners.dispose();
 	}
 }
 interface IRawEditorConfig {
 	tabSize?: any;
+
 	indentSize?: any;
+
 	insertSpaces?: any;
+
 	detectIndentation?: any;
+
 	trimAutoWhitespace?: any;
+
 	creationOptions?: any;
+
 	largeFileOptimizations?: any;
+
 	bracketPairColorization?: any;
 }
 interface IRawConfig {
 	eol?: any;
+
 	editor?: IRawEditorConfig;
 }
 
@@ -101,23 +112,32 @@ class DisposedModelInfo {
 }
 export class ModelService extends Disposable implements IModelService {
 	public static MAX_MEMORY_FOR_CLOSED_FILES_UNDO_STACK = 20 * 1024 * 1024;
+
 	public _serviceBrand: undefined;
+
 	private readonly _onModelAdded: Emitter<ITextModel> = this._register(
 		new Emitter<ITextModel>(),
 	);
+
 	public readonly onModelAdded: Event<ITextModel> = this._onModelAdded.event;
+
 	private readonly _onModelRemoved: Emitter<ITextModel> = this._register(
 		new Emitter<ITextModel>(),
 	);
+
 	public readonly onModelRemoved: Event<ITextModel> =
 		this._onModelRemoved.event;
+
 	private readonly _onModelModeChanged = this._register(
 		new Emitter<{
 			model: ITextModel;
+
 			oldLanguageId: string;
 		}>(),
 	);
+
 	public readonly onModelLanguageChanged = this._onModelModeChanged.event;
+
 	private _modelCreationOptionsByLanguageAndResource: {
 		[languageAndResource: string]: ITextModelCreationOptions;
 	};
@@ -127,7 +147,9 @@ export class ModelService extends Disposable implements IModelService {
 	private readonly _models: {
 		[modelId: string]: ModelData;
 	};
+
 	private readonly _disposedModels: Map<string, DisposedModelInfo>;
+
 	private _disposedModelsHeapSize: number;
 
 	constructor(
@@ -141,17 +163,24 @@ export class ModelService extends Disposable implements IModelService {
 		private readonly _instantiationService: IInstantiationService,
 	) {
 		super();
+
 		this._modelCreationOptionsByLanguageAndResource = Object.create(null);
+
 		this._models = {};
+
 		this._disposedModels = new Map<string, DisposedModelInfo>();
+
 		this._disposedModelsHeapSize = 0;
+
 		this._register(
 			this._configurationService.onDidChangeConfiguration((e) =>
 				this._updateModelOptions(e),
 			),
 		);
+
 		this._updateModelOptions(undefined);
 	}
+
 	private static _readModelOptions(
 		config: IRawConfig,
 		isForSimpleWidget: boolean,
@@ -164,10 +193,12 @@ export class ModelService extends Disposable implements IModelService {
 			if (!isNaN(parsedTabSize)) {
 				tabSize = parsedTabSize;
 			}
+
 			if (tabSize < 1) {
 				tabSize = 1;
 			}
 		}
+
 		let indentSize: number | "tabSize" = "tabSize";
 
 		if (
@@ -181,6 +212,7 @@ export class ModelService extends Disposable implements IModelService {
 				indentSize = Math.max(parsedIndentSize, 1);
 			}
 		}
+
 		let insertSpaces = EDITOR_MODEL_DEFAULTS.insertSpaces;
 
 		if (
@@ -192,6 +224,7 @@ export class ModelService extends Disposable implements IModelService {
 					? false
 					: Boolean(config.editor.insertSpaces);
 		}
+
 		let newDefaultEOL = DEFAULT_EOL;
 
 		const eol = config.eol;
@@ -201,6 +234,7 @@ export class ModelService extends Disposable implements IModelService {
 		} else if (eol === "\n") {
 			newDefaultEOL = DefaultEndOfLine.LF;
 		}
+
 		let trimAutoWhitespace = EDITOR_MODEL_DEFAULTS.trimAutoWhitespace;
 
 		if (
@@ -212,6 +246,7 @@ export class ModelService extends Disposable implements IModelService {
 					? false
 					: Boolean(config.editor.trimAutoWhitespace);
 		}
+
 		let detectIndentation = EDITOR_MODEL_DEFAULTS.detectIndentation;
 
 		if (
@@ -223,6 +258,7 @@ export class ModelService extends Disposable implements IModelService {
 					? false
 					: Boolean(config.editor.detectIndentation);
 		}
+
 		let largeFileOptimizations =
 			EDITOR_MODEL_DEFAULTS.largeFileOptimizations;
 
@@ -235,6 +271,7 @@ export class ModelService extends Disposable implements IModelService {
 					? false
 					: Boolean(config.editor.largeFileOptimizations);
 		}
+
 		let bracketPairColorizationOptions =
 			EDITOR_MODEL_DEFAULTS.bracketPairColorizationOptions;
 
@@ -249,6 +286,7 @@ export class ModelService extends Disposable implements IModelService {
 						.independentColorPoolPerBracketType,
 			};
 		}
+
 		return {
 			isForSimpleWidget: isForSimpleWidget,
 			tabSize: tabSize,
@@ -261,10 +299,12 @@ export class ModelService extends Disposable implements IModelService {
 			bracketPairColorizationOptions,
 		};
 	}
+
 	private _getEOL(resource: URI | undefined, language: string): string {
 		if (resource) {
 			return this._resourcePropertiesService.getEOL(resource, language);
 		}
+
 		const eol = this._configurationService.getValue("files.eol", {
 			overrideIdentifier: language,
 		});
@@ -272,11 +312,13 @@ export class ModelService extends Disposable implements IModelService {
 		if (eol && typeof eol === "string" && eol !== "auto") {
 			return eol;
 		}
+
 		return platform.OS === platform.OperatingSystem.Linux ||
 			platform.OS === platform.OperatingSystem.Macintosh
 			? "\n"
 			: "\r\n";
 	}
+
 	private _shouldRestoreUndoStack(): boolean {
 		const result = this._configurationService.getValue(
 			"files.restoreUndoStack",
@@ -285,8 +327,10 @@ export class ModelService extends Disposable implements IModelService {
 		if (typeof result === "boolean") {
 			return result;
 		}
+
 		return true;
 	}
+
 	public getCreationOptions(
 		languageIdOrSelection: string | ILanguageSelection,
 		resource: URI | undefined,
@@ -310,21 +354,26 @@ export class ModelService extends Disposable implements IModelService {
 				);
 
 			const eol = this._getEOL(resource, language);
+
 			creationOptions = ModelService._readModelOptions(
 				{ editor, eol },
 				isForSimpleWidget,
 			);
+
 			this._modelCreationOptionsByLanguageAndResource[
 				language + resource
 			] = creationOptions;
 		}
+
 		return creationOptions;
 	}
+
 	private _updateModelOptions(
 		e: IConfigurationChangeEvent | undefined,
 	): void {
 		const oldOptionsByLanguageAndResource =
 			this._modelCreationOptionsByLanguageAndResource;
+
 		this._modelCreationOptionsByLanguageAndResource = Object.create(null);
 		// Update options on all models
 		const keys = Object.keys(this._models);
@@ -351,6 +400,7 @@ export class ModelService extends Disposable implements IModelService {
 			) {
 				continue; // perf: skip if this model is not affected by configuration change
 			}
+
 			const oldOptions = oldOptionsByLanguageAndResource[language + uri];
 
 			const newOptions = this.getCreationOptions(
@@ -358,6 +408,7 @@ export class ModelService extends Disposable implements IModelService {
 				uri,
 				modelData.model.isForSimpleWidget,
 			);
+
 			ModelService._setModelOptionsForModel(
 				modelData.model,
 				newOptions,
@@ -365,6 +416,7 @@ export class ModelService extends Disposable implements IModelService {
 			);
 		}
 	}
+
 	private static _setModelOptionsForModel(
 		model: ITextModel,
 		newOptions: ITextModelCreationOptions,
@@ -381,6 +433,7 @@ export class ModelService extends Disposable implements IModelService {
 					: EndOfLineSequence.CRLF,
 			);
 		}
+
 		if (
 			currentOptions &&
 			currentOptions.detectIndentation === newOptions.detectIndentation &&
@@ -397,11 +450,13 @@ export class ModelService extends Disposable implements IModelService {
 			// Same indent opts, no need to touch the model
 			return;
 		}
+
 		if (newOptions.detectIndentation) {
 			model.detectIndentation(
 				newOptions.insertSpaces,
 				newOptions.tabSize,
 			);
+
 			model.updateOptions({
 				trimAutoWhitespace: newOptions.trimAutoWhitespace,
 				bracketColorizationOptions:
@@ -424,27 +479,33 @@ export class ModelService extends Disposable implements IModelService {
 			MODEL_ID(disposedModelData.uri),
 			disposedModelData,
 		);
+
 		this._disposedModelsHeapSize += disposedModelData.heapSize;
 	}
+
 	private _removeDisposedModel(resource: URI): DisposedModelInfo | undefined {
 		const disposedModelData = this._disposedModels.get(MODEL_ID(resource));
 
 		if (disposedModelData) {
 			this._disposedModelsHeapSize -= disposedModelData.heapSize;
 		}
+
 		this._disposedModels.delete(MODEL_ID(resource));
 
 		return disposedModelData;
 	}
+
 	private _ensureDisposedModelsHeapSize(maxModelsHeapSize: number): void {
 		if (this._disposedModelsHeapSize > maxModelsHeapSize) {
 			// we must remove some old undo stack elements to free up some memory
 			const disposedModels: DisposedModelInfo[] = [];
+
 			this._disposedModels.forEach((entry) => {
 				if (!entry.sharesUndoRedoStack) {
 					disposedModels.push(entry);
 				}
 			});
+
 			disposedModels.sort((a, b) => a.time - b.time);
 
 			while (
@@ -452,6 +513,7 @@ export class ModelService extends Disposable implements IModelService {
 				this._disposedModelsHeapSize > maxModelsHeapSize
 			) {
 				const disposedModel = disposedModels.shift()!;
+
 				this._removeDisposedModel(disposedModel.uri);
 
 				if (disposedModel.initialUndoRedoSnapshot !== null) {
@@ -462,6 +524,7 @@ export class ModelService extends Disposable implements IModelService {
 			}
 		}
 	}
+
 	private _createModelData(
 		value: string | ITextBufferFactory,
 		languageIdOrSelection: string | ILanguageSelection,
@@ -503,6 +566,7 @@ export class ModelService extends Disposable implements IModelService {
 						element.setModel(model);
 					}
 				}
+
 				for (const element of elements.future) {
 					if (
 						isEditStackElement(element) &&
@@ -511,6 +575,7 @@ export class ModelService extends Disposable implements IModelService {
 						element.setModel(model);
 					}
 				}
+
 				this._undoRedoService.setElementsValidFlag(
 					resource,
 					true,
@@ -521,9 +586,11 @@ export class ModelService extends Disposable implements IModelService {
 
 				if (sha1IsEqual) {
 					model._overwriteVersionId(disposedModelData.versionId);
+
 					model._overwriteAlternativeVersionId(
 						disposedModelData.alternativeVersionId,
 					);
+
 					model._overwriteInitialUndoRedoSnapshot(
 						disposedModelData.initialUndoRedoSnapshot,
 					);
@@ -536,6 +603,7 @@ export class ModelService extends Disposable implements IModelService {
 				}
 			}
 		}
+
 		const modelId = MODEL_ID(model.uri);
 
 		if (this._models[modelId]) {
@@ -544,15 +612,18 @@ export class ModelService extends Disposable implements IModelService {
 				"ModelService: Cannot add model because it already exists!",
 			);
 		}
+
 		const modelData = new ModelData(
 			model,
 			(model) => this._onWillDispose(model),
 			(model, e) => this._onDidChangeLanguage(model, e),
 		);
+
 		this._models[modelId] = modelData;
 
 		return modelData;
 	}
+
 	public updateModel(
 		model: ITextModel,
 		value: string | ITextBufferFactory,
@@ -575,19 +646,24 @@ export class ModelService extends Disposable implements IModelService {
 		}
 		// Otherwise find a diff between the values and update model
 		model.pushStackElement();
+
 		model.pushEOL(
 			textBuffer.getEOL() === "\r\n"
 				? EndOfLineSequence.CRLF
 				: EndOfLineSequence.LF,
 		);
+
 		model.pushEditOperations(
 			[],
 			ModelService._computeEdits(model, textBuffer),
 			() => [],
 		);
+
 		model.pushStackElement();
+
 		disposable.dispose();
 	}
+
 	private static _commonPrefix(
 		a: ITextModel,
 		aLen: number,
@@ -602,14 +678,18 @@ export class ModelService extends Disposable implements IModelService {
 
 		for (
 			let i = 0;
+
 			i < maxResult &&
 			a.getLineContent(aDelta + i) === b.getLineContent(bDelta + i);
+
 			i++
 		) {
 			result++;
 		}
+
 		return result;
 	}
+
 	private static _commonSuffix(
 		a: ITextModel,
 		aLen: number,
@@ -624,13 +704,16 @@ export class ModelService extends Disposable implements IModelService {
 
 		for (
 			let i = 0;
+
 			i < maxResult &&
 			a.getLineContent(aDelta + aLen - i) ===
 				b.getLineContent(bDelta + bLen - i);
+
 			i++
 		) {
 			result++;
 		}
+
 		return result;
 	}
 	/**
@@ -660,6 +743,7 @@ export class ModelService extends Disposable implements IModelService {
 			// equality case
 			return [];
 		}
+
 		const commonSuffix = this._commonSuffix(
 			model,
 			modelLineCount - commonPrefix,
@@ -680,6 +764,7 @@ export class ModelService extends Disposable implements IModelService {
 				modelLineCount - commonSuffix + 1,
 				1,
 			);
+
 			newRange = new Range(
 				commonPrefix + 1,
 				1,
@@ -693,6 +778,7 @@ export class ModelService extends Disposable implements IModelService {
 				modelLineCount,
 				model.getLineMaxColumn(modelLineCount),
 			);
+
 			newRange = new Range(
 				commonPrefix,
 				1 + textBuffer.getLineLength(commonPrefix),
@@ -706,6 +792,7 @@ export class ModelService extends Disposable implements IModelService {
 				modelLineCount,
 				model.getLineMaxColumn(modelLineCount),
 			);
+
 			newRange = new Range(
 				1,
 				1,
@@ -713,6 +800,7 @@ export class ModelService extends Disposable implements IModelService {
 				1 + textBuffer.getLineLength(textBufferLineCount),
 			);
 		}
+
 		return [
 			EditOperation.replaceMove(
 				oldRange,
@@ -723,6 +811,7 @@ export class ModelService extends Disposable implements IModelService {
 			),
 		];
 	}
+
 	public createModel(
 		value: string | ITextBufferFactory,
 		languageSelection: ILanguageSelection | null,
@@ -746,10 +835,12 @@ export class ModelService extends Disposable implements IModelService {
 				isForSimpleWidget,
 			);
 		}
+
 		this._onModelAdded.fire(modelData.model);
 
 		return modelData.model;
 	}
+
 	public destroyModel(resource: URI): void {
 		// We need to support that not all models get disposed through this service (i.e. model.dispose() should work!)
 		const modelData = this._models[MODEL_ID(resource)];
@@ -757,8 +848,10 @@ export class ModelService extends Disposable implements IModelService {
 		if (!modelData) {
 			return;
 		}
+
 		modelData.model.dispose();
 	}
+
 	public getModels(): ITextModel[] {
 		const ret: ITextModel[] = [];
 
@@ -766,10 +859,13 @@ export class ModelService extends Disposable implements IModelService {
 
 		for (let i = 0, len = keys.length; i < len; i++) {
 			const modelId = keys[i];
+
 			ret.push(this._models[modelId].model);
 		}
+
 		return ret;
 	}
+
 	public getModel(resource: URI): ITextModel | null {
 		const modelId = MODEL_ID(resource);
 
@@ -778,6 +874,7 @@ export class ModelService extends Disposable implements IModelService {
 		if (!modelData) {
 			return null;
 		}
+
 		return modelData.model;
 	}
 	// --- end IModelService
@@ -790,6 +887,7 @@ export class ModelService extends Disposable implements IModelService {
 			resource.scheme === "fake-fs" // for tests
 		);
 	}
+
 	private _onWillDispose(model: ITextModel): void {
 		const modelId = MODEL_ID(model.uri);
 
@@ -817,22 +915,28 @@ export class ModelService extends Disposable implements IModelService {
 						element.matchesResource(model.uri)
 					) {
 						maintainUndoRedoStack = true;
+
 						heapSize += element.heapSize(model.uri);
+
 						element.setModel(model.uri); // remove reference from text buffer instance
 					}
 				}
+
 				for (const element of elements.future) {
 					if (
 						isEditStackElement(element) &&
 						element.matchesResource(model.uri)
 					) {
 						maintainUndoRedoStack = true;
+
 						heapSize += element.heapSize(model.uri);
+
 						element.setModel(model.uri); // remove reference from text buffer instance
 					}
 				}
 			}
 		}
+
 		const maxMemory = ModelService.MAX_MEMORY_FOR_CLOSED_FILES_UNDO_STACK;
 
 		const sha1Computer = this._getSHA1Computer();
@@ -869,6 +973,7 @@ export class ModelService extends Disposable implements IModelService {
 					isEditStackElement(element) &&
 					element.matchesResource(model.uri),
 			);
+
 			this._insertDisposedModel(
 				new DisposedModelInfo(
 					model.uri,
@@ -882,14 +987,18 @@ export class ModelService extends Disposable implements IModelService {
 				),
 			);
 		}
+
 		delete this._models[modelId];
+
 		modelData.dispose();
 		// clean up cache
 		delete this._modelCreationOptionsByLanguageAndResource[
 			model.getLanguageId() + model.uri
 		];
+
 		this._onModelRemoved.fire(model);
 	}
+
 	private _onDidChangeLanguage(
 		model: ITextModel,
 		e: IModelLanguageChangedEvent,
@@ -909,15 +1018,19 @@ export class ModelService extends Disposable implements IModelService {
 			model.uri,
 			model.isForSimpleWidget,
 		);
+
 		ModelService._setModelOptionsForModel(model, newOptions, oldOptions);
+
 		this._onModelModeChanged.fire({ model, oldLanguageId: oldLanguageId });
 	}
+
 	protected _getSHA1Computer(): ITextModelSHA1Computer {
 		return new DefaultModelSHA1Computer();
 	}
 }
 export interface ITextModelSHA1Computer {
 	canComputeSHA1(model: ITextModel): boolean;
+
 	computeSHA1(model: ITextModel): string;
 }
 export class DefaultModelSHA1Computer implements ITextModelSHA1Computer {
@@ -927,6 +1040,7 @@ export class DefaultModelSHA1Computer implements ITextModelSHA1Computer {
 			model.getValueLength() <= DefaultModelSHA1Computer.MAX_MODEL_SIZE
 		);
 	}
+
 	computeSHA1(model: ITextModel): string {
 		// compute the sha1
 		const shaComputer = new StringSHA1();
@@ -938,6 +1052,7 @@ export class DefaultModelSHA1Computer implements ITextModelSHA1Computer {
 		while ((text = snapshot.read())) {
 			shaComputer.update(text);
 		}
+
 		return shaComputer.digest();
 	}
 }

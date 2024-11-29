@@ -42,12 +42,14 @@ export async function activate(context: ExtensionContext) {
 	const clientPackageJSON = await getPackageInfo(context);
 
 	const telemetry = new TelemetryReporter(clientPackageJSON.aiKey);
+
 	context.subscriptions.push(telemetry);
 
 	const logOutputChannel = window.createOutputChannel(
 		languageServerDescription,
 		{ log: true },
 	);
+
 	context.subscriptions.push(logOutputChannel);
 
 	const serverMain = `./server/${clientPackageJSON.main.indexOf("/dist/") !== -1 ? "dist" : "out"}/node/jsonServerMain`;
@@ -97,6 +99,7 @@ export async function activate(context: ExtensionContext) {
 		context,
 		logOutputChannel,
 	);
+
 	client = await startClient(context, newLanguageClient, {
 		schemaRequests,
 		telemetry,
@@ -107,13 +110,17 @@ export async function activate(context: ExtensionContext) {
 export async function deactivate(): Promise<any> {
 	if (client) {
 		await client.dispose();
+
 		client = undefined;
 	}
 }
 interface IPackageInfo {
 	name: string;
+
 	version: string;
+
 	aiKey: string;
+
 	main: string;
 }
 async function getPackageInfo(
@@ -146,18 +153,23 @@ async function getSchemaRequestService(
 			globalStorage.fsPath,
 			"json-schema-cache",
 		);
+
 		await fs.mkdir(schemaCacheLocation, { recursive: true });
 
 		const schemaCache = new JSONSchemaCache(
 			schemaCacheLocation,
 			context.globalState,
 		);
+
 		log.trace(
 			`[json schema cache] initial state: ${JSON.stringify(schemaCache.getCacheInfo(), null, " ")}`,
 		);
+
 		cache = schemaCache;
+
 		clearCache = async () => {
 			const cachedSchemas = await schemaCache.clearCache();
+
 			log.trace(
 				`[json schema cache] cache cleared. Previously cached schemas: ${cachedSchemas.join(", ")}`,
 			);
@@ -165,6 +177,7 @@ async function getSchemaRequestService(
 			return cachedSchemas;
 		};
 	}
+
 	const isXHRResponse = (error: any): error is XHRResponse =>
 		typeof error?.status === "number";
 
@@ -177,6 +190,7 @@ async function getSchemaRequestService(
 		if (etag) {
 			headers["If-None-Match"] = etag;
 		}
+
 		try {
 			log.trace(
 				`[json schema cache] Requesting schema ${uri} etag ${etag}...`,
@@ -195,6 +209,7 @@ async function getSchemaRequestService(
 					log.trace(
 						`[json schema cache] Storing schema ${uri} etag ${etag} in cache`,
 					);
+
 					await cache.putSchema(uri, etag, response.responseText);
 				} else {
 					log.trace(
@@ -202,6 +217,7 @@ async function getSchemaRequestService(
 					);
 				}
 			}
+
 			return response.responseText;
 		} catch (error: unknown) {
 			if (isXHRResponse(error)) {
@@ -219,22 +235,27 @@ async function getSchemaRequestService(
 
 						return content;
 					}
+
 					return request(uri);
 				}
+
 				let status = getErrorStatusDescription(error.status);
 
 				if (status && error.responseText) {
 					status = `${status}\n${error.responseText.substring(0, 200)}`;
 				}
+
 				if (!status) {
 					status = error.toString();
 				}
+
 				log.trace(
 					`[json schema cache] Respond schema ${uri} error ${status}`,
 				);
 
 				throw status;
 			}
+
 			throw error;
 		}
 	};
@@ -253,9 +274,11 @@ async function getSchemaRequestService(
 							`[json schema cache] Schema ${uri} from cache without request (last accessed ${cache.getLastUpdatedInHours(uri)} hours ago)`,
 						);
 					}
+
 					return content;
 				}
 			}
+
 			return request(uri, cache?.getETag(uri));
 		},
 		clearCache,

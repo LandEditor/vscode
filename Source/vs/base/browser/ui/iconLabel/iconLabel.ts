@@ -22,33 +22,53 @@ import { getDefaultHoverDelegate } from "../hover/hoverDelegateFactory.js";
 
 export interface IIconLabelCreationOptions {
 	readonly supportHighlights?: boolean;
+
 	readonly supportDescriptionHighlights?: boolean;
+
 	readonly supportIcons?: boolean;
+
 	readonly hoverDelegate?: IHoverDelegate;
+
 	readonly hoverTargetOverride?: HTMLElement;
 }
 
 export interface IIconLabelValueOptions {
 	title?: string | IManagedHoverTooltipMarkdownString;
+
 	descriptionTitle?: string | IManagedHoverTooltipMarkdownString;
+
 	suffix?: string;
+
 	hideIcon?: boolean;
+
 	extraClasses?: readonly string[];
+
 	italic?: boolean;
+
 	strikethrough?: boolean;
+
 	matches?: readonly IMatch[];
+
 	labelEscapeNewLines?: boolean;
+
 	descriptionMatches?: readonly IMatch[];
+
 	disabledCommand?: boolean;
+
 	readonly separator?: string;
+
 	readonly domId?: string;
+
 	iconPath?: URI;
 }
 
 class FastLabelNode {
 	private disposed: boolean | undefined;
+
 	private _textContent: string | undefined;
+
 	private _classNames: string[] | undefined;
+
 	private _empty: boolean | undefined;
 
 	constructor(private _element: HTMLElement) {}
@@ -63,6 +83,7 @@ class FastLabelNode {
 		}
 
 		this._textContent = content;
+
 		this._element.textContent = content;
 	}
 
@@ -72,7 +93,9 @@ class FastLabelNode {
 		}
 
 		this._classNames = classNames;
+
 		this._element.classList.value = "";
+
 		this._element.classList.add(...classNames);
 	}
 
@@ -82,6 +105,7 @@ class FastLabelNode {
 		}
 
 		this._empty = empty;
+
 		this._element.style.marginLeft = empty ? "0" : "";
 	}
 
@@ -94,19 +118,24 @@ export class IconLabel extends Disposable {
 	private readonly creationOptions?: IIconLabelCreationOptions;
 
 	private readonly domNode: FastLabelNode;
+
 	private readonly nameContainer: HTMLElement;
+
 	private readonly nameNode: Label | LabelWithHighlights;
 
 	private descriptionNode: FastLabelNode | HighlightedLabel | undefined;
+
 	private suffixNode: FastLabelNode | undefined;
 
 	private readonly labelContainer: HTMLElement;
 
 	private readonly hoverDelegate: IHoverDelegate;
+
 	private readonly customHovers: Map<HTMLElement, IDisposable> = new Map();
 
 	constructor(container: HTMLElement, options?: IIconLabelCreationOptions) {
 		super();
+
 		this.creationOptions = options;
 
 		this.domNode = this._register(
@@ -171,6 +200,7 @@ export class IconLabel extends Disposable {
 			if (options.disabledCommand) {
 				containerClasses.push("disabled");
 			}
+
 			if (options.title) {
 				if (typeof options.title === "string") {
 					ariaLabel += options.title;
@@ -189,19 +219,25 @@ export class IconLabel extends Disposable {
 
 			if (!existingIconNode || !dom.isHTMLElement(existingIconNode)) {
 				iconNode = dom.$(".monaco-icon-label-iconpath");
+
 				this.domNode.element.prepend(iconNode);
 			} else {
 				iconNode = existingIconNode;
 			}
+
 			iconNode.style.backgroundImage = css.asCSSUrl(options?.iconPath);
 		} else if (existingIconNode) {
 			existingIconNode.remove();
 		}
 
 		this.domNode.classNames = labelClasses;
+
 		this.domNode.element.setAttribute("aria-label", ariaLabel);
+
 		this.labelContainer.classList.value = "";
+
 		this.labelContainer.classList.add(...containerClasses);
+
 		this.setupHover(
 			options?.descriptionTitle ? this.labelContainer : this.element,
 			options?.title,
@@ -219,6 +255,7 @@ export class IconLabel extends Disposable {
 					undefined,
 					options?.labelEscapeNewLines,
 				);
+
 				this.setupHover(
 					descriptionNode.element,
 					options?.descriptionTitle,
@@ -228,16 +265,19 @@ export class IconLabel extends Disposable {
 					description && options?.labelEscapeNewLines
 						? HighlightedLabel.escapeNewLines(description, [])
 						: description || "";
+
 				this.setupHover(
 					descriptionNode.element,
 					options?.descriptionTitle || "",
 				);
+
 				descriptionNode.empty = !description;
 			}
 		}
 
 		if (options?.suffix || this.suffixNode) {
 			const suffixNode = this.getOrCreateSuffixNode();
+
 			suffixNode.textContent = options?.suffix ?? "";
 		}
 	}
@@ -250,6 +290,7 @@ export class IconLabel extends Disposable {
 
 		if (previousCustomHover) {
 			previousCustomHover.dispose();
+
 			this.customHovers.delete(htmlElement);
 		}
 
@@ -272,6 +313,7 @@ export class IconLabel extends Disposable {
 					"hoverTargetOverrride must be an ancestor of the htmlElement",
 				);
 			}
+
 			hoverTarget = this.creationOptions.hoverTargetOverride;
 		}
 
@@ -292,6 +334,7 @@ export class IconLabel extends Disposable {
 					htmlElement.removeAttribute("title");
 				}
 			}
+
 			setupNativeHover(hoverTarget, tooltip);
 		} else {
 			const hoverDisposable =
@@ -313,6 +356,7 @@ export class IconLabel extends Disposable {
 		for (const disposable of this.customHovers.values()) {
 			disposable.dispose();
 		}
+
 		this.customHovers.clear();
 	}
 
@@ -326,6 +370,7 @@ export class IconLabel extends Disposable {
 					),
 				),
 			);
+
 			this.suffixNode = this._register(
 				new FastLabelNode(
 					dom.append(
@@ -378,7 +423,9 @@ export class IconLabel extends Disposable {
 
 class Label {
 	private label: string | string[] | undefined = undefined;
+
 	private singleLabel: HTMLElement | undefined = undefined;
+
 	private options: IIconLabelValueOptions | undefined;
 
 	constructor(private container: HTMLElement) {}
@@ -389,12 +436,15 @@ class Label {
 		}
 
 		this.label = label;
+
 		this.options = options;
 
 		if (typeof label === "string") {
 			if (!this.singleLabel) {
 				this.container.innerText = "";
+
 				this.container.classList.remove("multiple");
+
 				this.singleLabel = dom.append(
 					this.container,
 					dom.$("a.label-name", { id: options?.domId }),
@@ -404,7 +454,9 @@ class Label {
 			this.singleLabel.textContent = label;
 		} else {
 			this.container.innerText = "";
+
 			this.container.classList.add("multiple");
+
 			this.singleLabel = undefined;
 
 			for (let i = 0; i < label.length; i++) {
@@ -474,7 +526,9 @@ function splitMatches(
 
 class LabelWithHighlights extends Disposable {
 	private label: string | string[] | undefined = undefined;
+
 	private singleLabel: HighlightedLabel | undefined = undefined;
+
 	private options: IIconLabelValueOptions | undefined;
 
 	constructor(
@@ -490,12 +544,15 @@ class LabelWithHighlights extends Disposable {
 		}
 
 		this.label = label;
+
 		this.options = options;
 
 		if (typeof label === "string") {
 			if (!this.singleLabel) {
 				this.container.innerText = "";
+
 				this.container.classList.remove("multiple");
+
 				this.singleLabel = this._register(
 					new HighlightedLabel(
 						dom.append(
@@ -515,7 +572,9 @@ class LabelWithHighlights extends Disposable {
 			);
 		} else {
 			this.container.innerText = "";
+
 			this.container.classList.add("multiple");
+
 			this.singleLabel = undefined;
 
 			const separator = options?.separator || "/";
@@ -541,6 +600,7 @@ class LabelWithHighlights extends Disposable {
 						supportIcons: this.supportIcons,
 					}),
 				);
+
 				highlightedLabel.set(
 					l,
 					m,

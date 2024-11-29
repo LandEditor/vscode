@@ -133,7 +133,9 @@ export interface ITextFileService extends IDisposable {
 	create(
 		operations: {
 			resource: URI;
+
 			value?: string | ITextSnapshot;
+
 			options?: {
 				overwrite?: boolean;
 			};
@@ -234,6 +236,7 @@ export class TextFileOperationError extends FileOperationError {
 			)
 		);
 	}
+
 	override readonly options?: IReadTextFileOptions & IWriteTextFileOptions;
 
 	constructor(
@@ -242,6 +245,7 @@ export class TextFileOperationError extends FileOperationError {
 		options?: IReadTextFileOptions & IWriteTextFileOptions,
 	) {
 		super(message, FileOperationResult.FILE_OTHER_ERROR);
+
 		this.options = options;
 	}
 }
@@ -255,6 +259,7 @@ export interface IResourceEncodings {
 }
 export interface IResourceEncoding {
 	readonly encoding: string;
+
 	readonly hasBOM: boolean;
 }
 /**
@@ -389,14 +394,23 @@ export interface ITextFileSaveParticipant {
 }
 export interface ITextFileEditorModelManager {
 	readonly onDidCreate: Event<ITextFileEditorModel>;
+
 	readonly onDidResolve: Event<ITextFileResolveEvent>;
+
 	readonly onDidChangeDirty: Event<ITextFileEditorModel>;
+
 	readonly onDidChangeReadonly: Event<ITextFileEditorModel>;
+
 	readonly onDidRemove: Event<URI>;
+
 	readonly onDidChangeOrphaned: Event<ITextFileEditorModel>;
+
 	readonly onDidChangeEncoding: Event<ITextFileEditorModel>;
+
 	readonly onDidSaveError: Event<ITextFileEditorModel>;
+
 	readonly onDidSave: Event<ITextFileSaveEvent>;
+
 	readonly onDidRevert: Event<ITextFileEditorModel>;
 	/**
 	 * Access to all text file editor models in memory.
@@ -531,19 +545,31 @@ export interface ITextFileEditorModel
 		ILanguageSupport,
 		IWorkingCopy {
 	readonly onDidSave: Event<ITextFileEditorModelSaveEvent>;
+
 	readonly onDidSaveError: Event<void>;
+
 	readonly onDidChangeOrphaned: Event<void>;
+
 	readonly onDidChangeReadonly: Event<void>;
+
 	readonly onDidChangeEncoding: Event<void>;
+
 	hasState(state: TextFileEditorModelState): boolean;
+
 	joinState(state: TextFileEditorModelState.PENDING_SAVE): Promise<void>;
+
 	updatePreferredEncoding(encoding: string | undefined): void;
+
 	save(options?: ITextFileSaveAsOptions): Promise<boolean>;
+
 	revert(options?: IRevertOptions): Promise<void>;
+
 	resolve(options?: ITextFileResolveOptions): Promise<void>;
+
 	isDirty(): this is IResolvedTextFileEditorModel;
 
 	getLanguageId(): string | undefined;
+
 	isResolved(): this is IResolvedTextFileEditorModel;
 }
 export function isTextFileEditorModel(
@@ -562,6 +588,7 @@ export function isTextFileEditorModel(
 }
 export interface IResolvedTextFileEditorModel extends ITextFileEditorModel {
 	readonly textEditorModel: ITextModel;
+
 	createSnapshot(): ITextSnapshot;
 }
 export function snapshotToString(snapshot: ITextSnapshot): string {
@@ -572,6 +599,7 @@ export function snapshotToString(snapshot: ITextSnapshot): string {
 	while (typeof (chunk = snapshot.read()) === "string") {
 		chunks.push(chunk);
 	}
+
 	return chunks.join("");
 }
 export function stringToSnapshot(value: string): ITextSnapshot {
@@ -584,6 +612,7 @@ export function stringToSnapshot(value: string): ITextSnapshot {
 
 				return value;
 			}
+
 			return null;
 		},
 	};
@@ -606,9 +635,11 @@ export function toBufferOrReadable(
 	if (typeof value === "undefined") {
 		return undefined;
 	}
+
 	if (typeof value === "string") {
 		return VSBuffer.fromString(value);
 	}
+
 	return {
 		read: () => {
 			const chunk = value.read();
@@ -616,6 +647,7 @@ export function toBufferOrReadable(
 			if (typeof chunk === "string") {
 				return VSBuffer.fromString(chunk);
 			}
+
 			return null;
 		},
 	};

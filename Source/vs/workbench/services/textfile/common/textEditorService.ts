@@ -71,6 +71,7 @@ export interface ITextEditorService {
 	 * @param input the untyped editor input to create a typed input from
 	 */
 	resolveTextEditor(input: IUntypedEditorInput): Promise<EditorInput>;
+
 	resolveTextEditor(
 		input: IUntypedFileEditorInput,
 	): Promise<IFileEditorInput>;
@@ -80,9 +81,11 @@ export class TextEditorService
 	implements ITextEditorService
 {
 	declare readonly _serviceBrand: undefined;
+
 	private readonly editorInputCache = new ResourceMap<
 		TextResourceEditorInput | IFileEditorInput | UntitledTextEditorInput
 	>();
+
 	private readonly fileEditorFactory = Registry.as<IEditorFactoryRegistry>(
 		EditorExtensions.EditorFactory,
 	).getFileEditorFactory();
@@ -104,6 +107,7 @@ export class TextEditorService
 		// service so that it shows up in the editors picker
 		this.registerDefaultEditor();
 	}
+
 	private registerDefaultEditor(): void {
 		this._register(
 			this.editorResolverService.registerEditor(
@@ -129,7 +133,9 @@ export class TextEditorService
 			),
 		);
 	}
+
 	resolveTextEditor(input: IUntypedEditorInput): Promise<EditorInput>;
+
 	resolveTextEditor(
 		input: IUntypedFileEditorInput,
 	): Promise<IFileEditorInput>;
@@ -139,8 +145,11 @@ export class TextEditorService
 	): Promise<EditorInput | IFileEditorInput> {
 		return this.createTextEditor(input);
 	}
+
 	createTextEditor(input: IUntypedEditorInput): EditorInput;
+
 	createTextEditor(input: IUntypedFileEditorInput): IFileEditorInput;
+
 	createTextEditor(
 		input: IUntypedEditorInput | IUntypedFileEditorInput,
 	): EditorInput | IFileEditorInput {
@@ -206,6 +215,7 @@ export class TextEditorService
 					...untitledOptions,
 				});
 			}
+
 			return this.createOrGetCached(untitledModel.resource, () =>
 				this.instantiationService.createInstance(
 					UntitledTextEditorInput,
@@ -275,21 +285,25 @@ export class TextEditorService
 								textResourceEditorInput.label,
 							);
 						}
+
 						if (textResourceEditorInput.description) {
 							cachedInput.setPreferredDescription(
 								textResourceEditorInput.description,
 							);
 						}
+
 						if (textResourceEditorInput.encoding) {
 							cachedInput.setPreferredEncoding(
 								textResourceEditorInput.encoding,
 							);
 						}
+
 						if (textResourceEditorInput.languageId) {
 							cachedInput.setPreferredLanguageId(
 								textResourceEditorInput.languageId,
 							);
 						}
+
 						if (
 							typeof textResourceEditorInput.contents === "string"
 						) {
@@ -303,16 +317,19 @@ export class TextEditorService
 						if (label) {
 							cachedInput.setName(label);
 						}
+
 						if (textResourceEditorInput.description) {
 							cachedInput.setDescription(
 								textResourceEditorInput.description,
 							);
 						}
+
 						if (textResourceEditorInput.languageId) {
 							cachedInput.setPreferredLanguageId(
 								textResourceEditorInput.languageId,
 							);
 						}
+
 						if (
 							typeof textResourceEditorInput.contents === "string"
 						) {
@@ -324,10 +341,12 @@ export class TextEditorService
 				},
 			);
 		}
+
 		throw new Error(
 			`ITextEditorService: Unable to create texteditor from ${JSON.stringify(input)}`,
 		);
 	}
+
 	private createOrGetCached(
 		resource: URI,
 		factoryFn: () =>
@@ -351,7 +370,9 @@ export class TextEditorService
 		}
 		// Otherwise create and add to cache
 		input = factoryFn();
+
 		this.editorInputCache.set(resource, input);
+
 		Event.once(input.onWillDispose)(() =>
 			this.editorInputCache.delete(resource),
 		);

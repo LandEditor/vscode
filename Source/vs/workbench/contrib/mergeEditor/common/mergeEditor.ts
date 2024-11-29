@@ -99,10 +99,15 @@ export const ctxMergeResultUri = new RawContextKey<string>(
 
 export interface MergeEditorContents {
 	languageId: string;
+
 	base: string;
+
 	input1: string;
+
 	input2: string;
+
 	result: string;
+
 	initialResult?: string;
 }
 export const StorageCloseWithConflicts = "mergeEditorCloseWithConflicts";

@@ -13,9 +13,13 @@ declare module "vscode" {
 
 	export class NotebookKernelSourceAction {
 		readonly label: string;
+
 		readonly description?: string;
+
 		readonly detail?: string;
+
 		readonly command: string | Command;
+
 		readonly documentation?: Uri;
 
 		constructor(label: string);

@@ -71,11 +71,14 @@ export class TimerService extends AbstractTimerService {
 			telemetryService,
 			layoutService,
 		);
+
 		this.setPerformanceMarks("main", _environmentService.window.perfMarks);
 	}
+
 	protected _isInitialStartup(): boolean {
 		return Boolean(this._environmentService.window.isInitialStartup);
 	}
+
 	protected _didUseCachedData(): boolean {
 		return didUseCachedData(
 			this._productService,
@@ -83,9 +86,11 @@ export class TimerService extends AbstractTimerService {
 			this._environmentService,
 		);
 	}
+
 	protected _getWindowCount(): Promise<number> {
 		return this._nativeHostService.getWindowCount();
 	}
+
 	protected async _extendStartupInfo(
 		info: Writeable<IStartupMetrics>,
 	): Promise<void> {
@@ -101,20 +106,29 @@ export class TimerService extends AbstractTimerService {
 				this._nativeHostService.getOSVirtualMachineHint(),
 				this._nativeHostService.isRunningUnderARM64Translation(),
 			]);
+
 			info.totalmem = osStatistics.totalmem;
+
 			info.freemem = osStatistics.freemem;
+
 			info.platform = osProperties.platform;
+
 			info.release = osProperties.release;
+
 			info.arch = osProperties.arch;
+
 			info.loadavg = osStatistics.loadavg;
+
 			info.isARM64Emulated = isARM64Emulated;
 
 			const processMemoryInfo = await process.getProcessMemoryInfo();
+
 			info.meminfo = {
 				workingSetSize: processMemoryInfo.residentSet,
 				privateBytes: processMemoryInfo.private,
 				sharedBytes: processMemoryInfo.shared,
 			};
+
 			info.isVMLikelyhood = Math.round(virtualMachineHint * 100);
 
 			const rawCpus = osProperties.cpus;
@@ -130,6 +144,7 @@ export class TimerService extends AbstractTimerService {
 			// ignore, be on the safe side with these hardware method calls
 		}
 	}
+
 	protected override _shouldReportPerfMarks(): boolean {
 		// always send when running with the prof-append-timers flag
 		return (
@@ -172,9 +187,11 @@ export function didUseCachedData(
 				StorageScope.APPLICATION,
 				StorageTarget.MACHINE,
 			);
+
 			_didUseCachedData = false; // first time start on commit, assume cached data is not yet there
 		}
 	}
+
 	return _didUseCachedData;
 }
 //#endregion

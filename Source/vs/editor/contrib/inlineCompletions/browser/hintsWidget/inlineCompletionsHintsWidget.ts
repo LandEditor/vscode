@@ -116,6 +116,7 @@ export class InlineCompletionsHintsWidget extends Disposable {
 				this.sessionPosition?.column ?? Number.MAX_SAFE_INTEGER,
 			),
 		);
+
 		this.sessionPosition = position;
 
 		return position;
@@ -150,7 +151,9 @@ export class InlineCompletionsHintsWidget extends Disposable {
 							model.activeCommands,
 						),
 					);
+
 					editor.addContentWidget(contentWidget);
+
 					store.add(
 						toDisposable(() =>
 							editor.removeContentWidget(contentWidget),
@@ -165,6 +168,7 @@ export class InlineCompletionsHintsWidget extends Disposable {
 							if (!position) {
 								return;
 							}
+
 							if (
 								model.lastTriggerKind.read(reader) !==
 								InlineCompletionTriggerKind.Explicit
@@ -182,6 +186,7 @@ export class InlineCompletionsHintsWidget extends Disposable {
 					(reader, lastValue) =>
 						!!this.position.read(reader) || !!lastValue,
 				);
+
 				store.add(
 					autorun((reader) => {
 						if (hadPosition.read(reader)) {
@@ -214,6 +219,7 @@ export class InlineSuggestionHintsContentWidget
 	implements IContentWidget
 {
 	private static _dropDownVisible = false;
+
 	public static get dropDownVisible() {
 		return this._dropDownVisible;
 	}
@@ -221,7 +227,9 @@ export class InlineSuggestionHintsContentWidget
 	private static id = 0;
 
 	private readonly id = `InlineSuggestionHintsContentWidget${InlineSuggestionHintsContentWidget.id++}`;
+
 	public readonly allowEditorOverflow = true;
+
 	public readonly suppressMouseDown = false;
 
 	private readonly nodes = h(
@@ -254,6 +262,7 @@ export class InlineSuggestionHintsContentWidget
 				kb.getLabel(),
 			);
 		}
+
 		action.tooltip = tooltip;
 
 		return action;
@@ -264,12 +273,14 @@ export class InlineSuggestionHintsContentWidget
 		localize("previous", "Previous"),
 		ThemeIcon.asClassName(inlineSuggestionHintsPreviousIcon),
 	);
+
 	private readonly availableSuggestionCountAction = new Action(
 		"inlineSuggestionHints.availableSuggestionCount",
 		"",
 		undefined,
 		false,
 	);
+
 	private readonly nextAction = this.createCommandAction(
 		showNextInlineSuggestionActionId,
 		localize("next", "Next"),
@@ -335,16 +346,19 @@ export class InlineSuggestionHintsContentWidget
 								undefined,
 							);
 						}
+
 						if (action === this.availableSuggestionCountAction) {
 							const a = new ActionViewItemWithClassName(
 								undefined,
 								action,
 								{ label: true, icon: false },
 							);
+
 							a.setClass("availableSuggestionCount");
 
 							return a;
 						}
+
 						return undefined;
 					},
 					telemetrySource: "InlineSuggestionToolbar",
@@ -368,6 +382,7 @@ export class InlineSuggestionHintsContentWidget
 			autorun((reader) => {
 				/** @description update position */
 				this._position.read(reader);
+
 				this.editor.layoutContentWidget(this);
 			}),
 		);
@@ -382,6 +397,7 @@ export class InlineSuggestionHintsContentWidget
 
 				if (suggestionCount !== undefined) {
 					this.clearAvailableSuggestionCountLabelDebounced.cancel();
+
 					this.availableSuggestionCountAction.label = `${currentSuggestionIdx + 1}/${suggestionCount}`;
 				} else {
 					this.clearAvailableSuggestionCountLabelDebounced.schedule();
@@ -389,6 +405,7 @@ export class InlineSuggestionHintsContentWidget
 
 				if (suggestionCount !== undefined && suggestionCount > 1) {
 					this.disableButtonsDebounced.cancel();
+
 					this.previousAction.enabled = this.nextAction.enabled =
 						true;
 				} else {
@@ -483,6 +500,7 @@ class StatusBarViewItem extends MenuEntryActionViewItem {
 		if (!kb) {
 			return super.updateLabel();
 		}
+
 		if (this.label) {
 			const div = h("div.keybinding").root;
 
@@ -492,9 +510,13 @@ class StatusBarViewItem extends MenuEntryActionViewItem {
 					...unthemedKeybindingLabelOptions,
 				}),
 			);
+
 			k.set(kb);
+
 			this.label.textContent = this._action.label;
+
 			this.label.appendChild(div);
+
 			this.label.classList.add("inlineSuggestionStatusBarItemLabel");
 		}
 	}
@@ -510,8 +532,11 @@ export class CustomizedMenuWorkbenchToolBar extends WorkbenchToolBar {
 			emitEventsForSubmenuChanges: true,
 		}),
 	);
+
 	private additionalActions: IAction[] = [];
+
 	private prependedPrimaryActions: IAction[] = [];
+
 	private additionalPrimaryActions: IAction[] = [];
 
 	constructor(
@@ -538,6 +563,7 @@ export class CustomizedMenuWorkbenchToolBar extends WorkbenchToolBar {
 		);
 
 		this._store.add(this.menu.onDidChange(() => this.updateToolbar()));
+
 		this.updateToolbar();
 	}
 
@@ -550,8 +576,11 @@ export class CustomizedMenuWorkbenchToolBar extends WorkbenchToolBar {
 		);
 
 		secondary.push(...this.additionalActions);
+
 		primary.unshift(...this.prependedPrimaryActions);
+
 		primary.push(...this.additionalPrimaryActions);
+
 		this.setActions(primary, secondary);
 	}
 
@@ -561,6 +590,7 @@ export class CustomizedMenuWorkbenchToolBar extends WorkbenchToolBar {
 		}
 
 		this.prependedPrimaryActions = actions;
+
 		this.updateToolbar();
 	}
 
@@ -570,6 +600,7 @@ export class CustomizedMenuWorkbenchToolBar extends WorkbenchToolBar {
 		}
 
 		this.additionalPrimaryActions = actions;
+
 		this.updateToolbar();
 	}
 
@@ -579,6 +610,7 @@ export class CustomizedMenuWorkbenchToolBar extends WorkbenchToolBar {
 		}
 
 		this.additionalActions = actions;
+
 		this.updateToolbar();
 	}
 }

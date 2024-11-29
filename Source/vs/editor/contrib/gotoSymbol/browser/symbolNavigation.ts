@@ -55,17 +55,26 @@ export const ISymbolNavigationService =
 
 export interface ISymbolNavigationService {
 	readonly _serviceBrand: undefined;
+
 	reset(): void;
+
 	put(anchor: OneReference): void;
+
 	revealNext(source: ICodeEditor): Promise<any>;
 }
 class SymbolNavigationService implements ISymbolNavigationService {
 	declare readonly _serviceBrand: undefined;
+
 	private readonly _ctxHasSymbols: IContextKey<boolean>;
+
 	private _currentModel?: ReferencesModel = undefined;
+
 	private _currentIdx: number = -1;
+
 	private _currentState?: IDisposable;
+
 	private _currentMessage?: IDisposable;
+
 	private _ignoreEditorChange: boolean = false;
 
 	constructor(
@@ -80,13 +89,19 @@ class SymbolNavigationService implements ISymbolNavigationService {
 	) {
 		this._ctxHasSymbols = ctxHasSymbols.bindTo(contextKeyService);
 	}
+
 	reset(): void {
 		this._ctxHasSymbols.reset();
+
 		this._currentState?.dispose();
+
 		this._currentMessage?.dispose();
+
 		this._currentModel = undefined;
+
 		this._currentIdx = -1;
 	}
+
 	put(anchor: OneReference): void {
 		const refModel = anchor.parent.parent;
 
@@ -95,9 +110,13 @@ class SymbolNavigationService implements ISymbolNavigationService {
 
 			return;
 		}
+
 		this._currentModel = refModel;
+
 		this._currentIdx = refModel.references.indexOf(anchor);
+
 		this._ctxHasSymbols.set(true);
+
 		this._showMessage();
 
 		const editorState = new EditorState(this._editorService);
@@ -106,11 +125,13 @@ class SymbolNavigationService implements ISymbolNavigationService {
 			if (this._ignoreEditorChange) {
 				return;
 			}
+
 			const editor = this._editorService.getActiveCodeEditor();
 
 			if (!editor) {
 				return;
 			}
+
 			const model = editor.getModel();
 
 			const position = editor.getPosition();
@@ -118,6 +139,7 @@ class SymbolNavigationService implements ISymbolNavigationService {
 			if (!model || !position) {
 				return;
 			}
+
 			let seenUri: boolean = false;
 
 			let seenPosition: boolean = false;
@@ -125,6 +147,7 @@ class SymbolNavigationService implements ISymbolNavigationService {
 			for (const reference of refModel.references) {
 				if (isEqual(reference.uri, model.uri)) {
 					seenUri = true;
+
 					seenPosition =
 						seenPosition ||
 						Range.containsPosition(reference.range, position);
@@ -132,18 +155,22 @@ class SymbolNavigationService implements ISymbolNavigationService {
 					break;
 				}
 			}
+
 			if (!seenUri || !seenPosition) {
 				this.reset();
 			}
 		});
+
 		this._currentState = combinedDisposable(editorState, listener);
 	}
+
 	revealNext(source: ICodeEditor): Promise<any> {
 		if (!this._currentModel) {
 			return Promise.resolve();
 		}
 		// get next result and advance
 		this._currentIdx += 1;
+
 		this._currentIdx %= this._currentModel.references.length;
 
 		const reference = this._currentModel.references[this._currentIdx];
@@ -168,6 +195,7 @@ class SymbolNavigationService implements ISymbolNavigationService {
 				this._ignoreEditorChange = false;
 			});
 	}
+
 	private _showMessage(): void {
 		this._currentMessage?.dispose();
 
@@ -189,6 +217,7 @@ class SymbolNavigationService implements ISymbolNavigationService {
 					this._currentIdx + 1,
 					this._currentModel!.references.length,
 				);
+
 		this._currentMessage = this._notificationService.status(message);
 	}
 }
@@ -209,6 +238,7 @@ registerEditorCommand(
 				},
 			});
 		}
+
 		runEditorCommand(
 			accessor: ServicesAccessor,
 			editor: ICodeEditor,
@@ -229,10 +259,13 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
 //
 class EditorState {
 	private readonly _listener = new Map<ICodeEditor, IDisposable>();
+
 	private readonly _disposables = new DisposableStore();
+
 	private readonly _onDidChange = new Emitter<{
 		editor: ICodeEditor;
 	}>();
+
 	readonly onDidChange: Event<{
 		editor: ICodeEditor;
 	}> = this._onDidChange.event;
@@ -244,16 +277,22 @@ class EditorState {
 		this._disposables.add(
 			editorService.onCodeEditorRemove(this._onDidRemoveEditor, this),
 		);
+
 		this._disposables.add(
 			editorService.onCodeEditorAdd(this._onDidAddEditor, this),
 		);
+
 		editorService.listCodeEditors().forEach(this._onDidAddEditor, this);
 	}
+
 	dispose(): void {
 		this._disposables.dispose();
+
 		this._onDidChange.dispose();
+
 		dispose(this._listener.values());
 	}
+
 	private _onDidAddEditor(editor: ICodeEditor): void {
 		this._listener.set(
 			editor,
@@ -267,8 +306,10 @@ class EditorState {
 			),
 		);
 	}
+
 	private _onDidRemoveEditor(editor: ICodeEditor): void {
 		this._listener.get(editor)?.dispose();
+
 		this._listener.delete(editor);
 	}
 }

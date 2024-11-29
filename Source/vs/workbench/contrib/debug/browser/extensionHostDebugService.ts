@@ -46,8 +46,11 @@ class BrowserExtensionHostDebugService
 {
 	private static readonly LAST_EXTENSION_DEVELOPMENT_WORKSPACE_KEY =
 		"debug.lastExtensionDevelopmentWorkspace";
+
 	private workspaceProvider: IWorkspaceProvider;
+
 	private readonly storageService: IStorageService;
+
 	private readonly fileService: IFileService;
 
 	constructor(
@@ -81,8 +84,11 @@ class BrowserExtensionHostDebugService
 				listen: () => Event.None,
 			} as any;
 		}
+
 		super(channel);
+
 		this.storageService = storageService;
+
 		this.fileService = fileService;
 
 		if (
@@ -97,6 +103,7 @@ class BrowserExtensionHostDebugService
 				workspace: undefined,
 				trusted: undefined,
 			};
+
 			logService.warn(
 				"Extension Host Debugging not available due to missing workspace provider.",
 			);
@@ -144,6 +151,7 @@ class BrowserExtensionHostDebugService
 				)
 					? { folderUri: workspaceId.uri.toJSON() }
 					: { workspaceUri: workspaceId.configPath.toJSON() };
+
 				storageService.store(
 					BrowserExtensionHostDebugService.LAST_EXTENSION_DEVELOPMENT_WORKSPACE_KEY,
 					JSON.stringify(serializedWorkspace),
@@ -158,6 +166,7 @@ class BrowserExtensionHostDebugService
 			}
 		}
 	}
+
 	override async openExtensionDevelopmentHostWindow(
 		args: string[],
 		_debugRenderer: boolean,
@@ -170,6 +179,7 @@ class BrowserExtensionHostDebugService
 		if (fileUriArg && !hasWorkspaceFileExtension(fileUriArg)) {
 			environment.set("openFile", fileUriArg);
 		}
+
 		const copyArgs = [
 			"extensionDevelopmentPath",
 			"extensionTestsPath",
@@ -200,6 +210,7 @@ class BrowserExtensionHostDebugService
 				debugWorkspace = { workspaceUri: URI.parse(fileUriArg) };
 			}
 		}
+
 		const extensionTestsPath = this.findArgument(
 			"extensionTestsPath",
 			args,
@@ -215,6 +226,7 @@ class BrowserExtensionHostDebugService
 				try {
 					const serializedWorkspace: {
 						workspaceUri?: UriComponents;
+
 						folderUri?: UriComponents;
 					} = JSON.parse(lastExtensionDevelopmentWorkspace);
 
@@ -262,6 +274,7 @@ class BrowserExtensionHostDebugService
 
 		return { success };
 	}
+
 	private findArgument(key: string, args: string[]): string | undefined {
 		for (const a of args) {
 			const k = `--${key}=`;
@@ -270,6 +283,7 @@ class BrowserExtensionHostDebugService
 				return a.substring(k.length);
 			}
 		}
+
 		return undefined;
 	}
 }

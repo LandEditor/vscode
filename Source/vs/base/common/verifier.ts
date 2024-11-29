@@ -9,12 +9,15 @@ interface IVerifier<T> {
 }
 abstract class Verifier<T> implements IVerifier<T> {
 	constructor(protected readonly defaultValue: T) {}
+
 	verify(value: unknown): T {
 		if (!this.isType(value)) {
 			return this.defaultValue;
 		}
+
 		return value;
 	}
+
 	protected abstract isType(value: unknown): value is T;
 }
 export class BooleanVerifier extends Verifier<boolean> {
@@ -37,8 +40,10 @@ export class EnumVerifier<T> extends Verifier<T> {
 
 	constructor(defaultValue: T, allowedValues: ReadonlyArray<T>) {
 		super(defaultValue);
+
 		this.allowedValues = allowedValues;
 	}
+
 	protected isType(value: unknown): value is T {
 		return this.allowedValues.includes(value as T);
 	}
@@ -52,12 +57,15 @@ export class ObjectVerifier<T extends Object> extends Verifier<T> {
 	) {
 		super(defaultValue);
 	}
+
 	override verify(value: unknown): T {
 		if (!this.isType(value)) {
 			return this.defaultValue;
 		}
+
 		return verifyObject<T>(this.verifier, value);
 	}
+
 	protected isType(value: unknown): value is T {
 		return isObject(value);
 	}
@@ -73,8 +81,10 @@ export function verifyObject<T extends Object>(
 	for (const key in verifiers) {
 		if (Object.hasOwnProperty.call(verifiers, key)) {
 			const verifier = verifiers[key];
+
 			result[key] = verifier.verify((value as any)[key]);
 		}
 	}
+
 	return result;
 }

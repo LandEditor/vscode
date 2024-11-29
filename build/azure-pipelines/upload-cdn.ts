@@ -73,6 +73,7 @@ const MimeTypesToCompress = new Set([
 function wait(stream: es.ThroughStream): Promise<void> {
 	return new Promise<void>((c, e) => {
 		stream.on("end", () => c());
+
 		stream.on("error", (err: any) => e(err));
 	});
 }
@@ -106,10 +107,13 @@ async function main(): Promise<void> {
 	const out = es.merge(compressed, uncompressed).pipe(
 		es.through(function (f) {
 			console.log("Uploaded:", f.relative);
+
 			files.push(f.relative);
+
 			this.emit("data", f);
 		}),
 	);
+
 	console.log(`Uploading files to CDN...`); // debug
 	await wait(out);
 
@@ -123,10 +127,12 @@ async function main(): Promise<void> {
 		.readArray([listing])
 		.pipe(gzip({ append: false }))
 		.pipe(azure.upload(options(true)));
+
 	console.log(`Uploading: files.txt (${files.length} files)`); // debug
 	await wait(filesOut);
 }
 main().catch((err) => {
 	console.error(err);
+
 	process.exit(1);
 });

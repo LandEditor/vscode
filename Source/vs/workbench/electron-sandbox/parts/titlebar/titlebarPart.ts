@@ -71,6 +71,7 @@ export class NativeTitlebarPart extends BrowserTitlebarPart {
 		if (!isMacintosh) {
 			return super.minimumHeight;
 		}
+
 		return (
 			(this.isCommandCenterVisible
 				? DEFAULT_CUSTOM_TITLEBAR_HEIGHT
@@ -78,25 +79,33 @@ export class NativeTitlebarPart extends BrowserTitlebarPart {
 			(this.preventZoom ? getZoomFactor(getWindow(this.element)) : 1)
 		);
 	}
+
 	override get maximumHeight(): number {
 		return this.minimumHeight;
 	}
+
 	private bigSurOrNewer: boolean;
+
 	private get macTitlebarSize() {
 		if (this.bigSurOrNewer) {
 			return 28; // macOS Big Sur increases title bar height
 		}
+
 		return 22;
 	}
 	//#endregion
 	private maxRestoreControl: HTMLElement | undefined;
+
 	private resizer: HTMLElement | undefined;
+
 	private cachedWindowControlStyles:
 		| {
 				bgColor: string;
+
 				fgColor: string;
 		  }
 		| undefined;
+
 	private cachedWindowControlHeight: number | undefined;
 
 	constructor(
@@ -150,8 +159,10 @@ export class NativeTitlebarPart extends BrowserTitlebarPart {
 			menuService,
 			keybindingService,
 		);
+
 		this.bigSurOrNewer = isBigSurOrNewer(environmentService.os.release);
 	}
+
 	protected override onMenubarVisibilityChanged(visible: boolean): void {
 		// Hide title when toggling menu bar
 		if (
@@ -166,8 +177,10 @@ export class NativeTitlebarPart extends BrowserTitlebarPart {
 				setTimeout(() => show(this.dragRegion!), 50);
 			}
 		}
+
 		super.onMenubarVisibilityChanged(visible);
 	}
+
 	protected override onConfigurationChanged(
 		event: IConfigurationChangeEvent,
 	): void {
@@ -179,6 +192,7 @@ export class NativeTitlebarPart extends BrowserTitlebarPart {
 			}
 		}
 	}
+
 	private onUpdateAppIconDragBehavior(): void {
 		const setting = this.configurationService.getValue(
 			"window.doubleClickIconToClose",
@@ -190,12 +204,14 @@ export class NativeTitlebarPart extends BrowserTitlebarPart {
 			(this.appIcon.style as any)["-webkit-app-region"] = "drag";
 		}
 	}
+
 	protected override installMenubar(): void {
 		super.installMenubar();
 
 		if (this.menubar) {
 			return;
 		}
+
 		if (this.customMenubar) {
 			this._register(
 				this.customMenubar.onFocusStateChange((e) =>
@@ -204,6 +220,7 @@ export class NativeTitlebarPart extends BrowserTitlebarPart {
 			);
 		}
 	}
+
 	private onMenubarFocusChanged(focused: boolean): void {
 		if (
 			(isWindows || isLinux) &&
@@ -217,6 +234,7 @@ export class NativeTitlebarPart extends BrowserTitlebarPart {
 			}
 		}
 	}
+
 	protected override createContentArea(parent: HTMLElement): HTMLElement {
 		const result = super.createContentArea(parent);
 
@@ -232,6 +250,7 @@ export class NativeTitlebarPart extends BrowserTitlebarPart {
 		// App Icon (Native Windows/Linux)
 		if (this.appIcon) {
 			this.onUpdateAppIconDragBehavior();
+
 			this._register(
 				addDisposableListener(this.appIcon, EventType.DBLCLICK, () => {
 					this.nativeHostService.closeWindow({ targetWindowId });
@@ -253,6 +272,7 @@ export class NativeTitlebarPart extends BrowserTitlebarPart {
 						ThemeIcon.asCSSSelector(Codicon.chromeMinimize),
 				),
 			);
+
 			this._register(
 				addDisposableListener(minimizeIcon, EventType.CLICK, () => {
 					this.nativeHostService.minimizeWindow({ targetWindowId });
@@ -263,6 +283,7 @@ export class NativeTitlebarPart extends BrowserTitlebarPart {
 				this.windowControlsContainer,
 				$("div.window-icon.window-max-restore"),
 			);
+
 			this._register(
 				addDisposableListener(
 					this.maxRestoreControl,
@@ -278,6 +299,7 @@ export class NativeTitlebarPart extends BrowserTitlebarPart {
 								targetWindowId,
 							});
 						}
+
 						return this.nativeHostService.maximizeWindow({
 							targetWindowId,
 						});
@@ -292,6 +314,7 @@ export class NativeTitlebarPart extends BrowserTitlebarPart {
 						ThemeIcon.asCSSSelector(Codicon.chromeClose),
 				),
 			);
+
 			this._register(
 				addDisposableListener(closeIcon, EventType.CLICK, () => {
 					this.nativeHostService.closeWindow({ targetWindowId });
@@ -299,6 +322,7 @@ export class NativeTitlebarPart extends BrowserTitlebarPart {
 			);
 			// Resizer
 			this.resizer = append(this.rootContainer, $("div.resizer"));
+
 			this._register(
 				Event.runAndSubscribe(
 					this.layoutService.onDidChangeWindowMaximized,
@@ -324,9 +348,11 @@ export class NativeTitlebarPart extends BrowserTitlebarPart {
 						if (targetWindowId !== windowId) {
 							return;
 						}
+
 						const zoomFactor = getZoomFactor(
 							getWindow(this.element),
 						);
+
 						this.onContextMenu(
 							new MouseEvent("mouseup", {
 								clientX: x / zoomFactor,
@@ -338,14 +364,17 @@ export class NativeTitlebarPart extends BrowserTitlebarPart {
 				),
 			);
 		}
+
 		return result;
 	}
+
 	private onDidChangeWindowMaximized(maximized: boolean): void {
 		if (this.maxRestoreControl) {
 			if (maximized) {
 				this.maxRestoreControl.classList.remove(
 					...ThemeIcon.asClassNameArray(Codicon.chromeMaximize),
 				);
+
 				this.maxRestoreControl.classList.add(
 					...ThemeIcon.asClassNameArray(Codicon.chromeRestore),
 				);
@@ -353,11 +382,13 @@ export class NativeTitlebarPart extends BrowserTitlebarPart {
 				this.maxRestoreControl.classList.remove(
 					...ThemeIcon.asClassNameArray(Codicon.chromeRestore),
 				);
+
 				this.maxRestoreControl.classList.add(
 					...ThemeIcon.asClassNameArray(Codicon.chromeMaximize),
 				);
 			}
 		}
+
 		if (this.resizer) {
 			if (maximized) {
 				hide(this.resizer);
@@ -366,6 +397,7 @@ export class NativeTitlebarPart extends BrowserTitlebarPart {
 			}
 		}
 	}
+
 	override updateStyles(): void {
 		super.updateStyles();
 		// WCO styles only supported on Windows currently
@@ -385,6 +417,7 @@ export class NativeTitlebarPart extends BrowserTitlebarPart {
 			}
 		}
 	}
+
 	override layout(width: number, height: number): void {
 		super.layout(width, height);
 
@@ -407,6 +440,7 @@ export class NativeTitlebarPart extends BrowserTitlebarPart {
 
 			if (newHeight !== this.cachedWindowControlHeight) {
 				this.cachedWindowControlHeight = newHeight;
+
 				this.nativeHostService.updateWindowControls({
 					targetWindowId: getWindowId(getWindow(this.element)),
 					height: newHeight,
@@ -476,6 +510,7 @@ export class AuxiliaryNativeTitlebarPart
 	get height() {
 		return this.minimumHeight;
 	}
+
 	constructor(
 		readonly container: HTMLElement,
 		editorGroupsContainer: IEditorGroupsContainer,
@@ -531,6 +566,7 @@ export class AuxiliaryNativeTitlebarPart
 			keybindingService,
 		);
 	}
+
 	override get preventZoom(): boolean {
 		// Prevent zooming behavior if any of the following conditions are met:
 		// 1. Shrinking below the window control size (zoom < 1)
@@ -547,6 +583,7 @@ export class NativeTitleService extends BrowserTitleService {
 	protected override createMainTitlebarPart(): MainNativeTitlebarPart {
 		return this.instantiationService.createInstance(MainNativeTitlebarPart);
 	}
+
 	protected override doCreateAuxiliaryTitlebarPart(
 		container: HTMLElement,
 		editorGroupsContainer: IEditorGroupsContainer,

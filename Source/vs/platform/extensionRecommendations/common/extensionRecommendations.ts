@@ -12,8 +12,11 @@ export const enum RecommendationSource {
 }
 export interface IExtensionRecommendations {
 	source: RecommendationSource;
+
 	extensions: string[];
+
 	name: string;
+
 	searchValue?: string;
 }
 export function RecommendationSourceToString(source: RecommendationSource) {
@@ -42,11 +45,15 @@ export const IExtensionRecommendationNotificationService =
 
 export interface IExtensionRecommendationNotificationService {
 	readonly _serviceBrand: undefined;
+
 	readonly ignoredRecommendations: string[];
+
 	hasToIgnoreRecommendationNotifications(): boolean;
+
 	promptImportantExtensionsInstallNotification(
 		recommendations: IExtensionRecommendations,
 	): Promise<RecommendationsNotificationResult>;
+
 	promptWorkspaceRecommendations(
 		recommendations: Array<string | URI>,
 	): Promise<void>;

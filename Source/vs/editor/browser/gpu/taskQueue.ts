@@ -32,35 +32,49 @@ interface ITaskDeadline {
 type CallbackWithDeadline = (deadline: ITaskDeadline) => void;
 abstract class TaskQueue extends Disposable implements ITaskQueue {
 	private _tasks: (() => boolean | void)[] = [];
+
 	private _idleCallback?: number;
+
 	private _i = 0;
 
 	constructor() {
 		super();
+
 		this._register(toDisposable(() => this.clear()));
 	}
+
 	protected abstract _requestCallback(callback: CallbackWithDeadline): number;
+
 	protected abstract _cancelCallback(identifier: number): void;
+
 	public enqueue(task: () => boolean | void): void {
 		this._tasks.push(task);
+
 		this._start();
 	}
+
 	public flush(): void {
 		while (this._i < this._tasks.length) {
 			if (!this._tasks[this._i]()) {
 				this._i++;
 			}
 		}
+
 		this.clear();
 	}
+
 	public clear(): void {
 		if (this._idleCallback) {
 			this._cancelCallback(this._idleCallback);
+
 			this._idleCallback = undefined;
 		}
+
 		this._i = 0;
+
 		this._tasks.length = 0;
 	}
+
 	private _start(): void {
 		if (!this._idleCallback) {
 			this._idleCallback = this._requestCallback(
@@ -68,6 +82,7 @@ abstract class TaskQueue extends Disposable implements ITaskQueue {
 			);
 		}
 	}
+
 	private _process(deadline: ITaskDeadline): void {
 		this._idleCallback = undefined;
 
@@ -89,6 +104,7 @@ abstract class TaskQueue extends Disposable implements ITaskQueue {
 			// this is not an issue here as a clock change during a short running task is very unlikely
 			// in case it still happened and leads to negative duration, simply assume 1 msec
 			taskDuration = Math.max(1, Date.now() - taskDuration);
+
 			longestTask = Math.max(taskDuration, longestTask);
 			// Guess the following task will take a similar time to the longest task in this batch, allow
 			// additional room to try avoid exceeding the deadline
@@ -102,12 +118,15 @@ abstract class TaskQueue extends Disposable implements ITaskQueue {
 						`task queue exceeded allotted deadline by ${Math.abs(Math.round(lastDeadlineRemaining - taskDuration))}ms`,
 					);
 				}
+
 				this._start();
 
 				return;
 			}
+
 			lastDeadlineRemaining = deadlineRemaining;
 		}
+
 		this.clear();
 	}
 }
@@ -122,9 +141,11 @@ export class PriorityTaskQueue extends TaskQueue {
 			callback(this._createDeadline(16)),
 		);
 	}
+
 	protected _cancelCallback(identifier: number): void {
 		getActiveWindow().clearTimeout(identifier);
 	}
+
 	private _createDeadline(duration: number): ITaskDeadline {
 		const end = Date.now() + duration;
 
@@ -143,6 +164,7 @@ export class IdleTaskQueue extends TaskQueue {
 	protected _requestCallback(callback: IdleRequestCallback): number {
 		return getActiveWindow().requestIdleCallback(callback);
 	}
+
 	protected _cancelCallback(identifier: number): void {
 		getActiveWindow().cancelIdleCallback(identifier);
 	}
@@ -157,10 +179,13 @@ export class DebouncedIdleTask {
 	constructor() {
 		this._queue = new IdleTaskQueue();
 	}
+
 	public set(task: () => boolean | void): void {
 		this._queue.clear();
+
 		this._queue.enqueue(task);
 	}
+
 	public flush(): void {
 		this._queue.flush();
 	}

@@ -53,16 +53,21 @@ import {
 
 export class OutputViewPane extends ViewPane {
 	private readonly editor: OutputEditor;
+
 	private channelId: string | undefined;
+
 	private editorPromise: CancelablePromise<OutputEditor> | null = null;
+
 	private readonly scrollLockContextKey: IContextKey<boolean>;
 
 	get scrollLock(): boolean {
 		return !!this.scrollLockContextKey.get();
 	}
+
 	set scrollLock(scrollLock: boolean) {
 		this.scrollLockContextKey.set(scrollLock);
 	}
+
 	constructor(
 		options: IViewPaneOptions,
 		@IKeybindingService
@@ -99,6 +104,7 @@ export class OutputViewPane extends ViewPane {
 			telemetryService,
 			hoverService,
 		);
+
 		this.scrollLockContextKey = CONTEXT_OUTPUT_SCROLL_LOCK.bindTo(
 			this.contextKeyService,
 		);
@@ -111,43 +117,56 @@ export class OutputViewPane extends ViewPane {
 				]),
 			),
 		);
+
 		this.editor = this._register(
 			editorInstantiationService.createInstance(OutputEditor),
 		);
+
 		this._register(
 			this.editor.onTitleAreaUpdate(() => {
 				this.updateTitle(this.editor.getTitle());
+
 				this.updateActions();
 			}),
 		);
+
 		this._register(
 			this.onDidChangeBodyVisibility(() =>
 				this.onDidChangeVisibility(this.isBodyVisible()),
 			),
 		);
 	}
+
 	showChannel(channel: IOutputChannel, preserveFocus: boolean): void {
 		if (this.channelId !== channel.id) {
 			this.setInput(channel);
 		}
+
 		if (!preserveFocus) {
 			this.focus();
 		}
 	}
+
 	override focus(): void {
 		super.focus();
+
 		this.editorPromise?.then(() => this.editor.focus());
 	}
+
 	protected override renderBody(container: HTMLElement): void {
 		super.renderBody(container);
+
 		this.editor.create(container);
+
 		container.classList.add("output-view");
 
 		const codeEditor = <ICodeEditor>this.editor.getControl();
+
 		codeEditor.setAriaOptions({
 			role: "document",
 			activeDescendant: undefined,
 		});
+
 		this._register(
 			codeEditor.onDidChangeModelContent(() => {
 				if (!this.scrollLock) {
@@ -155,11 +174,13 @@ export class OutputViewPane extends ViewPane {
 				}
 			}),
 		);
+
 		this._register(
 			codeEditor.onDidChangeCursorPosition((e) => {
 				if (e.reason !== CursorChangeReason.Explicit) {
 					return;
 				}
+
 				if (
 					!this.configurationService.getValue(
 						"output.smartScroll.enabled",
@@ -167,21 +188,26 @@ export class OutputViewPane extends ViewPane {
 				) {
 					return;
 				}
+
 				const model = codeEditor.getModel();
 
 				if (model) {
 					const newPositionLine = e.position.lineNumber;
 
 					const lastLine = model.getLineCount();
+
 					this.scrollLock = lastLine !== newPositionLine;
 				}
 			}),
 		);
 	}
+
 	protected override layoutBody(height: number, width: number): void {
 		super.layoutBody(height, width);
+
 		this.editor.layout(new Dimension(width, height));
 	}
+
 	private onDidChangeVisibility(visible: boolean): void {
 		this.editor.setVisible(visible);
 
@@ -189,6 +215,7 @@ export class OutputViewPane extends ViewPane {
 			this.clearInput();
 		}
 	}
+
 	private setInput(channel: IOutputChannel): void {
 		this.channelId = channel.id;
 
@@ -196,6 +223,7 @@ export class OutputViewPane extends ViewPane {
 
 		if (!this.editor.input || !input.matches(this.editor.input)) {
 			this.editorPromise?.cancel();
+
 			this.editorPromise = createCancelablePromise((token) =>
 				this.editor
 					.setInput(
@@ -208,11 +236,15 @@ export class OutputViewPane extends ViewPane {
 			);
 		}
 	}
+
 	private clearInput(): void {
 		this.channelId = undefined;
+
 		this.editor.clearInput();
+
 		this.editorPromise = null;
 	}
+
 	private createInput(channel: IOutputChannel): TextResourceEditorInput {
 		return this.instantiationService.createInstance(
 			TextResourceEditorInput,
@@ -259,33 +291,49 @@ class OutputEditor extends AbstractTextResourceEditor {
 			editorService,
 			fileService,
 		);
+
 		this.resourceContext = this._register(
 			instantiationService.createInstance(ResourceContextKey),
 		);
 	}
+
 	override getId(): string {
 		return OUTPUT_VIEW_ID;
 	}
+
 	override getTitle(): string {
 		return nls.localize("output", "Output");
 	}
+
 	protected override getConfigurationOverrides(
 		configuration: IEditorConfiguration,
 	): ICodeEditorOptions {
 		const options = super.getConfigurationOverrides(configuration);
+
 		options.wordWrap = "on"; // all output editors wrap
 		options.lineNumbers = "off"; // all output editors hide line numbers
 		options.glyphMargin = false;
+
 		options.lineDecorationsWidth = 20;
+
 		options.rulers = [];
+
 		options.folding = false;
+
 		options.scrollBeyondLastLine = false;
+
 		options.renderLineHighlight = "none";
+
 		options.minimap = { enabled: false };
+
 		options.renderValidationDecorations = "editable";
+
 		options.padding = undefined;
+
 		options.readOnly = true;
+
 		options.domReadOnly = true;
+
 		options.unicodeHighlight = {
 			nonBasicASCII: false,
 			invisibleCharacters: false,
@@ -298,17 +346,21 @@ class OutputEditor extends AbstractTextResourceEditor {
 			if (outputConfig["editor.minimap.enabled"]) {
 				options.minimap = { enabled: true };
 			}
+
 			if ("editor.wordWrap" in outputConfig) {
 				options.wordWrap = outputConfig["editor.wordWrap"];
 			}
 		}
+
 		return options;
 	}
+
 	protected getAriaLabel(): string {
 		return this.input
 			? this.input.getAriaLabel()
 			: nls.localize("outputViewAriaLabel", "Output panel");
 	}
+
 	protected override computeAriaLabel(): string {
 		return this.input
 			? computeEditorAriaLabel(
@@ -319,6 +371,7 @@ class OutputEditor extends AbstractTextResourceEditor {
 				)
 			: this.getAriaLabel();
 	}
+
 	override async setInput(
 		input: TextResourceEditorInput,
 		options: ITextEditorOptions | undefined,
@@ -330,26 +383,34 @@ class OutputEditor extends AbstractTextResourceEditor {
 		if (this.input && input.matches(this.input)) {
 			return;
 		}
+
 		if (this.input) {
 			// Dispose previous input (Output panel is not a workbench editor)
 			this.input.dispose();
 		}
+
 		await super.setInput(input, options, context, token);
+
 		this.resourceContext.set(input.resource);
 
 		if (focus) {
 			this.focus();
 		}
+
 		this.revealLastLine();
 	}
+
 	override clearInput(): void {
 		if (this.input) {
 			// Dispose current input (Output panel is not a workbench editor)
 			this.input.dispose();
 		}
+
 		super.clearInput();
+
 		this.resourceContext.reset();
 	}
+
 	protected override createEditor(parent: HTMLElement): void {
 		parent.setAttribute("role", "document");
 

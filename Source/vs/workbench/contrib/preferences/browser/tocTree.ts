@@ -52,6 +52,7 @@ const $ = DOM.$;
 
 export class TOCTreeModel {
 	private _currentSearchModel: SearchResultModel | null = null;
+
 	private _settingsTreeRoot!: SettingsTreeGroupElement;
 
 	constructor(
@@ -66,6 +67,7 @@ export class TOCTreeModel {
 
 	set settingsTreeRoot(value: SettingsTreeGroupElement) {
 		this._settingsTreeRoot = value;
+
 		this.update();
 	}
 
@@ -75,6 +77,7 @@ export class TOCTreeModel {
 
 	set currentSearchModel(model: SearchResultModel | null) {
 		this._currentSearchModel = model;
+
 		this.update();
 	}
 
@@ -138,7 +141,9 @@ const TOC_ENTRY_TEMPLATE_ID = "settings.toc.entry";
 
 interface ITOCEntryTemplate {
 	labelElement: HTMLElement;
+
 	countElement: HTMLElement;
+
 	elementDisposables: DisposableStore;
 }
 
@@ -172,6 +177,7 @@ export class TOCRenderer
 		const label = element.label;
 
 		template.labelElement.textContent = label;
+
 		template.elementDisposables.add(
 			this._hoverService.setupManagedHover(
 				getDefaultHoverDelegate("mouse"),
@@ -259,6 +265,7 @@ class SettingsAccessibilityProvider
 
 		while (element instanceof SettingsTreeGroupElement && element.parent) {
 			i++;
+
 			element = element.parent;
 		}
 

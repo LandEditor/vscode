@@ -69,16 +69,27 @@ import {
 //#region Interfaces
 export interface IFindInFilesArgs {
 	query?: string;
+
 	replace?: string;
+
 	preserveCase?: boolean;
+
 	triggerSearch?: boolean;
+
 	filesToInclude?: string;
+
 	filesToExclude?: string;
+
 	isRegex?: boolean;
+
 	isCaseSensitive?: boolean;
+
 	matchWholeWord?: boolean;
+
 	useExcludeSettingsAndIgnoreFiles?: boolean;
+
 	onlyOpenEditors?: boolean;
+
 	showIncludesExcludes?: boolean;
 }
 //#endregion
@@ -112,6 +123,7 @@ registerAction2(
 				],
 			});
 		}
+
 		async run(
 			accessor: ServicesAccessor,
 			folderMatch?: ISearchTreeFolderMatchWithResource,
@@ -149,6 +161,7 @@ registerAction2(
 				],
 			});
 		}
+
 		override async run(accessor: any) {
 			return expandSelectSubtree(accessor);
 		}
@@ -176,6 +189,7 @@ registerAction2(
 				],
 			});
 		}
+
 		async run(
 			accessor: ServicesAccessor,
 			folderMatch?: ISearchTreeFolderMatchWithResource,
@@ -213,6 +227,7 @@ registerAction2(
 				],
 			});
 		}
+
 		override async run(
 			accessor: ServicesAccessor,
 			args: any,
@@ -230,6 +245,7 @@ registerAction2(
 			if (!searchView) {
 				return;
 			}
+
 			let fileMatch: ISearchTreeFileMatch;
 
 			if (isSearchTreeFileMatch(args)) {
@@ -239,6 +255,7 @@ registerAction2(
 
 				return;
 			}
+
 			paneCompositeService
 				.openPaneComposite(
 					VIEWLET_ID_FILES,
@@ -249,6 +266,7 @@ registerAction2(
 					if (!viewlet) {
 						return;
 					}
+
 					const explorerViewContainer =
 						viewlet.getViewPaneContainer() as ExplorerViewPaneContainer;
 
@@ -257,7 +275,9 @@ registerAction2(
 					if (uri && contextService.isInsideWorkspace(uri)) {
 						const explorerView =
 							explorerViewContainer.getExplorerView();
+
 						explorerView.setExpanded(true);
+
 						explorerService
 							.select(uri, true)
 							.then(
@@ -333,6 +353,7 @@ registerAction2(
 				f1: true,
 			});
 		}
+
 		override async run(
 			accessor: ServicesAccessor,
 			args: IFindInFilesArgs = {},
@@ -367,6 +388,7 @@ registerAction2(
 				],
 			});
 		}
+
 		async run(accessor: ServicesAccessor, resource?: URI) {
 			await searchWithFolderCommand(accessor, true, true, resource);
 		}
@@ -393,6 +415,7 @@ registerAction2(
 				],
 			});
 		}
+
 		async run(accessor: ServicesAccessor) {
 			const searchConfig = accessor
 				.get(IConfigurationService)
@@ -405,6 +428,7 @@ registerAction2(
 					accessor.get(IViewsService),
 					true,
 				);
+
 				searchView?.searchInFolders();
 			} else {
 				return accessor
@@ -427,6 +451,7 @@ async function expandSelectSubtree(accessor: ServicesAccessor) {
 		const viewer = searchView.getControl();
 
 		const selected = viewer.getFocus()[0];
+
 		await forcedExpandRecursively(viewer, selected);
 	}
 }
@@ -467,16 +492,19 @@ async function searchWithFolderCommand(
 		if (!searchView) {
 			return;
 		}
+
 		resources = getMultiSelectedSearchResources(
 			searchView.getControl(),
 			folderMatch,
 			searchConfig,
 		);
 	}
+
 	const resolvedResources = fileService
 		.resolveAll(resources.map((resource) => ({ resource })))
 		.then((results) => {
 			const folders: URI[] = [];
+
 			results.forEach((result) => {
 				if (result.success && result.stat) {
 					folders.push(
@@ -500,6 +528,7 @@ async function searchWithFolderCommand(
 				searchView.searchOutsideOfFolders(await resolvedResources);
 			}
 		}
+
 		return undefined;
 	} else {
 		if (isIncludes) {
@@ -599,6 +628,7 @@ export async function findInFilesCommand(
 			}
 		}
 	}
+
 	const mode = searchConfig.mode;
 
 	if (mode === "view") {
@@ -606,6 +636,7 @@ export async function findInFilesCommand(
 			if (openedView) {
 				const searchAndReplaceWidget =
 					openedView.searchAndReplaceWidget;
+
 				searchAndReplaceWidget.toggleReplace(
 					typeof args.replace === "string",
 				);
@@ -619,6 +650,7 @@ export async function findInFilesCommand(
 								typeof args.replace !== "string",
 						});
 				}
+
 				openedView.setSearchParameters(args);
 
 				if (typeof args.showIncludesExcludes === "boolean") {
@@ -627,6 +659,7 @@ export async function findInFilesCommand(
 						args.showIncludesExcludes,
 					);
 				}
+
 				openedView.searchAndReplaceWidget.focus(
 					undefined,
 					updatedText,
@@ -652,6 +685,7 @@ export async function findInFilesCommand(
 				!args.useExcludeSettingsAndIgnoreFiles
 			),
 		});
+
 		commandService.executeCommand(
 			SearchEditorConstants.OpenEditorCommandId,
 			convertArgs(args),

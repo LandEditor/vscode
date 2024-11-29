@@ -63,13 +63,18 @@ export class MainThreadTesting
 	implements MainThreadTestingShape
 {
 	private readonly proxy: ExtHostTestingShape;
+
 	private readonly diffListener = this._register(new MutableDisposable());
+
 	private readonly testProviderRegistrations = new Map<
 		string,
 		{
 			instance: IMainThreadTestController;
+
 			label: ISettableObservable<string>;
+
 			capabilities: ISettableObservable<TestControllerCapability>;
+
 			disposable: IDisposable;
 		}
 	>();
@@ -86,7 +91,9 @@ export class MainThreadTesting
 		private readonly resultService: ITestResultService,
 	) {
 		super();
+
 		this.proxy = extHostContext.getProxy(ExtHostContext.ExtHostTesting);
+
 		this._register(
 			this.testService.registerExtHost({
 				provideTestFollowups: (req, token) =>
@@ -99,11 +106,13 @@ export class MainThreadTesting
 					this.proxy.$getTestsRelatedToCode(uri, position, token),
 			}),
 		);
+
 		this._register(
 			this.testService.onDidCancelTestRun(({ runId, taskId }) => {
 				this.proxy.$cancelExtensionTestRun(runId, taskId);
 			}),
 		);
+
 		this._register(
 			Event.debounce(
 				testProfiles.onDidChange,
@@ -123,12 +132,15 @@ export class MainThreadTesting
 						group,
 					)) {
 						obj[profile.controllerId] ??= [];
+
 						obj[profile.controllerId].push(profile.profileId);
 					}
 				}
+
 				this.proxy.$setDefaultRunProfiles(obj);
 			}),
 		);
+
 		this._register(
 			resultService.onResultsChanged((evt) => {
 				if ("completed" in evt) {
@@ -160,6 +172,7 @@ export class MainThreadTesting
 				tree.insert(TestId.fromString(id).path, undefined);
 			}
 		}
+
 		for (const result of this.resultService.results) {
 			// all non-live results are already entirely outdated
 			if (result instanceof LiveTestResult) {
@@ -226,10 +239,12 @@ export class MainThreadTesting
 			if (!task) {
 				return;
 			}
+
 			const deserialized = IFileCoverage.deserialize(
 				this.uriIdentityService,
 				coverage,
 			);
+
 			transaction((tx) => {
 				let value = task.coverage.read(undefined);
 
@@ -247,6 +262,7 @@ export class MainThreadTesting
 									),
 						},
 					);
+
 					value.append(deserialized, tx);
 					(task.coverage as ISettableObservable<TestCoverage>).set(
 						value,
@@ -310,6 +326,7 @@ export class MainThreadTesting
 			uri: URI.revive(locationDto.uri),
 			range: Range.lift(locationDto.range),
 		};
+
 		this.withLiveRun(runId, (r) =>
 			r.appendOutput(output, taskId, location, testId),
 		);
@@ -377,12 +394,15 @@ export class MainThreadTesting
 						})),
 					),
 		};
+
 		disposable.add(
 			toDisposable(() => this.testProfiles.removeProfile(controllerId)),
 		);
+
 		disposable.add(
 			this.testService.registerTestController(controllerId, controller),
 		);
+
 		this.testProviderRegistrations.set(controllerId, {
 			instance: controller,
 			label,
@@ -402,10 +422,12 @@ export class MainThreadTesting
 		if (!controller) {
 			return;
 		}
+
 		transaction((tx) => {
 			if (patch.label !== undefined) {
 				controller.label.set(patch.label, tx);
 			}
+
 			if (patch.capabilities !== undefined) {
 				controller.capabilities.set(patch.capabilities, tx);
 			}
@@ -416,6 +438,7 @@ export class MainThreadTesting
 	 */
 	public $unregisterTestController(controllerId: string) {
 		this.testProviderRegistrations.get(controllerId)?.disposable.dispose();
+
 		this.testProviderRegistrations.delete(controllerId);
 	}
 	/**
@@ -427,6 +450,7 @@ export class MainThreadTesting
 				.getReviverDiff()
 				.map(TestsDiffOp.serialize),
 		);
+
 		this.diffListener.value = this.testService.onDidProcessDiff(
 			this.proxy.$acceptDiff,
 			this.proxy,
@@ -481,14 +505,17 @@ export class MainThreadTesting
 		// results might be cleared in the meantime.
 		return details || [];
 	}
+
 	public override dispose() {
 		super.dispose();
 
 		for (const subscription of this.testProviderRegistrations.values()) {
 			subscription.disposable.dispose();
 		}
+
 		this.testProviderRegistrations.clear();
 	}
+
 	private withLiveRun<T>(
 		runId: string,
 		fn: (run: LiveTestResult) => T,

@@ -32,8 +32,11 @@ export class GitTimelineItem extends TimelineItem {
 	static is(item: TimelineItem): item is GitTimelineItem {
 		return item instanceof GitTimelineItem;
 	}
+
 	readonly ref: string;
+
 	readonly previousRef: string;
+
 	readonly message: string;
 
 	constructor(
@@ -50,18 +53,26 @@ export class GitTimelineItem extends TimelineItem {
 			index !== -1 ? `${message.substring(0, index)} \u2026` : message;
 
 		super(label, timestamp);
+
 		this.ref = ref;
+
 		this.previousRef = previousRef;
+
 		this.message = message;
+
 		this.id = id;
+
 		this.contextValue = contextValue;
 	}
+
 	get shortRef() {
 		return this.shortenRef(this.ref);
 	}
+
 	get shortPreviousRef() {
 		return this.shortenRef(this.previousRef);
 	}
+
 	setItemDetails(
 		author: string,
 		email: string | undefined,
@@ -72,19 +83,24 @@ export class GitTimelineItem extends TimelineItem {
 
 		if (email) {
 			const emailTitle = l10n.t("Email");
+
 			this.tooltip.appendMarkdown(
 				`$(account) [**${author}**](mailto:${email} "${emailTitle} ${author}")\n\n`,
 			);
 		} else {
 			this.tooltip.appendMarkdown(`$(account) **${author}**\n\n`);
 		}
+
 		this.tooltip.appendMarkdown(`$(history) ${date}\n\n`);
+
 		this.tooltip.appendMarkdown(message);
 	}
+
 	private shortenRef(ref: string): string {
 		if (ref === "" || ref === "~" || ref === "HEAD") {
 			return ref;
 		}
+
 		return ref.endsWith("^") ? `${ref.substr(0, 8)}^` : ref.substr(0, 8);
 	}
 }
@@ -94,12 +110,19 @@ export class GitTimelineProvider implements TimelineProvider {
 	get onDidChange(): Event<TimelineChangeEvent | undefined> {
 		return this._onDidChange.event;
 	}
+
 	readonly id = "git-history";
+
 	readonly label = l10n.t("Git History");
+
 	private readonly disposable: Disposable;
+
 	private providerDisposable: Disposable | undefined;
+
 	private repo: Repository | undefined;
+
 	private repoDisposable: Disposable | undefined;
+
 	private repoOperationDate: Date | undefined;
 
 	constructor(
@@ -118,10 +141,13 @@ export class GitTimelineProvider implements TimelineProvider {
 			this.ensureProviderRegistration();
 		}
 	}
+
 	dispose() {
 		this.providerDisposable?.dispose();
+
 		this.disposable.dispose();
 	}
+
 	async provideTimeline(
 		uri: Uri,
 		options: TimelineOptions,
@@ -133,15 +159,21 @@ export class GitTimelineProvider implements TimelineProvider {
 
 		if (!repo) {
 			this.repoDisposable?.dispose();
+
 			this.repoOperationDate = undefined;
+
 			this.repo = undefined;
 
 			return { items: [] };
 		}
+
 		if (this.repo?.root !== repo.root) {
 			this.repoDisposable?.dispose();
+
 			this.repo = repo;
+
 			this.repoOperationDate = new Date();
+
 			this.repoDisposable = Disposable.from(
 				repo.onDidChangeRepository((uri) =>
 					this.onRepositoryChanged(repo, uri),
@@ -154,6 +186,7 @@ export class GitTimelineProvider implements TimelineProvider {
 				),
 			);
 		}
+
 		const config = workspace.getConfiguration("git.timeline");
 		// TODO@eamodio: Ensure that the uri is a file -- if not we could get the history of the repo?
 		let limit: number | undefined;
@@ -179,6 +212,7 @@ export class GitTimelineProvider implements TimelineProvider {
 			// If we are not getting everything, ask for 1 more than so we can determine if there are more commits
 			limit = options.limit === undefined ? undefined : options.limit + 1;
 		}
+
 		await ensureEmojis();
 
 		const commits = await repo.logFile(uri, {
@@ -202,6 +236,7 @@ export class GitTimelineProvider implements TimelineProvider {
 		if (limit !== undefined && commits.length >= limit) {
 			commits.splice(commits.length - 1, 1);
 		}
+
 		const dateFormatter = new Intl.DateTimeFormat(env.language, {
 			year: "numeric",
 			month: "long",
@@ -231,11 +266,13 @@ export class GitTimelineProvider implements TimelineProvider {
 				c.hash,
 				"git:file:commit",
 			);
+
 			item.iconPath = new ThemeIcon("git-commit");
 
 			if (showAuthor) {
 				item.description = c.authorName;
 			}
+
 			item.setItemDetails(
 				c.authorName!,
 				c.authorEmail,
@@ -252,6 +289,7 @@ export class GitTimelineProvider implements TimelineProvider {
 					arguments: cmd.arguments,
 				};
 			}
+
 			return item;
 		});
 
@@ -275,7 +313,9 @@ export class GitTimelineProvider implements TimelineProvider {
 				);
 				// TODO@eamodio: Replace with a better icon -- reflecting its status maybe?
 				item.iconPath = new ThemeIcon("git-commit");
+
 				item.description = "";
+
 				item.setItemDetails(
 					you,
 					undefined,
@@ -295,8 +335,10 @@ export class GitTimelineProvider implements TimelineProvider {
 						arguments: cmd.arguments,
 					};
 				}
+
 				items.splice(0, 0, item);
 			}
+
 			if (showUncommitted) {
 				const working = repo.workingTreeGroup.resourceStates.find(
 					(r) => r.resourceUri.fsPath === uri.fsPath,
@@ -313,8 +355,11 @@ export class GitTimelineProvider implements TimelineProvider {
 						"working",
 						"git:file:working",
 					);
+
 					item.iconPath = new ThemeIcon("circle-outline");
+
 					item.description = "";
+
 					item.setItemDetails(
 						you,
 						undefined,
@@ -334,15 +379,18 @@ export class GitTimelineProvider implements TimelineProvider {
 							arguments: cmd.arguments,
 						};
 					}
+
 					items.splice(0, 0, item);
 				}
 			}
 		}
+
 		return {
 			items: items,
 			paging: paging,
 		};
 	}
+
 	private ensureProviderRegistration() {
 		if (this.providerDisposable === undefined) {
 			this.providerDisposable = workspace.registerTimelineProvider(
@@ -351,6 +399,7 @@ export class GitTimelineProvider implements TimelineProvider {
 			);
 		}
 	}
+
 	private onConfigurationChanged(e: ConfigurationChangeEvent) {
 		if (
 			e.affectsConfiguration("git.timeline.date") ||
@@ -360,16 +409,21 @@ export class GitTimelineProvider implements TimelineProvider {
 			this.fireChanged();
 		}
 	}
+
 	private onRepositoriesChanged(_repo: Repository) {
 		// console.log(`GitTimelineProvider.onRepositoriesChanged`);
+
 		this.ensureProviderRegistration();
 		// TODO@eamodio: Being naive for now and just always refreshing each time there is a new repository
 		this.fireChanged();
 	}
+
 	private onRepositoryChanged(_repo: Repository, _uri: Uri) {
 		// console.log(`GitTimelineProvider.onRepositoryChanged: uri=${uri.toString(true)}`);
+
 		this.fireChanged();
 	}
+
 	private onRepositoryStatusChanged(_repo: Repository) {
 		// console.log(`GitTimelineProvider.onRepositoryStatusChanged`);
 
@@ -381,6 +435,7 @@ export class GitTimelineProvider implements TimelineProvider {
 			this.fireChanged();
 		}
 	}
+
 	private onRepositoryOperationRun(
 		_repo: Repository,
 		_result: OperationResult,
@@ -395,6 +450,7 @@ export class GitTimelineProvider implements TimelineProvider {
 			// This is less than ideal, but for now just save the last time an
 			// operation was run and use that as the timestamp for staged items
 			this.repoOperationDate = new Date();
+
 			this.fireChanged();
 		}
 	}

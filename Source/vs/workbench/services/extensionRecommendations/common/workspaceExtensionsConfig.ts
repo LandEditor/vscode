@@ -41,6 +41,7 @@ export const EXTENSIONS_CONFIG = ".vscode/extensions.json";
 
 export interface IExtensionsConfigContent {
 	recommendations?: string[];
+
 	unwantedRecommendations?: string[];
 }
 export const IWorkspaceExtensionsConfigService =
@@ -50,6 +51,7 @@ export const IWorkspaceExtensionsConfigService =
 
 export interface IWorkspaceExtensionsConfigService {
 	readonly _serviceBrand: undefined;
+
 	onDidChangeExtensionsConfigs: Event<void>;
 
 	getExtensionsConfigs(): Promise<IExtensionsConfigContent[]>;
@@ -57,7 +59,9 @@ export interface IWorkspaceExtensionsConfigService {
 	getRecommendations(): Promise<string[]>;
 
 	getUnwantedRecommendations(): Promise<string[]>;
+
 	toggleRecommendation(extensionId: string): Promise<void>;
+
 	toggleUnwantedRecommendation(extensionId: string): Promise<void>;
 }
 export class WorkspaceExtensionsConfigService
@@ -65,9 +69,11 @@ export class WorkspaceExtensionsConfigService
 	implements IWorkspaceExtensionsConfigService
 {
 	declare readonly _serviceBrand: undefined;
+
 	private readonly _onDidChangeExtensionsConfigs = this._register(
 		new Emitter<void>(),
 	);
+
 	readonly onDidChangeExtensionsConfigs =
 		this._onDidChangeExtensionsConfigs.event;
 
@@ -86,11 +92,13 @@ export class WorkspaceExtensionsConfigService
 		private readonly jsonEditingService: IJSONEditingService,
 	) {
 		super();
+
 		this._register(
 			workspaceContextService.onDidChangeWorkspaceFolders((e) =>
 				this._onDidChangeExtensionsConfigs.fire(),
 			),
 		);
+
 		this._register(
 			fileService.onDidFilesChange((e) => {
 				const workspace = workspaceContextService.getWorkspace();
@@ -107,6 +115,7 @@ export class WorkspaceExtensionsConfigService
 			}),
 		);
 	}
+
 	async getExtensionsConfigs(): Promise<IExtensionsConfigContent[]> {
 		const workspace = this.workspaceContextService.getWorkspace();
 
@@ -121,6 +130,7 @@ export class WorkspaceExtensionsConfigService
 		if (workspaceExtensionsConfigContent) {
 			result.push(workspaceExtensionsConfigContent);
 		}
+
 		result.push(
 			...(await Promise.all(
 				workspace.folders.map((workspaceFolder) =>
@@ -131,6 +141,7 @@ export class WorkspaceExtensionsConfigService
 
 		return result;
 	}
+
 	async getRecommendations(): Promise<string[]> {
 		const configs = await this.getExtensionsConfigs();
 
@@ -142,6 +153,7 @@ export class WorkspaceExtensionsConfigService
 			),
 		);
 	}
+
 	async getUnwantedRecommendations(): Promise<string[]> {
 		const configs = await this.getExtensionsConfigs();
 
@@ -153,6 +165,7 @@ export class WorkspaceExtensionsConfigService
 			),
 		);
 	}
+
 	async toggleRecommendation(extensionId: string): Promise<void> {
 		extensionId = extensionId.toLowerCase();
 
@@ -166,12 +179,14 @@ export class WorkspaceExtensionsConfigService
 
 		const workspaceFolderExtensionsConfigContents =
 			new ResourceMap<IExtensionsConfigContent>();
+
 		await Promise.all(
 			workspace.folders.map(async (workspaceFolder) => {
 				const extensionsConfigContent =
 					await this.resolveWorkspaceFolderExtensionConfig(
 						workspaceFolder,
 					);
+
 				workspaceFolderExtensionsConfigContents.set(
 					workspaceFolder.uri,
 					extensionsConfigContent,
@@ -235,6 +250,7 @@ export class WorkspaceExtensionsConfigService
 			}
 		}
 	}
+
 	async toggleUnwantedRecommendation(extensionId: string): Promise<void> {
 		const workspace = this.workspaceContextService.getWorkspace();
 
@@ -246,12 +262,14 @@ export class WorkspaceExtensionsConfigService
 
 		const workspaceFolderExtensionsConfigContents =
 			new ResourceMap<IExtensionsConfigContent>();
+
 		await Promise.all(
 			workspace.folders.map(async (workspaceFolder) => {
 				const extensionsConfigContent =
 					await this.resolveWorkspaceFolderExtensionConfig(
 						workspaceFolder,
 					);
+
 				workspaceFolderExtensionsConfigContents.set(
 					workspaceFolder.uri,
 					extensionsConfigContent,
@@ -313,6 +331,7 @@ export class WorkspaceExtensionsConfigService
 			}
 		}
 	}
+
 	private async addOrRemoveWorkspaceFolderRecommendation(
 		extensionId: string,
 		workspaceFolder: IWorkspaceFolder,
@@ -333,6 +352,7 @@ export class WorkspaceExtensionsConfigService
 					value: [extensionId],
 				});
 			}
+
 			const unwantedRecommendationEdit =
 				this.getEditToRemoveValueFromArray(
 					["unwantedRecommendations"],
@@ -354,6 +374,7 @@ export class WorkspaceExtensionsConfigService
 				values.push(recommendationEdit);
 			}
 		}
+
 		if (values.length) {
 			return this.jsonEditingService.write(
 				workspaceFolder.toResource(EXTENSIONS_CONFIG),
@@ -362,6 +383,7 @@ export class WorkspaceExtensionsConfigService
 			);
 		}
 	}
+
 	private async addOrRemoveWorkspaceRecommendation(
 		extensionId: string,
 		workspace: IWorkspace,
@@ -379,6 +401,7 @@ export class WorkspaceExtensionsConfigService
 				} else {
 					values.push({ path, value: [extensionId] });
 				}
+
 				const unwantedRecommendationEdit =
 					this.getEditToRemoveValueFromArray(
 						["extensions", "unwantedRecommendations"],
@@ -406,6 +429,7 @@ export class WorkspaceExtensionsConfigService
 				value: { recommendations: [extensionId] },
 			});
 		}
+
 		if (values.length) {
 			return this.jsonEditingService.write(
 				workspace.configuration!,
@@ -414,6 +438,7 @@ export class WorkspaceExtensionsConfigService
 			);
 		}
 	}
+
 	private async addOrRemoveWorkspaceFolderUnwantedRecommendation(
 		extensionId: string,
 		workspaceFolder: IWorkspaceFolder,
@@ -432,6 +457,7 @@ export class WorkspaceExtensionsConfigService
 			} else {
 				values.push({ path, value: [extensionId] });
 			}
+
 			const recommendationEdit = this.getEditToRemoveValueFromArray(
 				["recommendations"],
 				extensionsConfigContent.recommendations,
@@ -453,6 +479,7 @@ export class WorkspaceExtensionsConfigService
 				values.push(unwantedRecommendationEdit);
 			}
 		}
+
 		if (values.length) {
 			return this.jsonEditingService.write(
 				workspaceFolder.toResource(EXTENSIONS_CONFIG),
@@ -461,6 +488,7 @@ export class WorkspaceExtensionsConfigService
 			);
 		}
 	}
+
 	private async addOrRemoveWorkspaceUnwantedRecommendation(
 		extensionId: string,
 		workspace: IWorkspace,
@@ -481,6 +509,7 @@ export class WorkspaceExtensionsConfigService
 				} else {
 					values.push({ path, value: [extensionId] });
 				}
+
 				const recommendationEdit = this.getEditToRemoveValueFromArray(
 					["extensions", "recommendations"],
 					extensionsConfigContent.recommendations,
@@ -508,6 +537,7 @@ export class WorkspaceExtensionsConfigService
 				value: { unwantedRecommendations: [extensionId] },
 			});
 		}
+
 		if (values.length) {
 			return this.jsonEditingService.write(
 				workspace.configuration!,
@@ -516,6 +546,7 @@ export class WorkspaceExtensionsConfigService
 			);
 		}
 	}
+
 	private async pickWorkspaceOrFolders(
 		workspaceFolders: IWorkspaceFolder[],
 		workspace: IWorkspace | undefined,
@@ -528,6 +559,7 @@ export class WorkspaceExtensionsConfigService
 		if (workspaceOrFolders.length === 1) {
 			return workspaceOrFolders;
 		}
+
 		const folderPicks: (
 			| (IQuickPickItem & {
 					workspaceOrFolder: IWorkspace | IWorkspaceFolder;
@@ -549,11 +581,13 @@ export class WorkspaceExtensionsConfigService
 
 		if (workspace) {
 			folderPicks.push({ type: "separator" });
+
 			folderPicks.push({
 				label: localize("workspace", "Workspace"),
 				workspaceOrFolder: workspace,
 			});
 		}
+
 		const result =
 			(await this.quickInputService.pick(folderPicks, {
 				placeHolder,
@@ -562,6 +596,7 @@ export class WorkspaceExtensionsConfigService
 
 		return result.map((r) => r.workspaceOrFolder);
 	}
+
 	private async resolveWorkspaceExtensionConfig(
 		workspaceConfigurationResource: URI,
 	): Promise<IExtensionsConfigContent | undefined> {
@@ -580,8 +615,10 @@ export class WorkspaceExtensionsConfigService
 		} catch (e) {
 			/* Ignore */
 		}
+
 		return undefined;
 	}
+
 	private async resolveWorkspaceFolderExtensionConfig(
 		workspaceFolder: IWorkspaceFolder,
 	): Promise<IExtensionsConfigContent> {
@@ -598,8 +635,10 @@ export class WorkspaceExtensionsConfigService
 		} catch (e) {
 			/* ignore */
 		}
+
 		return {};
 	}
+
 	private parseExtensionConfig(
 		extensionsConfigContent: IExtensionsConfigContent,
 	): IExtensionsConfigContent {
@@ -616,6 +655,7 @@ export class WorkspaceExtensionsConfigService
 			),
 		};
 	}
+
 	private getEditToRemoveValueFromArray(
 		path: JSONPath,
 		array: string[] | undefined,
@@ -626,6 +666,7 @@ export class WorkspaceExtensionsConfigService
 		if (index !== undefined && index !== -1) {
 			return { path: [...path, index], value: undefined };
 		}
+
 		return undefined;
 	}
 }

@@ -57,6 +57,7 @@ async function createRemoteTunnel(
 			tunnelRemotePort,
 			tunnelLocalPort,
 		);
+
 		readyTunnel = await tunnel.waitForReady();
 
 		if (
@@ -66,20 +67,32 @@ async function createRemoteTunnel(
 			break;
 		}
 	}
+
 	return readyTunnel!;
 }
 export class NodeRemoteTunnel extends Disposable implements RemoteTunnel {
 	public readonly tunnelRemotePort: number;
+
 	public tunnelLocalPort!: number;
+
 	public tunnelRemoteHost: string;
+
 	public localAddress!: string;
+
 	public readonly privacy = TunnelPrivacyId.Private;
+
 	private readonly _options: IConnectionOptions;
+
 	private readonly _server: net.Server;
+
 	private readonly _barrier: Barrier;
+
 	private readonly _listeningListener: () => void;
+
 	private readonly _connectionListener: (socket: net.Socket) => void;
+
 	private readonly _errorListener: () => void;
+
 	private readonly _socketsDispose: Map<string, () => void> = new Map();
 
 	constructor(
@@ -90,31 +103,48 @@ export class NodeRemoteTunnel extends Disposable implements RemoteTunnel {
 		private readonly suggestedLocalPort?: number,
 	) {
 		super();
+
 		this._options = options;
+
 		this._server = net.createServer();
+
 		this._barrier = new Barrier();
+
 		this._listeningListener = () => this._barrier.open();
+
 		this._server.on("listening", this._listeningListener);
+
 		this._connectionListener = (socket) => this._onConnection(socket);
+
 		this._server.on("connection", this._connectionListener);
 		// If there is no error listener and there is an error it will crash the whole window
 		this._errorListener = () => {};
+
 		this._server.on("error", this._errorListener);
+
 		this.tunnelRemotePort = tunnelRemotePort;
+
 		this.tunnelRemoteHost = tunnelRemoteHost;
 	}
+
 	public override async dispose(): Promise<void> {
 		super.dispose();
+
 		this._server.removeListener("listening", this._listeningListener);
+
 		this._server.removeListener("connection", this._connectionListener);
+
 		this._server.removeListener("error", this._errorListener);
+
 		this._server.close();
 
 		const disposers = Array.from(this._socketsDispose.values());
+
 		disposers.forEach((disposer) => {
 			disposer();
 		});
 	}
+
 	public async waitForReady(): Promise<this> {
 		const startPort = this.suggestedLocalPort ?? this.tunnelRemotePort;
 
@@ -125,21 +155,30 @@ export class NodeRemoteTunnel extends Disposable implements RemoteTunnel {
 		let localPort = await findFreePortFaster(startPort, 2, 1000, hostname);
 		// if that fails, the method above returns 0, which works out fine below...
 		let address: string | net.AddressInfo | null = null;
+
 		this._server.listen(localPort, this.defaultTunnelHost);
+
 		await this._barrier.wait();
+
 		address = <net.AddressInfo>this._server.address();
 		// It is possible for findFreePortFaster to return a port that there is already a server listening on. This causes the previous listen call to error out.
 		if (!address) {
 			localPort = 0;
+
 			this._server.listen(localPort, this.defaultTunnelHost);
+
 			await this._barrier.wait();
+
 			address = <net.AddressInfo>this._server.address();
 		}
+
 		this.tunnelLocalPort = address.port;
+
 		this.localAddress = `${this.tunnelRemoteHost === "127.0.0.1" ? "127.0.0.1" : "localhost"}:${address.port}`;
 
 		return this;
 	}
+
 	private async _onConnection(localSocket: net.Socket): Promise<void> {
 		// pause reading on the socket until we have a chance to forward its data
 		localSocket.pause();
@@ -159,22 +198,28 @@ export class NodeRemoteTunnel extends Disposable implements RemoteTunnel {
 		const remoteSocket = protocol.getSocket();
 
 		const dataChunk = protocol.readEntireBuffer();
+
 		protocol.dispose();
 
 		if (dataChunk.byteLength > 0) {
 			localSocket.write(dataChunk.buffer);
 		}
+
 		localSocket.on("end", () => {
 			if (localSocket.localAddress) {
 				this._socketsDispose.delete(localSocket.localAddress);
 			}
+
 			remoteSocket.end();
 		});
+
 		localSocket.on("close", () => remoteSocket.end());
+
 		localSocket.on("error", () => {
 			if (localSocket.localAddress) {
 				this._socketsDispose.delete(localSocket.localAddress);
 			}
+
 			if (remoteSocket instanceof NodeSocket) {
 				remoteSocket.socket.destroy();
 			} else {
@@ -187,35 +232,48 @@ export class NodeRemoteTunnel extends Disposable implements RemoteTunnel {
 		} else {
 			this._mirrorGenericSocket(localSocket, remoteSocket);
 		}
+
 		if (localSocket.localAddress) {
 			this._socketsDispose.set(localSocket.localAddress, () => {
 				// Need to end instead of unpipe, otherwise whatever is connected locally could end up "stuck" with whatever state it had until manually exited.
 				localSocket.end();
+
 				remoteSocket.end();
 			});
 		}
 	}
+
 	private _mirrorGenericSocket(
 		localSocket: net.Socket,
 		remoteSocket: ISocket,
 	) {
 		remoteSocket.onClose(() => localSocket.destroy());
+
 		remoteSocket.onEnd(() => localSocket.end());
+
 		remoteSocket.onData((d) => localSocket.write(d.buffer));
+
 		localSocket.on("data", (d) => remoteSocket.write(VSBuffer.wrap(d)));
+
 		localSocket.resume();
 	}
+
 	private _mirrorNodeSocket(
 		localSocket: net.Socket,
 		remoteNodeSocket: NodeSocket,
 	) {
 		const remoteSocket = remoteNodeSocket.socket;
+
 		remoteSocket.on("end", () => localSocket.end());
+
 		remoteSocket.on("close", () => localSocket.end());
+
 		remoteSocket.on("error", () => {
 			localSocket.destroy();
 		});
+
 		remoteSocket.pipe(localSocket);
+
 		localSocket.pipe(remoteSocket);
 	}
 }
@@ -234,9 +292,11 @@ export class BaseTunnelService extends AbstractTunnelService {
 	) {
 		super(logService, configurationService);
 	}
+
 	public isPortPrivileged(port: number): boolean {
 		return isPortPrivileged(port, this.defaultTunnelHost, OS, os.release());
 	}
+
 	protected retainOrCreateTunnel(
 		addressOrTunnelProvider: IAddressProvider | ITunnelProvider,
 		remoteHost: string,
@@ -254,6 +314,7 @@ export class BaseTunnelService extends AbstractTunnelService {
 
 			return existing.value;
 		}
+
 		if (isTunnelProvider(addressOrTunnelProvider)) {
 			return this.createWithProvider(
 				addressOrTunnelProvider,
@@ -286,9 +347,11 @@ export class BaseTunnelService extends AbstractTunnelService {
 				remotePort,
 				localPort,
 			);
+
 			this.logService.trace(
 				"ForwardedPorts: (TunnelService) Tunnel created without provider.",
 			);
+
 			this.addTunnelToMap(remoteHost, remotePort, tunnel);
 
 			return tunnel;
@@ -322,7 +385,9 @@ export class SharedTunnelsService
 	implements ISharedTunnelsService
 {
 	declare readonly _serviceBrand: undefined;
+
 	private readonly _tunnelServices: Map<string, ITunnelService> = new Map();
+
 	public constructor(
 		@IRemoteSocketFactoryService
 		protected readonly remoteSocketFactoryService: IRemoteSocketFactoryService,
@@ -337,6 +402,7 @@ export class SharedTunnelsService
 	) {
 		super();
 	}
+
 	async openTunnel(
 		authority: string,
 		addressProvider: IAddressProvider | undefined,
@@ -360,15 +426,20 @@ export class SharedTunnelsService
 				this.productService,
 				this.configurationService,
 			);
+
 			this._register(tunnelService);
+
 			this._tunnelServices.set(authority, tunnelService);
+
 			tunnelService.onTunnelClosed(async () => {
 				if ((await tunnelService.tunnels).length === 0) {
 					tunnelService.dispose();
+
 					this._tunnelServices.delete(authority);
 				}
 			});
 		}
+
 		return this._tunnelServices
 			.get(authority)!
 			.openTunnel(

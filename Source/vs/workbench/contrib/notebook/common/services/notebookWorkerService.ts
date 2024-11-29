@@ -15,7 +15,10 @@ export const INotebookEditorWorkerService =
 
 export interface INotebookEditorWorkerService {
 	readonly _serviceBrand: undefined;
+
 	canComputeDiff(original: URI, modified: URI): boolean;
+
 	computeDiff(original: URI, modified: URI): Promise<INotebookDiffResult>;
+
 	canPromptRecommendation(model: URI): Promise<boolean>;
 }

@@ -94,6 +94,7 @@ export class NotebookCellTextDiffListDelegate
 	) {
 		const editorOptions =
 			this.configurationService.getValue<IEditorOptions>("editor");
+
 		this.lineHeight = BareFontInfo.createFromRawSettings(
 			editorOptions,
 			PixelRatio.getInstance(targetWindow).value,
@@ -149,6 +150,7 @@ export class CellDiffPlaceholderRenderer
 
 	renderTemplate(container: HTMLElement): CellDiffPlaceholderRenderTemplate {
 		const body = DOM.$(".cell-placeholder-body");
+
 		DOM.append(container, body);
 
 		const elementDisposables = new DisposableStore();
@@ -183,6 +185,7 @@ export class CellDiffPlaceholderRenderer
 		height: number | undefined,
 	): void {
 		templateData.body.classList.remove("left", "right", "full");
+
 		templateData.elementDisposables.add(
 			this.instantiationService.createInstance(
 				CellDiffPlaceholderElement,
@@ -240,9 +243,11 @@ export class NotebookDocumentMetadataDiffRenderer
 		container: HTMLElement,
 	): NotebookDocumentDiffElementRenderTemplate {
 		const body = DOM.$(".cell-body");
+
 		DOM.append(container, body);
 
 		const diffEditorContainer = DOM.$(".cell-diff-editor-container");
+
 		DOM.append(body, diffEditorContainer);
 
 		const cellHeaderContainer = DOM.append(
@@ -345,6 +350,7 @@ export class NotebookDocumentMetadataDiffRenderer
 		height: number | undefined,
 	): void {
 		templateData.body.classList.remove("full");
+
 		templateData.elementDisposables.add(
 			this.instantiationService.createInstance(
 				NotebookDocumentMetadataElement,
@@ -359,8 +365,11 @@ export class NotebookDocumentMetadataDiffRenderer
 		templateData: NotebookDocumentDiffElementRenderTemplate,
 	): void {
 		templateData.container.innerText = "";
+
 		templateData.sourceEditor.dispose();
+
 		templateData.toolbar?.dispose();
+
 		templateData.elementDisposables.dispose();
 	}
 
@@ -372,6 +381,7 @@ export class NotebookDocumentMetadataDiffRenderer
 		if (templateData.toolbar) {
 			templateData.toolbar.context = undefined;
 		}
+
 		templateData.elementDisposables.clear();
 	}
 }
@@ -397,9 +407,11 @@ export class CellDiffSingleSideRenderer
 
 	renderTemplate(container: HTMLElement): CellDiffSingleSideRenderTemplate {
 		const body = DOM.$(".cell-body");
+
 		DOM.append(container, body);
 
 		const diffEditorContainer = DOM.$(".cell-diff-editor-container");
+
 		DOM.append(body, diffEditorContainer);
 
 		const diagonalFill = DOM.append(body, DOM.$(".diagonal-fill"));
@@ -518,7 +530,9 @@ export class CellDiffSingleSideRenderer
 
 	disposeTemplate(templateData: CellDiffSingleSideRenderTemplate): void {
 		templateData.container.innerText = "";
+
 		templateData.sourceEditor.dispose();
+
 		templateData.elementDisposables.dispose();
 	}
 
@@ -564,9 +578,11 @@ export class CellDiffSideBySideRenderer
 
 	renderTemplate(container: HTMLElement): CellDiffSideBySideRenderTemplate {
 		const body = DOM.$(".cell-body");
+
 		DOM.append(container, body);
 
 		const diffEditorContainer = DOM.$(".cell-diff-editor-container");
+
 		DOM.append(body, diffEditorContainer);
 
 		const cellHeaderContainer = DOM.append(
@@ -725,8 +741,11 @@ export class CellDiffSideBySideRenderer
 
 	disposeTemplate(templateData: CellDiffSideBySideRenderTemplate): void {
 		templateData.container.innerText = "";
+
 		templateData.sourceEditor.dispose();
+
 		templateData.toolbar?.dispose();
+
 		templateData.elementDisposables.dispose();
 	}
 
@@ -738,6 +757,7 @@ export class CellDiffSideBySideRenderer
 		if (templateData.toolbar) {
 			templateData.toolbar.context = undefined;
 		}
+
 		templateData.elementDisposables.clear();
 	}
 }
@@ -746,6 +766,7 @@ export class NotebookMouseController<T> extends MouseController<T> {
 	protected override onViewPointer(e: IListMouseEvent<T>): void {
 		if (isMonacoEditor(e.browserEvent.target as HTMLElement)) {
 			const focus = typeof e.index === "undefined" ? [] : [e.index];
+
 			this.list.setFocus(focus, e.browserEvent);
 		} else {
 			super.onViewPointer(e);
@@ -845,6 +866,7 @@ export class NotebookTextDiffList
 				this.view.domNode,
 			);
 		}
+
 		const suffix = selectorSuffix && `.${selectorSuffix}`;
 
 		const content: string[] = [];
@@ -859,6 +881,7 @@ export class NotebookTextDiffList
 			content.push(
 				`.monaco-list${suffix}:focus > div.monaco-scrollable-element > .monaco-list-rows > .monaco-list-row.focused { background-color: ${styles.listFocusBackground}; }`,
 			);
+
 			content.push(
 				`.monaco-list${suffix}:focus > div.monaco-scrollable-element > .monaco-list-rows > .monaco-list-row.focused:hover { background-color: ${styles.listFocusBackground}; }`,
 			); // overwrite :hover style in this case!
@@ -874,6 +897,7 @@ export class NotebookTextDiffList
 			content.push(
 				`.monaco-list${suffix}:focus > div.monaco-scrollable-element > .monaco-list-rows > .monaco-list-row.selected { background-color: ${styles.listActiveSelectionBackground}; }`,
 			);
+
 			content.push(
 				`.monaco-list${suffix}:focus > div.monaco-scrollable-element > .monaco-list-rows > .monaco-list-row.selected:hover { background-color: ${styles.listActiveSelectionBackground}; }`,
 			); // overwrite :hover style in this case!
@@ -903,6 +927,7 @@ export class NotebookTextDiffList
 			content.push(
 				`.monaco-list${suffix} > div.monaco-scrollable-element > .monaco-list-rows > .monaco-list-row.focused { background-color:  ${styles.listInactiveFocusBackground}; }`,
 			);
+
 			content.push(
 				`.monaco-list${suffix} > div.monaco-scrollable-element > .monaco-list-rows > .monaco-list-row.focused:hover { background-color:  ${styles.listInactiveFocusBackground}; }`,
 			); // overwrite :hover style in this case!
@@ -912,6 +937,7 @@ export class NotebookTextDiffList
 			content.push(
 				`.monaco-list${suffix} > div.monaco-scrollable-element > .monaco-list-rows > .monaco-list-row.selected { background-color:  ${styles.listInactiveSelectionBackground}; }`,
 			);
+
 			content.push(
 				`.monaco-list${suffix} > div.monaco-scrollable-element > .monaco-list-rows > .monaco-list-row.selected:hover { background-color:  ${styles.listInactiveSelectionBackground}; }`,
 			); // overwrite :hover style in this case!

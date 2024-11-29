@@ -9,7 +9,9 @@ type RunFunction =
 
 interface IDebugSession {
 	name: string;
+
 	eval(expression: string): Promise<unknown>;
+
 	evalJs<T extends any[], TResult>(
 		bodyFn: (...args: T) => TResult,
 		...args: T
@@ -31,7 +33,9 @@ interface HotReloadConfig {
 interface GlobalThisAddition {
 	$hotReload_applyNewExports?(args: {
 		oldExports: Record<string, unknown>;
+
 		newSrc: string;
+
 		config?: HotReloadConfig;
 	}): AcceptNewExportsFn | undefined;
 }

@@ -28,7 +28,9 @@ export class MainThreadLanguageModelTools
 	implements MainThreadLanguageModelToolsShape
 {
 	private readonly _proxy: ExtHostLanguageModelToolsShape;
+
 	private readonly _tools = this._register(new DisposableMap<string>());
+
 	private readonly _countTokenCallbacks = new Map<
 		/* call ID */ string,
 		CountTokensCallback
@@ -40,9 +42,11 @@ export class MainThreadLanguageModelTools
 		private readonly _languageModelToolsService: ILanguageModelToolsService,
 	) {
 		super();
+
 		this._proxy = extHostContext.getProxy(
 			ExtHostContext.ExtHostLanguageModelTools,
 		);
+
 		this._register(
 			this._languageModelToolsService.onDidChangeTools((e) =>
 				this._proxy.$onDidChangeTools([
@@ -51,9 +55,11 @@ export class MainThreadLanguageModelTools
 			),
 		);
 	}
+
 	async $getTools(): Promise<IToolData[]> {
 		return Array.from(this._languageModelToolsService.getTools());
 	}
+
 	async $invokeTool(
 		dto: IToolInvocation,
 		token?: CancellationToken,
@@ -75,6 +81,7 @@ export class MainThreadLanguageModelTools
 		if (!fn) {
 			throw new Error(`Tool invocation call ${callId} not found`);
 		}
+
 		return fn(input, token);
 	}
 	$registerTool(id: string): void {
@@ -92,6 +99,7 @@ export class MainThreadLanguageModelTools
 				prepareToolInvocation: (parameters, token) =>
 					this._proxy.$prepareToolInvocation(id, parameters, token),
 			});
+
 		this._tools.set(id, disposable);
 	}
 	$unregisterTool(name: string): void {

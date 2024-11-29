@@ -49,6 +49,7 @@ class EncryptionContribution implements IWorkbenchContribution {
 		) {
 			return;
 		}
+
 		try {
 			const content = await this.fileService.readFile(
 				this.environmentService.argvResource,
@@ -68,6 +69,7 @@ class EncryptionContribution implements IWorkbenchContribution {
 					true,
 				);
 			}
+
 			this.storageService.store(
 				"encryption.migratedToGnomeLibsecret",
 				true,

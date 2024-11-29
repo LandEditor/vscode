@@ -27,16 +27,19 @@ export async function getServiceMachineId(
 	if (uuid) {
 		return uuid;
 	}
+
 	try {
 		const contents = await fileService.readFile(
 			environmentService.serviceMachineIdResource,
 		);
 
 		const value = contents.value.toString();
+
 		uuid = isUUID(value) ? value : null;
 	} catch (e) {
 		uuid = null;
 	}
+
 	if (!uuid) {
 		uuid = generateUuid();
 
@@ -49,6 +52,7 @@ export async function getServiceMachineId(
 			//noop
 		}
 	}
+
 	storageService?.store(
 		"storage.serviceMachineId",
 		uuid,

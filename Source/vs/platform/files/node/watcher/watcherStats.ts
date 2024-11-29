@@ -74,22 +74,29 @@ export function computeStats(
 
 	const nonRecursiveWatcherStatus =
 		computeNonRecursiveWatchStatus(nonRecursiveWatcher);
+
 	lines.push("[Summary]");
+
 	lines.push(
 		`- Recursive Requests:     total: ${allRecursiveRequests.length}, suspended: ${recursiveRequestsStatus.suspended}, polling: ${recursiveRequestsStatus.polling}, failed: ${failedRecursiveRequests}`,
 	);
+
 	lines.push(
 		`- Non-Recursive Requests: total: ${allNonRecursiveRequests.length}, suspended: ${nonRecursiveRequestsStatus.suspended}, polling: ${nonRecursiveRequestsStatus.polling}`,
 	);
+
 	lines.push(
 		`- Recursive Watchers:     total: ${recursiveWatcher.watchers.size}, active: ${recursiveWatcherStatus.active}, failed: ${recursiveWatcherStatus.failed}, stopped: ${recursiveWatcherStatus.stopped}`,
 	);
+
 	lines.push(
 		`- Non-Recursive Watchers: total: ${nonRecursiveWatcher.watchers.size}, active: ${nonRecursiveWatcherStatus.active}, failed: ${nonRecursiveWatcherStatus.failed}, reusing: ${nonRecursiveWatcherStatus.reusing}`,
 	);
+
 	lines.push(
 		`- I/O Handles Impact:     total: ${recursiveRequestsStatus.polling + nonRecursiveRequestsStatus.polling + recursiveWatcherStatus.active + nonRecursiveWatcherStatus.active}`,
 	);
+
 	lines.push(
 		`\n[Recursive Requests (${allRecursiveRequests.length}, suspended: ${recursiveRequestsStatus.suspended}, polling: ${recursiveRequestsStatus.polling})]:`,
 	);
@@ -103,11 +110,15 @@ export function computeStats(
 	].flat()) {
 		fillRequestStats(recursiveRequestLines, request, recursiveWatcher);
 	}
+
 	lines.push(...alignTextColumns(recursiveRequestLines));
 
 	const recursiveWatcheLines: string[] = [];
+
 	fillRecursiveWatcherStats(recursiveWatcheLines, recursiveWatcher);
+
 	lines.push(...alignTextColumns(recursiveWatcheLines));
+
 	lines.push(
 		`\n[Non-Recursive Requests (${allNonRecursiveRequests.length}, suspended: ${nonRecursiveRequestsStatus.suspended}, polling: ${nonRecursiveRequestsStatus.polling})]:`,
 	);
@@ -125,10 +136,13 @@ export function computeStats(
 			nonRecursiveWatcher,
 		);
 	}
+
 	lines.push(...alignTextColumns(nonRecursiveRequestLines));
 
 	const nonRecursiveWatcheLines: string[] = [];
+
 	fillNonRecursiveWatcherStats(nonRecursiveWatcheLines, nonRecursiveWatcher);
+
 	lines.push(...alignTextColumns(nonRecursiveWatcheLines));
 
 	return `\n\n[File Watcher] request stats:\n\n${lines.join("\n")}\n\n`;
@@ -139,6 +153,7 @@ function alignTextColumns(lines: string[]) {
 	for (const line of lines) {
 		maxLength = Math.max(maxLength, line.split("\t")[0].length);
 	}
+
 	for (let i = 0; i < lines.length; i++) {
 		const line = lines[i];
 
@@ -146,9 +161,11 @@ function alignTextColumns(lines: string[]) {
 
 		if (parts.length === 2) {
 			const padding = " ".repeat(maxLength - parts[0].length);
+
 			lines[i] = `${parts[0]}${padding}\t${parts[1]}`;
 		}
 	}
+
 	return lines;
 }
 function computeRequestStatus(
@@ -156,6 +173,7 @@ function computeRequestStatus(
 	watcher: ParcelWatcher | NodeJSWatcher,
 ): {
 	suspended: number;
+
 	polling: number;
 } {
 	let polling = 0;
@@ -168,17 +186,21 @@ function computeRequestStatus(
 		if (isSuspended === false) {
 			continue;
 		}
+
 		suspended++;
 
 		if (isSuspended === "polling") {
 			polling++;
 		}
 	}
+
 	return { suspended, polling };
 }
 function computeRecursiveWatchStatus(recursiveWatcher: ParcelWatcher): {
 	active: number;
+
 	failed: number;
+
 	stopped: number;
 } {
 	let active = 0;
@@ -191,18 +213,23 @@ function computeRecursiveWatchStatus(recursiveWatcher: ParcelWatcher): {
 		if (!watcher.failed && !watcher.stopped) {
 			active++;
 		}
+
 		if (watcher.failed) {
 			failed++;
 		}
+
 		if (watcher.stopped) {
 			stopped++;
 		}
 	}
+
 	return { active, failed, stopped };
 }
 function computeNonRecursiveWatchStatus(nonRecursiveWatcher: NodeJSWatcher): {
 	active: number;
+
 	failed: number;
+
 	reusing: number;
 } {
 	let active = 0;
@@ -218,13 +245,16 @@ function computeNonRecursiveWatchStatus(nonRecursiveWatcher: NodeJSWatcher): {
 		) {
 			active++;
 		}
+
 		if (watcher.instance.failed) {
 			failed++;
 		}
+
 		if (watcher.instance.isReusingRecursiveWatcher) {
 			reusing++;
 		}
 	}
+
 	return { active, failed, reusing };
 }
 function sortByPathPrefix(
@@ -263,6 +293,7 @@ function sortByPathPrefix(
 				return p1[i] < p2[i] ? -1 : 1;
 			}
 		}
+
 		return p1.length - p2.length;
 	});
 
@@ -289,6 +320,7 @@ function fillRequestStats(
 			decorations.push("[SUSPENDED <non-polling>]");
 		}
 	}
+
 	lines.push(
 		` ${request.path}\t${decorations.length > 0 ? decorations.join(" ") + " " : ""}(${requestDetailsToString(request)})`,
 	);
@@ -306,6 +338,7 @@ function fillRecursiveWatcherStats(
 
 	const { active, failed, stopped } =
 		computeRecursiveWatchStatus(recursiveWatcher);
+
 	lines.push(
 		`\n[Recursive Watchers (${watchers.length}, active: ${active}, failed: ${failed}, stopped: ${stopped})]:`,
 	);
@@ -316,15 +349,19 @@ function fillRecursiveWatcherStats(
 		if (watcher.failed) {
 			decorations.push("[FAILED]");
 		}
+
 		if (watcher.stopped) {
 			decorations.push("[STOPPED]");
 		}
+
 		if (watcher.subscriptionsCount > 0) {
 			decorations.push(`[SUBSCRIBED:${watcher.subscriptionsCount}]`);
 		}
+
 		if (watcher.restarts > 0) {
 			decorations.push(`[RESTARTED:${watcher.restarts}]`);
 		}
+
 		lines.push(
 			` ${watcher.request.path}\t${decorations.length > 0 ? decorations.join(" ") + " " : ""}(${requestDetailsToString(watcher.request)})`,
 		);
@@ -354,6 +391,7 @@ function fillNonRecursiveWatcherStats(
 
 	const { active, failed, reusing } =
 		computeNonRecursiveWatchStatus(nonRecursiveWatcher);
+
 	lines.push(
 		`\n[Non-Recursive Watchers (${allWatchers.length}, active: ${active}, failed: ${failed}, reusing: ${reusing})]:`,
 	);
@@ -368,9 +406,11 @@ function fillNonRecursiveWatcherStats(
 		if (watcher.instance.failed) {
 			decorations.push("[FAILED]");
 		}
+
 		if (watcher.instance.isReusingRecursiveWatcher) {
 			decorations.push("[REUSING]");
 		}
+
 		lines.push(
 			` ${watcher.request.path}\t${decorations.length > 0 ? decorations.join(" ") + " " : ""}(${requestDetailsToString(watcher.request)})`,
 		);

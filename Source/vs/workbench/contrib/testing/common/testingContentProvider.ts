@@ -53,16 +53,19 @@ export class TestingContentProvider
 		if (existing && !existing.isDisposed()) {
 			return existing;
 		}
+
 		const parsed = parseTestUri(resource);
 
 		if (!parsed) {
 			return null;
 		}
+
 		const result = this.resultService.getResult(parsed.resultId);
 
 		if (!result) {
 			return null;
 		}
+
 		if (parsed.type === TestUriType.TaskOutput) {
 			const task = result.tasks[parsed.taskIndex];
 
@@ -90,21 +93,26 @@ export class TestingContentProvider
 				task.output.buffers,
 				task.output.length,
 			).toString();
+
 			append(removeAnsiEscapeCodes(init));
 
 			let hadContent = init.length > 0;
 
 			const dispose = new DisposableStore();
+
 			dispose.add(
 				task.output.onDidWriteData((d) => {
 					hadContent ||= d.byteLength > 0;
+
 					append(removeAnsiEscapeCodes(d.toString()));
 				}),
 			);
+
 			task.output.endPromise.then(() => {
 				if (dispose.isDisposed) {
 					return;
 				}
+
 				if (!hadContent) {
 					append(
 						localize(
@@ -112,18 +120,22 @@ export class TestingContentProvider
 							"The test run did not record any output.",
 						),
 					);
+
 					dispose.dispose();
 				}
 			});
+
 			model.onWillDispose(() => dispose.dispose());
 
 			return model;
 		}
+
 		const test = result?.getStateById(parsed.testExtId);
 
 		if (!test) {
 			return null;
 		}
+
 		let text: string | undefined;
 
 		let language: ILanguageSelection | null = null;
@@ -136,8 +148,10 @@ export class TestingContentProvider
 				if (message?.type === TestMessageType.Error) {
 					text = message.actual;
 				}
+
 				break;
 			}
+
 			case TestUriType.TestOutput: {
 				text = "";
 
@@ -152,8 +166,10 @@ export class TestingContentProvider
 						);
 					}
 				}
+
 				break;
 			}
+
 			case TestUriType.ResultExpectedOutput: {
 				const message =
 					test.tasks[parsed.taskIndex].messages[parsed.messageIndex];
@@ -161,8 +177,10 @@ export class TestingContentProvider
 				if (message?.type === TestMessageType.Error) {
 					text = message.expected;
 				}
+
 				break;
 			}
+
 			case TestUriType.ResultMessage: {
 				const message =
 					test.tasks[parsed.taskIndex].messages[parsed.messageIndex];
@@ -170,22 +188,27 @@ export class TestingContentProvider
 				if (!message) {
 					break;
 				}
+
 				if (message.type === TestMessageType.Output) {
 					const content = result.tasks[
 						parsed.taskIndex
 					].output.getRange(message.offset, message.length);
+
 					text = removeAnsiEscapeCodes(content.toString());
 				} else if (typeof message.message === "string") {
 					text = removeAnsiEscapeCodes(message.message);
 				} else {
 					text = message.message.value;
+
 					language = this.languageService.createById("markdown");
 				}
 			}
 		}
+
 		if (text === undefined) {
 			return null;
 		}
+
 		return this.modelService.createModel(text, language, resource, false);
 	}
 }

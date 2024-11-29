@@ -16,7 +16,9 @@ export abstract class ViewPart extends ViewEventHandler {
 
 	constructor(context: ViewContext) {
 		super();
+
 		this._context = context;
+
 		this._context.addEventHandler(this);
 	}
 
@@ -27,6 +29,7 @@ export abstract class ViewPart extends ViewEventHandler {
 	}
 
 	public abstract prepareRender(ctx: RenderingContext): void;
+
 	public abstract render(ctx: RestrictedRenderingContext): void;
 }
 
@@ -58,6 +61,7 @@ export class PartFingerprints {
 		if (r === null) {
 			return PartFingerprint.None;
 		}
+
 		return parseInt(r, 10);
 	}
 
@@ -70,9 +74,11 @@ export class PartFingerprints {
 			if (child === stopAt) {
 				break;
 			}
+
 			if (child.nodeType === child.ELEMENT_NODE) {
 				result[resultLen++] = this.read(child);
 			}
+
 			child = child.parentElement;
 		}
 
@@ -81,6 +87,7 @@ export class PartFingerprints {
 		for (let i = 0; i < resultLen; i++) {
 			r[i] = result[resultLen - i - 1];
 		}
+
 		return r;
 	}
 }

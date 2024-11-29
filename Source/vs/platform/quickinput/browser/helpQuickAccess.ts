@@ -26,6 +26,7 @@ interface IHelpQuickAccessPickItem extends IQuickPickItem {
 }
 export class HelpQuickAccessProvider implements IQuickAccessProvider {
 	static PREFIX = "?";
+
 	private readonly registry = Registry.as<IQuickAccessRegistry>(
 		Extensions.Quickaccess,
 	);
@@ -36,6 +37,7 @@ export class HelpQuickAccessProvider implements IQuickAccessProvider {
 		@IKeybindingService
 		private readonly keybindingService: IKeybindingService,
 	) {}
+
 	provide(
 		picker: IQuickPick<
 			IHelpQuickAccessPickItem,
@@ -84,6 +86,7 @@ export class HelpQuickAccessProvider implements IQuickAccessProvider {
 
 		return disposables;
 	}
+
 	getQuickAccessProviders(): IHelpQuickAccessPickItem[] {
 		const providers: IHelpQuickAccessPickItem[] = this.registry
 			.getQuickAccessProviders()
@@ -94,6 +97,7 @@ export class HelpQuickAccessProvider implements IQuickAccessProvider {
 
 		return providers;
 	}
+
 	private createPicks(
 		provider: IQuickAccessProviderDescriptor,
 	): IHelpQuickAccessPickItem[] {

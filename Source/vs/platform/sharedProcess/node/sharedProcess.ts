@@ -11,18 +11,28 @@ import { IUserDataProfile } from "../../userDataProfile/common/userDataProfile.j
 
 export interface ISharedProcessConfiguration {
 	readonly machineId: string;
+
 	readonly sqmId: string;
+
 	readonly devDeviceId: string;
+
 	readonly codeCachePath: string | undefined;
+
 	readonly args: NativeParsedArgs;
+
 	readonly logLevel: LogLevel;
+
 	readonly loggers: UriDto<ILoggerResource>[];
+
 	readonly profiles: {
 		readonly home: UriComponents;
+
 		readonly all: readonly UriDto<IUserDataProfile>[];
 	};
+
 	readonly policiesData?: IStringDictionary<{
 		definition: PolicyDefinition;
+
 		value: PolicyValue;
 	}>;
 }

@@ -57,6 +57,7 @@ export class LegacyLinesDiffComputer implements ILinesDiffComputer {
 					c.originalEndLineNumber + 1,
 				);
 			}
+
 			let modifiedRange: LineRange;
 
 			if (c.modifiedEndLineNumber === 0) {
@@ -71,6 +72,7 @@ export class LegacyLinesDiffComputer implements ILinesDiffComputer {
 					c.modifiedEndLineNumber + 1,
 				);
 			}
+
 			let change = new DetailedLineRangeMapping(
 				originalRange,
 				modifiedRange,
@@ -110,12 +112,16 @@ export class LegacyLinesDiffComputer implements ILinesDiffComputer {
 								)
 							: undefined,
 					);
+
 					changes.pop();
 				}
 			}
+
 			changes.push(change);
+
 			lastChange = change;
 		}
+
 		assertFn(() => {
 			return checkAdjacentItems(
 				changes,
@@ -137,6 +143,7 @@ export class LegacyLinesDiffComputer implements ILinesDiffComputer {
 }
 export interface IDiffComputationResult {
 	quitEarly: boolean;
+
 	identical: boolean;
 	/**
 	 * The changes as (legacy) line change array.
@@ -153,8 +160,11 @@ export interface IDiffComputationResult {
  */
 export interface IChange {
 	readonly originalStartLineNumber: number;
+
 	readonly originalEndLineNumber: number;
+
 	readonly modifiedStartLineNumber: number;
+
 	readonly modifiedEndLineNumber: number;
 }
 /**
@@ -162,8 +172,11 @@ export interface IChange {
  */
 export interface ICharChange extends IChange {
 	readonly originalStartColumn: number;
+
 	readonly originalEndColumn: number;
+
 	readonly modifiedStartColumn: number;
+
 	readonly modifiedEndColumn: number;
 }
 /**
@@ -174,6 +187,7 @@ export interface ILineChange extends IChange {
 }
 export interface IDiffComputerResult {
 	quitEarly: boolean;
+
 	changes: ILineChange[];
 }
 function computeDiff(
@@ -192,7 +206,9 @@ function computeDiff(
 }
 class LineSequence implements ISequence {
 	public readonly lines: string[];
+
 	private readonly _startColumns: number[];
+
 	private readonly _endColumns: number[];
 
 	constructor(lines: string[]) {
@@ -202,12 +218,17 @@ class LineSequence implements ISequence {
 
 		for (let i = 0, length = lines.length; i < length; i++) {
 			startColumns[i] = getFirstNonBlankColumn(lines[i], 1);
+
 			endColumns[i] = getLastNonBlankColumn(lines[i], 1);
 		}
+
 		this.lines = lines;
+
 		this._startColumns = startColumns;
+
 		this._endColumns = endColumns;
 	}
+
 	public getElements(): Int32Array | number[] | string[] {
 		const elements: string[] = [];
 
@@ -217,17 +238,22 @@ class LineSequence implements ISequence {
 				this._endColumns[i] - 1,
 			);
 		}
+
 		return elements;
 	}
+
 	public getStrictElement(index: number): string {
 		return this.lines[index];
 	}
+
 	public getStartLineNumber(i: number): number {
 		return i + 1;
 	}
+
 	public getEndLineNumber(i: number): number {
 		return i + 1;
 	}
+
 	public createCharSequence(
 		shouldIgnoreTrimWhitespace: boolean,
 		startIndex: number,
@@ -254,31 +280,44 @@ class LineSequence implements ISequence {
 
 			for (let col = startColumn; col < endColumn; col++) {
 				charCodes[len] = lineContent.charCodeAt(col - 1);
+
 				lineNumbers[len] = index + 1;
+
 				columns[len] = col;
+
 				len++;
 			}
+
 			if (!shouldIgnoreTrimWhitespace && index < endIndex) {
 				// Add \n if trim whitespace is not ignored
 				charCodes[len] = CharCode.LineFeed;
+
 				lineNumbers[len] = index + 1;
+
 				columns[len] = lineContent.length + 1;
+
 				len++;
 			}
 		}
+
 		return new CharSequence(charCodes, lineNumbers, columns);
 	}
 }
 class CharSequence implements ISequence {
 	private readonly _charCodes: number[];
+
 	private readonly _lineNumbers: number[];
+
 	private readonly _columns: number[];
 
 	constructor(charCodes: number[], lineNumbers: number[], columns: number[]) {
 		this._charCodes = charCodes;
+
 		this._lineNumbers = lineNumbers;
+
 		this._columns = columns;
 	}
+
 	public toString() {
 		return (
 			"[" +
@@ -294,69 +333,88 @@ class CharSequence implements ISequence {
 			"]"
 		);
 	}
+
 	private _assertIndex(index: number, arr: number[]): void {
 		if (index < 0 || index >= arr.length) {
 			throw new Error(`Illegal index`);
 		}
 	}
+
 	public getElements(): Int32Array | number[] | string[] {
 		return this._charCodes;
 	}
+
 	public getStartLineNumber(i: number): number {
 		if (i > 0 && i === this._lineNumbers.length) {
 			// the start line number of the element after the last element
 			// is the end line number of the last element
 			return this.getEndLineNumber(i - 1);
 		}
+
 		this._assertIndex(i, this._lineNumbers);
 
 		return this._lineNumbers[i];
 	}
+
 	public getEndLineNumber(i: number): number {
 		if (i === -1) {
 			// the end line number of the element before the first element
 			// is the start line number of the first element
 			return this.getStartLineNumber(i + 1);
 		}
+
 		this._assertIndex(i, this._lineNumbers);
 
 		if (this._charCodes[i] === CharCode.LineFeed) {
 			return this._lineNumbers[i] + 1;
 		}
+
 		return this._lineNumbers[i];
 	}
+
 	public getStartColumn(i: number): number {
 		if (i > 0 && i === this._columns.length) {
 			// the start column of the element after the last element
 			// is the end column of the last element
 			return this.getEndColumn(i - 1);
 		}
+
 		this._assertIndex(i, this._columns);
 
 		return this._columns[i];
 	}
+
 	public getEndColumn(i: number): number {
 		if (i === -1) {
 			// the end column of the element before the first element
 			// is the start column of the first element
 			return this.getStartColumn(i + 1);
 		}
+
 		this._assertIndex(i, this._columns);
 
 		if (this._charCodes[i] === CharCode.LineFeed) {
 			return 1;
 		}
+
 		return this._columns[i] + 1;
 	}
 }
 class CharChange implements ICharChange {
 	public originalStartLineNumber: number;
+
 	public originalStartColumn: number;
+
 	public originalEndLineNumber: number;
+
 	public originalEndColumn: number;
+
 	public modifiedStartLineNumber: number;
+
 	public modifiedStartColumn: number;
+
 	public modifiedEndLineNumber: number;
+
 	public modifiedEndColumn: number;
 
 	constructor(
@@ -370,14 +428,22 @@ class CharChange implements ICharChange {
 		modifiedEndColumn: number,
 	) {
 		this.originalStartLineNumber = originalStartLineNumber;
+
 		this.originalStartColumn = originalStartColumn;
+
 		this.originalEndLineNumber = originalEndLineNumber;
+
 		this.originalEndColumn = originalEndColumn;
+
 		this.modifiedStartLineNumber = modifiedStartLineNumber;
+
 		this.modifiedStartColumn = modifiedStartColumn;
+
 		this.modifiedEndLineNumber = modifiedEndLineNumber;
+
 		this.modifiedEndColumn = modifiedEndColumn;
 	}
+
 	public static createFromDiffChange(
 		diffChange: IDiffChange,
 		originalCharSequence: CharSequence,
@@ -431,6 +497,7 @@ function postProcessCharChanges(rawChanges: IDiffChange[]): IDiffChange[] {
 	if (rawChanges.length <= 1) {
 		return rawChanges;
 	}
+
 	const result = [rawChanges[0]];
 
 	let prevChange = result[0];
@@ -457,6 +524,7 @@ function postProcessCharChanges(rawChanges: IDiffChange[]): IDiffChange[] {
 				currChange.originalStart +
 				currChange.originalLength -
 				prevChange.originalStart;
+
 			prevChange.modifiedLength =
 				currChange.modifiedStart +
 				currChange.modifiedLength -
@@ -464,16 +532,22 @@ function postProcessCharChanges(rawChanges: IDiffChange[]): IDiffChange[] {
 		} else {
 			// Add the current change
 			result.push(currChange);
+
 			prevChange = currChange;
 		}
 	}
+
 	return result;
 }
 class LineChange implements ILineChange {
 	public originalStartLineNumber: number;
+
 	public originalEndLineNumber: number;
+
 	public modifiedStartLineNumber: number;
+
 	public modifiedEndLineNumber: number;
+
 	public charChanges: CharChange[] | undefined;
 
 	constructor(
@@ -484,11 +558,16 @@ class LineChange implements ILineChange {
 		charChanges: CharChange[] | undefined,
 	) {
 		this.originalStartLineNumber = originalStartLineNumber;
+
 		this.originalEndLineNumber = originalEndLineNumber;
+
 		this.modifiedStartLineNumber = modifiedStartLineNumber;
+
 		this.modifiedEndLineNumber = modifiedEndLineNumber;
+
 		this.charChanges = charChanges;
 	}
+
 	public static createFromDiffResult(
 		shouldIgnoreTrimWhitespace: boolean,
 		diffChange: IDiffChange,
@@ -513,29 +592,35 @@ class LineChange implements ILineChange {
 				originalLineSequence.getStartLineNumber(
 					diffChange.originalStart,
 				) - 1;
+
 			originalEndLineNumber = 0;
 		} else {
 			originalStartLineNumber = originalLineSequence.getStartLineNumber(
 				diffChange.originalStart,
 			);
+
 			originalEndLineNumber = originalLineSequence.getEndLineNumber(
 				diffChange.originalStart + diffChange.originalLength - 1,
 			);
 		}
+
 		if (diffChange.modifiedLength === 0) {
 			modifiedStartLineNumber =
 				modifiedLineSequence.getStartLineNumber(
 					diffChange.modifiedStart,
 				) - 1;
+
 			modifiedEndLineNumber = 0;
 		} else {
 			modifiedStartLineNumber = modifiedLineSequence.getStartLineNumber(
 				diffChange.modifiedStart,
 			);
+
 			modifiedEndLineNumber = modifiedLineSequence.getEndLineNumber(
 				diffChange.modifiedStart + diffChange.modifiedLength - 1,
 			);
 		}
+
 		if (
 			shouldComputeCharChanges &&
 			diffChange.originalLength > 0 &&
@@ -573,6 +658,7 @@ class LineChange implements ILineChange {
 				if (shouldPostProcessCharChanges) {
 					rawChanges = postProcessCharChanges(rawChanges);
 				}
+
 				charChanges = [];
 
 				for (let i = 0, length = rawChanges.length; i < length; i++) {
@@ -586,6 +672,7 @@ class LineChange implements ILineChange {
 				}
 			}
 		}
+
 		return new LineChange(
 			originalStartLineNumber,
 			originalEndLineNumber,
@@ -597,21 +684,34 @@ class LineChange implements ILineChange {
 }
 export interface IDiffComputerOpts {
 	shouldComputeCharChanges: boolean;
+
 	shouldPostProcessCharChanges: boolean;
+
 	shouldIgnoreTrimWhitespace: boolean;
+
 	shouldMakePrettyDiff: boolean;
+
 	maxComputationTime: number;
 }
 export class DiffComputer {
 	private readonly shouldComputeCharChanges: boolean;
+
 	private readonly shouldPostProcessCharChanges: boolean;
+
 	private readonly shouldIgnoreTrimWhitespace: boolean;
+
 	private readonly shouldMakePrettyDiff: boolean;
+
 	private readonly originalLines: string[];
+
 	private readonly modifiedLines: string[];
+
 	private readonly original: LineSequence;
+
 	private readonly modified: LineSequence;
+
 	private readonly continueLineDiff: () => boolean;
+
 	private readonly continueCharDiff: () => boolean;
 
 	constructor(
@@ -620,22 +720,32 @@ export class DiffComputer {
 		opts: IDiffComputerOpts,
 	) {
 		this.shouldComputeCharChanges = opts.shouldComputeCharChanges;
+
 		this.shouldPostProcessCharChanges = opts.shouldPostProcessCharChanges;
+
 		this.shouldIgnoreTrimWhitespace = opts.shouldIgnoreTrimWhitespace;
+
 		this.shouldMakePrettyDiff = opts.shouldMakePrettyDiff;
+
 		this.originalLines = originalLines;
+
 		this.modifiedLines = modifiedLines;
+
 		this.original = new LineSequence(originalLines);
+
 		this.modified = new LineSequence(modifiedLines);
+
 		this.continueLineDiff = createContinueProcessingPredicate(
 			opts.maxComputationTime,
 		);
+
 		this.continueCharDiff = createContinueProcessingPredicate(
 			opts.maxComputationTime === 0
 				? 0
 				: Math.min(opts.maxComputationTime, 5000),
 		); // never run after 5s for character changes...
 	}
+
 	public computeDiff(): IDiffComputerResult {
 		if (
 			this.original.lines.length === 1 &&
@@ -651,6 +761,7 @@ export class DiffComputer {
 					changes: [],
 				};
 			}
+
 			return {
 				quitEarly: false,
 				changes: [
@@ -664,6 +775,7 @@ export class DiffComputer {
 				],
 			};
 		}
+
 		if (
 			this.modified.lines.length === 1 &&
 			this.modified.lines[0].length === 0
@@ -682,6 +794,7 @@ export class DiffComputer {
 				],
 			};
 		}
+
 		const diffResult = computeDiff(
 			this.original,
 			this.modified,
@@ -710,6 +823,7 @@ export class DiffComputer {
 					),
 				);
 			}
+
 			return {
 				quitEarly: quitEarly,
 				changes: lineChanges,
@@ -771,9 +885,12 @@ export class DiffComputer {
 							if (originalChar !== modifiedChar) {
 								break;
 							}
+
 							originalStartColumn--;
+
 							modifiedStartColumn--;
 						}
+
 						if (
 							originalStartColumn > 1 ||
 							modifiedStartColumn > 1
@@ -820,9 +937,12 @@ export class DiffComputer {
 							if (originalChar !== modifiedChar) {
 								break;
 							}
+
 							originalEndColumn++;
+
 							modifiedEndColumn++;
 						}
+
 						if (
 							originalEndColumn < originalMaxColumn ||
 							modifiedEndColumn < modifiedMaxColumn
@@ -839,9 +959,12 @@ export class DiffComputer {
 						}
 					}
 				}
+
 				originalLineIndex++;
+
 				modifiedLineIndex++;
 			}
+
 			if (nextChange) {
 				// Emit the actual change
 				result.push(
@@ -855,15 +978,19 @@ export class DiffComputer {
 						this.shouldPostProcessCharChanges,
 					),
 				);
+
 				originalLineIndex += nextChange.originalLength;
+
 				modifiedLineIndex += nextChange.modifiedLength;
 			}
 		}
+
 		return {
 			quitEarly: quitEarly,
 			changes: result,
 		};
 	}
+
 	private _pushTrimWhitespaceCharChange(
 		result: LineChange[],
 		originalLineNumber: number,
@@ -887,6 +1014,7 @@ export class DiffComputer {
 			// Merged into previous
 			return;
 		}
+
 		let charChanges: CharChange[] | undefined = undefined;
 
 		if (this.shouldComputeCharChanges) {
@@ -903,6 +1031,7 @@ export class DiffComputer {
 				),
 			];
 		}
+
 		result.push(
 			new LineChange(
 				originalLineNumber,
@@ -913,6 +1042,7 @@ export class DiffComputer {
 			),
 		);
 	}
+
 	private _mergeTrimWhitespaceCharChange(
 		result: LineChange[],
 		originalLineNumber: number,
@@ -927,6 +1057,7 @@ export class DiffComputer {
 		if (len === 0) {
 			return false;
 		}
+
 		const prevChange = result[len - 1];
 
 		if (
@@ -936,6 +1067,7 @@ export class DiffComputer {
 			// Don't merge with inserts/deletes
 			return false;
 		}
+
 		if (
 			prevChange.originalEndLineNumber === originalLineNumber &&
 			prevChange.modifiedEndLineNumber === modifiedLineNumber
@@ -954,13 +1086,16 @@ export class DiffComputer {
 					),
 				);
 			}
+
 			return true;
 		}
+
 		if (
 			prevChange.originalEndLineNumber + 1 === originalLineNumber &&
 			prevChange.modifiedEndLineNumber + 1 === modifiedLineNumber
 		) {
 			prevChange.originalEndLineNumber = originalLineNumber;
+
 			prevChange.modifiedEndLineNumber = modifiedLineNumber;
 
 			if (this.shouldComputeCharChanges && prevChange.charChanges) {
@@ -977,8 +1112,10 @@ export class DiffComputer {
 					),
 				);
 			}
+
 			return true;
 		}
+
 		return false;
 	}
 }
@@ -988,6 +1125,7 @@ function getFirstNonBlankColumn(txt: string, defaultValue: number): number {
 	if (r === -1) {
 		return defaultValue;
 	}
+
 	return r + 1;
 }
 function getLastNonBlankColumn(txt: string, defaultValue: number): number {
@@ -996,6 +1134,7 @@ function getLastNonBlankColumn(txt: string, defaultValue: number): number {
 	if (r === -1) {
 		return defaultValue;
 	}
+
 	return r + 2;
 }
 function createContinueProcessingPredicate(
@@ -1004,6 +1143,7 @@ function createContinueProcessingPredicate(
 	if (maximumRuntime === 0) {
 		return () => true;
 	}
+
 	const startTime = Date.now();
 
 	return () => {

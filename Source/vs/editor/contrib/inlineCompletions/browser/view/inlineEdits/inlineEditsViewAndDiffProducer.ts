@@ -53,6 +53,7 @@ export class InlineEditsViewAndDiffProducer extends Disposable {
 			this._modelUriGenerator.getUniqueUri(),
 		),
 	).keepObserved(this._store);
+
 	private readonly _modifiedModel = derivedDisposable(() =>
 		this._modelService.createModel(
 			"",
@@ -65,6 +66,7 @@ export class InlineEditsViewAndDiffProducer extends Disposable {
 		{ getCacheKey: JSON.stringify },
 		(arg: { original: string; modified: string }) => {
 			this._originalModel.get().setValue(arg.original);
+
 			this._modifiedModel.get().setValue(arg.modified);
 
 			const diffAlgo =
@@ -99,6 +101,7 @@ export class InlineEditsViewAndDiffProducer extends Disposable {
 		}
 
 		//if (inlineEdit.text.trim() === '') { return undefined; }
+
 		const text = new TextModelText(this._editor.getModel()!);
 
 		const edit = inlineEdit.edit.extendToFullLine(text);
@@ -112,6 +115,7 @@ export class InlineEditsViewAndDiffProducer extends Disposable {
 			if (!p || !p.data) {
 				return undefined;
 			}
+
 			const result = p.data;
 
 			const rangeStartPos = edit.range.getStartPosition();
@@ -186,6 +190,7 @@ export class InlineEditWithChanges {
 	);
 
 	public readonly originalLineRange = this.lineEdit.lineRange;
+
 	public readonly modifiedLineRange = this.lineEdit
 		.toLineEdit()
 		.getNewLineRanges()[0];

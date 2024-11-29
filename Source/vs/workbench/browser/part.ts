@@ -29,12 +29,16 @@ import { IWorkbenchLayoutService } from "../services/layout/browser/layoutServic
 
 export interface IPartOptions {
 	readonly hasTitle?: boolean;
+
 	readonly borderWidth?: () => number;
 }
 export interface ILayoutContentResult {
 	readonly headerSize: IDimension;
+
 	readonly titleSize: IDimension;
+
 	readonly contentSize: IDimension;
+
 	readonly footerSize: IDimension;
 }
 /**
@@ -47,18 +51,27 @@ export abstract class Part extends Component implements ISerializableView {
 	get dimension(): Dimension | undefined {
 		return this._dimension;
 	}
+
 	private _contentPosition: IDomPosition | undefined;
 
 	get contentPosition(): IDomPosition | undefined {
 		return this._contentPosition;
 	}
+
 	protected _onDidVisibilityChange = this._register(new Emitter<boolean>());
+
 	readonly onDidVisibilityChange = this._onDidVisibilityChange.event;
+
 	private parent: HTMLElement | undefined;
+
 	private headerArea: HTMLElement | undefined;
+
 	private titleArea: HTMLElement | undefined;
+
 	private contentArea: HTMLElement | undefined;
+
 	private footerArea: HTMLElement | undefined;
+
 	private partLayout: PartLayout | undefined;
 
 	constructor(
@@ -69,8 +82,10 @@ export abstract class Part extends Component implements ISerializableView {
 		protected readonly layoutService: IWorkbenchLayoutService,
 	) {
 		super(id, themeService, storageService);
+
 		this._register(layoutService.registerPart(this));
 	}
+
 	protected override onThemeChange(theme: IColorTheme): void {
 		// only call if our create() method has been called
 		if (this.parent) {
@@ -85,9 +100,13 @@ export abstract class Part extends Component implements ISerializableView {
 	 */
 	create(parent: HTMLElement, options?: object): void {
 		this.parent = parent;
+
 		this.titleArea = this.createTitleArea(parent, options);
+
 		this.contentArea = this.createContentArea(parent, options);
+
 		this.partLayout = new PartLayout(this.options, this.contentArea);
+
 		this.updateStyles();
 	}
 	/**
@@ -133,14 +152,21 @@ export abstract class Part extends Component implements ISerializableView {
 		if (this.headerArea) {
 			throw new Error("Header already exists");
 		}
+
 		if (!this.parent || !this.titleArea) {
 			return;
 		}
+
 		prepend(this.parent, headerContainer);
+
 		headerContainer.classList.add("header-or-footer");
+
 		headerContainer.classList.add("header");
+
 		this.headerArea = headerContainer;
+
 		this.partLayout?.setHeaderVisibility(true);
+
 		this.relayout();
 	}
 	/**
@@ -150,14 +176,21 @@ export abstract class Part extends Component implements ISerializableView {
 		if (this.footerArea) {
 			throw new Error("Footer already exists");
 		}
+
 		if (!this.parent || !this.titleArea) {
 			return;
 		}
+
 		this.parent.appendChild(footerContainer);
+
 		footerContainer.classList.add("header-or-footer");
+
 		footerContainer.classList.add("footer");
+
 		this.footerArea = footerContainer;
+
 		this.partLayout?.setFooterVisibility(true);
+
 		this.relayout();
 	}
 	/**
@@ -166,8 +199,11 @@ export abstract class Part extends Component implements ISerializableView {
 	protected removeHeaderArea(): void {
 		if (this.headerArea) {
 			this.headerArea.remove();
+
 			this.headerArea = undefined;
+
 			this.partLayout?.setHeaderVisibility(false);
+
 			this.relayout();
 		}
 	}
@@ -177,11 +213,15 @@ export abstract class Part extends Component implements ISerializableView {
 	protected removeFooterArea(): void {
 		if (this.footerArea) {
 			this.footerArea.remove();
+
 			this.footerArea = undefined;
+
 			this.partLayout?.setFooterVisibility(false);
+
 			this.relayout();
 		}
 	}
+
 	private relayout() {
 		if (this.dimension && this.contentPosition) {
 			this.layout(
@@ -211,31 +251,45 @@ export abstract class Part extends Component implements ISerializableView {
 	get onDidChange(): Event<IViewSize | undefined> {
 		return this._onDidChange.event;
 	}
+
 	element!: HTMLElement;
+
 	abstract minimumWidth: number;
+
 	abstract maximumWidth: number;
+
 	abstract minimumHeight: number;
+
 	abstract maximumHeight: number;
+
 	layout(width: number, height: number, top: number, left: number): void {
 		this._dimension = new Dimension(width, height);
+
 		this._contentPosition = { top, left };
 	}
+
 	setVisible(visible: boolean) {
 		this._onDidVisibilityChange.fire(visible);
 	}
+
 	abstract toJSON(): object;
 }
 class PartLayout {
 	private static readonly HEADER_HEIGHT = 35;
+
 	private static readonly TITLE_HEIGHT = 35;
+
 	private static readonly Footer_HEIGHT = 35;
+
 	private headerVisible: boolean = false;
+
 	private footerVisible: boolean = false;
 
 	constructor(
 		private options: IPartOptions,
 		private contentArea: HTMLElement | undefined,
 	) {}
+
 	layout(width: number, height: number): ILayoutContentResult {
 		// Title Size: Width (Fill), Height (Variable)
 		let titleSize: Dimension;
@@ -270,6 +324,7 @@ class PartLayout {
 		} else {
 			footerSize = Dimension.None;
 		}
+
 		let contentWidth = width;
 
 		if (this.options && typeof this.options.borderWidth === "function") {
@@ -284,11 +339,14 @@ class PartLayout {
 		if (this.contentArea) {
 			size(this.contentArea, contentSize.width, contentSize.height);
 		}
+
 		return { headerSize, titleSize, contentSize, footerSize };
 	}
+
 	setFooterVisibility(visible: boolean): void {
 		this.footerVisible = visible;
 	}
+
 	setHeaderVisibility(visible: boolean): void {
 		this.headerVisible = visible;
 	}
@@ -304,18 +362,23 @@ export abstract class MultiWindowParts<
 	get parts() {
 		return Array.from(this._parts);
 	}
+
 	abstract readonly mainPart: T;
+
 	registerPart(part: T): IDisposable {
 		this._parts.add(part);
 
 		return toDisposable(() => this.unregisterPart(part));
 	}
+
 	protected unregisterPart(part: T): void {
 		this._parts.delete(part);
 	}
+
 	getPart(container: HTMLElement): T {
 		return this.getPartByDocument(container.ownerDocument);
 	}
+
 	protected getPartByDocument(document: Document): T {
 		if (this._parts.size > 1) {
 			for (const part of this._parts) {
@@ -324,8 +387,10 @@ export abstract class MultiWindowParts<
 				}
 			}
 		}
+
 		return this.mainPart;
 	}
+
 	get activePart(): T {
 		return this.getPartByDocument(getActiveDocument());
 	}

@@ -24,7 +24,9 @@ import { AbstractTokens } from "./tokens.js";
 
 export class TreeSitterTokens extends AbstractTokens {
 	private _tokenizationSupport: ITreeSitterTokenizationSupport | null = null;
+
 	private _lastLanguageId: string | undefined;
+
 	private readonly _tokensChangedListener: MutableDisposable<IDisposable> =
 		this._register(new MutableDisposable());
 
@@ -35,8 +37,10 @@ export class TreeSitterTokens extends AbstractTokens {
 		languageId: () => string,
 	) {
 		super(languageIdCodec, textModel, languageId);
+
 		this._initialize();
 	}
+
 	private _initialize() {
 		const newLanguage = this.getLanguageId();
 
@@ -45,8 +49,10 @@ export class TreeSitterTokens extends AbstractTokens {
 			this._lastLanguageId !== newLanguage
 		) {
 			this._lastLanguageId = newLanguage;
+
 			this._tokenizationSupport =
 				TreeSitterTokenizationRegistry.get(newLanguage);
+
 			this._tokensChangedListener.value =
 				this._tokenizationSupport?.onDidChangeTokens((e) => {
 					if (e.textModel === this._textModel) {
@@ -55,6 +61,7 @@ export class TreeSitterTokens extends AbstractTokens {
 				});
 		}
 	}
+
 	public getLineTokens(lineNumber: number): LineTokens {
 		const content = this._textModel.getLineContent(lineNumber);
 
@@ -72,8 +79,10 @@ export class TreeSitterTokens extends AbstractTokens {
 				);
 			}
 		}
+
 		return LineTokens.createEmpty(content, this._languageIdCodec);
 	}
+
 	public resetTokenization(fireTokenChangeEvent: boolean = true): void {
 		if (fireTokenChangeEvent) {
 			this._onDidChangeTokens.fire({
@@ -86,28 +95,35 @@ export class TreeSitterTokens extends AbstractTokens {
 				],
 			});
 		}
+
 		this._initialize();
 	}
+
 	public override handleDidChangeAttached(): void {
 		// TODO @alexr00 implement for background tokenization
 	}
+
 	public override handleDidChangeContent(e: IModelContentChangedEvent): void {
 		if (e.isFlush) {
 			// Don't fire the event, as the view might not have got the text change event yet
 			this.resetTokenization(false);
 		}
 	}
+
 	public override forceTokenization(lineNumber: number): void {
 		// TODO @alexr00 implement
 	}
+
 	public override hasAccurateTokensForLine(lineNumber: number): boolean {
 		// TODO @alexr00 update for background tokenization
 		return true;
 	}
+
 	public override isCheapToTokenize(lineNumber: number): boolean {
 		// TODO @alexr00 update for background tokenization
 		return true;
 	}
+
 	public override getTokenTypeIfInsertingCharacter(
 		lineNumber: number,
 		column: number,
@@ -116,6 +132,7 @@ export class TreeSitterTokens extends AbstractTokens {
 		// TODO @alexr00 implement once we have custom parsing and don't just feed in the whole text model value
 		return StandardTokenType.Other;
 	}
+
 	public override tokenizeLineWithEdit(
 		lineNumber: number,
 		edit: LineEditWithAdditionalLines,
@@ -123,6 +140,7 @@ export class TreeSitterTokens extends AbstractTokens {
 		// TODO @alexr00 understand what this is for and implement
 		return { mainLineTokens: null, additionalLines: null };
 	}
+
 	public override get hasTokens(): boolean {
 		// TODO @alexr00 once we have a token store, implement properly
 		const hasTree =

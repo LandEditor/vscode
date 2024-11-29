@@ -12,13 +12,16 @@ export function resolveContentAndKeybindingItems(
 ):
 	| {
 			content: MarkdownString;
+
 			configureKeybindingItems: IPickerQuickAccessItem[] | undefined;
+
 			configuredKeybindingItems: IPickerQuickAccessItem[] | undefined;
 	  }
 	| undefined {
 	if (!value) {
 		return;
 	}
+
 	const configureKeybindingItems: IPickerQuickAccessItem[] = [];
 
 	const configuredKeybindingItems: IPickerQuickAccessItem[] = [];
@@ -37,21 +40,26 @@ export function resolveContentAndKeybindingItems(
 
 			if (!keybinding) {
 				kbLabel = ` (unassigned keybinding)`;
+
 				configureKeybindingItems.push({
 					label: commandId,
 					id: commandId,
 				});
 			} else {
 				kbLabel = " (" + keybinding + ")";
+
 				configuredKeybindingItems.push({
 					label: commandId,
 					id: commandId,
 				});
 			}
+
 			value = value.replace(match[0], kbLabel);
 		}
 	}
+
 	const content = new MarkdownString(value);
+
 	content.isTrusted = true;
 
 	return {

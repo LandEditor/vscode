@@ -12,6 +12,7 @@ export interface IMultiDiffEditorModel {
 	readonly documents: IValueWithChangeEvent<
 		readonly RefCounted<IDocumentDiffItem>[] | "loading"
 	>;
+
 	readonly contextKeys?: Record<string, ContextKeyValue>;
 }
 export interface IDocumentDiffItem {
@@ -23,7 +24,10 @@ export interface IDocumentDiffItem {
 	 * undefined if the file was deleted.
 	 */
 	readonly modified: ITextModel | undefined;
+
 	readonly options?: IDiffEditorOptions;
+
 	readonly onOptionsDidChange?: Event<void>;
+
 	readonly contextKeys?: Record<string, ContextKeyValue>;
 }

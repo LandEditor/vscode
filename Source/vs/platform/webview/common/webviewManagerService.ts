@@ -17,30 +17,39 @@ export interface WebviewWindowId {
 }
 export interface FindInFrameOptions {
 	readonly forward?: boolean;
+
 	readonly findNext?: boolean;
+
 	readonly matchCase?: boolean;
 }
 export interface FoundInFrameResult {
 	readonly requestId: number;
+
 	readonly activeMatchOrdinal: number;
+
 	readonly matches: number;
+
 	readonly selectionArea: any;
+
 	readonly finalUpdate: boolean;
 }
 export interface IWebviewManagerService {
 	_serviceBrand: unknown;
+
 	onFoundInFrame: Event<FoundInFrameResult>;
 
 	setIgnoreMenuShortcuts(
 		id: WebviewWebContentsId | WebviewWindowId,
 		enabled: boolean,
 	): Promise<void>;
+
 	findInFrame(
 		windowId: WebviewWindowId,
 		frameName: string,
 		text: string,
 		options: FindInFrameOptions,
 	): Promise<void>;
+
 	stopFindInFrame(
 		windowId: WebviewWindowId,
 		frameName: string,

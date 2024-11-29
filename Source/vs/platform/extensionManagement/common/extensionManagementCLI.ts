@@ -49,7 +49,9 @@ const useId = localize(
 type InstallVSIXInfo = { vsix: URI; installOptions: InstallOptions };
 type InstallGalleryExtensionInfo = {
 	id: string;
+
 	version?: string;
+
 	installOptions: InstallOptions;
 };
 
@@ -86,6 +88,7 @@ export class ExtensionManagementCLI {
 
 				return;
 			}
+
 			extensions = extensions.filter((e) => {
 				if (e.manifest.categories) {
 					const lowerCaseCategories: string[] =
@@ -95,16 +98,19 @@ export class ExtensionManagementCLI {
 						lowerCaseCategories.indexOf(category.toLowerCase()) > -1
 					);
 				}
+
 				return false;
 			});
 		} else if (category === "") {
 			this.logger.info("Possible Categories: ");
+
 			categories.forEach((category) => {
 				this.logger.info(category);
 			});
 
 			return;
 		}
+
 		if (this.location) {
 			this.logger.info(
 				localize(
@@ -124,6 +130,7 @@ export class ExtensionManagementCLI {
 		for (const extension of extensions) {
 			if (lastId !== extension.identifier.id) {
 				lastId = extension.identifier.id;
+
 				this.logger.info(
 					showVersions
 						? `${lastId}@${extension.manifest.version}`
@@ -184,9 +191,11 @@ export class ExtensionManagementCLI {
 					installVSIXInfos.push({ vsix: extension, installOptions });
 				} else {
 					const [id, version] = getIdAndVersion(extension);
+
 					addInstallExtensionInfo(id, version, false);
 				}
 			}
+
 			for (const extension of builtinExtensions) {
 				if (extension instanceof URI) {
 					installVSIXInfos.push({
@@ -199,6 +208,7 @@ export class ExtensionManagementCLI {
 					});
 				} else {
 					const [id, version] = getIdAndVersion(extension);
+
 					addInstallExtensionInfo(id, version, true);
 				}
 			}
@@ -221,6 +231,7 @@ export class ExtensionManagementCLI {
 							);
 						} catch (err) {
 							this.logger.error(err);
+
 							failed.push(vsix.toString());
 						}
 					}),
@@ -234,6 +245,7 @@ export class ExtensionManagementCLI {
 						installed,
 						force,
 					);
+
 				failed.push(...failedGalleryExtensions);
 			}
 		} catch (error) {
@@ -399,6 +411,7 @@ export class ExtensionManagementCLI {
 
 						return false;
 					}
+
 					if (
 						version &&
 						installedExtension.manifest.version === version
@@ -414,6 +427,7 @@ export class ExtensionManagementCLI {
 						return false;
 					}
 				}
+
 				return true;
 			},
 		);
@@ -429,6 +443,7 @@ export class ExtensionManagementCLI {
 		const galleryExtensions = await this.getGalleryExtensions(
 			installExtensionInfos,
 		);
+
 		await Promise.all(
 			installExtensionInfos.map(
 				async ({ id, version, installOptions }) => {
@@ -438,10 +453,12 @@ export class ExtensionManagementCLI {
 						this.logger.error(
 							`${notFound(version ? `${id}@${version}` : id)}\n${useId}`,
 						);
+
 						failed.push(id);
 
 						return;
 					}
+
 					try {
 						const manifest =
 							await this.extensionGalleryService.getManifest(
@@ -454,10 +471,12 @@ export class ExtensionManagementCLI {
 						}
 					} catch (err) {
 						this.logger.error(err.message || err.stack || err);
+
 						failed.push(id);
 
 						return;
 					}
+
 					const installedExtension = installed.find((e) =>
 						areSameExtensions(e.identifier, gallery.identifier),
 					);
@@ -477,6 +496,7 @@ export class ExtensionManagementCLI {
 
 							return;
 						}
+
 						this.logger.info(
 							localize(
 								"updateMessage",
@@ -486,6 +506,7 @@ export class ExtensionManagementCLI {
 							),
 						);
 					}
+
 					if (installOptions.isBuiltin) {
 						this.logger.info(
 							version
@@ -517,6 +538,7 @@ export class ExtensionManagementCLI {
 									),
 						);
 					}
+
 					extensionsToInstall.push({
 						extension: gallery,
 						options: {
@@ -547,6 +569,7 @@ export class ExtensionManagementCLI {
 							getErrorMessage(extensionResult.error),
 						),
 					);
+
 					failed.push(extensionResult.identifier.id);
 				} else {
 					this.logger.info(
@@ -590,6 +613,7 @@ export class ExtensionManagementCLI {
 					...installOptions,
 					installGivenVersion: true,
 				});
+
 				this.logger.info(
 					localize(
 						"successVsixInstall",
@@ -632,6 +656,7 @@ export class ExtensionManagementCLI {
 				extensionInfos.push({ ...extension, preRelease });
 			}
 		}
+
 		if (extensionInfos.length) {
 			const result = await this.extensionGalleryService.getExtensions(
 				extensionInfos,
@@ -646,6 +671,7 @@ export class ExtensionManagementCLI {
 				);
 			}
 		}
+
 		return galleryExtensions;
 	}
 
@@ -704,6 +730,7 @@ export class ExtensionManagementCLI {
 
 				return getExtensionId(manifest.publisher, manifest.name);
 			}
+
 			return extensionDescription;
 		};
 
@@ -725,6 +752,7 @@ export class ExtensionManagementCLI {
 			if (!extensionsToUninstall.length) {
 				throw new Error(`${this.notInstalled(id)}\n${useId}`);
 			}
+
 			if (
 				extensionsToUninstall.some(
 					(e) => e.type === ExtensionType.System,
@@ -740,6 +768,7 @@ export class ExtensionManagementCLI {
 
 				return;
 			}
+
 			if (!force && extensionsToUninstall.some((e) => e.isBuiltin)) {
 				this.logger.info(
 					localize(
@@ -751,6 +780,7 @@ export class ExtensionManagementCLI {
 
 				return;
 			}
+
 			this.logger.info(
 				localize("uninstalling", "Uninstalling {0}...", id),
 			);
@@ -760,6 +790,7 @@ export class ExtensionManagementCLI {
 					extensionToUninstall,
 					{ profileLocation },
 				);
+
 				uninstalledExtensions.push(extensionToUninstall);
 			}
 
@@ -786,6 +817,7 @@ export class ExtensionManagementCLI {
 
 	public async locateExtension(extensions: string[]): Promise<void> {
 		const installed = await this.extensionManagementService.getInstalled();
+
 		extensions.forEach((e) => {
 			installed.forEach((i) => {
 				if (i.identifier.id === e) {

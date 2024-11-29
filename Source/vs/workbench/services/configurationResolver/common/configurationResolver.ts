@@ -16,19 +16,23 @@ export const IConfigurationResolverService =
 
 export interface IConfigurationResolverService {
 	readonly _serviceBrand: undefined;
+
 	resolveWithEnvironment(
 		environment: IProcessEnvironment,
 		folder: IWorkspaceFolder | undefined,
 		value: string,
 	): Promise<string>;
+
 	resolveAsync(
 		folder: IWorkspaceFolder | undefined,
 		value: string,
 	): Promise<string>;
+
 	resolveAsync(
 		folder: IWorkspaceFolder | undefined,
 		value: string[],
 	): Promise<string[]>;
+
 	resolveAsync(
 		folder: IWorkspaceFolder | undefined,
 		value: IStringDictionary<string>,
@@ -53,6 +57,7 @@ export interface IConfigurationResolverService {
 		commandValueMapping?: IStringDictionary<string>,
 	): Promise<{
 		newConfig: any;
+
 		resolvedVariables: Map<string, string>;
 	}>;
 	/**
@@ -91,20 +96,27 @@ export interface IConfigurationResolverService {
 }
 interface PromptStringInputInfo {
 	id: string;
+
 	type: "promptString";
+
 	description: string;
 
 	default?: string;
+
 	password?: boolean;
 }
 interface PickStringInputInfo {
 	id: string;
+
 	type: "pickString";
+
 	description: string;
+
 	options: (
 		| string
 		| {
 				value: string;
+
 				label?: string;
 		  }
 	)[];
@@ -113,8 +125,11 @@ interface PickStringInputInfo {
 }
 interface CommandInputInfo {
 	id: string;
+
 	type: "command";
+
 	command: string;
+
 	args?: any;
 }
 export type ConfiguredInput =

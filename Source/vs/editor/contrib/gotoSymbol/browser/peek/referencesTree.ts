@@ -55,9 +55,11 @@ export class DataSource
 		if (element instanceof ReferencesModel) {
 			return true;
 		}
+
 		if (element instanceof FileReferences) {
 			return true;
 		}
+
 		return false;
 	}
 
@@ -75,6 +77,7 @@ export class DataSource
 				// 	// we can update its rendering
 				// 	return tree.refresh(element).then(() => val.children);
 				// }
+
 				return val.children;
 			});
 		}
@@ -89,6 +92,7 @@ export class Delegate implements IListVirtualDelegate<TreeElement> {
 	getHeight(): number {
 		return 23;
 	}
+
 	getTemplateId(element: FileReferences | OneReference): string {
 		if (element instanceof FileReferences) {
 			return FileReferencesRenderer.id;
@@ -135,6 +139,7 @@ export class IdentityProvider implements IIdentityProvider<TreeElement> {
 
 class FileReferencesTemplate extends Disposable {
 	readonly file: IconLabel;
+
 	readonly badge: CountBadge;
 
 	constructor(
@@ -144,7 +149,9 @@ class FileReferencesTemplate extends Disposable {
 		super();
 
 		const parent = document.createElement("div");
+
 		parent.classList.add("reference-file");
+
 		this.file = this._register(
 			new IconLabel(parent, { supportHighlights: true }),
 		);
@@ -162,6 +169,7 @@ class FileReferencesTemplate extends Disposable {
 
 	set(element: FileReferences, matches: IMatch[]) {
 		const parent = dirname(element.uri);
+
 		this.file.setLabel(
 			this._labelService.getUriBasenameLabel(element.uri),
 			this._labelService.getUriLabel(parent, { relative: true }),
@@ -169,6 +177,7 @@ class FileReferencesTemplate extends Disposable {
 		);
 
 		const len = element.children.length;
+
 		this.badge.setCount(len);
 
 		if (len > 1) {
@@ -202,6 +211,7 @@ export class FileReferencesRenderer
 			container,
 		);
 	}
+
 	renderElement(
 		node: ITreeNode<FileReferences, FuzzyScore>,
 		index: number,
@@ -209,6 +219,7 @@ export class FileReferencesRenderer
 	): void {
 		template.set(node.element, createMatches(node.filterData));
 	}
+
 	disposeTemplate(templateData: FileReferencesTemplate): void {
 		templateData.dispose();
 	}
@@ -243,9 +254,11 @@ class OneReferenceTemplate extends Disposable {
 
 			if (score && !FuzzyScore.isDefault(score)) {
 				this.label.element.classList.toggle("referenceMatch", false);
+
 				this.label.set(value, createMatches(score));
 			} else {
 				this.label.element.classList.toggle("referenceMatch", true);
+
 				this.label.set(value, [highlight]);
 			}
 		}
@@ -262,6 +275,7 @@ export class OneReferenceRenderer
 	renderTemplate(container: HTMLElement): OneReferenceTemplate {
 		return new OneReferenceTemplate(container);
 	}
+
 	renderElement(
 		node: ITreeNode<OneReference, FuzzyScore>,
 		index: number,
@@ -269,6 +283,7 @@ export class OneReferenceRenderer
 	): void {
 		templateData.set(node.element, node.filterData);
 	}
+
 	disposeTemplate(templateData: OneReferenceTemplate): void {
 		templateData.dispose();
 	}

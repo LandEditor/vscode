@@ -36,7 +36,9 @@ export abstract class AbstractEditorWithViewState<
 	T extends object,
 > extends EditorPane {
 	private viewState: IEditorMemento<T>;
+
 	private readonly groupListener = this._register(new MutableDisposable());
+
 	private editorViewStateDisposables:
 		| Map<EditorInput, IDisposable>
 		| undefined;
@@ -61,6 +63,7 @@ export abstract class AbstractEditorWithViewState<
 		protected readonly editorGroupService: IEditorGroupsService,
 	) {
 		super(id, group, telemetryService, themeService, storageService);
+
 		this.viewState = this.getEditorMemento<T>(
 			editorGroupService,
 			textResourceConfigurationService,
@@ -68,6 +71,7 @@ export abstract class AbstractEditorWithViewState<
 			100,
 		);
 	}
+
 	protected override setEditorVisible(visible: boolean): void {
 		// Listen to close events to trigger `onWillCloseEditorInGroup`
 		this.groupListener.value = this.group.onWillCloseEditor((e) =>
@@ -76,6 +80,7 @@ export abstract class AbstractEditorWithViewState<
 
 		super.setEditorVisible(visible);
 	}
+
 	private onWillCloseEditor(e: IEditorCloseEvent): void {
 		const editor = e.editor;
 
@@ -86,22 +91,26 @@ export abstract class AbstractEditorWithViewState<
 			this.updateEditorViewState(editor);
 		}
 	}
+
 	override clearInput(): void {
 		// Preserve current input view state before clearing
 		this.updateEditorViewState(this.input);
 
 		super.clearInput();
 	}
+
 	protected override saveState(): void {
 		// Preserve current input view state before shutting down
 		this.updateEditorViewState(this.input);
 
 		super.saveState();
 	}
+
 	private updateEditorViewState(input: EditorInput | undefined): void {
 		if (!input || !this.tracksEditorViewState(input)) {
 			return; // ensure we have an input to handle view state for
 		}
+
 		const resource = this.toEditorViewStateResource(input);
 
 		if (!resource) {
@@ -117,11 +126,13 @@ export abstract class AbstractEditorWithViewState<
 					IDisposable
 				>();
 			}
+
 			if (!this.editorViewStateDisposables.has(input)) {
 				this.editorViewStateDisposables.set(
 					input,
 					Event.once(input.onWillDispose)(() => {
 						this.clearEditorViewState(resource, this.group);
+
 						this.editorViewStateDisposables?.delete(input);
 					}),
 				);
@@ -142,6 +153,7 @@ export abstract class AbstractEditorWithViewState<
 			this.saveEditorViewState(resource);
 		}
 	}
+
 	private shouldRestoreEditorViewState(
 		input: EditorInput,
 		context?: IEditorOpenContext,
@@ -160,27 +172,33 @@ export abstract class AbstractEditorWithViewState<
 		// existing editor: always restore viewstate
 		return true;
 	}
+
 	override getViewState(): T | undefined {
 		const input = this.input;
 
 		if (!input || !this.tracksEditorViewState(input)) {
 			return; // need valid input for view state
 		}
+
 		const resource = this.toEditorViewStateResource(input);
 
 		if (!resource) {
 			return; // need a resource for finding view state
 		}
+
 		return this.computeEditorViewState(resource);
 	}
+
 	private saveEditorViewState(resource: URI): void {
 		const editorViewState = this.computeEditorViewState(resource);
 
 		if (!editorViewState) {
 			return;
 		}
+
 		this.viewState.saveEditorState(this.group, resource, editorViewState);
 	}
+
 	protected loadEditorViewState(
 		input: EditorInput | undefined,
 		context?: IEditorOpenContext,
@@ -188,19 +206,24 @@ export abstract class AbstractEditorWithViewState<
 		if (!input) {
 			return undefined; // we need valid input
 		}
+
 		if (!this.tracksEditorViewState(input)) {
 			return undefined; // not tracking for input
 		}
+
 		if (!this.shouldRestoreEditorViewState(input, context)) {
 			return undefined; // not enabled for input
 		}
+
 		const resource = this.toEditorViewStateResource(input);
 
 		if (!resource) {
 			return; // need a resource for finding view state
 		}
+
 		return this.viewState.loadEditorState(this.group, resource);
 	}
+
 	protected moveEditorViewState(
 		source: URI,
 		target: URI,
@@ -208,9 +231,11 @@ export abstract class AbstractEditorWithViewState<
 	): void {
 		return this.viewState.moveEditorState(source, target, comparer);
 	}
+
 	protected clearEditorViewState(resource: URI, group?: IEditorGroup): void {
 		this.viewState.clearEditorState(resource, group);
 	}
+
 	override dispose(): void {
 		super.dispose();
 
@@ -218,6 +243,7 @@ export abstract class AbstractEditorWithViewState<
 			for (const [, disposables] of this.editorViewStateDisposables) {
 				disposables.dispose();
 			}
+
 			this.editorViewStateDisposables = undefined;
 		}
 	}

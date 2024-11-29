@@ -49,6 +49,7 @@ class MementoKeyValueStorage implements IKeyValueStorage {
 			StorageTarget.MACHINE,
 		);
 	}
+
 	async getValue<T>(
 		key: string,
 		defaultValue?: T | undefined,
@@ -57,8 +58,10 @@ class MementoKeyValueStorage implements IKeyValueStorage {
 
 		return value || defaultValue;
 	}
+
 	setValue<T>(key: string, value: T): void {
 		this.mementoObj[key] = value;
+
 		this.memento.saveMemento();
 	}
 }
@@ -69,10 +72,12 @@ class WorkbenchAssignmentServiceTelemetry implements IExperimentationTelemetry {
 		private telemetryService: ITelemetryService,
 		private productService: IProductService,
 	) {}
+
 	get assignmentContext(): string[] | undefined {
 		return this._lastAssignmentContext?.split(";");
 	}
 	// __GDPR__COMMON__ "abexp.assignmentcontext" : { "classification": "SystemMetaData", "purpose": "FeatureInsight" }
+
 	setSharedProperty(name: string, value: string): void {
 		if (
 			name ===
@@ -81,8 +86,10 @@ class WorkbenchAssignmentServiceTelemetry implements IExperimentationTelemetry {
 		) {
 			this._lastAssignmentContext = value;
 		}
+
 		this.telemetryService.setExperimentProperty(name, value);
 	}
+
 	postEvent(eventName: string, props: Map<string, string>): void {
 		const data: ITelemetryData = {};
 
@@ -126,6 +133,7 @@ export class WorkbenchAssignmentService extends BaseAssignmentService {
 			),
 		);
 	}
+
 	protected override get experimentsEnabled(): boolean {
 		return (
 			this.configurationService.getValue(
@@ -133,28 +141,40 @@ export class WorkbenchAssignmentService extends BaseAssignmentService {
 			) === true
 		);
 	}
+
 	override async getTreatment<T extends string | number | boolean>(
 		name: string,
 	): Promise<T | undefined> {
 		const result = await super.getTreatment<T>(name);
+
 		type TASClientReadTreatmentData = {
 			treatmentName: string;
+
 			treatmentValue: string;
 		};
+
 		type TASClientReadTreatmentClassification = {
 			owner: "sbatten";
+
 			comment: "Logged when a treatment value is read from the experiment service";
+
 			treatmentValue: {
 				classification: "SystemMetaData";
+
 				purpose: "PerformanceAndHealth";
+
 				comment: "The value of the read treatment";
 			};
+
 			treatmentName: {
 				classification: "SystemMetaData";
+
 				purpose: "PerformanceAndHealth";
+
 				comment: "The name of the treatment that was read";
 			};
 		};
+
 		this.telemetryService.publicLog2<
 			TASClientReadTreatmentData,
 			TASClientReadTreatmentClassification
@@ -165,13 +185,16 @@ export class WorkbenchAssignmentService extends BaseAssignmentService {
 
 		return result;
 	}
+
 	async getCurrentExperiments(): Promise<string[] | undefined> {
 		if (!this.tasClient) {
 			return undefined;
 		}
+
 		if (!this.experimentsEnabled) {
 			return undefined;
 		}
+
 		await this.tasClient;
 
 		return (this.telemetry as WorkbenchAssignmentServiceTelemetry)

@@ -17,6 +17,7 @@ export class DiffEditorActiveAnnouncementContribution
 	implements IWorkbenchContribution
 {
 	static readonly ID = "workbench.contrib.diffEditorActiveAnnouncement";
+
 	private _onDidActiveEditorChangeListener?: IDisposable;
 
 	constructor(
@@ -28,12 +29,14 @@ export class DiffEditorActiveAnnouncementContribution
 		private readonly _configurationService: IConfigurationService,
 	) {
 		super();
+
 		this._register(
 			Event.runAndSubscribe(
 				_accessibilityService.onDidChangeScreenReaderOptimized,
 				() => this._updateListener(),
 			),
 		);
+
 		this._register(
 			_configurationService.onDidChangeConfiguration((e) => {
 				if (
@@ -46,6 +49,7 @@ export class DiffEditorActiveAnnouncementContribution
 			}),
 		);
 	}
+
 	private _updateListener(): void {
 		const announcementEnabled = this._configurationService.getValue(
 			AccessibilityVerbositySettingId.DiffEditorActive,
@@ -56,13 +60,16 @@ export class DiffEditorActiveAnnouncementContribution
 
 		if (!announcementEnabled || !screenReaderOptimized) {
 			this._onDidActiveEditorChangeListener?.dispose();
+
 			this._onDidActiveEditorChangeListener = undefined;
 
 			return;
 		}
+
 		if (this._onDidActiveEditorChangeListener) {
 			return;
 		}
+
 		this._onDidActiveEditorChangeListener = this._register(
 			this._editorService.onDidActiveEditorChange(() => {
 				if (isDiffEditor(this._editorService.activeTextEditorControl)) {

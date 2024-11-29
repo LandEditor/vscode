@@ -30,6 +30,7 @@ export function activateShared(
 	contributions: MarkdownContributionProvider,
 ) {
 	const telemetryReporter = loadDefaultTelemetryReporter();
+
 	context.subscriptions.push(telemetryReporter);
 
 	const cspArbiter = new ExtensionContentSecurityPolicyArbiter(
@@ -55,10 +56,13 @@ export function activateShared(
 		contributions,
 		opener,
 	);
+
 	context.subscriptions.push(previewManager);
+
 	context.subscriptions.push(
 		registerMarkdownLanguageFeatures(client, commandManager, engine),
 	);
+
 	context.subscriptions.push(
 		registerMarkdownCommands(
 			commandManager,
@@ -68,6 +72,7 @@ export function activateShared(
 			engine,
 		),
 	);
+
 	context.subscriptions.push(
 		vscode.workspace.onDidChangeConfiguration(() => {
 			previewManager.updateConfiguration();

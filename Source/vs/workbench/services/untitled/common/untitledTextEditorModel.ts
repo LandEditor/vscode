@@ -89,6 +89,7 @@ export class UntitledTextEditorModel
 	implements IUntitledTextEditorModel
 {
 	private static readonly FIRST_LINE_NAME_MAX_LENGTH = 40;
+
 	private static readonly FIRST_LINE_NAME_CANDIDATE_MAX_LENGTH =
 		this.FIRST_LINE_NAME_MAX_LENGTH * 10;
 	// Support the special '${activeEditorLanguage}' language by
@@ -100,24 +101,36 @@ export class UntitledTextEditorModel
 		"${activeEditorLanguage}";
 	//#region Events
 	private readonly _onDidChangeContent = this._register(new Emitter<void>());
+
 	readonly onDidChangeContent = this._onDidChangeContent.event;
+
 	private readonly _onDidChangeName = this._register(new Emitter<void>());
+
 	readonly onDidChangeName = this._onDidChangeName.event;
+
 	private readonly _onDidChangeDirty = this._register(new Emitter<void>());
+
 	readonly onDidChangeDirty = this._onDidChangeDirty.event;
+
 	private readonly _onDidChangeEncoding = this._register(new Emitter<void>());
+
 	readonly onDidChangeEncoding = this._onDidChangeEncoding.event;
+
 	private readonly _onDidSave = this._register(
 		new Emitter<IWorkingCopySaveEvent>(),
 	);
+
 	readonly onDidSave = this._onDidSave.event;
+
 	private readonly _onDidRevert = this._register(new Emitter<void>());
+
 	readonly onDidRevert = this._onDidRevert.event;
 	//#endregion
 	readonly typeId = NO_TYPE_ID; // IMPORTANT: never change this to not break existing assumptions (e.g. backups)
 	readonly capabilities = WorkingCopyCapabilities.Untitled;
 	//#region Name
 	private configuredLabelFormat: "content" | "name" = "content";
+
 	private cachedModelFirstLineWords: string | undefined = undefined;
 
 	get name(): string {
@@ -177,8 +190,10 @@ export class UntitledTextEditorModel
 		}
 		// Fetch config
 		this.onConfigurationChange(undefined, false);
+
 		this.registerListeners();
 	}
+
 	private registerListeners(): void {
 		// Config Changes
 		this._register(
@@ -187,6 +202,7 @@ export class UntitledTextEditorModel
 			),
 		);
 	}
+
 	private onConfigurationChange(
 		e: ITextResourceConfigurationChangeEvent | undefined,
 		fromEvent: boolean,
@@ -243,16 +259,19 @@ export class UntitledTextEditorModel
 			languageId === UntitledTextEditorModel.ACTIVE_EDITOR_LANGUAGE_ID
 				? this.editorService.activeTextEditorLanguageId
 				: languageId;
+
 		this.preferredLanguageId = actualLanguage;
 
 		if (actualLanguage) {
 			super.setLanguageId(actualLanguage, source);
 		}
 	}
+
 	override getLanguageId(): string | undefined {
 		if (this.textEditorModel) {
 			return this.textEditorModel.getLanguageId();
 		}
+
 		return this.preferredLanguageId;
 	}
 	//#endregion
@@ -262,8 +281,10 @@ export class UntitledTextEditorModel
 	getEncoding(): string | undefined {
 		return this.preferredEncoding || this.configuredEncoding;
 	}
+
 	async setEncoding(encoding: string): Promise<void> {
 		const oldEncoding = this.getEncoding();
+
 		this.preferredEncoding = encoding;
 		// Emit if it changed
 		if (oldEncoding !== this.preferredEncoding) {
@@ -273,17 +294,22 @@ export class UntitledTextEditorModel
 	//#endregion
 	//#region Dirty
 	private dirty = this.hasAssociatedFilePath || !!this.initialValue;
+
 	isDirty(): boolean {
 		return this.dirty;
 	}
+
 	isModified(): boolean {
 		return this.isDirty();
 	}
+
 	private setDirty(dirty: boolean): void {
 		if (this.dirty === dirty) {
 			return;
 		}
+
 		this.dirty = dirty;
+
 		this._onDidChangeDirty.fire();
 	}
 	//#endregion
@@ -297,8 +323,10 @@ export class UntitledTextEditorModel
 				source: options?.source,
 			});
 		}
+
 		return !!target;
 	}
+
 	async revert(): Promise<void> {
 		// Reset contents to be empty
 		this.ignoreDirtyOnModelContentChange = true;
@@ -313,6 +341,7 @@ export class UntitledTextEditorModel
 		// Emit as event
 		this._onDidRevert.fire();
 	}
+
 	async backup(token: CancellationToken): Promise<IWorkingCopyBackup> {
 		let content: VSBufferReadable | undefined = undefined;
 		// Make sure to check whether this model has been resolved
@@ -330,11 +359,13 @@ export class UntitledTextEditorModel
 		} else if (typeof this.initialValue === "string") {
 			content = bufferToReadable(VSBuffer.fromString(this.initialValue));
 		}
+
 		return { content };
 	}
 	//#endregion
 	//#region Resolve
 	private ignoreDirtyOnModelContentChange = false;
+
 	override async resolve(): Promise<void> {
 		// Create text editor model if not yet done
 		let createdUntitledModel = false;
@@ -348,6 +379,7 @@ export class UntitledTextEditorModel
 
 			if (backup) {
 				untitledContents = backup.value;
+
 				hasBackup = true;
 			} else {
 				untitledContents = bufferToStream(
@@ -366,11 +398,13 @@ export class UntitledTextEditorModel
 						{ encoding: UTF8 },
 					),
 				);
+
 			this.createTextEditorModel(
 				untitledContentsFactory,
 				this.resource,
 				this.preferredLanguageId,
 			);
+
 			createdUntitledModel = true;
 		}
 		// Otherwise: the untitled model already exists and we must assume
@@ -381,6 +415,7 @@ export class UntitledTextEditorModel
 		}
 		// Listen to text model events
 		const textEditorModel = assertIsDefined(this.textEditorModel);
+
 		this.installModelListeners(textEditorModel);
 		// Only adjust name and dirty state etc. if we
 		// actually created the untitled model
@@ -401,14 +436,17 @@ export class UntitledTextEditorModel
 				this._onDidChangeContent.fire();
 			}
 		}
+
 		return super.resolve();
 	}
+
 	protected override installModelListeners(model: ITextModel): void {
 		this._register(
 			model.onDidChangeContent((e) =>
 				this.onModelContentChanged(model, e),
 			),
 		);
+
 		this._register(
 			model.onDidChangeLanguage(() =>
 				this.onConfigurationChange(undefined, true),
@@ -416,6 +454,7 @@ export class UntitledTextEditorModel
 		); // language change can have impact on config
 		super.installModelListeners(model);
 	}
+
 	private onModelContentChanged(
 		textEditorModel: ITextModel,
 		e: IModelContentChangedEvent,
@@ -452,6 +491,7 @@ export class UntitledTextEditorModel
 		// Detect language from content
 		this.autoDetectLanguage();
 	}
+
 	private updateNameFromFirstLine(textEditorModel: ITextModel): void {
 		if (this.hasAssociatedFilePath) {
 			return; // not in case of an associated file path
@@ -487,8 +527,10 @@ export class UntitledTextEditorModel
 		if (firstLineText && ensureValidWordDefinition().exec(firstLineText)) {
 			modelFirstWordsCandidate = firstLineText;
 		}
+
 		if (modelFirstWordsCandidate !== this.cachedModelFirstLineWords) {
 			this.cachedModelFirstLineWords = modelFirstWordsCandidate;
+
 			this._onDidChangeName.fire();
 		}
 	}

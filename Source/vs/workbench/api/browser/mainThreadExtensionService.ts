@@ -71,6 +71,7 @@ export class MainThreadExtensionService
 	implements MainThreadExtensionServiceShape
 {
 	private readonly _extensionHostKind: ExtensionHostKind;
+
 	private readonly _internalExtensionService: IInternalExtensionService;
 
 	constructor(
@@ -95,17 +96,21 @@ export class MainThreadExtensionService
 		this._extensionHostKind = extHostContext.extensionHostKind;
 
 		const internalExtHostContext = <IInternalExtHostContext>extHostContext;
+
 		this._internalExtensionService =
 			internalExtHostContext.internalExtensionService;
+
 		internalExtHostContext._setExtensionHostProxy(
 			new ExtensionHostProxy(
 				extHostContext.getProxy(ExtHostContext.ExtHostExtensionService),
 			),
 		);
+
 		internalExtHostContext._setAllMainProxyIdentifiers(
 			Object.keys(MainContext).map((key) => (<any>MainContext)[key]),
 		);
 	}
+
 	public dispose(): void {}
 	$getExtension(extensionId: string) {
 		return this._extensionService.getExtension(extensionId);
@@ -119,6 +124,7 @@ export class MainThreadExtensionService
 			reason,
 		);
 	}
+
 	async $onWillActivateExtension(
 		extensionId: ExtensionIdentifier,
 	): Promise<void> {
@@ -144,19 +150,24 @@ export class MainThreadExtensionService
 		data: SerializedError,
 	): void {
 		const error = transformErrorFromSerialization(data);
+
 		this._internalExtensionService._onExtensionRuntimeError(
 			extensionId,
 			error,
 		);
+
 		console.error(`[${extensionId.value}]${error.message}`);
+
 		console.error(error.stack);
 	}
+
 	async $onExtensionActivationError(
 		extensionId: ExtensionIdentifier,
 		data: SerializedError,
 		missingExtensionDependency: MissingExtensionDependency | null,
 	): Promise<void> {
 		const error = transformErrorFromSerialization(data);
+
 		this._internalExtensionService._onDidActivateExtensionError(
 			extensionId,
 			error,
@@ -194,6 +205,7 @@ export class MainThreadExtensionService
 				}
 			}
 		}
+
 		const isDev =
 			!this._environmentService.isBuilt ||
 			this._environmentService.isExtensionDevelopment;
@@ -203,8 +215,10 @@ export class MainThreadExtensionService
 
 			return;
 		}
+
 		console.error(error.message);
 	}
+
 	private async _handleMissingInstalledDependency(
 		extension: IExtensionDescription,
 		missingInstalledDependency: ILocalExtension,
@@ -341,6 +355,7 @@ export class MainThreadExtensionService
 			}
 		}
 	}
+
 	private async _handleMissingNotInstalledDependency(
 		extension: IExtensionDescription,
 		missingDependency: string,
@@ -357,6 +372,7 @@ export class MainThreadExtensionService
 				)
 			)[0];
 		} catch (err) {}
+
 		if (dependencyExtension) {
 			this._notificationService.notify({
 				severity: Severity.Error,
@@ -400,6 +416,7 @@ export class MainThreadExtensionService
 			);
 		}
 	}
+
 	async $setPerformanceMarks(marks: PerformanceMark[]): Promise<void> {
 		if (this._extensionHostKind === ExtensionHostKind.LocalProcess) {
 			this._timerService.setPerformanceMarks("localExtHost", marks);
@@ -411,12 +428,14 @@ export class MainThreadExtensionService
 			this._timerService.setPerformanceMarks("remoteExtHost", marks);
 		}
 	}
+
 	async $asBrowserUri(uri: UriComponents): Promise<UriComponents> {
 		return FileAccess.uriToBrowserUri(URI.revive(uri));
 	}
 }
 class ExtensionHostProxy implements IExtensionHostProxy {
 	constructor(private readonly _actual: ExtHostExtensionServiceShape) {}
+
 	async resolveAuthority(
 		remoteAuthority: string,
 		resolveAttempt: number,
@@ -430,6 +449,7 @@ class ExtensionHostProxy implements IExtensionHostProxy {
 
 		return resolved;
 	}
+
 	async getCanonicalURI(
 		remoteAuthority: string,
 		uri: URI,
@@ -441,45 +461,55 @@ class ExtensionHostProxy implements IExtensionHostProxy {
 
 		return uriComponents ? URI.revive(uriComponents) : uriComponents;
 	}
+
 	startExtensionHost(
 		extensionsDelta: IExtensionDescriptionDelta,
 	): Promise<void> {
 		return this._actual.$startExtensionHost(extensionsDelta);
 	}
+
 	extensionTestsExecute(): Promise<number> {
 		return this._actual.$extensionTestsExecute();
 	}
+
 	activateByEvent(
 		activationEvent: string,
 		activationKind: ActivationKind,
 	): Promise<void> {
 		return this._actual.$activateByEvent(activationEvent, activationKind);
 	}
+
 	activate(
 		extensionId: ExtensionIdentifier,
 		reason: ExtensionActivationReason,
 	): Promise<boolean> {
 		return this._actual.$activate(extensionId, reason);
 	}
+
 	setRemoteEnvironment(env: { [key: string]: string | null }): Promise<void> {
 		return this._actual.$setRemoteEnvironment(env);
 	}
+
 	updateRemoteConnectionData(
 		connectionData: IRemoteConnectionData,
 	): Promise<void> {
 		return this._actual.$updateRemoteConnectionData(connectionData);
 	}
+
 	deltaExtensions(
 		extensionsDelta: IExtensionDescriptionDelta,
 	): Promise<void> {
 		return this._actual.$deltaExtensions(extensionsDelta);
 	}
+
 	test_latency(n: number): Promise<number> {
 		return this._actual.$test_latency(n);
 	}
+
 	test_up(b: VSBuffer): Promise<number> {
 		return this._actual.$test_up(b);
 	}
+
 	test_down(size: number): Promise<VSBuffer> {
 		return this._actual.$test_down(size);
 	}
@@ -511,5 +541,6 @@ function reviveConnection(connection: Dto<RemoteConnection>): RemoteConnection {
 	if (connection.type === RemoteConnectionType.WebSocket) {
 		return new WebSocketRemoteConnection(connection.host, connection.port);
 	}
+
 	return new ManagedRemoteConnection(connection.id);
 }

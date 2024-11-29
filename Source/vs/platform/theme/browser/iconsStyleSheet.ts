@@ -19,6 +19,7 @@ import { IProductIconTheme, IThemeService } from "../common/themeService.js";
 
 export interface IIconsStyleSheet extends IDisposable {
 	getCSS(): css.CssFragment;
+
 	readonly onDidChange: Event<void>;
 }
 
@@ -30,6 +31,7 @@ export function getIconsStyleSheet(
 	const onDidChangeEmmiter = disposable.add(new Emitter<void>());
 
 	const iconRegistry = getIconRegistry();
+
 	disposable.add(iconRegistry.onDidChange(() => onDidChangeEmmiter.fire()));
 
 	if (themeService) {
@@ -70,10 +72,12 @@ export function getIconsStyleSheet(
 				if (fontContribution) {
 					usedFontIds[fontContribution.id] =
 						fontContribution.definition;
+
 					rootAttribs.push(
 						css.inline`${fontFamilyVar}: ${css.stringValue(fontContribution.id)};`,
 						css.inline`${contentVar}: ${css.stringValue(definition.fontCharacter)};`,
 					);
+
 					rules.push(
 						css.inline`.codicon-${css.className(contribution.id)}:before { content: ${css.stringValue(definition.fontCharacter)}; font-family: ${css.stringValue(fontContribution.id)}; }`,
 					);
@@ -81,6 +85,7 @@ export function getIconsStyleSheet(
 					rootAttribs.push(
 						css.inline`${contentVar}: ${css.stringValue(definition.fontCharacter)}; ${fontFamilyVar}: 'codicon';`,
 					);
+
 					rules.push(
 						css.inline`.codicon-${css.className(contribution.id)}:before { content: ${css.stringValue(definition.fontCharacter)}; }`,
 					);
@@ -105,6 +110,7 @@ export function getIconsStyleSheet(
 						css.inline`${css.asCSSUrl(l.location)} format(${css.stringValue(l.format)})`,
 					);
 				}
+
 				rules.push(
 					css.inline`@font-face { src: ${src.join(", ")}; font-family: ${css.stringValue(id)};${fontWeight}${fontStyle} font-display: block; }`,
 				);
@@ -129,8 +135,10 @@ export class UnthemedProductIconTheme implements IProductIconTheme {
 			if (!c) {
 				return undefined;
 			}
+
 			definition = c.defaults;
 		}
+
 		return definition;
 	}
 }

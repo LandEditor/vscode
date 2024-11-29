@@ -30,8 +30,10 @@ export function groupBy<K extends string | number | symbol, V>(
 		if (!target) {
 			target = result[key] = [];
 		}
+
 		target.push(element);
 	}
+
 	return result;
 }
 export function diffSets<T>(
@@ -39,6 +41,7 @@ export function diffSets<T>(
 	after: ReadonlySet<T>,
 ): {
 	removed: T[];
+
 	added: T[];
 } {
 	const removed: T[] = [];
@@ -50,11 +53,13 @@ export function diffSets<T>(
 			removed.push(element);
 		}
 	}
+
 	for (const element of after) {
 		if (!before.has(element)) {
 			added.push(element);
 		}
 	}
+
 	return { removed, added };
 }
 export function diffMaps<K, V>(
@@ -62,6 +67,7 @@ export function diffMaps<K, V>(
 	after: Map<K, V>,
 ): {
 	removed: V[];
+
 	added: V[];
 } {
 	const removed: V[] = [];
@@ -73,11 +79,13 @@ export function diffMaps<K, V>(
 			removed.push(value);
 		}
 	}
+
 	for (const [index, value] of after) {
 		if (!before.has(index)) {
 			added.push(value);
 		}
 	}
+
 	return { removed, added };
 }
 /**
@@ -95,6 +103,7 @@ export function intersection<T>(setA: Set<T>, setB: Iterable<T>): Set<T> {
 			result.add(elem);
 		}
 	}
+
 	return result;
 }
 export class SetWithKey<T> implements Set<T> {
@@ -108,18 +117,23 @@ export class SetWithKey<T> implements Set<T> {
 			this.add(value);
 		}
 	}
+
 	get size(): number {
 		return this._map.size;
 	}
+
 	add(value: T): this {
 		const key = this.toKey(value);
+
 		this._map.set(key, value);
 
 		return this;
 	}
+
 	delete(value: T): boolean {
 		return this._map.delete(this.toKey(value));
 	}
+
 	has(value: T): boolean {
 		return this._map.has(this.toKey(value));
 	}
@@ -128,6 +142,7 @@ export class SetWithKey<T> implements Set<T> {
 			yield [entry, entry];
 		}
 	}
+
 	keys(): IterableIterator<T> {
 		return this.values();
 	}
@@ -136,9 +151,11 @@ export class SetWithKey<T> implements Set<T> {
 			yield entry;
 		}
 	}
+
 	clear(): void {
 		this._map.clear();
 	}
+
 	forEach(
 		callbackfn: (value: T, value2: T, set: Set<T>) => void,
 		thisArg?: any,

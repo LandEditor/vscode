@@ -77,6 +77,7 @@ export function lengthAdd(l1: any, l2: any): Length {
 	if (l2 >= factor) {
 		r = r - (l1 % factor);
 	}
+
 	return r;
 }
 export function sumLengths<T>(
@@ -106,6 +107,7 @@ export function lengthDiffNonNegative(
 		// or they are equal and column-count of length1 is higher than column-count of length2
 		return lengthZero;
 	}
+
 	const lineCount1 = Math.floor(l1 / factor);
 
 	const lineCount2 = Math.floor(l2 / factor);

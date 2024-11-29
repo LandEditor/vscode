@@ -19,11 +19,15 @@ import { LifecyclePhase } from "../../lifecycle/common/lifecycle.js";
 
 export interface IUserDataInitializer {
 	requiresInitialization(): Promise<boolean>;
+
 	whenInitializationFinished(): Promise<void>;
+
 	initializeRequiredResources(): Promise<void>;
+
 	initializeInstalledExtensions(
 		instantiationService: IInstantiationService,
 	): Promise<void>;
+
 	initializeOtherResources(
 		instantiationService: IInstantiationService,
 	): Promise<void>;
@@ -42,6 +46,7 @@ export class UserDataInitializationService
 	_serviceBrand: any;
 
 	constructor(private readonly initializers: IUserDataInitializer[] = []) {}
+
 	async whenInitializationFinished(): Promise<void> {
 		if (await this.requiresInitialization()) {
 			await Promise.all(
@@ -51,6 +56,7 @@ export class UserDataInitializationService
 			);
 		}
 	}
+
 	async requiresInitialization(): Promise<boolean> {
 		return (
 			await Promise.all(
@@ -60,6 +66,7 @@ export class UserDataInitializationService
 			)
 		).some((result) => result);
 	}
+
 	async initializeRequiredResources(): Promise<void> {
 		if (await this.requiresInitialization()) {
 			await Promise.all(
@@ -69,6 +76,7 @@ export class UserDataInitializationService
 			);
 		}
 	}
+
 	async initializeOtherResources(
 		instantiationService: IInstantiationService,
 	): Promise<void> {
@@ -80,6 +88,7 @@ export class UserDataInitializationService
 			);
 		}
 	}
+
 	async initializeInstalledExtensions(
 		instantiationService: IInstantiationService,
 	): Promise<void> {
@@ -112,15 +121,18 @@ class InitializeOtherResourcesContribution implements IWorkbenchContribution {
 				),
 			);
 	}
+
 	private async initializeOtherResource(
 		userDataInitializeService: IUserDataInitializationService,
 		instantiationService: IInstantiationService,
 	): Promise<void> {
 		if (await userDataInitializeService.requiresInitialization()) {
 			mark("code/willInitOtherUserData");
+
 			await userDataInitializeService.initializeOtherResources(
 				instantiationService,
 			);
+
 			mark("code/didInitOtherUserData");
 		}
 	}
@@ -129,6 +141,7 @@ if (isWeb) {
 	const workbenchRegistry = Registry.as<IWorkbenchContributionsRegistry>(
 		Extensions.Workbench,
 	);
+
 	workbenchRegistry.registerWorkbenchContribution(
 		InitializeOtherResourcesContribution,
 		LifecyclePhase.Restored,

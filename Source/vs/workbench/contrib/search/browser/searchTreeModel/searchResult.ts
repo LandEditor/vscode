@@ -52,11 +52,17 @@ export class SearchResultImpl extends Disposable implements ISearchResult {
 			merge: mergeSearchResultEvents,
 		}),
 	);
+
 	readonly onChange: Event<IChangeEvent> = this._onChange.event;
+
 	private _onWillChangeModelListener: IDisposable | undefined;
+
 	private _onDidChangeModelListener: IDisposable | undefined;
+
 	private _plainTextSearchResult: PlainTextSearchHeadingImpl;
+
 	private _aiTextSearchResult: AITextSearchHeadingImpl;
+
 	private readonly _id: string;
 
 	constructor(
@@ -69,30 +75,37 @@ export class SearchResultImpl extends Disposable implements ISearchResult {
 		private readonly notebookEditorService: INotebookEditorService,
 	) {
 		super();
+
 		this._plainTextSearchResult = this._register(
 			this.instantiationService.createInstance(
 				PlainTextSearchHeadingImpl,
 				this,
 			),
 		);
+
 		this._aiTextSearchResult = this._register(
 			this.instantiationService.createInstance(
 				AITextSearchHeadingImpl,
 				this,
 			),
 		);
+
 		this._register(
 			this._plainTextSearchResult.onChange((e) => this._onChange.fire(e)),
 		);
+
 		this._register(
 			this._aiTextSearchResult.onChange((e) => this._onChange.fire(e)),
 		);
+
 		this.modelService
 			.getModels()
 			.forEach((model) => this.onModelAdded(model));
+
 		this._register(
 			this.modelService.onModelAdded((model) => this.onModelAdded(model)),
 		);
+
 		this._register(
 			this.notebookEditorService.onDidAddNotebookEditor((widget) => {
 				if (widget instanceof NotebookEditorWidget) {
@@ -102,29 +115,38 @@ export class SearchResultImpl extends Disposable implements ISearchResult {
 				}
 			}),
 		);
+
 		this._id = SEARCH_RESULT_PREFIX + Date.now().toString();
 	}
+
 	id(): string {
 		return this._id;
 	}
+
 	get plainTextSearchResult(): IPlainTextSearchHeading {
 		return this._plainTextSearchResult;
 	}
+
 	get aiTextSearchResult(): ITextSearchHeading {
 		return this._aiTextSearchResult;
 	}
+
 	get children() {
 		return this.textSearchResults;
 	}
+
 	get hasChildren(): boolean {
 		return true; // should always have a Text Search Result for plain results.
 	}
+
 	get textSearchResults(): ITextSearchHeading[] {
 		return [this._plainTextSearchResult, this._aiTextSearchResult];
 	}
+
 	async batchReplace(elementsToReplace: RenderableMatch[]) {
 		try {
 			this._onChange.pause();
+
 			await Promise.all(
 				elementsToReplace.map(async (elem) => {
 					const parent = elem.parent();
@@ -137,6 +159,7 @@ export class SearchResultImpl extends Disposable implements ISearchResult {
 						// skip any children who have parents in the array
 						return;
 					}
+
 					if (isSearchTreeFileMatch(elem)) {
 						await elem.parent().replace(elem);
 					} else if (isSearchTreeMatch(elem)) {
@@ -150,12 +173,14 @@ export class SearchResultImpl extends Disposable implements ISearchResult {
 			this._onChange.resume();
 		}
 	}
+
 	batchRemove(elementsToRemove: RenderableMatch[]) {
 		// need to check that we aren't trying to remove elements twice
 		const removedElems: RenderableMatch[] = [];
 
 		try {
 			this._onChange.pause();
+
 			elementsToRemove.forEach((currentElement) => {
 				if (
 					!arrayContainsElementOrParent(currentElement, removedElems)
@@ -175,6 +200,7 @@ export class SearchResultImpl extends Disposable implements ISearchResult {
 						) {
 							currentElement.parent().remove(currentElement);
 						}
+
 						removedElems.push(currentElement);
 					}
 				}
@@ -183,31 +209,39 @@ export class SearchResultImpl extends Disposable implements ISearchResult {
 			this._onChange.resume();
 		}
 	}
+
 	get isDirty(): boolean {
 		return (
 			this._aiTextSearchResult.isDirty ||
 			this._plainTextSearchResult.isDirty
 		);
 	}
+
 	get query(): ITextQuery | null {
 		return this._plainTextSearchResult.query;
 	}
+
 	set query(query: ITextQuery | null) {
 		this._plainTextSearchResult.query = query;
 	}
+
 	setAIQueryUsingTextQuery(query?: ITextQuery | null) {
 		if (!query) {
 			query = this.query;
 		}
+
 		this.aiTextSearchResult.query = aiTextQueryFromTextQuery(query);
 	}
+
 	private onDidAddNotebookEditorWidget(widget: NotebookEditorWidget): void {
 		this._onWillChangeModelListener?.dispose();
+
 		this._onWillChangeModelListener = widget.onWillChangeModel((model) => {
 			if (model) {
 				this.onNotebookEditorWidgetRemoved(widget, model?.uri);
 			}
 		});
+
 		this._onDidChangeModelListener?.dispose();
 		// listen to view model change as we are searching on both inputs and outputs
 		this._onDidChangeModelListener = widget.onDidAttachViewModel(() => {
@@ -216,34 +250,43 @@ export class SearchResultImpl extends Disposable implements ISearchResult {
 			}
 		});
 	}
+
 	folderMatches(ai: boolean = false): ISearchTreeFolderMatch[] {
 		if (ai) {
 			return this._aiTextSearchResult.folderMatches();
 		}
+
 		return this._plainTextSearchResult.folderMatches();
 	}
+
 	private onModelAdded(model: ITextModel): void {
 		const folderMatch = this._plainTextSearchResult.findFolderSubstr(
 			model.uri,
 		);
+
 		folderMatch?.bindModel(model);
 	}
+
 	private async onNotebookEditorWidgetAdded(
 		editor: NotebookEditorWidget,
 		resource: URI,
 	): Promise<void> {
 		const folderMatch =
 			this._plainTextSearchResult.findFolderSubstr(resource);
+
 		await folderMatch?.bindNotebookEditorWidget(editor, resource);
 	}
+
 	private onNotebookEditorWidgetRemoved(
 		editor: NotebookEditorWidget,
 		resource: URI,
 	): void {
 		const folderMatch =
 			this._plainTextSearchResult.findFolderSubstr(resource);
+
 		folderMatch?.unbindNotebookEditorWidget(editor, resource);
 	}
+
 	add(
 		allRaw: IFileMatch[],
 		searchInstanceID: string,
@@ -251,6 +294,7 @@ export class SearchResultImpl extends Disposable implements ISearchResult {
 		silent: boolean = false,
 	): void {
 		this._plainTextSearchResult.hidden = false;
+
 		this._aiTextSearchResult.hidden = false;
 
 		if (ai) {
@@ -259,10 +303,13 @@ export class SearchResultImpl extends Disposable implements ISearchResult {
 			this._plainTextSearchResult.add(allRaw, searchInstanceID, silent);
 		}
 	}
+
 	clear(): void {
 		this._plainTextSearchResult.clear();
+
 		this._aiTextSearchResult.clear();
 	}
+
 	remove(
 		matches:
 			| ISearchTreeFileMatch
@@ -273,11 +320,14 @@ export class SearchResultImpl extends Disposable implements ISearchResult {
 		if (ai) {
 			this._aiTextSearchResult.remove(matches, ai);
 		}
+
 		this._plainTextSearchResult.remove(matches, ai);
 	}
+
 	replace(match: ISearchTreeFileMatch): Promise<any> {
 		return this._plainTextSearchResult.replace(match);
 	}
+
 	matches(ai?: boolean): ISearchTreeFileMatch[] {
 		if (ai === undefined) {
 			return this._plainTextSearchResult
@@ -286,26 +336,31 @@ export class SearchResultImpl extends Disposable implements ISearchResult {
 		} else if (ai === true) {
 			return this._aiTextSearchResult.matches();
 		}
+
 		return this._plainTextSearchResult.matches();
 	}
+
 	isEmpty(): boolean {
 		return (
 			this._plainTextSearchResult.isEmpty() &&
 			this._aiTextSearchResult.isEmpty()
 		);
 	}
+
 	fileCount(): number {
 		return (
 			this._plainTextSearchResult.fileCount() +
 			this._aiTextSearchResult.fileCount()
 		);
 	}
+
 	count(): number {
 		return (
 			this._plainTextSearchResult.count() +
 			this._aiTextSearchResult.count()
 		);
 	}
+
 	setCachedSearchComplete(
 		cachedSearchComplete: ISearchComplete | undefined,
 		ai: boolean,
@@ -318,12 +373,15 @@ export class SearchResultImpl extends Disposable implements ISearchResult {
 				cachedSearchComplete;
 		}
 	}
+
 	getCachedSearchComplete(ai: boolean): ISearchComplete | undefined {
 		if (ai) {
 			return this._aiTextSearchResult.cachedSearchComplete;
 		}
+
 		return this._plainTextSearchResult.cachedSearchComplete;
 	}
+
 	toggleHighlights(value: boolean, ai: boolean = false): void {
 		if (ai) {
 			this._aiTextSearchResult.toggleHighlights(value);
@@ -331,21 +389,28 @@ export class SearchResultImpl extends Disposable implements ISearchResult {
 			this._plainTextSearchResult.toggleHighlights(value);
 		}
 	}
+
 	getRangeHighlightDecorations(
 		ai: boolean = false,
 	): RangeHighlightDecorations {
 		if (ai) {
 			return this._aiTextSearchResult.rangeHighlightDecorations;
 		}
+
 		return this._plainTextSearchResult.rangeHighlightDecorations;
 	}
+
 	replaceAll(progress: IProgress<IProgressStep>): Promise<any> {
 		return this._plainTextSearchResult.replaceAll(progress);
 	}
+
 	override async dispose(): Promise<void> {
 		this._aiTextSearchResult?.dispose();
+
 		this._plainTextSearchResult?.dispose();
+
 		this._onWillChangeModelListener?.dispose();
+
 		this._onDidChangeModelListener?.dispose();
 
 		super.dispose();

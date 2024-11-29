@@ -17,21 +17,28 @@ import {
 
 export class ExtHostEmbeddings implements ExtHostEmbeddingsShape {
 	private readonly _proxy: MainThreadEmbeddingsShape;
+
 	private readonly _provider = new Map<
 		number,
 		{
 			id: string;
+
 			provider: vscode.EmbeddingsProvider;
 		}
 	>();
+
 	private readonly _onDidChange = new Emitter<void>();
+
 	readonly onDidChange: Event<void> = this._onDidChange.event;
+
 	private _allKnownModels = new Set<string>();
+
 	private _handlePool: number = 0;
 
 	constructor(mainContext: IMainContext) {
 		this._proxy = mainContext.getProxy(MainContext.MainThreadEmbeddings);
 	}
+
 	registerEmbeddingsProvider(
 		_extension: IExtensionDescription,
 		embeddingsModel: string,
@@ -42,16 +49,22 @@ export class ExtHostEmbeddings implements ExtHostEmbeddingsShape {
 				"An embeddings provider for this model is already registered",
 			);
 		}
+
 		const handle = this._handlePool++;
+
 		this._proxy.$registerEmbeddingProvider(handle, embeddingsModel);
+
 		this._provider.set(handle, { id: embeddingsModel, provider });
 
 		return toDisposable(() => {
 			this._allKnownModels.delete(embeddingsModel);
+
 			this._proxy.$unregisterEmbeddingProvider(handle);
+
 			this._provider.delete(handle);
 		});
 	}
+
 	async computeEmbeddings(
 		embeddingsModel: string,
 		input: string,
@@ -78,6 +91,7 @@ export class ExtHostEmbeddings implements ExtHostEmbeddingsShape {
 
 			returnSingle = true;
 		}
+
 		const result = await this._proxy.$computeEmbeddings(
 			embeddingsModel,
 			input,
@@ -87,14 +101,18 @@ export class ExtHostEmbeddings implements ExtHostEmbeddingsShape {
 		if (result.length !== input.length) {
 			throw new Error();
 		}
+
 		if (returnSingle) {
 			if (result.length !== 1) {
 				throw new Error();
 			}
+
 			return result[0];
 		}
+
 		return result;
 	}
+
 	async $provideEmbeddings(
 		handle: number,
 		input: string[],
@@ -109,18 +127,22 @@ export class ExtHostEmbeddings implements ExtHostEmbeddingsShape {
 		if (!data) {
 			return [];
 		}
+
 		const result = await data.provider.provideEmbeddings(input, token);
 
 		if (!result) {
 			return [];
 		}
+
 		return result;
 	}
+
 	get embeddingsModels(): string[] {
 		return Array.from(this._allKnownModels);
 	}
 	$acceptEmbeddingModels(models: string[]): void {
 		this._allKnownModels = new Set(models);
+
 		this._onDidChange.fire();
 	}
 }

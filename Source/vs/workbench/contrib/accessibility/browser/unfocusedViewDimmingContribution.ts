@@ -23,6 +23,7 @@ export class UnfocusedViewDimmingContribution
 	implements IWorkbenchContribution
 {
 	private _styleElement?: HTMLStyleElement;
+
 	private _styleElementDisposables: DisposableStore | undefined = undefined;
 
 	constructor(
@@ -111,6 +112,7 @@ export class UnfocusedViewDimmingContribution
 							rules.add(
 								`.monaco-workbench .editor-instance:not(:focus-within) .gettingStartedContainer { ${filterRule} }`,
 							);
+
 							cssTextContent = [...rules].join("\n");
 						}
 					}
@@ -128,19 +130,24 @@ export class UnfocusedViewDimmingContribution
 	private _getStyleElement(): HTMLStyleElement {
 		if (!this._styleElement) {
 			this._styleElementDisposables = new DisposableStore();
+
 			this._styleElement = createStyleSheet(
 				undefined,
 				undefined,
 				this._styleElementDisposables,
 			);
+
 			this._styleElement.className = "accessibilityUnfocusedViewOpacity";
 		}
+
 		return this._styleElement;
 	}
 
 	private _removeStyleElement(): void {
 		this._styleElementDisposables?.dispose();
+
 		this._styleElementDisposables = undefined;
+
 		this._styleElement = undefined;
 	}
 }

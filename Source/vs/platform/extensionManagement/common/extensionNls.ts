@@ -13,6 +13,7 @@ export interface ITranslations {
 		| string
 		| {
 				message: string;
+
 				comment: string[];
 		  }
 		| undefined;
@@ -34,6 +35,7 @@ export function localizeManifest(
 		logger.error(error?.message ?? error);
 		/*Ignore Error*/
 	}
+
 	return extensionManifest;
 }
 /**
@@ -67,6 +69,7 @@ function replaceNLStrings(
 				if (translated === undefined && originalMessages) {
 					translated = originalMessages[messageKey];
 				}
+
 				const message: string | undefined =
 					typeof translated === "string"
 						? translated
@@ -83,8 +86,10 @@ function replaceNLStrings(
 							`[${extensionManifest.name}]: ${localize("missingNLSKey", "Couldn't find message for key {0}.", messageKey)}`,
 						);
 					}
+
 					return;
 				}
+
 				if (
 					// if we are translating the title or category of a command
 					command &&
@@ -97,6 +102,7 @@ function replaceNLStrings(
 						value: message,
 						original: originalMessage,
 					};
+
 					obj[key] = localizedString;
 				} else {
 					obj[key] = message;

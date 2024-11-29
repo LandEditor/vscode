@@ -34,23 +34,28 @@ const DEBUG_UX_STATE_KEY = "debug.uxstate";
 
 export interface IChosenEnvironment {
 	type: string;
+
 	dynamicLabel?: string;
 }
 
 export class DebugStorage extends Disposable {
 	public readonly breakpoints = observableValue(this, this.loadBreakpoints());
+
 	public readonly functionBreakpoints = observableValue(
 		this,
 		this.loadFunctionBreakpoints(),
 	);
+
 	public readonly exceptionBreakpoints = observableValue(
 		this,
 		this.loadExceptionBreakpoints(),
 	);
+
 	public readonly dataBreakpoints = observableValue(
 		this,
 		this.loadDataBreakpoints(),
 	);
+
 	public readonly watchExpressions = observableValue(
 		this,
 		this.loadWatchExpressions(),
@@ -78,21 +83,25 @@ export class DebugStorage extends Disposable {
 								this.loadBreakpoints(),
 								undefined,
 							);
+
 						case DEBUG_FUNCTION_BREAKPOINTS_KEY:
 							return this.functionBreakpoints.set(
 								this.loadFunctionBreakpoints(),
 								undefined,
 							);
+
 						case DEBUG_EXCEPTION_BREAKPOINTS_KEY:
 							return this.exceptionBreakpoints.set(
 								this.loadExceptionBreakpoints(),
 								undefined,
 							);
+
 						case DEBUG_DATA_BREAKPOINTS_KEY:
 							return this.dataBreakpoints.set(
 								this.loadDataBreakpoints(),
 								undefined,
 							);
+
 						case DEBUG_WATCH_EXPRESSIONS_KEY:
 							return this.watchExpressions.set(
 								this.loadWatchExpressions(),
@@ -123,6 +132,7 @@ export class DebugStorage extends Disposable {
 
 	private loadBreakpoints(): Breakpoint[] {
 		let result: Breakpoint[] | undefined;
+
 		try {
 			result = JSON.parse(
 				this.storageService.get(
@@ -132,6 +142,7 @@ export class DebugStorage extends Disposable {
 				),
 			).map((breakpoint: ReturnType<Breakpoint["toJSON"]>) => {
 				breakpoint.uri = URI.revive(breakpoint.uri);
+
 				return new Breakpoint(
 					breakpoint,
 					this.textFileService,
@@ -147,6 +158,7 @@ export class DebugStorage extends Disposable {
 
 	private loadFunctionBreakpoints(): FunctionBreakpoint[] {
 		let result: FunctionBreakpoint[] | undefined;
+
 		try {
 			result = JSON.parse(
 				this.storageService.get(
@@ -164,6 +176,7 @@ export class DebugStorage extends Disposable {
 
 	private loadExceptionBreakpoints(): ExceptionBreakpoint[] {
 		let result: ExceptionBreakpoint[] | undefined;
+
 		try {
 			result = JSON.parse(
 				this.storageService.get(
@@ -181,6 +194,7 @@ export class DebugStorage extends Disposable {
 
 	private loadDataBreakpoints(): DataBreakpoint[] {
 		let result: DataBreakpoint[] | undefined;
+
 		try {
 			result = JSON.parse(
 				this.storageService.get(
@@ -198,6 +212,7 @@ export class DebugStorage extends Disposable {
 
 	private loadWatchExpressions(): Expression[] {
 		let result: Expression[] | undefined;
+
 		try {
 			result = JSON.parse(
 				this.storageService.get(
@@ -263,6 +278,7 @@ export class DebugStorage extends Disposable {
 
 	storeBreakpoints(debugModel: IDebugModel): void {
 		const breakpoints = debugModel.getBreakpoints();
+
 		if (breakpoints.length) {
 			this.storageService.store(
 				DEBUG_BREAKPOINTS_KEY,
@@ -278,6 +294,7 @@ export class DebugStorage extends Disposable {
 		}
 
 		const functionBreakpoints = debugModel.getFunctionBreakpoints();
+
 		if (functionBreakpoints.length) {
 			this.storageService.store(
 				DEBUG_FUNCTION_BREAKPOINTS_KEY,
@@ -295,6 +312,7 @@ export class DebugStorage extends Disposable {
 		const dataBreakpoints = debugModel
 			.getDataBreakpoints()
 			.filter((dbp) => dbp.canPersist);
+
 		if (dataBreakpoints.length) {
 			this.storageService.store(
 				DEBUG_DATA_BREAKPOINTS_KEY,
@@ -310,6 +328,7 @@ export class DebugStorage extends Disposable {
 		}
 
 		const exceptionBreakpoints = debugModel.getExceptionBreakpoints();
+
 		if (exceptionBreakpoints.length) {
 			this.storageService.store(
 				DEBUG_EXCEPTION_BREAKPOINTS_KEY,

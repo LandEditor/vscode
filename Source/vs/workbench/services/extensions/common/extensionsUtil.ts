@@ -20,6 +20,7 @@ export function dedupExtensions(
 	logService: ILogService,
 ): IExtensionDescription[] {
 	const result = new ExtensionIdentifierMap<IExtensionDescription>();
+
 	system.forEach((systemExtension) => {
 		const extension = result.get(systemExtension.identifier);
 
@@ -33,8 +34,10 @@ export function dedupExtensions(
 				),
 			);
 		}
+
 		result.set(systemExtension.identifier, systemExtension);
 	});
+
 	user.forEach((userExtension) => {
 		const extension = result.get(userExtension.identifier);
 
@@ -67,8 +70,10 @@ export function dedupExtensions(
 
 			return;
 		}
+
 		result.set(userExtension.identifier, userExtension);
 	});
+
 	workspace.forEach((workspaceExtension) => {
 		const extension = result.get(workspaceExtension.identifier);
 
@@ -82,8 +87,10 @@ export function dedupExtensions(
 				),
 			);
 		}
+
 		result.set(workspaceExtension.identifier, workspaceExtension);
 	});
+
 	development.forEach((developedExtension) => {
 		logService.info(
 			localize(
@@ -102,6 +109,7 @@ export function dedupExtensions(
 					true;
 			}
 		}
+
 		result.set(developedExtension.identifier, developedExtension);
 	});
 

@@ -32,10 +32,12 @@ export const ILaunchMainService = createDecorator<ILaunchMainService>(ID);
 
 export interface IStartArguments {
 	readonly args: NativeParsedArgs;
+
 	readonly userEnv: IProcessEnvironment;
 }
 export interface ILaunchMainService {
 	readonly _serviceBrand: undefined;
+
 	start(args: NativeParsedArgs, userEnv: IProcessEnvironment): Promise<void>;
 
 	getMainProcessId(): Promise<number>;
@@ -53,6 +55,7 @@ export class LaunchMainService implements ILaunchMainService {
 		@IConfigurationService
 		private readonly configurationService: IConfigurationService,
 	) {}
+
 	async start(
 		args: NativeParsedArgs,
 		userEnv: IProcessEnvironment,
@@ -103,6 +106,7 @@ export class LaunchMainService implements ILaunchMainService {
 			return this.startOpenWindow(args, userEnv);
 		}
 	}
+
 	private parseOpenUrl(args: NativeParsedArgs): IProtocolUrl[] {
 		if (args["open-url"] && args._urls && args._urls.length > 0) {
 			// --open-url must contain -- followed by the url(s)
@@ -117,8 +121,10 @@ export class LaunchMainService implements ILaunchMainService {
 				}),
 			);
 		}
+
 		return [];
 	}
+
 	private async startOpenWindow(
 		args: NativeParsedArgs,
 		userEnv: IProcessEnvironment,
@@ -224,6 +230,7 @@ export class LaunchMainService implements ILaunchMainService {
 						lastActive,
 						baseConfig,
 					);
+
 					usedWindows = [lastActive];
 				} else {
 					usedWindows = await this.windowsMainService.open({
@@ -260,6 +267,7 @@ export class LaunchMainService implements ILaunchMainService {
 			);
 		}
 	}
+
 	async getMainProcessId(): Promise<number> {
 		this.logService.trace(
 			"Received request for process ID from other instance.",

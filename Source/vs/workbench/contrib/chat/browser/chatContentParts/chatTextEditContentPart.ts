@@ -66,13 +66,16 @@ const ICodeCompareModelService = createDecorator<ICodeCompareModelService>(
 );
 interface ICodeCompareModelService {
 	_serviceBrand: undefined;
+
 	createModel(
 		response: IChatResponseViewModel,
 		chatTextEdit: IChatTextEditGroup,
 	): Promise<
 		IReference<{
 			originalSha1: string;
+
 			original: IResolvedTextEditorModel;
+
 			modified: IResolvedTextEditorModel;
 		}>
 	>;
@@ -82,10 +85,13 @@ export class ChatTextEditContentPart
 	implements IChatContentPart
 {
 	public readonly domNode: HTMLElement;
+
 	private readonly comparePart:
 		| IDisposableReference<CodeCompareBlockPart>
 		| undefined;
+
 	private readonly _onDidChangeHeight = this._register(new Emitter<void>());
+
 	public readonly onDidChangeHeight = this._onDidChangeHeight.event;
 
 	constructor(
@@ -100,6 +106,7 @@ export class ChatTextEditContentPart
 		super();
 
 		const element = context.element;
+
 		assertType(isResponseVM(element));
 		// TODO@jrieken move this into the CompareCodeBlock and properly say what kind of changes happen
 		if (rendererOptions.renderTextEditsAsSummary?.(chatTextEdit.uri)) {
@@ -126,12 +133,15 @@ export class ChatTextEditContentPart
 			const cts = new CancellationTokenSource();
 
 			let isDisposed = false;
+
 			this._register(
 				toDisposable(() => {
 					isDisposed = true;
+
 					cts.dispose(true);
 				}),
 			);
+
 			this.comparePart = this._register(diffEditorPool.get());
 			// Attach this after updating text/layout of the editor, so it should only be fired when the size updates later (horizontal scrollbar, wrapping)
 			// not during a renderElement OR a progressive render (when we will be firing this event anyway at the end of the render)
@@ -155,6 +165,7 @@ export class ChatTextEditContentPart
 
 						return;
 					}
+
 					this._register(ref);
 
 					return {
@@ -164,26 +175,33 @@ export class ChatTextEditContentPart
 					} satisfies ICodeCompareBlockDiffData;
 				})(),
 			};
+
 			this.comparePart.object.render(data, currentWidth, cts.token);
+
 			this.domNode = this.comparePart.object.element;
 		}
 	}
+
 	layout(width: number): void {
 		this.comparePart?.object.layout(width);
 	}
+
 	hasSameContent(other: IChatProgressRenderableResponseContent): boolean {
 		// No other change allowed for this content type
 		return other.kind === "textEditGroup";
 	}
+
 	addDisposable(disposable: IDisposable): void {
 		this._register(disposable);
 	}
 }
 export class DiffEditorPool extends Disposable {
 	private readonly _pool: ResourcePool<CodeCompareBlockPart>;
+
 	public inUse(): Iterable<CodeCompareBlockPart> {
 		return this._pool.inUse;
 	}
+
 	constructor(
 		options: ChatEditorOptions,
 		delegate: IChatRendererDelegate,
@@ -192,6 +210,7 @@ export class DiffEditorPool extends Disposable {
 		instantiationService: IInstantiationService,
 	) {
 		super();
+
 		this._pool = this._register(
 			new ResourcePool(() => {
 				return instantiationService.createInstance(
@@ -204,6 +223,7 @@ export class DiffEditorPool extends Disposable {
 			}),
 		);
 	}
+
 	get(): IDisposableReference<CodeCompareBlockPart> {
 		const codeBlock = this._pool.get();
 
@@ -214,7 +234,9 @@ export class DiffEditorPool extends Disposable {
 			isStale: () => stale,
 			dispose: () => {
 				codeBlock.reset();
+
 				stale = true;
+
 				this._pool.release(codeBlock);
 			},
 		};
@@ -231,13 +253,16 @@ class CodeCompareModelService implements ICodeCompareModelService {
 		@IChatService
 		private readonly chatService: IChatService,
 	) {}
+
 	async createModel(
 		element: IChatResponseViewModel,
 		chatTextEdit: IChatTextEditGroup,
 	): Promise<
 		IReference<{
 			originalSha1: string;
+
 			original: IResolvedTextEditorModel;
+
 			modified: IResolvedTextEditorModel;
 		}>
 	> {
@@ -266,6 +291,7 @@ class CodeCompareModelService implements ICodeCompareModelService {
 		const d = new RefCountedDisposable(
 			toDisposable(() => {
 				original.dispose();
+
 				modified.dispose();
 			}),
 		);
@@ -281,6 +307,7 @@ class CodeCompareModelService implements ICodeCompareModelService {
 				originalSha1 = sha1.computeSHA1(
 					original.object.textEditorModel,
 				);
+
 				chatTextEdit.state = { sha1: originalSha1, applied: 0 };
 			}
 		}
@@ -293,6 +320,7 @@ class CodeCompareModelService implements ICodeCompareModelService {
 			if (!request.response) {
 				continue;
 			}
+
 			for (const item of request.response.response.value) {
 				if (
 					item.kind !== "textEditGroup" ||
@@ -301,15 +329,19 @@ class CodeCompareModelService implements ICodeCompareModelService {
 				) {
 					continue;
 				}
+
 				for (const group of item.edits) {
 					const edits = group.map(TextEdit.asEditOperation);
+
 					editGroups.push(edits);
 				}
 			}
+
 			if (request.response === element.model) {
 				break;
 			}
 		}
+
 		for (const edits of editGroups) {
 			modified.object.textEditorModel.pushEditOperations(
 				null,

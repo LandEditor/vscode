@@ -15,6 +15,7 @@ export class SizeStatusBarEntry extends PreviewStatusBarEntry {
 			101 /* to the left of editor status (100) */,
 		);
 	}
+
 	public show(owner: unknown, text: string) {
 		this.showItem(owner, text);
 	}

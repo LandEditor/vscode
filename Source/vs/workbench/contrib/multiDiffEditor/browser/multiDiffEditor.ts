@@ -43,12 +43,16 @@ import { MultiDiffEditorItem } from "./multiDiffSourceResolverService.js";
 
 export class MultiDiffEditor extends AbstractEditorWithViewState<IMultiDiffEditorViewState> {
 	static readonly ID = "multiDiffEditor";
+
 	private _multiDiffEditorWidget: MultiDiffEditorWidget | undefined =
 		undefined;
+
 	private _viewModel: MultiDiffEditorViewModel | undefined;
+
 	public get viewModel(): MultiDiffEditorViewModel | undefined {
 		return this._viewModel;
 	}
+
 	constructor(
 		group: IEditorGroup,
 		@IInstantiationService
@@ -81,6 +85,7 @@ export class MultiDiffEditor extends AbstractEditorWithViewState<IMultiDiffEdito
 			editorGroupService,
 		);
 	}
+
 	protected createEditor(parent: HTMLElement): void {
 		this._multiDiffEditorWidget = this._register(
 			this.instantiationService.createInstance(
@@ -91,12 +96,14 @@ export class MultiDiffEditor extends AbstractEditorWithViewState<IMultiDiffEdito
 				),
 			),
 		);
+
 		this._register(
 			this._multiDiffEditorWidget.onDidChangeActiveControl(() => {
 				this._onDidChangeControl.fire();
 			}),
 		);
 	}
+
 	override async setInput(
 		input: MultiDiffEditorInput,
 		options: IMultiDiffEditorOptions | undefined,
@@ -104,7 +111,9 @@ export class MultiDiffEditor extends AbstractEditorWithViewState<IMultiDiffEdito
 		token: CancellationToken,
 	): Promise<void> {
 		await super.setInput(input, options, context, token);
+
 		this._viewModel = await input.getViewModel();
+
 		this._multiDiffEditorWidget!.setViewModel(this._viewModel);
 
 		const viewState = this.loadEditorViewState(input, context);
@@ -112,17 +121,21 @@ export class MultiDiffEditor extends AbstractEditorWithViewState<IMultiDiffEdito
 		if (viewState) {
 			this._multiDiffEditorWidget!.setViewState(viewState);
 		}
+
 		this._applyOptions(options);
 	}
+
 	override setOptions(options: IMultiDiffEditorOptions | undefined): void {
 		this._applyOptions(options);
 	}
+
 	private _applyOptions(options: IMultiDiffEditorOptions | undefined): void {
 		const viewState = options?.viewState;
 
 		if (!viewState || !viewState.revealData) {
 			return;
 		}
+
 		this._multiDiffEditorWidget?.reveal(viewState.revealData.resource, {
 			range: viewState.revealData.range
 				? Range.lift(viewState.revealData.range)
@@ -130,47 +143,60 @@ export class MultiDiffEditor extends AbstractEditorWithViewState<IMultiDiffEdito
 			highlight: true,
 		});
 	}
+
 	override async clearInput(): Promise<void> {
 		await super.clearInput();
+
 		this._multiDiffEditorWidget!.setViewModel(undefined);
 	}
+
 	layout(dimension: DOM.Dimension): void {
 		this._multiDiffEditorWidget!.layout(dimension);
 	}
+
 	override getControl(): ICompositeControl | undefined {
 		return this._multiDiffEditorWidget!.getActiveControl();
 	}
+
 	override focus(): void {
 		super.focus();
+
 		this._multiDiffEditorWidget?.getActiveControl()?.focus();
 	}
+
 	override hasFocus(): boolean {
 		return (
 			this._multiDiffEditorWidget?.getActiveControl()?.hasTextFocus() ||
 			super.hasFocus()
 		);
 	}
+
 	protected override computeEditorViewState(
 		resource: URI,
 	): IMultiDiffEditorViewState | undefined {
 		return this._multiDiffEditorWidget!.getViewState();
 	}
+
 	protected override tracksEditorViewState(input: EditorInput): boolean {
 		return input instanceof MultiDiffEditorInput;
 	}
+
 	protected override toEditorViewStateResource(
 		input: EditorInput,
 	): URI | undefined {
 		return (input as MultiDiffEditorInput).resource;
 	}
+
 	public tryGetCodeEditor(resource: URI):
 		| {
 				diffEditor: IDiffEditor;
+
 				editor: ICodeEditor;
 		  }
 		| undefined {
 		return this._multiDiffEditorWidget!.tryGetCodeEditor(resource);
 	}
+
 	public findDocumentDiffItem(
 		resource: URI,
 	): MultiDiffEditorItem | undefined {
@@ -179,10 +205,12 @@ export class MultiDiffEditor extends AbstractEditorWithViewState<IMultiDiffEdito
 		if (!i) {
 			return undefined;
 		}
+
 		const i2 = i as IDocumentDiffItemWithMultiDiffEditorItem;
 
 		return i2.multiDiffEditorItem;
 	}
+
 	public async showWhile(promise: Promise<unknown>): Promise<void> {
 		return this.editorProgressService.showWhile(promise);
 	}
@@ -192,6 +220,7 @@ class WorkbenchUIElementFactory implements IWorkbenchUIElementFactory {
 		@IInstantiationService
 		private readonly _instantiationService: IInstantiationService,
 	) {}
+
 	createResourceLabel(element: HTMLElement): IResourceLabel {
 		const label = this._instantiationService.createInstance(
 			ResourceLabel,

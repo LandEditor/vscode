@@ -194,7 +194,9 @@ export const openNewSearchEditor = async (
 		} else {
 			activeModel = activeEditorControl as ICodeEditor;
 		}
+
 		const selection = activeModel?.getSelection();
+
 		selected =
 			(selection &&
 				activeModel?.getModel()?.getValueInRange(selection)) ??
@@ -217,13 +219,16 @@ export const openNewSearchEditor = async (
 	} else {
 		if (editorService.activeEditor instanceof SearchEditorInput) {
 			const active = editorService.activeEditorPane as SearchEditor;
+
 			selected = active.getSelected();
 		}
 	}
+
 	telemetryService.publicLog2<
 		{},
 		{
 			owner: "roblourens";
+
 			comment: "Fired when a search editor is opened";
 		}
 	>("searchEditor/openNewSearchEditor");
@@ -252,6 +257,7 @@ export const openNewSearchEditor = async (
 					: value;
 		}
 	}
+
 	const existing = editorService
 		.getEditors(EditorsOrder.MOST_RECENTLY_ACTIVE)
 		.find((id) => id.editor.typeId === SearchEditorInput.ID);
@@ -264,7 +270,9 @@ export const openNewSearchEditor = async (
 		if (!group) {
 			throw new Error("Invalid group id for search editor");
 		}
+
 		const input = existing.editor as SearchEditorInput;
+
 		editor = (await group.openEditor(input)) as SearchEditor;
 
 		if (selected) {
@@ -272,6 +280,7 @@ export const openNewSearchEditor = async (
 		} else {
 			editor.selectQuery();
 		}
+
 		editor.setSearchConfig(args);
 	} else {
 		const input = instantiationService.invokeFunction(
@@ -285,6 +294,7 @@ export const openNewSearchEditor = async (
 			toSide ? SIDE_GROUP : ACTIVE_GROUP,
 		)) as SearchEditor;
 	}
+
 	const searchOnType =
 		configurationService.getValue<ISearchConfigurationProperties>(
 			"search",
@@ -296,6 +306,7 @@ export const openNewSearchEditor = async (
 	) {
 		editor.triggerSearch({ focusResults: args.focusResults });
 	}
+
 	if (!args.focusResults) {
 		editor.focusSearchInput();
 	}
@@ -316,6 +327,7 @@ export const createEditorFromSearchResult = async (
 
 		return;
 	}
+
 	const editorService = accessor.get(IEditorService);
 
 	const telemetryService = accessor.get(ITelemetryService);
@@ -330,10 +342,12 @@ export const createEditorFromSearchResult = async (
 		configurationService.getValue<ISearchConfigurationProperties>(
 			"search",
 		).sortOrder;
+
 	telemetryService.publicLog2<
 		{},
 		{
 			owner: "roblourens";
+
 			comment: "Fired when a search editor is opened from the search view";
 		}
 	>("searchEditor/createEditorFromSearchResult");
@@ -349,6 +363,7 @@ export const createEditorFromSearchResult = async (
 		labelFormatter,
 		sortOrder,
 	);
+
 	config.onlyOpenEditors = onlySearchInOpenEditors;
 
 	const contextLines =
@@ -360,7 +375,9 @@ export const createEditorFromSearchResult = async (
 			getOrMakeSearchEditorInput,
 			{ resultsContents: text, config, from: "rawData" },
 		);
+
 		await editorService.openEditor(input, { pinned: true });
+
 		input.setMatchRanges(matchRanges);
 	} else {
 		const input = instantiationService.invokeFunction(
@@ -375,6 +392,7 @@ export const createEditorFromSearchResult = async (
 		const editor = (await editorService.openEditor(input, {
 			pinned: true,
 		})) as SearchEditor;
+
 		editor.triggerSearch();
 	}
 };

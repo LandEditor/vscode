@@ -39,6 +39,7 @@ export interface IDocumentDiffFactoryOptions {
 }
 export interface IDiffProviderFactoryService {
 	readonly _serviceBrand: undefined;
+
 	createDiffProvider(
 		options: IDocumentDiffFactoryOptions,
 	): IDocumentDiffProvider;
@@ -52,6 +53,7 @@ export class WorkerBasedDiffProviderFactoryService
 		@IInstantiationService
 		private readonly instantiationService: IInstantiationService,
 	) {}
+
 	createDiffProvider(
 		options: IDocumentDiffFactoryOptions,
 	): IDocumentDiffProvider {
@@ -71,16 +73,21 @@ export class WorkerBasedDocumentDiffProvider
 	implements IDocumentDiffProvider, IDisposable
 {
 	private onDidChangeEventEmitter = new Emitter<void>();
+
 	public readonly onDidChange: Event<void> =
 		this.onDidChangeEventEmitter.event;
+
 	private diffAlgorithm: DiffAlgorithmName | IDocumentDiffProvider =
 		"advanced";
+
 	private diffAlgorithmOnDidChangeSubscription: IDisposable | undefined =
 		undefined;
+
 	private static readonly diffCache = new Map<
 		string,
 		{
 			result: IDocumentDiff;
+
 			context: string;
 		}
 	>();
@@ -94,9 +101,11 @@ export class WorkerBasedDocumentDiffProvider
 	) {
 		this.setOptions(options);
 	}
+
 	public dispose(): void {
 		this.diffAlgorithmOnDidChangeSubscription?.dispose();
 	}
+
 	async computeDiff(
 		original: ITextModel,
 		modified: ITextModel,
@@ -111,6 +120,7 @@ export class WorkerBasedDocumentDiffProvider
 				cancellationToken,
 			);
 		}
+
 		if (original.isDisposed() || modified.isDisposed()) {
 			// TODO@hediet
 			return {
@@ -136,6 +146,7 @@ export class WorkerBasedDocumentDiffProvider
 					moves: [],
 				};
 			}
+
 			return {
 				changes: [
 					new DetailedLineRangeMapping(
@@ -154,6 +165,7 @@ export class WorkerBasedDocumentDiffProvider
 				moves: [],
 			};
 		}
+
 		const uriKey = JSON.stringify([
 			original.uri.toString(),
 			modified.uri.toString(),
@@ -172,6 +184,7 @@ export class WorkerBasedDocumentDiffProvider
 		if (c && c.context === context) {
 			return c.result;
 		}
+
 		const sw = StopWatch.create();
 
 		const result = await this.editorWorkerService.computeDiff(
@@ -182,29 +195,42 @@ export class WorkerBasedDocumentDiffProvider
 		);
 
 		const timeMs = sw.elapsed();
+
 		this.telemetryService.publicLog2<
 			{
 				timeMs: number;
+
 				timedOut: boolean;
+
 				detectedMoves: number;
 			},
 			{
 				owner: "hediet";
+
 				timeMs: {
 					classification: "SystemMetaData";
+
 					purpose: "FeatureInsight";
+
 					comment: "To understand if the new diff algorithm is slower/faster than the old one";
 				};
+
 				timedOut: {
 					classification: "SystemMetaData";
+
 					purpose: "FeatureInsight";
+
 					comment: "To understand how often the new diff algorithm times out";
 				};
+
 				detectedMoves: {
 					classification: "SystemMetaData";
+
 					purpose: "FeatureInsight";
+
 					comment: "To understand how often the new diff algorithm detects moves";
 				};
+
 				comment: "This event gives insight about the performance of the new diff algorithm.";
 			}
 		>("diffEditor.computeDiff", {
@@ -224,6 +250,7 @@ export class WorkerBasedDocumentDiffProvider
 				moves: [],
 			};
 		}
+
 		if (!result) {
 			throw new Error("no diff result available");
 		}
@@ -233,6 +260,7 @@ export class WorkerBasedDocumentDiffProvider
 				WorkerBasedDocumentDiffProvider.diffCache.keys().next().value!,
 			);
 		}
+
 		WorkerBasedDocumentDiffProvider.diffCache.set(uriKey, {
 			result,
 			context,
@@ -240,6 +268,7 @@ export class WorkerBasedDocumentDiffProvider
 
 		return result;
 	}
+
 	public setOptions(
 		newOptions: IWorkerBasedDocumentDiffProviderOptions,
 	): void {
@@ -248,7 +277,9 @@ export class WorkerBasedDocumentDiffProvider
 		if (newOptions.diffAlgorithm) {
 			if (this.diffAlgorithm !== newOptions.diffAlgorithm) {
 				this.diffAlgorithmOnDidChangeSubscription?.dispose();
+
 				this.diffAlgorithmOnDidChangeSubscription = undefined;
+
 				this.diffAlgorithm = newOptions.diffAlgorithm;
 
 				if (typeof newOptions.diffAlgorithm !== "string") {
@@ -257,9 +288,11 @@ export class WorkerBasedDocumentDiffProvider
 							this.onDidChangeEventEmitter.fire(),
 						);
 				}
+
 				didChange = true;
 			}
 		}
+
 		if (didChange) {
 			this.onDidChangeEventEmitter.fire();
 		}

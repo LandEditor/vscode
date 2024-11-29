@@ -31,6 +31,7 @@ class EditorTextRenderer {
 		if (!model) {
 			return null;
 		}
+
 		const colorMap = this.getDefaultColorMap();
 
 		const fontInfo = editor.getOptions().get(EditorOption.fontInfo);
@@ -56,8 +57,11 @@ class EditorTextRenderer {
 		const fontSize = fontInfo.fontSize;
 
 		const fontWeight = fontInfo.fontWeight;
+
 		element.style.setProperty(fontFamilyVar, fontInfo.fontFamily);
+
 		element.style.setProperty(fontSizeVar, `${fontSize}px`);
+
 		element.style.setProperty(fontWeightVar, fontWeight);
 
 		const linesHtml = this.getRichTextLinesAsHtml(
@@ -65,10 +69,12 @@ class EditorTextRenderer {
 			modelRange,
 			colorMap,
 		);
+
 		element.innerHTML = linesHtml as string;
 
 		return element;
 	}
+
 	private getRichTextLinesAsHtml(
 		model: ITextModel,
 		modelRange: Range,
@@ -88,7 +94,9 @@ class EditorTextRenderer {
 
 		for (
 			let lineNumber = startLineNumber;
+
 			lineNumber <= endLineNumber;
+
 			lineNumber++
 		) {
 			const lineTokens = model.tokenization.getLineTokens(lineNumber);
@@ -117,8 +125,10 @@ class EditorTextRenderer {
 				);
 			}
 		}
+
 		return EditorTextRenderer._ttPolicy?.createHTML(result) ?? result;
 	}
+
 	private getDefaultColorMap(): string[] {
 		const colorMap = languages.TokenizationRegistry.getColorMap();
 
@@ -129,6 +139,7 @@ class EditorTextRenderer {
 				result[i] = Color.Format.CSS.formatHex(colorMap[i]);
 			}
 		}
+
 		return result;
 	}
 }
@@ -143,10 +154,13 @@ export class CodeCellDragImageRenderer {
 		if (!dragImage) {
 			// TODO@roblourens I don't think this can happen
 			dragImage = document.createElement("div");
+
 			dragImage.textContent = "1 cell";
 		}
+
 		return dragImage;
 	}
+
 	private getDragImageImpl(
 		templateData: BaseCellRenderTemplate,
 		editor: ICodeEditor,
@@ -155,9 +169,11 @@ export class CodeCellDragImageRenderer {
 		const dragImageContainer = templateData.container.cloneNode(
 			true,
 		) as HTMLElement;
+
 		dragImageContainer.classList.forEach((c) =>
 			dragImageContainer.classList.remove(c),
 		);
+
 		dragImageContainer.classList.add(
 			"cell-drag-image",
 			"monaco-list-row",
@@ -171,6 +187,7 @@ export class CodeCellDragImageRenderer {
 		if (!editorContainer) {
 			return null;
 		}
+
 		const richEditorText = new EditorTextRenderer().getRichText(
 			editor,
 			new Range(1, 1, 1, 1000),
@@ -179,6 +196,7 @@ export class CodeCellDragImageRenderer {
 		if (!richEditorText) {
 			return null;
 		}
+
 		DOM.reset(editorContainer, richEditorText);
 
 		return dragImageContainer;

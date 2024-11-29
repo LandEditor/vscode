@@ -108,8 +108,11 @@ export interface ITestResult {
  */
 export interface ITaskRawOutput {
 	readonly onDidWriteData: Event<VSBuffer>;
+
 	readonly endPromise: Promise<void>;
+
 	readonly buffers: VSBuffer[];
+
 	readonly length: number;
 	/** Gets a continuous buffer for the desired range */
 	getRange(start: number, length: number): VSBuffer;
@@ -128,7 +131,9 @@ const emptyRawOutput: ITaskRawOutput = {
 
 export class TaskRawOutput implements ITaskRawOutput {
 	private readonly writeDataEmitter = new Emitter<VSBuffer>();
+
 	private readonly endDeferred = new DeferredPromise<void>();
+
 	private offset = 0;
 	/** @inheritdoc */
 	public readonly onDidWriteData = this.writeDataEmitter.event;
@@ -148,8 +153,10 @@ export class TaskRawOutput implements ITaskRawOutput {
 
 		for (const chunk of this.getRangeIter(start, length)) {
 			buf.buffer.set(chunk.buffer, bufLastWrite);
+
 			bufLastWrite += chunk.byteLength;
 		}
+
 		return bufLastWrite < length ? buf.slice(0, bufLastWrite) : buf;
 	}
 	/** @inheritdoc */
@@ -164,12 +171,15 @@ export class TaskRawOutput implements ITaskRawOutput {
 
 				continue;
 			}
+
 			const bstart = Math.max(0, start - internalLastRead);
 
 			const bend = Math.min(b.byteLength, bstart + length - soFar);
 
 			yield b.slice(bstart, bend);
+
 			soFar += bend - bstart;
+
 			internalLastRead += b.byteLength;
 
 			if (soFar === length) {
@@ -199,10 +209,13 @@ export class TaskRawOutput implements ITaskRawOutput {
 			CR = 13,
 			LF = 10,
 		}
+
 		const start = VSBuffer.fromString(getMarkCode(marker, true));
 
 		const end = VSBuffer.fromString(getMarkCode(marker, false));
+
 		length += start.byteLength + end.byteLength;
+
 		this.push(start);
 
 		let trimLen = data.byteLength;
@@ -214,18 +227,25 @@ export class TaskRawOutput implements ITaskRawOutput {
 				break;
 			}
 		}
+
 		this.push(data.slice(0, trimLen));
+
 		this.push(end);
+
 		this.push(data.slice(trimLen));
 
 		return { offset, length };
 	}
+
 	private push(data: VSBuffer) {
 		if (data.byteLength === 0) {
 			return;
 		}
+
 		this.buffers.push(data);
+
 		this.writeDataEmitter.fire(data);
+
 		this.offset += data.byteLength;
 	}
 	/** Signals the output has ended. */
@@ -248,6 +268,7 @@ export const maxCountPriority = (counts: Readonly<TestStateCount>) => {
 			return state;
 		}
 	}
+
 	return TestResultState.Unset;
 };
 
@@ -279,6 +300,7 @@ export const enum TestResultItemChangeReason {
 }
 export type TestResultItemChange = {
 	item: TestResultItem;
+
 	result: ITestResult;
 } & (
 	| {
@@ -286,11 +308,14 @@ export type TestResultItemChange = {
 	  }
 	| {
 			reason: TestResultItemChangeReason.OwnStateChange;
+
 			previousState: TestResultState;
+
 			previousOwnDuration: number | undefined;
 	  }
 	| {
 			reason: TestResultItemChangeReason.NewMessage;
+
 			message: ITestMessage;
 	  }
 );
@@ -300,23 +325,35 @@ export type TestResultItemChange = {
  */
 export class LiveTestResult extends Disposable implements ITestResult {
 	private readonly completeEmitter = this._register(new Emitter<void>());
+
 	private readonly newTaskEmitter = this._register(new Emitter<number>());
+
 	private readonly endTaskEmitter = this._register(new Emitter<number>());
+
 	private readonly changeEmitter = this._register(
 		new Emitter<TestResultItemChange>(),
 	);
 	/** todo@connor4312: convert to a WellDefinedPrefixTree */
 	private readonly testById = new Map<string, TestResultItemWithChildren>();
+
 	private testMarkerCounter = 0;
+
 	private _completedAt?: number;
+
 	public readonly startedAt = Date.now();
+
 	public readonly onChange = this.changeEmitter.event;
+
 	public readonly onComplete = this.completeEmitter.event;
+
 	public readonly onNewTask = this.newTaskEmitter.event;
+
 	public readonly onEndTask = this.endTaskEmitter.event;
+
 	public readonly tasks: (ITestRunTaskResults & {
 		output: TaskRawOutput;
 	})[] = [];
+
 	public readonly name = localize(
 		"runFinished",
 		"Test run at {0}",
@@ -342,6 +379,7 @@ export class LiveTestResult extends Disposable implements ITestResult {
 	public getTestById(id: string) {
 		return this.testById.get(id)?.item;
 	}
+
 	private readonly computedStateAccessor: IComputedStateAccessor<TestResultItemWithChildren> =
 		{
 			getOwnState: (i) => i.ownComputedState,
@@ -398,6 +436,7 @@ export class LiveTestResult extends Disposable implements ITestResult {
 		if (testId || location) {
 			marker = this.testMarkerCounter++;
 		}
+
 		const index = this.mustGetTaskIndex(taskId);
 
 		const task = this.tasks[index];
@@ -417,6 +456,7 @@ export class LiveTestResult extends Disposable implements ITestResult {
 
 		if (test) {
 			test.tasks[index].messages.push(message);
+
 			this.changeEmitter.fire({
 				item: test,
 				result: this,
@@ -445,6 +485,7 @@ export class LiveTestResult extends Disposable implements ITestResult {
 				state: TestResultState.Unset,
 			});
 		}
+
 		this.newTaskEmitter.fire(this.tasks.length - 1);
 	}
 	/**
@@ -461,6 +502,7 @@ export class LiveTestResult extends Disposable implements ITestResult {
 			// must be a test root
 			parent = this.addTestToRun(controllerId, chain[0], null);
 		}
+
 		for (let i = 1; i < chain.length; i++) {
 			parent = this.addTestToRun(
 				controllerId,
@@ -468,6 +510,7 @@ export class LiveTestResult extends Disposable implements ITestResult {
 				parent.item.extId,
 			);
 		}
+
 		return undefined;
 	}
 	/**
@@ -484,6 +527,7 @@ export class LiveTestResult extends Disposable implements ITestResult {
 		if (!entry) {
 			return;
 		}
+
 		const index = this.mustGetTaskIndex(taskId);
 
 		const oldTerminalStatePrio =
@@ -499,6 +543,7 @@ export class LiveTestResult extends Disposable implements ITestResult {
 		) {
 			return;
 		}
+
 		this.fireUpdateAndRefresh(entry, index, state, duration);
 	}
 	/**
@@ -514,7 +559,9 @@ export class LiveTestResult extends Disposable implements ITestResult {
 		if (!entry) {
 			return;
 		}
+
 		entry.tasks[this.mustGetTaskIndex(taskId)].messages.push(message);
+
 		this.changeEmitter.fire({
 			item: entry,
 			result: this,
@@ -529,8 +576,11 @@ export class LiveTestResult extends Disposable implements ITestResult {
 		const index = this.mustGetTaskIndex(taskId);
 
 		const task = this.tasks[index];
+
 		task.running = false;
+
 		task.output.end();
+
 		this.setAllToState(
 			TestResultState.Unset,
 			taskId,
@@ -538,6 +588,7 @@ export class LiveTestResult extends Disposable implements ITestResult {
 				t.state === TestResultState.Queued ||
 				t.state === TestResultState.Running,
 		);
+
 		this.endTaskEmitter.fire(index);
 	}
 	/**
@@ -547,38 +598,51 @@ export class LiveTestResult extends Disposable implements ITestResult {
 		if (this._completedAt !== undefined) {
 			throw new Error("cannot complete a test result multiple times");
 		}
+
 		for (const task of this.tasks) {
 			if (task.running) {
 				this.markTaskComplete(task.id);
 			}
 		}
+
 		this._completedAt = Date.now();
+
 		this.completeEmitter.fire();
+
 		this.telemetry.publicLog2<
 			{
 				failures: number;
+
 				passes: number;
+
 				controller: string;
 			},
 			{
 				owner: "connor4312";
+
 				comment: "Test outcome metrics. This helps us understand magnitude of feature use and how to build fix suggestions.";
+
 				failures: {
 					comment: "Number of test failures";
 
 					classification: "SystemMetaData";
+
 					purpose: "FeatureInsight";
 				};
+
 				passes: {
 					comment: "Number of test failures";
 
 					classification: "SystemMetaData";
+
 					purpose: "FeatureInsight";
 				};
+
 				controller: {
 					comment: "The test controller being used";
 
 					classification: "SystemMetaData";
+
 					purpose: "FeatureInsight";
 				};
 			}
@@ -602,6 +666,7 @@ export class LiveTestResult extends Disposable implements ITestResult {
 				(!testIds || testIds.hasKeyOrParent(TestId.fromString(id).path))
 			) {
 				test.retired = true;
+
 				this.changeEmitter.fire({
 					reason: TestResultItemChangeReason.ComputedStateChange,
 					item: test,
@@ -618,6 +683,7 @@ export class LiveTestResult extends Disposable implements ITestResult {
 			? this.doSerialize.value
 			: undefined;
 	}
+
 	public toJSONWithMessages(): ISerializedTestResults | undefined {
 		return this.completedAt && this.persist
 			? this.doSerializeWithMessages.value
@@ -639,6 +705,7 @@ export class LiveTestResult extends Disposable implements ITestResult {
 			}
 		}
 	}
+
 	private fireUpdateAndRefresh(
 		entry: TestResultItem,
 		taskIndex: number,
@@ -656,26 +723,34 @@ export class LiveTestResult extends Disposable implements ITestResult {
 			previousState: previousOwnComputed,
 			previousOwnDuration: previousOwnDuration,
 		};
+
 		entry.tasks[taskIndex].state = newState;
 
 		if (newOwnDuration !== undefined) {
 			entry.tasks[taskIndex].duration = newOwnDuration;
+
 			entry.ownDuration = Math.max(
 				entry.ownDuration || 0,
 				newOwnDuration,
 			);
 		}
+
 		const newOwnComputed = maxPriority(...entry.tasks.map((t) => t.state));
 
 		if (newOwnComputed === previousOwnComputed) {
 			if (newOwnDuration !== previousOwnDuration) {
 				this.changeEmitter.fire(changeEvent); // fire manually since state change won't do it
 			}
+
 			return;
 		}
+
 		entry.ownComputedState = newOwnComputed;
+
 		this.counts[previousOwnComputed]--;
+
 		this.counts[newOwnComputed]++;
+
 		refreshComputedState(this.computedStateAccessor, entry).forEach((t) =>
 			this.changeEmitter.fire(
 				t === entry
@@ -688,18 +763,22 @@ export class LiveTestResult extends Disposable implements ITestResult {
 			),
 		);
 	}
+
 	private addTestToRun(
 		controllerId: string,
 		item: ITestItem,
 		parent: string | null,
 	) {
 		const node = itemToNode(controllerId, item, parent);
+
 		this.testById.set(item.extId, node);
+
 		this.counts[TestResultState.Unset]++;
 
 		if (parent) {
 			this.testById.get(parent)?.children.push(node);
 		}
+
 		if (this.tasks.length) {
 			for (let i = 0; i < this.tasks.length; i++) {
 				node.tasks.push({
@@ -709,16 +788,20 @@ export class LiveTestResult extends Disposable implements ITestResult {
 				});
 			}
 		}
+
 		return node;
 	}
+
 	private mustGetTaskIndex(taskId: string) {
 		const index = this.tasks.findIndex((t) => t.id === taskId);
 
 		if (index === -1) {
 			throw new Error(`Unknown task ${taskId} in updateState`);
 		}
+
 		return index;
 	}
+
 	private readonly doSerialize = new Lazy(
 		(): ISerializedTestResults => ({
 			id: this.id,
@@ -736,6 +819,7 @@ export class LiveTestResult extends Disposable implements ITestResult {
 			),
 		}),
 	);
+
 	private readonly doSerializeWithMessages = new Lazy(
 		(): ISerializedTestResults => ({
 			id: this.id,
@@ -786,6 +870,7 @@ export class HydratedTestResult implements ITestResult {
 	 * @inheritdoc
 	 */
 	public readonly request: ResolvedTestRunRequest;
+
 	private readonly testById = new Map<string, TestResultItem>();
 
 	constructor(
@@ -794,7 +879,9 @@ export class HydratedTestResult implements ITestResult {
 		private readonly persist = true,
 	) {
 		this.id = serialized.id;
+
 		this.completedAt = serialized.completedAt;
+
 		this.tasks = serialized.tasks.map((task, i) => ({
 			id: task.id,
 			name: task.name || localize("testUnnamedTask", "Unnamed Task"),
@@ -804,12 +891,16 @@ export class HydratedTestResult implements ITestResult {
 			output: emptyRawOutput,
 			otherMessages: [],
 		}));
+
 		this.name = serialized.name;
+
 		this.request = serialized.request;
 
 		for (const item of serialized.items) {
 			const de = TestResultItem.deserialize(identity, item);
+
 			this.counts[de.ownComputedState]++;
+
 			this.testById.set(item.item.extId, de);
 		}
 	}

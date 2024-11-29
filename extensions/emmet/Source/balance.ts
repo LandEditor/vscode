@@ -22,6 +22,7 @@ function balance(out: boolean) {
 	if (!validate(false) || !vscode.window.activeTextEditor) {
 		return;
 	}
+
 	const editor = vscode.window.activeTextEditor;
 
 	const document = editor.document;
@@ -31,6 +32,7 @@ function balance(out: boolean) {
 	if (!rootNode) {
 		return;
 	}
+
 	const rangeFn = out ? getRangeToBalanceOut : getRangeToBalanceIn;
 
 	let newSelections: readonly vscode.Selection[] = editor.selections.map(
@@ -53,7 +55,9 @@ function balance(out: boolean) {
 		// we are starting elsewhere, so reset the stack
 		balanceOutStack = out ? [editor.selections] : [];
 	}
+
 	editor.selections = newSelections;
+
 	lastBalancedSelections = editor.selections;
 }
 function getRangeToBalanceOut(
@@ -73,6 +77,7 @@ function getRangeToBalanceOut(
 	if (!nodeToBalance) {
 		return selection;
 	}
+
 	if (!nodeToBalance.open || !nodeToBalance.close) {
 		return offsetRangeToSelection(
 			document,
@@ -94,6 +99,7 @@ function getRangeToBalanceOut(
 			nodeToBalance.close.start,
 			nodeToBalance.open.end,
 		);
+
 		outerSelection = offsetRangeToSelection(
 			document,
 			nodeToBalance.close.end,
@@ -105,24 +111,28 @@ function getRangeToBalanceOut(
 			nodeToBalance.open.end,
 			nodeToBalance.close.start,
 		);
+
 		outerSelection = offsetRangeToSelection(
 			document,
 			nodeToBalance.open.start,
 			nodeToBalance.close.end,
 		);
 	}
+
 	if (
 		innerSelection.contains(selection) &&
 		!innerSelection.isEqual(selection)
 	) {
 		return innerSelection;
 	}
+
 	if (
 		outerSelection.contains(selection) &&
 		!outerSelection.isEqual(selection)
 	) {
 		return outerSelection;
 	}
+
 	return selection;
 }
 function getRangeToBalanceIn(
@@ -142,6 +152,7 @@ function getRangeToBalanceIn(
 	if (!nodeToBalance) {
 		return selection;
 	}
+
 	const selectionStart = document.offsetAt(selection.start);
 
 	const selectionEnd = document.offsetAt(selection.end);
@@ -167,9 +178,11 @@ function getRangeToBalanceIn(
 			);
 		}
 	}
+
 	if (!nodeToBalance.firstChild) {
 		return selection;
 	}
+
 	const firstChild = nodeToBalance.firstChild;
 
 	if (
@@ -184,6 +197,7 @@ function getRangeToBalanceIn(
 			firstChild.close.start,
 		);
 	}
+
 	return offsetRangeToSelection(document, firstChild.start, firstChild.end);
 }
 function areSameSelections(
@@ -193,10 +207,12 @@ function areSameSelections(
 	if (a.length !== b.length) {
 		return false;
 	}
+
 	for (let i = 0; i < a.length; i++) {
 		if (!a[i].isEqual(b[i])) {
 			return false;
 		}
 	}
+
 	return true;
 }

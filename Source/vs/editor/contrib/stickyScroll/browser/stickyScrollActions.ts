@@ -69,6 +69,7 @@ export class ToggleStickyScroll extends Action2 {
 			],
 		});
 	}
+
 	override async run(accessor: ServicesAccessor): Promise<void> {
 		const configurationService = accessor.get(IConfigurationService);
 
@@ -109,6 +110,7 @@ export class FocusStickyScroll extends EditorAction2 {
 			menu: [{ id: MenuId.CommandPalette }],
 		});
 	}
+
 	runEditorCommand(_accessor: ServicesAccessor, editor: ICodeEditor) {
 		StickyScrollController.get(editor)?.focus();
 	}
@@ -128,6 +130,7 @@ export class SelectNextStickyScrollLine extends EditorAction2 {
 			},
 		});
 	}
+
 	runEditorCommand(_accessor: ServicesAccessor, editor: ICodeEditor) {
 		StickyScrollController.get(editor)?.focusNext();
 	}
@@ -147,6 +150,7 @@ export class SelectPreviousStickyScrollLine extends EditorAction2 {
 			},
 		});
 	}
+
 	runEditorCommand(_accessor: ServicesAccessor, editor: ICodeEditor) {
 		StickyScrollController.get(editor)?.focusPrevious();
 	}
@@ -166,6 +170,7 @@ export class GoToStickyScrollLine extends EditorAction2 {
 			},
 		});
 	}
+
 	runEditorCommand(_accessor: ServicesAccessor, editor: ICodeEditor) {
 		StickyScrollController.get(editor)?.goToFocused();
 	}
@@ -182,6 +187,7 @@ export class SelectEditor extends EditorAction2 {
 			},
 		});
 	}
+
 	runEditorCommand(_accessor: ServicesAccessor, editor: ICodeEditor) {
 		StickyScrollController.get(editor)?.selectEditor();
 	}

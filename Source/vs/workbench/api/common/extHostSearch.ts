@@ -40,18 +40,22 @@ export interface IExtHostSearch extends ExtHostSearchShape {
 		scheme: string,
 		provider: vscode.TextSearchProvider,
 	): IDisposable;
+
 	registerFileSearchProviderOld(
 		scheme: string,
 		provider: vscode.FileSearchProvider,
 	): IDisposable;
+
 	registerTextSearchProvider(
 		scheme: string,
 		provider: vscode.TextSearchProvider2,
 	): IDisposable;
+
 	registerAITextSearchProvider(
 		scheme: string,
 		provider: vscode.AITextSearchProvider,
 	): IDisposable;
+
 	registerFileSearchProvider(
 		scheme: string,
 		provider: vscode.FileSearchProvider2,
@@ -69,22 +73,30 @@ export class ExtHostSearch implements IExtHostSearch {
 	protected readonly _proxy: MainThreadSearchShape = this.extHostRpc.getProxy(
 		MainContext.MainThreadSearch,
 	);
+
 	protected _handlePool: number = 0;
+
 	private readonly _textSearchProvider = new Map<
 		number,
 		vscode.TextSearchProvider2
 	>();
+
 	private readonly _textSearchUsedSchemes = new Set<string>();
+
 	private readonly _aiTextSearchProvider = new Map<
 		number,
 		vscode.AITextSearchProvider
 	>();
+
 	private readonly _aiTextSearchUsedSchemes = new Set<string>();
+
 	private readonly _fileSearchProvider = new Map<
 		number,
 		vscode.FileSearchProvider2
 	>();
+
 	private readonly _fileSearchUsedSchemes = new Set<string>();
+
 	private readonly _fileSearchManager = new FileSearchManager();
 
 	constructor(
@@ -95,9 +107,11 @@ export class ExtHostSearch implements IExtHostSearch {
 		@ILogService
 		protected _logService: ILogService,
 	) {}
+
 	protected _transformScheme(scheme: string): string {
 		return this._uriTransformer.transformOutgoingScheme(scheme);
 	}
+
 	registerTextSearchProviderOld(
 		scheme: string,
 		provider: vscode.TextSearchProvider,
@@ -107,13 +121,16 @@ export class ExtHostSearch implements IExtHostSearch {
 				`a text search provider for the scheme '${scheme}' is already registered`,
 			);
 		}
+
 		this._textSearchUsedSchemes.add(scheme);
 
 		const handle = this._handlePool++;
+
 		this._textSearchProvider.set(
 			handle,
 			new OldTextSearchProviderConverter(provider),
 		);
+
 		this._proxy.$registerTextSearchProvider(
 			handle,
 			this._transformScheme(scheme),
@@ -121,10 +138,13 @@ export class ExtHostSearch implements IExtHostSearch {
 
 		return toDisposable(() => {
 			this._textSearchUsedSchemes.delete(scheme);
+
 			this._textSearchProvider.delete(handle);
+
 			this._proxy.$unregisterProvider(handle);
 		});
 	}
+
 	registerTextSearchProvider(
 		scheme: string,
 		provider: vscode.TextSearchProvider2,
@@ -134,10 +154,13 @@ export class ExtHostSearch implements IExtHostSearch {
 				`a text search provider for the scheme '${scheme}' is already registered`,
 			);
 		}
+
 		this._textSearchUsedSchemes.add(scheme);
 
 		const handle = this._handlePool++;
+
 		this._textSearchProvider.set(handle, provider);
+
 		this._proxy.$registerTextSearchProvider(
 			handle,
 			this._transformScheme(scheme),
@@ -145,10 +168,13 @@ export class ExtHostSearch implements IExtHostSearch {
 
 		return toDisposable(() => {
 			this._textSearchUsedSchemes.delete(scheme);
+
 			this._textSearchProvider.delete(handle);
+
 			this._proxy.$unregisterProvider(handle);
 		});
 	}
+
 	registerAITextSearchProvider(
 		scheme: string,
 		provider: vscode.AITextSearchProvider,
@@ -158,10 +184,13 @@ export class ExtHostSearch implements IExtHostSearch {
 				`an AI text search provider for the scheme '${scheme}'is already registered`,
 			);
 		}
+
 		this._aiTextSearchUsedSchemes.add(scheme);
 
 		const handle = this._handlePool++;
+
 		this._aiTextSearchProvider.set(handle, provider);
+
 		this._proxy.$registerAITextSearchProvider(
 			handle,
 			this._transformScheme(scheme),
@@ -169,10 +198,13 @@ export class ExtHostSearch implements IExtHostSearch {
 
 		return toDisposable(() => {
 			this._aiTextSearchUsedSchemes.delete(scheme);
+
 			this._aiTextSearchProvider.delete(handle);
+
 			this._proxy.$unregisterProvider(handle);
 		});
 	}
+
 	registerFileSearchProviderOld(
 		scheme: string,
 		provider: vscode.FileSearchProvider,
@@ -182,13 +214,16 @@ export class ExtHostSearch implements IExtHostSearch {
 				`a file search provider for the scheme '${scheme}' is already registered`,
 			);
 		}
+
 		this._fileSearchUsedSchemes.add(scheme);
 
 		const handle = this._handlePool++;
+
 		this._fileSearchProvider.set(
 			handle,
 			new OldFileSearchProviderConverter(provider),
 		);
+
 		this._proxy.$registerFileSearchProvider(
 			handle,
 			this._transformScheme(scheme),
@@ -196,10 +231,13 @@ export class ExtHostSearch implements IExtHostSearch {
 
 		return toDisposable(() => {
 			this._fileSearchUsedSchemes.delete(scheme);
+
 			this._fileSearchProvider.delete(handle);
+
 			this._proxy.$unregisterProvider(handle);
 		});
 	}
+
 	registerFileSearchProvider(
 		scheme: string,
 		provider: vscode.FileSearchProvider2,
@@ -209,10 +247,13 @@ export class ExtHostSearch implements IExtHostSearch {
 				`a file search provider for the scheme '${scheme}' is already registered`,
 			);
 		}
+
 		this._fileSearchUsedSchemes.add(scheme);
 
 		const handle = this._handlePool++;
+
 		this._fileSearchProvider.set(handle, provider);
+
 		this._proxy.$registerFileSearchProvider(
 			handle,
 			this._transformScheme(scheme),
@@ -220,7 +261,9 @@ export class ExtHostSearch implements IExtHostSearch {
 
 		return toDisposable(() => {
 			this._fileSearchUsedSchemes.delete(scheme);
+
 			this._fileSearchProvider.delete(handle);
+
 			this._proxy.$unregisterProvider(handle);
 		});
 	}
@@ -251,6 +294,7 @@ export class ExtHostSearch implements IExtHostSearch {
 			throw new Error("unknown provider: " + handle);
 		}
 	}
+
 	async doInternalFileSearchWithCustomCallback(
 		query: IFileQuery,
 		token: CancellationToken,
@@ -274,6 +318,7 @@ export class ExtHostSearch implements IExtHostSearch {
 		if (!provider || !provider.provideTextSearchResults) {
 			throw new Error(`Unknown Text Search Provider ${handle}`);
 		}
+
 		const query = reviveQuery(rawQuery);
 
 		const engine = this.createTextSearchManager(query, provider);
@@ -295,6 +340,7 @@ export class ExtHostSearch implements IExtHostSearch {
 		if (!provider || !provider.provideAITextSearchResults) {
 			throw new Error(`Unknown AI Text Search Provider ${handle}`);
 		}
+
 		const query = reviveQuery(rawQuery);
 
 		const engine = this.createAITextSearchManager(query, provider);
@@ -306,6 +352,7 @@ export class ExtHostSearch implements IExtHostSearch {
 		);
 	}
 	$enableExtensionHostSearch(): void {}
+
 	async $getAIName(handle: number): Promise<string | undefined> {
 		const provider = this._aiTextSearchProvider.get(handle);
 
@@ -315,6 +362,7 @@ export class ExtHostSearch implements IExtHostSearch {
 		// if the provider is defined, but has no name, use default name
 		return provider.name ?? "AI";
 	}
+
 	protected createTextSearchManager(
 		query: ITextQuery,
 		provider: vscode.TextSearchProvider2,
@@ -328,6 +376,7 @@ export class ExtHostSearch implements IExtHostSearch {
 			"textSearchProvider",
 		);
 	}
+
 	protected createAITextSearchManager(
 		query: IAITextQuery,
 		provider: vscode.AITextSearchProvider,

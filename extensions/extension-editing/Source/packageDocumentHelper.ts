@@ -12,6 +12,7 @@ import {
 
 export class PackageDocument {
 	constructor(private document: vscode.TextDocument) {}
+
 	public provideCompletionItems(
 		position: vscode.Position,
 		_token: vscode.CancellationToken,
@@ -30,8 +31,10 @@ export class PackageDocument {
 				position,
 			);
 		}
+
 		return undefined;
 	}
+
 	public provideCodeActions(
 		_range: vscode.Range,
 		context: vscode.CodeActionContext,
@@ -48,6 +51,7 @@ export class PackageDocument {
 					vscode.l10n.t("Remove activation event"),
 					vscode.CodeActionKind.QuickFix,
 				);
+
 				codeAction.edit = new vscode.WorkspaceEdit();
 
 				const rangeForCharAfter = diagnostic.range.with(
@@ -66,11 +70,14 @@ export class PackageDocument {
 				} else {
 					codeAction.edit.delete(this.document.uri, diagnostic.range);
 				}
+
 				codeActions.push(codeAction);
 			}
 		}
+
 		return codeActions;
 	}
+
 	private provideLanguageOverridesCompletionItems(
 		location: Location,
 		position: vscode.Position,
@@ -92,8 +99,10 @@ export class PackageDocument {
 					),
 					range.end,
 				);
+
 				snippet = snippet.substring(1);
 			}
+
 			return Promise.resolve([
 				this.newSnippetCompletionItem({
 					label: vscode.l10n.t("Language specific editor settings"),
@@ -105,6 +114,7 @@ export class PackageDocument {
 				}),
 			]);
 		}
+
 		if (
 			location.path.length === 3 &&
 			location.previousNode &&
@@ -129,8 +139,10 @@ export class PackageDocument {
 				});
 			});
 		}
+
 		return Promise.resolve([]);
 	}
+
 	private getReplaceRange(location: Location, position: vscode.Position) {
 		const node = location.previousNode;
 
@@ -145,8 +157,10 @@ export class PackageDocument {
 				return new vscode.Range(nodeStart, nodeEnd);
 			}
 		}
+
 		return new vscode.Range(position, position);
 	}
+
 	private newSimpleCompletionItem(
 		text: string,
 		range: vscode.Range,
@@ -154,24 +168,35 @@ export class PackageDocument {
 		insertText?: string,
 	): vscode.CompletionItem {
 		const item = new vscode.CompletionItem(text);
+
 		item.kind = vscode.CompletionItemKind.Value;
+
 		item.detail = description;
+
 		item.insertText = insertText ? insertText : text;
+
 		item.range = range;
 
 		return item;
 	}
+
 	private newSnippetCompletionItem(o: {
 		label: string;
 
 		documentation?: string;
+
 		snippet: string;
+
 		range: vscode.Range;
 	}): vscode.CompletionItem {
 		const item = new vscode.CompletionItem(o.label);
+
 		item.kind = vscode.CompletionItemKind.Value;
+
 		item.documentation = o.documentation;
+
 		item.insertText = new vscode.SnippetString(o.snippet);
+
 		item.range = o.range;
 
 		return item;

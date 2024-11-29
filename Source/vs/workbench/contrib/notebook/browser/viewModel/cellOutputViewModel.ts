@@ -24,8 +24,11 @@ export class CellOutputViewModel
 	implements ICellOutputViewModel
 {
 	private _onDidResetRendererEmitter = this._register(new Emitter<void>());
+
 	readonly onDidResetRenderer = this._onDidResetRendererEmitter.event;
+
 	private alwaysShow = false;
+
 	visible = observableValue<boolean>("outputVisible", false);
 
 	setVisible(visible = true, force: boolean = false) {
@@ -33,24 +36,30 @@ export class CellOutputViewModel
 			// we are forced to show, so no-op
 			return;
 		}
+
 		if (force && visible) {
 			this.alwaysShow = true;
 		}
+
 		this.visible.set(visible, undefined);
 	}
+
 	outputHandle = handle++;
 
 	get model(): ICellOutput {
 		return this._outputRawData;
 	}
+
 	private _pickedMimeType: IOrderedMimeType | undefined;
 
 	get pickedMimeType() {
 		return this._pickedMimeType;
 	}
+
 	set pickedMimeType(value: IOrderedMimeType | undefined) {
 		this._pickedMimeType = value;
 	}
+
 	constructor(
 		readonly cellViewModel: IGenericCellViewModel,
 		private readonly _outputRawData: ICellOutput,
@@ -58,16 +67,19 @@ export class CellOutputViewModel
 	) {
 		super();
 	}
+
 	hasMultiMimeType() {
 		if (this._outputRawData.outputs.length < 2) {
 			return false;
 		}
+
 		const firstMimeType = this._outputRawData.outputs[0].mime;
 
 		return this._outputRawData.outputs.some(
 			(output) => output.mime !== firstMimeType,
 		);
 	}
+
 	resolveMimeTypes(
 		textModel: NotebookTextModel,
 		kernelProvides: readonly string[] | undefined,
@@ -86,12 +98,16 @@ export class CellOutputViewModel
 
 		return [mimeTypes, Math.max(index, 0)];
 	}
+
 	resetRenderer() {
 		// reset the output renderer
 		this._pickedMimeType = undefined;
+
 		this.model.bumpVersion();
+
 		this._onDidResetRendererEmitter.fire();
 	}
+
 	toRawJSON() {
 		return {
 			outputs: this._outputRawData.outputs,

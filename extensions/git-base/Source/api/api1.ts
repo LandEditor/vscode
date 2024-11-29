@@ -17,14 +17,17 @@ import {
 
 export class ApiImpl implements API {
 	constructor(private _model: Model) {}
+
 	pickRemoteSource(
 		options: PickRemoteSourceOptions,
 	): Promise<PickRemoteSourceResult | string | undefined> {
 		return pickRemoteSource(this._model, options as any);
 	}
+
 	getRemoteSourceActions(url: string): Promise<RemoteSourceAction[]> {
 		return getRemoteSourceActions(this._model, url);
 	}
+
 	registerRemoteSourceProvider(provider: RemoteSourceProvider): Disposable {
 		return this._model.registerRemoteSourceProvider(provider);
 	}
@@ -33,6 +36,7 @@ export function registerAPICommands(
 	extension: GitBaseExtensionImpl,
 ): Disposable {
 	const disposables: Disposable[] = [];
+
 	disposables.push(
 		commands.registerCommand(
 			"git-base.api.getRemoteSources",
@@ -40,6 +44,7 @@ export function registerAPICommands(
 				if (!extension.model) {
 					return;
 				}
+
 				return pickRemoteSource(extension.model, opts as any);
 			},
 		),

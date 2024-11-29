@@ -84,6 +84,7 @@ import { asProgressiveEdit, performAsyncTextEdit } from "./utils.js";
 
 export interface IEditObserver {
 	start(): void;
+
 	stop(): void;
 }
 export const enum HunkAction {
@@ -99,10 +100,15 @@ export abstract class EditModeStrategy {
 		showIfCollapsed: false,
 		isWholeLine: true,
 	});
+
 	protected readonly _store = new DisposableStore();
+
 	protected readonly _onDidAccept = this._store.add(new Emitter<void>());
+
 	protected readonly _onDidDiscard = this._store.add(new Emitter<void>());
+
 	readonly onDidAccept: Event<void> = this._onDidAccept.event;
+
 	readonly onDidDiscard: Event<void> = this._onDidDiscard.event;
 
 	constructor(
@@ -114,9 +120,11 @@ export abstract class EditModeStrategy {
 		@IInstantiationService
 		protected readonly _instaService: IInstantiationService,
 	) {}
+
 	dispose(): void {
 		this._store.dispose();
 	}
+
 	performHunkAction(_hunk: HunkInformation | undefined, action: HunkAction) {
 		if (action === HunkAction.Accept) {
 			this._onDidAccept.fire();
@@ -124,6 +132,7 @@ export abstract class EditModeStrategy {
 			this._onDidDiscard.fire();
 		}
 	}
+
 	protected async _doApplyChanges(ignoreLocal: boolean): Promise<void> {
 		const untitledModels: IUntitledTextEditorModel[] = [];
 
@@ -133,16 +142,19 @@ export abstract class EditModeStrategy {
 			if (!request.response?.response) {
 				continue;
 			}
+
 			for (const item of request.response.response.value) {
 				if (item.kind !== "textEditGroup") {
 					continue;
 				}
+
 				if (
 					ignoreLocal &&
 					isEqual(item.uri, this._session.textModelN.uri)
 				) {
 					continue;
 				}
+
 				await editor.apply(request.response, item, undefined);
 
 				if (item.uri.scheme === Schemas.untitled) {
@@ -156,29 +168,37 @@ export abstract class EditModeStrategy {
 				}
 			}
 		}
+
 		for (const untitledModel of untitledModels) {
 			if (!untitledModel.isDisposed()) {
 				await untitledModel.resolve();
+
 				await untitledModel.save({ reason: SaveReason.EXPLICIT });
 			}
 		}
 	}
+
 	abstract apply(): Promise<void>;
+
 	cancel() {
 		return this._session.hunkData.discardAll();
 	}
+
 	abstract makeProgressiveChanges(
 		edits: ISingleEditOperation[],
 		obs: IEditObserver,
 		timings: ProgressingEditsOptions,
 		undoStopBefore: boolean,
 	): Promise<void>;
+
 	abstract makeChanges(
 		edits: ISingleEditOperation[],
 		obs: IEditObserver,
 		undoStopBefore: boolean,
 	): Promise<void>;
+
 	abstract renderChanges(): Promise<Position | undefined>;
+
 	abstract hasFocus(): boolean;
 
 	getWholeRangeDecoration(): IModelDeltaDecoration[] {
@@ -189,6 +209,7 @@ export abstract class EditModeStrategy {
 				? undefined
 				: { range, options: EditModeStrategy._decoBlock },
 		);
+
 		coalesceInPlace(newDecorations);
 
 		return newDecorations;
@@ -211,10 +232,12 @@ export class PreviewStrategy extends EditModeStrategy {
 		instaService: IInstantiationService,
 	) {
 		super(session, editor, zone, textFileService, instaService);
+
 		this._ctxDocumentChanged =
 			CTX_INLINE_CHAT_DOCUMENT_CHANGED.bindTo(contextKeyService);
 
 		const baseModel = modelService.getModel(session.targetUri)!;
+
 		Event.debounce(
 			baseModel.onDidChangeContent.bind(baseModel),
 			() => {},
@@ -232,37 +255,55 @@ export class PreviewStrategy extends EditModeStrategy {
 			this._store,
 		);
 	}
+
 	override dispose(): void {
 		this._ctxDocumentChanged.reset();
 
 		super.dispose();
 	}
+
 	override async apply() {
 		await super._doApplyChanges(false);
 	}
+
 	override async makeChanges(): Promise<void> {}
+
 	override async makeProgressiveChanges(): Promise<void> {}
+
 	override async renderChanges(): Promise<undefined> {}
+
 	hasFocus(): boolean {
 		return this._zone.widget.hasFocus();
 	}
 }
 export interface ProgressingEditsOptions {
 	duration: number;
+
 	token: CancellationToken;
 }
 type HunkDisplayData = {
 	decorationIds: string[];
+
 	diffViewZoneId: string | undefined;
+
 	diffViewZone: IViewZone;
+
 	lensActionsViewZoneIds?: string[];
+
 	distance: number;
+
 	position: Position;
+
 	acceptHunk: () => void;
+
 	discardHunk: () => void;
+
 	toggleDiff?: () => any;
+
 	remove(): void;
+
 	move: (next: boolean) => void;
+
 	hunk: HunkInformation;
 };
 
@@ -280,15 +321,21 @@ export class LiveStrategy extends EditModeStrategy {
 			color: themeColorFromId(minimapInlineChatDiffInserted),
 		},
 	});
+
 	private readonly _decoInsertedTextRange = ModelDecorationOptions.register({
 		description: "inline-chat-inserted-range-linehighlight",
 		className: "inline-chat-inserted-range",
 		stickiness: TrackedRangeStickiness.NeverGrowsWhenTypingAtEdges,
 	});
+
 	private readonly _ctxCurrentChangeHasDiff: IContextKey<boolean>;
+
 	private readonly _ctxCurrentChangeShowsDiff: IContextKey<boolean>;
+
 	private readonly _progressiveEditingDecorations: IEditorDecorationsCollection;
+
 	private readonly _lensActionsFactory: ConflictActionsFactory;
+
 	private _editCount: number = 0;
 
 	constructor(
@@ -314,44 +361,57 @@ export class LiveStrategy extends EditModeStrategy {
 		instaService: IInstantiationService,
 	) {
 		super(session, editor, zone, textFileService, instaService);
+
 		this._ctxCurrentChangeHasDiff =
 			CTX_INLINE_CHAT_CHANGE_HAS_DIFF.bindTo(contextKeyService);
+
 		this._ctxCurrentChangeShowsDiff =
 			CTX_INLINE_CHAT_CHANGE_SHOWS_DIFF.bindTo(contextKeyService);
+
 		this._progressiveEditingDecorations =
 			this._editor.createDecorationsCollection();
+
 		this._lensActionsFactory = this._store.add(
 			new ConflictActionsFactory(this._editor),
 		);
 	}
+
 	override dispose(): void {
 		this._resetDiff();
 
 		super.dispose();
 	}
+
 	private _resetDiff(): void {
 		this._ctxCurrentChangeHasDiff.reset();
+
 		this._ctxCurrentChangeShowsDiff.reset();
+
 		this._zone.widget.updateStatus("");
+
 		this._progressiveEditingDecorations.clear();
 
 		for (const data of this._hunkDisplayData.values()) {
 			data.remove();
 		}
 	}
+
 	override async apply() {
 		this._resetDiff();
 
 		if (this._editCount > 0) {
 			this._editor.pushUndoStop();
 		}
+
 		await super._doApplyChanges(true);
 	}
+
 	override cancel() {
 		this._resetDiff();
 
 		return super.cancel();
 	}
+
 	override async makeChanges(
 		edits: ISingleEditOperation[],
 		obs: IEditObserver,
@@ -365,6 +425,7 @@ export class LiveStrategy extends EditModeStrategy {
 			undoStopBefore,
 		);
 	}
+
 	override async makeProgressiveChanges(
 		edits: ISingleEditOperation[],
 		obs: IEditObserver,
@@ -380,6 +441,7 @@ export class LiveStrategy extends EditModeStrategy {
 					newLines.add(line),
 				);
 			}
+
 			const existingRanges = this._progressiveEditingDecorations
 				.getRanges()
 				.map(LineRange.fromRange);
@@ -387,6 +449,7 @@ export class LiveStrategy extends EditModeStrategy {
 			for (const existingRange of existingRanges) {
 				existingRange.forEach((line) => newLines.delete(line));
 			}
+
 			const newDecorations: IModelDeltaDecoration[] = [];
 
 			for (const line of newLines) {
@@ -395,11 +458,13 @@ export class LiveStrategy extends EditModeStrategy {
 					options: this._decoInsertedText,
 				});
 			}
+
 			this._progressiveEditingDecorations.append(newDecorations);
 		});
 
 		return this._makeChanges(edits, obs, opts, progress, undoStopBefore);
 	}
+
 	private async _makeChanges(
 		edits: ISingleEditOperation[],
 		obs: IEditObserver,
@@ -411,6 +476,7 @@ export class LiveStrategy extends EditModeStrategy {
 		if (undoStopBefore) {
 			this._editor.pushUndoStop();
 		}
+
 		this._editCount++;
 
 		if (opts) {
@@ -429,6 +495,7 @@ export class LiveStrategy extends EditModeStrategy {
 					speed,
 					opts.token,
 				);
+
 				await performAsyncTextEdit(
 					this._session.textModelN,
 					asyncEdit,
@@ -439,6 +506,7 @@ export class LiveStrategy extends EditModeStrategy {
 		} else {
 			// SYNC
 			obs.start();
+
 			this._session.textModelN.pushEditOperations(
 				null,
 				edits,
@@ -448,9 +516,11 @@ export class LiveStrategy extends EditModeStrategy {
 					return null;
 				},
 			);
+
 			obs.stop();
 		}
 	}
+
 	override performHunkAction(
 		hunk: HunkInformation | undefined,
 		action: HunkAction,
@@ -465,8 +535,10 @@ export class LiveStrategy extends EditModeStrategy {
 			} else if (action === HunkAction.Discard) {
 				this._onDidDiscard.fire();
 			}
+
 			return;
 		}
+
 		if (action === HunkAction.Accept) {
 			displayData.acceptHunk();
 		} else if (action === HunkAction.Discard) {
@@ -479,6 +551,7 @@ export class LiveStrategy extends EditModeStrategy {
 			displayData.toggleDiff?.();
 		}
 	}
+
 	private _findDisplayData(hunkInfo?: HunkInformation) {
 		let result: HunkDisplayData | undefined;
 
@@ -486,6 +559,7 @@ export class LiveStrategy extends EditModeStrategy {
 			// use context hunk (from tool/buttonbar)
 			result = this._hunkDisplayData.get(hunkInfo);
 		}
+
 		if (!result && this._zone.position) {
 			// find nearest from zone position
 			const zoneLine = this._zone.position.lineNumber;
@@ -496,6 +570,7 @@ export class LiveStrategy extends EditModeStrategy {
 				if (candidate.hunk.getState() !== HunkState.Pending) {
 					continue;
 				}
+
 				const hunkRanges = candidate.hunk.getRangesN();
 
 				const myDistance =
@@ -505,10 +580,12 @@ export class LiveStrategy extends EditModeStrategy {
 
 				if (myDistance < distance) {
 					distance = myDistance;
+
 					result = candidate;
 				}
 			}
 		}
+
 		if (!result) {
 			// fallback: first hunk that is pending
 			result = Iterable.first(
@@ -519,21 +596,26 @@ export class LiveStrategy extends EditModeStrategy {
 				),
 			);
 		}
+
 		return result;
 	}
+
 	private readonly _hunkDisplayData = new Map<
 		HunkInformation,
 		HunkDisplayData
 	>();
+
 	override async renderChanges() {
 		this._progressiveEditingDecorations.clear();
 
 		const renderHunks = () => {
 			let widgetData: HunkDisplayData | undefined;
+
 			changeDecorationsAndViewZones(
 				this._editor,
 				(decorationsAccessor, viewZoneAccessor) => {
 					const keysNow = new Set(this._hunkDisplayData.keys());
+
 					widgetData = undefined;
 
 					for (const hunkData of this._session.hunkData.getInfo()) {
@@ -557,13 +639,16 @@ export class LiveStrategy extends EditModeStrategy {
 									),
 								);
 							}
+
 							const acceptHunk = () => {
 								hunkData.acceptChanges();
+
 								renderHunks();
 							};
 
 							const discardHunk = () => {
 								hunkData.discardChanges();
+
 								renderHunks();
 							};
 							// original view zone
@@ -626,6 +711,7 @@ export class LiveStrategy extends EditModeStrategy {
 									StableEditorScrollState.capture(
 										this._editor,
 									);
+
 								changeDecorationsAndViewZones(
 									this._editor,
 									(
@@ -637,8 +723,10 @@ export class LiveStrategy extends EditModeStrategy {
 										if (!data.diffViewZoneId) {
 											const [hunkRange] =
 												hunkData.getRangesN();
+
 											viewZoneData.afterLineNumber =
 												hunkRange.startLineNumber - 1;
+
 											data.diffViewZoneId =
 												viewZoneAccessor.addZone(
 													viewZoneData,
@@ -647,13 +735,16 @@ export class LiveStrategy extends EditModeStrategy {
 											viewZoneAccessor.removeZone(
 												data.diffViewZoneId!,
 											);
+
 											data.diffViewZoneId = undefined;
 										}
 									},
 								);
+
 								this._ctxCurrentChangeShowsDiff.set(
 									typeof data?.diffViewZoneId === "string",
 								);
+
 								scrollState.restore(this._editor);
 							};
 
@@ -700,6 +791,7 @@ export class LiveStrategy extends EditModeStrategy {
 												) {
 													text = `$(${item.item.icon.id}) ${text}`;
 												}
+
 												actions.push({
 													text,
 													tooltip: item.tooltip,
@@ -709,6 +801,7 @@ export class LiveStrategy extends EditModeStrategy {
 											}
 										}
 									}
+
 									return actions;
 								};
 
@@ -716,12 +809,15 @@ export class LiveStrategy extends EditModeStrategy {
 									this,
 									makeActions(),
 								);
+
 								lensActions.add(
 									menu.onDidChange(() =>
 										obs.set(makeActions(), undefined),
 									),
 								);
+
 								lensActions.add(menu);
+
 								lensActions.add(
 									this._lensActionsFactory.createWidget(
 										viewZoneAccessor,
@@ -731,6 +827,7 @@ export class LiveStrategy extends EditModeStrategy {
 									),
 								);
 							}
+
 							const remove = () => {
 								changeDecorationsAndViewZones(
 									this._editor,
@@ -742,19 +839,25 @@ export class LiveStrategy extends EditModeStrategy {
 												decorationId,
 											);
 										}
+
 										if (data.diffViewZoneId) {
 											viewZoneAccessor.removeZone(
 												data.diffViewZoneId,
 											);
 										}
+
 										data.decorationIds = [];
+
 										data.diffViewZoneId = undefined;
+
 										data.lensActionsViewZoneIds?.forEach(
 											viewZoneAccessor.removeZone,
 										);
+
 										data.lensActionsViewZoneIds = undefined;
 									},
 								);
+
 								lensActions?.dispose();
 							};
 
@@ -773,9 +876,11 @@ export class LiveStrategy extends EditModeStrategy {
 									const nextData = this._hunkDisplayData.get(
 										keys[nextIdx],
 									)!;
+
 									this._zone.updatePositionAndHeight(
 										nextData?.position,
 									);
+
 									renderHunks();
 								}
 							};
@@ -790,6 +895,7 @@ export class LiveStrategy extends EditModeStrategy {
 										zoneLineNumber
 									: zoneLineNumber -
 										hunkRanges[0].endLineNumber;
+
 							data = {
 								hunk: hunkData,
 								decorationIds,
@@ -808,6 +914,7 @@ export class LiveStrategy extends EditModeStrategy {
 								remove,
 								move,
 							};
+
 							this._hunkDisplayData.set(hunkData, data);
 						} else if (hunkData.getState() !== HunkState.Pending) {
 							data.remove();
@@ -818,9 +925,11 @@ export class LiveStrategy extends EditModeStrategy {
 								this._editor.getPosition()!.lineNumber;
 
 							const modifiedRangeNow = hunkRanges[0];
+
 							data.position = modifiedRangeNow
 								.getStartPosition()
 								.delta(-1);
+
 							data.distance =
 								zoneLineNumber <=
 								modifiedRangeNow.startLineNumber
@@ -829,6 +938,7 @@ export class LiveStrategy extends EditModeStrategy {
 									: zoneLineNumber -
 										modifiedRangeNow.endLineNumber;
 						}
+
 						if (
 							hunkData.getState() === HunkState.Pending &&
 							(!widgetData || data.distance < widgetData.distance)
@@ -836,11 +946,13 @@ export class LiveStrategy extends EditModeStrategy {
 							widgetData = data;
 						}
 					}
+
 					for (const key of keysNow) {
 						const data = this._hunkDisplayData.get(key);
 
 						if (data) {
 							this._hunkDisplayData.delete(key);
+
 							data.remove();
 						}
 					}
@@ -864,6 +976,7 @@ export class LiveStrategy extends EditModeStrategy {
 						widgetData.hunk,
 					);
 				}
+
 				this._ctxCurrentChangeHasDiff.set(
 					Boolean(widgetData.toggleDiff),
 				);
@@ -878,20 +991,24 @@ export class LiveStrategy extends EditModeStrategy {
 						break;
 					}
 				}
+
 				if (oneAccepted) {
 					this._onDidAccept.fire();
 				} else {
 					this._onDidDiscard.fire();
 				}
 			}
+
 			return widgetData;
 		};
 
 		return renderHunks()?.position;
 	}
+
 	hasFocus(): boolean {
 		return this._zone.widget.hasFocus();
 	}
+
 	override getWholeRangeDecoration(): IModelDeltaDecoration[] {
 		// don't render the blue in live mode
 		return [];

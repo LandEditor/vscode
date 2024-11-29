@@ -35,10 +35,12 @@ import { spawnRipgrepCmd } from "./ripgrepFileSearch.js";
 
 interface IDirectoryEntry extends IRawFileMatch {
 	base: string;
+
 	basename: string;
 }
 interface IDirectoryTree {
 	rootEntries: IDirectoryEntry[];
+
 	pathToEntries: {
 		[relativePath: string]: IDirectoryEntry[];
 	};
@@ -51,42 +53,70 @@ process.on("exit", () => {
 
 export class FileWalker {
 	private config: IFileQuery;
+
 	private filePattern: string;
+
 	private normalizedFilePatternLowercase: string | null = null;
+
 	private includePattern: glob.ParsedExpression | undefined;
+
 	private maxResults: number | null;
+
 	private exists: boolean;
+
 	private maxFilesize: number | null = null;
+
 	private isLimitHit: boolean;
+
 	private resultCount: number;
+
 	private isCanceled = false;
+
 	private fileWalkSW: StopWatch | null = null;
+
 	private directoriesWalked: number;
+
 	private filesWalked: number;
+
 	private errors: string[];
+
 	private cmdSW: StopWatch | null = null;
+
 	private cmdResultCount: number = 0;
+
 	private folderExcludePatterns: Map<
 		string,
 		AbsoluteAndRelativeParsedExpression
 	>;
+
 	private globalExcludePattern: glob.ParsedExpression | undefined;
+
 	private walkedPaths: {
 		[path: string]: boolean;
 	};
 
 	constructor(config: IFileQuery) {
 		this.config = config;
+
 		this.filePattern = config.filePattern || "";
+
 		this.includePattern =
 			config.includePattern && glob.parse(config.includePattern);
+
 		this.maxResults = config.maxResults || null;
+
 		this.exists = !!config.exists;
+
 		this.walkedPaths = Object.create(null);
+
 		this.resultCount = 0;
+
 		this.isLimitHit = false;
+
 		this.directoriesWalked = 0;
+
 		this.filesWalked = 0;
+
 		this.errors = [];
 
 		if (this.filePattern) {
@@ -95,12 +125,15 @@ export class FileWalker {
 					? null
 					: prepareQuery(this.filePattern).normalizedLowercase;
 		}
+
 		this.globalExcludePattern =
 			config.excludePattern && glob.parse(config.excludePattern);
+
 		this.folderExcludePatterns = new Map<
 			string,
 			AbsoluteAndRelativeParsedExpression
 		>();
+
 		config.folderQueries.forEach((folderQuery) => {
 			const folderExcludeExpression: glob.IExpression = {}; // todo: consider exclude baseURI
 			folderQuery.excludePattern?.forEach((excludePattern) => {
@@ -119,6 +152,7 @@ export class FileWalker {
 			}
 			// Add excludes for other root folders
 			const fqPath = folderQuery.folder.fsPath;
+
 			config.folderQueries
 				.map((rootFolderQuery) => rootFolderQuery.folder.fsPath)
 				.filter((rootFolder) => rootFolder !== fqPath)
@@ -130,6 +164,7 @@ export class FileWalker {
 						] = true;
 					}
 				});
+
 			this.folderExcludePatterns.set(
 				fqPath,
 				new AbsoluteAndRelativeParsedExpression(
@@ -139,10 +174,13 @@ export class FileWalker {
 			);
 		});
 	}
+
 	cancel(): void {
 		this.isCanceled = true;
+
 		killCmds.forEach((cmd) => cmd());
 	}
+
 	walk(
 		folderQueries: IFolderQuery[],
 		extraFiles: URI[],
@@ -173,6 +211,7 @@ export class FileWalker {
 				searchPath: undefined,
 			});
 		});
+
 		this.cmdSW = StopWatch.create(false);
 		// For each root folder
 		this.parallel<IFolderQuery, void>(
@@ -191,8 +230,11 @@ export class FileWalker {
 					(err?: Error) => {
 						if (err) {
 							const errorMessage = toErrorMessage(err);
+
 							console.error(errorMessage);
+
 							this.errors.push(errorMessage);
+
 							rootFolderDone(err, undefined);
 						} else {
 							rootFolderDone(null, undefined);
@@ -209,6 +251,7 @@ export class FileWalker {
 			},
 		);
 	}
+
 	private parallel<T, E>(
 		list: T[],
 		fn: (
@@ -228,22 +271,28 @@ export class FileWalker {
 		if (list.length === 0) {
 			return callback(null, []);
 		}
+
 		list.forEach((item, index) => {
 			fn(item, (error, result) => {
 				if (error) {
 					didErrorOccur = true;
+
 					results[index] = null;
+
 					errors[index] = error;
 				} else {
 					results[index] = result;
+
 					errors[index] = null;
 				}
+
 				if (++doneCount === list.length) {
 					return callback(didErrorOccur ? errors : null, results);
 				}
 			});
 		});
 	}
+
 	private call<F extends Function>(fun: F, that: any, ...args: any[]): void {
 		try {
 			fun.apply(that, args);
@@ -251,6 +300,7 @@ export class FileWalker {
 			args[args.length - 1](e);
 		}
 	}
+
 	private cmdTraversal(
 		folderQuery: IFolderQuery,
 		numThreads: number | undefined,
@@ -263,12 +313,14 @@ export class FileWalker {
 		const isMac = platform.isMacintosh;
 
 		const killCmd = () => cmd && cmd.kill();
+
 		killCmds.add(killCmd);
 
 		let done = (err?: Error) => {
 			killCmds.delete(killCmd);
 
 			done = () => {};
+
 			cb(err);
 		};
 
@@ -298,8 +350,11 @@ export class FileWalker {
 		if (ripgrep.rgArgs.siblingClauses) {
 			rgCmd += `\n - Sibling clauses: ${JSON.stringify(ripgrep.rgArgs.siblingClauses)}`;
 		}
+
 		onMessage({ message: rgCmd });
+
 		this.cmdResultCount = 0;
+
 		this.collectStdout(
 			cmd,
 			"utf8",
@@ -310,6 +365,7 @@ export class FileWalker {
 
 					return;
 				}
+
 				if (this.isLimitHit) {
 					done();
 
@@ -324,6 +380,7 @@ export class FileWalker {
 
 				if (last) {
 					const n = relativeFiles.length;
+
 					relativeFiles[n - 1] = relativeFiles[n - 1].trim();
 
 					if (!relativeFiles[n - 1]) {
@@ -332,6 +389,7 @@ export class FileWalker {
 				} else {
 					leftover = relativeFiles.pop() || "";
 				}
+
 				if (
 					relativeFiles.length &&
 					relativeFiles[0].indexOf("\n") !== -1
@@ -340,6 +398,7 @@ export class FileWalker {
 
 					return;
 				}
+
 				this.cmdResultCount += relativeFiles.length;
 
 				if (noSiblingsClauses) {
@@ -359,9 +418,11 @@ export class FileWalker {
 							break;
 						}
 					}
+
 					if (last || this.isLimitHit) {
 						done();
 					}
+
 					return;
 				}
 				// TODO: Optimize siblings clauses with ripgrep here.
@@ -400,15 +461,21 @@ export class FileWalker {
 
 			for (const basename of basenames) {
 				args.push("-name", basename);
+
 				args.push("-o");
 			}
+
 			for (const path of pathTerms) {
 				args.push("-path", path);
+
 				args.push("-o");
 			}
+
 			args.pop();
+
 			args.push(")", "-prune", ")");
 		}
+
 		args.push("-type", "f");
 
 		return childProcess.spawn("find", args, {
@@ -424,6 +491,7 @@ export class FileWalker {
 		cb: (err: Error | null, stdout?: string) => void,
 	): void {
 		let all = "";
+
 		this.collectStdout(
 			cmd,
 			encoding,
@@ -434,6 +502,7 @@ export class FileWalker {
 
 					return;
 				}
+
 				all += stdout;
 
 				if (last) {
@@ -442,6 +511,7 @@ export class FileWalker {
 			},
 		);
 	}
+
 	private collectStdout(
 		cmd: childProcess.ChildProcess,
 		encoding: BufferEncoding,
@@ -451,8 +521,10 @@ export class FileWalker {
 		let onData = (err: Error | null, stdout?: string, last?: boolean) => {
 			if (err || last) {
 				onData = () => {};
+
 				this.cmdSW?.stop();
 			}
+
 			cb(err, stdout, last);
 		};
 
@@ -461,10 +533,12 @@ export class FileWalker {
 		if (cmd.stdout) {
 			// Should be non-null, but #38195
 			this.forwardData(cmd.stdout, encoding, onData);
+
 			cmd.stdout.once("data", () => (gotData = true));
 		} else {
 			onMessage({ message: "stdout is null" });
 		}
+
 		let stderr: Buffer[];
 
 		if (cmd.stderr) {
@@ -473,9 +547,11 @@ export class FileWalker {
 		} else {
 			onMessage({ message: "stderr is null" });
 		}
+
 		cmd.on("error", (err: Error) => {
 			onData(err);
 		});
+
 		cmd.on("close", (code: number) => {
 			// ripgrep returns code=1 when no results are found
 			let stderrText: string;
@@ -494,44 +570,53 @@ export class FileWalker {
 				if (this.exists && code === 0) {
 					this.isLimitHit = true;
 				}
+
 				onData(null, "", true);
 			}
 		});
 	}
+
 	private forwardData(
 		stream: Readable,
 		encoding: BufferEncoding,
 		cb: (err: Error | null, stdout?: string) => void,
 	): StringDecoder {
 		const decoder = new StringDecoder(encoding);
+
 		stream.on("data", (data: Buffer) => {
 			cb(null, decoder.write(data));
 		});
 
 		return decoder;
 	}
+
 	private collectData(stream: Readable): Buffer[] {
 		const buffers: Buffer[] = [];
+
 		stream.on("data", (data: Buffer) => {
 			buffers.push(data);
 		});
 
 		return buffers;
 	}
+
 	private decodeData(buffers: Buffer[], encoding: BufferEncoding): string {
 		const decoder = new StringDecoder(encoding);
 
 		return buffers.map((buffer) => decoder.write(buffer)).join("");
 	}
+
 	private initDirectoryTree(): IDirectoryTree {
 		const tree: IDirectoryTree = {
 			rootEntries: [],
 			pathToEntries: Object.create(null),
 		};
+
 		tree.pathToEntries["."] = tree.rootEntries;
 
 		return tree;
 	}
+
 	private addDirectoryEntries(
 		folderQuery: IFolderQuery,
 		{ pathToEntries }: IDirectoryTree,
@@ -547,6 +632,7 @@ export class FileWalker {
 				searchPath: this.getSearchPath(folderQuery, this.filePattern),
 			});
 		}
+
 		const add = (relativePath: string) => {
 			const basename = path.basename(relativePath);
 
@@ -556,8 +642,10 @@ export class FileWalker {
 
 			if (!entries) {
 				entries = pathToEntries[dirname] = [];
+
 				add(dirname);
 			}
+
 			entries.push({
 				base,
 				relativePath,
@@ -565,8 +653,10 @@ export class FileWalker {
 				searchPath: this.getSearchPath(folderQuery, relativePath),
 			});
 		};
+
 		relativeFiles.forEach(add);
 	}
+
 	private matchDirectoryTree(
 		{ rootEntries, pathToEntries }: IDirectoryTree,
 		rootFolder: string,
@@ -602,6 +692,7 @@ export class FileWalker {
 				) {
 					continue;
 				}
+
 				const sub = pathToEntries[relativePath];
 
 				if (sub) {
@@ -612,15 +703,19 @@ export class FileWalker {
 					if (relativePath === filePattern) {
 						continue; // ignore file if its path matches with the file pattern because that is already matched above
 					}
+
 					self.matchFile(onResult, entry);
 				}
+
 				if (self.isLimitHit) {
 					break;
 				}
 			}
 		}
+
 		matchDirectory(rootEntries);
 	}
+
 	getStats(): ISearchEngineStats {
 		return {
 			cmdTime: this.cmdSW!.elapsed(),
@@ -630,6 +725,7 @@ export class FileWalker {
 			cmdResultCount: this.cmdResultCount,
 		};
 	}
+
 	private doWalk(
 		folderQuery: IFolderQuery,
 		relativeParentPath: string,
@@ -640,6 +736,7 @@ export class FileWalker {
 		const rootFolder = folderQuery.folder;
 		// Execute tasks on each file in parallel to optimize throughput
 		const hasSibling = hasSiblingFn(() => files);
+
 		this.parallel(
 			files,
 			(
@@ -676,6 +773,7 @@ export class FileWalker {
 					rootFolder.fsPath,
 					currentRelativePath,
 				].join(path.sep);
+
 				fs.lstat(currentAbsolutePath, (error, lstat) => {
 					if (error || this.isCanceled || this.isLimitHit) {
 						return clb(null);
@@ -705,11 +803,13 @@ export class FileWalker {
 										) {
 											return clb(null);
 										}
+
 										realpath = realpath || "";
 
 										if (this.walkedPaths[realpath]) {
 											return clb(null); // escape when there are cycles (can happen with symlinks)
 										}
+
 										this.walkedPaths[realpath] = true; // remember as walked
 										// Continue walking
 										return Promises.readdir(
@@ -722,6 +822,7 @@ export class FileWalker {
 												) {
 													return clb(null);
 												}
+
 												this.doWalk(
 													folderQuery,
 													currentRelativePath,
@@ -744,6 +845,7 @@ export class FileWalker {
 								if (currentRelativePath === this.filePattern) {
 									return clb(null, undefined); // ignore file if its path matches with the file pattern because checkFilePatternRelativeMatch() takes care of those
 								}
+
 								if (
 									this.maxFilesize &&
 									types.isNumber(stat.size) &&
@@ -751,6 +853,7 @@ export class FileWalker {
 								) {
 									return clb(null, undefined); // ignore file if max file size is hit
 								}
+
 								this.matchFile(onResult, {
 									base: rootFolder.fsPath,
 									relativePath: currentRelativePath,
@@ -776,6 +879,7 @@ export class FileWalker {
 			},
 		);
 	}
+
 	private matchFile(
 		onResult: (result: IRawFileMatch) => void,
 		candidate: IRawFileMatch,
@@ -796,17 +900,20 @@ export class FileWalker {
 			) {
 				this.isLimitHit = true;
 			}
+
 			if (!this.isLimitHit) {
 				onResult(candidate);
 			}
 		}
 	}
+
 	private isFileMatch(candidate: IRawFileMatch): boolean {
 		// Check for search pattern
 		if (this.filePattern) {
 			if (this.filePattern === "*") {
 				return true; // support the all-matching wildcard
 			}
+
 			if (this.normalizedFilePatternLowercase) {
 				return isFilePatternMatch(
 					candidate,
@@ -819,6 +926,7 @@ export class FileWalker {
 		// No patterns means we match all
 		return true;
 	}
+
 	private statLinkIfNeeded(
 		path: string,
 		lstat: fs.Stats,
@@ -827,8 +935,10 @@ export class FileWalker {
 		if (lstat.isSymbolicLink()) {
 			return fs.stat(path, clb); // stat the target the link points to
 		}
+
 		return clb(null, lstat); // not a link, so the stat is already ok for us
 	}
+
 	private realPathIfNeeded(
 		path: string,
 		lstat: fs.Stats,
@@ -839,9 +949,11 @@ export class FileWalker {
 				if (error) {
 					return clb(error);
 				}
+
 				return clb(null, realpath);
 			});
 		}
+
 		return clb(null, path);
 	}
 	/**
@@ -857,21 +969,29 @@ export class FileWalker {
 		if (folderQuery.folderName) {
 			return path.join(folderQuery.folderName, relativePath);
 		}
+
 		return relativePath;
 	}
 }
 export class Engine implements ISearchEngine<IRawFileMatch> {
 	private folderQueries: IFolderQuery[];
+
 	private extraFiles: URI[];
+
 	private walker: FileWalker;
+
 	private numThreads?: number;
 
 	constructor(config: IFileQuery, numThreads?: number) {
 		this.folderQueries = config.folderQueries;
+
 		this.extraFiles = config.extraFileResources || [];
+
 		this.numThreads = numThreads;
+
 		this.walker = new FileWalker(config);
 	}
+
 	search(
 		onResult: (result: IRawFileMatch) => void,
 		onProgress: (progress: IProgressMessage) => void,
@@ -892,6 +1012,7 @@ export class Engine implements ISearchEngine<IRawFileMatch> {
 			},
 		);
 	}
+
 	cancel(): void {
 		this.walker.cancel();
 	}
@@ -903,6 +1024,7 @@ export class Engine implements ISearchEngine<IRawFileMatch> {
  */
 class AbsoluteAndRelativeParsedExpression {
 	private absoluteParsedExpr: glob.ParsedExpression | undefined;
+
 	private relativeParsedExpr: glob.ParsedExpression | undefined;
 
 	constructor(
@@ -918,26 +1040,32 @@ class AbsoluteAndRelativeParsedExpression {
 		let absoluteGlobExpr: glob.IExpression | undefined;
 
 		let relativeGlobExpr: glob.IExpression | undefined;
+
 		Object.keys(expr)
 			.filter((key) => expr[key])
 			.forEach((key) => {
 				if (path.isAbsolute(key)) {
 					absoluteGlobExpr =
 						absoluteGlobExpr || glob.getEmptyExpression();
+
 					absoluteGlobExpr[key] = expr[key];
 				} else {
 					relativeGlobExpr =
 						relativeGlobExpr || glob.getEmptyExpression();
+
 					relativeGlobExpr[key] = expr[key];
 				}
 			});
+
 		this.absoluteParsedExpr =
 			absoluteGlobExpr &&
 			glob.parse(absoluteGlobExpr, { trimForExclusions: true });
+
 		this.relativeParsedExpr =
 			relativeGlobExpr &&
 			glob.parse(relativeGlobExpr, { trimForExclusions: true });
 	}
+
 	test(
 		_path: string,
 		basename?: string,
@@ -954,6 +1082,7 @@ class AbsoluteAndRelativeParsedExpression {
 				))
 		);
 	}
+
 	getBasenameTerms(): string[] {
 		const basenameTerms: string[] = [];
 
@@ -962,22 +1091,27 @@ class AbsoluteAndRelativeParsedExpression {
 				...glob.getBasenameTerms(this.absoluteParsedExpr),
 			);
 		}
+
 		if (this.relativeParsedExpr) {
 			basenameTerms.push(
 				...glob.getBasenameTerms(this.relativeParsedExpr),
 			);
 		}
+
 		return basenameTerms;
 	}
+
 	getPathTerms(): string[] {
 		const pathTerms: string[] = [];
 
 		if (this.absoluteParsedExpr) {
 			pathTerms.push(...glob.getPathTerms(this.absoluteParsedExpr));
 		}
+
 		if (this.relativeParsedExpr) {
 			pathTerms.push(...glob.getPathTerms(this.relativeParsedExpr));
 		}
+
 		return pathTerms;
 	}
 }
@@ -989,9 +1123,11 @@ function rgErrorMsgForDisplay(msg: string): string | undefined {
 	if (firstLine.startsWith("Error parsing regex")) {
 		return firstLine;
 	}
+
 	if (firstLine.startsWith("regex parse error")) {
 		return strings.uppercaseFirstLetter(lines[lines.length - 1].trim());
 	}
+
 	if (
 		firstLine.startsWith("error parsing glob") ||
 		firstLine.startsWith("unsupported encoding")
@@ -999,13 +1135,16 @@ function rgErrorMsgForDisplay(msg: string): string | undefined {
 		// Uppercase first letter
 		return firstLine.charAt(0).toUpperCase() + firstLine.substr(1);
 	}
+
 	if (firstLine === `Literal '\\n' not allowed.`) {
 		// I won't localize this because none of the Ripgrep error messages are localized
 		return `Literal '\\n' currently not supported`;
 	}
+
 	if (firstLine.startsWith("Literal ")) {
 		// Other unsupported chars
 		return firstLine;
 	}
+
 	return undefined;
 }

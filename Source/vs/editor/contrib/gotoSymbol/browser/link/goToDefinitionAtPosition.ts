@@ -56,12 +56,19 @@ export class GotoDefinitionAtPositionEditorContribution
 	implements IEditorContribution
 {
 	public static readonly ID = "editor.contrib.gotodefinitionatposition";
+
 	static readonly MAX_SOURCE_PREVIEW_LINES = 8;
+
 	private readonly editor: ICodeEditor;
+
 	private readonly toUnhook = new DisposableStore();
+
 	private readonly toUnhookForKeyboard = new DisposableStore();
+
 	private readonly linkDecorations: IEditorDecorationsCollection;
+
 	private currentWordAtPosition: IWordAtPosition | null = null;
+
 	private previousPromise: CancelablePromise<LocationLink[] | null> | null =
 		null;
 
@@ -75,10 +82,13 @@ export class GotoDefinitionAtPositionEditorContribution
 		private readonly languageFeaturesService: ILanguageFeaturesService,
 	) {
 		this.editor = editor;
+
 		this.linkDecorations = this.editor.createDecorationsCollection();
 
 		const linkGesture = new ClickLinkGesture(editor);
+
 		this.toUnhook.add(linkGesture);
+
 		this.toUnhook.add(
 			linkGesture.onMouseMoveOrRelevantKeyDown(
 				([mouseEvent, keyboardEvent]) => {
@@ -89,6 +99,7 @@ export class GotoDefinitionAtPositionEditorContribution
 				},
 			),
 		);
+
 		this.toUnhook.add(
 			linkGesture.onExecute((mouseEvent: ClickLinkMouseEvent) => {
 				if (this.isEnabled(mouseEvent)) {
@@ -105,13 +116,16 @@ export class GotoDefinitionAtPositionEditorContribution
 				}
 			}),
 		);
+
 		this.toUnhook.add(
 			linkGesture.onCancel(() => {
 				this.removeLinkDecorations();
+
 				this.currentWordAtPosition = null;
 			}),
 		);
 	}
+
 	static get(
 		editor: ICodeEditor,
 	): GotoDefinitionAtPositionEditorContribution | null {
@@ -119,6 +133,7 @@ export class GotoDefinitionAtPositionEditorContribution
 			GotoDefinitionAtPositionEditorContribution.ID,
 		);
 	}
+
 	async startFindDefinitionFromCursor(position: Position) {
 		// For issue: https://github.com/microsoft/vscode/issues/46257
 		// equivalent to mouse move with meta/ctrl key
@@ -133,20 +148,26 @@ export class GotoDefinitionAtPositionEditorContribution
 		this.toUnhookForKeyboard.add(
 			this.editor.onDidChangeCursorPosition(() => {
 				this.currentWordAtPosition = null;
+
 				this.removeLinkDecorations();
+
 				this.toUnhookForKeyboard.clear();
 			}),
 		);
+
 		this.toUnhookForKeyboard.add(
 			this.editor.onKeyDown((e: IKeyboardEvent) => {
 				if (e) {
 					this.currentWordAtPosition = null;
+
 					this.removeLinkDecorations();
+
 					this.toUnhookForKeyboard.clear();
 				}
 			}),
 		);
 	}
+
 	private startFindDefinitionFromMouse(
 		mouseEvent: ClickLinkMouseEvent,
 		withKey?: ClickLinkKeyboardEvent,
@@ -158,15 +179,20 @@ export class GotoDefinitionAtPositionEditorContribution
 		) {
 			return;
 		}
+
 		if (!this.editor.hasModel() || !this.isEnabled(mouseEvent, withKey)) {
 			this.currentWordAtPosition = null;
+
 			this.removeLinkDecorations();
 
 			return;
 		}
+
 		const position = mouseEvent.target.position!;
+
 		this.startFindDefinition(position);
 	}
+
 	private async startFindDefinition(position: Position): Promise<void> {
 		// Dispose listeners for updating decorations when using keyboard to show definition hover
 		this.toUnhookForKeyboard.clear();
@@ -177,6 +203,7 @@ export class GotoDefinitionAtPositionEditorContribution
 
 		if (!word) {
 			this.currentWordAtPosition = null;
+
 			this.removeLinkDecorations();
 
 			return;
@@ -190,6 +217,7 @@ export class GotoDefinitionAtPositionEditorContribution
 		) {
 			return;
 		}
+
 		this.currentWordAtPosition = word;
 		// Find definition and decorate word if found
 		const state = new EditorState(
@@ -202,8 +230,10 @@ export class GotoDefinitionAtPositionEditorContribution
 
 		if (this.previousPromise) {
 			this.previousPromise.cancel();
+
 			this.previousPromise = null;
 		}
+
 		this.previousPromise = createCancelablePromise((token) =>
 			this.findDefinition(position, token),
 		);
@@ -217,11 +247,13 @@ export class GotoDefinitionAtPositionEditorContribution
 
 			return;
 		}
+
 		if (!results || !results.length || !state.validate(this.editor)) {
 			this.removeLinkDecorations();
 
 			return;
 		}
+
 		const linkRange = results[0].originSelectionRange
 			? Range.lift(results[0].originSelectionRange)
 			: new Range(
@@ -242,6 +274,7 @@ export class GotoDefinitionAtPositionEditorContribution
 					);
 				}
 			}
+
 			this.addDecoration(
 				combinedRange,
 				new MarkdownString().appendText(
@@ -259,6 +292,7 @@ export class GotoDefinitionAtPositionEditorContribution
 			if (!result.uri) {
 				return;
 			}
+
 			this.textModelResolverService
 				.createModelReference(result.uri)
 				.then((ref) => {
@@ -267,6 +301,7 @@ export class GotoDefinitionAtPositionEditorContribution
 
 						return;
 					}
+
 					const {
 						object: { textEditorModel },
 					} = ref;
@@ -282,6 +317,7 @@ export class GotoDefinitionAtPositionEditorContribution
 
 						return;
 					}
+
 					const previewValue = this.getPreviewValue(
 						textEditorModel,
 						startLineNumber,
@@ -292,6 +328,7 @@ export class GotoDefinitionAtPositionEditorContribution
 						this.languageService.guessLanguageIdByFilepathOrFirstLine(
 							textEditorModel.uri,
 						);
+
 					this.addDecoration(
 						linkRange,
 						previewValue
@@ -301,10 +338,12 @@ export class GotoDefinitionAtPositionEditorContribution
 								)
 							: undefined,
 					);
+
 					ref.dispose();
 				});
 		}
 	}
+
 	private getPreviewValue(
 		textEditorModel: ITextModel,
 		startLineNumber: number,
@@ -324,6 +363,7 @@ export class GotoDefinitionAtPositionEditorContribution
 				startLineNumber,
 			);
 		}
+
 		const previewValue = this.stripIndentationFromPreviewRange(
 			textEditorModel,
 			startLineNumber,
@@ -332,6 +372,7 @@ export class GotoDefinitionAtPositionEditorContribution
 
 		return previewValue;
 	}
+
 	private stripIndentationFromPreviewRange(
 		textEditorModel: ITextModel,
 		startLineNumber: number,
@@ -344,13 +385,17 @@ export class GotoDefinitionAtPositionEditorContribution
 
 		for (
 			let endLineNumber = startLineNumber + 1;
+
 			endLineNumber < previewRange.endLineNumber;
+
 			endLineNumber++
 		) {
 			const endIndent =
 				textEditorModel.getLineFirstNonWhitespaceColumn(endLineNumber);
+
 			minIndent = Math.min(minIndent, endIndent);
 		}
+
 		const previewValue = textEditorModel
 			.getValueInRange(previewRange)
 			.replace(new RegExp(`^\\s{${minIndent - 1}}`, "gm"), "")
@@ -358,6 +403,7 @@ export class GotoDefinitionAtPositionEditorContribution
 
 		return previewValue;
 	}
+
 	private getPreviewRangeBasedOnIndentation(
 		textEditorModel: ITextModel,
 		startLineNumber: number,
@@ -381,8 +427,10 @@ export class GotoDefinitionAtPositionEditorContribution
 				break;
 			}
 		}
+
 		return new Range(startLineNumber, 1, endLineNumber + 1, 1);
 	}
+
 	private addDecoration(
 		range: Range,
 		hoverMessage: MarkdownString | undefined,
@@ -395,11 +443,14 @@ export class GotoDefinitionAtPositionEditorContribution
 				hoverMessage,
 			},
 		};
+
 		this.linkDecorations.set([newDecorations]);
 	}
+
 	private removeLinkDecorations(): void {
 		this.linkDecorations.clear();
 	}
+
 	private isEnabled(
 		mouseEvent: ClickLinkMouseEvent,
 		withKey?: ClickLinkKeyboardEvent,
@@ -420,6 +471,7 @@ export class GotoDefinitionAtPositionEditorContribution
 			)
 		);
 	}
+
 	private findDefinition(
 		position: Position,
 		token: CancellationToken,
@@ -429,6 +481,7 @@ export class GotoDefinitionAtPositionEditorContribution
 		if (!model) {
 			return Promise.resolve(null);
 		}
+
 		return getDefinitionsAtPosition(
 			this.languageFeaturesService.definitionProvider,
 			model,
@@ -437,6 +490,7 @@ export class GotoDefinitionAtPositionEditorContribution
 			token,
 		);
 	}
+
 	private gotoDefinition(
 		position: Position,
 		openToSide: boolean,
@@ -461,13 +515,16 @@ export class GotoDefinitionAtPositionEditorContribution
 			return action.run(accessor);
 		});
 	}
+
 	private isInPeekEditor(accessor: ServicesAccessor): boolean | undefined {
 		const contextKeyService = accessor.get(IContextKeyService);
 
 		return PeekContext.inPeekEditor.getValue(contextKeyService);
 	}
+
 	public dispose(): void {
 		this.toUnhook.dispose();
+
 		this.toUnhookForKeyboard.dispose();
 	}
 }

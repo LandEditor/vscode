@@ -679,6 +679,7 @@ CommandsRegistry.registerCommand(
 	"_executeWorkspaceSymbolProvider",
 	async function (accessor, ...args): Promise<IWorkspaceSymbol[]> {
 		const [query] = args;
+
 		assertType(typeof query === "string");
 
 		const result = await getWorkspaceSymbols(query);

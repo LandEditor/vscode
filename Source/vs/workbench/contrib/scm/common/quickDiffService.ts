@@ -28,6 +28,7 @@ function createProviderComparer(
 		}
 
 		const aIsParent = isEqualOrParent(uri, a.rootUri!);
+
 		const bIsParent = isEqualOrParent(uri, b.rootUri!);
 
 		if (aIsParent && bIsParent) {
@@ -46,9 +47,11 @@ export class QuickDiffService extends Disposable implements IQuickDiffService {
 	declare readonly _serviceBrand: undefined;
 
 	private quickDiffProviders: Set<QuickDiffProvider> = new Set();
+
 	private readonly _onDidChangeQuickDiffProviders = this._register(
 		new Emitter<void>(),
 	);
+
 	readonly onDidChangeQuickDiffProviders =
 		this._onDidChangeQuickDiffProviders.event;
 
@@ -61,10 +64,13 @@ export class QuickDiffService extends Disposable implements IQuickDiffService {
 
 	addQuickDiffProvider(quickDiff: QuickDiffProvider): IDisposable {
 		this.quickDiffProviders.add(quickDiff);
+
 		this._onDidChangeQuickDiffProviders.fire();
+
 		return {
 			dispose: () => {
 				this.quickDiffProviders.delete(quickDiff);
+
 				this._onDidChangeQuickDiffProviders.fire();
 			},
 		};
@@ -72,7 +78,9 @@ export class QuickDiffService extends Disposable implements IQuickDiffService {
 
 	private isQuickDiff(diff: {
 		originalResource?: URI;
+
 		label?: string;
+
 		isSCM?: boolean;
 	}): diff is QuickDiff {
 		return (
@@ -110,6 +118,7 @@ export class QuickDiffService extends Disposable implements IQuickDiffService {
 							undefined,
 						)
 					: 10;
+
 				const diff: Partial<QuickDiff> = {
 					originalResource:
 						scoreValue > 0
@@ -120,9 +129,11 @@ export class QuickDiffService extends Disposable implements IQuickDiffService {
 					isSCM: provider.isSCM,
 					visible: provider.visible,
 				};
+
 				return diff;
 			}),
 		);
+
 		return diffs.filter<QuickDiff>(this.isQuickDiff);
 	}
 }

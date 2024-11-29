@@ -58,11 +58,13 @@ export class ImplicitContextAttachmentWidget extends Disposable {
 		this.domNode = dom.$(
 			".chat-attached-context-attachment.show-file-icons.implicit",
 		);
+
 		this.render();
 	}
 
 	private render() {
 		dom.clearNode(this.domNode);
+
 		this.renderDisposables.clear();
 
 		this.domNode.classList.toggle("disabled", !this.attachment.enabled);
@@ -112,19 +114,23 @@ export class ImplicitContextAttachmentWidget extends Disposable {
 			currentFile + (this.attachment.enabled ? "" : ` (${inactive})`);
 
 		const title = `${currentFileHint}\n${uriLabel}`;
+
 		label.setFile(file, {
 			fileKind: FileKind.FILE,
 			hidePath: true,
 			range,
 			title,
 		});
+
 		this.domNode.ariaLabel = ariaLabel;
+
 		this.domNode.tabIndex = 0;
 
 		const hintElement = dom.append(
 			this.domNode,
 			dom.$("span.chat-implicit-hint", undefined, "Current file"),
 		);
+
 		this._register(
 			this.hoverService.setupManagedHover(
 				getDefaultHoverDelegate("element"),
@@ -140,9 +146,11 @@ export class ImplicitContextAttachmentWidget extends Disposable {
 		const toggleButton = this.renderDisposables.add(
 			new Button(this.domNode, { supportIcons: true, title: buttonMsg }),
 		);
+
 		toggleButton.icon = this.attachment.enabled
 			? Codicon.eye
 			: Codicon.eyeClosed;
+
 		this.renderDisposables.add(
 			toggleButton.onDidClick((e) => {
 				e.stopPropagation(); // prevent it from triggering the click handler on the parent immediately after rerendering
@@ -163,6 +171,7 @@ export class ImplicitContextAttachmentWidget extends Disposable {
 				this.modelService,
 			),
 		);
+
 		resourceContextKey.set(file);
 
 		this.renderDisposables.add(

@@ -20,6 +20,7 @@ class NotebookCellOutlineDataSourceReferenceCollection extends ReferenceCollecti
 	) {
 		super();
 	}
+
 	protected override createReferencedObject(
 		_key: string,
 		editor: INotebookEditor,
@@ -29,6 +30,7 @@ class NotebookCellOutlineDataSourceReferenceCollection extends ReferenceCollecti
 			editor,
 		);
 	}
+
 	protected override destroyReferencedObject(
 		_key: string,
 		object: NotebookCellOutlineDataSource,
@@ -59,6 +61,7 @@ export class NotebookCellOutlineDataSourceFactory
 			NotebookCellOutlineDataSourceReferenceCollection,
 		);
 	}
+
 	getOrCreate(
 		editor: INotebookEditor,
 	): IReference<NotebookCellOutlineDataSource> {

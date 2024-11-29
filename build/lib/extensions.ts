@@ -56,6 +56,7 @@ function minifyExtensionResources(input: Stream): Stream {
 					// file parsed OK => just stringify to drop whitespace and comments
 					f.contents = Buffer.from(JSON.stringify(value));
 				}
+
 				return f;
 			}),
 		)
@@ -75,6 +76,7 @@ function updateExtensionPackageJSON(
 		.pipe(
 			es.mapSync((f: File) => {
 				const data = JSON.parse(f.contents.toString("utf8"));
+
 				f.contents = Buffer.from(JSON.stringify(update(data)));
 
 				return f;
@@ -102,15 +104,19 @@ function fromLocal(
 	if (isWebPacked) {
 		input = updateExtensionPackageJSON(input, (data: any) => {
 			delete data.scripts;
+
 			delete data.dependencies;
+
 			delete data.devDependencies;
 
 			if (data.main) {
 				data.main = data.main.replace("/out/", "/dist/");
 			}
+
 			return data;
 		});
 	}
+
 	return input;
 }
 function fromLocalWebpack(
@@ -184,11 +190,13 @@ function fromLocalWebpack(
 						if (err) {
 							result.emit("error", err);
 						}
+
 						const { compilation } = stats;
 
 						if (compilation.errors.length > 0) {
 							result.emit("error", compilation.errors.join("\n"));
 						}
+
 						if (compilation.warnings.length > 0) {
 							result.emit(
 								"error",
@@ -226,6 +234,7 @@ function fromLocalWebpack(
 								}
 							}
 						}
+
 						const relativeOutputPath = path.relative(
 							extensionPath,
 							webpackConfig.output.path,
@@ -235,7 +244,9 @@ function fromLocalWebpack(
 							.pipe(
 								es.through(function (data) {
 									data.stat = data.stat || {};
+
 									data.base = extensionPath;
+
 									this.emit("data", data);
 								}),
 							)
@@ -248,6 +259,7 @@ function fromLocalWebpack(
 										const contents = (<Buffer>(
 											data.contents
 										)).toString("utf8");
+
 										data.contents = Buffer.from(
 											contents.replace(
 												/\n\/\/# sourceMappingURL=(.*)$/gm,
@@ -276,7 +288,9 @@ function fromLocalWebpack(
 		})
 		.catch((err) => {
 			console.error(extensionPath);
+
 			console.error(packagedDependencies);
+
 			result.emit("error", err);
 		});
 
@@ -286,6 +300,7 @@ function fromLocalNormal(extensionPath: string): Stream {
 	const vsce = require("@vscode/vsce") as typeof import("@vscode/vsce");
 
 	const result = es.through();
+
 	vsce.listFiles({
 		cwd: extensionPath,
 		packageManager: vsce.PackageManager.Npm,
@@ -302,6 +317,7 @@ function fromLocalNormal(extensionPath: string): Stream {
 							contents: fs.createReadStream(filePath) as any,
 						}),
 				);
+
 			es.readArray(files).pipe(result);
 		})
 		.catch((err) => result.emit("error", err));
@@ -327,6 +343,7 @@ export function fromMarketplace(
 	const [publisher, name] = extensionName.split(".");
 
 	const url = `${serviceUrl}/publishers/${publisher}/vsextensions/${name}/${version}/vspackage`;
+
 	fancyLog(
 		"Downloading extension:",
 		ansiColors.yellow(`${extensionName}@${version}`),
@@ -363,6 +380,7 @@ export function fromGithub({
 }: IExtensionDefinition): Stream {
 	const json =
 		require("gulp-json-editor") as typeof import("gulp-json-editor");
+
 	fancyLog(
 		"Downloading extension from GH:",
 		ansiColors.yellow(`${name}@${version}`),
@@ -425,10 +443,15 @@ const webBuiltInExtensions: IExtensionDefinition[] =
 type ExtensionKind = "ui" | "workspace" | "web";
 interface IExtensionManifest {
 	main?: string;
+
 	browser?: string;
+
 	extensionKind?: ExtensionKind | ExtensionKind[];
+
 	extensionPack?: string[];
+
 	extensionDependencies?: string[];
+
 	contributes?: {
 		[id: string]: any;
 	};
@@ -440,6 +463,7 @@ function isWebExtension(manifest: IExtensionManifest): boolean {
 	if (Boolean(manifest.browser)) {
 		return true;
 	}
+
 	if (Boolean(manifest.main)) {
 		return false;
 	}
@@ -453,6 +477,7 @@ function isWebExtension(manifest: IExtensionManifest): boolean {
 			return true;
 		}
 	}
+
 	if (typeof manifest.contributes !== "undefined") {
 		for (const id of ["debuggers", "terminal", "typescriptServerPlugins"]) {
 			if (manifest.contributes.hasOwnProperty(id)) {
@@ -460,6 +485,7 @@ function isWebExtension(manifest: IExtensionManifest): boolean {
 			}
 		}
 	}
+
 	return true;
 }
 
@@ -613,7 +639,9 @@ export function packageMarketplaceExtensionsStream(forWeb: boolean): Stream {
 
 				return updateExtensionPackageJSON(src, (data: any) => {
 					delete data.scripts;
+
 					delete data.dependencies;
+
 					delete data.devDependencies;
 
 					return data;
@@ -628,9 +656,13 @@ export function packageMarketplaceExtensionsStream(forWeb: boolean): Stream {
 }
 export interface IScannedBuiltinExtension {
 	extensionPath: string;
+
 	packageJSON: any;
+
 	packageNLS?: any;
+
 	readmePath?: string;
+
 	changelogPath?: string;
 }
 export function scanBuiltinExtensions(
@@ -646,6 +678,7 @@ export function scanBuiltinExtensions(
 			if (exclude.indexOf(extensionFolder) >= 0) {
 				continue;
 			}
+
 			const packageJSONPath = path.join(
 				extensionsRoot,
 				extensionFolder,
@@ -655,6 +688,7 @@ export function scanBuiltinExtensions(
 			if (!fs.existsSync(packageJSONPath)) {
 				continue;
 			}
+
 			const packageJSON = JSON.parse(
 				fs.readFileSync(packageJSONPath).toString("utf8"),
 			);
@@ -662,6 +696,7 @@ export function scanBuiltinExtensions(
 			if (!isWebExtension(packageJSON)) {
 				continue;
 			}
+
 			const children = fs.readdirSync(
 				path.join(extensionsRoot, extensionFolder),
 			);
@@ -691,6 +726,7 @@ export function scanBuiltinExtensions(
 			const changelog = children.filter((child) =>
 				/^changelog(\.txt|\.md|)$/i.test(child),
 			)[0];
+
 			scannedExtensions.push({
 				extensionPath: extensionFolder,
 				packageJSON,
@@ -703,6 +739,7 @@ export function scanBuiltinExtensions(
 					: undefined,
 			});
 		}
+
 		return scannedExtensions;
 	} catch (ex) {
 		return scannedExtensions;
@@ -717,9 +754,11 @@ export function translatePackageJSON(
 			| string
 			| {
 					message: string;
+
 					comment: string[];
 			  };
 	}
+
 	const CharCode_PC = "%".charCodeAt(0);
 
 	const packageNls: NLSFormat = JSON.parse(
@@ -752,6 +791,7 @@ export function translatePackageJSON(
 			}
 		}
 	};
+
 	translate(packageJSON);
 
 	return packageJSON;
@@ -773,6 +813,7 @@ export async function webpackExtensions(
 	isWatch: boolean,
 	webpackConfigLocations: {
 		configPath: string;
+
 		outputRoot?: string;
 	}[],
 ) {
@@ -806,11 +847,14 @@ export async function webpackExtensions(
 						),
 					);
 				}
+
 				webpackConfigs.push(config);
 			}
 		}
+
 		addConfig(configOrFnOrArray);
 	}
+
 	function reporter(fullStats: any) {
 		if (Array.isArray(fullStats.children)) {
 			for (const stats of fullStats.children) {
@@ -824,15 +868,18 @@ export async function webpackExtensions(
 					const match = relativePath.match(
 						/[^\/]+(\/server|\/client)?/,
 					);
+
 					fancyLog(
 						`Finished ${ansiColors.green(taskName)} ${ansiColors.cyan(match![0])} with ${stats.errors.length} errors.`,
 					);
 				}
+
 				if (Array.isArray(stats.errors)) {
 					stats.errors.forEach((error: any) => {
 						fancyLog.error(error);
 					});
 				}
+
 				if (Array.isArray(stats.warnings)) {
 					stats.warnings.forEach((warning: any) => {
 						fancyLog.warn(warning);
@@ -841,6 +888,7 @@ export async function webpackExtensions(
 			}
 		}
 	}
+
 	return new Promise<void>((resolve, reject) => {
 		if (isWatch) {
 			webpack(webpackConfigs).watch({}, (err, stats) => {
@@ -854,9 +902,11 @@ export async function webpackExtensions(
 			webpack(webpackConfigs).run((err, stats) => {
 				if (err) {
 					fancyLog.error(err);
+
 					reject();
 				} else {
 					reporter(stats?.toJson());
+
 					resolve();
 				}
 			});
@@ -868,11 +918,13 @@ async function esbuildExtensions(
 	isWatch: boolean,
 	scripts: {
 		script: string;
+
 		outputRoot?: string;
 	}[],
 ) {
 	function reporter(stdError: string, script: string) {
 		const matches = (stdError || "").match(/\> (.+): error: (.+)?/g);
+
 		fancyLog(
 			`Finished ${ansiColors.green(taskName)} ${script} with ${matches ? matches.length : 0} errors.`,
 		);
@@ -881,6 +933,7 @@ async function esbuildExtensions(
 			fancyLog.error(match);
 		}
 	}
+
 	const tasks = scripts.map(({ script, outputRoot }) => {
 		return new Promise<void>((resolve, reject) => {
 			const args = [script];
@@ -888,9 +941,11 @@ async function esbuildExtensions(
 			if (isWatch) {
 				args.push("--watch");
 			}
+
 			if (outputRoot) {
 				args.push("--outputRoot", outputRoot);
 			}
+
 			const proc = cp.execFile(
 				process.argv[0],
 				args,
@@ -899,11 +954,13 @@ async function esbuildExtensions(
 					if (error) {
 						return reject(error);
 					}
+
 					reporter(stderr, script);
 
 					return resolve();
 				},
 			);
+
 			proc.stdout!.on("data", (data) => {
 				fancyLog(
 					`${ansiColors.green(taskName)}: ${data.toString("utf8")}`,

@@ -37,10 +37,12 @@ export class ExtensionDependencyChecker
 		private readonly hostService: IHostService,
 	) {
 		super();
+
 		CommandsRegistry.registerCommand(
 			"workbench.extensions.installMissingDependencies",
 			() => this.installMissingDependencies(),
 		);
+
 		MenuRegistry.appendMenuItem(MenuId.CommandPalette, {
 			command: {
 				id: "workbench.extensions.installMissingDependencies",
@@ -52,6 +54,7 @@ export class ExtensionDependencyChecker
 			},
 		});
 	}
+
 	private async getUninstalledMissingDependencies(): Promise<string[]> {
 		const allMissingDependencies = await this.getAllMissingDependencies();
 
@@ -64,12 +67,14 @@ export class ExtensionDependencyChecker
 			),
 		);
 	}
+
 	private async getAllMissingDependencies(): Promise<string[]> {
 		await this.extensionService.whenInstalledExtensionsRegistered();
 
 		const runningExtensionsIds: Set<string> =
 			this.extensionService.extensions.reduce((result, r) => {
 				result.add(r.identifier.value.toLowerCase());
+
 				return result;
 			}, new Set<string>());
 
@@ -84,8 +89,10 @@ export class ExtensionDependencyChecker
 				});
 			}
 		}
+
 		return [...missingDependencies.values()];
 	}
+
 	private async installMissingDependencies(): Promise<void> {
 		const missingDependencies =
 			await this.getUninstalledMissingDependencies();
@@ -103,6 +110,7 @@ export class ExtensionDependencyChecker
 						this.extensionsWorkbenchService.install(extension),
 					),
 				);
+
 				this.notificationService.notify({
 					severity: Severity.Info,
 					message: localize(

@@ -51,6 +51,7 @@ export const TextToSpeechInProgress = new RawContextKey<boolean>(
 
 export interface ISpeechProviderMetadata {
 	readonly extension: ExtensionIdentifier;
+
 	readonly displayName: string;
 }
 export enum SpeechToTextStatus {
@@ -62,6 +63,7 @@ export enum SpeechToTextStatus {
 }
 export interface ISpeechToTextEvent {
 	readonly status: SpeechToTextStatus;
+
 	readonly text?: string;
 }
 export interface ISpeechToTextSession {
@@ -74,10 +76,12 @@ export enum TextToSpeechStatus {
 }
 export interface ITextToSpeechEvent {
 	readonly status: TextToSpeechStatus;
+
 	readonly text?: string;
 }
 export interface ITextToSpeechSession {
 	readonly onDidChange: Event<ITextToSpeechEvent>;
+
 	synthesize(text: string): Promise<void>;
 }
 export enum KeywordRecognitionStatus {
@@ -87,6 +91,7 @@ export enum KeywordRecognitionStatus {
 }
 export interface IKeywordRecognitionEvent {
 	readonly status: KeywordRecognitionStatus;
+
 	readonly text?: string;
 }
 export interface IKeywordRecognitionSession {
@@ -100,28 +105,37 @@ export interface ITextToSpeechSessionOptions {
 }
 export interface ISpeechProvider {
 	readonly metadata: ISpeechProviderMetadata;
+
 	createSpeechToTextSession(
 		token: CancellationToken,
 		options?: ISpeechToTextSessionOptions,
 	): ISpeechToTextSession;
+
 	createTextToSpeechSession(
 		token: CancellationToken,
 		options?: ITextToSpeechSessionOptions,
 	): ITextToSpeechSession;
+
 	createKeywordRecognitionSession(
 		token: CancellationToken,
 	): IKeywordRecognitionSession;
 }
 export interface ISpeechService {
 	readonly _serviceBrand: undefined;
+
 	readonly onDidChangeHasSpeechProvider: Event<void>;
+
 	readonly hasSpeechProvider: boolean;
+
 	registerSpeechProvider(
 		identifier: string,
 		provider: ISpeechProvider,
 	): IDisposable;
+
 	readonly onDidStartSpeechToTextSession: Event<void>;
+
 	readonly onDidEndSpeechToTextSession: Event<void>;
+
 	readonly hasActiveSpeechToTextSession: boolean;
 	/**
 	 * Starts to transcribe speech from the default microphone. The returned
@@ -131,8 +145,11 @@ export interface ISpeechService {
 		token: CancellationToken,
 		context?: string,
 	): Promise<ISpeechToTextSession>;
+
 	readonly onDidStartTextToSpeechSession: Event<void>;
+
 	readonly onDidEndTextToSpeechSession: Event<void>;
+
 	readonly hasActiveTextToSpeechSession: boolean;
 	/**
 	 * Creates a synthesizer to synthesize speech from text. The returned
@@ -143,8 +160,11 @@ export interface ISpeechService {
 		token: CancellationToken,
 		context?: string,
 	): Promise<ITextToSpeechSession>;
+
 	readonly onDidStartKeywordRecognition: Event<void>;
+
 	readonly onDidEndKeywordRecognition: Event<void>;
+
 	readonly hasActiveKeywordRecognition: boolean;
 	/**
 	 * Starts to recognize a keyword from the default microphone. The returned
@@ -267,5 +287,6 @@ export function speechLanguageConfigToLanguage(
 			}
 		}
 	}
+
 	return "en-US";
 }

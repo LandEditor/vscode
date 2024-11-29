@@ -78,6 +78,7 @@ import "./menuEntryActionViewItem.css";
 
 export interface PrimaryAndSecondaryActions {
 	primary: IAction[];
+
 	secondary: IAction[];
 }
 
@@ -119,6 +120,7 @@ function getContextMenuActionsImpl(
 	const useAlternativeActions =
 		modifierKeyEmitter.keyStatus.altKey ||
 		((isWindows || isLinux) && modifierKeyEmitter.keyStatus.shiftKey);
+
 	fillInActions(
 		groups,
 		target,
@@ -140,6 +142,7 @@ export function getActionBarActions(
 	useSeparatorsInPrimaryActions?: boolean,
 ): PrimaryAndSecondaryActions {
 	const target: PrimaryAndSecondaryActions = { primary: [], secondary: [] };
+
 	fillInActionBarActions(
 		groups,
 		target,
@@ -162,6 +165,7 @@ export function getFlatActionBarActions(
 	useSeparatorsInPrimaryActions?: boolean,
 ): IAction[] {
 	const target: IAction[] = [];
+
 	fillInActionBarActions(
 		groups,
 		target,
@@ -221,15 +225,19 @@ function fillInActions(
 
 	if (Array.isArray(target)) {
 		primaryBucket = target;
+
 		secondaryBucket = target;
 	} else {
 		primaryBucket = target.primary;
+
 		secondaryBucket = target.secondary;
 	}
 
 	const submenuInfo = new Set<{
 		group: string;
+
 		action: SubmenuAction;
+
 		index: number;
 	}>();
 
@@ -257,6 +265,7 @@ function fillInActions(
 						? action.alt
 						: action;
 			}
+
 			const newLen = target.push(action);
 			// keep submenu info for later inlining
 			if (action instanceof SubmenuAction) {
@@ -282,7 +291,9 @@ function fillInActions(
 
 export interface IMenuEntryActionViewItemOptions {
 	draggable?: boolean;
+
 	keybinding?: string;
+
 	hoverDelegate?: IHoverDelegate;
 }
 
@@ -290,9 +301,11 @@ export class MenuEntryActionViewItem<
 	T extends IMenuEntryActionViewItemOptions = IMenuEntryActionViewItemOptions,
 > extends ActionViewItem {
 	private _wantsAltCommand: boolean = false;
+
 	private readonly _itemClassDispose = this._register(
 		new MutableDisposable(),
 	);
+
 	private readonly _altKey: ModifierKeyEmitter;
 
 	constructor(
@@ -315,6 +328,7 @@ export class MenuEntryActionViewItem<
 			keybinding: _options?.keybinding,
 			hoverDelegate: _options?.hoverDelegate,
 		});
+
 		this._altKey = ModifierKeyEmitter.getInstance();
 	}
 
@@ -331,6 +345,7 @@ export class MenuEntryActionViewItem<
 
 	override async onClick(event: MouseEvent): Promise<void> {
 		event.preventDefault();
+
 		event.stopPropagation();
 
 		try {
@@ -342,6 +357,7 @@ export class MenuEntryActionViewItem<
 
 	override render(container: HTMLElement): void {
 		super.render(container);
+
 		container.classList.add("menu-entry");
 
 		if (this.options.icon) {
@@ -361,8 +377,11 @@ export class MenuEntryActionViewItem<
 
 				if (wantsAltCommand !== this._wantsAltCommand) {
 					this._wantsAltCommand = wantsAltCommand;
+
 					this.updateLabel();
+
 					this.updateTooltip();
+
 					this.updateClass();
 				}
 			};
@@ -372,6 +391,7 @@ export class MenuEntryActionViewItem<
 			this._register(
 				addDisposableListener(container, "mouseleave", (_) => {
 					isMouseOver = false;
+
 					updateAltState();
 				}),
 			);
@@ -379,6 +399,7 @@ export class MenuEntryActionViewItem<
 			this._register(
 				addDisposableListener(container, "mouseenter", (_) => {
 					isMouseOver = true;
+
 					updateAltState();
 				}),
 			);
@@ -438,6 +459,7 @@ export class MenuEntryActionViewItem<
 				altTitleSection,
 			);
 		}
+
 		return title;
 	}
 
@@ -476,7 +498,9 @@ export class MenuEntryActionViewItem<
 		if (ThemeIcon.isThemeIcon(icon)) {
 			// theme icons
 			const iconClasses = ThemeIcon.asClassNameArray(icon);
+
 			label.classList.add(...iconClasses);
+
 			this._itemClassDispose.value = toDisposable(() => {
 				label.classList.remove(...iconClasses);
 			});
@@ -487,10 +511,13 @@ export class MenuEntryActionViewItem<
 			)
 				? asCSSUrl(icon.dark)
 				: asCSSUrl(icon.light);
+
 			label.classList.add("icon");
+
 			this._itemClassDispose.value = combinedDisposable(
 				toDisposable(() => {
 					label.style.backgroundImage = "";
+
 					label.classList.remove("icon");
 				}),
 				this._themeService.onDidColorThemeChange(() => {
@@ -505,16 +532,20 @@ export class MenuEntryActionViewItem<
 export interface ITextOnlyMenuEntryActionViewItemOptions
 	extends IMenuEntryActionViewItemOptions {
 	conversational?: boolean;
+
 	useComma?: boolean;
 }
 
 export class TextOnlyMenuEntryActionViewItem extends MenuEntryActionViewItem<ITextOnlyMenuEntryActionViewItemOptions> {
 	override render(container: HTMLElement): void {
 		this.options.label = true;
+
 		this.options.icon = false;
 
 		super.render(container);
+
 		container.classList.add("text-only");
+
 		container.classList.toggle(
 			"use-comma",
 			this._options?.useComma ?? false,
@@ -530,6 +561,7 @@ export class TextOnlyMenuEntryActionViewItem extends MenuEntryActionViewItem<ITe
 		if (!kb) {
 			return super.updateLabel();
 		}
+
 		if (this.label) {
 			const kb2 = TextOnlyMenuEntryActionViewItem._symbolPrintEnter(kb);
 
@@ -595,6 +627,7 @@ export class SubmenuEntryActionViewItem extends DropdownMenuActionViewItem {
 
 	override render(container: HTMLElement): void {
 		super.render(container);
+
 		assertType(this.element);
 
 		container.classList.add("menu-entry");
@@ -617,6 +650,7 @@ export class SubmenuEntryActionViewItem extends DropdownMenuActionViewItem {
 			};
 
 			setBackgroundImage();
+
 			this._register(
 				this._themeService.onDidColorThemeChange(() => {
 					// refresh when the theme changes in case we go between dark <-> light
@@ -630,6 +664,7 @@ export class SubmenuEntryActionViewItem extends DropdownMenuActionViewItem {
 export interface IDropdownWithDefaultActionViewItemOptions
 	extends IDropdownMenuActionViewItemOptions {
 	renderKeybindingWithDefaultActionLabel?: boolean;
+
 	persistLastActionId?: boolean;
 }
 
@@ -637,9 +672,13 @@ export class DropdownWithDefaultActionViewItem extends BaseActionViewItem {
 	private readonly _options:
 		| IDropdownWithDefaultActionViewItemOptions
 		| undefined;
+
 	private _defaultAction: ActionViewItem;
+
 	private readonly _dropdown: DropdownMenuActionViewItem;
+
 	private _container: HTMLElement | null = null;
+
 	private readonly _storageKey: string;
 
 	get onDidChangeDropdownVisibility(): Event<boolean> {
@@ -659,7 +698,9 @@ export class DropdownWithDefaultActionViewItem extends BaseActionViewItem {
 		@IStorageService protected _storageService: IStorageService,
 	) {
 		super(null, submenuAction);
+
 		this._options = options;
+
 		this._storageKey = `${submenuAction.item.submenu.id}_lastActionId`;
 
 		// determine default action
@@ -674,6 +715,7 @@ export class DropdownWithDefaultActionViewItem extends BaseActionViewItem {
 				(a) => defaultActionId === a.id,
 			);
 		}
+
 		if (!defaultAction) {
 			defaultAction = submenuAction.actions[0];
 		}
@@ -705,6 +747,7 @@ export class DropdownWithDefaultActionViewItem extends BaseActionViewItem {
 			this._contextMenuService,
 			dropdownOptions,
 		);
+
 		this._register(
 			this._dropdown.actionRunner.onDidRun((e: IRunEvent) => {
 				if (e.action instanceof MenuItemAction) {
@@ -725,11 +768,13 @@ export class DropdownWithDefaultActionViewItem extends BaseActionViewItem {
 		}
 
 		this._defaultAction.dispose();
+
 		this._defaultAction = this._instaService.createInstance(
 			MenuEntryActionViewItem,
 			lastAction,
 			{ keybinding: this._getDefaultActionKeybindingLabel(lastAction) },
 		);
+
 		this._defaultAction.actionRunner = new (class extends ActionRunner {
 			protected override async runAction(
 				action: IAction,
@@ -758,12 +803,15 @@ export class DropdownWithDefaultActionViewItem extends BaseActionViewItem {
 				defaultActionKeybinding = `(${kb.getLabel()})`;
 			}
 		}
+
 		return defaultActionKeybinding;
 	}
 
 	override setActionContext(newContext: unknown): void {
 		super.setActionContext(newContext);
+
 		this._defaultAction.setActionContext(newContext);
+
 		this._dropdown.setActionContext(newContext);
 	}
 
@@ -775,7 +823,9 @@ export class DropdownWithDefaultActionViewItem extends BaseActionViewItem {
 		this._container.classList.add("monaco-dropdown-with-default");
 
 		const primaryContainer = $(".action-container");
+
 		this._defaultAction.render(append(this._container, primaryContainer));
+
 		this._register(
 			addDisposableListener(
 				primaryContainer,
@@ -785,7 +835,9 @@ export class DropdownWithDefaultActionViewItem extends BaseActionViewItem {
 
 					if (event.equals(KeyCode.RightArrow)) {
 						this._defaultAction.element!.tabIndex = -1;
+
 						this._dropdown.focus();
+
 						event.stopPropagation();
 					}
 				},
@@ -793,7 +845,9 @@ export class DropdownWithDefaultActionViewItem extends BaseActionViewItem {
 		);
 
 		const dropdownContainer = $(".dropdown-action-container");
+
 		this._dropdown.render(append(this._container, dropdownContainer));
+
 		this._register(
 			addDisposableListener(
 				dropdownContainer,
@@ -803,8 +857,11 @@ export class DropdownWithDefaultActionViewItem extends BaseActionViewItem {
 
 					if (event.equals(KeyCode.LeftArrow)) {
 						this._defaultAction.element!.tabIndex = 0;
+
 						this._dropdown.setFocusable(false);
+
 						this._defaultAction.element?.focus();
+
 						event.stopPropagation();
 					}
 				},
@@ -817,13 +874,16 @@ export class DropdownWithDefaultActionViewItem extends BaseActionViewItem {
 			this._dropdown.focus();
 		} else {
 			this._defaultAction.element!.tabIndex = 0;
+
 			this._defaultAction.element!.focus();
 		}
 	}
 
 	override blur(): void {
 		this._defaultAction.element!.tabIndex = -1;
+
 		this._dropdown.blur();
+
 		this._container!.blur();
 	}
 
@@ -832,12 +892,14 @@ export class DropdownWithDefaultActionViewItem extends BaseActionViewItem {
 			this._defaultAction.element!.tabIndex = 0;
 		} else {
 			this._defaultAction.element!.tabIndex = -1;
+
 			this._dropdown.setFocusable(false);
 		}
 	}
 
 	override dispose() {
 		this._defaultAction.dispose();
+
 		this._dropdown.dispose();
 
 		super.dispose();
@@ -864,6 +926,7 @@ class SubmenuEntrySelectActionViewItem extends SelectActionViewItem {
 			defaultSelectBoxStyles,
 			{ ariaLabel: action.tooltip, optionsAsChildren: true },
 		);
+
 		this.select(
 			Math.max(
 				0,
@@ -874,6 +937,7 @@ class SubmenuEntrySelectActionViewItem extends SelectActionViewItem {
 
 	override render(container: HTMLElement): void {
 		super.render(container);
+
 		container.style.borderColor = asCssVariable(selectBorder);
 	}
 

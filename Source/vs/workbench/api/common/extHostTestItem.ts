@@ -20,6 +20,7 @@ const testItemPropAccessor = <K extends keyof vscode.TestItem>(
 	toUpdate: (newValue: vscode.TestItem[K], oldValue: vscode.TestItem[K]) => ExtHostTestItemEvent,
 ) => {
 	let value = defaultValue;
+
 	return {
 		enumerable: true,
 		configurable: false,
@@ -29,7 +30,9 @@ const testItemPropAccessor = <K extends keyof vscode.TestItem>(
 		set(newValue: vscode.TestItem[K]) {
 			if (!equals(value, newValue)) {
 				const oldValue = value;
+
 				value = newValue;
+
 				api.listener?.(toUpdate(newValue, oldValue));
 			}
 		},
@@ -43,7 +46,9 @@ const strictEqualComparator = <T>(a: T, b: T) => a === b;
 const propComparators: { [K in keyof Required<WritableProps>]: (a: vscode.TestItem[K], b: vscode.TestItem[K]) => boolean } = {
 	range: (a, b) => {
 		if (a === b) { return true; }
+
 		if (!a || !b) { return false; }
+
 		return a.isEqual(b);
 	},
 	label: strictEqualComparator,
@@ -71,7 +76,9 @@ const evSetProps = <T>(fn: (newValue: T) => Partial<ITestItem>): (newValue: T) =
 const makePropDescriptors = (api: IExtHostTestItemApi, label: string): { [K in keyof Required<WritableProps>]: PropertyDescriptor } => ({
 	range: (() => {
 		let value: vscode.Range | undefined;
+
 		const updateProps = evSetProps<vscode.Range | undefined>(r => ({ range: editorRange.Range.lift(Convert.Range.from(r)) }));
+
 		return {
 			enumerable: true,
 			configurable: false,
@@ -80,8 +87,10 @@ const makePropDescriptors = (api: IExtHostTestItemApi, label: string): { [K in k
 			},
 			set(newValue: vscode.Range | undefined) {
 				api.listener?.({ op: TestItemEventOp.DocumentSynced });
+
 				if (!propComparators.range(value, newValue)) {
 					value = newValue;
+
 					api.listener?.(updateProps(newValue));
 				}
 			},
@@ -105,19 +114,28 @@ const makePropDescriptors = (api: IExtHostTestItemApi, label: string): { [K in k
 
 const toItemFromPlain = (item: ITestItem.Serialized): TestItemImpl => {
 	const testId = TestId.fromString(item.extId);
+
 	const testItem = new TestItemImpl(testId.controllerId, testId.localId, item.label, URI.revive(item.uri) || undefined);
+
 	testItem.range = Convert.Range.to(item.range || undefined);
+
 	testItem.description = item.description || undefined;
+
 	testItem.sortText = item.sortText || undefined;
+
 	testItem.tags = item.tags.map(t => Convert.TestTag.to({ id: denamespaceTestTag(t).tagId }));
+
 	return testItem;
 };
 
 export const toItemFromContext = (context: ITestItemContext): TestItemImpl => {
 	let node: TestItemImpl | undefined;
+
 	for (const test of context.tests) {
 		const next = toItemFromPlain(test.item);
+
 		getPrivateApiFor(next).parent = node;
+
 		node = next;
 	}
 
@@ -126,17 +144,27 @@ export const toItemFromContext = (context: ITestItemContext): TestItemImpl => {
 
 export class TestItemImpl implements vscode.TestItem {
 	public readonly id!: string;
+
 	public readonly uri!: vscode.Uri | undefined;
+
 	public readonly children!: ITestItemChildren<vscode.TestItem>;
+
 	public readonly parent!: TestItemImpl | undefined;
 
 	public range!: vscode.Range | undefined;
+
 	public description!: string | undefined;
+
 	public sortText!: string | undefined;
+
 	public label!: string;
+
 	public error!: string | vscode.MarkdownString;
+
 	public busy!: boolean;
+
 	public canResolveChildren!: boolean;
+
 	public tags!: readonly vscode.TestTag[];
 
 	/**
@@ -148,6 +176,7 @@ export class TestItemImpl implements vscode.TestItem {
 		}
 
 		const api = createPrivateApiFor(this, controllerId);
+
 		Object.defineProperties(this, {
 			id: {
 				value: id,

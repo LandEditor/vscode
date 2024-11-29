@@ -63,12 +63,14 @@ export const defaultWindowTitle = (() => {
 	if (isMacintosh && isNative) {
 		return "${activeEditorShort}${separator}${rootName}${separator}${profileName}"; // macOS has native dirty indicator
 	}
+
 	const base =
 		"${dirty}${activeEditorShort}${separator}${rootName}${separator}${profileName}${separator}${appName}";
 
 	if (isWeb) {
 		return base + "${separator}${remoteName}"; // Web: always show remote name
 	}
+
 	return base;
 })();
 
@@ -78,43 +80,54 @@ export class WindowTitle extends Disposable {
 	private static readonly NLS_USER_IS_ADMIN = isWindows
 		? localize("userIsAdmin", "[Administrator]")
 		: localize("userIsSudo", "[Superuser]");
+
 	private static readonly NLS_EXTENSION_HOST = localize(
 		"devExtensionWindowTitlePrefix",
 		"[Extension Development Host]",
 	);
+
 	private static readonly TITLE_DIRTY = "\u25cf ";
+
 	private readonly properties: ITitleProperties = {
 		isPure: true,
 		isAdmin: false,
 		prefix: undefined,
 	};
+
 	private readonly variables = new Map<
 		string /* context key */,
 		string /* name */
 	>();
+
 	private readonly activeEditorListeners = this._register(
 		new DisposableStore(),
 	);
+
 	private readonly titleUpdater = this._register(
 		new RunOnceScheduler(() => this.doUpdateTitle(), 0),
 	);
+
 	private readonly onDidChangeEmitter = new Emitter<void>();
+
 	readonly onDidChange = this.onDidChangeEmitter.event;
 
 	get value() {
 		return this.title ?? "";
 	}
+
 	get workspaceName() {
 		return this.labelService.getWorkspaceLabel(
 			this.contextService.getWorkspace(),
 		);
 	}
+
 	get fileName() {
 		const activeEditor = this.editorService.activeEditor;
 
 		if (!activeEditor) {
 			return undefined;
 		}
+
 		const fileName = activeEditor.getTitle(Verbosity.SHORT);
 
 		const dirty =
@@ -124,9 +137,13 @@ export class WindowTitle extends Disposable {
 
 		return `${dirty}${fileName}`;
 	}
+
 	private title: string | undefined;
+
 	private titleIncludesFocusedView: boolean = false;
+
 	private readonly editorService: IEditorService;
+
 	private readonly windowId: number;
 
 	constructor(
@@ -152,50 +169,62 @@ export class WindowTitle extends Disposable {
 		private readonly viewsService: IViewsService,
 	) {
 		super();
+
 		this.editorService = editorService.createScoped(
 			editorGroupsContainer,
 			this._store,
 		);
+
 		this.windowId = targetWindow.vscodeWindowId;
+
 		this.updateTitleIncludesFocusedView();
+
 		this.registerListeners();
 	}
+
 	private registerListeners(): void {
 		this._register(
 			this.configurationService.onDidChangeConfiguration((e) =>
 				this.onConfigurationChanged(e),
 			),
 		);
+
 		this._register(
 			this.editorService.onDidActiveEditorChange(() =>
 				this.onActiveEditorChange(),
 			),
 		);
+
 		this._register(
 			this.contextService.onDidChangeWorkspaceFolders(() =>
 				this.titleUpdater.schedule(),
 			),
 		);
+
 		this._register(
 			this.contextService.onDidChangeWorkbenchState(() =>
 				this.titleUpdater.schedule(),
 			),
 		);
+
 		this._register(
 			this.contextService.onDidChangeWorkspaceName(() =>
 				this.titleUpdater.schedule(),
 			),
 		);
+
 		this._register(
 			this.labelService.onDidChangeFormatters(() =>
 				this.titleUpdater.schedule(),
 			),
 		);
+
 		this._register(
 			this.userDataProfileService.onDidChangeCurrentProfile(() =>
 				this.titleUpdater.schedule(),
 			),
 		);
+
 		this._register(
 			this.viewsService.onDidChangeFocusedView(() => {
 				if (this.titleIncludesFocusedView) {
@@ -203,6 +232,7 @@ export class WindowTitle extends Disposable {
 				}
 			}),
 		);
+
 		this._register(
 			this.contextKeyService.onDidChangeContext((e) => {
 				if (e.affectsSome(this.variables)) {
@@ -211,10 +241,12 @@ export class WindowTitle extends Disposable {
 			}),
 		);
 	}
+
 	private onConfigurationChanged(event: IConfigurationChangeEvent): void {
 		if (event.affectsConfiguration(WindowSettingNames.title)) {
 			this.updateTitleIncludesFocusedView();
 		}
+
 		if (
 			event.affectsConfiguration(WindowSettingNames.title) ||
 			event.affectsConfiguration(WindowSettingNames.titleSeparator)
@@ -222,14 +254,17 @@ export class WindowTitle extends Disposable {
 			this.titleUpdater.schedule();
 		}
 	}
+
 	private updateTitleIncludesFocusedView(): void {
 		const titleTemplate = this.configurationService.getValue<unknown>(
 			WindowSettingNames.title,
 		);
+
 		this.titleIncludesFocusedView =
 			typeof titleTemplate === "string" &&
 			titleTemplate.includes("${focusedView}");
 	}
+
 	private onActiveEditorChange(): void {
 		// Dispose old listeners
 		this.activeEditorListeners.clear();
@@ -244,6 +279,7 @@ export class WindowTitle extends Disposable {
 					this.titleUpdater.schedule(),
 				),
 			);
+
 			this.activeEditorListeners.add(
 				activeEditor.onDidChangeLabel(() =>
 					this.titleUpdater.schedule(),
@@ -265,12 +301,14 @@ export class WindowTitle extends Disposable {
 					activeTextEditorControl.getModifiedEditor(),
 				);
 			}
+
 			for (const textEditorControl of textEditorControls) {
 				this.activeEditorListeners.add(
 					textEditorControl.onDidBlurEditorText(() =>
 						this.titleUpdater.schedule(),
 					),
 				);
+
 				this.activeEditorListeners.add(
 					textEditorControl.onDidFocusEditorText(() =>
 						this.titleUpdater.schedule(),
@@ -279,6 +317,7 @@ export class WindowTitle extends Disposable {
 			}
 		}
 	}
+
 	private doUpdateTitle(): void {
 		const title = this.getFullWindowTitle();
 
@@ -289,6 +328,7 @@ export class WindowTitle extends Disposable {
 			if (!trim(nativeTitle)) {
 				nativeTitle = this.productService.nameLong;
 			}
+
 			const window = getWindowById(this.windowId, true).window;
 
 			if (
@@ -305,11 +345,15 @@ export class WindowTitle extends Disposable {
 				// See: https://github.com/microsoft/vscode/issues/191288
 				window.document.title = `${this.productService.nameLong} ${WindowTitle.TITLE_DIRTY}`;
 			}
+
 			window.document.title = nativeTitle;
+
 			this.title = title;
+
 			this.onDidChangeEmitter.fire();
 		}
 	}
+
 	private getFullWindowTitle(): string {
 		const { prefix, suffix } = this.getTitleDecorations();
 
@@ -318,12 +362,14 @@ export class WindowTitle extends Disposable {
 		if (prefix) {
 			title = `${prefix} ${title}`;
 		}
+
 		if (suffix) {
 			title = `${title} ${suffix}`;
 		}
 		// Replace non-space whitespace
 		return title.replace(/[^\S ]/g, " ");
 	}
+
 	getTitleDecorations() {
 		let prefix: string | undefined;
 
@@ -332,16 +378,20 @@ export class WindowTitle extends Disposable {
 		if (this.properties.prefix) {
 			prefix = this.properties.prefix;
 		}
+
 		if (this.environmentService.isExtensionDevelopment) {
 			prefix = !prefix
 				? WindowTitle.NLS_EXTENSION_HOST
 				: `${WindowTitle.NLS_EXTENSION_HOST} - ${prefix}`;
 		}
+
 		if (this.properties.isAdmin) {
 			suffix = WindowTitle.NLS_USER_IS_ADMIN;
 		}
+
 		return { prefix, suffix };
 	}
+
 	updateProperties(properties: ITitleProperties): void {
 		const isAdmin =
 			typeof properties.isAdmin === "boolean"
@@ -364,20 +414,26 @@ export class WindowTitle extends Disposable {
 			prefix !== this.properties.prefix
 		) {
 			this.properties.isAdmin = isAdmin;
+
 			this.properties.isPure = isPure;
+
 			this.properties.prefix = prefix;
+
 			this.titleUpdater.schedule();
 		}
 	}
+
 	registerVariables(variables: ITitleVariable[]): void {
 		let changed = false;
 
 		for (const { name, contextKey } of variables) {
 			if (!this.variables.has(contextKey)) {
 				this.variables.set(contextKey, name);
+
 				changed = true;
 			}
 		}
+
 		if (changed) {
 			this.titleUpdater.schedule();
 		}
@@ -518,6 +574,7 @@ export class WindowTitle extends Disposable {
 			variables[name] =
 				this.contextKeyService.getContextKeyValue(contextKey) ?? "";
 		}
+
 		let titleTemplate = this.configurationService.getValue<string>(
 			WindowSettingNames.title,
 		);
@@ -525,6 +582,7 @@ export class WindowTitle extends Disposable {
 		if (typeof titleTemplate !== "string") {
 			titleTemplate = defaultWindowTitle;
 		}
+
 		let separator = this.configurationService.getValue<string>(
 			WindowSettingNames.titleSeparator,
 		);
@@ -532,6 +590,7 @@ export class WindowTitle extends Disposable {
 		if (typeof separator !== "string") {
 			separator = defaultWindowTitleSeparator;
 		}
+
 		return template(titleTemplate, {
 			...variables,
 			activeEditorShort,
@@ -553,6 +612,7 @@ export class WindowTitle extends Disposable {
 			separator: { label: separator },
 		});
 	}
+
 	isCustomTitleFormat(): boolean {
 		const title = this.configurationService.inspect<string>(
 			WindowSettingNames.title,

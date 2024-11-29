@@ -8,7 +8,9 @@ import { Change, Status } from "./api/git";
 
 export interface GitUriParams {
 	path: string;
+
 	ref: string;
+
 	submoduleOf?: string;
 }
 export function isGitUri(uri: Uri): boolean {
@@ -19,7 +21,9 @@ export function fromGitUri(uri: Uri): GitUriParams {
 }
 export interface GitUriOptions {
 	scheme?: string;
+
 	replaceFileExtension?: boolean;
+
 	submoduleOf?: string;
 }
 // As a mitigation for extensions like ESLint showing warnings and errors
@@ -38,6 +42,7 @@ export function toGitUri(
 	if (options.submoduleOf) {
 		params.submoduleOf = options.submoduleOf;
 	}
+
 	let path = uri.path;
 
 	if (options.replaceFileExtension) {
@@ -45,6 +50,7 @@ export function toGitUri(
 	} else if (options.submoduleOf) {
 		path = `${path}.diff`;
 	}
+
 	return uri.with({
 		scheme: options.scheme ?? "git",
 		path,
@@ -56,7 +62,9 @@ export function toGitUri(
  */
 export function toMergeUris(uri: Uri): {
 	base: Uri;
+
 	ours: Uri;
+
 	theirs: Uri;
 } {
 	return {
@@ -71,6 +79,7 @@ export function toMultiFileDiffEditorUris(
 	modifiedRef: string,
 ): {
 	originalUri: Uri | undefined;
+
 	modifiedUri: Uri | undefined;
 } {
 	switch (change.status) {

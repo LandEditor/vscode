@@ -44,6 +44,7 @@ export function annotateSpecialMarkdownContent(
 					label = basename(item.inlineReference.uri);
 				}
 			}
+
 			const refId = refIdPool++;
 
 			const printUri = URI.parse(contentRefUrl).with({
@@ -59,6 +60,7 @@ export function annotateSpecialMarkdownContent(
 					previousItem.content,
 					new MarkdownString(markdownText),
 				);
+
 				result[previousItemIndex] = {
 					...previousItem,
 					content: merged,
@@ -83,6 +85,7 @@ export function annotateSpecialMarkdownContent(
 				previousItem.content,
 				item.content,
 			);
+
 			result[previousItemIndex] = { ...previousItem, content: merged };
 		} else if (item.kind === "markdownVuln") {
 			const vulnText = encodeURIComponent(
@@ -97,6 +100,7 @@ export function annotateSpecialMarkdownContent(
 					previousItem.content,
 					new MarkdownString(markdownText),
 				);
+
 				result[previousItemIndex] = {
 					...previousItem,
 					content: merged,
@@ -115,6 +119,7 @@ export function annotateSpecialMarkdownContent(
 					previousItem.content,
 					new MarkdownString(markdownText),
 				);
+
 				result[previousItemIndex] = {
 					...previousItem,
 					content: merged,
@@ -124,11 +129,14 @@ export function annotateSpecialMarkdownContent(
 			result.push(item);
 		}
 	}
+
 	return result;
 }
 export interface IMarkdownVulnerability {
 	readonly title: string;
+
 	readonly description: string;
+
 	readonly range: IRange;
 }
 export function annotateVulnerabilitiesInText(
@@ -174,11 +182,13 @@ export function annotateVulnerabilitiesInText(
 			}
 		}
 	}
+
 	return result;
 }
 export function extractCodeblockUrisFromText(text: string):
 	| {
 			uri: URI;
+
 			textWithoutResult: string;
 	  }
 	| undefined {
@@ -195,10 +205,12 @@ export function extractCodeblockUrisFromText(text: string):
 
 		return { uri: result, textWithoutResult };
 	}
+
 	return undefined;
 }
 export function extractVulnerabilitiesFromText(text: string): {
 	newText: string;
+
 	vulnerabilities: IMarkdownVulnerability[];
 } {
 	const vulnerabilities: IMarkdownVulnerability[] = [];
@@ -236,6 +248,7 @@ export function extractVulnerabilitiesFromText(text: string): {
 			const vulnDetails: IChatAgentVulnerabilityDetails[] = JSON.parse(
 				decodeURIComponent(details),
 			);
+
 			vulnDetails.forEach(({ title, description }) =>
 				vulnerabilities.push({
 					title,
@@ -251,10 +264,12 @@ export function extractVulnerabilitiesFromText(text: string): {
 		} catch (err) {
 			// Something went wrong with encoding this text, just ignore it
 		}
+
 		newText =
 			newText.substring(0, start) +
 			content +
 			newText.substring(start + full.length);
 	}
+
 	return { newText, vulnerabilities };
 }

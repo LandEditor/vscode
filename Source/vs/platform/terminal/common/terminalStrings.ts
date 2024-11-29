@@ -25,6 +25,7 @@ export function formatMessageForTerminal(
 	if (!options.excludeLeadingNewLine) {
 		result += "\r\n";
 	}
+
 	result += "\x1b[0m\x1b[7m * ";
 
 	if (options.loudFormatting) {
@@ -32,6 +33,7 @@ export function formatMessageForTerminal(
 	} else {
 		result += "\x1b[0m";
 	}
+
 	result += ` ${message} \x1b[0m\n\r`;
 
 	return result;

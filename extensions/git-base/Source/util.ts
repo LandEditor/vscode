@@ -16,10 +16,14 @@ export namespace Versions {
 
 	export interface Version {
 		major: number;
+
 		minor: number;
+
 		patch: number;
+
 		pre?: string;
 	}
+
 	export function compare(
 		v1: string | Version,
 		v2: string | Version,
@@ -27,38 +31,50 @@ export namespace Versions {
 		if (typeof v1 === "string") {
 			v1 = fromString(v1);
 		}
+
 		if (typeof v2 === "string") {
 			v2 = fromString(v2);
 		}
+
 		if (v1.major > v2.major) {
 			return 1;
 		}
+
 		if (v1.major < v2.major) {
 			return -1;
 		}
+
 		if (v1.minor > v2.minor) {
 			return 1;
 		}
+
 		if (v1.minor < v2.minor) {
 			return -1;
 		}
+
 		if (v1.patch > v2.patch) {
 			return 1;
 		}
+
 		if (v1.patch < v2.patch) {
 			return -1;
 		}
+
 		if (v1.pre === undefined && v2.pre !== undefined) {
 			return 1;
 		}
+
 		if (v1.pre !== undefined && v2.pre === undefined) {
 			return -1;
 		}
+
 		if (v1.pre !== undefined && v2.pre !== undefined) {
 			return v1.pre.localeCompare(v2.pre) as VersionComparisonResult;
 		}
+
 		return 0;
 	}
+
 	export function from(
 		major: string | number,
 		minor: string | number,
@@ -77,6 +93,7 @@ export namespace Versions {
 			pre: pre,
 		};
 	}
+
 	export function fromString(version: string): Version {
 		const [ver, pre] = version.split("-");
 

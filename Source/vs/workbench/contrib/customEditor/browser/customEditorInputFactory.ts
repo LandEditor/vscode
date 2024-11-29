@@ -41,32 +41,44 @@ import { CustomEditorInput } from "./customEditorInput.js";
 
 export interface CustomDocumentBackupData extends IWorkingCopyBackupMeta {
 	readonly viewType: string;
+
 	readonly editorResource: UriComponents;
+
 	backupId: string;
+
 	readonly extension:
 		| undefined
 		| {
 				readonly location: UriComponents;
+
 				readonly id: string;
 		  };
+
 	readonly webview: {
 		readonly origin: string | undefined;
+
 		readonly options: SerializedWebviewOptions;
+
 		readonly state: any;
 	};
 }
 interface SerializedCustomEditor extends SerializedWebview {
 	readonly editorResource: UriComponents;
+
 	readonly dirty: boolean;
+
 	readonly backupId?: string;
 }
 interface DeserializedCustomEditor extends DeserializedWebview {
 	readonly editorResource: URI;
+
 	readonly dirty: boolean;
+
 	readonly backupId?: string;
 }
 export class CustomEditorInputSerializer extends WebviewEditorInputSerializer {
 	public static override readonly ID = CustomEditorInput.typeId;
+
 	public constructor(
 		@IWebviewWorkbenchService
 		webviewWorkbenchService: IWebviewWorkbenchService,
@@ -77,6 +89,7 @@ export class CustomEditorInputSerializer extends WebviewEditorInputSerializer {
 	) {
 		super(webviewWorkbenchService);
 	}
+
 	public override serialize(input: CustomEditorInput): string | undefined {
 		const dirty = input.isDirty();
 
@@ -93,6 +106,7 @@ export class CustomEditorInputSerializer extends WebviewEditorInputSerializer {
 			return undefined;
 		}
 	}
+
 	protected override fromJson(
 		data: SerializedCustomEditor,
 	): DeserializedCustomEditor {
@@ -102,6 +116,7 @@ export class CustomEditorInputSerializer extends WebviewEditorInputSerializer {
 			dirty: data.dirty,
 		};
 	}
+
 	public override deserialize(
 		_instantiationService: IInstantiationService,
 		serializedEditorInput: string,
@@ -120,6 +135,7 @@ export class CustomEditorInputSerializer extends WebviewEditorInputSerializer {
 		if (typeof data.group === "number") {
 			customInput.updateGroup(data.group);
 		}
+
 		return customInput;
 	}
 }
@@ -127,10 +143,15 @@ function reviveWebview(
 	webviewService: IWebviewService,
 	data: {
 		origin: string | undefined;
+
 		viewType: string;
+
 		state: any;
+
 		webviewOptions: WebviewOptions;
+
 		contentOptions: WebviewContentOptions;
+
 		extension?: WebviewExtensionDescription;
 	},
 ) {
@@ -147,6 +168,7 @@ function reviveWebview(
 		contentOptions: data.contentOptions,
 		extension: data.extension,
 	});
+
 	webview.state = data.state;
 
 	return webview;
@@ -171,15 +193,19 @@ export class ComplexCustomWorkingCopyEditorHandler
 		_customEditorService: ICustomEditorService, // DO NOT REMOVE (needed on startup to register overrides properly)
 	) {
 		super();
+
 		this._register(_workingCopyEditorService.registerHandler(this));
 	}
+
 	handles(workingCopy: IWorkingCopyIdentifier): boolean {
 		return workingCopy.resource.scheme === Schemas.vscodeCustomEditor;
 	}
+
 	isOpen(workingCopy: IWorkingCopyIdentifier, editor: EditorInput): boolean {
 		if (!this.handles(workingCopy)) {
 			return false;
 		}
+
 		if (
 			workingCopy.resource.authority === "jupyter-notebook-ipynb" &&
 			editor instanceof NotebookEditorInput
@@ -194,9 +220,11 @@ export class ComplexCustomWorkingCopyEditorHandler
 				return false;
 			}
 		}
+
 		if (!(editor instanceof CustomEditorInput)) {
 			return false;
 		}
+
 		if (
 			workingCopy.resource.authority !==
 			editor.viewType.replace(/[^a-z0-9\-_]/gi, "-").toLowerCase()
@@ -214,6 +242,7 @@ export class ComplexCustomWorkingCopyEditorHandler
 			return false;
 		}
 	}
+
 	async createEditor(
 		workingCopy: IWorkingCopyIdentifier,
 	): Promise<EditorInput> {
@@ -227,6 +256,7 @@ export class ComplexCustomWorkingCopyEditorHandler
 				`No backup found for custom editor: ${workingCopy.resource}`,
 			);
 		}
+
 		const backupData = backup.meta;
 
 		const extension = reviveWebviewExtensionDescription(
@@ -254,6 +284,7 @@ export class ComplexCustomWorkingCopyEditorHandler
 			webview,
 			{ backupId: backupData.backupId },
 		);
+
 		editor.updateGroup(0);
 
 		return editor;

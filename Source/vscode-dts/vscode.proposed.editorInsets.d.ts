@@ -8,10 +8,15 @@
 declare module "vscode" {
 	export interface WebviewEditorInset {
 		readonly editor: TextEditor;
+
 		readonly line: number;
+
 		readonly height: number;
+
 		readonly webview: Webview;
+
 		readonly onDidDispose: Event<void>;
+
 		dispose(): void;
 	}
 

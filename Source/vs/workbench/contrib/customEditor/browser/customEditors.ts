@@ -66,21 +66,29 @@ export class CustomEditorService
 	implements ICustomEditorService
 {
 	_serviceBrand: any;
+
 	private readonly _contributedEditors: ContributedCustomEditors;
+
 	private _untitledCounter = 0;
+
 	private readonly _editorResolverDisposables = this._register(
 		new DisposableStore(),
 	);
+
 	private readonly _editorCapabilities = new Map<
 		string,
 		CustomEditorCapabilities
 	>();
+
 	private readonly _models = new CustomEditorModelManager();
+
 	private readonly _onDidChangeEditorTypes = this._register(
 		new Emitter<void>(),
 	);
+
 	public readonly onDidChangeEditorTypes: Event<void> =
 		this._onDidChangeEditorTypes.event;
+
 	private readonly _fileEditorFactory = Registry.as<IEditorFactoryRegistry>(
 		EditorExtensions.EditorFactory,
 	).getFileEditorFactory();
@@ -102,6 +110,7 @@ export class CustomEditorService
 		private readonly editorResolverService: IEditorResolverService,
 	) {
 		super();
+
 		this._contributedEditors = this._register(
 			new ContributedCustomEditors(storageService),
 		);
@@ -109,12 +118,14 @@ export class CustomEditorService
 		this.editorResolverService.bufferChangeEvents(
 			this.registerContributionPoints.bind(this),
 		);
+
 		this._register(
 			this._contributedEditors.onChange(() => {
 				// Register the contribution points only emitting one change from the resolver
 				this.editorResolverService.bufferChangeEvents(
 					this.registerContributionPoints.bind(this),
 				);
+
 				this._onDidChangeEditorTypes.fire();
 			}),
 		);
@@ -135,16 +146,19 @@ export class CustomEditorService
 					this.getCustomEditorIsEditable(group),
 				onDidChange: this.onDidChangeEditorTypes,
 			};
+
 		this._register(
 			this.editorGroupService.registerContextKeyProvider(
 				activeCustomEditorContextKeyProvider,
 			),
 		);
+
 		this._register(
 			this.editorGroupService.registerContextKeyProvider(
 				customEditorIsEditableContextKeyProvider,
 			),
 		);
+
 		this._register(
 			fileService.onDidRunOperation((e) => {
 				if (e.isOperation(FileOperation.MOVE)) {
@@ -159,20 +173,24 @@ export class CustomEditorService
 		);
 
 		const PRIORITY = 105;
+
 		this._register(
 			UndoCommand.addImplementation(PRIORITY, "custom-editor", () => {
 				return this.withActiveCustomEditor((editor) => editor.undo());
 			}),
 		);
+
 		this._register(
 			RedoCommand.addImplementation(PRIORITY, "custom-editor", () => {
 				return this.withActiveCustomEditor((editor) => editor.redo());
 			}),
 		);
 	}
+
 	getEditorTypes(): IEditorType[] {
 		return [...this._contributedEditors];
 	}
+
 	private withActiveCustomEditor(
 		f: (editor: CustomEditorInput) => void | Promise<void>,
 	): boolean | Promise<void> {
@@ -184,10 +202,13 @@ export class CustomEditorService
 			if (result) {
 				return result;
 			}
+
 			return true;
 		}
+
 		return false;
 	}
+
 	private registerContributionPoints(): void {
 		// Clear all previous contributions we know
 		this._editorResolverDisposables.clear();
@@ -197,6 +218,7 @@ export class CustomEditorService
 				if (!globPattern.filenamePattern) {
 					continue;
 				}
+
 				this._editorResolverDisposables.add(
 					this.editorResolverService.registerEditor(
 						globPattern.filenamePattern,
@@ -258,6 +280,7 @@ export class CustomEditorService
 			}
 		}
 	}
+
 	private createDiffEditorInput(
 		editor: IResourceDiffEditorInput,
 		editorID: string,
@@ -288,12 +311,15 @@ export class CustomEditorService
 			true,
 		);
 	}
+
 	public get models() {
 		return this._models;
 	}
+
 	public getCustomEditor(viewType: string): CustomEditorInfo | undefined {
 		return this._contributedEditors.get(viewType);
 	}
+
 	public getContributedCustomEditors(
 		resource: URI,
 	): CustomEditorInfoCollection {
@@ -301,6 +327,7 @@ export class CustomEditorService
 			this._contributedEditors.getContributedEditors(resource),
 		);
 	}
+
 	public getUserConfiguredCustomEditors(
 		resource: URI,
 	): CustomEditorInfoCollection {
@@ -315,12 +342,14 @@ export class CustomEditorService
 			),
 		);
 	}
+
 	public getAllCustomEditors(resource: URI): CustomEditorInfoCollection {
 		return new CustomEditorInfoCollection([
 			...this.getUserConfiguredCustomEditors(resource).allEditors,
 			...this.getContributedCustomEditors(resource).allEditors,
 		]);
 	}
+
 	public registerCustomEditorCapabilities(
 		viewType: string,
 		options: CustomEditorCapabilities,
@@ -328,17 +357,20 @@ export class CustomEditorService
 		if (this._editorCapabilities.has(viewType)) {
 			throw new Error(`Capabilities for ${viewType} already set`);
 		}
+
 		this._editorCapabilities.set(viewType, options);
 
 		return toDisposable(() => {
 			this._editorCapabilities.delete(viewType);
 		});
 	}
+
 	public getCustomEditorCapabilities(
 		viewType: string,
 	): CustomEditorCapabilities | undefined {
 		return this._editorCapabilities.get(viewType);
 	}
+
 	private getActiveCustomEditorId(group: IEditorGroup): string {
 		const activeEditorPane = group.activeEditorPane;
 
@@ -347,10 +379,12 @@ export class CustomEditorService
 		if (!resource) {
 			return "";
 		}
+
 		return activeEditorPane?.input instanceof CustomEditorInput
 			? activeEditorPane.input.viewType
 			: "";
 	}
+
 	private getCustomEditorIsEditable(group: IEditorGroup): boolean {
 		const activeEditorPane = group.activeEditorPane;
 
@@ -359,8 +393,10 @@ export class CustomEditorService
 		if (!resource) {
 			return false;
 		}
+
 		return activeEditorPane?.input instanceof CustomEditorInput;
 	}
+
 	private async handleMovedFileInOpenedFileEditors(
 		oldResource: URI,
 		newResource: URI,
@@ -371,6 +407,7 @@ export class CustomEditorService
 		) {
 			return;
 		}
+
 		const possibleEditors = this.getAllCustomEditors(newResource);
 		// See if we have any non-optional custom editor for this resource
 		if (
@@ -394,15 +431,19 @@ export class CustomEditorService
 
 					if (!entry) {
 						entry = [];
+
 						editorsToReplace.set(group.id, entry);
 					}
+
 					entry.push(editor);
 				}
 			}
 		}
+
 		if (!editorsToReplace.size) {
 			return;
 		}
+
 		for (const [group, entries] of editorsToReplace) {
 			this.editorService.replaceEditors(
 				entries.map((editor) => {
@@ -410,6 +451,7 @@ export class CustomEditorService
 
 					if (possibleEditors.defaultEditor) {
 						const viewType = possibleEditors.defaultEditor.id;
+
 						replacement = CustomEditorInput.create(
 							this.instantiationService,
 							newResource,
@@ -424,6 +466,7 @@ export class CustomEditorService
 							},
 						};
 					}
+
 					return {
 						editor,
 						replacement,

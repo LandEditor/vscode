@@ -150,6 +150,7 @@ CommandsRegistry.registerCommand({
 	id: '_revealTestInExplorer',
 	handler: async (accessor: ServicesAccessor, testId: string | ITestItem, focus?: boolean) => {
 		accessor.get(ITestExplorerFilterState).reveal.set(typeof testId === 'string' ? testId : testId.extId, undefined);
+
 		accessor.get(IViewsService).openView(Testing.ExplorerViewId, focus);
 	}
 });
@@ -157,15 +158,20 @@ CommandsRegistry.registerCommand({
 	id: TestCommandId.StartContinousRunFromExtension,
 	handler: async (accessor: ServicesAccessor, profileRef: ITestRunProfileReference, tests: readonly ITestItem[]) => {
 		const profiles = accessor.get(ITestProfileService);
+
 		const collection = accessor.get(ITestService).collection;
+
 		const profile = profiles.getControllerProfiles(profileRef.controllerId).find(p => p.profileId === profileRef.profileId);
+
 		if (!profile?.supportsContinuousRun) {
 			return;
 		}
 
 		const crService = accessor.get(ITestingContinuousRunService);
+
 		for (const test of tests) {
 			const found = collection.getNodeById(test.extId);
+
 			if (found && canUseProfileWithTest(profile, found)) {
 				crService.start([profile], found.item.extId);
 			}
@@ -176,6 +182,7 @@ CommandsRegistry.registerCommand({
 	id: TestCommandId.StopContinousRunFromExtension,
 	handler: async (accessor: ServicesAccessor, tests: readonly ITestItem[]) => {
 		const crService = accessor.get(ITestingContinuousRunService);
+
 		for (const test of tests) {
 			crService.stop(test.extId);
 		}
@@ -186,12 +193,15 @@ CommandsRegistry.registerCommand({
 	id: 'vscode.peekTestError',
 	handler: async (accessor: ServicesAccessor, extId: string) => {
 		const lookup = accessor.get(ITestResultService).getStateById(extId);
+
 		if (!lookup) {
 			return false;
 		}
 
 		const [result, ownState] = lookup;
+
 		const opener = accessor.get(ITestingPeekOpener);
+
 		if (opener.tryPeekFirstError(result, ownState)) { // fast path
 			return true;
 		}
@@ -210,14 +220,19 @@ CommandsRegistry.registerCommand({
 	id: 'vscode.revealTest',
 	handler: async (accessor: ServicesAccessor, extId: string, opts?: { preserveFocus?: boolean; openToSide?: boolean }) => {
 		const test = accessor.get(ITestService).collection.getNodeById(extId);
+
 		if (!test) {
 			return;
 		}
+
 		const commandService = accessor.get(ICommandService);
+
 		const fileService = accessor.get(IFileService);
+
 		const openerService = accessor.get(IOpenerService);
 
 		const { range, uri } = test.item;
+
 		if (!uri) {
 			return;
 		}
@@ -227,9 +242,11 @@ CommandsRegistry.registerCommand({
 		const position = accessor.get(ITestingDecorationsService).getDecoratedTestPosition(uri, extId) || range?.getStartPosition();
 
 		accessor.get(ITestExplorerFilterState).reveal.set(extId, undefined);
+
 		accessor.get(ITestingPeekOpener).closeAllPeeks();
 
 		let isFile = true;
+
 		try {
 			if (!(await fileService.stat(uri)).isFile) {
 				isFile = false;
@@ -240,6 +257,7 @@ CommandsRegistry.registerCommand({
 
 		if (!isFile) {
 			await commandService.executeCommand(REVEAL_IN_EXPLORER_COMMAND_ID, uri);
+
 			return;
 		}
 
@@ -260,6 +278,7 @@ CommandsRegistry.registerCommand({
 	id: 'vscode.runTestsById',
 	handler: async (accessor: ServicesAccessor, group: TestRunProfileBitset, ...testIds: string[]) => {
 		const testService = accessor.get(ITestService);
+
 		await discoverAndRunTests(
 			accessor.get(ITestService).collection,
 			accessor.get(IProgressService),
@@ -273,6 +292,7 @@ CommandsRegistry.registerCommand({
 	id: 'vscode.testing.getControllersWithTests',
 	handler: async (accessor: ServicesAccessor) => {
 		const testService = accessor.get(ITestService);
+
 		return [...testService.collection.rootItems]
 			.filter(r => r.children.size > 0)
 			.map(r => r.controllerId);

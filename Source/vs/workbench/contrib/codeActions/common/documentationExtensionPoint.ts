@@ -13,7 +13,9 @@ enum DocumentationExtensionPointFields {
 }
 interface RefactoringDocumentationExtensionPoint {
 	readonly [DocumentationExtensionPointFields.title]: string;
+
 	readonly [DocumentationExtensionPointFields.when]: string;
+
 	readonly [DocumentationExtensionPointFields.command]: string;
 }
 export interface DocumentationExtensionPoint {

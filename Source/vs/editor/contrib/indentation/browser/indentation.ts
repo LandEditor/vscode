@@ -72,6 +72,7 @@ export class IndentationToSpacesAction extends EditorAction {
 		if (!model) {
 			return;
 		}
+
 		const modelOpts = model.getOptions();
 
 		const selection = editor.getSelection();
@@ -79,13 +80,16 @@ export class IndentationToSpacesAction extends EditorAction {
 		if (!selection) {
 			return;
 		}
+
 		const command = new IndentationToSpacesCommand(
 			selection,
 			modelOpts.tabSize,
 		);
 
 		editor.pushUndoStop();
+
 		editor.executeCommands(this.id, [command]);
+
 		editor.pushUndoStop();
 
 		model.updateOptions({
@@ -120,6 +124,7 @@ export class IndentationToTabsAction extends EditorAction {
 		if (!model) {
 			return;
 		}
+
 		const modelOpts = model.getOptions();
 
 		const selection = editor.getSelection();
@@ -127,13 +132,16 @@ export class IndentationToTabsAction extends EditorAction {
 		if (!selection) {
 			return;
 		}
+
 		const command = new IndentationToTabsCommand(
 			selection,
 			modelOpts.tabSize,
 		);
 
 		editor.pushUndoStop();
+
 		editor.executeCommands(this.id, [command]);
+
 		editor.pushUndoStop();
 
 		model.updateOptions({
@@ -313,6 +321,7 @@ export class DetectIndentation extends EditorAction {
 			model.uri,
 			model.isForSimpleWidget,
 		);
+
 		model.detectIndentation(
 			creationOpts.insertSpaces,
 			creationOpts.tabSize,
@@ -345,6 +354,7 @@ export class ReindentLinesAction extends EditorAction {
 		if (!model) {
 			return;
 		}
+
 		const edits = getReindentEditOperations(
 			model,
 			languageConfigurationService,
@@ -354,7 +364,9 @@ export class ReindentLinesAction extends EditorAction {
 
 		if (edits.length > 0) {
 			editor.pushUndoStop();
+
 			editor.executeEdits(this.id, edits);
+
 			editor.pushUndoStop();
 		}
 	}
@@ -423,12 +435,15 @@ export class ReindentSelectedLinesAction extends EditorAction {
 				startLineNumber,
 				endLineNumber,
 			);
+
 			edits.push(...editOperations);
 		}
 
 		if (edits.length > 0) {
 			editor.pushUndoStop();
+
 			editor.executeEdits(this.id, edits);
+
 			editor.pushUndoStop();
 		}
 	}
@@ -437,16 +452,21 @@ export class ReindentSelectedLinesAction extends EditorAction {
 export class AutoIndentOnPasteCommand implements ICommand {
 	private readonly _edits: {
 		range: IRange;
+
 		text: string;
+
 		eol?: EndOfLineSequence;
 	}[];
 
 	private readonly _initialSelection: Selection;
+
 	private _selectionId: string | null;
 
 	constructor(edits: TextEdit[], initialSelection: Selection) {
 		this._initialSelection = initialSelection;
+
 		this._edits = [];
+
 		this._selectionId = null;
 
 		for (const edit of edits) {
@@ -454,7 +474,9 @@ export class AutoIndentOnPasteCommand implements ICommand {
 				this._edits.push(
 					edit as {
 						range: IRange;
+
 						text: string;
+
 						eol?: EndOfLineSequence;
 					},
 				);
@@ -484,6 +506,7 @@ export class AutoIndentOnPasteCommand implements ICommand {
 					this._initialSelection.endLineNumber
 			) {
 				selectionIsSet = true;
+
 				this._selectionId = builder.trackSelection(
 					this._initialSelection,
 					true,
@@ -495,6 +518,7 @@ export class AutoIndentOnPasteCommand implements ICommand {
 					this._initialSelection.startLineNumber
 			) {
 				selectionIsSet = true;
+
 				this._selectionId = builder.trackSelection(
 					this._initialSelection,
 					false,
@@ -519,6 +543,7 @@ export class AutoIndentOnPaste implements IEditorContribution {
 	public static readonly ID = "editor.contrib.autoIndentOnPaste";
 
 	private readonly callOnDispose = new DisposableStore();
+
 	private readonly callOnModel = new DisposableStore();
 
 	constructor(
@@ -529,7 +554,9 @@ export class AutoIndentOnPaste implements IEditorContribution {
 		this.callOnDispose.add(
 			editor.onDidChangeConfiguration(() => this.update()),
 		);
+
 		this.callOnDispose.add(editor.onDidChangeModel(() => this.update()));
+
 		this.callOnDispose.add(
 			editor.onDidChangeModelLanguage(() => this.update()),
 		);
@@ -572,15 +599,18 @@ export class AutoIndentOnPaste implements IEditorContribution {
 		if (!model) {
 			return;
 		}
+
 		const containsOnlyWhitespace =
 			this.rangeContainsOnlyWhitespaceCharacters(model, range);
 
 		if (containsOnlyWhitespace) {
 			return;
 		}
+
 		if (isStartOrEndInString(model, range)) {
 			return;
 		}
+
 		if (
 			!model.tokenization.isCheapToTokenize(
 				range.getStartPosition().lineNumber,
@@ -588,6 +618,7 @@ export class AutoIndentOnPaste implements IEditorContribution {
 		) {
 			return;
 		}
+
 		const autoIndent = this.editor.getOption(EditorOption.autoIndent);
 
 		const { tabSize, indentSize, insertSpaces } = model.getOptions();
@@ -623,6 +654,7 @@ export class AutoIndentOnPaste implements IEditorContribution {
 
 				continue;
 			}
+
 			break;
 		}
 
@@ -662,6 +694,7 @@ export class AutoIndentOnPaste implements IEditorContribution {
 						tabSize,
 						insertSpaces,
 					);
+
 					textEdits.push({
 						range: new Range(
 							startLineNumber,
@@ -671,6 +704,7 @@ export class AutoIndentOnPaste implements IEditorContribution {
 						),
 						text: newIndent,
 					});
+
 					firstLineText =
 						newIndent +
 						firstLineText.substring(oldIndentation.length);
@@ -704,6 +738,7 @@ export class AutoIndentOnPaste implements IEditorContribution {
 
 				continue;
 			}
+
 			break;
 		}
 
@@ -763,7 +798,9 @@ export class AutoIndentOnPaste implements IEditorContribution {
 
 					for (
 						let i = startLineNumber + 1;
+
 						i <= range.endLineNumber;
+
 						i++
 					) {
 						const lineContent = model.getLineContent(i);
@@ -807,7 +844,9 @@ export class AutoIndentOnPaste implements IEditorContribution {
 				textEdits,
 				this.editor.getSelection()!,
 			);
+
 			this.editor.executeCommand("autoIndentOnPaste", cmd);
+
 			this.editor.pushUndoStop();
 		}
 	}
@@ -829,6 +868,7 @@ export class AutoIndentOnPaste implements IEditorContribution {
 				range.startColumn - 1,
 				range.endColumn - 1,
 			);
+
 			containsOnlyWhitespace = lineContainsOnlyWhitespace(linePart);
 		} else {
 			for (let i = range.startLineNumber; i <= range.endLineNumber; i++) {
@@ -838,6 +878,7 @@ export class AutoIndentOnPaste implements IEditorContribution {
 					const linePart = lineContent.substring(
 						range.startColumn - 1,
 					);
+
 					containsOnlyWhitespace =
 						lineContainsOnlyWhitespace(linePart);
 				} else if (i === range.endLineNumber) {
@@ -845,17 +886,20 @@ export class AutoIndentOnPaste implements IEditorContribution {
 						0,
 						range.endColumn - 1,
 					);
+
 					containsOnlyWhitespace =
 						lineContainsOnlyWhitespace(linePart);
 				} else {
 					containsOnlyWhitespace =
 						model.getLineFirstNonWhitespaceColumn(i) === 0;
 				}
+
 				if (!containsOnlyWhitespace) {
 					break;
 				}
 			}
 		}
+
 		return containsOnlyWhitespace;
 	}
 
@@ -868,6 +912,7 @@ export class AutoIndentOnPaste implements IEditorContribution {
 		if (nonWhitespaceColumn === 0) {
 			return true;
 		}
+
 		const tokens = model.tokenization.getLineTokens(lineNumber);
 
 		if (tokens.getCount() > 0) {
@@ -888,6 +933,7 @@ export class AutoIndentOnPaste implements IEditorContribution {
 
 	public dispose(): void {
 		this.callOnDispose.dispose();
+
 		this.callOnModel.dispose();
 	}
 }
@@ -926,7 +972,9 @@ function getIndentationEditOperations(
 
 	for (
 		let lineNumber = 1, lineCount = model.getLineCount();
+
 		lineNumber <= lineCount;
+
 		lineNumber++
 	) {
 		let lastIndentationColumn =

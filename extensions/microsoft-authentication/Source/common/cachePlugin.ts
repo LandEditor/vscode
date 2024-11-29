@@ -8,8 +8,11 @@ import { Disposable, EventEmitter, SecretStorage } from "vscode";
 export class SecretStorageCachePlugin implements ICachePlugin {
 	private readonly _onDidChange: EventEmitter<void> =
 		new EventEmitter<void>();
+
 	readonly onDidChange = this._onDidChange.event;
+
 	private _disposable: Disposable;
+
 	private _value: string | undefined;
 
 	constructor(
@@ -21,6 +24,7 @@ export class SecretStorageCachePlugin implements ICachePlugin {
 			this._registerChangeHandler(),
 		);
 	}
+
 	private _registerChangeHandler() {
 		return this._secretStorage.onDidChange((e) => {
 			if (e.key === this._key) {
@@ -28,16 +32,19 @@ export class SecretStorageCachePlugin implements ICachePlugin {
 			}
 		});
 	}
+
 	async beforeCacheAccess(
 		tokenCacheContext: TokenCacheContext,
 	): Promise<void> {
 		const data = await this._secretStorage.get(this._key);
+
 		this._value = data;
 
 		if (data) {
 			tokenCacheContext.tokenCache.deserialize(data);
 		}
 	}
+
 	async afterCacheAccess(
 		tokenCacheContext: TokenCacheContext,
 	): Promise<void> {
@@ -49,6 +56,7 @@ export class SecretStorageCachePlugin implements ICachePlugin {
 			}
 		}
 	}
+
 	dispose() {
 		this._disposable.dispose();
 	}

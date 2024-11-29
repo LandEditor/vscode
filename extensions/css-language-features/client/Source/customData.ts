@@ -11,6 +11,7 @@ export function getCustomDataSource(toDispose: Disposable[]) {
 	let pathsInExtensions = getCustomDataPathsFromAllExtensions();
 
 	const onChange = new EventEmitter<void>();
+
 	toDispose.push(
 		extensions.onDidChange((_) => {
 			const newPathsInExtensions = getCustomDataPathsFromAllExtensions();
@@ -22,14 +23,17 @@ export function getCustomDataSource(toDispose: Disposable[]) {
 				)
 			) {
 				pathsInExtensions = newPathsInExtensions;
+
 				onChange.fire();
 			}
 		}),
 	);
+
 	toDispose.push(
 		workspace.onDidChangeConfiguration((e) => {
 			if (e.affectsConfiguration("css.customData")) {
 				pathsInWorkspace = getCustomDataPathsInAllWorkspaces();
+
 				onChange.fire();
 			}
 		}),
@@ -52,6 +56,7 @@ function getCustomDataPathsInAllWorkspaces(): string[] {
 	if (!workspaceFolders) {
 		return dataPaths;
 	}
+
 	const collect = (paths: string[] | undefined, rootFolder: Uri) => {
 		if (Array.isArray(paths)) {
 			for (const path of paths) {
@@ -81,10 +86,12 @@ function getCustomDataPathsInAllWorkspaces(): string[] {
 						workspace.workspaceFile,
 					);
 				}
+
 				collect(customDataInspect.globalValue, folderUri);
 			}
 		}
 	}
+
 	return dataPaths;
 }
 function getCustomDataPathsFromAllExtensions(): string[] {
@@ -101,5 +108,6 @@ function getCustomDataPathsFromAllExtensions(): string[] {
 			}
 		}
 	}
+
 	return dataPaths;
 }

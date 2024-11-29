@@ -14,6 +14,7 @@ export class ObservableLazy<T> {
 	public get cachedValue(): IObservable<T | undefined> {
 		return this._value;
 	}
+
 	constructor(private readonly _computeValue: () => T) {}
 	/**
 	 * Returns the cached value.
@@ -24,8 +25,10 @@ export class ObservableLazy<T> {
 
 		if (!v) {
 			v = this._computeValue();
+
 			this._value.set(v, undefined);
 		}
+
 		return v;
 	}
 }
@@ -36,6 +39,7 @@ export class ObservablePromise<T> {
 	public static fromFn<T>(fn: () => Promise<T>): ObservablePromise<T> {
 		return new ObservablePromise(fn());
 	}
+
 	private readonly _value = observableValue<PromiseResult<T> | undefined>(
 		this,
 		undefined,
@@ -92,6 +96,7 @@ export class PromiseResult<T> {
 		if (this.error) {
 			throw this.error;
 		}
+
 		return this.data!;
 	}
 }
@@ -111,6 +116,7 @@ export class ObservableLazyPromise<T> {
 	);
 
 	constructor(private readonly _computePromise: () => Promise<T>) {}
+
 	public getPromise(): Promise<T> {
 		return this._lazyValue.getValue().promise;
 	}

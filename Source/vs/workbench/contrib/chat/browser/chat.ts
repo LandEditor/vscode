@@ -70,13 +70,21 @@ export const IQuickChatService =
 
 export interface IQuickChatService {
 	readonly _serviceBrand: undefined;
+
 	readonly onDidClose: Event<void>;
+
 	readonly enabled: boolean;
+
 	readonly focused: boolean;
+
 	toggle(options?: IQuickChatOpenOptions): void;
+
 	focus(): void;
+
 	open(options?: IQuickChatOpenOptions): void;
+
 	close(): void;
+
 	openInChatView(): void;
 }
 
@@ -100,7 +108,9 @@ export const IChatAccessibilityService =
 
 export interface IChatAccessibilityService {
 	readonly _serviceBrand: undefined;
+
 	acceptRequest(): number;
+
 	acceptResponse(
 		response: IChatResponseViewModel | string | undefined,
 		requestId: number,
@@ -110,12 +120,19 @@ export interface IChatAccessibilityService {
 
 export interface IChatCodeBlockInfo {
 	readonly ownerMarkdownPartId: string;
+
 	readonly codeBlockIndex: number;
+
 	readonly element: ChatTreeItem;
+
 	readonly uri: URI | undefined;
+
 	readonly uriPromise: Promise<URI | undefined>;
+
 	codemapperUri: URI | undefined;
+
 	readonly isStreaming: boolean;
+
 	focus(): void;
 
 	getContent(): string;
@@ -123,7 +140,9 @@ export interface IChatCodeBlockInfo {
 
 export interface IChatFileTreeInfo {
 	treeDataId: string;
+
 	treeIndex: number;
+
 	focus(): void;
 }
 
@@ -131,22 +150,35 @@ export type ChatTreeItem = IChatRequestViewModel | IChatResponseViewModel;
 
 export interface IChatListItemRendererOptions {
 	readonly renderStyle?: "compact" | "minimal";
+
 	readonly noHeader?: boolean;
+
 	readonly noPadding?: boolean;
+
 	readonly editableCodeBlock?: boolean;
+
 	readonly renderCodeBlockPills?: boolean;
+
 	readonly renderTextEditsAsSummary?: (uri: URI) => boolean;
 }
 
 export interface IChatWidgetViewOptions {
 	autoScroll?: boolean;
+
 	renderInputOnTop?: boolean;
+
 	renderFollowups?: boolean;
+
 	renderStyle?: "compact" | "minimal";
+
 	supportsFileReferences?: boolean;
+
 	supportsAdditionalParticipants?: boolean;
+
 	filter?: (item: ChatTreeItem) => boolean;
+
 	rendererOptions?: IChatListItemRendererOptions;
+
 	menus?: {
 		/**
 		 * The menu that is inside the input editor, use for send, dictation
@@ -163,7 +195,9 @@ export interface IChatWidgetViewOptions {
 	};
 
 	defaultElementHeight?: number;
+
 	editorOverflowWidgetsDomNode?: HTMLElement;
+
 	enableImplicitContext?: boolean;
 }
 
@@ -182,35 +216,55 @@ export type IChatWidgetViewContext =
 
 export interface IChatAcceptInputOptions {
 	noCommandDetection?: boolean;
+
 	isVoiceInput?: boolean;
 }
 
 export interface IChatWidget {
 	readonly onDidChangeViewModel: Event<void>;
+
 	readonly onDidAcceptInput: Event<void>;
+
 	readonly onDidHide: Event<void>;
+
 	readonly onDidSubmitAgent: Event<{
 		agent: IChatAgentData;
+
 		slashCommand?: IChatAgentCommand;
 	}>;
+
 	readonly onDidChangeAgent: Event<{
 		agent: IChatAgentData;
+
 		slashCommand?: IChatAgentCommand;
 	}>;
+
 	readonly onDidChangeParsedInput: Event<void>;
+
 	readonly location: ChatAgentLocation;
+
 	readonly viewContext: IChatWidgetViewContext;
+
 	readonly viewModel: IChatViewModel | undefined;
+
 	readonly inputEditor: ICodeEditor;
+
 	readonly supportsFileReferences: boolean;
+
 	readonly parsedInput: IParsedChatRequest;
+
 	lastSelectedAgent: IChatAgentData | undefined;
+
 	readonly scopedContextKeyService: IContextKeyService;
+
 	readonly input: ChatInputPart;
+
 	readonly attachmentModel: ChatAttachmentModel;
 
 	getContrib<T extends IChatWidgetContrib>(id: string): T | undefined;
+
 	reveal(item: ChatTreeItem): void;
+
 	focus(item: ChatTreeItem): void;
 
 	getSibling(
@@ -223,18 +277,26 @@ export interface IChatWidget {
 	setInput(query?: string): void;
 
 	getInput(): string;
+
 	refreshParsedInput(): void;
+
 	logInputHistory(): void;
+
 	acceptInput(
 		query?: string,
 		options?: IChatAcceptInputOptions,
 	): Promise<IChatResponseModel | undefined>;
+
 	acceptInputWithPrefix(prefix: string): void;
 
 	setInputPlaceholder(placeholder: string): void;
+
 	resetInputPlaceholder(): void;
+
 	focusLastMessage(): void;
+
 	focusInput(): void;
+
 	hasInputFocus(): boolean;
 
 	getCodeBlockInfoForEditor(uri: URI): IChatCodeBlockInfo | undefined;
@@ -250,6 +312,7 @@ export interface IChatWidget {
 	getLastFocusedFileTreeForResponse(
 		response: IChatResponseViewModel,
 	): IChatFileTreeInfo | undefined;
+
 	clear(): void;
 
 	getViewState(): IChatViewState;
@@ -268,7 +331,9 @@ export const IChatCodeBlockContextProviderService =
 
 export interface IChatCodeBlockContextProviderService {
 	readonly _serviceBrand: undefined;
+
 	readonly providers: ICodeBlockActionContextProvider[];
+
 	registerProvider(
 		provider: ICodeBlockActionContextProvider,
 		id: string,

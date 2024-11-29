@@ -21,11 +21,16 @@ export class ExtensionHostDebugBroadcastChannel<TContext>
 	implements IServerChannel<TContext>
 {
 	static readonly ChannelName = "extensionhostdebugservice";
+
 	private readonly _onCloseEmitter = new Emitter<ICloseSessionEvent>();
+
 	private readonly _onReloadEmitter = new Emitter<IReloadSessionEvent>();
+
 	private readonly _onTerminateEmitter =
 		new Emitter<ITerminateSessionEvent>();
+
 	private readonly _onAttachEmitter = new Emitter<IAttachSessionEvent>();
+
 	call(ctx: TContext, command: string, arg?: any): Promise<any> {
 		switch (command) {
 			case "close":
@@ -52,8 +57,10 @@ export class ExtensionHostDebugBroadcastChannel<TContext>
 					}),
 				);
 		}
+
 		throw new Error("Method not implemented.");
 	}
+
 	listen(ctx: TContext, event: string, arg?: any): Event<any> {
 		switch (event) {
 			case "close":
@@ -68,6 +75,7 @@ export class ExtensionHostDebugBroadcastChannel<TContext>
 			case "attach":
 				return this._onAttachEmitter.event;
 		}
+
 		throw new Error("Method not implemented.");
 	}
 }
@@ -80,30 +88,39 @@ export class ExtensionHostDebugChannelClient
 	constructor(private channel: IChannel) {
 		super();
 	}
+
 	reload(sessionId: string): void {
 		this.channel.call("reload", [sessionId]);
 	}
+
 	get onReload(): Event<IReloadSessionEvent> {
 		return this.channel.listen("reload");
 	}
+
 	close(sessionId: string): void {
 		this.channel.call("close", [sessionId]);
 	}
+
 	get onClose(): Event<ICloseSessionEvent> {
 		return this.channel.listen("close");
 	}
+
 	attachSession(sessionId: string, port: number, subId?: string): void {
 		this.channel.call("attach", [sessionId, port, subId]);
 	}
+
 	get onAttachSession(): Event<IAttachSessionEvent> {
 		return this.channel.listen("attach");
 	}
+
 	terminateSession(sessionId: string, subId?: string): void {
 		this.channel.call("terminate", [sessionId, subId]);
 	}
+
 	get onTerminateSession(): Event<ITerminateSessionEvent> {
 		return this.channel.listen("terminate");
 	}
+
 	openExtensionDevelopmentHostWindow(
 		args: string[],
 		debugRenderer: boolean,

@@ -48,19 +48,26 @@ export class EditorAutoSave
 	>();
 	// Auto save: focus change & window change
 	private lastActiveEditor: EditorInput | undefined = undefined;
+
 	private lastActiveGroupId: GroupIdentifier | undefined = undefined;
+
 	private readonly lastActiveEditorControlDisposable = this._register(
 		new DisposableStore(),
 	);
 	// Auto save: waiting on specific condition
 	private readonly waitingOnConditionAutoSaveWorkingCopies = new ResourceMap<{
 		readonly workingCopy: IWorkingCopy;
+
 		readonly reason: SaveReason;
+
 		condition: AutoSaveDisabledReason;
 	}>((resource) => this.uriIdentityService.extUri.getComparisonKey(resource));
+
 	private readonly waitingOnConditionAutoSaveEditors = new ResourceMap<{
 		readonly editor: IEditorIdentifier;
+
 		readonly reason: SaveReason;
+
 		condition: AutoSaveDisabledReason;
 	}>((resource) => this.uriIdentityService.extUri.getComparisonKey(resource));
 
@@ -88,24 +95,29 @@ export class EditorAutoSave
 			.dirtyWorkingCopies) {
 			this.onDidRegister(dirtyWorkingCopy);
 		}
+
 		this.registerListeners();
 	}
+
 	private registerListeners(): void {
 		this._register(
 			this.hostService.onDidChangeFocus((focused) =>
 				this.onWindowFocusChange(focused),
 			),
 		);
+
 		this._register(
 			this.hostService.onDidChangeActiveWindow(() =>
 				this.onActiveWindowChange(),
 			),
 		);
+
 		this._register(
 			this.editorService.onDidActiveEditorChange(() =>
 				this.onDidActiveEditorChange(),
 			),
 		);
+
 		this._register(
 			this.filesConfigurationService.onDidChangeAutoSaveConfiguration(
 				() => this.onDidChangeAutoSaveConfiguration(),
@@ -117,16 +129,19 @@ export class EditorAutoSave
 				this.onDidRegister(workingCopy),
 			),
 		);
+
 		this._register(
 			this.workingCopyService.onDidUnregister((workingCopy) =>
 				this.onDidUnregister(workingCopy),
 			),
 		);
+
 		this._register(
 			this.workingCopyService.onDidChangeDirty((workingCopy) =>
 				this.onDidChangeDirty(workingCopy),
 			),
 		);
+
 		this._register(
 			this.workingCopyService.onDidChangeContent((workingCopy) =>
 				this.onDidChangeContent(workingCopy),
@@ -138,6 +153,7 @@ export class EditorAutoSave
 				this.onConditionChanged(e, AutoSaveDisabledReason.ERRORS),
 			),
 		);
+
 		this._register(
 			this.filesConfigurationService.onDidChangeAutoSaveDisabled(
 				(resource) =>
@@ -148,6 +164,7 @@ export class EditorAutoSave
 			),
 		);
 	}
+
 	private onConditionChanged(
 		resources: readonly URI[],
 		condition:
@@ -168,11 +185,13 @@ export class EditorAutoSave
 					).mode !== AutoSaveMode.OFF
 				) {
 					this.discardAutoSave(workingCopyResult.workingCopy);
+
 					this.logService.trace(
 						`[editor auto save] running auto save from condition change event`,
 						workingCopyResult.workingCopy.resource.toString(),
 						workingCopyResult.workingCopy.typeId,
 					);
+
 					workingCopyResult.workingCopy.save({
 						reason: workingCopyResult.reason,
 					});
@@ -193,9 +212,11 @@ export class EditorAutoSave
 					).mode !== AutoSaveMode.OFF
 				) {
 					this.waitingOnConditionAutoSaveEditors.delete(resource);
+
 					this.logService.trace(
 						`[editor auto save] running auto save from condition change event with reason ${editorResult.reason}`,
 					);
+
 					this.editorService.save(editorResult.editor, {
 						reason: editorResult.reason,
 					});
@@ -203,14 +224,17 @@ export class EditorAutoSave
 			}
 		}
 	}
+
 	private onWindowFocusChange(focused: boolean): void {
 		if (!focused) {
 			this.maybeTriggerAutoSave(SaveReason.WINDOW_CHANGE);
 		}
 	}
+
 	private onActiveWindowChange(): void {
 		this.maybeTriggerAutoSave(SaveReason.WINDOW_CHANGE);
 	}
+
 	private onDidActiveEditorChange(): void {
 		// Treat editor change like a focus change for our last active editor if any
 		if (
@@ -227,6 +251,7 @@ export class EditorAutoSave
 
 		const activeEditor = (this.lastActiveEditor =
 			activeGroup.activeEditor ?? undefined);
+
 		this.lastActiveGroupId = activeGroup.id;
 		// Dispose previous active control listeners
 		this.lastActiveEditorControlDisposable.clear();
@@ -244,6 +269,7 @@ export class EditorAutoSave
 			);
 		}
 	}
+
 	private maybeTriggerAutoSave(
 		reason: SaveReason.WINDOW_CHANGE | SaveReason.FOCUS_CHANGE,
 		editorIdentifier?: IEditorIdentifier,
@@ -258,6 +284,7 @@ export class EditorAutoSave
 			) {
 				return; // no auto save for non-dirty, readonly or untitled editors
 			}
+
 			const autoSaveMode = this.filesConfigurationService.getAutoSaveMode(
 				editorIdentifier.editor,
 				reason,
@@ -277,6 +304,7 @@ export class EditorAutoSave
 					this.logService.trace(
 						`[editor auto save] triggering auto save with reason ${reason}`,
 					);
+
 					this.editorService.save(editorIdentifier, { reason });
 				}
 			} else if (
@@ -297,6 +325,7 @@ export class EditorAutoSave
 			this.saveAllDirtyAutoSaveables(reason);
 		}
 	}
+
 	private onDidChangeAutoSaveConfiguration(): void {
 		// Trigger a save-all when auto save is enabled
 		let reason: SaveReason | undefined = undefined;
@@ -320,15 +349,18 @@ export class EditorAutoSave
 
 				break;
 		}
+
 		if (reason) {
 			this.saveAllDirtyAutoSaveables(reason);
 		}
 	}
+
 	private saveAllDirtyAutoSaveables(reason: SaveReason): void {
 		for (const workingCopy of this.workingCopyService.dirtyWorkingCopies) {
 			if (workingCopy.capabilities & WorkingCopyCapabilities.Untitled) {
 				continue; // we never auto save untitled working copies
 			}
+
 			const autoSaveMode = this.filesConfigurationService.getAutoSaveMode(
 				workingCopy.resource,
 				reason,
@@ -347,14 +379,17 @@ export class EditorAutoSave
 			}
 		}
 	}
+
 	private onDidRegister(workingCopy: IWorkingCopy): void {
 		if (workingCopy.isDirty()) {
 			this.scheduleAutoSave(workingCopy);
 		}
 	}
+
 	private onDidUnregister(workingCopy: IWorkingCopy): void {
 		this.discardAutoSave(workingCopy);
 	}
+
 	private onDidChangeDirty(workingCopy: IWorkingCopy): void {
 		if (workingCopy.isDirty()) {
 			this.scheduleAutoSave(workingCopy);
@@ -362,6 +397,7 @@ export class EditorAutoSave
 			this.discardAutoSave(workingCopy);
 		}
 	}
+
 	private onDidChangeContent(workingCopy: IWorkingCopy): void {
 		if (workingCopy.isDirty()) {
 			// this listener will make sure that the auto save is
@@ -370,10 +406,12 @@ export class EditorAutoSave
 			this.scheduleAutoSave(workingCopy);
 		}
 	}
+
 	private scheduleAutoSave(workingCopy: IWorkingCopy): void {
 		if (workingCopy.capabilities & WorkingCopyCapabilities.Untitled) {
 			return; // we never auto save untitled working copies
 		}
+
 		const autoSaveAfterDelay =
 			this.filesConfigurationService.getAutoSaveConfiguration(
 				workingCopy.resource,
@@ -384,6 +422,7 @@ export class EditorAutoSave
 		}
 		// Clear any running auto save operation
 		this.discardAutoSave(workingCopy);
+
 		this.logService.trace(
 			`[editor auto save] scheduling auto save after ${autoSaveAfterDelay}ms`,
 			workingCopy.resource.toString(),
@@ -409,6 +448,7 @@ export class EditorAutoSave
 						workingCopy.resource.toString(),
 						workingCopy.typeId,
 					);
+
 					workingCopy.save({ reason });
 				} else if (
 					autoSaveMode.reason === AutoSaveDisabledReason.ERRORS ||
@@ -430,16 +470,21 @@ export class EditorAutoSave
 					workingCopy.resource.toString(),
 					workingCopy.typeId,
 				);
+
 				clearTimeout(handle);
 			}),
 		);
 	}
+
 	private discardAutoSave(workingCopy: IWorkingCopy): void {
 		dispose(this.scheduledAutoSavesAfterDelay.get(workingCopy));
+
 		this.scheduledAutoSavesAfterDelay.delete(workingCopy);
+
 		this.waitingOnConditionAutoSaveWorkingCopies.delete(
 			workingCopy.resource,
 		);
+
 		this.waitingOnConditionAutoSaveEditors.delete(workingCopy.resource);
 	}
 }

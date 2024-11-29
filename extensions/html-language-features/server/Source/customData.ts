@@ -33,6 +33,7 @@ function parseHTMLData(id: string, source: string): IHTMLDataProvider {
 	} catch (err) {
 		return newHTMLDataProvider(id, { version: 1 });
 	}
+
 	return newHTMLDataProvider(id, {
 		version: rawData.version || 1,
 		tags: rawData.tags || [],

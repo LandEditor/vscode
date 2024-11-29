@@ -15,6 +15,7 @@ import { ITerminalChildProcess } from "../../../common/terminal.js";
  */
 export class TerminalAutoResponder extends Disposable {
 	private _pointer = 0;
+
 	private _paused = false;
 	/**
 	 * Each reply is throttled by a second to avoid resource starvation and responding to screen
@@ -29,11 +30,13 @@ export class TerminalAutoResponder extends Disposable {
 		logService: ILogService,
 	) {
 		super();
+
 		this._register(
 			proc.onProcessData((e) => {
 				if (this._paused || this._throttled) {
 					return;
 				}
+
 				const data = typeof e === "string" ? e : e.data;
 
 				for (let i = 0; i < data.length; i++) {
@@ -47,15 +50,20 @@ export class TerminalAutoResponder extends Disposable {
 						logService.debug(
 							`Auto reply match: "${matchWord}", response: "${response}"`,
 						);
+
 						proc.input(response);
+
 						this._throttled = true;
+
 						timeout(1000).then(() => (this._throttled = false));
+
 						this._reset();
 					}
 				}
 			}),
 		);
 	}
+
 	private _reset() {
 		this._pointer = 0;
 	}
@@ -68,6 +76,7 @@ export class TerminalAutoResponder extends Disposable {
 			this._paused = true;
 		}
 	}
+
 	handleInput() {
 		this._paused = false;
 	}

@@ -31,6 +31,7 @@ const webviewActiveContextKeyExpr = ContextKeyExpr.and(
 
 export class ShowWebViewEditorFindWidgetAction extends Action2 {
 	public static readonly ID = "editor.action.webvieweditor.showFind";
+
 	public static readonly LABEL = nls.localize(
 		"editor.action.webvieweditor.showFind",
 		"Show find",
@@ -50,12 +51,14 @@ export class ShowWebViewEditorFindWidgetAction extends Action2 {
 			},
 		});
 	}
+
 	public run(accessor: ServicesAccessor): void {
 		getActiveWebviewEditor(accessor)?.showFind();
 	}
 }
 export class HideWebViewEditorFindCommand extends Action2 {
 	public static readonly ID = "editor.action.webvieweditor.hideFind";
+
 	public static readonly LABEL = nls.localize(
 		"editor.action.webvieweditor.hideFind",
 		"Stop find",
@@ -75,12 +78,14 @@ export class HideWebViewEditorFindCommand extends Action2 {
 			},
 		});
 	}
+
 	public run(accessor: ServicesAccessor): void {
 		getActiveWebviewEditor(accessor)?.hideFind();
 	}
 }
 export class WebViewEditorFindNextCommand extends Action2 {
 	public static readonly ID = "editor.action.webvieweditor.findNext";
+
 	public static readonly LABEL = nls.localize(
 		"editor.action.webvieweditor.findNext",
 		"Find next",
@@ -100,12 +105,14 @@ export class WebViewEditorFindNextCommand extends Action2 {
 			},
 		});
 	}
+
 	public run(accessor: ServicesAccessor): void {
 		getActiveWebviewEditor(accessor)?.runFindAction(false);
 	}
 }
 export class WebViewEditorFindPreviousCommand extends Action2 {
 	public static readonly ID = "editor.action.webvieweditor.findPrevious";
+
 	public static readonly LABEL = nls.localize(
 		"editor.action.webvieweditor.findPrevious",
 		"Find previous",
@@ -125,16 +132,19 @@ export class WebViewEditorFindPreviousCommand extends Action2 {
 			},
 		});
 	}
+
 	public run(accessor: ServicesAccessor): void {
 		getActiveWebviewEditor(accessor)?.runFindAction(true);
 	}
 }
 export class ReloadWebviewAction extends Action2 {
 	static readonly ID = "workbench.action.webview.reloadWebviewAction";
+
 	static readonly LABEL = nls.localize2(
 		"refreshWebviewLabel",
 		"Reload Webviews",
 	);
+
 	public constructor() {
 		super({
 			id: ReloadWebviewAction.ID,
@@ -147,6 +157,7 @@ export class ReloadWebviewAction extends Action2 {
 			],
 		});
 	}
+
 	public async run(accessor: ServicesAccessor): Promise<void> {
 		const webviewService = accessor.get(IWebviewService);
 

@@ -21,7 +21,9 @@ export class ImplicitActivationEventsImpl {
 		string,
 		IActivationEventsGenerator<any>
 	>();
+
 	private readonly _cache = new WeakMap<IExtensionDescription, string[]>();
+
 	public register<T>(
 		extensionPointName: string,
 		generator: IActivationEventsGenerator<T>,
@@ -41,6 +43,7 @@ export class ImplicitActivationEventsImpl {
 				this._readActivationEvents(extensionDescription),
 			);
 		}
+
 		return this._cache.get(extensionDescription)!;
 	}
 	/**
@@ -66,8 +69,10 @@ export class ImplicitActivationEventsImpl {
 				] = activationEvents;
 			}
 		}
+
 		return result;
 	}
+
 	private _readActivationEvents(desc: IExtensionDescription): string[] {
 		if (
 			typeof desc.main === "undefined" &&
@@ -75,6 +80,7 @@ export class ImplicitActivationEventsImpl {
 		) {
 			return [];
 		}
+
 		const activationEvents: string[] = Array.isArray(desc.activationEvents)
 			? desc.activationEvents.slice(0)
 			: [];
@@ -86,10 +92,12 @@ export class ImplicitActivationEventsImpl {
 					`onUri:${ExtensionIdentifier.toKey(desc.identifier)}`;
 			}
 		}
+
 		if (!desc.contributes) {
 			// no implicit activation events
 			return activationEvents;
 		}
+
 		for (const extPointName in desc.contributes) {
 			const generator = this._generators.get(extPointName);
 
@@ -97,6 +105,7 @@ export class ImplicitActivationEventsImpl {
 				// There's no generator for this extension point
 				continue;
 			}
+
 			const contrib = (desc.contributes as any)[extPointName];
 
 			const contribArr = Array.isArray(contrib) ? contrib : [contrib];
@@ -107,6 +116,7 @@ export class ImplicitActivationEventsImpl {
 				onUnexpectedError(err);
 			}
 		}
+
 		return activationEvents;
 	}
 }

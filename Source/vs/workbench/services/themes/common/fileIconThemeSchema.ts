@@ -418,5 +418,6 @@ export function registerFileIconThemeSchemas() {
 	const schemaRegistry = Registry.as<IJSONContributionRegistry>(
 		JSONExtensions.JSONContribution,
 	);
+
 	schemaRegistry.registerSchema(schemaId, schema);
 }

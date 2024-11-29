@@ -44,13 +44,17 @@ const enum State {
 
 export interface ISimpleSelectedSuggestion {
 	item: SimpleCompletionItem;
+
 	index: number;
+
 	model: SimpleCompletionModel;
 }
 
 interface IPersistedWidgetSizeDelegate {
 	restore(): dom.Dimension | undefined;
+
 	store(size: dom.Dimension): void;
+
 	reset(): void;
 }
 
@@ -69,15 +73,23 @@ export interface IWorkbenchSuggestWidgetOptions {
 
 export class SimpleSuggestWidget extends Disposable {
 	private _state: State = State.Hidden;
+
 	private _completionModel?: SimpleCompletionModel;
+
 	private _cappedHeight?: { wanted: number; capped: number };
+
 	private _forceRenderingAbove: boolean = false;
+
 	private _preference?: WidgetPositionPreference;
+
 	private readonly _pendingLayout = this._register(new MutableDisposable());
 
 	readonly element: ResizableHTMLElement;
+
 	private readonly _listElement: HTMLElement;
+
 	private readonly _list: List<SimpleCompletionItem>;
+
 	private readonly _status?: SuggestWidgetStatus;
 
 	private readonly _showTimeout = this._register(new TimeoutTimer());
@@ -85,11 +97,16 @@ export class SimpleSuggestWidget extends Disposable {
 	private readonly _onDidSelect = this._register(
 		new Emitter<ISimpleSelectedSuggestion>(),
 	);
+
 	readonly onDidSelect: Event<ISimpleSelectedSuggestion> =
 		this._onDidSelect.event;
+
 	private readonly _onDidHide = this._register(new Emitter<this>());
+
 	readonly onDidHide: Event<this> = this._onDidHide.event;
+
 	private readonly _onDidShow = this._register(new Emitter<this>());
+
 	readonly onDidShow: Event<this> = this._onDidShow.event;
 
 	get list(): List<SimpleCompletionItem> {
@@ -106,7 +123,9 @@ export class SimpleSuggestWidget extends Disposable {
 		super();
 
 		this.element = this._register(new ResizableHTMLElement());
+
 		this.element.domNode.classList.add("workbench-suggest-widget");
+
 		this._container.appendChild(this.element.domNode);
 
 		class ResizeState {
@@ -119,15 +138,18 @@ export class SimpleSuggestWidget extends Disposable {
 		}
 
 		let state: ResizeState | undefined;
+
 		this._register(
 			this.element.onDidWillResize(() => {
 				// this._preferenceLocked = true;
+
 				state = new ResizeState(
 					this._persistedSize.restore(),
 					this.element.size,
 				);
 			}),
 		);
+
 		this._register(
 			this.element.onDidResize((e) => {
 				this._resize(e.dimension.width, e.dimension.height);
@@ -135,6 +157,7 @@ export class SimpleSuggestWidget extends Disposable {
 				if (state) {
 					state.persistHeight =
 						state.persistHeight || !!e.north || !!e.south;
+
 					state.persistWidth =
 						state.persistWidth || !!e.east || !!e.west;
 				}
@@ -159,24 +182,30 @@ export class SimpleSuggestWidget extends Disposable {
 						height =
 							state.persistedSize?.height ?? defaultSize.height;
 					}
+
 					if (
 						!state.persistWidth ||
 						Math.abs(state.currentSize.width - width) <= threshold
 					) {
 						width = state.persistedSize?.width ?? defaultSize.width;
 					}
+
 					this._persistedSize.store(new dom.Dimension(width, height));
 				}
 
 				// reset working state
 				// this._preferenceLocked = false;
+
 				state = undefined;
 			}),
 		);
 
 		const renderer = new SimpleSuggestWidgetItemRenderer(_getFontInfo);
+
 		this._register(renderer);
+
 		this._listElement = dom.append(this.element.domNode, $(".tree"));
+
 		this._list = this._register(
 			new List(
 				"SuggestWidget",
@@ -264,13 +293,16 @@ export class SimpleSuggestWidget extends Disposable {
 					options.statusBarMenuId,
 				),
 			);
+
 			this.element.domNode.classList.toggle("with-status-bar", true);
 		}
 
 		this._register(
 			this._list.onMouseDown((e) => this._onListMouseDownOrTap(e)),
 		);
+
 		this._register(this._list.onTap((e) => this._onListMouseDownOrTap(e)));
+
 		this._register(
 			this._list.onDidChangeSelection((e) => this._onListSelection(e)),
 		);
@@ -317,6 +349,7 @@ export class SimpleSuggestWidget extends Disposable {
 
 		if (isEmpty) {
 			this._setState(isAuto ? State.Hidden : State.Empty);
+
 			this._completionModel = undefined;
 
 			return;
@@ -337,8 +370,11 @@ export class SimpleSuggestWidget extends Disposable {
 				this._list.length,
 				this._completionModel?.items ?? [],
 			);
+
 			this._setState(isFrozen ? State.Frozen : State.Open);
+
 			this._list.reveal(selectionIndex, 0);
+
 			this._list.setFocus([selectionIndex]);
 			// this._list.setFocus(noFocus ? [] : [selectionIndex]);
 		} finally {
@@ -350,6 +386,7 @@ export class SimpleSuggestWidget extends Disposable {
 			dom.getWindow(this.element.domNode),
 			() => {
 				this._pendingLayout.clear();
+
 				this._layout(this.element.size);
 				// Reset focus border
 				// this._details.widget.domNode.classList.remove('focused');
@@ -367,9 +404,11 @@ export class SimpleSuggestWidget extends Disposable {
 		if (this._state === state) {
 			return;
 		}
+
 		this._state = state;
 
 		this.element.domNode.classList.toggle("frozen", state === State.Frozen);
+
 		this.element.domNode.classList.remove("message");
 
 		switch (state) {
@@ -382,15 +421,20 @@ export class SimpleSuggestWidget extends Disposable {
 					dom.hide(this._status?.element);
 				}
 				// this._details.hide(true);
+
 				this._status?.hide();
 				// this._contentWidget.hide();
 				// this._ctxSuggestWidgetVisible.reset();
 				// this._ctxSuggestWidgetMultipleSuggestions.reset();
 				// this._ctxSuggestWidgetHasFocusedSuggestion.reset();
+
 				this._showTimeout.cancel();
+
 				this.element.domNode.classList.remove("visible");
+
 				this._list.splice(0, this._list.length);
 				// this._focusedItem = undefined;
+
 				this._cappedHeight = undefined;
 				// this._explainMode = false;
 
@@ -407,6 +451,7 @@ export class SimpleSuggestWidget extends Disposable {
 				}
 				// dom.show(this._messageElement);
 				// this._details.hide();
+
 				this._show();
 				// this._focusedItem = undefined;
 
@@ -423,6 +468,7 @@ export class SimpleSuggestWidget extends Disposable {
 				}
 				// dom.show(this._messageElement);
 				// this._details.hide();
+
 				this._show();
 				// this._focusedItem = undefined;
 
@@ -436,6 +482,7 @@ export class SimpleSuggestWidget extends Disposable {
 				if (this._status) {
 					dom.show(this._status?.element);
 				}
+
 				this._show();
 
 				break;
@@ -448,6 +495,7 @@ export class SimpleSuggestWidget extends Disposable {
 				if (this._status) {
 					dom.show(this._status?.element);
 				}
+
 				this._show();
 
 				break;
@@ -461,6 +509,7 @@ export class SimpleSuggestWidget extends Disposable {
 					dom.show(this._status?.element);
 				}
 				// this._details.show();
+
 				this._show();
 
 				break;
@@ -476,10 +525,12 @@ export class SimpleSuggestWidget extends Disposable {
 		// this._contentWidget.show();
 
 		dom.show(this.element.domNode);
+
 		this._layout(this._persistedSize.restore());
 		// this._ctxSuggestWidgetVisible.set(true);
 
 		this._onDidShow.fire(this);
+
 		this._showTimeout.cancelAndSet(() => {
 			this.element.domNode.classList.add("visible");
 		}, 100);
@@ -491,9 +542,11 @@ export class SimpleSuggestWidget extends Disposable {
 		// this._loadingTimeout?.dispose();
 
 		this._setState(State.Hidden);
+
 		this._onDidHide.fire(this);
 
 		dom.hide(this.element.domNode);
+
 		this.element.clearSashHoverState();
 		// ensure that a reasonable widget height is persisted so that
 		// accidential "resize-to-single-items" cases aren't happening
@@ -555,6 +608,7 @@ export class SimpleSuggestWidget extends Disposable {
 		if (width > maxWidth) {
 			width = maxWidth;
 		}
+
 		const preferredWidth = this._completionModel
 			? this._completionModel.stats.pLabelLen *
 				info.typicalHalfwidthCharacterWidth
@@ -598,6 +652,7 @@ export class SimpleSuggestWidget extends Disposable {
 		if (height < minHeight) {
 			height = minHeight;
 		}
+
 		if (height > maxHeight) {
 			height = maxHeight;
 		}
@@ -610,18 +665,25 @@ export class SimpleSuggestWidget extends Disposable {
 				availableSpaceAbove > forceRenderingAboveRequiredSpace)
 		) {
 			this._preference = WidgetPositionPreference.Above;
+
 			this.element.enableSashes(true, true, false, false);
+
 			maxHeight = maxHeightAbove;
 		} else {
 			this._preference = WidgetPositionPreference.Below;
+
 			this.element.enableSashes(false, true, true, false);
+
 			maxHeight = maxHeightBelow;
 		}
+
 		this.element.preferredSize = new dom.Dimension(
 			preferredWidth,
 			info.defaultSize.height,
 		);
+
 		this.element.maxSize = new dom.Dimension(maxWidth, maxHeight);
+
 		this.element.minSize = new dom.Dimension(220, minHeight);
 
 		// Know when the height was capped to fit and remember
@@ -635,6 +697,7 @@ export class SimpleSuggestWidget extends Disposable {
 					}
 				: undefined;
 		// }
+
 		this.element.domNode.style.left = `${this._cursorPosition.left}px`;
 
 		if (this._preference === WidgetPositionPreference.Above) {
@@ -642,11 +705,13 @@ export class SimpleSuggestWidget extends Disposable {
 		} else {
 			this.element.domNode.style.top = `${this._cursorPosition.top + this._cursorPosition.height}px`;
 		}
+
 		this._resize(width, height);
 	}
 
 	private _resize(width: number, height: number): void {
 		const { width: maxWidth, height: maxHeight } = this.element.maxSize;
+
 		width = Math.min(maxWidth, width);
 
 		if (maxHeight) {
@@ -654,11 +719,15 @@ export class SimpleSuggestWidget extends Disposable {
 		}
 
 		const { statusBarHeight } = this._getLayoutInfo();
+
 		this._list.layout(height - statusBarHeight, width);
+
 		this._listElement.style.height = `${height - statusBarHeight}px`;
 
 		this._listElement.style.width = `${width}px`;
+
 		this._listElement.style.height = `${height}px`;
+
 		this.element.layout(height, width);
 
 		// this._positionDetails();
@@ -705,6 +774,7 @@ export class SimpleSuggestWidget extends Disposable {
 
 		// prevent stealing browser focus from the terminal
 		e.browserEvent.preventDefault();
+
 		e.browserEvent.stopPropagation();
 
 		this._select(e.element, e.index);
@@ -732,6 +802,7 @@ export class SimpleSuggestWidget extends Disposable {
 		if (focus.length > 0) {
 			this._list.reveal(focus[0]);
 		}
+
 		return true;
 	}
 
@@ -743,6 +814,7 @@ export class SimpleSuggestWidget extends Disposable {
 		if (focus.length > 0) {
 			this._list.reveal(focus[0]);
 		}
+
 		return true;
 	}
 
@@ -754,6 +826,7 @@ export class SimpleSuggestWidget extends Disposable {
 		if (focus.length > 0) {
 			this._list.reveal(focus[0]);
 		}
+
 		return true;
 	}
 
@@ -765,6 +838,7 @@ export class SimpleSuggestWidget extends Disposable {
 		if (focus.length > 0) {
 			this._list.reveal(focus[0]);
 		}
+
 		return true;
 	}
 
@@ -776,12 +850,14 @@ export class SimpleSuggestWidget extends Disposable {
 				model: this._completionModel,
 			};
 		}
+
 		return undefined;
 	}
 
 	forceRenderingAbove() {
 		if (!this._forceRenderingAbove) {
 			this._forceRenderingAbove = true;
+
 			this._layout(this._persistedSize.restore());
 		}
 	}

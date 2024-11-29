@@ -62,18 +62,22 @@ export class ColumnSelection {
 				if (visibleStartColumn > toVisibleColumn) {
 					continue;
 				}
+
 				if (visibleEndColumn < fromVisibleColumn) {
 					continue;
 				}
 			}
+
 			if (isRTL) {
 				if (visibleEndColumn > fromVisibleColumn) {
 					continue;
 				}
+
 				if (visibleStartColumn < toVisibleColumn) {
 					continue;
 				}
 			}
+
 			result.push(
 				new SingleCursorState(
 					new Range(lineNumber, startColumn, lineNumber, startColumn),
@@ -84,12 +88,14 @@ export class ColumnSelection {
 				),
 			);
 		}
+
 		if (result.length === 0) {
 			// We are after all the lines, so add cursor at the end of each line
 			for (let i = 0; i < lineCount; i++) {
 				const lineNumber = fromLineNumber + (reversed ? -i : i);
 
 				const maxColumn = model.getLineMaxColumn(lineNumber);
+
 				result.push(
 					new SingleCursorState(
 						new Range(lineNumber, maxColumn, lineNumber, maxColumn),
@@ -101,6 +107,7 @@ export class ColumnSelection {
 				);
 			}
 		}
+
 		return {
 			viewStates: result,
 			reversed: reversed,
@@ -110,6 +117,7 @@ export class ColumnSelection {
 			toVisualColumn: toVisibleColumn,
 		};
 	}
+
 	public static columnSelectLeft(
 		config: CursorConfiguration,
 		model: ICursorSimpleModel,
@@ -120,6 +128,7 @@ export class ColumnSelection {
 		if (toViewVisualColumn > 0) {
 			toViewVisualColumn--;
 		}
+
 		return ColumnSelection.columnSelect(
 			config,
 			model,
@@ -129,6 +138,7 @@ export class ColumnSelection {
 			toViewVisualColumn,
 		);
 	}
+
 	public static columnSelectRight(
 		config: CursorConfiguration,
 		model: ICursorSimpleModel,
@@ -148,7 +158,9 @@ export class ColumnSelection {
 
 		for (
 			let lineNumber = minViewLineNumber;
+
 			lineNumber <= maxViewLineNumber;
+
 			lineNumber++
 		) {
 			const lineMaxViewColumn = model.getLineMaxColumn(lineNumber);
@@ -157,16 +169,19 @@ export class ColumnSelection {
 				model,
 				new Position(lineNumber, lineMaxViewColumn),
 			);
+
 			maxVisualViewColumn = Math.max(
 				maxVisualViewColumn,
 				lineMaxVisualViewColumn,
 			);
 		}
+
 		let toViewVisualColumn = prevColumnSelectData.toViewVisualColumn;
 
 		if (toViewVisualColumn < maxVisualViewColumn) {
 			toViewVisualColumn++;
 		}
+
 		return this.columnSelect(
 			config,
 			model,
@@ -176,6 +191,7 @@ export class ColumnSelection {
 			toViewVisualColumn,
 		);
 	}
+
 	public static columnSelectUp(
 		config: CursorConfiguration,
 		model: ICursorSimpleModel,
@@ -198,6 +214,7 @@ export class ColumnSelection {
 			prevColumnSelectData.toViewVisualColumn,
 		);
 	}
+
 	public static columnSelectDown(
 		config: CursorConfiguration,
 		model: ICursorSimpleModel,
@@ -223,9 +240,14 @@ export class ColumnSelection {
 }
 export interface IColumnSelectResult {
 	viewStates: SingleCursorState[];
+
 	reversed: boolean;
+
 	fromLineNumber: number;
+
 	fromVisualColumn: number;
+
 	toLineNumber: number;
+
 	toVisualColumn: number;
 }

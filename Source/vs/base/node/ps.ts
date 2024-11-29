@@ -31,15 +31,18 @@ export function listProcesses(rootPid: number): Promise<ProcessItem> {
 					load,
 					mem,
 				};
+
 				map.set(pid, item);
 
 				if (pid === rootPid) {
 					rootItem = item;
 				}
+
 				if (parent) {
 					if (!parent.children) {
 						parent.children = [];
 					}
+
 					parent.children.push(item);
 
 					if (parent.children.length > 1) {
@@ -50,6 +53,7 @@ export function listProcesses(rootPid: number): Promise<ProcessItem> {
 				}
 			}
 		}
+
 		function findName(cmd: string): string {
 			const UTILITY_NETWORK_HINT = /--utility-sub-type=network/i;
 
@@ -82,10 +86,12 @@ export function listProcesses(rootPid: number): Promise<ProcessItem> {
 					if (UTILITY_NETWORK_HINT.exec(cmd)) {
 						return "utility-network-service";
 					}
+
 					return "utility-process";
 				} else if (matches[1] === "extensionHost") {
 					return "extension-host"; // normalize remote extension host type
 				}
+
 				return matches[1];
 			}
 			// find all xxxx.js
@@ -106,8 +112,10 @@ export function listProcesses(rootPid: number): Promise<ProcessItem> {
 					return `electron-nodejs (${result})`;
 				}
 			}
+
 			return cmd;
 		}
+
 		if (process.platform === "win32") {
 			const cleanUNCPrefix = (value: string): string => {
 				if (value.indexOf("\\\\?\\") === 0) {
@@ -122,6 +130,7 @@ export function listProcesses(rootPid: number): Promise<ProcessItem> {
 					return value;
 				}
 			};
+
 			import("@vscode/windows-process-tree").then(
 				(windowsProcessTree) => {
 					windowsProcessTree.getProcessList(
@@ -136,6 +145,7 @@ export function listProcesses(rootPid: number): Promise<ProcessItem> {
 
 								return;
 							}
+
 							windowsProcessTree.getProcessCpuUsage(
 								processList,
 								(completeProcessList) => {
@@ -143,10 +153,12 @@ export function listProcesses(rootPid: number): Promise<ProcessItem> {
 										number,
 										ProcessItem
 									> = new Map();
+
 									completeProcessList.forEach((process) => {
 										const commandLine = cleanUNCPrefix(
 											process.commandLine || "",
 										);
+
 										processItems.set(process.pid, {
 											name: findName(commandLine),
 											cmd: commandLine,
@@ -156,6 +168,7 @@ export function listProcesses(rootPid: number): Promise<ProcessItem> {
 											mem: process.memory || 0,
 										});
 									});
+
 									rootItem = processItems.get(rootPid);
 
 									if (rootItem) {
@@ -168,9 +181,11 @@ export function listProcesses(rootPid: number): Promise<ProcessItem> {
 												if (!parent.children) {
 													parent.children = [];
 												}
+
 												parent.children.push(item);
 											}
 										});
+
 										processItems.forEach((item) => {
 											if (item.children) {
 												item.children =
@@ -179,6 +194,7 @@ export function listProcesses(rootPid: number): Promise<ProcessItem> {
 													);
 											}
 										});
+
 										resolve(rootItem);
 									} else {
 										reject(
@@ -220,7 +236,9 @@ export function listProcesses(rootPid: number): Promise<ProcessItem> {
 				let cmd = JSON.stringify(
 					FileAccess.asFileUri("vs/base/node/cpuUsage.sh").fsPath,
 				);
+
 				cmd += " " + pids.join(" ");
+
 				exec(cmd, {}, (err, stdout, stderr) => {
 					if (err || stderr) {
 						reject(err || new Error(stderr.toString()));
@@ -229,8 +247,10 @@ export function listProcesses(rootPid: number): Promise<ProcessItem> {
 
 						for (let i = 0; i < pids.length; i++) {
 							const processInfo = map.get(pids[i])!;
+
 							processInfo.load = parseFloat(cpuUsage[i]);
 						}
+
 						if (!rootItem) {
 							reject(
 								new Error(`Root process ${rootPid} not found`),
@@ -238,10 +258,12 @@ export function listProcesses(rootPid: number): Promise<ProcessItem> {
 
 							return;
 						}
+
 						resolve(rootItem);
 					}
 				});
 			}
+
 			exec("which ps", {}, (err, stdout, stderr) => {
 				if (err || stderr) {
 					if (process.platform !== "linux") {
@@ -250,11 +272,13 @@ export function listProcesses(rootPid: number): Promise<ProcessItem> {
 						const cmd = JSON.stringify(
 							FileAccess.asFileUri("vs/base/node/ps.sh").fsPath,
 						);
+
 						exec(cmd, {}, (err, stdout, stderr) => {
 							if (err || stderr) {
 								reject(err || new Error(stderr.toString()));
 							} else {
 								parsePsOutput(stdout, addToTree);
+
 								calculateLinuxCpuUsage();
 							}
 						});

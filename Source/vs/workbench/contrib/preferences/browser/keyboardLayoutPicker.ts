@@ -48,6 +48,7 @@ export class KeyboardLayoutPickerContribution
 	implements IWorkbenchContribution
 {
 	static readonly ID = "workbench.contrib.keyboardLayoutPicker";
+
 	private readonly pickerElement = this._register(
 		new MutableDisposable<IStatusbarEntryAccessor>(),
 	);
@@ -75,6 +76,7 @@ export class KeyboardLayoutPickerContribution
 				"Layout: {0}",
 				layoutInfo.label,
 			);
+
 			this.pickerElement.value = this.statusbarService.addEntry(
 				{
 					name,
@@ -86,6 +88,7 @@ export class KeyboardLayoutPickerContribution
 				StatusbarAlignment.RIGHT,
 			);
 		}
+
 		this._register(
 			this.keyboardLayoutService.onDidChangeKeyboardLayout(() => {
 				const layout =
@@ -99,6 +102,7 @@ export class KeyboardLayoutPickerContribution
 						"Layout: {0}",
 						layoutInfo.label,
 					);
+
 					this.pickerElement.value.update({
 						name,
 						text,
@@ -111,6 +115,7 @@ export class KeyboardLayoutPickerContribution
 						"Layout: {0}",
 						layoutInfo.label,
 					);
+
 					this.pickerElement.value = this.statusbarService.addEntry(
 						{
 							name,
@@ -136,7 +141,9 @@ interface LayoutQuickPickItem extends IQuickPickItem {
 }
 interface IUnknownLayout {
 	text?: string;
+
 	lang?: string;
+
 	layout?: string;
 }
 
@@ -159,6 +166,7 @@ registerAction2(
 				f1: true,
 			});
 		}
+
 		async run(accessor: ServicesAccessor): Promise<void> {
 			const keyboardLayoutService = accessor.get(IKeyboardLayoutService);
 
@@ -220,6 +228,7 @@ registerAction2(
 					: isWindows
 						? "Win"
 						: "Linux";
+
 				picks.unshift({
 					type: "separator",
 					label: nls.localize(
@@ -229,12 +238,14 @@ registerAction2(
 					),
 				});
 			}
+
 			const configureKeyboardLayout: IQuickPickItem = {
 				label: nls.localize(
 					"configureKeyboardLayout",
 					"Configure Keyboard Layout",
 				),
 			};
+
 			picks.unshift(configureKeyboardLayout);
 			// Offer to "Auto Detect"
 			const autoDetectMode: IQuickPickItem = {
@@ -244,6 +255,7 @@ registerAction2(
 					: undefined,
 				picked: isAutoDetect ? true : undefined,
 			};
+
 			picks.unshift(autoDetectMode);
 
 			const pick = await quickInputService.pick(picks, {
@@ -257,6 +269,7 @@ registerAction2(
 			if (!pick) {
 				return;
 			}
+
 			if (pick === autoDetectMode) {
 				// set keymap service to auto mode
 				configurationService.updateValue(
@@ -266,8 +279,10 @@ registerAction2(
 
 				return;
 			}
+
 			if (pick === configureKeyboardLayout) {
 				const file = environmentService.keyboardLayoutResource;
+
 				await fileService
 					.stat(file)
 					.then(undefined, () => {
@@ -283,6 +298,7 @@ registerAction2(
 							if (!stat) {
 								return undefined;
 							}
+
 							return editorService.openEditor({
 								resource: stat.resource,
 								languageId: "jsonc",
@@ -303,6 +319,7 @@ registerAction2(
 
 				return Promise.resolve();
 			}
+
 			configurationService.updateValue(
 				"keyboard.layout",
 				getKeyboardLayoutId((<LayoutQuickPickItem>pick).layout),

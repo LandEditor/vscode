@@ -24,7 +24,9 @@ import { ITreeItem, ITreeItemLabel } from "../../../common/views.js";
 
 export interface DidChangeUserDataProfileEvent {
 	readonly previous: IUserDataProfile;
+
 	readonly profile: IUserDataProfile;
+
 	join(promise: Promise<void>): void;
 }
 export const IUserDataProfileService = createDecorator<IUserDataProfileService>(
@@ -33,12 +35,16 @@ export const IUserDataProfileService = createDecorator<IUserDataProfileService>(
 
 export interface IUserDataProfileService {
 	readonly _serviceBrand: undefined;
+
 	readonly currentProfile: IUserDataProfile;
+
 	readonly onDidChangeCurrentProfile: Event<DidChangeUserDataProfileEvent>;
+
 	updateCurrentProfile(currentProfile: IUserDataProfile): Promise<void>;
 }
 export interface IProfileTemplateInfo {
 	readonly name: string;
+
 	readonly url: string;
 }
 export const IUserDataProfileManagementService =
@@ -48,16 +54,21 @@ export const IUserDataProfileManagementService =
 
 export interface IUserDataProfileManagementService {
 	readonly _serviceBrand: undefined;
+
 	createProfile(
 		name: string,
 		options?: IUserDataProfileOptions,
 	): Promise<IUserDataProfile>;
+
 	createAndEnterProfile(
 		name: string,
 		options?: IUserDataProfileOptions,
 	): Promise<IUserDataProfile>;
+
 	createAndEnterTransientProfile(): Promise<IUserDataProfile>;
+
 	removeProfile(profile: IUserDataProfile): Promise<void>;
+
 	updateProfile(
 		profile: IUserDataProfile,
 		updateOptions: IUserDataProfileUpdateOptions,
@@ -71,12 +82,19 @@ export interface IUserDataProfileManagementService {
 }
 export interface IUserDataProfileTemplate {
 	readonly name: string;
+
 	readonly icon?: string;
+
 	readonly settings?: string;
+
 	readonly keybindings?: string;
+
 	readonly tasks?: string;
+
 	readonly snippets?: string;
+
 	readonly globalState?: string;
+
 	readonly extensions?: string;
 }
 export function isUserDataProfileTemplate(
@@ -117,11 +135,14 @@ export function isProfileURL(uri: URI): boolean {
 }
 export interface IUserDataProfileCreateOptions extends IUserDataProfileOptions {
 	readonly name?: string;
+
 	readonly resourceTypeFlags?: ProfileResourceTypeFlags;
 }
 export interface IProfileImportOptions extends IUserDataProfileCreateOptions {
 	readonly name?: string;
+
 	readonly icon?: string;
+
 	readonly mode?: "apply";
 }
 export const IUserDataProfileImportExportService =
@@ -131,27 +152,33 @@ export const IUserDataProfileImportExportService =
 
 export interface IUserDataProfileImportExportService {
 	readonly _serviceBrand: undefined;
+
 	registerProfileContentHandler(
 		id: string,
 		profileContentHandler: IUserDataProfileContentHandler,
 	): IDisposable;
+
 	unregisterProfileContentHandler(id: string): void;
+
 	resolveProfileTemplate(uri: URI): Promise<IUserDataProfileTemplate | null>;
 
 	exportProfile(
 		profile: IUserDataProfile,
 		exportFlags?: ProfileResourceTypeFlags,
 	): Promise<void>;
+
 	createFromProfile(
 		from: IUserDataProfile,
 		options: IUserDataProfileCreateOptions,
 		token: CancellationToken,
 	): Promise<IUserDataProfile | undefined>;
+
 	createProfileFromTemplate(
 		profileTemplate: IUserDataProfileTemplate,
 		options: IUserDataProfileCreateOptions,
 		token: CancellationToken,
 	): Promise<IUserDataProfile | undefined>;
+
 	createTroubleshootProfile(): Promise<void>;
 }
 export interface IProfileResourceInitializer {
@@ -159,11 +186,14 @@ export interface IProfileResourceInitializer {
 }
 export interface IProfileResource {
 	getContent(profile: IUserDataProfile): Promise<string>;
+
 	apply(content: string, profile: IUserDataProfile): Promise<void>;
 }
 export interface IProfileResourceTreeItem extends ITreeItem {
 	readonly type: ProfileResourceType;
+
 	readonly label: ITreeItemLabel;
+
 	isFromDefaultProfile(): boolean;
 
 	getChildren(): Promise<IProfileResourceChildTreeItem[] | undefined>;
@@ -175,17 +205,22 @@ export interface IProfileResourceChildTreeItem extends ITreeItem {
 }
 export interface ISaveProfileResult {
 	readonly id: string;
+
 	readonly link: URI;
 }
 export interface IUserDataProfileContentHandler {
 	readonly name: string;
+
 	readonly description?: string;
+
 	readonly extensionId?: string;
+
 	saveProfile(
 		name: string,
 		content: string,
 		token: CancellationToken,
 	): Promise<ISaveProfileResult | null>;
+
 	readProfile(
 		idOrUri: string | URI,
 		token: CancellationToken,

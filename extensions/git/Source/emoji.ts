@@ -20,6 +20,7 @@ export async function ensureEmojis() {
 		if (emojiMapPromise === undefined) {
 			emojiMapPromise = loadEmojiMap();
 		}
+
 		await emojiMapPromise;
 	}
 }
@@ -31,6 +32,7 @@ async function loadEmojiMap() {
 		"resources",
 		"emojis.json",
 	);
+
 	emojiMap = JSON.parse(
 		new TextDecoder("utf8").decode(await workspace.fs.readFile(uri)),
 	);
@@ -39,6 +41,7 @@ export function emojify(message: string) {
 	if (emojiMap === undefined) {
 		return message;
 	}
+
 	return message.replace(emojiRegex, (s, code) => {
 		return emojiMap?.[code] || s;
 	});

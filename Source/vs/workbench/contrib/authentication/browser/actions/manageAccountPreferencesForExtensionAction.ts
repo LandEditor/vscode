@@ -46,6 +46,7 @@ export class ManageAccountPreferencesForExtensionAction extends Action2 {
 			f1: false,
 		});
 	}
+
 	override run(
 		accessor: ServicesAccessor,
 		extensionId?: string,
@@ -62,12 +63,16 @@ type AccountPreferenceQuickPickItem =
 	| ExistingAccountQuickPickItem;
 interface NewAccountQuickPickItem extends IQuickPickItem {
 	account?: undefined;
+
 	scopes: string[];
+
 	providerId: string;
 }
 interface ExistingAccountQuickPickItem extends IQuickPickItem {
 	account: AuthenticationSessionAccount;
+
 	scopes?: undefined;
+
 	providerId: string;
 }
 class ManageAccountPreferenceForExtensionActionImpl {
@@ -87,16 +92,19 @@ class ManageAccountPreferenceForExtensionActionImpl {
 		@ILogService
 		private readonly _logService: ILogService,
 	) {}
+
 	async run(extensionId?: string, providerId?: string) {
 		if (!extensionId) {
 			return;
 		}
+
 		const extension =
 			await this._extensionService.getExtension(extensionId);
 
 		if (!extension) {
 			throw new Error(`No extension with id ${extensionId}`);
 		}
+
 		const providerIds = new Array<string>();
 
 		const providerIdToAccounts = new Map<
@@ -110,6 +118,7 @@ class ManageAccountPreferenceForExtensionActionImpl {
 
 		if (providerId) {
 			providerIds.push(providerId);
+
 			providerIdToAccounts.set(
 				providerId,
 				await this._authenticationService.getAccounts(providerId),
@@ -120,6 +129,7 @@ class ManageAccountPreferenceForExtensionActionImpl {
 					// Don't show internal providers
 					continue;
 				}
+
 				const accounts =
 					await this._authenticationService.getAccounts(providerId);
 
@@ -135,6 +145,7 @@ class ManageAccountPreferenceForExtensionActionImpl {
 
 					if (usage) {
 						providerIds.push(providerId);
+
 						providerIdToAccounts.set(providerId, accounts);
 
 						break;
@@ -142,6 +153,7 @@ class ManageAccountPreferenceForExtensionActionImpl {
 				}
 			}
 		}
+
 		let chosenProviderId: string | undefined = providerIds[0];
 
 		if (providerIds.length > 1) {
@@ -162,8 +174,10 @@ class ManageAccountPreferenceForExtensionActionImpl {
 					),
 				},
 			);
+
 			chosenProviderId = result?.id;
 		}
+
 		if (!chosenProviderId) {
 			await this._dialogService.info(
 				localize(
@@ -174,6 +188,7 @@ class ManageAccountPreferenceForExtensionActionImpl {
 
 			return;
 		}
+
 		const currentAccountNamePreference =
 			this._authenticationExtensionsService.getAccountPreference(
 				extensionId,
@@ -211,6 +226,7 @@ class ManageAccountPreferenceForExtensionActionImpl {
 
 			if (lastUsedScopes) {
 				items.push({ type: "separator" });
+
 				items.push({
 					providerId: chosenProviderId,
 					scopes: lastUsedScopes,
@@ -218,6 +234,7 @@ class ManageAccountPreferenceForExtensionActionImpl {
 				});
 			}
 		}
+
 		const disposables = new DisposableStore();
 
 		const picker = this._createQuickPick(
@@ -233,9 +250,12 @@ class ManageAccountPreferenceForExtensionActionImpl {
 
 			return;
 		}
+
 		picker.items = items;
+
 		picker.show();
 	}
+
 	private _createQuickPick(
 		disposableStore: DisposableStore,
 		extensionId: string,
@@ -247,32 +267,39 @@ class ManageAccountPreferenceForExtensionActionImpl {
 				{ useSeparators: true },
 			),
 		);
+
 		disposableStore.add(
 			picker.onDidHide(() => {
 				disposableStore.dispose();
 			}),
 		);
+
 		picker.placeholder = localize(
 			"placeholder v2",
 			"Manage '{0}' account preferences for {1}...",
 			extensionLabel,
 			providerLabel,
 		);
+
 		picker.title = localize(
 			"title",
 			"'{0}' Account Preferences For This Workspace",
 			extensionLabel,
 		);
+
 		picker.sortByLabel = false;
+
 		disposableStore.add(
 			picker.onDidAccept(async () => {
 				picker.hide();
+
 				await this._accept(extensionId, picker.selectedItems);
 			}),
 		);
 
 		return picker;
 	}
+
 	private _getItems(
 		accounts: ReadonlyArray<AuthenticationSessionAccount>,
 		providerId: string,
@@ -298,6 +325,7 @@ class ManageAccountPreferenceForExtensionActionImpl {
 						},
 		);
 	}
+
 	private _handleNoAccounts(
 		picker: IQuickPick<
 			IQuickPickItem,
@@ -310,7 +338,9 @@ class ManageAccountPreferenceForExtensionActionImpl {
 			"noAccounts",
 			"No accounts are currently used by this extension.",
 		);
+
 		picker.buttons = [this._quickInputService.backButton];
+
 		picker.show();
 
 		return Event.filter(
@@ -318,6 +348,7 @@ class ManageAccountPreferenceForExtensionActionImpl {
 			(e) => e === this._quickInputService.backButton,
 		)(() => this.run());
 	}
+
 	private async _accept(
 		extensionId: string,
 		selectedItems: ReadonlyArray<AccountPreferenceQuickPickItem>,
@@ -332,6 +363,7 @@ class ManageAccountPreferenceForExtensionActionImpl {
 							item.providerId,
 							item.scopes,
 						);
+
 					account = session.account;
 				} catch (e) {
 					this._logService.error(e);
@@ -341,6 +373,7 @@ class ManageAccountPreferenceForExtensionActionImpl {
 			} else {
 				account = item.account;
 			}
+
 			const providerId = item.providerId;
 
 			const currentAccountName =
@@ -353,6 +386,7 @@ class ManageAccountPreferenceForExtensionActionImpl {
 				// This account is already the preferred account
 				continue;
 			}
+
 			this._authenticationExtensionsService.updateAccountPreference(
 				extensionId,
 				providerId,

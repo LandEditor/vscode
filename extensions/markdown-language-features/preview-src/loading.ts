@@ -6,14 +6,18 @@ import { MessagePoster } from "./messaging";
 
 export class StyleLoadingMonitor {
 	private _unloadedStyles: string[] = [];
+
 	private _finishedLoading: boolean = false;
+
 	private _poster?: MessagePoster;
 
 	constructor() {
 		const onStyleLoadError = (event: any) => {
 			const source = event.target.dataset.source;
+
 			this._unloadedStyles.push(source);
 		};
+
 		window.addEventListener("DOMContentLoaded", () => {
 			for (const link of document.getElementsByClassName(
 				"code-user-style",
@@ -23,16 +27,20 @@ export class StyleLoadingMonitor {
 				}
 			}
 		});
+
 		window.addEventListener("load", () => {
 			if (!this._unloadedStyles.length) {
 				return;
 			}
+
 			this._finishedLoading = true;
+
 			this._poster?.postMessage("previewStyleLoadError", {
 				unloadedStyles: this._unloadedStyles,
 			});
 		});
 	}
+
 	public setPoster(poster: MessagePoster): void {
 		this._poster = poster;
 

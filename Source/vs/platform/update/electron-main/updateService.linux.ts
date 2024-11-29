@@ -51,6 +51,7 @@ export class LinuxUpdateService extends AbstractUpdateService {
 			productService,
 		);
 	}
+
 	protected buildUpdateFeedUrl(quality: string): string {
 		return createUpdateURL(
 			`linux-${process.arch}`,
@@ -58,11 +59,14 @@ export class LinuxUpdateService extends AbstractUpdateService {
 			this.productService,
 		);
 	}
+
 	protected doCheckForUpdates(context: any): void {
 		if (!this.url) {
 			return;
 		}
+
 		this.setState(State.CheckingForUpdates(context));
+
 		this.requestService
 			.request({ url: this.url }, CancellationToken.None)
 			.then<IUpdate | null>(asJson)
@@ -79,6 +83,7 @@ export class LinuxUpdateService extends AbstractUpdateService {
 						},
 						UpdateNotAvailableClassification
 					>("update:notAvailable", { explicit: !!context });
+
 					this.setState(State.Idle(UpdateType.Archive));
 				} else {
 					this.setState(State.AvailableForDownload(update));
@@ -90,9 +95,11 @@ export class LinuxUpdateService extends AbstractUpdateService {
 				const message: string | undefined = !!context
 					? err.message || err
 					: undefined;
+
 				this.setState(State.Idle(UpdateType.Archive, message));
 			});
 	}
+
 	protected override async doDownloadUpdate(
 		state: AvailableForDownload,
 	): Promise<void> {
@@ -112,6 +119,7 @@ export class LinuxUpdateService extends AbstractUpdateService {
 				state.update.url,
 			);
 		}
+
 		this.setState(State.Idle(UpdateType.Archive));
 	}
 }

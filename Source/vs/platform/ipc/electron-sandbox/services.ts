@@ -36,6 +36,7 @@ abstract class RemoteServiceStub<T extends object> {
 				new SyncDescriptor(options.channelClientCtor, [channel]),
 			);
 		}
+
 		return ProxyChannel.toService(channel, options?.proxyOptions);
 	}
 }
@@ -107,6 +108,7 @@ export interface ISharedProcessService extends IRemoteService {
 	 * listeners to enable the data flow.
 	 */
 	createRawConnection(): Promise<MessagePort>;
+
 	notifyRestored(): void;
 }
 class SharedProcessRemoteServiceStub<

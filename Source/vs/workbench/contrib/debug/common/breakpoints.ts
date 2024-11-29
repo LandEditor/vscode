@@ -22,9 +22,11 @@ export class Breakpoints {
 				? ContextKeyExpr.deserialize(breakpointContribution.when)
 				: undefined;
 	}
+
 	get language(): string {
 		return this.breakpointContribution.language;
 	}
+
 	get enabled(): boolean {
 		return (
 			!this.breakpointsWhen ||

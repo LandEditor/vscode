@@ -55,16 +55,27 @@ const timelineOpenIcon = registerIcon(
 
 export class TimelinePaneDescriptor implements IViewDescriptor {
 	readonly id = TimelinePaneId;
+
 	readonly name: ILocalizedString = TimelinePane.TITLE;
+
 	readonly containerIcon = timelineViewIcon;
+
 	readonly ctorDescriptor = new SyncDescriptor(TimelinePane);
+
 	readonly order = 2;
+
 	readonly weight = 30;
+
 	readonly collapsed = true;
+
 	readonly canToggleVisibility = true;
+
 	readonly hideByDefault = false;
+
 	readonly canMoveView = true;
+
 	readonly when = TimelineHasProviderContext;
+
 	focusCommand = { id: "timeline.focus" };
 }
 // Configuration

@@ -42,10 +42,12 @@ export class ToggleTabFocusModeAction extends Action2 {
 			f1: true,
 		});
 	}
+
 	public run(): void {
 		const oldValue = TabFocus.getTabFocusMode();
 
 		const newValue = !oldValue;
+
 		TabFocus.setTabFocusMode(newValue);
 
 		if (newValue) {

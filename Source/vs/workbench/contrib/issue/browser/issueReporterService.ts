@@ -16,7 +16,9 @@ export class IssueWebReporter extends BaseIssueReporterService {
 		data: IssueReporterData,
 		os: {
 			type: string;
+
 			arch: string;
+
 			release: string;
 		},
 		product: IProductConfiguration,
@@ -45,15 +47,21 @@ export class IssueWebReporter extends BaseIssueReporterService {
 
 		if (webInfo) {
 			target?.appendChild(this.window.document.createTextNode(webInfo));
+
 			this.receivedSystemInfo = true;
+
 			this.issueReporterModel.update({ systemInfoWeb: webInfo });
 		}
+
 		this.setEventHandlers();
 	}
+
 	public override setEventHandlers(): void {
 		super.setEventHandlers();
+
 		this.addEventListener("issue-type", "change", (event: Event) => {
 			const issueType = parseInt((<HTMLInputElement>event.target).value);
+
 			this.issueReporterModel.update({ issueType: issueType });
 			// Resets placeholder
 			const descriptionTextArea = <HTMLInputElement>(
@@ -66,8 +74,11 @@ export class IssueWebReporter extends BaseIssueReporterService {
 					"Please enter a title",
 				);
 			}
+
 			this.updatePreviewButtonState();
+
 			this.setSourceOptions();
+
 			this.render();
 		});
 	}

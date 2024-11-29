@@ -48,19 +48,25 @@ export interface MarkdownRenderOptions extends FormattedTextRenderOptions {
 		languageId: string,
 		value: string,
 	) => Promise<HTMLElement>;
+
 	readonly codeBlockRendererSync?: (
 		languageId: string,
 		value: string,
 		raw?: string,
 	) => HTMLElement;
+
 	readonly asyncRenderCallback?: () => void;
+
 	readonly fillInIncompleteTokens?: boolean;
+
 	readonly remoteImageIsAllowed?: (uri: URI) => boolean;
+
 	readonly sanitizerOptions?: ISanitizerOptions;
 }
 
 export interface ISanitizerOptions {
 	replaceWithPlaintext?: boolean;
+
 	allowedTags?: string[];
 }
 
@@ -72,17 +78,22 @@ const defaultMarkedRenderers = Object.freeze({
 
 		if (href) {
 			({ href, dimensions } = parseHrefAndDimensions(href));
+
 			attributes.push(`src="${escapeDoubleQuotes(href)}"`);
 		}
+
 		if (text) {
 			attributes.push(`alt="${escapeDoubleQuotes(text)}"`);
 		}
+
 		if (title) {
 			attributes.push(`title="${escapeDoubleQuotes(title)}"`);
 		}
+
 		if (dimensions.length) {
 			attributes = attributes.concat(dimensions);
 		}
+
 		return "<img " + attributes.join(" ") + ">";
 	},
 
@@ -113,6 +124,7 @@ const defaultMarkedRenderers = Object.freeze({
 			typeof title === "string"
 				? escapeDoubleQuotes(removeMarkdownEscapes(title))
 				: "";
+
 		href = removeMarkdownEscapes(href);
 
 		// HTML Encode href
@@ -164,6 +176,7 @@ export function renderMarkdown(
 		const tokens = marked.lexer(value, opts);
 
 		const newTokens = fillInIncompleteTokens(tokens);
+
 		renderedMarkdown = marked.parser(newTokens, opts);
 	} else {
 		renderedMarkdown = marked.parse(value, {
@@ -176,6 +189,7 @@ export function renderMarkdown(
 	// Rewrite theme icons
 	if (markdown.supportThemeIcons) {
 		const elements = renderLabelWithIcons(renderedMarkdown);
+
 		renderedMarkdown = elements
 			.map((e) => (typeof e === "string" ? e : e.outerHTML))
 			.join("");
@@ -203,6 +217,7 @@ export function renderMarkdown(
 			if (isDisposed) {
 				return;
 			}
+
 			const renderedElements = new Map(tuples);
 
 			const placeholderElements =
@@ -217,6 +232,7 @@ export function renderMarkdown(
 					DOM.reset(placeholderElement, renderedElement);
 				}
 			}
+
 			options.asyncRenderCallback?.();
 		});
 	} else if (syncCodeBlocks.length > 0) {
@@ -242,6 +258,7 @@ export function renderMarkdown(
 			const listener = disposables.add(
 				DOM.addDisposableListener(img, "load", () => {
 					listener.dispose();
+
 					options.asyncRenderCallback!();
 				}),
 			);
@@ -257,6 +274,7 @@ export function renderMarkdown(
 		const onAuxClick = options.actionHandler.disposables.add(
 			new DomEmitter(element, "auxclick"),
 		);
+
 		options.actionHandler.disposables.add(
 			Event.any(
 				onClick.event,
@@ -270,6 +288,7 @@ export function renderMarkdown(
 				if (!mouseEvent.leftButton && !mouseEvent.middleButton) {
 					return;
 				}
+
 				activateLink(markdown, options, mouseEvent);
 			}),
 		);
@@ -284,6 +303,7 @@ export function renderMarkdown(
 				) {
 					return;
 				}
+
 				activateLink(markdown, options, keyboardEvent);
 			}),
 		);
@@ -293,6 +313,7 @@ export function renderMarkdown(
 		element,
 		dispose: () => {
 			isDisposed = true;
+
 			disposables.dispose();
 		},
 	};
@@ -351,6 +372,7 @@ function rewriteRenderedLinks(
 					href,
 				);
 			}
+
 			el.dataset.href = resolvedHref;
 		}
 	}
@@ -361,12 +383,17 @@ function createMarkdownRenderer(
 	markdown: IMarkdownString,
 ): {
 	renderer: marked.Renderer;
+
 	codeBlocks: Promise<[string, HTMLElement]>[];
+
 	syncCodeBlocks: [string, HTMLElement][];
 } {
 	const renderer = new marked.Renderer();
+
 	renderer.image = defaultMarkedRenderers.image;
+
 	renderer.link = defaultMarkedRenderers.link;
+
 	renderer.paragraph = defaultMarkedRenderers.paragraph;
 
 	// Will collect [id, renderedElement] tuples
@@ -383,6 +410,7 @@ function createMarkdownRenderer(
 				text,
 				raw,
 			);
+
 			syncCodeBlocks.push([id, value]);
 
 			return `<div class="code" data-code="${id}">${escape(text)}</div>`;
@@ -395,6 +423,7 @@ function createMarkdownRenderer(
 				postProcessCodeBlockLanguageId(lang),
 				text,
 			);
+
 			codeBlocks.push(value.then((element) => [id, element]));
 
 			return `<div class="code" data-code="${id}">${escape(text)}</div>`;
@@ -416,6 +445,7 @@ function createMarkdownRenderer(
 			return match ? text : "";
 		};
 	}
+
 	return { renderer, codeBlocks, syncCodeBlocks };
 }
 
@@ -453,6 +483,7 @@ function activateLink(
 			if (markdown.baseUri) {
 				href = resolveWithBaseUri(URI.from(markdown.baseUri), href);
 			}
+
 			options.actionHandler!.callback(href, event);
 		}
 	} catch (err) {
@@ -470,9 +501,11 @@ function uriMassage(markdown: IMarkdownString, part: string): string {
 	} catch (e) {
 		// ignore
 	}
+
 	if (!data) {
 		return part;
 	}
+
 	data = cloneAndChange(data, (value) => {
 		if (markdown.uris && markdown.uris[value]) {
 			return URI.revive(markdown.uris[value]);
@@ -497,6 +530,7 @@ function massageHref(
 		if (href.startsWith(Schemas.data + ":")) {
 			return href;
 		}
+
 		if (!uri) {
 			uri = URI.parse(href);
 		}
@@ -506,15 +540,19 @@ function massageHref(
 		// browsers (like http or https)
 		return FileAccess.uriToBrowserUri(uri).toString(true);
 	}
+
 	if (!uri) {
 		return href;
 	}
+
 	if (URI.parse(href).toString() === uri.toString()) {
 		return href; // no transformation performed
 	}
+
 	if (uri.query) {
 		uri = uri.with({ query: uriMassage(markdown, uri.query) });
 	}
+
 	return uri.toString();
 }
 
@@ -528,6 +566,7 @@ function postProcessCodeBlockLanguageId(lang: string | undefined): string {
 	if (parts.length) {
 		return parts[0];
 	}
+
 	return lang;
 }
 
@@ -575,6 +614,7 @@ function sanitizeRenderedMarkdown(
 	const { config, allowedSchemes } = getSanitizerOptions(options);
 
 	const store = new DisposableStore();
+
 	store.add(
 		addDompurifyHook("uponSanitizeAttribute", (element, e) => {
 			if (e.attrName === "style" || e.attrName === "class") {
@@ -595,6 +635,7 @@ function sanitizeRenderedMarkdown(
 						return;
 					}
 				}
+
 				e.keepAttr = false;
 
 				return;
@@ -611,6 +652,7 @@ function sanitizeRenderedMarkdown(
 
 					return;
 				}
+
 				e.keepAttr = false;
 			}
 		}),
@@ -655,6 +697,7 @@ function sanitizeRenderedMarkdown(
 									)
 									.join(" ")
 							: "";
+
 						startTagText = `<${e.tagName}${attrString}>`;
 
 						if (!isSelfClosing) {
@@ -668,6 +711,7 @@ function sanitizeRenderedMarkdown(
 						element.parentElement.ownerDocument.createTextNode(
 							startTagText,
 						);
+
 					fragment.appendChild(textNode);
 
 					const endTagTextNode = endTagText
@@ -739,6 +783,7 @@ export const allowedMarkdownAttr = [
 
 function getSanitizerOptions(options: IInternalSanitizerOptions): {
 	config: dompurify.Config;
+
 	allowedSchemes: string[];
 } {
 	const allowedSchemes = [
@@ -826,29 +871,37 @@ function createRenderer(): marked.Renderer {
 	renderer.code = ({ text }: marked.Tokens.Code): string => {
 		return escape(text);
 	};
+
 	renderer.blockquote = ({ text }: marked.Tokens.Blockquote): string => {
 		return text + "\n";
 	};
+
 	renderer.html = (_: marked.Tokens.HTML): string => {
 		return "";
 	};
+
 	renderer.heading = function ({ tokens }: marked.Tokens.Heading): string {
 		return this.parser.parseInline(tokens) + "\n";
 	};
+
 	renderer.hr = (): string => {
 		return "";
 	};
+
 	renderer.list = function ({ items }: marked.Tokens.List): string {
 		return items.map((x) => this.listitem(x)).join("\n") + "\n";
 	};
+
 	renderer.listitem = ({ text }: marked.Tokens.ListItem): string => {
 		return text + "\n";
 	};
+
 	renderer.paragraph = function ({
 		tokens,
 	}: marked.Tokens.Paragraph): string {
 		return this.parser.parseInline(tokens) + "\n";
 	};
+
 	renderer.table = function ({ header, rows }: marked.Tokens.Table): string {
 		return (
 			header.map((cell) => this.tablecell(cell)).join(" ") +
@@ -861,35 +914,45 @@ function createRenderer(): marked.Renderer {
 			"\n"
 		);
 	};
+
 	renderer.tablerow = ({ text }: marked.Tokens.TableRow): string => {
 		return text;
 	};
+
 	renderer.tablecell = function ({
 		tokens,
 	}: marked.Tokens.TableCell): string {
 		return this.parser.parseInline(tokens);
 	};
+
 	renderer.strong = ({ text }: marked.Tokens.Strong): string => {
 		return text;
 	};
+
 	renderer.em = ({ text }: marked.Tokens.Em): string => {
 		return text;
 	};
+
 	renderer.codespan = ({ text }: marked.Tokens.Codespan): string => {
 		return escape(text);
 	};
+
 	renderer.br = (_: marked.Tokens.Br): string => {
 		return "\n";
 	};
+
 	renderer.del = ({ text }: marked.Tokens.Del): string => {
 		return text;
 	};
+
 	renderer.image = (_: marked.Tokens.Image): string => {
 		return "";
 	};
+
 	renderer.text = ({ text }: marked.Tokens.Text): string => {
 		return text;
 	};
+
 	renderer.link = ({ text }: marked.Tokens.Link): string => {
 		return text;
 	};
@@ -901,6 +964,7 @@ const plainTextRenderer = new Lazy<marked.Renderer>(createRenderer);
 
 const plainTextWithCodeBlocksRenderer = new Lazy<marked.Renderer>(() => {
 	const renderer = createRenderer();
+
 	renderer.code = ({ text }: marked.Tokens.Code): string => {
 		return `\n\`\`\`\n${escape(text)}\n\`\`\`\n`;
 	};
@@ -910,6 +974,7 @@ const plainTextWithCodeBlocksRenderer = new Lazy<marked.Renderer>(() => {
 
 function mergeRawTokenText(tokens: marked.Token[]): string {
 	let mergedTokenText = "";
+
 	tokens.forEach((token) => {
 		mergedTokenText += token.raw;
 	});
@@ -970,6 +1035,7 @@ function completeSingleLinePattern(
 				) {
 					return completeLinkTargetArg(token);
 				}
+
 				return completeLinkTarget(token);
 			}
 

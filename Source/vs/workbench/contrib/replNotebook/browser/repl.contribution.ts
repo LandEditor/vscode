@@ -105,15 +105,20 @@ import { ReplEditorInput } from "./replEditorInput.js";
 
 type SerializedNotebookEditorData = {
 	resource: URI;
+
 	preferredResource: URI;
+
 	viewType: string;
+
 	options?: NotebookEditorInputOptions;
+
 	label?: string;
 };
 class ReplEditorSerializer implements IEditorSerializer {
 	canSerialize(input: EditorInput): boolean {
 		return input.typeId === ReplEditorInput.ID;
 	}
+
 	serialize(input: EditorInput): string {
 		assertType(input instanceof ReplEditorInput);
 
@@ -127,12 +132,14 @@ class ReplEditorSerializer implements IEditorSerializer {
 
 		return JSON.stringify(data);
 	}
+
 	deserialize(instantiationService: IInstantiationService, raw: string) {
 		const data = <SerializedNotebookEditorData>parse(raw);
 
 		if (!data) {
 			return undefined;
 		}
+
 		const { resource, viewType } = data;
 
 		if (!data || !URI.isUri(resource) || typeof viewType !== "string") {
@@ -206,6 +213,7 @@ export class ReplDocumentContribution
 							this.editorInputCache.delete(resource);
 						}
 					}
+
 					const scratchpad =
 						this.configurationService.getValue<boolean>(
 							NotebookSetting.InteractiveWindowPromptToSave,
@@ -234,7 +242,9 @@ export class ReplDocumentContribution
 						notebookUri,
 						label,
 					);
+
 					this.editorInputCache.set(notebookUri, editor);
+
 					Event.once(editor.onWillDispose)(() =>
 						this.editorInputCache.delete(notebookUri),
 					);
@@ -257,7 +267,9 @@ export class ReplDocumentContribution
 						resource,
 						label,
 					);
+
 					this.editorInputCache.set(resource, editor);
+
 					Event.once(editor.onWillDispose)(() =>
 						this.editorInputCache.delete(resource),
 					);
@@ -400,6 +412,7 @@ registerAction2(
 				if (!uri) {
 					return;
 				}
+
 				const replEditor = editorService.findEditors(uri)[0];
 
 				if (replEditor) {
@@ -424,6 +437,7 @@ registerAction2(
 
 				if (lastCellIndex >= 0) {
 					const cell = viewModel.viewCells[lastCellIndex];
+
 					notebookEditor.focusNotebookCell(cell, "container");
 				}
 			}
@@ -485,6 +499,7 @@ registerAction2(
 				if (!uri) {
 					return;
 				}
+
 				const replEditor = editorService.findEditors(uri)[0];
 
 				if (replEditor) {
@@ -593,6 +608,7 @@ registerAction2(
 							found.editor,
 							found.groupId,
 						);
+
 						editorControl = editor?.getControl();
 
 						break;
@@ -602,6 +618,7 @@ registerAction2(
 				editorControl = editorService.activeEditorPane?.getControl() as
 					| {
 							notebookEditor: NotebookEditorWidget | undefined;
+
 							codeEditor: CodeEditorWidget;
 					  }
 					| undefined;
@@ -658,8 +675,11 @@ async function executeReplInput(
 			}
 
 			historyService.replaceLast(notebookDocument.uri, value);
+
 			historyService.addToHistory(notebookDocument.uri, "");
+
 			textModel.setValue("");
+
 			notebookDocument.cells[index].resetTextBuffer(
 				textModel.getTextBuffer(),
 			);
@@ -694,7 +714,9 @@ async function executeReplInput(
 
 			// reveal the cell into view first
 			const range = { start: index, end: index + 1 };
+
 			editorControl.notebookEditor.revealCellRangeInView(range);
+
 			await editorControl.notebookEditor.executeNotebookCells(
 				editorControl.notebookEditor.getCellsInRange({
 					start: index,
@@ -709,6 +731,7 @@ async function executeReplInput(
 
 			if (editor) {
 				editor.setSelections([range]);
+
 				editor.setFocus(range);
 			}
 		}

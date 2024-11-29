@@ -22,7 +22,9 @@ const invalidFunc = () => {
 };
 interface IZoneWidget {
 	whitespaceId: string;
+
 	isInHiddenArea: boolean;
+
 	zone: INotebookViewZone;
 
 	domNode: FastDomNode<HTMLElement>;
@@ -31,6 +33,7 @@ export class NotebookViewZones extends Disposable {
 	private _zones: {
 		[key: string]: IZoneWidget;
 	};
+
 	public domNode: FastDomNode<HTMLElement>;
 
 	constructor(
@@ -38,15 +41,24 @@ export class NotebookViewZones extends Disposable {
 		private readonly coordinator: ICoordinatesConverter,
 	) {
 		super();
+
 		this.domNode = createFastDomNode(document.createElement("div"));
+
 		this.domNode.setClassName("view-zones");
+
 		this.domNode.setPosition("absolute");
+
 		this.domNode.setAttribute("role", "presentation");
+
 		this.domNode.setAttribute("aria-hidden", "true");
+
 		this.domNode.setWidth("100%");
+
 		this._zones = {};
+
 		this.listView.containerDomNode.appendChild(this.domNode.domNode);
 	}
+
 	changeViewZones(
 		callback: (changeAccessor: INotebookViewZoneChangeAccessor) => void,
 	): boolean {
@@ -69,16 +81,21 @@ export class NotebookViewZones extends Disposable {
 				this._layoutZone(id);
 			},
 		};
+
 		safeInvoke1Arg(callback, changeAccessor);
 		// Invalidate changeAccessor
 		changeAccessor.addZone = invalidFunc;
+
 		changeAccessor.removeZone = invalidFunc;
+
 		changeAccessor.layoutZone = invalidFunc;
 
 		return zonesHaveChanged;
 	}
+
 	onCellsChanged(e: INotebookViewCellsUpdateEvent): void {
 		const splices = e.splices.slice().reverse();
+
 		splices.forEach((splice) => {
 			const [start, deleted, newCells] = splice;
 
@@ -101,23 +118,28 @@ export class NotebookViewZones extends Disposable {
 					// The cell this whitespace was after has been deleted
 					//  => move whitespace to before first deleted cell
 					zone.afterModelPosition = fromIndex;
+
 					this._updateWhitespace(this._zones[id]);
 				} else if (cellBeforeWhitespaceIndex >= toIndex) {
 					// adjust afterModelPosition for all other cells
 					const insertLength = newCells.length;
 
 					const offset = insertLength - deleted;
+
 					zone.afterModelPosition += offset;
+
 					this._updateWhitespace(this._zones[id]);
 				}
 			}
 		});
 	}
+
 	onHiddenRangesChange() {
 		for (const id in this._zones) {
 			this._updateWhitespace(this._zones[id]);
 		}
 	}
+
 	private _updateWhitespace(zone: IZoneWidget) {
 		const whitespaceId = zone.whitespaceId;
 
@@ -126,18 +148,22 @@ export class NotebookViewZones extends Disposable {
 		);
 
 		const isInHiddenArea = this._isInHiddenRanges(zone.zone);
+
 		zone.isInHiddenArea = isInHiddenArea;
+
 		this.listView.changeOneWhitespace(
 			whitespaceId,
 			viewPosition,
 			isInHiddenArea ? 0 : zone.zone.heightInPx,
 		);
 	}
+
 	layout() {
 		for (const id in this._zones) {
 			this._layoutZone(id);
 		}
 	}
+
 	private _addZone(zone: INotebookViewZone): string {
 		const viewPosition = this.coordinator.convertModelIndexToViewIndex(
 			zone.afterModelPosition,
@@ -156,25 +182,35 @@ export class NotebookViewZones extends Disposable {
 			domNode: createFastDomNode(zone.domNode),
 			isInHiddenArea: isInHiddenArea,
 		};
+
 		this._zones[whitespaceId] = myZone;
+
 		myZone.domNode.setPosition("absolute");
+
 		myZone.domNode.domNode.style.width = "100%";
+
 		myZone.domNode.setDisplay("none");
+
 		myZone.domNode.setAttribute("notebook-view-zone", whitespaceId);
+
 		this.domNode.appendChild(myZone.domNode);
 
 		return whitespaceId;
 	}
+
 	private _removeZone(id: string): void {
 		this.listView.removeWhitespace(id);
+
 		delete this._zones[id];
 	}
+
 	private _layoutZone(id: string): void {
 		const zoneWidget = this._zones[id];
 
 		if (!zoneWidget) {
 			return;
 		}
+
 		this._updateWhitespace(this._zones[id]);
 
 		const isInHiddenArea = this._isInHiddenRanges(zoneWidget.zone);
@@ -185,19 +221,25 @@ export class NotebookViewZones extends Disposable {
 			const top = this.listView.getWhitespacePosition(
 				zoneWidget.whitespaceId,
 			);
+
 			zoneWidget.domNode.setTop(top);
+
 			zoneWidget.domNode.setDisplay("block");
+
 			zoneWidget.domNode.setHeight(zoneWidget.zone.heightInPx);
 		}
 	}
+
 	private _isInHiddenRanges(zone: INotebookViewZone) {
 		// The view zone is between two cells (zone.afterModelPosition - 1, zone.afterModelPosition)
 		const afterIndex = zone.afterModelPosition;
 		// In notebook, the first cell (markdown cell) in a folding range is always visible, so we need to check the cell after the notebook view zone
 		return !this.coordinator.modelIndexIsVisible(afterIndex);
 	}
+
 	override dispose(): void {
 		super.dispose();
+
 		this._zones = {};
 	}
 }

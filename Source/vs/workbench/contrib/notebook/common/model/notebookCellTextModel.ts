@@ -47,12 +47,14 @@ export class NotebookCellTextModel extends Disposable implements ICell {
 	private readonly _onDidChangeOutputs = this._register(
 		new Emitter<NotebookCellOutputsSplice>(),
 	);
+
 	readonly onDidChangeOutputs: Event<NotebookCellOutputsSplice> =
 		this._onDidChangeOutputs.event;
 
 	private readonly _onDidChangeOutputItems = this._register(
 		new Emitter<void>(),
 	);
+
 	readonly onDidChangeOutputItems: Event<void> =
 		this._onDidChangeOutputItems.event;
 
@@ -64,6 +66,7 @@ export class NotebookCellTextModel extends Disposable implements ICell {
 			| { type: "model"; event: IModelContentChangedEvent }
 		>(),
 	);
+
 	readonly onDidChangeContent: Event<
 		| "content"
 		| "language"
@@ -72,17 +75,20 @@ export class NotebookCellTextModel extends Disposable implements ICell {
 	> = this._onDidChangeContent.event;
 
 	private readonly _onDidChangeMetadata = this._register(new Emitter<void>());
+
 	readonly onDidChangeMetadata: Event<void> = this._onDidChangeMetadata.event;
 
 	private readonly _onDidChangeInternalMetadata = this._register(
 		new Emitter<CellInternalMetadataChangedEvent>(),
 	);
+
 	readonly onDidChangeInternalMetadata: Event<CellInternalMetadataChangedEvent> =
 		this._onDidChangeInternalMetadata.event;
 
 	private readonly _onDidChangeLanguage = this._register(
 		new Emitter<string>(),
 	);
+
 	readonly onDidChangeLanguage: Event<string> =
 		this._onDidChangeLanguage.event;
 
@@ -100,7 +106,9 @@ export class NotebookCellTextModel extends Disposable implements ICell {
 
 	set metadata(newMetadata: NotebookCellMetadata) {
 		this._metadata = newMetadata;
+
 		this._hash = null;
+
 		this._onDidChangeMetadata.fire();
 	}
 
@@ -114,6 +122,7 @@ export class NotebookCellTextModel extends Disposable implements ICell {
 		const lastRunSuccessChanged =
 			this._internalMetadata.lastRunSuccess !==
 			newInternalMetadata.lastRunSuccess;
+
 		newInternalMetadata = {
 			...newInternalMetadata,
 			...{
@@ -123,8 +132,11 @@ export class NotebookCellTextModel extends Disposable implements ICell {
 				),
 			},
 		};
+
 		this._internalMetadata = newInternalMetadata;
+
 		this._hash = null;
+
 		this._onDidChangeInternalMetadata.fire({ lastRunSuccessChanged });
 	}
 
@@ -148,6 +160,7 @@ export class NotebookCellTextModel extends Disposable implements ICell {
 		}
 
 		this._hasLanguageSetExplicitly = true;
+
 		this._setLanguageInternal(newLanguage);
 	}
 
@@ -159,8 +172,11 @@ export class NotebookCellTextModel extends Disposable implements ICell {
 		if (this._mime === newMime) {
 			return;
 		}
+
 		this._mime = newMime;
+
 		this._hash = null;
+
 		this._onDidChangeContent.fire("mime");
 	}
 
@@ -183,6 +199,7 @@ export class NotebookCellTextModel extends Disposable implements ICell {
 				if (!this._textModel) {
 					this._onDidChangeContent.fire("content");
 				}
+
 				this.autoDetectLanguage();
 			}),
 		);
@@ -191,9 +208,11 @@ export class NotebookCellTextModel extends Disposable implements ICell {
 	}
 
 	private _textBufferHash: string | null = null;
+
 	private _hash: number | null = null;
 
 	private _versionId: number = 1;
+
 	private _alternativeId: number = 1;
 
 	get alternativeId(): number {
@@ -203,6 +222,7 @@ export class NotebookCellTextModel extends Disposable implements ICell {
 	private readonly _textModelDisposables = this._register(
 		new DisposableStore(),
 	);
+
 	private _textModel: TextModel | undefined = undefined;
 
 	get textModel(): TextModel | undefined {
@@ -215,6 +235,7 @@ export class NotebookCellTextModel extends Disposable implements ICell {
 		}
 
 		this._textModelDisposables.clear();
+
 		this._textModel = m;
 
 		if (this._textModel) {
@@ -234,25 +255,32 @@ export class NotebookCellTextModel extends Disposable implements ICell {
 					),
 				),
 			);
+
 			this._textModelDisposables.add(
 				this._textModel.onWillDispose(
 					() => (this.textModel = undefined),
 				),
 			);
+
 			this._textModelDisposables.add(
 				this._textModel.onDidChangeContent((e) => {
 					if (this._textModel) {
 						this._versionId = this._textModel.getVersionId();
+
 						this._alternativeId =
 							this._textModel.getAlternativeVersionId();
 					}
+
 					this._textBufferHash = null;
+
 					this._onDidChangeContent.fire("content");
+
 					this._onDidChangeContent.fire({ type: "model", event: e });
 				}),
 			);
 
 			this._textModel._overwriteVersionId(this._versionId);
+
 			this._textModel._overwriteAlternativeVersionId(this._versionId);
 		}
 	}
@@ -277,13 +305,17 @@ export class NotebookCellTextModel extends Disposable implements ICell {
 			this.language = newLanguage;
 		}
 	}
+
 	private static readonly AUTO_DETECT_LANGUAGE_THROTTLE_DELAY = 600;
+
 	private readonly autoDetectLanguageThrottler = this._register(
 		new ThrottledDelayer<void>(
 			NotebookCellTextModel.AUTO_DETECT_LANGUAGE_THROTTLE_DELAY,
 		),
 	);
+
 	private _autoLanguageDetectionEnabled: boolean = false;
+
 	private _hasLanguageSetExplicitly: boolean = false;
 
 	get hasLanguageSetExplicitly(): boolean {
@@ -308,15 +340,19 @@ export class NotebookCellTextModel extends Disposable implements ICell {
 			| undefined = undefined,
 	) {
 		super();
+
 		this._outputs = outputs.map(
 			(op) => new NotebookCellOutputTextModel(op),
 		);
+
 		this._metadata = metadata ?? {};
+
 		this._internalMetadata = internalMetadata ?? {};
 	}
 
 	enableAutoLanguageDetection() {
 		this._autoLanguageDetectionEnabled = true;
+
 		this.autoDetectLanguage();
 	}
 
@@ -365,6 +401,7 @@ export class NotebookCellTextModel extends Disposable implements ICell {
 
 		if (this._textModel) {
 			const languageId = this._languageService.createById(newLanguageId);
+
 			this._textModel.setLanguage(languageId.languageId);
 		}
 
@@ -373,8 +410,11 @@ export class NotebookCellTextModel extends Disposable implements ICell {
 		}
 
 		this._language = newLanguage;
+
 		this._hash = null;
+
 		this._onDidChangeLanguage.fire(newLanguage);
+
 		this._onDidChangeContent.fire("language");
 	}
 
@@ -414,6 +454,7 @@ export class NotebookCellTextModel extends Disposable implements ICell {
 		while ((text = snapshot.read())) {
 			shaComputer.update(text);
 		}
+
 		this._textBufferHash = shaComputer.digest();
 
 		return this._textBufferHash;
@@ -485,7 +526,9 @@ export class NotebookCellTextModel extends Disposable implements ICell {
 				splice.deleteCount - commonLen,
 				...splice.newOutputs.slice(commonLen),
 			);
+
 			removed.forEach((output) => output.dispose());
+
 			this._onDidChangeOutputs.fire({
 				start: splice.start + commonLen,
 				deleteCount: splice.deleteCount - commonLen,
@@ -497,7 +540,9 @@ export class NotebookCellTextModel extends Disposable implements ICell {
 				splice.deleteCount,
 				...splice.newOutputs,
 			);
+
 			removed.forEach((output) => output.dispose());
+
 			this._onDidChangeOutputs.fire(splice);
 		}
 	}
@@ -518,7 +563,9 @@ export class NotebookCellTextModel extends Disposable implements ICell {
 			outputId: newOutputItem.outputId,
 			metadata: newOutputItem.metadata,
 		});
+
 		newOutputItem.dispose();
+
 		this._onDidChangeOutputItems.fire();
 
 		return true;
@@ -548,6 +595,7 @@ export class NotebookCellTextModel extends Disposable implements ICell {
 				metadata: output.metadata,
 			});
 		}
+
 		this._onDidChangeOutputItems.fire();
 
 		return true;
@@ -672,11 +720,13 @@ export class NotebookCellTextModel extends Disposable implements ICell {
 		if (aLines.length !== bLines.length) {
 			return false;
 		}
+
 		for (let i = 0; i < aLines.length; i++) {
 			if (aLines[i] !== bLines[i]) {
 				return false;
 			}
 		}
+
 		return true;
 	}
 
@@ -693,7 +743,9 @@ export class NotebookCellTextModel extends Disposable implements ICell {
 			true,
 			true,
 		);
+
 		emptyDisposedTextBuffer.dispose();
+
 		this._textBuffer = emptyDisposedTextBuffer;
 
 		super.dispose();
@@ -761,6 +813,7 @@ export function getFormattedMetadataJSON(
 	if (language) {
 		obj.language = language;
 	}
+
 	const metadataSource = toFormattedString(obj, {});
 
 	return metadataSource;

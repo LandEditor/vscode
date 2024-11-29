@@ -33,10 +33,13 @@ class NotebookSelectionHighlighter
 	implements INotebookEditorContribution
 {
 	static readonly id: string = "notebook.selectionHighlighter";
+
 	private isEnabled: boolean = false;
 
 	private cellDecorationIds = new Map<ICellViewModel, string[]>();
+
 	private anchorCell: [ICellViewModel, ICodeEditor] | undefined;
+
 	private readonly anchorDisposables = new DisposableStore();
 
 	// right now this lets us mimic the more performant cache implementation of the text editor (doesn't need to be a delayer)
@@ -53,6 +56,7 @@ class NotebookSelectionHighlighter
 		this.isEnabled = this.configurationService.getValue<boolean>(
 			"editor.selectionHighlight",
 		);
+
 		this._register(
 			this.configurationService.onDidChangeConfiguration((e) => {
 				if (e.affectsConfiguration("editor.selectionHighlight")) {
@@ -91,6 +95,7 @@ class NotebookSelectionHighlighter
 				this.clearNotebookSelectionDecorations();
 
 				this.anchorDisposables.clear();
+
 				this.anchorDisposables.add(
 					this.anchorCell[1].onDidChangeCursorPosition((e) => {
 						if (e.reason !== CursorChangeReason.Explicit) {
@@ -103,6 +108,7 @@ class NotebookSelectionHighlighter
 
 						if (this.notebookEditor.hasModel()) {
 							this.clearNotebookSelectionDecorations();
+
 							this._update(this.notebookEditor);
 						}
 					}),
@@ -132,6 +138,7 @@ class NotebookSelectionHighlighter
 		if (!textModel || textModel.isTooLargeForTokenization()) {
 			return;
 		}
+
 		const s = this.anchorCell[0].getSelections()[0];
 
 		if (s.startLineNumber !== s.endLineNumber || s.isEmpty()) {
@@ -139,6 +146,7 @@ class NotebookSelectionHighlighter
 			// multiline forbidden for perf reasons
 			return;
 		}
+
 		const searchText = this.getSearchText(s, textModel);
 
 		if (!searchText) {
@@ -169,6 +177,7 @@ class NotebookSelectionHighlighter
 		});
 
 		const newDecorations: IModelDeltaDecoration[] = [];
+
 		selections?.map((selection) => {
 			const isEmpty = selection.isEmpty();
 
@@ -184,6 +193,7 @@ class NotebookSelectionHighlighter
 		});
 
 		const oldDecorations = this.cellDecorationIds.get(cell) ?? [];
+
 		this.cellDecorationIds.set(
 			cell,
 			cell.deltaModelDecorations(oldDecorations, newDecorations),
@@ -196,6 +206,7 @@ class NotebookSelectionHighlighter
 
 			if (cellDecorations) {
 				cell.deltaModelDecorations(cellDecorations, []);
+
 				this.cellDecorationIds.delete(cell);
 			}
 		});
@@ -207,6 +218,7 @@ class NotebookSelectionHighlighter
 
 	override dispose(): void {
 		super.dispose();
+
 		this.anchorDisposables.dispose();
 	}
 }

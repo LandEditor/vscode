@@ -51,13 +51,16 @@ export const IExtensionStatusBarItemService =
 
 export interface IExtensionStatusBarItemChangeEvent {
 	readonly added?: ExtensionStatusBarEntry;
+
 	readonly removed?: string;
 }
 export type ExtensionStatusBarEntry = [
 	string,
 	{
 		entry: IStatusbarEntry;
+
 		alignment: MainThreadStatusBarAlignment;
+
 		priority: number;
 	},
 ];
@@ -68,6 +71,7 @@ export const enum StatusBarUpdateKind {
 }
 export interface IExtensionStatusBarItemService {
 	readonly _serviceBrand: undefined;
+
 	onDidChange: Event<IExtensionStatusBarItemChangeEvent>;
 
 	setOrUpdateEntry(
@@ -84,24 +88,32 @@ export interface IExtensionStatusBarItemService {
 		priority: number | undefined,
 		accessibilityInformation: IAccessibilityInformation | undefined,
 	): StatusBarUpdateKind;
+
 	unsetEntry(id: string): void;
 
 	getEntries(): Iterable<ExtensionStatusBarEntry>;
 }
 class ExtensionStatusBarItemService implements IExtensionStatusBarItemService {
 	declare readonly _serviceBrand: undefined;
+
 	private readonly _entries: Map<
 		string,
 		{
 			accessor: IStatusbarEntryAccessor;
+
 			entry: IStatusbarEntry;
+
 			alignment: MainThreadStatusBarAlignment;
+
 			priority: number;
+
 			disposable: IDisposable;
 		}
 	> = new Map();
+
 	private readonly _onDidChange =
 		new Emitter<IExtensionStatusBarItemChangeEvent>();
+
 	readonly onDidChange: Event<IExtensionStatusBarItemChangeEvent> =
 		this._onDidChange.event;
 
@@ -109,11 +121,15 @@ class ExtensionStatusBarItemService implements IExtensionStatusBarItemService {
 		@IStatusbarService
 		private readonly _statusbarService: IStatusbarService,
 	) {}
+
 	dispose(): void {
 		this._entries.forEach((entry) => entry.accessor.dispose());
+
 		this._entries.clear();
+
 		this._onDidChange.dispose();
 	}
+
 	setOrUpdateEntry(
 		entryId: string,
 		id: string,
@@ -135,6 +151,7 @@ class ExtensionStatusBarItemService implements IExtensionStatusBarItemService {
 
 		if (accessibilityInformation) {
 			ariaLabel = accessibilityInformation.label;
+
 			role = accessibilityInformation.role;
 		} else {
 			ariaLabel = getCodiconAriaLabel(text);
@@ -142,9 +159,11 @@ class ExtensionStatusBarItemService implements IExtensionStatusBarItemService {
 			if (tooltip) {
 				const tooltipString =
 					typeof tooltip === "string" ? tooltip : tooltip.value;
+
 				ariaLabel += `, ${tooltipString}`;
 			}
 		}
+
 		let kind: StatusbarEntryKind | undefined = undefined;
 
 		switch (backgroundColor?.id) {
@@ -155,9 +174,12 @@ class ExtensionStatusBarItemService implements IExtensionStatusBarItemService {
 					backgroundColor.id === STATUS_BAR_ERROR_ITEM_BACKGROUND
 						? "error"
 						: "warning";
+
 				color = undefined;
+
 				backgroundColor = undefined;
 		}
+
 		const entry: IStatusbarEntry = {
 			name,
 			text,
@@ -173,6 +195,7 @@ class ExtensionStatusBarItemService implements IExtensionStatusBarItemService {
 		if (typeof priority === "undefined") {
 			priority = 0;
 		}
+
 		let alignment = alignLeft
 			? StatusbarAlignment.LEFT
 			: StatusbarAlignment.RIGHT;
@@ -181,6 +204,7 @@ class ExtensionStatusBarItemService implements IExtensionStatusBarItemService {
 
 		if (existingEntry) {
 			alignment = existingEntry.alignment;
+
 			priority = existingEntry.priority;
 		}
 		// Create new entry if not existing
@@ -200,12 +224,14 @@ class ExtensionStatusBarItemService implements IExtensionStatusBarItemService {
 			} else {
 				entryPriority = priority;
 			}
+
 			const accessor = this._statusbarService.addEntry(
 				entry,
 				id,
 				alignment,
 				entryPriority,
 			);
+
 			this._entries.set(entryId, {
 				accessor,
 				entry,
@@ -213,10 +239,13 @@ class ExtensionStatusBarItemService implements IExtensionStatusBarItemService {
 				priority,
 				disposable: toDisposable(() => {
 					accessor.dispose();
+
 					this._entries.delete(entryId);
+
 					this._onDidChange.fire({ removed: entryId });
 				}),
 			});
+
 			this._onDidChange.fire({
 				added: [entryId, { entry, alignment, priority }],
 			});
@@ -225,21 +254,27 @@ class ExtensionStatusBarItemService implements IExtensionStatusBarItemService {
 		} else {
 			// Otherwise update
 			existingEntry.accessor.update(entry);
+
 			existingEntry.entry = entry;
 
 			return StatusBarUpdateKind.DidUpdate;
 		}
 	}
+
 	unsetEntry(entryId: string): void {
 		this._entries.get(entryId)?.disposable.dispose();
+
 		this._entries.delete(entryId);
 	}
+
 	getEntries(): Iterable<
 		[
 			string,
 			{
 				entry: IStatusbarEntry;
+
 				alignment: MainThreadStatusBarAlignment;
+
 				priority: number;
 			},
 		]
@@ -255,12 +290,19 @@ registerSingleton(
 // --- extension point and reading of it
 interface IUserFriendlyStatusItemEntry {
 	id: string;
+
 	name: string;
+
 	text: string;
+
 	alignment: "left" | "right";
+
 	command?: string;
+
 	priority?: number;
+
 	tooltip?: string;
+
 	accessibilityInformation?: IAccessibilityInformation;
 }
 function isUserFriendlyStatusItemEntry(
@@ -386,6 +428,7 @@ export class StatusBarItemsExtensionPoint {
 		statusBarItemsService: IExtensionStatusBarItemService,
 	) {
 		const contributions = new DisposableStore();
+
 		statusBarItemsExtensionPoint.setHandler((extensions) => {
 			contributions.clear();
 
@@ -402,6 +445,7 @@ export class StatusBarItemsExtensionPoint {
 
 					continue;
 				}
+
 				const { value, collector } = entry;
 
 				for (const candidate of Iterable.wrap(value)) {
@@ -415,6 +459,7 @@ export class StatusBarItemsExtensionPoint {
 
 						continue;
 					}
+
 					const fullItemId = asStatusBarItemIdentifier(
 						entry.description.identifier,
 						candidate.id,

@@ -10,6 +10,7 @@
 		contextBridge,
 		webUtils,
 	} = require("electron");
+
 	type ISandboxConfiguration =
 		import("vs/base/parts/sandbox/common/sandboxTypes.js").ISandboxConfiguration;
 	//#region Utilities
@@ -17,14 +18,17 @@
 		if (!channel || !channel.startsWith("vscode:")) {
 			throw new Error(`Unsupported event IPC channel '${channel}'`);
 		}
+
 		return true;
 	}
+
 	function parseArgv(key: string): string | undefined {
 		for (const arg of process.argv) {
 			if (arg.indexOf(`--${key}=`) === 0) {
 				return arg.split("=")[1];
 			}
 		}
+
 		return undefined;
 	}
 	//#endregion
@@ -39,6 +43,7 @@
 				"Preload: did not find expected vscode-window-config in renderer process arguments list.",
 			);
 		}
+
 		try {
 			validateIPC(windowConfigIpcChannel);
 			// Resolve configuration from electron-main
@@ -114,6 +119,7 @@
 				) => void,
 			) {
 				validateIPC(channel);
+
 				ipcRenderer.on(channel, listener);
 
 				return this;
@@ -126,6 +132,7 @@
 				) => void,
 			) {
 				validateIPC(channel);
+
 				ipcRenderer.once(channel, listener);
 
 				return this;
@@ -138,6 +145,7 @@
 				) => void,
 			) {
 				validateIPC(channel);
+
 				ipcRenderer.removeListener(channel, listener);
 
 				return this;
@@ -156,6 +164,7 @@
 						// isolation is enabled
 						if (nonce === responseNonce) {
 							ipcRenderer.off(responseChannel, responseListener);
+
 							window.postMessage(nonce, "*", e.ports);
 						}
 					};

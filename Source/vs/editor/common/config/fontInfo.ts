@@ -69,10 +69,15 @@ export class BareFontInfo {
 	public static createFromRawSettings(
 		opts: {
 			fontFamily?: string;
+
 			fontWeight?: string;
+
 			fontSize?: number;
+
 			fontLigatures?: boolean | string;
+
 			fontVariations?: boolean | string;
+
 			lineHeight?: number;
 
 			letterSpacing?: number;
@@ -138,9 +143,12 @@ export class BareFontInfo {
 		if (lineHeight < MINIMUM_LINE_HEIGHT) {
 			lineHeight = MINIMUM_LINE_HEIGHT;
 		}
+
 		const editorZoomLevelMultiplier =
 			1 + (ignoreEditorZoom ? 0 : EditorZoom.getZoomLevel() * 0.1);
+
 		fontSize *= editorZoomLevelMultiplier;
+
 		lineHeight *= editorZoomLevelMultiplier;
 
 		if (fontVariationSettings === EditorFontVariations.TRANSLATE) {
@@ -148,10 +156,13 @@ export class BareFontInfo {
 				fontVariationSettings = EditorFontVariations.OFF;
 			} else {
 				const fontWeightAsNumber = parseInt(fontWeight, 10);
+
 				fontVariationSettings = `'wght' ${fontWeightAsNumber}`;
+
 				fontWeight = "normal";
 			}
 		}
+
 		return new BareFontInfo({
 			pixelRatio: pixelRatio,
 			fontFamily: fontFamily,
@@ -163,35 +174,56 @@ export class BareFontInfo {
 			letterSpacing: letterSpacing,
 		});
 	}
+
 	readonly pixelRatio: number;
+
 	readonly fontFamily: string;
+
 	readonly fontWeight: string;
+
 	readonly fontSize: number;
+
 	readonly fontFeatureSettings: string;
+
 	readonly fontVariationSettings: string;
+
 	readonly lineHeight: number;
+
 	readonly letterSpacing: number;
 	/**
 	 * @internal
 	 */
 	protected constructor(opts: {
 		pixelRatio: number;
+
 		fontFamily: string;
+
 		fontWeight: string;
+
 		fontSize: number;
+
 		fontFeatureSettings: string;
+
 		fontVariationSettings: string;
+
 		lineHeight: number;
 
 		letterSpacing: number;
 	}) {
 		this.pixelRatio = opts.pixelRatio;
+
 		this.fontFamily = String(opts.fontFamily);
+
 		this.fontWeight = String(opts.fontWeight);
+
 		this.fontSize = opts.fontSize;
+
 		this.fontFeatureSettings = opts.fontFeatureSettings;
+
 		this.fontVariationSettings = opts.fontVariationSettings;
+
 		this.lineHeight = opts.lineHeight | 0;
+
 		this.letterSpacing = opts.letterSpacing;
 	}
 	/**
@@ -211,17 +243,21 @@ export class BareFontInfo {
 		if (fallbackFontFamily && this.fontFamily !== fallbackFontFamily) {
 			return `${fontFamily}, ${fallbackFontFamily}`;
 		}
+
 		return fontFamily;
 	}
+
 	private static _wrapInQuotes(fontFamily: string): string {
 		if (/[,"']/.test(fontFamily)) {
 			// Looks like the font family might be already escaped
 			return fontFamily;
 		}
+
 		if (/[+ ]/.test(fontFamily)) {
 			// Wrap a font family using + or <space> with quotes
 			return `"${fontFamily}"`;
 		}
+
 		return fontFamily;
 	}
 }
@@ -230,15 +266,25 @@ export const SERIALIZED_FONT_INFO_VERSION = 2;
 
 export class FontInfo extends BareFontInfo {
 	readonly _editorStylingBrand: void = undefined;
+
 	readonly version: number = SERIALIZED_FONT_INFO_VERSION;
+
 	readonly isTrusted: boolean;
+
 	readonly isMonospace: boolean;
+
 	readonly typicalHalfwidthCharacterWidth: number;
+
 	readonly typicalFullwidthCharacterWidth: number;
+
 	readonly canUseHalfwidthRightwardsArrow: boolean;
+
 	readonly spaceWidth: number;
+
 	readonly middotWidth: number;
+
 	readonly wsmiddotWidth: number;
+
 	readonly maxDigitWidth: number;
 	/**
 	 * @internal
@@ -246,37 +292,60 @@ export class FontInfo extends BareFontInfo {
 	constructor(
 		opts: {
 			pixelRatio: number;
+
 			fontFamily: string;
+
 			fontWeight: string;
+
 			fontSize: number;
+
 			fontFeatureSettings: string;
+
 			fontVariationSettings: string;
+
 			lineHeight: number;
 
 			letterSpacing: number;
+
 			isMonospace: boolean;
+
 			typicalHalfwidthCharacterWidth: number;
+
 			typicalFullwidthCharacterWidth: number;
+
 			canUseHalfwidthRightwardsArrow: boolean;
+
 			spaceWidth: number;
+
 			middotWidth: number;
+
 			wsmiddotWidth: number;
+
 			maxDigitWidth: number;
 		},
 		isTrusted: boolean,
 	) {
 		super(opts);
+
 		this.isTrusted = isTrusted;
+
 		this.isMonospace = opts.isMonospace;
+
 		this.typicalHalfwidthCharacterWidth =
 			opts.typicalHalfwidthCharacterWidth;
+
 		this.typicalFullwidthCharacterWidth =
 			opts.typicalFullwidthCharacterWidth;
+
 		this.canUseHalfwidthRightwardsArrow =
 			opts.canUseHalfwidthRightwardsArrow;
+
 		this.spaceWidth = opts.spaceWidth;
+
 		this.middotWidth = opts.middotWidth;
+
 		this.wsmiddotWidth = opts.wsmiddotWidth;
+
 		this.maxDigitWidth = opts.maxDigitWidth;
 	}
 	/**

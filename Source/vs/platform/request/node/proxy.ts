@@ -22,10 +22,12 @@ function getSystemProxyURI(
 			null
 		);
 	}
+
 	return null;
 }
 export interface IOptions {
 	proxyUrl?: string;
+
 	strictSSL?: boolean;
 }
 export async function getProxyAgent(
@@ -40,11 +42,13 @@ export async function getProxyAgent(
 	if (!proxyURL) {
 		return null;
 	}
+
 	const proxyEndpoint = parseUrl(proxyURL);
 
 	if (!/^https?:$/.test(proxyEndpoint.protocol || "")) {
 		return null;
 	}
+
 	const opts = {
 		host: proxyEndpoint.hostname || "",
 		port:

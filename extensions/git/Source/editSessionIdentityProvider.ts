@@ -16,15 +16,18 @@ export class GitEditSessionIdentityProvider
 	constructor(private model: Model) {
 		this.providerRegistration =
 			vscode.workspace.registerEditSessionIdentityProvider("file", this);
+
 		vscode.workspace.onWillCreateEditSessionIdentity((e) => {
 			e.waitUntil(
 				this._onWillCreateEditSessionIdentity(e.workspaceFolder),
 			);
 		});
 	}
+
 	dispose() {
 		this.providerRegistration.dispose();
 	}
+
 	async provideEditSessionIdentity(
 		workspaceFolder: vscode.WorkspaceFolder,
 		token: vscode.CancellationToken,
@@ -34,11 +37,13 @@ export class GitEditSessionIdentityProvider
 		);
 
 		const repository = this.model.getRepository(workspaceFolder.uri);
+
 		await repository?.status();
 
 		if (!repository || !repository?.HEAD?.upstream) {
 			return undefined;
 		}
+
 		const remoteUrl = repository.remotes
 			.find((remote) => remote.name === repository.HEAD?.upstream?.remote)
 			?.pushUrl?.replace(/^(git@[^\/:]+)(:)/i, "ssh://$1/");
@@ -57,6 +62,7 @@ export class GitEditSessionIdentityProvider
 			sha: repository.HEAD?.commit ?? null,
 		});
 	}
+
 	provideEditSessionIdentityMatch(
 		identity1: string,
 		identity2: string,
@@ -87,11 +93,13 @@ export class GitEditSessionIdentityProvider
 			return vscode.EditSessionIdentityMatch.Partial;
 		}
 	}
+
 	private async _onWillCreateEditSessionIdentity(
 		workspaceFolder: vscode.WorkspaceFolder,
 	): Promise<void> {
 		await this._doPublish(workspaceFolder);
 	}
+
 	private async _doPublish(workspaceFolder: vscode.WorkspaceFolder) {
 		await this.model.openRepository(
 			path.dirname(workspaceFolder.uri.fsPath),
@@ -102,6 +110,7 @@ export class GitEditSessionIdentityProvider
 		if (!repository) {
 			return;
 		}
+
 		await repository.status();
 		// If this branch hasn't been published to the remote yet,
 		// ensure that it is published before Continue On is invoked
@@ -122,6 +131,7 @@ export class GitEditSessionIdentityProvider
 			if (selection !== publishBranch) {
 				throw new vscode.CancellationError();
 			}
+
 			await vscode.commands.executeCommand("git.publish");
 		}
 	}
@@ -132,6 +142,7 @@ function normalizeEditSessionIdentity(identity: string) {
 	if (typeof remote === "string" && remote.endsWith(".git")) {
 		remote = remote.slice(0, remote.length - 4);
 	}
+
 	return {
 		remote,
 		ref,

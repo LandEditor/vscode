@@ -76,6 +76,7 @@ export class NativeExtensionManagementService
 		options?: InstallOptions,
 	): Promise<ILocalExtension> {
 		const { location, cleanup } = await this.downloadVsix(vsix);
+
 		try {
 			return await super.install(location, options);
 		} finally {
@@ -89,13 +90,18 @@ export class NativeExtensionManagementService
 		if (vsix.scheme === Schemas.file) {
 			return { location: vsix, async cleanup() {} };
 		}
+
 		this.logService.trace("Downloading extension from", vsix.toString());
+
 		const location = joinPath(
 			this.nativeEnvironmentService.extensionsDownloadLocation,
 			generateUuid(),
 		);
+
 		await this.downloadService.download(vsix, location);
+
 		this.logService.info("Downloaded extension to", location.toString());
+
 		const cleanup = async () => {
 			try {
 				await this.fileService.del(location);
@@ -103,6 +109,7 @@ export class NativeExtensionManagementService
 				this.logService.error(error);
 			}
 		};
+
 		return { location, cleanup };
 	}
 
@@ -116,21 +123,25 @@ export class NativeExtensionManagementService
 				ExtensionType.User,
 				previousProfileLocation,
 			);
+
 			const resolverExtension = previousInstalledExtensions.find((e) =>
 				isResolverExtension(
 					e.manifest,
 					this.nativeEnvironmentService.remoteAuthority,
 				),
 			);
+
 			if (resolverExtension) {
 				if (!preserveExtensions) {
 					preserveExtensions = [];
 				}
+
 				preserveExtensions.push(
 					new ExtensionIdentifier(resolverExtension.identifier.id),
 				);
 			}
 		}
+
 		return super.switchExtensionsProfile(
 			previousProfileLocation,
 			currentProfileLocation,

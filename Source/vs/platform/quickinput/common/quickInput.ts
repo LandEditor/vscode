@@ -17,18 +17,26 @@ import { IQuickAccessController } from "./quickAccess.js";
 
 export interface IQuickPickItemHighlights {
 	label?: IMatch[];
+
 	description?: IMatch[];
+
 	detail?: IMatch[];
 }
 export type QuickPickItem = IQuickPickSeparator | IQuickPickItem;
 
 export interface IQuickPickItem {
 	type?: "item";
+
 	id?: string;
+
 	label: string;
+
 	ariaLabel?: string;
+
 	description?: string;
+
 	detail?: string;
+
 	tooltip?: string | IMarkdownString;
 	/**
 	 * Allows to show a keybinding next to the item to indicate
@@ -36,34 +44,51 @@ export interface IQuickPickItem {
 	 * keyboard shortcut.
 	 */
 	keybinding?: ResolvedKeybinding;
+
 	iconClasses?: readonly string[];
+
 	iconPath?: {
 		dark: URI;
+
 		light?: URI;
 	};
+
 	iconClass?: string;
+
 	italic?: boolean;
+
 	strikethrough?: boolean;
+
 	highlights?: IQuickPickItemHighlights;
+
 	buttons?: readonly IQuickInputButton[];
+
 	picked?: boolean;
 	/**
 	 * Used when we're in multi-select mode. Renders a disabled checkbox.
 	 */
 	disabled?: boolean;
+
 	alwaysShow?: boolean;
 }
 export interface IQuickPickSeparator {
 	type: "separator";
+
 	id?: string;
+
 	label?: string;
+
 	description?: string;
+
 	ariaLabel?: string;
+
 	buttons?: readonly IQuickInputButton[];
+
 	tooltip?: string | IMarkdownString;
 }
 export interface IKeyMods {
 	readonly ctrlCmd: boolean;
+
 	readonly alt: boolean;
 }
 export const NO_KEY_MODS: IKeyMods = { ctrlCmd: false, alt: false };
@@ -122,9 +147,13 @@ export interface IPickOptions<T extends IQuickPickItem> {
 	 * an optional property for the item to focus initially.
 	 */
 	activeItem?: Promise<T> | T;
+
 	onKeyMods?: (keyMods: IKeyMods) => void;
+
 	onDidFocus?: (entry: T) => void;
+
 	onDidTriggerItemButton?: (context: IQuickPickItemButtonContext<T>) => void;
+
 	onDidTriggerSeparatorButton?: (
 		context: IQuickPickSeparatorButtonEvent,
 	) => void;
@@ -167,6 +196,7 @@ export interface IInputOptions {
 		| undefined
 		| {
 				content: string;
+
 				severity: Severity;
 		  }
 	>;
@@ -635,6 +665,7 @@ export interface IQuickInputButton {
 	 */
 	iconPath?: {
 		dark: URI;
+
 		light?: URI;
 	};
 	/**
@@ -707,25 +738,32 @@ export class QuickPickItemScorerAccessor
 	constructor(
 		private options?: {
 			skipDescription?: boolean;
+
 			skipPath?: boolean;
 		},
 	) {}
+
 	getItemLabel(entry: IQuickPickItemWithResource): string {
 		return entry.label;
 	}
+
 	getItemDescription(entry: IQuickPickItemWithResource): string | undefined {
 		if (this.options?.skipDescription) {
 			return undefined;
 		}
+
 		return entry.description;
 	}
+
 	getItemPath(entry: IQuickPickItemWithResource): string | undefined {
 		if (this.options?.skipPath) {
 			return undefined;
 		}
+
 		if (entry.resource?.scheme === Schemas.file) {
 			return entry.resource.fsPath;
 		}
+
 		return entry.resource?.path;
 	}
 }
@@ -765,6 +803,7 @@ export interface IQuickInputService {
 		},
 		token?: CancellationToken,
 	): Promise<T[] | undefined>;
+
 	pick<T extends IQuickPickItem>(
 		picks: Promise<QuickPickInput<T>[]> | QuickPickInput<T>[],
 		options?: IPickOptions<T> & {
@@ -772,6 +811,7 @@ export interface IQuickInputService {
 		},
 		token?: CancellationToken,
 	): Promise<T | undefined>;
+
 	pick<T extends IQuickPickItem>(
 		picks: Promise<QuickPickInput<T>[]> | QuickPickInput<T>[],
 		options?: Omit<IPickOptions<T>, "canPickMany">,
@@ -795,6 +835,7 @@ export interface IQuickInputService {
 			useSeparators: true;
 		}
 	>;
+
 	createQuickPick<T extends IQuickPickItem>(options?: {
 		useSeparators: boolean;
 	}): IQuickPick<

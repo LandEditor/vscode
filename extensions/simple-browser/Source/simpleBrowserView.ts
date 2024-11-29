@@ -8,16 +8,20 @@ import { Disposable } from "./dispose";
 
 export interface ShowOptions {
 	readonly preserveFocus?: boolean;
+
 	readonly viewColumn?: vscode.ViewColumn;
 }
 export class SimpleBrowserView extends Disposable {
 	public static readonly viewType = "simpleBrowser.view";
+
 	private static readonly title = vscode.l10n.t("Simple Browser");
+
 	private static getWebviewLocalResourceRoots(
 		extensionUri: vscode.Uri,
 	): readonly vscode.Uri[] {
 		return [vscode.Uri.joinPath(extensionUri, "media")];
 	}
+
 	private static getWebviewOptions(
 		extensionUri: vscode.Uri,
 	): vscode.WebviewOptions {
@@ -28,11 +32,15 @@ export class SimpleBrowserView extends Disposable {
 				SimpleBrowserView.getWebviewLocalResourceRoots(extensionUri),
 		};
 	}
+
 	private readonly _webviewPanel: vscode.WebviewPanel;
+
 	private readonly _onDidDispose = this._register(
 		new vscode.EventEmitter<void>(),
 	);
+
 	public readonly onDispose = this._onDidDispose.event;
+
 	public static create(
 		extensionUri: vscode.Uri,
 		url: string,
@@ -53,6 +61,7 @@ export class SimpleBrowserView extends Disposable {
 
 		return new SimpleBrowserView(extensionUri, url, webview);
 	}
+
 	public static restore(
 		extensionUri: vscode.Uri,
 		url: string,
@@ -60,34 +69,42 @@ export class SimpleBrowserView extends Disposable {
 	): SimpleBrowserView {
 		return new SimpleBrowserView(extensionUri, url, webviewPanel);
 	}
+
 	private constructor(
 		private readonly extensionUri: vscode.Uri,
 		url: string,
 		webviewPanel: vscode.WebviewPanel,
 	) {
 		super();
+
 		this._webviewPanel = this._register(webviewPanel);
+
 		this._webviewPanel.webview.options =
 			SimpleBrowserView.getWebviewOptions(extensionUri);
+
 		this._register(
 			this._webviewPanel.webview.onDidReceiveMessage((e) => {
 				switch (e.type) {
 					case "openExternal":
 						try {
 							const url = vscode.Uri.parse(e.url);
+
 							vscode.env.openExternal(url);
 						} catch {
 							// Noop
 						}
+
 						break;
 				}
 			}),
 		);
+
 		this._register(
 			this._webviewPanel.onDidDispose(() => {
 				this.dispose();
 			}),
 		);
+
 		this._register(
 			vscode.workspace.onDidChangeConfiguration((e) => {
 				if (
@@ -97,6 +114,7 @@ export class SimpleBrowserView extends Disposable {
 				) {
 					const configuration =
 						vscode.workspace.getConfiguration("simpleBrowser");
+
 					this._webviewPanel.webview.postMessage({
 						type: "didChangeFocusLockIndicatorEnabled",
 						focusLockEnabled: configuration.get<boolean>(
@@ -107,17 +125,22 @@ export class SimpleBrowserView extends Disposable {
 				}
 			}),
 		);
+
 		this.show(url);
 	}
+
 	public override dispose() {
 		this._onDidDispose.fire();
 
 		super.dispose();
 	}
+
 	public show(url: string, options?: ShowOptions) {
 		this._webviewPanel.webview.html = this.getHtml(url);
+
 		this._webviewPanel.reveal(options?.viewColumn, options?.preserveFocus);
 	}
+
 	private getHtml(url: string) {
 		const configuration =
 			vscode.workspace.getConfiguration("simpleBrowser");
@@ -137,9 +160,13 @@ export class SimpleBrowserView extends Disposable {
 
 				<meta http-equiv="Content-Security-Policy" content="
 					default-src 'none';
+
 					font-src data:;
+
 					style-src ${this._webviewPanel.webview.cspSource};
+
 					script-src 'nonce-${nonce}';
+
 					frame-src *;
 					">
 
@@ -189,6 +216,7 @@ export class SimpleBrowserView extends Disposable {
 			</body>
 			</html>`;
 	}
+
 	private extensionResourceUrl(...parts: string[]): vscode.Uri {
 		return this._webviewPanel.webview.asWebviewUri(
 			vscode.Uri.joinPath(this.extensionUri, ...parts),
@@ -207,5 +235,6 @@ function getNonce() {
 	for (let i = 0; i < 64; i++) {
 		text += possible.charAt(Math.floor(Math.random() * possible.length));
 	}
+
 	return text;
 }

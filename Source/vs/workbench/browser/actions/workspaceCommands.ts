@@ -103,6 +103,7 @@ CommandsRegistry.registerCommand({
 		if (!folders || !folders.length) {
 			return;
 		}
+
 		await workspaceEditingService.addFolders(
 			folders.map((folder) => ({ uri: folder })),
 		);
@@ -120,6 +121,7 @@ CommandsRegistry.registerCommand({
 		if (!folders || !folders.length) {
 			return;
 		}
+
 		await workspaceEditingService.updateFolders(
 			0,
 			contextService.getWorkspace().folders.length,
@@ -171,6 +173,7 @@ CommandsRegistry.registerCommand(
 		if (!folders.length) {
 			return;
 		}
+
 		const folderPicks: IQuickPickItem[] = folders.map((folder) => {
 			const label = folder.name;
 
@@ -197,15 +200,18 @@ CommandsRegistry.registerCommand(
 		if (!options.activeItem) {
 			options.activeItem = folderPicks[0];
 		}
+
 		if (!options.placeHolder) {
 			options.placeHolder = localize(
 				"workspaceFolderPickerPlaceholder",
 				"Select workspace folder",
 			);
 		}
+
 		if (typeof options.matchOnDescription !== "boolean") {
 			options.matchOnDescription = true;
 		}
+
 		const token: CancellationToken =
 			(args ? args[1] : undefined) || CancellationToken.None;
 
@@ -214,6 +220,7 @@ CommandsRegistry.registerCommand(
 		if (pick) {
 			return folders[folderPicks.indexOf(pick)];
 		}
+
 		return;
 	},
 );
@@ -222,6 +229,7 @@ interface IOpenFolderAPICommandOptions {
 	forceNewWindow?: boolean;
 
 	forceReuseWindow?: boolean;
+
 	noRecentEntry?: boolean;
 
 	forceLocalWindow?: boolean;
@@ -250,13 +258,16 @@ CommandsRegistry.registerCommand({
 
 			if (arg?.forceLocalWindow) {
 				options.remoteAuthority = null;
+
 				options.availableFileSystems = ["file"];
 			}
+
 			return commandService.executeCommand(
 				"_files.pickFolderAndOpen",
 				options,
 			);
 		}
+
 		const uri = URI.from(uriComponents, true);
 
 		const options: IOpenWindowOptions = {
@@ -372,6 +383,7 @@ CommandsRegistry.registerCommand({
 		} else {
 			path = URI.revive(path); // called from extension host
 		}
+
 		return workspacesService.removeRecentlyOpened([path]);
 	},
 	metadata: {
@@ -390,8 +402,11 @@ CommandsRegistry.registerCommand({
 });
 interface RecentEntry {
 	uri: URI;
+
 	type: "workspace" | "folder" | "file";
+
 	label?: string;
+
 	remoteAuthority?: string;
 }
 CommandsRegistry.registerCommand(
@@ -410,12 +425,14 @@ CommandsRegistry.registerCommand(
 		if (recentEntry.type === "workspace") {
 			const workspace =
 				await workspacesService.getWorkspaceIdentifier(uri);
+
 			recent = { workspace, label, remoteAuthority };
 		} else if (recentEntry.type === "folder") {
 			recent = { folderUri: uri, label, remoteAuthority };
 		} else {
 			recent = { fileUri: uri, label, remoteAuthority };
 		}
+
 		return workspacesService.addRecentlyOpened([recent]);
 	},
 );

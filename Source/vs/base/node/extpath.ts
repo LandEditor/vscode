@@ -26,12 +26,14 @@ export function realcaseSync(path: string): string | null {
 		// (see also https://github.com/microsoft/vscode/issues/139709)
 		return path;
 	}
+
 	const dir = dirname(path);
 
 	if (path === dir) {
 		// end recursion
 		return path;
 	}
+
 	const name = (
 		basename(path) /* can be '' for windows drive letters */ || path
 	).toLowerCase();
@@ -61,6 +63,7 @@ export function realcaseSync(path: string): string | null {
 	} catch (error) {
 		// silently ignore error
 	}
+
 	return null;
 }
 export async function realcase(
@@ -73,12 +76,14 @@ export async function realcase(
 		// (see also https://github.com/microsoft/vscode/issues/139709)
 		return path;
 	}
+
 	const dir = dirname(path);
 
 	if (path === dir) {
 		// end recursion
 		return path;
 	}
+
 	const name = (
 		basename(path) /* can be '' for windows drive letters */ || path
 	).toLowerCase();
@@ -87,6 +92,7 @@ export async function realcase(
 		if (token?.isCancellationRequested) {
 			return null;
 		}
+
 		const entries = await Promises.readdir(dir);
 
 		const found = entries.filter((e) => e.toLowerCase() === name); // use a case insensitive search
@@ -111,6 +117,7 @@ export async function realcase(
 	} catch (error) {
 		// silently ignore error
 	}
+
 	return null;
 }
 export async function realpath(path: string): Promise<string> {
@@ -127,6 +134,7 @@ export async function realpath(path: string): Promise<string> {
 		// fs.realpath() is resolving symlinks and that can fail in certain cases. The workaround is
 		// to not resolve links but to simply see if the path is read accessible or not.
 		const normalizedPath = normalizePath(path);
+
 		await fs.promises.access(normalizedPath, fs.constants.R_OK);
 
 		return normalizedPath;
@@ -142,6 +150,7 @@ export function realpathSync(path: string): string {
 		// fs.realpath() is resolving symlinks and that can fail in certain cases. The workaround is
 		// to not resolve links but to simply see if the path is read accessible or not.
 		const normalizedPath = normalizePath(path);
+
 		fs.accessSync(normalizedPath, fs.constants.R_OK); // throws in case of an error
 		return normalizedPath;
 	}

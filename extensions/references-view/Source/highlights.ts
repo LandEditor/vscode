@@ -18,7 +18,9 @@ export class EditorHighlights<T> {
 				"editor.findMatchHighlightBackground",
 			),
 		});
+
 	private readonly disposables: vscode.Disposable[] = [];
+
 	private readonly _ignore = new Set<string>();
 
 	constructor(
@@ -41,8 +43,10 @@ export class EditorHighlights<T> {
 				}
 			}),
 		);
+
 		this._show();
 	}
+
 	dispose() {
 		vscode.Disposable.from(...this.disposables).dispose();
 
@@ -50,20 +54,24 @@ export class EditorHighlights<T> {
 			editor.setDecorations(this._decorationType, []);
 		}
 	}
+
 	private _show(): void {
 		const { activeTextEditor: editor } = vscode.window;
 
 		if (!editor || !editor.viewColumn) {
 			return;
 		}
+
 		if (this._ignore.has(editor.document.uri.toString())) {
 			return;
 		}
+
 		const [anchor] = this._view.selection;
 
 		if (!anchor) {
 			return;
 		}
+
 		const ranges = this._delegate.getEditorHighlights(
 			anchor,
 			editor.document.uri,
@@ -73,13 +81,16 @@ export class EditorHighlights<T> {
 			editor.setDecorations(this._decorationType, ranges);
 		}
 	}
+
 	private _hide(): void {
 		for (const editor of vscode.window.visibleTextEditors) {
 			editor.setDecorations(this._decorationType, []);
 		}
 	}
+
 	update(): void {
 		this._hide();
+
 		this._show();
 	}
 }

@@ -11,6 +11,7 @@ export interface IMenubarData {
 	menus: {
 		[id: string]: IMenubarMenu;
 	};
+
 	keybindings: {
 		[id: string]: IMenubarKeybinding;
 	};
@@ -20,25 +21,35 @@ export interface IMenubarMenu {
 }
 export interface IMenubarKeybinding {
 	label: string;
+
 	userSettingsLabel?: string;
+
 	isNative?: boolean; // Assumed true if missing
 }
 export interface IMenubarMenuItemAction {
 	id: string;
+
 	label: string;
+
 	checked?: boolean; // Assumed false if missing
 	enabled?: boolean; // Assumed true if missing
 }
 export interface IMenubarMenuRecentItemAction {
 	id: string;
+
 	label: string;
+
 	uri: URI;
+
 	remoteAuthority?: string;
+
 	enabled?: boolean;
 }
 export interface IMenubarMenuItemSubmenu {
 	id: string;
+
 	label: string;
+
 	submenu: IMenubarMenu;
 }
 export interface IMenubarMenuItemSeparator {

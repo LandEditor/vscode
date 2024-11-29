@@ -34,6 +34,7 @@ export class ReplInputHintContentWidget
 	private static readonly ID = "replInput.widget.emptyHint";
 
 	private domNode: HTMLElement | undefined;
+
 	private ariaLabel: string = "";
 
 	constructor(
@@ -60,6 +61,7 @@ export class ReplInputHintContentWidget
 			() => undefined,
 			500,
 		);
+
 		this._register(
 			onDidFocusEditorText(() => {
 				if (
@@ -73,6 +75,7 @@ export class ReplInputHintContentWidget
 				}
 			}),
 		);
+
 		this._register(
 			configurationService.onDidChangeConfiguration((e) => {
 				if (
@@ -84,6 +87,7 @@ export class ReplInputHintContentWidget
 				}
 			}),
 		);
+
 		this.editor.addContentWidget(this);
 	}
 
@@ -101,7 +105,9 @@ export class ReplInputHintContentWidget
 	getDomNode(): HTMLElement {
 		if (!this.domNode) {
 			this.domNode = dom.$(".empty-editor-hint");
+
 			this.domNode.style.width = "max-content";
+
 			this.domNode.style.paddingLeft = "4px";
 
 			this.setHint();
@@ -122,12 +128,15 @@ export class ReplInputHintContentWidget
 		if (!this.domNode) {
 			return;
 		}
+
 		while (this.domNode.firstChild) {
 			this.domNode.removeChild(this.domNode.firstChild);
 		}
 
 		const hintElement = dom.$("div.empty-hint-text");
+
 		hintElement.style.cursor = "text";
+
 		hintElement.style.whiteSpace = "nowrap";
 
 		const keybinding = this.getKeybinding();
@@ -145,6 +154,7 @@ export class ReplInputHintContentWidget
 				.split(keybindingHintLabel)
 				.map((fragment) => {
 					const hintPart = dom.$("span", undefined, fragment);
+
 					hintPart.style.fontStyle = "italic";
 
 					return hintPart;
@@ -153,11 +163,15 @@ export class ReplInputHintContentWidget
 			hintElement.appendChild(before);
 
 			const label = new KeybindingLabel(hintElement, OS);
+
 			label.set(keybinding);
+
 			label.element.style.width = "min-content";
+
 			label.element.style.display = "inline";
 
 			hintElement.appendChild(after);
+
 			this.domNode.append(hintElement);
 
 			const helpKeybinding = this.keybindingService
@@ -225,6 +239,7 @@ export class ReplInputHintContentWidget
 			if (keybinding) {
 				return keybinding;
 			}
+
 			keybinding = this.keybindingService
 				.lookupKeybindings("python.execInREPLEnter")
 				.find((kb) => hasEnterChord(kb));
@@ -239,6 +254,7 @@ export class ReplInputHintContentWidget
 
 	override dispose(): void {
 		super.dispose();
+
 		this.editor.removeContentWidget(this);
 	}
 }

@@ -21,8 +21,11 @@ export const enum TerminalTypeAheadSettingId {
 }
 export interface ITerminalTypeAheadConfiguration {
 	localEchoLatencyThreshold: number;
+
 	localEchoExcludePrograms: ReadonlyArray<string>;
+
 	localEchoEnabled: "auto" | "on" | "off";
+
 	localEchoStyle:
 		| "bold"
 		| "dim"

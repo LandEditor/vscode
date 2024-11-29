@@ -44,6 +44,7 @@ export function applyZoom(
 	} else {
 		targetWindows.push(target);
 	}
+
 	for (const targetWindow of targetWindows) {
 		getGlobals(targetWindow)?.webFrame?.setZoomLevel(zoomLevel);
 
@@ -69,6 +70,7 @@ function getGlobals(win: Window): ISandboxGlobals | undefined {
 			return auxiliaryWindow.vscode;
 		}
 	}
+
 	return undefined;
 }
 export function zoomIn(target: ApplyZoomTarget | Window): void {
@@ -93,13 +95,17 @@ export interface ILoadOptions<
 		forceDisableShowDevtoolsOnError?: boolean;
 
 		forceEnableDeveloperKeybindings?: boolean;
+
 		disallowReloadKeybinding?: boolean;
+
 		removeDeveloperKeybindingsAfterLoad?: boolean;
 	};
+
 	beforeImport?: (config: T) => void;
 }
 export interface ILoadResult<M, T> {
 	readonly result: M;
+
 	readonly configuration: T;
 }
 export interface IBootstrapWindow {

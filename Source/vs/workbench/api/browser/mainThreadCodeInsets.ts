@@ -32,9 +32,13 @@ import { reviveWebviewContentOptions } from "./mainThreadWebviews.js";
 // todo@jrieken move these things back into something like contrib/insets
 class EditorWebviewZone implements IViewZone {
 	readonly domNode: HTMLElement;
+
 	readonly afterLineNumber: number;
+
 	readonly afterColumn: number;
+
 	readonly heightInLines: number;
+
 	private _id?: string;
 	// suppressMouseDown?: boolean | undefined;
 	// heightInPx?: number | undefined;
@@ -50,15 +54,21 @@ class EditorWebviewZone implements IViewZone {
 		readonly webview: IWebviewElement,
 	) {
 		this.domNode = document.createElement("div");
+
 		this.domNode.style.zIndex = "10"; // without this, the webview is not interactive
 		this.afterLineNumber = line;
+
 		this.afterColumn = 1;
+
 		this.heightInLines = height;
+
 		editor.changeViewZones(
 			(accessor) => (this._id = accessor.addZone(this)),
 		);
+
 		webview.mountTo(this.domNode, getWindow(editor.getDomNode()));
 	}
+
 	dispose(): void {
 		this.editor.changeViewZones(
 			(accessor) => this._id && accessor.removeZone(this._id),
@@ -68,7 +78,9 @@ class EditorWebviewZone implements IViewZone {
 @extHostNamedCustomer(MainContext.MainThreadEditorInsets)
 export class MainThreadEditorInsets implements MainThreadEditorInsetsShape {
 	private readonly _proxy: ExtHostEditorInsetsShape;
+
 	private readonly _disposables = new DisposableStore();
+
 	private readonly _insets = new Map<number, EditorWebviewZone>();
 
 	constructor(
@@ -80,9 +92,11 @@ export class MainThreadEditorInsets implements MainThreadEditorInsetsShape {
 	) {
 		this._proxy = context.getProxy(ExtHostContext.ExtHostEditorInsets);
 	}
+
 	dispose(): void {
 		this._disposables.dispose();
 	}
+
 	async $createEditorInset(
 		handle: number,
 		id: string,
@@ -94,6 +108,7 @@ export class MainThreadEditorInsets implements MainThreadEditorInsetsShape {
 		extensionLocation: UriComponents,
 	): Promise<void> {
 		let editor: IActiveCodeEditor | undefined;
+
 		id = id.substr(0, id.indexOf(",")); //todo@jrieken HACK
 		for (const candidate of this._editorService.listCodeEditors()) {
 			if (
@@ -106,11 +121,13 @@ export class MainThreadEditorInsets implements MainThreadEditorInsetsShape {
 				break;
 			}
 		}
+
 		if (!editor) {
 			setTimeout(() => this._proxy.$onDidDispose(handle));
 
 			return;
 		}
+
 		const disposables = new DisposableStore();
 
 		const webview = this._webviewService.createWebviewElement({
@@ -134,45 +151,61 @@ export class MainThreadEditorInsets implements MainThreadEditorInsetsShape {
 
 		const remove = () => {
 			disposables.dispose();
+
 			this._proxy.$onDidDispose(handle);
+
 			this._insets.delete(handle);
 		};
+
 		disposables.add(editor.onDidChangeModel(remove));
+
 		disposables.add(editor.onDidDispose(remove));
+
 		disposables.add(webviewZone);
+
 		disposables.add(webview);
+
 		disposables.add(
 			webview.onMessage((msg) =>
 				this._proxy.$onDidReceiveMessage(handle, msg.message),
 			),
 		);
+
 		this._insets.set(handle, webviewZone);
 	}
 	$disposeEditorInset(handle: number): void {
 		const inset = this.getInset(handle);
+
 		this._insets.delete(handle);
+
 		inset.dispose();
 	}
 	$setHtml(handle: number, value: string): void {
 		const inset = this.getInset(handle);
+
 		inset.webview.setHtml(value);
 	}
 	$setOptions(handle: number, options: IWebviewContentOptions): void {
 		const inset = this.getInset(handle);
+
 		inset.webview.contentOptions = reviveWebviewContentOptions(options);
 	}
+
 	async $postMessage(handle: number, value: any): Promise<boolean> {
 		const inset = this.getInset(handle);
+
 		inset.webview.postMessage(value);
 
 		return true;
 	}
+
 	private getInset(handle: number): EditorWebviewZone {
 		const inset = this._insets.get(handle);
 
 		if (!inset) {
 			throw new Error("Unknown inset");
 		}
+
 		return inset;
 	}
 }

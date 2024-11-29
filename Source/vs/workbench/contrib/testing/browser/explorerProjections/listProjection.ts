@@ -39,36 +39,48 @@ import {
  */
 class ListTestItemElement extends TestItemTreeElement {
 	private errorChild?: TestTreeErrorMessage;
+
 	public descriptionParts: string[] = [];
+
 	public override get description() {
 		return this.chain.map((c) => c.item.label).join(flatTestItemDelimiter);
 	}
+
 	constructor(
 		test: InternalTestItem,
 		parent: null | ListTestItemElement,
 		private readonly chain: InternalTestItem[],
 	) {
 		super({ ...test, item: { ...test.item } }, parent);
+
 		this.updateErrorVisibility();
 	}
+
 	public update(patch: ITestItemUpdate) {
 		applyTestItemUpdate(this.test, patch);
+
 		this.updateErrorVisibility(patch);
+
 		this.fireChange();
 	}
+
 	public fireChange() {
 		this.changeEmitter.fire();
 	}
+
 	private updateErrorVisibility(patch?: ITestItemUpdate) {
 		if (this.errorChild && (!this.test.item.error || patch?.item?.error)) {
 			this.children.delete(this.errorChild);
+
 			this.errorChild = undefined;
 		}
+
 		if (this.test.item.error && !this.errorChild) {
 			this.errorChild = new TestTreeErrorMessage(
 				this.test.item.error,
 				this,
 			);
+
 			this.children.add(this.errorChild);
 		}
 	}
@@ -78,6 +90,7 @@ class ListTestItemElement extends TestItemTreeElement {
  */
 export class ListProjection extends Disposable implements ITestTreeProjection {
 	private readonly updateEmitter = new Emitter<void>();
+
 	private readonly items = new Map<string, ListTestItemElement>();
 	/**
 	 * Gets root elements of the tree.
@@ -106,6 +119,7 @@ export class ListProjection extends Disposable implements ITestTreeProjection {
 		private readonly results: ITestResultService,
 	) {
 		super();
+
 		this._register(
 			testService.onDidProcessDiff((diff) => this.applyDiff(diff)),
 		);
@@ -115,15 +129,19 @@ export class ListProjection extends Disposable implements ITestTreeProjection {
 				if (!("removed" in evt)) {
 					return;
 				}
+
 				for (const inTree of this.items.values()) {
 					// Simple logic here, because we know in this projection states
 					// are never inherited.
 					const lookup = this.results.getStateById(
 						inTree.test.item.extId,
 					)?.[1];
+
 					inTree.duration = lookup?.ownDuration;
+
 					inTree.state =
 						lookup?.ownComputedState || TestResultState.Unset;
+
 					inTree.fireChange();
 				}
 			}),
@@ -134,6 +152,7 @@ export class ListProjection extends Disposable implements ITestTreeProjection {
 				if (ev.reason === TestResultItemChangeReason.NewMessage) {
 					return; // no effect in the tree
 				}
+
 				let result = ev.item;
 				// if the state is unset, or the latest run is not making the change,
 				// double check that it's valid. Retire calls might cause previous
@@ -148,14 +167,19 @@ export class ListProjection extends Disposable implements ITestTreeProjection {
 						result = fallback[1];
 					}
 				}
+
 				const item = this.items.get(result.item.extId);
 
 				if (!item) {
 					return;
 				}
+
 				item.retired = !!result.retired;
+
 				item.state = result.computedState;
+
 				item.duration = result.ownDuration;
+
 				item.fireChange();
 			}),
 		);
@@ -181,21 +205,25 @@ export class ListProjection extends Disposable implements ITestTreeProjection {
 
 					break;
 				}
+
 				case TestDiffOpType.Update: {
 					this.items.get(op.item.extId)?.update(op.item);
 
 					break;
 				}
+
 				case TestDiffOpType.Remove: {
 					for (const [id, item] of this.items) {
 						if (id === op.itemId || TestId.isChild(op.itemId, id)) {
 							this.unstoreItem(item);
 						}
 					}
+
 					break;
 				}
 			}
 		}
+
 		if (diff.length !== 0) {
 			this.updateEmitter.fire();
 		}
@@ -223,13 +251,17 @@ export class ListProjection extends Disposable implements ITestTreeProjection {
 		if (!(element instanceof ListTestItemElement)) {
 			return;
 		}
+
 		if (element.test.expand === TestItemExpandState.NotExpandable) {
 			return;
 		}
+
 		this.testService.collection.expand(element.test.item.extId, depth);
 	}
+
 	private unstoreItem(treeElement: ListTestItemElement) {
 		this.items.delete(treeElement.test.item.extId);
+
 		treeElement.parent?.children.delete(treeElement);
 
 		const parentId = TestId.fromString(
@@ -252,10 +284,12 @@ export class ListProjection extends Disposable implements ITestTreeProjection {
 				) {
 					this._storeItem(parentId, parentTest);
 				}
+
 				break;
 			}
 		}
 	}
+
 	private _storeItem(testId: TestId, item: InternalTestItem) {
 		const displayedParent = testId.isRoot
 			? null
@@ -272,7 +306,9 @@ export class ListProjection extends Disposable implements ITestTreeProjection {
 			displayedParent,
 			chain,
 		);
+
 		displayedParent?.children.add(treeElement);
+
 		this.items.set(treeElement.test.item.extId, treeElement);
 
 		if (
@@ -284,16 +320,20 @@ export class ListProjection extends Disposable implements ITestTreeProjection {
 		) {
 			this.expandElement(treeElement, Infinity);
 		}
+
 		const prevState = this.results.getStateById(
 			treeElement.test.item.extId,
 		)?.[1];
 
 		if (prevState) {
 			treeElement.retired = !!prevState.retired;
+
 			treeElement.state = prevState.computedState;
+
 			treeElement.duration = prevState.ownDuration;
 		}
 	}
+
 	private storeItem(item: InternalTestItem) {
 		const testId = TestId.fromString(item.item.extId);
 		// Remove any non-root parent of this item which is no longer a leaf.
@@ -308,6 +348,7 @@ export class ListProjection extends Disposable implements ITestTreeProjection {
 				}
 			}
 		}
+
 		this._storeItem(testId, item);
 	}
 }

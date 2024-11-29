@@ -27,4 +27,5 @@ const nodePath = path.join(
 	`${platform}-${arch}`,
 	node,
 );
+
 console.log(nodePath);

@@ -45,6 +45,7 @@ export class ToggleRenderControlCharacterAction extends Action2 {
 			},
 		});
 	}
+
 	override run(accessor: ServicesAccessor): Promise<void> {
 		const configurationService = accessor.get(IConfigurationService);
 

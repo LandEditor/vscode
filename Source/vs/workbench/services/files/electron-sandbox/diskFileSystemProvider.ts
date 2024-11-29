@@ -78,8 +78,10 @@ export class DiskFileSystemProvider
 					true /* send all requests to universal watcher process */,
 			},
 		});
+
 		this.registerListeners();
 	}
+
 	private registerListeners(): void {
 		// Forward events from the embedded provider
 		this._register(
@@ -87,6 +89,7 @@ export class DiskFileSystemProvider
 				this._onDidChangeFile.fire(changes),
 			),
 		);
+
 		this._register(
 			this.provider.onDidWatchError((error) =>
 				this._onDidWatchError.fire(error),
@@ -97,6 +100,7 @@ export class DiskFileSystemProvider
 	get onDidChangeCapabilities(): Event<void> {
 		return this.provider.onDidChangeCapabilities;
 	}
+
 	get capabilities(): FileSystemProviderCapabilities {
 		return this.provider.capabilities;
 	}
@@ -105,6 +109,7 @@ export class DiskFileSystemProvider
 	stat(resource: URI): Promise<IStat> {
 		return this.provider.stat(resource);
 	}
+
 	readdir(resource: URI): Promise<[string, FileType][]> {
 		return this.provider.readdir(resource);
 	}
@@ -116,6 +121,7 @@ export class DiskFileSystemProvider
 	): Promise<Uint8Array> {
 		return this.provider.readFile(resource, opts);
 	}
+
 	readFileStream(
 		resource: URI,
 		opts: IFileReadStreamOptions,
@@ -123,6 +129,7 @@ export class DiskFileSystemProvider
 	): ReadableStreamEvents<Uint8Array> {
 		return this.provider.readFileStream(resource, opts, token);
 	}
+
 	writeFile(
 		resource: URI,
 		content: Uint8Array,
@@ -130,12 +137,15 @@ export class DiskFileSystemProvider
 	): Promise<void> {
 		return this.provider.writeFile(resource, content, opts);
 	}
+
 	open(resource: URI, opts: IFileOpenOptions): Promise<number> {
 		return this.provider.open(resource, opts);
 	}
+
 	close(fd: number): Promise<void> {
 		return this.provider.close(fd);
 	}
+
 	read(
 		fd: number,
 		pos: number,
@@ -145,6 +155,7 @@ export class DiskFileSystemProvider
 	): Promise<number> {
 		return this.provider.read(fd, pos, data, offset, length);
 	}
+
 	write(
 		fd: number,
 		pos: number,
@@ -159,12 +170,15 @@ export class DiskFileSystemProvider
 	mkdir(resource: URI): Promise<void> {
 		return this.provider.mkdir(resource);
 	}
+
 	delete(resource: URI, opts: IFileDeleteOptions): Promise<void> {
 		return this.provider.delete(resource, opts);
 	}
+
 	rename(from: URI, to: URI, opts: IFileOverwriteOptions): Promise<void> {
 		return this.provider.rename(from, to, opts);
 	}
+
 	copy(from: URI, to: URI, opts: IFileOverwriteOptions): Promise<void> {
 		return this.provider.copy(from, to, opts);
 	}
@@ -187,10 +201,13 @@ export class DiskFileSystemProvider
 			this.utilityProcessWorkerWorkbenchService,
 		);
 	}
+
 	protected createNonRecursiveWatcher(): never {
 		throw new Error("Method not implemented in sandbox."); // we never expect this to be called given we set `forceUniversal: true`
 	}
+
 	private _watcherLogService: ILogService | undefined = undefined;
+
 	private get watcherLogService(): ILogService {
 		if (!this._watcherLogService) {
 			this._watcherLogService = new LogService(
@@ -199,8 +216,10 @@ export class DiskFileSystemProvider
 				}),
 			);
 		}
+
 		return this._watcherLogService;
 	}
+
 	protected override logWatcherMessage(msg: ILogMessage): void {
 		this.watcherLogService[msg.type](msg.message);
 

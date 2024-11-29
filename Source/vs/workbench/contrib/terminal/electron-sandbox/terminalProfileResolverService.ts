@@ -45,6 +45,7 @@ export class ElectronTerminalProfileResolverService extends BaseTerminalProfileR
 							`Cannot get default system shell when there is no backend for remote authority '${remoteAuthority}'`,
 						);
 					}
+
 					return backend.getDefaultSystemShell(platform);
 				},
 				getEnvironment: async (remoteAuthority) => {
@@ -58,6 +59,7 @@ export class ElectronTerminalProfileResolverService extends BaseTerminalProfileR
 							`Cannot get environment when there is no backend for remote authority '${remoteAuthority}'`,
 						);
 					}
+
 					return backend.getEnvironment();
 				},
 			},

@@ -72,9 +72,11 @@ import {
 export abstract class EditorPane extends Composite implements IEditorPane {
 	//#region Events
 	readonly onDidChangeSizeConstraints = Event.None;
+
 	protected readonly _onDidChangeControl = this._register(
 		new Emitter<void>(),
 	);
+
 	readonly onDidChangeControl = this._onDidChangeControl.event;
 	//#endregion
 	private static readonly EDITOR_MEMENTOS = new Map<
@@ -85,25 +87,31 @@ export abstract class EditorPane extends Composite implements IEditorPane {
 	get minimumWidth() {
 		return DEFAULT_EDITOR_MIN_DIMENSIONS.width;
 	}
+
 	get maximumWidth() {
 		return DEFAULT_EDITOR_MAX_DIMENSIONS.width;
 	}
+
 	get minimumHeight() {
 		return DEFAULT_EDITOR_MIN_DIMENSIONS.height;
 	}
+
 	get maximumHeight() {
 		return DEFAULT_EDITOR_MAX_DIMENSIONS.height;
 	}
+
 	protected _input: EditorInput | undefined;
 
 	get input(): EditorInput | undefined {
 		return this._input;
 	}
+
 	protected _options: IEditorOptions | undefined;
 
 	get options(): IEditorOptions | undefined {
 		return this._options;
 	}
+
 	get window() {
 		return getWindowById(this.group.windowId, true).window;
 	}
@@ -113,6 +121,7 @@ export abstract class EditorPane extends Composite implements IEditorPane {
 	get scopedContextKeyService(): IContextKeyService | undefined {
 		return undefined;
 	}
+
 	constructor(
 		id: string,
 		readonly group: IEditorGroup,
@@ -122,6 +131,7 @@ export abstract class EditorPane extends Composite implements IEditorPane {
 	) {
 		super(id, telemetryService, themeService, storageService);
 	}
+
 	override create(parent: HTMLElement): void {
 		super.create(parent);
 		// Create Editor
@@ -152,6 +162,7 @@ export abstract class EditorPane extends Composite implements IEditorPane {
 		token: CancellationToken,
 	): Promise<void> {
 		this._input = input;
+
 		this._options = options;
 	}
 	/**
@@ -167,6 +178,7 @@ export abstract class EditorPane extends Composite implements IEditorPane {
 	 */
 	clearInput(): void {
 		this._input = undefined;
+
 		this._options = undefined;
 	}
 	/**
@@ -179,6 +191,7 @@ export abstract class EditorPane extends Composite implements IEditorPane {
 	setOptions(options: IEditorOptions | undefined): void {
 		this._options = options;
 	}
+
 	override setVisible(visible: boolean): void {
 		super.setVisible(visible);
 		// Propagate to Editor
@@ -192,9 +205,11 @@ export abstract class EditorPane extends Composite implements IEditorPane {
 	protected setEditorVisible(visible: boolean): void {
 		// Subclasses can implement
 	}
+
 	setBoundarySashes(_sashes: IBoundarySashes) {
 		// Subclasses can implement
 	}
+
 	protected getEditorMemento<T>(
 		editorGroupService: IEditorGroupsService,
 		configurationService: ITextResourceConfigurationService,
@@ -219,14 +234,18 @@ export abstract class EditorPane extends Composite implements IEditorPane {
 					configurationService,
 				),
 			);
+
 			EditorPane.EDITOR_MEMENTOS.set(mementoKey, editorMemento);
 		}
+
 		return editorMemento;
 	}
+
 	getViewState(): object | undefined {
 		// Subclasses to override
 		return undefined;
 	}
+
 	protected override saveState(): void {
 		// Save all editor memento for this editor type
 		for (const [, editorMemento] of EditorPane.EDITOR_MEMENTOS) {
@@ -234,10 +253,13 @@ export abstract class EditorPane extends Composite implements IEditorPane {
 				editorMemento.saveState();
 			}
 		}
+
 		super.saveState();
 	}
+
 	override dispose(): void {
 		this._input = undefined;
+
 		this._options = undefined;
 
 		super.dispose();
@@ -249,8 +271,11 @@ interface MapGroupToMemento<T> {
 export class EditorMemento<T> extends Disposable implements IEditorMemento<T> {
 	private static readonly SHARED_EDITOR_STATE = -1; // pick a number < 0 to be outside group id range
 	private cache: LRUCache<string, MapGroupToMemento<T>> | undefined;
+
 	private cleanedUp = false;
+
 	private editorDisposables: Map<EditorInput, IDisposable> | undefined;
+
 	private shareEditorState = false;
 
 	constructor(
@@ -262,9 +287,12 @@ export class EditorMemento<T> extends Disposable implements IEditorMemento<T> {
 		private readonly configurationService: ITextResourceConfigurationService,
 	) {
 		super();
+
 		this.updateConfiguration(undefined);
+
 		this.registerListeners();
 	}
+
 	private registerListeners(): void {
 		this._register(
 			this.configurationService.onDidChangeConfiguration((e) =>
@@ -272,6 +300,7 @@ export class EditorMemento<T> extends Disposable implements IEditorMemento<T> {
 			),
 		);
 	}
+
 	private updateConfiguration(
 		e: ITextResourceConfigurationChangeEvent | undefined,
 	): void {
@@ -289,8 +318,11 @@ export class EditorMemento<T> extends Disposable implements IEditorMemento<T> {
 				) === true;
 		}
 	}
+
 	saveEditorState(group: IEditorGroup, resource: URI, state: T): void;
+
 	saveEditorState(group: IEditorGroup, editor: EditorInput, state: T): void;
+
 	saveEditorState(
 		group: IEditorGroup,
 		resourceOrEditor: URI | EditorInput,
@@ -301,12 +333,14 @@ export class EditorMemento<T> extends Disposable implements IEditorMemento<T> {
 		if (!resource || !group) {
 			return; // we are not in a good state to save any state for a resource
 		}
+
 		const cache = this.doLoad();
 		// Ensure mementos for resource map
 		let mementosForResource = cache.get(resource.toString());
 
 		if (!mementosForResource) {
 			mementosForResource = Object.create(null) as MapGroupToMemento<T>;
+
 			cache.set(resource.toString(), mementosForResource);
 		}
 		// Store state for group
@@ -320,8 +354,11 @@ export class EditorMemento<T> extends Disposable implements IEditorMemento<T> {
 			this.clearEditorStateOnDispose(resource, resourceOrEditor);
 		}
 	}
+
 	loadEditorState(group: IEditorGroup, resource: URI): T | undefined;
+
 	loadEditorState(group: IEditorGroup, editor: EditorInput): T | undefined;
+
 	loadEditorState(
 		group: IEditorGroup,
 		resourceOrEditor: URI | EditorInput,
@@ -331,6 +368,7 @@ export class EditorMemento<T> extends Disposable implements IEditorMemento<T> {
 		if (!resource || !group) {
 			return; // we are not in a good state to load any state for a resource
 		}
+
 		const cache = this.doLoad();
 
 		const mementosForResource = cache.get(resource.toString());
@@ -346,10 +384,14 @@ export class EditorMemento<T> extends Disposable implements IEditorMemento<T> {
 				return mementosForResource[EditorMemento.SHARED_EDITOR_STATE];
 			}
 		}
+
 		return undefined;
 	}
+
 	clearEditorState(resource: URI, group?: IEditorGroup): void;
+
 	clearEditorState(editor: EditorInput, group?: IEditorGroup): void;
+
 	clearEditorState(
 		resourceOrEditor: URI | EditorInput,
 		group?: IEditorGroup,
@@ -357,6 +399,7 @@ export class EditorMemento<T> extends Disposable implements IEditorMemento<T> {
 		if (isEditorInput(resourceOrEditor)) {
 			this.editorDisposables?.delete(resourceOrEditor);
 		}
+
 		const resource = this.doGetResource(resourceOrEditor);
 
 		if (resource) {
@@ -379,20 +422,24 @@ export class EditorMemento<T> extends Disposable implements IEditorMemento<T> {
 			}
 		}
 	}
+
 	clearEditorStateOnDispose(resource: URI, editor: EditorInput): void {
 		if (!this.editorDisposables) {
 			this.editorDisposables = new Map<EditorInput, IDisposable>();
 		}
+
 		if (!this.editorDisposables.has(editor)) {
 			this.editorDisposables.set(
 				editor,
 				Event.once(editor.onWillDispose)(() => {
 					this.clearEditorState(resource);
+
 					this.editorDisposables?.delete(editor);
 				}),
 			);
 		}
 	}
+
 	moveEditorState(source: URI, target: URI, comparer: IExtUri): void {
 		const cache = this.doLoad();
 		// We need a copy of the keys to not iterate over
@@ -412,6 +459,7 @@ export class EditorMemento<T> extends Disposable implements IEditorMemento<T> {
 				targetResource = target; // file got moved
 			} else {
 				const index = indexOfPath(resource.path, source.path);
+
 				targetResource = joinPath(
 					target,
 					resource.path.substr(index + source.path.length + 1),
@@ -422,18 +470,22 @@ export class EditorMemento<T> extends Disposable implements IEditorMemento<T> {
 
 			if (value) {
 				cache.delete(cacheKey);
+
 				cache.set(targetResource.toString(), value);
 			}
 		}
 	}
+
 	private doGetResource(
 		resourceOrEditor: URI | EditorInput,
 	): URI | undefined {
 		if (isEditorInput(resourceOrEditor)) {
 			return resourceOrEditor.resource;
 		}
+
 		return resourceOrEditor;
 	}
+
 	private doLoad(): LRUCache<string, MapGroupToMemento<T>> {
 		if (!this.cache) {
 			this.cache = new LRUCache<string, MapGroupToMemento<T>>(this.limit);
@@ -444,17 +496,22 @@ export class EditorMemento<T> extends Disposable implements IEditorMemento<T> {
 				this.cache.fromJSON(rawEditorMemento);
 			}
 		}
+
 		return this.cache;
 	}
+
 	saveState(): void {
 		const cache = this.doLoad();
 		// Cleanup once during session
 		if (!this.cleanedUp) {
 			this.cleanUp();
+
 			this.cleanedUp = true;
 		}
+
 		this.memento[this.key] = cache.toJSON();
 	}
+
 	private cleanUp(): void {
 		const cache = this.doLoad();
 		// Remove groups from states that no longer exist. Since we modify the
@@ -471,6 +528,7 @@ export class EditorMemento<T> extends Disposable implements IEditorMemento<T> {
 				) {
 					continue; // skip over shared entries if sharing is enabled
 				}
+
 				if (!this.editorGroupService.getGroup(groupId)) {
 					delete mapGroupToMementos[groupId];
 

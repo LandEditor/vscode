@@ -60,6 +60,7 @@ class NotebookChatContribution
 	implements IWorkbenchContribution
 {
 	static readonly ID = "workbench.contrib.notebookChatContribution";
+
 	private readonly _ctxHasProvider: IContextKey<boolean>;
 
 	constructor(
@@ -77,6 +78,7 @@ class NotebookChatContribution
 		private readonly languageFeaturesService: ILanguageFeaturesService,
 	) {
 		super();
+
 		this._ctxHasProvider =
 			CTX_NOTEBOOK_CHAT_HAS_AGENT.bindTo(contextKeyService);
 
@@ -84,12 +86,16 @@ class NotebookChatContribution
 			const hasNotebookAgent = Boolean(
 				chatAgentService.getDefaultAgent(ChatAgentLocation.Notebook),
 			);
+
 			this._ctxHasProvider.set(hasNotebookAgent);
 		};
+
 		updateNotebookAgentStatus();
+
 		this._register(
 			chatAgentService.onDidChangeAgents(updateNotebookAgentStatus),
 		);
+
 		this._register(
 			this.languageFeaturesService.completionProvider.register(
 				{
@@ -113,9 +119,11 @@ class NotebookChatContribution
 						if (!widget || !widget.supportsFileReferences) {
 							return null;
 						}
+
 						if (widget.location !== ChatAgentLocation.Notebook) {
 							return null;
 						}
+
 						const variableNameDef = new RegExp(
 							`${chatVariableLeader}\\w*`,
 							"g",
@@ -131,6 +139,7 @@ class NotebookChatContribution
 						if (!range) {
 							return null;
 						}
+
 						const result: CompletionList = { suggestions: [] };
 
 						const afterRange = new Range(
@@ -141,6 +150,7 @@ class NotebookChatContribution
 								`${chatVariableLeader}${NotebookKernelVariableKey}:`
 									.length,
 						);
+
 						result.suggestions.push({
 							label: `${chatVariableLeader}${NotebookKernelVariableKey}`,
 							insertText: `${chatVariableLeader}${NotebookKernelVariableKey}:`,
@@ -157,6 +167,7 @@ class NotebookChatContribution
 							},
 							sortText: "z",
 						});
+
 						await this.addKernelVariableCompletion(
 							widget,
 							result,
@@ -170,11 +181,13 @@ class NotebookChatContribution
 			),
 		);
 	}
+
 	private async addKernelVariableCompletion(
 		widget: IChatWidget,
 		result: CompletionList,
 		info: {
 			insert: Range;
+
 			replace: Range;
 
 			varWord: IWordAtPosition | null;
@@ -189,6 +202,7 @@ class NotebookChatContribution
 		) {
 			pattern = info.varWord.word.toLowerCase().slice(1);
 		}
+
 		const notebook = getNotebookEditorFromEditorPane(
 			this.editorService.activeEditorPane,
 		)?.getViewModel()?.notebookDocument;
@@ -196,6 +210,7 @@ class NotebookChatContribution
 		if (!notebook) {
 			return;
 		}
+
 		const selectedKernel =
 			this.notebookKernelService.getMatchingKernel(notebook).selected;
 
@@ -204,6 +219,7 @@ class NotebookChatContribution
 		if (!hasVariableProvider) {
 			return;
 		}
+
 		const variables = await selectedKernel.provideVariables(
 			notebook.uri,
 			undefined,
@@ -216,6 +232,7 @@ class NotebookChatContribution
 			if (pattern && !variable.name.toLowerCase().includes(pattern)) {
 				continue;
 			}
+
 			result.suggestions.push({
 				label: { label: variable.name, description: variable.type },
 				insertText: `${chatVariableLeader}${NotebookKernelVariableKey}:${variable.name} `,
@@ -243,7 +260,9 @@ export class SelectAndInsertKernelVariableAction extends Action2 {
 			title: "", // not displayed
 		});
 	}
+
 	static readonly ID = "notebook.chat.selectAndInsertKernelVariable";
+
 	override async run(
 		accessor: ServicesAccessor,
 		...args: any[]
@@ -261,11 +280,13 @@ export class SelectAndInsertKernelVariableAction extends Action2 {
 		if (!notebook) {
 			return;
 		}
+
 		const context = args[0];
 
 		if (!context || !("widget" in context) || !("range" in context)) {
 			return;
 		}
+
 		const widget = <IChatWidget>context.widget;
 
 		const range = <Range | undefined>context.range;
@@ -277,6 +298,7 @@ export class SelectAndInsertKernelVariableAction extends Action2 {
 
 			return;
 		}
+
 		const selectedKernel =
 			notebookKernelService.getMatchingKernel(notebook).selected;
 
@@ -285,6 +307,7 @@ export class SelectAndInsertKernelVariableAction extends Action2 {
 		if (!hasVariableProvider) {
 			return;
 		}
+
 		const variables = await selectedKernel.provideVariables(
 			notebook.uri,
 			undefined,
@@ -302,6 +325,7 @@ export class SelectAndInsertKernelVariableAction extends Action2 {
 				detail: variable.type,
 			});
 		}
+
 		const pickedVariable = await quickInputService.pick(quickPickItems, {
 			placeHolder: "Select a kernel variable",
 		});
@@ -309,8 +333,10 @@ export class SelectAndInsertKernelVariableAction extends Action2 {
 		if (!pickedVariable) {
 			return;
 		}
+
 		this.addVariableReference(widget, pickedVariable.label, range, true);
 	}
+
 	private addVariableReference(
 		widget: IChatWidget,
 		variableName: string,
@@ -331,6 +357,7 @@ export class SelectAndInsertKernelVariableAction extends Action2 {
 					return;
 				}
 			}
+
 			widget
 				.getContrib<ChatDynamicVariableModel>(
 					ChatDynamicVariableModel.ID,

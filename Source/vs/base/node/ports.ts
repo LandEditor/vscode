@@ -28,6 +28,7 @@ export function findFreePort(
 		doFindFreePort(startPort, giveUpAfter, stride, (port) => {
 			if (!done) {
 				done = true;
+
 				clearTimeout(timeoutHandle);
 
 				return resolve(port);
@@ -44,6 +45,7 @@ function doFindFreePort(
 	if (giveUpAfter === 0) {
 		return clb(0);
 	}
+
 	const client = new net.Socket();
 	// If we can connect to the port it means the port is already taken so we continue searching
 	client.once("connect", () => {
@@ -51,9 +53,11 @@ function doFindFreePort(
 
 		return doFindFreePort(startPort + stride, giveUpAfter - 1, stride, clb);
 	});
+
 	client.once("data", () => {
 		// this listener is required since node.js 8.x
 	});
+
 	client.once(
 		"error",
 		(
@@ -75,6 +79,7 @@ function doFindFreePort(
 			return clb(startPort);
 		},
 	);
+
 	client.connect(startPort, "127.0.0.1");
 }
 // Reference: https://chromium.googlesource.com/chromium/src.git/+/refs/heads/main/net/base/port_util.cc#56
@@ -180,22 +185,28 @@ export function findFreePortFaster(
 	function doResolve(port: number, resolve: (port: number) => void) {
 		if (!resolved) {
 			resolved = true;
+
 			server.removeAllListeners();
+
 			server.close();
 
 			if (timeoutHandle) {
 				clearTimeout(timeoutHandle);
 			}
+
 			resolve(port);
 		}
 	}
+
 	return new Promise<number>((resolve) => {
 		timeoutHandle = setTimeout(() => {
 			doResolve(0, resolve);
 		}, timeout);
+
 		server.on("listening", () => {
 			doResolve(startPort, resolve);
 		});
+
 		server.on("error", (err) => {
 			if (
 				err &&
@@ -204,24 +215,32 @@ export function findFreePortFaster(
 				countTried < giveUpAfter
 			) {
 				startPort++;
+
 				countTried++;
+
 				server.listen(startPort, hostname);
 			} else {
 				doResolve(0, resolve);
 			}
 		});
+
 		server.on("close", () => {
 			doResolve(0, resolve);
 		});
+
 		server.listen(startPort, hostname);
 	});
 }
 function dispose(socket: net.Socket): void {
 	try {
 		socket.removeAllListeners("connect");
+
 		socket.removeAllListeners("error");
+
 		socket.end();
+
 		socket.destroy();
+
 		socket.unref();
 	} catch (error) {
 		console.error(error); // otherwise this error would get lost in the callback chain

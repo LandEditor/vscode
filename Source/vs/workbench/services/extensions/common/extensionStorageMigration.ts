@@ -66,6 +66,7 @@ export async function migrateExtensionStorage(
 		if (fromExtensionId === toExtensionId) {
 			return;
 		}
+
 		const getExtensionStorageLocation = (
 			extensionId: string,
 			global: boolean,
@@ -76,6 +77,7 @@ export async function migrateExtensionStorage(
 					extensionId.toLowerCase() /* Extension id is lower cased for global storage */,
 				);
 			}
+
 			return uriIdentityService.extUri.joinPath(
 				environmentService.workspaceStorageHome,
 				workspaceContextService.getWorkspace().id,
@@ -117,6 +119,7 @@ export async function migrateExtensionStorage(
 					value,
 					global,
 				);
+
 				extensionStorageService.setExtensionState(
 					fromExtensionId,
 					undefined,
@@ -146,9 +149,11 @@ export async function migrateExtensionStorage(
 					}
 				}
 			}
+
 			logService.info(
 				`Migrated ${global ? "global" : "workspace"} extension storage from ${fromExtensionId} to ${toExtensionId}`,
 			);
+
 			storageService.store(
 				storageMigratedKey,
 				true,

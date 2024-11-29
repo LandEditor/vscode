@@ -29,9 +29,13 @@ export class ElectronPtyHostStarter
 	implements IPtyHostStarter
 {
 	private utilityProcess: UtilityProcess | undefined = undefined;
+
 	private readonly _onRequestConnection = new Emitter<void>();
+
 	readonly onRequestConnection = this._onRequestConnection.event;
+
 	private readonly _onWillShutdown = new Emitter<void>();
+
 	readonly onWillShutdown = this._onWillShutdown.event;
 
 	constructor(
@@ -46,6 +50,7 @@ export class ElectronPtyHostStarter
 		private readonly _logService: ILogService,
 	) {
 		super();
+
 		this._register(
 			this._lifecycleMainService.onWillShutdown(() =>
 				this._onWillShutdown.fire(),
@@ -55,6 +60,7 @@ export class ElectronPtyHostStarter
 		validatedIpcMain.on("vscode:createPtyHostMessageChannel", (e, nonce) =>
 			this._onWindowConnection(e, nonce),
 		);
+
 		this._register(
 			toDisposable(() => {
 				validatedIpcMain.removeHandler(
@@ -63,6 +69,7 @@ export class ElectronPtyHostStarter
 			}),
 		);
 	}
+
 	start(): IPtyHostConnection {
 		this.utilityProcess = new UtilityProcess(
 			this._logService,
@@ -81,6 +88,7 @@ export class ElectronPtyHostStarter
 					`--inspect${inspectParams.break ? "-brk" : ""}=${inspectParams.port}`,
 				]
 			: undefined;
+
 		this.utilityProcess.start({
 			type: "ptyHost",
 			entryPoint: "vs/platform/terminal/node/ptyHostMain",
@@ -99,11 +107,15 @@ export class ElectronPtyHostStarter
 		const client = new MessagePortClient(port, "ptyHost");
 
 		const store = new DisposableStore();
+
 		store.add(client);
+
 		store.add(
 			toDisposable(() => {
 				this.utilityProcess?.kill();
+
 				this.utilityProcess?.dispose();
+
 				this.utilityProcess = undefined;
 			}),
 		);
@@ -114,6 +126,7 @@ export class ElectronPtyHostStarter
 			onDidProcessExit: this.utilityProcess.onExit,
 		};
 	}
+
 	private _createPtyHostConfiguration() {
 		this._environmentMainService.unsetSnapExportedVariables();
 
@@ -142,6 +155,7 @@ export class ElectronPtyHostStarter
 		if (simulatedLatency && typeof simulatedLatency === "number") {
 			config.VSCODE_LATENCY = String(simulatedLatency);
 		}
+
 		const startupDelay = this._configurationService.getValue(
 			TerminalSettingId.DeveloperPtyHostStartupDelay,
 		);
@@ -149,10 +163,12 @@ export class ElectronPtyHostStarter
 		if (startupDelay && typeof startupDelay === "number") {
 			config.VSCODE_STARTUP_DELAY = String(startupDelay);
 		}
+
 		this._environmentMainService.restoreSnapExportedVariables();
 
 		return config;
 	}
+
 	private _onWindowConnection(e: IpcMainEvent, nonce: string) {
 		this._onRequestConnection.fire();
 
@@ -166,6 +182,7 @@ export class ElectronPtyHostStarter
 
 			return;
 		}
+
 		e.sender.postMessage(
 			"vscode:createPtyHostMessageChannelResult",
 			nonce,

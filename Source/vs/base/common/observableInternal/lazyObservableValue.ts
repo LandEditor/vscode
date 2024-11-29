@@ -20,29 +20,36 @@ export class LazyObservableValue<T, TChange = void>
 	implements ISettableObservable<T, TChange>
 {
 	protected _value: T;
+
 	private _isUpToDate = true;
+
 	private readonly _deltas: TChange[] = [];
 
 	get debugName() {
 		return this._debugNameData.getDebugName(this) ?? "LazyObservableValue";
 	}
+
 	constructor(
 		private readonly _debugNameData: DebugNameData,
 		initialValue: T,
 		private readonly _equalityComparator: EqualityComparer<T>,
 	) {
 		super();
+
 		this._value = initialValue;
 	}
+
 	public override get(): T {
 		this._update();
 
 		return this._value;
 	}
+
 	private _update(): void {
 		if (this._isUpToDate) {
 			return;
 		}
+
 		this._isUpToDate = true;
 
 		if (this._deltas.length > 0) {
@@ -51,6 +58,7 @@ export class LazyObservableValue<T, TChange = void>
 					observer.handleChange(this, change);
 				}
 			}
+
 			this._deltas.length = 0;
 		} else {
 			for (const observer of this.observers) {
@@ -58,7 +66,9 @@ export class LazyObservableValue<T, TChange = void>
 			}
 		}
 	}
+
 	private _updateCounter = 0;
+
 	private _beginUpdate(): void {
 		this._updateCounter++;
 
@@ -68,6 +78,7 @@ export class LazyObservableValue<T, TChange = void>
 			}
 		}
 	}
+
 	private _endUpdate(): void {
 		this._updateCounter--;
 
@@ -81,6 +92,7 @@ export class LazyObservableValue<T, TChange = void>
 			}
 		}
 	}
+
 	public override addObserver(observer: IObserver): void {
 		const shouldCallBeginUpdate =
 			!this.observers.has(observer) && this._updateCounter > 0;
@@ -91,6 +103,7 @@ export class LazyObservableValue<T, TChange = void>
 			observer.beginUpdate(this);
 		}
 	}
+
 	public override removeObserver(observer: IObserver): void {
 		const shouldCallEndUpdate =
 			this.observers.has(observer) && this._updateCounter > 0;
@@ -102,6 +115,7 @@ export class LazyObservableValue<T, TChange = void>
 			observer.endUpdate(this);
 		}
 	}
+
 	public set(value: T, tx: ITransaction | undefined, change: TChange): void {
 		if (
 			change === undefined &&
@@ -109,6 +123,7 @@ export class LazyObservableValue<T, TChange = void>
 		) {
 			return;
 		}
+
 		let _tx: TransactionImpl | undefined;
 
 		if (!tx) {
@@ -117,13 +132,16 @@ export class LazyObservableValue<T, TChange = void>
 				() => `Setting ${this.debugName}`,
 			);
 		}
+
 		try {
 			this._isUpToDate = false;
+
 			this._setValue(value);
 
 			if (change !== undefined) {
 				this._deltas.push(change);
 			}
+
 			tx.updateObserver(
 				{
 					beginUpdate: () => this._beginUpdate(),
@@ -146,9 +164,11 @@ export class LazyObservableValue<T, TChange = void>
 			}
 		}
 	}
+
 	override toString(): string {
 		return `${this.debugName}: ${this._value}`;
 	}
+
 	protected _setValue(newValue: T): void {
 		this._value = newValue;
 	}

@@ -23,26 +23,42 @@ export type ITerminalEnvironmentVariableCollections = [
 
 export interface IWorkspaceFolderData {
 	uri: UriComponents;
+
 	name: string;
+
 	index: number;
 }
 export interface ICreateTerminalProcessArguments {
 	configuration: ICompleteTerminalConfiguration;
+
 	resolvedVariables: {
 		[name: string]: string;
 	};
+
 	envVariableCollections: ITerminalEnvironmentVariableCollections;
+
 	shellLaunchConfig: IShellLaunchConfigDto;
+
 	workspaceId: string;
+
 	workspaceName: string;
+
 	workspaceFolders: IWorkspaceFolderData[];
+
 	activeWorkspaceFolder: IWorkspaceFolderData | null;
+
 	activeFileResource: UriComponents | undefined;
+
 	shouldPersistTerminal: boolean;
+
 	options: ITerminalProcessOptions;
+
 	cols: number;
+
 	rows: number;
+
 	unicodeVersion: "6" | "11";
+
 	resolverEnv:
 		| {
 				[key: string]: string | null;
@@ -51,6 +67,7 @@ export interface ICreateTerminalProcessArguments {
 }
 export interface ICreateTerminalProcessResult {
 	persistentTerminalId: number;
+
 	resolvedShellLaunchConfig: IShellLaunchConfigDto;
 }
 export const enum RemoteTerminalChannelEvent {

@@ -134,6 +134,7 @@ export class ConfigurationEditingError extends ErrorNoTelemetry {
 }
 export interface IConfigurationValue {
 	key: string;
+
 	value: any;
 }
 export interface IConfigurationEditingOptions
@@ -151,12 +152,16 @@ export const enum EditableConfigurationTarget {
 }
 interface IConfigurationEditOperation extends IConfigurationValue {
 	target: EditableConfigurationTarget;
+
 	jsonPath: json.JSONPath;
+
 	resource?: URI;
+
 	workspaceStandAloneConfigurationKey?: string;
 }
 export class ConfigurationEditing {
 	public _serviceBrand: undefined;
+
 	private queue: Queue<void>;
 
 	constructor(
@@ -186,6 +191,7 @@ export class ConfigurationEditing {
 	) {
 		this.queue = new Queue<void>();
 	}
+
 	async writeConfiguration(
 		target: EditableConfigurationTarget,
 		value: IConfigurationValue,
@@ -204,10 +210,12 @@ export class ConfigurationEditing {
 				if (options.donotNotifyError) {
 					throw error;
 				}
+
 				await this.onError(error, operation, options.scopes);
 			}
 		});
 	}
+
 	private async doWriteConfiguration(
 		operation: IConfigurationEditOperation,
 		options: IConfigurationEditingOptions,
@@ -227,6 +235,7 @@ export class ConfigurationEditing {
 			const formattingOptions = this.getFormattingOptions(
 				reference.object.textEditorModel,
 			);
+
 			await this.updateConfiguration(
 				operation,
 				reference.object.textEditorModel,
@@ -237,6 +246,7 @@ export class ConfigurationEditing {
 			reference.dispose();
 		}
 	}
+
 	private async updateConfiguration(
 		operation: IConfigurationEditOperation,
 		model: ITextModel,
@@ -250,6 +260,7 @@ export class ConfigurationEditing {
 				operation,
 			);
 		}
+
 		if (
 			this.textFileService.isDirty(model.uri) &&
 			options.handleDirtyFile
@@ -266,6 +277,7 @@ export class ConfigurationEditing {
 					break;
 			}
 		}
+
 		const edit = this.getEdits(
 			operation,
 			model.getValue(),
@@ -276,6 +288,7 @@ export class ConfigurationEditing {
 			await this.save(model, operation);
 		}
 	}
+
 	private async save(
 		model: ITextModel,
 		operation: IConfigurationEditOperation,
@@ -295,6 +308,7 @@ export class ConfigurationEditing {
 					operation,
 				);
 			}
+
 			throw new ConfigurationEditingError(
 				nls.localize(
 					"fsError",
@@ -306,6 +320,7 @@ export class ConfigurationEditing {
 			);
 		}
 	}
+
 	private applyEditsToBuffer(edit: Edit, model: ITextModel): boolean {
 		const startPosition = model.getPositionAt(edit.offset);
 
@@ -324,6 +339,7 @@ export class ConfigurationEditing {
 			const editOperation = currentText
 				? EditOperation.replace(range, edit.content)
 				: EditOperation.insert(startPosition, edit.content);
+
 			model.pushEditOperations(
 				[
 					new Selection(
@@ -339,8 +355,10 @@ export class ConfigurationEditing {
 
 			return true;
 		}
+
 		return false;
 	}
+
 	private getEdits(
 		{ value, jsonPath }: IConfigurationEditOperation,
 		modelContent: string,
@@ -371,6 +389,7 @@ export class ConfigurationEditing {
 			},
 		];
 	}
+
 	private getFormattingOptions(model: ITextModel): FormattingOptions {
 		const { insertSpaces, tabSize } = model.getOptions();
 
@@ -378,6 +397,7 @@ export class ConfigurationEditing {
 
 		return { insertSpaces, tabSize, eol };
 	}
+
 	private async onError(
 		error: ConfigurationEditingError,
 		operation: IConfigurationEditOperation,
@@ -404,6 +424,7 @@ export class ConfigurationEditing {
 				this.notificationService.error(error.message);
 		}
 	}
+
 	private onInvalidConfigurationError(
 		error: ConfigurationEditingError,
 		operation: IConfigurationEditOperation,
@@ -439,6 +460,7 @@ export class ConfigurationEditing {
 			]);
 		}
 	}
+
 	private onConfigurationFileDirtyError(
 		error: ConfigurationEditingError,
 		operation: IConfigurationEditOperation,
@@ -467,6 +489,7 @@ export class ConfigurationEditing {
 						const key = operation.key
 							? `${operation.workspaceStandAloneConfigurationKey}.${operation.key}`
 							: operation.workspaceStandAloneConfigurationKey!;
+
 						this.writeConfiguration(
 							operation.target,
 							{ key, value: operation.value },
@@ -497,6 +520,7 @@ export class ConfigurationEditing {
 			]);
 		}
 	}
+
 	private openSettings(operation: IConfigurationEditOperation): void {
 		const options: IOpenSettingsOptions = { jsonEditor: true };
 
@@ -530,12 +554,15 @@ export class ConfigurationEditing {
 						});
 					}
 				}
+
 				break;
 		}
 	}
+
 	private openFile(resource: URI): void {
 		this.editorService.openEditor({ resource, options: { pinned: true } });
 	}
+
 	private toConfigurationEditingError(
 		code: ConfigurationEditingErrorCode,
 		target: EditableConfigurationTarget,
@@ -545,6 +572,7 @@ export class ConfigurationEditing {
 
 		return new ConfigurationEditingError(message, code);
 	}
+
 	private toErrorMessage(
 		error: ConfigurationEditingErrorCode,
 		target: EditableConfigurationTarget,
@@ -632,6 +660,7 @@ export class ConfigurationEditing {
 						"Unable to write into the tasks configuration file. Please open it to correct errors/warnings in it and try again.",
 					);
 				}
+
 				if (
 					operation.workspaceStandAloneConfigurationKey ===
 					LAUNCH_CONFIGURATION_KEY
@@ -641,6 +670,7 @@ export class ConfigurationEditing {
 						"Unable to write into the launch configuration file. Please open it to correct errors/warnings in it and try again.",
 					);
 				}
+
 				switch (target) {
 					case EditableConfigurationTarget.USER_LOCAL:
 						return nls.localize(
@@ -673,16 +703,19 @@ export class ConfigurationEditing {
 								workspaceFolderName = folder.name;
 							}
 						}
+
 						return nls.localize(
 							"errorInvalidConfigurationFolder",
 							"Unable to write into folder settings. Please open the '{0}' folder settings to correct errors/warnings in it and try again.",
 							workspaceFolderName,
 						);
 					}
+
 					default:
 						return "";
 				}
 			}
+
 			case ConfigurationEditingErrorCode.ERROR_CONFIGURATION_FILE_DIRTY: {
 				if (
 					operation.workspaceStandAloneConfigurationKey ===
@@ -693,6 +726,7 @@ export class ConfigurationEditing {
 						"Unable to write into tasks configuration file because the file has unsaved changes. Please save it first and then try again.",
 					);
 				}
+
 				if (
 					operation.workspaceStandAloneConfigurationKey ===
 					LAUNCH_CONFIGURATION_KEY
@@ -702,6 +736,7 @@ export class ConfigurationEditing {
 						"Unable to write into launch configuration file because the file has unsaved changes. Please save it first and then try again.",
 					);
 				}
+
 				switch (target) {
 					case EditableConfigurationTarget.USER_LOCAL:
 						return nls.localize(
@@ -734,16 +769,19 @@ export class ConfigurationEditing {
 								workspaceFolderName = folder.name;
 							}
 						}
+
 						return nls.localize(
 							"errorConfigurationFileDirtyFolder",
 							"Unable to write into folder settings because the file has unsaved changes. Please save the '{0}' folder settings file first and then try again.",
 							workspaceFolderName,
 						);
 					}
+
 					default:
 						return "";
 				}
 			}
+
 			case ConfigurationEditingErrorCode.ERROR_CONFIGURATION_FILE_MODIFIED_SINCE:
 				if (
 					operation.workspaceStandAloneConfigurationKey ===
@@ -754,6 +792,7 @@ export class ConfigurationEditing {
 						"Unable to write into tasks configuration file because the content of the file is newer.",
 					);
 				}
+
 				if (
 					operation.workspaceStandAloneConfigurationKey ===
 					LAUNCH_CONFIGURATION_KEY
@@ -763,6 +802,7 @@ export class ConfigurationEditing {
 						"Unable to write into launch configuration file because the content of the file is newer.",
 					);
 				}
+
 				switch (target) {
 					case EditableConfigurationTarget.USER_LOCAL:
 						return nls.localize(
@@ -788,6 +828,7 @@ export class ConfigurationEditing {
 							"Unable to write into folder settings because the content of the file is newer.",
 						);
 				}
+
 			case ConfigurationEditingErrorCode.ERROR_INTERNAL:
 				return nls.localize(
 					"errorUnknown",
@@ -796,6 +837,7 @@ export class ConfigurationEditing {
 				);
 		}
 	}
+
 	private stringifyTarget(target: EditableConfigurationTarget): string {
 		switch (target) {
 			case EditableConfigurationTarget.USER_LOCAL:
@@ -814,6 +856,7 @@ export class ConfigurationEditing {
 				return "";
 		}
 	}
+
 	private defaultResourceValue(resource: URI): string {
 		const basename: string =
 			this.uriIdentityService.extUri.basename(resource);
@@ -832,6 +875,7 @@ export class ConfigurationEditing {
 				return "{}";
 		}
 	}
+
 	private async resolveModelReference(
 		resource: URI,
 	): Promise<IReference<IResolvedTextEditorModel>> {
@@ -844,8 +888,10 @@ export class ConfigurationEditing {
 				{ encoding: "utf8" },
 			);
 		}
+
 		return this.textModelResolverService.createModelReference(resource);
 	}
+
 	private hasParseErrors(
 		content: string,
 		operation: IConfigurationEditOperation,
@@ -855,7 +901,9 @@ export class ConfigurationEditing {
 		if (operation.workspaceStandAloneConfigurationKey && !operation.key) {
 			return false;
 		}
+
 		const parseErrors: json.ParseError[] = [];
+
 		json.parse(content, parseErrors, {
 			allowTrailingComma: true,
 			allowEmptyContent: true,
@@ -863,6 +911,7 @@ export class ConfigurationEditing {
 
 		return parseErrors.length > 0;
 	}
+
 	private async validate(
 		target: EditableConfigurationTarget,
 		operation: IConfigurationEditOperation,
@@ -879,6 +928,7 @@ export class ConfigurationEditing {
 				operation,
 			);
 		}
+
 		const configurationProperties = Registry.as<IConfigurationRegistry>(
 			ConfigurationExtensions.Configuration,
 		).getConfigurationProperties();
@@ -906,6 +956,7 @@ export class ConfigurationEditing {
 				);
 			}
 		}
+
 		if (operation.workspaceStandAloneConfigurationKey) {
 			// Global launches are not supported
 			if (
@@ -933,6 +984,7 @@ export class ConfigurationEditing {
 				operation,
 			);
 		}
+
 		if (target === EditableConfigurationTarget.WORKSPACE) {
 			if (
 				!operation.workspaceStandAloneConfigurationKey &&
@@ -945,6 +997,7 @@ export class ConfigurationEditing {
 						operation,
 					);
 				}
+
 				if (configurationScope === ConfigurationScope.MACHINE) {
 					throw this.toConfigurationEditingError(
 						ConfigurationEditingErrorCode.ERROR_INVALID_WORKSPACE_CONFIGURATION_MACHINE,
@@ -954,6 +1007,7 @@ export class ConfigurationEditing {
 				}
 			}
 		}
+
 		if (target === EditableConfigurationTarget.WORKSPACE_FOLDER) {
 			if (!operation.resource) {
 				throw this.toConfigurationEditingError(
@@ -962,6 +1016,7 @@ export class ConfigurationEditing {
 					operation,
 				);
 			}
+
 			if (
 				!operation.workspaceStandAloneConfigurationKey &&
 				!OVERRIDE_PROPERTY_REGEX.test(operation.key)
@@ -978,6 +1033,7 @@ export class ConfigurationEditing {
 				}
 			}
 		}
+
 		if (overrides.overrideIdentifiers?.length) {
 			if (
 				configurationScope !== ConfigurationScope.LANGUAGE_OVERRIDABLE
@@ -989,6 +1045,7 @@ export class ConfigurationEditing {
 				);
 			}
 		}
+
 		if (!operation.resource) {
 			throw this.toConfigurationEditingError(
 				ConfigurationEditingErrorCode.ERROR_INVALID_FOLDER_TARGET,
@@ -996,6 +1053,7 @@ export class ConfigurationEditing {
 				operation,
 			);
 		}
+
 		if (checkDirty && this.textFileService.isDirty(operation.resource)) {
 			throw this.toConfigurationEditingError(
 				ConfigurationEditingErrorCode.ERROR_CONFIGURATION_FILE_DIRTY,
@@ -1004,6 +1062,7 @@ export class ConfigurationEditing {
 			);
 		}
 	}
+
 	private getConfigurationEditOperation(
 		target: EditableConfigurationTarget,
 		config: IConfigurationValue,
@@ -1066,6 +1125,7 @@ export class ConfigurationEditing {
 				}
 			}
 		}
+
 		const key = config.key;
 
 		const configurationProperties = Registry.as<IConfigurationRegistry>(
@@ -1097,6 +1157,7 @@ export class ConfigurationEditing {
 				target,
 			};
 		}
+
 		const resource = this.getConfigurationFileResource(
 			target,
 			key,
@@ -1108,6 +1169,7 @@ export class ConfigurationEditing {
 		if (this.isWorkspaceConfigurationResource(resource)) {
 			jsonPath = ["settings", ...jsonPath];
 		}
+
 		return {
 			key,
 			jsonPath,
@@ -1116,6 +1178,7 @@ export class ConfigurationEditing {
 			target,
 		};
 	}
+
 	private isWorkspaceConfigurationResource(resource: URI | null): boolean {
 		const workspace = this.contextService.getWorkspace();
 
@@ -1125,6 +1188,7 @@ export class ConfigurationEditing {
 			workspace.configuration.fsPath === resource.fsPath
 		);
 	}
+
 	private getConfigurationFileResource(
 		target: EditableConfigurationTarget,
 		key: string,
@@ -1145,13 +1209,16 @@ export class ConfigurationEditing {
 					return this.userDataProfilesService.defaultProfile
 						.settingsResource;
 				}
+
 				return this.userDataProfileService.currentProfile
 					.settingsResource;
 			}
 		}
+
 		if (target === EditableConfigurationTarget.USER_REMOTE) {
 			return this.remoteSettingsResource;
 		}
+
 		const workbenchState = this.contextService.getWorkbenchState();
 
 		if (workbenchState !== WorkbenchState.EMPTY) {
@@ -1161,10 +1228,12 @@ export class ConfigurationEditing {
 				if (workbenchState === WorkbenchState.WORKSPACE) {
 					return workspace.configuration ?? null;
 				}
+
 				if (workbenchState === WorkbenchState.FOLDER) {
 					return workspace.folders[0].toResource(relativePath);
 				}
 			}
+
 			if (target === EditableConfigurationTarget.WORKSPACE_FOLDER) {
 				if (resource) {
 					const folder =
@@ -1176,6 +1245,7 @@ export class ConfigurationEditing {
 				}
 			}
 		}
+
 		return null;
 	}
 }

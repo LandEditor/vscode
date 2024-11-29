@@ -24,6 +24,7 @@ export const ILanguageModelStatsService =
 
 export interface ILanguageModelStatsService {
 	readonly _serviceBrand: undefined;
+
 	update(
 		model: string,
 		extensionId: ExtensionIdentifier,
@@ -34,11 +35,16 @@ export interface ILanguageModelStatsService {
 interface LanguageModelStats {
 	extensions: {
 		extensionId: string;
+
 		requestCount: number;
+
 		tokenCount: number;
+
 		participants: {
 			id: string;
+
 			requestCount: number;
+
 			tokenCount: number;
 		}[];
 	}[];
@@ -49,11 +55,16 @@ export class LanguageModelStatsService
 {
 	private static readonly MODEL_STATS_STORAGE_KEY_PREFIX =
 		"languageModelStats.";
+
 	private static readonly MODEL_ACCESS_STORAGE_KEY_PREFIX =
 		"languageModelAccess.";
+
 	declare _serviceBrand: undefined;
+
 	private readonly _onDidChangeStats = this._register(new Emitter<string>());
+
 	readonly onDidChangeLanguageMoelStats = this._onDidChangeStats.event;
+
 	private readonly sessionStats = new Map<string, LanguageModelStats>();
 
 	constructor(
@@ -63,6 +74,7 @@ export class LanguageModelStatsService
 		private readonly _storageService: IStorageService,
 	) {
 		super();
+
 		this._register(
 			_storageService.onDidChangeValue(
 				StorageScope.APPLICATION,
@@ -77,11 +89,13 @@ export class LanguageModelStatsService
 			}),
 		);
 	}
+
 	hasAccessedModel(extensionId: string, model: string): boolean {
 		return this.getAccessExtensions(model).includes(
 			extensionId.toLowerCase(),
 		);
 	}
+
 	async update(
 		model: string,
 		extensionId: ExtensionIdentifier,
@@ -99,12 +113,17 @@ export class LanguageModelStatsService
 
 		if (!sessionStats) {
 			sessionStats = { extensions: [] };
+
 			this.sessionStats.set(model, sessionStats);
 		}
+
 		this.add(sessionStats, extensionId.value, agent, tokenCount);
+
 		this.write(model, extensionId.value, agent, tokenCount);
+
 		this._onDidChangeStats.fire(model);
 	}
+
 	private addAccess(model: string, extensionId: string): void {
 		extensionId = extensionId.toLowerCase();
 
@@ -112,6 +131,7 @@ export class LanguageModelStatsService
 
 		if (!extensions.includes(extensionId)) {
 			extensions.push(extensionId);
+
 			this._storageService.store(
 				this.getAccessKey(model),
 				JSON.stringify(extensions),
@@ -120,6 +140,7 @@ export class LanguageModelStatsService
 			);
 		}
 	}
+
 	private getAccessExtensions(model: string): string[] {
 		const key = this.getAccessKey(model);
 
@@ -136,8 +157,10 @@ export class LanguageModelStatsService
 		} catch (e) {
 			// ignore
 		}
+
 		return [];
 	}
+
 	private async write(
 		model: string,
 		extensionId: string,
@@ -145,7 +168,9 @@ export class LanguageModelStatsService
 		tokenCount: number | undefined,
 	): Promise<void> {
 		const modelStats = await this.read(model);
+
 		this.add(modelStats, extensionId, participant, tokenCount);
+
 		this._storageService.store(
 			this.getKey(model),
 			JSON.stringify(modelStats),
@@ -153,6 +178,7 @@ export class LanguageModelStatsService
 			StorageTarget.USER,
 		);
 	}
+
 	private add(
 		modelStats: LanguageModelStats,
 		extensionId: string,
@@ -170,8 +196,10 @@ export class LanguageModelStatsService
 				tokenCount: 0,
 				participants: [],
 			};
+
 			modelStats.extensions.push(extensionStats);
 		}
+
 		if (participant) {
 			let participantStats = extensionStats.participants.find(
 				(p) => p.id === participant,
@@ -183,15 +211,20 @@ export class LanguageModelStatsService
 					requestCount: 0,
 					tokenCount: 0,
 				};
+
 				extensionStats.participants.push(participantStats);
 			}
+
 			participantStats.requestCount++;
+
 			participantStats.tokenCount += tokenCount ?? 0;
 		} else {
 			extensionStats.requestCount++;
+
 			extensionStats.tokenCount += tokenCount ?? 0;
 		}
 	}
+
 	private async read(model: string): Promise<LanguageModelStats> {
 		try {
 			const value = this._storageService.get(
@@ -205,8 +238,10 @@ export class LanguageModelStatsService
 		} catch (error) {
 			// ignore
 		}
+
 		return { extensions: [] };
 	}
+
 	private getModel(key: string): string | undefined {
 		if (
 			key.startsWith(
@@ -217,11 +252,14 @@ export class LanguageModelStatsService
 				LanguageModelStatsService.MODEL_STATS_STORAGE_KEY_PREFIX.length,
 			);
 		}
+
 		return undefined;
 	}
+
 	private getKey(model: string): string {
 		return `${LanguageModelStatsService.MODEL_STATS_STORAGE_KEY_PREFIX}${model}`;
 	}
+
 	private getAccessKey(model: string): string {
 		return `${LanguageModelStatsService.MODEL_ACCESS_STORAGE_KEY_PREFIX}${model}`;
 	}

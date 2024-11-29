@@ -118,14 +118,18 @@ class AuthenticationContribution
 		private readonly _authenticationService: IAuthenticationService,
 	) {
 		super();
+
 		this._register(codeExchangeProxyCommand);
+
 		this._register(extensionFeature);
 
 		// Clear the placeholder menu item if there are already providers registered.
 		if (_authenticationService.getProviderIds().length) {
 			this._clearPlaceholderMenuItem();
 		}
+
 		this._registerHandlers();
+
 		this._registerActions();
 	}
 
@@ -137,6 +141,7 @@ class AuthenticationContribution
 				},
 			),
 		);
+
 		this._register(
 			this._authenticationService.onDidUnregisterAuthenticationProvider(
 				(_e) => {
@@ -159,9 +164,11 @@ class AuthenticationContribution
 
 	private _registerActions(): void {
 		this._register(registerAction2(SignOutOfAccountAction));
+
 		this._register(
 			registerAction2(ManageTrustedExtensionsForAccountAction),
 		);
+
 		this._register(
 			registerAction2(ManageAccountPreferencesForExtensionAction),
 		);
@@ -169,6 +176,7 @@ class AuthenticationContribution
 
 	private _clearPlaceholderMenuItem(): void {
 		this._placeholderMenuItem?.dispose();
+
 		this._placeholderMenuItem = undefined;
 	}
 }

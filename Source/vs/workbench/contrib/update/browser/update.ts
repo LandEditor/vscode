@@ -102,6 +102,7 @@ export function showReleaseNotesInEditor(
 		releaseNotesManager =
 			instantiationService.createInstance(ReleaseNotesManager);
 	}
+
 	return releaseNotesManager.show(version, useCurrentFile);
 }
 async function openLatestReleaseNotesInBrowser(accessor: ServicesAccessor) {
@@ -111,6 +112,7 @@ async function openLatestReleaseNotesInBrowser(accessor: ServicesAccessor) {
 
 	if (productService.releaseNotesUrl) {
 		const uri = URI.parse(productService.releaseNotesUrl);
+
 		await openerService.open(uri);
 	} else {
 		throw new Error(
@@ -139,7 +141,9 @@ async function showReleaseNotes(accessor: ServicesAccessor, version: string) {
 }
 interface IVersion {
 	major: number;
+
 	minor: number;
+
 	patch: number;
 }
 function parseVersion(version: string): IVersion | undefined {
@@ -148,6 +152,7 @@ function parseVersion(version: string): IVersion | undefined {
 	if (!match) {
 		return undefined;
 	}
+
 	return {
 		major: parseInt(match[1]),
 		minor: parseInt(match[2]),
@@ -183,20 +188,25 @@ export class ProductContribution implements IWorkbenchContribution {
 		if (productService.releaseNotesUrl) {
 			const releaseNotesUrlKey =
 				RELEASE_NOTES_URL.bindTo(contextKeyService);
+
 			releaseNotesUrlKey.set(productService.releaseNotesUrl);
 		}
+
 		if (productService.downloadUrl) {
 			const downloadUrlKey = DOWNLOAD_URL.bindTo(contextKeyService);
 
 			downloadUrlKey.set(productService.downloadUrl);
 		}
+
 		if (isWeb) {
 			return;
 		}
+
 		hostService.hadLastFocus().then(async (hadLastFocus) => {
 			if (!hadLastFocus) {
 				return;
 			}
+
 			const lastVersion = parseVersion(
 				storageService.get(
 					ProductContribution.KEY,
@@ -243,6 +253,7 @@ export class ProductContribution implements IWorkbenchContribution {
 								),
 								run: () => {
 									const uri = URI.parse(releaseNotesUrl);
+
 									openerService.open(uri);
 								},
 							},
@@ -250,6 +261,7 @@ export class ProductContribution implements IWorkbenchContribution {
 					);
 				});
 			}
+
 			storageService.store(
 				ProductContribution.KEY,
 				productService.version,
@@ -264,8 +276,11 @@ export class UpdateContribution
 	implements IWorkbenchContribution
 {
 	private state: UpdateState;
+
 	private readonly badgeDisposable = this._register(new MutableDisposable());
+
 	private updateStateContextKey: IContextKey<string>;
+
 	private majorMinorUpdateAvailableContextKey: IContextKey<boolean>;
 
 	constructor(
@@ -293,15 +308,20 @@ export class UpdateContribution
 		private readonly hostService: IHostService,
 	) {
 		super();
+
 		this.state = updateService.state;
+
 		this.updateStateContextKey = CONTEXT_UPDATE_STATE.bindTo(
 			this.contextKeyService,
 		);
+
 		this.majorMinorUpdateAvailableContextKey =
 			MAJOR_MINOR_UPDATE_AVAILABLE.bindTo(this.contextKeyService);
+
 		this._register(
 			updateService.onStateChange(this.onUpdateStateChange, this),
 		);
+
 		this.onUpdateStateChange(this.updateService.state);
 		/*
         The `update/lastKnownVersion` and `update/updateNotificationTime` storage keys are used in
@@ -322,13 +342,16 @@ export class UpdateContribution
 				"update/lastKnownVersion",
 				StorageScope.APPLICATION,
 			);
+
 			this.storageService.remove(
 				"update/updateNotificationTime",
 				StorageScope.APPLICATION,
 			);
 		}
+
 		this.registerGlobalActivityActions();
 	}
+
 	private async onUpdateStateChange(state: UpdateState): Promise<void> {
 		this.updateStateContextKey.set(state.type);
 
@@ -360,6 +383,7 @@ export class UpdateContribution
 						neverShowAgain: { id: "no-updates-running-as-admin" },
 					});
 				}
+
 				break;
 
 			case StateType.Idle:
@@ -372,6 +396,7 @@ export class UpdateContribution
 				) {
 					this.onUpdateNotAvailable();
 				}
+
 				break;
 
 			case StateType.AvailableForDownload:
@@ -393,6 +418,7 @@ export class UpdateContribution
 					);
 
 					const nextVersion = parseVersion(productVersion);
+
 					this.majorMinorUpdateAvailableContextKey.set(
 						Boolean(
 							currentVersion &&
@@ -400,11 +426,14 @@ export class UpdateContribution
 								isMajorMinorUpdate(currentVersion, nextVersion),
 						),
 					);
+
 					this.onUpdateReady(state.update);
 				}
+
 				break;
 			}
 		}
+
 		let badge: IBadge | undefined = undefined;
 
 		let priority: number | undefined = undefined;
@@ -425,42 +454,51 @@ export class UpdateContribution
 			badge = new ProgressBadge(() =>
 				nls.localize("checkingForUpdates", "Checking for Updates..."),
 			);
+
 			priority = 1;
 		} else if (state.type === StateType.Downloading) {
 			badge = new ProgressBadge(() =>
 				nls.localize("downloading", "Downloading..."),
 			);
+
 			priority = 1;
 		} else if (state.type === StateType.Updating) {
 			badge = new ProgressBadge(() =>
 				nls.localize("updating", "Updating..."),
 			);
+
 			priority = 1;
 		}
+
 		this.badgeDisposable.clear();
 
 		if (badge) {
 			this.badgeDisposable.value =
 				this.activityService.showGlobalActivity({ badge, priority });
 		}
+
 		this.state = state;
 	}
+
 	private onError(error: string): void {
 		if (
 			/The request timed out|The network connection was lost/i.test(error)
 		) {
 			return;
 		}
+
 		error = error.replace(
 			/See https:\/\/github\.com\/Squirrel\/Squirrel\.Mac\/issues\/182 for more information/,
 			"This might mean the application was put on quarantine by macOS. See [this link](https://github.com/microsoft/vscode/issues/7426#issuecomment-425093469) for more information",
 		);
+
 		this.notificationService.notify({
 			severity: Severity.Error,
 			message: error,
 			source: nls.localize("update service", "Update Service"),
 		});
 	}
+
 	private onUpdateNotAvailable(): void {
 		this.dialogService.info(
 			nls.localize(
@@ -474,11 +512,13 @@ export class UpdateContribution
 		if (!this.shouldShowNotification()) {
 			return;
 		}
+
 		const productVersion = update.productVersion;
 
 		if (!productVersion) {
 			return;
 		}
+
 		this.notificationService.prompt(
 			severity.Info,
 			nls.localize(
@@ -510,6 +550,7 @@ export class UpdateContribution
 		if (isMacintosh) {
 			return;
 		}
+
 		if (
 			this.configurationService.getValue(
 				"update.enableWindowsBackgroundUpdates",
@@ -518,14 +559,17 @@ export class UpdateContribution
 		) {
 			return;
 		}
+
 		if (!this.shouldShowNotification()) {
 			return;
 		}
+
 		const productVersion = update.productVersion;
 
 		if (!productVersion) {
 			return;
 		}
+
 		this.notificationService.prompt(
 			severity.Info,
 			nls.localize(
@@ -562,6 +606,7 @@ export class UpdateContribution
 		) {
 			return;
 		}
+
 		const actions = [
 			{
 				label: nls.localize("updateNow", "Update Now"),
@@ -597,6 +642,7 @@ export class UpdateContribution
 			{ sticky: true },
 		);
 	}
+
 	private shouldShowNotification(): boolean {
 		const currentVersion = this.productService.commit;
 
@@ -614,6 +660,7 @@ export class UpdateContribution
 				StorageScope.APPLICATION,
 				StorageTarget.MACHINE,
 			);
+
 			this.storageService.store(
 				"update/updateNotificationTime",
 				currentMillis,
@@ -621,6 +668,7 @@ export class UpdateContribution
 				StorageTarget.MACHINE,
 			);
 		}
+
 		const updateNotificationMillis = this.storageService.getNumber(
 			"update/updateNotificationTime",
 			StorageScope.APPLICATION,
@@ -632,10 +680,12 @@ export class UpdateContribution
 
 		return diffDays > 5;
 	}
+
 	private registerGlobalActivityActions(): void {
 		CommandsRegistry.registerCommand("update.check", () =>
 			this.updateService.checkForUpdates(true),
 		);
+
 		MenuRegistry.appendMenuItem(MenuId.GlobalActivity, {
 			group: "7_update",
 			command: {
@@ -644,7 +694,9 @@ export class UpdateContribution
 			},
 			when: CONTEXT_UPDATE_STATE.isEqualTo(StateType.Idle),
 		});
+
 		CommandsRegistry.registerCommand("update.checking", () => {});
+
 		MenuRegistry.appendMenuItem(MenuId.GlobalActivity, {
 			group: "7_update",
 			command: {
@@ -657,9 +709,11 @@ export class UpdateContribution
 			},
 			when: CONTEXT_UPDATE_STATE.isEqualTo(StateType.CheckingForUpdates),
 		});
+
 		CommandsRegistry.registerCommand("update.downloadNow", () =>
 			this.updateService.downloadUpdate(),
 		);
+
 		MenuRegistry.appendMenuItem(MenuId.GlobalActivity, {
 			group: "7_update",
 			command: {
@@ -670,7 +724,9 @@ export class UpdateContribution
 				StateType.AvailableForDownload,
 			),
 		});
+
 		CommandsRegistry.registerCommand("update.downloading", () => {});
+
 		MenuRegistry.appendMenuItem(MenuId.GlobalActivity, {
 			group: "7_update",
 			command: {
@@ -683,9 +739,11 @@ export class UpdateContribution
 			},
 			when: CONTEXT_UPDATE_STATE.isEqualTo(StateType.Downloading),
 		});
+
 		CommandsRegistry.registerCommand("update.install", () =>
 			this.updateService.applyUpdate(),
 		);
+
 		MenuRegistry.appendMenuItem(MenuId.GlobalActivity, {
 			group: "7_update",
 			command: {
@@ -697,7 +755,9 @@ export class UpdateContribution
 			},
 			when: CONTEXT_UPDATE_STATE.isEqualTo(StateType.Downloaded),
 		});
+
 		CommandsRegistry.registerCommand("update.updating", () => {});
+
 		MenuRegistry.appendMenuItem(MenuId.GlobalActivity, {
 			group: "7_update",
 			command: {
@@ -715,6 +775,7 @@ export class UpdateContribution
 					if (this.updateService.state.type !== StateType.Ready) {
 						return;
 					}
+
 					const productVersion =
 						this.updateService.state.update.productVersion;
 
@@ -725,6 +786,7 @@ export class UpdateContribution
 					}
 				},
 			);
+
 			MenuRegistry.appendMenuItem(MenuId.GlobalActivity, {
 				group: "7_update",
 				order: 1,
@@ -741,9 +803,11 @@ export class UpdateContribution
 				),
 			});
 		}
+
 		CommandsRegistry.registerCommand("update.restart", () =>
 			this.updateService.quitAndInstall(),
 		);
+
 		MenuRegistry.appendMenuItem(MenuId.GlobalActivity, {
 			group: "7_update",
 			order: 2,
@@ -753,6 +817,7 @@ export class UpdateContribution
 			},
 			when: CONTEXT_UPDATE_STATE.isEqualTo(StateType.Ready),
 		});
+
 		CommandsRegistry.registerCommand("_update.state", () => {
 			return this.state;
 		});
@@ -769,8 +834,10 @@ export class SwitchProductQualityContribution
 		private readonly environmentService: IBrowserWorkbenchEnvironmentService,
 	) {
 		super();
+
 		this.registerGlobalActivityActions();
 	}
+
 	private registerGlobalActivityActions(): void {
 		const quality = this.productService.quality;
 
@@ -786,6 +853,7 @@ export class SwitchProductQualityContribution
 			const commandId = `update.switchQuality.${newQuality}`;
 
 			const isSwitchingToInsiders = newQuality === "insider";
+
 			this._register(
 				registerAction2(
 					class SwitchQuality extends Action2 {
@@ -809,6 +877,7 @@ export class SwitchProductQualityContribution
 								},
 							});
 						}
+
 						async run(accessor: ServicesAccessor): Promise<void> {
 							const dialogService = accessor.get(IDialogService);
 
@@ -863,6 +932,7 @@ export class SwitchProductQualityContribution
 									if (!userDataSyncStoreType) {
 										return;
 									}
+
 									storageService.store(
 										selectSettingsSyncServiceDialogShownKey,
 										true,
@@ -877,6 +947,7 @@ export class SwitchProductQualityContribution
 										);
 									}
 								}
+
 								const res = await dialogService.confirm({
 									type: "info",
 									message: nls.localize(
@@ -929,7 +1000,9 @@ export class SwitchProductQualityContribution
 											userDataSyncWorkbenchService.synchroniseUserDataSyncStoreType(),
 										);
 									}
+
 									await Promises.settled(promises);
+
 									productQualityChangeHandler(newQuality);
 								} else {
 									// Reset
@@ -944,6 +1017,7 @@ export class SwitchProductQualityContribution
 								notificationService.error(error);
 							}
 						}
+
 						private async selectSettingsSyncService(
 							dialogService: IDialogService,
 						): Promise<UserDataSyncStoreType | undefined> {

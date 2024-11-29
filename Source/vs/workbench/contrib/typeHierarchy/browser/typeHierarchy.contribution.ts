@@ -82,18 +82,26 @@ function sanitizedDirection(candidate: string): TypeHierarchyDirection {
 }
 class TypeHierarchyController implements IEditorContribution {
 	static readonly Id = "typeHierarchy";
+
 	static get(editor: ICodeEditor): TypeHierarchyController | null {
 		return editor.getContribution<TypeHierarchyController>(
 			TypeHierarchyController.Id,
 		);
 	}
+
 	private static readonly _storageDirectionKey =
 		"typeHierarchy/defaultDirection";
+
 	private readonly _ctxHasProvider: IContextKey<boolean>;
+
 	private readonly _ctxIsVisible: IContextKey<boolean>;
+
 	private readonly _ctxDirection: IContextKey<string>;
+
 	private readonly _disposables = new DisposableStore();
+
 	private readonly _sessionDisposables = new DisposableStore();
+
 	private _widget?: TypeHierarchyTreePeekWidget;
 
 	constructor(
@@ -110,12 +118,15 @@ class TypeHierarchyController implements IEditorContribution {
 		this._ctxHasProvider = _ctxHasTypeHierarchyProvider.bindTo(
 			this._contextKeyService,
 		);
+
 		this._ctxIsVisible = _ctxTypeHierarchyVisible.bindTo(
 			this._contextKeyService,
 		);
+
 		this._ctxDirection = _ctxTypeHierarchyDirection.bindTo(
 			this._contextKeyService,
 		);
+
 		this._disposables.add(
 			Event.any<any>(
 				_editor.onDidChangeModel,
@@ -128,8 +139,10 @@ class TypeHierarchyController implements IEditorContribution {
 				);
 			}),
 		);
+
 		this._disposables.add(this._sessionDisposables);
 	}
+
 	dispose(): void {
 		this._disposables.dispose();
 	}
@@ -140,6 +153,7 @@ class TypeHierarchyController implements IEditorContribution {
 		if (!this._editor.hasModel()) {
 			return;
 		}
+
 		const document = this._editor.getModel();
 
 		const position = this._editor.getPosition();
@@ -147,6 +161,7 @@ class TypeHierarchyController implements IEditorContribution {
 		if (!TypeHierarchyProviderRegistry.has(document)) {
 			return;
 		}
+
 		const cts = new CancellationTokenSource();
 
 		const model = TypeHierarchyModel.create(document, position, cts.token);
@@ -158,8 +173,10 @@ class TypeHierarchyController implements IEditorContribution {
 				TypeHierarchyDirection.Subtypes,
 			),
 		);
+
 		this._showTypeHierarchyWidget(position, direction, model, cts);
 	}
+
 	private _showTypeHierarchyWidget(
 		position: Position,
 		direction: TypeHierarchyDirection,
@@ -167,21 +184,27 @@ class TypeHierarchyController implements IEditorContribution {
 		cts: CancellationTokenSource,
 	) {
 		this._ctxIsVisible.set(true);
+
 		this._ctxDirection.set(direction);
+
 		Event.any<any>(
 			this._editor.onDidChangeModel,
 			this._editor.onDidChangeModelLanguage,
 		)(this.endTypeHierarchy, this, this._sessionDisposables);
+
 		this._widget = this._instantiationService.createInstance(
 			TypeHierarchyTreePeekWidget,
 			this._editor,
 			position,
 			direction,
 		);
+
 		this._widget.showLoading();
+
 		this._sessionDisposables.add(
 			this._widget.onDidClose(() => {
 				this.endTypeHierarchy();
+
 				this._storageService.store(
 					TypeHierarchyController._storageDirectionKey,
 					this._widget!.direction,
@@ -190,19 +213,24 @@ class TypeHierarchyController implements IEditorContribution {
 				);
 			}),
 		);
+
 		this._sessionDisposables.add({
 			dispose() {
 				cts.dispose(true);
 			},
 		});
+
 		this._sessionDisposables.add(this._widget);
+
 		model
 			.then((model) => {
 				if (cts.token.isCancellationRequested) {
 					return; // nothing
 				}
+
 				if (model) {
 					this._sessionDisposables.add(model);
+
 					this._widget!.showModel(model);
 				} else {
 					this._widget!.showMessage(
@@ -216,15 +244,18 @@ class TypeHierarchyController implements IEditorContribution {
 
 					return;
 				}
+
 				this._widget!.showMessage(
 					localize("error", "Failed to show type hierarchy"),
 				);
 			});
 	}
+
 	async startTypeHierarchyFromTypeHierarchy(): Promise<void> {
 		if (!this._widget) {
 			return;
 		}
+
 		const model = this._widget.getModel();
 
 		const typeItem = this._widget.getFocused();
@@ -232,6 +263,7 @@ class TypeHierarchyController implements IEditorContribution {
 		if (!typeItem || !model) {
 			return;
 		}
+
 		const newEditor = await this._editorService.openCodeEditor(
 			{ resource: typeItem.item.uri },
 			this._editor,
@@ -240,8 +272,11 @@ class TypeHierarchyController implements IEditorContribution {
 		if (!newEditor) {
 			return;
 		}
+
 		const newModel = model.fork(typeItem.item);
+
 		this._sessionDisposables.clear();
+
 		TypeHierarchyController.get(newEditor)?._showTypeHierarchyWidget(
 			Range.lift(newModel.root.selectionRange).getStartPosition(),
 			this._widget.direction,
@@ -249,17 +284,24 @@ class TypeHierarchyController implements IEditorContribution {
 			new CancellationTokenSource(),
 		);
 	}
+
 	showSupertypes(): void {
 		this._widget?.updateDirection(TypeHierarchyDirection.Supertypes);
+
 		this._ctxDirection.set(TypeHierarchyDirection.Supertypes);
 	}
+
 	showSubtypes(): void {
 		this._widget?.updateDirection(TypeHierarchyDirection.Subtypes);
+
 		this._ctxDirection.set(TypeHierarchyDirection.Subtypes);
 	}
+
 	endTypeHierarchy(): void {
 		this._sessionDisposables.clear();
+
 		this._ctxIsVisible.set(false);
+
 		this._editor.focus();
 	}
 }
@@ -291,6 +333,7 @@ registerAction2(
 				f1: true,
 			});
 		}
+
 		async runEditorCommand(
 			_accessor: ServicesAccessor,
 			editor: ICodeEditor,
@@ -328,6 +371,7 @@ registerAction2(
 				},
 			});
 		}
+
 		runEditorCommand(_accessor: ServicesAccessor, editor: ICodeEditor) {
 			return TypeHierarchyController.get(editor)?.showSupertypes();
 		}
@@ -359,6 +403,7 @@ registerAction2(
 				},
 			});
 		}
+
 		runEditorCommand(_accessor: ServicesAccessor, editor: ICodeEditor) {
 			return TypeHierarchyController.get(editor)?.showSubtypes();
 		}
@@ -380,6 +425,7 @@ registerAction2(
 				},
 			});
 		}
+
 		async runEditorCommand(
 			_accessor: ServicesAccessor,
 			editor: ICodeEditor,
@@ -409,6 +455,7 @@ registerAction2(
 				},
 			});
 		}
+
 		runEditorCommand(
 			_accessor: ServicesAccessor,
 			editor: ICodeEditor,

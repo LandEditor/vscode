@@ -25,6 +25,7 @@ export function getReindentEditOperations(
 		// Model is empty
 		return [];
 	}
+
 	const indentationRulesSupport =
 		languageConfigurationService.getLanguageConfiguration(
 			model.getLanguageId(),
@@ -33,22 +34,27 @@ export function getReindentEditOperations(
 	if (!indentationRulesSupport) {
 		return [];
 	}
+
 	const processedIndentRulesSupport = new ProcessedIndentRulesSupport(
 		model,
 		indentationRulesSupport,
 		languageConfigurationService,
 	);
+
 	endLineNumber = Math.min(endLineNumber, model.getLineCount());
 	// Skip `unIndentedLinePattern` lines
 	while (startLineNumber <= endLineNumber) {
 		if (!processedIndentRulesSupport.shouldIgnore(startLineNumber)) {
 			break;
 		}
+
 		startLineNumber++;
 	}
+
 	if (startLineNumber > endLineNumber - 1) {
 		return [];
 	}
+
 	const { tabSize, indentSize, insertSpaces } = model.getOptions();
 
 	const shiftIndent = (indentation: string, count?: number) => {
@@ -87,22 +93,27 @@ export function getReindentEditOperations(
 
 	if (processedIndentRulesSupport.shouldIncrease(startLineNumber)) {
 		idealIndentForNextLine = shiftIndent(idealIndentForNextLine);
+
 		globalIndent = shiftIndent(globalIndent);
 	} else if (
 		processedIndentRulesSupport.shouldIndentNextLine(startLineNumber)
 	) {
 		idealIndentForNextLine = shiftIndent(idealIndentForNextLine);
 	}
+
 	startLineNumber++;
 	// Calculate indentation adjustment for all following lines
 	for (
 		let lineNumber = startLineNumber;
+
 		lineNumber <= endLineNumber;
+
 		lineNumber++
 	) {
 		if (doesLineStartWithString(model, lineNumber)) {
 			continue;
 		}
+
 		const text = model.getLineContent(lineNumber);
 
 		const oldIndentation = strings.getLeadingWhitespace(text);
@@ -116,8 +127,10 @@ export function getReindentEditOperations(
 			)
 		) {
 			idealIndentForNextLine = unshiftIndent(idealIndentForNextLine);
+
 			globalIndent = unshiftIndent(globalIndent);
 		}
+
 		if (oldIndentation !== idealIndentForNextLine) {
 			indentEdits.push(
 				EditOperation.replaceMove(
@@ -147,6 +160,7 @@ export function getReindentEditOperations(
 			)
 		) {
 			globalIndent = shiftIndent(globalIndent);
+
 			idealIndentForNextLine = globalIndent;
 		} else if (
 			processedIndentRulesSupport.shouldIndentNextLine(
@@ -159,6 +173,7 @@ export function getReindentEditOperations(
 			idealIndentForNextLine = globalIndent;
 		}
 	}
+
 	return indentEdits;
 }
 function doesLineStartWithString(
@@ -168,6 +183,7 @@ function doesLineStartWithString(
 	if (!model.tokenization.isCheapToTokenize(lineNumber)) {
 		return false;
 	}
+
 	const lineTokens = model.tokenization.getLineTokens(lineNumber);
 
 	return lineTokens.getStandardTokenType(0) === StandardTokenType.String;

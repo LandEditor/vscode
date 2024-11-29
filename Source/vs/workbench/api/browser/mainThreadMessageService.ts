@@ -52,6 +52,7 @@ export class MainThreadMessageService implements MainThreadMessageServiceShape {
 			},
 		);
 	}
+
 	dispose(): void {
 		this.extensionsListener.dispose();
 	}
@@ -61,7 +62,9 @@ export class MainThreadMessageService implements MainThreadMessageServiceShape {
 		options: MainThreadMessageOptions,
 		commands: {
 			title: string;
+
 			isCloseAffordance: boolean;
+
 			handle: number;
 		}[],
 	): Promise<number | undefined> {
@@ -77,12 +80,15 @@ export class MainThreadMessageService implements MainThreadMessageServiceShape {
 			return this._showMessage(severity, message, commands, options);
 		}
 	}
+
 	private _showMessage(
 		severity: Severity,
 		message: string,
 		commands: {
 			title: string;
+
 			isCloseAffordance: boolean;
+
 			handle: number;
 		}[],
 		options: MainThreadMessageOptions,
@@ -109,9 +115,11 @@ export class MainThreadMessageService implements MainThreadMessageServiceShape {
 					id: options.source.identifier.value,
 				};
 			}
+
 			if (!source) {
 				source = nls.localize("defaultSource", "Extension");
 			}
+
 			const secondaryActions: IAction[] = [];
 
 			if (options.source) {
@@ -131,6 +139,7 @@ export class MainThreadMessageService implements MainThreadMessageServiceShape {
 					}),
 				);
 			}
+
 			const messageHandle = this._notificationService.notify({
 				severity,
 				message,
@@ -147,13 +156,16 @@ export class MainThreadMessageService implements MainThreadMessageServiceShape {
 			});
 		});
 	}
+
 	private async _showModalMessage(
 		severity: Severity,
 		message: string,
 		detail: string | undefined,
 		commands: {
 			title: string;
+
 			isCloseAffordance: boolean;
+
 			handle: number;
 		}[],
 		useCustom?: boolean,
@@ -175,6 +187,7 @@ export class MainThreadMessageService implements MainThreadMessageServiceShape {
 				buttons.push(button);
 			}
 		}
+
 		if (!cancelButton) {
 			if (buttons.length > 0) {
 				cancelButton = {
@@ -191,6 +204,7 @@ export class MainThreadMessageService implements MainThreadMessageServiceShape {
 				};
 			}
 		}
+
 		const { result } = await this._dialogService.prompt({
 			type: severity,
 			message,

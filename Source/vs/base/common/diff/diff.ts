@@ -8,6 +8,7 @@ import { DiffChange } from "./diffChange.js";
 
 export class StringDiffSequence implements ISequence {
 	constructor(private source: string) {}
+
 	getElements(): Int32Array | number[] | string[] {
 		const source = this.source;
 
@@ -16,6 +17,7 @@ export class StringDiffSequence implements ISequence {
 		for (let i = 0, len = source.length; i < len; i++) {
 			characters[i] = source.charCodeAt(i);
 		}
+
 		return characters;
 	}
 }
@@ -61,6 +63,7 @@ export interface IContinueProcessingPredicate {
 }
 export interface IDiffResult {
 	quitEarly: boolean;
+
 	changes: IDiffChange[];
 }
 //
@@ -101,6 +104,7 @@ class MyArray {
 				sourceArray[sourceIndex + i];
 		}
 	}
+
 	public static Copy2(
 		sourceArray: Int32Array,
 		sourceIndex: number,
@@ -138,18 +142,26 @@ const enum LocalConstants {
  */
 class DiffChangeHelper {
 	private m_changes: DiffChange[];
+
 	private m_originalStart: number;
+
 	private m_modifiedStart: number;
+
 	private m_originalCount: number;
+
 	private m_modifiedCount: number;
 	/**
 	 * Constructs a new DiffChangeHelper for the given DiffSequences.
 	 */
 	constructor() {
 		this.m_changes = [];
+
 		this.m_originalStart = Constants.MAX_SAFE_SMALL_INTEGER;
+
 		this.m_modifiedStart = Constants.MAX_SAFE_SMALL_INTEGER;
+
 		this.m_originalCount = 0;
+
 		this.m_modifiedCount = 0;
 	}
 	/**
@@ -170,8 +182,11 @@ class DiffChangeHelper {
 		}
 		// Reset for the next change
 		this.m_originalCount = 0;
+
 		this.m_modifiedCount = 0;
+
 		this.m_originalStart = Constants.MAX_SAFE_SMALL_INTEGER;
+
 		this.m_modifiedStart = Constants.MAX_SAFE_SMALL_INTEGER;
 	}
 	/**
@@ -184,7 +199,9 @@ class DiffChangeHelper {
 	public AddOriginalElement(originalIndex: number, modifiedIndex: number) {
 		// The 'true' start index is the smallest of the ones we've seen
 		this.m_originalStart = Math.min(this.m_originalStart, originalIndex);
+
 		this.m_modifiedStart = Math.min(this.m_modifiedStart, modifiedIndex);
+
 		this.m_originalCount++;
 	}
 	/**
@@ -200,7 +217,9 @@ class DiffChangeHelper {
 	): void {
 		// The 'true' start index is the smallest of the ones we've seen
 		this.m_originalStart = Math.min(this.m_originalStart, originalIndex);
+
 		this.m_modifiedStart = Math.min(this.m_modifiedStart, modifiedIndex);
+
 		this.m_modifiedCount++;
 	}
 	/**
@@ -211,6 +230,7 @@ class DiffChangeHelper {
 			// Finish up on whatever is left
 			this.MarkNextChange();
 		}
+
 		return this.m_changes;
 	}
 	/**
@@ -221,6 +241,7 @@ class DiffChangeHelper {
 			// Finish up on whatever is left
 			this.MarkNextChange();
 		}
+
 		this.m_changes.reverse();
 
 		return this.m_changes;
@@ -232,14 +253,23 @@ class DiffChangeHelper {
  */
 export class LcsDiff {
 	private readonly ContinueProcessingPredicate: IContinueProcessingPredicate | null;
+
 	private readonly _originalSequence: ISequence;
+
 	private readonly _modifiedSequence: ISequence;
+
 	private readonly _hasStrings: boolean;
+
 	private readonly _originalStringElements: string[];
+
 	private readonly _originalElementsOrHash: Int32Array;
+
 	private readonly _modifiedStringElements: string[];
+
 	private readonly _modifiedElementsOrHash: Int32Array;
+
 	private m_forwardHistory: Int32Array[];
+
 	private m_reverseHistory: Int32Array[];
 	/**
 	 * Constructs the DiffFinder
@@ -250,7 +280,9 @@ export class LcsDiff {
 		continueProcessingPredicate: IContinueProcessingPredicate | null = null,
 	) {
 		this.ContinueProcessingPredicate = continueProcessingPredicate;
+
 		this._originalSequence = originalSequence;
+
 		this._modifiedSequence = modifiedSequence;
 
 		const [
@@ -264,19 +296,28 @@ export class LcsDiff {
 			modifiedElementsOrHash,
 			modifiedHasStrings,
 		] = LcsDiff._getElements(modifiedSequence);
+
 		this._hasStrings = originalHasStrings && modifiedHasStrings;
+
 		this._originalStringElements = originalStringElements;
+
 		this._originalElementsOrHash = originalElementsOrHash;
+
 		this._modifiedStringElements = modifiedStringElements;
+
 		this._modifiedElementsOrHash = modifiedElementsOrHash;
+
 		this.m_forwardHistory = [];
+
 		this.m_reverseHistory = [];
 	}
+
 	private static _isStringArray(
 		arr: Int32Array | number[] | string[],
 	): arr is string[] {
 		return arr.length > 0 && typeof arr[0] === "string";
 	}
+
 	private static _getElements(
 		sequence: ISequence,
 	): [string[], Int32Array, boolean] {
@@ -288,13 +329,17 @@ export class LcsDiff {
 			for (let i = 0, len = elements.length; i < len; i++) {
 				hashes[i] = stringHash(elements[i], 0);
 			}
+
 			return [elements, hashes, true];
 		}
+
 		if (elements instanceof Int32Array) {
 			return [[], elements, false];
 		}
+
 		return [[], new Int32Array(elements), false];
 	}
+
 	private ElementsAreEqual(originalIndex: number, newIndex: number): boolean {
 		if (
 			this._originalElementsOrHash[originalIndex] !==
@@ -302,11 +347,13 @@ export class LcsDiff {
 		) {
 			return false;
 		}
+
 		return this._hasStrings
 			? this._originalStringElements[originalIndex] ===
 					this._modifiedStringElements[newIndex]
 			: true;
 	}
+
 	private ElementsAreStrictEqual(
 		originalIndex: number,
 		newIndex: number,
@@ -314,6 +361,7 @@ export class LcsDiff {
 		if (!this.ElementsAreEqual(originalIndex, newIndex)) {
 			return false;
 		}
+
 		const originalElement = LcsDiff._getStrictElement(
 			this._originalSequence,
 			originalIndex,
@@ -326,6 +374,7 @@ export class LcsDiff {
 
 		return originalElement === modifiedElement;
 	}
+
 	private static _getStrictElement(
 		sequence: ISequence,
 		index: number,
@@ -333,8 +382,10 @@ export class LcsDiff {
 		if (typeof sequence.getStrictElement === "function") {
 			return sequence.getStrictElement(index);
 		}
+
 		return null;
 	}
+
 	private OriginalElementsAreEqual(index1: number, index2: number): boolean {
 		if (
 			this._originalElementsOrHash[index1] !==
@@ -342,11 +393,13 @@ export class LcsDiff {
 		) {
 			return false;
 		}
+
 		return this._hasStrings
 			? this._originalStringElements[index1] ===
 					this._originalStringElements[index2]
 			: true;
 	}
+
 	private ModifiedElementsAreEqual(index1: number, index2: number): boolean {
 		if (
 			this._modifiedElementsOrHash[index1] !==
@@ -354,11 +407,13 @@ export class LcsDiff {
 		) {
 			return false;
 		}
+
 		return this._hasStrings
 			? this._modifiedStringElements[index1] ===
 					this._modifiedStringElements[index2]
 			: true;
 	}
+
 	public ComputeDiff(pretty: boolean): IDiffResult {
 		return this._ComputeDiff(
 			0,
@@ -396,6 +451,7 @@ export class LcsDiff {
 			// of diffs have been computed
 			changes = this.PrettifyChanges(changes);
 		}
+
 		return {
 			quitEarly: quitEarlyArr[0],
 			changes: changes,
@@ -421,6 +477,7 @@ export class LcsDiff {
 			this.ElementsAreEqual(originalStart, modifiedStart)
 		) {
 			originalStart++;
+
 			modifiedStart++;
 		}
 		// Find the end of the differences
@@ -430,6 +487,7 @@ export class LcsDiff {
 			this.ElementsAreEqual(originalEnd, modifiedEnd)
 		) {
 			originalEnd--;
+
 			modifiedEnd--;
 		}
 		// In the special case where we either have all insertions or all deletions or the sequences are identical
@@ -469,6 +527,7 @@ export class LcsDiff {
 					originalStart === originalEnd + 1,
 					"originalStart should only be one more than originalEnd",
 				);
+
 				Debug.Assert(
 					modifiedStart === modifiedEnd + 1,
 					"modifiedStart should only be one more than modifiedEnd",
@@ -476,6 +535,7 @@ export class LcsDiff {
 				// Identical sequences - No differences
 				changes = [];
 			}
+
 			return changes;
 		}
 		// This problem can be solved using the Divide-And-Conquer technique.
@@ -536,6 +596,7 @@ export class LcsDiff {
 					),
 				];
 			}
+
 			return this.ConcatenateChanges(leftChanges, rightChanges);
 		}
 		// If we hit here, we quit early, and so can't return anything meaningful
@@ -548,6 +609,7 @@ export class LcsDiff {
 			),
 		];
 	}
+
 	private WALKTRACE(
 		diagonalForwardBase: number,
 		diagonalForwardStart: number,
@@ -596,38 +658,49 @@ export class LcsDiff {
 			) {
 				// Vertical line (the element is an insert)
 				originalIndex = forwardPoints[diagonal + 1];
+
 				modifiedIndex =
 					originalIndex - diagonalRelative - diagonalForwardOffset;
 
 				if (originalIndex < lastOriginalIndex) {
 					changeHelper.MarkNextChange();
 				}
+
 				lastOriginalIndex = originalIndex;
+
 				changeHelper.AddModifiedElement(
 					originalIndex + 1,
 					modifiedIndex,
 				);
+
 				diagonalRelative = diagonal + 1 - diagonalForwardBase; //Setup for the next iteration
 			} else {
 				// Horizontal line (the element is a deletion)
 				originalIndex = forwardPoints[diagonal - 1] + 1;
+
 				modifiedIndex =
 					originalIndex - diagonalRelative - diagonalForwardOffset;
 
 				if (originalIndex < lastOriginalIndex) {
 					changeHelper.MarkNextChange();
 				}
+
 				lastOriginalIndex = originalIndex - 1;
+
 				changeHelper.AddOriginalElement(
 					originalIndex,
 					modifiedIndex + 1,
 				);
+
 				diagonalRelative = diagonal - 1 - diagonalForwardBase; //Setup for the next iteration
 			}
+
 			if (historyIndex >= 0) {
 				forwardPoints = this.m_forwardHistory[historyIndex];
+
 				diagonalForwardBase = forwardPoints[0]; //We stored this in the first spot
 				diagonalMin = 1;
+
 				diagonalMax = forwardPoints.length - 1;
 			}
 		} while (--historyIndex >= -1);
@@ -645,15 +718,18 @@ export class LcsDiff {
 			if (forwardChanges !== null && forwardChanges.length > 0) {
 				const lastForwardChange =
 					forwardChanges[forwardChanges.length - 1];
+
 				originalStartPoint = Math.max(
 					originalStartPoint,
 					lastForwardChange.getOriginalEnd(),
 				);
+
 				modifiedStartPoint = Math.max(
 					modifiedStartPoint,
 					lastForwardChange.getModifiedEnd(),
 				);
 			}
+
 			reverseChanges = [
 				new DiffChange(
 					originalStartPoint,
@@ -665,11 +741,16 @@ export class LcsDiff {
 		} else {
 			// Now walk backward through the reverse diagonals history
 			changeHelper = new DiffChangeHelper();
+
 			diagonalMin = diagonalReverseStart;
+
 			diagonalMax = diagonalReverseEnd;
+
 			diagonalRelative =
 				midOriginalArr[0] - midModifiedArr[0] - diagonalReverseOffset;
+
 			lastOriginalIndex = Constants.MAX_SAFE_SMALL_INTEGER;
+
 			historyIndex = deltaIsEven
 				? this.m_reverseHistory.length - 1
 				: this.m_reverseHistory.length - 2;
@@ -686,6 +767,7 @@ export class LcsDiff {
 				) {
 					// Horizontal line (the element is a deletion))
 					originalIndex = reversePoints[diagonal + 1] - 1;
+
 					modifiedIndex =
 						originalIndex -
 						diagonalRelative -
@@ -694,15 +776,19 @@ export class LcsDiff {
 					if (originalIndex > lastOriginalIndex) {
 						changeHelper.MarkNextChange();
 					}
+
 					lastOriginalIndex = originalIndex + 1;
+
 					changeHelper.AddOriginalElement(
 						originalIndex + 1,
 						modifiedIndex + 1,
 					);
+
 					diagonalRelative = diagonal + 1 - diagonalReverseBase; //Setup for the next iteration
 				} else {
 					// Vertical line (the element is an insertion)
 					originalIndex = reversePoints[diagonal - 1];
+
 					modifiedIndex =
 						originalIndex -
 						diagonalRelative -
@@ -711,17 +797,23 @@ export class LcsDiff {
 					if (originalIndex > lastOriginalIndex) {
 						changeHelper.MarkNextChange();
 					}
+
 					lastOriginalIndex = originalIndex;
+
 					changeHelper.AddModifiedElement(
 						originalIndex + 1,
 						modifiedIndex + 1,
 					);
+
 					diagonalRelative = diagonal - 1 - diagonalReverseBase; //Setup for the next iteration
 				}
+
 				if (historyIndex >= 0) {
 					reversePoints = this.m_reverseHistory[historyIndex];
+
 					diagonalReverseBase = reversePoints[0]; //We stored this in the first spot
 					diagonalMin = 1;
+
 					diagonalMax = reversePoints.length - 1;
 				}
 			} while (--historyIndex >= -1);
@@ -729,6 +821,7 @@ export class LcsDiff {
 			// are correct, but not intuitive, so we need shift them.
 			reverseChanges = changeHelper.getChanges();
 		}
+
 		return this.ConcatenateChanges(forwardChanges, reverseChanges);
 	}
 	/**
@@ -767,13 +860,16 @@ export class LcsDiff {
 		// To traverse the edit graph and produce the proper LCS, our actual
 		// start position is just outside the given boundary
 		originalStart--;
+
 		modifiedStart--;
 		// We set these up to make the compiler happy, but they will
 		// be replaced before we return with the actual recursion point
 		midOriginalArr[0] = 0;
+
 		midModifiedArr[0] = 0;
 		// Clear out the history
 		this.m_forwardHistory = [];
+
 		this.m_reverseHistory = [];
 		// Each cell in the two arrays corresponds to a diagonal in the edit graph.
 		// The integer value in the cell represents the originalIndex of the furthest
@@ -808,6 +904,7 @@ export class LcsDiff {
 		// Here we set up the start and end points as the furthest points found so far
 		// in both the forward and reverse directions, respectively
 		forwardPoints[diagonalForwardBase] = originalStart;
+
 		reversePoints[diagonalReverseBase] = originalEnd;
 		// Remember if we quit early, and thus need to do a best-effort result instead of a real result.
 		quitEarlyArr[0] = false;
@@ -820,7 +917,9 @@ export class LcsDiff {
 		//   is even and odd diagonals only when numDifferences is odd.
 		for (
 			let numDifferences = 1;
+
 			numDifferences <= maxDifferences / 2 + 1;
+
 			numDifferences++
 		) {
 			let furthestOriginalIndex = 0;
@@ -833,6 +932,7 @@ export class LcsDiff {
 				diagonalForwardBase,
 				numDiagonals,
 			);
+
 			diagonalForwardEnd = this.ClipDiagonalBound(
 				diagonalForwardBase + numDifferences,
 				numDifferences,
@@ -842,7 +942,9 @@ export class LcsDiff {
 
 			for (
 				let diagonal = diagonalForwardStart;
+
 				diagonal <= diagonalForwardEnd;
+
 				diagonal += 2
 			) {
 				// STEP 1: We extend the furthest reaching point in the present diagonal
@@ -858,6 +960,7 @@ export class LcsDiff {
 				} else {
 					originalIndex = forwardPoints[diagonal - 1] + 1;
 				}
+
 				modifiedIndex =
 					originalIndex -
 					(diagonal - diagonalForwardBase) -
@@ -872,8 +975,10 @@ export class LcsDiff {
 					this.ElementsAreEqual(originalIndex + 1, modifiedIndex + 1)
 				) {
 					originalIndex++;
+
 					modifiedIndex++;
 				}
+
 				forwardPoints[diagonal] = originalIndex;
 
 				if (
@@ -881,6 +986,7 @@ export class LcsDiff {
 					furthestOriginalIndex + furthestModifiedIndex
 				) {
 					furthestOriginalIndex = originalIndex;
+
 					furthestModifiedIndex = modifiedIndex;
 				}
 				// STEP 3: If delta is odd (overlap first happens on forward when delta is odd)
@@ -894,6 +1000,7 @@ export class LcsDiff {
 				) {
 					if (originalIndex >= reversePoints[diagonal]) {
 						midOriginalArr[0] = originalIndex;
+
 						midModifiedArr[0] = modifiedIndex;
 
 						if (
@@ -950,6 +1057,7 @@ export class LcsDiff {
 				quitEarlyArr[0] = true;
 				// Use the furthest distance we got in the forward direction.
 				midOriginalArr[0] = furthestOriginalIndex;
+
 				midModifiedArr[0] = furthestModifiedIndex;
 
 				if (
@@ -983,6 +1091,7 @@ export class LcsDiff {
 					//Since we are quitting the diff early, we need to shift back the originalStart and modified start
 					//back into the boundary limits since we decremented their value above beyond the boundary limit.
 					originalStart++;
+
 					modifiedStart++;
 
 					return [
@@ -1002,6 +1111,7 @@ export class LcsDiff {
 				diagonalReverseBase,
 				numDiagonals,
 			);
+
 			diagonalReverseEnd = this.ClipDiagonalBound(
 				diagonalReverseBase + numDifferences,
 				numDifferences,
@@ -1011,7 +1121,9 @@ export class LcsDiff {
 
 			for (
 				let diagonal = diagonalReverseStart;
+
 				diagonal <= diagonalReverseEnd;
+
 				diagonal += 2
 			) {
 				// STEP 1: We extend the furthest reaching point in the present diagonal
@@ -1027,6 +1139,7 @@ export class LcsDiff {
 				} else {
 					originalIndex = reversePoints[diagonal - 1];
 				}
+
 				modifiedIndex =
 					originalIndex -
 					(diagonal - diagonalReverseBase) -
@@ -1041,8 +1154,10 @@ export class LcsDiff {
 					this.ElementsAreEqual(originalIndex, modifiedIndex)
 				) {
 					originalIndex--;
+
 					modifiedIndex--;
 				}
+
 				reversePoints[diagonal] = originalIndex;
 				// STEP 4: If delta is even (overlap first happens on reverse when delta is even)
 				// and diagonal is in the range of forward diagonals computed for numDifferences
@@ -1053,6 +1168,7 @@ export class LcsDiff {
 				) {
 					if (originalIndex <= forwardPoints[diagonal]) {
 						midOriginalArr[0] = originalIndex;
+
 						midModifiedArr[0] = modifiedIndex;
 
 						if (
@@ -1097,7 +1213,9 @@ export class LcsDiff {
 				let temp = new Int32Array(
 					diagonalForwardEnd - diagonalForwardStart + 2,
 				);
+
 				temp[0] = diagonalForwardBase - diagonalForwardStart + 1;
+
 				MyArray.Copy2(
 					forwardPoints,
 					diagonalForwardStart,
@@ -1105,11 +1223,15 @@ export class LcsDiff {
 					1,
 					diagonalForwardEnd - diagonalForwardStart + 1,
 				);
+
 				this.m_forwardHistory.push(temp);
+
 				temp = new Int32Array(
 					diagonalReverseEnd - diagonalReverseStart + 2,
 				);
+
 				temp[0] = diagonalReverseBase - diagonalReverseStart + 1;
+
 				MyArray.Copy2(
 					reversePoints,
 					diagonalReverseStart,
@@ -1117,6 +1239,7 @@ export class LcsDiff {
 					1,
 					diagonalReverseEnd - diagonalReverseStart + 1,
 				);
+
 				this.m_reverseHistory.push(temp);
 			}
 		}
@@ -1198,9 +1321,12 @@ export class LcsDiff {
 					// moving the change down would create an equal change, but the elements are not strict equal
 					break;
 				}
+
 				change.originalStart++;
+
 				change.modifiedStart++;
 			}
+
 			const mergedChangeArr: Array<DiffChange | null> = [null];
 
 			if (
@@ -1208,7 +1334,9 @@ export class LcsDiff {
 				this.ChangesOverlap(changes[i], changes[i + 1], mergedChangeArr)
 			) {
 				changes[i] = mergedChangeArr[0]!;
+
 				changes.splice(i + 1, 1);
+
 				i--;
 
 				continue;
@@ -1224,11 +1352,14 @@ export class LcsDiff {
 
 			if (i > 0) {
 				const prevChange = changes[i - 1];
+
 				originalStop =
 					prevChange.originalStart + prevChange.originalLength;
+
 				modifiedStop =
 					prevChange.modifiedStart + prevChange.modifiedLength;
 			}
+
 			const checkOriginal = change.originalLength > 0;
 
 			const checkModified = change.modifiedLength > 0;
@@ -1253,6 +1384,7 @@ export class LcsDiff {
 				) {
 					break;
 				}
+
 				if (
 					checkOriginal &&
 					!this.OriginalElementsAreEqual(
@@ -1262,6 +1394,7 @@ export class LcsDiff {
 				) {
 					break;
 				}
+
 				if (
 					checkModified &&
 					!this.ModifiedElementsAreEqual(
@@ -1271,6 +1404,7 @@ export class LcsDiff {
 				) {
 					break;
 				}
+
 				const touchingPreviousChange =
 					originalStart === originalStop &&
 					modifiedStart === modifiedStop;
@@ -1286,10 +1420,13 @@ export class LcsDiff {
 
 				if (score > bestScore) {
 					bestScore = score;
+
 					bestDelta = delta;
 				}
 			}
+
 			change.originalStart -= bestDelta;
+
 			change.modifiedStart -= bestDelta;
 
 			const mergedChangeArr: Array<DiffChange | null> = [null];
@@ -1299,7 +1436,9 @@ export class LcsDiff {
 				this.ChangesOverlap(changes[i - 1], changes[i], mergedChangeArr)
 			) {
 				changes[i - 1] = mergedChangeArr[0]!;
+
 				changes.splice(i, 1);
+
 				i++;
 
 				continue;
@@ -1358,14 +1497,19 @@ export class LcsDiff {
 							// switch to another sequence that has a better score
 							aChange.originalLength =
 								originalMatchStart - aChange.originalStart;
+
 							aChange.modifiedLength =
 								modifiedMatchStart - aChange.modifiedStart;
+
 							bChange.originalStart =
 								originalMatchStart + matchedLength;
+
 							bChange.modifiedStart =
 								modifiedMatchStart + matchedLength;
+
 							bChange.originalLength =
 								bOriginalEnd - bChange.originalStart;
+
 							bChange.modifiedLength =
 								bModifiedEnd - bChange.modifiedStart;
 						}
@@ -1373,8 +1517,10 @@ export class LcsDiff {
 				}
 			}
 		}
+
 		return changes;
 	}
+
 	private _findBetterContiguousSequence(
 		originalStart: number,
 		originalLength: number,
@@ -1385,6 +1531,7 @@ export class LcsDiff {
 		if (originalLength < desiredLength || modifiedLength < desiredLength) {
 			return null;
 		}
+
 		const originalMax = originalStart + originalLength - desiredLength + 1;
 
 		const modifiedMax = modifiedStart + modifiedLength - desiredLength + 1;
@@ -1405,16 +1552,21 @@ export class LcsDiff {
 
 				if (score > 0 && score > bestScore) {
 					bestScore = score;
+
 					bestOriginalStart = i;
+
 					bestModifiedStart = j;
 				}
 			}
 		}
+
 		if (bestScore > 0) {
 			return [bestOriginalStart, bestModifiedStart];
 		}
+
 		return null;
 	}
+
 	private _contiguousSequenceScore(
 		originalStart: number,
 		modifiedStart: number,
@@ -1426,19 +1578,24 @@ export class LcsDiff {
 			if (!this.ElementsAreEqual(originalStart + l, modifiedStart + l)) {
 				return 0;
 			}
+
 			score += this._originalStringElements[originalStart + l].length;
 		}
+
 		return score;
 	}
+
 	private _OriginalIsBoundary(index: number): boolean {
 		if (index <= 0 || index >= this._originalElementsOrHash.length - 1) {
 			return true;
 		}
+
 		return (
 			this._hasStrings &&
 			/^\s*$/.test(this._originalStringElements[index])
 		);
 	}
+
 	private _OriginalRegionIsBoundary(
 		originalStart: number,
 		originalLength: number,
@@ -1449,6 +1606,7 @@ export class LcsDiff {
 		) {
 			return true;
 		}
+
 		if (originalLength > 0) {
 			const originalEnd = originalStart + originalLength;
 
@@ -1459,17 +1617,21 @@ export class LcsDiff {
 				return true;
 			}
 		}
+
 		return false;
 	}
+
 	private _ModifiedIsBoundary(index: number): boolean {
 		if (index <= 0 || index >= this._modifiedElementsOrHash.length - 1) {
 			return true;
 		}
+
 		return (
 			this._hasStrings &&
 			/^\s*$/.test(this._modifiedStringElements[index])
 		);
 	}
+
 	private _ModifiedRegionIsBoundary(
 		modifiedStart: number,
 		modifiedLength: number,
@@ -1480,6 +1642,7 @@ export class LcsDiff {
 		) {
 			return true;
 		}
+
 		if (modifiedLength > 0) {
 			const modifiedEnd = modifiedStart + modifiedLength;
 
@@ -1490,8 +1653,10 @@ export class LcsDiff {
 				return true;
 			}
 		}
+
 		return false;
 	}
+
 	private _boundaryScore(
 		originalStart: number,
 		originalLength: number,
@@ -1543,14 +1708,19 @@ export class LcsDiff {
 			const result = new Array<DiffChange>(
 				left.length + right.length - 1,
 			);
+
 			MyArray.Copy(left, 0, result, 0, left.length - 1);
+
 			result[left.length - 1] = mergedChangeArr[0];
+
 			MyArray.Copy(right, 1, result, left.length, right.length - 1);
 
 			return result;
 		} else {
 			const result = new Array<DiffChange>(left.length + right.length);
+
 			MyArray.Copy(left, 0, result, 0, left.length);
+
 			MyArray.Copy(right, 0, result, left.length, right.length);
 
 			return result;
@@ -1573,6 +1743,7 @@ export class LcsDiff {
 			left.originalStart <= right.originalStart,
 			"Left change is not less than or equal to right change",
 		);
+
 		Debug.Assert(
 			left.modifiedStart <= right.modifiedStart,
 			"Left change is not less than or equal to right change",
@@ -1599,6 +1770,7 @@ export class LcsDiff {
 					right.originalLength -
 					left.originalStart;
 			}
+
 			if (
 				left.modifiedStart + left.modifiedLength >=
 				right.modifiedStart
@@ -1608,6 +1780,7 @@ export class LcsDiff {
 					right.modifiedLength -
 					left.modifiedStart;
 			}
+
 			mergedChangeArr[0] = new DiffChange(
 				originalStart,
 				originalLength,

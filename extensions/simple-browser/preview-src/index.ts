@@ -15,6 +15,7 @@ function getSettings() {
 			return JSON.parse(data);
 		}
 	}
+
 	throw new Error(`Could not load settings`);
 }
 
@@ -43,6 +44,7 @@ window.addEventListener("message", (e) => {
 
 			break;
 		}
+
 		case "didChangeFocusLockIndicatorEnabled": {
 			toggleFocusLockIndicatorEnabled(e.data.enabled);
 
@@ -60,23 +62,28 @@ onceDocumentLoaded(() => {
 	iframe.addEventListener("load", () => {
 		// Noop
 	});
+
 	input.addEventListener("change", (e) => {
 		const url = (e.target as HTMLInputElement).value;
+
 		navigateTo(url);
 	});
 
 	forwardButton.addEventListener("click", () => {
 		history.forward();
 	});
+
 	backButton.addEventListener("click", () => {
 		history.back();
 	});
+
 	openExternalButton.addEventListener("click", () => {
 		vscode.postMessage({
 			type: "openExternal",
 			url: input.value,
 		});
 	});
+
 	reloadButton.addEventListener("click", () => {
 		// This does not seem to trigger what we want
 		// history.go(0);
@@ -85,8 +92,11 @@ onceDocumentLoaded(() => {
 		// which may not match the current page if the user has navigated
 		navigateTo(input.value);
 	});
+
 	navigateTo(settings.url);
+
 	input.value = settings.url;
+
 	toggleFocusLockIndicatorEnabled(settings.focusLockIndicatorEnabled);
 
 	function navigateTo(rawUrl: string): void {
@@ -103,6 +113,7 @@ onceDocumentLoaded(() => {
 		} catch {
 			iframe.src = rawUrl;
 		}
+
 		vscode.setState({ url: rawUrl });
 	}
 });

@@ -27,6 +27,7 @@ export interface CellOutputMetadata {
 	 * Original cell output type
 	 */
 	outputType: nbformat.OutputType | string;
+
 	executionCount?: nbformat.IExecuteResult["ExecutionCount"];
 	/**
 	 * Whether the original Mime data is JSON or not.

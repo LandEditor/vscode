@@ -48,24 +48,30 @@ interface IToken {
 }
 interface IThemedToken {
 	text: string;
+
 	color: Color | null;
 }
 interface IThemesResult {
 	[themeName: string]: {
 		document: ThemeDocument;
+
 		tokens: IThemedToken[];
 	};
 }
 class ThemeDocument {
 	private readonly _theme: IWorkbenchColorTheme;
+
 	private readonly _cache: {
 		[scopes: string]: ThemeRule;
 	};
+
 	private readonly _defaultColor: string;
 
 	constructor(theme: IWorkbenchColorTheme) {
 		this._theme = theme;
+
 		this._cache = Object.create(null);
+
 		this._defaultColor = "#000000";
 
 		for (let i = 0, len = this._theme.tokenColors.length; i < len; i++) {
@@ -76,9 +82,11 @@ class ThemeDocument {
 			}
 		}
 	}
+
 	private _generateExplanation(selector: string, color: Color): string {
 		return `${selector}: ${Color.Format.CSS.formatHexA(color, true).toUpperCase()}`;
 	}
+
 	public explainTokenColor(scopes: string, color: Color): string {
 		const matchingRule = this._findMatchingThemeRule(scopes);
 
@@ -90,8 +98,10 @@ class ThemeDocument {
 					`[${this._theme.label}]: Unexpected color ${Color.Format.CSS.formatHexA(color)} for ${scopes}. Expected default ${Color.Format.CSS.formatHexA(expected)}`,
 				);
 			}
+
 			return this._generateExplanation("default", color);
 		}
+
 		const expected = Color.fromHex(matchingRule.settings.foreground!);
 
 		if (!color.equals(expected)) {
@@ -99,8 +109,10 @@ class ThemeDocument {
 				`[${this._theme.label}]: Unexpected color ${Color.Format.CSS.formatHexA(color)} for ${scopes}. Expected ${Color.Format.CSS.formatHexA(expected)} coming in from ${matchingRule.rawSelector}`,
 			);
 		}
+
 		return this._generateExplanation(matchingRule.rawSelector, color);
 	}
+
 	private _findMatchingThemeRule(scopes: string): ThemeRule {
 		if (!this._cache[scopes]) {
 			this._cache[scopes] = findMatchingThemeRule(
@@ -108,6 +120,7 @@ class ThemeDocument {
 				scopes.split(" "),
 			)!;
 		}
+
 		return this._cache[scopes];
 	}
 }
@@ -122,6 +135,7 @@ class Snapper {
 		@ITreeSitterParserService
 		private readonly treeSitterParserService: ITreeSitterParserService,
 	) {}
+
 	private _themedTokenize(
 		grammar: IGrammar,
 		lines: string[],
@@ -141,7 +155,9 @@ class Snapper {
 
 			for (
 				let j = 0, lenJ = tokenizationResult.tokens.length >>> 1;
+
 				j < lenJ;
+
 				j++
 			) {
 				const startOffset = tokenizationResult.tokens[j << 1];
@@ -156,15 +172,19 @@ class Snapper {
 				const tokenText = line.substring(startOffset, endOffset);
 
 				const color = TokenMetadata.getForeground(metadata);
+
 				result[resultLen++] = {
 					text: tokenText,
 					color: colorMap![color],
 				};
 			}
+
 			state = tokenizationResult.ruleStack;
 		}
+
 		return result;
 	}
+
 	private _themedTokenizeTreeSitter(
 		tokens: IToken[],
 		languageId: string,
@@ -190,13 +210,16 @@ class Snapper {
 			);
 
 			const color = TokenMetadata.getForeground(metadata);
+
 			result[i] = {
 				text: token.c,
 				color: colorMap![color],
 			};
 		}
+
 		return result;
 	}
+
 	private _tokenize(grammar: IGrammar, lines: string[]): IToken[] {
 		let state: StateStack | null = null;
 
@@ -213,7 +236,9 @@ class Snapper {
 
 			for (
 				let j = 0, lenJ = tokenizationResult.tokens.length;
+
 				j < lenJ;
+
 				j++
 			) {
 				const token = tokenizationResult.tokens[j];
@@ -229,6 +254,7 @@ class Snapper {
 					result[resultLen - 1].c += tokenText;
 				} else {
 					lastScopes = tokenScopes;
+
 					result[resultLen++] = {
 						c: tokenText,
 						t: tokenScopes,
@@ -242,10 +268,13 @@ class Snapper {
 					};
 				}
 			}
+
 			state = tokenizationResult.ruleStack;
 		}
+
 		return result;
 	}
+
 	private async _getThemesResult(
 		grammar: IGrammar,
 		lines: string[],
@@ -260,6 +289,7 @@ class Snapper {
 			if (startIdx !== -1) {
 				return id.substring(startIdx + part.length, id.length - 5);
 			}
+
 			return undefined;
 		};
 
@@ -281,6 +311,7 @@ class Snapper {
 
 			if (success) {
 				const themeName = getThemeName(themeId);
+
 				result[themeName!] = {
 					document: new ThemeDocument(
 						this.themeService.getColorTheme(),
@@ -289,10 +320,12 @@ class Snapper {
 				};
 			}
 		}
+
 		await this.themeService.setColorTheme(currentTheme.id, undefined);
 
 		return result;
 	}
+
 	private async _getTreeSitterThemesResult(
 		tokens: IToken[],
 		languageId: string,
@@ -307,6 +340,7 @@ class Snapper {
 			if (startIdx !== -1) {
 				return id.substring(startIdx + part.length, id.length - 5);
 			}
+
 			return undefined;
 		};
 
@@ -328,6 +362,7 @@ class Snapper {
 
 			if (success) {
 				const themeName = getThemeName(themeId);
+
 				result[themeName!] = {
 					document: new ThemeDocument(
 						this.themeService.getColorTheme(),
@@ -336,10 +371,12 @@ class Snapper {
 				};
 			}
 		}
+
 		await this.themeService.setColorTheme(currentTheme.id, undefined);
 
 		return result;
 	}
+
 	private _enrichResult(result: IToken[], themesResult: IThemesResult): void {
 		const index: {
 			[themeName: string]: number;
@@ -350,12 +387,14 @@ class Snapper {
 		for (const themeName of themeNames) {
 			index[themeName] = 0;
 		}
+
 		for (let i = 0, len = result.length; i < len; i++) {
 			const token = result[i];
 
 			for (const themeName of themeNames) {
 				const themedToken =
 					themesResult[themeName].tokens[index[themeName]];
+
 				themedToken.text = themedToken.text.substr(token.c.length);
 
 				if (themedToken.color) {
@@ -363,17 +402,20 @@ class Snapper {
 						themeName
 					].document.explainTokenColor(token.t, themedToken.color);
 				}
+
 				if (themedToken.text.length === 0) {
 					index[themeName]++;
 				}
 			}
 		}
 	}
+
 	private _treeSitterTokenize(
 		tree: Parser.Tree,
 		languageId: string,
 	): IToken[] {
 		const cursor = tree.walk();
+
 		cursor.gotoFirstChild();
 
 		let cursorResult: boolean = true;
@@ -390,6 +432,7 @@ class Snapper {
 					cursor.currentNode.startPosition.column + 1,
 					tree,
 				);
+
 				tokens.push({
 					c: cursor.currentNode.text.replace(/\r\n/g, "\n"),
 					t: capture?.map((cap) => cap.name).join(" ") ?? "",
@@ -414,6 +457,7 @@ class Snapper {
 
 		return tokens;
 	}
+
 	public captureSyntaxTokens(
 		fileName: string,
 		content: string,
@@ -429,6 +473,7 @@ class Snapper {
 				if (!grammar) {
 					return [];
 				}
+
 				const lines = splitLines(content);
 
 				const result = this._tokenize(grammar, lines);
@@ -442,6 +487,7 @@ class Snapper {
 				);
 			});
 	}
+
 	public async captureTreeSitterSyntaxTokens(
 		fileName: string,
 		content: string,
@@ -460,6 +506,7 @@ class Snapper {
 			if (!tree) {
 				return [];
 			}
+
 			const result = (
 				await this._treeSitterTokenize(tree, languageId)
 			).filter((t) => t.c.length > 0);
@@ -468,10 +515,12 @@ class Snapper {
 				result,
 				languageId,
 			);
+
 			this._enrichResult(result, themeTokens);
 
 			return result;
 		}
+
 		return [];
 	}
 }
@@ -526,6 +575,7 @@ async function captureTokens(
 
 		return processResult;
 	}
+
 	return undefined;
 }
 CommandsRegistry.registerCommand(

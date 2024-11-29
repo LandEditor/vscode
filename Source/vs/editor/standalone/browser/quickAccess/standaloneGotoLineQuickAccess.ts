@@ -30,6 +30,7 @@ export class StandaloneGotoLineQuickAccessProvider extends AbstractGotoLineQuick
 	) {
 		super();
 	}
+
 	protected get activeTextEditorControl() {
 		return this.editorService.getFocusedCodeEditor() ?? undefined;
 	}
@@ -51,6 +52,7 @@ export class GotoLineAction extends EditorAction {
 			},
 		});
 	}
+
 	run(accessor: ServicesAccessor): void {
 		accessor
 			.get(IQuickInputService)

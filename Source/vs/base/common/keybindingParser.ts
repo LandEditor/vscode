@@ -29,32 +29,49 @@ export class KeybindingParser {
 
 			if (/^ctrl(\+|\-)/.test(input)) {
 				ctrl = true;
+
 				input = input.substr("ctrl-".length);
+
 				matchedModifier = true;
 			}
+
 			if (/^shift(\+|\-)/.test(input)) {
 				shift = true;
+
 				input = input.substr("shift-".length);
+
 				matchedModifier = true;
 			}
+
 			if (/^alt(\+|\-)/.test(input)) {
 				alt = true;
+
 				input = input.substr("alt-".length);
+
 				matchedModifier = true;
 			}
+
 			if (/^meta(\+|\-)/.test(input)) {
 				meta = true;
+
 				input = input.substr("meta-".length);
+
 				matchedModifier = true;
 			}
+
 			if (/^win(\+|\-)/.test(input)) {
 				meta = true;
+
 				input = input.substr("win-".length);
+
 				matchedModifier = true;
 			}
+
 			if (/^cmd(\+|\-)/.test(input)) {
 				meta = true;
+
 				input = input.substr("cmd-".length);
+
 				matchedModifier = true;
 			}
 		} while (matchedModifier);
@@ -65,11 +82,14 @@ export class KeybindingParser {
 
 		if (firstSpaceIdx > 0) {
 			key = input.substring(0, firstSpaceIdx);
+
 			input = input.substring(firstSpaceIdx);
 		} else {
 			key = input;
+
 			input = "";
 		}
+
 		return {
 			remains: input,
 			ctrl,
@@ -79,6 +99,7 @@ export class KeybindingParser {
 			key,
 		};
 	}
+
 	private static parseChord(input: string): [Chord, string] {
 		const mods = this._readModifiers(input);
 
@@ -100,6 +121,7 @@ export class KeybindingParser {
 				mods.remains,
 			];
 		}
+
 		const keyCode = KeyCodeUtils.fromUserSettings(mods.key);
 
 		return [
@@ -113,18 +135,22 @@ export class KeybindingParser {
 			mods.remains,
 		];
 	}
+
 	static parseKeybinding(input: string): Keybinding | null {
 		if (!input) {
 			return null;
 		}
+
 		const chords: Chord[] = [];
 
 		let chord: Chord;
 
 		while (input.length > 0) {
 			[chord, input] = this.parseChord(input);
+
 			chords.push(chord);
 		}
+
 		return chords.length > 0 ? new Keybinding(chords) : null;
 	}
 }

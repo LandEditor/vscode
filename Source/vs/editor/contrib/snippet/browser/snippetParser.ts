@@ -23,7 +23,9 @@ export const enum TokenType {
 }
 export interface Token {
 	type: TokenType;
+
 	pos: number;
+
 	len: number;
 }
 export class Scanner {
@@ -42,9 +44,11 @@ export class Scanner {
 		[CharCode.Dash]: TokenType.Dash,
 		[CharCode.QuestionMark]: TokenType.QuestionMark,
 	};
+
 	static isDigitCharacter(ch: number): boolean {
 		return ch >= CharCode.Digit0 && ch <= CharCode.Digit9;
 	}
+
 	static isVariableCharacter(ch: number): boolean {
 		return (
 			ch === CharCode.Underline ||
@@ -52,19 +56,26 @@ export class Scanner {
 			(ch >= CharCode.A && ch <= CharCode.Z)
 		);
 	}
+
 	value: string = "";
+
 	pos: number = 0;
+
 	text(value: string) {
 		this.value = value;
+
 		this.pos = 0;
 	}
+
 	tokenText(token: Token): string {
 		return this.value.substr(token.pos, token.len);
 	}
+
 	next(): Token {
 		if (this.pos >= this.value.length) {
 			return { type: TokenType.EOF, pos: this.pos, len: 0 };
 		}
+
 		const pos = this.pos;
 
 		let len = 0;
@@ -86,8 +97,10 @@ export class Scanner {
 
 			do {
 				len += 1;
+
 				ch = this.value.charCodeAt(pos + len);
 			} while (Scanner.isDigitCharacter(ch));
+
 			this.pos += len;
 
 			return { type, pos, len };
@@ -102,6 +115,7 @@ export class Scanner {
 				Scanner.isVariableCharacter(ch) ||
 				Scanner.isDigitCharacter(ch)
 			);
+
 			this.pos += len;
 
 			return { type, pos, len };
@@ -111,6 +125,7 @@ export class Scanner {
 
 		do {
 			len += 1;
+
 			ch = this.value.charCodeAt(pos + len);
 		} while (
 			!isNaN(ch) &&
@@ -118,6 +133,7 @@ export class Scanner {
 			!Scanner.isDigitCharacter(ch) && // not number
 			!Scanner.isVariableCharacter(ch) // not variable
 		);
+
 		this.pos += len;
 
 		return { type, pos, len };
@@ -125,8 +141,11 @@ export class Scanner {
 }
 export abstract class Marker {
 	readonly _markerBrand: any;
+
 	public parent!: Marker;
+
 	protected _children: Marker[] = [];
+
 	appendChild(child: Marker): this {
 		if (
 			child instanceof Text &&
@@ -138,35 +157,45 @@ export abstract class Marker {
 		} else {
 			// normal adoption of child
 			child.parent = this;
+
 			this._children.push(child);
 		}
+
 		return this;
 	}
+
 	replace(child: Marker, others: Marker[]): void {
 		const { parent } = child;
 
 		const idx = parent.children.indexOf(child);
 
 		const newChildren = parent.children.slice(0);
+
 		newChildren.splice(idx, 1, ...others);
+
 		parent._children = newChildren;
 		(function _fixParent(children: Marker[], parent: Marker) {
 			for (const child of children) {
 				child.parent = parent;
+
 				_fixParent(child.children, child);
 			}
 		})(others, parent);
 	}
+
 	get children(): Marker[] {
 		return this._children;
 	}
+
 	get rightMostDescendant(): Marker {
 		if (this._children.length > 0) {
 			return this._children[this._children.length - 1]
 				.rightMostDescendant;
 		}
+
 		return this;
 	}
+
 	get snippet(): TextmateSnippet | undefined {
 		let candidate: Marker = this;
 
@@ -174,37 +203,48 @@ export abstract class Marker {
 			if (!candidate) {
 				return undefined;
 			}
+
 			if (candidate instanceof TextmateSnippet) {
 				return candidate;
 			}
+
 			candidate = candidate.parent;
 		}
 	}
+
 	toString(): string {
 		return this.children.reduce((prev, cur) => prev + cur.toString(), "");
 	}
+
 	abstract toTextmateString(): string;
+
 	len(): number {
 		return 0;
 	}
+
 	abstract clone(): Marker;
 }
 export class Text extends Marker {
 	static escape(value: string): string {
 		return value.replace(/\$|}|\\/g, "\\$&");
 	}
+
 	constructor(public value: string) {
 		super();
 	}
+
 	override toString() {
 		return this.value;
 	}
+
 	toTextmateString(): string {
 		return Text.escape(this.value);
 	}
+
 	override len(): number {
 		return this.value.length;
 	}
+
 	clone(): Text {
 		return new Text(this.value);
 	}
@@ -228,24 +268,29 @@ export class Placeholder extends TransformableMarker {
 			return 0;
 		}
 	}
+
 	constructor(public index: number) {
 		super();
 	}
+
 	get isFinalTabstop() {
 		return this.index === 0;
 	}
+
 	get choice(): Choice | undefined {
 		return this._children.length === 1 &&
 			this._children[0] instanceof Choice
 			? (this._children[0] as Choice)
 			: undefined;
 	}
+
 	toTextmateString(): string {
 		let transformString = "";
 
 		if (this.transform) {
 			transformString = this.transform.toTextmateString();
 		}
+
 		if (this.children.length === 0 && !this.transform) {
 			return `\$${this.index}`;
 		} else if (this.children.length === 0) {
@@ -256,12 +301,14 @@ export class Placeholder extends TransformableMarker {
 			return `\${${this.index}:${this.children.map((child) => child.toTextmateString()).join("")}${transformString}}`;
 		}
 	}
+
 	clone(): Placeholder {
 		const ret = new Placeholder(this.index);
 
 		if (this.transform) {
 			ret.transform = this.transform.clone();
 		}
+
 		ret._children = this.children.map((child) => child.clone());
 
 		return ret;
@@ -269,26 +316,34 @@ export class Placeholder extends TransformableMarker {
 }
 export class Choice extends Marker {
 	readonly options: Text[] = [];
+
 	override appendChild(marker: Marker): this {
 		if (marker instanceof Text) {
 			marker.parent = this;
+
 			this.options.push(marker);
 		}
+
 		return this;
 	}
+
 	override toString() {
 		return this.options[0].value;
 	}
+
 	toTextmateString(): string {
 		return this.options
 			.map((option) => option.value.replace(/\||,|\\/g, "\\$&"))
 			.join(",");
 	}
+
 	override len(): number {
 		return this.options[0].len();
 	}
+
 	clone(): Choice {
 		const ret = new Choice();
+
 		this.options.forEach(ret.appendChild, ret);
 
 		return ret;
@@ -296,6 +351,7 @@ export class Choice extends Marker {
 }
 export class Transform extends Marker {
 	regexp: RegExp = new RegExp("");
+
 	resolve(value: string): string {
 		const _this = this;
 
@@ -317,36 +373,46 @@ export class Transform extends Marker {
 		) {
 			ret = this._replace([]);
 		}
+
 		return ret;
 	}
+
 	private _replace(groups: string[]): string {
 		let ret = "";
 
 		for (const marker of this._children) {
 			if (marker instanceof FormatString) {
 				let value = groups[marker.index] || "";
+
 				value = marker.resolve(value);
+
 				ret += value;
 			} else {
 				ret += marker.toString();
 			}
 		}
+
 		return ret;
 	}
+
 	override toString(): string {
 		return "";
 	}
+
 	toTextmateString(): string {
 		return `/${this.regexp.source}/${this.children.map((c) => c.toTextmateString())}/${(this.regexp.ignoreCase ? "i" : "") + (this.regexp.global ? "g" : "")}`;
 	}
+
 	clone(): Transform {
 		const ret = new Transform();
+
 		ret.regexp = new RegExp(
 			this.regexp.source,
 			"" +
 				(this.regexp.ignoreCase ? "i" : "") +
 				(this.regexp.global ? "g" : ""),
 		);
+
 		ret._children = this.children.map((child) => child.clone());
 
 		return ret;
@@ -361,6 +427,7 @@ export class FormatString extends Marker {
 	) {
 		super();
 	}
+
 	resolve(value?: string): string {
 		if (this.shorthandName === "upcase") {
 			return !value ? "" : value.toLocaleUpperCase();
@@ -380,35 +447,42 @@ export class FormatString extends Marker {
 			return value || "";
 		}
 	}
+
 	private _toPascalCase(value: string): string {
 		const match = value.match(/[a-z0-9]+/gi);
 
 		if (!match) {
 			return value;
 		}
+
 		return match
 			.map((word) => {
 				return word.charAt(0).toUpperCase() + word.substr(1);
 			})
 			.join("");
 	}
+
 	private _toCamelCase(value: string): string {
 		const match = value.match(/[a-z0-9]+/gi);
 
 		if (!match) {
 			return value;
 		}
+
 		return match
 			.map((word, index) => {
 				if (index === 0) {
 					return word.charAt(0).toLowerCase() + word.substr(1);
 				}
+
 				return word.charAt(0).toUpperCase() + word.substr(1);
 			})
 			.join("");
 	}
+
 	toTextmateString(): string {
 		let value = "${";
+
 		value += this.index;
 
 		if (this.shorthandName) {
@@ -420,10 +494,12 @@ export class FormatString extends Marker {
 		} else if (this.elseValue) {
 			value += `:-${this.elseValue}`;
 		}
+
 		value += "}";
 
 		return value;
 	}
+
 	clone(): FormatString {
 		const ret = new FormatString(
 			this.index,
@@ -439,37 +515,44 @@ export class Variable extends TransformableMarker {
 	constructor(public name: string) {
 		super();
 	}
+
 	resolve(resolver: VariableResolver): boolean {
 		let value = resolver.resolve(this);
 
 		if (this.transform) {
 			value = this.transform.resolve(value || "");
 		}
+
 		if (value !== undefined) {
 			this._children = [new Text(value)];
 
 			return true;
 		}
+
 		return false;
 	}
+
 	toTextmateString(): string {
 		let transformString = "";
 
 		if (this.transform) {
 			transformString = this.transform.toTextmateString();
 		}
+
 		if (this.children.length === 0) {
 			return `\${${this.name}${transformString}}`;
 		} else {
 			return `\${${this.name}:${this.children.map((child) => child.toTextmateString()).join("")}${transformString}}`;
 		}
 	}
+
 	clone(): Variable {
 		const ret = new Variable(this.name);
 
 		if (this.transform) {
 			ret.transform = this.transform.clone();
 		}
+
 		ret._children = this.children.map((child) => child.clone());
 
 		return ret;
@@ -489,12 +572,14 @@ function walk(marker: Marker[], visitor: (marker: Marker) => boolean): void {
 		if (!recurse) {
 			break;
 		}
+
 		stack.unshift(...marker.children);
 	}
 }
 export class TextmateSnippet extends Marker {
 	private _placeholders?: {
 		all: Placeholder[];
+
 		last?: Placeholder;
 	};
 
@@ -504,35 +589,44 @@ export class TextmateSnippet extends Marker {
 			const all: Placeholder[] = [];
 
 			let last: Placeholder | undefined;
+
 			this.walk(function (candidate) {
 				if (candidate instanceof Placeholder) {
 					all.push(candidate);
+
 					last =
 						!last || last.index < candidate.index
 							? candidate
 							: last;
 				}
+
 				return true;
 			});
+
 			this._placeholders = { all, last };
 		}
+
 		return this._placeholders;
 	}
+
 	get placeholders(): Placeholder[] {
 		const { all } = this.placeholderInfo;
 
 		return all;
 	}
+
 	offset(marker: Marker): number {
 		let pos = 0;
 
 		let found = false;
+
 		this.walk((candidate) => {
 			if (candidate === marker) {
 				found = true;
 
 				return false;
 			}
+
 			pos += candidate.len();
 
 			return true;
@@ -541,10 +635,13 @@ export class TextmateSnippet extends Marker {
 		if (!found) {
 			return -1;
 		}
+
 		return pos;
 	}
+
 	fullLen(marker: Marker): number {
 		let ret = 0;
+
 		walk([marker], (marker) => {
 			ret += marker.len();
 
@@ -553,6 +650,7 @@ export class TextmateSnippet extends Marker {
 
 		return ret;
 	}
+
 	enclosingPlaceholders(placeholder: Placeholder): Placeholder[] {
 		const ret: Placeholder[] = [];
 
@@ -562,10 +660,13 @@ export class TextmateSnippet extends Marker {
 			if (parent instanceof Placeholder) {
 				ret.push(parent);
 			}
+
 			parent = parent.parent;
 		}
+
 		return ret;
 	}
+
 	resolveVariables(resolver: VariableResolver): this {
 		this.walk((candidate) => {
 			if (candidate instanceof Variable) {
@@ -573,33 +674,40 @@ export class TextmateSnippet extends Marker {
 					this._placeholders = undefined;
 				}
 			}
+
 			return true;
 		});
 
 		return this;
 	}
+
 	override appendChild(child: Marker) {
 		this._placeholders = undefined;
 
 		return super.appendChild(child);
 	}
+
 	override replace(child: Marker, others: Marker[]): void {
 		this._placeholders = undefined;
 
 		return super.replace(child, others);
 	}
+
 	toTextmateString(): string {
 		return this.children.reduce(
 			(prev, cur) => prev + cur.toTextmateString(),
 			"",
 		);
 	}
+
 	clone(): TextmateSnippet {
 		const ret = new TextmateSnippet();
+
 		this._children = this.children.map((child) => child.clone());
 
 		return ret;
 	}
+
 	walk(visitor: (marker: Marker) => boolean): void {
 		walk(this.children, visitor);
 	}
@@ -615,18 +723,24 @@ export class SnippetParser {
 	static asInsertText(value: string): string {
 		return new SnippetParser().parse(value).toString();
 	}
+
 	static guessNeedsClipboard(template: string): boolean {
 		return /\${?CLIPBOARD/.test(template);
 	}
+
 	private _scanner: Scanner = new Scanner();
+
 	private _token: Token = { type: TokenType.EOF, pos: 0, len: 0 };
+
 	parse(
 		value: string,
 		insertFinalTabstop?: boolean,
 		enforceFinalTabstop?: boolean,
 	): TextmateSnippet {
 		const snippet = new TextmateSnippet();
+
 		this.parseFragment(value, snippet);
+
 		this.ensureFinalTabstop(
 			snippet,
 			enforceFinalTabstop ?? false,
@@ -635,9 +749,12 @@ export class SnippetParser {
 
 		return snippet;
 	}
+
 	parseFragment(value: string, snippet: TextmateSnippet): readonly Marker[] {
 		const offset = snippet.children.length;
+
 		this._scanner.text(value);
+
 		this._token = this._scanner.next();
 
 		while (this._parse(snippet)) {
@@ -651,6 +768,7 @@ export class SnippetParser {
 		>();
 
 		const incompletePlaceholders: Placeholder[] = [];
+
 		snippet.walk((marker) => {
 			if (marker instanceof Placeholder) {
 				if (marker.isFinalTabstop) {
@@ -664,6 +782,7 @@ export class SnippetParser {
 					incompletePlaceholders.push(marker);
 				}
 			}
+
 			return true;
 		});
 
@@ -678,11 +797,14 @@ export class SnippetParser {
 			if (!defaultValues) {
 				return;
 			}
+
 			const clone = new Placeholder(placeholder.index);
+
 			clone.transform = placeholder.transform;
 
 			for (const child of defaultValues) {
 				const newChild = child.clone();
+
 				clone.appendChild(newChild);
 				// "recurse" on children that are again placeholders
 				if (
@@ -691,10 +813,13 @@ export class SnippetParser {
 					!stack.has(newChild.index)
 				) {
 					stack.add(newChild.index);
+
 					fillInIncompletePlaceholder(newChild, stack);
+
 					stack.delete(newChild.index);
 				}
 			}
+
 			snippet.replace(placeholder, [clone]);
 		};
 
@@ -703,8 +828,10 @@ export class SnippetParser {
 		for (const placeholder of incompletePlaceholders) {
 			fillInIncompletePlaceholder(placeholder, stack);
 		}
+
 		return snippet.children.slice(offset);
 	}
+
 	ensureFinalTabstop(
 		snippet: TextmateSnippet,
 		enforceFinalTabstop: boolean,
@@ -725,23 +852,31 @@ export class SnippetParser {
 			}
 		}
 	}
+
 	private _accept(type?: TokenType): boolean;
+
 	private _accept(type: TokenType | undefined, value: true): string;
+
 	private _accept(type: TokenType, value?: boolean): boolean | string {
 		if (type === undefined || this._token.type === type) {
 			const ret = !value ? true : this._scanner.tokenText(this._token);
+
 			this._token = this._scanner.next();
 
 			return ret;
 		}
+
 		return false;
 	}
+
 	private _backTo(token: Token): false {
 		this._scanner.pos = token.pos + token.len;
+
 		this._token = token;
 
 		return false;
 	}
+
 	private _until(type: TokenType): false | string {
 		const start = this._token;
 
@@ -759,15 +894,19 @@ export class SnippetParser {
 					return false;
 				}
 			}
+
 			this._token = this._scanner.next();
 		}
+
 		const value = this._scanner.value
 			.substring(start.pos, this._token.pos)
 			.replace(/\\(\$|}|\\)/g, "$1");
+
 		this._token = this._scanner.next();
 
 		return value;
 	}
+
 	private _parse(marker: Marker): boolean {
 		return (
 			this._parseEscaped(marker) ||
@@ -788,10 +927,12 @@ export class SnippetParser {
 				this._accept(TokenType.CurlyClose, true) ||
 				this._accept(TokenType.Backslash, true) ||
 				value;
+
 			marker.appendChild(new Text(value));
 
 			return true;
 		}
+
 		return false;
 	}
 	// $foo -> variable, $1 -> tabstop
@@ -809,6 +950,7 @@ export class SnippetParser {
 		if (!match) {
 			return this._backTo(token);
 		}
+
 		parent.appendChild(
 			/^\d+$/.test(value!)
 				? new Placeholder(Number(value!))
@@ -831,10 +973,12 @@ export class SnippetParser {
 		if (!match) {
 			return this._backTo(token);
 		}
+
 		const placeholder = new Placeholder(Number(index!));
 
 		if (this._accept(TokenType.Colon)) {
 			// ${1:<children>}
+
 			while (true) {
 				// ...} -> done
 				if (this._accept(TokenType.CurlyClose)) {
@@ -842,17 +986,20 @@ export class SnippetParser {
 
 					return true;
 				}
+
 				if (this._parse(placeholder)) {
 					continue;
 				}
 				// fallback
 				parent.appendChild(new Text("${" + index! + ":"));
+
 				placeholder.children.forEach(parent.appendChild, parent);
 
 				return true;
 			}
 		} else if (placeholder.index > 0 && this._accept(TokenType.Pipe)) {
 			// ${1|one,two,three|}
+
 			const choice = new Choice();
 
 			while (true) {
@@ -861,6 +1008,7 @@ export class SnippetParser {
 						// opt, -> more
 						continue;
 					}
+
 					if (this._accept(TokenType.Pipe)) {
 						placeholder.appendChild(choice);
 
@@ -872,22 +1020,26 @@ export class SnippetParser {
 						}
 					}
 				}
+
 				this._backTo(token);
 
 				return false;
 			}
 		} else if (this._accept(TokenType.Forwardslash)) {
 			// ${1/<regex>/<format>/<options>}
+
 			if (this._parseTransform(placeholder)) {
 				parent.appendChild(placeholder);
 
 				return true;
 			}
+
 			this._backTo(token);
 
 			return false;
 		} else if (this._accept(TokenType.CurlyClose)) {
 			// ${1}
+
 			parent.appendChild(placeholder);
 
 			return true;
@@ -896,6 +1048,7 @@ export class SnippetParser {
 			return this._backTo(token);
 		}
 	}
+
 	private _parseChoiceElement(parent: Choice): boolean {
 		const token = this._token;
 
@@ -908,6 +1061,7 @@ export class SnippetParser {
 			) {
 				break;
 			}
+
 			let value: string;
 
 			if ((value = this._accept(TokenType.Backslash, true))) {
@@ -920,19 +1074,23 @@ export class SnippetParser {
 			} else {
 				value = this._accept(undefined, true);
 			}
+
 			if (!value) {
 				// EOF
 				this._backTo(token);
 
 				return false;
 			}
+
 			values.push(value);
 		}
+
 		if (values.length === 0) {
 			this._backTo(token);
 
 			return false;
 		}
+
 		parent.appendChild(new Text(values.join("")));
 
 		return true;
@@ -951,10 +1109,12 @@ export class SnippetParser {
 		if (!match) {
 			return this._backTo(token);
 		}
+
 		const variable = new Variable(name!);
 
 		if (this._accept(TokenType.Colon)) {
 			// ${foo:<children>}
+
 			while (true) {
 				// ...} -> done
 				if (this._accept(TokenType.CurlyClose)) {
@@ -962,6 +1122,7 @@ export class SnippetParser {
 
 					return true;
 				}
+
 				if (this._parse(variable)) {
 					continue;
 				}
@@ -974,16 +1135,19 @@ export class SnippetParser {
 			}
 		} else if (this._accept(TokenType.Forwardslash)) {
 			// ${foo/<regex>/<format>/<options>}
+
 			if (this._parseTransform(variable)) {
 				parent.appendChild(variable);
 
 				return true;
 			}
+
 			this._backTo(token);
 
 			return false;
 		} else if (this._accept(TokenType.CurlyClose)) {
 			// ${foo}
+
 			parent.appendChild(variable);
 
 			return true;
@@ -992,8 +1156,10 @@ export class SnippetParser {
 			return this._backTo(token);
 		}
 	}
+
 	private _parseTransform(parent: TransformableMarker): boolean {
 		// ...<regex>/<format>/<options>}
+
 		const transform = new Transform();
 
 		let regexValue = "";
@@ -1004,19 +1170,23 @@ export class SnippetParser {
 			if (this._accept(TokenType.Forwardslash)) {
 				break;
 			}
+
 			let escaped: string;
 
 			if ((escaped = this._accept(TokenType.Backslash, true))) {
 				escaped = this._accept(TokenType.Forwardslash, true) || escaped;
+
 				regexValue += escaped;
 
 				continue;
 			}
+
 			if (this._token.type !== TokenType.EOF) {
 				regexValue += this._accept(undefined, true);
 
 				continue;
 			}
+
 			return false;
 		}
 		// (2) /format
@@ -1024,6 +1194,7 @@ export class SnippetParser {
 			if (this._accept(TokenType.Forwardslash)) {
 				break;
 			}
+
 			let escaped: string;
 
 			if ((escaped = this._accept(TokenType.Backslash, true))) {
@@ -1031,16 +1202,19 @@ export class SnippetParser {
 					this._accept(TokenType.Backslash, true) ||
 					this._accept(TokenType.Forwardslash, true) ||
 					escaped;
+
 				transform.appendChild(new Text(escaped));
 
 				continue;
 			}
+
 			if (
 				this._parseFormatString(transform) ||
 				this._parseAnything(transform)
 			) {
 				continue;
 			}
+
 			return false;
 		}
 		// (3) /option
@@ -1048,34 +1222,41 @@ export class SnippetParser {
 			if (this._accept(TokenType.CurlyClose)) {
 				break;
 			}
+
 			if (this._token.type !== TokenType.EOF) {
 				regexOptions += this._accept(undefined, true);
 
 				continue;
 			}
+
 			return false;
 		}
+
 		try {
 			transform.regexp = new RegExp(regexValue, regexOptions);
 		} catch (e) {
 			// invalid regexp
 			return false;
 		}
+
 		parent.transform = transform;
 
 		return true;
 	}
+
 	private _parseFormatString(parent: Transform): boolean {
 		const token = this._token;
 
 		if (!this._accept(TokenType.Dollar)) {
 			return false;
 		}
+
 		let complex = false;
 
 		if (this._accept(TokenType.CurlyOpen)) {
 			complex = true;
 		}
+
 		const index = this._accept(TokenType.Int, true);
 
 		if (!index) {
@@ -1089,6 +1270,7 @@ export class SnippetParser {
 			return true;
 		} else if (this._accept(TokenType.CurlyClose)) {
 			// ${1}
+
 			parent.appendChild(new FormatString(Number(index)));
 
 			return true;
@@ -1097,8 +1279,10 @@ export class SnippetParser {
 
 			return false;
 		}
+
 		if (this._accept(TokenType.Forwardslash)) {
 			// ${1:/upcase}
+
 			const shorthand = this._accept(TokenType.VariableName, true);
 
 			if (!shorthand || !this._accept(TokenType.CurlyClose)) {
@@ -1112,6 +1296,7 @@ export class SnippetParser {
 			}
 		} else if (this._accept(TokenType.Plus)) {
 			// ${1:+<if>}
+
 			const ifValue = this._until(TokenType.CurlyClose);
 
 			if (ifValue) {
@@ -1128,6 +1313,7 @@ export class SnippetParser {
 			}
 		} else if (this._accept(TokenType.Dash)) {
 			// ${2:-<else>}
+
 			const elseValue = this._until(TokenType.CurlyClose);
 
 			if (elseValue) {
@@ -1144,6 +1330,7 @@ export class SnippetParser {
 			}
 		} else if (this._accept(TokenType.QuestionMark)) {
 			// ${2:?<if>:<else>}
+
 			const ifValue = this._until(TokenType.Colon);
 
 			if (ifValue) {
@@ -1164,6 +1351,7 @@ export class SnippetParser {
 			}
 		} else {
 			// ${1:<else>}
+
 			const elseValue = this._until(TokenType.CurlyClose);
 
 			if (elseValue) {
@@ -1179,17 +1367,21 @@ export class SnippetParser {
 				return true;
 			}
 		}
+
 		this._backTo(token);
 
 		return false;
 	}
+
 	private _parseAnything(marker: Marker): boolean {
 		if (this._token.type !== TokenType.EOF) {
 			marker.appendChild(new Text(this._scanner.tokenText(this._token)));
+
 			this._accept(undefined);
 
 			return true;
 		}
+
 		return false;
 	}
 }

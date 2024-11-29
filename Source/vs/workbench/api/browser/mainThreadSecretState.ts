@@ -24,6 +24,7 @@ export class MainThreadSecretState
 	implements MainThreadSecretStateShape
 {
 	private readonly _proxy: ExtHostSecretStateShape;
+
 	private readonly _sequencer = new SequencerByKey<string>();
 
 	constructor(
@@ -36,9 +37,11 @@ export class MainThreadSecretState
 		environmentService: IBrowserWorkbenchEnvironmentService,
 	) {
 		super();
+
 		this._proxy = extHostContext.getProxy(
 			ExtHostContext.ExtHostSecretState,
 		);
+
 		this._register(
 			this.secretStorageService.onDidChangeSecret((e: string) => {
 				try {
@@ -66,6 +69,7 @@ export class MainThreadSecretState
 			this.doGetPassword(extensionId, key),
 		);
 	}
+
 	private async doGetPassword(
 		extensionId: string,
 		key: string,
@@ -73,6 +77,7 @@ export class MainThreadSecretState
 		const fullKey = this.getKey(extensionId, key);
 
 		const password = await this.secretStorageService.get(fullKey);
+
 		this.logService.trace(
 			`[mainThreadSecretState] ${password ? "P" : "No p"}assword found for: `,
 			extensionId,
@@ -95,13 +100,16 @@ export class MainThreadSecretState
 			this.doSetPassword(extensionId, key, value),
 		);
 	}
+
 	private async doSetPassword(
 		extensionId: string,
 		key: string,
 		value: string,
 	): Promise<void> {
 		const fullKey = this.getKey(extensionId, key);
+
 		await this.secretStorageService.set(fullKey, value);
+
 		this.logService.trace(
 			"[mainThreadSecretState] Password set for: ",
 			extensionId,
@@ -118,23 +126,29 @@ export class MainThreadSecretState
 			this.doDeletePassword(extensionId, key),
 		);
 	}
+
 	private async doDeletePassword(
 		extensionId: string,
 		key: string,
 	): Promise<void> {
 		const fullKey = this.getKey(extensionId, key);
+
 		await this.secretStorageService.delete(fullKey);
+
 		this.logService.trace(
 			"[mainThreadSecretState] Password deleted for: ",
 			extensionId,
 			key,
 		);
 	}
+
 	private getKey(extensionId: string, key: string): string {
 		return JSON.stringify({ extensionId, key });
 	}
+
 	private parseKey(key: string): {
 		extensionId: string;
+
 		key: string;
 	} {
 		return JSON.parse(key);

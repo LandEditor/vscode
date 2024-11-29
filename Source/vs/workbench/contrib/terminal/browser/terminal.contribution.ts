@@ -168,6 +168,7 @@ Registry.as<IDragAndDropContributionRegistry>(
 		} catch (error) {
 			// Invalid transfer
 		}
+
 		return editors;
 	},
 	setData(resources, event) {

@@ -28,14 +28,18 @@ export class NotebookVariablesDelegate
 	getHeight(element: INotebookVariableElement): number {
 		return 22;
 	}
+
 	getTemplateId(element: INotebookVariableElement): string {
 		return NotebookVariableRenderer.ID;
 	}
 }
 export interface IVariableTemplateData {
 	expression: HTMLElement;
+
 	name: HTMLSpanElement;
+
 	value: HTMLSpanElement;
+
 	elementDisposables: DisposableStore;
 }
 export class NotebookVariableRenderer
@@ -47,11 +51,13 @@ export class NotebookVariableRenderer
 		>
 {
 	private expressionRenderer: DebugExpressionRenderer;
+
 	static readonly ID = "variableElement";
 
 	get templateId(): string {
 		return NotebookVariableRenderer.ID;
 	}
+
 	constructor(
 		@IInstantiationService
 		instantiationService: IInstantiationService,
@@ -60,6 +66,7 @@ export class NotebookVariableRenderer
 			DebugExpressionRenderer,
 		);
 	}
+
 	renderTemplate(container: HTMLElement): IVariableTemplateData {
 		const expression = dom.append(container, $(".expression"));
 
@@ -76,6 +83,7 @@ export class NotebookVariableRenderer
 
 		return template;
 	}
+
 	renderElement(
 		element: ITreeNode<INotebookVariableElement, FuzzyScore>,
 		_index: number,
@@ -85,8 +93,11 @@ export class NotebookVariableRenderer
 			element.element.value.trim() !== ""
 				? `${element.element.name}:`
 				: element.element.name;
+
 		data.name.textContent = text;
+
 		data.name.title = element.element.type ?? "";
+
 		data.elementDisposables.add(
 			this.expressionRenderer.renderValue(data.value, element.element, {
 				colorize: true,
@@ -95,6 +106,7 @@ export class NotebookVariableRenderer
 			}),
 		);
 	}
+
 	disposeElement(
 		element: ITreeNode<INotebookVariableElement, FuzzyScore>,
 		index: number,
@@ -103,6 +115,7 @@ export class NotebookVariableRenderer
 	): void {
 		templateData.elementDisposables.clear();
 	}
+
 	disposeTemplate(templateData: IVariableTemplateData): void {
 		templateData.elementDisposables.dispose();
 	}
@@ -113,6 +126,7 @@ export class NotebookVariableAccessibilityProvider
 	getWidgetAriaLabel(): string {
 		return localize("debugConsole", "Notebook Variables");
 	}
+
 	getAriaLabel(element: INotebookVariableElement): string {
 		return localize(
 			"notebookVariableAriaLabel",

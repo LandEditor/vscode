@@ -140,9 +140,11 @@ class CodeMain {
 			this.startup();
 		} catch (error) {
 			console.error(error.message);
+
 			app.exit(1);
 		}
 	}
+
 	private async startup(): Promise<void> {
 		// Set the error handler early enough so that we are not getting the
 		// default electron error dialog popping up
@@ -218,7 +220,9 @@ class CodeMain {
 				// Lifecycle
 				Event.once(lifecycleMainService.onWillShutdown)((evt) => {
 					fileService.dispose();
+
 					configurationService.dispose();
+
 					evt.join(
 						"instanceLockfile",
 						promises
@@ -239,6 +243,7 @@ class CodeMain {
 			instantiationService.invokeFunction(this.quit, error);
 		}
 	}
+
 	private createServices(): [
 		IInstantiationService,
 		IProcessEnvironment,
@@ -252,9 +257,11 @@ class CodeMain {
 		const services = new ServiceCollection();
 
 		const disposables = new DisposableStore();
+
 		process.once("exit", () => disposables.dispose());
 		// Product
 		const productService = { _serviceBrand: undefined, ...product };
+
 		services.set(IProductService, productService);
 		// Environment
 		const environmentMainService = new EnvironmentMainService(
@@ -271,6 +278,7 @@ class CodeMain {
 			getLogLevel(environmentMainService),
 			environmentMainService.logsHome,
 		);
+
 		services.set(ILoggerMainService, loggerService);
 		// Log: We need to buffer the spdlog logs until we are sure
 		// we are the only instance running, otherwise we'll have concurrent
@@ -282,15 +290,19 @@ class CodeMain {
 				new ConsoleMainLogger(loggerService.getLogLevel()),
 			]),
 		);
+
 		services.set(ILogService, logService);
 		// Files
 		const fileService = new FileService(logService);
+
 		services.set(IFileService, fileService);
 
 		const diskFileSystemProvider = new DiskFileSystemProvider(logService);
+
 		fileService.registerProvider(Schemas.file, diskFileSystemProvider);
 		// URI Identity
 		const uriIdentityService = new UriIdentityService(fileService);
+
 		services.set(IUriIdentityService, uriIdentityService);
 		// State
 		const stateService = new StateService(
@@ -299,7 +311,9 @@ class CodeMain {
 			logService,
 			fileService,
 		);
+
 		services.set(IStateReadService, stateService);
+
 		services.set(IStateService, stateService);
 		// User Data Profiles
 		const userDataProfilesMainService = new UserDataProfilesMainService(
@@ -309,6 +323,7 @@ class CodeMain {
 			fileService,
 			logService,
 		);
+
 		services.set(IUserDataProfilesMainService, userDataProfilesMainService);
 		// Use FileUserDataProvider for user data to
 		// enable atomic read / write operations.
@@ -341,6 +356,7 @@ class CodeMain {
 							),
 						)
 					: new NullPolicyService();
+
 		services.set(IPolicyService, policyService);
 		// Configuration
 		const configurationService = new ConfigurationService(
@@ -349,6 +365,7 @@ class CodeMain {
 			policyService,
 			logService,
 		);
+
 		services.set(IConfigurationService, configurationService);
 		// Lifecycle
 		services.set(
@@ -394,6 +411,7 @@ class CodeMain {
 			userDataProfilesMainService,
 		];
 	}
+
 	private patchEnvironment(
 		environmentMainService: IEnvironmentMainService,
 	): IProcessEnvironment {
@@ -407,10 +425,12 @@ class CodeMain {
 				instanceEnvironment[key] = value;
 			}
 		});
+
 		Object.assign(process.env, instanceEnvironment);
 
 		return instanceEnvironment;
 	}
+
 	private async initServices(
 		environmentMainService: IEnvironmentMainService,
 		userDataProfilesMainService: UserDataProfilesMainService,
@@ -453,6 +473,7 @@ class CodeMain {
 		// Initialize user data profiles after initializing the state
 		userDataProfilesMainService.init();
 	}
+
 	private allowWindowsUNCPath(path: string): string {
 		if (isWindows) {
 			const host = getUNCHost(path);
@@ -461,8 +482,10 @@ class CodeMain {
 				addUNCHostToAllowlist(host);
 			}
 		}
+
 		return path;
 	}
+
 	private async claimInstance(
 		logService: ILogService,
 		environmentMainService: IEnvironmentMainService,
@@ -478,10 +501,13 @@ class CodeMain {
 
 		try {
 			mark("code/willStartMainServer");
+
 			mainProcessNodeIpcServer = await nodeIPCServe(
 				environmentMainService.mainIPCHandle,
 			);
+
 			mark("code/didStartMainServer");
+
 			Event.once(lifecycleMainService.onWillShutdown)(() =>
 				mainProcessNodeIpcServer.dispose(),
 			);
@@ -523,6 +549,7 @@ class CodeMain {
 							productService,
 						);
 					}
+
 					throw error;
 				}
 				// it happens on Linux and OS X that the pipe is left behind
@@ -538,6 +565,7 @@ class CodeMain {
 
 					throw error;
 				}
+
 				return this.claimInstance(
 					logService,
 					environmentMainService,
@@ -553,7 +581,9 @@ class CodeMain {
 				!environmentMainService.debugExtensionHost.break
 			) {
 				const msg = `Running extension tests from the command line is currently only supported if no other instance of ${productService.nameShort} is running.`;
+
 				logService.error(msg);
+
 				client.dispose();
 
 				throw new Error(msg);
@@ -583,6 +613,7 @@ class CodeMain {
 					);
 				}, 10000);
 			}
+
 			const otherInstanceLaunchMainService =
 				ProxyChannel.toService<ILaunchMainService>(
 					client.getChannel("launch"),
@@ -617,6 +648,7 @@ class CodeMain {
 						mainDiagnostics,
 						remoteDiagnostics,
 					);
+
 					console.log(diagnostics);
 
 					throw new ExpectedError();
@@ -631,6 +663,7 @@ class CodeMain {
 			}
 			// Send environment over...
 			logService.trace("Sending env to running instance...");
+
 			await otherInstanceLaunchMainService.start(
 				environmentMainService.args,
 				process.env as IProcessEnvironment,
@@ -641,6 +674,7 @@ class CodeMain {
 			if (startupWarningDialogHandle) {
 				clearTimeout(startupWarningDialogHandle);
 			}
+
 			throw new ExpectedError(
 				"Sent env to running instance. Terminating...",
 			);
@@ -663,6 +697,7 @@ class CodeMain {
 
 		return mainProcessNodeIpcServer;
 	}
+
 	private handleStartupDataDirError(
 		environmentMainService: IEnvironmentMainService,
 		productService: IProductService,
@@ -679,6 +714,7 @@ class CodeMain {
 					tildify: environmentMainService,
 				}),
 			);
+
 			this.showStartupWarningDialog(
 				localize(
 					"startupDataDirError",
@@ -694,6 +730,7 @@ class CodeMain {
 			);
 		}
 	}
+
 	private showStartupWarningDialog(
 		message: string,
 		detail: string,
@@ -722,12 +759,14 @@ class CodeMain {
 			).options,
 		);
 	}
+
 	private async windowsAllowSetForegroundWindow(
 		launchMainService: ILaunchMainService,
 		logService: ILogService,
 	): Promise<void> {
 		if (isWindows) {
 			const processId = await launchMainService.getMainProcessId();
+
 			logService.trace(
 				"Sending some foreground love to the running instance:",
 				processId,
@@ -742,6 +781,7 @@ class CodeMain {
 			}
 		}
 	}
+
 	private quit(
 		accessor: ServicesAccessor,
 		reason?: ExpectedError | Error,
@@ -766,6 +806,7 @@ class CodeMain {
 				}
 			}
 		}
+
 		lifecycleMainService.kill(exitCode);
 	}
 	//#region Command line arguments utilities
@@ -788,24 +829,31 @@ class CodeMain {
 					"--waitMarkerFilePath",
 					waitMarkerFilePath,
 				);
+
 				args.waitMarkerFilePath = waitMarkerFilePath;
 			}
 		}
+
 		return args;
 	}
+
 	private validatePaths(args: NativeParsedArgs): NativeParsedArgs {
 		// Track URLs if they're going to be used
 		if (args["open-url"]) {
 			args._urls = args._;
+
 			args._ = [];
 		}
 		// Normalize paths and watch out for goto line mode
 		if (!args["remote"]) {
 			const paths = this.doValidatePaths(args._, args.goto);
+
 			args._ = paths;
 		}
+
 		return args;
 	}
+
 	private doValidatePaths(args: string[], gotoLineMode?: boolean): string[] {
 		const currentWorkingDir = cwd();
 
@@ -816,14 +864,17 @@ class CodeMain {
 
 			if (gotoLineMode) {
 				parsedPath = parseLineAndColumnAware(pathCandidate);
+
 				pathCandidate = parsedPath.path;
 			}
+
 			if (pathCandidate) {
 				pathCandidate = this.preparePath(
 					currentWorkingDir,
 					pathCandidate,
 				);
 			}
+
 			const sanitizedFilePath = sanitizeFilePath(
 				pathCandidate,
 				currentWorkingDir,
@@ -837,11 +888,13 @@ class CodeMain {
 			) {
 				return null; // do not allow invalid file names
 			}
+
 			if (gotoLineMode && parsedPath) {
 				parsedPath.path = sanitizedFilePath;
 
 				return this.toPath(parsedPath);
 			}
+
 			return sanitizedFilePath;
 		});
 
@@ -853,6 +906,7 @@ class CodeMain {
 
 		return coalesce(distinctPaths);
 	}
+
 	private preparePath(cwd: string, path: string): string {
 		// Trim trailing quotes
 		if (isWindows) {
@@ -867,17 +921,21 @@ class CodeMain {
 			// Trim trailing '.' chars on Windows to prevent invalid file names
 			path = rtrim(path, ".");
 		}
+
 		return path;
 	}
+
 	private toPath(pathWithLineAndCol: IPathWithLineAndColumn): string {
 		const segments = [pathWithLineAndCol.path];
 
 		if (typeof pathWithLineAndCol.line === "number") {
 			segments.push(String(pathWithLineAndCol.line));
 		}
+
 		if (typeof pathWithLineAndCol.column === "number") {
 			segments.push(String(pathWithLineAndCol.column));
 		}
+
 		return segments.join(":");
 	}
 }

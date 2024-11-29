@@ -156,6 +156,7 @@ registerEditorAction(
 					};
 				}
 			}
+
 			return CopyPasteController.get(editor)?.pasteAs(preference);
 		}
 	},

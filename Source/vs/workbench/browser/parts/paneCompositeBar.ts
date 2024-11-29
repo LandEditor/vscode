@@ -72,10 +72,15 @@ import { IPaneCompositePart } from "./paneCompositePart.js";
 
 interface IPlaceholderViewContainer {
 	readonly id: string;
+
 	readonly name?: string;
+
 	readonly iconUrl?: UriComponents;
+
 	readonly themeIcon?: ThemeIcon;
+
 	readonly isBuiltin?: boolean;
+
 	readonly views?: { when?: string }[];
 	// TODO @sandy081: Remove this after a while. Migrated to visible in IViewContainerWorkspaceState
 	readonly visible?: boolean;
@@ -83,7 +88,9 @@ interface IPlaceholderViewContainer {
 
 interface IPinnedViewContainer {
 	readonly id: string;
+
 	readonly pinned: boolean;
+
 	readonly order?: number;
 	// TODO @sandy081: Remove this after a while. Migrated to visible in IViewContainerWorkspaceState
 	readonly visible: boolean;
@@ -91,38 +98,60 @@ interface IPinnedViewContainer {
 
 interface IViewContainerWorkspaceState {
 	readonly id: string;
+
 	readonly visible: boolean;
 }
 
 interface ICachedViewContainer {
 	readonly id: string;
+
 	name?: string;
+
 	icon?: URI | ThemeIcon;
+
 	readonly pinned: boolean;
+
 	readonly order?: number;
+
 	visible: boolean;
+
 	isBuiltin?: boolean;
+
 	views?: { when?: string }[];
 }
 
 export interface IPaneCompositeBarOptions {
 	readonly partContainerClass: string;
+
 	readonly pinnedViewContainersKey: string;
+
 	readonly placeholderViewContainersKey: string;
+
 	readonly viewContainersWorkspaceStateKey: string;
+
 	readonly icon: boolean;
+
 	readonly compact?: boolean;
+
 	readonly iconSize: number;
+
 	readonly recomputeSizes: boolean;
+
 	readonly orientation: ActionsOrientation;
+
 	readonly compositeSize: number;
+
 	readonly overflowActionSize: number;
+
 	readonly preventLoopNavigation?: boolean;
+
 	readonly activityHoverOptions: IActivityHoverOptions;
+
 	readonly fillExtraContextMenuActions: (
 		actions: IAction[],
 		e?: MouseEvent | GestureEvent,
 	) => void;
+
 	readonly colors: (theme: IColorTheme) => ICompositeBarColors;
 }
 
@@ -130,15 +159,20 @@ export class PaneCompositeBar extends Disposable {
 	private readonly viewContainerDisposables = this._register(
 		new DisposableMap<string, IDisposable>(),
 	);
+
 	private readonly location: ViewContainerLocation;
 
 	private readonly compositeBar: CompositeBar;
+
 	readonly dndHandler: ICompositeDragAndDrop;
+
 	private readonly compositeActions = new Map<
 		string,
 		{
 			activityAction: ViewContainerActivityAction;
+
 			pinnedAction: ToggleCompositePinnedAction;
+
 			badgeAction: ToggleCompositeBadgeAction;
 		}
 	>();
@@ -164,6 +198,7 @@ export class PaneCompositeBar extends Disposable {
 		protected readonly layoutService: IWorkbenchLayoutService,
 	) {
 		super();
+
 		this.location =
 			paneCompositePart.partId === Parts.PANEL_PART
 				? ViewContainerLocation.Panel
@@ -201,8 +236,11 @@ export class PaneCompositeBar extends Disposable {
 			order: container.order,
 			pinned: container.pinned,
 		}));
+
 		this.compositeBar = this.createCompositeBar(cachedItems);
+
 		this.onDidRegisterViewContainers(this.getViewContainers());
+
 		this.registerListeners();
 	}
 
@@ -304,6 +342,7 @@ export class PaneCompositeBar extends Disposable {
 							undefined,
 							"resetLocationAction",
 						);
+
 						this.viewService.openViewContainer(
 							viewContainer.id,
 							true,
@@ -335,6 +374,7 @@ export class PaneCompositeBar extends Disposable {
 									undefined,
 									"resetLocationAction",
 								);
+
 								this.viewService.openViewContainer(
 									viewContainer.id,
 									true,
@@ -373,11 +413,13 @@ export class PaneCompositeBar extends Disposable {
 				} else {
 					index = undefined; // restore default location
 				}
+
 				this.viewDescriptorService.moveViewContainerToLocation(
 					viewContainer,
 					newLocation,
 					index,
 				);
+
 				this.viewService.openViewContainer(viewContainer.id, true);
 			},
 		});
@@ -391,6 +433,7 @@ export class PaneCompositeBar extends Disposable {
 					this.onDidChangeViewContainers(added, removed),
 			),
 		);
+
 		this._register(
 			this.viewDescriptorService.onDidChangeContainerLocation(
 				({ viewContainer, from, to }) =>
@@ -408,6 +451,7 @@ export class PaneCompositeBar extends Disposable {
 				this.onDidChangeViewContainerVisibility(e.getId(), true),
 			),
 		);
+
 		this._register(
 			this.paneCompositePart.onDidPaneCompositeClose((e) =>
 				this.onDidChangeViewContainerVisibility(e.getId(), false),
@@ -419,13 +463,17 @@ export class PaneCompositeBar extends Disposable {
 			if (this._store.isDisposed) {
 				return;
 			}
+
 			this.onDidRegisterExtensions();
+
 			this._register(
 				this.compositeBar.onDidChange(() => {
 					this.updateCompositeBarItemsFromStorage(true);
+
 					this.saveCachedViewContainers();
 				}),
 			);
+
 			this._register(
 				this.storageService.onDidChangeValue(
 					StorageScope.PROFILE,
@@ -439,10 +487,12 @@ export class PaneCompositeBar extends Disposable {
 	private onDidChangeViewContainers(
 		added: readonly {
 			container: ViewContainer;
+
 			location: ViewContainerLocation;
 		}[],
 		removed: readonly {
 			container: ViewContainer;
+
 			location: ViewContainerLocation;
 		}[],
 	) {
@@ -451,6 +501,7 @@ export class PaneCompositeBar extends Disposable {
 			.forEach(({ container }) =>
 				this.onDidDeregisterViewContainer(container),
 			);
+
 		this.onDidRegisterViewContainers(
 			added
 				.filter(({ location }) => location === this.location)
@@ -513,6 +564,7 @@ export class PaneCompositeBar extends Disposable {
 		if (viewContainer) {
 			// Update the composite bar by adding
 			this.addComposite(viewContainer);
+
 			this.compositeBar.activateComposite(viewContainer.id);
 
 			if (this.shouldBeHidden(viewContainer)) {
@@ -535,7 +587,9 @@ export class PaneCompositeBar extends Disposable {
 
 	private getCompositeActions(compositeId: string): {
 		activityAction: ViewContainerActivityAction;
+
 		pinnedAction: ToggleCompositePinnedAction;
+
 		badgeAction: ToggleCompositeBadgeAction;
 	} {
 		let compositeActions = this.compositeActions.get(compositeId);
@@ -548,6 +602,7 @@ export class PaneCompositeBar extends Disposable {
 					this.viewDescriptorService.getViewContainerModel(
 						viewContainer,
 					);
+
 				compositeActions = {
 					activityAction: this._register(
 						this.instantiationService.createInstance(
@@ -580,6 +635,7 @@ export class PaneCompositeBar extends Disposable {
 				const cachedComposite = this.cachedViewContainers.filter(
 					(c) => c.id === compositeId,
 				)[0];
+
 				compositeActions = {
 					activityAction: this._register(
 						this.instantiationService.createInstance(
@@ -640,13 +696,16 @@ export class PaneCompositeBar extends Disposable {
 
 			const viewContainerModel =
 				this.viewDescriptorService.getViewContainerModel(viewContainer);
+
 			this.updateCompositeBarActionItem(
 				viewContainer,
 				viewContainerModel,
 			);
+
 			this.showOrHideViewContainer(viewContainer);
 
 			const disposables = new DisposableStore();
+
 			disposables.add(
 				viewContainerModel.onDidChangeContainerInfo(() =>
 					this.updateCompositeBarActionItem(
@@ -655,6 +714,7 @@ export class PaneCompositeBar extends Disposable {
 					),
 				),
 			);
+
 			disposables.add(
 				viewContainerModel.onDidChangeActiveViewDescriptors(() =>
 					this.showOrHideViewContainer(viewContainer),
@@ -667,6 +727,7 @@ export class PaneCompositeBar extends Disposable {
 
 	private onDidDeregisterViewContainer(viewContainer: ViewContainer): void {
 		this.viewContainerDisposables.deleteAndDispose(viewContainer.id);
+
 		this.removeComposite(viewContainer.id);
 	}
 
@@ -680,6 +741,7 @@ export class PaneCompositeBar extends Disposable {
 		const { activityAction, pinnedAction } = this.getCompositeActions(
 			viewContainer.id,
 		);
+
 		activityAction.updateCompositeBarActionItem(compositeBarActionItem);
 
 		if (pinnedAction instanceof PlaceHolderToggleCompositePinnedAction) {
@@ -721,6 +783,7 @@ export class PaneCompositeBar extends Disposable {
 				const cssUrl = asCSSUrl(icon);
 
 				const hash = new StringSHA1();
+
 				hash.update(cssUrl);
 
 				const iconId = `activity-${id.replace(/\./g, "-")}-${hash.digest()}`;
@@ -728,13 +791,16 @@ export class PaneCompositeBar extends Disposable {
 				const iconClass = `.monaco-workbench .${this.options.partContainerClass} .monaco-action-bar .action-label.${iconId}`;
 
 				classNames = [iconId, "uri-icon"];
+
 				createCSSRule(
 					iconClass,
 					`
 				mask: ${cssUrl} no-repeat 50% 50%;
+
 				mask-size: ${this.options.iconSize}px;
 				-webkit-mask: ${cssUrl} no-repeat 50% 50%;
 				-webkit-mask-size: ${this.options.iconSize}px;
+
 				mask-origin: padding;
 				-webkit-mask-origin: padding;
 			`,
@@ -842,7 +908,9 @@ export class PaneCompositeBar extends Disposable {
 
 		if (compositeActions) {
 			compositeActions.activityAction.dispose();
+
 			compositeActions.pinnedAction.dispose();
+
 			this.compositeActions.delete(compositeId);
 		}
 	}
@@ -854,7 +922,9 @@ export class PaneCompositeBar extends Disposable {
 
 		if (compositeActions) {
 			compositeActions.activityAction.dispose();
+
 			compositeActions.pinnedAction.dispose();
+
 			this.compositeActions.delete(compositeId);
 		}
 	}
@@ -928,7 +998,9 @@ export class PaneCompositeBar extends Disposable {
 		}
 
 		this._placeholderViewContainersValue = undefined;
+
 		this._pinnedViewContainersValue = undefined;
+
 		this._cachedViewContainers = undefined;
 
 		const newCompositeItems: ICompositeBarItem[] = [];
@@ -956,6 +1028,7 @@ export class PaneCompositeBar extends Disposable {
 
 				if (index !== -1) {
 					const compositeItem = compositeItems[index];
+
 					newCompositeItems.splice(index, 0, {
 						id: viewContainer.id,
 						name:
@@ -1015,6 +1088,7 @@ export class PaneCompositeBar extends Disposable {
 				for (const { when } of viewContainerModel.allViewDescriptors) {
 					views.push({ when: when ? when.serialize() : undefined });
 				}
+
 				state.push({
 					id: compositeItem.id,
 					name: viewContainerModel.title,
@@ -1046,6 +1120,7 @@ export class PaneCompositeBar extends Disposable {
 
 	private _cachedViewContainers: ICachedViewContainer[] | undefined =
 		undefined;
+
 	private get cachedViewContainers(): ICachedViewContainer[] {
 		if (this._cachedViewContainers === undefined) {
 			this._cachedViewContainers = this.getPinnedViewContainers();
@@ -1059,7 +1134,9 @@ export class PaneCompositeBar extends Disposable {
 					cachedViewContainer.visible =
 						placeholderViewContainer.visible ??
 						cachedViewContainer.visible;
+
 					cachedViewContainer.name = placeholderViewContainer.name;
+
 					cachedViewContainer.icon =
 						placeholderViewContainer.themeIcon
 							? placeholderViewContainer.themeIcon
@@ -1073,11 +1150,14 @@ export class PaneCompositeBar extends Disposable {
 					) {
 						cachedViewContainer.icon = undefined; // Do not cache uri icons with remote connection
 					}
+
 					cachedViewContainer.views = placeholderViewContainer.views;
+
 					cachedViewContainer.isBuiltin =
 						placeholderViewContainer.isBuiltin;
 				}
 			}
+
 			for (const viewContainerWorkspaceState of this.getViewContainersWorkspaceState()) {
 				const cachedViewContainer = this._cachedViewContainers.find(
 					(cached) => cached.id === viewContainerWorkspaceState.id,
@@ -1098,6 +1178,7 @@ export class PaneCompositeBar extends Disposable {
 		cachedViewContainers: ICachedViewContainer[],
 	): void {
 		const pinnedViewContainers = this.getPinnedViewContainers();
+
 		this.setPinnedViewContainers(
 			cachedViewContainers.map(
 				({ id, pinned, order }) =>
@@ -1152,6 +1233,7 @@ export class PaneCompositeBar extends Disposable {
 	}
 
 	private _pinnedViewContainersValue: string | undefined;
+
 	private get pinnedViewContainersValue(): string {
 		if (!this._pinnedViewContainersValue) {
 			this._pinnedViewContainersValue =
@@ -1164,6 +1246,7 @@ export class PaneCompositeBar extends Disposable {
 	private set pinnedViewContainersValue(pinnedViewContainersValue: string) {
 		if (this.pinnedViewContainersValue !== pinnedViewContainersValue) {
 			this._pinnedViewContainersValue = pinnedViewContainersValue;
+
 			this.setStoredPinnedViewContainersValue(pinnedViewContainersValue);
 		}
 	}
@@ -1198,6 +1281,7 @@ export class PaneCompositeBar extends Disposable {
 	}
 
 	private _placeholderViewContainersValue: string | undefined;
+
 	private get placeholderViewContainersValue(): string {
 		if (!this._placeholderViewContainersValue) {
 			this._placeholderViewContainersValue =
@@ -1216,6 +1300,7 @@ export class PaneCompositeBar extends Disposable {
 		) {
 			this._placeholderViewContainersValue =
 				placeholderViewContainesValue;
+
 			this.setStoredPlaceholderViewContainersValue(
 				placeholderViewContainesValue,
 			);
@@ -1252,6 +1337,7 @@ export class PaneCompositeBar extends Disposable {
 	}
 
 	private _viewContainersWorkspaceStateValue: string | undefined;
+
 	private get viewContainersWorkspaceStateValue(): string {
 		if (!this._viewContainersWorkspaceStateValue) {
 			this._viewContainersWorkspaceStateValue =
@@ -1270,6 +1356,7 @@ export class PaneCompositeBar extends Disposable {
 		) {
 			this._viewContainersWorkspaceStateValue =
 				viewContainersWorkspaceStateValue;
+
 			this.setStoredViewContainersWorkspaceStateValue(
 				viewContainersWorkspaceStateValue,
 			);
@@ -1311,7 +1398,9 @@ class ViewContainerActivityAction extends CompositeBarAction {
 		@IActivityService private readonly activityService: IActivityService,
 	) {
 		super(compositeBarActionItem);
+
 		this.updateActivity();
+
 		this._register(
 			this.activityService.onDidChangeActivity(
 				(viewContainerOrAction) => {
@@ -1337,6 +1426,7 @@ class ViewContainerActivityAction extends CompositeBarAction {
 		const activities = this.activityService.getViewContainerActivities(
 			this.compositeBarActionItem.id,
 		);
+
 		this.activity = activities[0];
 	}
 
@@ -1357,6 +1447,7 @@ class ViewContainerActivityAction extends CompositeBarAction {
 		) {
 			return;
 		}
+
 		this.lastRun = now;
 
 		const focus =
@@ -1381,6 +1472,7 @@ class ViewContainerActivityAction extends CompositeBarAction {
 				switch (focusBehavior) {
 					case "focus":
 						this.logAction("refocus");
+
 						this.paneCompositePart.openPaneComposite(
 							this.compositeBarActionItem.id,
 							focus,
@@ -1392,6 +1484,7 @@ class ViewContainerActivityAction extends CompositeBarAction {
 					default:
 						// Hide sidebar if selected viewlet already visible
 						this.logAction("hide");
+
 						this.layoutService.setPartHidden(
 							true,
 							Parts.SIDEBAR_PART,
@@ -1417,18 +1510,26 @@ class ViewContainerActivityAction extends CompositeBarAction {
 	private logAction(action: string) {
 		type ActivityBarActionClassification = {
 			owner: "sbatten";
+
 			comment: "Event logged when an activity bar action is triggered.";
+
 			viewletId: {
 				classification: "SystemMetaData";
+
 				purpose: "FeatureInsight";
+
 				comment: "The view in the activity bar for which the action was performed.";
 			};
+
 			action: {
 				classification: "SystemMetaData";
+
 				purpose: "FeatureInsight";
+
 				comment: 'The action that was performed. e.g. "hide", "show", or "refocus"';
 			};
 		};
+
 		this.telemetryService.publicLog2<
 			{ viewletId: String; action: String },
 			ActivityBarActionClassification

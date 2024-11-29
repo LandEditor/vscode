@@ -38,6 +38,7 @@ export async function migrateUnsupportedExtensions(
 		if (!extensionsControlManifest.deprecated) {
 			return;
 		}
+
 		const installed = await extensionManagementService.getInstalled(
 			ExtensionType.User,
 		);
@@ -48,6 +49,7 @@ export async function migrateUnsupportedExtensions(
 			if (!deprecated?.extension) {
 				continue;
 			}
+
 			const {
 				id: preReleaseExtensionId,
 				autoMigrate,
@@ -57,6 +59,7 @@ export async function migrateUnsupportedExtensions(
 			if (!autoMigrate) {
 				continue;
 			}
+
 			const unsupportedExtension = installed.find((i) =>
 				areSameExtensions(i.identifier, { id: unsupportedExtensionId }),
 			);
@@ -64,6 +67,7 @@ export async function migrateUnsupportedExtensions(
 			if (!unsupportedExtension) {
 				continue;
 			}
+
 			const gallery = (
 				await galleryService.getExtensions(
 					[{ id: preReleaseExtensionId, preRelease }],
@@ -83,6 +87,7 @@ export async function migrateUnsupportedExtensions(
 
 				continue;
 			}
+
 			try {
 				logService.info(
 					`Migrating '${unsupportedExtension.identifier.id}' extension to '${preReleaseExtensionId}' extension...`,
@@ -97,9 +102,11 @@ export async function migrateUnsupportedExtensions(
 								unsupportedExtension.identifier,
 							),
 						);
+
 				await extensionManagementService.uninstall(
 					unsupportedExtension,
 				);
+
 				logService.info(
 					`Uninstalled the unsupported extension '${unsupportedExtension.identifier.id}'`,
 				);
@@ -125,6 +132,7 @@ export async function migrateUnsupportedExtensions(
 								operation: InstallOperation.Migrate,
 							},
 						);
+
 					logService.info(
 						`Installed the pre-release extension '${preReleaseExtension.identifier.id}'`,
 					);
@@ -133,10 +141,12 @@ export async function migrateUnsupportedExtensions(
 						await extensionEnablementService.disableExtension(
 							preReleaseExtension.identifier,
 						);
+
 						logService.info(
 							`Disabled the pre-release extension '${preReleaseExtension.identifier.id}' because the unsupported extension '${unsupportedExtension.identifier.id}' is disabled`,
 						);
 					}
+
 					if (autoMigrate.storage) {
 						extensionStorageService.addToMigrationList(
 							getExtensionId(
@@ -148,11 +158,13 @@ export async function migrateUnsupportedExtensions(
 								preReleaseExtension.manifest.name,
 							),
 						);
+
 						logService.info(
 							`Added pre-release extension to the storage migration list`,
 						);
 					}
 				}
+
 				logService.info(
 					`Migrated '${unsupportedExtension.identifier.id}' extension to '${preReleaseExtensionId}' extension.`,
 				);

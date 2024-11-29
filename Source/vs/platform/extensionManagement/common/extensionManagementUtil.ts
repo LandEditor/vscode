@@ -18,9 +18,11 @@ export function areSameExtensions(a: IExtensionIdentifier, b: IExtensionIdentifi
 	if (a.uuid && b.uuid) {
 		return a.uuid === b.uuid;
 	}
+
 	if (a.id === b.id) {
 		return true;
 	}
+
 	return compareIgnoreCase(a.id, b.id) === 0;
 }
 
@@ -30,12 +32,15 @@ export class ExtensionKey {
 
 	static create(extension: IExtension | IGalleryExtension): ExtensionKey {
 		const version = (extension as IExtension).manifest ? (extension as IExtension).manifest.version : (extension as IGalleryExtension).version;
+
 		const targetPlatform = (extension as IExtension).manifest ? (extension as IExtension).targetPlatform : (extension as IGalleryExtension).properties.targetPlatform;
+
 		return new ExtensionKey(extension.identifier, version, targetPlatform);
 	}
 
 	static parse(key: string): ExtensionKey | null {
 		const matches = ExtensionKeyRegex.exec(key);
+
 		return matches && matches[1] && matches[2] ? new ExtensionKey({ id: matches[1] }, matches[2], matches[4] as TargetPlatform || undefined) : null;
 	}
 
@@ -57,6 +62,7 @@ export class ExtensionKey {
 		if (!(o instanceof ExtensionKey)) {
 			return false;
 		}
+
 		return areSameExtensions(this, o) && this.version === o.version && this.targetPlatform === o.targetPlatform;
 	}
 }
@@ -65,9 +71,11 @@ const EXTENSION_IDENTIFIER_WITH_VERSION_REGEX = /^([^.]+\..+)@((prerelease)|(\d+
 
 export function getIdAndVersion(id: string): [string, string | undefined] {
 	const matches = EXTENSION_IDENTIFIER_WITH_VERSION_REGEX.exec(id);
+
 	if (matches && matches[1]) {
 		return [adoptToGalleryExtensionId(matches[1]), matches[2]];
 	}
+
 	return [adoptToGalleryExtensionId(id), undefined];
 }
 
@@ -85,22 +93,27 @@ export function getGalleryExtensionId(publisher: string | undefined, name: strin
 
 export function groupByExtension<T>(extensions: T[], getExtensionIdentifier: (t: T) => IExtensionIdentifier): T[][] {
 	const byExtension: T[][] = [];
+
 	const findGroup = (extension: T) => {
 		for (const group of byExtension) {
 			if (group.some(e => areSameExtensions(getExtensionIdentifier(e), getExtensionIdentifier(extension)))) {
 				return group;
 			}
 		}
+
 		return null;
 	};
+
 	for (const extension of extensions) {
 		const group = findGroup(extension);
+
 		if (group) {
 			group.push(extension);
 		} else {
 			byExtension.push([extension]);
 		}
 	}
+
 	return byExtension;
 }
 
@@ -154,6 +167,7 @@ export const BetterMergeId = new ExtensionIdentifier('pprice.better-merge');
 
 export function getExtensionDependencies(installedExtensions: ReadonlyArray<IExtension>, extension: IExtension): IExtension[] {
 	const dependencies: IExtension[] = [];
+
 	const extensions = extension.manifest.extensionDependencies?.slice(0) ?? [];
 
 	while (extensions.length) {
@@ -161,8 +175,10 @@ export function getExtensionDependencies(installedExtensions: ReadonlyArray<IExt
 
 		if (id && dependencies.every(e => !areSameExtensions(e.identifier, { id }))) {
 			const ext = installedExtensions.filter(e => areSameExtensions(e.identifier, { id }));
+
 			if (ext.length === 1) {
 				dependencies.push(ext[0]);
+
 				extensions.push(...ext[0].manifest.extensionDependencies?.slice(0) ?? []);
 			}
 		}
@@ -175,25 +191,33 @@ async function isAlpineLinux(fileService: IFileService, logService: ILogService)
 	if (!isLinux) {
 		return false;
 	}
+
 	let content: string | undefined;
+
 	try {
 		const fileContent = await fileService.readFile(URI.file('/etc/os-release'));
+
 		content = fileContent.value.toString();
 	} catch (error) {
 		try {
 			const fileContent = await fileService.readFile(URI.file('/usr/lib/os-release'));
+
 			content = fileContent.value.toString();
 		} catch (error) {
 			/* Ignore */
 			logService.debug(`Error while getting the os-release file.`, getErrorMessage(error));
 		}
 	}
+
 	return !!content && (content.match(/^ID=([^\u001b\r\n]*)/m) || [])[1] === 'alpine';
 }
 
 export async function computeTargetPlatform(fileService: IFileService, logService: ILogService): Promise<TargetPlatform> {
 	const alpineLinux = await isAlpineLinux(fileService, logService);
+
 	const targetPlatform = getTargetPlatform(alpineLinux ? 'alpine' : platform, arch);
+
 	logService.debug('ComputeTargetPlatform:', targetPlatform);
+
 	return targetPlatform;
 }

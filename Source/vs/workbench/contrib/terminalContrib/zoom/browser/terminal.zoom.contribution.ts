@@ -45,6 +45,7 @@ class TerminalMouseWheelZoomContribution
 	 * 'active terminals' are only tracked for non-detached terminal instanecs.
 	 */
 	static activeFindWidget?: TerminalMouseWheelZoomContribution;
+
 	static get(
 		instance: ITerminalInstance | IDetachedTerminalInstance,
 	): TerminalMouseWheelZoomContribution | null {
@@ -52,6 +53,7 @@ class TerminalMouseWheelZoomContribution
 			TerminalMouseWheelZoomContribution.ID,
 		);
 	}
+
 	private readonly _listener = this._register(new MutableDisposable());
 
 	constructor(
@@ -63,6 +65,7 @@ class TerminalMouseWheelZoomContribution
 	) {
 		super();
 	}
+
 	xtermOpen(
 		xterm: IXtermTerminal & {
 			raw: RawXtermTerminal;
@@ -92,9 +95,11 @@ class TerminalMouseWheelZoomContribution
 			),
 		);
 	}
+
 	private _getConfigFontSize(): number {
 		return this._configurationService.getValue(TerminalSettingId.FontSize);
 	}
+
 	private _setupMouseWheelZoomListener(raw: RawXtermTerminal) {
 		// This is essentially a copy of what we do in the editor, just we modify font size directly
 		// as there is no separate zoom level concept in the terminal
@@ -107,18 +112,22 @@ class TerminalMouseWheelZoomContribution
 		let gestureHasZoomModifiers = false;
 
 		let gestureAccumulatedDelta = 0;
+
 		raw.attachCustomWheelEventHandler((e: WheelEvent) => {
 			const browserEvent = e as any as IMouseWheelEvent;
 
 			if (classifier.isPhysicalMouseWheel()) {
 				if (this._hasMouseWheelZoomModifiers(browserEvent)) {
 					const delta = browserEvent.deltaY > 0 ? -1 : 1;
+
 					this._configurationService.updateValue(
 						TerminalSettingId.FontSize,
 						this._getConfigFontSize() + delta,
 					);
 					// EditorZoom.setZoomLevel(zoomLevel + delta);
+
 					browserEvent.preventDefault();
+
 					browserEvent.stopPropagation();
 
 					return false;
@@ -130,11 +139,15 @@ class TerminalMouseWheelZoomContribution
 				if (Date.now() - prevMouseWheelTime > 50) {
 					// reset if more than 50ms have passed
 					gestureStartFontSize = this._getConfigFontSize();
+
 					gestureHasZoomModifiers =
 						this._hasMouseWheelZoomModifiers(browserEvent);
+
 					gestureAccumulatedDelta = 0;
 				}
+
 				prevMouseWheelTime = Date.now();
+
 				gestureAccumulatedDelta += browserEvent.deltaY;
 
 				if (gestureHasZoomModifiers) {
@@ -145,23 +158,30 @@ class TerminalMouseWheelZoomContribution
 					const deltaDirection = gestureAccumulatedDelta > 0 ? -1 : 1;
 
 					const delta = deltaAbs * deltaDirection;
+
 					this._configurationService.updateValue(
 						TerminalSettingId.FontSize,
 						gestureStartFontSize + delta,
 					);
+
 					gestureAccumulatedDelta += browserEvent.deltaY;
+
 					browserEvent.preventDefault();
+
 					browserEvent.stopPropagation();
 
 					return false;
 				}
 			}
+
 			return true;
 		});
+
 		this._listener.value = toDisposable(() =>
 			raw.attachCustomWheelEventHandler(() => true),
 		);
 	}
+
 	private _hasMouseWheelZoomModifiers(
 		browserEvent: IMouseWheelEvent,
 	): boolean {
@@ -219,6 +239,7 @@ registerTerminalAction({
 	title: localize2("fontZoomReset", "Reset Font Size"),
 	run: async (c, accessor) => {
 		const configurationService = accessor.get(IConfigurationService);
+
 		await configurationService.updateValue(
 			TerminalSettingId.FontSize,
 			defaultTerminalFontSize,

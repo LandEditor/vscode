@@ -24,11 +24,13 @@ export class ExtHostDownloadService extends Disposable {
 		const proxy = extHostRpc.getProxy(
 			MainContext.MainThreadDownloadService,
 		);
+
 		commands.registerCommand(
 			false,
 			"_workbench.downloadResource",
 			async (resource: URI): Promise<any> => {
 				const location = URI.file(join(tmpdir(), generateUuid()));
+
 				await proxy.$download(resource, location);
 
 				return location;

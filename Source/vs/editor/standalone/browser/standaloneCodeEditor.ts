@@ -266,15 +266,18 @@ export interface IStandaloneDiffEditorConstructionOptions
 }
 export interface IStandaloneCodeEditor extends ICodeEditor {
 	updateOptions(newOptions: IEditorOptions & IGlobalEditorOptions): void;
+
 	addCommand(
 		keybinding: number,
 		handler: ICommandHandler,
 		context?: string,
 	): string | null;
+
 	createContextKey<T extends ContextKeyValue = ContextKeyValue>(
 		key: string,
 		defaultValue: T,
 	): IContextKey<T>;
+
 	addAction(descriptor: IActionDescriptor): IDisposable;
 }
 export interface IStandaloneDiffEditor extends IDiffEditor {
@@ -283,10 +286,12 @@ export interface IStandaloneDiffEditor extends IDiffEditor {
 		handler: ICommandHandler,
 		context?: string,
 	): string | null;
+
 	createContextKey<T extends ContextKeyValue = ContextKeyValue>(
 		key: string,
 		defaultValue: T,
 	): IContextKey<T>;
+
 	addAction(descriptor: IActionDescriptor): IDisposable;
 
 	getOriginalEditor(): IStandaloneCodeEditor;
@@ -306,8 +311,10 @@ function createAriaDomNode(parent: HTMLElement | undefined) {
 		if (ariaDomNodeCreated) {
 			return;
 		}
+
 		ariaDomNodeCreated = true;
 	}
+
 	aria.setARIAContainer(parent || mainWindow.document.body);
 }
 /**
@@ -346,6 +353,7 @@ export class StandaloneCodeEditor
 		languageFeaturesService: ILanguageFeaturesService,
 	) {
 		const options = { ..._options };
+
 		options.ariaLabel =
 			options.ariaLabel ||
 			StandaloneCodeEditorNLS.editorViewAccessibleLabel;
@@ -370,6 +378,7 @@ export class StandaloneCodeEditor
 		} else {
 			this._standaloneKeybindingService = null;
 		}
+
 		createAriaDomNode(options.ariaContainerElement);
 
 		setHoverDelegateFactory((placement, enableInstantHover) =>
@@ -383,6 +392,7 @@ export class StandaloneCodeEditor
 
 		setBaseLayerHoverDelegate(hoverService);
 	}
+
 	public addCommand(
 		keybinding: number,
 		handler: ICommandHandler,
@@ -395,9 +405,11 @@ export class StandaloneCodeEditor
 
 			return null;
 		}
+
 		const commandId = "DYNAMIC_" + ++LAST_GENERATED_COMMAND_ID;
 
 		const whenExpression = ContextKeyExpr.deserialize(context);
+
 		this._standaloneKeybindingService.addDynamicKeybinding(
 			commandId,
 			keybinding,
@@ -407,12 +419,14 @@ export class StandaloneCodeEditor
 
 		return commandId;
 	}
+
 	public createContextKey<T extends ContextKeyValue = ContextKeyValue>(
 		key: string,
 		defaultValue: T,
 	): IContextKey<T> {
 		return this._contextKeyService.createKey(key, defaultValue);
 	}
+
 	public addAction(_descriptor: IActionDescriptor): IDisposable {
 		if (
 			typeof _descriptor.id !== "string" ||
@@ -423,6 +437,7 @@ export class StandaloneCodeEditor
 				"Invalid action descriptor, `id`, `label` and `run` are required properties!",
 			);
 		}
+
 		if (!this._standaloneKeybindingService) {
 			console.warn(
 				"Cannot add keybinding because the editor is configured with an unrecognized KeybindingService",
@@ -474,6 +489,7 @@ export class StandaloneCodeEditor
 				group: contextMenuGroupId,
 				order: contextMenuOrder,
 			};
+
 			toDispose.add(
 				MenuRegistry.appendMenuItem(MenuId.EditorContext, menuItem),
 			);
@@ -504,6 +520,7 @@ export class StandaloneCodeEditor
 		);
 		// Store it under the original id, such that trigger with the original id will work
 		this._actions.set(id, internalAction);
+
 		toDispose.add(
 			toDisposable(() => {
 				this._actions.delete(id);
@@ -512,6 +529,7 @@ export class StandaloneCodeEditor
 
 		return toDispose;
 	}
+
 	protected override _triggerCommand(handlerId: string, payload: any): void {
 		if (this._codeEditorService instanceof StandaloneCodeEditorService) {
 			// Help commands find this editor as the active editor
@@ -532,7 +550,9 @@ export class StandaloneEditor
 	implements IStandaloneCodeEditor
 {
 	private readonly _configurationService: IConfigurationService;
+
 	private readonly _standaloneThemeService: IStandaloneThemeService;
+
 	private _ownsModel: boolean;
 
 	constructor(
@@ -568,6 +588,7 @@ export class StandaloneEditor
 		languageFeaturesService: ILanguageFeaturesService,
 	) {
 		const options = { ..._options };
+
 		updateConfigurationService(configurationService, options, false);
 
 		const themeDomRegistration = (<StandaloneThemeService>(
@@ -577,12 +598,15 @@ export class StandaloneEditor
 		if (typeof options.theme === "string") {
 			themeService.setTheme(options.theme);
 		}
+
 		if (typeof options.autoDetectHighContrast !== "undefined") {
 			themeService.setAutoDetectHighContrast(
 				Boolean(options.autoDetectHighContrast),
 			);
 		}
+
 		const _model: ITextModel | null | undefined = options.model;
+
 		delete options.model;
 
 		super(
@@ -600,8 +624,11 @@ export class StandaloneEditor
 			languageConfigurationService,
 			languageFeaturesService,
 		);
+
 		this._configurationService = configurationService;
+
 		this._standaloneThemeService = themeService;
+
 		this._register(themeDomRegistration);
 
 		let model: ITextModel | null;
@@ -611,6 +638,7 @@ export class StandaloneEditor
 				languageService.getLanguageIdByMimeType(options.language) ||
 				options.language ||
 				PLAINTEXT_LANGUAGE_ID;
+
 			model = createTextModel(
 				modelService,
 				languageService,
@@ -618,11 +646,14 @@ export class StandaloneEditor
 				languageId,
 				undefined,
 			);
+
 			this._ownsModel = true;
 		} else {
 			model = _model;
+
 			this._ownsModel = false;
 		}
+
 		this._attachModel(model);
 
 		if (model) {
@@ -630,12 +661,15 @@ export class StandaloneEditor
 				oldModelUrl: null,
 				newModelUrl: model.uri,
 			};
+
 			this._onDidChangeModel.fire(e);
 		}
 	}
+
 	public override dispose(): void {
 		super.dispose();
 	}
+
 	public override updateOptions(
 		newOptions: Readonly<IEditorOptions & IGlobalEditorOptions>,
 	): void {
@@ -648,13 +682,16 @@ export class StandaloneEditor
 		if (typeof newOptions.theme === "string") {
 			this._standaloneThemeService.setTheme(newOptions.theme);
 		}
+
 		if (typeof newOptions.autoDetectHighContrast !== "undefined") {
 			this._standaloneThemeService.setAutoDetectHighContrast(
 				Boolean(newOptions.autoDetectHighContrast),
 			);
 		}
+
 		super.updateOptions(newOptions);
 	}
+
 	protected override _postDetachModelCleanup(
 		detachedModel: ITextModel,
 	): void {
@@ -662,6 +699,7 @@ export class StandaloneEditor
 
 		if (detachedModel && this._ownsModel) {
 			detachedModel.dispose();
+
 			this._ownsModel = false;
 		}
 	}
@@ -671,6 +709,7 @@ export class StandaloneDiffEditor2
 	implements IStandaloneDiffEditor
 {
 	private readonly _configurationService: IConfigurationService;
+
 	private readonly _standaloneThemeService: IStandaloneThemeService;
 
 	constructor(
@@ -700,6 +739,7 @@ export class StandaloneDiffEditor2
 		accessibilitySignalService: IAccessibilitySignalService,
 	) {
 		const options = { ..._options };
+
 		updateConfigurationService(configurationService, options, true);
 
 		const themeDomRegistration = (<StandaloneThemeService>(
@@ -709,11 +749,13 @@ export class StandaloneDiffEditor2
 		if (typeof options.theme === "string") {
 			themeService.setTheme(options.theme);
 		}
+
 		if (typeof options.autoDetectHighContrast !== "undefined") {
 			themeService.setAutoDetectHighContrast(
 				Boolean(options.autoDetectHighContrast),
 			);
 		}
+
 		super(
 			domElement,
 			options,
@@ -724,13 +766,18 @@ export class StandaloneDiffEditor2
 			accessibilitySignalService,
 			editorProgressService,
 		);
+
 		this._configurationService = configurationService;
+
 		this._standaloneThemeService = themeService;
+
 		this._register(themeDomRegistration);
 	}
+
 	public override dispose(): void {
 		super.dispose();
 	}
+
 	public override updateOptions(
 		newOptions: Readonly<IDiffEditorOptions & IGlobalEditorOptions>,
 	): void {
@@ -743,13 +790,16 @@ export class StandaloneDiffEditor2
 		if (typeof newOptions.theme === "string") {
 			this._standaloneThemeService.setTheme(newOptions.theme);
 		}
+
 		if (typeof newOptions.autoDetectHighContrast !== "undefined") {
 			this._standaloneThemeService.setAutoDetectHighContrast(
 				Boolean(newOptions.autoDetectHighContrast),
 			);
 		}
+
 		super.updateOptions(newOptions);
 	}
+
 	protected override _createInnerEditor(
 		instantiationService: IInstantiationService,
 		container: HTMLElement,
@@ -761,12 +811,15 @@ export class StandaloneDiffEditor2
 			options,
 		);
 	}
+
 	public override getOriginalEditor(): IStandaloneCodeEditor {
 		return <StandaloneCodeEditor>super.getOriginalEditor();
 	}
+
 	public override getModifiedEditor(): IStandaloneCodeEditor {
 		return <StandaloneCodeEditor>super.getModifiedEditor();
 	}
+
 	public addCommand(
 		keybinding: number,
 		handler: ICommandHandler,
@@ -778,12 +831,14 @@ export class StandaloneDiffEditor2
 			context,
 		);
 	}
+
 	public createContextKey<T extends ContextKeyValue = ContextKeyValue>(
 		key: string,
 		defaultValue: T,
 	): IContextKey<T> {
 		return this.getModifiedEditor().createContextKey(key, defaultValue);
 	}
+
 	public addAction(descriptor: IActionDescriptor): IDisposable {
 		return this.getModifiedEditor().addAction(descriptor);
 	}
@@ -808,6 +863,7 @@ export function createTextModel(
 		if (firstLF !== -1) {
 			firstLine = value.substring(0, firstLF);
 		}
+
 		return doCreateModel(
 			modelService,
 			value,
@@ -815,6 +871,7 @@ export function createTextModel(
 			uri,
 		);
 	}
+
 	return doCreateModel(
 		modelService,
 		value,

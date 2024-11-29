@@ -92,7 +92,9 @@ class ProcessListDelegate
 
 interface IProcessItemTemplateData extends IProcessRowTemplateData {
 	readonly CPU: HTMLElement;
+
 	readonly memory: HTMLElement;
+
 	readonly PID: HTMLElement;
 }
 
@@ -189,8 +191,11 @@ class ProcessHeaderTreeRenderer
 		height: number | undefined,
 	): void {
 		templateData.name.textContent = localize("name", "Process Name");
+
 		templateData.CPU.textContent = localize("cpu", "CPU (%)");
+
 		templateData.PID.textContent = localize("pid", "PID");
+
 		templateData.memory.textContent = localize("memory", "Memory (MB)");
 	}
 
@@ -204,14 +209,17 @@ class MachineRenderer
 		ITreeRenderer<MachineProcessInformation, void, IProcessRowTemplateData>
 {
 	templateId: string = "machine";
+
 	renderTemplate(container: HTMLElement): IProcessRowTemplateData {
 		const data = Object.create(null);
 
 		const row = append(container, $(".row"));
+
 		data.name = append(row, $(".nameLabel"));
 
 		return data;
 	}
+
 	renderElement(
 		node: ITreeNode<MachineProcessInformation, void>,
 		index: number,
@@ -220,6 +228,7 @@ class MachineRenderer
 	): void {
 		templateData.name.textContent = node.element.name;
 	}
+
 	disposeTemplate(templateData: IProcessRowTemplateData): void {
 		// Nothing to do
 	}
@@ -230,14 +239,17 @@ class ErrorRenderer
 		ITreeRenderer<IRemoteDiagnosticError, void, IProcessRowTemplateData>
 {
 	templateId: string = "error";
+
 	renderTemplate(container: HTMLElement): IProcessRowTemplateData {
 		const data = Object.create(null);
 
 		const row = append(container, $(".row"));
+
 		data.name = append(row, $(".nameLabel"));
 
 		return data;
 	}
+
 	renderElement(
 		node: ITreeNode<IRemoteDiagnosticError, void>,
 		index: number,
@@ -246,6 +258,7 @@ class ErrorRenderer
 	): void {
 		templateData.name.textContent = node.element.errorMessage;
 	}
+
 	disposeTemplate(templateData: IProcessRowTemplateData): void {
 		// Nothing to do
 	}
@@ -261,6 +274,7 @@ class ProcessRenderer
 	) {}
 
 	templateId: string = "process";
+
 	renderTemplate(container: HTMLElement): IProcessItemTemplateData {
 		const row = append(container, $(".row"));
 
@@ -274,6 +288,7 @@ class ProcessRenderer
 
 		return { name, CPU, PID, memory };
 	}
+
 	renderElement(
 		node: ITreeNode<ProcessItem, void>,
 		index: number,
@@ -291,16 +306,20 @@ class ProcessRenderer
 		}
 
 		templateData.name.textContent = name;
+
 		templateData.name.title = element.cmd;
 
 		templateData.CPU.textContent = element.load.toFixed(0);
+
 		templateData.PID.textContent = pid;
+
 		templateData.PID.parentElement!.id = `pid-${pid}`;
 
 		const memory =
 			this.platform === "win32"
 				? element.mem
 				: this.totalMem * (element.mem / 100);
+
 		templateData.memory.textContent = (memory / ByteSize.MB).toFixed(0);
 	}
 
@@ -311,6 +330,7 @@ class ProcessRenderer
 
 interface MachineProcessInformation {
 	name: string;
+
 	rootProcess: ProcessItem | IRemoteDiagnosticError;
 }
 
@@ -360,12 +380,14 @@ class ProcessExplorer {
 		private data: ProcessExplorerData,
 	) {
 		const mainProcessService = new ElectronIPCMainProcessService(windowId);
+
 		this.nativeHostService = new NativeHostService(
 			windowId,
 			mainProcessService,
 		) as INativeHostService;
 
 		this.applyStyles(data.styles);
+
 		this.setEventHandlers(data);
 
 		ipcRenderer.on(
@@ -398,6 +420,7 @@ class ProcessExplorer {
 					await this.createProcessTree(processRoots);
 				} else {
 					this.tree.setInput({ processes: { processRoots } });
+
 					this.tree.layout(
 						mainWindow.innerHeight,
 						mainWindow.innerWidth,
@@ -409,7 +432,9 @@ class ProcessExplorer {
 		);
 
 		this.lastRequestTime = Date.now();
+
 		ipcRenderer.send("vscode:pidToNameRequest");
+
 		ipcRenderer.send("vscode:listProcesses");
 	}
 
@@ -421,6 +446,7 @@ class ProcessExplorer {
 			// Cmd/Ctrl + w closes issue window
 			if (cmdOrCtrlKey && e.keyCode === 87) {
 				e.stopPropagation();
+
 				e.preventDefault();
 
 				ipcRenderer.send("vscode:closeProcessExplorer");
@@ -499,12 +525,15 @@ class ProcessExplorer {
 		);
 
 		this.tree.setInput({ processes: { processRoots } });
+
 		this.tree.layout(mainWindow.innerHeight, mainWindow.innerWidth);
+
 		this.tree.onKeyDown((e) => {
 			const event = new StandardKeyboardEvent(e);
 
 			if (event.keyCode === KeyCode.KeyE && event.altKey) {
 				const selectionPids = this.getSelectedPids();
+
 				void Promise.all(
 					selectionPids.map((pid) =>
 						this.nativeHostService.killProcess(pid, "SIGTERM"),
@@ -512,6 +541,7 @@ class ProcessExplorer {
 				).then(() => this.tree?.refresh());
 			}
 		});
+
 		this.tree.onContextMenu((e) => {
 			if (isProcessItem(e.element)) {
 				this.showContextMenu(e.element, true);
@@ -522,6 +552,7 @@ class ProcessExplorer {
 
 		mainWindow.addEventListener("resize", () => {
 			container.style.height = `${mainWindow.innerHeight}px`;
+
 			this.tree?.layout(mainWindow.innerHeight, mainWindow.innerWidth);
 		});
 	}
@@ -576,6 +607,7 @@ class ProcessExplorer {
 			content.push(
 				`.monaco-list:focus .monaco-list-row.focused { background-color: ${styles.listFocusBackground}; }`,
 			);
+
 			content.push(
 				`.monaco-list:focus .monaco-list-row.focused:hover { background-color: ${styles.listFocusBackground}; }`,
 			);
@@ -591,6 +623,7 @@ class ProcessExplorer {
 			content.push(
 				`.monaco-list:focus .monaco-list-row.selected { background-color: ${styles.listActiveSelectionBackground}; }`,
 			);
+
 			content.push(
 				`.monaco-list:focus .monaco-list-row.selected:hover { background-color: ${styles.listActiveSelectionBackground}; }`,
 			);
@@ -709,8 +742,10 @@ class ProcessExplorer {
 				// item only.
 				if (!selectionPids?.includes(pid)) {
 					selectionPids.length = 0;
+
 					selectionPids.push(pid);
 				}
+
 				const rows = selectionPids
 					?.map((e) => mainWindow.document.getElementById(`pid-${e}`))
 					.filter((e) => !!e) as HTMLElement[];
@@ -719,6 +754,7 @@ class ProcessExplorer {
 					const text = rows
 						.map((e) => e.innerText)
 						.filter((e) => !!e) as string[];
+
 					this.nativeHostService.writeClipboardText(text.join("\n"));
 				}
 			},
@@ -760,11 +796,13 @@ class ProcessExplorer {
 
 			const waited =
 				totalWaitTime + nextRequestTime - this.lastRequestTime;
+
 			this.lastRequestTime = nextRequestTime;
 
 			// Wait at least a second between requests.
 			if (waited > 1000) {
 				ipcRenderer.send("vscode:pidToNameRequest");
+
 				ipcRenderer.send("vscode:listProcesses");
 			} else {
 				this.requestProcessList(waited);
@@ -779,6 +817,7 @@ class ProcessExplorer {
 				if (!e || !("pid" in e)) {
 					return undefined;
 				}
+
 				return e.pid;
 			})
 			.filter((e) => !!e) as number[];
@@ -787,6 +826,7 @@ class ProcessExplorer {
 
 function createCodiconStyleSheet() {
 	const codiconStyleSheet = createStyleSheet();
+
 	codiconStyleSheet.id = "codiconStyles";
 
 	const iconsStyleSheet = getIconsStyleSheet(undefined);
@@ -796,7 +836,9 @@ function createCodiconStyleSheet() {
 	}
 
 	const delayer = new RunOnceScheduler(updateAll, 0);
+
 	iconsStyleSheet.onDidChange(() => delayer.schedule());
+
 	delayer.schedule();
 }
 
@@ -813,8 +855,10 @@ export function startup(
 			: configuration.data.platform === "linux"
 				? "linux"
 				: "mac";
+
 	mainWindow.document.body.classList.add(platformClass); // used by our fonts
 	createCodiconStyleSheet();
+
 	applyZoom(configuration.data.zoomLevel, mainWindow);
 
 	new ProcessExplorer(configuration.windowId, configuration.data);

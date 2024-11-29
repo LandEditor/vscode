@@ -30,6 +30,7 @@ export function createInstanceCapabilityEventMultiplexer<
 	getEvent: (capability: ITerminalCapabilityImplMap[T]) => Event<K>,
 ): IDynamicListEventMultiplexer<{
 	instance: ITerminalInstance;
+
 	data: K;
 }> {
 	const store = new DisposableStore();
@@ -37,6 +38,7 @@ export function createInstanceCapabilityEventMultiplexer<
 	const multiplexer = store.add(
 		new EventMultiplexer<{
 			instance: ITerminalInstance;
+
 			data: K;
 		}>(),
 	);
@@ -65,11 +67,13 @@ export function createInstanceCapabilityEventMultiplexer<
 				ITerminalCapabilityImplMap[T],
 				IDisposable
 			>();
+
 			capabilityListeners.set(
 				instance.instanceId,
 				instanceCapabilityListeners,
 			);
 		}
+
 		instanceCapabilityListeners.set(capability, listener);
 	}
 	// Existing instances
@@ -99,6 +103,7 @@ export function createInstanceCapabilityEventMultiplexer<
 				),
 		),
 	);
+
 	store.add(
 		addCapabilityMultiplexer.event((e) => {
 			if (e.changeEvent.id === capabilityId) {
@@ -119,6 +124,7 @@ export function createInstanceCapabilityEventMultiplexer<
 				),
 		),
 	);
+
 	store.add(
 		removeCapabilityMultiplexer.event((e) => {
 			if (e.changeEvent.id === capabilityId) {

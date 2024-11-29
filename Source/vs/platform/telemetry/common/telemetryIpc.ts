@@ -11,13 +11,16 @@ import { ITelemetryAppender } from "./telemetryUtils.js";
 
 export interface ITelemetryLog {
 	eventName: string;
+
 	data?: any;
 }
 export class TelemetryAppenderChannel implements IServerChannel {
 	constructor(private appenders: ITelemetryAppender[]) {}
+
 	listen<T>(_: unknown, event: string): Event<T> {
 		throw new Error(`Event not found: ${event}`);
 	}
+
 	call(
 		_: unknown,
 		command: string,
@@ -30,6 +33,7 @@ export class TelemetryAppenderChannel implements IServerChannel {
 }
 export class TelemetryAppenderClient implements ITelemetryAppender {
 	constructor(private channel: IChannel) {}
+
 	log(eventName: string, data?: any): any {
 		this.channel
 			.call("log", { eventName, data })
@@ -40,6 +44,7 @@ export class TelemetryAppenderClient implements ITelemetryAppender {
 
 		return Promise.resolve(null);
 	}
+
 	flush(): Promise<void> {
 		// TODO
 		return Promise.resolve();

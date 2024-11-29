@@ -107,6 +107,7 @@ export interface SaveDialogOptions {
 	 * be used.
 	 */
 	buttonLabel?: string;
+
 	filters?: FileFilter[];
 	/**
 	 * Message to display above text fields.
@@ -126,6 +127,7 @@ export interface SaveDialogOptions {
 	 * @platform darwin
 	 */
 	showsTagField?: boolean;
+
 	properties?: Array<
 		| "showHiddenFiles"
 		| "createDirectory"
@@ -169,6 +171,7 @@ export interface OpenDialogOptions {
 	 * be used.
 	 */
 	buttonLabel?: string;
+
 	filters?: FileFilter[];
 	/**
 	 * Contains which features the dialog should use. The following values are
@@ -220,6 +223,7 @@ export interface OpenDialogReturnValue {
 export interface FileFilter {
 	// Docs: https://electronjs.org/docs/api/structures/file-filter
 	extensions: string[];
+
 	name: string;
 }
 export interface OpenDevToolsOptions {
@@ -325,10 +329,15 @@ export interface MouseInputEvent extends InputEvent {
 	 * The button pressed, can be `left`, `middle`, `right`.
 	 */
 	button?: "left" | "middle" | "right";
+
 	clickCount?: number;
+
 	globalX?: number;
+
 	globalY?: number;
+
 	movementX?: number;
+
 	movementY?: number;
 	/**
 	 * The type of the event, can be `mouseDown`, `mouseUp`, `mouseEnter`,
@@ -342,6 +351,8 @@ export interface MouseInputEvent extends InputEvent {
 		| "contextMenu"
 		| "mouseWheel"
 		| "mouseMove";
+
 	x: number;
+
 	y: number;
 }

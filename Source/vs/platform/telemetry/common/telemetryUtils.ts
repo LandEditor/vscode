@@ -35,17 +35,29 @@ export class TelemetryTrustedValue<T> {
 }
 export class NullTelemetryServiceShape implements ITelemetryService {
 	declare readonly _serviceBrand: undefined;
+
 	readonly telemetryLevel = TelemetryLevel.NONE;
+
 	readonly sessionId = "someValue.sessionId";
+
 	readonly machineId = "someValue.machineId";
+
 	readonly sqmId = "someValue.sqmId";
+
 	readonly devDeviceId = "someValue.devDeviceId";
+
 	readonly firstSessionDate = "someValue.firstSessionDate";
+
 	readonly sendErrorTelemetry = false;
+
 	publicLog() {}
+
 	publicLog2() {}
+
 	publicLogError() {}
+
 	publicLogError2() {}
+
 	setExperimentProperty() {}
 }
 export const NullTelemetryService = new NullTelemetryServiceShape();
@@ -62,6 +74,7 @@ export class NullEndpointTelemetryService
 	): Promise<void> {
 		// noop
 	}
+
 	async publicLogError(
 		_endpoint: ITelemetryEndpoint,
 		_errorEventName: string,
@@ -76,6 +89,7 @@ export const extensionTelemetryLogChannelId = "extensionTelemetryLog";
 
 export interface ITelemetryAppender {
 	log(eventName: string, data: any): void;
+
 	flush(): Promise<void>;
 }
 export const NullAppender: ITelemetryAppender = {
@@ -92,8 +106,11 @@ export const NullAppender: ITelemetryAppender = {
 */
 export interface URIDescriptor {
 	mimeType?: string;
+
 	scheme?: string;
+
 	ext?: string;
+
 	path?: string;
 }
 /**
@@ -114,6 +131,7 @@ export function supportsTelemetry(
 	if (!environmentService.isBuilt && !environmentService.disableTelemetry) {
 		return true;
 	}
+
 	return !(
 		environmentService.disableTelemetry || !productService.enableTelemetry
 	);
@@ -137,12 +155,15 @@ export function isLoggingOnly(
 	if (environmentService.isBuilt) {
 		return false;
 	}
+
 	if (environmentService.disableTelemetry) {
 		return false;
 	}
+
 	if (productService.enableTelemetry && productService.aiConfig?.ariaKey) {
 		return false;
 	}
+
 	return true;
 }
 /**
@@ -193,6 +214,7 @@ export interface Measurements {
 }
 export function validateTelemetryData(data?: any): {
 	properties: Properties;
+
 	measurements: Measurements;
 } {
 	const properties: Properties = {};
@@ -200,6 +222,7 @@ export function validateTelemetryData(data?: any): {
 	const measurements: Measurements = {};
 
 	const flat: Record<string, any> = {};
+
 	flatten(data, flat);
 
 	for (let prop in flat) {
@@ -225,6 +248,7 @@ export function validateTelemetryData(data?: any): {
 			properties[prop] = value;
 		}
 	}
+
 	return {
 		properties,
 		measurements,
@@ -245,6 +269,7 @@ export function cleanRemoteAuthority(remoteAuthority?: string): string {
 	if (!remoteAuthority) {
 		return "none";
 	}
+
 	const remoteName = getRemoteName(remoteAuthority);
 
 	return telemetryAllowedAuthorities.has(remoteName) ? remoteName : "other";
@@ -260,6 +285,7 @@ function flatten(
 	if (!obj) {
 		return;
 	}
+
 	for (const item of Object.getOwnPropertyNames(obj)) {
 		const value = obj[item];
 
@@ -303,9 +329,13 @@ export function isInternalTelemetry(
 }
 interface IPathEnvironment {
 	appRoot: string;
+
 	extensionsPath: string;
+
 	userDataPath: string;
+
 	userHome: URI;
+
 	tmpDir: URI;
 }
 export function getPiiPathsFromEnvironment(paths: IPathEnvironment): string[] {
@@ -329,6 +359,7 @@ function anonymizeFilePaths(stack: string, cleanupPatterns: RegExp[]): string {
 	if (!stack || (!stack.includes("/") && !stack.includes("\\"))) {
 		return stack;
 	}
+
 	let updatedStack = stack;
 
 	const cleanUpIndexes: [number, number][] = [];
@@ -340,15 +371,18 @@ function anonymizeFilePaths(stack: string, cleanupPatterns: RegExp[]): string {
 			if (!result) {
 				break;
 			}
+
 			cleanUpIndexes.push([result.index, regexp.lastIndex]);
 		}
 	}
+
 	const nodeModulesRegex = /^[\\\/]?(node_modules|node_modules\.asar)[\\\/]/;
 
 	const fileRegex =
 		/(file:\/\/)?([a-zA-Z]:(\\\\|\\|\/)|(\\\\|\\|\/))?([\w-\._]+(\\\\|\\|\/))+[\w-\._]*/g;
 
 	let lastIndex = 0;
+
 	updatedStack = "";
 
 	while (true) {
@@ -366,12 +400,15 @@ function anonymizeFilePaths(stack: string, cleanupPatterns: RegExp[]): string {
 			updatedStack +=
 				stack.substring(lastIndex, result.index) +
 				"<REDACTED: user-file-path>";
+
 			lastIndex = fileRegex.lastIndex;
 		}
 	}
+
 	if (lastIndex < stack.length) {
 		updatedStack += stack.substr(lastIndex);
 	}
+
 	return updatedStack;
 }
 /**
@@ -385,6 +422,7 @@ function removePropertiesWithPossibleUserInfo(property: string): string {
 	if (!property) {
 		return property;
 	}
+
 	const userDataRegexes = [
 		{ label: "Google API Key", regex: /AIza[A-Za-z0-9_\\\-]{35}/ },
 		{ label: "Slack Token", regex: /xox[pbar]\-[A-Za-z0-9]/ },
@@ -412,6 +450,7 @@ function removePropertiesWithPossibleUserInfo(property: string): string {
 			return `<REDACTED: ${secretRegex.label}>`;
 		}
 	}
+
 	return property;
 }
 /**
@@ -450,6 +489,7 @@ export function cleanData(
 
 			return updatedProperty;
 		}
+
 		return undefined;
 	});
 }

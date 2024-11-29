@@ -9,7 +9,9 @@ import { ColorTheme, ColorThemeKind } from "./extHostTypes.js";
 
 export class ExtHostTheming implements ExtHostThemingShape {
 	readonly _serviceBrand: undefined;
+
 	private _actual: ColorTheme;
+
 	private _onDidChangeActiveColorTheme: Emitter<ColorTheme>;
 
 	constructor(
@@ -17,8 +19,10 @@ export class ExtHostTheming implements ExtHostThemingShape {
 		_extHostRpc: IExtHostRpcService,
 	) {
 		this._actual = new ColorTheme(ColorThemeKind.Dark);
+
 		this._onDidChangeActiveColorTheme = new Emitter<ColorTheme>();
 	}
+
 	public get activeColorTheme(): ColorTheme {
 		return this._actual;
 	}
@@ -44,9 +48,12 @@ export class ExtHostTheming implements ExtHostThemingShape {
 			default:
 				kind = ColorThemeKind.Dark;
 		}
+
 		this._actual = new ColorTheme(kind);
+
 		this._onDidChangeActiveColorTheme.fire(this._actual);
 	}
+
 	public get onDidChangeActiveColorTheme(): Event<ColorTheme> {
 		return this._onDidChangeActiveColorTheme.event;
 	}

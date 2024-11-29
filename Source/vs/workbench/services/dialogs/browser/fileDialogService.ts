@@ -44,12 +44,14 @@ export class FileDialogService
 			Schemas.file,
 		) as HTMLFileSystemProvider;
 	}
+
 	async pickFileFolderAndOpen(options: IPickAndOpenOptions): Promise<void> {
 		const schema = this.getFileSystemSchema(options);
 
 		if (!options.defaultUri) {
 			options.defaultUri = await this.defaultFilePath(schema);
 		}
+
 		if (this.shouldUseSimplified(schema)) {
 			return super.pickFileFolderAndOpenSimplified(
 				schema,
@@ -57,6 +59,7 @@ export class FileDialogService
 				false,
 			);
 		}
+
 		throw new Error(
 			localize(
 				"pickFolderAndOpen",
@@ -64,6 +67,7 @@ export class FileDialogService
 			),
 		);
 	}
+
 	protected override addFileSchemaIfNeeded(
 		schema: string,
 		isFolder: boolean,
@@ -75,20 +79,24 @@ export class FileDialogService
 				? [schema, Schemas.file]
 				: [schema];
 	}
+
 	async pickFileAndOpen(options: IPickAndOpenOptions): Promise<void> {
 		const schema = this.getFileSystemSchema(options);
 
 		if (!options.defaultUri) {
 			options.defaultUri = await this.defaultFilePath(schema);
 		}
+
 		if (this.shouldUseSimplified(schema)) {
 			return super.pickFileAndOpenSimplified(schema, options, false);
 		}
+
 		const activeWindow = getActiveWindow();
 
 		if (!WebFileSystemAccess.supported(activeWindow)) {
 			return this.showUnsupportedBrowserWarning("open");
 		}
+
 		let fileHandle: FileSystemHandle | undefined = undefined;
 
 		try {
@@ -98,26 +106,33 @@ export class FileDialogService
 		} catch (error) {
 			return; // `showOpenFilePicker` will throw an error when the user cancels
 		}
+
 		if (!WebFileSystemAccess.isFileSystemFileHandle(fileHandle)) {
 			return;
 		}
+
 		const uri =
 			await this.fileSystemProvider.registerFileHandle(fileHandle);
+
 		this.addFileToRecentlyOpened(uri);
+
 		await this.openerService.open(uri, {
 			fromUserGesture: true,
 			editorOptions: { pinned: true },
 		});
 	}
+
 	async pickFolderAndOpen(options: IPickAndOpenOptions): Promise<void> {
 		const schema = this.getFileSystemSchema(options);
 
 		if (!options.defaultUri) {
 			options.defaultUri = await this.defaultFolderPath(schema);
 		}
+
 		if (this.shouldUseSimplified(schema)) {
 			return super.pickFolderAndOpenSimplified(schema, options);
 		}
+
 		throw new Error(
 			localize(
 				"pickFolderAndOpen",
@@ -125,6 +140,7 @@ export class FileDialogService
 			),
 		);
 	}
+
 	async pickWorkspaceAndOpen(options: IPickAndOpenOptions): Promise<void> {
 		options.availableFileSystems =
 			this.getWorkspaceAvailableFileSystems(options);
@@ -134,9 +150,11 @@ export class FileDialogService
 		if (!options.defaultUri) {
 			options.defaultUri = await this.defaultWorkspacePath(schema);
 		}
+
 		if (this.shouldUseSimplified(schema)) {
 			return super.pickWorkspaceAndOpenSimplified(schema, options);
 		}
+
 		throw new Error(
 			localize(
 				"pickWorkspaceAndOpen",
@@ -144,6 +162,7 @@ export class FileDialogService
 			),
 		);
 	}
+
 	async pickFileToSave(
 		defaultUri: URI,
 		availableFileSystems?: string[],
@@ -161,11 +180,13 @@ export class FileDialogService
 		if (this.shouldUseSimplified(schema)) {
 			return super.pickFileToSaveSimplified(schema, options);
 		}
+
 		const activeWindow = getActiveWindow();
 
 		if (!WebFileSystemAccess.supported(activeWindow)) {
 			return this.showUnsupportedBrowserWarning("save");
 		}
+
 		let fileHandle: FileSystemHandle | undefined = undefined;
 
 		const startIn = Iterable.first(this.fileSystemProvider.directories);
@@ -178,11 +199,14 @@ export class FileDialogService
 		} catch (error) {
 			return; // `showSaveFilePicker` will throw an error when the user cancels
 		}
+
 		if (!WebFileSystemAccess.isFileSystemFileHandle(fileHandle)) {
 			return undefined;
 		}
+
 		return this.fileSystemProvider.registerFileHandle(fileHandle);
 	}
+
 	private getFilePickerTypes(
 		filters?: FileFilter[],
 	): FilePickerAcceptType[] | undefined {
@@ -203,6 +227,7 @@ export class FileDialogService
 						ext.indexOf("*") < 0 &&
 						ext.indexOf("_") < 0,
 				);
+
 				accept[
 					getMediaOrTextMime(`fileName.${filter.extensions[0]}`) ??
 						"text/plain"
@@ -216,6 +241,7 @@ export class FileDialogService
 				};
 			});
 	}
+
 	async showSaveDialog(
 		options: ISaveDialogOptions,
 	): Promise<URI | undefined> {
@@ -224,11 +250,13 @@ export class FileDialogService
 		if (this.shouldUseSimplified(schema)) {
 			return super.showSaveDialogSimplified(schema, options);
 		}
+
 		const activeWindow = getActiveWindow();
 
 		if (!WebFileSystemAccess.supported(activeWindow)) {
 			return this.showUnsupportedBrowserWarning("save");
 		}
+
 		let fileHandle: FileSystemHandle | undefined = undefined;
 
 		const startIn = Iterable.first(this.fileSystemProvider.directories);
@@ -244,11 +272,14 @@ export class FileDialogService
 		} catch (error) {
 			return undefined; // `showSaveFilePicker` will throw an error when the user cancels
 		}
+
 		if (!WebFileSystemAccess.isFileSystemFileHandle(fileHandle)) {
 			return undefined;
 		}
+
 		return this.fileSystemProvider.registerFileHandle(fileHandle);
 	}
+
 	async showOpenDialog(
 		options: IOpenDialogOptions,
 	): Promise<URI[] | undefined> {
@@ -257,11 +288,13 @@ export class FileDialogService
 		if (this.shouldUseSimplified(schema)) {
 			return super.showOpenDialogSimplified(schema, options);
 		}
+
 		const activeWindow = getActiveWindow();
 
 		if (!WebFileSystemAccess.supported(activeWindow)) {
 			return this.showUnsupportedBrowserWarning("open");
 		}
+
 		let uri: URI | undefined;
 
 		const startIn =
@@ -287,6 +320,7 @@ export class FileDialogService
 				const handle = await activeWindow.showDirectoryPicker({
 					...{ startIn },
 				});
+
 				uri =
 					await this.fileSystemProvider.registerDirectoryHandle(
 						handle,
@@ -295,8 +329,10 @@ export class FileDialogService
 		} catch (error) {
 			// ignore - `showOpenFilePicker` / `showDirectoryPicker` will throw an error when the user cancels
 		}
+
 		return uri ? [uri] : undefined;
 	}
+
 	private async showUnsupportedBrowserWarning(
 		context: "save" | "open",
 	): Promise<undefined> {
@@ -377,6 +413,7 @@ export class FileDialogService
 				},
 			});
 		}
+
 		await this.dialogService.prompt({
 			type: Severity.Warning,
 			message: localize(
@@ -392,6 +429,7 @@ export class FileDialogService
 
 		return undefined;
 	}
+
 	private shouldUseSimplified(scheme: string): boolean {
 		return ![Schemas.file, Schemas.vscodeUserData, Schemas.tmp].includes(
 			scheme,

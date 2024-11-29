@@ -11,6 +11,7 @@ import { ITypeScriptServiceClient } from "../typescriptService";
 
 class SmartSelection implements vscode.SelectionRangeProvider {
 	public constructor(private readonly client: ITypeScriptServiceClient) {}
+
 	public async provideSelectionRanges(
 		document: vscode.TextDocument,
 		positions: vscode.Position[],
@@ -21,6 +22,7 @@ class SmartSelection implements vscode.SelectionRangeProvider {
 		if (!file) {
 			return undefined;
 		}
+
 		const args: Proto.SelectionRangeRequestArgs = {
 			file,
 			locations: positions.map(typeConverters.Position.toLocation),
@@ -35,8 +37,10 @@ class SmartSelection implements vscode.SelectionRangeProvider {
 		if (response.type !== "response" || !response.body) {
 			return undefined;
 		}
+
 		return response.body.map(SmartSelection.convertSelectionRange);
 	}
+
 	private static convertSelectionRange(
 		selectionRange: Proto.SelectionRange,
 	): vscode.SelectionRange {

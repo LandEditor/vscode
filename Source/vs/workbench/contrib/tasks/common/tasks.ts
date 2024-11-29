@@ -56,6 +56,7 @@ export namespace ShellQuoting {
 		if (!value) {
 			return ShellQuoting.Strong;
 		}
+
 		switch (value.toLowerCase()) {
 			case "escape":
 				return ShellQuoting.Escape;
@@ -79,6 +80,7 @@ export interface IShellQuotingOptions {
 		| string
 		| {
 				escapeChar: string;
+
 				charsToEscape: string;
 		  };
 	/**
@@ -297,6 +299,7 @@ export namespace RuntimeType {
 				return RuntimeType.Process;
 		}
 	}
+
 	export function toString(value: RuntimeType): string {
 		switch (value) {
 			case RuntimeType.Shell:
@@ -315,6 +318,7 @@ export namespace RuntimeType {
 }
 export interface IQuotedString {
 	value: string;
+
 	quoting: ShellQuoting;
 }
 export type CommandString = string | IQuotedString;
@@ -376,6 +380,7 @@ export namespace TaskGroup {
 			value === Test._id
 		);
 	}
+
 	export function from(
 		value: string | TaskGroup | undefined,
 	): TaskGroup | undefined {
@@ -385,6 +390,7 @@ export namespace TaskGroup {
 			if (is(value)) {
 				return { _id: value, isDefault: false };
 			}
+
 			return undefined;
 		} else {
 			return value;
@@ -393,6 +399,7 @@ export namespace TaskGroup {
 }
 export interface TaskGroup {
 	_id: string;
+
 	isDefault?: boolean | string;
 }
 export const enum TaskScope {
@@ -426,28 +433,39 @@ export namespace TaskSourceKind {
 }
 export interface ITaskSourceConfigElement {
 	workspaceFolder?: IWorkspaceFolder;
+
 	workspace?: IWorkspace;
+
 	file: string;
+
 	index: number;
+
 	element: any;
 }
 interface IBaseTaskSource {
 	readonly kind: string;
+
 	readonly label: string;
 }
 export interface IWorkspaceTaskSource extends IBaseTaskSource {
 	readonly kind: "workspace";
+
 	readonly config: ITaskSourceConfigElement;
+
 	readonly customizes?: KeyedTaskIdentifier;
 }
 export interface IExtensionTaskSource extends IBaseTaskSource {
 	readonly kind: "extension";
+
 	readonly extension?: string;
+
 	readonly scope: TaskScope;
+
 	readonly workspaceFolder: IWorkspaceFolder | undefined;
 }
 export interface IExtensionTaskSourceTransfer {
 	__workspaceFolder: UriComponents;
+
 	__definition: {
 		type: string;
 		[name: string]: any;
@@ -458,12 +476,16 @@ export interface IInMemoryTaskSource extends IBaseTaskSource {
 }
 export interface IUserTaskSource extends IBaseTaskSource {
 	readonly kind: "user";
+
 	readonly config: ITaskSourceConfigElement;
+
 	readonly customizes?: KeyedTaskIdentifier;
 }
 export interface WorkspaceFileTaskSource extends IBaseTaskSource {
 	readonly kind: "workspaceFile";
+
 	readonly config: ITaskSourceConfigElement;
+
 	readonly customizes?: KeyedTaskIdentifier;
 }
 export type TaskSource =
@@ -487,6 +509,7 @@ export interface KeyedTaskIdentifier extends ITaskIdentifier {
 }
 export interface ITaskDependency {
 	uri: URI | string;
+
 	task: string | KeyedTaskIdentifier | undefined;
 }
 export const enum DependsOrder {
@@ -543,6 +566,7 @@ export interface IConfigurationProperties {
 	 */
 	icon?: {
 		id?: string;
+
 		color?: string;
 	};
 	/**
@@ -556,7 +580,9 @@ export enum RunOnOptions {
 }
 export interface IRunOptions {
 	reevaluateOnRerun?: boolean;
+
 	runOn?: RunOnOptions;
+
 	instanceLimit?: number;
 }
 export namespace RunOptions {
@@ -575,11 +601,17 @@ export abstract class CommonTask {
 	 * The cached label.
 	 */
 	_label: string = "";
+
 	type?: string;
+
 	runOptions: IRunOptions;
+
 	configurationProperties: IConfigurationProperties;
+
 	_source: IBaseTaskSource;
+
 	private _taskLoadMessages: string[] | undefined;
+
 	protected constructor(
 		id: string,
 		label: string | undefined,
@@ -593,28 +625,39 @@ export abstract class CommonTask {
 		if (label) {
 			this._label = label;
 		}
+
 		if (type) {
 			this.type = type;
 		}
+
 		this.runOptions = runOptions;
+
 		this.configurationProperties = configurationProperties;
+
 		this._source = source;
 	}
+
 	public getDefinition(useSource?: boolean): KeyedTaskIdentifier | undefined {
 		return undefined;
 	}
+
 	public getMapKey(): string {
 		return this._id;
 	}
+
 	public getKey(): string | undefined {
 		return undefined;
 	}
+
 	protected abstract getFolderId(): string | undefined;
+
 	public getCommonTaskId(): string {
 		interface IRecentTaskKey {
 			folder: string | undefined;
+
 			id: string;
 		}
+
 		const key: IRecentTaskKey = {
 			folder: this.getFolderId(),
 			id: this._id,
@@ -622,19 +665,25 @@ export abstract class CommonTask {
 
 		return JSON.stringify(key);
 	}
+
 	public clone(): Task {
 		return this.fromObject(Object.assign({}, <any>this));
 	}
+
 	protected abstract fromObject(object: any): Task;
+
 	public getWorkspaceFolder(): IWorkspaceFolder | undefined {
 		return undefined;
 	}
+
 	public getWorkspaceFileName(): string | undefined {
 		return undefined;
 	}
+
 	public getTelemetryKind(): string {
 		return "unknown";
 	}
+
 	public matches(
 		key: string | KeyedTaskIdentifier | undefined,
 		compareId: boolean = false,
@@ -642,6 +691,7 @@ export abstract class CommonTask {
 		if (key === undefined) {
 			return false;
 		}
+
 		if (Types.isString(key)) {
 			return (
 				key === this._label ||
@@ -649,10 +699,12 @@ export abstract class CommonTask {
 				(compareId && key === this._id)
 			);
 		}
+
 		const identifier = this.getDefinition(true);
 
 		return identifier !== undefined && identifier._key === key._key;
 	}
+
 	public getQualifiedLabel(): string {
 		const workspaceFolder = this.getWorkspaceFolder();
 
@@ -662,6 +714,7 @@ export abstract class CommonTask {
 			return this._label;
 		}
 	}
+
 	public getTaskExecution(): ITaskExecution {
 		const result: ITaskExecution = {
 			id: this._id,
@@ -670,14 +723,17 @@ export abstract class CommonTask {
 
 		return result;
 	}
+
 	public addTaskLoadMessages(messages: string[] | undefined) {
 		if (this._taskLoadMessages === undefined) {
 			this._taskLoadMessages = [];
 		}
+
 		if (messages) {
 			this._taskLoadMessages = this._taskLoadMessages.concat(messages);
 		}
 	}
+
 	get taskLoadMessages(): string[] | undefined {
 		return this._taskLoadMessages;
 	}
@@ -695,11 +751,13 @@ export class CustomTask extends CommonTask {
 	 * Indicated the source of the task (e.g. tasks.json or extension)
 	 */
 	override _source: FileBasedTaskSource;
+
 	hasDefinedMatchers: boolean;
 	/**
 	 * The command configuration
 	 */
 	command: ICommandConfiguration = {};
+
 	public constructor(
 		id: string,
 		source: FileBasedTaskSource,
@@ -718,13 +776,16 @@ export class CustomTask extends CommonTask {
 			configurationProperties,
 			source,
 		);
+
 		this._source = source;
+
 		this.hasDefinedMatchers = hasDefinedMatchers;
 
 		if (command) {
 			this.command = command;
 		}
 	}
+
 	public override clone(): CustomTask {
 		return new CustomTask(
 			this._id,
@@ -737,12 +798,15 @@ export class CustomTask extends CommonTask {
 			this.configurationProperties,
 		);
 	}
+
 	public customizes(): KeyedTaskIdentifier | undefined {
 		if (this._source && this._source.customizes) {
 			return this._source.customizes;
 		}
+
 		return undefined;
 	}
+
 	public override getDefinition(
 		useSource: boolean = false,
 	): KeyedTaskIdentifier {
@@ -779,6 +843,7 @@ export class CustomTask extends CommonTask {
 				default:
 					throw new Error("Unexpected task runtime");
 			}
+
 			const result: KeyedTaskIdentifier = {
 				type,
 				_key: this._id,
@@ -788,9 +853,11 @@ export class CustomTask extends CommonTask {
 			return result;
 		}
 	}
+
 	public static is(value: any): value is CustomTask {
 		return value instanceof CustomTask;
 	}
+
 	public override getMapKey(): string {
 		const workspaceFolder = this._source.config.workspaceFolder;
 
@@ -798,11 +865,13 @@ export class CustomTask extends CommonTask {
 			? `${workspaceFolder.uri.toString()}|${this._id}|${this.instance}`
 			: `${this._id}|${this.instance}`;
 	}
+
 	protected getFolderId(): string | undefined {
 		return this._source.kind === TaskSourceKind.User
 			? USER_TASKS_GROUP_KEY
 			: this._source.config.workspaceFolder?.uri.toString();
 	}
+
 	public override getCommonTaskId(): string {
 		return this._source.customizes
 			? super.getCommonTaskId()
@@ -814,19 +883,24 @@ export class CustomTask extends CommonTask {
 	public override getKey(): string | undefined {
 		interface ICustomKey {
 			type: string;
+
 			folder: string;
+
 			id: string;
 		}
+
 		const workspaceFolder = this.getFolderId();
 
 		if (!workspaceFolder) {
 			return undefined;
 		}
+
 		let id: string = this.configurationProperties.identifier!;
 
 		if (this._source.kind !== TaskSourceKind.Workspace) {
 			id += this._source.kind;
 		}
+
 		const key: ICustomKey = {
 			type: CUSTOMIZED_TASK_TYPE,
 			folder: workspaceFolder,
@@ -835,15 +909,18 @@ export class CustomTask extends CommonTask {
 
 		return JSON.stringify(key);
 	}
+
 	public override getWorkspaceFolder(): IWorkspaceFolder | undefined {
 		return this._source.config.workspaceFolder;
 	}
+
 	public override getWorkspaceFileName(): string | undefined {
 		return this._source.config.workspace &&
 			this._source.config.workspace.configuration
 			? resources.basename(this._source.config.workspace.configuration)
 			: undefined;
 	}
+
 	public override getTelemetryKind(): string {
 		if (this._source.customizes) {
 			return "workspace>extension";
@@ -851,6 +928,7 @@ export class CustomTask extends CommonTask {
 			return "workspace";
 		}
 	}
+
 	protected fromObject(object: CustomTask): CustomTask {
 		return new CustomTask(
 			object._id,
@@ -874,7 +952,9 @@ export class ConfiguringTask extends CommonTask {
 	 * Indicated the source of the task (e.g. tasks.json or extension)
 	 */
 	override _source: FileBasedTaskSource;
+
 	configures: KeyedTaskIdentifier;
+
 	public constructor(
 		id: string,
 		source: FileBasedTaskSource,
@@ -885,48 +965,62 @@ export class ConfiguringTask extends CommonTask {
 		configurationProperties: IConfigurationProperties,
 	) {
 		super(id, label, type, runOptions, configurationProperties, source);
+
 		this._source = source;
+
 		this.configures = configures;
 	}
+
 	public static is(value: any): value is ConfiguringTask {
 		return value instanceof ConfiguringTask;
 	}
+
 	protected fromObject(object: any): Task {
 		return object;
 	}
+
 	public override getDefinition(): KeyedTaskIdentifier {
 		return this.configures;
 	}
+
 	public override getWorkspaceFileName(): string | undefined {
 		return this._source.config.workspace &&
 			this._source.config.workspace.configuration
 			? resources.basename(this._source.config.workspace.configuration)
 			: undefined;
 	}
+
 	public override getWorkspaceFolder(): IWorkspaceFolder | undefined {
 		return this._source.config.workspaceFolder;
 	}
+
 	protected getFolderId(): string | undefined {
 		return this._source.kind === TaskSourceKind.User
 			? USER_TASKS_GROUP_KEY
 			: this._source.config.workspaceFolder?.uri.toString();
 	}
+
 	public override getKey(): string | undefined {
 		interface ICustomKey {
 			type: string;
+
 			folder: string;
+
 			id: string;
 		}
+
 		const workspaceFolder = this.getFolderId();
 
 		if (!workspaceFolder) {
 			return undefined;
 		}
+
 		let id: string = this.configurationProperties.identifier!;
 
 		if (this._source.kind !== TaskSourceKind.Workspace) {
 			id += this._source.kind;
 		}
+
 		const key: ICustomKey = {
 			type: CUSTOMIZED_TASK_TYPE,
 			folder: workspaceFolder,
@@ -945,8 +1039,11 @@ export class ContributedTask extends CommonTask {
 	 * Set in the super constructor
 	 */
 	declare _source: IExtensionTaskSource;
+
 	instance: number | undefined;
+
 	defines: KeyedTaskIdentifier;
+
 	hasDefinedMatchers: boolean;
 	/**
 	 * The command configuration
@@ -958,6 +1055,7 @@ export class ContributedTask extends CommonTask {
 	icon:
 		| {
 				id?: string;
+
 				color?: string;
 		  }
 		| undefined;
@@ -965,6 +1063,7 @@ export class ContributedTask extends CommonTask {
 	 * Don't show the task in the run task quickpick
 	 */
 	hide?: boolean;
+
 	public constructor(
 		id: string,
 		source: IExtensionTaskSource,
@@ -977,12 +1076,18 @@ export class ContributedTask extends CommonTask {
 		configurationProperties: IConfigurationProperties,
 	) {
 		super(id, label, type, runOptions, configurationProperties, source);
+
 		this.defines = defines;
+
 		this.hasDefinedMatchers = hasDefinedMatchers;
+
 		this.command = command;
+
 		this.icon = configurationProperties.icon;
+
 		this.hide = configurationProperties.hide;
 	}
+
 	public override clone(): ContributedTask {
 		return new ContributedTask(
 			this._id,
@@ -996,12 +1101,15 @@ export class ContributedTask extends CommonTask {
 			this.configurationProperties,
 		);
 	}
+
 	public override getDefinition(): KeyedTaskIdentifier {
 		return this.defines;
 	}
+
 	public static is(value: any): value is ContributedTask {
 		return value instanceof ContributedTask;
 	}
+
 	public override getMapKey(): string {
 		const workspaceFolder = this._source.workspaceFolder;
 
@@ -1009,6 +1117,7 @@ export class ContributedTask extends CommonTask {
 			? `${this._source.scope.toString()}|${workspaceFolder.uri.toString()}|${this._id}|${this.instance}`
 			: `${this._source.scope.toString()}|${this._id}|${this.instance}`;
 	}
+
 	protected getFolderId(): string | undefined {
 		if (
 			this._source.scope === TaskScope.Folder &&
@@ -1016,30 +1125,40 @@ export class ContributedTask extends CommonTask {
 		) {
 			return this._source.workspaceFolder.uri.toString();
 		}
+
 		return undefined;
 	}
+
 	public override getKey(): string | undefined {
 		interface IContributedKey {
 			type: string;
+
 			scope: number;
+
 			folder?: string;
+
 			id: string;
 		}
+
 		const key: IContributedKey = {
 			type: "contributed",
 			scope: this._source.scope,
 			id: this._id,
 		};
+
 		key.folder = this.getFolderId();
 
 		return JSON.stringify(key);
 	}
+
 	public override getWorkspaceFolder(): IWorkspaceFolder | undefined {
 		return this._source.workspaceFolder;
 	}
+
 	public override getTelemetryKind(): string {
 		return "extension";
 	}
+
 	protected fromObject(object: ContributedTask): ContributedTask {
 		return new ContributedTask(
 			object._id,
@@ -1059,8 +1178,11 @@ export class InMemoryTask extends CommonTask {
 	 * Indicated the source of the task (e.g. tasks.json or extension)
 	 */
 	override _source: IInMemoryTaskSource;
+
 	instance: number | undefined;
+
 	declare type: "inMemory";
+
 	public constructor(
 		id: string,
 		source: IInMemoryTaskSource,
@@ -1070,8 +1192,10 @@ export class InMemoryTask extends CommonTask {
 		configurationProperties: IConfigurationProperties,
 	) {
 		super(id, label, type, runOptions, configurationProperties, source);
+
 		this._source = source;
 	}
+
 	public override clone(): InMemoryTask {
 		return new InMemoryTask(
 			this._id,
@@ -1082,18 +1206,23 @@ export class InMemoryTask extends CommonTask {
 			this.configurationProperties,
 		);
 	}
+
 	public static is(value: any): value is InMemoryTask {
 		return value instanceof InMemoryTask;
 	}
+
 	public override getTelemetryKind(): string {
 		return "composite";
 	}
+
 	public override getMapKey(): string {
 		return `${this._id}|${this.instance}`;
 	}
+
 	protected getFolderId(): undefined {
 		return undefined;
 	}
+
 	protected fromObject(object: InMemoryTask): InMemoryTask {
 		return new InMemoryTask(
 			object._id,
@@ -1109,6 +1238,7 @@ export type Task = CustomTask | ContributedTask | InMemoryTask;
 
 export interface ITaskExecution {
 	id: string;
+
 	task: Task;
 }
 export enum ExecutionEngine {
@@ -1124,13 +1254,18 @@ export const enum JsonSchemaVersion {
 }
 export interface ITaskSet {
 	tasks: Task[];
+
 	extension?: IExtensionDescription;
 }
 export interface ITaskDefinition {
 	extensionId: string;
+
 	taskType: string;
+
 	required: string[];
+
 	properties: IJSONSchemaMap;
+
 	when?: ContextKeyExpression;
 }
 export class TaskSorter {
@@ -1141,6 +1276,7 @@ export class TaskSorter {
 			this._order.set(workspaceFolders[i].uri.toString(), i);
 		}
 	}
+
 	public compare(
 		a: Task | ConfiguringTask,
 		b: Task | ConfiguringTask,
@@ -1151,9 +1287,11 @@ export class TaskSorter {
 
 		if (aw && bw) {
 			let ai = this._order.get(aw.uri.toString());
+
 			ai = ai === undefined ? 0 : ai + 1;
 
 			let bi = this._order.get(bw.uri.toString());
+
 			bi = bi === undefined ? 0 : bi + 1;
 
 			if (ai === bi) {
@@ -1191,29 +1329,41 @@ export interface ITaskChangedEvent {
 }
 interface ITaskCommon {
 	taskId: string;
+
 	runType: TaskRunType;
+
 	taskName: string | undefined;
+
 	group: string | TaskGroup | undefined;
+
 	__task: Task;
 }
 export interface ITaskProcessStartedEvent extends ITaskCommon {
 	kind: TaskEventKind.ProcessStarted;
+
 	terminalId: number;
+
 	processId: number;
 }
 export interface ITaskProcessEndedEvent extends ITaskCommon {
 	kind: TaskEventKind.ProcessEnded;
+
 	terminalId: number | undefined;
+
 	exitCode?: number;
 }
 export interface ITaskTerminatedEvent extends ITaskCommon {
 	kind: TaskEventKind.Terminated;
+
 	terminalId: number;
+
 	exitReason: TerminalExitReason | undefined;
 }
 export interface ITaskStartedEvent extends ITaskCommon {
 	kind: TaskEventKind.Start;
+
 	terminalId: number;
+
 	resolvedVariables: Map<string, string>;
 }
 export interface ITaskGeneralEvent extends ITaskCommon {
@@ -1223,6 +1373,7 @@ export interface ITaskGeneralEvent extends ITaskCommon {
 		| TaskEventKind.Active
 		| TaskEventKind.Inactive
 		| TaskEventKind.End;
+
 	terminalId: number | undefined;
 }
 export type ITaskEvent =
@@ -1252,6 +1403,7 @@ export namespace TaskEvent {
 			__task: task,
 		};
 	}
+
 	export function start(
 		task: Task,
 		terminalId: number,
@@ -1264,6 +1416,7 @@ export namespace TaskEvent {
 			resolvedVariables,
 		};
 	}
+
 	export function processStarted(
 		task: Task,
 		terminalId: number,
@@ -1276,6 +1429,7 @@ export namespace TaskEvent {
 			processId,
 		};
 	}
+
 	export function processEnded(
 		task: Task,
 		terminalId: number | undefined,
@@ -1288,6 +1442,7 @@ export namespace TaskEvent {
 			exitCode,
 		};
 	}
+
 	export function terminated(
 		task: Task,
 		terminalId: number,
@@ -1300,6 +1455,7 @@ export namespace TaskEvent {
 			terminalId,
 		};
 	}
+
 	export function general(
 		kind:
 			| TaskEventKind.AcquiredInput
@@ -1316,6 +1472,7 @@ export namespace TaskEvent {
 			terminalId,
 		};
 	}
+
 	export function changed(): ITaskChangedEvent {
 		return { kind: TaskEventKind.Changed };
 	}
@@ -1334,14 +1491,18 @@ export namespace KeyedTaskIdentifier {
 			} else if (typeof stringified === "string") {
 				stringified = stringified.replace(/,/g, ",,");
 			}
+
 			result += key + "," + stringified + ",";
 		}
+
 		return result;
 	}
+
 	export function create(value: ITaskIdentifier): KeyedTaskIdentifier {
 		const resultKey = sortedStringify(value);
 
 		const result = { _key: resultKey, type: value.taskType };
+
 		Object.assign(result, value);
 
 		return result;
@@ -1383,17 +1544,21 @@ export namespace TaskDefinition {
 		if (definition === undefined) {
 			// We have no task definition so we can't sanitize the literal. Take it as is
 			const copy = Objects.deepClone(external);
+
 			delete copy._key;
 
 			return KeyedTaskIdentifier.create(copy);
 		}
+
 		const literal: {
 			type: string;
 			[name: string]: any;
 		} = Object.create(null);
+
 		literal.type = definition.taskType;
 
 		const required: Set<string> = new Set();
+
 		definition.required.forEach((element) => required.add(element));
 
 		const properties = definition.properties;
@@ -1441,6 +1606,7 @@ export namespace TaskDefinition {
 				}
 			}
 		}
+
 		return KeyedTaskIdentifier.create(literal);
 	}
 }

@@ -27,6 +27,7 @@ export function isConfigurationOverrides(
 
 export interface IConfigurationOverrides {
 	overrideIdentifier?: string | null;
+
 	resource?: URI | null;
 }
 
@@ -90,12 +91,15 @@ export function ConfigurationTargetToString(
 
 export interface IConfigurationChange {
 	keys: string[];
+
 	overrides: [string, string[]][];
 }
 
 export interface IConfigurationChangeEvent {
 	readonly source: ConfigurationTarget;
+
 	readonly affectedKeys: ReadonlySet<string>;
+
 	readonly change: IConfigurationChange;
 
 	affectsConfiguration(
@@ -106,33 +110,53 @@ export interface IConfigurationChangeEvent {
 
 export interface IInspectValue<T> {
 	readonly value?: T;
+
 	readonly override?: T;
+
 	readonly overrides?: {
 		readonly identifiers: string[];
+
 		readonly value: T;
 	}[];
 }
 
 export interface IConfigurationValue<T> {
 	readonly defaultValue?: T;
+
 	readonly applicationValue?: T;
+
 	readonly userValue?: T;
+
 	readonly userLocalValue?: T;
+
 	readonly userRemoteValue?: T;
+
 	readonly workspaceValue?: T;
+
 	readonly workspaceFolderValue?: T;
+
 	readonly memoryValue?: T;
+
 	readonly policyValue?: T;
+
 	readonly value?: T;
 
 	readonly default?: IInspectValue<T>;
+
 	readonly application?: IInspectValue<T>;
+
 	readonly user?: IInspectValue<T>;
+
 	readonly userLocal?: IInspectValue<T>;
+
 	readonly userRemote?: IInspectValue<T>;
+
 	readonly workspace?: IInspectValue<T>;
+
 	readonly workspaceFolder?: IInspectValue<T>;
+
 	readonly memory?: IInspectValue<T>;
+
 	readonly policy?: { value?: T };
 
 	readonly overrideIdentifiers?: string[];
@@ -204,16 +228,19 @@ export interface IConfigurationService {
 	 * @param value The new value
 	 */
 	updateValue(key: string, value: any): Promise<void>;
+
 	updateValue(
 		key: string,
 		value: any,
 		target: ConfigurationTarget,
 	): Promise<void>;
+
 	updateValue(
 		key: string,
 		value: any,
 		overrides: IConfigurationOverrides | IConfigurationUpdateOverrides,
 	): Promise<void>;
+
 	updateValue(
 		key: string,
 		value: any,
@@ -233,38 +260,54 @@ export interface IConfigurationService {
 
 	keys(): {
 		default: string[];
+
 		user: string[];
+
 		workspace: string[];
+
 		workspaceFolder: string[];
+
 		memory?: string[];
 	};
 }
 
 export interface IConfigurationModel {
 	contents: any;
+
 	keys: string[];
+
 	overrides: IOverrides[];
 }
 
 export interface IOverrides {
 	keys: string[];
+
 	contents: any;
+
 	identifiers: string[];
 }
 
 export interface IConfigurationData {
 	defaults: IConfigurationModel;
+
 	policy: IConfigurationModel;
+
 	application: IConfigurationModel;
+
 	user: IConfigurationModel;
+
 	workspace: IConfigurationModel;
+
 	folders: [UriComponents, IConfigurationModel][];
 }
 
 export interface IConfigurationCompareResult {
 	added: string[];
+
 	removed: string[];
+
 	updated: string[];
+
 	overrides: [string, string[]][];
 }
 
@@ -312,6 +355,7 @@ export function addToValueTree(
 
 					return;
 				}
+
 				break;
 
 			default:
@@ -321,6 +365,7 @@ export function addToValueTree(
 
 				return;
 		}
+
 		curr = obj;
 	}
 
@@ -394,8 +439,10 @@ export function getConfigurationValue<T>(
 			if (typeof current !== "object" || current === null) {
 				return undefined;
 			}
+
 			current = current[component];
 		}
+
 		return <T>current;
 	}
 

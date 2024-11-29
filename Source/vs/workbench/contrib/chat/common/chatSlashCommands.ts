@@ -23,13 +23,16 @@ import { IChatMessage } from "./languageModels.js";
 //#region slash service, commands etc
 export interface IChatSlashData {
 	command: string;
+
 	detail: string;
+
 	sortText?: string;
 	/**
 	 * Whether the command should execute as soon
 	 * as it is entered. Defaults to `false`.
 	 */
 	executeImmediately?: boolean;
+
 	locations: ChatAgentLocation[];
 }
 export interface IChatSlashFragment {
@@ -58,11 +61,14 @@ export const IChatSlashCommandService =
  */
 export interface IChatSlashCommandService {
 	_serviceBrand: undefined;
+
 	readonly onDidChangeCommands: Event<void>;
+
 	registerSlashCommand(
 		data: IChatSlashData,
 		command: IChatSlashCallback,
 	): IDisposable;
+
 	executeCommand(
 		id: string,
 		prompt: string,
@@ -75,10 +81,12 @@ export interface IChatSlashCommandService {
 	} | void>;
 
 	getCommands(location: ChatAgentLocation): Array<IChatSlashData>;
+
 	hasCommand(id: string): boolean;
 }
 type Tuple = {
 	data: IChatSlashData;
+
 	command?: IChatSlashCallback;
 };
 
@@ -87,8 +95,11 @@ export class ChatSlashCommandService
 	implements IChatSlashCommandService
 {
 	declare _serviceBrand: undefined;
+
 	private readonly _commands = new Map<string, Tuple>();
+
 	private readonly _onDidChangeCommands = this._register(new Emitter<void>());
+
 	readonly onDidChangeCommands: Event<void> = this._onDidChangeCommands.event;
 
 	constructor(
@@ -97,10 +108,13 @@ export class ChatSlashCommandService
 	) {
 		super();
 	}
+
 	override dispose(): void {
 		super.dispose();
+
 		this._commands.clear();
 	}
+
 	registerSlashCommand(
 		data: IChatSlashData,
 		command: IChatSlashCallback,
@@ -110,7 +124,9 @@ export class ChatSlashCommandService
 				`Already registered a command with id ${data.command}}`,
 			);
 		}
+
 		this._commands.set(data.command, { data, command });
+
 		this._onDidChangeCommands.fire();
 
 		return toDisposable(() => {
@@ -119,14 +135,17 @@ export class ChatSlashCommandService
 			}
 		});
 	}
+
 	getCommands(location: ChatAgentLocation): Array<IChatSlashData> {
 		return Array.from(this._commands.values(), (v) => v.data).filter((c) =>
 			c.locations.includes(location),
 		);
 	}
+
 	hasCommand(id: string): boolean {
 		return this._commands.has(id);
 	}
+
 	async executeCommand(
 		id: string,
 		prompt: string,
@@ -142,12 +161,15 @@ export class ChatSlashCommandService
 		if (!data) {
 			throw new Error("No command with id ${id} NOT registered");
 		}
+
 		if (!data.command) {
 			await this._extensionService.activateByEvent(`onSlash:${id}`);
 		}
+
 		if (!data.command) {
 			throw new Error(`No command with id ${id} NOT resolved`);
 		}
+
 		return await data.command(prompt, progress, history, location, token);
 	}
 }

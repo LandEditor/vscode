@@ -30,6 +30,7 @@ export function looksLikeMarkdownPath(resolvedHrefPath: vscode.Uri): boolean {
 	if (doc) {
 		return isMarkdownFile(doc);
 	}
+
 	if (resolvedHrefPath.scheme === Schemes.notebookCell) {
 		for (const notebook of vscode.workspace.notebookDocuments) {
 			for (const cell of notebook.getCells()) {
@@ -41,8 +42,10 @@ export function looksLikeMarkdownPath(resolvedHrefPath: vscode.Uri): boolean {
 				}
 			}
 		}
+
 		return false;
 	}
+
 	return markdownFileExtensions.includes(
 		URI.Utils.extname(resolvedHrefPath).toLowerCase().replace(".", ""),
 	);

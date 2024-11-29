@@ -14,8 +14,11 @@ const reUrl = /^https?:/;
 
 export type ImageInfoWithScale = {
 	realWidth: number;
+
 	realHeight: number;
+
 	width: number;
+
 	height: number;
 };
 /**
@@ -53,6 +56,7 @@ function getImageSizeFromFile(
 				return reject(err);
 			}
 		}
+
 		imageSize(file, (err: Error | null, size?: ISizeCalculationResult) => {
 			if (err) {
 				reject(err);
@@ -76,6 +80,7 @@ function getImageSizeFromURL(
 		if (!url.pathname) {
 			return reject("Given url doesnt have pathname property");
 		}
+
 		const urlPath: string = url.pathname;
 
 		getTransport(url, (resp) => {
@@ -88,7 +93,9 @@ function getImageSizeFromURL(
 					const size: ISizeCalculationResult = imageSize(
 						Buffer.concat(chunks, bufSize),
 					);
+
 					resp.removeListener("data", onData);
+
 					resp.destroy(); // no need to read further
 					resolve(sizeForFileName(path.basename(urlPath), size));
 				} catch (err) {
@@ -98,14 +105,17 @@ function getImageSizeFromURL(
 
 			const onData = (chunk: Buffer) => {
 				bufSize += chunk.length;
+
 				chunks.push(chunk);
 
 				trySize(chunks);
 			};
+
 			resp.on("data", onData)
 				.on("end", () => trySize(chunks))
 				.once("error", (err) => {
 					resp.removeListener("data", onData);
+
 					reject(err);
 				});
 		}).once("error", reject);
@@ -126,6 +136,7 @@ function sizeForFileName(
 	if (!size || !size.width || !size.height) {
 		return;
 	}
+
 	return {
 		realWidth: size.width,
 		realHeight: size.height,

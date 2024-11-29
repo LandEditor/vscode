@@ -108,6 +108,7 @@ export namespace SaveLocalFileCommand {
 					},
 				);
 			}
+
 			return Promise.resolve(undefined);
 		};
 	}
@@ -149,6 +150,7 @@ export namespace OpenLocalFileFolderCommand {
 }
 interface FileQuickPickItem extends IQuickPickItem {
 	uri: URI;
+
 	isFolder: boolean;
 }
 enum UpdateResult {
@@ -165,32 +167,54 @@ export const RemoteFileDialogContext = new RawContextKey<boolean>(
 
 export interface ISimpleFileDialog extends IDisposable {
 	showOpenDialog(options: IOpenDialogOptions): Promise<URI | undefined>;
+
 	showSaveDialog(options: ISaveDialogOptions): Promise<URI | undefined>;
 }
 export class SimpleFileDialog extends Disposable implements ISimpleFileDialog {
 	private options!: IOpenDialogOptions;
+
 	private currentFolder!: URI;
+
 	private filePickBox!: IQuickPick<FileQuickPickItem>;
+
 	private hidden: boolean = false;
+
 	private allowFileSelection: boolean = true;
+
 	private allowFolderSelection: boolean = false;
+
 	private remoteAuthority: string | undefined;
+
 	private requiresTrailing: boolean = false;
+
 	private trailing: string | undefined;
+
 	protected scheme: string;
+
 	private contextKey: IContextKey<boolean>;
+
 	private userEnteredPathSegment: string = "";
+
 	private autoCompletePathSegment: string = "";
+
 	private activeItem: FileQuickPickItem | undefined;
+
 	private userHome!: URI;
+
 	private trueHome!: URI;
+
 	private isWindows: boolean = false;
+
 	private badPath: string | undefined;
+
 	private remoteAgentEnvironment: IRemoteAgentEnvironment | null | undefined;
+
 	private separator: string = "/";
+
 	private readonly onBusyChangeEmitter = this._register(
 		new Emitter<boolean>(),
 	);
+
 	private updatingPromise: CancelablePromise<boolean> | undefined;
 
 	constructor(
@@ -224,19 +248,26 @@ export class SimpleFileDialog extends Disposable implements ISimpleFileDialog {
 		private readonly accessibilityService: IAccessibilityService,
 	) {
 		super();
+
 		this.remoteAuthority = this.environmentService.remoteAuthority;
+
 		this.contextKey = RemoteFileDialogContext.bindTo(contextKeyService);
+
 		this.scheme = this.pathService.defaultUriScheme;
 	}
+
 	set busy(busy: boolean) {
 		if (this.filePickBox.busy !== busy) {
 			this.filePickBox.busy = busy;
+
 			this.onBusyChangeEmitter.fire(busy);
 		}
 	}
+
 	get busy(): boolean {
 		return this.filePickBox.busy;
 	}
+
 	public async showOpenDialog(
 		options: IOpenDialogOptions = {},
 	): Promise<URI | undefined> {
@@ -244,7 +275,9 @@ export class SimpleFileDialog extends Disposable implements ISimpleFileDialog {
 			options.availableFileSystems,
 			options.defaultUri,
 		);
+
 		this.userHome = await this.getUserHome();
+
 		this.trueHome = await this.getUserHome(true);
 
 		const newOptions = this.getOptions(options);
@@ -252,10 +285,12 @@ export class SimpleFileDialog extends Disposable implements ISimpleFileDialog {
 		if (!newOptions) {
 			return Promise.resolve(undefined);
 		}
+
 		this.options = newOptions;
 
 		return this.pickResource();
 	}
+
 	public async showSaveDialog(
 		options: ISaveDialogOptions,
 	): Promise<URI | undefined> {
@@ -263,8 +298,11 @@ export class SimpleFileDialog extends Disposable implements ISimpleFileDialog {
 			options.availableFileSystems,
 			options.defaultUri,
 		);
+
 		this.userHome = await this.getUserHome();
+
 		this.trueHome = await this.getUserHome(true);
+
 		this.requiresTrailing = true;
 
 		const newOptions = this.getOptions(options, true);
@@ -272,8 +310,11 @@ export class SimpleFileDialog extends Disposable implements ISimpleFileDialog {
 		if (!newOptions) {
 			return Promise.resolve(undefined);
 		}
+
 		this.options = newOptions;
+
 		this.options.canSelectFolders = true;
+
 		this.options.canSelectFiles = true;
 
 		return new Promise<URI | undefined>((resolve) => {
@@ -282,6 +323,7 @@ export class SimpleFileDialog extends Disposable implements ISimpleFileDialog {
 			});
 		});
 	}
+
 	private getOptions(
 		options: ISaveDialogOptions | IOpenDialogOptions,
 		isSave: boolean = false,
@@ -295,10 +337,12 @@ export class SimpleFileDialog extends Disposable implements ISimpleFileDialog {
 				this.scheme === options.defaultUri.scheme
 					? options.defaultUri
 					: undefined;
+
 			filename = isSave
 				? resources.basename(options.defaultUri)
 				: undefined;
 		}
+
 		if (!defaultUri) {
 			defaultUri = this.userHome;
 
@@ -306,6 +350,7 @@ export class SimpleFileDialog extends Disposable implements ISimpleFileDialog {
 				defaultUri = resources.joinPath(defaultUri, filename);
 			}
 		}
+
 		if (
 			this.scheme !== Schemas.file &&
 			!this.fileService.hasProvider(defaultUri)
@@ -320,15 +365,19 @@ export class SimpleFileDialog extends Disposable implements ISimpleFileDialog {
 
 			return undefined;
 		}
+
 		const newOptions: IOpenDialogOptions = objects.deepClone(options);
+
 		newOptions.defaultUri = defaultUri;
 
 		return newOptions;
 	}
+
 	private remoteUriFrom(path: string, hintUri?: URI): URI {
 		if (!path.startsWith("\\\\")) {
 			path = path.replace(/\\/g, "/");
 		}
+
 		const uri: URI =
 			this.scheme === Schemas.file
 				? URI.file(path)
@@ -352,6 +401,7 @@ export class SimpleFileDialog extends Disposable implements ISimpleFileDialog {
 			authority ? this.pathService.defaultUriScheme : uri.scheme,
 		);
 	}
+
 	private getScheme(
 		available: readonly string[] | undefined,
 		defaultUri: URI | undefined,
@@ -360,19 +410,24 @@ export class SimpleFileDialog extends Disposable implements ISimpleFileDialog {
 			if (defaultUri && available.indexOf(defaultUri.scheme) >= 0) {
 				return defaultUri.scheme;
 			}
+
 			return available[0];
 		} else if (defaultUri) {
 			return defaultUri.scheme;
 		}
+
 		return Schemas.file;
 	}
+
 	private async getRemoteAgentEnvironment(): Promise<IRemoteAgentEnvironment | null> {
 		if (this.remoteAgentEnvironment === undefined) {
 			this.remoteAgentEnvironment =
 				await this.remoteAgentService.getEnvironment();
 		}
+
 		return this.remoteAgentEnvironment;
 	}
+
 	protected getUserHome(trueHome = false): Promise<URI> {
 		return trueHome
 			? this.pathService.userHome({
@@ -380,16 +435,21 @@ export class SimpleFileDialog extends Disposable implements ISimpleFileDialog {
 				})
 			: this.fileDialogService.preferredHome(this.scheme);
 	}
+
 	private async pickResource(
 		isSave: boolean = false,
 	): Promise<URI | undefined> {
 		this.allowFolderSelection = !!this.options.canSelectFolders;
+
 		this.allowFileSelection = !!this.options.canSelectFiles;
+
 		this.separator = this.labelService.getSeparator(
 			this.scheme,
 			this.remoteAuthority,
 		);
+
 		this.hidden = false;
+
 		this.isWindows = await this.checkIsWindowsOS();
 
 		let homedir: URI = this.options.defaultUri
@@ -406,19 +466,27 @@ export class SimpleFileDialog extends Disposable implements ISimpleFileDialog {
 			} catch (e) {
 				// The file or folder doesn't exist
 			}
+
 			if (!stat || !stat.isDirectory) {
 				homedir = resources.dirname(this.options.defaultUri);
+
 				this.trailing = resources.basename(this.options.defaultUri);
 			}
 		}
+
 		return new Promise<URI | undefined>((resolve) => {
 			this.filePickBox = this._register(
 				this.quickInputService.createQuickPick<FileQuickPickItem>(),
 			);
+
 			this.busy = true;
+
 			this.filePickBox.matchOnLabel = false;
+
 			this.filePickBox.sortByLabel = false;
+
 			this.filePickBox.ignoreFocusOut = true;
+
 			this.filePickBox.ok = true;
 
 			if (
@@ -429,6 +497,7 @@ export class SimpleFileDialog extends Disposable implements ISimpleFileDialog {
 				this.options.availableFileSystems.indexOf(Schemas.file) > -1
 			) {
 				this.filePickBox.customButton = true;
+
 				this.filePickBox.customLabel = nls.localize(
 					"remoteFileDialog.local",
 					"Show Local",
@@ -445,6 +514,7 @@ export class SimpleFileDialog extends Disposable implements ISimpleFileDialog {
 							: OpenLocalFileCommand
 						: OpenLocalFolderCommand;
 				}
+
 				const keybinding = this.keybindingService.lookupKeybinding(
 					action.ID,
 				);
@@ -461,14 +531,21 @@ export class SimpleFileDialog extends Disposable implements ISimpleFileDialog {
 					}
 				}
 			}
+
 			let isResolving: number = 0;
 
 			let isAcceptHandled = false;
+
 			this.currentFolder = resources.dirname(homedir);
+
 			this.userEnteredPathSegment = "";
+
 			this.autoCompletePathSegment = "";
+
 			this.filePickBox.title = this.options.title;
+
 			this.filePickBox.value = this.pathFromUri(this.currentFolder, true);
+
 			this.filePickBox.valueSelection = [
 				this.filePickBox.value.length,
 				this.filePickBox.value.length,
@@ -483,16 +560,22 @@ export class SimpleFileDialog extends Disposable implements ISimpleFileDialog {
 					// To be consistent, we should never have a trailing path separator on directories (or anything else). Will not remove from c:/.
 					uri = resources.removeTrailingPathSeparator(uri);
 				}
+
 				resolve(uri);
+
 				this.contextKey.set(false);
+
 				this.dispose();
 			};
+
 			this._register(
 				this.filePickBox.onDidCustom(() => {
 					if (isAcceptHandled || this.busy) {
 						return;
 					}
+
 					isAcceptHandled = true;
+
 					isResolving++;
 
 					if (
@@ -502,6 +585,7 @@ export class SimpleFileDialog extends Disposable implements ISimpleFileDialog {
 						this.options.availableFileSystems =
 							this.options.availableFileSystems.slice(1);
 					}
+
 					this.filePickBox.hide();
 
 					if (isSave) {
@@ -533,8 +617,11 @@ export class SimpleFileDialog extends Disposable implements ISimpleFileDialog {
 				} else if (isAcceptHandled) {
 					return;
 				}
+
 				isAcceptHandled = true;
+
 				isResolving++;
+
 				this.onDidAccept().then((resolveValue) => {
 					if (resolveValue) {
 						this.filePickBox.hide();
@@ -544,15 +631,18 @@ export class SimpleFileDialog extends Disposable implements ISimpleFileDialog {
 						doResolve(undefined);
 					} else {
 						isResolving--;
+
 						isAcceptHandled = false;
 					}
 				});
 			};
+
 			this._register(
 				this.filePickBox.onDidAccept((_) => {
 					handleAccept();
 				}),
 			);
+
 			this._register(
 				this.filePickBox.onDidChangeActive((i) => {
 					isAcceptHandled = false;
@@ -575,8 +665,10 @@ export class SimpleFileDialog extends Disposable implements ISimpleFileDialog {
 								0,
 								this.filePickBox.value.length,
 							];
+
 							this.insertText(userPath, userPath);
 						}
+
 						this.setAutoComplete(
 							userPath,
 							this.userEnteredPathSegment,
@@ -586,11 +678,13 @@ export class SimpleFileDialog extends Disposable implements ISimpleFileDialog {
 					}
 				}),
 			);
+
 			this._register(
 				this.filePickBox.onDidChangeValue(async (value) => {
 					return this.handleValueChange(value);
 				}),
 			);
+
 			this._register(
 				this.filePickBox.onDidHide(() => {
 					this.hidden = true;
@@ -600,8 +694,11 @@ export class SimpleFileDialog extends Disposable implements ISimpleFileDialog {
 					}
 				}),
 			);
+
 			this.filePickBox.show();
+
 			this.contextKey.set(true);
+
 			this.updateItems(homedir, true, this.trailing).then(() => {
 				if (this.trailing) {
 					this.filePickBox.valueSelection = [
@@ -614,13 +711,16 @@ export class SimpleFileDialog extends Disposable implements ISimpleFileDialog {
 						this.filePickBox.value.length,
 					];
 				}
+
 				this.busy = false;
 			});
 		});
 	}
+
 	public override dispose(): void {
 		super.dispose();
 	}
+
 	private async handleValueChange(value: string) {
 		try {
 			// onDidChangeValue can also be triggered by the auto complete, so if it looks like the auto complete, don't do anything
@@ -647,6 +747,7 @@ export class SimpleFileDialog extends Disposable implements ISimpleFileDialog {
 							filePickBoxUri,
 						);
 					}
+
 					if (
 						updated === UpdateResult.NotUpdated ||
 						updated === UpdateResult.UpdatedWithTrailing
@@ -655,6 +756,7 @@ export class SimpleFileDialog extends Disposable implements ISimpleFileDialog {
 					}
 				} else {
 					this.filePickBox.activeItems = [];
+
 					this.userEnteredPathSegment = "";
 				}
 			}
@@ -662,6 +764,7 @@ export class SimpleFileDialog extends Disposable implements ISimpleFileDialog {
 			// Since any text can be entered in the input box, there is potential for error causing input. If this happens, do nothing.
 		}
 	}
+
 	private isBadSubpath(value: string) {
 		return (
 			this.badPath &&
@@ -672,6 +775,7 @@ export class SimpleFileDialog extends Disposable implements ISimpleFileDialog {
 			)
 		);
 	}
+
 	private isValueChangeFromUser(): boolean {
 		if (
 			equalsIgnoreCase(
@@ -684,8 +788,10 @@ export class SimpleFileDialog extends Disposable implements ISimpleFileDialog {
 		) {
 			return false;
 		}
+
 		return true;
 	}
+
 	private isSelectionChangeFromUser(): boolean {
 		if (
 			this.activeItem ===
@@ -695,8 +801,10 @@ export class SimpleFileDialog extends Disposable implements ISimpleFileDialog {
 		) {
 			return false;
 		}
+
 		return true;
 	}
+
 	private constructFullUserPath(): string {
 		const currentFolderPath = this.pathFromUri(this.currentFolder);
 
@@ -726,6 +834,7 @@ export class SimpleFileDialog extends Disposable implements ISimpleFileDialog {
 			);
 		}
 	}
+
 	private filePickBoxValue(): URI {
 		// The file pick box can't render everything, so we use the current folder to create the uri so that it is an existing path.
 		const directUri = this.remoteUriFrom(
@@ -738,6 +847,7 @@ export class SimpleFileDialog extends Disposable implements ISimpleFileDialog {
 		if (equalsIgnoreCase(this.filePickBox.value, currentPath)) {
 			return this.currentFolder;
 		}
+
 		const currentDisplayUri = this.remoteUriFrom(
 			currentPath,
 			this.currentFolder,
@@ -767,6 +877,7 @@ export class SimpleFileDialog extends Disposable implements ISimpleFileDialog {
 					this.currentFolder,
 				);
 			}
+
 			return resources.hasTrailingPathSeparator(directUri)
 				? resources.addTrailingPathSeparator(path)
 				: path;
@@ -774,6 +885,7 @@ export class SimpleFileDialog extends Disposable implements ISimpleFileDialog {
 			return directUri;
 		}
 	}
+
 	private async onDidAccept(): Promise<URI | undefined> {
 		this.busy = true;
 
@@ -799,6 +911,7 @@ export class SimpleFileDialog extends Disposable implements ISimpleFileDialog {
 							this.pathFromUri(this.currentFolder).length,
 							this.filePickBox.value.length,
 						];
+
 						this.insertText(
 							newPath,
 							this.basenameWithTrailingSlash(item.uri),
@@ -811,11 +924,13 @@ export class SimpleFileDialog extends Disposable implements ISimpleFileDialog {
 							newPath.length,
 							this.filePickBox.value.length,
 						];
+
 						this.insertText(newPath, "");
 					} else {
 						await this.updateItems(item.uri, true);
 					}
 				}
+
 				this.filePickBox.busy = false;
 
 				return;
@@ -833,6 +948,7 @@ export class SimpleFileDialog extends Disposable implements ISimpleFileDialog {
 				return;
 			}
 		}
+
 		let resolveValue: URI | undefined;
 		// Find resolve value
 		if (this.filePickBox.activeItems.length === 0) {
@@ -840,18 +956,22 @@ export class SimpleFileDialog extends Disposable implements ISimpleFileDialog {
 		} else if (this.filePickBox.activeItems.length === 1) {
 			resolveValue = this.filePickBox.selectedItems[0].uri;
 		}
+
 		if (resolveValue) {
 			resolveValue = this.addPostfix(resolveValue);
 		}
+
 		if (await this.validate(resolveValue)) {
 			this.busy = false;
 
 			return resolveValue;
 		}
+
 		this.busy = false;
 
 		return undefined;
 	}
+
 	private root(value: URI) {
 		let lastDir = value;
 
@@ -859,18 +979,23 @@ export class SimpleFileDialog extends Disposable implements ISimpleFileDialog {
 
 		while (!resources.isEqual(lastDir, dir)) {
 			lastDir = dir;
+
 			dir = resources.dirname(dir);
 		}
+
 		return dir;
 	}
+
 	private tildaReplace(value: string): URI {
 		const home = this.trueHome;
 
 		if (value.length > 0 && value[0] === "~") {
 			return resources.joinPath(home, value.substring(1));
 		}
+
 		return this.remoteUriFrom(value);
 	}
+
 	private tryAddTrailingSeparatorToDirectory(
 		uri: URI,
 		stat: IFileStatWithPartialMetadata,
@@ -881,8 +1006,10 @@ export class SimpleFileDialog extends Disposable implements ISimpleFileDialog {
 				return resources.addTrailingPathSeparator(uri);
 			}
 		}
+
 		return uri;
 	}
+
 	private async tryUpdateItems(
 		value: string,
 		valueUri: URI,
@@ -895,6 +1022,7 @@ export class SimpleFileDialog extends Disposable implements ISimpleFileDialog {
 				: UpdateResult.Updated;
 		} else if (value === "\\") {
 			valueUri = this.root(this.currentFolder);
+
 			value = this.pathFromUri(valueUri);
 
 			return (await this.updateItems(valueUri, true))
@@ -933,6 +1061,7 @@ export class SimpleFileDialog extends Disposable implements ISimpleFileDialog {
 				} catch (e) {
 					// do nothing
 				}
+
 				if (
 					stat &&
 					stat.isDirectory &&
@@ -997,11 +1126,13 @@ export class SimpleFileDialog extends Disposable implements ISimpleFileDialog {
 						} catch (e) {
 							// do nothing
 						}
+
 						if (
 							statWithoutTrailing &&
 							statWithoutTrailing.isDirectory
 						) {
 							this.badPath = undefined;
+
 							inputUriDirname =
 								this.tryAddTrailingSeparatorToDirectory(
 									inputUriDirname,
@@ -1020,10 +1151,12 @@ export class SimpleFileDialog extends Disposable implements ISimpleFileDialog {
 				}
 			}
 		}
+
 		this.badPath = undefined;
 
 		return UpdateResult.NotUpdated;
 	}
+
 	private tryUpdateTrailing(value: URI) {
 		const ext = resources.extname(value);
 
@@ -1031,6 +1164,7 @@ export class SimpleFileDialog extends Disposable implements ISimpleFileDialog {
 			this.trailing = resources.basename(value);
 		}
 	}
+
 	private setActiveItems(value: string) {
 		value = this.pathFromUri(this.tildaReplace(value));
 
@@ -1056,6 +1190,7 @@ export class SimpleFileDialog extends Disposable implements ISimpleFileDialog {
 					break;
 				}
 			}
+
 			if (!hasMatch) {
 				const userBasename =
 					inputBasename.length >= 2
@@ -1063,19 +1198,27 @@ export class SimpleFileDialog extends Disposable implements ISimpleFileDialog {
 								userPath.length - inputBasename.length + 2,
 							)
 						: "";
+
 				this.userEnteredPathSegment =
 					userBasename === inputBasename ? inputBasename : "";
+
 				this.autoCompletePathSegment = "";
+
 				this.filePickBox.activeItems = [];
+
 				this.tryUpdateTrailing(asUri);
 			}
 		} else {
 			this.userEnteredPathSegment = inputBasename;
+
 			this.autoCompletePathSegment = "";
+
 			this.filePickBox.activeItems = [];
+
 			this.tryUpdateTrailing(asUri);
 		}
 	}
+
 	private setAutoComplete(
 		startingValue: string,
 		startingBasename: string,
@@ -1085,22 +1228,27 @@ export class SimpleFileDialog extends Disposable implements ISimpleFileDialog {
 		if (this.busy) {
 			// We're in the middle of something else. Doing an auto complete now can result jumbled or incorrect autocompletes.
 			this.userEnteredPathSegment = startingBasename;
+
 			this.autoCompletePathSegment = "";
 
 			return false;
 		}
+
 		const itemBasename = quickPickItem.label;
 		// Either force the autocomplete, or the old value should be one smaller than the new value and match the new value.
 		if (itemBasename === "..") {
 			// Don't match on the up directory item ever.
 			this.userEnteredPathSegment = "";
+
 			this.autoCompletePathSegment = "";
+
 			this.activeItem = quickPickItem;
 
 			if (force) {
 				// clear any selected text
 				getActiveDocument().execCommand("insertText", false, "");
 			}
+
 			return false;
 		} else if (
 			!force &&
@@ -1111,6 +1259,7 @@ export class SimpleFileDialog extends Disposable implements ISimpleFileDialog {
 			)
 		) {
 			this.userEnteredPathSegment = startingBasename;
+
 			this.activeItem = quickPickItem;
 			// Changing the active items will trigger the onDidActiveItemsChanged. Clear the autocomplete first, then set it after.
 			this.autoCompletePathSegment = "";
@@ -1120,6 +1269,7 @@ export class SimpleFileDialog extends Disposable implements ISimpleFileDialog {
 			} else {
 				this.filePickBox.activeItems = [];
 			}
+
 			return true;
 		} else if (
 			force &&
@@ -1134,6 +1284,7 @@ export class SimpleFileDialog extends Disposable implements ISimpleFileDialog {
 				this.autoCompletePathSegment =
 					this.trimTrailingSlash(itemBasename);
 			}
+
 			this.activeItem = quickPickItem;
 
 			if (!this.accessibilityService.isScreenReaderOptimized()) {
@@ -1149,33 +1300,40 @@ export class SimpleFileDialog extends Disposable implements ISimpleFileDialog {
 					),
 					this.autoCompletePathSegment,
 				);
+
 				this.filePickBox.valueSelection = [
 					this.filePickBox.value.length -
 						this.autoCompletePathSegment.length,
 					this.filePickBox.value.length,
 				];
 			}
+
 			return true;
 		} else {
 			this.userEnteredPathSegment = startingBasename;
+
 			this.autoCompletePathSegment = "";
 
 			return false;
 		}
 	}
+
 	private insertText(wholeValue: string, insertText: string) {
 		if (this.filePickBox.inputHasFocus()) {
 			getActiveDocument().execCommand("insertText", false, insertText);
 
 			if (this.filePickBox.value !== wholeValue) {
 				this.filePickBox.value = wholeValue;
+
 				this.handleValueChange(wholeValue);
 			}
 		} else {
 			this.filePickBox.value = wholeValue;
+
 			this.handleValueChange(wholeValue);
 		}
 	}
+
 	private addPostfix(uri: URI): URI {
 		let result = uri;
 
@@ -1193,7 +1351,9 @@ export class SimpleFileDialog extends Disposable implements ISimpleFileDialog {
 			for (let i = 0; i < this.options.filters.length; i++) {
 				for (
 					let j = 0;
+
 					j < this.options.filters[i].extensions.length;
+
 					j++
 				) {
 					if (
@@ -1205,10 +1365,12 @@ export class SimpleFileDialog extends Disposable implements ISimpleFileDialog {
 						break;
 					}
 				}
+
 				if (hasExt) {
 					break;
 				}
 			}
+
 			if (!hasExt) {
 				result = resources.joinPath(
 					resources.dirname(uri),
@@ -1218,27 +1380,37 @@ export class SimpleFileDialog extends Disposable implements ISimpleFileDialog {
 				);
 			}
 		}
+
 		return result;
 	}
+
 	private trimTrailingSlash(path: string): string {
 		return path.length > 1 && this.endsWithSlash(path)
 			? path.substr(0, path.length - 1)
 			: path;
 	}
+
 	private yesNoPrompt(uri: URI, message: string): Promise<boolean> {
 		interface YesNoItem extends IQuickPickItem {
 			value: boolean;
 		}
+
 		const disposableStore = new DisposableStore();
 
 		const prompt = disposableStore.add(
 			this.quickInputService.createQuickPick<YesNoItem>(),
 		);
+
 		prompt.title = message;
+
 		prompt.ignoreFocusOut = true;
+
 		prompt.ok = true;
+
 		prompt.customButton = true;
+
 		prompt.customLabel = nls.localize("remoteFileDialog.cancel", "Cancel");
+
 		prompt.value = this.pathFromUri(uri);
 
 		let isResolving = false;
@@ -1247,33 +1419,43 @@ export class SimpleFileDialog extends Disposable implements ISimpleFileDialog {
 			disposableStore.add(
 				prompt.onDidAccept(() => {
 					isResolving = true;
+
 					prompt.hide();
+
 					resolve(true);
 				}),
 			);
+
 			disposableStore.add(
 				prompt.onDidHide(() => {
 					if (!isResolving) {
 						resolve(false);
 					}
+
 					this.filePickBox.show();
+
 					this.hidden = false;
+
 					disposableStore.dispose();
 				}),
 			);
+
 			disposableStore.add(
 				prompt.onDidChangeValue(() => {
 					prompt.hide();
 				}),
 			);
+
 			disposableStore.add(
 				prompt.onDidCustom(() => {
 					prompt.hide();
 				}),
 			);
+
 			prompt.show();
 		});
 	}
+
 	private async validate(uri: URI | undefined): Promise<boolean> {
 		if (uri === undefined) {
 			this.filePickBox.validationMessage = nls.localize(
@@ -1283,16 +1465,19 @@ export class SimpleFileDialog extends Disposable implements ISimpleFileDialog {
 
 			return Promise.resolve(false);
 		}
+
 		let stat: IFileStatWithPartialMetadata | undefined;
 
 		let statDirname: IFileStatWithPartialMetadata | undefined;
 
 		try {
 			statDirname = await this.fileService.stat(resources.dirname(uri));
+
 			stat = await this.fileService.stat(uri);
 		} catch (e) {
 			// do nothing
 		}
+
 		if (this.requiresTrailing) {
 			// save
 			if (stat && stat.isDirectory) {
@@ -1382,6 +1567,7 @@ export class SimpleFileDialog extends Disposable implements ISimpleFileDialog {
 				return Promise.resolve(false);
 			}
 		}
+
 		return Promise.resolve(true);
 	}
 	// Returns true if there is a file at the end of the URI.
@@ -1391,6 +1577,7 @@ export class SimpleFileDialog extends Disposable implements ISimpleFileDialog {
 		trailing?: string,
 	): Promise<boolean> {
 		this.busy = true;
+
 		this.autoCompletePathSegment = "";
 
 		const isSave = !!trailing;
@@ -1405,19 +1592,25 @@ export class SimpleFileDialog extends Disposable implements ISimpleFileDialog {
 
 				if (!folderStat.isDirectory) {
 					trailing = resources.basename(newFolder);
+
 					newFolder = resources.dirname(newFolder);
+
 					folderStat = undefined;
+
 					result = true;
 				}
 			} catch (e) {
 				// The file/directory doesn't exist
 			}
+
 			const newValue = trailing
 				? this.pathAppend(newFolder, trailing)
 				: this.pathFromUri(newFolder, true);
+
 			this.currentFolder = this.endsWithSlash(newFolder.path)
 				? newFolder
 				: resources.addTrailingPathSeparator(newFolder, this.separator);
+
 			this.userEnteredPathSegment = trailing ? trailing : "";
 
 			return this.createItems(folderStat, this.currentFolder, token).then(
@@ -1427,7 +1620,9 @@ export class SimpleFileDialog extends Disposable implements ISimpleFileDialog {
 
 						return false;
 					}
+
 					this.filePickBox.itemActivation = ItemActivation.NONE;
+
 					this.filePickBox.items = items;
 					// the user might have continued typing while we were updating. Only update the input box if it doesn't match the directory.
 					if (
@@ -1438,8 +1633,10 @@ export class SimpleFileDialog extends Disposable implements ISimpleFileDialog {
 							0,
 							this.filePickBox.value.length,
 						];
+
 						this.insertText(newValue, newValue);
 					}
+
 					if (force && trailing && isSave) {
 						// Keep the cursor position in front of the save as name.
 						this.filePickBox.valueSelection = [
@@ -1453,7 +1650,9 @@ export class SimpleFileDialog extends Disposable implements ISimpleFileDialog {
 							this.filePickBox.value.length,
 						];
 					}
+
 					this.busy = false;
+
 					this.updatingPromise = undefined;
 
 					return result;
@@ -1464,10 +1663,12 @@ export class SimpleFileDialog extends Disposable implements ISimpleFileDialog {
 		if (this.updatingPromise !== undefined) {
 			this.updatingPromise.cancel();
 		}
+
 		this.updatingPromise = updatingPromise;
 
 		return updatingPromise;
 	}
+
 	private pathFromUri(uri: URI, endWithSeparator: boolean = false): string {
 		let result: string = normalizeDriveLetter(
 			uri.fsPath,
@@ -1479,11 +1680,14 @@ export class SimpleFileDialog extends Disposable implements ISimpleFileDialog {
 		} else {
 			result = result.replace(/\//g, this.separator);
 		}
+
 		if (endWithSeparator && !this.endsWithSlash(result)) {
 			result = result + this.separator;
 		}
+
 		return result;
 	}
+
 	private pathAppend(uri: URI, additional: string): string {
 		if (additional === ".." || additional === ".") {
 			const basePath = this.pathFromUri(uri, true);
@@ -1493,6 +1697,7 @@ export class SimpleFileDialog extends Disposable implements ISimpleFileDialog {
 			return this.pathFromUri(resources.joinPath(uri, additional));
 		}
 	}
+
 	private async checkIsWindowsOS(): Promise<boolean> {
 		let isWindowsOS = isWindows;
 
@@ -1501,11 +1706,14 @@ export class SimpleFileDialog extends Disposable implements ISimpleFileDialog {
 		if (env) {
 			isWindowsOS = env.os === OperatingSystem.Windows;
 		}
+
 		return isWindowsOS;
 	}
+
 	private endsWithSlash(s: string) {
 		return /[\/\\]$/.test(s);
 	}
+
 	private basenameWithTrailingSlash(fullPath: URI): string {
 		const child = this.pathFromUri(fullPath, true);
 
@@ -1513,6 +1721,7 @@ export class SimpleFileDialog extends Disposable implements ISimpleFileDialog {
 
 		return child.substring(parent.length);
 	}
+
 	private async createBackItem(
 		currFolder: URI,
 	): Promise<FileQuickPickItem | undefined> {
@@ -1541,8 +1750,10 @@ export class SimpleFileDialog extends Disposable implements ISimpleFileDialog {
 				};
 			}
 		}
+
 		return undefined;
 	}
+
 	private async createItems(
 		folder: IFileStat | undefined,
 		currentFolder: URI,
@@ -1556,6 +1767,7 @@ export class SimpleFileDialog extends Disposable implements ISimpleFileDialog {
 			if (!folder) {
 				folder = await this.fileService.resolve(currentFolder);
 			}
+
 			const items = folder.children
 				? await Promise.all(
 						folder.children.map((child) =>
@@ -1573,13 +1785,16 @@ export class SimpleFileDialog extends Disposable implements ISimpleFileDialog {
 			// ignore
 			console.log(e);
 		}
+
 		if (token.isCancellationRequested) {
 			return [];
 		}
+
 		const sorted = result.sort((i1, i2) => {
 			if (i1.isFolder !== i2.isFolder) {
 				return i1.isFolder ? -1 : 1;
 			}
+
 			const trimmed1 = this.endsWithSlash(i1.label)
 				? i1.label.substr(0, i1.label.length - 1)
 				: i1.label;
@@ -1594,14 +1809,18 @@ export class SimpleFileDialog extends Disposable implements ISimpleFileDialog {
 		if (backDir) {
 			sorted.unshift(backDir);
 		}
+
 		return sorted;
 	}
+
 	private filterFile(file: URI): boolean {
 		if (this.options.filters) {
 			for (let i = 0; i < this.options.filters.length; i++) {
 				for (
 					let j = 0;
+
 					j < this.options.filters[i].extensions.length;
+
 					j++
 				) {
 					const testExt = this.options.filters[i].extensions[j];
@@ -1611,10 +1830,13 @@ export class SimpleFileDialog extends Disposable implements ISimpleFileDialog {
 					}
 				}
 			}
+
 			return false;
 		}
+
 		return true;
 	}
+
 	private async createItem(
 		stat: IFileStat,
 		parent: URI,
@@ -1623,10 +1845,12 @@ export class SimpleFileDialog extends Disposable implements ISimpleFileDialog {
 		if (token.isCancellationRequested) {
 			return undefined;
 		}
+
 		let fullPath = resources.joinPath(parent, stat.name);
 
 		if (stat.isDirectory) {
 			const filename = resources.basename(fullPath);
+
 			fullPath = resources.addTrailingPathSeparator(
 				fullPath,
 				this.separator,
@@ -1659,6 +1883,7 @@ export class SimpleFileDialog extends Disposable implements ISimpleFileDialog {
 				),
 			};
 		}
+
 		return undefined;
 	}
 }

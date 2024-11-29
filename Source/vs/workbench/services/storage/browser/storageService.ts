@@ -42,18 +42,27 @@ import { IUserDataProfileService } from "../../userDataProfile/common/userDataPr
 export class BrowserStorageService extends AbstractStorageService {
 	private static BROWSER_DEFAULT_FLUSH_INTERVAL = 5 * 1000; // every 5s because async operations are not permitted on shutdown
 	private applicationStorage: IStorage | undefined;
+
 	private applicationStorageDatabase: IIndexedDBStorageDatabase | undefined;
+
 	private readonly applicationStoragePromise = new DeferredPromise<{
 		indexedDb: IIndexedDBStorageDatabase;
+
 		storage: IStorage;
 	}>();
+
 	private profileStorage: IStorage | undefined;
+
 	private profileStorageDatabase: IIndexedDBStorageDatabase | undefined;
+
 	private profileStorageProfile = this.userDataProfileService.currentProfile;
+
 	private readonly profileStorageDisposables = this._register(
 		new DisposableStore(),
 	);
+
 	private workspaceStorage: IStorage | undefined;
+
 	private workspaceStorageDatabase: IIndexedDBStorageDatabase | undefined;
 
 	get hasPendingUpdate(): boolean {
@@ -63,6 +72,7 @@ export class BrowserStorageService extends AbstractStorageService {
 				this.workspaceStorageDatabase?.hasPendingUpdate,
 		);
 	}
+
 	constructor(
 		private readonly workspace: IAnyWorkspaceIdentifier,
 		private readonly userDataProfileService: IUserDataProfileService,
@@ -72,8 +82,10 @@ export class BrowserStorageService extends AbstractStorageService {
 		super({
 			flushInterval: BrowserStorageService.BROWSER_DEFAULT_FLUSH_INTERVAL,
 		});
+
 		this.registerListeners();
 	}
+
 	private registerListeners(): void {
 		this._register(
 			this.userDataProfileService.onDidChangeCurrentProfile((e) =>
@@ -81,6 +93,7 @@ export class BrowserStorageService extends AbstractStorageService {
 			),
 		);
 	}
+
 	protected async doInitialize(): Promise<void> {
 		// Init storages
 		await Promises.settled([
@@ -89,29 +102,37 @@ export class BrowserStorageService extends AbstractStorageService {
 			this.createWorkspaceStorage(),
 		]);
 	}
+
 	private async createApplicationStorage(): Promise<void> {
 		const applicationStorageIndexedDB =
 			await IndexedDBStorageDatabase.createApplicationStorage(
 				this.logService,
 			);
+
 		this.applicationStorageDatabase = this._register(
 			applicationStorageIndexedDB,
 		);
+
 		this.applicationStorage = this._register(
 			new Storage(this.applicationStorageDatabase),
 		);
+
 		this._register(
 			this.applicationStorage.onDidChangeStorage((e) =>
 				this.emitDidChangeValue(StorageScope.APPLICATION, e),
 			),
 		);
+
 		await this.applicationStorage.init();
+
 		this.updateIsNew(this.applicationStorage);
+
 		this.applicationStoragePromise.complete({
 			indexedDb: applicationStorageIndexedDB,
 			storage: this.applicationStorage,
 		});
 	}
+
 	private async createProfileStorage(
 		profile: IUserDataProfile,
 	): Promise<void> {
@@ -129,8 +150,11 @@ export class BrowserStorageService extends AbstractStorageService {
 				indexedDb: applicationStorageIndexedDB,
 				storage: applicationStorage,
 			} = await this.applicationStoragePromise.p;
+
 			this.profileStorageDatabase = applicationStorageIndexedDB;
+
 			this.profileStorage = applicationStorage;
+
 			this.profileStorageDisposables.add(
 				this.profileStorage.onDidChangeStorage((e) =>
 					this.emitDidChangeValue(StorageScope.PROFILE, e),
@@ -142,41 +166,53 @@ export class BrowserStorageService extends AbstractStorageService {
 					this.profileStorageProfile,
 					this.logService,
 				);
+
 			this.profileStorageDatabase = this.profileStorageDisposables.add(
 				profileStorageIndexedDB,
 			);
+
 			this.profileStorage = this.profileStorageDisposables.add(
 				new Storage(this.profileStorageDatabase),
 			);
+
 			this.profileStorageDisposables.add(
 				this.profileStorage.onDidChangeStorage((e) =>
 					this.emitDidChangeValue(StorageScope.PROFILE, e),
 				),
 			);
+
 			await this.profileStorage.init();
+
 			this.updateIsNew(this.profileStorage);
 		}
 	}
+
 	private async createWorkspaceStorage(): Promise<void> {
 		const workspaceStorageIndexedDB =
 			await IndexedDBStorageDatabase.createWorkspaceStorage(
 				this.workspace.id,
 				this.logService,
 			);
+
 		this.workspaceStorageDatabase = this._register(
 			workspaceStorageIndexedDB,
 		);
+
 		this.workspaceStorage = this._register(
 			new Storage(this.workspaceStorageDatabase),
 		);
+
 		this._register(
 			this.workspaceStorage.onDidChangeStorage((e) =>
 				this.emitDidChangeValue(StorageScope.WORKSPACE, e),
 			),
 		);
+
 		await this.workspaceStorage.init();
+
 		this.updateIsNew(this.workspaceStorage);
 	}
+
 	private updateIsNew(storage: IStorage): void {
 		const firstOpen = storage.getBoolean(IS_NEW_KEY);
 
@@ -186,6 +222,7 @@ export class BrowserStorageService extends AbstractStorageService {
 			storage.set(IS_NEW_KEY, false);
 		}
 	}
+
 	protected getStorage(scope: StorageScope): IStorage | undefined {
 		switch (scope) {
 			case StorageScope.APPLICATION:
@@ -198,6 +235,7 @@ export class BrowserStorageService extends AbstractStorageService {
 				return this.workspaceStorage;
 		}
 	}
+
 	protected getLogDetails(scope: StorageScope): string | undefined {
 		switch (scope) {
 			case StorageScope.APPLICATION:
@@ -210,12 +248,14 @@ export class BrowserStorageService extends AbstractStorageService {
 				return this.workspaceStorageDatabase?.name;
 		}
 	}
+
 	protected async switchToProfile(
 		toProfile: IUserDataProfile,
 	): Promise<void> {
 		if (!this.canSwitchProfile(this.profileStorageProfile, toProfile)) {
 			return;
 		}
+
 		const oldProfileStorage = assertIsDefined(this.profileStorage);
 
 		const oldItems = oldProfileStorage.items;
@@ -233,12 +273,14 @@ export class BrowserStorageService extends AbstractStorageService {
 			StorageScope.PROFILE,
 		);
 	}
+
 	protected async switchToWorkspace(
 		toWorkspace: IAnyWorkspaceIdentifier,
 		preserveData: boolean,
 	): Promise<void> {
 		throw new Error("Migrating storage is currently unsupported in Web");
 	}
+
 	protected override shouldFlushWhenIdle(): boolean {
 		// this flush() will potentially cause new state to be stored
 		// since new state will only be created while the document
@@ -251,6 +293,7 @@ export class BrowserStorageService extends AbstractStorageService {
 		// thus unhealthy.
 		return getActiveWindow().document.hasFocus() && !this.hasPendingUpdate;
 	}
+
 	close(): void {
 		// Safari: there is an issue where the page can hang on load when
 		// a previous session has kept IndexedDB transactions running.
@@ -261,13 +304,16 @@ export class BrowserStorageService extends AbstractStorageService {
 		// we expect data to be written when the unload happens.
 		if (isSafari) {
 			this.applicationStorage?.close();
+
 			this.profileStorageDatabase?.close();
+
 			this.workspaceStorageDatabase?.close();
 		}
 		// Always dispose to ensure that no timeouts or callbacks
 		// get triggered in this phase.
 		this.dispose();
 	}
+
 	async clear(): Promise<void> {
 		// Clear key/values
 		for (const scope of [
@@ -280,6 +326,7 @@ export class BrowserStorageService extends AbstractStorageService {
 					this.remove(key, scope);
 				}
 			}
+
 			await this.getStorage(scope)?.whenFlushed();
 		}
 		// Clear databases
@@ -289,10 +336,12 @@ export class BrowserStorageService extends AbstractStorageService {
 			this.workspaceStorageDatabase?.clear() ?? Promise.resolve(),
 		]);
 	}
+
 	hasScope(scope: IAnyWorkspaceIdentifier | IUserDataProfile): boolean {
 		if (isUserDataProfile(scope)) {
 			return this.profileStorageProfile.id === scope.id;
 		}
+
 		return this.workspace.id === scope.id;
 	}
 }
@@ -316,17 +365,20 @@ class InMemoryIndexedDBStorageDatabase
 	implements IIndexedDBStorageDatabase
 {
 	readonly hasPendingUpdate = false;
+
 	readonly name = "in-memory-indexedb-storage";
 
 	async clear(): Promise<void> {
 		(await this.getItems()).clear();
 	}
+
 	dispose(): void {
 		// No-op
 	}
 }
 interface IndexedDBStorageDatabaseOptions {
 	id: string;
+
 	broadcastChanges?: boolean;
 }
 export class IndexedDBStorageDatabase
@@ -341,6 +393,7 @@ export class IndexedDBStorageDatabase
 			logService,
 		);
 	}
+
 	static async createProfileStorage(
 		profile: IUserDataProfile,
 		logService: ILogService,
@@ -350,18 +403,21 @@ export class IndexedDBStorageDatabase
 			logService,
 		);
 	}
+
 	static async createWorkspaceStorage(
 		workspaceId: string,
 		logService: ILogService,
 	): Promise<IIndexedDBStorageDatabase> {
 		return IndexedDBStorageDatabase.create({ id: workspaceId }, logService);
 	}
+
 	static async create(
 		options: IndexedDBStorageDatabaseOptions,
 		logService: ILogService,
 	): Promise<IIndexedDBStorageDatabase> {
 		try {
 			const database = new IndexedDBStorageDatabase(options, logService);
+
 			await database.whenConnected;
 
 			return database;
@@ -373,28 +429,39 @@ export class IndexedDBStorageDatabase
 			return new InMemoryIndexedDBStorageDatabase();
 		}
 	}
+
 	private static readonly STORAGE_DATABASE_PREFIX = "vscode-web-state-db-";
+
 	private static readonly STORAGE_OBJECT_STORE = "ItemTable";
+
 	private readonly _onDidChangeItemsExternal = this._register(
 		new Emitter<IStorageItemsChangeEvent>(),
 	);
+
 	readonly onDidChangeItemsExternal = this._onDidChangeItemsExternal.event;
+
 	private broadcastChannel:
 		| BroadcastDataChannel<IStorageItemsChangeEvent>
 		| undefined;
+
 	private pendingUpdate: Promise<boolean> | undefined = undefined;
 
 	get hasPendingUpdate(): boolean {
 		return !!this.pendingUpdate;
 	}
+
 	readonly name: string;
+
 	private readonly whenConnected: Promise<IndexedDB>;
+
 	private constructor(
 		options: IndexedDBStorageDatabaseOptions,
 		private readonly logService: ILogService,
 	) {
 		super();
+
 		this.name = `${IndexedDBStorageDatabase.STORAGE_DATABASE_PREFIX}${options.id}`;
+
 		this.broadcastChannel = options.broadcastChanges
 			? this._register(
 					new BroadcastDataChannel<IStorageItemsChangeEvent>(
@@ -402,9 +469,12 @@ export class IndexedDBStorageDatabase
 					),
 				)
 			: undefined;
+
 		this.whenConnected = this.connect();
+
 		this.registerListeners();
 	}
+
 	private registerListeners(): void {
 		// Check for storage change events from other
 		// windows/tabs via `BroadcastChannel` mechanisms.
@@ -418,6 +488,7 @@ export class IndexedDBStorageDatabase
 			);
 		}
 	}
+
 	private async connect(): Promise<IndexedDB> {
 		try {
 			return await IndexedDB.create(this.name, undefined, [
@@ -431,20 +502,24 @@ export class IndexedDBStorageDatabase
 			throw error;
 		}
 	}
+
 	async getItems(): Promise<Map<string, string>> {
 		const db = await this.whenConnected;
 
 		function isValid(value: unknown): value is string {
 			return typeof value === "string";
 		}
+
 		return db.getKeyValues<string>(
 			IndexedDBStorageDatabase.STORAGE_OBJECT_STORE,
 			isValid,
 		);
 	}
+
 	async updateItems(request: IUpdateRequest): Promise<void> {
 		// Run the update
 		let didUpdate = false;
+
 		this.pendingUpdate = this.doUpdateItems(request);
 
 		try {
@@ -459,9 +534,11 @@ export class IndexedDBStorageDatabase
 				changed: request.insert,
 				deleted: request.delete,
 			};
+
 			this.broadcastChannel.postData(event);
 		}
 	}
+
 	private async doUpdateItems(request: IUpdateRequest): Promise<boolean> {
 		// Return early if the request is empty
 		const toInsert = request.insert;
@@ -474,6 +551,7 @@ export class IndexedDBStorageDatabase
 		) {
 			return false;
 		}
+
 		const db = await this.whenConnected;
 		// Update `ItemTable` with inserts and/or deletes
 		await db.runInTransaction(
@@ -493,15 +571,18 @@ export class IndexedDBStorageDatabase
 						requests.push(objectStore.delete(key));
 					}
 				}
+
 				return requests;
 			},
 		);
 
 		return true;
 	}
+
 	async optimize(): Promise<void> {
 		// not suported in IndexedDB
 	}
+
 	async close(): Promise<void> {
 		const db = await this.whenConnected;
 		// Wait for pending updates to having finished
@@ -509,8 +590,10 @@ export class IndexedDBStorageDatabase
 		// Finally, close IndexedDB
 		return db.close();
 	}
+
 	async clear(): Promise<void> {
 		const db = await this.whenConnected;
+
 		await db.runInTransaction(
 			IndexedDBStorageDatabase.STORAGE_OBJECT_STORE,
 			"readwrite",

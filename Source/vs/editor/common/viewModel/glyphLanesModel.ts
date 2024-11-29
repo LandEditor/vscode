@@ -9,11 +9,14 @@ const MAX_LANE = GlyphMarginLane.Right;
 
 export class GlyphMarginLanesModel implements IGlyphMarginLanesModel {
 	private lanes: Uint8Array;
+
 	private persist = 0;
+
 	private _requiredLanes = 1; // always render at least one lane
 	constructor(maxLine: number) {
 		this.lanes = new Uint8Array(Math.ceil(((maxLine + 1) * MAX_LANE) / 8));
 	}
+
 	public reset(maxLine: number) {
 		const bytes = Math.ceil(((maxLine + 1) * MAX_LANE) / 8);
 
@@ -22,24 +25,31 @@ export class GlyphMarginLanesModel implements IGlyphMarginLanesModel {
 		} else {
 			this.lanes.fill(0);
 		}
+
 		this._requiredLanes = 1;
 	}
+
 	public get requiredLanes() {
 		return this._requiredLanes;
 	}
+
 	public push(lane: GlyphMarginLane, range: Range, persist?: boolean): void {
 		if (persist) {
 			this.persist |= 1 << (lane - 1);
 		}
+
 		for (let i = range.startLineNumber; i <= range.endLineNumber; i++) {
 			const bit = MAX_LANE * i + (lane - 1);
+
 			this.lanes[bit >>> 3] |= 1 << bit % 8;
+
 			this._requiredLanes = Math.max(
 				this._requiredLanes,
 				this.countAtLine(i),
 			);
 		}
 	}
+
 	public getLanesAtLine(lineNumber: number): GlyphMarginLane[] {
 		const lanes: GlyphMarginLane[] = [];
 
@@ -52,10 +62,13 @@ export class GlyphMarginLanesModel implements IGlyphMarginLanesModel {
 			) {
 				lanes.push(i + 1);
 			}
+
 			bit++;
 		}
+
 		return lanes.length ? lanes : [GlyphMarginLane.Center];
 	}
+
 	private countAtLine(lineNumber: number): number {
 		let bit = MAX_LANE * lineNumber;
 
@@ -68,8 +81,10 @@ export class GlyphMarginLanesModel implements IGlyphMarginLanesModel {
 			) {
 				count++;
 			}
+
 			bit++;
 		}
+
 		return count;
 	}
 }

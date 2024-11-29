@@ -21,9 +21,11 @@ export async function downloadLibcxxHeaders(
 	if (await fs.existsSync(path.resolve(outDir, "include"))) {
 		return;
 	}
+
 	if (!(await fs.existsSync(outDir))) {
 		await fs.mkdirSync(outDir, { recursive: true });
 	}
+
 	d(`downloading ${lib_name}_headers`);
 
 	const headers = await downloadArtifact({
@@ -31,7 +33,9 @@ export async function downloadLibcxxHeaders(
 		isGeneric: true,
 		artifactName: `${lib_name}_headers.zip`,
 	});
+
 	d(`unpacking ${lib_name}_headers from ${headers}`);
+
 	await extract(headers, { dir: outDir });
 }
 export async function downloadLibcxxObjects(
@@ -42,9 +46,11 @@ export async function downloadLibcxxObjects(
 	if (await fs.existsSync(path.resolve(outDir, "libc++.a"))) {
 		return;
 	}
+
 	if (!(await fs.existsSync(outDir))) {
 		await fs.mkdirSync(outDir, { recursive: true });
 	}
+
 	d(`downloading libcxx-objects-linux-${targetArch}`);
 
 	const objects = await downloadArtifact({
@@ -53,7 +59,9 @@ export async function downloadLibcxxObjects(
 		artifactName: "libcxx-objects",
 		arch: targetArch,
 	});
+
 	d(`unpacking libcxx-objects from ${objects}`);
+
 	await extract(objects, { dir: outDir });
 }
 async function main(): Promise<void> {
@@ -79,12 +87,15 @@ async function main(): Promise<void> {
 	) {
 		throw new Error("Required build env not set");
 	}
+
 	await downloadLibcxxObjects(libcxxObjectsDirPath, electronVersion, arch);
+
 	await downloadLibcxxHeaders(
 		libcxxHeadersDownloadDir,
 		electronVersion,
 		"libcxx",
 	);
+
 	await downloadLibcxxHeaders(
 		libcxxabiHeadersDownloadDir,
 		electronVersion,
@@ -94,6 +105,7 @@ async function main(): Promise<void> {
 if (require.main === module) {
 	main().catch((err) => {
 		console.error(err);
+
 		process.exit(1);
 	});
 }

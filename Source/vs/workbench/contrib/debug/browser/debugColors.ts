@@ -330,6 +330,7 @@ export function registerColors() {
 			"Debug toolbar icon for step back.",
 		),
 	);
+
 	registerThemingParticipant((theme, collector) => {
 		// All these colours provide a default value so they will never be undefined, hence the `!`
 		const badgeBackgroundColor = theme.getColor(badgeBackground)!;
@@ -363,6 +364,7 @@ export function registerColors() {
 		const toolbarHoverBackgroundColor = theme.getColor(
 			toolbarHoverBackground,
 		);
+
 		collector.addRule(`
 			/* Text colour of the call stack row's filename */
 			.debug-pane .debug-call-stack .monaco-list-row:not(.selected) .stack-frame > .file .file-name {
@@ -372,12 +374,14 @@ export function registerColors() {
 			/* Line & column number "badge" for selected call stack row */
 			.debug-pane .monaco-list-row.selected .line-number {
 				background-color: ${badgeBackgroundColor};
+
 				color: ${badgeForegroundColor};
 			}
 
 			/* Line & column number "badge" for unselected call stack row (basically all other rows) */
 			.debug-pane .line-number {
 				background-color: ${badgeBackgroundColor.transparent(0.6)};
+
 				color: ${badgeForegroundColor.transparent(0.6)};
 			}
 
@@ -387,6 +391,7 @@ export function registerColors() {
 			.debug-pane .debug-call-stack .thread > .state.label,
 			.debug-pane .debug-call-stack .session > .state.label {
 				background-color: ${debugViewStateLabelBackgroundColor};
+
 				color: ${debugViewStateLabelForegroundColor};
 			}
 
@@ -397,26 +402,33 @@ export function registerColors() {
 			.debug-pane .debug-call-stack .thread > .state.label.exception,
 			.debug-pane .debug-call-stack .session > .state.label.exception {
 				background-color: ${debugViewExceptionLabelBackgroundColor};
+
 				color: ${debugViewExceptionLabelForegroundColor};
 			}
 
 			/* Info "badge" shown when the debugger pauses due to a thrown exception. */
 			.debug-pane .call-stack-state-message > .label.exception {
 				background-color: ${debugViewExceptionLabelBackgroundColor};
+
 				color: ${debugViewExceptionLabelForegroundColor};
 			}
 
 			/* Animation of changed values in Debug viewlet */
 			@keyframes debugViewletValueChanged {
 				0%   { background-color: ${debugViewValueChangedHighlightColor.transparent(0)} }
+
 				5%   { background-color: ${debugViewValueChangedHighlightColor.transparent(0.9)} }
+
 				100% { background-color: ${debugViewValueChangedHighlightColor.transparent(0.3)} }
 			}
 
 			.debug-pane .monaco-list-row .expression .value.changed {
 				background-color: ${debugViewValueChangedHighlightColor.transparent(0.3)};
+
 				animation-name: debugViewletValueChanged;
+
 				animation-duration: 1s;
+
 				animation-fill-mode: forwards;
 			}
 
@@ -439,9 +451,11 @@ export function registerColors() {
 			collector.addRule(`
 			.debug-pane .line-number {
 				background-color: ${badgeBackgroundColor};
+
 				color: ${badgeForegroundColor};
 			}`);
 		}
+
 		const tokenNameColor = theme.getColor(debugTokenExpressionName)!;
 
 		const tokenTypeColor = theme.getColor(debugTokenExpressionType)!;
@@ -455,6 +469,7 @@ export function registerColors() {
 		const tokenErrorColor = theme.getColor(debugTokenExpressionError)!;
 
 		const tokenNumberColor = theme.getColor(debugTokenExpressionNumber)!;
+
 		collector.addRule(`
 			.monaco-workbench .monaco-list-row .expression .name {
 				color: ${tokenNameColor};
@@ -513,6 +528,7 @@ export function registerColors() {
 		const debugConsoleInputIconForegroundColor = theme.getColor(
 			debugConsoleInputIconForeground,
 		)!;
+
 		collector.addRule(`
 			.repl .repl-input-wrapper {
 				border-top: 1px solid ${debugConsoleInputBorderColor};
@@ -555,6 +571,7 @@ export function registerColors() {
 				}
 			`);
 		}
+
 		const debugIconStartColor = theme.getColor(debugIconStartForeground);
 
 		if (debugIconStartColor) {
@@ -562,6 +579,7 @@ export function registerColors() {
 				`.monaco-workbench ${ThemeIcon.asCSSSelector(icons.debugStart)} { color: ${debugIconStartColor}; }`,
 			);
 		}
+
 		const debugIconPauseColor = theme.getColor(debugIconPauseForeground);
 
 		if (debugIconPauseColor) {
@@ -569,6 +587,7 @@ export function registerColors() {
 				`.monaco-workbench .part > .title > .title-actions .action-label${ThemeIcon.asCSSSelector(icons.debugPause)}, .monaco-workbench ${ThemeIcon.asCSSSelector(icons.debugPause)} { color: ${debugIconPauseColor}; }`,
 			);
 		}
+
 		const debugIconStopColor = theme.getColor(debugIconStopForeground);
 
 		if (debugIconStopColor) {
@@ -576,6 +595,7 @@ export function registerColors() {
 				`.monaco-workbench .part > .title > .title-actions .action-label${ThemeIcon.asCSSSelector(icons.debugStop)},.monaco-workbench ${ThemeIcon.asCSSSelector(icons.debugStop)} { color: ${debugIconStopColor}; }`,
 			);
 		}
+
 		const debugIconDisconnectColor = theme.getColor(
 			debugIconDisconnectForeground,
 		);
@@ -585,6 +605,7 @@ export function registerColors() {
 				`.monaco-workbench .part > .title > .title-actions .action-label${ThemeIcon.asCSSSelector(icons.debugDisconnect)},.monaco-workbench .debug-view-content ${ThemeIcon.asCSSSelector(icons.debugDisconnect)}, .monaco-workbench .debug-toolbar ${ThemeIcon.asCSSSelector(icons.debugDisconnect)}, .monaco-workbench .command-center-center ${ThemeIcon.asCSSSelector(icons.debugDisconnect)} { color: ${debugIconDisconnectColor}; }`,
 			);
 		}
+
 		const debugIconRestartColor = theme.getColor(
 			debugIconRestartForeground,
 		);
@@ -594,6 +615,7 @@ export function registerColors() {
 				`.monaco-workbench ${ThemeIcon.asCSSSelector(icons.debugRestart)}, .monaco-workbench ${ThemeIcon.asCSSSelector(icons.debugRestartFrame)}, .monaco-workbench .part > .title > .title-actions .action-label${ThemeIcon.asCSSSelector(icons.debugRestart)}, .monaco-workbench .part > .title > .title-actions .action-label${ThemeIcon.asCSSSelector(icons.debugRestartFrame)} { color: ${debugIconRestartColor}; }`,
 			);
 		}
+
 		const debugIconStepOverColor = theme.getColor(
 			debugIconStepOverForeground,
 		);
@@ -603,6 +625,7 @@ export function registerColors() {
 				`.monaco-workbench .part > .title > .title-actions .action-label${ThemeIcon.asCSSSelector(icons.debugStepOver)}, .monaco-workbench ${ThemeIcon.asCSSSelector(icons.debugStepOver)} { color: ${debugIconStepOverColor}; }`,
 			);
 		}
+
 		const debugIconStepIntoColor = theme.getColor(
 			debugIconStepIntoForeground,
 		);
@@ -612,6 +635,7 @@ export function registerColors() {
 				`.monaco-workbench .part > .title > .title-actions .action-label${ThemeIcon.asCSSSelector(icons.debugStepInto)}, .monaco-workbench .part > .title > .title-actions .action-label${ThemeIcon.asCSSSelector(icons.debugStepInto)}, .monaco-workbench ${ThemeIcon.asCSSSelector(icons.debugStepInto)} { color: ${debugIconStepIntoColor}; }`,
 			);
 		}
+
 		const debugIconStepOutColor = theme.getColor(
 			debugIconStepOutForeground,
 		);
@@ -621,6 +645,7 @@ export function registerColors() {
 				`.monaco-workbench .part > .title > .title-actions .action-label${ThemeIcon.asCSSSelector(icons.debugStepOut)}, .monaco-workbench .part > .title > .title-actions .action-label${ThemeIcon.asCSSSelector(icons.debugStepOut)}, .monaco-workbench ${ThemeIcon.asCSSSelector(icons.debugStepOut)} { color: ${debugIconStepOutColor}; }`,
 			);
 		}
+
 		const debugIconContinueColor = theme.getColor(
 			debugIconContinueForeground,
 		);
@@ -630,6 +655,7 @@ export function registerColors() {
 				`.monaco-workbench .part > .title > .title-actions .action-label${ThemeIcon.asCSSSelector(icons.debugContinue)}, .monaco-workbench ${ThemeIcon.asCSSSelector(icons.debugContinue)}, .monaco-workbench .part > .title > .title-actions .action-label${ThemeIcon.asCSSSelector(icons.debugReverseContinue)}, .monaco-workbench ${ThemeIcon.asCSSSelector(icons.debugReverseContinue)} { color: ${debugIconContinueColor}; }`,
 			);
 		}
+
 		const debugIconStepBackColor = theme.getColor(
 			debugIconStepBackForeground,
 		);

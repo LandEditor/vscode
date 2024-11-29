@@ -25,7 +25,9 @@ export class DirtyFilesIndicator
 	implements IWorkbenchContribution
 {
 	static readonly ID = "workbench.contrib.dirtyFilesIndicator";
+
 	private readonly badgeHandle = this._register(new MutableDisposable());
+
 	private lastKnownDirtyCount = 0;
 
 	constructor(
@@ -37,9 +39,12 @@ export class DirtyFilesIndicator
 		private readonly filesConfigurationService: IFilesConfigurationService,
 	) {
 		super();
+
 		this.updateActivityBadge();
+
 		this.registerListeners();
 	}
+
 	private registerListeners(): void {
 		// Working copy dirty indicator
 		this._register(
@@ -48,6 +53,7 @@ export class DirtyFilesIndicator
 			),
 		);
 	}
+
 	private onWorkingCopyDidChangeDirty(workingCopy: IWorkingCopy): void {
 		const gotDirty = workingCopy.isDirty();
 
@@ -60,10 +66,12 @@ export class DirtyFilesIndicator
 		) {
 			return; // do not indicate dirty of working copies that are auto saved after short delay
 		}
+
 		if (gotDirty || this.lastKnownDirtyCount > 0) {
 			this.updateActivityBadge();
 		}
 	}
+
 	private updateActivityBadge(): void {
 		const dirtyCount = (this.lastKnownDirtyCount =
 			this.workingCopyService.dirtyCount);

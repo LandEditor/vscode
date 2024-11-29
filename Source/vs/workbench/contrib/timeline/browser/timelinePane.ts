@@ -73,9 +73,12 @@ function isTimelineItem(item: TreeElement | undefined): item is TimelineItem {
 
 function updateRelativeTime(item: TimelineItem, lastRelativeTime: string | undefined): string | undefined {
 	item.relativeTime = isTimelineItem(item) ? fromNow(item.timestamp) : undefined;
+
 	item.relativeTimeFullWord = isTimelineItem(item) ? fromNow(item.timestamp, false, true) : undefined;
+
 	if (lastRelativeTime === undefined || item.relativeTime !== lastRelativeTime) {
 		lastRelativeTime = item.relativeTime;
+
 		item.hideRelativeTime = false;
 	} else {
 		item.hideRelativeTime = true;
@@ -86,23 +89,29 @@ function updateRelativeTime(item: TimelineItem, lastRelativeTime: string | undef
 
 interface TimelineActionContext {
 	uri: URI | undefined;
+
 	item: TreeElement;
 }
 
 class TimelineAggregate {
 	readonly items: TimelineItem[];
+
 	readonly source: string;
 
 	lastRenderedIndex: number;
 
 	constructor(timeline: Timeline) {
 		this.source = timeline.source;
+
 		this.items = timeline.items;
+
 		this._cursor = timeline.paging?.cursor;
+
 		this.lastRenderedIndex = -1;
 	}
 
 	private _cursor?: string;
+
 	get cursor(): string | undefined {
 		return this._cursor;
 	}
@@ -126,12 +135,14 @@ class TimelineAggregate {
 			updated = true;
 
 			const ids = new Set();
+
 			const timestamps = new Set();
 
 			for (const item of timeline.items) {
 				if (item.id === undefined) {
 					timestamps.add(item.timestamp);
 				}
+
 				else {
 					ids.add(item.id);
 				}
@@ -139,9 +150,12 @@ class TimelineAggregate {
 
 			// Remove any duplicate items
 			let i = this.items.length;
+
 			let item;
+
 			while (i--) {
 				item = this.items[i];
+
 				if ((item.id !== undefined && ids.has(item.id)) || timestamps.has(item.timestamp)) {
 					this.items.splice(i, 1);
 				}
@@ -177,43 +191,59 @@ class TimelineAggregate {
 	}
 
 	private _stale = false;
+
 	get stale() {
 		return this._stale;
 	}
 
 	private _requiresReset = false;
+
 	get requiresReset(): boolean {
 		return this._requiresReset;
 	}
 
 	invalidate(requiresReset: boolean) {
 		this._stale = true;
+
 		this._requiresReset = requiresReset;
 	}
 }
 
 class LoadMoreCommand {
 	readonly handle = 'vscode-command:loadMore';
+
 	readonly timestamp = 0;
+
 	readonly description = undefined;
+
 	readonly tooltip = undefined;
+
 	readonly contextValue = undefined;
 	// Make things easier for duck typing
 	readonly id = undefined;
+
 	readonly icon = undefined;
+
 	readonly iconDark = undefined;
+
 	readonly source = undefined;
+
 	readonly relativeTime = undefined;
+
 	readonly relativeTimeFullWord = undefined;
+
 	readonly hideRelativeTime = undefined;
 
 	constructor(loading: boolean) {
 		this._loading = loading;
 	}
+
 	private _loading: boolean = false;
+
 	get loading(): boolean {
 		return this._loading;
 	}
+
 	set loading(value: boolean) {
 		this._loading = value;
 	}
@@ -239,18 +269,27 @@ export class TimelinePane extends ViewPane {
 	static readonly TITLE: ILocalizedString = localize2('timeline', "Timeline");
 
 	private $container!: HTMLElement;
+
 	private $message!: HTMLDivElement;
+
 	private $tree!: HTMLDivElement;
+
 	private tree!: WorkbenchObjectTree<TreeElement, FuzzyScore>;
+
 	private treeRenderer: TimelineTreeRenderer | undefined;
+
 	private commands: TimelinePaneCommands;
+
 	private visibilityDisposables: DisposableStore | undefined;
 
 	private followActiveEditorContext: IContextKey<boolean>;
+
 	private timelineExcludeSourcesContext: IContextKey<string>;
 
 	private excludedSources: Set<string>;
+
 	private pendingRequests = new Map<string, TimelineRequest>();
+
 	private timelinesBySource = new Map<string, TimelineAggregate>();
 
 	private uri: URI | undefined;
@@ -281,29 +320,39 @@ export class TimelinePane extends ViewPane {
 		this.commands = this._register(this.instantiationService.createInstance(TimelinePaneCommands, this));
 
 		this.followActiveEditorContext = TimelineFollowActiveEditorContext.bindTo(this.contextKeyService);
+
 		this.timelineExcludeSourcesContext = TimelineExcludeSources.bindTo(this.contextKeyService);
 
 		const excludedSourcesString = storageService.get('timeline.excludeSources', StorageScope.PROFILE, '[]');
+
 		this.timelineExcludeSourcesContext.set(excludedSourcesString);
+
 		this.excludedSources = new Set(JSON.parse(excludedSourcesString));
 
 		this._register(storageService.onDidChangeValue(StorageScope.PROFILE, 'timeline.excludeSources', this._store)(this.onStorageServiceChanged, this));
+
 		this._register(configurationService.onDidChangeConfiguration(this.onConfigurationChanged, this));
+
 		this._register(timelineService.onDidChangeProviders(this.onProvidersChanged, this));
+
 		this._register(timelineService.onDidChangeTimeline(this.onTimelineChanged, this));
+
 		this._register(timelineService.onDidChangeUri(uri => this.setUri(uri), this));
 	}
 
 	private _followActiveEditor: boolean = true;
+
 	get followActiveEditor(): boolean {
 		return this._followActiveEditor;
 	}
+
 	set followActiveEditor(value: boolean) {
 		if (this._followActiveEditor === value) {
 			return;
 		}
 
 		this._followActiveEditor = value;
+
 		this.followActiveEditorContext.set(value);
 
 		this.updateFilename(this._filename);
@@ -314,6 +363,7 @@ export class TimelinePane extends ViewPane {
 	}
 
 	private _pageOnScroll: boolean | undefined;
+
 	get pageOnScroll() {
 		if (this._pageOnScroll === undefined) {
 			this._pageOnScroll = this.configurationService.getValue<boolean | null | undefined>('timeline.pageOnScroll') ?? false;
@@ -324,10 +374,12 @@ export class TimelinePane extends ViewPane {
 
 	get pageSize() {
 		let pageSize = this.configurationService.getValue<number | null | undefined>('timeline.pageSize');
+
 		if (pageSize === undefined || pageSize === null) {
 			// If we are paging when scrolling, then add an extra item to the end to make sure the "Load more" item is out of view
 			pageSize = Math.max(20, Math.floor((this.tree?.renderHeight ?? 0 / ItemHeight) + (this.pageOnScroll ? 1 : -1)));
 		}
+
 		return pageSize;
 	}
 
@@ -345,18 +397,24 @@ export class TimelinePane extends ViewPane {
 		}
 
 		this.uri = uri;
+
 		this.updateFilename(uri ? this.labelService.getUriBasenameLabel(uri) : undefined);
+
 		this.treeRenderer?.setUri(uri);
+
 		this.loadTimeline(true);
 	}
 
 	private onStorageServiceChanged() {
 		const excludedSourcesString = this.storageService.get('timeline.excludeSources', StorageScope.PROFILE, '[]');
+
 		this.timelineExcludeSourcesContext.set(excludedSourcesString);
+
 		this.excludedSources = new Set(JSON.parse(excludedSourcesString));
 
 		const missing = this.timelineService.getSources()
 			.filter(({ id }) => !this.excludedSources.has(id) && !this.timelinesBySource.has(id));
+
 		if (missing.length !== 0) {
 			this.loadTimeline(true, missing.map(({ id }) => id));
 		} else {
@@ -388,6 +446,7 @@ export class TimelinePane extends ViewPane {
 				}
 
 				const timeline = this.timelinesBySource.get(source.id);
+
 				if (timeline !== undefined && !timeline.stale) {
 					continue;
 				}
@@ -422,6 +481,7 @@ export class TimelinePane extends ViewPane {
 	private onTimelineChanged(e: TimelineChangeEvent) {
 		if (e?.uri === undefined || this.uriIdentityService.extUri.isEqual(URI.revive(e.uri), this.uri)) {
 			const timeline = this.timelinesBySource.get(e.id);
+
 			if (timeline === undefined) {
 				return;
 			}
@@ -435,8 +495,10 @@ export class TimelinePane extends ViewPane {
 	}
 
 	private _filename: string | undefined;
+
 	updateFilename(filename: string | undefined) {
 		this._filename = filename;
+
 		if (this.followActiveEditor || !filename) {
 			this.updateTitleDescription(filename);
 		} else {
@@ -445,12 +507,14 @@ export class TimelinePane extends ViewPane {
 	}
 
 	private _message: string | undefined;
+
 	get message(): string | undefined {
 		return this._message;
 	}
 
 	set message(message: string | undefined) {
 		this._message = message;
+
 		this.updateMessage();
 	}
 
@@ -466,7 +530,9 @@ export class TimelinePane extends ViewPane {
 		if (!this.$message) {
 			return;
 		}
+
 		this.$message.classList.remove('hide');
+
 		this.resetMessageElement();
 
 		this.$message.textContent = message;
@@ -474,6 +540,7 @@ export class TimelinePane extends ViewPane {
 
 	private hideMessage(): void {
 		this.resetMessageElement();
+
 		this.$message.classList.add('hide');
 	}
 
@@ -482,16 +549,20 @@ export class TimelinePane extends ViewPane {
 	}
 
 	private _isEmpty = true;
+
 	private _maxItemCount = 0;
 
 	private _visibleItemCount = 0;
+
 	private get hasVisibleItems() {
 		return this._visibleItemCount > 0;
 	}
 
 	private clear(cancelPending: boolean) {
 		this._visibleItemCount = 0;
+
 		this._maxItemCount = this.pageSize;
+
 		this.timelinesBySource.clear();
 
 		if (cancelPending) {
@@ -503,6 +574,7 @@ export class TimelinePane extends ViewPane {
 
 			if (!this.isBodyVisible() && this.tree) {
 				this.tree.setChildren(null, undefined);
+
 				this._isEmpty = true;
 			}
 		}
@@ -520,6 +592,7 @@ export class TimelinePane extends ViewPane {
 				this.uri = undefined;
 
 				this.clear(false);
+
 				this.refresh();
 
 				return;
@@ -532,6 +605,7 @@ export class TimelinePane extends ViewPane {
 
 		if (this.uri === undefined) {
 			this.clear(false);
+
 			this.refresh();
 
 			return;
@@ -545,6 +619,7 @@ export class TimelinePane extends ViewPane {
 
 		for (const source of sources ?? this.timelineService.getSources().map(s => s.id)) {
 			const requested = this.loadTimelineForSource(source, this.uri, reset);
+
 			if (requested) {
 				hasPendingRequests = true;
 			}
@@ -585,10 +660,12 @@ export class TimelinePane extends ViewPane {
 				// If we are not resetting, have item(s), and already know there are no more to fetch, we're done here
 				return false;
 			}
+
 			options = { cursor: reset ? undefined : timeline?.cursor, limit: this.pageSize };
 		}
 
 		let request = this.pendingRequests.get(source);
+
 		if (request !== undefined) {
 			options.cursor = request.options.cursor;
 
@@ -601,9 +678,13 @@ export class TimelinePane extends ViewPane {
 				}
 			}
 		}
+
 		request?.tokenSource.dispose(true);
+
 		options.cacheResults = true;
+
 		options.resetCache = reset;
+
 		request = this.timelineService.getTimeline(
 			source, uri, options, new CancellationTokenSource()
 		);
@@ -613,6 +694,7 @@ export class TimelinePane extends ViewPane {
 		}
 
 		this.pendingRequests.set(source, request);
+
 		request.tokenSource.token.onCancellationRequested(() => this.pendingRequests.delete(source));
 
 		this.handleRequest(request);
@@ -625,10 +707,12 @@ export class TimelinePane extends ViewPane {
 			this.timelinesBySource.delete(timeline.source);
 			// Override the limit, to re-query for all our existing cached (possibly visible) items to keep visual continuity
 			const { oldest } = timeline;
+
 			this.loadTimelineForSource(timeline.source, this.uri!, true, oldest !== undefined ? { limit: { timestamp: oldest.timestamp, id: oldest.id } } : undefined);
 		} else {
 			// Override the limit, to query for any newer items
 			const { newest } = timeline;
+
 			this.loadTimelineForSource(timeline.source, this.uri!, false, newest !== undefined ? { limit: { timestamp: newest.timestamp, id: newest.id } } : { limit: this.pageSize });
 		}
 	}
@@ -637,9 +721,11 @@ export class TimelinePane extends ViewPane {
 
 	private async handleRequest(request: TimelineRequest) {
 		let response: Timeline | undefined;
+
 		try {
 			response = await this.progressService.withProgress({ location: this.id }, () => request.result);
 		}
+
 		finally {
 			this.pendingRequests.delete(request.source);
 		}
@@ -659,11 +745,15 @@ export class TimelinePane extends ViewPane {
 		const source = request.source;
 
 		let updated = false;
+
 		const timeline = this.timelinesBySource.get(source);
+
 		if (timeline === undefined) {
 			this.timelinesBySource.set(source, new TimelineAggregate(response));
+
 			updated = true;
 		}
+
 		else {
 			updated = timeline.add(response, request.options);
 		}
@@ -696,6 +786,7 @@ export class TimelinePane extends ViewPane {
 		}
 
 		const maxCount = this._maxItemCount;
+
 		let count = 0;
 
 		if (this.timelinesBySource.size === 1) {
@@ -717,26 +808,33 @@ export class TimelinePane extends ViewPane {
 			more = timeline.more;
 
 			let lastRelativeTime: string | undefined;
+
 			for (const item of timeline.items) {
 				item.relativeTime = undefined;
+
 				item.hideRelativeTime = undefined;
 
 				count++;
+
 				if (count > maxCount) {
 					more = true;
+
 					break;
 				}
 
 				lastRelativeTime = updateRelativeTime(item, lastRelativeTime);
+
 				yield { element: item };
 			}
 
 			timeline.lastRenderedIndex = count - 1;
 		}
+
 		else {
 			const sources: { timeline: TimelineAggregate; iterator: IterableIterator<TimelineItem>; nextItem: IteratorResult<TimelineItem, undefined> }[] = [];
 
 			let hasAnyItems = false;
+
 			let mostRecentEnd = 0;
 
 			for (const [source, timeline] of this.timelinesBySource) {
@@ -754,12 +852,14 @@ export class TimelinePane extends ViewPane {
 					more = true;
 
 					const last = timeline.items[Math.min(maxCount, timeline.items.length - 1)];
+
 					if (last.timestamp > mostRecentEnd) {
 						mostRecentEnd = last.timestamp;
 					}
 				}
 
 				const iterator = timeline.items[Symbol.iterator]();
+
 				sources.push({ timeline, iterator, nextItem: iterator.next() });
 			}
 
@@ -772,22 +872,29 @@ export class TimelinePane extends ViewPane {
 			}
 
 			let lastRelativeTime: string | undefined;
+
 			let nextSource;
+
 			while (nextSource = getNextMostRecentSource()) {
 				nextSource.timeline.lastRenderedIndex++;
 
 				const item = nextSource.nextItem.value!;
+
 				item.relativeTime = undefined;
+
 				item.hideRelativeTime = undefined;
 
 				if (item.timestamp >= mostRecentEnd) {
 					count++;
+
 					if (count > maxCount) {
 						more = true;
+
 						break;
 					}
 
 					lastRelativeTime = updateRelativeTime(item, lastRelativeTime);
+
 					yield { element: item };
 				}
 
@@ -796,6 +903,7 @@ export class TimelinePane extends ViewPane {
 		}
 
 		this._visibleItemCount = count;
+
 		if (count > 0) {
 			if (more) {
 				yield {
@@ -815,17 +923,21 @@ export class TimelinePane extends ViewPane {
 		}
 
 		this.tree.setChildren(null, this.getItems() as any);
+
 		this._isEmpty = !this.hasVisibleItems;
 
 		if (this.uri === undefined) {
 			this.updateFilename(undefined);
+
 			this.message = localize('timeline.editorCannotProvideTimeline', "The active editor cannot provide timeline information.");
 		} else if (this._isEmpty) {
 			if (this.pendingRequests.size !== 0) {
 				this.setLoadingUriMessage();
 			} else {
 				this.updateFilename(this.labelService.getUriBasenameLabel(this.uri));
+
 				const scmProviderCount = this.contextKeyService.getContextKeyValue<number>('scm.providerCount');
+
 				if (this.timelineService.getSources().filter(({ id }) => !this.excludedSources.has(id)).length === 0) {
 					this.message = localize('timeline.noTimelineSourcesEnabled', "All timeline sources have been filtered out.");
 				} else {
@@ -837,12 +949,14 @@ export class TimelinePane extends ViewPane {
 						this.message = localize('timeline.noTimelineInfo', "No timeline information was provided.");
 					}
 				}
+
 				if (!scmProviderCount || scmProviderCount === 0) {
 					this.message += ' ' + localize('timeline.noSCM', "Source Control has not been configured.");
 				}
 			}
 		} else {
 			this.updateFilename(this.labelService.getUriBasenameLabel(this.uri));
+
 			this.message = undefined;
 		}
 
@@ -856,6 +970,7 @@ export class TimelinePane extends ViewPane {
 
 	override focus(): void {
 		super.focus();
+
 		this.tree.domFocus();
 	}
 
@@ -876,6 +991,7 @@ export class TimelinePane extends ViewPane {
 	override setVisible(visible: boolean): void {
 		if (visible) {
 			this.extensionService.activateByEvent('onView:timeline');
+
 			this.visibilityDisposables = new DisposableStore();
 
 			this.editorService.onDidActiveEditorChange(this.onActiveEditorChanged, this, this.visibilityDisposables);
@@ -894,6 +1010,7 @@ export class TimelinePane extends ViewPane {
 
 	protected override layoutBody(height: number, width: number): void {
 		super.layoutBody(height, width);
+
 		this.tree.layout(height, width);
 	}
 
@@ -907,19 +1024,24 @@ export class TimelinePane extends ViewPane {
 		super.renderBody(container);
 
 		this.$container = container;
+
 		container.classList.add('tree-explorer-viewlet-tree-view', 'timeline-tree-view');
 
 		this.$message = DOM.append(this.$container, DOM.$('.message'));
+
 		this.$message.classList.add('timeline-subtle');
 
 		this.message = localize('timeline.editorCannotProvideTimeline', "The active editor cannot provide timeline information.");
 
 		this.$tree = document.createElement('div');
+
 		this.$tree.classList.add('customview-tree', 'file-icon-themable-tree', 'hide-arrows');
 		// this.treeElement.classList.add('show-file-icons');
+
 		container.appendChild(this.$tree);
 
 		this.treeRenderer = this.instantiationService.createInstance(TimelineTreeRenderer, this.commands);
+
 		this.treeRenderer.onDidScrollToEnd(item => {
 			if (this.pageOnScroll) {
 				this.loadMore(item);
@@ -934,12 +1056,14 @@ export class TimelinePane extends ViewPane {
 					if (isLoadMoreCommand(element)) {
 						return element.ariaLabel;
 					}
+
 					return element.accessibilityInformation ? element.accessibilityInformation.label : localize('timeline.aria.item', "{0}: {1}", element.relativeTimeFullWord ?? '', element.label);
 				},
 				getRole(element: TreeElement): AriaRole {
 					if (isLoadMoreCommand(element)) {
 						return 'treeitem';
 					}
+
 					return element.accessibilityInformation && element.accessibilityInformation.role ? element.accessibilityInformation.role : 'treeitem';
 				},
 				getWidgetAriaLabel(): string {
@@ -952,14 +1076,18 @@ export class TimelinePane extends ViewPane {
 		});
 
 		this._register(this.tree.onContextMenu(e => this.onContextMenu(this.commands, e)));
+
 		this._register(this.tree.onDidChangeSelection(e => this.ensureValidItems()));
+
 		this._register(this.tree.onDidOpen(e => {
 			if (!e.browserEvent || !this.ensureValidItems()) {
 				return;
 			}
 
 			const selection = this.tree.getSelection();
+
 			let item;
+
 			if (selection.length === 1) {
 				item = selection[0];
 			}
@@ -971,6 +1099,7 @@ export class TimelinePane extends ViewPane {
 			if (isTimelineItem(item)) {
 				if (item.command) {
 					let args = item.command.arguments ?? [];
+
 					if (item.command.id === API_OPEN_EDITOR_COMMAND_ID || item.command.id === API_OPEN_DIFF_EDITOR_COMMAND_ID) {
 						// Some commands owned by us should receive the
 						// `IOpenEvent` as context to open properly
@@ -980,6 +1109,7 @@ export class TimelinePane extends ViewPane {
 					this.commandService.executeCommand(item.command.id, ...args);
 				}
 			}
+
 			else if (isLoadMoreCommand(item)) {
 				this.loadMore(item);
 			}
@@ -992,6 +1122,7 @@ export class TimelinePane extends ViewPane {
 		}
 
 		item.loading = true;
+
 		this.tree.rerender(item);
 
 		if (this.pendingRequests.size !== 0) {
@@ -999,6 +1130,7 @@ export class TimelinePane extends ViewPane {
 		}
 
 		this._maxItemCount = this._visibleItemCount + this.pageSize;
+
 		this.loadTimeline(false);
 	}
 
@@ -1006,6 +1138,7 @@ export class TimelinePane extends ViewPane {
 		// If we don't have any non-excluded timelines, clear the tree and show the loading message
 		if (!this.hasVisibleItems || !this.timelineService.getSources().some(({ id }) => !this.excludedSources.has(id) && this.timelinesBySource.has(id))) {
 			this.tree.setChildren(null, undefined);
+
 			this._isEmpty = true;
 
 			this.setLoadingUriMessage();
@@ -1018,18 +1151,23 @@ export class TimelinePane extends ViewPane {
 
 	setLoadingUriMessage() {
 		const file = this.uri && this.labelService.getUriBasenameLabel(this.uri);
+
 		this.updateFilename(file);
+
 		this.message = file ? localize('timeline.loading', "Loading timeline for {0}...", file) : '';
 	}
 
 	private onContextMenu(commands: TimelinePaneCommands, treeEvent: ITreeContextMenuEvent<TreeElement | null>): void {
 		const item = treeEvent.element;
+
 		if (item === null) {
 			return;
 		}
+
 		const event: UIEvent = treeEvent.browserEvent;
 
 		event.preventDefault();
+
 		event.stopPropagation();
 
 		if (!this.ensureValidItems()) {
@@ -1037,7 +1175,9 @@ export class TimelinePane extends ViewPane {
 		}
 
 		this.tree.setFocus([item]);
+
 		const actions = commands.getItemContextActions(item);
+
 		if (!actions.length) {
 			return;
 		}
@@ -1047,9 +1187,11 @@ export class TimelinePane extends ViewPane {
 			getActions: () => actions,
 			getActionViewItem: (action) => {
 				const keybinding = this.keybindingService.lookupKeybinding(action.id);
+
 				if (keybinding) {
 					return new ActionViewItem(action, action, { label: true, keybinding: keybinding.getLabel() });
 				}
+
 				return undefined;
 			},
 			onHide: (wasCancelled?: boolean) => {
@@ -1067,8 +1209,11 @@ class TimelineElementTemplate implements IDisposable {
 	static readonly id = 'TimelineElementTemplate';
 
 	readonly actionBar: ActionBar;
+
 	readonly icon: HTMLElement;
+
 	readonly iconLabel: IconLabel;
+
 	readonly timestamp: HTMLSpanElement;
 
 	constructor(
@@ -1077,25 +1222,31 @@ class TimelineElementTemplate implements IDisposable {
 		hoverDelegate: IHoverDelegate,
 	) {
 		container.classList.add('custom-view-tree-node-item');
+
 		this.icon = DOM.append(container, DOM.$('.custom-view-tree-node-item-icon'));
 
 		this.iconLabel = new IconLabel(container, { supportHighlights: true, supportIcons: true, hoverDelegate });
 
 		const timestampContainer = DOM.append(this.iconLabel.element, DOM.$('.timeline-timestamp-container'));
+
 		this.timestamp = DOM.append(timestampContainer, DOM.$('span.timeline-timestamp'));
 
 		const actionsContainer = DOM.append(this.iconLabel.element, DOM.$('.actions'));
+
 		this.actionBar = new ActionBar(actionsContainer, { actionViewItemProvider });
 	}
 
 	dispose() {
 		this.iconLabel.dispose();
+
 		this.actionBar.dispose();
 	}
 
 	reset() {
 		this.icon.className = '';
+
 		this.icon.style.backgroundImage = '';
+
 		this.actionBar.clear();
 	}
 }
@@ -1112,6 +1263,7 @@ class TimelineActionRunner extends ActionRunner {
 		if (!isTimelineItem(item)) {
 			// TODO@eamodio do we need to do anything else?
 			await action.run();
+
 			return;
 		}
 
@@ -1146,6 +1298,7 @@ export class TimelineListVirtualDelegate implements IListVirtualDelegate<TreeEle
 
 class TimelineTreeRenderer implements ITreeRenderer<TreeElement, FuzzyScore, TimelineElementTemplate> {
 	private readonly _onDidScrollToEnd = new Emitter<LoadMoreCommand>();
+
 	readonly onDidScrollToEnd: Event<LoadMoreCommand> = this._onDidScrollToEnd.event;
 
 	readonly templateId: string = TimelineElementTemplate.id;
@@ -1160,6 +1313,7 @@ class TimelineTreeRenderer implements ITreeRenderer<TreeElement, FuzzyScore, Tim
 		@IThemeService private themeService: IThemeService,
 	) {
 		this.actionViewItemProvider = createActionViewItem.bind(undefined, this.instantiationService);
+
 		this._hoverDelegate = this.instantiationService.createInstance(WorkbenchHoverDelegate, 'element', false, {
 			position: {
 				hoverPosition: HoverPosition.RIGHT // Will flip when there's no space
@@ -1168,6 +1322,7 @@ class TimelineTreeRenderer implements ITreeRenderer<TreeElement, FuzzyScore, Tim
 	}
 
 	private uri: URI | undefined;
+
 	setUri(uri: URI | undefined) {
 		this.uri = uri;
 	}
@@ -1187,26 +1342,35 @@ class TimelineTreeRenderer implements ITreeRenderer<TreeElement, FuzzyScore, Tim
 		const { element: item } = node;
 
 		const theme = this.themeService.getColorTheme();
+
 		const icon = theme.type === ColorScheme.LIGHT ? item.icon : item.iconDark;
+
 		const iconUrl = icon ? URI.revive(icon) : null;
 
 		if (iconUrl) {
 			template.icon.className = 'custom-view-tree-node-item-icon';
+
 			template.icon.style.backgroundImage = css.asCSSUrl(iconUrl);
+
 			template.icon.style.color = '';
 		} else if (item.themeIcon) {
 			template.icon.className = `custom-view-tree-node-item-icon ${ThemeIcon.asClassName(item.themeIcon)}`;
+
 			if (item.themeIcon.color) {
 				template.icon.style.color = theme.getColor(item.themeIcon.color.id)?.toString() ?? '';
 			} else {
 				template.icon.style.color = '';
 			}
+
 			template.icon.style.backgroundImage = '';
 		} else {
 			template.icon.className = 'custom-view-tree-node-item-icon';
+
 			template.icon.style.backgroundImage = '';
+
 			template.icon.style.color = '';
 		}
+
 		const tooltip = item.tooltip
 			? isString(item.tooltip)
 				? item.tooltip
@@ -1219,11 +1383,15 @@ class TimelineTreeRenderer implements ITreeRenderer<TreeElement, FuzzyScore, Tim
 		});
 
 		template.timestamp.textContent = item.relativeTime ?? '';
+
 		template.timestamp.ariaLabel = item.relativeTimeFullWord ?? '';
+
 		template.timestamp.parentElement!.classList.toggle('timeline-timestamp--duplicate', isTimelineItem(item) && item.hideRelativeTime);
 
 		template.actionBar.context = { uri: this.uri, item } satisfies TimelineActionContext;
+
 		template.actionBar.actionRunner = new TimelineActionRunner();
+
 		template.actionBar.push(this.commands.getItemActions(item), { icon: true, label: false });
 
 		// If we are rendering the load more item, we've scrolled to the end, so trigger an event
@@ -1270,6 +1438,7 @@ class TimelinePaneCommands extends Disposable {
 					}
 				});
 			}
+
 			run(accessor: ServicesAccessor, ...args: any[]) {
 				pane.reset();
 			}
@@ -1304,6 +1473,7 @@ class TimelinePaneCommands extends Disposable {
 		})));
 
 		this._register(timelineService.onDidChangeProviders(() => this.updateTimelineSourceFilters()));
+
 		this.updateTimelineSourceFilters();
 	}
 
@@ -1322,6 +1492,7 @@ class TimelinePaneCommands extends Disposable {
 		]);
 
 		const menu = this.menuService.getMenuActions(menuId, contextKeyService, { shouldForwardArgs: true });
+
 		return getContextMenuActions(menu, 'inline');
 	}
 
@@ -1329,6 +1500,7 @@ class TimelinePaneCommands extends Disposable {
 		this.sourceDisposables.clear();
 
 		const excluded = new Set(JSON.parse(this.storageService.get('timeline.excludeSources', StorageScope.PROFILE, '[]')));
+
 		for (const source of this.timelineService.getSources()) {
 			this.sourceDisposables.add(registerAction2(class extends Action2 {
 				constructor() {
@@ -1342,6 +1514,7 @@ class TimelinePaneCommands extends Disposable {
 						toggled: ContextKeyExpr.regex(`timelineExcludeSources`, new RegExp(`\\b${escapeRegExpCharacters(source.id)}\\b`)).negate()
 					});
 				}
+
 				run(accessor: ServicesAccessor, ...args: any[]) {
 					if (excluded.has(source.id)) {
 						excluded.delete(source.id);
@@ -1350,6 +1523,7 @@ class TimelinePaneCommands extends Disposable {
 					}
 
 					const storageService = accessor.get(IStorageService);
+
 					storageService.store('timeline.excludeSources', JSON.stringify([...excluded.keys()]), StorageScope.PROFILE, StorageTarget.USER);
 				}
 			}));

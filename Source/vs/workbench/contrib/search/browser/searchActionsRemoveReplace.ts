@@ -54,19 +54,30 @@ export interface ISearchActionContext {
 		ISearchResult,
 		RenderableMatch
 	>;
+
 	readonly element: RenderableMatch;
 }
 export interface IFindInFilesArgs {
 	query?: string;
+
 	replace?: string;
+
 	preserveCase?: boolean;
+
 	triggerSearch?: boolean;
+
 	filesToInclude?: string;
+
 	filesToExclude?: string;
+
 	isRegex?: boolean;
+
 	isCaseSensitive?: boolean;
+
 	matchWholeWord?: boolean;
+
 	useExcludeSettingsAndIgnoreFiles?: boolean;
+
 	onlyOpenEditors?: boolean;
 }
 //#endregion
@@ -104,6 +115,7 @@ registerAction2(
 				],
 			});
 		}
+
 		async run(
 			accessor: ServicesAccessor,
 			context: ISearchActionContext | undefined,
@@ -117,6 +129,7 @@ registerAction2(
 			if (!searchView) {
 				return;
 			}
+
 			let element = context?.element;
 
 			let viewer = context?.viewer;
@@ -124,9 +137,11 @@ registerAction2(
 			if (!viewer) {
 				viewer = searchView.getControl();
 			}
+
 			if (!element) {
 				element = viewer.getFocus()[0] ?? undefined;
 			}
+
 			const elementsToRemove = getElementsToOperateOn(
 				viewer,
 				element,
@@ -140,9 +155,11 @@ registerAction2(
 			if (elementsToRemove.length === 0) {
 				return;
 			}
+
 			if (!focusElement || isSearchResult(focusElement)) {
 				focusElement = element;
 			}
+
 			let nextFocusElement;
 
 			const shouldRefocusMatch = shouldRefocus(
@@ -157,11 +174,13 @@ registerAction2(
 					elementsToRemove,
 				);
 			}
+
 			const searchResult = searchView.searchResult;
 
 			if (searchResult) {
 				searchResult.batchRemove(elementsToRemove);
 			}
+
 			await searchView.queueRefreshTree(); // wait for refreshTree to finish
 			if (focusElement && shouldRefocusMatch) {
 				if (!nextFocusElement) {
@@ -170,6 +189,7 @@ registerAction2(
 						focusElement,
 					);
 				}
+
 				if (
 					nextFocusElement &&
 					!arrayContainsElementOrParent(
@@ -178,10 +198,12 @@ registerAction2(
 					)
 				) {
 					viewer.reveal(nextFocusElement);
+
 					viewer.setFocus(
 						[nextFocusElement],
 						getSelectionKeyboardEvent(),
 					);
+
 					viewer.setSelection(
 						[nextFocusElement],
 						getSelectionKeyboardEvent(),
@@ -190,6 +212,7 @@ registerAction2(
 			} else if (!equals(viewer.getFocus(), viewer.getSelection())) {
 				viewer.setSelection(viewer.getFocus());
 			}
+
 			viewer.domFocus();
 
 			return;
@@ -238,6 +261,7 @@ registerAction2(
 				],
 			});
 		}
+
 		override async run(
 			accessor: ServicesAccessor,
 			context: ISearchActionContext | undefined,
@@ -289,6 +313,7 @@ registerAction2(
 				],
 			});
 		}
+
 		override async run(
 			accessor: ServicesAccessor,
 			context: ISearchActionContext | undefined,
@@ -340,6 +365,7 @@ registerAction2(
 				],
 			});
 		}
+
 		override async run(
 			accessor: ServicesAccessor,
 			context: ISearchActionContext | undefined,
@@ -367,6 +393,7 @@ async function performReplace(
 	if (!viewer) {
 		return;
 	}
+
 	const element: RenderableMatch | null =
 		context?.element ?? viewer.getFocus()[0];
 	// since multiple elements can be selected, we need to check the type of the FolderMatch/FileMatch/Match before we perform the replace.
@@ -386,9 +413,11 @@ async function performReplace(
 	) {
 		focusElement = element;
 	}
+
 	if (elementsToReplace.length === 0) {
 		return;
 	}
+
 	let nextFocusElement;
 
 	if (focusElement) {
@@ -398,11 +427,13 @@ async function performReplace(
 			elementsToReplace,
 		);
 	}
+
 	const searchResult = viewlet?.searchResult;
 
 	if (searchResult) {
 		await searchResult.batchReplace(elementsToReplace);
 	}
+
 	await viewlet?.queueRefreshTree(); // wait for refreshTree to finish
 	if (focusElement) {
 		if (!nextFocusElement) {
@@ -411,9 +442,12 @@ async function performReplace(
 				focusElement,
 			);
 		}
+
 		if (nextFocusElement) {
 			viewer.reveal(nextFocusElement);
+
 			viewer.setFocus([nextFocusElement], getSelectionKeyboardEvent());
+
 			viewer.setSelection(
 				[nextFocusElement],
 				getSelectionKeyboardEvent(),
@@ -440,6 +474,7 @@ async function performReplace(
 			}
 		}
 	}
+
 	viewer.domFocus();
 }
 function hasToOpenFile(
@@ -449,6 +484,7 @@ function hasToOpenFile(
 	if (!isSearchTreeMatch(currBottomElem)) {
 		return false;
 	}
+
 	const activeEditor = accessor.get(IEditorService).activeEditor;
 
 	const file = activeEditor?.resource;
@@ -458,6 +494,7 @@ function hasToOpenFile(
 			.get(IUriIdentityService)
 			.extUri.isEqual(file, currBottomElem.parent().resource);
 	}
+
 	return false;
 }
 function compareLevels(elem1: RenderableMatch, elem2: RenderableMatch) {
@@ -533,6 +570,7 @@ export async function getElementToFocusAfterRemoved(
 			await viewer.expand(navigator.current());
 		}
 	}
+
 	return navigator.current();
 }
 /***
@@ -553,6 +591,7 @@ export async function getLastNodeFromSameType(
 			if (!expanded) {
 				return lastElem;
 			}
+
 			lastElem = viewer.lastVisibleElement;
 		} else if (compareVal === 1) {
 			const potentialLastElem = viewer.getParentElement(lastElem);
@@ -566,6 +605,7 @@ export async function getLastNodeFromSameType(
 			return lastElem;
 		}
 	}
+
 	return undefined;
 }
 //#endregion

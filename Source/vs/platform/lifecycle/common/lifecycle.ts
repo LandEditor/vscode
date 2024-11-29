@@ -12,6 +12,7 @@ export function handleVetos(
 	if (vetos.length === 0) {
 		return Promise.resolve(false);
 	}
+
 	const promises: Promise<void>[] = [];
 
 	let lazyValue = false;
@@ -21,6 +22,7 @@ export function handleVetos(
 		if (valueOrPromise === true) {
 			return Promise.resolve(true);
 		}
+
 		if (isThenable(valueOrPromise)) {
 			promises.push(
 				valueOrPromise.then(
@@ -37,5 +39,6 @@ export function handleVetos(
 			);
 		}
 	}
+
 	return Promises.settled(promises).then(() => lazyValue);
 }

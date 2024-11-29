@@ -37,29 +37,39 @@ import {
  */
 export class ViewContentWidgets extends ViewPart {
 	private readonly _viewDomNode: FastDomNode<HTMLElement>;
+
 	private _widgets: { [key: string]: Widget };
 
 	public domNode: FastDomNode<HTMLElement>;
+
 	public overflowingContentWidgetsDomNode: FastDomNode<HTMLElement>;
 
 	constructor(context: ViewContext, viewDomNode: FastDomNode<HTMLElement>) {
 		super(context);
+
 		this._viewDomNode = viewDomNode;
+
 		this._widgets = {};
 
 		this.domNode = createFastDomNode(document.createElement("div"));
+
 		PartFingerprints.write(this.domNode, PartFingerprint.ContentWidgets);
+
 		this.domNode.setClassName("contentWidgets");
+
 		this.domNode.setPosition("absolute");
+
 		this.domNode.setTop(0);
 
 		this.overflowingContentWidgetsDomNode = createFastDomNode(
 			document.createElement("div"),
 		);
+
 		PartFingerprints.write(
 			this.overflowingContentWidgetsDomNode,
 			PartFingerprint.OverflowingContentWidgets,
 		);
+
 		this.overflowingContentWidgetsDomNode.setClassName(
 			"overflowingContentWidgets",
 		);
@@ -67,6 +77,7 @@ export class ViewContentWidgets extends ViewPart {
 
 	public override dispose(): void {
 		super.dispose();
+
 		this._widgets = {};
 	}
 
@@ -80,17 +91,21 @@ export class ViewContentWidgets extends ViewPart {
 		for (const widgetId of keys) {
 			this._widgets[widgetId].onConfigurationChanged(e);
 		}
+
 		return true;
 	}
+
 	public override onDecorationsChanged(
 		e: viewEvents.ViewDecorationsChangedEvent,
 	): boolean {
 		// true for inline decorations that can end up relayouting text
 		return true;
 	}
+
 	public override onFlushed(e: viewEvents.ViewFlushedEvent): boolean {
 		return true;
 	}
+
 	public override onLineMappingChanged(
 		e: viewEvents.ViewLineMappingChangedEvent,
 	): boolean {
@@ -98,6 +113,7 @@ export class ViewContentWidgets extends ViewPart {
 
 		return true;
 	}
+
 	public override onLinesChanged(
 		e: viewEvents.ViewLinesChangedEvent,
 	): boolean {
@@ -105,6 +121,7 @@ export class ViewContentWidgets extends ViewPart {
 
 		return true;
 	}
+
 	public override onLinesDeleted(
 		e: viewEvents.ViewLinesDeletedEvent,
 	): boolean {
@@ -112,6 +129,7 @@ export class ViewContentWidgets extends ViewPart {
 
 		return true;
 	}
+
 	public override onLinesInserted(
 		e: viewEvents.ViewLinesInsertedEvent,
 	): boolean {
@@ -119,11 +137,13 @@ export class ViewContentWidgets extends ViewPart {
 
 		return true;
 	}
+
 	public override onScrollChanged(
 		e: viewEvents.ViewScrollChangedEvent,
 	): boolean {
 		return true;
 	}
+
 	public override onZonesChanged(
 		e: viewEvents.ViewZonesChangedEvent,
 	): boolean {
@@ -142,6 +162,7 @@ export class ViewContentWidgets extends ViewPart {
 
 	public addWidget(_widget: IContentWidget): void {
 		const myWidget = new Widget(this._context, this._viewDomNode, _widget);
+
 		this._widgets[myWidget.id] = myWidget;
 
 		if (myWidget.allowEditorOverflow) {
@@ -161,6 +182,7 @@ export class ViewContentWidgets extends ViewPart {
 		affinity: PositionAffinity | null,
 	): void {
 		const myWidget = this._widgets[widget.getId()];
+
 		myWidget.setPosition(
 			primaryAnchor,
 			secondaryAnchor,
@@ -176,6 +198,7 @@ export class ViewContentWidgets extends ViewPart {
 
 		if (this._widgets.hasOwnProperty(widgetId)) {
 			const myWidget = this._widgets[widgetId];
+
 			delete this._widgets[widgetId];
 
 			const domNode = myWidget.domNode.domNode;
@@ -192,6 +215,7 @@ export class ViewContentWidgets extends ViewPart {
 		if (this._widgets.hasOwnProperty(widgetId)) {
 			return this._widgets[widgetId].suppressMouseDown;
 		}
+
 		return false;
 	}
 
@@ -222,9 +246,11 @@ export class ViewContentWidgets extends ViewPart {
 
 interface IBoxLayoutResult {
 	fitsAbove: boolean;
+
 	aboveTop: number;
 
 	fitsBelow: boolean;
+
 	belowTop: number;
 
 	left: number;
@@ -232,12 +258,15 @@ interface IBoxLayoutResult {
 
 interface IOffViewportRenderData {
 	kind: "offViewport";
+
 	preserveFocus: boolean;
 }
 
 interface IInViewportRenderData {
 	kind: "inViewport";
+
 	coordinate: Coordinate;
+
 	position: ContentWidgetPositionPreference;
 }
 
@@ -245,26 +274,41 @@ type IRenderData = IInViewportRenderData | IOffViewportRenderData;
 
 class Widget {
 	private readonly _context: ViewContext;
+
 	private readonly _viewDomNode: FastDomNode<HTMLElement>;
+
 	private readonly _actual: IContentWidget;
 
 	public readonly domNode: FastDomNode<HTMLElement>;
+
 	public readonly id: string;
+
 	public readonly allowEditorOverflow: boolean;
+
 	public readonly suppressMouseDown: boolean;
 
 	private readonly _fixedOverflowWidgets: boolean;
+
 	private _contentWidth: number;
+
 	private _contentLeft: number;
+
 	private _lineHeight: number;
 
 	private _primaryAnchor: PositionPair = new PositionPair(null, null);
+
 	private _secondaryAnchor: PositionPair = new PositionPair(null, null);
+
 	private _affinity: PositionAffinity | null;
+
 	private _preference: ContentWidgetPositionPreference[] | null;
+
 	private _cachedDomNodeOffsetWidth: number;
+
 	private _cachedDomNodeOffsetHeight: number;
+
 	private _maxWidth: number;
+
 	private _isVisible: boolean;
 
 	private _renderData: IRenderData | null;
@@ -275,12 +319,17 @@ class Widget {
 		actual: IContentWidget,
 	) {
 		this._context = context;
+
 		this._viewDomNode = viewDomNode;
+
 		this._actual = actual;
 
 		this.domNode = createFastDomNode(this._actual.getDomNode());
+
 		this.id = this._actual.getId();
+
 		this.allowEditorOverflow = this._actual.allowEditorOverflow || false;
+
 		this.suppressMouseDown = this._actual.suppressMouseDown || false;
 
 		const options = this._context.configuration.options;
@@ -290,16 +339,25 @@ class Widget {
 		this._fixedOverflowWidgets = options.get(
 			EditorOption.fixedOverflowWidgets,
 		);
+
 		this._contentWidth = layoutInfo.contentWidth;
+
 		this._contentLeft = layoutInfo.contentLeft;
+
 		this._lineHeight = options.get(EditorOption.lineHeight);
 
 		this._affinity = null;
+
 		this._preference = [];
+
 		this._cachedDomNodeOffsetWidth = -1;
+
 		this._cachedDomNodeOffsetHeight = -1;
+
 		this._maxWidth = this._getMaxWidth();
+
 		this._isVisible = false;
+
 		this._renderData = null;
 
 		this.domNode.setPosition(
@@ -307,9 +365,13 @@ class Widget {
 				? "fixed"
 				: "absolute",
 		);
+
 		this.domNode.setDisplay("none");
+
 		this.domNode.setVisibility("hidden");
+
 		this.domNode.setAttribute("widgetId", this.id);
+
 		this.domNode.setMaxWidth(this._maxWidth);
 	}
 
@@ -317,12 +379,16 @@ class Widget {
 		e: viewEvents.ViewConfigurationChangedEvent,
 	): void {
 		const options = this._context.configuration.options;
+
 		this._lineHeight = options.get(EditorOption.lineHeight);
 
 		if (e.hasChanged(EditorOption.layoutInfo)) {
 			const layoutInfo = options.get(EditorOption.layoutInfo);
+
 			this._contentLeft = layoutInfo.contentLeft;
+
 			this._contentWidth = layoutInfo.contentWidth;
+
 			this._maxWidth = this._getMaxWidth();
 		}
 	}
@@ -341,11 +407,13 @@ class Widget {
 		secondaryAnchor: IPosition | null,
 	): void {
 		this._affinity = affinity;
+
 		this._primaryAnchor = getValidPositionPair(
 			primaryAnchor,
 			this._context.viewModel,
 			this._affinity,
 		);
+
 		this._secondaryAnchor = getValidPositionPair(
 			secondaryAnchor,
 			this._context.viewModel,
@@ -377,6 +445,7 @@ class Widget {
 
 				return new PositionPair(position, viewPosition);
 			}
+
 			return new PositionPair(position, null);
 		}
 	}
@@ -400,6 +469,7 @@ class Widget {
 		affinity: PositionAffinity | null,
 	): void {
 		this._setPosition(affinity, primaryAnchor, secondaryAnchor);
+
 		this._preference = preference;
 
 		if (
@@ -415,7 +485,9 @@ class Widget {
 		} else {
 			this.domNode.setDisplay("none");
 		}
+
 		this._cachedDomNodeOffsetWidth = -1;
+
 		this._cachedDomNodeOffsetHeight = -1;
 	}
 
@@ -451,6 +523,7 @@ class Widget {
 		if (left + width > ctx.scrollLeft + ctx.viewportWidth) {
 			left = ctx.scrollLeft + ctx.viewportWidth - width;
 		}
+
 		if (left < ctx.scrollLeft) {
 			left = ctx.scrollLeft;
 		}
@@ -486,13 +559,17 @@ class Widget {
 
 		if (absoluteLeft + width > MAX_LIMIT) {
 			const delta = absoluteLeft - (MAX_LIMIT - width);
+
 			absoluteLeft -= delta;
+
 			left -= delta;
 		}
 
 		if (absoluteLeft < MIN_LIMIT) {
 			const delta = absoluteLeft - MIN_LIMIT;
+
 			absoluteLeft -= delta;
+
 			left -= delta;
 		}
 
@@ -568,6 +645,7 @@ class Widget {
 	 */
 	private _getAnchorsCoordinates(ctx: RenderingContext): {
 		primary: AnchorCoordinate | null;
+
 		secondary: AnchorCoordinate | null;
 	} {
 		const primary = getCoordinates(
@@ -646,6 +724,7 @@ class Widget {
 				primary.left + width - fontInfo.typicalFullwidthCharacterWidth,
 			);
 		}
+
 		return new AnchorCoordinate(primary.top, left, primary.height);
 	}
 
@@ -678,14 +757,18 @@ class Widget {
 					this._actual,
 				);
 			}
+
 			if (preferredDimensions) {
 				this._cachedDomNodeOffsetWidth = preferredDimensions.width;
+
 				this._cachedDomNodeOffsetHeight = preferredDimensions.height;
 			} else {
 				const domNode = this.domNode.domNode;
 
 				const clientRect = domNode.getBoundingClientRect();
+
 				this._cachedDomNodeOffsetWidth = Math.round(clientRect.width);
+
 				this._cachedDomNodeOffsetHeight = Math.round(clientRect.height);
 			}
 		}
@@ -723,6 +806,7 @@ class Widget {
 						// Widget outside of viewport
 						return null;
 					}
+
 					if (pass === 2 || placement.fitsAbove) {
 						return {
 							kind: "inViewport",
@@ -738,6 +822,7 @@ class Widget {
 						// Widget outside of viewport
 						return null;
 					}
+
 					if (pass === 2 || placement.fitsBelow) {
 						return {
 							kind: "inViewport",
@@ -802,6 +887,7 @@ class Widget {
 			// This widget should be invisible
 			if (this._isVisible) {
 				this.domNode.removeAttribute("monaco-visible-content-widget");
+
 				this._isVisible = false;
 
 				if (
@@ -819,12 +905,14 @@ class Widget {
 			if (typeof this._actual.afterRender === "function") {
 				safeInvoke(this._actual.afterRender, this._actual, null, null);
 			}
+
 			return;
 		}
 
 		// This widget should be visible
 		if (this.allowEditorOverflow) {
 			this.domNode.setTop(this._renderData.coordinate.top);
+
 			this.domNode.setLeft(this._renderData.coordinate.left);
 		} else {
 			this.domNode.setTop(
@@ -832,12 +920,15 @@ class Widget {
 					ctx.scrollTop -
 					ctx.bigNumbersDelta,
 			);
+
 			this.domNode.setLeft(this._renderData.coordinate.left);
 		}
 
 		if (!this._isVisible) {
 			this.domNode.setVisibility("inherit");
+
 			this.domNode.setAttribute("monaco-visible-content-widget", "true");
+
 			this._isVisible = true;
 		}
 

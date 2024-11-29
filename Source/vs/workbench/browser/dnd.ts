@@ -52,13 +52,16 @@ export class DraggedEditorGroupIdentifier {
 
 export async function extractTreeDropData(dataTransfer: VSDataTransfer): Promise<Array<IDraggedResourceEditorInput>> {
 	const editors: IDraggedResourceEditorInput[] = [];
+
 	const resourcesKey = Mimes.uriList.toLowerCase();
 
 	// Data Transfer: Resources
 	if (dataTransfer.has(resourcesKey)) {
 		try {
 			const asString = await dataTransfer.get(resourcesKey)?.asString();
+
 			const rawResourcesData = JSON.stringify(UriList.parse(asString ?? ''));
+
 			editors.push(...createDraggedEditorInputFromRawResourcesData(rawResourcesData));
 		} catch (error) {
 			// Invalid transfer
@@ -99,6 +102,7 @@ export class ResourcesDropHandler {
 
 	async handleDrop(event: DragEvent, targetWindow: Window, resolveTargetGroup?: () => IEditorGroup | undefined, afterDrop?: (targetGroup: IEditorGroup | undefined) => void, options?: IEditorOptions): Promise<void> {
 		const editors = await this.instantiationService.invokeFunction(accessor => extractEditorsAndFilesDropData(accessor, event));
+
 		if (!editors.length) {
 			return;
 		}
@@ -109,8 +113,10 @@ export class ResourcesDropHandler {
 		// Check for workspace file / folder being dropped if we are allowed to do so
 		if (this.options.allowWorkspaceOpen) {
 			const localFilesAllowedToOpenAsWorkspace = coalesce(editors.filter(editor => editor.allowWorkspaceOpen && editor.resource?.scheme === Schemas.file).map(editor => editor.resource));
+
 			if (localFilesAllowedToOpenAsWorkspace.length > 0) {
 				const isWorkspaceOpening = await this.handleWorkspaceDrop(localFilesAllowedToOpenAsWorkspace);
+
 				if (isWorkspaceOpening) {
 					return; // return early if the drop operation resulted in this window changing to a workspace
 				}
@@ -119,12 +125,14 @@ export class ResourcesDropHandler {
 
 		// Add external ones to recently open list unless dropped resource is a workspace
 		const externalLocalFiles = coalesce(editors.filter(editor => editor.isExternal && editor.resource?.scheme === Schemas.file).map(editor => editor.resource));
+
 		if (externalLocalFiles.length) {
 			this.workspacesService.addRecentlyOpened(externalLocalFiles.map(resource => ({ fileUri: resource })));
 		}
 
 		// Open in Editor
 		const targetGroup = resolveTargetGroup?.();
+
 		await this.editorService.openEditors(editors.map(editor => ({
 			...editor,
 			resource: editor.resource,
@@ -141,6 +149,7 @@ export class ResourcesDropHandler {
 
 	private async handleWorkspaceDrop(resources: URI[]): Promise<boolean> {
 		const toOpen: IWindowOpenable[] = [];
+
 		const folderURIs: IWorkspaceFolderCreationData[] = [];
 
 		await Promise.all(resources.map(async resource => {
@@ -155,8 +164,10 @@ export class ResourcesDropHandler {
 			// Check for Folder
 			try {
 				const stat = await this.fileService.stat(resource);
+
 				if (stat.isDirectory) {
 					toOpen.push({ folderUri: stat.resource });
+
 					folderURIs.push({ uri: stat.resource });
 				}
 			} catch (error) {
@@ -200,8 +211,11 @@ export function fillEditorsDragData(accessor: ServicesAccessor, resourcesOrEdito
 	}
 
 	const textFileService = accessor.get(ITextFileService);
+
 	const editorService = accessor.get(IEditorService);
+
 	const fileService = accessor.get(IFileService);
+
 	const labelService = accessor.get(ILabelService);
 
 	// Extract resources from URIs or Editors that
@@ -223,10 +237,12 @@ export function fillEditorsDragData(accessor: ServicesAccessor, resourcesOrEdito
 	}));
 
 	const fileSystemResources = resources.filter(({ resource }) => fileService.hasProvider(resource));
+
 	if (!options?.disableStandardTransfer) {
 
 		// Text: allows to paste into text-capable areas
 		const lineDelimiter = isWindows ? '\r\n' : '\n';
+
 		event.dataTransfer.setData(DataTransfers.TEXT, fileSystemResources.map(({ resource }) => labelService.getUriLabel(resource, { noPrefix: true })).join(lineDelimiter));
 
 		// Download URL: enables support to drag a tab as file to desktop
@@ -235,6 +251,7 @@ export function fillEditorsDragData(accessor: ServicesAccessor, resourcesOrEdito
 		// - only a single file is supported
 		// - only file:/ resources are supported
 		const firstFile = fileSystemResources.find(({ isDirectory }) => !isDirectory);
+
 		if (firstFile) {
 			const firstFileUri = FileAccess.uriToFileUri(firstFile.resource); // enforce `file:` URIs
 			if (firstFileUri.scheme === Schemas.file) {
@@ -245,12 +262,14 @@ export function fillEditorsDragData(accessor: ServicesAccessor, resourcesOrEdito
 
 	// Resource URLs: allows to drop multiple file resources to a target in VS Code
 	const files = fileSystemResources.filter(({ isDirectory }) => !isDirectory);
+
 	if (files.length) {
 		event.dataTransfer.setData(DataTransfers.RESOURCES, JSON.stringify(files.map(({ resource }) => resource.toString())));
 	}
 
 	// Contributions
 	const contributions = Registry.as<IDragAndDropContributionRegistry>(Extensions.DragAndDropContribution).getAll();
+
 	for (const contribution of contributions) {
 		contribution.setData(resources, event);
 	}
@@ -263,13 +282,16 @@ export function fillEditorsDragData(accessor: ServicesAccessor, resourcesOrEdito
 
 		// Extract resource editor from provided object or URI
 		let editor: IDraggedResourceEditorInput | undefined = undefined;
+
 		if (isEditorIdentifier(resourceOrEditor)) {
 			const untypedEditor = resourceOrEditor.editor.toUntyped({ preserveViewState: resourceOrEditor.groupId });
+
 			if (untypedEditor) {
 				editor = { ...untypedEditor, resource: EditorResourceAccessor.getCanonicalUri(untypedEditor) };
 			}
 		} else if (URI.isUri(resourceOrEditor)) {
 			const { selection, uri } = extractSelection(resourceOrEditor);
+
 			editor = { resource: uri, options: selection ? { selection } : undefined };
 		} else if (!resourceOrEditor.isDirectory) {
 			editor = {
@@ -290,8 +312,10 @@ export function fillEditorsDragData(accessor: ServicesAccessor, resourcesOrEdito
 		// provide everything from the `toUntyped` method.
 		{
 			const resource = editor.resource;
+
 			if (resource) {
 				const textFileModel = textFileService.files.get(resource);
+
 				if (textFileModel) {
 
 					// language
@@ -318,6 +342,7 @@ export function fillEditorsDragData(accessor: ServicesAccessor, resourcesOrEdito
 							for (const visibleEditorPane of editorService.visibleEditorPanes) {
 								if (isEqual(visibleEditorPane.input.resource, resource)) {
 									const viewState = visibleEditorPane.getViewState();
+
 									if (viewState) {
 										return viewState;
 									}
@@ -340,6 +365,7 @@ export function fillEditorsDragData(accessor: ServicesAccessor, resourcesOrEdito
 
 		// Add a URI list entry
 		const uriListEntries: URI[] = [];
+
 		for (const editor of draggedEditors) {
 			if (editor.resource) {
 				uriListEntries.push(editor.options?.selection ? withSelection(editor.resource, editor.options.selection) : editor.resource);
@@ -363,6 +389,7 @@ export function fillEditorsDragData(accessor: ServicesAccessor, resourcesOrEdito
 		if (!options?.disableStandardTransfer) {
 			event.dataTransfer.setData(Mimes.uriList, UriList.create(uriListEntries.slice(0, 1)));
 		}
+
 		event.dataTransfer.setData(DataTransfers.INTERNAL_URI_LIST, UriList.create(uriListEntries));
 	}
 }
@@ -373,21 +400,29 @@ export function fillEditorsDragData(accessor: ServicesAccessor, resourcesOrEdito
 
 export type Before2D = {
 	readonly verticallyBefore: boolean;
+
 	readonly horizontallyBefore: boolean;
 };
 
 export interface ICompositeDragAndDrop {
 	drop(data: IDragAndDropData, target: string | undefined, originalEvent: DragEvent, before?: Before2D): void;
+
 	onDragOver(data: IDragAndDropData, target: string | undefined, originalEvent: DragEvent): boolean;
+
 	onDragEnter(data: IDragAndDropData, target: string | undefined, originalEvent: DragEvent): boolean;
 }
 
 export interface ICompositeDragAndDropObserverCallbacks {
 	onDragEnter?: (e: IDraggedCompositeData) => void;
+
 	onDragLeave?: (e: IDraggedCompositeData) => void;
+
 	onDrop?: (e: IDraggedCompositeData) => void;
+
 	onDragOver?: (e: IDraggedCompositeData) => void;
+
 	onDragStart?: (e: IDraggedCompositeData) => void;
+
 	onDragEnd?: (e: IDraggedCompositeData) => void;
 }
 
@@ -401,6 +436,7 @@ export class CompositeDragAndDropData implements IDragAndDropData {
 
 	getData(): {
 		type: 'view' | 'composite';
+
 		id: string;
 	} {
 		return { type: this.type, id: this.id };
@@ -409,6 +445,7 @@ export class CompositeDragAndDropData implements IDragAndDropData {
 
 export interface IDraggedCompositeData {
 	readonly eventData: DragEvent;
+
 	readonly dragAndDropData: CompositeDragAndDropData;
 }
 
@@ -439,6 +476,7 @@ export class CompositeDragAndDropObserver extends Disposable {
 	static get INSTANCE(): CompositeDragAndDropObserver {
 		if (!CompositeDragAndDropObserver.instance) {
 			CompositeDragAndDropObserver.instance = new CompositeDragAndDropObserver();
+
 			markAsSingleton(CompositeDragAndDropObserver.instance);
 		}
 
@@ -448,6 +486,7 @@ export class CompositeDragAndDropObserver extends Disposable {
 	private readonly transferData = LocalSelectionTransfer.getInstance<DraggedCompositeIdentifier | DraggedViewIdentifier>();
 
 	private readonly onDragStart = this._register(new Emitter<IDraggedCompositeData>());
+
 	private readonly onDragEnd = this._register(new Emitter<IDraggedCompositeData>());
 
 	private constructor() {
@@ -455,8 +494,11 @@ export class CompositeDragAndDropObserver extends Disposable {
 
 		this._register(this.onDragEnd.event(e => {
 			const id = e.dragAndDropData.getData().id;
+
 			const type = e.dragAndDropData.getData().type;
+
 			const data = this.readDragData(type);
+
 			if (data?.getData().id === id) {
 				this.transferData.clearData(type === 'view' ? DraggedViewIdentifier.prototype : DraggedCompositeIdentifier.prototype);
 			}
@@ -466,6 +508,7 @@ export class CompositeDragAndDropObserver extends Disposable {
 	private readDragData(type: ViewType): CompositeDragAndDropData | undefined {
 		if (this.transferData.hasData(type === 'view' ? DraggedViewIdentifier.prototype : DraggedCompositeIdentifier.prototype)) {
 			const data = this.transferData.getData(type === 'view' ? DraggedViewIdentifier.prototype : DraggedCompositeIdentifier.prototype);
+
 			if (data && data[0]) {
 				return new CompositeDragAndDropData(type, data[0].id);
 			}
@@ -480,12 +523,14 @@ export class CompositeDragAndDropObserver extends Disposable {
 
 	registerTarget(element: HTMLElement, callbacks: ICompositeDragAndDropObserverCallbacks): IDisposable {
 		const disposableStore = new DisposableStore();
+
 		disposableStore.add(new DragAndDropObserver(element, {
 			onDragEnter: e => {
 				e.preventDefault();
 
 				if (callbacks.onDragEnter) {
 					const data = this.readDragData('composite') || this.readDragData('view');
+
 					if (data) {
 						callbacks.onDragEnter({ eventData: e, dragAndDropData: data });
 					}
@@ -493,6 +538,7 @@ export class CompositeDragAndDropObserver extends Disposable {
 			},
 			onDragLeave: e => {
 				const data = this.readDragData('composite') || this.readDragData('view');
+
 				if (callbacks.onDragLeave && data) {
 					callbacks.onDragLeave({ eventData: e, dragAndDropData: data });
 				}
@@ -500,6 +546,7 @@ export class CompositeDragAndDropObserver extends Disposable {
 			onDrop: e => {
 				if (callbacks.onDrop) {
 					const data = this.readDragData('composite') || this.readDragData('view');
+
 					if (!data) {
 						return;
 					}
@@ -515,6 +562,7 @@ export class CompositeDragAndDropObserver extends Disposable {
 
 				if (callbacks.onDragOver) {
 					const data = this.readDragData('composite') || this.readDragData('view');
+
 					if (!data) {
 						return;
 					}
@@ -547,6 +595,7 @@ export class CompositeDragAndDropObserver extends Disposable {
 		disposableStore.add(new DragAndDropObserver(element, {
 			onDragStart: e => {
 				const { id, type } = draggedItemProvider();
+
 				this.writeDragData(id, type);
 
 				e.dataTransfer?.setDragImage(element, 0, 0);
@@ -555,7 +604,9 @@ export class CompositeDragAndDropObserver extends Disposable {
 			},
 			onDragEnd: e => {
 				const { type } = draggedItemProvider();
+
 				const data = this.readDragData(type);
+
 				if (!data) {
 					return;
 				}
@@ -565,6 +616,7 @@ export class CompositeDragAndDropObserver extends Disposable {
 			onDragEnter: e => {
 				if (callbacks.onDragEnter) {
 					const data = this.readDragData('composite') || this.readDragData('view');
+
 					if (!data) {
 						return;
 					}
@@ -576,6 +628,7 @@ export class CompositeDragAndDropObserver extends Disposable {
 			},
 			onDragLeave: e => {
 				const data = this.readDragData('composite') || this.readDragData('view');
+
 				if (!data) {
 					return;
 				}
@@ -585,6 +638,7 @@ export class CompositeDragAndDropObserver extends Disposable {
 			onDrop: e => {
 				if (callbacks.onDrop) {
 					const data = this.readDragData('composite') || this.readDragData('view');
+
 					if (!data) {
 						return;
 					}
@@ -598,6 +652,7 @@ export class CompositeDragAndDropObserver extends Disposable {
 			onDragOver: e => {
 				if (callbacks.onDragOver) {
 					const data = this.readDragData('composite') || this.readDragData('view');
+
 					if (!data) {
 						return;
 					}
@@ -639,22 +694,27 @@ export class ResourceListDnDHandler<T> implements IListDragAndDrop<T> {
 
 	getDragURI(element: T): string | null {
 		const resource = this.toResource(element);
+
 		return resource ? resource.toString() : null;
 	}
 
 	getDragLabel(elements: T[]): string | undefined {
 		const resources = coalesce(elements.map(this.toResource));
+
 		return resources.length === 1 ? basename(resources[0]) : resources.length > 1 ? String(resources.length) : undefined;
 	}
 
 	onDragStart(data: IDragAndDropData, originalEvent: DragEvent): void {
 		const resources: URI[] = [];
+
 		for (const element of (data as ElementsDragAndDropData<T>).elements) {
 			const resource = this.toResource(element);
+
 			if (resource) {
 				resources.push(resource);
 			}
 		}
+
 		if (resources.length) {
 			// Apply some datatransfer types to allow for dragging the element outside of the application
 			this.instantiationService.invokeFunction(accessor => fillEditorsDragData(accessor, resources, originalEvent));
@@ -687,6 +747,7 @@ class GlobalWindowDraggedOverTracker extends Disposable {
 	private registerListeners(): void {
 		this._register(Event.runAndSubscribe(onDidRegisterWindow, ({ window, disposables }) => {
 			disposables.add(addDisposableListener(window, EventType.DRAG_OVER, () => this.markDraggedOver(false), true));
+
 			disposables.add(addDisposableListener(window, EventType.DRAG_LEAVE, () => this.clearDraggedOver(false), true));
 		}, { window: mainWindow, disposables: this._store }));
 
@@ -700,6 +761,7 @@ class GlobalWindowDraggedOverTracker extends Disposable {
 	}
 
 	private draggedOver = false;
+
 	get isDraggedOver(): boolean { return this.draggedOver; }
 
 	private markDraggedOver(fromBroadcast: boolean): void {

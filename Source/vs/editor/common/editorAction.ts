@@ -19,13 +19,16 @@ export class InternalEditorAction implements IEditorAction {
 		private readonly _run: (args: unknown) => Promise<void>,
 		private readonly _contextKeyService: IContextKeyService,
 	) {}
+
 	public isSupported(): boolean {
 		return this._contextKeyService.contextMatchesRules(this._precondition);
 	}
+
 	public run(args: unknown): Promise<void> {
 		if (!this.isSupported()) {
 			return Promise.resolve(undefined);
 		}
+
 		return this._run(args);
 	}
 }

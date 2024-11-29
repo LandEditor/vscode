@@ -26,19 +26,23 @@ import { DiffEditorWidget } from "../../diffEditorWidget.js";
 
 export class InlineDiffDeletedCodeMargin extends Disposable {
 	private readonly _diffActions: HTMLElement;
+
 	private _visibility: boolean = false;
 
 	get visibility(): boolean {
 		return this._visibility;
 	}
+
 	set visibility(_visibility: boolean) {
 		if (this._visibility !== _visibility) {
 			this._visibility = _visibility;
+
 			this._diffActions.style.visibility = _visibility
 				? "visible"
 				: "hidden";
 		}
 	}
+
 	constructor(
 		private readonly _getViewZoneId: () => string,
 		private readonly _marginDomNode: HTMLElement,
@@ -53,18 +57,26 @@ export class InlineDiffDeletedCodeMargin extends Disposable {
 		super();
 		// make sure the diff margin shows above overlay.
 		this._marginDomNode.style.zIndex = "10";
+
 		this._diffActions = document.createElement("div");
+
 		this._diffActions.className =
 			ThemeIcon.asClassName(Codicon.lightBulb) + " lightbulb-glyph";
+
 		this._diffActions.style.position = "absolute";
 
 		const lineHeight = this._modifiedEditor.getOption(
 			EditorOption.lineHeight,
 		);
+
 		this._diffActions.style.right = "0px";
+
 		this._diffActions.style.visibility = "hidden";
+
 		this._diffActions.style.height = `${lineHeight}px`;
+
 		this._diffActions.style.lineHeight = `${lineHeight}px`;
+
 		this._marginDomNode.appendChild(this._diffActions);
 
 		let currentLineNumberOffset = 0;
@@ -111,6 +123,7 @@ export class InlineDiffDeletedCodeMargin extends Disposable {
 									this._originalTextModel.getValueInRange(
 										_diff.original.toExclusiveRange(),
 									);
+
 								await this._clipboardService.writeText(
 									originalText,
 								);
@@ -148,11 +161,13 @@ export class InlineDiffDeletedCodeMargin extends Disposable {
 										// empty line -> new line
 										const eof =
 											this._originalTextModel.getEndOfLineSequence();
+
 										lineContent =
 											eof === EndOfLineSequence.LF
 												? "\n"
 												: "\r\n";
 									}
+
 									await this._clipboardService.writeText(
 										lineContent,
 									);
@@ -160,6 +175,7 @@ export class InlineDiffDeletedCodeMargin extends Disposable {
 							),
 						);
 					}
+
 					const readOnly = _modifiedEditor.getOption(
 						EditorOption.readOnly,
 					);
@@ -180,11 +196,13 @@ export class InlineDiffDeletedCodeMargin extends Disposable {
 							),
 						);
 					}
+
 					return actions;
 				},
 				autoSelectFirstItem: true,
 			});
 		};
+
 		this._register(
 			addStandardDisposableListener(
 				this._diffActions,
@@ -193,16 +211,20 @@ export class InlineDiffDeletedCodeMargin extends Disposable {
 					if (!e.leftButton) {
 						return;
 					}
+
 					const { top, height } = getDomNodePagePosition(
 						this._diffActions,
 					);
 
 					const pad = Math.floor(lineHeight / 3);
+
 					e.preventDefault();
+
 					showContextMenu(e.posx, top + height + pad);
 				},
 			),
 		);
+
 		this._register(
 			_modifiedEditor.onMouseMove((e: IEditorMouseEvent) => {
 				if (
@@ -215,17 +237,20 @@ export class InlineDiffDeletedCodeMargin extends Disposable {
 						e.event.browserEvent.y,
 						lineHeight,
 					);
+
 					this.visibility = true;
 				} else {
 					this.visibility = false;
 				}
 			}),
 		);
+
 		this._register(
 			_modifiedEditor.onMouseDown((e: IEditorMouseEvent) => {
 				if (!e.event.leftButton) {
 					return;
 				}
+
 				if (
 					e.target.type === MouseTargetType.CONTENT_VIEW_ZONE ||
 					e.target.type === MouseTargetType.GUTTER_VIEW_ZONE
@@ -234,11 +259,13 @@ export class InlineDiffDeletedCodeMargin extends Disposable {
 
 					if (viewZoneId === this._getViewZoneId()) {
 						e.event.preventDefault();
+
 						currentLineNumberOffset = this._updateLightBulbPosition(
 							this._marginDomNode,
 							e.event.browserEvent.y,
 							lineHeight,
 						);
+
 						showContextMenu(
 							e.event.posx,
 							e.event.posy + lineHeight,
@@ -248,6 +275,7 @@ export class InlineDiffDeletedCodeMargin extends Disposable {
 			}),
 		);
 	}
+
 	private _updateLightBulbPosition(
 		marginDomNode: HTMLElement,
 		y: number,
@@ -260,6 +288,7 @@ export class InlineDiffDeletedCodeMargin extends Disposable {
 		const lineNumberOffset = Math.floor(offset / lineHeight);
 
 		const newTop = lineNumberOffset * lineHeight;
+
 		this._diffActions.style.top = `${newTop}px`;
 
 		if (this._viewLineCounts) {
@@ -273,6 +302,7 @@ export class InlineDiffDeletedCodeMargin extends Disposable {
 				}
 			}
 		}
+
 		return lineNumberOffset;
 	}
 }

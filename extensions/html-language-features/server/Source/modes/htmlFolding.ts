@@ -42,10 +42,13 @@ export async function getFoldingRanges(
 
 			if (!Array.isArray(ranges)) {
 				ranges = (await mode.getFoldingRanges(document)) || [];
+
 				rangesPerMode[mode.getId()] = ranges;
 			}
+
 			return ranges;
 		}
+
 		return [];
 	};
 
@@ -56,6 +59,7 @@ export async function getFoldingRanges(
 
 		if (mode && mode !== htmlMode && !modeRange.attributeValue) {
 			const ranges = await getRangesForMode(mode);
+
 			result.push(
 				...ranges.filter(
 					(r) =>
@@ -65,9 +69,11 @@ export async function getFoldingRanges(
 			);
 		}
 	}
+
 	if (maxRanges && result.length > maxRanges) {
 		result = limitRanges(result, maxRanges);
 	}
+
 	return result;
 }
 function limitRanges(ranges: FoldingRange[], maxRanges: number) {
@@ -77,6 +83,7 @@ function limitRanges(ranges: FoldingRange[], maxRanges: number) {
 		if (diff === 0) {
 			diff = r1.endLine - r2.endLine;
 		}
+
 		return diff;
 	});
 	// compute each range's nesting level in 'nestingLevels'.
@@ -108,6 +115,7 @@ function limitRanges(ranges: FoldingRange[], maxRanges: number) {
 			if (entry.startLine > top.startLine) {
 				if (entry.endLine <= top.endLine) {
 					previous.push(top);
+
 					top = entry;
 
 					setNestingLevel(i, previous.length);
@@ -119,6 +127,7 @@ function limitRanges(ranges: FoldingRange[], maxRanges: number) {
 					if (top) {
 						previous.push(top);
 					}
+
 					top = entry;
 
 					setNestingLevel(i, previous.length);
@@ -126,6 +135,7 @@ function limitRanges(ranges: FoldingRange[], maxRanges: number) {
 			}
 		}
 	}
+
 	let entries = 0;
 
 	let maxLevel = 0;
@@ -139,9 +149,11 @@ function limitRanges(ranges: FoldingRange[], maxRanges: number) {
 
 				break;
 			}
+
 			entries += n;
 		}
 	}
+
 	const result = [];
 
 	for (let i = 0; i < ranges.length; i++) {
@@ -156,5 +168,6 @@ function limitRanges(ranges: FoldingRange[], maxRanges: number) {
 			}
 		}
 	}
+
 	return result;
 }

@@ -22,6 +22,7 @@ import { BaseCellViewModel } from "./baseCellViewModel.js";
 
 export interface IViewCellEditingDelegate extends ITextCellEditingDelegate {
 	createCellViewModel?(cell: NotebookCellTextModel): BaseCellViewModel;
+
 	createCell?(
 		index: number,
 		source: string,
@@ -33,8 +34,11 @@ export interface IViewCellEditingDelegate extends ITextCellEditingDelegate {
 }
 export class JoinCellEdit implements IResourceUndoRedoElement {
 	type: UndoRedoElementType.Resource = UndoRedoElementType.Resource;
+
 	label: string = "Join Cell";
+
 	code: string = "undoredo.textBufferEdit";
+
 	private _deletedRawCell: NotebookCellTextModel;
 
 	constructor(
@@ -50,6 +54,7 @@ export class JoinCellEdit implements IResourceUndoRedoElement {
 	) {
 		this._deletedRawCell = this.removedCell.model;
 	}
+
 	async undo(): Promise<void> {
 		if (
 			!this.editingDelegate.insertCell ||
@@ -59,10 +64,13 @@ export class JoinCellEdit implements IResourceUndoRedoElement {
 				"Notebook Insert Cell not implemented for Undo/Redo",
 			);
 		}
+
 		await this.cell.resolveTextModel();
+
 		this.cell.textModel?.applyEdits([
 			{ range: this.inverseRange, text: "" },
 		]);
+
 		this.cell.setSelections(this.selections);
 
 		const cell = this.editingDelegate.createCellViewModel(
@@ -75,6 +83,7 @@ export class JoinCellEdit implements IResourceUndoRedoElement {
 				primary: cell.handle,
 				selections: [cell.handle],
 			});
+
 			cell.focusMode = CellFocusMode.Editor;
 		} else {
 			this.editingDelegate.insertCell(this.index, cell.model, {
@@ -82,24 +91,30 @@ export class JoinCellEdit implements IResourceUndoRedoElement {
 				primary: this.cell.handle,
 				selections: [this.cell.handle],
 			});
+
 			this.cell.focusMode = CellFocusMode.Editor;
 		}
 	}
+
 	async redo(): Promise<void> {
 		if (!this.editingDelegate.deleteCell) {
 			throw new Error(
 				"Notebook Delete Cell not implemented for Undo/Redo",
 			);
 		}
+
 		await this.cell.resolveTextModel();
+
 		this.cell.textModel?.applyEdits([
 			{ range: this.inverseRange, text: this.insertContent },
 		]);
+
 		this.editingDelegate.deleteCell(this.index, {
 			kind: SelectionStateType.Handle,
 			primary: this.cell.handle,
 			selections: [this.cell.handle],
 		});
+
 		this.cell.focusMode = CellFocusMode.Editor;
 	}
 }

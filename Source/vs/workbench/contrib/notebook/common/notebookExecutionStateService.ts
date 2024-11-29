@@ -25,9 +25,13 @@ export type ICellExecuteUpdate =
 
 export interface ICellExecutionStateUpdate {
 	editType: CellExecutionUpdateType.ExecutionState;
+
 	executionOrder?: number;
+
 	runStartTime?: number;
+
 	didPause?: boolean;
+
 	isPaused?: boolean;
 }
 
@@ -48,15 +52,21 @@ export interface ICellErrorStackFrame {
 
 export interface ICellExecutionError {
 	name: string;
+
 	message: string;
+
 	stack: string | ICellErrorStackFrame[] | undefined;
+
 	uri: UriComponents;
+
 	location: IRange | undefined;
 }
 
 export interface ICellExecutionComplete {
 	runEndTime?: number;
+
 	lastRunSuccess?: boolean;
+
 	error?: ICellExecutionError;
 }
 export enum NotebookExecutionType {
@@ -65,26 +75,35 @@ export enum NotebookExecutionType {
 }
 export interface ICellExecutionStateChangedEvent {
 	type: NotebookExecutionType.cell;
+
 	notebook: URI;
+
 	cellHandle: number;
+
 	changed?: INotebookCellExecution; // undefined -> execution was completed
 	affectsCell(cell: URI): boolean;
+
 	affectsNotebook(notebook: URI): boolean;
 }
 export interface IExecutionStateChangedEvent {
 	type: NotebookExecutionType.notebook;
+
 	notebook: URI;
+
 	changed?: INotebookExecution; // undefined -> execution was completed
 	affectsNotebook(notebook: URI): boolean;
 }
 export interface INotebookFailStateChangedEvent {
 	visible: boolean;
+
 	notebook: URI;
 }
 
 export interface IFailedCellInfo {
 	cellHandle: number;
+
 	disposable: IDisposable;
+
 	visible: boolean;
 }
 
@@ -99,6 +118,7 @@ export interface INotebookExecutionStateService {
 	onDidChangeExecution: Event<
 		ICellExecutionStateChangedEvent | IExecutionStateChangedEvent
 	>;
+
 	onDidChangeLastRunFailState: Event<INotebookFailStateChangedEvent>;
 
 	forceCancelNotebookExecutions(notebookUri: URI): void;
@@ -110,12 +130,14 @@ export interface INotebookExecutionStateService {
 	): Map<number, INotebookCellExecution> | undefined;
 
 	getCellExecution(cellUri: URI): INotebookCellExecution | undefined;
+
 	createCellExecution(
 		notebook: URI,
 		cellHandle: number,
 	): INotebookCellExecution;
 
 	getExecution(notebook: URI): INotebookExecution | undefined;
+
 	createExecution(notebook: URI): INotebookExecution;
 
 	getLastFailedCellForNotebook(notebook: URI): number | undefined;
@@ -125,20 +147,29 @@ export interface INotebookExecutionStateService {
 
 export interface INotebookCellExecution {
 	readonly notebook: URI;
+
 	readonly cellHandle: number;
+
 	readonly state: NotebookCellExecutionState;
+
 	readonly didPause: boolean;
+
 	readonly isPaused: boolean;
 
 	confirm(): void;
+
 	update(updates: ICellExecuteUpdate[]): void;
+
 	complete(complete: ICellExecutionComplete): void;
 }
 export interface INotebookExecution {
 	readonly notebook: URI;
+
 	readonly state: NotebookExecutionState;
 
 	confirm(): void;
+
 	begin(): void;
+
 	complete(): void;
 }

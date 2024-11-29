@@ -62,45 +62,59 @@ export abstract class PaneComposite
 	) {
 		super(id, telemetryService, themeService, storageService);
 	}
+
 	override create(parent: HTMLElement): void {
 		super.create(parent);
+
 		this.viewPaneContainer = this._register(
 			this.createViewPaneContainer(parent),
 		);
+
 		this._register(
 			this.viewPaneContainer.onTitleAreaUpdate(() =>
 				this.updateTitleArea(),
 			),
 		);
+
 		this.viewPaneContainer.create(parent);
 	}
+
 	override setVisible(visible: boolean): void {
 		super.setVisible(visible);
+
 		this.viewPaneContainer?.setVisible(visible);
 	}
+
 	layout(dimension: Dimension): void {
 		this.viewPaneContainer?.layout(dimension);
 	}
+
 	setBoundarySashes(sashes: IBoundarySashes): void {
 		this.viewPaneContainer?.setBoundarySashes(sashes);
 	}
+
 	getOptimalWidth(): number {
 		return this.viewPaneContainer?.getOptimalWidth() ?? 0;
 	}
+
 	openView<T extends IView>(id: string, focus?: boolean): T | undefined {
 		return this.viewPaneContainer?.openView(id, focus) as T;
 	}
+
 	getViewPaneContainer(): ViewPaneContainer | undefined {
 		return this.viewPaneContainer;
 	}
+
 	override getActionsContext(): unknown {
 		return this.getViewPaneContainer()?.getActionsContext();
 	}
+
 	override getContextMenuActions(): readonly IAction[] {
 		return (
 			this.viewPaneContainer?.menuActions?.getContextMenuActions() ?? []
 		);
 	}
+
 	override getMenuIds(): MenuId[] {
 		const result: MenuId[] = [];
 
@@ -111,8 +125,10 @@ export abstract class PaneComposite
 				result.push(this.viewPaneContainer.panes[0].menuActions.menuId);
 			}
 		}
+
 		return result;
 	}
+
 	override getActions(): readonly IAction[] {
 		const result = [];
 
@@ -127,15 +143,19 @@ export abstract class PaneComposite
 				if (viewPane.shouldShowFilterInHeader()) {
 					result.push(VIEWPANE_FILTER_ACTION);
 				}
+
 				result.push(...viewPane.menuActions.getPrimaryActions());
 			}
 		}
+
 		return result;
 	}
+
 	override getSecondaryActions(): readonly IAction[] {
 		if (!this.viewPaneContainer?.menuActions) {
 			return [];
 		}
+
 		const viewPaneActions =
 			this.viewPaneContainer.isViewMergedWithContainer()
 				? this.viewPaneContainer.panes[0].menuActions.getSecondaryActions()
@@ -170,24 +190,31 @@ export abstract class PaneComposite
 				menuActions.splice(viewsSubmenuActionIndex, 1);
 			}
 		}
+
 		if (menuActions.length && viewPaneActions.length) {
 			return [...menuActions, new Separator(), ...viewPaneActions];
 		}
+
 		return menuActions.length ? menuActions : viewPaneActions;
 	}
+
 	override getActionViewItem(
 		action: IAction,
 		options: IBaseActionViewItemOptions,
 	): IActionViewItem | undefined {
 		return this.viewPaneContainer?.getActionViewItem(action, options);
 	}
+
 	override getTitle(): string {
 		return this.viewPaneContainer?.getTitle() ?? "";
 	}
+
 	override focus(): void {
 		super.focus();
+
 		this.viewPaneContainer?.focus();
 	}
+
 	protected abstract createViewPaneContainer(
 		parent: HTMLElement,
 	): ViewPaneContainer;
@@ -217,6 +244,7 @@ export class PaneCompositeDescriptor extends CompositeDescriptor<PaneComposite> 
 			iconUrl,
 		);
 	}
+
 	private constructor(
 		ctor: IConstructorSignature<PaneComposite>,
 		id: string,

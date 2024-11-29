@@ -19,11 +19,13 @@ export function createWaitMarkerFileSync(
 				`Marker file for --wait created: ${randomWaitMarkerPath}`,
 			);
 		}
+
 		return randomWaitMarkerPath;
 	} catch (err) {
 		if (verbose) {
 			console.error(`Failed to create marker file for --wait: ${err}`);
 		}
+
 		return undefined;
 	}
 }

@@ -66,7 +66,9 @@ import {
 
 type SessionData = {
 	editor: ICodeEditor;
+
 	session: Session;
+
 	store: IDisposable;
 };
 
@@ -75,33 +77,45 @@ export class InlineChatError extends Error {
 
 	constructor(message: string) {
 		super(message);
+
 		this.name = InlineChatError.code;
 	}
 }
 export class InlineChatSessionServiceImpl implements IInlineChatSessionService {
 	declare _serviceBrand: undefined;
+
 	private readonly _store = new DisposableStore();
+
 	private readonly _onWillStartSession = this._store.add(
 		new Emitter<IActiveCodeEditor>(),
 	);
+
 	readonly onWillStartSession: Event<IActiveCodeEditor> =
 		this._onWillStartSession.event;
+
 	private readonly _onDidMoveSession = this._store.add(
 		new Emitter<IInlineChatSessionEvent>(),
 	);
+
 	readonly onDidMoveSession: Event<IInlineChatSessionEvent> =
 		this._onDidMoveSession.event;
+
 	private readonly _onDidEndSession = this._store.add(
 		new Emitter<IInlineChatSessionEndEvent>(),
 	);
+
 	readonly onDidEndSession: Event<IInlineChatSessionEndEvent> =
 		this._onDidEndSession.event;
+
 	private readonly _onDidStashSession = this._store.add(
 		new Emitter<IInlineChatSessionEvent>(),
 	);
+
 	readonly onDidStashSession: Event<IInlineChatSessionEvent> =
 		this._onDidStashSession.event;
+
 	private readonly _sessions = new Map<string, SessionData>();
+
 	private readonly _keyComputers = new Map<string, ISessionKeyComputer>();
 
 	constructor(
@@ -128,17 +142,24 @@ export class InlineChatSessionServiceImpl implements IInlineChatSessionService {
 		@IChatAgentService
 		private readonly _chatAgentService: IChatAgentService,
 	) {}
+
 	dispose() {
 		this._store.dispose();
+
 		this._sessions.forEach((x) => x.store.dispose());
+
 		this._sessions.clear();
 	}
+
 	async createSession(
 		editor: IActiveCodeEditor,
 		options: {
 			editMode: EditMode;
+
 			headless?: boolean;
+
 			wholeRange?: Range;
+
 			session?: Session;
 		},
 		token: CancellationToken,
@@ -152,6 +173,7 @@ export class InlineChatSessionServiceImpl implements IInlineChatSessionService {
 
 			return undefined;
 		}
+
 		this._onWillStartSession.fire(editor);
 
 		const textModel = editor.getModel();
@@ -159,6 +181,7 @@ export class InlineChatSessionServiceImpl implements IInlineChatSessionService {
 		const selection = editor.getSelection();
 
 		const store = new DisposableStore();
+
 		this._logService.trace(
 			`[IE] creating NEW session for ${editor.getId()}, ${agent.extensionId}`,
 		);
@@ -172,6 +195,7 @@ export class InlineChatSessionServiceImpl implements IInlineChatSessionService {
 
 			return undefined;
 		}
+
 		store.add(
 			toDisposable(() => {
 				const doesOtherSessionUseChatModel = [
@@ -184,23 +208,29 @@ export class InlineChatSessionServiceImpl implements IInlineChatSessionService {
 
 				if (!doesOtherSessionUseChatModel) {
 					this._chatService.clearSession(chatModel.sessionId);
+
 					chatModel.dispose();
 				}
 			}),
 		);
 
 		const lastResponseListener = store.add(new MutableDisposable());
+
 		store.add(
 			chatModel.onDidChange((e) => {
 				if (e.kind !== "addRequest" || !e.request.response) {
 					return;
 				}
+
 				const { response } = e.request;
+
 				session.markModelVersion(e.request);
+
 				lastResponseListener.value = response.onDidChange(() => {
 					if (!response.isComplete) {
 						return;
 					}
+
 					lastResponseListener.clear(); // ONCE
 					// special handling for untitled files
 					for (const part of response.response.value) {
@@ -211,6 +241,7 @@ export class InlineChatSessionServiceImpl implements IInlineChatSessionService {
 						) {
 							continue;
 						}
+
 						const langSelection =
 							this._languageService.createByFilepathOrFirstLine(
 								part.uri,
@@ -222,7 +253,9 @@ export class InlineChatSessionServiceImpl implements IInlineChatSessionService {
 								associatedResource: part.uri,
 								languageId: langSelection.languageId,
 							});
+
 						untitledTextModel.resolve();
+
 						this._textModelService
 							.createModelReference(part.uri)
 							.then((ref) => {
@@ -232,6 +265,7 @@ export class InlineChatSessionServiceImpl implements IInlineChatSessionService {
 				});
 			}),
 		);
+
 		store.add(
 			this._chatAgentService.onDidChangeAgents((e) => {
 				if (
@@ -244,6 +278,7 @@ export class InlineChatSessionServiceImpl implements IInlineChatSessionService {
 					this._logService.trace(
 						`[IE] provider GONE for ${editor.getId()}, ${agent.extensionId}`,
 					);
+
 					this._releaseSession(session, true);
 				}
 			}),
@@ -294,6 +329,7 @@ export class InlineChatSessionServiceImpl implements IInlineChatSessionService {
 				}),
 			);
 		}
+
 		let wholeRange = options.wholeRange;
 
 		if (!wholeRange) {
@@ -304,11 +340,13 @@ export class InlineChatSessionServiceImpl implements IInlineChatSessionService {
 				selection.positionColumn,
 			);
 		}
+
 		if (token.isCancellationRequested) {
 			store.dispose();
 
 			return undefined;
 		}
+
 		const session = new Session(
 			options.editMode,
 			options.headless ?? false,
@@ -331,10 +369,12 @@ export class InlineChatSessionServiceImpl implements IInlineChatSessionService {
 
 			throw new Error(`Session already stored for ${key}`);
 		}
+
 		this._sessions.set(key, { session, editor, store });
 
 		return session;
 	}
+
 	moveSession(session: Session, target: ICodeEditor): void {
 		const newKey = this._key(target, session.targetUri);
 
@@ -350,28 +390,36 @@ export class InlineChatSessionServiceImpl implements IInlineChatSessionService {
 				return;
 			}
 		}
+
 		let found = false;
 
 		for (const [oldKey, data] of this._sessions) {
 			if (data.session === session) {
 				found = true;
+
 				this._sessions.delete(oldKey);
+
 				this._sessions.set(newKey, { ...data, editor: target });
+
 				this._logService.trace(
 					`[IE] did MOVE session for ${data.editor.getId()} to NEW EDITOR ${target.getId()}, ${session.agent.extensionId}`,
 				);
+
 				this._onDidMoveSession.fire({ session, editor: target });
 
 				break;
 			}
 		}
+
 		if (!found) {
 			throw new Error(`Cannot move session because it is not stored`);
 		}
 	}
+
 	releaseSession(session: Session): void {
 		this._releaseSession(session, false);
 	}
+
 	private _releaseSession(session: Session, byServer: boolean): void {
 		let tuple: [string, SessionData] | undefined;
 		// cleanup
@@ -383,27 +431,34 @@ export class InlineChatSessionServiceImpl implements IInlineChatSessionService {
 				break;
 			}
 		}
+
 		if (!tuple) {
 			// double remove
 			return;
 		}
+
 		this._telemetryService.publicLog2<
 			TelemetryData,
 			TelemetryDataClassification
 		>("interactiveEditor/session", session.asTelemetryData());
 
 		const [key, value] = tuple;
+
 		this._sessions.delete(key);
+
 		this._logService.trace(
 			`[IE] did RELEASED session for ${value.editor.getId()}, ${session.agent.extensionId}`,
 		);
+
 		this._onDidEndSession.fire({
 			editor: value.editor,
 			session,
 			endedByExternalCause: byServer,
 		});
+
 		value.store.dispose();
 	}
+
 	stashSession(
 		session: Session,
 		editor: ICodeEditor,
@@ -415,26 +470,32 @@ export class InlineChatSessionServiceImpl implements IInlineChatSessionService {
 			session,
 			undoCancelEdits,
 		);
+
 		this._onDidStashSession.fire({ editor, session });
+
 		this._logService.trace(
 			`[IE] did STASH session for ${editor.getId()}, ${session.agent.extensionId}`,
 		);
 
 		return result;
 	}
+
 	getCodeEditor(session: Session): ICodeEditor {
 		for (const [, data] of this._sessions) {
 			if (data.session === session) {
 				return data.editor;
 			}
 		}
+
 		throw new Error("session not found");
 	}
+
 	getSession(editor: ICodeEditor, uri: URI): Session | undefined {
 		const key = this._key(editor, uri);
 
 		return this._sessions.get(key)?.session;
 	}
+
 	private _key(editor: ICodeEditor, uri: URI): string {
 		const item = this._keyComputers.get(uri.scheme);
 
@@ -442,6 +503,7 @@ export class InlineChatSessionServiceImpl implements IInlineChatSessionService {
 			? item.getComparisonKey(editor, uri)
 			: `${editor.getId()}@${uri.toString()}`;
 	}
+
 	registerSessionKeyComputer(
 		scheme: string,
 		value: ISessionKeyComputer,
@@ -453,8 +515,11 @@ export class InlineChatSessionServiceImpl implements IInlineChatSessionService {
 }
 export class InlineChatEnabler {
 	static Id = "inlineChat.enabler";
+
 	private readonly _ctxHasProvider: IContextKey<boolean>;
+
 	private readonly _ctxPossible: IContextKey<boolean>;
+
 	private readonly _store = new DisposableStore();
 
 	constructor(
@@ -467,15 +532,19 @@ export class InlineChatEnabler {
 	) {
 		this._ctxHasProvider =
 			CTX_INLINE_CHAT_HAS_AGENT.bindTo(contextKeyService);
+
 		this._ctxPossible = CTX_INLINE_CHAT_POSSIBLE.bindTo(contextKeyService);
 
 		const updateAgent = () => {
 			const hasEditorAgent = Boolean(
 				chatAgentService.getDefaultAgent(ChatAgentLocation.Editor),
 			);
+
 			this._ctxHasProvider.set(hasEditorAgent);
 		};
+
 		this._store.add(chatAgentService.onDidChangeAgents(updateAgent));
+
 		updateAgent();
 
 		const updateEditor = () => {
@@ -485,14 +554,20 @@ export class InlineChatEnabler {
 				isCodeEditor(ctrl) ||
 				isDiffEditor(ctrl) ||
 				isCompositeEditor(ctrl);
+
 			this._ctxPossible.set(isCodeEditorLike);
 		};
+
 		this._store.add(editorService.onDidActiveEditorChange(updateEditor));
+
 		updateEditor();
 	}
+
 	dispose() {
 		this._ctxPossible.reset();
+
 		this._ctxHasProvider.reset();
+
 		this._store.dispose();
 	}
 }

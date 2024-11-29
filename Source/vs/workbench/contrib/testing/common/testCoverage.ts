@@ -37,9 +37,12 @@ let incId = 0;
  */
 export class TestCoverage {
 	private readonly fileCoverage = new ResourceMap<FileCoverage>();
+
 	public readonly didAddCoverage =
 		observableSignal<IPrefixTreeNode<AbstractFileCoverage>[]>(this);
+
 	public readonly tree = new WellDefinedPrefixTree<AbstractFileCoverage>();
+
 	public readonly associatedData = new Map<unknown, unknown>();
 
 	constructor(
@@ -64,6 +67,7 @@ export class TestCoverage {
 			}
 		}
 	}
+
 	public append(coverage: IFileCoverage, tx: ITransaction | undefined) {
 		const previous = this.getComputedForUri(coverage.uri);
 
@@ -81,6 +85,7 @@ export class TestCoverage {
 				node[kind]!.covered +=
 					(coverage[kind]?.covered || 0) -
 					(previous?.[kind]?.covered || 0);
+
 				node[kind]!.total +=
 					(coverage[kind]?.total || 0) -
 					(previous?.[kind]?.total || 0);
@@ -94,6 +99,7 @@ export class TestCoverage {
 		];
 
 		const chain: IPrefixTreeNode<AbstractFileCoverage>[] = [];
+
 		this.tree.mutatePath(
 			this.treePathForUri(coverage.uri, /* canonical = */ false),
 			(node) => {
@@ -105,8 +111,11 @@ export class TestCoverage {
 						const v = node.value;
 						// if ID was generated from a test-specific coverage, reassign it to get its real ID in the extension host.
 						v.id = coverage.id;
+
 						v.statement = coverage.statement;
+
 						v.branch = coverage.branch;
+
 						v.declaration = coverage.declaration;
 					} else {
 						const v = (node.value = new FileCoverage(
@@ -114,6 +123,7 @@ export class TestCoverage {
 							result,
 							this.accessor,
 						));
+
 						this.fileCoverage.set(coverage.uri, v);
 					}
 				} else {
@@ -123,21 +133,28 @@ export class TestCoverage {
 					if (!node.value) {
 						// clone because later intersertions can modify the counts:
 						const intermediate = deepClone(coverage);
+
 						intermediate.id = String(incId++);
+
 						intermediate.uri = this.treePathToUri(
 							canonical.slice(0, chain.length),
 						);
+
 						node.value = new ComputedFileCoverage(
 							intermediate,
 							result,
 						);
 					} else {
 						applyDelta("statement", node.value);
+
 						applyDelta("branch", node.value);
+
 						applyDelta("declaration", node.value);
+
 						node.value.didChange.trigger(tx);
 					}
 				}
+
 				if (coverage.testIds) {
 					node.value!.perTestData ??= new Set();
 
@@ -163,15 +180,18 @@ export class TestCoverage {
 				if (!node.perTestData?.has(testId.toString())) {
 					continue;
 				}
+
 				const canonical = [
 					...this.treePathForUri(node.uri, /* canonical = */ true),
 				];
 
 				const chain: IPrefixTreeNode<AbstractFileCoverage>[] = [];
+
 				tree.mutatePath(
 					this.treePathForUri(node.uri, /* canonical = */ false),
 					(n) => {
 						chain.push(n);
+
 						n.value ??= new BypassedFileCoverage(
 							this.treePathToUri(
 								canonical.slice(0, chain.length),
@@ -182,6 +202,7 @@ export class TestCoverage {
 				);
 			}
 		}
+
 		return tree;
 	}
 	/**
@@ -205,6 +226,7 @@ export class TestCoverage {
 			this.treePathForUri(uri, /* canonical = */ false),
 		);
 	}
+
 	private *treePathForUri(uri: URI, canconicalPath: boolean) {
 		yield uri.scheme;
 
@@ -218,6 +240,7 @@ export class TestCoverage {
 
 		yield* path.split("/");
 	}
+
 	private treePathToUri(path: string[]) {
 		return URI.from({
 			scheme: path[0],
@@ -237,21 +260,30 @@ export const getTotalCoveragePercent = (
 
 	if (branch) {
 		numerator += branch.covered;
+
 		denominator += branch.total;
 	}
+
 	if (function_) {
 		numerator += function_.covered;
+
 		denominator += function_.total;
 	}
+
 	return denominator === 0 ? 1 : numerator / denominator;
 };
 
 export abstract class AbstractFileCoverage {
 	public id: string;
+
 	public readonly uri: URI;
+
 	public statement: ICoverageCount;
+
 	public branch?: ICoverageCount;
+
 	public declaration?: ICoverageCount;
+
 	public readonly didChange = observableSignal(this);
 	/**
 	 * Gets the total coverage percent based on information provided.
@@ -274,9 +306,13 @@ export abstract class AbstractFileCoverage {
 		public readonly fromResult: LiveTestResult,
 	) {
 		this.id = coverage.id;
+
 		this.uri = coverage.uri;
+
 		this.statement = coverage.statement;
+
 		this.branch = coverage.branch;
+
 		this.declaration = coverage.declaration;
 	}
 }
@@ -298,12 +334,15 @@ export class BypassedFileCoverage extends ComputedFileCoverage {
 }
 export class FileCoverage extends AbstractFileCoverage {
 	private _details?: Promise<CoverageDetails[]>;
+
 	private resolved?: boolean;
+
 	private _detailsForTest?: Map<string, Promise<CoverageDetails[]>>;
 	/** Gets whether details are synchronously available */
 	public get hasSynchronousDetails() {
 		return this._details instanceof Array || this.resolved;
 	}
+
 	constructor(
 		coverage: IFileCoverage,
 		fromResult: LiveTestResult,
@@ -327,6 +366,7 @@ export class FileCoverage extends AbstractFileCoverage {
 		if (prev) {
 			return prev;
 		}
+
 		const promise = (async () => {
 			try {
 				return await this.accessor.getCoverageDetails(
@@ -340,6 +380,7 @@ export class FileCoverage extends AbstractFileCoverage {
 				throw e;
 			}
 		})();
+
 		this._detailsForTest.set(testId, promise);
 
 		return promise;
@@ -356,6 +397,7 @@ export class FileCoverage extends AbstractFileCoverage {
 
 		try {
 			const d = await this._details;
+
 			this.resolved = true;
 
 			return d;
@@ -379,18 +421,24 @@ export const totalFromCoverageDetails = (
 	for (const detail of details) {
 		if (detail.type === DetailType.Statement) {
 			fc.statement.total++;
+
 			fc.statement.total += detail.count ? 1 : 0;
 
 			for (const branch of detail.branches || []) {
 				fc.branch ??= ICoverageCount.empty();
+
 				fc.branch.total++;
+
 				fc.branch.covered += branch.count ? 1 : 0;
 			}
 		} else {
 			fc.declaration ??= ICoverageCount.empty();
+
 			fc.declaration.total++;
+
 			fc.declaration.covered += detail.count ? 1 : 0;
 		}
 	}
+
 	return fc;
 };

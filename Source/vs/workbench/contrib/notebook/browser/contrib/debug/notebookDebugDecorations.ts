@@ -32,6 +32,7 @@ import { runningCellRulerDecorationColor } from "../../notebookEditorWidget.js";
 
 interface ICellAndRange {
 	handle: number;
+
 	range: IRange;
 }
 export class PausedCellDecorationContribution
@@ -39,8 +40,11 @@ export class PausedCellDecorationContribution
 	implements INotebookEditorContribution
 {
 	static id: string = "workbench.notebook.debug.pausedCellDecorations";
+
 	private _currentTopDecorations: string[] = [];
+
 	private _currentOtherDecorations: string[] = [];
+
 	private _executingCellDecorations: string[] = [];
 
 	constructor(
@@ -53,16 +57,19 @@ export class PausedCellDecorationContribution
 		super();
 
 		const delayer = this._register(new Delayer(200));
+
 		this._register(
 			_debugService
 				.getModel()
 				.onDidChangeCallStack(() => this.updateExecutionDecorations()),
 		);
+
 		this._register(
 			_debugService
 				.getViewModel()
 				.onDidFocusStackFrame(() => this.updateExecutionDecorations()),
 		);
+
 		this._register(
 			_notebookExecutionStateService.onDidChangeExecution((e) => {
 				if (
@@ -75,6 +82,7 @@ export class PausedCellDecorationContribution
 			}),
 		);
 	}
+
 	private updateExecutionDecorations(): void {
 		const exes = this._notebookEditor.textModel
 			? this._notebookExecutionStateService.getCellExecutionsByHandleForNotebook(
@@ -98,6 +106,7 @@ export class PausedCellDecorationContribution
 			) {
 				return { handle: parsed.handle, range: sf.range };
 			}
+
 			return undefined;
 		};
 
@@ -111,11 +120,13 @@ export class PausedCellDecorationContribution
 
 					if (notebookCellAndRange) {
 						topFrameCellsAndRanges.push(notebookCellAndRange);
+
 						exes?.delete(notebookCellAndRange.handle);
 					}
 				}
 			}
 		}
+
 		const focusedFrame =
 			this._debugService.getViewModel().focusedStackFrame;
 
@@ -136,10 +147,13 @@ export class PausedCellDecorationContribution
 				)
 			) {
 				focusedFrameCellAndRange = thisFocusedFrameCellAndRange;
+
 				exes?.delete(focusedFrameCellAndRange.handle);
 			}
 		}
+
 		this.setTopFrameDecoration(topFrameCellsAndRanges);
+
 		this.setFocusedFrameDecoration(focusedFrameCellAndRange);
 
 		const exeHandles = exes
@@ -150,8 +164,10 @@ export class PausedCellDecorationContribution
 					)
 					.map(([handle]) => handle)
 			: [];
+
 		this.setExecutingCellDecorations(exeHandles);
 	}
+
 	private setTopFrameDecoration(handlesAndRanges: ICellAndRange[]): void {
 		const newDecorations = handlesAndRanges.map(({ handle, range }) => {
 			const options: INotebookCellDecorationOptions = {
@@ -165,11 +181,13 @@ export class PausedCellDecorationContribution
 
 			return { handle, options };
 		});
+
 		this._currentTopDecorations = this._notebookEditor.deltaCellDecorations(
 			this._currentTopDecorations,
 			newDecorations,
 		);
 	}
+
 	private setFocusedFrameDecoration(
 		focusedFrameCellAndRange: ICellAndRange | undefined,
 	): void {
@@ -184,16 +202,19 @@ export class PausedCellDecorationContribution
 					position: NotebookOverviewRulerLane.Full,
 				},
 			};
+
 			newDecorations = [
 				{ handle: focusedFrameCellAndRange.handle, options },
 			];
 		}
+
 		this._currentOtherDecorations =
 			this._notebookEditor.deltaCellDecorations(
 				this._currentOtherDecorations,
 				newDecorations,
 			);
 	}
+
 	private setExecutingCellDecorations(handles: number[]): void {
 		const newDecorations = handles.map((handle) => {
 			const options: INotebookCellDecorationOptions = {
@@ -207,6 +228,7 @@ export class PausedCellDecorationContribution
 
 			return { handle, options };
 		});
+
 		this._executingCellDecorations =
 			this._notebookEditor.deltaCellDecorations(
 				this._executingCellDecorations,
@@ -225,6 +247,7 @@ export class NotebookBreakpointDecorations
 {
 	static id: string =
 		"workbench.notebook.debug.notebookBreakpointDecorations";
+
 	private _currentDecorations: string[] = [];
 
 	constructor(
@@ -235,11 +258,13 @@ export class NotebookBreakpointDecorations
 		private readonly _configService: IConfigurationService,
 	) {
 		super();
+
 		this._register(
 			_debugService
 				.getModel()
 				.onDidChangeBreakpoints(() => this.updateDecorations()),
 		);
+
 		this._register(
 			_configService.onDidChangeConfiguration(
 				(e) =>
@@ -249,6 +274,7 @@ export class NotebookBreakpointDecorations
 			),
 		);
 	}
+
 	private updateDecorations(): void {
 		const enabled = this._configService.getValue(
 			"debug.showBreakpointsInOverviewRuler",
@@ -268,6 +294,7 @@ export class NotebookBreakpointDecorations
 						) {
 							return null;
 						}
+
 						const options: INotebookCellDecorationOptions = {
 							overviewRuler: {
 								color: debugIconBreakpointForeground,
@@ -288,6 +315,7 @@ export class NotebookBreakpointDecorations
 					})
 					.filter((x) => !!x) as INotebookDeltaDecoration[])
 			: [];
+
 		this._currentDecorations = this._notebookEditor.deltaCellDecorations(
 			this._currentDecorations,
 			newDecorations,

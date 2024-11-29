@@ -20,6 +20,7 @@ export function watch(location: string): IFileWatcher {
 			watcher.onDidChange,
 			watcher.onDidDelete,
 		);
+
 		dispose() {
 			watcher.dispose();
 		}

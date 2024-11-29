@@ -29,14 +29,21 @@ export interface IDecorationsViewportData {
 }
 export class ViewModelDecorations implements IDisposable {
 	private readonly editorId: number;
+
 	private readonly model: ITextModel;
+
 	private readonly configuration: IEditorConfiguration;
+
 	private readonly _linesCollection: IViewModelLines;
+
 	private readonly _coordinatesConverter: ICoordinatesConverter;
+
 	private _decorationsCache: {
 		[decorationId: string]: ViewModelDecoration;
 	};
+
 	private _cachedModelDecorationsResolver: IDecorationsViewportData | null;
+
 	private _cachedModelDecorationsResolverViewRange: Range | null;
 
 	constructor(
@@ -47,34 +54,52 @@ export class ViewModelDecorations implements IDisposable {
 		coordinatesConverter: ICoordinatesConverter,
 	) {
 		this.editorId = editorId;
+
 		this.model = model;
+
 		this.configuration = configuration;
+
 		this._linesCollection = linesCollection;
+
 		this._coordinatesConverter = coordinatesConverter;
+
 		this._decorationsCache = Object.create(null);
+
 		this._cachedModelDecorationsResolver = null;
+
 		this._cachedModelDecorationsResolverViewRange = null;
 	}
+
 	private _clearCachedModelDecorationsResolver(): void {
 		this._cachedModelDecorationsResolver = null;
+
 		this._cachedModelDecorationsResolverViewRange = null;
 	}
+
 	public dispose(): void {
 		this._decorationsCache = Object.create(null);
+
 		this._clearCachedModelDecorationsResolver();
 	}
+
 	public reset(): void {
 		this._decorationsCache = Object.create(null);
+
 		this._clearCachedModelDecorationsResolver();
 	}
+
 	public onModelDecorationsChanged(): void {
 		this._decorationsCache = Object.create(null);
+
 		this._clearCachedModelDecorationsResolver();
 	}
+
 	public onLineMappingChanged(): void {
 		this._decorationsCache = Object.create(null);
+
 		this._clearCachedModelDecorationsResolver();
 	}
+
 	private _getOrCreateViewModelDecoration(
 		modelDecoration: IModelDecoration,
 	): ViewModelDecoration {
@@ -108,6 +133,7 @@ export class ViewModelDecorations implements IDisposable {
 						),
 						PositionAffinity.Right,
 					);
+
 				viewRange = new Range(
 					start.lineNumber,
 					start.column,
@@ -123,18 +149,24 @@ export class ViewModelDecorations implements IDisposable {
 						PositionAffinity.Right,
 					);
 			}
+
 			r = new ViewModelDecoration(viewRange, options);
+
 			this._decorationsCache[id] = r;
 		}
+
 		return r;
 	}
+
 	public getMinimapDecorationsInRange(range: Range): ViewModelDecoration[] {
 		return this._getDecorationsInRange(range, true, false).decorations;
 	}
+
 	public getDecorationsViewportData(
 		viewRange: Range,
 	): IDecorationsViewportData {
 		let cacheIsValid = this._cachedModelDecorationsResolver !== null;
+
 		cacheIsValid =
 			cacheIsValid &&
 			viewRange.equalsRange(
@@ -147,10 +179,13 @@ export class ViewModelDecorations implements IDisposable {
 				false,
 				false,
 			);
+
 			this._cachedModelDecorationsResolverViewRange = viewRange;
 		}
+
 		return this._cachedModelDecorationsResolver!;
 	}
+
 	public getInlineDecorationsOnLine(
 		lineNumber: number,
 		onlyMinimapDecorations: boolean = false,
@@ -169,6 +204,7 @@ export class ViewModelDecorations implements IDisposable {
 			onlyMarginDecorations,
 		).inlineDecorations[0];
 	}
+
 	private _getDecorationsInRange(
 		viewRange: Range,
 		onlyMinimapDecorations: boolean,
@@ -195,6 +231,7 @@ export class ViewModelDecorations implements IDisposable {
 		for (let j = startLineNumber; j <= endLineNumber; j++) {
 			inlineDecorations[j - startLineNumber] = [];
 		}
+
 		for (let i = 0, len = modelDecorations.length; i < len; i++) {
 			const modelDecoration = modelDecorations[i];
 
@@ -203,10 +240,12 @@ export class ViewModelDecorations implements IDisposable {
 			if (!isModelDecorationVisible(this.model, modelDecoration)) {
 				continue;
 			}
+
 			const viewModelDecoration =
 				this._getOrCreateViewModelDecoration(modelDecoration);
 
 			const viewRange = viewModelDecoration.range;
+
 			decorationsInViewport[decorationsInViewportLen++] =
 				viewModelDecoration;
 
@@ -231,7 +270,9 @@ export class ViewModelDecorations implements IDisposable {
 
 				for (
 					let j = intersectedStartLineNumber;
+
 					j <= intersectedEndLineNumber;
+
 					j++
 				) {
 					inlineDecorations[j - startLineNumber].push(
@@ -239,6 +280,7 @@ export class ViewModelDecorations implements IDisposable {
 					);
 				}
 			}
+
 			if (decorationOptions.beforeContentClassName) {
 				if (
 					startLineNumber <= viewRange.startLineNumber &&
@@ -254,11 +296,13 @@ export class ViewModelDecorations implements IDisposable {
 						decorationOptions.beforeContentClassName,
 						InlineDecorationType.Before,
 					);
+
 					inlineDecorations[
 						viewRange.startLineNumber - startLineNumber
 					].push(inlineDecoration);
 				}
 			}
+
 			if (decorationOptions.afterContentClassName) {
 				if (
 					startLineNumber <= viewRange.endLineNumber &&
@@ -274,12 +318,14 @@ export class ViewModelDecorations implements IDisposable {
 						decorationOptions.afterContentClassName,
 						InlineDecorationType.After,
 					);
+
 					inlineDecorations[
 						viewRange.endLineNumber - startLineNumber
 					].push(inlineDecoration);
 				}
 			}
 		}
+
 		return {
 			decorations: decorationsInViewport,
 			inlineDecorations: inlineDecorations,
@@ -296,12 +342,14 @@ export function isModelDecorationVisible(
 	) {
 		return false;
 	}
+
 	if (
 		decoration.options.hideInStringTokens &&
 		isModelDecorationInString(model, decoration)
 	) {
 		return false;
 	}
+
 	return true;
 }
 export function isModelDecorationInComment(
@@ -336,7 +384,9 @@ function testTokensInRange(
 ): boolean {
 	for (
 		let lineNumber = range.startLineNumber;
+
 		lineNumber <= range.endLineNumber;
+
 		lineNumber++
 	) {
 		const lineTokens = model.tokenization.getLineTokens(lineNumber);
@@ -357,6 +407,7 @@ function testTokensInRange(
 					break;
 				}
 			}
+
 			const callbackResult = callback(
 				lineTokens.getStandardTokenType(tokenIdx),
 			);
@@ -364,8 +415,10 @@ function testTokensInRange(
 			if (!callbackResult) {
 				return false;
 			}
+
 			tokenIdx++;
 		}
 	}
+
 	return true;
 }

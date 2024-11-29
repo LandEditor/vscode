@@ -83,6 +83,7 @@ export class BrowserWorkspaceEditingService extends AbstractWorkspaceEditingServ
 			userDataProfileService,
 		);
 	}
+
 	async enterWorkspace(workspaceUri: URI): Promise<void> {
 		const result = await this.doEnterWorkspace(workspaceUri);
 

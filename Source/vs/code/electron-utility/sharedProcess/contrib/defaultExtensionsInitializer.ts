@@ -52,6 +52,7 @@ export class DefaultExtensionsInitializer extends Disposable {
 				StorageScope.APPLICATION,
 				StorageTarget.MACHINE,
 			);
+
 			this.initializeDefaultExtensions().then(() =>
 				storageService.store(
 					defaultExtensionsInitStatusKey,
@@ -91,6 +92,7 @@ export class DefaultExtensionsInitializer extends Disposable {
 
 				return;
 			}
+
 			this.logService.error("Error initializing extensions", error);
 
 			return;
@@ -113,6 +115,7 @@ export class DefaultExtensionsInitializer extends Disposable {
 			"Initializing default extensions",
 			extensionsLocation.toString(),
 		);
+
 		await Promise.all(
 			vsixs.map(async (vsix) => {
 				this.logService.info(
@@ -128,6 +131,7 @@ export class DefaultExtensionsInitializer extends Disposable {
 							keepExisting: false,
 						},
 					);
+
 					this.logService.info(
 						"Default extension installed",
 						vsix.resource.toString(),
@@ -141,6 +145,7 @@ export class DefaultExtensionsInitializer extends Disposable {
 				}
 			}),
 		);
+
 		this.logService.info(
 			"Default extensions initialized",
 			extensionsLocation.toString(),

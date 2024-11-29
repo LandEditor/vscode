@@ -25,6 +25,7 @@ import {
 @extHostNamedCustomer(MainContext.MainThreadWindow)
 export class MainThreadWindow implements MainThreadWindowShape {
 	private readonly proxy: ExtHostWindowShape;
+
 	private readonly disposables = new DisposableStore();
 
 	constructor(
@@ -41,11 +42,13 @@ export class MainThreadWindow implements MainThreadWindowShape {
 			this.proxy,
 			this.disposables,
 		);
+
 		userActivityService.onDidChangeIsActive(
 			this.proxy.$onDidChangeWindowActive,
 			this.proxy,
 			this.disposables,
 		);
+
 		this.registerNativeHandle();
 	}
 
@@ -58,6 +61,7 @@ export class MainThreadWindow implements MainThreadWindowShape {
 			async (windowId) => {
 				const handle =
 					await this.hostService.getNativeWindowHandle(windowId);
+
 				this.proxy.$onDidChangeActiveNativeWindowHandle(
 					handle ? encodeBase64(handle) : undefined,
 				);
@@ -80,7 +84,9 @@ export class MainThreadWindow implements MainThreadWindowShape {
 		options: IOpenUriOptions,
 	): Promise<boolean> {
 		const uri = URI.from(uriComponents);
+
 		let target: URI | string;
+
 		if (uriString && URI.parse(uriString).toString() === uri.toString()) {
 			// called with string and no transformation happened -> keep string
 			target = uriString;
@@ -88,6 +94,7 @@ export class MainThreadWindow implements MainThreadWindowShape {
 			// called with URI or transformed -> use uri
 			target = uri;
 		}
+
 		return this.openerService.open(target, {
 			openExternal: true,
 			allowTunneling: options.allowTunneling,
@@ -103,6 +110,7 @@ export class MainThreadWindow implements MainThreadWindowShape {
 			URI.revive(uriComponents),
 			options,
 		);
+
 		return result.resolved;
 	}
 }

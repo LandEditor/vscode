@@ -83,13 +83,17 @@ class UserTrustedExtensionIdStorage {
 			return [];
 		}
 	}
+
 	constructor(private storageService: IStorageService) {}
+
 	has(id: string): boolean {
 		return this.extensions.indexOf(id) > -1;
 	}
+
 	add(id: string): void {
 		this.set([...this.extensions, id]);
 	}
+
 	set(ids: string[]): void {
 		this.storageService.store(
 			USER_TRUSTED_EXTENSIONS_STORAGE_KEY,
@@ -108,10 +112,12 @@ export interface IExtensionContributedURLHandler extends IURLHandler {
 }
 export interface IExtensionUrlHandler {
 	readonly _serviceBrand: undefined;
+
 	registerExtensionHandler(
 		extensionId: ExtensionIdentifier,
 		handler: IExtensionContributedURLHandler,
 	): void;
+
 	unregisterExtensionHandler(extensionId: ExtensionIdentifier): void;
 }
 export interface ExtensionUrlHandlerEvent {
@@ -119,29 +125,41 @@ export interface ExtensionUrlHandlerEvent {
 }
 type ExtensionUrlHandlerClassification = {
 	owner: "joaomoreno";
+
 	readonly extensionId: {
 		classification: "PublicNonPersonalData";
+
 		purpose: "FeatureInsight";
+
 		comment: "The ID of the extension that should handle the URI";
 	};
+
 	comment: "This is used to understand the drop funnel of extension URI handling by the OS & VS Code.";
 };
 interface ExtensionUrlReloadHandlerEvent {
 	readonly extensionId: string;
+
 	readonly isRemote: boolean;
 }
 type ExtensionUrlReloadHandlerClassification = {
 	owner: "sandy081";
+
 	readonly extensionId: {
 		classification: "PublicNonPersonalData";
+
 		purpose: "FeatureInsight";
+
 		comment: "The ID of the extension that should handle the URI";
 	};
+
 	readonly isRemote: {
 		classification: "PublicNonPersonalData";
+
 		purpose: "FeatureInsight";
+
 		comment: "Whether the current window is a remote window";
 	};
+
 	comment: "This is used to understand the drop funnel of extension URI handling by the OS & VS Code.";
 };
 /**
@@ -155,18 +173,23 @@ type ExtensionUrlReloadHandlerClassification = {
  */
 class ExtensionUrlHandler implements IExtensionUrlHandler, IURLHandler {
 	readonly _serviceBrand: undefined;
+
 	private extensionHandlers = new Map<
 		string,
 		IExtensionContributedURLHandler
 	>();
+
 	private uriBuffer = new Map<
 		string,
 		{
 			timestamp: number;
+
 			uri: URI;
 		}[]
 	>();
+
 	private userTrustedExtensionsStorage: UserTrustedExtensionIdStorage;
+
 	private disposable: IDisposable;
 
 	constructor(
@@ -210,10 +233,12 @@ class ExtensionUrlHandler implements IExtensionUrlHandler, IURLHandler {
 
 		if (urlToHandleValue) {
 			this.storageService.remove(URL_TO_HANDLE, StorageScope.WORKSPACE);
+
 			this.handleURL(URI.revive(JSON.parse(urlToHandleValue)), {
 				trusted: true,
 			});
 		}
+
 		this.disposable = combinedDisposable(
 			urlService.registerHandler(this),
 			interval,
@@ -225,11 +250,14 @@ class ExtensionUrlHandler implements IExtensionUrlHandler, IURLHandler {
 			cache.forEach(([uri, option]) => this.handleURL(uri, option)),
 		);
 	}
+
 	async handleURL(uri: URI, options?: IOpenURLOptions): Promise<boolean> {
 		if (!isExtensionId(uri.authority)) {
 			return false;
 		}
+
 		const extensionId = uri.authority;
+
 		this.telemetryService.publicLog2<
 			ExtensionUrlHandlerEvent,
 			ExtensionUrlHandlerClassification
@@ -256,6 +284,7 @@ class ExtensionUrlHandler implements IExtensionUrlHandler, IURLHandler {
 		} else {
 			extensionDisplayName = initialHandler.extensionDisplayName;
 		}
+
 		const trusted =
 			options?.trusted ||
 			this.productService.trustedExtensionProtocolHandlers?.includes(
@@ -269,6 +298,7 @@ class ExtensionUrlHandler implements IExtensionUrlHandler, IURLHandler {
 			if (uriString.length > 40) {
 				uriString = `${uriString.substring(0, 30)}...${uriString.substring(uriString.length - 5)}`;
 			}
+
 			const result = await this.dialogService.confirm({
 				message: localize(
 					"confirmUrl",
@@ -296,12 +326,14 @@ class ExtensionUrlHandler implements IExtensionUrlHandler, IURLHandler {
 
 				return true;
 			}
+
 			if (result.checkboxChecked) {
 				this.userTrustedExtensionsStorage.add(
 					ExtensionIdentifier.toKey(extensionId),
 				);
 			}
 		}
+
 		const handler = this.extensionHandlers.get(
 			ExtensionIdentifier.toKey(extensionId),
 		);
@@ -326,8 +358,10 @@ class ExtensionUrlHandler implements IExtensionUrlHandler, IURLHandler {
 
 		if (!uris) {
 			uris = [];
+
 			this.uriBuffer.set(ExtensionIdentifier.toKey(extensionId), uris);
 		}
+
 		uris.push({ timestamp, uri });
 		// activate the extension using ActivationKind.Immediate because URI handling might be part
 		// of resolving authorities (via authentication extensions)
@@ -338,6 +372,7 @@ class ExtensionUrlHandler implements IExtensionUrlHandler, IURLHandler {
 
 		return true;
 	}
+
 	registerExtensionHandler(
 		extensionId: ExtensionIdentifier,
 		handler: IExtensionContributedURLHandler,
@@ -353,11 +388,14 @@ class ExtensionUrlHandler implements IExtensionUrlHandler, IURLHandler {
 		for (const { uri } of uris) {
 			this.handleURLByExtension(extensionId, handler, uri);
 		}
+
 		this.uriBuffer.delete(ExtensionIdentifier.toKey(extensionId));
 	}
+
 	unregisterExtensionHandler(extensionId: ExtensionIdentifier): void {
 		this.extensionHandlers.delete(ExtensionIdentifier.toKey(extensionId));
 	}
+
 	private async handleURLByExtension(
 		extensionId: ExtensionIdentifier | string,
 		handler: IURLHandler,
@@ -373,6 +411,7 @@ class ExtensionUrlHandler implements IExtensionUrlHandler, IURLHandler {
 
 		return await handler.handleURL(uri, options);
 	}
+
 	private async handleUnhandledURL(
 		uri: URI,
 		extensionId: string,
@@ -395,6 +434,7 @@ class ExtensionUrlHandler implements IExtensionUrlHandler, IURLHandler {
 					enable: true,
 				},
 			);
+
 			this.telemetryService.publicLog2<
 				ExtensionUrlHandlerEvent,
 				ExtensionUrlHandlerClassification
@@ -410,10 +450,13 @@ class ExtensionUrlHandler implements IExtensionUrlHandler, IURLHandler {
 					ExtensionUrlHandlerEvent,
 					ExtensionUrlHandlerClassification
 				>("uri_invoked/install_extension/error", { extensionId });
+
 				this.notificationService.error(error);
 			}
+
 			return;
 		}
+
 		const extension = await this.extensionService.getExtension(extensionId);
 
 		if (extension) {
@@ -446,12 +489,14 @@ class ExtensionUrlHandler implements IExtensionUrlHandler, IURLHandler {
 			if (!result.confirmed) {
 				return;
 			}
+
 			this.storageService.store(
 				URL_TO_HANDLE,
 				JSON.stringify(uri.toJSON()),
 				StorageScope.WORKSPACE,
 				StorageTarget.MACHINE,
 			);
+
 			await this.hostService.reload();
 		}
 	}
@@ -463,9 +508,11 @@ class ExtensionUrlHandler implements IExtensionUrlHandler, IURLHandler {
 			string,
 			{
 				timestamp: number;
+
 				uri: URI;
 			}[]
 		>();
+
 		this.uriBuffer.forEach((uris, extensionId) => {
 			uris = uris.filter(
 				({ timestamp }) => now - timestamp < FIVE_MINUTES,
@@ -475,18 +522,22 @@ class ExtensionUrlHandler implements IExtensionUrlHandler, IURLHandler {
 				uriBuffer.set(extensionId, uris);
 			}
 		});
+
 		this.uriBuffer = uriBuffer;
 	}
+
 	private didUserTrustExtension(id: string): boolean {
 		if (this.userTrustedExtensionsStorage.has(id)) {
 			return true;
 		}
+
 		return (
 			this.getConfirmedTrustedExtensionIdsFromConfiguration().indexOf(
 				id,
 			) > -1
 		);
 	}
+
 	private getConfirmedTrustedExtensionIdsFromConfiguration(): Array<string> {
 		const trustedExtensionIds = this.configurationService.getValue(
 			USER_TRUSTED_EXTENSIONS_CONFIGURATION_KEY,
@@ -495,11 +546,15 @@ class ExtensionUrlHandler implements IExtensionUrlHandler, IURLHandler {
 		if (!Array.isArray(trustedExtensionIds)) {
 			return [];
 		}
+
 		return trustedExtensionIds;
 	}
+
 	dispose(): void {
 		this.disposable.dispose();
+
 		this.extensionHandlers.clear();
+
 		this.uriBuffer.clear();
 	}
 }
@@ -516,16 +571,21 @@ class ExtensionUrlBootstrapHandler
 	implements IWorkbenchContribution, IURLHandler
 {
 	static readonly ID = "workbench.contrib.extensionUrlBootstrapHandler";
+
 	private static _cache: [URI, IOpenURLOptions | undefined][] = [];
+
 	private static disposable: IDisposable;
+
 	static get cache(): [URI, IOpenURLOptions | undefined][] {
 		ExtensionUrlBootstrapHandler.disposable.dispose();
 
 		const result = ExtensionUrlBootstrapHandler._cache;
+
 		ExtensionUrlBootstrapHandler._cache = [];
 
 		return result;
 	}
+
 	constructor(
 		@IURLService
 		urlService: IURLService,
@@ -533,10 +593,12 @@ class ExtensionUrlBootstrapHandler
 		ExtensionUrlBootstrapHandler.disposable =
 			urlService.registerHandler(this);
 	}
+
 	async handleURL(uri: URI, options?: IOpenURLOptions): Promise<boolean> {
 		if (!isExtensionId(uri.authority)) {
 			return false;
 		}
+
 		ExtensionUrlBootstrapHandler._cache.push([uri, options]);
 
 		return true;
@@ -559,6 +621,7 @@ class ManageAuthorizedExtensionURIsAction extends Action2 {
 			},
 		});
 	}
+
 	async run(accessor: ServicesAccessor): Promise<void> {
 		const storageService = accessor.get(IStorageService);
 
@@ -582,6 +645,7 @@ class ManageAuthorizedExtensionURIsAction extends Action2 {
 
 			return;
 		}
+
 		const result = await quickInputService.pick(items, {
 			canPickMany: true,
 		});
@@ -589,6 +653,7 @@ class ManageAuthorizedExtensionURIsAction extends Action2 {
 		if (!result) {
 			return;
 		}
+
 		storage.set(result.map((item) => item.label));
 	}
 }

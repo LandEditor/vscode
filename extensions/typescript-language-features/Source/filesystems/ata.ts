@@ -17,6 +17,7 @@ export function registerAtaSupport(logger: Logger): vscode.Disposable {
 	if (!supportsReadableByteStreams()) {
 		return vscode.Disposable.from();
 	}
+
 	return conditionalRegistration(
 		[
 			requireGlobalConfiguration(

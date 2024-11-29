@@ -16,51 +16,71 @@ import { ITextModel } from "../../../common/model.js";
 
 export class CopyLinesCommand implements ICommand {
 	private readonly _selection: Selection;
+
 	private readonly _isCopyingDown: boolean;
+
 	private readonly _noop: boolean;
+
 	private _selectionDirection: SelectionDirection;
+
 	private _selectionId: string | null;
+
 	private _startLineNumberDelta: number;
+
 	private _endLineNumberDelta: number;
 
 	constructor(selection: Selection, isCopyingDown: boolean, noop?: boolean) {
 		this._selection = selection;
+
 		this._isCopyingDown = isCopyingDown;
+
 		this._noop = noop || false;
+
 		this._selectionDirection = SelectionDirection.LTR;
+
 		this._selectionId = null;
+
 		this._startLineNumberDelta = 0;
+
 		this._endLineNumberDelta = 0;
 	}
+
 	public getEditOperations(
 		model: ITextModel,
 		builder: IEditOperationBuilder,
 	): void {
 		let s = this._selection;
+
 		this._startLineNumberDelta = 0;
+
 		this._endLineNumberDelta = 0;
 
 		if (s.startLineNumber < s.endLineNumber && s.endColumn === 1) {
 			this._endLineNumberDelta = 1;
+
 			s = s.setEndPosition(
 				s.endLineNumber - 1,
 				model.getLineMaxColumn(s.endLineNumber - 1),
 			);
 		}
+
 		const sourceLines: string[] = [];
 
 		for (let i = s.startLineNumber; i <= s.endLineNumber; i++) {
 			sourceLines.push(model.getLineContent(i));
 		}
+
 		const sourceText = sourceLines.join("\n");
 
 		if (sourceText === "") {
 			// Duplicating empty line
 			if (this._isCopyingDown) {
 				this._startLineNumberDelta++;
+
 				this._endLineNumberDelta++;
 			}
 		}
+
 		if (this._noop) {
 			builder.addEditOperation(
 				new Range(
@@ -89,9 +109,12 @@ export class CopyLinesCommand implements ICommand {
 				);
 			}
 		}
+
 		this._selectionId = builder.trackSelection(s);
+
 		this._selectionDirection = this._selection.getDirection();
 	}
+
 	public computeCursorState(
 		model: ITextModel,
 		helper: ICursorStateComputerData,
@@ -112,12 +135,16 @@ export class CopyLinesCommand implements ICommand {
 
 			if (this._startLineNumberDelta !== 0) {
 				startLineNumber = startLineNumber + this._startLineNumberDelta;
+
 				startColumn = 1;
 			}
+
 			if (this._endLineNumberDelta !== 0) {
 				endLineNumber = endLineNumber + this._endLineNumberDelta;
+
 				endColumn = 1;
 			}
+
 			result = Selection.createWithDirection(
 				startLineNumber,
 				startColumn,
@@ -126,6 +153,7 @@ export class CopyLinesCommand implements ICommand {
 				this._selectionDirection,
 			);
 		}
+
 		return result;
 	}
 }

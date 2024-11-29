@@ -94,10 +94,14 @@ export class CommentsAccessibilityHelpProvider
 	implements IAccessibleViewContentProvider
 {
 	id = AccessibleViewProviderId.Comments;
+
 	verbositySettingKey: AccessibilityVerbositySettingId =
 		AccessibilityVerbositySettingId.Comments;
+
 	options: IAccessibleViewOptions = { type: AccessibleViewType.Help };
+
 	private _element: HTMLElement | undefined;
+
 	provideContent(): string {
 		return [
 			CommentAccessibilityHelpNLS.tabFocus,
@@ -109,14 +113,18 @@ export class CommentsAccessibilityHelpProvider
 			CommentAccessibilityHelpNLS.previousRange,
 		].join("\n");
 	}
+
 	onClose(): void {
 		this._element?.focus();
 	}
 }
 export class CommentsAccessibilityHelp implements IAccessibleViewImplentation {
 	readonly priority = 110;
+
 	readonly name = "comments";
+
 	readonly type = AccessibleViewType.Help;
+
 	readonly when = ContextKeyExpr.or(
 		ctxCommentEditorFocused,
 		CommentContextKeys.commentFocused,

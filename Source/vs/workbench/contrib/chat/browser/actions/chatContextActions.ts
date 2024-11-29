@@ -96,9 +96,13 @@ import { CHAT_CATEGORY } from "./chatActions.js";
 
 export function registerChatContextActions() {
 	registerAction2(AttachContextAction);
+
 	registerAction2(AttachFileToChatAction);
+
 	registerAction2(AttachSelectionToChatAction);
+
 	registerAction2(AttachFileToEditingSessionAction);
+
 	registerAction2(AttachSelectionToEditingSessionAction);
 }
 
@@ -192,21 +196,29 @@ function isRelatedFileQuickPickItem(
 
 interface IRelatedFilesQuickPickItem extends IQuickPickItem {
 	kind: "related-files";
+
 	id: string;
+
 	label: string;
 }
 
 interface IImageQuickPickItem extends IQuickPickItem {
 	kind: "image";
+
 	id: string;
 }
 
 interface ICommandVariableQuickPickItem extends IQuickPickItem {
 	kind: "command";
+
 	id: string;
+
 	command: Command;
+
 	name?: string;
+
 	value: unknown;
+
 	isDynamic: true;
 
 	icon?: ThemeIcon;
@@ -214,8 +226,11 @@ interface ICommandVariableQuickPickItem extends IQuickPickItem {
 
 interface IToolQuickPickItem extends IQuickPickItem {
 	kind: "tool";
+
 	id: string;
+
 	name?: string;
+
 	icon?: ThemeIcon;
 }
 
@@ -227,25 +242,33 @@ interface IVariableQuickPickItem extends IQuickPickItem {
 
 interface IQuickAccessQuickPickItem extends IQuickPickItem {
 	kind: "quickaccess";
+
 	id: string;
+
 	prefix: string;
 }
 
 interface IOpenEditorsQuickPickItem extends IQuickPickItem {
 	kind: "open-editors";
+
 	id: "open-editors";
+
 	icon?: ThemeIcon;
 }
 
 interface ISearchResultsQuickPickItem extends IQuickPickItem {
 	kind: "search-results";
+
 	id: string;
+
 	icon?: ThemeIcon;
 }
 
 interface IScreenShotQuickPickItem extends IQuickPickItem {
 	kind: "screenshot";
+
 	id: string;
+
 	icon?: ThemeIcon;
 }
 
@@ -749,6 +772,7 @@ export class AttachContextAction extends Action2 {
 				if (!chatSessionId || !chatEditingService) {
 					continue;
 				}
+
 				const relatedFiles = await chatEditingService.getRelatedFiles(
 					chatSessionId,
 					widget.getInput(),
@@ -758,6 +782,7 @@ export class AttachContextAction extends Action2 {
 				if (!relatedFiles) {
 					continue;
 				}
+
 				const attachments = widget.attachmentModel.getAttachmentIDs();
 
 				const itemsPromise = chatEditingService
@@ -800,6 +825,7 @@ export class AttachContextAction extends Action2 {
 									picked: true,
 								});
 							}
+
 							return acc;
 						}, []),
 					);
@@ -841,6 +867,7 @@ export class AttachContextAction extends Action2 {
 						// User made no selection, skip this variable
 						continue;
 					}
+
 					toAttach.push({
 						...attachmentPick,
 						isDynamic: attachmentPick.isDynamic,
@@ -860,6 +887,7 @@ export class AttachContextAction extends Action2 {
 					});
 				} else if (attachmentPick.kind === "image") {
 					const fileBuffer = await clipboardService.readImage();
+
 					toAttach.push({
 						id: await imageToHash(fileBuffer),
 						name: localize("pastedImage", "Pasted Image"),
@@ -928,7 +956,9 @@ export class AttachContextAction extends Action2 {
 		const context:
 			| {
 					widget?: IChatWidget;
+
 					showFilesOnly?: boolean;
+
 					placeholder?: string;
 			  }
 			| undefined = args[0];
@@ -938,6 +968,7 @@ export class AttachContextAction extends Action2 {
 		if (!widget) {
 			return;
 		}
+
 		const chatEditingService =
 			widget.location === ChatAgentLocation.EditingSession
 				? accessor.get(IChatEditingService)
@@ -1110,6 +1141,7 @@ export class AttachContextAction extends Action2 {
 					iconClass: ThemeIcon.asClassName(Codicon.sparkle),
 				});
 			}
+
 			if (
 				editorService.editors.filter(
 					(e) =>
@@ -1125,6 +1157,7 @@ export class AttachContextAction extends Action2 {
 					iconClass: ThemeIcon.asClassName(Codicon.files),
 				});
 			}
+
 			if (SearchContext.HasSearchResults.getValue(contextKeyService)) {
 				quickPickItems.push({
 					kind: "search-results",
@@ -1142,6 +1175,7 @@ export class AttachContextAction extends Action2 {
 			if (!label) {
 				return "";
 			}
+
 			const match = label.match(/\$\([^\)]+\)\s*(.+)/);
 
 			return match ? match[1] : label;
@@ -1212,6 +1246,7 @@ export class AttachContextAction extends Action2 {
 					if (!clipboardService) {
 						return;
 					}
+
 					this._attachContext(
 						widget,
 						quickInputService,
@@ -1266,6 +1301,7 @@ export class AttachContextAction extends Action2 {
 							return true;
 						}
 					}
+
 					return false;
 				}
 
@@ -1320,6 +1356,7 @@ export class AttachContextAction extends Action2 {
 				return true;
 			},
 		};
+
 		quickInputService.quickAccess.show(query, {
 			enabledProviderPrefixes: [
 				AnythingQuickAccessProvider.PREFIX,

@@ -79,12 +79,16 @@ import { NativeWindow } from "./window.js";
 (function registerActions(): void {
 	// Actions: Zoom
 	registerAction2(ZoomInAction);
+
 	registerAction2(ZoomOutAction);
+
 	registerAction2(ZoomResetAction);
 
 	// Actions: Window
 	registerAction2(SwitchWindowAction);
+
 	registerAction2(QuickSwitchWindowAction);
+
 	registerAction2(CloseWindowAction);
 
 	if (isMacintosh) {
@@ -106,6 +110,7 @@ import { NativeWindow } from "./window.js";
 	// Actions: Install Shell Script (macOS only)
 	if (isMacintosh) {
 		registerAction2(InstallShellScriptAction);
+
 		registerAction2(UninstallShellScriptAction);
 	}
 
@@ -195,9 +200,13 @@ import { NativeWindow } from "./window.js";
 
 	// Actions: Developer
 	registerAction2(ReloadWindowWithExtensionsDisabledAction);
+
 	registerAction2(ConfigureRuntimeArgumentsAction);
+
 	registerAction2(ToggleDevToolsAction);
+
 	registerAction2(OpenUserDataFolderAction);
+
 	registerAction2(ShowGPUInfoAction);
 })();
 
@@ -690,6 +699,7 @@ import { NativeWindow } from "./window.js";
 				"Forces the renderer to be accessible. ONLY change this if you are using a screen reader on Linux. On other platforms the renderer will automatically be accessible. This flag is automatically set if you have editor.accessibilitySupport: on.",
 			),
 		};
+
 		schema.properties!["password-store"] = {
 			type: "string",
 			description: localize(

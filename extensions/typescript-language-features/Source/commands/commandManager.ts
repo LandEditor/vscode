@@ -6,6 +6,7 @@ import * as vscode from "vscode";
 
 export interface Command {
 	readonly id: string;
+
 	execute(...args: any[]): void | any;
 }
 export class CommandManager {
@@ -13,15 +14,19 @@ export class CommandManager {
 		string,
 		{
 			refCount: number;
+
 			readonly registration: vscode.Disposable;
 		}
 	>();
+
 	public dispose() {
 		for (const registration of this.commands.values()) {
 			registration.registration.dispose();
 		}
+
 		this.commands.clear();
 	}
+
 	public register<T extends Command>(command: T): vscode.Disposable {
 		let entry = this.commands.get(command.id);
 
@@ -34,15 +39,18 @@ export class CommandManager {
 					command,
 				),
 			};
+
 			this.commands.set(command.id, entry);
 		} else {
 			entry.refCount += 1;
 		}
+
 		return new vscode.Disposable(() => {
 			entry.refCount -= 1;
 
 			if (entry.refCount <= 0) {
 				entry.registration.dispose();
+
 				this.commands.delete(command.id);
 			}
 		});

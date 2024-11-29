@@ -16,6 +16,7 @@ import { ConfigurationKey, IConfigurationCache } from "./configuration.js";
 
 export class ConfigurationCache implements IConfigurationCache {
 	private readonly cacheHome: URI;
+
 	private readonly cachedConfigurations: Map<string, CachedConfiguration> =
 		new Map<string, CachedConfiguration>();
 
@@ -26,19 +27,24 @@ export class ConfigurationCache implements IConfigurationCache {
 	) {
 		this.cacheHome = environmentService.cacheHome;
 	}
+
 	needsCaching(resource: URI): boolean {
 		// Cache all non native resources
 		return !this.donotCacheResourcesWithSchemes.includes(resource.scheme);
 	}
+
 	read(key: ConfigurationKey): Promise<string> {
 		return this.getCachedConfiguration(key).read();
 	}
+
 	write(key: ConfigurationKey, content: string): Promise<void> {
 		return this.getCachedConfiguration(key).save(content);
 	}
+
 	remove(key: ConfigurationKey): Promise<void> {
 		return this.getCachedConfiguration(key).remove();
 	}
+
 	private getCachedConfiguration({
 		type,
 		key,
@@ -53,14 +59,18 @@ export class ConfigurationCache implements IConfigurationCache {
 				this.cacheHome,
 				this.fileService,
 			);
+
 			this.cachedConfigurations.set(k, cachedConfiguration);
 		}
+
 		return cachedConfiguration;
 	}
 }
 class CachedConfiguration {
 	private queue: Queue<void>;
+
 	private cachedConfigurationFolderResource: URI;
+
 	private cachedConfigurationFileResource: URI;
 
 	constructor(
@@ -74,12 +84,15 @@ class CachedConfiguration {
 			type,
 			key,
 		);
+
 		this.cachedConfigurationFileResource = joinPath(
 			this.cachedConfigurationFolderResource,
 			type === "workspaces" ? "workspace.json" : "configuration.json",
 		);
+
 		this.queue = new Queue<void>();
 	}
+
 	async read(): Promise<string> {
 		try {
 			const content = await this.fileService.readFile(
@@ -91,6 +104,7 @@ class CachedConfiguration {
 			return "";
 		}
 	}
+
 	async save(content: string): Promise<void> {
 		const created = await this.createCachedFolder();
 
@@ -103,6 +117,7 @@ class CachedConfiguration {
 			});
 		}
 	}
+
 	async remove(): Promise<void> {
 		try {
 			await this.queue.queue(() =>
@@ -120,6 +135,7 @@ class CachedConfiguration {
 			}
 		}
 	}
+
 	private async createCachedFolder(): Promise<boolean> {
 		if (
 			await this.fileService.exists(
@@ -128,6 +144,7 @@ class CachedConfiguration {
 		) {
 			return true;
 		}
+
 		try {
 			await this.fileService.createFolder(
 				this.cachedConfigurationFolderResource,

@@ -21,6 +21,7 @@ export class ExtHostQuickDiff implements ExtHostQuickDiffShape {
 	private static handlePool: number = 0;
 
 	private proxy: MainThreadQuickDiffShape;
+
 	private providers: Map<number, vscode.QuickDiffProvider> = new Map();
 
 	constructor(
@@ -36,6 +37,7 @@ export class ExtHostQuickDiff implements ExtHostQuickDiffShape {
 		token: CancellationToken,
 	): Promise<UriComponents | null> {
 		const uri = URI.revive(uriComponents);
+
 		const provider = this.providers.get(handle);
 
 		if (!provider) {
@@ -54,7 +56,9 @@ export class ExtHostQuickDiff implements ExtHostQuickDiffShape {
 		rootUri?: vscode.Uri,
 	): vscode.Disposable {
 		const handle = ExtHostQuickDiff.handlePool++;
+
 		this.providers.set(handle, quickDiffProvider);
+
 		this.proxy.$registerQuickDiffProvider(
 			handle,
 			DocumentSelector.from(selector, this.uriTransformer),
@@ -62,9 +66,11 @@ export class ExtHostQuickDiff implements ExtHostQuickDiffShape {
 			rootUri,
 			quickDiffProvider.visible ?? true,
 		);
+
 		return {
 			dispose: () => {
 				this.proxy.$unregisterQuickDiffProvider(handle);
+
 				this.providers.delete(handle);
 			},
 		};

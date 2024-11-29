@@ -17,85 +17,137 @@ import { IRemoteConnectionData } from "../../../../platform/remote/common/remote
 
 export interface IExtensionDescriptionSnapshot {
 	readonly versionId: number;
+
 	readonly allExtensions: IExtensionDescription[];
+
 	readonly activationEvents: { [extensionId: string]: string[] };
+
 	readonly myExtensions: ExtensionIdentifier[];
 }
 
 export interface IExtensionDescriptionDelta {
 	readonly versionId: number;
+
 	readonly toRemove: ExtensionIdentifier[];
+
 	readonly toAdd: IExtensionDescription[];
+
 	readonly addActivationEvents: { [extensionId: string]: string[] };
+
 	readonly myToRemove: ExtensionIdentifier[];
+
 	readonly myToAdd: ExtensionIdentifier[];
 }
 
 export interface IExtensionHostInitData {
 	version: string;
+
 	quality: string | undefined;
+
 	commit?: string;
 	/**
 	 * When set to `0`, no polling for the parent process still running will happen.
 	 */
 	parentPid: number | 0;
+
 	environment: IEnvironment;
+
 	workspace?: IStaticWorkspaceData | null;
+
 	extensions: IExtensionDescriptionSnapshot;
+
 	nlsBaseUrl?: URI;
+
 	telemetryInfo: {
 		readonly sessionId: string;
+
 		readonly machineId: string;
+
 		readonly sqmId: string;
+
 		readonly devDeviceId: string;
+
 		readonly firstSessionDate: string;
+
 		readonly msftInternal?: boolean;
 	};
+
 	logLevel: LogLevel;
+
 	loggers: UriDto<ILoggerResource>[];
+
 	logsLocation: URI;
+
 	autoStart: boolean;
+
 	remote: {
 		isRemote: boolean;
+
 		authority: string | undefined;
+
 		connectionData: IRemoteConnectionData | null;
 	};
+
 	consoleForward: { includeStack: boolean; logNative: boolean };
+
 	uiKind: UIKind;
+
 	messagePorts?: ReadonlyMap<string, MessagePortLike>;
+
 	handle?: string;
 }
 
 export interface IEnvironment {
 	isExtensionDevelopmentDebug: boolean;
+
 	appName: string;
+
 	appHost: string;
+
 	appRoot?: URI;
+
 	appLanguage: string;
+
 	extensionTelemetryLogResource: URI;
+
 	isExtensionTelemetryLoggingOnly: boolean;
+
 	appUriScheme: string;
+
 	extensionDevelopmentLocationURI?: URI[];
+
 	extensionTestsLocationURI?: URI;
+
 	globalStorageHome: URI;
+
 	workspaceStorageHome: URI;
+
 	useHostProxy?: boolean;
+
 	skipWorkspaceStorageLock?: boolean;
+
 	extensionLogLevel?: [string, string][];
 }
 
 export interface IStaticWorkspaceData {
 	id: string;
+
 	name: string;
+
 	transient?: boolean;
+
 	configuration?: UriComponents | null;
+
 	isUntitled?: boolean | null;
 }
 
 export interface MessagePortLike {
 	postMessage(message: any, transfer?: any[]): void;
+
 	addEventListener(type: "message", listener: (e: any) => unknown): void;
+
 	removeEventListener(type: "message", listener: (e: any) => unknown): void;
+
 	start(): void;
 }
 
@@ -116,9 +168,13 @@ export interface IExtHostReadyMessage {
 
 export interface IExtHostSocketMessage {
 	type: "VSCODE_EXTHOST_IPC_SOCKET";
+
 	initialDataChunk: string;
+
 	skipWebSocketFrames: boolean;
+
 	permessageDeflate: boolean;
+
 	inflateBytes: string;
 }
 
@@ -138,14 +194,17 @@ export function createMessageOfType(type: MessageType): VSBuffer {
 	switch (type) {
 		case MessageType.Initialized:
 			result.writeUInt8(1, 0);
+
 			break;
 
 		case MessageType.Ready:
 			result.writeUInt8(2, 0);
+
 			break;
 
 		case MessageType.Terminate:
 			result.writeUInt8(3, 0);
+
 			break;
 	}
 

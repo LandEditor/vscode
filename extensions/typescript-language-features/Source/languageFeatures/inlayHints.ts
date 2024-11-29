@@ -39,10 +39,13 @@ class TypeScriptInlayHintsProvider
 	implements vscode.InlayHintsProvider
 {
 	public static readonly minVersion = API.v440;
+
 	private readonly _onDidChangeInlayHints = this._register(
 		new vscode.EventEmitter<void>(),
 	);
+
 	public readonly onDidChangeInlayHints = this._onDidChangeInlayHints.event;
+
 	private hasReportedTelemetry = false;
 
 	constructor(
@@ -52,6 +55,7 @@ class TypeScriptInlayHintsProvider
 		private readonly telemetryReporter: TelemetryReporter,
 	) {
 		super();
+
 		this._register(
 			vscode.workspace.onDidChangeConfiguration((e) => {
 				if (
@@ -73,6 +77,7 @@ class TypeScriptInlayHintsProvider
 			}),
 		);
 	}
+
 	async provideInlayHints(
 		model: vscode.TextDocument,
 		range: vscode.Range,
@@ -83,12 +88,15 @@ class TypeScriptInlayHintsProvider
 		if (!filepath) {
 			return;
 		}
+
 		if (!areInlayHintsEnabledForFile(this.language, model)) {
 			return;
 		}
+
 		const start = model.offsetAt(range.start);
 
 		const length = model.offsetAt(range.end) - start;
+
 		await this.fileConfigurationManager.ensureConfigurationForDocument(
 			model,
 			token,
@@ -97,6 +105,7 @@ class TypeScriptInlayHintsProvider
 		if (token.isCancellationRequested) {
 			return;
 		}
+
 		if (!this.hasReportedTelemetry) {
 			this.hasReportedTelemetry = true;
 			/* __GDPR__
@@ -109,6 +118,7 @@ class TypeScriptInlayHintsProvider
             */
 			this.telemetryReporter.logTelemetry("inlayHints.provide", {});
 		}
+
 		const response = await this.client.execute(
 			"provideInlayHints",
 			{ file: filepath, start, length },
@@ -122,18 +132,22 @@ class TypeScriptInlayHintsProvider
 		) {
 			return;
 		}
+
 		return response.body.map((hint) => {
 			const result = new vscode.InlayHint(
 				Position.fromLocation(hint.position),
 				this.convertInlayHintText(hint),
 				fromProtocolInlayHintKind(hint.kind),
 			);
+
 			result.paddingLeft = hint.whitespaceBefore;
+
 			result.paddingRight = hint.whitespaceAfter;
 
 			return result;
 		});
 	}
+
 	private convertInlayHintText(
 		tsHint: Proto.InlayHintItem,
 	): string | vscode.InlayHintLabelPart[] {
@@ -148,10 +162,12 @@ class TypeScriptInlayHintsProvider
 							part.span,
 						);
 					}
+
 					return out;
 				},
 			);
 		}
+
 		return tsHint.text;
 	}
 }

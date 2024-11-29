@@ -12,6 +12,7 @@ import { INativeWorkbenchEnvironmentService } from "../../../services/environmen
 
 export class OpenLogsFolderAction extends Action {
 	static readonly ID = "workbench.action.openLogsFolder";
+
 	static readonly TITLE = nls.localize2("openLogsFolder", "Open Logs Folder");
 
 	constructor(
@@ -24,6 +25,7 @@ export class OpenLogsFolderAction extends Action {
 	) {
 		super(id, label);
 	}
+
 	override run(): Promise<void> {
 		return this.nativeHostService.showItemInFolder(
 			joinPath(this.environmentService.logsHome, "main.log").with({
@@ -34,6 +36,7 @@ export class OpenLogsFolderAction extends Action {
 }
 export class OpenExtensionLogsFolderAction extends Action {
 	static readonly ID = "workbench.action.openExtensionLogsFolder";
+
 	static readonly TITLE = nls.localize2(
 		"openExtensionLogsFolder",
 		"Open Extension Logs Folder",
@@ -51,6 +54,7 @@ export class OpenExtensionLogsFolderAction extends Action {
 	) {
 		super(id, label);
 	}
+
 	override async run(): Promise<void> {
 		const folderStat = await this.fileService.resolve(
 			this.environmentSerice.extHostLogsPath,

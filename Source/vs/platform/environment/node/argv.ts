@@ -20,20 +20,30 @@ const helpCategories = {
 
 export interface Option<OptionType> {
 	type: OptionType;
+
 	alias?: string;
+
 	deprecates?: string[]; // old deprecated ids
 	args?: string | string[];
+
 	description?: string;
+
 	deprecationMessage?: string;
+
 	allowEmptyValue?: boolean;
+
 	cat?: keyof typeof helpCategories;
+
 	global?: boolean;
 }
 
 export interface Subcommand<T> {
 	type: "subcommand";
+
 	description?: string;
+
 	deprecationMessage?: string;
+
 	options: OptionDescriptions<Required<T>>;
 }
 
@@ -501,8 +511,11 @@ export const OPTIONS: OptionDescriptions<Required<NativeParsedArgs>> = {
 
 export interface ErrorReporter {
 	onUnknownOption(id: string): void;
+
 	onMultipleValues(id: string, usedValue: string): void;
+
 	onEmptyValue(id: string): void;
+
 	onDeprecatedOption(deprecatedId: string, message: string): void;
 
 	getSubcommandReporter?(command: string): ErrorReporter;
@@ -557,17 +570,20 @@ export function parseArgs<T>(
 					booleanOptions.push(...o.deprecates);
 				}
 			}
+
 			if (o.global) {
 				globalOptions[optionId] = o;
 			}
 		}
 	}
+
 	if (command && firstArg) {
 		const options = globalOptions;
 
 		for (const optionId in command.options) {
 			options[optionId] = command.options[optionId];
 		}
+
 		const newArgs = args.filter((a) => a !== firstArg);
 
 		const reporter = errorReporter.getSubcommandReporter
@@ -606,6 +622,7 @@ export function parseArgs<T>(
 		if (o.type === "subcommand") {
 			continue;
 		}
+
 		if (o.alias) {
 			delete remainingArgs[o.alias];
 		}
@@ -630,6 +647,7 @@ export function parseArgs<T>(
 							);
 						}
 					}
+
 					delete remainingArgs[deprecatedId];
 				}
 			}
@@ -640,11 +658,13 @@ export function parseArgs<T>(
 				if (!Array.isArray(val)) {
 					val = [val];
 				}
+
 				if (!o.allowEmptyValue) {
 					const sanitized = val.filter((v: string) => v.length > 0);
 
 					if (sanitized.length !== val.length) {
 						errorReporter.onEmptyValue(optionId);
+
 						val = sanitized.length > 0 ? sanitized : undefined;
 					}
 				}
@@ -654,9 +674,11 @@ export function parseArgs<T>(
 					errorReporter.onMultipleValues(optionId, val);
 				} else if (!val && !o.allowEmptyValue) {
 					errorReporter.onEmptyValue(optionId);
+
 					val = undefined;
 				}
 			}
+
 			cleanedArgs[optionId] = val;
 
 			if (o.deprecationMessage) {
@@ -666,6 +688,7 @@ export function parseArgs<T>(
 				);
 			}
 		}
+
 		delete remainingArgs[optionId];
 	}
 
@@ -686,9 +709,11 @@ function formatUsage(optionId: string, option: Option<any>) {
 			args = ` <${option.args}>`;
 		}
 	}
+
 	if (option.alias) {
 		return `-${option.alias} --${optionId}${args}`;
 	}
+
 	return `--${optionId}${args}`;
 }
 
@@ -703,8 +728,10 @@ export function formatOptions(
 		const o = options[optionId];
 
 		const usageText = formatUsage(optionId, o);
+
 		usageTexts.push([usageText, o.description!]);
 	}
+
 	return formatUsageTexts(usageTexts, columns);
 }
 
@@ -723,6 +750,7 @@ function formatUsageTexts(usageTexts: [string, string][], columns: number) {
 			[],
 		);
 	}
+
 	const descriptionColumns = columns - argLength - 1;
 
 	const result: string[] = [];
@@ -735,12 +763,14 @@ function formatUsageTexts(usageTexts: [string, string][], columns: number) {
 		const keyPadding = indent(
 			argLength - usage.length - 2 /*left padding*/,
 		);
+
 		result.push("  " + usage + keyPadding + wrappedDescription[0]);
 
 		for (let i = 1; i < wrappedDescription.length; i++) {
 			result.push(indent(argLength) + wrappedDescription[i]);
 		}
 	}
+
 	return result;
 }
 
@@ -758,9 +788,12 @@ function wrapText(text: string, columns: number): string[] {
 				: text.lastIndexOf(" ", columns);
 
 		const line = text.slice(0, index).trim();
+
 		text = text.slice(index);
+
 		lines.push(line);
 	}
+
 	return lines;
 }
 
@@ -779,10 +812,13 @@ export function buildHelpMessage(
 			: "";
 
 	const help = [`${productName} ${version}`];
+
 	help.push("");
+
 	help.push(
 		`${localize("usage", "Usage")}: ${executableName} [${localize("options", "options")}]${inputFiles}`,
 	);
+
 	help.push("");
 
 	if (capabilities?.noPipe !== true) {
@@ -803,8 +839,10 @@ export function buildHelpMessage(
 				),
 			);
 		}
+
 		help.push("");
 	}
+
 	const optionsByCategory: {
 		[P in keyof typeof helpCategories]?: OptionDescriptions<any>;
 	} = {};
@@ -827,6 +865,7 @@ export function buildHelpMessage(
 			if (!optionsByCat) {
 				optionsByCategory[o.cat] = optionsByCat = {};
 			}
+
 			optionsByCat[optionId] = o;
 		}
 	}
@@ -838,19 +877,23 @@ export function buildHelpMessage(
 
 		if (categoryOptions) {
 			help.push(helpCategories[key]);
+
 			help.push(...formatOptions(categoryOptions, columns));
+
 			help.push("");
 		}
 	}
 
 	if (subcommands.length) {
 		help.push(localize("subcommands", "Subcommands"));
+
 		help.push(
 			...formatUsageTexts(
 				subcommands.map((s) => [s.command, s.description]),
 				columns,
 			),
 		);
+
 		help.push("");
 	}
 

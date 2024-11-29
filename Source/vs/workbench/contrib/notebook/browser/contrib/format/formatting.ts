@@ -140,6 +140,7 @@ registerAction2(
 								await textModelService.createModelReference(
 									cell.uri,
 								);
+
 							disposable.add(ref);
 
 							const model = ref.object.textEditorModel;
@@ -225,6 +226,7 @@ registerEditorAction(
 		): Promise<void> {
 			if (editor.hasModel()) {
 				const instaService = accessor.get(IInstantiationService);
+
 				await instaService.invokeFunction(
 					formatDocumentWithSelectedProvider,
 					editor,
@@ -274,6 +276,7 @@ class FormatOnCellExecutionParticipant implements ICellExecutionParticipant {
 					if (!nbModel) {
 						return [];
 					}
+
 					let activeCell;
 
 					for (const cell of nbModel.cells) {
@@ -283,6 +286,7 @@ class FormatOnCellExecutionParticipant implements ICellExecutionParticipant {
 							break;
 						}
 					}
+
 					if (!activeCell) {
 						return [];
 					}
@@ -291,6 +295,7 @@ class FormatOnCellExecutionParticipant implements ICellExecutionParticipant {
 						await this.textModelService.createModelReference(
 							activeCell.uri,
 						);
+
 					disposable.add(ref);
 
 					const model = ref.object.textEditorModel;
@@ -346,6 +351,7 @@ export class CellExecutionParticipantsContribution
 		private readonly notebookExecutionService: INotebookExecutionService,
 	) {
 		super();
+
 		this.registerKernelExecutionParticipants();
 	}
 

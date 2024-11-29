@@ -69,7 +69,9 @@ export interface LayoutableEditor {
 
 export class SimpleCommentEditor extends CodeEditorWidget {
 	private _parentThread: ICommentThreadWidget;
+
 	private _commentEditorFocused: IContextKey<boolean>;
+
 	private _commentEditorEmpty: IContextKey<boolean>;
 
 	constructor(
@@ -156,10 +158,13 @@ export class SimpleCommentEditor extends CodeEditorWidget {
 		this._commentEditorFocused = ctxCommentEditorFocused.bindTo(
 			scopedContextKeyService,
 		);
+
 		this._commentEditorEmpty = CommentContextKeys.commentIsEmpty.bindTo(
 			scopedContextKeyService,
 		);
+
 		this._commentEditorEmpty.set(!this.getModel()?.getValueLength());
+
 		this._parentThread = parentThread;
 
 		this._register(
@@ -175,6 +180,7 @@ export class SimpleCommentEditor extends CodeEditorWidget {
 				),
 			),
 		);
+
 		this._register(
 			this.onDidBlurEditorWidget((_) =>
 				this._commentEditorFocused.reset(),
@@ -272,5 +278,6 @@ export function calculateEditorHeight(
 			),
 		);
 	}
+
 	return currentHeight;
 }

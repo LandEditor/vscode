@@ -52,19 +52,27 @@ export interface Runtime {
 			decode(buffer: ArrayBuffer): string;
 		};
 	};
+
 	fs?: RequestService;
 }
 interface FormatterRegistration {
 	readonly languageId: string;
+
 	readonly settingId: string;
+
 	provider: Disposable | undefined;
 }
 interface CSSFormatSettings {
 	newlineBetweenSelectors?: boolean;
+
 	newlineBetweenRules?: boolean;
+
 	spaceAroundSelectorSeparator?: boolean;
+
 	braceStyle?: "collapse" | "expand";
+
 	preserveNewLines?: boolean;
+
 	maxPreserveNewLines?: number | null;
 }
 
@@ -126,6 +134,7 @@ export async function startClient(
 						};
 					}
 				}
+
 				function updateLabel(item: CompletionItem) {
 					if (item.kind === CompletionItemKind.Color) {
 						item.label = {
@@ -142,8 +151,10 @@ export async function startClient(
 						(Array.isArray(r) ? r : r.items).forEach(updateRanges);
 						(Array.isArray(r) ? r : r.items).forEach(updateLabel);
 					}
+
 					return r;
 				}
+
 				const isThenable = <T>(
 					obj: ProviderResult<T>,
 				): obj is Thenable<T> => obj && (<any>obj)["then"];
@@ -157,6 +168,7 @@ export async function startClient(
 				) {
 					return r.then(updateProposals);
 				}
+
 				return updateProposals(r);
 			},
 		},
@@ -167,12 +179,16 @@ export async function startClient(
 		l10n.t("CSS Language Server"),
 		clientOptions,
 	);
+
 	client.registerProposedFeatures();
+
 	await client.start();
+
 	client.sendNotification(
 		CustomDataChangedNotification.type,
 		customDataSource.uris,
 	);
+
 	customDataSource.onDidChange(() => {
 		client.sendNotification(
 			CustomDataChangedNotification.type,
@@ -182,9 +198,11 @@ export async function startClient(
 	// manually register / deregister format provider based on the `css/less/scss.format.enable` setting avoiding issues with late registration. See #71652.
 	for (const registration of formatterRegistrations) {
 		updateFormatterRegistration(registration);
+
 		context.subscriptions.push({
 			dispose: () => registration.provider?.dispose(),
 		});
+
 		context.subscriptions.push(
 			workspace.onDidChangeConfiguration(
 				(e) =>
@@ -193,7 +211,9 @@ export async function startClient(
 			),
 		);
 	}
+
 	serveFileSystemRequests(client, runtime);
+
 	context.subscriptions.push(initCompletionProvider());
 
 	function initCompletionProvider(): Disposable {
@@ -217,33 +237,46 @@ export async function startClient(
 						"#region",
 						CompletionItemKind.Snippet,
 					);
+
 					beginProposal.range = range;
+
 					TextEdit.replace(range, "/* #region */");
+
 					beginProposal.insertText = new SnippetString(
 						"/* #region $1*/",
 					);
+
 					beginProposal.documentation = l10n.t(
 						"Folding Region Start",
 					);
+
 					beginProposal.filterText = match[2];
+
 					beginProposal.sortText = "za";
 
 					const endProposal = new CompletionItem(
 						"#endregion",
 						CompletionItemKind.Snippet,
 					);
+
 					endProposal.range = range;
+
 					endProposal.insertText = "/* #endregion */";
+
 					endProposal.documentation = l10n.t("Folding Region End");
+
 					endProposal.sortText = "zb";
+
 					endProposal.filterText = match[2];
 
 					return [beginProposal, endProposal];
 				}
+
 				return null;
 			},
 		});
 	}
+
 	commands.registerCommand("_css.applyCodeAction", applyCodeAction);
 
 	function applyCodeAction(
@@ -261,6 +294,7 @@ export async function startClient(
 					),
 				);
 			}
+
 			textEditor
 				.edit((mutator) => {
 					for (const edit of edits) {
@@ -281,6 +315,7 @@ export async function startClient(
 				});
 		}
 	}
+
 	function updateFormatterRegistration(registration: FormatterRegistration) {
 		const formatEnabled = workspace
 			.getConfiguration()
@@ -288,6 +323,7 @@ export async function startClient(
 
 		if (!formatEnabled && registration.provider) {
 			registration.provider.dispose();
+
 			registration.provider = undefined;
 		} else if (formatEnabled && !registration.provider) {
 			registration.provider =
@@ -351,6 +387,7 @@ export async function startClient(
 									}
 								}
 							}
+
 							return client
 								.sendRequest(
 									DocumentRangeFormattingRequest.type,
@@ -375,5 +412,6 @@ export async function startClient(
 				);
 		}
 	}
+
 	return client;
 }

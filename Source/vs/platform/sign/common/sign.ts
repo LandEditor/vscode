@@ -10,11 +10,15 @@ export const ISignService = createDecorator<ISignService>(SIGN_SERVICE_ID);
 
 export interface IMessage {
 	id: string;
+
 	data: string;
 }
 export interface ISignService {
 	readonly _serviceBrand: undefined;
+
 	createNewMessage(value: string): Promise<IMessage>;
+
 	validate(message: IMessage, value: string): Promise<boolean>;
+
 	sign(value: string): Promise<string>;
 }

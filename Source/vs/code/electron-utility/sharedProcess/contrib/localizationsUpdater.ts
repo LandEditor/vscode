@@ -12,8 +12,10 @@ export class LocalizationsUpdater extends Disposable {
 		private readonly localizationsService: NativeLanguagePackService,
 	) {
 		super();
+
 		this.updateLocalizations();
 	}
+
 	private updateLocalizations(): void {
 		this.localizationsService.update();
 	}

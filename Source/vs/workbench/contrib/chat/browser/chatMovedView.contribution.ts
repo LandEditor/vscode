@@ -65,8 +65,10 @@ export class MoveChatViewContribution
 	implements IWorkbenchContribution
 {
 	static readonly ID = "workbench.contrib.chatMovedViewWelcomeView";
+
 	private static readonly hideMovedChatWelcomeViewStorageKey =
 		"workbench.chat.hideMovedChatWelcomeView";
+
 	private readonly showWelcomeViewCtx =
 		ChatContextKeys.shouldShowMovedViewWelcome.bindTo(
 			this.contextKeyService,
@@ -93,8 +95,10 @@ export class MoveChatViewContribution
 		private readonly keybindingService: IKeybindingService,
 	) {
 		super();
+
 		this.initialize();
 	}
+
 	private async initialize(): Promise<void> {
 		const hidden = this.storageService.getBoolean(
 			MoveChatViewContribution.hideMovedChatWelcomeViewStorageKey,
@@ -107,14 +111,22 @@ export class MoveChatViewContribution
 
 			return;
 		}
+
 		await this.hideViewIfCopilotIsNotInstalled();
+
 		this.updateContextKey();
+
 		this.registerListeners();
+
 		this.registerKeybindings();
+
 		this.registerCommands();
+
 		this.registerMovedChatWelcomeView();
+
 		this.hideViewIfOldViewIsMovedFromDefaultLocation();
 	}
+
 	private markViewToHide(): void {
 		this.storageService.store(
 			MoveChatViewContribution.hideMovedChatWelcomeViewStorageKey,
@@ -122,8 +134,10 @@ export class MoveChatViewContribution
 			StorageScope.APPLICATION,
 			StorageTarget.USER,
 		);
+
 		this.updateContextKey();
 	}
+
 	private async hideViewIfCopilotIsNotInstalled(): Promise<void> {
 		const extensions = await this.extensionManagementService.getInstalled();
 
@@ -138,6 +152,7 @@ export class MoveChatViewContribution
 			this.markViewToHide();
 		}
 	}
+
 	private hideViewIfOldViewIsMovedFromDefaultLocation(): void {
 		// If the chat view is not actually moved to the new view container, then we should hide the welcome view.
 		const newViewContainer =
@@ -148,6 +163,7 @@ export class MoveChatViewContribution
 		if (!newViewContainer) {
 			return;
 		}
+
 		const currentChatViewContainer =
 			this.viewDescriptorService.getViewContainerByViewId(CHAT_VIEW_ID);
 
@@ -165,6 +181,7 @@ export class MoveChatViewContribution
 		if (!oldViewContainer) {
 			return;
 		}
+
 		const oldLocation =
 			this.viewDescriptorService.getViewContainerLocation(
 				oldViewContainer,
@@ -174,14 +191,17 @@ export class MoveChatViewContribution
 			this.markViewToHide();
 		}
 	}
+
 	private updateContextKey(): void {
 		const hidden = this.storageService.getBoolean(
 			MoveChatViewContribution.hideMovedChatWelcomeViewStorageKey,
 			StorageScope.APPLICATION,
 			false,
 		);
+
 		this.showWelcomeViewCtx.set(!hidden);
 	}
+
 	private registerListeners(): void {
 		this._register(
 			this.storageService.onDidChangeValue(
@@ -191,6 +211,7 @@ export class MoveChatViewContribution
 			)(() => this.updateContextKey()),
 		);
 	}
+
 	private registerKeybindings(): void {
 		KeybindingsRegistry.registerCommandAndKeybindingRule({
 			id: CHAT_SIDEBAR_OLD_VIEW_PANEL_ID,
@@ -200,14 +221,17 @@ export class MoveChatViewContribution
 			handler: (accessor) => showChatView(accessor.get(IViewsService)),
 		});
 	}
+
 	private registerCommands(): void {
 		CommandsRegistry.registerCommand({
 			id: "_chatMovedViewWelcomeView.ok",
 			handler: async (accessor: ServicesAccessor) => {
 				showChatView(accessor.get(IViewsService));
+
 				this.markViewToHide();
 			},
 		});
+
 		CommandsRegistry.registerCommand({
 			id: "_chatMovedViewWelcomeView.restore",
 			handler: async () => {
@@ -226,6 +250,7 @@ export class MoveChatViewContribution
 
 					return;
 				}
+
 				const oldLocation =
 					this.viewDescriptorService.getViewContainerLocation(
 						oldViewContainer,
@@ -245,6 +270,7 @@ export class MoveChatViewContribution
 
 					return;
 				}
+
 				const viewContainerIds =
 					this.paneCompositePartService.getPaneCompositeIds(
 						oldLocation,
@@ -253,25 +279,31 @@ export class MoveChatViewContribution
 				const targetIndex = viewContainerIds.indexOf(
 					oldViewContainer.id,
 				);
+
 				this.viewDescriptorService.moveViewContainerToLocation(
 					newViewContainer,
 					oldLocation,
 					targetIndex,
 				);
+
 				this.viewsService.openViewContainer(newViewContainer.id, true);
+
 				this.markViewToHide();
 			},
 		});
+
 		CommandsRegistry.registerCommand({
 			id: "_chatMovedViewWelcomeView.learnMore",
 			handler: async (accessor: ServicesAccessor) => {
 				const openerService = accessor.get(IOpenerService);
+
 				openerService.open(
 					URI.parse("https://aka.ms/vscode-secondary-sidebar"),
 				);
 			},
 		});
 	}
+
 	private registerMovedChatWelcomeView(): IDisposable {
 		// This is a welcome view container intended to show up where the old chat view was positioned to inform
 		// the user that we have changed the default location and how they can move it back or use the new location.
@@ -323,6 +355,7 @@ export class MoveChatViewContribution
 				{ id: viewId },
 			]),
 		};
+
 		Registry.as<IViewsRegistry>(ViewExtensions.ViewsRegistry).registerViews(
 			[viewDescriptor],
 			viewContainer,
@@ -370,9 +403,11 @@ export class MoveChatViewContribution
 				chatViewKeybinding,
 			);
 		}
+
 		if (quicklyAccessMessage) {
 			welcomeViewMainMessage = `${welcomeViewMainMessage}\n\n${quicklyAccessMessage}`;
 		}
+
 		const okButton = `[${localize("ok", "Got it")}](command:_chatMovedViewWelcomeView.ok)`;
 
 		const restoreButton = `[${localize("restore", "Restore Old Location")}](command:_chatMovedViewWelcomeView.restore)`;
@@ -403,6 +438,7 @@ export class MoveChatViewContribution
 			),
 		});
 	}
+
 	private hasCommandCenterChat(): boolean {
 		if (
 			this.configurationService.getValue("chat.commandCenter.enabled") ===
@@ -411,6 +447,7 @@ export class MoveChatViewContribution
 		) {
 			return false;
 		}
+
 		return true;
 	}
 }

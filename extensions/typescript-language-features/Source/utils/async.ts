@@ -9,18 +9,26 @@ export interface ITask<T> {
 }
 export class Delayer<T> {
 	public defaultDelay: number;
+
 	private timeout: any; // Timer
 	private completionPromise: Promise<T | undefined> | null;
+
 	private onSuccess: ((value: T | PromiseLike<T> | undefined) => void) | null;
+
 	private task: ITask<T> | null;
 
 	constructor(defaultDelay: number) {
 		this.defaultDelay = defaultDelay;
+
 		this.timeout = null;
+
 		this.completionPromise = null;
+
 		this.onSuccess = null;
+
 		this.task = null;
 	}
+
 	public trigger(
 		task: ITask<T>,
 		delay: number = this.defaultDelay,
@@ -30,33 +38,41 @@ export class Delayer<T> {
 		if (delay >= 0) {
 			this.cancelTimeout();
 		}
+
 		if (!this.completionPromise) {
 			this.completionPromise = new Promise<T | undefined>((resolve) => {
 				this.onSuccess = resolve;
 			}).then(() => {
 				this.completionPromise = null;
+
 				this.onSuccess = null;
 
 				const result = this.task?.();
+
 				this.task = null;
 
 				return result;
 			});
 		}
+
 		if (delay >= 0 || this.timeout === null) {
 			this.timeout = setTimeout(
 				() => {
 					this.timeout = null;
+
 					this.onSuccess?.(undefined);
 				},
 				delay >= 0 ? delay : this.defaultDelay,
 			);
 		}
+
 		return this.completionPromise;
 	}
+
 	private cancelTimeout(): void {
 		if (this.timeout !== null) {
 			clearTimeout(this.timeout);
+
 			this.timeout = null;
 		}
 	}
@@ -103,19 +119,26 @@ export function setImmediate(
  */
 export class Throttler {
 	private activePromise: Promise<any> | null;
+
 	private queuedPromise: Promise<any> | null;
+
 	private queuedPromiseFactory: ITask<Promise<any>> | null;
+
 	private isDisposed = false;
 
 	constructor() {
 		this.activePromise = null;
+
 		this.queuedPromise = null;
+
 		this.queuedPromiseFactory = null;
 	}
+
 	queue<T>(promiseFactory: ITask<Promise<T>>): Promise<T> {
 		if (this.isDisposed) {
 			return Promise.reject(new Error("Throttler is disposed"));
 		}
+
 		if (this.activePromise) {
 			this.queuedPromiseFactory = promiseFactory;
 
@@ -126,36 +149,44 @@ export class Throttler {
 					if (this.isDisposed) {
 						return;
 					}
+
 					const result = this.queue(this.queuedPromiseFactory!);
+
 					this.queuedPromiseFactory = null;
 
 					return result;
 				};
+
 				this.queuedPromise = new Promise((resolve) => {
 					this.activePromise!.then(onComplete, onComplete).then(
 						resolve,
 					);
 				});
 			}
+
 			return new Promise((resolve, reject) => {
 				this.queuedPromise!.then(resolve, reject);
 			});
 		}
+
 		this.activePromise = promiseFactory();
 
 		return new Promise((resolve, reject) => {
 			this.activePromise!.then(
 				(result: T) => {
 					this.activePromise = null;
+
 					resolve(result);
 				},
 				(err: unknown) => {
 					this.activePromise = null;
+
 					reject(err);
 				},
 			);
 		});
 	}
+
 	dispose(): void {
 		this.isDisposed = true;
 	}

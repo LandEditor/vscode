@@ -9,7 +9,9 @@ import { Memento } from "vscode";
 
 interface CacheEntry {
 	etag: string;
+
 	fileName: string;
+
 	updateTime: number;
 }
 interface CacheInfo {
@@ -40,19 +42,24 @@ export class JSONSchemaCache {
 				validated[schemaUri] = { etag, fileName, updateTime };
 			}
 		}
+
 		this.cacheInfo = validated;
 	}
+
 	getETag(schemaUri: string): string | undefined {
 		return this.cacheInfo[schemaUri]?.etag;
 	}
+
 	getLastUpdatedInHours(schemaUri: string): number | undefined {
 		const updateTime = this.cacheInfo[schemaUri]?.updateTime;
 
 		if (updateTime !== undefined) {
 			return (new Date().getTime() - updateTime) / 1000 / 60 / 60;
 		}
+
 		return undefined;
 	}
+
 	async putSchema(
 		schemaUri: string,
 		etag: string,
@@ -60,6 +67,7 @@ export class JSONSchemaCache {
 	): Promise<void> {
 		try {
 			const fileName = getCacheFileName(schemaUri);
+
 			await fs.writeFile(
 				path.join(this.schemaCacheLocation, fileName),
 				schemaContent,
@@ -70,6 +78,7 @@ export class JSONSchemaCache {
 				fileName,
 				updateTime: new Date().getTime(),
 			};
+
 			this.cacheInfo[schemaUri] = entry;
 		} catch (e) {
 			delete this.cacheInfo[schemaUri];
@@ -77,6 +86,7 @@ export class JSONSchemaCache {
 			await this.updateMemento();
 		}
 	}
+
 	async getSchemaIfUpdatedSince(
 		schemaUri: string,
 		expirationDurationInHours: number,
@@ -93,8 +103,10 @@ export class JSONSchemaCache {
 				false,
 			);
 		}
+
 		return undefined;
 	}
+
 	async getSchema(
 		schemaUri: string,
 		etag: string,
@@ -109,8 +121,10 @@ export class JSONSchemaCache {
 				this.deleteSchemaFile(schemaUri, cacheEntry);
 			}
 		}
+
 		return undefined;
 	}
+
 	private async loadSchemaFile(
 		schemaUri: string,
 		cacheEntry: CacheEntry,
@@ -127,6 +141,7 @@ export class JSONSchemaCache {
 			if (isUpdated) {
 				cacheEntry.updateTime = new Date().getTime();
 			}
+
 			return content;
 		} catch (e) {
 			delete this.cacheInfo[schemaUri];
@@ -136,6 +151,7 @@ export class JSONSchemaCache {
 			await this.updateMemento();
 		}
 	}
+
 	private async deleteSchemaFile(
 		schemaUri: string,
 		cacheEntry: CacheEntry,
@@ -144,7 +160,9 @@ export class JSONSchemaCache {
 			this.schemaCacheLocation,
 			cacheEntry.fileName,
 		);
+
 		delete this.cacheInfo[schemaUri];
+
 		await this.updateMemento();
 
 		try {
@@ -157,6 +175,7 @@ export class JSONSchemaCache {
 	public getCacheInfo() {
 		return this.cacheInfo;
 	}
+
 	private async updateMemento() {
 		try {
 			await this.globalState.update(MEMENTO_KEY, this.cacheInfo);
@@ -164,6 +183,7 @@ export class JSONSchemaCache {
 			// ignore
 		}
 	}
+
 	public async clearCache(): Promise<string[]> {
 		const uris = Object.keys(this.cacheInfo);
 
@@ -181,8 +201,10 @@ export class JSONSchemaCache {
 			// ignore
 		} finally {
 			this.cacheInfo = {};
+
 			await this.updateMemento();
 		}
+
 		return uris;
 	}
 }

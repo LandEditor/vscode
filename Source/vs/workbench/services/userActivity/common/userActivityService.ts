@@ -59,13 +59,17 @@ export class UserActivityService
 	implements IUserActivityService
 {
 	declare readonly _serviceBrand: undefined;
+
 	private readonly markInactive = this._register(
 		new RunOnceScheduler(() => {
 			this.isActive = false;
+
 			this.changeEmitter.fire(false);
 		}, MARK_INACTIVE_DEBOUNCE),
 	);
+
 	private readonly changeEmitter = this._register(new Emitter<boolean>());
+
 	private active = 0;
 	/**
 	 * @inheritdoc
@@ -83,6 +87,7 @@ export class UserActivityService
 		instantiationService: IInstantiationService,
 	) {
 		super();
+
 		this._register(
 			runWhenGlobalIdle(() =>
 				userActivityRegistry.take(this, instantiationService),
@@ -93,6 +98,7 @@ export class UserActivityService
 	markActive(opts?: IMarkActiveOptions): IDisposable {
 		if (opts?.whenHeldFor) {
 			const store = new DisposableStore();
+
 			store.add(
 				disposableTimeout(
 					() => store.add(this.markActive()),
@@ -102,11 +108,15 @@ export class UserActivityService
 
 			return store;
 		}
+
 		if (++this.active === 1) {
 			this.isActive = true;
+
 			this.changeEmitter.fire(true);
+
 			this.markInactive.cancel();
 		}
+
 		return toDisposable(() => {
 			if (--this.active === 0) {
 				this.markInactive.schedule();

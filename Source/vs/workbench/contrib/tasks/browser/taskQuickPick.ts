@@ -97,6 +97,7 @@ const runTaskStorageKey = "runTaskStorageKey";
 
 export class TaskQuickPick extends Disposable {
 	private _sorter: TaskSorter;
+
 	private _topLevelEntries:
 		| QuickPickInput<ITaskTwoLevelQuickPickEntry>[]
 		| undefined;
@@ -118,32 +119,41 @@ export class TaskQuickPick extends Disposable {
 		private _storageService: IStorageService,
 	) {
 		super();
+
 		this._sorter = this._taskService.createSorter();
 	}
+
 	private _showDetail(): boolean {
 		// Ensure invalid values get converted into boolean values
 		return !!this._configurationService.getValue(QUICKOPEN_DETAIL_CONFIG);
 	}
+
 	private _guessTaskLabel(task: Task | ConfiguringTask): string {
 		if (task._label) {
 			return task._label;
 		}
+
 		if (ConfiguringTask.is(task)) {
 			let label: string = task.configures.type;
 
 			const configures: Partial<KeyedTaskIdentifier> = Objects.deepClone(
 				task.configures,
 			);
+
 			delete configures["_key"];
+
 			delete configures["type"];
+
 			Object.keys(configures).forEach(
 				(key) => (label += `: ${configures[key]}`),
 			);
 
 			return label;
 		}
+
 		return "";
 	}
+
 	public static getTaskLabelWithIcon(
 		task: Task | ConfiguringTask,
 		labelGuess?: string,
@@ -155,10 +165,12 @@ export class TaskQuickPick extends Disposable {
 		if (!icon) {
 			return `${label}`;
 		}
+
 		return icon.id
 			? `$(${icon.id}) ${label}`
 			: `$(${Codicon.tools.id}) ${label}`;
 	}
+
 	public static applyColorStyles(
 		task: Task | ConfiguringTask,
 		entry: TaskQuickPickEntryType | ITaskTwoLevelQuickPickEntry,
@@ -168,14 +180,17 @@ export class TaskQuickPick extends Disposable {
 			const colorTheme = themeService.getColorTheme();
 
 			const disposable = createColorStyleElement(colorTheme);
+
 			entry.iconClasses = [
 				getColorClass(task.configurationProperties.icon.color),
 			];
 
 			return disposable;
 		}
+
 		return;
 	}
+
 	private _createTaskEntry(
 		task: Task | ConfiguringTask,
 		extraButtons: IQuickInputButton[] = [],
@@ -210,8 +225,10 @@ export class TaskQuickPick extends Disposable {
 		if (disposable) {
 			this._register(disposable);
 		}
+
 		return entry;
 	}
+
 	private _createEntriesForGroup(
 		entries: QuickPickInput<ITaskTwoLevelQuickPickEntry>[],
 		tasks: (Task | ConfiguringTask)[],
@@ -219,12 +236,14 @@ export class TaskQuickPick extends Disposable {
 		extraButtons: IQuickInputButton[] = [],
 	) {
 		entries.push({ type: "separator", label: groupLabel });
+
 		tasks.forEach((task) => {
 			if (!task.configurationProperties.hide) {
 				entries.push(this._createTaskEntry(task, extraButtons));
 			}
 		});
 	}
+
 	private _createTypeEntries(
 		entries: QuickPickInput<ITaskTwoLevelQuickPickEntry>[],
 		types: string[],
@@ -233,6 +252,7 @@ export class TaskQuickPick extends Disposable {
 			type: "separator",
 			label: nls.localize("contributedTasks", "contributed"),
 		});
+
 		types.forEach((type) => {
 			entries.push({
 				label: `$(folder) ${type}`,
@@ -240,16 +260,20 @@ export class TaskQuickPick extends Disposable {
 				ariaLabel: nls.localize("taskType", "All {0} tasks", type),
 			});
 		});
+
 		entries.push({ label: SHOW_ALL, task: SHOW_ALL, alwaysShow: true });
 	}
+
 	private _handleFolderTaskResult(
 		result: Map<string, IWorkspaceFolderTaskResult>,
 	): (Task | ConfiguringTask)[] {
 		const tasks: (Task | ConfiguringTask)[] = [];
+
 		Array.from(result).forEach(([key, folderTasks]) => {
 			if (folderTasks.set) {
 				tasks.push(...folderTasks.set.tasks);
 			}
+
 			if (folderTasks.configurations) {
 				for (const configuration in folderTasks.configurations
 					.byIdentifier) {
@@ -262,11 +286,13 @@ export class TaskQuickPick extends Disposable {
 
 		return tasks;
 	}
+
 	private _dedupeConfiguredAndRecent(
 		recentTasks: (Task | ConfiguringTask)[],
 		configuredTasks: (Task | ConfiguringTask)[],
 	): {
 		configuredTasks: (Task | ConfiguringTask)[];
+
 		recentTasks: (Task | ConfiguringTask)[];
 	} {
 		let dedupedConfiguredTasks: (Task | ConfiguringTask)[] = [];
@@ -304,9 +330,11 @@ export class TaskQuickPick extends Disposable {
 				dedupedConfiguredTasks.push(configuredTasks[j]);
 			} else {
 				recentTasks[findIndex] = configuredTasks[j];
+
 				foundRecentTasks[findIndex] = true;
 			}
 		}
+
 		dedupedConfiguredTasks = dedupedConfiguredTasks.sort((a, b) =>
 			this._sorter.compare(a, b),
 		);
@@ -318,20 +346,24 @@ export class TaskQuickPick extends Disposable {
 				prunedRecentTasks.push(recentTasks[i]);
 			}
 		}
+
 		return {
 			configuredTasks: dedupedConfiguredTasks,
 			recentTasks: prunedRecentTasks,
 		};
 	}
+
 	public async getTopLevelEntries(
 		defaultEntry?: ITaskQuickPickEntry,
 	): Promise<{
 		entries: QuickPickInput<ITaskTwoLevelQuickPickEntry>[];
+
 		isSingleConfigured?: Task | ConfiguringTask;
 	}> {
 		if (this._topLevelEntries !== undefined) {
 			return { entries: this._topLevelEntries };
 		}
+
 		let recentTasks: (Task | ConfiguringTask)[] = (
 			await this._taskService.getSavedTasks("historical")
 		).reverse();
@@ -342,6 +374,7 @@ export class TaskQuickPick extends Disposable {
 			);
 
 		const extensionTaskTypes = this._taskService.taskTypes();
+
 		this._topLevelEntries = [];
 		// Dedupe will update recent tasks if they've changed in tasks.json.
 		const dedupeAndPrune = this._dedupeConfiguredAndRecent(
@@ -351,6 +384,7 @@ export class TaskQuickPick extends Disposable {
 
 		const dedupedConfiguredTasks: (Task | ConfiguringTask)[] =
 			dedupeAndPrune.configuredTasks;
+
 		recentTasks = dedupeAndPrune.recentTasks;
 
 		if (recentTasks.length > 0) {
@@ -361,6 +395,7 @@ export class TaskQuickPick extends Disposable {
 					"Remove Recently Used Task",
 				),
 			};
+
 			this._createEntriesForGroup(
 				this._topLevelEntries,
 				recentTasks,
@@ -368,6 +403,7 @@ export class TaskQuickPick extends Disposable {
 				[removeRecentButton],
 			);
 		}
+
 		if (configuredTasks.length > 0) {
 			if (dedupedConfiguredTasks.length > 0) {
 				this._createEntriesForGroup(
@@ -377,22 +413,27 @@ export class TaskQuickPick extends Disposable {
 				);
 			}
 		}
+
 		if (defaultEntry && configuredTasks.length === 0) {
 			this._topLevelEntries.push({
 				type: "separator",
 				label: nls.localize("configured", "configured"),
 			});
+
 			this._topLevelEntries.push(defaultEntry);
 		}
+
 		if (extensionTaskTypes.length > 0) {
 			this._createTypeEntries(this._topLevelEntries, extensionTaskTypes);
 		}
+
 		return {
 			entries: this._topLevelEntries,
 			isSingleConfigured:
 				configuredTasks.length === 1 ? configuredTasks[0] : undefined,
 		};
 	}
+
 	public async handleSettingOption(selectedType: string) {
 		const { confirmed } = await this._dialogService.confirm({
 			type: Severity.Warning,
@@ -409,6 +450,7 @@ export class TaskQuickPick extends Disposable {
 				`${selectedType}.autoDetect`,
 				"on",
 			);
+
 			await new Promise<void>((resolve) =>
 				setTimeout(() => resolve(), 100),
 			);
@@ -422,8 +464,10 @@ export class TaskQuickPick extends Disposable {
 				selectedType,
 			);
 		}
+
 		return undefined;
 	}
+
 	public async show(
 		placeHolder: string,
 		defaultEntry?: ITaskQuickPickEntry,
@@ -437,9 +481,13 @@ export class TaskQuickPick extends Disposable {
 				{ useSeparators: true },
 			),
 		);
+
 		picker.placeholder = placeHolder;
+
 		picker.matchOnDescription = true;
+
 		picker.ignoreFocusOut = false;
+
 		disposables.add(
 			picker.onDidTriggerItemButton(async (context) => {
 				const task = context.item.task;
@@ -456,6 +504,7 @@ export class TaskQuickPick extends Disposable {
 					if (key) {
 						this._taskService.removeRecentlyUsedTask(key);
 					}
+
 					const indexToRemove = picker.items.indexOf(context.item);
 
 					if (indexToRemove >= 0) {
@@ -484,6 +533,7 @@ export class TaskQuickPick extends Disposable {
 						} catch (e) {
 							// do nothing.
 						}
+
 						if (!canOpenConfig) {
 							this._taskService.customize(task, undefined, true);
 						}
@@ -495,6 +545,7 @@ export class TaskQuickPick extends Disposable {
 		if (name) {
 			picker.value = name;
 		}
+
 		let firstLevelTask: Task | ConfiguringTask | string | undefined | null =
 			startAtType;
 
@@ -513,14 +564,17 @@ export class TaskQuickPick extends Disposable {
 
 				return this._toTask(topLevelEntriesResult.isSingleConfigured);
 			}
+
 			const taskQuickPickEntries: QuickPickInput<ITaskTwoLevelQuickPickEntry>[] =
 				topLevelEntriesResult.entries;
+
 			firstLevelTask = await this._doPickerFirstLevel(
 				picker,
 				taskQuickPickEntries,
 				disposables,
 			);
 		}
+
 		do {
 			if (Types.isString(firstLevelTask)) {
 				if (name) {
@@ -529,10 +583,12 @@ export class TaskQuickPick extends Disposable {
 						(await this.getTopLevelEntries(defaultEntry)).entries,
 						disposables,
 					);
+
 					disposables.dispose();
 
 					return undefined;
 				}
+
 				const selectedEntry = await this.doPickerSecondLevel(
 					picker,
 					disposables,
@@ -546,6 +602,7 @@ export class TaskQuickPick extends Disposable {
 				) {
 					// The user has chosen to go back to the first level
 					picker.value = "";
+
 					firstLevelTask = await this._doPickerFirstLevel(
 						picker,
 						(await this.getTopLevelEntries(defaultEntry)).entries,
@@ -579,6 +636,7 @@ export class TaskQuickPick extends Disposable {
 
 		return;
 	}
+
 	private async _doPickerFirstLevel(
 		picker: IQuickPick<
 			ITaskTwoLevelQuickPickEntry,
@@ -590,6 +648,7 @@ export class TaskQuickPick extends Disposable {
 		disposables: DisposableStore,
 	): Promise<Task | ConfiguringTask | string | null | undefined> {
 		picker.items = taskQuickPickEntries;
+
 		disposables.add(
 			showWithPinnedItems(
 				this._storageService,
@@ -615,6 +674,7 @@ export class TaskQuickPick extends Disposable {
 
 		return firstLevelPickerResult?.task;
 	}
+
 	public async doPickerSecondLevel(
 		picker: IQuickPick<
 			ITaskTwoLevelQuickPickEntry,
@@ -633,15 +693,20 @@ export class TaskQuickPick extends Disposable {
 				.filter((t) => !t.configurationProperties.hide)
 				.sort((a, b) => this._sorter.compare(a, b))
 				.map((task) => this._createTaskEntry(task));
+
 			items.push(
 				...TaskQuickPick.allSettingEntries(this._configurationService),
 			);
+
 			picker.items = items;
 		} else {
 			picker.value = name || "";
+
 			picker.items = await this._getEntriesForProvider(type);
 		}
+
 		await picker.show();
+
 		picker.busy = false;
 
 		const secondLevelPickerResult = await new Promise<
@@ -660,6 +725,7 @@ export class TaskQuickPick extends Disposable {
 
 		return secondLevelPickerResult;
 	}
+
 	public static allSettingEntries(
 		configurationService: IConfigurationService,
 	): (ITaskTwoLevelQuickPickEntry & {
@@ -677,6 +743,7 @@ export class TaskQuickPick extends Disposable {
 		if (gruntEntry) {
 			entries.push(gruntEntry);
 		}
+
 		const gulpEntry = TaskQuickPick.getSettingEntry(
 			configurationService,
 			"gulp",
@@ -685,6 +752,7 @@ export class TaskQuickPick extends Disposable {
 		if (gulpEntry) {
 			entries.push(gulpEntry);
 		}
+
 		const jakeEntry = TaskQuickPick.getSettingEntry(
 			configurationService,
 			"jake",
@@ -693,8 +761,10 @@ export class TaskQuickPick extends Disposable {
 		if (jakeEntry) {
 			entries.push(jakeEntry);
 		}
+
 		return entries;
 	}
+
 	public static getSettingEntry(
 		configurationService: IConfigurationService,
 		type: string,
@@ -716,8 +786,10 @@ export class TaskQuickPick extends Disposable {
 				alwaysShow: true,
 			};
 		}
+
 		return undefined;
 	}
+
 	private async _getEntriesForProvider(
 		type: string,
 	): Promise<QuickPickInput<ITaskTwoLevelQuickPickEntry>[]> {
@@ -734,6 +806,7 @@ export class TaskQuickPick extends Disposable {
 					taskQuickPickEntries.push(this._createTaskEntry(task));
 				}
 			}
+
 			taskQuickPickEntries.push(
 				{
 					type: "separator",
@@ -757,6 +830,7 @@ export class TaskQuickPick extends Disposable {
 				},
 			];
 		}
+
 		const settingEntry = TaskQuickPick.getSettingEntry(
 			this._configurationService,
 			type,
@@ -765,14 +839,17 @@ export class TaskQuickPick extends Disposable {
 		if (settingEntry) {
 			taskQuickPickEntries.push(settingEntry);
 		}
+
 		return taskQuickPickEntries;
 	}
+
 	private async _toTask(
 		task: Task | ConfiguringTask,
 	): Promise<Task | undefined> {
 		if (!ConfiguringTask.is(task)) {
 			return task;
 		}
+
 		const resolvedTask = await this._taskService.tryResolveTask(task);
 
 		if (!resolvedTask) {
@@ -784,6 +861,7 @@ export class TaskQuickPick extends Disposable {
 				),
 			);
 		}
+
 		return resolvedTask;
 	}
 }

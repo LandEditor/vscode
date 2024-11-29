@@ -85,16 +85,22 @@ import { ToggleAuxiliaryBarAction } from "./auxiliaryBarActions.js";
 export class AuxiliaryBarPart extends AbstractPaneCompositePart {
 	static readonly activePanelSettingsKey =
 		"workbench.auxiliarybar.activepanelid";
+
 	static readonly pinnedPanelsKey = "workbench.auxiliarybar.pinnedPanels";
+
 	static readonly placeholdeViewContainersKey =
 		"workbench.auxiliarybar.placeholderPanels";
+
 	static readonly viewContainersWorkspaceStateKey =
 		"workbench.auxiliarybar.viewContainersWorkspaceState";
 
 	// Use the side bar dimensions
 	override readonly minimumWidth: number = 170;
+
 	override readonly maximumWidth: number = Number.POSITIVE_INFINITY;
+
 	override readonly minimumHeight: number = 0;
+
 	override readonly maximumHeight: number = Number.POSITIVE_INFINITY;
 
 	get preferredHeight(): number | undefined {
@@ -193,6 +199,7 @@ export class AuxiliaryBarPart extends AbstractPaneCompositePart {
 		super.updateStyles();
 
 		const container = assertIsDefined(this.getContainer());
+
 		container.style.backgroundColor =
 			this.getColor(SIDE_BAR_BACKGROUND) || "";
 
@@ -205,15 +212,18 @@ export class AuxiliaryBarPart extends AbstractPaneCompositePart {
 		container.style.color = this.getColor(SIDE_BAR_FOREGROUND) || "";
 
 		container.style.borderLeftColor = borderColor ?? "";
+
 		container.style.borderRightColor = borderColor ?? "";
 
 		container.style.borderLeftStyle =
 			borderColor && !isPositionLeft ? "solid" : "none";
+
 		container.style.borderRightStyle =
 			borderColor && isPositionLeft ? "solid" : "none";
 
 		container.style.borderLeftWidth =
 			borderColor && !isPositionLeft ? "1px" : "0px";
+
 		container.style.borderRightWidth =
 			borderColor && isPositionLeft ? "1px" : "0px";
 	}
@@ -292,6 +302,7 @@ export class AuxiliaryBarPart extends AbstractPaneCompositePart {
 
 			if (viewsSubmenuAction) {
 				actions.push(new Separator());
+
 				actions.push(viewsSubmenuAction);
 			}
 		}
@@ -409,6 +420,7 @@ export class AuxiliaryBarPart extends AbstractPaneCompositePart {
 		);
 
 		toolBar.setActions(prepareActions(menu.getPrimaryActions()));
+
 		this.headerFooterCompositeBarDispoables.add(
 			menu.onDidChange(() =>
 				toolBar.setActions(prepareActions(menu.getPrimaryActions())),

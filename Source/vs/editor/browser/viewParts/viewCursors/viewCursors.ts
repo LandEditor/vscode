@@ -49,61 +49,102 @@ import {
  */
 export class ViewCursors extends ViewPart {
 	static readonly BLINK_INTERVAL = 500;
+
 	private _readOnly: boolean;
+
 	private _cursorBlinking: TextEditorCursorBlinkingStyle;
+
 	private _cursorStyle: TextEditorCursorStyle;
+
 	private _cursorSmoothCaretAnimation: "off" | "explicit" | "on";
+
 	private _experimentalEditContextEnabled: boolean;
+
 	private _selectionIsEmpty: boolean;
+
 	private _isComposingInput: boolean;
+
 	private _isVisible: boolean;
+
 	private readonly _domNode: FastDomNode<HTMLElement>;
+
 	private readonly _startCursorBlinkAnimation: TimeoutTimer;
+
 	private readonly _cursorFlatBlinkInterval: IntervalTimer;
+
 	private _blinkingEnabled: boolean;
+
 	private _editorHasFocus: boolean;
+
 	private readonly _primaryCursor: ViewCursor;
+
 	private readonly _secondaryCursors: ViewCursor[];
+
 	private _renderData: IViewCursorRenderData[];
 
 	constructor(context: ViewContext) {
 		super(context);
 
 		const options = this._context.configuration.options;
+
 		this._readOnly = options.get(EditorOption.readOnly);
+
 		this._cursorBlinking = options.get(EditorOption.cursorBlinking);
+
 		this._cursorStyle = options.get(EditorOption.cursorStyle);
+
 		this._cursorSmoothCaretAnimation = options.get(
 			EditorOption.cursorSmoothCaretAnimation,
 		);
+
 		this._experimentalEditContextEnabled = options.get(
 			EditorOption.experimentalEditContextEnabled,
 		);
+
 		this._selectionIsEmpty = true;
+
 		this._isComposingInput = false;
+
 		this._isVisible = false;
+
 		this._primaryCursor = new ViewCursor(
 			this._context,
 			CursorPlurality.Single,
 		);
+
 		this._secondaryCursors = [];
+
 		this._renderData = [];
+
 		this._domNode = createFastDomNode(document.createElement("div"));
+
 		this._domNode.setAttribute("role", "presentation");
+
 		this._domNode.setAttribute("aria-hidden", "true");
+
 		this._updateDomClassName();
+
 		this._domNode.appendChild(this._primaryCursor.getDomNode());
+
 		this._startCursorBlinkAnimation = new TimeoutTimer();
+
 		this._cursorFlatBlinkInterval = new WindowIntervalTimer();
+
 		this._blinkingEnabled = false;
+
 		this._editorHasFocus = false;
+
 		this._updateBlinking();
 	}
+
 	public override dispose(): void {
 		super.dispose();
+
 		this._startCursorBlinkAnimation.dispose();
+
 		this._cursorFlatBlinkInterval.dispose();
 	}
+
 	public getDomNode(): FastDomNode<HTMLElement> {
 		return this._domNode;
 	}
@@ -112,40 +153,54 @@ export class ViewCursors extends ViewPart {
 		e: viewEvents.ViewCompositionStartEvent,
 	): boolean {
 		this._isComposingInput = true;
+
 		this._updateBlinking();
 
 		return true;
 	}
+
 	public override onCompositionEnd(
 		e: viewEvents.ViewCompositionEndEvent,
 	): boolean {
 		this._isComposingInput = false;
+
 		this._updateBlinking();
 
 		return true;
 	}
+
 	public override onConfigurationChanged(
 		e: viewEvents.ViewConfigurationChangedEvent,
 	): boolean {
 		const options = this._context.configuration.options;
+
 		this._readOnly = options.get(EditorOption.readOnly);
+
 		this._cursorBlinking = options.get(EditorOption.cursorBlinking);
+
 		this._cursorStyle = options.get(EditorOption.cursorStyle);
+
 		this._cursorSmoothCaretAnimation = options.get(
 			EditorOption.cursorSmoothCaretAnimation,
 		);
+
 		this._experimentalEditContextEnabled = options.get(
 			EditorOption.experimentalEditContextEnabled,
 		);
+
 		this._updateBlinking();
+
 		this._updateDomClassName();
+
 		this._primaryCursor.onConfigurationChanged(e);
 
 		for (let i = 0, len = this._secondaryCursors.length; i < len; i++) {
 			this._secondaryCursors[i].onConfigurationChanged(e);
 		}
+
 		return true;
 	}
+
 	private _onCursorPositionChanged(
 		position: Position,
 		secondaryPositions: Position[],
@@ -155,12 +210,15 @@ export class ViewCursors extends ViewPart {
 			this._secondaryCursors.length !== secondaryPositions.length ||
 			(this._cursorSmoothCaretAnimation === "explicit" &&
 				reason !== CursorChangeReason.Explicit);
+
 		this._primaryCursor.setPlurality(
 			secondaryPositions.length
 				? CursorPlurality.MultiPrimary
 				: CursorPlurality.Single,
 		);
+
 		this._primaryCursor.onCursorPositionChanged(position, pauseAnimation);
+
 		this._updateBlinking();
 
 		if (this._secondaryCursors.length < secondaryPositions.length) {
@@ -173,10 +231,12 @@ export class ViewCursors extends ViewPart {
 					this._context,
 					CursorPlurality.MultiSecondary,
 				);
+
 				this._domNode.domNode.insertBefore(
 					newCursor.getDomNode().domNode,
 					this._primaryCursor.getDomNode().domNode.nextSibling,
 				);
+
 				this._secondaryCursors.push(newCursor);
 			}
 		} else if (this._secondaryCursors.length > secondaryPositions.length) {
@@ -188,9 +248,11 @@ export class ViewCursors extends ViewPart {
 				this._domNode.removeChild(
 					this._secondaryCursors[0].getDomNode(),
 				);
+
 				this._secondaryCursors.splice(0, 1);
 			}
 		}
+
 		for (let i = 0; i < secondaryPositions.length; i++) {
 			this._secondaryCursors[i].onCursorPositionChanged(
 				secondaryPositions[i],
@@ -198,6 +260,7 @@ export class ViewCursors extends ViewPart {
 			);
 		}
 	}
+
 	public override onCursorStateChanged(
 		e: viewEvents.ViewCursorStateChangedEvent,
 	): boolean {
@@ -206,6 +269,7 @@ export class ViewCursors extends ViewPart {
 		for (let i = 0, len = e.selections.length; i < len; i++) {
 			positions[i] = e.selections[i].getPosition();
 		}
+
 		this._onCursorPositionChanged(
 			positions[0],
 			positions.slice(1),
@@ -216,47 +280,58 @@ export class ViewCursors extends ViewPart {
 
 		if (this._selectionIsEmpty !== selectionIsEmpty) {
 			this._selectionIsEmpty = selectionIsEmpty;
+
 			this._updateDomClassName();
 		}
+
 		return true;
 	}
+
 	public override onDecorationsChanged(
 		e: viewEvents.ViewDecorationsChangedEvent,
 	): boolean {
 		// true for inline decorations that can end up relayouting text
 		return true;
 	}
+
 	public override onFlushed(e: viewEvents.ViewFlushedEvent): boolean {
 		return true;
 	}
+
 	public override onFocusChanged(
 		e: viewEvents.ViewFocusChangedEvent,
 	): boolean {
 		this._editorHasFocus = e.isFocused;
+
 		this._updateBlinking();
 
 		return false;
 	}
+
 	public override onLinesChanged(
 		e: viewEvents.ViewLinesChangedEvent,
 	): boolean {
 		return true;
 	}
+
 	public override onLinesDeleted(
 		e: viewEvents.ViewLinesDeletedEvent,
 	): boolean {
 		return true;
 	}
+
 	public override onLinesInserted(
 		e: viewEvents.ViewLinesInsertedEvent,
 	): boolean {
 		return true;
 	}
+
 	public override onScrollChanged(
 		e: viewEvents.ViewScrollChangedEvent,
 	): boolean {
 		return true;
 	}
+
 	public override onTokensChanged(
 		e: viewEvents.ViewTokensChangedEvent,
 	): boolean {
@@ -269,19 +344,23 @@ export class ViewCursors extends ViewPart {
 					return true;
 				}
 			}
+
 			return false;
 		};
 
 		if (shouldRender(this._primaryCursor.getPosition())) {
 			return true;
 		}
+
 		for (const secondaryCursor of this._secondaryCursors) {
 			if (shouldRender(secondaryCursor.getPosition())) {
 				return true;
 			}
 		}
+
 		return false;
 	}
+
 	public override onZonesChanged(
 		e: viewEvents.ViewZonesChangedEvent,
 	): boolean {
@@ -295,16 +374,21 @@ export class ViewCursors extends ViewPart {
 			// avoid double cursors
 			return TextEditorCursorBlinkingStyle.Hidden;
 		}
+
 		if (!this._editorHasFocus) {
 			return TextEditorCursorBlinkingStyle.Hidden;
 		}
+
 		if (this._readOnly) {
 			return TextEditorCursorBlinkingStyle.Solid;
 		}
+
 		return this._cursorBlinking;
 	}
+
 	private _updateBlinking(): void {
 		this._startCursorBlinkAnimation.cancel();
+
 		this._cursorFlatBlinkInterval.cancel();
 
 		const blinkingStyle = this._getCursorBlinking();
@@ -318,7 +402,9 @@ export class ViewCursors extends ViewPart {
 		} else {
 			this._show();
 		}
+
 		this._blinkingEnabled = false;
+
 		this._updateDomClassName();
 
 		if (!isHidden && !isSolid) {
@@ -338,6 +424,7 @@ export class ViewCursors extends ViewPart {
 			} else {
 				this._startCursorBlinkAnimation.setIfNotSet(() => {
 					this._blinkingEnabled = true;
+
 					this._updateDomClassName();
 				}, ViewCursors.BLINK_INTERVAL);
 			}
@@ -347,12 +434,14 @@ export class ViewCursors extends ViewPart {
 	private _updateDomClassName(): void {
 		this._domNode.setClassName(this._getClassName());
 	}
+
 	private _getClassName(): string {
 		let result = "cursors-layer";
 
 		if (!this._selectionIsEmpty) {
 			result += " has-selection";
 		}
+
 		switch (this._cursorStyle) {
 			case TextEditorCursorStyle.Line:
 				result += " cursor-line-style";
@@ -387,6 +476,7 @@ export class ViewCursors extends ViewPart {
 			default:
 				result += " cursor-line-style";
 		}
+
 		if (this._blinkingEnabled) {
 			switch (this._getCursorBlinking()) {
 				case TextEditorCursorBlinkingStyle.Blink:
@@ -420,28 +510,34 @@ export class ViewCursors extends ViewPart {
 		} else {
 			result += " cursor-solid";
 		}
+
 		if (
 			this._cursorSmoothCaretAnimation === "on" ||
 			this._cursorSmoothCaretAnimation === "explicit"
 		) {
 			result += " cursor-smooth-caret-animation";
 		}
+
 		return result;
 	}
+
 	private _show(): void {
 		this._primaryCursor.show();
 
 		for (let i = 0, len = this._secondaryCursors.length; i < len; i++) {
 			this._secondaryCursors[i].show();
 		}
+
 		this._isVisible = true;
 	}
+
 	private _hide(): void {
 		this._primaryCursor.hide();
 
 		for (let i = 0, len = this._secondaryCursors.length; i < len; i++) {
 			this._secondaryCursors[i].hide();
 		}
+
 		this._isVisible = false;
 	}
 	// ---- IViewPart implementation
@@ -452,6 +548,7 @@ export class ViewCursors extends ViewPart {
 			this._secondaryCursors[i].prepareRender(ctx);
 		}
 	}
+
 	public render(ctx: RestrictedRenderingContext): void {
 		const renderData: IViewCursorRenderData[] = [];
 
@@ -462,6 +559,7 @@ export class ViewCursors extends ViewPart {
 		if (primaryRenderData) {
 			renderData[renderDataLen++] = primaryRenderData;
 		}
+
 		for (let i = 0, len = this._secondaryCursors.length; i < len; i++) {
 			const secondaryRenderData = this._secondaryCursors[i].render(ctx);
 
@@ -469,8 +567,10 @@ export class ViewCursors extends ViewPart {
 				renderData[renderDataLen++] = secondaryRenderData;
 			}
 		}
+
 		this._renderData = renderData;
 	}
+
 	public getLastRenderData(): IViewCursorRenderData[] {
 		return this._renderData;
 	}
@@ -478,6 +578,7 @@ export class ViewCursors extends ViewPart {
 registerThemingParticipant((theme, collector) => {
 	type CursorTheme = {
 		foreground: string;
+
 		background: string;
 
 		class: string;
@@ -510,6 +611,7 @@ registerThemingParticipant((theme, collector) => {
 			if (!caretBackground) {
 				caretBackground = caret.opposite();
 			}
+
 			collector.addRule(
 				`.monaco-editor .cursors-layer ${cursorTheme.class} { background-color: ${caret}; border-color: ${caret}; color: ${caretBackground}; }`,
 			);

@@ -35,19 +35,25 @@ import { FileChangeType } from "./extHostTypes.js";
 
 class FsLinkProvider {
 	private _schemes: string[] = [];
+
 	private _stateMachine?: StateMachine;
+
 	add(scheme: string): void {
 		this._stateMachine = undefined;
+
 		this._schemes.push(scheme);
 	}
+
 	delete(scheme: string): void {
 		const idx = this._schemes.indexOf(scheme);
 
 		if (idx >= 0) {
 			this._schemes.splice(idx, 1);
+
 			this._stateMachine = undefined;
 		}
 	}
+
 	private _initStateMachine(): void {
 		if (!this._stateMachine) {
 			// sort and compute common prefix with previous scheme
@@ -76,38 +82,47 @@ class FsLinkProvider {
 				} else {
 					prevState = nextState;
 				}
+
 				for (; pos < scheme.length; pos++) {
 					// keep creating new (next) states until the
 					// end (and the BeforeColon-state) is reached
 					if (pos + 1 === scheme.length) {
 						// Save the last state here, because we need to continue for the next scheme
 						lastState = nextState;
+
 						nextState = State.BeforeColon;
 					} else {
 						nextState += 1;
 					}
+
 					edges.push([
 						prevState,
 						scheme.toUpperCase().charCodeAt(pos),
 						nextState,
 					]);
+
 					edges.push([
 						prevState,
 						scheme.toLowerCase().charCodeAt(pos),
 						nextState,
 					]);
+
 					prevState = nextState;
 				}
+
 				prevScheme = scheme;
 				// Restore the last state
 				nextState = lastState;
 			}
 			// all link must match this pattern `<scheme>:/<more>`
 			edges.push([State.BeforeColon, CharCode.Colon, State.AfterColon]);
+
 			edges.push([State.AfterColon, CharCode.Slash, State.End]);
+
 			this._stateMachine = new StateMachine(edges);
 		}
 	}
+
 	provideDocumentLinks(
 		document: vscode.TextDocument,
 	): vscode.ProviderResult<vscode.DocumentLink[]> {
@@ -134,16 +149,23 @@ class FsLinkProvider {
 				result.push(docLink);
 			}
 		}
+
 		return result;
 	}
 }
 export class ExtHostFileSystem implements ExtHostFileSystemShape {
 	private readonly _proxy: MainThreadFileSystemShape;
+
 	private readonly _linkProvider = new FsLinkProvider();
+
 	private readonly _fsProvider = new Map<number, vscode.FileSystemProvider>();
+
 	private readonly _registeredSchemes = new Set<string>();
+
 	private readonly _watches = new Map<number, IDisposable>();
+
 	private _linkProviderRegistration?: IDisposable;
+
 	private _handlePool: number = 0;
 
 	constructor(
@@ -152,15 +174,18 @@ export class ExtHostFileSystem implements ExtHostFileSystemShape {
 	) {
 		this._proxy = mainContext.getProxy(MainContext.MainThreadFileSystem);
 	}
+
 	dispose(): void {
 		this._linkProviderRegistration?.dispose();
 	}
+
 	registerFileSystemProvider(
 		extension: IExtensionDescription,
 		scheme: string,
 		provider: vscode.FileSystemProvider,
 		options: {
 			isCaseSensitive?: boolean;
+
 			isReadonly?: boolean | vscode.MarkdownString;
 		} = {},
 	) {
@@ -181,9 +206,13 @@ export class ExtHostFileSystem implements ExtHostFileSystemShape {
 					this._linkProvider,
 				);
 		}
+
 		const handle = this._handlePool++;
+
 		this._linkProvider.add(scheme);
+
 		this._registeredSchemes.add(scheme);
+
 		this._fsProvider.set(handle, provider);
 
 		let capabilities = files.FileSystemProviderCapabilities.FileReadWrite;
@@ -192,12 +221,15 @@ export class ExtHostFileSystem implements ExtHostFileSystemShape {
 			capabilities +=
 				files.FileSystemProviderCapabilities.PathCaseSensitive;
 		}
+
 		if (options.isReadonly) {
 			capabilities += files.FileSystemProviderCapabilities.Readonly;
 		}
+
 		if (typeof provider.copy === "function") {
 			capabilities += files.FileSystemProviderCapabilities.FileFolderCopy;
 		}
+
 		if (
 			typeof provider.open === "function" &&
 			typeof provider.close === "function" &&
@@ -205,9 +237,11 @@ export class ExtHostFileSystem implements ExtHostFileSystemShape {
 			typeof provider.write === "function"
 		) {
 			checkProposedApiEnabled(extension, "fsChunks");
+
 			capabilities +=
 				files.FileSystemProviderCapabilities.FileOpenReadWriteClose;
 		}
+
 		let readOnlyMessage: IMarkdownString | undefined;
 
 		if (
@@ -224,6 +258,7 @@ export class ExtHostFileSystem implements ExtHostFileSystemShape {
 				uris: options.isReadonly.uris,
 			};
 		}
+
 		this._proxy
 			.$registerFileSystemProvider(
 				handle,
@@ -235,6 +270,7 @@ export class ExtHostFileSystem implements ExtHostFileSystemShape {
 				console.error(
 					`FAILED to register filesystem provider of ${extension.identifier.value}-extension for the scheme ${scheme}`,
 				);
+
 				console.error(err);
 			});
 
@@ -248,6 +284,7 @@ export class ExtHostFileSystem implements ExtHostFileSystemShape {
 					// dropping events for wrong scheme
 					continue;
 				}
+
 				let newType: files.FileChangeType | undefined;
 
 				switch (type) {
@@ -269,50 +306,66 @@ export class ExtHostFileSystem implements ExtHostFileSystemShape {
 					default:
 						throw new Error("Unknown FileChangeType");
 				}
+
 				mapped.push({ resource, type: newType });
 			}
+
 			this._proxy.$onFileSystemChange(handle, mapped);
 		});
 
 		return toDisposable(() => {
 			subscription.dispose();
+
 			this._linkProvider.delete(scheme);
+
 			this._registeredSchemes.delete(scheme);
+
 			this._fsProvider.delete(handle);
+
 			this._proxy.$unregisterProvider(handle);
 		});
 	}
+
 	private static _validateFileSystemProvider(
 		provider: vscode.FileSystemProvider,
 	) {
 		if (!provider) {
 			throw new Error("MISSING provider");
 		}
+
 		if (typeof provider.watch !== "function") {
 			throw new Error("Provider does NOT implement watch");
 		}
+
 		if (typeof provider.stat !== "function") {
 			throw new Error("Provider does NOT implement stat");
 		}
+
 		if (typeof provider.readDirectory !== "function") {
 			throw new Error("Provider does NOT implement readDirectory");
 		}
+
 		if (typeof provider.createDirectory !== "function") {
 			throw new Error("Provider does NOT implement createDirectory");
 		}
+
 		if (typeof provider.readFile !== "function") {
 			throw new Error("Provider does NOT implement readFile");
 		}
+
 		if (typeof provider.writeFile !== "function") {
 			throw new Error("Provider does NOT implement writeFile");
 		}
+
 		if (typeof provider.delete !== "function") {
 			throw new Error("Provider does NOT implement delete");
 		}
+
 		if (typeof provider.rename !== "function") {
 			throw new Error("Provider does NOT implement rename");
 		}
 	}
+
 	private static _asIStat(stat: vscode.FileStat): files.IStat {
 		const { type, ctime, mtime, size, permissions } = stat;
 
@@ -384,6 +437,7 @@ export class ExtHostFileSystem implements ExtHostFileSystemShape {
 		if (!provider.copy) {
 			throw new Error('FileSystemProvider does not implement "copy"');
 		}
+
 		return Promise.resolve(
 			provider.copy(URI.revive(oldUri), URI.revive(newUri), opts),
 		);
@@ -403,6 +457,7 @@ export class ExtHostFileSystem implements ExtHostFileSystemShape {
 			URI.revive(resource),
 			opts,
 		);
+
 		this._watches.set(session, subscription);
 	}
 	$unwatch(_handle: number, session: number): void {
@@ -410,6 +465,7 @@ export class ExtHostFileSystem implements ExtHostFileSystemShape {
 
 		if (subscription) {
 			subscription.dispose();
+
 			this._watches.delete(session);
 		}
 	}
@@ -423,6 +479,7 @@ export class ExtHostFileSystem implements ExtHostFileSystemShape {
 		if (!provider.open) {
 			throw new Error('FileSystemProvider does not implement "open"');
 		}
+
 		return Promise.resolve(provider.open(URI.revive(resource), opts));
 	}
 	$close(handle: number, fd: number): Promise<void> {
@@ -431,6 +488,7 @@ export class ExtHostFileSystem implements ExtHostFileSystemShape {
 		if (!provider.close) {
 			throw new Error('FileSystemProvider does not implement "close"');
 		}
+
 		return Promise.resolve(provider.close(fd));
 	}
 	$read(
@@ -444,6 +502,7 @@ export class ExtHostFileSystem implements ExtHostFileSystemShape {
 		if (!provider.read) {
 			throw new Error('FileSystemProvider does not implement "read"');
 		}
+
 		const data = VSBuffer.alloc(length);
 
 		return Promise.resolve(
@@ -463,20 +522,25 @@ export class ExtHostFileSystem implements ExtHostFileSystemShape {
 		if (!provider.write) {
 			throw new Error('FileSystemProvider does not implement "write"');
 		}
+
 		return Promise.resolve(
 			provider.write(fd, pos, data.buffer, 0, data.byteLength),
 		);
 	}
+
 	private _getFsProvider(handle: number): vscode.FileSystemProvider {
 		const provider = this._fsProvider.get(handle);
 
 		if (!provider) {
 			const err = new Error();
+
 			err.name = "ENOPRO";
+
 			err.message = `no provider`;
 
 			throw err;
 		}
+
 		return provider;
 	}
 }

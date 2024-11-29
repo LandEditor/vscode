@@ -80,20 +80,24 @@ export class TokenizationTextModelPart
 
 	private readonly _onDidChangeLanguage: Emitter<IModelLanguageChangedEvent> =
 		this._register(new Emitter<IModelLanguageChangedEvent>());
+
 	public readonly onDidChangeLanguage: Event<IModelLanguageChangedEvent> =
 		this._onDidChangeLanguage.event;
 
 	private readonly _onDidChangeLanguageConfiguration: Emitter<IModelLanguageConfigurationChangedEvent> =
 		this._register(new Emitter<IModelLanguageConfigurationChangedEvent>());
+
 	public readonly onDidChangeLanguageConfiguration: Event<IModelLanguageConfigurationChangedEvent> =
 		this._onDidChangeLanguageConfiguration.event;
 
 	private readonly _onDidChangeTokens: Emitter<IModelTokensChangedEvent> =
 		this._register(new Emitter<IModelTokensChangedEvent>());
+
 	public readonly onDidChangeTokens: Event<IModelTokensChangedEvent> =
 		this._onDidChangeTokens.event;
 
 	private _tokens!: AbstractTokens;
+
 	private readonly _tokensDisposables: DisposableStore = this._register(
 		new DisposableStore(),
 	);
@@ -121,6 +125,7 @@ export class TokenizationTextModelPart
 				this.createPreferredTokenProvider();
 			}),
 		);
+
 		this.createPreferredTokenProvider();
 	}
 
@@ -148,11 +153,15 @@ export class TokenizationTextModelPart
 
 	private createTokens(useTreeSitter: boolean): void {
 		const needsReset = this._tokens !== undefined;
+
 		this._tokens?.dispose();
+
 		this._tokens = useTreeSitter
 			? this.createTreeSitterTokens()
 			: this.createGrammarTokens();
+
 		this._tokensDisposables.clear();
+
 		this._tokensDisposables.add(
 			this._tokens.onDidChangeTokens((e) => {
 				this._emitModelTokensChangedEvent(e);
@@ -243,6 +252,7 @@ export class TokenizationTextModelPart
 	private _emitModelTokensChangedEvent(e: IModelTokensChangedEvent): void {
 		if (!this._textModel._isDisposing()) {
 			this._bracketPairsTextModelPart.handleDidChangeTokens(e);
+
 			this._onDidChangeTokens.fire(e);
 		}
 	}
@@ -269,6 +279,7 @@ export class TokenizationTextModelPart
 
 	public forceTokenization(lineNumber: number): void {
 		this.validateLineNumber(lineNumber);
+
 		this._tokens.forceTokenization(lineNumber);
 	}
 
@@ -286,6 +297,7 @@ export class TokenizationTextModelPart
 
 	public tokenizeIfCheap(lineNumber: number): void {
 		this.validateLineNumber(lineNumber);
+
 		this._tokens.tokenizeIfCheap(lineNumber);
 	}
 
@@ -344,6 +356,7 @@ export class TokenizationTextModelPart
 		if (this.hasCompleteSemanticTokens()) {
 			return;
 		}
+
 		const changedRange = this._textModel.validateRange(
 			this._semanticTokens.setPartial(range, tokens),
 		);
@@ -449,7 +462,9 @@ export class TokenizationTextModelPart
 
 		for (
 			let i = tokenIndex;
+
 			i >= 0 && lineTokens.getLanguageId(i) === languageId;
+
 			i--
 		) {
 			startOffset = lineTokens.getStartOffset(i);
@@ -460,7 +475,9 @@ export class TokenizationTextModelPart
 
 		for (
 			let i = tokenIndex, tokenCount = lineTokens.getCount();
+
 			i < tokenCount && lineTokens.getLanguageId(i) === languageId;
+
 			i++
 		) {
 			endOffset = lineTokens.getEndOffset(i);
@@ -479,6 +496,7 @@ export class TokenizationTextModelPart
 				endColumn: position.column,
 			};
 		}
+
 		return {
 			word: wordAtPosition.word.substr(
 				0,
@@ -524,9 +542,13 @@ export class TokenizationTextModelPart
 		this._languageId = languageId;
 
 		this._bracketPairsTextModelPart.handleDidChangeLanguage(e);
+
 		this._tokens.resetTokenization();
+
 		this.createPreferredTokenProvider();
+
 		this._onDidChangeLanguage.fire(e);
+
 		this._onDidChangeLanguageConfiguration.fire({});
 	}
 
@@ -535,14 +557,18 @@ export class TokenizationTextModelPart
 
 class GrammarTokens extends AbstractTokens {
 	private _tokenizer: TokenizerWithStateStoreAndTextModel | null = null;
+
 	private _defaultBackgroundTokenizer: DefaultBackgroundTokenizer | null =
 		null;
+
 	private readonly _backgroundTokenizer = this._register(
 		new MutableDisposable<IBackgroundTokenizer>(),
 	);
 
 	private readonly _tokens = new ContiguousTokensStore(this._languageIdCodec);
+
 	private _debugBackgroundTokens: ContiguousTokensStore | undefined;
+
 	private _debugBackgroundStates:
 		| TrackingTokenizationStateStore<IState>
 		| undefined;
@@ -570,6 +596,7 @@ class GrammarTokens extends AbstractTokens {
 				if (e.changedLanguages.indexOf(languageId) === -1) {
 					return;
 				}
+
 				this.resetTokenization();
 			}),
 		);
@@ -585,8 +612,10 @@ class GrammarTokens extends AbstractTokens {
 						existing = new AttachedViewHandler(() =>
 							this.refreshRanges(existing!.lineRanges),
 						);
+
 						this._attachedViewStates.set(view, existing);
 					}
+
 					existing.handleStateChange(state);
 				} else {
 					this._attachedViewStates.deleteAndDispose(view);
@@ -597,6 +626,7 @@ class GrammarTokens extends AbstractTokens {
 
 	public resetTokenization(fireTokenChangeEvent: boolean = true): void {
 		this._tokens.flush();
+
 		this._debugBackgroundTokens?.flush();
 
 		if (this._debugBackgroundStates) {
@@ -604,6 +634,7 @@ class GrammarTokens extends AbstractTokens {
 				this._textModel.getLineCount(),
 			);
 		}
+
 		if (fireTokenChangeEvent) {
 			this._onDidChangeTokens.fire({
 				semanticTokensApplied: false,
@@ -622,6 +653,7 @@ class GrammarTokens extends AbstractTokens {
 			if (this._textModel.isTooLargeForTokenization()) {
 				return [null, null];
 			}
+
 			const tokenizationSupport = TokenizationRegistry.get(
 				this.getLanguageId(),
 			);
@@ -629,6 +661,7 @@ class GrammarTokens extends AbstractTokens {
 			if (!tokenizationSupport) {
 				return [null, null];
 			}
+
 			let initialState: IState;
 
 			try {
@@ -638,6 +671,7 @@ class GrammarTokens extends AbstractTokens {
 
 				return [null, null];
 			}
+
 			return [tokenizationSupport, initialState];
 		};
 
@@ -671,14 +705,18 @@ class GrammarTokens extends AbstractTokens {
 						// We already did a full tokenization and don't go back to progressing.
 						return;
 					}
+
 					const newState = BackgroundTokenizationState.Completed;
+
 					this._backgroundTokenizationState = newState;
+
 					this._onDidChangeBackgroundTokenizationState.fire();
 				},
 				setEndState: (lineNumber, state) => {
 					if (!this._tokenizer) {
 						return;
 					}
+
 					const firstInvalidEndStateLineNumber =
 						this._tokenizer.store.getFirstInvalidEndStateLineNumber();
 					// Don't accept states for definitely valid states, the renderer is ahead of the worker!
@@ -702,6 +740,7 @@ class GrammarTokens extends AbstractTokens {
 						b,
 					);
 			}
+
 			if (
 				!this._backgroundTokenizer.value &&
 				!this._textModel.isTooLargeForTokenization()
@@ -709,6 +748,7 @@ class GrammarTokens extends AbstractTokens {
 				this._backgroundTokenizer.value =
 					this._defaultBackgroundTokenizer =
 						new DefaultBackgroundTokenizer(this._tokenizer, b);
+
 				this._defaultBackgroundTokenizer.handleChanges();
 			}
 
@@ -719,11 +759,14 @@ class GrammarTokens extends AbstractTokens {
 				this._debugBackgroundTokens = new ContiguousTokensStore(
 					this._languageIdCodec,
 				);
+
 				this._debugBackgroundStates =
 					new TrackingTokenizationStateStore(
 						this._textModel.getLineCount(),
 					);
+
 				this._debugBackgroundTokenizer.clear();
+
 				this._debugBackgroundTokenizer.value =
 					tokenizationSupport.createBackgroundTokenizer(
 						this._textModel,
@@ -747,7 +790,9 @@ class GrammarTokens extends AbstractTokens {
 					);
 			} else {
 				this._debugBackgroundTokens = undefined;
+
 				this._debugBackgroundStates = undefined;
+
 				this._debugBackgroundTokenizer.value = undefined;
 			}
 		}
@@ -769,17 +814,20 @@ class GrammarTokens extends AbstractTokens {
 				const [eolCount, firstLineLength] = countEOL(c.text);
 
 				this._tokens.acceptEdit(c.range, eolCount, firstLineLength);
+
 				this._debugBackgroundTokens?.acceptEdit(
 					c.range,
 					eolCount,
 					firstLineLength,
 				);
 			}
+
 			this._debugBackgroundStates?.acceptChanges(e.changes);
 
 			if (this._tokenizer) {
 				this._tokenizer.store.acceptChanges(e.changes);
 			}
+
 			this._defaultBackgroundTokenizer?.handleChanges();
 		}
 	}
@@ -806,6 +854,7 @@ class GrammarTokens extends AbstractTokens {
 		const ranges = LineRange.joinMany(
 			[...this._attachedViewStates].map(([_, s]) => s.lineRanges),
 		);
+
 		this.refreshRanges(ranges);
 	}
 
@@ -827,6 +876,7 @@ class GrammarTokens extends AbstractTokens {
 			1,
 			Math.min(this._textModel.getLineCount(), startLineNumber),
 		);
+
 		endLineNumber = Math.min(this._textModel.getLineCount(), endLineNumber);
 
 		const builder = new ContiguousMultilineTokensBuilder();
@@ -856,8 +906,11 @@ class GrammarTokens extends AbstractTokens {
 
 	public forceTokenization(lineNumber: number): void {
 		const builder = new ContiguousMultilineTokensBuilder();
+
 		this._tokenizer?.updateTokensUntilLine(builder, lineNumber);
+
 		this.setTokens(builder.finalize());
+
 		this._defaultBackgroundTokenizer?.checkFinished();
 	}
 
@@ -865,6 +918,7 @@ class GrammarTokens extends AbstractTokens {
 		if (!this._tokenizer) {
 			return true;
 		}
+
 		return this._tokenizer.hasAccurateTokensForLine(lineNumber);
 	}
 
@@ -872,6 +926,7 @@ class GrammarTokens extends AbstractTokens {
 		if (!this._tokenizer) {
 			return true;
 		}
+
 		return this._tokenizer.isCheapToTokenize(lineNumber);
 	}
 
@@ -912,6 +967,7 @@ class GrammarTokens extends AbstractTokens {
 				}
 			}
 		}
+
 		return result;
 	}
 
@@ -927,6 +983,7 @@ class GrammarTokens extends AbstractTokens {
 		const position = this._textModel.validatePosition(
 			new Position(lineNumber, column),
 		);
+
 		this.forceTokenization(position.lineNumber);
 
 		return this._tokenizer.getTokenTypeIfInsertingCharacter(
@@ -942,6 +999,7 @@ class GrammarTokens extends AbstractTokens {
 		if (!this._tokenizer) {
 			return { mainLineTokens: null, additionalLines: null };
 		}
+
 		this.forceTokenization(lineNumber);
 
 		return this._tokenizer.tokenizeLineWithEdit(lineNumber, edit);

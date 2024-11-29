@@ -23,6 +23,7 @@ export interface IExtHostManagedSockets extends ExtHostManagedSocketsShape {
 		socketFactoryId: number,
 		makeConnection: () => Thenable<vscode.ManagedMessagePassing>,
 	): void;
+
 	readonly _serviceBrand: undefined;
 }
 export const IExtHostManagedSockets = createDecorator<IExtHostManagedSockets>(
@@ -31,9 +32,13 @@ export const IExtHostManagedSockets = createDecorator<IExtHostManagedSockets>(
 
 export class ExtHostManagedSockets implements IExtHostManagedSockets {
 	declare readonly _serviceBrand: undefined;
+
 	private readonly _proxy: MainThreadManagedSocketsShape;
+
 	private _remoteSocketIdCounter = 0;
+
 	private _factory: ManagedSocketFactory | null = null;
+
 	private readonly _managedRemoteSockets: Map<number, ManagedSocket> =
 		new Map();
 
@@ -43,6 +48,7 @@ export class ExtHostManagedSockets implements IExtHostManagedSockets {
 	) {
 		this._proxy = extHostRpc.getProxy(MainContext.MainThreadManagedSockets);
 	}
+
 	setFactory(
 		socketFactoryId: number,
 		makeConnection: () => Thenable<vscode.ManagedMessagePassing>,
@@ -56,12 +62,15 @@ export class ExtHostManagedSockets implements IExtHostManagedSockets {
 		if (this._factory) {
 			this._proxy.$unregisterSocketFactory(this._factory.socketFactoryId);
 		}
+
 		this._factory = new ManagedSocketFactory(
 			socketFactoryId,
 			makeConnection,
 		);
+
 		this._proxy.$registerSocketFactory(this._factory.socketFactoryId);
 	}
+
 	async $openRemoteSocket(socketFactoryId: number): Promise<number> {
 		if (
 			!this._factory ||
@@ -69,33 +78,41 @@ export class ExtHostManagedSockets implements IExtHostManagedSockets {
 		) {
 			throw new Error(`No socket factory with id ${socketFactoryId}`);
 		}
+
 		const id = ++this._remoteSocketIdCounter;
 
 		const socket = await this._factory.makeConnection();
 
 		const disposable = new DisposableStore();
+
 		this._managedRemoteSockets.set(
 			id,
 			new ManagedSocket(id, socket, disposable),
 		);
+
 		disposable.add(
 			toDisposable(() => this._managedRemoteSockets.delete(id)),
 		);
+
 		disposable.add(
 			socket.onDidEnd(() => {
 				this._proxy.$onDidManagedSocketEnd(id);
+
 				disposable.dispose();
 			}),
 		);
+
 		disposable.add(
 			socket.onDidClose((e) => {
 				this._proxy.$onDidManagedSocketClose(
 					id,
 					e?.stack ?? e?.message,
 				);
+
 				disposable.dispose();
 			}),
 		);
+
 		disposable.add(
 			socket.onDidReceiveMessage((e) =>
 				this._proxy.$onDidManagedSocketHaveData(id, VSBuffer.wrap(e)),
@@ -112,9 +129,11 @@ export class ExtHostManagedSockets implements IExtHostManagedSockets {
 
 		if (socket) {
 			socket.actual.end();
+
 			socket.dispose();
 		}
 	}
+
 	async $remoteSocketDrain(socketId: number): Promise<void> {
 		await this._managedRemoteSockets.get(socketId)?.actual.drain?.();
 	}
@@ -132,6 +151,7 @@ class ManagedSocket extends Disposable {
 		disposer: DisposableStore,
 	) {
 		super();
+
 		this._register(disposer);
 	}
 }

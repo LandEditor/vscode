@@ -81,6 +81,7 @@ export class DropOrPasteSchemaContribution
 	);
 
 	private _allProvidedDropKinds: HierarchicalKind[] = [];
+
 	private _allProvidedPasteKinds: HierarchicalKind[] = [];
 
 	constructor(
@@ -102,6 +103,7 @@ export class DropOrPasteSchemaContribution
 				),
 				() => {
 					this.updateProvidedKinds();
+
 					this.updateConfigurationSchema();
 
 					this._onDidChangeSchemaContributions.fire();
@@ -124,6 +126,7 @@ export class DropOrPasteSchemaContribution
 				dropKinds.set(kind.value, kind);
 			}
 		}
+
 		this._allProvidedDropKinds = Array.from(dropKinds.values());
 
 		// Paste
@@ -134,6 +137,7 @@ export class DropOrPasteSchemaContribution
 				pasteKinds.set(kind.value, kind);
 			}
 		}
+
 		this._allProvidedPasteKinds = Array.from(pasteKinds.values());
 	}
 

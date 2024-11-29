@@ -9,7 +9,9 @@ class WindowManager {
 	static readonly INSTANCE = new WindowManager();
 	// --- Zoom Level
 	private readonly mapWindowIdToZoomLevel = new Map<number, number>();
+
 	private readonly _onDidChangeZoomLevel = new Emitter<number>();
+
 	readonly onDidChangeZoomLevel = this._onDidChangeZoomLevel.event;
 
 	getZoomLevel(targetWindow: Window): number {
@@ -17,12 +19,16 @@ class WindowManager {
 			this.mapWindowIdToZoomLevel.get(this.getWindowId(targetWindow)) ?? 0
 		);
 	}
+
 	setZoomLevel(zoomLevel: number, targetWindow: Window): void {
 		if (this.getZoomLevel(targetWindow) === zoomLevel) {
 			return;
 		}
+
 		const targetWindowId = this.getWindowId(targetWindow);
+
 		this.mapWindowIdToZoomLevel.set(targetWindowId, zoomLevel);
+
 		this._onDidChangeZoomLevel.fire(targetWindowId);
 	}
 	// --- Zoom Factor
@@ -34,6 +40,7 @@ class WindowManager {
 			1
 		);
 	}
+
 	setZoomFactor(zoomFactor: number, targetWindow: Window): void {
 		this.mapWindowIdToZoomFactor.set(
 			this.getWindowId(targetWindow),
@@ -42,22 +49,29 @@ class WindowManager {
 	}
 	// --- Fullscreen
 	private readonly _onDidChangeFullscreen = new Emitter<number>();
+
 	readonly onDidChangeFullscreen = this._onDidChangeFullscreen.event;
+
 	private readonly mapWindowIdToFullScreen = new Map<number, boolean>();
 
 	setFullscreen(fullscreen: boolean, targetWindow: Window): void {
 		if (this.isFullscreen(targetWindow) === fullscreen) {
 			return;
 		}
+
 		const windowId = this.getWindowId(targetWindow);
+
 		this.mapWindowIdToFullScreen.set(windowId, fullscreen);
+
 		this._onDidChangeFullscreen.fire(windowId);
 	}
+
 	isFullscreen(targetWindow: Window): boolean {
 		return !!this.mapWindowIdToFullScreen.get(
 			this.getWindowId(targetWindow),
 		);
 	}
+
 	private getWindowId(targetWindow: Window): number {
 		return (targetWindow as CodeWindow).vscodeWindowId;
 	}
@@ -70,6 +84,7 @@ export function addMatchMediaChangeListener(
 	if (typeof query === "string") {
 		query = targetWindow.matchMedia(query);
 	}
+
 	query.addEventListener("change", callback);
 }
 /** A zoom index, e.g. 1, 2, 3 */
@@ -121,7 +136,9 @@ if (typeof mainWindow.matchMedia === "function") {
 	const fullScreenMatchMedia = mainWindow.matchMedia(
 		"(display-mode: fullscreen)",
 	);
+
 	standalone = standaloneMatchMedia.matches;
+
 	addMatchMediaChangeListener(
 		mainWindow,
 		standaloneMatchMedia,

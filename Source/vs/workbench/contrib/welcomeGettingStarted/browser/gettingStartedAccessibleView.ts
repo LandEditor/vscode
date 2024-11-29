@@ -36,8 +36,11 @@ export class GettingStartedAccessibleView
 	implements IAccessibleViewImplentation
 {
 	readonly type = AccessibleViewType.View;
+
 	readonly priority = 110;
+
 	readonly name = "walkthroughs";
+
 	readonly when = inWelcomeContext;
 
 	getProvider = (
@@ -50,6 +53,7 @@ export class GettingStartedAccessibleView
 		if (!(editorPane instanceof GettingStartedPage)) {
 			return;
 		}
+
 		const gettingStartedInput = editorPane.input;
 
 		if (
@@ -77,6 +81,7 @@ export class GettingStartedAccessibleView
 				currentStepIds,
 			);
 		}
+
 		return;
 	};
 }
@@ -86,6 +91,7 @@ class GettingStartedAccessibleProvider
 	implements IAccessibleViewContentProvider
 {
 	private _currentStepIndex: number = 0;
+
 	private _activeWalkthroughSteps: IResolvedWalkthroughStep[] = [];
 
 	constructor(
@@ -97,6 +103,7 @@ class GettingStartedAccessibleProvider
 		private readonly _focusedStep?: string | undefined,
 	) {
 		super();
+
 		this._activeWalkthroughSteps = _walkthrough.steps.filter(
 			(step) =>
 				!step.when ||
@@ -105,7 +112,9 @@ class GettingStartedAccessibleProvider
 	}
 
 	readonly id = AccessibleViewProviderId.Walkthrough;
+
 	readonly verbositySettingKey = AccessibilityVerbositySettingId.Walkthrough;
+
 	readonly options = { type: AccessibleViewType.View };
 
 	public get actions(): IAction[] {
@@ -154,9 +163,11 @@ class GettingStartedAccessibleProvider
 									// ignore error
 								}
 							}
+
 							if (!Array.isArray(args)) {
 								args = [args];
 							}
+
 							this.commandService.executeCommand(
 								commandURI.path,
 								...args,
@@ -170,6 +181,7 @@ class GettingStartedAccessibleProvider
 				),
 			);
 		}
+
 		return actions;
 	}
 
@@ -183,6 +195,7 @@ class GettingStartedAccessibleProvider
 				this._currentStepIndex = stepIndex;
 			}
 		}
+
 		return this._getContent(
 			this._walkthrough,
 			this._activeWalkthroughSteps[this._currentStepIndex],
@@ -231,6 +244,7 @@ class GettingStartedAccessibleProvider
 
 			return;
 		}
+
 		return this._getContent(
 			this._walkthrough,
 			this._activeWalkthroughSteps[this._currentStepIndex],
@@ -243,6 +257,7 @@ class GettingStartedAccessibleProvider
 
 			return;
 		}
+
 		return this._getContent(
 			this._walkthrough,
 			this._activeWalkthroughSteps[this._currentStepIndex],
@@ -253,6 +268,7 @@ class GettingStartedAccessibleProvider
 		if (this._currentStepIndex > -1) {
 			const currentStep =
 				this._activeWalkthroughSteps[this._currentStepIndex];
+
 			this._gettingStartedPage.makeCategoryVisibleWhenAvailable(
 				this._walkthrough.id,
 				currentStep.id,

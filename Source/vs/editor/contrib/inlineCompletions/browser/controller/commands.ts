@@ -63,6 +63,7 @@ export class ShowNextInlineSuggestionAction extends EditorAction {
 		editor: ICodeEditor,
 	): Promise<void> {
 		const controller = InlineCompletionsController.get(editor);
+
 		controller?.model.get()?.next();
 	}
 }
@@ -93,6 +94,7 @@ export class ShowPreviousInlineSuggestionAction extends EditorAction {
 		editor: ICodeEditor,
 	): Promise<void> {
 		const controller = InlineCompletionsController.get(editor);
+
 		controller?.model.get()?.previous();
 	}
 }
@@ -114,9 +116,11 @@ export class TriggerInlineSuggestionAction extends EditorAction {
 		editor: ICodeEditor,
 	): Promise<void> {
 		const controller = InlineCompletionsController.get(editor);
+
 		await asyncTransaction(async (tx) => {
 			/** @description triggerExplicitly from command */
 			await controller?.model.get()?.triggerExplicitly(tx);
+
 			controller?.playAccessibilitySignal(tx);
 		});
 	}
@@ -192,6 +196,7 @@ export class AcceptNextWordOfInlineCompletion extends EditorAction {
 		editor: ICodeEditor,
 	): Promise<void> {
 		const controller = InlineCompletionsController.get(editor);
+
 		await controller?.model.get()?.acceptNextWord(controller.editor);
 	}
 }
@@ -227,6 +232,7 @@ export class AcceptNextLineOfInlineCompletion extends EditorAction {
 		editor: ICodeEditor,
 	): Promise<void> {
 		const controller = InlineCompletionsController.get(editor);
+
 		await controller?.model.get()?.acceptNextLine(controller.editor);
 	}
 }
@@ -303,6 +309,7 @@ export class AcceptInlineCompletion extends EditorAction {
 
 		if (controller) {
 			controller.model.get()?.accept(controller.editor);
+
 			controller.editor.focus();
 		}
 	}
@@ -378,6 +385,7 @@ export class HideInlineCompletion extends EditorAction {
 		editor: ICodeEditor,
 	): Promise<void> {
 		const controller = InlineCompletionsController.get(editor);
+
 		transaction((tx) => {
 			controller?.model.get()?.stop("explicitCancel", tx);
 		});
@@ -421,6 +429,7 @@ export class ToggleAlwaysShowInlineSuggestionToolbar extends Action2 {
 		);
 
 		const newValue = currentValue === "always" ? "onHover" : "always";
+
 		configService.updateValue("editor.inlineSuggest.showToolbar", newValue);
 	}
 }
@@ -451,6 +460,7 @@ export class DevExtractReproSample extends EditorAction {
 		if (!m) {
 			return;
 		}
+
 		const repro = m.extractReproSample();
 
 		const inlineCompletionLines = splitLines(

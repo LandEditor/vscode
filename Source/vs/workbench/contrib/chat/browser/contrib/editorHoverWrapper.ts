@@ -28,13 +28,16 @@ export class ChatEditorHoverWrapper {
 		const hoverElement = h(".chat-editor-hover-wrapper@root", [
 			h(".chat-editor-hover-wrapper-content@content"),
 		]);
+
 		this.domNode = hoverElement.root;
+
 		hoverElement.content.appendChild(hoverContentElement);
 
 		if (actions && actions.length > 0) {
 			const statusBarElement = $(".hover-row.status-bar");
 
 			const actionsElement = $(".actions");
+
 			actions.forEach((action) => {
 				const keybinding = this.keybindingService.lookupKeybinding(
 					action.commandId,
@@ -43,6 +46,7 @@ export class ChatEditorHoverWrapper {
 				const keybindingLabel = keybinding
 					? keybinding.getLabel()
 					: null;
+
 				HoverAction.render(
 					actionsElement,
 					{
@@ -56,7 +60,9 @@ export class ChatEditorHoverWrapper {
 					keybindingLabel,
 				);
 			});
+
 			statusBarElement.appendChild(actionsElement);
+
 			this.domNode.appendChild(statusBarElement);
 		}
 	}

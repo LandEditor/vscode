@@ -68,7 +68,9 @@ export class ContextMenuController implements IEditorContribution {
 	}
 
 	private readonly _toDispose = new DisposableStore();
+
 	private _contextMenuIsBeingShownCount: number = 0;
+
 	private readonly _editor: ICodeEditor;
 
 	constructor(
@@ -94,6 +96,7 @@ export class ContextMenuController implements IEditorContribution {
 				this._onContextMenu(e),
 			),
 		);
+
 		this._toDispose.add(
 			this._editor.onMouseWheel((e: IMouseWheelEvent) => {
 				if (this._contextMenuIsBeingShownCount > 0) {
@@ -115,15 +118,19 @@ export class ContextMenuController implements IEditorContribution {
 				}
 			}),
 		);
+
 		this._toDispose.add(
 			this._editor.onKeyDown((e: IKeyboardEvent) => {
 				if (!this._editor.getOption(EditorOption.contextmenu)) {
 					return; // Context menu is turned off through configuration
 				}
+
 				if (e.keyCode === KeyCode.ContextMenu) {
 					// Chrome is funny like that
 					e.preventDefault();
+
 					e.stopPropagation();
+
 					this.showContextMenu();
 				}
 			}),
@@ -144,12 +151,14 @@ export class ContextMenuController implements IEditorContribution {
 			) {
 				this._editor.setPosition(e.target.position);
 			}
+
 			return; // Context menu is turned off through configuration
 		}
 
 		if (e.target.type === MouseTargetType.OVERLAY_WIDGET) {
 			return; // allow native menu on widgets to support right click on input field for example in find
 		}
+
 		if (
 			e.target.type === MouseTargetType.CONTENT_TEXT &&
 			e.target.detail.injectedText
@@ -158,6 +167,7 @@ export class ContextMenuController implements IEditorContribution {
 		}
 
 		e.event.preventDefault();
+
 		e.event.stopPropagation();
 
 		if (e.target.type === MouseTargetType.SCROLLBAR) {
@@ -207,6 +217,7 @@ export class ContextMenuController implements IEditorContribution {
 		if (!this._editor.getOption(EditorOption.contextmenu)) {
 			return; // Context menu is turned off through configuration
 		}
+
 		if (!this._editor.hasModel()) {
 			return;
 		}
@@ -254,10 +265,12 @@ export class ContextMenuController implements IEditorContribution {
 								subActions,
 							),
 						);
+
 						addedItems++;
 					}
 				} else {
 					result.push(action);
+
 					addedItems++;
 				}
 			}
@@ -284,6 +297,7 @@ export class ContextMenuController implements IEditorContribution {
 
 		// Disable hover
 		const oldHoverSetting = this._editor.getOption(EditorOption.hover);
+
 		this._editor.updateOptions({
 			hover: {
 				enabled: false,
@@ -323,6 +337,7 @@ export class ContextMenuController implements IEditorContribution {
 
 		// Show menu
 		this._contextMenuIsBeingShownCount++;
+
 		this._contextMenuService.showContextMenu({
 			domForShadowRoot: useShadowDOM
 				? (this._editor.getOverflowWidgetsDomNode() ??
@@ -365,6 +380,7 @@ export class ContextMenuController implements IEditorContribution {
 
 			onHide: (wasCancelled: boolean) => {
 				this._contextMenuIsBeingShownCount--;
+
 				this._editor.updateOptions({
 					hover: oldHoverSetting,
 				});
@@ -392,8 +408,11 @@ export class ContextMenuController implements IEditorContribution {
 
 		const createAction = (opts: {
 			label: string;
+
 			enabled?: boolean;
+
 			checked?: boolean;
+
 			run: () => void;
 		}): IAction => {
 			return {
@@ -430,6 +449,7 @@ export class ContextMenuController implements IEditorContribution {
 			if (!enabled) {
 				return createAction({ label, enabled, run: () => {} });
 			}
+
 			const createRunner = (value: T) => {
 				return () => {
 					this._configurationService.updateValue(configName, value);
@@ -447,10 +467,12 @@ export class ContextMenuController implements IEditorContribution {
 					}),
 				);
 			}
+
 			return createSubmenuAction(label, actions);
 		};
 
 		const actions: IAction[] = [];
+
 		actions.push(
 			createAction({
 				label: nls.localize("context.minimap.minimap", "Minimap"),
@@ -463,7 +485,9 @@ export class ContextMenuController implements IEditorContribution {
 				},
 			}),
 		);
+
 		actions.push(new Separator());
+
 		actions.push(
 			createAction({
 				label: nls.localize(
@@ -480,6 +504,7 @@ export class ContextMenuController implements IEditorContribution {
 				},
 			}),
 		);
+
 		actions.push(
 			createEnumAction<"proportional" | "fill" | "fit">(
 				nls.localize("context.minimap.size", "Vertical size"),
@@ -508,6 +533,7 @@ export class ContextMenuController implements IEditorContribution {
 				],
 			),
 		);
+
 		actions.push(
 			createEnumAction<"always" | "mouseover">(
 				nls.localize("context.minimap.slider", "Slider"),
@@ -536,6 +562,7 @@ export class ContextMenuController implements IEditorContribution {
 		const useShadowDOM =
 			this._editor.getOption(EditorOption.useShadowDOM) && !isIOS; // Do not use shadow dom on IOS #122035
 		this._contextMenuIsBeingShownCount++;
+
 		this._contextMenuService.showContextMenu({
 			domForShadowRoot: useShadowDOM
 				? this._editor.getDomNode()
@@ -544,6 +571,7 @@ export class ContextMenuController implements IEditorContribution {
 			getActions: () => actions,
 			onHide: (wasCancelled: boolean) => {
 				this._contextMenuIsBeingShownCount--;
+
 				this._editor.focus();
 			},
 		});

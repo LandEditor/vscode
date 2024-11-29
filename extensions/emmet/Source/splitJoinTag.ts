@@ -18,6 +18,7 @@ export function splitJoinTag() {
 	if (!validate(false) || !vscode.window.activeTextEditor) {
 		return;
 	}
+
 	const editor = vscode.window.activeTextEditor;
 
 	const document = editor.document;
@@ -27,6 +28,7 @@ export function splitJoinTag() {
 	if (!rootNode) {
 		return;
 	}
+
 	return editor.edit((editBuilder) => {
 		Array.from(editor.selections)
 			.reverse()
@@ -44,6 +46,7 @@ export function splitJoinTag() {
 
 				if (nodeToUpdate) {
 					const textEdit = getRangesToReplace(document, nodeToUpdate);
+
 					editBuilder.replace(textEdit.range, textEdit.newText);
 				}
 			});
@@ -68,14 +71,18 @@ function getRangesToReplace(
 		const end = nodeToUpdate.end;
 
 		const start = m ? end - m[0].length : end;
+
 		rangeToReplace = offsetRangeToVsRange(document, start, end);
+
 		textToReplaceWith = `></${nodeToUpdate.name}>`;
 	} else {
 		// Join Tag
 		const start = nodeToUpdate.open.end - 1;
 
 		const end = nodeToUpdate.end;
+
 		rangeToReplace = offsetRangeToVsRange(document, start, end);
+
 		textToReplaceWith = "/>";
 
 		const emmetMode = getEmmetMode(document.languageId, {}, []) ?? "";
@@ -93,5 +100,6 @@ function getRangesToReplace(
 			textToReplaceWith = " " + textToReplaceWith;
 		}
 	}
+
 	return new vscode.TextEdit(rangeToReplace, textToReplaceWith);
 }

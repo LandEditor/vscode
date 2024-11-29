@@ -28,8 +28,10 @@ export function applyLineChanges(
 		// https://github.com/microsoft/vscode/issues/59670
 		if (isDeletion && diff.originalEndLineNumber === original.lineCount) {
 			endLine -= 1;
+
 			endCharacter = original.lineAt(endLine).range.end.character;
 		}
+
 		result.push(
 			original.getText(new Range(currentLine, 0, endLine, endCharacter)),
 		);
@@ -46,8 +48,10 @@ export function applyLineChanges(
 				diff.originalStartLineNumber === original.lineCount
 			) {
 				fromLine -= 1;
+
 				fromCharacter = modified.lineAt(fromLine).range.end.character;
 			}
+
 			result.push(
 				modified.getText(
 					new Range(
@@ -59,10 +63,12 @@ export function applyLineChanges(
 				),
 			);
 		}
+
 		currentLine = isInsertion
 			? diff.originalStartLineNumber
 			: diff.originalEndLineNumber;
 	}
+
 	result.push(
 		original.getText(new Range(currentLine, 0, original.lineCount, 0)),
 	);
@@ -80,6 +86,7 @@ export function toLineRanges(
 
 		return new Range(startLine.range.start, endLine.range.end);
 	});
+
 	lineRanges.sort((a, b) => a.start.line - b.start.line);
 
 	const result = lineRanges.reduce((result, l) => {
@@ -88,6 +95,7 @@ export function toLineRanges(
 
 			return result;
 		}
+
 		const [last, ...rest] = result;
 
 		const intersection = l.intersection(last);
@@ -95,13 +103,16 @@ export function toLineRanges(
 		if (intersection) {
 			return [intersection, ...rest];
 		}
+
 		if (l.start.line === last.end.line + 1) {
 			const merge = new Range(last.start, l.end);
 
 			return [merge, ...rest];
 		}
+
 		return [l, ...result];
 	}, [] as Range[]);
+
 	result.reverse();
 
 	return result;
@@ -146,6 +157,7 @@ export function intersectDiffWithRange(
 	if (!intersection) {
 		return null;
 	}
+
 	if (diff.modifiedEndLineNumber === 0) {
 		return diff;
 	} else {
@@ -193,6 +205,8 @@ export interface DiffEditorSelectionHunkToolbarContext {
 	 * The original text with the selected modified changes applied.
 	 */
 	originalWithModifiedChanges: string;
+
 	modifiedUri: Uri;
+
 	originalUri: Uri;
 }

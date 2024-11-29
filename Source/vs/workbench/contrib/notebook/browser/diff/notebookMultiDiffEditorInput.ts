@@ -22,6 +22,7 @@ export const NotebookMultiDiffEditorScheme = "multi-cell-notebook-diff-editor";
 export class NotebookMultiDiffEditorInput extends NotebookDiffEditorInput {
 	static override readonly ID: string =
 		"workbench.input.multiDiffNotebookInput";
+
 	static override create(
 		instantiationService: IInstantiationService,
 		resource: URI,
@@ -72,6 +73,7 @@ export class NotebookMultiDiffEditorWidgetInput
 			notebookDiffViewModel,
 		);
 	}
+
 	constructor(
 		multiDiffSource: URI,
 		private readonly notebookDiffViewModel: NotebookDiffViewModel,
@@ -97,11 +99,14 @@ export class NotebookMultiDiffEditorWidgetInput
 			_multiDiffSourceResolverService,
 			_textFileService,
 		);
+
 		this._register(_multiDiffSourceResolverService.registerResolver(this));
 	}
+
 	canHandleUri(uri: URI): boolean {
 		return uri.toString() === this.multiDiffSource.toString();
 	}
+
 	async resolveDiffSource(_: URI): Promise<IResolvedMultiDiffSource> {
 		return { resources: this.notebookDiffViewModel };
 	}

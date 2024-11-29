@@ -60,25 +60,33 @@ export class ParcelWatcherInstance extends Disposable {
 			joinRestart?: Promise<void>;
 		}>(),
 	);
+
 	readonly onDidStop = this._onDidStop.event;
+
 	private readonly _onDidFail = this._register(new Emitter<void>());
+
 	readonly onDidFail = this._onDidFail.event;
+
 	private didFail = false;
 
 	get failed(): boolean {
 		return this.didFail;
 	}
+
 	private didStop = false;
 
 	get stopped(): boolean {
 		return this.didStop;
 	}
+
 	private readonly includes = this.request.includes
 		? parseWatcherPatterns(this.request.path, this.request.includes)
 		: undefined;
+
 	private readonly excludes = this.request.excludes
 		? parseWatcherPatterns(this.request.path, this.request.excludes)
 		: undefined;
+
 	private readonly subscriptions = new Map<
 		string,
 		Set<(change: IFileChange) => void>
@@ -106,8 +114,10 @@ export class ParcelWatcherInstance extends Disposable {
 		private readonly stopFn: () => Promise<void>,
 	) {
 		super();
+
 		this._register(toDisposable(() => this.subscriptions.clear()));
 	}
+
 	subscribe(
 		path: string,
 		callback: (change: IFileChange) => void,
@@ -117,8 +127,10 @@ export class ParcelWatcherInstance extends Disposable {
 
 		if (!subscriptions) {
 			subscriptions = new Set();
+
 			this.subscriptions.set(path, subscriptions);
 		}
+
 		subscriptions.add(callback);
 
 		return toDisposable(() => {
@@ -133,9 +145,11 @@ export class ParcelWatcherInstance extends Disposable {
 			}
 		});
 	}
+
 	get subscriptionsCount(): number {
 		return this.subscriptions.size;
 	}
+
 	notifyFileChange(path: string, change: IFileChange): void {
 		const subscriptions = this.subscriptions.get(path);
 
@@ -145,19 +159,25 @@ export class ParcelWatcherInstance extends Disposable {
 			}
 		}
 	}
+
 	notifyWatchFailed(): void {
 		this.didFail = true;
+
 		this._onDidFail.fire();
 	}
+
 	include(path: string): boolean {
 		if (!this.includes || this.includes.length === 0) {
 			return true; // no specific includes defined, include all
 		}
+
 		return this.includes.some((include) => include(path));
 	}
+
 	exclude(path: string): boolean {
 		return Boolean(this.excludes?.some((exclude) => exclude(path)));
 	}
+
 	async stop(joinRestart: Promise<void> | undefined): Promise<void> {
 		this.didStop = true;
 
@@ -165,6 +185,7 @@ export class ParcelWatcherInstance extends Disposable {
 			await this.stopFn();
 		} finally {
 			this._onDidStop.fire({ joinRestart });
+
 			this.dispose();
 		}
 	}
@@ -181,6 +202,7 @@ export class ParcelWatcher
 		["update", FileChangeType.UPDATED],
 		["delete", FileChangeType.DELETED],
 	]);
+
 	private static readonly PREDEFINED_EXCLUDES: {
 		[platform: string]: string[];
 	} = {
@@ -190,15 +212,19 @@ export class ParcelWatcher
 		],
 		"linux": [],
 	};
+
 	private static readonly PARCEL_WATCHER_BACKEND = isWindows
 		? "windows"
 		: isLinux
 			? "inotify"
 			: "fs-events";
+
 	private readonly _onDidError = this._register(
 		new Emitter<IWatcherErrorEvent>(),
 	);
+
 	readonly onDidError = this._onDidError.event;
+
 	readonly watchers = new Set<ParcelWatcherInstance>();
 	// A delay for collecting file changes from Parcel
 	// before collecting them for coalescing and emitting.
@@ -223,21 +249,26 @@ export class ParcelWatcher
 			(events) => this._onDidChangeFile.fire(events),
 		),
 	);
+
 	private enospcErrorLogged = false;
 
 	constructor() {
 		super();
+
 		this.registerListeners();
 	}
+
 	private registerListeners(): void {
 		// Error handling on process
 		process.on("uncaughtException", (error) =>
 			this.onUnexpectedError(error),
 		);
+
 		process.on("unhandledRejection", (error) =>
 			this.onUnexpectedError(error),
 		);
 	}
+
 	protected override async doWatch(
 		requests: IRecursiveWatchRequest[],
 	): Promise<void> {
@@ -268,6 +299,7 @@ export class ParcelWatcher
 				`Request to start watching: ${requestsToStart.map((request) => this.requestToString(request)).join(",")}`,
 			);
 		}
+
 		if (watchersToStop.size) {
 			this.trace(
 				`Request to stop watching: ${Array.from(watchersToStop)
@@ -288,6 +320,7 @@ export class ParcelWatcher
 			}
 		}
 	}
+
 	private findWatcher(
 		request: IRecursiveWatchRequest,
 	): ParcelWatcherInstance | undefined {
@@ -314,8 +347,10 @@ export class ParcelWatcher
 				}
 			}
 		}
+
 		return undefined;
 	}
+
 	private startPolling(
 		request: IRecursiveWatchRequest,
 		pollingInterval: number,
@@ -338,16 +373,22 @@ export class ParcelWatcher
 			),
 			async () => {
 				cts.dispose(true);
+
 				watcher.worker.flush();
+
 				watcher.worker.dispose();
+
 				pollingWatcher.dispose();
+
 				unlinkSync(snapshotFile);
 			},
 		);
+
 		this.watchers.add(watcher);
 		// Path checks for symbolic links / wrong casing
 		const { realPath, realPathDiffers, realPathLength } =
 			this.normalizePath(request);
+
 		this.trace(
 			`Started watching: '${realPath}' with polling interval '${pollingInterval}'`,
 		);
@@ -393,14 +434,17 @@ export class ParcelWatcher
 			if (counter === 1) {
 				instance.complete();
 			}
+
 			if (cts.token.isCancellationRequested) {
 				return;
 			}
 			// Schedule again at the next interval
 			pollingWatcher.schedule();
 		}, pollingInterval);
+
 		pollingWatcher.schedule(0);
 	}
+
 	private async startWatching(
 		request: IRecursiveWatchRequest,
 		restarts = 0,
@@ -422,13 +466,17 @@ export class ParcelWatcher
 			),
 			async () => {
 				cts.dispose(true);
+
 				watcher.worker.flush();
+
 				watcher.worker.dispose();
 
 				const watcherInstance = await instance.p;
+
 				await watcherInstance?.unsubscribe();
 			},
 		);
+
 		this.watchers.add(watcher);
 		// Path checks for symbolic links / wrong casing
 		const { realPath, realPathDiffers, realPathLength } =
@@ -465,17 +513,23 @@ export class ParcelWatcher
 					),
 				},
 			);
+
 			this.trace(
 				`Started watching: '${realPath}' with backend '${ParcelWatcher.PARCEL_WATCHER_BACKEND}'`,
 			);
+
 			instance.complete(parcelWatcherInstance);
 		} catch (error) {
 			this.onUnexpectedError(error, request);
+
 			instance.complete(undefined);
+
 			watcher.notifyWatchFailed();
+
 			this._onDidWatchFail.fire(request);
 		}
 	}
+
 	private addPredefinedExcludes(initialExcludes: string[]): string[] {
 		const excludes = [...initialExcludes];
 
@@ -489,8 +543,10 @@ export class ParcelWatcher
 				}
 			}
 		}
+
 		return excludes;
 	}
+
 	private onParcelEvents(
 		parcelEvents: parcelWatcher.Event[],
 		watcher: ParcelWatcherInstance,
@@ -516,6 +572,7 @@ export class ParcelWatcher
 			watcher.worker.work(includedEvent);
 		}
 	}
+
 	private handleIncludes(
 		watcher: ParcelWatcherInstance,
 		parcelEvents: parcelWatcher.Event[],
@@ -550,8 +607,10 @@ export class ParcelWatcher
 				});
 			}
 		}
+
 		return events;
 	}
+
 	private handleParcelEvents(
 		parcelEvents: IFileChange[],
 		watcher: ParcelWatcherInstance,
@@ -570,6 +629,7 @@ export class ParcelWatcher
 			this.onWatchedPathDeleted(watcher);
 		}
 	}
+
 	private emitEvents(
 		events: IFileChange[],
 		watcher: ParcelWatcherInstance,
@@ -593,9 +653,12 @@ export class ParcelWatcher
 			}
 		}
 	}
+
 	private normalizePath(request: IRecursiveWatchRequest): {
 		realPath: string;
+
 		realPathDiffers: boolean;
+
 		realPathLength: number;
 	} {
 		let realPath = request.path;
@@ -615,7 +678,9 @@ export class ParcelWatcher
 			// Correct watch path as needed
 			if (request.path !== realPath) {
 				realPathLength = realPath.length;
+
 				realPathDiffers = true;
+
 				this.trace(
 					`correcting a path to watch that seems to be a symbolic link or wrong casing (original: ${request.path}, real: ${realPath})`,
 				);
@@ -623,8 +688,10 @@ export class ParcelWatcher
 		} catch (error) {
 			// ignore
 		}
+
 		return { realPath, realPathDiffers, realPathLength };
 	}
+
 	private normalizeEvents(
 		events: parcelWatcher.Event[],
 		request: IRecursiveWatchRequest,
@@ -650,11 +717,13 @@ export class ParcelWatcher
 			}
 		}
 	}
+
 	private filterEvents(
 		events: IFileChange[],
 		watcher: ParcelWatcherInstance,
 	): {
 		events: IFileChange[];
+
 		rootDeleted?: boolean;
 	} {
 		const filteredEvents: IFileChange[] = [];
@@ -681,19 +750,26 @@ export class ParcelWatcher
 						watcher.request,
 					);
 				}
+
 				continue;
 			}
 			// Logging
 			this.traceEvent(event, watcher.request);
+
 			filteredEvents.push(event);
 		}
+
 		return { events: filteredEvents, rootDeleted };
 	}
+
 	private onWatchedPathDeleted(watcher: ParcelWatcherInstance): void {
 		this.warn("Watcher shutdown because watched path got deleted", watcher);
+
 		watcher.notifyWatchFailed();
+
 		this._onDidWatchFail.fire(watcher.request);
 	}
+
 	private onUnexpectedError(
 		error: unknown,
 		request?: IRecursiveWatchRequest,
@@ -707,6 +783,7 @@ export class ParcelWatcher
 		if (msg.indexOf("No space left on device") !== -1) {
 			if (!this.enospcErrorLogged) {
 				this.error("Inotify limit reached (ENOSPC)", request);
+
 				this.enospcErrorLogged = true;
 			}
 		}
@@ -715,9 +792,11 @@ export class ParcelWatcher
 		// state again if possible and if not attempted too much
 		else {
 			this.error(`Unexpected error: ${msg} (EUNKNOWN)`, request);
+
 			this._onDidError.fire({ request, error: msg });
 		}
 	}
+
 	override async stop(): Promise<void> {
 		await super.stop();
 
@@ -725,6 +804,7 @@ export class ParcelWatcher
 			await this.stopWatching(watcher);
 		}
 	}
+
 	protected restartWatching(
 		watcher: ParcelWatcherInstance,
 		delay = 800,
@@ -736,6 +816,7 @@ export class ParcelWatcher
 			if (watcher.token.isCancellationRequested) {
 				return; // return early when disposed
 			}
+
 			const restartPromise = new DeferredPromise<void>();
 
 			try {
@@ -759,14 +840,18 @@ export class ParcelWatcher
 				restartPromise.complete();
 			}
 		}, delay);
+
 		scheduler.schedule();
+
 		watcher.token.onCancellationRequested(() => scheduler.dispose());
 	}
+
 	private async stopWatching(
 		watcher: ParcelWatcherInstance,
 		joinRestart?: Promise<void>,
 	): Promise<void> {
 		this.trace(`stopping file watcher`, watcher);
+
 		this.watchers.delete(watcher);
 
 		try {
@@ -778,6 +863,7 @@ export class ParcelWatcher
 			);
 		}
 	}
+
 	protected removeDuplicateRequests(
 		requests: IRecursiveWatchRequest[],
 		validatePaths = true,
@@ -798,6 +884,7 @@ export class ParcelWatcher
 			if (request.excludes.includes(GLOBSTAR)) {
 				continue; // path is ignored entirely (via `**` glob exclude)
 			}
+
 			const path = isLinux ? request.path : request.path.toLowerCase(); // adjust for case sensitivity
 			let requestsForCorrelation = mapCorrelationtoRequests.get(
 				request.correlationId,
@@ -808,18 +895,22 @@ export class ParcelWatcher
 					string,
 					IRecursiveWatchRequest
 				>();
+
 				mapCorrelationtoRequests.set(
 					request.correlationId,
 					requestsForCorrelation,
 				);
 			}
+
 			if (requestsForCorrelation.has(path)) {
 				this.trace(
 					`ignoring a request for watching who's path is already watched: ${this.requestToString(request)}`,
 				);
 			}
+
 			requestsForCorrelation.set(path, request);
 		}
+
 		const normalizedRequests: IRecursiveWatchRequest[] = [];
 
 		for (const requestsForCorrelation of mapCorrelationtoRequests.values()) {
@@ -851,6 +942,7 @@ export class ParcelWatcher
 						this.trace(
 							`ignoring a request for watching who's realpath failed to resolve: ${this.requestToString(request)} (error: ${error})`,
 						);
+
 						this._onDidWatchFail.fire(request);
 
 						continue;
@@ -862,14 +954,18 @@ export class ParcelWatcher
 
 					continue;
 				}
+
 				requestTrie.set(request.path, request);
 			}
+
 			normalizedRequests.push(
 				...Array.from(requestTrie).map(([, request]) => request),
 			);
 		}
+
 		return normalizedRequests;
 	}
+
 	private isPathValid(path: string): boolean {
 		try {
 			const stat = statSync(path);
@@ -888,8 +984,10 @@ export class ParcelWatcher
 
 			return false;
 		}
+
 		return true;
 	}
+
 	subscribe(
 		path: string,
 		callback: (error: true | null, change?: IFileChange) => void,
@@ -898,33 +996,42 @@ export class ParcelWatcher
 			if (watcher.failed) {
 				continue; // watcher has already failed
 			}
+
 			if (!isEqualOrParent(path, watcher.request.path, !isLinux)) {
 				continue; // watcher does not consider this path
 			}
+
 			if (watcher.exclude(path) || !watcher.include(path)) {
 				continue; // parcel instance does not consider this path
 			}
+
 			const disposables = new DisposableStore();
+
 			disposables.add(
 				Event.once(watcher.onDidStop)(async (e) => {
 					await e.joinRestart; // if we are restarting, await that so that we can possibly reuse this watcher again
 					if (disposables.isDisposed) {
 						return;
 					}
+
 					callback(true /* error */);
 				}),
 			);
+
 			disposables.add(
 				Event.once(watcher.onDidFail)(() => callback(true /* error */)),
 			);
+
 			disposables.add(
 				watcher.subscribe(path, (change) => callback(null, change)),
 			);
 
 			return disposables;
 		}
+
 		return undefined;
 	}
+
 	protected trace(message: string, watcher?: ParcelWatcherInstance): void {
 		if (this.verboseLogging) {
 			this._onDidLogMessage.fire({
@@ -933,18 +1040,21 @@ export class ParcelWatcher
 			});
 		}
 	}
+
 	protected warn(message: string, watcher?: ParcelWatcherInstance) {
 		this._onDidLogMessage.fire({
 			type: "warn",
 			message: this.toMessage(message, watcher?.request),
 		});
 	}
+
 	private error(message: string, request?: IRecursiveWatchRequest) {
 		this._onDidLogMessage.fire({
 			type: "error",
 			message: this.toMessage(message, request),
 		});
 	}
+
 	private toMessage(
 		message: string,
 		request?: IRecursiveWatchRequest,
@@ -953,6 +1063,7 @@ export class ParcelWatcher
 			? `[File Watcher] ${message} (path: ${request.path})`
 			: `[File Watcher ('parcel')] ${message}`;
 	}
+
 	protected get recursiveWatcher() {
 		return this;
 	}

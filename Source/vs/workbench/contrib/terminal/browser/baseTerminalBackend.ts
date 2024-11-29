@@ -29,19 +29,27 @@ export abstract class BaseTerminalBackend extends Disposable {
 	get isResponsive(): boolean {
 		return !this._isPtyHostUnresponsive;
 	}
+
 	protected readonly _onPtyHostConnected = this._register(
 		new Emitter<void>(),
 	);
+
 	readonly onPtyHostConnected = this._onPtyHostConnected.event;
+
 	protected readonly _onPtyHostRestart = this._register(new Emitter<void>());
+
 	readonly onPtyHostRestart = this._onPtyHostRestart.event;
+
 	protected readonly _onPtyHostUnresponsive = this._register(
 		new Emitter<void>(),
 	);
+
 	readonly onPtyHostUnresponsive = this._onPtyHostUnresponsive.event;
+
 	protected readonly _onPtyHostResponsive = this._register(
 		new Emitter<void>(),
 	);
+
 	readonly onPtyHostResponsive = this._onPtyHostResponsive.event;
 
 	constructor(
@@ -67,7 +75,9 @@ export abstract class BaseTerminalBackend extends Disposable {
 				);
 			}),
 		);
+
 		this._register(this.onPtyHostConnected(() => (hasStarted = true)));
+
 		this._register(
 			this._ptyHostController.onPtyHostStart(() => {
 				this._logService.debug(
@@ -78,12 +88,16 @@ export abstract class BaseTerminalBackend extends Disposable {
 					this._logService.trace(
 						"IPtyHostController#onPtyHostRestart",
 					);
+
 					this._onPtyHostRestart.fire();
 				}
+
 				statusBarAccessor?.dispose();
+
 				this._isPtyHostUnresponsive = false;
 			}),
 		);
+
 		this._register(
 			this._ptyHostController.onPtyHostUnresponsive(() => {
 				statusBarAccessor?.dispose();
@@ -105,26 +119,35 @@ export abstract class BaseTerminalBackend extends Disposable {
 						kind: "warning",
 					};
 				}
+
 				statusBarAccessor = statusBarService.addEntry(
 					unresponsiveStatusBarEntry,
 					"ptyHostStatus",
 					StatusbarAlignment.LEFT,
 				);
+
 				this._isPtyHostUnresponsive = true;
+
 				this._onPtyHostUnresponsive.fire();
 			}),
 		);
+
 		this._register(
 			this._ptyHostController.onPtyHostResponsive(() => {
 				if (!this._isPtyHostUnresponsive) {
 					return;
 				}
+
 				this._logService.info("The pty host became responsive again");
+
 				statusBarAccessor?.dispose();
+
 				this._isPtyHostUnresponsive = false;
+
 				this._onPtyHostResponsive.fire();
 			}),
 		);
+
 		this._register(
 			this._ptyHostController.onPtyHostRequestResolveVariables(
 				async (e) => {
@@ -135,6 +158,7 @@ export abstract class BaseTerminalBackend extends Disposable {
 					) {
 						return;
 					}
+
 					const activeWorkspaceRootUri =
 						historyService.getLastActiveWorkspaceRoot(Schemas.file);
 
@@ -154,6 +178,7 @@ export abstract class BaseTerminalBackend extends Disposable {
 					);
 
 					const result = await Promise.all(resolveCalls);
+
 					this._ptyHostController.acceptPtyHostResolvedVariables(
 						e.requestId,
 						result,
@@ -162,15 +187,18 @@ export abstract class BaseTerminalBackend extends Disposable {
 			),
 		);
 	}
+
 	restartPtyHost(): void {
 		this._ptyHostController.restartPtyHost();
 	}
+
 	protected _deserializeTerminalState(
 		serializedState: string | undefined,
 	): ISerializedTerminalState[] | undefined {
 		if (serializedState === undefined) {
 			return undefined;
 		}
+
 		const parsedUnknown = JSON.parse(serializedState);
 
 		if (
@@ -185,6 +213,7 @@ export abstract class BaseTerminalBackend extends Disposable {
 
 			return undefined;
 		}
+
 		const parsedCrossVersion =
 			parsedUnknown as ICrossVersionSerializedTerminalState;
 
@@ -196,8 +225,10 @@ export abstract class BaseTerminalBackend extends Disposable {
 
 			return undefined;
 		}
+
 		return parsedCrossVersion.state as ISerializedTerminalState[];
 	}
+
 	protected _getWorkspaceId(): string {
 		return this._workspaceContextService.getWorkspace().id;
 	}

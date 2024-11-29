@@ -98,6 +98,7 @@ function getIconFromIconDto(
 		return iconDto;
 	} else {
 		const icon = iconDto as { light: UriComponents; dark: UriComponents };
+
 		return { light: URI.revive(icon.light), dark: URI.revive(icon.dark) };
 	}
 }
@@ -109,6 +110,7 @@ function toISCMHistoryItem(historyItemDto: SCMHistoryItemDto): ISCMHistoryItem {
 	}));
 
 	const newLineIndex = historyItemDto.message.indexOf("\n");
+
 	const subject =
 		newLineIndex === -1
 			? historyItemDto.message
@@ -140,6 +142,7 @@ class SCMInputBoxContentProvider
 		private readonly languageService: ILanguageService,
 	) {
 		super();
+
 		this._register(
 			textModelService.registerTextModelContentProvider(
 				Schemas.vscodeSourceControl,
@@ -150,9 +153,11 @@ class SCMInputBoxContentProvider
 
 	async provideTextContent(resource: URI): Promise<ITextModel | null> {
 		const existing = this.modelService.getModel(resource);
+
 		if (existing) {
 			return existing;
 		}
+
 		return this.modelService.createModel(
 			"",
 			this.languageService.createById("scminput"),
@@ -167,13 +172,16 @@ class MainThreadSCMResourceGroup implements ISCMResourceGroup {
 	private _resourceTree:
 		| ResourceTree<ISCMResource, ISCMResourceGroup>
 		| undefined;
+
 	get resourceTree(): ResourceTree<ISCMResource, ISCMResourceGroup> {
 		if (!this._resourceTree) {
 			const rootUri = this.provider.rootUri ?? URI.file("/");
+
 			this._resourceTree = new ResourceTree<
 				ISCMResource,
 				ISCMResourceGroup
 			>(this, rootUri, this._uriIdentService.extUri);
+
 			for (const resource of this.resources) {
 				this._resourceTree.add(resource.sourceUri, resource);
 			}
@@ -183,9 +191,11 @@ class MainThreadSCMResourceGroup implements ISCMResourceGroup {
 	}
 
 	private readonly _onDidChange = new Emitter<void>();
+
 	readonly onDidChange: Event<void> = this._onDidChange.event;
 
 	private readonly _onDidChangeResources = new Emitter<void>();
+
 	readonly onDidChangeResources = this._onDidChangeResources.event;
 
 	get hideWhenEmpty(): boolean {
@@ -213,6 +223,7 @@ class MainThreadSCMResourceGroup implements ISCMResourceGroup {
 
 	splice(start: number, deleteCount: number, toInsert: ISCMResource[]) {
 		this.resources.splice(start, deleteCount, ...toInsert);
+
 		this._resourceTree = undefined;
 
 		this._onDidChangeResources.fire();
@@ -220,11 +231,13 @@ class MainThreadSCMResourceGroup implements ISCMResourceGroup {
 
 	$updateGroup(features: SCMGroupFeatures): void {
 		this.features = { ...this.features, ...features };
+
 		this._onDidChange.fire();
 	}
 
 	$updateGroupLabel(label: string): void {
 		this.label = label;
+
 		this._onDidChange.fire();
 	}
 }
@@ -273,6 +286,7 @@ class MainThreadSCMHistoryProvider implements ISCMHistoryProvider {
 		},
 		undefined,
 	);
+
 	get historyItemRef(): IObservable<ISCMHistoryItemRef | undefined> {
 		return this._historyItemRef;
 	}
@@ -286,6 +300,7 @@ class MainThreadSCMHistoryProvider implements ISCMHistoryProvider {
 		},
 		undefined,
 	);
+
 	get historyItemRemoteRef(): IObservable<ISCMHistoryItemRef | undefined> {
 		return this._historyItemRemoteRef;
 	}
@@ -299,6 +314,7 @@ class MainThreadSCMHistoryProvider implements ISCMHistoryProvider {
 		},
 		undefined,
 	);
+
 	get historyItemBaseRef(): IObservable<ISCMHistoryItemRef | undefined> {
 		return this._historyItemBaseRef;
 	}
@@ -310,6 +326,7 @@ class MainThreadSCMHistoryProvider implements ISCMHistoryProvider {
 			removed: [],
 			silent: false,
 		});
+
 	get historyItemRefChanges(): IObservable<ISCMHistoryItemRefsChangeEvent> {
 		return this._historyItemRefChanges;
 	}
@@ -337,6 +354,7 @@ class MainThreadSCMHistoryProvider implements ISCMHistoryProvider {
 			historyItemsRefs,
 			CancellationToken.None,
 		);
+
 		return historyItemRefs?.map((ref) => ({
 			...ref,
 			icon: getIconFromIconDto(ref.icon),
@@ -351,6 +369,7 @@ class MainThreadSCMHistoryProvider implements ISCMHistoryProvider {
 			options,
 			CancellationToken.None,
 		);
+
 		return historyItems?.map((historyItem) =>
 			toISCMHistoryItem(historyItem),
 		);
@@ -366,6 +385,7 @@ class MainThreadSCMHistoryProvider implements ISCMHistoryProvider {
 			historyItemParentId,
 			CancellationToken.None,
 		);
+
 		return changes?.map((change) => ({
 			uri: URI.revive(change.uri),
 			originalUri: change.originalUri && URI.revive(change.originalUri),
@@ -384,6 +404,7 @@ class MainThreadSCMHistoryProvider implements ISCMHistoryProvider {
 				toISCMHistoryItemRef(historyItemRef, historyItemRefColor),
 				tx,
 			);
+
 			this._historyItemRemoteRef.set(
 				toISCMHistoryItemRef(
 					historyItemRemoteRef,
@@ -391,6 +412,7 @@ class MainThreadSCMHistoryProvider implements ISCMHistoryProvider {
 				),
 				tx,
 			);
+
 			this._historyItemBaseRef.set(
 				toISCMHistoryItemRef(
 					historyItemBaseRef,
@@ -407,9 +429,11 @@ class MainThreadSCMHistoryProvider implements ISCMHistoryProvider {
 		const added = historyItemRefs.added.map(
 			(ref) => toISCMHistoryItemRef(ref)!,
 		);
+
 		const modified = historyItemRefs.modified.map(
 			(ref) => toISCMHistoryItemRef(ref)!,
 		);
+
 		const removed = historyItemRefs.removed.map(
 			(ref) => toISCMHistoryItemRef(ref)!,
 		);
@@ -423,16 +447,21 @@ class MainThreadSCMHistoryProvider implements ISCMHistoryProvider {
 
 class MainThreadSCMProvider implements ISCMProvider, QuickDiffProvider {
 	private static ID_HANDLE = 0;
+
 	private _id = `scm${MainThreadSCMProvider.ID_HANDLE++}`;
+
 	get id(): string {
 		return this._id;
 	}
 
 	readonly groups: MainThreadSCMResourceGroup[] = [];
+
 	private readonly _onDidChangeResourceGroups = new Emitter<void>();
+
 	readonly onDidChangeResourceGroups = this._onDidChangeResourceGroups.event;
 
 	private readonly _onDidChangeResources = new Emitter<void>();
+
 	readonly onDidChangeResources = this._onDidChangeResources.event;
 
 	private readonly _groupsByHandle: {
@@ -454,15 +483,19 @@ class MainThreadSCMProvider implements ISCMProvider, QuickDiffProvider {
 	get handle(): number {
 		return this._handle;
 	}
+
 	get label(): string {
 		return this._label;
 	}
+
 	get rootUri(): URI | undefined {
 		return this._rootUri;
 	}
+
 	get inputBoxTextModel(): ITextModel {
 		return this._inputBoxTextModel;
 	}
+
 	get contextValue(): string {
 		return this._providerId;
 	}
@@ -475,6 +508,7 @@ class MainThreadSCMProvider implements ISCMProvider, QuickDiffProvider {
 		this,
 		undefined,
 	);
+
 	get count() {
 		return this._count;
 	}
@@ -482,16 +516,19 @@ class MainThreadSCMProvider implements ISCMProvider, QuickDiffProvider {
 	private readonly _statusBarCommands = observableValue<
 		readonly Command[] | undefined
 	>(this, undefined);
+
 	get statusBarCommands() {
 		return this._statusBarCommands;
 	}
 
 	private readonly _name: string | undefined;
+
 	get name(): string {
 		return this._name ?? this._label;
 	}
 
 	private readonly _commitTemplate = observableValue<string>(this, "");
+
 	get commitTemplate() {
 		return this._commitTemplate;
 	}
@@ -499,17 +536,21 @@ class MainThreadSCMProvider implements ISCMProvider, QuickDiffProvider {
 	private readonly _actionButton = observableValue<
 		ISCMActionButtonDescriptor | undefined
 	>(this, undefined);
+
 	get actionButton(): IObservable<ISCMActionButtonDescriptor | undefined> {
 		return this._actionButton;
 	}
 
 	private _quickDiff: IDisposable | undefined;
+
 	public readonly isSCM: boolean = true;
+
 	public readonly visible: boolean = true;
 
 	private readonly _historyProvider = observableValue<
 		MainThreadSCMHistoryProvider | undefined
 	>(this, undefined);
+
 	get historyProvider() {
 		return this._historyProvider;
 	}
@@ -528,6 +569,7 @@ class MainThreadSCMProvider implements ISCMProvider, QuickDiffProvider {
 		if (_rootUri) {
 			const folder =
 				this._workspaceContextService.getWorkspaceFolder(_rootUri);
+
 			if (folder?.uri.toString() === _rootUri.toString()) {
 				this._name = folder.name;
 			} else if (_rootUri.path !== "/") {
@@ -566,6 +608,7 @@ class MainThreadSCMProvider implements ISCMProvider, QuickDiffProvider {
 			});
 		} else if (features.hasQuickDiffProvider === false && this._quickDiff) {
 			this._quickDiff.dispose();
+
 			this._quickDiff = undefined;
 		}
 
@@ -574,6 +617,7 @@ class MainThreadSCMProvider implements ISCMProvider, QuickDiffProvider {
 				this.proxy,
 				this.handle,
 			);
+
 			this._historyProvider.set(historyProvider, undefined);
 		} else if (
 			features.hasHistoryProvider === false &&
@@ -612,11 +656,13 @@ class MainThreadSCMProvider implements ISCMProvider, QuickDiffProvider {
 				);
 
 				this._groupsByHandle[handle] = group;
+
 				return group;
 			},
 		);
 
 		this.groups.splice(this.groups.length, 0, ...groups);
+
 		this._onDidChangeResourceGroups.fire();
 	}
 
@@ -648,6 +694,7 @@ class MainThreadSCMProvider implements ISCMProvider, QuickDiffProvider {
 				console.warn(
 					`SCM group ${groupHandle} not found in provider ${this.label}`,
 				);
+
 				continue;
 			}
 
@@ -670,9 +717,11 @@ class MainThreadSCMProvider implements ISCMProvider, QuickDiffProvider {
 					] = rawResource;
 
 					const [light, dark] = icons;
+
 					const icon = ThemeIcon.isThemeIcon(light)
 						? light
 						: URI.revive(light);
+
 					const iconDark =
 						(ThemeIcon.isThemeIcon(dark)
 							? dark
@@ -716,7 +765,9 @@ class MainThreadSCMProvider implements ISCMProvider, QuickDiffProvider {
 		}
 
 		delete this._groupsByHandle[handle];
+
 		this.groups.splice(this.groups.indexOf(group), 1);
+
 		this._onDidChangeResourceGroups.fire();
 	}
 
@@ -730,6 +781,7 @@ class MainThreadSCMProvider implements ISCMProvider, QuickDiffProvider {
 			uri,
 			CancellationToken.None,
 		);
+
 		return result && URI.revive(result);
 	}
 
@@ -778,9 +830,13 @@ class MainThreadSCMProvider implements ISCMProvider, QuickDiffProvider {
 @extHostNamedCustomer(MainContext.MainThreadSCM)
 export class MainThreadSCM implements MainThreadSCMShape {
 	private readonly _proxy: ExtHostSCMShape;
+
 	private _repositories = new Map<number, ISCMRepository>();
+
 	private _repositoryBarriers = new Map<number, Barrier>();
+
 	private _repositoryDisposables = new Map<number, IDisposable>();
+
 	private readonly _disposables = new DisposableStore();
 
 	constructor(
@@ -809,9 +865,11 @@ export class MainThreadSCM implements MainThreadSCMShape {
 
 	dispose(): void {
 		dispose(this._repositories.values());
+
 		this._repositories.clear();
 
 		dispose(this._repositoryDisposables.values());
+
 		this._repositoryDisposables.clear();
 
 		this._disposables.dispose();
@@ -830,6 +888,7 @@ export class MainThreadSCM implements MainThreadSCMShape {
 			await this.textModelService.createModelReference(
 				URI.revive(inputBoxDocumentUri),
 			);
+
 		const provider = new MainThreadSCMProvider(
 			this._proxy,
 			handle,
@@ -841,7 +900,9 @@ export class MainThreadSCM implements MainThreadSCMShape {
 			this._uriIdentService,
 			this.workspaceContextService,
 		);
+
 		const repository = this.scmService.registerSCMProvider(provider);
+
 		this._repositories.set(handle, repository);
 
 		const disposable = combinedDisposable(
@@ -854,6 +915,7 @@ export class MainThreadSCM implements MainThreadSCMShape {
 				this._proxy.$onInputBoxValueChange(handle, value),
 			),
 		);
+
 		this._repositoryDisposables.set(handle, disposable);
 
 		if (this.scmViewService.focusedRepository === repository) {
@@ -879,6 +941,7 @@ export class MainThreadSCM implements MainThreadSCMShape {
 		features: SCMProviderFeatures,
 	): Promise<void> {
 		await this._repositoryBarriers.get(handle)?.wait();
+
 		const repository = this._repositories.get(handle);
 
 		if (!repository) {
@@ -886,11 +949,13 @@ export class MainThreadSCM implements MainThreadSCMShape {
 		}
 
 		const provider = repository.provider as MainThreadSCMProvider;
+
 		provider.$updateSourceControl(features);
 	}
 
 	async $unregisterSourceControl(handle: number): Promise<void> {
 		await this._repositoryBarriers.get(handle)?.wait();
+
 		const repository = this._repositories.get(handle);
 
 		if (!repository) {
@@ -898,9 +963,11 @@ export class MainThreadSCM implements MainThreadSCMShape {
 		}
 
 		this._repositoryDisposables.get(handle)!.dispose();
+
 		this._repositoryDisposables.delete(handle);
 
 		repository.dispose();
+
 		this._repositories.delete(handle);
 	}
 
@@ -916,6 +983,7 @@ export class MainThreadSCM implements MainThreadSCMShape {
 		splices: SCMRawResourceSplices[],
 	): Promise<void> {
 		await this._repositoryBarriers.get(sourceControlHandle)?.wait();
+
 		const repository = this._repositories.get(sourceControlHandle);
 
 		if (!repository) {
@@ -923,7 +991,9 @@ export class MainThreadSCM implements MainThreadSCMShape {
 		}
 
 		const provider = repository.provider as MainThreadSCMProvider;
+
 		provider.$registerGroups(groups);
+
 		provider.$spliceGroupResourceStates(splices);
 	}
 
@@ -933,6 +1003,7 @@ export class MainThreadSCM implements MainThreadSCMShape {
 		features: SCMGroupFeatures,
 	): Promise<void> {
 		await this._repositoryBarriers.get(sourceControlHandle)?.wait();
+
 		const repository = this._repositories.get(sourceControlHandle);
 
 		if (!repository) {
@@ -940,6 +1011,7 @@ export class MainThreadSCM implements MainThreadSCMShape {
 		}
 
 		const provider = repository.provider as MainThreadSCMProvider;
+
 		provider.$updateGroup(groupHandle, features);
 	}
 
@@ -949,6 +1021,7 @@ export class MainThreadSCM implements MainThreadSCMShape {
 		label: string,
 	): Promise<void> {
 		await this._repositoryBarriers.get(sourceControlHandle)?.wait();
+
 		const repository = this._repositories.get(sourceControlHandle);
 
 		if (!repository) {
@@ -956,6 +1029,7 @@ export class MainThreadSCM implements MainThreadSCMShape {
 		}
 
 		const provider = repository.provider as MainThreadSCMProvider;
+
 		provider.$updateGroupLabel(groupHandle, label);
 	}
 
@@ -964,6 +1038,7 @@ export class MainThreadSCM implements MainThreadSCMShape {
 		splices: SCMRawResourceSplices[],
 	): Promise<void> {
 		await this._repositoryBarriers.get(sourceControlHandle)?.wait();
+
 		const repository = this._repositories.get(sourceControlHandle);
 
 		if (!repository) {
@@ -971,6 +1046,7 @@ export class MainThreadSCM implements MainThreadSCMShape {
 		}
 
 		const provider = repository.provider as MainThreadSCMProvider;
+
 		provider.$spliceGroupResourceStates(splices);
 	}
 
@@ -979,6 +1055,7 @@ export class MainThreadSCM implements MainThreadSCMShape {
 		handle: number,
 	): Promise<void> {
 		await this._repositoryBarriers.get(sourceControlHandle)?.wait();
+
 		const repository = this._repositories.get(sourceControlHandle);
 
 		if (!repository) {
@@ -986,6 +1063,7 @@ export class MainThreadSCM implements MainThreadSCMShape {
 		}
 
 		const provider = repository.provider as MainThreadSCMProvider;
+
 		provider.$unregisterGroup(handle);
 	}
 
@@ -994,6 +1072,7 @@ export class MainThreadSCM implements MainThreadSCMShape {
 		value: string,
 	): Promise<void> {
 		await this._repositoryBarriers.get(sourceControlHandle)?.wait();
+
 		const repository = this._repositories.get(sourceControlHandle);
 
 		if (!repository) {
@@ -1008,6 +1087,7 @@ export class MainThreadSCM implements MainThreadSCMShape {
 		placeholder: string,
 	): Promise<void> {
 		await this._repositoryBarriers.get(sourceControlHandle)?.wait();
+
 		const repository = this._repositories.get(sourceControlHandle);
 
 		if (!repository) {
@@ -1022,6 +1102,7 @@ export class MainThreadSCM implements MainThreadSCMShape {
 		enabled: boolean,
 	): Promise<void> {
 		await this._repositoryBarriers.get(sourceControlHandle)?.wait();
+
 		const repository = this._repositories.get(sourceControlHandle);
 
 		if (!repository) {
@@ -1036,6 +1117,7 @@ export class MainThreadSCM implements MainThreadSCMShape {
 		visible: boolean,
 	): Promise<void> {
 		await this._repositoryBarriers.get(sourceControlHandle)?.wait();
+
 		const repository = this._repositories.get(sourceControlHandle);
 
 		if (!repository) {
@@ -1051,7 +1133,9 @@ export class MainThreadSCM implements MainThreadSCMShape {
 		type: InputValidationType,
 	): Promise<void> {
 		await this._repositoryBarriers.get(sourceControlHandle)?.wait();
+
 		const repository = this._repositories.get(sourceControlHandle);
+
 		if (!repository) {
 			return;
 		}
@@ -1064,6 +1148,7 @@ export class MainThreadSCM implements MainThreadSCMShape {
 		enabled: boolean,
 	): Promise<void> {
 		await this._repositoryBarriers.get(sourceControlHandle)?.wait();
+
 		const repository = this._repositories.get(sourceControlHandle);
 
 		if (!repository) {
@@ -1080,6 +1165,7 @@ export class MainThreadSCM implements MainThreadSCMShape {
 					value,
 					pos,
 				);
+
 				return result && { message: result[0], type: result[1] };
 			};
 		} else {
@@ -1094,6 +1180,7 @@ export class MainThreadSCM implements MainThreadSCMShape {
 		historyItemBaseRef?: SCMHistoryItemRefDto,
 	): Promise<void> {
 		await this._repositoryBarriers.get(sourceControlHandle)?.wait();
+
 		const repository = this._repositories.get(sourceControlHandle);
 
 		if (!repository) {
@@ -1101,6 +1188,7 @@ export class MainThreadSCM implements MainThreadSCMShape {
 		}
 
 		const provider = repository.provider as MainThreadSCMProvider;
+
 		provider.$onDidChangeHistoryProviderCurrentHistoryItemRefs(
 			historyItemRef,
 			historyItemRemoteRef,
@@ -1113,6 +1201,7 @@ export class MainThreadSCM implements MainThreadSCMShape {
 		historyItemRefs: SCMHistoryItemRefsChangeEventDto,
 	): Promise<void> {
 		await this._repositoryBarriers.get(sourceControlHandle)?.wait();
+
 		const repository = this._repositories.get(sourceControlHandle);
 
 		if (!repository) {
@@ -1120,6 +1209,7 @@ export class MainThreadSCM implements MainThreadSCMShape {
 		}
 
 		const provider = repository.provider as MainThreadSCMProvider;
+
 		provider.$onDidChangeHistoryProviderHistoryItemRefs(historyItemRefs);
 	}
 }

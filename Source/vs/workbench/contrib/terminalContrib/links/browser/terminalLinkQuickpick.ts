@@ -38,12 +38,16 @@ import { getLinkSuffix } from "./terminalLinkParsing.js";
 
 export class TerminalLinkQuickpick extends DisposableStore {
 	private readonly _editorSequencer = new Sequencer();
+
 	private readonly _editorViewState: PickerEditorState;
+
 	private _instance:
 		| ITerminalInstance
 		| IDetachedTerminalInstance
 		| undefined;
+
 	private readonly _onDidRequestMoreLinks = this.add(new Emitter<void>());
+
 	readonly onDidRequestMoreLinks = this._onDidRequestMoreLinks.event;
 
 	constructor(
@@ -57,14 +61,17 @@ export class TerminalLinkQuickpick extends DisposableStore {
 		private readonly _quickInputService: IQuickInputService,
 	) {
 		super();
+
 		this._editorViewState = this.add(
 			instantiationService.createInstance(PickerEditorState),
 		);
 	}
+
 	async show(
 		instance: ITerminalInstance | IDetachedTerminalInstance,
 		links: {
 			viewport: IDetectedLinks;
+
 			all: Promise<IDetectedLinks>;
 		},
 	): Promise<void> {
@@ -100,15 +107,19 @@ export class TerminalLinkQuickpick extends DisposableStore {
 				type: "separator",
 				label: localize("terminal.integrated.urlLinks", "Url"),
 			});
+
 			picks.push(...webPicks);
 		}
+
 		if (filePicks) {
 			picks.push({
 				type: "separator",
 				label: localize("terminal.integrated.localFileLinks", "File"),
 			});
+
 			picks.push(...filePicks);
 		}
+
 		if (folderPicks) {
 			picks.push({
 				type: "separator",
@@ -117,8 +128,10 @@ export class TerminalLinkQuickpick extends DisposableStore {
 					"Folder",
 				),
 			});
+
 			picks.push(...folderPicks);
 		}
+
 		if (wordPicks) {
 			picks.push({
 				type: "separator",
@@ -127,6 +140,7 @@ export class TerminalLinkQuickpick extends DisposableStore {
 					"Workspace Search",
 				),
 			});
+
 			picks.push(...wordPicks);
 		}
 		// Create and show quick pick
@@ -135,13 +149,18 @@ export class TerminalLinkQuickpick extends DisposableStore {
 		>({ useSeparators: true });
 
 		const disposables = new DisposableStore();
+
 		disposables.add(pick);
+
 		pick.items = picks;
+
 		pick.placeholder = localize(
 			"terminal.integrated.openDetectedLink",
 			"Select the link to open, type to filter all links",
 		);
+
 		pick.sortByLabel = false;
+
 		pick.show();
 
 		if (pick.activeItems.length > 0) {
@@ -159,6 +178,7 @@ export class TerminalLinkQuickpick extends DisposableStore {
 					if (accepted) {
 						return;
 					}
+
 					const wordIgnoreLinks = [
 						...(allLinks.fileLinks ?? []),
 						...(allLinks.folderLinks ?? []),
@@ -194,8 +214,10 @@ export class TerminalLinkQuickpick extends DisposableStore {
 								"Url",
 							),
 						});
+
 						picks.push(...webPicks);
 					}
+
 					if (filePicks) {
 						picks.push({
 							type: "separator",
@@ -204,8 +226,10 @@ export class TerminalLinkQuickpick extends DisposableStore {
 								"File",
 							),
 						});
+
 						picks.push(...filePicks);
 					}
+
 					if (folderPicks) {
 						picks.push({
 							type: "separator",
@@ -214,8 +238,10 @@ export class TerminalLinkQuickpick extends DisposableStore {
 								"Folder",
 							),
 						});
+
 						picks.push(...folderPicks);
 					}
+
 					if (wordPicks) {
 						picks.push({
 							type: "separator",
@@ -224,15 +250,19 @@ export class TerminalLinkQuickpick extends DisposableStore {
 								"Workspace Search",
 							),
 						});
+
 						picks.push(...wordPicks);
 					}
+
 					pick.items = picks;
 				}),
 			);
 		}
+
 		disposables.add(
 			pick.onDidChangeActive(async () => {
 				const [item] = pick.activeItems;
+
 				this._previewItem(item);
 			}),
 		);
@@ -246,7 +276,9 @@ export class TerminalLinkQuickpick extends DisposableStore {
 
 						if (markTracker) {
 							markTracker.restoreScrollState();
+
 							markTracker.clear();
+
 							this._terminalScrollStateSaved = false;
 						}
 					}
@@ -257,6 +289,7 @@ export class TerminalLinkQuickpick extends DisposableStore {
 					if (reason === QuickInputHideReason.Gesture) {
 						this._editorViewState.restore();
 					}
+
 					disposables.dispose();
 
 					if (pick.selectedItems.length === 0) {
@@ -264,9 +297,11 @@ export class TerminalLinkQuickpick extends DisposableStore {
 							AccessibleViewProviderId.Terminal,
 						);
 					}
+
 					r();
 				}),
 			);
+
 			disposables.add(
 				Event.once(pick.onDidAccept)(() => {
 					// Restore terminal scroll state
@@ -275,10 +310,13 @@ export class TerminalLinkQuickpick extends DisposableStore {
 
 						if (markTracker) {
 							markTracker.restoreScrollState();
+
 							markTracker.clear();
+
 							this._terminalScrollStateSaved = false;
 						}
 					}
+
 					accepted = true;
 
 					const event = new TerminalLinkQuickPickEvent(
@@ -290,7 +328,9 @@ export class TerminalLinkQuickpick extends DisposableStore {
 					if (activeItem && "link" in activeItem) {
 						activeItem.link.activate(event, activeItem.label);
 					}
+
 					disposables.dispose();
+
 					r();
 				}),
 			);
@@ -306,6 +346,7 @@ export class TerminalLinkQuickpick extends DisposableStore {
 		if (!links) {
 			return;
 		}
+
 		const linkTextKeys: Set<string> = new Set();
 
 		const linkUriKeys: Set<string> = new Set();
@@ -333,6 +374,7 @@ export class TerminalLinkQuickpick extends DisposableStore {
 							TerminalBuiltinLinkType.LocalFolderOutsideWorkspace
 					) {
 						label = basenameOrAuthority(link.uri);
+
 						description = this._labelService.getUriLabel(
 							dirname(link.uri),
 							{ relative: true },
@@ -346,6 +388,7 @@ export class TerminalLinkQuickpick extends DisposableStore {
 							if (link.parsedLink?.suffix?.rowEnd !== undefined) {
 								label += `-${link.parsedLink.suffix.rowEnd}`;
 							}
+
 							if (link.parsedLink?.suffix?.col !== undefined) {
 								label += `:${link.parsedLink.suffix.col}`;
 
@@ -362,29 +405,37 @@ export class TerminalLinkQuickpick extends DisposableStore {
 					if (linkUriKeys.has(label + "|" + (description ?? ""))) {
 						continue;
 					}
+
 					linkUriKeys.add(label + "|" + (description ?? ""));
 				}
+
 				picks.push({ label, link, description });
 			}
 		}
+
 		return picks.length > 0 ? picks : undefined;
 	}
+
 	private _previewItem(item: ITerminalLinkQuickPickItem | IQuickPickItem) {
 		if (!item || !("link" in item) || !item.link) {
 			return;
 		}
 		// Any link can be previewed in the termninal
 		const link = item.link;
+
 		this._previewItemInTerminal(link);
 
 		if (!("uri" in link) || !link.uri) {
 			return;
 		}
+
 		if (link.type !== TerminalBuiltinLinkType.LocalFile) {
 			return;
 		}
+
 		this._previewItemInEditor(link);
 	}
+
 	private _previewItemInEditor(link: TerminalLink) {
 		const linkSuffix = link.parsedLink
 			? link.parsedLink.suffix
@@ -399,7 +450,9 @@ export class TerminalLinkQuickpick extends DisposableStore {
 						endLineNumber: linkSuffix.rowEnd,
 						endColumn: linkSuffix.colEnd,
 					};
+
 		this._editorViewState.set();
+
 		this._editorSequencer.queue(async () => {
 			await this._editorViewState.openTransientEditor({
 				resource: link.uri,
@@ -412,17 +465,22 @@ export class TerminalLinkQuickpick extends DisposableStore {
 			});
 		});
 	}
+
 	private _terminalScrollStateSaved: boolean = false;
+
 	private _previewItemInTerminal(link: ILink) {
 		const xterm = this._instance?.xterm;
 
 		if (!xterm) {
 			return;
 		}
+
 		if (!this._terminalScrollStateSaved) {
 			xterm.markTracker.saveScrollState();
+
 			this._terminalScrollStateSaved = true;
 		}
+
 		xterm.markTracker.revealRange(link.range);
 	}
 }

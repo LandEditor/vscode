@@ -43,8 +43,11 @@ export class ExtractError extends Error {
 
 				break;
 		}
+
 		super(message);
+
 		this.type = type;
+
 		this.cause = cause;
 	}
 }
@@ -59,11 +62,13 @@ function toExtractError(err: Error): ExtractError {
 	if (err instanceof ExtractError) {
 		return err;
 	}
+
 	let type: ExtractErrorType | undefined = undefined;
 
 	if (CORRUPT_ZIP_PATTERN.test(err.message)) {
 		type = "CorruptZip";
 	}
+
 	return new ExtractError(type, err);
 }
 function extractEntry(
@@ -89,9 +94,11 @@ function extractEntry(
 			),
 		);
 	}
+
 	const targetFileName = path.join(targetPath, fileName);
 
 	let istream: WriteStream;
+
 	token.onCancellationRequested(() => {
 		istream?.destroy();
 	});
@@ -104,11 +111,16 @@ function extractEntry(
 				if (token.isCancellationRequested) {
 					return;
 				}
+
 				try {
 					istream = createWriteStream(targetFileName, { mode });
+
 					istream.once("close", () => c());
+
 					istream.once("error", e);
+
 					stream.once("error", e);
+
 					stream.pipe(istream);
 				} catch (error) {
 					e(error);
@@ -128,6 +140,7 @@ function extractZip(
 
 	const listener = token.onCancellationRequested(() => {
 		last.cancel();
+
 		zipfile.close();
 	});
 
@@ -138,10 +151,14 @@ function extractZip(
 			if (token.isCancellationRequested) {
 				return;
 			}
+
 			extractedEntriesCount++;
+
 			zipfile.readEntry();
 		};
+
 		zipfile.once("error", e);
+
 		zipfile.once("close", () =>
 			last.then(() => {
 				if (
@@ -166,16 +183,20 @@ function extractZip(
 				}
 			}, e),
 		);
+
 		zipfile.readEntry();
+
 		zipfile.on("entry", (entry: Entry) => {
 			if (token.isCancellationRequested) {
 				return;
 			}
+
 			if (!options.sourcePathRegex.test(entry.fileName)) {
 				readNextEntry(token);
 
 				return;
 			}
+
 			const fileName = entry.fileName.replace(
 				options.sourcePathRegex,
 				"",
@@ -183,6 +204,7 @@ function extractZip(
 			// directory file names end with '/'
 			if (/\/$/.test(fileName)) {
 				const targetFileName = path.join(targetPath, fileName);
+
 				last = createCancelablePromise((token) =>
 					promises
 						.mkdir(targetFileName, { recursive: true })
@@ -192,9 +214,11 @@ function extractZip(
 
 				return;
 			}
+
 			const stream = openZipStream(zipfile, entry);
 
 			const mode = modeFromEntry(entry);
+
 			last = createCancelablePromise((token) =>
 				throttler
 					.queue(() =>
@@ -250,7 +274,9 @@ function openZipStream(zipFile: ZipFile, entry: Entry): Promise<Readable> {
 }
 export interface IFile {
 	path: string;
+
 	contents?: Buffer | string;
+
 	localPath?: string;
 }
 export async function zip(zipPath: string, files: IFile[]): Promise<string> {
@@ -258,6 +284,7 @@ export async function zip(zipPath: string, files: IFile[]): Promise<string> {
 
 	return new Promise<string>((c, e) => {
 		const zip = new ZipFile();
+
 		files.forEach((f) => {
 			if (f.contents) {
 				zip.addBuffer(
@@ -270,12 +297,17 @@ export async function zip(zipPath: string, files: IFile[]): Promise<string> {
 				zip.addFile(f.localPath, f.path);
 			}
 		});
+
 		zip.end();
 
 		const zipStream = createWriteStream(zipPath);
+
 		zip.outputStream.pipe(zipStream);
+
 		zip.outputStream.once("error", e);
+
 		zipStream.once("error", e);
+
 		zipStream.once("finish", () => c(zipPath));
 	});
 }
@@ -296,6 +328,7 @@ export function extract(
 			Promises.rm(targetPath).then(() => zipfile),
 		);
 	}
+
 	return promise.then((zipfile) =>
 		extractZip(zipfile, targetPath, { sourcePathRegex }, token),
 	);
@@ -311,6 +344,7 @@ function read(zipPath: string, filePath: string): Promise<Readable> {
 					);
 				}
 			});
+
 			zipfile.once("close", () =>
 				e(
 					new Error(
@@ -329,8 +363,11 @@ export function buffer(zipPath: string, filePath: string): Promise<Buffer> {
 	return read(zipPath, filePath).then((stream) => {
 		return new Promise<Buffer>((c, e) => {
 			const buffers: Buffer[] = [];
+
 			stream.once("error", e);
+
 			stream.on("data", (b: Buffer) => buffers.push(b));
+
 			stream.on("end", () => c(Buffer.concat(buffers)));
 		});
 	});

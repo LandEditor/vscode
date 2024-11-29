@@ -39,6 +39,7 @@ export class GoToFileAction extends Action2 {
 			},
 		});
 	}
+
 	async run(accessor: ServicesAccessor, ...args: any[]): Promise<void> {
 		const uri = args[0] as URI;
 
@@ -51,11 +52,13 @@ export class GoToFileAction extends Action2 {
 		if (!(activeEditorPane instanceof MultiDiffEditor)) {
 			return;
 		}
+
 		const editor = activeEditorPane.tryGetCodeEditor(uri);
 
 		if (editor) {
 			selections = editor.editor.getSelections() ?? undefined;
 		}
+
 		let targetUri = uri;
 
 		const item = activeEditorPane.findDocumentDiffItem(uri);
@@ -63,6 +66,7 @@ export class GoToFileAction extends Action2 {
 		if (item && item.goToFileUri) {
 			targetUri = item.goToFileUri;
 		}
+
 		await editorService.openEditor({
 			resource: targetUri,
 			options: {
@@ -95,6 +99,7 @@ export class CollapseAllAction extends Action2 {
 			f1: true,
 		});
 	}
+
 	async run(accessor: ServicesAccessor, ...args: unknown[]): Promise<void> {
 		const resolvedContext = resolveCommandsContext(
 			args,
@@ -108,10 +113,12 @@ export class CollapseAllAction extends Action2 {
 		if (!groupContext) {
 			return;
 		}
+
 		const editor = groupContext.editors[0];
 
 		if (editor instanceof MultiDiffEditorInput) {
 			const viewModel = await editor.getViewModel();
+
 			viewModel.collapseAll();
 		}
 	}
@@ -138,6 +145,7 @@ export class ExpandAllAction extends Action2 {
 			f1: true,
 		});
 	}
+
 	async run(accessor: ServicesAccessor, ...args: unknown[]): Promise<void> {
 		const resolvedContext = resolveCommandsContext(
 			args,
@@ -151,10 +159,12 @@ export class ExpandAllAction extends Action2 {
 		if (!groupContext) {
 			return;
 		}
+
 		const editor = groupContext.editors[0];
 
 		if (editor instanceof MultiDiffEditorInput) {
 			const viewModel = await editor.getViewModel();
+
 			viewModel.expandAll();
 		}
 	}

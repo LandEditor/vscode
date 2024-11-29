@@ -30,17 +30,26 @@ export const TimelineHasProviderContext = new RawContextKey<boolean>(
 
 export class TimelineService implements ITimelineService {
 	declare readonly _serviceBrand: undefined;
+
 	private readonly _onDidChangeProviders =
 		new Emitter<TimelineProvidersChangeEvent>();
+
 	readonly onDidChangeProviders: Event<TimelineProvidersChangeEvent> =
 		this._onDidChangeProviders.event;
+
 	private readonly _onDidChangeTimeline = new Emitter<TimelineChangeEvent>();
+
 	readonly onDidChangeTimeline: Event<TimelineChangeEvent> =
 		this._onDidChangeTimeline.event;
+
 	private readonly _onDidChangeUri = new Emitter<URI>();
+
 	readonly onDidChangeUri: Event<URI> = this._onDidChangeUri.event;
+
 	private readonly hasProviderContext: IContextKey<boolean>;
+
 	private readonly providers = new Map<string, TimelineProvider>();
+
 	private readonly providerSubscriptions = new Map<string, IDisposable>();
 
 	constructor(
@@ -56,14 +65,17 @@ export class TimelineService implements ITimelineService {
 		this.hasProviderContext = TimelineHasProviderContext.bindTo(
 			this.contextKeyService,
 		);
+
 		this.updateHasProviderContext();
 	}
+
 	getSources() {
 		return [...this.providers.values()].map((p) => ({
 			id: p.id,
 			label: p.label,
 		}));
 	}
+
 	getTimeline(
 		id: string,
 		uri: URI,
@@ -79,6 +91,7 @@ export class TimelineService implements ITimelineService {
 		if (provider === undefined) {
 			return undefined;
 		}
+
 		if (typeof provider.scheme === "string") {
 			if (provider.scheme !== "*" && provider.scheme !== uri.scheme) {
 				return undefined;
@@ -86,6 +99,7 @@ export class TimelineService implements ITimelineService {
 		} else if (!provider.scheme.includes(uri.scheme)) {
 			return undefined;
 		}
+
 		return {
 			result: provider
 				.provideTimeline(uri, options, tokenSource.token)
@@ -93,10 +107,12 @@ export class TimelineService implements ITimelineService {
 					if (result === undefined) {
 						return undefined;
 					}
+
 					result.items = result.items.map((item) => ({
 						...item,
 						source: provider.id,
 					}));
+
 					result.items.sort(
 						(a, b) =>
 							b.timestamp - a.timestamp ||
@@ -114,6 +130,7 @@ export class TimelineService implements ITimelineService {
 			uri: uri,
 		};
 	}
+
 	registerTimelineProvider(provider: TimelineProvider): IDisposable {
 		this.logService.trace(
 			`TimelineService#registerTimelineProvider: id=${provider.id}`,
@@ -132,7 +149,9 @@ export class TimelineService implements ITimelineService {
 				existing?.dispose();
 			} catch {}
 		}
+
 		this.providers.set(id, provider);
+
 		this.updateHasProviderContext();
 
 		if (provider.onDidChange) {
@@ -141,15 +160,18 @@ export class TimelineService implements ITimelineService {
 				provider.onDidChange((e) => this._onDidChangeTimeline.fire(e)),
 			);
 		}
+
 		this._onDidChangeProviders.fire({ added: [id] });
 
 		return {
 			dispose: () => {
 				this.providers.delete(id);
+
 				this._onDidChangeProviders.fire({ removed: [id] });
 			},
 		};
 	}
+
 	unregisterTimelineProvider(id: string): void {
 		this.logService.trace(
 			`TimelineService#unregisterTimelineProvider: id=${id}`,
@@ -158,15 +180,22 @@ export class TimelineService implements ITimelineService {
 		if (!this.providers.has(id)) {
 			return;
 		}
+
 		this.providers.delete(id);
+
 		this.providerSubscriptions.delete(id);
+
 		this.updateHasProviderContext();
+
 		this._onDidChangeProviders.fire({ removed: [id] });
 	}
+
 	setUri(uri: URI) {
 		this.viewsService.openView(TimelinePaneId, true);
+
 		this._onDidChangeUri.fire(uri);
 	}
+
 	private updateHasProviderContext() {
 		this.hasProviderContext.set(this.providers.size !== 0);
 	}

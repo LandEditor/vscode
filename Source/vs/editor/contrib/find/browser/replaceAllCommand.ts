@@ -13,12 +13,16 @@ import { ITextModel } from "../../../common/model.js";
 
 interface IEditOperation {
 	range: Range;
+
 	text: string;
 }
 export class ReplaceAllCommand implements ICommand {
 	private readonly _editorSelection: Selection;
+
 	private _trackedEditorSelectionId: string | null;
+
 	private readonly _ranges: Range[];
+
 	private readonly _replaceStrings: string[];
 
 	constructor(
@@ -27,10 +31,14 @@ export class ReplaceAllCommand implements ICommand {
 		replaceStrings: string[],
 	) {
 		this._editorSelection = editorSelection;
+
 		this._ranges = ranges;
+
 		this._replaceStrings = replaceStrings;
+
 		this._trackedEditorSelectionId = null;
 	}
+
 	public getEditOperations(
 		model: ITextModel,
 		builder: IEditOperationBuilder,
@@ -62,22 +70,27 @@ export class ReplaceAllCommand implements ICommand {
 				) {
 					// These operations are one after another and can be merged
 					previousOp.range = previousOp.range.plusRange(ops[i].range);
+
 					previousOp.text = previousOp.text + ops[i].text;
 				} else {
 					resultOps.push(previousOp);
+
 					previousOp = ops[i];
 				}
 			}
+
 			resultOps.push(previousOp);
 
 			for (const op of resultOps) {
 				builder.addEditOperation(op.range, op.text);
 			}
 		}
+
 		this._trackedEditorSelectionId = builder.trackSelection(
 			this._editorSelection,
 		);
 	}
+
 	public computeCursorState(
 		model: ITextModel,
 		helper: ICursorStateComputerData,

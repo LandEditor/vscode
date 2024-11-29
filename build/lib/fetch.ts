@@ -12,8 +12,11 @@ import * as VinylFile from "vinyl";
 
 export interface IFetchOptions {
 	base?: string;
+
 	nodeFetchOptions?: RequestInit;
+
 	verbose?: boolean;
+
 	checksumSha256?: string;
 }
 export function fetchUrls(
@@ -23,15 +26,19 @@ export function fetchUrls(
 	if (options === undefined) {
 		options = {};
 	}
+
 	if (typeof options.base !== "string" && options.base !== null) {
 		options.base = "/";
 	}
+
 	if (!Array.isArray(urls)) {
 		urls = [urls];
 	}
+
 	return es.readArray(urls).pipe(
 		es.map<string, VinylFile | void>((data: string, cb) => {
 			const url = [options.base, data].join("");
+
 			fetchUrl(url, options).then(
 				(file) => {
 					cb(undefined, file);
@@ -61,8 +68,10 @@ export async function fetchUrl(
 			log(
 				`Start fetching ${ansiColors.magenta(url)}${retries !== 10 ? ` (${10 - retries} retry)` : ""}`,
 			);
+
 			startTime = new Date().getTime();
 		}
+
 		const controller = new AbortController();
 
 		const timeout = setTimeout(() => controller.abort(), 30 * 1000);
@@ -78,6 +87,7 @@ export async function fetchUrl(
 					`Fetch completed: Status ${response.status}. Took ${ansiColors.magenta(`${new Date().getTime() - startTime} ms`)}`,
 				);
 			}
+
 			if (
 				response.ok &&
 				response.status >= 200 &&
@@ -105,11 +115,13 @@ export async function fetchUrl(
 						`Skipping checksum verification for ${ansiColors.cyan(url)} because no expected checksum was provided`,
 					);
 				}
+
 				if (verbose) {
 					log(
 						`Fetched response body buffer: ${ansiColors.magenta(`${(contents as Buffer).byteLength} bytes`)}`,
 					);
 				}
+
 				return new VinylFile({
 					cwd: "/",
 					base: options.base,
@@ -117,11 +129,13 @@ export async function fetchUrl(
 					contents,
 				});
 			}
+
 			let err = `Request ${ansiColors.magenta(url)} failed with status code: ${response.status}`;
 
 			if (response.status === 403) {
 				err += " (you may be rate limited)";
 			}
+
 			throw new Error(err);
 		} finally {
 			clearTimeout(timeout);
@@ -130,11 +144,13 @@ export async function fetchUrl(
 		if (verbose) {
 			log(`Fetching ${ansiColors.cyan(url)} failed: ${e}`);
 		}
+
 		if (retries > 0) {
 			await new Promise((resolve) => setTimeout(resolve, retryDelay));
 
 			return fetchUrl(url, options, retries - 1, retryDelay);
 		}
+
 		throw e;
 	}
 }
@@ -155,8 +171,11 @@ const ghDownloadHeaders = {
 
 export interface IGitHubAssetOptions {
 	version: string;
+
 	name: string | ((name: string) => boolean);
+
 	checksumSha256?: string;
+
 	verbose?: boolean;
 }
 /**
@@ -194,6 +213,7 @@ export function fetchGithub(
 					),
 				);
 			}
+
 			try {
 				callback(
 					null,

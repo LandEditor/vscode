@@ -21,7 +21,9 @@ export function isEmptyWindowBackupInfo(
 }
 export interface ISerializedWorkspaceBackupInfo {
 	readonly id: string;
+
 	readonly configURIPath: string;
+
 	remoteAuthority?: string;
 }
 export function deserializeWorkspaceInfos(
@@ -44,10 +46,12 @@ export function deserializeWorkspaceInfos(
 	} catch (e) {
 		// ignore URI parsing exceptions
 	}
+
 	return workspaceBackupInfos;
 }
 export interface ISerializedFolderBackupInfo {
 	readonly folderUri: string;
+
 	remoteAuthority?: string;
 }
 export function deserializeFolderInfos(
@@ -67,17 +71,22 @@ export function deserializeFolderInfos(
 	} catch (e) {
 		// ignore URI parsing exceptions
 	}
+
 	return folderBackupInfos;
 }
 export interface ISerializedEmptyWindowBackupInfo
 	extends IEmptyWindowBackupInfo {}
 export interface ILegacySerializedBackupWorkspaces {
 	readonly rootURIWorkspaces: ISerializedWorkspaceBackupInfo[];
+
 	readonly folderWorkspaceInfos: ISerializedFolderBackupInfo[];
+
 	readonly emptyWorkspaceInfos: ISerializedEmptyWindowBackupInfo[];
 }
 export interface ISerializedBackupWorkspaces {
 	readonly workspaces: ISerializedWorkspaceBackupInfo[];
+
 	readonly folders: ISerializedFolderBackupInfo[];
+
 	readonly emptyWindows: ISerializedEmptyWindowBackupInfo[];
 }

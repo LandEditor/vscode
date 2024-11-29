@@ -93,6 +93,7 @@ export class ExtensionManagementService extends BaseExtensionManagementService {
 			telemetryService,
 		);
 	}
+
 	protected override async installVSIXInServer(
 		vsix: URI,
 		server: IExtensionManagementServer,
@@ -108,9 +109,12 @@ export class ExtensionManagementService extends BaseExtensionManagementService {
 				this.environmentService.tmpDir,
 				generateUuid(),
 			);
+
 			await this.downloadService.download(vsix, downloadedLocation);
+
 			vsix = downloadedLocation;
 		}
+
 		return super.installVSIXInServer(vsix, server, options);
 	}
 }

@@ -17,6 +17,7 @@ export class EditSessionsLogService
 	implements IEditSessionsLogService
 {
 	declare readonly _serviceBrand: undefined;
+
 	private readonly logger: ILogger;
 
 	constructor(
@@ -26,6 +27,7 @@ export class EditSessionsLogService
 		environmentService: IEnvironmentService,
 	) {
 		super();
+
 		this.logger = this._register(
 			loggerService.createLogger(
 				joinPath(
@@ -39,21 +41,27 @@ export class EditSessionsLogService
 			),
 		);
 	}
+
 	trace(message: string, ...args: any[]): void {
 		this.logger.trace(message, ...args);
 	}
+
 	debug(message: string, ...args: any[]): void {
 		this.logger.debug(message, ...args);
 	}
+
 	info(message: string, ...args: any[]): void {
 		this.logger.info(message, ...args);
 	}
+
 	warn(message: string, ...args: any[]): void {
 		this.logger.warn(message, ...args);
 	}
+
 	error(message: string | Error, ...args: any[]): void {
 		this.logger.error(message, ...args);
 	}
+
 	flush(): void {
 		this.logger.flush();
 	}

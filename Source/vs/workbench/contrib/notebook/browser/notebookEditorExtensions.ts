@@ -12,11 +12,13 @@ import {
 
 class EditorContributionRegistry {
 	public static readonly INSTANCE = new EditorContributionRegistry();
+
 	private readonly editorContributions: INotebookEditorContributionDescription[];
 
 	constructor() {
 		this.editorContributions = [];
 	}
+
 	public registerEditorContribution<Services extends BrandedService[]>(
 		id: string,
 		ctor: {
@@ -31,6 +33,7 @@ class EditorContributionRegistry {
 			ctor: ctor as INotebookEditorContributionCtor,
 		});
 	}
+
 	public getEditorContributions(): INotebookEditorContributionDescription[] {
 		return this.editorContributions.slice(0);
 	}
@@ -50,6 +53,7 @@ export namespace NotebookEditorExtensionsRegistry {
 	export function getEditorContributions(): INotebookEditorContributionDescription[] {
 		return EditorContributionRegistry.INSTANCE.getEditorContributions();
 	}
+
 	export function getSomeEditorContributions(
 		ids: string[],
 	): INotebookEditorContributionDescription[] {

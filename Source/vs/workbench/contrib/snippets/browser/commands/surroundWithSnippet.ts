@@ -26,6 +26,7 @@ export async function getSurroundableSnippets(
 	includeDisabledSnippets: boolean,
 ): Promise<Snippet[]> {
 	const { lineNumber, column } = position;
+
 	model.tokenization.tokenizeIfCheap(lineNumber);
 
 	const languageId = model.getLanguageIdAtPosition(lineNumber, column);
@@ -53,10 +54,12 @@ export class SurroundWithSnippetEditorAction extends SnippetEditorAction {
 			f1: true,
 		});
 	}
+
 	async runEditorCommand(accessor: ServicesAccessor, editor: ICodeEditor) {
 		if (!editor.hasModel()) {
 			return;
 		}
+
 		const instaService = accessor.get(IInstantiationService);
 
 		const snippetsService = accessor.get(ISnippetsService);
@@ -73,6 +76,7 @@ export class SurroundWithSnippetEditorAction extends SnippetEditorAction {
 		if (!snippets.length) {
 			return;
 		}
+
 		const snippet = await instaService.invokeFunction(
 			pickSnippet,
 			snippets,
@@ -81,15 +85,19 @@ export class SurroundWithSnippetEditorAction extends SnippetEditorAction {
 		if (!snippet) {
 			return;
 		}
+
 		let clipboardText: string | undefined;
 
 		if (snippet.needsClipboard) {
 			clipboardText = await clipboardService.readText();
 		}
+
 		editor.focus();
+
 		SnippetController2.get(editor)?.insert(snippet.codeSnippet, {
 			clipboardText,
 		});
+
 		snippetsService.updateUsageTimestamp(snippet);
 	}
 }

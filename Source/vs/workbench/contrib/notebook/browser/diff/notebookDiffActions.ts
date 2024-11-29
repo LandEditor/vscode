@@ -100,6 +100,7 @@ registerAction2(
 				],
 			});
 		}
+
 		async run(accessor: ServicesAccessor): Promise<void> {
 			const editorService = accessor.get(IEditorService);
 
@@ -108,6 +109,7 @@ registerAction2(
 			if (!activeEditor) {
 				return;
 			}
+
 			if (
 				activeEditor instanceof NotebookTextDiffEditor ||
 				activeEditor instanceof NotebookMultiTextDiffEditor
@@ -116,6 +118,7 @@ registerAction2(
 					activeEditor.input as NotebookDiffEditorInput;
 
 				const resource = diffEditorInput.modified.resource;
+
 				await editorService.openEditor({ resource });
 			}
 		}
@@ -146,12 +149,14 @@ registerAction2(
 				},
 			});
 		}
+
 		run(accessor: ServicesAccessor, ...args: unknown[]): void {
 			const configurationService = accessor.get(IConfigurationService);
 
 			const newValue = !configurationService.getValue<boolean>(
 				"diffEditor.hideUnchangedRegions.enabled",
 			);
+
 			configurationService.updateValue(
 				"diffEditor.hideUnchangedRegions.enabled",
 				newValue,
@@ -191,6 +196,7 @@ registerAction2(
 				],
 			});
 		}
+
 		async run(accessor: ServicesAccessor): Promise<void> {
 			const editorService = accessor.get(IEditorService);
 
@@ -199,12 +205,14 @@ registerAction2(
 			if (!activeEditor) {
 				return;
 			}
+
 			if (
 				activeEditor instanceof NotebookTextDiffEditor ||
 				activeEditor instanceof NotebookMultiTextDiffEditor
 			) {
 				const diffEditorInput =
 					activeEditor.input as NotebookDiffEditorInput;
+
 				await editorService.openEditor({
 					original: { resource: diffEditorInput.original.resource },
 					modified: { resource: diffEditorInput.resource },
@@ -250,12 +258,14 @@ registerAction2(
 				},
 			});
 		}
+
 		run(accessor: ServicesAccessor, ...args: unknown[]): void {
 			const activeEditor = accessor.get(IEditorService).activeEditorPane;
 
 			if (!activeEditor) {
 				return;
 			}
+
 			if (activeEditor instanceof NotebookMultiTextDiffEditor) {
 				activeEditor.showUnchanged();
 			}
@@ -294,12 +304,14 @@ registerAction2(
 				},
 			});
 		}
+
 		run(accessor: ServicesAccessor, ...args: unknown[]): void {
 			const activeEditor = accessor.get(IEditorService).activeEditorPane;
 
 			if (!activeEditor) {
 				return;
 			}
+
 			if (activeEditor instanceof NotebookMultiTextDiffEditor) {
 				activeEditor.hideUnchanged();
 			}
@@ -333,6 +345,7 @@ registerAction2(
 				},
 			});
 		}
+
 		async run(accessor: ServicesAccessor, ...args: any[]): Promise<void> {
 			const uri = args[0] as URI;
 
@@ -343,6 +356,7 @@ registerAction2(
 			if (!(activeEditorPane instanceof NotebookMultiTextDiffEditor)) {
 				return;
 			}
+
 			await editorService.openEditor({
 				resource: uri,
 				options: {
@@ -371,6 +385,7 @@ registerAction2(
 				precondition: NOTEBOOK_DIFF_METADATA,
 			});
 		}
+
 		run(
 			accessor: ServicesAccessor,
 			context?: NotebookDocumentMetadataViewModel,
@@ -378,6 +393,7 @@ registerAction2(
 			if (!context) {
 				return;
 			}
+
 			const editorService = accessor.get(IEditorService);
 
 			const activeEditorPane = editorService.activeEditorPane;
@@ -385,6 +401,7 @@ registerAction2(
 			if (!(activeEditorPane instanceof NotebookTextDiffEditor)) {
 				return;
 			}
+
 			context.modifiedDocumentTextModel.applyEdits(
 				[
 					{
@@ -430,6 +447,7 @@ registerAction2(
 				},
 			});
 		}
+
 		async run(accessor: ServicesAccessor, ...args: any[]): Promise<void> {
 			const uri = args[0] as URI;
 
@@ -440,6 +458,7 @@ registerAction2(
 			if (!(activeEditorPane instanceof NotebookMultiTextDiffEditor)) {
 				return;
 			}
+
 			const item = activeEditorPane.getDiffElementViewModel(uri);
 
 			if (item && item instanceof SideBySideDiffElementViewModel) {
@@ -450,7 +469,9 @@ registerAction2(
 				if (!original || !modified) {
 					return;
 				}
+
 				const bulkEditService = accessor.get(IBulkEditService);
+
 				await bulkEditService.apply(
 					[
 						new ResourceTextEdit(modified.uri, {
@@ -497,6 +518,7 @@ registerAction2(
 				},
 			});
 		}
+
 		async run(accessor: ServicesAccessor, ...args: any[]): Promise<void> {
 			const uri = args[0] as URI;
 
@@ -507,6 +529,7 @@ registerAction2(
 			if (!(activeEditorPane instanceof NotebookMultiTextDiffEditor)) {
 				return;
 			}
+
 			const item = activeEditorPane.getDiffElementViewModel(uri);
 
 			if (item && item instanceof SideBySideDiffElementViewModel) {
@@ -519,6 +542,7 @@ registerAction2(
 				if (modifiedCellIndex === -1) {
 					return;
 				}
+
 				item.mainDocumentTextModel.applyEdits(
 					[
 						{
@@ -570,6 +594,7 @@ registerAction2(
 				},
 			});
 		}
+
 		async run(accessor: ServicesAccessor, ...args: any[]): Promise<void> {
 			const uri = args[0] as URI;
 
@@ -580,6 +605,7 @@ registerAction2(
 			if (!(activeEditorPane instanceof NotebookMultiTextDiffEditor)) {
 				return;
 			}
+
 			const item = activeEditorPane.getDiffElementViewModel(uri);
 
 			if (item && item instanceof SideBySideDiffElementViewModel) {
@@ -592,6 +618,7 @@ registerAction2(
 				if (modifiedCellIndex === -1) {
 					return;
 				}
+
 				item.mainDocumentTextModel.applyEdits(
 					[
 						{
@@ -625,6 +652,7 @@ registerAction2(
 				precondition: NOTEBOOK_DIFF_CELL_PROPERTY,
 			});
 		}
+
 		run(
 			accessor: ServicesAccessor,
 			context?: DiffElementCellViewModelBase,
@@ -632,9 +660,11 @@ registerAction2(
 			if (!context) {
 				return;
 			}
+
 			if (!(context instanceof SideBySideDiffElementViewModel)) {
 				return;
 			}
+
 			const original = context.original;
 
 			const modified = context.modified;
@@ -645,6 +675,7 @@ registerAction2(
 			if (modifiedCellIndex === -1) {
 				return;
 			}
+
 			const rawEdits: ICellEditOperation[] = [
 				{
 					editType: CellEditType.Metadata,
@@ -663,6 +694,7 @@ registerAction2(
 					language: context.original.language,
 				});
 			}
+
 			context.modifiedDocument.applyEdits(
 				rawEdits,
 				true,
@@ -712,6 +744,7 @@ registerAction2(
 				},
 			});
 		}
+
 		run(
 			accessor: ServicesAccessor,
 			context?: DiffElementCellViewModelBase,
@@ -719,6 +752,7 @@ registerAction2(
 			if (!context) {
 				return;
 			}
+
 			context.renderOutput = !context.renderOutput;
 		}
 	},
@@ -741,6 +775,7 @@ registerAction2(
 				precondition: NOTEBOOK_DIFF_CELL_PROPERTY,
 			});
 		}
+
 		run(
 			accessor: ServicesAccessor,
 			context?: DiffElementCellViewModelBase,
@@ -748,9 +783,11 @@ registerAction2(
 			if (!context) {
 				return;
 			}
+
 			if (!(context instanceof SideBySideDiffElementViewModel)) {
 				return;
 			}
+
 			const original = context.original;
 
 			const modified = context.modified;
@@ -761,6 +798,7 @@ registerAction2(
 			if (modifiedCellIndex === -1) {
 				return;
 			}
+
 			context.mainDocumentTextModel.applyEdits(
 				[
 					{
@@ -801,6 +839,7 @@ registerAction2(
 				),
 			});
 		}
+
 		run(
 			accessor: ServicesAccessor,
 			context?: DiffElementCellViewModelBase,
@@ -810,6 +849,7 @@ registerAction2(
 			if (!cell?.modified) {
 				return;
 			}
+
 			const uri = cell.modified.uri;
 
 			const configService = accessor.get(
@@ -819,6 +859,7 @@ registerAction2(
 			const key = "diffEditor.ignoreTrimWhitespace";
 
 			const val = configService.getValue(uri, key);
+
 			configService.updateValue(uri, key, !val);
 		}
 	},
@@ -839,6 +880,7 @@ registerAction2(
 				precondition: NOTEBOOK_DIFF_CELL_INPUT,
 			});
 		}
+
 		run(
 			accessor: ServicesAccessor,
 			context?: DiffElementCellViewModelBase,
@@ -846,6 +888,7 @@ registerAction2(
 			if (!context) {
 				return;
 			}
+
 			const original = context.original;
 
 			const modified = context.modified;
@@ -853,6 +896,7 @@ registerAction2(
 			if (!original || !modified) {
 				return;
 			}
+
 			const bulkEditService = accessor.get(IBulkEditService);
 
 			return bulkEditService.apply(
@@ -892,6 +936,7 @@ class ToggleRenderAction extends Action2 {
 			toggled: toggled,
 		});
 	}
+
 	async run(accessor: ServicesAccessor): Promise<void> {
 		const configurationService = accessor.get(IConfigurationService);
 
@@ -899,15 +944,18 @@ class ToggleRenderAction extends Action2 {
 			const oldValue = configurationService.getValue(
 				"notebook.diff.ignoreOutputs",
 			);
+
 			configurationService.updateValue(
 				"notebook.diff.ignoreOutputs",
 				!oldValue,
 			);
 		}
+
 		if (this.toggleMetadata !== undefined) {
 			const oldValue = configurationService.getValue(
 				"notebook.diff.ignoreMetadata",
 			);
+
 			configurationService.updateValue(
 				"notebook.diff.ignoreMetadata",
 				!oldValue,
@@ -994,6 +1042,7 @@ registerAction2(
 				},
 			});
 		}
+
 		run(accessor: ServicesAccessor) {
 			const editorService: IEditorService = accessor.get(IEditorService);
 
@@ -1003,9 +1052,11 @@ registerAction2(
 			) {
 				return;
 			}
+
 			const editor = editorService.activeEditorPane.getControl() as
 				| INotebookTextDiffEditor
 				| undefined;
+
 			editor?.previousChange();
 		}
 	},
@@ -1037,6 +1088,7 @@ registerAction2(
 				},
 			});
 		}
+
 		run(accessor: ServicesAccessor) {
 			const editorService: IEditorService = accessor.get(IEditorService);
 
@@ -1046,9 +1098,11 @@ registerAction2(
 			) {
 				return;
 			}
+
 			const editor = editorService.activeEditorPane.getControl() as
 				| INotebookTextDiffEditor
 				| undefined;
+
 			editor?.nextChange();
 		}
 	},

@@ -43,6 +43,7 @@ class TerminalCommandGuideContribution
 	implements ITerminalContribution
 {
 	static readonly ID = "terminal.commandGuide";
+
 	static get(
 		instance: ITerminalInstance | IDetachedTerminalInstance,
 	): TerminalCommandGuideContribution | null {
@@ -50,11 +51,13 @@ class TerminalCommandGuideContribution
 			TerminalCommandGuideContribution.ID,
 		);
 	}
+
 	private _xterm:
 		| (IXtermTerminal & {
 				raw: RawXtermTerminal;
 		  })
 		| undefined;
+
 	private readonly _activeCommandGuide = this._register(
 		new MutableDisposable(),
 	);
@@ -68,13 +71,16 @@ class TerminalCommandGuideContribution
 	) {
 		super();
 	}
+
 	xtermOpen(
 		xterm: IXtermTerminal & {
 			raw: RawXtermTerminal;
 		},
 	): void {
 		this._xterm = xterm;
+
 		this._refreshActivatedState();
+
 		this._register(
 			this._configurationService.onDidChangeConfiguration((e) => {
 				if (
@@ -87,12 +93,14 @@ class TerminalCommandGuideContribution
 			}),
 		);
 	}
+
 	private _refreshActivatedState() {
 		const xterm = this._xterm;
 
 		if (!xterm) {
 			return;
 		}
+
 		const showCommandGuide =
 			this._configurationService.getValue<ITerminalCommandGuideConfiguration>(
 				terminalCommandGuideConfigSection,
@@ -101,6 +109,7 @@ class TerminalCommandGuideContribution
 		if (!!this._activeCommandGuide.value === showCommandGuide) {
 			return;
 		}
+
 		if (!showCommandGuide) {
 			this._activeCommandGuide.clear();
 		} else {
@@ -109,6 +118,7 @@ class TerminalCommandGuideContribution
 
 			const viewportElement =
 				xterm.raw.element!.querySelector(".xterm-viewport")!;
+
 			this._activeCommandGuide.value = combinedDisposable(
 				addDisposableListener(
 					screenElement,
@@ -134,6 +144,7 @@ class TerminalCommandGuideContribution
 			);
 		}
 	}
+
 	private _tryShowHighlight(
 		element: Element,
 		xterm: IXtermTerminal & {
@@ -146,6 +157,7 @@ class TerminalCommandGuideContribution
 		if (!rect) {
 			return;
 		}
+
 		const mouseCursorY = Math.floor(
 			(e.clientY - rect.top) / (rect.height / xterm.raw.rows),
 		);

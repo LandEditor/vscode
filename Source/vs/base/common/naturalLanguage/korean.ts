@@ -17,6 +17,7 @@ export function getKoreanAltChars(code: number): ArrayLike<number> | undefined {
 	if (result && result.length > 0) {
 		return new Uint32Array(result);
 	}
+
 	return undefined;
 }
 let codeBufferLength = 0;
@@ -88,6 +89,7 @@ function disassembleKorean(code: number): Uint32Array | undefined {
 				HangulRangeStartCode.CompatibilityJamo,
 			);
 		}
+
 		if (vowelIndex < modernVowels.length) {
 			getCodesFromArray(vowelIndex, modernVowels, 0);
 		} else if (
@@ -104,6 +106,7 @@ function disassembleKorean(code: number): Uint32Array | undefined {
 				HangulRangeStartCode.CompatibilityJamo,
 			);
 		}
+
 		if (finalConsonantIndex >= 0) {
 			if (finalConsonantIndex < modernFinalConsonants.length) {
 				getCodesFromArray(
@@ -126,10 +129,12 @@ function disassembleKorean(code: number): Uint32Array | undefined {
 				);
 			}
 		}
+
 		if (codeBufferLength > 0) {
 			return codeBuffer.subarray(0, codeBufferLength);
 		}
 	}
+
 	return undefined;
 }
 function getCodesFromArray(
@@ -154,6 +159,7 @@ function addCodesToBuffer(codes: number): void {
 	if (codes >> 8) {
 		codeBuffer[codeBufferLength++] = (codes >> 8) & 0xff;
 	}
+
 	if (codes >> 16) {
 		codeBuffer[codeBufferLength++] = (codes >> 16) & 0xff;
 	}

@@ -8,58 +8,98 @@ import { IframeUtils } from "./iframe.js";
 
 export interface IMouseEvent {
 	readonly browserEvent: MouseEvent;
+
 	readonly leftButton: boolean;
+
 	readonly middleButton: boolean;
+
 	readonly rightButton: boolean;
+
 	readonly buttons: number;
+
 	readonly target: HTMLElement;
+
 	readonly detail: number;
+
 	readonly posx: number;
+
 	readonly posy: number;
+
 	readonly ctrlKey: boolean;
+
 	readonly shiftKey: boolean;
+
 	readonly altKey: boolean;
+
 	readonly metaKey: boolean;
+
 	readonly timestamp: number;
+
 	preventDefault(): void;
+
 	stopPropagation(): void;
 }
 export class StandardMouseEvent implements IMouseEvent {
 	public readonly browserEvent: MouseEvent;
+
 	public readonly leftButton: boolean;
+
 	public readonly middleButton: boolean;
+
 	public readonly rightButton: boolean;
+
 	public readonly buttons: number;
+
 	public readonly target: HTMLElement;
+
 	public detail: number;
+
 	public readonly posx: number;
+
 	public readonly posy: number;
+
 	public readonly ctrlKey: boolean;
+
 	public readonly shiftKey: boolean;
+
 	public readonly altKey: boolean;
+
 	public readonly metaKey: boolean;
+
 	public readonly timestamp: number;
 
 	constructor(targetWindow: Window, e: MouseEvent) {
 		this.timestamp = Date.now();
+
 		this.browserEvent = e;
+
 		this.leftButton = e.button === 0;
+
 		this.middleButton = e.button === 1;
+
 		this.rightButton = e.button === 2;
+
 		this.buttons = e.buttons;
+
 		this.target = <HTMLElement>e.target;
+
 		this.detail = e.detail || 1;
 
 		if (e.type === "dblclick") {
 			this.detail = 2;
 		}
+
 		this.ctrlKey = e.ctrlKey;
+
 		this.shiftKey = e.shiftKey;
+
 		this.altKey = e.altKey;
+
 		this.metaKey = e.metaKey;
 
 		if (typeof e.pageX === "number") {
 			this.posx = e.pageX;
+
 			this.posy = e.pageY;
 		} else {
 			// Probably hit by MSGestureEvent
@@ -67,6 +107,7 @@ export class StandardMouseEvent implements IMouseEvent {
 				e.clientX +
 				this.target.ownerDocument.body.scrollLeft +
 				this.target.ownerDocument.documentElement.scrollLeft;
+
 			this.posy =
 				e.clientY +
 				this.target.ownerDocument.body.scrollTop +
@@ -78,12 +119,16 @@ export class StandardMouseEvent implements IMouseEvent {
 				targetWindow,
 				e.view,
 			);
+
 		this.posx -= iframeOffsets.left;
+
 		this.posy -= iframeOffsets.top;
 	}
+
 	public preventDefault(): void {
 		this.browserEvent.preventDefault();
 	}
+
 	public stopPropagation(): void {
 		this.browserEvent.stopPropagation();
 	}
@@ -93,32 +138,46 @@ export class DragMouseEvent extends StandardMouseEvent {
 
 	constructor(targetWindow: Window, e: MouseEvent) {
 		super(targetWindow, e);
+
 		this.dataTransfer = (<any>e).dataTransfer;
 	}
 }
 export interface IMouseWheelEvent extends MouseEvent {
 	readonly wheelDelta: number;
+
 	readonly wheelDeltaX: number;
+
 	readonly wheelDeltaY: number;
+
 	readonly deltaX: number;
+
 	readonly deltaY: number;
+
 	readonly deltaZ: number;
+
 	readonly deltaMode: number;
 }
 interface IWebKitMouseWheelEvent {
 	wheelDeltaY: number;
+
 	wheelDeltaX: number;
 }
 interface IGeckoMouseWheelEvent {
 	HORIZONTAL_AXIS: number;
+
 	VERTICAL_AXIS: number;
+
 	axis: number;
+
 	detail: number;
 }
 export class StandardWheelEvent {
 	public readonly browserEvent: IMouseWheelEvent | null;
+
 	public readonly deltaY: number;
+
 	public readonly deltaX: number;
+
 	public readonly target: Node;
 
 	constructor(
@@ -127,10 +186,13 @@ export class StandardWheelEvent {
 		deltaY: number = 0,
 	) {
 		this.browserEvent = e || null;
+
 		this.target = e
 			? e.target || (<any>e).targetNode || e.srcElement
 			: null;
+
 		this.deltaY = deltaY;
+
 		this.deltaX = deltaX;
 
 		let shouldFactorDPR: boolean = false;
@@ -144,8 +206,10 @@ export class StandardWheelEvent {
 			const chromeMajorVersion = chromeVersionMatch
 				? parseInt(chromeVersionMatch[1])
 				: 123;
+
 			shouldFactorDPR = chromeMajorVersion <= 122;
 		}
+
 		if (e) {
 			// Old (deprecated) wheel events
 			const e1 = <IWebKitMouseWheelEvent>(<any>e);
@@ -224,9 +288,11 @@ export class StandardWheelEvent {
 			}
 		}
 	}
+
 	public preventDefault(): void {
 		this.browserEvent?.preventDefault();
 	}
+
 	public stopPropagation(): void {
 		this.browserEvent?.stopPropagation();
 	}

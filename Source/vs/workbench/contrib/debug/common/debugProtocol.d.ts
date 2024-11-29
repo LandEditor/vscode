@@ -82,6 +82,7 @@ declare module DebugProtocol {
 	*/
 	interface CancelRequest extends Request {
 		// command: 'cancel';
+
 		arguments?: CancelArguments;
 	}
 
@@ -121,6 +122,7 @@ declare module DebugProtocol {
 	*/
 	interface StoppedEvent extends Event {
 		// event: 'stopped';
+
 		body: {
 			/** The reason for the event.
 				For backward compatibility this string is shown in the UI if the `description` attribute is missing (but it must not be translated).
@@ -166,6 +168,7 @@ declare module DebugProtocol {
 	*/
 	interface ContinuedEvent extends Event {
 		// event: 'continued';
+
 		body: {
 			/** The thread which was continued. */
 			threadId: number;
@@ -179,6 +182,7 @@ declare module DebugProtocol {
 	*/
 	interface ExitedEvent extends Event {
 		// event: 'exited';
+
 		body: {
 			/** The exit code returned from the debuggee. */
 			exitCode: number;
@@ -190,6 +194,7 @@ declare module DebugProtocol {
 	*/
 	interface TerminatedEvent extends Event {
 		// event: 'terminated';
+
 		body?: {
 			/** A debug adapter may set `restart` to true (or to an arbitrary object) to request that the client restarts the session.
 				The value is not interpreted by the client and passed unmodified as an attribute `__restart` to the `launch` and `attach` requests.
@@ -203,6 +208,7 @@ declare module DebugProtocol {
 	*/
 	interface ThreadEvent extends Event {
 		// event: 'thread';
+
 		body: {
 			/** The reason for the event.
 				Values: 'started', 'exited', etc.
@@ -218,6 +224,7 @@ declare module DebugProtocol {
 	*/
 	interface OutputEvent extends Event {
 		// event: 'output';
+
 		body: {
 			/** The output category. If not specified or if the category is not understood by the client, `console` is assumed.
 				Values:
@@ -274,6 +281,7 @@ declare module DebugProtocol {
 	*/
 	interface BreakpointEvent extends Event {
 		// event: 'breakpoint';
+
 		body: {
 			/** The reason for the event.
 				Values: 'changed', 'new', 'removed', etc.
@@ -289,6 +297,7 @@ declare module DebugProtocol {
 	*/
 	interface ModuleEvent extends Event {
 		// event: 'module';
+
 		body: {
 			/** The reason for the event. */
 			reason: "new" | "changed" | "removed";
@@ -302,6 +311,7 @@ declare module DebugProtocol {
 	*/
 	interface LoadedSourceEvent extends Event {
 		// event: 'loadedSource';
+
 		body: {
 			/** The reason for the event. */
 			reason: "new" | "changed" | "removed";
@@ -315,6 +325,7 @@ declare module DebugProtocol {
 	*/
 	interface ProcessEvent extends Event {
 		// event: 'process';
+
 		body: {
 			/** The logical name of the process. This is usually the full path to process's executable file. Example: /home/example/myproj/program.js. */
 			name: string;
@@ -341,6 +352,7 @@ declare module DebugProtocol {
 	*/
 	interface CapabilitiesEvent extends Event {
 		// event: 'capabilities';
+
 		body: {
 			/** The set of updated capabilities. */
 			capabilities: Capabilities;
@@ -354,6 +366,7 @@ declare module DebugProtocol {
 	*/
 	interface ProgressStartEvent extends Event {
 		// event: 'progressStart';
+
 		body: {
 			/** An ID that can be used in subsequent `progressUpdate` and `progressEnd` events to make them refer to the same progress reporting.
 				IDs must be unique within a debug session.
@@ -384,6 +397,7 @@ declare module DebugProtocol {
 	*/
 	interface ProgressUpdateEvent extends Event {
 		// event: 'progressUpdate';
+
 		body: {
 			/** The ID that was introduced in the initial `progressStart` event. */
 			progressId: string;
@@ -400,6 +414,7 @@ declare module DebugProtocol {
 	*/
 	interface ProgressEndEvent extends Event {
 		// event: 'progressEnd';
+
 		body: {
 			/** The ID that was introduced in the initial `ProgressStartEvent`. */
 			progressId: string;
@@ -415,6 +430,7 @@ declare module DebugProtocol {
 	*/
 	interface InvalidatedEvent extends Event {
 		// event: 'invalidated';
+
 		body: {
 			/** Set of logical areas that got invalidated. This property has a hint characteristic: a client can only be expected to make a 'best effort' in honoring the areas but there are no guarantees. If this property is missing, empty, or if values are not understood, the client should assume a single value `all`. */
 			areas?: InvalidatedAreas[];
@@ -432,6 +448,7 @@ declare module DebugProtocol {
 	*/
 	interface MemoryEvent extends Event {
 		// event: 'memory';
+
 		body: {
 			/** Memory reference of a memory range that has been updated. */
 			memoryReference: string;
@@ -451,6 +468,7 @@ declare module DebugProtocol {
 	*/
 	interface RunInTerminalRequest extends Request {
 		// command: 'runInTerminal';
+
 		arguments: RunInTerminalRequestArguments;
 	}
 
@@ -487,6 +505,7 @@ declare module DebugProtocol {
 	*/
 	interface StartDebuggingRequest extends Request {
 		// command: 'startDebugging';
+
 		arguments: StartDebuggingRequestArguments;
 	}
 
@@ -509,6 +528,7 @@ declare module DebugProtocol {
 	*/
 	interface InitializeRequest extends Request {
 		// command: 'initialize';
+
 		arguments: InitializeRequestArguments;
 	}
 
@@ -565,6 +585,7 @@ declare module DebugProtocol {
 	*/
 	interface ConfigurationDoneRequest extends Request {
 		// command: 'configurationDone';
+
 		arguments?: ConfigurationDoneArguments;
 	}
 
@@ -580,6 +601,7 @@ declare module DebugProtocol {
 	*/
 	interface LaunchRequest extends Request {
 		// command: 'launch';
+
 		arguments: LaunchRequestArguments;
 	}
 
@@ -603,6 +625,7 @@ declare module DebugProtocol {
 	*/
 	interface AttachRequest extends Request {
 		// command: 'attach';
+
 		arguments: AttachRequestArguments;
 	}
 
@@ -624,6 +647,7 @@ declare module DebugProtocol {
 	*/
 	interface RestartRequest extends Request {
 		// command: 'restart';
+
 		arguments?: RestartArguments;
 	}
 
@@ -643,6 +667,7 @@ declare module DebugProtocol {
 	*/
 	interface DisconnectRequest extends Request {
 		// command: 'disconnect';
+
 		arguments?: DisconnectArguments;
 	}
 
@@ -673,6 +698,7 @@ declare module DebugProtocol {
 	*/
 	interface TerminateRequest extends Request {
 		// command: 'terminate';
+
 		arguments?: TerminateArguments;
 	}
 
@@ -691,6 +717,7 @@ declare module DebugProtocol {
 	*/
 	interface BreakpointLocationsRequest extends Request {
 		// command: 'breakpointLocations';
+
 		arguments?: BreakpointLocationsArguments;
 	}
 
@@ -725,6 +752,7 @@ declare module DebugProtocol {
 	*/
 	interface SetBreakpointsRequest extends Request {
 		// command: 'setBreakpoints';
+
 		arguments: SetBreakpointsArguments;
 	}
 
@@ -763,6 +791,7 @@ declare module DebugProtocol {
 	*/
 	interface SetFunctionBreakpointsRequest extends Request {
 		// command: 'setFunctionBreakpoints';
+
 		arguments: SetFunctionBreakpointsArguments;
 	}
 
@@ -788,6 +817,7 @@ declare module DebugProtocol {
 	*/
 	interface SetExceptionBreakpointsRequest extends Request {
 		// command: 'setExceptionBreakpoints';
+
 		arguments: SetExceptionBreakpointsArguments;
 	}
 
@@ -823,6 +853,7 @@ declare module DebugProtocol {
 	*/
 	interface DataBreakpointInfoRequest extends Request {
 		// command: 'dataBreakpointInfo';
+
 		arguments: DataBreakpointInfoArguments;
 	}
 
@@ -873,6 +904,7 @@ declare module DebugProtocol {
 	*/
 	interface SetDataBreakpointsRequest extends Request {
 		// command: 'setDataBreakpoints';
+
 		arguments: SetDataBreakpointsArguments;
 	}
 
@@ -900,6 +932,7 @@ declare module DebugProtocol {
 	*/
 	interface SetInstructionBreakpointsRequest extends Request {
 		// command: 'setInstructionBreakpoints';
+
 		arguments: SetInstructionBreakpointsArguments;
 	}
 
@@ -922,6 +955,7 @@ declare module DebugProtocol {
 	*/
 	interface ContinueRequest extends Request {
 		// command: 'continue';
+
 		arguments: ContinueArguments;
 	}
 
@@ -948,6 +982,7 @@ declare module DebugProtocol {
 	*/
 	interface NextRequest extends Request {
 		// command: 'next';
+
 		arguments: NextArguments;
 	}
 
@@ -975,6 +1010,7 @@ declare module DebugProtocol {
 	*/
 	interface StepInRequest extends Request {
 		// command: 'stepIn';
+
 		arguments: StepInArguments;
 	}
 
@@ -1000,6 +1036,7 @@ declare module DebugProtocol {
 	*/
 	interface StepOutRequest extends Request {
 		// command: 'stepOut';
+
 		arguments: StepOutArguments;
 	}
 
@@ -1024,6 +1061,7 @@ declare module DebugProtocol {
 	*/
 	interface StepBackRequest extends Request {
 		// command: 'stepBack';
+
 		arguments: StepBackArguments;
 	}
 
@@ -1046,6 +1084,7 @@ declare module DebugProtocol {
 	*/
 	interface ReverseContinueRequest extends Request {
 		// command: 'reverseContinue';
+
 		arguments: ReverseContinueArguments;
 	}
 
@@ -1067,6 +1106,7 @@ declare module DebugProtocol {
 	*/
 	interface RestartFrameRequest extends Request {
 		// command: 'restartFrame';
+
 		arguments: RestartFrameArguments;
 	}
 
@@ -1088,6 +1128,7 @@ declare module DebugProtocol {
 	*/
 	interface GotoRequest extends Request {
 		// command: 'goto';
+
 		arguments: GotoArguments;
 	}
 
@@ -1108,6 +1149,7 @@ declare module DebugProtocol {
 	*/
 	interface PauseRequest extends Request {
 		// command: 'pause';
+
 		arguments: PauseArguments;
 	}
 
@@ -1126,6 +1168,7 @@ declare module DebugProtocol {
 	*/
 	interface StackTraceRequest extends Request {
 		// command: 'stackTrace';
+
 		arguments: StackTraceArguments;
 	}
 
@@ -1160,6 +1203,7 @@ declare module DebugProtocol {
 	*/
 	interface ScopesRequest extends Request {
 		// command: 'scopes';
+
 		arguments: ScopesArguments;
 	}
 
@@ -1183,6 +1227,7 @@ declare module DebugProtocol {
 	*/
 	interface VariablesRequest extends Request {
 		// command: 'variables';
+
 		arguments: VariablesArguments;
 	}
 
@@ -1220,6 +1265,7 @@ declare module DebugProtocol {
 	*/
 	interface SetVariableRequest extends Request {
 		// command: 'setVariable';
+
 		arguments: SetVariableArguments;
 	}
 
@@ -1275,6 +1321,7 @@ declare module DebugProtocol {
 	*/
 	interface SourceRequest extends Request {
 		// command: 'source';
+
 		arguments: SourceArguments;
 	}
 
@@ -1319,6 +1366,7 @@ declare module DebugProtocol {
 	*/
 	interface TerminateThreadsRequest extends Request {
 		// command: 'terminateThreads';
+
 		arguments: TerminateThreadsArguments;
 	}
 
@@ -1337,6 +1385,7 @@ declare module DebugProtocol {
 	*/
 	interface ModulesRequest extends Request {
 		// command: 'modules';
+
 		arguments: ModulesArguments;
 	}
 
@@ -1364,6 +1413,7 @@ declare module DebugProtocol {
 	*/
 	interface LoadedSourcesRequest extends Request {
 		// command: 'loadedSources';
+
 		arguments?: LoadedSourcesArguments;
 	}
 
@@ -1384,6 +1434,7 @@ declare module DebugProtocol {
 	*/
 	interface EvaluateRequest extends Request {
 		// command: 'evaluate';
+
 		arguments: EvaluateArguments;
 	}
 
@@ -1470,6 +1521,7 @@ declare module DebugProtocol {
 	*/
 	interface SetExpressionRequest extends Request {
 		// command: 'setExpression';
+
 		arguments: SetExpressionArguments;
 	}
 
@@ -1528,6 +1580,7 @@ declare module DebugProtocol {
 	*/
 	interface StepInTargetsRequest extends Request {
 		// command: 'stepInTargets';
+
 		arguments: StepInTargetsArguments;
 	}
 
@@ -1552,6 +1605,7 @@ declare module DebugProtocol {
 	*/
 	interface GotoTargetsRequest extends Request {
 		// command: 'gotoTargets';
+
 		arguments: GotoTargetsArguments;
 	}
 
@@ -1579,6 +1633,7 @@ declare module DebugProtocol {
 	*/
 	interface CompletionsRequest extends Request {
 		// command: 'completions';
+
 		arguments: CompletionsArguments;
 	}
 
@@ -1608,6 +1663,7 @@ declare module DebugProtocol {
 	*/
 	interface ExceptionInfoRequest extends Request {
 		// command: 'exceptionInfo';
+
 		arguments: ExceptionInfoArguments;
 	}
 
@@ -1637,6 +1693,7 @@ declare module DebugProtocol {
 	*/
 	interface ReadMemoryRequest extends Request {
 		// command: 'readMemory';
+
 		arguments: ReadMemoryArguments;
 	}
 
@@ -1672,6 +1729,7 @@ declare module DebugProtocol {
 	*/
 	interface WriteMemoryRequest extends Request {
 		// command: 'writeMemory';
+
 		arguments: WriteMemoryArguments;
 	}
 
@@ -1705,6 +1763,7 @@ declare module DebugProtocol {
 	*/
 	interface DisassembleRequest extends Request {
 		// command: 'disassemble';
+
 		arguments: DisassembleArguments;
 	}
 
@@ -1737,6 +1796,7 @@ declare module DebugProtocol {
 	*/
 	interface LocationsRequest extends Request {
 		// command: 'locations';
+
 		arguments: LocationsArguments;
 	}
 

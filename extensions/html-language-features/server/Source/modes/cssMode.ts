@@ -166,10 +166,12 @@ export function getCSSMode(
 		},
 		onDocumentRemoved(document: TextDocument) {
 			embeddedCSSDocuments.onDocumentRemoved(document);
+
 			cssStylesheets.onDocumentRemoved(document);
 		},
 		dispose() {
 			embeddedCSSDocuments.dispose();
+
 			cssStylesheets.dispose();
 		},
 	};

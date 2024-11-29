@@ -37,6 +37,7 @@ export class NotebookEditorWorkerServiceImpl
 	implements INotebookEditorWorkerService
 {
 	declare readonly _serviceBrand: undefined;
+
 	private readonly _workerManager: WorkerManager;
 
 	constructor(
@@ -46,18 +47,22 @@ export class NotebookEditorWorkerServiceImpl
 		modelService: IModelService,
 	) {
 		super();
+
 		this._workerManager = this._register(
 			new WorkerManager(notebookService, modelService),
 		);
 	}
+
 	canComputeDiff(original: URI, modified: URI): boolean {
 		throw new Error("Method not implemented.");
 	}
+
 	computeDiff(original: URI, modified: URI): Promise<INotebookDiffResult> {
 		return this._workerManager.withWorker().then((client) => {
 			return client.computeDiff(original, modified);
 		});
 	}
+
 	canPromptRecommendation(model: URI): Promise<boolean> {
 		return this._workerManager.withWorker().then((client) => {
 			return client.canPromptRecommendation(model);
@@ -73,9 +78,11 @@ class WorkerManager extends Disposable {
 		private readonly _modelService: IModelService,
 	) {
 		super();
+
 		this._editorWorkerClient = null;
 		// this._lastWorkerUsedTime = (new Date()).getTime();
 	}
+
 	withWorker(): Promise<NotebookWorkerClient> {
 		// this._lastWorkerUsedTime = (new Date()).getTime();
 
@@ -85,6 +92,7 @@ class WorkerManager extends Disposable {
 				this._modelService,
 			);
 		}
+
 		return Promise.resolve(this._editorWorkerClient);
 	}
 }
@@ -92,6 +100,7 @@ class NotebookEditorModelManager extends Disposable {
 	private _syncedModels: {
 		[modelUrl: string]: IDisposable;
 	} = Object.create(null);
+
 	private _syncedModelsLastUsedTime: {
 		[modelUrl: string]: number;
 	} = Object.create(null);
@@ -103,6 +112,7 @@ class NotebookEditorModelManager extends Disposable {
 	) {
 		super();
 	}
+
 	public ensureSyncedResources(resources: URI[]): void {
 		for (const resource of resources) {
 			const resourceStr = resource.toString();
@@ -110,12 +120,14 @@ class NotebookEditorModelManager extends Disposable {
 			if (!this._syncedModels[resourceStr]) {
 				this._beginModelSync(resource);
 			}
+
 			if (this._syncedModels[resourceStr]) {
 				this._syncedModelsLastUsedTime[resourceStr] =
 					new Date().getTime();
 			}
 		}
 	}
+
 	private _beginModelSync(resource: URI): void {
 		const model = this._notebookService
 			.listNotebookDocuments()
@@ -126,7 +138,9 @@ class NotebookEditorModelManager extends Disposable {
 		if (!model) {
 			return;
 		}
+
 		const modelUrl = resource.toString();
+
 		this._proxy.$acceptNewModel(
 			model.uri.toString(),
 			model.metadata,
@@ -173,6 +187,7 @@ class NotebookEditorModelManager extends Disposable {
 
 		const addCellContentChangeHandler = (cell: NotebookCellTextModel) => {
 			cellHandlers.add(cell);
+
 			toDispose.add(
 				cell.onDidChangeContent((e) => {
 					if (typeof e === "object" && e.type === "model") {
@@ -185,6 +200,7 @@ class NotebookEditorModelManager extends Disposable {
 				}),
 			);
 		};
+
 		model.cells.forEach((cell) => addCellContentChangeHandler(cell));
 		// Possible some of the models have not yet been loaded.
 		// If all have been loaded, for all cells, then no need to listen to model add events.
@@ -197,11 +213,13 @@ class NotebookEditorModelManager extends Disposable {
 					) {
 						return;
 					}
+
 					const cellUri = CellUri.parse(textModel.uri);
 
 					if (!cellUri || !isEqual(cellUri.notebook, model.uri)) {
 						return;
 					}
+
 					const cell = model.cells.find(
 						(cell) => cell.handle === cellUri.handle,
 					);
@@ -212,9 +230,11 @@ class NotebookEditorModelManager extends Disposable {
 				}),
 			);
 		}
+
 		toDispose.add(
 			model.onDidChangeContent((event) => {
 				const dto: NotebookRawContentEventDto[] = [];
+
 				event.rawEvents.forEach((e) => {
 					switch (e.kind) {
 						case NotebookCellsChangeType.ModelChange:
@@ -242,8 +262,10 @@ class NotebookEditorModelManager extends Disposable {
 									);
 								}
 							}
+
 							break;
 						}
+
 						case NotebookCellsChangeType.Move: {
 							dto.push({
 								kind: NotebookCellsChangeType.Move,
@@ -257,6 +279,7 @@ class NotebookEditorModelManager extends Disposable {
 
 							break;
 						}
+
 						case NotebookCellsChangeType.ChangeCellContent:
 							// Changes to cell content are handled by the cell model change listener.
 							break;
@@ -271,33 +294,42 @@ class NotebookEditorModelManager extends Disposable {
 							dto.push(e);
 					}
 				});
+
 				this._proxy.$acceptModelChanged(modelUrl.toString(), {
 					rawEvents: dto,
 					versionId: event.versionId,
 				});
 			}),
 		);
+
 		toDispose.add(
 			model.onWillDispose(() => {
 				this._stopModelSync(modelUrl);
 			}),
 		);
+
 		toDispose.add(
 			toDisposable(() => {
 				this._proxy.$acceptRemovedModel(modelUrl);
 			}),
 		);
+
 		this._syncedModels[modelUrl] = toDispose;
 	}
+
 	private _stopModelSync(modelUrl: string): void {
 		const toDispose = this._syncedModels[modelUrl];
+
 		delete this._syncedModels[modelUrl];
+
 		delete this._syncedModelsLastUsedTime[modelUrl];
+
 		dispose(toDispose);
 	}
 }
 class NotebookWorkerClient extends Disposable {
 	private _worker: IWorkerClient<NotebookEditorSimpleWorker> | null;
+
 	private _modelManager: NotebookEditorModelManager | null;
 
 	constructor(
@@ -305,19 +337,24 @@ class NotebookWorkerClient extends Disposable {
 		private readonly _modelService: IModelService,
 	) {
 		super();
+
 		this._worker = null;
+
 		this._modelManager = null;
 	}
+
 	computeDiff(original: URI, modified: URI) {
 		const proxy = this._ensureSyncedResources([original, modified]);
 
 		return proxy.$computeDiff(original.toString(), modified.toString());
 	}
+
 	canPromptRecommendation(modelUri: URI) {
 		const proxy = this._ensureSyncedResources([modelUri]);
 
 		return proxy.$canPromptRecommendation(modelUri.toString());
 	}
+
 	private _getOrCreateModelManager(
 		proxy: Proxied<NotebookEditorSimpleWorker>,
 	): NotebookEditorModelManager {
@@ -330,16 +367,20 @@ class NotebookWorkerClient extends Disposable {
 				),
 			);
 		}
+
 		return this._modelManager;
 	}
+
 	protected _ensureSyncedResources(
 		resources: URI[],
 	): Proxied<NotebookEditorSimpleWorker> {
 		const proxy = this._getOrCreateWorker().proxy;
+
 		this._getOrCreateModelManager(proxy).ensureSyncedResources(resources);
 
 		return proxy;
 	}
+
 	private _getOrCreateWorker(): IWorkerClient<NotebookEditorSimpleWorker> {
 		if (!this._worker) {
 			try {
@@ -356,6 +397,7 @@ class NotebookWorkerClient extends Disposable {
 				throw err;
 			}
 		}
+
 		return this._worker;
 	}
 }

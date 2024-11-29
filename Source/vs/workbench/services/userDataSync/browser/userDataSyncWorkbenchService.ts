@@ -105,8 +105,11 @@ import {
 
 type AccountQuickPickItem = {
 	label: string;
+
 	authenticationProvider: IAuthenticationProvider;
+
 	account?: UserDataSyncAccount;
+
 	description?: string;
 };
 
@@ -119,12 +122,15 @@ class UserDataSyncAccount implements IUserDataSyncAccount {
 	get sessionId(): string {
 		return this.session.id;
 	}
+
 	get accountName(): string {
 		return this.session.account.label;
 	}
+
 	get accountId(): string {
 		return this.session.account.id;
 	}
+
 	get token(): string {
 		return this.session.idToken || this.session.accessToken;
 	}
@@ -132,8 +138,11 @@ class UserDataSyncAccount implements IUserDataSyncAccount {
 
 type MergeEditorInput = {
 	base: URI;
+
 	input1: { uri: URI };
+
 	input2: { uri: URI };
+
 	result: URI;
 };
 
@@ -158,8 +167,10 @@ export class UserDataSyncWorkbenchService
 
 	private static DONOT_USE_WORKBENCH_SESSION_STORAGE_KEY =
 		"userDataSyncAccount.donotUseWorkbenchSession";
+
 	private static CACHED_AUTHENTICATION_PROVIDER_KEY =
 		"userDataSyncAccountProvider";
+
 	private static CACHED_SESSION_STORAGE_KEY = "userDataSyncAccountPreference";
 
 	get enabled() {
@@ -177,12 +188,15 @@ export class UserDataSyncWorkbenchService
 	get accountStatus(): AccountStatus {
 		return this._accountStatus;
 	}
+
 	private readonly _onDidChangeAccountStatus = this._register(
 		new Emitter<AccountStatus>(),
 	);
+
 	readonly onDidChangeAccountStatus = this._onDidChangeAccountStatus.event;
 
 	private readonly _onDidTurnOnSync = this._register(new Emitter<void>());
+
 	readonly onDidTurnOnSync = this._onDidTurnOnSync.event;
 
 	private _current: UserDataSyncAccount | undefined;
@@ -192,10 +206,15 @@ export class UserDataSyncWorkbenchService
 	}
 
 	private readonly syncEnablementContext: IContextKey<boolean>;
+
 	private readonly syncStatusContext: IContextKey<string>;
+
 	private readonly accountStatusContext: IContextKey<string>;
+
 	private readonly enableConflictsViewContext: IContextKey<boolean>;
+
 	private readonly hasConflicts: IContextKey<boolean>;
+
 	private readonly activityViewsEnablementContext: IContextKey<boolean>;
 
 	private turnOnSyncCancellationToken: CancellationTokenSource | undefined =
@@ -248,27 +267,36 @@ export class UserDataSyncWorkbenchService
 		private readonly userDataSyncMachinesService: IUserDataSyncMachinesService,
 	) {
 		super();
+
 		this.syncEnablementContext =
 			CONTEXT_SYNC_ENABLEMENT.bindTo(contextKeyService);
+
 		this.syncStatusContext = CONTEXT_SYNC_STATE.bindTo(contextKeyService);
+
 		this.accountStatusContext =
 			CONTEXT_ACCOUNT_STATE.bindTo(contextKeyService);
+
 		this.activityViewsEnablementContext =
 			CONTEXT_ENABLE_ACTIVITY_VIEWS.bindTo(contextKeyService);
+
 		this.hasConflicts = CONTEXT_HAS_CONFLICTS.bindTo(contextKeyService);
+
 		this.enableConflictsViewContext =
 			CONTEXT_ENABLE_SYNC_CONFLICTS_VIEW.bindTo(contextKeyService);
 
 		if (this.userDataSyncStoreManagementService.userDataSyncStore) {
 			this.syncStatusContext.set(this.userDataSyncService.status);
+
 			this._register(
 				userDataSyncService.onDidChangeStatus((status) =>
 					this.syncStatusContext.set(status),
 				),
 			);
+
 			this.syncEnablementContext.set(
 				userDataSyncEnablementService.isEnabled(),
 			);
+
 			this._register(
 				userDataSyncEnablementService.onDidChangeEnablement((enabled) =>
 					this.syncEnablementContext.set(enabled),
@@ -281,6 +309,7 @@ export class UserDataSyncWorkbenchService
 
 	private updateAuthenticationProviders(): boolean {
 		const oldValue = this._authenticationProviders;
+
 		this._authenticationProviders = (
 			this.userDataSyncStoreManagementService.userDataSyncStore
 				?.authenticationProviders || []
@@ -289,6 +318,7 @@ export class UserDataSyncWorkbenchService
 				(provider) => provider.id === id,
 			),
 		);
+
 		this.logService.trace(
 			"Settings Sync: Authentication providers updated",
 			this._authenticationProviders.map(({ id }) => id),
@@ -351,11 +381,13 @@ export class UserDataSyncWorkbenchService
 				else if (this.useWorkbenchSessionId) {
 					this.currentSessionId = authenticationSession.id;
 				}
+
 				this.useWorkbenchSessionId = false;
 			}
 		}
 
 		const initPromise = this.update("initialize");
+
 		this._register(
 			this.authenticationService.onDidChangeDeclaredProviders(() => {
 				if (this.updateAuthenticationProviders()) {
@@ -368,6 +400,7 @@ export class UserDataSyncWorkbenchService
 				}
 			}),
 		);
+
 		await initPromise;
 
 		this._register(
@@ -394,6 +427,7 @@ export class UserDataSyncWorkbenchService
 				this.isSupportedAuthenticationProviderId(e.providerId),
 			)(({ event }) => this.onDidChangeSessions(event)),
 		);
+
 		this._register(
 			this.storageService.onDidChangeValue(
 				StorageScope.APPLICATION,
@@ -401,13 +435,16 @@ export class UserDataSyncWorkbenchService
 				this._store,
 			)(() => this.onDidChangeStorage()),
 		);
+
 		this._register(
 			Event.filter(
 				this.userDataSyncAccountService.onTokenFailed,
 				(bailout) => bailout,
 			)(() => this.onDidAuthFailure()),
 		);
+
 		this.hasConflicts.set(this.userDataSyncService.conflicts.length > 0);
+
 		this._register(
 			this.userDataSyncService.onDidChangeConflicts((conflicts) => {
 				this.hasConflicts.set(conflicts.length > 0);
@@ -427,6 +464,7 @@ export class UserDataSyncWorkbenchService
 						if (remoteResource?.scheme !== USER_DATA_SYNC_SCHEME) {
 							return false;
 						}
+
 						return !this.userDataSyncService.conflicts.some(
 							({ conflicts }) =>
 								conflicts.some(({ previewResource }) =>
@@ -446,6 +484,7 @@ export class UserDataSyncWorkbenchService
 		this.logService.trace(`Settings Sync: Updating due to ${reason}`);
 
 		this.updateAuthenticationProviders();
+
 		await this.updateCurrentAccount();
 
 		if (this._current) {
@@ -454,6 +493,7 @@ export class UserDataSyncWorkbenchService
 		}
 
 		await this.updateToken(this._current);
+
 		this.updateAccountStatus(
 			this._current ? AccountStatus.Available : AccountStatus.Unavailable,
 		);
@@ -484,6 +524,7 @@ export class UserDataSyncWorkbenchService
 				for (const session of sessions) {
 					if (session.id === currentSessionId) {
 						this._current = new UserDataSyncAccount(id, session);
+
 						this.logService.trace(
 							"Settings Sync: Updated the current account",
 							this._current.accountName,
@@ -494,6 +535,7 @@ export class UserDataSyncWorkbenchService
 				}
 			}
 		}
+
 		this._current = undefined;
 	}
 
@@ -512,10 +554,12 @@ export class UserDataSyncWorkbenchService
 				);
 
 				const token = current.token;
+
 				this.logService.info(
 					"Settings Sync: Token updated for the account",
 					current.accountName,
 				);
+
 				value = {
 					token,
 					authenticationProviderId: current.authenticationProviderId,
@@ -524,6 +568,7 @@ export class UserDataSyncWorkbenchService
 				this.logService.error(e);
 			}
 		}
+
 		await this.userDataSyncAccountService.updateAccount(value);
 	}
 
@@ -534,12 +579,15 @@ export class UserDataSyncWorkbenchService
 
 		if (this._accountStatus !== accountStatus) {
 			const previous = this._accountStatus;
+
 			this.logService.info(
 				`Settings Sync: Account status changed from ${previous} to ${accountStatus}`,
 			);
 
 			this._accountStatus = accountStatus;
+
 			this.accountStatusContext.set(accountStatus);
+
 			this._onDidChangeAccountStatus.fire(accountStatus);
 		}
 	}
@@ -553,9 +601,11 @@ export class UserDataSyncWorkbenchService
 				),
 			);
 		}
+
 		if (this.userDataSyncEnablementService.isEnabled()) {
 			return;
 		}
+
 		if (this.userDataSyncService.status !== SyncStatus.Idle) {
 			throw new Error("Cannot turn on sync while syncing");
 		}
@@ -603,6 +653,7 @@ export class UserDataSyncWorkbenchService
 							if (confirmed) {
 								turnOnSyncCancellationToken.cancel();
 							}
+
 							return !confirmed;
 						})(),
 						"veto.settingsSync",
@@ -613,8 +664,10 @@ export class UserDataSyncWorkbenchService
 			await this.doTurnOnSync(turnOnSyncCancellationToken.token);
 		} finally {
 			disposable.dispose();
+
 			this.turnOnSyncCancellationToken = undefined;
 		}
+
 		await this.userDataAutoSyncService.turnOn();
 
 		if (
@@ -640,6 +693,7 @@ export class UserDataSyncWorkbenchService
 		this.notificationService.info(
 			localize("sync turned on", "{0} is turned on", SYNC_TITLE.value),
 		);
+
 		this._onDidTurnOnSync.fire();
 	}
 
@@ -658,6 +712,7 @@ export class UserDataSyncWorkbenchService
 				);
 			}
 		}
+
 		if (this.turnOnSyncCancellationToken) {
 			this.turnOnSyncCancellationToken.cancel();
 		}
@@ -669,6 +724,7 @@ export class UserDataSyncWorkbenchService
 				"Cannot update because you are signed out from settings sync. Please sign in and try again.",
 			);
 		}
+
 		if (
 			!isWeb ||
 			!this.userDataSyncStoreManagementService.userDataSyncStore
@@ -690,10 +746,12 @@ export class UserDataSyncWorkbenchService
 				UserDataSyncStoreClient,
 				userDataSyncStoreUrl,
 			);
+
 		userDataSyncStoreClient.setAuthToken(
 			this.userDataSyncAccountService.account.token,
 			this.userDataSyncAccountService.account.authenticationProviderId,
 		);
+
 		await this.instantiationService
 			.createInstance(
 				UserDataSyncStoreTypeSynchronizer,
@@ -730,6 +788,7 @@ export class UserDataSyncWorkbenchService
 					progress.report({
 						message: localize("turning on", "Turning on..."),
 					});
+
 					disposables.add(
 						this.userDataSyncService.onDidChangeStatus((status) => {
 							if (status === SyncStatus.HasConflicts) {
@@ -749,6 +808,7 @@ export class UserDataSyncWorkbenchService
 							}
 						}),
 					);
+
 					await manualSyncTask.merge();
 
 					if (
@@ -757,6 +817,7 @@ export class UserDataSyncWorkbenchService
 					) {
 						await this.handleConflictsWhileTurningOn(token);
 					}
+
 					await manualSyncTask.apply();
 				},
 			);
@@ -800,9 +861,11 @@ export class UserDataSyncWorkbenchService
 								),
 								token,
 							);
+
 						await this.showConflicts(
 							this.userDataSyncService.conflicts[0]?.conflicts[0],
 						);
+
 						await waitUntilConflictsAreResolvedPromise;
 					},
 				},
@@ -869,6 +932,7 @@ export class UserDataSyncWorkbenchService
 		if (!this.userDataSyncService.conflicts.length) {
 			return;
 		}
+
 		this.enableConflictsViewContext.set(true);
 
 		const view =
@@ -921,6 +985,7 @@ export class UserDataSyncWorkbenchService
 					.map((d) => d.resource),
 			);
 		}
+
 		const result: URI[] = [];
 
 		for (const logFolder of logsFolders) {
@@ -936,12 +1001,15 @@ export class UserDataSyncWorkbenchService
 				result.push(childStat.resource);
 			}
 		}
+
 		return result;
 	}
 
 	async showSyncActivity(): Promise<void> {
 		this.activityViewsEnablementContext.set(true);
+
 		await this.waitForActiveSyncViews();
+
 		await this.viewsService.openViewContainer(SYNC_VIEW_CONTAINER_ID);
 	}
 
@@ -995,6 +1063,7 @@ export class UserDataSyncWorkbenchService
 						}
 					}
 				}
+
 				indexes.sort((a, b) => a - b);
 
 				const folder = this.uriIdentityService.extUri.joinPath(
@@ -1003,6 +1072,7 @@ export class UserDataSyncWorkbenchService
 						? name
 						: `${name} ${indexes[indexes.length - 1] + 1}`,
 				);
+
 				await Promise.all([
 					this.userDataSyncService.saveRemoteActivityData(
 						this.uriIdentityService.extUri.joinPath(
@@ -1012,6 +1082,7 @@ export class UserDataSyncWorkbenchService
 					),
 					(async () => {
 						const logResources = await this.getAllLogResources();
+
 						await Promise.all(
 							logResources.map(async (logResource) =>
 								this.fileService.copy(
@@ -1080,6 +1151,7 @@ export class UserDataSyncWorkbenchService
 					),
 				);
 			}
+
 			await this.pick();
 		}
 	}
@@ -1090,6 +1162,7 @@ export class UserDataSyncWorkbenchService
 		if (!result) {
 			return false;
 		}
+
 		await this.doSignIn(result);
 
 		return true;
@@ -1138,18 +1211,23 @@ export class UserDataSyncWorkbenchService
 			disposables.add(
 				quickPick.onDidHide(() => {
 					disposables.dispose();
+
 					c(result);
 				}),
 			);
 		});
 
 		quickPick.title = SYNC_TITLE.value;
+
 		quickPick.ok = false;
+
 		quickPick.ignoreFocusOut = true;
+
 		quickPick.placeholder = localize(
 			"choose account placeholder",
 			"Select an account to sign in",
 		);
+
 		quickPick.show();
 
 		if (authenticationProviders.length > 1) {
@@ -1162,6 +1240,7 @@ export class UserDataSyncWorkbenchService
 					allAccounts.set(id, accounts);
 				}
 			}
+
 			quickPick.busy = false;
 		}
 
@@ -1169,11 +1248,13 @@ export class UserDataSyncWorkbenchService
 			authenticationProviders,
 			allAccounts,
 		);
+
 		disposables.add(
 			quickPick.onDidAccept(() => {
 				result = quickPick.selectedItems[0]?.account
 					? quickPick.selectedItems[0]?.account
 					: quickPick.selectedItems[0]?.authenticationProvider;
+
 				quickPick.hide();
 			}),
 		);
@@ -1203,6 +1284,7 @@ export class UserDataSyncWorkbenchService
 				authenticationProviderId,
 				session,
 			);
+
 			accounts.set(account.accountId, account);
 
 			if (account.sessionId === this.currentSessionId) {
@@ -1259,6 +1341,7 @@ export class UserDataSyncWorkbenchService
 					});
 				}
 			}
+
 			quickPickItems.push({
 				type: "separator",
 				label: localize("others", "Others"),
@@ -1276,6 +1359,7 @@ export class UserDataSyncWorkbenchService
 				provider.supportsMultipleAccounts
 			) {
 				const providerName = provider.label;
+
 				quickPickItems.push({
 					label: localize(
 						"sign in using account",
@@ -1310,6 +1394,7 @@ export class UserDataSyncWorkbenchService
 					)
 				).id;
 			}
+
 			this.currentAuthenticationProviderId = accountOrAuthProvider.id;
 		} else {
 			if (
@@ -1322,10 +1407,13 @@ export class UserDataSyncWorkbenchService
 			} else {
 				sessionId = accountOrAuthProvider.sessionId;
 			}
+
 			this.currentAuthenticationProviderId =
 				accountOrAuthProvider.authenticationProviderId;
 		}
+
 		this.currentSessionId = sessionId;
+
 		await this.update("sign in");
 	}
 
@@ -1334,10 +1422,13 @@ export class UserDataSyncWorkbenchService
 			{},
 			{
 				owner: "sandy081";
+
 				comment: "Report when there are successive auth failures during settings sync";
 			}
 		>("sync/successiveAuthFailures");
+
 		this.currentSessionId = undefined;
+
 		await this.update("auth failure");
 	}
 
@@ -1348,6 +1439,7 @@ export class UserDataSyncWorkbenchService
 		) {
 			this.currentSessionId = undefined;
 		}
+
 		this.update("change in sessions");
 	}
 
@@ -1357,12 +1449,14 @@ export class UserDataSyncWorkbenchService
 			this.getStoredCachedSessionId() /* This checks if current window changed the value or not */
 		) {
 			this._cachedCurrentSessionId = null;
+
 			this.update("change in storage");
 		}
 	}
 
 	private _cachedCurrentAuthenticationProviderId: string | undefined | null =
 		null;
+
 	private get currentAuthenticationProviderId(): string | undefined {
 		if (this._cachedCurrentAuthenticationProviderId === null) {
 			this._cachedCurrentAuthenticationProviderId =
@@ -1371,6 +1465,7 @@ export class UserDataSyncWorkbenchService
 					StorageScope.APPLICATION,
 				);
 		}
+
 		return this._cachedCurrentAuthenticationProviderId;
 	}
 
@@ -1401,10 +1496,12 @@ export class UserDataSyncWorkbenchService
 	}
 
 	private _cachedCurrentSessionId: string | undefined | null = null;
+
 	private get currentSessionId(): string | undefined {
 		if (this._cachedCurrentSessionId === null) {
 			this._cachedCurrentSessionId = this.getStoredCachedSessionId();
 		}
+
 		return this._cachedCurrentSessionId;
 	}
 
@@ -1414,6 +1511,7 @@ export class UserDataSyncWorkbenchService
 
 			if (cachedSessionId === undefined) {
 				this.logService.info("Settings Sync: Reset current session");
+
 				this.storageService.remove(
 					UserDataSyncWorkbenchService.CACHED_SESSION_STORAGE_KEY,
 					StorageScope.APPLICATION,
@@ -1423,6 +1521,7 @@ export class UserDataSyncWorkbenchService
 					"Settings Sync: Updated current session",
 					cachedSessionId,
 				);
+
 				this.storageService.store(
 					UserDataSyncWorkbenchService.CACHED_SESSION_STORAGE_KEY,
 					cachedSessionId,

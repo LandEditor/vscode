@@ -52,8 +52,11 @@ import {
 const processExplorerWindowState = "issue.processExplorerWindowState";
 interface IBrowserWindowOptions {
 	backgroundColor: string | undefined;
+
 	title: string;
+
 	zoomLevel: number;
+
 	alwaysOnTop: boolean;
 }
 type IStrictWindowState = Required<
@@ -62,8 +65,11 @@ type IStrictWindowState = Required<
 
 export class ProcessMainService implements IProcessMainService {
 	declare readonly _serviceBrand: undefined;
+
 	private static readonly DEFAULT_BACKGROUND_COLOR = "#1E1E1E";
+
 	private processExplorerWindow: BrowserWindow | null = null;
+
 	private processExplorerParentWindow: BrowserWindow | null = null;
 
 	constructor(
@@ -106,6 +112,7 @@ export class ProcessMainService implements IProcessMainService {
 					await this.diagnosticsMainService.getRemoteDiagnostics({
 						includeProcesses: true,
 					});
+
 				remoteDiagnostics.forEach((data) => {
 					if (isRemoteDiagnosticError(data)) {
 						processes.push({
@@ -124,15 +131,19 @@ export class ProcessMainService implements IProcessMainService {
 			} catch (e) {
 				this.logService.error(`Listing processes failed: ${e}`);
 			}
+
 			this.safeSend(event, "vscode:listProcessesResponse", processes);
 		});
+
 		validatedIpcMain.on(
 			"vscode:workbenchCommand",
 			(
 				_: unknown,
 				commandInfo: {
 					id: any;
+
 					from: any;
+
 					args: any;
 				},
 			) => {
@@ -150,6 +161,7 @@ export class ProcessMainService implements IProcessMainService {
 						// The issue reporter does not use this anymore.
 						throw new Error(`Unexpected command source: ${from}`);
 				}
+
 				parentWindow?.webContents.send("vscode:runAction", {
 					id,
 					from,
@@ -157,9 +169,11 @@ export class ProcessMainService implements IProcessMainService {
 				});
 			},
 		);
+
 		validatedIpcMain.on("vscode:closeProcessExplorer", (event) => {
 			this.processExplorerWindow?.close();
 		});
+
 		validatedIpcMain.on("vscode:pidToNameRequest", async (event) => {
 			const mainProcessInfo =
 				await this.diagnosticsMainService.getMainDiagnostics();
@@ -172,12 +186,15 @@ export class ProcessMainService implements IProcessMainService {
 					`window [${window.id}] (${window.title})`,
 				]);
 			}
+
 			for (const { pid, name } of UtilityProcess.getAll()) {
 				pidToNames.push([pid, name]);
 			}
+
 			this.safeSend(event, "vscode:pidToNameResponse", pidToNames);
 		});
 	}
+
 	async openProcessExplorer(data: ProcessExplorerData): Promise<void> {
 		if (!this.processExplorerWindow) {
 			this.processExplorerParentWindow = BrowserWindow.getFocusedWindow();
@@ -202,6 +219,7 @@ export class ProcessMainService implements IProcessMainService {
 							800,
 							500,
 						);
+
 				this.processExplorerWindow = this.createBrowserWindow(
 					position,
 					processExplorerWindowConfigUrl,
@@ -228,19 +246,25 @@ export class ProcessMainService implements IProcessMainService {
 						? await this.cssDevelopmentService.getCssModules()
 						: undefined,
 				});
+
 				this.processExplorerWindow.loadURL(
 					FileAccess.asBrowserUri(
 						`vs/code/electron-sandbox/processExplorer/processExplorer${this.environmentMainService.isBuilt ? "" : "-dev"}.html`,
 					).toString(true),
 				);
+
 				this.processExplorerWindow.on("close", () => {
 					this.processExplorerWindow = null;
+
 					processExplorerDisposables.dispose();
 				});
+
 				this.processExplorerParentWindow.on("close", () => {
 					if (this.processExplorerWindow) {
 						this.processExplorerWindow.close();
+
 						this.processExplorerWindow = null;
+
 						processExplorerDisposables.dispose();
 					}
 				});
@@ -249,6 +273,7 @@ export class ProcessMainService implements IProcessMainService {
 					if (!this.processExplorerWindow) {
 						return;
 					}
+
 					const size = this.processExplorerWindow.getSize();
 
 					const position = this.processExplorerWindow.getPosition();
@@ -256,31 +281,39 @@ export class ProcessMainService implements IProcessMainService {
 					if (!size || !position) {
 						return;
 					}
+
 					const state: IWindowState = {
 						width: size[0],
 						height: size[1],
 						x: position[0],
 						y: position[1],
 					};
+
 					this.stateService.setItem(
 						processExplorerWindowState,
 						state,
 					);
 				};
+
 				this.processExplorerWindow.on("moved", storeState);
+
 				this.processExplorerWindow.on("resized", storeState);
 			}
 		}
+
 		if (this.processExplorerWindow) {
 			this.focusWindow(this.processExplorerWindow);
 		}
 	}
+
 	private focusWindow(window: BrowserWindow): void {
 		if (window.isMinimized()) {
 			window.restore();
 		}
+
 		window.focus();
 	}
+
 	private getWindowPosition(
 		parentWindow: BrowserWindow,
 		defaultWidth: number,
@@ -299,6 +332,7 @@ export class ProcessMainService implements IProcessMainService {
 			// on mac there is 1 menu per window so we need to use the monitor where the cursor currently is
 			if (isMacintosh) {
 				const cursorPoint = screen.getCursorScreenPoint();
+
 				displayToUse = screen.getDisplayNearestPoint(cursorPoint);
 			}
 			// if we have a last active window, use that display for the new window
@@ -312,6 +346,7 @@ export class ProcessMainService implements IProcessMainService {
 				displayToUse = screen.getPrimaryDisplay() || displays[0];
 			}
 		}
+
 		const displayBounds = displayToUse.bounds;
 
 		const state: IStrictWindowState = {
@@ -329,28 +364,36 @@ export class ProcessMainService implements IProcessMainService {
 			if (state.x < displayBounds.x) {
 				state.x = displayBounds.x; // prevent window from falling out of the screen to the left
 			}
+
 			if (state.y < displayBounds.y) {
 				state.y = displayBounds.y; // prevent window from falling out of the screen to the top
 			}
+
 			if (state.x > displayBounds.x + displayBounds.width) {
 				state.x = displayBounds.x; // prevent window from falling out of the screen to the right
 			}
+
 			if (state.y > displayBounds.y + displayBounds.height) {
 				state.y = displayBounds.y; // prevent window from falling out of the screen to the bottom
 			}
+
 			if (state.width > displayBounds.width) {
 				state.width = displayBounds.width; // prevent window from exceeding display bounds width
 			}
+
 			if (state.height > displayBounds.height) {
 				state.height = displayBounds.height; // prevent window from exceeding display bounds height
 			}
 		}
+
 		return state;
 	}
+
 	async stopTracing(): Promise<void> {
 		if (!this.environmentMainService.args.trace) {
 			return; // requires tracing to be on
 		}
+
 		const path = await contentTracing.stopRecording(
 			`${randomPath(this.environmentMainService.userHome.fsPath, this.productService.applicationName)}.trace.txt`,
 		);
@@ -379,6 +422,7 @@ export class ProcessMainService implements IProcessMainService {
 		// Show item in explorer
 		this.nativeHostMainService.showItemInFolder(undefined, path);
 	}
+
 	async getSystemStatus(): Promise<string> {
 		const [info, remoteData] = await Promise.all([
 			this.diagnosticsMainService.getMainDiagnostics(),
@@ -390,6 +434,7 @@ export class ProcessMainService implements IProcessMainService {
 
 		return this.diagnosticsService.getDiagnostics(info, remoteData);
 	}
+
 	async $getSystemInfo(): Promise<SystemInfo> {
 		const [info, remoteData] = await Promise.all([
 			this.diagnosticsMainService.getMainDiagnostics(),
@@ -406,6 +451,7 @@ export class ProcessMainService implements IProcessMainService {
 
 		return msg;
 	}
+
 	async $getPerformanceInfo(): Promise<PerformanceInfo> {
 		try {
 			const [info, remoteData] = await Promise.all([
@@ -429,6 +475,7 @@ export class ProcessMainService implements IProcessMainService {
 			throw error;
 		}
 	}
+
 	private createBrowserWindow<T>(
 		position: IWindowState,
 		ipcObjectUrl: IIPCObjectUrl<T>,
@@ -471,10 +518,12 @@ export class ProcessMainService implements IProcessMainService {
 		};
 
 		const window = new BrowserWindow(browserWindowOptions);
+
 		window.setMenuBarVisibility(false);
 
 		return window;
 	}
+
 	private safeSend(
 		event: IpcMainEvent,
 		channel: string,
@@ -484,6 +533,7 @@ export class ProcessMainService implements IProcessMainService {
 			event.sender.send(channel, ...args);
 		}
 	}
+
 	async closeProcessExplorer(): Promise<void> {
 		this.processExplorerWindow?.close();
 	}
@@ -492,5 +542,6 @@ function isStrictWindowState(obj: unknown): obj is IStrictWindowState {
 	if (typeof obj !== "object" || obj === null) {
 		return false;
 	}
+
 	return "x" in obj && "y" in obj && "width" in obj && "height" in obj;
 }

@@ -62,6 +62,7 @@ function getRgArgs(
 	foldersToIncludeGlobs([folderQuery], includePattern, false).forEach(
 		(globArg) => {
 			const inclusion = anchorGlob(globArg);
+
 			args.push("-g", inclusion);
 
 			if (isMac) {
@@ -80,8 +81,10 @@ function getRgArgs(
 		undefined,
 		false,
 	);
+
 	rgGlobs.globArgs.forEach((globArg) => {
 		const exclusion = `!${anchorGlob(globArg)}`;
+
 		args.push("-g", exclusion);
 
 		if (isMac) {
@@ -103,17 +106,21 @@ function getRgArgs(
 	if (!folderQuery.ignoreSymlinks) {
 		args.push("--follow");
 	}
+
 	if (config.exists) {
 		args.push("--quiet");
 	}
+
 	if (numThreads) {
 		args.push("--threads", `${numThreads}`);
 	}
+
 	args.push("--no-config");
 
 	if (folderQuery.disregardGlobalIgnoreFiles) {
 		args.push("--no-ignore-global");
 	}
+
 	return {
 		args,
 		siblingClauses: rgGlobs.siblingClauses,
@@ -121,6 +128,7 @@ function getRgArgs(
 }
 interface IRgGlobResult {
 	globArgs: string[];
+
 	siblingClauses: glob.IExpression;
 }
 function foldersToRgExcludeGlobs(
@@ -132,6 +140,7 @@ function foldersToRgExcludeGlobs(
 	const globArgs: string[] = [];
 
 	let siblingClauses: glob.IExpression = {};
+
 	folderQueries.forEach((folderQuery) => {
 		const totalExcludePattern = Object.assign(
 			{},
@@ -144,6 +153,7 @@ function foldersToRgExcludeGlobs(
 			absoluteGlobs ? folderQuery.folder.fsPath : undefined,
 			excludesToSkip,
 		);
+
 		globArgs.push(...result.globArgs);
 
 		if (result.siblingClauses) {
@@ -162,6 +172,7 @@ function foldersToIncludeGlobs(
 	absoluteGlobs = true,
 ): string[] {
 	const globArgs: string[] = [];
+
 	folderQueries.forEach((folderQuery) => {
 		const totalIncludePattern = Object.assign(
 			{},
@@ -173,6 +184,7 @@ function foldersToIncludeGlobs(
 			totalIncludePattern,
 			absoluteGlobs ? folderQuery.folder.fsPath : undefined,
 		);
+
 		globArgs.push(...result.globArgs);
 	});
 
@@ -186,14 +198,18 @@ function globExprsToRgGlobs(
 	const globArgs: string[] = [];
 
 	const siblingClauses: glob.IExpression = {};
+
 	Object.keys(patterns).forEach((key) => {
 		if (excludesToSkip && excludesToSkip.has(key)) {
 			return;
 		}
+
 		if (!key) {
 			return;
 		}
+
 		const value = patterns[key];
+
 		key = trimTrailingSlash(folder ? getAbsoluteGlob(folder, key) : key);
 		// glob.ts requires forward slashes, but a UNC path still must start with \\
 		// #38165 and #38151
@@ -202,11 +218,13 @@ function globExprsToRgGlobs(
 		} else {
 			key = key.replace(/\\/g, "/");
 		}
+
 		if (typeof value === "boolean" && value) {
 			if (key.startsWith("\\\\")) {
 				// Absolute globs UNC paths don't work properly, see #58758
 				key += "**";
 			}
+
 			globArgs.push(fixDriveC(key));
 		} else if (value && value.when) {
 			siblingClauses[key] = value;

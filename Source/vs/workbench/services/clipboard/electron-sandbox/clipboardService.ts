@@ -20,29 +20,36 @@ export class NativeClipboardService implements IClipboardService {
 		@INativeHostService
 		private readonly nativeHostService: INativeHostService,
 	) {}
+
 	async readImage(): Promise<Uint8Array> {
 		return this.nativeHostService.readImage();
 	}
+
 	async writeText(
 		text: string,
 		type?: "selection" | "clipboard",
 	): Promise<void> {
 		return this.nativeHostService.writeClipboardText(text, type);
 	}
+
 	async readText(type?: "selection" | "clipboard"): Promise<string> {
 		return this.nativeHostService.readClipboardText(type);
 	}
+
 	async readFindText(): Promise<string> {
 		if (isMacintosh) {
 			return this.nativeHostService.readClipboardFindText();
 		}
+
 		return "";
 	}
+
 	async writeFindText(text: string): Promise<void> {
 		if (isMacintosh) {
 			return this.nativeHostService.writeClipboardFindText(text);
 		}
 	}
+
 	async writeResources(resources: URI[]): Promise<void> {
 		if (resources.length) {
 			return this.nativeHostService.writeClipboardBuffer(
@@ -51,6 +58,7 @@ export class NativeClipboardService implements IClipboardService {
 			);
 		}
 	}
+
 	async readResources(): Promise<URI[]> {
 		return this.bufferToResources(
 			await this.nativeHostService.readClipboardBuffer(
@@ -58,25 +66,30 @@ export class NativeClipboardService implements IClipboardService {
 			),
 		);
 	}
+
 	async hasResources(): Promise<boolean> {
 		return this.nativeHostService.hasClipboard(
 			NativeClipboardService.FILE_FORMAT,
 		);
 	}
+
 	private resourcesToBuffer(resources: URI[]): VSBuffer {
 		return VSBuffer.fromString(
 			resources.map((r) => r.toString()).join("\n"),
 		);
 	}
+
 	private bufferToResources(buffer: VSBuffer): URI[] {
 		if (!buffer) {
 			return [];
 		}
+
 		const bufferValue = buffer.toString();
 
 		if (!bufferValue) {
 			return [];
 		}
+
 		try {
 			return bufferValue.split("\n").map((f) => URI.parse(f));
 		} catch (error) {

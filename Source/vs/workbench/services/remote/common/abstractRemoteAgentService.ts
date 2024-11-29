@@ -48,7 +48,9 @@ export abstract class AbstractRemoteAgentService
 	implements IRemoteAgentService
 {
 	declare readonly _serviceBrand: undefined;
+
 	private readonly _connection: IRemoteAgentConnection | null;
+
 	private _environment: Promise<IRemoteAgentEnvironment | null> | null;
 
 	constructor(
@@ -84,14 +86,18 @@ export abstract class AbstractRemoteAgentService
 		} else {
 			this._connection = null;
 		}
+
 		this._environment = null;
 	}
+
 	getConnection(): IRemoteAgentConnection | null {
 		return this._connection;
 	}
+
 	getEnvironment(): Promise<IRemoteAgentEnvironment | null> {
 		return this.getRawEnvironment().then(undefined, () => null);
 	}
+
 	getRawEnvironment(): Promise<IRemoteAgentEnvironment | null> {
 		if (!this._environment) {
 			this._environment = this._withChannel(
@@ -104,6 +110,7 @@ export abstract class AbstractRemoteAgentService
 								? undefined
 								: this.userDataProfileService.currentProfile.id,
 						);
+
 					this._remoteAuthorityResolverService._setAuthorityConnectionToken(
 						connection.remoteAuthority,
 						env.connectionToken,
@@ -114,8 +121,10 @@ export abstract class AbstractRemoteAgentService
 				null,
 			);
 		}
+
 		return this._environment;
 	}
+
 	getExtensionHostExitInfo(
 		reconnectionToken: string,
 	): Promise<IExtensionHostExitInfo | null> {
@@ -129,6 +138,7 @@ export abstract class AbstractRemoteAgentService
 			null,
 		);
 	}
+
 	getDiagnosticInfo(
 		options: IDiagnosticInfoOptions,
 	): Promise<IDiagnosticInfo | undefined> {
@@ -141,6 +151,7 @@ export abstract class AbstractRemoteAgentService
 			undefined,
 		);
 	}
+
 	updateTelemetryLevel(telemetryLevel: TelemetryLevel): Promise<void> {
 		return this._withTelemetryChannel(
 			(channel) =>
@@ -151,6 +162,7 @@ export abstract class AbstractRemoteAgentService
 			undefined,
 		);
 	}
+
 	logTelemetry(eventName: string, data: ITelemetryData): Promise<void> {
 		return this._withTelemetryChannel(
 			(channel) =>
@@ -162,6 +174,7 @@ export abstract class AbstractRemoteAgentService
 			undefined,
 		);
 	}
+
 	flushTelemetry(): Promise<void> {
 		return this._withTelemetryChannel(
 			(channel) =>
@@ -169,20 +182,25 @@ export abstract class AbstractRemoteAgentService
 			undefined,
 		);
 	}
+
 	getRoundTripTime(): Promise<number | undefined> {
 		return this._withTelemetryChannel(async (channel) => {
 			const start = Date.now();
+
 			await RemoteExtensionEnvironmentChannelClient.ping(channel);
 
 			return Date.now() - start;
 		}, undefined);
 	}
+
 	async endConnection(): Promise<void> {
 		if (this._connection) {
 			await this._connection.end();
+
 			this._connection.dispose();
 		}
 	}
+
 	private _withChannel<R>(
 		callback: (
 			channel: IChannel,
@@ -195,11 +213,13 @@ export abstract class AbstractRemoteAgentService
 		if (!connection) {
 			return Promise.resolve(fallback);
 		}
+
 		return connection.withChannel(
 			"remoteextensionsenvironment",
 			(channel) => callback(channel, connection),
 		);
 	}
+
 	private _withTelemetryChannel<R>(
 		callback: (
 			channel: IChannel,
@@ -212,6 +232,7 @@ export abstract class AbstractRemoteAgentService
 		if (!connection) {
 			return Promise.resolve(fallback);
 		}
+
 		return connection.withChannel("telemetry", (channel) =>
 			callback(channel, connection),
 		);
@@ -222,13 +243,19 @@ class RemoteAgentConnection
 	implements IRemoteAgentConnection
 {
 	private readonly _onReconnecting = this._register(new Emitter<void>());
+
 	public readonly onReconnecting = this._onReconnecting.event;
+
 	private readonly _onDidStateChange = this._register(
 		new Emitter<PersistentConnectionEvent>(),
 	);
+
 	public readonly onDidStateChange = this._onDidStateChange.event;
+
 	readonly remoteAuthority: string;
+
 	private _connection: Promise<Client<RemoteAgentConnectionContext>> | null;
+
 	private _initialConnectionMs: number | undefined;
 
 	constructor(
@@ -241,9 +268,12 @@ class RemoteAgentConnection
 		private readonly _logService: ILogService,
 	) {
 		super();
+
 		this.remoteAuthority = remoteAuthority;
+
 		this._connection = null;
 	}
+
 	end: () => Promise<void> = () => Promise.resolve();
 
 	getChannel<T extends IChannel>(channelName: string): T {
@@ -255,6 +285,7 @@ class RemoteAgentConnection
 			)
 		);
 	}
+
 	withChannel<T extends IChannel, R>(
 		channelName: string,
 		callback: (channel: T) => Promise<R>,
@@ -265,6 +296,7 @@ class RemoteAgentConnection
 
 		return result;
 	}
+
 	registerChannel<T extends IServerChannel<RemoteAgentConnectionContext>>(
 		channelName: string,
 		channel: T,
@@ -273,22 +305,27 @@ class RemoteAgentConnection
 			client.registerChannel(channelName, channel),
 		);
 	}
+
 	async getInitialConnectionTimeMs() {
 		try {
 			await this._getOrCreateConnection();
 		} catch {
 			// ignored -- time is measured even if connection fails
 		}
+
 		return this._initialConnectionMs!;
 	}
+
 	private _getOrCreateConnection(): Promise<
 		Client<RemoteAgentConnectionContext>
 	> {
 		if (!this._connection) {
 			this._connection = this._createConnection();
 		}
+
 		return this._connection;
 	}
+
 	private async _createConnection(): Promise<
 		Client<RemoteAgentConnectionContext>
 	> {
@@ -304,6 +341,7 @@ class RemoteAgentConnection
 					} else {
 						this._onReconnecting.fire(undefined);
 					}
+
 					const { authority } =
 						await this._remoteAuthorityResolverService.resolveAuthority(
 							this.remoteAuthority,
@@ -338,14 +376,17 @@ class RemoteAgentConnection
 		} finally {
 			this._initialConnectionMs = Date.now() - start;
 		}
+
 		connection.protocol.onDidDispose(() => {
 			connection.dispose();
 		});
+
 		this.end = () => {
 			connection.protocol.sendDisconnect();
 
 			return connection.protocol.drain();
 		};
+
 		this._register(
 			connection.onDidStateChange((e) => this._onDidStateChange.fire(e)),
 		);

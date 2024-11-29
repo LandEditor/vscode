@@ -39,23 +39,32 @@ import { IExtensionService } from "../../../services/extensions/common/extension
 
 interface IRegExp {
 	pattern: string;
+
 	flags?: string;
 }
 interface IIndentationRules {
 	decreaseIndentPattern: string | IRegExp;
+
 	increaseIndentPattern: string | IRegExp;
+
 	indentNextLinePattern?: string | IRegExp;
+
 	unIndentedLinePattern?: string | IRegExp;
 }
 interface IEnterAction {
 	indent: "none" | "indent" | "indentOutdent" | "outdent";
+
 	appendText?: string;
+
 	removeText?: number;
 }
 interface IOnEnterRule {
 	beforeText: string | IRegExp;
+
 	afterText?: string | IRegExp;
+
 	previousLineText?: string | IRegExp;
+
 	action: IEnterAction;
 }
 /**
@@ -63,31 +72,44 @@ interface IOnEnterRule {
  */
 export interface ILanguageConfiguration {
 	comments?: CommentRule;
+
 	brackets?: CharacterPair[];
+
 	autoClosingPairs?: Array<CharacterPair | IAutoClosingPairConditional>;
+
 	surroundingPairs?: Array<CharacterPair | IAutoClosingPair>;
+
 	colorizedBracketPairs?: Array<CharacterPair>;
+
 	wordPattern?: string | IRegExp;
+
 	indentationRules?: IIndentationRules;
+
 	folding?: {
 		offSide?: boolean;
+
 		markers?: {
 			start?: string | IRegExp;
+
 			end?: string | IRegExp;
 		};
 	};
+
 	autoCloseBefore?: string;
+
 	onEnterRules?: IOnEnterRule[];
 }
 function isStringArr(something: string[] | null): something is string[] {
 	if (!Array.isArray(something)) {
 		return false;
 	}
+
 	for (let i = 0, len = something.length; i < len; i++) {
 		if (typeof something[i] !== "string") {
 			return false;
 		}
 	}
+
 	return true;
 }
 function isCharacterPair(something: CharacterPair | null): boolean {
@@ -110,6 +132,7 @@ export class LanguageConfigurationFileHandler extends Disposable {
 		private readonly _languageConfigurationService: ILanguageConfigurationService,
 	) {
 		super();
+
 		this._register(
 			this._languageService.onDidRequestBasicLanguageFeatures(
 				async (languageIdentifier) => {
@@ -122,6 +145,7 @@ export class LanguageConfigurationFileHandler extends Disposable {
 				},
 			),
 		);
+
 		this._register(
 			this._languageService.onDidChange(() => {
 				// reload language configurations as necessary
@@ -131,6 +155,7 @@ export class LanguageConfigurationFileHandler extends Disposable {
 			}),
 		);
 	}
+
 	private async _loadConfigurationsForMode(
 		languageId: string,
 	): Promise<void> {
@@ -144,6 +169,7 @@ export class LanguageConfigurationFileHandler extends Disposable {
 		if (this._done.get(languageId) === configurationHash) {
 			return;
 		}
+
 		this._done.set(languageId, configurationHash);
 
 		const configs = await Promise.all(
@@ -156,6 +182,7 @@ export class LanguageConfigurationFileHandler extends Disposable {
 			this._handleConfig(languageId, config);
 		}
 	}
+
 	private async _readConfigFile(
 		configFileLocation: URI,
 	): Promise<ILanguageConfiguration> {
@@ -184,6 +211,7 @@ export class LanguageConfigurationFileHandler extends Disposable {
 					),
 				);
 			}
+
 			if (getNodeType(configuration) !== "object") {
 				console.error(
 					nls.localize(
@@ -192,8 +220,10 @@ export class LanguageConfigurationFileHandler extends Disposable {
 						configFileLocation.toString(),
 					),
 				);
+
 				configuration = {};
 			}
+
 			return configuration;
 		} catch (err) {
 			console.error(err);
@@ -201,6 +231,7 @@ export class LanguageConfigurationFileHandler extends Disposable {
 			return {};
 		}
 	}
+
 	private static _extractValidCommentRule(
 		languageId: string,
 		configuration: ILanguageConfiguration,
@@ -210,6 +241,7 @@ export class LanguageConfigurationFileHandler extends Disposable {
 		if (typeof source === "undefined") {
 			return undefined;
 		}
+
 		if (!types.isObject(source)) {
 			console.warn(
 				`[${languageId}]: language configuration: expected \`comments\` to be an object.`,
@@ -217,6 +249,7 @@ export class LanguageConfigurationFileHandler extends Disposable {
 
 			return undefined;
 		}
+
 		let result: CommentRule | undefined = undefined;
 
 		if (typeof source.lineComment !== "undefined") {
@@ -226,9 +259,11 @@ export class LanguageConfigurationFileHandler extends Disposable {
 				);
 			} else {
 				result = result || {};
+
 				result.lineComment = source.lineComment;
 			}
 		}
+
 		if (typeof source.blockComment !== "undefined") {
 			if (!isCharacterPair(source.blockComment)) {
 				console.warn(
@@ -236,11 +271,14 @@ export class LanguageConfigurationFileHandler extends Disposable {
 				);
 			} else {
 				result = result || {};
+
 				result.blockComment = source.blockComment;
 			}
 		}
+
 		return result;
 	}
+
 	private static _extractValidBrackets(
 		languageId: string,
 		configuration: ILanguageConfiguration,
@@ -250,6 +288,7 @@ export class LanguageConfigurationFileHandler extends Disposable {
 		if (typeof source === "undefined") {
 			return undefined;
 		}
+
 		if (!Array.isArray(source)) {
 			console.warn(
 				`[${languageId}]: language configuration: expected \`brackets\` to be an array.`,
@@ -257,6 +296,7 @@ export class LanguageConfigurationFileHandler extends Disposable {
 
 			return undefined;
 		}
+
 		let result: CharacterPair[] | undefined = undefined;
 
 		for (let i = 0, len = source.length; i < len; i++) {
@@ -269,11 +309,15 @@ export class LanguageConfigurationFileHandler extends Disposable {
 
 				continue;
 			}
+
 			result = result || [];
+
 			result.push(pair);
 		}
+
 		return result;
 	}
+
 	private static _extractValidAutoClosingPairs(
 		languageId: string,
 		configuration: ILanguageConfiguration,
@@ -283,6 +327,7 @@ export class LanguageConfigurationFileHandler extends Disposable {
 		if (typeof source === "undefined") {
 			return undefined;
 		}
+
 		if (!Array.isArray(source)) {
 			console.warn(
 				`[${languageId}]: language configuration: expected \`autoClosingPairs\` to be an array.`,
@@ -290,6 +335,7 @@ export class LanguageConfigurationFileHandler extends Disposable {
 
 			return undefined;
 		}
+
 		let result: IAutoClosingPairConditional[] | undefined = undefined;
 
 		for (let i = 0, len = source.length; i < len; i++) {
@@ -303,7 +349,9 @@ export class LanguageConfigurationFileHandler extends Disposable {
 
 					continue;
 				}
+
 				result = result || [];
+
 				result.push({ open: pair[0], close: pair[1] });
 			} else {
 				if (!types.isObject(pair)) {
@@ -313,6 +361,7 @@ export class LanguageConfigurationFileHandler extends Disposable {
 
 					continue;
 				}
+
 				if (typeof pair.open !== "string") {
 					console.warn(
 						`[${languageId}]: language configuration: expected \`autoClosingPairs[${i}].open\` to be a string.`,
@@ -320,6 +369,7 @@ export class LanguageConfigurationFileHandler extends Disposable {
 
 					continue;
 				}
+
 				if (typeof pair.close !== "string") {
 					console.warn(
 						`[${languageId}]: language configuration: expected \`autoClosingPairs[${i}].close\` to be a string.`,
@@ -327,6 +377,7 @@ export class LanguageConfigurationFileHandler extends Disposable {
 
 					continue;
 				}
+
 				if (typeof pair.notIn !== "undefined") {
 					if (!isStringArr(pair.notIn)) {
 						console.warn(
@@ -336,7 +387,9 @@ export class LanguageConfigurationFileHandler extends Disposable {
 						continue;
 					}
 				}
+
 				result = result || [];
+
 				result.push({
 					open: pair.open,
 					close: pair.close,
@@ -344,8 +397,10 @@ export class LanguageConfigurationFileHandler extends Disposable {
 				});
 			}
 		}
+
 		return result;
 	}
+
 	private static _extractValidSurroundingPairs(
 		languageId: string,
 		configuration: ILanguageConfiguration,
@@ -355,6 +410,7 @@ export class LanguageConfigurationFileHandler extends Disposable {
 		if (typeof source === "undefined") {
 			return undefined;
 		}
+
 		if (!Array.isArray(source)) {
 			console.warn(
 				`[${languageId}]: language configuration: expected \`surroundingPairs\` to be an array.`,
@@ -362,6 +418,7 @@ export class LanguageConfigurationFileHandler extends Disposable {
 
 			return undefined;
 		}
+
 		let result: IAutoClosingPair[] | undefined = undefined;
 
 		for (let i = 0, len = source.length; i < len; i++) {
@@ -375,7 +432,9 @@ export class LanguageConfigurationFileHandler extends Disposable {
 
 					continue;
 				}
+
 				result = result || [];
+
 				result.push({ open: pair[0], close: pair[1] });
 			} else {
 				if (!types.isObject(pair)) {
@@ -385,6 +444,7 @@ export class LanguageConfigurationFileHandler extends Disposable {
 
 					continue;
 				}
+
 				if (typeof pair.open !== "string") {
 					console.warn(
 						`[${languageId}]: language configuration: expected \`surroundingPairs[${i}].open\` to be a string.`,
@@ -392,6 +452,7 @@ export class LanguageConfigurationFileHandler extends Disposable {
 
 					continue;
 				}
+
 				if (typeof pair.close !== "string") {
 					console.warn(
 						`[${languageId}]: language configuration: expected \`surroundingPairs[${i}].close\` to be a string.`,
@@ -399,12 +460,16 @@ export class LanguageConfigurationFileHandler extends Disposable {
 
 					continue;
 				}
+
 				result = result || [];
+
 				result.push({ open: pair.open, close: pair.close });
 			}
 		}
+
 		return result;
 	}
+
 	private static _extractValidColorizedBracketPairs(
 		languageId: string,
 		configuration: ILanguageConfiguration,
@@ -414,6 +479,7 @@ export class LanguageConfigurationFileHandler extends Disposable {
 		if (typeof source === "undefined") {
 			return undefined;
 		}
+
 		if (!Array.isArray(source)) {
 			console.warn(
 				`[${languageId}]: language configuration: expected \`colorizedBracketPairs\` to be an array.`,
@@ -421,6 +487,7 @@ export class LanguageConfigurationFileHandler extends Disposable {
 
 			return undefined;
 		}
+
 		const result: CharacterPair[] = [];
 
 		for (let i = 0, len = source.length; i < len; i++) {
@@ -433,10 +500,13 @@ export class LanguageConfigurationFileHandler extends Disposable {
 
 				continue;
 			}
+
 			result.push([pair[0], pair[1]]);
 		}
+
 		return result;
 	}
+
 	private static _extractValidOnEnterRules(
 		languageId: string,
 		configuration: ILanguageConfiguration,
@@ -446,6 +516,7 @@ export class LanguageConfigurationFileHandler extends Disposable {
 		if (typeof source === "undefined") {
 			return undefined;
 		}
+
 		if (!Array.isArray(source)) {
 			console.warn(
 				`[${languageId}]: language configuration: expected \`onEnterRules\` to be an array.`,
@@ -453,6 +524,7 @@ export class LanguageConfigurationFileHandler extends Disposable {
 
 			return undefined;
 		}
+
 		let result: OnEnterRule[] | undefined = undefined;
 
 		for (let i = 0, len = source.length; i < len; i++) {
@@ -465,6 +537,7 @@ export class LanguageConfigurationFileHandler extends Disposable {
 
 				continue;
 			}
+
 			if (!types.isObject(onEnterRule.action)) {
 				console.warn(
 					`[${languageId}]: language configuration: expected \`onEnterRules[${i}].action\` to be an object.`,
@@ -472,6 +545,7 @@ export class LanguageConfigurationFileHandler extends Disposable {
 
 				continue;
 			}
+
 			let indentAction: IndentAction;
 
 			if (onEnterRule.action.indent === "none") {
@@ -489,6 +563,7 @@ export class LanguageConfigurationFileHandler extends Disposable {
 
 				continue;
 			}
+
 			const action: EnterAction = { indentAction };
 
 			if (onEnterRule.action.appendText) {
@@ -500,6 +575,7 @@ export class LanguageConfigurationFileHandler extends Disposable {
 					);
 				}
 			}
+
 			if (onEnterRule.action.removeText) {
 				if (typeof onEnterRule.action.removeText === "number") {
 					action.removeText = onEnterRule.action.removeText;
@@ -509,6 +585,7 @@ export class LanguageConfigurationFileHandler extends Disposable {
 					);
 				}
 			}
+
 			const beforeText = this._parseRegex(
 				languageId,
 				`onEnterRules[${i}].beforeText`,
@@ -518,6 +595,7 @@ export class LanguageConfigurationFileHandler extends Disposable {
 			if (!beforeText) {
 				continue;
 			}
+
 			const resultingOnEnterRule: OnEnterRule = { beforeText, action };
 
 			if (onEnterRule.afterText) {
@@ -531,6 +609,7 @@ export class LanguageConfigurationFileHandler extends Disposable {
 					resultingOnEnterRule.afterText = afterText;
 				}
 			}
+
 			if (onEnterRule.previousLineText) {
 				const previousLineText = this._parseRegex(
 					languageId,
@@ -542,11 +621,15 @@ export class LanguageConfigurationFileHandler extends Disposable {
 					resultingOnEnterRule.previousLineText = previousLineText;
 				}
 			}
+
 			result = result || [];
+
 			result.push(resultingOnEnterRule);
 		}
+
 		return result;
 	}
+
 	public static extractValidConfig(
 		languageId: string,
 		configuration: ILanguageConfiguration,
@@ -620,11 +703,13 @@ export class LanguageConfigurationFileHandler extends Disposable {
 				startMarker && endMarker
 					? { start: startMarker, end: endMarker }
 					: undefined;
+
 			folding = {
 				offSide: configuration.folding.offSide,
 				markers,
 			};
 		}
+
 		const onEnterRules = this._extractValidOnEnterRules(
 			languageId,
 			configuration,
@@ -646,6 +731,7 @@ export class LanguageConfigurationFileHandler extends Disposable {
 
 		return richEditConfig;
 	}
+
 	private _handleConfig(
 		languageId: string,
 		configuration: ILanguageConfiguration,
@@ -655,12 +741,14 @@ export class LanguageConfigurationFileHandler extends Disposable {
 				languageId,
 				configuration,
 			);
+
 		this._languageConfigurationService.register(
 			languageId,
 			richEditConfig,
 			50,
 		);
 	}
+
 	private static _parseRegex(
 		languageId: string,
 		confPath: string,
@@ -678,6 +766,7 @@ export class LanguageConfigurationFileHandler extends Disposable {
 				return undefined;
 			}
 		}
+
 		if (types.isObject(value)) {
 			if (typeof value.pattern !== "string") {
 				console.warn(
@@ -686,6 +775,7 @@ export class LanguageConfigurationFileHandler extends Disposable {
 
 				return undefined;
 			}
+
 			if (
 				typeof value.flags !== "undefined" &&
 				typeof value.flags !== "string"
@@ -696,6 +786,7 @@ export class LanguageConfigurationFileHandler extends Disposable {
 
 				return undefined;
 			}
+
 			try {
 				return new RegExp(value.pattern, value.flags);
 			} catch (err) {
@@ -707,12 +798,14 @@ export class LanguageConfigurationFileHandler extends Disposable {
 				return undefined;
 			}
 		}
+
 		console.warn(
 			`[${languageId}]: language configuration: expected \`${confPath}\` to be a string or an object.`,
 		);
 
 		return undefined;
 	}
+
 	private static _mapIndentationRules(
 		languageId: string,
 		indentationRules: IIndentationRules,
@@ -726,6 +819,7 @@ export class LanguageConfigurationFileHandler extends Disposable {
 		if (!increaseIndentPattern) {
 			return undefined;
 		}
+
 		const decreaseIndentPattern = this._parseRegex(
 			languageId,
 			`indentationRules.decreaseIndentPattern`,
@@ -735,6 +829,7 @@ export class LanguageConfigurationFileHandler extends Disposable {
 		if (!decreaseIndentPattern) {
 			return undefined;
 		}
+
 		const result: IndentationRule = {
 			increaseIndentPattern: increaseIndentPattern,
 			decreaseIndentPattern: decreaseIndentPattern,
@@ -747,6 +842,7 @@ export class LanguageConfigurationFileHandler extends Disposable {
 				indentationRules.indentNextLinePattern,
 			);
 		}
+
 		if (indentationRules.unIndentedLinePattern) {
 			result.unIndentedLinePattern = this._parseRegex(
 				languageId,
@@ -754,6 +850,7 @@ export class LanguageConfigurationFileHandler extends Disposable {
 				indentationRules.unIndentedLinePattern,
 			);
 		}
+
 		return result;
 	}
 }

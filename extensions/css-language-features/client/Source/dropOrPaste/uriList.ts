@@ -27,9 +27,11 @@ export class UriList {
 			),
 		);
 	}
+
 	constructor(
 		public readonly entries: ReadonlyArray<{
 			readonly uri: vscode.Uri;
+
 			readonly str: string;
 		}>,
 	) {}

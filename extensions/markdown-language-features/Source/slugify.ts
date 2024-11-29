@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 export class Slug {
 	public constructor(public readonly value: string) {}
+
 	public equals(other: Slug): boolean {
 		return this.value === other.value;
 	}

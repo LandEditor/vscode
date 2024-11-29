@@ -48,15 +48,20 @@ export class BracketPairsTextModelPart
 	private readonly bracketPairsTree = this._register(
 		new MutableDisposable<IReference<BracketPairsTree>>(),
 	);
+
 	private readonly onDidChangeEmitter = new Emitter<void>();
+
 	public readonly onDidChange = this.onDidChangeEmitter.event;
+
 	private get canBuildAST() {
 		const maxSupportedDocumentLength =
 			/* max lines */ 50000 * /* average column count */ 100;
 
 		return this.textModel.getValueLength() <= maxSupportedDocumentLength;
 	}
+
 	private bracketsRequested = false;
+
 	public constructor(
 		private readonly textModel: TextModel,
 		private readonly languageConfigurationService: ILanguageConfigurationService,
@@ -72,23 +77,31 @@ export class BracketPairsTextModelPart
 			this.bracketPairsTree.value?.object.didLanguageChange(e.languageId)
 		) {
 			this.bracketPairsTree.clear();
+
 			this.updateBracketPairsTree();
 		}
 	}
+
 	public handleDidChangeOptions(e: IModelOptionsChangedEvent): void {
 		this.bracketPairsTree.clear();
+
 		this.updateBracketPairsTree();
 	}
+
 	public handleDidChangeLanguage(e: IModelLanguageChangedEvent): void {
 		this.bracketPairsTree.clear();
+
 		this.updateBracketPairsTree();
 	}
+
 	public handleDidChangeContent(change: IModelContentChangedEvent) {
 		this.bracketPairsTree.value?.object.handleContentChanged(change);
 	}
+
 	public handleDidChangeBackgroundTokenizationState(): void {
 		this.bracketPairsTree.value?.object.handleDidChangeBackgroundTokenizationState();
 	}
+
 	public handleDidChangeTokens(e: IModelTokensChangedEvent): void {
 		this.bracketPairsTree.value?.object.handleDidChangeTokens(e);
 	}
@@ -97,6 +110,7 @@ export class BracketPairsTextModelPart
 		if (this.bracketsRequested && this.canBuildAST) {
 			if (!this.bracketPairsTree.value) {
 				const store = new DisposableStore();
+
 				this.bracketPairsTree.value = createDisposableRef(
 					store.add(
 						new BracketPairsTree(this.textModel, (languageId) => {
@@ -107,11 +121,13 @@ export class BracketPairsTextModelPart
 					),
 					store,
 				);
+
 				store.add(
 					this.bracketPairsTree.value.object.onDidChange((e) =>
 						this.onDidChangeEmitter.fire(e),
 					),
 				);
+
 				this.onDidChangeEmitter.fire();
 			}
 		} else {
@@ -130,6 +146,7 @@ export class BracketPairsTextModelPart
 		range: Range,
 	): CallbackIterable<BracketPairInfo> {
 		this.bracketsRequested = true;
+
 		this.updateBracketPairsTree();
 
 		return (
@@ -139,10 +156,12 @@ export class BracketPairsTextModelPart
 			) || CallbackIterable.empty
 		);
 	}
+
 	public getBracketPairsInRangeWithMinIndentation(
 		range: Range,
 	): CallbackIterable<BracketPairWithMinIndentationInfo> {
 		this.bracketsRequested = true;
+
 		this.updateBracketPairsTree();
 
 		return (
@@ -152,11 +171,13 @@ export class BracketPairsTextModelPart
 			) || CallbackIterable.empty
 		);
 	}
+
 	public getBracketsInRange(
 		range: Range,
 		onlyColorizedBrackets: boolean = false,
 	): CallbackIterable<BracketInfo> {
 		this.bracketsRequested = true;
+
 		this.updateBracketPairsTree();
 
 		return (
@@ -166,6 +187,7 @@ export class BracketPairsTextModelPart
 			) || CallbackIterable.empty
 		);
 	}
+
 	public findMatchingBracketUp(
 		_bracket: string,
 		_position: IPosition,
@@ -186,6 +208,7 @@ export class BracketPairsTextModelPart
 			if (!closingBracketInfo) {
 				return null;
 			}
+
 			const bracketPair = this.getBracketPairsInRange(
 				Range.fromPositions(_position, _position),
 			).findLast((b) => closingBracketInfo.closes(b.openingBracketInfo));
@@ -193,6 +216,7 @@ export class BracketPairsTextModelPart
 			if (bracketPair) {
 				return bracketPair.openingBracketRange;
 			}
+
 			return null;
 		} else {
 			// Fallback to old bracket matching code:
@@ -206,11 +230,13 @@ export class BracketPairsTextModelPart
 			if (!bracketsSupport) {
 				return null;
 			}
+
 			const data = bracketsSupport.textIsBracket[bracket];
 
 			if (!data) {
 				return null;
 			}
+
 			return stripBracketSearchCanceled(
 				this._findMatchingBracketUp(
 					data,
@@ -220,6 +246,7 @@ export class BracketPairsTextModelPart
 			);
 		}
 	}
+
 	public matchBracket(
 		position: IPosition,
 		maxDuration?: number,
@@ -252,6 +279,7 @@ export class BracketPairsTextModelPart
 					bracketPair.closingBracketRange!,
 				];
 			}
+
 			return null;
 		} else {
 			// Fallback to old bracket matching code:
@@ -264,6 +292,7 @@ export class BracketPairsTextModelPart
 			);
 		}
 	}
+
 	private _establishBracketSearchOffsets(
 		position: Position,
 		lineTokens: LineTokens,
@@ -285,6 +314,7 @@ export class BracketPairsTextModelPart
 			if (tokenEndOffset <= searchStartOffset) {
 				break;
 			}
+
 			if (
 				ignoreBracketsInToken(lineTokens.getStandardTokenType(i)) ||
 				lineTokens.getLanguageId(i) !== currentLanguageId
@@ -306,6 +336,7 @@ export class BracketPairsTextModelPart
 			if (tokenStartOffset >= searchEndOffset) {
 				break;
 			}
+
 			if (
 				ignoreBracketsInToken(lineTokens.getStandardTokenType(i)) ||
 				lineTokens.getLanguageId(i) !== currentLanguageId
@@ -315,8 +346,10 @@ export class BracketPairsTextModelPart
 				break;
 			}
 		}
+
 		return { searchStartOffset, searchEndOffset };
 	}
+
 	private _matchBracket(
 		position: Position,
 		continueSearchPredicate: ContinueBracketSearchPredicate,
@@ -335,6 +368,7 @@ export class BracketPairsTextModelPart
 		if (tokenIndex < 0) {
 			return null;
 		}
+
 		const currentModeBrackets =
 			this.languageConfigurationService.getLanguageConfiguration(
 				lineTokens.getLanguageId(tokenIndex),
@@ -391,11 +425,14 @@ export class BracketPairsTextModelPart
 						if (r instanceof BracketSearchCanceled) {
 							return null;
 						}
+
 						bestResult = r;
 					}
 				}
+
 				searchStartOffset = foundBracket.endColumn - 1;
 			}
+
 			if (bestResult) {
 				return bestResult;
 			}
@@ -457,13 +494,16 @@ export class BracketPairsTextModelPart
 						if (r instanceof BracketSearchCanceled) {
 							return null;
 						}
+
 						return r;
 					}
 				}
 			}
 		}
+
 		return null;
 	}
+
 	private _matchFoundBracket(
 		foundBracket: Range,
 		data: RichEditBracket,
@@ -473,6 +513,7 @@ export class BracketPairsTextModelPart
 		if (!data) {
 			return null;
 		}
+
 		const matched = isOpen
 			? this._findMatchingBracketDown(
 					data,
@@ -488,11 +529,14 @@ export class BracketPairsTextModelPart
 		if (!matched) {
 			return null;
 		}
+
 		if (matched instanceof BracketSearchCanceled) {
 			return matched;
 		}
+
 		return [foundBracket, matched];
 	}
+
 	private _findMatchingBracketUp(
 		bracket: RichEditBracket,
 		position: Position,
@@ -522,6 +566,7 @@ export class BracketPairsTextModelPart
 				) {
 					return BracketSearchCanceled.INSTANCE;
 				}
+
 				const r = BracketsUtils.findPrevBracketInRange(
 					reversedBracketRegex,
 					lineNumber,
@@ -533,6 +578,7 @@ export class BracketPairsTextModelPart
 				if (!r) {
 					break;
 				}
+
 				const hitText = lineText
 					.substring(r.startColumn - 1, r.endColumn - 1)
 					.toLowerCase();
@@ -542,17 +588,22 @@ export class BracketPairsTextModelPart
 				} else if (bracket.isClose(hitText)) {
 					count--;
 				}
+
 				if (count === 0) {
 					return r;
 				}
+
 				searchEndOffset = r.startColumn - 1;
 			}
+
 			return null;
 		};
 
 		for (
 			let lineNumber = position.lineNumber;
+
 			lineNumber >= 1;
+
 			lineNumber--
 		) {
 			const lineTokens =
@@ -572,9 +623,12 @@ export class BracketPairsTextModelPart
 				tokenIndex = lineTokens.findTokenIndexAtOffset(
 					position.column - 1,
 				);
+
 				searchStartOffset = position.column - 1;
+
 				searchEndOffset = position.column - 1;
 			}
+
 			let prevSearchInToken = true;
 
 			for (; tokenIndex >= 0; tokenIndex--) {
@@ -594,6 +648,7 @@ export class BracketPairsTextModelPart
 						// the previous token should not be searched
 						searchStartOffset =
 							lineTokens.getStartOffset(tokenIndex);
+
 						searchEndOffset = lineTokens.getEndOffset(tokenIndex);
 					}
 				} else {
@@ -614,8 +669,10 @@ export class BracketPairsTextModelPart
 						}
 					}
 				}
+
 				prevSearchInToken = searchInToken;
 			}
+
 			if (prevSearchInToken && searchStartOffset !== searchEndOffset) {
 				const r = searchPrevMatchingBracketInRange(
 					lineNumber,
@@ -629,8 +686,10 @@ export class BracketPairsTextModelPart
 				}
 			}
 		}
+
 		return null;
 	}
+
 	private _findMatchingBracketDown(
 		bracket: RichEditBracket,
 		position: Position,
@@ -660,6 +719,7 @@ export class BracketPairsTextModelPart
 				) {
 					return BracketSearchCanceled.INSTANCE;
 				}
+
 				const r = BracketsUtils.findNextBracketInRange(
 					bracketRegex,
 					lineNumber,
@@ -671,6 +731,7 @@ export class BracketPairsTextModelPart
 				if (!r) {
 					break;
 				}
+
 				const hitText = lineText
 					.substring(r.startColumn - 1, r.endColumn - 1)
 					.toLowerCase();
@@ -680,11 +741,14 @@ export class BracketPairsTextModelPart
 				} else if (bracket.isClose(hitText)) {
 					count--;
 				}
+
 				if (count === 0) {
 					return r;
 				}
+
 				searchStartOffset = r.endColumn - 1;
 			}
+
 			return null;
 		};
 
@@ -692,7 +756,9 @@ export class BracketPairsTextModelPart
 
 		for (
 			let lineNumber = position.lineNumber;
+
 			lineNumber <= lineCount;
+
 			lineNumber++
 		) {
 			const lineTokens =
@@ -712,9 +778,12 @@ export class BracketPairsTextModelPart
 				tokenIndex = lineTokens.findTokenIndexAtOffset(
 					position.column - 1,
 				);
+
 				searchStartOffset = position.column - 1;
+
 				searchEndOffset = position.column - 1;
 			}
+
 			let prevSearchInToken = true;
 
 			for (; tokenIndex < tokenCount; tokenIndex++) {
@@ -733,6 +802,7 @@ export class BracketPairsTextModelPart
 						// the previous token should not be searched
 						searchStartOffset =
 							lineTokens.getStartOffset(tokenIndex);
+
 						searchEndOffset = lineTokens.getEndOffset(tokenIndex);
 					}
 				} else {
@@ -753,8 +823,10 @@ export class BracketPairsTextModelPart
 						}
 					}
 				}
+
 				prevSearchInToken = searchInToken;
 			}
+
 			if (prevSearchInToken && searchStartOffset !== searchEndOffset) {
 				const r = searchNextMatchingBracketInRange(
 					lineNumber,
@@ -768,13 +840,16 @@ export class BracketPairsTextModelPart
 				}
 			}
 		}
+
 		return null;
 	}
+
 	public findPrevBracket(_position: IPosition): IFoundBracket | null {
 		const position = this.textModel.validatePosition(_position);
 
 		if (this.canBuildAST) {
 			this.bracketsRequested = true;
+
 			this.updateBracketPairsTree();
 
 			return (
@@ -783,6 +858,7 @@ export class BracketPairsTextModelPart
 				) || null
 			);
 		}
+
 		let languageId: string | null = null;
 
 		let modeBrackets: RichEditBrackets | null = null;
@@ -791,7 +867,9 @@ export class BracketPairsTextModelPart
 
 		for (
 			let lineNumber = position.lineNumber;
+
 			lineNumber >= 1;
+
 			lineNumber--
 		) {
 			const lineTokens =
@@ -811,23 +889,28 @@ export class BracketPairsTextModelPart
 				tokenIndex = lineTokens.findTokenIndexAtOffset(
 					position.column - 1,
 				);
+
 				searchStartOffset = position.column - 1;
+
 				searchEndOffset = position.column - 1;
 
 				const tokenLanguageId = lineTokens.getLanguageId(tokenIndex);
 
 				if (languageId !== tokenLanguageId) {
 					languageId = tokenLanguageId;
+
 					modeBrackets =
 						this.languageConfigurationService.getLanguageConfiguration(
 							languageId,
 						).brackets;
+
 					bracketConfig =
 						this.languageConfigurationService.getLanguageConfiguration(
 							languageId,
 						).bracketsNew;
 				}
 			}
+
 			let prevSearchInToken = true;
 
 			for (; tokenIndex >= 0; tokenIndex--) {
@@ -852,18 +935,23 @@ export class BracketPairsTextModelPart
 						if (r) {
 							return this._toFoundBracket(bracketConfig, r);
 						}
+
 						prevSearchInToken = false;
 					}
+
 					languageId = tokenLanguageId;
+
 					modeBrackets =
 						this.languageConfigurationService.getLanguageConfiguration(
 							languageId,
 						).brackets;
+
 					bracketConfig =
 						this.languageConfigurationService.getLanguageConfiguration(
 							languageId,
 						).bracketsNew;
 				}
+
 				const searchInToken =
 					!!modeBrackets &&
 					!ignoreBracketsInToken(
@@ -880,6 +968,7 @@ export class BracketPairsTextModelPart
 						// the previous token should not be searched
 						searchStartOffset =
 							lineTokens.getStartOffset(tokenIndex);
+
 						searchEndOffset = lineTokens.getEndOffset(tokenIndex);
 					}
 				} else {
@@ -903,8 +992,10 @@ export class BracketPairsTextModelPart
 						}
 					}
 				}
+
 				prevSearchInToken = searchInToken;
 			}
+
 			if (
 				bracketConfig &&
 				modeBrackets &&
@@ -924,13 +1015,16 @@ export class BracketPairsTextModelPart
 				}
 			}
 		}
+
 		return null;
 	}
+
 	public findNextBracket(_position: IPosition): IFoundBracket | null {
 		const position = this.textModel.validatePosition(_position);
 
 		if (this.canBuildAST) {
 			this.bracketsRequested = true;
+
 			this.updateBracketPairsTree();
 
 			return (
@@ -939,6 +1033,7 @@ export class BracketPairsTextModelPart
 				) || null
 			);
 		}
+
 		const lineCount = this.textModel.getLineCount();
 
 		let languageId: string | null = null;
@@ -949,7 +1044,9 @@ export class BracketPairsTextModelPart
 
 		for (
 			let lineNumber = position.lineNumber;
+
 			lineNumber <= lineCount;
+
 			lineNumber++
 		) {
 			const lineTokens =
@@ -969,23 +1066,28 @@ export class BracketPairsTextModelPart
 				tokenIndex = lineTokens.findTokenIndexAtOffset(
 					position.column - 1,
 				);
+
 				searchStartOffset = position.column - 1;
+
 				searchEndOffset = position.column - 1;
 
 				const tokenLanguageId = lineTokens.getLanguageId(tokenIndex);
 
 				if (languageId !== tokenLanguageId) {
 					languageId = tokenLanguageId;
+
 					modeBrackets =
 						this.languageConfigurationService.getLanguageConfiguration(
 							languageId,
 						).brackets;
+
 					bracketConfig =
 						this.languageConfigurationService.getLanguageConfiguration(
 							languageId,
 						).bracketsNew;
 				}
 			}
+
 			let prevSearchInToken = true;
 
 			for (; tokenIndex < tokenCount; tokenIndex++) {
@@ -1010,18 +1112,23 @@ export class BracketPairsTextModelPart
 						if (r) {
 							return this._toFoundBracket(bracketConfig, r);
 						}
+
 						prevSearchInToken = false;
 					}
+
 					languageId = tokenLanguageId;
+
 					modeBrackets =
 						this.languageConfigurationService.getLanguageConfiguration(
 							languageId,
 						).brackets;
+
 					bracketConfig =
 						this.languageConfigurationService.getLanguageConfiguration(
 							languageId,
 						).bracketsNew;
 				}
+
 				const searchInToken =
 					!!modeBrackets &&
 					!ignoreBracketsInToken(
@@ -1037,6 +1144,7 @@ export class BracketPairsTextModelPart
 						// the previous token should not be searched
 						searchStartOffset =
 							lineTokens.getStartOffset(tokenIndex);
+
 						searchEndOffset = lineTokens.getEndOffset(tokenIndex);
 					}
 				} else {
@@ -1060,8 +1168,10 @@ export class BracketPairsTextModelPart
 						}
 					}
 				}
+
 				prevSearchInToken = searchInToken;
 			}
+
 			if (
 				bracketConfig &&
 				modeBrackets &&
@@ -1081,8 +1191,10 @@ export class BracketPairsTextModelPart
 				}
 			}
 		}
+
 		return null;
 	}
+
 	public findEnclosingBrackets(
 		_position: IPosition,
 		maxDuration?: number,
@@ -1106,8 +1218,10 @@ export class BracketPairsTextModelPart
 					bracketPair.closingBracketRange!,
 				];
 			}
+
 			return null;
 		}
+
 		const continueSearchPredicate =
 			createTimeBasedContinueBracketSearchPredicate(maxDuration);
 
@@ -1127,13 +1241,17 @@ export class BracketPairsTextModelPart
 				for (
 					let i = 0,
 						len = modeBrackets ? modeBrackets.brackets.length : 0;
+
 					i < len;
+
 					i++
 				) {
 					tmp[i] = 0;
 				}
+
 				savedCounts.set(languageId, tmp);
 			}
+
 			counts = savedCounts.get(languageId)!;
 		};
 
@@ -1154,6 +1272,7 @@ export class BracketPairsTextModelPart
 				) {
 					return BracketSearchCanceled.INSTANCE;
 				}
+
 				const r = BracketsUtils.findNextBracketInRange(
 					modeBrackets.forwardRegex,
 					lineNumber,
@@ -1165,6 +1284,7 @@ export class BracketPairsTextModelPart
 				if (!r) {
 					break;
 				}
+
 				const hitText = lineText
 					.substring(r.startColumn - 1, r.endColumn - 1)
 					.toLowerCase();
@@ -1177,6 +1297,7 @@ export class BracketPairsTextModelPart
 					} else if (bracket.isClose(hitText)) {
 						counts[bracket.index]--;
 					}
+
 					if (counts[bracket.index] === -1) {
 						return this._matchFoundBracket(
 							r,
@@ -1186,8 +1307,10 @@ export class BracketPairsTextModelPart
 						);
 					}
 				}
+
 				searchStartOffset = r.endColumn - 1;
 			}
+
 			return null;
 		};
 
@@ -1197,7 +1320,9 @@ export class BracketPairsTextModelPart
 
 		for (
 			let lineNumber = position.lineNumber;
+
 			lineNumber <= lineCount;
+
 			lineNumber++
 		) {
 			const lineTokens =
@@ -1217,20 +1342,25 @@ export class BracketPairsTextModelPart
 				tokenIndex = lineTokens.findTokenIndexAtOffset(
 					position.column - 1,
 				);
+
 				searchStartOffset = position.column - 1;
+
 				searchEndOffset = position.column - 1;
 
 				const tokenLanguageId = lineTokens.getLanguageId(tokenIndex);
 
 				if (languageId !== tokenLanguageId) {
 					languageId = tokenLanguageId;
+
 					modeBrackets =
 						this.languageConfigurationService.getLanguageConfiguration(
 							languageId,
 						).brackets;
+
 					resetCounts(languageId, modeBrackets);
 				}
 			}
+
 			let prevSearchInToken = true;
 
 			for (; tokenIndex < tokenCount; tokenIndex++) {
@@ -1254,15 +1384,20 @@ export class BracketPairsTextModelPart
 						if (r) {
 							return stripBracketSearchCanceled(r);
 						}
+
 						prevSearchInToken = false;
 					}
+
 					languageId = tokenLanguageId;
+
 					modeBrackets =
 						this.languageConfigurationService.getLanguageConfiguration(
 							languageId,
 						).brackets;
+
 					resetCounts(languageId, modeBrackets);
 				}
+
 				const searchInToken =
 					!!modeBrackets &&
 					!ignoreBracketsInToken(
@@ -1278,6 +1413,7 @@ export class BracketPairsTextModelPart
 						// the previous token should not be searched
 						searchStartOffset =
 							lineTokens.getStartOffset(tokenIndex);
+
 						searchEndOffset = lineTokens.getEndOffset(tokenIndex);
 					}
 				} else {
@@ -1300,8 +1436,10 @@ export class BracketPairsTextModelPart
 						}
 					}
 				}
+
 				prevSearchInToken = searchInToken;
 			}
+
 			if (
 				modeBrackets &&
 				prevSearchInToken &&
@@ -1320,8 +1458,10 @@ export class BracketPairsTextModelPart
 				}
 			}
 		}
+
 		return null;
 	}
+
 	private _toFoundBracket(
 		bracketConfig: LanguageBracketsConfiguration,
 		r: Range,
@@ -1329,7 +1469,9 @@ export class BracketPairsTextModelPart
 		if (!r) {
 			return null;
 		}
+
 		let text = this.textModel.getValueInRange(r);
+
 		text = text.toLowerCase();
 
 		const bracketInfo = bracketConfig.getBracketInfo(text);
@@ -1337,6 +1479,7 @@ export class BracketPairsTextModelPart
 		if (!bracketInfo) {
 			return null;
 		}
+
 		return {
 			range: r,
 			bracketInfo,
@@ -1368,7 +1511,9 @@ function createTimeBasedContinueBracketSearchPredicate(
 }
 class BracketSearchCanceled {
 	public static INSTANCE = new BracketSearchCanceled();
+
 	_searchCanceledBrand = undefined;
+
 	private constructor() {}
 }
 function stripBracketSearchCanceled<T>(
@@ -1377,5 +1522,6 @@ function stripBracketSearchCanceled<T>(
 	if (result instanceof BracketSearchCanceled) {
 		return null;
 	}
+
 	return result;
 }

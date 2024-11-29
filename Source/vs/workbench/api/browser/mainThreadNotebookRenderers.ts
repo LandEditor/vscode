@@ -28,9 +28,11 @@ export class MainThreadNotebookRenderers
 		private readonly messaging: INotebookRendererMessagingService,
 	) {
 		super();
+
 		this.proxy = extHostContext.getProxy(
 			ExtHostContext.ExtHostNotebookRenderers,
 		);
+
 		this._register(
 			messaging.onShouldPostMessage((e) => {
 				this.proxy.$postRendererMessage(

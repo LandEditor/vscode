@@ -70,9 +70,11 @@ export class SCMTitleMenu implements IDisposable {
 	}
 
 	private readonly _onDidChangeTitle = new Emitter<void>();
+
 	readonly onDidChangeTitle = this._onDidChangeTitle.event;
 
 	readonly menu: IMenu;
+
 	private readonly disposables = new DisposableStore();
 
 	constructor(
@@ -80,9 +82,11 @@ export class SCMTitleMenu implements IDisposable {
 		@IContextKeyService contextKeyService: IContextKeyService,
 	) {
 		this.menu = menuService.createMenu(MenuId.SCMTitle, contextKeyService);
+
 		this.disposables.add(this.menu);
 
 		this.menu.onDidChange(this.updateTitleActions, this, this.disposables);
+
 		this.updateTitleActions();
 	}
 
@@ -99,6 +103,7 @@ export class SCMTitleMenu implements IDisposable {
 		}
 
 		this._actions = primary;
+
 		this._secondaryActions = secondary;
 
 		this._onDidChangeTitle.fire();
@@ -111,6 +116,7 @@ export class SCMTitleMenu implements IDisposable {
 
 interface IContextualResourceMenuItem {
 	readonly menu: IMenu;
+
 	dispose(): void;
 }
 
@@ -142,6 +148,7 @@ class SCMMenusItem implements IDisposable {
 	}
 
 	private genericResourceMenu: IMenu | undefined;
+
 	private contextualResourceMenus:
 		| Map<string /* contextValue */, IContextualResourceMenuItem>
 		| undefined;
@@ -197,12 +204,16 @@ class SCMMenusItem implements IDisposable {
 
 	dispose(): void {
 		this._resourceGroupMenu?.dispose();
+
 		this._resourceFolderMenu?.dispose();
+
 		this.genericResourceMenu?.dispose();
 
 		if (this.contextualResourceMenus) {
 			dispose(this.contextualResourceMenus.values());
+
 			this.contextualResourceMenus.clear();
+
 			this.contextualResourceMenus = undefined;
 		}
 	}
@@ -212,6 +223,7 @@ export class SCMRepositoryMenus implements ISCMRepositoryMenus, IDisposable {
 	private contextKeyService: IContextKeyService;
 
 	readonly titleMenu: SCMTitleMenu;
+
 	readonly repositoryMenu: IMenu;
 
 	private readonly resourceGroupMenusItems = new Map<
@@ -227,6 +239,7 @@ export class SCMRepositoryMenus implements ISCMRepositoryMenus, IDisposable {
 				MenuId.SCMSourceControl,
 				this.contextKeyService,
 			);
+
 			this.disposables.add(this._repositoryContextMenu);
 		}
 
@@ -251,17 +264,21 @@ export class SCMRepositoryMenus implements ISCMRepositoryMenus, IDisposable {
 			IContextKeyService,
 			this.contextKeyService,
 		]);
+
 		instantiationService = instantiationService.createChild(
 			serviceCollection,
 			this.disposables,
 		);
+
 		this.titleMenu = instantiationService.createInstance(SCMTitleMenu);
+
 		this.disposables.add(this.titleMenu);
 
 		this.repositoryMenu = menuService.createMenu(
 			MenuId.SCMSourceControlInline,
 			this.contextKeyService,
 		);
+
 		this.disposables.add(this.repositoryMenu);
 
 		provider.onDidChangeResourceGroups(
@@ -269,6 +286,7 @@ export class SCMRepositoryMenus implements ISCMRepositoryMenus, IDisposable {
 			this,
 			this.disposables,
 		);
+
 		this.onDidChangeResourceGroups();
 	}
 
@@ -301,6 +319,7 @@ export class SCMRepositoryMenus implements ISCMRepositoryMenus, IDisposable {
 			]);
 
 			result = new SCMMenusItem(contextKeyService, this.menuService);
+
 			this.resourceGroupMenusItems.set(group, result);
 		}
 
@@ -311,6 +330,7 @@ export class SCMRepositoryMenus implements ISCMRepositoryMenus, IDisposable {
 		for (const resourceGroup of this.resourceGroupMenusItems.keys()) {
 			if (!this.provider.groups.includes(resourceGroup)) {
 				this.resourceGroupMenusItems.get(resourceGroup)?.dispose();
+
 				this.resourceGroupMenusItems.delete(resourceGroup);
 			}
 		}
@@ -318,13 +338,16 @@ export class SCMRepositoryMenus implements ISCMRepositoryMenus, IDisposable {
 
 	dispose(): void {
 		this.disposables.dispose();
+
 		this.resourceGroupMenusItems.forEach((item) => item.dispose());
 	}
 }
 
 export class SCMMenus implements ISCMMenus, IDisposable {
 	readonly titleMenu: SCMTitleMenu;
+
 	private readonly disposables = new DisposableStore();
+
 	private readonly menus = new Map<
 		ISCMProvider,
 		{ menus: SCMRepositoryMenus; dispose: () => void }
@@ -336,6 +359,7 @@ export class SCMMenus implements ISCMMenus, IDisposable {
 		private instantiationService: IInstantiationService,
 	) {
 		this.titleMenu = instantiationService.createInstance(SCMTitleMenu);
+
 		scmService.onDidRemoveRepository(
 			this.onDidRemoveRepository,
 			this,
@@ -345,7 +369,9 @@ export class SCMMenus implements ISCMMenus, IDisposable {
 
 	private onDidRemoveRepository(repository: ISCMRepository): void {
 		const menus = this.menus.get(repository.provider);
+
 		menus?.dispose();
+
 		this.menus.delete(repository.provider);
 	}
 
@@ -360,10 +386,12 @@ export class SCMMenus implements ISCMMenus, IDisposable {
 
 			const dispose = () => {
 				menus.dispose();
+
 				this.menus.delete(provider);
 			};
 
 			result = { menus, dispose };
+
 			this.menus.set(provider, result);
 		}
 

@@ -226,6 +226,7 @@ class ChatSlashStaticSlashCommandsContribution extends Disposable {
 		@IInstantiationService instantiationService: IInstantiationService,
 	) {
 		super();
+
 		this._store.add(slashCommandService.registerSlashCommand({
 			command: 'clear',
 			detail: nls.localize('clear', "Start a new chat"),
@@ -235,6 +236,7 @@ class ChatSlashStaticSlashCommandsContribution extends Disposable {
 		}, async () => {
 			commandService.executeCommand(ACTION_ID_NEW_CHAT);
 		}));
+
 		this._store.add(slashCommandService.registerSlashCommand({
 			command: 'help',
 			detail: '',
@@ -243,6 +245,7 @@ class ChatSlashStaticSlashCommandsContribution extends Disposable {
 			locations: [ChatAgentLocation.Panel]
 		}, async (prompt, progress) => {
 			const defaultAgent = chatAgentService.getDefaultAgent(ChatAgentLocation.Panel);
+
 			const agents = chatAgentService.getAgents();
 
 			// Report prefix
@@ -252,6 +255,7 @@ class ChatSlashStaticSlashCommandsContribution extends Disposable {
 				} else {
 					progress.report({ content: new MarkdownString(defaultAgent.metadata.helpTextPrefix), kind: 'markdownContent' });
 				}
+
 				progress.report({ content: new MarkdownString('\n\n'), kind: 'markdownContent' });
 			}
 
@@ -261,20 +265,26 @@ class ChatSlashStaticSlashCommandsContribution extends Disposable {
 				.filter(a => a.locations.includes(ChatAgentLocation.Panel))
 				.map(async a => {
 					const description = a.description ? `- ${a.description}` : '';
+
 					const agentMarkdown = instantiationService.invokeFunction(accessor => agentToMarkdown(a, true, accessor));
+
 					const agentLine = `- ${agentMarkdown} ${description}`;
+
 					const commandText = a.slashCommands.map(c => {
 						const description = c.description ? `- ${c.description}` : '';
+
 						return `\t* ${agentSlashCommandToMarkdown(a, c)} ${description}`;
 					}).join('\n');
 
 					return (agentLine + '\n' + commandText).trim();
 				}))).join('\n');
+
 			progress.report({ content: new MarkdownString(agentText, { isTrusted: { enabledCommands: [ChatSubmitAction.ID] } }), kind: 'markdownContent' });
 
 			// Report variables
 			if (defaultAgent?.metadata.helpTextVariablesPrefix) {
 				progress.report({ content: new MarkdownString('\n\n'), kind: 'markdownContent' });
+
 				if (isMarkdownString(defaultAgent.metadata.helpTextVariablesPrefix)) {
 					progress.report({ content: defaultAgent.metadata.helpTextVariablesPrefix, kind: 'markdownContent' });
 				} else {
@@ -285,15 +295,18 @@ class ChatSlashStaticSlashCommandsContribution extends Disposable {
 					...chatVariablesService.getVariables(ChatAgentLocation.Panel),
 					{ name: 'file', description: nls.localize('file', "Choose a file in the workspace") }
 				];
+
 				const variableText = variables
 					.map(v => `* \`${chatVariableLeader}${v.name}\` - ${v.description}`)
 					.join('\n');
+
 				progress.report({ content: new MarkdownString('\n' + variableText), kind: 'markdownContent' });
 			}
 
 			// Report help text ending
 			if (defaultAgent?.metadata.helpTextPostfix) {
 				progress.report({ content: new MarkdownString('\n\n'), kind: 'markdownContent' });
+
 				if (isMarkdownString(defaultAgent.metadata.helpTextPostfix)) {
 					progress.report({ content: defaultAgent.metadata.helpTextPostfix, kind: 'markdownContent' });
 				} else {

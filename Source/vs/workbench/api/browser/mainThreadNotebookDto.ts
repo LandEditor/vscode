@@ -19,6 +19,7 @@ export namespace NotebookDto {
 			valueBytes: item.data,
 		};
 	}
+
 	export function toNotebookOutputDto(
 		output: notebookCommon.IOutputDto,
 	): extHostProtocol.NotebookOutputDto {
@@ -28,6 +29,7 @@ export namespace NotebookDto {
 			items: output.outputs.map(toNotebookOutputItemDto),
 		};
 	}
+
 	export function toNotebookCellDataDto(
 		cell: notebookCommon.ICellDto2,
 	): extHostProtocol.NotebookCellDataDto {
@@ -41,6 +43,7 @@ export namespace NotebookDto {
 			outputs: cell.outputs.map(toNotebookOutputDto),
 		};
 	}
+
 	export function toNotebookDataDto(
 		data: notebookCommon.NotebookData,
 	): extHostProtocol.NotebookDataDto {
@@ -49,6 +52,7 @@ export namespace NotebookDto {
 			cells: data.cells.map(toNotebookCellDataDto),
 		};
 	}
+
 	export function fromNotebookOutputItemDto(
 		item: extHostProtocol.NotebookOutputItemDto,
 	): notebookCommon.IOutputItemDto {
@@ -57,6 +61,7 @@ export namespace NotebookDto {
 			data: item.valueBytes,
 		};
 	}
+
 	export function fromNotebookOutputDto(
 		output: extHostProtocol.NotebookOutputDto,
 	): notebookCommon.IOutputDto {
@@ -66,6 +71,7 @@ export namespace NotebookDto {
 			outputs: output.items.map(fromNotebookOutputItemDto),
 		};
 	}
+
 	export function fromNotebookCellDataDto(
 		cell: extHostProtocol.NotebookCellDataDto,
 	): notebookCommon.ICellDto2 {
@@ -79,6 +85,7 @@ export namespace NotebookDto {
 			internalMetadata: cell.internalMetadata,
 		};
 	}
+
 	export function fromNotebookDataDto(
 		data: extHostProtocol.NotebookDataDto,
 	): notebookCommon.NotebookData {
@@ -87,6 +94,7 @@ export namespace NotebookDto {
 			cells: data.cells.map(fromNotebookCellDataDto),
 		};
 	}
+
 	export function toNotebookCellDto(
 		cell: notebookCommon.ICell,
 	): extHostProtocol.NotebookCellDto {
@@ -102,6 +110,7 @@ export namespace NotebookDto {
 			internalMetadata: cell.internalMetadata,
 		};
 	}
+
 	export function fromCellExecuteUpdateDto(
 		data: extHostProtocol.ICellExecuteUpdateDto,
 	): ICellExecuteUpdate {
@@ -123,11 +132,13 @@ export namespace NotebookDto {
 			return data;
 		}
 	}
+
 	export function fromCellExecuteCompleteDto(
 		data: extHostProtocol.ICellExecutionCompleteDto,
 	): ICellExecutionComplete {
 		return data;
 	}
+
 	export function fromCellEditOperationDto(
 		edit: extHostProtocol.ICellEditOperationDto,
 	): notebookCommon.ICellEditOperation {

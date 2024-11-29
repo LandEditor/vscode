@@ -14,6 +14,7 @@ export function fetchSelectItem(direction: string): void {
 	if (!validate() || !vscode.window.activeTextEditor) {
 		return;
 	}
+
 	const editor = vscode.window.activeTextEditor;
 
 	const document = editor.document;
@@ -23,7 +24,9 @@ export function fetchSelectItem(direction: string): void {
 	if (!rootNode) {
 		return;
 	}
+
 	const newSelections: vscode.Selection[] = [];
+
 	editor.selections.forEach((selection) => {
 		const selectionStart = selection.isReversed
 			? selection.active
@@ -66,8 +69,11 @@ export function fetchSelectItem(direction: string): void {
 							<HtmlNode>rootNode,
 						);
 		}
+
 		newSelections.push(updatedSelection ? updatedSelection : selection);
 	});
+
 	editor.selections = newSelections;
+
 	editor.revealRange(editor.selections[editor.selections.length - 1]);
 }

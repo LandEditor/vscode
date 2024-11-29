@@ -51,21 +51,26 @@ import {
 
 export class MovedBlocksLinesFeature extends Disposable {
 	public static readonly movedCodeBlockPadding = 4;
+
 	private readonly _element: SVGElement;
+
 	private readonly _originalScrollTop = observableFromEvent(
 		this,
 		this._editors.original.onDidScrollChange,
 		() => this._editors.original.getScrollTop(),
 	);
+
 	private readonly _modifiedScrollTop = observableFromEvent(
 		this,
 		this._editors.modified.onDidScrollChange,
 		() => this._editors.modified.getScrollTop(),
 	);
+
 	private readonly _viewZonesChanged = observableSignalFromEvent(
 		"onDidChangeViewZones",
 		this._editors.modified.onDidChangeViewZones,
 	);
+
 	public readonly width = observableValue(this, 0);
 
 	constructor(
@@ -78,13 +83,18 @@ export class MovedBlocksLinesFeature extends Disposable {
 		private readonly _editors: DiffEditorEditors,
 	) {
 		super();
+
 		this._element = document.createElementNS(
 			"http://www.w3.org/2000/svg",
 			"svg",
 		);
+
 		this._element.setAttribute("class", "moved-blocks-lines");
+
 		this._rootElement.appendChild(this._element);
+
 		this._register(toDisposable(() => this._element.remove()));
+
 		this._register(
 			autorun((reader) => {
 				/** @description update moved blocks lines positioning */
@@ -95,11 +105,15 @@ export class MovedBlocksLinesFeature extends Disposable {
 				if (!info || !info2) {
 					return;
 				}
+
 				this._element.style.left = `${info.width - info.verticalScrollbarWidth}px`;
+
 				this._element.style.height = `${info.height}px`;
+
 				this._element.style.width = `${info.verticalScrollbarWidth + info.contentLeft - MovedBlocksLinesFeature.movedCodeBlockPadding + this.width.read(reader)}px`;
 			}),
 		);
+
 		this._register(recomputeInitiallyAndOnChange(this._state));
 
 		const movedBlockViewZones = derived((reader) => {
@@ -110,6 +124,7 @@ export class MovedBlocksLinesFeature extends Disposable {
 			if (!d) {
 				return [];
 			}
+
 			return d.movedTexts.map((move) => ({
 				move,
 				original: new PlaceholderViewZone(
@@ -126,6 +141,7 @@ export class MovedBlocksLinesFeature extends Disposable {
 				),
 			}));
 		});
+
 		this._register(
 			applyViewZones(
 				this._editors.original,
@@ -136,6 +152,7 @@ export class MovedBlocksLinesFeature extends Disposable {
 				),
 			),
 		);
+
 		this._register(
 			applyViewZones(
 				this._editors.modified,
@@ -146,6 +163,7 @@ export class MovedBlocksLinesFeature extends Disposable {
 				),
 			),
 		);
+
 		this._register(
 			autorunWithStore((reader, store) => {
 				const blocks = movedBlockViewZones.read(reader);
@@ -160,6 +178,7 @@ export class MovedBlocksLinesFeature extends Disposable {
 							this._diffModel.get()!,
 						),
 					);
+
 					store.add(
 						new MovedBlockOverlayWidget(
 							this._editors.modified,
@@ -190,6 +209,7 @@ export class MovedBlocksLinesFeature extends Disposable {
 		);
 
 		let lastChangedEditor: "original" | "modified" = "modified";
+
 		this._register(
 			autorunHandleChanges(
 				{
@@ -198,15 +218,18 @@ export class MovedBlocksLinesFeature extends Disposable {
 						if (ctx.didChange(originalHasFocus)) {
 							lastChangedEditor = "original";
 						}
+
 						if (ctx.didChange(modifiedHasFocus)) {
 							lastChangedEditor = "modified";
 						}
+
 						return true;
 					},
 				},
 				(reader) => {
 					/** @description MovedBlocksLines.setActiveMovedTextFromCursor */
 					originalHasFocus.read(reader);
+
 					modifiedHasFocus.read(reader);
 
 					const m = this._diffModel.read(reader);
@@ -214,6 +237,7 @@ export class MovedBlocksLinesFeature extends Disposable {
 					if (!m) {
 						return;
 					}
+
 					const diff = m.diff.read(reader);
 
 					let movedText: MovedText | undefined = undefined;
@@ -230,6 +254,7 @@ export class MovedBlocksLinesFeature extends Disposable {
 							);
 						}
 					}
+
 					if (diff && lastChangedEditor === "modified") {
 						const modifiedPos =
 							this._editors.modifiedCursor.read(reader);
@@ -242,24 +267,29 @@ export class MovedBlocksLinesFeature extends Disposable {
 							);
 						}
 					}
+
 					if (movedText !== m.movedTextToCompare.get()) {
 						m.movedTextToCompare.set(undefined, undefined);
 					}
+
 					m.setActiveMovedText(movedText);
 				},
 			),
 		);
 	}
+
 	private readonly _modifiedViewZonesChangedSignal =
 		observableSignalFromEvent(
 			"modified.onDidChangeViewZones",
 			this._editors.modified.onDidChangeViewZones,
 		);
+
 	private readonly _originalViewZonesChangedSignal =
 		observableSignalFromEvent(
 			"original.onDidChangeViewZones",
 			this._editors.original.onDidChangeViewZones,
 		);
+
 	private readonly _state = derivedWithStore(this, (reader, store) => {
 		/** @description state */
 		this._element.replaceChildren();
@@ -273,6 +303,7 @@ export class MovedBlocksLinesFeature extends Disposable {
 
 			return;
 		}
+
 		this._viewZonesChanged.read(reader);
 
 		const infoOrig = this._originalEditorLayoutInfo.read(reader);
@@ -284,7 +315,9 @@ export class MovedBlocksLinesFeature extends Disposable {
 
 			return;
 		}
+
 		this._modifiedViewZonesChangedSignal.read(reader);
+
 		this._originalViewZonesChangedSignal.read(reader);
 
 		const lines = moves.map((move) => {
@@ -301,6 +334,7 @@ export class MovedBlocksLinesFeature extends Disposable {
 
 				return (t1 + t2) / 2;
 			}
+
 			const start = computeLineStart(
 				move.lineRangeMapping.original,
 				this._editors.original,
@@ -332,6 +366,7 @@ export class MovedBlocksLinesFeature extends Disposable {
 				move,
 			};
 		});
+
 		lines.sort(
 			tieBreakComparators(
 				compareBy(
@@ -384,11 +419,17 @@ export class MovedBlocksLinesFeature extends Disposable {
 				"http://www.w3.org/2000/svg",
 				"rect",
 			);
+
 			rect.classList.add("arrow-rectangle");
+
 			rect.setAttribute("x", `${right - rectWidth}`);
+
 			rect.setAttribute("y", `${line.to - rectHeight / 2}`);
+
 			rect.setAttribute("width", `${rectWidth}`);
+
 			rect.setAttribute("height", `${rectHeight}`);
+
 			this._element.appendChild(rect);
 
 			const g = document.createElementNS(
@@ -400,46 +441,57 @@ export class MovedBlocksLinesFeature extends Disposable {
 				"http://www.w3.org/2000/svg",
 				"path",
 			);
+
 			path.setAttribute(
 				"d",
 				`M ${0} ${line.from} L ${verticalY} ${line.from} L ${verticalY} ${line.to} L ${right - arrowWidth} ${line.to}`,
 			);
+
 			path.setAttribute("fill", "none");
+
 			g.appendChild(path);
 
 			const arrowRight = document.createElementNS(
 				"http://www.w3.org/2000/svg",
 				"polygon",
 			);
+
 			arrowRight.classList.add("arrow");
+
 			store.add(
 				autorun((reader) => {
 					path.classList.toggle(
 						"currentMove",
 						line.move === model.activeMovedText.read(reader),
 					);
+
 					arrowRight.classList.toggle(
 						"currentMove",
 						line.move === model.activeMovedText.read(reader),
 					);
 				}),
 			);
+
 			arrowRight.setAttribute(
 				"points",
 				`${right - arrowWidth},${line.to - arrowHeight / 2} ${right},${line.to} ${right - arrowWidth},${line.to + arrowHeight / 2}`,
 			);
+
 			g.appendChild(arrowRight);
+
 			this._element.appendChild(g);
 			/*
             TODO@hediet
             path.addEventListener('mouseenter', () => {
                 model.setHoveredMovedText(line.move);
             });
+
             path.addEventListener('mouseleave', () => {
                 model.setHoveredMovedText(undefined);
             });*/
 			idx++;
 		}
+
 		this.width.set(lineAreaWidth, undefined);
 	});
 }
@@ -471,18 +523,24 @@ class LinesLayout {
 					setsPerTrack.push(new OffsetRangeSet());
 				}
 			}
+
 			setsPerTrack[trackIdx].addRange(line);
+
 			trackPerLineIdx.push(trackIdx);
 		}
+
 		return new LinesLayout(setsPerTrack.length, trackPerLineIdx);
 	}
+
 	private constructor(
 		private readonly _trackCount: number,
 		private readonly trackPerLineIdx: number[],
 	) {}
+
 	getTrack(lineIdx: number): number {
 		return this.trackPerLineIdx[lineIdx];
 	}
+
 	getTrackCount(): number {
 		return this._trackCount;
 	}
@@ -504,12 +562,14 @@ class MovedBlockOverlayWidget extends ViewZoneOverlayWidget {
 		const root = h("div.diff-hidden-lines-widget");
 
 		super(_editor, _viewZone, root.root);
+
 		root.root.appendChild(this._nodes.root);
 
 		const editorLayout = observableFromEvent(
 			this._editor.onDidLayoutChange,
 			() => this._editor.getLayoutInfo(),
 		);
+
 		this._register(
 			applyStyle(this._nodes.root, {
 				paddingRight: editorLayout.map((l) => l.verticalScrollbarWidth),
@@ -557,6 +617,7 @@ class MovedBlockOverlayWidget extends ViewZoneOverlayWidget {
 								.endLineNumberExclusive - 1,
 						);
 		}
+
 		const actionBar = this._register(
 			new ActionBar(this._nodes.actionBar, {
 				highlightToggledItems: true,
@@ -564,6 +625,7 @@ class MovedBlockOverlayWidget extends ViewZoneOverlayWidget {
 		);
 
 		const caption = new Action("", text, "", false);
+
 		actionBar.push(caption, { icon: false, label: true });
 
 		const actionCompare = new Action(
@@ -573,6 +635,7 @@ class MovedBlockOverlayWidget extends ViewZoneOverlayWidget {
 			true,
 			() => {
 				this._editor.focus();
+
 				this._diffModel.movedTextToCompare.set(
 					this._diffModel.movedTextToCompare.get() === _move
 						? undefined
@@ -581,13 +644,16 @@ class MovedBlockOverlayWidget extends ViewZoneOverlayWidget {
 				);
 			},
 		);
+
 		this._register(
 			autorun((reader) => {
 				const isActive =
 					this._diffModel.movedTextToCompare.read(reader) === _move;
+
 				actionCompare.checked = isActive;
 			}),
 		);
+
 		actionBar.push(actionCompare, { icon: false, label: true });
 	}
 }

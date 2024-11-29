@@ -21,7 +21,9 @@ import {
 
 interface ActionGroup {
 	readonly kind: HierarchicalKind;
+
 	readonly title: string;
+
 	readonly icon?: ThemeIcon;
 }
 
@@ -106,6 +108,7 @@ export function toMenuItems(
 			}
 		}
 	}
+
 	const allMenuItems: IActionListItem<CodeActionItem>[] = [];
 
 	for (const menuEntry of menuEntries) {
@@ -117,6 +120,7 @@ export function toMenuItems(
 
 			for (const action of menuEntry.actions) {
 				const group = menuEntry.group;
+
 				allMenuItems.push({
 					kind: ActionListItemKind.Action,
 					item: action,
@@ -134,5 +138,6 @@ export function toMenuItems(
 			}
 		}
 	}
+
 	return allMenuItems;
 }

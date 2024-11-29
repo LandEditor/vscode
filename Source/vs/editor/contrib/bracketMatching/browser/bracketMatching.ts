@@ -111,6 +111,7 @@ class SelectToBracketAction extends EditorAction {
 		if (args && args.selectBrackets === false) {
 			selectBrackets = false;
 		}
+
 		BracketMatchingController.get(editor)?.selectToBracket(selectBrackets);
 	}
 }
@@ -140,7 +141,9 @@ type Brackets = [Range, Range];
 
 class BracketsData {
 	public readonly position: Position;
+
 	public readonly brackets: Brackets | null;
+
 	public readonly options: ModelDecorationOptions;
 
 	constructor(
@@ -149,7 +152,9 @@ class BracketsData {
 		options: ModelDecorationOptions,
 	) {
 		this.position = position;
+
 		this.brackets = brackets;
+
 		this.options = options;
 	}
 }
@@ -169,25 +174,36 @@ export class BracketMatchingController
 	private readonly _editor: ICodeEditor;
 
 	private _lastBracketsData: BracketsData[];
+
 	private _lastVersionId: number;
+
 	private readonly _decorations: IEditorDecorationsCollection;
+
 	private readonly _updateBracketsSoon: RunOnceScheduler;
+
 	private _matchBrackets: "never" | "near" | "always";
 
 	constructor(editor: ICodeEditor) {
 		super();
+
 		this._editor = editor;
+
 		this._lastBracketsData = [];
+
 		this._lastVersionId = 0;
+
 		this._decorations = this._editor.createDecorationsCollection();
+
 		this._updateBracketsSoon = this._register(
 			new RunOnceScheduler(() => this._updateBrackets(), 50),
 		);
+
 		this._matchBrackets = this._editor.getOption(
 			EditorOption.matchBrackets,
 		);
 
 		this._updateBracketsSoon.schedule();
+
 		this._register(
 			editor.onDidChangeCursorPosition((e) => {
 				if (this._matchBrackets === "never") {
@@ -199,32 +215,42 @@ export class BracketMatchingController
 				this._updateBracketsSoon.schedule();
 			}),
 		);
+
 		this._register(
 			editor.onDidChangeModelContent((e) => {
 				this._updateBracketsSoon.schedule();
 			}),
 		);
+
 		this._register(
 			editor.onDidChangeModel((e) => {
 				this._lastBracketsData = [];
+
 				this._updateBracketsSoon.schedule();
 			}),
 		);
+
 		this._register(
 			editor.onDidChangeModelLanguageConfiguration((e) => {
 				this._lastBracketsData = [];
+
 				this._updateBracketsSoon.schedule();
 			}),
 		);
+
 		this._register(
 			editor.onDidChangeConfiguration((e) => {
 				if (e.hasChanged(EditorOption.matchBrackets)) {
 					this._matchBrackets = this._editor.getOption(
 						EditorOption.matchBrackets,
 					);
+
 					this._decorations.clear();
+
 					this._lastBracketsData = [];
+
 					this._lastVersionId = 0;
+
 					this._updateBracketsSoon.schedule();
 				}
 			}),
@@ -294,6 +320,7 @@ export class BracketMatchingController
 					newCursorPosition.column,
 				);
 			}
+
 			return new Selection(
 				position.lineNumber,
 				position.column,
@@ -303,6 +330,7 @@ export class BracketMatchingController
 		});
 
 		this._editor.setSelections(newSelections);
+
 		this._editor.revealRange(newSelections[0]);
 	}
 
@@ -343,9 +371,11 @@ export class BracketMatchingController
 				brackets.sort(Range.compareRangesUsingStarts);
 
 				const [open, close] = brackets;
+
 				selectFrom = selectBrackets
 					? open.getStartPosition()
 					: open.getEndPosition();
+
 				selectTo = selectBrackets
 					? close.getEndPosition()
 					: close.getStartPosition();
@@ -353,7 +383,9 @@ export class BracketMatchingController
 				if (close.containsPosition(position)) {
 					// select backwards if the cursor was on the closing bracket
 					const tmp = selectFrom;
+
 					selectFrom = selectTo;
+
 					selectTo = tmp;
 				}
 			}
@@ -372,15 +404,18 @@ export class BracketMatchingController
 
 		if (newSelections.length > 0) {
 			this._editor.setSelections(newSelections);
+
 			this._editor.revealRange(newSelections[0]);
 		}
 	}
+
 	public removeBrackets(editSource?: string): void {
 		if (!this._editor.hasModel()) {
 			return;
 		}
 
 		const model = this._editor.getModel();
+
 		this._editor.getSelections().forEach((selection) => {
 			const position = selection.getPosition();
 
@@ -389,12 +424,15 @@ export class BracketMatchingController
 			if (!brackets) {
 				brackets = model.bracketPairs.findEnclosingBrackets(position);
 			}
+
 			if (brackets) {
 				this._editor.pushUndoStop();
+
 				this._editor.executeEdits(editSource, [
 					{ range: brackets[0], text: "" },
 					{ range: brackets[1], text: "" },
 				]);
+
 				this._editor.pushUndoStop();
 			}
 		});
@@ -422,6 +460,7 @@ export class BracketMatchingController
 		if (this._matchBrackets === "never") {
 			return;
 		}
+
 		this._recomputeBrackets();
 
 		const newDecorations: IModelDeltaDecoration[] = [];
@@ -436,6 +475,7 @@ export class BracketMatchingController
 					range: brackets[0],
 					options: bracketData.options,
 				};
+
 				newDecorations[newDecorationsLen++] = {
 					range: brackets[1],
 					options: bracketData.options,
@@ -450,6 +490,7 @@ export class BracketMatchingController
 		if (!this._editor.hasModel() || !this._editor.hasWidgetFocus()) {
 			// no model or no focus => no brackets!
 			this._lastBracketsData = [];
+
 			this._lastVersionId = 0;
 
 			return;
@@ -460,6 +501,7 @@ export class BracketMatchingController
 		if (selections.length > 100) {
 			// no bracket matching for high numbers of selections
 			this._lastBracketsData = [];
+
 			this._lastVersionId = 0;
 
 			return;
@@ -531,9 +573,11 @@ export class BracketMatchingController
 						position,
 						20 /* give at most 20ms to compute */,
 					);
+
 					options =
 						BracketMatchingController._DECORATION_OPTIONS_WITHOUT_OVERVIEW_RULER;
 				}
+
 				newData[newDataLen++] = new BracketsData(
 					position,
 					brackets,
@@ -543,6 +587,7 @@ export class BracketMatchingController
 		}
 
 		this._lastBracketsData = newData;
+
 		this._lastVersionId = versionId;
 	}
 }

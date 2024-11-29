@@ -21,6 +21,7 @@ export class PolicyChannel implements IServerChannel {
 	private readonly disposables = new DisposableStore();
 
 	constructor(private service: IPolicyService) {}
+
 	listen(_: unknown, event: string): Event<any> {
 		switch (event) {
 			case "onDidChange":
@@ -38,8 +39,10 @@ export class PolicyChannel implements IServerChannel {
 					this.disposables,
 				);
 		}
+
 		throw new Error(`Event not found: ${event}`);
 	}
+
 	call(_: unknown, command: string, arg?: any): Promise<any> {
 		switch (command) {
 			case "updatePolicyDefinitions":
@@ -47,8 +50,10 @@ export class PolicyChannel implements IServerChannel {
 					arg as IStringDictionary<PolicyDefinition>,
 				);
 		}
+
 		throw new Error(`Call not found: ${command}`);
 	}
+
 	dispose() {
 		this.disposables.dispose();
 	}
@@ -60,6 +65,7 @@ export class PolicyChannelClient
 	constructor(
 		policiesData: IStringDictionary<{
 			definition: PolicyDefinition;
+
 			value: PolicyValue;
 		}>,
 		private readonly channel: IChannel,
@@ -68,12 +74,14 @@ export class PolicyChannelClient
 
 		for (const name in policiesData) {
 			const { definition, value } = policiesData[name];
+
 			this.policyDefinitions[name] = definition;
 
 			if (value !== undefined) {
 				this.policies.set(name, value);
 			}
 		}
+
 		this.channel.listen<object>("onDidChange")((policies) => {
 			for (const name in policies) {
 				const value = policies[name as keyof typeof policies];
@@ -84,9 +92,11 @@ export class PolicyChannelClient
 					this.policies.set(name, value);
 				}
 			}
+
 			this._onDidChange.fire(Object.keys(policies));
 		});
 	}
+
 	protected async _updatePolicyDefinitions(
 		policyDefinitions: IStringDictionary<PolicyDefinition>,
 	): Promise<void> {

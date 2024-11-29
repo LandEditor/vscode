@@ -12,8 +12,10 @@ export namespace WebFileSystemAccess {
 		if (typeof obj?.showDirectoryPicker === "function") {
 			return true;
 		}
+
 		return false;
 	}
+
 	export function isFileSystemHandle(
 		handle: unknown,
 	): handle is FileSystemHandle {
@@ -22,17 +24,20 @@ export namespace WebFileSystemAccess {
 		if (!candidate) {
 			return false;
 		}
+
 		return (
 			typeof candidate.kind === "string" &&
 			typeof candidate.queryPermission === "function" &&
 			typeof candidate.requestPermission === "function"
 		);
 	}
+
 	export function isFileSystemFileHandle(
 		handle: FileSystemHandle,
 	): handle is FileSystemFileHandle {
 		return handle.kind === "file";
 	}
+
 	export function isFileSystemDirectoryHandle(
 		handle: FileSystemHandle,
 	): handle is FileSystemDirectoryHandle {
@@ -52,14 +57,18 @@ export interface FileSystemObserver {
 			observer: FileSystemObserver,
 		) => void,
 	): FileSystemObserver;
+
 	observe(handle: FileSystemHandle): Promise<void>;
+
 	observe(
 		handle: FileSystemDirectoryHandle,
 		options?: {
 			recursive: boolean;
 		},
 	): Promise<void>;
+
 	unobserve(handle: FileSystemHandle): void;
+
 	disconnect(): void;
 }
 export interface FileSystemObserverRecord {

@@ -53,6 +53,7 @@ export function showWithPinnedItems(
 	);
 
 	const disposables = new DisposableStore();
+
 	disposables.add(
 		quickPick.onDidTriggerItemButton(async (buttonEvent) => {
 			const expectedButton =
@@ -61,6 +62,7 @@ export function showWithPinnedItems(
 
 			if (expectedButton) {
 				quickPick.items = itemsWithoutPinned;
+
 				itemsWithPinned = _formatPinnedItems(
 					storageKey,
 					quickPick,
@@ -68,12 +70,14 @@ export function showWithPinnedItems(
 					buttonEvent.item,
 					filterDuplicates,
 				);
+
 				quickPick.items = quickPick.value
 					? itemsWithoutPinned
 					: itemsWithPinned;
 			}
 		}),
 	);
+
 	disposables.add(
 		quickPick.onDidChangeValue(async (value) => {
 			if (quickPick.items === itemsWithPinned && value) {
@@ -83,7 +87,9 @@ export function showWithPinnedItems(
 			}
 		}),
 	);
+
 	quickPick.items = quickPick.value ? itemsWithoutPinned : itemsWithPinned;
+
 	quickPick.show();
 
 	return disposables;
@@ -113,12 +119,14 @@ function _formatPinnedItems(
 	} else {
 		pinnedItems = getPinnedItems(storageKey, storageService);
 	}
+
 	if (pinnedItems.length) {
 		formattedItems.push({
 			type: "separator",
 			label: localize("terminal.commands.pinned", "pinned"),
 		});
 	}
+
 	const pinnedIds = new Set();
 
 	for (const itemToFind of pinnedItems) {
@@ -135,17 +143,20 @@ function _formatPinnedItems(
 
 			if (!filterDuplicates || !pinnedIds.has(pinnedItemId)) {
 				pinnedIds.add(pinnedItemId);
+
 				updateButtons(pinnedItem, false);
 
 				formattedItems.push(pinnedItem);
 			}
 		}
 	}
+
 	for (const item of quickPick.items) {
 		updateButtons(item, true);
 
 		formattedItems.push(item);
 	}
+
 	return formattedItems;
 }
 function getItemIdentifier(item: QuickPickItem): string {
@@ -163,6 +174,7 @@ function updateButtons(item: QuickPickItem, removePin: boolean): void {
 			(button) =>
 				button.iconClass && !buttonClasses.includes(button.iconClass),
 		) ?? [];
+
 	newButtons.unshift({
 		iconClass: removePin ? pinButtonClass : pinnedButtonClass,
 		tooltip: removePin
@@ -170,6 +182,7 @@ function updateButtons(item: QuickPickItem, removePin: boolean): void {
 			: localize("pinnedCommand", "Pinned command"),
 		alwaysVisible: false,
 	});
+
 	item.buttons = newButtons;
 }
 function itemsMatch(itemA: QuickPickItem, itemB: QuickPickItem): boolean {
@@ -194,6 +207,7 @@ function updatePinnedItems(
 	} else {
 		items.push(changedItem);
 	}
+
 	storageService.store(
 		storageKey,
 		JSON.stringify(items),

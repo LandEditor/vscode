@@ -7,6 +7,7 @@ import * as path from "path";
 
 if (process.argv.length !== 3) {
 	console.error("Usage: node listNodeModules.js OUTPUT_FILE");
+
 	process.exit(-1);
 }
 
@@ -24,6 +25,7 @@ function findNodeModulesFiles(
 		if (/(^\/out)|(^\/src$)|(^\/.git$)|(^\/.build$)/.test(entryPath)) {
 			continue;
 		}
+
 		let stat: fs.Stats;
 
 		try {
@@ -31,6 +33,7 @@ function findNodeModulesFiles(
 		} catch (err) {
 			continue;
 		}
+
 		if (stat.isDirectory()) {
 			findNodeModulesFiles(
 				entryPath,

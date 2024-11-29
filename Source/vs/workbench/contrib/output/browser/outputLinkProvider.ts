@@ -25,7 +25,9 @@ import { OutputLinkComputer } from "../common/outputLinkComputer.js";
 export class OutputLinkProvider extends Disposable {
 	private static readonly DISPOSE_WORKER_TIME = 3 * 60 * 1000; // dispose worker after 3 minutes of inactivity
 	private worker?: OutputLinkWorkerClient;
+
 	private disposeWorkerScheduler: RunOnceScheduler;
+
 	private linkProviderRegistration: IDisposable | undefined;
 
 	constructor(
@@ -37,13 +39,17 @@ export class OutputLinkProvider extends Disposable {
 		private readonly languageFeaturesService: ILanguageFeaturesService,
 	) {
 		super();
+
 		this.disposeWorkerScheduler = new RunOnceScheduler(
 			() => this.disposeWorker(),
 			OutputLinkProvider.DISPOSE_WORKER_TIME,
 		);
+
 		this.registerListeners();
+
 		this.updateLinkProviderWorker();
 	}
+
 	private registerListeners(): void {
 		this._register(
 			this.contextService.onDidChangeWorkspaceFolders(() =>
@@ -51,6 +57,7 @@ export class OutputLinkProvider extends Disposable {
 			),
 		);
 	}
+
 	private updateLinkProviderWorker(): void {
 		// Setup link provider depending on folders being opened or not
 		const folders = this.contextService.getWorkspace().folders;
@@ -76,12 +83,15 @@ export class OutputLinkProvider extends Disposable {
 			}
 		} else {
 			dispose(this.linkProviderRegistration);
+
 			this.linkProviderRegistration = undefined;
 		}
 		// Dispose worker to recreate with folders on next provideLinks request
 		this.disposeWorker();
+
 		this.disposeWorkerScheduler.cancel();
 	}
+
 	private getOrCreateWorker(): OutputLinkWorkerClient {
 		this.disposeWorkerScheduler.schedule();
 
@@ -91,21 +101,27 @@ export class OutputLinkProvider extends Disposable {
 				this.modelService,
 			);
 		}
+
 		return this.worker;
 	}
+
 	private async provideLinks(modelUri: URI): Promise<ILink[]> {
 		return this.getOrCreateWorker().provideLinks(modelUri);
 	}
+
 	private disposeWorker(): void {
 		if (this.worker) {
 			this.worker.dispose();
+
 			this.worker = undefined;
 		}
 	}
 }
 class OutputLinkWorkerClient extends Disposable {
 	private readonly _workerClient: IWorkerClient<OutputLinkComputer>;
+
 	private readonly _workerTextModelSyncClient: WorkerTextModelSyncClient;
+
 	private readonly _initializeBarrier: Promise<void>;
 
 	constructor(
@@ -115,18 +131,22 @@ class OutputLinkWorkerClient extends Disposable {
 		modelService: IModelService,
 	) {
 		super();
+
 		this._workerClient = this._register(
 			createWebWorker<OutputLinkComputer>(
 				"vs/workbench/contrib/output/common/outputLinkComputer",
 				"OutputLinkDetectionWorker",
 			),
 		);
+
 		this._workerTextModelSyncClient = WorkerTextModelSyncClient.create(
 			this._workerClient,
 			modelService,
 		);
+
 		this._initializeBarrier = this._ensureWorkspaceFolders();
 	}
+
 	private async _ensureWorkspaceFolders(): Promise<void> {
 		await this._workerClient.proxy.$setWorkspaceFolders(
 			this.contextService
@@ -134,8 +154,10 @@ class OutputLinkWorkerClient extends Disposable {
 				.folders.map((folder) => folder.uri.toString()),
 		);
 	}
+
 	public async provideLinks(modelUri: URI): Promise<ILink[]> {
 		await this._initializeBarrier;
+
 		await this._workerTextModelSyncClient.ensureSyncedResources([modelUri]);
 
 		return this._workerClient.proxy.$computeLinks(modelUri.toString());

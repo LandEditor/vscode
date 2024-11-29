@@ -11,11 +11,14 @@ export class NotebookSerializer extends NotebookSerializerBase {
 	private experimentalSave = vscode.workspace
 		.getConfiguration("ipynb")
 		.get("experimental.serialization", false);
+
 	private worker?: import("node:worker_threads").Worker;
+
 	private tasks = new Map<string, DeferredPromise<Uint8Array>>();
 
 	constructor(context: vscode.ExtensionContext) {
 		super(context);
+
 		context.subscriptions.push(
 			vscode.workspace.onDidChangeConfiguration((e) => {
 				if (
@@ -28,14 +31,17 @@ export class NotebookSerializer extends NotebookSerializerBase {
 			}),
 		);
 	}
+
 	override dispose() {
 		try {
 			void this.worker?.terminate();
 		} catch {
 			//
 		}
+
 		super.dispose();
 	}
+
 	public override async serializeNotebook(
 		data: vscode.NotebookData,
 		token: vscode.CancellationToken,
@@ -43,21 +49,27 @@ export class NotebookSerializer extends NotebookSerializerBase {
 		if (this.disposed) {
 			return new Uint8Array(0);
 		}
+
 		if (this.experimentalSave) {
 			return this.serializeViaWorker(data);
 		}
+
 		return super.serializeNotebook(data, token);
 	}
+
 	private async startWorker() {
 		if (this.disposed) {
 			throw new Error("Serializer disposed");
 		}
+
 		if (this.worker) {
 			return this.worker;
 		}
+
 		const { Worker } = await import("node:worker_threads");
 
 		const outputDir = getOutputDir(this.context);
+
 		this.worker = new Worker(
 			vscode.Uri.joinPath(
 				this.context.extensionUri,
@@ -66,6 +78,7 @@ export class NotebookSerializer extends NotebookSerializerBase {
 			).fsPath,
 			{},
 		);
+
 		this.worker.on("exit", (exitCode) => {
 			if (!this.disposed) {
 				console.error(
@@ -73,8 +86,10 @@ export class NotebookSerializer extends NotebookSerializerBase {
 					exitCode,
 				);
 			}
+
 			this.worker = undefined;
 		});
+
 		this.worker.on(
 			"message",
 			(result: { data: Uint8Array; id: string }) => {
@@ -82,10 +97,12 @@ export class NotebookSerializer extends NotebookSerializerBase {
 
 				if (task) {
 					task.complete(result.data);
+
 					this.tasks.delete(result.id);
 				}
 			},
 		);
+
 		this.worker.on("error", (err) => {
 			if (!this.disposed) {
 				console.error(
@@ -97,6 +114,7 @@ export class NotebookSerializer extends NotebookSerializerBase {
 
 		return this.worker;
 	}
+
 	private async serializeViaWorker(
 		data: vscode.NotebookData,
 	): Promise<Uint8Array> {
@@ -105,7 +123,9 @@ export class NotebookSerializer extends NotebookSerializerBase {
 		const id = generateUuid();
 
 		const deferred = new DeferredPromise<Uint8Array>();
+
 		this.tasks.set(id, deferred);
+
 		worker.postMessage({ data, id });
 
 		return deferred.p;

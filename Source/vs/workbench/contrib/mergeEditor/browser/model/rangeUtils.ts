@@ -16,18 +16,21 @@ export function rangeContainsPosition(
 	) {
 		return false;
 	}
+
 	if (
 		position.lineNumber === range.startLineNumber &&
 		position.column < range.startColumn
 	) {
 		return false;
 	}
+
 	if (
 		position.lineNumber === range.endLineNumber &&
 		position.column >= range.endColumn
 	) {
 		return false;
 	}
+
 	return true;
 }
 export function lengthOfRange(range: Range): TextLength {

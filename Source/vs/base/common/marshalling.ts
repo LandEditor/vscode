@@ -11,6 +11,7 @@ export function stringify(obj: any): string {
 }
 export function parse(text: string): any {
 	let data = JSON.parse(text);
+
 	data = revive(data);
 
 	return data;
@@ -27,6 +28,7 @@ function replacer(key: string, value: any): any {
 			flags: value.flags,
 		};
 	}
+
 	return value;
 }
 type Deserialize<T> = T extends UriComponents
@@ -45,6 +47,7 @@ export function revive<T = any>(obj: any, depth = 0): Revived<T> {
 	if (!obj || depth > 200) {
 		return obj;
 	}
+
 	if (typeof obj === "object") {
 		switch ((<MarshalledObject>obj).$mid) {
 			case MarshalledId.Uri:
@@ -56,9 +59,11 @@ export function revive<T = any>(obj: any, depth = 0): Revived<T> {
 			case MarshalledId.Date:
 				return <any>new Date(obj.source);
 		}
+
 		if (obj instanceof VSBuffer || obj instanceof Uint8Array) {
 			return <any>obj;
 		}
+
 		if (Array.isArray(obj)) {
 			for (let i = 0; i < obj.length; ++i) {
 				obj[i] = revive(obj[i], depth + 1);
@@ -72,5 +77,6 @@ export function revive<T = any>(obj: any, depth = 0): Revived<T> {
 			}
 		}
 	}
+
 	return obj;
 }

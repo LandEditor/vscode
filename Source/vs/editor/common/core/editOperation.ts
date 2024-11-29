@@ -40,12 +40,14 @@ export class EditOperation {
 			forceMoveMarkers: true,
 		};
 	}
+
 	public static delete(range: Range): ISingleEditOperation {
 		return {
 			range: range,
 			text: null,
 		};
 	}
+
 	public static replace(
 		range: Range,
 		text: string | null,
@@ -55,6 +57,7 @@ export class EditOperation {
 			text: text,
 		};
 	}
+
 	public static replaceMove(
 		range: Range,
 		text: string | null,

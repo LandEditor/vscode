@@ -26,10 +26,13 @@ export function computeIndentLevel(line: string, tabSize: number): number {
 		} else {
 			break;
 		}
+
 		i++;
 	}
+
 	if (i === len) {
 		return -1; // line only consists of whitespace
 	}
+
 	return indent;
 }

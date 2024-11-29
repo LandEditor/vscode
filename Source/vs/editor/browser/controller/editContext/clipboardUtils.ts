@@ -47,9 +47,11 @@ export function getDataToCopy(
 
 		if (richText) {
 			html = richText.html;
+
 			mode = richText.mode;
 		}
 	}
+
 	const dataToCopy: ClipboardDataToCopy = {
 		isFromEmptySelection,
 		multicursorText,
@@ -84,6 +86,7 @@ export class InMemoryClipboardMetadataManager {
 			// match!
 			return this._lastState.data;
 		}
+
 		this._lastState = null;
 
 		return null;
@@ -92,16 +95,23 @@ export class InMemoryClipboardMetadataManager {
 
 export interface ClipboardDataToCopy {
 	isFromEmptySelection: boolean;
+
 	multicursorText: string[] | null | undefined;
+
 	text: string;
+
 	html: string | null | undefined;
+
 	mode: string | null;
 }
 
 export interface ClipboardStoredMetadata {
 	version: 1;
+
 	isFromEmptySelection: boolean | undefined;
+
 	multicursorText: string[] | null | undefined;
+
 	mode: string | null;
 }
 
@@ -111,6 +121,7 @@ export const CopyOptions = {
 
 interface InMemoryClipboardMetadata {
 	lastCopiedValue: string;
+
 	data: ClipboardStoredMetadata;
 }
 
@@ -135,6 +146,7 @@ export const ClipboardEventUtils = {
 				// no problem!
 			}
 		}
+
 		if (
 			text.length === 0 &&
 			metadata === null &&
@@ -148,6 +160,7 @@ export const ClipboardEventUtils = {
 
 			return [files.map((file) => file.name).join("\n"), null];
 		}
+
 		return [text, metadata];
 	},
 
@@ -162,6 +175,7 @@ export const ClipboardEventUtils = {
 		if (typeof html === "string") {
 			clipboardData.setData("text/html", html);
 		}
+
 		clipboardData.setData("vscode-editor-data", JSON.stringify(metadata));
 	},
 };

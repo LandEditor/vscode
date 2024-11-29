@@ -43,16 +43,26 @@ const enum Refilter {
  * */
 export class CompletionModel {
 	private readonly _items: CompletionItem[];
+
 	private readonly _column: number;
+
 	private readonly _wordDistance: WordDistance;
+
 	private readonly _options: InternalSuggestOptions;
+
 	private readonly _snippetCompareFn =
 		CompletionModel._compareCompletionItems;
+
 	private readonly _fuzzyScoreOptions: FuzzyScoreOptions;
+
 	private _lineContext: LineContext;
+
 	private _refilterKind: Refilter;
+
 	private _filteredItems?: StrictCompletionItem[];
+
 	private _itemsByProvider?: Map<CompletionItemProvider, CompletionItem[]>;
+
 	private _stats?: ICompletionStats;
 
 	constructor(
@@ -68,11 +78,17 @@ export class CompletionModel {
 		readonly clipboardText: string | undefined = undefined,
 	) {
 		this._items = items;
+
 		this._column = column;
+
 		this._wordDistance = wordDistance;
+
 		this._options = options;
+
 		this._refilterKind = Refilter.All;
+
 		this._lineContext = lineContext;
+
 		this._fuzzyScoreOptions = fuzzyScoreOptions;
 
 		if (snippetSuggestions === "top") {
@@ -83,9 +99,11 @@ export class CompletionModel {
 				CompletionModel._compareCompletionItemsSnippetsDown;
 		}
 	}
+
 	get lineContext(): LineContext {
 		return this._lineContext;
 	}
+
 	set lineContext(value: LineContext) {
 		if (
 			this._lineContext.leadingLineContent !== value.leadingLineContent ||
@@ -96,14 +114,17 @@ export class CompletionModel {
 					value.characterCountDelta && this._filteredItems
 					? Refilter.Incr
 					: Refilter.All;
+
 			this._lineContext = value;
 		}
 	}
+
 	get items(): CompletionItem[] {
 		this._ensureCachedState();
 
 		return this._filteredItems!;
 	}
+
 	getItemsByProvider(): ReadonlyMap<
 		CompletionItemProvider,
 		CompletionItem[]
@@ -112,6 +133,7 @@ export class CompletionModel {
 
 		return this._itemsByProvider!;
 	}
+
 	getIncompleteProvider(): Set<CompletionItemProvider> {
 		this._ensureCachedState();
 
@@ -122,18 +144,22 @@ export class CompletionModel {
 				result.add(provider);
 			}
 		}
+
 		return result;
 	}
+
 	get stats(): ICompletionStats {
 		this._ensureCachedState();
 
 		return this._stats!;
 	}
+
 	private _ensureCachedState(): void {
 		if (this._refilterKind !== Refilter.Nothing) {
 			this._createCachedState();
 		}
 	}
+
 	private _createCachedState(): void {
 		this._itemsByProvider = new Map();
 
@@ -186,6 +212,7 @@ export class CompletionModel {
 
 			if (word.length !== wordLen) {
 				word = wordLen === 0 ? "" : leadingLineContent.slice(-wordLen);
+
 				wordLow = word.toLowerCase();
 			}
 			// remember the word against which this item was
@@ -213,6 +240,7 @@ export class CompletionModel {
 						break;
 					}
 				}
+
 				if (wordPos >= wordLen) {
 					// the wordPos at which scoring starts is the whole word
 					// and therefore the same rules as not having a word apply
@@ -235,6 +263,7 @@ export class CompletionModel {
 					if (!match) {
 						continue; // NO match
 					}
+
 					if (
 						compareIgnoreCase(
 							item.completion.filterText,
@@ -254,6 +283,7 @@ export class CompletionModel {
 							item.labelLow,
 							0,
 						);
+
 						item.score[0] = match[0]; // use score from filterText
 					}
 				} else {
@@ -271,20 +301,27 @@ export class CompletionModel {
 					if (!match) {
 						continue; // NO match
 					}
+
 					item.score = match;
 				}
 			}
+
 			item.idx = i;
+
 			item.distance = this._wordDistance.distance(
 				item.position,
 				item.completion,
 			);
+
 			target.push(item as StrictCompletionItem);
 			// update stats
 			labelLengths.push(item.textLabel.length);
 		}
+
 		this._filteredItems = target.sort(this._snippetCompareFn);
+
 		this._refilterKind = Refilter.Nothing;
+
 		this._stats = {
 			pLabelLen: labelLengths.length
 				? quickSelect(
@@ -295,6 +332,7 @@ export class CompletionModel {
 				: 0,
 		};
 	}
+
 	private static _compareCompletionItems(
 		a: StrictCompletionItem,
 		b: StrictCompletionItem,
@@ -315,6 +353,7 @@ export class CompletionModel {
 			return 0;
 		}
 	}
+
 	private static _compareCompletionItemsSnippetsDown(
 		a: StrictCompletionItem,
 		b: StrictCompletionItem,
@@ -326,8 +365,10 @@ export class CompletionModel {
 				return -1;
 			}
 		}
+
 		return CompletionModel._compareCompletionItems(a, b);
 	}
+
 	private static _compareCompletionItemsSnippetsUp(
 		a: StrictCompletionItem,
 		b: StrictCompletionItem,
@@ -339,6 +380,7 @@ export class CompletionModel {
 				return 1;
 			}
 		}
+
 		return CompletionModel._compareCompletionItems(a, b);
 	}
 }

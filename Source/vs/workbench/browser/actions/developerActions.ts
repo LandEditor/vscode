@@ -97,22 +97,29 @@ class InspectContextKeysAction extends Action2 {
 		const disposables = new DisposableStore();
 
 		const stylesheet = createStyleSheet(undefined, undefined, disposables);
+
 		createCSSRule("*", "cursor: crosshair !important;", stylesheet);
 
 		const hoverFeedback = document.createElement("div");
 
 		const activeDocument = getActiveDocument();
+
 		activeDocument.body.appendChild(hoverFeedback);
+
 		disposables.add(toDisposable(() => hoverFeedback.remove()));
 
 		hoverFeedback.style.position = "absolute";
+
 		hoverFeedback.style.pointerEvents = "none";
+
 		hoverFeedback.style.backgroundColor = "rgba(255, 0, 0, 0.5)";
+
 		hoverFeedback.style.zIndex = "1000";
 
 		const onMouseMove = disposables.add(
 			new DomEmitter(activeDocument, "mousemove", true),
 		);
+
 		disposables.add(
 			onMouseMove.event((e) => {
 				const target = e.target as HTMLElement;
@@ -120,8 +127,11 @@ class InspectContextKeysAction extends Action2 {
 				const position = getDomNodePagePosition(target);
 
 				hoverFeedback.style.top = `${position.top}px`;
+
 				hoverFeedback.style.left = `${position.left}px`;
+
 				hoverFeedback.style.width = `${position.width}px`;
+
 				hoverFeedback.style.height = `${position.height}px`;
 			}),
 		);
@@ -129,9 +139,11 @@ class InspectContextKeysAction extends Action2 {
 		const onMouseDown = disposables.add(
 			new DomEmitter(activeDocument, "mousedown", true),
 		);
+
 		Event.once(onMouseDown.event)(
 			(e) => {
 				e.preventDefault();
+
 				e.stopPropagation();
 			},
 			null,
@@ -141,14 +153,17 @@ class InspectContextKeysAction extends Action2 {
 		const onMouseUp = disposables.add(
 			new DomEmitter(activeDocument, "mouseup", true),
 		);
+
 		Event.once(onMouseUp.event)(
 			(e) => {
 				e.preventDefault();
+
 				e.stopPropagation();
 
 				const context = contextKeyService.getContext(
 					e.target as HTMLElement,
 				) as Context;
+
 				console.log(context.collectAllValues());
 
 				dispose(disposables);
@@ -161,9 +176,13 @@ class InspectContextKeysAction extends Action2 {
 
 interface IScreencastKeyboardOptions {
 	readonly showKeys?: boolean;
+
 	readonly showKeybindings?: boolean;
+
 	readonly showCommands?: boolean;
+
 	readonly showCommandGroups?: boolean;
+
 	readonly showSingleEditorCursorMoves?: boolean;
 }
 
@@ -185,6 +204,7 @@ class ToggleScreencastModeAction extends Action2 {
 	run(accessor: ServicesAccessor): void {
 		if (ToggleScreencastModeAction.disposable) {
 			ToggleScreencastModeAction.disposable.dispose();
+
 			ToggleScreencastModeAction.disposable = undefined;
 
 			return;
@@ -201,9 +221,11 @@ class ToggleScreencastModeAction extends Action2 {
 		const container = layoutService.activeContainer;
 
 		const mouseMarker = append(container, $(".screencast-mouse"));
+
 		disposables.add(toDisposable(() => mouseMarker.remove()));
 
 		const keyboardMarker = append(container, $(".screencast-keyboard"));
+
 		disposables.add(toDisposable(() => keyboardMarker.remove()));
 
 		const onMouseDown = disposables.add(new Emitter<MouseEvent>());
@@ -221,11 +243,13 @@ class ToggleScreencastModeAction extends Action2 {
 					.add(new DomEmitter(container, "mousedown", true))
 					.event((e) => onMouseDown.fire(e)),
 			);
+
 			disposables.add(
 				disposables
 					.add(new DomEmitter(container, "mouseup", true))
 					.event((e) => onMouseUp.fire(e)),
 			);
+
 			disposables.add(
 				disposables
 					.add(new DomEmitter(container, "mousemove", true))
@@ -252,6 +276,7 @@ class ToggleScreencastModeAction extends Action2 {
 		disposables.add(
 			layoutService.onDidChangeActiveContainer(() => {
 				layoutService.activeContainer.appendChild(mouseMarker);
+
 				layoutService.activeContainer.appendChild(keyboardMarker);
 			}),
 		);
@@ -276,28 +301,37 @@ class ToggleScreencastModeAction extends Action2 {
 			);
 
 			mouseMarker.style.height = `${mouseIndicatorSize}px`;
+
 			mouseMarker.style.width = `${mouseIndicatorSize}px`;
 		};
 
 		updateMouseIndicatorColor();
+
 		updateMouseIndicatorSize();
 
 		disposables.add(
 			onMouseDown.event((e) => {
 				mouseMarker.style.top = `${e.clientY - mouseIndicatorSize / 2}px`;
+
 				mouseMarker.style.left = `${e.clientX - mouseIndicatorSize / 2}px`;
+
 				mouseMarker.style.display = "block";
+
 				mouseMarker.style.transform = `scale(${1})`;
+
 				mouseMarker.style.transition = "transform 0.1s";
 
 				const mouseMoveListener = onMouseMove.event((e) => {
 					mouseMarker.style.top = `${e.clientY - mouseIndicatorSize / 2}px`;
+
 					mouseMarker.style.left = `${e.clientX - mouseIndicatorSize / 2}px`;
+
 					mouseMarker.style.transform = `scale(${0.8})`;
 				});
 
 				Event.once(onMouseUp.event)(() => {
 					mouseMarker.style.display = "none";
+
 					mouseMoveListener.dispose();
 				});
 			}),
@@ -324,7 +358,9 @@ class ToggleScreencastModeAction extends Action2 {
 		};
 
 		updateKeyboardFontSize();
+
 		updateKeyboardMarker();
+
 		updateKeyboardMarkerTimeout();
 
 		disposables.add(
@@ -382,16 +418,19 @@ class ToggleScreencastModeAction extends Action2 {
 					.add(new DomEmitter(window, "keydown", true))
 					.event((e) => onKeyDown.fire(e)),
 			);
+
 			disposables.add(
 				disposables
 					.add(new DomEmitter(window, "compositionstart", true))
 					.event((e) => onCompositionStart.fire(e)),
 			);
+
 			disposables.add(
 				disposables
 					.add(new DomEmitter(window, "compositionupdate", true))
 					.event((e) => onCompositionUpdate.fire(e)),
 			);
+
 			disposables.add(
 				disposables
 					.add(new DomEmitter(window, "compositionend", true))
@@ -417,7 +456,9 @@ class ToggleScreencastModeAction extends Action2 {
 
 		const clearKeyboardScheduler = new RunOnceScheduler(() => {
 			keyboardMarker.textContent = "";
+
 			composing = undefined;
+
 			length = 0;
 		}, keyboardMarkerTimeout);
 
@@ -432,15 +473,20 @@ class ToggleScreencastModeAction extends Action2 {
 				if (e.data && imeBackSpace) {
 					if (length > 20) {
 						keyboardMarker.innerText = "";
+
 						length = 0;
 					}
+
 					composing =
 						composing ?? append(keyboardMarker, $("span.key"));
+
 					composing.textContent = e.data;
 				} else if (imeBackSpace) {
 					keyboardMarker.innerText = "";
+
 					append(keyboardMarker, $("span.key", {}, `Backspace`));
 				}
+
 				clearKeyboardScheduler.schedule();
 			}),
 		);
@@ -448,6 +494,7 @@ class ToggleScreencastModeAction extends Action2 {
 		disposables.add(
 			onCompositionEnd.event((e) => {
 				composing = undefined;
+
 				length++;
 			}),
 		);
@@ -464,10 +511,12 @@ class ToggleScreencastModeAction extends Action2 {
 						imeBackSpace = true;
 					} else if (!e.code.includes("Key")) {
 						composing = undefined;
+
 						imeBackSpace = false;
 					} else {
 						imeBackSpace = true;
 					}
+
 					clearKeyboardScheduler.schedule();
 
 					return;
@@ -518,6 +567,7 @@ class ToggleScreencastModeAction extends Action2 {
 					event.keyCode === KeyCode.RightArrow
 				) {
 					keyboardMarker.innerText = "";
+
 					length = 0;
 				}
 
@@ -578,6 +628,7 @@ class ToggleScreencastModeAction extends Action2 {
 				}
 
 				length++;
+
 				clearKeyboardScheduler.schedule();
 			}),
 		);
@@ -589,8 +640,11 @@ class ToggleScreencastModeAction extends Action2 {
 		resolutionResult: ResolutionResult,
 	): resolutionResult is {
 		kind: ResultKind.KbFound;
+
 		commandId: string | null;
+
 		commandArgs: any;
+
 		isBubble: boolean;
 	} {
 		return resolutionResult.kind === ResultKind.KbFound;
@@ -756,8 +810,11 @@ class RemoveLargeStorageEntriesAction extends Action2 {
 
 		interface IStorageItem extends IQuickPickItem {
 			readonly key: string;
+
 			readonly scope: StorageScope;
+
 			readonly target: StorageTarget;
+
 			readonly size: number;
 		}
 
@@ -819,15 +876,22 @@ class RemoveLargeStorageEntriesAction extends Action2 {
 				const picker = disposables.add(
 					quickInputService.createQuickPick<IStorageItem>(),
 				);
+
 				picker.items = items;
+
 				picker.canSelectMany = true;
+
 				picker.ok = false;
+
 				picker.customButton = true;
+
 				picker.hideCheckAll = true;
+
 				picker.customLabel = localize(
 					"removeLargeStorageEntriesPickerButton",
 					"Remove",
 				);
+
 				picker.placeholder = localize(
 					"removeLargeStorageEntriesPickerPlaceholder",
 					"Select large entries to remove from storage",
@@ -845,6 +909,7 @@ class RemoveLargeStorageEntriesAction extends Action2 {
 				disposables.add(
 					picker.onDidCustom(() => {
 						resolve(picker.selectedItems);
+
 						picker.hide();
 					}),
 				);
@@ -885,6 +950,7 @@ class RemoveLargeStorageEntriesAction extends Action2 {
 
 		for (const item of selectedItems) {
 			storageService.remove(item.key, item.scope);
+
 			scopesToOptimize.add(item.scope);
 		}
 
@@ -924,6 +990,7 @@ class StartTrackDisposables extends Action2 {
 			DisposablesSnapshotStateContext.bindTo(
 				accessor.get(IContextKeyService),
 			);
+
 		disposablesSnapshotStateContext.set("started");
 
 		trackedDisposables.clear();
@@ -953,6 +1020,7 @@ class SnapshotTrackedDisposables extends Action2 {
 			DisposablesSnapshotStateContext.bindTo(
 				accessor.get(IContextKeyService),
 			);
+
 		disposablesSnapshotStateContext.set("pending");
 
 		trackedDisposables = new Set(
@@ -984,6 +1052,7 @@ class StopTrackDisposables extends Action2 {
 			DisposablesSnapshotStateContext.bindTo(
 				accessor.get(IContextKeyService),
 			);
+
 		disposablesSnapshotStateContext.set("stopped");
 
 		if (tracker) {
@@ -1011,7 +1080,9 @@ class StopTrackDisposables extends Action2 {
 		}
 
 		setDisposableTracker(null);
+
 		tracker = undefined;
+
 		trackedDisposables.clear();
 	}
 }
@@ -1024,7 +1095,9 @@ registerAction2(LogWorkingCopiesAction);
 registerAction2(RemoveLargeStorageEntriesAction);
 if (!product.commit) {
 	registerAction2(StartTrackDisposables);
+
 	registerAction2(SnapshotTrackedDisposables);
+
 	registerAction2(StopTrackDisposables);
 }
 

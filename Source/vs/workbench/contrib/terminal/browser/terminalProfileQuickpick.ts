@@ -61,6 +61,7 @@ export class TerminalProfileQuickpick {
 		@INotificationService
 		private readonly _notificationService: INotificationService,
 	) {}
+
 	async showAndGetResult(
 		type: "setDefault" | "createInstance",
 	): Promise<IQuickPickTerminalObject | DefaultProfileName | undefined> {
@@ -75,6 +76,7 @@ export class TerminalProfileQuickpick {
 		if (!result) {
 			return;
 		}
+
 		if (type === "setDefault") {
 			if ("command" in result.profile) {
 				return; // Should never happen
@@ -118,6 +120,7 @@ export class TerminalProfileQuickpick {
 						}
 					)[result.profile.profileName] =
 						this._createNewProfileConfig(result.profile);
+
 					await this._configurationService.updateValue(
 						profilesKey,
 						profilesConfig,
@@ -154,6 +157,7 @@ export class TerminalProfileQuickpick {
 			? result.profile.profileName
 			: result.profile.title;
 	}
+
 	private async _createAndShow(
 		type: "setDefault" | "createInstance",
 	): Promise<IProfileQuickPickItem | undefined> {
@@ -184,12 +188,15 @@ export class TerminalProfileQuickpick {
 				if (!(await this._isProfileSafe(context.item.profile))) {
 					return;
 				}
+
 				if ("command" in context.item.profile) {
 					return;
 				}
+
 				if ("id" in context.item.profile) {
 					return;
 				}
+
 				const configProfiles: {
 					[key: string]: any;
 				} = this._configurationService.getValue(
@@ -213,6 +220,7 @@ export class TerminalProfileQuickpick {
 								"A terminal profile already exists with that name",
 							);
 						}
+
 						return undefined;
 					},
 				});
@@ -220,12 +228,14 @@ export class TerminalProfileQuickpick {
 				if (!name) {
 					return;
 				}
+
 				const newConfigValue: {
 					[key: string]: ITerminalExecutable;
 				} = {
 					...configProfiles,
 					[name]: this._createNewProfileConfig(context.item.profile),
 				};
+
 				await this._configurationService.updateValue(
 					profilesKey,
 					newConfigValue,
@@ -247,6 +257,7 @@ export class TerminalProfileQuickpick {
 				type: "separator",
 				label: nls.localize("terminalProfiles", "profiles"),
 			});
+
 			quickPickItems.push(
 				...this._sortProfileQuickPickItems(
 					configProfiles.map((e) =>
@@ -256,6 +267,7 @@ export class TerminalProfileQuickpick {
 				),
 			);
 		}
+
 		quickPickItems.push({
 			type: "separator",
 			label: nls.localize(
@@ -277,9 +289,11 @@ export class TerminalProfileQuickpick {
 					icon = ThemeIcon.fromId(contributed.icon);
 				}
 			}
+
 			if (!icon || !getIconRegistry().getIcon(icon.id)) {
 				icon = this._terminalProfileResolverService.getDefaultIcon();
 			}
+
 			const uriClasses = getUriClasses(
 				contributed,
 				this._themeService.getColorTheme().type,
@@ -293,9 +307,11 @@ export class TerminalProfileQuickpick {
 			if (uriClasses) {
 				iconClasses.push(...uriClasses);
 			}
+
 			if (colorClass) {
 				iconClasses.push(colorClass);
 			}
+
 			contributedProfiles.push({
 				label: `$(${icon.id}) ${contributed.title}`,
 				profile: {
@@ -309,6 +325,7 @@ export class TerminalProfileQuickpick {
 				iconClasses,
 			});
 		}
+
 		if (contributedProfiles.length > 0) {
 			quickPickItems.push(
 				...this._sortProfileQuickPickItems(
@@ -317,11 +334,13 @@ export class TerminalProfileQuickpick {
 				),
 			);
 		}
+
 		if (autoDetectedProfiles.length > 0) {
 			quickPickItems.push({
 				type: "separator",
 				label: nls.localize("terminalProfiles.detected", "detected"),
 			});
+
 			quickPickItems.push(
 				...this._sortProfileQuickPickItems(
 					autoDetectedProfiles.map((e) =>
@@ -331,6 +350,7 @@ export class TerminalProfileQuickpick {
 				),
 			);
 		}
+
 		const colorStyleDisposable = createColorStyleElement(
 			this._themeService.getColorTheme(),
 		);
@@ -339,19 +359,24 @@ export class TerminalProfileQuickpick {
 			quickPickItems,
 			options,
 		);
+
 		colorStyleDisposable.dispose();
 
 		if (!result) {
 			return undefined;
 		}
+
 		if (!(await this._isProfileSafe(result.profile))) {
 			return undefined;
 		}
+
 		if (keyMods) {
 			result.keyMods = keyMods;
 		}
+
 		return result;
 	}
+
 	private _createNewProfileConfig(
 		profile: ITerminalProfile,
 	): ITerminalExecutable {
@@ -360,11 +385,14 @@ export class TerminalProfileQuickpick {
 		if (profile.args) {
 			result.args = profile.args;
 		}
+
 		if (profile.env) {
 			result.env = profile.env;
 		}
+
 		return result;
 	}
+
 	private async _isProfileSafe(
 		profile: ITerminalProfile | IExtensionTerminalProfile,
 	): Promise<boolean> {
@@ -383,6 +411,7 @@ export class TerminalProfileQuickpick {
 			if (isUnsafePath) {
 				unsafePaths.push(profile.path);
 			}
+
 			if (requiresUnsafePath) {
 				unsafePaths.push(requiresUnsafePath);
 			}
@@ -406,9 +435,11 @@ export class TerminalProfileQuickpick {
 					},
 				],
 			);
+
 			handle.onDidClose(() => r(false));
 		});
 	}
+
 	private _createProfileQuickPickItem(
 		profile: ITerminalProfile,
 	): IProfileQuickPickItem {
@@ -440,6 +471,7 @@ export class TerminalProfileQuickpick {
 		if (colorClass) {
 			iconClasses.push(colorClass);
 		}
+
 		if (profile.args) {
 			if (typeof profile.args === "string") {
 				return {
@@ -451,11 +483,13 @@ export class TerminalProfileQuickpick {
 					iconClasses,
 				};
 			}
+
 			const argsString = profile.args
 				.map((e) => {
 					if (e.includes(" ")) {
 						return `"${e.replace(/"/g, '\\"')}"`; // CodeQL [SM02383] js/incomplete-sanitization This is only used as a label on the UI so this isn't a problem
 					}
+
 					return e;
 				})
 				.join(" ");
@@ -469,6 +503,7 @@ export class TerminalProfileQuickpick {
 				iconClasses,
 			};
 		}
+
 		return {
 			label,
 			description: friendlyPath,
@@ -478,6 +513,7 @@ export class TerminalProfileQuickpick {
 			iconClasses,
 		};
 	}
+
 	private _sortProfileQuickPickItems(
 		items: IProfileQuickPickItem[],
 		defaultProfileName: string,
@@ -486,16 +522,20 @@ export class TerminalProfileQuickpick {
 			if (b.profileName === defaultProfileName) {
 				return 1;
 			}
+
 			if (a.profileName === defaultProfileName) {
 				return -1;
 			}
+
 			return a.profileName.localeCompare(b.profileName);
 		});
 	}
 }
 export interface IProfileQuickPickItem extends IQuickPickItem {
 	profile: ITerminalProfile | IExtensionTerminalProfile;
+
 	profileName: string;
+
 	keyMods?: IKeyMods | undefined;
 }
 export interface ITerminalQuickPickItem extends IPickerQuickAccessItem {

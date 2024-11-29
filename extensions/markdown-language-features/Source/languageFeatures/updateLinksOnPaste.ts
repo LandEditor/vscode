@@ -97,6 +97,7 @@ class UpdatePastedLinksEditProvider
 		);
 
 		const workspaceEdit = new vscode.WorkspaceEdit();
+
 		workspaceEdit.set(
 			document.uri,
 			edits.map(
@@ -112,6 +113,7 @@ class UpdatePastedLinksEditProvider
 					),
 			),
 		);
+
 		pasteEdit.additionalEdit = workspaceEdit;
 
 		if (

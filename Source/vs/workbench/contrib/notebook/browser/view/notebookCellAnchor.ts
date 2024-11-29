@@ -19,7 +19,9 @@ import { CellViewModel } from "../viewModel/notebookViewModelImpl.js";
 
 export class NotebookCellAnchor implements IDisposable {
 	private stopAnchoring = false;
+
 	private executionWatcher: IDisposable | undefined;
+
 	private scrollWatcher: IDisposable | undefined;
 
 	constructor(
@@ -27,6 +29,7 @@ export class NotebookCellAnchor implements IDisposable {
 		private readonly configurationService: IConfigurationService,
 		private readonly scrollEvent: Event<ScrollEvent>,
 	) {}
+
 	public shouldAnchor(
 		cellListView: IListView<CellViewModel>,
 		focusedIndex: number,
@@ -39,9 +42,11 @@ export class NotebookCellAnchor implements IDisposable {
 		) {
 			return true;
 		}
+
 		if (this.stopAnchoring) {
 			return false;
 		}
+
 		const newFocusBottom =
 			cellListView.elementTop(focusedIndex) +
 			cellListView.elementHeight(focusedIndex) +
@@ -66,8 +71,10 @@ export class NotebookCellAnchor implements IDisposable {
 
 			return true;
 		}
+
 		return false;
 	}
+
 	public watchAchorDuringExecution(executingCell: ICellViewModel) {
 		// anchor while the cell is executing unless the user scrolls up.
 		if (
@@ -87,21 +94,28 @@ export class NotebookCellAnchor implements IDisposable {
 					executingCell as CodeCellViewModel
 				).onDidStopExecution(() => {
 					this.executionWatcher?.dispose();
+
 					this.executionWatcher = undefined;
+
 					this.scrollWatcher?.dispose();
+
 					this.stopAnchoring = false;
 				});
+
 				this.scrollWatcher = this.scrollEvent((scrollEvent) => {
 					if (scrollEvent.scrollTop < scrollEvent.oldScrollTop) {
 						this.stopAnchoring = true;
+
 						this.scrollWatcher?.dispose();
 					}
 				});
 			}
 		}
 	}
+
 	dispose(): void {
 		this.executionWatcher?.dispose();
+
 		this.scrollWatcher?.dispose();
 	}
 }

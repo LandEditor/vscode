@@ -82,6 +82,7 @@ export class BrowserIssueService implements IWorkbenchIssueService {
 		@IConfigurationService
 		private readonly configurationService: IConfigurationService,
 	) {}
+
 	async openReporter(options: Partial<IssueReporterData>): Promise<void> {
 		// If web reporter setting is false open the old GitHub issue reporter
 		if (
@@ -101,10 +102,12 @@ export class BrowserIssueService implements IWorkbenchIssueService {
 
 					return;
 				}
+
 				throw new Error(
 					`No issue reporting URL configured for ${this.productService.nameLong}.`,
 				);
 			}
+
 			const selectedExtension = this.extensionService.extensions.filter(
 				(ext) => ext.identifier.value === options.extensionId,
 			)[0];
@@ -117,6 +120,7 @@ export class BrowserIssueService implements IWorkbenchIssueService {
 					`Unable to find issue reporting url for ${extensionId}`,
 				);
 			}
+
 			const uri = this.getIssueUriFromStaticContent(
 				`${extensionGitHubUrl}/issues/new`,
 				selectedExtension,
@@ -124,6 +128,7 @@ export class BrowserIssueService implements IWorkbenchIssueService {
 
 			dom.windowOpenNoOpener(uri);
 		}
+
 		if (this.productService.reportIssueUrl) {
 			const theme = this.themeService.getColorTheme();
 
@@ -139,6 +144,7 @@ export class BrowserIssueService implements IWorkbenchIssueService {
 				const potentialSessions = githubSessions.filter((session) =>
 					session.scopes.includes("repo"),
 				);
+
 				githubAccessToken = potentialSessions[0]?.accessToken;
 			} catch (e) {
 				// Ignore
@@ -151,6 +157,7 @@ export class BrowserIssueService implements IWorkbenchIssueService {
 			} catch (e) {
 				// Ignore
 			}
+
 			const extensionData: IssueReporterExtensionData[] = [];
 
 			try {
@@ -163,6 +170,7 @@ export class BrowserIssueService implements IWorkbenchIssueService {
 						(options.extensionId &&
 							extension.identifier.id === options.extensionId),
 				);
+
 				extensionData.push(
 					...enabledExtensions.map(
 						(extension): IssueReporterExtensionData => {
@@ -214,6 +222,7 @@ export class BrowserIssueService implements IWorkbenchIssueService {
 					isBuiltin: true,
 				});
 			}
+
 			const issueReporterData: IssueReporterData = Object.assign(
 				{
 					styles: getIssueReporterStyles(theme),
@@ -230,14 +239,17 @@ export class BrowserIssueService implements IWorkbenchIssueService {
 
 			return this.issueFormService.openReporter(issueReporterData);
 		}
+
 		throw new Error(
 			`No issue reporting URL configured for ${this.productService.nameLong}.`,
 		);
 	}
+
 	private getExtensionGitHubUrl(extension: IExtensionDescription): string {
 		if (extension.isBuiltin && this.productService.reportIssueUrl) {
 			return normalizeGitHubUrl(this.productService.reportIssueUrl);
 		}
+
 		let repositoryUrl = "";
 
 		const bugsUrl = extension?.bugs?.url;
@@ -252,8 +264,10 @@ export class BrowserIssueService implements IWorkbenchIssueService {
 		) {
 			repositoryUrl = normalizeGitHubUrl(extensionUrl);
 		}
+
 		return repositoryUrl;
 	}
+
 	private getIssueUriFromStaticContent(
 		baseUri: string,
 		extension?: IExtensionDescription,

@@ -12,12 +12,15 @@ declare module "vscode" {
 
 	export interface ShareableItem {
 		resourceUri: Uri;
+
 		selection?: Range;
 	}
 
 	export interface ShareProvider {
 		readonly id: string;
+
 		readonly label: string;
+
 		readonly priority: number;
 
 		provideShare(

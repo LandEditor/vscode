@@ -43,6 +43,7 @@ registerAction2(
 				},
 			});
 		}
+
 		async run(
 			accessor: ServicesAccessor,
 			item: ITimelineCommandArgument,

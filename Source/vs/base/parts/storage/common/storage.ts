@@ -23,10 +23,12 @@ export interface IStorageOptions {
 }
 export interface IUpdateRequest {
 	readonly insert?: Map<string, string>;
+
 	readonly delete?: Set<string>;
 }
 export interface IStorageItemsChangeEvent {
 	readonly changed?: Map<string, string>;
+
 	readonly deleted?: Set<string>;
 }
 export function isStorageItemsChangeEvent(
@@ -42,8 +44,11 @@ export interface IStorageDatabase {
 	readonly onDidChangeItemsExternal: Event<IStorageItemsChangeEvent>;
 
 	getItems(): Promise<Map<string, string>>;
+
 	updateItems(request: IUpdateRequest): Promise<void>;
+
 	optimize(): Promise<void>;
+
 	close(recovery?: () => Map<string, string>): Promise<void>;
 }
 export interface IStorageChangeEvent {
@@ -71,8 +76,11 @@ export type StorageValue =
 
 export interface IStorage extends IDisposable {
 	readonly onDidChangeStorage: Event<IStorageChangeEvent>;
+
 	readonly items: Map<string, string>;
+
 	readonly size: number;
+
 	init(): Promise<void>;
 
 	get(key: string, fallbackValue: string): string;
@@ -92,10 +100,15 @@ export interface IStorage extends IDisposable {
 	getObject<T extends object>(key: string, fallbackValue?: T): T | undefined;
 
 	set(key: string, value: StorageValue, external?: boolean): Promise<void>;
+
 	delete(key: string, external?: boolean): Promise<void>;
+
 	flush(delay?: number): Promise<void>;
+
 	whenFlushed(): Promise<void>;
+
 	optimize(): Promise<void>;
+
 	close(): Promise<void>;
 }
 export enum StorageState {
@@ -105,18 +118,27 @@ export enum StorageState {
 }
 export class Storage extends Disposable implements IStorage {
 	private static readonly DEFAULT_FLUSH_DELAY = 100;
+
 	private readonly _onDidChangeStorage = this._register(
 		new PauseableEmitter<IStorageChangeEvent>(),
 	);
+
 	readonly onDidChangeStorage = this._onDidChangeStorage.event;
+
 	private state = StorageState.None;
+
 	private cache = new Map<string, string>();
+
 	private readonly flushDelayer = this._register(
 		new ThrottledDelayer<void>(Storage.DEFAULT_FLUSH_DELAY),
 	);
+
 	private pendingDeletes = new Set<string>();
+
 	private pendingInserts = new Map<string, string>();
+
 	private pendingClose: Promise<void> | undefined = undefined;
+
 	private readonly whenFlushedCallbacks: Function[] = [];
 
 	constructor(
@@ -124,8 +146,10 @@ export class Storage extends Disposable implements IStorage {
 		private readonly options: IStorageOptions = Object.create(null),
 	) {
 		super();
+
 		this.registerListeners();
 	}
+
 	private registerListeners(): void {
 		this._register(
 			this.database.onDidChangeItemsExternal((e) =>
@@ -133,6 +157,7 @@ export class Storage extends Disposable implements IStorage {
 			),
 		);
 	}
+
 	private onDidChangeItemsExternal(e: IStorageItemsChangeEvent): void {
 		this._onDidChangeStorage.pause();
 
@@ -141,15 +166,18 @@ export class Storage extends Disposable implements IStorage {
 			// caches with the values. we just accept the value and
 			// emit an event if there is a change.
 			e.changed?.forEach((value, key) => this.acceptExternal(key, value));
+
 			e.deleted?.forEach((key) => this.acceptExternal(key, undefined));
 		} finally {
 			this._onDidChangeStorage.resume();
 		}
 	}
+
 	private acceptExternal(key: string, value: string | undefined): void {
 		if (this.state === StorageState.Closed) {
 			return; // Return early if we are already closed
 		}
+
 		let changed = false;
 		// Item got removed, check for deletion
 		if (isUndefinedOrNull(value)) {
@@ -161,6 +189,7 @@ export class Storage extends Disposable implements IStorage {
 
 			if (currentValue !== value) {
 				this.cache.set(key, value);
+
 				changed = true;
 			}
 		}
@@ -169,16 +198,20 @@ export class Storage extends Disposable implements IStorage {
 			this._onDidChangeStorage.fire({ key, external: true });
 		}
 	}
+
 	get items(): Map<string, string> {
 		return this.cache;
 	}
+
 	get size(): number {
 		return this.cache.size;
 	}
+
 	async init(): Promise<void> {
 		if (this.state !== StorageState.None) {
 			return; // either closed or already initialized
 		}
+
 		this.state = StorageState.Initialized;
 
 		if (this.options.hint === StorageHint.STORAGE_DOES_NOT_EXIST) {
@@ -187,8 +220,10 @@ export class Storage extends Disposable implements IStorage {
 			// there can be no items because the storage does not exist.
 			return;
 		}
+
 		this.cache = await this.database.getItems();
 	}
+
 	get(key: string, fallbackValue: string): string;
 
 	get(key: string, fallbackValue?: string): string | undefined;
@@ -199,8 +234,10 @@ export class Storage extends Disposable implements IStorage {
 		if (isUndefinedOrNull(value)) {
 			return fallbackValue;
 		}
+
 		return value;
 	}
+
 	getBoolean(key: string, fallbackValue: boolean): boolean;
 
 	getBoolean(key: string, fallbackValue?: boolean): boolean | undefined;
@@ -211,8 +248,10 @@ export class Storage extends Disposable implements IStorage {
 		if (isUndefinedOrNull(value)) {
 			return fallbackValue;
 		}
+
 		return value === "true";
 	}
+
 	getNumber(key: string, fallbackValue: number): number;
 
 	getNumber(key: string, fallbackValue?: number): number | undefined;
@@ -223,8 +262,10 @@ export class Storage extends Disposable implements IStorage {
 		if (isUndefinedOrNull(value)) {
 			return fallbackValue;
 		}
+
 		return parseInt(value, 10);
 	}
+
 	getObject(key: string, fallbackValue: object): object;
 
 	getObject(
@@ -238,8 +279,10 @@ export class Storage extends Disposable implements IStorage {
 		if (isUndefinedOrNull(value)) {
 			return fallbackValue;
 		}
+
 		return parse(value);
 	}
+
 	async set(
 		key: string,
 		value: string | boolean | number | null | undefined | object,
@@ -265,13 +308,16 @@ export class Storage extends Disposable implements IStorage {
 		}
 		// Update in cache and pending
 		this.cache.set(key, valueStr);
+
 		this.pendingInserts.set(key, valueStr);
+
 		this.pendingDeletes.delete(key);
 		// Event
 		this._onDidChangeStorage.fire({ key, external });
 		// Accumulate work by scheduling after timeout
 		return this.doFlush();
 	}
+
 	async delete(key: string, external = false): Promise<void> {
 		if (this.state === StorageState.Closed) {
 			return; // Return early if we are already closed
@@ -282,15 +328,18 @@ export class Storage extends Disposable implements IStorage {
 		if (!wasDeleted) {
 			return; // Return early if value already deleted
 		}
+
 		if (!this.pendingDeletes.has(key)) {
 			this.pendingDeletes.add(key);
 		}
+
 		this.pendingInserts.delete(key);
 		// Event
 		this._onDidChangeStorage.fire({ key, external });
 		// Accumulate work by scheduling after timeout
 		return this.doFlush();
 	}
+
 	async optimize(): Promise<void> {
 		if (this.state === StorageState.Closed) {
 			return; // Return early if we are already closed
@@ -301,12 +350,15 @@ export class Storage extends Disposable implements IStorage {
 
 		return this.database.optimize();
 	}
+
 	async close(): Promise<void> {
 		if (!this.pendingClose) {
 			this.pendingClose = this.doClose();
 		}
+
 		return this.pendingClose;
 	}
+
 	private async doClose(): Promise<void> {
 		// Update state
 		this.state = StorageState.Closed;
@@ -321,11 +373,14 @@ export class Storage extends Disposable implements IStorage {
 		} catch (error) {
 			// Ignore
 		}
+
 		await this.database.close(() => this.cache);
 	}
+
 	private get hasPending() {
 		return this.pendingInserts.size > 0 || this.pendingDeletes.size > 0;
 	}
+
 	private async flushPending(): Promise<void> {
 		if (!this.hasPending) {
 			return; // return early if nothing to do
@@ -337,6 +392,7 @@ export class Storage extends Disposable implements IStorage {
 		};
 		// Reset pending data for next run
 		this.pendingDeletes = new Set<string>();
+
 		this.pendingInserts = new Map<string, string>();
 		// Update in storage and release any
 		// waiters we have once done
@@ -348,6 +404,7 @@ export class Storage extends Disposable implements IStorage {
 			}
 		});
 	}
+
 	async flush(delay?: number): Promise<void> {
 		if (
 			this.state === StorageState.Closed || // Return early if we are already closed
@@ -355,37 +412,48 @@ export class Storage extends Disposable implements IStorage {
 		) {
 			return;
 		}
+
 		return this.doFlush(delay);
 	}
+
 	private async doFlush(delay?: number): Promise<void> {
 		if (this.options.hint === StorageHint.STORAGE_IN_MEMORY) {
 			return this.flushPending(); // return early if in-memory
 		}
+
 		return this.flushDelayer.trigger(() => this.flushPending(), delay);
 	}
+
 	async whenFlushed(): Promise<void> {
 		if (!this.hasPending) {
 			return; // return early if nothing to do
 		}
+
 		return new Promise((resolve) =>
 			this.whenFlushedCallbacks.push(resolve),
 		);
 	}
+
 	isInMemory(): boolean {
 		return this.options.hint === StorageHint.STORAGE_IN_MEMORY;
 	}
 }
 export class InMemoryStorageDatabase implements IStorageDatabase {
 	readonly onDidChangeItemsExternal = Event.None;
+
 	private readonly items = new Map<string, string>();
 
 	async getItems(): Promise<Map<string, string>> {
 		return this.items;
 	}
+
 	async updateItems(request: IUpdateRequest): Promise<void> {
 		request.insert?.forEach((value, key) => this.items.set(key, value));
+
 		request.delete?.forEach((key) => this.items.delete(key));
 	}
+
 	async optimize(): Promise<void> {}
+
 	async close(): Promise<void> {}
 }

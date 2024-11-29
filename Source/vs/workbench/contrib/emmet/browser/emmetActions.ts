@@ -65,6 +65,7 @@ export abstract class EmmetEditorAction extends EditorAction {
 
 	constructor(opts: IEmmetActionOptions) {
 		super(opts);
+
 		this.emmetActionName = opts.actionName;
 	}
 
@@ -87,18 +88,22 @@ export abstract class EmmetEditorAction extends EditorAction {
 
 	private _lastGrammarContributions: Promise<GrammarContributions> | null =
 		null;
+
 	private _lastExtensionService: IExtensionService | null = null;
+
 	private _withGrammarContributions(
 		extensionService: IExtensionService,
 	): Promise<GrammarContributions | null> {
 		if (this._lastExtensionService !== extensionService) {
 			this._lastExtensionService = extensionService;
+
 			this._lastGrammarContributions = extensionService
 				.readExtensionPointContributions(grammarsExtPoint)
 				.then((contributions) => {
 					return new GrammarContributions(contributions);
 				});
 		}
+
 		return this._lastGrammarContributions || Promise.resolve(null);
 	}
 
@@ -140,6 +145,7 @@ export abstract class EmmetEditorAction extends EditorAction {
 		}
 
 		const position = selection.getStartPosition();
+
 		model.tokenization.tokenizeIfCheap(position.lineNumber);
 
 		const languageId = model.getLanguageIdAtPosition(
@@ -159,11 +165,13 @@ export abstract class EmmetEditorAction extends EditorAction {
 			if (!languageGrammar) {
 				return syntax;
 			}
+
 			const languages = languageGrammar.split(".");
 
 			if (languages.length < 2) {
 				return syntax;
 			}
+
 			for (let i = 1; i < languages.length; i++) {
 				const language = languages[languages.length - i];
 
@@ -171,6 +179,7 @@ export abstract class EmmetEditorAction extends EditorAction {
 					return language;
 				}
 			}
+
 			return syntax;
 		};
 

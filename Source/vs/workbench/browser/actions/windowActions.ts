@@ -80,7 +80,9 @@ import { getQuickNavigateHandler, inQuickPickContext } from "../quickaccess.js";
 export const inRecentFilesPickerContextKey = "inRecentFilesPicker";
 interface IRecentlyOpenedPick extends IQuickPickItem {
 	resource: URI;
+
 	openable: IWindowOpenable;
+
 	remoteAuthority: string | undefined;
 }
 abstract class BaseOpenRecentAction extends Action2 {
@@ -88,6 +90,7 @@ abstract class BaseOpenRecentAction extends Action2 {
 		iconClass: ThemeIcon.asClassName(Codicon.removeClose),
 		tooltip: localize("remove", "Remove from Recently Opened"),
 	};
+
 	private readonly dirtyRecentlyOpenedFolder: IQuickInputButton = {
 		iconClass:
 			"dirty-workspace " + ThemeIcon.asClassName(Codicon.closeDirty),
@@ -97,6 +100,7 @@ abstract class BaseOpenRecentAction extends Action2 {
 		),
 		alwaysVisible: true,
 	};
+
 	private readonly dirtyRecentlyOpenedWorkspace: IQuickInputButton = {
 		...this.dirtyRecentlyOpenedFolder,
 		tooltip: localize(
@@ -108,7 +112,9 @@ abstract class BaseOpenRecentAction extends Action2 {
 	constructor(desc: Readonly<IAction2Options>) {
 		super(desc);
 	}
+
 	protected abstract isQuickNavigate(): boolean;
+
 	override async run(accessor: ServicesAccessor): Promise<void> {
 		const workspacesService = accessor.get(IWorkspacesService);
 
@@ -147,6 +153,7 @@ abstract class BaseOpenRecentAction extends Action2 {
 					dirtyWorkspace.workspace.configPath,
 					dirtyWorkspace.workspace,
 				);
+
 				hasWorkspaces = true;
 			}
 		}
@@ -163,6 +170,7 @@ abstract class BaseOpenRecentAction extends Action2 {
 					recent.workspace.configPath,
 					recent.workspace,
 				);
+
 				hasWorkspaces = true;
 			}
 		}
@@ -173,6 +181,7 @@ abstract class BaseOpenRecentAction extends Action2 {
 			const isDirty = isRecentFolder(recent)
 				? dirtyFolders.has(recent.folderUri)
 				: dirtyWorkspaces.has(recent.workspace.configPath);
+
 			workspacePicks.push(
 				this.toQuickPick(
 					modelService,
@@ -215,6 +224,7 @@ abstract class BaseOpenRecentAction extends Action2 {
 				);
 			}
 		}
+
 		const filePicks = recentlyOpened.files.map((p) =>
 			this.toQuickPick(
 				modelService,
@@ -286,6 +296,7 @@ abstract class BaseOpenRecentAction extends Action2 {
 					await workspacesService.removeRecentlyOpened([
 						context.item.resource,
 					]);
+
 					context.removeItem();
 				}
 				// Dirty Folder/Workspace
@@ -331,6 +342,7 @@ abstract class BaseOpenRecentAction extends Action2 {
 							remoteAuthority:
 								context.item.remoteAuthority || null, // local window if remoteAuthority is not set or can not be deducted from the openable
 						});
+
 						quickInputService.cancel();
 					}
 				}
@@ -345,6 +357,7 @@ abstract class BaseOpenRecentAction extends Action2 {
 			});
 		}
 	}
+
 	private toQuickPick(
 		modelService: IModelService,
 		languageService: ILanguageService,
@@ -364,13 +377,16 @@ abstract class BaseOpenRecentAction extends Action2 {
 		// Folder
 		if (isRecentFolder(recent)) {
 			resource = recent.folderUri;
+
 			iconClasses = getIconClasses(
 				modelService,
 				languageService,
 				resource,
 				FileKind.FOLDER,
 			);
+
 			openable = { folderUri: resource };
+
 			fullLabel =
 				recent.label ||
 				labelService.getWorkspaceLabel(resource, {
@@ -380,32 +396,40 @@ abstract class BaseOpenRecentAction extends Action2 {
 		// Workspace
 		else if (isRecentWorkspace(recent)) {
 			resource = recent.workspace.configPath;
+
 			iconClasses = getIconClasses(
 				modelService,
 				languageService,
 				resource,
 				FileKind.ROOT_FOLDER,
 			);
+
 			openable = { workspaceUri: resource };
+
 			fullLabel =
 				recent.label ||
 				labelService.getWorkspaceLabel(recent.workspace, {
 					verbose: Verbosity.LONG,
 				});
+
 			isWorkspace = true;
 		}
 		// File
 		else {
 			resource = recent.fileUri;
+
 			iconClasses = getIconClasses(
 				modelService,
 				languageService,
 				resource,
 				FileKind.FILE,
 			);
+
 			openable = { fileUri: resource };
+
 			fullLabel = recent.label || labelService.getUriLabel(resource);
 		}
+
 		const { name, parentPath } = splitRecentLabel(fullLabel);
 
 		return {
@@ -465,6 +489,7 @@ export class OpenRecentAction extends BaseOpenRecentAction {
 			},
 		});
 	}
+
 	protected isQuickNavigate(): boolean {
 		return false;
 	}
@@ -478,6 +503,7 @@ class QuickPickRecentAction extends BaseOpenRecentAction {
 			f1: false, // hide quick pickers from command palette to not confuse with the other entry that shows a input field
 		});
 	}
+
 	protected isQuickNavigate(): boolean {
 		return true;
 	}
@@ -516,6 +542,7 @@ class ToggleFullScreenAction extends Action2 {
 			],
 		});
 	}
+
 	override run(accessor: ServicesAccessor): Promise<void> {
 		const hostService = accessor.get(IHostService);
 
@@ -538,6 +565,7 @@ export class ReloadWindowAction extends Action2 {
 			},
 		});
 	}
+
 	override async run(accessor: ServicesAccessor): Promise<void> {
 		const hostService = accessor.get(IHostService);
 
@@ -565,6 +593,7 @@ class ShowAboutDialogAction extends Action2 {
 			},
 		});
 	}
+
 	override run(accessor: ServicesAccessor): Promise<void> {
 		const dialogService = accessor.get(IDialogService);
 
@@ -607,6 +636,7 @@ class NewWindowAction extends Action2 {
 			},
 		});
 	}
+
 	override run(accessor: ServicesAccessor): Promise<void> {
 		const hostService = accessor.get(IHostService);
 
@@ -623,6 +653,7 @@ class BlurAction extends Action2 {
 			),
 		});
 	}
+
 	run(): void {
 		const activeElement = getActiveElement();
 

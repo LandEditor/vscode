@@ -47,16 +47,20 @@ export async function showLoadedScriptMenu(accessor: ServicesAccessor) {
 	const quickPick = quickInputService.createQuickPick<IPickerDebugItem>({
 		useSeparators: true,
 	});
+
 	localDisposableStore.add(quickPick);
+
 	quickPick.matchOnLabel =
 		quickPick.matchOnDescription =
 		quickPick.matchOnDetail =
 		quickPick.sortByLabel =
 			false;
+
 	quickPick.placeholder = nls.localize(
 		"moveFocusedView.selectView",
 		"Search loaded scripts by name",
 	);
+
 	quickPick.items = await _getPicks(
 		quickPick.value,
 		sessions,
@@ -65,6 +69,7 @@ export async function showLoadedScriptMenu(accessor: ServicesAccessor) {
 		languageService,
 		labelService,
 	);
+
 	localDisposableStore.add(
 		quickPick.onDidChangeValue(async () => {
 			quickPick.items = await _getPicks(
@@ -77,14 +82,19 @@ export async function showLoadedScriptMenu(accessor: ServicesAccessor) {
 			);
 		}),
 	);
+
 	localDisposableStore.add(
 		quickPick.onDidAccept(() => {
 			const selectedItem = quickPick.selectedItems[0];
+
 			selectedItem.accept();
+
 			quickPick.hide();
+
 			localDisposableStore.dispose();
 		}),
 	);
+
 	quickPick.show();
 }
 async function _getPicksFromSession(
@@ -96,9 +106,11 @@ async function _getPicksFromSession(
 	labelService: ILabelService,
 ): Promise<Array<IPickerDebugItem | IQuickPickSeparator>> {
 	const items: Array<IPickerDebugItem | IQuickPickSeparator> = [];
+
 	items.push({ type: "separator", label: session.name });
 
 	const sources = await session.getLoadedSources();
+
 	sources.forEach((element: Source) => {
 		const pick = _createPick(
 			element,
@@ -144,6 +156,7 @@ async function _getPicks(
 			loadedScriptPicks.push(elem);
 		}
 	}
+
 	return loadedScriptPicks;
 }
 function _createPick(
@@ -187,5 +200,6 @@ function _createPick(
 			},
 		};
 	}
+
 	return undefined;
 }

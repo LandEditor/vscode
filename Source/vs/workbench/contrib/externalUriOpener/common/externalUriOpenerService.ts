@@ -38,11 +38,14 @@ export interface IExternalOpenerProvider {
 }
 export interface IExternalUriOpener {
 	readonly id: string;
+
 	readonly label: string;
+
 	canOpen(
 		uri: URI,
 		token: CancellationToken,
 	): Promise<languages.ExternalUriOpenerPriority>;
+
 	openExternalUri(
 		uri: URI,
 		ctx: {
@@ -67,6 +70,7 @@ export interface IExternalUriOpenerService {
 		uri: URI,
 		ctx: {
 			sourceUri: URI;
+
 			preferredOpenerId?: string;
 		},
 		token: CancellationToken,
@@ -77,6 +81,7 @@ export class ExternalUriOpenerService
 	implements IExternalUriOpenerService, IExternalOpener
 {
 	public readonly _serviceBrand: undefined;
+
 	private readonly _providers = new LinkedList<IExternalOpenerProvider>();
 
 	constructor(
@@ -92,8 +97,10 @@ export class ExternalUriOpenerService
 		private readonly quickInputService: IQuickInputService,
 	) {
 		super();
+
 		this._register(openerService.registerExternalOpener(this));
 	}
+
 	registerExternalOpenerProvider(
 		provider: IExternalOpenerProvider,
 	): IDisposable {
@@ -101,11 +108,13 @@ export class ExternalUriOpenerService
 
 		return { dispose: remove };
 	}
+
 	private async getOpeners(
 		targetUri: URI,
 		allowOptional: boolean,
 		ctx: {
 			sourceUri: URI;
+
 			preferredOpenerId?: string;
 		},
 		token: CancellationToken,
@@ -120,6 +129,7 @@ export class ExternalUriOpenerService
 			if (ctx.preferredOpenerId === defaultExternalUriOpenerId) {
 				return [];
 			}
+
 			const preferredOpener = allOpeners.get(ctx.preferredOpenerId);
 
 			if (preferredOpener) {
@@ -142,8 +152,10 @@ export class ExternalUriOpenerService
 		// Then check to see if there is a valid opener
 		const validOpeners: Array<{
 			opener: IExternalUriOpener;
+
 			priority: languages.ExternalUriOpenerPriority;
 		}> = [];
+
 		await Promise.all(
 			Array.from(allOpeners.values()).map(async (opener) => {
 				let priority: languages.ExternalUriOpenerPriority;
@@ -155,6 +167,7 @@ export class ExternalUriOpenerService
 
 					return;
 				}
+
 				switch (priority) {
 					case languages.ExternalUriOpenerPriority.Option:
 					case languages.ExternalUriOpenerPriority.Default:
@@ -191,12 +204,15 @@ export class ExternalUriOpenerService
 		) {
 			return [];
 		}
+
 		return validOpeners.map((value) => value.opener);
 	}
+
 	async openExternal(
 		href: string,
 		ctx: {
 			sourceUri: URI;
+
 			preferredOpenerId?: string;
 		},
 		token: CancellationToken,
@@ -213,10 +229,12 @@ export class ExternalUriOpenerService
 		// Otherwise prompt
 		return this.showOpenerPrompt(allOpeners, targetUri, ctx, token);
 	}
+
 	async getOpener(
 		targetUri: URI,
 		ctx: {
 			sourceUri: URI;
+
 			preferredOpenerId?: string;
 		},
 		token: CancellationToken,
@@ -226,12 +244,15 @@ export class ExternalUriOpenerService
 		if (allOpeners.length >= 1) {
 			return allOpeners[0];
 		}
+
 		return undefined;
 	}
+
 	private async getAllOpenersForUri(
 		targetUri: URI,
 	): Promise<Map<string, IExternalUriOpener>> {
 		const allOpeners = new Map<string, IExternalUriOpener>();
+
 		await Promise.all(
 			Iterable.map(this._providers, async (provider) => {
 				for await (const opener of provider.getOpeners(targetUri)) {
@@ -242,6 +263,7 @@ export class ExternalUriOpenerService
 
 		return allOpeners;
 	}
+
 	private getConfiguredOpenerForUri(
 		openers: Map<string, IExternalUriOpener>,
 		targetUri: URI,
@@ -256,6 +278,7 @@ export class ExternalUriOpenerService
 				if (id === defaultExternalUriOpenerId) {
 					return "default";
 				}
+
 				const entry = openers.get(id);
 
 				if (entry) {
@@ -263,8 +286,10 @@ export class ExternalUriOpenerService
 				}
 			}
 		}
+
 		return undefined;
 	}
+
 	private async showOpenerPrompt(
 		openers: ReadonlyArray<IExternalUriOpener>,
 		targetUri: URI,
@@ -285,6 +310,7 @@ export class ExternalUriOpenerService
 				};
 			},
 		);
+
 		items.push(
 			{
 				label: isWeb
@@ -320,6 +346,7 @@ export class ExternalUriOpenerService
 			// Still cancel the default opener here since we prompted the user
 			return true;
 		}
+
 		if (typeof picked.opener === "undefined") {
 			return false; // Fallback to default opener
 		} else if (picked.opener === "configureDefault") {

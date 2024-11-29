@@ -39,12 +39,14 @@ export abstract class AbstractEditorCommandsQuickAccessProvider extends Abstract
 	 * Subclasses to provide the current active editor control.
 	 */
 	protected abstract activeTextEditorControl: IEditor | undefined;
+
 	protected getCodeEditorCommandPicks(): ICommandQuickPick[] {
 		const activeTextEditorControl = this.activeTextEditorControl;
 
 		if (!activeTextEditorControl) {
 			return [];
 		}
+
 		const editorCommandPicks: ICommandQuickPick[] = [];
 
 		for (const editorAction of activeTextEditorControl.getSupportedActions()) {
@@ -60,6 +62,7 @@ export abstract class AbstractEditorCommandsQuickAccessProvider extends Abstract
 					};
 				}
 			}
+
 			editorCommandPicks.push({
 				commandId: editorAction.id,
 				commandAlias: editorAction.alias,
@@ -67,6 +70,7 @@ export abstract class AbstractEditorCommandsQuickAccessProvider extends Abstract
 				label: stripIcons(editorAction.label) || editorAction.id,
 			});
 		}
+
 		return editorCommandPicks;
 	}
 }

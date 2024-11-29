@@ -26,9 +26,11 @@ interface NlsMetadata {
 	keys: {
 		[module: string]: string;
 	};
+
 	messages: {
 		[module: string]: string;
 	};
+
 	bundles: {
 		[bundle: string]: string[];
 	};
@@ -125,9 +127,12 @@ function main(): Promise<void> {
 								for (const module of modules) {
 									json.messages[module] =
 										parsedJson[module].messages;
+
 									json.keys[module] = parsedJson[module].keys;
+
 									json.bundles.main.push(module);
 								}
+
 								parsedJson = json;
 
 								break;
@@ -157,6 +162,7 @@ function main(): Promise<void> {
 		const nlsMessagesJs = vfs.src("out-build/nls.messages.js", {
 			base: "out-build",
 		});
+
 		es.merge(combinedMetadataJson, nlsMessagesJs)
 			.pipe(gzip({ append: false }))
 			.pipe(vfs.dest("./nlsMetadata"))
@@ -167,6 +173,7 @@ function main(): Promise<void> {
 					console.log(
 						`##vso[artifact.upload containerfolder=nlsmetadata;artifactname=${data.basename}]${data.path}`,
 					);
+
 					this.emit("data", data);
 				}),
 			)
@@ -188,5 +195,6 @@ function main(): Promise<void> {
 }
 main().catch((err) => {
 	console.error(err);
+
 	process.exit(1);
 });

@@ -22,6 +22,7 @@ class DisplayChangeRemeasureFonts
 		nativeHostService: INativeHostService,
 	) {
 		super();
+
 		this._register(
 			nativeHostService.onDidChangeDisplay(() => {
 				FontMeasurements.clearAllFontInfos();

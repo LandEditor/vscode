@@ -27,6 +27,7 @@ export const makeRawSocketHeaders = (
 	for (let i = 0; i < 16; i++) {
 		buffer[i] = Math.round(Math.random() * 256);
 	}
+
 	const nonce = encodeBase64(VSBuffer.wrap(buffer));
 
 	const headers = [
@@ -43,7 +44,9 @@ export const socketRawEndHeaderSequence = VSBuffer.fromString("\r\n\r\n");
 
 export interface RemoteSocketHalf {
 	onData: Emitter<VSBuffer>;
+
 	onClose: Emitter<SocketCloseEvent>;
+
 	onEnd: Emitter<void>;
 }
 /** Should be called immediately after making a ManagedSocket to make it ready for data flow. */
@@ -63,6 +66,7 @@ export async function connectManagedSocket<T extends ManagedSocket>(
 	try {
 		return await new Promise<T>((resolve, reject) => {
 			let dataSoFar: VSBuffer | undefined;
+
 			d.add(
 				socket.onData((d_1) => {
 					if (!dataSoFar) {
@@ -73,11 +77,13 @@ export async function connectManagedSocket<T extends ManagedSocket>(
 							dataSoFar.byteLength + d_1.byteLength,
 						);
 					}
+
 					const index = dataSoFar.indexOf(socketRawEndHeaderSequence);
 
 					if (index === -1) {
 						return;
 					}
+
 					resolve(socket);
 					// pause data events until the socket consumer is hooked up. We may
 					// immediately emit remaining data, but if not there may still be
@@ -93,11 +99,13 @@ export async function connectManagedSocket<T extends ManagedSocket>(
 					}
 				}),
 			);
+
 			d.add(
 				socket.onClose((err) =>
 					reject(err ?? new Error("socket closed")),
 				),
 			);
+
 			d.add(socket.onEnd(() => reject(new Error("socket ended"))));
 		});
 	} catch (e) {
@@ -112,27 +120,39 @@ export abstract class ManagedSocket extends Disposable implements ISocket {
 	private readonly pausableDataEmitter = this._register(
 		new PauseableEmitter<VSBuffer>(),
 	);
+
 	public onData: Event<VSBuffer> = (...args) => {
 		if (this.pausableDataEmitter.isPaused) {
 			queueMicrotask(() => this.pausableDataEmitter.resume());
 		}
+
 		return this.pausableDataEmitter.event(...args);
 	};
+
 	public onClose: Event<SocketCloseEvent>;
+
 	public onEnd: Event<void>;
+
 	private readonly didDisposeEmitter = this._register(new Emitter<void>());
+
 	public onDidDispose = this.didDisposeEmitter.event;
+
 	private ended = false;
+
 	protected constructor(
 		private readonly debugLabel: string,
 		half: RemoteSocketHalf,
 	) {
 		super();
+
 		this._register(half.onData);
+
 		this._register(
 			half.onData.event((data) => this.pausableDataEmitter.fire(data)),
 		);
+
 		this.onClose = this._register(half.onClose).event;
+
 		this.onEnd = this._register(half.onEnd).event;
 	}
 	/** Pauses data events until a new listener comes in onData() */
@@ -146,17 +166,23 @@ export abstract class ManagedSocket extends Disposable implements ISocket {
 	/** Ends the remote socket. */
 	public end(): void {
 		this.ended = true;
+
 		this.closeRemote();
 	}
+
 	public abstract write(buffer: VSBuffer): void;
+
 	protected abstract closeRemote(): void;
+
 	traceSocketEvent(type: SocketDiagnosticsEventType, data?: any): void {
 		SocketDiagnostics.traceSocketEvent(this, this.debugLabel, type, data);
 	}
+
 	override dispose(): void {
 		if (!this.ended) {
 			this.closeRemote();
 		}
+
 		this.didDisposeEmitter.fire();
 
 		super.dispose();

@@ -11,7 +11,9 @@ import * as nls from "../../../../nls.js";
 
 export class ToggleReactionsAction extends Action {
 	static readonly ID = "toolbar.toggle.pickReactions";
+
 	private _menuActions: IAction[] = [];
+
 	private toggleDropdownMenu: () => void;
 
 	constructor(toggleDropdownMenu: () => void, title?: string) {
@@ -21,16 +23,20 @@ export class ToggleReactionsAction extends Action {
 			"toggle-reactions",
 			true,
 		);
+
 		this.toggleDropdownMenu = toggleDropdownMenu;
 	}
+
 	override run(): Promise<any> {
 		this.toggleDropdownMenu();
 
 		return Promise.resolve(true);
 	}
+
 	get menuActions() {
 		return this._menuActions;
 	}
+
 	set menuActions(actions: IAction[]) {
 		this._menuActions = actions;
 	}
@@ -39,20 +45,24 @@ export class ReactionActionViewItem extends ActionViewItem {
 	constructor(action: ReactionAction) {
 		super(null, action, {});
 	}
+
 	protected override updateLabel(): void {
 		if (!this.label) {
 			return;
 		}
+
 		const action = this.action as ReactionAction;
 
 		if (action.class) {
 			this.label.classList.add(action.class);
 		}
+
 		if (!action.icon) {
 			const reactionLabel = dom.append(
 				this.label,
 				dom.$("span.reaction-label"),
 			);
+
 			reactionLabel.innerText = action.label;
 		} else {
 			const reactionIcon = dom.append(
@@ -61,16 +71,20 @@ export class ReactionActionViewItem extends ActionViewItem {
 			);
 
 			const uri = URI.revive(action.icon);
+
 			reactionIcon.style.backgroundImage = cssJs.asCSSUrl(uri);
 		}
+
 		if (action.count) {
 			const reactionCount = dom.append(
 				this.label,
 				dom.$("span.reaction-count"),
 			);
+
 			reactionCount.innerText = `${action.count}`;
 		}
 	}
+
 	protected override getTooltip(): string | undefined {
 		const action = this.action as ReactionAction;
 
@@ -164,6 +178,7 @@ export class ReactionActionViewItem extends ActionViewItem {
 				);
 			}
 		}
+
 		return undefined;
 	}
 }

@@ -30,6 +30,7 @@ export const IWorkspaceIdentityService =
 
 export interface IWorkspaceIdentityService {
 	_serviceBrand: undefined;
+
 	matches(
 		folders: IWorkspaceStateFolder[],
 		cancellationToken: CancellationToken,
@@ -48,6 +49,7 @@ export class WorkspaceIdentityService implements IWorkspaceIdentityService {
 		@IEditSessionIdentityService
 		private readonly editSessionIdentityService: IEditSessionIdentityService,
 	) {}
+
 	async getWorkspaceStateFolders(
 		cancellationToken: CancellationToken,
 	): Promise<IWorkspaceStateFolder[]> {
@@ -64,13 +66,16 @@ export class WorkspaceIdentityService implements IWorkspaceIdentityService {
 			if (!workspaceFolderIdentity) {
 				continue;
 			}
+
 			workspaceStateFolders.push({
 				resourceUri: workspaceFolder.uri.toString(),
 				workspaceFolderIdentity,
 			});
 		}
+
 		return workspaceStateFolders;
 	}
+
 	async matches(
 		incomingWorkspaceFolders: IWorkspaceStateFolder[],
 		cancellationToken: CancellationToken,
@@ -105,6 +110,7 @@ export class WorkspaceIdentityService implements IWorkspaceIdentityService {
 			if (!workspaceFolderIdentity) {
 				continue;
 			}
+
 			currentWorkspaceFoldersToIdentities.set(
 				workspaceFolder,
 				workspaceFolderIdentity,
@@ -144,16 +150,20 @@ export class WorkspaceIdentityService implements IWorkspaceIdentityService {
 				) {
 					incomingToCurrentWorkspaceFolderUris[incomingFolder] =
 						currentWorkspaceFolder.uri.toString();
+
 					hasCompleteMatch = true;
 
 					break;
 				}
 			}
+
 			if (hasCompleteMatch) {
 				continue;
 			}
+
 			return false;
 		}
+
 		const convertUri = (uriToConvert: URI) => {
 			// Figure out which current folder the incoming URI is a child of
 			for (const incomingFolderUriKey of Object.keys(
@@ -189,12 +199,15 @@ export class WorkspaceIdentityService implements IWorkspaceIdentityService {
 			if (!obj || depth > 200) {
 				return obj;
 			}
+
 			if (obj instanceof VSBuffer || obj instanceof Uint8Array) {
 				return <any>obj;
 			}
+
 			if (URI.isUri(obj)) {
 				return convertUri(obj);
 			}
+
 			if (Array.isArray(obj)) {
 				for (let i = 0; i < obj.length; ++i) {
 					obj[i] = uriReplacer(obj[i], depth + 1);
@@ -207,6 +220,7 @@ export class WorkspaceIdentityService implements IWorkspaceIdentityService {
 					}
 				}
 			}
+
 			return obj;
 		};
 

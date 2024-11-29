@@ -25,16 +25,20 @@ import { JSONLanguageStatus, JSONSchemaSettings } from "./jsonClient";
 
 type ShowSchemasInput = {
 	schemas: string[];
+
 	uri: string;
 };
 interface ShowSchemasItem extends QuickPickItem {
 	uri?: Uri;
+
 	buttonCommands?: (() => void)[];
 }
 function getExtensionSchemaAssociations() {
 	const associations: {
 		fullUri: string;
+
 		extension: Extension<any>;
+
 		label: string;
 	}[] = [];
 
@@ -53,6 +57,7 @@ function getExtensionSchemaAssociations() {
 							uri,
 						).toString(false);
 					}
+
 					associations.push({
 						fullUri: uri,
 						extension,
@@ -62,6 +67,7 @@ function getExtensionSchemaAssociations() {
 			}
 		}
 	}
+
 	return {
 		findExtension(uri: string): ShowSchemasItem | undefined {
 			for (const association of associations) {
@@ -89,6 +95,7 @@ function getExtensionSchemaAssociations() {
 					};
 				}
 			}
+
 			return undefined;
 		},
 	};
@@ -105,7 +112,9 @@ function getSettingsSchemaAssociations(uri: string) {
 
 	const associations: {
 		fullUri: string;
+
 		workspaceFolder: WorkspaceFolder | undefined;
+
 		label: string;
 	}[] = [];
 
@@ -123,10 +132,12 @@ function getSettingsSchemaAssociations(uri: string) {
 						false,
 					);
 				}
+
 				associations.push({ fullUri, workspaceFolder, label: uri });
 			}
 		}
 	}
+
 	const userSettingSchemas = settings?.globalValue;
 
 	if (Array.isArray(userSettingSchemas)) {
@@ -141,6 +152,7 @@ function getSettingsSchemaAssociations(uri: string) {
 						false,
 					);
 				}
+
 				associations.push({
 					fullUri,
 					workspaceFolder: undefined,
@@ -149,6 +161,7 @@ function getSettingsSchemaAssociations(uri: string) {
 			}
 		}
 	}
+
 	return {
 		findSetting(uri: string): ShowSchemasItem | undefined {
 			for (const association of associations) {
@@ -177,6 +190,7 @@ function getSettingsSchemaAssociations(uri: string) {
 					};
 				}
 			}
+
 			return undefined;
 		},
 	};
@@ -201,6 +215,7 @@ function showSchemaList(input: ShowSchemasInput) {
 
 			continue;
 		}
+
 		const settingsEntry = settingsSchemaAssocations.findSetting(schemaUri);
 
 		if (settingsEntry) {
@@ -208,8 +223,10 @@ function showSchemaList(input: ShowSchemasInput) {
 
 			continue;
 		}
+
 		otherEntries.push({ label: schemaUri, uri: Uri.parse(schemaUri) });
 	}
+
 	const items: ShowSchemasItem[] = [
 		...extensionEntries,
 		...settingsEntries,
@@ -234,7 +251,9 @@ function showSchemaList(input: ShowSchemasInput) {
 			],
 		});
 	}
+
 	items.push({ label: "", kind: QuickPickItemKind.Separator });
+
 	items.push({
 		label: l10n.t("Learn more about JSON schema configuration..."),
 		uri: Uri.parse(
@@ -243,19 +262,25 @@ function showSchemaList(input: ShowSchemasInput) {
 	});
 
 	const quickPick = window.createQuickPick<ShowSchemasItem>();
+
 	quickPick.placeholder = items.length
 		? l10n.t("Select the schema to use for {0}", input.uri)
 		: undefined;
+
 	quickPick.items = items;
+
 	quickPick.show();
+
 	quickPick.onDidAccept(() => {
 		const uri = quickPick.selectedItems[0].uri;
 
 		if (uri) {
 			commands.executeCommand("vscode.open", uri);
+
 			quickPick.dispose();
 		}
 	});
+
 	quickPick.onDidTriggerItemButton((b) => {
 		const index = b.item.buttons?.indexOf(b.button);
 
@@ -277,7 +302,9 @@ export function createLanguageStatusItem(
 		"json.projectStatus",
 		documentSelector,
 	);
+
 	statusItem.name = l10n.t("JSON Validation Status");
+
 	statusItem.severity = LanguageStatusSeverity.Information;
 
 	const showSchemasCommand = commands.registerCommand(
@@ -295,25 +322,32 @@ export function createLanguageStatusItem(
 		if (document) {
 			try {
 				statusItem.text = "$(loading~spin)";
+
 				statusItem.detail = l10n.t("Loading JSON info");
+
 				statusItem.command = undefined;
 
 				const schemas = (await statusRequest(document.uri.toString()))
 					.schemas;
+
 				statusItem.detail = undefined;
 
 				if (schemas.length === 0) {
 					statusItem.text = l10n.t("No Schema Validation");
+
 					statusItem.detail = l10n.t("no JSON schema configured");
 				} else if (schemas.length === 1) {
 					statusItem.text = l10n.t("Schema Validated");
+
 					statusItem.detail = l10n.t("JSON schema configured");
 				} else {
 					statusItem.text = l10n.t("Schema Validated");
+
 					statusItem.detail = l10n.t(
 						"multiple JSON schemas configured",
 					);
 				}
+
 				statusItem.command = {
 					command: "_json.showAssociatedSchemaList",
 					title: l10n.t("Show Schemas"),
@@ -329,17 +363,22 @@ export function createLanguageStatusItem(
 					"Unable to compute used schemas: {0}",
 					e.message,
 				);
+
 				statusItem.detail = undefined;
+
 				statusItem.command = undefined;
 			}
 		} else {
 			statusItem.text = l10n.t(
 				"Unable to compute used schemas: No document",
 			);
+
 			statusItem.detail = undefined;
+
 			statusItem.command = undefined;
 		}
 	}
+
 	updateLanguageStatus();
 
 	return Disposable.from(
@@ -354,9 +393,11 @@ export function createLimitStatusItem(newItem: (limit: number) => Disposable) {
 	const activeLimits: Map<TextDocument, number> = new Map();
 
 	const toDispose: Disposable[] = [];
+
 	toDispose.push(
 		window.onDidChangeActiveTextEditor((textEditor) => {
 			statusItem?.dispose();
+
 			statusItem = undefined;
 
 			const doc = textEditor?.document;
@@ -370,6 +411,7 @@ export function createLimitStatusItem(newItem: (limit: number) => Disposable) {
 			}
 		}),
 	);
+
 	toDispose.push(
 		workspace.onDidCloseTextDocument((document) => {
 			activeLimits.delete(document);
@@ -382,6 +424,7 @@ export function createLimitStatusItem(newItem: (limit: number) => Disposable) {
 
 			if (statusItem && document === window.activeTextEditor?.document) {
 				statusItem.dispose();
+
 				statusItem = undefined;
 			}
 		} else {
@@ -393,18 +436,24 @@ export function createLimitStatusItem(newItem: (limit: number) => Disposable) {
 					limitApplied !== activeLimits.get(document)
 				) {
 					statusItem?.dispose();
+
 					statusItem = newItem(limitApplied);
 				}
 			}
 		}
 	}
+
 	return {
 		update,
 		dispose() {
 			statusItem?.dispose();
+
 			toDispose.forEach((d) => d.dispose());
+
 			toDispose.length = 0;
+
 			statusItem = undefined;
+
 			activeLimits.clear();
 		},
 	};
@@ -423,13 +472,18 @@ export function createDocumentSymbolsLimitItem(
 		"json.documentSymbolsStatus",
 		documentSelector,
 	);
+
 	statusItem.name = l10n.t("JSON Outline Status");
+
 	statusItem.severity = LanguageStatusSeverity.Warning;
+
 	statusItem.text = l10n.t("Outline");
+
 	statusItem.detail = l10n.t(
 		"only {0} document symbols shown for performance reasons",
 		limit,
 	);
+
 	statusItem.command = {
 		command: openSettingsCommand,
 		arguments: [settingId],

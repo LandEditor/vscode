@@ -58,7 +58,9 @@ const getComputedState = <T extends object>(
 
 		for (const child of accessor.getChildren(node)) {
 			const childComputed = getComputedState(accessor, child);
+
 			childrenCount++;
+
 			stateMap[childComputed]++;
 			// If all children are skipped, make the current state skipped too if unset (#131537)
 			computed =
@@ -67,11 +69,14 @@ const getComputedState = <T extends object>(
 					? TestResultState.Skipped
 					: maxPriority(computed, childComputed);
 		}
+
 		if (childrenCount > LARGE_NODE_THRESHOLD) {
 			largeNodeChildrenStates.set(node, stateMap);
 		}
+
 		accessor.setComputedState(node, computed);
 	}
+
 	return computed;
 };
 
@@ -98,8 +103,10 @@ const getComputedDuration = <T>(
 				}
 			}
 		}
+
 		accessor.setComputedDuration(node, computed);
 	}
+
 	return computed;
 };
 
@@ -137,6 +144,7 @@ export const refreshComputedState = <T extends object>(
 
 	if (newPriority !== oldPriority) {
 		accessor.setComputedState(node, newState);
+
 		toUpdate.add(node);
 
 		let moveFromState = oldState;
@@ -148,8 +156,10 @@ export const refreshComputedState = <T extends object>(
 
 			if (lnm) {
 				lnm[moveFromState]--;
+
 				lnm[moveToState]++;
 			}
+
 			const prev = accessor.getCurrentComputedState(parent);
 
 			if (newPriority > oldPriority) {
@@ -157,27 +167,35 @@ export const refreshComputedState = <T extends object>(
 				if (prev !== undefined && statePriority[prev] >= newPriority) {
 					break;
 				}
+
 				if (lnm && lnm[moveToState] > 1) {
 					break;
 				}
 				// moveToState remains the same, the new higher priority node state
 				accessor.setComputedState(parent, newState);
+
 				toUpdate.add(parent);
 			} /* newProirity < oldPriority */ else {
 				// Update all parts whose statese might have been based on this one
 				if (prev === undefined || statePriority[prev] > oldPriority) {
 					break;
 				}
+
 				if (lnm && lnm[moveFromState] > 0) {
 					break;
 				}
+
 				moveToState = getComputedState(accessor, parent, true);
+
 				accessor.setComputedState(parent, moveToState);
+
 				toUpdate.add(parent);
 			}
+
 			moveFromState = prev;
 		}
 	}
+
 	if (isDurationAccessor(accessor) && refreshDuration) {
 		for (const parent of Iterable.concat(
 			Iterable.single(node),
@@ -190,9 +208,12 @@ export const refreshComputedState = <T extends object>(
 			if (oldDuration === newDuration) {
 				break;
 			}
+
 			accessor.setComputedDuration(parent, newDuration);
+
 			toUpdate.add(parent);
 		}
 	}
+
 	return toUpdate;
 };

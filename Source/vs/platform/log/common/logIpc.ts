@@ -35,6 +35,7 @@ export class LoggerChannelClient
 		private readonly channel: IChannel,
 	) {
 		super(logLevel, logsHome, loggers);
+
 		this._register(
 			channel.listen<LogLevel | [URI, LogLevel]>(
 				"onDidChangeLogLevel",
@@ -47,6 +48,7 @@ export class LoggerChannelClient
 				}
 			}),
 		);
+
 		this._register(
 			channel.listen<[URI, boolean]>(
 				"onDidChangeVisibility",
@@ -55,6 +57,7 @@ export class LoggerChannelClient
 				super.setVisibility(URI.revive(resource), visibility),
 			),
 		);
+
 		this._register(
 			channel.listen<DidChangeLoggersEvent>(
 				"onDidChangeLoggers",
@@ -66,12 +69,14 @@ export class LoggerChannelClient
 						resource: URI.revive(loggerResource.resource),
 					});
 				}
+
 				for (const loggerResource of removed) {
 					super.deregisterLogger(loggerResource.resource);
 				}
 			}),
 		);
 	}
+
 	createConsoleMainLogger(): ILogger {
 		return new AdapterLogger({
 			log: (level: LogLevel, args: any[]) => {
@@ -79,30 +84,41 @@ export class LoggerChannelClient
 			},
 		});
 	}
+
 	override registerLogger(logger: ILoggerResource): void {
 		super.registerLogger(logger);
+
 		this.channel.call("registerLogger", [logger, this.windowId]);
 	}
+
 	override deregisterLogger(resource: URI): void {
 		super.deregisterLogger(resource);
+
 		this.channel.call("deregisterLogger", [resource, this.windowId]);
 	}
+
 	override setLogLevel(logLevel: LogLevel): void;
+
 	override setLogLevel(resource: URI, logLevel: LogLevel): void;
+
 	override setLogLevel(arg1: any, arg2?: any): void {
 		super.setLogLevel(arg1, arg2);
+
 		this.channel.call("setLogLevel", [arg1, arg2]);
 	}
+
 	override setVisibility(
 		resourceOrId: URI | string,
 		visibility: boolean,
 	): void {
 		super.setVisibility(resourceOrId, visibility);
+
 		this.channel.call("setVisibility", [
 			this.toResource(resourceOrId),
 			visibility,
 		]);
 	}
+
 	protected doCreateLogger(
 		file: URI,
 		logLevel: LogLevel,
@@ -110,15 +126,18 @@ export class LoggerChannelClient
 	): ILogger {
 		return new Logger(this.channel, file, logLevel, options, this.windowId);
 	}
+
 	public static setLogLevel(
 		channel: IChannel,
 		level: LogLevel,
 	): Promise<void>;
+
 	public static setLogLevel(
 		channel: IChannel,
 		resource: URI,
 		level: LogLevel,
 	): Promise<void>;
+
 	public static setLogLevel(
 		channel: IChannel,
 		arg1: any,
@@ -129,6 +148,7 @@ export class LoggerChannelClient
 }
 class Logger extends AbstractMessageLogger {
 	private isLoggerCreated: boolean = false;
+
 	private buffer: [LogLevel, string][] = [];
 
 	constructor(
@@ -139,14 +159,18 @@ class Logger extends AbstractMessageLogger {
 		windowId?: number | undefined,
 	) {
 		super(loggerOptions?.logLevel === "always");
+
 		this.setLevel(logLevel);
+
 		this.channel
 			.call("createLogger", [file, loggerOptions, windowId])
 			.then(() => {
 				this.doLog(this.buffer);
+
 				this.isLoggerCreated = true;
 			});
 	}
+
 	protected log(level: LogLevel, message: string) {
 		const messages: [LogLevel, string][] = [[level, message]];
 
@@ -156,6 +180,7 @@ class Logger extends AbstractMessageLogger {
 			this.buffer.push(...messages);
 		}
 	}
+
 	private doLog(messages: [LogLevel, string][]) {
 		this.channel.call("log", [this.file, messages]);
 	}
@@ -165,6 +190,7 @@ export class LoggerChannel implements IServerChannel {
 		private readonly loggerService: ILoggerService,
 		private getUriTransformer: (requestContext: any) => IURITransformer,
 	) {}
+
 	listen(context: any, event: string): Event<any> {
 		const uriTransformer = this.getUriTransformer(context);
 
@@ -198,8 +224,10 @@ export class LoggerChannel implements IServerChannel {
 						: [uriTransformer.transformOutgoingURI(e[0]), e[1]],
 				);
 		}
+
 		throw new Error(`Event not found: ${event}`);
 	}
+
 	async call(context: any, command: string, arg?: any): Promise<any> {
 		const uriTransformer: IURITransformer | null =
 			this.getUriTransformer(context);
@@ -223,8 +251,10 @@ export class LoggerChannel implements IServerChannel {
 					),
 				);
 		}
+
 		throw new Error(`Call not found: ${command}`);
 	}
+
 	private transformLogger(
 		logger: ILoggerResource,
 		transformer: IURITransformer,
@@ -238,12 +268,15 @@ export class LoggerChannel implements IServerChannel {
 export class RemoteLoggerChannelClient extends Disposable {
 	constructor(loggerService: ILoggerService, channel: IChannel) {
 		super();
+
 		channel.call("setLogLevel", [loggerService.getLogLevel()]);
+
 		this._register(
 			loggerService.onDidChangeLogLevel((arg) =>
 				channel.call("setLogLevel", [arg]),
 			),
 		);
+
 		channel
 			.call<ILoggerResource[]>("getRegisteredLoggers")
 			.then((loggers) => {
@@ -254,6 +287,7 @@ export class RemoteLoggerChannelClient extends Disposable {
 					});
 				}
 			});
+
 		this._register(
 			channel.listen<[URI, boolean]>("onDidChangeVisibility")(
 				([resource, visibility]) =>
@@ -263,6 +297,7 @@ export class RemoteLoggerChannelClient extends Disposable {
 					),
 			),
 		);
+
 		this._register(
 			channel.listen<DidChangeLoggersEvent>("onDidChangeLoggers")(
 				({ added, removed }) => {
@@ -272,6 +307,7 @@ export class RemoteLoggerChannelClient extends Disposable {
 							resource: URI.revive(loggerResource.resource),
 						});
 					}
+
 					for (const loggerResource of removed) {
 						loggerService.deregisterLogger(loggerResource.resource);
 					}

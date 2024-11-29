@@ -73,46 +73,59 @@ export class ExceptionWidget extends ZoneWidget {
 			frameWidth: 1,
 			className: "exception-widget-container",
 		});
+
 		this.applyTheme(themeService.getColorTheme());
+
 		this._disposables.add(
 			themeService.onDidColorThemeChange(this.applyTheme.bind(this)),
 		);
+
 		this.create();
 
 		const onDidLayoutChangeScheduler = new RunOnceScheduler(
 			() => this._doLayout(undefined, undefined),
 			50,
 		);
+
 		this._disposables.add(
 			this.editor.onDidLayoutChange(() =>
 				onDidLayoutChangeScheduler.schedule(),
 			),
 		);
+
 		this._disposables.add(onDidLayoutChangeScheduler);
 	}
+
 	private applyTheme(theme: IColorTheme): void {
 		this.backgroundColor = theme.getColor(debugExceptionWidgetBackground);
 
 		const frameColor = theme.getColor(debugExceptionWidgetBorder);
+
 		this.style({
 			arrowColor: frameColor,
 			frameColor: frameColor,
 		}); // style() will trigger _applyStyles
 	}
+
 	protected override _applyStyles(): void {
 		if (this.container) {
 			this.container.style.backgroundColor = this.backgroundColor
 				? this.backgroundColor.toString()
 				: "";
 		}
+
 		super._applyStyles();
 	}
+
 	protected _fillContainer(container: HTMLElement): void {
 		this.setCssClass("exception-widget");
 		// Set the font size and line height to the one from the editor configuration.
 		const fontInfo = this.editor.getOption(EditorOption.fontInfo);
+
 		container.style.fontSize = `${fontInfo.fontSize}px`;
+
 		container.style.lineHeight = `${fontInfo.lineHeight}px`;
+
 		container.tabIndex = 0;
 
 		const title = $(".title");
@@ -124,6 +137,7 @@ export class ExceptionWidget extends ZoneWidget {
 		const actions = $(".actions");
 
 		dom.append(title, actions);
+
 		label.textContent = this.exceptionInfo.id
 			? nls.localize(
 					"exceptionThrownWithId",
@@ -135,6 +149,7 @@ export class ExceptionWidget extends ZoneWidget {
 		let ariaLabel = label.textContent;
 
 		const actionBar = new ActionBar(actions);
+
 		actionBar.push(
 			new Action(
 				"editor.closeExceptionWidget",
@@ -146,6 +161,7 @@ export class ExceptionWidget extends ZoneWidget {
 						this.editor.getContribution<IDebugEditorContribution>(
 							EDITOR_CONTRIBUTION_ID,
 						);
+
 					contribution?.closeExceptionWidget();
 				},
 			),
@@ -156,11 +172,14 @@ export class ExceptionWidget extends ZoneWidget {
 
 		if (this.exceptionInfo.description) {
 			const description = $(".description");
+
 			description.textContent = this.exceptionInfo.description;
+
 			ariaLabel += ", " + this.exceptionInfo.description;
 
 			dom.append(container, description);
 		}
+
 		if (
 			this.exceptionInfo.details &&
 			this.exceptionInfo.details.stackTrace
@@ -177,13 +196,17 @@ export class ExceptionWidget extends ZoneWidget {
 				undefined,
 				{ type: DebugLinkHoverBehavior.Rich, store: this._disposables },
 			);
+
 			stackTrace.appendChild(linkedStackTrace);
 
 			dom.append(container, stackTrace);
+
 			ariaLabel += ", " + this.exceptionInfo.details.stackTrace;
 		}
+
 		container.setAttribute("aria-label", ariaLabel);
 	}
+
 	protected override _doLayout(
 		_heightInPixel: number | undefined,
 		_widthInPixel: number | undefined,
@@ -198,16 +221,20 @@ export class ExceptionWidget extends ZoneWidget {
 		const computedLinesNumber = Math.ceil(
 			(this.container!.offsetHeight + arrowHeight) / lineHeight,
 		);
+
 		this._relayout(computedLinesNumber);
 	}
+
 	focus(): void {
 		// Focus into the container for accessibility purposes so the exception and stack trace gets read
 		this.container?.focus();
 	}
+
 	override hasFocus(): boolean {
 		if (!this.container) {
 			return false;
 		}
+
 		return dom.isAncestorOfActiveElement(this.container);
 	}
 }

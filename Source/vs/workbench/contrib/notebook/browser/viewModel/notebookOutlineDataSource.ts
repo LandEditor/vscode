@@ -26,16 +26,22 @@ import { OutlineEntry } from "./OutlineEntry.js";
 
 export interface INotebookCellOutlineDataSource {
 	readonly activeElement: OutlineEntry | undefined;
+
 	readonly entries: OutlineEntry[];
 }
 export class NotebookCellOutlineDataSource
 	implements INotebookCellOutlineDataSource
 {
 	private readonly _disposables = new DisposableStore();
+
 	private readonly _onDidChange = new Emitter<OutlineChangeEvent>();
+
 	readonly onDidChange: Event<OutlineChangeEvent> = this._onDidChange.event;
+
 	private _uri: URI | undefined;
+
 	private _entries: OutlineEntry[] = [];
+
 	private _activeEntry?: OutlineEntry;
 
 	constructor(
@@ -49,18 +55,23 @@ export class NotebookCellOutlineDataSource
 	) {
 		this.recomputeState();
 	}
+
 	get activeElement(): OutlineEntry | undefined {
 		return this._activeEntry;
 	}
+
 	get entries(): OutlineEntry[] {
 		return this._entries;
 	}
+
 	get isEmpty(): boolean {
 		return this._entries.length === 0;
 	}
+
 	get uri() {
 		return this._uri;
 	}
+
 	public async computeFullSymbols(cancelToken: CancellationToken) {
 		const notebookEditorWidget = this._editor;
 
@@ -77,18 +88,24 @@ export class NotebookCellOutlineDataSource
 					this._outlineEntryFactory.cacheSymbols(cell, cancelToken),
 				);
 			}
+
 			await Promise.allSettled(promises);
 		}
+
 		this.recomputeState();
 	}
+
 	public recomputeState(): void {
 		this._disposables.clear();
+
 		this._activeEntry = undefined;
+
 		this._uri = undefined;
 
 		if (!this._editor.hasModel()) {
 			return;
 		}
+
 		this._uri = this._editor.textModel.uri;
 
 		const notebookEditorWidget: IActiveNotebookEditor = this._editor;
@@ -96,6 +113,7 @@ export class NotebookCellOutlineDataSource
 		if (notebookEditorWidget.getLength() === 0) {
 			return;
 		}
+
 		const notebookCells = notebookEditorWidget.getViewModel().viewCells;
 
 		const entries: OutlineEntry[] = [];
@@ -123,6 +141,7 @@ export class NotebookCellOutlineDataSource
 					if (len === 0) {
 						// root node
 						result.push(entry);
+
 						parentStack.push(entry);
 
 						break;
@@ -131,6 +150,7 @@ export class NotebookCellOutlineDataSource
 
 						if (parentCandidate.level < entry.level) {
 							parentCandidate.addChild(entry);
+
 							parentStack.push(entry);
 
 							break;
@@ -140,16 +160,19 @@ export class NotebookCellOutlineDataSource
 					}
 				}
 			}
+
 			this._entries = result;
 		}
 		// feature: show markers with each cell
 		const markerServiceListener = new MutableDisposable();
+
 		this._disposables.add(markerServiceListener);
 
 		const updateMarkerUpdater = () => {
 			if (notebookEditorWidget.isDisposed) {
 				return;
 			}
+
 			const doUpdateMarker = (clear: boolean) => {
 				for (const entry of this._entries) {
 					if (clear) {
@@ -167,6 +190,7 @@ export class NotebookCellOutlineDataSource
 			if (problem === undefined) {
 				return;
 			}
+
 			const config = this._configurationService.getValue(
 				OutlineConfigKeys.problemsEnabled,
 			);
@@ -179,6 +203,7 @@ export class NotebookCellOutlineDataSource
 
 							return;
 						}
+
 						if (
 							e.some((uri) =>
 								notebookEditorWidget
@@ -187,6 +212,7 @@ export class NotebookCellOutlineDataSource
 							)
 						) {
 							doUpdateMarker(false);
+
 							this._onDidChange.fire({});
 						}
 					});
@@ -198,7 +224,9 @@ export class NotebookCellOutlineDataSource
 				doUpdateMarker(true);
 			}
 		};
+
 		updateMarkerUpdater();
+
 		this._disposables.add(
 			this._configurationService.onDidChangeConfiguration((e) => {
 				if (
@@ -206,6 +234,7 @@ export class NotebookCellOutlineDataSource
 					e.affectsConfiguration(OutlineConfigKeys.problemsEnabled)
 				) {
 					updateMarkerUpdater();
+
 					this._onDidChange.fire({});
 				}
 			}),
@@ -217,6 +246,7 @@ export class NotebookCellOutlineDataSource
 			this._onDidChange.fire({});
 		}
 	}
+
 	public recomputeActive(): {
 		changeEventTriggered: boolean;
 	} {
@@ -245,17 +275,23 @@ export class NotebookCellOutlineDataSource
 				}
 			}
 		}
+
 		if (newActive !== this._activeEntry) {
 			this._activeEntry = newActive;
+
 			this._onDidChange.fire({ affectOnlyActiveElement: true });
 
 			return { changeEventTriggered: true };
 		}
+
 		return { changeEventTriggered: false };
 	}
+
 	dispose(): void {
 		this._entries.length = 0;
+
 		this._activeEntry = undefined;
+
 		this._disposables.dispose();
 	}
 }

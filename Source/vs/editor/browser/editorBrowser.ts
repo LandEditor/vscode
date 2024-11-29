@@ -462,15 +462,22 @@ export interface IMouseTargetUnknown extends IBaseMouseTarget {
 }
 export interface IMouseTargetTextarea extends IBaseMouseTarget {
 	readonly type: MouseTargetType.TEXTAREA;
+
 	readonly position: null;
+
 	readonly range: null;
 }
 export interface IMouseTargetMarginData {
 	readonly isAfterLines: boolean;
+
 	readonly glyphMarginLeft: number;
+
 	readonly glyphMarginWidth: number;
+
 	readonly glyphMarginLane?: GlyphMarginLane;
+
 	readonly lineNumbersWidth: number;
+
 	readonly offsetX: number;
 }
 export interface IMouseTargetMargin extends IBaseMouseTarget {
@@ -478,23 +485,33 @@ export interface IMouseTargetMargin extends IBaseMouseTarget {
 		| MouseTargetType.GUTTER_GLYPH_MARGIN
 		| MouseTargetType.GUTTER_LINE_NUMBERS
 		| MouseTargetType.GUTTER_LINE_DECORATIONS;
+
 	readonly position: Position;
+
 	readonly range: Range;
+
 	readonly detail: IMouseTargetMarginData;
 }
 export interface IMouseTargetViewZoneData {
 	readonly viewZoneId: string;
+
 	readonly positionBefore: Position | null;
+
 	readonly positionAfter: Position | null;
+
 	readonly position: Position;
+
 	readonly afterLineNumber: number;
 }
 export interface IMouseTargetViewZone extends IBaseMouseTarget {
 	readonly type:
 		| MouseTargetType.GUTTER_VIEW_ZONE
 		| MouseTargetType.CONTENT_VIEW_ZONE;
+
 	readonly position: Position;
+
 	readonly range: Range;
+
 	readonly detail: IMouseTargetViewZoneData;
 }
 export interface IMouseTargetContentTextData {
@@ -506,35 +523,50 @@ export interface IMouseTargetContentTextData {
 }
 export interface IMouseTargetContentText extends IBaseMouseTarget {
 	readonly type: MouseTargetType.CONTENT_TEXT;
+
 	readonly position: Position;
+
 	readonly range: Range;
+
 	readonly detail: IMouseTargetContentTextData;
 }
 export interface IMouseTargetContentEmptyData {
 	readonly isAfterLines: boolean;
+
 	readonly horizontalDistanceToText?: number;
 }
 export interface IMouseTargetContentEmpty extends IBaseMouseTarget {
 	readonly type: MouseTargetType.CONTENT_EMPTY;
+
 	readonly position: Position;
+
 	readonly range: Range;
+
 	readonly detail: IMouseTargetContentEmptyData;
 }
 export interface IMouseTargetContentWidget extends IBaseMouseTarget {
 	readonly type: MouseTargetType.CONTENT_WIDGET;
+
 	readonly position: null;
+
 	readonly range: null;
+
 	readonly detail: string;
 }
 export interface IMouseTargetOverlayWidget extends IBaseMouseTarget {
 	readonly type: MouseTargetType.OVERLAY_WIDGET;
+
 	readonly position: null;
+
 	readonly range: null;
+
 	readonly detail: string;
 }
 export interface IMouseTargetScrollbar extends IBaseMouseTarget {
 	readonly type: MouseTargetType.SCROLLBAR;
+
 	readonly position: Position;
+
 	readonly range: Range;
 }
 export interface IMouseTargetOverviewRuler extends IBaseMouseTarget {
@@ -542,7 +574,9 @@ export interface IMouseTargetOverviewRuler extends IBaseMouseTarget {
 }
 export interface IMouseTargetOutsideEditor extends IBaseMouseTarget {
 	readonly type: MouseTargetType.OUTSIDE_EDITOR;
+
 	readonly outsidePosition: "above" | "below" | "left" | "right";
+
 	readonly outsideDistance: number;
 }
 /**
@@ -565,10 +599,12 @@ export type IMouseTarget =
  */
 export interface IEditorMouseEvent {
 	readonly event: IMouseEvent;
+
 	readonly target: IMouseTarget;
 }
 export interface IPartialEditorMouseEvent {
 	readonly event: IMouseEvent;
+
 	readonly target: IMouseTarget | null;
 }
 
@@ -577,7 +613,9 @@ export interface IPartialEditorMouseEvent {
  */
 export interface IPasteEvent {
 	readonly range: Range;
+
 	readonly languageId: string | null;
+
 	readonly clipboardEvent?: ClipboardEvent;
 }
 
@@ -586,9 +624,13 @@ export interface IPasteEvent {
  */
 export interface PastePayload {
 	text: string;
+
 	pasteOnNewLine: boolean;
+
 	multicursorText: string[] | null;
+
 	mode: string | null;
+
 	clipboardEvent?: ClipboardEvent;
 }
 
@@ -598,6 +640,7 @@ export interface PastePayload {
  */
 export interface IOverviewRuler {
 	getDomNode(): HTMLElement;
+
 	dispose(): void;
 
 	setZones(zones: OverviewRulerZone[]): void;
@@ -611,6 +654,7 @@ export interface IOverviewRuler {
  */
 export interface IEditorAriaOptions {
 	activeDescendant: string | undefined;
+
 	role?: string;
 }
 
@@ -793,6 +837,7 @@ export interface ICodeEditor extends editorCommon.IEditor {
 	 */
 	readonly onDropIntoEditor: Event<{
 		readonly position: IPosition;
+
 		readonly event: DragEvent;
 	}>;
 	/**
@@ -1332,7 +1377,9 @@ export interface IActiveCodeEditor extends ICodeEditor {
 	 */
 	getScrolledVisiblePosition(position: IPosition): {
 		top: number;
+
 		left: number;
+
 		height: number;
 	};
 }

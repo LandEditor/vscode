@@ -32,17 +32,22 @@ import {
 
 export class SyncScroll extends Disposable implements IWorkbenchContribution {
 	static readonly ID = "workbench.contrib.syncScrolling";
+
 	private readonly paneInitialScrollTop = new Map<
 		IEditorPane,
 		IEditorPaneScrollPosition | undefined
 	>();
+
 	private readonly syncScrollDispoasbles = this._register(
 		new DisposableStore(),
 	);
+
 	private readonly paneDisposables = new DisposableStore();
+
 	private readonly statusBarEntry = this._register(
 		new MutableDisposable<IStatusbarEntryAccessor>(),
 	);
+
 	private isActive: boolean = false;
 
 	constructor(
@@ -52,8 +57,10 @@ export class SyncScroll extends Disposable implements IWorkbenchContribution {
 		private readonly statusbarService: IStatusbarService,
 	) {
 		super();
+
 		this.registerActions();
 	}
+
 	private registerActiveListeners(): void {
 		this.syncScrollDispoasbles.add(
 			this.editorService.onDidVisibleEditorsChange(() =>
@@ -61,30 +68,39 @@ export class SyncScroll extends Disposable implements IWorkbenchContribution {
 			),
 		);
 	}
+
 	private activate(): void {
 		this.registerActiveListeners();
+
 		this.trackVisiblePanes();
 	}
+
 	toggle(): void {
 		if (this.isActive) {
 			this.deactivate();
 		} else {
 			this.activate();
 		}
+
 		this.isActive = !this.isActive;
+
 		this.toggleStatusbarItem(this.isActive);
 	}
 	// makes sure that the onDidEditorPaneScroll is not called multiple times for the same event
 	private _reentrancyBarrier = new ReentrancyBarrier();
+
 	private trackVisiblePanes(): void {
 		this.paneDisposables.clear();
+
 		this.paneInitialScrollTop.clear();
 
 		for (const pane of this.getAllVisiblePanes()) {
 			if (!isEditorPaneWithScrolling(pane)) {
 				continue;
 			}
+
 			this.paneInitialScrollTop.set(pane, pane.getScrollPosition());
+
 			this.paneDisposables.add(
 				pane.onDidChangeScroll(() =>
 					this._reentrancyBarrier.runExclusivelyOrSkip(() => {
@@ -94,6 +110,7 @@ export class SyncScroll extends Disposable implements IWorkbenchContribution {
 			);
 		}
 	}
+
 	private onDidEditorPaneScroll(scrolledPane: IEditorPane) {
 		const scrolledPaneInitialOffset =
 			this.paneInitialScrollTop.get(scrolledPane);
@@ -101,9 +118,11 @@ export class SyncScroll extends Disposable implements IWorkbenchContribution {
 		if (scrolledPaneInitialOffset === undefined) {
 			throw new Error("Scrolled pane not tracked");
 		}
+
 		if (!isEditorPaneWithScrolling(scrolledPane)) {
 			throw new Error("Scrolled pane does not support scrolling");
 		}
+
 		const scrolledPaneCurrentPosition = scrolledPane.getScrollPosition();
 
 		const scrolledFromInitial = {
@@ -122,14 +141,17 @@ export class SyncScroll extends Disposable implements IWorkbenchContribution {
 			if (pane === scrolledPane) {
 				continue;
 			}
+
 			if (!isEditorPaneWithScrolling(pane)) {
 				continue;
 			}
+
 			const initialOffset = this.paneInitialScrollTop.get(pane);
 
 			if (initialOffset === undefined) {
 				throw new Error("Could not find initial offset for pane");
 			}
+
 			const currentPanePosition = pane.getScrollPosition();
 
 			const newPaneScrollPosition = {
@@ -151,9 +173,11 @@ export class SyncScroll extends Disposable implements IWorkbenchContribution {
 			) {
 				continue;
 			}
+
 			pane.setScrollPosition(newPaneScrollPosition);
 		}
 	}
+
 	private getAllVisiblePanes(): IEditorPane[] {
 		const panes: IEditorPane[] = [];
 
@@ -166,18 +190,25 @@ export class SyncScroll extends Disposable implements IWorkbenchContribution {
 				if (primaryPane) {
 					panes.push(primaryPane);
 				}
+
 				if (secondaryPane) {
 					panes.push(secondaryPane);
 				}
+
 				continue;
 			}
+
 			panes.push(pane);
 		}
+
 		return panes;
 	}
+
 	private deactivate(): void {
 		this.paneDisposables.clear();
+
 		this.syncScrollDispoasbles.clear();
+
 		this.paneInitialScrollTop.clear();
 	}
 	// Actions & Commands
@@ -193,6 +224,7 @@ export class SyncScroll extends Disposable implements IWorkbenchContribution {
 					"mouseLockScrollingEnabled",
 					"Lock Scrolling Enabled",
 				);
+
 				this.statusBarEntry.value = this.statusbarService.addEntry(
 					{
 						name: text,
@@ -215,8 +247,10 @@ export class SyncScroll extends Disposable implements IWorkbenchContribution {
 			this.statusBarEntry.clear();
 		}
 	}
+
 	private registerActions() {
 		const $this = this;
+
 		this._register(
 			registerAction2(
 				class extends Action2 {
@@ -246,12 +280,14 @@ export class SyncScroll extends Disposable implements IWorkbenchContribution {
 							},
 						});
 					}
+
 					run(): void {
 						$this.toggle();
 					}
 				},
 			),
 		);
+
 		this._register(
 			registerAction2(
 				class extends Action2 {
@@ -274,6 +310,7 @@ export class SyncScroll extends Disposable implements IWorkbenchContribution {
 							category: Categories.View,
 						});
 					}
+
 					run(accessor: ServicesAccessor): void {
 						const keybindingService =
 							accessor.get(IKeybindingService);
@@ -288,6 +325,7 @@ export class SyncScroll extends Disposable implements IWorkbenchContribution {
 						if (!holdMode) {
 							return;
 						}
+
 						holdMode.finally(() => {
 							$this.toggle();
 						});
@@ -296,6 +334,7 @@ export class SyncScroll extends Disposable implements IWorkbenchContribution {
 			),
 		);
 	}
+
 	override dispose(): void {
 		this.deactivate();
 

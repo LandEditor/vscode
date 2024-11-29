@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 export const ansiColorIdentifiers: {
 	colorName: string;
+
 	colorValue: string;
 }[] = [];
 
@@ -65,6 +66,7 @@ for (const id in ansiColorMap) {
 	const entry = ansiColorMap[id];
 
 	const colorName = id.substring(13);
+
 	ansiColorIdentifiers[entry.index] = {
 		colorName,
 		colorValue: "var(--vscode-" + id.replace(".", "-") + ")",

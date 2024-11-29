@@ -34,6 +34,7 @@ export function buildReplaceStringWithCasePreserved(
 				"_",
 			);
 		}
+
 		if (matches[0].toUpperCase() === matches[0]) {
 			return pattern.toUpperCase();
 		} else if (matches[0].toLowerCase() === matches[0]) {
@@ -81,6 +82,7 @@ function buildReplaceStringForSpecificSpecialCharacter(
 	const splitMatchAtSpecialCharacter = matches[0].split(specialCharacter);
 
 	let replaceString: string = "";
+
 	splitPatternAtSpecialCharacter.forEach((splitValue, index) => {
 		replaceString +=
 			buildReplaceStringWithCasePreserved(

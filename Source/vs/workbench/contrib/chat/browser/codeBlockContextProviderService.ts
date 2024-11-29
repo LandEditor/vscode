@@ -15,6 +15,7 @@ export class ChatCodeBlockContextProviderService
 	implements IChatCodeBlockContextProviderService
 {
 	declare _serviceBrand: undefined;
+
 	private readonly _providers = new Map<
 		string,
 		ICodeBlockActionContextProvider
@@ -23,6 +24,7 @@ export class ChatCodeBlockContextProviderService
 	get providers(): ICodeBlockActionContextProvider[] {
 		return [...this._providers.values()];
 	}
+
 	registerProvider(
 		provider: ICodeBlockActionContextProvider,
 		id: string,

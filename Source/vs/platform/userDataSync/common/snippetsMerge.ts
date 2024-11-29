@@ -7,14 +7,20 @@ import { IStringDictionary } from "../../../base/common/collections.js";
 export interface IMergeResult {
 	local: {
 		added: IStringDictionary<string>;
+
 		updated: IStringDictionary<string>;
+
 		removed: string[];
 	};
+
 	remote: {
 		added: IStringDictionary<string>;
+
 		updated: IStringDictionary<string>;
+
 		removed: string[];
 	};
+
 	conflicts: string[];
 }
 export function merge(
@@ -39,6 +45,7 @@ export function merge(
 			conflicts: [],
 		};
 	}
+
 	const localToRemote = compare(local, remote);
 
 	if (
@@ -57,6 +64,7 @@ export function merge(
 			conflicts: [],
 		};
 	}
+
 	const baseToLocal = compare(base, local);
 
 	const baseToRemote = compare(base, remote);
@@ -154,6 +162,7 @@ export function merge(
 			localAdded[key] = remote[key];
 		}
 	}
+
 	return {
 		local: {
 			added: localAdded,
@@ -173,7 +182,9 @@ function compare(
 	to: IStringDictionary<string> | null,
 ): {
 	added: Set<string>;
+
 	removed: Set<string>;
+
 	updated: Set<string>;
 } {
 	const fromKeys = from ? Object.keys(from) : [];
@@ -184,6 +195,7 @@ function compare(
 		.filter((key) => !fromKeys.includes(key))
 		.reduce((r, key) => {
 			r.add(key);
+
 			return r;
 		}, new Set<string>());
 
@@ -191,6 +203,7 @@ function compare(
 		.filter((key) => !toKeys.includes(key))
 		.reduce((r, key) => {
 			r.add(key);
+
 			return r;
 		}, new Set<string>());
 
@@ -200,6 +213,7 @@ function compare(
 		if (removed.has(key)) {
 			continue;
 		}
+
 		const fromSnippet = from![key]!;
 
 		const toSnippet = to![key]!;
@@ -208,6 +222,7 @@ function compare(
 			updated.add(key);
 		}
 	}
+
 	return { added, removed, updated };
 }
 export function areSame(

@@ -25,9 +25,11 @@ export class MainProcessService implements IMainProcessService {
 		private server: IPCServer,
 		private router: StaticRouter,
 	) {}
+
 	getChannel(channelName: string): IChannel {
 		return this.server.getChannel(channelName, this.router);
 	}
+
 	registerChannel(
 		channelName: string,
 		channel: IServerChannel<string>,

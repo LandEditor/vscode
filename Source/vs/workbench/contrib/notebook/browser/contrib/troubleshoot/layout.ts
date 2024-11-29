@@ -37,38 +37,51 @@ export class TroubleshootController
 	implements INotebookEditorContribution
 {
 	static id: string = "workbench.notebook.troubleshoot";
+
 	private readonly _localStore = this._register(new DisposableStore());
+
 	private _cellStateListeners: IDisposable[] = [];
+
 	private _enabled: boolean = false;
+
 	private _cellStatusItems: string[] = [];
 
 	constructor(private readonly _notebookEditor: INotebookEditor) {
 		super();
+
 		this._register(
 			this._notebookEditor.onDidChangeModel(() => {
 				this._update();
 			}),
 		);
+
 		this._update();
 	}
+
 	toggle(): void {
 		this._enabled = !this._enabled;
+
 		this._update();
 	}
+
 	private _update() {
 		this._localStore.clear();
+
 		this._cellStateListeners.forEach((listener) => listener.dispose());
 
 		if (!this._notebookEditor.hasModel()) {
 			return;
 		}
+
 		this._updateListener();
 	}
+
 	private _log(cell: ICellViewModel, e: any) {
 		if (this._enabled) {
 			const oldHeight = (
 				this._notebookEditor as NotebookEditorWidget
 			).getViewHeight(cell);
+
 			console.log(
 				`cell#${cell.handle}`,
 				e,
@@ -76,18 +89,22 @@ export class TroubleshootController
 			);
 		}
 	}
+
 	private _updateListener() {
 		if (!this._notebookEditor.hasModel()) {
 			return;
 		}
+
 		for (let i = 0; i < this._notebookEditor.getLength(); i++) {
 			const cell = this._notebookEditor.cellAt(i);
+
 			this._cellStateListeners.push(
 				cell.onDidChangeLayout((e) => {
 					this._log(cell, e);
 				}),
 			);
 		}
+
 		this._localStore.add(
 			this._notebookEditor.onDidChangeViewCells((e) => {
 				[...e.splices].reverse().forEach((splice) => {
@@ -104,6 +121,7 @@ export class TroubleshootController
 							);
 						}),
 					);
+
 					dispose(deletedCells);
 				});
 			}),
@@ -116,11 +134,13 @@ export class TroubleshootController
 		if (this._enabled) {
 			items = this._getItemsForCells();
 		}
+
 		this._cellStatusItems = vm.deltaCellStatusBarItems(
 			this._cellStatusItems,
 			items,
 		);
 	}
+
 	private _getItemsForCells(): INotebookDeltaCellStatusBarItems[] {
 		const items: INotebookDeltaCellStatusBarItems[] = [];
 
@@ -136,8 +156,10 @@ export class TroubleshootController
 				],
 			});
 		}
+
 		return items;
 	}
+
 	override dispose() {
 		dispose(this._cellStateListeners);
 
@@ -158,6 +180,7 @@ registerAction2(
 				f1: true,
 			});
 		}
+
 		async run(accessor: ServicesAccessor): Promise<void> {
 			const editorService = accessor.get(IEditorService);
 
@@ -168,9 +191,11 @@ registerAction2(
 			if (!editor) {
 				return;
 			}
+
 			const controller = editor.getContribution<TroubleshootController>(
 				TroubleshootController.id,
 			);
+
 			controller?.toggle();
 		}
 	},
@@ -188,6 +213,7 @@ registerAction2(
 				f1: true,
 			});
 		}
+
 		async run(accessor: ServicesAccessor): Promise<void> {
 			const editorService = accessor.get(IEditorService);
 
@@ -198,8 +224,10 @@ registerAction2(
 			if (!editor || !editor.hasModel()) {
 				return;
 			}
+
 			for (let i = 0; i < editor.getLength(); i++) {
 				const cell = editor.cellAt(i);
+
 				console.log(`cell#${cell.handle}`, cell.layoutInfo);
 			}
 		}
@@ -218,8 +246,10 @@ registerAction2(
 				f1: true,
 			});
 		}
+
 		async run(accessor: ServicesAccessor): Promise<void> {
 			const notebookService = accessor.get(INotebookService);
+
 			notebookService.clearEditorCache();
 		}
 	},

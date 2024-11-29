@@ -61,6 +61,7 @@ export class ExtensionEnablementWorkspaceTrustTransitionParticipant
 												"Restarting extension host due to workspace trust change.",
 											),
 										);
+
 									await extensionEnablementService.updateExtensionsEnablementsWhenWorkspaceTrustChanges();
 
 									if (stopped) {

@@ -52,6 +52,7 @@ export interface IModelService {
 
 	readonly onModelLanguageChanged: Event<{
 		readonly model: ITextModel;
+
 		readonly oldLanguageId: string;
 	}>;
 }

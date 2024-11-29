@@ -48,11 +48,13 @@ export class TerminalWslRecommendationContribution
 		if (!isWindows) {
 			return;
 		}
+
 		const exeBasedExtensionTips = productService.exeBasedExtensionTips;
 
 		if (!exeBasedExtensionTips || !exeBasedExtensionTips.wsl) {
 			return;
 		}
+
 		let listener: IDisposable | undefined =
 			terminalService.onDidCreateInstance(async (instance) => {
 				async function isExtensionInstalled(
@@ -63,6 +65,7 @@ export class TerminalWslRecommendationContribution
 
 					return extensions.some((e) => e.identifier.id === id);
 				}
+
 				if (
 					!instance.shellLaunchConfig.executable ||
 					basename(
@@ -71,7 +74,9 @@ export class TerminalWslRecommendationContribution
 				) {
 					return;
 				}
+
 				listener?.dispose();
+
 				listener = undefined;
 
 				const extId = Object.keys(
@@ -85,6 +90,7 @@ export class TerminalWslRecommendationContribution
 				if (!extId || (await isExtensionInstalled(extId))) {
 					return;
 				}
+
 				notificationService.prompt(
 					Severity.Info,
 					localize(

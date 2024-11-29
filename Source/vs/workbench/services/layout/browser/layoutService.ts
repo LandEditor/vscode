@@ -188,6 +188,7 @@ export interface IWorkbenchLayoutService extends ILayoutService {
 	 */
 	readonly onDidChangeWindowMaximized: Event<{
 		readonly windowId: number;
+
 		readonly maximized: boolean;
 	}>;
 
@@ -246,7 +247,9 @@ export interface IWorkbenchLayoutService extends ILayoutService {
 	 * Focuses the part in the target window. If the part is not visible this is a noop.
 	 */
 	focusPart(part: SINGLE_WINDOW_PARTS): void;
+
 	focusPart(part: MULTI_WINDOW_PARTS, targetWindow: Window): void;
+
 	focusPart(part: Parts, targetWindow: Window): void;
 
 	/**
@@ -260,7 +263,9 @@ export interface IWorkbenchLayoutService extends ILayoutService {
 	 * Returns if the part is visible in the target window.
 	 */
 	isVisible(part: SINGLE_WINDOW_PARTS): boolean;
+
 	isVisible(part: MULTI_WINDOW_PARTS, targetWindow: Window): boolean;
+
 	isVisible(part: Parts, targetWindow: Window): boolean;
 
 	/**

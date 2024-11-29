@@ -59,10 +59,13 @@ export class BrowserWorkspacesService
 	implements IWorkspacesService
 {
 	static readonly RECENTLY_OPENED_KEY = "recently.opened";
+
 	declare readonly _serviceBrand: undefined;
+
 	private readonly _onRecentlyOpenedChange = this._register(
 		new Emitter<void>(),
 	);
+
 	readonly onDidChangeRecentlyOpened = this._onRecentlyOpenedChange.event;
 
 	constructor(
@@ -83,8 +86,10 @@ export class BrowserWorkspacesService
 		// Opening a workspace should push it as most
 		// recently used to the workspaces history
 		this.addWorkspaceToRecentlyOpened();
+
 		this.registerListeners();
 	}
+
 	private registerListeners(): void {
 		// Storage
 		this._register(
@@ -101,6 +106,7 @@ export class BrowserWorkspacesService
 			),
 		);
 	}
+
 	private onDidChangeWorkspaceFolders(e: IWorkspaceFoldersChangeEvent): void {
 		if (!isTemporaryWorkspace(this.contextService.getWorkspace())) {
 			return;
@@ -111,6 +117,7 @@ export class BrowserWorkspacesService
 			this.addRecentlyOpened([{ folderUri: folder.uri }]);
 		}
 	}
+
 	private addWorkspaceToRecentlyOpened(): void {
 		const workspace = this.contextService.getWorkspace();
 
@@ -150,6 +157,7 @@ export class BrowserWorkspacesService
 				JSON.parse(recentlyOpenedRaw),
 				this.logService,
 			);
+
 			recentlyOpened.workspaces = recentlyOpened.workspaces.filter(
 				(recent) => {
 					// In web, unless we are in a temporary workspace, we cannot support
@@ -172,39 +180,49 @@ export class BrowserWorkspacesService
 					) {
 						return false;
 					}
+
 					return true;
 				},
 			);
 
 			return recentlyOpened;
 		}
+
 		return { workspaces: [], files: [] };
 	}
+
 	async addRecentlyOpened(recents: IRecent[]): Promise<void> {
 		const recentlyOpened = await this.getRecentlyOpened();
 
 		for (const recent of recents) {
 			if (isRecentFile(recent)) {
 				this.doRemoveRecentlyOpened(recentlyOpened, [recent.fileUri]);
+
 				recentlyOpened.files.unshift(recent);
 			} else if (isRecentFolder(recent)) {
 				this.doRemoveRecentlyOpened(recentlyOpened, [recent.folderUri]);
+
 				recentlyOpened.workspaces.unshift(recent);
 			} else {
 				this.doRemoveRecentlyOpened(recentlyOpened, [
 					recent.workspace.configPath,
 				]);
+
 				recentlyOpened.workspaces.unshift(recent);
 			}
 		}
+
 		return this.saveRecentlyOpened(recentlyOpened);
 	}
+
 	async removeRecentlyOpened(paths: URI[]): Promise<void> {
 		const recentlyOpened = await this.getRecentlyOpened();
+
 		this.doRemoveRecentlyOpened(recentlyOpened, paths);
 
 		return this.saveRecentlyOpened(recentlyOpened);
 	}
+
 	private doRemoveRecentlyOpened(
 		recentlyOpened: IRecentlyOpened,
 		paths: URI[],
@@ -214,6 +232,7 @@ export class BrowserWorkspacesService
 				(path) => path.toString() === file.fileUri.toString(),
 			);
 		});
+
 		recentlyOpened.workspaces = recentlyOpened.workspaces.filter(
 			(workspace) => {
 				return !paths.some(
@@ -226,6 +245,7 @@ export class BrowserWorkspacesService
 			},
 		);
 	}
+
 	private async saveRecentlyOpened(data: IRecentlyOpened): Promise<void> {
 		return this.storageService.store(
 			BrowserWorkspacesService.RECENTLY_OPENED_KEY,
@@ -234,6 +254,7 @@ export class BrowserWorkspacesService
 			StorageTarget.USER,
 		);
 	}
+
 	async clearRecentlyOpened(): Promise<void> {
 		this.storageService.remove(
 			BrowserWorkspacesService.RECENTLY_OPENED_KEY,
@@ -247,6 +268,7 @@ export class BrowserWorkspacesService
 	): Promise<IEnterWorkspaceResult | undefined> {
 		return { workspace: await this.getWorkspaceIdentifier(workspaceUri) };
 	}
+
 	async createUntitledWorkspace(
 		folders?: IWorkspaceFolderCreationData[],
 		remoteAuthority?: string,
@@ -280,6 +302,7 @@ export class BrowserWorkspacesService
 			folders: storedWorkspaceFolder,
 			remoteAuthority,
 		};
+
 		await this.fileService.writeFile(
 			newUntitledWorkspacePath,
 			VSBuffer.fromString(JSON.stringify(storedWorkspace, null, "\t")),
@@ -287,6 +310,7 @@ export class BrowserWorkspacesService
 
 		return this.getWorkspaceIdentifier(newUntitledWorkspacePath);
 	}
+
 	async deleteUntitledWorkspace(
 		workspace: IWorkspaceIdentifier,
 	): Promise<void> {
@@ -301,6 +325,7 @@ export class BrowserWorkspacesService
 			}
 		}
 	}
+
 	async getWorkspaceIdentifier(
 		workspaceUri: URI,
 	): Promise<IWorkspaceIdentifier> {

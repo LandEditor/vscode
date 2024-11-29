@@ -21,6 +21,7 @@ export class ChatImageDropAndPaste extends Disposable {
 		@IExtensionService private readonly extensionService: IExtensionService,
 	) {
 		super();
+
 		this._register(
 			this.inputPart.inputEditor.onDidPaste((e) => {
 				if (
@@ -40,6 +41,7 @@ export class ChatImageDropAndPaste extends Disposable {
 		if (!currClipboard || !isImage(currClipboard)) {
 			return;
 		}
+
 		const context = await getImageAttachContext(currClipboard);
 
 		if (!context) {

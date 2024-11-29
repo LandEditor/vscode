@@ -42,8 +42,11 @@ export class ExpandLineSelectionAction extends EditorAction {
 		if (!editor.hasModel()) {
 			return;
 		}
+
 		const viewModel = editor._getViewModel();
+
 		viewModel.model.pushStackElement();
+
 		viewModel.setCursorStates(
 			args.source,
 			CursorChangeReason.Explicit,
@@ -52,6 +55,7 @@ export class ExpandLineSelectionAction extends EditorAction {
 				viewModel.getCursorStates(),
 			),
 		);
+
 		viewModel.revealAllCursors(args.source, true);
 	}
 }

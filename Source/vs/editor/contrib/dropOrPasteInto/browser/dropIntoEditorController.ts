@@ -82,6 +82,7 @@ export class DropIntoEditorController
 	private static _currentDropOperation?: CancelablePromise<void>;
 
 	private readonly _dropProgressManager: InlineProgressManager;
+
 	private readonly _postDropWidgetManager: PostEditWidgetManager<DocumentDropEdit>;
 
 	private readonly treeItemsTransfer =
@@ -106,6 +107,7 @@ export class DropIntoEditorController
 				editor,
 			),
 		);
+
 		this._postDropWidgetManager = this._register(
 			instantiationService.createInstance(
 				PostEditWidgetManager,
@@ -153,6 +155,7 @@ export class DropIntoEditorController
 		DropIntoEditorController._currentDropOperation?.cancel();
 
 		editor.focus();
+
 		editor.setPosition(position);
 
 		const p = createCancelablePromise(async (token) => {
@@ -192,6 +195,7 @@ export class DropIntoEditorController
 								// Keep all providers that don't specify mime types
 								return true;
 							}
+
 							return provider.dropMimeTypes.some((mime) =>
 								ourDataTransfer.matches(mime),
 							);
@@ -247,6 +251,7 @@ export class DropIntoEditorController
 			p,
 			{ cancel: () => p.cancel() },
 		);
+
 		DropIntoEditorController._currentDropOperation = p;
 	}
 
@@ -273,6 +278,7 @@ export class DropIntoEditorController
 						if (edits) {
 							disposables.add(edits);
 						}
+
 						return edits?.edits.map((edit) => ({
 							...edit,
 							providerId: provider.id,
@@ -281,8 +287,10 @@ export class DropIntoEditorController
 						if (!isCancellationError(err)) {
 							console.error(err);
 						}
+
 						console.error(err);
 					}
+
 					return undefined;
 				}),
 			),
@@ -318,6 +326,7 @@ export class DropIntoEditorController
 				return editIndex;
 			}
 		}
+
 		return 0;
 	}
 

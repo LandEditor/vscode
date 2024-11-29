@@ -28,6 +28,7 @@ export class ModelUndoRedoParticipant
 		private readonly _undoRedoService: IUndoRedoService,
 	) {
 		super();
+
 		this._register(
 			this._modelService.onModelRemoved((model) => {
 				// a model will get disposed, so let's check if the undo redo stack is maintained
@@ -39,11 +40,13 @@ export class ModelUndoRedoParticipant
 				) {
 					return;
 				}
+
 				for (const element of elements.past) {
 					if (element instanceof MultiModelEditStackElement) {
 						element.setDelegate(this);
 					}
 				}
+
 				for (const element of elements.future) {
 					if (element instanceof MultiModelEditStackElement) {
 						element.setDelegate(this);
@@ -52,6 +55,7 @@ export class ModelUndoRedoParticipant
 			}),
 		);
 	}
+
 	public prepareUndoRedo(
 		element: MultiModelEditStackElement,
 	): IDisposable | Promise<IDisposable> {
@@ -62,6 +66,7 @@ export class ModelUndoRedoParticipant
 			// All models are available!
 			return Disposable.None;
 		}
+
 		const disposablesPromises = missingModels.map(async (uri) => {
 			try {
 				const reference =

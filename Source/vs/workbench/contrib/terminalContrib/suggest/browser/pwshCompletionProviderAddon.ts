@@ -54,8 +54,11 @@ export type CompressedPwshCompletion = [
 
 export type PwshCompletion = {
 	CompletionText: string;
+
 	ResultType: number;
+
 	ToolTip?: string;
+
 	CustomIcon?: string;
 };
 
@@ -75,36 +78,59 @@ export class PwshCompletionProviderAddon
 	implements ITerminalAddon, ITerminalCompletionProvider
 {
 	id: string = PwshCompletionProviderAddon.ID;
+
 	triggerCharacters?: string[] | undefined;
+
 	isBuiltin?: boolean = true;
+
 	static readonly ID = "terminal.pwshCompletionProvider";
+
 	static cachedPwshCommands: Set<ITerminalCompletion>;
+
 	readonly shellTypes = [GeneralShellType.PowerShell];
+
 	private _codeCompletionsRequested: boolean = false;
+
 	private _gitCompletionsRequested: boolean = false;
+
 	private _lastUserDataTimestamp: number = 0;
+
 	private _terminal?: Terminal;
+
 	private _mostRecentCompletion?: ITerminalCompletion;
+
 	private _promptInputModel?: IPromptInputModel;
+
 	private _currentPromptInputState?: IPromptInputModelState;
+
 	private _enableWidget: boolean = true;
+
 	isPasting: boolean = false;
+
 	private _completionsDeferred: DeferredPromise<
 		ITerminalCompletion[] | undefined
 	> | null = null;
+
 	private readonly _onBell = this._register(new Emitter<void>());
+
 	readonly onBell = this._onBell.event;
+
 	private readonly _onAcceptedCompletion = this._register(
 		new Emitter<string>(),
 	);
+
 	readonly onAcceptedCompletion = this._onAcceptedCompletion.event;
+
 	private readonly _onDidReceiveCompletions = this._register(
 		new Emitter<void>(),
 	);
+
 	readonly onDidReceiveCompletions = this._onDidReceiveCompletions.event;
+
 	private readonly _onDidRequestSendText = this._register(
 		new Emitter<RequestCompletionsSequence>(),
 	);
+
 	readonly onDidRequestSendText = this._onDidRequestSendText.event;
 
 	constructor(
@@ -115,6 +141,7 @@ export class PwshCompletionProviderAddon
 		@IStorageService private readonly _storageService: IStorageService,
 	) {
 		super();
+
 		this._register(
 			Event.runAndSubscribe(
 				Event.any(
@@ -140,6 +167,7 @@ export class PwshCompletionProviderAddon
 				},
 			),
 		);
+
 		PwshCompletionProviderAddon.cachedPwshCommands =
 			providedPwshCommands || new Set();
 
@@ -171,6 +199,7 @@ export class PwshCompletionProviderAddon
 
 	clearSuggestCache(): void {
 		PwshCompletionProviderAddon.cachedPwshCommands.clear();
+
 		this._storageService.remove(
 			Constants.CachedPwshCommandsStorageKey,
 			StorageScope.APPLICATION,
@@ -179,6 +208,7 @@ export class PwshCompletionProviderAddon
 
 	activate(xterm: Terminal): void {
 		this._terminal = xterm;
+
 		this._register(
 			xterm.onData(() => {
 				this._lastUserDataTimestamp = Date.now();
@@ -195,6 +225,7 @@ export class PwshCompletionProviderAddon
 		if (!enabled) {
 			return;
 		}
+
 		this._register(
 			xterm.parser.registerOscHandler(
 				ShellIntegrationOscPs.VSCode,
@@ -289,9 +320,12 @@ export class PwshCompletionProviderAddon
 		// This is a TabExpansion2 result
 		if (!isGlobalCommand) {
 			replacementIndex = parseInt(args[0]);
+
 			replacementLength = parseInt(args[1]);
+
 			leadingLineContent = this._promptInputModel.prefix;
 		}
+
 		const payload = data.slice(
 			command.length +
 				args[0].length +
@@ -319,7 +353,9 @@ export class PwshCompletionProviderAddon
 		if (isGlobalCommand) {
 			for (const c of PwshCompletionProviderAddon.cachedPwshCommands) {
 				c.replacementIndex = replacementIndex;
+
 				c.replacementLength = replacementLength;
+
 				completions.push(c);
 			}
 		}
@@ -330,7 +366,9 @@ export class PwshCompletionProviderAddon
 		) {
 			completions.push(this._mostRecentCompletion);
 		}
+
 		this._mostRecentCompletion = undefined;
+
 		this._resolveCompletions(completions);
 	}
 
@@ -374,6 +412,7 @@ export class PwshCompletionProviderAddon
 		if (!this._completionsDeferred) {
 			return;
 		}
+
 		this._completionsDeferred.complete(result);
 		// Resolved, clear the deferred promise
 		this._completionsDeferred = null;
@@ -404,13 +443,16 @@ export class PwshCompletionProviderAddon
 			builtinCompletionsConfig.pwshCode
 		) {
 			this._onDidRequestSendText.fire(RequestCompletionsSequence.Code);
+
 			this._codeCompletionsRequested = true;
 		}
+
 		if (
 			!this._gitCompletionsRequested &&
 			builtinCompletionsConfig.pwshGit
 		) {
 			this._onDidRequestSendText.fire(RequestCompletionsSequence.Git);
+
 			this._gitCompletionsRequested = true;
 		}
 
@@ -429,17 +471,20 @@ export class PwshCompletionProviderAddon
 				RequestCompletionsSequence.Contextual,
 			);
 		}
+
 		if (token.isCancellationRequested) {
 			return Promise.resolve(undefined);
 		}
 
 		return new Promise((resolve) => {
 			const completionPromise = this._getCompletionsPromise();
+
 			this._register(
 				token.onCancellationRequested(() => {
 					this._resolveCompletions(undefined);
 				}),
 			);
+
 			completionPromise.then((result) => {
 				if (token.isCancellationRequested) {
 					resolve(undefined);
@@ -463,6 +508,7 @@ export function parseCompletionsFromShell(
 	if (!rawCompletions) {
 		return [];
 	}
+
 	let typedRawCompletions: PwshCompletion[];
 
 	if (!Array.isArray(rawCompletions)) {
@@ -471,6 +517,7 @@ export function parseCompletionsFromShell(
 		if (rawCompletions.length === 0) {
 			return [];
 		}
+
 		if (typeof rawCompletions[0] === "string") {
 			typedRawCompletions = [
 				rawCompletions as CompressedPwshCompletion,
@@ -493,6 +540,7 @@ export function parseCompletionsFromShell(
 			typedRawCompletions = rawCompletions as PwshCompletion[];
 		}
 	}
+
 	return typedRawCompletions.map((e) =>
 		rawCompletionToITerminalCompletion(
 			e,
@@ -521,6 +569,7 @@ function rawCompletionToITerminalCompletion(
 		!label.match(/[\\\/]$/)
 	) {
 		const separator = label.match(/(?<sep>[\\\/])/)?.groups?.sep ?? sep;
+
 		label = label + separator;
 	}
 
@@ -565,6 +614,7 @@ function getIcon(resultType: number, customIconId?: string): ThemeIcon {
 			return icon;
 		}
 	}
+
 	return pwshTypeToIconMap[resultType] ?? Codicon.symbolText;
 }
 

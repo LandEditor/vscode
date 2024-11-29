@@ -31,7 +31,9 @@ export interface IResourceUndoRedoElement {
 	 * Show a message to the user confirming when trying to undo this element
 	 */
 	readonly confirmBeforeUndo?: boolean;
+
 	undo(): Promise<void> | void;
+
 	redo(): Promise<void> | void;
 }
 export interface IWorkspaceUndoRedoElement {
@@ -52,7 +54,9 @@ export interface IWorkspaceUndoRedoElement {
 	 * Show a message to the user confirming when trying to undo this element
 	 */
 	readonly confirmBeforeUndo?: boolean;
+
 	undo(): Promise<void> | void;
+
 	redo(): Promise<void> | void;
 	/**
 	 * If implemented, indicates that this undo/redo element can be split into multiple per resource elements.
@@ -71,6 +75,7 @@ export type IUndoRedoElement =
 
 export interface IPastFutureElements {
 	past: IUndoRedoElement[];
+
 	future: IUndoRedoElement[];
 }
 export interface UriComparisonKeyComputer {
@@ -84,36 +89,48 @@ export class ResourceEditStackSnapshot {
 }
 export class UndoRedoGroup {
 	private static _ID = 0;
+
 	public readonly id: number;
+
 	private order: number;
 
 	constructor() {
 		this.id = UndoRedoGroup._ID++;
+
 		this.order = 1;
 	}
+
 	public nextOrder(): number {
 		if (this.id === 0) {
 			return 0;
 		}
+
 		return this.order++;
 	}
+
 	public static None = new UndoRedoGroup();
 }
 export class UndoRedoSource {
 	private static _ID = 0;
+
 	public readonly id: number;
+
 	private order: number;
 
 	constructor() {
 		this.id = UndoRedoSource._ID++;
+
 		this.order = 1;
 	}
+
 	public nextOrder(): number {
 		if (this.id === 0) {
 			return 0;
 		}
+
 		return this.order++;
 	}
+
 	public static None = new UndoRedoSource();
 }
 export interface IUndoRedoService {
@@ -170,8 +187,12 @@ export interface IUndoRedoService {
 	 * Attempt (as best as possible) to restore a certain snapshot previously created with `createSnapshot` for a resource.
 	 */
 	restoreSnapshot(snapshot: ResourceEditStackSnapshot): void;
+
 	canUndo(resource: URI | UndoRedoSource): boolean;
+
 	undo(resource: URI | UndoRedoSource): Promise<void> | void;
+
 	canRedo(resource: URI | UndoRedoSource): boolean;
+
 	redo(resource: URI | UndoRedoSource): Promise<void> | void;
 }

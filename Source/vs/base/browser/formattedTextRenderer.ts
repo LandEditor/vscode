@@ -13,13 +13,17 @@ export interface IContentActionHandler {
 		content: string,
 		event: IMouseEvent | IKeyboardEvent,
 	) => void;
+
 	readonly disposables: DisposableStore;
 }
 
 export interface FormattedTextRenderOptions {
 	readonly className?: string;
+
 	readonly inline?: boolean;
+
 	readonly actionHandler?: IContentActionHandler;
+
 	readonly renderCodeSegments?: boolean;
 }
 
@@ -28,6 +32,7 @@ export function renderText(
 	options: FormattedTextRenderOptions = {},
 ): HTMLElement {
 	const element = createElement(options);
+
 	element.textContent = text;
 
 	return element;
@@ -38,6 +43,7 @@ export function renderFormattedText(
 	options: FormattedTextRenderOptions = {},
 ): HTMLElement {
 	const element = createElement(options);
+
 	_renderFormattedText(
 		element,
 		parseFormattedText(formattedText, !!options.renderCodeSegments),
@@ -58,15 +64,18 @@ export function createElement(
 	if (options.className) {
 		element.className = options.className;
 	}
+
 	return element;
 }
 
 class StringStream {
 	private source: string;
+
 	private index: number;
 
 	constructor(source: string) {
 		this.source = source;
+
 		this.index = 0;
 	}
 
@@ -76,6 +85,7 @@ class StringStream {
 
 	public next(): string {
 		const next = this.peek();
+
 		this.advance();
 
 		return next;
@@ -104,8 +114,11 @@ const enum FormatType {
 
 interface IFormatParseTree {
 	type: FormatType;
+
 	content?: string;
+
 	index?: number;
+
 	children?: IFormatParseTree[];
 }
 
@@ -127,6 +140,7 @@ function _renderFormattedText(
 		child = document.createElement("code");
 	} else if (treeNode.type === FormatType.Action && actionHandler) {
 		const a = document.createElement("a");
+
 		actionHandler.disposables.add(
 			DOM.addStandardDisposableListener(a, "click", (event) => {
 				actionHandler.callback(String(treeNode.index), event);
@@ -212,11 +226,14 @@ function parseFormattedText(
 
 				if (type === FormatType.Action) {
 					newCurrent.index = actionViewItemIndex;
+
 					actionViewItemIndex++;
 				}
 
 				current.children!.push(newCurrent);
+
 				stack.push(current);
+
 				current = newCurrent;
 			}
 		} else if (next === "\n") {
@@ -233,8 +250,11 @@ function parseFormattedText(
 					type: FormatType.Text,
 					content: next,
 				};
+
 				current.children!.push(textCurrent);
+
 				stack.push(current);
+
 				current = textCurrent;
 			} else {
 				current.content += next;

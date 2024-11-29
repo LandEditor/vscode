@@ -12,6 +12,7 @@ export class FindFileReferencesCommand implements Command {
 	public readonly id = "markdown.findAllFileReferences";
 
 	constructor(private readonly _client: MdLanguageClient) {}
+
 	public async execute(resource?: vscode.Uri) {
 		resource ??= vscode.window.activeTextEditor?.document.uri;
 
@@ -24,6 +25,7 @@ export class FindFileReferencesCommand implements Command {
 
 			return;
 		}
+
 		await vscode.window.withProgress(
 			{
 				location: vscode.ProgressLocation.Window,
@@ -46,6 +48,7 @@ export class FindFileReferencesCommand implements Command {
 
 				const existingSetting =
 					config.inspect<string>("preferredLocation");
+
 				await config.update("preferredLocation", "view");
 
 				try {

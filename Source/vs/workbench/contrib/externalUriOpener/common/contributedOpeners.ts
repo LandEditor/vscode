@@ -14,6 +14,7 @@ import { updateContributedOpeners } from "./configuration.js";
 
 interface RegisteredExternalOpener {
 	readonly extensionId: string;
+
 	isCurrentlyRegistered: boolean;
 }
 interface OpenersMemento {
@@ -21,8 +22,11 @@ interface OpenersMemento {
 }
 export class ContributedExternalUriOpenersStore extends Disposable {
 	private static readonly STORAGE_ID = "externalUriOpeners";
+
 	private readonly _openers = new Map<string, RegisteredExternalOpener>();
+
 	private readonly _memento: Memento;
+
 	private _mementoObject: OpenersMemento;
 
 	constructor(
@@ -32,10 +36,12 @@ export class ContributedExternalUriOpenersStore extends Disposable {
 		private readonly _extensionService: IExtensionService,
 	) {
 		super();
+
 		this._memento = new Memento(
 			ContributedExternalUriOpenersStore.STORAGE_ID,
 			storageService,
 		);
+
 		this._mementoObject = this._memento.getMemento(
 			StorageScope.PROFILE,
 			StorageTarget.MACHINE,
@@ -44,23 +50,28 @@ export class ContributedExternalUriOpenersStore extends Disposable {
 		for (const [id, value] of Object.entries(this._mementoObject || {})) {
 			this.add(id, value.extensionId, { isCurrentlyRegistered: false });
 		}
+
 		this.invalidateOpenersOnExtensionsChanged();
+
 		this._register(
 			this._extensionService.onDidChangeExtensions(() =>
 				this.invalidateOpenersOnExtensionsChanged(),
 			),
 		);
+
 		this._register(
 			this._extensionService.onDidChangeExtensionsStatus(() =>
 				this.invalidateOpenersOnExtensionsChanged(),
 			),
 		);
 	}
+
 	public didRegisterOpener(id: string, extensionId: string): void {
 		this.add(id, extensionId, {
 			isCurrentlyRegistered: true,
 		});
 	}
+
 	private add(
 		id: string,
 		extensionId: string,
@@ -76,21 +87,31 @@ export class ContributedExternalUriOpenersStore extends Disposable {
 
 			return;
 		}
+
 		const entry = {
 			extensionId,
 			isCurrentlyRegistered: options.isCurrentlyRegistered,
 		};
+
 		this._openers.set(id, entry);
+
 		this._mementoObject[id] = entry;
+
 		this._memento.saveMemento();
+
 		this.updateSchema();
 	}
+
 	public delete(id: string): void {
 		this._openers.delete(id);
+
 		delete this._mementoObject[id];
+
 		this._memento.saveMemento();
+
 		this.updateSchema();
 	}
+
 	private async invalidateOpenersOnExtensionsChanged() {
 		await this._extensionService.whenInstalledExtensionsRegistered();
 
@@ -114,6 +135,7 @@ export class ContributedExternalUriOpenersStore extends Disposable {
 			}
 		}
 	}
+
 	private updateSchema() {
 		const ids: string[] = [];
 
@@ -121,8 +143,10 @@ export class ContributedExternalUriOpenersStore extends Disposable {
 
 		for (const [id, entry] of this._openers) {
 			ids.push(id);
+
 			descriptions.push(entry.extensionId);
 		}
+
 		updateContributedOpeners(ids, descriptions);
 	}
 }

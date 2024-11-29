@@ -47,8 +47,10 @@ async function initMicrosoftSovereignCloudAuthProvider(
 					"microsoft-sovereign-cloud.customEnvironment",
 				);
 			}
+
 			return undefined;
 		}
+
 		try {
 			Environment.add(customEnv);
 		} catch (e) {
@@ -66,8 +68,10 @@ async function initMicrosoftSovereignCloudAuthProvider(
 					"microsoft-sovereign-cloud.customEnvironment",
 				);
 			}
+
 			return undefined;
 		}
+
 		authProviderName = customEnv.name;
 	} else {
 		authProviderName = environment;
@@ -98,6 +102,7 @@ async function initMicrosoftSovereignCloudAuthProvider(
 		telemetryReporter,
 		env,
 	);
+
 	await aadService.initialize();
 
 	const disposable = vscode.authentication.registerAuthenticationProvider(
@@ -179,6 +184,7 @@ export async function activate(
 	context.globalState.update("msalMigration", false);
 
 	const uriHandler = new UriEventHandler();
+
 	context.subscriptions.push(uriHandler);
 
 	const betterSecretStorage = new BetterTokenStorage<IStoredSession>(
@@ -194,6 +200,7 @@ export async function activate(
 		telemetryReporter,
 		Environment.AzureCloud,
 	);
+
 	await loginService.initialize();
 
 	context.subscriptions.push(
@@ -275,6 +282,7 @@ export async function activate(
 		vscode.workspace.onDidChangeConfiguration(async (e) => {
 			if (e.affectsConfiguration("microsoft-sovereign-cloud")) {
 				microsoftSovereignCloudAuthProviderDisposable?.dispose();
+
 				microsoftSovereignCloudAuthProviderDisposable =
 					await initMicrosoftSovereignCloudAuthProvider(
 						context,

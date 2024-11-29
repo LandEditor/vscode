@@ -56,6 +56,7 @@ export class UserDataAutoSyncService extends BaseUserDataAutoSyncService {
 			userDataSyncMachinesService,
 			storageService,
 		);
+
 		this._register(
 			Event.debounce<string, string[]>(
 				Event.any<string>(

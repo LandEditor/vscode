@@ -47,6 +47,7 @@ class CellStatusBarLanguagePickerProvider
 		@ILanguageService
 		private readonly _languageService: ILanguageService,
 	) {}
+
 	async provideCellStatusBarItems(
 		uri: URI,
 		index: number,
@@ -59,6 +60,7 @@ class CellStatusBarLanguagePickerProvider
 		if (!cell) {
 			return;
 		}
+
 		const statusBarItems: INotebookCellStatusBarItem[] = [];
 
 		let displayLanguage = cell.language;
@@ -82,6 +84,7 @@ class CellStatusBarLanguagePickerProvider
 					"Unknown cell language. Click to search for '{0}' extensions",
 					cell.language,
 				);
+
 				statusBarItems.push({
 					text: `$(dialog-warning)`,
 					command: {
@@ -95,6 +98,7 @@ class CellStatusBarLanguagePickerProvider
 				});
 			}
 		}
+
 		statusBarItems.push({
 			text: displayLanguage,
 			command: CHANGE_CELL_LANGUAGE,
@@ -115,10 +119,14 @@ class CellStatusBarLanguageDetectionProvider
 	implements INotebookCellStatusBarItemProvider
 {
 	readonly viewType = "*";
+
 	private cache = new ResourceMap<{
 		contentVersion: number;
+
 		updateTimestamp: number;
+
 		cellLanguage: string;
+
 		guess?: string;
 	}>();
 
@@ -136,6 +144,7 @@ class CellStatusBarLanguageDetectionProvider
 		@IKeybindingService
 		private readonly _keybindingService: IKeybindingService,
 	) {}
+
 	async provideCellStatusBarItems(
 		uri: URI,
 		index: number,
@@ -148,6 +157,7 @@ class CellStatusBarLanguageDetectionProvider
 		if (!cell) {
 			return;
 		}
+
 		const enablementConfig =
 			this._configurationService.getValue<LanguageDetectionHintConfig>(
 				"workbench.editor.languageDetectionHints",
@@ -160,6 +170,7 @@ class CellStatusBarLanguageDetectionProvider
 		if (!enabled) {
 			return;
 		}
+
 		const cellUri = cell.uri;
 
 		const contentVersion = cell.textModel?.getVersionId();
@@ -167,6 +178,7 @@ class CellStatusBarLanguageDetectionProvider
 		if (!contentVersion) {
 			return;
 		}
+
 		const currentLanguageId =
 			cell.cellKind === CellKind.Markup
 				? "markdown"
@@ -181,6 +193,7 @@ class CellStatusBarLanguageDetectionProvider
 				contentVersion: 1, // dont run for the initial contents, only on update
 			});
 		}
+
 		const cached = this.cache.get(cellUri)!;
 
 		if (
@@ -189,7 +202,9 @@ class CellStatusBarLanguageDetectionProvider
 				cached.contentVersion !== contentVersion)
 		) {
 			cached.updateTimestamp = Date.now();
+
 			cached.cellLanguage = currentLanguageId;
+
 			cached.contentVersion = contentVersion;
 
 			const kernel =
@@ -200,6 +215,7 @@ class CellStatusBarLanguageDetectionProvider
 					...kernel.supportedLanguages,
 					"markdown",
 				];
+
 				cached.guess =
 					await this._languageDetectionService.detectLanguage(
 						cell.uri,
@@ -207,6 +223,7 @@ class CellStatusBarLanguageDetectionProvider
 					);
 			}
 		}
+
 		const items: INotebookCellStatusBarItem[] = [];
 
 		if (cached.guess && currentLanguageId !== cached.guess) {
@@ -228,6 +245,7 @@ class CellStatusBarLanguageDetectionProvider
 			if (label) {
 				tooltip += ` (${label})`;
 			}
+
 			items.push({
 				text: "$(lightbulb-autofix)",
 				command: DETECT_CELL_LANGUAGE,
@@ -236,6 +254,7 @@ class CellStatusBarLanguageDetectionProvider
 				priority: -Number.MAX_SAFE_INTEGER + 1,
 			});
 		}
+
 		return { items };
 	}
 }
@@ -252,6 +271,7 @@ class BuiltinCellStatusBarProviders extends Disposable {
 			CellStatusBarLanguagePickerProvider,
 			CellStatusBarLanguageDetectionProvider,
 		];
+
 		builtinProviders.forEach((p) => {
 			this._register(
 				notebookCellStatusBarService.registerCellStatusBarItemProvider(

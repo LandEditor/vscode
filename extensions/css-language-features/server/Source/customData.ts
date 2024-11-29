@@ -33,6 +33,7 @@ function parseCSSData(source: string): ICSSDataProvider {
 	} catch (err) {
 		return newCSSDataProvider({ version: 1 });
 	}
+
 	return newCSSDataProvider({
 		version: rawData.version || 1,
 		properties: rawData.properties || [],

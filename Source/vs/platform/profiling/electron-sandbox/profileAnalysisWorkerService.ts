@@ -31,12 +31,14 @@ export const IProfileAnalysisWorkerService =
 
 export interface IProfileAnalysisWorkerService {
 	readonly _serviceBrand: undefined;
+
 	analyseBottomUp(
 		profile: IV8Profile,
 		callFrameClassifier: IScriptUrlClassifier,
 		perfBaseline: number,
 		sendAsErrorTelemtry: boolean,
 	): Promise<ProfilingOutput>;
+
 	analyseByLocation(
 		profile: IV8Profile,
 		locations: [location: URI, id: string][],
@@ -52,6 +54,7 @@ class ProfileAnalysisWorkerService implements IProfileAnalysisWorkerService {
 		@ILogService
 		private readonly _logService: ILogService,
 	) {}
+
 	private async _withWorker<R>(
 		callback: (worker: Proxied<IProfileAnalysisWorker>) => Promise<R>,
 	): Promise<R> {
@@ -68,6 +71,7 @@ class ProfileAnalysisWorkerService implements IProfileAnalysisWorkerService {
 			worker.dispose();
 		}
 	}
+
 	async analyseBottomUp(
 		profile: IV8Profile,
 		callFrameClassifier: IScriptUrlClassifier,
@@ -91,9 +95,11 @@ class ProfileAnalysisWorkerService implements IProfileAnalysisWorkerService {
 					);
 				}
 			}
+
 			return result.kind;
 		});
 	}
+
 	async analyseByLocation(
 		profile: IV8Profile,
 		locations: [location: URI, id: string][],
@@ -111,12 +117,16 @@ class ProfileAnalysisWorkerService implements IProfileAnalysisWorkerService {
 // ---- worker contract
 export interface BottomUpAnalysis {
 	kind: ProfilingOutput;
+
 	samples: BottomUpSample[];
 }
 export interface CategoryAnalysis {
 	category: string;
+
 	percentage: number;
+
 	aggregated: number;
+
 	overallDuration: number;
 }
 export interface IProfileAnalysisWorker {

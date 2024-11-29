@@ -74,9 +74,12 @@ export class StartSessionAction extends Action2 {
 			}
 		});
 	}
+
 	override run(accessor: ServicesAccessor, ...args: any[]): void {
 		const codeEditorService = accessor.get(ICodeEditorService);
+
 		const editor = codeEditorService.getActiveCodeEditor();
+
 		if (!editor || editor.isSimpleWidget) {
 			// well, at least we tried...
 			return;
@@ -85,12 +88,17 @@ export class StartSessionAction extends Action2 {
 		// precondition does hold
 		return editor.invokeWithinContext((editorAccessor) => {
 			const kbService = editorAccessor.get(IContextKeyService);
+
 			const logService = editorAccessor.get(ILogService);
+
 			const enabled = kbService.contextMatchesRules(this.desc.precondition ?? undefined);
+
 			if (!enabled) {
 				logService.debug(`[EditorAction2] NOT running command because its precondition is FALSE`, this.desc.id, this.desc.precondition?.serialize());
+
 				return;
 			}
+
 			return this._runEditorCommand(editorAccessor, editor, ...args);
 		});
 	}
@@ -98,6 +106,7 @@ export class StartSessionAction extends Action2 {
 	private _runEditorCommand(accessor: ServicesAccessor, editor: ICodeEditor, ..._args: any[]) {
 
 		const ctrl = InlineChatController.get(editor);
+
 		if (!ctrl) {
 			return;
 		}
@@ -107,10 +116,13 @@ export class StartSessionAction extends Action2 {
 		}
 
 		let options: InlineChatRunOptions | undefined;
+
 		const arg = _args[0];
+
 		if (arg && InlineChatRunOptions.isInlineChatRunOptions(arg)) {
 			options = arg;
 		}
+
 		InlineChatController.get(editor)?.run({ ...options });
 	}
 }
@@ -131,8 +143,10 @@ export class UnstashSessionAction extends EditorAction2 {
 
 	override async runEditorCommand(_accessor: ServicesAccessor, editor: ICodeEditor, ..._args: any[]) {
 		const ctrl = InlineChatController.get(editor);
+
 		if (ctrl) {
 			const session = ctrl.unstashLastSession();
+
 			if (session) {
 				ctrl.run({
 					existingSession: session,
@@ -157,27 +171,33 @@ export abstract class AbstractInlineChatAction extends EditorAction2 {
 
 	override runEditorCommand(accessor: ServicesAccessor, editor: ICodeEditor, ..._args: any[]) {
 		const editorService = accessor.get(IEditorService);
+
 		const logService = accessor.get(ILogService);
 
 		let ctrl = InlineChatController.get(editor);
+
 		if (!ctrl) {
 			const { activeTextEditorControl } = editorService;
+
 			if (isCodeEditor(activeTextEditorControl)) {
 				editor = activeTextEditorControl;
 			} else if (isDiffEditor(activeTextEditorControl)) {
 				editor = activeTextEditorControl.getModifiedEditor();
 			}
+
 			ctrl = InlineChatController.get(editor);
 		}
 
 		if (!ctrl) {
 			logService.warn('[IE] NO controller found for action', this.desc.id, editor.getModel()?.uri);
+
 			return;
 		}
 
 		if (editor instanceof EmbeddedCodeEditorWidget) {
 			editor = editor.getParentEditor();
 		}
+
 		if (!ctrl) {
 			for (const diffEditor of accessor.get(ICodeEditorService).listDiffEditors()) {
 				if (diffEditor.getOriginalEditor() === editor || diffEditor.getModifiedEditor() === editor) {
@@ -186,8 +206,10 @@ export abstract class AbstractInlineChatAction extends EditorAction2 {
 					}
 				}
 			}
+
 			return;
 		}
+
 		this.runInlineChatCommand(accessor, ctrl, editor, ..._args);
 	}
 
@@ -357,15 +379,20 @@ export class RerunAction extends AbstractInlineChatAction {
 
 	override async runInlineChatCommand(accessor: ServicesAccessor, ctrl: InlineChatController, _editor: ICodeEditor, ..._args: any[]): Promise<void> {
 		const chatService = accessor.get(IChatService);
+
 		const chatWidgetService = accessor.get(IChatWidgetService);
+
 		const model = ctrl.chatWidget.viewModel?.model;
+
 		if (!model) {
 			return;
 		}
 
 		const lastRequest = model.getRequests().at(-1);
+
 		if (lastRequest) {
 			const widget = chatWidgetService.getWidgetBySessionId(model.sessionId);
+
 			await chatService.resendRequest(lastRequest, {
 				noCommandDetection: false,
 				attempt: lastRequest.attempt + 1,
@@ -498,6 +525,7 @@ export class ViewInChatAction extends AbstractInlineChatAction {
 			}
 		});
 	}
+
 	override runInlineChatCommand(_accessor: ServicesAccessor, ctrl: InlineChatController, _editor: ICodeEditor, ..._args: any[]) {
 		return ctrl.viewInChat();
 	}

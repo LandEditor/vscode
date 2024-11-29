@@ -48,11 +48,17 @@ const socketEndTimeoutMs = 30000;
 
 export class NodeSocket implements ISocket {
 	public readonly debugLabel: string;
+
 	public readonly socket: Socket;
+
 	private readonly _errorListener: (err: any) => void;
+
 	private readonly _closeListener: (hadError: boolean) => void;
+
 	private readonly _endListener: () => void;
+
 	private _canWrite = true;
+
 	public traceSocketEvent(
 		type: SocketDiagnosticsEventType,
 		data?: VSBuffer | Uint8Array | ArrayBuffer | ArrayBufferView | any,
@@ -64,12 +70,16 @@ export class NodeSocket implements ISocket {
 			data,
 		);
 	}
+
 	constructor(socket: Socket, debugLabel: string = "") {
 		this.debugLabel = debugLabel;
+
 		this.socket = socket;
+
 		this.traceSocketEvent(SocketDiagnosticsEventType.Created, {
 			type: "NodeSocket",
 		});
+
 		this._errorListener = (err: any) => {
 			this.traceSocketEvent(SocketDiagnosticsEventType.Error, {
 				code: err?.code,
@@ -86,50 +96,67 @@ export class NodeSocket implements ISocket {
 					// > indicative that the remote side of the stream being written to has been closed.
 					return;
 				}
+
 				onUnexpectedError(err);
 			}
 		};
+
 		this.socket.on("error", this._errorListener);
 
 		let endTimeoutHandle: NodeJS.Timeout | undefined;
+
 		this._closeListener = (hadError: boolean) => {
 			this.traceSocketEvent(SocketDiagnosticsEventType.Close, {
 				hadError,
 			});
+
 			this._canWrite = false;
 
 			if (endTimeoutHandle) {
 				clearTimeout(endTimeoutHandle);
 			}
 		};
+
 		this.socket.on("close", this._closeListener);
+
 		this._endListener = () => {
 			this.traceSocketEvent(SocketDiagnosticsEventType.NodeEndReceived);
+
 			this._canWrite = false;
+
 			endTimeoutHandle = setTimeout(
 				() => socket.destroy(),
 				socketEndTimeoutMs,
 			);
 		};
+
 		this.socket.on("end", this._endListener);
 	}
+
 	public dispose(): void {
 		this.socket.off("error", this._errorListener);
+
 		this.socket.off("close", this._closeListener);
+
 		this.socket.off("end", this._endListener);
+
 		this.socket.destroy();
 	}
+
 	public onData(_listener: (e: VSBuffer) => void): IDisposable {
 		const listener = (buff: Buffer) => {
 			this.traceSocketEvent(SocketDiagnosticsEventType.Read, buff);
+
 			_listener(VSBuffer.wrap(buff));
 		};
+
 		this.socket.on("data", listener);
 
 		return {
 			dispose: () => this.socket.off("data", listener),
 		};
 	}
+
 	public onClose(listener: (e: SocketCloseEvent) => void): IDisposable {
 		const adapter = (hadError: boolean) => {
 			listener({
@@ -138,22 +165,26 @@ export class NodeSocket implements ISocket {
 				error: undefined,
 			});
 		};
+
 		this.socket.on("close", adapter);
 
 		return {
 			dispose: () => this.socket.off("close", adapter),
 		};
 	}
+
 	public onEnd(listener: () => void): IDisposable {
 		const adapter = () => {
 			listener();
 		};
+
 		this.socket.on("end", adapter);
 
 		return {
 			dispose: () => this.socket.off("end", adapter),
 		};
 	}
+
 	public write(buffer: VSBuffer): void {
 		// return early if socket has been destroyed in the meantime
 		if (this.socket.destroyed || !this._canWrite) {
@@ -166,6 +197,7 @@ export class NodeSocket implements ISocket {
 		// > accept and buffer chunk even if it has not been allowed to drain.
 		try {
 			this.traceSocketEvent(SocketDiagnosticsEventType.Write, buffer);
+
 			this.socket.write(buffer.buffer, (err: any) => {
 				if (err) {
 					if (err.code === "EPIPE") {
@@ -177,6 +209,7 @@ export class NodeSocket implements ISocket {
 						// > indicative that the remote side of the stream being written to has been closed.
 						return;
 					}
+
 					onUnexpectedError(err);
 				}
 			});
@@ -190,36 +223,53 @@ export class NodeSocket implements ISocket {
 				// > indicative that the remote side of the stream being written to has been closed.
 				return;
 			}
+
 			onUnexpectedError(err);
 		}
 	}
+
 	public end(): void {
 		this.traceSocketEvent(SocketDiagnosticsEventType.NodeEndSent);
+
 		this.socket.end();
 	}
+
 	public drain(): Promise<void> {
 		this.traceSocketEvent(SocketDiagnosticsEventType.NodeDrainBegin);
 
 		return new Promise<void>((resolve, reject) => {
 			if (this.socket.bufferSize === 0) {
 				this.traceSocketEvent(SocketDiagnosticsEventType.NodeDrainEnd);
+
 				resolve();
 
 				return;
 			}
+
 			const finished = () => {
 				this.socket.off("close", finished);
+
 				this.socket.off("end", finished);
+
 				this.socket.off("error", finished);
+
 				this.socket.off("timeout", finished);
+
 				this.socket.off("drain", finished);
+
 				this.traceSocketEvent(SocketDiagnosticsEventType.NodeDrainEnd);
+
 				resolve();
 			};
+
 			this.socket.on("close", finished);
+
 			this.socket.on("end", finished);
+
 			this.socket.on("error", finished);
+
 			this.socket.on("timeout", finished);
+
 			this.socket.on("drain", finished);
 		});
 	}
@@ -251,6 +301,7 @@ interface ISocketTracer {
 }
 interface FrameOptions {
 	compressed: boolean;
+
 	opcode: number;
 }
 /**
@@ -261,11 +312,17 @@ export class WebSocketNodeSocket
 	implements ISocket, ISocketTracer
 {
 	public readonly socket: NodeSocket;
+
 	private readonly _flowManager: WebSocketFlowManager;
+
 	private readonly _incomingData: ChunkStream;
+
 	private readonly _onData = this._register(new Emitter<VSBuffer>());
+
 	private readonly _onClose = this._register(new Emitter<SocketCloseEvent>());
+
 	private _isEnded: boolean = false;
+
 	private readonly _state = {
 		state: ReadState.PeekHeader,
 		readLen: Constants.MinHeaderByteSize,
@@ -275,12 +332,15 @@ export class WebSocketNodeSocket
 		mask: 0,
 		opcode: 0,
 	};
+
 	public get permessageDeflate(): boolean {
 		return this._flowManager.permessageDeflate;
 	}
+
 	public get recordedInflateBytes(): VSBuffer {
 		return this._flowManager.recordedInflateBytes;
 	}
+
 	public traceSocketEvent(
 		type: SocketDiagnosticsEventType,
 		data?: VSBuffer | Uint8Array | ArrayBuffer | ArrayBufferView | any,
@@ -306,13 +366,16 @@ export class WebSocketNodeSocket
 		recordInflateBytes: boolean,
 	) {
 		super();
+
 		this.socket = socket;
+
 		this.traceSocketEvent(SocketDiagnosticsEventType.Created, {
 			type: "WebSocketNodeSocket",
 			permessageDeflate,
 			inflateBytesLength: inflateBytes?.byteLength || 0,
 			recordInflateBytes,
 		});
+
 		this._flowManager = this._register(
 			new WebSocketFlowManager(
 				this,
@@ -323,11 +386,14 @@ export class WebSocketNodeSocket
 				(data, options) => this._write(data, options),
 			),
 		);
+
 		this._register(
 			this._flowManager.onError((err) => {
 				// zlib errors are fatal, since we have no idea how to recover
 				console.error(err);
+
 				onUnexpectedError(err);
+
 				this._onClose.fire({
 					type: SocketCloseEventType.NodeSocketCloseEvent,
 					hadError: true,
@@ -335,8 +401,11 @@ export class WebSocketNodeSocket
 				});
 			}),
 		);
+
 		this._incomingData = new ChunkStream();
+
 		this._register(this.socket.onData((data) => this._acceptChunk(data)));
+
 		this._register(
 			this.socket.onClose(async (e) => {
 				// Delay surfacing the close event until the async inflating is done
@@ -346,10 +415,12 @@ export class WebSocketNodeSocket
 						this._flowManager.onDidFinishProcessingReadQueue,
 					);
 				}
+
 				this._onClose.fire(e);
 			}),
 		);
 	}
+
 	public override dispose(): void {
 		if (this._flowManager.isProcessingWriteQueue()) {
 			// Wait for any outstanding writes to finish before disposing
@@ -364,15 +435,19 @@ export class WebSocketNodeSocket
 			super.dispose();
 		}
 	}
+
 	public onData(listener: (e: VSBuffer) => void): IDisposable {
 		return this._onData.event(listener);
 	}
+
 	public onClose(listener: (e: SocketCloseEvent) => void): IDisposable {
 		return this._onClose.event(listener);
 	}
+
 	public onEnd(listener: () => void): IDisposable {
 		return this.socket.onEnd(listener);
 	}
+
 	public write(buffer: VSBuffer): void {
 		// If we write many logical messages (let's say 1000 messages of 100KB) during a single process tick, we do
 		// this thing where we install a process.nextTick timer and group all of them together and we then issue a
@@ -398,9 +473,11 @@ export class WebSocketNodeSocket
 				),
 				{ compressed: true, opcode: 0x02 /* Binary frame */ },
 			);
+
 			start += Constants.MaxWebSocketMessageLength;
 		}
 	}
+
 	private _write(
 		buffer: VSBuffer,
 		{ compressed, opcode }: FrameOptions,
@@ -409,6 +486,7 @@ export class WebSocketNodeSocket
 			// Avoid ERR_STREAM_WRITE_AFTER_END
 			return;
 		}
+
 		this.traceSocketEvent(
 			SocketDiagnosticsEventType.WebSocketNodeSocketWrite,
 			buffer,
@@ -423,11 +501,13 @@ export class WebSocketNodeSocket
 		} else {
 			headerLen += 8;
 		}
+
 		const header = VSBuffer.alloc(headerLen);
 		// The RSV1 bit indicates a compressed frame
 		const compressedFlag = compressed ? 0b01000000 : 0;
 
 		const opcodeFlag = opcode & 0b00001111;
+
 		header.writeUInt8(0b10000000 | compressedFlag | opcodeFlag, 0);
 
 		if (buffer.byteLength < 126) {
@@ -436,37 +516,52 @@ export class WebSocketNodeSocket
 			header.writeUInt8(126, 1);
 
 			let offset = 1;
+
 			header.writeUInt8((buffer.byteLength >>> 8) & 0b11111111, ++offset);
+
 			header.writeUInt8((buffer.byteLength >>> 0) & 0b11111111, ++offset);
 		} else {
 			header.writeUInt8(127, 1);
 
 			let offset = 1;
+
 			header.writeUInt8(0, ++offset);
+
 			header.writeUInt8(0, ++offset);
+
 			header.writeUInt8(0, ++offset);
+
 			header.writeUInt8(0, ++offset);
+
 			header.writeUInt8(
 				(buffer.byteLength >>> 24) & 0b11111111,
 				++offset,
 			);
+
 			header.writeUInt8(
 				(buffer.byteLength >>> 16) & 0b11111111,
 				++offset,
 			);
+
 			header.writeUInt8((buffer.byteLength >>> 8) & 0b11111111, ++offset);
+
 			header.writeUInt8((buffer.byteLength >>> 0) & 0b11111111, ++offset);
 		}
+
 		this.socket.write(VSBuffer.concat([header, buffer]));
 	}
+
 	public end(): void {
 		this._isEnded = true;
+
 		this.socket.end();
 	}
+
 	private _acceptChunk(data: VSBuffer): void {
 		if (data.byteLength === 0) {
 			return;
 		}
+
 		this._incomingData.acceptChunk(data);
 
 		while (this._incomingData.byteLength >= this._state.readLen) {
@@ -487,21 +582,28 @@ export class WebSocketNodeSocket
 				const hasMask = (secondByte & 0b10000000) >>> 7;
 
 				const len = secondByte & 0b01111111;
+
 				this._state.state = ReadState.ReadHeader;
+
 				this._state.readLen =
 					Constants.MinHeaderByteSize +
 					(hasMask ? 4 : 0) +
 					(len === 126 ? 2 : 0) +
 					(len === 127 ? 8 : 0);
+
 				this._state.fin = finBit;
 
 				if (this._state.firstFrameOfMessage) {
 					// if the frame is compressed, the RSV1 bit is set only for the first frame of the message
 					this._state.compressed = Boolean(rsv1Bit);
 				}
+
 				this._state.firstFrameOfMessage = Boolean(finBit);
+
 				this._state.mask = 0;
+
 				this._state.opcode = opcode;
+
 				this.traceSocketEvent(
 					SocketDiagnosticsEventType.WebSocketNodeSocketPeekedHeader,
 					{
@@ -538,6 +640,7 @@ export class WebSocketNodeSocket
 						header.readUInt8(++offset) * 2 ** 8 +
 						header.readUInt8(++offset);
 				}
+
 				let mask = 0;
 
 				if (hasMask) {
@@ -547,9 +650,13 @@ export class WebSocketNodeSocket
 						header.readUInt8(++offset) * 2 ** 8 +
 						header.readUInt8(++offset);
 				}
+
 				this._state.state = ReadState.ReadBody;
+
 				this._state.readLen = len;
+
 				this._state.mask = mask;
+
 				this.traceSocketEvent(
 					SocketDiagnosticsEventType.WebSocketNodeSocketPeekedHeader,
 					{
@@ -563,17 +670,23 @@ export class WebSocketNodeSocket
 			} else if (this._state.state === ReadState.ReadBody) {
 				// read body
 				const body = this._incomingData.read(this._state.readLen);
+
 				this.traceSocketEvent(
 					SocketDiagnosticsEventType.WebSocketNodeSocketReadData,
 					body,
 				);
+
 				unmask(body, this._state.mask);
+
 				this.traceSocketEvent(
 					SocketDiagnosticsEventType.WebSocketNodeSocketUnmaskedData,
 					body,
 				);
+
 				this._state.state = ReadState.PeekHeader;
+
 				this._state.readLen = Constants.MinHeaderByteSize;
+
 				this._state.mask = 0;
 
 				if (
@@ -595,6 +708,7 @@ export class WebSocketNodeSocket
 			}
 		}
 	}
+
 	public async drain(): Promise<void> {
 		this.traceSocketEvent(
 			SocketDiagnosticsEventType.WebSocketNodeSocketDrainBegin,
@@ -605,7 +719,9 @@ export class WebSocketNodeSocket
 				this._flowManager.onDidFinishProcessingWriteQueue,
 			);
 		}
+
 		await this.socket.drain();
+
 		this.traceSocketEvent(
 			SocketDiagnosticsEventType.WebSocketNodeSocketDrainEnd,
 		);
@@ -613,37 +729,53 @@ export class WebSocketNodeSocket
 }
 class WebSocketFlowManager extends Disposable {
 	private readonly _onError = this._register(new Emitter<Error>());
+
 	public readonly onError = this._onError.event;
+
 	private readonly _zlibInflateStream: ZlibInflateStream | null;
+
 	private readonly _zlibDeflateStream: ZlibDeflateStream | null;
+
 	private readonly _writeQueue: {
 		data: VSBuffer;
+
 		options: FrameOptions;
 	}[] = [];
+
 	private readonly _readQueue: {
 		data: VSBuffer;
+
 		isCompressed: boolean;
+
 		isLastFrameOfMessage: boolean;
 	}[] = [];
+
 	private readonly _onDidFinishProcessingReadQueue = this._register(
 		new Emitter<void>(),
 	);
+
 	public readonly onDidFinishProcessingReadQueue =
 		this._onDidFinishProcessingReadQueue.event;
+
 	private readonly _onDidFinishProcessingWriteQueue = this._register(
 		new Emitter<void>(),
 	);
+
 	public readonly onDidFinishProcessingWriteQueue =
 		this._onDidFinishProcessingWriteQueue.event;
+
 	public get permessageDeflate(): boolean {
 		return Boolean(this._zlibInflateStream && this._zlibDeflateStream);
 	}
+
 	public get recordedInflateBytes(): VSBuffer {
 		if (this._zlibInflateStream) {
 			return this._zlibInflateStream.recordedInflateBytes;
 		}
+
 		return VSBuffer.alloc(0);
 	}
+
 	constructor(
 		private readonly _tracer: ISocketTracer,
 		permessageDeflate: boolean,
@@ -669,14 +801,17 @@ class WebSocketFlowManager extends Disposable {
 					{ windowBits: 15 },
 				),
 			);
+
 			this._zlibDeflateStream = this._register(
 				new ZlibDeflateStream(this._tracer, { windowBits: 15 }),
 			);
+
 			this._register(
 				this._zlibInflateStream.onError((err) =>
 					this._onError.fire(err),
 				),
 			);
+
 			this._register(
 				this._zlibDeflateStream.onError((err) =>
 					this._onError.fire(err),
@@ -684,18 +819,24 @@ class WebSocketFlowManager extends Disposable {
 			);
 		} else {
 			this._zlibInflateStream = null;
+
 			this._zlibDeflateStream = null;
 		}
 	}
+
 	public writeMessage(data: VSBuffer, options: FrameOptions): void {
 		this._writeQueue.push({ data, options });
+
 		this._processWriteQueue();
 	}
+
 	private _isProcessingWriteQueue = false;
+
 	private async _processWriteQueue(): Promise<void> {
 		if (this._isProcessingWriteQueue) {
 			return;
 		}
+
 		this._isProcessingWriteQueue = true;
 
 		while (this._writeQueue.length > 0) {
@@ -706,14 +847,18 @@ class WebSocketFlowManager extends Disposable {
 					this._zlibDeflateStream,
 					data,
 				);
+
 				this._writeFn(compressedData, options);
 			} else {
 				this._writeFn(data, { ...options, compressed: false });
 			}
 		}
+
 		this._isProcessingWriteQueue = false;
+
 		this._onDidFinishProcessingWriteQueue.fire();
 	}
+
 	public isProcessingWriteQueue(): boolean {
 		return this._isProcessingWriteQueue;
 	}
@@ -726,22 +871,28 @@ class WebSocketFlowManager extends Disposable {
 	): Promise<VSBuffer> {
 		return new Promise<VSBuffer>((resolve, reject) => {
 			zlibDeflateStream.write(buffer);
+
 			zlibDeflateStream.flush((data) => resolve(data));
 		});
 	}
+
 	public acceptFrame(
 		data: VSBuffer,
 		isCompressed: boolean,
 		isLastFrameOfMessage: boolean,
 	): void {
 		this._readQueue.push({ data, isCompressed, isLastFrameOfMessage });
+
 		this._processReadQueue();
 	}
+
 	private _isProcessingReadQueue = false;
+
 	private async _processReadQueue(): Promise<void> {
 		if (this._isProcessingReadQueue) {
 			return;
 		}
+
 		this._isProcessingReadQueue = true;
 
 		while (this._readQueue.length > 0) {
@@ -757,14 +908,18 @@ class WebSocketFlowManager extends Disposable {
 					frameInfo.data,
 					frameInfo.isLastFrameOfMessage,
 				);
+
 				this._onData.fire(data);
 			} else {
 				this._onData.fire(frameInfo.data);
 			}
 		}
+
 		this._isProcessingReadQueue = false;
+
 		this._onDidFinishProcessingReadQueue.fire();
 	}
+
 	public isProcessingReadQueue(): boolean {
 		return this._isProcessingReadQueue;
 	}
@@ -785,22 +940,30 @@ class WebSocketFlowManager extends Disposable {
 					VSBuffer.fromByteArray([0x00, 0x00, 0xff, 0xff]),
 				);
 			}
+
 			zlibInflateStream.flush((data) => resolve(data));
 		});
 	}
 }
 class ZlibInflateStream extends Disposable {
 	private readonly _onError = this._register(new Emitter<Error>());
+
 	public readonly onError = this._onError.event;
+
 	private readonly _zlibInflate: InflateRaw;
+
 	private readonly _recordedInflateBytes: VSBuffer[] = [];
+
 	private readonly _pendingInflateData: VSBuffer[] = [];
+
 	public get recordedInflateBytes(): VSBuffer {
 		if (this._recordInflateBytes) {
 			return VSBuffer.concat(this._recordedInflateBytes);
 		}
+
 		return VSBuffer.alloc(0);
 	}
+
 	constructor(
 		private readonly _tracer: ISocketTracer,
 		private readonly _recordInflateBytes: boolean,
@@ -808,19 +971,24 @@ class ZlibInflateStream extends Disposable {
 		options: ZlibOptions,
 	) {
 		super();
+
 		this._zlibInflate = createInflateRaw(options);
+
 		this._zlibInflate.on("error", (err) => {
 			this._tracer.traceSocketEvent(
 				SocketDiagnosticsEventType.zlibInflateError,
 				{ message: err?.message, code: (<any>err)?.code },
 			);
+
 			this._onError.fire(err);
 		});
+
 		this._zlibInflate.on("data", (data: Buffer) => {
 			this._tracer.traceSocketEvent(
 				SocketDiagnosticsEventType.zlibInflateData,
 				data,
 			);
+
 			this._pendingInflateData.push(VSBuffer.wrap(data));
 		});
 
@@ -829,25 +997,32 @@ class ZlibInflateStream extends Disposable {
 				SocketDiagnosticsEventType.zlibInflateInitialWrite,
 				inflateBytes.buffer,
 			);
+
 			this._zlibInflate.write(inflateBytes.buffer);
+
 			this._zlibInflate.flush(() => {
 				this._tracer.traceSocketEvent(
 					SocketDiagnosticsEventType.zlibInflateInitialFlushFired,
 				);
+
 				this._pendingInflateData.length = 0;
 			});
 		}
 	}
+
 	public write(buffer: VSBuffer): void {
 		if (this._recordInflateBytes) {
 			this._recordedInflateBytes.push(buffer.clone());
 		}
+
 		this._tracer.traceSocketEvent(
 			SocketDiagnosticsEventType.zlibInflateWrite,
 			buffer,
 		);
+
 		this._zlibInflate.write(buffer.buffer);
 	}
+
 	public flush(callback: (data: VSBuffer) => void): void {
 		this._zlibInflate.flush(() => {
 			this._tracer.traceSocketEvent(
@@ -855,15 +1030,20 @@ class ZlibInflateStream extends Disposable {
 			);
 
 			const data = VSBuffer.concat(this._pendingInflateData);
+
 			this._pendingInflateData.length = 0;
+
 			callback(data);
 		});
 	}
 }
 class ZlibDeflateStream extends Disposable {
 	private readonly _onError = this._register(new Emitter<Error>());
+
 	public readonly onError = this._onError.event;
+
 	private readonly _zlibDeflate: DeflateRaw;
+
 	private readonly _pendingDeflateData: VSBuffer[] = [];
 
 	constructor(
@@ -871,31 +1051,39 @@ class ZlibDeflateStream extends Disposable {
 		options: ZlibOptions,
 	) {
 		super();
+
 		this._zlibDeflate = createDeflateRaw({
 			windowBits: 15,
 		});
+
 		this._zlibDeflate.on("error", (err) => {
 			this._tracer.traceSocketEvent(
 				SocketDiagnosticsEventType.zlibDeflateError,
 				{ message: err?.message, code: (<any>err)?.code },
 			);
+
 			this._onError.fire(err);
 		});
+
 		this._zlibDeflate.on("data", (data: Buffer) => {
 			this._tracer.traceSocketEvent(
 				SocketDiagnosticsEventType.zlibDeflateData,
 				data,
 			);
+
 			this._pendingDeflateData.push(VSBuffer.wrap(data));
 		});
 	}
+
 	public write(buffer: VSBuffer): void {
 		this._tracer.traceSocketEvent(
 			SocketDiagnosticsEventType.zlibDeflateWrite,
 			buffer.buffer,
 		);
+
 		this._zlibDeflate.write(<Buffer>buffer.buffer);
 	}
+
 	public flush(callback: (data: VSBuffer) => void): void {
 		// See https://zlib.net/manual.html#Constants
 		this._zlibDeflate.flush(/*Z_SYNC_FLUSH*/ 2, () => {
@@ -904,9 +1092,11 @@ class ZlibDeflateStream extends Disposable {
 			);
 
 			let data = VSBuffer.concat(this._pendingDeflateData);
+
 			this._pendingDeflateData.length = 0;
 			// See https://tools.ietf.org/html/rfc7692#section-7.2.1
 			data = data.slice(0, data.byteLength - 4);
+
 			callback(data);
 		});
 	}
@@ -915,12 +1105,15 @@ function unmask(buffer: VSBuffer, mask: number): void {
 	if (mask === 0) {
 		return;
 	}
+
 	const cnt = buffer.byteLength >>> 2;
 
 	for (let i = 0; i < cnt; i++) {
 		const v = buffer.readUInt32BE(i * 4);
+
 		buffer.writeUInt32BE(v ^ mask, i * 4);
 	}
+
 	const offset = cnt * 4;
 
 	const bytesLeft = buffer.byteLength - offset;
@@ -934,9 +1127,11 @@ function unmask(buffer: VSBuffer, mask: number): void {
 	if (bytesLeft >= 1) {
 		buffer.writeUInt8(buffer.readUInt8(offset) ^ m3, offset);
 	}
+
 	if (bytesLeft >= 2) {
 		buffer.writeUInt8(buffer.readUInt8(offset + 1) ^ m2, offset + 1);
 	}
+
 	if (bytesLeft >= 3) {
 		buffer.writeUInt8(buffer.readUInt8(offset + 2) ^ m1, offset + 2);
 	}
@@ -1043,17 +1238,21 @@ export class Server extends IPCServer {
 			),
 		}));
 	}
+
 	private server: NetServer | null;
 
 	constructor(server: NetServer) {
 		super(Server.toClientConnectionEvent(server));
+
 		this.server = server;
 	}
+
 	override dispose(): void {
 		super.dispose();
 
 		if (this.server) {
 			this.server.close();
+
 			this.server = null;
 		}
 	}
@@ -1065,9 +1264,12 @@ export function serve(namedPipe: string): Promise<Server>;
 export function serve(hook: any): Promise<Server> {
 	return new Promise<Server>((c, e) => {
 		const server = createServer();
+
 		server.on("error", e);
+
 		server.listen(hook, () => {
 			server.removeListener("error", e);
+
 			c(new Server(server));
 		});
 	});
@@ -1075,6 +1277,7 @@ export function serve(hook: any): Promise<Server> {
 export function connect(
 	options: {
 		host: string;
+
 		port: number;
 	},
 	clientId: string,
@@ -1088,6 +1291,7 @@ export function connect(hook: any, clientId: string): Promise<Client> {
 	return new Promise<Client>((c, e) => {
 		const socket = createConnection(hook, () => {
 			socket.removeListener("error", e);
+
 			c(
 				Client.fromSocket(
 					new NodeSocket(socket, `ipc-client${clientId}`),
@@ -1095,6 +1299,7 @@ export function connect(hook: any, clientId: string): Promise<Client> {
 				),
 			);
 		});
+
 		socket.once("error", e);
 	});
 }

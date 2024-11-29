@@ -28,6 +28,7 @@ export class ChatProgressContentPart
 	public readonly domNode: HTMLElement;
 
 	private readonly showSpinner: boolean;
+
 	private readonly isHidden: boolean;
 
 	constructor(
@@ -43,9 +44,11 @@ export class ChatProgressContentPart
 		const followingContent = context.content.slice(
 			context.contentIndex + 1,
 		);
+
 		this.showSpinner =
 			forceShowSpinner ??
 			shouldShowSpinner(followingContent, context.element);
+
 		this.isHidden =
 			forceShowMessage !== true &&
 			followingContent.some((part) => part.kind !== "progressMessage");
@@ -62,6 +65,7 @@ export class ChatProgressContentPart
 			// this step is in progress, communicate it to SR users
 			alert(progress.content.value);
 		}
+
 		const codicon = icon
 			? icon
 			: this.showSpinner
@@ -73,13 +77,17 @@ export class ChatProgressContentPart
 		});
 
 		const result = this._register(renderer.render(markdown));
+
 		result.element.classList.add("progress-step");
 
 		this.domNode = $(".progress-container");
 
 		const iconElement = $("div");
+
 		iconElement.classList.add(...ThemeIcon.asClassNameArray(codicon));
+
 		append(this.domNode, iconElement);
+
 		append(this.domNode, result.element);
 	}
 

@@ -90,21 +90,30 @@ USER_STANDALONE_CONFIGURATIONS[TASKS_CONFIGURATION_KEY] =
 
 export type ConfigurationKey = {
 	type: "defaults" | "user" | "workspaces" | "folder";
+
 	key: string;
 };
 
 export interface IConfigurationCache {
 	needsCaching(resource: URI): boolean;
+
 	read(key: ConfigurationKey): Promise<string>;
+
 	write(key: ConfigurationKey, content: string): Promise<void>;
+
 	remove(key: ConfigurationKey): Promise<void>;
 }
 export type RestrictedSettings = {
 	default: ReadonlyArray<string>;
+
 	application?: ReadonlyArray<string>;
+
 	userLocal?: ReadonlyArray<string>;
+
 	userRemote?: ReadonlyArray<string>;
+
 	workspace?: ReadonlyArray<string>;
+
 	workspaceFolder?: ResourceMap<ReadonlyArray<string>>;
 };
 

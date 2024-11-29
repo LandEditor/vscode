@@ -20,8 +20,11 @@ export class SparseMultilineTokens {
 			new SparseMultilineTokensStorage(tokens),
 		);
 	}
+
 	private _startLineNumber: number;
+
 	private _endLineNumber: number;
+
 	private readonly _tokens: SparseMultilineTokensStorage;
 	/**
 	 * (Inclusive) start line number for these tokens.
@@ -35,25 +38,32 @@ export class SparseMultilineTokens {
 	public get endLineNumber(): number {
 		return this._endLineNumber;
 	}
+
 	private constructor(
 		startLineNumber: number,
 		tokens: SparseMultilineTokensStorage,
 	) {
 		this._startLineNumber = startLineNumber;
+
 		this._tokens = tokens;
+
 		this._endLineNumber =
 			this._startLineNumber + this._tokens.getMaxDeltaLine();
 	}
+
 	public toString(): string {
 		return this._tokens.toString(this._startLineNumber);
 	}
+
 	private _updateEndLineNumber(): void {
 		this._endLineNumber =
 			this._startLineNumber + this._tokens.getMaxDeltaLine();
 	}
+
 	public isEmpty(): boolean {
 		return this._tokens.isEmpty();
 	}
+
 	public getLineTokens(lineNumber: number): SparseLineTokens | null {
 		if (
 			this._startLineNumber <= lineNumber &&
@@ -63,14 +73,17 @@ export class SparseMultilineTokens {
 				lineNumber - this._startLineNumber,
 			);
 		}
+
 		return null;
 	}
+
 	public getRange(): Range | null {
 		const deltaRange = this._tokens.getRange();
 
 		if (!deltaRange) {
 			return deltaRange;
 		}
+
 		return new Range(
 			this._startLineNumber + deltaRange.startLineNumber,
 			deltaRange.startColumn,
@@ -78,18 +91,22 @@ export class SparseMultilineTokens {
 			deltaRange.endColumn,
 		);
 	}
+
 	public removeTokens(range: Range): void {
 		const startLineIndex = range.startLineNumber - this._startLineNumber;
 
 		const endLineIndex = range.endLineNumber - this._startLineNumber;
+
 		this._startLineNumber += this._tokens.removeTokens(
 			startLineIndex,
 			range.startColumn - 1,
 			endLineIndex,
 			range.endColumn - 1,
 		);
+
 		this._updateEndLineNumber();
 	}
+
 	public split(range: Range): [SparseMultilineTokens, SparseMultilineTokens] {
 		// split tokens to two:
 		// a) all the tokens before `range`
@@ -110,8 +127,10 @@ export class SparseMultilineTokens {
 			new SparseMultilineTokens(this._startLineNumber + bDeltaLine, b),
 		];
 	}
+
 	public applyEdit(range: IRange, text: string): void {
 		const [eolCount, firstLineLength, lastLineLength] = countEOL(text);
+
 		this.acceptEdit(
 			range,
 			eolCount,
@@ -120,6 +139,7 @@ export class SparseMultilineTokens {
 			text.length > 0 ? text.charCodeAt(0) : CharCode.Null,
 		);
 	}
+
 	public acceptEdit(
 		range: IRange,
 		eolCount: number,
@@ -128,6 +148,7 @@ export class SparseMultilineTokens {
 		firstCharCode: number,
 	): void {
 		this._acceptDeleteRange(range);
+
 		this._acceptInsertText(
 			new Position(range.startLineNumber, range.startColumn),
 			eolCount,
@@ -135,8 +156,10 @@ export class SparseMultilineTokens {
 			lastLineLength,
 			firstCharCode,
 		);
+
 		this._updateEndLineNumber();
 	}
+
 	private _acceptDeleteRange(range: IRange): void {
 		if (
 			range.startLineNumber === range.endLineNumber &&
@@ -145,6 +168,7 @@ export class SparseMultilineTokens {
 			// Nothing to delete
 			return;
 		}
+
 		const firstLineIndex = range.startLineNumber - this._startLineNumber;
 
 		const lastLineIndex = range.endLineNumber - this._startLineNumber;
@@ -152,26 +176,33 @@ export class SparseMultilineTokens {
 		if (lastLineIndex < 0) {
 			// this deletion occurs entirely before this block, so we only need to adjust line numbers
 			const deletedLinesCount = lastLineIndex - firstLineIndex;
+
 			this._startLineNumber -= deletedLinesCount;
 
 			return;
 		}
+
 		const tokenMaxDeltaLine = this._tokens.getMaxDeltaLine();
 
 		if (firstLineIndex >= tokenMaxDeltaLine + 1) {
 			// this deletion occurs entirely after this block, so there is nothing to do
 			return;
 		}
+
 		if (firstLineIndex < 0 && lastLineIndex >= tokenMaxDeltaLine + 1) {
 			// this deletion completely encompasses this block
 			this._startLineNumber = 0;
+
 			this._tokens.clear();
 
 			return;
 		}
+
 		if (firstLineIndex < 0) {
 			const deletedBefore = -firstLineIndex;
+
 			this._startLineNumber -= deletedBefore;
+
 			this._tokens.acceptDeleteRange(
 				range.startColumn - 1,
 				0,
@@ -189,6 +220,7 @@ export class SparseMultilineTokens {
 			);
 		}
 	}
+
 	private _acceptInsertText(
 		position: Position,
 		eolCount: number,
@@ -200,6 +232,7 @@ export class SparseMultilineTokens {
 			// Nothing to insert
 			return;
 		}
+
 		const lineIndex = position.lineNumber - this._startLineNumber;
 
 		if (lineIndex < 0) {
@@ -208,12 +241,14 @@ export class SparseMultilineTokens {
 
 			return;
 		}
+
 		const tokenMaxDeltaLine = this._tokens.getMaxDeltaLine();
 
 		if (lineIndex >= tokenMaxDeltaLine + 1) {
 			// this insertion occurs after this block, so there is nothing to do
 			return;
 		}
+
 		this._tokens.acceptInsertText(
 			lineIndex,
 			position.column - 1,
@@ -233,12 +268,15 @@ class SparseMultilineTokensStorage {
 	 *  4*i+3  metadata
 	 */
 	private readonly _tokens: Uint32Array;
+
 	private _tokenCount: number;
 
 	constructor(tokens: Uint32Array) {
 		this._tokens = tokens;
+
 		this._tokenCount = tokens.length / 4;
 	}
+
 	public toString(startLineNumber: number): string {
 		const pieces: string[] = [];
 
@@ -247,22 +285,27 @@ class SparseMultilineTokensStorage {
 				`(${this._getDeltaLine(i) + startLineNumber},${this._getStartCharacter(i)}-${this._getEndCharacter(i)})`,
 			);
 		}
+
 		return `[${pieces.join(",")}]`;
 	}
+
 	public getMaxDeltaLine(): number {
 		const tokenCount = this._getTokenCount();
 
 		if (tokenCount === 0) {
 			return -1;
 		}
+
 		return this._getDeltaLine(tokenCount - 1);
 	}
+
 	public getRange(): Range | null {
 		const tokenCount = this._getTokenCount();
 
 		if (tokenCount === 0) {
 			return null;
 		}
+
 		const startChar = this._getStartCharacter(0);
 
 		const maxDeltaLine = this._getDeltaLine(tokenCount - 1);
@@ -271,21 +314,27 @@ class SparseMultilineTokensStorage {
 
 		return new Range(0, startChar + 1, maxDeltaLine, endChar + 1);
 	}
+
 	private _getTokenCount(): number {
 		return this._tokenCount;
 	}
+
 	private _getDeltaLine(tokenIndex: number): number {
 		return this._tokens[4 * tokenIndex];
 	}
+
 	private _getStartCharacter(tokenIndex: number): number {
 		return this._tokens[4 * tokenIndex + 1];
 	}
+
 	private _getEndCharacter(tokenIndex: number): number {
 		return this._tokens[4 * tokenIndex + 2];
 	}
+
 	public isEmpty(): boolean {
 		return this._getTokenCount() === 0;
 	}
+
 	public getLineTokens(deltaLine: number): SparseLineTokens | null {
 		let low = 0;
 
@@ -306,6 +355,7 @@ class SparseMultilineTokensStorage {
 				while (min > low && this._getDeltaLine(min - 1) === deltaLine) {
 					min--;
 				}
+
 				let max = mid;
 
 				while (
@@ -314,21 +364,26 @@ class SparseMultilineTokensStorage {
 				) {
 					max++;
 				}
+
 				return new SparseLineTokens(
 					this._tokens.subarray(4 * min, 4 * max + 4),
 				);
 			}
 		}
+
 		if (this._getDeltaLine(low) === deltaLine) {
 			return new SparseLineTokens(
 				this._tokens.subarray(4 * low, 4 * low + 4),
 			);
 		}
+
 		return null;
 	}
+
 	public clear(): void {
 		this._tokenCount = 0;
 	}
+
 	public removeTokens(
 		startDeltaLine: number,
 		startChar: number,
@@ -369,21 +424,29 @@ class SparseMultilineTokensStorage {
 				if (newTokenCount === 0) {
 					firstDeltaLine = tokenDeltaLine;
 				}
+
 				if (hasDeletedTokens) {
 					// must move the token to the left
 					const destOffset = 4 * newTokenCount;
+
 					tokens[destOffset] = tokenDeltaLine - firstDeltaLine;
+
 					tokens[destOffset + 1] = tokenStartCharacter;
+
 					tokens[destOffset + 2] = tokenEndCharacter;
+
 					tokens[destOffset + 3] = tokenMetadata;
 				}
+
 				newTokenCount++;
 			}
 		}
+
 		this._tokenCount = newTokenCount;
 
 		return firstDeltaLine;
 	}
+
 	public split(
 		startDeltaLine: number,
 		startChar: number,
@@ -432,22 +495,30 @@ class SparseMultilineTokensStorage {
 					if (destTokens !== bTokens) {
 						// this token is the first token after the range
 						destTokens = bTokens;
+
 						destOffset = 0;
+
 						destFirstDeltaLine = tokenDeltaLine;
 					}
 				}
 			}
+
 			destTokens[destOffset++] = tokenDeltaLine - destFirstDeltaLine;
+
 			destTokens[destOffset++] = tokenStartCharacter;
+
 			destTokens[destOffset++] = tokenEndCharacter;
+
 			destTokens[destOffset++] = tokenMetadata;
 		}
+
 		return [
 			new SparseMultilineTokensStorage(new Uint32Array(aTokens)),
 			new SparseMultilineTokensStorage(new Uint32Array(bTokens)),
 			destFirstDeltaLine,
 		];
 	}
+
 	public acceptDeleteRange(
 		horizontalShiftForFirstLineTokens: number,
 		startDeltaLine: number,
@@ -580,7 +651,9 @@ class SparseMultilineTokensStorage {
 					// 3c. The token starts inside the deletion range, and ends after the deletion range
 					// => the token moves to continue right after the deletion
 					tokenDeltaLine = startDeltaLine;
+
 					tokenStartCharacter = startCharacter;
+
 					tokenEndCharacter =
 						tokenStartCharacter +
 						(tokenEndCharacter - endCharacter);
@@ -600,6 +673,7 @@ class SparseMultilineTokensStorage {
 
 					break;
 				}
+
 				tokenDeltaLine -= deletedLineCount;
 			} else if (
 				tokenDeltaLine === endDeltaLine &&
@@ -608,23 +682,35 @@ class SparseMultilineTokensStorage {
 				// 4. (continued) The token starts after the deletion range, on the last line where a deletion occurs
 				if (horizontalShiftForFirstLineTokens && tokenDeltaLine === 0) {
 					tokenStartCharacter += horizontalShiftForFirstLineTokens;
+
 					tokenEndCharacter += horizontalShiftForFirstLineTokens;
 				}
+
 				tokenDeltaLine -= deletedLineCount;
+
 				tokenStartCharacter -= endCharacter - startCharacter;
+
 				tokenEndCharacter -= endCharacter - startCharacter;
 			} else {
 				throw new Error(`Not possible!`);
 			}
+
 			const destOffset = 4 * newTokenCount;
+
 			tokens[destOffset] = tokenDeltaLine;
+
 			tokens[destOffset + 1] = tokenStartCharacter;
+
 			tokens[destOffset + 2] = tokenEndCharacter;
+
 			tokens[destOffset + 3] = tokenMetadata;
+
 			newTokenCount++;
 		}
+
 		this._tokenCount = newTokenCount;
 	}
+
 	public acceptInsertText(
 		deltaLine: number,
 		character: number,
@@ -717,20 +803,26 @@ class SparseMultilineTokensStorage {
 					// this token is on the line where the insertion is taking place
 					if (eolCount === 0) {
 						tokenStartCharacter += firstLineLength;
+
 						tokenEndCharacter += firstLineLength;
 					} else {
 						const tokenLength =
 							tokenEndCharacter - tokenStartCharacter;
+
 						tokenStartCharacter =
 							lastLineLength + (tokenStartCharacter - character);
+
 						tokenEndCharacter = tokenStartCharacter + tokenLength;
 					}
 				} else {
 					tokenDeltaLine += eolCount;
 				}
 			}
+
 			tokens[offset] = tokenDeltaLine;
+
 			tokens[offset + 1] = tokenStartCharacter;
+
 			tokens[offset + 2] = tokenEndCharacter;
 		}
 	}
@@ -741,15 +833,19 @@ export class SparseLineTokens {
 	constructor(tokens: Uint32Array) {
 		this._tokens = tokens;
 	}
+
 	public getCount(): number {
 		return this._tokens.length / 4;
 	}
+
 	public getStartCharacter(tokenIndex: number): number {
 		return this._tokens[4 * tokenIndex + 1];
 	}
+
 	public getEndCharacter(tokenIndex: number): number {
 		return this._tokens[4 * tokenIndex + 2];
 	}
+
 	public getMetadata(tokenIndex: number): number {
 		return this._tokens[4 * tokenIndex + 3];
 	}

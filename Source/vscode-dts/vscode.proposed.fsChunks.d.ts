@@ -11,7 +11,9 @@ declare module "vscode" {
 			resource: Uri,
 			options: { create: boolean },
 		): number | Thenable<number>;
+
 		close?(fd: number): void | Thenable<void>;
+
 		read?(
 			fd: number,
 			pos: number,
@@ -19,6 +21,7 @@ declare module "vscode" {
 			offset: number,
 			length: number,
 		): number | Thenable<number>;
+
 		write?(
 			fd: number,
 			pos: number,

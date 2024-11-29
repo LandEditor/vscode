@@ -9,11 +9,14 @@ import { MarkersFilters } from "./markersViewActions.js";
 
 export interface IMarkersView extends IView {
 	readonly filters: MarkersFilters;
+
 	focusFilter(): void;
+
 	clearFilterText(): void;
 
 	getFilterStats(): {
 		total: number;
+
 		filtered: number;
 	};
 
@@ -22,6 +25,7 @@ export interface IMarkersView extends IView {
 	getFocusedSelectedElements(): MarkerElement[] | null;
 
 	getAllResourceMarkers(): ResourceMarkers[];
+
 	collapseAll(): void;
 
 	setMultiline(multiline: boolean): void;

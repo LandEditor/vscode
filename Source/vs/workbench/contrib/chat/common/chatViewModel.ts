@@ -81,50 +81,77 @@ export interface IChatSetHiddenEvent {
 
 export interface IChatViewModel {
 	readonly model: IChatModel;
+
 	readonly initState: ChatModelInitState;
+
 	readonly sessionId: string;
+
 	readonly onDidDisposeModel: Event<void>;
+
 	readonly onDidChange: Event<IChatViewModelChangeEvent>;
+
 	readonly requestInProgress: boolean;
+
 	readonly inputPlaceholder?: string;
 
 	getItems(): (IChatRequestViewModel | IChatResponseViewModel)[];
 
 	setInputPlaceholder(text: string): void;
+
 	resetInputPlaceholder(): void;
 }
 
 export interface IChatRequestViewModel {
 	readonly id: string;
+
 	readonly sessionId: string;
 	/** This ID updates every time the underlying data changes */
 	readonly dataId: string;
+
 	readonly username: string;
+
 	readonly avatarIcon?: URI | ThemeIcon;
+
 	readonly message: IParsedChatRequest | IChatFollowup;
+
 	readonly messageText: string;
+
 	readonly attempt: number;
+
 	readonly variables: IChatRequestVariableEntry[];
+
 	currentRenderedHeight: number | undefined;
+
 	readonly contentReferences?: ReadonlyArray<IChatContentReference>;
+
 	readonly workingSet?: ReadonlyArray<URI>;
+
 	readonly confirmation?: string;
+
 	readonly isHidden: boolean;
+
 	readonly isComplete: boolean;
+
 	readonly isCompleteAddedRequest: boolean;
 }
 
 export interface IChatResponseMarkdownRenderData {
 	renderedWordCount: number;
+
 	lastRenderTime: number;
+
 	isFullyRendered: boolean;
+
 	originalMarkdown: IMarkdownString;
 }
 
 export interface IChatResponseMarkdownRenderData2 {
 	renderedWordCount: number;
+
 	lastRenderTime: number;
+
 	isFullyRendered: boolean;
+
 	originalMarkdown: IMarkdownString;
 }
 
@@ -147,7 +174,9 @@ export interface IChatProgressMessageRenderData {
 
 export interface IChatTaskRenderData {
 	task: IChatTask;
+
 	isSettled: boolean;
+
 	progressLength: number;
 }
 
@@ -155,6 +184,7 @@ export interface IChatResponseRenderData {
 	renderedParts: IChatRendererContent[];
 
 	renderedWordCount: number;
+
 	lastRenderTime: number;
 }
 
@@ -163,6 +193,7 @@ export interface IChatResponseRenderData {
  */
 export interface IChatReferences {
 	references: ReadonlyArray<IChatContentReference>;
+
 	kind: "references";
 }
 
@@ -171,6 +202,7 @@ export interface IChatReferences {
  */
 export interface IChatCodeCitations {
 	citations: ReadonlyArray<IChatCodeCitation>;
+
 	kind: "codeCitations";
 }
 
@@ -184,47 +216,77 @@ export type IChatRendererContent =
 
 export interface IChatLiveUpdateData {
 	firstWordTime: number;
+
 	lastUpdateTime: number;
+
 	impliedWordLoadRate: number;
+
 	lastWordCount: number;
 }
 
 export interface IChatResponseViewModel {
 	readonly model: IChatResponseModel;
+
 	readonly id: string;
+
 	readonly sessionId: string;
 	/** This ID updates every time the underlying data changes */
 	readonly dataId: string;
 	/** The ID of the associated IChatRequestViewModel */
 	readonly requestId: string;
+
 	readonly username: string;
+
 	readonly avatarIcon?: URI | ThemeIcon;
+
 	readonly agent?: IChatAgentData;
+
 	readonly slashCommand?: IChatAgentCommand;
+
 	readonly agentOrSlashCommandDetected: boolean;
+
 	readonly response: IResponse;
+
 	readonly usedContext: IChatUsedContext | undefined;
+
 	readonly contentReferences: ReadonlyArray<IChatContentReference>;
+
 	readonly codeCitations: ReadonlyArray<IChatCodeCitation>;
+
 	readonly progressMessages: ReadonlyArray<IChatProgressMessage>;
+
 	readonly isComplete: boolean;
+
 	readonly isCanceled: boolean;
+
 	readonly isStale: boolean;
+
 	readonly vote: ChatAgentVoteDirection | undefined;
+
 	readonly voteDownReason: ChatAgentVoteDownReason | undefined;
+
 	readonly replyFollowups?: IChatFollowup[];
+
 	readonly errorDetails?: IChatResponseErrorDetails;
+
 	readonly result?: IChatAgentResult;
+
 	readonly contentUpdateTimings?: IChatLiveUpdateData;
+
 	readonly isHidden: boolean;
+
 	readonly isCompleteAddedRequest: boolean;
+
 	renderData?: IChatResponseRenderData;
+
 	currentRenderedHeight: number | undefined;
 
 	setVote(vote: ChatAgentVoteDirection): void;
 
 	setVoteDownReason(reason: ChatAgentVoteDownReason | undefined): void;
+
 	usedReferencesExpanded?: boolean;
+
 	vulnerabilitiesListExpanded: boolean;
 
 	setEditApplied(edit: IChatTextEditGroup, editCount: number): void;
@@ -232,11 +294,13 @@ export interface IChatResponseViewModel {
 
 export class ChatViewModel extends Disposable implements IChatViewModel {
 	private readonly _onDidDisposeModel = this._register(new Emitter<void>());
+
 	readonly onDidDisposeModel = this._onDidDisposeModel.event;
 
 	private readonly _onDidChange = this._register(
 		new Emitter<IChatViewModelChangeEvent>(),
 	);
+
 	readonly onDidChange = this._onDidChange.event;
 
 	private readonly _items: (ChatRequestViewModel | ChatResponseViewModel)[] =
@@ -254,11 +318,13 @@ export class ChatViewModel extends Disposable implements IChatViewModel {
 
 	setInputPlaceholder(text: string): void {
 		this._inputPlaceholder = text;
+
 		this._onDidChange.fire({ kind: "changePlaceholder" });
 	}
 
 	resetInputPlaceholder(): void {
 		this._inputPlaceholder = undefined;
+
 		this._onDidChange.fire({ kind: "changePlaceholder" });
 	}
 
@@ -287,7 +353,9 @@ export class ChatViewModel extends Disposable implements IChatViewModel {
 				ChatRequestViewModel,
 				request,
 			);
+
 			this._items.push(requestModel);
+
 			this.updateCodeBlockTextModels(requestModel);
 
 			if (request.response) {
@@ -298,6 +366,7 @@ export class ChatViewModel extends Disposable implements IChatViewModel {
 		this._register(
 			_model.onDidDispose(() => this._onDidDisposeModel.fire()),
 		);
+
 		this._register(
 			_model.onDidChange((e) => {
 				if (e.kind === "addRequest") {
@@ -306,7 +375,9 @@ export class ChatViewModel extends Disposable implements IChatViewModel {
 							ChatRequestViewModel,
 							e.request,
 						);
+
 					this._items.push(requestModel);
+
 					this.updateCodeBlockTextModels(requestModel);
 
 					if (e.request.response) {
@@ -349,6 +420,7 @@ export class ChatViewModel extends Disposable implements IChatViewModel {
 							: e.kind === "setHidden"
 								? { kind: "setHidden" }
 								: null;
+
 				this._onDidChange.fire(modelEventToVmEvent);
 			}),
 		);
@@ -360,15 +432,19 @@ export class ChatViewModel extends Disposable implements IChatViewModel {
 			responseModel,
 			this,
 		);
+
 		this._register(
 			response.onDidChange(() => {
 				if (response.isComplete) {
 					this.updateCodeBlockTextModels(response);
 				}
+
 				return this._onDidChange.fire(null);
 			}),
 		);
+
 		this._items.push(response);
+
 		this.updateCodeBlockTextModels(response);
 	}
 
@@ -378,6 +454,7 @@ export class ChatViewModel extends Disposable implements IChatViewModel {
 
 	override dispose() {
 		super.dispose();
+
 		this._items
 			.filter(
 				(item): item is ChatResponseViewModel =>
@@ -400,11 +477,13 @@ export class ChatViewModel extends Disposable implements IChatViewModel {
 		}
 
 		let codeBlockIndex = 0;
+
 		marked.walkTokens(marked.lexer(content), (token) => {
 			if (token.type === "code") {
 				const lang = token.lang || "";
 
 				const text = token.text;
+
 				this.codeBlockModelCollection.update(
 					this._model.sessionId,
 					model,
@@ -492,6 +571,7 @@ export class ChatResponseViewModel
 	private _modelChangeCount = 0;
 
 	private readonly _onDidChange = this._register(new Emitter<void>());
+
 	readonly onDidChange = this._onDidChange.event;
 
 	get model() {
@@ -618,6 +698,7 @@ export class ChatResponseViewModel
 	}
 
 	renderData: IChatResponseRenderData | undefined = undefined;
+
 	currentRenderedHeight: number | undefined;
 
 	private _usedReferencesExpanded: boolean | undefined;
@@ -685,10 +766,12 @@ export class ChatResponseViewModel
 					const impliedWordLoadRate =
 						this._contentUpdateTimings.lastWordCount /
 						(timeDiff / 1000);
+
 					this.trace(
 						"onDidChange",
 						`Update- got ${this._contentUpdateTimings.lastWordCount} words over last ${timeDiff}ms = ${impliedWordLoadRate} words/s. ${wordCount} words are now available.`,
 					);
+
 					this._contentUpdateTimings = {
 						firstWordTime:
 							this._contentUpdateTimings.firstWordTime === 0 &&
@@ -721,16 +804,19 @@ export class ChatResponseViewModel
 
 	setVote(vote: ChatAgentVoteDirection): void {
 		this._modelChangeCount++;
+
 		this._model.setVote(vote);
 	}
 
 	setVoteDownReason(reason: ChatAgentVoteDownReason | undefined): void {
 		this._modelChangeCount++;
+
 		this._model.setVoteDownReason(reason);
 	}
 
 	setEditApplied(edit: IChatTextEditGroup, editCount: number) {
 		this._modelChangeCount++;
+
 		this._model.setEditApplied(edit, editCount);
 	}
 }

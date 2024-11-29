@@ -13,16 +13,19 @@ export function getNodeFSRequestService(): RequestService {
 			throw new Error("fileRequestService can only handle file URLs");
 		}
 	}
+
 	return {
 		getContent(location: string, encoding?: BufferEncoding) {
 			ensureFileUri(location);
 
 			return new Promise((c, e) => {
 				const uri = Uri.parse(location);
+
 				fs.readFile(uri.fsPath, encoding, (err, buf) => {
 					if (err) {
 						return e(err);
 					}
+
 					c(buf.toString());
 				});
 			});
@@ -32,6 +35,7 @@ export function getNodeFSRequestService(): RequestService {
 
 			return new Promise((c, e) => {
 				const uri = Uri.parse(location);
+
 				fs.stat(uri.fsPath, (err, stats) => {
 					if (err) {
 						if (err.code === "ENOENT") {
@@ -45,6 +49,7 @@ export function getNodeFSRequestService(): RequestService {
 							return e(err);
 						}
 					}
+
 					let type = FileType.Unknown;
 
 					if (stats.isFile()) {
@@ -54,6 +59,7 @@ export function getNodeFSRequestService(): RequestService {
 					} else if (stats.isSymbolicLink()) {
 						type = FileType.SymbolicLink;
 					}
+
 					c({
 						type,
 						ctime: stats.ctime.getTime(),
@@ -68,10 +74,12 @@ export function getNodeFSRequestService(): RequestService {
 
 			return new Promise((c, e) => {
 				const path = Uri.parse(location).fsPath;
+
 				fs.readdir(path, { withFileTypes: true }, (err, children) => {
 					if (err) {
 						return e(err);
 					}
+
 					c(
 						children.map((stat) => {
 							if (stat.isSymbolicLink()) {

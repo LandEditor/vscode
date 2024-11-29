@@ -103,6 +103,7 @@ export namespace WorkspaceEdit {
 	): vscode.WorkspaceEdit {
 		return withFileCodeEdits(new vscode.WorkspaceEdit(), client, edits);
 	}
+
 	export function withFileCodeEdits(
 		workspaceEdit: vscode.WorkspaceEdit,
 		client: ITypeScriptServiceClient,
@@ -119,6 +120,7 @@ export namespace WorkspaceEdit {
 				);
 			}
 		}
+
 		return workspaceEdit;
 	}
 }

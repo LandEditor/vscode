@@ -159,9 +159,13 @@ export class EditorMouseEvent extends StandardMouseEvent {
 		editorViewDomNode: HTMLElement,
 	) {
 		super(dom.getWindow(editorViewDomNode), e);
+
 		this.isFromPointerCapture = isFromPointerCapture;
+
 		this.pos = new PageCoordinates(this.posx, this.posy);
+
 		this.editorPos = createEditorPagePosition(editorViewDomNode);
+
 		this.relativePos = createCoordinatesRelativeToEditor(
 			editorViewDomNode,
 			this.editorPos,
@@ -314,15 +318,20 @@ export class EditorPointerEventFactory {
 
 export class GlobalEditorPointerMoveMonitor extends Disposable {
 	private readonly _editorViewDomNode: HTMLElement;
+
 	private readonly _globalPointerMoveMonitor: GlobalPointerMoveMonitor;
+
 	private _keydownListener: IDisposable | null;
 
 	constructor(editorViewDomNode: HTMLElement) {
 		super();
+
 		this._editorViewDomNode = editorViewDomNode;
+
 		this._globalPointerMoveMonitor = this._register(
 			new GlobalPointerMoveMonitor(),
 		);
+
 		this._keydownListener = null;
 	}
 
@@ -345,6 +354,7 @@ export class GlobalEditorPointerMoveMonitor extends Disposable {
 					// Allow modifier keys
 					return;
 				}
+
 				this._globalPointerMoveMonitor.stopMonitoring(
 					true,
 					e.browserEvent,
@@ -364,6 +374,7 @@ export class GlobalEditorPointerMoveMonitor extends Disposable {
 			},
 			(e) => {
 				this._keydownListener!.dispose();
+
 				onStopCallback(e);
 			},
 		);
@@ -381,8 +392,11 @@ export class GlobalEditorPointerMoveMonitor extends Disposable {
  */
 export class DynamicCssRules {
 	private static _idPool = 0;
+
 	private readonly _instanceId = ++DynamicCssRules._idPool;
+
 	private _counter = 0;
+
 	private readonly _rules = new Map<string, RefCountedCssRule>();
 
 	// We delay garbage collection so that hanging rules can be reused.
@@ -395,12 +409,14 @@ export class DynamicCssRules {
 
 	public createClassNameRef(options: CssProperties): ClassNameReference {
 		const rule = this.getOrCreateRule(options);
+
 		rule.increaseRefCount();
 
 		return {
 			className: rule.className,
 			dispose: () => {
 				rule.decreaseRefCount();
+
 				this._garbageCollectionScheduler.schedule();
 			},
 		};
@@ -413,6 +429,7 @@ export class DynamicCssRules {
 
 		if (!existingRule) {
 			const counter = this._counter++;
+
 			existingRule = new RefCountedCssRule(
 				key,
 				`dyn-rule-${this._instanceId}-${counter}`,
@@ -421,8 +438,10 @@ export class DynamicCssRules {
 					: undefined,
 				properties,
 			);
+
 			this._rules.set(key, existingRule);
 		}
+
 		return existingRule;
 	}
 
@@ -434,6 +453,7 @@ export class DynamicCssRules {
 		for (const rule of this._rules.values()) {
 			if (!rule.hasReferences()) {
 				this._rules.delete(rule.key);
+
 				rule.dispose();
 			}
 		}
@@ -446,29 +466,49 @@ export interface ClassNameReference extends IDisposable {
 
 export interface CssProperties {
 	border?: string;
+
 	borderColor?: string | ThemeColor;
+
 	borderRadius?: string;
+
 	fontStyle?: string;
+
 	fontWeight?: string;
+
 	fontSize?: string;
+
 	fontFamily?: string;
+
 	unicodeBidi?: string;
+
 	textDecoration?: string;
+
 	color?: string | ThemeColor;
+
 	backgroundColor?: string | ThemeColor;
+
 	opacity?: string;
+
 	verticalAlign?: string;
+
 	cursor?: string;
+
 	margin?: string;
+
 	padding?: string;
+
 	width?: string;
+
 	height?: string;
+
 	display?: string;
 }
 
 class RefCountedCssRule {
 	private _referenceCount: number = 0;
+
 	private _styleElement: HTMLStyleElement | undefined;
+
 	private readonly _styleElementDisposables: DisposableStore;
 
 	constructor(
@@ -478,11 +518,13 @@ class RefCountedCssRule {
 		public readonly properties: CssProperties,
 	) {
 		this._styleElementDisposables = new DisposableStore();
+
 		this._styleElement = domStylesheetsJs.createStyleSheet(
 			_containerElement,
 			undefined,
 			this._styleElementDisposables,
 		);
+
 		this._styleElement.textContent = this.getCssText(
 			this.className,
 			this.properties,
@@ -504,8 +546,10 @@ class RefCountedCssRule {
 			}
 
 			const cssPropName = camelToDashes(prop);
+
 			str += `\n\t${cssPropName}: ${cssValue};`;
 		}
+
 		str += `\n}`;
 
 		return str;
@@ -513,6 +557,7 @@ class RefCountedCssRule {
 
 	public dispose(): void {
 		this._styleElementDisposables.dispose();
+
 		this._styleElement = undefined;
 	}
 

@@ -7,7 +7,9 @@ declare module "event-stream" {
 
 	export interface ThroughStream extends _ThroughStream {
 		queue(data: File | null): any;
+
 		push(data: File | null): any;
+
 		paused: boolean;
 	}
 

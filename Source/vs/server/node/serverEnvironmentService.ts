@@ -273,9 +273,12 @@ export interface ServerParsedArgs {
 	"without-browser-env-var"?: boolean;
 	/* ----- server cli ----- */
 	help: boolean;
+
 	version: boolean;
 	"locate-shell-integration-path"?: string;
+
 	compatibility: string;
+
 	_: string[];
 }
 export const IServerEnvironmentService = refineServiceDecorator<
@@ -294,6 +297,7 @@ export class ServerEnvironmentService
 	override get userRoamingDataHome(): URI {
 		return this.appSettingsHome;
 	}
+
 	override get args(): ServerParsedArgs {
 		return super.args as ServerParsedArgs;
 	}

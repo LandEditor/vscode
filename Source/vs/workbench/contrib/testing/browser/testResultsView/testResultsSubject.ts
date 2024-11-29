@@ -36,32 +36,43 @@ export const inspectSubjectHasStack = (subject: InspectSubject | undefined) =>
 
 export class MessageSubject implements ISubjectCommon {
 	public readonly test: ITestItem;
+
 	public readonly message: ITestMessage;
+
 	public readonly expectedUri: URI;
+
 	public readonly actualUri: URI;
+
 	public readonly messageUri: URI;
+
 	public readonly revealLocation: IRichLocation | undefined;
+
 	public readonly context: ITestMessageMenuArgs | undefined;
+
 	public get controllerId() {
 		return TestId.root(this.test.extId);
 	}
+
 	public get isDiffable() {
 		return (
 			this.message.type === TestMessageType.Error &&
 			ITestMessage.isDiffable(this.message)
 		);
 	}
+
 	public get contextValue() {
 		return this.message.type === TestMessageType.Error
 			? this.message.contextValue
 			: undefined;
 	}
+
 	public get stack() {
 		return this.message.type === TestMessageType.Error &&
 			this.message.stackTrace?.length
 			? this.message.stackTrace
 			: undefined;
 	}
+
 	constructor(
 		public readonly result: ITestResult,
 		test: TestResultItem,
@@ -71,6 +82,7 @@ export class MessageSubject implements ISubjectCommon {
 		this.test = test.item;
 
 		const messages = test.tasks[taskIndex].messages;
+
 		this.messageIndex = messageIndex;
 
 		const parts = {
@@ -79,21 +91,26 @@ export class MessageSubject implements ISubjectCommon {
 			taskIndex,
 			testExtId: test.item.extId,
 		};
+
 		this.expectedUri = buildTestUri({
 			...parts,
 			type: TestUriType.ResultExpectedOutput,
 		});
+
 		this.actualUri = buildTestUri({
 			...parts,
 			type: TestUriType.ResultActualOutput,
 		});
+
 		this.messageUri = buildTestUri({
 			...parts,
 			type: TestUriType.ResultMessage,
 		});
 
 		const message = (this.message = messages[this.messageIndex]);
+
 		this.context = getMessageArgs(test, message);
+
 		this.revealLocation =
 			message.location ??
 			(test.item.uri && test.item.range
@@ -103,10 +120,13 @@ export class MessageSubject implements ISubjectCommon {
 }
 export class TaskSubject implements ISubjectCommon {
 	public readonly outputUri: URI;
+
 	public readonly revealLocation: undefined;
+
 	public get controllerId() {
 		return this.result.tasks[this.taskIndex].ctrlId;
 	}
+
 	constructor(
 		public readonly result: ITestResult,
 		public readonly taskIndex: number,
@@ -120,11 +140,15 @@ export class TaskSubject implements ISubjectCommon {
 }
 export class TestOutputSubject implements ISubjectCommon {
 	public readonly outputUri: URI;
+
 	public readonly revealLocation: undefined;
+
 	public readonly task: ITestRunTask;
+
 	public get controllerId() {
 		return TestId.root(this.test.item.extId);
 	}
+
 	constructor(
 		public readonly result: ITestResult,
 		public readonly taskIndex: number,
@@ -136,6 +160,7 @@ export class TestOutputSubject implements ISubjectCommon {
 			testExtId: this.test.item.extId,
 			type: TestUriType.TestOutput,
 		});
+
 		this.task = result.tasks[this.taskIndex];
 	}
 }
@@ -168,7 +193,9 @@ export const mapFindTestMessage = <T>(
 
 		for (
 			let messageIndex = 0;
+
 			messageIndex < task.messages.length;
+
 			messageIndex++
 		) {
 			const r = fn(
@@ -183,6 +210,7 @@ export const mapFindTestMessage = <T>(
 			}
 		}
 	}
+
 	return undefined;
 };
 
@@ -190,8 +218,10 @@ export const getSubjectTestItem = (subject: InspectSubject) => {
 	if (subject instanceof MessageSubject) {
 		return subject.test;
 	}
+
 	if (subject instanceof TaskSubject) {
 		return undefined;
 	}
+
 	return subject.test.item;
 };

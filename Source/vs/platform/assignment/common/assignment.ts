@@ -97,6 +97,7 @@ export class AssignmentFilterProvider
 
 		return result[0];
 	}
+
 	getFilterValue(filter: string): string | null {
 		switch (filter) {
 			case Filters.ApplicationVersion:
@@ -120,6 +121,7 @@ export class AssignmentFilterProvider
 				return "";
 		}
 	}
+
 	getFilters(): Map<string, any> {
 		const filters: Map<string, any> = new Map<string, any>();
 
@@ -128,6 +130,7 @@ export class AssignmentFilterProvider
 		for (const value of filterValues) {
 			filters.set(value, this.getFilterValue(value));
 		}
+
 		return filters;
 	}
 }

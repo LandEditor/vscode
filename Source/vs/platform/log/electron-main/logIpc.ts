@@ -19,6 +19,7 @@ export class LoggerChannel implements IServerChannel {
 	private readonly loggers = new ResourceMap<ILogger>();
 
 	constructor(private readonly loggerService: ILoggerMainService) {}
+
 	listen(_: unknown, event: string, windowId?: number): Event<any> {
 		switch (event) {
 			case "onDidChangeLoggers":
@@ -36,8 +37,10 @@ export class LoggerChannel implements IServerChannel {
 					? this.loggerService.getOnDidChangeVisibilityEvent(windowId)
 					: this.loggerService.onDidChangeVisibility;
 		}
+
 		throw new Error(`Event not found: ${event}`);
 	}
+
 	async call(_: unknown, command: string, arg?: any): Promise<any> {
 		switch (command) {
 			case "createLogger":
@@ -74,8 +77,10 @@ export class LoggerChannel implements IServerChannel {
 			case "deregisterLogger":
 				return this.loggerService.deregisterLogger(URI.revive(arg[0]));
 		}
+
 		throw new Error(`Call not found: ${command}`);
 	}
+
 	private createLogger(
 		file: URI,
 		options: ILoggerOptions,
@@ -86,6 +91,7 @@ export class LoggerChannel implements IServerChannel {
 			this.loggerService.createLogger(file, options, windowId),
 		);
 	}
+
 	private consoleLog(level: LogLevel, args: any[]): void {
 		let consoleFn = console.log;
 
@@ -105,14 +111,17 @@ export class LoggerChannel implements IServerChannel {
 
 				break;
 		}
+
 		consoleFn.call(console, ...args);
 	}
+
 	private log(file: URI, messages: [LogLevel, string][]): void {
 		const logger = this.loggers.get(file);
 
 		if (!logger) {
 			throw new Error("Create the logger before logging");
 		}
+
 		for (const [level, message] of messages) {
 			log(logger, level, message);
 		}

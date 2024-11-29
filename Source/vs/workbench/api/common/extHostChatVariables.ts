@@ -26,19 +26,24 @@ import * as extHostTypes from "./extHostTypes.js";
 
 export class ExtHostChatVariables implements ExtHostChatVariablesShape {
 	private static _idPool = 0;
+
 	private readonly _resolver = new Map<
 		number,
 		{
 			extension: IExtensionDescription;
+
 			data: IChatVariableData;
+
 			resolver: vscode.ChatVariableResolver;
 		}
 	>();
+
 	private readonly _proxy: MainThreadChatVariablesShape;
 
 	constructor(mainContext: IMainContext) {
 		this._proxy = mainContext.getProxy(MainContext.MainThreadChatVariables);
 	}
+
 	async $resolveVariable(
 		handle: number,
 		requestId: string,
@@ -50,6 +55,7 @@ export class ExtHostChatVariables implements ExtHostChatVariablesShape {
 		if (!item) {
 			return undefined;
 		}
+
 		try {
 			if (item.resolver.resolve2) {
 				checkProposedApiEnabled(
@@ -86,8 +92,10 @@ export class ExtHostChatVariables implements ExtHostChatVariablesShape {
 		} catch (err) {
 			onUnexpectedExternalError(err);
 		}
+
 		return undefined;
 	}
+
 	registerVariableResolver(
 		extension: IExtensionDescription,
 		id: string,
@@ -102,6 +110,7 @@ export class ExtHostChatVariables implements ExtHostChatVariablesShape {
 		const handle = ExtHostChatVariables._idPool++;
 
 		const icon = themeIconId ? ThemeIcon.fromId(themeIconId) : undefined;
+
 		this._resolver.set(handle, {
 			extension,
 			data: {
@@ -113,6 +122,7 @@ export class ExtHostChatVariables implements ExtHostChatVariablesShape {
 			},
 			resolver: resolver,
 		});
+
 		this._proxy.$registerVariable(handle, {
 			id,
 			name,
@@ -125,21 +135,25 @@ export class ExtHostChatVariables implements ExtHostChatVariablesShape {
 
 		return toDisposable(() => {
 			this._resolver.delete(handle);
+
 			this._proxy.$unregisterVariable(handle);
 		});
 	}
 }
 class ChatVariableResolverResponseStream {
 	private _isClosed: boolean = false;
+
 	private _apiObject: vscode.ChatVariableResolverResponseStream | undefined;
 
 	constructor(
 		private readonly _requestId: string,
 		private readonly _proxy: MainThreadChatVariablesShape,
 	) {}
+
 	close() {
 		this._isClosed = true;
 	}
+
 	get apiObject() {
 		if (!this._apiObject) {
 			const that = this;
@@ -147,14 +161,17 @@ class ChatVariableResolverResponseStream {
 			function throwIfDone(source: Function | undefined) {
 				if (that._isClosed) {
 					const err = new Error("Response stream has been closed");
+
 					Error.captureStackTrace(err, source);
 
 					throw err;
 				}
 			}
+
 			const _report = (progress: IChatVariableResolverProgressDto) => {
 				this._proxy.$handleProgressChunk(this._requestId, progress);
 			};
+
 			this._apiObject = {
 				progress(value) {
 					throwIfDone(this.progress);
@@ -164,6 +181,7 @@ class ChatVariableResolverResponseStream {
 					);
 
 					const dto = typeConvert.ChatResponseProgressPart.from(part);
+
 					_report(dto);
 
 					return this;
@@ -177,6 +195,7 @@ class ChatVariableResolverResponseStream {
 
 					const dto =
 						typeConvert.ChatResponseReferencePart.from(part);
+
 					_report(dto);
 
 					return this;
@@ -197,10 +216,12 @@ class ChatVariableResolverResponseStream {
 							typeConvert.ChatResponseProgressPart.from(part),
 						);
 					}
+
 					return this;
 				},
 			};
 		}
+
 		return this._apiObject;
 	}
 }

@@ -54,7 +54,9 @@ export class RemoteExtensionsScannerService
 	implements IRemoteExtensionsScannerService
 {
 	readonly _serviceBrand: undefined;
+
 	private readonly _whenBuiltinExtensionsReady = Promise.resolve();
+
 	private readonly _whenExtensionsReady = Promise.resolve();
 
 	constructor(
@@ -79,7 +81,9 @@ export class RemoteExtensionsScannerService
 				installPreReleaseVersion:
 					!!environmentService.args["pre-release"],
 			};
+
 			performance.mark("code/server/willInstallBuiltinExtensions");
+
 			this._whenExtensionsReady = this._whenBuiltinExtensionsReady =
 				_extensionManagementCLI
 					.installExtensions(
@@ -93,6 +97,7 @@ export class RemoteExtensionsScannerService
 							performance.mark(
 								"code/server/didInstallBuiltinExtensions",
 							);
+
 							_logService.trace(
 								"Finished installing builtin extensions",
 							);
@@ -102,11 +107,13 @@ export class RemoteExtensionsScannerService
 						},
 					);
 		}
+
 		const extensionsToInstall =
 			environmentService.args["install-extension"];
 
 		if (extensionsToInstall) {
 			_logService.trace("Installing extensions passed via args...");
+
 			this._whenExtensionsReady = this._whenBuiltinExtensionsReady
 				.then(() =>
 					_extensionManagementCLI.installExtensions(
@@ -132,6 +139,7 @@ export class RemoteExtensionsScannerService
 				);
 		}
 	}
+
 	private _asExtensionIdOrVSIX(inputs: string[]): (string | URI)[] {
 		return inputs.map((input) =>
 			/\.vsix$/i.test(input)
@@ -139,9 +147,11 @@ export class RemoteExtensionsScannerService
 				: input,
 		);
 	}
+
 	whenExtensionsReady(): Promise<void> {
 		return this._whenExtensionsReady;
 	}
+
 	async scanExtensions(
 		language?: string,
 		profileLocation?: URI,
@@ -150,9 +160,11 @@ export class RemoteExtensionsScannerService
 		languagePackId?: string,
 	): Promise<IExtensionDescription[]> {
 		performance.mark("code/server/willScanExtensions");
+
 		this._logService.trace(
 			`Scanning extensions using UI language: ${language}`,
 		);
+
 		await this._whenBuiltinExtensionsReady;
 
 		const extensionDevelopmentPaths = extensionDevelopmentLocations
@@ -160,6 +172,7 @@ export class RemoteExtensionsScannerService
 					.filter((url) => url.scheme === Schemas.file)
 					.map((url) => url.fsPath)
 			: undefined;
+
 		profileLocation =
 			profileLocation ??
 			this._userDataProfilesService.defaultProfile.extensionsResource;
@@ -171,12 +184,16 @@ export class RemoteExtensionsScannerService
 			extensionDevelopmentPaths,
 			languagePackId,
 		);
+
 		this._logService.trace("Scanned Extensions", extensions);
+
 		this._massageWhenConditions(extensions);
+
 		performance.mark("code/server/didScanExtensions");
 
 		return extensions;
 	}
+
 	private async _scanExtensions(
 		profileLocation: URI,
 		language: string,
@@ -209,6 +226,7 @@ export class RemoteExtensionsScannerService
 			this._logService,
 		);
 	}
+
 	private async _scanDevelopedExtensions(
 		language: string,
 		extensionDevelopmentPaths?: string[],
@@ -228,8 +246,10 @@ export class RemoteExtensionsScannerService
 				.flat()
 				.map((e) => toExtensionDescription(e, true));
 		}
+
 		return [];
 	}
+
 	private async _scanWorkspaceInstalledExtensions(
 		language: string,
 		workspaceInstalledExtensions?: URI[],
@@ -255,8 +275,10 @@ export class RemoteExtensionsScannerService
 				}
 			}
 		}
+
 		return result;
 	}
+
 	private async _scanBuiltinExtensions(
 		language: string,
 	): Promise<IExtensionDescription[]> {
@@ -268,6 +290,7 @@ export class RemoteExtensionsScannerService
 
 		return scannedExtensions.map((e) => toExtensionDescription(e, false));
 	}
+
 	private async _scanInstalledExtensions(
 		profileLocation: URI,
 		language: string,
@@ -281,6 +304,7 @@ export class RemoteExtensionsScannerService
 
 		return scannedExtensions.map((e) => toExtensionDescription(e, false));
 	}
+
 	private async _ensureLanguagePackIsInstalled(
 		language: string,
 		languagePackId: string | undefined,
@@ -293,6 +317,7 @@ export class RemoteExtensionsScannerService
 		) {
 			return;
 		}
+
 		try {
 			const installed =
 				await this._languagePackService.getInstalledLanguages();
@@ -308,6 +333,7 @@ export class RemoteExtensionsScannerService
 			// We tried to see what is installed but failed. We can try installing anyway.
 			this._logService.error(err);
 		}
+
 		if (!languagePackId) {
 			this._logService.trace(
 				`No language pack id provided for language ${language}. Skipping language pack installation.`,
@@ -315,6 +341,7 @@ export class RemoteExtensionsScannerService
 
 			return;
 		}
+
 		this._logService.trace(
 			`Language Pack ${languagePackId} for language ${language} is not installed. It will be installed now.`,
 		);
@@ -331,14 +358,17 @@ export class RemoteExtensionsScannerService
 			this._logService.error(err);
 		}
 	}
+
 	private _massageWhenConditions(extensions: IExtensionDescription[]): void {
 		// Massage "when" conditions which mention `resourceScheme`
 		interface WhenUser {
 			when?: string;
 		}
+
 		interface LocWhenUser {
 			[loc: string]: WhenUser[];
 		}
+
 		const _mapResourceSchemeValue = (
 			value: string,
 			isRegex: boolean,
@@ -350,8 +380,11 @@ export class RemoteExtensionsScannerService
 
 		const _mapResourceRegExpValue = (value: RegExp): RegExp => {
 			let flags = "";
+
 			flags += value.global ? "g" : "";
+
 			flags += value.ignoreCase ? "i" : "";
+
 			flags += value.multiline ? "m" : "";
 
 			return new RegExp(
@@ -364,9 +397,11 @@ export class RemoteExtensionsScannerService
 			mapDefined(key: string): ContextKeyExpression {
 				return ContextKeyDefinedExpr.create(key);
 			}
+
 			mapNot(key: string): ContextKeyExpression {
 				return ContextKeyNotExpr.create(key);
 			}
+
 			mapEquals(key: string, value: any): ContextKeyExpression {
 				if (key === "resourceScheme" && typeof value === "string") {
 					return ContextKeyEqualsExpr.create(
@@ -377,6 +412,7 @@ export class RemoteExtensionsScannerService
 					return ContextKeyEqualsExpr.create(key, value);
 				}
 			}
+
 			mapNotEquals(key: string, value: any): ContextKeyExpression {
 				if (key === "resourceScheme" && typeof value === "string") {
 					return ContextKeyNotEqualsExpr.create(
@@ -387,18 +423,23 @@ export class RemoteExtensionsScannerService
 					return ContextKeyNotEqualsExpr.create(key, value);
 				}
 			}
+
 			mapGreater(key: string, value: any): ContextKeyExpression {
 				return ContextKeyGreaterExpr.create(key, value);
 			}
+
 			mapGreaterEquals(key: string, value: any): ContextKeyExpression {
 				return ContextKeyGreaterEqualsExpr.create(key, value);
 			}
+
 			mapSmaller(key: string, value: any): ContextKeyExpression {
 				return ContextKeySmallerExpr.create(key, value);
 			}
+
 			mapSmallerEquals(key: string, value: any): ContextKeyExpression {
 				return ContextKeySmallerEqualsExpr.create(key, value);
 			}
+
 			mapRegex(key: string, regexp: RegExp | null): ContextKeyRegexExpr {
 				if (key === "resourceScheme" && regexp) {
 					return ContextKeyRegexExpr.create(
@@ -409,9 +450,11 @@ export class RemoteExtensionsScannerService
 					return ContextKeyRegexExpr.create(key, regexp);
 				}
 			}
+
 			mapIn(key: string, valueKey: string): ContextKeyInExpr {
 				return ContextKeyInExpr.create(key, valueKey);
 			}
+
 			mapNotIn(key: string, valueKey: string): ContextKeyNotInExpr {
 				return ContextKeyNotInExpr.create(key, valueKey);
 			}
@@ -425,12 +468,15 @@ export class RemoteExtensionsScannerService
 			) {
 				return;
 			}
+
 			const expr = ContextKeyExpr.deserialize(element.when);
 
 			if (!expr) {
 				return;
 			}
+
 			const massaged = expr.map(_exprKeyMapper);
+
 			element.when = massaged.serialize();
 		};
 
@@ -449,6 +495,7 @@ export class RemoteExtensionsScannerService
 				_massageWhenUserArr(target[loc]);
 			}
 		};
+
 		extensions.forEach((extension) => {
 			if (extension.contributes) {
 				if (extension.contributes.menus) {
@@ -456,6 +503,7 @@ export class RemoteExtensionsScannerService
 						<LocWhenUser>extension.contributes.menus,
 					);
 				}
+
 				if (extension.contributes.keybindings) {
 					_massageWhenUserArr(
 						<WhenUser | WhenUser[]>(
@@ -463,6 +511,7 @@ export class RemoteExtensionsScannerService
 						),
 					);
 				}
+
 				if (extension.contributes.views) {
 					_massageLocWhenUser(
 						<LocWhenUser>extension.contributes.views,
@@ -477,9 +526,11 @@ export class RemoteExtensionsScannerChannel implements IServerChannel {
 		private service: RemoteExtensionsScannerService,
 		private getUriTransformer: (requestContext: any) => IURITransformer,
 	) {}
+
 	listen(context: any, event: string): Event<any> {
 		throw new Error("Invalid listen");
 	}
+
 	async call(context: any, command: string, args?: any): Promise<any> {
 		const uriTransformer = this.getUriTransformer(context);
 
@@ -521,6 +572,7 @@ export class RemoteExtensionsScannerChannel implements IServerChannel {
 				);
 			}
 		}
+
 		throw new Error("Invalid call");
 	}
 }

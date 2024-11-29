@@ -34,7 +34,9 @@ export interface IGuidesTextModelPart {
 }
 export interface IActiveIndentGuideInfo {
 	startLineNumber: number;
+
 	endLineNumber: number;
+
 	indent: number;
 }
 export enum HorizontalGuidesState {
@@ -44,7 +46,9 @@ export enum HorizontalGuidesState {
 }
 export interface BracketGuideOptions {
 	includeInactive: boolean;
+
 	horizontalGuides: HorizontalGuidesState;
+
 	highlightActive: boolean;
 }
 export class IndentGuide {

@@ -37,12 +37,15 @@ import {
 
 class MirrorCell {
 	private readonly textModel: MirrorModel;
+
 	private _hash?: Promise<number>;
+
 	public get eol() {
 		return this._eol === "\r\n"
 			? DefaultEndOfLine.CRLF
 			: DefaultEndOfLine.LF;
 	}
+
 	constructor(
 		public readonly handle: number,
 		uri: URI,
@@ -60,8 +63,10 @@ class MirrorCell {
 
 	onEvents(e: IModelChangedEvent) {
 		this.textModel.onEvents(e);
+
 		this._hash = undefined;
 	}
+
 	getValue(): string {
 		return this.textModel.getValue();
 	}
@@ -74,8 +79,11 @@ class MirrorCell {
 		let hashValue = numberHash(104579, 0);
 
 		hashValue = doHash(this.language, hashValue);
+
 		hashValue = doHash(this.getValue(), hashValue);
+
 		hashValue = doHash(this.metadata, hashValue);
+
 		hashValue = doHash(this.internalMetadata, hashValue);
 
 		for (const op of this.outputs) {
@@ -120,19 +128,23 @@ class MirrorNotebookDocument {
 				this._spliceNotebookCells(e.changes);
 			} else if (e.kind === NotebookCellsChangeType.Move) {
 				const cells = this.cells.splice(e.index, 1);
+
 				this.cells.splice(e.newIdx, 0, ...cells);
 			} else if (e.kind === NotebookCellsChangeType.Output) {
 				const cell = this.cells[e.index];
+
 				cell.outputs = e.outputs;
 			} else if (e.kind === NotebookCellsChangeType.ChangeCellLanguage) {
 				this._assertIndex(e.index);
 
 				const cell = this.cells[e.index];
+
 				cell.language = e.language;
 			} else if (e.kind === NotebookCellsChangeType.ChangeCellMetadata) {
 				this._assertIndex(e.index);
 
 				const cell = this.cells[e.index];
+
 				cell.metadata = e.metadata;
 			} else if (
 				e.kind === NotebookCellsChangeType.ChangeCellInternalMetadata
@@ -140,6 +152,7 @@ class MirrorNotebookDocument {
 				this._assertIndex(e.index);
 
 				const cell = this.cells[e.index];
+
 				cell.internalMetadata = e.internalMetadata;
 			} else if (
 				e.kind === NotebookCellsChangeType.ChangeDocumentMetadata
@@ -183,6 +196,7 @@ class MirrorNotebookDocument {
 class CellSequence implements ISequence {
 	static async create(textModel: MirrorNotebookDocument) {
 		const hashValue = new Int32Array(textModel.cells.length);
+
 		await Promise.all(
 			textModel.cells.map(async (c, i) => {
 				hashValue[i] = await c.getComparisonValue();
@@ -196,11 +210,13 @@ class CellSequence implements ISequence {
 		textModel: MirrorNotebookDocument,
 	): Promise<Map<string, number>> {
 		const hashValue = new Map<string, number>();
+
 		await Promise.all(
 			textModel.cells.map(async (c, i) => {
 				const value = await c.getComparisonValue();
 
 				const id: string = (c.metadata?.id || "") as string;
+
 				hashValue.set(id, value);
 			}),
 		);
@@ -225,6 +241,7 @@ export class NotebookEditorSimpleWorker
 	constructor() {
 		this._models = Object.create(null);
 	}
+
 	dispose(): void {}
 
 	public $acceptNewModel(
@@ -259,6 +276,7 @@ export class NotebookEditorSimpleWorker
 		event: NotebookCellsChangedEventDto,
 	) {
 		const model = this._models[strURL];
+
 		model?.acceptModelChanged(event);
 	}
 
@@ -268,6 +286,7 @@ export class NotebookEditorSimpleWorker
 		event: IModelChangedEvent,
 	) {
 		const model = this._models[strURL];
+
 		model.cells.find((cell) => cell.handle === handle)?.onEvents(event);
 	}
 
@@ -275,6 +294,7 @@ export class NotebookEditorSimpleWorker
 		if (!this._models[strURL]) {
 			return;
 		}
+
 		delete this._models[strURL];
 	}
 
@@ -341,11 +361,13 @@ export class NotebookEditorSimpleWorker
 			notebook: MirrorNotebookDocument,
 		) => {
 			const hashValue = new Map<string, number>();
+
 			await Promise.all(
 				notebook.cells.map(async (c, i) => {
 					const value = await c.getComparisonValue();
 					// Verified earlier that these cannot be empty.
 					const id: string = (c.metadata?.id || "") as string;
+
 					hashValue.set(id, value);
 				}),
 			);
@@ -398,6 +420,7 @@ export class NotebookEditorSimpleWorker
 						modifiedLength: 0,
 					});
 				}
+
 				continue;
 			} else {
 				// This is a new cell.
@@ -455,6 +478,7 @@ export class NotebookEditorSimpleWorker
 			}
 
 			const builder = new PieceTreeTextBufferBuilder();
+
 			builder.acceptChunk(cell.getValue());
 
 			const bufferFactory = builder.finish(true);

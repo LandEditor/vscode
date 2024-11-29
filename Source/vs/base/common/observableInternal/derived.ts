@@ -51,6 +51,7 @@ export function derived<T>(
 			strictEquals,
 		);
 	}
+
 	return new Derived(
 		new DebugNameData(undefined, undefined, computeFnOrOwner as any),
 		computeFnOrOwner as any,
@@ -78,6 +79,7 @@ export function derivedWithSetter<T>(
 export function derivedOpts<T>(
 	options: IDebugNameData & {
 		equalsFn?: EqualityComparer<T>;
+
 		onLastObserverRemoved?: () => void;
 	},
 	computeFn: (reader: IReader) => T,
@@ -112,10 +114,12 @@ _setDerivedOpts(derivedOpts);
 export function derivedHandleChanges<T, TChangeSummary>(
 	options: IDebugNameData & {
 		createEmptyChangeSummary: () => TChangeSummary;
+
 		handleChange: (
 			context: IChangeContext,
 			changeSummary: TChangeSummary,
 		) => boolean;
+
 		equalityComparer?: EqualityComparer<T>;
 	},
 	computeFn: (reader: IReader, changeSummary: TChangeSummary) => T,
@@ -148,11 +152,14 @@ export function derivedWithStore<T>(
 
 	if (computeFnOrUndefined === undefined) {
 		computeFn = computeFnOrOwner as any;
+
 		owner = undefined;
 	} else {
 		owner = computeFnOrOwner;
+
 		computeFn = computeFnOrUndefined as any;
 	}
+
 	const store = new DisposableStore();
 
 	return new Derived(
@@ -187,11 +194,14 @@ export function derivedDisposable<T extends IDisposable | undefined>(
 
 	if (computeFnOrUndefined === undefined) {
 		computeFn = computeFnOrOwner as any;
+
 		owner = undefined;
 	} else {
 		owner = computeFnOrOwner;
+
 		computeFn = computeFnOrUndefined as any;
 	}
+
 	let store: DisposableStore | undefined = undefined;
 
 	return new Derived(
@@ -202,11 +212,13 @@ export function derivedDisposable<T extends IDisposable | undefined>(
 			} else {
 				store.clear();
 			}
+
 			const result = computeFn(r);
 
 			if (result) {
 				store.add(result);
 			}
+
 			return result;
 		},
 		undefined,
@@ -214,6 +226,7 @@ export function derivedDisposable<T extends IDisposable | undefined>(
 		() => {
 			if (store) {
 				store.dispose();
+
 				store = undefined;
 			}
 		},
@@ -244,16 +257,25 @@ export class Derived<T, TChangeSummary = any>
 	implements IReader, IObserver
 {
 	private state = DerivedState.initial;
+
 	private value: T | undefined = undefined;
+
 	private updateCount = 0;
+
 	private dependencies = new Set<IObservable<any>>();
+
 	private dependenciesToBeRemoved = new Set<IObservable<any>>();
+
 	private changeSummary: TChangeSummary | undefined = undefined;
+
 	private _isUpdating = false;
+
 	private _isComputing = false;
+
 	public override get debugName(): string {
 		return this._debugNameData.getDebugName(this) ?? "(anonymous)";
 	}
+
 	constructor(
 		public readonly _debugNameData: DebugNameData,
 		public readonly _computeFn: (
@@ -272,36 +294,44 @@ export class Derived<T, TChangeSummary = any>
 		private readonly _equalityComparator: EqualityComparer<T>,
 	) {
 		super();
+
 		this.changeSummary = this.createChangeSummary?.();
 
 		getLogger()?.handleDerivedCreated(this);
 	}
+
 	protected override onLastObserverRemoved(): void {
 		/**
 		 * We are not tracking changes anymore, thus we have to assume
 		 * that our cache is invalid.
 		 */
 		this.state = DerivedState.initial;
+
 		this.value = undefined;
 
 		for (const d of this.dependencies) {
 			d.removeObserver(this);
 		}
+
 		this.dependencies.clear();
+
 		this._handleLastObserverRemoved?.();
 	}
+
 	public override get(): T {
 		if (this._isComputing) {
 			throw new BugIndicatingError(
 				"Cyclic deriveds are not supported yet!",
 			);
 		}
+
 		if (this.observers.size === 0) {
 			let result;
 			// Without observers, we don't know when to clean up stuff.
 			// Thus, we don't cache anything to prevent memory leaks.
 			try {
 				this._isReaderValid = true;
+
 				result = this._computeFn(this, this.createChangeSummary?.()!);
 			} finally {
 				this._isReaderValid = false;
@@ -332,6 +362,7 @@ export class Derived<T, TChangeSummary = any>
 				if (this.state === DerivedState.dependenciesMightHaveChanged) {
 					this.state = DerivedState.upToDate;
 				}
+
 				this._recomputeIfNeeded();
 				// In case recomputation changed one of our dependencies, we need to recompute again.
 			} while (this.state !== DerivedState.upToDate);
@@ -339,23 +370,30 @@ export class Derived<T, TChangeSummary = any>
 			return this.value!;
 		}
 	}
+
 	private _recomputeIfNeeded() {
 		if (this.state === DerivedState.upToDate) {
 			return;
 		}
+
 		const emptySet = this.dependenciesToBeRemoved;
+
 		this.dependenciesToBeRemoved = this.dependencies;
+
 		this.dependencies = emptySet;
 
 		const hadValue = this.state !== DerivedState.initial;
 
 		const oldValue = this.value;
+
 		this.state = DerivedState.upToDate;
 
 		let didChange = false;
+
 		this._isComputing = false; // TODO@hediet: Set to true and investigate diff editor scrolling issues! (also see test.skip('catches cyclic dependencies')
 		try {
 			const changeSummary = this.changeSummary!;
+
 			this.changeSummary = this.createChangeSummary?.();
 
 			try {
@@ -369,8 +407,10 @@ export class Derived<T, TChangeSummary = any>
 				for (const o of this.dependenciesToBeRemoved) {
 					o.removeObserver(this);
 				}
+
 				this.dependenciesToBeRemoved.clear();
 			}
+
 			didChange =
 				hadValue && !this._equalityComparator(oldValue!, this.value);
 
@@ -384,6 +424,7 @@ export class Derived<T, TChangeSummary = any>
 		} catch (e) {
 			onBugIndicatingError(e);
 		}
+
 		this._isComputing = false;
 
 		if (didChange) {
@@ -392,6 +433,7 @@ export class Derived<T, TChangeSummary = any>
 			}
 		}
 	}
+
 	public override toString(): string {
 		return `LazyDerived<${this.debugName}>`;
 	}
@@ -402,7 +444,9 @@ export class Derived<T, TChangeSummary = any>
 				"Cyclic deriveds are not supported yet!",
 			);
 		}
+
 		this.updateCount++;
+
 		this._isUpdating = true;
 
 		try {
@@ -417,6 +461,7 @@ export class Derived<T, TChangeSummary = any>
 					}
 				}
 			}
+
 			if (propagateBeginUpdate) {
 				for (const r of this.observers) {
 					r.beginUpdate(this); // This signals a possible change
@@ -426,6 +471,7 @@ export class Derived<T, TChangeSummary = any>
 			this._isUpdating = false;
 		}
 	}
+
 	public endUpdate<T>(_observable: IObservable<T>): void {
 		this.updateCount--;
 
@@ -437,8 +483,10 @@ export class Derived<T, TChangeSummary = any>
 				r.endUpdate(this);
 			}
 		}
+
 		assertFn(() => this.updateCount >= 0);
 	}
+
 	public handlePossibleChange<T>(observable: IObservable<T, unknown>): void {
 		// In all other states, observers already know that we might have changed.
 		if (
@@ -453,6 +501,7 @@ export class Derived<T, TChangeSummary = any>
 			}
 		}
 	}
+
 	public handleChange<T, TChange>(
 		observable: IObservable<T, TChange>,
 		change: TChange,
@@ -478,6 +527,7 @@ export class Derived<T, TChangeSummary = any>
 			} catch (e) {
 				onBugIndicatingError(e);
 			}
+
 			const wasUpToDate = this.state === DerivedState.upToDate;
 
 			if (
@@ -497,6 +547,7 @@ export class Derived<T, TChangeSummary = any>
 	}
 	// IReader Implementation
 	private _isReaderValid = false;
+
 	public readObservable<T>(observable: IObservable<T>): T {
 		if (!this._isReaderValid) {
 			throw new BugIndicatingError(
@@ -509,10 +560,12 @@ export class Derived<T, TChangeSummary = any>
 		const value = observable.get();
 		// Which is why we only add the observable to the dependencies now.
 		this.dependencies.add(observable);
+
 		this.dependenciesToBeRemoved.delete(observable);
 
 		return value;
 	}
+
 	public override addObserver(observer: IObserver): void {
 		const shouldCallBeginUpdate =
 			!this.observers.has(observer) && this.updateCount > 0;
@@ -523,6 +576,7 @@ export class Derived<T, TChangeSummary = any>
 			observer.beginUpdate(this);
 		}
 	}
+
 	public override removeObserver(observer: IObserver): void {
 		const shouldCallEndUpdate =
 			this.observers.has(observer) && this.updateCount > 0;

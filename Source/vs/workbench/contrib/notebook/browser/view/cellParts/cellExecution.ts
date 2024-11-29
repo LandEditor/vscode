@@ -28,6 +28,7 @@ export class CellExecutionPart extends CellContentPart {
 		private readonly _notebookExecutionStateService: INotebookExecutionStateService,
 	) {
 		super();
+
 		this._register(
 			this._notebookEditor.onDidChangeActiveKernel(() => {
 				if (this.currentCell) {
@@ -46,21 +47,25 @@ export class CellExecutionPart extends CellContentPart {
 							),
 						);
 					}
+
 					this.updateExecutionOrder(
 						this.currentCell.internalMetadata,
 					);
 				}
 			}),
 		);
+
 		this._register(
 			this._notebookEditor.onDidScroll(() => {
 				this._updatePosition();
 			}),
 		);
 	}
+
 	override didRenderCell(element: ICellViewModel): void {
 		this.updateExecutionOrder(element.internalMetadata, true);
 	}
+
 	private updateExecutionOrder(
 		internalMetadata: NotebookCellInternalMetadata,
 		forceClear = false,
@@ -79,6 +84,7 @@ export class CellExecutionPart extends CellContentPart {
 				)
 			) {
 				const renderingCell = this.currentCell;
+
 				disposableTimeout(
 					() => {
 						if (this.currentCell === renderingCell) {
@@ -94,15 +100,18 @@ export class CellExecutionPart extends CellContentPart {
 
 				return;
 			}
+
 			const executionOrderLabel =
 				typeof internalMetadata.executionOrder === "number"
 					? `[${internalMetadata.executionOrder}]`
 					: "[ ]";
+
 			this._executionOrderLabel.innerText = executionOrderLabel;
 		} else {
 			this._executionOrderLabel.innerText = "";
 		}
 	}
+
 	override updateState(
 		element: ICellViewModel,
 		e: CellViewModelStateChangeEvent,
@@ -111,9 +120,11 @@ export class CellExecutionPart extends CellContentPart {
 			this.updateExecutionOrder(element.internalMetadata);
 		}
 	}
+
 	override updateInternalLayoutNow(element: ICellViewModel): void {
 		this._updatePosition();
 	}
+
 	private _updatePosition() {
 		if (this.currentCell) {
 			if (this.currentCell.isInputCollapsed) {
@@ -144,7 +155,9 @@ export class CellExecutionPart extends CellContentPart {
 
 					if (scrollBottom <= editorBottom) {
 						const offset = editorBottom - scrollBottom;
+
 						top -= offset;
+
 						top = clamp(
 							top,
 							lineHeight + 12, // line height + padding for single line
@@ -154,6 +167,7 @@ export class CellExecutionPart extends CellContentPart {
 						);
 					}
 				}
+
 				this._executionOrderLabel.style.top = `${top}px`;
 			}
 		}

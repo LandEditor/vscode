@@ -37,11 +37,15 @@ export class NotebookDiffEditorEventDispatcher extends Disposable {
 	protected readonly _onDidChangeLayout = this._register(
 		new Emitter<NotebookDiffLayoutChangedEvent>(),
 	);
+
 	readonly onDidChangeLayout = this._onDidChangeLayout.event;
+
 	protected readonly _onDidChangeCellLayout = this._register(
 		new Emitter<NotebookCellLayoutChangedEvent>(),
 	);
+
 	readonly onDidChangeCellLayout = this._onDidChangeCellLayout.event;
+
 	emit(events: NotebookDiffViewEvent[]) {
 		for (let i = 0, len = events.length; i < len; i++) {
 			const e = events[i];

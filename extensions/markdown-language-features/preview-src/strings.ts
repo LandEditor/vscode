@@ -14,5 +14,6 @@ export function getStrings(): {
 			return JSON.parse(data);
 		}
 	}
+
 	throw new Error("Could not load strings");
 }

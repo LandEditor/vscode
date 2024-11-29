@@ -76,6 +76,7 @@ export interface IChatViewOpenOptions {
 
 export interface IChatViewOpenRequestEntry {
 	request: string;
+
 	response: string;
 }
 
@@ -113,25 +114,33 @@ class OpenChatGlobalAction extends Action2 {
 		opts = typeof opts === 'string' ? { query: opts } : opts;
 
 		const chatService = accessor.get(IChatService);
+
 		const chatVariablesService = accessor.get(IChatVariablesService);
+
 		const viewsService = accessor.get(IViewsService);
+
 		const hostService = accessor.get(IHostService);
 
 		const chatWidget = await showChatView(viewsService);
+
 		if (!chatWidget) {
 			return;
 		}
+
 		if (opts?.previousRequests?.length && chatWidget.viewModel) {
 			for (const { request, response } of opts.previousRequests) {
 				chatService.addCompleteRequest(chatWidget.viewModel.sessionId, request, undefined, 0, { message: response });
 			}
 		}
+
 		if (opts?.attachScreenshot) {
 			const screenshot = await hostService.getScreenshot();
+
 			if (screenshot) {
 				chatWidget.attachmentModel.addContext(convertBufferToScreenshotVariable(screenshot));
 			}
 		}
+
 		if (opts?.query) {
 			if (opts.isPartialQuery) {
 				chatWidget.setInput(opts.query);
@@ -139,8 +148,10 @@ class OpenChatGlobalAction extends Action2 {
 				chatWidget.acceptInput(opts.query);
 			}
 		}
+
 		if (opts?.variableIds && opts.variableIds.length > 0) {
 			const actualVariables = chatVariablesService.getVariables(ChatAgentLocation.Panel);
+
 			for (const actualVariable of actualVariables) {
 				if (opts.variableIds.includes(actualVariable.id)) {
 					chatWidget.attachmentModel.addContext({
@@ -179,8 +190,11 @@ class ChatHistoryAction extends Action2 {
 
 	async run(accessor: ServicesAccessor) {
 		const chatService = accessor.get(IChatService);
+
 		const quickInputService = accessor.get(IQuickInputService);
+
 		const viewsService = accessor.get(IViewsService);
+
 		const editorService = accessor.get(IEditorService);
 
 		const showPicker = () => {
@@ -188,10 +202,12 @@ class ChatHistoryAction extends Action2 {
 				iconClass: ThemeIcon.asClassName(Codicon.file),
 				tooltip: localize('interactiveSession.history.editor', "Open in Editor"),
 			};
+
 			const deleteButton: IQuickInputButton = {
 				iconClass: ThemeIcon.asClassName(Codicon.x),
 				tooltip: localize('interactiveSession.history.delete', "Delete"),
 			};
+
 			const renameButton: IQuickInputButton = {
 				iconClass: ThemeIcon.asClassName(Codicon.pencil),
 				tooltip: localize('chat.history.rename', "Rename"),
@@ -203,15 +219,20 @@ class ChatHistoryAction extends Action2 {
 
 			const getPicks = () => {
 				const items = chatService.getHistory();
+
 				items.sort((a, b) => (b.lastMessageDate ?? 0) - (a.lastMessageDate ?? 0));
 
 				let lastDate: string | undefined = undefined;
+
 				const picks = items.flatMap((i): [IQuickPickSeparator | undefined, IChatPickerItem] => {
 					const timeAgoStr = fromNowByDay(i.lastMessageDate, true, true);
+
 					const separator: IQuickPickSeparator | undefined = timeAgoStr !== lastDate ? {
 						type: 'separator', label: timeAgoStr,
 					} : undefined;
+
 					lastDate = timeAgoStr;
+
 					return [
 						separator,
 						{
@@ -231,20 +252,29 @@ class ChatHistoryAction extends Action2 {
 			};
 
 			const store = new DisposableStore();
+
 			const picker = store.add(quickInputService.createQuickPick<IChatPickerItem>({ useSeparators: true }));
+
 			picker.placeholder = localize('interactiveSession.history.pick', "Switch to chat");
+
 			const picks = getPicks();
+
 			picker.items = picks;
+
 			store.add(picker.onDidTriggerItemButton(async context => {
 				if (context.button === openInEditorButton) {
 					const options: IChatEditorOptions = { target: { sessionId: context.item.chat.sessionId }, pinned: true };
+
 					editorService.openEditor({ resource: ChatEditorInput.getNewEditorUri(), options }, ACTIVE_GROUP);
+
 					picker.hide();
 				} else if (context.button === deleteButton) {
 					chatService.removeHistoryEntry(context.item.chat.sessionId);
+
 					picker.items = getPicks();
 				} else if (context.button === renameButton) {
 					const title = await quickInputService.input({ title: localize('newChatTitle', "New chat title"), value: context.item.chat.title });
+
 					if (title) {
 						chatService.setChatSessionTitle(context.item.chat.sessionId, title);
 					}
@@ -253,20 +283,26 @@ class ChatHistoryAction extends Action2 {
 					showPicker();
 				}
 			}));
+
 			store.add(picker.onDidAccept(async () => {
 				try {
 					const item = picker.selectedItems[0];
+
 					const sessionId = item.chat.sessionId;
+
 					const view = await viewsService.openView(ChatViewId) as ChatViewPane;
+
 					view.loadSession(sessionId);
 				} finally {
 					picker.hide();
 				}
 			}));
+
 			store.add(picker.onDidHide(() => store.dispose()));
 
 			picker.show();
 		};
+
 		showPicker();
 	}
 }
@@ -284,6 +320,7 @@ class OpenChatEditorAction extends Action2 {
 
 	async run(accessor: ServicesAccessor) {
 		const editorService = accessor.get(IEditorService);
+
 		await editorService.openEditor({ resource: ChatEditorInput.getNewEditorUri(), options: { pinned: true } satisfies IChatEditorOptions });
 	}
 }
@@ -308,26 +345,34 @@ class ChatAddAction extends Action2 {
 
 	override async run(accessor: ServicesAccessor, ...args: any[]): Promise<void> {
 		const widgetService = accessor.get(IChatWidgetService);
+
 		const context: { widget?: IChatWidget } | undefined = args[0];
+
 		const widget = context?.widget ?? widgetService.lastFocusedWidget;
+
 		if (!widget) {
 			return;
 		}
 
 		const hasAgentOrCommand = extractAgentAndCommand(widget.parsedInput);
+
 		if (hasAgentOrCommand?.agentPart || hasAgentOrCommand?.commandPart) {
 			return;
 		}
 
 		const suggestCtrl = SuggestController.get(widget.inputEditor);
+
 		if (suggestCtrl) {
 			const curText = widget.inputEditor.getValue();
+
 			const newValue = curText ? `@ ${curText}` : '@';
+
 			if (!curText.startsWith('@')) {
 				widget.inputEditor.setValue(newValue);
 			}
 
 			widget.inputEditor.setPosition(new Position(1, 2));
+
 			suggestCtrl.triggerSuggest(undefined, true);
 		}
 	}
@@ -343,8 +388,11 @@ MenuRegistry.appendMenuItem(MenuId.ViewTitle, {
 
 export function registerChatActions() {
 	registerAction2(OpenChatGlobalAction);
+
 	registerAction2(ChatHistoryAction);
+
 	registerAction2(OpenChatEditorAction);
+
 	registerAction2(ChatAddAction);
 
 	registerAction2(class ClearChatInputHistoryAction extends Action2 {
@@ -357,8 +405,10 @@ export function registerChatActions() {
 				f1: true,
 			});
 		}
+
 		async run(accessor: ServicesAccessor, ...args: any[]) {
 			const historyService = accessor.get(IChatWidgetHistoryService);
+
 			historyService.clearHistory();
 		}
 	});
@@ -373,14 +423,18 @@ export function registerChatActions() {
 				f1: true,
 			});
 		}
+
 		async run(accessor: ServicesAccessor, ...args: any[]) {
 			const editorGroupsService = accessor.get(IEditorGroupsService);
+
 			const viewsService = accessor.get(IViewsService);
 
 			const chatService = accessor.get(IChatService);
+
 			chatService.clearAllHistoryEntries();
 
 			const chatView = viewsService.getViewWithId(ChatViewId) as ChatViewPane | undefined;
+
 			if (chatView) {
 				chatView.widget.clear();
 			}
@@ -428,8 +482,10 @@ export function registerChatActions() {
 
 		runEditorCommand(accessor: ServicesAccessor, editor: ICodeEditor): void | Promise<void> {
 			const editorUri = editor.getModel()?.uri;
+
 			if (editorUri) {
 				const widgetService = accessor.get(IChatWidgetService);
+
 				widgetService.getWidgetByInputUri(editorUri)?.focusLastMessage();
 			}
 		}
@@ -455,8 +511,10 @@ export function registerChatActions() {
 				]
 			});
 		}
+
 		run(accessor: ServicesAccessor, ...args: any[]) {
 			const widgetService = accessor.get(IChatWidgetService);
+
 			widgetService.lastFocusedWidget?.focusInput();
 		}
 	});
@@ -464,6 +522,7 @@ export function registerChatActions() {
 	registerAction2(class LearnMoreChatAction extends Action2 {
 
 		static readonly ID = 'workbench.action.chat.learnMore';
+
 		static readonly TITLE = localize2('learnMore', "Learn More");
 
 		constructor() {
@@ -483,6 +542,7 @@ export function registerChatActions() {
 
 		override async run(accessor: ServicesAccessor): Promise<void> {
 			const openerService = accessor.get(IOpenerService);
+
 			if (defaultChat.documentationUrl) {
 				openerService.open(URI.parse(defaultChat.documentationUrl));
 			}

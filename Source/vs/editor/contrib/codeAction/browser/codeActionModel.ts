@@ -57,6 +57,7 @@ export const SUPPORTED_CODE_ACTIONS = new RawContextKey<string>(
 export const APPLY_FIX_ALL_COMMAND_ID = "_typescript.applyFixAllCodeAction";
 type TriggeredCodeAction = {
 	readonly selection: Selection;
+
 	readonly trigger: CodeActionTrigger;
 };
 class CodeActionOracle extends Disposable {
@@ -71,22 +72,27 @@ class CodeActionOracle extends Disposable {
 		private readonly _delay: number = 250,
 	) {
 		super();
+
 		this._register(
 			this._markerService.onMarkerChanged((e) =>
 				this._onMarkerChanges(e),
 			),
 		);
+
 		this._register(
 			this._editor.onDidChangeCursorPosition(() =>
 				this._tryAutoTrigger(),
 			),
 		);
 	}
+
 	public trigger(trigger: CodeActionTrigger): void {
 		const selection =
 			this._getRangeOfSelectionUnlessWhitespaceEnclosed(trigger);
+
 		this._signalChange(selection ? { trigger, selection } : undefined);
 	}
+
 	private _onMarkerChanges(resources: readonly URI[]): void {
 		const model = this._editor.getModel();
 
@@ -97,6 +103,7 @@ class CodeActionOracle extends Disposable {
 			this._tryAutoTrigger();
 		}
 	}
+
 	private _tryAutoTrigger() {
 		this._autoTriggerTimer.cancelAndSet(() => {
 			this.trigger({
@@ -105,17 +112,20 @@ class CodeActionOracle extends Disposable {
 			});
 		}, this._delay);
 	}
+
 	private _getRangeOfSelectionUnlessWhitespaceEnclosed(
 		trigger: CodeActionTrigger,
 	): Selection | undefined {
 		if (!this._editor.hasModel()) {
 			return undefined;
 		}
+
 		const selection = this._editor.getSelection();
 
 		if (trigger.type === CodeActionTriggerType.Invoke) {
 			return selection;
 		}
+
 		const enabled = this._editor.getOption(EditorOption.lightbulb).enabled;
 
 		if (enabled === ShowLightbulbIconMode.Off) {
@@ -128,6 +138,7 @@ class CodeActionOracle extends Disposable {
 			if (!isSelectionEmpty) {
 				return selection;
 			}
+
 			const model = this._editor.getModel();
 
 			const { lineNumber, column } = selection.getPosition();
@@ -157,6 +168,7 @@ class CodeActionOracle extends Disposable {
 				}
 			}
 		}
+
 		return selection;
 	}
 }
@@ -165,10 +177,12 @@ export namespace CodeActionsState {
 		Empty,
 		Triggered,
 	}
+
 	export const Empty = { type: Type.Empty } as const;
 
 	export class Triggered {
 		readonly type = Type.Triggered;
+
 		public readonly actions: Promise<CodeActionSet>;
 
 		constructor(
@@ -180,13 +194,16 @@ export namespace CodeActionsState {
 				if (isCancellationError(e)) {
 					return emptyCodeActionSet;
 				}
+
 				throw e;
 			});
 		}
+
 		public cancel() {
 			this._cancellablePromise.cancel();
 		}
 	}
+
 	export type State = typeof Empty | Triggered;
 }
 
@@ -204,12 +221,17 @@ export class CodeActionModel extends Disposable {
 	private readonly _codeActionOracle = this._register(
 		new MutableDisposable<CodeActionOracle>(),
 	);
+
 	private _state: CodeActionsState.State = CodeActionsState.Empty;
+
 	private readonly _supportedCodeActions: IContextKey<string>;
+
 	private readonly _onDidChangeState = this._register(
 		new Emitter<CodeActionsState.State>(),
 	);
+
 	public readonly onDidChangeState = this._onDidChangeState.event;
+
 	private _disposed = false;
 
 	constructor(
@@ -222,13 +244,18 @@ export class CodeActionModel extends Disposable {
 		private readonly _telemetryService?: ITelemetryService,
 	) {
 		super();
+
 		this._supportedCodeActions =
 			SUPPORTED_CODE_ACTIONS.bindTo(contextKeyService);
+
 		this._register(this._editor.onDidChangeModel(() => this._update()));
+
 		this._register(
 			this._editor.onDidChangeModelLanguage(() => this._update()),
 		);
+
 		this._register(this._registry.onDidChange(() => this._update()));
+
 		this._register(
 			this._editor.onDidChangeConfiguration((e) => {
 				if (e.hasChanged(EditorOption.lightbulb)) {
@@ -236,17 +263,22 @@ export class CodeActionModel extends Disposable {
 				}
 			}),
 		);
+
 		this._update();
 	}
+
 	override dispose(): void {
 		if (this._disposed) {
 			return;
 		}
+
 		this._disposed = true;
 
 		super.dispose();
+
 		this.setState(CodeActionsState.Empty, true);
 	}
+
 	private _settingEnabledNearbyQuickfixes(): boolean {
 		const model = this._editor?.getModel();
 
@@ -257,11 +289,14 @@ export class CodeActionModel extends Disposable {
 				)
 			: false;
 	}
+
 	private _update(): void {
 		if (this._disposed) {
 			return;
 		}
+
 		this._codeActionOracle.value = undefined;
+
 		this.setState(CodeActionsState.Empty);
 
 		const model = this._editor.getModel();
@@ -274,7 +309,9 @@ export class CodeActionModel extends Disposable {
 			const supportedActions: string[] = this._registry
 				.all(model)
 				.flatMap((provider) => provider.providedCodeActionKinds ?? []);
+
 			this._supportedCodeActions.set(supportedActions.join(" "));
+
 			this._codeActionOracle.value = new CodeActionOracle(
 				this._editor,
 				this._markerService,
@@ -284,6 +321,7 @@ export class CodeActionModel extends Disposable {
 
 						return;
 					}
+
 					const startPosition = trigger.selection.getStartPosition();
 
 					const actions = createCancelablePromise(async (token) => {
@@ -348,6 +386,7 @@ export class CodeActionModel extends Disposable {
 										];
 									}
 								}
+
 								return {
 									validActions: codeActionSet.validActions,
 									allActions: allCodeActions,
@@ -459,6 +498,7 @@ export class CodeActionModel extends Disposable {
 															];
 													}
 												}
+
 												if (
 													codeActionSet.allActions
 														.length === 0
@@ -483,11 +523,13 @@ export class CodeActionModel extends Disposable {
 													);
 												}
 											}
+
 											distance = Math.abs(
 												currPosition.column - col,
 											);
 										}
 									}
+
 									const filteredActions =
 										currentActions.filter(
 											(action, index, self) =>
@@ -497,6 +539,7 @@ export class CodeActionModel extends Disposable {
 														action.action.title,
 												) === index,
 										);
+
 									filteredActions.sort((a, b) => {
 										if (
 											a.action.isPreferred &&
@@ -557,22 +600,32 @@ export class CodeActionModel extends Disposable {
 							if (this._telemetryService) {
 								type RenderActionMenu = {
 									codeActions: number;
+
 									duration: number;
 								};
+
 								type RenderActionMenuClassification = {
 									owner: "justschen";
+
 									comment: "Information about how long it took for code actions to be received from the provider and shown in the UI.";
+
 									codeActions: {
 										classification: "SystemMetaData";
+
 										purpose: "FeatureInsight";
+
 										comment: "Number of valid code actions received from TS.";
 									};
+
 									duration: {
 										classification: "SystemMetaData";
+
 										purpose: "FeatureInsight";
+
 										comment: "Duration it took for TS to return the action to run for each kind. ";
 									};
 								};
+
 								this._telemetryService.publicLog2<
 									RenderActionMenu,
 									RenderActionMenuClassification
@@ -582,8 +635,10 @@ export class CodeActionModel extends Disposable {
 									duration: sw.elapsed(),
 								});
 							}
+
 							return codeActions;
 						}
+
 						return getCodeActions(
 							this._registry,
 							model,
@@ -597,6 +652,7 @@ export class CodeActionModel extends Disposable {
 					if (trigger.trigger.type === CodeActionTriggerType.Invoke) {
 						this._progressService?.showWhile(actions, 250);
 					}
+
 					const newState = new CodeActionsState.Triggered(
 						trigger.trigger,
 						startPosition,
@@ -627,6 +683,7 @@ export class CodeActionModel extends Disposable {
 				},
 				undefined,
 			);
+
 			this._codeActionOracle.value.trigger({
 				type: CodeActionTriggerType.Auto,
 				triggerAction: CodeActionTriggerSource.Default,
@@ -635,9 +692,11 @@ export class CodeActionModel extends Disposable {
 			this._supportedCodeActions.reset();
 		}
 	}
+
 	public trigger(trigger: CodeActionTrigger) {
 		this._codeActionOracle.value?.trigger(trigger);
 	}
+
 	private setState(newState: CodeActionsState.State, skipNotify?: boolean) {
 		if (newState === this._state) {
 			return;
@@ -646,6 +705,7 @@ export class CodeActionModel extends Disposable {
 		if (this._state.type === CodeActionsState.Type.Triggered) {
 			this._state.cancel();
 		}
+
 		this._state = newState;
 
 		if (!skipNotify && !this._disposed) {

@@ -84,6 +84,7 @@ export abstract class AbstractTextResourceEditor extends AbstractTextCodeEditor<
 			fileService,
 		);
 	}
+
 	override async setInput(
 		input: AbstractTextResourceEditorInput,
 		options: ITextEditorOptions | undefined,
@@ -106,6 +107,7 @@ export abstract class AbstractTextResourceEditor extends AbstractTextCodeEditor<
 		const control = assertIsDefined(this.editorControl);
 
 		const textEditorModel = resolvedModel.textEditorModel;
+
 		control.setModel(textEditorModel);
 		// Restore view state (unless provided by options)
 		if (!isTextEditorViewState(options?.viewState)) {
@@ -115,6 +117,7 @@ export abstract class AbstractTextResourceEditor extends AbstractTextCodeEditor<
 				if (options?.selection) {
 					editorViewState.cursorState = []; // prevent duplicate selections via options
 				}
+
 				control.restoreViewState(editorViewState);
 			}
 		}
@@ -140,10 +143,12 @@ export abstract class AbstractTextResourceEditor extends AbstractTextCodeEditor<
 		if (!control) {
 			return;
 		}
+
 		const model = control.getModel();
 
 		if (model) {
 			const lastLine = model.getLineCount();
+
 			control.revealPosition(
 				{
 					lineNumber: lastLine,
@@ -153,11 +158,13 @@ export abstract class AbstractTextResourceEditor extends AbstractTextCodeEditor<
 			);
 		}
 	}
+
 	override clearInput(): void {
 		super.clearInput();
 		// Clear Model
 		this.editorControl?.setModel(null);
 	}
+
 	protected override tracksEditorViewState(input: EditorInput): boolean {
 		// editor view state persistence is only enabled for untitled and resource inputs
 		return (
@@ -205,6 +212,7 @@ export class TextResourceEditor extends AbstractTextResourceEditor {
 			fileService,
 		);
 	}
+
 	protected override createEditorControl(
 		parent: HTMLElement,
 		configuration: ICodeEditorOptions,
@@ -220,6 +228,7 @@ export class TextResourceEditor extends AbstractTextResourceEditor {
 			);
 		}
 	}
+
 	private onDidEditorPaste(e: IPasteEvent, codeEditor: ICodeEditor): void {
 		if (
 			this.input instanceof UntitledTextEditorInput &&
@@ -227,17 +236,21 @@ export class TextResourceEditor extends AbstractTextResourceEditor {
 		) {
 			return; // do not override language if it was set explicitly
 		}
+
 		if (e.range.startLineNumber !== 1 || e.range.startColumn !== 1) {
 			return; // document had existing content before the pasted text, don't override.
 		}
+
 		if (codeEditor.getOption(EditorOption.readOnly)) {
 			return; // not for readonly editors
 		}
+
 		const textModel = codeEditor.getModel();
 
 		if (!textModel) {
 			return; // require a live model
 		}
+
 		const pasteIsWholeContents =
 			textModel.getLineCount() === e.range.endLineNumber &&
 			textModel.getLineMaxColumn(e.range.endLineNumber) ===
@@ -246,14 +259,17 @@ export class TextResourceEditor extends AbstractTextResourceEditor {
 		if (!pasteIsWholeContents) {
 			return; // document had existing content after the pasted text, don't override.
 		}
+
 		const currentLanguageId = textModel.getLanguageId();
 
 		if (currentLanguageId !== PLAINTEXT_LANGUAGE_ID) {
 			return; // require current languageId to be unspecific
 		}
+
 		let candidateLanguage:
 			| {
 					id: string;
+
 					source: "event" | "guess";
 			  }
 			| undefined = undefined;
@@ -297,11 +313,13 @@ export class TextResourceEditor extends AbstractTextResourceEditor {
 					this.languageService.createById(candidateLanguage.id),
 				);
 			}
+
 			const opts = this.modelService.getCreationOptions(
 				textModel.getLanguageId(),
 				textModel.uri,
 				textModel.isForSimpleWidget,
 			);
+
 			textModel.detectIndentation(opts.insertSpaces, opts.tabSize);
 		}
 	}

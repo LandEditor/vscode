@@ -59,6 +59,7 @@ export class LabelContribution implements IWorkbenchContribution {
 	) {
 		this.registerFormatters();
 	}
+
 	private registerFormatters(): void {
 		this.remoteAgentService.getEnvironment().then((remoteEnvironment) => {
 			const os = remoteEnvironment?.os || OS;
@@ -70,6 +71,7 @@ export class LabelContribution implements IWorkbenchContribution {
 				normalizeDriveLetter: os === OperatingSystem.Windows,
 				workspaceSuffix: isWeb ? undefined : Schemas.vscodeRemote,
 			};
+
 			this.labelService.registerFormatter({
 				scheme: Schemas.vscodeRemote,
 				formatting,
@@ -105,6 +107,7 @@ class RemoteChannelsContribution
 				"download",
 				new DownloadServiceChannel(downloadService),
 			);
+
 			connection.withChannel("logger", async (channel) =>
 				this._register(
 					new RemoteLoggerChannelClient(loggerService, channel),
@@ -150,6 +153,7 @@ class RemoteInvalidWorkspaceDetector
 			});
 		}
 	}
+
 	private async validateRemoteWorkspace(): Promise<void> {
 		const workspace = this.contextService.getWorkspace();
 
@@ -159,11 +163,13 @@ class RemoteInvalidWorkspaceDetector
 		if (!workspaceUriToStat) {
 			return; // only when in workspace
 		}
+
 		const exists = await this.fileService.exists(workspaceUriToStat);
 
 		if (exists) {
 			return; // all good!
 		}
+
 		const res = await this.dialogService.confirm({
 			type: "warning",
 			message: localize(
@@ -225,10 +231,12 @@ if (enableDiagnostics) {
 				f1: true,
 			});
 		}
+
 		async run(accessor: ServicesAccessor): Promise<void> {
 			PersistentConnection.debugTriggerReconnection();
 		}
 	}
+
 	class PauseSocketWriting extends Action2 {
 		constructor() {
 			super({
@@ -241,11 +249,14 @@ if (enableDiagnostics) {
 				f1: true,
 			});
 		}
+
 		async run(accessor: ServicesAccessor): Promise<void> {
 			PersistentConnection.debugPauseSocketWriting();
 		}
 	}
+
 	registerAction2(TriggerReconnectAction);
+
 	registerAction2(PauseSocketWriting);
 }
 

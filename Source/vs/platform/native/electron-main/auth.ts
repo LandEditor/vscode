@@ -32,7 +32,9 @@ interface ElectronAuthenticationResponseDetails
 }
 type LoginEvent = {
 	event?: ElectronEvent;
+
 	authInfo: AuthInfo;
+
 	callback?: (username?: string, password?: string) => void;
 };
 
@@ -44,14 +46,19 @@ export interface IProxyAuthService {
 }
 export class ProxyAuthService extends Disposable implements IProxyAuthService {
 	declare readonly _serviceBrand: undefined;
+
 	private readonly PROXY_CREDENTIALS_SERVICE_KEY = "proxy-credentials://";
+
 	private pendingProxyResolves = new Map<
 		string,
 		Promise<Credentials | undefined>
 	>();
+
 	private currentDialog: Promise<Credentials | undefined> | undefined =
 		undefined;
+
 	private cancelledAuthInfoHashes = new Set<string>();
+
 	private sessionCredentials = new Map<string, Credentials | undefined>();
 
 	constructor(
@@ -69,8 +76,10 @@ export class ProxyAuthService extends Disposable implements IProxyAuthService {
 		private readonly environmentMainService: IEnvironmentMainService,
 	) {
 		super();
+
 		this.registerListeners();
 	}
+
 	private registerListeners(): void {
 		const onLogin = Event.fromNodeEventEmitter<LoginEvent>(
 			app,
@@ -91,13 +100,16 @@ export class ProxyAuthService extends Disposable implements IProxyAuthService {
 					callback,
 				}) satisfies LoginEvent,
 		);
+
 		this._register(onLogin(this.onLogin, this));
 	}
+
 	async lookupAuthorization(
 		authInfo: AuthInfo,
 	): Promise<Credentials | undefined> {
 		return this.onLogin({ authInfo });
 	}
+
 	private async onLogin({
 		event,
 		authInfo,
@@ -129,10 +141,12 @@ export class ProxyAuthService extends Disposable implements IProxyAuthService {
 			this.logService.trace(
 				"auth#onLogin (proxy) - no pending proxy handling found, starting new",
 			);
+
 			pendingProxyResolve = this.resolveProxyCredentials(
 				authInfo,
 				authInfoHash,
 			);
+
 			this.pendingProxyResolves.set(authInfoHash, pendingProxyResolve);
 
 			try {
@@ -144,6 +158,7 @@ export class ProxyAuthService extends Disposable implements IProxyAuthService {
 			this.logService.trace(
 				"auth#onLogin (proxy) - pending proxy handling found",
 			);
+
 			credentials = await pendingProxyResolve;
 		}
 		// According to Electron docs, it is fine to call back without
@@ -157,6 +172,7 @@ export class ProxyAuthService extends Disposable implements IProxyAuthService {
 
 		return credentials;
 	}
+
 	private async resolveProxyCredentials(
 		authInfo: AuthInfo,
 		authInfoHash: string,
@@ -185,8 +201,10 @@ export class ProxyAuthService extends Disposable implements IProxyAuthService {
 				"auth#resolveProxyCredentials (proxy) - exit",
 			);
 		}
+
 		return undefined;
 	}
+
 	private async doResolveProxyCredentials(
 		authInfo: AuthInfo,
 		authInfoHash: string,
@@ -216,6 +234,7 @@ export class ProxyAuthService extends Disposable implements IProxyAuthService {
 					};
 				}
 			}
+
 			return undefined;
 		}
 		// Reply with manually supplied credentials. Fail if they are wrong.
@@ -245,6 +264,7 @@ export class ProxyAuthService extends Disposable implements IProxyAuthService {
 
 					return undefined; // We tried already, let the user handle it.
 				}
+
 				this.logService.trace(
 					"auth#doResolveProxyCredentials (proxy) - exit - found config/envvar credentials to use",
 				);
@@ -281,6 +301,7 @@ export class ProxyAuthService extends Disposable implements IProxyAuthService {
 
 			return { username, password };
 		}
+
 		let storedUsername: string | undefined;
 
 		let storedPassword: string | undefined;
@@ -296,7 +317,9 @@ export class ProxyAuthService extends Disposable implements IProxyAuthService {
 				const credentials: Credentials = JSON.parse(
 					await this.encryptionMainService.decrypt(encryptedValue),
 				);
+
 				storedUsername = credentials.username;
+
 				storedPassword = credentials.password;
 			}
 		} catch (error) {
@@ -313,6 +336,7 @@ export class ProxyAuthService extends Disposable implements IProxyAuthService {
 			this.logService.trace(
 				"auth#doResolveProxyCredentials (proxy) - exit - found stored credentials to use",
 			);
+
 			this.sessionCredentials.set(authInfoHash, {
 				username: storedUsername,
 				password: storedPassword,
@@ -320,6 +344,7 @@ export class ProxyAuthService extends Disposable implements IProxyAuthService {
 
 			return { username: storedUsername, password: storedPassword };
 		}
+
 		const previousDialog = this.currentDialog;
 
 		const currentDialog = (this.currentDialog = (async () => {
@@ -335,11 +360,13 @@ export class ProxyAuthService extends Disposable implements IProxyAuthService {
 			if (this.currentDialog === currentDialog!) {
 				this.currentDialog = undefined;
 			}
+
 			return credentials;
 		})());
 
 		return currentDialog;
 	}
+
 	private async showProxyCredentialsDialog(
 		authInfo: AuthInfo,
 		authInfoHash: string,
@@ -367,6 +394,7 @@ export class ProxyAuthService extends Disposable implements IProxyAuthService {
 
 			return undefined; // unexpected
 		}
+
 		this.logService.trace(
 			`auth#doResolveProxyCredentials (proxy) - asking window ${window.id} to handle proxy login`,
 		);
@@ -379,6 +407,7 @@ export class ProxyAuthService extends Disposable implements IProxyAuthService {
 			password: sessionCredentials?.password ?? storedPassword, // prefer to show already used password (if any) over stored
 			replyChannel: `vscode:proxyAuthResponse:${generateUuid()}`,
 		};
+
 		window.sendWhenReady(
 			"vscode:openProxyAuthenticationDialog",
 			CancellationToken.None,
@@ -401,6 +430,7 @@ export class ProxyAuthService extends Disposable implements IProxyAuthService {
 					this.logService.trace(
 						`auth#doResolveProxyCredentials - exit - received credentials from window ${window.id}`,
 					);
+
 					window.win?.webContents.off(
 						"ipc-message",
 						proxyAuthResponseHandler,
@@ -418,6 +448,7 @@ export class ProxyAuthService extends Disposable implements IProxyAuthService {
 									await this.encryptionMainService.encrypt(
 										JSON.stringify(credentials),
 									);
+
 								this.applicationStorageMainService.store(
 									this.PROXY_CREDENTIALS_SERVICE_KEY +
 										authInfoHash,
@@ -436,6 +467,7 @@ export class ProxyAuthService extends Disposable implements IProxyAuthService {
 						} catch (error) {
 							this.logService.error(error); // handle gracefully
 						}
+
 						resolve({
 							username: credentials.username,
 							password: credentials.password,
@@ -444,10 +476,12 @@ export class ProxyAuthService extends Disposable implements IProxyAuthService {
 					// We did not get any credentials from the window (e.g. cancelled)
 					else {
 						this.cancelledAuthInfoHashes.add(authInfoHash);
+
 						resolve(undefined);
 					}
 				}
 			};
+
 			window.win?.webContents.on("ipc-message", proxyAuthResponseHandler);
 		});
 		// Remember credentials for the session in case

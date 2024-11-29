@@ -13,6 +13,7 @@ export type XtermAttributes = Omit<
 export interface IXtermCore {
 	viewport?: {
 		readonly scrollBarWidth: number;
+
 		_innerRefresh(): void;
 	};
 
@@ -25,10 +26,12 @@ export interface IXtermCore {
 			css: {
 				cell: {
 					width: number;
+
 					height: number;
 				};
 			};
 		};
+
 		_renderer: {
 			value?: unknown;
 		};

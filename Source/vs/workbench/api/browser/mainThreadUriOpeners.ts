@@ -36,7 +36,9 @@ import {
 
 interface RegisteredOpenerMetadata {
 	readonly schemes: ReadonlySet<string>;
+
 	readonly extensionId: ExtensionIdentifier;
+
 	readonly label: string;
 }
 @extHostNamedCustomer(MainContext.MainThreadUriOpeners)
@@ -45,10 +47,12 @@ export class MainThreadUriOpeners
 	implements MainThreadUriOpenersShape, IExternalOpenerProvider
 {
 	private readonly proxy: ExtHostUriOpenersShape;
+
 	private readonly _registeredOpeners = new Map<
 		string,
 		RegisteredOpenerMetadata
 	>();
+
 	private readonly _contributedExternalUriOpenersStore: ContributedExternalUriOpenersStore;
 
 	constructor(
@@ -65,10 +69,13 @@ export class MainThreadUriOpeners
 		private readonly notificationService: INotificationService,
 	) {
 		super();
+
 		this.proxy = context.getProxy(ExtHostContext.ExtHostUriOpeners);
+
 		this._register(
 			externalUriOpenerService.registerExternalOpenerProvider(this),
 		);
+
 		this._contributedExternalUriOpenersStore = this._register(
 			new ContributedExternalUriOpenersStore(
 				storageService,
@@ -76,6 +83,7 @@ export class MainThreadUriOpeners
 			),
 		);
 	}
+
 	public async *getOpeners(
 		targetUri: URI,
 	): AsyncIterable<IExternalUriOpener> {
@@ -86,6 +94,7 @@ export class MainThreadUriOpeners
 		) {
 			return;
 		}
+
 		await this.extensionService.activateByEvent(
 			`onOpenExternalUri:${targetUri.scheme}`,
 		);
@@ -96,6 +105,7 @@ export class MainThreadUriOpeners
 			}
 		}
 	}
+
 	private createOpener(
 		id: string,
 		metadata: RegisteredOpenerMetadata,
@@ -131,7 +141,9 @@ export class MainThreadUriOpeners
 								});
 							},
 						);
+
 						openDefaultAction.tooltip = uri.toString();
+
 						this.notificationService.notify({
 							severity: Severity.Error,
 							message: localize(
@@ -151,10 +163,12 @@ export class MainThreadUriOpeners
 						});
 					}
 				}
+
 				return true;
 			},
 		};
 	}
+
 	async $registerUriOpener(
 		id: string,
 		schemes: readonly string[],
@@ -164,22 +178,28 @@ export class MainThreadUriOpeners
 		if (this._registeredOpeners.has(id)) {
 			throw new Error(`Opener with id '${id}' already registered`);
 		}
+
 		this._registeredOpeners.set(id, {
 			schemes: new Set(schemes),
 			label,
 			extensionId,
 		});
+
 		this._contributedExternalUriOpenersStore.didRegisterOpener(
 			id,
 			extensionId.value,
 		);
 	}
+
 	async $unregisterUriOpener(id: string): Promise<void> {
 		this._registeredOpeners.delete(id);
+
 		this._contributedExternalUriOpenersStore.delete(id);
 	}
+
 	override dispose(): void {
 		super.dispose();
+
 		this._registeredOpeners.clear();
 	}
 }

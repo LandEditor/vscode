@@ -6,6 +6,7 @@ import { SelectedLines } from "./folding.js";
 
 export interface ILineRange {
 	startLineNumber: number;
+
 	endLineNumber: number;
 }
 export const enum FoldSource {
@@ -21,9 +22,13 @@ export const foldSourceAbbr = {
 
 export interface FoldRange {
 	startLineNumber: number;
+
 	endLineNumber: number;
+
 	type: string | undefined;
+
 	isCollapsed: boolean;
+
 	source: FoldSource;
 }
 export const MAX_FOLDING_REGIONS = 0xffff;
@@ -36,8 +41,10 @@ class BitField {
 
 	constructor(size: number) {
 		const numWords = Math.ceil(size / 32);
+
 		this._states = new Uint32Array(numWords);
 	}
+
 	public get(index: number): boolean {
 		const arrayIndex = (index / 32) | 0;
 
@@ -45,6 +52,7 @@ class BitField {
 
 		return (this._states[arrayIndex] & (1 << bit)) !== 0;
 	}
+
 	public set(index: number, newState: boolean) {
 		const arrayIndex = (index / 32) | 0;
 
@@ -61,11 +69,17 @@ class BitField {
 }
 export class FoldingRegions {
 	private readonly _startIndexes: Uint32Array;
+
 	private readonly _endIndexes: Uint32Array;
+
 	private readonly _collapseStates: BitField;
+
 	private readonly _userDefinedStates: BitField;
+
 	private readonly _recoveredStates: BitField;
+
 	private _parentsComputed: boolean;
+
 	private readonly _types: Array<string | undefined> | undefined;
 
 	constructor(
@@ -79,14 +93,22 @@ export class FoldingRegions {
 		) {
 			throw new Error("invalid startIndexes or endIndexes size");
 		}
+
 		this._startIndexes = startIndexes;
+
 		this._endIndexes = endIndexes;
+
 		this._collapseStates = new BitField(startIndexes.length);
+
 		this._userDefinedStates = new BitField(startIndexes.length);
+
 		this._recoveredStates = new BitField(startIndexes.length);
+
 		this._types = types;
+
 		this._parentsComputed = false;
 	}
+
 	private ensureParentIndices() {
 		if (!this._parentsComputed) {
 			this._parentsComputed = true;
@@ -119,77 +141,100 @@ export class FoldingRegions {
 							MAX_LINE_NUMBER,
 					);
 				}
+
 				while (
 					parentIndexes.length > 0 &&
 					!isInsideLast(startLineNumber, endLineNumber)
 				) {
 					parentIndexes.pop();
 				}
+
 				const parentIndex =
 					parentIndexes.length > 0
 						? parentIndexes[parentIndexes.length - 1]
 						: -1;
+
 				parentIndexes.push(i);
+
 				this._startIndexes[i] =
 					startLineNumber + ((parentIndex & 0xff) << 24);
+
 				this._endIndexes[i] =
 					endLineNumber + ((parentIndex & 0xff00) << 16);
 			}
 		}
 	}
+
 	public get length(): number {
 		return this._startIndexes.length;
 	}
+
 	public getStartLineNumber(index: number): number {
 		return this._startIndexes[index] & MAX_LINE_NUMBER;
 	}
+
 	public getEndLineNumber(index: number): number {
 		return this._endIndexes[index] & MAX_LINE_NUMBER;
 	}
+
 	public getType(index: number): string | undefined {
 		return this._types ? this._types[index] : undefined;
 	}
+
 	public hasTypes() {
 		return !!this._types;
 	}
+
 	public isCollapsed(index: number): boolean {
 		return this._collapseStates.get(index);
 	}
+
 	public setCollapsed(index: number, newState: boolean) {
 		this._collapseStates.set(index, newState);
 	}
+
 	private isUserDefined(index: number): boolean {
 		return this._userDefinedStates.get(index);
 	}
+
 	private setUserDefined(index: number, newState: boolean) {
 		return this._userDefinedStates.set(index, newState);
 	}
+
 	private isRecovered(index: number): boolean {
 		return this._recoveredStates.get(index);
 	}
+
 	private setRecovered(index: number, newState: boolean) {
 		return this._recoveredStates.set(index, newState);
 	}
+
 	public getSource(index: number): FoldSource {
 		if (this.isUserDefined(index)) {
 			return FoldSource.userDefined;
 		} else if (this.isRecovered(index)) {
 			return FoldSource.recovered;
 		}
+
 		return FoldSource.provider;
 	}
+
 	public setSource(index: number, source: FoldSource): void {
 		if (source === FoldSource.userDefined) {
 			this.setUserDefined(index, true);
+
 			this.setRecovered(index, false);
 		} else if (source === FoldSource.recovered) {
 			this.setUserDefined(index, false);
+
 			this.setRecovered(index, true);
 		} else {
 			this.setUserDefined(index, false);
+
 			this.setRecovered(index, false);
 		}
 	}
+
 	public setCollapsedAllOfType(type: string, newState: boolean) {
 		let hasChanged = false;
 
@@ -197,15 +242,19 @@ export class FoldingRegions {
 			for (let i = 0; i < this._types.length; i++) {
 				if (this._types[i] === type) {
 					this.setCollapsed(i, newState);
+
 					hasChanged = true;
 				}
 			}
 		}
+
 		return hasChanged;
 	}
+
 	public toRegion(index: number): FoldingRegion {
 		return new FoldingRegion(this, index);
 	}
+
 	public getParentIndex(index: number) {
 		this.ensureParentIndices();
 
@@ -216,14 +265,17 @@ export class FoldingRegions {
 		if (parent === MAX_FOLDING_REGIONS) {
 			return -1;
 		}
+
 		return parent;
 	}
+
 	public contains(index: number, line: number) {
 		return (
 			this.getStartLineNumber(index) <= line &&
 			this.getEndLineNumber(index) >= line
 		);
 	}
+
 	private findIndex(line: number) {
 		let low = 0,
 			high = this._startIndexes.length;
@@ -231,6 +283,7 @@ export class FoldingRegions {
 		if (high === 0) {
 			return -1; // no children
 		}
+
 		while (low < high) {
 			const mid = Math.floor((low + high) / 2);
 
@@ -240,8 +293,10 @@ export class FoldingRegions {
 				low = mid + 1;
 			}
 		}
+
 		return low - 1;
 	}
+
 	public findRange(line: number): number {
 		let index = this.findIndex(line);
 
@@ -251,17 +306,21 @@ export class FoldingRegions {
 			if (endLineNumber >= line) {
 				return index;
 			}
+
 			index = this.getParentIndex(index);
 
 			while (index !== -1) {
 				if (this.contains(index, line)) {
 					return index;
 				}
+
 				index = this.getParentIndex(index);
 			}
 		}
+
 		return -1;
 	}
+
 	public toString() {
 		const res: string[] = [];
 
@@ -269,8 +328,10 @@ export class FoldingRegions {
 			res[i] =
 				`[${foldSourceAbbr[this.getSource(i)]}${this.isCollapsed(i) ? "+" : "-"}] ${this.getStartLineNumber(i)}/${this.getEndLineNumber(i)}`;
 		}
+
 		return res.join(", ");
 	}
+
 	public toFoldRange(index: number): FoldRange {
 		return {
 			startLineNumber: this._startIndexes[index] & MAX_LINE_NUMBER,
@@ -280,6 +341,7 @@ export class FoldingRegions {
 			source: this.getSource(index),
 		};
 	}
+
 	public static fromFoldRanges(ranges: FoldRange[]): FoldingRegions {
 		const rangesLength = ranges.length;
 
@@ -293,25 +355,32 @@ export class FoldingRegions {
 
 		for (let i = 0; i < rangesLength; i++) {
 			const range = ranges[i];
+
 			startIndexes[i] = range.startLineNumber;
+
 			endIndexes[i] = range.endLineNumber;
+
 			types.push(range.type);
 
 			if (range.type) {
 				gotTypes = true;
 			}
 		}
+
 		if (!gotTypes) {
 			types = undefined;
 		}
+
 		const regions = new FoldingRegions(startIndexes, endIndexes, types);
 
 		for (let i = 0; i < rangesLength; i++) {
 			if (ranges[i].isCollapsed) {
 				regions.setCollapsed(i, true);
 			}
+
 			regions.setSource(i, ranges[i].source);
 		}
+
 		return regions;
 	}
 	/**
@@ -390,8 +459,10 @@ export class FoldingRegions {
 									nextA.startLineNumber + 1,
 									nextA.endLineNumber + 1,
 								));
+
 						useRange.source = FoldSource.provider;
 					}
+
 					nextA = getA(++indexA); // not necessary, just for speed
 				} else {
 					useRange = nextB;
@@ -404,6 +475,7 @@ export class FoldingRegions {
 						useRange.source = FoldSource.recovered;
 					}
 				}
+
 				nextB = getB(++indexB);
 			} else {
 				// nextA is next. The user folded B set takes precedence and we sometimes need to look
@@ -421,6 +493,7 @@ export class FoldingRegions {
 
 						break; // no conflict, use this nextA
 					}
+
 					if (
 						prescanB.source === FoldSource.userDefined &&
 						prescanB.endLineNumber > nextA!.endLineNumber
@@ -428,10 +501,13 @@ export class FoldingRegions {
 						// we found a user folded range, it wins
 						break; // without setting nextResult, so this nextA gets skipped
 					}
+
 					prescanB = getB(++scanIndex);
 				}
+
 				nextA = getA(++indexA);
 			}
+
 			if (useRange) {
 				while (
 					topStackedRange &&
@@ -439,6 +515,7 @@ export class FoldingRegions {
 				) {
 					topStackedRange = stackedRanges.pop();
 				}
+
 				if (
 					useRange.endLineNumber > useRange.startLineNumber &&
 					useRange.startLineNumber > prevLineNumber &&
@@ -447,15 +524,18 @@ export class FoldingRegions {
 						topStackedRange.endLineNumber >= useRange.endLineNumber)
 				) {
 					resultRanges.push(useRange);
+
 					prevLineNumber = useRange.startLineNumber;
 
 					if (topStackedRange) {
 						stackedRanges.push(topStackedRange);
 					}
+
 					topStackedRange = useRange;
 				}
 			}
 		}
+
 		return resultRanges;
 	}
 }
@@ -464,33 +544,41 @@ export class FoldingRegion {
 		private readonly ranges: FoldingRegions,
 		private index: number,
 	) {}
+
 	public get startLineNumber() {
 		return this.ranges.getStartLineNumber(this.index);
 	}
+
 	public get endLineNumber() {
 		return this.ranges.getEndLineNumber(this.index);
 	}
+
 	public get regionIndex() {
 		return this.index;
 	}
+
 	public get parentIndex() {
 		return this.ranges.getParentIndex(this.index);
 	}
+
 	public get isCollapsed() {
 		return this.ranges.isCollapsed(this.index);
 	}
+
 	containedBy(range: ILineRange): boolean {
 		return (
 			range.startLineNumber <= this.startLineNumber &&
 			range.endLineNumber >= this.endLineNumber
 		);
 	}
+
 	containsLine(lineNumber: number) {
 		return (
 			this.startLineNumber <= lineNumber &&
 			lineNumber <= this.endLineNumber
 		);
 	}
+
 	hidesLine(lineNumber: number) {
 		return (
 			this.startLineNumber < lineNumber &&

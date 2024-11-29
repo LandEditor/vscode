@@ -24,6 +24,7 @@ export const IInlineChatSessionService =
 
 export interface IInlineChatSessionEvent {
 	readonly editor: ICodeEditor;
+
 	readonly session: Session;
 }
 export interface IInlineChatSessionEndEvent extends IInlineChatSessionEvent {
@@ -31,34 +32,47 @@ export interface IInlineChatSessionEndEvent extends IInlineChatSessionEvent {
 }
 export interface IInlineChatSessionService {
 	_serviceBrand: undefined;
+
 	onWillStartSession: Event<IActiveCodeEditor>;
+
 	onDidMoveSession: Event<IInlineChatSessionEvent>;
+
 	onDidStashSession: Event<IInlineChatSessionEvent>;
+
 	onDidEndSession: Event<IInlineChatSessionEndEvent>;
+
 	createSession(
 		editor: IActiveCodeEditor,
 		options: {
 			editMode: EditMode;
+
 			wholeRange?: IRange;
+
 			session?: Session;
+
 			headless?: boolean;
 		},
 		token: CancellationToken,
 	): Promise<Session | undefined>;
+
 	moveSession(session: Session, newEditor: ICodeEditor): void;
 
 	getCodeEditor(session: Session): ICodeEditor;
 
 	getSession(editor: ICodeEditor, uri: URI): Session | undefined;
+
 	releaseSession(session: Session): void;
+
 	stashSession(
 		session: Session,
 		editor: ICodeEditor,
 		undoCancelEdits: IValidEditOperation[],
 	): StashedSession;
+
 	registerSessionKeyComputer(
 		scheme: string,
 		value: ISessionKeyComputer,
 	): IDisposable;
+
 	dispose(): void;
 }

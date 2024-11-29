@@ -44,6 +44,7 @@ export abstract class CodeEditorView extends Disposable {
 	readonly model = this.viewModel.map(
 		(m) => /** @description model */ m?.model,
 	);
+
 	protected readonly htmlElements = h("div.code-view", [
 		h("div.header@header", [
 			h("span.title@title"),
@@ -53,7 +54,9 @@ export abstract class CodeEditorView extends Disposable {
 		]),
 		h("div.container", [h("div.gutter@gutterDiv"), h("div@editor")]),
 	]);
+
 	private readonly _onDidViewChange = new Emitter<IViewSize | undefined>();
+
 	public readonly view: IView = {
 		element: this.htmlElements.root,
 		minimumWidth: DEFAULT_EDITOR_MIN_DIMENSIONS.width,
@@ -63,6 +66,7 @@ export abstract class CodeEditorView extends Disposable {
 		onDidChange: this._onDidViewChange.event,
 		layout: (width: number, height: number, top: number, left: number) => {
 			setStyle(this.htmlElements.root, { width, height, top, left });
+
 			this.editor.layout({
 				width: width - this.htmlElements.gutterDiv.clientWidth,
 				height: height - this.htmlElements.header.clientHeight,
@@ -73,22 +77,26 @@ export abstract class CodeEditorView extends Disposable {
 		// priority?: LayoutPriority | undefined;
 		// snap?: boolean | undefined;
 	};
+
 	protected readonly checkboxesVisible = observableConfigValue<boolean>(
 		"mergeEditor.showCheckboxes",
 		false,
 		this.configurationService,
 	);
+
 	protected readonly showDeletionMarkers = observableConfigValue<boolean>(
 		"mergeEditor.showDeletionMarkers",
 		true,
 		this.configurationService,
 	);
+
 	protected readonly useSimplifiedDecorations =
 		observableConfigValue<boolean>(
 			"mergeEditor.useSimplifiedDecorations",
 			false,
 			this.configurationService,
 		);
+
 	public readonly editor = this.instantiationService.createInstance(
 		CodeEditorWidget,
 		this.htmlElements.editor,
@@ -97,9 +105,11 @@ export abstract class CodeEditorView extends Disposable {
 			contributions: this.getEditorContributions(),
 		},
 	);
+
 	public updateOptions(newOptions: Readonly<IEditorOptions>): void {
 		this.editor.updateOptions(newOptions);
 	}
+
 	public readonly isFocused = observableFromEvent(
 		this,
 		Event.any(
@@ -109,17 +119,20 @@ export abstract class CodeEditorView extends Disposable {
 		() =>
 			/** @description editor.hasWidgetFocus */ this.editor.hasWidgetFocus(),
 	);
+
 	public readonly cursorPosition = observableFromEvent(
 		this,
 		this.editor.onDidChangeCursorPosition,
 		() => /** @description editor.getPosition */ this.editor.getPosition(),
 	);
+
 	public readonly selection = observableFromEvent(
 		this,
 		this.editor.onDidChangeCursorSelection,
 		() =>
 			/** @description editor.getSelections */ this.editor.getSelections(),
 	);
+
 	public readonly cursorLineNumber = this.cursorPosition.map(
 		(p) => /** @description cursorPosition.lineNumber */ p?.lineNumber,
 	);
@@ -133,6 +146,7 @@ export abstract class CodeEditorView extends Disposable {
 	) {
 		super();
 	}
+
 	protected getEditorContributions(): IEditorContributionDescription[] {
 		return EditorExtensionsRegistry.getEditorContributions().filter(
 			(c) =>
@@ -155,11 +169,13 @@ export function createSelectionsAutorun(
 		if (!viewModel) {
 			return [];
 		}
+
 		const baseRange = viewModel.selectionInBase.read(reader);
 
 		if (!baseRange || baseRange.sourceEditor === codeEditorView) {
 			return [];
 		}
+
 		return baseRange.rangesInBase.map((r) => translateRange(r, viewModel));
 	});
 
@@ -170,6 +186,7 @@ export function createSelectionsAutorun(
 		if (ranges.length === 0) {
 			return;
 		}
+
 		codeEditorView.editor.setSelections(
 			ranges.map(
 				(r) =>
@@ -201,6 +218,7 @@ export class TitleMenu extends Disposable {
 				toolbarOptions: { primaryGroup: (g) => g === "primary" },
 			},
 		);
+
 		this._store.add(toolbar);
 	}
 }

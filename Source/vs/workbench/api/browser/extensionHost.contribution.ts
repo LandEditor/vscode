@@ -100,14 +100,19 @@ export class ExtensionPoints implements IWorkbenchContribution {
 	) {
 		// Classes that handle extension points...
 		this.instantiationService.createInstance(JSONValidationExtensionPoint);
+
 		this.instantiationService.createInstance(ColorExtensionPoint);
+
 		this.instantiationService.createInstance(IconExtensionPoint);
+
 		this.instantiationService.createInstance(
 			TokenClassificationExtensionPoints,
 		);
+
 		this.instantiationService.createInstance(
 			LanguageConfigurationFileHandler,
 		);
+
 		this.instantiationService.createInstance(StatusBarItemsExtensionPoint);
 	}
 }

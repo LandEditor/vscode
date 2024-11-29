@@ -33,6 +33,7 @@ interface ILocalHistoryResource {
 }
 interface ISerializedLocalHistoryResource {
 	readonly location: string;
+
 	readonly associatedResource: string;
 }
 /**
@@ -45,6 +46,7 @@ export class LocalHistoryFileSystemProvider
 		IFileSystemProviderWithFileReadWriteCapability
 {
 	static readonly SCHEMA = "vscode-local-history";
+
 	static toLocalHistoryFileSystem(resource: ILocalHistoryResource): URI {
 		const serializedLocalHistoryResource: ISerializedLocalHistoryResource =
 			{
@@ -60,6 +62,7 @@ export class LocalHistoryFileSystemProvider
 			query: JSON.stringify(serializedLocalHistoryResource),
 		});
 	}
+
 	static fromLocalHistoryFileSystem(resource: URI): ILocalHistoryResource {
 		const serializedLocalHistoryResource: ISerializedLocalHistoryResource =
 			JSON.parse(resource.query);
@@ -71,10 +74,12 @@ export class LocalHistoryFileSystemProvider
 			),
 		};
 	}
+
 	private static readonly EMPTY_RESOURCE = URI.from({
 		scheme: LocalHistoryFileSystemProvider.SCHEMA,
 		path: "/empty",
 	});
+
 	static readonly EMPTY: ILocalHistoryResource = {
 		location: LocalHistoryFileSystemProvider.EMPTY_RESOURCE,
 		associatedResource: LocalHistoryFileSystemProvider.EMPTY_RESOURCE,
@@ -86,11 +91,14 @@ export class LocalHistoryFileSystemProvider
 			FileSystemProviderCapabilities.Readonly
 		);
 	}
+
 	constructor(private readonly fileService: IFileService) {}
+
 	private readonly mapSchemeToProvider = new Map<
 		string,
 		Promise<IFileSystemProvider>
 	>();
+
 	private async withProvider(resource: URI): Promise<IFileSystemProvider> {
 		const scheme = resource.scheme;
 
@@ -116,6 +124,7 @@ export class LocalHistoryFileSystemProvider
 										e.scheme === scheme
 									) {
 										disposable.dispose();
+
 										resolve(e.provider);
 									}
 								},
@@ -123,8 +132,10 @@ export class LocalHistoryFileSystemProvider
 					},
 				);
 			}
+
 			this.mapSchemeToProvider.set(scheme, providerPromise);
 		}
+
 		return providerPromise;
 	}
 	//#region Supported File Operations
@@ -140,6 +151,7 @@ export class LocalHistoryFileSystemProvider
 		// Otherwise delegate to provider
 		return (await this.withProvider(location)).stat(location);
 	}
+
 	async readFile(resource: URI): Promise<Uint8Array> {
 		const location =
 			LocalHistoryFileSystemProvider.fromLocalHistoryFileSystem(
@@ -155,11 +167,13 @@ export class LocalHistoryFileSystemProvider
 		if (hasReadWriteCapability(provider)) {
 			return provider.readFile(location);
 		}
+
 		throw new Error("Unsupported");
 	}
 	//#endregion
 	//#region Unsupported File Operations
 	readonly onDidChangeCapabilities = Event.None;
+
 	readonly onDidChangeFile = Event.None;
 
 	async writeFile(
@@ -167,16 +181,21 @@ export class LocalHistoryFileSystemProvider
 		content: Uint8Array,
 		opts: IFileWriteOptions,
 	): Promise<void> {}
+
 	async mkdir(resource: URI): Promise<void> {}
+
 	async readdir(resource: URI): Promise<[string, FileType][]> {
 		return [];
 	}
+
 	async rename(
 		from: URI,
 		to: URI,
 		opts: IFileOverwriteOptions,
 	): Promise<void> {}
+
 	async delete(resource: URI, opts: IFileDeleteOptions): Promise<void> {}
+
 	watch(resource: URI, opts: IWatchOptions): IDisposable {
 		return Disposable.None;
 	}

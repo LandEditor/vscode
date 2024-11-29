@@ -24,8 +24,11 @@ export const enum NotebookOutlineConstants {
 }
 type entryDesc = {
 	name: string;
+
 	range: IRange;
+
 	level: number;
+
 	kind: SymbolKind;
 };
 function getMarkdownHeadersInCellFallbackToHtmlTags(fullContent: string) {
@@ -41,8 +44,10 @@ function getMarkdownHeadersInCellFallbackToHtmlTags(fullContent: string) {
 		const level = parseInt(match[1]);
 
 		const text = match[2].trim();
+
 		headers.push({ depth: level, text });
 	}
+
 	return headers;
 }
 export const INotebookOutlineEntryFactory =
@@ -54,6 +59,7 @@ export interface INotebookOutlineEntryFactory {
 	readonly _serviceBrand: undefined;
 
 	getOutlineEntries(cell: ICellViewModel, index: number): OutlineEntry[];
+
 	cacheSymbols(
 		cell: ICellViewModel,
 		cancelToken: CancellationToken,
@@ -63,13 +69,17 @@ export class NotebookOutlineEntryFactory
 	implements INotebookOutlineEntryFactory
 {
 	declare readonly _serviceBrand: undefined;
+
 	private cellOutlineEntryCache: Record<string, entryDesc[]> = {};
+
 	private readonly cachedMarkdownOutlineEntries = new WeakMap<
 		ICellViewModel,
 		{
 			alternativeId: number;
+
 			headers: {
 				depth: number;
+
 				text: string;
 			}[];
 		}
@@ -83,6 +93,7 @@ export class NotebookOutlineEntryFactory
 		@ITextModelService
 		private readonly textModelService: ITextModelService,
 	) {}
+
 	public getOutlineEntries(
 		cell: ICellViewModel,
 		index: number,
@@ -110,6 +121,7 @@ export class NotebookOutlineEntryFactory
 								fullContent,
 							),
 						);
+
 			this.cachedMarkdownOutlineEntries.set(cell, {
 				alternativeId: cell.getAlternativeId(),
 				headers,
@@ -117,14 +129,17 @@ export class NotebookOutlineEntryFactory
 
 			for (const { depth, text } of headers) {
 				hasHeader = true;
+
 				entries.push(
 					new OutlineEntry(index++, depth, cell, text, false, false),
 				);
 			}
+
 			if (!hasHeader) {
 				content = renderMarkdownAsPlaintext({ value: content });
 			}
 		}
+
 		if (!hasHeader) {
 			const exeState =
 				!isMarkdown &&
@@ -148,6 +163,7 @@ export class NotebookOutlineEntryFactory
 							exeState ? exeState.isPaused : false,
 						),
 					);
+
 					cached.forEach((entry) => {
 						entries.push(
 							new OutlineEntry(
@@ -164,12 +180,14 @@ export class NotebookOutlineEntryFactory
 					});
 				}
 			}
+
 			if (entries.length === 0) {
 				// if there are no cached entries, use the first line of the cell as a code cell
 				if (preview.length === 0) {
 					// empty or just whitespace
 					preview = localize("empty", "empty cell");
 				}
+
 				entries.push(
 					new OutlineEntry(
 						index++,
@@ -182,8 +200,10 @@ export class NotebookOutlineEntryFactory
 				);
 			}
 		}
+
 		return entries;
 	}
+
 	public async cacheSymbols(
 		cell: ICellViewModel,
 		cancelToken: CancellationToken,
@@ -191,6 +211,7 @@ export class NotebookOutlineEntryFactory
 		if (cell.cellKind === CellKind.Markup) {
 			return;
 		}
+
 		const ref = await this.textModelService.createModelReference(cell.uri);
 
 		try {
@@ -205,6 +226,7 @@ export class NotebookOutlineEntryFactory
 				outlineModel.getTopLevelSymbols(),
 				8,
 			);
+
 			this.cellOutlineEntryCache[cell.id] = entries;
 		} finally {
 			ref.dispose();
@@ -218,6 +240,7 @@ function createOutlineEntries(
 	level: number,
 ): entryDesc[] {
 	const entries: entryDesc[] = [];
+
 	symbols.forEach((symbol) => {
 		entries.push({
 			name: symbol.name,
@@ -247,5 +270,6 @@ function getCellFirstNonEmptyLine(cell: ICellViewModel) {
 			return textBuffer.getLineContent(i + 1);
 		}
 	}
+
 	return cell.getText().substring(0, 100);
 }

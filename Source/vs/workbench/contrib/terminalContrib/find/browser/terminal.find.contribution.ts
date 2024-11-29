@@ -48,6 +48,7 @@ class TerminalFindContribution
 	 * 'active terminals' are only tracked for non-detached terminal instanecs.
 	 */
 	static activeFindWidget?: TerminalFindContribution;
+
 	static get(
 		instance: ITerminalInstance | IDetachedTerminalInstance,
 	): TerminalFindContribution | null {
@@ -55,12 +56,15 @@ class TerminalFindContribution
 			TerminalFindContribution.ID,
 		);
 	}
+
 	private _findWidget: Lazy<TerminalFindWidget>;
+
 	private _lastLayoutDimensions: IDimension | undefined;
 
 	get findWidget(): TerminalFindWidget {
 		return this._findWidget.value;
 	}
+
 	constructor(
 		ctx:
 			| ITerminalContributionContext
@@ -71,6 +75,7 @@ class TerminalFindContribution
 		terminalService: ITerminalService,
 	) {
 		super();
+
 		this._findWidget = new Lazy(() => {
 			const findWidget = instantiationService.createInstance(
 				TerminalFindWidget,
@@ -79,14 +84,17 @@ class TerminalFindContribution
 			// Track focus and set state so we can force the scroll bar to be visible
 			findWidget.focusTracker.onDidFocus(() => {
 				TerminalFindContribution.activeFindWidget = this;
+
 				ctx.instance.forceScrollbarVisibility();
 
 				if (!isDetachedTerminalInstance(ctx.instance)) {
 					terminalService.setActiveInstance(ctx.instance);
 				}
 			});
+
 			findWidget.focusTracker.onDidBlur(() => {
 				TerminalFindContribution.activeFindWidget = undefined;
+
 				ctx.instance.resetScrollbarVisibility();
 			});
 
@@ -95,14 +103,17 @@ class TerminalFindContribution
 					"FindWidget expected terminal DOM to be initialized",
 				);
 			}
+
 			ctx.instance.domElement?.appendChild(findWidget.getDomNode());
 
 			if (this._lastLayoutDimensions) {
 				findWidget.layout(this._lastLayoutDimensions.width);
 			}
+
 			return findWidget;
 		});
 	}
+
 	layout(
 		_xterm: IXtermTerminal & {
 			raw: RawXtermTerminal;
@@ -110,8 +121,10 @@ class TerminalFindContribution
 		dimension: IDimension,
 	): void {
 		this._lastLayoutDimensions = dimension;
+
 		this._findWidget.rawValue?.layout(dimension.width);
 	}
+
 	xtermReady(
 		xterm: IXtermTerminal & {
 			raw: RawXtermTerminal;
@@ -123,11 +136,14 @@ class TerminalFindContribution
 			),
 		);
 	}
+
 	override dispose() {
 		if (TerminalFindContribution.activeFindWidget === this) {
 			TerminalFindContribution.activeFindWidget = undefined;
 		}
+
 		super.dispose();
+
 		this._findWidget.rawValue?.dispose();
 	}
 }
@@ -157,6 +173,7 @@ registerActiveXtermAction({
 		const contr =
 			TerminalFindContribution.activeFindWidget ||
 			TerminalFindContribution.get(activeInstance);
+
 		contr?.findWidget.reveal();
 	},
 });
@@ -180,6 +197,7 @@ registerActiveXtermAction({
 		const contr =
 			TerminalFindContribution.activeFindWidget ||
 			TerminalFindContribution.get(activeInstance);
+
 		contr?.findWidget.hide();
 	},
 });
@@ -205,6 +223,7 @@ registerActiveXtermAction({
 			TerminalFindContribution.get(activeInstance);
 
 		const state = contr?.findWidget.state;
+
 		state?.change({ isRegex: !state.isRegex }, false);
 	},
 });
@@ -230,6 +249,7 @@ registerActiveXtermAction({
 			TerminalFindContribution.get(activeInstance);
 
 		const state = contr?.findWidget.state;
+
 		state?.change({ wholeWord: !state.wholeWord }, false);
 	},
 });
@@ -255,6 +275,7 @@ registerActiveXtermAction({
 			TerminalFindContribution.get(activeInstance);
 
 		const state = contr?.findWidget.state;
+
 		state?.change({ matchCase: !state.matchCase }, false);
 	},
 });
@@ -293,6 +314,7 @@ registerActiveXtermAction({
 
 		if (widget) {
 			widget.show();
+
 			widget.find(false);
 		}
 	},
@@ -332,6 +354,7 @@ registerActiveXtermAction({
 
 		if (widget) {
 			widget.show();
+
 			widget.find(true);
 		}
 	},

@@ -44,6 +44,7 @@ class ExtensionResourceLoaderService extends AbstractExtensionResourceLoaderServ
 			configurationService,
 		);
 	}
+
 	async readExtensionResource(uri: URI): Promise<string> {
 		uri = FileAccess.uriToBrowserUri(uri);
 
@@ -56,14 +57,17 @@ class ExtensionResourceLoaderService extends AbstractExtensionResourceLoaderServ
 
 			return result.value.toString();
 		}
+
 		const requestInit: RequestInit = {};
 
 		if (this.isExtensionGalleryResource(uri)) {
 			requestInit.headers =
 				await this.getExtensionGalleryRequestHeaders();
+
 			requestInit.mode =
 				"cors"; /* set mode to cors so that above headers are always passed */
 		}
+
 		const response = await fetch(uri.toString(true), requestInit);
 
 		if (response.status !== 200) {
@@ -73,6 +77,7 @@ class ExtensionResourceLoaderService extends AbstractExtensionResourceLoaderServ
 
 			throw new Error(response.statusText);
 		}
+
 		return response.text();
 	}
 }

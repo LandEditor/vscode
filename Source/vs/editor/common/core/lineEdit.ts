@@ -17,9 +17,11 @@ import { AbstractText, SingleTextEdit, TextEdit } from "./textEdit.js";
 
 export class LineEdit {
 	public static readonly empty = new LineEdit([]);
+
 	public static deserialize(data: SerializedLineEdit): LineEdit {
 		return new LineEdit(data.map((e) => SingleLineEdit.deserialize(e)));
 	}
+
 	public static fromEdit(
 		edit: OffsetEdit,
 		initialValue: AbstractText,
@@ -28,6 +30,7 @@ export class LineEdit {
 
 		return LineEdit.fromTextEdit(textEdit, initialValue);
 	}
+
 	public static fromTextEdit(
 		edit: TextEdit,
 		initialValue: AbstractText,
@@ -43,6 +46,7 @@ export class LineEdit {
 
 			const nextEditRange =
 				i + 1 < edits.length ? edits[i + 1] : undefined;
+
 			currentEdits.push(edit);
 
 			if (
@@ -51,30 +55,37 @@ export class LineEdit {
 			) {
 				continue;
 			}
+
 			const singleEdit = SingleTextEdit.joinEdits(
 				currentEdits,
 				initialValue,
 			);
+
 			currentEdits.length = 0;
 
 			const singleLineEdit = SingleLineEdit.fromSingleTextEdit(
 				singleEdit,
 				initialValue,
 			);
+
 			result.push(singleLineEdit);
 		}
+
 		return new LineEdit(result);
 	}
+
 	public static createFromUnsorted(
 		edits: readonly SingleLineEdit[],
 	): LineEdit {
 		const result = edits.slice();
+
 		result.sort(
 			compareBy((i) => i.lineRange.startLineNumber, numberComparator),
 		);
 
 		return new LineEdit(result);
 	}
+
 	constructor(
 		/**
 		 * Have to be sorted by start line number and non-intersecting.
@@ -90,21 +101,27 @@ export class LineEdit {
 			),
 		);
 	}
+
 	public toEdit(initialValue: AbstractText): OffsetEdit {
 		const edits: SingleOffsetEdit[] = [];
 
 		for (const edit of this.edits) {
 			const singleEdit = edit.toSingleEdit(initialValue);
+
 			edits.push(singleEdit);
 		}
+
 		return new OffsetEdit(edits);
 	}
+
 	public toString(): string {
 		return this.edits.map((e) => e.toString()).join(",");
 	}
+
 	public serialize(): SerializedLineEdit {
 		return this.edits.map((e) => e.serialize());
 	}
+
 	public getNewLineRanges(): LineRange[] {
 		const ranges: LineRange[] = [];
 
@@ -117,10 +134,13 @@ export class LineEdit {
 					e.newLines.length,
 				),
 			);
+
 			offset += e.newLines.length - e.lineRange.length;
 		}
+
 		return ranges;
 	}
+
 	public mapLineNumber(lineNumber: number): number {
 		let lineDelta = 0;
 
@@ -128,16 +148,20 @@ export class LineEdit {
 			if (e.lineRange.endLineNumberExclusive > lineNumber) {
 				break;
 			}
+
 			lineDelta += e.newLines.length - e.lineRange.length;
 		}
+
 		return lineNumber + lineDelta;
 	}
+
 	public mapLineRange(lineRange: LineRange): LineRange {
 		return new LineRange(
 			this.mapLineNumber(lineRange.startLineNumber),
 			this.mapLineNumber(lineRange.endLineNumberExclusive),
 		);
 	}
+
 	public rebase(base: LineEdit): LineEdit {
 		return new LineEdit(
 			this.edits.map(
@@ -149,6 +173,7 @@ export class LineEdit {
 			),
 		);
 	}
+
 	public humanReadablePatch(originalLines: string[]): string {
 		const result: string[] = [];
 
@@ -164,6 +189,7 @@ export class LineEdit {
 			if (content === undefined) {
 				content = "[[[[[ WARNING: LINE DOES NOT EXIST ]]]]]";
 			}
+
 			const origLn =
 				originalLineNumber === -1
 					? "   "
@@ -173,11 +199,14 @@ export class LineEdit {
 				modifiedLineNumber === -1
 					? "   "
 					: modifiedLineNumber.toString().padStart(3, " ");
+
 			result.push(`${specialChar} ${origLn} ${modLn} ${content}`);
 		}
+
 		function pushSeperator() {
 			result.push("---");
 		}
+
 		let lineDelta = 0;
 
 		let first = true;
@@ -191,12 +220,15 @@ export class LineEdit {
 			} else {
 				first = false;
 			}
+
 			let lastLineNumber = edits[0].lineRange.startLineNumber - 2;
 
 			for (const edit of edits) {
 				for (
 					let i = Math.max(1, lastLineNumber);
+
 					i < edit.lineRange.startLineNumber;
+
 					i++
 				) {
 					pushLine(
@@ -206,6 +238,7 @@ export class LineEdit {
 						originalLines[i - 1],
 					);
 				}
+
 				const range = edit.lineRange;
 
 				const newLines = edit.newLines;
@@ -214,10 +247,13 @@ export class LineEdit {
 					(n) => n,
 				)) {
 					const line = originalLines[replaceLineNumber - 1];
+
 					pushLine(replaceLineNumber, -1, "deleted", line);
 				}
+
 				for (let i = 0; i < newLines.length; i++) {
 					const line = newLines[i];
+
 					pushLine(
 						-1,
 						range.startLineNumber + lineDelta + i,
@@ -225,19 +261,26 @@ export class LineEdit {
 						line,
 					);
 				}
+
 				lastLineNumber = range.endLineNumberExclusive;
+
 				lineDelta += edit.newLines.length - edit.lineRange.length;
 			}
+
 			for (
 				let i = lastLineNumber;
+
 				i <= Math.min(lastLineNumber + 2, originalLines.length);
+
 				i++
 			) {
 				pushLine(i, i + lineDelta, "unmodified", originalLines[i - 1]);
 			}
 		}
+
 		return result.join("\n");
 	}
+
 	public apply(lines: string[]): string[] {
 		const result: string[] = [];
 
@@ -246,25 +289,33 @@ export class LineEdit {
 		for (const edit of this.edits) {
 			while (currentLineIndex < edit.lineRange.startLineNumber - 1) {
 				result.push(lines[currentLineIndex]);
+
 				currentLineIndex++;
 			}
+
 			for (const newLine of edit.newLines) {
 				result.push(newLine);
 			}
+
 			currentLineIndex = edit.lineRange.endLineNumberExclusive - 1;
 		}
+
 		while (currentLineIndex < lines.length) {
 			result.push(lines[currentLineIndex]);
+
 			currentLineIndex++;
 		}
+
 		return result;
 	}
+
 	public toSingleEdit() {}
 }
 export class SingleLineEdit {
 	public static deserialize(e: SerializedSingleLineEdit): SingleLineEdit {
 		return new SingleLineEdit(LineRange.ofLength(e[0], e[1] - e[0]), e[2]);
 	}
+
 	public static fromSingleTextEdit(
 		edit: SingleTextEdit,
 		initialValue: AbstractText,
@@ -287,6 +338,7 @@ export class SingleLineEdit {
 				edit.range.getStartPosition(),
 			),
 		);
+
 		newLines[0] = survivingFirstLineText + newLines[0];
 
 		let endLineNumberEx = edit.range.endLineNumber + 1;
@@ -305,6 +357,7 @@ export class SingleLineEdit {
 				),
 			),
 		);
+
 		newLines[newLines.length - 1] =
 			newLines[newLines.length - 1] + survivingEndLineText;
 		// Replacing [startLineNumber, endLineNumberEx) with newLines would be correct, however it might not be minimal.
@@ -323,8 +376,10 @@ export class SingleLineEdit {
 		) {
 			// the replacement would not delete any text on the first line
 			startLineNumber++;
+
 			newLines.shift();
 		}
+
 		if (
 			newLines.length > 0 &&
 			startLineNumber < endLineNumberEx &&
@@ -333,17 +388,21 @@ export class SingleLineEdit {
 		) {
 			// the replacement would not delete any text on the last line
 			endLineNumberEx--;
+
 			newLines.pop();
 		}
+
 		return new SingleLineEdit(
 			new LineRange(startLineNumber, endLineNumberEx),
 			newLines,
 		);
 	}
+
 	constructor(
 		public readonly lineRange: LineRange,
 		public readonly newLines: readonly string[],
 	) {}
+
 	public toSingleTextEdit(initialValue: AbstractText): SingleTextEdit {
 		if (this.newLines.length === 0) {
 			// Deletion
@@ -362,6 +421,7 @@ export class SingleLineEdit {
 						initialValue
 							.getTransformer()
 							.getLineLength(startLineNumber) + 1;
+
 					startPos = new Position(startLineNumber, startColumn);
 				} else {
 					// Delete everything.
@@ -369,6 +429,7 @@ export class SingleLineEdit {
 					// However, a string has always 1 line (which can be empty).
 					startPos = new Position(1, 1);
 				}
+
 				const lastPosition = textLen.addToPosition(new Position(1, 1));
 
 				return new SingleTextEdit(
@@ -401,15 +462,20 @@ export class SingleLineEdit {
 				initialValue.getTransformer().textLength.lineCount + 2
 			) {
 				endLineNumber = insertionLine - 1;
+
 				column =
 					initialValue.getTransformer().getLineLength(endLineNumber) +
 					1;
+
 				text = this.newLines.map((l) => "\n" + l).join("");
 			} else {
 				endLineNumber = insertionLine;
+
 				column = 1;
+
 				text = this.newLines.map((l) => l + "\n").join("");
 			}
+
 			return new SingleTextEdit(
 				Range.fromPositions(new Position(endLineNumber, column)),
 				text,
@@ -432,6 +498,7 @@ export class SingleLineEdit {
 			return new SingleTextEdit(range, text);
 		}
 	}
+
 	public toSingleEdit(initialValue: AbstractText): SingleOffsetEdit {
 		const textEdit = this.toSingleTextEdit(initialValue);
 
@@ -441,9 +508,11 @@ export class SingleLineEdit {
 
 		return new SingleOffsetEdit(range, textEdit.text);
 	}
+
 	public toString(): string {
 		return `${this.lineRange}->${JSON.stringify(this.newLines)}`;
 	}
+
 	public serialize(): SerializedSingleLineEdit {
 		return [
 			this.lineRange.startLineNumber,
@@ -451,6 +520,7 @@ export class SingleLineEdit {
 			this.newLines,
 		];
 	}
+
 	public removeCommonSuffixPrefixLines(
 		initialValue: AbstractText,
 	): SingleLineEdit {
@@ -467,8 +537,10 @@ export class SingleLineEdit {
 				initialValue.getLineAt(startLineNumber)
 		) {
 			startLineNumber++;
+
 			trimStartCount++;
 		}
+
 		let trimEndCount = 0;
 
 		while (
@@ -478,11 +550,14 @@ export class SingleLineEdit {
 				initialValue.getLineAt(endLineNumberEx - 1)
 		) {
 			endLineNumberEx--;
+
 			trimEndCount++;
 		}
+
 		if (trimStartCount === 0 && trimEndCount === 0) {
 			return this;
 		}
+
 		return new SingleLineEdit(
 			new LineRange(startLineNumber, endLineNumberEx),
 			this.newLines.slice(
@@ -491,6 +566,7 @@ export class SingleLineEdit {
 			),
 		);
 	}
+
 	public toLineEdit(): LineEdit {
 		return new LineEdit([this]);
 	}

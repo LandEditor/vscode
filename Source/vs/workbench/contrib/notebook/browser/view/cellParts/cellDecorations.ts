@@ -17,20 +17,25 @@ export class CellDecorations extends CellContentPart {
 	) {
 		super();
 	}
+
 	override didRenderCell(element: ICellViewModel): void {
 		const removedClassNames: string[] = [];
+
 		this.rootContainer.classList.forEach((className) => {
 			if (/^nb\-.*$/.test(className)) {
 				removedClassNames.push(className);
 			}
 		});
+
 		removedClassNames.forEach((className) => {
 			this.rootContainer.classList.remove(className);
 		});
+
 		this.decorationContainer.innerText = "";
 
 		const generateCellTopDecorations = () => {
 			this.decorationContainer.innerText = "";
+
 			element
 				.getCellDecorations()
 				.filter((options) => options.topClassName !== undefined)
@@ -40,6 +45,7 @@ export class CellDecorations extends CellContentPart {
 					);
 				});
 		};
+
 		this.cellDisposables.add(
 			element.onCellDecorationsChanged((e) => {
 				const modified =
@@ -51,24 +57,30 @@ export class CellDecorations extends CellContentPart {
 				}
 			}),
 		);
+
 		generateCellTopDecorations();
+
 		this.registerDecorations();
 	}
+
 	private registerDecorations() {
 		if (!this.currentCell) {
 			return;
 		}
+
 		this.cellDisposables.add(
 			this.currentCell.onCellDecorationsChanged((e) => {
 				e.added.forEach((options) => {
 					if (options.className && this.currentCell) {
 						this.rootContainer.classList.add(options.className);
+
 						this.notebookEditor.deltaCellContainerClassNames(
 							this.currentCell.id,
 							[options.className],
 							[],
 						);
 					}
+
 					if (options.outputClassName && this.currentCell) {
 						this.notebookEditor.deltaCellContainerClassNames(
 							this.currentCell.id,
@@ -77,15 +89,18 @@ export class CellDecorations extends CellContentPart {
 						);
 					}
 				});
+
 				e.removed.forEach((options) => {
 					if (options.className && this.currentCell) {
 						this.rootContainer.classList.remove(options.className);
+
 						this.notebookEditor.deltaCellContainerClassNames(
 							this.currentCell.id,
 							[],
 							[options.className],
 						);
 					}
+
 					if (options.outputClassName && this.currentCell) {
 						this.notebookEditor.deltaCellContainerClassNames(
 							this.currentCell.id,
@@ -96,15 +111,18 @@ export class CellDecorations extends CellContentPart {
 				});
 			}),
 		);
+
 		this.currentCell.getCellDecorations().forEach((options) => {
 			if (options.className && this.currentCell) {
 				this.rootContainer.classList.add(options.className);
+
 				this.notebookEditor.deltaCellContainerClassNames(
 					this.currentCell.id,
 					[options.className],
 					[],
 				);
 			}
+
 			if (options.outputClassName && this.currentCell) {
 				this.notebookEditor.deltaCellContainerClassNames(
 					this.currentCell.id,

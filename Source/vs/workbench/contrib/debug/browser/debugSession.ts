@@ -105,22 +105,38 @@ const TRIGGERED_BREAKPOINT_MAX_DELAY = 1500;
 
 export class DebugSession implements IDebugSession, IDisposable {
 	parentSession: IDebugSession | undefined;
+
 	rememberedCapabilities?: DebugProtocol.Capabilities;
+
 	private _subId: string | undefined;
+
 	raw: RawDebugSession | undefined; // used in tests
 	private initialized = false;
+
 	private _options: IDebugSessionOptions;
+
 	private sources = new Map<string, Source>();
+
 	private threads = new Map<number, Thread>();
+
 	private threadIds: number[] = [];
+
 	private cancellationMap = new Map<number, CancellationTokenSource[]>();
+
 	private readonly rawListeners = new DisposableStore();
+
 	private readonly globalDisposables = new DisposableStore();
+
 	private fetchThreadsScheduler: RunOnceScheduler | undefined;
+
 	private passFocusScheduler: RunOnceScheduler;
+
 	private lastContinuedThreadId: number | undefined;
+
 	private repl: ReplModel;
+
 	private stoppedDetails: IRawStoppedDetails[] = [];
+
 	private readonly statusQueue = this.rawListeners.add(
 		new ThreadStatusScheduler(),
 	);
@@ -128,24 +144,35 @@ export class DebugSession implements IDebugSession, IDisposable {
 	public readonly correlatedTestRun?: LiveTestResult;
 	/** Whether we terminated the correlated run yet. Used so a 2nd terminate request goes through to the underlying session. */
 	private didTerminateTestRun?: boolean;
+
 	private readonly _onDidChangeState = new Emitter<void>();
+
 	private readonly _onDidEndAdapter = new Emitter<
 		AdapterEndEvent | undefined
 	>();
+
 	private readonly _onDidLoadedSource = new Emitter<LoadedSourceEvent>();
+
 	private readonly _onDidCustomEvent = new Emitter<DebugProtocol.Event>();
+
 	private readonly _onDidProgressStart =
 		new Emitter<DebugProtocol.ProgressStartEvent>();
+
 	private readonly _onDidProgressUpdate =
 		new Emitter<DebugProtocol.ProgressUpdateEvent>();
+
 	private readonly _onDidProgressEnd =
 		new Emitter<DebugProtocol.ProgressEndEvent>();
+
 	private readonly _onDidInvalidMemory =
 		new Emitter<DebugProtocol.MemoryEvent>();
+
 	private readonly _onDidChangeREPLElements = new Emitter<
 		IReplElement | undefined
 	>();
+
 	private _name: string | undefined;
+
 	private readonly _onDidChangeName = new Emitter<string>();
 	/**
 	 * Promise set while enabling dependent breakpoints to block the debugger
@@ -157,6 +184,7 @@ export class DebugSession implements IDebugSession, IDisposable {
 		private id: string,
 		private _configuration: {
 			resolved: IConfig;
+
 			unresolved: IConfig | undefined;
 		},
 		public root: IWorkspaceFolder | undefined,
@@ -198,6 +226,7 @@ export class DebugSession implements IDebugSession, IDisposable {
 		private readonly accessibilityService: IAccessibilityService,
 	) {
 		this._options = options || {};
+
 		this.parentSession = this._options.parentSession;
 
 		if (this.hasSeparateRepl()) {
@@ -205,9 +234,11 @@ export class DebugSession implements IDebugSession, IDisposable {
 		} else {
 			this.repl = (this.parentSession as DebugSession).repl;
 		}
+
 		const toDispose = this.globalDisposables;
 
 		const replListener = toDispose.add(new MutableDisposable());
+
 		replListener.value = this.repl.onDidChangeElements((e) =>
 			this._onDidChangeREPLElements.fire(e),
 		);
@@ -216,6 +247,7 @@ export class DebugSession implements IDebugSession, IDisposable {
 			toDispose.add(
 				lifecycleService.onWillShutdown(() => {
 					this.shutdown();
+
 					dispose(toDispose);
 				}),
 			);
@@ -233,6 +265,7 @@ export class DebugSession implements IDebugSession, IDisposable {
 				this.correlatedTestRun.onComplete(() => this.terminate()),
 			);
 		}
+
 		const compoundRoot = this._options.compoundRoot;
 
 		if (compoundRoot) {
@@ -240,6 +273,7 @@ export class DebugSession implements IDebugSession, IDisposable {
 				compoundRoot.onDidSessionStop(() => this.terminate()),
 			);
 		}
+
 		this.passFocusScheduler = new RunOnceScheduler(() => {
 			// If there is some session or thread that is stopped pass focus to it
 			if (
@@ -265,6 +299,7 @@ export class DebugSession implements IDebugSession, IDisposable {
 							typeof toFocusThreadId === "number"
 								? this.getThread(toFocusThreadId)
 								: undefined;
+
 						this.debugService.focusStackFrame(
 							undefined,
 							toFocusThread,
@@ -297,54 +332,70 @@ export class DebugSession implements IDebugSession, IDisposable {
 						this.raw?.isInShutdown === false
 					) {
 						this.repl = this.repl.clone();
+
 						replListener.value = this.repl.onDidChangeElements(
 							(e) => this._onDidChangeREPLElements.fire(e),
 						);
+
 						this.parentSession = undefined;
 					}
 				}),
 			);
 		}
 	}
+
 	getId(): string {
 		return this.id;
 	}
+
 	setSubId(subId: string | undefined) {
 		this._subId = subId;
 	}
+
 	getMemory(memoryReference: string): IMemoryRegion {
 		return new MemoryRegion(memoryReference, this);
 	}
+
 	get subId(): string | undefined {
 		return this._subId;
 	}
+
 	get configuration(): IConfig {
 		return this._configuration.resolved;
 	}
+
 	get unresolvedConfiguration(): IConfig | undefined {
 		return this._configuration.unresolved;
 	}
+
 	get lifecycleManagedByParent(): boolean {
 		return !!this._options.lifecycleManagedByParent;
 	}
+
 	get compact(): boolean {
 		return !!this._options.compact;
 	}
+
 	get saveBeforeRestart(): boolean {
 		return this._options.saveBeforeRestart ?? !this._options?.parentSession;
 	}
+
 	get compoundRoot(): DebugCompoundRoot | undefined {
 		return this._options.compoundRoot;
 	}
+
 	get suppressDebugStatusbar(): boolean {
 		return this._options.suppressDebugStatusbar ?? false;
 	}
+
 	get suppressDebugToolbar(): boolean {
 		return this._options.suppressDebugToolbar ?? false;
 	}
+
 	get suppressDebugView(): boolean {
 		return this._options.suppressDebugView ?? false;
 	}
+
 	get autoExpandLazyVariables(): boolean {
 		// This tiny helper avoids converting the entire debug model to use service injection
 		const screenReaderOptimized =
@@ -357,12 +408,15 @@ export class DebugSession implements IDebugSession, IDisposable {
 
 		return (value === "auto" && screenReaderOptimized) || value === "on";
 	}
+
 	setConfiguration(configuration: {
 		resolved: IConfig;
+
 		unresolved: IConfig | undefined;
 	}) {
 		this._configuration = configuration;
 	}
+
 	getLabel(): string {
 		const includeRoot =
 			this.workspaceContextService.getWorkspace().folders.length > 1;
@@ -371,30 +425,39 @@ export class DebugSession implements IDebugSession, IDisposable {
 			? `${this.name} (${resources.basenameOrAuthority(this.root.uri)})`
 			: this.name;
 	}
+
 	setName(name: string): void {
 		this._name = name;
+
 		this._onDidChangeName.fire(name);
 	}
+
 	get name(): string {
 		return this._name || this.configuration.name;
 	}
+
 	get state(): State {
 		if (!this.initialized) {
 			return State.Initializing;
 		}
+
 		if (!this.raw) {
 			return State.Inactive;
 		}
+
 		const focusedThread = this.debugService.getViewModel().focusedThread;
 
 		if (focusedThread && focusedThread.session === this) {
 			return focusedThread.stopped ? State.Stopped : State.Running;
 		}
+
 		if (this.getAllThreads().some((t) => t.stopped)) {
 			return State.Stopped;
 		}
+
 		return State.Running;
 	}
+
 	get capabilities(): DebugProtocol.Capabilities {
 		return this.raw ? this.raw.capabilities : Object.create(null);
 	}
@@ -402,12 +465,15 @@ export class DebugSession implements IDebugSession, IDisposable {
 	get onDidChangeState(): Event<void> {
 		return this._onDidChangeState.event;
 	}
+
 	get onDidEndAdapter(): Event<AdapterEndEvent | undefined> {
 		return this._onDidEndAdapter.event;
 	}
+
 	get onDidChangeReplElements(): Event<IReplElement | undefined> {
 		return this._onDidChangeREPLElements.event;
 	}
+
 	get onDidChangeName(): Event<string> {
 		return this._onDidChangeName.event;
 	}
@@ -415,18 +481,23 @@ export class DebugSession implements IDebugSession, IDisposable {
 	get onDidCustomEvent(): Event<DebugProtocol.Event> {
 		return this._onDidCustomEvent.event;
 	}
+
 	get onDidLoadedSource(): Event<LoadedSourceEvent> {
 		return this._onDidLoadedSource.event;
 	}
+
 	get onDidProgressStart(): Event<DebugProtocol.ProgressStartEvent> {
 		return this._onDidProgressStart.event;
 	}
+
 	get onDidProgressUpdate(): Event<DebugProtocol.ProgressUpdateEvent> {
 		return this._onDidProgressUpdate.event;
 	}
+
 	get onDidProgressEnd(): Event<DebugProtocol.ProgressEndEvent> {
 		return this._onDidProgressEnd.event;
 	}
+
 	get onDidInvalidateMemory(): Event<DebugProtocol.MemoryEvent> {
 		return this._onDidInvalidMemory.event;
 	}
@@ -439,8 +510,10 @@ export class DebugSession implements IDebugSession, IDisposable {
 			// if there was already a connection make sure to remove old listeners
 			await this.shutdown();
 		}
+
 		try {
 			const debugAdapter = await dbgr.createDebugAdapter(this);
+
 			this.raw = this.instantiationService.createInstance(
 				RawDebugSession,
 				debugAdapter,
@@ -448,8 +521,11 @@ export class DebugSession implements IDebugSession, IDisposable {
 				this.id,
 				this.configuration.name,
 			);
+
 			await this.raw.start();
+
 			this.registerListeners();
+
 			await this.raw.initialize({
 				clientID: "vscode",
 				clientName: this.productService.nameLong,
@@ -469,15 +545,20 @@ export class DebugSession implements IDebugSession, IDisposable {
 				supportsStartDebuggingRequest: true,
 				supportsANSIStyling: true,
 			});
+
 			this.initialized = true;
+
 			this._onDidChangeState.fire();
+
 			this.rememberedCapabilities = this.raw.capabilities;
+
 			this.debugService.setExceptionBreakpointsForSession(
 				this,
 				(this.raw &&
 					this.raw.capabilities.exceptionBreakpointFilters) ||
 					[],
 			);
+
 			this.debugService
 				.getModel()
 				.registerBreakpointModes(
@@ -486,7 +567,9 @@ export class DebugSession implements IDebugSession, IDisposable {
 				);
 		} catch (err) {
 			this.initialized = true;
+
 			this._onDidChangeState.fire();
+
 			await this.shutdown();
 
 			throw err;
@@ -505,6 +588,7 @@ export class DebugSession implements IDebugSession, IDisposable {
 				),
 			);
 		}
+
 		if (this.parentSession && this.parentSession.state === State.Inactive) {
 			throw canceled();
 		}
@@ -527,6 +611,7 @@ export class DebugSession implements IDebugSession, IDisposable {
 			// Adapter went down but it did not send a 'terminated' event, simulate like the event has been sent
 			this.onDidExitAdapter();
 		}
+
 		this.cancelAllRequests();
 
 		if (this._options.lifecycleManagedByParent && this.parentSession) {
@@ -537,6 +622,7 @@ export class DebugSession implements IDebugSession, IDisposable {
 			!this.didTerminateTestRun
 		) {
 			this.didTerminateTestRun = true;
+
 			this.testService.cancelTestRun(this.correlatedTestRun.id);
 		} else if (this.raw) {
 			if (
@@ -548,6 +634,7 @@ export class DebugSession implements IDebugSession, IDisposable {
 				await this.raw.disconnect({ restart, terminateDebuggee: true });
 			}
 		}
+
 		if (!restart) {
 			this._options.compoundRoot?.sessionStopped();
 		}
@@ -560,6 +647,7 @@ export class DebugSession implements IDebugSession, IDisposable {
 			// Adapter went down but it did not send a 'terminated' event, simulate like the event has been sent
 			this.onDidExitAdapter();
 		}
+
 		this.cancelAllRequests();
 
 		if (this._options.lifecycleManagedByParent && this.parentSession) {
@@ -572,6 +660,7 @@ export class DebugSession implements IDebugSession, IDisposable {
 				suspendDebuggee: suspend,
 			});
 		}
+
 		if (!restart) {
 			this._options.compoundRoot?.sessionStopped();
 		}
@@ -589,6 +678,7 @@ export class DebugSession implements IDebugSession, IDisposable {
 				),
 			);
 		}
+
 		this.cancelAllRequests();
 
 		if (this._options.lifecycleManagedByParent && this.parentSession) {
@@ -597,6 +687,7 @@ export class DebugSession implements IDebugSession, IDisposable {
 			await this.raw.restart({ arguments: this.configuration });
 		}
 	}
+
 	async sendBreakpoints(
 		modelUri: URI,
 		breakpointsToSend: IBreakpoint[],
@@ -611,9 +702,11 @@ export class DebugSession implements IDebugSession, IDisposable {
 				),
 			);
 		}
+
 		if (!this.raw.readyForBreakpoints) {
 			return Promise.resolve(undefined);
 		}
+
 		const rawSource = this.getRawSource(modelUri);
 
 		if (breakpointsToSend.length && !rawSource.adapterData) {
@@ -623,6 +716,7 @@ export class DebugSession implements IDebugSession, IDisposable {
 		if (rawSource.path) {
 			rawSource.path = normalizeDriveLetter(rawSource.path);
 		}
+
 		const response = await this.raw.setBreakpoints({
 			source: rawSource,
 			lines: breakpointsToSend.map(
@@ -641,6 +735,7 @@ export class DebugSession implements IDebugSession, IDisposable {
 					response.body.breakpoints[i],
 				);
 			}
+
 			this.model.setBreakpointSessionData(
 				this.getId(),
 				this.capabilities,
@@ -648,6 +743,7 @@ export class DebugSession implements IDebugSession, IDisposable {
 			);
 		}
 	}
+
 	async sendFunctionBreakpoints(fbpts: IFunctionBreakpoint[]): Promise<void> {
 		if (!this.raw) {
 			throw new Error(
@@ -658,6 +754,7 @@ export class DebugSession implements IDebugSession, IDisposable {
 				),
 			);
 		}
+
 		if (this.raw.readyForBreakpoints) {
 			const response = await this.raw.setFunctionBreakpoints({
 				breakpoints: fbpts.map((bp) => bp.toDAP()),
@@ -669,6 +766,7 @@ export class DebugSession implements IDebugSession, IDisposable {
 				for (let i = 0; i < fbpts.length; i++) {
 					data.set(fbpts[i].getId(), response.body.breakpoints[i]);
 				}
+
 				this.model.setBreakpointSessionData(
 					this.getId(),
 					this.capabilities,
@@ -677,6 +775,7 @@ export class DebugSession implements IDebugSession, IDisposable {
 			}
 		}
 	}
+
 	async sendExceptionBreakpoints(
 		exbpts: IExceptionBreakpoint[],
 	): Promise<void> {
@@ -689,6 +788,7 @@ export class DebugSession implements IDebugSession, IDisposable {
 				),
 			);
 		}
+
 		if (this.raw.readyForBreakpoints) {
 			const args: DebugProtocol.SetExceptionBreakpointsArguments = this
 				.capabilities.supportsExceptionFilterOptions
@@ -701,6 +801,7 @@ export class DebugSession implements IDebugSession, IDisposable {
 									condition: exb.condition,
 								};
 							}
+
 							return { filterId: exb.filter };
 						}),
 					}
@@ -714,6 +815,7 @@ export class DebugSession implements IDebugSession, IDisposable {
 				for (let i = 0; i < exbpts.length; i++) {
 					data.set(exbpts[i].getId(), response.body.breakpoints[i]);
 				}
+
 				this.model.setBreakpointSessionData(
 					this.getId(),
 					this.capabilities,
@@ -722,6 +824,7 @@ export class DebugSession implements IDebugSession, IDisposable {
 			}
 		}
 	}
+
 	dataBytesBreakpointInfo(
 		address: string,
 		bytes: number,
@@ -734,31 +837,38 @@ export class DebugSession implements IDebugSession, IDisposable {
 				),
 			);
 		}
+
 		return this._dataBreakpointInfo({
 			name: address,
 			bytes,
 			asAddress: true,
 		});
 	}
+
 	dataBreakpointInfo(
 		name: string,
 		variablesReference?: number,
 	): Promise<
 		| {
 				dataId: string | null;
+
 				description: string;
+
 				canPersist?: boolean;
 		  }
 		| undefined
 	> {
 		return this._dataBreakpointInfo({ name, variablesReference });
 	}
+
 	private async _dataBreakpointInfo(
 		args: DebugProtocol.DataBreakpointInfoArguments,
 	): Promise<
 		| {
 				dataId: string | null;
+
 				description: string;
+
 				canPersist?: boolean;
 		  }
 		| undefined
@@ -772,6 +882,7 @@ export class DebugSession implements IDebugSession, IDisposable {
 				),
 			);
 		}
+
 		if (!this.raw.readyForBreakpoints) {
 			throw new Error(
 				localize(
@@ -780,10 +891,12 @@ export class DebugSession implements IDebugSession, IDisposable {
 				),
 			);
 		}
+
 		const response = await this.raw.dataBreakpointInfo(args);
 
 		return response?.body;
 	}
+
 	async sendDataBreakpoints(
 		dataBreakpoints: IDataBreakpoint[],
 	): Promise<void> {
@@ -796,6 +909,7 @@ export class DebugSession implements IDebugSession, IDisposable {
 				),
 			);
 		}
+
 		if (this.raw.readyForBreakpoints) {
 			const converted = await Promise.all(
 				dataBreakpoints.map(async (bp) => {
@@ -828,6 +942,7 @@ export class DebugSession implements IDebugSession, IDisposable {
 						);
 					}
 				}
+
 				this.model.setBreakpointSessionData(
 					this.getId(),
 					this.capabilities,
@@ -836,6 +951,7 @@ export class DebugSession implements IDebugSession, IDisposable {
 			}
 		}
 	}
+
 	async sendInstructionBreakpoints(
 		instructionBreakpoints: IInstructionBreakpoint[],
 	): Promise<void> {
@@ -848,6 +964,7 @@ export class DebugSession implements IDebugSession, IDisposable {
 				),
 			);
 		}
+
 		if (this.raw.readyForBreakpoints) {
 			const response = await this.raw.setInstructionBreakpoints({
 				breakpoints: instructionBreakpoints.map((ib) => ib.toDAP()),
@@ -862,6 +979,7 @@ export class DebugSession implements IDebugSession, IDisposable {
 						response.body.breakpoints[i],
 					);
 				}
+
 				this.model.setBreakpointSessionData(
 					this.getId(),
 					this.capabilities,
@@ -870,6 +988,7 @@ export class DebugSession implements IDebugSession, IDisposable {
 			}
 		}
 	}
+
 	async breakpointsLocations(
 		uri: URI,
 		lineNumber: number,
@@ -883,6 +1002,7 @@ export class DebugSession implements IDebugSession, IDisposable {
 				),
 			);
 		}
+
 		const source = this.getRawSource(uri);
 
 		const response = await this.raw.breakpointLocations({
@@ -893,6 +1013,7 @@ export class DebugSession implements IDebugSession, IDisposable {
 		if (!response || !response.body || !response.body.breakpoints) {
 			return [];
 		}
+
 		const positions = response.body.breakpoints.map((bp) => ({
 			lineNumber: bp.line,
 			column: bp.column || 1,
@@ -900,6 +1021,7 @@ export class DebugSession implements IDebugSession, IDisposable {
 
 		return distinct(positions, (p) => `${p.lineNumber}:${p.column}`);
 	}
+
 	getDebugProtocolBreakpoint(
 		breakpointId: string,
 	): DebugProtocol.Breakpoint | undefined {
@@ -908,6 +1030,7 @@ export class DebugSession implements IDebugSession, IDisposable {
 			this.getId(),
 		);
 	}
+
 	customRequest(
 		request: string,
 		args: any,
@@ -921,8 +1044,10 @@ export class DebugSession implements IDebugSession, IDisposable {
 				),
 			);
 		}
+
 		return this.raw.custom(request, args);
 	}
+
 	stackTrace(
 		threadId: number,
 		startFrame: number,
@@ -938,6 +1063,7 @@ export class DebugSession implements IDebugSession, IDisposable {
 				),
 			);
 		}
+
 		const sessionToken = this.getNewCancellationToken(threadId, token);
 
 		return this.raw.stackTrace(
@@ -945,6 +1071,7 @@ export class DebugSession implements IDebugSession, IDisposable {
 			sessionToken,
 		);
 	}
+
 	async exceptionInfo(threadId: number): Promise<IExceptionInfo | undefined> {
 		if (!this.raw) {
 			throw new Error(
@@ -955,6 +1082,7 @@ export class DebugSession implements IDebugSession, IDisposable {
 				),
 			);
 		}
+
 		const response = await this.raw.exceptionInfo({ threadId });
 
 		if (response) {
@@ -965,8 +1093,10 @@ export class DebugSession implements IDebugSession, IDisposable {
 				details: response.body.details,
 			};
 		}
+
 		return undefined;
 	}
+
 	scopes(
 		frameId: number,
 		threadId: number,
@@ -980,10 +1110,12 @@ export class DebugSession implements IDebugSession, IDisposable {
 				),
 			);
 		}
+
 		const token = this.getNewCancellationToken(threadId);
 
 		return this.raw.scopes({ frameId }, token);
 	}
+
 	variables(
 		variablesReference: number,
 		threadId: number | undefined,
@@ -1000,6 +1132,7 @@ export class DebugSession implements IDebugSession, IDisposable {
 				),
 			);
 		}
+
 		const token = threadId
 			? this.getNewCancellationToken(threadId)
 			: undefined;
@@ -1009,13 +1142,16 @@ export class DebugSession implements IDebugSession, IDisposable {
 			token,
 		);
 	}
+
 	evaluate(
 		expression: string,
 		frameId: number,
 		context?: string,
 		location?: {
 			line: number;
+
 			column: number;
+
 			source: DebugProtocol.Source;
 		},
 	): Promise<DebugProtocol.EvaluateResponse | undefined> {
@@ -1028,6 +1164,7 @@ export class DebugSession implements IDebugSession, IDisposable {
 				),
 			);
 		}
+
 		return this.raw.evaluate({
 			expression,
 			frameId,
@@ -1037,6 +1174,7 @@ export class DebugSession implements IDebugSession, IDisposable {
 			source: location?.source,
 		});
 	}
+
 	async restartFrame(frameId: number, threadId: number): Promise<void> {
 		await this.waitForTriggeredBreakpoints();
 
@@ -1049,8 +1187,10 @@ export class DebugSession implements IDebugSession, IDisposable {
 				),
 			);
 		}
+
 		await this.raw.restartFrame({ frameId }, threadId);
 	}
+
 	private setLastSteppingGranularity(
 		threadId: number,
 		granularity?: DebugProtocol.SteppingGranularity,
@@ -1061,6 +1201,7 @@ export class DebugSession implements IDebugSession, IDisposable {
 			thread.lastSteppingGranularity = granularity;
 		}
 	}
+
 	async next(
 		threadId: number,
 		granularity?: DebugProtocol.SteppingGranularity,
@@ -1076,9 +1217,12 @@ export class DebugSession implements IDebugSession, IDisposable {
 				),
 			);
 		}
+
 		this.setLastSteppingGranularity(threadId, granularity);
+
 		await this.raw.next({ threadId, granularity });
 	}
+
 	async stepIn(
 		threadId: number,
 		targetId?: number,
@@ -1095,9 +1239,12 @@ export class DebugSession implements IDebugSession, IDisposable {
 				),
 			);
 		}
+
 		this.setLastSteppingGranularity(threadId, granularity);
+
 		await this.raw.stepIn({ threadId, targetId, granularity });
 	}
+
 	async stepOut(
 		threadId: number,
 		granularity?: DebugProtocol.SteppingGranularity,
@@ -1113,9 +1260,12 @@ export class DebugSession implements IDebugSession, IDisposable {
 				),
 			);
 		}
+
 		this.setLastSteppingGranularity(threadId, granularity);
+
 		await this.raw.stepOut({ threadId, granularity });
 	}
+
 	async stepBack(
 		threadId: number,
 		granularity?: DebugProtocol.SteppingGranularity,
@@ -1131,9 +1281,12 @@ export class DebugSession implements IDebugSession, IDisposable {
 				),
 			);
 		}
+
 		this.setLastSteppingGranularity(threadId, granularity);
+
 		await this.raw.stepBack({ threadId, granularity });
 	}
+
 	async continue(threadId: number): Promise<void> {
 		await this.waitForTriggeredBreakpoints();
 
@@ -1146,8 +1299,10 @@ export class DebugSession implements IDebugSession, IDisposable {
 				),
 			);
 		}
+
 		await this.raw.continue({ threadId });
 	}
+
 	async reverseContinue(threadId: number): Promise<void> {
 		await this.waitForTriggeredBreakpoints();
 
@@ -1160,8 +1315,10 @@ export class DebugSession implements IDebugSession, IDisposable {
 				),
 			);
 		}
+
 		await this.raw.reverseContinue({ threadId });
 	}
+
 	async pause(threadId: number): Promise<void> {
 		if (!this.raw) {
 			throw new Error(
@@ -1172,8 +1329,10 @@ export class DebugSession implements IDebugSession, IDisposable {
 				),
 			);
 		}
+
 		await this.raw.pause({ threadId });
 	}
+
 	async terminateThreads(threadIds?: number[]): Promise<void> {
 		if (!this.raw) {
 			throw new Error(
@@ -1184,8 +1343,10 @@ export class DebugSession implements IDebugSession, IDisposable {
 				),
 			);
 		}
+
 		await this.raw.terminateThreads({ threadIds });
 	}
+
 	setVariable(
 		variablesReference: number,
 		name: string,
@@ -1200,8 +1361,10 @@ export class DebugSession implements IDebugSession, IDisposable {
 				),
 			);
 		}
+
 		return this.raw.setVariable({ variablesReference, name, value });
 	}
+
 	setExpression(
 		frameId: number,
 		expression: string,
@@ -1216,8 +1379,10 @@ export class DebugSession implements IDebugSession, IDisposable {
 				),
 			);
 		}
+
 		return this.raw.setExpression({ expression, value, frameId });
 	}
+
 	gotoTargets(
 		source: DebugProtocol.Source,
 		line: number,
@@ -1232,8 +1397,10 @@ export class DebugSession implements IDebugSession, IDisposable {
 				),
 			);
 		}
+
 		return this.raw.gotoTargets({ source, line, column });
 	}
+
 	goto(
 		threadId: number,
 		targetId: number,
@@ -1247,8 +1414,10 @@ export class DebugSession implements IDebugSession, IDisposable {
 				),
 			);
 		}
+
 		return this.raw.goto({ threadId, targetId });
 	}
+
 	loadSource(
 		resource: URI,
 	): Promise<DebugProtocol.SourceResponse | undefined> {
@@ -1263,6 +1432,7 @@ export class DebugSession implements IDebugSession, IDisposable {
 				),
 			);
 		}
+
 		const source = this.getSourceForUri(resource);
 
 		let rawSource: DebugProtocol.Source;
@@ -1272,16 +1442,19 @@ export class DebugSession implements IDebugSession, IDisposable {
 		} else {
 			// create a Source
 			const data = Source.getEncodedDebugData(resource);
+
 			rawSource = {
 				path: data.path,
 				sourceReference: data.sourceReference,
 			};
 		}
+
 		return this.raw.source({
 			sourceReference: rawSource.sourceReference || 0,
 			source: rawSource,
 		});
 	}
+
 	async getLoadedSources(): Promise<Source[]> {
 		if (!this.raw) {
 			return Promise.reject(
@@ -1294,6 +1467,7 @@ export class DebugSession implements IDebugSession, IDisposable {
 				),
 			);
 		}
+
 		const response = await this.raw.loadedSources({});
 
 		if (response?.body && response.body.sources) {
@@ -1302,6 +1476,7 @@ export class DebugSession implements IDebugSession, IDisposable {
 			return [];
 		}
 	}
+
 	async completions(
 		frameId: number | undefined,
 		threadId: number,
@@ -1321,6 +1496,7 @@ export class DebugSession implements IDebugSession, IDisposable {
 				),
 			);
 		}
+
 		const sessionCancelationToken = this.getNewCancellationToken(
 			threadId,
 			token,
@@ -1336,9 +1512,11 @@ export class DebugSession implements IDebugSession, IDisposable {
 			sessionCancelationToken,
 		);
 	}
+
 	async stepInTargets(frameId: number): Promise<
 		| {
 				id: number;
+
 				label: string;
 		  }[]
 		| undefined
@@ -1354,10 +1532,12 @@ export class DebugSession implements IDebugSession, IDisposable {
 				),
 			);
 		}
+
 		const response = await this.raw.stepInTargets({ frameId });
 
 		return response?.body.targets;
 	}
+
 	async cancel(
 		progressId: string,
 	): Promise<DebugProtocol.CancelResponse | undefined> {
@@ -1372,8 +1552,10 @@ export class DebugSession implements IDebugSession, IDisposable {
 				),
 			);
 		}
+
 		return this.raw.cancel({ progressId });
 	}
+
 	async disassemble(
 		memoryReference: string,
 		offset: number,
@@ -1391,6 +1573,7 @@ export class DebugSession implements IDebugSession, IDisposable {
 				),
 			);
 		}
+
 		const response = await this.raw.disassemble({
 			memoryReference,
 			offset,
@@ -1401,6 +1584,7 @@ export class DebugSession implements IDebugSession, IDisposable {
 
 		return response?.body?.instructions;
 	}
+
 	readMemory(
 		memoryReference: string,
 		offset: number,
@@ -1417,8 +1601,10 @@ export class DebugSession implements IDebugSession, IDisposable {
 				),
 			);
 		}
+
 		return this.raw.readMemory({ count, memoryReference, offset });
 	}
+
 	writeMemory(
 		memoryReference: string,
 		offset: number,
@@ -1436,6 +1622,7 @@ export class DebugSession implements IDebugSession, IDisposable {
 				),
 			);
 		}
+
 		return this.raw.writeMemory({
 			memoryReference,
 			offset,
@@ -1443,6 +1630,7 @@ export class DebugSession implements IDebugSession, IDisposable {
 			data,
 		});
 	}
+
 	async resolveLocationReference(
 		locationReference: number,
 	): Promise<IDebugLocationReferenced> {
@@ -1455,6 +1643,7 @@ export class DebugSession implements IDebugSession, IDisposable {
 				),
 			);
 		}
+
 		const location = await this.raw.locations({ locationReference });
 
 		if (!location?.body) {
@@ -1466,6 +1655,7 @@ export class DebugSession implements IDebugSession, IDisposable {
 				),
 			);
 		}
+
 		const source = this.getSource(location.body.source);
 
 		return { column: 1, ...location.body, source };
@@ -1474,8 +1664,10 @@ export class DebugSession implements IDebugSession, IDisposable {
 	getThread(threadId: number): Thread | undefined {
 		return this.threads.get(threadId);
 	}
+
 	getAllThreads(): IThread[] {
 		const result: IThread[] = [];
+
 		this.threadIds.forEach((threadId) => {
 			const thread = this.threads.get(threadId);
 
@@ -1486,6 +1678,7 @@ export class DebugSession implements IDebugSession, IDisposable {
 
 		return result;
 	}
+
 	clearThreads(
 		removeThreads: boolean,
 		reference: number | undefined = undefined,
@@ -1495,7 +1688,9 @@ export class DebugSession implements IDebugSession, IDisposable {
 
 			if (thread) {
 				thread.clearCallStack();
+
 				thread.stoppedDetails = undefined;
+
 				thread.stopped = false;
 
 				if (removeThreads) {
@@ -1505,24 +1700,31 @@ export class DebugSession implements IDebugSession, IDisposable {
 		} else {
 			this.threads.forEach((thread) => {
 				thread.clearCallStack();
+
 				thread.stoppedDetails = undefined;
+
 				thread.stopped = false;
 			});
 
 			if (removeThreads) {
 				this.threads.clear();
+
 				this.threadIds = [];
+
 				ExpressionContainer.allValues.clear();
 			}
 		}
 	}
+
 	getStoppedDetails(): IRawStoppedDetails | undefined {
 		return this.stoppedDetails.length >= 1
 			? this.stoppedDetails[0]
 			: undefined;
 	}
+
 	rawUpdate(data: IRawModelUpdate): void {
 		this.threadIds = [];
+
 		data.threads.forEach((thread) => {
 			this.threadIds.push(thread.id);
 
@@ -1541,6 +1743,7 @@ export class DebugSession implements IDebugSession, IDisposable {
 				}
 			}
 		});
+
 		this.threads.forEach((t) => {
 			// Remove all old threads which are no longer part of the update #75980
 			if (this.threadIds.indexOf(t.threadId) === -1) {
@@ -1559,7 +1762,9 @@ export class DebugSession implements IDebugSession, IDisposable {
 						thread.threadId === stoppedDetails.threadId
 							? stoppedDetails
 							: { reason: thread.stoppedDetails?.reason };
+
 					thread.stopped = true;
+
 					thread.clearCallStack();
 				});
 			} else {
@@ -1571,18 +1776,23 @@ export class DebugSession implements IDebugSession, IDisposable {
 				if (thread) {
 					// One thread is stopped, only update that thread.
 					thread.stoppedDetails = stoppedDetails;
+
 					thread.clearCallStack();
+
 					thread.stopped = true;
 				}
 			}
 		}
 	}
+
 	private waitForTriggeredBreakpoints() {
 		if (!this._waitToResume) {
 			return;
 		}
+
 		return raceTimeout(this._waitToResume, TRIGGERED_BREAKPOINT_MAX_DELAY);
 	}
+
 	private async fetchThreads(
 		stoppedDetails?: IRawStoppedDetails,
 	): Promise<void> {
@@ -1598,8 +1808,10 @@ export class DebugSession implements IDebugSession, IDisposable {
 			}
 		}
 	}
+
 	initializeForTest(raw: RawDebugSession): void {
 		this.raw = raw;
+
 		this.registerListeners();
 	}
 	//---- private
@@ -1607,6 +1819,7 @@ export class DebugSession implements IDebugSession, IDisposable {
 		if (!this.raw) {
 			return;
 		}
+
 		this.rawListeners.add(
 			this.raw.onDidInitialize(async () => {
 				aria.status(
@@ -1628,9 +1841,11 @@ export class DebugSession implements IDebugSession, IDisposable {
 						} catch (e) {
 							// Disconnect the debug session on configuration done error #10596
 							this.notificationService.error(e);
+
 							this.raw?.disconnect({});
 						}
 					}
+
 					return undefined;
 				};
 				// Send all breakpoints
@@ -1638,15 +1853,18 @@ export class DebugSession implements IDebugSession, IDisposable {
 					await this.debugService.sendAllBreakpoints(this);
 				} finally {
 					await sendConfigurationDone();
+
 					await this.fetchThreads();
 				}
 			}),
 		);
 
 		const statusQueue = this.statusQueue;
+
 		this.rawListeners.add(
 			this.raw.onDidStop((event) => this.handleStop(event.body)),
 		);
+
 		this.rawListeners.add(
 			this.raw.onDidThread((event) => {
 				statusQueue.cancel([event.body.threadId]);
@@ -1660,8 +1878,10 @@ export class DebugSession implements IDebugSession, IDisposable {
 							},
 							100,
 						);
+
 						this.rawListeners.add(this.fetchThreadsScheduler);
 					}
+
 					if (!this.fetchThreadsScheduler.isScheduled()) {
 						this.fetchThreadsScheduler.schedule();
 					}
@@ -1675,6 +1895,7 @@ export class DebugSession implements IDebugSession, IDisposable {
 					const viewModel = this.debugService.getViewModel();
 
 					const focusedThread = viewModel.focusedThread;
+
 					this.passFocusScheduler.cancel();
 
 					if (
@@ -1692,6 +1913,7 @@ export class DebugSession implements IDebugSession, IDisposable {
 				}
 			}),
 		);
+
 		this.rawListeners.add(
 			this.raw.onDidTerminateDebugee(async (event) => {
 				aria.status(localize("debuggingStopped", "Debugging stopped."));
@@ -1706,9 +1928,11 @@ export class DebugSession implements IDebugSession, IDisposable {
 				}
 			}),
 		);
+
 		this.rawListeners.add(
 			this.raw.onDidContinued((event) => {
 				const allThreads = event.body.allThreadsContinued !== false;
+
 				statusQueue.cancel(
 					allThreads ? undefined : [event.body.threadId],
 				);
@@ -1721,21 +1945,28 @@ export class DebugSession implements IDebugSession, IDisposable {
 					);
 
 					const tokens = this.cancellationMap.get(threadId);
+
 					this.cancellationMap.delete(threadId);
+
 					tokens?.forEach((t) => t.dispose(true));
 				} else {
 					this.stoppedDetails = [];
+
 					this.cancelAllRequests();
 				}
+
 				this.lastContinuedThreadId = threadId;
 				// We need to pass focus to other sessions / threads with a timeout in case a quick stop event occurs #130321
 				this.passFocusScheduler.schedule();
+
 				this.model.clearThreads(this.getId(), false, threadId);
+
 				this._onDidChangeState.fire();
 			}),
 		);
 
 		const outputQueue = new Queue<void>();
+
 		this.rawListeners.add(
 			this.raw.onDidOutput(async (event) => {
 				const outputSeverity =
@@ -1784,9 +2015,11 @@ export class DebugSession implements IDebugSession, IDisposable {
 
 							return;
 						}
+
 						resolved.forEach((child) => {
 							// Since we can not display multiple trees in a row, we are displaying these variables one after the other (ignoring their names)
 							(<any>child).name = null;
+
 							this.appendToRepl(
 								{
 									output: "",
@@ -1801,10 +2034,12 @@ export class DebugSession implements IDebugSession, IDisposable {
 
 					return;
 				}
+
 				outputQueue.queue(async () => {
 					if (!event.body || !this.raw) {
 						return;
 					}
+
 					if (event.body.category === "telemetry") {
 						// only log telemetry events from debug adapter if the debug extension provided the telemetry key
 						// and the user opted in telemetry
@@ -1827,12 +2062,14 @@ export class DebugSession implements IDebugSession, IDisposable {
 									event.body.data,
 								);
 							}
+
 							this.customEndpointTelemetryService.publicLog(
 								telemetryEndpoint,
 								event.body.output,
 								data,
 							);
 						}
+
 						return;
 					}
 					// Make sure to append output in the correct order by properly waiting on preivous promises #33822
@@ -1852,6 +2089,7 @@ export class DebugSession implements IDebugSession, IDisposable {
 						event.body.group === "startCollapsed"
 					) {
 						const expanded = event.body.group === "start";
+
 						this.repl.startGroup(
 							this,
 							event.body.output || "",
@@ -1861,6 +2099,7 @@ export class DebugSession implements IDebugSession, IDisposable {
 
 						return;
 					}
+
 					if (event.body.group === "end") {
 						this.repl.endGroup();
 
@@ -1869,6 +2108,7 @@ export class DebugSession implements IDebugSession, IDisposable {
 							return;
 						}
 					}
+
 					if (typeof event.body.output === "string") {
 						this.appendToRepl(
 							{
@@ -1882,6 +2122,7 @@ export class DebugSession implements IDebugSession, IDisposable {
 				});
 			}),
 		);
+
 		this.rawListeners.add(
 			this.raw.onDidBreakpoint((event) => {
 				const id =
@@ -1930,6 +2171,7 @@ export class DebugSession implements IDebugSession, IDisposable {
 						const data = new Map<string, DebugProtocol.Breakpoint>([
 							[bps[0].getId(), event.body.breakpoint],
 						]);
+
 						this.model.setBreakpointSessionData(
 							this.getId(),
 							this.capabilities,
@@ -1937,55 +2179,66 @@ export class DebugSession implements IDebugSession, IDisposable {
 						);
 					}
 				}
+
 				if (event.body.reason === "removed") {
 					if (breakpoint) {
 						this.model.removeBreakpoints([breakpoint]);
 					}
+
 					if (functionBreakpoint) {
 						this.model.removeFunctionBreakpoints(
 							functionBreakpoint.getId(),
 						);
 					}
+
 					if (dataBreakpoint) {
 						this.model.removeDataBreakpoints(
 							dataBreakpoint.getId(),
 						);
 					}
 				}
+
 				if (event.body.reason === "changed") {
 					if (breakpoint) {
 						if (!breakpoint.column) {
 							event.body.breakpoint.column = undefined;
 						}
+
 						const data = new Map<string, DebugProtocol.Breakpoint>([
 							[breakpoint.getId(), event.body.breakpoint],
 						]);
+
 						this.model.setBreakpointSessionData(
 							this.getId(),
 							this.capabilities,
 							data,
 						);
 					}
+
 					if (functionBreakpoint) {
 						const data = new Map<string, DebugProtocol.Breakpoint>([
 							[functionBreakpoint.getId(), event.body.breakpoint],
 						]);
+
 						this.model.setBreakpointSessionData(
 							this.getId(),
 							this.capabilities,
 							data,
 						);
 					}
+
 					if (dataBreakpoint) {
 						const data = new Map<string, DebugProtocol.Breakpoint>([
 							[dataBreakpoint.getId(), event.body.breakpoint],
 						]);
+
 						this.model.setBreakpointSessionData(
 							this.getId(),
 							this.capabilities,
 							data,
 						);
 					}
+
 					if (exceptionBreakpoint) {
 						const data = new Map<string, DebugProtocol.Breakpoint>([
 							[
@@ -1993,6 +2246,7 @@ export class DebugSession implements IDebugSession, IDisposable {
 								event.body.breakpoint,
 							],
 						]);
+
 						this.model.setBreakpointSessionData(
 							this.getId(),
 							this.capabilities,
@@ -2002,6 +2256,7 @@ export class DebugSession implements IDebugSession, IDisposable {
 				}
 			}),
 		);
+
 		this.rawListeners.add(
 			this.raw.onDidLoadedSource((event) => {
 				this._onDidLoadedSource.fire({
@@ -2010,31 +2265,37 @@ export class DebugSession implements IDebugSession, IDisposable {
 				});
 			}),
 		);
+
 		this.rawListeners.add(
 			this.raw.onDidCustomEvent((event) => {
 				this._onDidCustomEvent.fire(event);
 			}),
 		);
+
 		this.rawListeners.add(
 			this.raw.onDidProgressStart((event) => {
 				this._onDidProgressStart.fire(event);
 			}),
 		);
+
 		this.rawListeners.add(
 			this.raw.onDidProgressUpdate((event) => {
 				this._onDidProgressUpdate.fire(event);
 			}),
 		);
+
 		this.rawListeners.add(
 			this.raw.onDidProgressEnd((event) => {
 				this._onDidProgressEnd.fire(event);
 			}),
 		);
+
 		this.rawListeners.add(
 			this.raw.onDidInvalidateMemory((event) => {
 				this._onDidInvalidMemory.fire(event);
 			}),
 		);
+
 		this.rawListeners.add(
 			this.raw.onDidInvalidated(async (event) => {
 				const areas = event.body.areas || ["all"];
@@ -2045,12 +2306,16 @@ export class DebugSession implements IDebugSession, IDisposable {
 					areas.includes("all")
 				) {
 					this.cancelAllRequests();
+
 					this.model.clearThreads(this.getId(), true);
 
 					const details = this.stoppedDetails;
+
 					this.stoppedDetails.length = 1;
+
 					await Promise.all(details.map((d) => this.handleStop(d)));
 				}
+
 				const viewModel = this.debugService.getViewModel();
 
 				if (viewModel.focusedSession === this) {
@@ -2058,12 +2323,15 @@ export class DebugSession implements IDebugSession, IDisposable {
 				}
 			}),
 		);
+
 		this.rawListeners.add(
 			this.raw.onDidExitAdapter((event) => this.onDidExitAdapter(event)),
 		);
 	}
+
 	private async handleStop(event: IRawStoppedDetails) {
 		this.passFocusScheduler.cancel();
+
 		this.stoppedDetails.push(event);
 		// do this very eagerly if we have hitBreakpointIds, since it may take a
 		// moment for breakpoints to set and we want to do our best to not miss
@@ -2073,6 +2341,7 @@ export class DebugSession implements IDebugSession, IDisposable {
 				event.hitBreakpointIds,
 			);
 		}
+
 		this.statusQueue.run(
 			this.fetchThreads(event).then(() =>
 				event.threadId === undefined
@@ -2094,6 +2363,7 @@ export class DebugSession implements IDebugSession, IDisposable {
 				if (focusedThreadDoesNotExist) {
 					this.debugService.focusStackFrame(undefined, undefined);
 				}
+
 				const thread =
 					typeof threadId === "number"
 						? this.getThread(threadId)
@@ -2127,6 +2397,7 @@ export class DebugSession implements IDebugSession, IDisposable {
 									!this.configurationService.getValue<IDebugConfiguration>(
 										"debug",
 									).focusEditorOnBreak;
+
 								await this.debugService.focusStackFrame(
 									undefined,
 									thread,
@@ -2134,6 +2405,7 @@ export class DebugSession implements IDebugSession, IDisposable {
 									{ preserveFocus },
 								);
 							}
+
 							if (
 								thread.stoppedDetails &&
 								!token.isCancellationRequested
@@ -2151,6 +2423,7 @@ export class DebugSession implements IDebugSession, IDisposable {
 										ViewContainerLocation.Sidebar,
 									);
 								}
+
 								if (
 									this.configurationService.getValue<IDebugConfiguration>(
 										"debug",
@@ -2172,6 +2445,7 @@ export class DebugSession implements IDebugSession, IDisposable {
 							}
 						}
 					};
+
 					await promises.topCallStack;
 
 					if (!event.hitBreakpointIds) {
@@ -2179,15 +2453,19 @@ export class DebugSession implements IDebugSession, IDisposable {
 						this._waitToResume =
 							this.enableDependentBreakpoints(thread);
 					}
+
 					if (token.isCancellationRequested) {
 						return;
 					}
+
 					focus();
+
 					await promises.wholeCallStack;
 
 					if (token.isCancellationRequested) {
 						return;
 					}
+
 					const focusedStackFrame =
 						this.debugService.getViewModel().focusedStackFrame;
 
@@ -2199,10 +2477,12 @@ export class DebugSession implements IDebugSession, IDisposable {
 						focus();
 					}
 				}
+
 				this._onDidChangeState.fire();
 			},
 		);
 	}
+
 	private async enableDependentBreakpoints(
 		hitBreakpointIdsOrThread: Thread | number[],
 	) {
@@ -2222,12 +2502,14 @@ export class DebugSession implements IDebugSession, IDisposable {
 			if (frame === undefined) {
 				return;
 			}
+
 			if (
 				hitBreakpointIdsOrThread.stoppedDetails &&
 				hitBreakpointIdsOrThread.stoppedDetails.reason !== "breakpoint"
 			) {
 				return;
 			}
+
 			breakpoints = this.getBreakpointsAtPosition(
 				frame.source.uri,
 				frame.range.startLineNumber,
@@ -2239,18 +2521,21 @@ export class DebugSession implements IDebugSession, IDisposable {
 		// find the current breakpoints
 		// check if the current breakpoints are dependencies, and if so collect and send the dependents to DA
 		const urisToResend = new Set<string>();
+
 		this.model
 			.getBreakpoints({ triggeredOnly: true, enabledOnly: true })
 			.forEach((bp) => {
 				breakpoints.forEach((cbp) => {
 					if (bp.enabled && bp.triggeredBy === cbp.getId()) {
 						bp.setSessionDidTrigger(this.getId());
+
 						urisToResend.add(bp.uri.toString());
 					}
 				});
 			});
 
 		const results: Promise<any>[] = [];
+
 		urisToResend.forEach((uri) =>
 			results.push(
 				this.debugService.sendBreakpoints(
@@ -2263,6 +2548,7 @@ export class DebugSession implements IDebugSession, IDisposable {
 
 		return Promise.all(results);
 	}
+
 	private getBreakpointsAtPosition(
 		uri: URI,
 		startLineNumber: number,
@@ -2277,23 +2563,29 @@ export class DebugSession implements IDebugSession, IDisposable {
 			) {
 				return false;
 			}
+
 			if (
 				bp.column &&
 				(bp.column < startColumn || bp.column > endColumn)
 			) {
 				return false;
 			}
+
 			return true;
 		});
 	}
+
 	private onDidExitAdapter(event?: AdapterEndEvent): void {
 		this.initialized = true;
+
 		this.model.setBreakpointSessionData(
 			this.getId(),
 			this.capabilities,
 			undefined,
 		);
+
 		this.shutdown();
+
 		this._onDidEndAdapter.fire(event);
 	}
 	// Disconnects and clears state. Session can be initialized again for a new connection.
@@ -2303,19 +2595,30 @@ export class DebugSession implements IDebugSession, IDisposable {
 		if (this.raw) {
 			// Send out disconnect and immediatly dispose (do not wait for response) #127418
 			this.raw.disconnect({});
+
 			this.raw.dispose();
+
 			this.raw = undefined;
 		}
+
 		this.fetchThreadsScheduler?.dispose();
+
 		this.fetchThreadsScheduler = undefined;
+
 		this.passFocusScheduler.cancel();
+
 		this.passFocusScheduler.dispose();
+
 		this.model.clearThreads(this.getId(), true);
+
 		this._onDidChangeState.fire();
 	}
+
 	public dispose() {
 		this.cancelAllRequests();
+
 		this.rawListeners.dispose();
+
 		this.globalDisposables.dispose();
 	}
 	//---- sources
@@ -2324,6 +2627,7 @@ export class DebugSession implements IDebugSession, IDisposable {
 			this.uriIdentityService.asCanonicalUri(uri).toString(),
 		);
 	}
+
 	getSource(raw?: DebugProtocol.Source): Source {
 		let source = new Source(
 			raw,
@@ -2348,8 +2652,10 @@ export class DebugSession implements IDebugSession, IDisposable {
 		} else {
 			this.sources.set(uriKey, source);
 		}
+
 		return source;
 	}
+
 	private getRawSource(uri: URI): DebugProtocol.Source {
 		const source = this.getSourceForUri(uri);
 
@@ -2365,6 +2671,7 @@ export class DebugSession implements IDebugSession, IDisposable {
 			};
 		}
 	}
+
 	private getNewCancellationToken(
 		threadId: number,
 		token?: CancellationToken,
@@ -2372,27 +2679,34 @@ export class DebugSession implements IDebugSession, IDisposable {
 		const tokenSource = new CancellationTokenSource(token);
 
 		const tokens = this.cancellationMap.get(threadId) || [];
+
 		tokens.push(tokenSource);
+
 		this.cancellationMap.set(threadId, tokens);
 
 		return tokenSource.token;
 	}
+
 	private cancelAllRequests(): void {
 		this.cancellationMap.forEach((tokens) =>
 			tokens.forEach((t) => t.dispose(true)),
 		);
+
 		this.cancellationMap.clear();
 	}
 	// REPL
 	getReplElements(): IReplElement[] {
 		return this.repl.getReplElements();
 	}
+
 	hasSeparateRepl(): boolean {
 		return !this.parentSession || this._options.repl !== "mergeWithParent";
 	}
+
 	removeReplExpressions(): void {
 		this.repl.removeReplExpressions();
 	}
+
 	async addReplExpression(
 		stackFrame: IStackFrame | undefined,
 		expression: string,
@@ -2401,6 +2715,7 @@ export class DebugSession implements IDebugSession, IDisposable {
 		// Evaluate all watch expressions and fetch variables again since repl evaluation might have changed some.
 		this.debugService.getViewModel().updateViews();
 	}
+
 	appendToRepl(data: INewReplElementData, isImportant?: boolean): void {
 		this.repl.appendToRepl(this, data);
 
@@ -2453,6 +2768,7 @@ export class ThreadStatusScheduler extends Disposable {
 		) => Promise<unknown>,
 	) {
 		const cancelledWhileLookingUpThreads = new Set<number | undefined>();
+
 		this.pendingCancellations.push(cancelledWhileLookingUpThreads);
 
 		const threadIds = await threadIdsP;
@@ -2472,17 +2788,21 @@ export class ThreadStatusScheduler extends Disposable {
 				}
 			}
 		}
+
 		if (cancelledWhileLookingUpThreads.has(undefined)) {
 			return;
 		}
+
 		await Promise.all(
 			threadIds.map((threadId) => {
 				if (cancelledWhileLookingUpThreads.has(threadId)) {
 					return;
 				}
+
 				this.threadOps.get(threadId)?.cancel();
 
 				const cts = new CancellationTokenSource();
+
 				this.threadOps.set(threadId, cts);
 
 				return operation(threadId, cts.token);
@@ -2498,6 +2818,7 @@ export class ThreadStatusScheduler extends Disposable {
 			for (const [_, op] of this.threadOps) {
 				op.cancel();
 			}
+
 			this.threadOps.clearAndDisposeAll();
 
 			for (const s of this.pendingCancellations) {
@@ -2506,6 +2827,7 @@ export class ThreadStatusScheduler extends Disposable {
 		} else {
 			for (const threadId of threadIds) {
 				this.threadOps.get(threadId)?.cancel();
+
 				this.threadOps.deleteAndDispose(threadId);
 
 				for (const s of this.pendingCancellations) {

@@ -30,15 +30,24 @@ declare module "vscode" {
 			| CommentThreadState
 			| {
 					resolved?: CommentThreadState;
+
 					applicability?: CommentThreadApplicability;
 			  };
+
 		readonly uri: Uri;
+
 		range: Range | undefined;
+
 		comments: readonly Comment[];
+
 		collapsibleState: CommentThreadCollapsibleState;
+
 		canReply: boolean;
+
 		contextValue?: string;
+
 		label?: string;
+
 		dispose(): void;
 	}
 }

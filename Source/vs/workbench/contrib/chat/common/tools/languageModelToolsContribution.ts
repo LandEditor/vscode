@@ -21,14 +21,23 @@ import { toolsParametersSchemaSchemaId } from "./languageModelToolsParametersSch
 
 export interface IRawToolContribution {
 	name: string;
+
 	displayName: string;
+
 	modelDescription: string;
+
 	toolReferenceName?: string;
+
 	icon?: string | { light: string; dark: string };
+
 	when?: string;
+
 	tags?: string[];
+
 	userDescription?: string;
+
 	inputSchema?: IJSONSchema;
+
 	canBeReferencedInPrompt?: boolean;
 }
 
@@ -206,6 +215,7 @@ export class LanguageModelToolsExtensionPointHandler
 						logService.error(
 							`Extension '${extension.description.identifier.value}' CANNOT register tool without name, modelDescription, and displayName: ${JSON.stringify(rawTool)}`,
 						);
+
 						continue;
 					}
 
@@ -213,6 +223,7 @@ export class LanguageModelToolsExtensionPointHandler
 						logService.error(
 							`Extension '${extension.description.identifier.value}' CANNOT register tool with invalid id: ${rawTool.name}. The id must match /^[\\w-]+$/.`,
 						);
+
 						continue;
 					}
 
@@ -223,11 +234,14 @@ export class LanguageModelToolsExtensionPointHandler
 						logService.error(
 							`Extension '${extension.description.identifier.value}' CANNOT register tool with 'canBeReferencedInPrompt' set without a 'toolReferenceName': ${JSON.stringify(rawTool)}`,
 						);
+
 						continue;
 					}
 
 					const rawIcon = rawTool.icon;
+
 					let icon: IToolData["icon"] | undefined;
+
 					if (typeof rawIcon === "string") {
 						icon = ThemeIcon.fromString(rawIcon) ?? {
 							dark: joinPath(
@@ -262,8 +276,10 @@ export class LanguageModelToolsExtensionPointHandler
 							? ContextKeyExpr.deserialize(rawTool.when)
 							: undefined,
 					};
+
 					const disposable =
 						languageModelToolsService.registerToolData(tool);
+
 					this._registrationDisposables.set(
 						toToolKey(
 							extension.description.identifier,

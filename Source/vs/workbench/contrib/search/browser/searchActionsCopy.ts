@@ -53,6 +53,7 @@ registerAction2(
 				],
 			});
 		}
+
 		override async run(
 			accessor: ServicesAccessor,
 			match: RenderableMatch | undefined,
@@ -88,6 +89,7 @@ registerAction2(
 				],
 			});
 		}
+
 		override async run(
 			accessor: ServicesAccessor,
 			fileMatch:
@@ -116,6 +118,7 @@ registerAction2(
 				],
 			});
 		}
+
 		override async run(accessor: ServicesAccessor): Promise<any> {
 			await copyAllCommand(accessor);
 		}
@@ -140,8 +143,10 @@ async function copyPathCommand(
 		) {
 			return;
 		}
+
 		fileMatch = selection;
 	}
+
 	const clipboardService = accessor.get(IClipboardService);
 
 	const labelService = accessor.get(ILabelService);
@@ -149,6 +154,7 @@ async function copyPathCommand(
 	const text = labelService.getUriLabel(fileMatch.resource, {
 		noPrefix: true,
 	});
+
 	await clipboardService.writeText(text);
 }
 async function copyMatchCommand(
@@ -161,8 +167,10 @@ async function copyMatchCommand(
 		if (!selection) {
 			return;
 		}
+
 		match = selection;
 	}
+
 	const clipboardService = accessor.get(IClipboardService);
 
 	const labelService = accessor.get(ILabelService);
@@ -176,6 +184,7 @@ async function copyMatchCommand(
 	} else if (isSearchTreeFolderMatch(match)) {
 		text = folderMatchToString(match, labelService).text;
 	}
+
 	if (text) {
 		await clipboardService.writeText(text);
 	}
@@ -196,6 +205,7 @@ async function copyAllCommand(accessor: ServicesAccessor) {
 			root.folderMatches(),
 			labelService,
 		);
+
 		await clipboardService.writeText(text);
 	}
 }
@@ -237,6 +247,7 @@ function fileFolderMatchToString(
 	labelService: ILabelService,
 ): {
 	text: string;
+
 	count: number;
 } {
 	if (isSearchTreeFileMatch(match)) {
@@ -250,6 +261,7 @@ function fileMatchToString(
 	labelService: ILabelService,
 ): {
 	text: string;
+
 	count: number;
 } {
 	const matchTextRows = fileMatch
@@ -271,6 +283,7 @@ function folderMatchToString(
 	labelService: ILabelService,
 ): {
 	text: string;
+
 	count: number;
 } {
 	const results: string[] = [];
@@ -278,9 +291,12 @@ function folderMatchToString(
 	let numMatches = 0;
 
 	const matches = folderMatch.matches().sort(searchMatchComparer);
+
 	matches.forEach((match) => {
 		const result = fileFolderMatchToString(match, labelService);
+
 		numMatches += result.count;
+
 		results.push(result.text);
 	});
 
@@ -296,6 +312,7 @@ function allFolderMatchesToString(
 	labelService: ILabelService,
 ): string {
 	const folderResults: string[] = [];
+
 	folderMatches = folderMatches.sort(searchMatchComparer);
 
 	for (let i = 0; i < folderMatches.length; i++) {
@@ -308,6 +325,7 @@ function allFolderMatchesToString(
 			folderResults.push(folderResult.text);
 		}
 	}
+
 	return folderResults.join(lineDelimiter + lineDelimiter);
 }
 function getSelectedRow(

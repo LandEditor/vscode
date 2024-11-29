@@ -23,7 +23,9 @@ import { createGunzip } from 'zlib';
 
 interface IHTTPConfiguration {
 	proxy?: string;
+
 	proxyStrictSSL?: boolean;
+
 	proxyAuthorization?: string;
 }
 
@@ -33,8 +35,11 @@ export interface IRawRequestFunction {
 
 export interface NodeRequestOptions extends IRequestOptions {
 	agent?: Agent;
+
 	strictSSL?: boolean;
+
 	isChromiumNetwork?: boolean;
+
 	getRawRequest?(options: IRequestOptions): IRawRequestFunction;
 }
 
@@ -47,8 +52,11 @@ export class RequestService extends AbstractRequestService implements IRequestSe
 	declare readonly _serviceBrand: undefined;
 
 	private proxyUrl?: string;
+
 	private strictSSL: boolean | undefined;
+
 	private authorization?: string;
+
 	private shellEnvErrorLogged?: boolean;
 
 	constructor(
@@ -57,7 +65,9 @@ export class RequestService extends AbstractRequestService implements IRequestSe
 		@ILogService logService: ILogService,
 	) {
 		super(logService);
+
 		this.configure();
+
 		this._register(configurationService.onDidChangeConfiguration(e => {
 			if (e.affectsConfiguration('http')) {
 				this.configure();
@@ -69,7 +79,9 @@ export class RequestService extends AbstractRequestService implements IRequestSe
 		const config = this.configurationService.getValue<IHTTPConfiguration | undefined>('http');
 
 		this.proxyUrl = config?.proxy;
+
 		this.strictSSL = !!config?.proxyStrictSSL;
+
 		this.authorization = config?.proxyAuthorization;
 	}
 
@@ -77,11 +89,13 @@ export class RequestService extends AbstractRequestService implements IRequestSe
 		const { proxyUrl, strictSSL } = this;
 
 		let shellEnv: typeof process.env | undefined = undefined;
+
 		try {
 			shellEnv = await getResolvedShellEnv(this.configurationService, this.logService, this.environmentService.args, process.env);
 		} catch (error) {
 			if (!this.shellEnvErrorLogged) {
 				this.shellEnvErrorLogged = true;
+
 				this.logService.error(`resolving shell environment failed`, getErrorMessage(error));
 			}
 		}
@@ -90,9 +104,11 @@ export class RequestService extends AbstractRequestService implements IRequestSe
 			...process.env,
 			...shellEnv
 		};
+
 		const agent = options.agent ? options.agent : await getProxyAgent(options.url || '', env, { proxyUrl, strictSSL });
 
 		options.agent = agent;
+
 		options.strictSSL = strictSSL;
 
 		if (this.authorization) {
@@ -116,28 +132,38 @@ export class RequestService extends AbstractRequestService implements IRequestSe
 	async lookupKerberosAuthorization(urlStr: string): Promise<string | undefined> {
 		try {
 			const importKerberos = await import('kerberos');
+
 			const kerberos = importKerberos.default || importKerberos;
+
 			const url = new URL(urlStr);
+
 			const spn = this.configurationService.getValue<string>('http.proxyKerberosServicePrincipal')
 				|| (process.platform === 'win32' ? `HTTP/${url.hostname}` : `HTTP@${url.hostname}`);
+
 			this.logService.debug('RequestService#lookupKerberosAuthorization Kerberos authentication lookup', `proxyURL:${url}`, `spn:${spn}`);
+
 			const client = await kerberos.initializeClient(spn);
+
 			const response = await client.step('');
+
 			return 'Negotiate ' + response;
 		} catch (err) {
 			this.logService.debug('RequestService#lookupKerberosAuthorization Kerberos authentication failed', err);
+
 			return undefined;
 		}
 	}
 
 	async loadCertificates(): Promise<string[]> {
 		const proxyAgent = await import('@vscode/proxy-agent');
+
 		return proxyAgent.loadSystemCertificates({ log: this.logService });
 	}
 }
 
 async function getNodeRequest(options: IRequestOptions): Promise<IRawRequestFunction> {
 	const endpoint = parseUrl(options.url!);
+
 	const module = endpoint.protocol === 'https:' ? await import('https') : await import('http');
 
 	return module.request;
@@ -146,6 +172,7 @@ async function getNodeRequest(options: IRequestOptions): Promise<IRawRequestFunc
 export async function nodeRequest(options: NodeRequestOptions, token: CancellationToken): Promise<IRequestContext> {
 	return Promises.withAsyncBody<IRequestContext>(async (resolve, reject) => {
 		const endpoint = parseUrl(options.url!);
+
 		const rawRequest = options.getRawRequest
 			? options.getRawRequest(options)
 			: await getNodeRequest(options);
@@ -167,6 +194,7 @@ export async function nodeRequest(options: NodeRequestOptions, token: Cancellati
 
 		const req = rawRequest(opts, (res: http.IncomingMessage) => {
 			const followRedirects: number = isNumber(options.followRedirects) ? options.followRedirects : 3;
+
 			if (res.statusCode && res.statusCode >= 300 && res.statusCode < 400 && followRedirects > 0 && res.headers['location']) {
 				nodeRequest({
 					...options,

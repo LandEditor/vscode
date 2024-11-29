@@ -20,21 +20,27 @@ export class AutoInstallerFs
 	implements vscode.FileSystemProvider
 {
 	private readonly memfs: MemFs;
+
 	private readonly packageManager: PackageManager;
+
 	private readonly _projectCache = new Map<
 		/* root */ string,
 		Promise<void> | undefined
 	>();
+
 	private readonly _emitter = this._register(
 		new vscode.EventEmitter<vscode.FileChangeEvent[]>(),
 	);
+
 	readonly onDidChangeFile = this._emitter.event;
 
 	constructor(private readonly logger: Logger) {
 		super();
 
 		const memfs = new MemFs("auto-installer", logger);
+
 		this.memfs = memfs;
+
 		memfs.onDidChangeFile((e) => {
 			this._emitter.fire(
 				e.map((ev) => ({
@@ -44,6 +50,7 @@ export class AutoInstallerFs
 				})),
 			);
 		});
+
 		this.packageManager = new PackageManager({
 			readDirectory(
 				path: string,
@@ -90,6 +97,7 @@ export class AutoInstallerFs
 			},
 		});
 	}
+
 	watch(resource: vscode.Uri): vscode.Disposable {
 		this.logger.trace(
 			`AutoInstallerFs.watch. Resource: ${resource.toString()}}`,
@@ -97,6 +105,7 @@ export class AutoInstallerFs
 
 		return this.memfs.watch(resource);
 	}
+
 	async stat(uri: vscode.Uri): Promise<vscode.FileStat> {
 		this.logger.trace(`AutoInstallerFs.stat: ${uri}`);
 
@@ -115,36 +124,44 @@ export class AutoInstallerFs
 				size: 0,
 			};
 		}
+
 		await this.ensurePackageContents(mapped);
 
 		return this.memfs.stat(URI.file(mapped.path));
 	}
+
 	async readDirectory(uri: vscode.Uri): Promise<[string, vscode.FileType][]> {
 		this.logger.trace(`AutoInstallerFs.readDirectory: ${uri}`);
 
 		const mapped = new MappedUri(uri);
+
 		await this.ensurePackageContents(mapped);
 
 		return this.memfs.readDirectory(URI.file(mapped.path));
 	}
+
 	async readFile(uri: vscode.Uri): Promise<Uint8Array> {
 		this.logger.trace(`AutoInstallerFs.readFile: ${uri}`);
 
 		const mapped = new MappedUri(uri);
+
 		await this.ensurePackageContents(mapped);
 
 		return this.memfs.readFile(URI.file(mapped.path));
 	}
+
 	writeFile(
 		_uri: vscode.Uri,
 		_content: Uint8Array,
 		_options: {
 			create: boolean;
+
 			overwrite: boolean;
 		},
 	): void {
 		throw new Error("not implemented");
 	}
+
 	rename(
 		_oldUri: vscode.Uri,
 		_newUri: vscode.Uri,
@@ -154,12 +171,15 @@ export class AutoInstallerFs
 	): void {
 		throw new Error("not implemented");
 	}
+
 	delete(_uri: vscode.Uri): void {
 		throw new Error("not implemented");
 	}
+
 	createDirectory(_uri: vscode.Uri): void {
 		throw new Error("not implemented");
 	}
+
 	private async ensurePackageContents(incomingUri: MappedUri): Promise<void> {
 		// If we're not looking for something inside node_modules, bail early.
 		if (!incomingUri.path.includes("node_modules")) {
@@ -172,11 +192,13 @@ export class AutoInstallerFs
 		) {
 			throw vscode.FileSystemError.FileNotFound();
 		}
+
 		const root = await this.getProjectRoot(incomingUri.original);
 
 		if (!root) {
 			return;
 		}
+
 		this.logger.trace(
 			`AutoInstallerFs.ensurePackageContents. Path: ${incomingUri.path}, Root: ${root}`,
 		);
@@ -190,6 +212,7 @@ export class AutoInstallerFs
 
 			return existingInstall;
 		}
+
 		const installing = (async () => {
 			const proj = await this.packageManager.resolveProject(
 				root,
@@ -207,9 +230,12 @@ export class AutoInstallerFs
 				throw e;
 			}
 		})();
+
 		this._projectCache.set(root, installing);
+
 		await installing;
 	}
+
 	private async getInstallOpts(originalUri: URI, root: string) {
 		const vsfs = vscode.workspace.fs;
 		// We definitely need a package.json to be there.
@@ -228,6 +254,7 @@ export class AutoInstallerFs
 				),
 			);
 		} catch (e) {}
+
 		let npmLock;
 
 		try {
@@ -237,12 +264,14 @@ export class AutoInstallerFs
 				),
 			);
 		} catch (e) {}
+
 		return {
 			pkgJson,
 			kdlLock,
 			npmLock,
 		};
 	}
+
 	private async getProjectRoot(
 		incomingUri: URI,
 	): Promise<string | undefined> {
@@ -255,6 +284,7 @@ export class AutoInstallerFs
 		if (!ret) {
 			return;
 		}
+
 		try {
 			await vsfs.stat(
 				incomingUri.with({ path: join(ret, "package.json") }),
@@ -268,7 +298,9 @@ export class AutoInstallerFs
 }
 class MappedUri {
 	readonly raw: vscode.Uri;
+
 	readonly original: vscode.Uri;
+
 	readonly mapped: vscode.Uri;
 
 	constructor(uri: vscode.Uri) {
@@ -279,30 +311,37 @@ class MappedUri {
 		if (!parts) {
 			throw new Error(`Invalid uri: ${uri.toString()}, ${uri.path}`);
 		}
+
 		const scheme = parts[1];
 
 		const authority = parts[2] === "ts-nul-authority" ? "" : parts[2];
 
 		const path = parts[3];
+
 		this.original = URI.from({
 			scheme,
 			authority,
 			path: path ? "/" + path : path,
 		});
+
 		this.mapped = this.original.with({
 			scheme: this.raw.scheme,
 			authority: this.raw.authority,
 		});
 	}
+
 	get path() {
 		return this.mapped.path;
 	}
+
 	get scheme() {
 		return this.mapped.scheme;
 	}
+
 	get authority() {
 		return this.mapped.authority;
 	}
+
 	get flatPath() {
 		return join("/", this.scheme, this.authority, this.path);
 	}

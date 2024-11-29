@@ -46,11 +46,15 @@ import {
 
 export interface IPointerHandlerHelper {
 	viewDomNode: HTMLElement;
+
 	linesContentDomNode: HTMLElement;
+
 	viewLinesDomNode: HTMLElement;
+
 	viewLinesGpu: ViewLinesGpu | undefined;
 
 	focusTextArea(): void;
+
 	dispatchTextAreaEvent(event: CustomEvent): void;
 
 	/**
@@ -64,6 +68,7 @@ export interface IPointerHandlerHelper {
 	renderNow(): void;
 
 	shouldSuppressMouseDownOnViewZone(viewZoneId: string): boolean;
+
 	shouldSuppressMouseDownOnWidget(widgetId: string): boolean;
 
 	/**
@@ -84,12 +89,19 @@ export interface IPointerHandlerHelper {
 
 export class MouseHandler extends ViewEventHandler {
 	protected _context: ViewContext;
+
 	protected viewController: ViewController;
+
 	protected viewHelper: IPointerHandlerHelper;
+
 	protected mouseTargetFactory: MouseTargetFactory;
+
 	protected readonly _mouseDownOperation: MouseDownOperation;
+
 	private lastMouseLeaveTime: number;
+
 	private _height: number;
+
 	private _mouseLeaveMonitor: IDisposable | null = null;
 
 	constructor(
@@ -100,8 +112,11 @@ export class MouseHandler extends ViewEventHandler {
 		super();
 
 		this._context = context;
+
 		this.viewController = viewController;
+
 		this.viewHelper = viewHelper;
+
 		this.mouseTargetFactory = new MouseTargetFactory(
 			this._context,
 			viewHelper,
@@ -120,6 +135,7 @@ export class MouseHandler extends ViewEventHandler {
 		);
 
 		this.lastMouseLeaveTime = -1;
+
 		this._height = this._context.configuration.options.get(
 			EditorOption.layoutInfo,
 		).height;
@@ -187,6 +203,7 @@ export class MouseHandler extends ViewEventHandler {
 		// We will therefore save the pointer id for the mouse and then reuse it in the `mousedown` event
 		// for `element.setPointerCapture`.
 		let capturePointerId: number = 0;
+
 		this._register(
 			mouseEvents.onPointerDown(
 				this.viewHelper.viewDomNode,
@@ -209,11 +226,13 @@ export class MouseHandler extends ViewEventHandler {
 				},
 			),
 		);
+
 		this._register(
 			mouseEvents.onMouseDown(this.viewHelper.viewDomNode, (e) =>
 				this._onMouseDown(e, capturePointerId),
 			),
 		);
+
 		this._setupMouseWheelZoomListener();
 
 		this._context.addEventHandler(this);
@@ -250,8 +269,11 @@ export class MouseHandler extends ViewEventHandler {
 					const zoomLevel: number = EditorZoom.getZoomLevel();
 
 					const delta = e.deltaY > 0 ? 1 : -1;
+
 					EditorZoom.setZoomLevel(zoomLevel + delta);
+
 					e.preventDefault();
+
 					e.stopPropagation();
 				}
 			} else {
@@ -261,23 +283,29 @@ export class MouseHandler extends ViewEventHandler {
 				if (Date.now() - prevMouseWheelTime > 50) {
 					// reset if more than 50ms have passed
 					gestureStartZoomLevel = EditorZoom.getZoomLevel();
+
 					gestureHasZoomModifiers =
 						hasMouseWheelZoomModifiers(browserEvent);
+
 					gestureAccumulatedDelta = 0;
 				}
 
 				prevMouseWheelTime = Date.now();
+
 				gestureAccumulatedDelta += e.deltaY;
 
 				if (gestureHasZoomModifiers) {
 					EditorZoom.setZoomLevel(
 						gestureStartZoomLevel + gestureAccumulatedDelta / 5,
 					);
+
 					e.preventDefault();
+
 					e.stopPropagation();
 				}
 			}
 		};
+
 		this._register(
 			dom.addDisposableListener(
 				this.viewHelper.viewDomNode,
@@ -308,8 +336,10 @@ export class MouseHandler extends ViewEventHandler {
 
 		if (this._mouseLeaveMonitor) {
 			this._mouseLeaveMonitor.dispose();
+
 			this._mouseLeaveMonitor = null;
 		}
+
 		super.dispose();
 	}
 
@@ -325,11 +355,14 @@ export class MouseHandler extends ViewEventHandler {
 
 			if (this._height !== height) {
 				this._height = height;
+
 				this._mouseDownOperation.onHeightChanged();
 			}
 		}
+
 		return false;
 	}
+
 	public override onCursorStateChanged(
 		e: viewEvents.ViewCursorStateChangedEvent,
 	): boolean {
@@ -337,6 +370,7 @@ export class MouseHandler extends ViewEventHandler {
 
 		return false;
 	}
+
 	public override onFocusChanged(
 		e: viewEvents.ViewFocusChangedEvent,
 	): boolean {
@@ -397,6 +431,7 @@ export class MouseHandler extends ViewEventHandler {
 					);
 			}
 		}
+
 		return this.mouseTargetFactory.createMouseTarget(
 			this.viewHelper.getLastRenderData(),
 			e.editorPos,
@@ -431,6 +466,7 @@ export class MouseHandler extends ViewEventHandler {
 			// In selection/drag operation
 			return;
 		}
+
 		const actualMouseMoveTime = e.timestamp;
 
 		if (actualMouseMoveTime < this.lastMouseLeaveTime) {
@@ -447,9 +483,12 @@ export class MouseHandler extends ViewEventHandler {
 	protected _onMouseLeave(e: EditorMouseEvent): void {
 		if (this._mouseLeaveMonitor) {
 			this._mouseLeaveMonitor.dispose();
+
 			this._mouseLeaveMonitor = null;
 		}
+
 		this.lastMouseLeaveTime = new Date().getTime();
+
 		this.viewController.emitMouseLeave({
 			event: e,
 			target: null,
@@ -496,6 +535,7 @@ export class MouseHandler extends ViewEventHandler {
 
 		const focus = () => {
 			e.preventDefault();
+
 			this.viewHelper.focusTextArea();
 		};
 
@@ -504,6 +544,7 @@ export class MouseHandler extends ViewEventHandler {
 			(targetIsContent || (targetIsLineNumbers && selectOnLineNumbers))
 		) {
 			focus();
+
 			this._mouseDownOperation.start(t.type, e, pointerId);
 		} else if (targetIsGutter) {
 			// Do not steal focus
@@ -518,7 +559,9 @@ export class MouseHandler extends ViewEventHandler {
 				)
 			) {
 				focus();
+
 				this._mouseDownOperation.start(t.type, e, pointerId);
+
 				e.preventDefault();
 			}
 		} else if (
@@ -526,6 +569,7 @@ export class MouseHandler extends ViewEventHandler {
 			this.viewHelper.shouldSuppressMouseDownOnWidget(<string>t.detail)
 		) {
 			focus();
+
 			e.preventDefault();
 		}
 
@@ -545,14 +589,19 @@ class MouseDownOperation extends Disposable {
 		e: EditorMouseEvent,
 		testEventTarget: boolean,
 	) => IMouseTarget;
+
 	private readonly _getMouseColumn: (e: EditorMouseEvent) => number;
 
 	private readonly _mouseMoveMonitor: GlobalEditorPointerMoveMonitor;
+
 	private readonly _topBottomDragScrolling: TopBottomDragScrolling;
+
 	private readonly _mouseState: MouseDownState;
 
 	private _currentSelection: Selection;
+
 	private _isActive: boolean;
+
 	private _lastMouseEvent: EditorMouseEvent | null;
 
 	constructor(
@@ -567,12 +616,15 @@ class MouseDownOperation extends Disposable {
 		getMouseColumn: (e: EditorMouseEvent) => number,
 	) {
 		super();
+
 		this._createMouseTarget = createMouseTarget;
+
 		this._getMouseColumn = getMouseColumn;
 
 		this._mouseMoveMonitor = this._register(
 			new GlobalEditorPointerMoveMonitor(this._viewHelper.viewDomNode),
 		);
+
 		this._topBottomDragScrolling = this._register(
 			new TopBottomDragScrolling(
 				this._context,
@@ -582,10 +634,13 @@ class MouseDownOperation extends Disposable {
 					this._dispatchMouse(position, inSelectionMode, revealType),
 			),
 		);
+
 		this._mouseState = new MouseDownState();
 
 		this._currentSelection = new Selection(1, 1, 1, 1);
+
 		this._isActive = false;
+
 		this._lastMouseEvent = null;
 	}
 
@@ -599,6 +654,7 @@ class MouseDownOperation extends Disposable {
 
 	private _onMouseDownThenMove(e: EditorMouseEvent): void {
 		this._lastMouseEvent = e;
+
 		this._mouseState.setModifiers(e);
 
 		const position = this._findMousePosition(e, false);
@@ -622,6 +678,7 @@ class MouseDownOperation extends Disposable {
 				this._topBottomDragScrolling.start(position, e);
 			} else {
 				this._topBottomDragScrolling.stop();
+
 				this._dispatchMouse(
 					position,
 					true,
@@ -641,7 +698,9 @@ class MouseDownOperation extends Disposable {
 		this._mouseState.setStartedOnLineNumbers(
 			targetType === MouseTargetType.GUTTER_LINE_NUMBERS,
 		);
+
 		this._mouseState.setStartButtons(e);
+
 		this._mouseState.setModifiers(e);
 
 		const position = this._findMousePosition(e, true);
@@ -671,6 +730,7 @@ class MouseDownOperation extends Disposable {
 			this._currentSelection.containsPosition(position.position) // single click on a selection
 		) {
 			this._mouseState.isDragAndDrop = true;
+
 			this._isActive = true;
 
 			this._mouseMoveMonitor.startMonitoring(
@@ -707,6 +767,7 @@ class MouseDownOperation extends Disposable {
 		}
 
 		this._mouseState.isDragAndDrop = false;
+
 		this._dispatchMouse(
 			position,
 			e.shiftKey,
@@ -715,6 +776,7 @@ class MouseDownOperation extends Disposable {
 
 		if (!this._isActive) {
 			this._isActive = true;
+
 			this._mouseMoveMonitor.startMonitoring(
 				this._viewHelper.viewLinesDomNode,
 				pointerId,
@@ -727,6 +789,7 @@ class MouseDownOperation extends Disposable {
 
 	private _stop(): void {
 		this._isActive = false;
+
 		this._topBottomDragScrolling.stop();
 	}
 
@@ -924,6 +987,7 @@ class MouseDownOperation extends Disposable {
 				return positionAfter;
 			}
 		}
+
 		return null;
 	}
 
@@ -935,6 +999,7 @@ class MouseDownOperation extends Disposable {
 		if (!position.position) {
 			return;
 		}
+
 		this._viewController.dispatchMouse({
 			position: position.position,
 			mouseColumn: position.mouseColumn,
@@ -972,11 +1037,13 @@ class TopBottomDragScrolling extends Disposable {
 		) => void,
 	) {
 		super();
+
 		this._operation = null;
 	}
 
 	public override dispose(): void {
 		super.dispose();
+
 		this.stop();
 	}
 
@@ -1001,6 +1068,7 @@ class TopBottomDragScrolling extends Disposable {
 	public stop(): void {
 		if (this._operation) {
 			this._operation.dispose();
+
 			this._operation = null;
 		}
 	}
@@ -1008,8 +1076,11 @@ class TopBottomDragScrolling extends Disposable {
 
 class TopBottomDragScrollingOperation extends Disposable {
 	private _position: IMouseTargetOutsideEditor;
+
 	private _mouseEvent: EditorMouseEvent;
+
 	private _lastTime: number;
+
 	private _animationFrameDisposable: IDisposable;
 
 	constructor(
@@ -1025,9 +1096,13 @@ class TopBottomDragScrollingOperation extends Disposable {
 		mouseEvent: EditorMouseEvent,
 	) {
 		super();
+
 		this._position = position;
+
 		this._mouseEvent = mouseEvent;
+
 		this._lastTime = Date.now();
+
 		this._animationFrameDisposable = dom.scheduleAtNextAnimationFrame(
 			dom.getWindow(mouseEvent.browserEvent),
 			() => this._execute(),
@@ -1045,6 +1120,7 @@ class TopBottomDragScrollingOperation extends Disposable {
 		mouseEvent: EditorMouseEvent,
 	): void {
 		this._position = position;
+
 		this._mouseEvent = mouseEvent;
 	}
 
@@ -1055,6 +1131,7 @@ class TopBottomDragScrollingOperation extends Disposable {
 		const now = Date.now();
 
 		const elapsed = now - this._lastTime;
+
 		this._lastTime = now;
 
 		return elapsed;
@@ -1078,9 +1155,11 @@ class TopBottomDragScrollingOperation extends Disposable {
 		if (outsideDistanceInLines <= 1.5) {
 			return Math.max(30, viewportInLines * (1 + outsideDistanceInLines));
 		}
+
 		if (outsideDistanceInLines <= 3) {
 			return Math.max(60, viewportInLines * (2 + outsideDistanceInLines));
 		}
+
 		return Math.max(200, viewportInLines * (7 + outsideDistanceInLines));
 	}
 
@@ -1102,6 +1181,7 @@ class TopBottomDragScrollingOperation extends Disposable {
 				: scrollInPixels;
 
 		this._context.viewModel.viewLayout.deltaScrollNow(0, scrollValue);
+
 		this._viewHelper.renderNow();
 
 		const viewportData = this._context.viewLayout.getLinesViewportData();
@@ -1136,6 +1216,7 @@ class TopBottomDragScrollingOperation extends Disposable {
 				editorPos,
 				pos,
 			);
+
 			mouseTarget = this._mouseTargetFactory.createMouseTarget(
 				this._viewHelper.getLastRenderData(),
 				editorPos,
@@ -1144,6 +1225,7 @@ class TopBottomDragScrollingOperation extends Disposable {
 				null,
 			);
 		}
+
 		if (
 			!mouseTarget.position ||
 			mouseTarget.position.lineNumber !== edgeLineNumber
@@ -1175,6 +1257,7 @@ class TopBottomDragScrollingOperation extends Disposable {
 			true,
 			NavigationCommandRevealType.None,
 		);
+
 		this._animationFrameDisposable = dom.scheduleAtNextAnimationFrame(
 			dom.getWindow(mouseTarget.element),
 			() => this._execute(),
@@ -1186,58 +1269,80 @@ class MouseDownState {
 	private static readonly CLEAR_MOUSE_DOWN_COUNT_TIME = 400; // ms
 
 	private _altKey: boolean;
+
 	public get altKey(): boolean {
 		return this._altKey;
 	}
 
 	private _ctrlKey: boolean;
+
 	public get ctrlKey(): boolean {
 		return this._ctrlKey;
 	}
 
 	private _metaKey: boolean;
+
 	public get metaKey(): boolean {
 		return this._metaKey;
 	}
 
 	private _shiftKey: boolean;
+
 	public get shiftKey(): boolean {
 		return this._shiftKey;
 	}
 
 	private _leftButton: boolean;
+
 	public get leftButton(): boolean {
 		return this._leftButton;
 	}
 
 	private _middleButton: boolean;
+
 	public get middleButton(): boolean {
 		return this._middleButton;
 	}
 
 	private _startedOnLineNumbers: boolean;
+
 	public get startedOnLineNumbers(): boolean {
 		return this._startedOnLineNumbers;
 	}
 
 	private _lastMouseDownPosition: Position | null;
+
 	private _lastMouseDownPositionEqualCount: number;
+
 	private _lastMouseDownCount: number;
+
 	private _lastSetMouseDownCountTime: number;
+
 	public isDragAndDrop: boolean;
 
 	constructor() {
 		this._altKey = false;
+
 		this._ctrlKey = false;
+
 		this._metaKey = false;
+
 		this._shiftKey = false;
+
 		this._leftButton = false;
+
 		this._middleButton = false;
+
 		this._startedOnLineNumbers = false;
+
 		this._lastMouseDownPosition = null;
+
 		this._lastMouseDownPositionEqualCount = 0;
+
 		this._lastMouseDownCount = 0;
+
 		this._lastSetMouseDownCountTime = 0;
+
 		this.isDragAndDrop = false;
 	}
 
@@ -1247,13 +1352,17 @@ class MouseDownState {
 
 	public setModifiers(source: EditorMouseEvent) {
 		this._altKey = source.altKey;
+
 		this._ctrlKey = source.ctrlKey;
+
 		this._metaKey = source.metaKey;
+
 		this._shiftKey = source.shiftKey;
 	}
 
 	public setStartButtons(source: EditorMouseEvent) {
 		this._leftButton = source.leftButton;
+
 		this._middleButton = source.middleButton;
 	}
 
@@ -1274,6 +1383,7 @@ class MouseDownState {
 		) {
 			setMouseDownCount = 1;
 		}
+
 		this._lastSetMouseDownCountTime = currentTime;
 
 		// b. Ensure that we don't jump from single click to triple click in one go (will be hit by IE because the detail field of mouse events contains garbage in IE10)
@@ -1290,6 +1400,7 @@ class MouseDownState {
 		} else {
 			this._lastMouseDownPositionEqualCount = 1;
 		}
+
 		this._lastMouseDownPosition = newMouseDownPosition;
 
 		// Finally set the lastMouseDownCount

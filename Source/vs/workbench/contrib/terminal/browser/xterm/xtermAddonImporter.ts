@@ -15,11 +15,17 @@ import { importAMDNodeModule } from "../../../../../amdX.js";
 
 export interface IXtermAddonNameToCtor {
 	clipboard: typeof ClipboardAddonType;
+
 	image: typeof ImageAddonType;
+
 	ligatures: typeof LigaturesAddonType;
+
 	search: typeof SearchAddonType;
+
 	serialize: typeof SerializeAddonType;
+
 	unicode11: typeof Unicode11AddonType;
+
 	webgl: typeof WebglAddonType;
 }
 
@@ -59,6 +65,7 @@ export class XtermAddonImporter {
 							typeof import("@xterm/addon-clipboard")
 						>("@xterm/addon-clipboard", "lib/addon-clipboard.js")
 					).ClipboardAddon as IXtermAddonNameToCtor[T];
+
 					break;
 
 				case "image":
@@ -67,6 +74,7 @@ export class XtermAddonImporter {
 							typeof import("@xterm/addon-image")
 						>("@xterm/addon-image", "lib/addon-image.js")
 					).ImageAddon as IXtermAddonNameToCtor[T];
+
 					break;
 
 				case "ligatures":
@@ -75,6 +83,7 @@ export class XtermAddonImporter {
 							typeof import("@xterm/addon-ligatures")
 						>("@xterm/addon-ligatures", "lib/addon-ligatures.js")
 					).LigaturesAddon as IXtermAddonNameToCtor[T];
+
 					break;
 
 				case "search":
@@ -83,6 +92,7 @@ export class XtermAddonImporter {
 							typeof import("@xterm/addon-search")
 						>("@xterm/addon-search", "lib/addon-search.js")
 					).SearchAddon as IXtermAddonNameToCtor[T];
+
 					break;
 
 				case "serialize":
@@ -91,6 +101,7 @@ export class XtermAddonImporter {
 							typeof import("@xterm/addon-serialize")
 						>("@xterm/addon-serialize", "lib/addon-serialize.js")
 					).SerializeAddon as IXtermAddonNameToCtor[T];
+
 					break;
 
 				case "unicode11":
@@ -99,6 +110,7 @@ export class XtermAddonImporter {
 							typeof import("@xterm/addon-unicode11")
 						>("@xterm/addon-unicode11", "lib/addon-unicode11.js")
 					).Unicode11Addon as IXtermAddonNameToCtor[T];
+
 					break;
 
 				case "webgl":
@@ -107,13 +119,17 @@ export class XtermAddonImporter {
 							typeof import("@xterm/addon-webgl")
 						>("@xterm/addon-webgl", "lib/addon-webgl.js")
 					).WebglAddon as IXtermAddonNameToCtor[T];
+
 					break;
 			}
+
 			if (!addon) {
 				throw new Error(`Could not load addon ${name}`);
 			}
+
 			importedAddons.set(name, addon);
 		}
+
 		return addon as IXtermAddonNameToCtor[T];
 	}
 }

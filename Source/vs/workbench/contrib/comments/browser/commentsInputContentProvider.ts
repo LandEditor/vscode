@@ -39,12 +39,14 @@ export class CommentsInputContentProvider
 		private readonly _languageService: ILanguageService,
 	) {
 		super();
+
 		this._register(
 			textModelService.registerTextModelContentProvider(
 				Schemas.commentsInput,
 				this,
 			),
 		);
+
 		this._register(
 			codeEditorService.registerCodeEditorOpenHandler(
 				async (
@@ -55,12 +57,14 @@ export class CommentsInputContentProvider
 					if (!(editor instanceof SimpleCommentEditor)) {
 						return null;
 					}
+
 					if (
 						editor.getModel()?.uri.toString() !==
 						input.resource.toString()
 					) {
 						return null;
 					}
+
 					if (input.options) {
 						applyTextEditorOptions(
 							input.options,
@@ -68,11 +72,13 @@ export class CommentsInputContentProvider
 							ScrollType.Immediate,
 						);
 					}
+
 					return editor;
 				},
 			),
 		);
 	}
+
 	async provideTextContent(resource: URI): Promise<ITextModel | null> {
 		const existing = this._modelService.getModel(resource);
 

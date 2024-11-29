@@ -71,16 +71,27 @@ export class CommentThreadWidget<T extends IRange | ICellRange = IRange>
 	implements ICommentThreadWidget
 {
 	private _header!: CommentThreadHeader<T>;
+
 	private _body: CommentThreadBody<T>;
+
 	private _commentReply?: CommentReply<T>;
+
 	private _additionalActions?: CommentThreadAdditionalActions<T>;
+
 	private _commentMenus: CommentMenus;
+
 	private _commentThreadDisposables: IDisposable[] = [];
+
 	private _threadIsEmpty: IContextKey<boolean>;
+
 	private _styleElement: HTMLStyleElement;
+
 	private _commentThreadContextValue: IContextKey<string | undefined>;
+
 	private _focusedContextKey: IContextKey<boolean>;
+
 	private _onDidResize = new Emitter<dom.Dimension>();
+
 	onDidResize = this._onDidResize.event;
 
 	private _commentThreadState: languages.CommentThreadState | undefined;
@@ -88,6 +99,7 @@ export class CommentThreadWidget<T extends IRange | ICellRange = IRange>
 	get commentThread() {
 		return this._commentThread;
 	}
+
 	constructor(
 		readonly container: HTMLElement,
 		readonly _parentEditor: LayoutableEditor,
@@ -104,6 +116,7 @@ export class CommentThreadWidget<T extends IRange | ICellRange = IRange>
 		private _commentOptions: languages.CommentOptions | undefined,
 		private _containerDelegate: {
 			actionRunner: (() => void) | null;
+
 			collapse: () => void;
 		},
 		@ICommentService private commentService: ICommentService,
@@ -117,9 +130,11 @@ export class CommentThreadWidget<T extends IRange | ICellRange = IRange>
 		this._threadIsEmpty = CommentContextKeys.commentThreadIsEmpty.bindTo(
 			this._contextKeyService,
 		);
+
 		this._threadIsEmpty.set(
 			!_commentThread.comments || !_commentThread.comments.length,
 		);
+
 		this._focusedContextKey = CommentContextKeys.commentFocused.bindTo(
 			this._contextKeyService,
 		);
@@ -143,10 +158,13 @@ export class CommentThreadWidget<T extends IRange | ICellRange = IRange>
 		this._header.updateCommentThread(this._commentThread);
 
 		const bodyElement = <HTMLDivElement>dom.$(".body");
+
 		container.appendChild(bodyElement);
+
 		this._register(toDisposable(() => bodyElement.remove()));
 
 		const tracker = this._register(dom.trackFocus(bodyElement));
+
 		this._register(
 			registerNavigableContainer({
 				name: "commentThreadWidget",
@@ -166,12 +184,15 @@ export class CommentThreadWidget<T extends IRange | ICellRange = IRange>
 				},
 			}),
 		);
+
 		this._register(
 			tracker.onDidFocus(() => this._focusedContextKey.set(true)),
 		);
+
 		this._register(
 			tracker.onDidBlur(() => this._focusedContextKey.reset()),
 		);
+
 		this._register(
 			this.configurationService.onDidChangeConfiguration((e) => {
 				if (
@@ -183,6 +204,7 @@ export class CommentThreadWidget<T extends IRange | ICellRange = IRange>
 				}
 			}),
 		);
+
 		this._body = this._scopedInstantiationService.createInstance(
 			CommentThreadBody,
 			this._parentEditor,
@@ -195,14 +217,18 @@ export class CommentThreadWidget<T extends IRange | ICellRange = IRange>
 			this._scopedInstantiationService,
 			this,
 		) as unknown as CommentThreadBody<T>;
+
 		this._register(this._body);
+
 		this._setAriaLabel();
+
 		this._styleElement = domStylesheets.createStyleSheet(this.container);
 
 		this._commentThreadContextValue =
 			CommentContextKeys.commentThreadContext.bindTo(
 				this._contextKeyService,
 			);
+
 		this._commentThreadContextValue.set(_commentThread.contextValue);
 
 		const commentControllerKey =
@@ -239,6 +265,7 @@ export class CommentThreadWidget<T extends IRange | ICellRange = IRange>
 					)
 					?.getLabel() ?? undefined;
 		}
+
 		if (keybinding) {
 			ariaLabel = localize(
 				"commentLabelWithKeybinding",
@@ -253,6 +280,7 @@ export class CommentThreadWidget<T extends IRange | ICellRange = IRange>
 				ariaLabel,
 			);
 		}
+
 		this._body.container.ariaLabel = ariaLabel;
 	}
 
@@ -268,6 +296,7 @@ export class CommentThreadWidget<T extends IRange | ICellRange = IRange>
 		let hasMouse = false;
 
 		let hasFocus = false;
+
 		this._register(
 			dom.addDisposableListener(
 				this.container,
@@ -275,12 +304,14 @@ export class CommentThreadWidget<T extends IRange | ICellRange = IRange>
 				(e) => {
 					if ((<any>e).toElement === this.container) {
 						hasMouse = true;
+
 						this.updateCurrentThread(hasMouse, hasFocus);
 					}
 				},
 				true,
 			),
 		);
+
 		this._register(
 			dom.addDisposableListener(
 				this.container,
@@ -288,29 +319,34 @@ export class CommentThreadWidget<T extends IRange | ICellRange = IRange>
 				(e) => {
 					if ((<any>e).fromElement === this.container) {
 						hasMouse = false;
+
 						this.updateCurrentThread(hasMouse, hasFocus);
 					}
 				},
 				true,
 			),
 		);
+
 		this._register(
 			dom.addDisposableListener(
 				this.container,
 				dom.EventType.FOCUS_IN,
 				() => {
 					hasFocus = true;
+
 					this.updateCurrentThread(hasMouse, hasFocus);
 				},
 				true,
 			),
 		);
+
 		this._register(
 			dom.addDisposableListener(
 				this.container,
 				dom.EventType.FOCUS_OUT,
 				() => {
 					hasFocus = false;
+
 					this.updateCurrentThread(hasMouse, hasFocus);
 				},
 				true,
@@ -325,18 +361,26 @@ export class CommentThreadWidget<T extends IRange | ICellRange = IRange>
 			this._commentThreadState ===
 				languages.CommentThreadState.Unresolved &&
 			commentThread.state === languages.CommentThreadState.Resolved;
+
 		this._commentThreadState = commentThread.state;
+
 		this._commentThread = commentThread;
+
 		dispose(this._commentThreadDisposables);
+
 		this._commentThreadDisposables = [];
+
 		this._bindCommentThreadListeners();
 
 		await this._body.updateCommentThread(
 			commentThread,
 			this._commentReply?.isCommentEditorFocused() ?? false,
 		);
+
 		this._threadIsEmpty.set(!this._body.length);
+
 		this._header.updateCommentThread(commentThread);
+
 		this._commentReply?.updateCommentThread(commentThread);
 
 		if (this._commentThread.contextValue) {
@@ -367,6 +411,7 @@ export class CommentThreadWidget<T extends IRange | ICellRange = IRange>
 		if (this._commentThread.canReply) {
 			this._createCommentForm(focus);
 		}
+
 		this._createAdditionalActions();
 
 		this._register(
@@ -386,12 +431,15 @@ export class CommentThreadWidget<T extends IRange | ICellRange = IRange>
 
 	private _refresh(dimension: dom.Dimension) {
 		this._body.layout();
+
 		this._onDidResize.fire(dimension);
 	}
 
 	override dispose() {
 		super.dispose();
+
 		dispose(this._commentThreadDisposables);
+
 		this.updateCurrentThread(false, false);
 	}
 
@@ -473,6 +521,7 @@ export class CommentThreadWidget<T extends IRange | ICellRange = IRange>
 
 	setPendingComment(pending: languages.PendingComment) {
 		this._pendingComment = pending;
+
 		this._commentReply?.setPendingComment(pending);
 	}
 
@@ -519,6 +568,7 @@ export class CommentThreadWidget<T extends IRange | ICellRange = IRange>
 		) {
 			this._parentEditor.setSelection(this.commentThread.range);
 		}
+
 		this._containerDelegate.collapse();
 	}
 
@@ -528,6 +578,7 @@ export class CommentThreadWidget<T extends IRange | ICellRange = IRange>
 		content.push(
 			`.monaco-editor .review-widget > .body { border-top: 1px solid var(${commentThreadStateColorVar}) }`,
 		);
+
 		content.push(
 			`.monaco-editor .review-widget > .head { background-color: var(${commentThreadStateBackgroundColorVar}) }`,
 		);
@@ -554,6 +605,7 @@ export class CommentThreadWidget<T extends IRange | ICellRange = IRange>
 			content.push(
 				`.review-widget .body .comment-body a:focus { outline: 1px solid ${focusColor}; }`,
 			);
+
 			content.push(
 				`.review-widget .body .monaco-editor.focused { outline: 1px solid ${focusColor}; }`,
 			);
@@ -589,6 +641,7 @@ export class CommentThreadWidget<T extends IRange | ICellRange = IRange>
 			content.push(
 				`.review-widget .body .comment-form .review-thread-reply-button { outline-color: ${hcBorder}; }`,
 			);
+
 			content.push(
 				`.review-widget .body .monaco-editor { outline: 1px solid ${hcBorder}; }`,
 			);
@@ -623,19 +676,24 @@ export class CommentThreadWidget<T extends IRange | ICellRange = IRange>
 		const fontSizeVar = "--comment-thread-editor-font-size";
 
 		const fontWeightVar = "--comment-thread-editor-font-weight";
+
 		this.container?.style.setProperty(fontFamilyVar, fontInfo.fontFamily);
+
 		this.container?.style.setProperty(
 			fontSizeVar,
 			`${fontInfo.fontSize}px`,
 		);
+
 		this.container?.style.setProperty(fontWeightVar, fontInfo.fontWeight);
 
 		content.push(`.review-widget .body code {
 			font-family: var(${fontFamilyVar});
+
 			font-weight: var(${fontWeightVar});
 		}`);
 
 		this._styleElement.textContent = content.join("\n");
+
 		this._commentReply?.setCommentEditorDecorations();
 	}
 }

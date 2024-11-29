@@ -22,6 +22,7 @@ export class CustomEndpointTelemetryService
 	implements ICustomEndpointTelemetryService
 {
 	declare readonly _serviceBrand: undefined;
+
 	private customTelemetryServices = new Map<string, ITelemetryService>();
 
 	constructor(
@@ -38,6 +39,7 @@ export class CustomEndpointTelemetryService
 		@IProductService
 		private readonly productService: IProductService,
 	) {}
+
 	private getCustomTelemetryService(
 		endpoint: ITelemetryEndpoint,
 	): ITelemetryService {
@@ -45,8 +47,10 @@ export class CustomEndpointTelemetryService
 			const telemetryInfo: {
 				[key: string]: string;
 			} = Object.create(null);
+
 			telemetryInfo["common.vscodemachineid"] =
 				this.telemetryService.machineId;
+
 			telemetryInfo["common.vscodesessionid"] =
 				this.telemetryService.sessionId;
 
@@ -83,6 +87,7 @@ export class CustomEndpointTelemetryService
 					`[${endpoint.id}] `,
 				),
 			];
+
 			this.customTelemetryServices.set(
 				endpoint.id,
 				new TelemetryService(
@@ -95,8 +100,10 @@ export class CustomEndpointTelemetryService
 				),
 			);
 		}
+
 		return this.customTelemetryServices.get(endpoint.id)!;
 	}
+
 	publicLog(
 		telemetryEndpoint: ITelemetryEndpoint,
 		eventName: string,
@@ -104,8 +111,10 @@ export class CustomEndpointTelemetryService
 	) {
 		const customTelemetryService =
 			this.getCustomTelemetryService(telemetryEndpoint);
+
 		customTelemetryService.publicLog(eventName, data);
 	}
+
 	publicLogError(
 		telemetryEndpoint: ITelemetryEndpoint,
 		errorEventName: string,
@@ -113,6 +122,7 @@ export class CustomEndpointTelemetryService
 	) {
 		const customTelemetryService =
 			this.getCustomTelemetryService(telemetryEndpoint);
+
 		customTelemetryService.publicLogError(errorEventName, data);
 	}
 }

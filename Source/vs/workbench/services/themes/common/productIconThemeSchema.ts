@@ -125,5 +125,6 @@ export function registerProductIconThemeSchemas() {
 	const schemaRegistry = Registry.as<IJSONContributionRegistry>(
 		JSONExtensions.JSONContribution,
 	);
+
 	schemaRegistry.registerSchema(schemaId, schema);
 }

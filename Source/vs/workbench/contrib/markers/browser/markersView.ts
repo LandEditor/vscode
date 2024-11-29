@@ -159,10 +159,13 @@ export interface IProblemsWidget {
 	get onDidOpen(): Event<
 		IOpenEvent<MarkerElement | MarkerTableItem | undefined>
 	>;
+
 	collapseMarkers(): void;
+
 	dispose(): void;
 
 	domFocus(): void;
+
 	filterMarkers(
 		resourceMarkers: ResourceMarkers[],
 		filterOptions: FilterOptions,
@@ -179,8 +182,11 @@ export interface IProblemsWidget {
 	getSelection(): (MarkerElement | MarkerTableItem | null)[];
 
 	getVisibleItemCount(): number;
+
 	layout(height: number, width: number): void;
+
 	reset(resourceMarkers: ResourceMarkers[]): void;
+
 	revealMarkers(
 		activeResource: ResourceMarkers | null,
 		focus: boolean,
@@ -190,41 +196,66 @@ export interface IProblemsWidget {
 	setAriaLabel(label: string): void;
 
 	setMarkerSelection(selection?: Marker[], focus?: Marker[]): void;
+
 	toggleVisibility(hide: boolean): void;
+
 	update(resourceMarkers: ResourceMarkers[]): void;
+
 	updateMarker(marker: Marker): void;
 }
 export class MarkersView extends FilterViewPane implements IMarkersView {
 	private lastSelectedRelativeTop: number = 0;
+
 	private currentActiveResource: URI | null = null;
+
 	private readonly rangeHighlightDecorations: RangeHighlightDecorations;
+
 	private readonly markersModel: MarkersModel;
+
 	private readonly filter: Filter;
+
 	private readonly onVisibleDisposables = this._register(
 		new DisposableStore(),
 	);
+
 	private widget!: IProblemsWidget;
+
 	private readonly widgetDisposables = this._register(new DisposableStore());
+
 	private widgetContainer!: HTMLElement;
+
 	private widgetIdentityProvider: IIdentityProvider<
 		MarkerElement | MarkerTableItem
 	>;
+
 	private widgetAccessibilityProvider: MarkersWidgetAccessibilityProvider;
+
 	private messageBoxContainer: HTMLElement | undefined;
+
 	private ariaLabelElement: HTMLElement | undefined;
+
 	readonly filters: MarkersFilters;
+
 	private currentHeight = 0;
+
 	private currentWidth = 0;
+
 	private readonly memento: Memento;
+
 	private readonly panelState: MementoObject;
+
 	private cachedFilterStats:
 		| {
 				total: number;
+
 				filtered: number;
 		  }
 		| undefined = undefined;
+
 	private currentResourceGotAddedToMarkersData: boolean = false;
+
 	private readonly markersViewModel: MarkersViewModel;
+
 	readonly onDidChangeVisibility = this.onDidChangeBodyVisibility;
 
 	constructor(
@@ -293,11 +324,15 @@ export class MarkersView extends FilterViewPane implements IMarkersView {
 			telemetryService,
 			hoverService,
 		);
+
 		this.memento = memento;
+
 		this.panelState = panelState;
+
 		this.markersModel = this._register(
 			instantiationService.createInstance(MarkersModel),
 		);
+
 		this.markersViewModel = this._register(
 			instantiationService.createInstance(
 				MarkersViewModel,
@@ -305,29 +340,37 @@ export class MarkersView extends FilterViewPane implements IMarkersView {
 				this.panelState["viewMode"] ?? this.getDefaultViewMode(),
 			),
 		);
+
 		this._register(
 			this.onDidChangeVisibility((visible) =>
 				this.onDidChangeMarkersViewVisibility(visible),
 			),
 		);
+
 		this._register(
 			this.markersViewModel.onDidChangeViewMode((_) =>
 				this.onDidChangeViewMode(),
 			),
 		);
+
 		this.widgetAccessibilityProvider = instantiationService.createInstance(
 			MarkersWidgetAccessibilityProvider,
 		);
+
 		this.widgetIdentityProvider = {
 			getId(element: MarkerElement | MarkerTableItem) {
 				return element.id;
 			},
 		};
+
 		this.setCurrentActiveEditor();
+
 		this.filter = new Filter(FilterOptions.EMPTY(uriIdentityService));
+
 		this.rangeHighlightDecorations = this._register(
 			this.instantiationService.createInstance(RangeHighlightDecorations),
 		);
+
 		this.filters = this._register(
 			new MarkersFilters(
 				{
@@ -353,8 +396,10 @@ export class MarkersView extends FilterViewPane implements IMarkersView {
 			}),
 		);
 	}
+
 	override render(): void {
 		super.render();
+
 		this._register(
 			registerNavigableContainer({
 				name: "markersView",
@@ -372,9 +417,12 @@ export class MarkersView extends FilterViewPane implements IMarkersView {
 			}),
 		);
 	}
+
 	protected override renderBody(parent: HTMLElement): void {
 		super.renderBody(parent);
+
 		parent.classList.add("markers-panel");
+
 		this._register(
 			dom.addDisposableListener(parent, "keydown", (e) => {
 				const event = new StandardKeyboardEvent(e);
@@ -386,6 +434,7 @@ export class MarkersView extends FilterViewPane implements IMarkersView {
 				) {
 					return;
 				}
+
 				const result = this.keybindingService.softDispatch(
 					event,
 					event.target,
@@ -397,6 +446,7 @@ export class MarkersView extends FilterViewPane implements IMarkersView {
 				) {
 					return;
 				}
+
 				this.focusFilter();
 			}),
 		);
@@ -405,19 +455,27 @@ export class MarkersView extends FilterViewPane implements IMarkersView {
 			parent,
 			dom.$(".markers-panel-container"),
 		);
+
 		this.createArialLabelElement(panelContainer);
+
 		this.createMessageBox(panelContainer);
+
 		this.widgetContainer = dom.append(
 			panelContainer,
 			dom.$(".widget-container"),
 		);
+
 		this.createWidget(this.widgetContainer);
+
 		this.updateFilter();
+
 		this.renderContent();
 	}
+
 	public getTitle(): string {
 		return Messages.MARKERS_PANEL_TITLE_PROBLEMS.value;
 	}
+
 	protected layoutBodyContent(
 		height: number = this.currentHeight,
 		width: number = this.currentWidth,
@@ -425,26 +483,34 @@ export class MarkersView extends FilterViewPane implements IMarkersView {
 		if (this.messageBoxContainer) {
 			this.messageBoxContainer.style.height = `${height}px`;
 		}
+
 		this.widget.layout(height, width);
+
 		this.currentHeight = height;
+
 		this.currentWidth = width;
 	}
+
 	public override focus(): void {
 		super.focus();
 
 		if (dom.isActiveElement(this.widget.getHTMLElement())) {
 			return;
 		}
+
 		if (this.hasNoProblems()) {
 			this.messageBoxContainer!.focus();
 		} else {
 			this.widget.domFocus();
+
 			this.widget.setMarkerSelection();
 		}
 	}
+
 	public focusFilter(): void {
 		this.filterWidget.focus();
 	}
+
 	public updateBadge(total: number, filtered: number): void {
 		this.filterWidget.updateBadge(
 			total === filtered || total === 0
@@ -457,6 +523,7 @@ export class MarkersView extends FilterViewPane implements IMarkersView {
 					),
 		);
 	}
+
 	public checkMoreFilters(): void {
 		this.filterWidget.checkMoreFilters(
 			!this.filters.showErrors ||
@@ -466,9 +533,11 @@ export class MarkersView extends FilterViewPane implements IMarkersView {
 				this.filters.activeFile,
 		);
 	}
+
 	public clearFilterText(): void {
 		this.filterWidget.setFilterText("");
 	}
+
 	public showQuickFixes(marker: Marker): void {
 		const viewModel = this.markersViewModel.getViewModel(marker);
 
@@ -476,6 +545,7 @@ export class MarkersView extends FilterViewPane implements IMarkersView {
 			viewModel.quickFixAction.run();
 		}
 	}
+
 	public openFileAtElement(
 		element: any,
 		preserveFocus: boolean,
@@ -523,8 +593,10 @@ export class MarkersView extends FilterViewPane implements IMarkersView {
 		} else {
 			this.rangeHighlightDecorations.removeHighlightRange();
 		}
+
 		return false;
 	}
+
 	private refreshPanel(markerOrChange?: Marker | MarkerChangesEvent): void {
 		if (this.isVisible()) {
 			const hasSelection = this.widget.getSelection().length > 0;
@@ -548,24 +620,33 @@ export class MarkersView extends FilterViewPane implements IMarkersView {
 				// Reset complete widget
 				this.resetWidget();
 			}
+
 			if (hasSelection) {
 				this.widget.setMarkerSelection();
 			}
+
 			this.cachedFilterStats = undefined;
 
 			const { total, filtered } = this.getFilterStats();
+
 			this.toggleVisibility(total === 0 || filtered === 0);
+
 			this.renderMessage();
+
 			this.updateBadge(total, filtered);
+
 			this.checkMoreFilters();
 		}
 	}
+
 	private onDidChangeViewState(marker?: Marker): void {
 		this.refreshPanel(marker);
 	}
+
 	private resetWidget(): void {
 		this.widget.reset(this.getResourceMarkers());
 	}
+
 	private updateFilter() {
 		this.filter.options = new FilterOptions(
 			this.filterWidget.getFilterText(),
@@ -575,18 +656,25 @@ export class MarkersView extends FilterViewPane implements IMarkersView {
 			this.filters.showInfos,
 			this.uriIdentityService,
 		);
+
 		this.widget.filterMarkers(
 			this.getResourceMarkers(),
 			this.filter.options,
 		);
+
 		this.cachedFilterStats = undefined;
 
 		const { total, filtered } = this.getFilterStats();
+
 		this.toggleVisibility(total === 0 || filtered === 0);
+
 		this.renderMessage();
+
 		this.updateBadge(total, filtered);
+
 		this.checkMoreFilters();
 	}
+
 	private getDefaultViewMode(): MarkersViewMode {
 		switch (
 			this.configurationService.getValue<string>(
@@ -603,15 +691,18 @@ export class MarkersView extends FilterViewPane implements IMarkersView {
 				return MarkersViewMode.Tree;
 		}
 	}
+
 	private getFilesExcludeExpressions():
 		| {
 				root: URI;
+
 				expression: IExpression;
 		  }[]
 		| IExpression {
 		if (!this.filters.excludedFiles) {
 			return [];
 		}
+
 		const workspaceFolders =
 			this.workspaceContextService.getWorkspace().folders;
 
@@ -622,6 +713,7 @@ export class MarkersView extends FilterViewPane implements IMarkersView {
 				}))
 			: this.getFilesExclude();
 	}
+
 	private getFilesExclude(resource?: URI): IExpression {
 		return (
 			deepClone(
@@ -631,10 +723,12 @@ export class MarkersView extends FilterViewPane implements IMarkersView {
 			) || {}
 		);
 	}
+
 	private getResourceMarkers(): ResourceMarkers[] {
 		if (!this.filters.activeFile) {
 			return this.markersModel.resourceMarkers;
 		}
+
 		let resourceMarkers: ResourceMarkers[] = [];
 
 		if (this.currentActiveResource) {
@@ -646,27 +740,34 @@ export class MarkersView extends FilterViewPane implements IMarkersView {
 				resourceMarkers = [activeResourceMarkers];
 			}
 		}
+
 		return resourceMarkers;
 	}
+
 	private createMessageBox(parent: HTMLElement): void {
 		this.messageBoxContainer = dom.append(
 			parent,
 			dom.$(".message-box-container"),
 		);
+
 		this.messageBoxContainer.setAttribute(
 			"aria-labelledby",
 			"markers-panel-arialabel",
 		);
 	}
+
 	private createArialLabelElement(parent: HTMLElement): void {
 		this.ariaLabelElement = dom.append(parent, dom.$(""));
+
 		this.ariaLabelElement.setAttribute("id", "markers-panel-arialabel");
 	}
+
 	private createWidget(parent: HTMLElement): void {
 		this.widget =
 			this.markersViewModel.viewMode === MarkersViewMode.Table
 				? this.createTable(parent)
 				: this.createTree(parent);
+
 		this.widgetDisposables.add(this.widget);
 
 		const markerFocusContextKey =
@@ -678,16 +779,19 @@ export class MarkersView extends FilterViewPane implements IMarkersView {
 			MarkersContextKeys.RelatedInformationFocusContextKey.bindTo(
 				this.widget.contextKeyService,
 			);
+
 		this.widgetDisposables.add(
 			this.widget.onDidChangeFocus((focus) => {
 				markerFocusContextKey.set(
 					focus.elements.some((e) => e instanceof Marker),
 				);
+
 				relatedInformationFocusContextKey.set(
 					focus.elements.some((e) => e instanceof RelatedInformation),
 				);
 			}),
 		);
+
 		this.widgetDisposables.add(
 			Event.debounce(
 				this.widget.onDidOpen,
@@ -703,6 +807,7 @@ export class MarkersView extends FilterViewPane implements IMarkersView {
 				);
 			}),
 		);
+
 		this.widgetDisposables.add(
 			Event.any<any>(
 				this.widget.onDidChangeSelection,
@@ -717,18 +822,22 @@ export class MarkersView extends FilterViewPane implements IMarkersView {
 					if (element instanceof Marker) {
 						const viewModel =
 							this.markersViewModel.getViewModel(element);
+
 						viewModel?.showLightBulb();
 					}
 				}
 			}),
 		);
+
 		this.widgetDisposables.add(
 			this.widget.onContextMenu(this.onContextMenu, this),
 		);
+
 		this.widgetDisposables.add(
 			this.widget.onDidChangeSelection(this.onSelected, this),
 		);
 	}
+
 	private createTable(parent: HTMLElement): IProblemsWidget {
 		const table = this.instantiationService.createInstance(
 			MarkersTable,
@@ -747,6 +856,7 @@ export class MarkersView extends FilterViewPane implements IMarkersView {
 								element.range,
 							);
 						}
+
 						return null;
 					},
 				),
@@ -759,6 +869,7 @@ export class MarkersView extends FilterViewPane implements IMarkersView {
 
 		return table;
 	}
+
 	private createTree(parent: HTMLElement): IProblemsWidget {
 		const onDidChangeRenderNodeCount = new Relay<ITreeNode<any, any>>();
 
@@ -800,18 +911,21 @@ export class MarkersView extends FilterViewPane implements IMarkersView {
 						if (element instanceof ResourceMarkers) {
 							return element.resource;
 						}
+
 						if (element instanceof Marker) {
 							return withSelection(
 								element.resource,
 								element.range,
 							);
 						}
+
 						if (element instanceof RelatedInformation) {
 							return withSelection(
 								element.raw.resource,
 								element.raw,
 							);
 						}
+
 						return null;
 					},
 				),
@@ -823,19 +937,24 @@ export class MarkersView extends FilterViewPane implements IMarkersView {
 				multipleSelectionSupport: true,
 			},
 		);
+
 		onDidChangeRenderNodeCount.input = tree.onDidChangeRenderNodeCount;
 
 		return tree;
 	}
+
 	collapseAll(): void {
 		this.widget.collapseMarkers();
 	}
+
 	setMultiline(multiline: boolean): void {
 		this.markersViewModel.multiline = multiline;
 	}
+
 	setViewMode(viewMode: MarkersViewMode): void {
 		this.markersViewModel.viewMode = viewMode;
 	}
+
 	private onDidChangeMarkersViewVisibility(visible: boolean): void {
 		this.onVisibleDisposables.clear();
 
@@ -843,9 +962,11 @@ export class MarkersView extends FilterViewPane implements IMarkersView {
 			for (const disposable of this.reInitialize()) {
 				this.onVisibleDisposables.add(disposable);
 			}
+
 			this.refreshPanel();
 		}
 	}
+
 	private reInitialize(): IDisposable[] {
 		const disposables = [];
 		// Markers Model
@@ -857,17 +978,20 @@ export class MarkersView extends FilterViewPane implements IMarkersView {
 					MarkerSeverity.Warning |
 					MarkerSeverity.Info,
 			});
+
 		this.markersModel.setResourceMarkers(
 			groupBy(readMarkers(), compareMarkersByUri).map((group) => [
 				group[0].resource,
 				group,
 			]),
 		);
+
 		disposables.push(
 			Event.debounce<readonly URI[], ResourceMap<URI>>(
 				this.markerService.onMarkerChanged,
 				(resourcesMap, resources) => {
 					resourcesMap = resourcesMap || new ResourceMap<URI>();
+
 					resources.forEach((resource) =>
 						resourcesMap.set(resource, resource),
 					);
@@ -884,6 +1008,7 @@ export class MarkersView extends FilterViewPane implements IMarkersView {
 				);
 			}),
 		);
+
 		disposables.push(
 			Event.any<MarkerChangesEvent | void>(
 				this.markersModel.onDidChange,
@@ -896,6 +1021,7 @@ export class MarkersView extends FilterViewPane implements IMarkersView {
 				}
 			}),
 		);
+
 		disposables.push(toDisposable(() => this.markersModel.reset()));
 		// Markers View Model
 		this.markersModel.resourceMarkers.forEach((resourceMarker) =>
@@ -903,11 +1029,13 @@ export class MarkersView extends FilterViewPane implements IMarkersView {
 				this.markersViewModel.add(marker),
 			),
 		);
+
 		disposables.push(
 			this.markersViewModel.onDidChange((marker) =>
 				this.onDidChangeViewState(marker),
 			),
 		);
+
 		disposables.push(
 			toDisposable(() =>
 				this.markersModel.resourceMarkers.forEach((resourceMarker) =>
@@ -930,14 +1058,17 @@ export class MarkersView extends FilterViewPane implements IMarkersView {
 				}
 			}),
 		);
+
 		disposables.push(
 			this.filterWidget.onDidChangeFilterText((e) => this.updateFilter()),
 		);
+
 		disposables.push(
 			toDisposable(() => {
 				this.cachedFilterStats = undefined;
 			}),
 		);
+
 		disposables.push(
 			toDisposable(() =>
 				this.rangeHighlightDecorations.removeHighlightRange(),
@@ -946,6 +1077,7 @@ export class MarkersView extends FilterViewPane implements IMarkersView {
 
 		return disposables;
 	}
+
 	private onDidChangeModel(change: MarkerChangesEvent): void {
 		const resourceMarkers = [
 			...change.added,
@@ -966,22 +1098,29 @@ export class MarkersView extends FilterViewPane implements IMarkersView {
 					this.markersViewModel.add(marker);
 				}
 			}
+
 			resources.push(resource);
 		}
+
 		this.currentResourceGotAddedToMarkersData =
 			this.currentResourceGotAddedToMarkersData ||
 			this.isCurrentResourceGotAddedToMarkersData(resources);
+
 		this.refreshPanel(change);
+
 		this.updateRangeHighlights();
 
 		if (this.currentResourceGotAddedToMarkersData) {
 			this.autoReveal();
+
 			this.currentResourceGotAddedToMarkersData = false;
 		}
 	}
+
 	private onDidChangeViewMode(): void {
 		if (this.widgetContainer && this.widget) {
 			this.widgetContainer.textContent = "";
+
 			this.widgetDisposables.clear();
 		}
 		// Save selection
@@ -1007,6 +1146,7 @@ export class MarkersView extends FilterViewPane implements IMarkersView {
 		}
 		// Create new widget
 		this.createWidget(this.widgetContainer);
+
 		this.refreshPanel();
 		// Restore selection
 		if (selection.size > 0) {
@@ -1014,41 +1154,50 @@ export class MarkersView extends FilterViewPane implements IMarkersView {
 				Array.from(selection),
 				Array.from(focus),
 			);
+
 			this.widget.domFocus();
 		}
 	}
+
 	private isCurrentResourceGotAddedToMarkersData(changedResources: URI[]) {
 		const currentlyActiveResource = this.currentActiveResource;
 
 		if (!currentlyActiveResource) {
 			return false;
 		}
+
 		const resourceForCurrentActiveResource =
 			this.getResourceForCurrentActiveResource();
 
 		if (resourceForCurrentActiveResource) {
 			return false;
 		}
+
 		return changedResources.some(
 			(r) => r.toString() === currentlyActiveResource.toString(),
 		);
 	}
+
 	private onActiveEditorChanged(): void {
 		this.setCurrentActiveEditor();
 
 		if (this.filters.activeFile) {
 			this.refreshPanel();
 		}
+
 		this.autoReveal();
 	}
+
 	private setCurrentActiveEditor(): void {
 		const activeEditor = this.editorService.activeEditor;
+
 		this.currentActiveResource = activeEditor
 			? (EditorResourceAccessor.getOriginalUri(activeEditor, {
 					supportSideBySide: SideBySideEditor.PRIMARY,
 				}) ?? null)
 			: null;
 	}
+
 	private onSelected(): void {
 		const selection = this.widget.getSelection();
 
@@ -1057,27 +1206,35 @@ export class MarkersView extends FilterViewPane implements IMarkersView {
 				this.widget.getRelativeTop(selection[0]) || 0;
 		}
 	}
+
 	private hasNoProblems(): boolean {
 		const { total, filtered } = this.getFilterStats();
 
 		return total === 0 || filtered === 0;
 	}
+
 	private renderContent(): void {
 		this.cachedFilterStats = undefined;
+
 		this.resetWidget();
+
 		this.toggleVisibility(this.hasNoProblems());
+
 		this.renderMessage();
 	}
+
 	private renderMessage(): void {
 		if (!this.messageBoxContainer || !this.ariaLabelElement) {
 			return;
 		}
+
 		dom.clearNode(this.messageBoxContainer);
 
 		const { total, filtered } = this.getFilterStats();
 
 		if (filtered === 0) {
 			this.messageBoxContainer.style.display = "block";
+
 			this.messageBoxContainer.setAttribute("tabIndex", "0");
 
 			if (this.filters.activeFile) {
@@ -1112,9 +1269,11 @@ export class MarkersView extends FilterViewPane implements IMarkersView {
 					),
 				);
 			}
+
 			this.messageBoxContainer.removeAttribute("tabIndex");
 		}
 	}
+
 	private renderFilterMessageForActiveFile(container: HTMLElement): void {
 		if (
 			this.currentActiveResource &&
@@ -1125,15 +1284,20 @@ export class MarkersView extends FilterViewPane implements IMarkersView {
 			this.renderNoProblemsMessageForActiveFile(container);
 		}
 	}
+
 	private renderFilteredByFilterMessage(container: HTMLElement) {
 		const span1 = dom.append(container, dom.$("span"));
+
 		span1.textContent = Messages.MARKERS_PANEL_NO_PROBLEMS_FILTERS;
 
 		const link = dom.append(container, dom.$("a.messageAction"));
+
 		link.textContent = localize("clearFilter", "Clear Filters");
+
 		link.setAttribute("tabIndex", "0");
 
 		const span2 = dom.append(container, dom.$("span"));
+
 		span2.textContent = ".";
 
 		dom.addStandardDisposableListener(link, dom.EventType.CLICK, () =>
@@ -1146,38 +1310,55 @@ export class MarkersView extends FilterViewPane implements IMarkersView {
 			(e: IKeyboardEvent) => {
 				if (e.equals(KeyCode.Enter) || e.equals(KeyCode.Space)) {
 					this.clearFilters();
+
 					e.stopPropagation();
 				}
 			},
 		);
+
 		this.setAriaLabel(Messages.MARKERS_PANEL_NO_PROBLEMS_FILTERS);
 	}
+
 	private renderNoProblemsMessageForActiveFile(container: HTMLElement) {
 		const span = dom.append(container, dom.$("span"));
+
 		span.textContent = Messages.MARKERS_PANEL_NO_PROBLEMS_ACTIVE_FILE_BUILT;
+
 		this.setAriaLabel(Messages.MARKERS_PANEL_NO_PROBLEMS_ACTIVE_FILE_BUILT);
 	}
+
 	private renderNoProblemsMessage(container: HTMLElement) {
 		const span = dom.append(container, dom.$("span"));
+
 		span.textContent = Messages.MARKERS_PANEL_NO_PROBLEMS_BUILT;
+
 		this.setAriaLabel(Messages.MARKERS_PANEL_NO_PROBLEMS_BUILT);
 	}
+
 	private setAriaLabel(label: string): void {
 		this.widget.setAriaLabel(label);
+
 		this.ariaLabelElement!.setAttribute("aria-label", label);
 	}
+
 	private clearFilters(): void {
 		this.filterWidget.setFilterText("");
+
 		this.filters.excludedFiles = false;
+
 		this.filters.showErrors = true;
+
 		this.filters.showWarnings = true;
+
 		this.filters.showInfos = true;
 	}
+
 	private autoReveal(focus: boolean = false): void {
 		// No need to auto reveal if active file filter is on
 		if (this.filters.activeFile) {
 			return;
 		}
+
 		const autoReveal = this.configurationService.getValue<boolean>(
 			"problems.autoReveal",
 		);
@@ -1185,6 +1366,7 @@ export class MarkersView extends FilterViewPane implements IMarkersView {
 		if (typeof autoReveal === "boolean" && autoReveal) {
 			const currentActiveResource =
 				this.getResourceForCurrentActiveResource();
+
 			this.widget.revealMarkers(
 				currentActiveResource,
 				focus,
@@ -1192,11 +1374,13 @@ export class MarkersView extends FilterViewPane implements IMarkersView {
 			);
 		}
 	}
+
 	private getResourceForCurrentActiveResource(): ResourceMarkers | null {
 		return this.currentActiveResource
 			? this.markersModel.getResourceMarkers(this.currentActiveResource)
 			: null;
 	}
+
 	private updateRangeHighlights() {
 		this.rangeHighlightDecorations.removeHighlightRange();
 
@@ -1204,19 +1388,23 @@ export class MarkersView extends FilterViewPane implements IMarkersView {
 			this.highlightCurrentSelectedMarkerRange();
 		}
 	}
+
 	private highlightCurrentSelectedMarkerRange() {
 		const selections = this.widget.getSelection() ?? [];
 
 		if (selections.length !== 1) {
 			return;
 		}
+
 		const selection = selections[0];
 
 		if (!(selection instanceof Marker)) {
 			return;
 		}
+
 		this.rangeHighlightDecorations.highlightRange(selection);
 	}
+
 	private onContextMenu(
 		e:
 			| ITreeContextMenuEvent<MarkerElement | null>
@@ -1227,8 +1415,11 @@ export class MarkersView extends FilterViewPane implements IMarkersView {
 		if (!element) {
 			return;
 		}
+
 		e.browserEvent.preventDefault();
+
 		e.browserEvent.stopPropagation();
+
 		this.contextMenuService.showContextMenu({
 			getAnchor: () => e.anchor,
 			menuId: MenuId.ProblemsPanelContext,
@@ -1245,6 +1436,7 @@ export class MarkersView extends FilterViewPane implements IMarkersView {
 						keybinding: keybinding.getLabel(),
 					});
 				}
+
 				return undefined;
 			},
 			onHide: (wasCancelled?: boolean) => {
@@ -1254,6 +1446,7 @@ export class MarkersView extends FilterViewPane implements IMarkersView {
 			},
 		});
 	}
+
 	private getMenuActions(element: MarkerElement | null): IAction[] {
 		const result: IAction[] = [];
 
@@ -1265,21 +1458,26 @@ export class MarkersView extends FilterViewPane implements IMarkersView {
 
 				if (quickFixActions.length) {
 					result.push(...quickFixActions);
+
 					result.push(new Separator());
 				}
 			}
 		}
+
 		return result;
 	}
+
 	public getFocusElement(): MarkerElement | undefined {
 		return this.widget.getFocus()[0] ?? undefined;
 	}
+
 	public getFocusedSelectedElements(): MarkerElement[] | null {
 		const focus = this.getFocusElement();
 
 		if (!focus) {
 			return null;
 		}
+
 		const selection = this.widget.getSelection();
 
 		if (selection.includes(focus)) {
@@ -1290,16 +1488,20 @@ export class MarkersView extends FilterViewPane implements IMarkersView {
 					result.push(selected);
 				}
 			}
+
 			return result;
 		} else {
 			return [focus];
 		}
 	}
+
 	public getAllResourceMarkers(): ResourceMarkers[] {
 		return this.markersModel.resourceMarkers;
 	}
+
 	getFilterStats(): {
 		total: number;
+
 		filtered: number;
 	} {
 		if (!this.cachedFilterStats) {
@@ -1308,26 +1510,40 @@ export class MarkersView extends FilterViewPane implements IMarkersView {
 				filtered: this.widget?.getVisibleItemCount() ?? 0,
 			};
 		}
+
 		return this.cachedFilterStats;
 	}
+
 	private toggleVisibility(hide: boolean): void {
 		this.widget.toggleVisibility(hide);
+
 		this.layoutBodyContent();
 	}
+
 	override saveState(): void {
 		this.panelState["filter"] = this.filterWidget.getFilterText();
+
 		this.panelState["filterHistory"] = this.filters.filterHistory;
+
 		this.panelState["showErrors"] = this.filters.showErrors;
+
 		this.panelState["showWarnings"] = this.filters.showWarnings;
+
 		this.panelState["showInfos"] = this.filters.showInfos;
+
 		this.panelState["useFilesExclude"] = this.filters.excludedFiles;
+
 		this.panelState["activeFile"] = this.filters.activeFile;
+
 		this.panelState["multiline"] = this.markersViewModel.multiline;
+
 		this.panelState["viewMode"] = this.markersViewModel.viewMode;
+
 		this.memento.saveMemento();
 
 		super.saveState();
 	}
+
 	override dispose() {
 		super.dispose();
 	}
@@ -1366,21 +1582,29 @@ class MarkersTree
 			listService,
 			configurationService,
 		);
+
 		this.visibilityContextKey =
 			MarkersContextKeys.MarkersTreeVisibilityContextKey.bindTo(
 				contextKeyService,
 			);
 	}
+
 	collapseMarkers(): void {
 		this.collapseAll();
+
 		this.setSelection([]);
+
 		this.setFocus([]);
+
 		this.getHTMLElement().focus();
+
 		this.focusFirst();
 	}
+
 	filterMarkers(): void {
 		this.refilter();
 	}
+
 	getVisibleItemCount(): number {
 		let filtered = 0;
 
@@ -1393,15 +1617,20 @@ class MarkersTree
 				}
 			}
 		}
+
 		return filtered;
 	}
+
 	isVisible(): boolean {
 		return !this.container.classList.contains("hidden");
 	}
+
 	toggleVisibility(hide: boolean): void {
 		this.visibilityContextKey.set(!hide);
+
 		this.container.classList.toggle("hidden", hide);
 	}
+
 	reset(resourceMarkers: ResourceMarkers[]): void {
 		this.setChildren(
 			null,
@@ -1411,6 +1640,7 @@ class MarkersTree
 			})),
 		);
 	}
+
 	revealMarkers(
 		activeResource: ResourceMarkers | null,
 		focus: boolean,
@@ -1432,22 +1662,27 @@ class MarkersTree
 					}
 				} else {
 					this.expand(activeResource);
+
 					this.reveal(activeResource, 0);
 
 					if (focus) {
 						this.setFocus([activeResource]);
+
 						this.setSelection([activeResource]);
 					}
 				}
 			}
 		} else if (focus) {
 			this.setSelection([]);
+
 			this.focusFirst();
 		}
 	}
+
 	setAriaLabel(label: string): void {
 		this.ariaLabel = label;
 	}
+
 	setMarkerSelection(selection?: Marker[], focus?: Marker[]): void {
 		if (this.isVisible()) {
 			if (selection && selection.length > 0) {
@@ -1458,6 +1693,7 @@ class MarkersTree
 				} else {
 					this.setFocus([this.findMarkerNode(selection[0])]);
 				}
+
 				this.reveal(this.findMarkerNode(selection[0]));
 			} else if (this.getSelection().length === 0) {
 				const firstVisibleElement = this.firstVisibleElement;
@@ -1472,12 +1708,15 @@ class MarkersTree
 
 				if (marker) {
 					this.setSelection([marker]);
+
 					this.setFocus([marker]);
+
 					this.reveal(marker);
 				}
 			}
 		}
 	}
+
 	update(resourceMarkers: ResourceMarkers[]): void {
 		for (const resourceMarker of resourceMarkers) {
 			if (this.hasElement(resourceMarker)) {
@@ -1485,13 +1724,16 @@ class MarkersTree
 					resourceMarker,
 					createResourceMarkersIterator(resourceMarker),
 				);
+
 				this.rerender(resourceMarker);
 			}
 		}
 	}
+
 	updateMarker(marker: Marker): void {
 		this.rerender(marker);
 	}
+
 	private findMarkerNode(marker: Marker) {
 		for (const resourceNode of this.getNode().children) {
 			for (const markerNode of resourceNode.children) {
@@ -1503,8 +1745,10 @@ class MarkersTree
 				}
 			}
 		}
+
 		return null;
 	}
+
 	private hasSelectedMarkerFor(resource: ResourceMarkers): boolean {
 		const selectedElement = this.getSelection();
 
@@ -1517,11 +1761,14 @@ class MarkersTree
 				}
 			}
 		}
+
 		return false;
 	}
+
 	override dispose(): void {
 		super.dispose();
 	}
+
 	override layout(height: number, width: number): void {
 		this.container.style.height = `${height}px`;
 

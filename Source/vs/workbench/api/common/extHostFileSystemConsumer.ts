@@ -23,16 +23,22 @@ import { FileSystemError } from "./extHostTypes.js";
 
 export class ExtHostConsumerFileSystem {
 	readonly _serviceBrand: undefined;
+
 	readonly value: vscode.FileSystem;
+
 	private readonly _proxy: MainThreadFileSystemShape;
+
 	private readonly _fileSystemProvider = new Map<
 		string,
 		{
 			impl: vscode.FileSystemProvider;
+
 			extUri: IExtUri;
+
 			isReadonly: boolean;
 		}
 	>();
+
 	private readonly _writeQueue = new ResourceQueue();
 
 	constructor(
@@ -44,6 +50,7 @@ export class ExtHostConsumerFileSystem {
 		this._proxy = extHostRpc.getProxy(MainContext.MainThreadFileSystem);
 
 		const that = this;
+
 		this.value = Object.freeze({
 			async stat(uri: vscode.Uri): Promise<vscode.FileStat> {
 				try {
@@ -54,10 +61,12 @@ export class ExtHostConsumerFileSystem {
 					if (provider) {
 						// use shortcut
 						await that._proxy.$ensureActivation(uri.scheme);
+
 						stat = await provider.impl.stat(uri);
 					} else {
 						stat = await that._proxy.$stat(uri);
 					}
+
 					return {
 						type: stat.type,
 						ctime: stat.ctime,
@@ -138,6 +147,7 @@ export class ExtHostConsumerFileSystem {
 					if (provider && !provider.isReadonly) {
 						// use shortcut
 						await that._proxy.$ensureActivation(uri.scheme);
+
 						await that.mkdirp(
 							provider.impl,
 							provider.extUri,
@@ -166,6 +176,7 @@ export class ExtHostConsumerFileSystem {
 				uri: vscode.Uri,
 				options?: {
 					recursive?: boolean;
+
 					useTrash?: boolean;
 				},
 			): Promise<void> {
@@ -239,10 +250,12 @@ export class ExtHostConsumerFileSystem {
 						files.FileSystemProviderCapabilities.Readonly
 					);
 				}
+
 				return undefined;
 			},
 		});
 	}
+
 	private async mkdirp(
 		provider: vscode.FileSystemProvider,
 		providerExtUri: IExtUri,
@@ -264,6 +277,7 @@ export class ExtHostConsumerFileSystem {
 						`Unable to create folder '${directory.scheme === Schemas.file ? directory.fsPath : directory.toString(true)}' that already exists but is not a directory`,
 					);
 				}
+
 				break; // we have hit a directory that exists -> good
 			} catch (error) {
 				if (
@@ -274,9 +288,11 @@ export class ExtHostConsumerFileSystem {
 				}
 				// further go up and remember to create this directory
 				directoriesToCreate.push(providerExtUri.basename(directory));
+
 				directory = providerExtUri.dirname(directory);
 			}
 		}
+
 		for (let i = directoriesToCreate.length - 1; i >= 0; i--) {
 			directory = providerExtUri.joinPath(
 				directory,
@@ -303,6 +319,7 @@ export class ExtHostConsumerFileSystem {
 			}
 		}
 	}
+
 	private static _handleError(err: any): never {
 		// desired error type
 		if (err instanceof FileSystemError) {
@@ -377,6 +394,7 @@ export class ExtHostConsumerFileSystem {
 		provider: vscode.FileSystemProvider,
 		options?: {
 			isCaseSensitive?: boolean;
+
 			isReadonly?: boolean | IMarkdownString;
 		},
 	): IDisposable {
@@ -388,6 +406,7 @@ export class ExtHostConsumerFileSystem {
 
 		return toDisposable(() => this._fileSystemProvider.delete(scheme));
 	}
+
 	getFileSystemProviderExtUri(scheme: string) {
 		return this._fileSystemProvider.get(scheme)?.extUri ?? extUri;
 	}

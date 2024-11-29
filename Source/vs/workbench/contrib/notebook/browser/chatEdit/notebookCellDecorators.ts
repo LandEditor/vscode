@@ -70,7 +70,9 @@ import { INotebookOriginalCellModelFactory } from "./notebookOriginalCellModelFa
 
 export class NotebookCellDiffDecorator extends DisposableStore {
 	private readonly _decorations = this.editor.createDecorationsCollection();
+
 	private _viewZones: string[] = [];
+
 	private readonly throttledDecorator = new ThrottledDelayer(100);
 
 	constructor(
@@ -85,7 +87,9 @@ export class NotebookCellDiffDecorator extends DisposableStore {
 		private readonly originalCellModelFactory: INotebookOriginalCellModelFactory,
 	) {
 		super();
+
 		this.add(this.editor.onDidChangeModel(() => this.update()));
+
 		this.add(
 			this.editor.onDidChangeConfiguration((e) => {
 				if (
@@ -107,6 +111,7 @@ export class NotebookCellDiffDecorator extends DisposableStore {
 			) {
 				return false;
 			}
+
 			return value.entries
 				.read(r)
 				.some((e) =>
@@ -126,6 +131,7 @@ export class NotebookCellDiffDecorator extends DisposableStore {
 					actualReadonly ??= this.editor.getOption(
 						EditorOption.readOnly,
 					);
+
 					actualDeco ??= this.editor.getOption(
 						EditorOption.renderValidationDecorations,
 					);
@@ -143,12 +149,15 @@ export class NotebookCellDiffDecorator extends DisposableStore {
 							readOnly: actualReadonly,
 							renderValidationDecorations: actualDeco,
 						});
+
 						actualReadonly = undefined;
+
 						actualDeco = undefined;
 					}
 				}
 			}),
 		);
+
 		this.update();
 	}
 
@@ -166,16 +175,19 @@ export class NotebookCellDiffDecorator extends DisposableStore {
 		if (this.isDisposed) {
 			return;
 		}
+
 		if (!this.editor.hasModel()) {
 			this._clearRendering();
 
 			return;
 		}
+
 		if (this.editor.getOption(EditorOption.inDiffEditor)) {
 			this._clearRendering();
 
 			return;
 		}
+
 		const model = this.editor.getModel();
 
 		if (!model) {
@@ -212,11 +224,14 @@ export class NotebookCellDiffDecorator extends DisposableStore {
 				viewZoneChangeAccessor.removeZone(id);
 			}
 		});
+
 		this._viewZones = [];
+
 		this._decorations.clear();
 	}
 
 	private _originalModel?: ITextModel;
+
 	private getOrCreateOriginalModel() {
 		if (!this._originalModel) {
 			const model = this.editor.getModel();
@@ -224,6 +239,7 @@ export class NotebookCellDiffDecorator extends DisposableStore {
 			if (!model) {
 				return;
 			}
+
 			this._originalModel = this.add(
 				this.originalCellModelFactory.getOrCreate(
 					model.uri,
@@ -233,14 +249,17 @@ export class NotebookCellDiffDecorator extends DisposableStore {
 				),
 			).object;
 		}
+
 		return this._originalModel;
 	}
+
 	private async computeDiff() {
 		const model = this.editor.getModel();
 
 		if (!model) {
 			return;
 		}
+
 		const originalModel = this.getOrCreateOriginalModel();
 
 		if (!originalModel) {
@@ -310,6 +329,7 @@ export class NotebookCellDiffDecorator extends DisposableStore {
 			for (const id of this._viewZones) {
 				viewZoneChangeAccessor.removeZone(id);
 			}
+
 			this._viewZones = [];
 
 			const modifiedDecorations: IModelDeltaDecoration[] = [];
@@ -329,6 +349,7 @@ export class NotebookCellDiffDecorator extends DisposableStore {
 						Math.max(1, originalRange.endLineNumberExclusive - 1),
 					);
 				}
+
 				const source = new LineSource(
 					originalRange.length && originalModel
 						? originalRange.mapToLineArray((l) =>
@@ -352,11 +373,13 @@ export class NotebookCellDiffDecorator extends DisposableStore {
 							InlineDecorationType.Regular,
 						),
 					);
+
 					modifiedDecorations.push({
 						range: i.modifiedRange,
 						options: chatDiffAddDecoration,
 					});
 				}
+
 				if (!diffEntry.modified.isEmpty) {
 					modifiedDecorations.push({
 						range: diffEntry.modified.toInclusiveRange()!,
@@ -388,6 +411,7 @@ export class NotebookCellDiffDecorator extends DisposableStore {
 						options: modifiedDecoration,
 					});
 				}
+
 				const domNode = document.createElement("div");
 
 				domNode.className =
@@ -430,12 +454,14 @@ export class NotebookInsertedCellDecorator extends Disposable {
 	constructor(private readonly notebookEditor: INotebookEditor) {
 		super();
 	}
+
 	public apply(diffInfo: CellDiffInfo[]) {
 		const model = this.notebookEditor.textModel;
 
 		if (!model) {
 			return;
 		}
+
 		const cells = diffInfo
 			.filter((diff) => diff.type === "insert")
 			.map((diff) => model.cells[diff.modifiedCellIndex]);
@@ -450,7 +476,9 @@ export class NotebookInsertedCellDecorator extends Disposable {
 				},
 			})),
 		);
+
 		this.clear();
+
 		this.decorators.add(
 			toDisposable(() => {
 				if (!this.notebookEditor.isDisposed) {
@@ -459,6 +487,7 @@ export class NotebookInsertedCellDecorator extends Disposable {
 			}),
 		);
 	}
+
 	public clear() {
 		this.decorators.clear();
 	}
@@ -470,6 +499,7 @@ const ttPolicy = createTrustedTypesPolicy("notebookChatEditController", {
 
 export class NotebookDeletedCellDecorator extends Disposable {
 	private readonly zoneRemover = this._register(new DisposableStore());
+
 	private readonly createdViewZones = new Map<number, string>();
 
 	constructor(
@@ -486,14 +516,17 @@ export class NotebookDeletedCellDecorator extends Disposable {
 
 		const deletedCellsToRender: {
 			cells: NotebookCellTextModel[];
+
 			index: number;
 		} = { cells: [], index: 0 };
+
 		diffInfo.forEach((diff) => {
 			if (diff.type === "delete") {
 				const deletedCell = original.cells[diff.originalCellIndex];
 
 				if (deletedCell) {
 					deletedCellsToRender.cells.push(deletedCell);
+
 					deletedCellsToRender.index = currentIndex;
 				}
 			} else {
@@ -502,8 +535,10 @@ export class NotebookDeletedCellDecorator extends Disposable {
 						deletedCellsToRender.index + 1,
 						deletedCellsToRender.cells,
 					);
+
 					deletedCellsToRender.cells.length = 0;
 				}
+
 				currentIndex = diff.modifiedCellIndex;
 			}
 		});
@@ -523,6 +558,7 @@ export class NotebookDeletedCellDecorator extends Disposable {
 	private _createWidget(index: number, cells: NotebookCellTextModel[]) {
 		this._createWidgetImpl(index, cells);
 	}
+
 	private async _createWidgetImpl(
 		index: number,
 		cells: NotebookCellTextModel[],
@@ -555,16 +591,21 @@ export class NotebookDeletedCellDecorator extends Disposable {
 			};
 
 			const id = accessor.addZone(notebookViewZone);
+
 			accessor.layoutZone(id);
+
 			this.createdViewZones.set(index, id);
+
 			this.zoneRemover.add(
 				toDisposable(() => {
 					if (this.createdViewZones.get(index) === id) {
 						this.createdViewZones.delete(index);
 					}
+
 					if (!this._notebookEditor.isDisposed) {
 						this._notebookEditor.changeViewZones((accessor) => {
 							accessor.removeZone(id);
+
 							dispose(widgets);
 						});
 					}
@@ -586,7 +627,9 @@ export class NotebookDeletedCellWidget extends Disposable {
 		@ILanguageService private readonly languageService: ILanguageService,
 	) {
 		super();
+
 		this.container = DOM.append(container, document.createElement("div"));
+
 		this._register(
 			toDisposable(() => {
 				container.removeChild(this.container);
@@ -634,6 +677,7 @@ export class NotebookDeletedCellWidget extends Disposable {
 					: "" + `white-space: pre;`;
 
 		const rootContainer = this.container;
+
 		rootContainer.classList.add("code-cell-row");
 
 		const container = DOM.append(
@@ -649,6 +693,7 @@ export class NotebookDeletedCellWidget extends Disposable {
 		);
 
 		const cellContainer = DOM.append(container, DOM.$(".cell.code"));
+
 		DOM.append(focusIndicatorLeft, DOM.$("div.execution-count-label"));
 
 		const editorPart = DOM.append(
@@ -660,6 +705,7 @@ export class NotebookDeletedCellWidget extends Disposable {
 			editorPart,
 			DOM.$(".cell-editor-container"),
 		);
+
 		editorContainer = DOM.append(
 			editorContainer,
 			DOM.$(".code", { style }),
@@ -671,18 +717,21 @@ export class NotebookDeletedCellWidget extends Disposable {
 				fontInfo.fontFamily,
 			);
 		}
+
 		if (fontInfo.fontSize) {
 			editorContainer.style.setProperty(
 				fontSizeVar,
 				`${fontInfo.fontSize}px`,
 			);
 		}
+
 		if (fontInfo.fontWeight) {
 			editorContainer.style.setProperty(
 				fontWeightVar,
 				fontInfo.fontWeight,
 			);
 		}
+
 		editorContainer.innerHTML = (ttPolicy?.createHTML(codeHtml) ||
 			codeHtml) as string;
 

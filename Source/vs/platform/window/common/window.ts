@@ -37,11 +37,13 @@ export const WindowMinimumSize = {
 
 export interface IPoint {
 	readonly x: number;
+
 	readonly y: number;
 }
 
 export interface IRectangle extends IPoint {
 	readonly width: number;
+
 	readonly height: number;
 }
 
@@ -61,11 +63,13 @@ export interface IBaseOpenWindowsOptions {
 	readonly remoteAuthority?: string | null;
 
 	readonly forceProfile?: string;
+
 	readonly forceTempProfile?: boolean;
 }
 
 export interface IOpenWindowOptions extends IBaseOpenWindowsOptions {
 	readonly forceNewWindow?: boolean;
+
 	readonly preferNewWindow?: boolean;
 
 	readonly noRecentEntry?: boolean;
@@ -73,7 +77,9 @@ export interface IOpenWindowOptions extends IBaseOpenWindowsOptions {
 	readonly addMode?: boolean;
 
 	readonly diffMode?: boolean;
+
 	readonly mergeMode?: boolean;
+
 	readonly gotoLineMode?: boolean;
 
 	readonly waitMarkerFileURI?: URI;
@@ -85,12 +91,15 @@ export interface IAddFoldersRequest {
 
 interface IOpenedWindow {
 	readonly id: number;
+
 	readonly title: string;
+
 	readonly filename?: string;
 }
 
 export interface IOpenedMainWindow extends IOpenedWindow {
 	readonly workspace?: IAnyWorkspaceIdentifier;
+
 	readonly dirty: boolean;
 }
 
@@ -175,28 +184,46 @@ export interface IWindowsConfiguration {
 
 export interface IWindowSettings {
 	readonly openFilesInNewWindow: "on" | "off" | "default";
+
 	readonly openFoldersInNewWindow: "on" | "off" | "default";
+
 	readonly openWithoutArgumentsInNewWindow: "on" | "off";
+
 	readonly restoreWindows: "preserve" | "all" | "folders" | "one" | "none";
+
 	readonly restoreFullscreen: boolean;
+
 	readonly zoomLevel: number;
+
 	readonly titleBarStyle: TitlebarStyle;
+
 	readonly autoDetectHighContrast: boolean;
+
 	readonly autoDetectColorScheme: boolean;
+
 	readonly menuBarVisibility: MenuBarVisibility;
+
 	readonly newWindowDimensions:
 		| "default"
 		| "inherit"
 		| "offset"
 		| "maximized"
 		| "fullscreen";
+
 	readonly nativeTabs: boolean;
+
 	readonly nativeFullScreen: boolean;
+
 	readonly enableMenuBarMnemonics: boolean;
+
 	readonly closeWhenEmpty: boolean;
+
 	readonly clickThroughInactive: boolean;
+
 	readonly newWindowProfile: string;
+
 	readonly density: IDensitySettings;
+
 	readonly experimentalControlOverlay?: boolean;
 }
 
@@ -237,6 +264,7 @@ export function hasNativeTitlebar(
 	if (!titleBarStyle) {
 		titleBarStyle = getTitleBarStyle(configurationService);
 	}
+
 	return titleBarStyle === TitlebarStyle.NATIVE;
 }
 
@@ -362,17 +390,21 @@ export interface IPathData<T = IEditorOptions> {
 
 export interface IPathsToWaitFor extends IPathsToWaitForData {
 	paths: IPath[];
+
 	waitMarkerFileUri: URI;
 }
 
 interface IPathsToWaitForData {
 	readonly paths: IPathData[];
+
 	readonly waitMarkerFileUri: UriComponents;
 }
 
 export interface IOpenFileRequest {
 	readonly filesToOpenOrCreate?: IPathData[];
+
 	readonly filesToDiff?: IPathData[];
+
 	readonly filesToMerge?: IPathData[];
 }
 
@@ -381,12 +413,15 @@ export interface IOpenFileRequest {
  */
 export interface INativeOpenFileRequest extends IOpenFileRequest {
 	readonly termProgram?: string;
+
 	readonly filesToWait?: IPathsToWaitForData;
 }
 
 export interface INativeRunActionInWindowRequest {
 	readonly id: string;
+
 	readonly from: "menu" | "touchbar" | "mouse";
+
 	readonly args?: any[];
 }
 
@@ -396,6 +431,7 @@ export interface INativeRunKeybindingInWindowRequest {
 
 export interface IColorScheme {
 	readonly dark: boolean;
+
 	readonly highContrast: boolean;
 }
 
@@ -403,13 +439,17 @@ export interface IWindowConfiguration {
 	remoteAuthority?: string;
 
 	filesToOpenOrCreate?: IPath[];
+
 	filesToDiff?: IPath[];
+
 	filesToMerge?: IPath[];
 }
 
 export interface IOSConfiguration {
 	readonly release: string;
+
 	readonly hostname: string;
+
 	readonly arch: string;
 }
 
@@ -418,23 +458,31 @@ export interface INativeWindowConfiguration
 		NativeParsedArgs,
 		ISandboxConfiguration {
 	mainPid: number;
+
 	handle?: VSBuffer;
 
 	machineId: string;
+
 	sqmId: string;
+
 	devDeviceId: string;
 
 	execPath: string;
+
 	backupPath?: string;
 
 	profiles: {
 		home: UriComponents;
+
 		all: readonly UriDto<IUserDataProfile>[];
+
 		profile: UriDto<IUserDataProfile>;
 	};
 
 	homeDir: string;
+
 	tmpDir: string;
+
 	userDataDir: string;
 
 	partsSplash?: IPartsSplash;
@@ -442,18 +490,27 @@ export interface INativeWindowConfiguration
 	workspace?: IWorkspaceIdentifier | ISingleFolderWorkspaceIdentifier;
 
 	isInitialStartup?: boolean;
+
 	logLevel: LogLevel;
+
 	loggers: {
 		global: UriDto<ILoggerResource>[];
+
 		window: UriDto<ILoggerResource>[];
 	};
 
 	fullscreen?: boolean;
+
 	maximized?: boolean;
+
 	accessibilitySupport?: boolean;
+
 	colorScheme: IColorScheme;
+
 	autoDetectHighContrast?: boolean;
+
 	autoDetectColorScheme?: boolean;
+
 	isCustomZoomLevel?: boolean;
 
 	perfMarks: PerformanceMark[];
@@ -461,8 +518,10 @@ export interface INativeWindowConfiguration
 	filesToWait?: IPathsToWaitFor;
 
 	os: IOSConfiguration;
+
 	policiesData?: IStringDictionary<{
 		definition: PolicyDefinition;
+
 		value: PolicyValue;
 	}>;
 }

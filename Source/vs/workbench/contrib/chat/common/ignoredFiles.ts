@@ -20,7 +20,9 @@ export const ILanguageModelIgnoredFilesService =
 
 export interface ILanguageModelIgnoredFilesService {
 	_serviceBrand: undefined;
+
 	fileIsIgnored(uri: URI, token: CancellationToken): Promise<boolean>;
+
 	registerIgnoredFileProvider(
 		provider: ILanguageModelIgnoredFileProvider,
 	): IDisposable;
@@ -29,6 +31,7 @@ export class LanguageModelIgnoredFilesService
 	implements ILanguageModelIgnoredFilesService
 {
 	_serviceBrand: undefined;
+
 	private readonly _providers = new Set<ILanguageModelIgnoredFileProvider>();
 
 	async fileIsIgnored(uri: URI, token: CancellationToken): Promise<boolean> {
@@ -37,6 +40,7 @@ export class LanguageModelIgnoredFilesService
 
 		return provider ? provider.isFileIgnored(uri, token) : false;
 	}
+
 	registerIgnoredFileProvider(
 		provider: ILanguageModelIgnoredFileProvider,
 	): IDisposable {

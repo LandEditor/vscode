@@ -14,6 +14,7 @@ import { asResourceUrl, del, getThemeIcon, tail } from "../utils";
 
 export class TypesTreeInput implements SymbolTreeInput<TypeItem> {
 	readonly title: string;
+
 	readonly contextValue: string = "typeHierarchy";
 
 	constructor(
@@ -25,6 +26,7 @@ export class TypesTreeInput implements SymbolTreeInput<TypeItem> {
 				? vscode.l10n.t("Supertypes Of")
 				: vscode.l10n.t("Subtypes Of");
 	}
+
 	async resolve() {
 		const items = await Promise.resolve(
 			vscode.commands.executeCommand<vscode.TypeHierarchyItem[]>(
@@ -41,6 +43,7 @@ export class TypesTreeInput implements SymbolTreeInput<TypeItem> {
 		if (model.roots.length === 0) {
 			return;
 		}
+
 		return {
 			provider,
 			get message() {
@@ -56,6 +59,7 @@ export class TypesTreeInput implements SymbolTreeInput<TypeItem> {
 			},
 		};
 	}
+
 	with(location: vscode.Location): TypesTreeInput {
 		return new TypesTreeInput(location, this.direction);
 	}
@@ -72,6 +76,7 @@ export class TypeItem {
 		readonly item: vscode.TypeHierarchyItem,
 		readonly parent: TypeItem | undefined,
 	) {}
+
 	remove(): void {
 		this.model.remove(this);
 	}
@@ -83,7 +88,9 @@ class TypesModel
 		SymbolItemDragAndDrop<TypeItem>
 {
 	readonly roots: TypeItem[] = [];
+
 	private readonly _onDidChange = new vscode.EventEmitter<TypesModel>();
+
 	readonly onDidChange = this._onDidChange.event;
 
 	constructor(
@@ -92,6 +99,7 @@ class TypesModel
 	) {
 		this.roots = items.map((item) => new TypeItem(this, item, undefined));
 	}
+
 	private async _resolveTypes(currentType: TypeItem): Promise<TypeItem[]> {
 		if (this.direction === TypeHierarchyDirection.Supertypes) {
 			const types = await vscode.commands.executeCommand<
@@ -111,10 +119,12 @@ class TypesModel
 				: [];
 		}
 	}
+
 	async getTypeChildren(item: TypeItem): Promise<TypeItem[]> {
 		if (!item.children) {
 			item.children = await this._resolveTypes(item);
 		}
+
 		return item.children;
 	}
 	// -- dnd
@@ -128,6 +138,7 @@ class TypesModel
 			currentType.item.range,
 		);
 	}
+
 	nearest(uri: vscode.Uri, _position: vscode.Position): TypeItem | undefined {
 		return (
 			this.roots.find(
@@ -135,16 +146,20 @@ class TypesModel
 			) ?? this.roots[0]
 		);
 	}
+
 	next(from: TypeItem): TypeItem {
 		return this._move(from, true) ?? from;
 	}
+
 	previous(from: TypeItem): TypeItem {
 		return this._move(from, false) ?? from;
 	}
+
 	private _move(item: TypeItem, fwd: boolean): TypeItem | void {
 		if (item.children?.length) {
 			return fwd ? item.children[0] : tail(item.children);
 		}
+
 		const array = this.roots.includes(item)
 			? this.roots
 			: item.parent?.children;
@@ -166,6 +181,7 @@ class TypesModel
 			? [currentType.item.selectionRange]
 			: undefined;
 	}
+
 	remove(item: TypeItem) {
 		const isInRoot = this.roots.includes(item);
 
@@ -173,13 +189,16 @@ class TypesModel
 
 		if (siblings) {
 			del(siblings, item);
+
 			this._onDidChange.fire(this);
 		}
 	}
 }
 class TypeItemDataProvider implements vscode.TreeDataProvider<TypeItem> {
 	private readonly _emitter = new vscode.EventEmitter<TypeItem | undefined>();
+
 	readonly onDidChangeTreeData = this._emitter.event;
+
 	private readonly _modelListener: vscode.Disposable;
 
 	constructor(private _model: TypesModel) {
@@ -187,15 +206,22 @@ class TypeItemDataProvider implements vscode.TreeDataProvider<TypeItem> {
 			this._emitter.fire(e instanceof TypeItem ? e : undefined),
 		);
 	}
+
 	dispose(): void {
 		this._emitter.dispose();
+
 		this._modelListener.dispose();
 	}
+
 	getTreeItem(element: TypeItem): vscode.TreeItem {
 		const item = new vscode.TreeItem(element.item.name);
+
 		item.description = element.item.detail;
+
 		item.contextValue = "type-item";
+
 		item.iconPath = getThemeIcon(element.item.kind);
+
 		item.command = {
 			command: "vscode.open",
 			title: vscode.l10n.t("Open Type"),
@@ -208,15 +234,18 @@ class TypeItemDataProvider implements vscode.TreeDataProvider<TypeItem> {
 				} satisfies vscode.TextDocumentShowOptions,
 			],
 		};
+
 		item.collapsibleState = vscode.TreeItemCollapsibleState.Collapsed;
 
 		return item;
 	}
+
 	getChildren(element?: TypeItem | undefined) {
 		return element
 			? this._model.getTypeChildren(element)
 			: this._model.roots;
 	}
+
 	getParent(element: TypeItem) {
 		return element.parent;
 	}

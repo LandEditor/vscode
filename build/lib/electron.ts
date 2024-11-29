@@ -13,10 +13,15 @@ import * as util from "./util";
 type DarwinDocumentSuffix = "document" | "script" | "file" | "source code";
 type DarwinDocumentType = {
 	name: string;
+
 	role: string;
+
 	ostypes: string[];
+
 	extensions: string[];
+
 	iconFile: string;
+
 	utis?: string[];
 };
 function isDocumentSuffix(str?: string): str is DarwinDocumentSuffix {
@@ -83,6 +88,7 @@ function darwinBundleDocumentType(
 			" " +
 			(nameOrSuffix ?? "document");
 	}
+
 	return {
 		name: nameOrSuffix,
 		role: "Editor",
@@ -392,12 +398,14 @@ async function main(arch: string = process.arch): Promise<void> {
 
 	if (!isUpToDate) {
 		await util.rimraf(electronPath)();
+
 		await util.streamToPromise(getElectron(arch)());
 	}
 }
 if (require.main === module) {
 	main(process.argv[2]).catch((err) => {
 		console.error(err);
+
 		process.exit(1);
 	});
 }

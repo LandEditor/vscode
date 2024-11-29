@@ -18,8 +18,11 @@ import {
 
 interface IDatabaseConnection {
 	readonly db: Database;
+
 	readonly isInMemory: boolean;
+
 	isErroneous?: boolean;
+
 	lastError?: string;
 }
 export interface ISQLiteStorageDatabaseOptions {
@@ -27,6 +30,7 @@ export interface ISQLiteStorageDatabaseOptions {
 }
 export interface ISQLiteStorageDatabaseLoggingOptions {
 	logError?: (error: string | Error) => void;
+
 	logTrace?: (msg: string) => void;
 }
 export class SQLiteStorageDatabase implements IStorageDatabase {
@@ -38,9 +42,11 @@ export class SQLiteStorageDatabase implements IStorageDatabase {
 	private static readonly BUSY_OPEN_TIMEOUT = 2000; // timeout in ms to retry when opening DB fails with SQLITE_BUSY
 	private static readonly MAX_HOST_PARAMETERS = 256; // maximum number of parameters within a statement
 	private readonly name = basename(this.path);
+
 	private readonly logger = new SQLiteStorageDatabaseLogger(
 		this.options.logging,
 	);
+
 	private readonly whenConnected = this.connect(this.path);
 
 	constructor(
@@ -49,12 +55,14 @@ export class SQLiteStorageDatabase implements IStorageDatabase {
 			null,
 		),
 	) {}
+
 	async getItems(): Promise<Map<string, string>> {
 		const connection = await this.whenConnected;
 
 		const items = new Map<string, string>();
 
 		const rows = await this.all(connection, "SELECT * FROM ItemTable");
+
 		rows.forEach((row) => items.set(row.key, row.value));
 
 		if (this.logger.isTracing) {
@@ -62,13 +70,16 @@ export class SQLiteStorageDatabase implements IStorageDatabase {
 				`[storage ${this.name}] getItems(): ${items.size} rows`,
 			);
 		}
+
 		return items;
 	}
+
 	async updateItems(request: IUpdateRequest): Promise<void> {
 		const connection = await this.whenConnected;
 
 		return this.doUpdateItems(connection, request);
 	}
+
 	private doUpdateItems(
 		connection: IDatabaseConnection,
 		request: IUpdateRequest,
@@ -78,6 +89,7 @@ export class SQLiteStorageDatabase implements IStorageDatabase {
 				`[storage ${this.name}] updateItems(): insert(${request.insert ? mapToString(request.insert) : "0"}), delete(${request.delete ? setToString(request.delete) : "0"})`,
 			);
 		}
+
 		return this.transaction(connection, () => {
 			const toInsert = request.insert;
 
@@ -85,10 +97,12 @@ export class SQLiteStorageDatabase implements IStorageDatabase {
 			// INSERT
 			if (toInsert && toInsert.size > 0) {
 				const keysValuesChunks: string[][] = [];
+
 				keysValuesChunks.push([]); // seed with initial empty chunk
 				// Split key/values into chunks of SQLiteStorageDatabase.MAX_HOST_PARAMETERS
 				// so that we can efficiently run the INSERT with as many HOST parameters as possible
 				let currentChunkIndex = 0;
+
 				toInsert.forEach((value, key) => {
 					let keyValueChunk = keysValuesChunks[currentChunkIndex];
 
@@ -97,11 +111,15 @@ export class SQLiteStorageDatabase implements IStorageDatabase {
 						SQLiteStorageDatabase.MAX_HOST_PARAMETERS
 					) {
 						currentChunkIndex++;
+
 						keyValueChunk = [];
+
 						keysValuesChunks.push(keyValueChunk);
 					}
+
 					keyValueChunk.push(key, value);
 				});
+
 				keysValuesChunks.forEach((keysValuesChunk) => {
 					this.prepare(
 						connection,
@@ -111,8 +129,10 @@ export class SQLiteStorageDatabase implements IStorageDatabase {
 							const keys: string[] = [];
 
 							let length = 0;
+
 							toInsert.forEach((value, key) => {
 								keys.push(key);
+
 								length += value.length;
 							});
 
@@ -124,11 +144,13 @@ export class SQLiteStorageDatabase implements IStorageDatabase {
 			// DELETE
 			if (toDelete && toDelete.size) {
 				const keysChunks: string[][] = [];
+
 				keysChunks.push([]); // seed with initial empty chunk
 				// Split keys into chunks of SQLiteStorageDatabase.MAX_HOST_PARAMETERS
 				// so that we can efficiently run the DELETE with as many HOST parameters
 				// as possible
 				let currentChunkIndex = 0;
+
 				toDelete.forEach((key) => {
 					let keyChunk = keysChunks[currentChunkIndex];
 
@@ -137,11 +159,15 @@ export class SQLiteStorageDatabase implements IStorageDatabase {
 						SQLiteStorageDatabase.MAX_HOST_PARAMETERS
 					) {
 						currentChunkIndex++;
+
 						keyChunk = [];
+
 						keysChunks.push(keyChunk);
 					}
+
 					keyChunk.push(key);
 				});
+
 				keysChunks.forEach((keysChunk) => {
 					this.prepare(
 						connection,
@@ -149,6 +175,7 @@ export class SQLiteStorageDatabase implements IStorageDatabase {
 						(stmt) => stmt.run(keysChunk),
 						() => {
 							const keys: string[] = [];
+
 							toDelete.forEach((key) => {
 								keys.push(key);
 							});
@@ -160,6 +187,7 @@ export class SQLiteStorageDatabase implements IStorageDatabase {
 			}
 		});
 	}
+
 	async optimize(): Promise<void> {
 		this.logger.trace(`[storage ${this.name}] vacuum()`);
 
@@ -167,6 +195,7 @@ export class SQLiteStorageDatabase implements IStorageDatabase {
 
 		return this.exec(connection, "VACUUM");
 	}
+
 	async close(recovery?: () => Map<string, string>): Promise<void> {
 		this.logger.trace(`[storage ${this.name}] close()`);
 
@@ -174,6 +203,7 @@ export class SQLiteStorageDatabase implements IStorageDatabase {
 
 		return this.doClose(connection, recovery);
 	}
+
 	private doClose(
 		connection: IDatabaseConnection,
 		recovery?: () => Map<string, string>,
@@ -253,6 +283,7 @@ export class SQLiteStorageDatabase implements IStorageDatabase {
 			});
 		});
 	}
+
 	private backup(): Promise<void> {
 		const backupPath = this.toBackupPath(this.path);
 
@@ -260,9 +291,11 @@ export class SQLiteStorageDatabase implements IStorageDatabase {
 			preserveSymlinks: false,
 		});
 	}
+
 	private toBackupPath(path: string): string {
 		return `${path}.backup`;
 	}
+
 	async checkIntegrity(full: boolean): Promise<string> {
 		this.logger.trace(
 			`[storage ${this.name}] checkIntegrity(full: ${full})`,
@@ -282,11 +315,14 @@ export class SQLiteStorageDatabase implements IStorageDatabase {
 		if (connection.isErroneous) {
 			return `${integrity} (last error: ${connection.lastError})`;
 		}
+
 		if (connection.isInMemory) {
 			return `${integrity} (in-memory!)`;
 		}
+
 		return integrity;
 	}
+
 	private async connect(
 		path: string,
 		retryOnBusy: boolean = true,
@@ -333,6 +369,7 @@ export class SQLiteStorageDatabase implements IStorageDatabase {
 				} catch (error) {
 					// ignore
 				}
+
 				return await this.doConnect(path);
 			} catch (error) {
 				this.logger.error(
@@ -344,14 +381,18 @@ export class SQLiteStorageDatabase implements IStorageDatabase {
 			}
 		}
 	}
+
 	private handleSQLiteError(
 		connection: IDatabaseConnection,
 		msg: string,
 	): void {
 		connection.isErroneous = true;
+
 		connection.lastError = msg;
+
 		this.logger.error(msg);
 	}
+
 	private doConnect(path: string): Promise<IDatabaseConnection> {
 		return new Promise((resolve, reject) => {
 			import("@vscode/sqlite3").then((sqlite3) => {
@@ -417,6 +458,7 @@ export class SQLiteStorageDatabase implements IStorageDatabase {
 			}, reject);
 		});
 	}
+
 	private exec(connection: IDatabaseConnection, sql: string): Promise<void> {
 		return new Promise((resolve, reject) => {
 			connection.db.exec(sql, (error) => {
@@ -428,10 +470,12 @@ export class SQLiteStorageDatabase implements IStorageDatabase {
 
 					return reject(error);
 				}
+
 				return resolve();
 			});
 		});
 	}
+
 	private get(connection: IDatabaseConnection, sql: string): Promise<object> {
 		return new Promise((resolve, reject) => {
 			connection.db.get(sql, (error, row) => {
@@ -443,16 +487,19 @@ export class SQLiteStorageDatabase implements IStorageDatabase {
 
 					return reject(error);
 				}
+
 				return resolve(row);
 			});
 		});
 	}
+
 	private all(
 		connection: IDatabaseConnection,
 		sql: string,
 	): Promise<
 		{
 			key: string;
+
 			value: string;
 		}[]
 	> {
@@ -466,10 +513,12 @@ export class SQLiteStorageDatabase implements IStorageDatabase {
 
 					return reject(error);
 				}
+
 				return resolve(rows);
 			});
 		});
 	}
+
 	private transaction(
 		connection: IDatabaseConnection,
 		transactions: () => void,
@@ -477,7 +526,9 @@ export class SQLiteStorageDatabase implements IStorageDatabase {
 		return new Promise((resolve, reject) => {
 			connection.db.serialize(() => {
 				connection.db.run("BEGIN TRANSACTION");
+
 				transactions();
+
 				connection.db.run("END TRANSACTION", (error) => {
 					if (error) {
 						this.handleSQLiteError(
@@ -487,11 +538,13 @@ export class SQLiteStorageDatabase implements IStorageDatabase {
 
 						return reject(error);
 					}
+
 					return resolve();
 				});
 			});
 		});
 	}
+
 	private prepare(
 		connection: IDatabaseConnection,
 		sql: string,
@@ -506,12 +559,16 @@ export class SQLiteStorageDatabase implements IStorageDatabase {
 				`[storage ${this.name}] prepare(): ${error} (${sql}). Details: ${errorDetails()}`,
 			);
 		};
+
 		stmt.on("error", statementErrorListener);
+
 		runCallback(stmt);
+
 		stmt.finalize((error) => {
 			if (error) {
 				statementErrorListener(error);
 			}
+
 			stmt.removeListener("error", statementErrorListener);
 		});
 	}
@@ -521,7 +578,9 @@ class SQLiteStorageDatabaseLogger {
 	// this helps when running with --verbose normally where the storage tracing
 	// might hide useful output to look at
 	private static readonly VSCODE_TRACE_STORAGE = "VSCODE_TRACE_STORAGE";
+
 	private readonly logTrace: ((msg: string) => void) | undefined;
+
 	private readonly logError: ((error: string | Error) => void) | undefined;
 
 	constructor(options?: ISQLiteStorageDatabaseLoggingOptions) {
@@ -532,16 +591,20 @@ class SQLiteStorageDatabaseLogger {
 		) {
 			this.logTrace = options.logTrace;
 		}
+
 		if (options && typeof options.logError === "function") {
 			this.logError = options.logError;
 		}
 	}
+
 	get isTracing(): boolean {
 		return !!this.logTrace;
 	}
+
 	trace(msg: string): void {
 		this.logTrace?.(msg);
 	}
+
 	error(error: string | Error): void {
 		this.logError?.(error);
 	}

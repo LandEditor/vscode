@@ -28,12 +28,15 @@ import {
  */
 interface CollectionItem<T> {
 	readonly fullId: TestId;
+
 	actual: T;
+
 	expand: TestItemExpandState;
 	/**
 	 * Number of levels of items below this one that are expanded. May be infinite.
 	 */
 	expandLevels?: number;
+
 	resolveBarrier?: Barrier;
 }
 export const enum TestItemEventOp {
@@ -47,27 +50,34 @@ export const enum TestItemEventOp {
 }
 export interface ITestItemUpsertChild {
 	op: TestItemEventOp.Upsert;
+
 	item: ITestItemLike;
 }
 export interface ITestItemUpdateCanResolveChildren {
 	op: TestItemEventOp.UpdateCanResolveChildren;
+
 	state: boolean;
 }
 export interface ITestItemSetTags {
 	op: TestItemEventOp.SetTags;
+
 	new: ITestTag[];
+
 	old: ITestTag[];
 }
 export interface ITestItemRemoveChild {
 	op: TestItemEventOp.RemoveChild;
+
 	id: string;
 }
 export interface ITestItemSetProp {
 	op: TestItemEventOp.SetProp;
+
 	update: Partial<ITestItem>;
 }
 export interface ITestItemBulkReplace {
 	op: TestItemEventOp.Bulk;
+
 	ops: (ITestItemUpsertChild | ITestItemRemoveChild)[];
 }
 export interface ITestItemDocumentSynced {
@@ -84,7 +94,9 @@ export type ExtHostTestItemEvent =
 
 export interface ITestItemApi<T> {
 	controllerId: string;
+
 	parent?: T;
+
 	listener?: (evt: ExtHostTestItemEvent) => void;
 }
 export interface ITestItemCollectionOptions<T> {
@@ -111,9 +123,11 @@ const diffableProps: {
 		if (a === b) {
 			return true;
 		}
+
 		if (!a || !b) {
 			return false;
 		}
+
 		return a.equalsRange(b);
 	},
 	busy: strictEqualComparator,
@@ -125,9 +139,11 @@ const diffableProps: {
 		if (a.length !== b.length) {
 			return false;
 		}
+
 		if (a.some((t1) => !b.includes(t1))) {
 			return false;
 		}
+
 		return true;
 	},
 };
@@ -149,17 +165,22 @@ const diffTestItems = (a: ITestItem, b: ITestItem) => {
 			}
 		}
 	}
+
 	return output as Partial<ITestItem> | undefined;
 };
 
 export interface ITestChildrenLike<T> extends Iterable<[string, T]> {
 	get(id: string): T | undefined;
+
 	delete(id: string): void;
 }
 export interface ITestItemLike {
 	id: string;
+
 	tags: readonly ITestTag[];
+
 	uri?: URI;
+
 	canResolveChildren: boolean;
 }
 /**
@@ -169,27 +190,36 @@ export class TestItemCollection<T extends ITestItemLike> extends Disposable {
 	private readonly debounceSendDiff = this._register(
 		new RunOnceScheduler(() => this.flushDiff(), 200),
 	);
+
 	private readonly diffOpEmitter = this._register(new Emitter<TestsDiff>());
+
 	private _resolveHandler?: (item: T | undefined) => Promise<void> | void;
+
 	public get root() {
 		return this.options.root;
 	}
+
 	public readonly tree = new Map<
 		/* full test id */ string,
 		CollectionItem<T>
 	>();
+
 	private readonly tags = new Map<
 		string,
 		{
 			label?: string;
+
 			refCount: number;
 		}
 	>();
+
 	protected diff: TestsDiff = [];
 
 	constructor(private readonly options: ITestItemCollectionOptions<T>) {
 		super();
+
 		this.root.canResolveChildren = true;
+
 		this.upsertItem(this.root, undefined);
 	}
 	/**
@@ -204,6 +234,7 @@ export class TestItemCollection<T extends ITestItemLike> extends Disposable {
 			this.updateExpandability(test);
 		}
 	}
+
 	public get resolveHandler() {
 		return this._resolveHandler;
 	}
@@ -216,6 +247,7 @@ export class TestItemCollection<T extends ITestItemLike> extends Disposable {
 	 */
 	public collectDiff() {
 		const diff = this.diff;
+
 		this.diff = [];
 
 		return diff;
@@ -236,8 +268,10 @@ export class TestItemCollection<T extends ITestItemLike> extends Disposable {
 						return;
 					}
 				}
+
 				break;
 			}
+
 			case TestDiffOpType.Update: {
 				// Try to merge updates, since they're invoked per-property
 				const last = this.diff[this.diff.length - 1];
@@ -251,6 +285,7 @@ export class TestItemCollection<T extends ITestItemLike> extends Disposable {
 
 						return;
 					}
+
 					if (
 						last.op === TestDiffOpType.Add &&
 						last.item.item.extId === diff.item.extId
@@ -260,9 +295,11 @@ export class TestItemCollection<T extends ITestItemLike> extends Disposable {
 						return;
 					}
 				}
+
 				break;
 			}
 		}
+
 		this.diff.push(diff);
 
 		if (!this.debounceSendDiff.isScheduled()) {
@@ -280,6 +317,7 @@ export class TestItemCollection<T extends ITestItemLike> extends Disposable {
 		if (!internal) {
 			return;
 		}
+
 		if (
 			internal.expandLevels === undefined ||
 			levels > internal.expandLevels
@@ -302,15 +340,19 @@ export class TestItemCollection<T extends ITestItemLike> extends Disposable {
 				: this.expandChildren(internal, levels - 1);
 		}
 	}
+
 	public override dispose() {
 		for (const item of this.tree.values()) {
 			this.options.getApiFor(item.actual).listener = undefined;
 		}
+
 		this.tree.clear();
+
 		this.diff = [];
 
 		super.dispose();
 	}
+
 	private onTestItemEvent(
 		internal: CollectionItem<T>,
 		evt: ExtHostTestItemEvent,
@@ -330,6 +372,7 @@ export class TestItemCollection<T extends ITestItemLike> extends Disposable {
 				for (const op of evt.ops) {
 					this.onTestItemEvent(internal, op);
 				}
+
 				break;
 
 			case TestItemEventOp.SetTags:
@@ -362,6 +405,7 @@ export class TestItemCollection<T extends ITestItemLike> extends Disposable {
 				assertNever(evt);
 		}
 	}
+
 	private documentSynced(uri: URI | undefined) {
 		if (uri) {
 			this.pushDiff({
@@ -371,6 +415,7 @@ export class TestItemCollection<T extends ITestItemLike> extends Disposable {
 			});
 		}
 	}
+
 	private upsertItem(actual: T, parent: CollectionItem<T> | undefined): void {
 		const fullId = TestId.fromExtHostTestItem(
 			actual,
@@ -384,6 +429,7 @@ export class TestItemCollection<T extends ITestItemLike> extends Disposable {
 		if (privateApi.parent && privateApi.parent !== parent?.actual) {
 			this.options.getChildren(privateApi.parent).delete(actual.id);
 		}
+
 		let internal = this.tree.get(fullId.toString());
 		// Case 1: a brand new item
 		if (!internal) {
@@ -396,9 +442,13 @@ export class TestItemCollection<T extends ITestItemLike> extends Disposable {
 						: undefined,
 				expand: TestItemExpandState.NotExpandable, // updated by `connectItemAndChildren`
 			};
+
 			actual.tags.forEach(this.incrementTagRefs, this);
+
 			this.tree.set(internal.fullId.toString(), internal);
+
 			this.setItemParent(actual, parent);
+
 			this.pushDiff({
 				op: TestDiffOpType.Add,
 				item: {
@@ -407,6 +457,7 @@ export class TestItemCollection<T extends ITestItemLike> extends Disposable {
 					item: this.options.toITestItem(actual),
 				},
 			});
+
 			this.connectItemAndChildren(actual, internal, parent);
 
 			return;
@@ -424,6 +475,7 @@ export class TestItemCollection<T extends ITestItemLike> extends Disposable {
 
 			return this.upsertItem(actual, parent);
 		}
+
 		const oldChildren = this.options.getChildren(internal.actual);
 
 		const oldActual = internal.actual;
@@ -432,9 +484,13 @@ export class TestItemCollection<T extends ITestItemLike> extends Disposable {
 			this.options.toITestItem(oldActual),
 			this.options.toITestItem(actual),
 		);
+
 		this.options.getApiFor(oldActual).listener = undefined;
+
 		internal.actual = actual;
+
 		internal.resolveBarrier = undefined;
+
 		internal.expand = TestItemExpandState.NotExpandable; // updated by `connectItemAndChildren`
 		if (update) {
 			// tags are handled in a special way
@@ -444,13 +500,16 @@ export class TestItemCollection<T extends ITestItemLike> extends Disposable {
 					oldActual.tags,
 					fullId.toString(),
 				);
+
 				delete update.tags;
 			}
+
 			this.onTestItemEvent(internal, {
 				op: TestItemEventOp.SetProp,
 				update,
 			});
 		}
+
 		this.connectItemAndChildren(actual, internal, parent);
 		// Remove any orphaned children.
 		for (const [_, child] of oldChildren) {
@@ -467,6 +526,7 @@ export class TestItemCollection<T extends ITestItemLike> extends Disposable {
 			queueMicrotask(() => {
 				if (internal.expand === TestItemExpandState.Expandable) {
 					internal.expandLevels = undefined;
+
 					this.expand(fullId.toString(), expandLevels);
 				}
 			});
@@ -474,6 +534,7 @@ export class TestItemCollection<T extends ITestItemLike> extends Disposable {
 		// Mark ranges in the document as synced (#161320)
 		this.documentSynced(internal.actual.uri);
 	}
+
 	private diffTagRefs(
 		newTags: readonly ITestTag[],
 		oldTags: readonly ITestTag[],
@@ -486,6 +547,7 @@ export class TestItemCollection<T extends ITestItemLike> extends Disposable {
 				this.incrementTagRefs(tag);
 			}
 		}
+
 		this.pushDiff({
 			op: TestDiffOpType.Update,
 			item: {
@@ -497,8 +559,10 @@ export class TestItemCollection<T extends ITestItemLike> extends Disposable {
 				},
 			},
 		});
+
 		toDelete.forEach(this.decrementTagRefs, this);
 	}
+
 	private incrementTagRefs(tag: ITestTag) {
 		const existing = this.tags.get(tag.id);
 
@@ -506,6 +570,7 @@ export class TestItemCollection<T extends ITestItemLike> extends Disposable {
 			existing.refCount++;
 		} else {
 			this.tags.set(tag.id, { refCount: 1 });
+
 			this.pushDiff({
 				op: TestDiffOpType.AddTag,
 				tag: {
@@ -514,21 +579,25 @@ export class TestItemCollection<T extends ITestItemLike> extends Disposable {
 			});
 		}
 	}
+
 	private decrementTagRefs(tagId: string) {
 		const existing = this.tags.get(tagId);
 
 		if (existing && !--existing.refCount) {
 			this.tags.delete(tagId);
+
 			this.pushDiff({
 				op: TestDiffOpType.RemoveTag,
 				id: namespaceTestTag(this.options.controllerId, tagId),
 			});
 		}
 	}
+
 	private setItemParent(actual: T, parent: CollectionItem<T> | undefined) {
 		this.options.getApiFor(actual).parent =
 			parent && parent.actual !== this.root ? parent.actual : undefined;
 	}
+
 	private connectItem(
 		actual: T,
 		internal: CollectionItem<T>,
@@ -537,10 +606,14 @@ export class TestItemCollection<T extends ITestItemLike> extends Disposable {
 		this.setItemParent(actual, parent);
 
 		const api = this.options.getApiFor(actual);
+
 		api.parent = parent?.actual;
+
 		api.listener = (evt) => this.onTestItemEvent(internal, evt);
+
 		this.updateExpandability(internal);
 	}
+
 	private connectItemAndChildren(
 		actual: T,
 		internal: CollectionItem<T>,
@@ -571,10 +644,13 @@ export class TestItemCollection<T extends ITestItemLike> extends Disposable {
 				? TestItemExpandState.Expandable
 				: TestItemExpandState.NotExpandable;
 		}
+
 		if (newState === internal.expand) {
 			return;
 		}
+
 		internal.expand = newState;
+
 		this.pushDiff({
 			op: TestDiffOpType.Update,
 			item: { extId: internal.fullId.toString(), expand: newState },
@@ -599,6 +675,7 @@ export class TestItemCollection<T extends ITestItemLike> extends Disposable {
 		if (levels < 0) {
 			return;
 		}
+
 		const expandRequests: Promise<void>[] = [];
 
 		for (const [_, child] of this.options.getChildren(internal.actual)) {
@@ -611,6 +688,7 @@ export class TestItemCollection<T extends ITestItemLike> extends Disposable {
 				expandRequests.push(promise);
 			}
 		}
+
 		if (expandRequests.length) {
 			return Promise.all(expandRequests).then(() => {});
 		}
@@ -622,13 +700,17 @@ export class TestItemCollection<T extends ITestItemLike> extends Disposable {
 		if (internal.resolveBarrier) {
 			return internal.resolveBarrier;
 		}
+
 		if (!this._resolveHandler) {
 			const b = new Barrier();
+
 			b.open();
 
 			return b;
 		}
+
 		internal.expand = TestItemExpandState.BusyExpanding;
+
 		this.pushExpandStateUpdate(internal);
 
 		const barrier = (internal.resolveBarrier = new Barrier());
@@ -649,17 +731,22 @@ export class TestItemCollection<T extends ITestItemLike> extends Disposable {
 		} catch (err) {
 			applyError(err);
 		}
+
 		if (isThenable(r)) {
 			r.catch(applyError).then(() => {
 				barrier.open();
+
 				this.updateExpandability(internal);
 			});
 		} else {
 			barrier.open();
+
 			this.updateExpandability(internal);
 		}
+
 		return internal.resolveBarrier;
 	}
+
 	private pushExpandStateUpdate(internal: CollectionItem<T>) {
 		this.pushDiff({
 			op: TestDiffOpType.Update,
@@ -669,12 +756,14 @@ export class TestItemCollection<T extends ITestItemLike> extends Disposable {
 			},
 		});
 	}
+
 	private removeItem(childId: string) {
 		const childItem = this.tree.get(childId);
 
 		if (!childItem) {
 			throw new Error("attempting to remove non-existent child");
 		}
+
 		this.pushDiff({ op: TestDiffOpType.Remove, itemId: childId });
 
 		const queue: (CollectionItem<T> | undefined)[] = [childItem];
@@ -685,11 +774,13 @@ export class TestItemCollection<T extends ITestItemLike> extends Disposable {
 			if (!item) {
 				continue;
 			}
+
 			this.options.getApiFor(item.actual).listener = undefined;
 
 			for (const tag of item.actual.tags) {
 				this.decrementTagRefs(tag.id);
 			}
+
 			this.tree.delete(item.fullId.toString());
 
 			for (const [_, child] of this.options.getChildren(item.actual)) {
@@ -714,16 +805,20 @@ export class TestItemCollection<T extends ITestItemLike> extends Disposable {
 export interface ITestItemChildren<T extends ITestItemLike>
 	extends Iterable<[string, T]> {
 	readonly size: number;
+
 	replace(items: readonly T[]): void;
 
 	forEach(
 		callback: (item: T, collection: this) => unknown,
 		thisArg?: unknown,
 	): void;
+
 	add(item: T): void;
+
 	delete(itemId: string): void;
 
 	get(itemId: string): T | undefined;
+
 	toJSON(): readonly T[];
 }
 export class DuplicateTestItemError extends Error {
@@ -785,6 +880,7 @@ export const createTestItemChildren = <T extends ITestItemLike>(
 				if (!(item instanceof checkCtor)) {
 					throw new InvalidTestItemError((item as ITestItemLike).id);
 				}
+
 				const itemController = getApi(item).controllerId;
 
 				if (itemController !== api.controllerId) {
@@ -794,16 +890,22 @@ export const createTestItemChildren = <T extends ITestItemLike>(
 						api.controllerId,
 					);
 				}
+
 				if (newMapped.has(item.id)) {
 					throw new DuplicateTestItemError(item.id);
 				}
+
 				newMapped.set(item.id, item);
+
 				toDelete.delete(item.id);
+
 				bulk.ops.push({ op: TestItemEventOp.Upsert, item });
 			}
+
 			for (const id of toDelete.keys()) {
 				bulk.ops.push({ op: TestItemEventOp.RemoveChild, id });
 			}
+
 			api.listener?.(bulk);
 			// important mutations come after firing, so if an error happens no
 			// changes will be "saved":
@@ -814,7 +916,9 @@ export const createTestItemChildren = <T extends ITestItemLike>(
 			if (!(item instanceof checkCtor)) {
 				throw new InvalidTestItemError((item as ITestItemLike).id);
 			}
+
 			mapped.set(item.id, item);
+
 			api.listener?.({ op: TestItemEventOp.Upsert, item });
 		},
 		/** @inheritdoc */

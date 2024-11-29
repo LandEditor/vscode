@@ -9,9 +9,13 @@ import { createDecorator } from "../../instantiation/common/instantiation.js";
 export interface IUpdate {
 	// Windows and Linux: 9a19815253d91900be5ec1016e0ecc7cc9a6950 (Commit Hash). Mac: 1.54.0 (Product Version)
 	version: string;
+
 	productVersion?: string;
+
 	timestamp?: number;
+
 	url?: string;
+
 	sha256hash?: string;
 }
 /**
@@ -61,22 +65,27 @@ export type Uninitialized = {
 
 export type Disabled = {
 	type: StateType.Disabled;
+
 	reason: DisablementReason;
 };
 
 export type Idle = {
 	type: StateType.Idle;
+
 	updateType: UpdateType;
+
 	error?: string;
 };
 
 export type CheckingForUpdates = {
 	type: StateType.CheckingForUpdates;
+
 	explicit: boolean;
 };
 
 export type AvailableForDownload = {
 	type: StateType.AvailableForDownload;
+
 	update: IUpdate;
 };
 
@@ -86,16 +95,19 @@ export type Downloading = {
 
 export type Downloaded = {
 	type: StateType.Downloaded;
+
 	update: IUpdate;
 };
 
 export type Updating = {
 	type: StateType.Updating;
+
 	update: IUpdate;
 };
 
 export type Ready = {
 	type: StateType.Ready;
+
 	update: IUpdate;
 };
 
@@ -143,21 +155,31 @@ export const State = {
 
 export interface IAutoUpdater extends Event.NodeEventEmitter {
 	setFeedURL(url: string): void;
+
 	checkForUpdates(): void;
+
 	applyUpdate?(): Promise<void>;
+
 	quitAndInstall(): void;
 }
 export const IUpdateService = createDecorator<IUpdateService>("updateService");
 
 export interface IUpdateService {
 	readonly _serviceBrand: undefined;
+
 	readonly onStateChange: Event<State>;
+
 	readonly state: State;
+
 	checkForUpdates(explicit: boolean): Promise<void>;
 
 	downloadUpdate(): Promise<void>;
+
 	applyUpdate(): Promise<void>;
+
 	quitAndInstall(): Promise<void>;
+
 	isLatestVersion(): Promise<boolean | undefined>;
+
 	_applySpecificUpdate(packagePath: string): Promise<void>;
 }

@@ -48,7 +48,9 @@ import { classNames } from "./utils.js";
 
 export interface IOriginalEditorInlineDiffViewState {
 	diff: DetailedLineRangeMapping[];
+
 	modifiedText: AbstractText;
+
 	mode: "mixedLines" | "interleavedLines" | "sideBySide";
 
 	modifiedCodeEditor: ICodeEditor;
@@ -79,6 +81,7 @@ export class OriginalEditorInlineDiffView extends Disposable {
 		const modifiedCodeEditor = this._state.map(
 			(s) => s?.modifiedCodeEditor,
 		);
+
 		this._register(
 			autorunWithStore((reader, store) => {
 				const e = modifiedCodeEditor.read(reader);
@@ -151,6 +154,7 @@ export class OriginalEditorInlineDiffView extends Disposable {
 				}
 
 				const deletedCodeDomNode = document.createElement("div");
+
 				deletedCodeDomNode.classList.add(
 					"view-lines",
 					"line-insert",
@@ -213,6 +217,7 @@ export class OriginalEditorInlineDiffView extends Disposable {
 							: diffLineDeleteDecorationBackground,
 					});
 				}
+
 				if (!m.modified.isEmpty) {
 					modifiedDecorations.push({
 						range: m.modified.toInclusiveRange()!,
@@ -237,6 +242,7 @@ export class OriginalEditorInlineDiffView extends Disposable {
 						options: diffWholeLineDeleteDecoration,
 					});
 				}
+
 				if (!m.modified.isEmpty) {
 					modifiedDecorations.push({
 						range: m.modified.toInclusiveRange()!,
@@ -269,6 +275,7 @@ export class OriginalEditorInlineDiffView extends Disposable {
 							},
 						});
 					}
+
 					if (m.modified.contains(i.modifiedRange.startLineNumber)) {
 						modifiedDecorations.push({
 							range: i.modifiedRange,
@@ -280,10 +287,12 @@ export class OriginalEditorInlineDiffView extends Disposable {
 									: diffAddDecoration,
 						});
 					}
+
 					if (useInlineDiff) {
 						const insertedText = modified.getValueOfRange(
 							i.modifiedRange,
 						);
+
 						originalDecorations.push({
 							range: Range.fromPositions(
 								i.originalRange.getEndPosition(),
@@ -313,6 +322,7 @@ function allowsTrueInlineDiffRendering(
 	if (!mapping.innerChanges) {
 		return false;
 	}
+
 	return mapping.innerChanges.every(
 		(c) =>
 			rangeIsSingleLine(c.modifiedRange) &&

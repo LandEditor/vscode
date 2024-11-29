@@ -54,25 +54,32 @@ export class InlineChatExpandLineAction extends EditorAction2 {
 
 	override async runEditorCommand(_accessor: ServicesAccessor, editor: ICodeEditor) {
 		const ctrl = InlineChatController.get(editor);
+
 		if (!ctrl || !editor.hasModel()) {
 			return;
 		}
 
 		const model = editor.getModel();
+
 		const lineNumber = editor.getSelection().positionLineNumber;
+
 		const lineContent = model.getLineContent(lineNumber);
 
 		const startColumn = model.getLineFirstNonWhitespaceColumn(lineNumber);
+
 		const endColumn = model.getLineMaxColumn(lineNumber);
 
 		// clear the line
 		let undoEdits: IValidEditOperation[] = [];
+
 		model.pushEditOperations(null, [EditOperation.replace(new Range(lineNumber, startColumn, lineNumber, endColumn), '')], (edits) => {
 			undoEdits = edits;
+
 			return null;
 		});
 
 		let lastState: State | undefined;
+
 		const d = ctrl.onDidEnterState(e => lastState = e);
 
 		try {
@@ -111,25 +118,33 @@ export class ShowInlineChatHintAction extends EditorAction2 {
 		}
 
 		const ctrl = InlineChatHintsController.get(editor);
+
 		if (!ctrl) {
 			return;
 		}
 
 		const [uri, position] = args;
+
 		if (!URI.isUri(uri) || !Position.isIPosition(position)) {
 			ctrl.hide();
+
 			return;
 		}
 
 		const model = editor.getModel();
+
 		if (!isEqual(model.uri, uri)) {
 			ctrl.hide();
+
 			return;
 		}
 
 		model.tokenization.forceTokenization(position.lineNumber);
+
 		const tokens = model.tokenization.getLineTokens(position.lineNumber);
+
 		const tokenIndex = tokens.findTokenIndexAtOffset(position.column - 1);
+
 		const tokenType = tokens.getStandardTokenType(tokenIndex);
 
 		if (tokenType === StandardTokenType.Comment) {
@@ -149,7 +164,9 @@ export class InlineChatHintsController extends Disposable implements IEditorCont
 	}
 
 	private readonly _editor: ICodeEditor;
+
 	private readonly _ctxShowingHint: IContextKey<boolean>;
+
 	private readonly _visibilityObs = observableValue<boolean>(this, false);
 
 	constructor(
@@ -161,7 +178,9 @@ export class InlineChatHintsController extends Disposable implements IEditorCont
 		@IMarkerDecorationsService markerDecorationService: IMarkerDecorationsService
 	) {
 		super();
+
 		this._editor = editor;
+
 		this._ctxShowingHint = CTX_INLINE_CHAT_SHOWING_HINT.bindTo(contextKeyService);
 
 
@@ -171,10 +190,13 @@ export class InlineChatHintsController extends Disposable implements IEditorCont
 			if (e.target.type !== MouseTargetType.CONTENT_TEXT) {
 				return;
 			}
+
 			if (e.target.detail.injectedText?.options.attachedData !== this) {
 				return;
 			}
+
 			commandService.executeCommand(_inlineChatActionId);
+
 			this.hide();
 		}));
 
@@ -185,18 +207,25 @@ export class InlineChatHintsController extends Disposable implements IEditorCont
 		}));
 
 		const markerSuppression = this._store.add(new MutableDisposable());
+
 		const decos = this._editor.createDecorationsCollection();
 
 		const modelObs = observableFromEvent(editor.onDidChangeModel, () => editor.getModel());
+
 		const posObs = observableFromEvent(editor.onDidChangeCursorPosition, () => editor.getPosition());
+
 		const keyObs = observableFromEvent(keybindingService.onDidUpdateKeybindings, _ => keybindingService.lookupKeybinding(ACTION_START)?.getLabel());
 
 		this._store.add(autorun(r => {
 
 			const ghostState = ghostCtrl?.model.read(r)?.state.read(r);
+
 			const visible = this._visibilityObs.read(r);
+
 			const kb = keyObs.read(r);
+
 			const position = posObs.read(r);
+
 			const model = modelObs.read(r);
 
 			// update context key
@@ -204,21 +233,27 @@ export class InlineChatHintsController extends Disposable implements IEditorCont
 
 			if (!visible || !kb || !position || ghostState !== undefined || !model) {
 				decos.clear();
+
 				markerSuppression.clear();
+
 				return;
 			}
 
 			const agentName = chatAgentService.getDefaultAgent(ChatAgentLocation.Editor)?.fullName ?? localize('defaultTitle', "Chat");
+
 			const isEol = model.getLineMaxColumn(position.lineNumber) === position.column;
 
 			let content: string;
+
 			let inlineClassName: string;
 
 			if (isEol) {
 				content = '\u00A0' + localize('title', "{0} to continue with {1}...", kb, agentName);
+
 				inlineClassName = `inline-chat-hint${decos.length === 0 ? ' first' : ''}`;
 			} else {
 				content = '\u200a' + kb + '\u200a';
+
 				inlineClassName = 'inline-chat-hint embedded';
 			}
 

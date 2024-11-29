@@ -22,11 +22,14 @@ export class ReplEditorInputAccessibilityHelp
 	implements IAccessibleViewImplentation
 {
 	readonly priority = 105;
+
 	readonly name = "REPL Editor Input";
+
 	readonly when = ContextKeyExpr.and(
 		IS_COMPOSITE_NOTEBOOK,
 		NOTEBOOK_CELL_LIST_FOCUSED.negate(),
 	);
+
 	readonly type: AccessibleViewType = AccessibleViewType.Help;
 
 	getProvider(accessor: ServicesAccessor) {
@@ -78,11 +81,14 @@ export class ReplEditorHistoryAccessibilityHelp
 	implements IAccessibleViewImplentation
 {
 	readonly priority = 105;
+
 	readonly name = "REPL Editor History";
+
 	readonly when = ContextKeyExpr.and(
 		IS_COMPOSITE_NOTEBOOK,
 		NOTEBOOK_CELL_LIST_FOCUSED,
 	);
+
 	readonly type: AccessibleViewType = AccessibleViewType.Help;
 
 	getProvider(accessor: ServicesAccessor) {

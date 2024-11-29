@@ -15,6 +15,7 @@ export async function hasWSLFeatureInstalled(
 	if (hasWSLFeaturePromise === undefined || refresh) {
 		hasWSLFeaturePromise = testWSLFeatureInstalled();
 	}
+
 	return hasWSLFeaturePromise;
 }
 async function testWSLFeatureInstalled(): Promise<boolean> {
@@ -23,6 +24,7 @@ async function testWSLFeatureInstalled(): Promise<boolean> {
 	if (windowsBuildNumber === undefined) {
 		return false;
 	}
+
 	if (windowsBuildNumber >= 22000) {
 		const wslExePath = getWSLExecutablePath();
 
@@ -46,6 +48,7 @@ async function testWSLFeatureInstalled(): Promise<boolean> {
 			} catch (e) {}
 		}
 	}
+
 	return false;
 }
 function getWindowsBuildNumber(): number | undefined {
@@ -54,6 +57,7 @@ function getWindowsBuildNumber(): number | undefined {
 	if (osVersion) {
 		return parseInt(osVersion[3]);
 	}
+
 	return undefined;
 }
 function getSystem32Path(subPath: string): string | undefined {
@@ -70,6 +74,7 @@ function getSystem32Path(subPath: string): string | undefined {
 			subPath,
 		);
 	}
+
 	return undefined;
 }
 function getWSLExecutablePath(): string | undefined {

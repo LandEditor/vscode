@@ -17,6 +17,7 @@ import {
 
 class TypeScriptReferenceSupport implements vscode.ReferenceProvider {
 	public constructor(private readonly client: ITypeScriptServiceClient) {}
+
 	public async provideReferences(
 		document: vscode.TextDocument,
 		position: vscode.Position,
@@ -28,6 +29,7 @@ class TypeScriptReferenceSupport implements vscode.ReferenceProvider {
 		if (!filepath) {
 			return [];
 		}
+
 		const args = typeConverters.Position.toFileLocationRequestArgs(
 			filepath,
 			position,
@@ -38,17 +40,21 @@ class TypeScriptReferenceSupport implements vscode.ReferenceProvider {
 		if (response.type !== "response" || !response.body) {
 			return [];
 		}
+
 		const result: vscode.Location[] = [];
 
 		for (const ref of response.body.refs) {
 			if (!options.includeDeclaration && ref.isDefinition) {
 				continue;
 			}
+
 			const url = this.client.toResource(ref.file);
 
 			const location = typeConverters.Location.fromTextSpan(url, ref);
+
 			result.push(location);
 		}
+
 		return result;
 	}
 }

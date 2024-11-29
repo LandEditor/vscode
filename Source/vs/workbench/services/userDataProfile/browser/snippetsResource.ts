@@ -46,6 +46,7 @@ export class SnippetsResourceInitializer
 		@IUriIdentityService
 		private readonly uriIdentityService: IUriIdentityService,
 	) {}
+
 	async initialize(content: string): Promise<void> {
 		const snippetsContent: ISnippetsContent = JSON.parse(content);
 
@@ -54,6 +55,7 @@ export class SnippetsResourceInitializer
 				this.userDataProfileService.currentProfile.snippetsHome,
 				key,
 			);
+
 			await this.fileService.writeFile(
 				resource,
 				VSBuffer.fromString(snippetsContent.snippets[key]),
@@ -68,6 +70,7 @@ export class SnippetsResource implements IProfileResource {
 		@IUriIdentityService
 		private readonly uriIdentityService: IUriIdentityService,
 	) {}
+
 	async getContent(
 		profile: IUserDataProfile,
 		excluded?: ResourceSet,
@@ -76,6 +79,7 @@ export class SnippetsResource implements IProfileResource {
 
 		return JSON.stringify({ snippets });
 	}
+
 	async apply(content: string, profile: IUserDataProfile): Promise<void> {
 		const snippetsContent: ISnippetsContent = JSON.parse(content);
 
@@ -84,12 +88,14 @@ export class SnippetsResource implements IProfileResource {
 				profile.snippetsHome,
 				key,
 			);
+
 			await this.fileService.writeFile(
 				resource,
 				VSBuffer.fromString(snippetsContent.snippets[key]),
 			);
 		}
 	}
+
 	private async getSnippets(
 		profile: IUserDataProfile,
 		excluded?: ResourceSet,
@@ -108,10 +114,13 @@ export class SnippetsResource implements IProfileResource {
 			)!;
 
 			const content = await this.fileService.readFile(resource);
+
 			snippets[key] = content.value.toString();
 		}
+
 		return snippets;
 	}
+
 	async getSnippetsResources(
 		profile: IUserDataProfile,
 		excluded?: ResourceSet,
@@ -133,25 +142,33 @@ export class SnippetsResource implements IProfileResource {
 				throw e;
 			}
 		}
+
 		for (const { resource } of stat.children || []) {
 			if (excluded?.has(resource)) {
 				continue;
 			}
+
 			const extension = this.uriIdentityService.extUri.extname(resource);
 
 			if (extension === ".json" || extension === ".code-snippets") {
 				snippets.push(resource);
 			}
 		}
+
 		return snippets;
 	}
 }
 export class SnippetsResourceTreeItem implements IProfileResourceTreeItem {
 	readonly type = ProfileResourceType.Snippets;
+
 	readonly handle = this.profile.snippetsHome.toString();
+
 	readonly label = { label: localize("snippets", "Snippets") };
+
 	readonly collapsibleState = TreeItemCollapsibleState.Collapsed;
+
 	checkbox: ITreeItemCheckboxState | undefined;
+
 	private readonly excludedSnippets = new ResourceSet();
 
 	constructor(
@@ -161,6 +178,7 @@ export class SnippetsResourceTreeItem implements IProfileResourceTreeItem {
 		@IUriIdentityService
 		private readonly uriIdentityService: IUriIdentityService,
 	) {}
+
 	async getChildren(): Promise<IProfileResourceChildTreeItem[] | undefined> {
 		const snippetsResources = await this.instantiationService
 			.createInstance(SnippetsResource)
@@ -208,6 +226,7 @@ export class SnippetsResourceTreeItem implements IProfileResourceTreeItem {
 			}),
 		);
 	}
+
 	async hasContent(): Promise<boolean> {
 		const snippetsResources = await this.instantiationService
 			.createInstance(SnippetsResource)
@@ -215,11 +234,13 @@ export class SnippetsResourceTreeItem implements IProfileResourceTreeItem {
 
 		return snippetsResources.length > 0;
 	}
+
 	async getContent(): Promise<string> {
 		return this.instantiationService
 			.createInstance(SnippetsResource)
 			.getContent(this.profile, this.excludedSnippets);
 	}
+
 	isFromDefaultProfile(): boolean {
 		return (
 			!this.profile.isDefault && !!this.profile.useDefaultFlags?.snippets

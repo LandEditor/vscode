@@ -21,8 +21,11 @@ import {
 
 export interface ContentHoverComputerOptions {
 	shouldFocus: boolean;
+
 	anchor: HoverAnchor;
+
 	source: HoverStartSource;
+
 	insistOnKeepingHoverVisible: boolean;
 }
 
@@ -112,6 +115,7 @@ export class ContentHoverComputer
 				if (!participant.computeAsync) {
 					return AsyncIterableObject.EMPTY;
 				}
+
 				return participant.computeAsync(
 					anchor,
 					lineDecorations,

@@ -26,6 +26,7 @@ export class MenubarMainService
 	implements IMenubarMainService
 {
 	declare readonly _serviceBrand: undefined;
+
 	private readonly menubar = this.installMenuBarAfterWindowOpen();
 
 	constructor(
@@ -38,6 +39,7 @@ export class MenubarMainService
 	) {
 		super();
 	}
+
 	private async installMenuBarAfterWindowOpen(): Promise<Menubar> {
 		await this.lifecycleMainService.when(
 			LifecycleMainPhase.AfterWindowOpen,
@@ -47,10 +49,12 @@ export class MenubarMainService
 			this.instantiationService.createInstance(Menubar),
 		);
 	}
+
 	async updateMenubar(windowId: number, menus: IMenubarData): Promise<void> {
 		this.logService.trace("menubarService#updateMenubar", windowId);
 
 		const menubar = await this.menubar;
+
 		menubar.updateMenu(menus, windowId);
 	}
 }

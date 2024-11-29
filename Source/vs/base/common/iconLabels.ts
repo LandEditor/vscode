@@ -38,6 +38,7 @@ export function stripIcons(text: string): string {
 	if (text.indexOf(iconStartMarker) === -1) {
 		return text;
 	}
+
 	return text.replace(
 		stripIconsRegex,
 		(match, preWhitespace, escaped, postWhitespace) =>
@@ -51,12 +52,14 @@ export function getCodiconAriaLabel(text: string | undefined) {
 	if (!text) {
 		return "";
 	}
+
 	return text
 		.replace(/\$\((.*?)\)/g, (_match, codiconName) => ` ${codiconName} `)
 		.trim();
 }
 export interface IParsedLabelWithIcons {
 	readonly text: string;
+
 	readonly iconOffsets?: readonly number[];
 }
 
@@ -90,11 +93,14 @@ export function parseLabelWithIcons(input: string): IParsedLabelWithIcons {
 				iconOffsets.push(iconsOffset);
 			}
 		}
+
 		if (!match) {
 			break;
 		}
+
 		iconsOffset += match[0].length;
 	}
+
 	return { text, iconOffsets };
 }
 export function matchesFuzzyIconAware(
@@ -128,8 +134,10 @@ export function matchesFuzzyIconAware(
 				] /* icon offsets at index */ +
 				leadingWhitespaceOffset; /* overall leading whitespace offset */
 			match.start += iconOffset;
+
 			match.end += iconOffset;
 		}
 	}
+
 	return matches;
 }

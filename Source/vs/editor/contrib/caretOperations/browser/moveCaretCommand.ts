@@ -13,12 +13,15 @@ import { ITextModel } from "../../../common/model.js";
 
 export class MoveCaretCommand implements ICommand {
 	private readonly _selection: Selection;
+
 	private readonly _isMovingLeft: boolean;
 
 	constructor(selection: Selection, isMovingLeft: boolean) {
 		this._selection = selection;
+
 		this._isMovingLeft = isMovingLeft;
 	}
+
 	public getEditOperations(
 		model: ITextModel,
 		builder: IEditOperationBuilder,
@@ -29,6 +32,7 @@ export class MoveCaretCommand implements ICommand {
 		) {
 			return;
 		}
+
 		const lineNumber = this._selection.startLineNumber;
 
 		const startColumn = this._selection.startColumn;
@@ -38,12 +42,14 @@ export class MoveCaretCommand implements ICommand {
 		if (this._isMovingLeft && startColumn === 1) {
 			return;
 		}
+
 		if (
 			!this._isMovingLeft &&
 			endColumn === model.getLineMaxColumn(lineNumber)
 		) {
 			return;
 		}
+
 		if (this._isMovingLeft) {
 			const rangeBefore = new Range(
 				lineNumber,
@@ -53,7 +59,9 @@ export class MoveCaretCommand implements ICommand {
 			);
 
 			const charBefore = model.getValueInRange(rangeBefore);
+
 			builder.addEditOperation(rangeBefore, null);
+
 			builder.addEditOperation(
 				new Range(lineNumber, endColumn, lineNumber, endColumn),
 				charBefore,
@@ -67,13 +75,16 @@ export class MoveCaretCommand implements ICommand {
 			);
 
 			const charAfter = model.getValueInRange(rangeAfter);
+
 			builder.addEditOperation(rangeAfter, null);
+
 			builder.addEditOperation(
 				new Range(lineNumber, startColumn, lineNumber, startColumn),
 				charAfter,
 			);
 		}
 	}
+
 	public computeCursorState(
 		model: ITextModel,
 		helper: ICursorStateComputerData,

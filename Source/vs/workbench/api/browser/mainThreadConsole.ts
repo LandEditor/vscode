@@ -31,8 +31,10 @@ export class MainThreadConsole implements MainThreadConsoleShape {
 		private readonly _logService: ILogService,
 	) {
 		const devOpts = parseExtensionDevOptions(this._environmentService);
+
 		this._isExtensionDevTestFromCli = devOpts.isExtensionDevTestFromCli;
 	}
+
 	dispose(): void {
 		//
 	}
@@ -43,6 +45,7 @@ export class MainThreadConsole implements MainThreadConsoleShape {
 		} else {
 			// Log to the log service only errors and log everything to local console
 			logRemoteEntryIfError(this._logService, entry, "Extension Host");
+
 			log(entry, "Extension Host");
 		}
 	}

@@ -38,8 +38,10 @@ function createWordRegExp(allowInWords: string = ""): RegExp {
 		if (allowInWords.indexOf(sep) >= 0) {
 			continue;
 		}
+
 		source += "\\" + sep;
 	}
+
 	source += "\\s]+)";
 
 	return new RegExp(source, "g");
@@ -59,24 +61,30 @@ export function ensureValidWordDefinition(
 			if (wordDefinition.ignoreCase) {
 				flags += "i";
 			}
+
 			if (wordDefinition.multiline) {
 				flags += "m";
 			}
+
 			if (wordDefinition.unicode) {
 				flags += "u";
 			}
+
 			result = new RegExp(wordDefinition.source, flags);
 		} else {
 			result = wordDefinition;
 		}
 	}
+
 	result.lastIndex = 0;
 
 	return result;
 }
 export interface IGetWordAtTextConfig {
 	maxLen: number;
+
 	windowSize: number;
+
 	timeBudget: number;
 }
 
@@ -105,6 +113,7 @@ export function getWordAtText(
 	if (!config) {
 		config = Iterable.first(_defaultConfig)!;
 	}
+
 	if (text.length > config.maxLen) {
 		// don't throw strings that long at the regexp
 		// but use a sub-string in which a word must occur
@@ -115,10 +124,12 @@ export function getWordAtText(
 		} else {
 			textOffset += start;
 		}
+
 		text = text.substring(start, column + config.maxLen / 2);
 
 		return getWordAtText(column, wordDefinition, text, textOffset, config);
 	}
+
 	const t1 = Date.now();
 
 	const pos = column - 1 - textOffset;
@@ -135,6 +146,7 @@ export function getWordAtText(
 		// reset the index at which the regexp should start matching, also know where it
 		// should stop so that subsequent search don't repeat previous searches
 		const regexIndex = pos - config.windowSize * i;
+
 		wordDefinition.lastIndex = Math.max(0, regexIndex);
 
 		const thisMatch = _findRegexMatchEnclosingPosition(
@@ -148,23 +160,28 @@ export function getWordAtText(
 			// stop: we have something
 			break;
 		}
+
 		match = thisMatch;
 		// stop: searched at start
 		if (regexIndex <= 0) {
 			break;
 		}
+
 		prevRegexIndex = regexIndex;
 	}
+
 	if (match) {
 		const result = {
 			word: match[0],
 			startColumn: textOffset + 1 + match.index,
 			endColumn: textOffset + 1 + match.index + match[0].length,
 		};
+
 		wordDefinition.lastIndex = 0;
 
 		return result;
 	}
+
 	return null;
 }
 function _findRegexMatchEnclosingPosition(
@@ -184,5 +201,6 @@ function _findRegexMatchEnclosingPosition(
 			return null;
 		}
 	}
+
 	return null;
 }

@@ -74,9 +74,13 @@ export class Selection extends Range {
 			positionLineNumber,
 			positionColumn,
 		);
+
 		this.selectionStartLineNumber = selectionStartLineNumber;
+
 		this.selectionStartColumn = selectionStartColumn;
+
 		this.positionLineNumber = positionLineNumber;
+
 		this.positionColumn = positionColumn;
 	}
 	/**
@@ -122,6 +126,7 @@ export class Selection extends Range {
 		) {
 			return SelectionDirection.LTR;
 		}
+
 		return SelectionDirection.RTL;
 	}
 	/**
@@ -139,6 +144,7 @@ export class Selection extends Range {
 				endColumn,
 			);
 		}
+
 		return new Selection(
 			endLineNumber,
 			endColumn,
@@ -176,6 +182,7 @@ export class Selection extends Range {
 				this.endColumn,
 			);
 		}
+
 		return new Selection(
 			this.endLineNumber,
 			this.endColumn,
@@ -242,17 +249,21 @@ export class Selection extends Range {
 		if ((a && !b) || (!a && b)) {
 			return false;
 		}
+
 		if (!a && !b) {
 			return true;
 		}
+
 		if (a.length !== b.length) {
 			return false;
 		}
+
 		for (let i = 0, len = a.length; i < len; i++) {
 			if (!this.selectionsEqual(a[i], b[i])) {
 				return false;
 			}
 		}
+
 		return true;
 	}
 	/**
@@ -285,6 +296,7 @@ export class Selection extends Range {
 				endColumn,
 			);
 		}
+
 		return new Selection(
 			endLineNumber,
 			endColumn,

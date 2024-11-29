@@ -12,7 +12,9 @@ import {
 
 type MessageToSend = {
 	editorId: string;
+
 	rendererId: string;
+
 	message: unknown;
 };
 
@@ -29,13 +31,16 @@ export class NotebookRendererMessagingService
 		string /* rendererId */,
 		undefined | MessageToSend[]
 	>();
+
 	private readonly scopedMessaging = new Map<
 		/* editorId */ string,
 		IScopedRendererMessaging
 	>();
+
 	private readonly postMessageEmitter = this._register(
 		new Emitter<MessageToSend>(),
 	);
+
 	public readonly onShouldPostMessage = this.postMessageEmitter.event;
 
 	constructor(
@@ -57,6 +62,7 @@ export class NotebookRendererMessagingService
 
 			return Promise.all(sends).then((s) => s.some((s) => !!s));
 		}
+
 		return (
 			this.scopedMessaging
 				.get(editorId)
@@ -69,14 +75,18 @@ export class NotebookRendererMessagingService
 		if (this.activations.has(rendererId)) {
 			return;
 		}
+
 		const queue: MessageToSend[] = [];
+
 		this.activations.set(rendererId, queue);
+
 		this.extensionService
 			.activateByEvent(`onRenderer:${rendererId}`)
 			.then(() => {
 				for (const message of queue) {
 					this.postMessageEmitter.fire(message);
 				}
+
 				this.activations.set(rendererId, undefined);
 			});
 	}
@@ -87,15 +97,18 @@ export class NotebookRendererMessagingService
 		if (existing) {
 			return existing;
 		}
+
 		const messaging: IScopedRendererMessaging = {
 			postMessage: (rendererId, message) =>
 				this.postMessage(editorId, rendererId, message),
 			dispose: () => this.scopedMessaging.delete(editorId),
 		};
+
 		this.scopedMessaging.set(editorId, messaging);
 
 		return messaging;
 	}
+
 	private postMessage(
 		editorId: string,
 		rendererId: string,
@@ -104,6 +117,7 @@ export class NotebookRendererMessagingService
 		if (!this.activations.has(rendererId)) {
 			this.prepare(rendererId);
 		}
+
 		const activation = this.activations.get(rendererId);
 
 		const toSend = { rendererId, editorId, message };

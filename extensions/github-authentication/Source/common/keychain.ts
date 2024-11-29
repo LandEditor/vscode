@@ -12,6 +12,7 @@ export class Keychain {
 		private readonly serviceId: string,
 		private readonly Logger: Log,
 	) {}
+
 	async setToken(token: string): Promise<void> {
 		try {
 			return await this.context.secrets.store(this.serviceId, token);
@@ -20,6 +21,7 @@ export class Keychain {
 			this.Logger.error(`Setting token failed: ${e}`);
 		}
 	}
+
 	async getToken(): Promise<string | null | undefined> {
 		try {
 			const secret = await this.context.secrets.get(this.serviceId);
@@ -27,6 +29,7 @@ export class Keychain {
 			if (secret && secret !== "[]") {
 				this.Logger.trace("Token acquired from secret storage.");
 			}
+
 			return secret;
 		} catch (e) {
 			// Ignore
@@ -35,6 +38,7 @@ export class Keychain {
 			return Promise.resolve(undefined);
 		}
 	}
+
 	async deleteToken(): Promise<void> {
 		try {
 			return await this.context.secrets.delete(this.serviceId);

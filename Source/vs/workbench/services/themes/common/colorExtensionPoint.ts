@@ -25,12 +25,16 @@ import { ExtensionsRegistry } from "../../extensions/common/extensionsRegistry.j
 
 interface IColorExtensionPoint {
 	id: string;
+
 	description: string;
 
 	defaults: {
 		light: string;
+
 		dark: string;
+
 		highContrast: string;
+
 		highContrastLight?: string;
 	};
 }
@@ -148,6 +152,7 @@ export class ColorExtensionPoint {
 
 					return;
 				}
+
 				const parseColorValue = (s: string, name: string) => {
 					if (s.length > 0) {
 						if (s[0] === "#") {
@@ -156,6 +161,7 @@ export class ColorExtensionPoint {
 							return s;
 						}
 					}
+
 					collector.error(
 						nls.localize(
 							"invalid.default.colorType",
@@ -181,6 +187,7 @@ export class ColorExtensionPoint {
 
 						return;
 					}
+
 					if (!colorContribution.id.match(colorIdPattern)) {
 						collector.error(
 							nls.localize(
@@ -191,6 +198,7 @@ export class ColorExtensionPoint {
 
 						return;
 					}
+
 					if (
 						typeof colorContribution.description !== "string" ||
 						colorContribution.id.length === 0
@@ -204,6 +212,7 @@ export class ColorExtensionPoint {
 
 						return;
 					}
+
 					const defaults = colorContribution.defaults;
 
 					if (
@@ -221,6 +230,7 @@ export class ColorExtensionPoint {
 
 						return;
 					}
+
 					if (
 						defaults.highContrast &&
 						typeof defaults.highContrast !== "string"
@@ -234,6 +244,7 @@ export class ColorExtensionPoint {
 
 						return;
 					}
+
 					if (
 						defaults.highContrastLight &&
 						typeof defaults.highContrastLight !== "string"
@@ -247,6 +258,7 @@ export class ColorExtensionPoint {
 
 						return;
 					}
+
 					colorRegistry.registerColor(
 						colorContribution.id,
 						{
@@ -271,6 +283,7 @@ export class ColorExtensionPoint {
 					);
 				}
 			}
+
 			for (const extension of delta.removed) {
 				const extensionValue = <IColorExtensionPoint[]>extension.value;
 
@@ -286,15 +299,18 @@ class ColorDataRenderer
 	implements IExtensionFeatureTableRenderer
 {
 	readonly type = "table";
+
 	shouldRender(manifest: IExtensionManifest): boolean {
 		return !!manifest.contributes?.colors;
 	}
+
 	render(manifest: IExtensionManifest): IRenderedData<ITableData> {
 		const colors = manifest.contributes?.colors || [];
 
 		if (!colors.length) {
 			return { data: { headers: [], rows: [] }, dispose: () => {} };
 		}
+
 		const headers = [
 			nls.localize("id", "ID"),
 			nls.localize("description", "Description"),

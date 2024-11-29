@@ -24,6 +24,7 @@ import {
 @extHostNamedCustomer(MainContext.MainThreadQuickDiff)
 export class MainThreadQuickDiff implements MainThreadQuickDiffShape {
 	private readonly proxy: ExtHostQuickDiffShape;
+
 	private providerDisposables = new DisposableMap<number, IDisposable>();
 
 	constructor(
@@ -59,13 +60,16 @@ export class MainThreadQuickDiff implements MainThreadQuickDiffShape {
 		};
 
 		const disposable = this.quickDiffService.addQuickDiffProvider(provider);
+
 		this.providerDisposables.set(handle, disposable);
 	}
+
 	async $unregisterQuickDiffProvider(handle: number): Promise<void> {
 		if (this.providerDisposables.has(handle)) {
 			this.providerDisposables.deleteAndDispose(handle);
 		}
 	}
+
 	dispose(): void {
 		this.providerDisposables.dispose();
 	}

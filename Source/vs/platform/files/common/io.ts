@@ -58,9 +58,11 @@ export async function readFileIntoStream<T>(
 		if (error && options.errorTransformer) {
 			error = options.errorTransformer(error);
 		}
+
 		if (typeof error !== "undefined") {
 			target.error(error);
 		}
+
 		target.end();
 	}
 }
@@ -116,8 +118,11 @@ async function doReadFileIntoStream<T>(
 				posInBuffer,
 				buffer.byteLength - posInBuffer,
 			);
+
 			posInFile += bytesRead;
+
 			posInBuffer += bytesRead;
+
 			totalBytesRead += bytesRead;
 
 			if (typeof allowedRemainingBytes === "number") {
@@ -126,6 +131,7 @@ async function doReadFileIntoStream<T>(
 			// when buffer full, create a new one and emit it through stream
 			if (posInBuffer === buffer.byteLength) {
 				await target.write(transformer(buffer));
+
 				buffer = VSBuffer.alloc(
 					Math.min(
 						options.bufferSize,
@@ -134,6 +140,7 @@ async function doReadFileIntoStream<T>(
 							: options.bufferSize,
 					),
 				);
+
 				posInBuffer = 0;
 			}
 		} while (
@@ -150,6 +157,7 @@ async function doReadFileIntoStream<T>(
 			if (typeof allowedRemainingBytes === "number") {
 				lastChunkLength = Math.min(posInBuffer, allowedRemainingBytes);
 			}
+
 			target.write(transformer(buffer.slice(0, lastChunkLength)));
 		}
 	} catch (error) {
@@ -162,6 +170,7 @@ function throwIfCancelled(token: CancellationToken): boolean {
 	if (token.isCancellationRequested) {
 		throw canceled();
 	}
+
 	return true;
 }
 function throwIfTooLarge(
@@ -178,5 +187,6 @@ function throwIfTooLarge(
 			FileSystemProviderErrorCode.FileTooLarge,
 		);
 	}
+
 	return true;
 }

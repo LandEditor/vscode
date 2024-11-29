@@ -44,6 +44,7 @@ export function getAlignments(m: ModifiedBaseRange): LineAlignment[] {
 	);
 
 	let result: LineAlignment[] = [];
+
 	result.push([
 		m.input1Range.startLineNumber - 1,
 		m.baseRange.startLineNumber - 1,
@@ -84,13 +85,16 @@ export function getAlignments(m: ModifiedBaseRange): LineAlignment[] {
 						),
 				);
 			}
+
 			shouldAdd = isNewFullSyncAlignment;
 		} else {
 			const isNew = !result.some((r) =>
 				r.some((v, idx) => v !== undefined && v === lineAlignment[idx]),
 			);
+
 			shouldAdd = isNew;
 		}
+
 		if (shouldAdd) {
 			result.push(lineAlignment);
 		} else {
@@ -103,15 +107,19 @@ export function getAlignments(m: ModifiedBaseRange): LineAlignment[] {
 			}
 		}
 	}
+
 	const finalLineAlignment: LineAlignment = [
 		m.input1Range.endLineNumberExclusive,
 		m.baseRange.endLineNumberExclusive,
 		m.input2Range.endLineNumberExclusive,
 	];
+
 	result = result.filter((r) =>
 		r.every((v, idx) => v !== finalLineAlignment[idx]),
 	);
+
 	result.push(finalLineAlignment);
+
 	assertFn(
 		() =>
 			checkAdjacentItems(
@@ -135,8 +143,11 @@ export function getAlignments(m: ModifiedBaseRange): LineAlignment[] {
 }
 interface CommonRangeMapping {
 	output1Pos: Position | undefined;
+
 	output2Pos: Position | undefined;
+
 	inputPos: Position;
+
 	length: TextLength;
 }
 function toEqualRangeMappings(
@@ -161,6 +172,7 @@ function toEqualRangeMappings(
 				d.outputRange.getStartPosition(),
 			),
 		);
+
 		assertFn(() =>
 			lengthOfRange(equalRangeMapping.inputRange).equals(
 				lengthOfRange(equalRangeMapping.outputRange),
@@ -170,9 +182,12 @@ function toEqualRangeMappings(
 		if (!equalRangeMapping.inputRange.isEmpty()) {
 			result.push(equalRangeMapping);
 		}
+
 		equalRangeInputStart = d.inputRange.getEndPosition();
+
 		equalRangeOutputStart = d.outputRange.getEndPosition();
 	}
+
 	const equalRangeMapping = new RangeMapping(
 		Range.fromPositions(equalRangeInputStart, inputRange.getEndPosition()),
 		Range.fromPositions(
@@ -180,6 +195,7 @@ function toEqualRangeMappings(
 			outputRange.getEndPosition(),
 		),
 	);
+
 	assertFn(() =>
 		lengthOfRange(equalRangeMapping.inputRange).equals(
 			lengthOfRange(equalRangeMapping.outputRange),
@@ -189,6 +205,7 @@ function toEqualRangeMappings(
 	if (!equalRangeMapping.inputRange.isEmpty()) {
 		result.push(equalRangeMapping);
 	}
+
 	return result;
 }
 /**
@@ -202,8 +219,11 @@ function splitUpCommonEqualRangeMappings(
 
 	const events: {
 		input: 0 | 1;
+
 		start: boolean;
+
 		inputPos: Position;
+
 		outputPos: Position;
 	}[] = [];
 
@@ -218,6 +238,7 @@ function splitUpCommonEqualRangeMappings(
 				inputPos: rangeMapping.inputRange.getStartPosition(),
 				outputPos: rangeMapping.outputRange.getStartPosition(),
 			});
+
 			events.push({
 				input: input,
 				start: false,
@@ -226,6 +247,7 @@ function splitUpCommonEqualRangeMappings(
 			});
 		}
 	}
+
 	events.sort(compareBy((m) => m.inputPos, Position.compare));
 
 	const starts: [Position | undefined, Position | undefined] = [
@@ -250,13 +272,17 @@ function splitUpCommonEqualRangeMappings(
 				if (starts[0]) {
 					starts[0] = addLength(starts[0], length);
 				}
+
 				if (starts[1]) {
 					starts[1] = addLength(starts[1], length);
 				}
 			}
 		}
+
 		starts[event.input] = event.start ? event.outputPos : undefined;
+
 		lastInputPos = event.inputPos;
 	}
+
 	return result;
 }

@@ -36,35 +36,51 @@ export interface IMirrorTextModel {
 }
 export class MirrorTextModel implements IMirrorTextModel {
 	protected _uri: URI;
+
 	protected _lines: string[];
+
 	protected _eol: string;
+
 	protected _versionId: number;
+
 	protected _lineStarts: PrefixSumComputer | null;
+
 	private _cachedTextValue: string | null;
 
 	constructor(uri: URI, lines: string[], eol: string, versionId: number) {
 		this._uri = uri;
+
 		this._lines = lines;
+
 		this._eol = eol;
+
 		this._versionId = versionId;
+
 		this._lineStarts = null;
+
 		this._cachedTextValue = null;
 	}
+
 	dispose(): void {
 		this._lines.length = 0;
 	}
+
 	get version(): number {
 		return this._versionId;
 	}
+
 	getText(): string {
 		if (this._cachedTextValue === null) {
 			this._cachedTextValue = this._lines.join(this._eol);
 		}
+
 		return this._cachedTextValue;
 	}
+
 	onEvents(e: IModelChangedEvent): void {
 		if (e.eol && e.eol !== this._eol) {
 			this._eol = e.eol;
+
 			this._lineStarts = null;
 		}
 		// Update my lines
@@ -72,6 +88,7 @@ export class MirrorTextModel implements IMirrorTextModel {
 
 		for (const change of changes) {
 			this._acceptDeleteRange(change.range);
+
 			this._acceptInsertText(
 				new Position(
 					change.range.startLineNumber,
@@ -80,9 +97,12 @@ export class MirrorTextModel implements IMirrorTextModel {
 				change.text,
 			);
 		}
+
 		this._versionId = e.versionId;
+
 		this._cachedTextValue = null;
 	}
+
 	protected _ensureLineStarts(): void {
 		if (!this._lineStarts) {
 			const eolLength = this._eol.length;
@@ -94,6 +114,7 @@ export class MirrorTextModel implements IMirrorTextModel {
 			for (let i = 0; i < linesLength; i++) {
 				lineStartValues[i] = this._lines[i].length + eolLength;
 			}
+
 			this._lineStarts = new PrefixSumComputer(lineStartValues);
 		}
 	}
@@ -111,6 +132,7 @@ export class MirrorTextModel implements IMirrorTextModel {
 			);
 		}
 	}
+
 	private _acceptDeleteRange(range: IRange): void {
 		if (range.startLineNumber === range.endLineNumber) {
 			if (range.startColumn === range.endColumn) {
@@ -156,11 +178,13 @@ export class MirrorTextModel implements IMirrorTextModel {
 			);
 		}
 	}
+
 	private _acceptInsertText(position: Position, insertText: string): void {
 		if (insertText.length === 0) {
 			// Nothing to insert
 			return;
 		}
+
 		const insertLines = splitLines(insertText);
 
 		if (insertLines.length === 1) {
@@ -196,8 +220,10 @@ export class MirrorTextModel implements IMirrorTextModel {
 
 		for (let i = 1; i < insertLines.length; i++) {
 			this._lines.splice(position.lineNumber + i - 1, 0, insertLines[i]);
+
 			newLengths[i - 1] = insertLines[i].length + this._eol.length;
 		}
+
 		if (this._lineStarts) {
 			// update prefix sum
 			this._lineStarts.insertValues(position.lineNumber, newLengths);

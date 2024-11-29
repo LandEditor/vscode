@@ -33,15 +33,20 @@ const foldingRangeLimit: FoldingLimitReporter = {
 
 export class FoldingModel implements IDisposable {
 	private _viewModel: INotebookViewModel | null = null;
+
 	private readonly _viewModelStore = new DisposableStore();
+
 	private _regions: FoldingRegions;
 
 	get regions() {
 		return this._regions;
 	}
+
 	private readonly _onDidFoldingRegionChanges = new Emitter<void>();
+
 	readonly onDidFoldingRegionChanged: Event<void> =
 		this._onDidFoldingRegionChanges.event;
+
 	private _foldingRangeDecorationIds: string[] = [];
 
 	constructor() {
@@ -50,31 +55,40 @@ export class FoldingModel implements IDisposable {
 			new Uint32Array(0),
 		);
 	}
+
 	dispose() {
 		this._onDidFoldingRegionChanges.dispose();
+
 		this._viewModelStore.dispose();
 	}
+
 	detachViewModel() {
 		this._viewModelStore.clear();
+
 		this._viewModel = null;
 	}
+
 	attachViewModel(model: INotebookViewModel) {
 		this._viewModel = model;
+
 		this._viewModelStore.add(
 			this._viewModel.onDidChangeViewCells(() => {
 				this.recompute();
 			}),
 		);
+
 		this._viewModelStore.add(
 			this._viewModel.onDidChangeSelection(() => {
 				if (!this._viewModel) {
 					return;
 				}
+
 				const indexes = cellRangesToIndexes(
 					this._viewModel.getSelections(),
 				);
 
 				let changed = false;
+
 				indexes.forEach((index) => {
 					let regionIndex = this.regions.findRange(index + 1);
 
@@ -86,8 +100,10 @@ export class FoldingModel implements IDisposable {
 									1
 						) {
 							this._regions.setCollapsed(regionIndex, false);
+
 							changed = true;
 						}
+
 						regionIndex = this._regions.getParentIndex(regionIndex);
 					}
 				});
@@ -97,8 +113,10 @@ export class FoldingModel implements IDisposable {
 				}
 			}),
 		);
+
 		this.recompute();
 	}
+
 	getRegionAtLine(lineNumber: number): FoldingRegion | null {
 		if (this._regions) {
 			const index = this._regions.findRange(lineNumber);
@@ -107,8 +125,10 @@ export class FoldingModel implements IDisposable {
 				return this._regions.toRegion(index);
 			}
 		}
+
 		return null;
 	}
+
 	getRegionsInside(
 		region: FoldingRegion | null,
 		filter?: RegionFilter | RegionFilterWithLevel,
@@ -132,6 +152,7 @@ export class FoldingModel implements IDisposable {
 					) {
 						levelStack.pop();
 					}
+
 					levelStack.push(current);
 
 					if (filter(current, levelStack.length)) {
@@ -154,8 +175,10 @@ export class FoldingModel implements IDisposable {
 				}
 			}
 		}
+
 		return result;
 	}
+
 	getAllRegionsAtLine(
 		lineNumber: number,
 		filter?: (r: FoldingRegion, level: number) => boolean,
@@ -173,26 +196,34 @@ export class FoldingModel implements IDisposable {
 				if (!filter || filter(current, level)) {
 					result.push(current);
 				}
+
 				level++;
+
 				index = current.parentIndex;
 			}
 		}
+
 		return result;
 	}
+
 	setCollapsed(index: number, newState: boolean) {
 		this._regions.setCollapsed(index, newState);
 	}
+
 	recompute() {
 		if (!this._viewModel) {
 			return;
 		}
+
 		const viewModel = this._viewModel;
 
 		const cells = viewModel.viewCells;
 
 		const stack: {
 			index: number;
+
 			level: number;
+
 			endIndex: number;
 		}[] = [];
 
@@ -205,6 +236,7 @@ export class FoldingModel implements IDisposable {
 			) {
 				continue;
 			}
+
 			const minDepth = Math.min(
 				7,
 				...Array.from(
@@ -230,6 +262,7 @@ export class FoldingModel implements IDisposable {
 						break;
 					}
 				}
+
 				const endIndex = end !== undefined ? end : cells.length - 1;
 				// one based
 				return {
@@ -247,12 +280,14 @@ export class FoldingModel implements IDisposable {
 		const nextCollapsed = () => {
 			while (i < this._regions.length) {
 				const isCollapsed = this._regions.isCollapsed(i);
+
 				i++;
 
 				if (isCollapsed) {
 					return i - 1;
 				}
 			}
+
 			return -1;
 		};
 
@@ -277,22 +312,28 @@ export class FoldingModel implements IDisposable {
 							k,
 							collasedStartIndex === startIndex,
 						);
+
 						k++;
 					} else {
 						break;
 					}
 				}
 			}
+
 			collapsedIndex = nextCollapsed();
 		}
+
 		while (k < newRegions.length) {
 			newRegions.setCollapsed(k, false);
+
 			k++;
 		}
+
 		const cellRanges: ICellRange[] = [];
 
 		for (let i = 0; i < newRegions.length; i++) {
 			const region = newRegions.toRegion(i);
+
 			cellRanges.push({
 				start: region.startLineNumber - 1,
 				end: region.endLineNumber - 1,
@@ -307,6 +348,7 @@ export class FoldingModel implements IDisposable {
 				TrackedRangeStickiness.GrowsOnlyWhenTypingAfter,
 			),
 		);
+
 		this._foldingRangeDecorationIds = cellRanges
 			.map((region) =>
 				viewModel.setTrackedRange(
@@ -316,9 +358,12 @@ export class FoldingModel implements IDisposable {
 				),
 			)
 			.filter((str) => str !== null) as string[];
+
 		this._regions = newRegions;
+
 		this._onDidFoldingRegionChanges.fire();
 	}
+
 	getMemento(): ICellRange[] {
 		const collapsedRanges: ICellRange[] = [];
 
@@ -329,19 +374,24 @@ export class FoldingModel implements IDisposable {
 
 			if (isCollapsed) {
 				const region = this._regions.toRegion(i);
+
 				collapsedRanges.push({
 					start: region.startLineNumber - 1,
 					end: region.endLineNumber - 1,
 				});
 			}
+
 			i++;
 		}
+
 		return collapsedRanges;
 	}
+
 	public applyMemento(state: ICellRange[]): boolean {
 		if (!this._viewModel) {
 			return false;
 		}
+
 		let i = 0;
 
 		let k = 0;
@@ -363,18 +413,23 @@ export class FoldingModel implements IDisposable {
 							i,
 							collasedStartIndex === startIndex,
 						);
+
 						i++;
 					} else {
 						break;
 					}
 				}
 			}
+
 			k++;
 		}
+
 		while (i < this._regions.length) {
 			this._regions.setCollapsed(i, false);
+
 			i++;
 		}
+
 		return true;
 	}
 }
@@ -384,10 +439,12 @@ export function updateFoldingStateAtIndex(
 	collapsed: boolean,
 ) {
 	const range = foldingModel.regions.findRange(index + 1);
+
 	foldingModel.setCollapsed(range, collapsed);
 }
 export function* getMarkdownHeadersInCell(cellContent: string): Iterable<{
 	readonly depth: number;
+
 	readonly text: string;
 }> {
 	for (const token of marked.lexer(cellContent, { gfm: true })) {

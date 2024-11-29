@@ -32,6 +32,7 @@ import {
 
 interface IKeybindingsResourceContent {
 	platform: Platform;
+
 	keybindings: string | null;
 }
 export class KeybindingsResourceInitializer
@@ -45,6 +46,7 @@ export class KeybindingsResourceInitializer
 		@ILogService
 		private readonly logService: ILogService,
 	) {}
+
 	async initialize(content: string): Promise<void> {
 		const keybindingsContent: IKeybindingsResourceContent =
 			JSON.parse(content);
@@ -56,6 +58,7 @@ export class KeybindingsResourceInitializer
 
 			return;
 		}
+
 		await this.fileService.writeFile(
 			this.userDataProfileService.currentProfile.keybindingsResource,
 			VSBuffer.fromString(keybindingsContent.keybindings),
@@ -69,12 +72,14 @@ export class KeybindingsResource implements IProfileResource {
 		@ILogService
 		private readonly logService: ILogService,
 	) {}
+
 	async getContent(profile: IUserDataProfile): Promise<string> {
 		const keybindingsContent =
 			await this.getKeybindingsResourceContent(profile);
 
 		return JSON.stringify(keybindingsContent);
 	}
+
 	async getKeybindingsResourceContent(
 		profile: IUserDataProfile,
 	): Promise<IKeybindingsResourceContent> {
@@ -82,6 +87,7 @@ export class KeybindingsResource implements IProfileResource {
 
 		return { keybindings, platform };
 	}
+
 	async apply(content: string, profile: IUserDataProfile): Promise<void> {
 		const keybindingsContent: IKeybindingsResourceContent =
 			JSON.parse(content);
@@ -93,11 +99,13 @@ export class KeybindingsResource implements IProfileResource {
 
 			return;
 		}
+
 		await this.fileService.writeFile(
 			profile.keybindingsResource,
 			VSBuffer.fromString(keybindingsContent.keybindings),
 		);
 	}
+
 	private async getKeybindingsContent(
 		profile: IUserDataProfile,
 	): Promise<string | null> {
@@ -122,9 +130,13 @@ export class KeybindingsResource implements IProfileResource {
 }
 export class KeybindingsResourceTreeItem implements IProfileResourceTreeItem {
 	readonly type = ProfileResourceType.Keybindings;
+
 	readonly handle = ProfileResourceType.Keybindings;
+
 	readonly label = { label: localize("keybindings", "Keyboard Shortcuts") };
+
 	readonly collapsibleState = TreeItemCollapsibleState.Expanded;
+
 	checkbox: ITreeItemCheckboxState | undefined;
 
 	constructor(
@@ -134,12 +146,14 @@ export class KeybindingsResourceTreeItem implements IProfileResourceTreeItem {
 		@IInstantiationService
 		private readonly instantiationService: IInstantiationService,
 	) {}
+
 	isFromDefaultProfile(): boolean {
 		return (
 			!this.profile.isDefault &&
 			!!this.profile.useDefaultFlags?.keybindings
 		);
 	}
+
 	async getChildren(): Promise<IProfileResourceChildTreeItem[]> {
 		return [
 			{
@@ -164,6 +178,7 @@ export class KeybindingsResourceTreeItem implements IProfileResourceTreeItem {
 			},
 		];
 	}
+
 	async hasContent(): Promise<boolean> {
 		const keybindingsContent = await this.instantiationService
 			.createInstance(KeybindingsResource)
@@ -171,6 +186,7 @@ export class KeybindingsResourceTreeItem implements IProfileResourceTreeItem {
 
 		return keybindingsContent.keybindings !== null;
 	}
+
 	async getContent(): Promise<string> {
 		return this.instantiationService
 			.createInstance(KeybindingsResource)

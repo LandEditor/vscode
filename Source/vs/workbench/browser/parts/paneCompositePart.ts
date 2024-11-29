@@ -96,6 +96,7 @@ export interface IPaneCompositePart extends IView {
 		| Parts.SIDEBAR_PART;
 
 	readonly onDidPaneCompositeOpen: Event<IPaneComposite>;
+
 	readonly onDidPaneCompositeClose: Event<IPaneComposite>;
 
 	/**
@@ -173,26 +174,36 @@ export abstract class AbstractPaneCompositePart
 			(compositeEvent) => <IPaneComposite>compositeEvent.composite,
 		);
 	}
+
 	readonly onDidPaneCompositeClose = this.onDidCompositeClose
 		.event as Event<IPaneComposite>;
 
 	private readonly location: ViewContainerLocation;
+
 	private titleContainer: HTMLElement | undefined;
+
 	private headerFooterCompositeBarContainer: HTMLElement | undefined;
+
 	protected readonly headerFooterCompositeBarDispoables = this._register(
 		new DisposableStore(),
 	);
+
 	private paneCompositeBarContainer: HTMLElement | undefined;
+
 	private readonly paneCompositeBar = this._register(
 		new MutableDisposable<PaneCompositeBar>(),
 	);
+
 	private compositeBarPosition: CompositeBarPosition | undefined = undefined;
+
 	private emptyPaneMessageElement: HTMLElement | undefined;
 
 	private globalToolBar: WorkbenchToolBar | undefined;
+
 	private readonly globalActions: CompositeMenuActions;
 
 	private blockOpening = false;
+
 	protected contentDimension: Dimension | undefined;
 
 	constructor(
@@ -230,13 +241,18 @@ export abstract class AbstractPaneCompositePart
 
 		if (partId === Parts.PANEL_PART) {
 			location = ViewContainerLocation.Panel;
+
 			registryId = Extensions.Panels;
+
 			globalActionsMenuId = MenuId.PanelTitle;
 		} else if (partId === Parts.AUXILIARYBAR_PART) {
 			location = ViewContainerLocation.AuxiliaryBar;
+
 			registryId = Extensions.Auxiliary;
+
 			globalActionsMenuId = MenuId.AuxiliaryBarTitle;
 		}
+
 		super(
 			notificationService,
 			storageService,
@@ -257,6 +273,7 @@ export abstract class AbstractPaneCompositePart
 		);
 
 		this.location = location;
+
 		this.globalActions = this._register(
 			this.instantiationService.createInstance(
 				CompositeMenuActions,
@@ -275,7 +292,9 @@ export abstract class AbstractPaneCompositePart
 				this.onDidOpen(composite),
 			),
 		);
+
 		this._register(this.onDidPaneCompositeClose(this.onDidClose, this));
+
 		this._register(
 			this.globalActions.onDidChange(() =>
 				this.updateGlobalToolbarActions(),
@@ -308,6 +327,7 @@ export abstract class AbstractPaneCompositePart
 								activeContainers.filter(
 									(c) => c.id === defaultViewletId,
 								)[0] || activeContainers[0];
+
 							this.doOpenPaneComposite(containerToOpen.id);
 						}
 					} else {
@@ -340,13 +360,17 @@ export abstract class AbstractPaneCompositePart
 
 	protected override showComposite(composite: Composite): void {
 		super.showComposite(composite);
+
 		this.layoutCompositeBar();
+
 		this.layoutEmptyMessage();
 	}
 
 	protected override hideActiveComposite(): Composite | undefined {
 		const composite = super.hideActiveComposite();
+
 		this.layoutCompositeBar();
+
 		this.layoutEmptyMessage();
 
 		return composite;
@@ -354,6 +378,7 @@ export abstract class AbstractPaneCompositePart
 
 	override create(parent: HTMLElement): void {
 		this.element = parent;
+
 		this.element.classList.add("pane-composite-part");
 
 		super.create(parent);
@@ -367,9 +392,11 @@ export abstract class AbstractPaneCompositePart
 		this.updateCompositeBar();
 
 		const focusTracker = this._register(trackFocus(parent));
+
 		this._register(
 			focusTracker.onDidFocus(() => this.paneFocusContextKey.set(true)),
 		);
+
 		this._register(
 			focusTracker.onDidBlur(() => this.paneFocusContextKey.set(false)),
 		);
@@ -377,16 +404,20 @@ export abstract class AbstractPaneCompositePart
 
 	private createEmptyPaneMessage(parent: HTMLElement): void {
 		this.emptyPaneMessageElement = document.createElement("div");
+
 		this.emptyPaneMessageElement.classList.add("empty-pane-message-area");
 
 		const messageElement = document.createElement("div");
+
 		messageElement.classList.add("empty-pane-message");
+
 		messageElement.innerText = localize(
 			"pane.emptyMessage",
 			"Drag a view here to display.",
 		);
 
 		this.emptyPaneMessageElement.appendChild(messageElement);
+
 		parent.appendChild(this.emptyPaneMessageElement);
 
 		this._register(
@@ -401,6 +432,7 @@ export abstract class AbstractPaneCompositePart
 								undefined,
 								e.eventData,
 							);
+
 						toggleDropEffect(
 							e.eventData.dataTransfer,
 							"move",
@@ -418,6 +450,7 @@ export abstract class AbstractPaneCompositePart
 								undefined,
 								e.eventData,
 							);
+
 						this.emptyPaneMessageElement!.style.backgroundColor =
 							validDropTarget
 								? this.theme
@@ -430,14 +463,17 @@ export abstract class AbstractPaneCompositePart
 				},
 				onDragLeave: (e) => {
 					EventHelper.stop(e.eventData, true);
+
 					this.emptyPaneMessageElement!.style.backgroundColor = "";
 				},
 				onDragEnd: (e) => {
 					EventHelper.stop(e.eventData, true);
+
 					this.emptyPaneMessageElement!.style.backgroundColor = "";
 				},
 				onDrop: (e) => {
 					EventHelper.stop(e.eventData, true);
+
 					this.emptyPaneMessageElement!.style.backgroundColor = "";
 
 					if (this.paneCompositeBar.value) {
@@ -455,12 +491,14 @@ export abstract class AbstractPaneCompositePart
 								this.viewDescriptorService.getViewContainerById(
 									dragData.id,
 								)!;
+
 							this.viewDescriptorService.moveViewContainerToLocation(
 								currentContainer,
 								this.location,
 								undefined,
 								"dnd",
 							);
+
 							this.openPaneComposite(currentContainer.id, true);
 						} else if (dragData.type === "view") {
 							const viewToMove =
@@ -504,7 +542,9 @@ export abstract class AbstractPaneCompositePart
 				);
 			}),
 		);
+
 		this._register(Gesture.addTarget(titleArea));
+
 		this._register(
 			addDisposableListener(
 				titleArea,
@@ -552,16 +592,19 @@ export abstract class AbstractPaneCompositePart
 		this.titleContainer = parent;
 
 		const titleLabel = super.createTitleLabel(parent);
+
 		this.titleLabelElement!.draggable = true;
 
 		const draggedItemProvider = (): {
 			type: "view" | "composite";
+
 			id: string;
 		} => {
 			const activeViewlet = this.getActivePaneComposite()!;
 
 			return { type: "composite", id: activeViewlet.getId() };
 		};
+
 		this._register(
 			CompositeDragAndDropObserver.INSTANCE.registerDraggable(
 				this.titleLabelElement!,
@@ -609,7 +652,9 @@ export abstract class AbstractPaneCompositePart
 			}
 
 			this.paneCompositeBarContainer.remove();
+
 			this.paneCompositeBarContainer = undefined;
+
 			this.paneCompositeBar.value = undefined;
 
 			previousCompositeBarContainer.classList.remove("has-composite-bar");
@@ -627,16 +672,20 @@ export abstract class AbstractPaneCompositePart
 		switch (newPosition) {
 			case CompositeBarPosition.TOP:
 				newCompositeBarContainer = this.createHeaderArea();
+
 				break;
 
 			case CompositeBarPosition.TITLE:
 				newCompositeBarContainer = this.titleContainer;
+
 				break;
 
 			case CompositeBarPosition.BOTTOM:
 				newCompositeBarContainer = this.createFooterArea();
+
 				break;
 		}
+
 		if (isCompositeBarVisible) {
 			if (
 				this.paneCompositeBarContainer ||
@@ -649,11 +698,14 @@ export abstract class AbstractPaneCompositePart
 			}
 
 			newCompositeBarContainer.classList.add("has-composite-bar");
+
 			this.paneCompositeBarContainer = prepend(
 				newCompositeBarContainer,
 				$(".composite-bar-container"),
 			);
+
 			this.paneCompositeBar.value = this.createCompositeBar();
+
 			this.paneCompositeBar.value.create(this.paneCompositeBarContainer);
 
 			if (newPosition === CompositeBarPosition.TOP) {
@@ -689,6 +741,7 @@ export abstract class AbstractPaneCompositePart
 			// A pane composite part has either a header or a footer, but not both
 			throw new Error("Header or Footer composite bar already exists");
 		}
+
 		this.headerFooterCompositeBarContainer = area;
 
 		this.headerFooterCompositeBarDispoables.add(
@@ -698,7 +751,9 @@ export abstract class AbstractPaneCompositePart
 				);
 			}),
 		);
+
 		this.headerFooterCompositeBarDispoables.add(Gesture.addTarget(area));
+
 		this.headerFooterCompositeBarDispoables.add(
 			addDisposableListener(area, GestureEventType.Contextmenu, (e) => {
 				this.onCompositeBarAreaContextMenu(
@@ -712,6 +767,7 @@ export abstract class AbstractPaneCompositePart
 
 	private removeFooterHeaderArea(header: boolean): void {
 		this.headerFooterCompositeBarContainer = undefined;
+
 		this.headerFooterCompositeBarDispoables.clear();
 
 		if (header) {
@@ -765,6 +821,7 @@ export abstract class AbstractPaneCompositePart
 		if (!this.layoutService.isVisible(this.partId)) {
 			try {
 				this.blockOpening = true;
+
 				this.layoutService.setPartHidden(false, this.partId);
 			} finally {
 				this.blockOpening = false;
@@ -868,10 +925,12 @@ export abstract class AbstractPaneCompositePart
 
 			let availableWidth =
 				this.contentDimension.width - padding - borderWidth;
+
 			availableWidth = Math.max(
 				AbstractPaneCompositePart.MIN_COMPOSITE_BAR_WIDTH,
 				availableWidth - this.getToolbarWidth(),
 			);
+
 			this.paneCompositeBar.value.layout(
 				availableWidth,
 				this.dimension.height,
@@ -881,6 +940,7 @@ export abstract class AbstractPaneCompositePart
 
 	private layoutEmptyMessage(): void {
 		const visible = !this.getActiveComposite();
+
 		this.emptyPaneMessageElement?.classList.toggle("visible", visible);
 
 		if (visible) {
@@ -892,6 +952,7 @@ export abstract class AbstractPaneCompositePart
 		const primaryActions = this.globalActions.getPrimaryActions();
 
 		const secondaryActions = this.globalActions.getSecondaryActions();
+
 		this.globalToolBar?.setActions(
 			prepareActions(primaryActions),
 			prepareActions(secondaryActions),
@@ -982,6 +1043,7 @@ export abstract class AbstractPaneCompositePart
 			const scopedContextKeyService = disposables.add(
 				this.contextKeyService.createScoped(this.element),
 			);
+
 			scopedContextKeyService.createKey(
 				"viewContainer",
 				viewPaneContainer.viewContainer.id,
@@ -994,6 +1056,7 @@ export abstract class AbstractPaneCompositePart
 			);
 
 			const viewsActions = getActionBarActions(menu, () => true).primary;
+
 			disposables.dispose();
 
 			return viewsActions.length > 1 &&
@@ -1005,10 +1068,13 @@ export abstract class AbstractPaneCompositePart
 					)
 				: undefined;
 		}
+
 		return undefined;
 	}
 
 	protected abstract shouldShowCompositeBar(): boolean;
+
 	protected abstract getCompositeBarOptions(): IPaneCompositeBarOptions;
+
 	protected abstract getCompositeBarPosition(): CompositeBarPosition;
 }

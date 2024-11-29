@@ -13,17 +13,24 @@ import { serializeNotebookToString } from "./serializers";
 type NotebookMetadata = {
 	kernelspec?: {
 		name: string;
+
 		display_name: string;
 		[propName: string]: unknown;
 	};
+
 	language_info?: {
 		name: string;
+
 		codemirror_mode?: string | {};
+
 		file_extension?: string;
+
 		mimetype?: string;
+
 		pygments_lexer?: string;
 		[propName: string]: unknown;
 	};
+
 	orig_nbformat?: number;
 	[propName: string]: unknown;
 };
@@ -55,6 +62,7 @@ export function activate(
 			attachments: true,
 		},
 	};
+
 	context.subscriptions.push(
 		vscode.workspace.registerNotebookSerializer(
 			"jupyter-notebook",
@@ -75,6 +83,7 @@ export function activate(
 			attachments: true,
 		},
 	};
+
 	context.subscriptions.push(
 		vscode.workspace.registerNotebookSerializer(
 			"interactive",
@@ -82,6 +91,7 @@ export function activate(
 			interactiveSerializeOptions,
 		),
 	);
+
 	vscode.languages.registerCodeLensProvider(
 		{ pattern: "**/*.ipynb" },
 		{
@@ -93,6 +103,7 @@ export function activate(
 				) {
 					return [];
 				}
+
 				const codelens = new vscode.CodeLens(
 					new vscode.Range(0, 0, 0, 0),
 					{
@@ -106,6 +117,7 @@ export function activate(
 			},
 		},
 	);
+
 	context.subscriptions.push(
 		vscode.commands.registerCommand("ipynb.newUntitledIpynb", async () => {
 			const language = "python";
@@ -117,6 +129,7 @@ export function activate(
 			);
 
 			const data = new vscode.NotebookData([cell]);
+
 			data.metadata = {
 				cells: [],
 				metadata: {},
@@ -128,9 +141,11 @@ export function activate(
 				"jupyter-notebook",
 				data,
 			);
+
 			await vscode.window.showNotebookDocument(doc);
 		}),
 	);
+
 	context.subscriptions.push(
 		vscode.commands.registerCommand(
 			"ipynb.openIpynbInNotebookEditor",
@@ -143,12 +158,15 @@ export function activate(
 						"workbench.action.closeActiveEditor",
 					);
 				}
+
 				const document =
 					await vscode.workspace.openNotebookDocument(uri);
+
 				await vscode.window.showNotebookDocument(document);
 			},
 		),
 	);
+
 	context.subscriptions.push(notebookImagePasteSetup());
 
 	const enabled = vscode.workspace
@@ -157,8 +175,10 @@ export function activate(
 
 	if (enabled) {
 		const cleaner = new AttachmentCleaner();
+
 		context.subscriptions.push(cleaner);
 	}
+
 	return {
 		get dropCustomMetadata() {
 			return true;
@@ -177,7 +197,9 @@ export function activate(
 			if (!document) {
 				return false;
 			}
+
 			const edit = new vscode.WorkspaceEdit();
+
 			edit.set(resource, [
 				vscode.NotebookEdit.updateNotebookMetadata({
 					...document.metadata,

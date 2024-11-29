@@ -51,17 +51,22 @@ const CONTEXT_KEY_SORT_BY = new RawContextKey<CommentsSortOrder>(
 
 export interface CommentsFiltersChangeEvent {
 	showResolved?: boolean;
+
 	showUnresolved?: boolean;
+
 	sortBy?: CommentsSortOrder;
 }
 interface CommentsFiltersOptions {
 	showResolved: boolean;
+
 	showUnresolved: boolean;
+
 	sortBy: CommentsSortOrder;
 }
 export class CommentsFilters extends Disposable {
 	private readonly _onDidChange: Emitter<CommentsFiltersChangeEvent> =
 		this._register(new Emitter<CommentsFiltersChangeEvent>());
+
 	readonly onDidChange: Event<CommentsFiltersChangeEvent> =
 		this._onDidChange.event;
 
@@ -70,10 +75,14 @@ export class CommentsFilters extends Disposable {
 		private readonly contextKeyService: IContextKeyService,
 	) {
 		super();
+
 		this._showResolved.set(options.showResolved);
+
 		this._showUnresolved.set(options.showUnresolved);
+
 		this._sortBy.set(options.sortBy);
 	}
+
 	private readonly _showUnresolved = CONTEXT_KEY_SHOW_UNRESOLVED.bindTo(
 		this.contextKeyService,
 	);
@@ -81,12 +90,15 @@ export class CommentsFilters extends Disposable {
 	get showUnresolved(): boolean {
 		return !!this._showUnresolved.get();
 	}
+
 	set showUnresolved(showUnresolved: boolean) {
 		if (this._showUnresolved.get() !== showUnresolved) {
 			this._showUnresolved.set(showUnresolved);
+
 			this._onDidChange.fire({ showUnresolved: true });
 		}
 	}
+
 	private _showResolved = CONTEXT_KEY_SHOW_RESOLVED.bindTo(
 		this.contextKeyService,
 	);
@@ -94,21 +106,26 @@ export class CommentsFilters extends Disposable {
 	get showResolved(): boolean {
 		return !!this._showResolved.get();
 	}
+
 	set showResolved(showResolved: boolean) {
 		if (this._showResolved.get() !== showResolved) {
 			this._showResolved.set(showResolved);
+
 			this._onDidChange.fire({ showResolved: true });
 		}
 	}
+
 	private _sortBy: IContextKey<CommentsSortOrder> =
 		CONTEXT_KEY_SORT_BY.bindTo(this.contextKeyService);
 
 	get sortBy(): CommentsSortOrder {
 		return this._sortBy.get() ?? CommentsSortOrder.ResourceAscending;
 	}
+
 	set sortBy(sortBy: CommentsSortOrder) {
 		if (this._sortBy.get() !== sortBy) {
 			this._sortBy.set(sortBy);
+
 			this._onDidChange.fire({ sortBy });
 		}
 	}
@@ -127,6 +144,7 @@ registerAction2(
 				viewId: COMMENTS_VIEW_ID,
 			});
 		}
+
 		async runInView(
 			serviceAccessor: ServicesAccessor,
 			commentsView: ICommentsView,
@@ -149,6 +167,7 @@ registerAction2(
 				viewId: COMMENTS_VIEW_ID,
 			});
 		}
+
 		async runInView(
 			serviceAccessor: ServicesAccessor,
 			commentsView: ICommentsView,
@@ -171,6 +190,7 @@ registerAction2(
 				viewId: COMMENTS_VIEW_ID,
 			});
 		}
+
 		async runInView(
 			serviceAccessor: ServicesAccessor,
 			commentsView: ICommentsView,
@@ -199,6 +219,7 @@ registerAction2(
 				viewId: COMMENTS_VIEW_ID,
 			});
 		}
+
 		async runInView(
 			serviceAccessor: ServicesAccessor,
 			view: ICommentsView,
@@ -227,6 +248,7 @@ registerAction2(
 				viewId: COMMENTS_VIEW_ID,
 			});
 		}
+
 		async runInView(
 			serviceAccessor: ServicesAccessor,
 			view: ICommentsView,
@@ -268,6 +290,7 @@ registerAction2(
 				},
 			});
 		}
+
 		async runInView(
 			serviceAccessor: ServicesAccessor,
 			view: ICommentsView,
@@ -306,6 +329,7 @@ registerAction2(
 				},
 			});
 		}
+
 		async runInView(
 			serviceAccessor: ServicesAccessor,
 			view: ICommentsView,

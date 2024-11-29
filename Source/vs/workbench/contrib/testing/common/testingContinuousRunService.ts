@@ -84,15 +84,23 @@ export class TestingContinuousRunService
 	implements ITestingContinuousRunService
 {
 	declare readonly _serviceBrand: undefined;
+
 	private readonly changeEmitter = new Emitter<string | undefined>();
+
 	private globallyRunning?: IDisposable;
+
 	private readonly running = new WellDefinedPrefixTree<IDisposable>();
+
 	private readonly lastRun: StoredValue<Set<number>>;
+
 	private readonly isGloballyOn: IContextKey<boolean>;
+
 	public readonly onDidChange = this.changeEmitter.event;
+
 	public get lastRunProfileIds() {
 		return this.lastRun.get(new Set());
 	}
+
 	constructor(
 		@ITestService
 		private readonly testService: TestService,
@@ -104,8 +112,10 @@ export class TestingContinuousRunService
 		private readonly testProfileService: ITestProfileService,
 	) {
 		super();
+
 		this.isGloballyOn =
 			TestingContextKeys.isContinuousModeOn.bindTo(contextKeyService);
+
 		this.lastRun = this._register(
 			new StoredValue<Set<number>>(
 				{
@@ -120,6 +130,7 @@ export class TestingContinuousRunService
 				storageService,
 			),
 		);
+
 		this._register(
 			toDisposable(() => {
 				this.globallyRunning?.dispose();
@@ -142,6 +153,7 @@ export class TestingContinuousRunService
 		if (this.globallyRunning) {
 			return true;
 		}
+
 		return (
 			this.running.size > 0 &&
 			this.running.hasKeyOrParent(TestId.fromString(testId).path)
@@ -166,13 +178,16 @@ export class TestingContinuousRunService
 		const store = new DisposableStore();
 
 		const cts = new CancellationTokenSource();
+
 		store.add(toDisposable(() => cts.dispose(true)));
 
 		if (testId === undefined) {
 			this.isGloballyOn.set(true);
 		}
+
 		if (!testId) {
 			this.globallyRunning?.dispose();
+
 			this.globallyRunning = store;
 		} else {
 			this.running.mutate(TestId.fromString(testId).path, (c) => {
@@ -181,6 +196,7 @@ export class TestingContinuousRunService
 				return store;
 			});
 		}
+
 		let actualProfiles: ITestRunProfile[];
 
 		if (profiles instanceof Array) {
@@ -196,7 +212,9 @@ export class TestingContinuousRunService
 							p.supportsContinuousRun &&
 							(!testId || TestId.root(testId) === p.controllerId),
 					);
+
 			actualProfiles = getRelevant();
+
 			store.add(
 				this.testProfileService.onDidChange(() => {
 					if (!arrays.equals(getRelevant(), actualProfiles)) {
@@ -205,6 +223,7 @@ export class TestingContinuousRunService
 				}),
 			);
 		}
+
 		this.lastRun.store(new Set(actualProfiles.map((p) => p.profileId)));
 
 		if (actualProfiles.length) {
@@ -221,12 +240,14 @@ export class TestingContinuousRunService
 				cts.token,
 			);
 		}
+
 		this.changeEmitter.fire(testId);
 	}
 	/** @inheritdoc */
 	public stop(testId?: string): void {
 		if (!testId) {
 			this.globallyRunning?.dispose();
+
 			this.globallyRunning = undefined;
 		} else {
 			const cancellations = [
@@ -237,9 +258,11 @@ export class TestingContinuousRunService
 				cancellations[i].dispose();
 			}
 		}
+
 		if (testId === undefined) {
 			this.isGloballyOn.set(false);
 		}
+
 		this.changeEmitter.fire(testId);
 	}
 }

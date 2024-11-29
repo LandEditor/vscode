@@ -7,12 +7,16 @@ import * as path from "path";
 
 interface IBuiltInExtension {
 	readonly name: string;
+
 	readonly version: string;
+
 	readonly repo: string;
+
 	readonly metadata: any;
 }
 interface OSSProduct {
 	readonly builtInExtensions: IBuiltInExtension[];
+
 	readonly webBuiltInExtensions?: IBuiltInExtension[];
 }
 interface Product {
@@ -22,6 +26,7 @@ interface Product {
 				"include"?: IBuiltInExtension[];
 				"exclude"?: string[];
 		  };
+
 	readonly webBuiltInExtensions?: IBuiltInExtension[];
 }
 function log(...args: any[]): void {
@@ -37,6 +42,7 @@ function main() {
 	if (!quality) {
 		throw new Error("Missing VSCODE_QUALITY, skipping mixin");
 	}
+
 	log(`Mixing in distro quality...`);
 
 	const basePath = `.build/distro/mixin/${quality}`;
@@ -62,26 +68,33 @@ function main() {
 					"Overwriting built-in extensions:",
 					distro.builtInExtensions.map((e) => e.name),
 				);
+
 				builtInExtensions = distro.builtInExtensions;
 			} else if (distro.builtInExtensions) {
 				const include = distro.builtInExtensions["include"] ?? [];
 
 				const exclude = distro.builtInExtensions["exclude"] ?? [];
+
 				log(
 					"OSS built-in extensions:",
 					builtInExtensions.map((e) => e.name),
 				);
+
 				log(
 					"Including built-in extensions:",
 					include.map((e) => e.name),
 				);
+
 				log("Excluding built-in extensions:", exclude);
+
 				builtInExtensions = builtInExtensions.filter(
 					(ext) =>
 						!include.find((e) => e.name === ext.name) &&
 						!exclude.find((name) => name === ext.name),
 				);
+
 				builtInExtensions = [...builtInExtensions, ...include];
+
 				log(
 					"Final built-in extensions:",
 					builtInExtensions.map((e) => e.name),
@@ -92,11 +105,13 @@ function main() {
 					builtInExtensions.map((e) => e.name),
 				);
 			}
+
 			const result = {
 				webBuiltInExtensions: oss.webBuiltInExtensions,
 				...distro,
 				builtInExtensions,
 			};
+
 			fs.writeFileSync(
 				ossPath,
 				JSON.stringify(result, null, "\t"),
@@ -105,6 +120,7 @@ function main() {
 		} else {
 			fs.cpSync(distroPath, ossPath, { force: true, recursive: true });
 		}
+
 		log(distroPath, "✔︎");
 	}
 }

@@ -38,6 +38,7 @@ class NotebookBreakpoints extends Disposable implements IWorkbenchContribution {
 		super();
 
 		const listeners = new ResourceMap<IDisposable>();
+
 		this._register(
 			_notebookService.onWillAddNotebookDocument((model) => {
 				listeners.set(
@@ -49,12 +50,14 @@ class NotebookBreakpoints extends Disposable implements IWorkbenchContribution {
 						if (!debugModel.getBreakpoints().length) {
 							return;
 						}
+
 						if (
 							e.rawEvent.kind !==
 							NotebookCellsChangeType.ModelChange
 						) {
 							return;
 						}
+
 						for (const change of e.rawEvent.changes) {
 							const [start, deleteCount] = change;
 
@@ -68,6 +71,7 @@ class NotebookBreakpoints extends Disposable implements IWorkbenchContribution {
 									const cellBps = debugModel.getBreakpoints({
 										uri: deletedCell.uri,
 									});
+
 									cellBps.forEach((cellBp) =>
 										this._debugService.removeBreakpoints(
 											cellBp.getId(),
@@ -80,13 +84,17 @@ class NotebookBreakpoints extends Disposable implements IWorkbenchContribution {
 				);
 			}),
 		);
+
 		this._register(
 			_notebookService.onWillRemoveNotebookDocument((model) => {
 				this.updateBreakpoints(model);
+
 				listeners.get(model.uri)?.dispose();
+
 				listeners.delete(model.uri);
 			}),
 		);
+
 		this._register(
 			this._debugService.getModel().onDidChangeBreakpoints((e) => {
 				const newCellBp = e?.added?.find(
@@ -101,6 +109,7 @@ class NotebookBreakpoints extends Disposable implements IWorkbenchContribution {
 					if (!parsed) {
 						return;
 					}
+
 					const editor = getNotebookEditorFromEditorPane(
 						this._editorService.activeEditorPane,
 					);
@@ -113,43 +122,53 @@ class NotebookBreakpoints extends Disposable implements IWorkbenchContribution {
 					) {
 						return;
 					}
+
 					const cell = editor.getCellByHandle(parsed.handle);
 
 					if (!cell) {
 						return;
 					}
+
 					editor.focusElement(cell);
 				}
 			}),
 		);
 	}
+
 	private updateBreakpoints(model: NotebookTextModel): void {
 		const bps = this._debugService.getModel().getBreakpoints();
 
 		if (!bps.length || !model.cells.length) {
 			return;
 		}
+
 		const idxMap = new ResourceMap<number>();
+
 		model.cells.forEach((cell, i) => {
 			idxMap.set(cell.uri, i);
 		});
+
 		bps.forEach((bp) => {
 			const idx = idxMap.get(bp.uri);
 
 			if (typeof idx !== "number") {
 				return;
 			}
+
 			const notebook = CellUri.parse(bp.uri)?.notebook;
 
 			if (!notebook) {
 				return;
 			}
+
 			const newUri = CellUri.generate(notebook, idx);
 
 			if (isEqual(newUri, bp.uri)) {
 				return;
 			}
+
 			this._debugService.removeBreakpoints(bp.getId());
+
 			this._debugService.addBreakpoints(newUri, [
 				{
 					column: bp.column,

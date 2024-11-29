@@ -18,9 +18,12 @@ export class StandaloneColorPickerController
 	implements IEditorContribution
 {
 	public static ID = "editor.contrib.standaloneColorPickerController";
+
 	private _standaloneColorPickerWidget: StandaloneColorPickerWidget | null =
 		null;
+
 	private _standaloneColorPickerVisible: IContextKey<boolean>;
+
 	private _standaloneColorPickerFocused: IContextKey<boolean>;
 
 	constructor(
@@ -31,19 +34,23 @@ export class StandaloneColorPickerController
 		private readonly _instantiationService: IInstantiationService,
 	) {
 		super();
+
 		this._standaloneColorPickerVisible =
 			EditorContextKeys.standaloneColorPickerVisible.bindTo(
 				_contextKeyService,
 			);
+
 		this._standaloneColorPickerFocused =
 			EditorContextKeys.standaloneColorPickerFocused.bindTo(
 				_contextKeyService,
 			);
 	}
+
 	public showOrFocus() {
 		if (!this._editor.hasModel()) {
 			return;
 		}
+
 		if (!this._standaloneColorPickerVisible.get()) {
 			this._standaloneColorPickerWidget =
 				this._instantiationService.createInstance(
@@ -56,16 +63,23 @@ export class StandaloneColorPickerController
 			this._standaloneColorPickerWidget?.focus();
 		}
 	}
+
 	public hide() {
 		this._standaloneColorPickerFocused.set(false);
+
 		this._standaloneColorPickerVisible.set(false);
+
 		this._standaloneColorPickerWidget?.hide();
+
 		this._editor.focus();
 	}
+
 	public insertColor() {
 		this._standaloneColorPickerWidget?.updateEditor();
+
 		this.hide();
 	}
+
 	public static get(editor: ICodeEditor) {
 		return editor.getContribution<StandaloneColorPickerController>(
 			StandaloneColorPickerController.ID,

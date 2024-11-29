@@ -149,26 +149,32 @@ export async function setupServerServices(
 	disposables: DisposableStore,
 ) {
 	const services = new ServiceCollection();
+
 	const socketServer = new SocketServer<RemoteAgentConnectionContext>();
 
 	const productService: IProductService = {
 		_serviceBrand: undefined,
 		...product,
 	};
+
 	services.set(IProductService, productService);
 
 	const environmentService = new ServerEnvironmentService(
 		args,
 		productService,
 	);
+
 	services.set(IEnvironmentService, environmentService);
+
 	services.set(INativeEnvironmentService, environmentService);
 
 	const loggerService = new LoggerService(
 		getLogLevel(environmentService),
 		environmentService.logsHome,
 	);
+
 	services.set(ILoggerService, loggerService);
+
 	socketServer.registerChannel(
 		"logger",
 		new LoggerChannel(loggerService, (ctx: RemoteAgentConnectionContext) =>
@@ -179,10 +185,13 @@ export async function setupServerServices(
 	const logger = loggerService.createLogger("remoteagent", {
 		name: localize("remoteExtensionLog", "Server"),
 	});
+
 	const logService = new LogService(logger, [
 		new ServerLogger(getLogLevel(environmentService)),
 	]);
+
 	services.set(ILogService, logService);
+
 	setTimeout(
 		() =>
 			cleanupOlderLogs(
@@ -191,6 +200,7 @@ export async function setupServerServices(
 			).then(null, (err) => logService.error(err)),
 		10000,
 	);
+
 	logService.onDidChangeLogLevel((logLevel) =>
 		log(
 			logService,
@@ -200,7 +210,9 @@ export async function setupServerServices(
 	);
 
 	logService.trace(`Remote configuration data at ${REMOTE_DATA_FOLDER}`);
+
 	logService.trace("process arguments:", environmentService.args);
+
 	if (Array.isArray(productService.serverGreeting)) {
 		logService.info(`\n\n${productService.serverGreeting.join("\n")}\n\n`);
 	}
@@ -218,7 +230,9 @@ export async function setupServerServices(
 
 	// Files
 	const fileService = disposables.add(new FileService(logService));
+
 	services.set(IFileService, fileService);
+
 	fileService.registerProvider(
 		Schemas.file,
 		disposables.add(new DiskFileSystemProvider(logService)),
@@ -226,6 +240,7 @@ export async function setupServerServices(
 
 	// URI Identity
 	const uriIdentityService = new UriIdentityService(fileService);
+
 	services.set(IUriIdentityService, uriIdentityService);
 
 	// Configuration
@@ -235,6 +250,7 @@ export async function setupServerServices(
 		new NullPolicyService(),
 		logService,
 	);
+
 	services.set(IConfigurationService, configurationService);
 
 	// User Data Profiles
@@ -244,7 +260,9 @@ export async function setupServerServices(
 		fileService,
 		logService,
 	);
+
 	services.set(IUserDataProfilesService, userDataProfilesService);
+
 	socketServer.registerChannel(
 		"userDataProfiles",
 		new RemoteUserDataProfilesServiceChannel(
@@ -270,6 +288,7 @@ export async function setupServerServices(
 	]);
 
 	const extensionHostStatusService = new ExtensionHostStatusService();
+
 	services.set(IExtensionHostStatusService, extensionHostStatusService);
 
 	// Request
@@ -278,13 +297,16 @@ export async function setupServerServices(
 		environmentService,
 		logService,
 	);
+
 	services.set(IRequestService, requestService);
 
 	let oneDsAppender: ITelemetryAppender = NullAppender;
+
 	const isInternal = isInternalTelemetry(
 		productService,
 		configurationService,
 	);
+
 	if (supportsTelemetry(productService, environmentService)) {
 		if (
 			!isLoggingOnly(productService, environmentService) &&
@@ -297,6 +319,7 @@ export async function setupServerServices(
 				null,
 				productService.aiConfig.ariaKey,
 			);
+
 			disposables.add(toDisposable(() => oneDsAppender?.flush())); // Ensure the AI appender is disposed so that it flushes remaining data
 		}
 
@@ -316,8 +339,10 @@ export async function setupServerServices(
 			),
 			piiPaths: getPiiPathsFromEnvironment(environmentService),
 		};
+
 		const initialTelemetryLevelArg =
 			environmentService.args["telemetry-level"];
+
 		let injectedTelemetryLevel: TelemetryLevel = TelemetryLevel.USAGE;
 		// Convert the passed in CLI argument into a telemetry level for the telemetry service
 		if (initialTelemetryLevelArg === "all") {
@@ -329,6 +354,7 @@ export async function setupServerServices(
 		} else if (initialTelemetryLevelArg !== undefined) {
 			injectedTelemetryLevel = TelemetryLevel.NONE;
 		}
+
 		services.set(
 			IServerTelemetryService,
 			new SyncDescriptor(ServerTelemetryService, [
@@ -346,6 +372,7 @@ export async function setupServerServices(
 	);
 
 	const downloadChannel = socketServer.getChannel("download", router);
+
 	services.set(
 		IDownloadService,
 		new DownloadServiceChannelClient(
@@ -361,18 +388,22 @@ export async function setupServerServices(
 		IExtensionsProfileScannerService,
 		new SyncDescriptor(ExtensionsProfileScannerService),
 	);
+
 	services.set(
 		IExtensionsScannerService,
 		new SyncDescriptor(ExtensionsScannerService),
 	);
+
 	services.set(
 		IExtensionSignatureVerificationService,
 		new SyncDescriptor(ExtensionSignatureVerificationService),
 	);
+
 	services.set(
 		IAllowedExtensionsService,
 		new SyncDescriptor(AllowedExtensionsService),
 	);
+
 	services.set(
 		INativeServerExtensionManagementService,
 		new SyncDescriptor(ExtensionManagementService),
@@ -380,6 +411,7 @@ export async function setupServerServices(
 
 	const instantiationService: IInstantiationService =
 		new InstantiationService(services);
+
 	services.set(
 		ILanguagePackService,
 		instantiationService.createInstance(NativeLanguagePackService),
@@ -396,21 +428,27 @@ export async function setupServerServices(
 				) ?? 100,
 		},
 	);
+
 	const ptyHostService = instantiationService.createInstance(
 		PtyHostService,
 		ptyHostStarter,
 	);
+
 	services.set(IPtyService, ptyHostService);
 
 	instantiationService.invokeFunction((accessor) => {
 		const extensionManagementService = accessor.get(
 			INativeServerExtensionManagementService,
 		);
+
 		const extensionsScannerService = accessor.get(
 			IExtensionsScannerService,
 		);
+
 		const extensionGalleryService = accessor.get(IExtensionGalleryService);
+
 		const languagePackService = accessor.get(ILanguagePackService);
+
 		const remoteExtensionEnvironmentChannel =
 			new RemoteAgentEnvironmentChannel(
 				connectionToken,
@@ -418,6 +456,7 @@ export async function setupServerServices(
 				userDataProfilesService,
 				extensionHostStatusService,
 			);
+
 		socketServer.registerChannel(
 			"remoteextensionsenvironment",
 			remoteExtensionEnvironmentChannel,
@@ -427,6 +466,7 @@ export async function setupServerServices(
 			accessor.get(IServerTelemetryService),
 			oneDsAppender,
 		);
+
 		socketServer.registerChannel("telemetry", telemetryChannel);
 
 		socketServer.registerChannel(
@@ -453,6 +493,7 @@ export async function setupServerServices(
 			extensionGalleryService,
 			languagePackService,
 		);
+
 		socketServer.registerChannel(
 			RemoteExtensionsScannerChannelName,
 			new RemoteExtensionsScannerChannel(
@@ -469,6 +510,7 @@ export async function setupServerServices(
 				configurationService,
 			),
 		);
+
 		socketServer.registerChannel(
 			REMOTE_FILE_SYSTEM_CHANNEL_NAME,
 			remoteFileSystemChannel,
@@ -484,6 +526,7 @@ export async function setupServerServices(
 			(ctx: RemoteAgentConnectionContext) =>
 				getUriTransformer(ctx.remoteAuthority),
 		);
+
 		socketServer.registerChannel("extensions", channel);
 
 		// clean up extensions folder
@@ -509,6 +552,7 @@ function getUriTransformer(remoteAuthority: string): IURITransformer {
 		_uriTransformerCache[remoteAuthority] =
 			createURITransformer(remoteAuthority);
 	}
+
 	return _uriTransformerCache[remoteAuthority];
 }
 
@@ -517,7 +561,9 @@ export class SocketServer<TContext = string> extends IPCServer<TContext> {
 
 	constructor() {
 		const emitter = new Emitter<ClientConnectionEvent>();
+
 		super(emitter.event);
+
 		this._onDidConnectEmitter = emitter;
 	}
 
@@ -534,7 +580,9 @@ class ServerLogger extends AbstractLogger {
 
 	constructor(logLevel: LogLevel = DEFAULT_LOG_LEVEL) {
 		super();
+
 		this.setLevel(logLevel);
+
 		this.useColors = Boolean(process.stdout.isTTY);
 	}
 
@@ -595,6 +643,7 @@ class ServerLogger extends AbstractLogger {
 
 function now(): string {
 	const date = new Date();
+
 	return `${twodigits(date.getHours())}:${twodigits(date.getMinutes())}:${twodigits(date.getSeconds())}`;
 }
 
@@ -602,6 +651,7 @@ function twodigits(n: number): string {
 	if (n < 10) {
 		return `0${n}`;
 	}
+
 	return String(n);
 }
 
@@ -610,10 +660,15 @@ function twodigits(n: number): string {
  */
 async function cleanupOlderLogs(logsPath: string): Promise<void> {
 	const currentLog = path.basename(logsPath);
+
 	const logsRoot = path.dirname(logsPath);
+
 	const children = await Promises.readdir(logsRoot);
+
 	const allSessions = children.filter((name) => /^\d{8}T\d{6}$/.test(name));
+
 	const oldSessions = allSessions.sort().filter((d) => d !== currentLog);
+
 	const toDelete = oldSessions.slice(0, Math.max(0, oldSessions.length - 9));
 
 	await Promise.all(

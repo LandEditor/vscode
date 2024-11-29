@@ -40,8 +40,11 @@ type InstallerResponse =
  */
 export class WebTypingsInstallerClient implements ts.server.ITypingsInstaller {
 	private projectService: ts.server.ProjectService | undefined;
+
 	private requestedRegistry = false;
+
 	private typesRegistryCache: Map<string, ts.MapLike<string>> = new Map();
+
 	private readonly server: Promise<WebTypingsInstallerServer>;
 
 	constructor(
@@ -99,17 +102,21 @@ export class WebTypingsInstallerClient implements ts.server.ITypingsInstaller {
 		if (looksLikeValidName.result !== NameValidationResult.Ok) {
 			return false;
 		}
+
 		if (this.requestedRegistry) {
 			return (
 				!!this.typesRegistryCache &&
 				this.typesRegistryCache.has(packageName)
 			);
 		}
+
 		this.requestedRegistry = true;
+
 		this.server.then((s) => (this.typesRegistryCache = s.typesRegistry));
 
 		return false;
 	}
+
 	enqueueInstallTypingsRequest(
 		p: ts.server.Project,
 		typeAcquisition: ts.TypeAcquisition,
@@ -126,11 +133,14 @@ export class WebTypingsInstallerClient implements ts.server.ITypingsInstaller {
 			typeAcquisition,
 			unresolvedImports,
 		);
+
 		this.server.then((s) => s.install(req));
 	}
+
 	attach(projectService: ts.server.ProjectService): void {
 		this.projectService = projectService;
 	}
+
 	onProjectClosed(_projectService: ts.server.Project): void {
 		// noop
 	}
@@ -144,6 +154,7 @@ export class WebTypingsInstallerClient implements ts.server.ITypingsInstaller {
 class WebTypingsInstallerServer extends ts.server.typingsInstaller
 	.TypingsInstaller {
 	private static readonly typesRegistryPackageName = "types-registry";
+
 	private constructor(
 		override typesRegistry: Map<string, ts.MapLike<string>>,
 		private readonly handleResponse: (response: InstallerResponse) => void,
@@ -178,9 +189,11 @@ class WebTypingsInstallerServer extends ts.server.typingsInstaller
 		if (!fs.fileExists(pkgJson)) {
 			fs.writeFile(pkgJson, '{"private":true}');
 		}
+
 		const resolved = await pm.resolveProject(globalTypingsCachePath, {
 			addPackages: [this.typesRegistryPackageName],
 		});
+
 		await resolved.restore();
 
 		const registry = new Map<string, ts.MapLike<string>>();
@@ -195,6 +208,7 @@ class WebTypingsInstallerServer extends ts.server.typingsInstaller
 		for (const [packageName, entry] of Object.entries(index.entries)) {
 			registry.set(packageName, entry as ts.MapLike<string>);
 		}
+
 		console.log("ATA registry loaded");
 
 		return new WebTypingsInstallerServer(
@@ -224,7 +238,9 @@ class WebTypingsInstallerServer extends ts.server.typingsInstaller
 					addPackages: packageNames,
 					packageType: PackageType.DevDependency,
 				});
+
 				await resolved.restore();
+
 				onRequestCompleted(true);
 			} catch (e) {
 				onRequestCompleted(false);
@@ -249,6 +265,7 @@ class WebTypingsInstallerServer extends ts.server.typingsInstaller
 		if (!data) {
 			throw new Error("Failed to read file: " + path);
 		}
+
 		return JSON.parse(data.trim());
 	}
 }

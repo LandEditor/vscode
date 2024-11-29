@@ -14,20 +14,30 @@ import { ExtHostStorage } from "./extHostStorage.js";
 
 export class ExtensionMemento implements vscode.Memento {
 	protected readonly _id: string;
+
 	private readonly _shared: boolean;
+
 	protected readonly _storage: ExtHostStorage;
+
 	private readonly _init: Promise<ExtensionMemento>;
+
 	private _value?: {
 		[n: string]: any;
 	};
+
 	private readonly _storageListener: IDisposable;
+
 	private _deferredPromises: Map<string, DeferredPromise<void>> = new Map();
+
 	private _scheduler: RunOnceScheduler;
 
 	constructor(id: string, global: boolean, storage: ExtHostStorage) {
 		this._id = id;
+
 		this._shared = global;
+
 		this._storage = storage;
+
 		this._init = this._storage
 			.initializeExtensionStorage(
 				this._shared,
@@ -39,13 +49,16 @@ export class ExtensionMemento implements vscode.Memento {
 
 				return this;
 			});
+
 		this._storageListener = this._storage.onDidChangeStorage((e) => {
 			if (e.shared === this._shared && e.key === this._id) {
 				this._value = e.value;
 			}
 		});
+
 		this._scheduler = new RunOnceScheduler(() => {
 			const records = this._deferredPromises;
+
 			this._deferredPromises = new Map();
 			(async () => {
 				try {
@@ -66,15 +79,18 @@ export class ExtensionMemento implements vscode.Memento {
 			})();
 		}, 0);
 	}
+
 	keys(): readonly string[] {
 		// Filter out `undefined` values, as they can stick around in the `_value` until the `onDidChangeStorage` event runs
 		return Object.entries(this._value ?? {})
 			.filter(([, value]) => value !== undefined)
 			.map(([key]) => key);
 	}
+
 	get whenReady(): Promise<ExtensionMemento> {
 		return this._init;
 	}
+
 	get<T>(key: string): T | undefined;
 
 	get<T>(key: string, defaultValue: T): T;
@@ -85,8 +101,10 @@ export class ExtensionMemento implements vscode.Memento {
 		if (typeof value === "undefined") {
 			value = defaultValue;
 		}
+
 		return value;
 	}
+
 	update(key: string, value: any): Promise<void> {
 		this._value![key] = value;
 
@@ -95,14 +113,18 @@ export class ExtensionMemento implements vscode.Memento {
 		if (record !== undefined) {
 			return record.p;
 		}
+
 		const promise = new DeferredPromise<void>();
+
 		this._deferredPromises.set(key, promise);
 
 		if (!this._scheduler.isScheduled()) {
 			this._scheduler.schedule();
 		}
+
 		return promise.p;
 	}
+
 	dispose(): void {
 		this._storageListener.dispose();
 	}
@@ -116,11 +138,13 @@ export class ExtensionGlobalMemento extends ExtensionMemento {
 			keys,
 		);
 	}
+
 	constructor(
 		extensionDescription: IExtensionDescription,
 		storage: ExtHostStorage,
 	) {
 		super(extensionDescription.identifier.value, true, storage);
+
 		this._extension = extensionDescription;
 	}
 }

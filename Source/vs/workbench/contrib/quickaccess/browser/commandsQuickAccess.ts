@@ -66,6 +66,7 @@ import {
 
 export class CommandsQuickAccessProvider extends AbstractEditorCommandsQuickAccessProvider {
 	private static AI_RELATED_INFORMATION_MAX_PICKS = 5;
+
 	private static AI_RELATED_INFORMATION_DEBOUNCE = 200;
 	// If extensions are not yet registered, we wait for a little moment to give them
 	// a chance to register so that the complete set of commands shows up as result
@@ -75,16 +76,21 @@ export class CommandsQuickAccessProvider extends AbstractEditorCommandsQuickAcce
 		this.extensionService.whenInstalledExtensionsRegistered(),
 		800,
 	);
+
 	private useAiRelatedInfo = false;
+
 	protected get activeTextEditorControl(): IEditor | undefined {
 		return this.editorService.activeTextEditorControl;
 	}
+
 	get defaultFilterValue(): DefaultQuickAccessFilterValue | undefined {
 		if (this.configuration.preserveInput) {
 			return DefaultQuickAccessFilterValue.LAST;
 		}
+
 		return undefined;
 	}
+
 	constructor(
 		@IEditorService
 		private readonly editorService: IEditorService,
@@ -129,13 +135,16 @@ export class CommandsQuickAccessProvider extends AbstractEditorCommandsQuickAcce
 			telemetryService,
 			dialogService,
 		);
+
 		this._register(
 			configurationService.onDidChangeConfiguration((e) =>
 				this.updateOptions(e),
 			),
 		);
+
 		this.updateOptions();
 	}
+
 	private get configuration() {
 		const commandPaletteConfig =
 			this.configurationService.getValue<IWorkbenchQuickAccessConfiguration>()
@@ -146,6 +155,7 @@ export class CommandsQuickAccessProvider extends AbstractEditorCommandsQuickAcce
 			experimental: commandPaletteConfig.experimental,
 		};
 	}
+
 	private updateOptions(e?: IConfigurationChangeEvent): void {
 		if (
 			e &&
@@ -153,6 +163,7 @@ export class CommandsQuickAccessProvider extends AbstractEditorCommandsQuickAcce
 		) {
 			return;
 		}
+
 		const config = this.configuration;
 
 		const suggestedCommandIds =
@@ -160,9 +171,12 @@ export class CommandsQuickAccessProvider extends AbstractEditorCommandsQuickAcce
 			this.productService.commandPaletteSuggestedCommandIds?.length
 				? new Set(this.productService.commandPaletteSuggestedCommandIds)
 				: undefined;
+
 		this.options.suggestedCommandIds = suggestedCommandIds;
+
 		this.useAiRelatedInfo = config.experimental.enableNaturalLanguageSearch;
 	}
+
 	protected async getCommandPicks(
 		token: CancellationToken,
 	): Promise<Array<ICommandQuickPick>> {
@@ -172,6 +186,7 @@ export class CommandsQuickAccessProvider extends AbstractEditorCommandsQuickAcce
 		if (token.isCancellationRequested) {
 			return [];
 		}
+
 		return [
 			...this.getCodeEditorCommandPicks(),
 			...this.getGlobalCommandPicks(),
@@ -198,6 +213,7 @@ export class CommandsQuickAccessProvider extends AbstractEditorCommandsQuickAcce
 			},
 		}));
 	}
+
 	protected hasAdditionalCommandPicks(
 		filter: string,
 		token: CancellationToken,
@@ -210,8 +226,10 @@ export class CommandsQuickAccessProvider extends AbstractEditorCommandsQuickAcce
 		) {
 			return false;
 		}
+
 		return true;
 	}
+
 	protected async getAdditionalCommandPicks(
 		allPicks: ICommandQuickPick[],
 		picksSoFar: ICommandQuickPick[],
@@ -221,6 +239,7 @@ export class CommandsQuickAccessProvider extends AbstractEditorCommandsQuickAcce
 		if (!this.hasAdditionalCommandPicks(filter, token)) {
 			return [];
 		}
+
 		let additionalPicks;
 
 		try {
@@ -229,6 +248,7 @@ export class CommandsQuickAccessProvider extends AbstractEditorCommandsQuickAcce
 				CommandsQuickAccessProvider.AI_RELATED_INFORMATION_DEBOUNCE,
 				token,
 			);
+
 			additionalPicks = await this.getRelatedInformationPicks(
 				allPicks,
 				picksSoFar,
@@ -238,11 +258,13 @@ export class CommandsQuickAccessProvider extends AbstractEditorCommandsQuickAcce
 		} catch (e) {
 			return [];
 		}
+
 		if (picksSoFar.length || additionalPicks.length) {
 			additionalPicks.push({
 				type: "separator",
 			});
 		}
+
 		const defaultAgent = this.chatAgentService.getDefaultAgent(
 			ChatAgentLocation.Panel,
 		);
@@ -263,8 +285,10 @@ export class CommandsQuickAccessProvider extends AbstractEditorCommandsQuickAcce
 				args: [filter],
 			});
 		}
+
 		return additionalPicks;
 	}
+
 	private async getRelatedInformationPicks(
 		allPicks: ICommandQuickPick[],
 		picksSoFar: ICommandQuickPick[],
@@ -293,6 +317,7 @@ export class CommandsQuickAccessProvider extends AbstractEditorCommandsQuickAcce
 			) {
 				break;
 			}
+
 			const pick = allPicks.find(
 				(p) =>
 					p.commandId === info.command &&
@@ -303,8 +328,10 @@ export class CommandsQuickAccessProvider extends AbstractEditorCommandsQuickAcce
 				additionalPicks.push(pick);
 			}
 		}
+
 		return additionalPicks;
 	}
+
 	private getGlobalCommandPicks(): ICommandQuickPick[] {
 		const globalCommandPicks: ICommandQuickPick[] = [];
 
@@ -377,6 +404,7 @@ export class CommandsQuickAccessProvider extends AbstractEditorCommandsQuickAcce
 							value: metadataDescription,
 							original: metadataDescription,
 						};
+
 			globalCommandPicks.push({
 				commandId: action.item.id,
 				commandWhen: action.item.precondition?.serialize(),
@@ -385,6 +413,7 @@ export class CommandsQuickAccessProvider extends AbstractEditorCommandsQuickAcce
 				commandDescription,
 			});
 		}
+
 		return globalCommandPicks;
 	}
 }
@@ -407,6 +436,7 @@ export class ShowAllCommandsAction extends Action2 {
 			f1: true,
 		});
 	}
+
 	async run(accessor: ServicesAccessor): Promise<void> {
 		accessor
 			.get(IQuickInputService)
@@ -421,6 +451,7 @@ export class ClearCommandHistoryAction extends Action2 {
 			f1: true,
 		});
 	}
+
 	async run(accessor: ServicesAccessor): Promise<void> {
 		const configurationService = accessor.get(IConfigurationService);
 
@@ -457,6 +488,7 @@ export class ClearCommandHistoryAction extends Action2 {
 			if (!confirmed) {
 				return;
 			}
+
 			CommandsHistory.clearHistory(configurationService, storageService);
 		}
 	}

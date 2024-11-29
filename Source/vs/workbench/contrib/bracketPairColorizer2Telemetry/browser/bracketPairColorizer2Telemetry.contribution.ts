@@ -25,8 +25,10 @@ class BracketPairColorizer2TelemetryContribution {
 	) {
 		this.init().catch(onUnexpectedError);
 	}
+
 	private async init(): Promise<void> {
 		const bracketPairColorizerId = "coenraads.bracket-pair-colorizer-2";
+
 		await this.extensionsWorkbenchService.queryLocal();
 
 		const extension = this.extensionsWorkbenchService.installed.find(
@@ -40,24 +42,32 @@ class BracketPairColorizer2TelemetryContribution {
 		) {
 			return;
 		}
+
 		const nativeBracketPairColorizationEnabledKey =
 			"editor.bracketPairColorization.enabled";
 
 		const nativeColorizationEnabled = !!this.configurationService.getValue(
 			nativeBracketPairColorizationEnabledKey,
 		);
+
 		type BracketPairColorizer2InstalledClassification = {
 			owner: "hediet";
+
 			nativeColorizationEnabled: {
 				classification: "SystemMetaData";
+
 				purpose: "FeatureInsight";
+
 				comment: "Whether or not built-in bracket pair colorization is being used";
 			};
+
 			comment: "We use this to understand how many users have the bracket pair colorizer extension installed (and how many of them have native bracket pair colorization enabled), as the extension does not do anything if native bracket pair colorization is enabled.";
 		};
+
 		type BracketPairColorizer2Event = {
 			nativeColorizationEnabled: boolean;
 		};
+
 		this.telemetryService.publicLog2<
 			BracketPairColorizer2Event,
 			BracketPairColorizer2InstalledClassification

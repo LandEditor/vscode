@@ -25,11 +25,13 @@ class ToggleKeybindingsLogAction extends Action2 {
 			f1: true,
 		});
 	}
+
 	run(accessor: ServicesAccessor): void {
 		const logging = accessor.get(IKeybindingService).toggleLogging();
 
 		if (logging) {
 			const commandService = accessor.get(ICommandService);
+
 			commandService.executeCommand(showWindowLogActionId);
 		}
 	}

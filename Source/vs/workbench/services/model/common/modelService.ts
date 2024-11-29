@@ -35,6 +35,7 @@ export class WorkbenchModelService extends ModelService {
 			instantiationService,
 		);
 	}
+
 	protected override _schemaShouldMaintainUndoRedoElements(resource: URI) {
 		return (
 			super._schemaShouldMaintainUndoRedoElements(resource) ||

@@ -60,33 +60,44 @@ export class BannerPart extends Part implements IBannerService {
 	declare readonly _serviceBrand: undefined;
 	// #region IView
 	readonly height: number = 26;
+
 	readonly minimumWidth: number = 0;
+
 	readonly maximumWidth: number = Number.POSITIVE_INFINITY;
 
 	get minimumHeight(): number {
 		return this.visible ? this.height : 0;
 	}
+
 	get maximumHeight(): number {
 		return this.visible ? this.height : 0;
 	}
+
 	private _onDidChangeSize = this._register(
 		new Emitter<
 			| {
 					width: number;
+
 					height: number;
 			  }
 			| undefined
 		>(),
 	);
+
 	override get onDidChange() {
 		return this._onDidChangeSize.event;
 	}
 	//#endregion
 	private item: IBannerItem | undefined;
+
 	private readonly markdownRenderer: MarkdownRenderer;
+
 	private visible = false;
+
 	private actionBar: ActionBar | undefined;
+
 	private messageActionsContainer: HTMLElement | undefined;
+
 	private focusedActionIndex: number = -1;
 
 	constructor(
@@ -108,13 +119,16 @@ export class BannerPart extends Part implements IBannerService {
 			storageService,
 			layoutService,
 		);
+
 		this.markdownRenderer = this.instantiationService.createInstance(
 			MarkdownRenderer,
 			{},
 		);
 	}
+
 	protected override createContentArea(parent: HTMLElement): HTMLElement {
 		this.element = parent;
+
 		this.element.tabIndex = 0;
 		// Restore focused action if needed
 		this._register(
@@ -128,10 +142,12 @@ export class BannerPart extends Part implements IBannerService {
 		const scopedContextKeyService = this._register(
 			this.contextKeyService.createScoped(this.element),
 		);
+
 		BannerFocused.bindTo(scopedContextKeyService).set(true);
 
 		return this.element;
 	}
+
 	private close(item: IBannerItem): void {
 		// Hide banner
 		this.setVisibility(false);
@@ -141,8 +157,10 @@ export class BannerPart extends Part implements IBannerService {
 		if (typeof item.onClose === "function") {
 			item.onClose();
 		}
+
 		this.item = undefined;
 	}
+
 	private focusActionLink(): void {
 		const length = this.item?.actions?.length ?? 0;
 
@@ -152,60 +170,82 @@ export class BannerPart extends Part implements IBannerService {
 
 			if (isHTMLElement(actionLink)) {
 				this.actionBar?.setFocusable(false);
+
 				actionLink.focus();
 			}
 		} else {
 			this.actionBar?.focus(0);
 		}
 	}
+
 	private getAriaLabel(item: IBannerItem): string | undefined {
 		if (item.ariaLabel) {
 			return item.ariaLabel;
 		}
+
 		if (typeof item.message === "string") {
 			return item.message;
 		}
+
 		return undefined;
 	}
+
 	private getBannerMessage(message: MarkdownString | string): HTMLElement {
 		if (typeof message === "string") {
 			const element = $("span");
+
 			element.innerText = message;
 
 			return element;
 		}
+
 		return this.markdownRenderer.render(message).element;
 	}
+
 	private setVisibility(visible: boolean): void {
 		if (visible !== this.visible) {
 			this.visible = visible;
+
 			this.focusedActionIndex = -1;
+
 			this.layoutService.setPartHidden(!visible, Parts.BANNER_PART);
+
 			this._onDidChangeSize.fire(undefined);
 		}
 	}
+
 	focus(): void {
 		this.focusedActionIndex = -1;
+
 		this.element.focus();
 	}
+
 	focusNextAction(): void {
 		const length = this.item?.actions?.length ?? 0;
+
 		this.focusedActionIndex =
 			this.focusedActionIndex < length ? this.focusedActionIndex + 1 : 0;
+
 		this.focusActionLink();
 	}
+
 	focusPreviousAction(): void {
 		const length = this.item?.actions?.length ?? 0;
+
 		this.focusedActionIndex =
 			this.focusedActionIndex > 0 ? this.focusedActionIndex - 1 : length;
+
 		this.focusActionLink();
 	}
+
 	hide(id: string): void {
 		if (this.item?.id !== id) {
 			return;
 		}
+
 		this.setVisibility(false);
 	}
+
 	show(item: IBannerItem): void {
 		if (item.id === this.item?.id) {
 			this.setVisibility(true);
@@ -222,6 +262,7 @@ export class BannerPart extends Part implements IBannerService {
 		}
 		// Icon
 		const iconContainer = append(this.element, $("div.icon-container"));
+
 		iconContainer.setAttribute("aria-hidden", "true");
 
 		if (ThemeIcon.isThemeIcon(item.icon)) {
@@ -240,7 +281,9 @@ export class BannerPart extends Part implements IBannerService {
 			this.element,
 			$("div.message-container"),
 		);
+
 		messageContainer.setAttribute("aria-hidden", "true");
+
 		messageContainer.appendChild(this.getBannerMessage(item.message));
 		// Message Actions
 		this.messageActionsContainer = append(
@@ -265,6 +308,7 @@ export class BannerPart extends Part implements IBannerService {
 			this.element,
 			$("div.action-container"),
 		);
+
 		this.actionBar = this._register(new ActionBar(actionBarContainer));
 
 		const label = item.closeLabel ?? "Close Banner";
@@ -278,11 +322,16 @@ export class BannerPart extends Part implements IBannerService {
 				() => this.close(item),
 			),
 		);
+
 		this.actionBar.push(closeAction, { icon: true, label: false });
+
 		this.actionBar.setFocusable(false);
+
 		this.setVisibility(true);
+
 		this.item = item;
 	}
+
 	toJSON(): object {
 		return {
 			type: Parts.BANNER_PART,
@@ -298,6 +347,7 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
 	when: BannerFocused,
 	handler: (accessor: ServicesAccessor) => {
 		const bannerService = accessor.get(IBannerService);
+
 		bannerService.focus();
 	},
 });
@@ -309,6 +359,7 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
 	when: BannerFocused,
 	handler: (accessor: ServicesAccessor) => {
 		const bannerService = accessor.get(IBannerService);
+
 		bannerService.focusNextAction();
 	},
 });
@@ -320,12 +371,14 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
 	when: BannerFocused,
 	handler: (accessor: ServicesAccessor) => {
 		const bannerService = accessor.get(IBannerService);
+
 		bannerService.focusPreviousAction();
 	},
 });
 // Actions
 class FocusBannerAction extends Action2 {
 	static readonly ID = "workbench.action.focusBanner";
+
 	static readonly LABEL = localize2("focusBanner", "Focus Banner");
 
 	constructor() {
@@ -336,8 +389,10 @@ class FocusBannerAction extends Action2 {
 			f1: true,
 		});
 	}
+
 	async run(accessor: ServicesAccessor): Promise<void> {
 		const layoutService = accessor.get(IWorkbenchLayoutService);
+
 		layoutService.focusPart(Parts.BANNER_PART);
 	}
 }

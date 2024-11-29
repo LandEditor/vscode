@@ -113,29 +113,43 @@ enum Context {
 }
 interface TokenAndPosition {
 	token: MarkdownItType.Token;
+
 	begin: number;
+
 	end: number;
 }
 interface PackageJsonInfo {
 	isExtension: boolean;
+
 	hasHttpsRepository: boolean;
+
 	repository: Uri;
+
 	implicitActivationEvents: Set<string> | undefined;
+
 	engineVersion: INormalizedVersion | null;
 }
 export class ExtensionLinter {
 	private diagnosticsCollection =
 		languages.createDiagnosticCollection("extension-editing");
+
 	private fileWatcher = workspace.createFileSystemWatcher("**/package.json");
+
 	private disposables: Disposable[] = [
 		this.diagnosticsCollection,
 		this.fileWatcher,
 	];
+
 	private folderToPackageJsonInfo: Record<string, PackageJsonInfo> = {};
+
 	private packageJsonQ = new Set<TextDocument>();
+
 	private readmeQ = new Set<TextDocument>();
+
 	private timer: NodeJS.Timeout | undefined;
+
 	private markdownIt: MarkdownItType.MarkdownIt | undefined;
+
 	private parse5: typeof import("parse5") | undefined;
 
 	constructor() {
@@ -157,17 +171,22 @@ export class ExtensionLinter {
 				this.packageJsonChanged(this.getUriFolder(uri)),
 			),
 		);
+
 		workspace.textDocuments.forEach((document) => this.queue(document));
 	}
+
 	private queue(document: TextDocument) {
 		const p = document.uri.path;
 
 		if (document.languageId === "json" && p.endsWith("/package.json")) {
 			this.packageJsonQ.add(document);
+
 			this.startTimer();
 		}
+
 		this.queueReadme(document);
 	}
+
 	private queueReadme(document: TextDocument) {
 		const p = document.uri.path;
 
@@ -177,20 +196,25 @@ export class ExtensionLinter {
 				p.toLowerCase().endsWith("/changelog.md"))
 		) {
 			this.readmeQ.add(document);
+
 			this.startTimer();
 		}
 	}
+
 	private startTimer() {
 		if (this.timer) {
 			clearTimeout(this.timer);
 		}
+
 		this.timer = setTimeout(() => {
 			this.lint().catch(console.error);
 		}, 300);
 	}
+
 	private async lint() {
 		await Promise.all([this.lintPackageJson(), this.lintReadme()]);
 	}
+
 	private async lintPackageJson() {
 		for (const document of Array.from(this.packageJsonQ)) {
 			this.packageJsonQ.delete(document);
@@ -198,6 +222,7 @@ export class ExtensionLinter {
 			if (document.isClosed) {
 				continue;
 			}
+
 			const diagnostics: Diagnostic[] = [];
 
 			const tree = parseTree(document.getText());
@@ -221,6 +246,7 @@ export class ExtensionLinter {
 						info,
 					);
 				}
+
 				const badges = findNodeAtLocation(tree, ["badges"]);
 
 				if (badges && badges.type === "array" && badges.children) {
@@ -239,6 +265,7 @@ export class ExtensionLinter {
 							),
 						);
 				}
+
 				const publisher = findNodeAtLocation(tree, ["publisher"]);
 
 				const name = findNodeAtLocation(tree, ["name"]);
@@ -278,6 +305,7 @@ export class ExtensionLinter {
 								const end = document.positionAt(
 									child.offset + child.length,
 								);
+
 								diagnostics.push(
 									new Diagnostic(
 										new Range(start, end),
@@ -289,6 +317,7 @@ export class ExtensionLinter {
 						}
 					}
 				}
+
 				const activationEventsNode = findNodeAtLocation(tree, [
 					"activationEvents",
 				]);
@@ -326,6 +355,7 @@ export class ExtensionLinter {
 							const message = isImplicitActivationSupported
 								? redundantImplicitActivationEvent
 								: bumpEngineForImplicitActivationEvents;
+
 							diagnostics.push(
 								new Diagnostic(
 									new Range(start, end),
@@ -352,6 +382,7 @@ export class ExtensionLinter {
 									activationEventNode.offset +
 										activationEventNode.length,
 								);
+
 								diagnostics.push(
 									new Diagnostic(
 										new Range(start, end),
@@ -377,22 +408,27 @@ export class ExtensionLinter {
 								starActivation,
 								DiagnosticSeverity.Information,
 							);
+
 							diagnostic.code = {
 								value: "star-activation",
 								target: Uri.parse(
 									"https://code.visualstudio.com/api/references/activation-events#Start-up",
 								),
 							};
+
 							diagnostics.push(diagnostic);
 						}
 					}
 				}
+
 				const whenClauseLinting = await this.lintWhenClauses(
 					findNodeAtLocation(tree, ["contributes"]),
 					document,
 				);
+
 				diagnostics.push(...whenClauseLinting);
 			}
+
 			this.diagnosticsCollection.set(document.uri, diagnostics);
 		}
 	}
@@ -404,6 +440,7 @@ export class ExtensionLinter {
 		if (!contributesNode) {
 			return [];
 		}
+
 		const whenClauses: JsonNode[] = [];
 
 		function findWhens(node: JsonNode | undefined, clauseName: string) {
@@ -424,11 +461,13 @@ export class ExtensionLinter {
 									) {
 										whenClauses.push(value);
 									}
+
 								case "object":
 								case "array":
 									findWhens(value, clauseName);
 							}
 						}
+
 						break;
 
 					case "object":
@@ -447,6 +486,7 @@ export class ExtensionLinter {
 			findNodeAtLocation(contributesNode, ["viewsWelcome"]),
 			findNodeAtLocation(contributesNode, ["keybindings"]),
 		].forEach((n) => findWhens(n, "when"));
+
 		findWhens(
 			findNodeAtLocation(contributesNode, ["commands"]),
 			"enablement",
@@ -455,7 +495,9 @@ export class ExtensionLinter {
 		const parseResults = await commands.executeCommand<
 			{
 				errorMessage: string;
+
 				offset: number;
+
 				length: number;
 			}[][]
 		>(
@@ -498,17 +540,21 @@ export class ExtensionLinter {
 					errMsg,
 					DiagnosticSeverity.Error,
 				);
+
 				diagnostic.code = {
 					value: "See docs",
 					target: Uri.parse(
 						"https://code.visualstudio.com/api/references/when-clause-contexts",
 					),
 				};
+
 				diagnostics.push(diagnostic);
 			}
 		}
+
 		return diagnostics;
 	}
+
 	private async lintReadme() {
 		for (const document of this.readmeQ) {
 			this.readmeQ.delete(document);
@@ -516,24 +562,29 @@ export class ExtensionLinter {
 			if (document.isClosed) {
 				continue;
 			}
+
 			const folder = this.getUriFolder(document.uri);
 
 			let info = this.folderToPackageJsonInfo[folder.toString()];
 
 			if (!info) {
 				const tree = await this.loadPackageJson(folder);
+
 				info = this.readPackageJsonInfo(folder, tree);
 			}
+
 			if (!info.isExtension) {
 				this.diagnosticsCollection.set(document.uri, []);
 
 				return;
 			}
+
 			const text = document.getText();
 
 			if (!this.markdownIt) {
 				this.markdownIt = new (await import("markdown-it")).default();
 			}
+
 			const tokens = this.markdownIt.parse(text, {});
 
 			const tokensAndPositions: TokenAndPosition[] =
@@ -560,6 +611,7 @@ export class ExtensionLinter {
 									end: tokenEnd,
 								};
 							}
+
 							const image =
 								token.type === "image" &&
 								this.locateToken(
@@ -609,6 +661,7 @@ export class ExtensionLinter {
 				}.call(this, tokens);
 
 			const diagnostics: Diagnostic[] = [];
+
 			tokensAndPositions
 				.filter(
 					(tnp) =>
@@ -655,9 +708,11 @@ export class ExtensionLinter {
 					if (!this.parse5) {
 						this.parse5 = await import("parse5");
 					}
+
 					const parser = new this.parse5.SAXParser({
 						locationInfo: true,
 					});
+
 					parser.on(
 						"startTag",
 						(name, attrs, _selfClosing, location) => {
@@ -691,31 +746,39 @@ export class ExtensionLinter {
 									document.positionAt(begin),
 									document.positionAt(end),
 								);
+
 								svgStart = new Diagnostic(
 									range,
 									embeddedSvgsNotValid,
 									DiagnosticSeverity.Warning,
 								);
+
 								diagnostics.push(svgStart);
 							}
 						},
 					);
+
 					parser.on("endTag", (name, location) => {
 						if (name === "svg" && svgStart && location) {
 							const end = tnp.begin + location.endOffset;
+
 							svgStart.range = new Range(
 								svgStart.range.start,
 								document.positionAt(end),
 							);
 						}
 					});
+
 					parser.write(tnp.token.content);
+
 					parser.end();
 				}
 			}
+
 			this.diagnosticsCollection.set(document.uri, diagnostics);
 		}
 	}
+
 	private locateToken(
 		text: string,
 		begin: number,
@@ -740,8 +803,10 @@ export class ExtensionLinter {
 				}
 			}
 		}
+
 		return undefined;
 	}
+
 	private readPackageJsonInfo(folder: Uri, tree: JsonNode | undefined) {
 		const engine = tree && findNodeAtLocation(tree, ["engines", "vscode"]);
 
@@ -781,15 +846,18 @@ export class ExtensionLinter {
 		) {
 			this.packageJsonChanged(folder); // clears this.folderToPackageJsonInfo[str]
 		}
+
 		this.folderToPackageJsonInfo[str] = info;
 
 		return info;
 	}
+
 	private async loadPackageJson(folder: Uri) {
 		if (folder.scheme === "git") {
 			// #36236
 			return undefined;
 		}
+
 		const file = folder.with({
 			path: path.posix.join(folder.path, "package.json"),
 		});
@@ -801,10 +869,12 @@ export class ExtensionLinter {
 			return undefined;
 		}
 	}
+
 	private packageJsonChanged(folder: Uri) {
 		delete this.folderToPackageJsonInfo[folder.toString()];
 
 		const str = folder.toString().toLowerCase();
+
 		workspace.textDocuments
 			.filter(
 				(document) =>
@@ -813,9 +883,11 @@ export class ExtensionLinter {
 			)
 			.forEach((document) => this.queueReadme(document));
 	}
+
 	private getUriFolder(uri: Uri) {
 		return uri.with({ path: path.posix.dirname(uri.path) });
 	}
+
 	private addDiagnostics(
 		diagnostics: Diagnostic[],
 		document: TextDocument,
@@ -837,6 +909,7 @@ export class ExtensionLinter {
 		if (!uri) {
 			return;
 		}
+
 		const scheme = uri.scheme.toLowerCase();
 
 		if (hasScheme && scheme !== "https" && scheme !== "data") {
@@ -844,6 +917,7 @@ export class ExtensionLinter {
 				document.positionAt(begin),
 				document.positionAt(end),
 			);
+
 			diagnostics.push(
 				new Diagnostic(
 					range,
@@ -852,11 +926,13 @@ export class ExtensionLinter {
 				),
 			);
 		}
+
 		if (hasScheme && scheme === "data") {
 			const range = new Range(
 				document.positionAt(begin),
 				document.positionAt(end),
 			);
+
 			diagnostics.push(
 				new Diagnostic(
 					range,
@@ -865,6 +941,7 @@ export class ExtensionLinter {
 				),
 			);
 		}
+
 		if (
 			!hasScheme &&
 			!info.hasHttpsRepository &&
@@ -884,10 +961,12 @@ export class ExtensionLinter {
 						return relativeUrlRequiresHttpsRepository;
 				}
 			})();
+
 			diagnostics.push(
 				new Diagnostic(range, message, DiagnosticSeverity.Warning),
 			);
 		}
+
 		if (
 			uri.path.toLowerCase().endsWith(".svg") &&
 			!isTrustedSVGSource(uri)
@@ -896,17 +975,22 @@ export class ExtensionLinter {
 				document.positionAt(begin),
 				document.positionAt(end),
 			);
+
 			diagnostics.push(
 				new Diagnostic(range, svgsNotValid, DiagnosticSeverity.Warning),
 			);
 		}
 	}
+
 	private clear(document: TextDocument) {
 		this.diagnosticsCollection.delete(document.uri);
+
 		this.packageJsonQ.delete(document);
 	}
+
 	public dispose() {
 		this.disposables.forEach((d) => d.dispose());
+
 		this.disposables = [];
 	}
 }
@@ -931,6 +1015,7 @@ function parseImplicitActivationEvents(tree: JsonNode): Set<string> {
 	const activationEvents = new Set<string>();
 	// commands
 	const commands = findNodeAtLocation(tree, ["contributes", "commands"]);
+
 	commands?.children?.forEach((child) => {
 		const command = findNodeAtLocation(child, ["command"]);
 
@@ -943,6 +1028,7 @@ function parseImplicitActivationEvents(tree: JsonNode): Set<string> {
 		"contributes",
 		"authentication",
 	]);
+
 	authenticationProviders?.children?.forEach((child) => {
 		const id = findNodeAtLocation(child, ["id"]);
 
@@ -955,6 +1041,7 @@ function parseImplicitActivationEvents(tree: JsonNode): Set<string> {
 		"contributes",
 		"languages",
 	]);
+
 	languageContributions?.children?.forEach((child) => {
 		const id = findNodeAtLocation(child, ["id"]);
 
@@ -974,6 +1061,7 @@ function parseImplicitActivationEvents(tree: JsonNode): Set<string> {
 		"contributes",
 		"customEditors",
 	]);
+
 	customEditors?.children?.forEach((child) => {
 		const viewType = findNodeAtLocation(child, ["viewType"]);
 
@@ -986,10 +1074,12 @@ function parseImplicitActivationEvents(tree: JsonNode): Set<string> {
 		"contributes",
 		"views",
 	]);
+
 	viewContributions?.children?.forEach((viewContribution) => {
 		const views = viewContribution.children?.find(
 			(node) => node.type === "array",
 		);
+
 		views?.children?.forEach((view) => {
 			const id = findNodeAtLocation(view, ["id"]);
 
@@ -1003,6 +1093,7 @@ function parseImplicitActivationEvents(tree: JsonNode): Set<string> {
 		"contributes",
 		"walkthroughs",
 	]);
+
 	walkthroughs?.children?.forEach((child) => {
 		const id = findNodeAtLocation(child, ["id"]);
 
@@ -1015,6 +1106,7 @@ function parseImplicitActivationEvents(tree: JsonNode): Set<string> {
 		"contributes",
 		"notebookRenderer",
 	]);
+
 	notebookRenderers?.children?.forEach((child) => {
 		const id = findNodeAtLocation(child, ["id"]);
 
@@ -1028,6 +1120,7 @@ function parseImplicitActivationEvents(tree: JsonNode): Set<string> {
 		"terminal",
 		"profiles",
 	]);
+
 	terminalProfiles?.children?.forEach((child) => {
 		const id = findNodeAtLocation(child, ["id"]);
 
@@ -1041,6 +1134,7 @@ function parseImplicitActivationEvents(tree: JsonNode): Set<string> {
 		"terminal",
 		"quickFixes",
 	]);
+
 	terminalQuickFixes?.children?.forEach((child) => {
 		const id = findNodeAtLocation(child, ["id"]);
 
@@ -1050,6 +1144,7 @@ function parseImplicitActivationEvents(tree: JsonNode): Set<string> {
 	});
 	// tasks
 	const tasks = findNodeAtLocation(tree, ["contributes", "taskDefinitions"]);
+
 	tasks?.children?.forEach((child) => {
 		const id = findNodeAtLocation(child, ["type"]);
 

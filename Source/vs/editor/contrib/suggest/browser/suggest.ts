@@ -116,25 +116,33 @@ export class CompletionItem {
 	_brand!: "ISuggestionItem";
 	//
 	readonly editStart: IPosition;
+
 	readonly editInsertEnd: IPosition;
+
 	readonly editReplaceEnd: IPosition;
 	//
 	readonly textLabel: string;
 	// perf
 	readonly labelLow: string;
+
 	readonly sortTextLow?: string;
+
 	readonly filterTextLow?: string;
 	// validation
 	readonly isInvalid: boolean = false;
 	// sorting, filtering
 	score: FuzzyScore = FuzzyScore.Default;
+
 	distance: number = 0;
+
 	idx?: number;
+
 	word?: string;
 	// instrumentation
 	readonly extensionId?: ExtensionIdentifier;
 	// resolving
 	private _resolveDuration?: number;
+
 	private _resolveCache?: Promise<void>;
 
 	constructor(
@@ -151,10 +159,13 @@ export class CompletionItem {
 		this.labelLow = this.textLabel.toLowerCase();
 		// validate label
 		this.isInvalid = !this.textLabel;
+
 		this.sortTextLow =
 			completion.sortText && completion.sortText.toLowerCase();
+
 		this.filterTextLow =
 			completion.filterText && completion.filterText.toLowerCase();
+
 		this.extensionId = completion.extensionId;
 		// normalize ranges
 		if (Range.isIRange(completion.range)) {
@@ -162,10 +173,12 @@ export class CompletionItem {
 				completion.range.startLineNumber,
 				completion.range.startColumn,
 			);
+
 			this.editInsertEnd = new Position(
 				completion.range.endLineNumber,
 				completion.range.endColumn,
 			);
+
 			this.editReplaceEnd = new Position(
 				completion.range.endLineNumber,
 				completion.range.endColumn,
@@ -180,10 +193,12 @@ export class CompletionItem {
 				completion.range.insert.startLineNumber,
 				completion.range.insert.startColumn,
 			);
+
 			this.editInsertEnd = new Position(
 				completion.range.insert.endLineNumber,
 				completion.range.insert.endColumn,
 			);
+
 			this.editReplaceEnd = new Position(
 				completion.range.replace.endLineNumber,
 				completion.range.replace.endColumn,
@@ -203,6 +218,7 @@ export class CompletionItem {
 		// create the suggestion resolver
 		if (typeof provider.resolveCompletionItem !== "function") {
 			this._resolveCache = Promise.resolve();
+
 			this._resolveDuration = 0;
 		}
 	}
@@ -210,23 +226,28 @@ export class CompletionItem {
 	get isResolved(): boolean {
 		return this._resolveDuration !== undefined;
 	}
+
 	get resolveDuration(): number {
 		return this._resolveDuration !== undefined ? this._resolveDuration : -1;
 	}
+
 	async resolve(token: CancellationToken) {
 		if (!this._resolveCache) {
 			const sub = token.onCancellationRequested(() => {
 				this._resolveCache = undefined;
+
 				this._resolveDuration = undefined;
 			});
 
 			const sw = new StopWatch(true);
+
 			this._resolveCache = Promise.resolve(
 				this.provider.resolveCompletionItem!(this.completion, token),
 			)
 				.then(
 					(value) => {
 						Object.assign(this.completion, value);
+
 						this._resolveDuration = sw.elapsed();
 					},
 					(err) => {
@@ -234,6 +255,7 @@ export class CompletionItem {
 							// the IPC queue will reject the request with the
 							// cancellation error -> reset cached
 							this._resolveCache = undefined;
+
 							this._resolveDuration = undefined;
 						}
 					},
@@ -242,6 +264,7 @@ export class CompletionItem {
 					sub.dispose();
 				});
 		}
+
 		return this._resolveCache;
 	}
 }
@@ -275,17 +298,21 @@ export function setSnippetSuggestSupport(
 	support: languages.CompletionItemProvider | undefined,
 ): languages.CompletionItemProvider | undefined {
 	const old = _snippetSuggestSupport;
+
 	_snippetSuggestSupport = support;
 
 	return old;
 }
 export interface CompletionDurationEntry {
 	readonly providerName: string;
+
 	readonly elapsedProvider: number;
+
 	readonly elapsedOverall: number;
 }
 export interface CompletionDurations {
 	readonly entries: readonly CompletionDurationEntry[];
+
 	readonly elapsed: number;
 }
 export class CompletionItemModel {
@@ -307,6 +334,7 @@ export async function provideSuggestionItems(
 	token: CancellationToken = CancellationToken.None,
 ): Promise<CompletionItemModel> {
 	const sw = new StopWatch();
+
 	position = position.clone();
 
 	const word = model.getWordAtPosition(position);
@@ -346,6 +374,7 @@ export async function provideSuggestionItems(
 		if (!container) {
 			return didAddResult;
 		}
+
 		for (const suggestion of container.suggestions) {
 			if (!options.kindFilter.has(suggestion.kind)) {
 				// skip if not showing deprecated suggestions
@@ -368,6 +397,7 @@ export async function provideSuggestionItems(
 							? suggestion.label
 							: suggestion.label.label;
 				}
+
 				if (
 					!needsClipboard &&
 					suggestion.insertTextRules &&
@@ -378,6 +408,7 @@ export async function provideSuggestionItems(
 						suggestion.insertText,
 					);
 				}
+
 				result.push(
 					new CompletionItem(
 						position,
@@ -386,12 +417,15 @@ export async function provideSuggestionItems(
 						provider,
 					),
 				);
+
 				didAddResult = true;
 			}
 		}
+
 		if (isDisposable(container)) {
 			disposables.add(container);
 		}
+
 		durations.push({
 			providerName: provider._debugDisplayName ?? "unknown_provider",
 			elapsedProvider: container.duration ?? -1,
@@ -419,12 +453,14 @@ export async function provideSuggestionItems(
 
 			return;
 		}
+
 		if (
 			options.providerFilter.size > 0 &&
 			!options.providerFilter.has(_snippetSuggestSupport)
 		) {
 			return;
 		}
+
 		const sw = new StopWatch();
 
 		const list = await _snippetSuggestSupport.provideCompletionItems(
@@ -433,6 +469,7 @@ export async function provideSuggestionItems(
 			context,
 			token,
 		);
+
 		onCompletionList(_snippetSuggestSupport, list, sw);
 	})();
 	// add suggestions from contributed providers - providers are ordered in groups of
@@ -441,12 +478,15 @@ export async function provideSuggestionItems(
 	for (const providerGroup of registry.orderedGroups(model)) {
 		// for each support in the group ask for suggestions
 		let didAddResult = false;
+
 		await Promise.all(
 			providerGroup.map(async (provider) => {
 				// we have items from a previous session that we can reuse
 				if (options.providerItemsToReuse.has(provider)) {
 					const items = options.providerItemsToReuse.get(provider)!;
+
 					items.forEach((item) => result.push(item));
+
 					didAddResult = didAddResult || items.length > 0;
 
 					return;
@@ -458,6 +498,7 @@ export async function provideSuggestionItems(
 				) {
 					return;
 				}
+
 				try {
 					const sw = new StopWatch();
 
@@ -467,6 +508,7 @@ export async function provideSuggestionItems(
 						context,
 						token,
 					);
+
 					didAddResult =
 						onCompletionList(provider, list, sw) || didAddResult;
 				} catch (err) {
@@ -479,6 +521,7 @@ export async function provideSuggestionItems(
 			break;
 		}
 	}
+
 	await snippetCompletions;
 
 	if (token.isCancellationRequested) {
@@ -486,6 +529,7 @@ export async function provideSuggestionItems(
 
 		return Promise.reject<any>(new CancellationError());
 	}
+
 	return new CompletionItemModel(
 		result.sort(getSuggestionComparator(options.snippetSortOrder)),
 		needsClipboard,
@@ -519,6 +563,7 @@ function snippetUpComparator(a: CompletionItem, b: CompletionItem): number {
 			return 1;
 		}
 	}
+
 	return defaultComparator(a, b);
 }
 function snippetDownComparator(a: CompletionItem, b: CompletionItem): number {
@@ -529,6 +574,7 @@ function snippetDownComparator(a: CompletionItem, b: CompletionItem): number {
 			return -1;
 		}
 	}
+
 	return defaultComparator(a, b);
 }
 interface Comparator<T> {
@@ -552,9 +598,13 @@ CommandsRegistry.registerCommand(
 	"_executeCompletionItemProvider",
 	async (accessor, ...args: [URI, IPosition, string?, number?]) => {
 		const [uri, position, triggerCharacter, maxItemsToResolve] = args;
+
 		assertType(URI.isUri(uri));
+
 		assertType(Position.isIPosition(position));
+
 		assertType(typeof triggerCharacter === "string" || !triggerCharacter);
+
 		assertType(typeof maxItemsToResolve === "number" || !maxItemsToResolve);
 
 		const { completionProvider } = accessor.get(ILanguageFeaturesService);
@@ -591,10 +641,13 @@ CommandsRegistry.registerCommand(
 				if (resolving.length < (maxItemsToResolve ?? 0)) {
 					resolving.push(item.resolve(CancellationToken.None));
 				}
+
 				result.incomplete =
 					result.incomplete || item.container.incomplete;
+
 				result.suggestions.push(item.completion);
 			}
+
 			try {
 				await Promise.all(resolving);
 
@@ -649,6 +702,7 @@ export abstract class QuickSuggestionsOptions {
 			config.strings === "off"
 		);
 	}
+
 	static isAllOn(config: InternalQuickSuggestionsOptions): boolean {
 		return (
 			config.other === "on" &&
@@ -656,6 +710,7 @@ export abstract class QuickSuggestionsOptions {
 			config.strings === "on"
 		);
 	}
+
 	static valueFor(
 		config: InternalQuickSuggestionsOptions,
 		tokenType: StandardTokenType,

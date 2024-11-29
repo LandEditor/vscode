@@ -26,7 +26,9 @@ const FLAGS = ["RegExp", "CaseSensitive", "IgnoreExcludeSettings", "WordMatch"];
 let cachedLastParse:
 	| {
 			version: number;
+
 			parse: ParsedSearchResults;
+
 			uri: vscode.Uri;
 	  }
 	| undefined;
@@ -52,7 +54,9 @@ export function activate(context: vscode.ExtensionContext) {
 		const matchRanges = parsed
 			.filter((line) => !line.isContext)
 			.map((line) => line.prefixRange);
+
 		editor.setDecorations(contextLineDecorations, contextRanges);
+
 		editor.setDecorations(matchLineDecorations, matchRanges);
 	};
 
@@ -62,6 +66,7 @@ export function activate(context: vscode.ExtensionContext) {
 	) {
 		decorate(vscode.window.activeTextEditor);
 	}
+
 	context.subscriptions.push(
 		vscode.languages.registerDocumentSymbolProvider(
 			SEARCH_RESULT_SELECTOR,
@@ -107,6 +112,7 @@ export function activate(context: vscode.ExtensionContext) {
 					if (position.line > 3) {
 						return [];
 					}
+
 					if (
 						position.character === 0 ||
 						(position.character === 1 && line.text === "#")
@@ -124,9 +130,11 @@ export function activate(context: vscode.ExtensionContext) {
 							insertText: flag.slice(position.character) + " ",
 						}));
 					}
+
 					if (line.text.indexOf("# Flags:") === -1) {
 						return [];
 					}
+
 					return FLAGS.filter(
 						(flag) => line.text.indexOf(flag) === -1,
 					).map((flag) => ({ label: flag, insertText: flag + " " }));
@@ -147,6 +155,7 @@ export function activate(context: vscode.ExtensionContext) {
 				if (!lineResult) {
 					return [];
 				}
+
 				if (lineResult.type === "file") {
 					return lineResult.allLocations.map((l) => ({
 						...l,
@@ -154,6 +163,7 @@ export function activate(context: vscode.ExtensionContext) {
 							lineResult.location.originSelectionRange,
 					}));
 				}
+
 				const location = lineResult.locations.find((l) =>
 					l.originSelectionRange.contains(position),
 				);
@@ -161,6 +171,7 @@ export function activate(context: vscode.ExtensionContext) {
 				if (!location) {
 					return [];
 				}
+
 				const targetPos = new vscode.Position(
 					location.targetSelectionRange.start.line,
 					location.targetSelectionRange.start.character +
@@ -206,12 +217,14 @@ export function activate(context: vscode.ExtensionContext) {
 							decorate(editor);
 						}
 					});
+
 				decorate(editor);
 			}
 		}),
 		{
 			dispose() {
 				cachedLastParse = undefined;
+
 				documentChangeListener?.dispose();
 			},
 		},
@@ -228,6 +241,7 @@ function relativePathToUri(
 			scheme: "vscode-userdata",
 		});
 	}
+
 	if (pathUtils.isAbsolute(path)) {
 		if (/^[\\\/]Untitled-\d*$/.test(path)) {
 			return vscode.Uri.file(path.slice(1)).with({
@@ -235,13 +249,16 @@ function relativePathToUri(
 				path: path.slice(1),
 			});
 		}
+
 		return vscode.Uri.file(path);
 	}
+
 	if (path.indexOf("~/") === 0) {
 		const homePath = process.env.HOME || process.env.HOMEPATH || "";
 
 		return vscode.Uri.file(pathUtils.join(homePath, path.slice(2)));
 	}
+
 	const uriFromFolderWithPath = (
 		folder: vscode.WorkspaceFolder,
 		path: string,
@@ -277,20 +294,27 @@ function relativePathToUri(
 			}
 		}
 	}
+
 	console.error(`Unable to resolve path ${path}`);
 
 	return undefined;
 }
 type ParsedSearchFileLine = {
 	type: "file";
+
 	location: vscode.LocationLink;
+
 	allLocations: vscode.LocationLink[];
+
 	path: string;
 };
 type ParsedSearchResultLine = {
 	type: "result";
+
 	locations: Required<vscode.LocationLink>[];
+
 	isContext: boolean;
+
 	prefixRange: vscode.Range;
 };
 type ParsedSearchResults = Array<ParsedSearchFileLine | ParsedSearchResultLine>;
@@ -313,6 +337,7 @@ function parseSearchResults(
 	) {
 		return cachedLastParse.parse;
 	}
+
 	const lines = document.getText().split(/\r?\n/);
 
 	const links: ParsedSearchResults = [];
@@ -326,17 +351,20 @@ function parseSearchResults(
 		if (token?.isCancellationRequested) {
 			return [];
 		}
+
 		const line = lines[i];
 
 		const fileLine = FILE_LINE_REGEX.exec(line);
 
 		if (fileLine) {
 			const [, path] = fileLine;
+
 			currentTarget = relativePathToUri(path, document.uri);
 
 			if (!currentTarget) {
 				continue;
 			}
+
 			currentTargetLocations = [];
 
 			const location: vscode.LocationLink = {
@@ -344,6 +372,7 @@ function parseSearchResults(
 				targetUri: currentTarget,
 				originSelectionRange: new vscode.Range(i, 0, i, line.length),
 			};
+
 			links[i] = {
 				type: "file",
 				location,
@@ -351,9 +380,11 @@ function parseSearchResults(
 				path,
 			};
 		}
+
 		if (!currentTarget) {
 			continue;
 		}
+
 		const resultLine = RESULT_LINE_REGEX.exec(line);
 
 		if (resultLine) {
@@ -376,6 +407,7 @@ function parseSearchResults(
 			let lastEnd = metadataOffset;
 
 			let offset = 0;
+
 			ELISION_REGEX.lastIndex = metadataOffset;
 
 			for (
@@ -399,13 +431,16 @@ function parseSearchResults(
 						ELISION_REGEX.lastIndex - match[0].length,
 					),
 				});
+
 				offset +=
 					ELISION_REGEX.lastIndex -
 					lastEnd -
 					match[0].length +
 					Number(match[1]);
+
 				lastEnd = ELISION_REGEX.lastIndex;
 			}
+
 			if (lastEnd < line.length) {
 				locations.push({
 					targetRange,
@@ -445,7 +480,9 @@ function parseSearchResults(
 					metadataOffset - 1,
 				),
 			};
+
 			locations.push(convenienceLocation);
+
 			links[i] = {
 				type: "result",
 				locations,
@@ -454,6 +491,7 @@ function parseSearchResults(
 			};
 		}
 	}
+
 	cachedLastParse = {
 		version: document.version,
 		parse: links,

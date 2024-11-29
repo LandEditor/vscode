@@ -70,16 +70,19 @@ class WelcomeDialogContribution
 		if (!storageService.isNew(StorageScope.APPLICATION)) {
 			return; // do not show if this is not the first session
 		}
+
 		const setting = configurationService.inspect<boolean>(configurationKey);
 
 		if (!setting.value) {
 			return;
 		}
+
 		const welcomeDialog = environmentService.options?.welcomeDialog;
 
 		if (!welcomeDialog) {
 			return;
 		}
+
 		this._register(
 			editorService.onDidActiveEditorChange(() => {
 				if (!this.isRendered) {
@@ -113,6 +116,7 @@ class WelcomeDialogContribution
 									telemetryService,
 									openerService,
 								);
+
 								welcomeWidget.render(
 									welcomeDialog.title,
 									welcomeDialog.message,
@@ -121,6 +125,7 @@ class WelcomeDialogContribution
 								);
 							}
 						}, 3000);
+
 						this._register(
 							codeEditor.onDidChangeModelContent((e) => {
 								if (!this.isRendered) {

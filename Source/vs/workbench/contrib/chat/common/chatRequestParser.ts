@@ -49,6 +49,7 @@ export class ChatRequestParser {
 		@ILanguageModelToolsService
 		private readonly toolsService: ILanguageModelToolsService,
 	) {}
+
 	parseChatRequest(
 		sessionId: string,
 		message: string,
@@ -97,6 +98,7 @@ export class ChatRequestParser {
 						location,
 					);
 				}
+
 				if (!newPart) {
 					newPart = this.tryToParseDynamicVariable(
 						message.slice(i),
@@ -106,6 +108,7 @@ export class ChatRequestParser {
 					);
 				}
 			}
+
 			if (newPart) {
 				if (i !== 0) {
 					// Insert a part for all the text we passed over, then insert the new parsed part
@@ -119,6 +122,7 @@ export class ChatRequestParser {
 
 					const previousPartEditorRangeEndCol =
 						previousPart?.editorRange.endColumn ?? 1;
+
 					parts.push(
 						new ChatRequestTextPart(
 							new OffsetRange(previousPartEnd, i),
@@ -132,15 +136,19 @@ export class ChatRequestParser {
 						),
 					);
 				}
+
 				parts.push(newPart);
 			}
+
 			if (char === "\n") {
 				lineNumber++;
+
 				column = 1;
 			} else {
 				column++;
 			}
 		}
+
 		const lastPart = parts.at(-1);
 
 		const lastPartEnd = lastPart?.range.endExclusive ?? 0;
@@ -159,11 +167,13 @@ export class ChatRequestParser {
 				),
 			);
 		}
+
 		return {
 			parts,
 			text: message,
 		};
 	}
+
 	private tryToParseAgent(
 		message: string,
 		fullMessage: string,
@@ -178,6 +188,7 @@ export class ChatRequestParser {
 		if (!nextAgentMatch) {
 			return;
 		}
+
 		const [full, name] = nextAgentMatch;
 
 		const agentRange = new OffsetRange(offset, offset + full.length);
@@ -208,6 +219,7 @@ export class ChatRequestParser {
 		if (!agent) {
 			return;
 		}
+
 		if (parts.some((p) => p instanceof ChatRequestAgentPart)) {
 			// Only one agent allowed
 			return;
@@ -223,6 +235,7 @@ export class ChatRequestParser {
 		) {
 			return;
 		}
+
 		const previousPart = parts.at(-1);
 
 		const previousPartEnd = previousPart?.range.endExclusive ?? 0;
@@ -235,8 +248,10 @@ export class ChatRequestParser {
 		if (textSincePreviousPart.trim() !== "") {
 			return;
 		}
+
 		return new ChatRequestAgentPart(agentRange, agentEditorRange, agent);
 	}
+
 	private tryToParseVariable(
 		message: string,
 		offset: number,
@@ -252,6 +267,7 @@ export class ChatRequestParser {
 		if (!nextVariableMatch) {
 			return;
 		}
+
 		const [full, name] = nextVariableMatch;
 
 		const variableArg = nextVariableMatch[2] ?? "";
@@ -283,6 +299,7 @@ export class ChatRequestParser {
 				variable.id,
 			);
 		}
+
 		const tool = this.toolsService.getToolByName(name);
 
 		if (tool && tool.canBeReferencedInPrompt) {
@@ -295,8 +312,10 @@ export class ChatRequestParser {
 				tool.icon,
 			);
 		}
+
 		return;
 	}
+
 	private tryToParseSlashCommand(
 		remainingMessage: string,
 		fullMessage: string,
@@ -313,10 +332,12 @@ export class ChatRequestParser {
 		if (!nextSlashMatch) {
 			return;
 		}
+
 		if (parts.some((p) => p instanceof ChatRequestSlashCommandPart)) {
 			// Only one slash command allowed
 			return;
 		}
+
 		const [full, command] = nextSlashMatch;
 
 		const slashRange = new OffsetRange(offset, offset + full.length);
@@ -345,6 +366,7 @@ export class ChatRequestParser {
 			) {
 				return;
 			}
+
 			const previousPart = parts.at(-1);
 
 			const previousPartEnd = previousPart?.range.endExclusive ?? 0;
@@ -357,6 +379,7 @@ export class ChatRequestParser {
 			if (textSincePreviousPart.trim() !== "") {
 				return;
 			}
+
 			const subCommand = usedAgent.agent.slashCommands.find(
 				(c) => c.name === command,
 			);
@@ -403,8 +426,10 @@ export class ChatRequestParser {
 				}
 			}
 		}
+
 		return;
 	}
+
 	private tryToParseDynamicVariable(
 		message: string,
 		offset: number,
@@ -438,6 +463,7 @@ export class ChatRequestParser {
 				refAtThisPosition.isFile,
 			);
 		}
+
 		return;
 	}
 }

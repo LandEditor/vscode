@@ -38,8 +38,11 @@ import {
 
 export function activateEmmetExtension(context: vscode.ExtensionContext) {
 	migrateEmmetExtensionsPath();
+
 	refreshCompletionProviders(context);
+
 	updateEmmetExtensionsPath();
+
 	context.subscriptions.push(
 		vscode.commands.registerCommand(
 			"editor.emmet.action.wrapWithAbbreviation",
@@ -48,16 +51,19 @@ export function activateEmmetExtension(context: vscode.ExtensionContext) {
 			},
 		),
 	);
+
 	context.subscriptions.push(
 		vscode.commands.registerCommand("emmet.expandAbbreviation", (args) => {
 			expandEmmetAbbreviation(args);
 		}),
 	);
+
 	context.subscriptions.push(
 		vscode.commands.registerCommand("editor.emmet.action.removeTag", () => {
 			return removeTag();
 		}),
 	);
+
 	context.subscriptions.push(
 		vscode.commands.registerCommand(
 			"editor.emmet.action.updateTag",
@@ -65,15 +71,18 @@ export function activateEmmetExtension(context: vscode.ExtensionContext) {
 				if (inputTag && typeof inputTag === "string") {
 					return updateTag(inputTag);
 				}
+
 				return updateTag(undefined);
 			},
 		),
 	);
+
 	context.subscriptions.push(
 		vscode.commands.registerCommand("editor.emmet.action.matchTag", () => {
 			matchTag();
 		}),
 	);
+
 	context.subscriptions.push(
 		vscode.commands.registerCommand(
 			"editor.emmet.action.balanceOut",
@@ -82,11 +91,13 @@ export function activateEmmetExtension(context: vscode.ExtensionContext) {
 			},
 		),
 	);
+
 	context.subscriptions.push(
 		vscode.commands.registerCommand("editor.emmet.action.balanceIn", () => {
 			balanceIn();
 		}),
 	);
+
 	context.subscriptions.push(
 		vscode.commands.registerCommand(
 			"editor.emmet.action.splitJoinTag",
@@ -95,6 +106,7 @@ export function activateEmmetExtension(context: vscode.ExtensionContext) {
 			},
 		),
 	);
+
 	context.subscriptions.push(
 		vscode.commands.registerCommand(
 			"editor.emmet.action.mergeLines",
@@ -103,6 +115,7 @@ export function activateEmmetExtension(context: vscode.ExtensionContext) {
 			},
 		),
 	);
+
 	context.subscriptions.push(
 		vscode.commands.registerCommand(
 			"editor.emmet.action.toggleComment",
@@ -111,6 +124,7 @@ export function activateEmmetExtension(context: vscode.ExtensionContext) {
 			},
 		),
 	);
+
 	context.subscriptions.push(
 		vscode.commands.registerCommand(
 			"editor.emmet.action.nextEditPoint",
@@ -119,6 +133,7 @@ export function activateEmmetExtension(context: vscode.ExtensionContext) {
 			},
 		),
 	);
+
 	context.subscriptions.push(
 		vscode.commands.registerCommand(
 			"editor.emmet.action.prevEditPoint",
@@ -127,6 +142,7 @@ export function activateEmmetExtension(context: vscode.ExtensionContext) {
 			},
 		),
 	);
+
 	context.subscriptions.push(
 		vscode.commands.registerCommand(
 			"editor.emmet.action.selectNextItem",
@@ -135,6 +151,7 @@ export function activateEmmetExtension(context: vscode.ExtensionContext) {
 			},
 		),
 	);
+
 	context.subscriptions.push(
 		vscode.commands.registerCommand(
 			"editor.emmet.action.selectPrevItem",
@@ -143,6 +160,7 @@ export function activateEmmetExtension(context: vscode.ExtensionContext) {
 			},
 		),
 	);
+
 	context.subscriptions.push(
 		vscode.commands.registerCommand(
 			"editor.emmet.action.evaluateMathExpression",
@@ -151,6 +169,7 @@ export function activateEmmetExtension(context: vscode.ExtensionContext) {
 			},
 		),
 	);
+
 	context.subscriptions.push(
 		vscode.commands.registerCommand(
 			"editor.emmet.action.incrementNumberByOneTenth",
@@ -159,6 +178,7 @@ export function activateEmmetExtension(context: vscode.ExtensionContext) {
 			},
 		),
 	);
+
 	context.subscriptions.push(
 		vscode.commands.registerCommand(
 			"editor.emmet.action.incrementNumberByOne",
@@ -167,6 +187,7 @@ export function activateEmmetExtension(context: vscode.ExtensionContext) {
 			},
 		),
 	);
+
 	context.subscriptions.push(
 		vscode.commands.registerCommand(
 			"editor.emmet.action.incrementNumberByTen",
@@ -175,6 +196,7 @@ export function activateEmmetExtension(context: vscode.ExtensionContext) {
 			},
 		),
 	);
+
 	context.subscriptions.push(
 		vscode.commands.registerCommand(
 			"editor.emmet.action.decrementNumberByOneTenth",
@@ -183,6 +205,7 @@ export function activateEmmetExtension(context: vscode.ExtensionContext) {
 			},
 		),
 	);
+
 	context.subscriptions.push(
 		vscode.commands.registerCommand(
 			"editor.emmet.action.decrementNumberByOne",
@@ -191,6 +214,7 @@ export function activateEmmetExtension(context: vscode.ExtensionContext) {
 			},
 		),
 	);
+
 	context.subscriptions.push(
 		vscode.commands.registerCommand(
 			"editor.emmet.action.decrementNumberByTen",
@@ -199,6 +223,7 @@ export function activateEmmetExtension(context: vscode.ExtensionContext) {
 			},
 		),
 	);
+
 	context.subscriptions.push(
 		vscode.commands.registerCommand(
 			"editor.emmet.action.reflectCSSValue",
@@ -207,6 +232,7 @@ export function activateEmmetExtension(context: vscode.ExtensionContext) {
 			},
 		),
 	);
+
 	context.subscriptions.push(
 		vscode.commands.registerCommand(
 			"workbench.action.showEmmetCommands",
@@ -218,6 +244,7 @@ export function activateEmmetExtension(context: vscode.ExtensionContext) {
 			},
 		),
 	);
+
 	context.subscriptions.push(
 		vscode.workspace.onDidChangeConfiguration((e) => {
 			if (
@@ -226,11 +253,13 @@ export function activateEmmetExtension(context: vscode.ExtensionContext) {
 			) {
 				refreshCompletionProviders(context);
 			}
+
 			if (e.affectsConfiguration("emmet.extensionsPath")) {
 				updateEmmetExtensionsPath();
 			}
 		}),
 	);
+
 	context.subscriptions.push(
 		vscode.workspace.onDidSaveTextDocument((e) => {
 			const basefileName: string = getPathBaseName(e.fileName);
@@ -243,6 +272,7 @@ export function activateEmmetExtension(context: vscode.ExtensionContext) {
 			}
 		}),
 	);
+
 	context.subscriptions.push(
 		vscode.workspace.onDidOpenTextDocument((e) => {
 			const emmetMode = getEmmetMode(e.languageId, {}, []) ?? "";
@@ -257,6 +287,7 @@ export function activateEmmetExtension(context: vscode.ExtensionContext) {
 			}
 		}),
 	);
+
 	context.subscriptions.push(
 		vscode.workspace.onDidCloseTextDocument((e) => {
 			const emmetMode = getEmmetMode(e.languageId, {}, []) ?? "";
@@ -306,11 +337,13 @@ function refreshCompletionProviders(_: vscode.ExtensionContext) {
 			if (!items) {
 				return undefined;
 			}
+
 			const item = items.items[0];
 
 			if (!item) {
 				return undefined;
 			}
+
 			const range = item.range as vscode.Range;
 
 			if (document.getText(range) !== item.label) {
@@ -318,6 +351,7 @@ function refreshCompletionProviders(_: vscode.ExtensionContext) {
 				// If the user types `d`, we don't want to suggest `<div></div>`.
 				return undefined;
 			}
+
 			return [
 				{
 					insertText: item.insertText as any,
@@ -333,6 +367,7 @@ function refreshCompletionProviders(_: vscode.ExtensionContext) {
 		.get<boolean>("useInlineCompletions");
 
 	const includedLanguages = getMappingForIncludedLanguages();
+
 	Object.keys(includedLanguages).forEach((language) => {
 		if (
 			languageMappingForCompletionProviders.has(language) &&
@@ -341,26 +376,32 @@ function refreshCompletionProviders(_: vscode.ExtensionContext) {
 		) {
 			return;
 		}
+
 		if (useInlineCompletionProvider) {
 			const inlineCompletionsProvider =
 				vscode.languages.registerInlineCompletionItemProvider(
 					{ language, scheme: "*" },
 					inlineCompletionProvider,
 				);
+
 			completionProviderDisposables.push(inlineCompletionsProvider);
 		}
+
 		const explicitProvider =
 			vscode.languages.registerCompletionItemProvider(
 				{ language, scheme: "*" },
 				completionProvider,
 				...LANGUAGE_MODES[includedLanguages[language]],
 			);
+
 		completionProviderDisposables.push(explicitProvider);
+
 		languageMappingForCompletionProviders.set(
 			language,
 			includedLanguages[language],
 		);
 	});
+
 	Object.keys(LANGUAGE_MODES).forEach((language) => {
 		if (!languageMappingForCompletionProviders.has(language)) {
 			if (useInlineCompletionProvider) {
@@ -369,15 +410,19 @@ function refreshCompletionProviders(_: vscode.ExtensionContext) {
 						{ language, scheme: "*" },
 						inlineCompletionProvider,
 					);
+
 				completionProviderDisposables.push(inlineCompletionsProvider);
 			}
+
 			const explicitProvider =
 				vscode.languages.registerCompletionItemProvider(
 					{ language, scheme: "*" },
 					completionProvider,
 					...LANGUAGE_MODES[language],
 				);
+
 			completionProviderDisposables.push(explicitProvider);
+
 			languageMappingForCompletionProviders.set(language, language);
 		}
 	});
@@ -393,5 +438,6 @@ function clearCompletionProviderInfo() {
 }
 export function deactivate() {
 	clearCompletionProviderInfo();
+
 	clearParseCache();
 }

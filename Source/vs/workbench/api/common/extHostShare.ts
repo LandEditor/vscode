@@ -18,7 +18,9 @@ import { DocumentSelector, Range } from "./extHostTypeConverters.js";
 
 export class ExtHostShare implements ExtHostShareShape {
 	private static handlePool: number = 0;
+
 	private proxy: MainThreadShareShape;
+
 	private providers: Map<number, vscode.ShareProvider> = new Map();
 
 	constructor(
@@ -27,6 +29,7 @@ export class ExtHostShare implements ExtHostShareShape {
 	) {
 		this.proxy = mainContext.getProxy(MainContext.MainThreadShare);
 	}
+
 	async $provideShare(
 		handle: number,
 		shareableItem: IShareableItemDto,
@@ -44,12 +47,15 @@ export class ExtHostShare implements ExtHostShareShape {
 
 		return result ?? undefined;
 	}
+
 	registerShareProvider(
 		selector: vscode.DocumentSelector,
 		provider: vscode.ShareProvider,
 	): vscode.Disposable {
 		const handle = ExtHostShare.handlePool++;
+
 		this.providers.set(handle, provider);
+
 		this.proxy.$registerShareProvider(
 			handle,
 			DocumentSelector.from(selector, this.uriTransformer),
@@ -61,6 +67,7 @@ export class ExtHostShare implements ExtHostShareShape {
 		return {
 			dispose: () => {
 				this.proxy.$unregisterShareProvider(handle);
+
 				this.providers.delete(handle);
 			},
 		};

@@ -48,14 +48,21 @@ export interface IProcessEnvironment {
  */
 export interface INodeProcess {
 	platform: string;
+
 	arch: string;
+
 	env: IProcessEnvironment;
+
 	versions?: {
 		node?: string;
+
 		electron?: string;
+
 		chrome?: string;
 	};
+
 	type?: string;
+
 	cwd: () => string;
 }
 declare const process: INodeProcess;
@@ -83,24 +90,33 @@ const isElectronRenderer =
 	isElectronProcess && nodeProcess?.type === "renderer";
 interface INavigator {
 	userAgent: string;
+
 	maxTouchPoints?: number;
+
 	language: string;
 }
 declare const navigator: INavigator;
 // Native environment
 if (typeof nodeProcess === "object") {
 	_isWindows = nodeProcess.platform === "win32";
+
 	_isMacintosh = nodeProcess.platform === "darwin";
+
 	_isLinux = nodeProcess.platform === "linux";
+
 	_isLinuxSnap =
 		_isLinux &&
 		!!nodeProcess.env["SNAP"] &&
 		!!nodeProcess.env["SNAP_REVISION"];
+
 	_isElectron = isElectronProcess;
+
 	_isCI =
 		!!nodeProcess.env["CI"] ||
 		!!nodeProcess.env["BUILD_ARTIFACTSTAGINGDIRECTORY"];
+
 	_locale = LANGUAGE_DEFAULT;
+
 	_language = LANGUAGE_DEFAULT;
 
 	const rawNlsConfig = nodeProcess.env["VSCODE_NLS_CONFIG"];
@@ -108,31 +124,45 @@ if (typeof nodeProcess === "object") {
 	if (rawNlsConfig) {
 		try {
 			const nlsConfig: nls.INLSConfiguration = JSON.parse(rawNlsConfig);
+
 			_locale = nlsConfig.userLocale;
+
 			_platformLocale = nlsConfig.osLocale;
+
 			_language = nlsConfig.resolvedLanguage || LANGUAGE_DEFAULT;
+
 			_translationsConfigFile =
 				nlsConfig.languagePack?.translationsConfigFile;
 		} catch (e) {}
 	}
+
 	_isNative = true;
 }
 // Web environment
 else if (typeof navigator === "object" && !isElectronRenderer) {
 	_userAgent = navigator.userAgent;
+
 	_isWindows = _userAgent.indexOf("Windows") >= 0;
+
 	_isMacintosh = _userAgent.indexOf("Macintosh") >= 0;
+
 	_isIOS =
 		(_userAgent.indexOf("Macintosh") >= 0 ||
 			_userAgent.indexOf("iPad") >= 0 ||
 			_userAgent.indexOf("iPhone") >= 0) &&
 		!!navigator.maxTouchPoints &&
 		navigator.maxTouchPoints > 0;
+
 	_isLinux = _userAgent.indexOf("Linux") >= 0;
+
 	_isMobile = _userAgent?.indexOf("Mobi") >= 0;
+
 	_isWeb = true;
+
 	_language = nls.getNLSLanguage() || LANGUAGE_DEFAULT;
+
 	_locale = navigator.language.toLowerCase();
+
 	_platformLocale = _locale;
 }
 // Unknown environment
@@ -212,6 +242,7 @@ export namespace Language {
 	export function value(): string {
 		return language;
 	}
+
 	export function isDefaultVariant(): boolean {
 		if (language.length === 2) {
 			return language === "en";
@@ -225,6 +256,7 @@ export namespace Language {
 			return false;
 		}
 	}
+
 	export function isDefault(): boolean {
 		return language === "en";
 	}
@@ -260,8 +292,10 @@ export const setTimeout0 = (() => {
 	if (setTimeout0IsFaster) {
 		interface IQueueElement {
 			id: number;
+
 			callback: () => void;
 		}
+
 		const pending: IQueueElement[] = [];
 		$globalThis.addEventListener("message", (e: any) => {
 			if (e.data && e.data.vscodeScheduleAsyncWork) {
@@ -270,6 +304,7 @@ export const setTimeout0 = (() => {
 
 					if (candidate.id === e.data.vscodeScheduleAsyncWork) {
 						pending.splice(i, 1);
+
 						candidate.callback();
 
 						return;
@@ -282,6 +317,7 @@ export const setTimeout0 = (() => {
 
 		return (callback: () => void) => {
 			const myId = ++lastId;
+
 			pending.push({
 				id: myId,
 				callback: callback,
@@ -289,6 +325,7 @@ export const setTimeout0 = (() => {
 			$globalThis.postMessage({ vscodeScheduleAsyncWork: myId }, "*");
 		};
 	}
+
 	return (callback: () => void) => setTimeout(callback);
 })();
 
@@ -313,12 +350,16 @@ export function isLittleEndian(): boolean {
 		_isLittleEndianComputed = true;
 
 		const test = new Uint8Array(2);
+
 		test[0] = 1;
+
 		test[1] = 2;
 
 		const view = new Uint16Array(test.buffer);
+
 		_isLittleEndian = view[0] === (2 << 8) + 1;
 	}
+
 	return _isLittleEndian;
 }
 export const isChrome = !!(userAgent && userAgent.indexOf("Chrome") >= 0);

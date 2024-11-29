@@ -26,9 +26,11 @@ export function register(
 				),
 				direction.value,
 			);
+
 			tree.setInput(input);
 		}
 	}
+
 	function setTypeHierarchyDirection(
 		value: TypeHierarchyDirection,
 		anchor: TypeItem | vscode.Location | unknown,
@@ -52,10 +54,12 @@ export function register(
 		} else if (oldInput instanceof TypesTreeInput) {
 			newInput = new TypesTreeInput(oldInput.location, direction.value);
 		}
+
 		if (newInput) {
 			tree.setInput(newInput);
 		}
 	}
+
 	context.subscriptions.push(
 		vscode.commands.registerCommand(
 			"references-view.showTypeHierarchy",
@@ -90,6 +94,7 @@ function removeTypeItem(item: TypeItem | unknown): void {
 }
 class RichTypesDirection {
 	private static _key = "references-view.typeHierarchyMode";
+
 	private _ctxMode = new ContextKey<TypeHierarchyDirection>(
 		"references-view.typeHierarchyMode",
 	);
@@ -106,12 +111,16 @@ class RichTypesDirection {
 			this.value = _value;
 		}
 	}
+
 	get value() {
 		return this._value;
 	}
+
 	set value(value: TypeHierarchyDirection) {
 		this._value = value;
+
 		this._ctxMode.set(value);
+
 		this._mem.update(RichTypesDirection._key, value);
 	}
 }

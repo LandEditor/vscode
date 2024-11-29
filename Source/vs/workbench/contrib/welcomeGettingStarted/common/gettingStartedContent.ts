@@ -20,12 +20,14 @@ class GettingStartedContentProviderRegistry {
 		string,
 		IGettingStartedContentProvider
 	>();
+
 	registerProvider(
 		moduleId: string,
 		provider: IGettingStartedContentProvider,
 	): void {
 		this.providers.set(moduleId, provider);
 	}
+
 	getProvider(moduleId: string): IGettingStartedContentProvider | undefined {
 		return this.providers.get(moduleId);
 	}
@@ -37,11 +39,13 @@ export async function moduleToContent(resource: URI): Promise<string> {
 	if (!resource.query) {
 		throw new Error("Getting Started: invalid resource");
 	}
+
 	const query = JSON.parse(resource.query);
 
 	if (!query.moduleId) {
 		throw new Error("Getting Started: invalid resource");
 	}
+
 	const provider = gettingStartedContentRegistry.getProvider(query.moduleId);
 
 	if (!provider) {
@@ -49,6 +53,7 @@ export async function moduleToContent(resource: URI): Promise<string> {
 			`Getting Started: no provider registered for ${query.moduleId}`,
 		);
 	}
+
 	return provider();
 }
 gettingStartedContentRegistry.registerProvider(
@@ -85,57 +90,85 @@ const beginnerIcon = registerIcon(
 
 export type BuiltinGettingStartedStep = {
 	id: string;
+
 	title: string;
+
 	description: string;
+
 	completionEvents?: string[];
+
 	when?: string;
+
 	media:
 		| {
 				type: "image";
+
 				path:
 					| string
 					| {
 							hc: string;
+
 							hcLight?: string;
+
 							light: string;
+
 							dark: string;
 					  };
+
 				altText: string;
 		  }
 		| {
 				type: "svg";
+
 				path: string;
+
 				altText: string;
 		  }
 		| {
 				type: "markdown";
+
 				path: string;
 		  };
 };
 
 export type BuiltinGettingStartedCategory = {
 	id: string;
+
 	title: string;
+
 	description: string;
+
 	isFeatured: boolean;
+
 	next?: string;
+
 	icon: ThemeIcon;
+
 	when?: string;
+
 	content: {
 		type: "steps";
+
 		steps: BuiltinGettingStartedStep[];
 	};
+
 	walkthroughPageTitle: string;
 };
 
 export type BuiltinGettingStartedStartEntry = {
 	id: string;
+
 	title: string;
+
 	description: string;
+
 	icon: ThemeIcon;
+
 	when?: string;
+
 	content: {
 		type: "startEntry";
+
 		command: string;
 	};
 };

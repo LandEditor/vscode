@@ -114,28 +114,48 @@ type SearchEditorViewState = ICodeEditorViewState & {
 
 export class SearchEditor extends AbstractTextCodeEditor<SearchEditorViewState> {
 	static readonly ID: string = SearchEditorID;
+
 	static readonly SEARCH_EDITOR_VIEW_STATE_PREFERENCE_KEY =
 		"searchEditorViewState";
+
 	private queryEditorWidget!: SearchWidget;
+
 	private get searchResultEditor() {
 		return this.editorControl!;
 	}
+
 	private queryEditorContainer!: HTMLElement;
+
 	private dimension?: DOM.Dimension;
+
 	private inputPatternIncludes!: IncludePatternInputWidget;
+
 	private inputPatternExcludes!: ExcludePatternInputWidget;
+
 	private includesExcludesContainer!: HTMLElement;
+
 	private toggleQueryDetailsButton!: HTMLElement;
+
 	private messageBox!: HTMLElement;
+
 	private runSearchDelayer = new Delayer(0);
+
 	private pauseSearching: boolean = false;
+
 	private showingIncludesExcludes: boolean = false;
+
 	private searchOperation: LongRunningOperation;
+
 	private searchHistoryDelayer: Delayer<void>;
+
 	private readonly messageDisposables: DisposableStore;
+
 	private container: HTMLElement;
+
 	private searchModel: SearchModelImpl;
+
 	private ongoingOperations: number = 0;
+
 	private updatingModelForSearch: boolean = false;
 
 	constructor(
@@ -191,18 +211,25 @@ export class SearchEditor extends AbstractTextCodeEditor<SearchEditorViewState> 
 			editorGroupService,
 			fileService,
 		);
+
 		this.container = DOM.$(".search-editor");
+
 		this.searchOperation = this._register(
 			new LongRunningOperation(progressService),
 		);
+
 		this._register((this.messageDisposables = new DisposableStore()));
+
 		this.searchHistoryDelayer = new Delayer<void>(2000);
+
 		this.searchModel = this._register(
 			this.instantiationService.createInstance(SearchModelImpl),
 		);
 	}
+
 	protected override createEditor(parent: HTMLElement) {
 		DOM.append(parent, this.container);
+
 		this.queryEditorContainer = DOM.append(
 			this.container,
 			DOM.$(".query-container"),
@@ -214,12 +241,15 @@ export class SearchEditor extends AbstractTextCodeEditor<SearchEditorViewState> 
 		);
 
 		super.createEditor(searchResultContainer);
+
 		this.registerEditorListeners();
 
 		const scopedContextKeyService = assertIsDefined(
 			this.scopedContextKeyService,
 		);
+
 		InSearchEditor.bindTo(scopedContextKeyService).set(true);
+
 		this.createQueryEditor(
 			this.queryEditorContainer,
 			this._register(
@@ -233,6 +263,7 @@ export class SearchEditor extends AbstractTextCodeEditor<SearchEditorViewState> 
 			SearchContext.InputBoxFocusedKey.bindTo(scopedContextKeyService),
 		);
 	}
+
 	private createQueryEditor(
 		container: HTMLElement,
 		scopedInstantiationService: IInstantiationService,
@@ -241,6 +272,7 @@ export class SearchEditor extends AbstractTextCodeEditor<SearchEditorViewState> 
 		const searchEditorInputboxStyles = getInputBoxStyle({
 			inputBorder: searchEditorTextInputBorder,
 		});
+
 		this.queryEditorWidget = this._register(
 			scopedInstantiationService.createInstance(SearchWidget, container, {
 				_hideReplaceToggle: true,
@@ -249,12 +281,15 @@ export class SearchEditor extends AbstractTextCodeEditor<SearchEditorViewState> 
 				toggleStyles: defaultToggleStyles,
 			}),
 		);
+
 		this._register(
 			this.queryEditorWidget.onReplaceToggled(() => this.reLayout()),
 		);
+
 		this._register(
 			this.queryEditorWidget.onDidHeightChange(() => this.reLayout()),
 		);
+
 		this._register(
 			this.queryEditorWidget.onSearchSubmit(({ delay }) =>
 				this.triggerSearch({ delay }),
@@ -272,6 +307,7 @@ export class SearchEditor extends AbstractTextCodeEditor<SearchEditorViewState> 
 				"SearchEditor: SearchWidget.searchInput is undefined, cannot register onDidOptionChange listener",
 			);
 		}
+
 		this._register(
 			this.queryEditorWidget.onDidToggleContext(() =>
 				this.triggerSearch({ resetCursor: false }),
@@ -287,6 +323,7 @@ export class SearchEditor extends AbstractTextCodeEditor<SearchEditorViewState> 
 			"moreSearch",
 			"Toggle Search Details",
 		);
+
 		this.toggleQueryDetailsButton = DOM.append(
 			this.includesExcludesContainer,
 			DOM.$(".expand" + ThemeIcon.asCSSSelector(searchDetailsIcon), {
@@ -295,6 +332,7 @@ export class SearchEditor extends AbstractTextCodeEditor<SearchEditorViewState> 
 				"aria-label": toggleQueryDetailsLabel,
 			}),
 		);
+
 		this._register(
 			this.hoverService.setupManagedHover(
 				getDefaultHoverDelegate("element"),
@@ -302,16 +340,19 @@ export class SearchEditor extends AbstractTextCodeEditor<SearchEditorViewState> 
 				toggleQueryDetailsLabel,
 			),
 		);
+
 		this._register(
 			DOM.addDisposableListener(
 				this.toggleQueryDetailsButton,
 				DOM.EventType.CLICK,
 				(e) => {
 					DOM.EventHelper.stop(e);
+
 					this.toggleIncludesExcludes();
 				},
 			),
 		);
+
 		this._register(
 			DOM.addDisposableListener(
 				this.toggleQueryDetailsButton,
@@ -324,11 +365,13 @@ export class SearchEditor extends AbstractTextCodeEditor<SearchEditorViewState> 
 						event.equals(KeyCode.Space)
 					) {
 						DOM.EventHelper.stop(e);
+
 						this.toggleIncludesExcludes();
 					}
 				},
 			),
 		);
+
 		this._register(
 			DOM.addDisposableListener(
 				this.toggleQueryDetailsButton,
@@ -344,6 +387,7 @@ export class SearchEditor extends AbstractTextCodeEditor<SearchEditorViewState> 
 								? this.queryEditorWidget.replaceInput?.focusOnPreserve()
 								: this.queryEditorWidget.focusRegexAction();
 						}
+
 						DOM.EventHelper.stop(e);
 					}
 				},
@@ -359,10 +403,12 @@ export class SearchEditor extends AbstractTextCodeEditor<SearchEditorViewState> 
 			"searchScope.includes",
 			"files to include",
 		);
+
 		DOM.append(
 			folderIncludesList,
 			DOM.$("h4", undefined, filesToIncludeTitle),
 		);
+
 		this.inputPatternIncludes = this._register(
 			scopedInstantiationService.createInstance(
 				IncludePatternInputWidget,
@@ -377,6 +423,7 @@ export class SearchEditor extends AbstractTextCodeEditor<SearchEditorViewState> 
 				},
 			),
 		);
+
 		this.inputPatternIncludes.onSubmit((triggeredOnType) =>
 			this.triggerSearch({
 				resetCursor: false,
@@ -385,6 +432,7 @@ export class SearchEditor extends AbstractTextCodeEditor<SearchEditorViewState> 
 					: 0,
 			}),
 		);
+
 		this._register(
 			this.inputPatternIncludes.onChangeSearchInEditorsBox(() =>
 				this.triggerSearch(),
@@ -400,7 +448,9 @@ export class SearchEditor extends AbstractTextCodeEditor<SearchEditorViewState> 
 			"searchScope.excludes",
 			"files to exclude",
 		);
+
 		DOM.append(excludesList, DOM.$("h4", undefined, excludesTitle));
+
 		this.inputPatternExcludes = this._register(
 			scopedInstantiationService.createInstance(
 				ExcludePatternInputWidget,
@@ -415,6 +465,7 @@ export class SearchEditor extends AbstractTextCodeEditor<SearchEditorViewState> 
 				},
 			),
 		);
+
 		this.inputPatternExcludes.onSubmit((triggeredOnType) =>
 			this.triggerSearch({
 				resetCursor: false,
@@ -423,6 +474,7 @@ export class SearchEditor extends AbstractTextCodeEditor<SearchEditorViewState> 
 					: 0,
 			}),
 		);
+
 		this._register(
 			this.inputPatternExcludes.onChangeIgnoreBox(() =>
 				this.triggerSearch(),
@@ -442,18 +494,22 @@ export class SearchEditor extends AbstractTextCodeEditor<SearchEditorViewState> 
 			if (!tracker) {
 				return;
 			}
+
 			this._register(
 				tracker.onDidFocus(() =>
 					setTimeout(() => inputBoxFocusedContextKey.set(true), 0),
 				),
 			);
+
 			this._register(
 				tracker.onDidBlur(() => inputBoxFocusedContextKey.set(false)),
 			);
 		});
 	}
+
 	private toggleRunAgainMessage(show: boolean) {
 		DOM.clearNode(this.messageBox);
+
 		this.messageDisposables.clear();
 
 		if (show) {
@@ -465,18 +521,21 @@ export class SearchEditor extends AbstractTextCodeEditor<SearchEditorViewState> 
 					localize("runSearch", "Run Search"),
 				),
 			);
+
 			this.messageDisposables.add(
 				DOM.addDisposableListener(
 					runAgainLink,
 					DOM.EventType.CLICK,
 					async () => {
 						await this.triggerSearch();
+
 						this.searchResultEditor.focus();
 					},
 				),
 			);
 		}
 	}
+
 	private _getContributions(): IEditorContributionDescription[] {
 		const skipContributions = [UnusualLineTerminatorsDetector.ID];
 
@@ -484,9 +543,11 @@ export class SearchEditor extends AbstractTextCodeEditor<SearchEditorViewState> 
 			(c) => skipContributions.indexOf(c.id) === -1,
 		);
 	}
+
 	protected override getCodeEditorWidgetOptions(): ICodeEditorWidgetOptions {
 		return { contributions: this._getContributions() };
 	}
+
 	private registerEditorListeners() {
 		this.searchResultEditor.onMouseUp((e) => {
 			if (e.event.detail === 1) {
@@ -508,6 +569,7 @@ export class SearchEditor extends AbstractTextCodeEditor<SearchEditorViewState> 
 						this.searchResultEditor.setSelection(
 							Range.fromPositions(position),
 						);
+
 						this.commandService.executeCommand(
 							"editor.action.peekDefinition",
 						);
@@ -529,6 +591,7 @@ export class SearchEditor extends AbstractTextCodeEditor<SearchEditorViewState> 
 						this.searchResultEditor.setSelection(
 							Range.fromPositions(position),
 						);
+
 						this.commandService.executeCommand(
 							behaviour === "goToLocation"
 								? "editor.action.goToDeclaration"
@@ -538,6 +601,7 @@ export class SearchEditor extends AbstractTextCodeEditor<SearchEditorViewState> 
 						this.searchResultEditor.setSelection(
 							Range.fromPositions(position),
 						);
+
 						this.commandService.executeCommand(
 							"editor.action.peekDefinition",
 						);
@@ -545,6 +609,7 @@ export class SearchEditor extends AbstractTextCodeEditor<SearchEditorViewState> 
 				}
 			}
 		});
+
 		this._register(
 			this.searchResultEditor.onDidChangeModelContent(() => {
 				if (!this.updatingModelForSearch) {
@@ -553,9 +618,11 @@ export class SearchEditor extends AbstractTextCodeEditor<SearchEditorViewState> 
 			}),
 		);
 	}
+
 	override getControl() {
 		return this.searchResultEditor;
 	}
+
 	override focus() {
 		super.focus();
 
@@ -567,21 +634,27 @@ export class SearchEditor extends AbstractTextCodeEditor<SearchEditorViewState> 
 			this.queryEditorWidget.focus();
 		}
 	}
+
 	focusSearchInput() {
 		this.queryEditorWidget.searchInput?.focus();
 	}
+
 	focusFilesToIncludeInput() {
 		if (!this.showingIncludesExcludes) {
 			this.toggleIncludesExcludes(true);
 		}
+
 		this.inputPatternIncludes.focus();
 	}
+
 	focusFilesToExcludeInput() {
 		if (!this.showingIncludesExcludes) {
 			this.toggleIncludesExcludes(true);
 		}
+
 		this.inputPatternExcludes.focus();
 	}
+
 	focusNextInput() {
 		if (this.queryEditorWidget.searchInputHasFocus()) {
 			if (this.showingIncludesExcludes) {
@@ -597,6 +670,7 @@ export class SearchEditor extends AbstractTextCodeEditor<SearchEditorViewState> 
 			// pass
 		}
 	}
+
 	focusPrevInput() {
 		if (this.queryEditorWidget.searchInputHasFocus()) {
 			this.searchResultEditor.focus(); // wrap
@@ -608,39 +682,51 @@ export class SearchEditor extends AbstractTextCodeEditor<SearchEditorViewState> 
 			// unreachable.
 		}
 	}
+
 	setQuery(query: string) {
 		this.queryEditorWidget.searchInput?.setValue(query);
 	}
+
 	selectQuery() {
 		this.queryEditorWidget.searchInput?.select();
 	}
+
 	toggleWholeWords() {
 		this.queryEditorWidget.searchInput?.setWholeWords(
 			!this.queryEditorWidget.searchInput.getWholeWords(),
 		);
+
 		this.triggerSearch({ resetCursor: false });
 	}
+
 	toggleRegex() {
 		this.queryEditorWidget.searchInput?.setRegex(
 			!this.queryEditorWidget.searchInput.getRegex(),
 		);
+
 		this.triggerSearch({ resetCursor: false });
 	}
+
 	toggleCaseSensitive() {
 		this.queryEditorWidget.searchInput?.setCaseSensitive(
 			!this.queryEditorWidget.searchInput.getCaseSensitive(),
 		);
+
 		this.triggerSearch({ resetCursor: false });
 	}
+
 	toggleContextLines() {
 		this.queryEditorWidget.toggleContextLines();
 	}
+
 	modifyContextLines(increase: boolean) {
 		this.queryEditorWidget.modifyContextLines(increase);
 	}
+
 	toggleQueryDetails(shouldShow?: boolean) {
 		this.toggleIncludesExcludes(shouldShow);
 	}
+
 	deleteResultBlock() {
 		const linesToDelete = new Set<number>();
 
@@ -651,6 +737,7 @@ export class SearchEditor extends AbstractTextCodeEditor<SearchEditorViewState> 
 		if (!(selections && model)) {
 			return;
 		}
+
 		const maxLine = model.getLineCount();
 
 		const minLine = 1;
@@ -658,6 +745,7 @@ export class SearchEditor extends AbstractTextCodeEditor<SearchEditorViewState> 
 		const deleteUp = (start: number) => {
 			for (let cursor = start; cursor >= minLine; cursor--) {
 				const line = model.getLineContent(cursor);
+
 				linesToDelete.add(cursor);
 
 				if (line[0] !== undefined && line[0] !== " ") {
@@ -675,8 +763,10 @@ export class SearchEditor extends AbstractTextCodeEditor<SearchEditorViewState> 
 				if (line[0] !== undefined && line[0] !== " ") {
 					return cursor;
 				}
+
 				linesToDelete.add(cursor);
 			}
+
 			return;
 		};
 
@@ -684,21 +774,28 @@ export class SearchEditor extends AbstractTextCodeEditor<SearchEditorViewState> 
 
 		for (const selection of selections) {
 			const lineNumber = selection.startLineNumber;
+
 			endingCursorLines.push(deleteDown(lineNumber));
+
 			deleteUp(lineNumber);
 
 			for (
 				let inner = selection.startLineNumber;
+
 				inner <= selection.endLineNumber;
+
 				inner++
 			) {
 				linesToDelete.add(inner);
 			}
 		}
+
 		if (endingCursorLines.length === 0) {
 			endingCursorLines.push(1);
 		}
+
 		const isDefined = <T>(x: T | undefined): x is T => x !== undefined;
+
 		model.pushEditOperations(
 			this.searchResultEditor.getSelections(),
 			[...linesToDelete].map((line) => ({
@@ -711,20 +808,24 @@ export class SearchEditor extends AbstractTextCodeEditor<SearchEditorViewState> 
 					.map((line) => new Selection(line, 1, line, 1)),
 		);
 	}
+
 	cleanState() {
 		this.getInput()?.setDirty(false);
 	}
+
 	private get searchConfig(): ISearchConfigurationProperties {
 		return this.configurationService.getValue<ISearchConfigurationProperties>(
 			"search",
 		);
 	}
+
 	private iterateThroughMatches(reverse: boolean) {
 		const model = this.searchResultEditor.getModel();
 
 		if (!model) {
 			return;
 		}
+
 		const lastLine = model.getLineCount() ?? 1;
 
 		const lastColumn = model.getLineLength(lastLine);
@@ -742,14 +843,18 @@ export class SearchEditor extends AbstractTextCodeEditor<SearchEditorViewState> 
 		if (!matchRanges) {
 			return;
 		}
+
 		const matchRange = (reverse ? findPrevRange : findNextRange)(
 			matchRanges,
 			currentPosition,
 		);
+
 		this.searchResultEditor.setSelection(matchRange);
+
 		this.searchResultEditor.revealLineInCenterIfOutsideViewport(
 			matchRange.startLineNumber,
 		);
+
 		this.searchResultEditor.focus();
 
 		const matchLineText = model.getLineContent(matchRange.startLineNumber);
@@ -767,6 +872,7 @@ export class SearchEditor extends AbstractTextCodeEditor<SearchEditorViewState> 
 				break;
 			}
 		}
+
 		alert(
 			localize(
 				"searchResultItem",
@@ -777,12 +883,15 @@ export class SearchEditor extends AbstractTextCodeEditor<SearchEditorViewState> 
 			),
 		);
 	}
+
 	focusNextResult() {
 		this.iterateThroughMatches(false);
 	}
+
 	focusPreviousResult() {
 		this.iterateThroughMatches(true);
 	}
+
 	focusAllResults() {
 		this.searchResultEditor.setSelections(
 			(this.getInput()?.getMatchRanges() ?? []).map(
@@ -795,11 +904,15 @@ export class SearchEditor extends AbstractTextCodeEditor<SearchEditorViewState> 
 					),
 			),
 		);
+
 		this.searchResultEditor.focus();
 	}
+
 	async triggerSearch(_options?: {
 		resetCursor?: boolean;
+
 		delay?: number;
+
 		focusResults?: boolean;
 	}) {
 		const focusResults =
@@ -810,29 +923,35 @@ export class SearchEditor extends AbstractTextCodeEditor<SearchEditorViewState> 
 		} else if (_options.focusResults === undefined) {
 			_options.focusResults = focusResults;
 		}
+
 		const options = { resetCursor: true, delay: 0, ..._options };
 
 		if (!this.queryEditorWidget.searchInput?.inputBox.isInputValid()) {
 			return;
 		}
+
 		if (!this.pauseSearching) {
 			await this.runSearchDelayer.trigger(async () => {
 				this.toggleRunAgainMessage(false);
+
 				await this.doRunSearch();
 
 				if (options.resetCursor) {
 					this.searchResultEditor.setPosition(new Position(1, 1));
+
 					this.searchResultEditor.setScrollPosition({
 						scrollTop: 0,
 						scrollLeft: 0,
 					});
 				}
+
 				if (options.focusResults) {
 					this.searchResultEditor.focus();
 				}
 			}, options.delay);
 		}
 	}
+
 	private readConfigFromWidget(): SearchConfiguration {
 		return {
 			isCaseSensitive:
@@ -861,6 +980,7 @@ export class SearchEditor extends AbstractTextCodeEditor<SearchEditorViewState> 
 			},
 		};
 	}
+
 	private async doRunSearch() {
 		this.searchModel.cancelSearch(true);
 
@@ -869,9 +989,12 @@ export class SearchEditor extends AbstractTextCodeEditor<SearchEditorViewState> 
 		if (!startInput) {
 			return;
 		}
+
 		this.searchHistoryDelayer.trigger(() => {
 			this.queryEditorWidget.searchInput?.onSearchSubmit();
+
 			this.inputPatternExcludes.onSearchSubmit();
+
 			this.inputPatternIncludes.onSearchSubmit();
 		});
 
@@ -880,6 +1003,7 @@ export class SearchEditor extends AbstractTextCodeEditor<SearchEditorViewState> 
 		if (!config.query) {
 			return;
 		}
+
 		const content: IPatternInfo = {
 			pattern: config.query,
 			isRegExp: config.isRegexp,
@@ -924,6 +1048,7 @@ export class SearchEditor extends AbstractTextCodeEditor<SearchEditorViewState> 
 		try {
 			const queryBuilder =
 				this.instantiationService.createInstance(QueryBuilder);
+
 			query = queryBuilder.text(
 				content,
 				folderResources.map((folder) => folder.uri),
@@ -932,13 +1057,17 @@ export class SearchEditor extends AbstractTextCodeEditor<SearchEditorViewState> 
 		} catch (err) {
 			return;
 		}
+
 		this.searchOperation.start(500);
+
 		this.ongoingOperations++;
 
 		const { configurationModel } = await startInput.resolveModels();
+
 		configurationModel.updateConfig(config);
 
 		const result = this.searchModel.search(query);
+
 		startInput.ongoingSearchOperation = result.asyncResults.finally(() => {
 			this.ongoingOperations--;
 
@@ -948,8 +1077,10 @@ export class SearchEditor extends AbstractTextCodeEditor<SearchEditorViewState> 
 		});
 
 		const searchOperation = await startInput.ongoingSearchOperation;
+
 		await this.onSearchComplete(searchOperation, config, startInput);
 	}
+
 	private async onSearchComplete(
 		searchOperation: ISearchComplete,
 		startConfig: SearchConfiguration,
@@ -965,6 +1096,7 @@ export class SearchEditor extends AbstractTextCodeEditor<SearchEditorViewState> 
 		) {
 			return;
 		}
+
 		input.ongoingSearchOperation = undefined;
 
 		const sortOrder = this.searchConfig.sortOrder;
@@ -972,7 +1104,9 @@ export class SearchEditor extends AbstractTextCodeEditor<SearchEditorViewState> 
 		if (sortOrder === SearchSortOrder.Modified) {
 			await this.retrieveFileStats(this.searchModel.searchResult);
 		}
+
 		const controller = ReferencesController.get(this.searchResultEditor);
+
 		controller?.closeWidget(false);
 
 		const labelFormatter = (uri: URI): string =>
@@ -989,8 +1123,11 @@ export class SearchEditor extends AbstractTextCodeEditor<SearchEditorViewState> 
 		);
 
 		const { resultsModel } = await input.resolveModels();
+
 		this.updatingModelForSearch = true;
+
 		this.modelService.updateModel(resultsModel, results.text);
+
 		this.updatingModelForSearch = false;
 
 		if (searchOperation && searchOperation.messages) {
@@ -998,10 +1135,14 @@ export class SearchEditor extends AbstractTextCodeEditor<SearchEditorViewState> 
 				this.addMessage(message);
 			}
 		}
+
 		this.reLayout();
+
 		input.setDirty(!input.hasCapability(EditorInputCapabilities.Untitled));
+
 		input.setMatchRanges(results.matchRanges);
 	}
+
 	private addMessage(message: TextSearchCompleteMessage) {
 		let messageBox: HTMLElement;
 
@@ -1010,6 +1151,7 @@ export class SearchEditor extends AbstractTextCodeEditor<SearchEditorViewState> 
 		} else {
 			messageBox = DOM.append(this.messageBox, DOM.$(".message"));
 		}
+
 		DOM.append(
 			messageBox,
 			renderSearchMessage(
@@ -1023,6 +1165,7 @@ export class SearchEditor extends AbstractTextCodeEditor<SearchEditorViewState> 
 			),
 		);
 	}
+
 	private async retrieveFileStats(
 		searchResult: ISearchResult,
 	): Promise<void> {
@@ -1030,12 +1173,16 @@ export class SearchEditor extends AbstractTextCodeEditor<SearchEditorViewState> 
 			.matches()
 			.filter((f) => !f.fileStat)
 			.map((f) => f.resolveFileStat(this.fileService));
+
 		await Promise.all(files);
 	}
+
 	override layout(dimension: DOM.Dimension) {
 		this.dimension = dimension;
+
 		this.reLayout();
 	}
+
 	getSelected() {
 		const selection = this.searchResultEditor.getSelection();
 
@@ -1046,30 +1193,37 @@ export class SearchEditor extends AbstractTextCodeEditor<SearchEditorViewState> 
 					?.getValueInRange(selection) ?? ""
 			);
 		}
+
 		return "";
 	}
+
 	private reLayout() {
 		if (this.dimension) {
 			this.queryEditorWidget.setWidth(
 				this.dimension.width - 28 /* container margin */,
 			);
+
 			this.searchResultEditor.layout({
 				height:
 					this.dimension.height -
 					DOM.getTotalHeight(this.queryEditorContainer),
 				width: this.dimension.width,
 			});
+
 			this.inputPatternExcludes.setWidth(
 				this.dimension.width - 28 /* container margin */,
 			);
+
 			this.inputPatternIncludes.setWidth(
 				this.dimension.width - 28 /* container margin */,
 			);
 		}
 	}
+
 	private getInput(): SearchEditorInput | undefined {
 		return this.input as SearchEditorInput;
 	}
+
 	private priorConfig: Partial<Readonly<SearchConfiguration>> | undefined;
 
 	setSearchConfig(config: Partial<Readonly<SearchConfiguration>>) {
@@ -1078,42 +1232,52 @@ export class SearchEditor extends AbstractTextCodeEditor<SearchEditorViewState> 
 		if (config.query !== undefined) {
 			this.queryEditorWidget.setValue(config.query);
 		}
+
 		if (config.isCaseSensitive !== undefined) {
 			this.queryEditorWidget.searchInput?.setCaseSensitive(
 				config.isCaseSensitive,
 			);
 		}
+
 		if (config.isRegexp !== undefined) {
 			this.queryEditorWidget.searchInput?.setRegex(config.isRegexp);
 		}
+
 		if (config.matchWholeWord !== undefined) {
 			this.queryEditorWidget.searchInput?.setWholeWords(
 				config.matchWholeWord,
 			);
 		}
+
 		if (config.contextLines !== undefined) {
 			this.queryEditorWidget.setContextLines(config.contextLines);
 		}
+
 		if (config.filesToExclude !== undefined) {
 			this.inputPatternExcludes.setValue(config.filesToExclude);
 		}
+
 		if (config.filesToInclude !== undefined) {
 			this.inputPatternIncludes.setValue(config.filesToInclude);
 		}
+
 		if (config.onlyOpenEditors !== undefined) {
 			this.inputPatternIncludes.setOnlySearchInOpenEditors(
 				config.onlyOpenEditors,
 			);
 		}
+
 		if (config.useExcludeSettingsAndIgnoreFiles !== undefined) {
 			this.inputPatternExcludes.setUseExcludesAndIgnoreFiles(
 				config.useExcludeSettingsAndIgnoreFiles,
 			);
 		}
+
 		if (config.showIncludesExcludes !== undefined) {
 			this.toggleIncludesExcludes(config.showIncludesExcludes);
 		}
 	}
+
 	override async setInput(
 		newInput: SearchEditorInput,
 		options: IEditorOptions | undefined,
@@ -1125,44 +1289,56 @@ export class SearchEditor extends AbstractTextCodeEditor<SearchEditorViewState> 
 		if (token.isCancellationRequested) {
 			return;
 		}
+
 		const { configurationModel, resultsModel } =
 			await newInput.resolveModels();
 
 		if (token.isCancellationRequested) {
 			return;
 		}
+
 		this.searchResultEditor.setModel(resultsModel);
+
 		this.pauseSearching = true;
+
 		this.toggleRunAgainMessage(
 			!newInput.ongoingSearchOperation &&
 				resultsModel.getLineCount() === 1 &&
 				resultsModel.getValueLength() === 0 &&
 				configurationModel.config.query !== "",
 		);
+
 		this.setSearchConfig(configurationModel.config);
+
 		this._register(
 			configurationModel.onConfigDidUpdate((newConfig) => {
 				if (newConfig !== this.priorConfig) {
 					this.pauseSearching = true;
+
 					this.setSearchConfig(newConfig);
+
 					this.pauseSearching = false;
 				}
 			}),
 		);
+
 		this.restoreViewState(context);
 
 		if (!options?.preserveFocus) {
 			this.focus();
 		}
+
 		this.pauseSearching = false;
 
 		if (newInput.ongoingSearchOperation) {
 			const existingConfig = this.readConfigFromWidget();
+
 			newInput.ongoingSearchOperation.then((complete) => {
 				this.onSearchComplete(complete, existingConfig, newInput);
 			});
 		}
 	}
+
 	private toggleIncludesExcludes(_shouldShow?: boolean): void {
 		const cls = "expanded";
 
@@ -1172,26 +1348,33 @@ export class SearchEditor extends AbstractTextCodeEditor<SearchEditorViewState> 
 
 		if (shouldShow) {
 			this.toggleQueryDetailsButton.setAttribute("aria-expanded", "true");
+
 			this.includesExcludesContainer.classList.add(cls);
 		} else {
 			this.toggleQueryDetailsButton.setAttribute(
 				"aria-expanded",
 				"false",
 			);
+
 			this.includesExcludesContainer.classList.remove(cls);
 		}
+
 		this.showingIncludesExcludes =
 			this.includesExcludesContainer.classList.contains(cls);
+
 		this.reLayout();
 	}
+
 	protected override toEditorViewStateResource(
 		input: EditorInput,
 	): URI | undefined {
 		if (input.typeId === SearchEditorInputTypeId) {
 			return (input as SearchEditorInput).modelUri;
 		}
+
 		return undefined;
 	}
+
 	protected override computeEditorViewState(
 		resource: URI,
 	): SearchEditorViewState | undefined {
@@ -1202,9 +1385,11 @@ export class SearchEditor extends AbstractTextCodeEditor<SearchEditorViewState> 
 		if (!editorViewState) {
 			return undefined;
 		}
+
 		if (resource.toString() !== this.getInput()?.modelUri.toString()) {
 			return undefined;
 		}
+
 		return {
 			...editorViewState,
 			focused: this.searchResultEditor.hasWidgetFocus()
@@ -1212,9 +1397,11 @@ export class SearchEditor extends AbstractTextCodeEditor<SearchEditorViewState> 
 				: "input",
 		};
 	}
+
 	protected tracksEditorViewState(input: EditorInput): boolean {
 		return input.typeId === SearchEditorInputTypeId;
 	}
+
 	private restoreViewState(context: IEditorOpenContext) {
 		const viewState = this.loadEditorViewState(this.getInput(), context);
 
@@ -1222,6 +1409,7 @@ export class SearchEditor extends AbstractTextCodeEditor<SearchEditorViewState> 
 			this.searchResultEditor.restoreViewState(viewState);
 		}
 	}
+
 	getAriaLabel() {
 		return this.getInput()?.getName() ?? localize("searchEditor", "Search");
 	}
@@ -1238,6 +1426,7 @@ function findNextRange(matchRanges: Range[], currentPosition: Position) {
 			return matchRange;
 		}
 	}
+
 	return matchRanges[0];
 }
 function findPrevRange(matchRanges: Range[], currentPosition: Position) {
@@ -1250,5 +1439,6 @@ function findPrevRange(matchRanges: Range[], currentPosition: Position) {
 			}
 		}
 	}
+
 	return matchRanges[matchRanges.length - 1];
 }

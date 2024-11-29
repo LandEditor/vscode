@@ -42,11 +42,13 @@ export default class LanguageProvider extends Disposable {
 		) => void,
 	) {
 		super();
+
 		vscode.workspace.onDidChangeConfiguration(
 			this.configurationChanged,
 			this,
 			this._disposables,
 		);
+
 		this.configurationChanged();
 
 		client.onReady(() => this.registerProviders());
@@ -280,7 +282,9 @@ export default class LanguageProvider extends Disposable {
 
 	private configurationChanged(): void {
 		const config = vscode.workspace.getConfiguration(this.id, null);
+
 		this.updateValidate(config.get(validateSetting, true));
+
 		this.updateSuggestionDiagnostics(config.get(suggestionSetting, true));
 	}
 
@@ -345,6 +349,7 @@ export default class LanguageProvider extends Disposable {
 		file: vscode.Uri,
 		diagnostics: (vscode.Diagnostic & {
 			reportUnnecessary: any;
+
 			reportDeprecated: any;
 		})[],
 		ranges: vscode.Range[] | undefined,
@@ -384,6 +389,7 @@ export default class LanguageProvider extends Disposable {
 		const reportUnnecessary = config.get<boolean>("showUnused", true);
 
 		const reportDeprecated = config.get<boolean>("showDeprecated", true);
+
 		this.client.diagnosticsManager.updateDiagnostics(
 			file,
 			this._diagnosticLanguage,
@@ -398,6 +404,7 @@ export default class LanguageProvider extends Disposable {
 						return false;
 					}
 				}
+
 				if (!reportDeprecated) {
 					if (
 						diag.reportDeprecated &&
@@ -406,6 +413,7 @@ export default class LanguageProvider extends Disposable {
 						return false;
 					}
 				}
+
 				return true;
 			}),
 			ranges,

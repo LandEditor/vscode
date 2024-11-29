@@ -17,7 +17,9 @@ export class NotebookLoggingService
 	implements INotebookLoggingService
 {
 	_serviceBrand: undefined;
+
 	static ID: string = "notebook";
+
 	private readonly _logger: ILogger;
 
 	constructor(
@@ -25,21 +27,26 @@ export class NotebookLoggingService
 		loggerService: ILoggerService,
 	) {
 		super();
+
 		this._logger = this._register(
 			loggerService.createLogger(logChannelId, {
 				name: nls.localize("renderChannelName", "Notebook"),
 			}),
 		);
 	}
+
 	debug(category: string, output: string): void {
 		this._logger.debug(`[${category}] ${output}`);
 	}
+
 	info(category: string, output: string): void {
 		this._logger.info(`[${category}] ${output}`);
 	}
+
 	warn(category: string, output: string): void {
 		this._logger.warn(`[${category}] ${output}`);
 	}
+
 	error(category: string, output: string): void {
 		this._logger.error(`[${category}] ${output}`);
 	}

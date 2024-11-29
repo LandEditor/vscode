@@ -12,9 +12,13 @@ import { ITypeScriptServiceClient } from "../typescriptService";
 
 class FileReferencesCommand implements Command {
 	public static readonly context = "tsSupportsFileReferences";
+
 	public static readonly minVersion = API.v420;
+
 	public readonly id = "typescript.findAllFileReferences";
+
 	public constructor(private readonly client: ITypeScriptServiceClient) {}
+
 	public async execute(resource?: vscode.Uri) {
 		if (this.client.apiVersion.lt(FileReferencesCommand.minVersion)) {
 			vscode.window.showErrorMessage(
@@ -25,6 +29,7 @@ class FileReferencesCommand implements Command {
 
 			return;
 		}
+
 		resource ??= vscode.window.activeTextEditor?.document.uri;
 
 		if (!resource) {
@@ -36,6 +41,7 @@ class FileReferencesCommand implements Command {
 
 			return;
 		}
+
 		const document = await vscode.workspace.openTextDocument(resource);
 
 		if (!isSupportedLanguageMode(document)) {
@@ -47,6 +53,7 @@ class FileReferencesCommand implements Command {
 
 			return;
 		}
+
 		const openedFiledPath = this.client.toOpenTsFilePath(document);
 
 		if (!openedFiledPath) {
@@ -58,6 +65,7 @@ class FileReferencesCommand implements Command {
 
 			return;
 		}
+
 		await vscode.window.withProgress(
 			{
 				location: vscode.ProgressLocation.Window,
@@ -75,6 +83,7 @@ class FileReferencesCommand implements Command {
 				if (response.type !== "response" || !response.body) {
 					return;
 				}
+
 				const locations: vscode.Location[] = response.body.refs.map(
 					(reference) =>
 						typeConverters.Location.fromTextSpan(
@@ -87,6 +96,7 @@ class FileReferencesCommand implements Command {
 
 				const existingSetting =
 					config.inspect<string>("preferredLocation");
+
 				await config.update("preferredLocation", "view");
 
 				try {
@@ -118,7 +128,9 @@ export function register(
 			client.apiVersion.gte(FileReferencesCommand.minVersion),
 		);
 	}
+
 	updateContext();
+
 	commandManager.register(new FileReferencesCommand(client));
 
 	return client.onTsServerStarted(() => updateContext());

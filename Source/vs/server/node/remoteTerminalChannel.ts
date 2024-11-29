@@ -73,6 +73,7 @@ class CustomVariableResolver extends AbstractVariableResolverService {
 					if (found && found.length > 0) {
 						return found[0].uri;
 					}
+
 					return undefined;
 				},
 				getWorkspaceFolderCount: (): number => {
@@ -94,6 +95,7 @@ class CustomVariableResolver extends AbstractVariableResolverService {
 					if (activeFileResource) {
 						return path.normalize(activeFileResource.fsPath);
 					}
+
 					return undefined;
 				},
 				getSelectedText: (): string | undefined => {
@@ -121,22 +123,30 @@ export class RemoteTerminalChannel
 	implements IServerChannel<RemoteAgentConnectionContext>
 {
 	private _lastReqId = 0;
+
 	private readonly _pendingCommands = new Map<
 		number,
 		{
 			resolve: (data: any) => void;
+
 			reject: (err: any) => void;
+
 			uriTransformer: IURITransformer;
 		}
 	>();
+
 	private readonly _onExecuteCommand = this._register(
 		new Emitter<{
 			reqId: number;
+
 			persistentProcessId: number;
+
 			commandId: string;
+
 			commandArgs: any[];
 		}>(),
 	);
+
 	readonly onExecuteCommand = this._onExecuteCommand.event;
 
 	constructor(
@@ -149,6 +159,7 @@ export class RemoteTerminalChannel
 	) {
 		super();
 	}
+
 	async call(
 		ctx: RemoteAgentConnectionContext,
 		command: RemoteTerminalChannelRequest,
@@ -171,6 +182,7 @@ export class RemoteTerminalChannel
 					<ICreateTerminalProcessArguments>args,
 				);
 			}
+
 			case RemoteTerminalChannelRequest.AttachToProcess:
 				return this._ptyHostService.attachToProcess.apply(
 					this._ptyHostService,
@@ -382,6 +394,7 @@ export class RemoteTerminalChannel
 		// @ts-expect-error Assert command is the `never` type to ensure all messages are handled
 		throw new Error(`IPC Command ${command} not found`);
 	}
+
 	listen(_: any, event: RemoteTerminalChannelEvent, arg: any): Event<any> {
 		switch (event) {
 			case RemoteTerminalChannelEvent.OnPtyHostExitEvent:
@@ -429,6 +442,7 @@ export class RemoteTerminalChannel
 		// @ts-expect-error Assert event is the `never` type to ensure all messages are handled
 		throw new Error(`IPC Command ${event} not found`);
 	}
+
 	private async _createProcess(
 		uriTransformer: IURITransformer,
 		args: ICreateTerminalProcessArguments,
@@ -462,6 +476,7 @@ export class RemoteTerminalChannel
 			this._logService,
 			this._configurationService,
 		);
+
 		this._logService.trace("baseEnv", baseEnv);
 
 		const reviveWorkspaceFolder = (
@@ -515,6 +530,7 @@ export class RemoteTerminalChannel
 			args.configuration["terminal.integrated.cwd"],
 			this._logService,
 		);
+
 		shellLaunchConfig.cwd = initialCwd;
 
 		const envPlatformKey = platform.isWindows
@@ -546,6 +562,7 @@ export class RemoteTerminalChannel
 					},
 				]);
 			}
+
 			const envVariableCollections = new Map<
 				string,
 				IEnvironmentVariableCollection
@@ -558,6 +575,7 @@ export class RemoteTerminalChannel
 			const workspaceFolder = activeWorkspaceFolder
 				? (activeWorkspaceFolder ?? undefined)
 				: undefined;
+
 			await mergedCollection.applyToProcessEnvironment(
 				env,
 				{ workspaceFolder },
@@ -574,6 +592,7 @@ export class RemoteTerminalChannel
 		});
 		// Setup the CLI server to support forwarding commands run from the CLI
 		const ipcHandlePath = createRandomIPCHandle();
+
 		env.VSCODE_IPC_HOOK_CLI = ipcHandlePath;
 
 		const persistentProcessId = await this._ptyHostService.createProcess(
@@ -605,6 +624,7 @@ export class RemoteTerminalChannel
 			this._logService,
 			ipcHandlePath,
 		);
+
 		this._ptyHostService.onProcessExit(
 			(e) => e.id === persistentProcessId && cliServer.dispose(),
 		);
@@ -614,6 +634,7 @@ export class RemoteTerminalChannel
 			resolvedShellLaunchConfig: shellLaunchConfig,
 		};
 	}
+
 	private _executeCommand<T>(
 		persistentProcessId: number,
 		commandId: string,
@@ -623,6 +644,7 @@ export class RemoteTerminalChannel
 		const { resolve, reject, promise } = promiseWithResolvers<T>();
 
 		const reqId = ++this._lastReqId;
+
 		this._pendingCommands.set(reqId, { resolve, reject, uriTransformer });
 
 		const serializedCommandArgs = cloneAndChange(commandArgs, (obj) => {
@@ -630,11 +652,14 @@ export class RemoteTerminalChannel
 				// this is UriComponents
 				return uriTransformer.transformOutgoing(obj);
 			}
+
 			if (obj && obj instanceof URI) {
 				return uriTransformer.transformOutgoingURI(obj);
 			}
+
 			return undefined;
 		});
+
 		this._onExecuteCommand.fire({
 			reqId,
 			persistentProcessId,
@@ -644,6 +669,7 @@ export class RemoteTerminalChannel
 
 		return promise;
 	}
+
 	private _sendCommandResult(
 		reqId: number,
 		isError: boolean,
@@ -654,6 +680,7 @@ export class RemoteTerminalChannel
 		if (!data) {
 			return;
 		}
+
 		this._pendingCommands.delete(reqId);
 
 		const payload = cloneAndChange(serializedPayload, (obj) => {
@@ -661,6 +688,7 @@ export class RemoteTerminalChannel
 				// this is UriComponents
 				return data.uriTransformer.transformIncoming(obj);
 			}
+
 			return undefined;
 		});
 
@@ -670,11 +698,13 @@ export class RemoteTerminalChannel
 			data.resolve(payload);
 		}
 	}
+
 	private _getDefaultSystemShell(
 		osOverride?: platform.OperatingSystem,
 	): Promise<string> {
 		return this._ptyHostService.getDefaultSystemShell(osOverride);
 	}
+
 	private async _getProfiles(
 		workspaceId: string,
 		profiles: unknown,
@@ -690,15 +720,18 @@ export class RemoteTerminalChannel
 			) || []
 		);
 	}
+
 	private _getEnvironment(): platform.IProcessEnvironment {
 		return { ...process.env };
 	}
+
 	private _getWslPath(
 		original: string,
 		direction: "unix-to-win" | "win-to-unix",
 	): Promise<string> {
 		return this._ptyHostService.getWslPath(original, direction);
 	}
+
 	private _reduceConnectionGraceTime(): Promise<void> {
 		return this._ptyHostService.reduceConnectionGraceTime();
 	}

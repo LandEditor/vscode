@@ -173,20 +173,27 @@ registerWorkbenchContribution2(
 //#region Input Serializer
 type SerializedSearchEditor = {
 	modelUri: string | undefined;
+
 	dirty: boolean;
+
 	config?: SearchEditorConstants.SearchConfiguration;
+
 	name: string;
+
 	matchRanges: Range[];
+
 	backingUri?: string;
 };
 class SearchEditorInputSerializer implements IEditorSerializer {
 	canSerialize(input: SearchEditorInput) {
 		return !!input.tryReadConfigSync();
 	}
+
 	serialize(input: SearchEditorInput) {
 		if (!this.canSerialize(input)) {
 			return undefined;
 		}
+
 		if (input.isDisposed()) {
 			return JSON.stringify({
 				modelUri: undefined,
@@ -197,6 +204,7 @@ class SearchEditorInputSerializer implements IEditorSerializer {
 				backingUri: input.backingUri?.toString(),
 			} satisfies SerializedSearchEditor);
 		}
+
 		let modelUri = undefined;
 
 		if (
@@ -205,6 +213,7 @@ class SearchEditorInputSerializer implements IEditorSerializer {
 		) {
 			modelUri = input.modelUri.toString();
 		}
+
 		const config = input.tryReadConfigSync();
 
 		const dirty = input.isDirty();
@@ -222,6 +231,7 @@ class SearchEditorInputSerializer implements IEditorSerializer {
 			backingUri: backingUri?.toString(),
 		} satisfies SerializedSearchEditor);
 	}
+
 	deserialize(
 		instantiationService: IInstantiationService,
 		serializedEditorInput: string,
@@ -243,7 +253,9 @@ class SearchEditorInputSerializer implements IEditorSerializer {
 							: undefined,
 					},
 				);
+
 				input.setDirty(dirty);
+
 				input.setMatchRanges(matchRanges);
 
 				return input;
@@ -264,6 +276,7 @@ class SearchEditorInputSerializer implements IEditorSerializer {
 				}
 			}
 		}
+
 		return undefined;
 	}
 }
@@ -288,17 +301,27 @@ const category = localize2("search", "Search Editor");
 
 export type LegacySearchEditorArgs = Partial<{
 	query: string;
+
 	includes: string;
+
 	excludes: string;
+
 	contextLines: number;
+
 	wholeWord: boolean;
 
 	caseSensitive: boolean;
+
 	regexp: boolean;
+
 	useIgnores: boolean;
+
 	showIncludesExcludes: boolean;
+
 	triggerSearch: boolean;
+
 	focusResults: boolean;
+
 	location: "reuse" | "new";
 }>;
 
@@ -317,6 +340,7 @@ const translateLegacyConfig = (
 		regexp: "isRegexp",
 		useIgnores: "useExcludeSettingsAndIgnoreFiles",
 	};
+
 	Object.entries(legacyConfig).forEach(([key, value]) => {
 		(config as any)[(overrides as any)[key] ?? key] = value;
 	});
@@ -327,7 +351,9 @@ const translateLegacyConfig = (
 export type OpenSearchEditorArgs = Partial<
 	SearchEditorConstants.SearchConfiguration & {
 		triggerSearch: boolean;
+
 		focusResults: boolean;
+
 		location: "reuse" | "new";
 	}
 >;
@@ -375,6 +401,7 @@ registerAction2(
 				f1: true,
 			});
 		}
+
 		async run(accessor: ServicesAccessor) {
 			const contextService = accessor
 				.get(IContextKeyService)
@@ -407,6 +434,7 @@ registerAction2(
 				metadata: openArgMetadata,
 			});
 		}
+
 		async run(
 			accessor: ServicesAccessor,
 			args: LegacySearchEditorArgs | OpenSearchEditorArgs,
@@ -434,6 +462,7 @@ registerAction2(
 				metadata: openArgMetadata,
 			});
 		}
+
 		async run(
 			accessor: ServicesAccessor,
 			args: LegacySearchEditorArgs | OpenSearchEditorArgs,
@@ -461,6 +490,7 @@ registerAction2(
 				metadata: openArgMetadata,
 			});
 		}
+
 		async run(
 			accessor: ServicesAccessor,
 			args: LegacySearchEditorArgs | OpenSearchEditorArgs,
@@ -499,6 +529,7 @@ registerAction2(
 				},
 			});
 		}
+
 		async run(accessor: ServicesAccessor) {
 			const viewsService = accessor.get(IViewsService);
 
@@ -548,6 +579,7 @@ registerAction2(
 				],
 			});
 		}
+
 		async run(accessor: ServicesAccessor) {
 			const editorService = accessor.get(IEditorService);
 
@@ -579,6 +611,7 @@ registerAction2(
 				},
 			});
 		}
+
 		async run(accessor: ServicesAccessor) {
 			const editorService = accessor.get(IEditorService);
 
@@ -606,6 +639,7 @@ registerAction2(
 				precondition: SearchEditorConstants.InSearchEditor,
 			});
 		}
+
 		async run(accessor: ServicesAccessor) {
 			const editorService = accessor.get(IEditorService);
 
@@ -633,6 +667,7 @@ registerAction2(
 				precondition: SearchEditorConstants.InSearchEditor,
 			});
 		}
+
 		async run(accessor: ServicesAccessor) {
 			const editorService = accessor.get(IEditorService);
 
@@ -668,6 +703,7 @@ registerAction2(
 				),
 			});
 		}
+
 		run(accessor: ServicesAccessor) {
 			toggleSearchEditorCaseSensitiveCommand(accessor);
 		}
@@ -695,6 +731,7 @@ registerAction2(
 				),
 			});
 		}
+
 		run(accessor: ServicesAccessor) {
 			toggleSearchEditorWholeWordCommand(accessor);
 		}
@@ -722,6 +759,7 @@ registerAction2(
 				),
 			});
 		}
+
 		run(accessor: ServicesAccessor) {
 			toggleSearchEditorRegexCommand(accessor);
 		}
@@ -748,6 +786,7 @@ registerAction2(
 				},
 			});
 		}
+
 		run(accessor: ServicesAccessor) {
 			toggleSearchEditorContextLinesCommand(accessor);
 		}
@@ -771,6 +810,7 @@ registerAction2(
 				},
 			});
 		}
+
 		run(accessor: ServicesAccessor) {
 			modifySearchEditorContextLinesCommand(accessor, true);
 		}
@@ -794,6 +834,7 @@ registerAction2(
 				},
 			});
 		}
+
 		run(accessor: ServicesAccessor) {
 			modifySearchEditorContextLinesCommand(accessor, false);
 		}
@@ -817,6 +858,7 @@ registerAction2(
 				},
 			});
 		}
+
 		run(accessor: ServicesAccessor) {
 			selectAllSearchEditorMatchesCommand(accessor);
 		}
@@ -843,6 +885,7 @@ registerAction2(
 				],
 			});
 		}
+
 		run(accessor: ServicesAccessor, ...args: any[]) {
 			return openSearchEditor(accessor);
 		}
@@ -864,28 +907,34 @@ class SearchEditorWorkingCopyEditorHandler
 		workingCopyEditorService: IWorkingCopyEditorService,
 	) {
 		super();
+
 		this._register(workingCopyEditorService.registerHandler(this));
 	}
+
 	handles(workingCopy: IWorkingCopyIdentifier): boolean {
 		return (
 			workingCopy.resource.scheme ===
 			SearchEditorConstants.SearchEditorScheme
 		);
 	}
+
 	isOpen(workingCopy: IWorkingCopyIdentifier, editor: EditorInput): boolean {
 		if (!this.handles(workingCopy)) {
 			return false;
 		}
+
 		return (
 			editor instanceof SearchEditorInput &&
 			isEqual(workingCopy.resource, editor.modelUri)
 		);
 	}
+
 	createEditor(workingCopy: IWorkingCopyIdentifier): EditorInput {
 		const input = this.instantiationService.invokeFunction(
 			getOrMakeSearchEditorInput,
 			{ from: "model", modelUri: workingCopy.resource },
 		);
+
 		input.setDirty(true);
 
 		return input;

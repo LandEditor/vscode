@@ -4,7 +4,9 @@
  *--------------------------------------------------------------------------------------------*/
 export class Lazy<T> {
 	private _didRun: boolean = false;
+
 	private _value?: T;
+
 	private _error: Error | undefined;
 
 	constructor(private readonly executor: () => T) {}
@@ -30,9 +32,11 @@ export class Lazy<T> {
 				this._didRun = true;
 			}
 		}
+
 		if (this._error) {
 			throw this._error;
 		}
+
 		return this._value!;
 	}
 	/**

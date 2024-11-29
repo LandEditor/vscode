@@ -58,6 +58,7 @@ function createServerHost(
 		depth: number | undefined,
 		getFileSystemEntries: (path: string) => {
 			files: readonly string[];
+
 			directories: readonly string[];
 		},
 		realpath: (path: string) => string,
@@ -125,6 +126,7 @@ function createServerHost(
 				const packageJsonResponse = await fetch(
 					combinePaths(packageRoot, "package.json"),
 				);
+
 				packageJson = await packageJsonResponse.json();
 			} catch (e) {
 				return {
@@ -175,7 +177,9 @@ function createServerHost(
 
 				if (webPath) {
 					const request = new XMLHttpRequest();
+
 					request.open("GET", webPath, /* asynchronous */ false);
+
 					request.send();
 
 					return request.status === 200
@@ -203,12 +207,14 @@ function createServerHost(
 				if (!enabledExperimentalTypeAcquisition) {
 					return undefined;
 				}
+
 				try {
 					contents = fs.readFile(mapUri(uri, "vscode-node-modules"));
 				} catch (e) {
 					return undefined;
 				}
 			}
+
 			return textDecoder.decode(contents.slice());
 		},
 		getFileSize(path) {
@@ -231,6 +237,7 @@ function createServerHost(
 					} catch (_error) {}
 				}
 			}
+
 			return ret;
 		},
 		writeFile(path, data, writeByteOrderMark) {
@@ -251,6 +258,7 @@ function createServerHost(
 			} catch (e) {
 				return;
 			}
+
 			const encoded = textEncoder.encode(data);
 
 			try {
@@ -284,7 +292,9 @@ function createServerHost(
 				}
 
 				const request = new XMLHttpRequest();
+
 				request.open("HEAD", webPath, /* asynchronous */ false);
+
 				request.send();
 
 				return request.status === 200;
@@ -297,6 +307,7 @@ function createServerHost(
 			} catch (e) {
 				return false;
 			}
+
 			let ret = false;
 
 			try {
@@ -310,6 +321,7 @@ function createServerHost(
 					} catch (_error) {}
 				}
 			}
+
 			return ret;
 		},
 		directoryExists(path: string): boolean {
@@ -338,6 +350,7 @@ function createServerHost(
 					} catch (_error) {}
 				}
 			}
+
 			if (stat) {
 				if (path.startsWith("/https") && !path.endsWith(".d.ts")) {
 					// TODO: Hack, https 'file system' can't actually tell what is a file vs directory
@@ -420,6 +433,7 @@ function createServerHost(
 					} catch (_e) {}
 				}
 			}
+
 			return s && new Date(s.mtime);
 		},
 		deleteFile(path: string): void {
@@ -479,11 +493,13 @@ function createServerHost(
 		if (isNm) {
 			uri = mapUri(uri, "vscode-node-modules");
 		}
+
 		const out = [uri.scheme];
 
 		if (uri.authority) {
 			out.push(uri.authority);
 		}
+
 		for (const part of uri.path.split("/")) {
 			switch (part) {
 				case "":
@@ -500,11 +516,13 @@ function createServerHost(
 					out.push(part);
 			}
 		}
+
 		return "/" + out.join("/");
 	}
 
 	function getAccessibleFileSystemEntries(path: string): {
 		files: readonly string[];
+
 		directories: readonly string[];
 	} {
 		if (!fs) {
@@ -526,6 +544,7 @@ function createServerHost(
 				entries = fs.readDirectory(mapUri(uri, "vscode-node-modules"));
 			} catch (_e) {}
 		}
+
 		for (const [entry, type] of entries) {
 			// This is necessary because on some file system node fails to exclude
 			// '.' and '..'. See https://github.com/nodejs/node/issues/4002
@@ -539,7 +558,9 @@ function createServerHost(
 				directories.push(entry);
 			}
 		}
+
 		files.sort();
+
 		directories.sort();
 
 		return { files, directories };
@@ -562,6 +583,7 @@ export async function createSys(
 		);
 
 		const connection = new ClientConnection<Requests>(fsPort);
+
 		await connection.serviceReady();
 
 		const apiClient = new ApiClient(connection);

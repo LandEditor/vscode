@@ -17,19 +17,23 @@ import { IOpenURLOptions, IURLHandler } from "./url.js";
 
 export class URLHandlerChannel implements IServerChannel {
 	constructor(private handler: IURLHandler) {}
+
 	listen<T>(_: unknown, event: string): Event<T> {
 		throw new Error(`Event not found: ${event}`);
 	}
+
 	call(_: unknown, command: string, arg?: any): Promise<any> {
 		switch (command) {
 			case "handleURL":
 				return this.handler.handleURL(URI.revive(arg[0]), arg[1]);
 		}
+
 		throw new Error(`Call not found: ${command}`);
 	}
 }
 export class URLHandlerChannelClient implements IURLHandler {
 	constructor(private channel: IChannel) {}
+
 	handleURL(uri: URI, options?: IOpenURLOptions): Promise<boolean> {
 		return this.channel.call("handleURL", [uri.toJSON(), options]);
 	}
@@ -39,6 +43,7 @@ export class URLHandlerRouter implements IClientRouter<string> {
 		private next: IClientRouter<string>,
 		private readonly logService: ILogService,
 	) {}
+
 	async routeCall(
 		hub: IConnectionHub<string>,
 		command: string,
@@ -48,8 +53,10 @@ export class URLHandlerRouter implements IClientRouter<string> {
 		if (command !== "handleURL") {
 			throw new Error(`Call not found: ${command}`);
 		}
+
 		if (Array.isArray(arg) && arg.length > 0) {
 			const uri = URI.revive(arg[0]);
+
 			this.logService.trace(
 				"URLHandlerRouter#routeCall() with URI argument",
 				uri.toString(true),
@@ -60,6 +67,7 @@ export class URLHandlerRouter implements IClientRouter<string> {
 
 				if (match) {
 					const windowId = match[1];
+
 					this.logService.trace(
 						`URLHandlerRouter#routeCall(): found windowId query parameter with value "${windowId}"`,
 						uri.toString(true),
@@ -101,8 +109,10 @@ export class URLHandlerRouter implements IClientRouter<string> {
 				"URLHandlerRouter#routeCall() without URI argument",
 			);
 		}
+
 		return this.next.routeCall(hub, command, arg, cancellationToken);
 	}
+
 	routeEvent(
 		_: IConnectionHub<string>,
 		event: string,

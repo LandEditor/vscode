@@ -7,6 +7,7 @@ import { ITextBuffer } from "../model.js";
 
 class SpacesDiffResult {
 	public spacesDiff: number = 0;
+
 	public looksLikeAlignment: boolean = false;
 }
 /**
@@ -20,6 +21,7 @@ function spacesDiff(
 	result: SpacesDiffResult,
 ): void {
 	result.spacesDiff = 0;
+
 	result.looksLikeAlignment = false;
 	// This can go both ways (e.g.):
 	//  - a: "\t"
@@ -36,6 +38,7 @@ function spacesDiff(
 			break;
 		}
 	}
+
 	let aSpacesCnt = 0,
 		aTabsCount = 0;
 
@@ -48,6 +51,7 @@ function spacesDiff(
 			aTabsCount++;
 		}
 	}
+
 	let bSpacesCnt = 0,
 		bTabsCount = 0;
 
@@ -60,12 +64,15 @@ function spacesDiff(
 			bTabsCount++;
 		}
 	}
+
 	if (aSpacesCnt > 0 && aTabsCount > 0) {
 		return;
 	}
+
 	if (bSpacesCnt > 0 && bTabsCount > 0) {
 		return;
 	}
+
 	const tabsDiff = Math.abs(aTabsCount - bTabsCount);
 
 	const spacesDiff = Math.abs(aSpacesCnt - bSpacesCnt);
@@ -89,12 +96,15 @@ function spacesDiff(
 					// This looks like an alignment desire: e.g.
 					// const a = b + c,
 					//       d = b - c;
+
 					result.looksLikeAlignment = true;
 				}
 			}
 		}
+
 		return;
 	}
+
 	if (spacesDiff % tabsDiff === 0) {
 		result.spacesDiff = spacesDiff / tabsDiff;
 
@@ -155,6 +165,7 @@ export function guessIndentation(
 			} else {
 				// Hit non whitespace character on this line
 				currentLineHasContent = true;
+
 				currentLineIndentation = j;
 
 				break;
@@ -164,11 +175,13 @@ export function guessIndentation(
 		if (!currentLineHasContent) {
 			continue;
 		}
+
 		if (currentLineTabsCount > 0) {
 			linesIndentedWithTabsCount++;
 		} else if (currentLineSpacesCount > 1) {
 			linesIndentedWithSpacesCount++;
 		}
+
 		spacesDiff(
 			previousLineText,
 			previousLineIndentation,
@@ -192,30 +205,37 @@ export function guessIndentation(
 				continue;
 			}
 		}
+
 		const currentSpacesDiff = tmp.spacesDiff;
 
 		if (currentSpacesDiff <= MAX_ALLOWED_TAB_SIZE_GUESS) {
 			spacesDiffCount[currentSpacesDiff]++;
 		}
+
 		previousLineText = currentLineText;
+
 		previousLineIndentation = currentLineIndentation;
 	}
+
 	let insertSpaces = defaultInsertSpaces;
 
 	if (linesIndentedWithTabsCount !== linesIndentedWithSpacesCount) {
 		insertSpaces =
 			linesIndentedWithTabsCount < linesIndentedWithSpacesCount;
 	}
+
 	let tabSize = defaultTabSize;
 	// Guess tabSize only if inserting spaces...
 	if (insertSpaces) {
 		let tabSizeScore = insertSpaces ? 0 : 0.1 * linesCount;
 		// console.log("score threshold: " + tabSizeScore);
+
 		ALLOWED_TAB_SIZE_GUESSES.forEach((possibleTabSize) => {
 			const possibleTabSizeScore = spacesDiffCount[possibleTabSize];
 
 			if (possibleTabSizeScore > tabSizeScore) {
 				tabSizeScore = possibleTabSizeScore;
+
 				tabSize = possibleTabSize;
 			}
 		});

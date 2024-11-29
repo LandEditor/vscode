@@ -15,13 +15,16 @@ declare class AsarFilesystem {
 	readonly header: unknown;
 
 	constructor(src: string);
+
 	insertDirectory(path: string, shouldUnpack?: boolean): unknown;
+
 	insertFile(
 		path: string,
 		shouldUnpack: boolean,
 		file: {
 			stat: {
 				size: number;
+
 				mode: number;
 			};
 		},
@@ -41,6 +44,7 @@ export function createAsar(
 				return true;
 			}
 		}
+
 		return false;
 	};
 
@@ -50,6 +54,7 @@ export function createAsar(
 				return true;
 			}
 		}
+
 		return false;
 	};
 	// Files that should be duplicated between
@@ -60,6 +65,7 @@ export function createAsar(
 				return true;
 			}
 		}
+
 		return false;
 	};
 
@@ -81,15 +87,19 @@ export function createAsar(
 		if (seenDir[dir]) {
 			return;
 		}
+
 		let lastSlash = dir.lastIndexOf("/");
 
 		if (lastSlash === -1) {
 			lastSlash = dir.lastIndexOf("\\");
 		}
+
 		if (lastSlash !== -1) {
 			insertDirectoryRecursive(dir.substring(0, lastSlash));
 		}
+
 		seenDir[dir] = true;
+
 		filesystem.insertDirectory(dir);
 	};
 
@@ -99,6 +109,7 @@ export function createAsar(
 		if (lastSlash === -1) {
 			lastSlash = file.lastIndexOf("\\");
 		}
+
 		if (lastSlash !== -1) {
 			insertDirectoryRecursive(file.substring(0, lastSlash));
 		}
@@ -108,11 +119,13 @@ export function createAsar(
 		relativePath: string,
 		stat: {
 			size: number;
+
 			mode: number;
 		},
 		shouldUnpack: boolean,
 	) => {
 		insertDirectoryForFile(relativePath);
+
 		pendingInserts++;
 		// Do not pass `onFileInserted` directly because it gets overwritten below.
 		// Create a closure capturing `onFileInserted`.
@@ -129,9 +142,11 @@ export function createAsar(
 			if (file.stat.isDirectory()) {
 				return;
 			}
+
 			if (!file.stat.isFile()) {
 				throw new Error(`unknown item in stream!`);
 			}
+
 			if (shouldSkipFile(file)) {
 				this.queue(
 					new VinylFile({
@@ -144,6 +159,7 @@ export function createAsar(
 
 				return;
 			}
+
 			if (shouldDuplicateFile(file)) {
 				this.queue(
 					new VinylFile({
@@ -154,7 +170,9 @@ export function createAsar(
 					}),
 				);
 			}
+
 			const shouldUnpack = shouldUnpackFile(file);
+
 			insertFile(
 				file.relative,
 				{ size: file.contents.length, mode: file.stat.mode },
@@ -164,6 +182,7 @@ export function createAsar(
 			if (shouldUnpack) {
 				// The file goes outside of xx.asar, in a folder xx.asar.unpacked
 				const relative = path.relative(folderPath, file.path);
+
 				this.queue(
 					new VinylFile({
 						base: ".",
@@ -181,19 +200,26 @@ export function createAsar(
 			const finish = () => {
 				{
 					const headerPickle = pickle.createEmpty();
+
 					headerPickle.writeString(JSON.stringify(filesystem.header));
 
 					const headerBuf = headerPickle.toBuffer();
 
 					const sizePickle = pickle.createEmpty();
+
 					sizePickle.writeUInt32(headerBuf.length);
 
 					const sizeBuf = sizePickle.toBuffer();
+
 					out.unshift(headerBuf);
+
 					out.unshift(sizeBuf);
 				}
+
 				const contents = Buffer.concat(out);
+
 				out.length = 0;
+
 				this.queue(
 					new VinylFile({
 						base: ".",
@@ -201,6 +227,7 @@ export function createAsar(
 						contents: contents,
 					}),
 				);
+
 				this.queue(null);
 			};
 			// Call finish() only when all file inserts have finished...

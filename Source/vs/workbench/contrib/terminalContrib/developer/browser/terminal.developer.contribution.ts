@@ -77,12 +77,15 @@ registerTerminalAction({
 		if (!bitmap) {
 			return;
 		}
+
 		const cwdUri = workspaceContextService.getWorkspace().folders[0].uri;
 
 		const fileUri = URI.joinPath(cwdUri, "textureAtlas.png");
 
 		const canvas = document.createElement("canvas");
+
 		canvas.width = bitmap.width;
+
 		canvas.height = bitmap.height;
 
 		const ctx = canvas.getContext("bitmaprenderer");
@@ -90,6 +93,7 @@ registerTerminalAction({
 		if (!ctx) {
 			return;
 		}
+
 		ctx.transferFromImageBitmap(bitmap);
 
 		const blob = await new Promise<Blob | null>((res) =>
@@ -99,10 +103,12 @@ registerTerminalAction({
 		if (!blob) {
 			return;
 		}
+
 		await fileService.writeFile(
 			fileUri,
 			VSBuffer.wrap(new Uint8Array(await blob.arrayBuffer())),
 		);
+
 		openerService.open(fileUri);
 	},
 });
@@ -118,7 +124,9 @@ registerTerminalAction({
 		const quickInputService = accessor.get(IQuickInputService);
 
 		const instance = await c.service.getActiveOrCreateInstance();
+
 		await c.service.revealActiveTerminal();
+
 		await instance.processReady;
 
 		if (!instance.xterm) {
@@ -126,6 +134,7 @@ registerTerminalAction({
 				"Cannot write data to terminal if xterm isn't initialized",
 			);
 		}
+
 		const data = await quickInputService.input({
 			value: "",
 			placeHolder: "Enter data, use \\x to escape",
@@ -138,6 +147,7 @@ registerTerminalAction({
 		if (!data) {
 			return;
 		}
+
 		let escapedData = data.replace(/\\n/g, "\n").replace(/\\r/g, "\r");
 
 		while (true) {
@@ -150,12 +160,15 @@ registerTerminalAction({
 			) {
 				break;
 			}
+
 			escapedData =
 				escapedData.slice(0, match.index) +
 				String.fromCharCode(parseInt(match[1], 16)) +
 				escapedData.slice(match.index + 4);
 		}
+
 		const xterm = instance.xterm as any as IInternalXtermTerminal;
+
 		xterm._writeText(escapedData);
 	},
 });
@@ -194,12 +207,16 @@ registerTerminalAction({
 			"recordSession",
 			StatusbarAlignment.LEFT,
 		);
+
 		store.add(statusbarHandle);
 
 		// Create, reveal and focus instance
 		const instance = await c.service.createTerminal();
+
 		c.service.setActiveInstance(instance);
+
 		await c.service.revealActiveTerminal();
+
 		await Promise.all([
 			instance.processReady,
 			instance.focusWhenReady(true),
@@ -211,12 +228,16 @@ registerTerminalAction({
 
 			const endRecording = () => {
 				const session = JSON.stringify(events, null, 2);
+
 				clipboardService.writeText(session);
+
 				store.dispose();
+
 				resolve();
 			};
 
 			const timer = store.add(new Delayer(5000));
+
 			store.add(
 				Event.runAndSubscribe(instance.onDimensionsChanged, () => {
 					events.push({
@@ -224,47 +245,57 @@ registerTerminalAction({
 						cols: instance.cols,
 						rows: instance.rows,
 					});
+
 					timer.trigger(endRecording);
 				}),
 			);
+
 			store.add(
 				commandService.onWillExecuteCommand((e) => {
 					events.push({
 						type: "command",
 						id: e.commandId,
 					});
+
 					timer.trigger(endRecording);
 				}),
 			);
+
 			store.add(
 				instance.onWillData((data) => {
 					events.push({
 						type: "output",
 						data,
 					});
+
 					timer.trigger(endRecording);
 				}),
 			);
+
 			store.add(
 				instance.onDidSendText((data) => {
 					events.push({
 						type: "sendText",
 						data,
 					});
+
 					timer.trigger(endRecording);
 				}),
 			);
+
 			store.add(
 				instance.xterm!.raw.onData((data) => {
 					events.push({
 						type: "input",
 						data,
 					});
+
 					timer.trigger(endRecording);
 				}),
 			);
 
 			let commandDetectedRegistered = false;
+
 			store.add(
 				Event.runAndSubscribe(
 					instance.capabilities.onDidAddCapability,
@@ -272,6 +303,7 @@ registerTerminalAction({
 						if (commandDetectedRegistered) {
 							return;
 						}
+
 						const commandDetection = instance.capabilities.get(
 							TerminalCapability.CommandDetection,
 						);
@@ -279,6 +311,7 @@ registerTerminalAction({
 						if (!commandDetection) {
 							return;
 						}
+
 						store.add(
 							commandDetection.promptInputModel.onDidChangeInput(
 								(e) => {
@@ -286,10 +319,12 @@ registerTerminalAction({
 										type: "promptInputChange",
 										data: commandDetection.promptInputModel.getCombinedString(),
 									});
+
 									timer.trigger(endRecording);
 								},
 							),
 						);
+
 						commandDetectedRegistered = true;
 					},
 				),
@@ -319,6 +354,7 @@ registerTerminalAction({
 			logService.warn(
 				`Restarting pty host for authority "${backend.remoteAuthority}"`,
 			);
+
 			backend.restartPtyHost();
 		}
 	},
@@ -332,6 +368,7 @@ const enum DevModeContributionState {
 
 class DevModeContribution extends Disposable implements ITerminalContribution {
 	static readonly ID = "terminal.devMode";
+
 	static get(instance: ITerminalInstance): DevModeContribution | null {
 		return instance.getContribution<DevModeContribution>(
 			DevModeContribution.ID,
@@ -339,7 +376,9 @@ class DevModeContribution extends Disposable implements ITerminalContribution {
 	}
 
 	private _xterm: (IXtermTerminal & { raw: Terminal }) | undefined;
+
 	private readonly _activeDevModeDisposables = new MutableDisposable();
+
 	private _currentColor = 0;
 
 	private _state: DevModeContributionState = DevModeContributionState.Off;
@@ -350,6 +389,7 @@ class DevModeContribution extends Disposable implements ITerminalContribution {
 		private readonly _configurationService: IConfigurationService,
 	) {
 		super();
+
 		this._register(
 			this._configurationService.onDidChangeConfiguration((e) => {
 				if (e.affectsConfiguration(TerminalSettingId.DevMode)) {
@@ -361,11 +401,13 @@ class DevModeContribution extends Disposable implements ITerminalContribution {
 
 	xtermReady(xterm: IXtermTerminal & { raw: Terminal }): void {
 		this._xterm = xterm;
+
 		this._updateDevMode();
 	}
 
 	private _updateDevMode() {
 		const devMode: boolean = this._isEnabled();
+
 		this._xterm?.raw.element?.classList.toggle("dev-mode", devMode);
 
 		const commandDetection = this._ctx.instance.capabilities.get(
@@ -377,6 +419,7 @@ class DevModeContribution extends Disposable implements ITerminalContribution {
 				if (this._state === DevModeContributionState.On) {
 					return;
 				}
+
 				this._state = DevModeContributionState.On;
 
 				const commandDecorations = new DisposableMap<
@@ -385,6 +428,7 @@ class DevModeContribution extends Disposable implements ITerminalContribution {
 				>();
 
 				const otherDisposables = new DisposableStore();
+
 				this._activeDevModeDisposables.value = combinedDisposable(
 					commandDecorations,
 					otherDisposables,
@@ -399,6 +443,7 @@ class DevModeContribution extends Disposable implements ITerminalContribution {
 						const colorClass = `color-${this._currentColor}`;
 
 						const decorations: IDisposable[] = [];
+
 						commandDecorations.set(
 							command,
 							combinedDisposable(...decorations),
@@ -414,9 +459,11 @@ class DevModeContribution extends Disposable implements ITerminalContribution {
 
 							if (d) {
 								decorations.push(d);
+
 								otherDisposables.add(
 									d.onRender((e) => {
 										e.textContent = "A";
+
 										e.classList.add(
 											"xterm-sequence-decoration",
 											"top",
@@ -427,6 +474,7 @@ class DevModeContribution extends Disposable implements ITerminalContribution {
 								);
 							}
 						}
+
 						if (command.marker) {
 							const d =
 								this._ctx.instance.xterm!.raw?.registerDecoration(
@@ -438,9 +486,11 @@ class DevModeContribution extends Disposable implements ITerminalContribution {
 
 							if (d) {
 								decorations.push(d);
+
 								otherDisposables.add(
 									d.onRender((e) => {
 										e.textContent = "B";
+
 										e.classList.add(
 											"xterm-sequence-decoration",
 											"top",
@@ -451,6 +501,7 @@ class DevModeContribution extends Disposable implements ITerminalContribution {
 								);
 							}
 						}
+
 						if (command.executedMarker) {
 							const d =
 								this._ctx.instance.xterm!.raw?.registerDecoration(
@@ -462,9 +513,11 @@ class DevModeContribution extends Disposable implements ITerminalContribution {
 
 							if (d) {
 								decorations.push(d);
+
 								otherDisposables.add(
 									d.onRender((e) => {
 										e.textContent = "C";
+
 										e.classList.add(
 											"xterm-sequence-decoration",
 											"bottom",
@@ -475,6 +528,7 @@ class DevModeContribution extends Disposable implements ITerminalContribution {
 								);
 							}
 						}
+
 						if (command.endMarker) {
 							const d =
 								this._ctx.instance.xterm!.raw?.registerDecoration(
@@ -485,9 +539,11 @@ class DevModeContribution extends Disposable implements ITerminalContribution {
 
 							if (d) {
 								decorations.push(d);
+
 								otherDisposables.add(
 									d.onRender((e) => {
 										e.textContent = "D";
+
 										e.classList.add(
 											"xterm-sequence-decoration",
 											"bottom",
@@ -498,6 +554,7 @@ class DevModeContribution extends Disposable implements ITerminalContribution {
 								);
 							}
 						}
+
 						this._currentColor = (this._currentColor + 1) % 2;
 					}),
 					commandDetection.onCommandInvalidated((commands) => {
@@ -507,6 +564,7 @@ class DevModeContribution extends Disposable implements ITerminalContribution {
 							if (decorations) {
 								dispose(decorations);
 							}
+
 							commandDecorations.deleteAndDispose(c);
 						}
 					}),
@@ -518,7 +576,9 @@ class DevModeContribution extends Disposable implements ITerminalContribution {
 				) {
 					return;
 				}
+
 				this._state = DevModeContributionState.WaitingForCapability;
+
 				this._activeDevModeDisposables.value =
 					this._ctx.instance.capabilities.onDidAddCapabilityType(
 						(e) => {
@@ -532,7 +592,9 @@ class DevModeContribution extends Disposable implements ITerminalContribution {
 			if (this._state === DevModeContributionState.Off) {
 				return;
 			}
+
 			this._state = DevModeContributionState.Off;
+
 			this._activeDevModeDisposables.clear();
 		}
 	}

@@ -24,6 +24,7 @@ class SleepResumeRepaintMinimap
 		nativeHostService: INativeHostService,
 	) {
 		super();
+
 		this._register(
 			nativeHostService.onDidResumeOS(() => {
 				codeEditorService

@@ -91,6 +91,7 @@ namespace HitTestResult {
 		if (position) {
 			return new ContentHitTestResult(position, spanNode, null);
 		}
+
 		return new UnknownHitTestResult(spanNode);
 	}
 }
@@ -104,11 +105,14 @@ export class PointerHandlerLastRenderData {
 
 export class MouseTarget {
 	private static _deduceRage(position: Position): EditorRange;
+
 	private static _deduceRage(
 		position: Position,
 		range: EditorRange | null,
 	): EditorRange;
+
 	private static _deduceRage(position: Position | null): EditorRange | null;
+
 	private static _deduceRage(
 		position: Position | null,
 		range: EditorRange | null = null,
@@ -121,8 +125,10 @@ export class MouseTarget {
 				position.column,
 			);
 		}
+
 		return range ?? null;
 	}
+
 	public static createUnknown(
 		element: HTMLElement | null,
 		mouseColumn: number,
@@ -136,6 +142,7 @@ export class MouseTarget {
 			range: this._deduceRage(position),
 		};
 	}
+
 	public static createTextarea(
 		element: HTMLElement | null,
 		mouseColumn: number,
@@ -148,6 +155,7 @@ export class MouseTarget {
 			range: null,
 		};
 	}
+
 	public static createMargin(
 		type:
 			| MouseTargetType.GUTTER_GLYPH_MARGIN
@@ -161,6 +169,7 @@ export class MouseTarget {
 	): IMouseTargetMargin {
 		return { type, element, mouseColumn, position, range, detail };
 	}
+
 	public static createViewZone(
 		type:
 			| MouseTargetType.GUTTER_VIEW_ZONE
@@ -179,6 +188,7 @@ export class MouseTarget {
 			detail,
 		};
 	}
+
 	public static createContentText(
 		element: HTMLElement | null,
 		mouseColumn: number,
@@ -195,6 +205,7 @@ export class MouseTarget {
 			detail,
 		};
 	}
+
 	public static createContentEmpty(
 		element: HTMLElement | null,
 		mouseColumn: number,
@@ -210,6 +221,7 @@ export class MouseTarget {
 			detail,
 		};
 	}
+
 	public static createContentWidget(
 		element: HTMLElement | null,
 		mouseColumn: number,
@@ -224,6 +236,7 @@ export class MouseTarget {
 			detail,
 		};
 	}
+
 	public static createScrollbar(
 		element: HTMLElement | null,
 		mouseColumn: number,
@@ -237,6 +250,7 @@ export class MouseTarget {
 			range: this._deduceRage(position),
 		};
 	}
+
 	public static createOverlayWidget(
 		element: HTMLElement | null,
 		mouseColumn: number,
@@ -251,6 +265,7 @@ export class MouseTarget {
 			detail,
 		};
 	}
+
 	public static createOutsideEditor(
 		mouseColumn: number,
 		position: Position,
@@ -272,39 +287,51 @@ export class MouseTarget {
 		if (type === MouseTargetType.TEXTAREA) {
 			return "TEXTAREA";
 		}
+
 		if (type === MouseTargetType.GUTTER_GLYPH_MARGIN) {
 			return "GUTTER_GLYPH_MARGIN";
 		}
+
 		if (type === MouseTargetType.GUTTER_LINE_NUMBERS) {
 			return "GUTTER_LINE_NUMBERS";
 		}
+
 		if (type === MouseTargetType.GUTTER_LINE_DECORATIONS) {
 			return "GUTTER_LINE_DECORATIONS";
 		}
+
 		if (type === MouseTargetType.GUTTER_VIEW_ZONE) {
 			return "GUTTER_VIEW_ZONE";
 		}
+
 		if (type === MouseTargetType.CONTENT_TEXT) {
 			return "CONTENT_TEXT";
 		}
+
 		if (type === MouseTargetType.CONTENT_EMPTY) {
 			return "CONTENT_EMPTY";
 		}
+
 		if (type === MouseTargetType.CONTENT_VIEW_ZONE) {
 			return "CONTENT_VIEW_ZONE";
 		}
+
 		if (type === MouseTargetType.CONTENT_WIDGET) {
 			return "CONTENT_WIDGET";
 		}
+
 		if (type === MouseTargetType.OVERVIEW_RULER) {
 			return "OVERVIEW_RULER";
 		}
+
 		if (type === MouseTargetType.SCROLLBAR) {
 			return "SCROLLBAR";
 		}
+
 		if (type === MouseTargetType.OVERLAY_WIDGET) {
 			return "OVERLAY_WIDGET";
 		}
+
 		return "UNKNOWN";
 	}
 
@@ -403,15 +430,23 @@ class ElementPath {
 
 export class HitTestContext {
 	public readonly viewModel: IViewModel;
+
 	public readonly layoutInfo: EditorLayoutInfo;
+
 	public readonly viewDomNode: HTMLElement;
+
 	public readonly viewLinesGpu: ViewLinesGpu | undefined;
+
 	public readonly lineHeight: number;
+
 	public readonly stickyTabStops: boolean;
+
 	public readonly typicalHalfwidthCharacterWidth: number;
+
 	public readonly lastRenderData: PointerHandlerLastRenderData;
 
 	private readonly _context: ViewContext;
+
 	private readonly _viewHelper: IPointerHandlerHelper;
 
 	constructor(
@@ -422,16 +457,25 @@ export class HitTestContext {
 		this.viewModel = context.viewModel;
 
 		const options = context.configuration.options;
+
 		this.layoutInfo = options.get(EditorOption.layoutInfo);
+
 		this.viewDomNode = viewHelper.viewDomNode;
+
 		this.viewLinesGpu = viewHelper.viewLinesGpu;
+
 		this.lineHeight = options.get(EditorOption.lineHeight);
+
 		this.stickyTabStops = options.get(EditorOption.stickyTabStops);
+
 		this.typicalHalfwidthCharacterWidth = options.get(
 			EditorOption.fontInfo,
 		).typicalHalfwidthCharacterWidth;
+
 		this.lastRenderData = lastRenderData;
+
 		this._context = context;
+
 		this._viewHelper = viewHelper;
 	}
 
@@ -474,6 +518,7 @@ export class HitTestContext {
 					1,
 				);
 			}
+
 			if (viewZoneWhitespace.afterLineNumber > 0) {
 				// There are more lines above this view zone
 				positionBefore = new Position(
@@ -502,11 +547,13 @@ export class HitTestContext {
 				position: position!,
 			};
 		}
+
 		return null;
 	}
 
 	public getFullLineRangeAtCoord(mouseVerticalOffset: number): {
 		range: EditorRange;
+
 		isAfterLines: boolean;
 	} {
 		if (this._context.viewLayout.isAfterLines(mouseVerticalOffset)) {
@@ -582,11 +629,14 @@ export class HitTestContext {
 			if (element.hasAttribute && element.hasAttribute(attr)) {
 				return element.getAttribute(attr);
 			}
+
 			if (element === stopAt) {
 				return null;
 			}
+
 			element = <Element>element.parentNode;
 		}
+
 		return null;
 	}
 
@@ -619,11 +669,17 @@ export class HitTestContext {
 
 abstract class BareHitTestRequest {
 	public readonly editorPos: EditorPagePosition;
+
 	public readonly pos: PageCoordinates;
+
 	public readonly relativePos: CoordinatesRelativeToEditor;
+
 	public readonly mouseVerticalOffset: number;
+
 	public readonly isInMarginArea: boolean;
+
 	public readonly isInContentArea: boolean;
+
 	public readonly mouseContentHorizontalOffset: number;
 
 	protected readonly mouseColumn: number;
@@ -635,21 +691,27 @@ abstract class BareHitTestRequest {
 		relativePos: CoordinatesRelativeToEditor,
 	) {
 		this.editorPos = editorPos;
+
 		this.pos = pos;
+
 		this.relativePos = relativePos;
 
 		this.mouseVerticalOffset = Math.max(
 			0,
 			ctx.getCurrentScrollTop() + this.relativePos.y,
 		);
+
 		this.mouseContentHorizontalOffset =
 			ctx.getCurrentScrollLeft() +
 			this.relativePos.x -
 			ctx.layoutInfo.contentLeft;
+
 		this.isInMarginArea =
 			this.relativePos.x < ctx.layoutInfo.contentLeft &&
 			this.relativePos.x >= ctx.layoutInfo.glyphMarginLeft;
+
 		this.isInContentArea = !this.isInMarginArea;
+
 		this.mouseColumn = Math.max(
 			0,
 			MouseTargetFactory._getMouseColumn(
@@ -662,29 +724,37 @@ abstract class BareHitTestRequest {
 
 class HitTestRequest extends BareHitTestRequest {
 	private readonly _ctx: HitTestContext;
+
 	private readonly _eventTarget: HTMLElement | null;
+
 	public readonly hitTestResult = new Lazy(() =>
 		MouseTargetFactory.doHitTest(this._ctx, this),
 	);
+
 	private _useHitTestTarget: boolean;
+
 	private _targetPathCacheElement: HTMLElement | null = null;
+
 	private _targetPathCacheValue: Uint8Array = new Uint8Array(0);
 
 	public get target(): HTMLElement | null {
 		if (this._useHitTestTarget) {
 			return this.hitTestResult.value.hitTarget;
 		}
+
 		return this._eventTarget;
 	}
 
 	public get targetPath(): Uint8Array {
 		if (this._targetPathCacheElement !== this.target) {
 			this._targetPathCacheElement = this.target;
+
 			this._targetPathCacheValue = PartFingerprints.collect(
 				this.target,
 				this._ctx.viewDomNode,
 			);
 		}
+
 		return this._targetPathCacheValue;
 	}
 
@@ -696,11 +766,14 @@ class HitTestRequest extends BareHitTestRequest {
 		eventTarget: HTMLElement | null,
 	) {
 		super(ctx, editorPos, pos, relativePos);
+
 		this._ctx = ctx;
+
 		this._eventTarget = eventTarget;
 
 		// If no event target is passed in, we will use the hit test target
 		const hasEventTarget = Boolean(this._eventTarget);
+
 		this._useHitTestTarget = !hasEventTarget;
 	}
 
@@ -735,6 +808,7 @@ class HitTestRequest extends BareHitTestRequest {
 				) + 1
 			);
 		}
+
 		return this.mouseColumn;
 	}
 
@@ -747,9 +821,11 @@ class HitTestRequest extends BareHitTestRequest {
 			position,
 		);
 	}
+
 	public fulfillTextarea(): IMouseTargetTextarea {
 		return MouseTarget.createTextarea(this.target, this._getMouseColumn());
 	}
+
 	public fulfillMargin(
 		type:
 			| MouseTargetType.GUTTER_GLYPH_MARGIN
@@ -768,6 +844,7 @@ class HitTestRequest extends BareHitTestRequest {
 			detail,
 		);
 	}
+
 	public fulfillViewZone(
 		type:
 			| MouseTargetType.GUTTER_VIEW_ZONE
@@ -783,6 +860,7 @@ class HitTestRequest extends BareHitTestRequest {
 			detail,
 		);
 	}
+
 	public fulfillContentText(
 		position: Position,
 		range: EditorRange | null,
@@ -796,6 +874,7 @@ class HitTestRequest extends BareHitTestRequest {
 			detail,
 		);
 	}
+
 	public fulfillContentEmpty(
 		position: Position,
 		detail: IMouseTargetContentEmptyData,
@@ -807,6 +886,7 @@ class HitTestRequest extends BareHitTestRequest {
 			detail,
 		);
 	}
+
 	public fulfillContentWidget(detail: string): IMouseTargetContentWidget {
 		return MouseTarget.createContentWidget(
 			this.target,
@@ -814,6 +894,7 @@ class HitTestRequest extends BareHitTestRequest {
 			detail,
 		);
 	}
+
 	public fulfillScrollbar(position: Position): IMouseTargetScrollbar {
 		return MouseTarget.createScrollbar(
 			this.target,
@@ -821,6 +902,7 @@ class HitTestRequest extends BareHitTestRequest {
 			position,
 		);
 	}
+
 	public fulfillOverlayWidget(detail: string): IMouseTargetOverlayWidget {
 		return MouseTarget.createOverlayWidget(
 			this.target,
@@ -849,10 +931,12 @@ function createEmptyContentDataInLines(
 
 export class MouseTargetFactory {
 	private readonly _context: ViewContext;
+
 	private readonly _viewHelper: IPointerHandlerHelper;
 
 	constructor(context: ViewContext, viewHelper: IPointerHandlerHelper) {
 		this._context = context;
+
 		this._viewHelper = viewHelper;
 	}
 
@@ -965,26 +1049,35 @@ export class MouseTargetFactory {
 		result =
 			result ||
 			MouseTargetFactory._hitTestContentWidget(ctx, resolvedRequest);
+
 		result =
 			result ||
 			MouseTargetFactory._hitTestOverlayWidget(ctx, resolvedRequest);
+
 		result =
 			result || MouseTargetFactory._hitTestMinimap(ctx, resolvedRequest);
+
 		result =
 			result ||
 			MouseTargetFactory._hitTestScrollbarSlider(ctx, resolvedRequest);
+
 		result =
 			result || MouseTargetFactory._hitTestViewZone(ctx, resolvedRequest);
+
 		result =
 			result || MouseTargetFactory._hitTestMargin(ctx, resolvedRequest);
+
 		result =
 			result ||
 			MouseTargetFactory._hitTestViewCursor(ctx, resolvedRequest);
+
 		result =
 			result || MouseTargetFactory._hitTestTextArea(ctx, resolvedRequest);
+
 		result =
 			result ||
 			MouseTargetFactory._hitTestViewLines(ctx, resolvedRequest);
+
 		result =
 			result ||
 			MouseTargetFactory._hitTestScrollbar(ctx, resolvedRequest);
@@ -1009,6 +1102,7 @@ export class MouseTargetFactory {
 				return request.fulfillUnknown();
 			}
 		}
+
 		return null;
 	}
 
@@ -1029,6 +1123,7 @@ export class MouseTargetFactory {
 				return request.fulfillUnknown();
 			}
 		}
+
 		return null;
 	}
 
@@ -1070,6 +1165,7 @@ export class MouseTargetFactory {
 					// mouse position is to the left of the cursor
 					continue;
 				}
+
 				if (mouseContentHorizontalOffset > d.contentLeft + d.width) {
 					// mouse position is to the right of the cursor
 					continue;
@@ -1128,8 +1224,10 @@ export class MouseTargetFactory {
 					{ mightBeForeignElement: false, injectedText: null },
 				);
 			}
+
 			return request.fulfillTextarea();
 		}
+
 		return null;
 	}
 
@@ -1166,6 +1264,7 @@ export class MouseTargetFactory {
 				const lanes = ctx.viewModel.glyphLanes.getLanesAtLine(
 					modelCoordinate.lineNumber,
 				);
+
 				detail.glyphMarginLane =
 					lanes[Math.floor(offset / ctx.lineHeight)];
 
@@ -1176,6 +1275,7 @@ export class MouseTargetFactory {
 					detail,
 				);
 			}
+
 			offset -= ctx.layoutInfo.glyphMarginWidth;
 
 			if (offset <= ctx.layoutInfo.lineNumbersWidth) {
@@ -1187,6 +1287,7 @@ export class MouseTargetFactory {
 					detail,
 				);
 			}
+
 			offset -= ctx.layoutInfo.lineNumbersWidth;
 
 			// On the line decorations
@@ -1197,6 +1298,7 @@ export class MouseTargetFactory {
 				detail,
 			);
 		}
+
 		return null;
 	}
 
@@ -1362,6 +1464,7 @@ export class MouseTargetFactory {
 				new Position(possibleLineNumber, maxColumn),
 			);
 		}
+
 		return null;
 	}
 
@@ -1388,6 +1491,7 @@ export class MouseTargetFactory {
 				}
 			}
 		}
+
 		return null;
 	}
 
@@ -1436,6 +1540,7 @@ export class MouseTargetFactory {
 		if (mouseContentHorizontalOffset < 0) {
 			return 1;
 		}
+
 		const chars = Math.round(
 			mouseContentHorizontalOffset / typicalHalfwidthCharacterWidth,
 		);
@@ -1486,10 +1591,12 @@ export class MouseTargetFactory {
 		// Let's define a, b, c and check if the offset is in between them...
 		interface OffsetColumn {
 			offset: number;
+
 			column: number;
 		}
 
 		const points: OffsetColumn[] = [];
+
 		points.push({ offset: visibleRange.left, column: column });
 
 		if (column > 1) {
@@ -1502,6 +1609,7 @@ export class MouseTargetFactory {
 				points.push({ offset: visibleRange.left, column: column - 1 });
 			}
 		}
+
 		const lineMaxColumn = ctx.viewModel.getLineMaxColumn(lineNumber);
 
 		if (column < lineMaxColumn) {
@@ -1606,6 +1714,7 @@ export class MouseTargetFactory {
 			if (adjustedPageY <= request.editorPos.y) {
 				adjustedPageY = request.editorPos.y + 1;
 			}
+
 			if (
 				adjustedPageY >=
 				request.editorPos.y + request.editorPos.height
@@ -1818,6 +1927,7 @@ export class MouseTargetFactory {
 		if (newPosition !== -1) {
 			return new Position(position.lineNumber, newPosition + 1);
 		}
+
 		return position;
 	}
 
@@ -1840,6 +1950,7 @@ export class MouseTargetFactory {
 				request.pos.toClientCoordinates(dom.getWindow(ctx.viewDomNode)),
 			);
 		}
+
 		if (result.type === HitTestResultType.Content) {
 			const injectedText = ctx.viewModel.getInjectedTextAt(
 				result.position,
@@ -1858,6 +1969,7 @@ export class MouseTargetFactory {
 				);
 			}
 		}
+
 		return result;
 	}
 }
@@ -1953,6 +2065,7 @@ function shadowCaretRangeFromPoint(
 
 		// Creates a range with the text node of the element and set the offset found
 		range.setStart(el.firstChild!, offset);
+
 		range.setEnd(el.firstChild!, offset);
 	}
 
@@ -1966,14 +2079,17 @@ class CharWidthReader {
 		if (!CharWidthReader._INSTANCE) {
 			CharWidthReader._INSTANCE = new CharWidthReader();
 		}
+
 		return CharWidthReader._INSTANCE;
 	}
 
 	private readonly _cache: { [cacheKey: string]: number };
+
 	private readonly _canvas: HTMLCanvasElement;
 
 	private constructor() {
 		this._cache = {};
+
 		this._canvas = document.createElement("canvas");
 	}
 
@@ -1985,11 +2101,13 @@ class CharWidthReader {
 		}
 
 		const context = this._canvas.getContext("2d")!;
+
 		context.font = font;
 
 		const metrics = context.measureText(char);
 
 		const width = metrics.width;
+
 		this._cache[cacheKey] = width;
 
 		return width;

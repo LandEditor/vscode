@@ -44,6 +44,7 @@ const inputOptions: WalkThroughInputOptions = {
 
 export class EditorWalkThroughAction extends Action2 {
 	public static readonly ID = "workbench.action.showInteractivePlayground";
+
 	public static readonly LABEL = localize2(
 		"editorWalkThrough",
 		"Interactive Editor Playground",
@@ -63,6 +64,7 @@ export class EditorWalkThroughAction extends Action2 {
 			},
 		});
 	}
+
 	public override run(serviceAccessor: ServicesAccessor): Promise<void> {
 		const editorService = serviceAccessor.get(IEditorService);
 
@@ -80,12 +82,15 @@ export class EditorWalkThroughAction extends Action2 {
 }
 export class EditorWalkThroughInputSerializer implements IEditorSerializer {
 	static readonly ID = typeId;
+
 	public canSerialize(editorInput: EditorInput): boolean {
 		return true;
 	}
+
 	public serialize(editorInput: EditorInput): string {
 		return "";
 	}
+
 	public deserialize(
 		instantiationService: IInstantiationService,
 	): WalkThroughInput {

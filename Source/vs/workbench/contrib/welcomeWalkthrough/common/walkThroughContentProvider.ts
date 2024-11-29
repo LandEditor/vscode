@@ -31,12 +31,14 @@ interface IWalkThroughContentProvider {
 }
 class WalkThroughContentProviderRegistry {
 	private readonly providers = new Map<string, IWalkThroughContentProvider>();
+
 	registerProvider(
 		moduleId: string,
 		provider: IWalkThroughContentProvider,
 	): void {
 		this.providers.set(moduleId, provider);
 	}
+
 	getProvider(moduleId: string): IWalkThroughContentProvider | undefined {
 		return this.providers.get(moduleId);
 	}
@@ -51,11 +53,13 @@ export async function moduleToContent(
 	if (!resource.query) {
 		throw new Error("Walkthrough: invalid resource");
 	}
+
 	const query = JSON.parse(resource.query);
 
 	if (!query.moduleId) {
 		throw new Error("Walkthrough: invalid resource");
 	}
+
 	const provider = walkThroughContentRegistry.getProvider(query.moduleId);
 
 	if (!provider) {
@@ -63,12 +67,14 @@ export async function moduleToContent(
 			`Walkthrough: no provider registered for ${query.moduleId}`,
 		);
 	}
+
 	return instantiationService.invokeFunction(provider);
 }
 export class WalkThroughSnippetContentProvider
 	implements ITextModelContentProvider, IWorkbenchContribution
 {
 	static readonly ID = "workbench.contrib.walkThroughSnippetContentProvider";
+
 	private loads = new Map<string, Promise<ITextBufferFactory>>();
 
 	constructor(
@@ -86,6 +92,7 @@ export class WalkThroughSnippetContentProvider
 			this,
 		);
 	}
+
 	private async textBufferFactoryFromResource(
 		resource: URI,
 	): Promise<ITextBufferFactory> {
@@ -95,10 +102,13 @@ export class WalkThroughSnippetContentProvider
 			ongoing = moduleToContent(this.instantiationService, resource)
 				.then((content) => createTextBufferFactory(content))
 				.finally(() => this.loads.delete(resource.toString()));
+
 			this.loads.set(resource.toString(), ongoing);
 		}
+
 		return ongoing;
 	}
+
 	public async provideTextContent(resource: URI): Promise<ITextModel> {
 		const factory = await this.textBufferFactoryFromResource(
 			resource.with({ fragment: "" }),
@@ -112,6 +122,7 @@ export class WalkThroughSnippetContentProvider
 			let i = 0;
 
 			const renderer = new marked.marked.Renderer();
+
 			renderer.code = ({ text, lang }: marked.Tokens.Code) => {
 				i++;
 
@@ -134,6 +145,7 @@ export class WalkThroughSnippetContentProvider
 				if (i === j) {
 					codeEditorModel = model;
 				}
+
 				return "";
 			};
 
@@ -152,8 +164,10 @@ export class WalkThroughSnippetContentProvider
 				range,
 				EndOfLinePreference.TextDefined,
 			);
+
 			marked.marked(markdown, { renderer });
 		}
+
 		return assertIsDefined(codeEditorModel);
 	}
 }

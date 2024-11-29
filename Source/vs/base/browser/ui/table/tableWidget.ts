@@ -56,14 +56,19 @@ type TCell = any;
 
 interface RowTemplateData {
 	readonly container: HTMLElement;
+
 	readonly cellContainers: HTMLElement[];
+
 	readonly cellTemplateData: unknown[];
 }
 
 class TableListRenderer<TRow> implements IListRenderer<TRow, RowTemplateData> {
 	static TemplateId = "row";
+
 	readonly templateId = TableListRenderer.TemplateId;
+
 	private renderers: ITableRenderer<TCell, unknown>[];
+
 	private renderedTemplates = new Set<RowTemplateData>();
 
 	constructor(
@@ -72,6 +77,7 @@ class TableListRenderer<TRow> implements IListRenderer<TRow, RowTemplateData> {
 		private getColumnSize: (index: number) => number,
 	) {
 		const rendererMap = new Map(renderers.map((r) => [r.templateId, r]));
+
 		this.renderers = [];
 
 		for (const column of columns) {
@@ -103,11 +109,14 @@ class TableListRenderer<TRow> implements IListRenderer<TRow, RowTemplateData> {
 			);
 
 			cellContainer.style.width = `${this.getColumnSize(i)}px`;
+
 			cellContainers.push(cellContainer);
+
 			cellTemplateData.push(renderer.renderTemplate(cellContainer));
 		}
 
 		const result = { container, cellContainers, cellTemplateData };
+
 		this.renderedTemplates.add(result);
 
 		return result;
@@ -125,6 +134,7 @@ class TableListRenderer<TRow> implements IListRenderer<TRow, RowTemplateData> {
 			const cell = column.project(element);
 
 			const renderer = this.renderers[i];
+
 			renderer.renderElement(
 				cell,
 				index,
@@ -161,10 +171,12 @@ class TableListRenderer<TRow> implements IListRenderer<TRow, RowTemplateData> {
 	disposeTemplate(templateData: RowTemplateData): void {
 		for (let i = 0; i < this.columns.length; i++) {
 			const renderer = this.renderers[i];
+
 			renderer.disposeTemplate(templateData.cellTemplateData[i]);
 		}
 
 		clearNode(templateData.container);
+
 		this.renderedTemplates.delete(templateData);
 	}
 
@@ -194,14 +206,17 @@ class ColumnHeader<TRow, TCell> extends Disposable implements IView {
 	get minimumSize() {
 		return this.column.minimumWidth ?? 120;
 	}
+
 	get maximumSize() {
 		return this.column.maximumWidth ?? Number.POSITIVE_INFINITY;
 	}
+
 	get onDidChange() {
 		return this.column.onDidChangeWidthConstraints ?? Event.None;
 	}
 
 	private _onDidLayout = new Emitter<[number, number]>();
+
 	readonly onDidLayout = this._onDidLayout.event;
 
 	constructor(
@@ -238,20 +253,27 @@ export interface ITableStyles extends IListStyles {}
 
 export class Table<TRow> implements ISpliceable<TRow>, IDisposable {
 	private static InstanceCount = 0;
+
 	readonly domId = `table_id_${++Table.InstanceCount}`;
 
 	readonly domNode: HTMLElement;
+
 	private splitview: SplitView;
+
 	private list: List<TRow>;
+
 	private styleElement: HTMLStyleElement;
+
 	protected readonly disposables = new DisposableStore();
 
 	private cachedWidth: number = 0;
+
 	private cachedHeight: number = 0;
 
 	get onDidChangeFocus(): Event<ITableEvent<TRow>> {
 		return this.list.onDidChangeFocus;
 	}
+
 	get onDidChangeSelection(): Event<ITableEvent<TRow>> {
 		return this.list.onDidChangeSelection;
 	}
@@ -259,39 +281,51 @@ export class Table<TRow> implements ISpliceable<TRow>, IDisposable {
 	get onDidScroll(): Event<ScrollEvent> {
 		return this.list.onDidScroll;
 	}
+
 	get onMouseClick(): Event<ITableMouseEvent<TRow>> {
 		return this.list.onMouseClick;
 	}
+
 	get onMouseDblClick(): Event<ITableMouseEvent<TRow>> {
 		return this.list.onMouseDblClick;
 	}
+
 	get onMouseMiddleClick(): Event<ITableMouseEvent<TRow>> {
 		return this.list.onMouseMiddleClick;
 	}
+
 	get onPointer(): Event<ITableMouseEvent<TRow>> {
 		return this.list.onPointer;
 	}
+
 	get onMouseUp(): Event<ITableMouseEvent<TRow>> {
 		return this.list.onMouseUp;
 	}
+
 	get onMouseDown(): Event<ITableMouseEvent<TRow>> {
 		return this.list.onMouseDown;
 	}
+
 	get onMouseOver(): Event<ITableMouseEvent<TRow>> {
 		return this.list.onMouseOver;
 	}
+
 	get onMouseMove(): Event<ITableMouseEvent<TRow>> {
 		return this.list.onMouseMove;
 	}
+
 	get onMouseOut(): Event<ITableMouseEvent<TRow>> {
 		return this.list.onMouseOut;
 	}
+
 	get onTouchStart(): Event<ITableTouchEvent<TRow>> {
 		return this.list.onTouchStart;
 	}
+
 	get onTap(): Event<ITableGestureEvent<TRow>> {
 		return this.list.onTap;
 	}
+
 	get onContextMenu(): Event<ITableContextMenuEvent<TRow>> {
 		return this.list.onContextMenu;
 	}
@@ -299,6 +333,7 @@ export class Table<TRow> implements ISpliceable<TRow>, IDisposable {
 	get onDidFocus(): Event<void> {
 		return this.list.onDidFocus;
 	}
+
 	get onDidBlur(): Event<void> {
 		return this.list.onDidBlur;
 	}
@@ -306,21 +341,27 @@ export class Table<TRow> implements ISpliceable<TRow>, IDisposable {
 	get scrollTop(): number {
 		return this.list.scrollTop;
 	}
+
 	set scrollTop(scrollTop: number) {
 		this.list.scrollTop = scrollTop;
 	}
+
 	get scrollLeft(): number {
 		return this.list.scrollLeft;
 	}
+
 	set scrollLeft(scrollLeft: number) {
 		this.list.scrollLeft = scrollLeft;
 	}
+
 	get scrollHeight(): number {
 		return this.list.scrollHeight;
 	}
+
 	get renderHeight(): number {
 		return this.list.renderHeight;
 	}
+
 	get onDidDispose(): Event<void> {
 		return this.list.onDidDispose;
 	}
@@ -354,11 +395,13 @@ export class Table<TRow> implements ISpliceable<TRow>, IDisposable {
 		);
 
 		this.splitview.el.style.height = `${virtualDelegate.headerRowHeight}px`;
+
 		this.splitview.el.style.lineHeight = `${virtualDelegate.headerRowHeight}px`;
 
 		const renderer = new TableListRenderer(columns, renderers, (i) =>
 			this.splitview.getViewSize(i),
 		);
+
 		this.list = this.disposables.add(
 			new List(
 				user,
@@ -381,6 +424,7 @@ export class Table<TRow> implements ISpliceable<TRow>, IDisposable {
 
 				const size =
 					(columns[index].weight / totalWeight) * this.cachedWidth;
+
 				this.splitview.resizeView(index, size);
 			},
 			null,
@@ -388,6 +432,7 @@ export class Table<TRow> implements ISpliceable<TRow>, IDisposable {
 		);
 
 		this.styleElement = createStyleSheet(this.domNode);
+
 		this.style(unthemedListStyles);
 	}
 
@@ -397,6 +442,7 @@ export class Table<TRow> implements ISpliceable<TRow>, IDisposable {
 
 	resizeColumn(index: number, percentage: number): void {
 		const size = Math.round((percentage / 100.0) * this.cachedWidth);
+
 		this.splitview.resizeView(index, size);
 	}
 
@@ -434,14 +480,19 @@ export class Table<TRow> implements ISpliceable<TRow>, IDisposable {
 
 	layout(height?: number, width?: number): void {
 		height = height ?? getContentHeight(this.domNode);
+
 		width = width ?? getContentWidth(this.domNode);
 
 		this.cachedWidth = width;
+
 		this.cachedHeight = height;
+
 		this.splitview.layout(width);
 
 		const listHeight = height - this.virtualDelegate.headerRowHeight;
+
 		this.list.getHTMLElement().style.height = `${listHeight}px`;
+
 		this.list.layout(listHeight, width);
 	}
 
@@ -454,10 +505,12 @@ export class Table<TRow> implements ISpliceable<TRow>, IDisposable {
 
 		content.push(`.monaco-table.${this.domId} > .monaco-split-view2 .monaco-sash.vertical::before {
 			top: ${this.virtualDelegate.headerRowHeight + 1}px;
+
 			height: calc(100% - ${this.virtualDelegate.headerRowHeight}px);
 		}`);
 
 		this.styleElement.textContent = content.join("\n");
+
 		this.list.style(styles);
 	}
 

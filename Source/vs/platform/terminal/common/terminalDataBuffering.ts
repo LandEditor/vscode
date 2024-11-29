@@ -8,6 +8,7 @@ import { IProcessDataEvent } from "./terminal.js";
 
 interface TerminalDataBuffer extends IDisposable {
 	data: string[];
+
 	timeoutId: any;
 }
 export class TerminalDataBufferer implements IDisposable {
@@ -16,11 +17,13 @@ export class TerminalDataBufferer implements IDisposable {
 	constructor(
 		private readonly _callback: (id: number, data: string) => void,
 	) {}
+
 	dispose() {
 		for (const buffer of this._terminalBufferMap.values()) {
 			buffer.dispose();
 		}
 	}
+
 	startBuffering(
 		id: number,
 		event: Event<string | IProcessDataEvent>,
@@ -36,33 +39,42 @@ export class TerminalDataBufferer implements IDisposable {
 
 				return;
 			}
+
 			const timeoutId = setTimeout(
 				() => this.flushBuffer(id),
 				throttleBy,
 			);
+
 			buffer = {
 				data: [data],
 				timeoutId: timeoutId,
 				dispose: () => {
 					clearTimeout(timeoutId);
+
 					this.flushBuffer(id);
+
 					disposable.dispose();
 				},
 			};
+
 			this._terminalBufferMap.set(id, buffer);
 		});
 
 		return disposable;
 	}
+
 	stopBuffering(id: number) {
 		const buffer = this._terminalBufferMap.get(id);
+
 		buffer?.dispose();
 	}
+
 	flushBuffer(id: number): void {
 		const buffer = this._terminalBufferMap.get(id);
 
 		if (buffer) {
 			this._terminalBufferMap.delete(id);
+
 			this._callback(id, buffer.data.join(""));
 		}
 	}

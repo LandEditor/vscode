@@ -55,6 +55,7 @@ const LAST_INPUT_CACHE_SIZE = 5;
 export abstract class BaseConfigurationResolverService extends AbstractVariableResolverService {
 	static readonly INPUT_OR_COMMAND_VARIABLES_PATTERN =
 		/\${((input|command):(.*?))}/g;
+
 	private userInputAccessQueue = new Queue<
 		string | IQuickPickItem | undefined
 	>();
@@ -121,6 +122,7 @@ export abstract class BaseConfigurationResolverService extends AbstractVariableR
 					if (!fileResource) {
 						return undefined;
 					}
+
 					return this.labelService.getUriLabel(fileResource, {
 						noPrefix: true,
 					});
@@ -141,6 +143,7 @@ export abstract class BaseConfigurationResolverService extends AbstractVariableR
 					if (!fileResource) {
 						return undefined;
 					}
+
 					const wsFolder =
 						workspaceContextService.getWorkspaceFolder(
 							fileResource,
@@ -149,6 +152,7 @@ export abstract class BaseConfigurationResolverService extends AbstractVariableR
 					if (!wsFolder) {
 						return undefined;
 					}
+
 					return this.labelService.getUriLabel(wsFolder.uri, {
 						noPrefix: true,
 					});
@@ -167,10 +171,12 @@ export abstract class BaseConfigurationResolverService extends AbstractVariableR
 
 						const modified =
 							activeTextEditorControl.getModifiedEditor();
+
 						activeControl = original.hasWidgetFocus()
 							? original
 							: modified;
 					}
+
 					const activeModel = activeControl?.getModel();
 
 					const activeSelection = activeControl?.getSelection();
@@ -178,6 +184,7 @@ export abstract class BaseConfigurationResolverService extends AbstractVariableR
 					if (activeModel && activeSelection) {
 						return activeModel.getValueInRange(activeSelection);
 					}
+
 					return undefined;
 				},
 				getLineNumber: (): string | undefined => {
@@ -194,6 +201,7 @@ export abstract class BaseConfigurationResolverService extends AbstractVariableR
 							return String(lineNumber);
 						}
 					}
+
 					return undefined;
 				},
 				getExtension: (id) => {
@@ -205,6 +213,7 @@ export abstract class BaseConfigurationResolverService extends AbstractVariableR
 			envVariablesPromise,
 		);
 	}
+
 	public override async resolveWithInteractionReplace(
 		folder: IWorkspaceFolder | undefined,
 		config: any,
@@ -236,6 +245,7 @@ export abstract class BaseConfigurationResolverService extends AbstractVariableR
 			}
 		});
 	}
+
 	public override async resolveWithInteraction(
 		folder: IWorkspaceFolder | undefined,
 		config: any,
@@ -245,6 +255,7 @@ export abstract class BaseConfigurationResolverService extends AbstractVariableR
 	): Promise<Map<string, string> | undefined> {
 		// resolve any non-interactive variables and any contributed variables
 		const resolved = await this.resolveAnyMap(folder, config);
+
 		config = resolved.newConfig;
 
 		const allVariableMapping: Map<string, string> =
@@ -260,6 +271,7 @@ export abstract class BaseConfigurationResolverService extends AbstractVariableR
 			if (this.updateMapping(inputOrCommandMapping, allVariableMapping)) {
 				return allVariableMapping;
 			}
+
 			return undefined;
 		});
 	}
@@ -273,9 +285,11 @@ export abstract class BaseConfigurationResolverService extends AbstractVariableR
 		if (!newMapping) {
 			return false;
 		}
+
 		for (const [key, value] of Object.entries(newMapping)) {
 			fullMapping.set(key, value);
 		}
+
 		return true;
 	}
 	/**
@@ -346,6 +360,7 @@ export abstract class BaseConfigurationResolverService extends AbstractVariableR
 		}
 		// extract and dedupe all "input" and "command" variables and preserve their order in an array
 		const variables: string[] = [];
+
 		this.findVariables(configuration, variables);
 
 		const variableValues: IStringDictionary<string> = Object.create(null);
@@ -367,6 +382,7 @@ export abstract class BaseConfigurationResolverService extends AbstractVariableR
 						(variableToCommandMap
 							? variableToCommandMap[name]
 							: undefined) || name;
+
 					result = await this.commandService.executeCommand(
 						commandId,
 						configuration,
@@ -384,8 +400,10 @@ export abstract class BaseConfigurationResolverService extends AbstractVariableR
 							),
 						);
 					}
+
 					break;
 				}
+
 				default:
 					// Try to resolve it as a contributed variable
 					if (this._contributedVariables.has(variable)) {
@@ -393,12 +411,14 @@ export abstract class BaseConfigurationResolverService extends AbstractVariableR
 							await this._contributedVariables.get(variable)!();
 					}
 			}
+
 			if (typeof result === "string") {
 				variableValues[variable] = result;
 			} else {
 				return undefined;
 			}
 		}
+
 		return variableValues;
 	}
 	/**
@@ -424,6 +444,7 @@ export abstract class BaseConfigurationResolverService extends AbstractVariableR
 					}
 				}
 			}
+
 			for (const contributed of this._contributedVariables.keys()) {
 				if (
 					variables.indexOf(contributed) < 0 &&
@@ -491,6 +512,7 @@ export abstract class BaseConfigurationResolverService extends AbstractVariableR
 					if (!Types.isString(info.description)) {
 						missingAttribute("description");
 					}
+
 					const inputOptions: IInputOptions = {
 						prompt: info.description,
 						ignoreFocusLost: true,
@@ -500,9 +522,11 @@ export abstract class BaseConfigurationResolverService extends AbstractVariableR
 					if (info.default) {
 						inputOptions.value = info.default;
 					}
+
 					if (info.password) {
 						inputOptions.password = info.password;
 					}
+
 					return this.userInputAccessQueue
 						.queue(() => this.quickInputService.input(inputOptions))
 						.then((resolvedInput) => {
@@ -514,13 +538,16 @@ export abstract class BaseConfigurationResolverService extends AbstractVariableR
 									),
 								);
 							}
+
 							return resolvedInput as string;
 						});
 				}
+
 				case "pickString": {
 					if (!Types.isString(info.description)) {
 						missingAttribute("description");
 					}
+
 					if (Array.isArray(info.options)) {
 						for (const pickOption of info.options) {
 							if (
@@ -533,9 +560,11 @@ export abstract class BaseConfigurationResolverService extends AbstractVariableR
 					} else {
 						missingAttribute("options");
 					}
+
 					interface PickStringItem extends IQuickPickItem {
 						value: string;
 					}
+
 					const picks = new Array<PickStringItem>();
 
 					for (const pickOption of info.options) {
@@ -557,6 +586,7 @@ export abstract class BaseConfigurationResolverService extends AbstractVariableR
 								"inputVariable.defaultInputValue",
 								"(Default)",
 							);
+
 							picks.unshift(item);
 						} else if (
 							!info.default &&
@@ -567,6 +597,7 @@ export abstract class BaseConfigurationResolverService extends AbstractVariableR
 							picks.push(item);
 						}
 					}
+
 					const pickOptions: IPickOptions<PickStringItem> = {
 						placeHolder: info.description,
 						matchOnDetail: true,
@@ -585,19 +616,23 @@ export abstract class BaseConfigurationResolverService extends AbstractVariableR
 							if (resolvedInput) {
 								const value = (resolvedInput as PickStringItem)
 									.value;
+
 								this.storeInputLru(
 									defaultValueMap.set(defaultValueKey, value),
 								);
 
 								return value;
 							}
+
 							return undefined;
 						});
 				}
+
 				case "command": {
 					if (!Types.isString(info.command)) {
 						missingAttribute("command");
 					}
+
 					return this.userInputAccessQueue
 						.queue(() =>
 							this.commandService.executeCommand<string>(
@@ -612,6 +647,7 @@ export abstract class BaseConfigurationResolverService extends AbstractVariableR
 							) {
 								return result;
 							}
+
 							throw new Error(
 								nls.localize(
 									"inputVariable.command.noStringType",
@@ -622,6 +658,7 @@ export abstract class BaseConfigurationResolverService extends AbstractVariableR
 							);
 						});
 				}
+
 				default:
 					throw new Error(
 						nls.localize(
@@ -632,6 +669,7 @@ export abstract class BaseConfigurationResolverService extends AbstractVariableR
 					);
 			}
 		}
+
 		return Promise.reject(
 			new Error(
 				nls.localize(
@@ -642,6 +680,7 @@ export abstract class BaseConfigurationResolverService extends AbstractVariableR
 			),
 		);
 	}
+
 	private storeInputLru(lru: LRUCache<string, string>): void {
 		this.storageService.store(
 			LAST_INPUT_STORAGE_KEY,
@@ -650,6 +689,7 @@ export abstract class BaseConfigurationResolverService extends AbstractVariableR
 			StorageTarget.MACHINE,
 		);
 	}
+
 	private readInputLru(): LRUCache<string, string> {
 		const contents = this.storageService.get(
 			LAST_INPUT_STORAGE_KEY,
@@ -665,6 +705,7 @@ export abstract class BaseConfigurationResolverService extends AbstractVariableR
 		} catch {
 			// ignored
 		}
+
 		return lru;
 	}
 }

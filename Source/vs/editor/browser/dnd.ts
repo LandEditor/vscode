@@ -27,6 +27,7 @@ export function toVSDataTransfer(dataTransfer: DataTransfer) {
 			const asStringValue = new Promise<string>((resolve) =>
 				item.getAsString(resolve),
 			);
+
 			vsDataTransfer.append(
 				type,
 				createStringDataTransferItem(asStringValue),
@@ -42,6 +43,7 @@ export function toVSDataTransfer(dataTransfer: DataTransfer) {
 			}
 		}
 	}
+
 	return vsDataTransfer;
 }
 function createFileDataTransferItemFromFile(file: File): IDataTransferItem {
@@ -95,6 +97,7 @@ export function toExternalVSDataTransfer(
 					}
 				}
 			}
+
 			if (editorData.length) {
 				vsDataTransfer.replace(
 					Mimes.uriList,
@@ -103,8 +106,10 @@ export function toExternalVSDataTransfer(
 			}
 		}
 	}
+
 	for (const internal of INTERNAL_DND_MIME_TYPES) {
 		vsDataTransfer.delete(internal);
 	}
+
 	return vsDataTransfer;
 }

@@ -81,20 +81,26 @@ export const enum CellOverflowToolbarGroups {
 
 export interface INotebookActionContext {
 	readonly cell?: ICellViewModel;
+
 	readonly notebookEditor: IActiveNotebookEditor;
+
 	readonly ui?: boolean;
+
 	readonly selectedCells?: readonly ICellViewModel[];
+
 	readonly autoReveal?: boolean;
 }
 
 export interface INotebookCellToolbarActionContext
 	extends INotebookActionContext {
 	readonly ui: true;
+
 	readonly cell: ICellViewModel;
 }
 
 export interface INotebookCommandContext extends INotebookActionContext {
 	readonly ui: false;
+
 	readonly selectedCells: readonly ICellViewModel[];
 }
 
@@ -113,12 +119,15 @@ export function getContextFromActiveEditor(
 	const editor = getNotebookEditorFromEditorPane(
 		editorService.activeEditorPane,
 	);
+
 	if (!editor || !editor.hasModel()) {
 		return;
 	}
 
 	const activeCell = editor.getActiveCell();
+
 	const selectedCells = editor.getSelectionViewModels();
+
 	return {
 		cell: activeCell,
 		selectedCells,
@@ -128,6 +137,7 @@ export function getContextFromActiveEditor(
 
 function getWidgetFromUri(accessor: ServicesAccessor, uri: URI) {
 	const notebookEditorService = accessor.get(INotebookEditorService);
+
 	const widget = notebookEditorService
 		.listNotebookEditors()
 		.find(
@@ -164,9 +174,11 @@ export function findTargetCellEditor(
 	targetCell: ICellViewModel,
 ) {
 	let foundEditor: ICodeEditor | undefined = undefined;
+
 	for (const [, codeEditor] of context.notebookEditor.codeEditors) {
 		if (isEqual(codeEditor.getModel()?.uri, targetCell.uri)) {
 			foundEditor = codeEditor;
+
 			break;
 		}
 	}
@@ -178,6 +190,7 @@ export abstract class NotebookAction extends Action2 {
 	constructor(desc: IAction2Options) {
 		if (desc.f1 !== false) {
 			desc.f1 = false;
+
 			const f1Menu = {
 				id: MenuId.CommandPalette,
 				when: ContextKeyExpr.or(
@@ -214,6 +227,7 @@ export abstract class NotebookAction extends Action2 {
 				context,
 				...additionalArgs,
 			);
+
 			if (!context) {
 				return;
 			}
@@ -249,6 +263,7 @@ export abstract class NotebookMultiCellAction extends Action2 {
 	constructor(desc: IAction2Options) {
 		if (desc.f1 !== false) {
 			desc.f1 = false;
+
 			const f1Menu = {
 				id: MenuId.CommandPalette,
 				when: NOTEBOOK_IS_ACTIVE_EDITOR,
@@ -295,18 +310,21 @@ export abstract class NotebookMultiCellAction extends Action2 {
 		sendEntryTelemetry(accessor, this.desc.id, context);
 
 		const isFromCellToolbar = isCellToolbarContext(context);
+
 		if (isFromCellToolbar) {
 			return this.runWithContext(accessor, context);
 		}
 
 		// handle parsed args
 		const parsedArgs = this.parseArgs(accessor, ...additionalArgs);
+
 		if (parsedArgs) {
 			return this.runWithContext(accessor, parsedArgs);
 		}
 
 		// no parsed args, try handle active editor
 		const editor = getEditorFromArgsOrActivePane(accessor);
+
 		if (editor) {
 			const selectedCellRange: ICellRange[] =
 				editor.getSelections().length === 0
@@ -366,6 +384,7 @@ export abstract class NotebookCellAction<
 
 		const activeEditorContext =
 			this.getEditorContextFromArgsOrActive(accessor);
+
 		if (this.isCellActionContext(activeEditorContext)) {
 			return this.runWithContext(accessor, activeEditorContext);
 		}
@@ -384,7 +403,9 @@ export const executeNotebookCondition = ContextKeyExpr.or(
 
 interface IMultiCellArgs {
 	ranges: ICellRange[];
+
 	document?: URI;
+
 	autoReveal?: boolean;
 }
 
@@ -395,6 +416,7 @@ function sendEntryTelemetry(
 ) {
 	if (context) {
 		const telemetryService = accessor.get(ITelemetryService);
+
 		if (context.source) {
 			telemetryService.publicLog2<
 				WorkbenchActionExecutedEvent,
@@ -423,6 +445,7 @@ function sendEntryTelemetry(
 				: isEditorCommandsContext(context)
 					? "editorToolbar"
 					: "other";
+
 			telemetryService.publicLog2<
 				WorkbenchActionExecutedEvent,
 				WorkbenchActionExecutedClassification
@@ -445,7 +468,9 @@ function isMultiCellArgs(arg: unknown): arg is IMultiCellArgs {
 	if (arg === undefined) {
 		return false;
 	}
+
 	const ranges = (arg as IMultiCellArgs).ranges;
+
 	if (!ranges) {
 		return false;
 	}
@@ -481,6 +506,7 @@ export function getEditorFromArgsOrActivePane(
 	const editor = getNotebookEditorFromEditorPane(
 		accessor.get(IEditorService).activeEditorPane,
 	);
+
 	if (!editor || !editor.hasModel()) {
 		return;
 	}
@@ -499,15 +525,19 @@ export function parseMultiCellExecutionArgs(
 			accessor,
 			firstArg.document,
 		);
+
 		if (!editor) {
 			return;
 		}
 
 		const ranges = firstArg.ranges;
+
 		const selectedCells = ranges
 			.map((range) => editor.getCellsInRange(range).slice(0))
 			.flat();
+
 		const autoReveal = firstArg.autoReveal;
+
 		return {
 			ui: false,
 			notebookEditor: editor,
@@ -520,7 +550,9 @@ export function parseMultiCellExecutionArgs(
 	if (isICellRange(firstArg)) {
 		// cellRange, document
 		const secondArg = args[1];
+
 		const editor = getEditorFromArgsOrActivePane(accessor, secondArg);
+
 		if (!editor) {
 			return;
 		}
@@ -534,6 +566,7 @@ export function parseMultiCellExecutionArgs(
 
 	// let's just execute the active cell
 	const context = getContextFromActiveEditor(accessor.get(IEditorService));
+
 	return context
 		? {
 				ui: false,
@@ -546,9 +579,13 @@ export function parseMultiCellExecutionArgs(
 
 export const cellExecutionArgs: ReadonlyArray<{
 	readonly name: string;
+
 	readonly isOptional?: boolean;
+
 	readonly description?: string;
+
 	readonly constraint?: TypeConstraint;
+
 	readonly schema?: IJSONSchema;
 }> = [
 	{

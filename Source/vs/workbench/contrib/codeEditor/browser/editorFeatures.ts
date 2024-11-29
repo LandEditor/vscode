@@ -18,6 +18,7 @@ class EditorFeaturesInstantiator
 	implements IWorkbenchContribution
 {
 	static readonly ID = "workbench.contrib.editorFeaturesInstantiator";
+
 	private _instantiated = false;
 
 	constructor(
@@ -27,9 +28,11 @@ class EditorFeaturesInstantiator
 		private readonly _instantiationService: IInstantiationService,
 	) {
 		super();
+
 		this._register(
 			codeEditorService.onWillCreateCodeEditor(() => this._instantiate()),
 		);
+
 		this._register(
 			codeEditorService.onWillCreateDiffEditor(() => this._instantiate()),
 		);
@@ -41,10 +44,12 @@ class EditorFeaturesInstantiator
 			this._instantiate();
 		}
 	}
+
 	private _instantiate(): void {
 		if (this._instantiated) {
 			return;
 		}
+
 		this._instantiated = true;
 		// Instantiate all editor features
 		const editorFeatures = getEditorFeatures();

@@ -153,6 +153,7 @@ function createInlineValueDecoration(
 		contentText =
 			contentText.substring(0, MAX_INLINE_DECORATOR_LENGTH) + "...";
 	}
+
 	return [
 		{
 			range: {
@@ -208,6 +209,7 @@ function createInlineValueDecorationsInsideRange(
 			break;
 		}
 	}
+
 	const lineToNamesMap: Map<number, string[]> = new Map<number, string[]>();
 	// Compute unique set of names on each line
 	nameValueMap.forEach((_value, name) => {
@@ -225,6 +227,7 @@ function createInlineValueDecorationsInsideRange(
 					if (!lineToNamesMap.has(lineNumber)) {
 						lineToNamesMap.set(lineNumber, []);
 					}
+
 					if (lineToNamesMap.get(lineNumber)!.indexOf(name) === -1) {
 						lineToNamesMap.get(lineNumber)!.push(name);
 					}
@@ -254,14 +257,18 @@ function getWordToLineNumbersMap(
 	if (lineLength > MAX_TOKENIZATION_LINE_LEN) {
 		return;
 	}
+
 	const lineContent = model.getLineContent(lineNumber);
+
 	model.tokenization.forceTokenization(lineNumber);
 
 	const lineTokens = model.tokenization.getLineTokens(lineNumber);
 
 	for (
 		let tokenIndex = 0, tokenCount = lineTokens.getCount();
+
 		tokenIndex < tokenCount;
+
 		tokenIndex++
 	) {
 		const tokenType = lineTokens.getStandardTokenType(tokenIndex);
@@ -285,6 +292,7 @@ function getWordToLineNumbersMap(
 				if (!result.has(word)) {
 					result.set(word, []);
 				}
+
 				result.get(word)!.push(lineNumber);
 			}
 		}
@@ -292,21 +300,35 @@ function getWordToLineNumbersMap(
 }
 export class DebugEditorContribution implements IDebugEditorContribution {
 	private toDispose: IDisposable[];
+
 	private hoverWidget: DebugHoverWidget;
+
 	private hoverPosition?: {
 		position: Position;
+
 		event: IMouseEvent;
 	};
+
 	private mouseDown = false;
+
 	private exceptionWidgetVisible: IContextKey<boolean>;
+
 	private gutterIsHovered = false;
+
 	private exceptionWidget: ExceptionWidget | undefined;
+
 	private configurationWidget: FloatingEditorClickWidget | undefined;
+
 	private readonly altListener = new MutableDisposable();
+
 	private altPressed = false;
+
 	private oldDecorations = this.editor.createDecorationsCollection();
+
 	private readonly displayedStore = new DisposableStore();
+
 	private editorHoverOptions: IEditorHoverOptions | undefined;
+
 	private readonly debounceInfo: IFeatureDebounceInformation;
 	// Holds a Disposable that prevents the default editor hover behavior while it exists.
 	private readonly defaultHoverLockout = new MutableDisposable();
@@ -337,20 +359,26 @@ export class DebugEditorContribution implements IDebugEditorContribution {
 			"InlineValues",
 			{ min: DEAFULT_INLINE_DEBOUNCE_DELAY },
 		);
+
 		this.hoverWidget = this.instantiationService.createInstance(
 			DebugHoverWidget,
 			this.editor,
 		);
+
 		this.toDispose = [
 			this.defaultHoverLockout,
 			this.altListener,
 			this.displayedStore,
 		];
+
 		this.registerListeners();
+
 		this.exceptionWidgetVisible =
 			CONTEXT_EXCEPTION_WIDGET_VISIBLE.bindTo(contextKeyService);
+
 		this.toggleExceptionWidget();
 	}
+
 	private registerListeners(): void {
 		this.toDispose.push(
 			this.debugService
@@ -365,14 +393,17 @@ export class DebugEditorContribution implements IDebugEditorContribution {
 				this.onEditorMouseDown(e),
 			),
 		);
+
 		this.toDispose.push(
 			this.editor.onMouseUp(() => (this.mouseDown = false)),
 		);
+
 		this.toDispose.push(
 			this.editor.onMouseMove((e: IEditorMouseEvent) =>
 				this.onEditorMouseMove(e),
 			),
 		);
+
 		this.toDispose.push(
 			this.editor.onMouseLeave((e: IPartialEditorMouseEvent) => {
 				const hoverDomNode = this.hoverWidget.getDomNode();
@@ -380,6 +411,7 @@ export class DebugEditorContribution implements IDebugEditorContribution {
 				if (!hoverDomNode) {
 					return;
 				}
+
 				const rect = hoverDomNode.getBoundingClientRect();
 				// Only hide the hover widget if the editor mouse leave event is outside the hover widget #3528
 				if (
@@ -392,15 +424,19 @@ export class DebugEditorContribution implements IDebugEditorContribution {
 				}
 			}),
 		);
+
 		this.toDispose.push(
 			this.editor.onKeyDown((e: IKeyboardEvent) => this.onKeyDown(e)),
 		);
+
 		this.toDispose.push(
 			this.editor.onDidChangeModelContent(() => {
 				this._wordToLineNumbersMap = undefined;
+
 				this.updateInlineValuesScheduler.schedule();
 			}),
 		);
+
 		this.toDispose.push(
 			this.debugService
 				.getViewModel()
@@ -408,6 +444,7 @@ export class DebugEditorContribution implements IDebugEditorContribution {
 					this.updateInlineValuesScheduler.schedule(),
 				),
 		);
+
 		this.toDispose.push(
 			this.debugService
 				.getViewModel()
@@ -415,18 +452,24 @@ export class DebugEditorContribution implements IDebugEditorContribution {
 					this.updateInlineValuesScheduler.schedule(),
 				),
 		);
+
 		this.toDispose.push(
 			this.editor.onDidChangeModel(async () => {
 				this.addDocumentListeners();
+
 				this.toggleExceptionWidget();
+
 				this.hideHoverWidget();
+
 				this._wordToLineNumbersMap = undefined;
 
 				const stackFrame =
 					this.debugService.getViewModel().focusedStackFrame;
+
 				await this.updateInlineValueDecorations(stackFrame);
 			}),
 		);
+
 		this.toDispose.push(
 			this.editor.onDidScrollChange(() => {
 				this.hideHoverWidget();
@@ -441,6 +484,7 @@ export class DebugEditorContribution implements IDebugEditorContribution {
 				}
 			}),
 		);
+
 		this.toDispose.push(
 			this.configurationService.onDidChangeConfiguration((e) => {
 				if (e.affectsConfiguration("editor.hover")) {
@@ -448,6 +492,7 @@ export class DebugEditorContribution implements IDebugEditorContribution {
 				}
 			}),
 		);
+
 		this.toDispose.push(
 			this.debugService.onDidChangeState((state: State) => {
 				if (state !== State.Stopped) {
@@ -455,9 +500,12 @@ export class DebugEditorContribution implements IDebugEditorContribution {
 				}
 			}),
 		);
+
 		this.updateHoverConfiguration();
 	}
+
 	private _wordToLineNumbersMap: WordsToLineNumbersCache | undefined;
+
 	private updateHoverConfiguration(): void {
 		const model = this.editor.getModel();
 
@@ -472,6 +520,7 @@ export class DebugEditorContribution implements IDebugEditorContribution {
 				);
 		}
 	}
+
 	private addDocumentListeners(): void {
 		const stackFrame = this.debugService.getViewModel().focusedStackFrame;
 
@@ -481,6 +530,7 @@ export class DebugEditorContribution implements IDebugEditorContribution {
 			this.applyDocumentListeners(model, stackFrame);
 		}
 	}
+
 	private applyDocumentListeners(
 		model: ITextModel,
 		stackFrame: IStackFrame | undefined,
@@ -496,6 +546,7 @@ export class DebugEditorContribution implements IDebugEditorContribution {
 
 			return;
 		}
+
 		const ownerDocument = this.editor.getContainerDomNode().ownerDocument;
 		// When the alt key is pressed show regular editor hover and hide the debug hover #84561
 		this.altListener.value = addDisposableListener(
@@ -510,7 +561,9 @@ export class DebugEditorContribution implements IDebugEditorContribution {
 					this.altPressed = true;
 
 					const debugHoverWasVisible = this.hoverWidget.isVisible();
+
 					this.hoverWidget.hide();
+
 					this.defaultHoverLockout.clear();
 
 					if (debugHoverWasVisible && this.hoverPosition) {
@@ -520,6 +573,7 @@ export class DebugEditorContribution implements IDebugEditorContribution {
 							false,
 						);
 					}
+
 					const onKeyUp = new DomEmitter(ownerDocument, "keyup");
 
 					const listener = Event.any<KeyboardEvent | boolean>(
@@ -533,13 +587,17 @@ export class DebugEditorContribution implements IDebugEditorContribution {
 								keyupEvent,
 							);
 						}
+
 						if (
 							!standardKeyboardEvent ||
 							standardKeyboardEvent.keyCode === KeyCode.Alt
 						) {
 							this.altPressed = false;
+
 							this.preventDefaultEditorHover();
+
 							listener.dispose();
+
 							onKeyUp.dispose();
 						}
 					});
@@ -547,6 +605,7 @@ export class DebugEditorContribution implements IDebugEditorContribution {
 			},
 		);
 	}
+
 	async showHover(
 		position: Position,
 		focus: boolean,
@@ -578,6 +637,7 @@ export class DebugEditorContribution implements IDebugEditorContribution {
 			this.showEditorHover(position, focus);
 		}
 	}
+
 	private preventDefaultEditorHover() {
 		if (
 			this.defaultHoverLockout.value ||
@@ -585,12 +645,16 @@ export class DebugEditorContribution implements IDebugEditorContribution {
 		) {
 			return;
 		}
+
 		const hoverController =
 			this.editor.getContribution<ContentHoverController>(
 				ContentHoverController.ID,
 			);
+
 		hoverController?.hideContentHover();
+
 		this.editor.updateOptions({ hover: { enabled: false } });
+
 		this.defaultHoverLockout.value = {
 			dispose: () => {
 				this.editor.updateOptions({
@@ -601,6 +665,7 @@ export class DebugEditorContribution implements IDebugEditorContribution {
 			},
 		};
 	}
+
 	private showEditorHover(position: Position, focus: boolean) {
 		const hoverController =
 			this.editor.getContribution<ContentHoverController>(
@@ -616,6 +681,7 @@ export class DebugEditorContribution implements IDebugEditorContribution {
 		// enable the editor hover, otherwise the content controller will see it
 		// as disabled and hide it on the first mouse move (#193149)
 		this.defaultHoverLockout.clear();
+
 		hoverController?.showContentHover(
 			range,
 			HoverStartMode.Immediate,
@@ -623,6 +689,7 @@ export class DebugEditorContribution implements IDebugEditorContribution {
 			focus,
 		);
 	}
+
 	private async onFocusStackFrame(
 		sf: IStackFrame | undefined,
 	): Promise<void> {
@@ -640,8 +707,10 @@ export class DebugEditorContribution implements IDebugEditorContribution {
 				this.hideHoverWidget();
 			}
 		}
+
 		await this.updateInlineValueDecorations(sf);
 	}
+
 	private get hoverDelay() {
 		const baseDelay = this.editorHoverOptions?.delay || 0;
 		// heuristic to get a 'good' but configurable delay for evaluation. The
@@ -666,15 +735,19 @@ export class DebugEditorContribution implements IDebugEditorContribution {
 				);
 			}
 		}, this.hoverDelay);
+
 		this.toDispose.push(scheduler);
 
 		return scheduler;
 	}
+
 	private hideHoverWidget(): void {
 		if (this.hoverWidget.willBeVisible()) {
 			this.hoverWidget.hide();
 		}
+
 		this.showHoverScheduler.cancel();
+
 		this.defaultHoverLockout.clear();
 	}
 	// hover business
@@ -687,12 +760,15 @@ export class DebugEditorContribution implements IDebugEditorContribution {
 		) {
 			return;
 		}
+
 		this.hideHoverWidget();
 	}
+
 	private onEditorMouseMove(mouseEvent: IEditorMouseEvent): void {
 		if (this.debugService.state !== State.Stopped) {
 			return;
 		}
+
 		const target = mouseEvent.target;
 
 		const stopKey = env.isMacintosh ? "metaKey" : "ctrlKey";
@@ -700,12 +776,15 @@ export class DebugEditorContribution implements IDebugEditorContribution {
 		if (!this.altPressed) {
 			if (target.type === MouseTargetType.GUTTER_GLYPH_MARGIN) {
 				this.defaultHoverLockout.clear();
+
 				this.gutterIsHovered = true;
 			} else if (this.gutterIsHovered) {
 				this.gutterIsHovered = false;
+
 				this.updateHoverConfiguration();
 			}
 		}
+
 		if (
 			(target.type === MouseTargetType.CONTENT_WIDGET &&
 				target.detail === DebugHoverWidget.ID) ||
@@ -725,6 +804,7 @@ export class DebugEditorContribution implements IDebugEditorContribution {
 				return;
 			}
 		}
+
 		if (target.type === MouseTargetType.CONTENT_TEXT) {
 			if (
 				target.position &&
@@ -743,6 +823,7 @@ export class DebugEditorContribution implements IDebugEditorContribution {
 				};
 				// Disable the editor hover during the request to avoid flickering
 				this.preventDefaultEditorHover();
+
 				this.showHoverScheduler.schedule(this.hoverDelay);
 			}
 		} else if (!this.mouseDown) {
@@ -750,6 +831,7 @@ export class DebugEditorContribution implements IDebugEditorContribution {
 			this.hideHoverWidget();
 		}
 	}
+
 	private onKeyDown(e: IKeyboardEvent): void {
 		const stopKey = env.isMacintosh ? KeyCode.Meta : KeyCode.Ctrl;
 
@@ -789,6 +871,7 @@ export class DebugEditorContribution implements IDebugEditorContribution {
 
 			return;
 		}
+
 		const sameUri = this.uriIdentityService.extUri.isEqual(
 			exceptionSf.source.uri,
 			model.uri,
@@ -809,6 +892,7 @@ export class DebugEditorContribution implements IDebugEditorContribution {
 			}
 		}
 	}
+
 	private showExceptionWidget(
 		exceptionInfo: IExceptionInfo,
 		debugSession: IDebugSession | undefined,
@@ -818,27 +902,36 @@ export class DebugEditorContribution implements IDebugEditorContribution {
 		if (this.exceptionWidget) {
 			this.exceptionWidget.dispose();
 		}
+
 		this.exceptionWidget = this.instantiationService.createInstance(
 			ExceptionWidget,
 			this.editor,
 			exceptionInfo,
 			debugSession,
 		);
+
 		this.exceptionWidget.show({ lineNumber, column }, 0);
+
 		this.exceptionWidget.focus();
+
 		this.editor.revealRangeInCenter({
 			startLineNumber: lineNumber,
 			startColumn: column,
 			endLineNumber: lineNumber,
 			endColumn: column,
 		});
+
 		this.exceptionWidgetVisible.set(true);
 	}
+
 	closeExceptionWidget(): void {
 		if (this.exceptionWidget) {
 			const shouldFocusEditor = this.exceptionWidget.hasFocus();
+
 			this.exceptionWidget.dispose();
+
 			this.exceptionWidget = undefined;
+
 			this.exceptionWidgetVisible.set(false);
 
 			if (shouldFocusEditor) {
@@ -846,18 +939,21 @@ export class DebugEditorContribution implements IDebugEditorContribution {
 			}
 		}
 	}
+
 	async addLaunchConfiguration(): Promise<void> {
 		const model = this.editor.getModel();
 
 		if (!model) {
 			return;
 		}
+
 		let configurationsArrayPosition: Position | undefined;
 
 		let lastProperty: string;
 
 		const getConfigurationPosition = () => {
 			let depthInArray = 0;
+
 			visit(model.getValue(), {
 				onObjectProperty: (property: string) => {
 					lastProperty = property;
@@ -871,6 +967,7 @@ export class DebugEditorContribution implements IDebugEditorContribution {
 							offset + 1,
 						);
 					}
+
 					depthInArray++;
 				},
 				onArrayEnd: () => {
@@ -911,6 +1008,7 @@ export class DebugEditorContribution implements IDebugEditorContribution {
 				lineNumber,
 				model.getLineMaxColumn(lineNumber),
 			);
+
 			model.pushEditOperations(
 				null,
 				[EditOperation.replace(range, edit.content)],
@@ -919,9 +1017,11 @@ export class DebugEditorContribution implements IDebugEditorContribution {
 			// Go through the file again since we've edited it
 			getConfigurationPosition();
 		}
+
 		if (!configurationsArrayPosition) {
 			return;
 		}
+
 		this.editor.focus();
 
 		const insertLine = (position: Position): Promise<any> => {
@@ -931,19 +1031,23 @@ export class DebugEditorContribution implements IDebugEditorContribution {
 				position.column
 			) {
 				this.editor.setPosition(position);
+
 				CoreEditingCommands.LineBreakInsert.runEditorCommand(
 					null,
 					this.editor,
 					null,
 				);
 			}
+
 			this.editor.setPosition(position);
 
 			return this.commandService.executeCommand(
 				"editor.action.insertLineAfter",
 			);
 		};
+
 		await insertLine(configurationsArrayPosition);
+
 		await this.commandService.executeCommand(
 			"editor.action.triggerSuggest",
 		);
@@ -953,6 +1057,7 @@ export class DebugEditorContribution implements IDebugEditorContribution {
 	private get removeInlineValuesScheduler(): RunOnceScheduler {
 		return new RunOnceScheduler(() => {
 			this.displayedStore.clear();
+
 			this.oldDecorations.clear();
 		}, 100);
 	}
@@ -970,6 +1075,7 @@ export class DebugEditorContribution implements IDebugEditorContribution {
 				: DEAFULT_INLINE_DEBOUNCE_DELAY,
 		);
 	}
+
 	private async updateInlineValueDecorations(
 		stackFrame: IStackFrame | undefined,
 	): Promise<void> {
@@ -1000,9 +1106,12 @@ export class DebugEditorContribution implements IDebugEditorContribution {
 			if (!this.removeInlineValuesScheduler.isScheduled()) {
 				this.removeInlineValuesScheduler.schedule();
 			}
+
 			return;
 		}
+
 		this.removeInlineValuesScheduler.cancel();
+
 		this.displayedStore.clear();
 
 		const viewRanges = this.editor.getVisibleRangesPlusViewportAboveBelow();
@@ -1010,6 +1119,7 @@ export class DebugEditorContribution implements IDebugEditorContribution {
 		let allDecorations: IModelDeltaDecoration[];
 
 		const cts = new CancellationTokenSource();
+
 		this.displayedStore.add(toDisposable(() => cts.dispose(true)));
 
 		if (this.languageFeaturesService.inlineValuesProvider.has(model)) {
@@ -1036,6 +1146,7 @@ export class DebugEditorContribution implements IDebugEditorContribution {
 						return found.value;
 					}
 				}
+
 				return undefined;
 			};
 
@@ -1052,6 +1163,7 @@ export class DebugEditorContribution implements IDebugEditorContribution {
 			const providers = this.languageFeaturesService.inlineValuesProvider
 				.ordered(model)
 				.reverse();
+
 			allDecorations = [];
 
 			const lineDecorations = new Map<number, InlineSegment[]>();
@@ -1086,11 +1198,13 @@ export class DebugEditorContribution implements IDebugEditorContribution {
 														iv.range
 															.startLineNumber,
 													);
+
 												va = lineContent.substring(
 													iv.range.startColumn - 1,
 													iv.range.endColumn - 1,
 												);
 											}
+
 											const value = await findVariable(
 												va,
 												iv.caseSensitiveLookup,
@@ -1103,8 +1217,10 @@ export class DebugEditorContribution implements IDebugEditorContribution {
 													value,
 												);
 											}
+
 											break;
 										}
+
 										case "expression": {
 											let expr = iv.expression;
 
@@ -1114,14 +1230,17 @@ export class DebugEditorContribution implements IDebugEditorContribution {
 														iv.range
 															.startLineNumber,
 													);
+
 												expr = lineContent.substring(
 													iv.range.startColumn - 1,
 													iv.range.endColumn - 1,
 												);
 											}
+
 											if (expr) {
 												const expression =
 													new Expression(expr);
+
 												await expression.evaluate(
 													stackFrame.thread.session,
 													stackFrame,
@@ -1137,9 +1256,11 @@ export class DebugEditorContribution implements IDebugEditorContribution {
 													);
 												}
 											}
+
 											break;
 										}
 									}
+
 									if (text) {
 										const line = iv.range.startLineNumber;
 
@@ -1148,11 +1269,13 @@ export class DebugEditorContribution implements IDebugEditorContribution {
 
 										if (!lineSegments) {
 											lineSegments = [];
+
 											lineDecorations.set(
 												line,
 												lineSegments,
 											);
 										}
+
 										if (
 											!lineSegments.some(
 												(iv) => iv.text === text,
@@ -1178,6 +1301,7 @@ export class DebugEditorContribution implements IDebugEditorContribution {
 			);
 
 			const startTime = Date.now();
+
 			await Promise.all(promises);
 			// update debounce info
 			this.updateInlineValuesScheduler.delay = this.debounceInfo.update(
@@ -1190,6 +1314,7 @@ export class DebugEditorContribution implements IDebugEditorContribution {
 					segments = segments.sort((a, b) => a.column - b.column);
 
 					const text = segments.map((s) => s.text).join(separator);
+
 					allDecorations.push(
 						...createInlineValueDecoration(line, text),
 					);
@@ -1229,9 +1354,11 @@ export class DebugEditorContribution implements IDebugEditorContribution {
 						scope.range.startColumn,
 					);
 				}
+
 				const ownRanges = viewRanges
 					.map((r) => r.intersectRanges(scopeRange))
 					.filter(isDefined);
+
 				this._wordToLineNumbersMap ??= new WordsToLineNumbersCache(
 					model,
 				);
@@ -1239,6 +1366,7 @@ export class DebugEditorContribution implements IDebugEditorContribution {
 				for (const range of ownRanges) {
 					this._wordToLineNumbersMap.ensureRangePopulated(range);
 				}
+
 				const mapped = createInlineValueDecorationsInsideRange(
 					variables,
 					ownRanges,
@@ -1251,8 +1379,10 @@ export class DebugEditorContribution implements IDebugEditorContribution {
 
 					if (!values) {
 						values = new Map<string, string>();
+
 						valuesPerLine.set(line, values);
 					}
+
 					for (const { name, value } of variables) {
 						if (!values.has(name)) {
 							values.set(name, value);
@@ -1260,6 +1390,7 @@ export class DebugEditorContribution implements IDebugEditorContribution {
 					}
 				}
 			}
+
 			allDecorations = [...valuesPerLine.entries()].flatMap(
 				([line, values]) =>
 					createInlineValueDecoration(
@@ -1268,6 +1399,7 @@ export class DebugEditorContribution implements IDebugEditorContribution {
 					),
 			);
 		}
+
 		if (cts.token.isCancellationRequested) {
 			return;
 		}
@@ -1277,6 +1409,7 @@ export class DebugEditorContribution implements IDebugEditorContribution {
 		let preservePosition:
 			| {
 					position: Position;
+
 					top: number;
 			  }
 			| undefined;
@@ -1299,6 +1432,7 @@ export class DebugEditorContribution implements IDebugEditorContribution {
 				};
 			}
 		}
+
 		this.oldDecorations.set(allDecorations);
 
 		if (preservePosition) {
@@ -1306,25 +1440,30 @@ export class DebugEditorContribution implements IDebugEditorContribution {
 				preservePosition.position.lineNumber,
 				preservePosition.position.column,
 			);
+
 			this.editor.setScrollTop(
 				this.editor.getScrollTop() - (preservePosition.top - top),
 				ScrollType.Immediate,
 			);
 		}
 	}
+
 	dispose(): void {
 		if (this.hoverWidget) {
 			this.hoverWidget.dispose();
 		}
+
 		if (this.configurationWidget) {
 			this.configurationWidget.dispose();
 		}
+
 		this.toDispose = dispose(this.toDispose);
 	}
 }
 class WordsToLineNumbersCache {
 	// we use this as an array of bits where each 1 bit is a line number that's been parsed
 	private readonly intervals: Uint8Array;
+
 	public readonly value = new Map<string, number[]>();
 
 	constructor(private readonly model: ITextModel) {
@@ -1334,13 +1473,16 @@ class WordsToLineNumbersCache {
 	public ensureRangePopulated(range: Range) {
 		for (
 			let lineNumber = range.startLineNumber;
+
 			lineNumber <= range.endLineNumber;
+
 			lineNumber++
 		) {
 			const bin = lineNumber >> 3; /* Math.floor(i / 8) */
 			const bit = 1 << (lineNumber & 0b111); /* 1 << (i % 8) */
 			if (!(this.intervals[bin] & bit)) {
 				getWordToLineNumbersMap(this.model, lineNumber, this.value);
+
 				this.intervals[bin] |= bit;
 			}
 		}
@@ -1355,6 +1497,7 @@ CommandsRegistry.registerCommand(
 		context: InlineValueContext,
 	): Promise<InlineValue[] | null> => {
 		assertType(URI.isUri(uri));
+
 		assertType(Range.isIRange(iRange));
 
 		if (
@@ -1364,11 +1507,13 @@ CommandsRegistry.registerCommand(
 		) {
 			throw illegalArgument("context");
 		}
+
 		const model = accessor.get(IModelService).getModel(uri);
 
 		if (!model) {
 			throw illegalArgument("uri");
 		}
+
 		const range = Range.lift(iRange);
 
 		const { inlineValuesProvider } = accessor.get(ILanguageFeaturesService);

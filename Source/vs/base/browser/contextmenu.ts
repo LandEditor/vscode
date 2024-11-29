@@ -16,8 +16,11 @@ import {
 
 export interface IContextMenuEvent {
 	readonly shiftKey?: boolean;
+
 	readonly ctrlKey?: boolean;
+
 	readonly altKey?: boolean;
+
 	readonly metaKey?: boolean;
 }
 /**
@@ -52,11 +55,17 @@ export interface IContextMenuDelegate {
 	getKeyBinding?(action: IAction): ResolvedKeybinding | undefined;
 
 	getMenuClassName?(): string;
+
 	onHide?(didCancel: boolean): void;
+
 	actionRunner?: IActionRunner;
+
 	skipTelemetry?: boolean;
+
 	autoSelectFirstItem?: boolean;
+
 	anchorAlignment?: AnchorAlignment;
+
 	anchorAxisAlignment?: AnchorAxisAlignment;
 
 	domForShadowRoot?: HTMLElement;

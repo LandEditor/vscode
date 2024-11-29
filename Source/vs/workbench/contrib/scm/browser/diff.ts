@@ -78,6 +78,7 @@ export class DirtyDiffModelService
 					}
 
 					dirtyDiffModel.dispose();
+
 					this._models.delete(uri);
 				}
 			}),
@@ -98,6 +99,7 @@ export class DirtyDiffModelService
 				DirtyDiffModel,
 				textFileModel,
 			);
+
 			this._models.set(uri, model);
 		}
 

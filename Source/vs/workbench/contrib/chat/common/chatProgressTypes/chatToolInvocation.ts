@@ -15,26 +15,31 @@ export class ChatToolInvocation implements IChatToolInvocation {
 	public readonly kind: "toolInvocation" = "toolInvocation";
 
 	private _isComplete = false;
+
 	public get isComplete(): boolean {
 		return this._isComplete;
 	}
 
 	private _isCompleteDeferred = new DeferredPromise<void>();
+
 	public get isCompleteDeferred(): DeferredPromise<void> {
 		return this._isCompleteDeferred;
 	}
 
 	private _isCanceled: boolean | undefined;
+
 	public get isCanceled(): boolean | undefined {
 		return this._isCanceled;
 	}
 
 	private _confirmDeferred = new DeferredPromise<boolean>();
+
 	public get confirmed() {
 		return this._confirmDeferred;
 	}
 
 	private _isConfirmed: boolean | undefined;
+
 	public get isConfirmed(): boolean | undefined {
 		return this._isConfirmed;
 	}
@@ -46,11 +51,13 @@ export class ChatToolInvocation implements IChatToolInvocation {
 		if (!_confirmationMessages) {
 			// No confirmation needed
 			this._isConfirmed = true;
+
 			this._confirmDeferred.complete(true);
 		}
 
 		this._confirmDeferred.p.then((confirmed) => {
 			this._isConfirmed = confirmed;
+
 			this._confirmationMessages = undefined;
 
 			if (!confirmed) {

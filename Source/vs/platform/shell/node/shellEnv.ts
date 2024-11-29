@@ -93,6 +93,7 @@ export async function getResolvedShellEnv(
 					// Give up resolving shell env after some time
 					const timeout = setTimeout(() => {
 						cts.dispose(true);
+
 						reject(
 							new Error(
 								localize(
@@ -126,11 +127,13 @@ export async function getResolvedShellEnv(
 						}
 					} finally {
 						clearTimeout(timeout);
+
 						cts.dispose();
 					}
 				},
 			);
 		}
+
 		return unixShellEnvPromise;
 	}
 }
@@ -139,9 +142,11 @@ async function doResolveUnixShellEnv(
 	token: CancellationToken,
 ): Promise<typeof process.env> {
 	const runAsNode = process.env["ELECTRON_RUN_AS_NODE"];
+
 	logService.trace("getUnixShellEnvironment#runAsNode", runAsNode);
 
 	const noAttach = process.env["ELECTRON_NO_ATTACH_CONSOLE"];
+
 	logService.trace("getUnixShellEnvironment#noAttach", noAttach);
 
 	const mark = generateUuid().replace(/-/g, "").substr(0, 12);
@@ -154,9 +159,11 @@ async function doResolveUnixShellEnv(
 		ELECTRON_NO_ATTACH_CONSOLE: "1",
 		VSCODE_RESOLVING_ENVIRONMENT: "1",
 	};
+
 	logService.trace("getUnixShellEnvironment#env", env);
 
 	const systemShellUnix = await getSystemShell(OS, env);
+
 	logService.trace("getUnixShellEnvironment#shell", systemShellUnix);
 
 	return new Promise<typeof process.env>((resolve, reject) => {
@@ -174,14 +181,17 @@ async function doResolveUnixShellEnv(
 			// Older versions of PowerShell removes double quotes sometimes so we use "double single quotes" which is how
 			// you escape single quotes inside of a single quoted string.
 			command = `& '${process.execPath}' ${extraArgs} -p '''${mark}'' + JSON.stringify(process.env) + ''${mark}'''`;
+
 			shellArgs = ["-Login", "-Command"];
 		} else if (name === "nu") {
 			// nushell requires ^ before quoted path to treat it as a command
 			command = `^'${process.execPath}' ${extraArgs} -p '"${mark}" + JSON.stringify(process.env) + "${mark}"'`;
+
 			shellArgs = ["-i", "-l", "-c"];
 		} else if (name === "xonsh") {
 			// #200374: native implementation is shorter
 			command = `import os, json; print("${mark}", json.dumps(dict(os.environ)), "${mark}")`;
+
 			shellArgs = ["-i", "-l", "-c"];
 		} else {
 			command = `'${process.execPath}' ${extraArgs} -p '"${mark}" + JSON.stringify(process.env) + "${mark}"'`;
@@ -192,6 +202,7 @@ async function doResolveUnixShellEnv(
 				shellArgs = ["-i", "-l", "-c"];
 			}
 		}
+
 		logService.trace(
 			"getUnixShellEnvironment#spawn",
 			JSON.stringify(shellArgs),
@@ -203,26 +214,33 @@ async function doResolveUnixShellEnv(
 			stdio: ["ignore", "pipe", "pipe"],
 			env,
 		});
+
 		token.onCancellationRequested(() => {
 			child.kill();
 
 			return reject(new CancellationError());
 		});
+
 		child.on("error", (err) => {
 			logService.error(
 				"getUnixShellEnvironment#errorChildProcess",
 				toErrorMessage(err),
 			);
+
 			reject(err);
 		});
 
 		const buffers: Buffer[] = [];
+
 		child.stdout.on("data", (b) => buffers.push(b));
 
 		const stderr: Buffer[] = [];
+
 		child.stderr.on("data", (b) => stderr.push(b));
+
 		child.on("close", (code, signal) => {
 			const raw = Buffer.concat(buffers).toString("utf8");
+
 			logService.trace("getUnixShellEnvironment#raw", raw);
 
 			const stderrStr = Buffer.concat(stderr).toString("utf8");
@@ -230,6 +248,7 @@ async function doResolveUnixShellEnv(
 			if (stderrStr.trim()) {
 				logService.trace("getUnixShellEnvironment#stderr", stderrStr);
 			}
+
 			if (code || signal) {
 				return reject(
 					new Error(
@@ -242,6 +261,7 @@ async function doResolveUnixShellEnv(
 					),
 				);
 			}
+
 			const match = regex.exec(raw);
 
 			const rawStripped = match ? match[1] : "{}";
@@ -254,21 +274,26 @@ async function doResolveUnixShellEnv(
 				} else {
 					delete env["ELECTRON_RUN_AS_NODE"];
 				}
+
 				if (noAttach) {
 					env["ELECTRON_NO_ATTACH_CONSOLE"] = noAttach;
 				} else {
 					delete env["ELECTRON_NO_ATTACH_CONSOLE"];
 				}
+
 				delete env["VSCODE_RESOLVING_ENVIRONMENT"];
 				// https://github.com/microsoft/vscode/issues/22593#issuecomment-336050758
 				delete env["XDG_RUNTIME_DIR"];
+
 				logService.trace("getUnixShellEnvironment#result", env);
+
 				resolve(env);
 			} catch (err) {
 				logService.error(
 					"getUnixShellEnvironment#errorCaught",
 					toErrorMessage(err),
 				);
+
 				reject(err);
 			}
 		});

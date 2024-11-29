@@ -20,19 +20,27 @@ export const ITerminalQuickFixService =
 
 export interface ITerminalQuickFixService {
 	onDidRegisterProvider: Event<ITerminalQuickFixProviderSelector>;
+
 	onDidRegisterCommandSelector: Event<ITerminalCommandSelector>;
+
 	onDidUnregisterProvider: Event<string>;
+
 	readonly _serviceBrand: undefined;
+
 	readonly extensionQuickFixes: Promise<Array<ITerminalCommandSelector>>;
+
 	providers: Map<string, ITerminalQuickFixProvider>;
+
 	registerQuickFixProvider(
 		id: string,
 		provider: ITerminalQuickFixProvider,
 	): IDisposable;
+
 	registerCommandSelector(selector: ITerminalCommandSelector): void;
 }
 export interface ITerminalQuickFixProviderSelector {
 	selector: ITerminalCommandSelector;
+
 	provider: ITerminalQuickFixProvider;
 }
 export type TerminalQuickFixActionInternal =
@@ -76,26 +84,35 @@ export enum TerminalQuickFixType {
 }
 export interface ITerminalQuickFixOptions {
 	type: "internal" | "resolved" | "unresolved";
+
 	id: string;
+
 	commandLineMatcher: string | RegExp;
+
 	outputMatcher?: ITerminalOutputMatcher;
+
 	commandExitResult: "success" | "error";
+
 	kind?: "fix" | "explain";
 }
 export interface ITerminalQuickFix {
 	type: TerminalQuickFixType;
+
 	id: string;
+
 	source: string;
 }
 export interface ITerminalQuickFixTerminalCommandAction
 	extends ITerminalQuickFix {
 	type: TerminalQuickFixType.TerminalCommand;
+
 	terminalCommand: string;
 	// TODO: Should this depend on whether alt is held?
 	shouldExecute?: boolean;
 }
 export interface ITerminalQuickFixOpenerAction extends ITerminalQuickFix {
 	type: TerminalQuickFixType.Opener;
+
 	uri: URI;
 }
 export interface ITerminalQuickFixCommandAction extends ITerminalQuickFix {
@@ -103,7 +120,9 @@ export interface ITerminalQuickFixCommandAction extends ITerminalQuickFix {
 }
 export interface ITerminalCommandMatchResult {
 	commandLine: string;
+
 	commandLineMatch: RegExpMatchArray;
+
 	outputMatch?: ITerminalOutputMatch;
 }
 export interface ITerminalQuickFixInternalOptions

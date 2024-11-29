@@ -27,9 +27,13 @@ const WORKSPACE_CONTAINS_TIMEOUT = 7000;
 
 export interface IExtensionActivationHost {
 	readonly logService: ILogService;
+
 	readonly folders: readonly UriComponents[];
+
 	readonly forceUsingSearch: boolean;
+
 	exists(uri: URI): Promise<boolean>;
+
 	checkExists(
 		folders: readonly UriComponents[],
 		includes: string[],
@@ -48,6 +52,7 @@ export function checkActivateWorkspaceContainsExtension(
 	if (!activationEvents) {
 		return Promise.resolve(undefined);
 	}
+
 	const fileNames: string[] = [];
 
 	const globPatterns: string[] = [];
@@ -69,9 +74,11 @@ export function checkActivateWorkspaceContainsExtension(
 			}
 		}
 	}
+
 	if (fileNames.length === 0 && globPatterns.length === 0) {
 		return Promise.resolve(undefined);
 	}
+
 	const { promise, resolve } = promiseWithResolvers<
 		IExtensionActivationResult | undefined
 	>();
@@ -90,6 +97,7 @@ export function checkActivateWorkspaceContainsExtension(
 		globPatterns,
 		activate,
 	);
+
 	Promise.all([fileNamePromise, globPatternPromise]).then(() => {
 		// when all are done, resolve with undefined (relevant only if it was not activated so far)
 		resolve(undefined);
@@ -121,6 +129,7 @@ async function _activateIfGlobPatterns(
 	if (globPatterns.length === 0) {
 		return Promise.resolve(undefined);
 	}
+
 	const tokenSource = new CancellationTokenSource();
 
 	const searchP = host.checkExists(
@@ -131,6 +140,7 @@ async function _activateIfGlobPatterns(
 
 	const timer = setTimeout(async () => {
 		tokenSource.cancel();
+
 		host.logService.info(
 			`Not activating extension '${extensionId.value}': Timed out while searching for 'workspaceContains' pattern ${globPatterns.join(",")}`,
 		);
@@ -145,7 +155,9 @@ async function _activateIfGlobPatterns(
 			errors.onUnexpectedError(err);
 		}
 	}
+
 	tokenSource.dispose();
+
 	clearTimeout(timer);
 
 	if (exists) {
@@ -182,6 +194,7 @@ export function checkGlobFileExists(
 			if (!errors.isCancellationError(err)) {
 				return Promise.reject(err);
 			}
+
 			return false;
 		},
 	);

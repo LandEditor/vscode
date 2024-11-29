@@ -34,6 +34,7 @@ export interface ITestExplorerFilterState {
 	 */
 	readonly globList: readonly {
 		include: boolean;
+
 		text: string;
 	}[];
 	/**
@@ -81,6 +82,7 @@ export class TestExplorerFilterState
 	implements ITestExplorerFilterState
 {
 	declare _serviceBrand: undefined;
+
 	private readonly focusEmitter = new Emitter<void>();
 	/**
 	 * Mapping of terms to whether they're included in the text.
@@ -91,6 +93,7 @@ export class TestExplorerFilterState
 	/** @inheritdoc */
 	public globList: {
 		include: boolean;
+
 		text: string;
 	}[] = [];
 	/** @inheritdoc */
@@ -113,12 +116,16 @@ export class TestExplorerFilterState
 			false,
 		),
 	);
+
 	public readonly reveal: ISettableObservable<string | undefined> =
 		observableValue("TestExplorerFilterState.reveal", undefined);
+
 	public readonly onDidRequestInputFocus = this.focusEmitter.event;
+
 	private selectTestInExplorerEmitter = this._register(
 		new Emitter<string | undefined>(),
 	);
+
 	public readonly onDidSelectTestInExplorer =
 		this.selectTestInExplorerEmitter.event;
 
@@ -141,9 +148,13 @@ export class TestExplorerFilterState
 		if (text === this.text.value) {
 			return;
 		}
+
 		this.termFilterState = {};
+
 		this.globList = [];
+
 		this.includeTags.clear();
+
 		this.excludeTags.clear();
 
 		let globText = "";
@@ -169,6 +180,7 @@ export class TestExplorerFilterState
 				} else {
 					nextIndex++;
 				}
+
 				let tagId = "";
 
 				while (
@@ -177,22 +189,29 @@ export class TestExplorerFilterState
 				) {
 					if (text[nextIndex] === "\\") {
 						tagId += text[nextIndex + 1];
+
 						nextIndex += 2;
 					} else {
 						tagId += text[nextIndex];
+
 						nextIndex++;
 					}
 				}
+
 				if (match[0].startsWith("!")) {
 					this.excludeTags.add(namespaceTestTag(match[1], tagId));
 				} else {
 					this.includeTags.add(namespaceTestTag(match[1], tagId));
 				}
+
 				nextIndex++;
 			}
+
 			globText += text.slice(lastIndex, match.index);
+
 			lastIndex = nextIndex;
 		}
+
 		globText += text.slice(lastIndex).trim();
 
 		if (globText.length) {
@@ -212,6 +231,7 @@ export class TestExplorerFilterState
 				}
 			}
 		}
+
 		this.text.value = text; // purposely afterwards so everything is updated when the change event happen
 	}
 	/** @inheritdoc */

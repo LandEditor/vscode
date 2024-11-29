@@ -23,12 +23,14 @@ export class ChatEditingTextModelContentProvider
 	implements ITextModelContentProvider
 {
 	public static readonly scheme = "chat-editing-text-model";
+
 	public static getEmptyFileURI(): URI {
 		return URI.from({
 			scheme: ChatEditingTextModelContentProvider.scheme,
 			query: JSON.stringify({ kind: "empty" }),
 		});
 	}
+
 	public static getFileURI(documentId: string, path: string): URI {
 		return URI.from({
 			scheme: ChatEditingTextModelContentProvider.scheme,
@@ -36,17 +38,20 @@ export class ChatEditingTextModelContentProvider
 			query: JSON.stringify({ kind: "doc", documentId }),
 		});
 	}
+
 	constructor(
 		private readonly _currentSessionObs: IObservable<ChatEditingSession | null>,
 		@IModelService
 		private readonly _modelService: IModelService,
 	) {}
+
 	async provideTextContent(resource: URI): Promise<ITextModel | null> {
 		const existing = this._modelService.getModel(resource);
 
 		if (existing && !existing.isDisposed()) {
 			return existing;
 		}
+
 		const data: ChatEditingTextModelContentQueryData = JSON.parse(
 			resource.query,
 		);
@@ -54,11 +59,13 @@ export class ChatEditingTextModelContentProvider
 		if (data.kind === "empty") {
 			return this._modelService.createModel("", null, resource, false);
 		}
+
 		const session = this._currentSessionObs.get();
 
 		if (!session) {
 			return null;
 		}
+
 		return session.getVirtualModel(data.documentId);
 	}
 }
@@ -70,6 +77,7 @@ export class ChatEditingSnapshotTextModelContentProvider
 	implements ITextModelContentProvider
 {
 	public static readonly scheme = "chat-editing-snapshot-text-model";
+
 	public static getSnapshotFileURI(
 		requestId: string | undefined,
 		path: string,
@@ -80,17 +88,20 @@ export class ChatEditingSnapshotTextModelContentProvider
 			query: JSON.stringify({ requestId: requestId ?? "" }),
 		});
 	}
+
 	constructor(
 		private readonly _currentSessionObs: IObservable<ChatEditingSession | null>,
 		@IModelService
 		private readonly _modelService: IModelService,
 	) {}
+
 	async provideTextContent(resource: URI): Promise<ITextModel | null> {
 		const existing = this._modelService.getModel(resource);
 
 		if (existing && !existing.isDisposed()) {
 			return existing;
 		}
+
 		const data: ChatEditingSnapshotTextModelContentQueryData = JSON.parse(
 			resource.query,
 		);
@@ -100,6 +111,7 @@ export class ChatEditingSnapshotTextModelContentProvider
 		if (!session || !data.requestId) {
 			return null;
 		}
+
 		return session.getSnapshotModel(data.requestId, resource);
 	}
 }

@@ -28,6 +28,7 @@ export async function resolveMachineId(
 	) {
 		machineId = await getMachineId(logService.error.bind(logService));
 	}
+
 	return machineId;
 }
 export async function resolveSqmId(
@@ -39,6 +40,7 @@ export async function resolveSqmId(
 	if (typeof sqmId !== "string") {
 		sqmId = await getSqmMachineId(logService.error.bind(logService));
 	}
+
 	return sqmId;
 }
 export async function resolvedevDeviceId(
@@ -50,5 +52,6 @@ export async function resolvedevDeviceId(
 	if (typeof devDeviceId !== "string") {
 		devDeviceId = await getdevDeviceId(logService.error.bind(logService));
 	}
+
 	return devDeviceId;
 }

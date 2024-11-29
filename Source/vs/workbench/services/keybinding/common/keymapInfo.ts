@@ -30,6 +30,7 @@ function deserializeMapping(serializedMapping: ISerializedMapping) {
 			const mask = Number(result[4]);
 
 			const vkey = result.length === 6 ? result[5] : undefined;
+
 			ret[key] = {
 				"value": value,
 				"vkey": vkey,
@@ -54,17 +55,25 @@ function deserializeMapping(serializedMapping: ISerializedMapping) {
 			};
 		}
 	}
+
 	return ret;
 }
 export interface IRawMixedKeyboardMapping {
 	[key: string]: {
 		value: string;
+
 		withShift: string;
+
 		withAltGr: string;
+
 		withShiftAltGr: string;
+
 		valueIsDeadKey?: boolean;
+
 		withShiftIsDeadKey?: boolean;
+
 		withAltGrIsDeadKey?: boolean;
+
 		withShiftAltGrIsDeadKey?: boolean;
 	};
 }
@@ -73,12 +82,16 @@ interface ISerializedMapping {
 }
 export interface IKeymapInfo {
 	layout: IKeyboardLayoutInfo;
+
 	secondaryLayouts: IKeyboardLayoutInfo[];
+
 	mapping: ISerializedMapping;
+
 	isUserKeyboardLayout?: boolean;
 }
 export class KeymapInfo {
 	mapping: IRawMixedKeyboardMapping;
+
 	isUserKeyboardLayout: boolean;
 
 	constructor(
@@ -88,26 +101,36 @@ export class KeymapInfo {
 		isUserKeyboardLayout?: boolean,
 	) {
 		this.mapping = deserializeMapping(keyboardMapping);
+
 		this.isUserKeyboardLayout = !!isUserKeyboardLayout;
+
 		this.layout.isUserKeyboardLayout = !!isUserKeyboardLayout;
 	}
+
 	static createKeyboardLayoutFromDebugInfo(
 		layout: IKeyboardLayoutInfo,
 		value: IRawMixedKeyboardMapping,
 		isUserKeyboardLayout?: boolean,
 	): KeymapInfo {
 		const keyboardLayoutInfo = new KeymapInfo(layout, [], {}, true);
+
 		keyboardLayoutInfo.mapping = value;
 
 		return keyboardLayoutInfo;
 	}
+
 	update(other: KeymapInfo) {
 		this.layout = other.layout;
+
 		this.secondaryLayouts = other.secondaryLayouts;
+
 		this.mapping = other.mapping;
+
 		this.isUserKeyboardLayout = other.isUserKeyboardLayout;
+
 		this.layout.isUserKeyboardLayout = other.isUserKeyboardLayout;
 	}
+
 	getScore(other: IRawMixedKeyboardMapping): number {
 		let score = 0;
 
@@ -116,15 +139,18 @@ export class KeymapInfo {
 				// keymap from Chromium is probably wrong.
 				continue;
 			}
+
 			if (isLinux && (key === "Backspace" || key === "Escape")) {
 				// native keymap doesn't align with keyboard event
 				continue;
 			}
+
 			const currentMapping = this.mapping[key];
 
 			if (currentMapping === undefined) {
 				score -= 1;
 			}
+
 			const otherMapping = other[key];
 
 			if (
@@ -135,29 +161,36 @@ export class KeymapInfo {
 				score -= 1;
 			}
 		}
+
 		return score;
 	}
+
 	equal(other: KeymapInfo): boolean {
 		if (this.isUserKeyboardLayout !== other.isUserKeyboardLayout) {
 			return false;
 		}
+
 		if (
 			getKeyboardLayoutId(this.layout) !==
 			getKeyboardLayoutId(other.layout)
 		) {
 			return false;
 		}
+
 		return this.fuzzyEqual(other.mapping);
 	}
+
 	fuzzyEqual(other: IRawMixedKeyboardMapping): boolean {
 		for (const key in other) {
 			if (isWindows && (key === "Backslash" || key === "KeyQ")) {
 				// keymap from Chromium is probably wrong.
 				continue;
 			}
+
 			if (this.mapping[key] === undefined) {
 				return false;
 			}
+
 			const currentMapping = this.mapping[key];
 
 			const otherMapping = other[key];
@@ -166,6 +199,7 @@ export class KeymapInfo {
 				return false;
 			}
 		}
+
 		return true;
 	}
 }

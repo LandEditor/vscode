@@ -105,6 +105,7 @@ export function registerChatTitleActions() {
 				}
 
 				const chatService = accessor.get(IChatService);
+
 				chatService.notifyUserAction({
 					agentId: item.agent?.id,
 					command: item.slashCommand?.name,
@@ -117,7 +118,9 @@ export function registerChatTitleActions() {
 						reason: undefined,
 					},
 				});
+
 				item.setVote(ChatAgentVoteDirection.Up);
+
 				item.setVoteDownReason(undefined);
 			}
 		},
@@ -172,9 +175,11 @@ export function registerChatTitleActions() {
 				}
 
 				item.setVote(ChatAgentVoteDirection.Down);
+
 				item.setVoteDownReason(reason as ChatAgentVoteDownReason);
 
 				const chatService = accessor.get(IChatService);
+
 				chatService.notifyUserAction({
 					agentId: item.agent?.id,
 					command: item.slashCommand?.name,
@@ -234,6 +239,7 @@ export function registerChatTitleActions() {
 				}
 
 				const chatService = accessor.get(IChatService);
+
 				chatService.notifyUserAction({
 					agentId: item.agent?.id,
 					command: item.slashCommand?.name,
@@ -291,6 +297,7 @@ export function registerChatTitleActions() {
 						?.viewModel?.getItems()
 						.at(-1);
 				}
+
 				if (!isResponseVM(item)) {
 					return;
 				}
@@ -306,6 +313,7 @@ export function registerChatTitleActions() {
 				if (!chatRequests) {
 					return;
 				}
+
 				const itemIndex = chatRequests?.findIndex(
 					(request) => request.id === item.requestId,
 				);
@@ -393,6 +401,7 @@ export function registerChatTitleActions() {
 						);
 					}
 				}
+
 				const request = chatModel
 					?.getRequests()
 					.find((candidate) => candidate.id === item.requestId);
@@ -400,6 +409,7 @@ export function registerChatTitleActions() {
 				const languageModelId = chatWidgetService.getWidgetBySessionId(
 					item.sessionId,
 				)?.input.currentLanguageModel;
+
 				chatService.resendRequest(request!, {
 					userSelectedModelId: languageModelId,
 				});
@@ -559,6 +569,7 @@ export function registerChatTitleActions() {
 					const chatWidgetService = accessor.get(IChatWidgetService);
 
 					const widget = chatWidgetService.lastFocusedWidget;
+
 					item = widget?.getFocus();
 				}
 
@@ -585,6 +596,7 @@ export function registerChatTitleActions() {
 
 				if (requestId) {
 					const chatService = accessor.get(IChatService);
+
 					chatService.removeRequest(item.sessionId, requestId);
 				}
 			}
@@ -699,6 +711,7 @@ export function registerChatTitleActions() {
 					await Event.toPromise(
 						chatEditingService.onDidCreateEditingSession,
 					);
+
 					editingSession =
 						chatEditingService.currentEditingSessionObs.get();
 
@@ -723,11 +736,13 @@ export function registerChatTitleActions() {
 						editingSession.chatSessionId,
 						request,
 					);
+
 					this._collectWorkingSetAdditions(
 						request,
 						workingSetAdditions,
 					);
 				}
+
 				workingSetAdditions.forEach((uri) =>
 					editingSession.addFileToWorkingSet(uri),
 				);
@@ -846,26 +861,33 @@ export function registerChatTitleActions() {
 				return await new Promise<IChatRequestModel[]>((_resolve) => {
 					const resolve = (value: IChatRequestModel[]) => {
 						qp.hide();
+
 						store.dispose();
+
 						_resolve(value);
 					};
 
 					const store = new DisposableStore();
 
 					const qp = quickPickService.createQuickPick<PickType>();
+
 					qp.placeholder = localize(
 						"chat.startEditing.pickRequest",
 						"Select requests that you want to use for editing",
 					);
+
 					qp.canSelectMany = true;
+
 					qp.items = customPicks;
 
 					let ignore = false;
+
 					store.add(
 						qp.onDidChangeSelection((e) => {
 							if (ignore) {
 								return;
 							}
+
 							ignore = true;
 
 							try {
@@ -877,6 +899,7 @@ export function registerChatTitleActions() {
 
 								const selected =
 									idx >= 0 ? customPicks.slice(idx) : [];
+
 								qp.selectedItems = selected;
 							} finally {
 								ignore = false;
@@ -889,8 +912,11 @@ export function registerChatTitleActions() {
 							resolve(qp.selectedItems.map((i) => i.request)),
 						),
 					);
+
 					store.add(qp.onDidHide((_) => resolve([])));
+
 					store.add(qp);
+
 					qp.show();
 				});
 			}
@@ -900,12 +926,15 @@ export function registerChatTitleActions() {
 
 interface MarkdownContent {
 	type: "markdown";
+
 	content: string;
 }
 
 interface CodeContent {
 	type: "code";
+
 	language: string;
+
 	content: string;
 }
 
@@ -919,12 +948,15 @@ function splitMarkdownAndCodeBlocks(markdown: string): Content[] {
 	const splitContent: Content[] = [];
 
 	let markdownPart = "";
+
 	tokens.forEach((token) => {
 		if (token.type === "code") {
 			if (markdownPart.trim()) {
 				splitContent.push({ type: "markdown", content: markdownPart });
+
 				markdownPart = "";
 			}
+
 			splitContent.push({
 				type: "code",
 				language: token.lang || "",

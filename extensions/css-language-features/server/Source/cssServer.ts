@@ -49,12 +49,16 @@ namespace CustomDataChangedNotification {
 }
 export interface Settings {
 	css: LanguageSettings;
+
 	less: LanguageSettings;
+
 	scss: LanguageSettings;
 }
 export interface RuntimeEnvironment {
 	readonly file?: RequestService;
+
 	readonly http?: RequestService;
+
 	readonly timer: {
 		setImmediate(
 			callback: (...args: any[]) => void,
@@ -85,6 +89,7 @@ export function startServer(
 	documents.onDidClose((e) => {
 		stylesheets.onDocumentRemoved(e.document);
 	});
+
 	connection.onShutdown(() => {
 		stylesheets.dispose();
 	});
@@ -117,6 +122,7 @@ export function startServer(
 	connection.onInitialize((params: InitializeParams): InitializeResult => {
 		const initializationOptions =
 			(params.initializationOptions as any) || {};
+
 		workspaceFolders = (<any>params).workspaceFolders;
 
 		if (!Array.isArray(workspaceFolders)) {
@@ -129,6 +135,7 @@ export function startServer(
 				});
 			}
 		}
+
 		requestService = getRequestService(
 			initializationOptions?.handledSchemas || ["file"],
 			connection,
@@ -144,18 +151,23 @@ export function startServer(
 				if (!c.hasOwnProperty(keys[i])) {
 					return def;
 				}
+
 				c = c[keys[i]];
 			}
+
 			return c;
 		}
+
 		const snippetSupport = !!getClientCapability(
 			"textDocument.completion.completionItem.snippetSupport",
 			false,
 		);
+
 		scopedSettingsSupport = !!getClientCapability(
 			"workspace.configuration",
 			false,
 		);
+
 		foldingRangeLimit = getClientCapability(
 			"textDocument.foldingRange.rangeLimit",
 			Number.MAX_VALUE,
@@ -164,14 +176,17 @@ export function startServer(
 		formatterMaxNumberOfEdits =
 			initializationOptions?.customCapabilities?.rangeFormatting
 				?.editLimit || Number.MAX_VALUE;
+
 		languageServices.css = getCSSLanguageService({
 			fileSystemProvider: requestService,
 			clientCapabilities: params.capabilities,
 		});
+
 		languageServices.scss = getSCSSLanguageService({
 			fileSystemProvider: requestService,
 			clientCapabilities: params.capabilities,
 		});
+
 		languageServices.less = getLESSLanguageService({
 			fileSystemProvider: requestService,
 			clientCapabilities: params.capabilities,
@@ -197,6 +212,7 @@ export function startServer(
 				validateTextDocument,
 			);
 		}
+
 		const capabilities: ServerCapabilities = {
 			textDocumentSync: TextDocumentSyncKind.Incremental,
 			completionProvider: snippetSupport
@@ -238,10 +254,13 @@ export function startServer(
 					document.languageId +
 					", using css instead.",
 			);
+
 			service = languageServices["css"];
 		}
+
 		return service;
 	}
+
 	let documentSettings: {
 		[key: string]: Thenable<LanguageSettings | undefined>;
 	} = {};
@@ -265,14 +284,17 @@ export function startServer(
 						},
 					],
 				};
+
 				promise = connection
 					.sendRequest(ConfigurationRequest.type, configRequestParam)
 					.then((s) => s[0] as LanguageSettings | undefined);
 
 				documentSettings[textDocument.uri] = promise;
 			}
+
 			return promise;
 		}
+
 		return Promise.resolve(undefined);
 	}
 	// The settings have changed. Is send on server activation as well.
@@ -286,8 +308,10 @@ export function startServer(
 		}
 		// reset all document settings
 		documentSettings = {};
+
 		diagnosticsSupport?.requestRefresh();
 	}
+
 	async function validateTextDocument(
 		textDocument: TextDocument,
 	): Promise<Diagnostic[]> {
@@ -306,6 +330,7 @@ export function startServer(
 			settings,
 		);
 	}
+
 	function updateDataProviders(dataPaths: string[]) {
 		dataProvidersReady = fetchDataProviders(dataPaths, requestService).then(
 			(customDataProviders) => {
@@ -318,6 +343,7 @@ export function startServer(
 			},
 		);
 	}
+
 	connection.onCompletion((textDocumentPosition, token) => {
 		return runSafeAsync(
 			runtime,
@@ -347,6 +373,7 @@ export function startServer(
 						settings?.completion,
 					);
 				}
+
 				return null;
 			},
 			null,
@@ -354,6 +381,7 @@ export function startServer(
 			token,
 		);
 	});
+
 	connection.onHover((textDocumentPosition, token) => {
 		return runSafeAsync(
 			runtime,
@@ -377,6 +405,7 @@ export function startServer(
 						settings?.hover,
 					);
 				}
+
 				return null;
 			},
 			null,
@@ -384,6 +413,7 @@ export function startServer(
 			token,
 		);
 	});
+
 	connection.onDocumentSymbol((documentSymbolParams, token) => {
 		return runSafeAsync(
 			runtime,
@@ -402,6 +432,7 @@ export function startServer(
 						stylesheet,
 					);
 				}
+
 				return [];
 			},
 			[],
@@ -409,6 +440,7 @@ export function startServer(
 			token,
 		);
 	});
+
 	connection.onDefinition((documentDefinitionParams, token) => {
 		return runSafeAsync(
 			runtime,
@@ -428,6 +460,7 @@ export function startServer(
 						stylesheet,
 					);
 				}
+
 				return null;
 			},
 			null,
@@ -435,6 +468,7 @@ export function startServer(
 			token,
 		);
 	});
+
 	connection.onDocumentHighlight((documentHighlightParams, token) => {
 		return runSafeAsync(
 			runtime,
@@ -454,6 +488,7 @@ export function startServer(
 						stylesheet,
 					);
 				}
+
 				return [];
 			},
 			[],
@@ -461,6 +496,7 @@ export function startServer(
 			token,
 		);
 	});
+
 	connection.onDocumentLinks(async (documentLinkParams, token) => {
 		return runSafeAsync(
 			runtime,
@@ -485,6 +521,7 @@ export function startServer(
 						documentContext,
 					);
 				}
+
 				return [];
 			},
 			[],
@@ -492,6 +529,7 @@ export function startServer(
 			token,
 		);
 	});
+
 	connection.onReferences((referenceParams, token) => {
 		return runSafeAsync(
 			runtime,
@@ -511,6 +549,7 @@ export function startServer(
 						stylesheet,
 					);
 				}
+
 				return [];
 			},
 			[],
@@ -518,6 +557,7 @@ export function startServer(
 			token,
 		);
 	});
+
 	connection.onCodeAction((codeActionParams, token) => {
 		return runSafeAsync(
 			runtime,
@@ -538,6 +578,7 @@ export function startServer(
 						stylesheet,
 					);
 				}
+
 				return [];
 			},
 			[],
@@ -545,6 +586,7 @@ export function startServer(
 			token,
 		);
 	});
+
 	connection.onDocumentColor((params, token) => {
 		return runSafeAsync(
 			runtime,
@@ -561,6 +603,7 @@ export function startServer(
 						stylesheet,
 					);
 				}
+
 				return [];
 			},
 			[],
@@ -568,6 +611,7 @@ export function startServer(
 			token,
 		);
 	});
+
 	connection.onColorPresentation((params, token) => {
 		return runSafeAsync(
 			runtime,
@@ -586,6 +630,7 @@ export function startServer(
 						params.range,
 					);
 				}
+
 				return [];
 			},
 			[],
@@ -593,6 +638,7 @@ export function startServer(
 			token,
 		);
 	});
+
 	connection.onRenameRequest((renameParameters, token) => {
 		return runSafeAsync(
 			runtime,
@@ -613,6 +659,7 @@ export function startServer(
 						stylesheet,
 					);
 				}
+
 				return null;
 			},
 			null,
@@ -620,6 +667,7 @@ export function startServer(
 			token,
 		);
 	});
+
 	connection.onFoldingRanges((params, token) => {
 		return runSafeAsync(
 			runtime,
@@ -634,6 +682,7 @@ export function startServer(
 						{ rangeLimit: foldingRangeLimit },
 					);
 				}
+
 				return null;
 			},
 			null,
@@ -641,6 +690,7 @@ export function startServer(
 			token,
 		);
 	});
+
 	connection.onSelectionRanges((params, token) => {
 		return runSafeAsync(
 			runtime,
@@ -660,6 +710,7 @@ export function startServer(
 						stylesheet,
 					);
 				}
+
 				return [];
 			},
 			[],
@@ -687,10 +738,13 @@ export function startServer(
 
 				return [TextEdit.replace(getFullRange(document), newText)];
 			}
+
 			return edits;
 		}
+
 		return [];
 	}
+
 	connection.onDocumentRangeFormatting((formatParams, token) => {
 		return runSafeAsync(
 			runtime,
@@ -705,6 +759,7 @@ export function startServer(
 			token,
 		);
 	});
+
 	connection.onDocumentFormatting((formatParams, token) => {
 		return runSafeAsync(
 			runtime,
@@ -719,6 +774,7 @@ export function startServer(
 			token,
 		);
 	});
+
 	connection.onNotification(
 		CustomDataChangedNotification.type,
 		updateDataProviders,

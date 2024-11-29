@@ -32,12 +32,15 @@ class WalkThroughModel extends EditorModel {
 	) {
 		super();
 	}
+
 	get main() {
 		return this.mainRef;
 	}
+
 	get snippets() {
 		return this.snippetRefs.map((snippet) => snippet.object);
 	}
+
 	override dispose() {
 		this.snippetRefs.forEach((ref) => ref.dispose());
 
@@ -46,27 +49,37 @@ class WalkThroughModel extends EditorModel {
 }
 export interface WalkThroughInputOptions {
 	readonly typeId: string;
+
 	readonly name: string;
+
 	readonly description?: string;
+
 	readonly resource: URI;
+
 	readonly telemetryFrom: string;
+
 	readonly onReady?: (
 		container: HTMLElement,
 		contentDisposables: DisposableStore,
 	) => void;
+
 	readonly layout?: (dimension: Dimension) => void;
 }
 export class WalkThroughInput extends EditorInput {
 	override get capabilities(): EditorInputCapabilities {
 		return EditorInputCapabilities.Singleton | super.capabilities;
 	}
+
 	private promise: Promise<WalkThroughModel> | null = null;
+
 	private maxTopScroll = 0;
+
 	private maxBottomScroll = 0;
 
 	get resource() {
 		return this.options.resource;
 	}
+
 	constructor(
 		private readonly options: WalkThroughInputOptions,
 		@IInstantiationService
@@ -76,22 +89,28 @@ export class WalkThroughInput extends EditorInput {
 	) {
 		super();
 	}
+
 	override get typeId(): string {
 		return this.options.typeId;
 	}
+
 	override getName(): string {
 		return this.options.name;
 	}
+
 	override getDescription(): string {
 		return this.options.description || "";
 	}
+
 	getTelemetryFrom(): string {
 		return this.options.telemetryFrom;
 	}
+
 	override getTelemetryDescriptor(): {
 		[key: string]: unknown;
 	} {
 		const descriptor = super.getTelemetryDescriptor();
+
 		descriptor["target"] = this.getTelemetryFrom();
 		/* __GDPR__FRAGMENT__
             "EditorTelemetryDescriptor" : {
@@ -100,12 +119,15 @@ export class WalkThroughInput extends EditorInput {
         */
 		return descriptor;
 	}
+
 	get onReady() {
 		return this.options.onReady;
 	}
+
 	get layout() {
 		return this.options.layout;
 	}
+
 	override resolve(): Promise<WalkThroughModel> {
 		if (!this.promise) {
 			this.promise = moduleToContent(
@@ -115,11 +137,13 @@ export class WalkThroughInput extends EditorInput {
 				if (this.resource.path.endsWith(".html")) {
 					return new WalkThroughModel(content, []);
 				}
+
 				const snippets: Promise<IReference<ITextEditorModel>>[] = [];
 
 				let i = 0;
 
 				const renderer = new marked.marked.Renderer();
+
 				renderer.code = ({ lang }: marked.Tokens.Code) => {
 					i++;
 
@@ -127,6 +151,7 @@ export class WalkThroughInput extends EditorInput {
 						scheme: Schemas.walkThroughSnippet,
 						fragment: `${i}.${lang}`,
 					});
+
 					snippets.push(
 						this.textModelResolverService.createModelReference(
 							resource,
@@ -140,6 +165,7 @@ export class WalkThroughInput extends EditorInput {
 					{ renderer },
 					markedGfmHeadingIdPlugin(),
 				);
+
 				content = m.parse(content, { async: false });
 
 				return Promise.all(snippets).then(
@@ -147,26 +173,35 @@ export class WalkThroughInput extends EditorInput {
 				);
 			});
 		}
+
 		return this.promise;
 	}
+
 	override matches(otherInput: EditorInput | IUntypedEditorInput): boolean {
 		if (super.matches(otherInput)) {
 			return true;
 		}
+
 		if (otherInput instanceof WalkThroughInput) {
 			return isEqual(otherInput.options.resource, this.options.resource);
 		}
+
 		return false;
 	}
+
 	override dispose(): void {
 		if (this.promise) {
 			this.promise.then((model) => model.dispose());
+
 			this.promise = null;
 		}
+
 		super.dispose();
 	}
+
 	public relativeScrollPosition(topScroll: number, bottomScroll: number) {
 		this.maxTopScroll = Math.max(this.maxTopScroll, topScroll);
+
 		this.maxBottomScroll = Math.max(this.maxBottomScroll, bottomScroll);
 	}
 }

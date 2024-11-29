@@ -35,9 +35,11 @@ function liftEdits(edits: ResourceEdit[]): ResourceEdit[] {
 		if (ResourceTextEdit.is(edit)) {
 			return ResourceTextEdit.lift(edit);
 		}
+
 		if (ResourceFileEdit.is(edit)) {
 			return ResourceFileEdit.lift(edit);
 		}
+
 		if (ResourceNotebookCellEdit.is(edit)) {
 			return ResourceNotebookCellEdit.lift(edit);
 		}
@@ -71,16 +73,21 @@ class BulkEdit {
 	ariaMessage(): string {
 
 		const otherResources = new ResourceMap<boolean>();
+
 		const textEditResources = new ResourceMap<boolean>();
+
 		let textEditCount = 0;
+
 		for (const edit of this._edits) {
 			if (edit instanceof ResourceTextEdit) {
 				textEditCount += 1;
+
 				textEditResources.set(edit.resource, true);
 			} else if (edit instanceof ResourceFileEdit) {
 				otherResources.set(edit.oldResource ?? edit.newResource!, true);
 			}
 		}
+
 		if (this._edits.length === 0) {
 			return localize('summary.0', "Made no edits");
 		} else if (otherResources.size === 0) {
@@ -101,6 +108,7 @@ class BulkEdit {
 		}
 
 		const ranges: number[] = [1];
+
 		for (let i = 1; i < this._edits.length; i++) {
 			if (Object.getPrototypeOf(this._edits[i - 1]) === Object.getPrototypeOf(this._edits[i])) {
 				ranges[ranges.length - 1]++;
@@ -111,17 +119,22 @@ class BulkEdit {
 
 		// Show infinte progress when there is only 1 item since we do not know how long it takes
 		const increment = this._edits.length > 1 ? 0 : undefined;
+
 		this._progress.report({ increment, total: 100 });
 		// Increment by percentage points since progress API expects that
 		const progress: IProgress<void> = { report: _ => this._progress.report({ increment: 100 / this._edits.length }) };
 
 		const resources: (readonly URI[])[] = [];
+
 		let index = 0;
+
 		for (const range of ranges) {
 			if (this._token.isCancellationRequested) {
 				break;
 			}
+
 			const group = this._edits.slice(index, index + range);
+
 			if (group[0] instanceof ResourceFileEdit) {
 				resources.push(await this._performFileEdits(<ResourceFileEdit[]>group, this._undoRedoGroup, this._undoRedoSource, this._confirmBeforeUndo, progress));
 			} else if (group[0] instanceof ResourceTextEdit) {
@@ -133,6 +146,7 @@ class BulkEdit {
 			} else {
 				console.log('UNKNOWN EDIT');
 			}
+
 			index = index + range;
 		}
 
@@ -141,25 +155,33 @@ class BulkEdit {
 
 	private async _performFileEdits(edits: ResourceFileEdit[], undoRedoGroup: UndoRedoGroup, undoRedoSource: UndoRedoSource | undefined, confirmBeforeUndo: boolean, progress: IProgress<void>): Promise<readonly URI[]> {
 		this._logService.debug('_performFileEdits', JSON.stringify(edits));
+
 		const model = this._instaService.createInstance(BulkFileEdits, this._label || localize('workspaceEdit', "Workspace Edit"), this._code || 'undoredo.workspaceEdit', undoRedoGroup, undoRedoSource, confirmBeforeUndo, progress, this._token, edits);
+
 		return await model.apply();
 	}
 
 	private async _performTextEdits(edits: ResourceTextEdit[], undoRedoGroup: UndoRedoGroup, undoRedoSource: UndoRedoSource | undefined, progress: IProgress<void>): Promise<readonly URI[]> {
 		this._logService.debug('_performTextEdits', JSON.stringify(edits));
+
 		const model = this._instaService.createInstance(BulkTextEdits, this._label || localize('workspaceEdit', "Workspace Edit"), this._code || 'undoredo.workspaceEdit', this._editor, undoRedoGroup, undoRedoSource, progress, this._token, edits);
+
 		return await model.apply();
 	}
 
 	private async _performCellEdits(edits: ResourceNotebookCellEdit[], undoRedoGroup: UndoRedoGroup, undoRedoSource: UndoRedoSource | undefined, progress: IProgress<void>): Promise<readonly URI[]> {
 		this._logService.debug('_performCellEdits', JSON.stringify(edits));
+
 		const model = this._instaService.createInstance(BulkCellEdits, undoRedoGroup, undoRedoSource, progress, this._token, edits);
+
 		return await model.apply();
 	}
 
 	private async _performOpaqueEdits(edits: ResourceAttachmentEdit[], undoRedoGroup: UndoRedoGroup, undoRedoSource: UndoRedoSource | undefined, progress: IProgress<void>): Promise<readonly URI[]> {
 		this._logService.debug('_performOpaqueEdits', JSON.stringify(edits));
+
 		const model = this._instaService.createInstance(OpaqueEdits, undoRedoGroup, undoRedoSource, progress, this._token, edits);
+
 		return await model.apply();
 	}
 }
@@ -169,6 +191,7 @@ export class BulkEditService implements IBulkEditService {
 	declare readonly _serviceBrand: undefined;
 
 	private readonly _activeUndoRedoGroups = new LinkedList<UndoRedoGroup>();
+
 	private _previewHandler?: IBulkEditPreviewHandler;
 
 	constructor(
@@ -183,6 +206,7 @@ export class BulkEditService implements IBulkEditService {
 
 	setPreviewHandler(handler: IBulkEditPreviewHandler): IDisposable {
 		this._previewHandler = handler;
+
 		return toDisposable(() => {
 			if (this._previewHandler === handler) {
 				this._previewHandler = undefined;
@@ -209,6 +233,7 @@ export class BulkEditService implements IBulkEditService {
 		// try to find code editor
 		if (!codeEditor) {
 			const candidate = this._editorService.activeTextEditorControl;
+
 			if (isCodeEditor(candidate)) {
 				codeEditor = candidate;
 			} else if (isDiffEditor(candidate)) {
@@ -225,21 +250,27 @@ export class BulkEditService implements IBulkEditService {
 		// in the list of active edits. otherwise (or when not found)
 		// create a separate undo-redo-group
 		let undoRedoGroup: UndoRedoGroup | undefined;
+
 		let undoRedoGroupRemove = () => { };
+
 		if (typeof options?.undoRedoGroupId === 'number') {
 			for (const candidate of this._activeUndoRedoGroups) {
 				if (candidate.id === options.undoRedoGroupId) {
 					undoRedoGroup = candidate;
+
 					break;
 				}
 			}
 		}
+
 		if (!undoRedoGroup) {
 			undoRedoGroup = new UndoRedoGroup();
+
 			undoRedoGroupRemove = this._activeUndoRedoGroups.push(undoRedoGroup);
 		}
 
 		const label = options?.quotableLabel || options?.label;
+
 		const bulkEdit = this._instaService.createInstance(
 			BulkEdit,
 			label,
@@ -254,8 +285,10 @@ export class BulkEditService implements IBulkEditService {
 		);
 
 		let listener: IDisposable | undefined;
+
 		try {
 			listener = this._lifecycleService.onBeforeShutdown(e => e.veto(this._shouldVeto(label, e.reason), 'veto.blukEditService'));
+
 			const resources = await bulkEdit.perform();
 
 			// when enabled (option AND setting) loop over all dirty working copies and trigger save
@@ -268,16 +301,20 @@ export class BulkEditService implements IBulkEditService {
 		} catch (err) {
 			// console.log('apply FAILED');
 			// console.log(err);
+
 			this._logService.error(err);
+
 			throw err;
 		} finally {
 			listener?.dispose();
+
 			undoRedoGroupRemove();
 		}
 	}
 
 	private async _saveAll(resources: readonly URI[]) {
 		const set = new ResourceSet(resources);
+
 		const saves = this._workingCopyService.dirtyWorkingCopies.map(async (copy) => {
 			if (set.has(copy.resource)) {
 				await copy.save();
@@ -285,6 +322,7 @@ export class BulkEditService implements IBulkEditService {
 		});
 
 		const result = await Promise.allSettled(saves);
+
 		for (const item of result) {
 			if (item.status === 'rejected') {
 				this._logService.warn(item.reason);
@@ -294,23 +332,36 @@ export class BulkEditService implements IBulkEditService {
 
 	private async _shouldVeto(label: string | undefined, reason: ShutdownReason): Promise<boolean> {
 		let message: string;
+
 		let primaryButton: string;
+
 		switch (reason) {
 			case ShutdownReason.CLOSE:
 				message = localize('closeTheWindow.message', "Are you sure you want to close the window?");
+
 				primaryButton = localize({ key: 'closeTheWindow', comment: ['&& denotes a mnemonic'] }, "&&Close Window");
+
 				break;
+
 			case ShutdownReason.LOAD:
 				message = localize('changeWorkspace.message', "Are you sure you want to change the workspace?");
+
 				primaryButton = localize({ key: 'changeWorkspace', comment: ['&& denotes a mnemonic'] }, "Change &&Workspace");
+
 				break;
+
 			case ShutdownReason.RELOAD:
 				message = localize('reloadTheWindow.message', "Are you sure you want to reload the window?");
+
 				primaryButton = localize({ key: 'reloadTheWindow', comment: ['&& denotes a mnemonic'] }, "&&Reload Window");
+
 				break;
+
 			default:
 				message = localize('quit.message', "Are you sure you want to quit?");
+
 				primaryButton = localize({ key: 'quit', comment: ['&& denotes a mnemonic'] }, "&&Quit");
+
 				break;
 		}
 

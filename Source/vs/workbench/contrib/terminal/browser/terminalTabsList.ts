@@ -122,7 +122,9 @@ export const enum TerminalTabsListSizes {
 
 export class TerminalTabList extends WorkbenchList<ITerminalInstance> {
 	private _decorationsProvider: TabDecorationsProvider | undefined;
+
 	private _terminalTabsSingleSelectedContextKey: IContextKey<boolean>;
+
 	private _isSplitContextKey: IContextKey<boolean>;
 
 	constructor(
@@ -208,9 +210,12 @@ export class TerminalTabList extends WorkbenchList<ITerminalInstance> {
 			this._terminalGroupService.onDidChangeActiveInstance((e) => {
 				if (e) {
 					const i = this._terminalGroupService.instances.indexOf(e);
+
 					this.setSelection([i]);
+
 					this.reveal(i);
 				}
+
 				this.refresh();
 			}),
 		];
@@ -220,12 +225,15 @@ export class TerminalTabList extends WorkbenchList<ITerminalInstance> {
 		this.disposables.add(
 			lifecycleService.onWillShutdown((e) => {
 				dispose(instanceDisposables);
+
 				instanceDisposables.length = 0;
 			}),
 		);
+
 		this.disposables.add(
 			toDisposable(() => {
 				dispose(instanceDisposables);
+
 				instanceDisposables.length = 0;
 			}),
 		);
@@ -238,7 +246,9 @@ export class TerminalTabList extends WorkbenchList<ITerminalInstance> {
 					const instance = await this._terminalService.createTerminal(
 						{ location: TerminalLocation.Panel },
 					);
+
 					this._terminalGroupService.setActiveInstance(instance);
+
 					await instance.focusWhenReady();
 				}
 
@@ -290,6 +300,7 @@ export class TerminalTabList extends WorkbenchList<ITerminalInstance> {
 
 					return;
 				}
+
 				const selection = this.getSelectedElements();
 
 				if (!selection || !selection.find((s) => e.element === s)) {
@@ -300,12 +311,14 @@ export class TerminalTabList extends WorkbenchList<ITerminalInstance> {
 
 		this._terminalTabsSingleSelectedContextKey =
 			TerminalContextKeys.tabsSingularSelection.bindTo(contextKeyService);
+
 		this._isSplitContextKey =
 			TerminalContextKeys.splitTerminal.bindTo(contextKeyService);
 
 		this.disposables.add(
 			this.onDidChangeSelection((e) => this._updateContextKey()),
 		);
+
 		this.disposables.add(
 			this.onDidChangeFocus(() => this._updateContextKey()),
 		);
@@ -317,6 +330,7 @@ export class TerminalTabList extends WorkbenchList<ITerminalInstance> {
 				if (!instance) {
 					return;
 				}
+
 				this._terminalGroupService.setActiveInstance(instance);
 
 				if (!e.editorOptions.preserveFocus) {
@@ -329,12 +343,14 @@ export class TerminalTabList extends WorkbenchList<ITerminalInstance> {
 			this._decorationsProvider = this.disposables.add(
 				instantiationService.createInstance(TabDecorationsProvider),
 			);
+
 			this.disposables.add(
 				decorationsService.registerDecorationsProvider(
 					this._decorationsProvider,
 				),
 			);
 		}
+
 		this.refresh();
 	}
 
@@ -379,6 +395,7 @@ export class TerminalTabList extends WorkbenchList<ITerminalInstance> {
 		);
 
 		const instance = this.getFocusedElements();
+
 		this._isSplitContextKey.set(
 			instance.length > 0 &&
 				this._terminalGroupService.instanceIsSplit(instance[0]),
@@ -498,6 +515,7 @@ class TerminalTabsRenderer
 		}
 
 		template.element.classList.toggle("has-text", hasText);
+
 		template.element.classList.toggle(
 			"is-active",
 			this._terminalGroupService.activeInstance === instance,
@@ -518,6 +536,7 @@ class TerminalTabsRenderer
 		}
 
 		const hoverInfo = getInstanceHoverInfo(instance);
+
 		template.context.hoverActions = hoverInfo.actions;
 
 		const iconId = this._instantiationService.invokeFunction(
@@ -539,6 +558,7 @@ class TerminalTabsRenderer
 			}
 		} else {
 			this.fillActionBar(instance, template);
+
 			label = prefix;
 			// Only add the title if the icon is set, this prevents the title jumping around for
 			// example when launching with a ShellLaunchConfig.name and no icon
@@ -573,6 +593,7 @@ class TerminalTabsRenderer
 		if (colorClass) {
 			extraClasses.push(colorClass);
 		}
+
 		const uriClasses = getUriClasses(
 			instance,
 			this._themeService.getColorTheme().type,
@@ -602,6 +623,7 @@ class TerminalTabsRenderer
 		);
 
 		const editableData = this._terminalService.getEditableData(instance);
+
 		template.label.element.classList.toggle("editable-tab", !!editableData);
 
 		if (editableData) {
@@ -614,6 +636,7 @@ class TerminalTabsRenderer
 					editableData,
 				),
 			);
+
 			template.actionBar.clear();
 		}
 	}
@@ -647,9 +670,13 @@ class TerminalTabsRenderer
 			),
 			inputBoxStyles: defaultInputBoxStyles,
 		});
+
 		inputBox.element.style.height = "22px";
+
 		inputBox.value = value;
+
 		inputBox.focus();
+
 		inputBox.select({ start: 0, end: value.length });
 
 		const done = createSingleCallFunction(
@@ -657,7 +684,9 @@ class TerminalTabsRenderer
 				inputBox.element.style.display = "none";
 
 				const value = inputBox.value;
+
 				dispose(toDispose);
+
 				inputBox.element.remove();
 
 				if (finishEditing) {
@@ -686,6 +715,7 @@ class TerminalTabsRenderer
 				}
 			}
 		};
+
 		showInputBoxNotification();
 
 		const toDispose = [
@@ -730,12 +760,15 @@ class TerminalTabsRenderer
 		templateData: ITerminalTabEntryTemplate,
 	): void {
 		templateData.elementDisposables.clear();
+
 		templateData.actionBar.clear();
 	}
 
 	disposeTemplate(templateData: ITerminalTabEntryTemplate): void {
 		templateData.elementDisposables.dispose();
+
 		templateData.label.dispose();
+
 		templateData.actionBar.dispose();
 	}
 
@@ -799,18 +832,24 @@ class TerminalTabsRenderer
 		} else {
 			callback(instance);
 		}
+
 		this._terminalGroupService.focusTabs();
+
 		this._listService.lastFocusedList?.focusNext();
 	}
 }
 
 interface ITerminalTabEntryTemplate {
 	readonly element: HTMLElement;
+
 	readonly label: IResourceLabel;
+
 	readonly actionBar: ActionBar;
+
 	context: {
 		hoverActions?: IHoverAction[];
 	};
+
 	readonly elementDisposables: DisposableStore;
 }
 
@@ -833,6 +872,7 @@ class TerminalTabsAccessibilityProvider
 
 		if (tab && tab.terminalInstances?.length > 1) {
 			const terminalIndex = tab.terminalInstances.indexOf(instance);
+
 			ariaLabel = localize(
 				{
 					key: "splitTerminalAriaLabel",
@@ -860,6 +900,7 @@ class TerminalTabsAccessibilityProvider
 				instance.title,
 			);
 		}
+
 		return ariaLabel;
 	}
 }
@@ -869,7 +910,9 @@ class TerminalTabsDragAndDrop
 	implements IListDragAndDrop<ITerminalInstance>
 {
 	private _autoFocusInstance: ITerminalInstance | undefined;
+
 	private _autoFocusDisposable: IDisposable = Disposable.None;
+
 	private _primaryBackend: ITerminalBackend | undefined;
 
 	constructor(
@@ -879,6 +922,7 @@ class TerminalTabsDragAndDrop
 		@IListService private readonly _listService: IListService,
 	) {
 		super();
+
 		this._primaryBackend = this._terminalService.getPrimaryBackend();
 	}
 
@@ -902,7 +946,9 @@ class TerminalTabsDragAndDrop
 
 	onDragLeave() {
 		this._autoFocusInstance = undefined;
+
 		this._autoFocusDisposable.dispose();
+
 		this._autoFocusDisposable = Disposable.None;
 	}
 
@@ -910,6 +956,7 @@ class TerminalTabsDragAndDrop
 		if (!originalEvent.dataTransfer) {
 			return;
 		}
+
 		const dndData: unknown = data.getData();
 
 		if (!Array.isArray(dndData)) {
@@ -954,6 +1001,7 @@ class TerminalTabsDragAndDrop
 
 		if (didChangeAutoFocusInstance) {
 			this._autoFocusDisposable.dispose();
+
 			this._autoFocusInstance = targetInstance;
 		}
 
@@ -968,6 +1016,7 @@ class TerminalTabsDragAndDrop
 			this._autoFocusDisposable = disposableTimeout(
 				() => {
 					this._terminalService.setActiveInstance(targetInstance);
+
 					this._autoFocusInstance = undefined;
 				},
 				500,
@@ -993,6 +1042,7 @@ class TerminalTabsDragAndDrop
 		originalEvent: DragEvent,
 	): Promise<void> {
 		this._autoFocusDisposable.dispose();
+
 		this._autoFocusInstance = undefined;
 
 		let sourceInstances: ITerminalInstance[] | undefined;
@@ -1012,6 +1062,7 @@ class TerminalTabsDragAndDrop
 					} else {
 						sourceInstances = [instance];
 					}
+
 					this._terminalService.moveToTerminalView(instance);
 				} else if (this._primaryBackend) {
 					const terminalIdentifier = parseTerminalUri(uri);
@@ -1030,6 +1081,7 @@ class TerminalTabsDragAndDrop
 
 		if (promises.length) {
 			let processes = await Promise.all(promises);
+
 			processes = processes.filter((p) => p !== undefined);
 
 			let lastInstance: ITerminalInstance | undefined;
@@ -1039,9 +1091,11 @@ class TerminalTabsDragAndDrop
 					config: { attachPersistentProcess },
 				});
 			}
+
 			if (lastInstance) {
 				this._terminalService.setActiveInstance(lastInstance);
 			}
+
 			return;
 		}
 
@@ -1069,6 +1123,7 @@ class TerminalTabsDragAndDrop
 
 		if (!targetInstance) {
 			this._terminalGroupService.moveGroupToEnd(sourceInstances);
+
 			this._terminalService.setActiveInstance(sourceInstances[0]);
 
 			const targetGroup = this._terminalGroupService.getGroupForInstance(
@@ -1078,12 +1133,15 @@ class TerminalTabsDragAndDrop
 			if (targetGroup) {
 				const index =
 					this._terminalGroupService.groups.indexOf(targetGroup);
+
 				this._listService.lastFocusedList?.setSelection([index]);
 			}
+
 			return;
 		}
 
 		this._terminalGroupService.moveGroup(sourceInstances, targetInstance);
+
 		this._terminalService.setActiveInstance(sourceInstances[0]);
 
 		const targetGroup = this._terminalGroupService.getGroupForInstance(
@@ -1093,6 +1151,7 @@ class TerminalTabsDragAndDrop
 		if (targetGroup) {
 			const index =
 				this._terminalGroupService.groups.indexOf(targetGroup);
+
 			this._listService.lastFocusedList?.setSelection([index]);
 		}
 	}
@@ -1136,6 +1195,7 @@ class TerminalTabsDragAndDrop
 		this._terminalService.setActiveInstance(instance);
 
 		instance.focus();
+
 		await instance.sendPath(resource, false);
 	}
 }
@@ -1147,12 +1207,14 @@ class TabDecorationsProvider
 	readonly label: string = localize("label", "Terminal");
 
 	private readonly _onDidChange = this._register(new Emitter<URI[]>());
+
 	readonly onDidChange = this._onDidChange.event;
 
 	constructor(
 		@ITerminalService private readonly _terminalService: ITerminalService,
 	) {
 		super();
+
 		this._register(
 			this._terminalService.onAnyInstancePrimaryStatusChange((e) =>
 				this._onDidChange.fire([e.resource]),

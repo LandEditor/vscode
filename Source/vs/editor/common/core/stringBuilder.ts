@@ -11,6 +11,7 @@ function getUTF16LE_TextDecoder(): TextDecoder {
 	if (!_utf16LE_TextDecoder) {
 		_utf16LE_TextDecoder = new TextDecoder("UTF-16LE");
 	}
+
 	return _utf16LE_TextDecoder;
 }
 let _utf16BE_TextDecoder: TextDecoder | null;
@@ -18,6 +19,7 @@ function getUTF16BE_TextDecoder(): TextDecoder {
 	if (!_utf16BE_TextDecoder) {
 		_utf16BE_TextDecoder = new TextDecoder("UTF-16BE");
 	}
+
 	return _utf16BE_TextDecoder;
 }
 let _platformTextDecoder: TextDecoder | null;
@@ -28,6 +30,7 @@ export function getPlatformTextDecoder(): TextDecoder {
 			? getUTF16LE_TextDecoder()
 			: getUTF16BE_TextDecoder();
 	}
+
 	return _platformTextDecoder;
 }
 export function decodeUTF16LE(
@@ -44,6 +47,7 @@ export function decodeUTF16LE(
 		// So we use the manual decoder
 		return compatDecodeUTF16LE(source, offset, len);
 	}
+
 	return getUTF16LE_TextDecoder().decode(view);
 }
 function compatDecodeUTF16LE(
@@ -57,39 +61,54 @@ function compatDecodeUTF16LE(
 
 	for (let i = 0; i < len; i++) {
 		const charCode = buffer.readUInt16LE(source, offset);
+
 		offset += 2;
+
 		result[resultLen++] = String.fromCharCode(charCode);
 	}
+
 	return result.join("");
 }
 export class StringBuilder {
 	private readonly _capacity: number;
+
 	private readonly _buffer: Uint16Array;
+
 	private _completedStrings: string[] | null;
+
 	private _bufferLength: number;
 
 	constructor(capacity: number) {
 		this._capacity = capacity | 0;
+
 		this._buffer = new Uint16Array(this._capacity);
+
 		this._completedStrings = null;
+
 		this._bufferLength = 0;
 	}
+
 	public reset(): void {
 		this._completedStrings = null;
+
 		this._bufferLength = 0;
 	}
+
 	public build(): string {
 		if (this._completedStrings !== null) {
 			this._flushBuffer();
 
 			return this._completedStrings.join("");
 		}
+
 		return this._buildBuffer();
 	}
+
 	private _buildBuffer(): string {
 		if (this._bufferLength === 0) {
 			return "";
 		}
+
 		const view = new Uint16Array(
 			this._buffer.buffer,
 			0,
@@ -98,8 +117,10 @@ export class StringBuilder {
 
 		return getPlatformTextDecoder().decode(view);
 	}
+
 	private _flushBuffer(): void {
 		const bufferString = this._buildBuffer();
+
 		this._bufferLength = 0;
 
 		if (this._completedStrings === null) {
@@ -120,6 +141,7 @@ export class StringBuilder {
 				this._flushBuffer();
 			}
 		}
+
 		this._buffer[this._bufferLength++] = charCode;
 	}
 	/**
@@ -130,18 +152,22 @@ export class StringBuilder {
 			// buffer is full
 			this._flushBuffer();
 		}
+
 		this._buffer[this._bufferLength++] = charCode;
 	}
+
 	public appendString(str: string): void {
 		const strLen = str.length;
 
 		if (this._bufferLength + strLen >= this._capacity) {
 			// This string does not fit in the remaining buffer space
 			this._flushBuffer();
+
 			this._completedStrings![this._completedStrings!.length] = str;
 
 			return;
 		}
+
 		for (let i = 0; i < strLen; i++) {
 			this._buffer[this._bufferLength++] = str.charCodeAt(i);
 		}

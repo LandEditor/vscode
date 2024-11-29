@@ -31,6 +31,7 @@ export class MainThreadProfileContentHandlers
 	implements MainThreadProfileContentHandlersShape
 {
 	private readonly proxy: ExtHostProfileContentHandlersShape;
+
 	private readonly registeredHandlers = this._register(
 		new DisposableMap<string, IDisposable>(),
 	);
@@ -41,10 +42,12 @@ export class MainThreadProfileContentHandlers
 		private readonly userDataProfileImportExportService: IUserDataProfileImportExportService,
 	) {
 		super();
+
 		this.proxy = context.getProxy(
 			ExtHostContext.ExtHostProfileContentHandlers,
 		);
 	}
+
 	async $registerProfileContentHandler(
 		id: string,
 		name: string,
@@ -82,6 +85,7 @@ export class MainThreadProfileContentHandlers
 			),
 		);
 	}
+
 	async $unregisterProfileContentHandler(id: string): Promise<void> {
 		this.registeredHandlers.deleteAndDispose(id);
 	}

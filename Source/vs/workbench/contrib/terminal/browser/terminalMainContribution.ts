@@ -59,6 +59,7 @@ export class TerminalMainContribution
 		terminalInstanceService: ITerminalInstanceService,
 	) {
 		super();
+
 		this._init(
 			editorResolverService,
 			embedderTerminalService,
@@ -71,6 +72,7 @@ export class TerminalMainContribution
 			terminalInstanceService,
 		);
 	}
+
 	private async _init(
 		editorResolverService: IEditorResolverService,
 		embedderTerminalService: IEmbedderTerminalService,
@@ -92,11 +94,14 @@ export class TerminalMainContribution
 						location: TerminalLocation.Panel,
 						skipContributedProfileCheck: true,
 					});
+
 					terminalService.setActiveInstance(terminal);
+
 					await terminalService.revealActiveTerminal();
 				},
 			),
 		);
+
 		await lifecycleService.when(LifecyclePhase.Restored);
 		// Register terminal editors
 		this._register(
@@ -122,6 +127,7 @@ export class TerminalMainContribution
 								terminalGroupService.getGroupForInstance(
 									instance,
 								);
+
 							sourceGroup?.removeInstance(instance);
 						} else {
 							// Terminal from a different window
@@ -133,12 +139,14 @@ export class TerminalMainContribution
 									"Terminal identifier without instanceId",
 								);
 							}
+
 							const primaryBackend =
 								terminalService.getPrimaryBackend();
 
 							if (!primaryBackend) {
 								throw new Error("No terminal primary backend");
 							}
+
 							const attachPersistentProcess =
 								await primaryBackend.requestDetachInstance(
 									terminalIdentifier.workspaceId,
@@ -150,11 +158,13 @@ export class TerminalMainContribution
 									"No terminal persistent process to attach",
 								);
 							}
+
 							instance = terminalInstanceService.createInstance(
 								{ attachPersistentProcess },
 								TerminalLocation.Editor,
 							);
 						}
+
 						const resolvedResource =
 							terminalEditorService.resolveResource(instance);
 

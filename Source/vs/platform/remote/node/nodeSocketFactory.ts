@@ -19,6 +19,7 @@ export const nodeSocketFactory = new (class
 	supports(connectTo: WebSocketRemoteConnection): boolean {
 		return true;
 	}
+
 	connect(
 		{ host, port }: WebSocketRemoteConnection,
 		path: string,
@@ -30,6 +31,7 @@ export const nodeSocketFactory = new (class
 				{ host: host, port: port },
 				() => {
 					socket.removeListener("error", reject);
+
 					socket.write(makeRawSocketHeaders(path, query, debugLabel));
 
 					const onData = (data: Buffer) => {
@@ -38,14 +40,17 @@ export const nodeSocketFactory = new (class
 						if (strData.indexOf("\r\n\r\n") >= 0) {
 							// headers received OK
 							socket.off("data", onData);
+
 							resolve(new NodeSocket(socket, debugLabel));
 						}
 					};
+
 					socket.on("data", onData);
 				},
 			);
 			// Disable Nagle's algorithm.
 			socket.setNoDelay(true);
+
 			socket.once("error", reject);
 		});
 	}

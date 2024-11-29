@@ -56,9 +56,11 @@ export class InlineCompletionsSource extends Disposable {
 	private readonly _updateOperation = this._register(
 		new MutableDisposable<UpdateOperation>(),
 	);
+
 	public readonly inlineCompletions = disposableObservableValue<
 		UpToDateInlineCompletions | undefined
 	>("inlineCompletions", undefined);
+
 	public readonly suggestWidgetInlineCompletions = disposableObservableValue<
 		UpToDateInlineCompletions | undefined
 	>("suggestWidgetInlineCompletions", undefined);
@@ -68,6 +70,7 @@ export class InlineCompletionsSource extends Disposable {
 		false,
 		this._configurationService,
 	).recomputeInitiallyAndOnChange(this._store);
+
 	private readonly _recordingLoggingEnabled = observableContextKey(
 		"editor.inlineSuggest.logFetch",
 		this._contextKeyService,
@@ -100,14 +103,20 @@ export class InlineCompletionsSource extends Disposable {
 		entry:
 			| ({
 					kind: "start";
+
 					requestId: number;
+
 					context: unknown;
 			  } & IRecordableEditorLogEntry)
 			| ({
 					kind: "end";
+
 					error: any;
+
 					durationMs: number;
+
 					result: unknown;
+
 					requestId: number;
 			  } & IRecordableLogEntry),
 	) {
@@ -142,6 +151,7 @@ export class InlineCompletionsSource extends Disposable {
 		this.loading.set(true, undefined);
 
 		const updateOngoing = !!this._updateOperation.value;
+
 		this._updateOperation.clear();
 
 		const source = new CancellationTokenSource();
@@ -211,12 +221,14 @@ export class InlineCompletionsSource extends Disposable {
 					if (source.token.isCancellationRequested) {
 						error = "canceled";
 					}
+
 					const result = updatedCompletions?.completions.map((c) => ({
 						range: c.range.toString(),
 						text: c.insertText,
 						isInlineEdit: !!c.sourceInlineCompletion.isInlineEdit,
 						source: c.source.provider.groupId,
 					}));
+
 					this._log({
 						kind: "end",
 						requestId,
@@ -239,6 +251,7 @@ export class InlineCompletionsSource extends Disposable {
 			}
 
 			const endTime = new Date();
+
 			this._debounceValue.update(
 				this._textModel,
 				endTime.getTime() - startTime.getTime(),
@@ -271,9 +284,11 @@ export class InlineCompletionsSource extends Disposable {
 			}
 
 			this._updateOperation.clear();
+
 			transaction((tx) => {
 				/** @description Update completions with provider result */
 				target.set(completions, tx);
+
 				this.loading.set(false, tx);
 			});
 
@@ -281,6 +296,7 @@ export class InlineCompletionsSource extends Disposable {
 		})();
 
 		const updateOperation = new UpdateOperation(request, source, promise);
+
 		this._updateOperation.value = updateOperation;
 
 		return promise;
@@ -288,7 +304,9 @@ export class InlineCompletionsSource extends Disposable {
 
 	public clear(tx: ITransaction): void {
 		this._updateOperation.clear();
+
 		this.inlineCompletions.set(undefined, tx);
+
 		this.suggestWidgetInlineCompletions.set(undefined, tx);
 	}
 
@@ -298,6 +316,7 @@ export class InlineCompletionsSource extends Disposable {
 		) {
 			this._updateOperation.clear();
 		}
+
 		this.suggestWidgetInlineCompletions.set(undefined, tx);
 	}
 
@@ -317,6 +336,7 @@ function wait(
 			if (d) {
 				d.dispose();
 			}
+
 			resolve();
 		}, ms);
 
@@ -327,6 +347,7 @@ function wait(
 				if (d) {
 					d.dispose();
 				}
+
 				resolve();
 			});
 		}
@@ -371,11 +392,13 @@ class UpdateOperation implements IDisposable {
 
 export class UpToDateInlineCompletions implements IDisposable {
 	private readonly _inlineCompletions: InlineCompletionWithUpdatedRange[];
+
 	public get inlineCompletions(): ReadonlyArray<InlineCompletionWithUpdatedRange> {
 		return this._inlineCompletions;
 	}
 
 	private _refCount = 1;
+
 	private readonly _prependedInlineCompletionItems: InlineCompletionItem[] =
 		[];
 
@@ -428,6 +451,7 @@ export class UpToDateInlineCompletions implements IDisposable {
 					);
 				}
 			}, 0);
+
 			this.inlineCompletionProviderResult.dispose();
 
 			for (const i of this._prependedInlineCompletionItems) {
@@ -456,6 +480,7 @@ export class UpToDateInlineCompletions implements IDisposable {
 				},
 			],
 		)[0];
+
 		this._inlineCompletions.unshift(
 			new InlineCompletionWithUpdatedRange(
 				inlineCompletion,
@@ -465,6 +490,7 @@ export class UpToDateInlineCompletions implements IDisposable {
 				this.request,
 			),
 		);
+
 		this._prependedInlineCompletionItems.push(inlineCompletion);
 	}
 }
@@ -571,6 +597,7 @@ export class InlineCompletionWithUpdatedRange {
 			if (originalValueBefore.length === 0) {
 				originalValueAfter = originalValueAfter.trimStart();
 			}
+
 			filterTextBefore = filterTextBefore.trimStart();
 
 			if (filterTextBefore.length === 0) {
@@ -616,6 +643,7 @@ interface IRecordableLogEntry {
 
 export interface IRecordableEditorLogEntry extends IRecordableLogEntry {
 	modelUri: string;
+
 	modelVersion: number;
 }
 

@@ -34,33 +34,45 @@ import {
 export class ExtHostEditors extends Disposable implements ExtHostEditorsShape {
 	private readonly _onDidChangeTextEditorSelection =
 		new Emitter<vscode.TextEditorSelectionChangeEvent>();
+
 	private readonly _onDidChangeTextEditorOptions =
 		new Emitter<vscode.TextEditorOptionsChangeEvent>();
+
 	private readonly _onDidChangeTextEditorVisibleRanges =
 		new Emitter<vscode.TextEditorVisibleRangesChangeEvent>();
+
 	private readonly _onDidChangeTextEditorViewColumn =
 		new Emitter<vscode.TextEditorViewColumnChangeEvent>();
+
 	private readonly _onDidChangeTextEditorDiffInformation =
 		new Emitter<vscode.TextEditorDiffInformationChangeEvent>();
+
 	private readonly _onDidChangeActiveTextEditor = new Emitter<
 		vscode.TextEditor | undefined
 	>();
+
 	private readonly _onDidChangeVisibleTextEditors = new Emitter<
 		readonly vscode.TextEditor[]
 	>();
 
 	readonly onDidChangeTextEditorSelection: Event<vscode.TextEditorSelectionChangeEvent> =
 		this._onDidChangeTextEditorSelection.event;
+
 	readonly onDidChangeTextEditorOptions: Event<vscode.TextEditorOptionsChangeEvent> =
 		this._onDidChangeTextEditorOptions.event;
+
 	readonly onDidChangeTextEditorVisibleRanges: Event<vscode.TextEditorVisibleRangesChangeEvent> =
 		this._onDidChangeTextEditorVisibleRanges.event;
+
 	readonly onDidChangeTextEditorViewColumn: Event<vscode.TextEditorViewColumnChangeEvent> =
 		this._onDidChangeTextEditorViewColumn.event;
+
 	readonly onDidChangeTextEditorDiffInformation: Event<vscode.TextEditorDiffInformationChangeEvent> =
 		this._onDidChangeTextEditorDiffInformation.event;
+
 	readonly onDidChangeActiveTextEditor: Event<vscode.TextEditor | undefined> =
 		this._onDidChangeActiveTextEditor.event;
+
 	readonly onDidChangeVisibleTextEditors: Event<
 		readonly vscode.TextEditor[]
 	> = this._onDidChangeVisibleTextEditors.event;
@@ -72,6 +84,7 @@ export class ExtHostEditors extends Disposable implements ExtHostEditorsShape {
 		private readonly _extHostDocumentsAndEditors: ExtHostDocumentsAndEditors,
 	) {
 		super();
+
 		this._proxy = mainContext.getProxy(MainContext.MainThreadTextEditors);
 
 		this._register(
@@ -79,6 +92,7 @@ export class ExtHostEditors extends Disposable implements ExtHostEditorsShape {
 				(e) => this._onDidChangeVisibleTextEditors.fire(e),
 			),
 		);
+
 		this._register(
 			this._extHostDocumentsAndEditors.onDidChangeActiveTextEditor((e) =>
 				this._onDidChangeActiveTextEditor.fire(e),
@@ -91,11 +105,14 @@ export class ExtHostEditors extends Disposable implements ExtHostEditorsShape {
 	}
 
 	getVisibleTextEditors(): vscode.TextEditor[];
+
 	getVisibleTextEditors(internal: true): ExtHostTextEditor[];
+
 	getVisibleTextEditors(
 		internal?: true,
 	): ExtHostTextEditor[] | vscode.TextEditor[] {
 		const editors = this._extHostDocumentsAndEditors.allEditors();
+
 		return internal ? editors : editors.map((editor) => editor.value);
 	}
 
@@ -104,14 +121,18 @@ export class ExtHostEditors extends Disposable implements ExtHostEditorsShape {
 		column: vscode.ViewColumn,
 		preserveFocus: boolean,
 	): Promise<vscode.TextEditor>;
+
 	showTextDocument(
 		document: vscode.TextDocument,
 		options: {
 			column: vscode.ViewColumn;
+
 			preserveFocus: boolean;
+
 			pinned: boolean;
 		},
 	): Promise<vscode.TextEditor>;
+
 	showTextDocument(
 		document: vscode.TextDocument,
 		columnOrOptions:
@@ -120,6 +141,7 @@ export class ExtHostEditors extends Disposable implements ExtHostEditorsShape {
 			| undefined,
 		preserveFocus?: boolean,
 	): Promise<vscode.TextEditor>;
+
 	async showTextDocument(
 		document: vscode.TextDocument,
 		columnOrOptions:
@@ -129,6 +151,7 @@ export class ExtHostEditors extends Disposable implements ExtHostEditorsShape {
 		preserveFocus?: boolean,
 	): Promise<vscode.TextEditor> {
 		let options: ITextDocumentShowOptions;
+
 		if (typeof columnOrOptions === "number") {
 			options = {
 				position: TypeConverters.ViewColumn.from(columnOrOptions),
@@ -159,8 +182,10 @@ export class ExtHostEditors extends Disposable implements ExtHostEditorsShape {
 			document.uri,
 			options,
 		);
+
 		const editor =
 			editorId && this._extHostDocumentsAndEditors.getEditor(editorId);
+
 		if (editor) {
 			return editor.value;
 		}
@@ -192,6 +217,7 @@ export class ExtHostEditors extends Disposable implements ExtHostEditorsShape {
 		data: IEditorPropertiesChangeData,
 	): void {
 		const textEditor = this._extHostDocumentsAndEditors.getEditor(id);
+
 		if (!textEditor) {
 			throw new Error("unknown text editor");
 		}
@@ -200,16 +226,20 @@ export class ExtHostEditors extends Disposable implements ExtHostEditorsShape {
 		if (data.options) {
 			textEditor._acceptOptions(data.options);
 		}
+
 		if (data.selections) {
 			const selections = data.selections.selections.map(
 				TypeConverters.Selection.to,
 			);
+
 			textEditor._acceptSelections(selections);
 		}
+
 		if (data.visibleRanges) {
 			const visibleRanges = arrays.coalesce(
 				data.visibleRanges.map(TypeConverters.Range.to),
 			);
+
 			textEditor._acceptVisibleRanges(visibleRanges);
 		}
 
@@ -225,23 +255,28 @@ export class ExtHostEditors extends Disposable implements ExtHostEditorsShape {
 				},
 			});
 		}
+
 		if (data.selections) {
 			const kind = TextEditorSelectionChangeKind.fromValue(
 				data.selections.source,
 			);
+
 			const selections = data.selections.selections.map(
 				TypeConverters.Selection.to,
 			);
+
 			this._onDidChangeTextEditorSelection.fire({
 				textEditor: textEditor.value,
 				selections,
 				kind,
 			});
 		}
+
 		if (data.visibleRanges) {
 			const visibleRanges = arrays.coalesce(
 				data.visibleRanges.map(TypeConverters.Range.to),
 			);
+
 			this._onDidChangeTextEditorVisibleRanges.fire({
 				textEditor: textEditor.value,
 				visibleRanges,
@@ -252,12 +287,16 @@ export class ExtHostEditors extends Disposable implements ExtHostEditorsShape {
 	$acceptEditorPositionData(data: ITextEditorPositionData): void {
 		for (const id in data) {
 			const textEditor = this._extHostDocumentsAndEditors.getEditor(id);
+
 			if (!textEditor) {
 				throw new Error("Unknown text editor");
 			}
+
 			const viewColumn = TypeConverters.ViewColumn.to(data[id]);
+
 			if (textEditor.value.viewColumn !== viewColumn) {
 				textEditor._acceptViewColumn(viewColumn);
+
 				this._onDidChangeTextEditorViewColumn.fire({
 					textEditor: textEditor.value,
 					viewColumn,
@@ -271,22 +310,27 @@ export class ExtHostEditors extends Disposable implements ExtHostEditorsShape {
 		diffInformation: ITextEditorDiffInformation[] | undefined,
 	): void {
 		const textEditor = this._extHostDocumentsAndEditors.getEditor(id);
+
 		if (!textEditor) {
 			throw new Error("unknown text editor");
 		}
 
 		if (!diffInformation) {
 			textEditor._acceptDiffInformation(undefined);
+
 			this._onDidChangeTextEditorDiffInformation.fire({
 				textEditor: textEditor.value,
 				diffInformation: undefined,
 			});
+
 			return;
 		}
 
 		const that = this;
+
 		const result = diffInformation.map((diff) => {
 			const original = URI.revive(diff.original);
+
 			const modified = URI.revive(diff.modified);
 
 			const changes = diff.changes.map((change) => {
@@ -298,6 +342,7 @@ export class ExtHostEditors extends Disposable implements ExtHostEditorsShape {
 				] = change;
 
 				let kind: vscode.TextEditorChangeKind;
+
 				if (
 					originalStartLineNumber === originalEndLineNumberExclusive
 				) {
@@ -331,12 +376,14 @@ export class ExtHostEditors extends Disposable implements ExtHostEditorsShape {
 				get isStale(): boolean {
 					const document =
 						that._extHostDocumentsAndEditors.getDocument(modified);
+
 					return document?.version !== diff.documentVersion;
 				},
 			});
 		});
 
 		textEditor._acceptDiffInformation(result);
+
 		this._onDidChangeTextEditorDiffInformation.fire({
 			textEditor: textEditor.value,
 			diffInformation: result,

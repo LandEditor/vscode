@@ -74,6 +74,7 @@ function registerOpenTerminalCommand(
 					IExternalTerminalService,
 				);
 			} catch {}
+
 			const resources = getMultiSelectedResources(
 				resource,
 				accessor.get(IListService),
@@ -109,6 +110,7 @@ function registerOpenTerminalCommand(
 							if (stat!.isDirectory) {
 								return resource;
 							}
+
 							return URI.from({
 								scheme: resource.scheme,
 								authority: resource.authority,
@@ -122,6 +124,7 @@ function registerOpenTerminalCommand(
 							if (opened[cwd.path]) {
 								return;
 							}
+
 							opened[cwd.path] = true;
 
 							const instance =
@@ -140,6 +143,7 @@ function registerOpenTerminalCommand(
 								integratedTerminalService.setActiveInstance(
 									instance,
 								);
+
 								terminalGroupService.showPanel(true);
 							}
 						}
@@ -172,6 +176,7 @@ export class ExternalTerminalContribution
 	implements IWorkbenchContribution
 {
 	private _openInIntegratedTerminalMenuItem: IMenuItem;
+
 	private _openInTerminalMenuItem: IMenuItem;
 
 	constructor(
@@ -201,6 +206,7 @@ export class ExternalTerminalContribution
 				ContextKeyExpr.equals("config.terminal.explorerKind", "both"),
 			),
 		);
+
 		this._openInIntegratedTerminalMenuItem = {
 			group: "navigation",
 			order: 30,
@@ -216,6 +222,7 @@ export class ExternalTerminalContribution
 				ResourceContextKey.Scheme.isEqualTo(Schemas.vscodeRemote),
 			),
 		};
+
 		this._openInTerminalMenuItem = {
 			group: "navigation",
 			order: 31,
@@ -228,14 +235,17 @@ export class ExternalTerminalContribution
 			},
 			when: shouldShowExternalKindOnLocal,
 		};
+
 		MenuRegistry.appendMenuItem(
 			MenuId.ExplorerContext,
 			this._openInTerminalMenuItem,
 		);
+
 		MenuRegistry.appendMenuItem(
 			MenuId.ExplorerContext,
 			this._openInIntegratedTerminalMenuItem,
 		);
+
 		this._register(
 			this._configurationService.onDidChangeConfiguration((e) => {
 				if (
@@ -246,8 +256,10 @@ export class ExternalTerminalContribution
 				}
 			}),
 		);
+
 		this._refreshOpenInTerminalMenuItemTitle();
 	}
+
 	private isWindows(): boolean {
 		const config =
 			this._configurationService.getValue<IExternalTerminalConfiguration>()
@@ -260,8 +272,10 @@ export class ExternalTerminalContribution
 				return true;
 			}
 		}
+
 		return false;
 	}
+
 	private _refreshOpenInTerminalMenuItemTitle(): void {
 		if (this.isWindows()) {
 			this._openInTerminalMenuItem.command.title = nls.localize(

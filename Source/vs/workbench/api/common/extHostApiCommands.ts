@@ -41,6 +41,7 @@ const newCommands: ApiCommand[] = [
 			if (isFalsyOrEmpty(value)) {
 				return undefined;
 			}
+
 			class MergedInfo extends types.SymbolInformation implements vscode.DocumentSymbol {
 				static to(symbol: languages.DocumentSymbol): MergedInfo {
 					const res = new MergedInfo(
@@ -49,19 +50,29 @@ const newCommands: ApiCommand[] = [
 						symbol.containerName || '',
 						new types.Location(apiArgs[0], typeConverters.Range.to(symbol.range))
 					);
+
 					res.detail = symbol.detail;
+
 					res.range = res.location.range;
+
 					res.selectionRange = typeConverters.Range.to(symbol.selectionRange);
+
 					res.children = symbol.children ? symbol.children.map(MergedInfo.to) : [];
+
 					return res;
 				}
 
 				detail!: string;
+
 				range!: vscode.Range;
+
 				selectionRange!: vscode.Range;
+
 				children!: vscode.DocumentSymbol[];
+
 				override containerName!: string;
 			}
+
 			return value.map(MergedInfo.to);
 
 		})
@@ -151,9 +162,11 @@ const newCommands: ApiCommand[] = [
 		new ApiCommandResult<IRange[][], types.SelectionRange[]>('A promise that resolves to an array of ranges.', result => {
 			return result.map(ranges => {
 				let node: types.SelectionRange | undefined;
+
 				for (const range of ranges.reverse()) {
 					node = new types.SelectionRange(typeConverters.Range.to(range), node);
 				}
+
 				return node!;
 			});
 		})
@@ -190,6 +203,7 @@ const newCommands: ApiCommand[] = [
 			if (!value) {
 				return undefined;
 			}
+
 			return {
 				range: typeConverters.Range.to(value.range),
 				placeholder: value.text
@@ -203,9 +217,11 @@ const newCommands: ApiCommand[] = [
 			if (!value) {
 				return undefined;
 			}
+
 			if (value.rejectReason) {
 				throw new Error(value.rejectReason);
 			}
+
 			return typeConverters.WorkspaceEdit.to(value);
 		})
 	),
@@ -223,6 +239,7 @@ const newCommands: ApiCommand[] = [
 			if (!value) {
 				return undefined;
 			}
+
 			return new types.SemanticTokensLegend(value.tokenTypes, value.tokenModifiers);
 		})
 	),
@@ -233,11 +250,14 @@ const newCommands: ApiCommand[] = [
 			if (!value) {
 				return undefined;
 			}
+
 			const semanticTokensDto = decodeSemanticTokensDto(value);
+
 			if (semanticTokensDto.type !== 'full') {
 				// only accepting full semantic tokens from provideDocumentSemanticTokens
 				return undefined;
 			}
+
 			return new types.SemanticTokens(semanticTokensDto.data, undefined);
 		})
 	),
@@ -248,6 +268,7 @@ const newCommands: ApiCommand[] = [
 			if (!value) {
 				return undefined;
 			}
+
 			return new types.SemanticTokensLegend(value.tokenTypes, value.tokenModifiers);
 		})
 	),
@@ -258,11 +279,14 @@ const newCommands: ApiCommand[] = [
 			if (!value) {
 				return undefined;
 			}
+
 			const semanticTokensDto = decodeSemanticTokensDto(value);
+
 			if (semanticTokensDto.type !== 'full') {
 				// only accepting full semantic tokens from provideDocumentRangeSemanticTokens
 				return undefined;
 			}
+
 			return new types.SemanticTokens(semanticTokensDto.data, undefined);
 		})
 	),
@@ -279,7 +303,9 @@ const newCommands: ApiCommand[] = [
 			if (!value) {
 				return new types.CompletionList([]);
 			}
+
 			const items = value.suggestions.map(suggestion => typeConverters.CompletionItem.to(suggestion, converter));
+
 			return new types.CompletionList(items, value.incomplete);
 		})
 	),
@@ -291,6 +317,7 @@ const newCommands: ApiCommand[] = [
 			if (value) {
 				return typeConverters.SignatureHelp.to(value);
 			}
+
 			return undefined;
 		})
 	),
@@ -319,19 +346,24 @@ const newCommands: ApiCommand[] = [
 					if (!codeAction.command) {
 						throw new Error('Synthetic code actions must have a command');
 					}
+
 					return converter.fromInternal(codeAction.command);
 				} else {
 					const ret = new types.CodeAction(
 						codeAction.title,
 						codeAction.kind ? new types.CodeActionKind(codeAction.kind) : undefined
 					);
+
 					if (codeAction.edit) {
 						ret.edit = typeConverters.WorkspaceEdit.to(codeAction.edit);
 					}
+
 					if (codeAction.command) {
 						ret.command = converter.fromInternal(codeAction.command);
 					}
+
 					ret.isPreferred = codeAction.isPreferred;
+
 					return ret;
 				}
 			})(value);
@@ -345,6 +377,7 @@ const newCommands: ApiCommand[] = [
 			if (result) {
 				return result.map(ci => new types.ColorInformation(typeConverters.Range.to(ci.range), typeConverters.Color.to(ci.color)));
 			}
+
 			return [];
 		})
 	),
@@ -358,6 +391,7 @@ const newCommands: ApiCommand[] = [
 			if (result) {
 				return result.map(typeConverters.ColorPresentation.to);
 			}
+
 			return [];
 		})
 	),
@@ -377,6 +411,7 @@ const newCommands: ApiCommand[] = [
 			if (result) {
 				return result.map(typeConverters.FoldingRange.to);
 			}
+
 			return undefined;
 		})
 	),
@@ -391,13 +426,19 @@ const newCommands: ApiCommand[] = [
 		],
 		new ApiCommandResult<{
 			viewType: string;
+
 			displayName: string;
+
 			options: { transientOutputs: boolean; transientCellMetadata: TransientCellMetadata; transientDocumentMetadata: TransientDocumentMetadata };
+
 			filenamePattern: (vscode.GlobPattern | { include: vscode.GlobPattern; exclude: vscode.GlobPattern })[];
 		}[], {
 			viewType: string;
+
 			displayName: string;
+
 			filenamePattern: (vscode.GlobPattern | { include: vscode.GlobPattern; exclude: vscode.GlobPattern })[];
+
 			options: vscode.NotebookDocumentContentOptions;
 		}[] | undefined>('A promise that resolves to an array of NotebookContentProvider static info objects.', tryMapWith(item => {
 			return {
@@ -474,6 +515,7 @@ const newCommands: ApiCommand[] = [
 						}
 
 						const [label, left, right] = resource;
+
 						if (!URI.isUri(label) ||
 							(!URI.isUri(left) && left !== undefined && left !== null) ||
 							(!URI.isUri(right) && right !== undefined && right !== null)) {
@@ -576,17 +618,25 @@ const newCommands: ApiCommand[] = [
 
 type InlineChatEditorApiArg = {
 	initialRange?: vscode.Range;
+
 	initialSelection?: vscode.Selection;
+
 	message?: string;
+
 	autoSend?: boolean;
+
 	position?: vscode.Position;
 };
 
 type InlineChatRunOptions = {
 	initialRange?: IRange;
+
 	initialSelection?: ISelection;
+
 	message?: string;
+
 	autoSend?: boolean;
+
 	position?: IPosition;
 };
 
@@ -614,6 +664,7 @@ function tryMapWith<T, R>(f: (x: T) => R) {
 		if (Array.isArray(value)) {
 			return value.map(f);
 		}
+
 		return undefined;
 	};
 }
@@ -622,7 +673,9 @@ function mapLocationOrLocationLink(values: (languages.Location | languages.Locat
 	if (!Array.isArray(values)) {
 		return undefined;
 	}
+
 	const result: (types.Location | vscode.LocationLink)[] = [];
+
 	for (const item of values) {
 		if (languages.isLocationLink(item)) {
 			result.push(typeConverters.DefinitionLink.to(item));
@@ -630,5 +683,6 @@ function mapLocationOrLocationLink(values: (languages.Location | languages.Locat
 			result.push(typeConverters.location.to(item));
 		}
 	}
+
 	return result;
 }

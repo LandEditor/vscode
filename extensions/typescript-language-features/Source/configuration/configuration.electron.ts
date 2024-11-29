@@ -23,8 +23,10 @@ export class ElectronServiceConfigurationProvider extends BaseServiceConfigurati
 				);
 			}
 		}
+
 		return inspectValue;
 	}
+
 	protected readGlobalTsdk(
 		configuration: vscode.WorkspaceConfiguration,
 	): string | null {
@@ -33,8 +35,10 @@ export class ElectronServiceConfigurationProvider extends BaseServiceConfigurati
 		if (inspect && typeof inspect.globalValue === "string") {
 			return this.fixPathPrefixes(inspect.globalValue);
 		}
+
 		return null;
 	}
+
 	protected readLocalTsdk(
 		configuration: vscode.WorkspaceConfiguration,
 	): string | null {
@@ -43,13 +47,16 @@ export class ElectronServiceConfigurationProvider extends BaseServiceConfigurati
 		if (inspect && typeof inspect.workspaceValue === "string") {
 			return this.fixPathPrefixes(inspect.workspaceValue);
 		}
+
 		return null;
 	}
+
 	protected readLocalNodePath(
 		configuration: vscode.WorkspaceConfiguration,
 	): string | null {
 		return this.validatePath(this.readLocalNodePathWorker(configuration));
 	}
+
 	private readLocalNodePathWorker(
 		configuration: vscode.WorkspaceConfiguration,
 	): string | null {
@@ -62,6 +69,7 @@ export class ElectronServiceConfigurationProvider extends BaseServiceConfigurati
 			if (inspect.workspaceValue === "node") {
 				return this.findNodePath();
 			}
+
 			const fixedPath = this.fixPathPrefixes(inspect.workspaceValue);
 
 			if (!path.isAbsolute(fixedPath)) {
@@ -72,15 +80,19 @@ export class ElectronServiceConfigurationProvider extends BaseServiceConfigurati
 
 				return workspacePath || null;
 			}
+
 			return fixedPath;
 		}
+
 		return null;
 	}
+
 	protected readGlobalNodePath(
 		configuration: vscode.WorkspaceConfiguration,
 	): string | null {
 		return this.validatePath(this.readGlobalNodePathWorker(configuration));
 	}
+
 	private readGlobalNodePathWorker(
 		configuration: vscode.WorkspaceConfiguration,
 	): string | null {
@@ -90,14 +102,17 @@ export class ElectronServiceConfigurationProvider extends BaseServiceConfigurati
 			if (inspect.globalValue === "node") {
 				return this.findNodePath();
 			}
+
 			const fixedPath = this.fixPathPrefixes(inspect.globalValue);
 
 			if (path.isAbsolute(fixedPath)) {
 				return fixedPath;
 			}
 		}
+
 		return null;
 	}
+
 	private findNodePath(): string | null {
 		try {
 			const out = child_process.execFileSync(
@@ -122,6 +137,7 @@ export class ElectronServiceConfigurationProvider extends BaseServiceConfigurati
 			return null;
 		}
 	}
+
 	private validatePath(nodePath: string | null): string | null {
 		if (
 			nodePath &&
@@ -136,6 +152,7 @@ export class ElectronServiceConfigurationProvider extends BaseServiceConfigurati
 
 			return null;
 		}
+
 		return nodePath;
 	}
 }

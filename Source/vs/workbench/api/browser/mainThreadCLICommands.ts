@@ -68,6 +68,7 @@ CommandsRegistry.registerCommand(
 		if (!toOpen.length) {
 			return commandService.executeCommand("_files.newWindow", options);
 		}
+
 		return commandService.executeCommand(
 			"_files.windowOpen",
 			toOpen,
@@ -87,7 +88,9 @@ CommandsRegistry.registerCommand(
 
 interface ManageExtensionsArgs {
 	list?: { showVersions?: boolean; category?: string };
+
 	install?: (string | URI)[];
+
 	uninstall?: string[];
 
 	force?: boolean;
@@ -158,6 +161,7 @@ CommandsRegistry.registerCommand(
 						lines.push(e.message);
 					}
 				}
+
 				if (Array.isArray(args.uninstall) && args.uninstall.length) {
 					try {
 						await cliService.uninstallExtensions(
@@ -170,6 +174,7 @@ CommandsRegistry.registerCommand(
 					}
 				}
 			}
+
 			return lines.join("\n");
 		} finally {
 			childInstantiationService.dispose();
@@ -194,6 +199,7 @@ class RemoteExtensionManagementCLI extends ExtensionManagementCLI {
 		super(logger, extensionManagementService, extensionGalleryService);
 
 		const remoteAuthority = envService.remoteAuthority;
+
 		this._location = remoteAuthority
 			? labelService.getHostLabel(Schemas.vscodeRemote, remoteAuthority)
 			: undefined;
@@ -228,6 +234,7 @@ class RemoteExtensionManagementCLI extends ExtensionManagementCLI {
 
 			return false;
 		}
+
 		return true;
 	}
 }

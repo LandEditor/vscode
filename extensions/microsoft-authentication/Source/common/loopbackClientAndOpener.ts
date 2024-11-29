@@ -20,8 +20,10 @@ export class UriHandlerLoopbackClient implements ILoopbackClientAndOpener {
 		private readonly _redirectUri: string,
 		private readonly _logger: LogOutputChannel,
 	) {}
+
 	async listenForAuthCode(): Promise<ServerAuthorizationCodeResponse> {
 		const url = await toPromise(this._uriHandler.event);
+
 		this._logger.debug(`Received URL event. Authority: ${url.authority}`);
 
 		const result = new URL(url.toString(true));
@@ -35,14 +37,17 @@ export class UriHandlerLoopbackClient implements ILoopbackClientAndOpener {
 			error_uri: result.searchParams.get("error_uri") ?? undefined,
 		};
 	}
+
 	getRedirectUri(): string {
 		// We always return the constant redirect URL because
 		// it will handle redirecting back to the extension
 		return this._redirectUri;
 	}
+
 	closeServer(): void {
 		// No-op
 	}
+
 	async openBrowser(url: string): Promise<void> {
 		const callbackUri = await env.asExternalUri(
 			Uri.parse(`${env.uriScheme}://vscode.microsoft-authentication`),
@@ -51,6 +56,7 @@ export class UriHandlerLoopbackClient implements ILoopbackClientAndOpener {
 		const uri = Uri.parse(
 			url + `&state=${encodeURI(callbackUri.toString(true))}`,
 		);
+
 		await env.openExternal(uri);
 	}
 }

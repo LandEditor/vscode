@@ -32,6 +32,7 @@ import {
 
 export class JSONEditingService implements IJSONEditingService {
 	public _serviceBrand: undefined;
+
 	private queue: Queue<void>;
 
 	constructor(
@@ -44,11 +45,13 @@ export class JSONEditingService implements IJSONEditingService {
 	) {
 		this.queue = new Queue<void>();
 	}
+
 	write(resource: URI, values: IJSONValue[]): Promise<void> {
 		return Promise.resolve(
 			this.queue.queue(() => this.doWriteConfiguration(resource, values)),
 		); // queue up writes to prevent race conditions
 	}
+
 	private async doWriteConfiguration(
 		resource: URI,
 		values: IJSONValue[],
@@ -61,6 +64,7 @@ export class JSONEditingService implements IJSONEditingService {
 			reference.dispose();
 		}
 	}
+
 	private async writeToBuffer(
 		model: ITextModel,
 		values: IJSONValue[],
@@ -69,12 +73,15 @@ export class JSONEditingService implements IJSONEditingService {
 
 		for (const value of values) {
 			const edit = this.getEdits(model, value)[0];
+
 			hasEdits = !!edit && this.applyEditsToBuffer(edit, model);
 		}
+
 		if (hasEdits) {
 			return this.textFileService.save(model.uri);
 		}
 	}
+
 	private applyEditsToBuffer(edit: Edit, model: ITextModel): boolean {
 		const startPosition = model.getPositionAt(edit.offset);
 
@@ -93,6 +100,7 @@ export class JSONEditingService implements IJSONEditingService {
 			const editOperation = currentText
 				? EditOperation.replace(range, edit.content)
 				: EditOperation.insert(startPosition, edit.content);
+
 			model.pushEditOperations(
 				[
 					new Selection(
@@ -108,8 +116,10 @@ export class JSONEditingService implements IJSONEditingService {
 
 			return true;
 		}
+
 		return false;
 	}
+
 	private getEdits(
 		model: ITextModel,
 		configurationValue: IJSONValue,
@@ -135,12 +145,14 @@ export class JSONEditingService implements IJSONEditingService {
 				},
 			];
 		}
+
 		return setProperty(model.getValue(), path, value, {
 			tabSize,
 			insertSpaces,
 			eol,
 		});
 	}
+
 	private async resolveModelReference(
 		resource: URI,
 	): Promise<IReference<IResolvedTextEditorModel>> {
@@ -151,10 +163,13 @@ export class JSONEditingService implements IJSONEditingService {
 				encoding: "utf8",
 			});
 		}
+
 		return this.textModelResolverService.createModelReference(resource);
 	}
+
 	private hasParseErrors(model: ITextModel): boolean {
 		const parseErrors: json.ParseError[] = [];
+
 		json.parse(model.getValue(), parseErrors, {
 			allowTrailingComma: true,
 			allowEmptyContent: true,
@@ -162,6 +177,7 @@ export class JSONEditingService implements IJSONEditingService {
 
 		return parseErrors.length > 0;
 	}
+
 	private async resolveAndValidate(
 		resource: URI,
 		checkDirty: boolean,
@@ -177,13 +193,16 @@ export class JSONEditingService implements IJSONEditingService {
 				JSONEditingErrorCode.ERROR_INVALID_FILE,
 			);
 		}
+
 		return reference;
 	}
+
 	private reject<T>(code: JSONEditingErrorCode): Promise<T> {
 		const message = this.toErrorMessage(code);
 
 		return Promise.reject(new JSONEditingError(message, code));
 	}
+
 	private toErrorMessage(error: JSONEditingErrorCode): string {
 		switch (error) {
 			// User issues

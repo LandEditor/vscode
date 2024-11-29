@@ -59,10 +59,14 @@ const taskDefinitionSchema: IJSONSchema = {
 namespace Configuration {
 	export interface ITaskDefinition {
 		type?: string;
+
 		required?: string[];
+
 		properties?: IJSONSchemaMap;
+
 		when?: string;
 	}
+
 	export function from(
 		value: ITaskDefinition,
 		extensionId: ExtensionIdentifier,
@@ -71,6 +75,7 @@ namespace Configuration {
 		if (!value) {
 			return undefined;
 		}
+
 		const taskType = Types.isString(value.type) ? value.type : undefined;
 
 		if (!taskType || taskType.length === 0) {
@@ -83,6 +88,7 @@ namespace Configuration {
 
 			return undefined;
 		}
+
 		const required: string[] = [];
 
 		if (Array.isArray(value.required)) {
@@ -92,6 +98,7 @@ namespace Configuration {
 				}
 			}
 		}
+
 		return {
 			extensionId: extensionId.value,
 			taskType,
@@ -136,20 +143,27 @@ export interface ITaskDefinitionRegistry {
 	onReady(): Promise<void>;
 
 	get(key: string): Tasks.ITaskDefinition;
+
 	all(): Tasks.ITaskDefinition[];
 
 	getJsonSchema(): IJSONSchema;
+
 	onDefinitionsChanged: Event<void>;
 }
 class TaskDefinitionRegistryImpl implements ITaskDefinitionRegistry {
 	private taskTypes: IStringDictionary<Tasks.ITaskDefinition>;
+
 	private readyPromise: Promise<void>;
+
 	private _schema: IJSONSchema | undefined;
+
 	private _onDefinitionsChanged: Emitter<void> = new Emitter();
+
 	public onDefinitionsChanged: Event<void> = this._onDefinitionsChanged.event;
 
 	constructor() {
 		this.taskTypes = Object.create(null);
+
 		this.readyPromise = new Promise<void>((resolve, reject) => {
 			taskDefinitionsExtPoint.setHandler((extensions, delta) => {
 				this._schema = undefined;
@@ -168,6 +182,7 @@ class TaskDefinitionRegistryImpl implements ITaskDefinitionRegistry {
 							}
 						}
 					}
+
 					for (const extension of delta.added) {
 						const taskTypes = extension.value;
 
@@ -183,23 +198,29 @@ class TaskDefinitionRegistryImpl implements ITaskDefinitionRegistry {
 							}
 						}
 					}
+
 					if (delta.removed.length > 0 || delta.added.length > 0) {
 						this._onDefinitionsChanged.fire();
 					}
 				} catch (error) {}
+
 				resolve(undefined);
 			});
 		});
 	}
+
 	public onReady(): Promise<void> {
 		return this.readyPromise;
 	}
+
 	public get(key: string): Tasks.ITaskDefinition {
 		return this.taskTypes[key];
 	}
+
 	public all(): Tasks.ITaskDefinition[] {
 		return Object.keys(this.taskTypes).map((key) => this.taskTypes[key]);
 	}
+
 	public getJsonSchema(): IJSONSchema {
 		if (this._schema === undefined) {
 			const schemas: IJSONSchema[] = [];
@@ -213,6 +234,7 @@ class TaskDefinitionRegistryImpl implements ITaskDefinitionRegistry {
 				if (definition.required.length > 0) {
 					schema.required = definition.required.slice(0);
 				}
+
 				if (definition.properties !== undefined) {
 					schema.properties = Objects.deepClone(
 						definition.properties,
@@ -220,14 +242,18 @@ class TaskDefinitionRegistryImpl implements ITaskDefinitionRegistry {
 				} else {
 					schema.properties = Object.create(null);
 				}
+
 				schema.properties!.type = {
 					type: "string",
 					enum: [definition.taskType],
 				};
+
 				schemas.push(schema);
 			}
+
 			this._schema = { oneOf: schemas };
 		}
+
 		return this._schema;
 	}
 }

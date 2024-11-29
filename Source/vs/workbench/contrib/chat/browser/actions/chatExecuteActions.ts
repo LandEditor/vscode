@@ -42,7 +42,9 @@ export interface IVoiceChatExecuteActionContext {
 
 export interface IChatExecuteActionContext {
 	widget?: IChatWidget;
+
 	inputValue?: string;
+
 	voice?: IVoiceChatExecuteActionContext;
 }
 
@@ -53,6 +55,7 @@ abstract class SubmitAction extends Action2 {
 		const widgetService = accessor.get(IChatWidgetService);
 
 		const widget = context?.widget ?? widgetService.lastFocusedWidget;
+
 		widget?.acceptInput(context?.inputValue);
 	}
 }
@@ -198,6 +201,7 @@ class SubmitWithoutDispatchingAction extends Action2 {
 		const widgetService = accessor.get(IChatWidgetService);
 
 		const widget = context?.widget ?? widgetService.lastFocusedWidget;
+
 		widget?.acceptInput(context?.inputValue, { noCommandDetection: true });
 	}
 }
@@ -297,6 +301,7 @@ export class ChatSubmitSecondaryAgentAction extends Action2 {
 			widget.acceptInput();
 		} else {
 			widget.lastSelectedAgent = secondaryAgent;
+
 			widget.acceptInputWithPrefix(
 				`${chatAgentLeader}${secondaryAgent.name}`,
 			);
@@ -432,9 +437,13 @@ class SendToChatEditingAction extends Action2 {
 		}
 
 		editingWidget.setInput(widget.getInput());
+
 		widget.setInput("");
+
 		widget.attachmentModel.clear();
+
 		editingWidget.acceptInput();
+
 		editingWidget.focusInput();
 	}
 }
@@ -478,6 +487,7 @@ class SendToNewChatAction extends Action2 {
 		}
 
 		widget.clear();
+
 		widget.acceptInput(context?.inputValue);
 	}
 }
@@ -548,10 +558,16 @@ export class CancelAction extends Action2 {
 
 export function registerChatExecuteActions() {
 	registerAction2(ChatSubmitAction);
+
 	registerAction2(ChatEditingSessionSubmitAction);
+
 	registerAction2(SubmitWithoutDispatchingAction);
+
 	registerAction2(CancelAction);
+
 	registerAction2(SendToNewChatAction);
+
 	registerAction2(ChatSubmitSecondaryAgentAction);
+
 	registerAction2(SendToChatEditingAction);
 }

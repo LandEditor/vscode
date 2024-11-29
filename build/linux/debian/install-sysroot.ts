@@ -34,7 +34,9 @@ const ghDownloadHeaders = {
 };
 interface IFetchOptions {
 	assetName: string;
+
 	checksumSha256?: string;
+
 	dest: string;
 }
 function getElectronVersion(): Record<string, string> {
@@ -62,8 +64,10 @@ function getSha(filename: fs.PathLike): string {
 		buffer.length
 	) {
 		hash.update(buffer);
+
 		position += bytesRead;
 	}
+
 	hash.update(buffer.slice(0, bytesRead));
 
 	return hash.digest("hex");
@@ -81,6 +85,7 @@ function getVSCodeSysrootChecksum(expectedName: string) {
 			return checksum;
 		}
 	}
+
 	return undefined;
 }
 /*
@@ -127,6 +132,7 @@ async function fetchUrl(
 						`Could not find asset in release of Microsoft/vscode-linux-build-agent @ ${version}`,
 					);
 				}
+
 				console.log(`Found asset ${options.assetName} @ ${asset.url}.`);
 
 				const assetResponse = await fetch(asset.url, {
@@ -141,6 +147,7 @@ async function fetchUrl(
 					const assetContents = Buffer.from(
 						await assetResponse.arrayBuffer(),
 					);
+
 					console.log(
 						`Fetched response body buffer: ${ansiColors.magenta(`${(assetContents as Buffer).byteLength} bytes`)}`,
 					);
@@ -156,20 +163,25 @@ async function fetchUrl(
 							);
 						}
 					}
+
 					console.log(
 						`Verified SHA256 checksums match for ${ansiColors.cyan(asset.url)}`,
 					);
 
 					const tarCommand = `tar -xz -C ${options.dest}`;
+
 					execSync(tarCommand, { input: assetContents });
+
 					console.log(`Fetch complete!`);
 
 					return;
 				}
+
 				throw new Error(
 					`Request ${ansiColors.magenta(asset.url)} failed with status code: ${assetResponse.status}`,
 				);
 			}
+
 			throw new Error(
 				`Request ${ansiColors.magenta("https://api.github.com")} failed with status code: ${response.status}`,
 			);
@@ -179,16 +191,20 @@ async function fetchUrl(
 	} catch (e) {
 		if (retries > 0) {
 			console.log(`Fetching failed: ${e}`);
+
 			await new Promise((resolve) => setTimeout(resolve, retryDelay));
 
 			return fetchUrl(options, retries - 1, retryDelay);
 		}
+
 		throw e;
 	}
 }
 type SysrootDictEntry = {
 	Sha256Sum: string;
+
 	SysrootDir: string;
+
 	Tarball: string;
 };
 
@@ -204,22 +220,26 @@ export async function getVSCodeSysroot(
 	switch (arch) {
 		case "amd64":
 			expectedName = `x86_64-linux-gnu${prefix}.tar.gz`;
+
 			triple = "x86_64-linux-gnu";
 
 			break;
 
 		case "arm64":
 			expectedName = `aarch64-linux-gnu${prefix}.tar.gz`;
+
 			triple = "aarch64-linux-gnu";
 
 			break;
 
 		case "armhf":
 			expectedName = `arm-rpi-linux-gnueabihf${prefix}.tar.gz`;
+
 			triple = "arm-rpi-linux-gnueabihf";
 
 			break;
 	}
+
 	console.log(`Fetching ${expectedName} for ${triple}`);
 
 	const checksumSha256 = getVSCodeSysrootChecksum(expectedName);
@@ -227,6 +247,7 @@ export async function getVSCodeSysroot(
 	if (!checksumSha256) {
 		throw new Error(`Could not find checksum for ${expectedName}`);
 	}
+
 	const sysroot =
 		process.env["VSCODE_SYSROOT_DIR"] ??
 		path.join(tmpdir(), `vscode-${arch}-sysroot`);
@@ -241,14 +262,19 @@ export async function getVSCodeSysroot(
 	) {
 		return result;
 	}
+
 	console.log(`Installing ${arch} root image: ${sysroot}`);
+
 	fs.rmSync(sysroot, { recursive: true, force: true });
+
 	fs.mkdirSync(sysroot);
+
 	await fetchUrl({
 		checksumSha256,
 		assetName: expectedName,
 		dest: sysroot,
 	});
+
 	fs.writeFileSync(stamp, expectedName);
 
 	return result;
@@ -271,6 +297,7 @@ export async function getChromiumSysroot(
 			"Cannot retrieve sysroots.json. Stderr:\n" + result.stderr,
 		);
 	}
+
 	const sysrootInfo = require(sysrootDictLocation);
 
 	const sysrootArch = `bullseye_${arch}`;
@@ -290,25 +317,32 @@ export async function getChromiumSysroot(
 	if (fs.existsSync(stamp) && fs.readFileSync(stamp).toString() === url) {
 		return sysroot;
 	}
+
 	console.log(`Installing Debian ${arch} root image: ${sysroot}`);
+
 	fs.rmSync(sysroot, { recursive: true, force: true });
+
 	fs.mkdirSync(sysroot);
 
 	const tarball = path.join(sysroot, tarballFilename);
+
 	console.log(`Downloading ${url}`);
 
 	let downloadSuccess = false;
 
 	for (let i = 0; i < 3 && !downloadSuccess; i++) {
 		fs.writeFileSync(tarball, "");
+
 		await new Promise<void>((c) => {
 			https
 				.get(url, (res) => {
 					res.on("data", (chunk) => {
 						fs.appendFileSync(tarball, chunk);
 					});
+
 					res.on("end", () => {
 						downloadSuccess = true;
+
 						c();
 					});
 				})
@@ -317,15 +351,18 @@ export async function getChromiumSysroot(
 						"Encountered an error during the download attempt: " +
 							err.message,
 					);
+
 					c();
 				});
 		});
 	}
+
 	if (!downloadSuccess) {
 		fs.rmSync(tarball);
 
 		throw new Error("Failed to download " + url);
 	}
+
 	const sha = getSha(tarball);
 
 	if (sha !== tarballSha) {
@@ -333,12 +370,15 @@ export async function getChromiumSysroot(
 			`Tarball sha1sum is wrong. Expected ${tarballSha}, actual ${sha}`,
 		);
 	}
+
 	const proc = spawnSync("tar", ["xf", tarball, "-C", sysroot]);
 
 	if (proc.status) {
 		throw new Error("Tarball extraction failed with code " + proc.status);
 	}
+
 	fs.rmSync(tarball);
+
 	fs.writeFileSync(stamp, url);
 
 	return sysroot;

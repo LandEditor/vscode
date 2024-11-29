@@ -105,6 +105,7 @@ export class FileDialogService
 			logService,
 		);
 	}
+
 	private toNativeOpenDialogOptions(
 		options: IPickAndOpenOptions,
 	): INativeOpenDialogOptions {
@@ -114,8 +115,10 @@ export class FileDialogService
 			defaultPath: options.defaultUri?.fsPath,
 		};
 	}
+
 	private shouldUseSimplified(schema: string): {
 		useSimplified: boolean;
+
 		isSetting: boolean;
 	} {
 		const setting =
@@ -135,12 +138,14 @@ export class FileDialogService
 			isSetting: newWindowSetting,
 		};
 	}
+
 	async pickFileFolderAndOpen(options: IPickAndOpenOptions): Promise<void> {
 		const schema = this.getFileSystemSchema(options);
 
 		if (!options.defaultUri) {
 			options.defaultUri = await this.defaultFilePath(schema);
 		}
+
 		const shouldUseSimplified = this.shouldUseSimplified(schema);
 
 		if (shouldUseSimplified.useSimplified) {
@@ -150,16 +155,19 @@ export class FileDialogService
 				shouldUseSimplified.isSetting,
 			);
 		}
+
 		return this.nativeHostService.pickFileFolderAndOpen(
 			this.toNativeOpenDialogOptions(options),
 		);
 	}
+
 	async pickFileAndOpen(options: IPickAndOpenOptions): Promise<void> {
 		const schema = this.getFileSystemSchema(options);
 
 		if (!options.defaultUri) {
 			options.defaultUri = await this.defaultFilePath(schema);
 		}
+
 		const shouldUseSimplified = this.shouldUseSimplified(schema);
 
 		if (shouldUseSimplified.useSimplified) {
@@ -169,23 +177,28 @@ export class FileDialogService
 				shouldUseSimplified.isSetting,
 			);
 		}
+
 		return this.nativeHostService.pickFileAndOpen(
 			this.toNativeOpenDialogOptions(options),
 		);
 	}
+
 	async pickFolderAndOpen(options: IPickAndOpenOptions): Promise<void> {
 		const schema = this.getFileSystemSchema(options);
 
 		if (!options.defaultUri) {
 			options.defaultUri = await this.defaultFolderPath(schema);
 		}
+
 		if (this.shouldUseSimplified(schema).useSimplified) {
 			return this.pickFolderAndOpenSimplified(schema, options);
 		}
+
 		return this.nativeHostService.pickFolderAndOpen(
 			this.toNativeOpenDialogOptions(options),
 		);
 	}
+
 	async pickWorkspaceAndOpen(options: IPickAndOpenOptions): Promise<void> {
 		options.availableFileSystems =
 			this.getWorkspaceAvailableFileSystems(options);
@@ -195,13 +208,16 @@ export class FileDialogService
 		if (!options.defaultUri) {
 			options.defaultUri = await this.defaultWorkspacePath(schema);
 		}
+
 		if (this.shouldUseSimplified(schema).useSimplified) {
 			return this.pickWorkspaceAndOpenSimplified(schema, options);
 		}
+
 		return this.nativeHostService.pickWorkspaceAndOpen(
 			this.toNativeOpenDialogOptions(options),
 		);
 	}
+
 	async pickFileToSave(
 		defaultUri: URI,
 		availableFileSystems?: string[],
@@ -225,13 +241,16 @@ export class FileDialogService
 
 			if (result && !result.canceled && result.filePath) {
 				const uri = URI.file(result.filePath);
+
 				this.addFileToRecentlyOpened(uri);
 
 				return uri;
 			}
 		}
+
 		return;
 	}
+
 	private toNativeSaveDialogOptions(
 		options: ISaveDialogOptions,
 	): SaveDialogOptions & INativeHostOptions {
@@ -247,6 +266,7 @@ export class FileDialogService
 			targetWindowId: getActiveWindow().vscodeWindowId,
 		};
 	}
+
 	async showSaveDialog(
 		options: ISaveDialogOptions,
 	): Promise<URI | undefined> {
@@ -255,6 +275,7 @@ export class FileDialogService
 		if (this.shouldUseSimplified(schema).useSimplified) {
 			return this.showSaveDialogSimplified(schema, options);
 		}
+
 		const result = await this.nativeHostService.showSaveDialog(
 			this.toNativeSaveDialogOptions(options),
 		);
@@ -262,8 +283,10 @@ export class FileDialogService
 		if (result && !result.canceled && result.filePath) {
 			return URI.file(result.filePath);
 		}
+
 		return;
 	}
+
 	async showOpenDialog(
 		options: IOpenDialogOptions,
 	): Promise<URI[] | undefined> {
@@ -272,6 +295,7 @@ export class FileDialogService
 		if (this.shouldUseSimplified(schema).useSimplified) {
 			return this.showOpenDialogSimplified(schema, options);
 		}
+
 		const newOptions: OpenDialogOptions & {
 			properties: string[];
 		} & INativeHostOptions = {
@@ -282,17 +306,21 @@ export class FileDialogService
 			properties: [],
 			targetWindowId: getActiveWindow().vscodeWindowId,
 		};
+
 		newOptions.properties.push("createDirectory");
 
 		if (options.canSelectFiles) {
 			newOptions.properties.push("openFile");
 		}
+
 		if (options.canSelectFolders) {
 			newOptions.properties.push("openDirectory");
 		}
+
 		if (options.canSelectMany) {
 			newOptions.properties.push("multiSelections");
 		}
+
 		const result = await this.nativeHostService.showOpenDialog(newOptions);
 
 		return result &&

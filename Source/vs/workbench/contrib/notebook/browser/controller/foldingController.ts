@@ -42,16 +42,20 @@ export class FoldingController
 	implements INotebookEditorContribution
 {
 	static id: string = "workbench.notebook.foldingController";
+
 	private _foldingModel: FoldingModel | null = null;
+
 	private readonly _localStore = this._register(new DisposableStore());
 
 	constructor(private readonly _notebookEditor: INotebookEditor) {
 		super();
+
 		this._register(
 			this._notebookEditor.onMouseUp((e) => {
 				this.onMouseUp(e);
 			}),
 		);
+
 		this._register(
 			this._notebookEditor.onDidChangeModel(() => {
 				this._localStore.clear();
@@ -59,6 +63,7 @@ export class FoldingController
 				if (!this._notebookEditor.hasModel()) {
 					return;
 				}
+
 				this._localStore.add(
 					this._notebookEditor.onDidChangeCellState((e) => {
 						if (
@@ -70,11 +75,15 @@ export class FoldingController
 						}
 					}),
 				);
+
 				this._foldingModel = new FoldingModel();
+
 				this._localStore.add(this._foldingModel);
+
 				this._foldingModel.attachViewModel(
 					this._notebookEditor.getViewModel(),
 				);
+
 				this._localStore.add(
 					this._foldingModel.onDidFoldingRegionChanged(() => {
 						this._updateEditorFoldingRanges();
@@ -83,13 +92,17 @@ export class FoldingController
 			}),
 		);
 	}
+
 	saveViewState(): ICellRange[] {
 		return this._foldingModel?.getMemento() || [];
 	}
+
 	restoreViewState(state: ICellRange[] | undefined) {
 		this._foldingModel?.applyMemento(state || []);
+
 		this._updateEditorFoldingRanges();
 	}
+
 	setFoldingStateDown(
 		index: number,
 		state: CellFoldingState,
@@ -105,61 +118,77 @@ export class FoldingController
 			if (region.isCollapsed !== doCollapse) {
 				regions.push(region);
 			}
+
 			if (levels > 1) {
 				const regionsInside = this._foldingModel!.getRegionsInside(
 					region,
 					(r, level: number) =>
 						r.isCollapsed !== doCollapse && level < levels,
 				);
+
 				regions.push(...regionsInside);
 			}
 		}
+
 		regions.forEach((r) =>
 			this._foldingModel!.setCollapsed(
 				r.regionIndex,
 				state === CellFoldingState.Collapsed,
 			),
 		);
+
 		this._updateEditorFoldingRanges();
 	}
+
 	setFoldingStateUp(index: number, state: CellFoldingState, levels: number) {
 		if (!this._foldingModel) {
 			return;
 		}
+
 		const regions = this._foldingModel.getAllRegionsAtLine(
 			index + 1,
 			(region, level) =>
 				region.isCollapsed !== (state === CellFoldingState.Collapsed) &&
 				level <= levels,
 		);
+
 		regions.forEach((r) =>
 			this._foldingModel!.setCollapsed(
 				r.regionIndex,
 				state === CellFoldingState.Collapsed,
 			),
 		);
+
 		this._updateEditorFoldingRanges();
 	}
+
 	private _updateEditorFoldingRanges() {
 		if (!this._foldingModel) {
 			return;
 		}
+
 		if (!this._notebookEditor.hasModel()) {
 			return;
 		}
+
 		const vm = this._notebookEditor.getViewModel() as NotebookViewModel;
+
 		vm.updateFoldingRanges(this._foldingModel.regions);
 
 		const hiddenRanges = vm.getHiddenRanges();
+
 		this._notebookEditor.setHiddenAreas(hiddenRanges);
 	}
+
 	onMouseUp(e: INotebookEditorMouseEvent) {
 		if (!e.event.target) {
 			return;
 		}
+
 		if (!this._notebookEditor.hasModel()) {
 			return;
 		}
+
 		const viewModel =
 			this._notebookEditor.getViewModel() as NotebookViewModel;
 
@@ -184,6 +213,7 @@ export class FoldingController
 			if (state === CellFoldingState.None) {
 				return;
 			}
+
 			this.setFoldingStateUp(
 				modelIndex,
 				state === CellFoldingState.Collapsed
@@ -191,8 +221,10 @@ export class FoldingController
 					: CellFoldingState.Collapsed,
 				1,
 			);
+
 			this._notebookEditor.focusElement(cellViewModel);
 		}
+
 		return;
 	}
 }
@@ -259,11 +291,14 @@ registerAction2(
 				f1: true,
 			});
 		}
+
 		async run(
 			accessor: ServicesAccessor,
 			args?: {
 				index: number;
+
 				levels: number;
+
 				direction: "up" | "down";
 			},
 		): Promise<void> {
@@ -276,9 +311,11 @@ registerAction2(
 			if (!editor) {
 				return;
 			}
+
 			if (!editor.hasModel()) {
 				return;
 			}
+
 			const levels = (args && args.levels) || 1;
 
 			const direction = args && args.direction === "up" ? "up" : "down";
@@ -293,8 +330,10 @@ registerAction2(
 				if (!activeCell) {
 					return;
 				}
+
 				index = editor.getCellIndex(activeCell);
 			}
+
 			const controller = editor.getContribution<FoldingController>(
 				FoldingController.id,
 			);
@@ -311,6 +350,7 @@ registerAction2(
 				) {
 					return;
 				}
+
 				if (direction === "up") {
 					controller.setFoldingStateUp(
 						index,
@@ -324,9 +364,11 @@ registerAction2(
 						levels,
 					);
 				}
+
 				const viewIndex = editor
 					.getViewModel()
 					.getNearestVisibleCellIndexUpwards(index);
+
 				editor.focusElement(editor.cellAt(viewIndex));
 			}
 		}
@@ -362,11 +404,14 @@ registerAction2(
 				f1: true,
 			});
 		}
+
 		async run(
 			accessor: ServicesAccessor,
 			args?: {
 				index: number;
+
 				levels: number;
+
 				direction: "up" | "down";
 			},
 		): Promise<void> {
@@ -379,6 +424,7 @@ registerAction2(
 			if (!editor) {
 				return;
 			}
+
 			const levels = (args && args.levels) || 1;
 
 			const direction = args && args.direction === "up" ? "up" : "down";
@@ -393,8 +439,10 @@ registerAction2(
 				if (!activeCell) {
 					return;
 				}
+
 				index = editor.getCellIndex(activeCell);
 			}
+
 			const controller = editor.getContribution<FoldingController>(
 				FoldingController.id,
 			);

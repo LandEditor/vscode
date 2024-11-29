@@ -24,15 +24,19 @@ const RuntimeExtensionsEditorIcon = registerIcon(
 
 export class RuntimeExtensionsInput extends EditorInput {
 	static readonly ID = "workbench.runtimeExtensions.input";
+
 	override get typeId(): string {
 		return RuntimeExtensionsInput.ID;
 	}
+
 	override get capabilities(): EditorInputCapabilities {
 		return (
 			EditorInputCapabilities.Readonly | EditorInputCapabilities.Singleton
 		);
 	}
+
 	static _instance: RuntimeExtensionsInput;
+
 	static get instance() {
 		if (
 			!RuntimeExtensionsInput._instance ||
@@ -40,22 +44,28 @@ export class RuntimeExtensionsInput extends EditorInput {
 		) {
 			RuntimeExtensionsInput._instance = new RuntimeExtensionsInput();
 		}
+
 		return RuntimeExtensionsInput._instance;
 	}
+
 	readonly resource = URI.from({
 		scheme: "runtime-extensions",
 		path: "default",
 	});
+
 	override getName(): string {
 		return nls.localize("extensionsInputName", "Running Extensions");
 	}
+
 	override getIcon(): ThemeIcon {
 		return RuntimeExtensionsEditorIcon;
 	}
+
 	override matches(other: EditorInput | IUntypedEditorInput): boolean {
 		if (super.matches(other)) {
 			return true;
 		}
+
 		return other instanceof RuntimeExtensionsInput;
 	}
 }

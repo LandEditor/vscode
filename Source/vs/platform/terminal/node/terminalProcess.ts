@@ -86,6 +86,7 @@ const enum Constants {
 }
 interface IWriteObject {
 	data: string;
+
 	isBinary: boolean;
 }
 
@@ -110,7 +111,9 @@ export class TerminalProcess
 	implements ITerminalChildProcess
 {
 	readonly id = 0;
+
 	readonly shouldPersist = false;
+
 	private _properties: IProcessPropertyMap = {
 		cwd: "",
 		initialCwd: "",
@@ -123,50 +126,78 @@ export class TerminalProcess
 		failedShellIntegrationActivation: false,
 		usedShellIntegrationInjection: undefined,
 	};
+
 	private static _lastKillOrStart = 0;
+
 	private _exitCode: number | undefined;
+
 	private _exitMessage: string | undefined;
+
 	private _closeTimeout: any;
+
 	private _ptyProcess: IPty | undefined;
+
 	private _currentTitle: string = "";
+
 	private _processStartupComplete: Promise<void> | undefined;
+
 	private _windowsShellHelper: WindowsShellHelper | undefined;
+
 	private _childProcessMonitor: ChildProcessMonitor | undefined;
+
 	private _titleInterval: NodeJS.Timeout | null = null;
+
 	private _writeQueue: IWriteObject[] = [];
+
 	private _writeTimeout: NodeJS.Timeout | undefined;
+
 	private _delayedResizer: DelayedResizer | undefined;
+
 	private readonly _initialCwd: string;
+
 	private readonly _ptyOptions: IPtyForkOptions | IWindowsPtyForkOptions;
+
 	private _isPtyPaused: boolean = false;
+
 	private _unacknowledgedCharCount: number = 0;
 
 	get exitMessage(): string | undefined {
 		return this._exitMessage;
 	}
+
 	get currentTitle(): string {
 		return this._windowsShellHelper?.shellTitle || this._currentTitle;
 	}
+
 	get shellType(): TerminalShellType | undefined {
 		return isWindows
 			? this._windowsShellHelper?.shellType
 			: posixShellTypeMap.get(this._currentTitle) ||
 					generalShellTypeMap.get(this._currentTitle);
 	}
+
 	get hasChildProcesses(): boolean {
 		return this._childProcessMonitor?.hasChildProcesses || false;
 	}
+
 	private readonly _onProcessData = this._register(new Emitter<string>());
+
 	readonly onProcessData = this._onProcessData.event;
+
 	private readonly _onProcessReady = this._register(
 		new Emitter<IProcessReadyEvent>(),
 	);
+
 	readonly onProcessReady = this._onProcessReady.event;
+
 	private readonly _onDidChangeProperty = this._register(
 		new Emitter<IProcessProperty<any>>(),
 	);
+
 	readonly onDidChangeProperty = this._onDidChangeProperty.event;
+
 	private readonly _onProcessExit = this._register(new Emitter<number>());
+
 	readonly onProcessExit = this._onProcessExit.event;
 
 	constructor(
@@ -196,8 +227,11 @@ export class TerminalProcess
 			// color prompt as defined in the default ~/.bashrc file.
 			name = "xterm-256color";
 		}
+
 		this._initialCwd = cwd;
+
 		this._properties[ProcessPropertyType.InitialCwd] = this._initialCwd;
+
 		this._properties[ProcessPropertyType.Cwd] = this._initialCwd;
 
 		const useConpty =
@@ -206,6 +240,7 @@ export class TerminalProcess
 			getWindowsBuildNumber() >= 18309;
 
 		const useConptyDll = useConpty && this._options.windowsUseConptyDll;
+
 		this._ptyOptions = {
 			name,
 			cwd,
@@ -231,9 +266,11 @@ export class TerminalProcess
 				)
 			) {
 				this._delayedResizer = new DelayedResizer();
+
 				this._register(
 					this._delayedResizer.onTrigger((dimensions) => {
 						this._delayedResizer?.dispose();
+
 						this._delayedResizer = undefined;
 
 						if (dimensions.cols && dimensions.rows) {
@@ -247,6 +284,7 @@ export class TerminalProcess
 				this._windowsShellHelper = this._register(
 					new WindowsShellHelper(e.pid),
 				);
+
 				this._register(
 					this._windowsShellHelper.onShellTypeChanged((e) =>
 						this._onDidChangeProperty.fire({
@@ -255,6 +293,7 @@ export class TerminalProcess
 						}),
 					),
 				);
+
 				this._register(
 					this._windowsShellHelper.onShellNameChanged((e) =>
 						this._onDidChangeProperty.fire({
@@ -265,15 +304,18 @@ export class TerminalProcess
 				);
 			});
 		}
+
 		this._register(
 			toDisposable(() => {
 				if (this._titleInterval) {
 					clearInterval(this._titleInterval);
+
 					this._titleInterval = null;
 				}
 			}),
 		);
 	}
+
 	async start(): Promise<
 		| ITerminalLaunchError
 		| {
@@ -291,6 +333,7 @@ export class TerminalProcess
 		if (firstError) {
 			return firstError;
 		}
+
 		let injection: IShellIntegrationConfigInjection | undefined;
 
 		if (this._options.shellIntegration.enabled) {
@@ -313,15 +356,18 @@ export class TerminalProcess
 						injection.envMixin,
 					)) {
 						this._ptyOptions.env ||= {};
+
 						this._ptyOptions.env[key] = value;
 					}
 				}
+
 				if (injection.filesToCopy) {
 					for (const f of injection.filesToCopy) {
 						try {
 							await fs.promises.mkdir(path.dirname(f.dest), {
 								recursive: true,
 							});
+
 							await fs.promises.copyFile(f.source, f.dest);
 						} catch {
 							// Swallow error, this should only happen when multiple users are on the same
@@ -338,6 +384,7 @@ export class TerminalProcess
 				});
 			}
 		}
+
 		try {
 			await this.setupPtyProcess(
 				this.shellLaunchConfig,
@@ -348,6 +395,7 @@ export class TerminalProcess
 			if (injection?.newArgs) {
 				return { injectedArgs: injection.newArgs };
 			}
+
 			return undefined;
 		} catch (err) {
 			this._logService.trace(
@@ -360,6 +408,7 @@ export class TerminalProcess
 			};
 		}
 	}
+
 	private async _validateCwd(): Promise<undefined | ITerminalLaunchError> {
 		try {
 			const result = await fs.promises.stat(this._initialCwd);
@@ -384,6 +433,7 @@ export class TerminalProcess
 				};
 			}
 		}
+
 		this._onDidChangeProperty.fire({
 			type: ProcessPropertyType.InitialCwd,
 			value: this._initialCwd,
@@ -391,6 +441,7 @@ export class TerminalProcess
 
 		return undefined;
 	}
+
 	private async _validateExecutable(): Promise<
 		undefined | ITerminalLaunchError
 	> {
@@ -399,6 +450,7 @@ export class TerminalProcess
 		if (!slc.executable) {
 			throw new Error("IShellLaunchConfig.executable not set");
 		}
+
 		const cwd = slc.cwd instanceof URI ? slc.cwd.path : slc.cwd;
 
 		const envPaths: string[] | undefined =
@@ -422,6 +474,7 @@ export class TerminalProcess
 				),
 			};
 		}
+
 		try {
 			const result = await fs.promises.stat(executable);
 
@@ -444,8 +497,10 @@ export class TerminalProcess
 				throw err;
 			}
 		}
+
 		return undefined;
 	}
+
 	private async setupPtyProcess(
 		shellLaunchConfig: IShellLaunchConfig,
 		options: IPtyForkOptions,
@@ -453,7 +508,9 @@ export class TerminalProcess
 	): Promise<void> {
 		const args =
 			shellIntegrationInjection?.newArgs || shellLaunchConfig.args || [];
+
 		await this._throttleKillSpawn();
+
 		this._logService.trace(
 			"node-pty.IPty#spawn",
 			shellLaunchConfig.executable,
@@ -462,19 +519,24 @@ export class TerminalProcess
 		);
 
 		const ptyProcess = spawn(shellLaunchConfig.executable!, args, options);
+
 		this._ptyProcess = ptyProcess;
+
 		this._childProcessMonitor = this._register(
 			new ChildProcessMonitor(ptyProcess.pid, this._logService),
 		);
+
 		this._childProcessMonitor.onDidChangeHasChildProcesses((value) =>
 			this._onDidChangeProperty.fire({
 				type: ProcessPropertyType.HasChildProcesses,
 				value,
 			}),
 		);
+
 		this._processStartupComplete = new Promise<void>((c) => {
 			this.onProcessReady(() => c());
 		});
+
 		ptyProcess.onData((data) => {
 			// Handle flow control
 			this._unacknowledgedCharCount += data.length;
@@ -487,26 +549,36 @@ export class TerminalProcess
 				this._logService.trace(
 					`Flow control: Pause (${this._unacknowledgedCharCount} > ${FlowControlConstants.HighWatermarkChars})`,
 				);
+
 				this._isPtyPaused = true;
+
 				ptyProcess.pause();
 			}
 			// Refire the data event
 			this._logService.trace("node-pty.IPty#onData", data);
+
 			this._onProcessData.fire(data);
 
 			if (this._closeTimeout) {
 				this._queueProcessExit();
 			}
+
 			this._windowsShellHelper?.checkShell();
+
 			this._childProcessMonitor?.handleOutput();
 		});
+
 		ptyProcess.onExit((e) => {
 			this._exitCode = e.exitCode;
+
 			this._queueProcessExit();
 		});
+
 		this._sendProcessId(ptyProcess.pid);
+
 		this._setupTitlePolling(ptyProcess);
 	}
+
 	private _setupTitlePolling(ptyProcess: IPty) {
 		// Send initial timeout async to give event listeners a chance to init
 		setTimeout(() => this._sendProcessTitle(ptyProcess));
@@ -528,14 +600,18 @@ export class TerminalProcess
 				new Error().stack?.replace(/^Error/, ""),
 			);
 		}
+
 		if (this._closeTimeout) {
 			clearTimeout(this._closeTimeout);
 		}
+
 		this._closeTimeout = setTimeout(() => {
 			this._closeTimeout = undefined;
+
 			this._kill();
 		}, ShutdownConstants.DataFlushTimeout);
 	}
+
 	private async _kill(): Promise<void> {
 		// Wait to kill to process until the start up code has run. This prevents us from firing a process exit before a
 		// process start.
@@ -549,15 +625,20 @@ export class TerminalProcess
 		try {
 			if (this._ptyProcess) {
 				await this._throttleKillSpawn();
+
 				this._logService.trace("node-pty.IPty#kill");
+
 				this._ptyProcess.kill();
 			}
 		} catch (ex) {
 			// Swallow, the pty has already been killed
 		}
+
 		this._onProcessExit.fire(this._exitCode || 0);
+
 		this.dispose();
 	}
+
 	private async _throttleKillSpawn(): Promise<void> {
 		// Only throttle on Windows/conpty
 		if (
@@ -577,14 +658,17 @@ export class TerminalProcess
 			Constants.KillSpawnThrottleInterval
 		) {
 			this._logService.trace("Throttling kill/spawn call");
+
 			await timeout(
 				Constants.KillSpawnThrottleInterval -
 					(Date.now() - TerminalProcess._lastKillOrStart) +
 					Constants.KillSpawnSpacingDuration,
 			);
 		}
+
 		TerminalProcess._lastKillOrStart = Date.now();
 	}
+
 	private _sendProcessId(pid: number) {
 		this._onProcessReady.fire({
 			pid,
@@ -592,12 +676,14 @@ export class TerminalProcess
 			windowsPty: this.getWindowsPty(),
 		});
 	}
+
 	private _sendProcessTitle(ptyProcess: IPty): void {
 		if (this._store.isDisposed) {
 			return;
 		}
 		// HACK: The node-pty API can return undefined somehow https://github.com/microsoft/vscode/issues/222323
 		this._currentTitle = ptyProcess.process ?? "";
+
 		this._onDidChangeProperty.fire({
 			type: ProcessPropertyType.Title,
 			value: this._currentTitle,
@@ -619,12 +705,14 @@ export class TerminalProcess
 			const shellTypeValue =
 				posixShellTypeMap.get(sanitizedTitle) ||
 				generalShellTypeMap.get(sanitizedTitle);
+
 			this._onDidChangeProperty.fire({
 				type: ProcessPropertyType.ShellType,
 				value: shellTypeValue,
 			});
 		}
 	}
+
 	shutdown(immediate: boolean): void {
 		if (this._logService.getLevel() === LogLevel.Trace) {
 			this._logService.trace(
@@ -644,26 +732,32 @@ export class TerminalProcess
 				setTimeout(() => {
 					if (this._closeTimeout && !this._store.isDisposed) {
 						this._closeTimeout = undefined;
+
 						this._kill();
 					}
 				}, ShutdownConstants.MaximumShutdownTime);
 			}
 		}
 	}
+
 	input(data: string, isBinary: boolean = false): void {
 		if (this._store.isDisposed || !this._ptyProcess) {
 			return;
 		}
+
 		this._writeQueue.push(
 			...chunkInput(data).map((e) => {
 				return { isBinary, data: e };
 			}),
 		);
+
 		this._startWrite();
 	}
+
 	async processBinary(data: string): Promise<void> {
 		this.input(data, true);
 	}
+
 	async refreshProperty<T extends ProcessPropertyType>(
 		type: T,
 	): Promise<IProcessPropertyMap[T]> {
@@ -673,25 +767,31 @@ export class TerminalProcess
 
 				if (newCwd !== this._properties.cwd) {
 					this._properties.cwd = newCwd;
+
 					this._onDidChangeProperty.fire({
 						type: ProcessPropertyType.Cwd,
 						value: this._properties.cwd,
 					});
 				}
+
 				return newCwd as IProcessPropertyMap[T];
 			}
+
 			case ProcessPropertyType.InitialCwd: {
 				const initialCwd = await this.getInitialCwd();
 
 				if (initialCwd !== this._properties.initialCwd) {
 					this._properties.initialCwd = initialCwd;
+
 					this._onDidChangeProperty.fire({
 						type: ProcessPropertyType.InitialCwd,
 						value: this._properties.initialCwd,
 					});
 				}
+
 				return initialCwd as IProcessPropertyMap[T];
 			}
+
 			case ProcessPropertyType.Title:
 				return this.currentTitle as IProcessPropertyMap[T];
 
@@ -699,6 +799,7 @@ export class TerminalProcess
 				return this.shellType as IProcessPropertyMap[T];
 		}
 	}
+
 	async updateProperty<T extends ProcessPropertyType>(
 		type: T,
 		value: IProcessPropertyMap[T],
@@ -708,11 +809,13 @@ export class TerminalProcess
 				value as IProcessPropertyMap[ProcessPropertyType.FixedDimensions];
 		}
 	}
+
 	private _startWrite(): void {
 		// Don't write if it's already queued of is there is nothing to write
 		if (this._writeTimeout !== undefined || this._writeQueue.length === 0) {
 			return;
 		}
+
 		this._doWrite();
 		// Don't queue more writes if the queue is empty
 		if (this._writeQueue.length === 0) {
@@ -723,11 +826,14 @@ export class TerminalProcess
 		// Queue the next write
 		this._writeTimeout = setTimeout(() => {
 			this._writeTimeout = undefined;
+
 			this._startWrite();
 		}, Constants.WriteInterval);
 	}
+
 	private _doWrite(): void {
 		const object = this._writeQueue.shift()!;
+
 		this._logService.trace("node-pty.IPty#write", object.data);
 
 		if (object.isBinary) {
@@ -735,12 +841,15 @@ export class TerminalProcess
 		} else {
 			this._ptyProcess!.write(object.data);
 		}
+
 		this._childProcessMonitor?.handleInput();
 	}
+
 	resize(cols: number, rows: number): void {
 		if (this._store.isDisposed) {
 			return;
 		}
+
 		if (
 			typeof cols !== "number" ||
 			typeof rows !== "number" ||
@@ -753,14 +862,17 @@ export class TerminalProcess
 		// exception in winpty.
 		if (this._ptyProcess) {
 			cols = Math.max(cols, 1);
+
 			rows = Math.max(rows, 1);
 			// Delay resize if needed
 			if (this._delayedResizer) {
 				this._delayedResizer.cols = cols;
+
 				this._delayedResizer.rows = rows;
 
 				return;
 			}
+
 			this._logService.trace("node-pty.IPty#resize", cols, rows);
 
 			try {
@@ -781,15 +893,18 @@ export class TerminalProcess
 			}
 		}
 	}
+
 	clearBuffer(): void {
 		this._ptyProcess?.clear();
 	}
+
 	acknowledgeDataEvent(charCount: number): void {
 		// Prevent lower than 0 to heal from errors
 		this._unacknowledgedCharCount = Math.max(
 			this._unacknowledgedCharCount - charCount,
 			0,
 		);
+
 		this._logService.trace(
 			`Flow control: Ack ${charCount} chars (unacknowledged: ${this._unacknowledgedCharCount})`,
 		);
@@ -802,27 +917,35 @@ export class TerminalProcess
 			this._logService.trace(
 				`Flow control: Resume (${this._unacknowledgedCharCount} < ${FlowControlConstants.LowWatermarkChars})`,
 			);
+
 			this._ptyProcess?.resume();
+
 			this._isPtyPaused = false;
 		}
 	}
+
 	clearUnacknowledgedChars(): void {
 		this._unacknowledgedCharCount = 0;
+
 		this._logService.trace(
 			`Flow control: Cleared all unacknowledged chars, forcing resume`,
 		);
 
 		if (this._isPtyPaused) {
 			this._ptyProcess?.resume();
+
 			this._isPtyPaused = false;
 		}
 	}
+
 	async setUnicodeVersion(version: "6" | "11"): Promise<void> {
 		// No-op
 	}
+
 	getInitialCwd(): Promise<string> {
 		return Promise.resolve(this._initialCwd);
 	}
+
 	async getCwd(): Promise<string> {
 		if (isMacintosh) {
 			// From Big Sur (darwin v20) there is a spawn blocking thread issue on Electron,
@@ -834,7 +957,9 @@ export class TerminalProcess
 
 					return;
 				}
+
 				this._logService.trace("node-pty.IPty#pid");
+
 				exec(
 					"lsof -OPln -p " + this._ptyProcess.pid + " | grep cwd",
 					{ env: { ...process.env, LANG: "en_US.UTF-8" } },
@@ -853,16 +978,19 @@ export class TerminalProcess
 								stdout,
 								stderr,
 							);
+
 							resolve(this._initialCwd);
 						}
 					},
 				);
 			});
 		}
+
 		if (isLinux) {
 			if (!this._ptyProcess) {
 				return this._initialCwd;
 			}
+
 			this._logService.trace("node-pty.IPty#pid");
 
 			try {
@@ -873,8 +1001,10 @@ export class TerminalProcess
 				return this._initialCwd;
 			}
 		}
+
 		return this._initialCwd;
 	}
+
 	getWindowsPty(): IProcessReadyWindowsPty | undefined {
 		return isWindows
 			? {
@@ -893,26 +1023,34 @@ export class TerminalProcess
  */
 class DelayedResizer extends Disposable {
 	rows: number | undefined;
+
 	cols: number | undefined;
+
 	private _timeout: NodeJS.Timeout;
+
 	private readonly _onTrigger = this._register(
 		new Emitter<{
 			rows?: number;
+
 			cols?: number;
 		}>(),
 	);
 
 	get onTrigger(): Event<{
 		rows?: number;
+
 		cols?: number;
 	}> {
 		return this._onTrigger.event;
 	}
+
 	constructor() {
 		super();
+
 		this._timeout = setTimeout(() => {
 			this._onTrigger.fire({ rows: this.rows, cols: this.cols });
 		}, 1000);
+
 		this._register(toDisposable(() => clearTimeout(this._timeout)));
 	}
 }

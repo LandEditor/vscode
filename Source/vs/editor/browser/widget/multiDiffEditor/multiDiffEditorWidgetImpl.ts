@@ -76,6 +76,7 @@ export class MultiDiffEditorWidgetImpl extends Disposable {
 		}),
 		h("div.monaco-editor@overflowWidgetsDomNode", {}),
 	]);
+
 	private readonly _scrollable = this._register(
 		new Scrollable({
 			forceIntegerValues: false,
@@ -84,6 +85,7 @@ export class MultiDiffEditorWidgetImpl extends Disposable {
 			smoothScrollDuration: 100,
 		}),
 	);
+
 	private readonly _scrollableElement = this._register(
 		new SmoothScrollableElement(
 			this._scrollableElements.root,
@@ -95,13 +97,16 @@ export class MultiDiffEditorWidgetImpl extends Disposable {
 			this._scrollable,
 		),
 	);
+
 	private readonly _elements = h("div.monaco-component.multiDiffEditor", {}, [
 		h("div", {}, [this._scrollableElement.getDomNode()]),
 		h("div.placeholder@placeholder", {}, [h("div")]),
 	]);
+
 	private readonly _sizeObserver = this._register(
 		new ObservableElementSizeObserver(this._element, undefined),
 	);
+
 	private readonly _objectPool = this._register(
 		new ObjectPool<TemplateData, DiffEditorItemTemplate>((data) => {
 			const template = this._instantiationService.createInstance(
@@ -110,11 +115,13 @@ export class MultiDiffEditorWidgetImpl extends Disposable {
 				this._scrollableElements.overflowWidgetsDomNode,
 				this._workbenchUIElementFactory,
 			);
+
 			template.setData(data);
 
 			return template;
 		}),
 	);
+
 	public readonly scrollTop = observableFromEvent(
 		this,
 		this._scrollableElement.onScroll,
@@ -122,6 +129,7 @@ export class MultiDiffEditorWidgetImpl extends Disposable {
 			/** @description scrollTop */ this._scrollableElement.getScrollPosition()
 				.scrollTop,
 	);
+
 	public readonly scrollLeft = observableFromEvent(
 		this,
 		this._scrollableElement.onScroll,
@@ -129,6 +137,7 @@ export class MultiDiffEditorWidgetImpl extends Disposable {
 			/** @description scrollLeft */ this._scrollableElement.getScrollPosition()
 				.scrollLeft,
 	);
+
 	private readonly _viewItemsInfo = derivedWithStore<{
 		items: readonly VirtualizedViewItem[];
 
@@ -144,6 +153,7 @@ export class MultiDiffEditorWidgetImpl extends Disposable {
 				},
 			};
 		}
+
 		const viewModels = vm.items.read(reader);
 
 		const map = new Map<DocumentDiffItemViewModel, VirtualizedViewItem>();
@@ -171,6 +181,7 @@ export class MultiDiffEditorWidgetImpl extends Disposable {
 					item.setViewState(data, tx);
 				});
 			}
+
 			map.set(d, item);
 
 			return item;
@@ -178,17 +189,21 @@ export class MultiDiffEditorWidgetImpl extends Disposable {
 
 		return { items, getItem: (d) => map.get(d)! };
 	});
+
 	private readonly _viewItems = this._viewItemsInfo.map(
 		this,
 		(items) => items.items,
 	);
+
 	private readonly _spaceBetweenPx = 0;
+
 	private readonly _totalHeight = this._viewItems.map(this, (items, reader) =>
 		items.reduce(
 			(r, i) => r + i.contentHeight.read(reader) + this._spaceBetweenPx,
 			0,
 		),
 	);
+
 	public readonly activeControl = derived(this, (reader) => {
 		const activeDiffItem = this._viewModel
 			.read(reader)
@@ -197,15 +212,18 @@ export class MultiDiffEditorWidgetImpl extends Disposable {
 		if (!activeDiffItem) {
 			return undefined;
 		}
+
 		const viewItem = this._viewItemsInfo
 			.read(reader)
 			.getItem(activeDiffItem);
 
 		return viewItem.template.read(reader)?.editor;
 	});
+
 	private readonly _contextKeyService = this._register(
 		this._parentContextKeyService.createScoped(this._element),
 	);
+
 	private readonly _instantiationService = this._register(
 		this._parentInstantiationService.createChild(
 			new ServiceCollection([
@@ -228,6 +246,7 @@ export class MultiDiffEditorWidgetImpl extends Disposable {
 		private readonly _parentInstantiationService: IInstantiationService,
 	) {
 		super();
+
 		this._register(
 			autorunWithStore((reader, store) => {
 				const viewModel = this._viewModel.read(reader);
@@ -241,7 +260,9 @@ export class MultiDiffEditorWidgetImpl extends Disposable {
 								key,
 								undefined,
 							);
+
 						contextKey.set(value);
+
 						store.add(toDisposable(() => contextKey.reset()));
 					}
 				}
@@ -253,6 +274,7 @@ export class MultiDiffEditorWidgetImpl extends Disposable {
 				EditorContextKeys.multiDiffEditorAllCollapsed.key,
 				false,
 			);
+
 		this._register(
 			autorun((reader) => {
 				const viewModel = this._viewModel.read(reader);
@@ -261,14 +283,17 @@ export class MultiDiffEditorWidgetImpl extends Disposable {
 					const allCollapsed = viewModel.items
 						.read(reader)
 						.every((item) => item.collapsed.read(reader));
+
 					ctxAllCollapsed.set(allCollapsed);
 				}
 			}),
 		);
+
 		this._register(
 			autorun((reader) => {
 				/** @description Update widget dimension */
 				const dimension = this._dimension.read(reader);
+
 				this._sizeObserver.observe(dimension);
 			}),
 		);
@@ -279,30 +304,38 @@ export class MultiDiffEditorWidgetImpl extends Disposable {
 			if (items.length > 0) {
 				return undefined;
 			}
+
 			const vm = this._viewModel.read(reader);
 
 			return !vm || vm.isLoading.read(reader)
 				? localize("loading", "Loading...")
 				: localize("noChangedFiles", "No Changed Files");
 		});
+
 		this._register(
 			autorun((reader) => {
 				const message = placeholderMessage.read(reader);
+
 				this._elements.placeholder.innerText = message ?? "";
+
 				this._elements.placeholder.classList.toggle(
 					"visible",
 					!!message,
 				);
 			}),
 		);
+
 		this._scrollableElements.content.style.position = "relative";
+
 		this._register(
 			autorun((reader) => {
 				/** @description Update scroll dimensions */
 				const height = this._sizeObserver.height.read(reader);
+
 				this._scrollableElements.root.style.height = `${height}px`;
 
 				const totalHeight = this._totalHeight.read(reader);
+
 				this._scrollableElements.content.style.height = `${totalHeight}px`;
 
 				const width = this._sizeObserver.width.read(reader);
@@ -321,8 +354,10 @@ export class MultiDiffEditorWidgetImpl extends Disposable {
 
 				if (max) {
 					const maxScroll = max.maxScroll.read(reader);
+
 					scrollWidth = width + maxScroll.maxScroll;
 				}
+
 				this._scrollableElement.setScrollDimensions({
 					width: width,
 					height: height,
@@ -331,12 +366,15 @@ export class MultiDiffEditorWidgetImpl extends Disposable {
 				});
 			}),
 		);
+
 		_element.replaceChildren(this._elements.root);
+
 		this._register(
 			toDisposable(() => {
 				_element.replaceChildren();
 			}),
 		);
+
 		this._register(
 			this._register(
 				autorun((reader) => {
@@ -348,12 +386,14 @@ export class MultiDiffEditorWidgetImpl extends Disposable {
 			),
 		);
 	}
+
 	public setScrollState(scrollState: { top?: number; left?: number }): void {
 		this._scrollableElement.setScrollPosition({
 			scrollLeft: scrollState.left,
 			scrollTop: scrollState.top,
 		});
 	}
+
 	public reveal(
 		resource: IMultiDiffResourceId,
 		options?: RevealOptions,
@@ -371,7 +411,9 @@ export class MultiDiffEditorWidgetImpl extends Disposable {
 		if (index === -1) {
 			throw new BugIndicatingError("Resource not found in diff editor");
 		}
+
 		const viewItem = viewItems[index];
+
 		this._viewModel
 			.get()!
 			.activeDiffItem.setCache(viewItem.viewModel, undefined);
@@ -382,6 +424,7 @@ export class MultiDiffEditorWidgetImpl extends Disposable {
 			scrollTop +=
 				viewItems[i].contentHeight.get() + this._spaceBetweenPx;
 		}
+
 		this._scrollableElement.setScrollPosition({ scrollTop });
 
 		const diffEditor = viewItem.template.get()?.editor;
@@ -393,9 +436,11 @@ export class MultiDiffEditorWidgetImpl extends Disposable {
 
 		if (editor && options?.range) {
 			editor.revealRangeInCenter(options.range);
+
 			highlightRange(editor, options.range);
 		}
 	}
+
 	public getViewState(): IMultiDiffEditorViewState {
 		return {
 			scrollState: {
@@ -411,9 +456,12 @@ export class MultiDiffEditorWidgetImpl extends Disposable {
 	}
 	/** This accounts for documents that are not loaded yet. */
 	private _lastDocStates: IMultiDiffEditorViewState["docStates"] = {};
+
 	public setViewState(viewState: IMultiDiffEditorViewState): void {
 		this.setScrollState(viewState.scrollState);
+
 		this._lastDocStates = viewState.docStates;
+
 		transaction((tx) => {
 			/** setViewState */
 			if (viewState.docStates) {
@@ -427,6 +475,7 @@ export class MultiDiffEditorWidgetImpl extends Disposable {
 			}
 		});
 	}
+
 	public findDocumentDiffItem(resource: URI): IDocumentDiffItem | undefined {
 		const item = this._viewItems
 			.get()
@@ -440,9 +489,11 @@ export class MultiDiffEditorWidgetImpl extends Disposable {
 
 		return item?.viewModel.documentDiffItem;
 	}
+
 	public tryGetCodeEditor(resource: URI):
 		| {
 				diffEditor: IDiffEditor;
+
 				editor: ICodeEditor;
 		  }
 		| undefined {
@@ -461,6 +512,7 @@ export class MultiDiffEditorWidgetImpl extends Disposable {
 		if (!editor) {
 			return undefined;
 		}
+
 		if (
 			item.viewModel.diffEditorViewModel.model.modified.uri.toString() ===
 			resource.toString()
@@ -470,6 +522,7 @@ export class MultiDiffEditorWidgetImpl extends Disposable {
 			return { diffEditor: editor, editor: editor.getOriginalEditor() };
 		}
 	}
+
 	private render(reader: IReader | undefined) {
 		const scrollTop = this.scrollTop.read(reader);
 
@@ -506,6 +559,7 @@ export class MultiDiffEditorWidgetImpl extends Disposable {
 			if (itemContentRange.isBefore(contentViewPort)) {
 				contentScrollOffsetToScrollOffset -=
 					itemContentHeight - itemHeight;
+
 				v.hide();
 			} else if (itemContentRange.isAfter(contentViewPort)) {
 				v.hide();
@@ -517,18 +571,23 @@ export class MultiDiffEditorWidgetImpl extends Disposable {
 						itemContentHeight - itemHeight,
 					),
 				);
+
 				contentScrollOffsetToScrollOffset -= scroll;
 
 				const viewPort = OffsetRange.ofStartAndLength(
 					scrollTop + contentScrollOffsetToScrollOffset,
 					viewPortHeight,
 				);
+
 				v.render(itemRange, scroll, width, viewPort);
 			}
+
 			itemHeightSumBefore += itemHeight + this._spaceBetweenPx;
+
 			itemContentHeightSumBefore +=
 				itemContentHeight + this._spaceBetweenPx;
 		}
+
 		this._scrollableElements.content.style.transform = `translateY(${-(scrollTop + contentScrollOffsetToScrollOffset)}px)`;
 	}
 }
@@ -554,6 +613,7 @@ function highlightRange(targetEditor: ICodeEditor, range: IRange) {
 export interface IMultiDiffEditorViewState {
 	scrollState: {
 		top: number;
+
 		left: number;
 	};
 
@@ -561,6 +621,7 @@ export interface IMultiDiffEditorViewState {
 }
 interface IMultiDiffDocState {
 	collapsed: boolean;
+
 	selections?: ISelection[];
 }
 export interface IMultiDiffEditorOptions extends ITextEditorOptions {
@@ -569,11 +630,13 @@ export interface IMultiDiffEditorOptions extends ITextEditorOptions {
 export interface IMultiDiffEditorOptionsViewState {
 	revealData?: {
 		resource: IMultiDiffResourceId;
+
 		range?: IRange;
 	};
 }
 export type IMultiDiffResourceId = {
 	original: URI | undefined;
+
 	modified: URI | undefined;
 };
 class VirtualizedViewItem extends Disposable {
@@ -582,6 +645,7 @@ class VirtualizedViewItem extends Disposable {
 			IReference<DiffEditorItemTemplate> | undefined
 		>(this, undefined),
 	);
+
 	public readonly contentHeight = derived(
 		this,
 		(reader) =>
@@ -590,6 +654,7 @@ class VirtualizedViewItem extends Disposable {
 				?.object.contentHeight?.read(reader) ??
 			this.viewModel.lastTemplateData.read(reader).contentHeight,
 	);
+
 	public readonly maxScroll = derived(
 		this,
 		(reader) =>
@@ -598,11 +663,14 @@ class VirtualizedViewItem extends Disposable {
 				scrollWidth: 0,
 			},
 	);
+
 	public readonly template = derived(
 		this,
 		(reader) => this._templateRef.read(reader)?.object,
 	);
+
 	private _isHidden = observableValue(this, false);
+
 	private readonly _isFocused = derived(
 		this,
 		(reader) => this.template.read(reader)?.isFocused.read(reader) ?? false,
@@ -618,15 +686,19 @@ class VirtualizedViewItem extends Disposable {
 		private readonly _deltaScrollVertical: (delta: number) => void,
 	) {
 		super();
+
 		this.viewModel.setIsFocused(this._isFocused, undefined);
+
 		this._register(
 			autorun((reader) => {
 				const scrollLeft = this._scrollLeft.read(reader);
+
 				this._templateRef
 					.read(reader)
 					?.object.setScrollLeft(scrollLeft);
 			}),
 		);
+
 		this._register(
 			autorun((reader) => {
 				const ref = this._templateRef.read(reader);
@@ -634,31 +706,38 @@ class VirtualizedViewItem extends Disposable {
 				if (!ref) {
 					return;
 				}
+
 				const isHidden = this._isHidden.read(reader);
 
 				if (!isHidden) {
 					return;
 				}
+
 				const isFocused = ref.object.isFocused.read(reader);
 
 				if (isFocused) {
 					return;
 				}
+
 				this._clear();
 			}),
 		);
 	}
+
 	override dispose(): void {
 		this._clear();
 
 		super.dispose();
 	}
+
 	public override toString(): string {
 		return `VirtualViewItem(${this.viewModel.documentDiffItem.modified?.uri.toString()})`;
 	}
+
 	public getKey(): string {
 		return this.viewModel.getKey();
 	}
+
 	public getViewState(): IMultiDiffDocState {
 		transaction((tx) => {
 			this._updateTemplateData(tx);
@@ -669,13 +748,16 @@ class VirtualizedViewItem extends Disposable {
 			selections: this.viewModel.lastTemplateData.get().selections,
 		};
 	}
+
 	public setViewState(viewState: IMultiDiffDocState, tx: ITransaction): void {
 		this.viewModel.collapsed.set(viewState.collapsed, tx);
+
 		this._updateTemplateData(tx);
 
 		const data = this.viewModel.lastTemplateData.get();
 
 		const selections = viewState.selections?.map(Selection.liftSelection);
+
 		this.viewModel.lastTemplateData.set(
 			{
 				...data,
@@ -692,12 +774,14 @@ class VirtualizedViewItem extends Disposable {
 			}
 		}
 	}
+
 	private _updateTemplateData(tx: ITransaction): void {
 		const ref = this._templateRef.get();
 
 		if (!ref) {
 			return;
 		}
+
 		this.viewModel.lastTemplateData.set(
 			{
 				contentHeight: ref.object.contentHeight.get(),
@@ -706,21 +790,27 @@ class VirtualizedViewItem extends Disposable {
 			tx,
 		);
 	}
+
 	private _clear(): void {
 		const ref = this._templateRef.get();
 
 		if (!ref) {
 			return;
 		}
+
 		transaction((tx) => {
 			this._updateTemplateData(tx);
+
 			ref.object.hide();
+
 			this._templateRef.set(undefined, tx);
 		});
 	}
+
 	public hide(): void {
 		this._isHidden.set(true, undefined);
 	}
+
 	public render(
 		verticalSpace: OffsetRange,
 		offset: number,
@@ -735,6 +825,7 @@ class VirtualizedViewItem extends Disposable {
 			ref = this._objectPool.getUnusedObj(
 				new TemplateData(this.viewModel, this._deltaScrollVertical),
 			);
+
 			this._templateRef.set(ref, undefined);
 
 			const selections = this.viewModel.lastTemplateData.get().selections;
@@ -743,6 +834,7 @@ class VirtualizedViewItem extends Disposable {
 				ref.object.editor.setSelections(selections);
 			}
 		}
+
 		ref.object.render(verticalSpace, width, offset, viewPort);
 	}
 }

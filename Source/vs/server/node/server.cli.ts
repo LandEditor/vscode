@@ -39,8 +39,11 @@ import { PipeCommand } from "../../workbench/api/node/extHostCLIServer.js";
 
 interface ProductDescription {
 	productName: string;
+
 	version: string;
+
 	commit: string;
+
 	executableName: string;
 }
 
@@ -60,6 +63,7 @@ const isSupportedForCmd = (optionId: keyof RemoteParsedArgs) => {
 		case "builtin-extensions-dir":
 		case "telemetry":
 			return false;
+
 		default:
 			return true;
 	}
@@ -90,6 +94,7 @@ const isSupportedForPipe = (optionId: keyof RemoteParsedArgs) => {
 		case "remote":
 		case "locate-shell-integration-path":
 			return true;
+
 		default:
 			return false;
 	}
@@ -109,6 +114,7 @@ export async function main(
 		console.log(
 			"Command is only available in WSL or inside a Visual Studio Code terminal.",
 		);
+
 		return;
 	}
 
@@ -118,9 +124,12 @@ export async function main(
 		gitCredential: { type: "string" },
 		openExternal: { type: "boolean" },
 	};
+
 	const isSupported = cliCommand ? isSupportedForCmd : isSupportedForPipe;
+
 	for (const optionId in OPTIONS) {
 		const optId = <keyof RemoteParsedArgs>optionId;
+
 		if (!isSupported(optId)) {
 			delete options[optId];
 		}
@@ -152,6 +161,7 @@ export async function main(
 	};
 
 	const parsedArgs = parseArgs(args, options, errorReporter);
+
 	const mapFileUri = cliRemoteAuthority
 		? mapFileToRemoteUri
 		: (uri: string) => uri;
@@ -167,36 +177,47 @@ export async function main(
 				options,
 			),
 		);
+
 		return;
 	}
+
 	if (parsedArgs.version) {
 		console.log(buildVersionMessage(desc.version, desc.commit));
+
 		return;
 	}
+
 	if (parsedArgs["locate-shell-integration-path"]) {
 		let file: string;
+
 		switch (parsedArgs["locate-shell-integration-path"]) {
 			// Usage: `[[ "$TERM_PROGRAM" == "vscode" ]] && . "$(code --locate-shell-integration-path bash)"`
 			case "bash":
 				file = "shellIntegration-bash.sh";
+
 				break;
 			// Usage: `if ($env:TERM_PROGRAM -eq "vscode") { . "$(code --locate-shell-integration-path pwsh)" }`
 			case "pwsh":
 				file = "shellIntegration.ps1";
+
 				break;
 			// Usage: `[[ "$TERM_PROGRAM" == "vscode" ]] && . "$(code --locate-shell-integration-path zsh)"`
 			case "zsh":
 				file = "shellIntegration-rc.zsh";
+
 				break;
 			// Usage: `string match -q "$TERM_PROGRAM" "vscode"; and . (code --locate-shell-integration-path fish)`
 			case "fish":
 				file = "shellIntegration.fish";
+
 				break;
+
 			default:
 				throw new Error(
 					"Error using --locate-shell-integration-path: Invalid shell type",
 				);
 		}
+
 		console.log(
 			join(
 				getAppRoot(),
@@ -210,28 +231,36 @@ export async function main(
 				file,
 			),
 		);
+
 		return;
 	}
+
 	if (cliPipe) {
 		if (parsedArgs["openExternal"]) {
 			openInBrowser(parsedArgs["_"], verbose);
+
 			return;
 		}
 	}
 
 	let remote: string | null | undefined = parsedArgs.remote;
+
 	if (remote === "local" || remote === "false" || remote === "") {
 		remote = null; // null represent a local window
 	}
 
 	const folderURIs = (parsedArgs["folder-uri"] || []).map(mapFileUri);
+
 	parsedArgs["folder-uri"] = folderURIs;
 
 	const fileURIs = (parsedArgs["file-uri"] || []).map(mapFileUri);
+
 	parsedArgs["file-uri"] = fileURIs;
 
 	const inputPaths = parsedArgs["_"];
+
 	let hasReadStdinArg = false;
+
 	for (const input of inputPaths) {
 		if (input === "-") {
 			hasReadStdinArg = true;
@@ -247,9 +276,12 @@ export async function main(
 	if (hasReadStdinArg && hasStdinWithoutTty()) {
 		try {
 			let stdinFilePath = cliStdInFilePath;
+
 			if (!stdinFilePath) {
 				stdinFilePath = getStdinFilePath();
+
 				const readFromStdinDone = new DeferredPromise<void>();
+
 				await readFromStdin(stdinFilePath, verbose, () =>
 					readFromStdinDone.complete(),
 				); // throws error if file can not be written
@@ -289,6 +321,7 @@ export async function main(
 	}
 
 	const crashReporterDirectory = parsedArgs["crash-reporter-directory"];
+
 	if (
 		crashReporterDirectory !== undefined &&
 		!crashReporterDirectory.match(/^([a-zA-Z]:[\\\/])/)
@@ -296,6 +329,7 @@ export async function main(
 		console.log(
 			`The crash reporter directory '${crashReporterDirectory}' must be an absolute Windows path (e.g. c:/crashes)`,
 		);
+
 		return;
 	}
 
@@ -307,20 +341,24 @@ export async function main(
 			parsedArgs["update-extensions"]
 		) {
 			const cmdLine: string[] = [];
+
 			parsedArgs["install-extension"]?.forEach((id) =>
 				cmdLine.push("--install-extension", id),
 			);
+
 			parsedArgs["uninstall-extension"]?.forEach((id) =>
 				cmdLine.push("--uninstall-extension", id),
 			);
 			["list-extensions", "force", "show-versions", "category"].forEach(
 				(opt) => {
 					const value = parsedArgs[<keyof NativeParsedArgs>opt];
+
 					if (value !== undefined) {
 						cmdLine.push(`--${opt}=${value}`);
 					}
 				},
 			);
+
 			if (parsedArgs["update-extensions"]) {
 				cmdLine.push("--update-extensions");
 			}
@@ -330,13 +368,17 @@ export async function main(
 				cmdLine,
 				{ stdio: "inherit" },
 			);
+
 			childProcess.on("error", (err) => console.log(err));
+
 			return;
 		}
 
 		const newCommandline: string[] = [];
+
 		for (const key in parsedArgs) {
 			const val = parsedArgs[key as keyof typeof parsedArgs];
+
 			if (typeof val === "boolean") {
 				if (val) {
 					newCommandline.push("--" + key);
@@ -349,43 +391,54 @@ export async function main(
 				newCommandline.push(`--${key}=${val.toString()}`);
 			}
 		}
+
 		if (remote !== null) {
 			newCommandline.push(`--remote=${remote || cliRemoteAuthority}`);
 		}
 
 		const ext = extname(cliCommand);
+
 		if (ext === ".bat" || ext === ".cmd") {
 			const processCwd = cliCommandCwd || cwd();
+
 			if (verbose) {
 				console.log(
 					`Invoking: cmd.exe /C ${cliCommand} ${newCommandline.join(" ")} in ${processCwd}`,
 				);
 			}
+
 			cp.spawn("cmd.exe", ["/C", cliCommand, ...newCommandline], {
 				stdio: "inherit",
 				cwd: processCwd,
 			});
 		} else {
 			const cliCwd = dirname(cliCommand);
+
 			const env = { ...process.env, ELECTRON_RUN_AS_NODE: "1" };
+
 			newCommandline.unshift("resources/app/out/cli.js");
+
 			if (verbose) {
 				console.log(
 					`Invoking: cd "${cliCwd}" && ELECTRON_RUN_AS_NODE=1 "${cliCommand}" "${newCommandline.join('" "')}"`,
 				);
 			}
+
 			if (runningInWSL2()) {
 				if (verbose) {
 					console.log(`Using pipes for output.`);
 				}
+
 				const childProcess = cp.spawn(cliCommand, newCommandline, {
 					cwd: cliCwd,
 					env,
 					stdio: ["inherit", "pipe", "pipe"],
 				});
+
 				childProcess.stdout.on("data", (data) =>
 					process.stdout.write(data),
 				);
+
 				childProcess.stderr.on("data", (data) =>
 					process.stderr.write(data),
 				);
@@ -411,6 +464,7 @@ export async function main(
 				.catch((e) => {
 					console.error("Error when requesting status:", e);
 				});
+
 			return;
 		}
 
@@ -448,15 +502,19 @@ export async function main(
 						e,
 					);
 				});
+
 			return;
 		}
 
 		let waitMarkerFilePath: string | undefined = undefined;
+
 		if (parsedArgs["wait"]) {
 			if (!fileURIs.length) {
 				console.log("At least one file must be provided to wait for.");
+
 				return;
 			}
+
 			waitMarkerFilePath = createWaitMarkerFileSync(verbose);
 		}
 
@@ -499,6 +557,7 @@ function runningInWSL2(): boolean {
 			// Ignore
 		}
 	}
+
 	return false;
 }
 
@@ -510,6 +569,7 @@ async function waitForFileDeleted(path: string) {
 
 function openInBrowser(args: string[], verbose: boolean) {
 	const uris: string[] = [];
+
 	for (const location of args) {
 		try {
 			if (/^[a-z-]+:\/\/.+/.test(location)) {
@@ -521,6 +581,7 @@ function openInBrowser(args: string[], verbose: boolean) {
 			console.log(`Invalid url: ${location}`);
 		}
 	}
+
 	if (uris.length) {
 		sendToPipe(
 			{
@@ -538,11 +599,15 @@ function sendToPipe(args: PipeCommand, verbose: boolean): Promise<string> {
 	if (verbose) {
 		console.log(JSON.stringify(args, null, "  "));
 	}
+
 	return new Promise<string>((resolve, reject) => {
 		const message = JSON.stringify(args);
+
 		if (!cliPipe) {
 			console.log("Message " + message);
+
 			resolve("");
+
 			return;
 		}
 
@@ -562,19 +627,26 @@ function sendToPipe(args: PipeCommand, verbose: boolean): Promise<string> {
 					"Error in response: Invalid content type: Expected 'application/json', is: " +
 						res.headers["content-type"],
 				);
+
 				return;
 			}
 
 			const chunks: string[] = [];
+
 			res.setEncoding("utf8");
+
 			res.on("data", (chunk) => {
 				chunks.push(chunk);
 			});
+
 			res.on("error", (err) => fatal("Error in response.", err));
+
 			res.on("end", () => {
 				const content = chunks.join("");
+
 				try {
 					const obj = JSON.parse(content);
+
 					if (res.statusCode === 200) {
 						resolve(obj);
 					} else {
@@ -590,7 +662,9 @@ function sendToPipe(args: PipeCommand, verbose: boolean): Promise<string> {
 		});
 
 		req.on("error", (err) => fatal("Error in request.", err));
+
 		req.write(message);
+
 		req.end();
 	});
 }
@@ -603,7 +677,9 @@ function asExtensionIdOrVSIX(inputs: string[] | undefined) {
 
 function fatal(message: string, err: any): void {
 	console.error("Unable to connect to VS Code server: " + message);
+
 	console.error(err);
+
 	process.exit(1);
 }
 
@@ -611,6 +687,7 @@ const preferredCwd = process.env.PWD || cwd(); // prefer process.env.PWD as it d
 
 function pathToURI(input: string): url.URL {
 	input = input.trim();
+
 	input = resolve(preferredCwd, input);
 
 	return url.pathToFileURL(input);
@@ -623,7 +700,9 @@ function translatePath(
 	fileURIS: string[],
 ) {
 	const url = pathToURI(input);
+
 	const mappedUri = mapFileUri(url.href);
+
 	try {
 		const stat = fs.lstatSync(fs.realpathSync(input));
 

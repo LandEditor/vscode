@@ -20,13 +20,18 @@ import { WebviewStyles } from "./webview.js";
 
 interface WebviewThemeData {
 	readonly activeTheme: string;
+
 	readonly themeLabel: string;
+
 	readonly themeId: string;
+
 	readonly styles: Readonly<WebviewStyles>;
 }
 export class WebviewThemeDataProvider extends Disposable {
 	private _cachedWebViewThemeData: WebviewThemeData | undefined = undefined;
+
 	private readonly _onThemeDataChanged = this._register(new Emitter<void>());
+
 	public readonly onThemeDataChanged = this._onThemeDataChanged.event;
 
 	constructor(
@@ -36,6 +41,7 @@ export class WebviewThemeDataProvider extends Disposable {
 		private readonly _configurationService: IConfigurationService,
 	) {
 		super();
+
 		this._register(
 			this._themeService.onDidColorThemeChange(() => {
 				this._reset();
@@ -48,6 +54,7 @@ export class WebviewThemeDataProvider extends Disposable {
 			"editor.fontSize",
 			"accessibility.underlineLinks",
 		];
+
 		this._register(
 			this._configurationService.onDidChangeConfiguration((e) => {
 				if (
@@ -60,9 +67,11 @@ export class WebviewThemeDataProvider extends Disposable {
 			}),
 		);
 	}
+
 	public getTheme(): IWorkbenchColorTheme {
 		return this._themeService.getColorTheme();
 	}
+
 	public getWebviewThemeData(): WebviewThemeData {
 		if (!this._cachedWebViewThemeData) {
 			const configuration =
@@ -93,6 +102,7 @@ export class WebviewThemeDataProvider extends Disposable {
 						colors["vscode-" + entry.id.replace(".", "-")] =
 							color.toString();
 					}
+
 					return colors;
 				}, {});
 
@@ -108,6 +118,7 @@ export class WebviewThemeDataProvider extends Disposable {
 			};
 
 			const activeTheme = ApiThemeClassName.fromTheme(theme);
+
 			this._cachedWebViewThemeData = {
 				styles,
 				activeTheme,
@@ -115,10 +126,13 @@ export class WebviewThemeDataProvider extends Disposable {
 				themeId: theme.settingsId,
 			};
 		}
+
 		return this._cachedWebViewThemeData;
 	}
+
 	private _reset() {
 		this._cachedWebViewThemeData = undefined;
+
 		this._onThemeDataChanged.fire();
 	}
 }

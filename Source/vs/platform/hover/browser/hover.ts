@@ -30,15 +30,19 @@ export class WorkbenchHoverDelegate
 	implements IHoverDelegate
 {
 	private lastHoverHideTime = 0;
+
 	private timeLimit = 200;
+
 	private _delay: number;
 
 	get delay(): number {
 		if (this.isInstantlyHovering()) {
 			return 0; // show instantly when a hover was recently shown
 		}
+
 		return this._delay;
 	}
+
 	private readonly hoverDisposables = this._register(new DisposableStore());
 
 	constructor(
@@ -56,9 +60,11 @@ export class WorkbenchHoverDelegate
 		private readonly hoverService: IHoverService,
 	) {
 		super();
+
 		this._delay = this.configurationService.getValue<number>(
 			"workbench.hover.delay",
 		);
+
 		this._register(
 			this.configurationService.onDidChangeConfiguration((e) => {
 				if (e.affectsConfiguration("workbench.hover.delay")) {
@@ -69,6 +75,7 @@ export class WorkbenchHoverDelegate
 			}),
 		);
 	}
+
 	showHover(
 		options: IHoverDelegateOptions,
 		focus?: boolean,
@@ -93,6 +100,7 @@ export class WorkbenchHoverDelegate
 				}),
 			);
 		}
+
 		const id = isHTMLElement(options.content)
 			? undefined
 			: typeof options.content === "string"
@@ -118,18 +126,22 @@ export class WorkbenchHoverDelegate
 			focus,
 		);
 	}
+
 	private isInstantlyHovering(): boolean {
 		return (
 			this.instantHover &&
 			Date.now() - this.lastHoverHideTime < this.timeLimit
 		);
 	}
+
 	setInstantHoverTimeLimit(timeLimit: number): void {
 		if (!this.instantHover) {
 			throw new Error("Instant hover is not enabled");
 		}
+
 		this.timeLimit = timeLimit;
 	}
+
 	onDidHideHover(): void {
 		this.hoverDisposables.clear();
 

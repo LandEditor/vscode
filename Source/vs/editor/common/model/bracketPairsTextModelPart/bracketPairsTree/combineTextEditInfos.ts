@@ -22,6 +22,7 @@ export function combineTextEditInfos(
 	if (textEditInfoFirst.length === 0) {
 		return textEditInfoSecond;
 	}
+
 	if (textEditInfoSecond.length === 0) {
 		return textEditInfoFirst;
 	}
@@ -32,10 +33,13 @@ export function combineTextEditInfos(
 		| LengthMapping
 		| {
 				lengthBefore: undefined;
+
 				lengthAfter: undefined;
+
 				modified: false;
 		  }
 	)[];
+
 	s1ToS2Map.push({
 		modified: false,
 		lengthBefore: undefined,
@@ -55,21 +59,29 @@ export function combineTextEditInfos(
 			if (curItem) {
 				arr.unshift(curItem);
 			}
+
 			return arr;
 		}
+
 		const result: LengthMapping[] = [];
 
 		while (curItem && !lengthIsZero(s1Length)) {
 			const [item, remainingItem] = curItem.splitAt(s1Length);
+
 			result.push(item);
+
 			s1Length = lengthDiffNonNegative(item.lengthAfter, s1Length);
+
 			curItem = remainingItem ?? s0ToS1Map.dequeue();
 		}
+
 		if (!lengthIsZero(s1Length)) {
 			result.push(new LengthMapping(false, s1Length, s1Length));
 		}
+
 		return result;
 	}
+
 	const result: TextEditInfo[] = [];
 
 	function pushEdit(
@@ -82,6 +94,7 @@ export function combineTextEditInfos(
 			lengthEquals(result[result.length - 1].endOffset, startOffset)
 		) {
 			const lastResult = result[result.length - 1];
+
 			result[result.length - 1] = new TextEditInfo(
 				lastResult.startOffset,
 				endOffset,
@@ -91,6 +104,7 @@ export function combineTextEditInfos(
 			result.push({ startOffset, endOffset, newLength });
 		}
 	}
+
 	let s0offset = lengthZero;
 
 	for (const s1ToS2 of s1ToS2Map) {
@@ -100,11 +114,14 @@ export function combineTextEditInfos(
 			const s0Length = sumLengths(s0ToS1Map, (s) => s.lengthBefore);
 
 			const s0EndOffset = lengthAdd(s0offset, s0Length);
+
 			pushEdit(s0offset, s0EndOffset, s1ToS2.lengthAfter);
+
 			s0offset = s0EndOffset;
 		} else {
 			for (const s1 of s0ToS1Map) {
 				const s0startOffset = s0offset;
+
 				s0offset = lengthAdd(s0offset, s1.lengthBefore);
 
 				if (s1.modified) {
@@ -113,6 +130,7 @@ export function combineTextEditInfos(
 			}
 		}
 	}
+
 	return result;
 }
 class LengthMapping {
@@ -124,6 +142,7 @@ class LengthMapping {
 		public readonly lengthBefore: Length,
 		public readonly lengthAfter: Length,
 	) {}
+
 	splitAt(lengthAfter: Length): [LengthMapping, LengthMapping | undefined] {
 		const remainingLengthAfter = lengthDiffNonNegative(
 			lengthAfter,
@@ -156,6 +175,7 @@ class LengthMapping {
 			];
 		}
 	}
+
 	toString(): string {
 		return `${this.modified ? "M" : "U"}:${lengthToObj(this.lengthBefore)} -> ${lengthToObj(this.lengthAfter)}`;
 	}
@@ -174,14 +194,18 @@ function toLengthMapping(textEditInfos: TextEditInfo[]): LengthMapping[] {
 		if (!lengthIsZero(spaceLength)) {
 			result.push(new LengthMapping(false, spaceLength, spaceLength));
 		}
+
 		const lengthBefore = lengthDiffNonNegative(
 			textEditInfo.startOffset,
 			textEditInfo.endOffset,
 		);
+
 		result.push(
 			new LengthMapping(true, lengthBefore, textEditInfo.newLength),
 		);
+
 		lastOffset = textEditInfo.endOffset;
 	}
+
 	return result;
 }

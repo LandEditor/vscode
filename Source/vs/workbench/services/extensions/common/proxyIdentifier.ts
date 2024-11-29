@@ -22,16 +22,21 @@ export interface IRPCProtocol {
 	 * Wait for the write buffer (if applicable) to become empty.
 	 */
 	drain(): Promise<void>;
+
 	dispose(): void;
 }
 export class ProxyIdentifier<T> {
 	public static count = 0;
+
 	_proxyIdentifierBrand: void = undefined;
+
 	public readonly sid: string;
+
 	public readonly nid: number;
 
 	constructor(sid: string) {
 		this.sid = sid;
+
 		this.nid = ++ProxyIdentifier.count;
 	}
 }
@@ -42,6 +47,7 @@ export function createProxyIdentifier<T>(
 	identifier: string,
 ): ProxyIdentifier<T> {
 	const result = new ProxyIdentifier<T>(identifier);
+
 	identifiers[result.nid] = result;
 
 	return result;

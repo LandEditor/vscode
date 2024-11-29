@@ -109,14 +109,17 @@ import { NativeWindow } from "./window.js";
 export class DesktopMain extends Disposable {
 	constructor(private readonly configuration: INativeWindowConfiguration) {
 		super();
+
 		this.init();
 	}
+
 	private init(): void {
 		// Massage configuration file URIs
 		this.reviveUris();
 		// Apply fullscreen early if configured
 		setFullscreen(!!this.configuration.fullscreen, mainWindow);
 	}
+
 	private reviveUris() {
 		// Workspace
 		const workspace = reviveIdentifier(this.configuration.workspace);
@@ -146,12 +149,14 @@ export class DesktopMain extends Disposable {
 				}
 			}
 		}
+
 		if (filesToWait) {
 			filesToWait.waitMarkerFileUri = URI.revive(
 				filesToWait.waitMarkerFileUri,
 			);
 		}
 	}
+
 	async open(): Promise<void> {
 		// Init services and wait for DOM to be ready in parallel
 		const [services] = await Promise.all([
@@ -180,6 +185,7 @@ export class DesktopMain extends Disposable {
 		// Window
 		this._register(instantiationService.createInstance(NativeWindow));
 	}
+
 	private applyWindowZoomLevel(configurationService: IConfigurationService) {
 		let zoomLevel: number | undefined = undefined;
 
@@ -191,19 +197,24 @@ export class DesktopMain extends Disposable {
 		} else {
 			const windowConfig =
 				configurationService.getValue<IWindowsConfiguration>();
+
 			zoomLevel =
 				typeof windowConfig.window?.zoomLevel === "number"
 					? windowConfig.window.zoomLevel
 					: 0;
 		}
+
 		applyZoom(zoomLevel, mainWindow);
 	}
+
 	private getExtraClasses(): string[] {
 		if (isMacintosh && isBigSurOrNewer(this.configuration.os.release)) {
 			return ["macos-bigsur-or-newer"];
 		}
+
 		return [];
 	}
+
 	private registerListeners(
 		workbench: Workbench,
 		storageService: NativeWorkbenchStorageService,
@@ -217,12 +228,17 @@ export class DesktopMain extends Disposable {
 				}),
 			),
 		);
+
 		this._register(workbench.onDidShutdown(() => this.dispose()));
 	}
+
 	private async initServices(): Promise<{
 		serviceCollection: ServiceCollection;
+
 		logService: ILogService;
+
 		storageService: NativeWorkbenchStorageService;
+
 		configurationService: IConfigurationService;
 	}> {
 		const serviceCollection = new ServiceCollection();
@@ -238,6 +254,7 @@ export class DesktopMain extends Disposable {
 		const mainProcessService = this._register(
 			new ElectronIPCMainProcessService(this.configuration.windowId),
 		);
+
 		serviceCollection.set(IMainProcessService, mainProcessService);
 		// Policies
 		const policyService = this.configuration.policiesData
@@ -246,18 +263,21 @@ export class DesktopMain extends Disposable {
 					mainProcessService.getChannel("policy"),
 				)
 			: new NullPolicyService();
+
 		serviceCollection.set(IPolicyService, policyService);
 		// Product
 		const productService: IProductService = {
 			_serviceBrand: undefined,
 			...product,
 		};
+
 		serviceCollection.set(IProductService, productService);
 		// Environment
 		const environmentService = new NativeWorkbenchEnvironmentService(
 			this.configuration,
 			productService,
 		);
+
 		serviceCollection.set(
 			INativeWorkbenchEnvironmentService,
 			environmentService,
@@ -282,16 +302,19 @@ export class DesktopMain extends Disposable {
 			loggers,
 			mainProcessService.getChannel("logger"),
 		);
+
 		serviceCollection.set(ILoggerService, loggerService);
 		// Log
 		const logService = this._register(
 			new NativeLogService(loggerService, environmentService),
 		);
+
 		serviceCollection.set(ILogService, logService);
 
 		if (isCI) {
 			logService.info("workbench#open()"); // marking workbench open helps to diagnose flaky integration/smoke tests
 		}
+
 		if (logService.getLevel() === LogLevel.Trace) {
 			logService.trace(
 				"workbench#open(): with configuration",
@@ -306,6 +329,7 @@ export class DesktopMain extends Disposable {
 			this.configuration.windowId,
 			logService,
 		);
+
 		serviceCollection.set(ISharedProcessService, sharedProcessService);
 		// Utility Process Worker
 		const utilityProcessWorkerWorkbenchService =
@@ -314,6 +338,7 @@ export class DesktopMain extends Disposable {
 				logService,
 				mainProcessService,
 			);
+
 		serviceCollection.set(
 			IUtilityProcessWorkerWorkbenchService,
 			utilityProcessWorkerWorkbenchService,
@@ -330,9 +355,11 @@ export class DesktopMain extends Disposable {
 		const signService = ProxyChannel.toService<ISignService>(
 			mainProcessService.getChannel("sign"),
 		);
+
 		serviceCollection.set(ISignService, signService);
 		// Files
 		const fileService = this._register(new FileService(logService));
+
 		serviceCollection.set(IFileService, fileService);
 		// Remote
 		const remoteAuthorityResolverService =
@@ -344,6 +371,7 @@ export class DesktopMain extends Disposable {
 					fileService,
 				),
 			);
+
 		serviceCollection.set(
 			IRemoteAuthorityResolverService,
 			remoteAuthorityResolverService,
@@ -357,9 +385,11 @@ export class DesktopMain extends Disposable {
 				loggerService,
 			),
 		);
+
 		fileService.registerProvider(Schemas.file, diskFileSystemProvider);
 		// URI Identity
 		const uriIdentityService = new UriIdentityService(fileService);
+
 		serviceCollection.set(IUriIdentityService, uriIdentityService);
 		// User Data Profiles
 		const userDataProfilesService = new UserDataProfilesService(
@@ -369,6 +399,7 @@ export class DesktopMain extends Disposable {
 			}),
 			mainProcessService.getChannel("userDataProfiles"),
 		);
+
 		serviceCollection.set(
 			IUserDataProfilesService,
 			userDataProfilesService,
@@ -380,6 +411,7 @@ export class DesktopMain extends Disposable {
 				userDataProfilesService.profilesHome.scheme,
 			),
 		);
+
 		serviceCollection.set(IUserDataProfileService, userDataProfileService);
 		// Use FileUserDataProvider for user data to
 		// enable atomic read / write operations.
@@ -398,10 +430,12 @@ export class DesktopMain extends Disposable {
 		);
 		// Remote Agent
 		const remoteSocketFactoryService = new RemoteSocketFactoryService();
+
 		remoteSocketFactoryService.register(
 			RemoteConnectionType.WebSocket,
 			new BrowserSocketFactory(null),
 		);
+
 		serviceCollection.set(
 			IRemoteSocketFactoryService,
 			remoteSocketFactoryService,
@@ -418,6 +452,7 @@ export class DesktopMain extends Disposable {
 				logService,
 			),
 		);
+
 		serviceCollection.set(IRemoteAgentService, remoteAgentService);
 		// Remote Files
 		this._register(
@@ -487,6 +522,7 @@ export class DesktopMain extends Disposable {
 				configurationService,
 				environmentService,
 			);
+
 		serviceCollection.set(
 			IWorkspaceTrustEnablementService,
 			workspaceTrustEnablementService,
@@ -503,6 +539,7 @@ export class DesktopMain extends Disposable {
 				workspaceTrustEnablementService,
 				fileService,
 			);
+
 		serviceCollection.set(
 			IWorkspaceTrustManagementService,
 			workspaceTrustManagementService,
@@ -511,6 +548,7 @@ export class DesktopMain extends Disposable {
 		configurationService.updateWorkspaceTrust(
 			workspaceTrustManagementService.isWorkspaceTrusted(),
 		);
+
 		this._register(
 			workspaceTrustManagementService.onDidChangeTrust(() =>
 				configurationService.updateWorkspaceTrust(
@@ -533,6 +571,7 @@ export class DesktopMain extends Disposable {
 			configurationService,
 		};
 	}
+
 	private resolveWorkspaceIdentifier(
 		environmentService: INativeWorkbenchEnvironmentService,
 	): IAnyWorkspaceIdentifier {
@@ -546,6 +585,7 @@ export class DesktopMain extends Disposable {
 			environmentService.isExtensionDevelopment,
 		);
 	}
+
 	private async createWorkspaceService(
 		workspace: IAnyWorkspaceIdentifier,
 		environmentService: INativeWorkbenchEnvironmentService,
@@ -591,6 +631,7 @@ export class DesktopMain extends Disposable {
 			return workspaceService;
 		}
 	}
+
 	private async createStorageService(
 		workspace: IAnyWorkspaceIdentifier,
 		environmentService: INativeWorkbenchEnvironmentService,
@@ -616,6 +657,7 @@ export class DesktopMain extends Disposable {
 			return storageService;
 		}
 	}
+
 	private async createKeyboardLayoutService(
 		mainProcessService: IMainProcessService,
 	): Promise<NativeKeyboardLayoutService> {

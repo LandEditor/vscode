@@ -24,6 +24,7 @@ export namespace WebviewResourceResponse {
 		AccessDenied,
 		NotModified,
 	}
+
 	export class StreamSuccess {
 		readonly type = Type.Success;
 
@@ -34,6 +35,7 @@ export namespace WebviewResourceResponse {
 			public readonly mimeType: string,
 		) {}
 	}
+
 	export const Failed = { type: Type.Failed } as const;
 
 	export const AccessDenied = { type: Type.AccessDenied } as const;
@@ -46,6 +48,7 @@ export namespace WebviewResourceResponse {
 			public readonly mtime: number | undefined,
 		) {}
 	}
+
 	export type StreamResponse =
 		| StreamSuccess
 		| typeof Failed
@@ -56,6 +59,7 @@ export async function loadLocalResource(
 	requestUri: URI,
 	options: {
 		ifNoneMatch: string | undefined;
+
 		roots: ReadonlyArray<URI>;
 	},
 	fileService: IFileService,
@@ -65,6 +69,7 @@ export async function loadLocalResource(
 	logService.debug(`loadLocalResource - begin. requestUri=${requestUri}`);
 
 	const resourceToLoad = getResourceToLoad(requestUri, options.roots);
+
 	logService.debug(
 		`loadLocalResource - found resource to load. requestUri=${requestUri}, resourceToLoad=${resourceToLoad}`,
 	);
@@ -72,6 +77,7 @@ export async function loadLocalResource(
 	if (!resourceToLoad) {
 		return WebviewResourceResponse.AccessDenied;
 	}
+
 	const mime = getWebviewContentMimeType(requestUri); // Use the original path for the mime
 	try {
 		const result = await fileService.readFileStream(
@@ -101,6 +107,7 @@ export async function loadLocalResource(
 		logService.debug(
 			`loadLocalResource - Error using fileReader. requestUri=${requestUri}`,
 		);
+
 		console.log(err);
 
 		return WebviewResourceResponse.Failed;
@@ -115,12 +122,14 @@ function getResourceToLoad(
 			return normalizeResourcePath(requestUri);
 		}
 	}
+
 	return undefined;
 }
 function containsResource(root: URI, resource: URI): boolean {
 	if (root.scheme !== resource.scheme) {
 		return false;
 	}
+
 	let resourceFsPath = normalize(resource.fsPath);
 
 	let rootPath = normalize(
@@ -129,8 +138,10 @@ function containsResource(root: URI, resource: URI): boolean {
 
 	if (isUNC(root.fsPath) && isUNC(resource.fsPath)) {
 		rootPath = rootPath.toLowerCase();
+
 		resourceFsPath = resourceFsPath.toLowerCase();
 	}
+
 	return resourceFsPath.startsWith(rootPath);
 }
 function normalizeResourcePath(resource: URI): URI {
@@ -145,5 +156,6 @@ function normalizeResourcePath(resource: URI): URI {
 			}),
 		});
 	}
+
 	return resource;
 }

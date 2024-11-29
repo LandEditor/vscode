@@ -43,6 +43,7 @@ export function waitForState<T>(
 	if (!predicate) {
 		predicate = (state) => state !== null && state !== undefined;
 	}
+
 	return new Promise((resolve, reject) => {
 		let isImmediateRun = true;
 
@@ -68,6 +69,7 @@ export function waitForState<T>(
 				} else {
 					d.dispose();
 				}
+
 				if (error) {
 					reject(error === true ? state : error);
 				} else {
@@ -79,18 +81,23 @@ export function waitForState<T>(
 		if (cancellationToken) {
 			const dc = cancellationToken.onCancellationRequested(() => {
 				d.dispose();
+
 				dc.dispose();
+
 				reject(new CancellationError());
 			});
 
 			if (cancellationToken.isCancellationRequested) {
 				d.dispose();
+
 				dc.dispose();
+
 				reject(new CancellationError());
 
 				return;
 			}
 		}
+
 		isImmediateRun = false;
 
 		if (shouldDispose) {
@@ -122,11 +129,14 @@ export function derivedWithCancellationToken<T>(
 
 	if (computeFnOrUndefined === undefined) {
 		computeFn = computeFnOrOwner as any;
+
 		owner = undefined;
 	} else {
 		owner = computeFnOrOwner;
+
 		computeFn = computeFnOrUndefined as any;
 	}
+
 	let cancellationTokenSource: CancellationTokenSource | undefined =
 		undefined;
 
@@ -136,6 +146,7 @@ export function derivedWithCancellationToken<T>(
 			if (cancellationTokenSource) {
 				cancellationTokenSource.dispose(true);
 			}
+
 			cancellationTokenSource = new CancellationTokenSource();
 
 			return computeFn(r, cancellationTokenSource.token);

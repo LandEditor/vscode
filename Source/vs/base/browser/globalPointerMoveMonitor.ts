@@ -17,12 +17,17 @@ export interface IOnStopCallback {
 }
 export class GlobalPointerMoveMonitor implements IDisposable {
 	private readonly _hooks = new DisposableStore();
+
 	private _pointerMoveCallback: IPointerMoveCallback | null = null;
+
 	private _onStopCallback: IOnStopCallback | null = null;
+
 	public dispose(): void {
 		this.stopMonitoring(false);
+
 		this._hooks.dispose();
 	}
+
 	public stopMonitoring(
 		invokeStopCallback: boolean,
 		browserEvent?: PointerEvent | KeyboardEvent,
@@ -33,18 +38,22 @@ export class GlobalPointerMoveMonitor implements IDisposable {
 		}
 		// Unhook
 		this._hooks.clear();
+
 		this._pointerMoveCallback = null;
 
 		const onStopCallback = this._onStopCallback;
+
 		this._onStopCallback = null;
 
 		if (invokeStopCallback && onStopCallback) {
 			onStopCallback(browserEvent);
 		}
 	}
+
 	public isMonitoring(): boolean {
 		return !!this._pointerMoveCallback;
 	}
+
 	public startMonitoring(
 		initialElement: Element,
 		pointerId: number,
@@ -55,13 +64,16 @@ export class GlobalPointerMoveMonitor implements IDisposable {
 		if (this.isMonitoring()) {
 			this.stopMonitoring(false);
 		}
+
 		this._pointerMoveCallback = pointerMoveCallback;
+
 		this._onStopCallback = onStopCallback;
 
 		let eventSource: Element | Window = initialElement;
 
 		try {
 			initialElement.setPointerCapture(pointerId);
+
 			this._hooks.add(
 				toDisposable(() => {
 					try {
@@ -88,6 +100,7 @@ export class GlobalPointerMoveMonitor implements IDisposable {
 			// In case of failure, we bind the listeners on the window
 			eventSource = dom.getWindow(initialElement);
 		}
+
 		this._hooks.add(
 			dom.addDisposableListener(
 				eventSource,
@@ -99,11 +112,14 @@ export class GlobalPointerMoveMonitor implements IDisposable {
 
 						return;
 					}
+
 					e.preventDefault();
+
 					this._pointerMoveCallback!(e);
 				},
 			),
 		);
+
 		this._hooks.add(
 			dom.addDisposableListener(
 				eventSource,

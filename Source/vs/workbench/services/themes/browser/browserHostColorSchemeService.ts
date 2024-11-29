@@ -17,14 +17,17 @@ export class BrowserHostColorSchemeService
 	implements IHostColorSchemeService
 {
 	declare readonly _serviceBrand: undefined;
+
 	private readonly _onDidSchemeChangeEvent = this._register(
 		new Emitter<void>(),
 	);
 
 	constructor() {
 		super();
+
 		this.registerListeners();
 	}
+
 	private registerListeners(): void {
 		addMatchMediaChangeListener(
 			mainWindow,
@@ -33,6 +36,7 @@ export class BrowserHostColorSchemeService
 				this._onDidSchemeChangeEvent.fire();
 			},
 		);
+
 		addMatchMediaChangeListener(
 			mainWindow,
 			"(forced-colors: active)",
@@ -41,9 +45,11 @@ export class BrowserHostColorSchemeService
 			},
 		);
 	}
+
 	get onDidChangeColorScheme(): Event<void> {
 		return this._onDidSchemeChangeEvent.event;
 	}
+
 	get dark(): boolean {
 		if (mainWindow.matchMedia(`(prefers-color-scheme: light)`).matches) {
 			return false;
@@ -52,12 +58,15 @@ export class BrowserHostColorSchemeService
 		) {
 			return true;
 		}
+
 		return false;
 	}
+
 	get highContrast(): boolean {
 		if (mainWindow.matchMedia(`(forced-colors: active)`).matches) {
 			return true;
 		}
+
 		return false;
 	}
 }

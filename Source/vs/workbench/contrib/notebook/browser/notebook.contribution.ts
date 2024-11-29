@@ -255,6 +255,7 @@ class NotebookDiffEditorSerializer implements IEditorSerializer {
 		@IConfigurationService
 		private readonly _configurationService: IConfigurationService,
 	) {}
+
 	canSerialize(): boolean {
 		return true;
 	}
@@ -275,11 +276,17 @@ class NotebookDiffEditorSerializer implements IEditorSerializer {
 	deserialize(instantiationService: IInstantiationService, raw: string) {
 		type Data = {
 			resource: URI;
+
 			originalResource: URI;
+
 			name: string;
+
 			originalName: string;
+
 			viewType: string;
+
 			textDiffName: string | undefined;
+
 			group: number;
 		};
 
@@ -288,6 +295,7 @@ class NotebookDiffEditorSerializer implements IEditorSerializer {
 		if (!data) {
 			return undefined;
 		}
+
 		const { resource, originalResource, name, viewType } = data;
 
 		if (
@@ -334,14 +342,18 @@ class NotebookDiffEditorSerializer implements IEditorSerializer {
 }
 type SerializedNotebookEditorData = {
 	resource: URI;
+
 	preferredResource: URI;
+
 	viewType: string;
+
 	options?: NotebookEditorInputOptions;
 };
 class NotebookEditorSerializer implements IEditorSerializer {
 	canSerialize(input: EditorInput): boolean {
 		return input.typeId === NotebookEditorInput.ID;
 	}
+
 	serialize(input: EditorInput): string {
 		assertType(input instanceof NotebookEditorInput);
 
@@ -354,12 +366,14 @@ class NotebookEditorSerializer implements IEditorSerializer {
 
 		return JSON.stringify(data);
 	}
+
 	deserialize(instantiationService: IInstantiationService, raw: string) {
 		const data = <SerializedNotebookEditorData>parse(raw);
 
 		if (!data) {
 			return undefined;
 		}
+
 		const { resource, preferredResource, viewType, options } = data;
 
 		if (!data || !URI.isUri(resource) || typeof viewType !== "string") {
@@ -450,6 +464,7 @@ export class NotebookContribution
 								if (undoRedoPerCell) {
 									return uri.toString();
 								}
+
 								return NotebookContribution._getCellUndoRedoComparisonKey(
 									uri,
 								);
@@ -460,6 +475,7 @@ export class NotebookContribution
 		} else {
 			// Dispose comparison key
 			this._uriComparisonKeyComputer?.dispose();
+
 			this._uriComparisonKeyComputer = undefined;
 		}
 	}
@@ -476,6 +492,7 @@ export class NotebookContribution
 
 	override dispose(): void {
 		super.dispose();
+
 		this._uriComparisonKeyComputer?.dispose();
 	}
 }
@@ -508,6 +525,7 @@ class CellContentProvider implements ITextModelContentProvider {
 		if (existing) {
 			return existing;
 		}
+
 		const data = CellUri.parse(resource);
 		// const data = parseCellUri(resource);
 
@@ -560,6 +578,7 @@ class CellContentProvider implements ITextModelContentProvider {
 								resource,
 								cell.textBuffer.getLineContent(1),
 							);
+
 				result = this._modelService.createModel(
 					bufferFactory,
 					languageSelection,
@@ -581,6 +600,7 @@ class CellContentProvider implements ITextModelContentProvider {
 			ref.object.notebook.onWillDispose,
 		)(() => {
 			once.dispose();
+
 			ref.dispose();
 		});
 
@@ -683,11 +703,13 @@ class CellInfoContentProvider {
 					cell.metadata,
 					cell.language,
 				);
+
 				result = this._modelService.createModel(
 					metadataSource,
 					mode,
 					resource,
 				);
+
 				this._disposables.push(
 					disposables.add(
 						ref.object.notebook.onDidChangeContent((e) => {
@@ -736,7 +758,9 @@ class CellInfoContentProvider {
 
 		const once = result.onWillDispose(() => {
 			disposables.dispose();
+
 			once.dispose();
+
 			ref.dispose();
 		});
 
@@ -765,6 +789,7 @@ class CellInfoContentProvider {
 	private _getResult(
 		data: {
 			notebook: URI;
+
 			outputId?: string | undefined;
 		},
 		cell: ICell,
@@ -797,6 +822,7 @@ class CellInfoContentProvider {
 		}));
 
 		const outputSource = toFormattedString(obj, {});
+
 		result = {
 			content: outputSource,
 			mode,
@@ -853,7 +879,9 @@ class CellInfoContentProvider {
 
 		const once = model.onWillDispose(() => {
 			once.dispose();
+
 			cellModelListener.dispose();
+
 			ref.dispose();
 		});
 
@@ -917,12 +945,15 @@ class CellInfoContentProvider {
 			}
 
 			model.setValue(newResult.content);
+
 			model.setLanguage(newResult.mode.languageId);
 		});
 
 		const once = model.onWillDispose(() => {
 			once.dispose();
+
 			cellModelListener.dispose();
+
 			ref.dispose();
 		});
 
@@ -995,6 +1026,7 @@ class NotebookMetadataContentProvider {
 			ref.object.notebook.transientOptions.transientDocumentMetadata,
 			ref.object.notebook.metadata,
 		);
+
 		result = this._modelService.createModel(metadataSource, mode, resource);
 
 		if (!result) {
@@ -1034,7 +1066,9 @@ class NotebookMetadataContentProvider {
 
 		const once = result.onWillDispose(() => {
 			disposables.dispose();
+
 			once.dispose();
+
 			ref.dispose();
 		});
 
@@ -1050,6 +1084,7 @@ class RegisterSchemasContribution
 
 	constructor() {
 		super();
+
 		this.registerMetadataSchemas();
 	}
 
@@ -1091,6 +1126,7 @@ class NotebookEditorManager implements IWorkbenchContribution {
 	) {
 		// OPEN notebook editor for models that have turned dirty without being visible in an editor
 		type E = IResolvedNotebookEditorModel;
+
 		this._disposables.add(
 			Event.debounce<E, E[]>(
 				this._notebookEditorModelService.onDidChangeDirty,
@@ -1111,6 +1147,7 @@ class NotebookEditorManager implements IWorkbenchContribution {
 					);
 
 					const p = group.closeEditors(conflictInputs);
+
 					e.waitUntil(p);
 				}
 			}),
@@ -1147,6 +1184,7 @@ class NotebookEditorManager implements IWorkbenchContribution {
 				});
 			}
 		}
+
 		if (result.length > 0) {
 			this._editorService.openEditors(result);
 		}
@@ -1234,6 +1272,7 @@ class SimpleNotebookWorkingCopyEditorHandler
 		) {
 			return notebookType?.viewType;
 		}
+
 		return undefined;
 	}
 }
@@ -1258,6 +1297,7 @@ class NotebookLanguageSelectorScoreRefine {
 		if (!cellUri) {
 			return undefined;
 		}
+
 		const notebook = this._notebookService.getNotebookTextModel(
 			cellUri.notebook,
 		);
@@ -1265,6 +1305,7 @@ class NotebookLanguageSelectorScoreRefine {
 		if (!notebook) {
 			return undefined;
 		}
+
 		return {
 			uri: notebook.uri,
 			type: notebook.viewType,

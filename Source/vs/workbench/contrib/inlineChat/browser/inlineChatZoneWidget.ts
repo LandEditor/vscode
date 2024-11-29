@@ -65,7 +65,9 @@ export class InlineChatZoneWidget extends ZoneWidget {
 	private readonly _scrollUp = this._disposables.add(
 		new ScrollUpState(this.editor),
 	);
+
 	private readonly _ctxCursorPosition: IContextKey<"above" | "below" | "">;
+
 	private _dimension?: Dimension;
 
 	constructor(
@@ -138,9 +140,11 @@ export class InlineChatZoneWidget extends ZoneWidget {
 				},
 			},
 		);
+
 		this._disposables.add(this.widget);
 
 		let revealFn: (() => void) | undefined;
+
 		this._disposables.add(
 			this.widget.chatWidget.onWillMaybeChangeHeight(() => {
 				if (this.position) {
@@ -150,6 +154,7 @@ export class InlineChatZoneWidget extends ZoneWidget {
 				}
 			}),
 		);
+
 		this._disposables.add(
 			this.widget.onDidChangeHeight(() => {
 				if (this.position && !this._usesResizeHeight) {
@@ -159,8 +164,11 @@ export class InlineChatZoneWidget extends ZoneWidget {
 					);
 
 					const height = this._computeHeight();
+
 					this._relayout(height.linesValue);
+
 					revealFn();
+
 					revealFn = undefined;
 				}
 			}),
@@ -171,6 +179,7 @@ export class InlineChatZoneWidget extends ZoneWidget {
 		this._disposables.add(
 			autorun((r) => {
 				const isBusy = this.widget.requestInProgress.read(r);
+
 				this.domNode.firstElementChild?.classList.toggle(
 					"busy",
 					isBusy,
@@ -212,16 +221,19 @@ export class InlineChatZoneWidget extends ZoneWidget {
 				this._ctxCursorPosition.reset();
 			}
 		};
+
 		this._disposables.add(
 			this.editor.onDidChangeCursorPosition((e) =>
 				updateCursorIsAboveContextKey(),
 			),
 		);
+
 		this._disposables.add(
 			this.editor.onDidFocusEditorText((e) =>
 				updateCursorIsAboveContextKey(),
 			),
 		);
+
 		updateCursorIsAboveContextKey();
 	}
 
@@ -240,9 +252,11 @@ export class InlineChatZoneWidget extends ZoneWidget {
 		const info = this.editor.getLayoutInfo();
 
 		let width = info.contentWidth - info.verticalScrollbarWidth;
+
 		width = Math.min(850, width);
 
 		this._dimension = new Dimension(width, heightInPixel);
+
 		this.widget.layout(this._dimension);
 	}
 
@@ -266,6 +280,7 @@ export class InlineChatZoneWidget extends ZoneWidget {
 
 	protected override _getResizeBounds(): {
 		minLines: number;
+
 		maxLines: number;
 	} {
 		const lineHeight = this.editor.getOption(EditorOption.lineHeight);
@@ -296,10 +311,13 @@ export class InlineChatZoneWidget extends ZoneWidget {
 		const revealZone = this._createZoneAndScrollRestoreFn(position);
 
 		super.show(position, this._computeHeight().linesValue);
+
 		this.widget.chatWidget.setVisible(true);
+
 		this.widget.focus();
 
 		revealZone();
+
 		this._scrollUp.enable();
 	}
 
@@ -312,6 +330,7 @@ export class InlineChatZoneWidget extends ZoneWidget {
 			info.glyphMarginWidth +
 			info.lineNumbersWidth +
 			info.decorationsWidth;
+
 		this.container.style.paddingLeft = `${marginWithoutIndentation}px`;
 	}
 
@@ -319,12 +338,15 @@ export class InlineChatZoneWidget extends ZoneWidget {
 		const stickyScroll = this.editor.getOption(EditorOption.stickyScroll);
 
 		const magicValue = stickyScroll.enabled ? stickyScroll.maxLineCount : 0;
+
 		this.editor.revealLines(
 			position.lineNumber + magicValue,
 			position.lineNumber + magicValue,
 			ScrollType.Immediate,
 		);
+
 		this._scrollUp.reset();
+
 		this.updatePositionAndHeight(position);
 	}
 
@@ -337,6 +359,7 @@ export class InlineChatZoneWidget extends ZoneWidget {
 				? this._computeHeight().linesValue
 				: undefined,
 		);
+
 		revealZone();
 	}
 
@@ -406,6 +429,7 @@ export class InlineChatZoneWidget extends ZoneWidget {
 					newScrollTop,
 					forceScrollTop,
 				});
+
 				this.editor.setScrollTop(newScrollTop, ScrollType.Immediate);
 			}
 		});
@@ -417,19 +441,26 @@ export class InlineChatZoneWidget extends ZoneWidget {
 
 	override hide(): void {
 		const scrollState = StableEditorBottomScrollState.capture(this.editor);
+
 		this._scrollUp.disable();
+
 		this._ctxCursorPosition.reset();
+
 		this.widget.reset();
+
 		this.widget.chatWidget.setVisible(false);
 
 		super.hide();
+
 		aria.status(localize("inlineChatClosed", "Closed inline chat widget"));
+
 		scrollState.restore(this.editor);
 	}
 }
 
 class ScrollUpState {
 	private _didScrollUpOrDown?: boolean;
+
 	private _ignoreEvents = false;
 
 	private readonly _listener = new MutableDisposable();
@@ -446,17 +477,21 @@ class ScrollUpState {
 
 	enable(): void {
 		this._didScrollUpOrDown = undefined;
+
 		this._listener.value = this._editor.onDidScrollChange((e) => {
 			if (!e.scrollTopChanged || this._ignoreEvents) {
 				return;
 			}
+
 			this._listener.clear();
+
 			this._didScrollUpOrDown = true;
 		});
 	}
 
 	disable(): void {
 		this._listener.clear();
+
 		this._didScrollUpOrDown = undefined;
 	}
 

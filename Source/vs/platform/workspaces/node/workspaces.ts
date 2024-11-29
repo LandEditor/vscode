@@ -37,8 +37,10 @@ export function getWorkspaceIdentifier(configPath: URI): IWorkspaceIdentifier {
 		if (!isLinux) {
 			configPathStr = configPathStr.toLowerCase(); // sanitize for platform file system
 		}
+
 		return createHash("md5").update(configPathStr).digest("hex"); // CodeQL [SM04514] Using MD5 to convert a file path to a fixed length
 	}
+
 	return {
 		id: getWorkspaceId(),
 		configPath,
@@ -74,6 +76,7 @@ export function getSingleFolderWorkspaceIdentifier(
 		if (!folderStat) {
 			return undefined;
 		}
+
 		let ctime: number | undefined;
 
 		if (isLinux) {
@@ -87,11 +90,13 @@ export function getSingleFolderWorkspaceIdentifier(
 				ctime = folderStat.birthtime.getTime();
 			}
 		}
+
 		return createHash("md5")
 			.update(folderUri.fsPath)
 			.update(ctime ? String(ctime) : "")
 			.digest("hex"); // CodeQL [SM04514] Using MD5 to convert a file path to a fixed length
 	}
+
 	const folderId = getFolderId();
 
 	if (typeof folderId === "string") {
@@ -100,6 +105,7 @@ export function getSingleFolderWorkspaceIdentifier(
 			uri: folderUri,
 		};
 	}
+
 	return undefined; // invalid folder
 }
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!

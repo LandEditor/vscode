@@ -42,6 +42,7 @@ declare module "vscode" {
 		 */
 		readonly onDidReceiveMessage: Event<{
 			readonly editor: NotebookEditor;
+
 			readonly message: any;
 		}>;
 

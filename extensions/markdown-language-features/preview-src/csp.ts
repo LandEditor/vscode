@@ -11,13 +11,16 @@ import { getStrings } from "./strings";
  */
 export class CspAlerter {
 	private _didShow = false;
+
 	private _didHaveCspWarning = false;
+
 	private _messaging?: MessagePoster;
 
 	constructor(private readonly _settingsManager: SettingsManager) {
 		document.addEventListener("securitypolicyviolation", () => {
 			this._onCspWarning();
 		});
+
 		window.addEventListener("message", (event) => {
 			if (
 				event &&
@@ -28,6 +31,7 @@ export class CspAlerter {
 			}
 		});
 	}
+
 	public setPoster(poster: MessagePoster) {
 		this._messaging = poster;
 
@@ -35,10 +39,13 @@ export class CspAlerter {
 			this._showCspWarning();
 		}
 	}
+
 	private _onCspWarning() {
 		this._didHaveCspWarning = true;
+
 		this._showCspWarning();
 	}
+
 	private _showCspWarning() {
 		const strings = getStrings();
 
@@ -51,14 +58,21 @@ export class CspAlerter {
 		) {
 			return;
 		}
+
 		this._didShow = true;
 
 		const notification = document.createElement("a");
+
 		notification.innerText = strings.cspAlertMessageText;
+
 		notification.setAttribute("id", "code-csp-warning");
+
 		notification.setAttribute("title", strings.cspAlertMessageTitle);
+
 		notification.setAttribute("role", "button");
+
 		notification.setAttribute("aria-label", strings.cspAlertMessageLabel);
+
 		notification.onclick = () => {
 			this._messaging!.postMessage("showPreviewSecuritySelector", {
 				source: settings.source,

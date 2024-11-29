@@ -40,11 +40,15 @@ import { IModelService } from "../../../common/services/model.js";
 
 export abstract class TreeElement {
 	abstract id: string;
+
 	abstract children: Map<string, TreeElement>;
+
 	abstract parent: TreeElement | undefined;
+
 	remove(): void {
 		this.parent?.children.delete(this.id);
 	}
+
 	static findId(
 		candidate: DocumentSymbol | string,
 		container: TreeElement,
@@ -62,13 +66,16 @@ export abstract class TreeElement {
 				candidateId = `${container.id}/${candidate.name}_${candidate.range.startLineNumber}_${candidate.range.startColumn}`;
 			}
 		}
+
 		let id = candidateId;
 
 		for (let i = 0; container.children.get(id) !== undefined; i++) {
 			id = `${candidateId}_${i}`;
 		}
+
 		return id;
 	}
+
 	static getElementById(
 		id: string,
 		element: TreeElement,
@@ -76,14 +83,17 @@ export abstract class TreeElement {
 		if (!id) {
 			return undefined;
 		}
+
 		const len = commonPrefixLength(id, element.id);
 
 		if (len === id.length) {
 			return element;
 		}
+
 		if (len < element.id.length) {
 			return undefined;
 		}
+
 		for (const [, child] of element.children) {
 			const candidate = TreeElement.getElementById(id, child);
 
@@ -91,32 +101,42 @@ export abstract class TreeElement {
 				return candidate;
 			}
 		}
+
 		return undefined;
 	}
+
 	static size(element: TreeElement): number {
 		let res = 1;
 
 		for (const [, child] of element.children) {
 			res += TreeElement.size(child);
 		}
+
 		return res;
 	}
+
 	static empty(element: TreeElement): boolean {
 		return element.children.size === 0;
 	}
 }
 export interface IOutlineMarker {
 	startLineNumber: number;
+
 	startColumn: number;
+
 	endLineNumber: number;
+
 	endColumn: number;
+
 	severity: MarkerSeverity;
 }
 export class OutlineElement extends TreeElement {
 	children = new Map<string, OutlineElement>();
+
 	marker:
 		| {
 				count: number;
+
 				topSev: MarkerSeverity;
 		  }
 		| undefined;
@@ -140,11 +160,13 @@ export class OutlineGroup extends TreeElement {
 	) {
 		super();
 	}
+
 	getItemEnclosingPosition(position: IPosition): OutlineElement | undefined {
 		return position
 			? this._getItemEnclosingPosition(position, this.children)
 			: undefined;
 	}
+
 	private _getItemEnclosingPosition(
 		position: IPosition,
 		children: Map<string, OutlineElement>,
@@ -156,17 +178,21 @@ export class OutlineGroup extends TreeElement {
 			) {
 				continue;
 			}
+
 			return (
 				this._getItemEnclosingPosition(position, item.children) || item
 			);
 		}
+
 		return undefined;
 	}
+
 	updateMarker(marker: IOutlineMarker[]): void {
 		for (const [, child] of this.children) {
 			this._updateMarker(marker, child);
 		}
 	}
+
 	private _updateMarker(
 		markers: IOutlineMarker[],
 		item: OutlineElement,
@@ -193,19 +219,23 @@ export class OutlineGroup extends TreeElement {
 		} else {
 			start = idx;
 		}
+
 		const myMarkers: IOutlineMarker[] = [];
 
 		let myTopSev: MarkerSeverity | undefined;
 
 		for (
 			;
+
 			start < markers.length &&
 			Range.areIntersecting(item.symbol.range, markers[start]);
+
 			start++
 		) {
 			// remove markers intersecting with this outline element
 			// and store them in a 'private' array.
 			const marker = markers[start];
+
 			myMarkers.push(marker);
 			(markers as Array<IOutlineMarker | undefined>)[start] = undefined;
 
@@ -220,12 +250,14 @@ export class OutlineGroup extends TreeElement {
 		for (const [, child] of item.children) {
 			this._updateMarker(myMarkers, child);
 		}
+
 		if (myTopSev) {
 			item.marker = {
 				count: myMarkers.length,
 				topSev: myTopSev,
 			};
 		}
+
 		coalesceInPlace(markers);
 	}
 }
@@ -259,6 +291,7 @@ export class OutlineModel extends TreeElement {
 						for (const info of result || []) {
 							OutlineModel._makeOutlineElement(info, group);
 						}
+
 						return group;
 					},
 					(err) => {
@@ -297,10 +330,13 @@ export class OutlineModel extends TreeElement {
 			})
 			.finally(() => {
 				cts.dispose();
+
 				listener.dispose();
+
 				cts.dispose();
 			});
 	}
+
 	private static _makeOutlineElement(
 		info: DocumentSymbol,
 		container: OutlineGroup | OutlineElement,
@@ -314,26 +350,38 @@ export class OutlineModel extends TreeElement {
 				OutlineModel._makeOutlineElement(childInfo, res);
 			}
 		}
+
 		container.children.set(res.id, res);
 	}
+
 	static get(element: TreeElement | undefined): OutlineModel | undefined {
 		while (element) {
 			if (element instanceof OutlineModel) {
 				return element;
 			}
+
 			element = element.parent;
 		}
+
 		return undefined;
 	}
+
 	readonly id = "root";
+
 	readonly parent = undefined;
+
 	protected _groups = new Map<string, OutlineGroup>();
+
 	children = new Map<string, OutlineGroup | OutlineElement>();
+
 	protected constructor(readonly uri: URI) {
 		super();
+
 		this.id = "root";
+
 		this.parent = undefined;
 	}
+
 	private _compact(): this {
 		let count = 0;
 
@@ -345,6 +393,7 @@ export class OutlineModel extends TreeElement {
 				count += 1;
 			}
 		}
+
 		if (count !== 1) {
 			//
 			this.children = this._groups;
@@ -354,23 +403,30 @@ export class OutlineModel extends TreeElement {
 
 			for (const [, child] of group.children) {
 				child.parent = this;
+
 				this.children.set(child.id, child);
 			}
 		}
+
 		return this;
 	}
+
 	merge(other: OutlineModel): boolean {
 		if (this.uri.toString() !== other.uri.toString()) {
 			return false;
 		}
+
 		if (this._groups.size !== other._groups.size) {
 			return false;
 		}
+
 		this._groups = other._groups;
+
 		this.children = other.children;
 
 		return true;
 	}
+
 	getItemEnclosingPosition(
 		position: IPosition,
 		context?: OutlineElement,
@@ -384,9 +440,11 @@ export class OutlineModel extends TreeElement {
 				if (candidate instanceof OutlineGroup) {
 					preferredGroup = candidate;
 				}
+
 				candidate = candidate.parent;
 			}
 		}
+
 		let result: OutlineElement | undefined = undefined;
 
 		for (const [, group] of this._groups) {
@@ -396,11 +454,14 @@ export class OutlineModel extends TreeElement {
 				break;
 			}
 		}
+
 		return result;
 	}
+
 	getItemById(id: string): TreeElement | undefined {
 		return TreeElement.getElementById(id, this);
 	}
+
 	updateMarker(marker: IOutlineMarker[]): void {
 		// sort markers by start range so that we can use
 		// outline element starts for quicker look up
@@ -410,6 +471,7 @@ export class OutlineModel extends TreeElement {
 			group.updateMarker(marker.slice(0));
 		}
 	}
+
 	getTopLevelSymbols(): DocumentSymbol[] {
 		const roots: DocumentSymbol[] = [];
 
@@ -425,14 +487,17 @@ export class OutlineModel extends TreeElement {
 				);
 			}
 		}
+
 		return roots.sort((a, b) =>
 			Range.compareRangesUsingStarts(a.range, b.range),
 		);
 	}
+
 	asListOfDocumentSymbols(): DocumentSymbol[] {
 		const roots = this.getTopLevelSymbols();
 
 		const bucket: DocumentSymbol[] = [];
+
 		OutlineModel._flattenDocumentSymbols(bucket, roots, "");
 
 		return bucket.sort(
@@ -447,6 +512,7 @@ export class OutlineModel extends TreeElement {
 				),
 		);
 	}
+
 	private static _flattenDocumentSymbols(
 		bucket: DocumentSymbol[],
 		entries: DocumentSymbol[],
@@ -490,16 +556,24 @@ export interface IOutlineModelService {
 }
 interface CacheEntry {
 	versionId: number;
+
 	provider: DocumentSymbolProvider[];
+
 	promiseCnt: number;
+
 	source: CancellationTokenSource;
+
 	promise: Promise<OutlineModel>;
+
 	model: OutlineModel | undefined;
 }
 export class OutlineModelService implements IOutlineModelService {
 	declare _serviceBrand: undefined;
+
 	private readonly _disposables = new DisposableStore();
+
 	private readonly _debounceInformation: IFeatureDebounceInformation;
+
 	private readonly _cache = new LRUCache<string, CacheEntry>(10, 0.7);
 
 	constructor(
@@ -522,9 +596,11 @@ export class OutlineModelService implements IOutlineModelService {
 			}),
 		);
 	}
+
 	dispose(): void {
 		this._disposables.dispose();
 	}
+
 	async getOrCreate(
 		textModel: ITextModel,
 		token: CancellationToken,
@@ -541,6 +617,7 @@ export class OutlineModelService implements IOutlineModelService {
 			!equals(data.provider, provider)
 		) {
 			const source = new CancellationTokenSource();
+
 			data = {
 				versionId: textModel.getVersionId(),
 				provider,
@@ -549,12 +626,15 @@ export class OutlineModelService implements IOutlineModelService {
 				promise: OutlineModel.create(registry, textModel, source.token),
 				model: undefined,
 			};
+
 			this._cache.set(textModel.id, data);
 
 			const now = Date.now();
+
 			data.promise
 				.then((outlineModel) => {
 					data!.model = outlineModel;
+
 					this._debounceInformation.update(
 						textModel,
 						Date.now() - now,
@@ -564,6 +644,7 @@ export class OutlineModelService implements IOutlineModelService {
 					this._cache.delete(textModel.id);
 				});
 		}
+
 		if (data.model) {
 			// resolved -> return data
 			return data.model;
@@ -575,6 +656,7 @@ export class OutlineModelService implements IOutlineModelService {
 			// last -> cancel provider request, remove cached promise
 			if (--data.promiseCnt === 0) {
 				data.source.cancel();
+
 				this._cache.delete(textModel.id);
 			}
 		});
@@ -585,6 +667,7 @@ export class OutlineModelService implements IOutlineModelService {
 			listener.dispose();
 		}
 	}
+
 	getDebounceValue(textModel: ITextModel): number {
 		return this._debounceInformation.get(textModel);
 	}

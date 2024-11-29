@@ -8,19 +8,23 @@ import { Repository } from "./typings/git";
 
 export class DisposableStore {
 	private disposables = new Set<vscode.Disposable>();
+
 	add(disposable: vscode.Disposable): void {
 		this.disposables.add(disposable);
 	}
+
 	dispose(): void {
 		for (const disposable of this.disposables) {
 			disposable.dispose();
 		}
+
 		this.disposables.clear();
 	}
 }
 export function getRepositoryFromUrl(url: string):
 	| {
 			owner: string;
+
 			repo: string;
 	  }
 	| undefined {
@@ -33,6 +37,7 @@ export function getRepositoryFromUrl(url: string):
 export function getRepositoryFromQuery(query: string):
 	| {
 			owner: string;
+
 			repo: string;
 	  }
 	| undefined {

@@ -16,6 +16,7 @@ function ensureFolderExists(loc: string) {
 		if (parent) {
 			ensureFolderExists(parent);
 		}
+
 		fs.mkdirSync(loc);
 	}
 }
@@ -55,13 +56,16 @@ async function downloadVSCodeServerArchive(
 		https.get(requestOptions, (res) => {
 			if (res.statusCode !== 302) {
 				reject("Failed to get VS Code server archive location");
+
 				res.resume(); // read the rest of the response data and discard it
 				return;
 			}
+
 			const archiveUrl = res.headers.location;
 
 			if (!archiveUrl) {
 				reject("Failed to get VS Code server archive location");
+
 				res.resume(); // read the rest of the response data and discard it
 				return;
 			}
@@ -75,14 +79,18 @@ async function downloadVSCodeServerArchive(
 			);
 
 			const outStream = fs.createWriteStream(archivePath);
+
 			outStream.on("finish", () => {
 				resolve(archivePath);
 			});
+
 			outStream.on("error", (err) => {
 				reject(err);
 			});
+
 			https.get(archiveRequestOptions, (res) => {
 				res.pipe(outStream);
+
 				res.on("error", (err) => {
 					reject(err);
 				});
@@ -120,6 +128,7 @@ function unzipVSCodeServer(
 		} else {
 			cp.spawnSync("unzip", [vscodeArchivePath, "-d", `${tempDir}`]);
 		}
+
 		fs.renameSync(
 			path.join(
 				tempDir,
@@ -134,6 +143,7 @@ function unzipVSCodeServer(
 		if (!fs.existsSync(extractDir)) {
 			fs.mkdirSync(extractDir);
 		}
+
 		cp.spawnSync("tar", [
 			"-xzf",
 			vscodeArchivePath,
@@ -181,5 +191,6 @@ export async function downloadAndUnzipVSCodeServer(
 			);
 		}
 	}
+
 	return Promise.resolve(extractDir);
 }

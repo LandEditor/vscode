@@ -17,6 +17,7 @@ export class VSCodeTelemetryReporter implements TelemetryReporter {
 			| undefined,
 		private readonly clientVersionDelegate: () => string,
 	) {}
+
 	public logTelemetry(
 		eventName: string,
 		properties: {
@@ -34,6 +35,7 @@ export class VSCodeTelemetryReporter implements TelemetryReporter {
             }
         */
 		properties["version"] = this.clientVersionDelegate();
+
 		reporter.postEventObj(eventName, properties);
 	}
 }

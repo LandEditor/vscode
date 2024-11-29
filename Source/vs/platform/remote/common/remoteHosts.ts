@@ -22,16 +22,19 @@ export function getRemoteName(
 	if (!authority) {
 		return undefined;
 	}
+
 	const pos = authority.indexOf("+");
 
 	if (pos < 0) {
 		// e.g. localhost:8000
 		return authority;
 	}
+
 	return authority.substr(0, pos);
 }
 export function parseAuthorityWithPort(authority: string): {
 	host: string;
+
 	port: number;
 } {
 	const { host, port } = parseAuthority(authority);
@@ -41,6 +44,7 @@ export function parseAuthorityWithPort(authority: string): {
 			`Invalid remote authority: ${authority}. It must either be a remote of form <remoteName>+<arg> or a remote host of form <host>:<port>.`,
 		);
 	}
+
 	return { host, port };
 }
 export function parseAuthorityWithOptionalPort(
@@ -48,6 +52,7 @@ export function parseAuthorityWithOptionalPort(
 	defaultPort: number,
 ): {
 	host: string;
+
 	port: number;
 } {
 	let { host, port } = parseAuthority(authority);
@@ -55,10 +60,12 @@ export function parseAuthorityWithOptionalPort(
 	if (typeof port === "undefined") {
 		port = defaultPort;
 	}
+
 	return { host, port };
 }
 function parseAuthority(authority: string): {
 	host: string;
+
 	port: number | undefined;
 } {
 	// check for ipv6 with port

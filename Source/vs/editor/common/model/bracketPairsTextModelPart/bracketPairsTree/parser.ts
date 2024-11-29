@@ -39,8 +39,11 @@ export function parseDocument(
  */
 class Parser {
 	private readonly oldNodeReader?: NodeReader;
+
 	private readonly positionMapper: BeforeEditPositionMapper;
+
 	private _itemsConstructed: number = 0;
+
 	private _itemsFromCache: number = 0;
 	/**
 	 * Reports how many nodes were constructed in the last parse operation.
@@ -54,6 +57,7 @@ class Parser {
 	get nodesReused() {
 		return this._itemsFromCache;
 	}
+
 	constructor(
 		private readonly tokenizer: Tokenizer,
 		edits: TextEditInfo[],
@@ -63,11 +67,15 @@ class Parser {
 		if (oldNode && createImmutableLists) {
 			throw new Error("Not supported");
 		}
+
 		this.oldNodeReader = oldNode ? new NodeReader(oldNode) : undefined;
+
 		this.positionMapper = new BeforeEditPositionMapper(edits);
 	}
+
 	parseDocument(): AstNode {
 		this._itemsConstructed = 0;
+
 		this._itemsFromCache = 0;
 
 		let result = this.parseList(SmallImmutableSet.getEmpty(), 0);
@@ -75,8 +83,10 @@ class Parser {
 		if (!result) {
 			result = ListAstNode.getEmpty();
 		}
+
 		return result;
 	}
+
 	private parseList(
 		openedBracketIds: SmallImmutableSet<OpeningBracketId>,
 		level: number,
@@ -96,11 +106,14 @@ class Parser {
 				) {
 					break;
 				}
+
 				child = this.parseChild(openedBracketIds, level + 1);
 			}
+
 			if (child.kind === AstNodeKind.List && child.childrenLength === 0) {
 				continue;
 			}
+
 			items.push(child);
 		}
 		// When there is no oldNodeReader, all items are created from scratch and must have the same height.
@@ -110,6 +123,7 @@ class Parser {
 
 		return result;
 	}
+
 	private tryReadChildFromCache(
 		openedBracketIds: SmallImmutableSet<number>,
 	): AstNode | undefined {
@@ -138,6 +152,7 @@ class Parser {
 							// In the latter case, brackets might have been extended (`end` -> `ending`), so even touching nodes cannot be reused.
 							return false;
 						}
+
 						const canBeReused =
 							curNode.canBeReused(openedBracketIds);
 
@@ -147,14 +162,17 @@ class Parser {
 
 				if (cachedNode) {
 					this._itemsFromCache++;
+
 					this.tokenizer.skip(cachedNode.length);
 
 					return cachedNode;
 				}
 			}
 		}
+
 		return undefined;
 	}
+
 	private parseChild(
 		openedBracketIds: SmallImmutableSet<number>,
 		level: number,
@@ -178,6 +196,7 @@ class Parser {
 					// To prevent stack overflows
 					return new TextAstNode(token.length);
 				}
+
 				const set = openedBracketIds.merge(token.bracketIds);
 
 				const child = this.parseList(set, level + 1);
@@ -205,6 +224,7 @@ class Parser {
 					);
 				}
 			}
+
 			default:
 				throw new Error("unexpected");
 		}

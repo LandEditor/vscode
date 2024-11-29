@@ -64,12 +64,14 @@ export type CoverageBarSource = Pick<
 
 export class ManagedTestCoverageBars extends Disposable {
 	private _coverage?: CoverageBarSource;
+
 	private readonly el = new Lazy(() => {
 		if (this.options.compact) {
 			const el = h(".test-coverage-bars.compact", [
 				h(".tpc@overall"),
 				h(".bar@tpcBar"),
 			]);
+
 			this.attachHover(el.tpcBar, getOverallHoverText);
 
 			return el;
@@ -80,19 +82,25 @@ export class ManagedTestCoverageBars extends Disposable {
 				h(".bar@function"),
 				h(".bar@branch"),
 			]);
+
 			this.attachHover(el.statement, stmtCoverageText);
+
 			this.attachHover(el.function, fnCoverageText);
+
 			this.attachHover(el.branch, branchCoverageText);
 
 			return el;
 		}
 	});
+
 	private readonly visibleStore = this._register(new DisposableStore());
+
 	private readonly customHovers: IManagedHover[] = [];
 	/** Gets whether coverage is currently visible for the resource. */
 	public get visible() {
 		return !!this._coverage;
 	}
+
 	constructor(
 		protected readonly options: TestCoverageBarsOptions,
 		@IConfigurationService
@@ -102,6 +110,7 @@ export class ManagedTestCoverageBars extends Disposable {
 	) {
 		super();
 	}
+
 	private attachHover(
 		target: HTMLElement,
 		factory: (
@@ -116,26 +125,35 @@ export class ManagedTestCoverageBars extends Disposable {
 			),
 		);
 	}
+
 	public setCoverageInfo(coverage: CoverageBarSource | undefined) {
 		const ds = this.visibleStore;
 
 		if (!coverage) {
 			if (this._coverage) {
 				this._coverage = undefined;
+
 				this.customHovers.forEach((c) => c.hide());
+
 				ds.clear();
 			}
+
 			return;
 		}
+
 		if (!this._coverage) {
 			const root = this.el.value.root;
+
 			ds.add(toDisposable(() => root.remove()));
+
 			this.options.container.appendChild(root);
+
 			ds.add(
 				this.configurationService.onDidChangeConfiguration((c) => {
 					if (!this._coverage) {
 						return;
 					}
+
 					if (
 						c.affectsConfiguration(
 							TestingConfigKeys.CoveragePercent,
@@ -149,9 +167,12 @@ export class ManagedTestCoverageBars extends Disposable {
 				}),
 			);
 		}
+
 		this._coverage = coverage;
+
 		this.doRender(coverage);
 	}
+
 	private doRender(coverage: CoverageBarSource) {
 		const el = this.el.value;
 
@@ -178,6 +199,7 @@ export class ManagedTestCoverageBars extends Disposable {
 		} else {
 			el.overall.style.display = "none";
 		}
+
 		if ("tpcBar" in el) {
 			// compact mode
 			renderBar(el.tpcBar, overallStat, false, thresholds);
@@ -188,6 +210,7 @@ export class ManagedTestCoverageBars extends Disposable {
 				coverage.statement.total === 0,
 				thresholds,
 			);
+
 			renderBar(
 				el.function,
 				coverage.declaration &&
@@ -195,6 +218,7 @@ export class ManagedTestCoverageBars extends Disposable {
 				coverage.declaration?.total === 0,
 				thresholds,
 			);
+
 			renderBar(
 				el.branch,
 				coverage.branch && coverUtils.percent(coverage.branch),
@@ -218,18 +242,23 @@ const renderBar = (
 
 		return;
 	}
+
 	bar.style.display = "block";
+
 	bar.style.width = `${barWidth}px`;
 	// this is floored so the bar is only completely filled at 100% and not 99.9%
 	bar.style.setProperty("--test-bar-width", `${Math.floor(pct * 16)}px`);
 
 	if (isZero) {
 		bar.style.color = "currentColor";
+
 		bar.style.opacity = "0.5";
 
 		return;
 	}
+
 	bar.style.color = coverUtils.getCoverageColor(pct, thresholds);
+
 	bar.style.opacity = "1";
 };
 
@@ -292,12 +321,16 @@ export class ExplorerTestCoverageBars
 		this,
 		undefined,
 	);
+
 	private static hasRegistered = false;
+
 	public static register() {
 		if (this.hasRegistered) {
 			return;
 		}
+
 		this.hasRegistered = true;
+
 		Registry.as<IExplorerFileContributionRegistry>(
 			ExplorerExtensions.FileContributionRegistry,
 		).register({
@@ -309,6 +342,7 @@ export class ExplorerTestCoverageBars
 			},
 		});
 	}
+
 	constructor(
 		options: TestCoverageBarsOptions,
 		@IConfigurationService
@@ -324,6 +358,7 @@ export class ExplorerTestCoverageBars
 			configurationService,
 			TestingConfigKeys.ShowCoverageInExplorer,
 		);
+
 		this._register(
 			autorun(async (reader) => {
 				let info: AbstractFileCoverage | undefined;
@@ -337,6 +372,7 @@ export class ExplorerTestCoverageBars
 						info = coverage.getComputedForUri(resource);
 					}
 				}
+
 				this.setCoverageInfo(info);
 			}),
 		);
@@ -345,10 +381,12 @@ export class ExplorerTestCoverageBars
 	public setResource(resource: URI | undefined, transaction?: ITransaction) {
 		this.resource.set(resource, transaction);
 	}
+
 	public override setCoverageInfo(
 		coverage: AbstractFileCoverage | undefined,
 	) {
 		super.setCoverageInfo(coverage);
+
 		this.options.container?.classList.toggle(
 			"explorer-item-with-test-coverage",
 			this.visible,

@@ -49,8 +49,11 @@ export interface IExtensionResourceLoaderService {
 	getExtensionGalleryResourceURL(
 		galleryExtension: {
 			publisher: string;
+
 			name: string;
+
 			version: string;
+
 			targetPlatform?: TargetPlatform;
 		},
 		path?: string,
@@ -63,11 +66,13 @@ export function migratePlatformSpecificExtensionGalleryResourceURL(
 	if (resource.query !== `target=${targetPlatform}`) {
 		return undefined;
 	}
+
 	const paths = resource.path.split("/");
 
 	if (!paths[3]) {
 		return undefined;
 	}
+
 	paths[3] = `${paths[3]}+${targetPlatform}`;
 
 	return resource.with({ query: null, path: paths.join("/") });
@@ -76,7 +81,9 @@ export abstract class AbstractExtensionResourceLoaderService
 	implements IExtensionResourceLoaderService
 {
 	readonly _serviceBrand: undefined;
+
 	private readonly _extensionGalleryResourceUrlTemplate: string | undefined;
+
 	private readonly _extensionGalleryAuthority: string | undefined;
 
 	constructor(
@@ -89,6 +96,7 @@ export abstract class AbstractExtensionResourceLoaderService
 		if (_productService.extensionsGallery) {
 			this._extensionGalleryResourceUrlTemplate =
 				_productService.extensionsGallery.resourceUrlTemplate;
+
 			this._extensionGalleryAuthority = this
 				._extensionGalleryResourceUrlTemplate
 				? this._getExtensionGalleryAuthority(
@@ -97,9 +105,11 @@ export abstract class AbstractExtensionResourceLoaderService
 				: undefined;
 		}
 	}
+
 	public get supportsExtensionGalleryResources(): boolean {
 		return this._extensionGalleryResourceUrlTemplate !== undefined;
 	}
+
 	public getExtensionGalleryResourceURL(
 		{
 			publisher,
@@ -108,8 +118,11 @@ export abstract class AbstractExtensionResourceLoaderService
 			targetPlatform,
 		}: {
 			publisher: string;
+
 			name: string;
+
 			version: string;
+
 			targetPlatform?: TargetPlatform;
 		},
 		path?: string,
@@ -136,9 +149,12 @@ export abstract class AbstractExtensionResourceLoaderService
 					})
 				: uri;
 		}
+
 		return undefined;
 	}
+
 	public abstract readExtensionResource(uri: URI): Promise<string>;
+
 	isExtensionGalleryResource(uri: URI): boolean {
 		return (
 			!!this._extensionGalleryAuthority &&
@@ -146,6 +162,7 @@ export abstract class AbstractExtensionResourceLoaderService
 				this._getExtensionGalleryAuthority(uri)
 		);
 	}
+
 	protected async getExtensionGalleryRequestHeaders(): Promise<
 		Record<string, string>
 	> {
@@ -161,12 +178,16 @@ export abstract class AbstractExtensionResourceLoaderService
 		) {
 			headers["X-Machine-Id"] = await this._getServiceMachineId();
 		}
+
 		if (this._productService.commit) {
 			headers["X-Client-Commit"] = this._productService.commit;
 		}
+
 		return headers;
 	}
+
 	private _serviceMachineIdPromise: Promise<string> | undefined;
+
 	private _getServiceMachineId(): Promise<string> {
 		if (!this._serviceMachineIdPromise) {
 			this._serviceMachineIdPromise = getServiceMachineId(
@@ -175,16 +196,20 @@ export abstract class AbstractExtensionResourceLoaderService
 				this._storageService,
 			);
 		}
+
 		return this._serviceMachineIdPromise;
 	}
+
 	private _getExtensionGalleryAuthority(uri: URI): string | undefined {
 		if (this._isWebExtensionResourceEndPoint(uri)) {
 			return uri.authority;
 		}
+
 		const index = uri.authority.indexOf(".");
 
 		return index !== -1 ? uri.authority.substring(index + 1) : undefined;
 	}
+
 	protected _isWebExtensionResourceEndPoint(uri: URI): boolean {
 		const uriPath = uri.path,
 			serverRootPath = RemoteAuthorities.getServerRootPath();

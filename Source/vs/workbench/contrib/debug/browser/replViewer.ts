@@ -71,32 +71,45 @@ interface IReplEvaluationInputTemplateData {
 
 interface IReplGroupTemplateData {
 	label: HTMLElement;
+
 	source: SourceWidget;
+
 	elementDisposable?: IDisposable;
 }
 
 interface IReplEvaluationResultTemplateData {
 	value: HTMLElement;
+
 	elementStore: DisposableStore;
 }
 
 interface IOutputReplElementTemplateData {
 	container: HTMLElement;
+
 	count: CountBadge;
+
 	countContainer: HTMLElement;
+
 	value: HTMLElement;
+
 	source: SourceWidget;
 
 	getReplElementSource(): IReplElementSource | undefined;
+
 	elementDisposable: DisposableStore;
 }
 
 interface IRawObjectReplTemplateData {
 	container: HTMLElement;
+
 	expression: HTMLElement;
+
 	name: HTMLElement;
+
 	value: HTMLElement;
+
 	label: HighlightedLabel;
+
 	elementStore: DisposableStore;
 }
 
@@ -136,6 +149,7 @@ export class ReplEvaluationInputsRenderer
 		templateData: IReplEvaluationInputTemplateData,
 	): void {
 		const evaluation = element.element;
+
 		templateData.label.set(
 			evaluation.value,
 			createMatches(element.filterData),
@@ -190,16 +204,19 @@ export class ReplGroupRenderer
 		const replGroup = element.element;
 
 		dom.clearNode(templateData.label);
+
 		templateData.elementDisposable = this.expressionRenderer.renderValue(
 			templateData.label,
 			replGroup.name,
 			{ wasANSI: true, session: element.element.session },
 		);
+
 		templateData.source.setSource(replGroup.sourceData);
 	}
 
 	disposeTemplate(templateData: IReplGroupTemplateData): void {
 		templateData.elementDisposable?.dispose();
+
 		templateData.source.dispose();
 	}
 }
@@ -239,6 +256,7 @@ export class ReplEvaluationResultsRenderer
 		templateData.elementStore.clear();
 
 		const expression = element.element;
+
 		templateData.elementStore.add(
 			this.expressionRenderer.renderValue(
 				templateData.value,
@@ -279,6 +297,7 @@ export class ReplOutputElementRenderer
 
 	renderTemplate(container: HTMLElement): IOutputReplElementTemplateData {
 		const data: IOutputReplElementTemplateData = Object.create(null);
+
 		container.classList.add("output");
 
 		const expression = dom.append(
@@ -287,17 +306,22 @@ export class ReplOutputElementRenderer
 		);
 
 		data.container = container;
+
 		data.countContainer = dom.append(expression, $(".count-badge-wrapper"));
+
 		data.count = new CountBadge(
 			data.countContainer,
 			{},
 			defaultCountBadgeStyles,
 		);
+
 		data.value = dom.append(expression, $("span.value.label"));
+
 		data.source = this.instaService.createInstance(
 			SourceWidget,
 			expression,
 		);
+
 		data.elementDisposable = new DisposableStore();
 
 		return data;
@@ -309,7 +333,9 @@ export class ReplOutputElementRenderer
 		templateData: IOutputReplElementTemplateData,
 	): void {
 		templateData.elementDisposable.clear();
+
 		this.setElementCount(element, templateData);
+
 		templateData.elementDisposable.add(
 			element.onDidChangeCount(() =>
 				this.setElementCount(element, templateData),
@@ -321,6 +347,7 @@ export class ReplOutputElementRenderer
 		templateData.value.className = "value";
 
 		const locationReference = element.expression?.valueLocationReference;
+
 		templateData.elementDisposable.add(
 			this.expressionRenderer.renderValue(
 				templateData.value,
@@ -343,7 +370,9 @@ export class ReplOutputElementRenderer
 						? "ignore"
 						: "info",
 		);
+
 		templateData.source.setSource(element.sourceData);
+
 		templateData.getReplElementSource = () => element.sourceData;
 	}
 
@@ -353,6 +382,7 @@ export class ReplOutputElementRenderer
 	): void {
 		if (element.count >= 2) {
 			templateData.count.setCount(element.count);
+
 			templateData.countContainer.hidden = false;
 		} else {
 			templateData.countContainer.hidden = true;
@@ -361,7 +391,9 @@ export class ReplOutputElementRenderer
 
 	disposeTemplate(templateData: IOutputReplElementTemplateData): void {
 		templateData.source.dispose();
+
 		templateData.elementDisposable.dispose();
+
 		templateData.count.dispose();
 	}
 
@@ -398,6 +430,7 @@ export class ReplVariablesRenderer extends AbstractExpressionsRenderer<
 		data: IExpressionTemplateData,
 	): void {
 		const element = node.element;
+
 		data.elementDisposable.clear();
 
 		super.renderExpressionElement(
@@ -420,6 +453,7 @@ export class ReplVariablesRenderer extends AbstractExpressionsRenderer<
 			data.label.set("");
 
 			const value = isReplVariable ? expression.expression : expression;
+
 			data.elementDisposable.add(
 				this.expressionRenderer.renderValue(data.value, value, {
 					colorize: true,
@@ -427,6 +461,7 @@ export class ReplVariablesRenderer extends AbstractExpressionsRenderer<
 					session: expression.getSession(),
 				}),
 			);
+
 			data.expression.classList.remove("nested-variable");
 		} else {
 			data.elementDisposable.add(
@@ -436,6 +471,7 @@ export class ReplVariablesRenderer extends AbstractExpressionsRenderer<
 					{ showChanged: true, highlights },
 				),
 			);
+
 			data.expression.classList.toggle(
 				"nested-variable",
 				isNestedVariable(expression),
@@ -496,6 +532,7 @@ export class ReplRawObjectsRenderer
 
 		// key
 		const element = node.element;
+
 		templateData.label.set(
 			element.name ? `${element.name}:` : "",
 			createMatches(node.filterData),
@@ -522,6 +559,7 @@ export class ReplRawObjectsRenderer
 
 	disposeTemplate(templateData: IRawObjectReplTemplateData): void {
 		templateData.elementStore.dispose();
+
 		templateData.label.dispose();
 	}
 }
@@ -589,15 +627,19 @@ export class ReplDelegate extends CachedListVirtualDelegate<IReplElement> {
 		) {
 			return ReplVariablesRenderer.ID;
 		}
+
 		if (element instanceof ReplEvaluationResult) {
 			return ReplEvaluationResultsRenderer.ID;
 		}
+
 		if (element instanceof ReplEvaluationInput) {
 			return ReplEvaluationInputsRenderer.ID;
 		}
+
 		if (element instanceof ReplOutputElement) {
 			return ReplOutputElementRenderer.ID;
 		}
+
 		if (element instanceof ReplGroup) {
 			return ReplGroupRenderer.ID;
 		}
@@ -660,6 +702,7 @@ export class ReplAccessibilityProvider
 				element.value,
 			);
 		}
+
 		if (
 			element instanceof ReplOutputElement ||
 			element instanceof ReplEvaluationInput ||
@@ -681,6 +724,7 @@ export class ReplAccessibilityProvider
 					: "")
 			);
 		}
+
 		if (element instanceof RawObjectReplElement) {
 			return localize(
 				"replRawObjectAriaLabel",
@@ -689,6 +733,7 @@ export class ReplAccessibilityProvider
 				element.value,
 			);
 		}
+
 		if (element instanceof ReplGroup) {
 			return localize(
 				"replGroup",
@@ -703,7 +748,9 @@ export class ReplAccessibilityProvider
 
 class SourceWidget extends Disposable {
 	private readonly el: HTMLElement;
+
 	private source?: IReplElementSource;
+
 	private hover?: IManagedHover;
 
 	constructor(
@@ -713,10 +760,13 @@ class SourceWidget extends Disposable {
 		@ILabelService private readonly labelService: ILabelService,
 	) {
 		super();
+
 		this.el = dom.append(container, $(".source"));
+
 		this._register(
 			dom.addDisposableListener(this.el, "click", (e) => {
 				e.preventDefault();
+
 				e.stopPropagation();
 
 				if (this.source) {
@@ -733,6 +783,7 @@ class SourceWidget extends Disposable {
 
 	public setSource(source?: IReplElementSource) {
 		this.source = source;
+
 		this.el.textContent = source
 			? `${basename(source.source.name)}:${source.lineNumber}`
 			: "";
@@ -744,6 +795,7 @@ class SourceWidget extends Disposable {
 				"",
 			),
 		);
+
 		this.hover.update(
 			source
 				? `${this.labelService.getUriLabel(source.source.uri)}:${source.lineNumber}`

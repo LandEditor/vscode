@@ -23,6 +23,7 @@ export class SpeechAccessibilitySignalContribution
 		private readonly _speechService: ISpeechService,
 	) {
 		super();
+
 		this._register(
 			this._speechService.onDidStartSpeechToTextSession(() =>
 				this._accessibilitySignalService.playSignal(
@@ -30,6 +31,7 @@ export class SpeechAccessibilitySignalContribution
 				),
 			),
 		);
+
 		this._register(
 			this._speechService.onDidEndSpeechToTextSession(() =>
 				this._accessibilitySignalService.playSignal(

@@ -16,6 +16,7 @@ export class MainThreadClipboard implements MainThreadClipboardShape {
 		@IClipboardService
 		private readonly _clipboardService: IClipboardService,
 	) {}
+
 	dispose(): void {
 		// nothing
 	}

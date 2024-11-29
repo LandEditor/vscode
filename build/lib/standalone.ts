@@ -19,15 +19,20 @@ function writeFile(filePath: string, contents: Buffer | string): void {
 		if (dirCache[dirPath]) {
 			return;
 		}
+
 		dirCache[dirPath] = true;
+
 		ensureDirs(path.dirname(dirPath));
 
 		if (fs.existsSync(dirPath)) {
 			return;
 		}
+
 		fs.mkdirSync(dirPath);
 	}
+
 	ensureDirs(path.dirname(filePath));
+
 	fs.writeFileSync(filePath, contents);
 }
 export function extractEditor(
@@ -56,17 +61,26 @@ export function extractEditor(
 				.compilerOptions,
 			tsConfig.compilerOptions,
 		);
+
 		delete tsConfig.extends;
 	} else {
 		compilerOptions = tsConfig.compilerOptions;
 	}
+
 	tsConfig.compilerOptions = compilerOptions;
+
 	compilerOptions.noEmit = false;
+
 	compilerOptions.noUnusedLocals = false;
+
 	compilerOptions.preserveConstEnums = false;
+
 	compilerOptions.declaration = false;
+
 	compilerOptions.moduleResolution = ts.ModuleResolutionKind.Classic;
+
 	options.compilerOptions = compilerOptions;
+
 	console.log(
 		`Running tree shaker with shakeLevel ${tss.toStringShakeLevel(options.shakeLevel)}`,
 	);
@@ -86,6 +100,7 @@ export function extractEditor(
 			}
 		});
 	}
+
 	const result = tss.shake(options);
 
 	for (const fileName in result) {
@@ -93,6 +108,7 @@ export function extractEditor(
 			writeFile(path.join(options.destRoot, fileName), result[fileName]);
 		}
 	}
+
 	const copied: {
 		[fileName: string]: boolean;
 	} = {};
@@ -101,11 +117,13 @@ export function extractEditor(
 		if (copied[fileName]) {
 			return;
 		}
+
 		copied[fileName] = true;
 
 		const srcPath = path.join(options.sourcesRoot, fileName);
 
 		const dstPath = path.join(options.destRoot, fileName);
+
 		writeFile(dstPath, fs.readFileSync(srcPath));
 	};
 
@@ -130,6 +148,7 @@ export function extractEditor(
 						importedFilePath,
 					);
 				}
+
 				if (/\.css$/.test(importedFilePath)) {
 					transportCSS(importedFilePath, copyFile, writeOutputFile);
 				} else {
@@ -148,15 +167,21 @@ export function extractEditor(
 			}
 		}
 	}
+
 	delete tsConfig.compilerOptions.moduleResolution;
+
 	writeOutputFile("tsconfig.json", JSON.stringify(tsConfig, null, "\t"));
 	["vs/loader.js"].forEach(copyFile);
 }
 export interface IOptions2 {
 	srcFolder: string;
+
 	outFolder: string;
+
 	outResourcesFolder: string;
+
 	ignores: string[];
+
 	renames: {
 		[filename: string]: string;
 	};
@@ -177,9 +202,11 @@ export function createESMSourcesAndResources2(options: IOptions2): void {
 		if (dest === "tsconfig.json") {
 			return path.join(OUT_FOLDER, `tsconfig.json`);
 		}
+
 		if (/\.ts$/.test(dest)) {
 			return path.join(OUT_FOLDER, dest);
 		}
+
 		return path.join(OUT_RESOURCES_FOLDER, dest);
 	};
 
@@ -189,14 +216,18 @@ export function createESMSourcesAndResources2(options: IOptions2): void {
 		if (options.ignores.indexOf(file.replace(/\\/g, "/")) >= 0) {
 			continue;
 		}
+
 		if (file === "tsconfig.json") {
 			const tsConfig = JSON.parse(
 				fs.readFileSync(path.join(SRC_FOLDER, file)).toString(),
 			);
+
 			tsConfig.compilerOptions.module = "es2022";
+
 			tsConfig.compilerOptions.outDir = path
 				.join(path.relative(OUT_FOLDER, OUT_RESOURCES_FOLDER), "vs")
 				.replace(/\\/g, "/");
+
 			write(
 				getDestAbsoluteFilePath(file),
 				JSON.stringify(tsConfig, null, "\t"),
@@ -204,6 +235,7 @@ export function createESMSourcesAndResources2(options: IOptions2): void {
 
 			continue;
 		}
+
 		if (
 			/\.ts$/.test(file) ||
 			/\.d\.ts$/.test(file) ||
@@ -219,8 +251,10 @@ export function createESMSourcesAndResources2(options: IOptions2): void {
 
 			continue;
 		}
+
 		console.log(`UNKNOWN FILE: ${file}`);
 	}
+
 	function walkDirRecursive(dir: string): string[] {
 		if (
 			dir.charAt(dir.length - 1) !== "/" ||
@@ -228,11 +262,14 @@ export function createESMSourcesAndResources2(options: IOptions2): void {
 		) {
 			dir += "/";
 		}
+
 		const result: string[] = [];
+
 		_walkDirRecursive(dir, result, dir.length);
 
 		return result;
 	}
+
 	function _walkDirRecursive(
 		dir: string,
 		result: string[],
@@ -250,10 +287,12 @@ export function createESMSourcesAndResources2(options: IOptions2): void {
 			}
 		}
 	}
+
 	function write(absoluteFilePath: string, contents: string | Buffer): void {
 		if (/(\.ts$)|(\.js$)/.test(absoluteFilePath)) {
 			contents = toggleComments(contents.toString());
 		}
+
 		writeFile(absoluteFilePath, contents);
 
 		function toggleComments(fileContents: string): string {
@@ -270,29 +309,35 @@ export function createESMSourcesAndResources2(options: IOptions2): void {
 
 						continue;
 					}
+
 					if (/\/\/ ESM-uncomment-begin/.test(line)) {
 						mode = 2;
 
 						continue;
 					}
+
 					continue;
 				}
+
 				if (mode === 1) {
 					if (/\/\/ ESM-comment-end/.test(line)) {
 						mode = 0;
 
 						continue;
 					}
+
 					lines[i] = "// " + line;
 
 					continue;
 				}
+
 				if (mode === 2) {
 					if (/\/\/ ESM-uncomment-end/.test(line)) {
 						mode = 0;
 
 						continue;
 					}
+
 					lines[i] = line.replace(
 						/^(\s*)\/\/ ?/,
 						function (_, indent) {
@@ -301,6 +346,7 @@ export function createESMSourcesAndResources2(options: IOptions2): void {
 					);
 				}
 			}
+
 			return lines.join("\n");
 		}
 	}
@@ -313,6 +359,7 @@ function transportCSS(
 	if (!/\.css/.test(module)) {
 		return false;
 	}
+
 	const filename = path.join(SRC_DIR, module);
 
 	const fileContents = fs.readFileSync(filename).toString();
@@ -322,6 +369,7 @@ function transportCSS(
 		fileContents,
 		inlineResources === "base64",
 	);
+
 	write(module, newContents);
 
 	return true;
@@ -339,10 +387,12 @@ function transportCSS(
 					path.dirname(module),
 					relativeFontPath,
 				);
+
 				enqueue(fontPath);
 
 				return relativeFontPath;
 			}
+
 			const imagePath = path.join(path.dirname(module), url);
 
 			const fileContents = fs.readFileSync(path.join(SRC_DIR, imagePath));
@@ -368,9 +418,11 @@ function transportCSS(
 					DATA = encodedData;
 				}
 			}
+
 			return '"data:' + MIME + DATA + '"';
 		});
 	}
+
 	function _replaceURL(
 		contents: string,
 		replacer: (url: string) => string,
@@ -399,6 +451,7 @@ function transportCSS(
 				) {
 					url = url.substring(0, url.length - 1);
 				}
+
 				if (
 					!_startsWith(url, "data:") &&
 					!_startsWith(url, "http://") &&
@@ -406,10 +459,12 @@ function transportCSS(
 				) {
 					url = replacer(url);
 				}
+
 				return "url(" + url + ")";
 			},
 		);
 	}
+
 	function _startsWith(haystack: string, needle: string): boolean {
 		return (
 			haystack.length >= needle.length &&

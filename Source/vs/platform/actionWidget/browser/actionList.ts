@@ -35,29 +35,42 @@ export const previewSelectedActionCommand = "previewSelectedCodeAction";
 
 export interface IActionListDelegate<T> {
 	onHide(didCancel?: boolean): void;
+
 	onSelect(action: T, preview?: boolean): void;
+
 	onHover?(
 		action: T,
 		cancellationToken: CancellationToken,
 	): Promise<{ canPreview: boolean } | void>;
+
 	onFocus?(action: T | undefined): void;
 }
 
 export interface IActionListItem<T> {
 	readonly item?: T;
+
 	readonly kind: ActionListItemKind;
+
 	readonly group?: { kind?: any; icon?: ThemeIcon; title: string };
+
 	readonly disabled?: boolean;
+
 	readonly label?: string;
+
 	readonly keybinding?: ResolvedKeybinding;
+
 	canPreview?: boolean | undefined;
+
 	readonly hideIcon?: boolean;
 }
 
 interface IActionMenuTemplateData {
 	readonly container: HTMLElement;
+
 	readonly icon: HTMLElement;
+
 	readonly text: HTMLElement;
+
 	readonly keybinding: KeybindingLabel;
 }
 
@@ -68,6 +81,7 @@ export const enum ActionListItemKind {
 
 interface IHeaderTemplateData {
 	readonly container: HTMLElement;
+
 	readonly text: HTMLElement;
 }
 
@@ -82,6 +96,7 @@ class HeaderRenderer<T>
 		container.classList.add("group-header");
 
 		const text = document.createElement("span");
+
 		container.append(text);
 
 		return { container, text };
@@ -117,11 +132,15 @@ class ActionItemRenderer<T>
 		container.classList.add(this.templateId);
 
 		const icon = document.createElement("div");
+
 		icon.className = "icon";
+
 		container.append(icon);
 
 		const text = document.createElement("span");
+
 		text.className = "title";
+
 		container.append(text);
 
 		const keybinding = new KeybindingLabel(container, OS);
@@ -144,6 +163,7 @@ class ActionItemRenderer<T>
 			}
 		} else {
 			data.icon.className = ThemeIcon.asClassName(Codicon.lightBulb);
+
 			data.icon.style.color = "var(--vscode-editorLightBulb-foreground)";
 		}
 
@@ -166,6 +186,7 @@ class ActionItemRenderer<T>
 		const previewTitle = this._keybindingService
 			.lookupKeybinding(previewSelectedActionCommand)
 			?.getLabel();
+
 		data.container.classList.toggle("option-disabled", element.disabled);
 
 		if (element.disabled) {
@@ -224,6 +245,7 @@ function getKeyboardNavigationLabel<T>(
 	if (item.kind === "action") {
 		return item.label;
 	}
+
 	return undefined;
 }
 
@@ -233,6 +255,7 @@ export class ActionList<T> extends Disposable {
 	private readonly _list: List<IActionListItem<T>>;
 
 	private readonly _actionLineHeight = 24;
+
 	private readonly _headerLineHeight = 26;
 
 	private readonly _allMenuItems: readonly IActionListItem<T>[];
@@ -252,6 +275,7 @@ export class ActionList<T> extends Disposable {
 		super();
 
 		this.domNode = document.createElement("div");
+
 		this.domNode.classList.add("actionList");
 
 		const virtualDelegate: IListVirtualDelegate<IActionListItem<T>> = {
@@ -300,8 +324,10 @@ export class ActionList<T> extends Disposable {
 										element.disabled,
 									);
 								}
+
 								return label;
 							}
+
 							return null;
 						},
 						getWidgetAriaLabel: () =>
@@ -325,13 +351,17 @@ export class ActionList<T> extends Disposable {
 		this._list.style(defaultListStyles);
 
 		this._register(this._list.onMouseClick((e) => this.onListClick(e)));
+
 		this._register(this._list.onMouseOver((e) => this.onListHover(e)));
+
 		this._register(this._list.onDidChangeFocus(() => this.onFocus()));
+
 		this._register(
 			this._list.onDidChangeSelection((e) => this.onListSelection(e)),
 		);
 
 		this._allMenuItems = items;
+
 		this._list.splice(0, this._list.length, this._allMenuItems);
 
 		if (this._list.length) {
@@ -345,7 +375,9 @@ export class ActionList<T> extends Disposable {
 
 	hide(didCancel?: boolean): void {
 		this._delegate.onHide(didCancel);
+
 		this.cts.cancel();
+
 		this._contextViewService.hideContextView();
 	}
 
@@ -361,6 +393,7 @@ export class ActionList<T> extends Disposable {
 			itemsHeight +
 			numHeaders * this._headerLineHeight -
 			numHeaders * this._actionLineHeight;
+
 		this._list.layout(heightWithHeaders);
 
 		let maxWidth = minWidth;
@@ -379,10 +412,12 @@ export class ActionList<T> extends Disposable {
 						element.style.width = "auto";
 
 						const width = element.getBoundingClientRect().width;
+
 						element.style.width = "";
 
 						return width;
 					}
+
 					return 0;
 				},
 			);
@@ -397,6 +432,7 @@ export class ActionList<T> extends Disposable {
 			heightWithHeaders,
 			this.domNode.ownerDocument.body.clientHeight * maxVhPrecentage,
 		);
+
 		this._list.layout(height, maxWidth);
 
 		this.domNode.style.height = `${height}px`;
@@ -432,6 +468,7 @@ export class ActionList<T> extends Disposable {
 		const event = preview
 			? new PreviewSelectedEvent()
 			: new AcceptSelectedEvent();
+
 		this._list.setSelection([focusIndex], event);
 	}
 
@@ -458,9 +495,11 @@ export class ActionList<T> extends Disposable {
 		if (focused.length === 0) {
 			return;
 		}
+
 		const focusIndex = focused[0];
 
 		const element = this._list.element(focusIndex);
+
 		this._delegate.onFocus?.(element.item);
 	}
 
@@ -477,8 +516,10 @@ export class ActionList<T> extends Disposable {
 					element.item,
 					this.cts.token,
 				);
+
 				element.canPreview = result ? result.canPreview : undefined;
 			}
+
 			if (e.index) {
 				this._list.splice(e.index, 1, [element]);
 			}

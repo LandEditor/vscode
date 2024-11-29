@@ -22,6 +22,7 @@ import {
 
 interface AutoFix {
 	readonly codes: Set<number>;
+
 	readonly fixName: string;
 }
 async function buildIndividualFixes(
@@ -37,9 +38,11 @@ async function buildIndividualFixes(
 			if (token.isCancellationRequested) {
 				return;
 			}
+
 			if (!codes.has(diagnostic.code as number)) {
 				continue;
 			}
+
 			const args: Proto.CodeFixRequestArgs = {
 				...typeConverters.Range.toFileRangeRequestArgs(
 					file,
@@ -53,6 +56,7 @@ async function buildIndividualFixes(
 			if (response.type !== "response") {
 				continue;
 			}
+
 			const fix = response.body?.find((fix) => fix.fixName === fixName);
 
 			if (fix) {
@@ -80,9 +84,11 @@ async function buildCombinedFix(
 			if (token.isCancellationRequested) {
 				return;
 			}
+
 			if (!codes.has(diagnostic.code as number)) {
 				continue;
 			}
+
 			const args: Proto.CodeFixRequestArgs = {
 				...typeConverters.Range.toFileRangeRequestArgs(
 					file,
@@ -96,11 +102,13 @@ async function buildCombinedFix(
 			if (response.type !== "response" || !response.body?.length) {
 				continue;
 			}
+
 			const fix = response.body?.find((fix) => fix.fixName === fixName);
 
 			if (!fix) {
 				continue;
 			}
+
 			if (!fix.fixId) {
 				typeConverters.WorkspaceEdit.withFileCodeEdits(
 					edit,
@@ -110,6 +118,7 @@ async function buildCombinedFix(
 
 				return;
 			}
+
 			const combinedArgs: Proto.GetCombinedCodeFixRequestArgs = {
 				scope: {
 					type: "file",
@@ -130,6 +139,7 @@ async function buildCombinedFix(
 			) {
 				return;
 			}
+
 			typeConverters.WorkspaceEdit.withFileCodeEdits(
 				edit,
 				client,
@@ -155,6 +165,7 @@ class SourceFixAll extends SourceAction {
 	constructor() {
 		super(vscode.l10n.t("Fix all fixable JS/TS issues"), SourceFixAll.kind);
 	}
+
 	async build(
 		client: ITypeScriptServiceClient,
 		file: string,
@@ -162,6 +173,7 @@ class SourceFixAll extends SourceAction {
 		token: vscode.CancellationToken,
 	): Promise<void> {
 		this.edit = new vscode.WorkspaceEdit();
+
 		await buildIndividualFixes(
 			[
 				{
@@ -179,6 +191,7 @@ class SourceFixAll extends SourceAction {
 			diagnostics,
 			token,
 		);
+
 		await buildCombinedFix(
 			[
 				{
@@ -201,6 +214,7 @@ class SourceRemoveUnused extends SourceAction {
 	constructor() {
 		super(vscode.l10n.t("Remove all unused code"), SourceRemoveUnused.kind);
 	}
+
 	async build(
 		client: ITypeScriptServiceClient,
 		file: string,
@@ -208,6 +222,7 @@ class SourceRemoveUnused extends SourceAction {
 		token: vscode.CancellationToken,
 	): Promise<void> {
 		this.edit = new vscode.WorkspaceEdit();
+
 		await buildCombinedFix(
 			[
 				{
@@ -233,6 +248,7 @@ class SourceAddMissingImports extends SourceAction {
 			SourceAddMissingImports.kind,
 		);
 	}
+
 	async build(
 		client: ITypeScriptServiceClient,
 		file: string,
@@ -240,6 +256,7 @@ class SourceAddMissingImports extends SourceAction {
 		token: vscode.CancellationToken,
 	): Promise<void> {
 		this.edit = new vscode.WorkspaceEdit();
+
 		await buildCombinedFix(
 			[{ codes: errorCodes.cannotFindName, fixName: fixNames.fixImport }],
 			this.edit,
@@ -263,12 +280,14 @@ class TypeScriptAutoFixProvider implements vscode.CodeActionProvider {
 		private readonly fileConfigurationManager: FileConfigurationManager,
 		private readonly diagnosticsManager: DiagnosticsManager,
 	) {}
+
 	public get metadata(): vscode.CodeActionProviderMetadata {
 		return {
 			providedCodeActionKinds:
 				TypeScriptAutoFixProvider.kindProviders.map((x) => x.kind),
 		};
 	}
+
 	public async provideCodeActions(
 		document: vscode.TextDocument,
 		_range: vscode.Range,
@@ -281,11 +300,13 @@ class TypeScriptAutoFixProvider implements vscode.CodeActionProvider {
 		) {
 			return undefined;
 		}
+
 		const file = this.client.toOpenTsFilePath(document);
 
 		if (!file) {
 			return undefined;
 		}
+
 		const actions = this.getFixAllActions(context.only);
 
 		const diagnostics = this.diagnosticsManager.getDiagnostics(
@@ -296,6 +317,7 @@ class TypeScriptAutoFixProvider implements vscode.CodeActionProvider {
 			// Actions are a no-op in this case but we still want to return them
 			return actions;
 		}
+
 		await this.fileConfigurationManager.ensureConfigurationForDocument(
 			document,
 			token,
@@ -304,6 +326,7 @@ class TypeScriptAutoFixProvider implements vscode.CodeActionProvider {
 		if (token.isCancellationRequested) {
 			return undefined;
 		}
+
 		await Promise.all(
 			actions.map((action) =>
 				action.build(this.client, file, diagnostics, token),
@@ -312,6 +335,7 @@ class TypeScriptAutoFixProvider implements vscode.CodeActionProvider {
 
 		return actions;
 	}
+
 	private getFixAllActions(only: vscode.CodeActionKind): SourceAction[] {
 		return TypeScriptAutoFixProvider.kindProviders
 			.filter((provider) => only.intersects(provider.kind))

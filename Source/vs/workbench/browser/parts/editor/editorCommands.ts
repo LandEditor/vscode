@@ -240,7 +240,9 @@ export interface ActiveEditorMoveCopyArguments {
 		| "position"
 		| "previous"
 		| "next";
+
 	by?: "tab" | "group";
+
 	value?: number;
 }
 
@@ -250,15 +252,19 @@ const isActiveEditorMoveCopyArg = function (
 	if (!isObject(arg)) {
 		return false;
 	}
+
 	if (!isString(arg.to)) {
 		return false;
 	}
+
 	if (!isUndefined(arg.by) && !isString(arg.by)) {
 		return false;
 	}
+
 	if (!isUndefined(arg.value) && !isNumber(arg.value)) {
 		return false;
 	}
+
 	return true;
 };
 function registerActiveEditorMoveCopyCommand(): void {
@@ -279,6 +285,7 @@ function registerActiveEditorMoveCopyCommand(): void {
 			},
 		},
 	};
+
 	KeybindingsRegistry.registerCommandAndKeybindingRule({
 		id: MOVE_ACTIVE_EDITOR_COMMAND_ID,
 		weight: KeybindingWeight.WorkbenchContrib,
@@ -306,6 +313,7 @@ function registerActiveEditorMoveCopyCommand(): void {
 			],
 		},
 	});
+
 	KeybindingsRegistry.registerCommandAndKeybindingRule({
 		id: COPY_ACTIVE_EDITOR_COMMAND_ID,
 		weight: KeybindingWeight.WorkbenchContrib,
@@ -341,7 +349,9 @@ function registerActiveEditorMoveCopyCommand(): void {
 		accessor: ServicesAccessor,
 	): void {
 		args.to = args.to || "right";
+
 		args.by = args.by || "tab";
+
 		args.value = typeof args.value === "number" ? args.value : 1;
 
 		const activeEditorPane = accessor.get(IEditorService).activeEditorPane;
@@ -352,6 +362,7 @@ function registerActiveEditorMoveCopyCommand(): void {
 					if (isMove) {
 						return moveActiveTab(args, activeEditorPane);
 					}
+
 					break;
 
 				case "group":
@@ -364,6 +375,7 @@ function registerActiveEditorMoveCopyCommand(): void {
 			}
 		}
 	}
+
 	function moveActiveTab(
 		args: ActiveEditorMoveCopyArguments,
 		control: IVisibleEditorPane,
@@ -403,9 +415,12 @@ function registerActiveEditorMoveCopyCommand(): void {
 
 				break;
 		}
+
 		index = index < 0 ? 0 : index >= group.count ? group.count - 1 : index;
+
 		group.moveEditor(control.input, group, { index });
 	}
+
 	function moveCopyActiveEditorToGroup(
 		isMove: boolean,
 		args: ActiveEditorMoveCopyArguments,
@@ -433,6 +448,7 @@ function registerActiveEditorMoveCopyCommand(): void {
 						GroupDirection.LEFT,
 					);
 				}
+
 				break;
 
 			case "right":
@@ -447,6 +463,7 @@ function registerActiveEditorMoveCopyCommand(): void {
 						GroupDirection.RIGHT,
 					);
 				}
+
 				break;
 
 			case "up":
@@ -461,6 +478,7 @@ function registerActiveEditorMoveCopyCommand(): void {
 						GroupDirection.UP,
 					);
 				}
+
 				break;
 
 			case "down":
@@ -475,6 +493,7 @@ function registerActiveEditorMoveCopyCommand(): void {
 						GroupDirection.DOWN,
 					);
 				}
+
 				break;
 
 			case "first":
@@ -513,6 +532,7 @@ function registerActiveEditorMoveCopyCommand(): void {
 						preferredSideBySideGroupDirection(configurationService),
 					);
 				}
+
 				break;
 
 			case "center":
@@ -529,12 +549,14 @@ function registerActiveEditorMoveCopyCommand(): void {
 
 				break;
 		}
+
 		if (targetGroup) {
 			if (isMove) {
 				sourceGroup.moveEditor(control.input, targetGroup);
 			} else if (sourceGroup.id !== targetGroup.id) {
 				sourceGroup.copyEditor(control.input, targetGroup);
 			}
+
 			targetGroup.focus();
 		}
 	}
@@ -547,9 +569,12 @@ function registerEditorGroupsLayoutCommands(): void {
 		if (!layout || typeof layout !== "object") {
 			return;
 		}
+
 		const editorGroupsService = accessor.get(IEditorGroupsService);
+
 		editorGroupsService.applyLayout(layout);
 	}
+
 	CommandsRegistry.registerCommand(
 		LAYOUT_EDITOR_GROUPS_COMMAND_ID,
 		(accessor: ServicesAccessor, args: EditorGroupLayout) => {
@@ -602,6 +627,7 @@ function registerEditorGroupsLayoutCommands(): void {
 			],
 		},
 	});
+
 	CommandsRegistry.registerCommand({
 		id: "vscode.getEditorLayout",
 		handler: (accessor: ServicesAccessor) => {
@@ -626,6 +652,7 @@ function registerOpenEditorAPICommands(): void {
 		if (!context) {
 			return [options, column];
 		}
+
 		return [
 			{ ...context.editorOptions, ...(options ?? Object.create(null)) },
 			context.sideBySide ? SIDE_GROUP : column,
@@ -645,6 +672,7 @@ function registerOpenEditorAPICommands(): void {
 			args: [{ name: "Uri" }],
 		},
 	});
+
 	CommandsRegistry.registerCommand(
 		API_OPEN_EDITOR_COMMAND_ID,
 		async function (
@@ -718,6 +746,7 @@ function registerOpenEditorAPICommands(): void {
 					// use any other resource as is
 					input = { resource, options, label };
 				}
+
 				await editorService.openEditor(
 					input,
 					columnToEditorGroup(
@@ -773,6 +802,7 @@ function registerOpenEditorAPICommands(): void {
 			],
 		},
 	});
+
 	CommandsRegistry.registerCommand(
 		API_OPEN_DIFF_EDITOR_COMMAND_ID,
 		async function (
@@ -783,6 +813,7 @@ function registerOpenEditorAPICommands(): void {
 				| string
 				| {
 						label: string;
+
 						description: string;
 				  },
 			columnAndOptions?: [EditorGroupColumn?, ITextEditorOptions?],
@@ -810,8 +841,10 @@ function registerOpenEditorAPICommands(): void {
 				label = labelAndOrDescription;
 			} else if (labelAndOrDescription) {
 				label = labelAndOrDescription.label;
+
 				description = labelAndOrDescription.description;
 			}
+
 			await editorService.openEditor(
 				{
 					original: { resource: URI.from(originalResource, true) },
@@ -828,6 +861,7 @@ function registerOpenEditorAPICommands(): void {
 			);
 		},
 	);
+
 	CommandsRegistry.registerCommand(
 		API_OPEN_WITH_EDITOR_COMMAND_ID,
 		async (
@@ -843,6 +877,7 @@ function registerOpenEditorAPICommands(): void {
 			const configurationService = accessor.get(IConfigurationService);
 
 			const [columnArg, optionsArg] = columnAndOptions ?? [];
+
 			await editorService.openEditor(
 				{
 					resource: URI.from(resource, true),
@@ -885,6 +920,7 @@ function registerOpenEditorAPICommands(): void {
 			],
 		},
 	});
+
 	CommandsRegistry.registerCommand(
 		"_workbench.changes",
 		async (
@@ -905,9 +941,11 @@ function registerOpenEditorAPICommands(): void {
 					modified: { resource: URI.revive(modified) },
 				});
 			}
+
 			await editorService.openEditor({ resources: editor, label: title });
 		},
 	);
+
 	CommandsRegistry.registerCommand(
 		"_workbench.openMultiDiffEditor",
 		async (
@@ -915,6 +953,7 @@ function registerOpenEditorAPICommands(): void {
 			options: OpenMultiFileDiffEditorOptions,
 		) => {
 			const editorService = accessor.get(IEditorService);
+
 			await editorService.openEditor({
 				multiDiffSource: options.multiDiffSourceUri
 					? URI.revive(options.multiDiffSourceUri)
@@ -930,9 +969,12 @@ function registerOpenEditorAPICommands(): void {
 }
 interface OpenMultiFileDiffEditorOptions {
 	title: string;
+
 	multiDiffSourceUri?: UriComponents;
+
 	resources?: {
 		originalUri: UriComponents;
+
 		modifiedUri: UriComponents;
 	}[];
 }
@@ -963,6 +1005,7 @@ function registerOpenEditorAtIndexCommands(): void {
 		const editorIndex = i;
 
 		const visibleIndex = i + 1;
+
 		KeybindingsRegistry.registerCommandAndKeybindingRule({
 			id: OPEN_EDITOR_AT_INDEX_COMMAND_ID + visibleIndex,
 			weight: KeybindingWeight.WorkbenchContrib,
@@ -972,6 +1015,7 @@ function registerOpenEditorAtIndexCommands(): void {
 			handler: (accessor) => openEditorAtIndex(accessor, editorIndex),
 		});
 	}
+
 	function toKeyCode(index: number): KeyCode {
 		switch (index) {
 			case 0:
@@ -1004,6 +1048,7 @@ function registerOpenEditorAtIndexCommands(): void {
 			case 9:
 				return KeyCode.Digit9;
 		}
+
 		throw new Error("invalid index");
 	}
 }
@@ -1046,6 +1091,7 @@ function registerFocusEditorGroupAtIndexCommands(): void {
 				if (!lastGroup) {
 					return;
 				}
+
 				const newGroup = editorGroupsService.addGroup(
 					lastGroup,
 					direction,
@@ -1055,6 +1101,7 @@ function registerFocusEditorGroupAtIndexCommands(): void {
 			},
 		});
 	}
+
 	function toCommandId(index: number): string {
 		switch (index) {
 			case 1:
@@ -1078,8 +1125,10 @@ function registerFocusEditorGroupAtIndexCommands(): void {
 			case 7:
 				return "workbench.action.focusEighthEditorGroup";
 		}
+
 		throw new Error("Invalid index");
 	}
+
 	function toKeyCode(index: number): KeyCode {
 		switch (index) {
 			case 1:
@@ -1103,6 +1152,7 @@ function registerFocusEditorGroupAtIndexCommands(): void {
 			case 7:
 				return KeyCode.Digit8;
 		}
+
 		throw new Error("Invalid index");
 	}
 }
@@ -1147,6 +1197,7 @@ function registerSplitEditorCommands() {
 				accessor.get(IEditorGroupsService),
 				accessor.get(IListService),
 			);
+
 			splitEditor(
 				accessor.get(IEditorGroupsService),
 				direction,
@@ -1227,10 +1278,12 @@ function registerCloseEditorCommands() {
 				const editorsToClose = editors.filter(
 					(editor) => !keepStickyEditors || !group.isSticky(editor),
 				);
+
 				await group.closeEditors(editorsToClose, { preserveFocus });
 			}),
 		);
 	}
+
 	KeybindingsRegistry.registerCommandAndKeybindingRule({
 		id: CLOSE_EDITOR_COMMAND_ID,
 		weight: KeybindingWeight.WorkbenchContrib,
@@ -1244,6 +1297,7 @@ function registerCloseEditorCommands() {
 			return closeEditorHandler(accessor, false, ...args);
 		},
 	});
+
 	CommandsRegistry.registerCommand(
 		CLOSE_PINNED_EDITOR_COMMAND_ID,
 		(accessor, ...args: unknown[]) => {
@@ -1254,6 +1308,7 @@ function registerCloseEditorCommands() {
 			);
 		},
 	);
+
 	KeybindingsRegistry.registerCommandAndKeybindingRule({
 		id: CLOSE_EDITORS_IN_GROUP_COMMAND_ID,
 		weight: KeybindingWeight.WorkbenchContrib,
@@ -1274,6 +1329,7 @@ function registerCloseEditorCommands() {
 			);
 		},
 	});
+
 	KeybindingsRegistry.registerCommandAndKeybindingRule({
 		id: CLOSE_EDITOR_GROUP_COMMAND_ID,
 		weight: KeybindingWeight.WorkbenchContrib,
@@ -1303,6 +1359,7 @@ function registerCloseEditorCommands() {
 			}
 		},
 	});
+
 	KeybindingsRegistry.registerCommandAndKeybindingRule({
 		id: CLOSE_SAVED_EDITORS_COMMAND_ID,
 		weight: KeybindingWeight.WorkbenchContrib,
@@ -1326,6 +1383,7 @@ function registerCloseEditorCommands() {
 			);
 		},
 	});
+
 	KeybindingsRegistry.registerCommandAndKeybindingRule({
 		id: CLOSE_OTHER_EDITORS_IN_GROUP_COMMAND_ID,
 		weight: KeybindingWeight.WorkbenchContrib,
@@ -1354,6 +1412,7 @@ function registerCloseEditorCommands() {
 								group.pinEditor(editorToKeep);
 							}
 						}
+
 						await group.closeEditors(editorsToClose, {
 							preserveFocus: resolvedContext.preserveFocus,
 						});
@@ -1362,6 +1421,7 @@ function registerCloseEditorCommands() {
 			);
 		},
 	});
+
 	KeybindingsRegistry.registerCommandAndKeybindingRule({
 		id: CLOSE_EDITORS_TO_THE_RIGHT_COMMAND_ID,
 		weight: KeybindingWeight.WorkbenchContrib,
@@ -1381,6 +1441,7 @@ function registerCloseEditorCommands() {
 				if (group.activeEditor) {
 					group.pinEditor(group.activeEditor);
 				}
+
 				await group.closeEditors(
 					{
 						direction: CloseDirection.RIGHT,
@@ -1392,6 +1453,7 @@ function registerCloseEditorCommands() {
 			}
 		},
 	});
+
 	KeybindingsRegistry.registerCommandAndKeybindingRule({
 		id: REOPEN_WITH_COMMAND_ID,
 		weight: KeybindingWeight.WorkbenchContrib,
@@ -1423,6 +1485,7 @@ function registerCloseEditorCommands() {
 					if (!untypedEditor) {
 						return; // Resolver can only resolve untyped editors
 					}
+
 					untypedEditor.options = {
 						...editorService.activeEditorPane?.options,
 						override: EditorResolution.PICK,
@@ -1437,16 +1500,19 @@ function registerCloseEditorCommands() {
 					if (!isEditorInputWithOptionsAndGroup(resolvedEditor)) {
 						return;
 					}
+
 					let editorReplacementsInGroup =
 						editorReplacements.get(group);
 
 					if (!editorReplacementsInGroup) {
 						editorReplacementsInGroup = [];
+
 						editorReplacements.set(
 							group,
 							editorReplacementsInGroup,
 						);
 					}
+
 					editorReplacementsInGroup.push({
 						editor: editor,
 						replacement: resolvedEditor.editor,
@@ -1457,34 +1523,52 @@ function registerCloseEditorCommands() {
 					// Telemetry
 					type WorkbenchEditorReopenClassification = {
 						owner: "rebornix";
+
 						comment: "Identify how a document is reopened";
+
 						scheme: {
 							classification: "SystemMetaData";
+
 							purpose: "FeatureInsight";
+
 							comment: "File system provider scheme for the resource";
 						};
+
 						ext: {
 							classification: "SystemMetaData";
+
 							purpose: "FeatureInsight";
+
 							comment: "File extension for the resource";
 						};
+
 						from: {
 							classification: "SystemMetaData";
+
 							purpose: "FeatureInsight";
+
 							comment: "The editor view type the resource is switched from";
 						};
+
 						to: {
 							classification: "SystemMetaData";
+
 							purpose: "FeatureInsight";
+
 							comment: "The editor view type the resource is switched to";
 						};
 					};
+
 					type WorkbenchEditorReopenEvent = {
 						scheme: string;
+
 						ext: string;
+
 						from: string;
+
 						to: string;
 					};
+
 					telemetryService.publicLog2<
 						WorkbenchEditorReopenEvent,
 						WorkbenchEditorReopenClassification
@@ -1499,10 +1583,12 @@ function registerCloseEditorCommands() {
 			// Replace editor with resolved one and make active
 			for (const [group, replacements] of editorReplacements) {
 				await group.replaceEditors(replacements);
+
 				await group.openEditor(replacements[0].replacement);
 			}
 		},
 	});
+
 	CommandsRegistry.registerCommand(
 		CLOSE_EDITORS_AND_GROUP_COMMAND_ID,
 		async (accessor: ServicesAccessor, ...args: unknown[]) => {
@@ -1517,6 +1603,7 @@ function registerCloseEditorCommands() {
 
 			if (resolvedContext.groupedEditors.length) {
 				const { group } = resolvedContext.groupedEditors[0];
+
 				await group.closeAllEditors();
 
 				if (
@@ -1562,6 +1649,7 @@ function registerFocusEditorGroupWihoutWrapCommands(): void {
 					editorGroupsService.activeGroup,
 					false,
 				);
+
 				group?.focus();
 			},
 		);
@@ -1577,6 +1665,7 @@ function registerSplitEditorInGroupCommands(): void {
 		if (!resolvedContext.groupedEditors.length) {
 			return;
 		}
+
 		const { group, editors } = resolvedContext.groupedEditors[0];
 
 		const editor = editors[0];
@@ -1584,6 +1673,7 @@ function registerSplitEditorInGroupCommands(): void {
 		if (!editor) {
 			return;
 		}
+
 		await group.replaceEditors([
 			{
 				editor,
@@ -1598,6 +1688,7 @@ function registerSplitEditorInGroupCommands(): void {
 			},
 		]);
 	}
+
 	registerAction2(
 		class extends Action2 {
 			constructor() {
@@ -1620,6 +1711,7 @@ function registerSplitEditorInGroupCommands(): void {
 					},
 				});
 			}
+
 			run(accessor: ServicesAccessor, ...args: unknown[]): Promise<void> {
 				return splitEditorInGroup(
 					accessor,
@@ -1640,6 +1732,7 @@ function registerSplitEditorInGroupCommands(): void {
 		if (!resolvedContext.groupedEditors.length) {
 			return;
 		}
+
 		const { group, editors } = resolvedContext.groupedEditors[0];
 
 		const editor = editors[0];
@@ -1647,9 +1740,11 @@ function registerSplitEditorInGroupCommands(): void {
 		if (!editor) {
 			return;
 		}
+
 		if (!(editor instanceof SideBySideEditorInput)) {
 			return;
 		}
+
 		let options: IEditorOptions | undefined = undefined;
 
 		const activeEditorPane = group.activeEditorPane;
@@ -1669,6 +1764,7 @@ function registerSplitEditorInGroupCommands(): void {
 				}
 			}
 		}
+
 		await group.replaceEditors([
 			{
 				editor,
@@ -1677,6 +1773,7 @@ function registerSplitEditorInGroupCommands(): void {
 			},
 		]);
 	}
+
 	registerAction2(
 		class extends Action2 {
 			constructor() {
@@ -1699,6 +1796,7 @@ function registerSplitEditorInGroupCommands(): void {
 					},
 				});
 			}
+
 			run(accessor: ServicesAccessor, ...args: unknown[]): Promise<void> {
 				return joinEditorInGroup(
 					resolveCommandsContext(
@@ -1711,6 +1809,7 @@ function registerSplitEditorInGroupCommands(): void {
 			}
 		},
 	);
+
 	registerAction2(
 		class extends Action2 {
 			constructor() {
@@ -1728,6 +1827,7 @@ function registerSplitEditorInGroupCommands(): void {
 					f1: true,
 				});
 			}
+
 			async run(
 				accessor: ServicesAccessor,
 				...args: unknown[]
@@ -1742,6 +1842,7 @@ function registerSplitEditorInGroupCommands(): void {
 				if (!resolvedContext.groupedEditors.length) {
 					return;
 				}
+
 				const { editors } = resolvedContext.groupedEditors[0];
 
 				if (editors[0] instanceof SideBySideEditorInput) {
@@ -1752,6 +1853,7 @@ function registerSplitEditorInGroupCommands(): void {
 			}
 		},
 	);
+
 	registerAction2(
 		class extends Action2 {
 			constructor() {
@@ -1766,6 +1868,7 @@ function registerSplitEditorInGroupCommands(): void {
 					f1: true,
 				});
 			}
+
 			async run(accessor: ServicesAccessor): Promise<void> {
 				const configurationService = accessor.get(
 					IConfigurationService,
@@ -1782,6 +1885,7 @@ function registerSplitEditorInGroupCommands(): void {
 				} else {
 					newSetting = "vertical";
 				}
+
 				return configurationService.updateValue(
 					SideBySideEditor.SIDE_BY_SIDE_LAYOUT_SETTING,
 					newSetting,
@@ -1808,6 +1912,7 @@ function registerFocusSideEditorsCommands(): void {
 					f1: true,
 				});
 			}
+
 			async run(accessor: ServicesAccessor): Promise<void> {
 				const editorService = accessor.get(IEditorService);
 
@@ -1825,6 +1930,7 @@ function registerFocusSideEditorsCommands(): void {
 			}
 		},
 	);
+
 	registerAction2(
 		class extends Action2 {
 			constructor() {
@@ -1842,6 +1948,7 @@ function registerFocusSideEditorsCommands(): void {
 					f1: true,
 				});
 			}
+
 			async run(accessor: ServicesAccessor): Promise<void> {
 				const editorService = accessor.get(IEditorService);
 
@@ -1859,6 +1966,7 @@ function registerFocusSideEditorsCommands(): void {
 			}
 		},
 	);
+
 	registerAction2(
 		class extends Action2 {
 			constructor() {
@@ -1876,6 +1984,7 @@ function registerFocusSideEditorsCommands(): void {
 					f1: true,
 				});
 			}
+
 			async run(accessor: ServicesAccessor): Promise<void> {
 				const editorService = accessor.get(IEditorService);
 
@@ -1917,6 +2026,7 @@ function registerOtherEditorCommands(): void {
 			}
 		},
 	});
+
 	CommandsRegistry.registerCommand({
 		id: TOGGLE_KEEP_EDITORS_COMMAND_ID,
 		handler: (accessor) => {
@@ -1927,6 +2037,7 @@ function registerOtherEditorCommands(): void {
 			);
 
 			const newSetting = currentSetting === true ? false : true;
+
 			configurationService.updateValue(
 				"workbench.editor.enablePreview",
 				newSetting,
@@ -1947,8 +2058,10 @@ function registerOtherEditorCommands(): void {
 		);
 
 		const group = resolvedContext.groupedEditors[0]?.group;
+
 		group?.lock(locked ?? !group.isLocked);
 	}
+
 	registerAction2(
 		class extends Action2 {
 			constructor() {
@@ -1962,6 +2075,7 @@ function registerOtherEditorCommands(): void {
 					f1: true,
 				});
 			}
+
 			async run(
 				accessor: ServicesAccessor,
 				...args: unknown[]
@@ -1970,6 +2084,7 @@ function registerOtherEditorCommands(): void {
 			}
 		},
 	);
+
 	registerAction2(
 		class extends Action2 {
 			constructor() {
@@ -1981,6 +2096,7 @@ function registerOtherEditorCommands(): void {
 					f1: true,
 				});
 			}
+
 			async run(
 				accessor: ServicesAccessor,
 				...args: unknown[]
@@ -1989,6 +2105,7 @@ function registerOtherEditorCommands(): void {
 			}
 		},
 	);
+
 	registerAction2(
 		class extends Action2 {
 			constructor() {
@@ -2003,6 +2120,7 @@ function registerOtherEditorCommands(): void {
 					f1: true,
 				});
 			}
+
 			async run(
 				accessor: ServicesAccessor,
 				...args: unknown[]
@@ -2011,6 +2129,7 @@ function registerOtherEditorCommands(): void {
 			}
 		},
 	);
+
 	KeybindingsRegistry.registerCommandAndKeybindingRule({
 		id: PIN_EDITOR_COMMAND_ID,
 		weight: KeybindingWeight.WorkbenchContrib,
@@ -2034,6 +2153,7 @@ function registerOtherEditorCommands(): void {
 			}
 		},
 	});
+
 	KeybindingsRegistry.registerCommandAndKeybindingRule({
 		id: DIFF_OPEN_SIDE,
 		weight: KeybindingWeight.WorkbenchContrib,
@@ -2058,6 +2178,7 @@ function registerOtherEditorCommands(): void {
 			) {
 				return;
 			}
+
 			let editor: EditorInput | undefined;
 
 			const originalEditor = activeTextEditorControl.getOriginalEditor();
@@ -2067,9 +2188,11 @@ function registerOtherEditorCommands(): void {
 			} else {
 				editor = activeEditor.modified;
 			}
+
 			return editorGroupsService.activeGroup.openEditor(editor);
 		},
 	});
+
 	KeybindingsRegistry.registerCommandAndKeybindingRule({
 		id: UNPIN_EDITOR_COMMAND_ID,
 		weight: KeybindingWeight.WorkbenchContrib,
@@ -2093,6 +2216,7 @@ function registerOtherEditorCommands(): void {
 			}
 		},
 	});
+
 	KeybindingsRegistry.registerCommandAndKeybindingRule({
 		id: SHOW_EDITORS_IN_GROUP,
 		weight: KeybindingWeight.WorkbenchContrib,
@@ -2115,6 +2239,7 @@ function registerOtherEditorCommands(): void {
 			if (group) {
 				editorGroupsService.activateGroup(group); // we need the group to be active
 			}
+
 			return quickInputService.quickAccess.show(
 				ActiveGroupEditorsByMostRecentlyUsedQuickAccess.PREFIX,
 			);
@@ -2123,15 +2248,26 @@ function registerOtherEditorCommands(): void {
 }
 export function setup(): void {
 	registerActiveEditorMoveCopyCommand();
+
 	registerEditorGroupsLayoutCommands();
+
 	registerDiffEditorCommands();
+
 	registerOpenEditorAPICommands();
+
 	registerOpenEditorAtIndexCommands();
+
 	registerCloseEditorCommands();
+
 	registerOtherEditorCommands();
+
 	registerSplitEditorInGroupCommands();
+
 	registerFocusSideEditorsCommands();
+
 	registerFocusEditorGroupAtIndexCommands();
+
 	registerSplitEditorCommands();
+
 	registerFocusEditorGroupWihoutWrapCommands();
 }

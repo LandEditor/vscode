@@ -35,6 +35,7 @@ export class TerminalStickyScrollContribution
 	implements ITerminalContribution
 {
 	static readonly ID = "terminal.stickyScroll";
+
 	static get(
 		instance: ITerminalInstance,
 	): TerminalStickyScrollContribution | null {
@@ -42,13 +43,17 @@ export class TerminalStickyScrollContribution
 			TerminalStickyScrollContribution.ID,
 		);
 	}
+
 	private _xterm?: IXtermTerminal & {
 		raw: RawXtermTerminal;
 	};
+
 	private readonly _overlay = this._register(
 		new MutableDisposable<TerminalStickyScrollOverlay>(),
 	);
+
 	private readonly _enableListeners = this._register(new MutableDisposable());
+
 	private readonly _disableListeners = this._register(
 		new MutableDisposable(),
 	);
@@ -65,6 +70,7 @@ export class TerminalStickyScrollContribution
 		private readonly _keybindingService: IKeybindingService,
 	) {
 		super();
+
 		this._register(
 			Event.runAndSubscribe(
 				this._configurationService.onDidChangeConfiguration,
@@ -81,14 +87,17 @@ export class TerminalStickyScrollContribution
 			),
 		);
 	}
+
 	xtermReady(
 		xterm: IXtermTerminal & {
 			raw: RawXtermTerminal;
 		},
 	): void {
 		this._xterm = xterm;
+
 		this._refreshState();
 	}
+
 	xtermOpen(
 		xterm: IXtermTerminal & {
 			raw: RawXtermTerminal;
@@ -96,18 +105,22 @@ export class TerminalStickyScrollContribution
 	): void {
 		this._refreshState();
 	}
+
 	hideLock() {
 		this._overlay.value?.lockHide();
 	}
+
 	hideUnlock() {
 		this._overlay.value?.unlockHide();
 	}
+
 	private _refreshState(): void {
 		if (this._overlay.value) {
 			this._tryDisable();
 		} else {
 			this._tryEnable();
 		}
+
 		if (this._overlay.value) {
 			this._enableListeners.clear();
 
@@ -134,12 +147,14 @@ export class TerminalStickyScrollContribution
 			}
 		}
 	}
+
 	private _tryEnable(): void {
 		if (this._shouldBeEnabled()) {
 			const xtermCtorEventually = TerminalInstance.getXtermConstructor(
 				this._keybindingService,
 				this._contextKeyService,
 			);
+
 			this._overlay.value = this._instantiationService.createInstance(
 				TerminalStickyScrollOverlay,
 				this._ctx.instance,
@@ -155,11 +170,13 @@ export class TerminalStickyScrollContribution
 			);
 		}
 	}
+
 	private _tryDisable(): void {
 		if (!this._shouldBeEnabled()) {
 			this._overlay.clear();
 		}
 	}
+
 	private _shouldBeEnabled(): boolean {
 		const capability = this._ctx.instance.capabilities.get(
 			TerminalCapability.CommandDetection,

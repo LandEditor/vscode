@@ -34,7 +34,9 @@ export interface IGutterActionsGenerator {
 	(
 		context: {
 			lineNumber: number;
+
 			editor: ICodeEditor;
+
 			accessor: ServicesAccessor;
 		},
 		result: {
@@ -64,6 +66,7 @@ export class GutterActionsRegistryImpl {
 			},
 		};
 	}
+
 	public getGutterActionsGenerators(): IGutterActionsGenerator[] {
 		return Array.from(this._registeredGutterActionsGenerators.values());
 	}
@@ -92,15 +95,18 @@ export class EditorLineNumberContextMenu
 		private readonly instantiationService: IInstantiationService,
 	) {
 		super();
+
 		this._register(
 			this.editor.onMouseDown((e: IEditorMouseEvent) =>
 				this.doShow(e, false),
 			),
 		);
 	}
+
 	public show(e: IEditorMouseEvent) {
 		this.doShow(e, true);
 	}
+
 	private doShow(e: IEditorMouseEvent, force: boolean) {
 		const model = this.editor.getModel();
 		// on macOS ctrl+click is interpreted as right click
@@ -115,6 +121,7 @@ export class EditorLineNumberContextMenu
 		) {
 			return;
 		}
+
 		const lineNumber = e.target.position.lineNumber;
 
 		const contextKeyService = this.contextKeyService.createOverlay([
@@ -130,9 +137,11 @@ export class EditorLineNumberContextMenu
 			string,
 			(IAction | MenuItemAction | SubmenuItemAction)[],
 		][] = [];
+
 		this.instantiationService.invokeFunction((accessor) => {
 			for (const generator of GutterActionsRegistry.getGutterActionsGenerators()) {
 				const collectedActions = new Map<string, IAction[]>();
+
 				generator(
 					{ lineNumber, editor: this.editor, accessor },
 					{
@@ -141,7 +150,9 @@ export class EditorLineNumberContextMenu
 							group: string = "navigation",
 						) => {
 							const actions = collectedActions.get(group) ?? [];
+
 							actions.push(action);
+
 							collectedActions.set(group, actions);
 						},
 					},
@@ -151,12 +162,14 @@ export class EditorLineNumberContextMenu
 					allActions.push([group, actions]);
 				}
 			}
+
 			allActions.sort((a, b) => a[0].localeCompare(b[0]));
 
 			const menuActions = menu.getActions({
 				arg: { lineNumber, uri: model.uri },
 				shouldForwardArgs: true,
 			});
+
 			allActions.push(...menuActions);
 			// if the current editor selections do not contain the target line number,
 			// set the selection to the clicked line number
@@ -183,6 +196,7 @@ export class EditorLineNumberContextMenu
 					);
 				}
 			}
+
 			this.contextMenuService.showContextMenu({
 				getAnchor: () => e.event,
 				getActions: () =>

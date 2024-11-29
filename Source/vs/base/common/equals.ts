@@ -65,6 +65,7 @@ export function equalsIfDefined<T>(
 		) {
 			return v2 === v1;
 		}
+
 		return equals(v1, v2);
 	} else {
 		const equals = equalsOrV1 as EqualityComparer<T>;
@@ -78,6 +79,7 @@ export function equalsIfDefined<T>(
 			) {
 				return v2 === v1;
 			}
+
 			return equals(v1, v2);
 		};
 	}
@@ -89,17 +91,21 @@ export function structuralEquals<T>(a: T, b: T): boolean {
 	if (a === b) {
 		return true;
 	}
+
 	if (Array.isArray(a) && Array.isArray(b)) {
 		if (a.length !== b.length) {
 			return false;
 		}
+
 		for (let i = 0; i < a.length; i++) {
 			if (!structuralEquals(a[i], b[i])) {
 				return false;
 			}
 		}
+
 		return true;
 	}
+
 	if (a && typeof a === "object" && b && typeof b === "object") {
 		if (
 			Object.getPrototypeOf(a) === Object.prototype &&
@@ -118,17 +124,21 @@ export function structuralEquals<T>(a: T, b: T): boolean {
 			if (keysA.length !== keysB.length) {
 				return false;
 			}
+
 			for (const key of keysA) {
 				if (!keysBSet.has(key)) {
 					return false;
 				}
+
 				if (!structuralEquals(aObj[key], bObj[key])) {
 					return false;
 				}
 			}
+
 			return true;
 		}
 	}
+
 	return false;
 }
 /**
@@ -145,6 +155,7 @@ function toNormalizedJsonStructure(t: unknown): unknown {
 	if (Array.isArray(t)) {
 		return t.map(toNormalizedJsonStructure);
 	}
+
 	if (t && typeof t === "object") {
 		if (Object.getPrototypeOf(t) === Object.prototype) {
 			const tObj = t as Record<string, unknown>;
@@ -154,17 +165,20 @@ function toNormalizedJsonStructure(t: unknown): unknown {
 			for (const key of Object.keys(tObj).sort()) {
 				res[key] = toNormalizedJsonStructure(tObj[key]);
 			}
+
 			return res;
 		} else {
 			let objId = objIds.get(t);
 
 			if (objId === undefined) {
 				objId = objectId++;
+
 				objIds.set(t, objId);
 			}
 			// Random string to prevent collisions
 			return objId + "----2b76a038c20c4bcc";
 		}
 	}
+
 	return t;
 }

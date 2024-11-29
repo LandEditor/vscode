@@ -35,10 +35,14 @@ import { ChatContextKeys } from "./chatContextKeys.js";
 type ChatInstallEntitlementEnablementClassification = {
 	entitled: {
 		classification: "SystemMetaData";
+
 		purpose: "FeatureInsight";
+
 		comment: "Flag indicating if the user is chat install entitled";
 	};
+
 	owner: "bpasero";
+
 	comment: "Reporting if the user is chat install entitled";
 };
 type ChatInstallEntitlementEnablementEvent = {
@@ -50,8 +54,10 @@ class ChatInstallEntitlementContribution
 {
 	private static readonly CHAT_EXTENSION_INSTALLED_KEY =
 		"chat.extensionInstalled";
+
 	private readonly chatInstallEntitledContextKey =
 		ChatContextKeys.installEntitled.bindTo(this.contextService);
+
 	private resolvedEntitlement: boolean | undefined = undefined;
 
 	constructor(
@@ -77,9 +83,12 @@ class ChatInstallEntitlementContribution
 		if (!this.productService.gitHubEntitlement) {
 			return;
 		}
+
 		this.checkExtensionInstallation();
+
 		this.registerListeners();
 	}
+
 	private async checkExtensionInstallation(): Promise<void> {
 		const extensions = await this.extensionManagementService.getInstalled();
 
@@ -89,8 +98,10 @@ class ChatInstallEntitlementContribution
 				this.productService.gitHubEntitlement?.extensionId,
 			),
 		);
+
 		this.updateExtensionInstalled(installed ? true : false);
 	}
+
 	private registerListeners(): void {
 		this._register(
 			this.extensionService.onDidChangeExtensions((result) => {
@@ -106,6 +117,7 @@ class ChatInstallEntitlementContribution
 						break;
 					}
 				}
+
 				for (const extension of result.added) {
 					if (
 						ExtensionIdentifier.equals(
@@ -120,6 +132,7 @@ class ChatInstallEntitlementContribution
 				}
 			}),
 		);
+
 		this._register(
 			this.authenticationService.onDidChangeSessions(async (e) => {
 				if (
@@ -134,6 +147,7 @@ class ChatInstallEntitlementContribution
 				}
 			}),
 		);
+
 		this._register(
 			this.authenticationService.onDidRegisterAuthenticationProvider(
 				async (e) => {
@@ -153,22 +167,28 @@ class ChatInstallEntitlementContribution
 			),
 		);
 	}
+
 	private async resolveEntitlement(
 		session: AuthenticationSession | undefined,
 	): Promise<void> {
 		if (!session) {
 			return;
 		}
+
 		const entitled = await this.doResolveEntitlement(session);
+
 		this.chatInstallEntitledContextKey.set(entitled);
 	}
+
 	private async doResolveEntitlement(
 		session: AuthenticationSession,
 	): Promise<boolean> {
 		if (typeof this.resolvedEntitlement === "boolean") {
 			return this.resolvedEntitlement;
 		}
+
 		const cts = new CancellationTokenSource();
+
 		this._register(toDisposable(() => cts.dispose(true)));
 
 		let context: IRequestContext;
@@ -187,14 +207,17 @@ class ChatInstallEntitlementContribution
 		} catch (error) {
 			return false;
 		}
+
 		if (context.res.statusCode && context.res.statusCode !== 200) {
 			return false;
 		}
+
 		const result = await asText(context);
 
 		if (!result) {
 			return false;
 		}
+
 		let parsedResult: any;
 
 		try {
@@ -202,9 +225,11 @@ class ChatInstallEntitlementContribution
 		} catch (err) {
 			return false; //ignore
 		}
+
 		this.resolvedEntitlement = Boolean(
 			parsedResult[this.productService.gitHubEntitlement!.enablementKey],
 		);
+
 		this.telemetryService.publicLog2<
 			ChatInstallEntitlementEnablementEvent,
 			ChatInstallEntitlementEnablementClassification
@@ -212,6 +237,7 @@ class ChatInstallEntitlementContribution
 
 		return this.resolvedEntitlement;
 	}
+
 	private updateExtensionInstalled(isExtensionInstalled: boolean): void {
 		this.storageService.store(
 			ChatInstallEntitlementContribution.CHAT_EXTENSION_INSTALLED_KEY,

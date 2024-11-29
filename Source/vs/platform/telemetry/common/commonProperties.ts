@@ -16,6 +16,7 @@ function getPlatformDetail(hostname: string): string | undefined {
 	if (platform === Platform.Linux && /^penguin(\.|$)/i.test(hostname)) {
 		return "chromebook";
 	}
+
 	return undefined;
 }
 export function resolveCommonProperties(
@@ -32,39 +33,52 @@ export function resolveCommonProperties(
 ): ICommonProperties {
 	const result: ICommonProperties = Object.create(null);
 	// __GDPR__COMMON__ "common.machineId" : { "endPoint": "MacAddressHash", "classification": "EndUserPseudonymizedInformation", "purpose": "FeatureInsight" }
+
 	result["common.machineId"] = machineId;
 	// __GDPR__COMMON__ "common.sqmId" : { "endPoint": "SqmMachineId", "classification": "EndUserPseudonymizedInformation", "purpose": "BusinessInsight" }
+
 	result["common.sqmId"] = sqmId;
 	// __GDPR__COMMON__ "common.devDeviceId" : { "endPoint": "SqmMachineId", "classification": "EndUserPseudonymizedInformation", "purpose": "BusinessInsight" }
+
 	result["common.devDeviceId"] = devDeviceId;
 	// __GDPR__COMMON__ "sessionID" : { "classification": "SystemMetaData", "purpose": "FeatureInsight" }
+
 	result["sessionID"] = generateUuid() + Date.now();
 	// __GDPR__COMMON__ "commitHash" : { "classification": "SystemMetaData", "purpose": "PerformanceAndHealth" }
+
 	result["commitHash"] = commit;
 	// __GDPR__COMMON__ "version" : { "classification": "SystemMetaData", "purpose": "FeatureInsight" }
+
 	result["version"] = version;
 	// __GDPR__COMMON__ "common.platformVersion" : { "classification": "SystemMetaData", "purpose": "FeatureInsight" }
+
 	result["common.platformVersion"] = (release || "").replace(
 		/^(\d+)(\.\d+)?(\.\d+)?(.*)/,
 		"$1$2$3",
 	);
 	// __GDPR__COMMON__ "common.platform" : { "classification": "SystemMetaData", "purpose": "FeatureInsight" }
+
 	result["common.platform"] = PlatformToString(platform);
 	// __GDPR__COMMON__ "common.nodePlatform" : { "classification": "SystemMetaData", "purpose": "PerformanceAndHealth" }
+
 	result["common.nodePlatform"] = nodePlatform;
 	// __GDPR__COMMON__ "common.nodeArch" : { "classification": "SystemMetaData", "purpose": "PerformanceAndHealth" }
+
 	result["common.nodeArch"] = arch;
 	// __GDPR__COMMON__ "common.product" : { "classification": "SystemMetaData", "purpose": "PerformanceAndHealth" }
+
 	result["common.product"] = product || "desktop";
 
 	if (isInternalTelemetry) {
 		// __GDPR__COMMON__ "common.msftInternal" : { "classification": "SystemMetaData", "purpose": "FeatureInsight", "isMeasurement": true }
+
 		result["common.msftInternal"] = isInternalTelemetry;
 	}
 	// dynamic properties which value differs on each call
 	let seq = 0;
 
 	const startTime = Date.now();
+
 	Object.defineProperties(result, {
 		// __GDPR__COMMON__ "timestamp" : { "classification": "SystemMetaData", "purpose": "FeatureInsight" }
 		"timestamp": {
@@ -85,14 +99,18 @@ export function resolveCommonProperties(
 
 	if (isLinuxSnap) {
 		// __GDPR__COMMON__ "common.snap" : { "classification": "SystemMetaData", "purpose": "FeatureInsight" }
+
 		result["common.snap"] = "true";
 	}
+
 	const platformDetail = getPlatformDetail(hostname);
 
 	if (platformDetail) {
 		// __GDPR__COMMON__ "common.platformDetail" : { "classification": "SystemMetaData", "purpose": "FeatureInsight" }
+
 		result["common.platformDetail"] = platformDetail;
 	}
+
 	return result;
 }
 export function verifyMicrosoftInternalDomain(
@@ -103,6 +121,7 @@ export function verifyMicrosoftInternalDomain(
 	if (!userDnsDomain) {
 		return false;
 	}
+
 	const domain = userDnsDomain.toLowerCase();
 
 	return domainList.some((msftDomain) => domain === msftDomain);

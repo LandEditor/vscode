@@ -44,6 +44,7 @@ export class IssueQuickAccess extends PickerQuickAccessProvider<IPickerQuickAcce
 	) {
 		super(IssueQuickAccess.PREFIX, { canAcceptInBackground: true });
 	}
+
 	protected override _getPicks(
 		filter: string,
 	):
@@ -100,6 +101,7 @@ export class IssueQuickAccess extends PickerQuickAccessProvider<IPickerQuickAcce
 					),
 			});
 		}
+
 		issuePicksConst.push({
 			type: "separator",
 			label: localize("extensions", "Extensions"),
@@ -115,6 +117,7 @@ export class IssueQuickAccess extends PickerQuickAccessProvider<IPickerQuickAcce
 			if ("source" in action.item && action.item.source) {
 				extensionIdSet.add(action.item.source.id);
 			}
+
 			const pick = this._createPick(filter, action);
 
 			if (pick) {
@@ -131,9 +134,11 @@ export class IssueQuickAccess extends PickerQuickAccessProvider<IPickerQuickAcce
 				if (pick && !extensionIdSet.has(id)) {
 					issuePicksParts.push(pick);
 				}
+
 				extensionIdSet.add(id);
 			}
 		});
+
 		issuePicksParts.sort((a, b) => {
 			const aLabel = a.label ?? "";
 
@@ -144,6 +149,7 @@ export class IssueQuickAccess extends PickerQuickAccessProvider<IPickerQuickAcce
 
 		return [...issuePicksConst, ...issuePicksParts];
 	}
+
 	private _createPick(
 		filter: string,
 		action?: MenuItemAction | SubmenuItemAction | undefined,
@@ -167,6 +173,7 @@ export class IssueQuickAccess extends PickerQuickAccessProvider<IPickerQuickAcce
 
 		if (action && "source" in action.item && action.item.source) {
 			label = action.item.source?.title;
+
 			trigger = () => {
 				if ("source" in action.item && action.item.source) {
 					this.commandService.executeCommand(
@@ -174,13 +181,16 @@ export class IssueQuickAccess extends PickerQuickAccessProvider<IPickerQuickAcce
 						action.item.source.id,
 					);
 				}
+
 				return TriggerAction.CLOSE_PICKER;
 			};
+
 			accept = () => {
 				action.run();
 			};
 		} else if (extension) {
 			label = extension.displayName ?? extension.name;
+
 			trigger = () => {
 				this.commandService.executeCommand(
 					"extension.open",
@@ -189,6 +199,7 @@ export class IssueQuickAccess extends PickerQuickAccessProvider<IPickerQuickAcce
 
 				return TriggerAction.CLOSE_PICKER;
 			};
+
 			accept = () => {
 				this.commandService.executeCommand(
 					"workbench.action.openIssueReporter",
@@ -198,6 +209,7 @@ export class IssueQuickAccess extends PickerQuickAccessProvider<IPickerQuickAcce
 		} else {
 			return undefined;
 		}
+
 		const highlights = matchesFuzzy(filter, label, true);
 
 		if (highlights) {
@@ -209,6 +221,7 @@ export class IssueQuickAccess extends PickerQuickAccessProvider<IPickerQuickAcce
 				accept,
 			};
 		}
+
 		return undefined;
 	}
 }

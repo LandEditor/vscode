@@ -55,6 +55,7 @@ export class FormatOnType implements IEditorContribution {
 	public static readonly ID = "editor.contrib.autoFormat";
 
 	private readonly _disposables = new DisposableStore();
+
 	private readonly _sessionDisposables = new DisposableStore();
 
 	constructor(
@@ -72,10 +73,13 @@ export class FormatOnType implements IEditorContribution {
 				this,
 			),
 		);
+
 		this._disposables.add(_editor.onDidChangeModel(() => this._update()));
+
 		this._disposables.add(
 			_editor.onDidChangeModelLanguage(() => this._update()),
 		);
+
 		this._disposables.add(
 			_editor.onDidChangeConfiguration((e) => {
 				if (e.hasChanged(EditorOption.formatOnType)) {
@@ -83,11 +87,13 @@ export class FormatOnType implements IEditorContribution {
 				}
 			}),
 		);
+
 		this._update();
 	}
 
 	dispose(): void {
 		this._disposables.dispose();
+
 		this._sessionDisposables.dispose();
 	}
 
@@ -123,6 +129,7 @@ export class FormatOnType implements IEditorContribution {
 		for (const ch of support.autoFormatTriggerCharacters) {
 			triggerChars.add(ch.charCodeAt(0));
 		}
+
 		this._sessionDisposables.add(
 			this._editor.onDidType((text: string) => {
 				const lastCharCode = text.charCodeAt(text.length - 1);
@@ -160,6 +167,7 @@ export class FormatOnType implements IEditorContribution {
 				// a model.setValue() was called
 				// cancel only once
 				cts.cancel();
+
 				unbind.dispose();
 
 				return;
@@ -171,6 +179,7 @@ export class FormatOnType implements IEditorContribution {
 				if (change.range.endLineNumber <= position.lineNumber) {
 					// cancel only once
 					cts.cancel();
+
 					unbind.dispose();
 
 					return;
@@ -191,11 +200,13 @@ export class FormatOnType implements IEditorContribution {
 				if (cts.token.isCancellationRequested) {
 					return;
 				}
+
 				if (isNonEmptyArray(edits)) {
 					this._accessibilitySignalService.playSignal(
 						AccessibilitySignal.format,
 						{ userGesture: false },
 					);
+
 					FormattingEdit.execute(this._editor, edits, true);
 				}
 			})
@@ -209,6 +220,7 @@ class FormatOnPaste implements IEditorContribution {
 	public static readonly ID = "editor.contrib.formatOnPaste";
 
 	private readonly _callOnDispose = new DisposableStore();
+
 	private readonly _callOnModel = new DisposableStore();
 
 	constructor(
@@ -221,10 +233,13 @@ class FormatOnPaste implements IEditorContribution {
 		this._callOnDispose.add(
 			editor.onDidChangeConfiguration(() => this._update()),
 		);
+
 		this._callOnDispose.add(editor.onDidChangeModel(() => this._update()));
+
 		this._callOnDispose.add(
 			editor.onDidChangeModelLanguage(() => this._update()),
 		);
+
 		this._callOnDispose.add(
 			_languageFeaturesService.documentRangeFormattingEditProvider.onDidChange(
 				this._update,
@@ -235,6 +250,7 @@ class FormatOnPaste implements IEditorContribution {
 
 	dispose(): void {
 		this._callOnDispose.dispose();
+
 		this._callOnModel.dispose();
 	}
 
@@ -270,9 +286,11 @@ class FormatOnPaste implements IEditorContribution {
 		if (!this.editor.hasModel()) {
 			return;
 		}
+
 		if (this.editor.getSelections().length > 1) {
 			return;
 		}
+
 		this._instantiationService
 			.invokeFunction(
 				formatDocumentRangesWithSelectedProvider,
@@ -317,6 +335,7 @@ class FormatDocumentAction extends EditorAction {
 			const instaService = accessor.get(IInstantiationService);
 
 			const progressService = accessor.get(IEditorProgressService);
+
 			await progressService.showWhile(
 				instaService.invokeFunction(
 					formatDocumentWithSelectedProvider,
@@ -361,6 +380,7 @@ class FormatSelectionAction extends EditorAction {
 		if (!editor.hasModel()) {
 			return;
 		}
+
 		const instaService = accessor.get(IInstantiationService);
 
 		const model = editor.getModel();
@@ -377,6 +397,7 @@ class FormatSelectionAction extends EditorAction {
 		});
 
 		const progressService = accessor.get(IEditorProgressService);
+
 		await progressService.showWhile(
 			instaService.invokeFunction(
 				formatDocumentRangesWithSelectedProvider,
@@ -413,6 +434,7 @@ CommandsRegistry.registerCommand("editor.action.format", async (accessor) => {
 	if (!editor || !editor.hasModel()) {
 		return;
 	}
+
 	const commandService = accessor.get(ICommandService);
 
 	if (editor.getSelection().isEmpty()) {

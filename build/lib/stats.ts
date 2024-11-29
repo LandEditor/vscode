@@ -13,6 +13,7 @@ class Entry {
 		public totalCount: number,
 		public totalSize: number,
 	) {}
+
 	toString(pretty?: boolean): string {
 		if (!pretty) {
 			if (this.totalCount === 1) {
@@ -42,6 +43,7 @@ export function createStatsStream(
 	log?: boolean,
 ): es.ThroughStream {
 	const entry = new Entry(group, 0, 0);
+
 	_entries.set(entry.name, entry);
 
 	return es.through(
@@ -59,6 +61,7 @@ export function createStatsStream(
 					// funky file...
 				}
 			}
+
 			this.emit("data", data);
 		},
 		function () {
@@ -72,11 +75,13 @@ export function createStatsStream(
 						entry.totalCount < 100
 							? ansiColors.green(entry.totalCount.toString())
 							: ansiColors.red(entry.totalCount.toString());
+
 					fancyLog(
 						`Stats for '${ansiColors.grey(entry.name)}': ${count} files, ${Math.round(entry.totalSize / 1204)}KB`,
 					);
 				}
 			}
+
 			this.emit("end");
 		},
 	);

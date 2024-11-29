@@ -19,10 +19,15 @@ const $ = dom.$;
 
 export class ColorPickerHeader extends Disposable {
 	private readonly _domNode: HTMLElement;
+
 	private readonly _pickedColorNode: HTMLElement;
+
 	private readonly _pickedColorPresentation: HTMLElement;
+
 	private readonly _originalColorNode: HTMLElement;
+
 	private readonly _closeButton: CloseButton | null = null;
+
 	private backgroundColor: Color;
 
 	constructor(
@@ -40,10 +45,12 @@ export class ColorPickerHeader extends Disposable {
 		this._pickedColorNode = dom.append(this._domNode, $(".picked-color"));
 
 		dom.append(this._pickedColorNode, $("span.codicon.codicon-color-mode"));
+
 		this._pickedColorPresentation = dom.append(
 			this._pickedColorNode,
 			document.createElement("span"),
 		);
+
 		this._pickedColorPresentation.classList.add(
 			"picked-color-presentation",
 		);
@@ -52,18 +59,21 @@ export class ColorPickerHeader extends Disposable {
 			"clickToToggleColorOptions",
 			"Click to toggle color options (rgb/hsl/hex)",
 		);
+
 		this._pickedColorNode.setAttribute("title", tooltip);
 
 		this._originalColorNode = dom.append(
 			this._domNode,
 			$(".original-color"),
 		);
+
 		this._originalColorNode.style.backgroundColor =
 			Color.Format.CSS.format(this.model.originalColor) || "";
 
 		this.backgroundColor =
 			themeService.getColorTheme().getColor(editorHoverBackground) ||
 			Color.white;
+
 		this._register(
 			themeService.onDidColorThemeChange((theme) => {
 				this.backgroundColor =
@@ -78,22 +88,28 @@ export class ColorPickerHeader extends Disposable {
 				() => this.model.selectNextColorPresentation(),
 			),
 		);
+
 		this._register(
 			dom.addDisposableListener(
 				this._originalColorNode,
 				dom.EventType.CLICK,
 				() => {
 					this.model.color = this.model.originalColor;
+
 					this.model.flushColor();
 				},
 			),
 		);
+
 		this._register(model.onDidChangeColor(this.onDidChangeColor, this));
+
 		this._register(
 			model.onDidChangePresentation(this.onDidChangePresentation, this),
 		);
+
 		this._pickedColorNode.style.backgroundColor =
 			Color.Format.CSS.format(model.color) || "";
+
 		this._pickedColorNode.classList.toggle(
 			"light",
 			model.color.rgba.a < 0.5
@@ -106,6 +122,7 @@ export class ColorPickerHeader extends Disposable {
 		// When the color picker widget is a standalone color picker widget, then add a close button
 		if (this.type === ColorPickerWidgetType.Standalone) {
 			this._domNode.classList.add("standalone-colorpicker");
+
 			this._closeButton = this._register(new CloseButton(this._domNode));
 		}
 	}
@@ -129,12 +146,14 @@ export class ColorPickerHeader extends Disposable {
 	private onDidChangeColor(color: Color): void {
 		this._pickedColorNode.style.backgroundColor =
 			Color.Format.CSS.format(color) || "";
+
 		this._pickedColorNode.classList.toggle(
 			"light",
 			color.rgba.a < 0.5
 				? this.backgroundColor.isLighter()
 				: color.isLighter(),
 		);
+
 		this.onDidChangePresentation();
 	}
 

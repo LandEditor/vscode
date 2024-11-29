@@ -26,6 +26,7 @@ let client: AsyncDisposable | undefined;
 // this method is called when vs code is activated
 export async function activate(context: ExtensionContext) {
 	const clientPackageJSON = getPackageInfo(context);
+
 	telemetry = new TelemetryReporter(clientPackageJSON.aiKey);
 
 	const serverMain = `./server/${clientPackageJSON.main.indexOf("/dist/") !== -1 ? "dist" : "out"}/node/htmlServerMain`;
@@ -70,6 +71,7 @@ export async function activate(context: ExtensionContext) {
 	};
 	// pass the location of the localization bundle to the server
 	process.env["VSCODE_L10N_BUNDLE_LOCATION"] = l10n.uri?.toString() ?? "";
+
 	client = await startClient(context, newLanguageClient, {
 		fileFs: getNodeFileFS(),
 		TextDecoder,
@@ -80,13 +82,17 @@ export async function activate(context: ExtensionContext) {
 export async function deactivate(): Promise<void> {
 	if (client) {
 		await client.dispose();
+
 		client = undefined;
 	}
 }
 interface IPackageInfo {
 	name: string;
+
 	version: string;
+
 	aiKey: string;
+
 	main: string;
 }
 function getPackageInfo(context: ExtensionContext): IPackageInfo {

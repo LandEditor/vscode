@@ -39,13 +39,18 @@ import {
 const PERF = false;
 type FileNode = {
 	type: "file";
+
 	name: string;
+
 	path: string;
+
 	resolve: () => Promise<ArrayBuffer>;
 };
 type DirNode = {
 	type: "dir";
+
 	name: string;
+
 	entries: Promise<(DirNode | FileNode)[]>;
 };
 
@@ -57,20 +62,24 @@ const time = async <T>(name: string, task: () => Promise<T> | T) => {
 	if (!PERF) {
 		return task();
 	}
+
 	const start = Date.now();
 
 	const itr = (itrcount[name] ?? 0) + 1;
+
 	console.info(
 		name,
 		itr,
 		"starting",
 		Math.round((start - globalStart) * 10) / 10000,
 	);
+
 	itrcount[name] = itr;
 
 	const r = await task();
 
 	const end = Date.now();
+
 	console.info(name, itr, "took", end - start);
 
 	return r;
@@ -86,7 +95,9 @@ export class LocalFileSearchSimpleWorker
 	implements ILocalFileSearchSimpleWorker, IRequestHandler
 {
 	_requestHandlerBrand: any;
+
 	private readonly host: LocalFileSearchSimpleWorkerHost;
+
 	cancellationTokens: Map<number, CancellationTokenSource> = new Map();
 
 	constructor(workerServer: IWorkerServer) {
@@ -95,14 +106,17 @@ export class LocalFileSearchSimpleWorker
 	$cancelQuery(queryId: number): void {
 		this.cancellationTokens.get(queryId)?.cancel();
 	}
+
 	private registerCancellationToken(
 		queryId: number,
 	): CancellationTokenSource {
 		const source = new CancellationTokenSource();
+
 		this.cancellationTokens.set(queryId, source);
 
 		return source;
 	}
+
 	async $listDirectory(
 		handle: IWorkerFileSystemDirectoryHandle,
 		query: IFileQueryProps<UriComponents>,
@@ -128,6 +142,7 @@ export class LocalFileSearchSimpleWorker
 			? (name: string) =>
 					query.filePattern!.split("").every((c) => name.includes(c))
 			: (name: string) => true;
+
 		await time("listDirectory", () =>
 			this.walkFolderQuery(
 				handle,
@@ -138,12 +153,15 @@ export class LocalFileSearchSimpleWorker
 					if (!filePatternMatcher(file.name)) {
 						return;
 					}
+
 					count++;
 
 					if (max && count > max) {
 						limitHit = true;
+
 						token.cancel();
 					}
+
 					return entries.push(file.path);
 				},
 				token.token,
@@ -155,6 +173,7 @@ export class LocalFileSearchSimpleWorker
 			limitHit,
 		};
 	}
+
 	async $searchDirectory(
 		handle: IWorkerFileSystemDirectoryHandle,
 		query: ITextQueryProps<UriComponents>,
@@ -185,6 +204,7 @@ export class LocalFileSearchSimpleWorker
 				if (token.token.isCancellationRequested) {
 					return;
 				}
+
 				fileCount++;
 
 				const contents = await file.resolve();
@@ -192,6 +212,7 @@ export class LocalFileSearchSimpleWorker
 				if (token.token.isCancellationRequested) {
 					return;
 				}
+
 				const bytes = new Uint8Array(contents);
 
 				const fileResults = getFileResults(bytes, pattern, {
@@ -208,14 +229,18 @@ export class LocalFileSearchSimpleWorker
 					if (query.maxResults && resultCount > query.maxResults) {
 						token.cancel();
 					}
+
 					const match = {
 						resource: URI.joinPath(revivedQuery.folder, file.path),
 						results: fileResults,
 					};
+
 					this.host.$sendTextSearchMatch(match, queryId);
+
 					results.push(match);
 				}
 			};
+
 			await time("walkFolderToResolve", () =>
 				this.walkFolderQuery(
 					handle,
@@ -226,6 +251,7 @@ export class LocalFileSearchSimpleWorker
 					token.token,
 				),
 			);
+
 			await time("resolveOngoingProcesses", () =>
 				Promise.all(onGoingProcesses),
 			);
@@ -233,12 +259,14 @@ export class LocalFileSearchSimpleWorker
 			if (PERF) {
 				console.log("Searched in", fileCount, "files");
 			}
+
 			return {
 				results,
 				limitHit,
 			};
 		});
 	}
+
 	private async walkFolderQuery(
 		handle: IWorkerFileSystemDirectoryHandle,
 		queryProps: ICommonQueryProps<URI>,
@@ -274,9 +302,11 @@ export class LocalFileSearchSimpleWorker
 			if (evalFolderExcludes(path, basename, hasSibling)) {
 				return true;
 			}
+
 			if (pathExcludedInQuery(queryProps, path)) {
 				return true;
 			}
+
 			return false;
 		};
 		// For files ensure the full check takes place.
@@ -290,9 +320,11 @@ export class LocalFileSearchSimpleWorker
 			if (evalFolderExcludes(path, basename, hasSibling)) {
 				return false;
 			}
+
 			if (!pathIncludedInQuery(queryProps, path, extUri)) {
 				return false;
 			}
+
 			return true;
 		};
 
@@ -334,16 +366,19 @@ export class LocalFileSearchSimpleWorker
 						.catch((e) => undefined),
 					directory.getFileHandle(".ignore").catch((e) => undefined),
 				]);
+
 				await Promise.all(
 					ignoreFiles.map(async (file) => {
 						if (!file) {
 							return;
 						}
+
 						const ignoreContents = new TextDecoder("utf8").decode(
 							new Uint8Array(
 								await (await file.getFile()).arrayBuffer(),
 							),
 						);
+
 						ignoreFile = new IgnoreFile(
 							ignoreContents,
 							prior,
@@ -352,6 +387,7 @@ export class LocalFileSearchSimpleWorker
 					}),
 				);
 			}
+
 			const entries = Promises.withAsyncBody<(FileNode | DirNode)[]>(
 				async (c) => {
 					const files: FileNode[] = [];
@@ -364,12 +400,15 @@ export class LocalFileSearchSimpleWorker
 
 					for await (const entry of directory.entries()) {
 						entries.push(entry);
+
 						sibilings.add(entry[0]);
 					}
+
 					for (const [basename, handle] of entries) {
 						if (token.isCancellationRequested) {
 							break;
 						}
+
 						const path = prior + basename;
 
 						if (
@@ -381,6 +420,7 @@ export class LocalFileSearchSimpleWorker
 						) {
 							continue;
 						}
+
 						const hasSibling = (query: string) =>
 							sibilings.has(query);
 
@@ -402,6 +442,7 @@ export class LocalFileSearchSimpleWorker
 							files.push(processFile(handle, path));
 						}
 					}
+
 					c([...(await Promise.all(dirs)), ...files]);
 				},
 			);
@@ -420,6 +461,7 @@ export class LocalFileSearchSimpleWorker
 			if (token.isCancellationRequested) {
 				return;
 			}
+
 			await Promise.all(
 				(await directory.entries)
 					.sort(
@@ -440,6 +482,7 @@ export class LocalFileSearchSimpleWorker
 		const processed = await time("process", () =>
 			processDirectory(handle, "/"),
 		);
+
 		await time("resolve", () => resolveDirectory(processed, onFile));
 	}
 }
@@ -488,6 +531,7 @@ function pathExcludedInQuery(
 	) {
 		return true;
 	}
+
 	return false;
 }
 function pathIncludedInQuery(
@@ -501,6 +545,7 @@ function pathIncludedInQuery(
 	) {
 		return false;
 	}
+
 	if (queryProps.includePattern || queryProps.usingSearchPaths) {
 		if (
 			queryProps.includePattern &&
@@ -533,7 +578,9 @@ function pathIncludedInQuery(
 				})
 			);
 		}
+
 		return false;
 	}
+
 	return true;
 }

@@ -58,13 +58,18 @@ export class NotebookExecutionStateService
 	private readonly _executions = new ResourceMap<
 		Map<number, CellExecution>
 	>();
+
 	private readonly _notebookExecutions = new ResourceMap<
 		[NotebookExecution, IDisposable]
 	>();
+
 	private readonly _notebookListeners =
 		new ResourceMap<NotebookExecutionListeners>();
+
 	private readonly _cellListeners = new ResourceMap<IDisposable>();
+
 	private readonly _lastFailedCells = new ResourceMap<IFailedCellInfo>();
+
 	private readonly _lastCompletedCellHandles = new ResourceMap<number>();
 
 	private readonly _onDidChangeExecution = this._register(
@@ -72,11 +77,13 @@ export class NotebookExecutionStateService
 			ICellExecutionStateChangedEvent | IExecutionStateChangedEvent
 		>(),
 	);
+
 	onDidChangeExecution = this._onDidChangeExecution.event;
 
 	private readonly _onDidChangeLastRunFailState = this._register(
 		new Emitter<INotebookFailStateChangedEvent>(),
 	);
+
 	onDidChangeLastRunFailState = this._onDidChangeLastRunFailState.event;
 
 	constructor(
@@ -112,6 +119,7 @@ export class NotebookExecutionStateService
 				);
 			}
 		}
+
 		if (this._notebookExecutions.has(notebookUri)) {
 			this._onExecutionDidComplete(notebookUri);
 		}
@@ -132,6 +140,7 @@ export class NotebookExecutionStateService
 
 		return undefined;
 	}
+
 	getExecution(notebook: URI): INotebookExecution | undefined {
 		return this._notebookExecutions.get(notebook)?.[0];
 	}
@@ -179,13 +188,18 @@ export class NotebookExecutionStateService
 		exe.dispose();
 
 		const cellUri = CellUri.generate(notebookUri, cellHandle);
+
 		this._cellListeners.get(cellUri)?.dispose();
+
 		this._cellListeners.delete(cellUri);
+
 		notebookExecutions.delete(cellHandle);
 
 		if (notebookExecutions.size === 0) {
 			this._executions.delete(notebookUri);
+
 			this._notebookListeners.get(notebookUri)?.dispose();
+
 			this._notebookListeners.delete(notebookUri);
 		}
 
@@ -196,13 +210,16 @@ export class NotebookExecutionStateService
 						AccessibilitySignal.notebookCellCompleted,
 					);
 				}
+
 				this._clearLastFailedCell(notebookUri);
 			} else {
 				this._accessibilitySignalService.playSignal(
 					AccessibilitySignal.notebookCellFailed,
 				);
+
 				this._setLastFailedCell(notebookUri, cellHandle);
 			}
+
 			this._lastCompletedCellHandles.set(notebookUri, cellHandle);
 		}
 
@@ -232,9 +249,11 @@ export class NotebookExecutionStateService
 		}
 
 		this._notebookExecutions.delete(notebookUri);
+
 		this._onDidChangeExecution.fire(
 			new NotebookExecutionEvent(notebookUri),
 		);
+
 		disposables.forEach((d) => d.dispose());
 	}
 
@@ -256,9 +275,11 @@ export class NotebookExecutionStateService
 				NotebookExecutionListeners,
 				notebookUri,
 			);
+
 			this._notebookListeners.set(notebookUri, listeners);
 
 			notebookExecutionMap = new Map<number, CellExecution>();
+
 			this._executions.set(notebookUri, notebookExecutionMap);
 		}
 
@@ -266,8 +287,11 @@ export class NotebookExecutionStateService
 
 		if (!exe) {
 			exe = this._createNotebookCellExecution(notebook, cellHandle);
+
 			notebookExecutionMap.set(cellHandle, exe);
+
 			exe.initialize();
+
 			this._onDidChangeExecution.fire(
 				new NotebookCellExecutionEvent(notebookUri, cellHandle, exe),
 			);
@@ -275,6 +299,7 @@ export class NotebookExecutionStateService
 
 		return exe;
 	}
+
 	createExecution(notebookUri: URI): INotebookExecution {
 		const notebook =
 			this._notebookService.getNotebookTextModel(notebookUri);
@@ -288,6 +313,7 @@ export class NotebookExecutionStateService
 				NotebookExecutionListeners,
 				notebookUri,
 			);
+
 			this._notebookListeners.set(notebookUri, listeners);
 		}
 
@@ -295,7 +321,9 @@ export class NotebookExecutionStateService
 
 		if (!info) {
 			info = this._createNotebookExecution(notebook);
+
 			this._notebookExecutions.set(notebookUri, info);
+
 			this._onDidChangeExecution.fire(
 				new NotebookExecutionEvent(notebookUri, info[0]),
 			);
@@ -329,6 +357,7 @@ export class NotebookExecutionStateService
 				),
 			),
 		);
+
 		this._cellListeners.set(
 			CellUri.generate(notebookUri, cellHandle),
 			disposable,
@@ -407,6 +436,7 @@ export class NotebookExecutionStateService
 
 		if (lastFailedCellInfo) {
 			lastFailedCellInfo.disposable?.dispose();
+
 			this._lastFailedCells.delete(notebookURI);
 		}
 
@@ -427,6 +457,7 @@ export class NotebookExecutionStateService
 					const lastFailedCellPos = notebook.cells.findIndex(
 						(c) => c.handle === lastFailedCell,
 					);
+
 					e.rawEvent.changes.forEach(
 						([start, deleteCount, addedCells]) => {
 							if (deleteCount) {
@@ -460,18 +491,25 @@ export class NotebookExecutionStateService
 
 	override dispose(): void {
 		super.dispose();
+
 		this._executions.forEach((executionMap) => {
 			executionMap.forEach((execution) => execution.dispose());
+
 			executionMap.clear();
 		});
+
 		this._executions.clear();
+
 		this._notebookExecutions.forEach((disposables) => {
 			disposables.forEach((d) => d.dispose());
 		});
+
 		this._notebookExecutions.clear();
 
 		this._cellListeners.forEach((disposable) => disposable.dispose());
+
 		this._notebookListeners.forEach((disposable) => disposable.dispose());
+
 		this._lastFailedCells.forEach((elem) => elem.disposable.dispose());
 	}
 }
@@ -528,6 +566,7 @@ class NotebookExecutionListeners extends Disposable {
 		@ILogService private readonly _logService: ILogService,
 	) {
 		super();
+
 		this._logService.debug(`NotebookExecution#ctor ${notebook.toString()}`);
 
 		const notebookModel =
@@ -538,11 +577,13 @@ class NotebookExecutionListeners extends Disposable {
 		}
 
 		this._notebookModel = notebookModel;
+
 		this._register(
 			this._notebookModel.onWillAddRemoveCells((e) =>
 				this.onWillAddRemoveCells(e),
 			),
 		);
+
 		this._register(
 			this._notebookModel.onWillDispose(() =>
 				this.onWillDisposeDocument(),
@@ -557,6 +598,7 @@ class NotebookExecutionListeners extends Disposable {
 			this._notebookExecutionStateService.getCellExecutionsForNotebook(
 				this._notebookModel.uri,
 			);
+
 		this._notebookExecutionService.cancelNotebookCellHandles(
 			this._notebookModel,
 			exes.map((exe) => exe.cellHandle),
@@ -565,6 +607,7 @@ class NotebookExecutionListeners extends Disposable {
 
 	private onWillDisposeDocument(): void {
 		this._logService.debug(`NotebookExecution#onWillDisposeDocument`);
+
 		this.cancelAll();
 	}
 
@@ -584,6 +627,7 @@ class NotebookExecutionListeners extends Disposable {
 					const deletedHandles = this._notebookModel.cells
 						.slice(start, start + deleteCount)
 						.map((c) => c.handle);
+
 					deletedHandles.forEach((h) => {
 						const exe = notebookExes.get(h);
 
@@ -611,6 +655,7 @@ class NotebookExecutionListeners extends Disposable {
 				const handlesToCancel = implementsInterrupt
 					? [...executingDeletedHandles]
 					: [...executingDeletedHandles, ...pendingDeletedHandles];
+
 				this._logService.debug(
 					`NotebookExecution#onWillAddRemoveCells, ${JSON.stringify([...handlesToCancel])}`,
 				);
@@ -650,9 +695,11 @@ function updateToEdit(
 		if (typeof update.executionOrder !== "undefined") {
 			newInternalMetadata.executionOrder = update.executionOrder;
 		}
+
 		if (typeof update.runStartTime !== "undefined") {
 			newInternalMetadata.runStartTime = update.runStartTime;
 		}
+
 		return {
 			editType: CellEditType.PartialInternalMetadata,
 			handle: cellHandle,
@@ -665,11 +712,13 @@ function updateToEdit(
 
 class CellExecution extends Disposable implements INotebookCellExecution {
 	private readonly _onDidUpdate = this._register(new Emitter<void>());
+
 	readonly onDidUpdate = this._onDidUpdate.event;
 
 	private readonly _onDidComplete = this._register(
 		new Emitter<boolean | undefined>(),
 	);
+
 	readonly onDidComplete = this._onDidComplete.event;
 
 	private _state: NotebookCellExecutionState =
@@ -701,6 +750,7 @@ class CellExecution extends Disposable implements INotebookCellExecution {
 		@ILogService private readonly _logService: ILogService,
 	) {
 		super();
+
 		this._logService.debug(`CellExecution#ctor ${this.getCellLog()}`);
 	}
 
@@ -717,6 +767,7 @@ class CellExecution extends Disposable implements INotebookCellExecution {
 				renderDuration: null,
 			},
 		};
+
 		this._applyExecutionEdits([startExecuteEdit]);
 	}
 
@@ -728,6 +779,7 @@ class CellExecution extends Disposable implements INotebookCellExecution {
 		const updateTypes = updates
 			.map((u) => CellExecutionUpdateType[u.editType])
 			.join(", ");
+
 		this._logService.debug(
 			`CellExecution#updateExecution ${this.getCellLog()}, [${updateTypes}]`,
 		);
@@ -735,7 +787,9 @@ class CellExecution extends Disposable implements INotebookCellExecution {
 
 	confirm() {
 		this._logService.debug(`CellExecution#confirm ${this.getCellLog()}`);
+
 		this._state = NotebookCellExecutionState.Pending;
+
 		this._onDidUpdate.fire();
 	}
 
@@ -787,6 +841,7 @@ class CellExecution extends Disposable implements INotebookCellExecution {
 			const edits = updates.map((update) =>
 				updateToEdit(update, this.cellHandle),
 			);
+
 			this._applyExecutionEdits(edits);
 		}
 
@@ -823,6 +878,7 @@ class CellExecution extends Disposable implements INotebookCellExecution {
 					error: completionData.error,
 				},
 			};
+
 			this._applyExecutionEdits([edit]);
 		}
 
@@ -843,9 +899,11 @@ class CellExecution extends Disposable implements INotebookCellExecution {
 
 class NotebookExecution extends Disposable implements INotebookExecution {
 	private readonly _onDidUpdate = this._register(new Emitter<void>());
+
 	readonly onDidUpdate = this._onDidUpdate.event;
 
 	private readonly _onDidComplete = this._register(new Emitter<void>());
+
 	readonly onDidComplete = this._onDidComplete.event;
 
 	private _state: NotebookExecutionState = NotebookExecutionState.Unconfirmed;
@@ -863,8 +921,10 @@ class NotebookExecution extends Disposable implements INotebookExecution {
 		@ILogService private readonly _logService: ILogService,
 	) {
 		super();
+
 		this._logService.debug(`NotebookExecution#ctor`);
 	}
+
 	private debug(message: string) {
 		this._logService.debug(
 			`${message} ${this._notebookModel.uri.toString()}`,
@@ -873,19 +933,25 @@ class NotebookExecution extends Disposable implements INotebookExecution {
 
 	confirm() {
 		this.debug(`Execution#confirm`);
+
 		this._state = NotebookExecutionState.Pending;
+
 		this._onDidUpdate.fire();
 	}
 
 	begin(): void {
 		this.debug(`Execution#begin`);
+
 		this._state = NotebookExecutionState.Executing;
+
 		this._onDidUpdate.fire();
 	}
 
 	complete(): void {
 		this.debug(`Execution#begin`);
+
 		this._state = NotebookExecutionState.Unconfirmed;
+
 		this._onDidComplete.fire();
 	}
 }

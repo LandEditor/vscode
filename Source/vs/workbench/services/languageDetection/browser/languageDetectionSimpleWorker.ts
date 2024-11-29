@@ -38,23 +38,36 @@ export function create(workerServer: IWorkerServer): IRequestHandler {
  */
 export class LanguageDetectionSimpleWorker implements ILanguageDetectionWorker {
 	_requestHandlerBrand: any;
+
 	private static readonly expectedRelativeConfidence = 0.2;
+
 	private static readonly positiveConfidenceCorrectionBucket1 = 0.05;
+
 	private static readonly positiveConfidenceCorrectionBucket2 = 0.025;
+
 	private static readonly negativeConfidenceCorrection = 0.5;
+
 	private readonly _workerTextModelSyncServer =
 		new WorkerTextModelSyncServer();
+
 	private readonly _host: LanguageDetectionWorkerHost;
+
 	private _regexpModel: RegexpModel | undefined;
+
 	private _regexpLoadFailed: boolean = false;
+
 	private _modelOperations: ModelOperations | undefined;
+
 	private _loadFailed: boolean = false;
+
 	private modelIdToCoreId = new Map<string, string | undefined>();
 
 	constructor(workerServer: IWorkerServer) {
 		this._host = LanguageDetectionWorkerHost.getChannel(workerServer);
+
 		this._workerTextModelSyncServer.bindToServer(workerServer);
 	}
+
 	public async $detectLanguage(
 		uri: string,
 		langBiases: Record<string, number> | undefined,
@@ -72,6 +85,7 @@ export class LanguageDetectionSimpleWorker implements ILanguageDetectionWorker {
 		if (!documentTextSample) {
 			return;
 		}
+
 		const neuralResolver = async () => {
 			for await (const language of this.detectLanguagesImpl(
 				documentTextSample,
@@ -82,6 +96,7 @@ export class LanguageDetectionSimpleWorker implements ILanguageDetectionWorker {
 						await this._host.$getLanguageId(language.languageId),
 					);
 				}
+
 				const coreId = this.modelIdToCoreId.get(language.languageId);
 
 				if (
@@ -89,9 +104,11 @@ export class LanguageDetectionSimpleWorker implements ILanguageDetectionWorker {
 					(!supportedLangs?.length || supportedLangs.includes(coreId))
 				) {
 					languages.push(coreId);
+
 					confidences.push(language.confidence);
 				}
 			}
+
 			stopWatch.stop();
 
 			if (languages.length) {
@@ -103,6 +120,7 @@ export class LanguageDetectionSimpleWorker implements ILanguageDetectionWorker {
 
 				return languages[0];
 			}
+
 			return undefined;
 		};
 
@@ -119,6 +137,7 @@ export class LanguageDetectionSimpleWorker implements ILanguageDetectionWorker {
 			if (history) {
 				return history;
 			}
+
 			const neural = await neuralResolver();
 
 			if (neural) {
@@ -130,20 +149,24 @@ export class LanguageDetectionSimpleWorker implements ILanguageDetectionWorker {
 			if (neural) {
 				return neural;
 			}
+
 			const history = await historicalResolver();
 
 			if (history) {
 				return history;
 			}
 		}
+
 		return undefined;
 	}
+
 	private getTextForDetection(uri: string): string | undefined {
 		const editorModel = this._workerTextModelSyncServer.getModel(uri);
 
 		if (!editorModel) {
 			return;
 		}
+
 		const end = editorModel.positionAt(10000);
 
 		const content = editorModel.getValueInRange({
@@ -155,13 +178,16 @@ export class LanguageDetectionSimpleWorker implements ILanguageDetectionWorker {
 
 		return content;
 	}
+
 	private async getRegexpModel(): Promise<RegexpModel | undefined> {
 		if (this._regexpLoadFailed) {
 			return;
 		}
+
 		if (this._regexpModel) {
 			return this._regexpModel;
 		}
+
 		const uri: string = await this._host.$getRegexpModelUri();
 
 		try {
@@ -178,6 +204,7 @@ export class LanguageDetectionSimpleWorker implements ILanguageDetectionWorker {
 			return;
 		}
 	}
+
 	private async runRegexpModel(
 		content: string,
 		langBiases: Record<string, number>,
@@ -188,6 +215,7 @@ export class LanguageDetectionSimpleWorker implements ILanguageDetectionWorker {
 		if (!regexpModel) {
 			return;
 		}
+
 		if (supportedLangs?.length) {
 			// When using supportedLangs, normally computed biases are too extreme. Just use a "bitmask" of sorts.
 			for (const lang of Object.keys(langBiases)) {
@@ -198,6 +226,7 @@ export class LanguageDetectionSimpleWorker implements ILanguageDetectionWorker {
 				}
 			}
 		}
+
 		const detected = regexpModel.detect(
 			content,
 			langBiases,
@@ -206,16 +235,19 @@ export class LanguageDetectionSimpleWorker implements ILanguageDetectionWorker {
 
 		return detected;
 	}
+
 	private async getModelOperations(): Promise<ModelOperations> {
 		if (this._modelOperations) {
 			return this._modelOperations;
 		}
+
 		const uri: string = await this._host.$getIndexJsUri();
 
 		const { ModelOperations } = (await importAMDNodeModule(
 			uri,
 			"",
 		)) as typeof import("@vscode/vscode-languagedetection");
+
 		this._modelOperations = new ModelOperations({
 			modelJsonLoaderFunc: async () => {
 				const response = await fetch(
@@ -296,24 +328,29 @@ export class LanguageDetectionSimpleWorker implements ILanguageDetectionWorker {
 			default:
 				break;
 		}
+
 		return modelResult;
 	}
+
 	private async *detectLanguagesImpl(
 		content: string,
 	): AsyncGenerator<ModelResult, void, unknown> {
 		if (this._loadFailed) {
 			return;
 		}
+
 		let modelOperations: ModelOperations | undefined;
 
 		try {
 			modelOperations = await this.getModelOperations();
 		} catch (e) {
 			console.log(e);
+
 			this._loadFailed = true;
 
 			return;
 		}
+
 		let modelResults: ModelResult[] | undefined;
 
 		try {
@@ -321,6 +358,7 @@ export class LanguageDetectionSimpleWorker implements ILanguageDetectionWorker {
 		} catch (e) {
 			console.warn(e);
 		}
+
 		if (
 			!modelResults ||
 			modelResults.length === 0 ||
@@ -329,6 +367,7 @@ export class LanguageDetectionSimpleWorker implements ILanguageDetectionWorker {
 		) {
 			return;
 		}
+
 		const firstModelResult = this.adjustLanguageConfidence(modelResults[0]);
 
 		if (
@@ -337,12 +376,14 @@ export class LanguageDetectionSimpleWorker implements ILanguageDetectionWorker {
 		) {
 			return;
 		}
+
 		const possibleLanguages: ModelResult[] = [firstModelResult];
 
 		for (let current of modelResults) {
 			if (current === firstModelResult) {
 				continue;
 			}
+
 			current = this.adjustLanguageConfidence(current);
 
 			const currentHighest =
@@ -355,6 +396,7 @@ export class LanguageDetectionSimpleWorker implements ILanguageDetectionWorker {
 				while (possibleLanguages.length) {
 					yield possibleLanguages.shift()!;
 				}
+
 				if (
 					current.confidence >
 					LanguageDetectionSimpleWorker.expectedRelativeConfidence
@@ -363,6 +405,7 @@ export class LanguageDetectionSimpleWorker implements ILanguageDetectionWorker {
 
 					continue;
 				}
+
 				return;
 			} else {
 				if (
@@ -373,6 +416,7 @@ export class LanguageDetectionSimpleWorker implements ILanguageDetectionWorker {
 
 					continue;
 				}
+
 				return;
 			}
 		}

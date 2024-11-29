@@ -30,6 +30,7 @@ import {
 
 type ManualSyncTaskEvent<T> = {
 	manualSyncTaskId: string;
+
 	data: T;
 };
 function reviewSyncResource(
@@ -57,6 +58,7 @@ export class UserDataSyncServiceChannel implements IServerChannel {
 		string,
 		IUserDataManualSyncTask
 	>();
+
 	private readonly onManualSynchronizeResources = new Emitter<
 		ManualSyncTaskEvent<[SyncResource, URI[]][]>
 	>();
@@ -66,6 +68,7 @@ export class UserDataSyncServiceChannel implements IServerChannel {
 		private readonly userDataProfilesService: IUserDataProfilesService,
 		private readonly logService: ILogService,
 	) {}
+
 	listen(_: unknown, event: string): Event<any> {
 		switch (event) {
 			// sync
@@ -93,10 +96,12 @@ export class UserDataSyncServiceChannel implements IServerChannel {
 			case "manualSync/onSynchronizeResources":
 				return this.onManualSynchronizeResources.event;
 		}
+
 		throw new Error(
 			`[UserDataSyncServiceChannel] Event not found: ${event}`,
 		);
 	}
+
 	async call(context: any, command: string, args?: any): Promise<any> {
 		try {
 			const result = await this._call(context, command, args);
@@ -108,6 +113,7 @@ export class UserDataSyncServiceChannel implements IServerChannel {
 			throw e;
 		}
 	}
+
 	private async _call(
 		context: any,
 		command: string,
@@ -175,6 +181,7 @@ export class UserDataSyncServiceChannel implements IServerChannel {
 			const manualSyncTaskId = args[0];
 
 			const manualSyncTask = this.getManualSyncTask(manualSyncTaskId);
+
 			args = (<Array<any>>args).slice(1);
 
 			switch (manualSyncTaskCommand) {
@@ -200,8 +207,10 @@ export class UserDataSyncServiceChannel implements IServerChannel {
 						);
 			}
 		}
+
 		throw new Error("Invalid call");
 	}
+
 	private getManualSyncTask(
 		manualSyncTaskId: string,
 	): IUserDataManualSyncTask {
@@ -212,10 +221,13 @@ export class UserDataSyncServiceChannel implements IServerChannel {
 		if (!manualSyncTask) {
 			throw new Error(`Manual sync taks not found: ${manualSyncTaskId}`);
 		}
+
 		return manualSyncTask;
 	}
+
 	private async createManualSyncTask(): Promise<string> {
 		const manualSyncTask = await this.service.createManualSyncTask();
+
 		this.manualSyncTasks.set(
 			this.createKey(manualSyncTask.id),
 			manualSyncTask,
@@ -223,6 +235,7 @@ export class UserDataSyncServiceChannel implements IServerChannel {
 
 		return manualSyncTask.id;
 	}
+
 	private createKey(manualSyncTaskId: string): string {
 		return `manualSyncTask-${manualSyncTaskId}`;
 	}
@@ -232,57 +245,72 @@ export class UserDataSyncServiceChannelClient
 	implements IUserDataSyncService
 {
 	declare readonly _serviceBrand: undefined;
+
 	private readonly channel: IChannel;
+
 	private _status: SyncStatus = SyncStatus.Uninitialized;
 
 	get status(): SyncStatus {
 		return this._status;
 	}
+
 	private _onDidChangeStatus: Emitter<SyncStatus> = this._register(
 		new Emitter<SyncStatus>(),
 	);
+
 	readonly onDidChangeStatus: Event<SyncStatus> =
 		this._onDidChangeStatus.event;
 
 	get onDidChangeLocal(): Event<SyncResource> {
 		return this.channel.listen<SyncResource>("onDidChangeLocal");
 	}
+
 	private _conflicts: IUserDataSyncResourceConflicts[] = [];
 
 	get conflicts(): IUserDataSyncResourceConflicts[] {
 		return this._conflicts;
 	}
+
 	private _onDidChangeConflicts = this._register(
 		new Emitter<IUserDataSyncResourceConflicts[]>(),
 	);
+
 	readonly onDidChangeConflicts = this._onDidChangeConflicts.event;
+
 	private _lastSyncTime: number | undefined = undefined;
 
 	get lastSyncTime(): number | undefined {
 		return this._lastSyncTime;
 	}
+
 	private _onDidChangeLastSyncTime: Emitter<number> = this._register(
 		new Emitter<number>(),
 	);
+
 	readonly onDidChangeLastSyncTime: Event<number> =
 		this._onDidChangeLastSyncTime.event;
+
 	private _onSyncErrors = this._register(
 		new Emitter<IUserDataSyncResourceError[]>(),
 	);
+
 	readonly onSyncErrors = this._onSyncErrors.event;
 
 	get onDidResetLocal(): Event<void> {
 		return this.channel.listen<void>("onDidResetLocal");
 	}
+
 	get onDidResetRemote(): Event<void> {
 		return this.channel.listen<void>("onDidResetRemote");
 	}
+
 	constructor(
 		userDataSyncChannel: IChannel,
 		@IUserDataProfilesService
 		private readonly userDataProfilesService: IUserDataProfilesService,
 	) {
 		super();
+
 		this.channel = {
 			call<T>(
 				command: string,
@@ -299,6 +327,7 @@ export class UserDataSyncServiceChannelClient
 				return userDataSyncChannel.listen(event, arg);
 			},
 		};
+
 		this.channel
 			.call<
 				[
@@ -309,27 +338,32 @@ export class UserDataSyncServiceChannelClient
 			>("_getInitialData")
 			.then(([status, conflicts, lastSyncTime]) => {
 				this.updateStatus(status);
+
 				this.updateConflicts(conflicts);
 
 				if (lastSyncTime) {
 					this.updateLastSyncTime(lastSyncTime);
 				}
+
 				this._register(
 					this.channel.listen<SyncStatus>("onDidChangeStatus")(
 						(status) => this.updateStatus(status),
 					),
 				);
+
 				this._register(
 					this.channel.listen<number>("onDidChangeLastSyncTime")(
 						(lastSyncTime) => this.updateLastSyncTime(lastSyncTime),
 					),
 				);
 			});
+
 		this._register(
 			this.channel.listen<IUserDataSyncResourceConflicts[]>(
 				"onDidChangeConflicts",
 			)((conflicts) => this.updateConflicts(conflicts)),
 		);
+
 		this._register(
 			this.channel.listen<IUserDataSyncResourceError[]>("onSyncErrors")(
 				(errors) =>
@@ -344,9 +378,11 @@ export class UserDataSyncServiceChannelClient
 			),
 		);
 	}
+
 	createSyncTask(): Promise<IUserDataSyncTask> {
 		throw new Error("not supported");
 	}
+
 	async createManualSyncTask(): Promise<IUserDataManualSyncTask> {
 		const id = await this.channel.call<string>("createManualSyncTask");
 
@@ -374,21 +410,27 @@ export class UserDataSyncServiceChannelClient
 
 		return manualSyncTaskChannelClient;
 	}
+
 	reset(): Promise<void> {
 		return this.channel.call("reset");
 	}
+
 	resetRemote(): Promise<void> {
 		return this.channel.call("resetRemote");
 	}
+
 	resetLocal(): Promise<void> {
 		return this.channel.call("resetLocal");
 	}
+
 	hasPreviouslySynced(): Promise<boolean> {
 		return this.channel.call("hasPreviouslySynced");
 	}
+
 	hasLocalData(): Promise<boolean> {
 		return this.channel.call("hasLocalData");
 	}
+
 	accept(
 		syncResource: IUserDataSyncResource,
 		resource: URI,
@@ -406,18 +448,23 @@ export class UserDataSyncServiceChannelClient
 			apply,
 		]);
 	}
+
 	resolveContent(resource: URI): Promise<string | null> {
 		return this.channel.call("resolveContent", [resource]);
 	}
+
 	cleanUpRemoteData(): Promise<void> {
 		return this.channel.call("cleanUpRemoteData");
 	}
+
 	replace(syncResourceHandle: ISyncResourceHandle): Promise<void> {
 		return this.channel.call("replace", [syncResourceHandle]);
 	}
+
 	saveRemoteActivityData(location: URI): Promise<void> {
 		return this.channel.call("getRemoteActivityData", [location]);
 	}
+
 	extractActivityData(
 		activityDataResource: URI,
 		location: URI,
@@ -427,10 +474,13 @@ export class UserDataSyncServiceChannelClient
 			location,
 		]);
 	}
+
 	private async updateStatus(status: SyncStatus): Promise<void> {
 		this._status = status;
+
 		this._onDidChangeStatus.fire(status);
 	}
+
 	private async updateConflicts(
 		conflicts: IUserDataSyncResourceConflicts[],
 	): Promise<void> {
@@ -449,11 +499,14 @@ export class UserDataSyncServiceChannelClient
 				previewResource: URI.revive(r.previewResource),
 			})),
 		}));
+
 		this._onDidChangeConflicts.fire(this._conflicts);
 	}
+
 	private updateLastSyncTime(lastSyncTime: number): void {
 		if (this._lastSyncTime !== lastSyncTime) {
 			this._lastSyncTime = lastSyncTime;
+
 			this._onDidChangeLastSyncTime.fire(lastSyncTime);
 		}
 	}
@@ -468,15 +521,19 @@ class ManualSyncTaskChannelClient
 	) {
 		super();
 	}
+
 	async merge(): Promise<void> {
 		return this.channel.call("merge");
 	}
+
 	async apply(): Promise<void> {
 		return this.channel.call("apply");
 	}
+
 	stop(): Promise<void> {
 		return this.channel.call("stop");
 	}
+
 	override dispose(): void {
 		this.channel.call("dispose");
 

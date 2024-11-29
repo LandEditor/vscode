@@ -91,8 +91,10 @@ export class BrowserTextFileService extends AbstractTextFileService {
 			elevatedFileService,
 			decorationsService,
 		);
+
 		this.registerListeners();
 	}
+
 	private registerListeners(): void {
 		// Lifecycle
 		this._register(
@@ -101,6 +103,7 @@ export class BrowserTextFileService extends AbstractTextFileService {
 			),
 		);
 	}
+
 	private onBeforeShutdown(): boolean {
 		if (
 			this.files.models.some((model) =>
@@ -109,6 +112,7 @@ export class BrowserTextFileService extends AbstractTextFileService {
 		) {
 			return true; // files are pending to be saved: veto (as there is no support for long running operations on shutdown)
 		}
+
 		return false;
 	}
 }

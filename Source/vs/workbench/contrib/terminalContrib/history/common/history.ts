@@ -87,6 +87,7 @@ export function getDirectoryHistory(
 				"dirs",
 			) as TerminalPersistedHistory<{ remoteAuthority?: string }>;
 	}
+
 	return directoryHistory;
 }
 
@@ -105,6 +106,7 @@ export function getCommandHistory(
 				"commands",
 			) as TerminalPersistedHistory<{ shellType: TerminalShellType }>;
 	}
+
 	return commandHistory;
 }
 
@@ -113,8 +115,11 @@ export class TerminalPersistedHistory<T>
 	implements ITerminalPersistedHistory<T>
 {
 	private readonly _entries: LRUCache<string, T>;
+
 	private _timestamp: number = 0;
+
 	private _isReady = false;
+
 	private _isStale = true;
 
 	get entries(): IterableIterator<[string, T]> {
@@ -168,19 +173,25 @@ export class TerminalPersistedHistory<T>
 
 	add(key: string, value: T) {
 		this._ensureUpToDate();
+
 		this._entries.set(key, value);
+
 		this._saveState();
 	}
 
 	remove(key: string) {
 		this._ensureUpToDate();
+
 		this._entries.delete(key);
+
 		this._saveState();
 	}
 
 	clear() {
 		this._ensureUpToDate();
+
 		this._entries.clear();
+
 		this._saveState();
 	}
 
@@ -188,6 +199,7 @@ export class TerminalPersistedHistory<T>
 		// Initial load
 		if (!this._isReady) {
 			this._loadState();
+
 			this._isReady = true;
 		}
 
@@ -196,7 +208,9 @@ export class TerminalPersistedHistory<T>
 			// Since state is saved whenever the entries change, it's a safe assumption that no
 			// merging of entries needs to happen, just loading the new state.
 			this._entries.clear();
+
 			this._loadState();
+
 			this._isStale = false;
 		}
 	}
@@ -227,6 +241,7 @@ export class TerminalPersistedHistory<T>
 		if (raw === undefined || raw.length === 0) {
 			return undefined;
 		}
+
 		let serialized: ISerializedCache<T> | undefined = undefined;
 
 		try {
@@ -235,21 +250,26 @@ export class TerminalPersistedHistory<T>
 			// Invalid data
 			return undefined;
 		}
+
 		return serialized;
 	}
 
 	private _saveState() {
 		const serialized: ISerializedCache<T> = { entries: [] };
+
 		this._entries.forEach((value, key) =>
 			serialized.entries.push({ key, value }),
 		);
+
 		this._storageService.store(
 			this._getEntriesStorageKey(),
 			JSON.stringify(serialized),
 			StorageScope.APPLICATION,
 			StorageTarget.MACHINE,
 		);
+
 		this._timestamp = Date.now();
+
 		this._storageService.store(
 			this._getTimestampStorageKey(),
 			this._timestamp,
@@ -280,7 +300,9 @@ export class TerminalPersistedHistory<T>
 // Shell file history loads once per shell per window
 interface IShellFileHistoryEntry {
 	sourceLabel: string;
+
 	sourceResource: URI;
+
 	commands: string[];
 }
 
@@ -298,9 +320,11 @@ export async function getShellFileHistory(
 	if (cached === null) {
 		return undefined;
 	}
+
 	if (cached !== undefined) {
 		return cached;
 	}
+
 	let result: IShellFileHistoryEntry | undefined;
 
 	switch (shellType) {
@@ -332,11 +356,13 @@ export async function getShellFileHistory(
 		default:
 			return undefined;
 	}
+
 	if (result === undefined) {
 		shellFileHistory.set(shellType, null);
 
 		return undefined;
 	}
+
 	shellFileHistory.set(shellType, result);
 
 	return result;
@@ -360,6 +386,7 @@ export async function fetchBashHistory(
 	) {
 		return undefined;
 	}
+
 	const sourceLabel = "~/.bash_history";
 
 	const resolvedFile = await fetchFileContents(
@@ -393,6 +420,7 @@ export async function fetchBashHistory(
 		} else {
 			currentCommand += `\n${currentLine}`;
 		}
+
 		for (let c = 0; c < currentLine.length; c++) {
 			if (wrapChar) {
 				if (currentLine[c] === wrapChar) {
@@ -404,10 +432,12 @@ export async function fetchBashHistory(
 				}
 			}
 		}
+
 		if (wrapChar === undefined) {
 			if (currentCommand.length > 0) {
 				result.add(currentCommand.trim());
 			}
+
 			currentCommand = undefined;
 		}
 	}
@@ -448,6 +478,7 @@ export async function fetchZshHistory(
 	if (resolvedFile === undefined) {
 		return undefined;
 	}
+
 	const fileLines = resolvedFile.content.split(/\:\s\d+\:\d+;/);
 
 	const result: Set<string> = new Set();
@@ -459,6 +490,7 @@ export async function fetchZshHistory(
 			result.add(sanitized);
 		}
 	}
+
 	return {
 		sourceLabel,
 		sourceResource: resolvedFile.resource,
@@ -530,14 +562,19 @@ export async function fetchPwshHistory(
 
 	if (isFileWindows) {
 		folderPrefix = env["APPDATA"];
+
 		filePath =
 			"Microsoft\\Windows\\PowerShell\\PSReadLine\\ConsoleHost_history.txt";
+
 		sourceLabel = `$APPDATA\\Microsoft\\Windows\\PowerShell\\PSReadLine\\ConsoleHost_history.txt`;
 	} else {
 		folderPrefix = env["HOME"];
+
 		filePath = ".local/share/powershell/PSReadline/ConsoleHost_history.txt";
+
 		sourceLabel = `~/${filePath}`;
 	}
+
 	const resolvedFile = await fetchFileContents(
 		folderPrefix,
 		filePath,
@@ -549,6 +586,7 @@ export async function fetchPwshHistory(
 	if (resolvedFile === undefined) {
 		return undefined;
 	}
+
 	const fileLines = resolvedFile.content.split("\n");
 
 	const result: Set<string> = new Set();
@@ -567,12 +605,14 @@ export async function fetchPwshHistory(
 		} else {
 			currentCommand += `\n${currentLine}`;
 		}
+
 		if (!currentLine.endsWith("`")) {
 			const sanitized = currentCommand.trim();
 
 			if (sanitized.length > 0) {
 				result.add(sanitized);
 			}
+
 			currentCommand = undefined;
 
 			continue;
@@ -598,10 +638,12 @@ export async function fetchPwshHistory(
 			if (sanitized.length > 0) {
 				result.add(sanitized);
 			}
+
 			currentCommand = undefined;
 		} else {
 			// Remove trailing backtick
 			currentCommand = currentCommand.replace(/`$/, "");
+
 			wrapChar = undefined;
 		}
 	}
@@ -650,13 +692,18 @@ export async function fetchFishHistory(
 
 	if (overridenDataHome) {
 		sourceLabel = "$XDG_DATA_HOME/fish/fish_history";
+
 		folderPrefix = env["XDG_DATA_HOME"];
+
 		filePath = "fish/fish_history";
 	} else {
 		sourceLabel = "~/.local/share/fish/fish_history";
+
 		folderPrefix = env["HOME"];
+
 		filePath = ".local/share/fish/fish_history";
 	}
+
 	const resolvedFile = await fetchFileContents(
 		folderPrefix,
 		filePath,
@@ -697,6 +744,7 @@ export async function fetchFishHistory(
 			result.add(sanitized);
 		}
 	}
+
 	return {
 		sourceLabel,
 		sourceResource: resolvedFile.resource,
@@ -731,6 +779,7 @@ function repeatedReplace(
 
 	while (true) {
 		last = current;
+
 		current = current.replace(pattern, replaceValue);
 
 		if (current === last) {
@@ -749,6 +798,7 @@ async function fetchFileContents(
 	if (!folderPrefix) {
 		return undefined;
 	}
+
 	const connection = remoteAgentService.getConnection();
 
 	const isRemote = !!connection?.remoteAuthority;
@@ -771,11 +821,14 @@ async function fetchFileContents(
 		) {
 			return undefined;
 		}
+
 		throw e;
 	}
+
 	if (content === undefined) {
 		return undefined;
 	}
+
 	return {
 		resource,
 		content: content.value.toString(),

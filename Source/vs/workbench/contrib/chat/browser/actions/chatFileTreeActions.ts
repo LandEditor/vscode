@@ -38,11 +38,13 @@ export function registerChatFileTreeActions() {
 					category: CHAT_CATEGORY,
 				});
 			}
+
 			run(accessor: ServicesAccessor, ...args: any[]) {
 				navigateTrees(accessor, false);
 			}
 		},
 	);
+
 	registerAction2(
 		class PreviousFileTreeAction extends Action2 {
 			constructor() {
@@ -62,6 +64,7 @@ export function registerChatFileTreeActions() {
 					category: CHAT_CATEGORY,
 				});
 			}
+
 			run(accessor: ServicesAccessor, ...args: any[]) {
 				navigateTrees(accessor, true);
 			}
@@ -76,6 +79,7 @@ function navigateTrees(accessor: ServicesAccessor, reverse: boolean) {
 	if (!widget) {
 		return;
 	}
+
 	const focused = !widget.inputEditor.hasWidgetFocus() && widget.getFocus();
 
 	const focusedResponse = isResponseVM(focused) ? focused : undefined;
@@ -90,6 +94,7 @@ function navigateTrees(accessor: ServicesAccessor, reverse: boolean) {
 	if (!currentResponse) {
 		return;
 	}
+
 	widget.reveal(currentResponse);
 
 	const responseFileTrees =
@@ -106,5 +111,6 @@ function navigateTrees(accessor: ServicesAccessor, reverse: boolean) {
 		: reverse
 			? responseFileTrees.length - 1
 			: 0;
+
 	responseFileTrees[focusIdx]?.focus();
 }

@@ -77,6 +77,7 @@ export class NotebookChatEditorControllerContrib
 {
 	public static readonly ID: string =
 		"workbench.notebook.chatEditorController";
+
 	readonly _serviceBrand: undefined;
 
 	constructor(
@@ -103,7 +104,9 @@ export class NotebookChatEditorControllerContrib
 
 class NotebookChatEditorController extends Disposable {
 	private readonly deletedCellDecorator: NotebookDeletedCellDecorator;
+
 	private readonly insertedCellDecorator: NotebookInsertedCellDecorator;
+
 	private readonly _ctxHasEditorModification: IContextKey<boolean>;
 
 	constructor(
@@ -119,14 +122,17 @@ class NotebookChatEditorController extends Disposable {
 		@IContextKeyService contextKeyService: IContextKeyService,
 	) {
 		super();
+
 		this._ctxHasEditorModification =
 			ctxNotebookHasEditorModification.bindTo(contextKeyService);
+
 		this.deletedCellDecorator = this._register(
 			instantiationService.createInstance(
 				NotebookDeletedCellDecorator,
 				notebookEditor,
 			),
 		);
+
 		this.insertedCellDecorator = this._register(
 			instantiationService.createInstance(
 				NotebookInsertedCellDecorator,
@@ -168,8 +174,11 @@ class NotebookChatEditorController extends Disposable {
 
 		const clearDecorators = () => {
 			dispose(Array.from(decorators.values()));
+
 			decorators.clear();
+
 			this.deletedCellDecorator.clear();
+
 			this.insertedCellDecorator.clear();
 		};
 
@@ -186,6 +195,7 @@ class NotebookChatEditorController extends Disposable {
 			if (!model || !session) {
 				return;
 			}
+
 			return session.entries
 				.read(r)
 				.find((e) => isEqual(e.modifiedURI, model.uri));
@@ -217,9 +227,11 @@ class NotebookChatEditorController extends Disposable {
 				if (notebookSynchronizer && model) {
 					notebookSynchronizer.object.revert();
 				}
+
 				return observableValue<
 					| {
 							cellDiff: CellDiffInfo[];
+
 							modelVersion: number;
 					  }
 					| undefined
@@ -229,6 +241,7 @@ class NotebookChatEditorController extends Disposable {
 			notebookSynchronizer =
 				notebookSynchronizer ||
 				this._register(this.synchronizerFactory.getOrCreate(model));
+
 			this.originalModelRefFactory
 				.getOrCreate(entry, model.viewType)
 				.then((ref) =>
@@ -241,6 +254,7 @@ class NotebookChatEditorController extends Disposable {
 			.flatten();
 
 		const notebookCellDiffInfo = notebookDiffInfo.map((d) => d?.cellDiff);
+
 		this._register(
 			instantiationService.createInstance(
 				NotebookChatActionsOverlayController,
@@ -255,6 +269,7 @@ class NotebookChatEditorController extends Disposable {
 				// If we have a new entry for the file, then clear old decorators.
 				// User could be cycling through different edit sessions (Undo Last Edit / Redo Last Edit).
 				entryObs.read(r);
+
 				clearDecorators();
 			}),
 		);
@@ -266,6 +281,7 @@ class NotebookChatEditorController extends Disposable {
 
 				if (!diffs || !diffs.cellDiff.length) {
 					clearDecorators();
+
 					this._ctxHasEditorModification.reset();
 				} else {
 					this._ctxHasEditorModification.set(true);
@@ -282,11 +298,13 @@ class NotebookChatEditorController extends Disposable {
 				const modified = notebookModel.read(r);
 
 				const original = originalModel.read(r);
+
 				onDidChangeVisibleRanges.read(r);
 
 				if (!entry || !modified || !original || !diffInfo) {
 					return;
 				}
+
 				if (
 					diffInfo &&
 					updatedCellDecoratorsOnceBefore &&
@@ -299,6 +317,7 @@ class NotebookChatEditorController extends Disposable {
 
 				const validDiffDecorators =
 					new Set<NotebookCellDiffDecorator>();
+
 				diffInfo.cellDiff.forEach((diff) => {
 					if (diff.type === "modified") {
 						const modifiedCell =
@@ -329,8 +348,11 @@ class NotebookChatEditorController extends Disposable {
 										modifiedCell,
 										originalCell,
 									);
+
 								decorators.set(modifiedCell, decorator);
+
 								validDiffDecorators.add(decorator);
+
 								this._register(
 									editor.onDidDispose(() => {
 										decorator.dispose();
@@ -354,6 +376,7 @@ class NotebookChatEditorController extends Disposable {
 				decorators.forEach((v, cell) => {
 					if (!validDiffDecorators.has(v)) {
 						v.dispose();
+
 						decorators.delete(cell);
 					}
 				});
@@ -381,6 +404,7 @@ class NotebookChatEditorController extends Disposable {
 				) {
 					return;
 				}
+
 				if (
 					diffInfo &&
 					updatedDeletedInsertedDecoratorsOnceBefore &&
@@ -388,8 +412,11 @@ class NotebookChatEditorController extends Disposable {
 				) {
 					return;
 				}
+
 				updatedDeletedInsertedDecoratorsOnceBefore = true;
+
 				this.insertedCellDecorator.apply(diffInfo.cellDiff);
+
 				this.deletedCellDecorator.apply(diffInfo.cellDiff, original);
 			}),
 		);

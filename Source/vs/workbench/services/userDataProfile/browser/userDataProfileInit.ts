@@ -35,7 +35,9 @@ import { TasksResourceInitializer } from "./tasksResource.js";
 
 export class UserDataProfileInitializer implements IUserDataInitializer {
 	_serviceBrand: any;
+
 	private readonly initialized: ProfileResourceType[] = [];
+
 	private readonly initializationFinished = new Barrier();
 
 	constructor(
@@ -54,18 +56,23 @@ export class UserDataProfileInitializer implements IUserDataInitializer {
 		@IRequestService
 		private readonly requestService: IRequestService,
 	) {}
+
 	async whenInitializationFinished(): Promise<void> {
 		await this.initializationFinished.wait();
 	}
+
 	async requiresInitialization(): Promise<boolean> {
 		if (!this.environmentService.options?.profile?.contents) {
 			return false;
 		}
+
 		if (!this.storageService.isNew(StorageScope.PROFILE)) {
 			return false;
 		}
+
 		return true;
 	}
+
 	async initializeRequiredResources(): Promise<void> {
 		this.logService.trace(
 			`UserDataProfileInitializer#initializeRequiredResources`,
@@ -88,6 +95,7 @@ export class UserDataProfileInitializer implements IUserDataInitializer {
 				),
 			);
 		}
+
 		if (profileTemplate?.globalState) {
 			promises.push(
 				this.initialize(
@@ -97,8 +105,10 @@ export class UserDataProfileInitializer implements IUserDataInitializer {
 				),
 			);
 		}
+
 		await Promise.all(promises);
 	}
+
 	async initializeOtherResources(
 		instantiationService: IInstantiationService,
 	): Promise<void> {
@@ -124,6 +134,7 @@ export class UserDataProfileInitializer implements IUserDataInitializer {
 					),
 				);
 			}
+
 			if (profileTemplate?.tasks) {
 				promises.push(
 					this.initialize(
@@ -137,6 +148,7 @@ export class UserDataProfileInitializer implements IUserDataInitializer {
 					),
 				);
 			}
+
 			if (profileTemplate?.snippets) {
 				promises.push(
 					this.initialize(
@@ -150,14 +162,17 @@ export class UserDataProfileInitializer implements IUserDataInitializer {
 					),
 				);
 			}
+
 			promises.push(
 				this.initializeInstalledExtensions(instantiationService),
 			);
+
 			await Promises.settled(promises);
 		} finally {
 			this.initializationFinished.open();
 		}
 	}
+
 	private initializeInstalledExtensionsPromise: Promise<void> | undefined;
 
 	async initializeInstalledExtensions(
@@ -178,21 +193,27 @@ export class UserDataProfileInitializer implements IUserDataInitializer {
 				this.initializeInstalledExtensionsPromise = Promise.resolve();
 			}
 		}
+
 		return this.initializeInstalledExtensionsPromise;
 	}
+
 	private profileTemplatePromise:
 		| Promise<IUserDataProfileTemplate | null>
 		| undefined;
+
 	private getProfileTemplate(): Promise<IUserDataProfileTemplate | null> {
 		if (!this.profileTemplatePromise) {
 			this.profileTemplatePromise = this.doGetProfileTemplate();
 		}
+
 		return this.profileTemplatePromise;
 	}
+
 	private async doGetProfileTemplate(): Promise<IUserDataProfileTemplate | null> {
 		if (!this.environmentService.options?.profile?.contents) {
 			return null;
 		}
+
 		if (isString(this.environmentService.options.profile.contents)) {
 			try {
 				return JSON.parse(
@@ -204,6 +225,7 @@ export class UserDataProfileInitializer implements IUserDataInitializer {
 				return null;
 			}
 		}
+
 		try {
 			const url = URI.revive(
 				this.environmentService.options.profile.contents,
@@ -224,8 +246,10 @@ export class UserDataProfileInitializer implements IUserDataInitializer {
 		} catch (error) {
 			this.logService.error(error);
 		}
+
 		return null;
 	}
+
 	private async initialize(
 		initializer: IProfileResourceInitializer,
 		content: string,
@@ -239,11 +263,15 @@ export class UserDataProfileInitializer implements IUserDataInitializer {
 
 				return;
 			}
+
 			this.initialized.push(profileResource);
+
 			this.logService.trace(
 				`UserDataProfileInitializer: Initializing ${profileResource}`,
 			);
+
 			await initializer.initialize(content);
+
 			this.logService.info(
 				`UserDataProfileInitializer: Initialized ${profileResource}`,
 			);
@@ -251,6 +279,7 @@ export class UserDataProfileInitializer implements IUserDataInitializer {
 			this.logService.info(
 				`UserDataProfileInitializer: Error while initializing ${profileResource}`,
 			);
+
 			this.logService.error(error);
 		}
 	}

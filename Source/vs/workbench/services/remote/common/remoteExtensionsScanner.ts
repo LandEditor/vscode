@@ -44,12 +44,14 @@ class RemoteExtensionsScannerService
 		@ILogService
 		private readonly logService: ILogService,
 	) {}
+
 	whenExtensionsReady(): Promise<void> {
 		return this.withChannel(
 			(channel) => channel.call("whenExtensionsReady"),
 			undefined,
 		);
 	}
+
 	async scanExtensions(): Promise<IExtensionDescription[]> {
 		try {
 			const languagePack =
@@ -74,6 +76,7 @@ class RemoteExtensionsScannerService
 					this.environmentService.extensionDevelopmentLocationURI,
 					languagePack,
 				]);
+
 				scannedExtensions.forEach((extension) => {
 					extension.extensionLocation = URI.revive(
 						extension.extensionLocation,
@@ -88,6 +91,7 @@ class RemoteExtensionsScannerService
 			return [];
 		}
 	}
+
 	private withChannel<R>(
 		callback: (channel: IChannel) => Promise<R>,
 		fallback: R,
@@ -97,6 +101,7 @@ class RemoteExtensionsScannerService
 		if (!connection) {
 			return Promise.resolve(fallback);
 		}
+
 		return connection.withChannel(
 			RemoteExtensionsScannerChannelName,
 			(channel) => callback(channel),

@@ -27,6 +27,7 @@ export function wrapInReloadableClass0<TArgs extends BrandedService[]>(
 type Result<TArgs extends any[]> = new (...args: TArgs) => IDisposable;
 class BaseClass {
 	constructor(public readonly instantiationService: IInstantiationService) {}
+
 	public init(...params: any[]): void {}
 }
 function createWrapper<T extends any[]>(
@@ -35,9 +36,11 @@ function createWrapper<T extends any[]>(
 ) {
 	return class ReloadableWrapper extends B {
 		private _autorun: IDisposable | undefined = undefined;
+
 		override init(...params: any[]) {
 			this._autorun = autorunWithStore((reader, store) => {
 				const clazz = readHotReloadableExport(getClass(), reader);
+
 				store.add(
 					this.instantiationService.createInstance(
 						clazz as any,
@@ -46,6 +49,7 @@ function createWrapper<T extends any[]>(
 				);
 			});
 		}
+
 		dispose(): void {
 			this._autorun?.dispose();
 		}
@@ -57,6 +61,7 @@ class BaseClass0 extends BaseClass {
 		i: IInstantiationService,
 	) {
 		super(i);
+
 		this.init();
 	}
 }
@@ -79,6 +84,7 @@ class BaseClass1 extends BaseClass {
 		i: IInstantiationService,
 	) {
 		super(i);
+
 		this.init(param1);
 	}
 }

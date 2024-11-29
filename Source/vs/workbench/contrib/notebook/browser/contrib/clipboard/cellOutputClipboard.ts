@@ -21,11 +21,13 @@ export async function copyCellOutput(
 			: cellOutput.outputs.find((output) =>
 					TEXT_BASED_MIMETYPES.includes(output.mime),
 				);
+
 	mimeType = output?.mime;
 
 	if (!mimeType || !output) {
 		return;
 	}
+
 	const decoder = new TextDecoder();
 
 	let text = decoder.decode(output.data.buffer);
@@ -46,13 +48,17 @@ export async function copyCellOutput(
 			if (!nextOutput) {
 				break;
 			}
+
 			text = text + decoder.decode(nextOutput.data.buffer);
+
 			index = index + 1;
 		}
 	}
+
 	if (mimeType.endsWith("error")) {
 		text = text.replace(/\\u001b\[[0-9;]*m/gi, "").replaceAll("\\n", "\n");
 	}
+
 	try {
 		await clipboardService.writeText(text);
 	} catch (e) {

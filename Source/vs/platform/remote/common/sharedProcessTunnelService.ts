@@ -12,6 +12,7 @@ export const ipcSharedProcessTunnelChannelName = "sharedProcessTunnel";
 
 export interface ISharedProcessTunnel {
 	tunnelLocalPort: number | undefined;
+
 	localAddress: string;
 }
 /**

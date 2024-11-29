@@ -246,16 +246,23 @@ export class ShellIntegrationAddon
 	implements IShellIntegration, ITerminalAddon
 {
 	private _terminal?: Terminal;
+
 	readonly capabilities = this._register(new TerminalCapabilityStore());
+
 	private _hasUpdatedTelemetry: boolean = false;
+
 	private _activationTimeout: any;
+
 	private _commonProtocolDisposables: IDisposable[] = [];
+
 	private _status: ShellIntegrationStatus = ShellIntegrationStatus.Off;
 
 	get status(): ShellIntegrationStatus {
 		return this._status;
 	}
+
 	private readonly _onDidChangeStatus = new Emitter<ShellIntegrationStatus>();
+
 	readonly onDidChangeStatus = this._onDidChangeStatus.event;
 
 	constructor(
@@ -265,69 +272,86 @@ export class ShellIntegrationAddon
 		private readonly _logService: ILogService,
 	) {
 		super();
+
 		this._register(
 			toDisposable(() => {
 				this._clearActivationTimeout();
+
 				this._disposeCommonProtocol();
 			}),
 		);
 	}
+
 	private _disposeCommonProtocol(): void {
 		dispose(this._commonProtocolDisposables);
+
 		this._commonProtocolDisposables.length = 0;
 	}
+
 	activate(xterm: Terminal) {
 		this._terminal = xterm;
+
 		this.capabilities.add(
 			TerminalCapability.PartialCommandDetection,
 			this._register(
 				new PartialCommandDetectionCapability(this._terminal),
 			),
 		);
+
 		this._register(
 			xterm.parser.registerOscHandler(
 				ShellIntegrationOscPs.VSCode,
 				(data) => this._handleVSCodeSequence(data),
 			),
 		);
+
 		this._register(
 			xterm.parser.registerOscHandler(
 				ShellIntegrationOscPs.ITerm,
 				(data) => this._doHandleITermSequence(data),
 			),
 		);
+
 		this._commonProtocolDisposables.push(
 			xterm.parser.registerOscHandler(
 				ShellIntegrationOscPs.FinalTerm,
 				(data) => this._handleFinalTermSequence(data),
 			),
 		);
+
 		this._register(
 			xterm.parser.registerOscHandler(
 				ShellIntegrationOscPs.SetCwd,
 				(data) => this._doHandleSetCwd(data),
 			),
 		);
+
 		this._register(
 			xterm.parser.registerOscHandler(
 				ShellIntegrationOscPs.SetWindowsFriendlyCwd,
 				(data) => this._doHandleSetWindowsFriendlyCwd(data),
 			),
 		);
+
 		this._ensureCapabilitiesOrAddFailureTelemetry();
 	}
+
 	getMarkerId(terminal: Terminal, vscodeMarkerId: string) {
 		this._createOrGetBufferMarkDetection(terminal).getMark(vscodeMarkerId);
 	}
+
 	private _handleFinalTermSequence(data: string): boolean {
 		const didHandle = this._doHandleFinalTermSequence(data);
 
 		if (this._status === ShellIntegrationStatus.Off) {
 			this._status = ShellIntegrationStatus.FinalTerm;
+
 			this._onDidChangeStatus.fire(this._status);
 		}
+
 		return didHandle;
 	}
+
 	private _doHandleFinalTermSequence(data: string): boolean {
 		if (!this._terminal) {
 			return false;
@@ -365,6 +389,7 @@ export class ShellIntegrationAddon
 			case FinalTermOscPt.CommandFinished: {
 				const exitCode =
 					args.length === 1 ? parseInt(args[0]) : undefined;
+
 				this._createOrGetCommandDetection(
 					this._terminal,
 				).handleCommandFinished(exitCode);
@@ -372,8 +397,10 @@ export class ShellIntegrationAddon
 				return true;
 			}
 		}
+
 		return false;
 	}
+
 	private _handleVSCodeSequence(data: string): boolean {
 		const didHandle = this._doHandleVSCodeSequence(data);
 
@@ -382,22 +409,30 @@ export class ShellIntegrationAddon
 				{},
 				{
 					owner: "meganrogge";
+
 					comment: "Indicates shell integration was activated";
 				}
 			>("terminal/shellIntegrationActivationSucceeded");
+
 			this._hasUpdatedTelemetry = true;
+
 			this._clearActivationTimeout();
 		}
+
 		if (this._status !== ShellIntegrationStatus.VSCode) {
 			this._status = ShellIntegrationStatus.VSCode;
+
 			this._onDidChangeStatus.fire(this._status);
 		}
+
 		return didHandle;
 	}
+
 	private async _ensureCapabilitiesOrAddFailureTelemetry(): Promise<void> {
 		if (!this._telemetryService || this._disableTelemetry) {
 			return;
 		}
+
 		this._activationTimeout = setTimeout(() => {
 			if (
 				!this.capabilities.get(TerminalCapability.CommandDetection) &&
@@ -405,21 +440,27 @@ export class ShellIntegrationAddon
 			) {
 				this._telemetryService?.publicLog2<{
 					classification: "SystemMetaData";
+
 					purpose: "FeatureInsight";
 				}>("terminal/shellIntegrationActivationTimeout");
+
 				this._logService.warn(
 					"Shell integration failed to add capabilities within 10 seconds",
 				);
 			}
+
 			this._hasUpdatedTelemetry = true;
 		}, 10000);
 	}
+
 	private _clearActivationTimeout(): void {
 		if (this._activationTimeout !== undefined) {
 			clearTimeout(this._activationTimeout);
+
 			this._activationTimeout = undefined;
 		}
 	}
+
 	private _doHandleVSCodeSequence(data: string): boolean {
 		if (!this._terminal) {
 			return false;
@@ -460,12 +501,14 @@ export class ShellIntegrationAddon
 
 				const exitCode =
 					arg0 !== undefined ? parseInt(arg0) : undefined;
+
 				this._createOrGetCommandDetection(
 					this._terminal,
 				).handleCommandFinished(exitCode);
 
 				return true;
 			}
+
 			case VSCodeOscPt.CommandLine: {
 				const arg0 = args[0];
 
@@ -478,12 +521,14 @@ export class ShellIntegrationAddon
 				} else {
 					commandLine = "";
 				}
+
 				this._createOrGetCommandDetection(
 					this._terminal,
 				).setCommandLine(commandLine, arg1 === this._nonce);
 
 				return true;
 			}
+
 			case VSCodeOscPt.ContinuationStart: {
 				this._createOrGetCommandDetection(
 					this._terminal,
@@ -491,6 +536,7 @@ export class ShellIntegrationAddon
 
 				return true;
 			}
+
 			case VSCodeOscPt.ContinuationEnd: {
 				this._createOrGetCommandDetection(
 					this._terminal,
@@ -498,6 +544,7 @@ export class ShellIntegrationAddon
 
 				return true;
 			}
+
 			case VSCodeOscPt.RightPromptStart: {
 				this._createOrGetCommandDetection(
 					this._terminal,
@@ -505,6 +552,7 @@ export class ShellIntegrationAddon
 
 				return true;
 			}
+
 			case VSCodeOscPt.RightPromptEnd: {
 				this._createOrGetCommandDetection(
 					this._terminal,
@@ -512,6 +560,7 @@ export class ShellIntegrationAddon
 
 				return true;
 			}
+
 			case VSCodeOscPt.Property: {
 				const arg0 = args[0];
 
@@ -523,6 +572,7 @@ export class ShellIntegrationAddon
 				if (value === undefined) {
 					return true;
 				}
+
 				switch (key) {
 					case "ContinuationPrompt": {
 						this._updateContinuationPrompt(
@@ -531,11 +581,13 @@ export class ShellIntegrationAddon
 
 						return true;
 					}
+
 					case "Cwd": {
 						this._updateCwd(value);
 
 						return true;
 					}
+
 					case "IsWindows": {
 						this._createOrGetCommandDetection(
 							this._terminal,
@@ -543,18 +595,22 @@ export class ShellIntegrationAddon
 
 						return true;
 					}
+
 					case "Prompt": {
 						// Remove escape sequences from the user's prompt
 						const sanitizedValue = value.replace(
 							/\x1b\[[0-9;]*m/g,
 							"",
 						);
+
 						this._updatePromptTerminator(sanitizedValue);
 
 						return true;
 					}
+
 					case "Task": {
 						this._createOrGetBufferMarkDetection(this._terminal);
+
 						this.capabilities
 							.get(TerminalCapability.CommandDetection)
 							?.setIsCommandStorageDisabled();
@@ -563,6 +619,7 @@ export class ShellIntegrationAddon
 					}
 				}
 			}
+
 			case VSCodeOscPt.SetMark: {
 				this._createOrGetBufferMarkDetection(this._terminal).addMark(
 					parseMarkSequence(args),
@@ -574,18 +631,22 @@ export class ShellIntegrationAddon
 		// Unrecognized sequence
 		return false;
 	}
+
 	private _updateContinuationPrompt(value: string) {
 		if (!this._terminal) {
 			return;
 		}
+
 		this._createOrGetCommandDetection(this._terminal).setContinuationPrompt(
 			value,
 		);
 	}
+
 	private _updatePromptTerminator(prompt: string) {
 		if (!this._terminal) {
 			return;
 		}
+
 		const lastPromptLine = prompt.substring(prompt.lastIndexOf("\n") + 1);
 
 		const promptTerminator = lastPromptLine.substring(
@@ -598,25 +659,31 @@ export class ShellIntegrationAddon
 			).setPromptTerminator(promptTerminator, lastPromptLine);
 		}
 	}
+
 	private _updateCwd(value: string) {
 		value = sanitizeCwd(value);
+
 		this._createOrGetCwdDetection().updateCwd(value);
 
 		const commandDetection = this.capabilities.get(
 			TerminalCapability.CommandDetection,
 		);
+
 		commandDetection?.setCwd(value);
 	}
+
 	private _doHandleITermSequence(data: string): boolean {
 		if (!this._terminal) {
 			return false;
 		}
+
 		const [command] = data.split(";");
 
 		switch (command) {
 			case ITermOscPt.SetMark: {
 				this._createOrGetBufferMarkDetection(this._terminal).addMark();
 			}
+
 			default: {
 				// Checking for known `<key>=<value>` pairs.
 				// Note that unlike `VSCodeOscPt.Property`, iTerm2 does not interpret backslash or hex-escape sequences.
@@ -627,6 +694,7 @@ export class ShellIntegrationAddon
 					// No '=' was found, so it's not a property assignment.
 					return true;
 				}
+
 				switch (key) {
 					case ITermOscPt.CurrentDir:
 						// Encountered: `OSC 1337 ; CurrentDir=<Cwd> ST`
@@ -639,10 +707,12 @@ export class ShellIntegrationAddon
 		// Unrecognized sequence
 		return false;
 	}
+
 	private _doHandleSetWindowsFriendlyCwd(data: string): boolean {
 		if (!this._terminal) {
 			return false;
 		}
+
 		const [command, ...args] = data.split(";");
 
 		switch (command) {
@@ -651,6 +721,7 @@ export class ShellIntegrationAddon
 				if (args.length) {
 					this._updateCwd(args[0]);
 				}
+
 				return true;
 		}
 		// Unrecognized sequence
@@ -663,6 +734,7 @@ export class ShellIntegrationAddon
 		if (!this._terminal) {
 			return false;
 		}
+
 		const [command] = data.split(";");
 
 		if (command.match(/^file:\/\/.*\//)) {
@@ -677,6 +749,7 @@ export class ShellIntegrationAddon
 		// Unrecognized sequence
 		return false;
 	}
+
 	serialize(): ISerializedCommandDetectionCapability {
 		if (
 			!this._terminal ||
@@ -688,22 +761,26 @@ export class ShellIntegrationAddon
 				promptInputModel: undefined,
 			};
 		}
+
 		const result = this._createOrGetCommandDetection(
 			this._terminal,
 		).serialize();
 
 		return result;
 	}
+
 	deserialize(serialized: ISerializedCommandDetectionCapability): void {
 		if (!this._terminal) {
 			throw new Error(
 				"Cannot restore commands before addon is activated",
 			);
 		}
+
 		this._createOrGetCommandDetection(this._terminal).deserialize(
 			serialized,
 		);
 	}
+
 	protected _createOrGetCwdDetection(): ICwdDetectionCapability {
 		let cwdDetection = this.capabilities.get(
 			TerminalCapability.CwdDetection,
@@ -711,13 +788,16 @@ export class ShellIntegrationAddon
 
 		if (!cwdDetection) {
 			cwdDetection = this._register(new CwdDetectionCapability());
+
 			this.capabilities.add(
 				TerminalCapability.CwdDetection,
 				cwdDetection,
 			);
 		}
+
 		return cwdDetection;
 	}
+
 	protected _createOrGetCommandDetection(
 		terminal: Terminal,
 	): ICommandDetectionCapability {
@@ -729,13 +809,16 @@ export class ShellIntegrationAddon
 			commandDetection = this._register(
 				new CommandDetectionCapability(terminal, this._logService),
 			);
+
 			this.capabilities.add(
 				TerminalCapability.CommandDetection,
 				commandDetection,
 			);
 		}
+
 		return commandDetection;
 	}
+
 	protected _createOrGetBufferMarkDetection(
 		terminal: Terminal,
 	): IBufferMarkCapability {
@@ -747,11 +830,13 @@ export class ShellIntegrationAddon
 			bufferMarkDetection = this._register(
 				new BufferMarkCapability(terminal),
 			);
+
 			this.capabilities.add(
 				TerminalCapability.BufferMarkDetection,
 				bufferMarkDetection,
 			);
 		}
+
 		return bufferMarkDetection;
 	}
 }
@@ -767,6 +852,7 @@ export function deserializeMessage(message: string): string {
 }
 export function parseKeyValueAssignment(message: string): {
 	key: string;
+
 	value: string | undefined;
 } {
 	const separatorIndex = message.indexOf("=");
@@ -774,6 +860,7 @@ export function parseKeyValueAssignment(message: string): {
 	if (separatorIndex === -1) {
 		return { key: message, value: undefined }; // No '=' was found.
 	}
+
 	return {
 		key: message.substring(0, separatorIndex),
 		value: message.substring(1 + separatorIndex),
@@ -781,6 +868,7 @@ export function parseKeyValueAssignment(message: string): {
 }
 export function parseMarkSequence(sequence: (string | undefined)[]): {
 	id?: string;
+
 	hidden?: boolean;
 } {
 	let id = undefined;
@@ -792,12 +880,15 @@ export function parseMarkSequence(sequence: (string | undefined)[]): {
 		if (property === undefined) {
 			continue;
 		}
+
 		if (property === "Hidden") {
 			hidden = true;
 		}
+
 		if (property.startsWith("Id=")) {
 			id = property.substring(3);
 		}
 	}
+
 	return { id, hidden };
 }

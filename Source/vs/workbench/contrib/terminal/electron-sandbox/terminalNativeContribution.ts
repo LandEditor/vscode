@@ -34,15 +34,18 @@ export class TerminalNativeContribution
 		nativeHostService: INativeHostService,
 	) {
 		super();
+
 		ipcRenderer.on(
 			"vscode:openFiles",
 			(_: unknown, request: INativeOpenFileRequest) => {
 				this._onOpenFileRequest(request);
 			},
 		);
+
 		this._register(
 			nativeHostService.onDidResumeOS(() => this._onOsResume()),
 		);
+
 		this._terminalService.setNativeDelegate({
 			getWindowCount: () => nativeHostService.getWindowCount(),
 		});
@@ -53,11 +56,13 @@ export class TerminalNativeContribution
 			registerRemoteContributions();
 		}
 	}
+
 	private _onOsResume(): void {
 		for (const instance of this._terminalService.instances) {
 			instance.xterm?.forceRedraw();
 		}
 	}
+
 	private async _onOpenFileRequest(
 		request: INativeOpenFileRequest,
 	): Promise<void> {
@@ -68,11 +73,13 @@ export class TerminalNativeContribution
 			const waitMarkerFileUri = URI.revive(
 				request.filesToWait.waitMarkerFileUri,
 			);
+
 			await this._whenFileDeleted(waitMarkerFileUri);
 			// Focus active terminal
 			this._terminalService.activeInstance?.focus();
 		}
 	}
+
 	private _whenFileDeleted(path: URI): Promise<void> {
 		// Complete when wait marker file is deleted
 		return new Promise<void>((resolve) => {
@@ -85,10 +92,12 @@ export class TerminalNativeContribution
 						running = true;
 
 						const exists = await this._fileService.exists(path);
+
 						running = false;
 
 						if (!exists) {
 							interval.dispose();
+
 							resolve(undefined);
 						}
 					}

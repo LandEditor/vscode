@@ -30,13 +30,19 @@ import {
 
 export class SuggestWidgetAdaptor extends Disposable {
 	private isSuggestWidgetVisible: boolean = false;
+
 	private isShiftKeyPressed = false;
+
 	private _isActive = false;
+
 	private _currentSuggestItemInfo: SuggestItemInfo | undefined = undefined;
+
 	public get selectedItem(): SuggestItemInfo | undefined {
 		return this._currentSuggestItemInfo;
 	}
+
 	private _onDidSelectedItemChange = this._register(new Emitter<void>());
+
 	public readonly onDidSelectedItemChange: Event<void> =
 		this._onDidSelectedItemChange.event;
 
@@ -53,14 +59,17 @@ export class SuggestWidgetAdaptor extends Disposable {
 			editor.onKeyDown((e) => {
 				if (e.shiftKey && !this.isShiftKeyPressed) {
 					this.isShiftKeyPressed = true;
+
 					this.update(this._isActive);
 				}
 			}),
 		);
+
 		this._register(
 			editor.onKeyUp((e) => {
 				if (e.shiftKey && this.isShiftKeyPressed) {
 					this.isShiftKeyPressed = false;
+
 					this.update(this._isActive);
 				}
 			}),
@@ -79,6 +88,7 @@ export class SuggestWidgetAdaptor extends Disposable {
 							// Should not happen
 							return -1;
 						}
+
 						const i = this.suggestControllerPreselector();
 
 						const itemToPreselect = i
@@ -88,6 +98,7 @@ export class SuggestWidgetAdaptor extends Disposable {
 						if (!itemToPreselect) {
 							return -1;
 						}
+
 						const position = Position.lift(pos);
 
 						const candidates = suggestItems
@@ -141,31 +152,40 @@ export class SuggestWidgetAdaptor extends Disposable {
 				if (isBoundToSuggestWidget) {
 					return;
 				}
+
 				isBoundToSuggestWidget = true;
+
 				this._register(
 					suggestController.widget.value.onDidShow(() => {
 						this.isSuggestWidgetVisible = true;
+
 						this.update(true);
 					}),
 				);
+
 				this._register(
 					suggestController.widget.value.onDidHide(() => {
 						this.isSuggestWidgetVisible = false;
+
 						this.update(false);
 					}),
 				);
+
 				this._register(
 					suggestController.widget.value.onDidFocus(() => {
 						this.isSuggestWidgetVisible = true;
+
 						this.update(true);
 					}),
 				);
 			};
+
 			this._register(
 				Event.once(suggestController.model.onDidTrigger)((e) => {
 					bindToSuggestWidget();
 				}),
 			);
+
 			this._register(
 				suggestController.onWillInsertSuggestItem((e) => {
 					const position = this.editor.getPosition();
@@ -175,6 +195,7 @@ export class SuggestWidgetAdaptor extends Disposable {
 					if (!position || !model) {
 						return undefined;
 					}
+
 					const suggestItemInfo = SuggestItemInfo.fromSuggestion(
 						suggestController,
 						model,
@@ -182,12 +203,15 @@ export class SuggestWidgetAdaptor extends Disposable {
 						e.item,
 						this.isShiftKeyPressed,
 					);
+
 					this.onWillAccept(suggestItemInfo);
 				}),
 			);
 		}
+
 		this.update(this._isActive);
 	}
+
 	private update(newActive: boolean): void {
 		const newInlineCompletion = this.getSuggestItemInfo();
 
@@ -199,16 +223,20 @@ export class SuggestWidgetAdaptor extends Disposable {
 			)
 		) {
 			this._isActive = newActive;
+
 			this._currentSuggestItemInfo = newInlineCompletion;
+
 			this._onDidSelectedItemChange.fire();
 		}
 	}
+
 	private getSuggestItemInfo(): SuggestItemInfo | undefined {
 		const suggestController = SuggestController.get(this.editor);
 
 		if (!suggestController || !this.isSuggestWidgetVisible) {
 			return undefined;
 		}
+
 		const focusedItem = suggestController.widget.value.getFocusedItem();
 
 		const position = this.editor.getPosition();
@@ -218,6 +246,7 @@ export class SuggestWidgetAdaptor extends Disposable {
 		if (!focusedItem || !position || !model) {
 			return undefined;
 		}
+
 		return SuggestItemInfo.fromSuggestion(
 			suggestController,
 			model,
@@ -226,12 +255,16 @@ export class SuggestWidgetAdaptor extends Disposable {
 			this.isShiftKeyPressed,
 		);
 	}
+
 	public stopForceRenderingAbove(): void {
 		const suggestController = SuggestController.get(this.editor);
+
 		suggestController?.stopForceRenderingAbove();
 	}
+
 	public forceRenderingAbove(): void {
 		const suggestController = SuggestController.get(this.editor);
+
 		suggestController?.forceRenderingAbove();
 	}
 }
@@ -257,9 +290,12 @@ export class SuggestItemInfo {
 				// Adjust whitespace is expensive.
 				SnippetSession.adjustWhitespace(model, position, true, snippet);
 			}
+
 			insertText = snippet.toString();
+
 			isSnippetText = true;
 		}
+
 		const info = suggestController.getOverwriteInfo(item, toggleMode);
 
 		return new SuggestItemInfo(
@@ -272,12 +308,14 @@ export class SuggestItemInfo {
 			isSnippetText,
 		);
 	}
+
 	private constructor(
 		public readonly range: Range,
 		public readonly insertText: string,
 		public readonly completionItemKind: CompletionItemKind,
 		public readonly isSnippetText: boolean,
 	) {}
+
 	public equals(other: SuggestItemInfo): boolean {
 		return (
 			this.range.equalsRange(other.range) &&
@@ -286,6 +324,7 @@ export class SuggestItemInfo {
 			this.isSnippetText === other.isSnippetText
 		);
 	}
+
 	public toSelectedSuggestionInfo(): SelectedSuggestionInfo {
 		return new SelectedSuggestionInfo(
 			this.range,
@@ -294,6 +333,7 @@ export class SuggestItemInfo {
 			this.isSnippetText,
 		);
 	}
+
 	public toSingleTextEdit(): SingleTextEdit {
 		return new SingleTextEdit(this.range, this.insertText);
 	}
@@ -305,8 +345,10 @@ function suggestItemInfoEquals(
 	if (a === b) {
 		return true;
 	}
+
 	if (!a || !b) {
 		return false;
 	}
+
 	return a.equals(b);
 }

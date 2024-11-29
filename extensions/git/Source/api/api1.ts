@@ -16,15 +16,20 @@ import { OperationKind, OperationResult } from '../operation';
 
 class ApiInputBox implements InputBox {
 	set value(value: string) { this._inputBox.value = value; }
+
 	get value(): string { return this._inputBox.value; }
+
 	constructor(private _inputBox: SourceControlInputBox) { }
 }
 
 export class ApiChange implements Change {
 
 	get uri(): Uri { return this.resource.resourceUri; }
+
 	get originalUri(): Uri { return this.resource.original; }
+
 	get renameUri(): Uri | undefined { return this.resource.renameResourceUri; }
+
 	get status(): Status { return this.resource.type; }
 
 	constructor(private readonly resource: Resource) { }
@@ -37,13 +42,19 @@ export class ApiRepositoryState implements RepositoryState {
 	 * @deprecated Use ApiRepository.getRefs() instead.
 	 */
 	get refs(): Ref[] { console.warn('Deprecated. Use ApiRepository.getRefs() instead.'); return []; }
+
 	get remotes(): Remote[] { return [...this._repository.remotes]; }
+
 	get submodules(): Submodule[] { return [...this._repository.submodules]; }
+
 	get rebaseCommit(): Commit | undefined { return this._repository.rebaseCommit; }
 
 	get mergeChanges(): Change[] { return this._repository.mergeGroup.resourceStates.map(r => new ApiChange(r)); }
+
 	get indexChanges(): Change[] { return this._repository.indexGroup.resourceStates.map(r => new ApiChange(r)); }
+
 	get workingTreeChanges(): Change[] { return this._repository.workingTreeGroup.resourceStates.map(r => new ApiChange(r)); }
+
 	get untrackedChanges(): Change[] { return this._repository.untrackedGroup.resourceStates.map(r => new ApiChange(r)); }
 
 	readonly onDidChange: Event<void> = this._repository.onDidRunGitStatus;
@@ -63,8 +74,11 @@ export class ApiRepositoryUIState implements RepositoryUIState {
 export class ApiRepository implements Repository {
 
 	readonly rootUri: Uri = Uri.file(this.repository.root);
+
 	readonly inputBox: InputBox = new ApiInputBox(this.repository.inputBox);
+
 	readonly state: RepositoryState = new ApiRepositoryState(this.repository);
+
 	readonly ui: RepositoryUIState = new ApiRepositoryUIState(this.repository.sourceControl);
 
 	readonly onDidCommit: Event<void> = mapEvent<OperationResult, void>(
@@ -132,25 +146,33 @@ export class ApiRepository implements Repository {
 	}
 
 	diffWithHEAD(): Promise<Change[]>;
+
 	diffWithHEAD(path: string): Promise<string>;
+
 	diffWithHEAD(path?: string): Promise<string | Change[]> {
 		return this.repository.diffWithHEAD(path);
 	}
 
 	diffWith(ref: string): Promise<Change[]>;
+
 	diffWith(ref: string, path: string): Promise<string>;
+
 	diffWith(ref: string, path?: string): Promise<string | Change[]> {
 		return this.repository.diffWith(ref, path);
 	}
 
 	diffIndexWithHEAD(): Promise<Change[]>;
+
 	diffIndexWithHEAD(path: string): Promise<string>;
+
 	diffIndexWithHEAD(path?: string): Promise<string | Change[]> {
 		return this.repository.diffIndexWithHEAD(path);
 	}
 
 	diffIndexWith(ref: string): Promise<Change[]>;
+
 	diffIndexWith(ref: string, path: string): Promise<string>;
+
 	diffIndexWith(ref: string, path?: string): Promise<string | Change[]> {
 		return this.repository.diffIndexWith(ref, path);
 	}
@@ -160,7 +182,9 @@ export class ApiRepository implements Repository {
 	}
 
 	diffBetween(ref1: string, ref2: string): Promise<Change[]>;
+
 	diffBetween(ref1: string, ref2: string, path: string): Promise<string>;
+
 	diffBetween(ref1: string, ref2: string, path?: string): Promise<string | Change[]> {
 		return this.repository.diffBetween(ref1, ref2, path);
 	}
@@ -315,13 +339,17 @@ export class ApiImpl implements API {
 
 	getRepository(uri: Uri): Repository | null {
 		const result = this._model.getRepository(uri);
+
 		return result ? new ApiRepository(result) : null;
 	}
 
 	async init(root: Uri, options?: InitOptions): Promise<Repository | null> {
 		const path = root.fsPath;
+
 		await this._model.git.init(path, options);
+
 		await this._model.openRepository(path);
+
 		return this.getRepository(root) || null;
 	}
 
@@ -331,6 +359,7 @@ export class ApiImpl implements API {
 		}
 
 		await this._model.openRepository(root.fsPath);
+
 		return this.getRepository(root) || null;
 	}
 
@@ -340,6 +369,7 @@ export class ApiImpl implements API {
 		if (provider.publishRepository) {
 			disposables.push(this._model.registerRemoteSourcePublisher(provider as RemoteSourcePublisher));
 		}
+
 		disposables.push(GitBaseApi.getAPI().registerRemoteSourceProvider(provider));
 
 		return combinedDisposable(disposables);
@@ -371,7 +401,9 @@ export class ApiImpl implements API {
 function getRefType(type: RefType): string {
 	switch (type) {
 		case RefType.Head: return 'Head';
+
 		case RefType.RemoteHead: return 'RemoteHead';
+
 		case RefType.Tag: return 'Tag';
 	}
 
@@ -381,23 +413,41 @@ function getRefType(type: RefType): string {
 function getStatus(status: Status): string {
 	switch (status) {
 		case Status.INDEX_MODIFIED: return 'INDEX_MODIFIED';
+
 		case Status.INDEX_ADDED: return 'INDEX_ADDED';
+
 		case Status.INDEX_DELETED: return 'INDEX_DELETED';
+
 		case Status.INDEX_RENAMED: return 'INDEX_RENAMED';
+
 		case Status.INDEX_COPIED: return 'INDEX_COPIED';
+
 		case Status.MODIFIED: return 'MODIFIED';
+
 		case Status.DELETED: return 'DELETED';
+
 		case Status.UNTRACKED: return 'UNTRACKED';
+
 		case Status.IGNORED: return 'IGNORED';
+
 		case Status.INTENT_TO_ADD: return 'INTENT_TO_ADD';
+
 		case Status.INTENT_TO_RENAME: return 'INTENT_TO_RENAME';
+
 		case Status.TYPE_CHANGED: return 'TYPE_CHANGED';
+
 		case Status.ADDED_BY_US: return 'ADDED_BY_US';
+
 		case Status.ADDED_BY_THEM: return 'ADDED_BY_THEM';
+
 		case Status.DELETED_BY_US: return 'DELETED_BY_US';
+
 		case Status.DELETED_BY_THEM: return 'DELETED_BY_THEM';
+
 		case Status.BOTH_ADDED: return 'BOTH_ADDED';
+
 		case Status.BOTH_DELETED: return 'BOTH_DELETED';
+
 		case Status.BOTH_MODIFIED: return 'BOTH_MODIFIED';
 	}
 
@@ -409,11 +459,13 @@ export function registerAPICommands(extension: GitExtensionImpl): Disposable {
 
 	disposables.push(commands.registerCommand('git.api.getRepositories', () => {
 		const api = extension.getAPI(1);
+
 		return api.repositories.map(r => r.rootUri.toString());
 	}));
 
 	disposables.push(commands.registerCommand('git.api.getRepositoryState', (uri: string) => {
 		const api = extension.getAPI(1);
+
 		const repository = api.getRepository(Uri.parse(uri));
 
 		if (!repository) {
@@ -423,6 +475,7 @@ export function registerAPICommands(extension: GitExtensionImpl): Disposable {
 		const state = repository.state;
 
 		const ref = (ref: Ref | undefined) => (ref && { ...ref, type: getRefType(ref.type) });
+
 		const change = (change: Change) => ({
 			uri: change.uri.toString(),
 			originalUri: change.originalUri.toString(),

@@ -13,6 +13,7 @@ import {
 
 export interface IUserDataSyncAccount {
 	readonly authenticationProviderId: string;
+
 	readonly token: string;
 }
 export const IUserDataSyncAccountService =
@@ -20,9 +21,13 @@ export const IUserDataSyncAccountService =
 
 export interface IUserDataSyncAccountService {
 	readonly _serviceBrand: undefined;
+
 	readonly onTokenFailed: Event<boolean /*bail out*/>;
+
 	readonly account: IUserDataSyncAccount | undefined;
+
 	readonly onDidChangeAccount: Event<IUserDataSyncAccount | undefined>;
+
 	updateAccount(account: IUserDataSyncAccount | undefined): Promise<void>;
 }
 export class UserDataSyncAccountService
@@ -30,19 +35,25 @@ export class UserDataSyncAccountService
 	implements IUserDataSyncAccountService
 {
 	_serviceBrand: any;
+
 	private _account: IUserDataSyncAccount | undefined;
 
 	get account(): IUserDataSyncAccount | undefined {
 		return this._account;
 	}
+
 	private _onDidChangeAccount = this._register(
 		new Emitter<IUserDataSyncAccount | undefined>(),
 	);
+
 	readonly onDidChangeAccount = this._onDidChangeAccount.event;
+
 	private _onTokenFailed: Emitter<boolean> = this._register(
 		new Emitter<boolean>(),
 	);
+
 	readonly onTokenFailed: Event<boolean> = this._onTokenFailed.event;
+
 	private wasTokenFailed: boolean = false;
 
 	constructor(
@@ -52,6 +63,7 @@ export class UserDataSyncAccountService
 		private readonly logService: IUserDataSyncLogService,
 	) {
 		super();
+
 		this._register(
 			userDataSyncStoreService.onTokenFailed((code) => {
 				this.logService.info(
@@ -60,6 +72,7 @@ export class UserDataSyncAccountService
 					this.wasTokenFailed,
 					code,
 				);
+
 				this.updateAccount(undefined);
 
 				if (code === UserDataSyncErrorCode.Forbidden) {
@@ -70,15 +83,18 @@ export class UserDataSyncAccountService
 							.wasTokenFailed /* bail out if token failed before */,
 					);
 				}
+
 				this.wasTokenFailed = true;
 			}),
 		);
+
 		this._register(
 			userDataSyncStoreService.onTokenSucceed(
 				() => (this.wasTokenFailed = false),
 			),
 		);
 	}
+
 	async updateAccount(
 		account: IUserDataSyncAccount | undefined,
 	): Promise<void> {
@@ -97,6 +113,7 @@ export class UserDataSyncAccountService
 					this._account.authenticationProviderId,
 				);
 			}
+
 			this._onDidChangeAccount.fire(account);
 		}
 	}

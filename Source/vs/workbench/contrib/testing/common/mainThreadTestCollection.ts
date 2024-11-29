@@ -22,13 +22,16 @@ export class MainThreadTestCollection
 	implements IMainThreadTestCollection
 {
 	private testsByUrl = new ResourceMap<Set<IncrementalTestCollectionItem>>();
+
 	private busyProvidersChangeEmitter = new Emitter<number>();
+
 	private expandPromises = new WeakMap<
 		IncrementalTestCollectionItem,
 		{
 			pendingLvl: number;
 
 			doneLvl: number;
+
 			prom: Promise<void>;
 		}
 	>();
@@ -50,9 +53,11 @@ export class MainThreadTestCollection
 	public get all() {
 		return this.getIterator();
 	}
+
 	public get rootIds() {
 		return Iterable.map(this.roots.values(), (r) => r.item.extId);
 	}
+
 	public readonly onBusyProvidersChange =
 		this.busyProvidersChangeEmitter.event;
 
@@ -80,6 +85,7 @@ export class MainThreadTestCollection
 		if (existing && existing.pendingLvl >= levels) {
 			return existing.prom;
 		}
+
 		const prom = this.expandActual(test.item.extId, levels);
 
 		const record = {
@@ -87,6 +93,7 @@ export class MainThreadTestCollection
 			pendingLvl: levels,
 			prom,
 		};
+
 		this.expandPromises.set(test, record);
 
 		return prom.then(() => {
@@ -121,6 +128,7 @@ export class MainThreadTestCollection
 		while (queue.length) {
 			for (const child of queue.pop()!) {
 				const item = this.items.get(child)!;
+
 				ops.push({
 					op: TestDiffOpType.Add,
 					item: {
@@ -129,9 +137,11 @@ export class MainThreadTestCollection
 						item: item.item,
 					},
 				});
+
 				queue.push(item.children);
 			}
 		}
+
 		return ops;
 	}
 	/**
@@ -156,7 +166,9 @@ export class MainThreadTestCollection
 		for (const root of this.roots) {
 			ops.push({ op: TestDiffOpType.Remove, itemId: root.item.extId });
 		}
+
 		this.roots.clear();
+
 		this.items.clear();
 
 		return ops;
@@ -169,12 +181,14 @@ export class MainThreadTestCollection
 	): IncrementalTestCollectionItem {
 		return { ...internal, children: new Set() };
 	}
+
 	private readonly changeCollector: IncrementalChangeCollector<IncrementalTestCollectionItem> =
 		{
 			add: (node) => {
 				if (!node.item.uri) {
 					return;
 				}
+
 				const s = this.testsByUrl.get(node.item.uri);
 
 				if (!s) {
@@ -187,11 +201,13 @@ export class MainThreadTestCollection
 				if (!node.item.uri) {
 					return;
 				}
+
 				const s = this.testsByUrl.get(node.item.uri);
 
 				if (!s) {
 					return;
 				}
+
 				s.delete(node);
 
 				if (s.size === 0) {
@@ -199,9 +215,11 @@ export class MainThreadTestCollection
 				}
 			},
 		};
+
 	protected override createChangeCollector(): IncrementalChangeCollector<IncrementalTestCollectionItem> {
 		return this.changeCollector;
 	}
+
 	private *getIterator() {
 		const queue = [this.rootIds];
 
@@ -210,6 +228,7 @@ export class MainThreadTestCollection
 				const node = this.getNodeById(id)!;
 
 				yield node;
+
 				queue.push(node.children);
 			}
 		}

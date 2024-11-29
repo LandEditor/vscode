@@ -31,8 +31,10 @@ class ToggleHighContrast extends EditorAction {
 			alias: "Toggle High Contrast Theme",
 			precondition: undefined,
 		});
+
 		this._originalThemeName = null;
 	}
+
 	public run(accessor: ServicesAccessor, editor: ICodeEditor): void {
 		const standaloneThemeService = accessor.get(IStandaloneThemeService);
 
@@ -46,6 +48,7 @@ class ToggleHighContrast extends EditorAction {
 						? VS_DARK_THEME_NAME
 						: VS_LIGHT_THEME_NAME),
 			);
+
 			this._originalThemeName = null;
 		} else {
 			standaloneThemeService.setTheme(
@@ -53,6 +56,7 @@ class ToggleHighContrast extends EditorAction {
 					? HC_BLACK_THEME_NAME
 					: HC_LIGHT_THEME_NAME,
 			);
+
 			this._originalThemeName = currentTheme.themeName;
 		}
 	}

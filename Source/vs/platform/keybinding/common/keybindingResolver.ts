@@ -30,8 +30,11 @@ export type ResolutionResult =
 	  }
 	| {
 			kind: ResultKind.KbFound;
+
 			commandId: string | null;
+
 			commandArgs: any;
+
 			isBubble: boolean;
 	  };
 // util definitions to make working with the above types easier within this module:
@@ -54,16 +57,21 @@ function KbFound(
  */
 export class KeybindingResolver {
 	private readonly _log: (str: string) => void;
+
 	private readonly _defaultKeybindings: ResolvedKeybindingItem[];
+
 	private readonly _keybindings: ResolvedKeybindingItem[];
+
 	private readonly _defaultBoundCommands: Map<
 		/* commandId */ string,
 		boolean
 	>;
+
 	private readonly _map: Map<
 		/* 1st chord's keypress */ string,
 		ResolvedKeybindingItem[]
 	>;
+
 	private readonly _lookupMap: Map<
 		/* commandId */ string,
 		ResolvedKeybindingItem[]
@@ -77,7 +85,9 @@ export class KeybindingResolver {
 		log: (str: string) => void,
 	) {
 		this._log = log;
+
 		this._defaultKeybindings = defaultKeybindings;
+
 		this._defaultBoundCommands = new Map<string, boolean>();
 
 		for (const defaultKeybinding of defaultKeybindings) {
@@ -87,8 +97,11 @@ export class KeybindingResolver {
 				this._defaultBoundCommands.set(command, true);
 			}
 		}
+
 		this._map = new Map<string, ResolvedKeybindingItem[]>();
+
 		this._lookupMap = new Map<string, ResolvedKeybindingItem[]>();
+
 		this._keybindings = KeybindingResolver.handleRemovals(
 			([] as ResolvedKeybindingItem[])
 				.concat(defaultKeybindings)
@@ -109,9 +122,11 @@ export class KeybindingResolver {
 				// when condition is false
 				continue;
 			}
+
 			this._addKeyPress(k.chords[0], k);
 		}
 	}
+
 	private static _isTargetedForRemoval(
 		defaultKb: ResolvedKeybindingItem,
 		keypress: string[] | null,
@@ -130,6 +145,7 @@ export class KeybindingResolver {
 			if (!defaultKb.when) {
 				return false;
 			}
+
 			if (
 				!expressionsAreEqualWithConstantSubstitution(
 					when,
@@ -139,6 +155,7 @@ export class KeybindingResolver {
 				return false;
 			}
 		}
+
 		return true;
 	}
 	/**
@@ -166,6 +183,7 @@ export class KeybindingResolver {
 				}
 			}
 		}
+
 		if (removals.size === 0) {
 			// There are no removals
 			return rules;
@@ -181,9 +199,11 @@ export class KeybindingResolver {
 
 				continue;
 			}
+
 			if (rule.command.charAt(0) === "-") {
 				continue;
 			}
+
 			const commandRemovals = removals.get(rule.command);
 
 			if (!commandRemovals || !rule.isDefault) {
@@ -191,6 +211,7 @@ export class KeybindingResolver {
 
 				continue;
 			}
+
 			let isRemoved = false;
 
 			for (const commandRemoval of commandRemovals) {
@@ -208,24 +229,29 @@ export class KeybindingResolver {
 					break;
 				}
 			}
+
 			if (!isRemoved) {
 				result.push(rule);
 
 				continue;
 			}
 		}
+
 		return result;
 	}
+
 	private _addKeyPress(keypress: string, item: ResolvedKeybindingItem): void {
 		const conflicts = this._map.get(keypress);
 
 		if (typeof conflicts === "undefined") {
 			// There is no conflict so far
 			this._map.set(keypress, [item]);
+
 			this._addToLookupMap(item);
 
 			return;
 		}
+
 		for (let i = conflicts.length - 1; i >= 0; i--) {
 			const conflict = conflicts[i];
 
@@ -238,7 +264,9 @@ export class KeybindingResolver {
 
 			for (
 				let i = 1;
+
 				i < conflict.chords.length && i < item.chords.length;
+
 				i++
 			) {
 				if (conflict.chords[i] !== item.chords[i]) {
@@ -248,9 +276,11 @@ export class KeybindingResolver {
 					break;
 				}
 			}
+
 			if (!isShorterKbPrefix) {
 				continue;
 			}
+
 			if (
 				KeybindingResolver.whenIsEntirelyIncluded(
 					conflict.when,
@@ -262,31 +292,39 @@ export class KeybindingResolver {
 				this._removeFromLookupMap(conflict);
 			}
 		}
+
 		conflicts.push(item);
+
 		this._addToLookupMap(item);
 	}
+
 	private _addToLookupMap(item: ResolvedKeybindingItem): void {
 		if (!item.command) {
 			return;
 		}
+
 		let arr = this._lookupMap.get(item.command);
 
 		if (typeof arr === "undefined") {
 			arr = [item];
+
 			this._lookupMap.set(item.command, arr);
 		} else {
 			arr.push(item);
 		}
 	}
+
 	private _removeFromLookupMap(item: ResolvedKeybindingItem): void {
 		if (!item.command) {
 			return;
 		}
+
 		const arr = this._lookupMap.get(item.command);
 
 		if (typeof arr === "undefined") {
 			return;
 		}
+
 		for (let i = 0, len = arr.length; i < len; i++) {
 			if (arr[i] === item) {
 				arr.splice(i, 1);
@@ -305,20 +343,26 @@ export class KeybindingResolver {
 		if (!b || b.type === ContextKeyExprType.True) {
 			return true;
 		}
+
 		if (!a || a.type === ContextKeyExprType.True) {
 			return false;
 		}
+
 		return implies(a, b);
 	}
+
 	public getDefaultBoundCommands(): Map<string, boolean> {
 		return this._defaultBoundCommands;
 	}
+
 	public getDefaultKeybindings(): readonly ResolvedKeybindingItem[] {
 		return this._defaultKeybindings;
 	}
+
 	public getKeybindings(): readonly ResolvedKeybindingItem[] {
 		return this._keybindings;
 	}
+
 	public lookupKeybindings(commandId: string): ResolvedKeybindingItem[] {
 		const items = this._lookupMap.get(commandId);
 
@@ -333,8 +377,10 @@ export class KeybindingResolver {
 		for (let i = items.length - 1; i >= 0; i--) {
 			result[resultLen++] = items[i];
 		}
+
 		return result;
 	}
+
 	public lookupPrimaryKeybinding(
 		commandId: string,
 		context: IContextKeyService,
@@ -344,9 +390,11 @@ export class KeybindingResolver {
 		if (typeof items === "undefined" || items.length === 0) {
 			return null;
 		}
+
 		if (items.length === 1) {
 			return items[0];
 		}
+
 		for (let i = items.length - 1; i >= 0; i--) {
 			const item = items[i];
 
@@ -354,6 +402,7 @@ export class KeybindingResolver {
 				return item;
 			}
 		}
+
 		return items[items.length - 1];
 	}
 	/**
@@ -368,6 +417,7 @@ export class KeybindingResolver {
 		keypress: string,
 	): ResolutionResult {
 		const pressedChords = [...currentChords, keypress];
+
 		this._log(`| Resolving ${pressedChords}`);
 
 		const kbCandidates = this._map.get(pressedChords[0]);
@@ -378,6 +428,7 @@ export class KeybindingResolver {
 
 			return NoMatchingKb;
 		}
+
 		let lookupMap: ResolvedKeybindingItem[] | null = null;
 
 		if (pressedChords.length < 2) {
@@ -393,6 +444,7 @@ export class KeybindingResolver {
 					// # of pressed chords can't be less than # of chords in a keybinding to invoke
 					continue;
 				}
+
 				let prefixMatches = true;
 
 				for (let i = 1; i < pressedChords.length; i++) {
@@ -402,6 +454,7 @@ export class KeybindingResolver {
 						break;
 					}
 				}
+
 				if (prefixMatches) {
 					lookupMap.push(candidate);
 				}
@@ -426,12 +479,14 @@ export class KeybindingResolver {
 
 			return MoreChordsNeeded;
 		}
+
 		this._log(
 			`\\ From ${lookupMap.length} keybinding entries, matched ${result.command}, when: ${printWhenExplanation(result.when)}, source: ${printSourceExplanation(result)}.`,
 		);
 
 		return KbFound(result.command, result.commandArgs, result.bubble);
 	}
+
 	private _findCommand(
 		context: IContext,
 		matches: ResolvedKeybindingItem[],
@@ -442,10 +497,13 @@ export class KeybindingResolver {
 			if (!KeybindingResolver._contextMatchesRules(context, k.when)) {
 				continue;
 			}
+
 			return k;
 		}
+
 		return null;
 	}
+
 	private static _contextMatchesRules(
 		context: IContext,
 		rules: ContextKeyExpression | null | undefined,
@@ -453,6 +511,7 @@ export class KeybindingResolver {
 		if (!rules) {
 			return true;
 		}
+
 		return rules.evaluate(context);
 	}
 }
@@ -460,6 +519,7 @@ function printWhenExplanation(when: ContextKeyExpression | undefined): string {
 	if (!when) {
 		return `no when condition`;
 	}
+
 	return `${when.serialize()}`;
 }
 function printSourceExplanation(kb: ResolvedKeybindingItem): string {

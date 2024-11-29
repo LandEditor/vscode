@@ -91,6 +91,7 @@ export class ShowCurrentReleaseNotesAction extends Action2 {
 			],
 		});
 	}
+
 	async run(accessor: ServicesAccessor): Promise<void> {
 		const instantiationService = accessor.get(IInstantiationService);
 
@@ -142,6 +143,7 @@ export class ShowCurrentReleaseNotesFromCurrentFileAction extends Action2 {
 			f1: true,
 		});
 	}
+
 	async run(accessor: ServicesAccessor): Promise<void> {
 		const instantiationService = accessor.get(IInstantiationService);
 
@@ -176,6 +178,7 @@ export class CheckForUpdateAction extends Action2 {
 			precondition: CONTEXT_UPDATE_STATE.isEqualTo(StateType.Idle),
 		});
 	}
+
 	async run(accessor: ServicesAccessor): Promise<void> {
 		const updateService = accessor.get(IUpdateService);
 
@@ -194,6 +197,7 @@ class DownloadUpdateAction extends Action2 {
 			),
 		});
 	}
+
 	async run(accessor: ServicesAccessor): Promise<void> {
 		await accessor.get(IUpdateService).downloadUpdate();
 	}
@@ -208,6 +212,7 @@ class InstallUpdateAction extends Action2 {
 			precondition: CONTEXT_UPDATE_STATE.isEqualTo(StateType.Downloaded),
 		});
 	}
+
 	async run(accessor: ServicesAccessor): Promise<void> {
 		await accessor.get(IUpdateService).applyUpdate();
 	}
@@ -222,6 +227,7 @@ class RestartToUpdateAction extends Action2 {
 			precondition: CONTEXT_UPDATE_STATE.isEqualTo(StateType.Ready),
 		});
 	}
+
 	async run(accessor: ServicesAccessor): Promise<void> {
 		await accessor.get(IUpdateService).quitAndInstall();
 	}
@@ -247,6 +253,7 @@ class DownloadAction extends Action2 {
 			],
 		});
 	}
+
 	run(accessor: ServicesAccessor): void {
 		const productService = accessor.get(IProductService);
 
@@ -273,6 +280,7 @@ if (isWindows) {
 				precondition: CONTEXT_UPDATE_STATE.isEqualTo(StateType.Idle),
 			});
 		}
+
 		async run(accessor: ServicesAccessor): Promise<void> {
 			const updateService = accessor.get(IUpdateService);
 
@@ -296,8 +304,10 @@ if (isWindows) {
 			if (!updatePath || !updatePath[0]) {
 				return;
 			}
+
 			await updateService._applySpecificUpdate(updatePath[0].fsPath);
 		}
 	}
+
 	registerAction2(DeveloperApplyUpdateAction);
 }

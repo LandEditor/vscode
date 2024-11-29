@@ -4,16 +4,24 @@
  *--------------------------------------------------------------------------------------------*/
 export interface IRawChatCommandContribution {
 	name: string;
+
 	description: string;
+
 	sampleRequest?: string;
+
 	isSticky?: boolean;
+
 	when?: string;
 
 	defaultImplicitVariables?: string[];
+
 	disambiguation?: {
 		category: string;
+
 		categoryName?: string /** Deprecated */;
+
 		description: string;
+
 		examples: string[];
 	}[];
 }
@@ -25,21 +33,34 @@ export type RawChatParticipantLocation =
 
 export interface IRawChatParticipantContribution {
 	id: string;
+
 	name: string;
+
 	fullName: string;
+
 	when?: string;
+
 	description?: string;
+
 	isDefault?: boolean;
+
 	isSticky?: boolean;
+
 	sampleRequest?: string;
+
 	commands?: IRawChatCommandContribution[];
 
 	defaultImplicitVariables?: string[];
+
 	locations?: RawChatParticipantLocation[];
+
 	disambiguation?: {
 		category: string;
+
 		categoryName?: string /** Deprecated */;
+
 		description: string;
+
 		examples: string[];
 	}[];
 }

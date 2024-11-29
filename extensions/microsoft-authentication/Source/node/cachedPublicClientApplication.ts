@@ -35,24 +35,30 @@ export class CachedPublicClientApplication
 	implements ICachedPublicClientApplication
 {
 	private _pca: PublicClientApplication;
+
 	private _sequencer = new Sequencer();
+
 	private readonly _refreshDelayer = new DelayerByKey<AuthenticationResult>();
 
 	private _accounts: AccountInfo[] = [];
+
 	private readonly _disposable: Disposable;
 
 	private readonly _loggerOptions = new MsalLoggerOptions(this._logger);
+
 	private readonly _secretStorageCachePlugin = new SecretStorageCachePlugin(
 		this._secretStorage,
 		// Include the prefix as a differentiator to other secrets
 		`pca:${JSON.stringify({ clientId: this._clientId, authority: this._authority })}`,
 	);
+
 	private readonly _accountAccess = new ScopedAccountAccess(
 		this._secretStorage,
 		this._cloudName,
 		this._clientId,
 		this._authority,
 	);
+
 	private readonly _config: Configuration = {
 		auth: { clientId: this._clientId, authority: this._authority },
 		system: {
@@ -69,6 +75,7 @@ export class CachedPublicClientApplication
 			cachePlugin: this._secretStorageCachePlugin,
 		},
 	};
+
 	private readonly _isBrokerAvailable =
 		this._config.broker?.nativeBrokerPlugin?.isBrokerAvailable ?? false;
 
@@ -76,12 +83,16 @@ export class CachedPublicClientApplication
 
 	private readonly _onDidAccountsChangeEmitter = new EventEmitter<{
 		added: AccountInfo[];
+
 		changed: AccountInfo[];
+
 		deleted: AccountInfo[];
 	}>();
+
 	readonly onDidAccountsChange = this._onDidAccountsChangeEmitter.event;
 
 	private readonly _onDidRemoveLastAccountEmitter = new EventEmitter<void>();
+
 	readonly onDidRemoveLastAccount = this._onDidRemoveLastAccountEmitter.event;
 
 	//#endregion
@@ -96,7 +107,9 @@ export class CachedPublicClientApplication
 	) {
 		// TODO:@TylerLeonhardt clean up old use of memento. Remove this in an iteration
 		this._globalMemento.update(`lastRemoval:${this._clientId}:${this._authority}`, undefined);
+
 		this._pca = new PublicClientApplication(this._config);
+
 		this._disposable = Disposable.from(
 			this._registerOnSecretStorageChanged(),
 			this._onDidAccountsChangeEmitter,
@@ -107,9 +120,11 @@ export class CachedPublicClientApplication
 	get accounts(): AccountInfo[] {
 		return this._accounts;
 	}
+
 	get clientId(): string {
 		return this._clientId;
 	}
+
 	get authority(): string {
 		return this._authority;
 	}
@@ -118,6 +133,7 @@ export class CachedPublicClientApplication
 		if (this._isBrokerAvailable) {
 			await this._accountAccess.initialize();
 		}
+
 		await this._update();
 	}
 
@@ -135,6 +151,7 @@ export class CachedPublicClientApplication
 		const result = await this._sequencer.queue(() =>
 			this._pca.acquireTokenSilent(request),
 		);
+
 		this._logger.debug(
 			`[acquireTokenSilent] [${this._clientId}] [${this._authority}] [${request.scopes.join(" ")}] [${request.account.username}] got result`,
 		);
@@ -147,13 +164,16 @@ export class CachedPublicClientApplication
 			this._logger.debug(
 				`[acquireTokenSilent] [${this._clientId}] [${this._authority}] [${request.scopes.join(" ")}] [${request.account.username}] firing event due to change`,
 			);
+
 			this._setupRefresh(result);
+
 			this._onDidAccountsChangeEmitter.fire({
 				added: [],
 				changed: [result.account],
 				deleted: [],
 			});
 		}
+
 		return result;
 	}
 
@@ -177,11 +197,13 @@ export class CachedPublicClientApplication
 					1000 * 60 * 5,
 				),
 		);
+
 		this._setupRefresh(result);
 
 		if (this._isBrokerAvailable) {
 			await this._accountAccess.setAllowedAccess(result.account!, true);
 		}
+
 		return result;
 	}
 
@@ -208,6 +230,7 @@ export class CachedPublicClientApplication
 				);
 			}
 		}
+
 		return result;
 	}
 
@@ -215,6 +238,7 @@ export class CachedPublicClientApplication
 		if (this._isBrokerAvailable) {
 			return this._accountAccess.setAllowedAccess(account, false);
 		}
+
 		return this._pca.getTokenCache().removeAccount(account);
 	}
 
@@ -224,16 +248,19 @@ export class CachedPublicClientApplication
 				this._update(),
 			);
 		}
+
 		return this._secretStorageCachePlugin.onDidChange(() => this._update());
 	}
 
 	private _lastSeen = new Map<string, number>();
+
 	private _verifyIfUsingBroker(result: AuthenticationResult): boolean {
 		// If we're not brokering, we don't need to verify the date
 		// the cache check will be sufficient
 		if (!result.fromNativeBroker) {
 			return true;
 		}
+
 		const key = result.account!.homeAccountId;
 
 		const lastSeen = this._lastSeen.get(key);
@@ -245,9 +272,11 @@ export class CachedPublicClientApplication
 
 			return true;
 		}
+
 		if (lastSeen === lastTimeAuthed) {
 			return false;
 		}
+
 		this._lastSeen.set(key, lastTimeAuthed);
 
 		return true;
@@ -255,15 +284,19 @@ export class CachedPublicClientApplication
 
 	private async _update() {
 		const before = this._accounts;
+
 		this._logger.debug(`[update] [${this._clientId}] [${this._authority}] CachedPublicClientApplication update before: ${before.length}`);
 		// Clear in-memory cache so we know we're getting account data from the SecretStorage
 		this._pca.clearCache();
+
 		let after = await this._pca.getAllAccounts();
 
 		if (this._isBrokerAvailable) {
 			after = after.filter((a) => this._accountAccess.isAllowedAccess(a));
 		}
+
 		this._accounts = after;
+
 		this._logger.debug(
 			`[update] [${this._clientId}] [${this._authority}] CachedPublicClientApplication update after: ${after.length}`,
 		);
@@ -282,6 +315,7 @@ export class CachedPublicClientApplication
 				changed: [],
 				deleted,
 			});
+
 			this._logger.debug(
 				`[update] [${this._clientId}] [${this._authority}] CachedPublicClientApplication accounts changed. added: ${added.length}, deleted: ${deleted.length}`,
 			);
@@ -290,9 +324,11 @@ export class CachedPublicClientApplication
 				this._logger.debug(
 					`[update] [${this._clientId}] [${this._authority}] CachedPublicClientApplication final account deleted. Firing event.`,
 				);
+
 				this._onDidRemoveLastAccountEmitter.fire();
 			}
 		}
+
 		this._logger.debug(
 			`[update] [${this._clientId}] [${this._authority}] CachedPublicClientApplication update complete`,
 		);
@@ -314,9 +350,11 @@ export class CachedPublicClientApplication
 			accountId: account.homeAccountId,
 			scopes,
 		});
+
 		this._logger.debug(
 			`[_setupRefresh] [${this._clientId}] [${this._authority}] [${scopes.join(" ")}] [${account.username}] timeToRefresh: ${timeToRefresh}`,
 		);
+
 		this._refreshDelayer.trigger(
 			key,
 			() =>
@@ -350,6 +388,7 @@ class DelayerByKey<T> {
 
 		if (!delayer) {
 			delayer = new Delayer<T>(delay);
+
 			this._delayers.set(key, delayer);
 		}
 

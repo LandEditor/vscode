@@ -19,7 +19,9 @@ import { defaultButtonStyles } from "../../../../../platform/theme/browser/defau
 
 export interface IChatConfirmationButton {
 	label: string;
+
 	isSecondary?: boolean;
+
 	data: any;
 }
 export class ChatConfirmationWidget extends Disposable {
@@ -30,14 +32,17 @@ export class ChatConfirmationWidget extends Disposable {
 	get onDidClick(): Event<IChatConfirmationButton> {
 		return this._onDidClick.event;
 	}
+
 	private _domNode: HTMLElement;
 
 	get domNode(): HTMLElement {
 		return this._domNode;
 	}
+
 	setShowButtons(showButton: boolean): void {
 		this.domNode.classList.toggle("hideButtons", !showButton);
 	}
+
 	constructor(
 		title: string,
 		message: string | IMarkdownString,
@@ -52,6 +57,7 @@ export class ChatConfirmationWidget extends Disposable {
 			dom.h(".chat-confirmation-widget-message@message"),
 			dom.h(".chat-confirmation-buttons-container@buttonsContainer"),
 		]);
+
 		this._domNode = elements.root;
 
 		const renderer = this._register(
@@ -61,6 +67,7 @@ export class ChatConfirmationWidget extends Disposable {
 		const renderedTitle = this._register(
 			renderer.render(new MarkdownString(title)),
 		);
+
 		elements.title.appendChild(renderedTitle.element);
 
 		const renderedMessage = this._register(
@@ -70,13 +77,17 @@ export class ChatConfirmationWidget extends Disposable {
 					: message,
 			),
 		);
+
 		elements.message.appendChild(renderedMessage.element);
+
 		buttons.forEach((buttonData) => {
 			const button = new Button(elements.buttonsContainer, {
 				...defaultButtonStyles,
 				secondary: buttonData.isSecondary,
 			});
+
 			button.label = buttonData.label;
+
 			this._register(
 				button.onDidClick(() => this._onDidClick.fire(buttonData)),
 			);

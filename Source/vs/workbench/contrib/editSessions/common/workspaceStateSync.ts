@@ -50,34 +50,46 @@ class NullBackupStoreService implements IUserDataSyncLocalStoreService {
 	async writeResource(): Promise<void> {
 		return;
 	}
+
 	async getAllResourceRefs(): Promise<IResourceRefHandle[]> {
 		return [];
 	}
+
 	async resolveResourceContent(): Promise<string | null> {
 		return null;
 	}
 }
 class NullEnablementService implements IUserDataSyncEnablementService {
 	_serviceBrand: any;
+
 	private _onDidChangeEnablement = new Emitter<boolean>();
+
 	readonly onDidChangeEnablement: Event<boolean> =
 		this._onDidChangeEnablement.event;
+
 	private _onDidChangeResourceEnablement = new Emitter<
 		[SyncResource, boolean]
 	>();
+
 	readonly onDidChangeResourceEnablement: Event<[SyncResource, boolean]> =
 		this._onDidChangeResourceEnablement.event;
+
 	isEnabled(): boolean {
 		return true;
 	}
+
 	canToggleEnablement(): boolean {
 		return true;
 	}
+
 	setEnablement(_enabled: boolean): void {}
+
 	isResourceEnabled(_resource: SyncResource): boolean {
 		return true;
 	}
+
 	setResourceEnablement(_resource: SyncResource, _enabled: boolean): void {}
+
 	getResourceSyncStateVersion(_resource: SyncResource): string | undefined {
 		return undefined;
 	}
@@ -129,6 +141,7 @@ export class WorkspaceStateSynchroniser
 			uriIdentityService,
 		);
 	}
+
 	override async sync(): Promise<void> {
 		const cancellationTokenSource = new CancellationTokenSource();
 
@@ -151,7 +164,9 @@ export class WorkspaceStateSynchroniser
 		if (!keys.length) {
 			return;
 		}
+
 		const contributedData: IStringDictionary<string> = {};
+
 		keys.forEach((key) => {
 			const data = this.storageService.get(key, StorageScope.WORKSPACE);
 
@@ -165,11 +180,13 @@ export class WorkspaceStateSynchroniser
 			storage: contributedData,
 			version: this.version,
 		};
+
 		await this.editSessionsStorageService.write(
 			"workspaceState",
 			stringify(content),
 		);
 	}
+
 	override async apply(): Promise<ISyncResourcePreview | null> {
 		const payload =
 			this.editSessionsStorageService.lastReadResources.get(
@@ -188,6 +205,7 @@ export class WorkspaceStateSynchroniser
 		if (!resource) {
 			return null;
 		}
+
 		const remoteWorkspaceState: IWorkspaceState = parse(resource.content);
 
 		if (!remoteWorkspaceState) {
@@ -212,11 +230,13 @@ export class WorkspaceStateSynchroniser
 
 			return null;
 		}
+
 		const storage: IStringDictionary<any> = {};
 
 		for (const key of Object.keys(remoteWorkspaceState.storage)) {
 			storage[key] = remoteWorkspaceState.storage[key];
 		}
+
 		if (Object.keys(storage).length) {
 			// Initialize storage with remote storage
 			const storageEntries: Array<IStorageEntry> = [];
@@ -227,6 +247,7 @@ export class WorkspaceStateSynchroniser
 					const value = parse(storage[key]);
 					// Run URI conversion on the stored state
 					replaceUris(value);
+
 					storageEntries.push({
 						key,
 						value,
@@ -242,8 +263,10 @@ export class WorkspaceStateSynchroniser
 					});
 				}
 			}
+
 			this.storageService.storeAll(storageEntries, true);
 		}
+
 		this.editSessionsStorageService.delete("workspaceState", resource.ref);
 
 		return null;
@@ -257,6 +280,7 @@ export class WorkspaceStateSynchroniser
 	): Promise<void> {
 		throw new Error("Method not implemented.");
 	}
+
 	protected override async generateSyncPreview(
 		remoteUserData: IRemoteUserData,
 		lastSyncUserData: IRemoteUserData | null,
@@ -266,12 +290,14 @@ export class WorkspaceStateSynchroniser
 	): Promise<IResourcePreview[]> {
 		return [];
 	}
+
 	protected override getMergeResult(
 		resourcePreview: IResourcePreview,
 		token: CancellationToken,
 	): Promise<IMergeResult> {
 		throw new Error("Method not implemented.");
 	}
+
 	protected override getAcceptResult(
 		resourcePreview: IResourcePreview,
 		resource: URI,
@@ -280,14 +306,17 @@ export class WorkspaceStateSynchroniser
 	): Promise<IAcceptResult> {
 		throw new Error("Method not implemented.");
 	}
+
 	protected override async hasRemoteChanged(
 		lastSyncUserData: IRemoteUserData,
 	): Promise<boolean> {
 		return true;
 	}
+
 	override async hasLocalData(): Promise<boolean> {
 		return false;
 	}
+
 	override async resolveContent(uri: URI): Promise<string | null> {
 		return null;
 	}

@@ -11,7 +11,9 @@ import {
 
 export interface IExtHostTestItemApi {
 	controllerId: string;
+
 	parent?: vscode.TestItem;
+
 	listener?: (evt: ExtHostTestItemEvent) => void;
 }
 
@@ -22,6 +24,7 @@ export const createPrivateApiFor = (
 	controllerId: string,
 ) => {
 	const api: IExtHostTestItemApi = { controllerId };
+
 	eventPrivateApis.set(impl, api);
 
 	return api;
@@ -37,5 +40,6 @@ export const getPrivateApiFor = (impl: vscode.TestItem) => {
 	if (!api) {
 		throw new InvalidTestItemError(impl?.id || "<unknown>");
 	}
+
 	return api;
 };

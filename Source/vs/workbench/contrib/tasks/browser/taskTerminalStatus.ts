@@ -35,10 +35,15 @@ import { ITaskService, Task } from "../common/taskService.js";
 
 interface ITerminalData {
 	terminal: ITerminalInstance;
+
 	task: Task;
+
 	status: ITerminalStatus;
+
 	problemMatcher: AbstractProblemCollector;
+
 	taskRunEnded: boolean;
+
 	disposeListener?: MutableDisposable<IDisposable>;
 }
 
@@ -121,6 +126,7 @@ const INFO_INACTIVE_TASK_STATUS: ITerminalStatus = {
 
 export class TaskTerminalStatus extends Disposable {
 	private terminalMap: Map<number, ITerminalData> = new Map();
+
 	private _marker: IMarker | undefined;
 
 	constructor(
@@ -130,6 +136,7 @@ export class TaskTerminalStatus extends Disposable {
 		private readonly _accessibilitySignalService: IAccessibilitySignalService,
 	) {
 		super();
+
 		this._register(
 			taskService.onDidStateChange((event) => {
 				switch (event.kind) {
@@ -151,15 +158,18 @@ export class TaskTerminalStatus extends Disposable {
 				}
 			}),
 		);
+
 		this._register(
 			toDisposable(() => {
 				for (const terminalData of this.terminalMap.values()) {
 					terminalData.disposeListener?.dispose();
 				}
+
 				this.terminalMap.clear();
 			}),
 		);
 	}
+
 	addTerminal(
 		task: Task,
 		terminal: ITerminalInstance,
@@ -169,7 +179,9 @@ export class TaskTerminalStatus extends Disposable {
 			id: TASK_TERMINAL_STATUS_ID,
 			severity: Severity.Info,
 		};
+
 		terminal.statusList.add(status);
+
 		this._register(
 			problemMatcher.onDidFindFirstMatch(() => {
 				this._marker = terminal.registerMarker();
@@ -179,6 +191,7 @@ export class TaskTerminalStatus extends Disposable {
 				}
 			}),
 		);
+
 		this._register(
 			problemMatcher.onDidFindErrors(() => {
 				if (this._marker) {
@@ -193,12 +206,15 @@ export class TaskTerminalStatus extends Disposable {
 				}
 			}),
 		);
+
 		this._register(
 			problemMatcher.onDidRequestInvalidateLastMarker(() => {
 				this._marker?.dispose();
+
 				this._marker = undefined;
 			}),
 		);
+
 		this.terminalMap.set(terminal.instanceId, {
 			terminal,
 			task,
@@ -207,21 +223,26 @@ export class TaskTerminalStatus extends Disposable {
 			taskRunEnded: false,
 		});
 	}
+
 	private terminalFromEvent(event: {
 		terminalId: number | undefined;
 	}): ITerminalData | undefined {
 		if (!("terminalId" in event) || !event.terminalId) {
 			return undefined;
 		}
+
 		return this.terminalMap.get(event.terminalId);
 	}
+
 	private eventEnd(event: ITaskProcessEndedEvent) {
 		const terminalData = this.terminalFromEvent(event);
 
 		if (!terminalData) {
 			return;
 		}
+
 		terminalData.taskRunEnded = true;
+
 		terminalData.terminal.statusList.remove(terminalData.status);
 
 		if (
@@ -248,6 +269,7 @@ export class TaskTerminalStatus extends Disposable {
 			this._accessibilitySignalService.playSignal(
 				AccessibilitySignal.taskFailed,
 			);
+
 			terminalData.terminal.statusList.add(FAILED_TASK_STATUS);
 		} else if (
 			terminalData.problemMatcher.maxMarkerSeverity ===
@@ -261,6 +283,7 @@ export class TaskTerminalStatus extends Disposable {
 			terminalData.terminal.statusList.add(INFO_TASK_STATUS);
 		}
 	}
+
 	private eventInactive(event: ITaskGeneralEvent) {
 		const terminalData = this.terminalFromEvent(event);
 
@@ -271,12 +294,14 @@ export class TaskTerminalStatus extends Disposable {
 		) {
 			return;
 		}
+
 		terminalData.terminal.statusList.remove(terminalData.status);
 
 		if (terminalData.problemMatcher.numberOfMatches === 0) {
 			this._accessibilitySignalService.playSignal(
 				AccessibilitySignal.taskCompleted,
 			);
+
 			terminalData.terminal.statusList.add(
 				SUCCEEDED_INACTIVE_TASK_STATUS,
 			);
@@ -287,6 +312,7 @@ export class TaskTerminalStatus extends Disposable {
 			this._accessibilitySignalService.playSignal(
 				AccessibilitySignal.taskFailed,
 			);
+
 			terminalData.terminal.statusList.add(FAILED_INACTIVE_TASK_STATUS);
 		} else if (
 			terminalData.problemMatcher.maxMarkerSeverity ===
@@ -300,26 +326,33 @@ export class TaskTerminalStatus extends Disposable {
 			terminalData.terminal.statusList.add(INFO_INACTIVE_TASK_STATUS);
 		}
 	}
+
 	private eventActive(event: ITaskGeneralEvent | ITaskProcessStartedEvent) {
 		const terminalData = this.terminalFromEvent(event);
 
 		if (!terminalData) {
 			return;
 		}
+
 		if (!terminalData.disposeListener) {
 			terminalData.disposeListener = this._register(
 				new MutableDisposable(),
 			);
+
 			terminalData.disposeListener.value =
 				terminalData.terminal.onDisposed(() => {
 					if (!event.terminalId) {
 						return;
 					}
+
 					this.terminalMap.delete(event.terminalId);
+
 					terminalData.disposeListener?.dispose();
 				});
 		}
+
 		terminalData.taskRunEnded = false;
+
 		terminalData.terminal.statusList.remove(terminalData.status);
 		// We don't want to show an infinite status for a background task that doesn't have a problem matcher.
 		if (

@@ -317,8 +317,11 @@ class ExecCommandCopyWithSyntaxHighlightingAction extends EditorAction {
 		}
 
 		CopyOptions.forceCopyWithSyntaxHighlighting = true;
+
 		editor.focus();
+
 		editor.getContainerDomNode().ownerDocument.execCommand("copy");
+
 		CopyOptions.forceCopyWithSyntaxHighlighting = false;
 	}
 }
@@ -367,14 +370,17 @@ function registerExecCommandImpl(
 					focusedEditor
 						.getContainerDomNode()
 						.ownerDocument.execCommand("copy");
+
 					focusedEditor.trigger(undefined, Handler.Cut, undefined);
 				} else {
 					focusedEditor
 						.getContainerDomNode()
 						.ownerDocument.execCommand(browserCommand);
 				}
+
 				return true;
 			}
+
 			return false;
 		},
 	);
@@ -431,10 +437,13 @@ if (PasteAction) {
 					if (textAreaDomNode) {
 						const currentFocusedElement =
 							getActiveWindow().document.activeElement;
+
 						textAreaDomNode.focus();
+
 						result = focusedEditor
 							.getContainerDomNode()
 							.ownerDocument.execCommand("paste");
+
 						textAreaDomNode.textContent = "";
 
 						if (isHTMLElement(currentFocusedElement)) {
@@ -448,6 +457,7 @@ if (PasteAction) {
 						.getContainerDomNode()
 						.ownerDocument.execCommand("paste");
 				}
+
 				if (result) {
 					return (
 						CopyPasteController.get(
@@ -476,13 +486,16 @@ if (PasteAction) {
 									focusedEditor.getOption(
 										EditorOption.emptySelectionClipboard,
 									) && !!metadata.isFromEmptySelection;
+
 								multicursorText =
 									typeof metadata.multicursorText !==
 									"undefined"
 										? metadata.multicursorText
 										: null;
+
 								mode = metadata.mode;
 							}
+
 							focusedEditor.trigger("keyboard", Handler.Paste, {
 								text: clipboardText,
 								pasteOnNewLine,
@@ -492,8 +505,10 @@ if (PasteAction) {
 						}
 					})();
 				}
+
 				return true;
 			}
+
 			return false;
 		},
 	);

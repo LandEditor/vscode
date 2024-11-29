@@ -10,7 +10,9 @@ export const testUrlMatchesGlob = (uri: URI, globUrl: string): boolean => {
 	let url = uri.with({ query: null, fragment: null }).toString(true);
 
 	const normalize = (url: string) => url.replace(/\/+$/, "");
+
 	globUrl = normalize(globUrl);
+
 	url = normalize(url);
 
 	const memo = Array.from({ length: url.length + 1 }).map(() =>
@@ -20,11 +22,13 @@ export const testUrlMatchesGlob = (uri: URI, globUrl: string): boolean => {
 	if (/^[^./:]*:\/\//.test(globUrl)) {
 		return doUrlMatch(memo, url, globUrl, 0, 0);
 	}
+
 	const scheme = /^(https?):\/\//.exec(url)?.[1];
 
 	if (scheme) {
 		return doUrlMatch(memo, url, `${scheme}://${globUrl}`, 0, 0);
 	}
+
 	return false;
 };
 
@@ -38,6 +42,7 @@ const doUrlMatch = (
 	if (memo[urlOffset]?.[globUrlOffset] !== undefined) {
 		return memo[urlOffset][globUrlOffset]!;
 	}
+
 	const options = [];
 	// Endgame.
 	// Fully exact match
@@ -50,12 +55,14 @@ const doUrlMatch = (
 
 		return remaining[0] === "/";
 	}
+
 	if (url[urlOffset] === globUrl[globUrlOffset]) {
 		// Exact match.
 		options.push(
 			doUrlMatch(memo, url, globUrl, urlOffset + 1, globUrlOffset + 1),
 		);
 	}
+
 	if (globUrl[globUrlOffset] + globUrl[globUrlOffset + 1] === "*.") {
 		// Any subdomain match. Either consume one thing that's not a / or : and don't advance base or consume nothing and do.
 		if (!["/", ":"].includes(url[urlOffset])) {
@@ -63,10 +70,12 @@ const doUrlMatch = (
 				doUrlMatch(memo, url, globUrl, urlOffset + 1, globUrlOffset),
 			);
 		}
+
 		options.push(
 			doUrlMatch(memo, url, globUrl, urlOffset, globUrlOffset + 2),
 		);
 	}
+
 	if (globUrl[globUrlOffset] === "*") {
 		// Any match. Either consume one thing and don't advance base or consume nothing and do.
 		if (urlOffset + 1 === url.length) {
@@ -85,10 +94,12 @@ const doUrlMatch = (
 				doUrlMatch(memo, url, globUrl, urlOffset + 1, globUrlOffset),
 			);
 		}
+
 		options.push(
 			doUrlMatch(memo, url, globUrl, urlOffset, globUrlOffset + 1),
 		);
 	}
+
 	if (globUrl[globUrlOffset] + globUrl[globUrlOffset + 1] === ":*") {
 		// any port match. Consume a port if it exists otherwise nothing. Always comsume the base.
 		if (url[urlOffset] === ":") {
@@ -97,6 +108,7 @@ const doUrlMatch = (
 			do {
 				endPortIndex++;
 			} while (/[0-9]/.test(url[endPortIndex]));
+
 			options.push(
 				doUrlMatch(memo, url, globUrl, endPortIndex, globUrlOffset + 2),
 			);
@@ -106,5 +118,6 @@ const doUrlMatch = (
 			);
 		}
 	}
+
 	return (memo[urlOffset][globUrlOffset] = options.some((a) => a === true));
 };

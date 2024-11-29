@@ -80,6 +80,7 @@ function describeEnvironmentChanges(
 
 	for (const [ext, coll] of collection.collections) {
 		content += `\n\n## ${localize("extension", "Extension: {0}", ext)}`;
+
 		content += "\n";
 
 		const globalDescription = globalDescriptions.get(ext);
@@ -87,6 +88,7 @@ function describeEnvironmentChanges(
 		if (globalDescription) {
 			content += `\n${globalDescription}\n`;
 		}
+
 		const workspaceDescription = workspaceDescriptions.get(ext);
 
 		if (workspaceDescription) {
@@ -94,15 +96,19 @@ function describeEnvironmentChanges(
 			const workspaceSuffix = globalDescription
 				? ` (${localize("ScopedEnvironmentContributionInfo", "workspace")})`
 				: "";
+
 			content += `\n${workspaceDescription}${workspaceSuffix}\n`;
 		}
+
 		for (const mutator of coll.map.values()) {
 			if (filterScope(mutator, scope) === false) {
 				continue;
 			}
+
 			content += `\n- \`${mutatorTypeLabel(mutator.type, mutator.value, mutator.variable)}\``;
 		}
 	}
+
 	return content;
 }
 function filterScope(
@@ -120,6 +126,7 @@ function filterScope(
 	) {
 		return true;
 	}
+
 	return false;
 }
 function mutatorTypeLabel(
@@ -152,12 +159,14 @@ class EnvironmentCollectionProvider implements ITextModelContentProvider {
 			this,
 		);
 	}
+
 	async provideTextContent(resource: URI): Promise<ITextModel | null> {
 		const existing = this._modelService.getModel(resource);
 
 		if (existing && !existing.isDisposed()) {
 			return existing;
 		}
+
 		return this._modelService.createModel(
 			resource.fragment,
 			{ languageId: "markdown", onDidChange: Event.None },

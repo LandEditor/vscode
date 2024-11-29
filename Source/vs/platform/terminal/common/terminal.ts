@@ -171,6 +171,7 @@ export type TerminalShellType =
 
 export interface IRawTerminalInstanceLayoutInfo<T> {
 	relativeSize: number;
+
 	terminal: T;
 }
 export type ITerminalInstanceLayoutInfoById =
@@ -181,7 +182,9 @@ export type ITerminalInstanceLayoutInfo =
 
 export interface IRawTerminalTabLayoutInfo<T> {
 	isActive: boolean;
+
 	activePersistentProcessId: number | undefined;
+
 	terminals: IRawTerminalInstanceLayoutInfo<T>[];
 }
 
@@ -193,29 +196,47 @@ export interface IRawTerminalsLayoutInfo<T> {
 
 export interface IPtyHostAttachTarget {
 	id: number;
+
 	pid: number;
+
 	title: string;
+
 	titleSource: TitleEventSource;
+
 	cwd: string;
+
 	workspaceId: string;
+
 	workspaceName: string;
+
 	isOrphan: boolean;
+
 	icon: TerminalIcon | undefined;
+
 	fixedDimensions: IFixedTerminalDimensions | undefined;
+
 	environmentVariableCollections:
 		| ISerializableEnvironmentVariableCollections
 		| undefined;
+
 	reconnectionProperties?: IReconnectionProperties;
+
 	waitOnExit?: WaitOnExitValue;
+
 	hideFromUser?: boolean;
+
 	isFeatureTerminal?: boolean;
+
 	type?: TerminalType;
+
 	hasChildProcesses: boolean;
+
 	shellIntegrationNonce: string;
 }
 
 export interface IReconnectionProperties {
 	ownerId: string;
+
 	data?: unknown;
 }
 
@@ -275,6 +296,7 @@ export const enum ProcessPropertyType {
 
 export interface IProcessProperty<T extends ProcessPropertyType> {
 	type: T;
+
 	value: IProcessPropertyMap[T];
 }
 
@@ -313,23 +335,34 @@ export interface IPtyService {
 
 	readonly onProcessData: Event<{
 		id: number;
+
 		event: IProcessDataEvent | string;
 	}>;
+
 	readonly onProcessReady: Event<{ id: number; event: IProcessReadyEvent }>;
+
 	readonly onProcessReplay: Event<{
 		id: number;
+
 		event: IPtyHostProcessReplayEvent;
 	}>;
+
 	readonly onProcessOrphanQuestion: Event<{ id: number }>;
+
 	readonly onDidRequestDetach: Event<{
 		requestId: number;
+
 		workspaceId: string;
+
 		instanceId: number;
 	}>;
+
 	readonly onDidChangeProperty: Event<{
 		id: number;
+
 		property: IProcessProperty<any>;
 	}>;
+
 	readonly onProcessExit: Event<{ id: number; event: number | undefined }>;
 
 	createProcess(
@@ -345,8 +378,11 @@ export interface IPtyService {
 		workspaceId: string,
 		workspaceName: string,
 	): Promise<number>;
+
 	attachToProcess(id: number): Promise<void>;
+
 	detachFromProcess(id: number, forcePersist?: boolean): Promise<void>;
+
 	shutdownAll(): Promise<void>;
 
 	/**
@@ -363,25 +399,33 @@ export interface IPtyService {
 	start(
 		id: number,
 	): Promise<ITerminalLaunchError | { injectedArgs: string[] } | undefined>;
+
 	shutdown(id: number, immediate: boolean): Promise<void>;
+
 	input(id: number, data: string): Promise<void>;
+
 	resize(id: number, cols: number, rows: number): Promise<void>;
+
 	clearBuffer(id: number): Promise<void>;
 
 	getInitialCwd(id: number): Promise<string>;
 
 	getCwd(id: number): Promise<string>;
+
 	acknowledgeDataEvent(id: number, charCount: number): Promise<void>;
 
 	setUnicodeVersion(id: number, version: "6" | "11"): Promise<void>;
+
 	processBinary(id: number, data: string): Promise<void>;
 	/** Confirm the process is _not_ an orphan. */
 	orphanQuestionReply(id: number): Promise<void>;
+
 	updateTitle(
 		id: number,
 		title: string,
 		titleSource: TitleEventSource,
 	): Promise<void>;
+
 	updateIcon(
 		id: number,
 		userInitiated: boolean,
@@ -408,15 +452,19 @@ export interface IPtyService {
 	getTerminalLayoutInfo(
 		args: IGetTerminalLayoutInfoArgs,
 	): Promise<ITerminalsLayoutInfo | undefined>;
+
 	reduceConnectionGraceTime(): Promise<void>;
+
 	requestDetachInstance(
 		workspaceId: string,
 		instanceId: number,
 	): Promise<IProcessDetails | undefined>;
+
 	acceptDetachInstanceReply(
 		requestId: number,
 		persistentProcessId?: number,
 	): Promise<void>;
+
 	freePortKillProcess(
 		port: string,
 	): Promise<{ port: string; processId: string }>;
@@ -434,10 +482,12 @@ export interface IPtyService {
 		state: ISerializedTerminalState[],
 		dateTimeFormatLocate: string,
 	): Promise<void>;
+
 	refreshProperty<T extends ProcessPropertyType>(
 		id: number,
 		property: T,
 	): Promise<IProcessPropertyMap[T]>;
+
 	updateProperty<T extends ProcessPropertyType>(
 		id: number,
 		property: T,
@@ -450,6 +500,7 @@ export interface IPtyService {
 	// #region Pty service contribution RPC calls
 
 	installAutoReply(match: string, reply: string): Promise<void>;
+
 	uninstallAllAutoReplies(): Promise<void>;
 
 	// #endregion
@@ -461,8 +512,11 @@ export interface IPtyServiceContribution {
 		persistentProcessId: number,
 		process: ITerminalChildProcess,
 	): void;
+
 	handleProcessDispose(persistentProcessId: number): void;
+
 	handleProcessInput(persistentProcessId: number, data: string): void;
+
 	handleProcessResize(
 		persistentProcessId: number,
 		cols: number,
@@ -472,12 +526,17 @@ export interface IPtyServiceContribution {
 
 export interface IPtyHostController {
 	readonly onPtyHostExit: Event<number>;
+
 	readonly onPtyHostStart: Event<void>;
+
 	readonly onPtyHostUnresponsive: Event<void>;
+
 	readonly onPtyHostResponsive: Event<void>;
+
 	readonly onPtyHostRequestResolveVariables: Event<IRequestResolveVariablesEvent>;
 
 	restartPtyHost(): Promise<void>;
+
 	acceptPtyHostResolvedVariables(
 		requestId: number,
 		resolved: string[],
@@ -499,6 +558,7 @@ export interface IPtyHostService extends IPtyService, IPtyHostController {}
 
 export interface IPtyHostLatencyMeasurement {
 	label: string;
+
 	latency: number;
 }
 
@@ -508,28 +568,39 @@ export interface IPtyHostLatencyMeasurement {
  */
 export interface ICrossVersionSerializedTerminalState {
 	version: number;
+
 	state: unknown;
 }
 
 export interface ISerializedTerminalState {
 	id: number;
+
 	shellLaunchConfig: IShellLaunchConfig;
+
 	processDetails: IProcessDetails;
+
 	processLaunchConfig: IPersistentTerminalProcessLaunchConfig;
+
 	unicodeVersion: "6" | "11";
+
 	replayEvent: IPtyHostProcessReplayEvent;
+
 	timestamp: number;
 }
 
 export interface IPersistentTerminalProcessLaunchConfig {
 	env: IProcessEnvironment;
+
 	executableEnv: IProcessEnvironment;
+
 	options: ITerminalProcessOptions;
 }
 
 export interface IRequestResolveVariablesEvent {
 	requestId: number;
+
 	workspaceId: string;
+
 	originalText: string[];
 }
 
@@ -643,21 +714,37 @@ export interface IShellLaunchConfig {
 	 */
 	attachPersistentProcess?: {
 		id: number;
+
 		findRevivedId?: boolean;
+
 		pid: number;
+
 		title: string;
+
 		titleSource: TitleEventSource;
+
 		cwd: string;
+
 		icon?: TerminalIcon;
+
 		color?: string;
+
 		hasChildProcesses?: boolean;
+
 		fixedDimensions?: IFixedTerminalDimensions;
+
 		environmentVariableCollections?: ISerializableEnvironmentVariableCollections;
+
 		reconnectionProperties?: IReconnectionProperties;
+
 		type?: TerminalType;
+
 		waitOnExit?: WaitOnExitValue;
+
 		hideFromUser?: boolean;
+
 		isFeatureTerminal?: boolean;
+
 		shellIntegrationNonce: string;
 	};
 
@@ -742,11 +829,14 @@ export type WaitOnExitValue = boolean | string | ((exitCode: number) => string);
 
 export interface ICreateContributedTerminalProfileOptions {
 	icon?: URI | string | { light: URI; dark: URI };
+
 	color?: string;
+
 	location?:
 		| TerminalLocation
 		| { viewColumn: number; preserveState?: boolean }
 		| { splitActiveTerminal: boolean };
+
 	cwd?: string | URI;
 }
 
@@ -764,14 +854,23 @@ export type TerminalIcon = ThemeIcon | URI | { light: URI; dark: URI };
 
 export interface IShellLaunchConfigDto {
 	name?: string;
+
 	executable?: string;
+
 	args?: string[] | string;
+
 	cwd?: string | UriComponents;
+
 	env?: ITerminalEnvironment;
+
 	useShellEnvironment?: boolean;
+
 	hideFromUser?: boolean;
+
 	reconnectionProperties?: IReconnectionProperties;
+
 	type?: "Task" | "Local";
+
 	isFeatureTerminal?: boolean;
 }
 
@@ -782,14 +881,20 @@ export interface IShellLaunchConfigDto {
 export interface ITerminalProcessOptions {
 	shellIntegration: {
 		enabled: boolean;
+
 		suggestEnabled: boolean;
+
 		nonce: string;
 	};
+
 	windowsEnableConpty: boolean;
+
 	windowsUseConptyDll: boolean;
+
 	environmentVariableCollections:
 		| ISerializableEnvironmentVariableCollections
 		| undefined;
+
 	workspaceFolder: IWorkspaceFolder | undefined;
 }
 
@@ -799,12 +904,15 @@ export interface ITerminalEnvironment {
 
 export interface ITerminalLaunchError {
 	message: string;
+
 	code?: number;
 }
 
 export interface IProcessReadyEvent {
 	pid: number;
+
 	cwd: string;
+
 	windowsPty: IProcessReadyWindowsPty | undefined;
 }
 
@@ -837,10 +945,15 @@ export interface ITerminalChildProcess {
 	shouldPersist: boolean;
 
 	onProcessData: Event<IProcessDataEvent | string>;
+
 	onProcessReady: Event<IProcessReadyEvent>;
+
 	onProcessReplayComplete?: Event<void>;
+
 	onDidChangeProperty: Event<IProcessProperty<any>>;
+
 	onProcessExit: Event<number | undefined>;
+
 	onRestoreCommands?: Event<ISerializedCommandDetectionCapability>;
 
 	/**
@@ -873,9 +986,13 @@ export interface ITerminalChildProcess {
 	 * be given some time to make sure no additional data comes through.
 	 */
 	shutdown(immediate: boolean): void;
+
 	input(data: string): void;
+
 	processBinary(data: string): Promise<void>;
+
 	resize(cols: number, rows: number): void;
+
 	clearBuffer(): void | Promise<void>;
 
 	/**
@@ -895,9 +1012,11 @@ export interface ITerminalChildProcess {
 	getInitialCwd(): Promise<string>;
 
 	getCwd(): Promise<string>;
+
 	refreshProperty<T extends ProcessPropertyType>(
 		property: T,
 	): Promise<IProcessPropertyMap[T]>;
+
 	updateProperty<T extends ProcessPropertyType>(
 		property: T,
 		value: IProcessPropertyMap[T],
@@ -906,7 +1025,9 @@ export interface ITerminalChildProcess {
 
 export interface IReconnectConstants {
 	graceTime: number;
+
 	shortGraceTime: number;
+
 	scrollback: number;
 }
 
@@ -946,6 +1067,7 @@ export const enum FlowControlConstants {
 
 export interface IProcessDataEvent {
 	data: string;
+
 	trackCommit: boolean;
 	/**
 	 * When trackCommit is set, this will be set to a promise that resolves when the data is parsed.
@@ -967,7 +1089,9 @@ export interface ITerminalDimensions {
 
 export interface ITerminalProfile {
 	profileName: string;
+
 	path: string;
+
 	isDefault: boolean;
 	/**
 	 * Whether the terminal profile contains a potentially unsafe {@link path}. For example, the path
@@ -980,16 +1104,22 @@ export interface ITerminalProfile {
 	 * An additional unsafe path that must exist, for example a script that appears in {@link args}.
 	 */
 	requiresUnsafePath?: string;
+
 	isAutoDetected?: boolean;
 	/**
 	 * Whether the profile path was found on the `$PATH` environment variable, if so it will be
 	 * cleaner to display this profile in the UI using only `basename(path)`.
 	 */
 	isFromPath?: boolean;
+
 	args?: string | string[] | undefined;
+
 	env?: ITerminalEnvironment;
+
 	overrideName?: boolean;
+
 	color?: string;
+
 	icon?: ThemeIcon | URI | { light: URI; dark: URI };
 }
 
@@ -1008,11 +1138,17 @@ export const enum ProfileSource {
 
 export interface IBaseUnresolvedTerminalProfile {
 	args?: string | string[] | undefined;
+
 	isAutoDetected?: boolean;
+
 	overrideName?: boolean;
+
 	icon?: string | ThemeIcon | URI | { light: URI; dark: URI };
+
 	color?: string;
+
 	env?: ITerminalEnvironment;
+
 	requiresPath?: string | ITerminalUnsafePath;
 }
 
@@ -1020,6 +1156,7 @@ type OneOrN<T> = T | T[];
 
 export interface ITerminalUnsafePath {
 	path: string;
+
 	isUnsafe: true;
 }
 
@@ -1033,8 +1170,11 @@ export interface ITerminalProfileSource extends IBaseUnresolvedTerminalProfile {
 
 export interface ITerminalProfileContribution {
 	title: string;
+
 	id: string;
+
 	icon?: URI | { light: URI; dark: URI } | string;
+
 	color?: string;
 }
 
@@ -1051,6 +1191,7 @@ export type ITerminalProfileObject =
 
 export interface IShellIntegration {
 	readonly capabilities: ITerminalCapabilityStore;
+
 	readonly status: ShellIntegrationStatus;
 
 	readonly onDidChangeStatus: Event<ShellIntegrationStatus>;
@@ -1085,6 +1226,7 @@ export enum TerminalExitReason {
 
 export interface ITerminalOutputMatch {
 	regexMatch: RegExpMatchArray;
+
 	outputLines: string[];
 }
 
@@ -1120,10 +1262,15 @@ export interface ITerminalOutputMatcher {
 
 export interface ITerminalCommandSelector {
 	id: string;
+
 	commandLineMatcher: string | RegExp;
+
 	outputMatcher?: ITerminalOutputMatcher;
+
 	exitStatus: boolean;
+
 	commandExitResult: "success" | "error";
+
 	kind?: "fix" | "explain";
 }
 
@@ -1162,14 +1309,18 @@ export interface ITerminalBackend
 
 	onDidRequestDetach: Event<{
 		requestId: number;
+
 		workspaceId: string;
+
 		instanceId: number;
 	}>;
 
 	attachToProcess(id: number): Promise<ITerminalChildProcess | undefined>;
+
 	attachToRevivedProcess(
 		id: number,
 	): Promise<ITerminalChildProcess | undefined>;
+
 	listProcesses(): Promise<IProcessDetails[]>;
 
 	getLatency(): Promise<IPtyHostLatencyMeasurement[]>;
@@ -1192,11 +1343,13 @@ export interface ITerminalBackend
 	getShellEnvironment(): Promise<IProcessEnvironment | undefined>;
 
 	setTerminalLayoutInfo(layoutInfo?: ITerminalsLayoutInfoById): Promise<void>;
+
 	updateTitle(
 		id: number,
 		title: string,
 		titleSource: TitleEventSource,
 	): Promise<void>;
+
 	updateIcon(
 		id: number,
 		userInitiated: boolean,
@@ -1207,15 +1360,19 @@ export interface ITerminalBackend
 	getTerminalLayoutInfo(): Promise<ITerminalsLayoutInfo | undefined>;
 
 	getPerformanceMarks(): Promise<performance.PerformanceMark[]>;
+
 	reduceConnectionGraceTime(): Promise<void>;
+
 	requestDetachInstance(
 		workspaceId: string,
 		instanceId: number,
 	): Promise<IProcessDetails | undefined>;
+
 	acceptDetachInstanceReply(
 		requestId: number,
 		persistentProcessId?: number,
 	): Promise<void>;
+
 	persistTerminalState(): Promise<void>;
 
 	createProcess(
@@ -1234,6 +1391,7 @@ export interface ITerminalBackend
 
 export interface ITerminalBackendPtyServiceContributions {
 	installAutoReply(match: string, reply: string): Promise<void>;
+
 	uninstallAllAutoReplies(): Promise<void>;
 }
 
@@ -1273,6 +1431,7 @@ class TerminalBackendRegistry implements ITerminalBackendRegistry {
 				`A terminal backend with remote authority '${key}' was already registered.`,
 			);
 		}
+
 		this._backends.set(key, backend);
 	}
 

@@ -48,7 +48,9 @@ export class MainThreadConfiguration implements MainThreadConfigurationShape {
 		const proxy = extHostContext.getProxy(
 			ExtHostContext.ExtHostConfiguration,
 		);
+
 		proxy.$initializeConfiguration(this._getConfigurationData());
+
 		this._configurationListener =
 			configurationService.onDidChangeConfiguration((e) => {
 				proxy.$acceptConfigurationChanged(
@@ -57,6 +59,7 @@ export class MainThreadConfiguration implements MainThreadConfigurationShape {
 				);
 			});
 	}
+
 	private _getConfigurationData(): IConfigurationInitData {
 		const configurationData: IConfigurationInitData = {
 			...this.configurationService.getConfigurationData()!,
@@ -69,8 +72,10 @@ export class MainThreadConfiguration implements MainThreadConfigurationShape {
 		) {
 			configurationData.configurationScopes = getScopes();
 		}
+
 		return configurationData;
 	}
+
 	public dispose(): void {
 		this._configurationListener.dispose();
 	}
@@ -117,6 +122,7 @@ export class MainThreadConfiguration implements MainThreadConfigurationShape {
 			scopeToLanguage,
 		);
 	}
+
 	private writeConfiguration(
 		target: ConfigurationTarget | null,
 		key: string,
@@ -186,6 +192,7 @@ export class MainThreadConfiguration implements MainThreadConfigurationShape {
 				);
 		}
 	}
+
 	private _updateValue(
 		key: string,
 		value: any,
@@ -212,6 +219,7 @@ export class MainThreadConfiguration implements MainThreadConfigurationShape {
 			{ donotNotifyError: true },
 		);
 	}
+
 	private deriveConfigurationTarget(
 		key: string,
 		overrides: IConfigurationOverrides,
@@ -235,6 +243,7 @@ export class MainThreadConfiguration implements MainThreadConfigurationShape {
 				return ConfigurationTarget.WORKSPACE_FOLDER;
 			}
 		}
+
 		return ConfigurationTarget.WORKSPACE;
 	}
 }

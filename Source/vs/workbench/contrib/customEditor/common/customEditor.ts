@@ -41,6 +41,7 @@ export interface CustomEditorCapabilities {
 }
 export interface ICustomEditorService {
 	_serviceBrand: any;
+
 	readonly models: ICustomEditorModelManager;
 
 	getCustomEditor(viewType: string): CustomEditorInfo | undefined;
@@ -50,6 +51,7 @@ export interface ICustomEditorService {
 	getContributedCustomEditors(resource: URI): CustomEditorInfoCollection;
 
 	getUserConfiguredCustomEditors(resource: URI): CustomEditorInfoCollection;
+
 	registerCustomEditorCapabilities(
 		viewType: string,
 		options: CustomEditorCapabilities,
@@ -71,26 +73,40 @@ export interface ICustomEditorModelManager {
 		resource: URI,
 		viewType: string,
 	): Promise<IReference<ICustomEditorModel>> | undefined;
+
 	add(
 		resource: URI,
 		viewType: string,
 		model: Promise<ICustomEditorModel>,
 	): Promise<IReference<ICustomEditorModel>>;
+
 	disposeAllModelsForView(viewType: string): void;
 }
 export interface ICustomEditorModel extends IDisposable {
 	readonly viewType: string;
+
 	readonly resource: URI;
+
 	readonly backupId: string | undefined;
+
 	readonly canHotExit: boolean;
+
 	isReadonly(): boolean | IMarkdownString;
+
 	readonly onDidChangeReadonly: Event<void>;
+
 	isOrphaned(): boolean;
+
 	readonly onDidChangeOrphaned: Event<void>;
+
 	isDirty(): boolean;
+
 	readonly onDidChangeDirty: Event<void>;
+
 	revert(options?: IRevertOptions): Promise<void>;
+
 	saveCustomEditor(options?: ISaveOptions): Promise<URI | undefined>;
+
 	saveCustomEditorAs(
 		resource: URI,
 		targetResource: URI,
@@ -107,25 +123,38 @@ export interface CustomEditorSelector {
 }
 export interface CustomEditorDescriptor {
 	readonly id: string;
+
 	readonly displayName: string;
+
 	readonly providerDisplayName: string;
+
 	readonly priority: RegisteredEditorPriority;
+
 	readonly selector: readonly CustomEditorSelector[];
 }
 export class CustomEditorInfo implements CustomEditorDescriptor {
 	public readonly id: string;
+
 	public readonly displayName: string;
+
 	public readonly providerDisplayName: string;
+
 	public readonly priority: RegisteredEditorPriority;
+
 	public readonly selector: readonly CustomEditorSelector[];
 
 	constructor(descriptor: CustomEditorDescriptor) {
 		this.id = descriptor.id;
+
 		this.displayName = descriptor.displayName;
+
 		this.providerDisplayName = descriptor.providerDisplayName;
+
 		this.priority = descriptor.priority;
+
 		this.selector = descriptor.selector;
 	}
+
 	matches(resource: URI): boolean {
 		return this.selector.some(
 			(selector) =>
@@ -140,6 +169,7 @@ export class CustomEditorInfoCollection {
 	constructor(editors: readonly CustomEditorInfo[]) {
 		this.allEditors = distinct(editors, (editor) => editor.id);
 	}
+
 	public get length(): number {
 		return this.allEditors.length;
 	}

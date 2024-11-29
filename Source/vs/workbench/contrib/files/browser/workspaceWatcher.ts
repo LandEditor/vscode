@@ -38,6 +38,7 @@ import { IHostService } from "../../../services/host/browser/host.js";
 
 export class WorkspaceWatcher extends Disposable {
 	static readonly ID = "workbench.contrib.workspaceWatcher";
+
 	private readonly watchedWorkspaces = new ResourceMap<IDisposable>(
 		(resource) => this.uriIdentityService.extUri.getComparisonKey(resource),
 	);
@@ -61,31 +62,38 @@ export class WorkspaceWatcher extends Disposable {
 		private readonly telemetryService: ITelemetryService,
 	) {
 		super();
+
 		this.registerListeners();
+
 		this.refresh();
 	}
+
 	private registerListeners(): void {
 		this._register(
 			this.contextService.onDidChangeWorkspaceFolders((e) =>
 				this.onDidChangeWorkspaceFolders(e),
 			),
 		);
+
 		this._register(
 			this.contextService.onDidChangeWorkbenchState(() =>
 				this.onDidChangeWorkbenchState(),
 			),
 		);
+
 		this._register(
 			this.configurationService.onDidChangeConfiguration((e) =>
 				this.onDidChangeConfiguration(e),
 			),
 		);
+
 		this._register(
 			this.fileService.onDidWatchError((error) =>
 				this.onDidWatchError(error),
 			),
 		);
 	}
+
 	private onDidChangeWorkspaceFolders(e: IWorkspaceFoldersChangeEvent): void {
 		// Removed workspace: Unwatch
 		for (const removed of e.removed) {
@@ -96,9 +104,11 @@ export class WorkspaceWatcher extends Disposable {
 			this.watchWorkspace(added);
 		}
 	}
+
 	private onDidChangeWorkbenchState(): void {
 		this.refresh();
 	}
+
 	private onDidChangeConfiguration(e: IConfigurationChangeEvent): void {
 		if (
 			e.affectsConfiguration("files.watcherExclude") ||
@@ -107,6 +117,7 @@ export class WorkspaceWatcher extends Disposable {
 			this.refresh();
 		}
 	}
+
 	private onDidWatchError(error: Error): void {
 		const msg = error.toString();
 
@@ -114,6 +125,7 @@ export class WorkspaceWatcher extends Disposable {
 		// Detect if we run into ENOSPC issues
 		if (msg.indexOf("ENOSPC") >= 0) {
 			reason = "ENOSPC";
+
 			this.notificationService.prompt(
 				Severity.Warning,
 				localize(
@@ -144,6 +156,7 @@ export class WorkspaceWatcher extends Disposable {
 		// Detect when the watcher throws an error unexpectedly
 		else if (msg.indexOf("EUNKNOWN") >= 0) {
 			reason = "EUNKNOWN";
+
 			this.notificationService.prompt(
 				Severity.Warning,
 				localize(
@@ -171,22 +184,29 @@ export class WorkspaceWatcher extends Disposable {
 		if (reason) {
 			type WatchErrorClassification = {
 				owner: "bpasero";
+
 				comment: "An event that fires when a watcher errors";
+
 				reason: {
 					classification: "SystemMetaData";
+
 					purpose: "PerformanceAndHealth";
+
 					comment: "The watcher error reason.";
 				};
 			};
+
 			type WatchErrorEvent = {
 				reason: string;
 			};
+
 			this.telemetryService.publicLog2<
 				WatchErrorEvent,
 				WatchErrorClassification
 			>("fileWatcherError", { reason });
 		}
 	}
+
 	private watchWorkspace(workspace: IWorkspaceFolder): void {
 		// Compute the watcher exclude rules from configuration
 		const excludes: string[] = [];
@@ -202,6 +222,7 @@ export class WorkspaceWatcher extends Disposable {
 				}
 			}
 		}
+
 		const pathsToWatch = new ResourceMap<URI>((uri) =>
 			this.uriIdentityService.extUri.getComparisonKey(uri),
 		);
@@ -231,6 +252,7 @@ export class WorkspaceWatcher extends Disposable {
 				// Relative: join against workspace folder
 				else {
 					const candidate = workspace.toResource(includePath);
+
 					pathsToWatch.set(candidate, candidate);
 				}
 			}
@@ -246,14 +268,18 @@ export class WorkspaceWatcher extends Disposable {
 				}),
 			);
 		}
+
 		this.watchedWorkspaces.set(workspace.uri, disposables);
 	}
+
 	private unwatchWorkspace(workspace: IWorkspaceFolder): void {
 		if (this.watchedWorkspaces.has(workspace.uri)) {
 			dispose(this.watchedWorkspaces.get(workspace.uri));
+
 			this.watchedWorkspaces.delete(workspace.uri);
 		}
 	}
+
 	private refresh(): void {
 		// Unwatch all first
 		this.unwatchWorkspaces();
@@ -262,14 +288,18 @@ export class WorkspaceWatcher extends Disposable {
 			this.watchWorkspace(folder);
 		}
 	}
+
 	private unwatchWorkspaces(): void {
 		for (const [, disposable] of this.watchedWorkspaces) {
 			disposable.dispose();
 		}
+
 		this.watchedWorkspaces.clear();
 	}
+
 	override dispose(): void {
 		super.dispose();
+
 		this.unwatchWorkspaces();
 	}
 }

@@ -94,6 +94,7 @@ export interface ITokenizationTextModelPart {
 	getLanguageIdAtPosition(lineNumber: number, column: number): string;
 
 	setLanguageId(languageId: string, source?: string): void;
+
 	readonly backgroundTokenizationState: BackgroundTokenizationState;
 }
 export class LineEditWithAdditionalLines {
@@ -106,6 +107,7 @@ export class LineEditWithAdditionalLines {
 			null,
 		);
 	}
+
 	constructor(
 		/**
 		 * The edit for the main line.
@@ -119,6 +121,7 @@ export class LineEditWithAdditionalLines {
 }
 export interface ITokenizeLineWithEditResult {
 	readonly mainLineTokens: LineTokens | null;
+
 	readonly additionalLines: LineTokens[] | null;
 }
 export const enum BackgroundTokenizationState {

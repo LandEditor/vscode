@@ -19,6 +19,7 @@ export class NativePolicyService
 	implements IPolicyService
 {
 	private throttler = new Throttler();
+
 	private readonly watcher = this._register(new MutableDisposable<Watcher>());
 
 	constructor(
@@ -28,6 +29,7 @@ export class NativePolicyService
 	) {
 		super();
 	}
+
 	protected async _updatePolicyDefinitions(
 		policyDefinitions: IStringDictionary<PolicyDefinition>,
 	): Promise<void> {
@@ -36,6 +38,7 @@ export class NativePolicyService
 		);
 
 		const { createWatcher } = await import("@vscode/policy-watcher");
+
 		await this.throttler.queue(
 			() =>
 				new Promise<void>((c, e) => {
@@ -45,6 +48,7 @@ export class NativePolicyService
 							policyDefinitions,
 							(update) => {
 								this._onDidPolicyChange(update);
+
 								c();
 							},
 						);
@@ -53,11 +57,13 @@ export class NativePolicyService
 							`NativePolicyService#_updatePolicyDefinitions - Error creating watcher:`,
 							err,
 						);
+
 						e(err);
 					}
 				}),
 		);
 	}
+
 	private _onDidPolicyChange(
 		update: PolicyUpdate<IStringDictionary<PolicyDefinition>>,
 	): void {
@@ -74,6 +80,7 @@ export class NativePolicyService
 				this.policies.set(key, value);
 			}
 		}
+
 		this._onDidChange.fire(Object.keys(update));
 	}
 }

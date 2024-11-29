@@ -94,29 +94,47 @@ import {
 
 export type ChangeEvent = {
 	readonly name?: boolean;
+
 	readonly icon?: boolean;
+
 	readonly flags?: boolean;
+
 	readonly workspaces?: boolean;
+
 	readonly active?: boolean;
+
 	readonly message?: boolean;
+
 	readonly copyFrom?: boolean;
+
 	readonly copyFromInfo?: boolean;
+
 	readonly copyFlags?: boolean;
+
 	readonly preview?: boolean;
+
 	readonly profile?: boolean;
+
 	readonly extensions?: boolean;
+
 	readonly snippets?: boolean;
+
 	readonly disabled?: boolean;
+
 	readonly newWindowProfile?: boolean;
 };
 
 export interface IProfileChildElement {
 	readonly handle: string;
+
 	readonly openAction?: IAction;
+
 	readonly actions?: {
 		readonly primary?: IAction[];
+
 		readonly contextMenu?: IAction[];
 	};
+
 	readonly checkbox?: ITreeItemCheckboxState;
 }
 
@@ -126,8 +144,11 @@ export interface IProfileResourceTypeElement extends IProfileChildElement {
 
 export interface IProfileResourceTypeChildElement extends IProfileChildElement {
 	readonly label: string;
+
 	readonly description?: string;
+
 	readonly resource?: URI;
+
 	readonly icon?: ThemeIcon;
 }
 
@@ -147,6 +168,7 @@ export abstract class AbstractUserDataProfileElement extends Disposable {
 	protected readonly _onDidChange = this._register(
 		new Emitter<ChangeEvent>(),
 	);
+
 	readonly onDidChange = this._onDidChange.event;
 
 	private readonly saveScheduler = this._register(
@@ -176,19 +198,27 @@ export abstract class AbstractUserDataProfileElement extends Disposable {
 		protected readonly instantiationService: IInstantiationService,
 	) {
 		super();
+
 		this._name = name;
+
 		this._icon = icon;
+
 		this._flags = flags;
+
 		this._workspaces = workspaces;
+
 		this._active = isActive;
+
 		this._register(
 			this.onDidChange((e) => {
 				if (!e.message) {
 					this.validate();
 				}
+
 				this.save();
 			}),
 		);
+
 		this._register(
 			this.extensionManagementService.onProfileAwareDidInstallExtensions(
 				(results) => {
@@ -211,6 +241,7 @@ export abstract class AbstractUserDataProfileElement extends Disposable {
 				},
 			),
 		);
+
 		this._register(
 			this.extensionManagementService.onProfileAwareDidUninstallExtension(
 				(e) => {
@@ -230,6 +261,7 @@ export abstract class AbstractUserDataProfileElement extends Disposable {
 				},
 			),
 		);
+
 		this._register(
 			this.extensionManagementService.onProfileAwareDidUpdateExtensionMetadata(
 				(e) => {
@@ -254,11 +286,13 @@ export abstract class AbstractUserDataProfileElement extends Disposable {
 	get name(): string {
 		return this._name;
 	}
+
 	set name(name: string) {
 		name = name.trim();
 
 		if (this._name !== name) {
 			this._name = name;
+
 			this._onDidChange.fire({ name: true });
 		}
 	}
@@ -268,9 +302,11 @@ export abstract class AbstractUserDataProfileElement extends Disposable {
 	get icon(): string | undefined {
 		return this._icon;
 	}
+
 	set icon(icon: string | undefined) {
 		if (this._icon !== icon) {
 			this._icon = icon;
+
 			this._onDidChange.fire({ icon: true });
 		}
 	}
@@ -280,6 +316,7 @@ export abstract class AbstractUserDataProfileElement extends Disposable {
 	get workspaces(): readonly URI[] | undefined {
 		return this._workspaces;
 	}
+
 	set workspaces(workspaces: readonly URI[] | undefined) {
 		if (
 			!arrays.equals(
@@ -289,6 +326,7 @@ export abstract class AbstractUserDataProfileElement extends Disposable {
 			)
 		) {
 			this._workspaces = workspaces;
+
 			this._onDidChange.fire({ workspaces: true });
 		}
 	}
@@ -298,9 +336,11 @@ export abstract class AbstractUserDataProfileElement extends Disposable {
 	get flags(): UseDefaultProfileFlags | undefined {
 		return this._flags;
 	}
+
 	set flags(flags: UseDefaultProfileFlags | undefined) {
 		if (!equals(this._flags, flags)) {
 			this._flags = flags;
+
 			this._onDidChange.fire({ flags: true });
 		}
 	}
@@ -310,9 +350,11 @@ export abstract class AbstractUserDataProfileElement extends Disposable {
 	get active(): boolean {
 		return this._active;
 	}
+
 	set active(active: boolean) {
 		if (this._active !== active) {
 			this._active = active;
+
 			this._onDidChange.fire({ active: true });
 		}
 	}
@@ -322,9 +364,11 @@ export abstract class AbstractUserDataProfileElement extends Disposable {
 	get message(): string | undefined {
 		return this._message;
 	}
+
 	set message(message: string | undefined) {
 		if (this._message !== message) {
 			this._message = message;
+
 			this._onDidChange.fire({ message: true });
 		}
 	}
@@ -334,9 +378,11 @@ export abstract class AbstractUserDataProfileElement extends Disposable {
 	get disabled(): boolean {
 		return this._disabled;
 	}
+
 	set disabled(saving: boolean) {
 		if (this._disabled !== saving) {
 			this._disabled = saving;
+
 			this._onDidChange.fire({ disabled: true });
 		}
 	}
@@ -353,6 +399,7 @@ export abstract class AbstractUserDataProfileElement extends Disposable {
 		} else {
 			delete flags[key];
 		}
+
 		this.flags = flags;
 	}
 
@@ -365,6 +412,7 @@ export abstract class AbstractUserDataProfileElement extends Disposable {
 
 			return;
 		}
+
 		if (
 			this.shouldValidateName() &&
 			this.name !== this.getInitialName() &&
@@ -380,6 +428,7 @@ export abstract class AbstractUserDataProfileElement extends Disposable {
 
 			return;
 		}
+
 		if (
 			this.flags &&
 			this.flags.settings &&
@@ -395,6 +444,7 @@ export abstract class AbstractUserDataProfileElement extends Disposable {
 
 			return;
 		}
+
 		this.message = undefined;
 	}
 
@@ -438,6 +488,7 @@ export abstract class AbstractUserDataProfileElement extends Disposable {
 				),
 			);
 		}
+
 		return this.getChildrenForResourceType(resourceType);
 	}
 
@@ -494,6 +545,7 @@ export abstract class AbstractUserDataProfileElement extends Disposable {
 
 				break;
 		}
+
 		return children.map<IProfileResourceTypeChildElement>((child) =>
 			this.toUserDataProfileResourceChildElement(child),
 		);
@@ -582,12 +634,15 @@ export abstract class AbstractUserDataProfileElement extends Disposable {
 		if (this.name !== profile.name) {
 			return true;
 		}
+
 		if (this.icon !== profile.icon) {
 			return true;
 		}
+
 		if (!equals(this.flags ?? {}, profile.useDefaultFlags ?? {})) {
 			return true;
 		}
+
 		if (
 			!arrays.equals(
 				this.workspaces ?? [],
@@ -597,6 +652,7 @@ export abstract class AbstractUserDataProfileElement extends Disposable {
 		) {
 			return true;
 		}
+
 		return false;
 	}
 
@@ -606,11 +662,13 @@ export abstract class AbstractUserDataProfileElement extends Disposable {
 		if (!this.hasUnsavedChanges(profile)) {
 			return;
 		}
+
 		this.validate();
 
 		if (this.message) {
 			return;
 		}
+
 		const useDefaultFlags: UseDefaultProfileFlags | undefined = this.flags
 			? this.flags.settings &&
 				this.flags.keybindings &&
@@ -636,9 +694,11 @@ export abstract class AbstractUserDataProfileElement extends Disposable {
 	}
 
 	abstract readonly titleButtons: [Action[], Action[]];
+
 	abstract readonly actions: [IAction[], IAction[]];
 
 	protected abstract doSave(): Promise<void>;
+
 	protected abstract getProfileToWatch(): IUserDataProfile | undefined;
 }
 
@@ -685,9 +745,11 @@ export class UserDataProfileElement extends AbstractUserDataProfileElement {
 			extensionManagementService,
 			instantiationService,
 		);
+
 		this._isNewWindowProfile =
 			this.configurationService.getValue(CONFIG_NEW_WINDOW_PROFILE) ===
 			this.profile.name;
+
 		this._register(
 			configurationService.onDidChangeConfiguration((e) => {
 				if (e.affectsConfiguration(CONFIG_NEW_WINDOW_PROFILE)) {
@@ -698,6 +760,7 @@ export class UserDataProfileElement extends AbstractUserDataProfileElement {
 				}
 			}),
 		);
+
 		this._register(
 			this.userDataProfileService.onDidChangeCurrentProfile(
 				() =>
@@ -706,18 +769,23 @@ export class UserDataProfileElement extends AbstractUserDataProfileElement {
 						this.profile.id),
 			),
 		);
+
 		this._register(
 			this.userDataProfilesService.onDidChangeProfiles(({ updated }) => {
 				const profile = updated.find((p) => p.id === this.profile.id);
 
 				if (profile) {
 					this._profile = profile;
+
 					this.reset();
+
 					this._onDidChange.fire({ profile: true });
 				}
 			}),
 		);
+
 		this._register(fileService.watch(this.profile.snippetsHome));
+
 		this._register(
 			fileService.onDidFilesChange((e) => {
 				if (e.affects(this.profile.snippetsHome)) {
@@ -733,8 +801,11 @@ export class UserDataProfileElement extends AbstractUserDataProfileElement {
 
 	reset(): void {
 		this.name = this._profile.name;
+
 		this.icon = this._profile.icon;
+
 		this.flags = this._profile.useDefaultFlags;
+
 		this.workspaces = this._profile.workspaces;
 	}
 
@@ -744,9 +815,11 @@ export class UserDataProfileElement extends AbstractUserDataProfileElement {
 		for (const workspace of toAdd) {
 			workspaces.add(workspace);
 		}
+
 		for (const workspace of toRemove) {
 			workspaces.delete(workspace);
 		}
+
 		this.workspaces = [...workspaces.values()];
 	}
 
@@ -769,9 +842,11 @@ export class UserDataProfileElement extends AbstractUserDataProfileElement {
 	get isNewWindowProfile(): boolean {
 		return this._isNewWindowProfile;
 	}
+
 	set isNewWindowProfile(isNewWindowProfile: boolean) {
 		if (this._isNewWindowProfile !== isNewWindowProfile) {
 			this._isNewWindowProfile = isNewWindowProfile;
+
 			this._onDidChange.fire({ newWindowProfile: true });
 		}
 	}
@@ -837,6 +912,7 @@ export class UserDataProfileElement extends AbstractUserDataProfileElement {
 				]),
 			);
 		}
+
 		return this.getChildrenFromProfile(this.profile, resourceType);
 	}
 
@@ -856,9 +932,11 @@ export class NewProfileElement extends AbstractUserDataProfileElement {
 	}
 
 	private templatePromise: CancelablePromise<void> | undefined;
+
 	private template: IUserDataProfileTemplate | null = null;
 
 	private defaultName: string;
+
 	private defaultIcon: string | undefined;
 
 	constructor(
@@ -899,16 +977,22 @@ export class NewProfileElement extends AbstractUserDataProfileElement {
 			extensionManagementService,
 			instantiationService,
 		);
+
 		this.defaultName = name;
+
 		this._copyFrom = copyFrom;
+
 		this._copyFlags = this.getCopyFlagsFrom(copyFrom);
+
 		this.initialize();
+
 		this._register(
 			this.fileService.registerProvider(
 				USER_DATA_PROFILE_TEMPLATE_PREVIEW_SCHEME,
 				this._register(new InMemoryFileSystemProvider()),
 			),
 		);
+
 		this._register(
 			toDisposable(() => {
 				if (this.previewProfile) {
@@ -925,17 +1009,23 @@ export class NewProfileElement extends AbstractUserDataProfileElement {
 	get copyFrom(): IUserDataProfile | URI | undefined {
 		return this._copyFrom;
 	}
+
 	set copyFrom(copyFrom: IUserDataProfile | URI | undefined) {
 		if (this._copyFrom !== copyFrom) {
 			this._copyFrom = copyFrom;
+
 			this._onDidChange.fire({ copyFrom: true });
+
 			this.flags = undefined;
+
 			this.copyFlags = this.getCopyFlagsFrom(copyFrom);
 
 			if (copyFrom instanceof URI) {
 				this.templatePromise?.cancel();
+
 				this.templatePromise = undefined;
 			}
+
 			this.initialize();
 		}
 	}
@@ -945,9 +1035,11 @@ export class NewProfileElement extends AbstractUserDataProfileElement {
 	get copyFlags(): ProfileResourceTypeFlags | undefined {
 		return this._copyFlags;
 	}
+
 	set copyFlags(flags: ProfileResourceTypeFlags | undefined) {
 		if (!equals(this._copyFlags, flags)) {
 			this._copyFlags = flags;
+
 			this._onDidChange.fire({ copyFlags: true });
 		}
 	}
@@ -955,26 +1047,32 @@ export class NewProfileElement extends AbstractUserDataProfileElement {
 	private readonly previewProfileWatchDisposables = this._register(
 		new DisposableStore(),
 	);
+
 	private _previewProfile: IUserDataProfile | undefined;
 
 	get previewProfile(): IUserDataProfile | undefined {
 		return this._previewProfile;
 	}
+
 	set previewProfile(profile: IUserDataProfile | undefined) {
 		if (this._previewProfile !== profile) {
 			this._previewProfile = profile;
+
 			this._onDidChange.fire({ preview: true });
+
 			this.previewProfileWatchDisposables.clear();
 
 			if (this._previewProfile) {
 				this.previewProfileWatchDisposables.add(
 					this.fileService.watch(this._previewProfile.snippetsHome),
 				);
+
 				this.previewProfileWatchDisposables.add(
 					this.fileService.onDidFilesChange((e) => {
 						if (!this._previewProfile) {
 							return;
 						}
+
 						if (e.affects(this._previewProfile.snippetsHome)) {
 							this._onDidChange.fire({ snippets: true });
 						}
@@ -1018,31 +1116,39 @@ export class NewProfileElement extends AbstractUserDataProfileElement {
 					if (this.defaultName === this.name) {
 						this.name = this.defaultName = this.template.name ?? "";
 					}
+
 					if (this.defaultIcon === this.icon) {
 						this.icon = this.defaultIcon = this.template.icon;
 					}
+
 					this.setCopyFlag(
 						ProfileResourceType.Settings,
 						!!this.template.settings,
 					);
+
 					this.setCopyFlag(
 						ProfileResourceType.Keybindings,
 						!!this.template.keybindings,
 					);
+
 					this.setCopyFlag(
 						ProfileResourceType.Tasks,
 						!!this.template.tasks,
 					);
+
 					this.setCopyFlag(
 						ProfileResourceType.Snippets,
 						!!this.template.snippets,
 					);
+
 					this.setCopyFlag(
 						ProfileResourceType.Extensions,
 						!!this.template.extensions,
 					);
+
 					this._onDidChange.fire({ copyFromInfo: true });
 				}
+
 				return;
 			}
 
@@ -1054,14 +1160,21 @@ export class NewProfileElement extends AbstractUserDataProfileElement {
 						this.copyFrom.name,
 					);
 				}
+
 				if (this.defaultIcon === this.icon) {
 					this.icon = this.defaultIcon = this.copyFrom.icon;
 				}
+
 				this.setCopyFlag(ProfileResourceType.Settings, true);
+
 				this.setCopyFlag(ProfileResourceType.Keybindings, true);
+
 				this.setCopyFlag(ProfileResourceType.Tasks, true);
+
 				this.setCopyFlag(ProfileResourceType.Snippets, true);
+
 				this.setCopyFlag(ProfileResourceType.Extensions, true);
+
 				this._onDidChange.fire({ copyFromInfo: true });
 
 				return;
@@ -1070,14 +1183,21 @@ export class NewProfileElement extends AbstractUserDataProfileElement {
 			if (this.defaultName === this.name) {
 				this.name = this.defaultName = localize("untitled", "Untitled");
 			}
+
 			if (this.defaultIcon === this.icon) {
 				this.icon = this.defaultIcon = undefined;
 			}
+
 			this.setCopyFlag(ProfileResourceType.Settings, false);
+
 			this.setCopyFlag(ProfileResourceType.Keybindings, false);
+
 			this.setCopyFlag(ProfileResourceType.Tasks, false);
+
 			this.setCopyFlag(ProfileResourceType.Snippets, false);
+
 			this.setCopyFlag(ProfileResourceType.Extensions, false);
+
 			this._onDidChange.fire({ copyFromInfo: true });
 		} finally {
 			this.disabled = false;
@@ -1097,6 +1217,7 @@ export class NewProfileElement extends AbstractUserDataProfileElement {
 				}
 			});
 		}
+
 		await this.templatePromise;
 
 		return this.template;
@@ -1121,6 +1242,7 @@ export class NewProfileElement extends AbstractUserDataProfileElement {
 					return !!this.template.extensions;
 			}
 		}
+
 		return true;
 	}
 
@@ -1130,7 +1252,9 @@ export class NewProfileElement extends AbstractUserDataProfileElement {
 
 	setCopyFlag(key: ProfileResourceType, value: boolean): void {
 		const flags = this.copyFlags ? { ...this.copyFlags } : {};
+
 		flags[key] = value;
+
 		this.copyFlags = flags;
 	}
 
@@ -1138,9 +1262,11 @@ export class NewProfileElement extends AbstractUserDataProfileElement {
 		if (isUserDataProfile(this.copyFrom)) {
 			return this.copyFrom.name;
 		}
+
 		if (this.copyFrom instanceof URI) {
 			return this.copyFromTemplates.get(this.copyFrom);
 		}
+
 		return undefined;
 	}
 
@@ -1153,29 +1279,35 @@ export class NewProfileElement extends AbstractUserDataProfileElement {
 				resourceType,
 			);
 		}
+
 		if (!this.getCopyFlag(resourceType)) {
 			return [];
 		}
+
 		if (this.previewProfile) {
 			return this.getChildrenFromProfile(
 				this.previewProfile,
 				resourceType,
 			);
 		}
+
 		if (this.copyFrom instanceof URI) {
 			await this.resolveTemplate(this.copyFrom);
 
 			if (!this.template) {
 				return [];
 			}
+
 			return this.getChildrenFromProfileTemplate(
 				this.template,
 				resourceType,
 			);
 		}
+
 		if (this.copyFrom) {
 			return this.getChildrenFromProfile(this.copyFrom, resourceType);
 		}
+
 		return [];
 	}
 
@@ -1209,6 +1341,7 @@ export class NewProfileElement extends AbstractUserDataProfileElement {
 
 					return this.getChildrenFromProfile(profile, resourceType);
 				}
+
 				return [];
 
 			case ProfileResourceType.Keybindings:
@@ -1219,6 +1352,7 @@ export class NewProfileElement extends AbstractUserDataProfileElement {
 
 					return this.getChildrenFromProfile(profile, resourceType);
 				}
+
 				return [];
 
 			case ProfileResourceType.Snippets:
@@ -1229,6 +1363,7 @@ export class NewProfileElement extends AbstractUserDataProfileElement {
 
 					return this.getChildrenFromProfile(profile, resourceType);
 				}
+
 				return [];
 
 			case ProfileResourceType.Tasks:
@@ -1239,6 +1374,7 @@ export class NewProfileElement extends AbstractUserDataProfileElement {
 
 					return this.getChildrenFromProfile(profile, resourceType);
 				}
+
 				return [];
 
 			case ProfileResourceType.Extensions:
@@ -1254,8 +1390,10 @@ export class NewProfileElement extends AbstractUserDataProfileElement {
 						this.toUserDataProfileResourceChildElement(child),
 					);
 				}
+
 				return [];
 		}
+
 		return [];
 	}
 
@@ -1280,6 +1418,7 @@ export class NewProfileElement extends AbstractUserDataProfileElement {
 
 export class UserDataProfilesEditorModel extends EditorModel {
 	private static INSTANCE: UserDataProfilesEditorModel | undefined;
+
 	static getInstance(
 		instantiationService: IInstantiationService,
 	): UserDataProfilesEditorModel {
@@ -1289,6 +1428,7 @@ export class UserDataProfilesEditorModel extends EditorModel {
 					UserDataProfilesEditorModel,
 				);
 		}
+
 		return UserDataProfilesEditorModel.INSTANCE;
 	}
 
@@ -1301,21 +1441,25 @@ export class UserDataProfilesEditorModel extends EditorModel {
 				if (a instanceof NewProfileElement) {
 					return 1;
 				}
+
 				if (b instanceof NewProfileElement) {
 					return -1;
 				}
+
 				if (
 					a instanceof UserDataProfileElement &&
 					a.profile.isDefault
 				) {
 					return -1;
 				}
+
 				if (
 					b instanceof UserDataProfileElement &&
 					b.profile.isDefault
 				) {
 					return 1;
 				}
+
 				return a.name.localeCompare(b.name);
 			});
 	}
@@ -1325,6 +1469,7 @@ export class UserDataProfilesEditorModel extends EditorModel {
 	private _onDidChange = this._register(
 		new Emitter<AbstractUserDataProfileElement | undefined>(),
 	);
+
 	readonly onDidChange = this._onDidChange.event;
 
 	private templates: Promise<readonly IProfileTemplateInfo[]> | undefined;
@@ -1353,6 +1498,7 @@ export class UserDataProfilesEditorModel extends EditorModel {
 				this._profiles.push(this.createProfileElement(profile));
 			}
 		}
+
 		this._register(
 			toDisposable(() =>
 				this._profiles
@@ -1360,6 +1506,7 @@ export class UserDataProfilesEditorModel extends EditorModel {
 					.map(([, disposables]) => disposables.dispose()),
 			),
 		);
+
 		this._register(
 			userDataProfilesService.onDidChangeProfiles((e) =>
 				this.onDidChangeProfiles(e),
@@ -1376,13 +1523,16 @@ export class UserDataProfilesEditorModel extends EditorModel {
 				profile.name !== this.newProfileElement?.name
 			) {
 				changed = true;
+
 				this._profiles.push(this.createProfileElement(profile));
 			}
 		}
+
 		for (const profile of e.removed) {
 			if (profile.id === this.newProfileElement?.previewProfile?.id) {
 				this.newProfileElement.previewProfile = undefined;
 			}
+
 			const index = this._profiles.findIndex(
 				([p]) =>
 					p instanceof UserDataProfileElement &&
@@ -1391,11 +1541,13 @@ export class UserDataProfilesEditorModel extends EditorModel {
 
 			if (index !== -1) {
 				changed = true;
+
 				this._profiles
 					.splice(index, 1)
 					.map(([, disposables]) => disposables.dispose());
 			}
 		}
+
 		if (changed) {
 			this._onDidChange.fire(undefined);
 		}
@@ -1406,6 +1558,7 @@ export class UserDataProfilesEditorModel extends EditorModel {
 			this.templates =
 				this.userDataProfileManagementService.getBuiltinProfileTemplates();
 		}
+
 		return this.templates;
 	}
 
@@ -1474,15 +1627,20 @@ export class UserDataProfilesEditorModel extends EditorModel {
 		);
 
 		const primaryActions: IAction[] = [];
+
 		primaryActions.push(activateAction);
+
 		primaryActions.push(newWindowAction);
 
 		const secondaryActions: IAction[] = [];
+
 		secondaryActions.push(copyFromProfileAction);
+
 		secondaryActions.push(exportAction);
 
 		if (!profile.isDefault) {
 			secondaryActions.push(new Separator());
+
 			secondaryActions.push(deleteAction);
 		}
 
@@ -1498,6 +1656,7 @@ export class UserDataProfilesEditorModel extends EditorModel {
 		activateAction.enabled =
 			this.userDataProfileService.currentProfile.id !==
 			profileElement.profile.id;
+
 		disposables.add(
 			this.userDataProfileService.onDidChangeCurrentProfile(
 				() =>
@@ -1527,6 +1686,7 @@ export class UserDataProfilesEditorModel extends EditorModel {
 			if (!result.confirmed) {
 				return;
 			}
+
 			this.revert();
 		}
 
@@ -1546,6 +1706,7 @@ export class UserDataProfilesEditorModel extends EditorModel {
 			const disposables = new DisposableStore();
 
 			const cancellationTokenSource = new CancellationTokenSource();
+
 			disposables.add(
 				toDisposable(() => cancellationTokenSource.dispose(true)),
 			);
@@ -1567,6 +1728,7 @@ export class UserDataProfilesEditorModel extends EditorModel {
 						),
 				),
 			);
+
 			primaryActions.push(createAction);
 
 			if (isWeb && copyFrom instanceof URI && isProfileURL(copyFrom)) {
@@ -1587,6 +1749,7 @@ export class UserDataProfilesEditorModel extends EditorModel {
 					),
 				);
 			}
+
 			const cancelAction = disposables.add(
 				new Action(
 					"userDataProfile.cancel",
@@ -1596,6 +1759,7 @@ export class UserDataProfilesEditorModel extends EditorModel {
 					() => this.discardNewProfile(),
 				),
 			);
+
 			secondaryActions.push(cancelAction);
 
 			const previewProfileAction = disposables.add(
@@ -1607,6 +1771,7 @@ export class UserDataProfilesEditorModel extends EditorModel {
 					() => this.previewNewProfile(cancellationTokenSource.token),
 				),
 			);
+
 			secondaryActions.push(previewProfileAction);
 
 			const exportAction = disposables.add(
@@ -1618,6 +1783,7 @@ export class UserDataProfilesEditorModel extends EditorModel {
 					() => this.exportNewProfile(cancellationTokenSource.token),
 				),
 			);
+
 			this.newProfileElement = disposables.add(
 				this.instantiationService.createInstance(
 					NewProfileElement,
@@ -1644,18 +1810,22 @@ export class UserDataProfilesEditorModel extends EditorModel {
 					}
 				}
 			};
+
 			updateCreateActionLabel();
+
 			disposables.add(
 				this.newProfileElement.onDidChange((e) => {
 					if (e.preview || e.disabled || e.message) {
 						createAction.enabled =
 							!this.newProfileElement?.disabled &&
 							!this.newProfileElement?.message;
+
 						previewProfileAction.enabled =
 							!this.newProfileElement?.previewProfile &&
 							!this.newProfileElement?.disabled &&
 							!this.newProfileElement?.message;
 					}
+
 					if (e.name || e.copyFrom) {
 						updateCreateActionLabel();
 
@@ -1665,20 +1835,26 @@ export class UserDataProfilesEditorModel extends EditorModel {
 					}
 				}),
 			);
+
 			disposables.add(
 				this.userDataProfilesService.onDidChangeProfiles((e) => {
 					updateCreateActionLabel();
+
 					this.newProfileElement?.validate();
 				}),
 			);
+
 			this._profiles.push([this.newProfileElement, disposables]);
+
 			this._onDidChange.fire(this.newProfileElement);
 		}
+
 		return this.newProfileElement;
 	}
 
 	revert(): void {
 		this.removeNewProfile();
+
 		this._onDidChange.fire(undefined);
 	}
 
@@ -1693,6 +1869,7 @@ export class UserDataProfilesEditorModel extends EditorModel {
 					.splice(index, 1)
 					.map(([, disposables]) => disposables.dispose());
 			}
+
 			this.newProfileElement = undefined;
 		}
 	}
@@ -1701,9 +1878,11 @@ export class UserDataProfilesEditorModel extends EditorModel {
 		if (!this.newProfileElement) {
 			return;
 		}
+
 		if (this.newProfileElement.previewProfile) {
 			return;
 		}
+
 		const profile = await this.saveNewProfile(true, token);
 
 		if (profile) {
@@ -1723,9 +1902,11 @@ export class UserDataProfilesEditorModel extends EditorModel {
 		if (!this.newProfileElement) {
 			return;
 		}
+
 		if (!isUserDataProfile(this.newProfileElement.copyFrom)) {
 			return;
 		}
+
 		const profile = toUserDataProfile(
 			generateUuid(),
 			this.newProfileElement.name,
@@ -1737,6 +1918,7 @@ export class UserDataProfilesEditorModel extends EditorModel {
 			},
 			this.userDataProfilesService.defaultProfile,
 		);
+
 		await this.userDataProfileImportExportService.exportProfile(
 			profile,
 			this.newProfileElement.copyFlags,
@@ -1786,13 +1968,18 @@ export class UserDataProfilesEditorModel extends EditorModel {
 
 				type CreateProfileInfoClassification = {
 					owner: "sandy081";
+
 					comment: "Report when profile is about to be created";
+
 					source: {
 						classification: "SystemMetaData";
+
 						purpose: "FeatureInsight";
+
 						comment: "Type of profile source";
 					};
 				};
+
 				type CreateProfileInfoEvent = {
 					source: string | undefined;
 				};
@@ -1820,6 +2007,7 @@ export class UserDataProfilesEditorModel extends EditorModel {
 							"userDataProfile.createFromTemplate",
 							createProfileTelemetryData,
 						);
+
 						profile =
 							await this.userDataProfileImportExportService.createProfileFromTemplate(
 								template,
@@ -1842,6 +2030,7 @@ export class UserDataProfilesEditorModel extends EditorModel {
 						"userDataProfile.createFromProfile",
 						createProfileTelemetryData,
 					);
+
 					profile =
 						await this.userDataProfileImportExportService.createFromProfile(
 							copyFrom,
@@ -1863,6 +2052,7 @@ export class UserDataProfilesEditorModel extends EditorModel {
 						"userDataProfile.createEmptyProfile",
 						createProfileTelemetryData,
 					);
+
 					profile =
 						await this.userDataProfileManagementService.createProfile(
 							name,
@@ -1886,6 +2076,7 @@ export class UserDataProfilesEditorModel extends EditorModel {
 					// ignore
 				}
 			}
+
 			return;
 		}
 
@@ -1915,6 +2106,7 @@ export class UserDataProfilesEditorModel extends EditorModel {
 		if (!this.newProfileElement) {
 			return;
 		}
+
 		if (this.newProfileElement.previewProfile) {
 			await this.userDataProfileManagementService.removeProfile(
 				this.newProfileElement.previewProfile,
@@ -1922,7 +2114,9 @@ export class UserDataProfilesEditorModel extends EditorModel {
 
 			return;
 		}
+
 		this.removeNewProfile();
+
 		this._onDidChange.fire(undefined);
 	}
 

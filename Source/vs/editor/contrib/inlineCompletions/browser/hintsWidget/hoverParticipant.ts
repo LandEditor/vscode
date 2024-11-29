@@ -47,6 +47,7 @@ export class InlineCompletionsHover implements IHoverPart {
 		public readonly range: Range,
 		public readonly controller: InlineCompletionsController,
 	) {}
+
 	public isValidForHoverAnchor(anchor: HoverAnchor): boolean {
 		return (
 			anchor.type === HoverAnchorType.Range &&
@@ -73,12 +74,14 @@ export class InlineCompletionsHoverParticipant
 		@ITelemetryService
 		private readonly _telemetryService: ITelemetryService,
 	) {}
+
 	suggestHoverAnchor(mouseEvent: IEditorMouseEvent): HoverAnchor | null {
 		const controller = InlineCompletionsController.get(this._editor);
 
 		if (!controller) {
 			return null;
 		}
+
 		const target = mouseEvent.target;
 
 		if (target.type === MouseTargetType.CONTENT_VIEW_ZONE) {
@@ -103,6 +106,7 @@ export class InlineCompletionsHoverParticipant
 				);
 			}
 		}
+
 		if (target.type === MouseTargetType.CONTENT_EMPTY) {
 			// handle the case where the mouse is over the empty portion of a line following ghost text
 			if (controller.shouldShowHoverAt(target.range)) {
@@ -116,6 +120,7 @@ export class InlineCompletionsHoverParticipant
 				);
 			}
 		}
+
 		if (target.type === MouseTargetType.CONTENT_TEXT) {
 			// handle the case where the mouse is directly over ghost text
 			const mightBeForeignElement = target.detail.mightBeForeignElement;
@@ -134,8 +139,10 @@ export class InlineCompletionsHoverParticipant
 				);
 			}
 		}
+
 		return null;
 	}
+
 	computeSync(
 		anchor: HoverAnchor,
 		lineDecorations: IModelDecoration[],
@@ -146,13 +153,16 @@ export class InlineCompletionsHoverParticipant
 		) {
 			return [];
 		}
+
 		const controller = InlineCompletionsController.get(this._editor);
 
 		if (controller && controller.shouldShowHoverAt(anchor.range)) {
 			return [new InlineCompletionsHover(this, anchor.range, controller)];
 		}
+
 		return [];
 	}
+
 	renderHoverParts(
 		context: IEditorHoverRenderContext,
 		hoverParts: InlineCompletionsHover[],
@@ -160,10 +170,12 @@ export class InlineCompletionsHoverParticipant
 		const disposables = new DisposableStore();
 
 		const part = hoverParts[0];
+
 		this._telemetryService.publicLog2<
 			{},
 			{
 				owner: "hediet";
+
 				comment: "This event tracks whenever an inline completion hover is shown.";
 			}
 		>("inlineCompletionHover.shown");
@@ -176,6 +188,7 @@ export class InlineCompletionsHoverParticipant
 		) {
 			disposables.add(this.renderScreenReaderText(context, part));
 		}
+
 		const model = part.controller.model.get()!;
 
 		const w = this._instantiationService.createInstance(
@@ -189,8 +202,11 @@ export class InlineCompletionsHoverParticipant
 		);
 
 		const widgetNode: HTMLElement = w.getDomNode();
+
 		context.fragment.appendChild(widgetNode);
+
 		model.triggerExplicitly();
+
 		disposables.add(w);
 
 		const renderedHoverPart: IRenderedHoverPart<InlineCompletionsHover> = {
@@ -203,12 +219,14 @@ export class InlineCompletionsHoverParticipant
 
 		return new RenderedHoverParts([renderedHoverPart]);
 	}
+
 	getAccessibleContent(hoverPart: InlineCompletionsHover): string {
 		return nls.localize(
 			"hoverAccessibilityStatusBar",
 			"There are inline completions here",
 		);
 	}
+
 	private renderScreenReaderText(
 		context: IEditorHoverRenderContext,
 		part: InlineCompletionsHover,
@@ -237,6 +255,7 @@ export class InlineCompletionsHoverParticipant
 				renderer.onDidRenderAsync(() => {
 					hoverContentsElement.className =
 						"hover-contents code-hover-contents";
+
 					context.onContentsChanged();
 				}),
 			);
@@ -253,8 +272,10 @@ export class InlineCompletionsHoverParticipant
 						.appendCodeblock("text", code),
 				),
 			);
+
 			hoverContentsElement.replaceChildren(renderedContents.element);
 		};
+
 		disposables.add(
 			autorun((reader) => {
 				/** @description update hover */
@@ -266,12 +287,14 @@ export class InlineCompletionsHoverParticipant
 					const lineText = this._editor
 						.getModel()!
 						.getLineContent(ghostText.lineNumber);
+
 					render(ghostText.renderForScreenReader(lineText));
 				} else {
 					dom.reset(hoverContentsElement);
 				}
 			}),
 		);
+
 		context.fragment.appendChild(markdownHoverElement);
 
 		return disposables;

@@ -46,12 +46,15 @@ interface INavigableContainer {
 	 * focused, and blurred if all parts being blurred.
 	 */
 	readonly focusNotifiers: readonly IFocusNotifier[];
+
 	readonly name?: string; // for debugging
 	focusPreviousWidget(): void;
+
 	focusNextWidget(): void;
 }
 interface IFocusNotifier {
 	readonly onDidFocus: Event<any>;
+
 	readonly onDidBlur: Event<any>;
 }
 function handleFocusEventsGroup(
@@ -70,10 +73,12 @@ function handleFocusEventsGroup(
 					if (!focusedIndices.size) {
 						handler(true);
 					}
+
 					focusedIndices.add(index);
 				}),
 				events.onDidBlur(() => {
 					onPartFocusChange?.(index, "blur");
+
 					focusedIndices.delete(index);
 
 					if (!focusedIndices.size) {
@@ -91,9 +96,13 @@ const NavigableContainerFocusedContextKey = new RawContextKey<boolean>(
 );
 class NavigableContainerManager implements IDisposable {
 	static readonly ID = "workbench.contrib.navigableContainerManager";
+
 	private static INSTANCE: NavigableContainerManager | undefined;
+
 	private readonly containers = new Set<INavigableContainer>();
+
 	private lastContainer: INavigableContainer | undefined;
+
 	private focused: IContextKey<boolean>;
 
 	constructor(
@@ -106,30 +115,39 @@ class NavigableContainerManager implements IDisposable {
 	) {
 		this.focused =
 			NavigableContainerFocusedContextKey.bindTo(contextKeyService);
+
 		NavigableContainerManager.INSTANCE = this;
 	}
+
 	dispose(): void {
 		this.containers.clear();
+
 		this.focused.reset();
+
 		NavigableContainerManager.INSTANCE = undefined;
 	}
+
 	private get debugEnabled(): boolean {
 		return this.configurationService.getValue(
 			"workbench.navigibleContainer.enableDebug",
 		);
 	}
+
 	private log(msg: string, ...args: any[]): void {
 		if (this.debugEnabled) {
 			this.logService.debug(msg, ...args);
 		}
 	}
+
 	static register(container: INavigableContainer): IDisposable {
 		const instance = this.INSTANCE;
 
 		if (!instance) {
 			return Disposable.None;
 		}
+
 		instance.containers.add(container);
+
 		instance.log("NavigableContainerManager.register", container.name);
 
 		return combinedDisposable(
@@ -141,7 +159,9 @@ class NavigableContainerManager implements IDisposable {
 							"NavigableContainerManager.focus",
 							container.name,
 						);
+
 						instance.focused.set(true);
+
 						instance.lastContainer = container;
 					} else {
 						instance.log(
@@ -152,6 +172,7 @@ class NavigableContainerManager implements IDisposable {
 
 						if (instance.lastContainer === container) {
 							instance.focused.set(false);
+
 							instance.lastContainer = undefined;
 						}
 					}
@@ -167,6 +188,7 @@ class NavigableContainerManager implements IDisposable {
 			),
 			toDisposable(() => {
 				instance.containers.delete(container);
+
 				instance.log(
 					"NavigableContainerManager.unregister",
 					container.name,
@@ -175,11 +197,13 @@ class NavigableContainerManager implements IDisposable {
 
 				if (instance.lastContainer === container) {
 					instance.focused.set(false);
+
 					instance.lastContainer = undefined;
 				}
 			}),
 		);
 	}
+
 	static getActive(): INavigableContainer | undefined {
 		return this.INSTANCE?.lastContainer;
 	}
@@ -207,6 +231,7 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
 	primary: KeyMod.CtrlCmd | KeyCode.UpArrow,
 	handler: () => {
 		const activeContainer = NavigableContainerManager.getActive();
+
 		activeContainer?.focusPreviousWidget();
 	},
 });
@@ -223,6 +248,7 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
 	primary: KeyMod.CtrlCmd | KeyCode.DownArrow,
 	handler: () => {
 		const activeContainer = NavigableContainerManager.getActive();
+
 		activeContainer?.focusNextWidget();
 	},
 });

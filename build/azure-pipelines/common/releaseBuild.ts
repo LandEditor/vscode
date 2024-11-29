@@ -14,10 +14,12 @@ function getEnv(name: string): string {
 	if (typeof result === "undefined") {
 		throw new Error("Missing env: " + name);
 	}
+
 	return result;
 }
 interface Config {
 	id: string;
+
 	frozen: boolean;
 }
 function createDefaultConfig(quality: string): Config {
@@ -41,6 +43,7 @@ async function getConfig(
 	if (res.resources.length === 0) {
 		return createDefaultConfig(quality);
 	}
+
 	return res.resources[0] as Config;
 }
 async function main(force: boolean): Promise<void> {
@@ -76,20 +79,24 @@ async function main(force: boolean): Promise<void> {
 	console.log(`Releasing build ${commit}...`);
 
 	const scripts = client.database("builds").container(quality).scripts;
+
 	await retry(() =>
 		scripts.storedProcedure("releaseBuild").execute("", [commit]),
 	);
 }
 
 const [, , force] = process.argv;
+
 console.log(process.argv);
 main(/^true$/i.test(force)).then(
 	() => {
 		console.log("Build successfully released");
+
 		process.exit(0);
 	},
 	(err) => {
 		console.error(err);
+
 		process.exit(1);
 	},
 );

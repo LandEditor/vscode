@@ -107,6 +107,7 @@ export interface ITerminalProfileResolverService {
 		shellLaunchConfig: IShellLaunchConfig,
 		os: OperatingSystem,
 	): void;
+
 	resolveShellLaunchConfig(
 		shellLaunchConfig: IShellLaunchConfig,
 		options: IShellLaunchConfigResolveOptions,
@@ -137,8 +138,11 @@ export const ShellIntegrationExitCode = 633;
 
 export interface IRegisterContributedProfileArgs {
 	extensionIdentifier: string;
+
 	id: string;
+
 	title: string;
+
 	options: ICreateContributedTerminalProfileOptions;
 }
 
@@ -148,21 +152,27 @@ export const ITerminalProfileService = createDecorator<ITerminalProfileService>(
 
 export interface ITerminalProfileService {
 	readonly _serviceBrand: undefined;
+
 	readonly availableProfiles: ITerminalProfile[];
+
 	readonly contributedProfiles: IExtensionTerminalProfile[];
+
 	readonly profilesReady: Promise<void>;
 
 	getPlatformKey(): Promise<string>;
+
 	refreshAvailableProfiles(): void;
 
 	getDefaultProfileName(): string | undefined;
 
 	getDefaultProfile(os?: OperatingSystem): ITerminalProfile | undefined;
+
 	onDidChangeAvailableProfiles: Event<ITerminalProfile[]>;
 
 	getContributedDefaultProfile(
 		shellLaunchConfig: IShellLaunchConfig,
 	): Promise<IExtensionTerminalProfile | undefined>;
+
 	registerContributedProfile(
 		args: IRegisterContributedProfileArgs,
 	): Promise<void>;
@@ -171,6 +181,7 @@ export interface ITerminalProfileService {
 		extensionIdentifier: string,
 		id: string,
 	): ITerminalProfileProvider | undefined;
+
 	registerTerminalProfileProvider(
 		extensionIdentifier: string,
 		id: string,
@@ -186,7 +197,9 @@ export interface ITerminalProfileProvider {
 
 export interface IShellLaunchConfigResolveOptions {
 	remoteAuthority: string | undefined;
+
 	os: OperatingSystem;
+
 	allowAutomationShell?: boolean;
 }
 
@@ -194,7 +207,9 @@ export type FontWeight = "normal" | "bold" | number;
 
 export interface ITerminalProfiles {
 	linux: { [key: string]: ITerminalProfileObject };
+
 	osx: { [key: string]: ITerminalProfileObject };
+
 	windows: { [key: string]: ITerminalProfileObject };
 }
 
@@ -213,109 +228,184 @@ export interface ICompleteTerminalConfiguration {
 export interface ITerminalConfiguration {
 	shell: {
 		linux: string | null;
+
 		osx: string | null;
+
 		windows: string | null;
 	};
+
 	automationShell: {
 		linux: string | null;
+
 		osx: string | null;
+
 		windows: string | null;
 	};
+
 	shellArgs: {
 		linux: string[];
+
 		osx: string[];
+
 		windows: string[];
 	};
+
 	profiles: ITerminalProfiles;
 
 	defaultProfile: {
 		linux: string | null;
+
 		osx: string | null;
+
 		windows: string | null;
 	};
+
 	useWslProfiles: boolean;
+
 	altClickMovesCursor: boolean;
+
 	macOptionIsMeta: boolean;
+
 	macOptionClickForcesSelection: boolean;
+
 	gpuAcceleration: "auto" | "on" | "off";
+
 	rightClickBehavior:
 		| "default"
 		| "copyPaste"
 		| "paste"
 		| "selectWord"
 		| "nothing";
+
 	middleClickBehavior: "default" | "paste";
+
 	cursorBlinking: boolean;
+
 	cursorStyle: "block" | "underline" | "line";
+
 	cursorStyleInactive: "outline" | "block" | "underline" | "line" | "none";
+
 	cursorWidth: number;
+
 	drawBoldTextInBrightColors: boolean;
+
 	fastScrollSensitivity: number;
+
 	fontFamily: string;
+
 	fontWeight: FontWeight;
+
 	fontWeightBold: FontWeight;
+
 	minimumContrastRatio: number;
+
 	mouseWheelScrollSensitivity: number;
+
 	tabStopWidth: number;
+
 	sendKeybindingsToShell: boolean;
+
 	fontSize: number;
 
 	letterSpacing: number;
+
 	lineHeight: number;
+
 	detectLocale: "auto" | "off" | "on";
+
 	scrollback: number;
+
 	commandsToSkipShell: string[];
+
 	allowChords: boolean;
+
 	allowMnemonics: boolean;
+
 	cwd: string;
+
 	confirmOnExit: ConfirmOnExit;
+
 	confirmOnKill: ConfirmOnKill;
+
 	enableBell: boolean;
+
 	env: {
 		linux: { [key: string]: string };
+
 		osx: { [key: string]: string };
+
 		windows: { [key: string]: string };
 	};
+
 	environmentChangesIndicator: "off" | "on" | "warnonly";
+
 	environmentChangesRelaunch: boolean;
+
 	showExitAlert: boolean;
+
 	splitCwd: "workspaceRoot" | "initial" | "inherited";
+
 	windowsEnableConpty: boolean;
+
 	wordSeparators: string;
+
 	enableFileLinks: "off" | "on" | "notRemote";
+
 	allowedLinkSchemes: string[];
+
 	unicodeVersion: "6" | "11";
+
 	enablePersistentSessions: boolean;
+
 	tabs: {
 		enabled: boolean;
+
 		hideCondition: "never" | "singleTerminal" | "singleGroup";
+
 		showActiveTerminal:
 			| "always"
 			| "singleTerminal"
 			| "singleTerminalOrNarrow"
 			| "singleGroup"
 			| "never";
+
 		location: "left" | "right";
+
 		focusMode: "singleClick" | "doubleClick";
+
 		title: string;
+
 		description: string;
+
 		separator: string;
 	};
+
 	bellDuration: number;
 
 	defaultLocation: TerminalLocationString;
+
 	customGlyphs: boolean;
+
 	persistentSessionReviveProcess: "onExit" | "onExitAndWindowClose" | "never";
+
 	ignoreProcessNames: string[];
+
 	shellIntegration?: {
 		enabled: boolean;
+
 		decorationsEnabled: "both" | "gutter" | "overviewRuler" | "never";
 	};
+
 	enableImages: boolean;
+
 	smoothScrolling: boolean;
+
 	ignoreBracketedPasteMode: boolean;
+
 	rescaleOverlappingGlyphs: boolean;
+
 	fontLigatures?: boolean;
+
 	experimental?: {
 		windowsUseConptyDll?: boolean;
 	};
@@ -323,30 +413,45 @@ export interface ITerminalConfiguration {
 
 export interface ITerminalFont {
 	fontFamily: string;
+
 	fontSize: number;
 
 	letterSpacing: number;
+
 	lineHeight: number;
+
 	charWidth?: number;
+
 	charHeight?: number;
 }
 
 export interface IRemoteTerminalAttachTarget {
 	id: number;
+
 	pid: number;
+
 	title: string;
+
 	titleSource: TitleEventSource;
+
 	cwd: string;
+
 	workspaceId: string;
+
 	workspaceName: string;
+
 	isOrphan: boolean;
+
 	icon:
 		| URI
 		| { light: URI; dark: URI }
 		| { id: string; color?: { id: string } }
 		| undefined;
+
 	color: string | undefined;
+
 	fixedDimensions: IFixedTerminalDimensions | undefined;
+
 	shellIntegrationNonce: string;
 }
 
@@ -360,26 +465,42 @@ export interface IBeforeProcessDataEvent {
 
 export interface IDefaultShellAndArgsRequest {
 	useAutomationShell: boolean;
+
 	callback: (shell: string, args: string[] | string | undefined) => void;
 }
 
 /** Read-only process information that can apply to detached terminals. */
 export interface ITerminalProcessInfo {
 	readonly processState: ProcessState;
+
 	readonly ptyProcessReady: Promise<void>;
+
 	readonly shellProcessId: number | undefined;
+
 	readonly remoteAuthority: string | undefined;
+
 	readonly os: OperatingSystem | undefined;
+
 	readonly userHome: string | undefined;
+
 	readonly initialCwd: string;
+
 	readonly environmentVariableInfo: IEnvironmentVariableInfo | undefined;
+
 	readonly persistentProcessId: number | undefined;
+
 	readonly shouldPersist: boolean;
+
 	readonly hasWrittenData: boolean;
+
 	readonly hasChildProcesses: boolean;
+
 	readonly backend: ITerminalBackend | undefined;
+
 	readonly capabilities: ITerminalCapabilityStore;
+
 	readonly shellIntegrationNonce: string;
+
 	readonly extEnvironmentVariableCollection:
 		| IMergedEnvironmentVariableCollection
 		| undefined;
@@ -394,30 +515,42 @@ export interface ITerminalProcessManager
 	extends IDisposable,
 		ITerminalProcessInfo {
 	readonly onPtyDisconnect: Event<void>;
+
 	readonly onPtyReconnect: Event<void>;
 
 	readonly onProcessReady: Event<IProcessReadyEvent>;
+
 	readonly onBeforeProcessData: Event<IBeforeProcessDataEvent>;
+
 	readonly onProcessData: Event<IProcessDataEvent>;
+
 	readonly onProcessReplayComplete: Event<void>;
+
 	readonly onEnvironmentVariableInfoChanged: Event<IEnvironmentVariableInfo>;
+
 	readonly onDidChangeProperty: Event<IProcessProperty<any>>;
+
 	readonly onProcessExit: Event<number | undefined>;
+
 	readonly onRestoreCommands: Event<ISerializedCommandDetectionCapability>;
 
 	dispose(immediate?: boolean): void;
+
 	detachFromProcess(forcePersist?: boolean): Promise<void>;
+
 	createProcess(
 		shellLaunchConfig: IShellLaunchConfig,
 		cols: number,
 		rows: number,
 	): Promise<ITerminalLaunchError | { injectedArgs: string[] } | undefined>;
+
 	relaunch(
 		shellLaunchConfig: IShellLaunchConfig,
 		cols: number,
 		rows: number,
 		reset: boolean,
 	): Promise<ITerminalLaunchError | { injectedArgs: string[] } | undefined>;
+
 	write(data: string): Promise<void>;
 
 	setDimensions(cols: number, rows: number): Promise<void>;
@@ -425,21 +558,26 @@ export interface ITerminalProcessManager
 	setDimensions(cols: number, rows: number, sync: false): Promise<void>;
 
 	setDimensions(cols: number, rows: number, sync: true): void;
+
 	clearBuffer(): Promise<void>;
 
 	setUnicodeVersion(version: "6" | "11"): Promise<void>;
+
 	acknowledgeDataEvent(charCount: number): void;
+
 	processBinary(data: string): void;
 
 	refreshProperty<T extends ProcessPropertyType>(
 		type: T,
 	): Promise<IProcessPropertyMap[T]>;
+
 	updateProperty<T extends ProcessPropertyType>(
 		property: T,
 		value: IProcessPropertyMap[T],
 	): Promise<void>;
 
 	getBackendOS(): Promise<OperatingSystem>;
+
 	freePortKillProcess(port: string): Promise<void>;
 }
 
@@ -466,27 +604,39 @@ export interface ITerminalProcessExtHostProxy extends IDisposable {
 	readonly instanceId: number;
 
 	emitData(data: string): void;
+
 	emitProcessProperty(property: IProcessProperty<any>): void;
+
 	emitReady(
 		pid: number,
 		cwd: string,
 		windowsPty: IProcessReadyWindowsPty | undefined,
 	): void;
+
 	emitExit(exitCode: number | undefined): void;
 
 	onInput: Event<string>;
+
 	onBinary: Event<string>;
+
 	onResize: Event<{ cols: number; rows: number }>;
+
 	onAcknowledgeDataEvent: Event<number>;
+
 	onShutdown: Event<boolean>;
+
 	onRequestInitialCwd: Event<void>;
+
 	onRequestCwd: Event<void>;
 }
 
 export interface IStartExtensionTerminalRequest {
 	proxy: ITerminalProcessExtHostProxy;
+
 	cols: number;
+
 	rows: number;
+
 	callback: (error: ITerminalLaunchError | undefined) => void;
 }
 
@@ -515,7 +665,9 @@ export interface ITerminalStatus {
 
 export interface ITerminalStatusHoverAction {
 	label: string;
+
 	commandId: string;
+
 	run: () => void;
 }
 
@@ -524,6 +676,7 @@ export interface ITerminalStatusHoverAction {
  */
 export interface ISerializedTerminalInstanceContext {
 	$mid: MarshalledId.TerminalContext;
+
 	instanceId: number;
 }
 

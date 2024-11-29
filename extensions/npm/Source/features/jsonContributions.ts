@@ -33,7 +33,9 @@ import { PackageJSONContribution } from "./packageJSONContribution";
 
 export interface ISuggestionsCollector {
 	add(suggestion: CompletionItem): void;
+
 	error(message: string): void;
+
 	log(message: string): void;
 
 	setAsIncomplete(): void;
@@ -45,6 +47,7 @@ export interface IJSONContribution {
 		resourceUri: Uri,
 		location: Location,
 	): Thenable<MarkdownString[] | null> | null;
+
 	collectPropertySuggestions(
 		resourceUri: Uri,
 		location: Location,
@@ -53,15 +56,18 @@ export interface IJSONContribution {
 		isLast: boolean,
 		result: ISuggestionsCollector,
 	): Thenable<any> | null;
+
 	collectValueSuggestions(
 		resourceUri: Uri,
 		location: Location,
 		result: ISuggestionsCollector,
 	): Thenable<any> | null;
+
 	collectDefaultSuggestions(
 		resourceUri: Uri,
 		result: ISuggestionsCollector,
 	): Thenable<any>;
+
 	resolveSuggestion?(
 		resourceUri: Uri | undefined,
 		item: CompletionItem,
@@ -77,8 +83,10 @@ export function addJSONProviders(
 	];
 
 	const subscriptions: Disposable[] = [];
+
 	contributions.forEach((contribution) => {
 		const selector = contribution.getDocumentSelector();
+
 		subscriptions.push(
 			languages.registerCompletionItemProvider(
 				selector,
@@ -87,6 +95,7 @@ export function addJSONProviders(
 				":",
 			),
 		);
+
 		subscriptions.push(
 			languages.registerHoverProvider(
 				selector,
@@ -99,6 +108,7 @@ export function addJSONProviders(
 }
 export class JSONHoverProvider implements HoverProvider {
 	constructor(private jsonContribution: IJSONContribution) {}
+
 	public provideHover(
 		document: TextDocument,
 		position: Position,
@@ -111,6 +121,7 @@ export class JSONHoverProvider implements HoverProvider {
 		if (!location.previousNode) {
 			return null;
 		}
+
 		const node = location.previousNode;
 
 		if (
@@ -139,6 +150,7 @@ export class JSONHoverProvider implements HoverProvider {
 				});
 			}
 		}
+
 		return null;
 	}
 }
@@ -146,6 +158,7 @@ export class JSONCompletionItemProvider implements CompletionItemProvider {
 	private lastResource: Uri | undefined;
 
 	constructor(private jsonContribution: IJSONContribution) {}
+
 	public resolveCompletionItem(
 		item: CompletionItem,
 		_token: CancellationToken,
@@ -160,8 +173,10 @@ export class JSONCompletionItemProvider implements CompletionItemProvider {
 				return resolver;
 			}
 		}
+
 		return Promise.resolve(item);
 	}
+
 	public provideCompletionItems(
 		document: TextDocument,
 		position: Position,
@@ -203,6 +218,7 @@ export class JSONCompletionItemProvider implements CompletionItemProvider {
 				position,
 			);
 		}
+
 		const proposed: {
 			[key: string]: boolean;
 		} = {};
@@ -216,6 +232,7 @@ export class JSONCompletionItemProvider implements CompletionItemProvider {
 
 				if (!proposed[key]) {
 					proposed[key] = true;
+
 					suggestion.range = {
 						replacing: overwriteRange,
 						inserting: new Range(
@@ -223,6 +240,7 @@ export class JSONCompletionItemProvider implements CompletionItemProvider {
 							overwriteRange.start,
 						),
 					};
+
 					items.push(suggestion);
 				}
 			},
@@ -244,6 +262,7 @@ export class JSONCompletionItemProvider implements CompletionItemProvider {
 				);
 
 			const isLast = this.isLast(scanner, document.offsetAt(position));
+
 			collectPromise = this.jsonContribution.collectPropertySuggestions(
 				document.uri,
 				location,
@@ -267,16 +286,20 @@ export class JSONCompletionItemProvider implements CompletionItemProvider {
 				);
 			}
 		}
+
 		if (collectPromise) {
 			return collectPromise.then(() => {
 				if (items.length > 0 || isIncomplete) {
 					return new CompletionList(items, isIncomplete);
 				}
+
 				return null;
 			});
 		}
+
 		return null;
 	}
+
 	private getCurrentWord(document: TextDocument, position: Position) {
 		let i = position.character - 1;
 
@@ -285,8 +308,10 @@ export class JSONCompletionItemProvider implements CompletionItemProvider {
 		while (i >= 0 && ' \t\n\r\v":{[,'.indexOf(text.charAt(i)) === -1) {
 			i--;
 		}
+
 		return text.substring(i + 1, position.character);
 	}
+
 	private isLast(scanner: JSONScanner, offset: number): boolean {
 		scanner.setPosition(offset);
 
@@ -298,11 +323,13 @@ export class JSONCompletionItemProvider implements CompletionItemProvider {
 		) {
 			nextToken = scanner.scan();
 		}
+
 		return (
 			nextToken === SyntaxKind.CloseBraceToken ||
 			nextToken === SyntaxKind.EOF
 		);
 	}
+
 	private hasColonAfter(scanner: JSONScanner, offset: number): boolean {
 		scanner.setPosition(offset);
 

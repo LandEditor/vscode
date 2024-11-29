@@ -39,6 +39,7 @@ import {
 
 export interface ISpeechProviderDescriptor {
 	readonly name: string;
+
 	readonly description?: string;
 }
 
@@ -79,20 +80,25 @@ const speechProvidersExtensionPoint = ExtensionsRegistry.registerExtensionPoint<
 
 export class SpeechService extends Disposable implements ISpeechService {
 	readonly _serviceBrand: undefined;
+
 	private readonly _onDidChangeHasSpeechProvider = this._register(
 		new Emitter<void>(),
 	);
+
 	readonly onDidChangeHasSpeechProvider =
 		this._onDidChangeHasSpeechProvider.event;
 
 	get hasSpeechProvider() {
 		return this.providerDescriptors.size > 0 || this.providers.size > 0;
 	}
+
 	private readonly providers = new Map<string, ISpeechProvider>();
+
 	private readonly providerDescriptors = new Map<
 		string,
 		ISpeechProviderDescriptor
 	>();
+
 	private readonly hasSpeechProviderContext = HasSpeechProvider.bindTo(
 		this.contextKeyService,
 	);
@@ -112,8 +118,10 @@ export class SpeechService extends Disposable implements ISpeechService {
 		private readonly extensionService: IExtensionService,
 	) {
 		super();
+
 		this.handleAndRegisterSpeechExtensions();
 	}
+
 	private handleAndRegisterSpeechExtensions(): void {
 		speechProvidersExtensionPoint.setHandler((extensions, delta) => {
 			const oldHasSpeechProvider = this.hasSpeechProvider;
@@ -123,16 +131,19 @@ export class SpeechService extends Disposable implements ISpeechService {
 					this.providerDescriptors.delete(descriptor.name);
 				}
 			}
+
 			for (const extension of delta.added) {
 				for (const descriptor of extension.value) {
 					this.providerDescriptors.set(descriptor.name, descriptor);
 				}
 			}
+
 			if (oldHasSpeechProvider !== this.hasSpeechProvider) {
 				this.handleHasSpeechProviderChange();
 			}
 		});
 	}
+
 	registerSpeechProvider(
 		identifier: string,
 		provider: ISpeechProvider,
@@ -142,14 +153,18 @@ export class SpeechService extends Disposable implements ISpeechService {
 				`Speech provider with identifier ${identifier} is already registered.`,
 			);
 		}
+
 		const oldHasSpeechProvider = this.hasSpeechProvider;
+
 		this.providers.set(identifier, provider);
 
 		if (oldHasSpeechProvider !== this.hasSpeechProvider) {
 			this.handleHasSpeechProviderChange();
 		}
+
 		return toDisposable(() => {
 			const oldHasSpeechProvider = this.hasSpeechProvider;
+
 			this.providers.delete(identifier);
 
 			if (oldHasSpeechProvider !== this.hasSpeechProvider) {
@@ -157,26 +172,33 @@ export class SpeechService extends Disposable implements ISpeechService {
 			}
 		});
 	}
+
 	private handleHasSpeechProviderChange(): void {
 		this.hasSpeechProviderContext.set(this.hasSpeechProvider);
+
 		this._onDidChangeHasSpeechProvider.fire();
 	}
 	//#region Speech to Text
 	private readonly _onDidStartSpeechToTextSession = this._register(
 		new Emitter<void>(),
 	);
+
 	readonly onDidStartSpeechToTextSession =
 		this._onDidStartSpeechToTextSession.event;
+
 	private readonly _onDidEndSpeechToTextSession = this._register(
 		new Emitter<void>(),
 	);
+
 	readonly onDidEndSpeechToTextSession =
 		this._onDidEndSpeechToTextSession.event;
+
 	private activeSpeechToTextSessions = 0;
 
 	get hasActiveSpeechToTextSession() {
 		return this.activeSpeechToTextSessions > 0;
 	}
+
 	private readonly speechToTextInProgress = SpeechToTextInProgress.bindTo(
 		this.contextKeyService,
 	);
@@ -215,49 +237,77 @@ export class SpeechService extends Disposable implements ISpeechService {
 			if (!this.hasActiveSpeechToTextSession) {
 				this.speechToTextInProgress.reset();
 			}
+
 			this._onDidEndSpeechToTextSession.fire();
+
 			type SpeechToTextSessionClassification = {
 				owner: "bpasero";
+
 				comment: "An event that fires when a speech to text session is created";
+
 				context: {
 					classification: "SystemMetaData";
+
 					purpose: "FeatureInsight";
+
 					comment: "Context of the session.";
 				};
+
 				sessionDuration: {
 					classification: "SystemMetaData";
+
 					purpose: "FeatureInsight";
+
 					comment: "Duration of the session.";
 				};
+
 				sessionRecognized: {
 					classification: "SystemMetaData";
+
 					purpose: "FeatureInsight";
+
 					comment: "If speech was recognized.";
 				};
+
 				sessionError: {
 					classification: "SystemMetaData";
+
 					purpose: "FeatureInsight";
+
 					comment: "If speech resulted in error.";
 				};
+
 				sessionContentLength: {
 					classification: "SystemMetaData";
+
 					purpose: "FeatureInsight";
+
 					comment: "Length of the recognized text.";
 				};
+
 				sessionLanguage: {
 					classification: "SystemMetaData";
+
 					purpose: "FeatureInsight";
+
 					comment: "Configured language for the session.";
 				};
 			};
+
 			type SpeechToTextSessionEvent = {
 				context: string;
+
 				sessionDuration: number;
+
 				sessionRecognized: boolean;
+
 				sessionError: boolean;
+
 				sessionContentLength: number;
+
 				sessionLanguage: string;
 			};
+
 			this.telemetryService.publicLog2<
 				SpeechToTextSessionEvent,
 				SpeechToTextSessionClassification
@@ -269,8 +319,10 @@ export class SpeechService extends Disposable implements ISpeechService {
 				sessionContentLength,
 				sessionLanguage: language,
 			});
+
 			disposables.dispose();
 		};
+
 		disposables.add(
 			token.onCancellationRequested(() => onSessionStoppedOrCanceled()),
 		);
@@ -278,12 +330,15 @@ export class SpeechService extends Disposable implements ISpeechService {
 		if (token.isCancellationRequested) {
 			onSessionStoppedOrCanceled();
 		}
+
 		disposables.add(
 			session.onDidChange((e) => {
 				switch (e.status) {
 					case SpeechToTextStatus.Started:
 						this.activeSpeechToTextSessions++;
+
 						this.speechToTextInProgress.set(true);
+
 						this._onDidStartSpeechToTextSession.fire();
 
 						break;
@@ -297,6 +352,7 @@ export class SpeechService extends Disposable implements ISpeechService {
 						if (typeof e.text === "string") {
 							sessionContentLength += e.text.length;
 						}
+
 						break;
 
 					case SpeechToTextStatus.Stopped:
@@ -308,6 +364,7 @@ export class SpeechService extends Disposable implements ISpeechService {
 						this.logService.error(
 							`Speech provider error in speech to text session: ${e.text}`,
 						);
+
 						sessionError = true;
 
 						break;
@@ -317,6 +374,7 @@ export class SpeechService extends Disposable implements ISpeechService {
 
 		return session;
 	}
+
 	private async getProvider(): Promise<ISpeechProvider> {
 		// Send out extension activation to ensure providers can register
 		await this.extensionService.activateByEvent("onSpeech");
@@ -330,6 +388,7 @@ export class SpeechService extends Disposable implements ISpeechService {
 				`Multiple speech providers registered. Picking first one: ${provider.metadata.displayName}`,
 			);
 		}
+
 		return provider;
 	}
 	//#endregion
@@ -337,18 +396,23 @@ export class SpeechService extends Disposable implements ISpeechService {
 	private readonly _onDidStartTextToSpeechSession = this._register(
 		new Emitter<void>(),
 	);
+
 	readonly onDidStartTextToSpeechSession =
 		this._onDidStartTextToSpeechSession.event;
+
 	private readonly _onDidEndTextToSpeechSession = this._register(
 		new Emitter<void>(),
 	);
+
 	readonly onDidEndTextToSpeechSession =
 		this._onDidEndTextToSpeechSession.event;
+
 	private activeTextToSpeechSessions = 0;
 
 	get hasActiveTextToSpeechSession() {
 		return this.activeTextToSpeechSessions > 0;
 	}
+
 	private readonly textToSpeechInProgress = TextToSpeechInProgress.bindTo(
 		this.contextKeyService,
 	);
@@ -383,37 +447,57 @@ export class SpeechService extends Disposable implements ISpeechService {
 			if (!this.hasActiveTextToSpeechSession) {
 				this.textToSpeechInProgress.reset();
 			}
+
 			this._onDidEndTextToSpeechSession.fire();
+
 			type TextToSpeechSessionClassification = {
 				owner: "bpasero";
+
 				comment: "An event that fires when a text to speech session is created";
+
 				context: {
 					classification: "SystemMetaData";
+
 					purpose: "FeatureInsight";
+
 					comment: "Context of the session.";
 				};
+
 				sessionDuration: {
 					classification: "SystemMetaData";
+
 					purpose: "FeatureInsight";
+
 					comment: "Duration of the session.";
 				};
+
 				sessionError: {
 					classification: "SystemMetaData";
+
 					purpose: "FeatureInsight";
+
 					comment: "If speech resulted in error.";
 				};
+
 				sessionLanguage: {
 					classification: "SystemMetaData";
+
 					purpose: "FeatureInsight";
+
 					comment: "Configured language for the session.";
 				};
 			};
+
 			type TextToSpeechSessionEvent = {
 				context: string;
+
 				sessionDuration: number;
+
 				sessionError: boolean;
+
 				sessionLanguage: string;
 			};
+
 			this.telemetryService.publicLog2<
 				TextToSpeechSessionEvent,
 				TextToSpeechSessionClassification
@@ -428,6 +512,7 @@ export class SpeechService extends Disposable implements ISpeechService {
 				disposables.dispose();
 			}
 		};
+
 		disposables.add(
 			token.onCancellationRequested(() =>
 				onSessionStoppedOrCanceled(true),
@@ -437,12 +522,15 @@ export class SpeechService extends Disposable implements ISpeechService {
 		if (token.isCancellationRequested) {
 			onSessionStoppedOrCanceled(true);
 		}
+
 		disposables.add(
 			session.onDidChange((e) => {
 				switch (e.status) {
 					case TextToSpeechStatus.Started:
 						this.activeTextToSpeechSessions++;
+
 						this.textToSpeechInProgress.set(true);
+
 						this._onDidStartTextToSpeechSession.fire();
 
 						break;
@@ -456,6 +544,7 @@ export class SpeechService extends Disposable implements ISpeechService {
 						this.logService.error(
 							`Speech provider error in text to speech session: ${e.text}`,
 						);
+
 						sessionError = true;
 
 						break;
@@ -470,27 +559,34 @@ export class SpeechService extends Disposable implements ISpeechService {
 	private readonly _onDidStartKeywordRecognition = this._register(
 		new Emitter<void>(),
 	);
+
 	readonly onDidStartKeywordRecognition =
 		this._onDidStartKeywordRecognition.event;
+
 	private readonly _onDidEndKeywordRecognition = this._register(
 		new Emitter<void>(),
 	);
+
 	readonly onDidEndKeywordRecognition =
 		this._onDidEndKeywordRecognition.event;
+
 	private activeKeywordRecognitionSessions = 0;
 
 	get hasActiveKeywordRecognition() {
 		return this.activeKeywordRecognitionSessions > 0;
 	}
+
 	async recognizeKeyword(
 		token: CancellationToken,
 	): Promise<KeywordRecognitionStatus> {
 		const result = new DeferredPromise<KeywordRecognitionStatus>();
 
 		const disposables = new DisposableStore();
+
 		disposables.add(
 			token.onCancellationRequested(() => {
 				disposables.dispose();
+
 				result.complete(KeywordRecognitionStatus.Canceled);
 			}),
 		);
@@ -506,6 +602,7 @@ export class SpeechService extends Disposable implements ISpeechService {
 			recognizeKeywordDisposables.clear();
 
 			const cts = new CancellationTokenSource(token);
+
 			recognizeKeywordDisposables.add(
 				toDisposable(() => cts.dispose(true)),
 			);
@@ -532,10 +629,12 @@ export class SpeechService extends Disposable implements ISpeechService {
 					},
 				));
 		};
+
 		disposables.add(
 			this.hostService.onDidChangeFocus((focused) => {
 				if (!focused && activeRecognizeKeywordSession) {
 					recognizeKeywordDisposables.clear();
+
 					activeRecognizeKeywordSession = undefined;
 				} else if (!activeRecognizeKeywordSession) {
 					recognizeKeyword();
@@ -546,6 +645,7 @@ export class SpeechService extends Disposable implements ISpeechService {
 		if (this.hostService.hasFocus) {
 			recognizeKeyword();
 		}
+
 		let status: KeywordRecognitionStatus;
 
 		try {
@@ -553,18 +653,25 @@ export class SpeechService extends Disposable implements ISpeechService {
 		} finally {
 			disposables.dispose();
 		}
+
 		type KeywordRecognitionClassification = {
 			owner: "bpasero";
+
 			comment: "An event that fires when a speech keyword detection is started";
+
 			keywordRecognized: {
 				classification: "SystemMetaData";
+
 				purpose: "FeatureInsight";
+
 				comment: "If the keyword was recognized.";
 			};
 		};
+
 		type KeywordRecognitionEvent = {
 			keywordRecognized: boolean;
 		};
+
 		this.telemetryService.publicLog2<
 			KeywordRecognitionEvent,
 			KeywordRecognitionClassification
@@ -574,13 +681,16 @@ export class SpeechService extends Disposable implements ISpeechService {
 
 		return status;
 	}
+
 	private async doRecognizeKeyword(
 		token: CancellationToken,
 	): Promise<KeywordRecognitionStatus> {
 		const provider = await this.getProvider();
 
 		const session = provider.createKeywordRecognitionSession(token);
+
 		this.activeKeywordRecognitionSessions++;
+
 		this._onDidStartKeywordRecognition.fire();
 
 		const disposables = new DisposableStore();
@@ -590,9 +700,12 @@ export class SpeechService extends Disposable implements ISpeechService {
 				0,
 				this.activeKeywordRecognitionSessions - 1,
 			);
+
 			this._onDidEndKeywordRecognition.fire();
+
 			disposables.dispose();
 		};
+
 		disposables.add(
 			token.onCancellationRequested(() => onSessionStoppedOrCanceled()),
 		);
@@ -600,6 +713,7 @@ export class SpeechService extends Disposable implements ISpeechService {
 		if (token.isCancellationRequested) {
 			onSessionStoppedOrCanceled();
 		}
+
 		disposables.add(
 			session.onDidChange((e) => {
 				if (e.status === KeywordRecognitionStatus.Stopped) {

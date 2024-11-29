@@ -24,8 +24,10 @@ export const IAuthenticationAccessService =
 
 export interface IAuthenticationAccessService {
 	readonly _serviceBrand: undefined;
+
 	readonly onDidChangeExtensionSessionAccess: Event<{
 		providerId: string;
+
 		accountName: string;
 	}>;
 	/**
@@ -41,15 +43,18 @@ export interface IAuthenticationAccessService {
 		accountName: string,
 		extensionId: string,
 	): boolean | undefined;
+
 	readAllowedExtensions(
 		providerId: string,
 		accountName: string,
 	): AllowedExtension[];
+
 	updateAllowedExtensions(
 		providerId: string,
 		accountName: string,
 		extensions: AllowedExtension[],
 	): void;
+
 	removeAllowedExtensions(providerId: string, accountName: string): void;
 }
 // TODO@TylerLeonhardt: Move this class to MainThreadAuthentication
@@ -58,17 +63,22 @@ export class AuthenticationAccessService
 	implements IAuthenticationAccessService
 {
 	_serviceBrand: undefined;
+
 	private _onDidChangeExtensionSessionAccess: Emitter<{
 		providerId: string;
+
 		accountName: string;
 	}> = this._register(
 		new Emitter<{
 			providerId: string;
+
 			accountName: string;
 		}>(),
 	);
+
 	readonly onDidChangeExtensionSessionAccess: Event<{
 		providerId: string;
+
 		accountName: string;
 	}> = this._onDidChangeExtensionSessionAccess.event;
 
@@ -80,6 +90,7 @@ export class AuthenticationAccessService
 	) {
 		super();
 	}
+
 	isAccessAllowed(
 		providerId: string,
 		accountName: string,
@@ -97,6 +108,7 @@ export class AuthenticationAccessService
 		) {
 			return true;
 		}
+
 		const allowList = this.readAllowedExtensions(providerId, accountName);
 
 		const extensionData = allowList.find(
@@ -111,6 +123,7 @@ export class AuthenticationAccessService
 			? extensionData.allowed
 			: true;
 	}
+
 	readAllowedExtensions(
 		providerId: string,
 		accountName: string,
@@ -127,8 +140,10 @@ export class AuthenticationAccessService
 				trustedExtensions = JSON.parse(trustedExtensionSrc);
 			}
 		} catch (err) {}
+
 		return trustedExtensions;
 	}
+
 	updateAllowedExtensions(
 		providerId: string,
 		accountName: string,
@@ -145,22 +160,26 @@ export class AuthenticationAccessService
 				allowList[index].allowed = extension.allowed;
 			}
 		}
+
 		this._storageService.store(
 			`${providerId}-${accountName}`,
 			JSON.stringify(allowList),
 			StorageScope.APPLICATION,
 			StorageTarget.USER,
 		);
+
 		this._onDidChangeExtensionSessionAccess.fire({
 			providerId,
 			accountName,
 		});
 	}
+
 	removeAllowedExtensions(providerId: string, accountName: string): void {
 		this._storageService.remove(
 			`${providerId}-${accountName}`,
 			StorageScope.APPLICATION,
 		);
+
 		this._onDidChangeExtensionSessionAccess.fire({
 			providerId,
 			accountName,

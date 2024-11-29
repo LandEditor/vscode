@@ -86,6 +86,7 @@ function mapModifiedLineNumberToOriginalLineNumber(
 				change.original.startLineNumber,
 				change.original.endLineNumberExclusive,
 			);
+
 			const modifiedRangeLength = lineRangeLength(
 				change.modified.startLineNumber,
 				change.modified.endLineNumberExclusive,
@@ -105,11 +106,17 @@ function mapModifiedLineNumberToOriginalLineNumber(
 
 type BlameInformationTemplateTokens = {
 	readonly hash: string;
+
 	readonly hashShort: string;
+
 	readonly subject: string;
+
 	readonly authorName: string;
+
 	readonly authorEmail: string;
+
 	readonly authorDate: string;
+
 	readonly authorDateAgo: string;
 };
 
@@ -158,6 +165,7 @@ interface RepositoryBlameInformation {
 
 interface LineBlameInformation {
 	readonly lineNumber: number;
+
 	readonly blameInformation: BlameInformation | string;
 }
 
@@ -205,6 +213,7 @@ class GitBlameInformationCache {
 			resource,
 			commit,
 		);
+
 		return this._cache
 			.get(repository)
 			?.blameInformation.get(resource.scheme)
@@ -232,6 +241,7 @@ class GitBlameInformationCache {
 		}
 
 		const repositoryBlameInformation = this._cache.get(repository)!;
+
 		if (!repositoryBlameInformation.blameInformation.has(resource.scheme)) {
 			repositoryBlameInformation.blameInformation.set(
 				resource.scheme,
@@ -241,6 +251,7 @@ class GitBlameInformationCache {
 
 		const resourceSchemeBlameInformation =
 			repositoryBlameInformation.blameInformation.get(resource.scheme)!;
+
 		resourceSchemeBlameInformation.set(
 			this._getBlameInformationKey(resource, commit),
 			blameInformation,
@@ -255,6 +266,7 @@ class GitBlameInformationCache {
 export class GitBlameController {
 	private readonly _onDidChangeBlameInformation =
 		new EventEmitter<TextEditor>();
+
 	public readonly onDidChangeBlameInformation =
 		this._onDidChangeBlameInformation.event;
 
@@ -266,10 +278,12 @@ export class GitBlameController {
 	private readonly _repositoryBlameCache = new GitBlameInformationCache();
 
 	private _repositoryDisposables = new Map<Repository, IDisposable[]>();
+
 	private _disposables: IDisposable[] = [];
 
 	constructor(private readonly _model: Model) {
 		this._disposables.push(new GitBlameEditorDecoration(this));
+
 		this._disposables.push(new GitBlameStatusBarItem(this));
 
 		this._model.onDidOpenRepository(
@@ -277,6 +291,7 @@ export class GitBlameController {
 			this,
 			this._disposables,
 		);
+
 		this._model.onDidCloseRepository(
 			this._onDidCloseRepository,
 			this,
@@ -288,6 +303,7 @@ export class GitBlameController {
 			this,
 			this._disposables,
 		);
+
 		window.onDidChangeTextEditorDiffInformation(
 			(e) => this._updateTextEditorBlameInformation(e.textEditor),
 			this,
@@ -306,7 +322,9 @@ export class GitBlameController {
 		}
 
 		const markdownString = new MarkdownString();
+
 		markdownString.supportThemeIcons = true;
+
 		markdownString.isTrusted = true;
 
 		if (blameInformation.authorName) {
@@ -324,6 +342,7 @@ export class GitBlameController {
 					hour: "numeric",
 					minute: "numeric",
 				});
+
 				markdownString.appendMarkdown(
 					`, $(history) ${fromNow(blameInformation.authorDate, true, true)} (${dateString})`,
 				);
@@ -333,18 +352,22 @@ export class GitBlameController {
 		}
 
 		markdownString.appendMarkdown(`${blameInformation.subject}\n\n`);
+
 		markdownString.appendMarkdown(`---\n\n`);
 
 		markdownString.appendMarkdown(
 			`[$(eye) View Commit](command:git.blameStatusBarItem.viewCommit?${encodeURIComponent(JSON.stringify([documentUri, blameInformation.hash]))} "${l10n.t("View Commit")}")`,
 		);
+
 		markdownString.appendMarkdown("&nbsp;&nbsp;|&nbsp;&nbsp;");
+
 		markdownString.appendMarkdown(
 			`[$(copy) ${blameInformation.hash.substring(0, 8)}](command:git.blameStatusBarItem.copyContent?${encodeURIComponent(JSON.stringify(blameInformation.hash))} "${l10n.t("Copy Commit Hash")}")`,
 		);
 
 		if (blameInformation.subject) {
 			markdownString.appendMarkdown("&nbsp;&nbsp;");
+
 			markdownString.appendMarkdown(
 				`[$(copy) Subject](command:git.blameStatusBarItem.copyContent?${encodeURIComponent(JSON.stringify(blameInformation.subject))} "${l10n.t("Copy Commit Subject")}")`,
 			);
@@ -355,6 +378,7 @@ export class GitBlameController {
 
 	private _onDidOpenRepository(repository: Repository): void {
 		const repositoryDisposables: IDisposable[] = [];
+
 		repository.onDidRunGitStatus(
 			() => this._onDidRunGitStatus(repository),
 			this,
@@ -372,12 +396,14 @@ export class GitBlameController {
 		}
 
 		this._repositoryDisposables.delete(repository);
+
 		this._repositoryBlameCache.deleteBlameInformation(repository);
 	}
 
 	private _onDidRunGitStatus(repository: Repository): void {
 		const repositoryHEAD =
 			this._repositoryBlameCache.getRepositoryHEAD(repository);
+
 		if (!repositoryHEAD || !repository.HEAD?.commit) {
 			return;
 		}
@@ -389,6 +415,7 @@ export class GitBlameController {
 				repository,
 				"file",
 			);
+
 			this._repositoryBlameCache.setRepositoryHEAD(
 				repository,
 				repository.HEAD.commit,
@@ -405,6 +432,7 @@ export class GitBlameController {
 		commit: string,
 	): Promise<BlameInformation[] | undefined> {
 		const repository = this._model.getRepository(resource);
+
 		if (!repository) {
 			return undefined;
 		}
@@ -415,6 +443,7 @@ export class GitBlameController {
 				resource,
 				commit,
 			);
+
 		if (resourceBlameInformation) {
 			return resourceBlameInformation;
 		}
@@ -422,6 +451,7 @@ export class GitBlameController {
 		// Get blame information for the resource and cache it
 		const blameInformation =
 			(await repository.blame2(resource.fsPath, commit)) ?? [];
+
 		this._repositoryBlameCache.setBlameInformation(
 			repository,
 			resource,
@@ -444,6 +474,7 @@ export class GitBlameController {
 		}
 
 		const repository = this._model.getRepository(textEditor.document.uri);
+
 		if (!repository || !repository.HEAD?.commit) {
 			return;
 		}
@@ -482,11 +513,13 @@ export class GitBlameController {
 			textEditor.document.uri,
 			repository.HEAD.commit,
 		);
+
 		if (!resourceBlameInformation) {
 			return;
 		}
 
 		const lineBlameInformation: LineBlameInformation[] = [];
+
 		for (const lineNumber of textEditor.selections.map(
 			(s) => s.active.line,
 		)) {
@@ -501,6 +534,7 @@ export class GitBlameController {
 					lineNumber,
 					blameInformation: l10n.t("Not Committed Yet"),
 				});
+
 				continue;
 			}
 
@@ -515,6 +549,7 @@ export class GitBlameController {
 					lineNumber,
 					blameInformation: l10n.t("Not Committed Yet (Staged)"),
 				});
+
 				continue;
 			}
 
@@ -524,6 +559,7 @@ export class GitBlameController {
 					lineNumber + 1,
 					diffInformation.changes,
 				);
+
 			const blameInformation = resourceBlameInformation.find(
 				(blameInformation) => {
 					return blameInformation.ranges.find((range) => {
@@ -541,6 +577,7 @@ export class GitBlameController {
 		}
 
 		this.textEditorBlameInformation.set(textEditor, lineBlameInformation);
+
 		this._onDidChangeBlameInformation.fire(textEditor);
 	}
 
@@ -548,6 +585,7 @@ export class GitBlameController {
 		for (const disposables of this._repositoryDisposables.values()) {
 			dispose(disposables);
 		}
+
 		this._repositoryDisposables.clear();
 
 		this._disposables = dispose(this._disposables);
@@ -556,6 +594,7 @@ export class GitBlameController {
 
 class GitBlameEditorDecoration {
 	private readonly _decorationType: TextEditorDecorationType;
+
 	private _disposables: IDisposable[] = [];
 
 	constructor(private readonly _controller: GitBlameController) {
@@ -564,6 +603,7 @@ class GitBlameEditorDecoration {
 				color: new ThemeColor("git.blame.editorDecorationForeground"),
 			},
 		});
+
 		this._disposables.push(this._decorationType);
 
 		workspace.onDidChangeConfiguration(
@@ -571,6 +611,7 @@ class GitBlameEditorDecoration {
 			this,
 			this._disposables,
 		);
+
 		this._controller.onDidChangeBlameInformation(
 			(e) => this._updateDecorations(e),
 			this,
@@ -597,10 +638,12 @@ class GitBlameEditorDecoration {
 
 	private _getConfiguration(): { enabled: boolean; template: string } {
 		const config = workspace.getConfiguration("git");
+
 		const enabled = config.get<boolean>(
 			"blame.editorDecoration.enabled",
 			false,
 		);
+
 		const template = config.get<string>(
 			"blame.editorDecoration.template",
 			"${subject}, ${authorName} (${authorDateAgo})",
@@ -611,6 +654,7 @@ class GitBlameEditorDecoration {
 
 	private _updateDecorations(textEditor: TextEditor): void {
 		const { enabled, template } = this._getConfiguration();
+
 		if (!enabled) {
 			return;
 		}
@@ -627,6 +671,7 @@ class GitBlameEditorDecoration {
 		// Get blame information
 		const blameInformation =
 			this._controller.textEditorBlameInformation.get(textEditor);
+
 		if (!blameInformation || textEditor.document.uri.scheme !== "file") {
 			textEditor.setDecorations(this._decorationType, []);
 
@@ -639,6 +684,7 @@ class GitBlameEditorDecoration {
 				typeof blame.blameInformation === "string"
 					? blame.blameInformation
 					: formatBlameInformation(template, blame.blameInformation);
+
 			const hoverMessage = this._controller.getBlameInformationHover(
 				textEditor.document.uri,
 				blame.blameInformation,
@@ -689,6 +735,7 @@ class GitBlameStatusBarItem {
 			this,
 			this._disposables,
 		);
+
 		window.onDidChangeActiveTextEditor(
 			this._onDidChangeActiveTextEditor,
 			this,
@@ -716,6 +763,7 @@ class GitBlameStatusBarItem {
 			}
 		} else {
 			this._statusBarItem?.dispose();
+
 			this._statusBarItem = undefined;
 		}
 	}
@@ -734,10 +782,12 @@ class GitBlameStatusBarItem {
 
 	private _getConfiguration(): { enabled: boolean; template: string } {
 		const config = workspace.getConfiguration("git");
+
 		const enabled = config.get<boolean>(
 			"blame.statusBarItem.enabled",
 			false,
 		);
+
 		const template = config.get<string>(
 			"blame.statusBarItem.template",
 			"${authorName} (${authorDateAgo})",
@@ -748,6 +798,7 @@ class GitBlameStatusBarItem {
 
 	private _updateStatusBarItem(textEditor: TextEditor): void {
 		const { enabled, template } = this._getConfiguration();
+
 		if (!enabled || textEditor !== window.activeTextEditor) {
 			return;
 		}
@@ -758,39 +809,47 @@ class GitBlameStatusBarItem {
 				StatusBarAlignment.Right,
 				200,
 			);
+
 			this._statusBarItem.name = l10n.t("Git Blame Information");
+
 			this._disposables.push(this._statusBarItem);
 		}
 
 		const blameInformation =
 			this._controller.textEditorBlameInformation.get(textEditor);
+
 		if (
 			!blameInformation ||
 			blameInformation.length === 0 ||
 			textEditor.document.uri.scheme !== "file"
 		) {
 			this._statusBarItem.hide();
+
 			return;
 		}
 
 		if (typeof blameInformation[0].blameInformation === "string") {
 			this._statusBarItem.text = `$(git-commit) ${blameInformation[0].blameInformation}`;
+
 			this._statusBarItem.tooltip =
 				this._controller.getBlameInformationHover(
 					textEditor.document.uri,
 					blameInformation[0].blameInformation,
 				);
+
 			this._statusBarItem.command = undefined;
 		} else {
 			this._statusBarItem.text = formatBlameInformation(
 				template,
 				blameInformation[0].blameInformation,
 			);
+
 			this._statusBarItem.tooltip =
 				this._controller.getBlameInformationHover(
 					textEditor.document.uri,
 					blameInformation[0].blameInformation,
 				);
+
 			this._statusBarItem.command = {
 				title: l10n.t("View Commit"),
 				command: "git.blameStatusBarItem.viewCommit",

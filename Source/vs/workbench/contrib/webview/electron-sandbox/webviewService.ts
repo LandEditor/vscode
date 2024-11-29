@@ -13,6 +13,7 @@ export class ElectronWebviewService extends WebviewService {
 			initInfo,
 			this._webviewThemeDataProvider,
 		);
+
 		this.registerNewWebview(webview);
 
 		return webview;

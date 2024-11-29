@@ -19,5 +19,6 @@ export function isMousePositionWithinElement(
 	) {
 		return false;
 	}
+
 	return true;
 }

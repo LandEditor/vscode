@@ -38,6 +38,7 @@ export class TemplateData implements IObjectData {
 		public readonly viewModel: DocumentDiffItemViewModel,
 		public readonly deltaScrollVertical: (delta: number) => void,
 	) {}
+
 	getId(): unknown {
 		return this.viewModel;
 	}
@@ -49,10 +50,13 @@ export class DiffEditorItemTemplate
 	private readonly _viewModel = observableValue<
 		DocumentDiffItemViewModel | undefined
 	>(this, undefined);
+
 	private readonly _collapsed = derived(this, (reader) =>
 		this._viewModel.read(reader)?.collapsed.read(reader),
 	);
+
 	private readonly _editorContentHeight = observableValue<number>(this, 500);
+
 	public readonly contentHeight = derived(this, (reader) => {
 		const h = this._collapsed.read(reader)
 			? 0
@@ -60,10 +64,15 @@ export class DiffEditorItemTemplate
 
 		return h + this._outerEditorHeight;
 	});
+
 	private readonly _modifiedContentWidth = observableValue<number>(this, 0);
+
 	private readonly _modifiedWidth = observableValue<number>(this, 0);
+
 	private readonly _originalContentWidth = observableValue<number>(this, 0);
+
 	private readonly _originalWidth = observableValue<number>(this, 0);
+
 	public readonly maxScroll = derived(this, (reader) => {
 		const scroll1 =
 			this._modifiedContentWidth.read(reader) -
@@ -85,6 +94,7 @@ export class DiffEditorItemTemplate
 			};
 		}
 	});
+
 	private readonly _elements = h("div.multiDiffEntry", [
 		h("div.header@header", [
 			h("div.header-content", [
@@ -105,6 +115,7 @@ export class DiffEditorItemTemplate
 		]),
 		h("div.editorParent", [h("div.editorContainer@editor")]),
 	]) as Record<string, HTMLElement>;
+
 	public readonly editor = this._register(
 		this._instantiationService.createInstance(
 			DiffEditorWidget,
@@ -115,18 +126,22 @@ export class DiffEditorItemTemplate
 			{},
 		),
 	);
+
 	private readonly isModifedFocused = observableCodeEditor(
 		this.editor.getModifiedEditor(),
 	).isFocused;
+
 	private readonly isOriginalFocused = observableCodeEditor(
 		this.editor.getOriginalEditor(),
 	).isFocused;
+
 	public readonly isFocused = derived(
 		this,
 		(reader) =>
 			this.isModifedFocused.read(reader) ||
 			this.isOriginalFocused.read(reader),
 	);
+
 	private readonly _resourceLabel = this._workbenchUIElementFactory
 		.createResourceLabel
 		? this._register(
@@ -135,6 +150,7 @@ export class DiffEditorItemTemplate
 				),
 			)
 		: undefined;
+
 	private readonly _resourceLabel2 = this._workbenchUIElementFactory
 		.createResourceLabel
 		? this._register(
@@ -143,7 +159,9 @@ export class DiffEditorItemTemplate
 				),
 			)
 		: undefined;
+
 	private readonly _outerEditorHeight: number;
+
 	private readonly _contextKeyService: IScopedContextKeyService;
 
 	constructor(
@@ -158,14 +176,17 @@ export class DiffEditorItemTemplate
 		super();
 
 		const btn = new Button(this._elements.collapseButton, {});
+
 		this._register(
 			autorun((reader) => {
 				btn.element.className = "";
+
 				btn.icon = this._collapsed.read(reader)
 					? Codicon.chevronRight
 					: Codicon.chevronDown;
 			}),
 		);
+
 		this._register(
 			btn.onDidClick(() => {
 				this._viewModel
@@ -173,6 +194,7 @@ export class DiffEditorItemTemplate
 					?.collapsed.set(!this._collapsed.get(), undefined);
 			}),
 		);
+
 		this._register(
 			autorun((reader) => {
 				this._elements.editor.style.display = this._collapsed.read(
@@ -182,30 +204,37 @@ export class DiffEditorItemTemplate
 					: "block";
 			}),
 		);
+
 		this._register(
 			this.editor.getModifiedEditor().onDidLayoutChange((e) => {
 				const width = this.editor
 					.getModifiedEditor()
 					.getLayoutInfo().contentWidth;
+
 				this._modifiedWidth.set(width, undefined);
 			}),
 		);
+
 		this._register(
 			this.editor.getOriginalEditor().onDidLayoutChange((e) => {
 				const width = this.editor
 					.getOriginalEditor()
 					.getLayoutInfo().contentWidth;
+
 				this._originalWidth.set(width, undefined);
 			}),
 		);
+
 		this._register(
 			this.editor.onDidContentSizeChange((e) => {
 				globalTransaction((tx) => {
 					this._editorContentHeight.set(e.contentHeight, tx);
+
 					this._modifiedContentWidth.set(
 						this.editor.getModifiedEditor().getContentWidth(),
 						tx,
 					);
+
 					this._originalContentWidth.set(
 						this.editor.getOriginalEditor().getContentWidth(),
 						tx,
@@ -213,28 +242,37 @@ export class DiffEditorItemTemplate
 				});
 			}),
 		);
+
 		this._register(
 			this.editor.getOriginalEditor().onDidScrollChange((e) => {
 				if (this._isSettingScrollTop) {
 					return;
 				}
+
 				if (!e.scrollTopChanged || !this._data) {
 					return;
 				}
+
 				const delta = e.scrollTop - this._lastScrollTop;
+
 				this._data.deltaScrollVertical(delta);
 			}),
 		);
+
 		this._register(
 			autorun((reader) => {
 				const isActive = this._viewModel
 					.read(reader)
 					?.isActive.read(reader);
+
 				this._elements.root.classList.toggle("active", isActive);
 			}),
 		);
+
 		this._container.appendChild(this._elements.root);
+
 		this._outerEditorHeight = this._headerHeight;
+
 		this._contextKeyService = this._register(
 			_parentContextKeyService.createScoped(this._elements.actions),
 		);
@@ -247,6 +285,7 @@ export class DiffEditorItemTemplate
 				]),
 			),
 		);
+
 		this._register(
 			instantiationService.createInstance(
 				MenuWorkbenchToolBar,
@@ -274,6 +313,7 @@ export class DiffEditorItemTemplate
 			),
 		);
 	}
+
 	public setScrollLeft(left: number): void {
 		if (
 			this._modifiedContentWidth.get() - this._modifiedWidth.get() >
@@ -284,8 +324,11 @@ export class DiffEditorItemTemplate
 			this.editor.getOriginalEditor().setScrollLeft(left);
 		}
 	}
+
 	private readonly _dataStore = this._register(new DisposableStore());
+
 	private _data: TemplateData | undefined;
+
 	public setData(data: TemplateData | undefined): void {
 		this._data = data;
 
@@ -309,16 +352,21 @@ export class DiffEditorItemTemplate
 				overviewRulerBorder: false,
 			};
 		}
+
 		if (!data) {
 			globalTransaction((tx) => {
 				this._viewModel.set(undefined, tx);
+
 				this.editor.setDiffModel(null, tx);
+
 				this._dataStore.clear();
 			});
 
 			return;
 		}
+
 		const value = data.viewModel.documentDiffItem;
+
 		globalTransaction((tx) => {
 			this._resourceLabel?.setUri(
 				data.viewModel.modifiedUri ?? data.viewModel.originalUri!,
@@ -340,25 +388,37 @@ export class DiffEditorItemTemplate
 					data.viewModel.originalUri.path
 			) {
 				flag = "R";
+
 				isRenamed = true;
 			} else if (!data.viewModel.modifiedUri) {
 				flag = "D";
+
 				isDeleted = true;
 			} else if (!data.viewModel.originalUri) {
 				flag = "A";
+
 				isAdded = true;
 			}
+
 			this._elements.status.classList.toggle("renamed", isRenamed);
+
 			this._elements.status.classList.toggle("deleted", isDeleted);
+
 			this._elements.status.classList.toggle("added", isAdded);
+
 			this._elements.status.innerText = flag;
+
 			this._resourceLabel2?.setUri(
 				isRenamed ? data.viewModel.originalUri : undefined,
 				{ strikethrough: true },
 			);
+
 			this._dataStore.clear();
+
 			this._viewModel.set(data.viewModel, tx);
+
 			this.editor.setDiffModel(data.viewModel.diffEditorViewModelRef, tx);
+
 			this.editor.updateOptions(updateOptions(value.options ?? {}));
 		});
 
@@ -371,6 +431,7 @@ export class DiffEditorItemTemplate
 				}),
 			);
 		}
+
 		data.viewModel.isAlive.recomputeInitiallyAndOnChange(
 			this._dataStore,
 			(value) => {
@@ -388,9 +449,13 @@ export class DiffEditorItemTemplate
 			}
 		}
 	}
+
 	private readonly _headerHeight = /*this._elements.header.clientHeight*/ 40;
+
 	private _lastScrollTop = -1;
+
 	private _isSettingScrollTop = false;
+
 	public render(
 		verticalRange: OffsetRange,
 		width: number,
@@ -398,9 +463,13 @@ export class DiffEditorItemTemplate
 		viewPort: OffsetRange,
 	): void {
 		this._elements.root.style.visibility = "visible";
+
 		this._elements.root.style.top = `${verticalRange.start}px`;
+
 		this._elements.root.style.height = `${verticalRange.length}px`;
+
 		this._elements.root.style.width = `${width}px`;
+
 		this._elements.root.style.position = "absolute";
 		// For sticky scroll
 		const maxDelta = verticalRange.length - this._headerHeight;
@@ -409,7 +478,9 @@ export class DiffEditorItemTemplate
 			0,
 			Math.min(viewPort.start - verticalRange.start, maxDelta),
 		);
+
 		this._elements.header.style.transform = `translateY(${delta}px)`;
+
 		globalTransaction((tx) => {
 			this.editor.layout({
 				width: width - 2 * 8 - 2 * 1,
@@ -419,19 +490,25 @@ export class DiffEditorItemTemplate
 
 		try {
 			this._isSettingScrollTop = true;
+
 			this._lastScrollTop = editorScroll;
+
 			this.editor.getOriginalEditor().setScrollTop(editorScroll);
 		} finally {
 			this._isSettingScrollTop = false;
 		}
+
 		this._elements.header.classList.toggle(
 			"shadow",
 			delta > 0 || editorScroll > 0,
 		);
+
 		this._elements.header.classList.toggle("collapsed", delta === maxDelta);
 	}
+
 	public hide(): void {
 		this._elements.root.style.top = `-100000px`;
+
 		this._elements.root.style.visibility = "hidden"; // Some editor parts are still visible
 	}
 }

@@ -33,6 +33,7 @@ if (process.env["ELECTRON_RUN_AS_NODE"] || process.versions["electron"]) {
 		// Node.js default resolve if this is the last user-specified loader.
 		return nextResolve(specifier, context);
 	}`;
+
 	register(
 		`data:text/javascript;base64,${Buffer.from(jsCode).toString("base64")}`,
 		import.meta.url,
@@ -43,6 +44,7 @@ globalThis._VSCODE_PRODUCT_JSON = { ...product };
 if (process.env["VSCODE_DEV"]) {
 	try {
 		const overrides: unknown = require("../product.overrides.json");
+
 		globalThis._VSCODE_PRODUCT_JSON = Object.assign(
 			globalThis._VSCODE_PRODUCT_JSON,
 			overrides,
@@ -60,6 +62,7 @@ function setupNLS(): Promise<INLSConfiguration | undefined> {
 	if (!setupNLSResult) {
 		setupNLSResult = doSetupNLS();
 	}
+
 	return setupNLSResult;
 }
 async function doSetupNLS(): Promise<INLSConfiguration | undefined> {
@@ -78,6 +81,7 @@ async function doSetupNLS(): Promise<INLSConfiguration | undefined> {
 			} else if (nlsConfig?.defaultMessagesFile) {
 				messagesFile = nlsConfig.defaultMessagesFile;
 			}
+
 			globalThis._VSCODE_NLS_LANGUAGE = nlsConfig?.resolvedLanguage;
 		} catch (e) {
 			console.error(
@@ -85,12 +89,14 @@ async function doSetupNLS(): Promise<INLSConfiguration | undefined> {
 			);
 		}
 	}
+
 	if (
 		process.env["VSCODE_DEV"] || // no NLS support in dev mode
 		!messagesFile // no NLS messages file
 	) {
 		return undefined;
 	}
+
 	try {
 		globalThis._VSCODE_NLS_MESSAGES = JSON.parse(
 			(await fs.promises.readFile(messagesFile)).toString(),
@@ -132,6 +138,7 @@ async function doSetupNLS(): Promise<INLSConfiguration | undefined> {
 			}
 		}
 	}
+
 	performance.mark("code/didLoadNls");
 
 	return nlsConfig;

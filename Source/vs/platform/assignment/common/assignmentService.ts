@@ -24,12 +24,17 @@ import {
 
 export abstract class BaseAssignmentService implements IAssignmentService {
 	_serviceBrand: undefined;
+
 	protected tasClient: Promise<TASClient> | undefined;
+
 	private networkInitialized = false;
+
 	private overrideInitDelay: Promise<void>;
+
 	protected get experimentsEnabled(): boolean {
 		return true;
 	}
+
 	constructor(
 		private readonly machineId: string,
 		protected readonly configurationService: IConfigurationService,
@@ -57,10 +62,12 @@ export abstract class BaseAssignmentService implements IAssignmentService {
 
 		const overrideDelay =
 			typeof overrideDelaySetting === "number" ? overrideDelaySetting : 0;
+
 		this.overrideInitDelay = new Promise((resolve) =>
 			setTimeout(resolve, overrideDelay),
 		);
 	}
+
 	async getTreatment<T extends string | number | boolean>(
 		name: string,
 	): Promise<T | undefined> {
@@ -74,12 +81,15 @@ export abstract class BaseAssignmentService implements IAssignmentService {
 		if (override !== undefined) {
 			return override;
 		}
+
 		if (!this.tasClient) {
 			return undefined;
 		}
+
 		if (!this.experimentsEnabled) {
 			return undefined;
 		}
+
 		let result: T | undefined;
 
 		const client = await this.tasClient;
@@ -96,10 +106,12 @@ export abstract class BaseAssignmentService implements IAssignmentService {
 				true,
 			);
 		}
+
 		result = client.getTreatmentVariable<T>("vscode", name);
 
 		return result;
 	}
+
 	private async setupTASClient(): Promise<TASClient> {
 		const targetPopulation =
 			this.productService.quality === "stable"
@@ -133,7 +145,9 @@ export abstract class BaseAssignmentService implements IAssignmentService {
 			endpoint: tasConfig.endpoint,
 			refetchInterval: ASSIGNMENT_REFETCH_INTERVAL,
 		});
+
 		await tasClient.initializePromise;
+
 		tasClient.initialFetch.then(() => (this.networkInitialized = true));
 
 		return tasClient;

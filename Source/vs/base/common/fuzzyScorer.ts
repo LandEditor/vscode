@@ -38,6 +38,7 @@ export function scoreFuzzy(
 	if (!target || !query) {
 		return NO_SCORE; // return early if target or query are undefined
 	}
+
 	const targetLength = target.length;
 
 	const queryLength = query.length;
@@ -48,6 +49,7 @@ export function scoreFuzzy(
 	// if (DEBUG) {
 	// 	console.group(`Target: ${target}, Query: ${query}`);
 	// }
+
 	const targetLower = target.toLowerCase();
 
 	const res = doScoreFuzzy(
@@ -63,6 +65,7 @@ export function scoreFuzzy(
 	// 	console.log(`%cFinal Score: ${res[0]}`, 'font-weight: bold');
 	// 	console.groupEnd();
 	// }
+
 	return res;
 }
 function doScoreFuzzy(
@@ -155,6 +158,7 @@ function doScoreFuzzy(
 					targetLower.startsWith(queryLower, targetIndex))
 			) {
 				matches[currentIndex] = matchesSequenceLength + 1;
+
 				scores[currentIndex] = diagScore + score;
 			}
 			// We either have no score or the score is lower than the left score
@@ -162,6 +166,7 @@ function doScoreFuzzy(
 			// Score: pick up from left hand side
 			else {
 				matches[currentIndex] = NO_MATCH;
+
 				scores[currentIndex] = leftScore;
 			}
 		}
@@ -184,6 +189,7 @@ function doScoreFuzzy(
 			positions.push(targetIndex);
 			// go up and left
 			queryIndex--;
+
 			targetIndex--;
 		}
 	}
@@ -191,6 +197,7 @@ function doScoreFuzzy(
 	// if (DEBUG_MATRIX) {
 	// 	printMatrix(query, target, matches, scores);
 	// }
+
 	return [scores[queryLength * targetLength - 1], positions.reverse()];
 }
 function computeCharScore(
@@ -264,6 +271,7 @@ function computeCharScore(
 	// 	console.log(`Total score: ${score}`);
 	// 	console.groupEnd();
 	// }
+
 	return score;
 }
 function considerAsEqual(a: string, b: string): boolean {
@@ -274,6 +282,7 @@ function considerAsEqual(a: string, b: string): boolean {
 	if (a === "/" || a === "\\") {
 		return b === "/" || b === "\\";
 	}
+
 	return false;
 }
 function scoreSeparatorAtPos(charCode: number): number {
@@ -353,7 +362,9 @@ function doScoreFuzzy2Multiple(
 			// no score entirely, we require all queries to match
 			return NO_SCORE2;
 		}
+
 		totalScore += score;
+
 		totalMatches.push(...matches);
 	}
 	// if we have a score, ensure that the positions are
@@ -379,6 +390,7 @@ function doScoreFuzzy2Single(
 	if (!score) {
 		return NO_SCORE2;
 	}
+
 	return [score[0], createFuzzyMatches(score)];
 }
 //#endregion
@@ -455,11 +467,13 @@ export function scoreItemFuzzy<T>(
 	if (!item || !query.normalized) {
 		return NO_ITEM_SCORE; // we need an item and query to score on at least
 	}
+
 	const label = accessor.getItemLabel(item);
 
 	if (!label) {
 		return NO_ITEM_SCORE; // we need a label at least
 	}
+
 	const description = accessor.getItemDescription(item);
 	// in order to speed up scoring, we cache the score with a unique hash based on:
 	// - label
@@ -478,6 +492,7 @@ export function scoreItemFuzzy<T>(
 	if (cached) {
 		return cached;
 	}
+
 	const itemScore = doScoreItemFuzzy(
 		label,
 		description,
@@ -485,6 +500,7 @@ export function scoreItemFuzzy<T>(
 		query,
 		allowNonContiguousMatches,
 	);
+
 	cache[cacheHash] = itemScore;
 
 	return itemScore;
@@ -562,11 +578,13 @@ function doScoreItemFuzzyMultiple(
 			// no score entirely, we require all queries to match
 			return NO_ITEM_SCORE;
 		}
+
 		totalScore += score;
 
 		if (labelMatch) {
 			totalLabelMatches.push(...labelMatch);
 		}
+
 		if (descriptionMatch) {
 			totalDescriptionMatches.push(...descriptionMatch);
 		}
@@ -616,10 +634,12 @@ function doScoreItemFuzzySingle(
 				const prefixLengthBoost = Math.round(
 					(query.normalized.length / label.length) * 100,
 				);
+
 				baseScore += prefixLengthBoost;
 			} else {
 				baseScore = LABEL_SCORE_THRESHOLD;
 			}
+
 			return {
 				score: baseScore + labelScore,
 				labelMatch: labelPrefixMatch || createMatches(labelPositions),
@@ -633,6 +653,7 @@ function doScoreItemFuzzySingle(
 		if (!!path) {
 			descriptionPrefix = `${description}${sep}`; // assume this is a file path
 		}
+
 		const descriptionPrefixLength = descriptionPrefix.length;
 
 		const descriptionAndLabel = `${descriptionPrefix}${label}`;
@@ -663,6 +684,7 @@ function doScoreItemFuzzySingle(
 						start: 0,
 						end: h.end - descriptionPrefixLength,
 					});
+
 					descriptionMatch.push({
 						start: h.start,
 						end: descriptionPrefixLength,
@@ -688,6 +710,7 @@ function doScoreItemFuzzySingle(
 			};
 		}
 	}
+
 	return NO_ITEM_SCORE;
 }
 function createMatches(offsets: number[] | undefined): IMatch[] {
@@ -696,6 +719,7 @@ function createMatches(offsets: number[] | undefined): IMatch[] {
 	if (!offsets) {
 		return ret;
 	}
+
 	let last: IMatch | undefined;
 
 	for (const pos of offsets) {
@@ -703,9 +727,11 @@ function createMatches(offsets: number[] | undefined): IMatch[] {
 			last.end += 1;
 		} else {
 			last = { start: pos, end: pos + 1 };
+
 			ret.push(last);
 		}
 	}
+
 	return ret;
 }
 function normalizeMatches(matches: IMatch[]): IMatch[] {
@@ -724,23 +750,28 @@ function normalizeMatches(matches: IMatch[]): IMatch[] {
 		// it for future merging
 		if (!currentMatch || !matchOverlaps(currentMatch, match)) {
 			currentMatch = match;
+
 			normalizedMatches.push(match);
 		}
 		// otherwise we merge the matches
 		else {
 			currentMatch.start = Math.min(currentMatch.start, match.start);
+
 			currentMatch.end = Math.max(currentMatch.end, match.end);
 		}
 	}
+
 	return normalizedMatches;
 }
 function matchOverlaps(matchA: IMatch, matchB: IMatch): boolean {
 	if (matchA.end < matchB.start) {
 		return false; // A ends before B starts
 	}
+
 	if (matchB.end < matchA.start) {
 		return false; // B ends before A starts
 	}
+
 	return true;
 }
 //#endregion
@@ -883,6 +914,7 @@ function computeLabelAndDescriptionMatchDistance<T>(
 		matchEnd =
 			score.descriptionMatch[score.descriptionMatch.length - 1].end;
 	}
+
 	return matchEnd - matchStart;
 }
 function compareByMatchLength(
@@ -895,9 +927,11 @@ function compareByMatchLength(
 	) {
 		return 0; // make sure to not cause bad comparing when matches are not provided
 	}
+
 	if (!matchesB || !matchesB.length) {
 		return -1;
 	}
+
 	if (!matchesA || !matchesA.length) {
 		return 1;
 	}
@@ -975,6 +1009,7 @@ export interface IPreparedQueryPiece {
 	 * The original query as provided as input.
 	 */
 	original: string;
+
 	originalLowercase: string;
 	/**
 	 * Original normalized to platform separators:
@@ -987,6 +1022,7 @@ export interface IPreparedQueryPiece {
 	 * whitespace and wildcards removed.
 	 */
 	normalized: string;
+
 	normalizedLowercase: string;
 	/**
 	 * The query is wrapped in quotes which means
@@ -1022,6 +1058,7 @@ export function prepareQuery(original: string): IPreparedQuery {
 	if (typeof original !== "string") {
 		original = "";
 	}
+
 	const originalLowercase = original.toLowerCase();
 
 	const { pathNormalized, normalized, normalizedLowercase } =
@@ -1049,6 +1086,7 @@ export function prepareQuery(original: string): IPreparedQuery {
 				if (!values) {
 					values = [];
 				}
+
 				values.push({
 					original: originalPiece,
 					originalLowercase: originalPiece.toLowerCase(),
@@ -1060,6 +1098,7 @@ export function prepareQuery(original: string): IPreparedQuery {
 			}
 		}
 	}
+
 	return {
 		original,
 		originalLowercase,
@@ -1073,7 +1112,9 @@ export function prepareQuery(original: string): IPreparedQuery {
 }
 function normalizeQuery(original: string): {
 	pathNormalized: string;
+
 	normalized: string;
+
 	normalizedLowercase: string;
 } {
 	let pathNormalized: string;
@@ -1106,6 +1147,7 @@ export function pieceToQuery(
 				.join(MULTIPLE_QUERY_VALUES_SEPARATOR),
 		);
 	}
+
 	return prepareQuery(arg1.original);
 }
 //#endregion

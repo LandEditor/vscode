@@ -23,6 +23,7 @@ export abstract class WordDistance {
 			return 0;
 		}
 	})();
+
 	static async create(
 		service: IEditorWorkerService,
 		editor: ICodeEditor,
@@ -30,9 +31,11 @@ export abstract class WordDistance {
 		if (!editor.getOption(EditorOption.suggest).localityBonus) {
 			return WordDistance.None;
 		}
+
 		if (!editor.hasModel()) {
 			return WordDistance.None;
 		}
+
 		const model = editor.getModel();
 
 		const position = editor.getPosition();
@@ -40,6 +43,7 @@ export abstract class WordDistance {
 		if (!service.canComputeWordRanges(model.uri)) {
 			return WordDistance.None;
 		}
+
 		const [ranges] =
 			await new BracketSelectionRangeProvider().provideSelectionRanges(
 				model,
@@ -49,6 +53,7 @@ export abstract class WordDistance {
 		if (ranges.length === 0) {
 			return WordDistance.None;
 		}
+
 		const wordRanges = await service.computeWordRanges(
 			model.uri,
 			ranges[0].range,
@@ -59,6 +64,7 @@ export abstract class WordDistance {
 		}
 		// remove current word
 		const wordUntilPos = model.getWordUntilPosition(position);
+
 		delete wordRanges[wordUntilPos.word];
 
 		return new (class extends WordDistance {
@@ -66,9 +72,11 @@ export abstract class WordDistance {
 				if (!position.equals(editor.getPosition())) {
 					return 0;
 				}
+
 				if (item.kind === CompletionItemKind.Keyword) {
 					return 2 << 20;
 				}
+
 				const word =
 					typeof item.label === "string"
 						? item.label
@@ -79,6 +87,7 @@ export abstract class WordDistance {
 				if (isFalsyOrEmpty(wordLines)) {
 					return 2 << 20;
 				}
+
 				const idx = binarySearch(
 					wordLines,
 					Range.fromPositions(anchor),
@@ -96,11 +105,14 @@ export abstract class WordDistance {
 					if (!Range.containsRange(range.range, bestWordRange)) {
 						break;
 					}
+
 					blockDistance -= 1;
 				}
+
 				return blockDistance;
 			}
 		})();
 	}
+
 	abstract distance(anchor: IPosition, suggestion: CompletionItem): number;
 }

@@ -30,19 +30,25 @@ import { DetailedLineRangeMapping } from "./mapping.js";
 
 export class TextModelDiffs extends Disposable {
 	private _recomputeCount = 0;
+
 	private readonly _state = observableValue<
 		TextModelDiffState,
 		TextModelDiffChangeReason
 	>(this, TextModelDiffState.initializing);
+
 	private readonly _diffs = observableValue<
 		DetailedLineRangeMapping[],
 		TextModelDiffChangeReason
 	>(this, []);
+
 	private readonly _barrier = new ReentrancyBarrier();
+
 	private _isDisposed = false;
+
 	public get isApplyingChange() {
 		return this._barrier.isOccupied;
 	}
+
 	constructor(
 		private readonly baseTextModel: ITextModel,
 		private readonly textModel: ITextModel,
@@ -51,13 +57,16 @@ export class TextModelDiffs extends Disposable {
 		super();
 
 		const recomputeSignal = observableSignal("recompute");
+
 		this._register(
 			autorun((reader) => {
 				/** @description Update diff state */
 				recomputeSignal.read(reader);
+
 				this._recompute(reader);
 			}),
 		);
+
 		this._register(
 			baseTextModel.onDidChangeContent(
 				this._barrier.makeExclusiveOrSkip(() => {
@@ -65,6 +74,7 @@ export class TextModelDiffs extends Disposable {
 				}),
 			),
 		);
+
 		this._register(
 			textModel.onDidChangeContent(
 				this._barrier.makeExclusiveOrSkip(() => {
@@ -72,12 +82,14 @@ export class TextModelDiffs extends Disposable {
 				}),
 			),
 		);
+
 		this._register(
 			toDisposable(() => {
 				this._isDisposed = true;
 			}),
 		);
 	}
+
 	public get state(): IObservable<
 		TextModelDiffState,
 		TextModelDiffChangeReason
@@ -93,7 +105,9 @@ export class TextModelDiffs extends Disposable {
 	> {
 		return this._diffs;
 	}
+
 	private _isInitializing = true;
+
 	private _recompute(reader: IReader): void {
 		this._recomputeCount++;
 
@@ -102,6 +116,7 @@ export class TextModelDiffs extends Disposable {
 		if (this._state.get() === TextModelDiffState.initializing) {
 			this._isInitializing = true;
 		}
+
 		transaction((tx) => {
 			/** @description Starting Diff Computation. */
 			this._state.set(
@@ -118,14 +133,17 @@ export class TextModelDiffs extends Disposable {
 			this.textModel,
 			reader,
 		);
+
 		result.then((result) => {
 			if (this._isDisposed) {
 				return;
 			}
+
 			if (currentRecomputeIdx !== this._recomputeCount) {
 				// There is a newer recompute call
 				return;
 			}
+
 			transaction((tx) => {
 				/** @description Completed Diff Computation */
 				if (result.diffs) {
@@ -134,6 +152,7 @@ export class TextModelDiffs extends Disposable {
 						tx,
 						TextModelDiffChangeReason.textChange,
 					);
+
 					this._diffs.set(
 						result.diffs,
 						tx,
@@ -146,10 +165,12 @@ export class TextModelDiffs extends Disposable {
 						TextModelDiffChangeReason.textChange,
 					);
 				}
+
 				this._isInitializing = false;
 			});
 		});
 	}
+
 	private ensureUpToDate(): void {
 		if (this.state.get() !== TextModelDiffState.upToDate) {
 			throw new BugIndicatingError(
@@ -157,15 +178,18 @@ export class TextModelDiffs extends Disposable {
 			);
 		}
 	}
+
 	public removeDiffs(
 		diffToRemoves: DetailedLineRangeMapping[],
 		transaction: ITransaction | undefined,
 		group?: UndoRedoGroup,
 	): void {
 		this.ensureUpToDate();
+
 		diffToRemoves.sort(
 			compareBy((d) => d.inputRange.startLineNumber, numberComparator),
 		);
+
 		diffToRemoves.reverse();
 
 		let diffs = this._diffs.get();
@@ -173,15 +197,18 @@ export class TextModelDiffs extends Disposable {
 		for (const diffToRemove of diffToRemoves) {
 			// TODO improve performance
 			const len = diffs.length;
+
 			diffs = diffs.filter((d) => d !== diffToRemove);
 
 			if (len === diffs.length) {
 				throw new BugIndicatingError();
 			}
+
 			this._barrier.runExclusivelyOrThrow(() => {
 				const edits = diffToRemove
 					.getReverseLineEdit()
 					.toEdits(this.textModel.getLineCount());
+
 				this.textModel.pushEditOperations(
 					null,
 					edits,
@@ -189,6 +216,7 @@ export class TextModelDiffs extends Disposable {
 					group,
 				);
 			});
+
 			diffs = diffs.map((d) =>
 				d.outputRange.isAfter(diffToRemove.outputRange)
 					? d.addOutputLineDelta(
@@ -198,6 +226,7 @@ export class TextModelDiffs extends Disposable {
 					: d,
 			);
 		}
+
 		this._diffs.set(diffs, transaction, TextModelDiffChangeReason.other);
 	}
 	/**
@@ -229,8 +258,10 @@ export class TextModelDiffs extends Disposable {
 			} else if (diff.inputRange.isAfter(edit.range)) {
 				if (!firstAfter) {
 					firstAfter = true;
+
 					newDiffs.push(editMapping.addOutputLineDelta(delta));
 				}
+
 				newDiffs.push(
 					diff.addOutputLineDelta(
 						edit.newLines.length - edit.range.lineCount,
@@ -239,26 +270,34 @@ export class TextModelDiffs extends Disposable {
 			} else {
 				newDiffs.push(diff);
 			}
+
 			if (!firstAfter) {
 				delta += diff.outputRange.lineCount - diff.inputRange.lineCount;
 			}
 		}
+
 		if (!firstAfter) {
 			firstAfter = true;
+
 			newDiffs.push(editMapping.addOutputLineDelta(delta));
 		}
+
 		this._barrier.runExclusivelyOrThrow(() => {
 			const edits = new LineRangeEdit(
 				edit.range.delta(delta),
 				edit.newLines,
 			).toEdits(this.textModel.getLineCount());
+
 			this.textModel.pushEditOperations(null, edits, () => null, group);
 		});
+
 		this._diffs.set(newDiffs, transaction, TextModelDiffChangeReason.other);
 	}
+
 	public findTouchingDiffs(baseRange: LineRange): DetailedLineRangeMapping[] {
 		return this.diffs.get().filter((d) => d.inputRange.touches(baseRange));
 	}
+
 	private getResultLine(
 		lineNumber: number,
 		reader?: IReader,
@@ -279,8 +318,10 @@ export class TextModelDiffs extends Disposable {
 				break;
 			}
 		}
+
 		return lineNumber + offset;
 	}
+
 	public getResultLineRange(
 		baseRange: LineRange,
 		reader?: IReader,
@@ -290,6 +331,7 @@ export class TextModelDiffs extends Disposable {
 		if (typeof start !== "number") {
 			start = start.outputRange.startLineNumber;
 		}
+
 		let endExclusive = this.getResultLine(
 			baseRange.endLineNumberExclusive,
 			reader,
@@ -298,6 +340,7 @@ export class TextModelDiffs extends Disposable {
 		if (typeof endExclusive !== "number") {
 			endExclusive = endExclusive.outputRange.endLineNumberExclusive;
 		}
+
 		return LineRange.fromLineNumbers(start, endExclusive);
 	}
 }
@@ -313,5 +356,6 @@ export const enum TextModelDiffState {
 }
 export interface ITextModelDiffsState {
 	state: TextModelDiffState;
+
 	diffs: DetailedLineRangeMapping[];
 }

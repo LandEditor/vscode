@@ -23,18 +23,25 @@ import { UpdateNotAvailableClassification } from "./abstractUpdateService.js";
 
 abstract class AbstractUpdateService implements IUpdateService {
 	declare readonly _serviceBrand: undefined;
+
 	private _state: State = State.Uninitialized;
+
 	private readonly _onStateChange = new Emitter<State>();
+
 	readonly onStateChange: Event<State> = this._onStateChange.event;
 
 	get state(): State {
 		return this._state;
 	}
+
 	protected setState(state: State): void {
 		this.logService.info("update#setState", state.type);
+
 		this._state = state;
+
 		this._onStateChange.fire(state);
 	}
+
 	constructor(
 		@ILifecycleMainService
 		private readonly lifecycleMainService: ILifecycleMainService,
@@ -48,12 +55,14 @@ abstract class AbstractUpdateService implements IUpdateService {
 
 			return;
 		}
+
 		this.setState(State.Idle(this.getUpdateType()));
 		// Start checking for updates after 30 seconds
 		this.scheduleCheckForUpdates(30 * 1000).then(undefined, (err) =>
 			this.logService.error(err),
 		);
 	}
+
 	private scheduleCheckForUpdates(delay = 60 * 60 * 1000): Promise<void> {
 		return timeout(delay)
 			.then(() => this.checkForUpdates(false))
@@ -62,6 +71,7 @@ abstract class AbstractUpdateService implements IUpdateService {
 				return this.scheduleCheckForUpdates(60 * 60 * 1000);
 			});
 	}
+
 	async checkForUpdates(explicit: boolean): Promise<void> {
 		this.logService.trace(
 			"update#checkForUpdates, state = ",
@@ -71,8 +81,10 @@ abstract class AbstractUpdateService implements IUpdateService {
 		if (this.state.type !== StateType.Idle) {
 			return;
 		}
+
 		this.doCheckForUpdates(explicit);
 	}
+
 	async downloadUpdate(): Promise<void> {
 		this.logService.trace(
 			"update#downloadUpdate, state = ",
@@ -82,22 +94,28 @@ abstract class AbstractUpdateService implements IUpdateService {
 		if (this.state.type !== StateType.AvailableForDownload) {
 			return;
 		}
+
 		await this.doDownloadUpdate(this.state);
 	}
+
 	protected doDownloadUpdate(state: AvailableForDownload): Promise<void> {
 		return Promise.resolve(undefined);
 	}
+
 	async applyUpdate(): Promise<void> {
 		this.logService.trace("update#applyUpdate, state = ", this.state.type);
 
 		if (this.state.type !== StateType.Downloaded) {
 			return;
 		}
+
 		await this.doApplyUpdate();
 	}
+
 	protected doApplyUpdate(): Promise<void> {
 		return Promise.resolve(undefined);
 	}
+
 	quitAndInstall(): Promise<void> {
 		this.logService.trace(
 			"update#quitAndInstall, state = ",
@@ -107,9 +125,11 @@ abstract class AbstractUpdateService implements IUpdateService {
 		if (this.state.type !== StateType.Ready) {
 			return Promise.resolve(undefined);
 		}
+
 		this.logService.trace(
 			"update#quitAndInstall(): before lifecycle quit()",
 		);
+
 		this.lifecycleMainService
 			.quit(true /* will restart */)
 			.then((vetod) => {
@@ -120,25 +140,31 @@ abstract class AbstractUpdateService implements IUpdateService {
 				if (vetod) {
 					return;
 				}
+
 				this.logService.trace(
 					"update#quitAndInstall(): running raw#quitAndInstall()",
 				);
+
 				this.doQuitAndInstall();
 			});
 
 		return Promise.resolve(undefined);
 	}
+
 	protected getUpdateType(): UpdateType {
 		return UpdateType.Snap;
 	}
+
 	protected doQuitAndInstall(): void {
 		// noop
 	}
+
 	abstract isLatestVersion(): Promise<boolean | undefined>;
 
 	async _applySpecificUpdate(packagePath: string): Promise<void> {
 		// noop
 	}
+
 	protected abstract doCheckForUpdates(context: any): void;
 }
 export class SnapUpdateService extends AbstractUpdateService {
@@ -175,13 +201,17 @@ export class SnapUpdateService extends AbstractUpdateService {
 		const listener = onDebouncedCurrentChange(() =>
 			this.checkForUpdates(false),
 		);
+
 		lifecycleMainService.onWillShutdown(() => {
 			listener.dispose();
+
 			watcher.close();
 		});
 	}
+
 	protected doCheckForUpdates(): void {
 		this.setState(State.CheckingForUpdates(false));
+
 		this.isUpdateAvailable().then(
 			(result) => {
 				if (result) {
@@ -193,21 +223,25 @@ export class SnapUpdateService extends AbstractUpdateService {
 						},
 						UpdateNotAvailableClassification
 					>("update:notAvailable", { explicit: false });
+
 					this.setState(State.Idle(UpdateType.Snap));
 				}
 			},
 			(err) => {
 				this.logService.error(err);
+
 				this.telemetryService.publicLog2<
 					{
 						explicit: boolean;
 					},
 					UpdateNotAvailableClassification
 				>("update:notAvailable", { explicit: false });
+
 				this.setState(State.Idle(UpdateType.Snap, err.message || err));
 			},
 		);
 	}
+
 	protected override doQuitAndInstall(): void {
 		this.logService.trace(
 			"update#quitAndInstall(): running raw#quitAndInstall()",
@@ -219,6 +253,7 @@ export class SnapUpdateService extends AbstractUpdateService {
 			stdio: "ignore",
 		});
 	}
+
 	private async isUpdateAvailable(): Promise<boolean> {
 		const resolvedCurrentSnapPath = await new Promise<string>((c, e) =>
 			realpath(`${path.dirname(this.snap)}/current`, (err, r) =>
@@ -230,6 +265,7 @@ export class SnapUpdateService extends AbstractUpdateService {
 
 		return this.snapRevision !== currentRevision;
 	}
+
 	isLatestVersion(): Promise<boolean | undefined> {
 		return this.isUpdateAvailable().then(undefined, (err) => {
 			this.logService.error(

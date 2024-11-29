@@ -101,6 +101,7 @@ const IPrivateBreakpointWidgetService =
 	);
 interface IPrivateBreakpointWidgetService {
 	readonly _serviceBrand: undefined;
+
 	close(success: boolean): void;
 }
 
@@ -146,20 +147,35 @@ export class BreakpointWidget
 	implements IPrivateBreakpointWidgetService
 {
 	declare readonly _serviceBrand: undefined;
+
 	private selectContainer!: HTMLElement;
+
 	private inputContainer!: HTMLElement;
+
 	private selectBreakpointContainer!: HTMLElement;
+
 	private input!: IActiveCodeEditor;
+
 	private selectBreakpointBox!: SelectBox;
+
 	private selectModeBox?: SelectBox;
+
 	private toDispose: lifecycle.IDisposable[];
+
 	private conditionInput = "";
+
 	private hitCountInput = "";
+
 	private logMessageInput = "";
+
 	private modeInput?: DebugProtocol.BreakpointMode;
+
 	private breakpoint: IBreakpoint | undefined;
+
 	private context: Context;
+
 	private heightInPx: number | undefined;
+
 	private triggeredByBreakpointInput: IBreakpoint | undefined;
 
 	constructor(
@@ -200,6 +216,7 @@ export class BreakpointWidget
 			frameWidth: 1,
 			isAccessible: true,
 		});
+
 		this.toDispose = [];
 
 		const model = this.editor.getModel();
@@ -212,8 +229,10 @@ export class BreakpointWidget
 				column: this.column,
 				uri,
 			});
+
 			this.breakpoint = breakpoints.length ? breakpoints[0] : undefined;
 		}
+
 		if (context === undefined) {
 			if (
 				this.breakpoint &&
@@ -236,6 +255,7 @@ export class BreakpointWidget
 		} else {
 			this.context = context;
 		}
+
 		this.toDispose.push(
 			this.debugService.getModel().onDidChangeBreakpoints((e) => {
 				if (
@@ -248,13 +268,16 @@ export class BreakpointWidget
 				}
 			}),
 		);
+
 		this.codeEditorService.registerDecorationType(
 			"breakpoint-widget",
 			DECORATION_KEY,
 			{},
 		);
+
 		this.create();
 	}
+
 	private get placeholder(): string {
 		const acceptString =
 			this.keybindingService
@@ -292,6 +315,7 @@ export class BreakpointWidget
 				);
 		}
 	}
+
 	private getInputValue(breakpoint: IBreakpoint | undefined): string {
 		switch (this.context) {
 			case Context.LOG_MESSAGE:
@@ -310,6 +334,7 @@ export class BreakpointWidget
 					: this.conditionInput;
 		}
 	}
+
 	private rememberInput(): void {
 		if (this.context !== Context.TRIGGER_POINT) {
 			const value = this.input.getModel().getValue();
@@ -330,6 +355,7 @@ export class BreakpointWidget
 			}
 		}
 	}
+
 	private setInputMode(): void {
 		if (this.editor.hasModel()) {
 			// Use plaintext language for log messages, otherwise respect underlying editor language #125619
@@ -337,18 +363,23 @@ export class BreakpointWidget
 				this.context === Context.LOG_MESSAGE
 					? PLAINTEXT_LANGUAGE_ID
 					: this.editor.getModel().getLanguageId();
+
 			this.input.getModel().setLanguage(languageId);
 		}
 	}
+
 	override show(rangeOrPos: IRange | IPosition): void {
 		const lineNum = this.input.getModel().getLineCount();
 
 		super.show(rangeOrPos, lineNum + 1);
 	}
+
 	fitHeightToContent(): void {
 		const lineNum = this.input.getModel().getLineCount();
+
 		this._relayout(lineNum + 1);
 	}
+
 	protected _fillContainer(container: HTMLElement): void {
 		this.setCssClass("breakpoint-widget");
 
@@ -364,15 +395,23 @@ export class BreakpointWidget
 			defaultSelectBoxStyles,
 			{ ariaLabel: nls.localize("breakpointType", "Breakpoint Type") },
 		);
+
 		this.selectContainer = $(".breakpoint-select-container");
+
 		selectBox.render(dom.append(container, this.selectContainer));
+
 		selectBox.onDidSelect((e) => {
 			this.rememberInput();
+
 			this.context = e.index;
+
 			this.updateContextInput();
 		});
+
 		this.createModesInput(container);
+
 		this.inputContainer = $(".inputContainer");
+
 		this.toDispose.push(
 			this.hoverService.setupManagedHover(
 				getDefaultHoverDelegate("mouse"),
@@ -380,28 +419,36 @@ export class BreakpointWidget
 				this.placeholder,
 			),
 		);
+
 		this.createBreakpointInput(dom.append(container, this.inputContainer));
+
 		this.input.getModel().setValue(this.getInputValue(this.breakpoint));
+
 		this.toDispose.push(
 			this.input.getModel().onDidChangeContent(() => {
 				this.fitHeightToContent();
 			}),
 		);
+
 		this.input.setPosition({
 			lineNumber: 1,
 			column: this.input.getModel().getLineMaxColumn(1),
 		});
+
 		this.createTriggerBreakpointInput(container);
+
 		this.updateContextInput();
 		// Due to an electron bug we have to do the timeout, otherwise we do not get focus
 		setTimeout(() => this.focusInput(), 150);
 	}
+
 	private createModesInput(container: HTMLElement) {
 		const modes = this.debugService.getModel().getBreakpointModes("source");
 
 		if (modes.length <= 1) {
 			return;
 		}
+
 		const sb = (this.selectModeBox = new SelectBox(
 			[
 				{ text: nls.localize("bpMode", "Mode"), isDisabled: true },
@@ -414,7 +461,9 @@ export class BreakpointWidget
 			this.contextViewService,
 			defaultSelectBoxStyles,
 		));
+
 		this.toDispose.push(sb);
+
 		this.toDispose.push(
 			sb.onDidSelect((e) => {
 				this.modeInput = modes[e.index - 1];
@@ -426,10 +475,12 @@ export class BreakpointWidget
 		const selectionWrapper = $(".select-box-container");
 
 		dom.append(modeWrapper, selectionWrapper);
+
 		sb.render(selectionWrapper);
 
 		dom.append(container, modeWrapper);
 	}
+
 	private createTriggerBreakpointInput(container: HTMLElement) {
 		const breakpoints = this.debugService
 			.getModel()
@@ -471,6 +522,7 @@ export class BreakpointWidget
 					);
 				});
 		}
+
 		const selectBreakpointBox = (this.selectBreakpointBox = new SelectBox(
 			breakpointOptions,
 			index + 1,
@@ -483,6 +535,7 @@ export class BreakpointWidget
 				),
 			},
 		));
+
 		selectBreakpointBox.onDidSelect((e) => {
 			if (e.index === 0) {
 				this.triggeredByBreakpointInput = undefined;
@@ -490,8 +543,11 @@ export class BreakpointWidget
 				this.triggeredByBreakpointInput = breakpoints[e.index - 1];
 			}
 		});
+
 		this.toDispose.push(selectBreakpointBox);
+
 		this.selectBreakpointContainer = $(".select-breakpoint-container");
+
 		this.toDispose.push(
 			dom.addDisposableListener(
 				this.selectBreakpointContainer,
@@ -509,6 +565,7 @@ export class BreakpointWidget
 		const selectionWrapper = $(".select-box-container");
 
 		dom.append(this.selectBreakpointContainer, selectionWrapper);
+
 		selectBreakpointBox.render(selectionWrapper);
 
 		dom.append(container, this.selectBreakpointContainer);
@@ -517,40 +574,55 @@ export class BreakpointWidget
 			this.selectBreakpointContainer,
 			defaultButtonStyles,
 		);
+
 		closeButton.label = nls.localize("ok", "Ok");
+
 		this.toDispose.push(closeButton.onDidClick(() => this.close(true)));
+
 		this.toDispose.push(closeButton);
 	}
+
 	private updateContextInput() {
 		if (this.context === Context.TRIGGER_POINT) {
 			this.inputContainer.hidden = true;
+
 			this.selectBreakpointContainer.hidden = false;
 		} else {
 			this.inputContainer.hidden = false;
+
 			this.selectBreakpointContainer.hidden = true;
+
 			this.setInputMode();
 
 			const value = this.getInputValue(this.breakpoint);
+
 			this.input.getModel().setValue(value);
+
 			this.focusInput();
 		}
 	}
+
 	protected override _doLayout(
 		heightInPixel: number,
 		widthInPixel: number,
 	): void {
 		this.heightInPx = heightInPixel;
+
 		this.input.layout({ height: heightInPixel, width: widthInPixel - 113 });
+
 		this.centerInputVertically();
 	}
+
 	protected override _onWidth(widthInPixel: number): void {
 		if (typeof this.heightInPx === "number") {
 			this._doLayout(this.heightInPx, widthInPixel);
 		}
 	}
+
 	private createBreakpointInput(container: HTMLElement): void {
 		const scopedContextKeyService =
 			this.contextKeyService.createScoped(container);
+
 		this.toDispose.push(scopedContextKeyService);
 
 		const scopedInstatiationService = this.instantiationService.createChild(
@@ -559,11 +631,13 @@ export class BreakpointWidget
 				[IPrivateBreakpointWidgetService, this],
 			),
 		);
+
 		this.toDispose.push(scopedInstatiationService);
 
 		const options = this.createEditorOptions();
 
 		const codeEditorWidgetOptions = getSimpleCodeEditorWidgetOptions();
+
 		this.input = <IActiveCodeEditor>(
 			scopedInstatiationService.createInstance(
 				CodeEditorWidget,
@@ -572,6 +646,7 @@ export class BreakpointWidget
 				codeEditorWidgetOptions,
 			)
 		);
+
 		CONTEXT_IN_BREAKPOINT_WIDGET.bindTo(scopedContextKeyService).set(true);
 
 		const model = this.modelService.createModel(
@@ -584,8 +659,11 @@ export class BreakpointWidget
 		if (this.editor.hasModel()) {
 			model.setLanguage(this.editor.getModel().getLanguageId());
 		}
+
 		this.input.setModel(model);
+
 		this.setInputMode();
+
 		this.toDispose.push(model);
 
 		const setDecorations = () => {
@@ -597,14 +675,18 @@ export class BreakpointWidget
 						this.themeService.getColorTheme(),
 						this.placeholder,
 					);
+
 			this.input.setDecorationsByType(
 				"breakpoint-widget",
 				DECORATION_KEY,
 				decorations,
 			);
 		};
+
 		this.input.getModel().onDidChangeContent(() => setDecorations());
+
 		this.themeService.onDidColorThemeChange(() => setDecorations());
+
 		this.toDispose.push(
 			this.languageFeaturesService.completionProvider.register(
 				{ scheme: DEBUG_SCHEME, hasAccessToAllModels: true },
@@ -666,6 +748,7 @@ export class BreakpointWidget
 										overwriteBefore++;
 									}
 								}
+
 								return {
 									suggestions: suggestions.items.map((s) => {
 										s.completion.range =
@@ -686,11 +769,13 @@ export class BreakpointWidget
 								suggestions: [],
 							});
 						}
+
 						return suggestionsPromise;
 					},
 				},
 			),
 		);
+
 		this.toDispose.push(
 			this._configurationService.onDidChangeConfiguration((e) => {
 				if (
@@ -698,24 +783,32 @@ export class BreakpointWidget
 					e.affectsConfiguration("editor.lineHeight")
 				) {
 					this.input.updateOptions(this.createEditorOptions());
+
 					this.centerInputVertically();
 				}
 			}),
 		);
 	}
+
 	private createEditorOptions(): IEditorOptions {
 		const editorConfig =
 			this._configurationService.getValue<IEditorOptions>("editor");
 
 		const options = getSimpleEditorOptions(this._configurationService);
+
 		options.fontSize = editorConfig.fontSize;
+
 		options.fontFamily = editorConfig.fontFamily;
+
 		options.lineHeight = editorConfig.lineHeight;
+
 		options.fontLigatures = editorConfig.fontLigatures;
+
 		options.ariaLabel = this.placeholder;
 
 		return options;
 	}
+
 	private centerInputVertically() {
 		if (this.container && typeof this.heightInPx === "number") {
 			const lineHeight = this.input.getOption(EditorOption.lineHeight);
@@ -723,9 +816,11 @@ export class BreakpointWidget
 			const lineNum = this.input.getModel().getLineCount();
 
 			const newTopMargin = (this.heightInPx - lineNum * lineHeight) / 2;
+
 			this.inputContainer.style.marginTop = newTopMargin + "px";
 		}
 	}
+
 	close(success: boolean): void {
 		if (success) {
 			// if there is already a breakpoint on this location - remove it.
@@ -740,30 +835,41 @@ export class BreakpointWidget
 			let mode: string | undefined = undefined;
 
 			let modeLabel: string | undefined = undefined;
+
 			this.rememberInput();
 
 			if (this.conditionInput || this.context === Context.CONDITION) {
 				condition = this.conditionInput;
 			}
+
 			if (this.hitCountInput || this.context === Context.HIT_COUNT) {
 				hitCondition = this.hitCountInput;
 			}
+
 			if (this.logMessageInput || this.context === Context.LOG_MESSAGE) {
 				logMessage = this.logMessageInput;
 			}
+
 			if (this.selectModeBox) {
 				mode = this.modeInput?.mode;
+
 				modeLabel = this.modeInput?.label;
 			}
+
 			if (this.context === Context.TRIGGER_POINT) {
 				// currently, trigger points don't support additional conditions:
 				condition = undefined;
+
 				hitCondition = undefined;
+
 				logMessage = undefined;
+
 				triggeredBy = this.triggeredByBreakpointInput?.getId();
 			}
+
 			if (this.breakpoint) {
 				const data = new Map<string, IBreakpointUpdateData>();
+
 				data.set(this.breakpoint.getId(), {
 					condition,
 					hitCondition,
@@ -772,6 +878,7 @@ export class BreakpointWidget
 					mode,
 					modeLabel,
 				});
+
 				this.debugService
 					.updateBreakpoints(this.breakpoint.originalUri, data, false)
 					.then(undefined, onUnexpectedError);
@@ -795,8 +902,10 @@ export class BreakpointWidget
 				}
 			}
 		}
+
 		this.dispose();
 	}
+
 	private focusInput() {
 		if (this.context === Context.TRIGGER_POINT) {
 			this.selectBreakpointBox.focus();
@@ -804,9 +913,12 @@ export class BreakpointWidget
 			this.input.focus();
 		}
 	}
+
 	override dispose(): void {
 		super.dispose();
+
 		this.input.dispose();
+
 		lifecycle.dispose(this.toDispose);
 
 		setTimeout(() => this.editor.focus(), 0);
@@ -826,6 +938,7 @@ class AcceptBreakpointWidgetInputAction extends EditorCommand {
 			},
 		});
 	}
+
 	runEditorCommand(accessor: ServicesAccessor, editor: ICodeEditor): void {
 		accessor.get(IPrivateBreakpointWidgetService).close(true);
 	}
@@ -845,6 +958,7 @@ class CloseBreakpointWidgetCommand extends EditorCommand {
 			},
 		});
 	}
+
 	runEditorCommand(
 		accessor: ServicesAccessor,
 		editor: ICodeEditor,
@@ -859,6 +973,7 @@ class CloseBreakpointWidgetCommand extends EditorCommand {
 			// if focus is in outer editor we need to use the debug contribution to close
 			return debugContribution.closeBreakpointWidget();
 		}
+
 		accessor.get(IPrivateBreakpointWidgetService).close(false);
 	}
 }

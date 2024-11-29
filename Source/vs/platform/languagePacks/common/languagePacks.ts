@@ -23,6 +23,7 @@ export const ILanguagePackService = createDecorator<ILanguagePackService>(
 
 export interface ILanguagePackItem extends IQuickPickItem {
 	readonly extensionId?: string;
+
 	readonly galleryExtension?: IGalleryExtension;
 }
 export interface ILanguagePackService {
@@ -49,10 +50,12 @@ export abstract class LanguagePackBaseService
 	) {
 		super();
 	}
+
 	abstract getBuiltInExtensionTranslationsUri(
 		id: string,
 		language: string,
 	): Promise<URI | undefined>;
+
 	abstract getInstalledLanguages(): Promise<Array<ILanguagePackItem>>;
 
 	async getAvailableLanguages(): Promise<ILanguagePackItem[]> {
@@ -74,6 +77,7 @@ export abstract class LanguagePackBaseService
 			// This method is best effort. So, we ignore any errors.
 			return [];
 		}
+
 		const languagePackExtensions = result.firstPage.filter(
 			(e) =>
 				e.properties.localizedLanguages?.length &&
@@ -98,10 +102,12 @@ export abstract class LanguagePackBaseService
 					galleryExtension: lp,
 				};
 			});
+
 		allFromMarketplace.push(this.createQuickPickItem("en", "English"));
 
 		return allFromMarketplace;
 	}
+
 	protected createQuickPickItem(
 		locale: string,
 		languageName?: string,
@@ -114,10 +120,13 @@ export abstract class LanguagePackBaseService
 		if (label !== locale) {
 			description = `(${locale})`;
 		}
+
 		if (locale.toLowerCase() === language.toLowerCase()) {
 			description ??= "";
+
 			description += localize("currentDisplayLanguage", " (Current)");
 		}
+
 		if (languagePack?.installCount) {
 			description ??= "";
 
@@ -132,8 +141,10 @@ export abstract class LanguagePackBaseService
 			} else {
 				countLabel = String(count);
 			}
+
 			description += ` $(cloud-download) ${countLabel}`;
 		}
+
 		return {
 			id: locale,
 			label,

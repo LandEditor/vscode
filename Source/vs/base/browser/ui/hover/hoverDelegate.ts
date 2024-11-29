@@ -9,6 +9,7 @@ import { HoverPosition } from "./hoverWidget.js";
 
 export interface IHoverDelegateTarget extends IDisposable {
 	readonly targetElements: readonly HTMLElement[];
+
 	x?: number;
 }
 export interface IHoverDelegateOptions extends IManagedHoverOptions {
@@ -42,6 +43,7 @@ export interface IHoverDelegateOptions extends IManagedHoverOptions {
 		 */
 		hoverPosition?: HoverPosition;
 	};
+
 	appearance?: {
 		/**
 		 * Whether to show the hover pointer
@@ -66,9 +68,13 @@ export interface IHoverDelegate {
 		options: IHoverDelegateOptions,
 		focus?: boolean,
 	): IHoverWidget | undefined;
+
 	onDidHideHover?: () => void;
+
 	delay: number;
+
 	placement?: "mouse" | "element";
+
 	showNativeHover?: boolean; // TODO@benibenj remove this, only temp fix for contextviews
 }
 export interface IScopedHoverDelegate extends IHoverDelegate, IDisposable {}

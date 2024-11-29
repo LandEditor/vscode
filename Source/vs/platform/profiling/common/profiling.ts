@@ -7,28 +7,41 @@ import { createDecorator } from "../../instantiation/common/instantiation.js";
 
 export interface IV8Profile {
 	nodes: IV8ProfileNode[];
+
 	samples?: number[];
+
 	timeDeltas?: number[];
+
 	startTime: number;
+
 	endTime: number;
 }
 export interface IV8ProfileNode {
 	id: number;
+
 	hitCount?: number;
+
 	children?: number[];
+
 	callFrame: IV8CallFrame;
+
 	deoptReason?: string;
+
 	positionTicks?: {
 		line: number;
+
 		ticks: number;
 	}[];
 }
 export interface IV8CallFrame {
 	url: string;
+
 	scriptId: string;
 
 	functionName: string;
+
 	lineNumber: number;
+
 	columnNumber: number;
 }
 export const IV8InspectProfilingService =
@@ -36,7 +49,9 @@ export const IV8InspectProfilingService =
 
 export interface IV8InspectProfilingService {
 	_serviceBrand: undefined;
+
 	startProfiling(options: { host: string; port: number }): Promise<string>;
+
 	stopProfiling(sessionId: string): Promise<IV8Profile>;
 }
 export namespace Utils {
@@ -45,6 +60,7 @@ export namespace Utils {
 	): profile is Required<IV8Profile> {
 		return Boolean(profile.samples && profile.timeDeltas);
 	}
+
 	export function rewriteAbsolutePaths(
 		profile: IV8Profile,
 		replace: string = "noAbsolutePaths",
@@ -62,6 +78,7 @@ export namespace Utils {
 				}
 			}
 		}
+
 		return profile;
 	}
 }

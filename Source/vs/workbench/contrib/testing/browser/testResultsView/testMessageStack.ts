@@ -14,9 +14,11 @@ import { ITestMessageStackFrame } from "../../common/testTypes.js";
 
 export class TestResultStackWidget extends Disposable {
 	private readonly widget: CallStackWidget;
+
 	public get onDidScroll() {
 		return this.widget.onDidScroll;
 	}
+
 	constructor(
 		private readonly container: HTMLElement,
 		containingEditor: ICodeEditor | undefined,
@@ -24,6 +26,7 @@ export class TestResultStackWidget extends Disposable {
 		instantiationService: IInstantiationService,
 	) {
 		super();
+
 		this.widget = this._register(
 			instantiationService.createInstance(
 				CallStackWidget,
@@ -32,9 +35,11 @@ export class TestResultStackWidget extends Disposable {
 			),
 		);
 	}
+
 	public collapseAll() {
 		this.widget.collapseAll();
 	}
+
 	public update(
 		messageFrame: AnyStackFrame,
 		stack: ITestMessageStackFrame[],
@@ -52,6 +57,7 @@ export class TestResultStackWidget extends Disposable {
 			),
 		]);
 	}
+
 	public layout(height?: number, width?: number) {
 		this.widget.layout(height ?? this.container.clientHeight, width);
 	}

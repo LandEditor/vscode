@@ -42,17 +42,23 @@ import {
 interface IUserDataProfileManifestResourceMergeResult extends IAcceptResult {
 	readonly local: {
 		added: ISyncUserDataProfile[];
+
 		removed: IUserDataProfile[];
+
 		updated: ISyncUserDataProfile[];
 	};
+
 	readonly remote: {
 		added: IUserDataProfile[];
+
 		removed: ISyncUserDataProfile[];
+
 		updated: IUserDataProfile[];
 	} | null;
 }
 interface IUserDataProfilesManifestResourcePreview extends IResourcePreview {
 	readonly previewResult: IUserDataProfileManifestResourceMergeResult;
+
 	readonly remoteProfiles: ISyncUserDataProfile[] | null;
 }
 export class UserDataProfilesManifestSynchroniser
@@ -60,22 +66,27 @@ export class UserDataProfilesManifestSynchroniser
 	implements IUserDataSynchroniser
 {
 	protected readonly version: number = 2;
+
 	readonly previewResource: URI = this.extUri.joinPath(
 		this.syncPreviewFolder,
 		"profiles.json",
 	);
+
 	readonly baseResource: URI = this.previewResource.with({
 		scheme: USER_DATA_SYNC_SCHEME,
 		authority: "base",
 	});
+
 	readonly localResource: URI = this.previewResource.with({
 		scheme: USER_DATA_SYNC_SCHEME,
 		authority: "local",
 	});
+
 	readonly remoteResource: URI = this.previewResource.with({
 		scheme: USER_DATA_SYNC_SCHEME,
 		authority: "remote",
 	});
+
 	readonly acceptedResource: URI = this.previewResource.with({
 		scheme: USER_DATA_SYNC_SCHEME,
 		authority: "accepted",
@@ -121,12 +132,14 @@ export class UserDataProfilesManifestSynchroniser
 			configurationService,
 			uriIdentityService,
 		);
+
 		this._register(
 			userDataProfilesService.onDidChangeProfiles(() =>
 				this.triggerLocalChange(),
 			),
 		);
 	}
+
 	async getLastSyncedProfiles(): Promise<ISyncUserDataProfile[] | null> {
 		const lastSyncUserData = await this.getLastSyncUserData();
 
@@ -134,6 +147,7 @@ export class UserDataProfilesManifestSynchroniser
 			? parseUserDataProfilesManifest(lastSyncUserData.syncData)
 			: null;
 	}
+
 	async getRemoteSyncedProfiles(
 		manifest: IUserDataResourceManifest | null,
 	): Promise<ISyncUserDataProfile[] | null> {
@@ -148,6 +162,7 @@ export class UserDataProfilesManifestSynchroniser
 			? parseUserDataProfilesManifest(remoteUserData.syncData)
 			: null;
 	}
+
 	protected async generateSyncPreview(
 		remoteUserData: IRemoteUserData,
 		lastSyncUserData: IRemoteUserData | null,
@@ -210,6 +225,7 @@ export class UserDataProfilesManifestSynchroniser
 			},
 		];
 	}
+
 	protected async hasRemoteChanged(
 		lastSyncUserData: IRemoteUserData,
 	): Promise<boolean> {
@@ -233,12 +249,14 @@ export class UserDataProfilesManifestSynchroniser
 			!!remote?.updated.length
 		);
 	}
+
 	protected async getMergeResult(
 		resourcePreview: IUserDataProfilesManifestResourcePreview,
 		token: CancellationToken,
 	): Promise<IMergeResult> {
 		return { ...resourcePreview.previewResult, hasConflicts: false };
 	}
+
 	protected async getAcceptResult(
 		resourcePreview: IUserDataProfilesManifestResourcePreview,
 		resource: URI,
@@ -257,8 +275,10 @@ export class UserDataProfilesManifestSynchroniser
 		if (this.extUri.isEqual(resource, this.previewResource)) {
 			return resourcePreview.previewResult;
 		}
+
 		throw new Error(`Invalid Resource: ${resource.toString()}`);
 	}
+
 	private async acceptLocal(
 		resourcePreview: IUserDataProfilesManifestResourcePreview,
 	): Promise<IUserDataProfileManifestResourceMergeResult> {
@@ -281,6 +301,7 @@ export class UserDataProfilesManifestSynchroniser
 			remoteChange: remote !== null ? Change.Modified : Change.None,
 		};
 	}
+
 	private async acceptRemote(
 		resourcePreview: IUserDataProfilesManifestResourcePreview,
 	): Promise<IUserDataProfileManifestResourceMergeResult> {
@@ -304,9 +325,11 @@ export class UserDataProfilesManifestSynchroniser
 					name: profile.name,
 					collection: remoteProfile.collection,
 				});
+
 				localProfiles.push(profile);
 			}
 		}
+
 		if (remoteProfiles !== null) {
 			const mergeResult = merge(
 				localProfiles,
@@ -339,6 +362,7 @@ export class UserDataProfilesManifestSynchroniser
 			};
 		}
 	}
+
 	protected async applyResult(
 		remoteUserData: IRemoteUserData,
 		lastSyncUserData: IRemoteUserData | null,
@@ -356,6 +380,7 @@ export class UserDataProfilesManifestSynchroniser
 				`${this.syncResourceLogLabel}: No changes found during synchronizing profiles.`,
 			);
 		}
+
 		const remoteProfiles = resourcePreviews[0][0].remoteProfiles || [];
 
 		if (
@@ -369,26 +394,32 @@ export class UserDataProfilesManifestSynchroniser
 				UserDataSyncErrorCode.LocalTooManyProfiles,
 			);
 		}
+
 		if (localChange !== Change.None) {
 			await this.backupLocal(
 				stringifyLocalProfiles(this.getLocalUserDataProfiles(), false),
 			);
+
 			await Promise.all(
 				local.removed.map(async (profile) => {
 					this.logService.trace(
 						`${this.syncResourceLogLabel}: Removing '${profile.name}' profile...`,
 					);
+
 					await this.userDataProfilesService.removeProfile(profile);
+
 					this.logService.info(
 						`${this.syncResourceLogLabel}: Removed profile '${profile.name}'.`,
 					);
 				}),
 			);
+
 			await Promise.all(
 				local.added.map(async (profile) => {
 					this.logService.trace(
 						`${this.syncResourceLogLabel}: Creating '${profile.name}' profile...`,
 					);
+
 					await this.userDataProfilesService.createProfile(
 						profile.id,
 						profile.name,
@@ -397,11 +428,13 @@ export class UserDataProfilesManifestSynchroniser
 							useDefaultFlags: profile.useDefaultFlags,
 						},
 					);
+
 					this.logService.info(
 						`${this.syncResourceLogLabel}: Created profile '${profile.name}'.`,
 					);
 				}),
 			);
+
 			await Promise.all(
 				local.updated.map(async (profile) => {
 					const localProfile =
@@ -413,6 +446,7 @@ export class UserDataProfilesManifestSynchroniser
 						this.logService.trace(
 							`${this.syncResourceLogLabel}: Updating '${profile.name}' profile...`,
 						);
+
 						await this.userDataProfilesService.updateProfile(
 							localProfile,
 							{
@@ -421,6 +455,7 @@ export class UserDataProfilesManifestSynchroniser
 								useDefaultFlags: profile.useDefaultFlags,
 							},
 						);
+
 						this.logService.info(
 							`${this.syncResourceLogLabel}: Updated profile '${profile.name}'.`,
 						);
@@ -432,6 +467,7 @@ export class UserDataProfilesManifestSynchroniser
 				}),
 			);
 		}
+
 		if (remoteChange !== Change.None) {
 			this.logService.trace(
 				`${this.syncResourceLogLabel}: Updating remote profiles...`,
@@ -448,7 +484,9 @@ export class UserDataProfilesManifestSynchroniser
 						await this.userDataSyncStoreService.createCollection(
 							this.syncHeaders,
 						);
+
 					addedCollections.push(collection);
+
 					remoteProfiles.push({
 						id: profile.id,
 						name: profile.name,
@@ -462,12 +500,14 @@ export class UserDataProfilesManifestSynchroniser
 					`${this.syncResourceLogLabel}: Could not create remote profiles as there are too many profiles.`,
 				);
 			}
+
 			for (const profile of remote?.removed || []) {
 				remoteProfiles.splice(
 					remoteProfiles.findIndex(({ id }) => profile.id === id),
 					1,
 				);
 			}
+
 			for (const profile of remote?.updated || []) {
 				const profileToBeUpdated = remoteProfiles.find(
 					({ id }) => profile.id === id,
@@ -487,11 +527,13 @@ export class UserDataProfilesManifestSynchroniser
 					);
 				}
 			}
+
 			try {
 				remoteUserData = await this.updateRemoteProfiles(
 					remoteProfiles,
 					force ? null : remoteUserData.ref,
 				);
+
 				this.logService.info(
 					`${this.syncResourceLogLabel}: Updated remote profiles.${canAddRemoteProfiles && remote?.added.length ? ` Added: ${JSON.stringify(remote.added.map((e) => e.name))}.` : ""}${remote?.updated.length ? ` Updated: ${JSON.stringify(remote.updated.map((e) => e.name))}.` : ""}${remote?.removed.length ? ` Removed: ${JSON.stringify(remote.removed.map((e) => e.name))}.` : ""}`,
 				);
@@ -508,8 +550,10 @@ export class UserDataProfilesManifestSynchroniser
 						);
 					}
 				}
+
 				throw error;
 			}
+
 			for (const profile of remote?.removed || []) {
 				await this.userDataSyncStoreService.deleteCollection(
 					profile.collection,
@@ -517,17 +561,21 @@ export class UserDataProfilesManifestSynchroniser
 				);
 			}
 		}
+
 		if (lastSyncUserData?.ref !== remoteUserData.ref) {
 			// update last sync
 			this.logService.trace(
 				`${this.syncResourceLogLabel}: Updating last synchronized profiles...`,
 			);
+
 			await this.updateLastSyncUserData(remoteUserData);
+
 			this.logService.info(
 				`${this.syncResourceLogLabel}: Updated last synchronized profiles.`,
 			);
 		}
 	}
+
 	async updateRemoteProfiles(
 		profiles: ISyncUserDataProfile[],
 		ref: string | null,
@@ -537,9 +585,11 @@ export class UserDataProfilesManifestSynchroniser
 			ref,
 		);
 	}
+
 	async hasLocalData(): Promise<boolean> {
 		return this.getLocalUserDataProfiles().length > 0;
 	}
+
 	async resolveContent(uri: URI): Promise<string | null> {
 		if (
 			this.extUri.isEqual(this.remoteResource, uri) ||
@@ -553,13 +603,16 @@ export class UserDataProfilesManifestSynchroniser
 				? toFormattedString(JSON.parse(content), {})
 				: content;
 		}
+
 		return null;
 	}
+
 	private getLocalUserDataProfiles(): IUserDataProfile[] {
 		return this.userDataProfilesService.profiles.filter(
 			(p) => !p.isDefault && !p.isTransient,
 		);
 	}
+
 	private stringifyRemoteProfiles(profiles: ISyncUserDataProfile[]): string {
 		return JSON.stringify(
 			[...profiles].sort((a, b) => a.name.localeCompare(b.name)),

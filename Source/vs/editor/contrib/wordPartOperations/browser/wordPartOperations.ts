@@ -38,6 +38,7 @@ export class DeleteWordPartLeft extends DeleteWordCommand {
 			},
 		});
 	}
+
 	protected _delete(
 		ctx: DeleteWordContext,
 		wordNavigationType: WordNavigationType,
@@ -47,6 +48,7 @@ export class DeleteWordPartLeft extends DeleteWordCommand {
 		if (r) {
 			return r;
 		}
+
 		return new Range(1, 1, 1, 1);
 	}
 }
@@ -65,6 +67,7 @@ export class DeleteWordPartRight extends DeleteWordCommand {
 			},
 		});
 	}
+
 	protected _delete(
 		ctx: DeleteWordContext,
 		wordNavigationType: WordNavigationType,
@@ -74,6 +77,7 @@ export class DeleteWordPartRight extends DeleteWordCommand {
 		if (r) {
 			return r;
 		}
+
 		const lineCount = ctx.model.getLineCount();
 
 		const maxColumn = ctx.model.getLineMaxColumn(lineCount);

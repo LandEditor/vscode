@@ -64,41 +64,50 @@ export class RunAutomaticTasks
 				),
 			);
 		}
+
 		this._register(
 			this._workspaceTrustManagementService.onDidChangeTrust(
 				async () => await this._tryRunTasks(),
 			),
 		);
 	}
+
 	private async _tryRunTasks() {
 		if (!this._workspaceTrustManagementService.isWorkspaceTrusted()) {
 			return;
 		}
+
 		if (
 			this._hasRunTasks ||
 			this._configurationService.getValue(ALLOW_AUTOMATIC_TASKS) === "off"
 		) {
 			return;
 		}
+
 		this._hasRunTasks = true;
+
 		this._logService.trace("RunAutomaticTasks: Trying to run tasks.");
 		// Wait until we have task system info (the extension host and workspace folders are available).
 		if (!this._taskService.hasTaskSystemInfo) {
 			this._logService.trace(
 				"RunAutomaticTasks: Awaiting task system info.",
 			);
+
 			await Event.toPromise(
 				Event.once(this._taskService.onDidChangeTaskSystemInfo),
 			);
 		}
+
 		let workspaceTasks = await this._taskService.getWorkspaceTasks(
 			TaskRunSource.FolderOpen,
 		);
+
 		this._logService.trace(
 			`RunAutomaticTasks: Found ${workspaceTasks.size} automatic tasks`,
 		);
 
 		let autoTasks = this._findAutoTasks(this._taskService, workspaceTasks);
+
 		this._logService.trace(
 			`RunAutomaticTasks: taskNames=${JSON.stringify(autoTasks.taskNames)}`,
 		);
@@ -114,6 +123,7 @@ export class RunAutomaticTasks
 				new Promise<boolean>((resolve) => {
 					const timer = setTimeout(() => {
 						clearTimeout(timer);
+
 						resolve(false);
 					}, 10000);
 				}),
@@ -126,14 +136,18 @@ export class RunAutomaticTasks
 
 				return;
 			}
+
 			workspaceTasks = await this._taskService.getWorkspaceTasks(
 				TaskRunSource.FolderOpen,
 			);
+
 			autoTasks = this._findAutoTasks(this._taskService, workspaceTasks);
+
 			this._logService.trace(
 				`RunAutomaticTasks: updated taskNames=${JSON.stringify(autoTasks.taskNames)}`,
 			);
 		}
+
 		this._runWithPermission(
 			this._taskService,
 			this._configurationService,
@@ -141,6 +155,7 @@ export class RunAutomaticTasks
 			autoTasks.taskNames,
 		);
 	}
+
 	private _runTasks(
 		taskService: ITaskService,
 		tasks: Array<Task | Promise<Task | undefined>>,
@@ -157,6 +172,7 @@ export class RunAutomaticTasks
 			}
 		});
 	}
+
 	private _getTaskSource(source: TaskSource): URI | undefined {
 		const taskKind = TaskSourceKind.toConfigurationTarget(source.kind);
 
@@ -167,6 +183,7 @@ export class RunAutomaticTasks
 					(<IWorkspaceTaskSource>source).config.file,
 				);
 			}
+
 			case ConfigurationTarget.WORKSPACE: {
 				return (
 					(<WorkspaceFileTaskSource>source).config.workspace
@@ -174,14 +191,18 @@ export class RunAutomaticTasks
 				);
 			}
 		}
+
 		return undefined;
 	}
+
 	private _findAutoTasks(
 		taskService: ITaskService,
 		workspaceTaskResult: Map<string, IWorkspaceFolderTaskResult>,
 	): {
 		tasks: Array<Task | Promise<Task | undefined>>;
+
 		taskNames: Array<string>;
+
 		locations: Map<string, URI>;
 	} {
 		const tasks = new Array<Task | Promise<Task | undefined>>();
@@ -196,6 +217,7 @@ export class RunAutomaticTasks
 					resultElement.set.tasks.forEach((task) => {
 						if (task.runOptions.runOn === RunOnOptions.folderOpen) {
 							tasks.push(task);
+
 							taskNames.push(task._label);
 
 							const location = this._getTaskSource(task._source);
@@ -206,6 +228,7 @@ export class RunAutomaticTasks
 						}
 					});
 				}
+
 				if (resultElement.configurations) {
 					for (const configuredTask of Object.values(
 						resultElement.configurations.byIdentifier,
@@ -231,6 +254,7 @@ export class RunAutomaticTasks
 							} else {
 								taskNames.push(configuredTask.configures.task);
 							}
+
 							const location = this._getTaskSource(
 								configuredTask._source,
 							);
@@ -243,8 +267,10 @@ export class RunAutomaticTasks
 				}
 			});
 		}
+
 		return { tasks, taskNames, locations };
 	}
+
 	private async _runWithPermission(
 		taskService: ITaskService,
 		configurationService: IConfigurationService,
@@ -254,14 +280,17 @@ export class RunAutomaticTasks
 		if (taskNames.length === 0) {
 			return;
 		}
+
 		if (configurationService.getValue(ALLOW_AUTOMATIC_TASKS) === "off") {
 			return;
 		}
+
 		this._runTasks(taskService, tasks);
 	}
 }
 export class ManageAutomaticTaskRunning extends Action2 {
 	public static readonly ID = "workbench.action.tasks.manageAutomaticRunning";
+
 	public static readonly LABEL = nls.localize(
 		"workbench.action.tasks.manageAutomaticRunning",
 		"Manage Automatic Tasks",
@@ -274,6 +303,7 @@ export class ManageAutomaticTaskRunning extends Action2 {
 			category: TASKS_CATEGORY,
 		});
 	}
+
 	public async run(accessor: ServicesAccessor): Promise<any> {
 		const quickInputService = accessor.get(IQuickInputService);
 
@@ -300,6 +330,7 @@ export class ManageAutomaticTaskRunning extends Action2 {
 		if (!value) {
 			return;
 		}
+
 		configurationService.updateValue(
 			ALLOW_AUTOMATIC_TASKS,
 			value === allowItem ? "on" : "off",

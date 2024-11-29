@@ -32,6 +32,7 @@ export class NativeDialogHandler extends AbstractDialogHandler {
 	) {
 		super();
 	}
+
 	async prompt<T>(prompt: IPrompt<T>): Promise<IAsyncPromptResult<T>> {
 		this.logService.trace("DialogService#prompt", prompt.message);
 
@@ -54,6 +55,7 @@ export class NativeDialogHandler extends AbstractDialogHandler {
 
 		return this.getPromptResult(prompt, response, checkboxChecked);
 	}
+
 	async confirm(confirmation: IConfirmation): Promise<IConfirmationResult> {
 		this.logService.trace("DialogService#confirm", confirmation.message);
 
@@ -74,9 +76,11 @@ export class NativeDialogHandler extends AbstractDialogHandler {
 
 		return { confirmed: response === 0, checkboxChecked };
 	}
+
 	input(): never {
 		throw new Error("Unsupported"); // we have no native API for password dialogs in Electron
 	}
+
 	async about(): Promise<void> {
 		let version = this.productService.version;
 
@@ -85,6 +89,7 @@ export class NativeDialogHandler extends AbstractDialogHandler {
 		} else if (this.productService.darwinUniversalAssetId) {
 			version = `${version} (Universal)`;
 		}
+
 		const osProps = await this.nativeHostService.getOSProperties();
 
 		const detailString = (useAgo: boolean): string => {

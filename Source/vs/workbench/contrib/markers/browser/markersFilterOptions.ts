@@ -22,10 +22,12 @@ import { IUriIdentityService } from "../../../../platform/uriIdentity/common/uri
 
 export class ResourceGlobMatcher {
 	private readonly globalExpression: ParsedExpression;
+
 	private readonly expressionsByRoot: TernarySearchTree<
 		URI,
 		{
 			root: URI;
+
 			expression: ParsedExpression;
 		}
 	>;
@@ -34,13 +36,16 @@ export class ResourceGlobMatcher {
 		globalExpression: IExpression,
 		rootExpressions: {
 			root: URI;
+
 			expression: IExpression;
 		}[],
 		uriIdentityService: IUriIdentityService,
 	) {
 		this.globalExpression = parse(globalExpression);
+
 		this.expressionsByRoot = TernarySearchTree.forUris<{
 			root: URI;
+
 			expression: ParsedExpression;
 		}>((uri) => uriIdentityService.extUri.ignorePathCasing(uri));
 
@@ -51,6 +56,7 @@ export class ResourceGlobMatcher {
 			});
 		}
 	}
+
 	matches(resource: URI): boolean {
 		const rootExpression = this.expressionsByRoot.findSubstr(resource);
 
@@ -61,21 +67,31 @@ export class ResourceGlobMatcher {
 				return true;
 			}
 		}
+
 		return !!this.globalExpression(resource.path);
 	}
 }
 export class FilterOptions {
 	static readonly _filter: IFilter = matchesFuzzy2;
+
 	static readonly _messageFilter: IFilter = matchesFuzzy;
+
 	readonly showWarnings: boolean = false;
+
 	readonly showErrors: boolean = false;
+
 	readonly showInfos: boolean = false;
+
 	readonly textFilter: {
 		readonly text: string;
+
 		readonly negate: boolean;
 	};
+
 	readonly excludesMatcher: ResourceGlobMatcher;
+
 	readonly includesMatcher: ResourceGlobMatcher;
+
 	static EMPTY(uriIdentityService: IUriIdentityService) {
 		return new FilterOptions(
 			"",
@@ -86,11 +102,13 @@ export class FilterOptions {
 			uriIdentityService,
 		);
 	}
+
 	constructor(
 		readonly filter: string,
 		filesExclude:
 			| {
 					root: URI;
+
 					expression: IExpression;
 			  }[]
 			| IExpression,
@@ -100,8 +118,11 @@ export class FilterOptions {
 		uriIdentityService: IUriIdentityService,
 	) {
 		filter = filter.trim();
+
 		this.showWarnings = showWarnings;
+
 		this.showErrors = showErrors;
+
 		this.showInfos = showInfos;
 
 		const filesExcludeByRoot = Array.isArray(filesExclude)
@@ -121,7 +142,9 @@ export class FilterOptions {
 				}
 			}
 		}
+
 		const negate = filter.startsWith("!");
+
 		this.textFilter = {
 			text: (negate ? strings.ltrim(filter, "!") : filter).trim(),
 			negate,
@@ -146,22 +169,27 @@ export class FilterOptions {
 				}
 			}
 		}
+
 		this.excludesMatcher = new ResourceGlobMatcher(
 			excludesExpression,
 			filesExcludeByRoot,
 			uriIdentityService,
 		);
+
 		this.includesMatcher = new ResourceGlobMatcher(
 			includeExpression,
 			[],
 			uriIdentityService,
 		);
 	}
+
 	private setPattern(expression: IExpression, pattern: string) {
 		if (pattern[0] === ".") {
 			pattern = "*" + pattern; // convert ".js" to "*.js"
 		}
+
 		expression[`**/${pattern}/**`] = true;
+
 		expression[`**/${pattern}`] = true;
 	}
 }

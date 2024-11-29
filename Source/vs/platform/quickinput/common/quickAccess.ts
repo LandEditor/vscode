@@ -21,6 +21,7 @@ import {
  */
 export interface IQuickAccessProviderRunOptions {
 	readonly from?: string;
+
 	readonly placeholder?: string;
 	/**
 	 * A handler to invoke when an item is accepted for
@@ -38,6 +39,7 @@ export interface IQuickAccessProviderRunOptions {
 export interface AnythingQuickAccessProviderRunOptions
 	extends IQuickAccessProviderRunOptions {
 	readonly includeHelp?: boolean;
+
 	readonly filter?: (item: IQuickPickItem | IQuickPickSeparator) => boolean;
 	/**
 	 * @deprecated - temporary for Dynamic Chat Variables (see usage) until it has built-in UX for file picking
@@ -215,8 +217,10 @@ export interface IQuickAccessRegistry {
 }
 export class QuickAccessRegistry implements IQuickAccessRegistry {
 	private providers: IQuickAccessProviderDescriptor[] = [];
+
 	private defaultProvider: IQuickAccessProviderDescriptor | undefined =
 		undefined;
+
 	registerQuickAccessProvider(
 		provider: IQuickAccessProviderDescriptor,
 	): IDisposable {
@@ -241,9 +245,11 @@ export class QuickAccessRegistry implements IQuickAccessRegistry {
 			}
 		});
 	}
+
 	getQuickAccessProviders(): IQuickAccessProviderDescriptor[] {
 		return coalesce([this.defaultProvider, ...this.providers]);
 	}
+
 	getQuickAccessProvider(
 		prefix: string,
 	): IQuickAccessProviderDescriptor | undefined {
@@ -255,15 +261,19 @@ export class QuickAccessRegistry implements IQuickAccessRegistry {
 
 		return result || this.defaultProvider;
 	}
+
 	clear(): Function {
 		const providers = [...this.providers];
 
 		const defaultProvider = this.defaultProvider;
+
 		this.providers = [];
+
 		this.defaultProvider = undefined;
 
 		return () => {
 			this.providers = providers;
+
 			this.defaultProvider = defaultProvider;
 		};
 	}

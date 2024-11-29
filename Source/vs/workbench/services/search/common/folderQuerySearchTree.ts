@@ -31,9 +31,11 @@ export class FolderQuerySearchTree<
 		const fqBySameBase = new ResourceMap<
 			{
 				fq: IFolderQuery<URI>;
+
 				i: number;
 			}[]
 		>();
+
 		folderQueries.forEach((fq, i) => {
 			const uriWithoutQueryOrFragment = fq.folder.with({
 				query: "",
@@ -46,6 +48,7 @@ export class FolderQuerySearchTree<
 				fqBySameBase.set(uriWithoutQueryOrFragment, [{ fq, i }]);
 			}
 		});
+
 		fqBySameBase.forEach((values, key) => {
 			const folderQueriesWithQueries = new Map<string, FolderQueryInfo>();
 
@@ -54,14 +57,17 @@ export class FolderQuerySearchTree<
 					fqBases.fq,
 					fqBases.i,
 				);
+
 				folderQueriesWithQueries.set(
 					this.encodeKey(fqBases.fq.folder),
 					folderQueryInfo,
 				);
 			}
+
 			super.set(key, folderQueriesWithQueries);
 		});
 	}
+
 	findQueryFragmentAwareSubstr(key: URI): FolderQueryInfo | undefined {
 		const baseURIResult = super.findSubstr(
 			key.with({ query: "", fragment: "" }),
@@ -70,24 +76,29 @@ export class FolderQuerySearchTree<
 		if (!baseURIResult) {
 			return undefined;
 		}
+
 		const queryAndFragmentKey = this.encodeKey(key);
 
 		return baseURIResult.get(queryAndFragmentKey);
 	}
+
 	forEachFolderQueryInfo(
 		fn: (folderQueryInfo: FolderQueryInfo) => void,
 	): void {
 		return this.forEach((elem) => elem.forEach((mapElem) => fn(mapElem)));
 	}
+
 	private encodeKey(key: URI): string {
 		let str = "";
 
 		if (key.query) {
 			str += key.query;
 		}
+
 		if (key.fragment) {
 			str += "#" + key.fragment;
 		}
+
 		return str;
 	}
 }

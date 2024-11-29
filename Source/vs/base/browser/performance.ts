@@ -7,9 +7,12 @@ export namespace inputLatency {
 	// are created.
 	interface ICumulativeMeasurement {
 		total: number;
+
 		min: number;
+
 		max: number;
 	}
+
 	const totalKeydownTime: ICumulativeMeasurement = {
 		total: 0,
 		min: Number.MAX_VALUE,
@@ -32,6 +35,7 @@ export namespace inputLatency {
 		InProgress = 1,
 		Finished = 2,
 	}
+
 	const state = {
 		keydown: EventPhase.Before,
 		input: EventPhase.Before,
@@ -43,9 +47,13 @@ export namespace inputLatency {
 	export function onKeyDown() {
 		/** Direct Check C. See explanation in {@link recordIfFinished} */
 		recordIfFinished();
+
 		performance.mark("inputlatency/start");
+
 		performance.mark("keydown/start");
+
 		state.keydown = EventPhase.InProgress;
+
 		queueMicrotask(markKeyDownEnd);
 	}
 	/**
@@ -54,6 +62,7 @@ export namespace inputLatency {
 	function markKeyDownEnd() {
 		if (state.keydown === EventPhase.InProgress) {
 			performance.mark("keydown/end");
+
 			state.keydown = EventPhase.Finished;
 		}
 	}
@@ -62,6 +71,7 @@ export namespace inputLatency {
 	 */
 	export function onBeforeInput() {
 		performance.mark("input/start");
+
 		state.input = EventPhase.InProgress;
 		/** Schedule Task A. See explanation in {@link recordIfFinished} */
 		scheduleRecordIfFinishedTask();
@@ -74,11 +84,14 @@ export namespace inputLatency {
 			// it looks like we didn't receive a `beforeinput`
 			onBeforeInput();
 		}
+
 		queueMicrotask(markInputEnd);
 	}
+
 	function markInputEnd() {
 		if (state.input === EventPhase.InProgress) {
 			performance.mark("input/end");
+
 			state.input = EventPhase.Finished;
 		}
 	}
@@ -108,7 +121,9 @@ export namespace inputLatency {
 		) {
 			// Only measure the first render after keyboard input
 			performance.mark("render/start");
+
 			state.render = EventPhase.InProgress;
+
 			queueMicrotask(markRenderEnd);
 			/** Schedule Task B. See explanation in {@link recordIfFinished} */
 			scheduleRecordIfFinishedTask();
@@ -120,9 +135,11 @@ export namespace inputLatency {
 	function markRenderEnd() {
 		if (state.render === EventPhase.InProgress) {
 			performance.mark("render/end");
+
 			state.render = EventPhase.Finished;
 		}
 	}
+
 	function scheduleRecordIfFinishedTask() {
 		// Here we can safely assume that the `setTimeout` will not be
 		// artificially delayed by 4ms because we schedule it from
@@ -160,17 +177,25 @@ export namespace inputLatency {
 			state.render === EventPhase.Finished
 		) {
 			performance.mark("inputlatency/end");
+
 			performance.measure("keydown", "keydown/start", "keydown/end");
+
 			performance.measure("input", "input/start", "input/end");
+
 			performance.measure("render", "render/start", "render/end");
+
 			performance.measure(
 				"inputlatency",
 				"inputlatency/start",
 				"inputlatency/end",
 			);
+
 			addMeasure("keydown", totalKeydownTime);
+
 			addMeasure("input", totalInputTime);
+
 			addMeasure("render", totalRenderTime);
+
 			addMeasure("inputlatency", totalInputLatencyTime);
 			// console.info(
 			// 	`input latency=${performance.getEntriesByName('inputlatency')[0].duration.toFixed(1)} [` +
@@ -179,20 +204,26 @@ export namespace inputLatency {
 			// 	`render=${performance.getEntriesByName('render')[0].duration.toFixed(1)}` +
 			// 	`]`
 			// );
+
 			measurementsCount++;
+
 			reset();
 		}
 	}
+
 	function addMeasure(
 		entryName: string,
 		cumulativeMeasurement: ICumulativeMeasurement,
 	): void {
 		const duration = performance.getEntriesByName(entryName)[0].duration;
+
 		cumulativeMeasurement.total += duration;
+
 		cumulativeMeasurement.min = Math.min(
 			cumulativeMeasurement.min,
 			duration,
 		);
+
 		cumulativeMeasurement.max = Math.max(
 			cumulativeMeasurement.max,
 			duration,
@@ -203,31 +234,53 @@ export namespace inputLatency {
 	 */
 	function reset() {
 		performance.clearMarks("keydown/start");
+
 		performance.clearMarks("keydown/end");
+
 		performance.clearMarks("input/start");
+
 		performance.clearMarks("input/end");
+
 		performance.clearMarks("render/start");
+
 		performance.clearMarks("render/end");
+
 		performance.clearMarks("inputlatency/start");
+
 		performance.clearMarks("inputlatency/end");
+
 		performance.clearMeasures("keydown");
+
 		performance.clearMeasures("input");
+
 		performance.clearMeasures("render");
+
 		performance.clearMeasures("inputlatency");
+
 		state.keydown = EventPhase.Before;
+
 		state.input = EventPhase.Before;
+
 		state.render = EventPhase.Before;
 	}
+
 	export interface IInputLatencyMeasurements {
 		keydown: IInputLatencySingleMeasurement;
+
 		input: IInputLatencySingleMeasurement;
+
 		render: IInputLatencySingleMeasurement;
+
 		total: IInputLatencySingleMeasurement;
+
 		sampleCount: number;
 	}
+
 	export interface IInputLatencySingleMeasurement {
 		average: number;
+
 		min: number;
+
 		max: number;
 	}
 	/**
@@ -250,13 +303,18 @@ export namespace inputLatency {
 		};
 		// Clear the cumulative measurements
 		clearCumulativeMeasurement(totalKeydownTime);
+
 		clearCumulativeMeasurement(totalInputTime);
+
 		clearCumulativeMeasurement(totalRenderTime);
+
 		clearCumulativeMeasurement(totalInputLatencyTime);
+
 		measurementsCount = 0;
 
 		return result;
 	}
+
 	function cumulativeToFinalMeasurement(
 		cumulative: ICumulativeMeasurement,
 	): IInputLatencySingleMeasurement {
@@ -266,11 +324,14 @@ export namespace inputLatency {
 			min: cumulative.min,
 		};
 	}
+
 	function clearCumulativeMeasurement(
 		cumulative: ICumulativeMeasurement,
 	): void {
 		cumulative.total = 0;
+
 		cumulative.min = Number.MAX_VALUE;
+
 		cumulative.max = 0;
 	}
 }

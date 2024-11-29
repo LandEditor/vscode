@@ -54,28 +54,37 @@ import Messages from "./messages.js";
 const $ = DOM.$;
 interface IMarkerIconColumnTemplateData {
 	readonly icon: HTMLElement;
+
 	readonly actionBar: ActionBar;
 }
 interface IMarkerCodeColumnTemplateData {
 	readonly codeColumn: HTMLElement;
+
 	readonly sourceLabel: HighlightedLabel;
+
 	readonly codeLabel: HighlightedLabel;
+
 	readonly codeLink: Link;
+
 	readonly templateDisposable: DisposableStore;
 }
 interface IMarkerFileColumnTemplateData {
 	readonly columnElement: HTMLElement;
+
 	readonly fileLabel: HighlightedLabel;
+
 	readonly positionLabel: HighlightedLabel;
 }
 interface IMarkerHighlightedLabelColumnTemplateData {
 	readonly columnElement: HTMLElement;
+
 	readonly highlightedLabel: HighlightedLabel;
 }
 class MarkerSeverityColumnRenderer
 	implements ITableRenderer<MarkerTableItem, IMarkerIconColumnTemplateData>
 {
 	static readonly TEMPLATE_ID = "severity";
+
 	readonly templateId: string = MarkerSeverityColumnRenderer.TEMPLATE_ID;
 
 	constructor(
@@ -83,6 +92,7 @@ class MarkerSeverityColumnRenderer
 		@IInstantiationService
 		private readonly instantiationService: IInstantiationService,
 	) {}
+
 	renderTemplate(container: HTMLElement): IMarkerIconColumnTemplateData {
 		const severityColumn = DOM.append(container, $(".severity"));
 
@@ -103,6 +113,7 @@ class MarkerSeverityColumnRenderer
 
 		return { actionBar, icon };
 	}
+
 	renderElement(
 		element: MarkerTableItem,
 		index: number,
@@ -115,27 +126,35 @@ class MarkerSeverityColumnRenderer
 					templateData.icon,
 					"monaco-table-td",
 				)!;
+
 				container.classList.toggle("quickFix", enabled);
 			}
 		};
+
 		templateData.icon.title = MarkerSeverity.toString(
 			element.marker.severity,
 		);
+
 		templateData.icon.className = `marker-icon ${Severity.toString(MarkerSeverity.toSeverity(element.marker.severity))} codicon ${SeverityIcon.className(MarkerSeverity.toSeverity(element.marker.severity))}`;
+
 		templateData.actionBar.clear();
 
 		const viewModel = this.markersViewModel.getViewModel(element);
 
 		if (viewModel) {
 			const quickFixAction = viewModel.quickFixAction;
+
 			templateData.actionBar.push([quickFixAction], {
 				icon: true,
 				label: false,
 			});
+
 			toggleQuickFix(viewModel.quickFixAction.enabled);
+
 			quickFixAction.onDidChange(({ enabled }) =>
 				toggleQuickFix(enabled),
 			);
+
 			quickFixAction.onShowQuickFixes(() => {
 				const quickFixActionViewItem = <QuickFixActionViewItem>(
 					templateData.actionBar.viewItems[0]
@@ -147,12 +166,14 @@ class MarkerSeverityColumnRenderer
 			});
 		}
 	}
+
 	disposeTemplate(templateData: IMarkerIconColumnTemplateData): void {}
 }
 class MarkerCodeColumnRenderer
 	implements ITableRenderer<MarkerTableItem, IMarkerCodeColumnTemplateData>
 {
 	static readonly TEMPLATE_ID = "code";
+
 	readonly templateId: string = MarkerCodeColumnRenderer.TEMPLATE_ID;
 
 	constructor(
@@ -161,6 +182,7 @@ class MarkerCodeColumnRenderer
 		@IOpenerService
 		private readonly openerService: IOpenerService,
 	) {}
+
 	renderTemplate(container: HTMLElement): IMarkerCodeColumnTemplateData {
 		const templateDisposable = new DisposableStore();
 
@@ -169,11 +191,13 @@ class MarkerCodeColumnRenderer
 		const sourceLabel = templateDisposable.add(
 			new HighlightedLabel(codeColumn),
 		);
+
 		sourceLabel.element.classList.add("source-label");
 
 		const codeLabel = templateDisposable.add(
 			new HighlightedLabel(codeColumn),
 		);
+
 		codeLabel.element.classList.add("code-label");
 
 		const codeLink = templateDisposable.add(
@@ -194,6 +218,7 @@ class MarkerCodeColumnRenderer
 			templateDisposable,
 		};
 	}
+
 	renderElement(
 		element: MarkerTableItem,
 		index: number,
@@ -201,23 +226,29 @@ class MarkerCodeColumnRenderer
 		height: number | undefined,
 	): void {
 		templateData.codeColumn.classList.remove("code-label");
+
 		templateData.codeColumn.classList.remove("code-link");
 
 		if (element.marker.source && element.marker.code) {
 			if (typeof element.marker.code === "string") {
 				templateData.codeColumn.classList.add("code-label");
+
 				templateData.codeColumn.title = `${element.marker.source} (${element.marker.code})`;
+
 				templateData.sourceLabel.set(
 					element.marker.source,
 					element.sourceMatches,
 				);
+
 				templateData.codeLabel.set(
 					element.marker.code,
 					element.codeMatches,
 				);
 			} else {
 				templateData.codeColumn.classList.add("code-link");
+
 				templateData.codeColumn.title = `${element.marker.source} (${element.marker.code.value})`;
+
 				templateData.sourceLabel.set(
 					element.marker.source,
 					element.sourceMatches,
@@ -226,10 +257,12 @@ class MarkerCodeColumnRenderer
 				const codeLinkLabel = templateData.templateDisposable.add(
 					new HighlightedLabel($(".code-link-label")),
 				);
+
 				codeLinkLabel.set(
 					element.marker.code.value,
 					element.codeMatches,
 				);
+
 				templateData.codeLink.link = {
 					href: element.marker.code.target.toString(true),
 					title: element.marker.code.target.toString(true),
@@ -238,9 +271,11 @@ class MarkerCodeColumnRenderer
 			}
 		} else {
 			templateData.codeColumn.title = "";
+
 			templateData.sourceLabel.set("-");
 		}
 	}
+
 	disposeTemplate(templateData: IMarkerCodeColumnTemplateData): void {
 		templateData.templateDisposable.dispose();
 	}
@@ -253,7 +288,9 @@ class MarkerMessageColumnRenderer
 		>
 {
 	static readonly TEMPLATE_ID = "message";
+
 	readonly templateId: string = MarkerMessageColumnRenderer.TEMPLATE_ID;
+
 	renderTemplate(
 		container: HTMLElement,
 	): IMarkerHighlightedLabelColumnTemplateData {
@@ -263,6 +300,7 @@ class MarkerMessageColumnRenderer
 
 		return { columnElement, highlightedLabel };
 	}
+
 	renderElement(
 		element: MarkerTableItem,
 		index: number,
@@ -270,11 +308,13 @@ class MarkerMessageColumnRenderer
 		height: number | undefined,
 	): void {
 		templateData.columnElement.title = element.marker.message;
+
 		templateData.highlightedLabel.set(
 			element.marker.message,
 			element.messageMatches,
 		);
 	}
+
 	disposeTemplate(
 		templateData: IMarkerHighlightedLabelColumnTemplateData,
 	): void {
@@ -285,23 +325,28 @@ class MarkerFileColumnRenderer
 	implements ITableRenderer<MarkerTableItem, IMarkerFileColumnTemplateData>
 {
 	static readonly TEMPLATE_ID = "file";
+
 	readonly templateId: string = MarkerFileColumnRenderer.TEMPLATE_ID;
 
 	constructor(
 		@ILabelService
 		private readonly labelService: ILabelService,
 	) {}
+
 	renderTemplate(container: HTMLElement): IMarkerFileColumnTemplateData {
 		const columnElement = DOM.append(container, $(".file"));
 
 		const fileLabel = new HighlightedLabel(columnElement);
+
 		fileLabel.element.classList.add("file-label");
 
 		const positionLabel = new HighlightedLabel(columnElement);
+
 		positionLabel.element.classList.add("file-position");
 
 		return { columnElement, fileLabel, positionLabel };
 	}
+
 	renderElement(
 		element: MarkerTableItem,
 		index: number,
@@ -312,17 +357,22 @@ class MarkerFileColumnRenderer
 			element.marker.startLineNumber,
 			element.marker.startColumn,
 		);
+
 		templateData.columnElement.title = `${this.labelService.getUriLabel(element.marker.resource, { relative: false })} ${positionLabel}`;
+
 		templateData.fileLabel.set(
 			this.labelService.getUriLabel(element.marker.resource, {
 				relative: true,
 			}),
 			element.fileMatches,
 		);
+
 		templateData.positionLabel.set(positionLabel, undefined);
 	}
+
 	disposeTemplate(templateData: IMarkerFileColumnTemplateData): void {
 		templateData.fileLabel.dispose();
+
 		templateData.positionLabel.dispose();
 	}
 }
@@ -334,7 +384,9 @@ class MarkerOwnerColumnRenderer
 		>
 {
 	static readonly TEMPLATE_ID = "owner";
+
 	readonly templateId: string = MarkerOwnerColumnRenderer.TEMPLATE_ID;
+
 	renderTemplate(
 		container: HTMLElement,
 	): IMarkerHighlightedLabelColumnTemplateData {
@@ -344,6 +396,7 @@ class MarkerOwnerColumnRenderer
 
 		return { columnElement, highlightedLabel };
 	}
+
 	renderElement(
 		element: MarkerTableItem,
 		index: number,
@@ -351,11 +404,13 @@ class MarkerOwnerColumnRenderer
 		height: number | undefined,
 	): void {
 		templateData.columnElement.title = element.marker.owner;
+
 		templateData.highlightedLabel.set(
 			element.marker.owner,
 			element.ownerMatches,
 		);
 	}
+
 	disposeTemplate(
 		templateData: IMarkerHighlightedLabelColumnTemplateData,
 	): void {
@@ -364,7 +419,9 @@ class MarkerOwnerColumnRenderer
 }
 class MarkersTableVirtualDelegate implements ITableVirtualDelegate<any> {
 	static readonly HEADER_ROW_HEIGHT = 24;
+
 	static readonly ROW_HEIGHT = 24;
+
 	readonly headerRowHeight = MarkersTableVirtualDelegate.HEADER_ROW_HEIGHT;
 
 	getHeight(item: any) {
@@ -373,6 +430,7 @@ class MarkersTableVirtualDelegate implements ITableVirtualDelegate<any> {
 }
 export class MarkersTable extends Disposable implements IProblemsWidget {
 	private _itemCount: number = 0;
+
 	private readonly table: WorkbenchTable<MarkerTableItem>;
 
 	constructor(
@@ -387,6 +445,7 @@ export class MarkersTable extends Disposable implements IProblemsWidget {
 		private readonly labelService: ILabelService,
 	) {
 		super();
+
 		this.table = this.instantiationService.createInstance(
 			WorkbenchTable,
 			"Markers",
@@ -500,6 +559,7 @@ export class MarkersTable extends Disposable implements IProblemsWidget {
 			(_, e) => e,
 			500,
 		);
+
 		this._register(
 			onRowPermanentHover((e) => {
 				if (e !== -1 && this.table.row(e)) {
@@ -508,45 +568,58 @@ export class MarkersTable extends Disposable implements IProblemsWidget {
 			}),
 		);
 	}
+
 	get contextKeyService(): IContextKeyService {
 		return this.table.contextKeyService;
 	}
+
 	get onContextMenu(): Event<ITableContextMenuEvent<MarkerTableItem>> {
 		return this.table.onContextMenu;
 	}
+
 	get onDidOpen(): Event<IOpenEvent<MarkerTableItem | undefined>> {
 		return this.table.onDidOpen;
 	}
+
 	get onDidChangeFocus(): Event<ITableEvent<MarkerTableItem>> {
 		return this.table.onDidChangeFocus;
 	}
+
 	get onDidChangeSelection(): Event<ITableEvent<MarkerTableItem>> {
 		return this.table.onDidChangeSelection;
 	}
+
 	collapseMarkers(): void {}
+
 	domFocus(): void {
 		this.table.domFocus();
 	}
+
 	filterMarkers(
 		resourceMarkers: ResourceMarkers[],
 		filterOptions: FilterOptions,
 	): void {
 		this.filterOptions = filterOptions;
+
 		this.reset(resourceMarkers);
 	}
+
 	getFocus(): (MarkerTableItem | null)[] {
 		const focus = this.table.getFocus();
 
 		return focus.length > 0 ? [...focus.map((f) => this.table.row(f))] : [];
 	}
+
 	getHTMLElement(): HTMLElement {
 		return this.table.getHTMLElement();
 	}
+
 	getRelativeTop(marker: MarkerTableItem | null): number | null {
 		return marker
 			? this.table.getRelativeTop(this.table.indexOf(marker))
 			: null;
 	}
+
 	getSelection(): (MarkerTableItem | null)[] {
 		const selection = this.table.getSelection();
 
@@ -554,16 +627,21 @@ export class MarkersTable extends Disposable implements IProblemsWidget {
 			? [...selection.map((i) => this.table.row(i))]
 			: [];
 	}
+
 	getVisibleItemCount(): number {
 		return this._itemCount;
 	}
+
 	isVisible(): boolean {
 		return !this.container.classList.contains("hidden");
 	}
+
 	layout(height: number, width: number): void {
 		this.container.style.height = `${height}px`;
+
 		this.table.layout(height, width);
 	}
+
 	reset(resourceMarkers: ResourceMarkers[]): void {
 		this.resourceMarkers = resourceMarkers;
 
@@ -660,12 +738,16 @@ export class MarkersTable extends Disposable implements IProblemsWidget {
 							),
 						);
 					}
+
 					continue;
 				}
+
 				items.push(new MarkerTableItem(marker));
 			}
 		}
+
 		this._itemCount = items.length;
+
 		this.table.splice(
 			0,
 			Number.POSITIVE_INFINITY,
@@ -678,13 +760,16 @@ export class MarkersTable extends Disposable implements IProblemsWidget {
 				if (result === 0) {
 					result = compareMarkersByUri(a.marker, b.marker);
 				}
+
 				if (result === 0) {
 					result = Range.compareRangesUsingStarts(a.marker, b.marker);
 				}
+
 				return result;
 			}),
 		);
 	}
+
 	revealMarkers(
 		activeResource: ResourceMarkers | null,
 		focus: boolean,
@@ -697,6 +782,7 @@ export class MarkersTable extends Disposable implements IProblemsWidget {
 			if (activeResourceIndex !== -1) {
 				if (this.hasSelectedMarkerFor(activeResource)) {
 					const tableSelection = this.table.getSelection();
+
 					this.table.reveal(
 						tableSelection[0],
 						lastSelectedRelativeTop,
@@ -710,18 +796,22 @@ export class MarkersTable extends Disposable implements IProblemsWidget {
 
 					if (focus) {
 						this.table.setFocus([activeResourceIndex]);
+
 						this.table.setSelection([activeResourceIndex]);
 					}
 				}
 			}
 		} else if (focus) {
 			this.table.setSelection([]);
+
 			this.table.focusFirst();
 		}
 	}
+
 	setAriaLabel(label: string): void {
 		this.table.domNode.ariaLabel = label;
 	}
+
 	setMarkerSelection(selection?: Marker[], focus?: Marker[]): void {
 		if (this.isVisible()) {
 			if (selection && selection.length > 0) {
@@ -736,38 +826,49 @@ export class MarkersTable extends Disposable implements IProblemsWidget {
 				} else {
 					this.table.setFocus([this.findMarkerIndex(selection[0])]);
 				}
+
 				this.table.reveal(this.findMarkerIndex(selection[0]));
 			} else if (
 				this.getSelection().length === 0 &&
 				this.getVisibleItemCount() > 0
 			) {
 				this.table.setSelection([0]);
+
 				this.table.setFocus([0]);
+
 				this.table.reveal(0);
 			}
 		}
 	}
+
 	toggleVisibility(hide: boolean): void {
 		this.container.classList.toggle("hidden", hide);
 	}
+
 	update(resourceMarkers: ResourceMarkers[]): void {
 		for (const resourceMarker of resourceMarkers) {
 			const index = this.resourceMarkers.indexOf(resourceMarker);
+
 			this.resourceMarkers.splice(index, 1, resourceMarker);
 		}
+
 		this.reset(this.resourceMarkers);
 	}
+
 	updateMarker(marker: Marker): void {
 		this.table.rerender();
 	}
+
 	private findMarkerIndex(marker: Marker): number {
 		for (let index = 0; index < this.table.length; index++) {
 			if (this.table.row(index).marker === marker.marker) {
 				return index;
 			}
 		}
+
 		return -1;
 	}
+
 	private hasSelectedMarkerFor(resource: ResourceMarkers): boolean {
 		const selectedElement = this.getSelection();
 
@@ -780,6 +881,7 @@ export class MarkersTable extends Disposable implements IProblemsWidget {
 				}
 			}
 		}
+
 		return false;
 	}
 }

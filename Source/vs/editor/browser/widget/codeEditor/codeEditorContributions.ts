@@ -19,6 +19,7 @@ import {
 
 export class CodeEditorContributions extends Disposable {
 	private _editor: ICodeEditor | null = null;
+
 	private _instantiationService: IInstantiationService | null = null;
 	/**
 	 * Contains all instantiated contributions.
@@ -40,24 +41,30 @@ export class CodeEditorContributions extends Disposable {
 
 	constructor() {
 		super();
+
 		this._finishedInstantiation[EditorContributionInstantiation.Eager] =
 			false;
+
 		this._finishedInstantiation[
 			EditorContributionInstantiation.AfterFirstRender
 		] = false;
+
 		this._finishedInstantiation[
 			EditorContributionInstantiation.BeforeFirstInteraction
 		] = false;
+
 		this._finishedInstantiation[
 			EditorContributionInstantiation.Eventually
 		] = false;
 	}
+
 	public initialize(
 		editor: ICodeEditor,
 		contributions: IEditorContributionDescription[],
 		instantiationService: IInstantiationService,
 	) {
 		this._editor = editor;
+
 		this._instantiationService = instantiationService;
 
 		for (const desc of contributions) {
@@ -70,8 +77,10 @@ export class CodeEditorContributions extends Disposable {
 
 				continue;
 			}
+
 			this._pending.set(desc.id, desc);
 		}
+
 		this._instantiateSome(EditorContributionInstantiation.Eager);
 		// AfterFirstRender
 		// - these extensions will be instantiated at the latest 50ms after the first render.
@@ -108,6 +117,7 @@ export class CodeEditorContributions extends Disposable {
 			),
 		);
 	}
+
 	public saveViewState(): {
 		[key: string]: any;
 	} {
@@ -120,8 +130,10 @@ export class CodeEditorContributions extends Disposable {
 				contributionsState[id] = contribution.saveViewState();
 			}
 		}
+
 		return contributionsState;
 	}
+
 	public restoreViewState(contributionsState: { [key: string]: any }): void {
 		for (const [id, contribution] of this._instances) {
 			if (typeof contribution.restoreViewState === "function") {
@@ -129,6 +141,7 @@ export class CodeEditorContributions extends Disposable {
 			}
 		}
 	}
+
 	public get(id: string): IEditorContribution | null {
 		this._instantiateById(id);
 
@@ -140,12 +153,14 @@ export class CodeEditorContributions extends Disposable {
 	public set(id: string, value: IEditorContribution) {
 		this._instances.set(id, value);
 	}
+
 	public onBeforeInteractionEvent(): void {
 		// this method is called very often by the editor!
 		this._instantiateSome(
 			EditorContributionInstantiation.BeforeFirstInteraction,
 		);
 	}
+
 	public onAfterModelAttached(): IDisposable {
 		return runWhenWindowIdle(
 			getWindow(this._editor?.getDomNode()),
@@ -157,6 +172,7 @@ export class CodeEditorContributions extends Disposable {
 			50,
 		);
 	}
+
 	private _instantiateSome(
 		instantiation: EditorContributionInstantiation,
 	): void {
@@ -164,6 +180,7 @@ export class CodeEditorContributions extends Disposable {
 			// already done with this instantiation!
 			return;
 		}
+
 		this._finishedInstantiation[instantiation] = true;
 
 		const contribs =
@@ -173,6 +190,7 @@ export class CodeEditorContributions extends Disposable {
 			this._instantiateById(contrib.id);
 		}
 	}
+
 	private _findPendingContributionsByInstantiation(
 		instantiation: EditorContributionInstantiation,
 	): readonly IEditorContributionDescription[] {
@@ -183,14 +201,17 @@ export class CodeEditorContributions extends Disposable {
 				result.push(desc);
 			}
 		}
+
 		return result;
 	}
+
 	private _instantiateById(id: string): void {
 		const desc = this._pending.get(id);
 
 		if (!desc) {
 			return;
 		}
+
 		this._pending.delete(id);
 
 		if (!this._instantiationService || !this._editor) {
@@ -198,11 +219,13 @@ export class CodeEditorContributions extends Disposable {
 				`Cannot instantiate contributions before being initialized!`,
 			);
 		}
+
 		try {
 			const instance = this._instantiationService.createInstance(
 				desc.ctor,
 				this._editor,
 			);
+
 			this._instances.set(desc.id, instance);
 
 			if (

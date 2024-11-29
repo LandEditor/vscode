@@ -46,6 +46,7 @@ function extractDomain(url: string): string | null {
 			return null;
 		}
 	}
+
 	try {
 		const uri = URI.parse(url);
 
@@ -55,6 +56,7 @@ function extractDomain(url: string): string | null {
 	} catch (e) {
 		// ignore invalid URIs
 	}
+
 	return null;
 }
 export function getDomainsOfRemotes(
@@ -72,6 +74,7 @@ export function getDomainsOfRemotes(
 			domains.add(domain);
 		}
 	}
+
 	const allowedDomainsSet = new Set(allowedDomains);
 
 	return Array.from(domains).map((key) =>
@@ -92,8 +95,10 @@ function normalizeRemote(
 		if (stripEndingDotGit && path.endsWith(".git")) {
 			path = path.substr(0, path.length - 4);
 		}
+
 		return path.indexOf("/") === 0 ? `${host}${path}` : `${host}/${path}`;
 	}
+
 	return null;
 }
 function extractRemote(url: string, stripEndingDotGit: boolean): string | null {
@@ -104,6 +109,7 @@ function extractRemote(url: string, stripEndingDotGit: boolean): string | null {
 			return normalizeRemote(match[2], match[3], stripEndingDotGit);
 		}
 	}
+
 	try {
 		const uri = URI.parse(url);
 
@@ -117,6 +123,7 @@ function extractRemote(url: string, stripEndingDotGit: boolean): string | null {
 	} catch (e) {
 		// ignore invalid URIs
 	}
+
 	return null;
 }
 export function getRemotes(
@@ -134,5 +141,6 @@ export function getRemotes(
 			remotes.push(remote);
 		}
 	}
+
 	return remotes;
 }

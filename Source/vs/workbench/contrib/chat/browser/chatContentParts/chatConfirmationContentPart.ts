@@ -28,7 +28,9 @@ export class ChatConfirmationContentPart
 	implements IChatContentPart
 {
 	public readonly domNode: HTMLElement;
+
 	private readonly _onDidChangeHeight = this._register(new Emitter<void>());
+
 	public readonly onDidChangeHeight = this._onDidChangeHeight.event;
 
 	constructor(
@@ -70,7 +72,9 @@ export class ChatConfirmationContentPart
 				buttons,
 			),
 		);
+
 		confirmationWidget.setShowButtons(!confirmation.isUsed);
+
 		this._register(
 			confirmationWidget.onDidClick(async (e) => {
 				if (isResponseVM(element)) {
@@ -79,9 +83,13 @@ export class ChatConfirmationContentPart
 					const options: IChatSendRequestOptions = e.isSecondary
 						? { rejectedConfirmationData: [e.data] }
 						: { acceptedConfirmationData: [e.data] };
+
 					options.agentId = element.agent?.id;
+
 					options.slashCommand = element.slashCommand?.name;
+
 					options.confirmation = e.label;
+
 					options.userSelectedModelId =
 						chatWidgetService.getWidgetBySessionId(
 							element.sessionId,
@@ -95,18 +103,23 @@ export class ChatConfirmationContentPart
 						)
 					) {
 						confirmation.isUsed = true;
+
 						confirmationWidget.setShowButtons(false);
+
 						this._onDidChangeHeight.fire();
 					}
 				}
 			}),
 		);
+
 		this.domNode = confirmationWidget.domNode;
 	}
+
 	hasSameContent(other: IChatProgressRenderableResponseContent): boolean {
 		// No other change allowed for this content type
 		return other.kind === "confirmation";
 	}
+
 	addDisposable(disposable: IDisposable): void {
 		this._register(disposable);
 	}

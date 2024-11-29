@@ -57,8 +57,11 @@ export interface IWillSaveStateEvent {
 }
 export interface IStorageEntry {
 	readonly key: string;
+
 	readonly value: StorageValue;
+
 	readonly scope: StorageScope;
+
 	readonly target: StorageTarget;
 }
 export interface IWorkspaceStorageValueChangeEvent
@@ -88,16 +91,19 @@ export interface IStorageService {
 		key: string | undefined,
 		disposable: DisposableStore,
 	): Event<IWorkspaceStorageValueChangeEvent>;
+
 	onDidChangeValue(
 		scope: StorageScope.PROFILE,
 		key: string | undefined,
 		disposable: DisposableStore,
 	): Event<IProfileStorageValueChangeEvent>;
+
 	onDidChangeValue(
 		scope: StorageScope.APPLICATION,
 		key: string | undefined,
 		disposable: DisposableStore,
 	): Event<IApplicationStorageValueChangeEvent>;
+
 	onDidChangeValue(
 		scope: StorageScope,
 		key: string | undefined,
@@ -345,6 +351,7 @@ export function loadKeyTargets(storage: IStorage): IKeyTargets {
 			// Fail gracefully
 		}
 	}
+
 	return Object.create(null);
 }
 export abstract class AbstractStorageService
@@ -352,25 +359,33 @@ export abstract class AbstractStorageService
 	implements IStorageService
 {
 	declare readonly _serviceBrand: undefined;
+
 	private static DEFAULT_FLUSH_INTERVAL = 60 * 1000; // every minute
 	private readonly _onDidChangeValue = this._register(
 		new PauseableEmitter<IStorageValueChangeEvent>(),
 	);
+
 	private readonly _onDidChangeTarget = this._register(
 		new PauseableEmitter<IStorageTargetChangeEvent>(),
 	);
+
 	readonly onDidChangeTarget = this._onDidChangeTarget.event;
+
 	private readonly _onWillSaveState = this._register(
 		new Emitter<IWillSaveStateEvent>(),
 	);
+
 	readonly onWillSaveState = this._onWillSaveState.event;
+
 	private initializationPromise: Promise<void> | undefined;
+
 	private readonly flushWhenIdleScheduler = this._register(
 		new RunOnceScheduler(
 			() => this.doFlushWhenIdle(),
 			this.options.flushInterval,
 		),
 	);
+
 	private readonly runFlushWhenIdle = this._register(new MutableDisposable());
 
 	constructor(
@@ -380,21 +395,25 @@ export abstract class AbstractStorageService
 	) {
 		super();
 	}
+
 	onDidChangeValue(
 		scope: StorageScope.WORKSPACE,
 		key: string | undefined,
 		disposable: DisposableStore,
 	): Event<IWorkspaceStorageValueChangeEvent>;
+
 	onDidChangeValue(
 		scope: StorageScope.PROFILE,
 		key: string | undefined,
 		disposable: DisposableStore,
 	): Event<IProfileStorageValueChangeEvent>;
+
 	onDidChangeValue(
 		scope: StorageScope.APPLICATION,
 		key: string | undefined,
 		disposable: DisposableStore,
 	): Event<IApplicationStorageValueChangeEvent>;
+
 	onDidChangeValue(
 		scope: StorageScope,
 		key: string | undefined,
@@ -406,6 +425,7 @@ export abstract class AbstractStorageService
 			disposable,
 		);
 	}
+
 	private doFlushWhenIdle(): void {
 		this.runFlushWhenIdle.value = runWhenGlobalIdle(() => {
 			if (this.shouldFlushWhenIdle()) {
@@ -415,12 +435,15 @@ export abstract class AbstractStorageService
 			this.flushWhenIdleScheduler.schedule();
 		});
 	}
+
 	protected shouldFlushWhenIdle(): boolean {
 		return true;
 	}
+
 	protected stopFlushWhenIdle(): void {
 		dispose([this.runFlushWhenIdle, this.flushWhenIdleScheduler]);
 	}
+
 	initialize(): Promise<void> {
 		if (!this.initializationPromise) {
 			this.initializationPromise = (async () => {
@@ -443,8 +466,10 @@ export abstract class AbstractStorageService
 				this.flushWhenIdleScheduler.schedule();
 			})();
 		}
+
 		return this.initializationPromise;
 	}
+
 	protected emitDidChangeValue(
 		scope: StorageScope,
 		event: IStorageChangeEvent,
@@ -482,9 +507,11 @@ export abstract class AbstractStorageService
 			});
 		}
 	}
+
 	protected emitWillSaveState(reason: WillSaveStateReason): void {
 		this._onWillSaveState.fire({ reason });
 	}
+
 	get(key: string, scope: StorageScope, fallbackValue: string): string;
 
 	get(key: string, scope: StorageScope): string | undefined;
@@ -496,6 +523,7 @@ export abstract class AbstractStorageService
 	): string | undefined {
 		return this.getStorage(scope)?.get(key, fallbackValue);
 	}
+
 	getBoolean(
 		key: string,
 		scope: StorageScope,
@@ -511,6 +539,7 @@ export abstract class AbstractStorageService
 	): boolean | undefined {
 		return this.getStorage(scope)?.getBoolean(key, fallbackValue);
 	}
+
 	getNumber(key: string, scope: StorageScope, fallbackValue: number): number;
 
 	getNumber(key: string, scope: StorageScope): number | undefined;
@@ -522,6 +551,7 @@ export abstract class AbstractStorageService
 	): number | undefined {
 		return this.getStorage(scope)?.getNumber(key, fallbackValue);
 	}
+
 	getObject(key: string, scope: StorageScope, fallbackValue: object): object;
 
 	getObject(key: string, scope: StorageScope): object | undefined;
@@ -533,6 +563,7 @@ export abstract class AbstractStorageService
 	): object | undefined {
 		return this.getStorage(scope)?.getObject(key, fallbackValue);
 	}
+
 	storeAll(entries: Array<IStorageEntry>, external: boolean): void {
 		this.withPausedEmitters(() => {
 			for (const entry of entries) {
@@ -546,6 +577,7 @@ export abstract class AbstractStorageService
 			}
 		});
 	}
+
 	store(
 		key: string,
 		value: StorageValue,
@@ -567,6 +599,7 @@ export abstract class AbstractStorageService
 			this.getStorage(scope)?.set(key, value, external);
 		});
 	}
+
 	remove(key: string, scope: StorageScope, external = false): void {
 		// Update our datastructures but send events only after
 		this.withPausedEmitters(() => {
@@ -576,9 +609,11 @@ export abstract class AbstractStorageService
 			this.getStorage(scope)?.delete(key, external);
 		});
 	}
+
 	private withPausedEmitters(fn: Function): void {
 		// Pause emitters
 		this._onDidChangeValue.pause();
+
 		this._onDidChangeTarget.pause();
 
 		try {
@@ -586,9 +621,11 @@ export abstract class AbstractStorageService
 		} finally {
 			// Resume emitters
 			this._onDidChangeValue.resume();
+
 			this._onDidChangeTarget.resume();
 		}
 	}
+
 	keys(scope: StorageScope, target: StorageTarget): string[] {
 		const keys: string[] = [];
 
@@ -601,8 +638,10 @@ export abstract class AbstractStorageService
 				keys.push(key);
 			}
 		}
+
 		return keys;
 	}
+
 	private updateKeyTarget(
 		key: string,
 		scope: StorageScope,
@@ -615,6 +654,7 @@ export abstract class AbstractStorageService
 		if (typeof target === "number") {
 			if (keyTargets[key] !== target) {
 				keyTargets[key] = target;
+
 				this.getStorage(scope)?.set(
 					TARGET_KEY,
 					JSON.stringify(keyTargets),
@@ -626,6 +666,7 @@ export abstract class AbstractStorageService
 		else {
 			if (typeof keyTargets[key] === "number") {
 				delete keyTargets[key];
+
 				this.getStorage(scope)?.set(
 					TARGET_KEY,
 					JSON.stringify(keyTargets),
@@ -634,31 +675,41 @@ export abstract class AbstractStorageService
 			}
 		}
 	}
+
 	private _workspaceKeyTargets: IKeyTargets | undefined = undefined;
+
 	private get workspaceKeyTargets(): IKeyTargets {
 		if (!this._workspaceKeyTargets) {
 			this._workspaceKeyTargets = this.loadKeyTargets(
 				StorageScope.WORKSPACE,
 			);
 		}
+
 		return this._workspaceKeyTargets;
 	}
+
 	private _profileKeyTargets: IKeyTargets | undefined = undefined;
+
 	private get profileKeyTargets(): IKeyTargets {
 		if (!this._profileKeyTargets) {
 			this._profileKeyTargets = this.loadKeyTargets(StorageScope.PROFILE);
 		}
+
 		return this._profileKeyTargets;
 	}
+
 	private _applicationKeyTargets: IKeyTargets | undefined = undefined;
+
 	private get applicationKeyTargets(): IKeyTargets {
 		if (!this._applicationKeyTargets) {
 			this._applicationKeyTargets = this.loadKeyTargets(
 				StorageScope.APPLICATION,
 			);
 		}
+
 		return this._applicationKeyTargets;
 	}
+
 	private getKeyTargets(scope: StorageScope): IKeyTargets {
 		switch (scope) {
 			case StorageScope.APPLICATION:
@@ -671,6 +722,7 @@ export abstract class AbstractStorageService
 				return this.workspaceKeyTargets;
 		}
 	}
+
 	private loadKeyTargets(scope: StorageScope): {
 		[key: string]: StorageTarget;
 	} {
@@ -678,9 +730,11 @@ export abstract class AbstractStorageService
 
 		return storage ? loadKeyTargets(storage) : Object.create(null);
 	}
+
 	isNew(scope: StorageScope): boolean {
 		return this.getBoolean(IS_NEW_KEY, scope) === true;
 	}
+
 	async flush(reason = WillSaveStateReason.NONE): Promise<void> {
 		// Signal event to collect changes
 		this._onWillSaveState.fire({ reason });
@@ -713,6 +767,7 @@ export abstract class AbstractStorageService
 				break;
 		}
 	}
+
 	async log(): Promise<void> {
 		const applicationItems =
 			this.getStorage(StorageScope.APPLICATION)?.items ??
@@ -735,6 +790,7 @@ export abstract class AbstractStorageService
 			this.getLogDetails(StorageScope.WORKSPACE) ?? "",
 		);
 	}
+
 	async optimize(scope: StorageScope): Promise<void> {
 		// Await pending data to be flushed to the DB
 		// before attempting to optimize the DB
@@ -742,6 +798,7 @@ export abstract class AbstractStorageService
 
 		return this.getStorage(scope)?.optimize();
 	}
+
 	async switch(
 		to: IAnyWorkspaceIdentifier | IUserDataProfile,
 		preserveData: boolean,
@@ -752,8 +809,10 @@ export abstract class AbstractStorageService
 		if (isUserDataProfile(to)) {
 			return this.switchToProfile(to, preserveData);
 		}
+
 		return this.switchToWorkspace(to, preserveData);
 	}
+
 	protected canSwitchProfile(
 		from: IUserDataProfile,
 		to: IUserDataProfile,
@@ -761,14 +820,17 @@ export abstract class AbstractStorageService
 		if (from.id === to.id) {
 			return false; // both profiles are same
 		}
+
 		if (
 			isProfileUsingDefaultStorage(to) &&
 			isProfileUsingDefaultStorage(from)
 		) {
 			return false; // both profiles are using default
 		}
+
 		return true;
 	}
+
 	protected switchData(
 		oldStorage: Map<string, string>,
 		newStorage: IStorage,
@@ -787,6 +849,7 @@ export abstract class AbstractStorageService
 					this.emitDidChangeValue(scope, { key, external: true });
 				}
 			}
+
 			for (const [key] of newStorage.items) {
 				if (!handledkeys.has(key)) {
 					this.emitDidChangeValue(scope, { key, external: true });
@@ -798,13 +861,18 @@ export abstract class AbstractStorageService
 	abstract hasScope(
 		scope: IAnyWorkspaceIdentifier | IUserDataProfile,
 	): boolean;
+
 	protected abstract doInitialize(): Promise<void>;
+
 	protected abstract getStorage(scope: StorageScope): IStorage | undefined;
+
 	protected abstract getLogDetails(scope: StorageScope): string | undefined;
+
 	protected abstract switchToProfile(
 		toProfile: IUserDataProfile,
 		preserveData: boolean,
 	): Promise<void>;
+
 	protected abstract switchToWorkspace(
 		toWorkspace: IAnyWorkspaceIdentifier | IUserDataProfile,
 		preserveData: boolean,
@@ -821,11 +889,13 @@ export class InMemoryStorageService extends AbstractStorageService {
 			hint: StorageHint.STORAGE_IN_MEMORY,
 		}),
 	);
+
 	private readonly profileStorage = this._register(
 		new Storage(new InMemoryStorageDatabase(), {
 			hint: StorageHint.STORAGE_IN_MEMORY,
 		}),
 	);
+
 	private readonly workspaceStorage = this._register(
 		new Storage(new InMemoryStorageDatabase(), {
 			hint: StorageHint.STORAGE_IN_MEMORY,
@@ -834,22 +904,26 @@ export class InMemoryStorageService extends AbstractStorageService {
 
 	constructor() {
 		super();
+
 		this._register(
 			this.workspaceStorage.onDidChangeStorage((e) =>
 				this.emitDidChangeValue(StorageScope.WORKSPACE, e),
 			),
 		);
+
 		this._register(
 			this.profileStorage.onDidChangeStorage((e) =>
 				this.emitDidChangeValue(StorageScope.PROFILE, e),
 			),
 		);
+
 		this._register(
 			this.applicationStorage.onDidChangeStorage((e) =>
 				this.emitDidChangeValue(StorageScope.APPLICATION, e),
 			),
 		);
 	}
+
 	protected getStorage(scope: StorageScope): IStorage {
 		switch (scope) {
 			case StorageScope.APPLICATION:
@@ -862,6 +936,7 @@ export class InMemoryStorageService extends AbstractStorageService {
 				return this.workspaceStorage;
 		}
 	}
+
 	protected getLogDetails(scope: StorageScope): string | undefined {
 		switch (scope) {
 			case StorageScope.APPLICATION:
@@ -874,16 +949,21 @@ export class InMemoryStorageService extends AbstractStorageService {
 				return "inMemory (workspace)";
 		}
 	}
+
 	protected async doInitialize(): Promise<void> {}
+
 	protected async switchToProfile(): Promise<void> {
 		// no-op when in-memory
 	}
+
 	protected async switchToWorkspace(): Promise<void> {
 		// no-op when in-memory
 	}
+
 	protected override shouldFlushWhenIdle(): boolean {
 		return false;
 	}
+
 	hasScope(scope: IAnyWorkspaceIdentifier | IUserDataProfile): boolean {
 		return false;
 	}
@@ -907,24 +987,30 @@ export async function logStorage(
 	const applicationItems = new Map<string, string>();
 
 	const applicationItemsParsed = new Map<string, string>();
+
 	application.forEach((value, key) => {
 		applicationItems.set(key, value);
+
 		applicationItemsParsed.set(key, safeParse(value));
 	});
 
 	const profileItems = new Map<string, string>();
 
 	const profileItemsParsed = new Map<string, string>();
+
 	profile.forEach((value, key) => {
 		profileItems.set(key, value);
+
 		profileItemsParsed.set(key, safeParse(value));
 	});
 
 	const workspaceItems = new Map<string, string>();
 
 	const workspaceItemsParsed = new Map<string, string>();
+
 	workspace.forEach((value, key) => {
 		workspaceItems.set(key, value);
+
 		workspaceItemsParsed.set(key, safeParse(value));
 	});
 
@@ -935,15 +1021,21 @@ export async function logStorage(
 			`Storage: Application & Profile (path: ${applicationPath}, default profile)`,
 		);
 	}
+
 	const applicationValues: {
 		key: string;
+
 		value: string;
 	}[] = [];
+
 	applicationItems.forEach((value, key) => {
 		applicationValues.push({ key, value });
 	});
+
 	console.table(applicationValues);
+
 	console.groupEnd();
+
 	console.log(applicationItemsParsed);
 
 	if (applicationPath !== profilePath) {
@@ -953,25 +1045,36 @@ export async function logStorage(
 
 		const profileValues: {
 			key: string;
+
 			value: string;
 		}[] = [];
+
 		profileItems.forEach((value, key) => {
 			profileValues.push({ key, value });
 		});
+
 		console.table(profileValues);
+
 		console.groupEnd();
+
 		console.log(profileItemsParsed);
 	}
+
 	console.group(`Storage: Workspace (path: ${workspacePath})`);
 
 	const workspaceValues: {
 		key: string;
+
 		value: string;
 	}[] = [];
+
 	workspaceItems.forEach((value, key) => {
 		workspaceValues.push({ key, value });
 	});
+
 	console.table(workspaceValues);
+
 	console.groupEnd();
+
 	console.log(workspaceItemsParsed);
 }

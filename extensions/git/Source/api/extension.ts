@@ -12,7 +12,9 @@ export function deprecated(_target: any, key: string, descriptor: any): void {
 	if (typeof descriptor.value !== "function") {
 		throw new Error("not supported");
 	}
+
 	const fn = descriptor.value;
+
 	descriptor.value = function () {
 		console.warn(`Git extension API method '${key}' is deprecated.`);
 
@@ -21,9 +23,12 @@ export function deprecated(_target: any, key: string, descriptor: any): void {
 }
 export class GitExtensionImpl implements GitExtension {
 	enabled: boolean = false;
+
 	private _onDidChangeEnablement = new EventEmitter<boolean>();
+
 	readonly onDidChangeEnablement: Event<boolean> =
 		this._onDidChangeEnablement.event;
+
 	private _model: Model | undefined = undefined;
 
 	set model(model: Model | undefined) {
@@ -34,15 +39,20 @@ export class GitExtensionImpl implements GitExtension {
 		if (this.enabled === enabled) {
 			return;
 		}
+
 		this.enabled = enabled;
+
 		this._onDidChangeEnablement.fire(this.enabled);
 	}
+
 	get model(): Model | undefined {
 		return this._model;
 	}
+
 	constructor(model?: Model) {
 		if (model) {
 			this.enabled = true;
+
 			this._model = model;
 		}
 	}
@@ -51,6 +61,7 @@ export class GitExtensionImpl implements GitExtension {
 		if (!this._model) {
 			throw new Error("Git model not found");
 		}
+
 		return this._model.git.path;
 	}
 	@deprecated
@@ -58,17 +69,21 @@ export class GitExtensionImpl implements GitExtension {
 		if (!this._model) {
 			throw new Error("Git model not found");
 		}
+
 		return this._model.repositories.map(
 			(repository) => new ApiRepository(repository),
 		);
 	}
+
 	getAPI(version: number): API {
 		if (!this._model) {
 			throw new Error("Git model not found");
 		}
+
 		if (version !== 1) {
 			throw new Error(`No API version ${version} found.`);
 		}
+
 		return new ApiImpl(this._model);
 	}
 }

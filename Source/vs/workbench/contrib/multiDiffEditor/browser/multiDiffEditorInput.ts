@@ -96,6 +96,7 @@ export class MultiDiffEditorInput
 				"MultiDiffEditorInput requires either multiDiffSource or resources",
 			);
 		}
+
 		const multiDiffSource =
 			input.multiDiffSource ??
 			URI.parse(
@@ -116,6 +117,7 @@ export class MultiDiffEditorInput
 			input.isTransient ?? false,
 		);
 	}
+
 	public static fromSerialized(
 		data: ISerializedMultiDiffEditorInput,
 		instantiationService: IInstantiationService,
@@ -141,27 +143,35 @@ export class MultiDiffEditorInput
 			false,
 		);
 	}
+
 	static readonly ID: string = "workbench.input.multiDiffEditor";
 
 	get resource(): URI | undefined {
 		return this.multiDiffSource;
 	}
+
 	override get capabilities(): EditorInputCapabilities {
 		return EditorInputCapabilities.Readonly;
 	}
+
 	override get typeId(): string {
 		return MultiDiffEditorInput.ID;
 	}
+
 	private _name: string = "";
+
 	override getName(): string {
 		return this._name;
 	}
+
 	override get editorId(): string {
 		return DEFAULT_EDITOR_ASSOCIATION.id;
 	}
+
 	override getIcon(): ThemeIcon {
 		return MultiDiffEditorIcon;
 	}
+
 	constructor(
 		public readonly multiDiffSource: URI,
 		public readonly label: string | undefined,
@@ -181,6 +191,7 @@ export class MultiDiffEditorInput
 		private readonly _textFileService: ITextFileService,
 	) {
 		super();
+
 		this._register(
 			autorun((reader) => {
 				/** @description Updates name */
@@ -203,10 +214,12 @@ export class MultiDiffEditorInput
 				} else {
 					this._name = label;
 				}
+
 				this._onDidChangeLabel.fire();
 			}),
 		);
 	}
+
 	public serialize(): ISerializedMultiDiffEditorInput {
 		return {
 			label: this.label,
@@ -218,6 +231,7 @@ export class MultiDiffEditorInput
 			})),
 		};
 	}
+
 	public setLanguageId(
 		languageId: string,
 		source?: string | undefined,
@@ -231,29 +245,37 @@ export class MultiDiffEditorInput
 		if (!value) {
 			return;
 		}
+
 		const target = value.modified ?? value.original;
 
 		if (!target) {
 			return;
 		}
+
 		target.setLanguage(languageId, source);
 	}
+
 	public async getViewModel(): Promise<MultiDiffEditorViewModel> {
 		return this._viewModel.getPromise();
 	}
+
 	private readonly _viewModel = new LazyStatefulPromise(async () => {
 		const model = await this._createModel();
+
 		this._register(model);
 
 		const vm = new MultiDiffEditorViewModel(
 			model,
 			this._instantiationService,
 		);
+
 		this._register(vm);
+
 		await raceTimeout(vm.waitForDiffs(), 1000);
 
 		return vm;
 	});
+
 	private async _createModel(): Promise<IMultiDiffEditorModel & IDisposable> {
 		const source = await this._resolvedSource.getPromise();
 
@@ -288,16 +310,19 @@ export class MultiDiffEditorInput
 					if (original) {
 						multiDiffItemStore.add(original);
 					}
+
 					if (modified) {
 						multiDiffItemStore.add(modified);
 					}
 				} catch (e) {
 					// e.g. "File seems to be binary and cannot be opened as text"
 					console.error(e);
+
 					onUnexpectedError(e);
 
 					return undefined;
 				}
+
 				const uri = (r.modifiedUri ?? r.originalUri)!;
 
 				const result: IDocumentDiffItemWithMultiDiffEditorItem = {
@@ -359,6 +384,7 @@ export class MultiDiffEditorInput
 		});
 
 		const a = recomputeInitiallyAndOnChange(updateDocuments);
+
 		await updateDocuments.get();
 
 		const result: IMultiDiffEditorModel & IDisposable = {
@@ -369,6 +395,7 @@ export class MultiDiffEditorInput
 
 		return result;
 	}
+
 	private readonly _resolvedSource = new ObservableLazyPromise(async () => {
 		const source: IResolvedMultiDiffSource | undefined = this
 			.initialResources
@@ -384,23 +411,28 @@ export class MultiDiffEditorInput
 				: constObservable([]),
 		};
 	});
+
 	override matches(otherInput: EditorInput | IUntypedEditorInput): boolean {
 		if (super.matches(otherInput)) {
 			return true;
 		}
+
 		if (otherInput instanceof MultiDiffEditorInput) {
 			return (
 				this.multiDiffSource.toString() ===
 				otherInput.multiDiffSource.toString()
 			);
 		}
+
 		return false;
 	}
+
 	public readonly resources = derived(this, (reader) =>
 		this._resolvedSource.cachedPromiseResult
 			.read(reader)
 			?.data?.resources.read(reader),
 	);
+
 	private readonly textFileServiceOnDidChange = new FastEventDispatcher<
 		ITextFileEditorModel,
 		URI
@@ -409,6 +441,7 @@ export class MultiDiffEditorInput
 		(item) => item.resource.toString(),
 		(uri) => uri.toString(),
 	);
+
 	private readonly _isDirtyObservables = mapObservableArrayCached(
 		this,
 		this.resources.map((r) => r ?? []),
@@ -438,17 +471,21 @@ export class MultiDiffEditorInput
 		},
 		(i) => i.getKey(),
 	);
+
 	private readonly _isDirtyObservable = derived(this, (reader) =>
 		this._isDirtyObservables
 			.read(reader)
 			.some((isDirty) => isDirty.read(reader)),
 	).keepObserved(this._store);
+
 	override readonly onDidChangeDirty = Event.fromObservableLight(
 		this._isDirtyObservable,
 	);
+
 	override isDirty() {
 		return this._isDirtyObservable.get();
 	}
+
 	override async save(
 		group: number,
 		options?: ISaveOptions | undefined,
@@ -457,22 +494,26 @@ export class MultiDiffEditorInput
 
 		return this;
 	}
+
 	override revert(
 		group: GroupIdentifier,
 		options?: IRevertOptions,
 	): Promise<void> {
 		return this.doSaveOrRevert("revert", group, options);
 	}
+
 	private async doSaveOrRevert(
 		mode: "save",
 		group: GroupIdentifier,
 		options?: ISaveOptions,
 	): Promise<void>;
+
 	private async doSaveOrRevert(
 		mode: "revert",
 		group: GroupIdentifier,
 		options?: IRevertOptions,
 	): Promise<void>;
+
 	private async doSaveOrRevert(
 		mode: "save" | "revert",
 		group: GroupIdentifier,
@@ -513,8 +554,10 @@ export class MultiDiffEditorInput
 				}),
 			);
 		}
+
 		return undefined;
 	}
+
 	override readonly closeHandler: IEditorCloseHandler = {
 		// TODO@bpasero TODO@hediet this is a workaround for
 		// not having a better way to figure out if the
@@ -536,7 +579,9 @@ export interface IDocumentDiffItemWithMultiDiffEditorItem
  */
 class FastEventDispatcher<T, TKey> {
 	private _count = 0;
+
 	private readonly _buckets = new Map<string, Set<(value: T) => void>>();
+
 	private _eventSubscription: IDisposable | undefined;
 
 	constructor(
@@ -544,6 +589,7 @@ class FastEventDispatcher<T, TKey> {
 		private readonly _getEventArgsKey: (item: T) => string,
 		private readonly _keyToString: (key: TKey) => string,
 	) {}
+
 	public filteredEvent(
 		filter: TKey,
 	): (listener: (e: T) => unknown) => IDisposable {
@@ -554,14 +600,18 @@ class FastEventDispatcher<T, TKey> {
 
 			if (!bucket) {
 				bucket = new Set();
+
 				this._buckets.set(key, bucket);
 			}
+
 			bucket.add(listener);
+
 			this._count++;
 
 			if (this._count === 1) {
 				this._eventSubscription = this._event(this._handleEventChange);
 			}
+
 			return {
 				dispose: () => {
 					bucket!.delete(listener);
@@ -569,16 +619,19 @@ class FastEventDispatcher<T, TKey> {
 					if (bucket!.size === 0) {
 						this._buckets.delete(key);
 					}
+
 					this._count--;
 
 					if (this._count === 0) {
 						this._eventSubscription?.dispose();
+
 						this._eventSubscription = undefined;
 					}
 				},
 			};
 		};
 	}
+
 	private readonly _handleEventChange = (e: T) => {
 		const key = this._getEventArgsKey(e);
 
@@ -604,6 +657,7 @@ function getReadonlyConfiguration(
 	isReadonly: boolean | IMarkdownString | undefined,
 ): {
 	readOnly: boolean;
+
 	readOnlyMessage: IMarkdownString | undefined;
 } {
 	return {
@@ -623,14 +677,18 @@ function computeOptions(
 		);
 		// User settings defines `diffEditor.codeLens`, but here we rename that to `diffEditor.diffCodeLens` to avoid collisions with `editor.codeLens`.
 		diffEditorConfiguration.diffCodeLens = diffEditorConfiguration.codeLens;
+
 		delete diffEditorConfiguration.codeLens;
 		// User settings defines `diffEditor.wordWrap`, but here we rename that to `diffEditor.diffWordWrap` to avoid collisions with `editor.wordWrap`.
 		diffEditorConfiguration.diffWordWrap = <
 			"off" | "on" | "inherit" | undefined
 		>diffEditorConfiguration.wordWrap;
+
 		delete diffEditorConfiguration.wordWrap;
+
 		Object.assign(editorConfiguration, diffEditorConfiguration);
 	}
+
 	return editorConfiguration;
 }
 export class MultiDiffEditorResolverContribution extends Disposable {
@@ -643,6 +701,7 @@ export class MultiDiffEditorResolverContribution extends Disposable {
 		instantiationService: IInstantiationService,
 	) {
 		super();
+
 		this._register(
 			editorResolverService.registerEditor(
 				`*`,
@@ -671,11 +730,15 @@ export class MultiDiffEditorResolverContribution extends Disposable {
 }
 interface ISerializedMultiDiffEditorInput {
 	multiDiffSourceUri: string;
+
 	label: string | undefined;
+
 	resources:
 		| {
 				originalUri: string | undefined;
+
 				modifiedUri: string | undefined;
+
 				goToFileUri: string | undefined;
 		  }[]
 		| undefined;
@@ -684,12 +747,15 @@ export class MultiDiffEditorSerializer implements IEditorSerializer {
 	canSerialize(editor: EditorInput): editor is MultiDiffEditorInput {
 		return editor instanceof MultiDiffEditorInput && !editor.isTransient;
 	}
+
 	serialize(editor: MultiDiffEditorInput): string | undefined {
 		if (!this.canSerialize(editor)) {
 			return undefined;
 		}
+
 		return JSON.stringify(editor.serialize());
 	}
+
 	deserialize(
 		instantiationService: IInstantiationService,
 		serializedEditor: string,

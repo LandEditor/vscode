@@ -17,6 +17,7 @@ function exceptionToErrorMessage(exception: any, verbose: boolean): string {
 				stackToString(exception.stacktrace),
 		);
 	}
+
 	return detectSystemErrorMessage(exception);
 }
 function stackToString(
@@ -25,6 +26,7 @@ function stackToString(
 	if (Array.isArray(stack)) {
 		return stack.join("\n");
 	}
+
 	return stack;
 }
 function detectSystemErrorMessage(exception: any): string {
@@ -44,6 +46,7 @@ function detectSystemErrorMessage(exception: any): string {
 			exception.message,
 		);
 	}
+
 	return (
 		exception.message ||
 		nls.localize(
@@ -68,6 +71,7 @@ export function toErrorMessage(
 			"An unknown error occurred. Please consult the log for more details.",
 		);
 	}
+
 	if (Array.isArray(error)) {
 		const errors: any[] = arrays.coalesce(error);
 
@@ -81,27 +85,34 @@ export function toErrorMessage(
 				errors.length,
 			);
 		}
+
 		return msg;
 	}
+
 	if (types.isString(error)) {
 		return error;
 	}
+
 	if (error.detail) {
 		const detail = error.detail;
 
 		if (detail.error) {
 			return exceptionToErrorMessage(detail.error, verbose);
 		}
+
 		if (detail.exception) {
 			return exceptionToErrorMessage(detail.exception, verbose);
 		}
 	}
+
 	if (error.stack) {
 		return exceptionToErrorMessage(error, verbose);
 	}
+
 	if (error.message) {
 		return error.message;
 	}
+
 	return nls.localize(
 		"error.defaultMessage",
 		"An unknown error occurred. Please consult the log for more details.",
@@ -126,6 +137,7 @@ export function createErrorWithActions(
 	} else {
 		error = messageOrError as IErrorWithActions;
 	}
+
 	error.actions = actions;
 
 	return error;

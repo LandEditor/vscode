@@ -36,12 +36,16 @@ import {
 
 export interface IMachineData {
 	id: string;
+
 	name: string;
+
 	disabled?: boolean;
+
 	platform?: string;
 }
 export interface IMachinesData {
 	version: number;
+
 	machines: IMachineData[];
 }
 export type IUserDataSyncMachine = Readonly<IMachineData> & {
@@ -55,11 +59,15 @@ export const IUserDataSyncMachinesService =
 
 export interface IUserDataSyncMachinesService {
 	_serviceBrand: any;
+
 	readonly onDidChange: Event<void>;
 
 	getMachines(manifest?: IUserDataManifest): Promise<IUserDataSyncMachine[]>;
+
 	addCurrentMachine(manifest?: IUserDataManifest): Promise<void>;
+
 	removeCurrentMachine(manifest?: IUserDataManifest): Promise<void>;
+
 	renameMachine(machineId: string, name: string): Promise<void>;
 
 	setEnablements(enbalements: [string, boolean][]): Promise<void>;
@@ -87,24 +95,30 @@ export function isWebPlatform(platform: string) {
 		case PlatformToString(Platform.Web):
 			return true;
 	}
+
 	return false;
 }
 function getPlatformName(): string {
 	if (isSafari) {
 		return Safari;
 	}
+
 	if (isChrome) {
 		return Chrome;
 	}
+
 	if (isEdge) {
 		return Edge;
 	}
+
 	if (isFirefox) {
 		return Firefox;
 	}
+
 	if (isAndroid) {
 		return Android;
 	}
+
 	return PlatformToString(isWeb ? Platform.Web : platform);
 }
 export class UserDataSyncMachinesService
@@ -112,11 +126,17 @@ export class UserDataSyncMachinesService
 	implements IUserDataSyncMachinesService
 {
 	private static readonly VERSION = 1;
+
 	private static readonly RESOURCE = "machines";
+
 	_serviceBrand: any;
+
 	private readonly _onDidChange = this._register(new Emitter<void>());
+
 	readonly onDidChange = this._onDidChange.event;
+
 	private readonly currentMachineIdPromise: Promise<string>;
+
 	private userData: IUserData | null = null;
 
 	constructor(
@@ -134,12 +154,14 @@ export class UserDataSyncMachinesService
 		private readonly productService: IProductService,
 	) {
 		super();
+
 		this.currentMachineIdPromise = getServiceMachineId(
 			environmentService,
 			fileService,
 			storageService,
 		);
 	}
+
 	async getMachines(
 		manifest?: IUserDataManifest,
 	): Promise<IUserDataSyncMachine[]> {
@@ -152,6 +174,7 @@ export class UserDataSyncMachinesService
 			...{ isCurrent: machine.id === currentMachineId },
 		}));
 	}
+
 	async addCurrentMachine(manifest?: IUserDataManifest): Promise<void> {
 		const currentMachineId = await this.currentMachineIdPromise;
 
@@ -163,9 +186,11 @@ export class UserDataSyncMachinesService
 				name: this.computeCurrentMachineName(machineData.machines),
 				platform: getPlatformName(),
 			});
+
 			await this.writeMachinesData(machineData);
 		}
 	}
+
 	async removeCurrentMachine(manifest?: IUserDataManifest): Promise<void> {
 		const currentMachineId = await this.currentMachineIdPromise;
 
@@ -177,9 +202,11 @@ export class UserDataSyncMachinesService
 
 		if (updatedMachines.length !== machineData.machines.length) {
 			machineData.machines = updatedMachines;
+
 			await this.writeMachinesData(machineData);
 		}
 	}
+
 	async renameMachine(
 		machineId: string,
 		name: string,
@@ -191,6 +218,7 @@ export class UserDataSyncMachinesService
 
 		if (machine) {
 			machine.name = name;
+
 			await this.writeMachinesData(machineData);
 
 			const currentMachineId = await this.currentMachineIdPromise;
@@ -205,6 +233,7 @@ export class UserDataSyncMachinesService
 			}
 		}
 	}
+
 	async setEnablements(enablements: [string, boolean][]): Promise<void> {
 		const machineData = await this.readMachinesData();
 
@@ -217,8 +246,10 @@ export class UserDataSyncMachinesService
 				machine.disabled = enabled ? undefined : true;
 			}
 		}
+
 		await this.writeMachinesData(machineData);
 	}
+
 	private computeCurrentMachineName(machines: IMachineData[]): string {
 		const previousName = this.storageService.get(
 			currentMachineNameKey,
@@ -228,6 +259,7 @@ export class UserDataSyncMachinesService
 		if (previousName) {
 			return previousName;
 		}
+
 		const namePrefix = `${this.productService.embedderIdentifier ? `${this.productService.embedderIdentifier} - ` : ""}${getPlatformName()} (${this.productService.nameShort})`;
 
 		const nameRegEx = new RegExp(
@@ -240,10 +272,13 @@ export class UserDataSyncMachinesService
 			const matches = nameRegEx.exec(machine.name);
 
 			const index = matches ? parseInt(matches[1]) : 0;
+
 			nameIndex = index > nameIndex ? index : nameIndex;
 		}
+
 		return `${namePrefix} #${nameIndex + 1}`;
 	}
+
 	private async readMachinesData(
 		manifest?: IUserDataManifest,
 	): Promise<IMachinesData> {
@@ -260,8 +295,10 @@ export class UserDataSyncMachinesService
 				),
 			);
 		}
+
 		return machinesData;
 	}
+
 	private async writeMachinesData(
 		machinesData: IMachinesData,
 	): Promise<void> {
@@ -272,9 +309,12 @@ export class UserDataSyncMachinesService
 			content,
 			this.userData?.ref || null,
 		);
+
 		this.userData = { ref, content };
+
 		this._onDidChange.fire();
 	}
+
 	private async readUserData(
 		manifest?: IUserDataManifest,
 	): Promise<IUserData> {
@@ -292,11 +332,13 @@ export class UserDataSyncMachinesService
 				return this.userData;
 			}
 		}
+
 		return this.userDataSyncStoreService.readResource(
 			UserDataSyncMachinesService.RESOURCE,
 			this.userData,
 		);
 	}
+
 	private parse(userData: IUserData): IMachinesData {
 		if (userData.content !== null) {
 			try {
@@ -305,6 +347,7 @@ export class UserDataSyncMachinesService
 				this.logService.error(e);
 			}
 		}
+
 		return {
 			version: UserDataSyncMachinesService.VERSION,
 			machines: [],

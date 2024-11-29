@@ -18,6 +18,7 @@ export class StableEditorScrollState {
 				null,
 			);
 		}
+
 		let visiblePosition: Position | null = null;
 
 		let visiblePositionScrollDelta = 0;
@@ -31,9 +32,11 @@ export class StableEditorScrollState {
 				visiblePosition.lineNumber,
 				visiblePosition.column,
 			);
+
 			visiblePositionScrollDelta =
 				editor.getScrollTop() - visiblePositionScrollTop;
 		}
+
 		return new StableEditorScrollState(
 			editor.getScrollTop(),
 			editor.getContentHeight(),
@@ -42,6 +45,7 @@ export class StableEditorScrollState {
 			editor.getPosition(),
 		);
 	}
+
 	constructor(
 		private readonly _initialScrollTop: number,
 		private readonly _initialContentHeight: number,
@@ -49,6 +53,7 @@ export class StableEditorScrollState {
 		private readonly _visiblePositionScrollDelta: number,
 		private readonly _cursorPosition: Position | null,
 	) {}
+
 	public restore(editor: ICodeEditor): void {
 		if (
 			this._initialContentHeight === editor.getContentHeight() &&
@@ -57,16 +62,19 @@ export class StableEditorScrollState {
 			// The editor's content height and scroll top haven't changed, so we don't need to do anything
 			return;
 		}
+
 		if (this._visiblePosition) {
 			const visiblePositionScrollTop = editor.getTopForPosition(
 				this._visiblePosition.lineNumber,
 				this._visiblePosition.column,
 			);
+
 			editor.setScrollTop(
 				visiblePositionScrollTop + this._visiblePositionScrollDelta,
 			);
 		}
 	}
+
 	public restoreRelativeVerticalPositionOfCursor(editor: ICodeEditor): void {
 		if (
 			this._initialContentHeight === editor.getContentHeight() &&
@@ -75,14 +83,17 @@ export class StableEditorScrollState {
 			// The editor's content height and scroll top haven't changed, so we don't need to do anything
 			return;
 		}
+
 		const currentCursorPosition = editor.getPosition();
 
 		if (!this._cursorPosition || !currentCursorPosition) {
 			return;
 		}
+
 		const offset =
 			editor.getTopForLineNumber(currentCursorPosition.lineNumber) -
 			editor.getTopForLineNumber(this._cursorPosition.lineNumber);
+
 		editor.setScrollTop(
 			editor.getScrollTop() + offset,
 			ScrollType.Immediate,
@@ -100,6 +111,7 @@ export class StableEditorBottomScrollState {
 				0,
 			);
 		}
+
 		let visiblePosition: Position | null = null;
 
 		let visiblePositionScrollDelta = 0;
@@ -112,9 +124,11 @@ export class StableEditorBottomScrollState {
 			const visiblePositionScrollBottom = editor.getBottomForLineNumber(
 				visiblePosition.lineNumber,
 			);
+
 			visiblePositionScrollDelta =
 				visiblePositionScrollBottom - editor.getScrollTop();
 		}
+
 		return new StableEditorBottomScrollState(
 			editor.getScrollTop(),
 			editor.getContentHeight(),
@@ -122,12 +136,14 @@ export class StableEditorBottomScrollState {
 			visiblePositionScrollDelta,
 		);
 	}
+
 	constructor(
 		private readonly _initialScrollTop: number,
 		private readonly _initialContentHeight: number,
 		private readonly _visiblePosition: Position | null,
 		private readonly _visiblePositionScrollDelta: number,
 	) {}
+
 	public restore(editor: ICodeEditor): void {
 		if (
 			this._initialContentHeight === editor.getContentHeight() &&
@@ -136,10 +152,12 @@ export class StableEditorBottomScrollState {
 			// The editor's content height and scroll top haven't changed, so we don't need to do anything
 			return;
 		}
+
 		if (this._visiblePosition) {
 			const visiblePositionScrollBottom = editor.getBottomForLineNumber(
 				this._visiblePosition.lineNumber,
 			);
+
 			editor.setScrollTop(
 				visiblePositionScrollBottom - this._visiblePositionScrollDelta,
 				ScrollType.Immediate,

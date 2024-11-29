@@ -121,6 +121,7 @@ export interface IOutputChannel {
 	 * Update the channel.
 	 */
 	update(mode: OutputChannelUpdateMode.Append): void;
+
 	update(mode: OutputChannelUpdateMode, till: number): void;
 	/**
 	 * Disposes the output channel.
@@ -133,10 +134,15 @@ export const Extensions = {
 
 export interface IOutputChannelDescriptor {
 	id: string;
+
 	label: string;
+
 	log: boolean;
+
 	languageId?: string;
+
 	file?: URI;
+
 	extensionId?: string;
 }
 export interface IFileOutputChannelDescriptor extends IOutputChannelDescriptor {
@@ -144,6 +150,7 @@ export interface IFileOutputChannelDescriptor extends IOutputChannelDescriptor {
 }
 export interface IOutputChannelRegistry {
 	readonly onDidRegisterChannel: Event<string>;
+
 	readonly onDidRemoveChannel: Event<string>;
 	/**
 	 * Make an output channel known to the output world.
@@ -164,28 +171,39 @@ export interface IOutputChannelRegistry {
 }
 class OutputChannelRegistry implements IOutputChannelRegistry {
 	private channels = new Map<string, IOutputChannelDescriptor>();
+
 	private readonly _onDidRegisterChannel = new Emitter<string>();
+
 	readonly onDidRegisterChannel: Event<string> =
 		this._onDidRegisterChannel.event;
+
 	private readonly _onDidRemoveChannel = new Emitter<string>();
+
 	readonly onDidRemoveChannel: Event<string> = this._onDidRemoveChannel.event;
+
 	public registerChannel(descriptor: IOutputChannelDescriptor): void {
 		if (!this.channels.has(descriptor.id)) {
 			this.channels.set(descriptor.id, descriptor);
+
 			this._onDidRegisterChannel.fire(descriptor.id);
 		}
 	}
+
 	public getChannels(): IOutputChannelDescriptor[] {
 		const result: IOutputChannelDescriptor[] = [];
+
 		this.channels.forEach((value) => result.push(value));
 
 		return result;
 	}
+
 	public getChannel(id: string): IOutputChannelDescriptor | undefined {
 		return this.channels.get(id);
 	}
+
 	public removeChannel(id: string): void {
 		this.channels.delete(id);
+
 		this._onDidRemoveChannel.fire(id);
 	}
 }

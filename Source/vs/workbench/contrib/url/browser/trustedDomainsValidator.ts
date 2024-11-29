@@ -61,6 +61,7 @@ export class OpenerValidatorContributions implements IWorkbenchContribution {
 			shouldOpen: (uri, options) => this.validateLink(uri, options),
 		});
 	}
+
 	async validateLink(
 		resource: URI | string,
 		openOptions?: OpenOptions,
@@ -71,6 +72,7 @@ export class OpenerValidatorContributions implements IWorkbenchContribution {
 		) {
 			return true;
 		}
+
 		if (
 			openOptions?.fromWorkspace &&
 			this._workspaceTrustService.isWorkspaceTrusted() &&
@@ -80,6 +82,7 @@ export class OpenerValidatorContributions implements IWorkbenchContribution {
 		) {
 			return true;
 		}
+
 		const originalResource = resource;
 
 		let resourceUri: URI;
@@ -89,6 +92,7 @@ export class OpenerValidatorContributions implements IWorkbenchContribution {
 		} else {
 			resourceUri = resource;
 		}
+
 		if (await this._trustedDomainService.isValid(resourceUri)) {
 			return true;
 		} else {
@@ -117,6 +121,7 @@ export class OpenerValidatorContributions implements IWorkbenchContribution {
 						linkTail.length - linkTailLengthToKeep + 1,
 					);
 			}
+
 			const { result } = await this._dialogService.prompt<boolean>({
 				type: Severity.Info,
 				message: localize(
@@ -187,6 +192,7 @@ export class OpenerValidatorContributions implements IWorkbenchContribution {
 							) {
 								return true;
 							}
+
 							return false;
 						},
 					},

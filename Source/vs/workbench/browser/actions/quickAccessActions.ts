@@ -77,6 +77,7 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
 	primary: 0,
 	handler: (accessor) => {
 		const quickInputService = accessor.get(IQuickInputService);
+
 		quickInputService.focus();
 	},
 });
@@ -120,6 +121,7 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
 	primary: 0,
 	handler: (accessor) => {
 		const quickInputService = accessor.get(IQuickInputService);
+
 		quickInputService.toggle();
 	},
 });
@@ -133,6 +135,7 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
 	linux: { primary: KeyMod.CtrlCmd | KeyMod.Alt | KeyCode.Minus },
 	handler: (accessor) => {
 		const quickInputService = accessor.get(IQuickInputService);
+
 		quickInputService.back();
 	},
 });
@@ -162,8 +165,10 @@ registerAction2(
 				f1: true,
 			});
 		}
+
 		run(accessor: ServicesAccessor, prefix: undefined): void {
 			const quickInputService = accessor.get(IQuickInputService);
+
 			quickInputService.quickAccess.show(
 				typeof prefix === "string" ? prefix : undefined,
 				{
@@ -188,6 +193,7 @@ registerAction2(
 				},
 			});
 		}
+
 		run(accessor: ServicesAccessor): void {
 			const quickInputService = accessor.get(IQuickInputService);
 
@@ -195,6 +201,7 @@ registerAction2(
 				includeHelp: true,
 				from: "commandCenter",
 			};
+
 			quickInputService.quickAccess.show(undefined, {
 				preserveValue: true,
 				providerOptions,
@@ -206,6 +213,7 @@ CommandsRegistry.registerCommand(
 	"workbench.action.quickOpenPreviousEditor",
 	async (accessor) => {
 		const quickInputService = accessor.get(IQuickInputService);
+
 		quickInputService.quickAccess.show("", {
 			itemActivation: ItemActivation.SECOND,
 		});
@@ -223,6 +231,7 @@ class BaseQuickAccessNavigateAction extends Action2 {
 	) {
 		super({ id, title, f1: true, keybinding });
 	}
+
 	async run(accessor: ServicesAccessor): Promise<void> {
 		const keybindingService = accessor.get(IKeybindingService);
 
@@ -233,6 +242,7 @@ class BaseQuickAccessNavigateAction extends Action2 {
 		const quickNavigate = this.quickNavigate
 			? { keybindings: keys }
 			: undefined;
+
 		quickInputService.navigate(this.next, quickNavigate);
 	}
 }

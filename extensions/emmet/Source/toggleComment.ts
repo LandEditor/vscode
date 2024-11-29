@@ -30,6 +30,7 @@ export function toggleComment(): Thenable<boolean> | undefined {
 	if (!validate() || !vscode.window.activeTextEditor) {
 		return;
 	}
+
 	setupCommentSpacing();
 
 	const editor = vscode.window.activeTextEditor;
@@ -39,8 +40,10 @@ export function toggleComment(): Thenable<boolean> | undefined {
 	if (!rootNode) {
 		return;
 	}
+
 	return editor.edit((editBuilder) => {
 		const allEdits: vscode.TextEdit[][] = [];
+
 		Array.from(editor.selections)
 			.reverse()
 			.forEach((selection) => {
@@ -71,6 +74,7 @@ export function toggleComment(): Thenable<boolean> | undefined {
 			if (edits[0].range.end.isAfterOrEqual(lastEditPosition)) {
 				edits.forEach((x) => {
 					editBuilder.replace(x.range, x.newText);
+
 					lastEditPosition = x.range.end;
 				});
 			}
@@ -113,6 +117,7 @@ function toggleCommentHTML(
 	if (!startNode || !endNode) {
 		return [];
 	}
+
 	if (
 		sameNodes(startNode, endNode) &&
 		startNode.name === "style" &&
@@ -129,9 +134,11 @@ function toggleCommentHTML(
 
 		return toggleCommentStylesheet(document, selection, cssRootNode);
 	}
+
 	const allNodes: Node[] = getNodesInBetween(startNode, endNode);
 
 	let edits: vscode.TextEdit[] = [];
+
 	allNodes.forEach((node) => {
 		edits = edits.concat(getRangesToUnCommentHTML(node, document));
 	});
@@ -139,6 +146,7 @@ function toggleCommentHTML(
 	if (startNode.type === "comment") {
 		return edits;
 	}
+
 	edits.push(
 		new vscode.TextEdit(
 			offsetRangeToVsRange(
@@ -149,6 +157,7 @@ function toggleCommentHTML(
 			startCommentHTML,
 		),
 	);
+
 	edits.push(
 		new vscode.TextEdit(
 			offsetRangeToVsRange(
@@ -179,6 +188,7 @@ function getRangesToUnCommentHTML(
 				"",
 			),
 		);
+
 		unCommentTextEdits.push(
 			new vscode.TextEdit(
 				offsetRangeToVsRange(
@@ -228,11 +238,13 @@ function toggleCommentStylesheet(
 			selectionStartOffset,
 			rootNode,
 		);
+
 		selectionEndOffset = adjustEndNodeCss(
 			endNode,
 			selectionEndOffset,
 			rootNode,
 		);
+
 		selection = offsetRangeToSelection(
 			document,
 			selectionStartOffset,
@@ -240,7 +252,9 @@ function toggleCommentStylesheet(
 		);
 	} else if (startNode) {
 		selectionStartOffset = startNode.start;
+
 		selectionEndOffset = startNode.end;
+
 		selection = offsetRangeToSelection(
 			document,
 			selectionStartOffset,
@@ -251,6 +265,7 @@ function toggleCommentStylesheet(
 	const rangesToUnComment: vscode.Range[] = [];
 
 	const edits: vscode.TextEdit[] = [];
+
 	rootNode.comments.forEach((comment) => {
 		const commentRange = offsetRangeToVsRange(
 			document,
@@ -260,6 +275,7 @@ function toggleCommentStylesheet(
 
 		if (selection.intersection(commentRange)) {
 			rangesToUnComment.push(commentRange);
+
 			edits.push(
 				new vscode.TextEdit(
 					offsetRangeToVsRange(
@@ -270,6 +286,7 @@ function toggleCommentStylesheet(
 					"",
 				),
 			);
+
 			edits.push(
 				new vscode.TextEdit(
 					offsetRangeToVsRange(
@@ -286,6 +303,7 @@ function toggleCommentStylesheet(
 	if (edits.length > 0) {
 		return edits;
 	}
+
 	return [
 		new vscode.TextEdit(
 			new vscode.Range(selection.start, selection.start),
@@ -304,13 +322,19 @@ function setupCommentSpacing() {
 
 	if (config) {
 		startCommentStylesheet = "/* ";
+
 		endCommentStylesheet = " */";
+
 		startCommentHTML = "<!-- ";
+
 		endCommentHTML = " -->";
 	} else {
 		startCommentStylesheet = "/*";
+
 		endCommentStylesheet = "*/";
+
 		startCommentHTML = "<!--";
+
 		endCommentHTML = "-->";
 	}
 }
@@ -324,25 +348,31 @@ function adjustStartNodeCss(
 			return offset;
 		}
 	}
+
 	if (!node) {
 		return offset;
 	}
+
 	if (node.type === "property") {
 		return node.start;
 	}
+
 	const rule = <Rule>node;
 
 	if (offset < rule.contentStartToken.end || !rule.firstChild) {
 		return rule.start;
 	}
+
 	if (offset < rule.firstChild.start) {
 		return offset;
 	}
+
 	let newStartNode = rule.firstChild;
 
 	while (newStartNode.nextSibling && offset > newStartNode.end) {
 		newStartNode = newStartNode.nextSibling;
 	}
+
 	return newStartNode.start;
 }
 function adjustEndNodeCss(
@@ -355,24 +385,30 @@ function adjustEndNodeCss(
 			return offset;
 		}
 	}
+
 	if (!node) {
 		return offset;
 	}
+
 	if (node.type === "property") {
 		return node.end;
 	}
+
 	const rule = <Rule>node;
 
 	if (offset === rule.contentEndToken.end || !rule.firstChild) {
 		return rule.end;
 	}
+
 	if (offset > rule.children[rule.children.length - 1].end) {
 		return offset;
 	}
+
 	let newEndNode = rule.children[rule.children.length - 1];
 
 	while (newEndNode.previousSibling && offset < newEndNode.start) {
 		newEndNode = newEndNode.previousSibling;
 	}
+
 	return newEndNode.end;
 }

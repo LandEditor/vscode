@@ -25,7 +25,9 @@ export class Component extends Themable {
 		storageService: IStorageService,
 	) {
 		super(themeService);
+
 		this.memento = new Memento(this.id, storageService);
+
 		this._register(
 			storageService.onWillSaveState(() => {
 				// Ask the component to persist state into the memento
@@ -35,24 +37,29 @@ export class Component extends Themable {
 			}),
 		);
 	}
+
 	getId(): string {
 		return this.id;
 	}
+
 	protected getMemento(
 		scope: StorageScope,
 		target: StorageTarget,
 	): MementoObject {
 		return this.memento.getMemento(scope, target);
 	}
+
 	protected reloadMemento(scope: StorageScope): void {
 		return this.memento.reloadMemento(scope);
 	}
+
 	protected onDidChangeMementoValue(
 		scope: StorageScope,
 		disposables: DisposableStore,
 	): Event<IStorageValueChangeEvent> {
 		return this.memento.onDidChangeValue(scope, disposables);
 	}
+
 	protected saveState(): void {
 		// Subclasses to implement for storing state
 	}

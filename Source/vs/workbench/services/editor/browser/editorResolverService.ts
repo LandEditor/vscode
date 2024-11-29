@@ -89,8 +89,11 @@ import { PreferredGroup } from "../common/editorService.js";
 
 interface RegisteredEditor {
 	globPattern: string | glob.IRelativePattern;
+
 	editorInfo: RegisteredEditorInfo;
+
 	options?: RegisteredEditorOptions;
+
 	editorFactoryObject: EditorInputFactoryObject;
 }
 type RegisteredEditors = Array<RegisteredEditor>;
@@ -104,12 +107,15 @@ export class EditorResolverService
 	private readonly _onDidChangeEditorRegistrations = this._register(
 		new PauseableEmitter<void>(),
 	);
+
 	readonly onDidChangeEditorRegistrations =
 		this._onDidChangeEditorRegistrations.event;
 	// Constants
 	private static readonly configureDefaultID =
 		"promptOpenWith.configureDefault";
+
 	private static readonly cacheStorageID = "editorOverrideService.cache";
+
 	private static readonly conflictingDefaultsStorageID =
 		"editorOverrideService.conflictingDefaults";
 	// Data Stores
@@ -120,11 +126,14 @@ export class EditorResolverService
 		string | glob.IRelativePattern,
 		Map<string, RegisteredEditors>
 	>();
+
 	private _flattenedEditors: Map<
 		string | glob.IRelativePattern,
 		RegisteredEditors
 	> = new Map();
+
 	private _shouldReFlattenEditors: boolean = true;
+
 	private cache: Set<string> | undefined;
 
 	constructor(
@@ -158,10 +167,12 @@ export class EditorResolverService
 				),
 			),
 		);
+
 		this.storageService.remove(
 			EditorResolverService.cacheStorageID,
 			StorageScope.PROFILE,
 		);
+
 		this._register(
 			this.storageService.onWillSaveState(() => {
 				// We want to store the glob patterns we would activate on, this allows us to know if we need to await the ext host on startup for opening a resource
@@ -175,6 +186,7 @@ export class EditorResolverService
 			}),
 		);
 	}
+
 	private resolveUntypedInputAndGroup(
 		editor: IUntypedEditorInput,
 		preferredGroup: PreferredGroup | undefined,
@@ -209,6 +221,7 @@ export class EditorResolverService
 			return [untypedEditor, group, activation];
 		}
 	}
+
 	async resolveEditor(
 		editor: IUntypedEditorInput,
 		preferredGroup: PreferredGroup | undefined,
@@ -221,6 +234,7 @@ export class EditorResolverService
 		if (isResourceSideBySideEditorInput(editor)) {
 			return this.doResolveSideBySideEditor(editor, preferredGroup);
 		}
+
 		let resolvedUntypedAndGroup:
 			| [IUntypedEditorInput, IEditorGroup, EditorActivation | undefined]
 			| undefined;
@@ -235,6 +249,7 @@ export class EditorResolverService
 		} else {
 			resolvedUntypedAndGroup = resolvedUntypedAndGroupResult;
 		}
+
 		if (!resolvedUntypedAndGroup) {
 			return ResolvedStatus.NONE;
 		}
@@ -244,6 +259,7 @@ export class EditorResolverService
 		if (activation) {
 			untypedEditor.options = { ...untypedEditor.options, activation };
 		}
+
 		let resource = EditorResourceAccessor.getCanonicalUri(untypedEditor, {
 			supportSideBySide: SideBySideEditor.PRIMARY,
 		});
@@ -257,6 +273,7 @@ export class EditorResolverService
 		} else if (resource.scheme === undefined || resource === null) {
 			return ResolvedStatus.NONE;
 		}
+
 		if (untypedEditor.options?.override === EditorResolution.PICK) {
 			const picked = await this.doPickEditor(untypedEditor);
 			// If the picker was cancelled we will stop resolving the editor
@@ -287,7 +304,9 @@ export class EditorResolverService
 				resource,
 				DEFAULT_EDITOR_ASSOCIATION.id,
 			);
+
 			selectedEditor = resolvedEditor?.editor;
+
 			conflictingDefault = resolvedEditor?.conflictingDefault;
 
 			if (!selectedEditor) {
@@ -307,6 +326,7 @@ export class EditorResolverService
 			if (!resource2) {
 				resource2 = URI.from({ scheme: Schemas.untitled });
 			}
+
 			const { editor: selectedEditor2 } = this.getEditor(
 				resource2,
 				undefined,
@@ -320,9 +340,12 @@ export class EditorResolverService
 					editor: selectedDiff,
 					conflictingDefault: conflictingDefaultDiff,
 				} = this.getEditor(resource, DEFAULT_EDITOR_ASSOCIATION.id);
+
 				selectedEditor = selectedDiff;
+
 				conflictingDefault = conflictingDefaultDiff;
 			}
+
 			if (!selectedEditor) {
 				return ResolvedStatus.NONE;
 			}
@@ -340,6 +363,7 @@ export class EditorResolverService
 		) {
 			return ResolvedStatus.NONE;
 		}
+
 		const input = await this.doResolveEditor(
 			untypedEditor,
 			group,
@@ -356,6 +380,7 @@ export class EditorResolverService
 				group,
 			);
 		}
+
 		if (input) {
 			this.sendEditorResolutionTelemetry(input.editor);
 
@@ -364,10 +389,13 @@ export class EditorResolverService
 					`Editor ID Mismatch: ${input.editor.editorId} !== ${selectedEditor.editorInfo.id}. This will cause bugs. Please ensure editorInput.editorId matches the registered id`,
 				);
 			}
+
 			return { ...input, group };
 		}
+
 		return ResolvedStatus.ABORT;
 	}
+
 	private async doResolveSideBySideEditor(
 		editor: IResourceSideBySideEditorInput,
 		preferredGroup: PreferredGroup | undefined,
@@ -380,6 +408,7 @@ export class EditorResolverService
 		if (!isEditorInputWithOptionsAndGroup(primaryResolvedEditor)) {
 			return ResolvedStatus.NONE;
 		}
+
 		const secondaryResolvedEditor = await this.resolveEditor(
 			editor.secondary,
 			primaryResolvedEditor.group ?? preferredGroup,
@@ -388,6 +417,7 @@ export class EditorResolverService
 		if (!isEditorInputWithOptionsAndGroup(secondaryResolvedEditor)) {
 			return ResolvedStatus.NONE;
 		}
+
 		return {
 			group: primaryResolvedEditor.group ?? secondaryResolvedEditor.group,
 			editor: this.instantiationService.createInstance(
@@ -400,6 +430,7 @@ export class EditorResolverService
 			options: editor.options,
 		};
 	}
+
 	bufferChangeEvents(callback: Function): void {
 		this._onDidChangeEditorRegistrations.pause();
 
@@ -409,6 +440,7 @@ export class EditorResolverService
 			this._onDidChangeEditorRegistrations.resume();
 		}
 	}
+
 	registerEditor(
 		globPattern: string | glob.IRelativePattern,
 		editorInfo: RegisteredEditorInfo,
@@ -419,21 +451,27 @@ export class EditorResolverService
 
 		if (registeredEditor === undefined) {
 			registeredEditor = new Map<string, RegisteredEditors>();
+
 			this._editors.set(globPattern, registeredEditor);
 		}
+
 		let editorsWithId = registeredEditor.get(editorInfo.id);
 
 		if (editorsWithId === undefined) {
 			editorsWithId = [];
 		}
+
 		const remove = insert(editorsWithId, {
 			globPattern,
 			editorInfo,
 			options,
 			editorFactoryObject,
 		});
+
 		registeredEditor.set(editorInfo.id, editorsWithId);
+
 		this._shouldReFlattenEditors = true;
+
 		this._onDidChangeEditorRegistrations.fire();
 
 		return toDisposable(() => {
@@ -442,10 +480,13 @@ export class EditorResolverService
 			if (editorsWithId && editorsWithId.length === 0) {
 				registeredEditor?.delete(editorInfo.id);
 			}
+
 			this._shouldReFlattenEditors = true;
+
 			this._onDidChangeEditorRegistrations.fire();
 		});
 	}
+
 	getAssociationsForResource(resource: URI): EditorAssociations {
 		const associations = this.getAllUserAssociations();
 
@@ -467,6 +508,7 @@ export class EditorResolverService
 			allEditors.find((c) => c.editorInfo.id === association.viewType),
 		);
 	}
+
 	getAllUserAssociations(): EditorAssociations {
 		const inspectedEditorAssociations =
 			this.configurationService.inspect<{
@@ -493,6 +535,7 @@ export class EditorResolverService
 				rawAssociations[key] = value;
 			}
 		}
+
 		const associations = [];
 
 		for (const [key, value] of Object.entries(rawAssociations)) {
@@ -500,8 +543,10 @@ export class EditorResolverService
 				filenamePattern: key,
 				viewType: value,
 			};
+
 			associations.push(association);
 		}
+
 		return associations;
 	}
 	/**
@@ -513,6 +558,7 @@ export class EditorResolverService
 		if (!this._shouldReFlattenEditors) {
 			return this._flattenedEditors;
 		}
+
 		this._shouldReFlattenEditors = false;
 
 		const editors = new Map<
@@ -540,17 +586,21 @@ export class EditorResolverService
 						...registeredEditor.options,
 						...editor.options,
 					};
+
 					registeredEditor.editorFactoryObject = {
 						...registeredEditor.editorFactoryObject,
 						...editor.editorFactoryObject,
 					};
 				}
+
 				if (registeredEditor) {
 					registeredEditors.push(registeredEditor);
 				}
 			}
+
 			editors.set(glob, registeredEditors);
 		}
+
 		return editors;
 	}
 	/**
@@ -559,6 +609,7 @@ export class EditorResolverService
 	private get _registeredEditors(): RegisteredEditors {
 		return Array.from(this._flattenedEditors.values()).flat();
 	}
+
 	updateUserAssociations(globPattern: string, editorID: string): void {
 		const newAssociation: EditorAssociation = {
 			viewType: editorID,
@@ -575,11 +626,13 @@ export class EditorResolverService
 					association.viewType;
 			}
 		}
+
 		this.configurationService.updateValue(
 			editorsAssociationsSettingId,
 			newSettingObject,
 		);
 	}
+
 	private findMatchingEditors(resource: URI): RegisteredEditor[] {
 		// The user setting should be respected even if the editor doesn't specify that resource in package.json
 		const userSettings = this.getAssociationsForResource(resource);
@@ -613,12 +666,14 @@ export class EditorResolverService
 			) {
 				return b.globPattern.length - a.globPattern.length;
 			}
+
 			return (
 				priorityToRank(b.editorInfo.priority) -
 				priorityToRank(a.editorInfo.priority)
 			);
 		});
 	}
+
 	public getEditors(resource?: URI): RegisteredEditorInfo[] {
 		this._flattenedEditors = this._flattenEditorsMap();
 		// By resource
@@ -634,6 +689,7 @@ export class EditorResolverService
 			) {
 				return [];
 			}
+
 			return editors.map((editor) => editor.editorInfo);
 		}
 		// All
@@ -651,6 +707,7 @@ export class EditorResolverService
 		editorId: string | EditorResolution.EXCLUSIVE_ONLY | undefined,
 	): {
 		editor: RegisteredEditor | undefined;
+
 		conflictingDefault: boolean;
 	} {
 		const findMatchingEditor = (
@@ -667,6 +724,7 @@ export class EditorResolverService
 						editor.options.canSupportResource(resource)
 					);
 				}
+
 				return editor.editorInfo.id === viewType;
 			});
 		};
@@ -680,6 +738,7 @@ export class EditorResolverService
 				conflictingDefault: false,
 			};
 		}
+
 		const editors = this.findMatchingEditors(resource);
 
 		const associationsFromSetting =
@@ -732,11 +791,13 @@ export class EditorResolverService
 		) {
 			conflictingDefault = true;
 		}
+
 		return {
 			editor: findMatchingEditor(editors, selectedViewType),
 			conflictingDefault,
 		};
 	}
+
 	private async doResolveEditor(
 		editor: IUntypedEditorInput,
 		group: IEditorGroup,
@@ -761,6 +822,7 @@ export class EditorResolverService
 			if (!selectedEditor.editorFactoryObject.createMergeEditorInput) {
 				return;
 			}
+
 			const inputWithOptions =
 				await selectedEditor.editorFactoryObject.createMergeEditorInput(
 					editor,
@@ -777,6 +839,7 @@ export class EditorResolverService
 			if (!selectedEditor.editorFactoryObject.createDiffEditorInput) {
 				return;
 			}
+
 			const inputWithOptions =
 				await selectedEditor.editorFactoryObject.createDiffEditorInput(
 					editor,
@@ -795,6 +858,7 @@ export class EditorResolverService
 			) {
 				return;
 			}
+
 			const inputWithOptions =
 				await selectedEditor.editorFactoryObject.createMultiDiffEditorInput(
 					editor,
@@ -806,15 +870,18 @@ export class EditorResolverService
 				options: inputWithOptions.options ?? options,
 			};
 		}
+
 		if (isResourceSideBySideEditorInput(editor)) {
 			throw new Error(
 				`Untyped side by side editor input not supported here.`,
 			);
 		}
+
 		if (isUntitledResourceEditorInput(editor)) {
 			if (!selectedEditor.editorFactoryObject.createUntitledEditorInput) {
 				return;
 			}
+
 			const inputWithOptions =
 				await selectedEditor.editorFactoryObject.createUntitledEditorInput(
 					editor,
@@ -865,6 +932,7 @@ export class EditorResolverService
 				editor,
 				group,
 			);
+
 		options = inputWithOptions.options ?? options;
 
 		const input = inputWithOptions.editor;
@@ -882,6 +950,7 @@ export class EditorResolverService
 	private async moveExistingEditorForResource(
 		existingEditorsForResource: Array<{
 			editor: EditorInput;
+
 			group: IEditorGroup;
 		}>,
 		targetGroup: IEditorGroup,
@@ -908,6 +977,7 @@ export class EditorResolverService
 				return;
 			}
 		}
+
 		return editorToUse.editor;
 	}
 	/**
@@ -921,10 +991,12 @@ export class EditorResolverService
 		editorId: string,
 	): Array<{
 		editor: EditorInput;
+
 		group: IEditorGroup;
 	}> {
 		const out: Array<{
 			editor: EditorInput;
+
 			group: IEditorGroup;
 		}> = [];
 
@@ -940,8 +1012,10 @@ export class EditorResolverService
 				}
 			}
 		}
+
 		return out;
 	}
+
 	private async doHandleConflictingDefaults(
 		resource: URI,
 		editorName: string,
@@ -967,9 +1041,11 @@ export class EditorResolverService
 		// Writes to the storage service that a choice has been made for the currently installed editors
 		const writeCurrentEditorsToStorage = () => {
 			storedChoices[globForResource] = [];
+
 			editors.forEach((editor) =>
 				storedChoices[globForResource].push(editor.editorInfo.id),
 			);
+
 			this.storageService.store(
 				EditorResolverService.conflictingDefaultsStorageID,
 				JSON.stringify(storedChoices),
@@ -986,6 +1062,7 @@ export class EditorResolverService
 		) {
 			return;
 		}
+
 		const handle = this.notificationService.prompt(
 			Severity.Warning,
 			localize(
@@ -1008,6 +1085,7 @@ export class EditorResolverService
 						if (!picked) {
 							return;
 						}
+
 						untypedInput.options = picked;
 
 						const replacementEditor = await this.resolveEditor(
@@ -1044,9 +1122,11 @@ export class EditorResolverService
 		// If the user pressed X we assume they want to keep the current editor as default
 		const onCloseListener = handle.onDidClose(() => {
 			writeCurrentEditorsToStorage();
+
 			onCloseListener.dispose();
 		});
 	}
+
 	private mapEditorsToQuickPickEntry(
 		resource: URI,
 		showDefaultPicker?: boolean,
@@ -1109,6 +1189,7 @@ export class EditorResolverService
 		) {
 			defaultViewType = registeredEditors[1]?.editorInfo.id;
 		}
+
 		if (!defaultViewType) {
 			defaultViewType = DEFAULT_EDITOR_ASSOCIATION.id;
 		}
@@ -1136,11 +1217,13 @@ export class EditorResolverService
 								: undefined,
 				detail: editor.editorInfo.detail ?? editor.editorInfo.priority,
 			};
+
 			quickPickEntries.push(quickPickEntry);
 		});
 
 		if (!showDefaultPicker && extname(resource) !== "") {
 			const separator: IQuickPickSeparator = { type: "separator" };
+
 			quickPickEntries.push(separator);
 
 			const configureDefaultEntry = {
@@ -1151,17 +1234,22 @@ export class EditorResolverService
 					`*${extname(resource)}`,
 				),
 			};
+
 			quickPickEntries.push(configureDefaultEntry);
 		}
+
 		return quickPickEntries;
 	}
+
 	private async doPickEditor(
 		editor: IUntypedEditorInput,
 		showDefaultPicker?: boolean,
 	): Promise<IEditorOptions | undefined> {
 		type EditorPick = {
 			readonly item: IQuickPickItem;
+
 			readonly keyMods?: IKeyMods;
+
 			readonly openInBackground: boolean;
 		};
 
@@ -1197,8 +1285,11 @@ export class EditorResolverService
 					"Select editor for '{0}'",
 					basename(resource),
 				);
+
 		editorPicker.placeholder = placeHolderMessage;
+
 		editorPicker.canAcceptInBackground = true;
+
 		editorPicker.items = editorPicks;
 
 		const firstItem = editorPicker.items.find(
@@ -1230,15 +1321,19 @@ export class EditorResolverService
 							result.item.id,
 						);
 					}
+
 					resolve(result);
 				}),
 			);
+
 			disposables.add(
 				editorPicker.onDidHide(() => {
 					disposables.dispose();
+
 					resolve(undefined);
 				}),
 			);
+
 			disposables.add(
 				editorPicker.onDidTriggerItemButton((e) => {
 					// Trigger opening and close picker
@@ -1252,6 +1347,7 @@ export class EditorResolverService
 					}
 				}),
 			);
+
 			editorPicker.show();
 		});
 		// Close picker
@@ -1274,18 +1370,25 @@ export class EditorResolverService
 
 			return targetOptions;
 		}
+
 		return undefined;
 	}
+
 	private sendEditorResolutionTelemetry(chosenInput: EditorInput): void {
 		type editorResolutionClassification = {
 			viewType: {
 				classification: "PublicNonPersonalData";
+
 				purpose: "FeatureInsight";
+
 				comment: "The id of the editor opened. Used to gain an understanding of what editors are most popular";
 			};
+
 			owner: "lramos15";
+
 			comment: "An event that fires when an editor type is picked";
 		};
+
 		type editorResolutionEvent = {
 			viewType: string;
 		};
@@ -1297,6 +1400,7 @@ export class EditorResolverService
 			>("override.viewType", { viewType: chosenInput.editorId });
 		}
 	}
+
 	private cacheEditors() {
 		// Create a set to store glob patterns
 		const cacheStorage: Set<string> = new Set<string>();
@@ -1311,6 +1415,7 @@ export class EditorResolverService
 			if (!nonOptional) {
 				continue;
 			}
+
 			if (glob.isRelativePattern(globPattern)) {
 				cacheStorage.add(`${globPattern.pattern}`);
 			} else {
@@ -1325,6 +1430,7 @@ export class EditorResolverService
 				cacheStorage.add(association.filenamePattern);
 			}
 		}
+
 		this.storageService.store(
 			EditorResolverService.cacheStorageID,
 			JSON.stringify(Array.from(cacheStorage)),
@@ -1332,15 +1438,18 @@ export class EditorResolverService
 			StorageTarget.MACHINE,
 		);
 	}
+
 	private resourceMatchesCache(resource: URI): boolean {
 		if (!this.cache) {
 			return false;
 		}
+
 		for (const cacheEntry of this.cache) {
 			if (globMatchesResource(cacheEntry, resource)) {
 				return true;
 			}
 		}
+
 		return false;
 	}
 }

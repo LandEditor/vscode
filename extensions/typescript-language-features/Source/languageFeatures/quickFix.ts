@@ -36,12 +36,16 @@ import {
 
 type ApplyCodeActionCommand_args = {
 	readonly document: vscode.TextDocument;
+
 	readonly diagnostic: vscode.Diagnostic;
+
 	readonly action: Proto.CodeFixAction;
+
 	readonly followupAction?: Command;
 };
 class ApplyCodeActionCommand implements Command {
 	public static readonly ID = "_typescript.applyCodeActionCommand";
+
 	public readonly id = ApplyCodeActionCommand.ID;
 
 	constructor(
@@ -49,6 +53,7 @@ class ApplyCodeActionCommand implements Command {
 		private readonly diagnosticManager: DiagnosticsManager,
 		private readonly telemetryReporter: TelemetryReporter,
 	) {}
+
 	public async execute({
 		document,
 		action,
@@ -67,6 +72,7 @@ class ApplyCodeActionCommand implements Command {
 		this.telemetryReporter.logTelemetry("quickFix.execute", {
 			fixName: action.fixName,
 		});
+
 		this.diagnosticManager.deleteDiagnostic(document.uri, diagnostic);
 
 		const codeActionResult = await applyCodeActionCommands(
@@ -74,6 +80,7 @@ class ApplyCodeActionCommand implements Command {
 			action.commands,
 			nulToken,
 		);
+
 		await followupAction?.execute();
 
 		return codeActionResult;
@@ -84,12 +91,14 @@ type ApplyFixAllCodeAction_args = {
 };
 class ApplyFixAllCodeAction implements Command {
 	public static readonly ID = "_typescript.applyFixAllCodeAction";
+
 	public readonly id = ApplyFixAllCodeAction.ID;
 
 	constructor(
 		private readonly client: ITypeScriptServiceClient,
 		private readonly telemetryReporter: TelemetryReporter,
 	) {}
+
 	public async execute(args: ApplyFixAllCodeAction_args): Promise<void> {
 		/* __GDPR__
             "quickFixAll.execute" : {
@@ -123,19 +132,24 @@ class DiagnosticsSet {
 		for (const diagnostic of diagnostics) {
 			values.set(DiagnosticsSet.key(diagnostic), diagnostic);
 		}
+
 		return new DiagnosticsSet(values);
 	}
+
 	private static key(diagnostic: vscode.Diagnostic) {
 		const { start, end } = diagnostic.range;
 
 		return `${diagnostic.code}-${start.line},${start.character}-${end.line},${end.character}`;
 	}
+
 	private constructor(
 		private readonly _values: Map<string, vscode.Diagnostic>,
 	) {}
+
 	public get values(): Iterable<vscode.Diagnostic> {
 		return this._values.values();
 	}
+
 	public get size() {
 		return this._values.size;
 	}
@@ -158,17 +172,22 @@ class VsCodeFixAllCodeAction extends VsCodeCodeAction {
 	) {
 		super(tsAction, title, kind);
 	}
+
 	public combinedResponse?: Proto.GetCombinedCodeFixResponse;
 }
 class CodeActionSet {
 	private readonly _actions = new Set<VsCodeCodeAction>();
+
 	private readonly _fixAllActions = new Map<{}, VsCodeCodeAction>();
+
 	private readonly _aiActions = new Set<VsCodeCodeAction>();
+
 	public *values(): Iterable<VsCodeCodeAction> {
 		yield* this._actions;
 
 		yield* this._aiActions;
 	}
+
 	public addAction(action: VsCodeCodeAction) {
 		if (action.isAI) {
 			// there are no separate fixAllActions for AI, and no duplicates, so return immediately
@@ -176,6 +195,7 @@ class CodeActionSet {
 
 			return;
 		}
+
 		for (const existing of this._actions) {
 			if (
 				action.tsAction.fixName === existing.tsAction.fixName &&
@@ -184,6 +204,7 @@ class CodeActionSet {
 				this._actions.delete(existing);
 			}
 		}
+
 		this._actions.add(action);
 
 		if (action.tsAction.fixId) {
@@ -194,10 +215,12 @@ class CodeActionSet {
 
 			if (existingFixAll) {
 				this._actions.delete(existingFixAll);
+
 				this._actions.add(existingFixAll);
 			}
 		}
 	}
+
 	public addFixAllAction(fixId: {}, action: VsCodeCodeAction) {
 		const existing = this._fixAllActions.get(fixId);
 
@@ -205,15 +228,19 @@ class CodeActionSet {
 			// reinsert action at back of actions list
 			this._actions.delete(existing);
 		}
+
 		this.addAction(action);
+
 		this._fixAllActions.set(fixId, action);
 	}
+
 	public hasFixAllAction(fixId: {}) {
 		return this._fixAllActions.has(fixId);
 	}
 }
 class SupportedCodeActionProvider {
 	public constructor(private readonly client: ITypeScriptServiceClient) {}
+
 	public async getFixableDiagnosticsForContext(
 		diagnostics: readonly vscode.Diagnostic[],
 	): Promise<DiagnosticsSet> {
@@ -241,9 +268,11 @@ class TypeScriptQuickFixProvider
 	implements vscode.CodeActionProvider<VsCodeCodeAction>
 {
 	private static readonly _maxCodeActionsPerFile: number = 1000;
+
 	public static readonly metadata: vscode.CodeActionProviderMetadata = {
 		providedCodeActionKinds: [vscode.CodeActionKind.QuickFix],
 	};
+
 	private readonly supportedCodeActionProvider: SupportedCodeActionProvider;
 
 	constructor(
@@ -254,6 +283,7 @@ class TypeScriptQuickFixProvider
 		telemetryReporter: TelemetryReporter,
 	) {
 		commandManager.register(new CompositeCommand());
+
 		commandManager.register(
 			new ApplyCodeActionCommand(
 				client,
@@ -261,16 +291,20 @@ class TypeScriptQuickFixProvider
 				telemetryReporter,
 			),
 		);
+
 		commandManager.register(
 			new ApplyFixAllCodeAction(client, telemetryReporter),
 		);
+
 		commandManager.register(
 			new EditorChatFollowUp(client, telemetryReporter),
 		);
+
 		this.supportedCodeActionProvider = new SupportedCodeActionProvider(
 			client,
 		);
 	}
+
 	public async provideCodeActions(
 		document: vscode.TextDocument,
 		range: vscode.Range,
@@ -282,6 +316,7 @@ class TypeScriptQuickFixProvider
 		if (!file) {
 			return;
 		}
+
 		let diagnostics = context.diagnostics;
 
 		if (this.client.bufferSyncSupport.hasPendingDiagnostics(document.uri)) {
@@ -293,6 +328,7 @@ class TypeScriptQuickFixProvider
 			if (token.isCancellationRequested) {
 				return;
 			}
+
 			const allDiagnostics: vscode.Diagnostic[] = [];
 			// Match ranges again after getting new diagnostics
 			for (const diagnostic of this.diagnosticsManager.getDiagnostics(
@@ -309,8 +345,10 @@ class TypeScriptQuickFixProvider
 					}
 				}
 			}
+
 			diagnostics = allDiagnostics;
 		}
+
 		const fixableDiagnostics =
 			await this.supportedCodeActionProvider.getFixableDiagnosticsForContext(
 				diagnostics,
@@ -319,6 +357,7 @@ class TypeScriptQuickFixProvider
 		if (!fixableDiagnostics.size || token.isCancellationRequested) {
 			return;
 		}
+
 		await this.formattingConfigurationManager.ensureConfigurationForDocument(
 			document,
 			token,
@@ -327,6 +366,7 @@ class TypeScriptQuickFixProvider
 		if (token.isCancellationRequested) {
 			return;
 		}
+
 		const results = new CodeActionSet();
 
 		for (const diagnostic of fixableDiagnostics.values) {
@@ -342,13 +382,16 @@ class TypeScriptQuickFixProvider
 				return;
 			}
 		}
+
 		const allActions = Array.from(results.values());
 
 		for (const action of allActions) {
 			action.isPreferred = isPreferredFix(action, allActions);
 		}
+
 		return allActions;
 	}
+
 	public async resolveCodeAction(
 		codeAction: VsCodeCodeAction,
 		token: vscode.CancellationToken,
@@ -359,6 +402,7 @@ class TypeScriptQuickFixProvider
 		) {
 			return codeAction;
 		}
+
 		const arg: Proto.GetCombinedCodeFixRequestArgs = {
 			scope: {
 				type: "file",
@@ -375,13 +419,16 @@ class TypeScriptQuickFixProvider
 
 		if (response.type === "response") {
 			codeAction.combinedResponse = response;
+
 			codeAction.edit = typeConverters.WorkspaceEdit.fromFileCodeEdits(
 				this.client,
 				response.body.changes,
 			);
 		}
+
 		return codeAction;
 	}
+
 	private async getFixesForDiagnostic(
 		document: vscode.TextDocument,
 		file: string,
@@ -402,6 +449,7 @@ class TypeScriptQuickFixProvider
 		if (response.type !== "response" || !response.body) {
 			return results;
 		}
+
 		for (const tsCodeFix of response.body) {
 			for (const action of this.getFixesForTsCodeAction(
 				document,
@@ -410,6 +458,7 @@ class TypeScriptQuickFixProvider
 			)) {
 				results.addAction(action);
 			}
+
 			this.addFixAllForTsCodeAction(
 				results,
 				document.uri,
@@ -418,8 +467,10 @@ class TypeScriptQuickFixProvider
 				tsCodeFix as Proto.CodeFixAction,
 			);
 		}
+
 		return results;
 	}
+
 	private getFixesForTsCodeAction(
 		document: vscode.TextDocument,
 		diagnostic: vscode.Diagnostic,
@@ -432,9 +483,13 @@ class TypeScriptQuickFixProvider
 			action.description,
 			vscode.CodeActionKind.QuickFix,
 		);
+
 		codeAction.edit = getEditForCodeAction(this.client, action);
+
 		codeAction.diagnostics = [diagnostic];
+
 		codeAction.ranges = [diagnostic.range];
+
 		codeAction.command = {
 			command: ApplyCodeActionCommand.ID,
 			arguments: [
@@ -446,6 +501,7 @@ class TypeScriptQuickFixProvider
 			],
 			title: "",
 		};
+
 		actions.push(codeAction);
 
 		const copilot = vscode.extensions.getExtension("github.copilot-chat");
@@ -461,20 +517,26 @@ class TypeScriptQuickFixProvider
 				action.fixName === fixNames.classIncorrectlyImplementsInterface
 			) {
 				title += " with Copilot";
+
 				message = `Implement the stubbed-out class members for ${document.getText(diagnostic.range)} with a useful implementation.`;
+
 				expand = { kind: "code-action", action };
 			} else if (
 				action.fixName ===
 				fixNames.fixClassDoesntImplementInheritedAbstractMember
 			) {
 				title += " with Copilot";
+
 				message = `Implement the stubbed-out class members for ${document.getText(diagnostic.range)} with a useful implementation.`;
+
 				expand = { kind: "code-action", action };
 			} else if (
 				action.fixName === fixNames.fixMissingFunctionDeclaration
 			) {
 				title = `Implement missing function declaration '${document.getText(diagnostic.range)}' using Copilot`;
+
 				message = `Provide a reasonable implementation of the function ${document.getText(diagnostic.range)} given its type and the context it's called in.`;
+
 				expand = { kind: "code-action", action };
 			} else if (action.fixName === fixNames.inferFromUsage) {
 				const inferFromBody = new VsCodeCodeAction(
@@ -482,10 +544,15 @@ class TypeScriptQuickFixProvider
 					"Infer types using Copilot",
 					vscode.CodeActionKind.QuickFix,
 				);
+
 				inferFromBody.edit = new vscode.WorkspaceEdit();
+
 				inferFromBody.diagnostics = [diagnostic];
+
 				inferFromBody.ranges = [diagnostic.range];
+
 				inferFromBody.isAI = true;
+
 				inferFromBody.command = {
 					command: EditorChatFollowUp.ID,
 					arguments: [
@@ -502,6 +569,7 @@ class TypeScriptQuickFixProvider
 					],
 					title: "",
 				};
+
 				actions.push(inferFromBody);
 			} else if (action.fixName === fixNames.addNameToNamelessParameter) {
 				const newText = action.changes
@@ -511,28 +579,38 @@ class TypeScriptQuickFixProvider
 							.join(""),
 					)
 					.join("");
+
 				title = "Add meaningful parameter name with Copilot";
+
 				message = `Rename the parameter ${newText} with a more meaningful name.`;
+
 				expand = {
 					kind: "navtree-function",
 					pos: diagnostic.range.start,
 				};
 			}
+
 			if (expand && message !== undefined) {
 				const aiCodeAction = new VsCodeCodeAction(
 					action,
 					title,
 					vscode.CodeActionKind.QuickFix,
 				);
+
 				aiCodeAction.edit = getEditForCodeAction(this.client, action);
+
 				aiCodeAction.edit?.insert(
 					document.uri,
 					diagnostic.range.start,
 					"",
 				);
+
 				aiCodeAction.diagnostics = [diagnostic];
+
 				aiCodeAction.ranges = [diagnostic.range];
+
 				aiCodeAction.isAI = true;
+
 				aiCodeAction.command = {
 					command: CompositeCommand.ID,
 					title: "",
@@ -565,11 +643,14 @@ class TypeScriptQuickFixProvider
 						},
 					],
 				};
+
 				actions.push(aiCodeAction);
 			}
 		}
+
 		return actions;
 	}
+
 	private addFixAllForTsCodeAction(
 		results: CodeActionSet,
 		resource: vscode.Uri,
@@ -586,6 +667,7 @@ class TypeScriptQuickFixProvider
 				if (x === diagnostic) {
 					return false;
 				}
+
 				return (
 					x.code === diagnostic.code ||
 					(fixAllErrorCodes.has(x.code as number) &&
@@ -596,6 +678,7 @@ class TypeScriptQuickFixProvider
 		) {
 			return results;
 		}
+
 		const action = new VsCodeFixAllCodeAction(
 			tsAction,
 			file,
@@ -603,13 +686,17 @@ class TypeScriptQuickFixProvider
 				vscode.l10n.t("{0} (Fix all in file)", tsAction.description),
 			vscode.CodeActionKind.QuickFix,
 		);
+
 		action.diagnostics = [diagnostic];
+
 		action.ranges = [diagnostic.range];
+
 		action.command = {
 			command: ApplyFixAllCodeAction.ID,
 			arguments: [{ action } satisfies ApplyFixAllCodeAction_args],
 			title: "",
 		};
+
 		results.addFixAllAction(tsAction.fixId, action);
 
 		return results;
@@ -627,6 +714,7 @@ const preferredFixes = new Map<
 	string,
 	{
 		readonly priority: number;
+
 		readonly thereCanOnlyBeOne?: boolean;
 	}
 >([
@@ -653,18 +741,22 @@ function isPreferredFix(
 	if (action instanceof VsCodeFixAllCodeAction) {
 		return false;
 	}
+
 	const fixPriority = preferredFixes.get(action.tsAction.fixName);
 
 	if (!fixPriority) {
 		return false;
 	}
+
 	return allActions.every((otherAction) => {
 		if (otherAction === action) {
 			return true;
 		}
+
 		if (otherAction instanceof VsCodeFixAllCodeAction) {
 			return true;
 		}
+
 		const otherFixPriority = preferredFixes.get(
 			otherAction.tsAction.fixName,
 		);
@@ -677,12 +769,14 @@ function isPreferredFix(
 		} else if (otherFixPriority.priority > fixPriority.priority) {
 			return false;
 		}
+
 		if (
 			fixPriority.thereCanOnlyBeOne &&
 			action.tsAction.fixName === otherAction.tsAction.fixName
 		) {
 			return false;
 		}
+
 		return true;
 	});
 }

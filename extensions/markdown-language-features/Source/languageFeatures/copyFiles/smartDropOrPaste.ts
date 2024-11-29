@@ -28,9 +28,11 @@ export async function shouldInsertMarkdownLinkByDefault(
 		case InsertMarkdownLink.Always: {
 			return true;
 		}
+
 		case InsertMarkdownLink.Smart: {
 			return checkSmart();
 		}
+
 		case InsertMarkdownLink.SmartWithSelection: {
 			// At least one range must not be empty
 			if (
@@ -43,10 +45,12 @@ export async function shouldInsertMarkdownLinkByDefault(
 			// And all ranges must be smart
 			return checkSmart();
 		}
+
 		default: {
 			return false;
 		}
 	}
+
 	async function checkSmart(): Promise<boolean> {
 		return (
 			await Promise.all(
@@ -82,11 +86,13 @@ async function shouldSmartPasteForSelection(
 	if (selectedRange.start.line !== selectedRange.end.line) {
 		return false;
 	}
+
 	const rangeText = document.getText(selectedRange);
 	// Disable when the selection is already a link
 	if (findValidUriInText(rangeText)) {
 		return false;
 	}
+
 	if (/\[.*\]\(.*\)/.test(rangeText) || /!\[.*\]\(.*\)/.test(rangeText)) {
 		return false;
 	}
@@ -96,12 +102,14 @@ async function shouldSmartPasteForSelection(
 	if (token.isCancellationRequested) {
 		return false;
 	}
+
 	for (let i = 0; i < tokens.length; i++) {
 		const token = tokens[i];
 
 		if (!token.map) {
 			continue;
 		}
+
 		if (
 			token.map[0] <= selectedRange.start.line &&
 			token.map[1] > selectedRange.start.line
@@ -143,9 +151,11 @@ async function shouldSmartPasteForSelection(
 			if (match.index === undefined) {
 				continue;
 			}
+
 			if (regex.isWholeLine) {
 				return false;
 			}
+
 			if (
 				selectedRange.start.character > match.index &&
 				selectedRange.start.character < match.index + match[0].length
@@ -154,6 +164,7 @@ async function shouldSmartPasteForSelection(
 			}
 		}
 	}
+
 	return true;
 }
 
@@ -173,6 +184,7 @@ export function findValidUriInText(text: string): string | undefined {
 	) {
 		return;
 	}
+
 	let uri: vscode.Uri;
 
 	try {
@@ -198,6 +210,7 @@ export function findValidUriInText(text: string): string | undefined {
 	if (!uri.authority && uri.path.length < 2 && !uri.query && !uri.fragment) {
 		return;
 	}
+
 	return trimmedUrlList;
 }
 export enum InsertMarkdownLink {

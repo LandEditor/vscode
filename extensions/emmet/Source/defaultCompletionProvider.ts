@@ -29,6 +29,7 @@ export class DefaultCompletionItemProvider
 	implements vscode.CompletionItemProvider
 {
 	private lastCompletionType: string | undefined;
+
 	public provideCompletionItems(
 		document: vscode.TextDocument,
 		position: vscode.Position,
@@ -46,12 +47,14 @@ export class DefaultCompletionItemProvider
 
 			return;
 		}
+
 		return completionResult.then((completionList) => {
 			if (!completionList || !completionList.items.length) {
 				this.lastCompletionType = undefined;
 
 				return completionList;
 			}
+
 			const item = completionList.items[0];
 
 			const expandedText = item.documentation
@@ -68,9 +71,11 @@ export class DefaultCompletionItemProvider
 			} else {
 				this.lastCompletionType = undefined;
 			}
+
 			return completionList;
 		});
 	}
+
 	private provideCompletionItemsInternal(
 		document: vscode.TextDocument,
 		position: vscode.Position,
@@ -85,6 +90,7 @@ export class DefaultCompletionItemProvider
 		if (excludedLanguages.includes(document.languageId)) {
 			return;
 		}
+
 		const mappedLanguages = getMappingForIncludedLanguages();
 
 		const isSyntaxMapped = mappedLanguages[document.languageId]
@@ -107,6 +113,7 @@ export class DefaultCompletionItemProvider
 		) {
 			return;
 		}
+
 		let syntax = emmetMode;
 
 		let validateLocation =
@@ -117,6 +124,7 @@ export class DefaultCompletionItemProvider
 		let currentNode: Node | undefined;
 
 		const lsDoc = toLSTextDocument(document);
+
 		position = document.validatePosition(position);
 		// Don't show completions if there's a comment at the beginning of the line
 		const lineRange = new vscode.Range(
@@ -129,6 +137,7 @@ export class DefaultCompletionItemProvider
 		if (document.getText(lineRange).trimStart().startsWith("//")) {
 			return;
 		}
+
 		const helper = getEmmetHelper();
 
 		if (syntax === "html") {
@@ -144,6 +153,7 @@ export class DefaultCompletionItemProvider
 
 					case "css":
 						validateLocation = false;
+
 						syntax = "css";
 
 						break;
@@ -152,6 +162,7 @@ export class DefaultCompletionItemProvider
 						break;
 				}
 			}
+
 			if (validateLocation) {
 				const positionOffset = document.offsetAt(position);
 
@@ -198,6 +209,7 @@ export class DefaultCompletionItemProvider
 						}
 					} else if (foundNode.name === "style") {
 						syntax = "css";
+
 						validateLocation = false;
 					} else {
 						const styleNode = foundNode.attributes.find(
@@ -210,12 +222,14 @@ export class DefaultCompletionItemProvider
 							positionOffset <= styleNode.value.end
 						) {
 							syntax = "css";
+
 							validateLocation = false;
 						}
 					}
 				}
 			}
 		}
+
 		const expandOptions = isStyleSheet(syntax)
 			? { lookAhead: false, syntax: "stylesheet" }
 			: { lookAhead: true, syntax: "markup" };
@@ -235,6 +249,7 @@ export class DefaultCompletionItemProvider
 		) {
 			return;
 		}
+
 		const offset = document.offsetAt(position);
 
 		if (
@@ -248,6 +263,7 @@ export class DefaultCompletionItemProvider
 				vscode.workspace.getConfiguration("emmet")[
 					"optimizeStylesheetParsing"
 				] === true;
+
 			rootNode =
 				usePartialParsing && document.lineCount > 1000
 					? parsePartialStylesheet(document, position)
@@ -256,6 +272,7 @@ export class DefaultCompletionItemProvider
 			if (!rootNode) {
 				return;
 			}
+
 			currentNode = getFlatNode(rootNode, offset, true);
 		}
 		// Fix for https://github.com/microsoft/vscode/issues/107578
@@ -268,11 +285,13 @@ export class DefaultCompletionItemProvider
 				vscode.CompletionTriggerKind.TriggerForIncompleteCompletions
 		) {
 			validateLocation = true;
+
 			rootNode = getRootNode(document, true);
 
 			if (!rootNode) {
 				return;
 			}
+
 			const flatNode = getFlatNode(rootNode, offset, true);
 
 			const embeddedCssNode = getEmbeddedCssNodeIfAny(
@@ -280,8 +299,10 @@ export class DefaultCompletionItemProvider
 				flatNode,
 				position,
 			);
+
 			currentNode = getFlatNode(embeddedCssNode, offset, true);
 		}
+
 		if (
 			validateLocation &&
 			!isValidLocationForEmmetAbbreviation(
@@ -295,6 +316,7 @@ export class DefaultCompletionItemProvider
 		) {
 			return;
 		}
+
 		let isNoisePromise: Thenable<boolean> = Promise.resolve(false);
 		// Fix for https://github.com/microsoft/vscode/issues/32647
 		// Check for document symbols in js/ts/jsx/tsx and avoid triggering emmet for abbreviations of the form symbolName.sometext
@@ -333,11 +355,13 @@ export class DefaultCompletionItemProvider
 					});
 			}
 		}
+
 		return isNoisePromise.then(
 			(isNoise): vscode.CompletionList | undefined => {
 				if (isNoise) {
 					return undefined;
 				}
+
 				const config = getEmmetConfiguration(syntax!);
 
 				const result = helper.doComplete(
@@ -352,28 +376,36 @@ export class DefaultCompletionItemProvider
 				if (result && result.items) {
 					result.items.forEach((item: any) => {
 						const newItem = new vscode.CompletionItem(item.label);
+
 						newItem.documentation = item.documentation;
+
 						newItem.detail = item.detail;
+
 						newItem.insertText = new vscode.SnippetString(
 							item.textEdit.newText,
 						);
 
 						const oldrange = item.textEdit.range;
+
 						newItem.range = new vscode.Range(
 							oldrange.start.line,
 							oldrange.start.character,
 							oldrange.end.line,
 							oldrange.end.character,
 						);
+
 						newItem.filterText = item.filterText;
+
 						newItem.sortText = item.sortText;
 
 						if (emmetConfig["showSuggestionsAsSnippets"] === true) {
 							newItem.kind = vscode.CompletionItemKind.Snippet;
 						}
+
 						newItems.push(newItem);
 					});
 				}
+
 				return new vscode.CompletionList(newItems, true);
 			},
 		);

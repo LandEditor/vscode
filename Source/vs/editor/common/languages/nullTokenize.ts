@@ -20,6 +20,7 @@ export const NullState: IState = new (class implements IState {
 	public clone(): IState {
 		return this;
 	}
+
 	public equals(other: IState): boolean {
 		return this === other;
 	}
@@ -36,7 +37,9 @@ export function nullTokenizeEncoded(
 	state: IState | null,
 ): EncodedTokenizationResult {
 	const tokens = new Uint32Array(2);
+
 	tokens[0] = 0;
+
 	tokens[1] =
 		((languageId << MetadataConsts.LANGUAGEID_OFFSET) |
 			(StandardTokenType.Other << MetadataConsts.TOKEN_TYPE_OFFSET) |

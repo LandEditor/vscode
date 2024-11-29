@@ -33,6 +33,7 @@ export class TypeScriptReferencesCodeLensProvider extends TypeScriptBaseCodeLens
 		private readonly language: LanguageDescription,
 	) {
 		super(client, _cachedResponse);
+
 		this._register(
 			vscode.workspace.onDidChangeConfiguration((evt) => {
 				if (
@@ -45,6 +46,7 @@ export class TypeScriptReferencesCodeLensProvider extends TypeScriptBaseCodeLens
 			}),
 		);
 	}
+
 	public async resolveCodeLens(
 		codeLens: ReferencesCodeLens,
 		token: vscode.CancellationToken,
@@ -68,6 +70,7 @@ export class TypeScriptReferencesCodeLensProvider extends TypeScriptBaseCodeLens
 
 			return codeLens;
 		}
+
 		const locations = response.body.refs
 			.filter((reference) => !reference.isDefinition)
 			.map((reference) =>
@@ -76,6 +79,7 @@ export class TypeScriptReferencesCodeLensProvider extends TypeScriptBaseCodeLens
 					reference,
 				),
 			);
+
 		codeLens.command = {
 			title: this.getCodeLensLabel(locations),
 			command: locations.length ? "editor.action.showReferences" : "",
@@ -84,6 +88,7 @@ export class TypeScriptReferencesCodeLensProvider extends TypeScriptBaseCodeLens
 
 		return codeLens;
 	}
+
 	private getCodeLensLabel(
 		locations: ReadonlyArray<vscode.Location>,
 	): string {
@@ -91,6 +96,7 @@ export class TypeScriptReferencesCodeLensProvider extends TypeScriptBaseCodeLens
 			? vscode.l10n.t("1 reference")
 			: vscode.l10n.t("{0} references", locations.length);
 	}
+
 	protected extractSymbol(
 		document: vscode.TextDocument,
 		item: Proto.NavigationTree,
@@ -99,6 +105,7 @@ export class TypeScriptReferencesCodeLensProvider extends TypeScriptBaseCodeLens
 		if (parent && parent.kind === PConst.Kind.enum) {
 			return getSymbolRange(document, item);
 		}
+
 		switch (item.kind) {
 			case PConst.Kind.function: {
 				const showOnAllFunctions = vscode.workspace
@@ -117,12 +124,14 @@ export class TypeScriptReferencesCodeLensProvider extends TypeScriptBaseCodeLens
 				if (/\bexport\b/.test(item.kindModifiers)) {
 					return getSymbolRange(document, item);
 				}
+
 				break;
 
 			case PConst.Kind.class:
 				if (item.text === "<class>") {
 					break;
 				}
+
 				return getSymbolRange(document, item);
 
 			case PConst.Kind.interface:
@@ -156,8 +165,10 @@ export class TypeScriptReferencesCodeLensProvider extends TypeScriptBaseCodeLens
 					case PConst.Kind.type:
 						return getSymbolRange(document, item);
 				}
+
 				break;
 		}
+
 		return undefined;
 	}
 }

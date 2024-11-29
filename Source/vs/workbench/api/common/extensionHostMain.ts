@@ -56,13 +56,16 @@ export abstract class ErrorHandler {
 		const mainThreadErrors = rpcService.getProxy(
 			MainContext.MainThreadErrors,
 		);
+
 		errors.setUnexpectedErrorHandler((err) => {
 			logService.error(err);
 
 			const data = errors.transformErrorForSerialization(err);
+
 			mainThreadErrors.$onUnexpectedError(data);
 		});
 	}
+
 	static async installFullHandler(accessor: ServicesAccessor): Promise<void> {
 		// uses extension knowledges to correlate errors with extensions
 		const logService = accessor.get(ILogService);
@@ -87,6 +90,7 @@ export abstract class ErrorHandler {
 			Error,
 			{
 				extensionIdentifier: ExtensionIdentifier | undefined;
+
 				stack: string;
 			}
 		>();
@@ -100,6 +104,7 @@ export abstract class ErrorHandler {
 			if (extensionErrors.has(error)) {
 				return extensionErrors.get(error)!.stack;
 			}
+
 			let stackTraceMessage = "";
 
 			let extension: IExtensionDescription | undefined;
@@ -108,13 +113,16 @@ export abstract class ErrorHandler {
 
 			for (const call of stackTrace) {
 				stackTraceMessage += `\n\tat ${call.toString()}`;
+
 				fileName = call.getFileName();
 
 				if (!extension && fileName) {
 					extension = map.findSubstr(URI.file(fileName));
 				}
 			}
+
 			const result = `${error.name || "Error"}: ${error.message || ""}${stackTraceMessage}`;
+
 			extensionErrors.set(error, {
 				extensionIdentifier: extension?.identifier,
 				stack: result,
@@ -122,9 +130,11 @@ export abstract class ErrorHandler {
 
 			return result;
 		}
+
 		const _wasWrapped = Symbol("prepareStackTrace wrapped");
 
 		let _prepareStackTrace = prepareStackTraceAndFindExtension;
+
 		Object.defineProperty(Error, "prepareStackTrace", {
 			configurable: false,
 			get() {
@@ -140,11 +150,13 @@ export abstract class ErrorHandler {
 
 					return;
 				}
+
 				_prepareStackTrace = function (error, stackTrace) {
 					prepareStackTraceAndFindExtension(error, stackTrace);
 
 					return v.call(Error, error, stackTrace);
 				};
+
 				Object.assign(_prepareStackTrace, { [_wasWrapped]: true });
 			},
 		});
@@ -164,6 +176,7 @@ export abstract class ErrorHandler {
 
 				return;
 			}
+
 			mainThreadExtensions.$onExtensionRuntimeError(
 				stackData.extensionIdentifier,
 				errorData,
@@ -173,6 +186,7 @@ export abstract class ErrorHandler {
 				stackData.extensionIdentifier,
 				err,
 			);
+
 			logService.trace(
 				"forwarded error to extension?",
 				reported,
@@ -183,8 +197,11 @@ export abstract class ErrorHandler {
 }
 export class ExtensionHostMain {
 	private readonly _hostUtils: IHostUtils;
+
 	private readonly _rpcProtocol: RPCProtocol;
+
 	private readonly _extensionService: IExtHostExtensionService;
+
 	private readonly _logService: ILogService;
 
 	constructor(
@@ -195,6 +212,7 @@ export class ExtensionHostMain {
 		messagePorts?: ReadonlyMap<string, MessagePort>,
 	) {
 		this._hostUtils = hostUtils;
+
 		this._rpcProtocol = new RPCProtocol(protocol, null, uriTransformer);
 		// ensure URIs are transformed and revived
 		initData = ExtensionHostMain._transform(initData, this._rpcProtocol);
@@ -202,30 +220,36 @@ export class ExtensionHostMain {
 		const services = new ServiceCollection(
 			...getSingletonServiceDescriptors(),
 		);
+
 		services.set(IExtHostInitDataService, {
 			_serviceBrand: undefined,
 			...initData,
 			messagePorts,
 		});
+
 		services.set(
 			IExtHostRpcService,
 			new ExtHostRpcService(this._rpcProtocol),
 		);
+
 		services.set(
 			IURITransformerService,
 			new URITransformerService(uriTransformer),
 		);
+
 		services.set(IHostUtils, hostUtils);
 
 		const instaService: IInstantiationService = new InstantiationService(
 			services,
 			true,
 		);
+
 		instaService.invokeFunction(ErrorHandler.installEarlyHandler);
 		// ugly self - inject
 		this._logService = instaService.invokeFunction((accessor) =>
 			accessor.get(ILogService),
 		);
+
 		performance.mark(`code/extHost/didCreateServices`);
 
 		if (this._hostUtils.pid) {
@@ -235,6 +259,7 @@ export class ExtensionHostMain {
 		} else {
 			this._logService.info(`Extension host started`);
 		}
+
 		this._logService.trace("initData", initData);
 		// ugly self - inject
 		// must call initialize *after* creating the extension service
@@ -242,10 +267,12 @@ export class ExtensionHostMain {
 		this._extensionService = instaService.invokeFunction((accessor) =>
 			accessor.get(IExtHostExtensionService),
 		);
+
 		this._extensionService.initialize();
 		// install error handler that is extension-aware
 		instaService.invokeFunction(ErrorHandler.installFullHandler);
 	}
+
 	async asBrowserUri(uri: URI): Promise<URI> {
 		const mainThreadExtensionsProxy = this._rpcProtocol.getProxy(
 			MainContext.MainThreadExtensionService,
@@ -253,9 +280,11 @@ export class ExtensionHostMain {
 
 		return URI.revive(await mainThreadExtensionsProxy.$asBrowserUri(uri));
 	}
+
 	terminate(reason: string): void {
 		this._extensionService.terminate(reason);
 	}
+
 	private static _transform(
 		initData: IExtensionHostInitData,
 		rpcProtocol: RPCProtocol,
@@ -266,6 +295,7 @@ export class ExtensionHostMain {
 					rpcProtocol.transformIncomingURIs(ext.extensionLocation),
 				);
 		});
+
 		initData.environment.appRoot = URI.revive(
 			rpcProtocol.transformIncomingURIs(initData.environment.appRoot),
 		);
@@ -278,32 +308,39 @@ export class ExtensionHostMain {
 					URI.revive(rpcProtocol.transformIncomingURIs(url)),
 				);
 		}
+
 		initData.environment.extensionTestsLocationURI = URI.revive(
 			rpcProtocol.transformIncomingURIs(
 				initData.environment.extensionTestsLocationURI,
 			),
 		);
+
 		initData.environment.globalStorageHome = URI.revive(
 			rpcProtocol.transformIncomingURIs(
 				initData.environment.globalStorageHome,
 			),
 		);
+
 		initData.environment.workspaceStorageHome = URI.revive(
 			rpcProtocol.transformIncomingURIs(
 				initData.environment.workspaceStorageHome,
 			),
 		);
+
 		initData.environment.extensionTelemetryLogResource = URI.revive(
 			rpcProtocol.transformIncomingURIs(
 				initData.environment.extensionTelemetryLogResource,
 			),
 		);
+
 		initData.nlsBaseUrl = URI.revive(
 			rpcProtocol.transformIncomingURIs(initData.nlsBaseUrl),
 		);
+
 		initData.logsLocation = URI.revive(
 			rpcProtocol.transformIncomingURIs(initData.logsLocation),
 		);
+
 		initData.workspace = rpcProtocol.transformIncomingURIs(
 			initData.workspace,
 		);

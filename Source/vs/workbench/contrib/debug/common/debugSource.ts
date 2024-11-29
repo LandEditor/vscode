@@ -38,7 +38,9 @@ export const UNKNOWN_SOURCE_LABEL = nls.localize(
  */
 export class Source {
 	readonly uri: URI;
+
 	available: boolean;
+
 	raw: DebugProtocol.Source;
 
 	constructor(
@@ -51,13 +53,18 @@ export class Source {
 
 		if (raw_) {
 			this.raw = raw_;
+
 			path = this.raw.path || this.raw.name || "";
+
 			this.available = true;
 		} else {
 			this.raw = { name: UNKNOWN_SOURCE_LABEL };
+
 			this.available = false;
+
 			path = `${DEBUG_SCHEME}:${UNKNOWN_SOURCE_LABEL}`;
 		}
+
 		this.uri = getUriFromSource(
 			this.raw,
 			path,
@@ -66,21 +73,27 @@ export class Source {
 			logService,
 		);
 	}
+
 	get name() {
 		return this.raw.name || resources.basenameOrAuthority(this.uri);
 	}
+
 	get origin() {
 		return this.raw.origin;
 	}
+
 	get presentationHint() {
 		return this.raw.presentationHint;
 	}
+
 	get reference() {
 		return this.raw.sourceReference;
 	}
+
 	get inMemory() {
 		return this.uri.scheme === DEBUG_SCHEME;
 	}
+
 	openInEditor(
 		editorService: IEditorService,
 		selection: IRange,
@@ -106,10 +119,14 @@ export class Source {
 					sideBySide ? SIDE_GROUP : ACTIVE_GROUP,
 				);
 	}
+
 	static getEncodedDebugData(modelUri: URI): {
 		name: string;
+
 		path: string;
+
 		sessionId?: string;
+
 		sourceReference?: number;
 	} {
 		let path: string;
@@ -148,6 +165,7 @@ export class Source {
 						}
 					}
 				}
+
 				break;
 
 			default:
@@ -155,6 +173,7 @@ export class Source {
 
 				break;
 		}
+
 		return {
 			name: resources.basenameOrAuthority(modelUri),
 			path,
@@ -181,6 +200,7 @@ export function getUriFromSource(
 				query: `session=${sessionId}&ref=${raw.sourceReference}`,
 			});
 		}
+
 		if (path && isUri(path)) {
 			// path looks like a uri
 			return uriIdentityService.asCanonicalUri(URI.parse(path));

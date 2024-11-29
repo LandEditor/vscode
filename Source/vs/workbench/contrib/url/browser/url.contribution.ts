@@ -51,6 +51,7 @@ class OpenUrlAction extends Action2 {
 			f1: true,
 		});
 	}
+
 	async run(accessor: ServicesAccessor): Promise<void> {
 		const quickInputService = accessor.get(IQuickInputService);
 
@@ -61,6 +62,7 @@ class OpenUrlAction extends Action2 {
 			.then((input) => {
 				if (input) {
 					const uri = URI.parse(input);
+
 					urlService.open(uri, { originalUrl: input });
 				}
 			});

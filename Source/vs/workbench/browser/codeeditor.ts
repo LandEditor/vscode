@@ -40,14 +40,20 @@ import { IEditorService } from "../services/editor/common/editorService.js";
 
 export interface IRangeHighlightDecoration {
 	resource: URI;
+
 	range: IRange;
+
 	isWholeLine?: boolean;
 }
 export class RangeHighlightDecorations extends Disposable {
 	private readonly _onHighlightRemoved = this._register(new Emitter<void>());
+
 	readonly onHighlightRemoved = this._onHighlightRemoved.event;
+
 	private rangeHighlightDecorationId: string | null = null;
+
 	private editor: ICodeEditor | null = null;
+
 	private readonly editorDisposables = this._register(new DisposableStore());
 
 	constructor(
@@ -56,16 +62,21 @@ export class RangeHighlightDecorations extends Disposable {
 	) {
 		super();
 	}
+
 	removeHighlightRange() {
 		if (this.editor && this.rangeHighlightDecorationId) {
 			const decorationId = this.rangeHighlightDecorationId;
+
 			this.editor.changeDecorations((accessor) => {
 				accessor.removeDecoration(decorationId);
 			});
+
 			this._onHighlightRemoved.fire();
 		}
+
 		this.rangeHighlightDecorationId = null;
 	}
+
 	highlightRange(range: IRangeHighlightDecoration, editor?: any) {
 		editor = editor ?? this.getEditor(range);
 
@@ -78,11 +89,13 @@ export class RangeHighlightDecorations extends Disposable {
 			this.doHighlightRange(editor.activeCodeEditor, range);
 		}
 	}
+
 	private doHighlightRange(
 		editor: ICodeEditor,
 		selectionRange: IRangeHighlightDecoration,
 	) {
 		this.removeHighlightRange();
+
 		editor.changeDecorations(
 			(changeAccessor: IModelDecorationsChangeAccessor) => {
 				this.rangeHighlightDecorationId = changeAccessor.addDecoration(
@@ -93,8 +106,10 @@ export class RangeHighlightDecorations extends Disposable {
 				);
 			},
 		);
+
 		this.setEditor(editor);
 	}
+
 	private getEditor(
 		resourceRange: IRangeHighlightDecoration,
 	): ICodeEditor | undefined {
@@ -107,12 +122,16 @@ export class RangeHighlightDecorations extends Disposable {
 		) {
 			return this.editorService.activeTextEditorControl;
 		}
+
 		return undefined;
 	}
+
 	private setEditor(editor: ICodeEditor) {
 		if (this.editor !== editor) {
 			this.editorDisposables.clear();
+
 			this.editor = editor;
+
 			this.editorDisposables.add(
 				this.editor.onDidChangeCursorPosition(
 					(e: ICursorPositionChangedEvent) => {
@@ -127,19 +146,23 @@ export class RangeHighlightDecorations extends Disposable {
 					},
 				),
 			);
+
 			this.editorDisposables.add(
 				this.editor.onDidChangeModel(() => {
 					this.removeHighlightRange();
 				}),
 			);
+
 			this.editorDisposables.add(
 				this.editor.onDidDispose(() => {
 					this.removeHighlightRange();
+
 					this.editor = null;
 				}),
 			);
 		}
 	}
+
 	private static readonly _WHOLE_LINE_RANGE_HIGHLIGHT =
 		ModelDecorationOptions.register({
 			description: "codeeditor-range-highlight-whole",
@@ -147,11 +170,13 @@ export class RangeHighlightDecorations extends Disposable {
 			className: "rangeHighlight",
 			isWholeLine: true,
 		});
+
 	private static readonly _RANGE_HIGHLIGHT = ModelDecorationOptions.register({
 		description: "codeeditor-range-highlight",
 		stickiness: TrackedRangeStickiness.NeverGrowsWhenTypingAtEdges,
 		className: "rangeHighlight",
 	});
+
 	private createRangeHighlightDecoration(
 		isWholeLine: boolean = true,
 	): ModelDecorationOptions {
@@ -159,11 +184,13 @@ export class RangeHighlightDecorations extends Disposable {
 			? RangeHighlightDecorations._WHOLE_LINE_RANGE_HIGHLIGHT
 			: RangeHighlightDecorations._RANGE_HIGHLIGHT;
 	}
+
 	override dispose() {
 		super.dispose();
 
 		if (this.editor?.getModel()) {
 			this.removeHighlightRange();
+
 			this.editor = null;
 		}
 	}
@@ -186,18 +213,23 @@ export class FloatingEditorClickWidget
 				: label,
 		);
 	}
+
 	getId(): string {
 		return "editor.overlayWidget.floatingClickWidget";
 	}
+
 	getPosition(): IOverlayWidgetPosition {
 		return {
 			preference: OverlayWidgetPositionPreference.BOTTOM_RIGHT_CORNER,
 		};
 	}
+
 	override render() {
 		super.render();
+
 		this.editor.addOverlayWidget(this);
 	}
+
 	override dispose(): void {
 		this.editor.removeOverlayWidget(this);
 
@@ -220,8 +252,10 @@ export class FloatingEditorClickMenu
 		contextKeyService: IContextKeyService,
 	) {
 		super(MenuId.EditorContent, menuService, contextKeyService);
+
 		this.render();
 	}
+
 	protected override createWidget(action: IAction): FloatingClickWidget {
 		return this.instantiationService.createInstance(
 			FloatingEditorClickWidget,
@@ -230,6 +264,7 @@ export class FloatingEditorClickMenu
 			action.id,
 		);
 	}
+
 	protected override isVisible() {
 		return (
 			!(this.editor instanceof EmbeddedCodeEditorWidget) &&
@@ -237,6 +272,7 @@ export class FloatingEditorClickMenu
 			!this.editor.getOption(EditorOption.inDiffEditor)
 		);
 	}
+
 	protected override getActionArg(): unknown {
 		return this.editor.getModel()?.uri;
 	}

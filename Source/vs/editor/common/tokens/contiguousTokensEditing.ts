@@ -14,8 +14,10 @@ export class ContiguousTokensEditing {
 		if (lineTokens === null || lineTokens === EMPTY_LINE_TOKENS) {
 			return lineTokens;
 		}
+
 		return ContiguousTokensEditing.delete(lineTokens, 0, toChIndex);
 	}
+
 	public static deleteEnding(
 		lineTokens: Uint32Array | ArrayBuffer | null,
 		fromChIndex: number,
@@ -23,6 +25,7 @@ export class ContiguousTokensEditing {
 		if (lineTokens === null || lineTokens === EMPTY_LINE_TOKENS) {
 			return lineTokens;
 		}
+
 		const tokens = toUint32Array(lineTokens);
 
 		const lineTextLength = tokens[tokens.length - 2];
@@ -33,6 +36,7 @@ export class ContiguousTokensEditing {
 			lineTextLength,
 		);
 	}
+
 	public static delete(
 		lineTokens: Uint32Array | ArrayBuffer | null,
 		fromChIndex: number,
@@ -45,6 +49,7 @@ export class ContiguousTokensEditing {
 		) {
 			return lineTokens;
 		}
+
 		const tokens = toUint32Array(lineTokens);
 
 		const tokensCount = tokens.length >>> 1;
@@ -52,6 +57,7 @@ export class ContiguousTokensEditing {
 		if (fromChIndex === 0 && tokens[tokens.length - 2] === toChIndex) {
 			return EMPTY_LINE_TOKENS;
 		}
+
 		const fromTokenIndex = LineTokens.findIndexInTokensArray(
 			tokens,
 			fromChIndex,
@@ -69,44 +75,58 @@ export class ContiguousTokensEditing {
 			for (let i = fromTokenIndex; i < tokensCount; i++) {
 				tokens[i << 1] -= delta;
 			}
+
 			return lineTokens;
 		}
+
 		let dest: number;
 
 		let lastEnd: number;
 
 		if (fromTokenStartOffset !== fromChIndex) {
 			tokens[fromTokenIndex << 1] = fromChIndex;
+
 			dest = (fromTokenIndex + 1) << 1;
+
 			lastEnd = fromChIndex;
 		} else {
 			dest = fromTokenIndex << 1;
+
 			lastEnd = fromTokenStartOffset;
 		}
+
 		const delta = toChIndex - fromChIndex;
 
 		for (
 			let tokenIndex = fromTokenIndex + 1;
+
 			tokenIndex < tokensCount;
+
 			tokenIndex++
 		) {
 			const tokenEndOffset = tokens[tokenIndex << 1] - delta;
 
 			if (tokenEndOffset > lastEnd) {
 				tokens[dest++] = tokenEndOffset;
+
 				tokens[dest++] = tokens[(tokenIndex << 1) + 1];
+
 				lastEnd = tokenEndOffset;
 			}
 		}
+
 		if (dest === tokens.length) {
 			// nothing to trim
 			return lineTokens;
 		}
+
 		const tmp = new Uint32Array(dest);
+
 		tmp.set(tokens.subarray(0, dest), 0);
 
 		return tmp.buffer;
 	}
+
 	public static append(
 		lineTokens: Uint32Array | ArrayBuffer | null,
 		_otherTokens: Uint32Array | ArrayBuffer | null,
@@ -114,16 +134,20 @@ export class ContiguousTokensEditing {
 		if (_otherTokens === EMPTY_LINE_TOKENS) {
 			return lineTokens;
 		}
+
 		if (lineTokens === EMPTY_LINE_TOKENS) {
 			return _otherTokens;
 		}
+
 		if (lineTokens === null) {
 			return lineTokens;
 		}
+
 		if (_otherTokens === null) {
 			// cannot determine combined line length...
 			return null;
 		}
+
 		const myTokens = toUint32Array(lineTokens);
 
 		const otherTokens = toUint32Array(_otherTokens);
@@ -131,6 +155,7 @@ export class ContiguousTokensEditing {
 		const otherTokensCount = otherTokens.length >>> 1;
 
 		const result = new Uint32Array(myTokens.length + otherTokens.length);
+
 		result.set(myTokens, 0);
 
 		let dest = myTokens.length;
@@ -139,10 +164,13 @@ export class ContiguousTokensEditing {
 
 		for (let i = 0; i < otherTokensCount; i++) {
 			result[dest++] = otherTokens[i << 1] + delta;
+
 			result[dest++] = otherTokens[(i << 1) + 1];
 		}
+
 		return result.buffer;
 	}
+
 	public static insert(
 		lineTokens: Uint32Array | ArrayBuffer | null,
 		chIndex: number,
@@ -152,6 +180,7 @@ export class ContiguousTokensEditing {
 			// nothing to do
 			return lineTokens;
 		}
+
 		const tokens = toUint32Array(lineTokens);
 
 		const tokensCount = tokens.length >>> 1;
@@ -165,13 +194,17 @@ export class ContiguousTokensEditing {
 				fromTokenIndex--;
 			}
 		}
+
 		for (
 			let tokenIndex = fromTokenIndex;
+
 			tokenIndex < tokensCount;
+
 			tokenIndex++
 		) {
 			tokens[tokenIndex << 1] += textLength;
 		}
+
 		return lineTokens;
 	}
 }

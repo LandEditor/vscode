@@ -10,6 +10,7 @@ import { IWorkbenchIssueService } from "../../issue/common/issue.js";
 export class ReportExtensionIssueAction extends Action {
 	private static readonly _id =
 		"workbench.extensions.action.reportExtensionIssue";
+
 	private static readonly _label = nls.localize(
 		"reportExtensionIssue",
 		"Report Issue",
@@ -25,10 +26,12 @@ export class ReportExtensionIssueAction extends Action {
 			ReportExtensionIssueAction._label,
 			"extension-action report-issue",
 		);
+
 		this.enabled =
 			extension.isBuiltin ||
 			(!!extension.repository && !!extension.repository.url);
 	}
+
 	override async run(): Promise<void> {
 		await this.issueService.openReporter({
 			extensionId: this.extension.identifier.value,

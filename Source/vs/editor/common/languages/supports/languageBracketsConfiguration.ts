@@ -13,6 +13,7 @@ import { createBracketOrRegExp } from "./richEditBrackets.js";
  */
 export class LanguageBracketsConfiguration {
 	private readonly _openingBrackets: ReadonlyMap<string, OpeningBracketKind>;
+
 	private readonly _closingBrackets: ReadonlyMap<string, ClosingBracketKind>;
 
 	constructor(
@@ -53,7 +54,9 @@ export class LanguageBracketsConfiguration {
 			const opening = openingBracketInfos.get(open);
 
 			const closing = closingBracketInfos.get(close);
+
 			opening.closing.add(closing.info);
+
 			closing.opening.add(opening.info);
 		}
 		// Treat colorized brackets as brackets, and mark them as colorized.
@@ -69,13 +72,18 @@ export class LanguageBracketsConfiguration {
 			const opening = openingBracketInfos.get(open);
 
 			const closing = closingBracketInfos.get(close);
+
 			opening.closing.add(closing.info);
+
 			closing.openingColorized.add(opening.info);
+
 			closing.opening.add(opening.info);
 		}
+
 		this._openingBrackets = new Map(
 			[...openingBracketInfos.cachedValues].map(([k, v]) => [k, v.info]),
 		);
+
 		this._closingBrackets = new Map(
 			[...closingBracketInfos.cachedValues].map(([k, v]) => [k, v.info]),
 		);
@@ -92,22 +100,26 @@ export class LanguageBracketsConfiguration {
 	public get closingBrackets(): readonly ClosingBracketKind[] {
 		return [...this._closingBrackets.values()];
 	}
+
 	public getOpeningBracketInfo(
 		bracketText: string,
 	): OpeningBracketKind | undefined {
 		return this._openingBrackets.get(bracketText);
 	}
+
 	public getClosingBracketInfo(
 		bracketText: string,
 	): ClosingBracketKind | undefined {
 		return this._closingBrackets.get(bracketText);
 	}
+
 	public getBracketInfo(bracketText: string): BracketKind | undefined {
 		return (
 			this.getOpeningBracketInfo(bracketText) ||
 			this.getClosingBracketInfo(bracketText)
 		);
 	}
+
 	public getBracketRegExp(options?: RegExpOptions): RegExp {
 		const brackets = Array.from([
 			...this._openingBrackets.keys(),
@@ -129,6 +141,7 @@ export class BracketKindBase {
 		protected readonly config: LanguageBracketsConfiguration,
 		public readonly bracketText: string,
 	) {}
+
 	public get languageId(): string {
 		return this.config.languageId;
 	}
@@ -166,14 +179,18 @@ export class ClosingBracketKind extends BracketKindBase {
 		if (other["config"] !== this.config) {
 			return false;
 		}
+
 		return this.openingBrackets.has(other);
 	}
+
 	public closesColorized(other: OpeningBracketKind): boolean {
 		if (other["config"] !== this.config) {
 			return false;
 		}
+
 		return this.openingColorizedBrackets.has(other);
 	}
+
 	public getOpeningBrackets(): readonly OpeningBracketKind[] {
 		return [...this.openingBrackets];
 	}

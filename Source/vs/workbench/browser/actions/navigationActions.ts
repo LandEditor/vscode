@@ -38,6 +38,7 @@ abstract class BaseNavigationAction extends Action2 {
 	) {
 		super(options);
 	}
+
 	run(accessor: ServicesAccessor): void {
 		const layoutService = accessor.get(IWorkbenchLayoutService);
 
@@ -66,29 +67,34 @@ abstract class BaseNavigationAction extends Action2 {
 			if (didNavigate) {
 				return;
 			}
+
 			neighborPart = layoutService.getVisibleNeighborPart(
 				Parts.EDITOR_PART,
 				this.direction,
 			);
 		}
+
 		if (isPanelFocus) {
 			neighborPart = layoutService.getVisibleNeighborPart(
 				Parts.PANEL_PART,
 				this.direction,
 			);
 		}
+
 		if (isSidebarFocus) {
 			neighborPart = layoutService.getVisibleNeighborPart(
 				Parts.SIDEBAR_PART,
 				this.direction,
 			);
 		}
+
 		if (isAuxiliaryBarFocus) {
 			neighborPart = neighborPart = layoutService.getVisibleNeighborPart(
 				Parts.AUXILIARYBAR_PART,
 				this.direction,
 			);
 		}
+
 		if (neighborPart === Parts.EDITOR_PART) {
 			if (
 				!this.navigateBackToEditorGroup(
@@ -111,6 +117,7 @@ abstract class BaseNavigationAction extends Action2 {
 			this.navigateToAuxiliaryBar(layoutService, paneCompositeService);
 		}
 	}
+
 	private async navigateToPanel(
 		layoutService: IWorkbenchLayoutService,
 		paneCompositeService: IPaneCompositePartService,
@@ -118,6 +125,7 @@ abstract class BaseNavigationAction extends Action2 {
 		if (!layoutService.isVisible(Parts.PANEL_PART)) {
 			return false;
 		}
+
 		const activePanel = paneCompositeService.getActivePaneComposite(
 			ViewContainerLocation.Panel,
 		);
@@ -125,6 +133,7 @@ abstract class BaseNavigationAction extends Action2 {
 		if (!activePanel) {
 			return false;
 		}
+
 		const activePanelId = activePanel.getId();
 
 		const res = await paneCompositeService.openPaneComposite(
@@ -136,8 +145,10 @@ abstract class BaseNavigationAction extends Action2 {
 		if (!res) {
 			return false;
 		}
+
 		return res;
 	}
+
 	private async navigateToSidebar(
 		layoutService: IWorkbenchLayoutService,
 		paneCompositeService: IPaneCompositePartService,
@@ -145,6 +156,7 @@ abstract class BaseNavigationAction extends Action2 {
 		if (!layoutService.isVisible(Parts.SIDEBAR_PART)) {
 			return false;
 		}
+
 		const activeViewlet = paneCompositeService.getActivePaneComposite(
 			ViewContainerLocation.Sidebar,
 		);
@@ -152,6 +164,7 @@ abstract class BaseNavigationAction extends Action2 {
 		if (!activeViewlet) {
 			return false;
 		}
+
 		const activeViewletId = activeViewlet.getId();
 
 		const viewlet = await paneCompositeService.openPaneComposite(
@@ -162,6 +175,7 @@ abstract class BaseNavigationAction extends Action2 {
 
 		return !!viewlet;
 	}
+
 	private async navigateToAuxiliaryBar(
 		layoutService: IWorkbenchLayoutService,
 		paneCompositeService: IPaneCompositePartService,
@@ -169,6 +183,7 @@ abstract class BaseNavigationAction extends Action2 {
 		if (!layoutService.isVisible(Parts.AUXILIARYBAR_PART)) {
 			return false;
 		}
+
 		const activePanel = paneCompositeService.getActivePaneComposite(
 			ViewContainerLocation.AuxiliaryBar,
 		);
@@ -176,6 +191,7 @@ abstract class BaseNavigationAction extends Action2 {
 		if (!activePanel) {
 			return false;
 		}
+
 		const activePanelId = activePanel.getId();
 
 		const res = await paneCompositeService.openPaneComposite(
@@ -187,20 +203,24 @@ abstract class BaseNavigationAction extends Action2 {
 		if (!res) {
 			return false;
 		}
+
 		return res;
 	}
+
 	private navigateAcrossEditorGroup(
 		direction: GroupDirection,
 		editorGroupService: IEditorGroupsService,
 	): boolean {
 		return this.doNavigateToEditorGroup({ direction }, editorGroupService);
 	}
+
 	private navigateToEditorGroup(
 		location: GroupLocation,
 		editorGroupService: IEditorGroupsService,
 	): boolean {
 		return this.doNavigateToEditorGroup({ location }, editorGroupService);
 	}
+
 	private navigateBackToEditorGroup(
 		direction: GroupDirection,
 		editorGroupService: IEditorGroupsService,
@@ -208,6 +228,7 @@ abstract class BaseNavigationAction extends Action2 {
 		if (!editorGroupService.activeGroup) {
 			return false;
 		}
+
 		const oppositeDirection = this.toOppositeDirection(direction);
 		// Check to see if there is a group in between the last
 		// active group and the direction of movement
@@ -223,8 +244,10 @@ abstract class BaseNavigationAction extends Action2 {
 
 			return true;
 		}
+
 		return false;
 	}
+
 	private toGroupDirection(direction: Direction): GroupDirection {
 		switch (direction) {
 			case Direction.Down:
@@ -240,6 +263,7 @@ abstract class BaseNavigationAction extends Action2 {
 				return GroupDirection.UP;
 		}
 	}
+
 	private toOppositeDirection(direction: GroupDirection): GroupDirection {
 		switch (direction) {
 			case GroupDirection.UP:
@@ -255,6 +279,7 @@ abstract class BaseNavigationAction extends Action2 {
 				return GroupDirection.UP;
 		}
 	}
+
 	private doNavigateToEditorGroup(
 		scope: IFindGroupScope,
 		editorGroupService: IEditorGroupsService,
@@ -269,6 +294,7 @@ abstract class BaseNavigationAction extends Action2 {
 
 			return true;
 		}
+
 		return false;
 	}
 }
@@ -351,16 +377,19 @@ abstract class BaseFocusAction extends Action2 {
 	) {
 		super(options);
 	}
+
 	run(accessor: ServicesAccessor): void {
 		const layoutService = accessor.get(IWorkbenchLayoutService);
 
 		const editorService = accessor.get(IEditorService);
+
 		this.focusNextOrPreviousPart(
 			layoutService,
 			editorService,
 			this.focusNext,
 		);
 	}
+
 	private findVisibleNeighbour(
 		layoutService: IWorkbenchLayoutService,
 		part: Parts,
@@ -426,14 +455,17 @@ abstract class BaseFocusAction extends Action2 {
 					neighbour = Parts.EDITOR_PART;
 			}
 		}
+
 		if (
 			layoutService.isVisible(neighbour, activeWindow) ||
 			neighbour === Parts.EDITOR_PART
 		) {
 			return neighbour;
 		}
+
 		return this.findVisibleNeighbour(layoutService, neighbour, next);
 	}
+
 	private focusNextOrPreviousPart(
 		layoutService: IWorkbenchLayoutService,
 		editorService: IEditorService,
@@ -457,6 +489,7 @@ abstract class BaseFocusAction extends Action2 {
 		} else if (layoutService.hasFocus(Parts.PANEL_PART)) {
 			currentlyFocusedPart = Parts.PANEL_PART;
 		}
+
 		layoutService.focusPart(
 			currentlyFocusedPart
 				? this.findVisibleNeighbour(

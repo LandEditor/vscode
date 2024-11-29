@@ -90,6 +90,7 @@ registerAction2(
 				},
 			});
 		}
+
 		runInView(_accessor: ServicesAccessor, view: CommentsPanel) {
 			view.collapseAll();
 		}
@@ -120,6 +121,7 @@ registerAction2(
 				},
 			});
 		}
+
 		runInView(_accessor: ServicesAccessor, view: CommentsPanel) {
 			view.expandAll();
 		}
@@ -151,6 +153,7 @@ registerAction2(
 				],
 			});
 		}
+
 		override run(
 			accessor: ServicesAccessor,
 			marshalledCommentThread: MarshalledCommentThreadInternal,
@@ -160,6 +163,7 @@ registerAction2(
 			const editorService = accessor.get(IEditorService);
 
 			const uriIdentityService = accessor.get(IUriIdentityService);
+
 			revealCommentThread(
 				commentService,
 				editorService,
@@ -268,6 +272,7 @@ export class UnresolvedCommentsBadge
 	private readonly activity = this._register(
 		new MutableDisposable<IDisposable>(),
 	);
+
 	private totalUnresolved = 0;
 
 	constructor(
@@ -277,12 +282,14 @@ export class UnresolvedCommentsBadge
 		private readonly activityService: IActivityService,
 	) {
 		super();
+
 		this._register(
 			this._commentService.onDidSetAllCommentThreads(
 				this.onAllCommentsChanged,
 				this,
 			),
 		);
+
 		this._register(
 			this._commentService.onDidUpdateCommentThreads(
 				this.onCommentsUpdated,
@@ -290,6 +297,7 @@ export class UnresolvedCommentsBadge
 			),
 		);
 	}
+
 	private onAllCommentsChanged(e: IWorkspaceCommentThreadsEvent): void {
 		let unresolved = 0;
 
@@ -298,8 +306,10 @@ export class UnresolvedCommentsBadge
 				unresolved++;
 			}
 		}
+
 		this.updateBadge(unresolved);
 	}
+
 	private onCommentsUpdated(): void {
 		let unresolved = 0;
 
@@ -311,12 +321,15 @@ export class UnresolvedCommentsBadge
 				}
 			}
 		}
+
 		this.updateBadge(unresolved);
 	}
+
 	private updateBadge(unresolved: number) {
 		if (unresolved === this.totalUnresolved) {
 			return;
 		}
+
 		this.totalUnresolved = unresolved;
 
 		const message = nls.localize(
@@ -324,6 +337,7 @@ export class UnresolvedCommentsBadge
 			"{0} Unresolved Comments",
 			this.totalUnresolved,
 		);
+
 		this.activity.value = this.activityService.showViewActivity(
 			COMMENTS_VIEW_ID,
 			{ badge: new NumberBadge(this.totalUnresolved, () => message) },

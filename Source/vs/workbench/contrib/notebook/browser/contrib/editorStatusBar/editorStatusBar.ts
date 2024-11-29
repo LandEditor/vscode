@@ -59,10 +59,12 @@ class ImplictKernelSelector implements IDisposable {
 		logService: ILogService,
 	) {
 		const disposables = new DisposableStore();
+
 		this.dispose = disposables.dispose.bind(disposables);
 
 		const selectKernel = () => {
 			disposables.clear();
+
 			notebookKernelService.selectKernelForNotebook(suggested, notebook);
 		};
 		// IMPLICITLY select a suggested kernel when the notebook has been changed
@@ -79,6 +81,7 @@ class ImplictKernelSelector implements IDisposable {
 								"IMPLICIT kernel selection because of change event",
 								event.kind,
 							);
+
 							selectKernel();
 
 							break;
@@ -100,6 +103,7 @@ class ImplictKernelSelector implements IDisposable {
 						logService.trace(
 							"IMPLICIT kernel selection because of hover",
 						);
+
 						selectKernel();
 
 						return undefined;
@@ -111,6 +115,7 @@ class ImplictKernelSelector implements IDisposable {
 }
 class KernelStatus extends Disposable implements IWorkbenchContribution {
 	private readonly _editorDisposables = this._register(new DisposableStore());
+
 	private readonly _kernelInfoElement = this._register(new DisposableStore());
 
 	constructor(
@@ -124,13 +129,16 @@ class KernelStatus extends Disposable implements IWorkbenchContribution {
 		private readonly _instantiationService: IInstantiationService,
 	) {
 		super();
+
 		this._register(
 			this._editorService.onDidActiveEditorChange(() =>
 				this._updateStatusbar(),
 			),
 		);
+
 		this._updateStatusbar();
 	}
+
 	private _updateStatusbar() {
 		this._editorDisposables.clear();
 
@@ -144,6 +152,7 @@ class KernelStatus extends Disposable implements IWorkbenchContribution {
 
 			return;
 		}
+
 		const updateStatus = () => {
 			if (
 				activeEditor.notebookOptions.getDisplayOptions().globalToolbar
@@ -153,6 +162,7 @@ class KernelStatus extends Disposable implements IWorkbenchContribution {
 
 				return;
 			}
+
 			const notebook = activeEditor.textModel;
 
 			if (notebook) {
@@ -161,27 +171,34 @@ class KernelStatus extends Disposable implements IWorkbenchContribution {
 				this._kernelInfoElement.clear();
 			}
 		};
+
 		this._editorDisposables.add(
 			this._notebookKernelService.onDidAddKernel(updateStatus),
 		);
+
 		this._editorDisposables.add(
 			this._notebookKernelService.onDidChangeSelectedNotebooks(
 				updateStatus,
 			),
 		);
+
 		this._editorDisposables.add(
 			this._notebookKernelService.onDidChangeNotebookAffinity(
 				updateStatus,
 			),
 		);
+
 		this._editorDisposables.add(
 			activeEditor.onDidChangeModel(updateStatus),
 		);
+
 		this._editorDisposables.add(
 			activeEditor.notebookOptions.onDidChangeOptions(updateStatus),
 		);
+
 		updateStatus();
 	}
+
 	private _showKernelStatus(notebook: NotebookTextModel) {
 		this._kernelInfoElement.clear();
 
@@ -207,7 +224,9 @@ class KernelStatus extends Disposable implements IWorkbenchContribution {
 				// proceed with suggested kernel - show UI and install handler that selects the kernel
 				// when non trivial interactions with the notebook happen.
 				kernel = suggested!;
+
 				isSuggested = true;
+
 				this._kernelInfoElement.add(
 					this._instantiationService.createInstance(
 						ImplictKernelSelector,
@@ -216,7 +235,9 @@ class KernelStatus extends Disposable implements IWorkbenchContribution {
 					),
 				);
 			}
+
 			const tooltip = kernel.description ?? kernel.detail ?? kernel.label;
+
 			this._kernelInfoElement.add(
 				this._statusbarService.addEntry(
 					{
@@ -240,6 +261,7 @@ class KernelStatus extends Disposable implements IWorkbenchContribution {
 					10,
 				),
 			);
+
 			this._kernelInfoElement.add(
 				kernel.onDidChange(() => this._showKernelStatus(notebook)),
 			);
@@ -273,6 +295,7 @@ class KernelStatus extends Disposable implements IWorkbenchContribution {
 }
 class ActiveCellStatus extends Disposable implements IWorkbenchContribution {
 	private readonly _itemDisposables = this._register(new DisposableStore());
+
 	private readonly _accessor = this._register(
 		new MutableDisposable<IStatusbarEntryAccessor>(),
 	);
@@ -284,11 +307,14 @@ class ActiveCellStatus extends Disposable implements IWorkbenchContribution {
 		private readonly _statusbarService: IStatusbarService,
 	) {
 		super();
+
 		this._register(
 			this._editorService.onDidActiveEditorChange(() => this._update()),
 		);
+
 		this._update();
 	}
+
 	private _update() {
 		this._itemDisposables.clear();
 
@@ -302,22 +328,26 @@ class ActiveCellStatus extends Disposable implements IWorkbenchContribution {
 					this._show(activeEditor),
 				),
 			);
+
 			this._itemDisposables.add(
 				activeEditor.onDidChangeActiveCell(() =>
 					this._show(activeEditor),
 				),
 			);
+
 			this._show(activeEditor);
 		} else {
 			this._accessor.clear();
 		}
 	}
+
 	private _show(editor: INotebookEditor) {
 		if (!editor.hasModel()) {
 			this._accessor.clear();
 
 			return;
 		}
+
 		const newText = this._getSelectionsText(editor);
 
 		if (!newText) {
@@ -325,6 +355,7 @@ class ActiveCellStatus extends Disposable implements IWorkbenchContribution {
 
 			return;
 		}
+
 		const entry: IStatusbarEntry = {
 			name: nls.localize(
 				"notebook.activeCellStatusName",
@@ -346,15 +377,18 @@ class ActiveCellStatus extends Disposable implements IWorkbenchContribution {
 			this._accessor.value.update(entry);
 		}
 	}
+
 	private _getSelectionsText(editor: INotebookEditor): string | undefined {
 		if (!editor.hasModel()) {
 			return undefined;
 		}
+
 		const activeCell = editor.getActiveCell();
 
 		if (!activeCell) {
 			return undefined;
 		}
+
 		const idxFocused = editor.getCellIndex(activeCell) + 1;
 
 		const numSelected = editor
@@ -380,9 +414,11 @@ class ActiveCellStatus extends Disposable implements IWorkbenchContribution {
 }
 class NotebookIndentationStatus extends Disposable {
 	private readonly _itemDisposables = this._register(new DisposableStore());
+
 	private readonly _accessor = this._register(
 		new MutableDisposable<IStatusbarEntryAccessor>(),
 	);
+
 	static readonly ID = "selectNotebookIndentation";
 
 	constructor(
@@ -394,9 +430,11 @@ class NotebookIndentationStatus extends Disposable {
 		private readonly _configurationService: IConfigurationService,
 	) {
 		super();
+
 		this._register(
 			this._editorService.onDidActiveEditorChange(() => this._update()),
 		);
+
 		this._register(
 			this._configurationService.onDidChangeConfiguration((e) => {
 				if (
@@ -407,8 +445,10 @@ class NotebookIndentationStatus extends Disposable {
 				}
 			}),
 		);
+
 		this._update();
 	}
+
 	private _update() {
 		this._itemDisposables.clear();
 
@@ -418,9 +458,11 @@ class NotebookIndentationStatus extends Disposable {
 
 		if (activeEditor) {
 			this._show(activeEditor);
+
 			this._itemDisposables.add(
 				activeEditor.onDidChangeSelection(() => {
 					this._accessor.clear();
+
 					this._show(activeEditor);
 				}),
 			);
@@ -428,12 +470,14 @@ class NotebookIndentationStatus extends Disposable {
 			this._accessor.clear();
 		}
 	}
+
 	private _show(editor: INotebookEditor) {
 		if (!editor.hasModel()) {
 			this._accessor.clear();
 
 			return;
 		}
+
 		const cellOptions = editor.getActiveCell()?.textModel?.getOptions();
 
 		if (!cellOptions) {
@@ -441,6 +485,7 @@ class NotebookIndentationStatus extends Disposable {
 
 			return;
 		}
+
 		const cellEditorOverridesRaw =
 			editor.notebookOptions.getDisplayOptions()
 				.editorOptionsCustomizations;
@@ -469,6 +514,7 @@ class NotebookIndentationStatus extends Disposable {
 
 			return;
 		}
+
 		const entry: IStatusbarEntry = {
 			name: nls.localize("notebook.indentation", "Notebook Indentation"),
 			text: newText,
@@ -507,24 +553,30 @@ class NotebookEditorStatusContribution
 		for (const part of editorGroupService.parts) {
 			this.createNotebookStatus(part);
 		}
+
 		this._register(
 			editorGroupService.onDidCreateAuxiliaryEditorPart((part) =>
 				this.createNotebookStatus(part),
 			),
 		);
 	}
+
 	private createNotebookStatus(part: IEditorPart): void {
 		const disposables = new DisposableStore();
+
 		Event.once(part.onWillDispose)(() => disposables.dispose());
 
 		const scopedInstantiationService =
 			this.editorGroupService.getScopedInstantiationService(part);
+
 		disposables.add(
 			scopedInstantiationService.createInstance(KernelStatus),
 		);
+
 		disposables.add(
 			scopedInstantiationService.createInstance(ActiveCellStatus),
 		);
+
 		disposables.add(
 			scopedInstantiationService.createInstance(
 				NotebookIndentationStatus,

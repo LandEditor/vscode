@@ -93,7 +93,9 @@ definitions["taskRunnerConfiguration"]["properties"]!["isShellCommand"] =
 	Objects.deepClone(shellCommand);
 Object.getOwnPropertyNames(definitions).forEach((key) => {
 	const newKey = key + "1";
+
 	definitions[newKey] = definitions[key];
+
 	delete definitions[key];
 });
 function fixReferences(literal: any) {
@@ -103,6 +105,7 @@ function fixReferences(literal: any) {
 		if (literal["$ref"]) {
 			literal["$ref"] = literal["$ref"] + "1";
 		}
+
 		Object.getOwnPropertyNames(literal).forEach((property) => {
 			const value = literal[property];
 
@@ -118,6 +121,7 @@ ProblemMatcherRegistry.onReady().then(() => {
 		const matcherIds = ProblemMatcherRegistry.keys().map(
 			(key) => "$" + key,
 		);
+
 		definitions.problemMatcherType1.oneOf![0].enum = matcherIds;
 		(
 			definitions.problemMatcherType1.oneOf![2].items as IJSONSchema

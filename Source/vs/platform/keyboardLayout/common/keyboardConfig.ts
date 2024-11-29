@@ -19,6 +19,7 @@ export const enum DispatchConfig {
 }
 export interface IKeyboardConfig {
 	dispatch: DispatchConfig;
+
 	mapAltGrToCtrlAlt: boolean;
 }
 export function readKeyboardConfig(
@@ -27,6 +28,7 @@ export function readKeyboardConfig(
 	const keyboard = configurationService.getValue<
 		| {
 				dispatch: any;
+
 				mapAltGrToCtrlAlt: any;
 		  }
 		| undefined

@@ -22,12 +22,14 @@ export class ReadOnlyMessageController
 
 	constructor(private readonly editor: ICodeEditor) {
 		super();
+
 		this._register(
 			this.editor.onDidAttemptReadOnlyEdit(() =>
 				this._onDidAttemptReadOnlyEdit(),
 			),
 		);
 	}
+
 	private _onDidAttemptReadOnlyEdit(): void {
 		const messageController = MessageController.get(this.editor);
 
@@ -53,6 +55,7 @@ export class ReadOnlyMessageController
 					);
 				}
 			}
+
 			messageController.showMessage(message, this.editor.getPosition());
 		}
 	}

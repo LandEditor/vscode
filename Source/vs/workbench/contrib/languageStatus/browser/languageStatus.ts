@@ -93,6 +93,7 @@ class StoredCounter {
 
 	increment(): number {
 		const n = this.value + 1;
+
 		this._storageService.store(
 			this._key,
 			n,
@@ -129,10 +130,12 @@ export class LanguageStatusContribution
 
 	private createLanguageStatus(part: IEditorPart): void {
 		const disposables = new DisposableStore();
+
 		Event.once(part.onWillDispose)(() => disposables.dispose());
 
 		const scopedInstantiationService =
 			this.editorGroupService.getScopedInstantiationService(part);
+
 		disposables.add(
 			scopedInstantiationService.createInstance(LanguageStatus),
 		);
@@ -145,13 +148,17 @@ class LanguageStatus {
 	private static readonly _keyDedicatedItems = "languageStatus.dedicated";
 
 	private readonly _disposables = new DisposableStore();
+
 	private readonly _interactionCounter: StoredCounter;
 
 	private _dedicated = new Set<string>();
 
 	private _model?: LanguageStatusViewModel;
+
 	private _combinedEntry?: IStatusbarEntryAccessor;
+
 	private _dedicatedEntries = new Map<string, IStatusbarEntryAccessor>();
+
 	private readonly _renderDisposables = new DisposableStore();
 
 	constructor(
@@ -169,7 +176,9 @@ class LanguageStatus {
 			LanguageStatus._keyDedicatedItems,
 			this._disposables,
 		)(this._handleStorageChange, this, this._disposables);
+
 		this._restoreState();
+
 		this._interactionCounter = new StoredCounter(
 			_storageService,
 			"languageStatus.interactCount",
@@ -180,18 +189,22 @@ class LanguageStatus {
 			this,
 			this._disposables,
 		);
+
 		_editorService.onDidActiveEditorChange(
 			this._update,
 			this,
 			this._disposables,
 		);
+
 		this._update();
 
 		_statusBarService.onDidChangeEntryVisibility(
 			(e) => {
 				if (!e.visible && this._dedicated.has(e.id)) {
 					this._dedicated.delete(e.id);
+
 					this._update();
+
 					this._storeState();
 				}
 			},
@@ -202,8 +215,11 @@ class LanguageStatus {
 
 	dispose(): void {
 		this._disposables.dispose();
+
 		this._combinedEntry?.dispose();
+
 		dispose(this._dedicatedEntries.values());
+
 		this._renderDisposables.dispose();
 	}
 
@@ -211,6 +227,7 @@ class LanguageStatus {
 
 	private _handleStorageChange() {
 		this._restoreState();
+
 		this._update();
 	}
 
@@ -223,6 +240,7 @@ class LanguageStatus {
 
 		try {
 			const ids = <string[]>JSON.parse(raw);
+
 			this._dedicated = new Set(ids);
 		} catch {
 			this._dedicated.clear();
@@ -237,6 +255,7 @@ class LanguageStatus {
 			);
 		} else {
 			const raw = JSON.stringify(Array.from(this._dedicated.keys()));
+
 			this._storageService.store(
 				LanguageStatus._keyDedicatedItems,
 				raw,
@@ -254,6 +273,7 @@ class LanguageStatus {
 		if (!editor?.hasModel()) {
 			return new LanguageStatusViewModel([], []);
 		}
+
 		const all = this._languageStatusService.getLanguageStatus(
 			editor.getModel(),
 		);
@@ -266,8 +286,10 @@ class LanguageStatus {
 			if (this._dedicated.has(item.id)) {
 				dedicated.push(item);
 			}
+
 			combined.push(item);
 		}
+
 		return new LanguageStatusViewModel(combined, dedicated);
 	}
 
@@ -281,6 +303,7 @@ class LanguageStatus {
 		if (this._model?.isEqual(model)) {
 			return;
 		}
+
 		this._renderDisposables.clear();
 
 		this._model = model;
@@ -297,6 +320,7 @@ class LanguageStatus {
 		if (model.combined.length === 0) {
 			// nothing
 			this._combinedEntry?.dispose();
+
 			this._combinedEntry = undefined;
 		} else {
 			const [first] = model.combined;
@@ -313,6 +337,7 @@ class LanguageStatus {
 
 			for (const status of model.combined) {
 				const isPinned = model.dedicated.includes(status);
+
 				element.appendChild(
 					this._renderStatus(
 						status,
@@ -321,9 +346,11 @@ class LanguageStatus {
 						this._renderDisposables,
 					),
 				);
+
 				ariaLabels.push(
 					LanguageStatus._accessibilityInformation(status).label,
 				);
+
 				isOneBusy = isOneBusy || (!isPinned && status.busy); // unpinned items contribute to the busy-indicator of the composite status item
 			}
 
@@ -380,6 +407,7 @@ class LanguageStatus {
 						_wiggle,
 						showSeverity || !userHasInteractedWithStatus,
 					);
+
 					this._renderDisposables.add(
 						dom.addDisposableListener(node, "animationend", (_e) =>
 							node.classList.remove(_wiggle),
@@ -387,6 +415,7 @@ class LanguageStatus {
 					);
 					// flash background when severe
 					container.classList.toggle(_flash, showSeverity);
+
 					this._renderDisposables.add(
 						dom.addDisposableListener(
 							container,
@@ -396,6 +425,7 @@ class LanguageStatus {
 					);
 				} else {
 					node.classList.remove(_wiggle);
+
 					container.classList.remove(_flash);
 				}
 			}
@@ -411,13 +441,16 @@ class LanguageStatus {
 					const observer = new MutationObserver(() => {
 						if (targetWindow.document.contains(element)) {
 							this._interactionCounter.increment();
+
 							observer.disconnect();
 						}
 					});
+
 					observer.observe(hoverTarget, {
 						childList: true,
 						subtree: true,
 					});
+
 					this._renderDisposables.add(
 						toDisposable(() => observer.disconnect()),
 					);
@@ -445,11 +478,15 @@ class LanguageStatus {
 				);
 			} else {
 				entry.update(props);
+
 				this._dedicatedEntries.delete(status.id);
 			}
+
 			newDedicatedEntries.set(status.id, entry);
 		}
+
 		dispose(this._dedicatedEntries.values());
+
 		this._dedicatedEntries = newDedicatedEntries;
 	}
 
@@ -460,10 +497,13 @@ class LanguageStatus {
 		store: DisposableStore,
 	): HTMLElement {
 		const parent = document.createElement("div");
+
 		parent.classList.add("hover-language-status");
 
 		const severity = document.createElement("div");
+
 		severity.classList.add("severity", `sev${status.severity}`);
+
 		severity.classList.toggle("show", showSeverity);
 
 		const severityText = LanguageStatus._severityToSingleCodicon(
@@ -471,17 +511,23 @@ class LanguageStatus {
 		);
 
 		dom.append(severity, ...renderLabelWithIcons(severityText));
+
 		parent.appendChild(severity);
 
 		const element = document.createElement("div");
+
 		element.classList.add("element");
+
 		parent.appendChild(element);
 
 		const left = document.createElement("div");
+
 		left.classList.add("left");
+
 		element.appendChild(left);
 
 		const label = document.createElement("span");
+
 		label.classList.add("label");
 
 		const labelValue =
@@ -493,15 +539,21 @@ class LanguageStatus {
 			label,
 			...renderLabelWithIcons(computeText(labelValue, status.busy)),
 		);
+
 		left.appendChild(label);
 
 		const detail = document.createElement("span");
+
 		detail.classList.add("detail");
+
 		this._renderTextPlus(detail, status.detail, store);
+
 		left.appendChild(detail);
 
 		const right = document.createElement("div");
+
 		right.classList.add("right");
+
 		element.appendChild(right);
 
 		// -- command (if available)
@@ -537,7 +589,9 @@ class LanguageStatus {
 		const actionLabel: string = isPinned
 			? localize("unpin", "Remove from Status Bar")
 			: localize("pin", "Add to Status Bar");
+
 		actionBar.setAriaLabel(actionLabel);
+
 		store.add(actionBar);
 
 		let action: Action;
@@ -550,11 +604,14 @@ class LanguageStatus {
 				true,
 				() => {
 					this._dedicated.add(status.id);
+
 					this._statusBarService.updateEntryVisibility(
 						status.id,
 						true,
 					);
+
 					this._update();
+
 					this._storeState();
 				},
 			);
@@ -566,16 +623,21 @@ class LanguageStatus {
 				true,
 				() => {
 					this._dedicated.delete(status.id);
+
 					this._statusBarService.updateEntryVisibility(
 						status.id,
 						false,
 					);
+
 					this._update();
+
 					this._storeState();
 				},
 			);
 		}
+
 		actionBar.push(action, { icon: true, label: false });
+
 		store.add(action);
 
 		return parent;
@@ -637,6 +699,7 @@ class LanguageStatus {
 		if (status.accessibilityInfo) {
 			return status.accessibilityInfo;
 		}
+
 		const textValue =
 			typeof status.label === "string"
 				? status.label

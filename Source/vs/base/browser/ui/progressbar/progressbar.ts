@@ -44,58 +44,86 @@ export class ProgressBar extends Disposable {
 	 * https://github.com/microsoft/vscode/issues/138396
 	 */
 	private static readonly LONG_RUNNING_INFINITE_THRESHOLD = 10000;
+
 	private static readonly PROGRESS_SIGNAL_DEFAULT_DELAY = 3000;
+
 	private workedVal: number;
+
 	private element!: HTMLElement;
+
 	private bit!: HTMLElement;
+
 	private totalWork: number | undefined;
+
 	private showDelayedScheduler: RunOnceScheduler;
+
 	private longRunningScheduler: RunOnceScheduler;
+
 	private readonly progressSignal = this._register(
 		new MutableDisposable<IDisposable>(),
 	);
 
 	constructor(container: HTMLElement, options?: IProgressBarOptions) {
 		super();
+
 		this.workedVal = 0;
+
 		this.showDelayedScheduler = this._register(
 			new RunOnceScheduler(() => show(this.element), 0),
 		);
+
 		this.longRunningScheduler = this._register(
 			new RunOnceScheduler(
 				() => this.infiniteLongRunning(),
 				ProgressBar.LONG_RUNNING_INFINITE_THRESHOLD,
 			),
 		);
+
 		this.create(container, options);
 	}
+
 	private create(
 		container: HTMLElement,
 		options?: IProgressBarOptions,
 	): void {
 		this.element = document.createElement("div");
+
 		this.element.classList.add("monaco-progress-container");
+
 		this.element.setAttribute("role", "progressbar");
+
 		this.element.setAttribute("aria-valuemin", "0");
+
 		container.appendChild(this.element);
+
 		this.bit = document.createElement("div");
+
 		this.bit.classList.add("progress-bit");
+
 		this.bit.style.backgroundColor =
 			options?.progressBarBackground || "#0E70C0";
+
 		this.element.appendChild(this.bit);
 	}
+
 	private off(): void {
 		this.bit.style.width = "inherit";
+
 		this.bit.style.opacity = "1";
+
 		this.element.classList.remove(
 			CSS_ACTIVE,
 			CSS_INFINITE,
 			CSS_INFINITE_LONG_RUNNING,
 			CSS_DISCRETE,
 		);
+
 		this.workedVal = 0;
+
 		this.totalWork = undefined;
+
 		this.longRunningScheduler.cancel();
+
 		this.progressSignal.clear();
 	}
 	/**
@@ -110,6 +138,7 @@ export class ProgressBar extends Disposable {
 	stop(): ProgressBar {
 		return this.doDone(false);
 	}
+
 	private doDone(delayed: boolean): ProgressBar {
 		this.element.classList.add(CSS_DONE);
 		// discrete: let it grow to 100% width and hide afterwards
@@ -132,6 +161,7 @@ export class ProgressBar extends Disposable {
 				this.off();
 			}
 		}
+
 		return this;
 	}
 	/**
@@ -139,17 +169,22 @@ export class ProgressBar extends Disposable {
 	 */
 	infinite(): ProgressBar {
 		this.bit.style.width = "2%";
+
 		this.bit.style.opacity = "1";
+
 		this.element.classList.remove(
 			CSS_DISCRETE,
 			CSS_DONE,
 			CSS_INFINITE_LONG_RUNNING,
 		);
+
 		this.element.classList.add(CSS_ACTIVE, CSS_INFINITE);
+
 		this.longRunningScheduler.schedule();
 
 		return this;
 	}
+
 	private infiniteLongRunning(): void {
 		this.element.classList.add(CSS_INFINITE_LONG_RUNNING);
 	}
@@ -159,7 +194,9 @@ export class ProgressBar extends Disposable {
 	 */
 	total(value: number): ProgressBar {
 		this.workedVal = 0;
+
 		this.totalWork = value;
+
 		this.element.setAttribute("aria-valuemax", value.toString());
 
 		return this;
@@ -186,26 +223,36 @@ export class ProgressBar extends Disposable {
 
 		return this.doSetWorked(value);
 	}
+
 	private doSetWorked(value: number): ProgressBar {
 		const totalWork = this.totalWork || 100;
+
 		this.workedVal = value;
+
 		this.workedVal = Math.min(totalWork, this.workedVal);
+
 		this.element.classList.remove(
 			CSS_INFINITE,
 			CSS_INFINITE_LONG_RUNNING,
 			CSS_DONE,
 		);
+
 		this.element.classList.add(CSS_ACTIVE, CSS_DISCRETE);
+
 		this.element.setAttribute("aria-valuenow", value.toString());
+
 		this.bit.style.width = 100 * (this.workedVal / totalWork) + "%";
 
 		return this;
 	}
+
 	getContainer(): HTMLElement {
 		return this.element;
 	}
+
 	show(delay?: number): void {
 		this.showDelayedScheduler.cancel();
+
 		this.progressSignal.value = getProgressAcccessibilitySignalScheduler(
 			ProgressBar.PROGRESS_SIGNAL_DEFAULT_DELAY,
 		);
@@ -216,9 +263,12 @@ export class ProgressBar extends Disposable {
 			show(this.element);
 		}
 	}
+
 	hide(): void {
 		hide(this.element);
+
 		this.showDelayedScheduler.cancel();
+
 		this.progressSignal.clear();
 	}
 }

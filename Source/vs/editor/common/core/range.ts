@@ -57,13 +57,19 @@ export class Range {
 			(startLineNumber === endLineNumber && startColumn > endColumn)
 		) {
 			this.startLineNumber = endLineNumber;
+
 			this.startColumn = endColumn;
+
 			this.endLineNumber = startLineNumber;
+
 			this.endColumn = startColumn;
 		} else {
 			this.startLineNumber = startLineNumber;
+
 			this.startColumn = startColumn;
+
 			this.endLineNumber = endLineNumber;
+
 			this.endColumn = endColumn;
 		}
 	}
@@ -101,18 +107,21 @@ export class Range {
 		) {
 			return false;
 		}
+
 		if (
 			position.lineNumber === range.startLineNumber &&
 			position.column < range.startColumn
 		) {
 			return false;
 		}
+
 		if (
 			position.lineNumber === range.endLineNumber &&
 			position.column > range.endColumn
 		) {
 			return false;
 		}
+
 		return true;
 	}
 	/**
@@ -129,18 +138,21 @@ export class Range {
 		) {
 			return false;
 		}
+
 		if (
 			position.lineNumber === range.startLineNumber &&
 			position.column <= range.startColumn
 		) {
 			return false;
 		}
+
 		if (
 			position.lineNumber === range.endLineNumber &&
 			position.column >= range.endColumn
 		) {
 			return false;
 		}
+
 		return true;
 	}
 	/**
@@ -159,24 +171,28 @@ export class Range {
 		) {
 			return false;
 		}
+
 		if (
 			otherRange.startLineNumber > range.endLineNumber ||
 			otherRange.endLineNumber > range.endLineNumber
 		) {
 			return false;
 		}
+
 		if (
 			otherRange.startLineNumber === range.startLineNumber &&
 			otherRange.startColumn < range.startColumn
 		) {
 			return false;
 		}
+
 		if (
 			otherRange.endLineNumber === range.endLineNumber &&
 			otherRange.endColumn > range.endColumn
 		) {
 			return false;
 		}
+
 		return true;
 	}
 	/**
@@ -198,24 +214,28 @@ export class Range {
 		) {
 			return false;
 		}
+
 		if (
 			otherRange.startLineNumber > range.endLineNumber ||
 			otherRange.endLineNumber > range.endLineNumber
 		) {
 			return false;
 		}
+
 		if (
 			otherRange.startLineNumber === range.startLineNumber &&
 			otherRange.startColumn <= range.startColumn
 		) {
 			return false;
 		}
+
 		if (
 			otherRange.endLineNumber === range.endLineNumber &&
 			otherRange.endColumn >= range.endColumn
 		) {
 			return false;
 		}
+
 		return true;
 	}
 	/**
@@ -240,24 +260,32 @@ export class Range {
 
 		if (b.startLineNumber < a.startLineNumber) {
 			startLineNumber = b.startLineNumber;
+
 			startColumn = b.startColumn;
 		} else if (b.startLineNumber === a.startLineNumber) {
 			startLineNumber = b.startLineNumber;
+
 			startColumn = Math.min(b.startColumn, a.startColumn);
 		} else {
 			startLineNumber = a.startLineNumber;
+
 			startColumn = a.startColumn;
 		}
+
 		if (b.endLineNumber > a.endLineNumber) {
 			endLineNumber = b.endLineNumber;
+
 			endColumn = b.endColumn;
 		} else if (b.endLineNumber === a.endLineNumber) {
 			endLineNumber = b.endLineNumber;
+
 			endColumn = Math.max(b.endColumn, a.endColumn);
 		} else {
 			endLineNumber = a.endLineNumber;
+
 			endColumn = a.endColumn;
 		}
+
 		return new Range(
 			startLineNumber,
 			startColumn,
@@ -293,12 +321,15 @@ export class Range {
 
 		if (resultStartLineNumber < otherStartLineNumber) {
 			resultStartLineNumber = otherStartLineNumber;
+
 			resultStartColumn = otherStartColumn;
 		} else if (resultStartLineNumber === otherStartLineNumber) {
 			resultStartColumn = Math.max(resultStartColumn, otherStartColumn);
 		}
+
 		if (resultEndLineNumber > otherEndLineNumber) {
 			resultEndLineNumber = otherEndLineNumber;
+
 			resultEndColumn = otherEndColumn;
 		} else if (resultEndLineNumber === otherEndLineNumber) {
 			resultEndColumn = Math.min(resultEndColumn, otherEndColumn);
@@ -307,12 +338,14 @@ export class Range {
 		if (resultStartLineNumber > resultEndLineNumber) {
 			return null;
 		}
+
 		if (
 			resultStartLineNumber === resultEndLineNumber &&
 			resultStartColumn > resultEndColumn
 		) {
 			return null;
 		}
+
 		return new Range(
 			resultStartLineNumber,
 			resultStartColumn,
@@ -336,6 +369,7 @@ export class Range {
 		if (!a && !b) {
 			return true;
 		}
+
 		return (
 			!!a &&
 			!!b &&
@@ -471,12 +505,16 @@ export class Range {
 	 * Create a `Range` from an `IRange`.
 	 */
 	public static lift(range: undefined | null): null;
+
 	public static lift(range: IRange): Range;
+
 	public static lift(range: IRange | undefined | null): Range | null;
+
 	public static lift(range: IRange | undefined | null): Range | null {
 		if (!range) {
 			return null;
 		}
+
 		return new Range(
 			range.startLineNumber,
 			range.startColumn,
@@ -572,12 +610,16 @@ export class Range {
 
 						return aEndColumn - bEndColumn;
 					}
+
 					return aEndLineNumber - bEndLineNumber;
 				}
+
 				return aStartColumn - bStartColumn;
 			}
+
 			return aStartLineNumber - bStartLineNumber;
 		}
+
 		const aExists = a ? 1 : 0;
 
 		const bExists = b ? 1 : 0;
@@ -594,10 +636,13 @@ export class Range {
 				if (a.startLineNumber === b.startLineNumber) {
 					return a.startColumn - b.startColumn;
 				}
+
 				return a.startLineNumber - b.startLineNumber;
 			}
+
 			return a.endColumn - b.endColumn;
 		}
+
 		return a.endLineNumber - b.endLineNumber;
 	}
 	/**
@@ -606,6 +651,7 @@ export class Range {
 	public static spansMultipleLines(range: IRange): boolean {
 		return range.endLineNumber > range.startLineNumber;
 	}
+
 	public toJSON(): IRange {
 		return this;
 	}

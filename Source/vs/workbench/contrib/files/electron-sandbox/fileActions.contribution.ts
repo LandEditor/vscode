@@ -66,6 +66,7 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
 			accessor.get(IEditorGroupsService),
 			accessor.get(IExplorerService),
 		);
+
 		revealResourcesInOS(
 			resources,
 			accessor.get(INativeHostService),
@@ -92,6 +93,7 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
 		});
 
 		const resources = resource ? [resource] : [];
+
 		revealResourcesInOS(
 			resources,
 			accessor.get(INativeHostService),

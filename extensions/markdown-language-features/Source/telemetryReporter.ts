@@ -7,11 +7,14 @@ import * as vscode from "vscode";
 
 interface IPackageInfo {
 	name: string;
+
 	version: string;
+
 	aiKey: string;
 }
 export interface TelemetryReporter {
 	dispose(): void;
+
 	sendTelemetryEvent(
 		eventName: string,
 		properties?: {
@@ -24,6 +27,7 @@ const nullReporter = new (class NullTelemetryReporter
 	implements TelemetryReporter
 {
 	sendTelemetryEvent() {}
+
 	dispose() {}
 })();
 class ExtensionReporter implements TelemetryReporter {
@@ -32,6 +36,7 @@ class ExtensionReporter implements TelemetryReporter {
 	constructor(packageInfo: IPackageInfo) {
 		this._reporter = new VSCodeTelemetryReporter(packageInfo.aiKey);
 	}
+
 	sendTelemetryEvent(
 		eventName: string,
 		properties?: {
@@ -40,6 +45,7 @@ class ExtensionReporter implements TelemetryReporter {
 	) {
 		this._reporter.sendTelemetryEvent(eventName, properties);
 	}
+
 	dispose() {
 		this._reporter.dispose();
 	}
@@ -61,5 +67,6 @@ function getPackageInfo(): IPackageInfo | null {
 			aiKey: extension.packageJSON.aiKey,
 		};
 	}
+
 	return null;
 }

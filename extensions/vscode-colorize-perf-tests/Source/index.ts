@@ -17,6 +17,7 @@ const options: import("mocha").MochaOptions = {
 
 if (process.env.BUILD_ARTIFACTSTAGINGDIRECTORY) {
 	options.reporter = "mocha-multi-reporters";
+
 	options.reporterOptions = {
 		reporterEnabled: "spec, mocha-junit-reporter",
 		mochaJunitReporterReporterOptions: {

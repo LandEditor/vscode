@@ -256,9 +256,11 @@ export class CodeApplication extends Disposable {
 		};
 
 	private windowsMainService: IWindowsMainService | undefined;
+
 	private auxiliaryWindowsMainService:
 		| IAuxiliaryWindowsMainService
 		| undefined;
+
 	private nativeHostMainService: INativeHostMainService | undefined;
 
 	constructor(
@@ -283,6 +285,7 @@ export class CodeApplication extends Disposable {
 		super();
 
 		this.configureSession();
+
 		this.registerListeners();
 	}
 
@@ -314,9 +317,11 @@ export class CodeApplication extends Disposable {
 						allowedPermissionsInWebview.has(permission),
 					);
 				}
+
 				if (isUrlFromWindow(details.requestingUrl)) {
 					return callback(allowedPermissionsInCore.has(permission));
 				}
+
 				return callback(false);
 			},
 		);
@@ -326,9 +331,11 @@ export class CodeApplication extends Disposable {
 				if (isUrlFromWebview(details.requestingUrl)) {
 					return allowedPermissionsInWebview.has(permission);
 				}
+
 				if (isUrlFromWindow(details.requestingUrl)) {
 					return allowedPermissionsInCore.has(permission);
 				}
+
 				return false;
 			},
 		);
@@ -352,13 +359,16 @@ export class CodeApplication extends Disposable {
 		): boolean => {
 			for (
 				let frame: WebFrameMain | null | undefined = requestFrame;
+
 				frame;
+
 				frame = frame.parent
 			) {
 				if (frame.url.startsWith(`${Schemas.vscodeWebview}://`)) {
 					return true;
 				}
 			}
+
 			return false;
 		};
 
@@ -590,11 +600,13 @@ export class CodeApplication extends Disposable {
 	private registerListeners(): void {
 		// We handle uncaught exceptions here to prevent electron from opening a dialog to the user
 		setUnexpectedErrorHandler((error) => this.onUnexpectedError(error));
+
 		process.on("uncaughtException", (error) => {
 			if (!isSigPipeError(error)) {
 				onUnexpectedError(error);
 			}
 		});
+
 		process.on("unhandledRejection", (reason: unknown) =>
 			onUnexpectedError(reason),
 		);
@@ -696,10 +708,12 @@ export class CodeApplication extends Disposable {
 		let macOpenFileURIs: IWindowOpenable[] = [];
 
 		let runningTimeout: NodeJS.Timeout | undefined = undefined;
+
 		app.on("open-file", (event, path) => {
 			path = normalizeNFC(path); // macOS only: normalize paths to NFC form
 
 			this.logService.trace("app#open-file: ", path);
+
 			event.preventDefault();
 
 			// Keep in array because more might come!
@@ -712,6 +726,7 @@ export class CodeApplication extends Disposable {
 			// Clear previous handler if any
 			if (runningTimeout !== undefined) {
 				clearTimeout(runningTimeout);
+
 				runningTimeout = undefined;
 			}
 
@@ -728,6 +743,7 @@ export class CodeApplication extends Disposable {
 				});
 
 				macOpenFileURIs = [];
+
 				runningTimeout = undefined;
 			}, 100);
 		});
@@ -758,9 +774,11 @@ export class CodeApplication extends Disposable {
 
 			if (window?.config) {
 				args = window.config;
+
 				env = { ...process.env, ...window.config.userEnv };
 			} else {
 				args = this.environmentMainService.args;
+
 				env = process.env;
 			}
 
@@ -771,6 +789,7 @@ export class CodeApplication extends Disposable {
 		validatedIpcMain.on("vscode:toggleDevTools", (event) =>
 			event.sender.toggleDevTools(),
 		);
+
 		validatedIpcMain.on("vscode:openDevTools", (event) =>
 			event.sender.openDevTools(),
 		);
@@ -819,7 +838,9 @@ export class CodeApplication extends Disposable {
 
 	async startup(): Promise<void> {
 		this.logService.debug("Starting VS Code");
+
 		this.logService.debug(`from: ${this.environmentMainService.appRoot}`);
+
 		this.logService.debug("args:", this.environmentMainService.args);
 
 		// Make sure we associate the program with the app user model id
@@ -860,6 +881,7 @@ export class CodeApplication extends Disposable {
 
 		// Main process server (electron IPC based)
 		const mainProcessElectronServer = new ElectronIPCServer();
+
 		Event.once(this.lifecycleMainService.onWillShutdown)((e) => {
 			if (e.reason === ShutdownReason.KILL) {
 				// When we go down abnormally, make sure to free up
@@ -879,6 +901,7 @@ export class CodeApplication extends Disposable {
 			resolveSqmId(this.stateService, this.logService),
 			resolvedevDeviceId(this.stateService, this.logService),
 		]);
+
 		this.logService.trace(`Resolved machine identifier: ${machineId}`);
 
 		// Shared process
@@ -953,6 +976,7 @@ export class CodeApplication extends Disposable {
 				);
 			}, 2500),
 		);
+
 		eventuallyPhaseScheduler.schedule();
 	}
 
@@ -975,6 +999,7 @@ export class CodeApplication extends Disposable {
 		// the URLs into a window process to be handled there.
 
 		const app = this;
+
 		urlService.registerHandler({
 			async handleURL(
 				uri: URI,
@@ -1013,6 +1038,7 @@ export class CodeApplication extends Disposable {
 			"urlHandler",
 			urlHandlerRouter,
 		);
+
 		urlService.registerHandler(
 			new URLHandlerChannelClient(urlHandlerChannel),
 		);
@@ -1021,6 +1047,7 @@ export class CodeApplication extends Disposable {
 			windowsMainService,
 			dialogMainService,
 		);
+
 		this._register(
 			new ElectronURLListener(
 				initialProtocolUrls?.urls,
@@ -1075,6 +1102,7 @@ export class CodeApplication extends Disposable {
 								"error dispatching remote resource call",
 								err,
 							);
+
 							callback({ statusCode: 500, data: String(err) });
 						},
 					);
@@ -1200,6 +1228,7 @@ export class CodeApplication extends Disposable {
 
 		if (isWorkspaceToOpen(openable)) {
 			openableUri = openable.workspaceUri;
+
 			message = localize(
 				"confirmOpenMessageWorkspace",
 				"An external application wants to open '{0}' in {1}. Do you want to open this workspace file?",
@@ -1213,6 +1242,7 @@ export class CodeApplication extends Disposable {
 			);
 		} else if (isFolderToOpen(openable)) {
 			openableUri = openable.folderUri;
+
 			message = localize(
 				"confirmOpenMessageFolder",
 				"An external application wants to open '{0}' in {1}. Do you want to open this folder?",
@@ -1226,6 +1256,7 @@ export class CodeApplication extends Disposable {
 			);
 		} else {
 			openableUri = openable.fileUri;
+
 			message = localize(
 				"confirmOpenMessageFileOrFolder",
 				"An external application wants to open '{0}' in {1}. Do you want to open this file or folder?",
@@ -1311,7 +1342,9 @@ export class CodeApplication extends Disposable {
 				channel: "vscode:disablePromptForProtocolHandling",
 				args: openableUri.scheme === Schemas.file ? "local" : "remote",
 			};
+
 			windowsMainService.sendToFocused(request.channel, request.args);
+
 			windowsMainService.sendToOpeningWindow(
 				request.channel,
 				request.args,
@@ -1356,9 +1389,11 @@ export class CodeApplication extends Disposable {
 
 			if (secondSlash !== -1) {
 				authority = uri.path.substring(1, secondSlash);
+
 				path = uri.path.substring(secondSlash);
 			} else {
 				authority = uri.path.substring(1);
+
 				path = "/";
 			}
 
@@ -1370,6 +1405,7 @@ export class CodeApplication extends Disposable {
 				// Make sure to unset any `windowId=_blank` here
 				// https://github.com/microsoft/vscode/issues/191902
 				params.delete("windowId");
+
 				query = params.toString();
 			}
 
@@ -1392,6 +1428,7 @@ export class CodeApplication extends Disposable {
 
 			return { folderUri: remoteUri };
 		}
+
 		return undefined;
 	}
 
@@ -1432,6 +1469,7 @@ export class CodeApplication extends Disposable {
 			);
 
 			params.delete("windowId");
+
 			uri = uri.with({ query: params.toString() });
 
 			shouldOpenInNewWindow = true;
@@ -1457,6 +1495,7 @@ export class CodeApplication extends Disposable {
 			);
 
 			params.delete("continueOn");
+
 			uri = uri.with({ query: params.toString() });
 
 			this.environmentMainService.continueOn = continueOn ?? undefined;
@@ -1542,6 +1581,7 @@ export class CodeApplication extends Disposable {
 		devDeviceId: string,
 	): {
 		sharedProcessReady: Promise<MessagePortClient>;
+
 		sharedProcessClient: Promise<MessagePortClient>;
 	} {
 		const sharedProcess = this._register(
@@ -1615,6 +1655,7 @@ export class CodeApplication extends Disposable {
 						new SyncDescriptor(LinuxUpdateService),
 					);
 				}
+
 				break;
 
 			case "darwin":
@@ -1635,6 +1676,7 @@ export class CodeApplication extends Disposable {
 				false,
 			),
 		);
+
 		services.set(
 			IAuxiliaryWindowsMainService,
 			new SyncDescriptor(AuxiliaryWindowsMainService, undefined, false),
@@ -1645,6 +1687,7 @@ export class CodeApplication extends Disposable {
 			this.logService,
 			this.productService,
 		);
+
 		services.set(IDialogMainService, dialogMainService);
 
 		// Launch
@@ -1666,6 +1709,7 @@ export class CodeApplication extends Disposable {
 				false /* proxied to other processes */,
 			),
 		);
+
 		services.set(
 			IDiagnosticsService,
 			ProxyChannel.toService(
@@ -1728,6 +1772,7 @@ export class CodeApplication extends Disposable {
 			IStorageMainService,
 			new SyncDescriptor(StorageMainService),
 		);
+
 		services.set(
 			IApplicationStorageMainService,
 			new SyncDescriptor(ApplicationStorageMainService),
@@ -1755,6 +1800,7 @@ export class CodeApplication extends Disposable {
 			this.logService,
 			this.loggerService,
 		);
+
 		services.set(ILocalPtyService, ptyHostService);
 
 		// External terminal
@@ -1782,6 +1828,7 @@ export class CodeApplication extends Disposable {
 			this.logService,
 			this.stateService,
 		);
+
 		services.set(IBackupMainService, backupMainService);
 
 		// Workspaces
@@ -1793,10 +1840,12 @@ export class CodeApplication extends Disposable {
 				backupMainService,
 				dialogMainService,
 			);
+
 		services.set(
 			IWorkspacesManagementMainService,
 			workspacesManagementMainService,
 		);
+
 		services.set(
 			IWorkspacesService,
 			new SyncDescriptor(
@@ -1805,6 +1854,7 @@ export class CodeApplication extends Disposable {
 				false /* proxied to other processes */,
 			),
 		);
+
 		services.set(
 			IWorkspacesHistoryMainService,
 			new SyncDescriptor(WorkspacesHistoryMainService, undefined, false),
@@ -1877,6 +1927,7 @@ export class CodeApplication extends Disposable {
 				true,
 			),
 		);
+
 		services.set(
 			IExtensionsScannerService,
 			new SyncDescriptor(ExtensionsScannerService, undefined, true),
@@ -1927,6 +1978,7 @@ export class CodeApplication extends Disposable {
 			disposables,
 			{ disableMarshalling: true },
 		);
+
 		this.mainProcessNodeIpcServer.registerChannel("launch", launchChannel);
 
 		const diagnosticsChannel = ProxyChannel.fromService(
@@ -1934,6 +1986,7 @@ export class CodeApplication extends Disposable {
 			disposables,
 			{ disableMarshalling: true },
 		);
+
 		this.mainProcessNodeIpcServer.registerChannel(
 			"diagnostics",
 			diagnosticsChannel,
@@ -1943,7 +1996,9 @@ export class CodeApplication extends Disposable {
 		const policyChannel = disposables.add(
 			new PolicyChannel(accessor.get(IPolicyService)),
 		);
+
 		mainProcessElectronServer.registerChannel("policy", policyChannel);
+
 		sharedProcessClient.then((client) =>
 			client.registerChannel("policy", policyChannel),
 		);
@@ -1952,6 +2007,7 @@ export class CodeApplication extends Disposable {
 		const diskFileSystemProvider = this.fileService.getProvider(
 			Schemas.file,
 		);
+
 		assertType(diskFileSystemProvider instanceof DiskFileSystemProvider);
 
 		const fileSystemProviderChannel = disposables.add(
@@ -1961,10 +2017,12 @@ export class CodeApplication extends Disposable {
 				this.environmentMainService,
 			),
 		);
+
 		mainProcessElectronServer.registerChannel(
 			LOCAL_FILE_SYSTEM_CHANNEL_NAME,
 			fileSystemProviderChannel,
 		);
+
 		sharedProcessClient.then((client) =>
 			client.registerChannel(
 				LOCAL_FILE_SYSTEM_CHANNEL_NAME,
@@ -1977,16 +2035,19 @@ export class CodeApplication extends Disposable {
 			accessor.get(IUserDataProfilesMainService),
 			disposables,
 		);
+
 		mainProcessElectronServer.registerChannel(
 			"userDataProfiles",
 			userDataProfilesService,
 		);
+
 		sharedProcessClient.then((client) =>
 			client.registerChannel("userDataProfiles", userDataProfilesService),
 		);
 
 		// Update
 		const updateChannel = new UpdateChannel(accessor.get(IUpdateService));
+
 		mainProcessElectronServer.registerChannel("update", updateChannel);
 
 		// Process
@@ -1994,6 +2055,7 @@ export class CodeApplication extends Disposable {
 			accessor.get(IProcessMainService),
 			disposables,
 		);
+
 		mainProcessElectronServer.registerChannel("process", processChannel);
 
 		// Encryption
@@ -2001,6 +2063,7 @@ export class CodeApplication extends Disposable {
 			accessor.get(IEncryptionMainService),
 			disposables,
 		);
+
 		mainProcessElectronServer.registerChannel(
 			"encryption",
 			encryptionChannel,
@@ -2011,6 +2074,7 @@ export class CodeApplication extends Disposable {
 			accessor.get(ISignService),
 			disposables,
 		);
+
 		mainProcessElectronServer.registerChannel("sign", signChannel);
 
 		// Keyboard Layout
@@ -2018,6 +2082,7 @@ export class CodeApplication extends Disposable {
 			accessor.get(IKeyboardLayoutMainService),
 			disposables,
 		);
+
 		mainProcessElectronServer.registerChannel(
 			"keyboardLayout",
 			keyboardLayoutChannel,
@@ -2030,10 +2095,12 @@ export class CodeApplication extends Disposable {
 			this.nativeHostMainService,
 			disposables,
 		);
+
 		mainProcessElectronServer.registerChannel(
 			"nativeHost",
 			nativeHostChannel,
 		);
+
 		sharedProcessClient.then((client) =>
 			client.registerChannel("nativeHost", nativeHostChannel),
 		);
@@ -2043,6 +2110,7 @@ export class CodeApplication extends Disposable {
 			accessor.get(IWorkspacesService),
 			disposables,
 		);
+
 		mainProcessElectronServer.registerChannel(
 			"workspaces",
 			workspacesChannel,
@@ -2053,6 +2121,7 @@ export class CodeApplication extends Disposable {
 			accessor.get(IMenubarMainService),
 			disposables,
 		);
+
 		mainProcessElectronServer.registerChannel("menubar", menubarChannel);
 
 		// URL handling
@@ -2060,6 +2129,7 @@ export class CodeApplication extends Disposable {
 			accessor.get(IURLService),
 			disposables,
 		);
+
 		mainProcessElectronServer.registerChannel("url", urlChannel);
 
 		// Webview Manager
@@ -2067,6 +2137,7 @@ export class CodeApplication extends Disposable {
 			accessor.get(IWebviewManagerService),
 			disposables,
 		);
+
 		mainProcessElectronServer.registerChannel("webview", webviewChannel);
 
 		// Storage (main & shared process)
@@ -2076,7 +2147,9 @@ export class CodeApplication extends Disposable {
 				accessor.get(IStorageMainService),
 			),
 		);
+
 		mainProcessElectronServer.registerChannel("storage", storageChannel);
+
 		sharedProcessClient.then((client) =>
 			client.registerChannel("storage", storageChannel),
 		);
@@ -2089,6 +2162,7 @@ export class CodeApplication extends Disposable {
 				this.logService,
 			),
 		);
+
 		sharedProcessClient.then((client) =>
 			client.registerChannel(
 				"profileStorageListener",
@@ -2101,6 +2175,7 @@ export class CodeApplication extends Disposable {
 			accessor.get(ILocalPtyService),
 			disposables,
 		);
+
 		mainProcessElectronServer.registerChannel(
 			TerminalIpcChannels.LocalPty,
 			ptyHostChannel,
@@ -2111,6 +2186,7 @@ export class CodeApplication extends Disposable {
 			accessor.get(IExternalTerminalMainService),
 			disposables,
 		);
+
 		mainProcessElectronServer.registerChannel(
 			"externalTerminal",
 			externalTerminalChannel,
@@ -2120,7 +2196,9 @@ export class CodeApplication extends Disposable {
 		const loggerChannel = new LoggerChannel(
 			accessor.get(ILoggerMainService),
 		);
+
 		mainProcessElectronServer.registerChannel("logger", loggerChannel);
+
 		sharedProcessClient.then((client) =>
 			client.registerChannel("logger", loggerChannel),
 		);
@@ -2130,6 +2208,7 @@ export class CodeApplication extends Disposable {
 			new ElectronExtensionHostDebugBroadcastChannel(
 				accessor.get(IWindowsMainService),
 			);
+
 		mainProcessElectronServer.registerChannel(
 			"extensionhostdebugservice",
 			electronExtensionHostDebugBroadcastChannel,
@@ -2140,6 +2219,7 @@ export class CodeApplication extends Disposable {
 			accessor.get(IExtensionHostStarter),
 			disposables,
 		);
+
 		mainProcessElectronServer.registerChannel(
 			ipcExtensionHostStarterChannelName,
 			extensionHostStarterChannel,
@@ -2150,6 +2230,7 @@ export class CodeApplication extends Disposable {
 			accessor.get(IUtilityProcessWorkerMainService),
 			disposables,
 		);
+
 		mainProcessElectronServer.registerChannel(
 			ipcUtilityProcessWorkerChannelName,
 			utilityProcessWorkerChannel,
@@ -2162,6 +2243,7 @@ export class CodeApplication extends Disposable {
 	): Promise<ICodeWindow[]> {
 		const windowsMainService = (this.windowsMainService =
 			accessor.get(IWindowsMainService));
+
 		this.auxiliaryWindowsMainService = accessor.get(
 			IAuxiliaryWindowsMainService,
 		);
@@ -2203,8 +2285,10 @@ export class CodeApplication extends Disposable {
 						// this URL because here we open an empty window for it.
 
 						params.delete("windowId");
+
 						protocolUrl.originalUrl =
 							protocolUrl.uri.toString(true);
+
 						protocolUrl.uri = protocolUrl.uri.with({
 							query: params.toString(),
 						});
@@ -2346,6 +2430,7 @@ export class CodeApplication extends Disposable {
 				const WindowsMutex = await import("@vscode/windows-mutex");
 
 				const mutex = new WindowsMutex.Mutex(win32MutexName);
+
 				Event.once(this.lifecycleMainService.onWillShutdown)(() =>
 					mutex.release(),
 				);

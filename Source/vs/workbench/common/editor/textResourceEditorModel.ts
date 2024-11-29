@@ -33,11 +33,13 @@ export class TextResourceEditorModel extends BaseTextEditorModel {
 			resource,
 		);
 	}
+
 	override dispose(): void {
 		// force this class to dispose the underlying model
 		if (this.textEditorModelHandle) {
 			this.modelService.destroyModel(this.textEditorModelHandle);
 		}
+
 		super.dispose();
 	}
 }

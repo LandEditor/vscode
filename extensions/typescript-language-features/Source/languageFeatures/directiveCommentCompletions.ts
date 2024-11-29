@@ -10,6 +10,7 @@ import { ITypeScriptServiceClient } from "../typescriptService";
 
 interface Directive {
 	readonly value: string;
+
 	readonly description: string;
 }
 
@@ -47,6 +48,7 @@ class DirectiveCommentCompletionProvider
 	implements vscode.CompletionItemProvider
 {
 	constructor(private readonly client: ITypeScriptServiceClient) {}
+
 	public provideCompletionItems(
 		document: vscode.TextDocument,
 		position: vscode.Position,
@@ -57,6 +59,7 @@ class DirectiveCommentCompletionProvider
 		if (!file) {
 			return [];
 		}
+
 		const line = document.lineAt(position.line).text;
 
 		const prefix = line.slice(0, position.character);
@@ -73,7 +76,9 @@ class DirectiveCommentCompletionProvider
 					directive.value,
 					vscode.CompletionItemKind.Snippet,
 				);
+
 				item.detail = directive.description;
+
 				item.range = new vscode.Range(
 					position.line,
 					Math.max(
@@ -87,6 +92,7 @@ class DirectiveCommentCompletionProvider
 				return item;
 			});
 		}
+
 		return [];
 	}
 }

@@ -136,6 +136,7 @@ export class WorkspaceTrustContextKeys
 	implements IWorkbenchContribution
 {
 	private readonly _ctxWorkspaceTrustEnabled: IContextKey<boolean>;
+
 	private readonly _ctxWorkspaceTrustState: IContextKey<boolean>;
 
 	constructor(
@@ -147,16 +148,21 @@ export class WorkspaceTrustContextKeys
 		workspaceTrustManagementService: IWorkspaceTrustManagementService,
 	) {
 		super();
+
 		this._ctxWorkspaceTrustEnabled =
 			WorkspaceTrustContext.IsEnabled.bindTo(contextKeyService);
+
 		this._ctxWorkspaceTrustEnabled.set(
 			workspaceTrustEnablementService.isWorkspaceTrustEnabled(),
 		);
+
 		this._ctxWorkspaceTrustState =
 			WorkspaceTrustContext.IsTrusted.bindTo(contextKeyService);
+
 		this._ctxWorkspaceTrustState.set(
 			workspaceTrustManagementService.isWorkspaceTrusted(),
 		);
+
 		this._register(
 			workspaceTrustManagementService.onDidChangeTrust((trusted) =>
 				this._ctxWorkspaceTrustState.set(trusted),
@@ -192,13 +198,16 @@ export class WorkspaceTrustRequestHandler
 		private readonly workspaceTrustRequestService: IWorkspaceTrustRequestService,
 	) {
 		super();
+
 		this.registerListeners();
 	}
+
 	private get useWorkspaceLanguage(): boolean {
 		return !isSingleFolderWorkspaceIdentifier(
 			toWorkspaceIdentifier(this.workspaceContextService.getWorkspace()),
 		);
 	}
+
 	private registerListeners(): void {
 		// Open files trust request
 		this._register(
@@ -388,6 +397,7 @@ export class WorkspaceTrustRequestHandler
 							if (!cancelButton) {
 								return undefined;
 							}
+
 							return {
 								label: cancelButton.label,
 								run: () => cancelButton.type,
@@ -412,6 +422,7 @@ export class WorkspaceTrustRequestHandler
 
 						case "Manage":
 							this.workspaceTrustRequestService.cancelWorkspaceTrustRequest();
+
 							await this.commandService.executeCommand(
 								MANAGE_TRUST_COMMAND_ID,
 							);
@@ -436,6 +447,7 @@ export class WorkspaceTrustUXHandler
 	implements IWorkbenchContribution
 {
 	private readonly entryId = `status.workspaceTrust`;
+
 	private readonly statusbarEntryAccessor: MutableDisposable<IStatusbarEntryAccessor>;
 
 	constructor(
@@ -471,6 +483,7 @@ export class WorkspaceTrustUXHandler
 		private readonly fileService: IFileService,
 	) {
 		super();
+
 		this.statusbarEntryAccessor = this._register(
 			new MutableDisposable<IStatusbarEntryAccessor>(),
 		);
@@ -482,6 +495,7 @@ export class WorkspaceTrustUXHandler
 				this.workspaceTrustEnablementService.isWorkspaceTrustEnabled()
 			) {
 				this.registerListeners();
+
 				this.updateStatusbarEntry(
 					this.workspaceTrustManagementService.isWorkspaceTrusted(),
 				);
@@ -493,6 +507,7 @@ export class WorkspaceTrustUXHandler
 						(focused) => {
 							if (focused) {
 								focusDisposable.dispose();
+
 								this.showModalOnStart();
 							}
 						},
@@ -501,17 +516,20 @@ export class WorkspaceTrustUXHandler
 			}
 		})();
 	}
+
 	private registerListeners(): void {
 		this._register(
 			this.workspaceContextService.onWillChangeWorkspaceFolders((e) => {
 				if (e.fromCache) {
 					return;
 				}
+
 				if (
 					!this.workspaceTrustEnablementService.isWorkspaceTrustEnabled()
 				) {
 					return;
 				}
+
 				const addWorkspaceFolder = async (
 					e: IWorkspaceFoldersWillChangeEvent,
 				): Promise<void> => {
@@ -561,11 +579,13 @@ export class WorkspaceTrustUXHandler
 				return e.join(addWorkspaceFolder(e));
 			}),
 		);
+
 		this._register(
 			this.workspaceTrustManagementService.onDidChangeTrust((trusted) => {
 				this.updateWorkbenchIndicators(trusted);
 			}),
 		);
+
 		this._register(
 			this.workspaceTrustRequestService.onDidInitiateWorkspaceTrustRequestOnStartup(
 				async () => {
@@ -586,9 +606,11 @@ export class WorkspaceTrustUXHandler
 					) {
 						titleString =
 							this.productService.aiGeneratedWorkspaceTrust.title;
+
 						learnMoreString =
 							this.productService.aiGeneratedWorkspaceTrust
 								.startupTrustRequestLearnMore;
+
 						trustOption =
 							this.productService.aiGeneratedWorkspaceTrust
 								.trustOption;
@@ -601,6 +623,7 @@ export class WorkspaceTrustUXHandler
 							"AI generated workspace trust dialog contents not available.",
 						);
 					}
+
 					const title =
 						titleString ??
 						(this.useWorkspaceLanguage
@@ -636,6 +659,7 @@ export class WorkspaceTrustUXHandler
 								).uri,
 							),
 						);
+
 						checkboxText = localize(
 							"checkboxString",
 							"Trust the authors of all files in the parent folder '{0}'",
@@ -712,8 +736,10 @@ export class WorkspaceTrustUXHandler
 			),
 		);
 	}
+
 	private updateWorkbenchIndicators(trusted: boolean): void {
 		const bannerItem = this.getBannerItem(!trusted);
+
 		this.updateStatusbarEntry(trusted);
 
 		if (bannerItem) {
@@ -729,10 +755,12 @@ export class WorkspaceTrustUXHandler
 		question: string,
 		trustedOption: {
 			label: string;
+
 			sublabel: string;
 		},
 		untrustedOption: {
 			label: string;
+
 			sublabel: string;
 		},
 		markdownStrings: string[],
@@ -765,6 +793,7 @@ export class WorkspaceTrustUXHandler
 					label: untrustedOption.label,
 					run: () => {
 						this.updateWorkbenchIndicators(false);
+
 						this.workspaceTrustRequestService.cancelWorkspaceTrustRequest();
 					},
 				},
@@ -781,6 +810,7 @@ export class WorkspaceTrustUXHandler
 				}),
 			},
 		});
+
 		this.storageService.store(
 			STARTUP_PROMPT_SHOWN_KEY,
 			true,
@@ -788,6 +818,7 @@ export class WorkspaceTrustUXHandler
 			StorageTarget.MACHINE,
 		);
 	}
+
 	private async showModalOnStart(): Promise<void> {
 		if (this.workspaceTrustManagementService.isWorkspaceTrusted()) {
 			this.updateWorkbenchIndicators(true);
@@ -813,11 +844,13 @@ export class WorkspaceTrustUXHandler
 
 			return;
 		}
+
 		if (this.startupPromptSetting === "never") {
 			this.updateWorkbenchIndicators(false);
 
 			return;
 		}
+
 		if (
 			this.startupPromptSetting === "once" &&
 			this.storageService.getBoolean(
@@ -833,16 +866,19 @@ export class WorkspaceTrustUXHandler
 		// Use the workspace trust request service to show modal dialog
 		this.workspaceTrustRequestService.requestWorkspaceTrustOnStartup();
 	}
+
 	private get startupPromptSetting(): "always" | "once" | "never" {
 		return this.configurationService.getValue(
 			WORKSPACE_TRUST_STARTUP_PROMPT,
 		);
 	}
+
 	private get useWorkspaceLanguage(): boolean {
 		return !isSingleFolderWorkspaceIdentifier(
 			toWorkspaceIdentifier(this.workspaceContextService.getWorkspace()),
 		);
 	}
+
 	private async isAiGeneratedWorkspace(): Promise<boolean> {
 		const aiGeneratedWorkspaces = URI.joinPath(
 			this.environmentService.workspaceStorageHome,
@@ -875,6 +911,7 @@ export class WorkspaceTrustUXHandler
 						// Ignore errors when resolving file contents
 					}
 				}
+
 				return false;
 			});
 	}
@@ -894,6 +931,7 @@ export class WorkspaceTrustUXHandler
 		if (this.bannerSetting === "untilDismissed" && dismissedRestricted) {
 			return undefined;
 		}
+
 		const actions = [
 			{
 				label: localize("restrictedModeBannerManage", "Manage"),
@@ -923,6 +961,7 @@ export class WorkspaceTrustUXHandler
 			},
 		};
 	}
+
 	private getBannerItemAriaLabels(): string {
 		switch (this.workspaceContextService.getWorkbenchState()) {
 			case WorkbenchState.EMPTY:
@@ -944,6 +983,7 @@ export class WorkspaceTrustUXHandler
 				);
 		}
 	}
+
 	private getBannerItemMessages(): string {
 		switch (this.workspaceContextService.getWorkbenchState()) {
 			case WorkbenchState.EMPTY:
@@ -965,6 +1005,7 @@ export class WorkspaceTrustUXHandler
 				);
 		}
 	}
+
 	private get bannerSetting(): "always" | "untilDismissed" | "never" {
 		const result = this.configurationService.getValue<
 			"always" | "untilDismissed" | "never"
@@ -977,6 +1018,7 @@ export class WorkspaceTrustUXHandler
 		) {
 			return "never";
 		}
+
 		return result;
 	}
 	//#endregion
@@ -992,6 +1034,7 @@ export class WorkspaceTrustUXHandler
 					"status.ariaUntrustedWindow",
 					"Restricted Mode: Some features are disabled because this window is not trusted.",
 				);
+
 				toolTip = {
 					value: localize(
 						{
@@ -1010,11 +1053,13 @@ export class WorkspaceTrustUXHandler
 
 				break;
 			}
+
 			case WorkbenchState.FOLDER: {
 				ariaLabel = localize(
 					"status.ariaUntrustedFolder",
 					"Restricted Mode: Some features are disabled because this folder is not trusted.",
 				);
+
 				toolTip = {
 					value: localize(
 						{
@@ -1033,11 +1078,13 @@ export class WorkspaceTrustUXHandler
 
 				break;
 			}
+
 			case WorkbenchState.WORKSPACE: {
 				ariaLabel = localize(
 					"status.ariaUntrustedWorkspace",
 					"Restricted Mode: Some features are disabled because this workspace is not trusted.",
 				);
+
 				toolTip = {
 					value: localize(
 						{
@@ -1057,6 +1104,7 @@ export class WorkspaceTrustUXHandler
 				break;
 			}
 		}
+
 		return {
 			name: localize("status.WorkspaceTrust", "Workspace Trust"),
 			text: `$(shield) ${localize("untrusted", "Restricted Mode")}`,
@@ -1066,14 +1114,17 @@ export class WorkspaceTrustUXHandler
 			kind: "prominent",
 		};
 	}
+
 	private updateStatusbarEntry(trusted: boolean): void {
 		if (trusted && this.statusbarEntryAccessor.value) {
 			this.statusbarEntryAccessor.clear();
 
 			return;
 		}
+
 		if (!trusted && !this.statusbarEntryAccessor.value) {
 			const entry = this.getRestrictedModeStatusbarEntry();
+
 			this.statusbarEntryAccessor.value = this.statusbarService.addEntry(
 				entry,
 				this.entryId,
@@ -1101,9 +1152,11 @@ class WorkspaceTrustEditorInputSerializer implements IEditorSerializer {
 	canSerialize(editorInput: EditorInput): boolean {
 		return true;
 	}
+
 	serialize(input: WorkspaceTrustEditorInput): string {
 		return "";
 	}
+
 	deserialize(
 		instantiationService: IInstantiationService,
 	): WorkspaceTrustEditorInput {
@@ -1153,6 +1206,7 @@ registerAction2(
 				f1: true,
 			});
 		}
+
 		run(accessor: ServicesAccessor) {
 			accessor.get(IPreferencesService).openUserSettings({
 				jsonEditor: false,
@@ -1182,6 +1236,7 @@ registerAction2(
 				f1: true,
 			});
 		}
+
 		run(accessor: ServicesAccessor) {
 			const editorService = accessor.get(IEditorService);
 
@@ -1190,6 +1245,7 @@ registerAction2(
 			const input = instantiationService.createInstance(
 				WorkspaceTrustEditorInput,
 			);
+
 			editorService.openEditor(input, { pinned: true });
 
 			return;
@@ -1320,12 +1376,15 @@ class WorkspaceTrustTelemetryContribution
 		private readonly workspaceTrustManagementService: IWorkspaceTrustManagementService,
 	) {
 		super();
+
 		this.workspaceTrustManagementService.workspaceTrustInitialized.then(
 			() => {
 				this.logInitialWorkspaceTrustInfo();
+
 				this.logWorkspaceTrust(
 					this.workspaceTrustManagementService.isWorkspaceTrusted(),
 				);
+
 				this._register(
 					this.workspaceTrustManagementService.onDidChangeTrust(
 						(isTrusted) => this.logWorkspaceTrust(isTrusted),
@@ -1334,22 +1393,30 @@ class WorkspaceTrustTelemetryContribution
 			},
 		);
 	}
+
 	private logInitialWorkspaceTrustInfo(): void {
 		if (!this.workspaceTrustEnablementService.isWorkspaceTrustEnabled()) {
 			const disabledByCliFlag =
 				this.environmentService.disableWorkspaceTrust;
+
 			type WorkspaceTrustDisabledEventClassification = {
 				owner: "sbatten";
+
 				comment: "Logged when workspace trust is disabled";
+
 				reason: {
 					classification: "SystemMetaData";
+
 					purpose: "FeatureInsight";
+
 					comment: "The reason workspace trust is disabled. e.g. cli or setting";
 				};
 			};
+
 			type WorkspaceTrustDisabledEvent = {
 				reason: "setting" | "cli";
 			};
+
 			this.telemetryService.publicLog2<
 				WorkspaceTrustDisabledEvent,
 				WorkspaceTrustDisabledEventClassification
@@ -1359,18 +1426,25 @@ class WorkspaceTrustTelemetryContribution
 
 			return;
 		}
+
 		type WorkspaceTrustInfoEventClassification = {
 			owner: "sbatten";
+
 			comment: "Information about the workspaces trusted on the machine";
+
 			trustedFoldersCount: {
 				classification: "SystemMetaData";
+
 				purpose: "FeatureInsight";
+
 				comment: "The number of trusted folders on the machine";
 			};
 		};
+
 		type WorkspaceTrustInfoEvent = {
 			trustedFoldersCount: number;
 		};
+
 		this.telemetryService.publicLog2<
 			WorkspaceTrustInfoEvent,
 			WorkspaceTrustInfoEventClassification
@@ -1379,28 +1453,40 @@ class WorkspaceTrustTelemetryContribution
 				this.workspaceTrustManagementService.getTrustedUris().length,
 		});
 	}
+
 	private async logWorkspaceTrust(isTrusted: boolean): Promise<void> {
 		if (!this.workspaceTrustEnablementService.isWorkspaceTrustEnabled()) {
 			return;
 		}
+
 		type WorkspaceTrustStateChangedEvent = {
 			workspaceId: string;
+
 			isTrusted: boolean;
 		};
+
 		type WorkspaceTrustStateChangedEventClassification = {
 			owner: "sbatten";
+
 			comment: "Logged when the workspace transitions between trusted and restricted modes";
+
 			workspaceId: {
 				classification: "SystemMetaData";
+
 				purpose: "FeatureInsight";
+
 				comment: "An id of the workspace";
 			};
+
 			isTrusted: {
 				classification: "SystemMetaData";
+
 				purpose: "FeatureInsight";
+
 				comment: "true if the workspace is trusted";
 			};
 		};
+
 		this.telemetryService.publicLog2<
 			WorkspaceTrustStateChangedEvent,
 			WorkspaceTrustStateChangedEventClassification
@@ -1412,26 +1498,39 @@ class WorkspaceTrustTelemetryContribution
 		if (isTrusted) {
 			type WorkspaceTrustFolderInfoEventClassification = {
 				owner: "sbatten";
+
 				comment: "Some metrics on the trusted workspaces folder structure";
+
 				trustedFolderDepth: {
 					classification: "SystemMetaData";
+
 					purpose: "FeatureInsight";
+
 					comment: "The number of directories deep of the trusted path";
 				};
+
 				workspaceFolderDepth: {
 					classification: "SystemMetaData";
+
 					purpose: "FeatureInsight";
+
 					comment: "The number of directories deep of the workspace path";
 				};
+
 				delta: {
 					classification: "SystemMetaData";
+
 					purpose: "FeatureInsight";
+
 					comment: "The difference between the trusted path and the workspace path directories depth";
 				};
 			};
+
 			type WorkspaceTrustFolderInfoEvent = {
 				trustedFolderDepth: number;
+
 				workspaceFolderDepth: number;
+
 				delta: number;
 			};
 
@@ -1442,8 +1541,10 @@ class WorkspaceTrustTelemetryContribution
 
 				while (dirname(resolvedPath) !== resolvedPath && depth < 100) {
 					resolvedPath = dirname(resolvedPath);
+
 					depth++;
 				}
+
 				return depth;
 			};
 
@@ -1457,11 +1558,13 @@ class WorkspaceTrustTelemetryContribution
 				if (!trusted) {
 					continue;
 				}
+
 				const workspaceFolderDepth = getDepth(folder.uri.fsPath);
 
 				const trustedFolderDepth = getDepth(uri.fsPath);
 
 				const delta = workspaceFolderDepth - trustedFolderDepth;
+
 				this.telemetryService.publicLog2<
 					WorkspaceTrustFolderInfoEvent,
 					WorkspaceTrustFolderInfoEventClassification

@@ -12,6 +12,7 @@ function dec2hex(dec: number): string {
 }
 export function generateCodeVerifier(): string {
 	const array = new Uint32Array(56 / 2);
+
 	crypto.getRandomValues(array);
 
 	return Array.from(array, dec2hex).join("");
@@ -33,6 +34,7 @@ function base64urlencode(a: ArrayBuffer) {
 	for (let i = 0; i < len; i++) {
 		str += String.fromCharCode(bytes[i]);
 	}
+
 	return base64Encode(str)
 		.replace(/\+/g, "-")
 		.replace(/\//g, "_")

@@ -51,6 +51,7 @@ export namespace TunnelDtoConverter {
 			protocol: tunnel.protocol,
 		};
 	}
+
 	export function fromServiceTunnel(tunnel: RemoteTunnel): TunnelDto {
 		return {
 			remoteAddress: {
@@ -69,28 +70,34 @@ export namespace TunnelDtoConverter {
 export interface Tunnel extends vscode.Disposable {
 	remote: {
 		port: number;
+
 		host: string;
 	};
+
 	localAddress: string;
 }
 export interface IExtHostTunnelService extends ExtHostTunnelServiceShape {
 	readonly _serviceBrand: undefined;
+
 	openTunnel(
 		extension: IExtensionDescription,
 		forward: TunnelOptions,
 	): Promise<vscode.Tunnel | undefined>;
 
 	getTunnels(): Promise<vscode.TunnelDescription[]>;
+
 	onDidChangeTunnels: vscode.Event<void>;
 
 	setTunnelFactory(
 		provider: vscode.RemoteAuthorityResolver | undefined,
 		managedRemoteAuthority: vscode.ManagedResolvedAuthority | undefined,
 	): Promise<IDisposable>;
+
 	registerPortsAttributesProvider(
 		portSelector: PortAttributesSelector,
 		provider: vscode.PortAttributesProvider,
 	): IDisposable;
+
 	registerTunnelProvider(
 		provider: vscode.TunnelProvider,
 		information: vscode.TunnelInformation,
@@ -105,7 +112,9 @@ export class ExtHostTunnelService
 	implements IExtHostTunnelService
 {
 	readonly _serviceBrand: undefined;
+
 	protected readonly _proxy: MainThreadTunnelServiceShape;
+
 	private _forwardPortProvider:
 		| ((
 				tunnelOptions: TunnelOptions,
@@ -113,6 +122,7 @@ export class ExtHostTunnelService
 				token?: vscode.CancellationToken,
 		  ) => Thenable<vscode.Tunnel | undefined> | undefined)
 		| undefined;
+
 	private _showCandidatePort: (
 		host: string,
 		port: number,
@@ -120,23 +130,30 @@ export class ExtHostTunnelService
 	) => Thenable<boolean> = () => {
 		return Promise.resolve(true);
 	};
+
 	private _extensionTunnels: Map<
 		string,
 		Map<
 			number,
 			{
 				tunnel: vscode.Tunnel;
+
 				disposeListener: IDisposable;
 			}
 		>
 	> = new Map();
+
 	private _onDidChangeTunnels: Emitter<void> = new Emitter<void>();
+
 	onDidChangeTunnels: vscode.Event<void> = this._onDidChangeTunnels.event;
+
 	private _providerHandleCounter: number = 0;
+
 	private _portAttributesProviders: Map<
 		number,
 		{
 			provider: vscode.PortAttributesProvider;
+
 			selector: PortAttributesSelector;
 		}
 	> = new Map();
@@ -150,8 +167,10 @@ export class ExtHostTunnelService
 		protected readonly logService: ILogService,
 	) {
 		super();
+
 		this._proxy = extHostRpc.getProxy(MainContext.MainThreadTunnelService);
 	}
+
 	async openTunnel(
 		extension: IExtensionDescription,
 		forward: TunnelOptions,
@@ -173,18 +192,23 @@ export class ExtHostTunnelService
 					return this._proxy.$closeTunnel(tunnel.remoteAddress);
 				},
 			);
+
 			this._register(disposableTunnel);
 
 			return disposableTunnel;
 		}
+
 		return undefined;
 	}
+
 	async getTunnels(): Promise<vscode.TunnelDescription[]> {
 		return this._proxy.$getTunnels();
 	}
+
 	private nextPortAttributesProviderHandle(): number {
 		return this._providerHandleCounter++;
 	}
+
 	registerPortsAttributesProvider(
 		portSelector: PortAttributesSelector,
 		provider: vscode.PortAttributesProvider,
@@ -197,11 +221,14 @@ export class ExtHostTunnelService
 				"PortAttributesProvider must specify either a portRange or a commandPattern",
 			);
 		}
+
 		const providerHandle = this.nextPortAttributesProviderHandle();
+
 		this._portAttributesProviders.set(providerHandle, {
 			selector: portSelector,
 			provider,
 		});
+
 		this._proxy.$registerPortsAttributesProvider(
 			portSelector,
 			providerHandle,
@@ -209,9 +236,11 @@ export class ExtHostTunnelService
 
 		return new types.Disposable(() => {
 			this._portAttributesProviders.delete(providerHandle);
+
 			this._proxy.$unregisterPortsAttributesProvider(providerHandle);
 		});
 	}
+
 	async $providePortAttributes(
 		handles: number[],
 		ports: number[],
@@ -221,6 +250,7 @@ export class ExtHostTunnelService
 	): Promise<ProvidedPortAttributes[]> {
 		const providedAttributes: {
 			providedAttributes: vscode.PortAttributes | null | undefined;
+
 			port: number;
 		}[] = [];
 
@@ -230,6 +260,7 @@ export class ExtHostTunnelService
 			if (!provider) {
 				return [];
 			}
+
 			providedAttributes.push(
 				...(await Promise.all(
 					ports.map(async (port) => {
@@ -256,14 +287,17 @@ export class ExtHostTunnelService
 								) => vscode.ProviderResult<vscode.PortAttributes>
 							)(port, pid, commandLine, cancellationToken);
 						}
+
 						return { providedAttributes, port };
 					}),
 				)),
 			);
 		}
+
 		const allAttributes = <
 			{
 				providedAttributes: vscode.PortAttributes;
+
 				port: number;
 			}[]
 		>providedAttributes.filter((attribute) => !!attribute.providedAttributes);
@@ -281,7 +315,9 @@ export class ExtHostTunnelService
 				})
 			: [];
 	}
+
 	async $registerCandidateFinder(_enable: boolean): Promise<void> {}
+
 	registerTunnelProvider(
 		provider: vscode.TunnelProvider,
 		information: vscode.TunnelInformation,
@@ -291,6 +327,7 @@ export class ExtHostTunnelService
 				"A tunnel provider has already been registered. Only the first tunnel provider to be registered will be used.",
 			);
 		}
+
 		this._forwardPortProvider = async (
 			tunnelOptions: TunnelOptions,
 			tunnelCreationOptions: TunnelCreationOptions,
@@ -314,11 +351,13 @@ export class ExtHostTunnelService
 							: information.tunnelFeatures.protocol,
 				}
 			: undefined;
+
 		this._proxy.$setTunnelProvider(tunnelFeatures, true);
 
 		return Promise.resolve(
 			toDisposable(() => {
 				this._forwardPortProvider = undefined;
+
 				this._proxy.$setTunnelProvider(undefined, false);
 			}),
 		);
@@ -343,10 +382,13 @@ export class ExtHostTunnelService
 					provider.candidatePortSource,
 				);
 			}
+
 			if (provider.showCandidatePort) {
 				this._showCandidatePort = provider.showCandidatePort;
+
 				this._proxy.$setCandidateFilter();
 			}
+
 			const tunnelFactory =
 				provider.tunnelFactory ??
 				(managedRemoteAuthority
@@ -382,6 +424,7 @@ export class ExtHostTunnelService
 						},
 					];
 				}
+
 				const tunnelFeatures = provider.tunnelFeatures
 					? {
 							elevation: !!provider.tunnelFeatures?.elevation,
@@ -390,6 +433,7 @@ export class ExtHostTunnelService
 							protocol: true,
 						}
 					: undefined;
+
 				this._proxy.$setTunnelProvider(
 					tunnelFeatures,
 					!!provider.tunnelFactory,
@@ -398,18 +442,22 @@ export class ExtHostTunnelService
 		} else {
 			this._forwardPortProvider = undefined;
 		}
+
 		return toDisposable(() => {
 			this._forwardPortProvider = undefined;
 		});
 	}
+
 	protected makeManagedTunnelFactory(
 		_authority: vscode.ManagedResolvedAuthority,
 	): vscode.RemoteAuthorityResolver["tunnelFactory"] {
 		return undefined; // may be overridden
 	}
+
 	async $closeTunnel(
 		remote: {
 			host: string;
+
 			port: number;
 		},
 		silent?: boolean,
@@ -421,14 +469,18 @@ export class ExtHostTunnelService
 				if (silent) {
 					hostMap.get(remote.port)!.disposeListener.dispose();
 				}
+
 				await hostMap.get(remote.port)!.tunnel.dispose();
+
 				hostMap.delete(remote.port);
 			}
 		}
 	}
+
 	async $onDidTunnelsChange(): Promise<void> {
 		this._onDidChangeTunnels.fire();
 	}
+
 	async $forwardPort(
 		tunnelOptions: TunnelOptions,
 		tunnelCreationOptions: TunnelCreationOptions,
@@ -443,12 +495,14 @@ export class ExtHostTunnelService
 					tunnelOptions,
 					tunnelCreationOptions,
 				);
+
 				this.logService.trace(
 					"ForwardedPorts: (ExtHostTunnelService) Got tunnel promise from provider.",
 				);
 
 				if (providedPort !== undefined) {
 					const tunnel = await providedPort;
+
 					this.logService.trace(
 						"ForwardedPorts: (ExtHostTunnelService) Successfully awaited tunnel from provider.",
 					);
@@ -460,6 +514,7 @@ export class ExtHostTunnelService
 
 						return undefined;
 					}
+
 					if (
 						!this._extensionTunnels.has(
 							tunnelOptions.remoteAddress.host,
@@ -470,6 +525,7 @@ export class ExtHostTunnelService
 							new Map(),
 						);
 					}
+
 					const disposeListener = this._register(
 						tunnel.onDidDispose(() => {
 							this.logService.trace(
@@ -481,6 +537,7 @@ export class ExtHostTunnelService
 							);
 						}),
 					);
+
 					this._extensionTunnels
 						.get(tunnelOptions.remoteAddress.host)!
 						.set(tunnelOptions.remoteAddress.port, {
@@ -504,8 +561,10 @@ export class ExtHostTunnelService
 				}
 			}
 		}
+
 		return undefined;
 	}
+
 	async $applyCandidateFilter(
 		candidates: CandidatePort[],
 	): Promise<CandidatePort[]> {
@@ -520,6 +579,7 @@ export class ExtHostTunnelService
 		);
 
 		const result = candidates.filter((candidate, index) => filter[index]);
+
 		this.logService.trace(
 			`ForwardedPorts: (ExtHostTunnelService) filtered from ${candidates.map((port) => port.port).join(", ")} to ${result.map((port) => port.port).join(", ")}`,
 		);

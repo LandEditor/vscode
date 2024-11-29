@@ -51,6 +51,7 @@ export interface IAccessibleViewOptions {
 	 * Defaults to markdown
 	 */
 	language?: string;
+
 	type: AccessibleViewType;
 	/**
 	 * By default, places the cursor on the top line of the accessible view.
@@ -80,6 +81,7 @@ export interface IAccessibleViewContentProvider
 	extends IBasicContentProvider,
 		IDisposable {
 	id: AccessibleViewProviderId;
+
 	verbositySettingKey: string;
 	/**
 	 * Note that a Codicon class should be provided for each action.
@@ -97,24 +99,35 @@ export interface IAccessibleViewContentProvider
 }
 export interface IAccessibleViewSymbol extends IPickerQuickAccessItem {
 	markdownToParse?: string;
+
 	firstListItem?: string;
+
 	lineNumber?: number;
+
 	endLineNumber?: number;
 }
 export interface IPosition {
 	lineNumber: number;
+
 	column: number;
 }
 export interface IAccessibleViewService {
 	readonly _serviceBrand: undefined;
 	// The provider will be disposed when the view is closed
 	show(provider: AccesibleViewContentProvider, position?: IPosition): void;
+
 	showLastProvider(id: AccessibleViewProviderId): void;
+
 	showAccessibleViewHelp(): void;
+
 	next(): void;
+
 	previous(): void;
+
 	navigateToCodeBlock(type: "next" | "previous"): void;
+
 	goToSymbol(): void;
+
 	disableHint(): void;
 
 	getPosition(id: AccessibleViewProviderId): IPosition | undefined;
@@ -129,13 +142,18 @@ export interface IAccessibleViewService {
 	getOpenAriaHint(verbositySettingKey: string): string | null;
 
 	getCodeBlockContext(): ICodeBlockActionContext | undefined;
+
 	configureKeybindings(unassigned: boolean): void;
+
 	openHelpLink(): void;
 }
 export interface ICodeBlockActionContext {
 	code: string;
+
 	languageId?: string;
+
 	codeBlockIndex: number;
+
 	element: unknown;
 }
 export type AccesibleViewContentProvider =
@@ -184,12 +202,20 @@ export class ExtensionContentProvider
 }
 export interface IBasicContentProvider extends IDisposable {
 	id: string;
+
 	options: IAccessibleViewOptions;
+
 	onClose(): void;
+
 	provideContent(): string;
+
 	onOpen?(): void;
+
 	actions?: IAction[];
+
 	providePreviousContent?(): void;
+
 	provideNextContent?(): void;
+
 	onDidChangeContent?: Event<void>;
 }

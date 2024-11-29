@@ -24,6 +24,7 @@ export interface IPostCommitCommandsProviderRegistry {
 	readonly onDidChangePostCommitCommandsProviders: Event<void>;
 
 	getPostCommitCommandsProviders(): PostCommitCommandsProvider[];
+
 	registerPostCommitCommandsProvider(
 		provider: PostCommitCommandsProvider,
 	): Disposable;
@@ -76,10 +77,12 @@ export class GitPostCommitCommandsProvider
 			pushCommandTooltip = !alwaysCommitToNewBranch
 				? l10n.t("Committing & Pushing Changes...")
 				: l10n.t("Committing to New Branch & Pushing Changes...");
+
 			syncCommandTooltip = !alwaysCommitToNewBranch
 				? l10n.t("Committing & Synchronizing Changes...")
 				: l10n.t("Committing to New Branch & Synchronizing Changes...");
 		}
+
 		return [
 			{
 				command: "git.push",
@@ -100,6 +103,7 @@ export class CommitCommandsCenter {
 	get onDidChange(): Event<void> {
 		return this._onDidChange.event;
 	}
+
 	private disposables: Disposable[] = [];
 
 	set postCommitCommand(command: string | null | undefined) {
@@ -108,10 +112,12 @@ export class CommitCommandsCenter {
 			// so there is no need to store the post-commit command
 			return;
 		}
+
 		this.globalState
 			.update(this.getGlobalStateKey(), command)
 			.then(() => this._onDidChange.fire());
 	}
+
 	constructor(
 		private readonly globalState: Memento,
 		private readonly repository: Repository,
@@ -130,6 +136,7 @@ export class CommitCommandsCenter {
 					);
 				}
 			};
+
 			this.disposables.push(
 				workspace.onDidChangeConfiguration((e) => {
 					if (
@@ -142,7 +149,9 @@ export class CommitCommandsCenter {
 					}
 				}),
 			);
+
 			onRememberPostCommitCommandChange();
+
 			this.disposables.push(
 				postCommitCommandsProviderRegistry.onDidChangePostCommitCommandsProviders(
 					() => this._onDidChange.fire(),
@@ -150,6 +159,7 @@ export class CommitCommandsCenter {
 			);
 		});
 	}
+
 	getPrimaryCommand(): Command {
 		const allCommands = this.getSecondaryCommands()
 			.map((c) => c)
@@ -173,6 +183,7 @@ export class CommitCommandsCenter {
 			this.getCommitCommands()[0]
 		);
 	}
+
 	getSecondaryCommands(): Command[][] {
 		const commandGroups: Command[][] = [];
 
@@ -180,6 +191,7 @@ export class CommitCommandsCenter {
 			const commands = provider.getCommands(
 				new ApiRepository(this.repository),
 			);
+
 			commandGroups.push(
 				(commands ?? []).map((c) => {
 					return {
@@ -191,11 +203,14 @@ export class CommitCommandsCenter {
 				}),
 			);
 		}
+
 		if (commandGroups.length > 0) {
 			commandGroups.splice(0, 0, this.getCommitCommands());
 		}
+
 		return commandGroups;
 	}
+
 	async executePostCommitCommand(
 		command: string | null | undefined,
 	): Promise<void> {
@@ -204,15 +219,18 @@ export class CommitCommandsCenter {
 				// No post-commit command
 				return;
 			}
+
 			if (command === undefined) {
 				// Commit WAS NOT initiated using the action button (ex: keybinding, toolbar action,
 				// command palette) so we have to honour the default post commit command (memento/setting).
 				const primaryCommand = this.getPrimaryCommand();
+
 				command =
 					primaryCommand.arguments?.length === 2
 						? primaryCommand.arguments[1]
 						: null;
 			}
+
 			if (command !== null) {
 				await commands.executeCommand(
 					command!.toString(),
@@ -227,13 +245,16 @@ export class CommitCommandsCenter {
 					this.getGlobalStateKey(),
 					undefined,
 				);
+
 				this._onDidChange.fire();
 			}
 		}
 	}
+
 	private getGlobalStateKey(): string {
 		return `postCommitCommand:${this.repository.root}`;
 	}
+
 	private getCommitCommands(): Command[] {
 		const config = workspace.getConfiguration(
 			"git",
@@ -272,6 +293,7 @@ export class CommitCommandsCenter {
 				? l10n.t("Committing Changes...")
 				: l10n.t("Committing Changes to New Branch...");
 		}
+
 		return [
 			{
 				command: "git.commit",
@@ -287,6 +309,7 @@ export class CommitCommandsCenter {
 			},
 		];
 	}
+
 	private getPostCommitCommandStringFromSetting(): string | undefined {
 		const config = workspace.getConfiguration(
 			"git",
@@ -301,9 +324,11 @@ export class CommitCommandsCenter {
 			? `git.${postCommitCommandSetting}`
 			: undefined;
 	}
+
 	private getPostCommitCommandStringFromStorage(): string | null | undefined {
 		return this.globalState.get<string | null>(this.getGlobalStateKey());
 	}
+
 	private async migratePostCommitCommandStorage(): Promise<void> {
 		const postCommitCommandString = this.globalState.get<string | null>(
 			this.repository.root,
@@ -314,9 +339,11 @@ export class CommitCommandsCenter {
 				this.getGlobalStateKey(),
 				postCommitCommandString,
 			);
+
 			await this.globalState.update(this.repository.root, undefined);
 		}
 	}
+
 	private isRememberPostCommitCommandEnabled(): boolean {
 		const config = workspace.getConfiguration(
 			"git",
@@ -325,6 +352,7 @@ export class CommitCommandsCenter {
 
 		return config.get<boolean>("rememberPostCommitCommand") === true;
 	}
+
 	dispose(): void {
 		this.disposables = dispose(this.disposables);
 	}

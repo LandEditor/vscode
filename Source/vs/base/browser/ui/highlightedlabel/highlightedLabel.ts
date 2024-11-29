@@ -16,7 +16,9 @@ import { renderLabelWithIcons } from "../iconLabel/iconLabels.js";
  */
 export interface IHighlight {
 	start: number;
+
 	end: number;
+
 	readonly extraClasses?: readonly string[];
 }
 export interface IHighlightedLabelOptions {
@@ -24,6 +26,7 @@ export interface IHighlightedLabelOptions {
 	 * Whether the label supports rendering icons.
 	 */
 	readonly supportIcons?: boolean;
+
 	readonly hoverDelegate?: IHoverDelegate;
 }
 /**
@@ -32,11 +35,17 @@ export interface IHighlightedLabelOptions {
  */
 export class HighlightedLabel extends Disposable {
 	private readonly domNode: HTMLElement;
+
 	private text: string = "";
+
 	private title: string = "";
+
 	private highlights: readonly IHighlight[] = [];
+
 	private supportIcons: boolean;
+
 	private didEverRender: boolean = false;
+
 	private customHover: IManagedHover | undefined;
 	/**
 	 * Create a new {@link HighlightedLabel}.
@@ -48,7 +57,9 @@ export class HighlightedLabel extends Disposable {
 		private readonly options?: IHighlightedLabelOptions,
 	) {
 		super();
+
 		this.supportIcons = options?.supportIcons ?? false;
+
 		this.domNode = dom.append(
 			container,
 			dom.$("span.monaco-highlighted-label"),
@@ -78,10 +89,12 @@ export class HighlightedLabel extends Disposable {
 		if (!text) {
 			text = "";
 		}
+
 		if (escapeNewLines) {
 			// adjusts highlights inplace
 			text = HighlightedLabel.escapeNewLines(text, highlights);
 		}
+
 		if (
 			this.didEverRender &&
 			this.text === text &&
@@ -90,11 +103,16 @@ export class HighlightedLabel extends Disposable {
 		) {
 			return;
 		}
+
 		this.text = text;
+
 		this.title = title;
+
 		this.highlights = highlights;
+
 		this.render();
 	}
+
 	private render(): void {
 		const children: Array<HTMLSpanElement | string> = [];
 
@@ -104,6 +122,7 @@ export class HighlightedLabel extends Disposable {
 			if (highlight.end === highlight.start) {
 				continue;
 			}
+
 			if (pos < highlight.start) {
 				const substring = this.text.substring(pos, highlight.start);
 
@@ -112,8 +131,10 @@ export class HighlightedLabel extends Disposable {
 				} else {
 					children.push(substring);
 				}
+
 				pos = highlight.start;
 			}
+
 			const substring = this.text.substring(pos, highlight.end);
 
 			const element = dom.$(
@@ -127,9 +148,12 @@ export class HighlightedLabel extends Disposable {
 			if (highlight.extraClasses) {
 				element.classList.add(...highlight.extraClasses);
 			}
+
 			children.push(element);
+
 			pos = highlight.end;
 		}
+
 		if (pos < this.text.length) {
 			const substring = this.text.substring(pos);
 
@@ -139,6 +163,7 @@ export class HighlightedLabel extends Disposable {
 				children.push(substring);
 			}
 		}
+
 		dom.reset(this.domNode, ...children);
 
 		if (this.options?.hoverDelegate?.showNativeHover) {
@@ -149,6 +174,7 @@ export class HighlightedLabel extends Disposable {
 				const hoverDelegate =
 					this.options?.hoverDelegate ??
 					getDefaultHoverDelegate("mouse");
+
 				this.customHover = this._register(
 					getBaseLayerHoverDelegate().setupManagedHover(
 						hoverDelegate,
@@ -160,8 +186,10 @@ export class HighlightedLabel extends Disposable {
 				this.customHover.update(this.title);
 			}
 		}
+
 		this.didEverRender = true;
 	}
+
 	static escapeNewLines(
 		text: string,
 		highlights: readonly IHighlight[],
@@ -172,19 +200,23 @@ export class HighlightedLabel extends Disposable {
 
 		return text.replace(/\r\n|\r|\n/g, (match, offset) => {
 			extra = match === "\r\n" ? -1 : 0;
+
 			offset += total;
 
 			for (const highlight of highlights) {
 				if (highlight.end <= offset) {
 					continue;
 				}
+
 				if (highlight.start >= offset) {
 					highlight.start += extra;
 				}
+
 				if (highlight.end >= offset) {
 					highlight.end += extra;
 				}
 			}
+
 			total += extra;
 
 			return "\u23CE";

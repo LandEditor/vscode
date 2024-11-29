@@ -16,6 +16,7 @@ function registerOpenTerminalAtIndexCommands(): void {
 		const terminalIndex = i;
 
 		const visibleIndex = i + 1;
+
 		KeybindingsRegistry.registerCommandAndKeybindingRule({
 			id: `workbench.action.terminal.focusAtIndex${visibleIndex}`,
 			weight: KeybindingWeight.WorkbenchContrib,

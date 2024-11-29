@@ -35,6 +35,7 @@ function collect(
 		) {
 			result.push(node);
 		}
+
 		if (
 			stepResult === CollectStepResult.YesAndRecurse ||
 			stepResult === CollectStepResult.NoAndRecurse
@@ -42,6 +43,7 @@ function collect(
 			ts.forEachChild(node, loop);
 		}
 	}
+
 	loop(node);
 
 	return result;
@@ -52,6 +54,7 @@ function clone<T extends object>(object: T): T {
 	for (const id in object) {
 		result[id] = object[id];
 	}
+
 	return result;
 }
 /**
@@ -77,6 +80,7 @@ export function nls(options: {
 							),
 						);
 					}
+
 					let source = f.sourceMap.sources[0];
 
 					if (!source) {
@@ -87,11 +91,13 @@ export function nls(options: {
 							),
 						);
 					}
+
 					const root = f.sourceMap.sourceRoot;
 
 					if (root) {
 						source = path.join(root, source);
 					}
+
 					const typescript = f.sourceMap.sourcesContent![0];
 
 					if (!typescript) {
@@ -102,7 +108,9 @@ export function nls(options: {
 							),
 						);
 					}
+
 					base = f.base;
+
 					this.emit("data", _nls.patchFile(f, typescript, options));
 				},
 				function () {
@@ -147,6 +155,7 @@ globalThis._VSCODE_NLS_MESSAGES=${JSON.stringify(_nls.allNLSMessages)};`),
 					]) {
 						this.emit("data", file);
 					}
+
 					this.emit("end");
 				},
 			),
@@ -176,6 +185,7 @@ module _nls {
 	> = [];
 
 	let allNLSMessagesIndex = 0;
+
 	type ILocalizeKey =
 		| string
 		| {
@@ -183,27 +193,40 @@ module _nls {
 		  }; // key might contain metadata for translators and then is not just a string
 	interface INlsPatchResult {
 		javascript: string;
+
 		sourcemap: sm.RawSourceMap;
+
 		nlsMessages?: string[];
+
 		nlsKeys?: ILocalizeKey[];
 	}
+
 	interface ISpan {
 		start: ts.LineAndCharacter;
+
 		end: ts.LineAndCharacter;
 	}
+
 	interface ILocalizeCall {
 		keySpan: ISpan;
+
 		key: string;
+
 		valueSpan: ISpan;
+
 		value: string;
 	}
+
 	interface ILocalizeAnalysisResult {
 		localizeCalls: ILocalizeCall[];
 	}
+
 	interface IPatch {
 		span: ISpan;
+
 		content: string;
 	}
+
 	function fileFrom(file: File, contents: string, path: string = file.path) {
 		return new File({
 			contents: Buffer.from(contents),
@@ -212,17 +235,21 @@ module _nls {
 			path: path,
 		});
 	}
+
 	function mappedPositionFrom(
 		source: string,
 		lc: ts.LineAndCharacter,
 	): sm.MappedPosition {
 		return { source, line: lc.line + 1, column: lc.character };
 	}
+
 	function lcFrom(position: sm.Position): ts.LineAndCharacter {
 		return { line: position.line - 1, character: position.column };
 	}
+
 	class SingleFileServiceHost implements ts.LanguageServiceHost {
 		private file: ts.IScriptSnapshot;
+
 		private lib: ts.IScriptSnapshot;
 
 		constructor(
@@ -232,8 +259,10 @@ module _nls {
 			contents: string,
 		) {
 			this.file = ts.ScriptSnapshot.fromString(contents);
+
 			this.lib = ts.ScriptSnapshot.fromString("");
 		}
+
 		getCompilationSettings = () => this.options;
 
 		getScriptFileNames = () => [this.filename];
@@ -246,16 +275,20 @@ module _nls {
 		getCurrentDirectory = () => "";
 
 		getDefaultLibFileName = () => "lib.d.ts";
+
 		readFile(path: string, _encoding?: string): string | undefined {
 			if (path === this.filename) {
 				return this.file.getText(0, this.file.getLength());
 			}
+
 			return undefined;
 		}
+
 		fileExists(path: string): boolean {
 			return path === this.filename;
 		}
 	}
+
 	function isCallExpressionWithinTextSpanCollectStep(
 		ts: typeof import("typescript"),
 		textSpan: ts.TextSpan,
@@ -269,10 +302,12 @@ module _nls {
 		) {
 			return CollectStepResult.No;
 		}
+
 		return node.kind === ts.SyntaxKind.CallExpression
 			? CollectStepResult.YesAndRecurse
 			: CollectStepResult.NoAndRecurse;
 	}
+
 	function analyze(
 		ts: typeof import("typescript"),
 		contents: string,
@@ -454,8 +489,10 @@ module _nls {
 			localizeCalls: localizeCalls.toArray(),
 		};
 	}
+
 	class TextModel {
 		private lines: string[];
+
 		private lineEndings: string[];
 
 		constructor(contents: string) {
@@ -464,25 +501,34 @@ module _nls {
 			let index = 0;
 
 			let match: RegExpExecArray | null;
+
 			this.lines = [];
+
 			this.lineEndings = [];
 
 			while ((match = regex.exec(contents))) {
 				this.lines.push(contents.substring(index, match.index));
+
 				this.lineEndings.push(match[0]);
+
 				index = regex.lastIndex;
 			}
+
 			if (contents.length > 0) {
 				this.lines.push(contents.substring(index, contents.length));
+
 				this.lineEndings.push("");
 			}
 		}
+
 		public get(index: number): string {
 			return this.lines[index];
 		}
+
 		public set(index: number, line: string): void {
 			this.lines[index] = line;
 		}
+
 		public get lineCount(): number {
 			return this.lines.length;
 		}
@@ -499,6 +545,7 @@ module _nls {
 			const startLine = this.lines[startLineNumber] || "";
 
 			const endLine = this.lines[endLineNumber] || "";
+
 			this.lines[startLineNumber] = [
 				startLine.substring(0, patch.span.start.character),
 				patch.content,
@@ -509,6 +556,7 @@ module _nls {
 				this.lines[i] = "";
 			}
 		}
+
 		public toString(): string {
 			return lazy(this.lines)
 				.zip(this.lineEndings)
@@ -517,6 +565,7 @@ module _nls {
 				.join("");
 		}
 	}
+
 	function patchJavascript(patches: IPatch[], contents: string): string {
 		const model = new TextModel(contents);
 		// patch the localize calls
@@ -526,6 +575,7 @@ module _nls {
 
 		return model.toString();
 	}
+
 	function patchSourcemap(
 		patches: IPatch[],
 		rsm: sm.RawSourceMap,
@@ -535,6 +585,7 @@ module _nls {
 			file: rsm.file,
 			sourceRoot: rsm.sourceRoot,
 		});
+
 		patches = patches.reverse();
 
 		let currentLine = -1;
@@ -542,6 +593,7 @@ module _nls {
 		let currentLineDiff = 0;
 
 		let source: string | null = null;
+
 		smc.eachMapping(
 			(m) => {
 				const patch = patches[patches.length - 1];
@@ -559,7 +611,9 @@ module _nls {
 				if (currentLine !== generated.line) {
 					currentLineDiff = 0;
 				}
+
 				currentLine = generated.line;
+
 				generated.column += currentLineDiff;
 
 				if (
@@ -573,14 +627,20 @@ module _nls {
 					const modifiedLength = patch.content.length;
 
 					const lengthDiff = modifiedLength - originalLength;
+
 					currentLineDiff += lengthDiff;
+
 					generated.column += lengthDiff;
+
 					patches.pop();
 				}
+
 				source = rsm.sourceRoot
 					? path.relative(rsm.sourceRoot, m.source)
 					: m.source;
+
 				source = source.replace(/\\/g, "/");
+
 				smg.addMapping({ source, name: m.name, original, generated });
 			},
 			null,
@@ -590,8 +650,10 @@ module _nls {
 		if (source) {
 			smg.setSourceContent(source, smc.sourceContentFor(source));
 		}
+
 		return JSON.parse(smg.toString());
 	}
+
 	function parseLocalizeKeyOrValue(sourceExpression: string) {
 		// sourceValue can be "foo", 'foo', `foo` or { .... }
 		// in its evalulated form
@@ -599,6 +661,7 @@ module _nls {
 		// eslint-disable-next-line no-eval
 		return eval(`(${sourceExpression})`);
 	}
+
 	function patch(
 		ts: typeof import("typescript"),
 		typescript: string,
@@ -619,6 +682,7 @@ module _nls {
 		if (localizeCalls.length === 0 && localize2Calls.length === 0) {
 			return { javascript, sourcemap };
 		}
+
 		const nlsKeys = localizeCalls
 			.map((lc) => parseLocalizeKeyOrValue(lc.key))
 			.concat(
@@ -693,11 +757,14 @@ module _nls {
 					return 0;
 				}
 			});
+
 		javascript = patchJavascript(patches, javascript);
+
 		sourcemap = patchSourcemap(patches, sourcemap, smc);
 
 		return { javascript, sourcemap, nlsKeys, nlsMessages };
 	}
+
 	export function patchFile(
 		javascriptFile: File,
 		typescript: string,
@@ -724,6 +791,7 @@ module _nls {
 
 		if (nlsKeys) {
 			moduleToNLSKeys[moduleId] = nlsKeys;
+
 			allNLSModulesAndKeys.push([
 				moduleId,
 				nlsKeys.map((nlsKey) =>
@@ -731,10 +799,13 @@ module _nls {
 				),
 			]);
 		}
+
 		if (nlsMessages) {
 			moduleToNLSMessages[moduleId] = nlsMessages;
+
 			allNLSMessages.push(...nlsMessages);
 		}
+
 		return result;
 	}
 }

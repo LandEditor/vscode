@@ -191,9 +191,11 @@ class KeybindingsEditorInputSerializer implements IEditorSerializer {
 	canSerialize(editorInput: EditorInput): boolean {
 		return true;
 	}
+
 	serialize(editorInput: EditorInput): string {
 		return "";
 	}
+
 	deserialize(instantiationService: IInstantiationService): EditorInput {
 		return instantiationService.createInstance(KeybindingsEditorInput);
 	}
@@ -202,9 +204,11 @@ class SettingsEditor2InputSerializer implements IEditorSerializer {
 	canSerialize(editorInput: EditorInput): boolean {
 		return true;
 	}
+
 	serialize(input: SettingsEditor2Input): string {
 		return "";
 	}
+
 	deserialize(
 		instantiationService: IInstantiationService,
 	): SettingsEditor2Input {
@@ -242,11 +246,15 @@ const OPEN_APPLICATION_SETTINGS_JSON_TITLE = nls.localize2(
 const category = Categories.Preferences;
 interface IOpenSettingsActionOptions {
 	openToSide?: boolean;
+
 	query?: string;
+
 	revealSetting?: {
 		key: string;
+
 		edit?: boolean;
 	};
+
 	focusSearch?: boolean;
 }
 function sanitizeBoolean(arg: any): boolean | undefined {
@@ -259,6 +267,7 @@ function sanitizeOpenSettingsArgs(args: any): IOpenSettingsActionOptions {
 	if (!isObject(args)) {
 		args = {};
 	}
+
 	let sanitizedObject: IOpenSettingsActionOptions = {
 		focusSearch: sanitizeBoolean(args?.focusSearch),
 		openToSide: sanitizeBoolean(args?.openToSide),
@@ -274,6 +283,7 @@ function sanitizeOpenSettingsArgs(args: any): IOpenSettingsActionOptions {
 			},
 		};
 	}
+
 	return sanitizedObject;
 }
 class PreferencesActionsContribution
@@ -299,20 +309,26 @@ class PreferencesActionsContribution
 		private readonly userDataProfilesService: IUserDataProfilesService,
 	) {
 		super();
+
 		this.registerSettingsActions();
+
 		this.registerKeybindingsActions();
+
 		this.updatePreferencesEditorMenuItem();
+
 		this._register(
 			workspaceContextService.onDidChangeWorkbenchState(() =>
 				this.updatePreferencesEditorMenuItem(),
 			),
 		);
+
 		this._register(
 			workspaceContextService.onDidChangeWorkspaceFolders(() =>
 				this.updatePreferencesEditorMenuItemForWorkspaceFolders(),
 			),
 		);
 	}
+
 	private registerSettingsActions() {
 		this._register(
 			registerAction2(
@@ -349,6 +365,7 @@ class PreferencesActionsContribution
 							],
 						});
 					}
+
 					run(
 						accessor: ServicesAccessor,
 						args: string | IOpenSettingsActionOptions,
@@ -366,6 +383,7 @@ class PreferencesActionsContribution
 				},
 			),
 		);
+
 		this._register(
 			registerAction2(
 				class extends Action2 {
@@ -380,6 +398,7 @@ class PreferencesActionsContribution
 							f1: true,
 						});
 					}
+
 					run(
 						accessor: ServicesAccessor,
 						args: IOpenSettingsActionOptions,
@@ -393,6 +412,7 @@ class PreferencesActionsContribution
 				},
 			),
 		);
+
 		this._register(
 			registerAction2(
 				class extends Action2 {
@@ -410,6 +430,7 @@ class PreferencesActionsContribution
 							f1: true,
 						});
 					}
+
 					run(
 						accessor: ServicesAccessor,
 						args: IOpenSettingsActionOptions,
@@ -425,6 +446,7 @@ class PreferencesActionsContribution
 		);
 
 		const that = this;
+
 		this._register(
 			registerAction2(
 				class extends Action2 {
@@ -443,6 +465,7 @@ class PreferencesActionsContribution
 							},
 						});
 					}
+
 					run(
 						accessor: ServicesAccessor,
 						args: IOpenSettingsActionOptions,
@@ -474,6 +497,7 @@ class PreferencesActionsContribution
 							f1: true,
 						});
 					}
+
 					run(
 						accessor: ServicesAccessor,
 						args: IOpenSettingsActionOptions,
@@ -487,6 +511,7 @@ class PreferencesActionsContribution
 				},
 			),
 		);
+
 		this._register(
 			registerAction2(
 				class extends Action2 {
@@ -501,6 +526,7 @@ class PreferencesActionsContribution
 							f1: true,
 						});
 					}
+
 					run(accessor: ServicesAccessor) {
 						return accessor
 							.get(IPreferencesService)
@@ -509,6 +535,7 @@ class PreferencesActionsContribution
 				},
 			),
 		);
+
 		this._register(
 			registerAction2(
 				class extends Action2 {
@@ -520,6 +547,7 @@ class PreferencesActionsContribution
 							f1: true,
 						});
 					}
+
 					run(accessor: ServicesAccessor) {
 						return accessor
 							.get(IInstantiationService)
@@ -534,6 +562,7 @@ class PreferencesActionsContribution
 				},
 			),
 		);
+
 		this._register(
 			registerAction2(
 				class extends Action2 {
@@ -553,6 +582,7 @@ class PreferencesActionsContribution
 							},
 						});
 					}
+
 					run(
 						accessor: ServicesAccessor,
 						args?: string | IOpenSettingsActionOptions,
@@ -570,6 +600,7 @@ class PreferencesActionsContribution
 				},
 			),
 		);
+
 		this._register(
 			registerAction2(
 				class extends Action2 {
@@ -589,6 +620,7 @@ class PreferencesActionsContribution
 							},
 						});
 					}
+
 					async run(accessor: ServicesAccessor) {
 						await accessor.get(IPreferencesService).openSettings({
 							jsonEditor: false,
@@ -598,6 +630,7 @@ class PreferencesActionsContribution
 				},
 			),
 		);
+
 		this._register(
 			registerAction2(
 				class extends Action2 {
@@ -617,6 +650,7 @@ class PreferencesActionsContribution
 							},
 						});
 					}
+
 					run(
 						accessor: ServicesAccessor,
 						args?: IOpenSettingsActionOptions,
@@ -633,6 +667,7 @@ class PreferencesActionsContribution
 				},
 			),
 		);
+
 		this._register(
 			registerAction2(
 				class extends Action2 {
@@ -652,6 +687,7 @@ class PreferencesActionsContribution
 							},
 						});
 					}
+
 					async run(
 						accessor: ServicesAccessor,
 						args?: IOpenSettingsActionOptions,
@@ -668,6 +704,7 @@ class PreferencesActionsContribution
 
 						if (workspaceFolder) {
 							args = sanitizeOpenSettingsArgs(args);
+
 							await preferencesService.openFolderSettings({
 								folderUri: workspaceFolder.uri,
 								...args,
@@ -677,6 +714,7 @@ class PreferencesActionsContribution
 				},
 			),
 		);
+
 		this._register(
 			registerAction2(
 				class extends Action2 {
@@ -696,6 +734,7 @@ class PreferencesActionsContribution
 							},
 						});
 					}
+
 					async run(
 						accessor: ServicesAccessor,
 						args?: IOpenSettingsActionOptions,
@@ -712,6 +751,7 @@ class PreferencesActionsContribution
 
 						if (workspaceFolder) {
 							args = sanitizeOpenSettingsArgs(args);
+
 							await preferencesService.openFolderSettings({
 								folderUri: workspaceFolder.uri,
 								jsonEditor: true,
@@ -722,6 +762,7 @@ class PreferencesActionsContribution
 				},
 			),
 		);
+
 		this._register(
 			registerAction2(
 				class extends Action2 {
@@ -744,6 +785,7 @@ class PreferencesActionsContribution
 							},
 						});
 					}
+
 					async run(accessor: ServicesAccessor, resource?: URI) {
 						if (URI.isUri(resource)) {
 							await accessor
@@ -771,6 +813,7 @@ class PreferencesActionsContribution
 				},
 			),
 		);
+
 		this._register(
 			registerAction2(
 				class extends Action2 {
@@ -791,6 +834,7 @@ class PreferencesActionsContribution
 							},
 						});
 					}
+
 					run(accessor: ServicesAccessor) {
 						const editorPane =
 							accessor.get(IEditorService).activeEditorPane;
@@ -807,6 +851,7 @@ class PreferencesActionsContribution
 				},
 			),
 		);
+
 		this._register(
 			registerAction2(
 				class extends Action2 {
@@ -819,6 +864,7 @@ class PreferencesActionsContribution
 							),
 						});
 					}
+
 					run(accessor: ServicesAccessor) {
 						accessor
 							.get(IPreferencesService)
@@ -830,6 +876,7 @@ class PreferencesActionsContribution
 				},
 			),
 		);
+
 		this._register(
 			registerAction2(
 				class extends Action2 {
@@ -845,6 +892,7 @@ class PreferencesActionsContribution
 							),
 						});
 					}
+
 					run(accessor: ServicesAccessor) {
 						const editorPane =
 							accessor.get(IEditorService).activeEditorPane;
@@ -861,7 +909,9 @@ class PreferencesActionsContribution
 				},
 			),
 		);
+
 		this.registerSettingsEditorActions();
+
 		this.extensionService.whenInstalledExtensionsRegistered().then(() => {
 			const remoteAuthority = this.environmentService.remoteAuthority;
 
@@ -870,6 +920,7 @@ class PreferencesActionsContribution
 					Schemas.vscodeRemote,
 					remoteAuthority,
 				) || remoteAuthority;
+
 			this._register(
 				registerAction2(
 					class extends Action2 {
@@ -888,6 +939,7 @@ class PreferencesActionsContribution
 								},
 							});
 						}
+
 						run(
 							accessor: ServicesAccessor,
 							args?: IOpenSettingsActionOptions,
@@ -901,6 +953,7 @@ class PreferencesActionsContribution
 					},
 				),
 			);
+
 			this._register(
 				registerAction2(
 					class extends Action2 {
@@ -919,6 +972,7 @@ class PreferencesActionsContribution
 								},
 							});
 						}
+
 						run(
 							accessor: ServicesAccessor,
 							args?: IOpenSettingsActionOptions,
@@ -937,6 +991,7 @@ class PreferencesActionsContribution
 			);
 		});
 	}
+
 	private registerSettingsEditorActions() {
 		function getPreferencesEditor(
 			accessor: ServicesAccessor,
@@ -947,12 +1002,16 @@ class PreferencesActionsContribution
 			if (activeEditorPane instanceof SettingsEditor2) {
 				return activeEditorPane;
 			}
+
 			return null;
 		}
+
 		function settingsEditorFocusSearch(accessor: ServicesAccessor) {
 			const preferencesEditor = getPreferencesEditor(accessor);
+
 			preferencesEditor?.focusSearch();
 		}
+
 		this._register(
 			registerAction2(
 				class extends Action2 {
@@ -973,12 +1032,14 @@ class PreferencesActionsContribution
 							),
 						});
 					}
+
 					run(accessor: ServicesAccessor) {
 						settingsEditorFocusSearch(accessor);
 					}
 				},
 			),
 		);
+
 		this._register(
 			registerAction2(
 				class extends Action2 {
@@ -999,14 +1060,17 @@ class PreferencesActionsContribution
 							),
 						});
 					}
+
 					run(accessor: ServicesAccessor) {
 						const preferencesEditor =
 							getPreferencesEditor(accessor);
+
 						preferencesEditor?.clearSearchResults();
 					}
 				},
 			),
 		);
+
 		this._register(
 			registerAction2(
 				class extends Action2 {
@@ -1028,14 +1092,17 @@ class PreferencesActionsContribution
 							),
 						});
 					}
+
 					run(accessor: ServicesAccessor, args: any): void {
 						const preferencesEditor =
 							getPreferencesEditor(accessor);
+
 						preferencesEditor?.focusSettings();
 					}
 				},
 			),
 		);
+
 		this._register(
 			registerAction2(
 				class extends Action2 {
@@ -1057,14 +1124,17 @@ class PreferencesActionsContribution
 							),
 						});
 					}
+
 					run(accessor: ServicesAccessor, args: any): void {
 						const preferencesEditor =
 							getPreferencesEditor(accessor);
+
 						preferencesEditor?.focusSettings();
 					}
 				},
 			),
 		);
+
 		this._register(
 			registerAction2(
 				class extends Action2 {
@@ -1086,6 +1156,7 @@ class PreferencesActionsContribution
 							),
 						});
 					}
+
 					run(accessor: ServicesAccessor): void {
 						const preferencesEditor =
 							getPreferencesEditor(accessor);
@@ -1097,6 +1168,7 @@ class PreferencesActionsContribution
 				},
 			),
 		);
+
 		this._register(
 			registerAction2(
 				class extends Action2 {
@@ -1119,6 +1191,7 @@ class PreferencesActionsContribution
 							),
 						});
 					}
+
 					run(accessor: ServicesAccessor): void {
 						const preferencesEditor =
 							getPreferencesEditor(accessor);
@@ -1126,11 +1199,13 @@ class PreferencesActionsContribution
 						if (!(preferencesEditor instanceof SettingsEditor2)) {
 							return;
 						}
+
 						preferencesEditor.focusTOC();
 					}
 				},
 			),
 		);
+
 		this._register(
 			registerAction2(
 				class extends Action2 {
@@ -1151,6 +1226,7 @@ class PreferencesActionsContribution
 							),
 						});
 					}
+
 					run(accessor: ServicesAccessor): void {
 						const preferencesEditor =
 							getPreferencesEditor(accessor);
@@ -1158,6 +1234,7 @@ class PreferencesActionsContribution
 						if (!(preferencesEditor instanceof SettingsEditor2)) {
 							return;
 						}
+
 						const activeElement =
 							preferencesEditor.getContainer()?.ownerDocument
 								.activeElement;
@@ -1169,6 +1246,7 @@ class PreferencesActionsContribution
 				},
 			),
 		);
+
 		this._register(
 			registerAction2(
 				class extends Action2 {
@@ -1189,6 +1267,7 @@ class PreferencesActionsContribution
 							),
 						});
 					}
+
 					run(accessor: ServicesAccessor): void {
 						const preferencesEditor =
 							getPreferencesEditor(accessor);
@@ -1200,6 +1279,7 @@ class PreferencesActionsContribution
 				},
 			),
 		);
+
 		this._register(
 			registerAction2(
 				class extends Action2 {
@@ -1224,6 +1304,7 @@ class PreferencesActionsContribution
 							),
 						});
 					}
+
 					run(accessor: ServicesAccessor): void {
 						const preferencesEditor =
 							getPreferencesEditor(accessor);
@@ -1231,6 +1312,7 @@ class PreferencesActionsContribution
 						if (!(preferencesEditor instanceof SettingsEditor2)) {
 							return;
 						}
+
 						if (
 							preferencesEditor.currentFocusContext ===
 							SettingsFocusContext.SettingControl
@@ -1252,12 +1334,14 @@ class PreferencesActionsContribution
 			),
 		);
 	}
+
 	private registerKeybindingsActions() {
 		const that = this;
 
 		const category = nls.localize2("preferences", "Preferences");
 
 		const id = "workbench.action.openGlobalKeybindings";
+
 		this._register(
 			registerAction2(
 				class extends Action2 {
@@ -1300,6 +1384,7 @@ class PreferencesActionsContribution
 							],
 						});
 					}
+
 					run(accessor: ServicesAccessor, args: string | undefined) {
 						const query =
 							typeof args === "string" ? args : undefined;
@@ -1311,6 +1396,7 @@ class PreferencesActionsContribution
 				},
 			),
 		);
+
 		this._register(
 			MenuRegistry.appendMenuItem(MenuId.MenubarPreferencesMenu, {
 				command: {
@@ -1324,6 +1410,7 @@ class PreferencesActionsContribution
 				order: 4,
 			}),
 		);
+
 		this._register(
 			registerAction2(
 				class extends Action2 {
@@ -1338,6 +1425,7 @@ class PreferencesActionsContribution
 							menu: { id: MenuId.CommandPalette },
 						});
 					}
+
 					run(accessor: ServicesAccessor) {
 						return accessor
 							.get(IPreferencesService)
@@ -1346,6 +1434,7 @@ class PreferencesActionsContribution
 				},
 			),
 		);
+
 		this._register(
 			registerAction2(
 				class extends Action2 {
@@ -1370,6 +1459,7 @@ class PreferencesActionsContribution
 							],
 						});
 					}
+
 					run(accessor: ServicesAccessor) {
 						return accessor
 							.get(IPreferencesService)
@@ -1378,6 +1468,7 @@ class PreferencesActionsContribution
 				},
 			),
 		);
+
 		this._register(
 			registerAction2(
 				class extends Action2 {
@@ -1399,6 +1490,7 @@ class PreferencesActionsContribution
 							],
 						});
 					}
+
 					run(accessor: ServicesAccessor) {
 						const editorPane =
 							accessor.get(IEditorService).activeEditorPane;
@@ -1410,6 +1502,7 @@ class PreferencesActionsContribution
 				},
 			),
 		);
+
 		this._register(
 			registerAction2(
 				class extends Action2 {
@@ -1431,6 +1524,7 @@ class PreferencesActionsContribution
 							],
 						});
 					}
+
 					run(accessor: ServicesAccessor) {
 						const editorPane =
 							accessor.get(IEditorService).activeEditorPane;
@@ -1442,6 +1536,7 @@ class PreferencesActionsContribution
 				},
 			),
 		);
+
 		this._register(
 			registerAction2(
 				class extends Action2 {
@@ -1463,6 +1558,7 @@ class PreferencesActionsContribution
 							],
 						});
 					}
+
 					run(accessor: ServicesAccessor) {
 						const editorPane =
 							accessor.get(IEditorService).activeEditorPane;
@@ -1474,6 +1570,7 @@ class PreferencesActionsContribution
 				},
 			),
 		);
+
 		this._register(
 			registerAction2(
 				class extends Action2 {
@@ -1494,6 +1591,7 @@ class PreferencesActionsContribution
 							},
 						});
 					}
+
 					run(accessor: ServicesAccessor) {
 						const editorPane =
 							accessor.get(IEditorService).activeEditorPane;
@@ -1505,6 +1603,7 @@ class PreferencesActionsContribution
 				},
 			),
 		);
+
 		this._register(
 			registerAction2(
 				class extends Action2 {
@@ -1526,6 +1625,7 @@ class PreferencesActionsContribution
 							],
 						});
 					}
+
 					run(accessor: ServicesAccessor) {
 						const editorPane =
 							accessor.get(IEditorService).activeEditorPane;
@@ -1537,10 +1637,13 @@ class PreferencesActionsContribution
 				},
 			),
 		);
+
 		this.registerKeybindingEditorActions();
 	}
+
 	private registerKeybindingEditorActions(): void {
 		const that = this;
+
 		KeybindingsRegistry.registerCommandAndKeybindingRule({
 			id: KEYBINDINGS_EDITOR_COMMAND_DEFINE,
 			weight: KeybindingWeight.WorkbenchContrib,
@@ -1562,6 +1665,7 @@ class PreferencesActionsContribution
 				}
 			},
 		});
+
 		KeybindingsRegistry.registerCommandAndKeybindingRule({
 			id: KEYBINDINGS_EDITOR_COMMAND_ADD,
 			weight: KeybindingWeight.WorkbenchContrib,
@@ -1585,6 +1689,7 @@ class PreferencesActionsContribution
 				}
 			},
 		});
+
 		KeybindingsRegistry.registerCommandAndKeybindingRule({
 			id: KEYBINDINGS_EDITOR_COMMAND_DEFINE_WHEN,
 			weight: KeybindingWeight.WorkbenchContrib,
@@ -1610,6 +1715,7 @@ class PreferencesActionsContribution
 				}
 			},
 		});
+
 		KeybindingsRegistry.registerCommandAndKeybindingRule({
 			id: KEYBINDINGS_EDITOR_COMMAND_REMOVE,
 			weight: KeybindingWeight.WorkbenchContrib,
@@ -1633,6 +1739,7 @@ class PreferencesActionsContribution
 				}
 			},
 		});
+
 		KeybindingsRegistry.registerCommandAndKeybindingRule({
 			id: KEYBINDINGS_EDITOR_COMMAND_RESET,
 			weight: KeybindingWeight.WorkbenchContrib,
@@ -1652,6 +1759,7 @@ class PreferencesActionsContribution
 				}
 			},
 		});
+
 		KeybindingsRegistry.registerCommandAndKeybindingRule({
 			id: KEYBINDINGS_EDITOR_COMMAND_SEARCH,
 			weight: KeybindingWeight.WorkbenchContrib,
@@ -1666,6 +1774,7 @@ class PreferencesActionsContribution
 				}
 			},
 		});
+
 		KeybindingsRegistry.registerCommandAndKeybindingRule({
 			id: KEYBINDINGS_EDITOR_COMMAND_RECORD_SEARCH_KEYS,
 			weight: KeybindingWeight.WorkbenchContrib,
@@ -1684,6 +1793,7 @@ class PreferencesActionsContribution
 				}
 			},
 		});
+
 		KeybindingsRegistry.registerCommandAndKeybindingRule({
 			id: KEYBINDINGS_EDITOR_COMMAND_SORTBY_PRECEDENCE,
 			weight: KeybindingWeight.WorkbenchContrib,
@@ -1699,6 +1809,7 @@ class PreferencesActionsContribution
 				}
 			},
 		});
+
 		KeybindingsRegistry.registerCommandAndKeybindingRule({
 			id: KEYBINDINGS_EDITOR_COMMAND_SHOW_SIMILAR,
 			weight: KeybindingWeight.WorkbenchContrib,
@@ -1718,6 +1829,7 @@ class PreferencesActionsContribution
 				}
 			},
 		});
+
 		KeybindingsRegistry.registerCommandAndKeybindingRule({
 			id: KEYBINDINGS_EDITOR_COMMAND_COPY,
 			weight: KeybindingWeight.WorkbenchContrib,
@@ -1738,6 +1850,7 @@ class PreferencesActionsContribution
 				}
 			},
 		});
+
 		KeybindingsRegistry.registerCommandAndKeybindingRule({
 			id: KEYBINDINGS_EDITOR_COMMAND_COPY_COMMAND,
 			weight: KeybindingWeight.WorkbenchContrib,
@@ -1757,6 +1870,7 @@ class PreferencesActionsContribution
 				}
 			},
 		});
+
 		KeybindingsRegistry.registerCommandAndKeybindingRule({
 			id: KEYBINDINGS_EDITOR_COMMAND_COPY_COMMAND_TITLE,
 			weight: KeybindingWeight.WorkbenchContrib,
@@ -1776,6 +1890,7 @@ class PreferencesActionsContribution
 				}
 			},
 		});
+
 		KeybindingsRegistry.registerCommandAndKeybindingRule({
 			id: KEYBINDINGS_EDITOR_COMMAND_FOCUS_KEYBINDINGS,
 			weight: KeybindingWeight.WorkbenchContrib,
@@ -1793,6 +1908,7 @@ class PreferencesActionsContribution
 				}
 			},
 		});
+
 		KeybindingsRegistry.registerCommandAndKeybindingRule({
 			id: KEYBINDINGS_EDITOR_COMMAND_REJECT_WHEN,
 			weight: KeybindingWeight.WorkbenchContrib,
@@ -1813,6 +1929,7 @@ class PreferencesActionsContribution
 				}
 			},
 		});
+
 		KeybindingsRegistry.registerCommandAndKeybindingRule({
 			id: KEYBINDINGS_EDITOR_COMMAND_ACCEPT_WHEN,
 			weight: KeybindingWeight.WorkbenchContrib,
@@ -1840,6 +1957,7 @@ class PreferencesActionsContribution
 
 		const registerProfileScopedActions = () => {
 			profileScopedActionDisposables.clear();
+
 			profileScopedActionDisposables.add(
 				registerAction2(
 					class DefineKeybindingAction extends Action2 {
@@ -1870,6 +1988,7 @@ class PreferencesActionsContribution
 								},
 							});
 						}
+
 						async run(accessor: ServicesAccessor): Promise<void> {
 							const codeEditor =
 								accessor.get(
@@ -1888,13 +2007,16 @@ class PreferencesActionsContribution
 				),
 			);
 		};
+
 		registerProfileScopedActions();
+
 		this._register(
 			this.userDataProfileService.onDidChangeCurrentProfile(() =>
 				registerProfileScopedActions(),
 			),
 		);
 	}
+
 	private updatePreferencesEditorMenuItem() {
 		const commandId = "_workbench.openWorkspaceSettingsEditor";
 
@@ -1908,6 +2030,7 @@ class PreferencesActionsContribution
 					jsonEditor: false,
 				}),
 			);
+
 			MenuRegistry.appendMenuItem(MenuId.EditorTitle, {
 				command: {
 					id: commandId,
@@ -1925,8 +2048,10 @@ class PreferencesActionsContribution
 				order: 1,
 			});
 		}
+
 		this.updatePreferencesEditorMenuItemForWorkspaceFolders();
 	}
+
 	private updatePreferencesEditorMenuItemForWorkspaceFolders() {
 		for (const folder of this.workspaceContextService.getWorkspace()
 			.folders) {
@@ -1948,6 +2073,7 @@ class PreferencesActionsContribution
 						});
 					}
 				});
+
 				MenuRegistry.appendMenuItem(MenuId.EditorTitle, {
 					command: {
 						id: commandId,
@@ -1980,8 +2106,10 @@ class SettingsEditorTitleContribution
 		private readonly userDataProfilesService: IUserDataProfilesService,
 	) {
 		super();
+
 		this.registerSettingsEditorTitleActions();
 	}
+
 	private registerSettingsEditorTitleActions() {
 		const registerOpenUserSettingsEditorFromJsonActionDisposables =
 			this._register(new MutableDisposable());
@@ -2001,6 +2129,7 @@ class SettingsEditorTitleContribution
 		const registerOpenUserSettingsEditorFromJsonAction = () => {
 			registerOpenUserSettingsEditorFromJsonActionDisposables.value =
 				undefined;
+
 			registerOpenUserSettingsEditorFromJsonActionDisposables.value =
 				registerAction2(
 					class extends Action2 {
@@ -2019,6 +2148,7 @@ class SettingsEditorTitleContribution
 								],
 							});
 						}
+
 						run(
 							accessor: ServicesAccessor,
 							args: IOpenSettingsActionOptions,
@@ -2035,7 +2165,9 @@ class SettingsEditorTitleContribution
 					},
 				);
 		};
+
 		registerOpenUserSettingsEditorFromJsonAction();
+
 		this._register(
 			this.userDataProfileService.onDidChangeCurrentProfile(() => {
 				// Force the action to check the context again.
@@ -2047,6 +2179,7 @@ class SettingsEditorTitleContribution
 			CONTEXT_SETTINGS_EDITOR,
 			CONTEXT_SETTINGS_JSON_EDITOR.toNegated(),
 		);
+
 		this._register(
 			registerAction2(
 				class extends Action2 {
@@ -2068,6 +2201,7 @@ class SettingsEditorTitleContribution
 							],
 						});
 					}
+
 					run(accessor: ServicesAccessor) {
 						const editorPane =
 							accessor.get(IEditorService).activeEditorPane;
@@ -2075,6 +2209,7 @@ class SettingsEditorTitleContribution
 						if (editorPane instanceof SettingsEditor2) {
 							return editorPane.switchToSettingsFile();
 						}
+
 						return null;
 					}
 				},

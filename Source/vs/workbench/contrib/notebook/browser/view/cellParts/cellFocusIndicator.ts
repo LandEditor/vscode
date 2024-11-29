@@ -17,6 +17,7 @@ import { CellTitleToolbarPart } from "./cellToolbars.js";
 
 export class CellFocusIndicator extends CellContentPart {
 	public codeFocusIndicator: FastDomNode<HTMLElement>;
+
 	public outputFocusIndicator: FastDomNode<HTMLElement>;
 
 	constructor(
@@ -28,6 +29,7 @@ export class CellFocusIndicator extends CellContentPart {
 		readonly bottom: FastDomNode<HTMLElement>,
 	) {
 		super();
+
 		this.codeFocusIndicator = new FastDomNode(
 			DOM.append(
 				this.left.domNode,
@@ -38,6 +40,7 @@ export class CellFocusIndicator extends CellContentPart {
 				),
 			),
 		);
+
 		this.outputFocusIndicator = new FastDomNode(
 			DOM.append(
 				this.left.domNode,
@@ -48,6 +51,7 @@ export class CellFocusIndicator extends CellContentPart {
 				),
 			),
 		);
+
 		this._register(
 			DOM.addDisposableListener(
 				this.codeFocusIndicator.domNode,
@@ -60,6 +64,7 @@ export class CellFocusIndicator extends CellContentPart {
 				},
 			),
 		);
+
 		this._register(
 			DOM.addDisposableListener(
 				this.outputFocusIndicator.domNode,
@@ -72,6 +77,7 @@ export class CellFocusIndicator extends CellContentPart {
 				},
 			),
 		);
+
 		this._register(
 			DOM.addDisposableListener(
 				this.left.domNode,
@@ -80,10 +86,12 @@ export class CellFocusIndicator extends CellContentPart {
 					if (!this.currentCell || !this.notebookEditor.hasModel()) {
 						return;
 					}
+
 					if (e.target !== this.left.domNode) {
 						// Don't allow dblclick on the codeFocusIndicator/outputFocusIndicator
 						return;
 					}
+
 					const clickedOnInput =
 						e.offsetY <
 						(this.currentCell.layoutInfo as CodeCellLayoutInfo)
@@ -99,12 +107,14 @@ export class CellFocusIndicator extends CellContentPart {
 				},
 			),
 		);
+
 		this._register(
 			this.titleToolbar.onDidUpdateActions(() => {
 				this.updateFocusIndicatorsForTitleMenu();
 			}),
 		);
 	}
+
 	override updateInternalLayoutNow(element: ICellViewModel): void {
 		if (element.cellKind === CellKind.Markup) {
 			const indicatorPostion =
@@ -113,9 +123,13 @@ export class CellFocusIndicator extends CellContentPart {
 					(element as MarkupCellViewModel).layoutInfo.foldHintHeight,
 					this.notebookEditor.textModel?.viewType,
 				);
+
 			this.bottom.domNode.style.transform = `translateY(${indicatorPostion.bottomIndicatorTop + 6}px)`;
+
 			this.left.setHeight(indicatorPostion.verticalIndicatorHeight);
+
 			this.right.setHeight(indicatorPostion.verticalIndicatorHeight);
+
 			this.codeFocusIndicator.setHeight(
 				indicatorPostion.verticalIndicatorHeight -
 					this.getIndicatorTopMargin() * 2 -
@@ -136,11 +150,15 @@ export class CellFocusIndicator extends CellContentPart {
 				cell.layoutInfo.codeIndicatorHeight +
 				cell.layoutInfo.outputIndicatorHeight +
 				cell.layoutInfo.commentHeight;
+
 			this.left.setHeight(indicatorHeight);
+
 			this.right.setHeight(indicatorHeight);
+
 			this.codeFocusIndicator.setHeight(
 				cell.layoutInfo.codeIndicatorHeight,
 			);
+
 			this.outputFocusIndicator.setHeight(
 				Math.max(
 					cell.layoutInfo.outputIndicatorHeight -
@@ -149,17 +167,23 @@ export class CellFocusIndicator extends CellContentPart {
 					0,
 				),
 			);
+
 			this.bottom.domNode.style.transform = `translateY(${cell.layoutInfo.totalHeight - bottomToolbarDimensions.bottomToolbarGap - layoutInfo.cellBottomMargin}px)`;
 		}
+
 		this.updateFocusIndicatorsForTitleMenu();
 	}
+
 	private updateFocusIndicatorsForTitleMenu(): void {
 		const y =
 			(this.currentCell?.layoutInfo.chatHeight ?? 0) +
 			this.getIndicatorTopMargin();
+
 		this.left.domNode.style.transform = `translateY(${y}px)`;
+
 		this.right.domNode.style.transform = `translateY(${y}px)`;
 	}
+
 	private getIndicatorTopMargin() {
 		const layoutInfo =
 			this.notebookEditor.notebookOptions.getLayoutConfiguration();

@@ -11,6 +11,7 @@ export class ExtHostClipboard {
 
 	constructor(mainContext: IMainContext) {
 		const proxy = mainContext.getProxy(MainContext.MainThreadClipboard);
+
 		this.value = Object.freeze({
 			readText() {
 				return proxy.$readText();

@@ -5,23 +5,38 @@
 // https://github.com/microsoft/vscode/blob/6cb34eb22385bc93ab25aa2e5113f59c7a2299ac/src/vs/platform/extensions/common/extensionValidator.ts
 export interface IParsedVersion {
 	hasCaret: boolean;
+
 	hasGreaterEquals: boolean;
+
 	majorBase: number;
+
 	majorMustEqual: boolean;
+
 	minorBase: number;
+
 	minorMustEqual: boolean;
+
 	patchBase: number;
+
 	patchMustEqual: boolean;
+
 	preRelease: string | null;
 }
 export interface INormalizedVersion {
 	majorBase: number;
+
 	majorMustEqual: boolean;
+
 	minorBase: number;
+
 	minorMustEqual: boolean;
+
 	patchBase: number;
+
 	patchMustEqual: boolean;
+
 	notBefore: number /* milliseconds timestamp, or 0 */;
+
 	isMinimum: boolean;
 }
 
@@ -38,6 +53,7 @@ export function parseVersion(version: string): IParsedVersion | null {
 	if (!isValidVersionStr(version)) {
 		return null;
 	}
+
 	version = version.trim();
 
 	if (version === "*") {
@@ -53,11 +69,13 @@ export function parseVersion(version: string): IParsedVersion | null {
 			preRelease: null,
 		};
 	}
+
 	const m = version.match(VERSION_REGEXP);
 
 	if (!m) {
 		return null;
 	}
+
 	return {
 		hasCaret: m[1] === "^",
 		hasGreaterEquals: m[1] === ">=",
@@ -76,6 +94,7 @@ export function normalizeVersion(
 	if (!version) {
 		return null;
 	}
+
 	const majorBase = version.majorBase;
 
 	const majorMustEqual = version.majorMustEqual;
@@ -93,9 +112,11 @@ export function normalizeVersion(
 			patchMustEqual = false;
 		} else {
 			minorMustEqual = false;
+
 			patchMustEqual = false;
 		}
 	}
+
 	let notBefore = 0;
 
 	if (version.preRelease) {
@@ -103,9 +124,11 @@ export function normalizeVersion(
 
 		if (match) {
 			const [, year, month, day] = match;
+
 			notBefore = Date.UTC(Number(year), Number(month) - 1, Number(day));
 		}
 	}
+
 	return {
 		majorBase: majorBase,
 		majorMustEqual: majorMustEqual,

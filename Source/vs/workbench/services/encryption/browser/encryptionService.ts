@@ -13,18 +13,23 @@ import {
 
 export class EncryptionService implements IEncryptionService {
 	declare readonly _serviceBrand: undefined;
+
 	encrypt(value: string): Promise<string> {
 		return Promise.resolve(value);
 	}
+
 	decrypt(value: string): Promise<string> {
 		return Promise.resolve(value);
 	}
+
 	isEncryptionAvailable(): Promise<boolean> {
 		return Promise.resolve(false);
 	}
+
 	getKeyStorageProvider(): Promise<KnownStorageProvider> {
 		return Promise.resolve(KnownStorageProvider.basicText);
 	}
+
 	setUsePlainTextEncryption(): Promise<void> {
 		return Promise.resolve(undefined);
 	}

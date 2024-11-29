@@ -13,9 +13,13 @@ import {
 
 export abstract class FixedZoneWidget extends Disposable {
 	private static counter = 0;
+
 	private readonly overlayWidgetId = `fixedZoneWidget-${FixedZoneWidget.counter++}`;
+
 	private readonly viewZoneId: string;
+
 	protected readonly widgetDomNode = h("div.fixed-zone-widget").root;
+
 	private readonly overlayWidget: IOverlayWidget = {
 		getId: () => this.overlayWidgetId,
 		getDomNode: () => this.widgetDomNode,
@@ -30,6 +34,7 @@ export abstract class FixedZoneWidget extends Disposable {
 		viewZoneIdsToCleanUp: string[],
 	) {
 		super();
+
 		this.viewZoneId = viewZoneAccessor.addZone({
 			domNode: document.createElement("div"),
 			afterLineNumber: afterLineNumber,
@@ -42,14 +47,18 @@ export abstract class FixedZoneWidget extends Disposable {
 				this.widgetDomNode.style.top = `${top}px`;
 			},
 		});
+
 		viewZoneIdsToCleanUp.push(this.viewZoneId);
+
 		this._register(
 			Event.runAndSubscribe(this.editor.onDidLayoutChange, () => {
 				this.widgetDomNode.style.left =
 					this.editor.getLayoutInfo().contentLeft + "px";
 			}),
 		);
+
 		this.editor.addOverlayWidget(this.overlayWidget);
+
 		this._register({
 			dispose: () => {
 				this.editor.removeOverlayWidget(this.overlayWidget);

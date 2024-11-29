@@ -12,20 +12,28 @@ import { ISyncUserDataProfile } from "./userDataSync.js";
 interface IRelaxedMergeResult {
 	local: {
 		added: ISyncUserDataProfile[];
+
 		removed: IUserDataProfile[];
+
 		updated: ISyncUserDataProfile[];
 	};
+
 	remote: {
 		added: IUserDataProfile[];
+
 		removed: ISyncUserDataProfile[];
+
 		updated: IUserDataProfile[];
 	} | null;
 }
 export type IMergeResult = Required<IRelaxedMergeResult>;
 interface IUserDataProfileInfo {
 	readonly id: string;
+
 	readonly name: string;
+
 	readonly icon?: string;
+
 	readonly useDefaultFlags?: UseDefaultProfileFlags;
 }
 export function merge(
@@ -36,13 +44,17 @@ export function merge(
 ): IMergeResult {
 	const localResult: {
 		added: ISyncUserDataProfile[];
+
 		removed: IUserDataProfile[];
+
 		updated: ISyncUserDataProfile[];
 	} = { added: [], removed: [], updated: [] };
 
 	let remoteResult: {
 		added: IUserDataProfile[];
+
 		removed: ISyncUserDataProfile[];
+
 		updated: IUserDataProfile[];
 	} | null = { added: [], removed: [], updated: [] };
 
@@ -54,11 +66,13 @@ export function merge(
 		} else {
 			remoteResult = null;
 		}
+
 		return {
 			local: localResult,
 			remote: remoteResult,
 		};
 	}
+
 	const localToRemote = compare(local, remote, ignored);
 
 	if (
@@ -129,6 +143,7 @@ export function merge(
 			}
 		}
 	}
+
 	if (
 		remoteResult.added.length === 0 &&
 		remoteResult.removed.length === 0 &&
@@ -136,6 +151,7 @@ export function merge(
 	) {
 		remoteResult = null;
 	}
+
 	return { local: localResult, remote: remoteResult };
 }
 function compare(
@@ -144,10 +160,13 @@ function compare(
 	ignoredProfiles: string[],
 ): {
 	added: string[];
+
 	removed: string[];
+
 	updated: string[];
 } {
 	from = from ? from.filter(({ id }) => !ignoredProfiles.includes(id)) : [];
+
 	to = to.filter(({ id }) => !ignoredProfiles.includes(id));
 
 	const fromKeys = from.map(({ id }) => id);
@@ -164,6 +183,7 @@ function compare(
 		if (removed.includes(id)) {
 			continue;
 		}
+
 		const toProfile = to.find((p) => p.id === id);
 
 		if (
@@ -175,5 +195,6 @@ function compare(
 			updated.push(id);
 		}
 	}
+
 	return { added, removed, updated };
 }

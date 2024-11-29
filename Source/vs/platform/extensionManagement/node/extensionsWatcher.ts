@@ -40,10 +40,13 @@ import { INativeServerExtensionManagementService } from "./extensionManagementSe
 export interface DidChangeProfileExtensionsEvent {
 	readonly added?: {
 		readonly extensions: readonly IExtensionIdentifier[];
+
 		readonly profileLocation: URI;
 	};
+
 	readonly removed?: {
 		readonly extensions: readonly IExtensionIdentifier[];
+
 		readonly profileLocation: URI;
 	};
 }
@@ -51,9 +54,12 @@ export class ExtensionsWatcher extends Disposable {
 	private readonly _onDidChangeExtensionsByAnotherSource = this._register(
 		new Emitter<DidChangeProfileExtensionsEvent>(),
 	);
+
 	readonly onDidChangeExtensionsByAnotherSource =
 		this._onDidChangeExtensionsByAnotherSource.event;
+
 	private readonly allExtensions = new Map<string, ResourceSet>();
+
 	private readonly extensionsProfileWatchDisposables = this._register(
 		new DisposableMap<string>(),
 	);
@@ -68,6 +74,7 @@ export class ExtensionsWatcher extends Disposable {
 		private readonly logService: ILogService,
 	) {
 		super();
+
 		this.initialize().then(null, (error) =>
 			logService.error(
 				"Error while initializing Extensions Watcher",
@@ -75,42 +82,53 @@ export class ExtensionsWatcher extends Disposable {
 			),
 		);
 	}
+
 	private async initialize(): Promise<void> {
 		await this.extensionsScannerService.initializeDefaultProfileExtensions();
+
 		await this.onDidChangeProfiles(this.userDataProfilesService.profiles);
+
 		this.registerListeners();
+
 		await this.uninstallExtensionsNotInProfiles();
 	}
+
 	private registerListeners(): void {
 		this._register(
 			this.userDataProfilesService.onDidChangeProfiles((e) =>
 				this.onDidChangeProfiles(e.added),
 			),
 		);
+
 		this._register(
 			this.extensionsProfileScannerService.onAddExtensions((e) =>
 				this.onAddExtensions(e),
 			),
 		);
+
 		this._register(
 			this.extensionsProfileScannerService.onDidAddExtensions((e) =>
 				this.onDidAddExtensions(e),
 			),
 		);
+
 		this._register(
 			this.extensionsProfileScannerService.onRemoveExtensions((e) =>
 				this.onRemoveExtensions(e),
 			),
 		);
+
 		this._register(
 			this.extensionsProfileScannerService.onDidRemoveExtensions((e) =>
 				this.onDidRemoveExtensions(e),
 			),
 		);
+
 		this._register(
 			this.fileService.onDidFilesChange((e) => this.onDidFilesChange(e)),
 		);
 	}
+
 	private async onDidChangeProfiles(
 		added: readonly IUserDataProfile[],
 	): Promise<void> {
@@ -145,6 +163,7 @@ export class ExtensionsWatcher extends Disposable {
 			throw error;
 		}
 	}
+
 	private async onAddExtensions(e: ProfileExtensionsEvent): Promise<void> {
 		for (const extension of e.extensions) {
 			this.addExtensionWithKey(
@@ -153,6 +172,7 @@ export class ExtensionsWatcher extends Disposable {
 			);
 		}
 	}
+
 	private async onDidAddExtensions(
 		e: DidAddProfileExtensionsEvent,
 	): Promise<void> {
@@ -166,6 +186,7 @@ export class ExtensionsWatcher extends Disposable {
 			}
 		}
 	}
+
 	private async onRemoveExtensions(e: ProfileExtensionsEvent): Promise<void> {
 		for (const extension of e.extensions) {
 			this.removeExtensionWithKey(
@@ -174,6 +195,7 @@ export class ExtensionsWatcher extends Disposable {
 			);
 		}
 	}
+
 	private async onDidRemoveExtensions(
 		e: DidRemoveProfileExtensionsEvent,
 	): Promise<void> {
@@ -195,6 +217,7 @@ export class ExtensionsWatcher extends Disposable {
 						extension.identifier.id,
 						extension.version,
 					);
+
 					promises.push(
 						this.extensionManagementService
 							.scanInstalledExtensionAtLocation(
@@ -217,6 +240,7 @@ export class ExtensionsWatcher extends Disposable {
 				}
 			}
 		}
+
 		try {
 			await Promise.all(promises);
 
@@ -229,6 +253,7 @@ export class ExtensionsWatcher extends Disposable {
 			this.logService.error(error);
 		}
 	}
+
 	private onDidFilesChange(e: FileChangesEvent): void {
 		for (const profile of this.userDataProfilesService.profiles) {
 			if (
@@ -242,6 +267,7 @@ export class ExtensionsWatcher extends Disposable {
 			}
 		}
 	}
+
 	private async onDidExtensionsProfileChange(
 		profileLocation: URI,
 	): Promise<void> {
@@ -262,25 +288,31 @@ export class ExtensionsWatcher extends Disposable {
 				cached.add(key);
 			}
 		}
+
 		for (const extension of extensions) {
 			const key = this.getKey(extension.identifier, extension.version);
+
 			extensionKeys.add(key);
 
 			if (!cached.has(key)) {
 				added.push(extension.identifier);
+
 				this.addExtensionWithKey(key, profileLocation);
 			}
 		}
+
 		for (const key of cached) {
 			if (!extensionKeys.has(key)) {
 				const extension = this.fromKey(key);
 
 				if (extension) {
 					removed.push(extension.identifier);
+
 					this.removeExtensionWithKey(key, profileLocation);
 				}
 			}
 		}
+
 		if (added.length || removed.length) {
 			this._onDidChangeExtensionsByAnotherSource.fire({
 				added: added.length
@@ -292,6 +324,7 @@ export class ExtensionsWatcher extends Disposable {
 			});
 		}
 	}
+
 	private async populateExtensionsFromProfile(
 		extensionsProfileLocation: URI,
 	): Promise<void> {
@@ -307,12 +340,14 @@ export class ExtensionsWatcher extends Disposable {
 			);
 		}
 	}
+
 	private async uninstallExtensionsNotInProfiles(
 		toUninstall?: IExtension[],
 	): Promise<void> {
 		if (!toUninstall) {
 			const installed =
 				await this.extensionManagementService.scanAllUserInstalledExtensions();
+
 			toUninstall = installed.filter(
 				(installedExtension) =>
 					!this.allExtensions.has(
@@ -323,12 +358,14 @@ export class ExtensionsWatcher extends Disposable {
 					),
 			);
 		}
+
 		if (toUninstall.length) {
 			await this.extensionManagementService.markAsUninstalled(
 				...toUninstall,
 			);
 		}
 	}
+
 	private addExtensionWithKey(
 		key: string,
 		extensionsProfileLocation: URI,
@@ -343,24 +380,30 @@ export class ExtensionsWatcher extends Disposable {
 				)),
 			);
 		}
+
 		profiles.add(extensionsProfileLocation);
 	}
+
 	private removeExtensionWithKey(key: string, profileLocation: URI): void {
 		const profiles = this.allExtensions.get(key);
 
 		if (profiles) {
 			profiles.delete(profileLocation);
 		}
+
 		if (!profiles?.size) {
 			this.allExtensions.delete(key);
 		}
 	}
+
 	private getKey(identifier: IExtensionIdentifier, version: string): string {
 		return `${ExtensionIdentifier.toKey(identifier.id)}@${version}`;
 	}
+
 	private fromKey(key: string):
 		| {
 				identifier: IExtensionIdentifier;
+
 				version: string;
 		  }
 		| undefined {

@@ -14,6 +14,7 @@ import { ExtHostConsoleForwarder } from "./extHostConsoleForwarder.js";
 
 class WorkerRequireInterceptor extends RequireInterceptor {
 	protected _installInterceptor() {}
+
 	getModule(request: string, parent: URI): undefined | any {
 		for (const alternativeModuleName of this._alternatives) {
 			const alternative = alternativeModuleName(request);
@@ -24,17 +25,21 @@ class WorkerRequireInterceptor extends RequireInterceptor {
 				break;
 			}
 		}
+
 		if (this._factories.has(request)) {
 			return this._factories.get(request)!.load(request, parent, () => {
 				throw new Error("CANNOT LOAD MODULE from here.");
 			});
 		}
+
 		return undefined;
 	}
 }
 export class ExtHostExtensionService extends AbstractExtHostExtensionService {
 	readonly extensionRuntime = ExtensionRuntime.Webworker;
+
 	private _fakeModules?: WorkerRequireInterceptor;
+
 	protected async _beforeAlmostReadyToRunExtensions(): Promise<void> {
 		// make sure console.log calls make it to the render
 		this._instaService.createInstance(ExtHostConsoleForwarder);
@@ -42,20 +47,26 @@ export class ExtHostExtensionService extends AbstractExtHostExtensionService {
 		const apiFactory = this._instaService.invokeFunction(
 			createApiFactoryAndRegisterActors,
 		);
+
 		this._fakeModules = this._instaService.createInstance(
 			WorkerRequireInterceptor,
 			apiFactory,
 			{ mine: this._myRegistry, all: this._globalRegistry },
 		);
+
 		await this._fakeModules.install();
+
 		performance.mark("code/extHost/didInitAPI");
+
 		await this._waitForDebuggerAttachment();
 	}
+
 	protected _getEntryPoint(
 		extensionDescription: IExtensionDescription,
 	): string | undefined {
 		return extensionDescription.browser;
 	}
+
 	protected async _loadCommonJSModule<T extends object | undefined>(
 		extension: IExtensionDescription | null,
 		module: URI,
@@ -84,6 +95,7 @@ export class ExtHostExtensionService extends AbstractExtHostExtensionService {
 				`code/extHost/didFetchExtensionCode/${extensionId}`,
 			);
 		}
+
 		if (response.status !== 200) {
 			throw new Error(response.statusText);
 		}
@@ -107,13 +119,16 @@ export class ExtHostExtensionService extends AbstractExtHostExtensionService {
 			} else {
 				console.error(`Loading code failed: ${err.message}`);
 			}
+
 			console.error(
 				`${module.toString(true)}${typeof err.line === "number" ? ` line ${err.line}` : ""}${typeof err.column === "number" ? ` column ${err.column}` : ""}`,
 			);
+
 			console.error(err);
 
 			throw err;
 		}
+
 		if (extension) {
 			await this._extHostLocalizationService.initializeLocalizedMessages(
 				extension,
@@ -130,6 +145,7 @@ export class ExtHostExtensionService extends AbstractExtHostExtensionService {
 			if (result === undefined) {
 				throw new Error(`Cannot load module '${request}'`);
 			}
+
 			return result;
 		};
 
@@ -141,6 +157,7 @@ export class ExtHostExtensionService extends AbstractExtHostExtensionService {
 					`code/extHost/willLoadExtensionCode/${extensionId}`,
 				);
 			}
+
 			initFn(_module, _exports, _require);
 
 			return <T>(
@@ -152,19 +169,23 @@ export class ExtHostExtensionService extends AbstractExtHostExtensionService {
 					`code/extHost/didLoadExtensionCode/${extensionId}`,
 				);
 			}
+
 			activationTimesBuilder.codeLoadingStop();
 		}
 	}
+
 	async $setRemoteEnvironment(_env: {
 		[key: string]: string | null;
 	}): Promise<void> {
 		return;
 	}
+
 	private async _waitForDebuggerAttachment(waitTimeout = 5000) {
 		// debugger attaches async, waiting for it fixes #106698 and #99222
 		if (!this._initData.environment.isExtensionDevelopmentDebug) {
 			return;
 		}
+
 		const deadline = Date.now() + waitTimeout;
 
 		while (Date.now() < deadline && !("__jsDebugIsReady" in globalThis)) {

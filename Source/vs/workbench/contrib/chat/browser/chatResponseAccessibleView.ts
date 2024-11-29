@@ -19,8 +19,11 @@ import { ChatTreeItem, IChatWidget, IChatWidgetService } from "./chat.js";
 
 export class ChatResponseAccessibleView implements IAccessibleViewImplentation {
 	readonly priority = 100;
+
 	readonly name = "panelChat";
+
 	readonly type = AccessibleViewType.View;
+
 	readonly when = ChatContextKeys.inChatSession;
 
 	getProvider(accessor: ServicesAccessor) {
@@ -31,11 +34,13 @@ export class ChatResponseAccessibleView implements IAccessibleViewImplentation {
 		if (!widget) {
 			return;
 		}
+
 		const chatInputFocused = widget.hasInputFocus();
 
 		if (chatInputFocused) {
 			widget.focusLastMessage();
 		}
+
 		const verifiedWidget: IChatWidget = widget;
 
 		const focusedItem = verifiedWidget.getFocus();
@@ -43,6 +48,7 @@ export class ChatResponseAccessibleView implements IAccessibleViewImplentation {
 		if (!focusedItem) {
 			return;
 		}
+
 		return new ChatResponseAccessibleProvider(
 			verifiedWidget,
 			focusedItem,
@@ -62,14 +68,20 @@ class ChatResponseAccessibleProvider
 		private readonly _chatInputFocused: boolean,
 	) {
 		super();
+
 		this._focusedItem = item;
 	}
+
 	readonly id = AccessibleViewProviderId.PanelChat;
+
 	readonly verbositySettingKey = AccessibilityVerbositySettingId.Chat;
+
 	readonly options = { type: AccessibleViewType.View };
+
 	provideContent(): string {
 		return this._getContent(this._focusedItem);
 	}
+
 	private _getContent(item: ChatTreeItem): string {
 		let responseContent = isResponseVM(item)
 			? item.response.toString()
@@ -78,11 +90,13 @@ class ChatResponseAccessibleProvider
 		if (!responseContent && "errorDetails" in item && item.errorDetails) {
 			responseContent = item.errorDetails.message;
 		}
+
 		return renderMarkdownAsPlaintext(
 			new MarkdownString(responseContent),
 			true,
 		);
 	}
+
 	onClose(): void {
 		this._widget.reveal(this._focusedItem);
 
@@ -92,6 +106,7 @@ class ChatResponseAccessibleProvider
 			this._widget.focus(this._focusedItem);
 		}
 	}
+
 	provideNextContent(): string | undefined {
 		const next = this._widget.getSibling(this._focusedItem, "next");
 
@@ -100,8 +115,10 @@ class ChatResponseAccessibleProvider
 
 			return this._getContent(next);
 		}
+
 		return;
 	}
+
 	providePreviousContent(): string | undefined {
 		const previous = this._widget.getSibling(this._focusedItem, "previous");
 
@@ -110,6 +127,7 @@ class ChatResponseAccessibleProvider
 
 			return this._getContent(previous);
 		}
+
 		return;
 	}
 }

@@ -17,7 +17,9 @@ interface Hint {
 }
 class ExcludeHintItem {
 	public configFileName?: string;
+
 	private readonly _item: vscode.StatusBarItem;
+
 	private _currentHint?: Hint;
 
 	constructor(private readonly telemetryReporter: TelemetryReporter) {
@@ -26,15 +28,20 @@ class ExcludeHintItem {
 			vscode.StatusBarAlignment.Right,
 			98 /* to the right of typescript version status (99) */,
 		);
+
 		this._item.name = vscode.l10n.t("TypeScript: Configure Excludes");
+
 		this._item.command = "js.projectStatus.command";
 	}
+
 	public getCurrentHint(): Hint {
 		return this._currentHint!;
 	}
+
 	public hide() {
 		this._item.hide();
 	}
+
 	public show(largeRoots?: string) {
 		this._currentHint = {
 			message: largeRoots
@@ -46,12 +53,17 @@ class ExcludeHintItem {
 						"To enable project-wide JavaScript/TypeScript language features, exclude large folders with source files that you do not work on.",
 					),
 		};
+
 		this._item.tooltip = this._currentHint.message;
+
 		this._item.text = vscode.l10n.t("Configure Excludes");
+
 		this._item.tooltip = vscode.l10n.t(
 			"To enable project-wide JavaScript/TypeScript language features, exclude large folders with source files that you do not work on.",
 		);
+
 		this._item.color = "#A5DF3B";
+
 		this._item.show();
 		/* __GDPR__
             "js.hintProjectExcludes" : {
@@ -71,6 +83,7 @@ function createLargeProjectMonitorFromTypeScript(
 	interface LargeProjectMessageItem extends vscode.MessageItem {
 		index: number;
 	}
+
 	return client.onProjectLanguageServiceStateChanged((body) => {
 		if (body.languageServiceEnabled) {
 			item.hide();
@@ -81,6 +94,7 @@ function createLargeProjectMonitorFromTypeScript(
 
 			if (configFileName) {
 				item.configFileName = configFileName;
+
 				vscode.window
 					.showWarningMessage<LargeProjectMessageItem>(
 						item.getCurrentHint().message,
@@ -127,16 +141,19 @@ export function create(client: ITypeScriptServiceClient): vscode.Disposable {
 	const toDispose: vscode.Disposable[] = [];
 
 	const item = new ExcludeHintItem(client.telemetryReporter);
+
 	toDispose.push(
 		vscode.commands.registerCommand("js.projectStatus.command", () => {
 			if (item.configFileName) {
 				onConfigureExcludesSelected(client, item.configFileName);
 			}
+
 			const { message } = item.getCurrentHint();
 
 			return vscode.window.showInformationMessage(message);
 		}),
 	);
+
 	toDispose.push(createLargeProjectMonitorFromTypeScript(item, client));
 
 	return vscode.Disposable.from(...toDispose);

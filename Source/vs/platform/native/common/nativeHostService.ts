@@ -21,6 +21,7 @@ export class NativeHostService implements INativeHostService {
 				context: windowId,
 				properties: (() => {
 					const properties = new Map<string, unknown>();
+
 					properties.set("windowId", windowId);
 
 					return properties;

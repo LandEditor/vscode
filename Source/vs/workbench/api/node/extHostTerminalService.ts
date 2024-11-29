@@ -22,6 +22,7 @@ export class ExtHostTerminalService extends BaseExtHostTerminalService {
 	) {
 		super(true, extHostCommands, extHostRpc);
 	}
+
 	public createTerminal(
 		name?: string,
 		shellPath?: string,
@@ -29,6 +30,7 @@ export class ExtHostTerminalService extends BaseExtHostTerminalService {
 	): vscode.Terminal {
 		return this.createTerminalFromOptions({ name, shellPath, shellArgs });
 	}
+
 	public createTerminalFromOptions(
 		options: vscode.TerminalOptions,
 		internalOptions?: ITerminalInternalOptions,
@@ -39,7 +41,9 @@ export class ExtHostTerminalService extends BaseExtHostTerminalService {
 			options,
 			options.name,
 		);
+
 		this._terminals.push(terminal);
+
 		terminal.create(
 			options,
 			this._serializeParentTerminal(options, internalOptions),

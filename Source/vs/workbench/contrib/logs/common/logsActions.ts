@@ -43,12 +43,15 @@ type LogLevelQuickPickItem = IQuickPickItem & {
 };
 type LogChannelQuickPickItem = IQuickPickItem & {
 	id: string;
+
 	resource: URI;
+
 	extensionId?: string;
 };
 
 export class SetLogLevelAction extends Action {
 	static readonly ID = "workbench.action.setLogLevel";
+
 	static readonly TITLE = nls.localize2("setLogLevel", "Set Log Level...");
 
 	constructor(
@@ -65,6 +68,7 @@ export class SetLogLevelAction extends Action {
 	) {
 		super(id, label);
 	}
+
 	override async run(): Promise<void> {
 		const logLevelOrChannel = await this.selectLogLevelOrChannel();
 
@@ -76,6 +80,7 @@ export class SetLogLevelAction extends Action {
 			}
 		}
 	}
+
 	private async selectLogLevelOrChannel(): Promise<
 		LogChannelQuickPickItem | LogLevel | null
 	> {
@@ -91,6 +96,7 @@ export class SetLogLevelAction extends Action {
 			if (!SetLogLevelAction.isLevelSettable(channel) || !channel.file) {
 				continue;
 			}
+
 			const channelLogLevel =
 				this.loggerService.getLogLevel(channel.file) ?? logLevel;
 
@@ -111,12 +117,15 @@ export class SetLogLevelAction extends Action {
 				logs.push(item);
 			}
 		}
+
 		const entries: (
 			| LogLevelQuickPickItem
 			| LogChannelQuickPickItem
 			| IQuickPickSeparator
 		)[] = [];
+
 		entries.push({ type: "separator", label: nls.localize("all", "All") });
+
 		entries.push(
 			...this.getLogLevelEntries(
 				defaultLogLevels.default,
@@ -130,14 +139,17 @@ export class SetLogLevelAction extends Action {
 				type: "separator",
 				label: nls.localize("extensionLogs", "Extension Logs"),
 			});
+
 			entries.push(
 				...extensionLogs.sort((a, b) => a.label.localeCompare(b.label)),
 			);
 		}
+
 		entries.push({
 			type: "separator",
 			label: nls.localize("loggers", "Logs"),
 		});
+
 		entries.push(...logs.sort((a, b) => a.label.localeCompare(b.label)));
 
 		return new Promise((resolve, reject) => {
@@ -146,37 +158,48 @@ export class SetLogLevelAction extends Action {
 			const quickPick = disposables.add(
 				this.quickInputService.createQuickPick({ useSeparators: true }),
 			);
+
 			quickPick.placeholder = nls.localize("selectlog", "Set Log Level");
+
 			quickPick.items = entries;
 
 			let selectedItem: IQuickPickItem | undefined;
+
 			disposables.add(
 				quickPick.onDidTriggerItemButton((e) => {
 					quickPick.hide();
+
 					this.defaultLogLevelsService.setDefaultLogLevel(
 						(<LogLevelQuickPickItem>e.item).level,
 					);
 				}),
 			);
+
 			disposables.add(
 				quickPick.onDidAccept((e) => {
 					selectedItem = quickPick.selectedItems[0];
+
 					quickPick.hide();
 				}),
 			);
+
 			disposables.add(
 				quickPick.onDidHide(() => {
 					const result = selectedItem
 						? ((<LogLevelQuickPickItem>selectedItem).level ??
 							<LogChannelQuickPickItem>selectedItem)
 						: null;
+
 					disposables.dispose();
+
 					resolve(result);
 				}),
 			);
+
 			quickPick.show();
 		});
 	}
+
 	static isLevelSettable(channel: IOutputChannelDescriptor): boolean {
 		return (
 			channel.log &&
@@ -185,6 +208,7 @@ export class SetLogLevelAction extends Action {
 			channel.id !== extensionTelemetryLogChannelId
 		);
 	}
+
 	private async setLogLevelForChannel(
 		logChannel: LogChannelQuickPickItem,
 	): Promise<void> {
@@ -212,6 +236,7 @@ export class SetLogLevelAction extends Action {
 			const quickPick = disposables.add(
 				this.quickInputService.createQuickPick(),
 			);
+
 			quickPick.placeholder = logChannel
 				? nls.localize(
 						"selectLogLevelFor",
@@ -219,28 +244,35 @@ export class SetLogLevelAction extends Action {
 						logChannel?.label,
 					)
 				: nls.localize("selectLogLevel", "Select log level");
+
 			quickPick.items = entries;
+
 			quickPick.activeItems = entries.filter(
 				(entry) => entry.level === this.loggerService.getLogLevel(),
 			);
 
 			let selectedItem: LogLevelQuickPickItem | undefined;
+
 			disposables.add(
 				quickPick.onDidTriggerItemButton((e) => {
 					quickPick.hide();
+
 					this.defaultLogLevelsService.setDefaultLogLevel(
 						(<LogLevelQuickPickItem>e.item).level,
 						logChannel.extensionId,
 					);
 				}),
 			);
+
 			disposables.add(
 				quickPick.onDidAccept((e) => {
 					selectedItem = quickPick
 						.selectedItems[0] as LogLevelQuickPickItem;
+
 					quickPick.hide();
 				}),
 			);
+
 			disposables.add(
 				quickPick.onDidHide(() => {
 					if (selectedItem) {
@@ -249,13 +281,17 @@ export class SetLogLevelAction extends Action {
 							selectedItem.level,
 						);
 					}
+
 					disposables.dispose();
+
 					resolve();
 				}),
 			);
+
 			quickPick.show();
 		});
 	}
+
 	private getLogLevelEntries(
 		defaultLogLevel: LogLevel,
 		currentLogLevel: LogLevel,
@@ -343,11 +379,13 @@ export class SetLogLevelAction extends Action {
 			},
 		];
 	}
+
 	private getLabel(level: LogLevel, current?: LogLevel): string {
 		const label = LogLevelToLocalizedString(level).value;
 
 		return level === current ? `$(check) ${label}` : label;
 	}
+
 	private getDescription(
 		level: LogLevel,
 		defaultLogLevel: LogLevel,
@@ -359,6 +397,7 @@ export class SetLogLevelAction extends Action {
 }
 export class OpenWindowSessionLogFileAction extends Action {
 	static readonly ID = "workbench.action.openSessionLogFile";
+
 	static readonly TITLE = nls.localize2(
 		"openSessionLogFile",
 		"Open Window Log File (Session)...",
@@ -378,6 +417,7 @@ export class OpenWindowSessionLogFileAction extends Action {
 	) {
 		super(id, label);
 	}
+
 	override async run(): Promise<void> {
 		const sessionResult = await this.quickInputService.pick(
 			this.getSessions().then((sessions) =>
@@ -431,6 +471,7 @@ export class OpenWindowSessionLogFileAction extends Action {
 			}
 		}
 	}
+
 	private async getSessions(): Promise<URI[]> {
 		const logsPath = this.environmentService.logsHome.with({
 			scheme: this.environmentService.logFile.scheme,
@@ -454,8 +495,10 @@ export class OpenWindowSessionLogFileAction extends Action {
 					.map((d) => d.resource),
 			);
 		}
+
 		return result;
 	}
+
 	private async getLogFiles(session: URI): Promise<URI[]> {
 		const stat = await this.fileService.resolve(session);
 
@@ -464,6 +507,7 @@ export class OpenWindowSessionLogFileAction extends Action {
 				.filter((stat) => !stat.isDirectory)
 				.map((stat) => stat.resource);
 		}
+
 		return [];
 	}
 }

@@ -34,6 +34,7 @@ export abstract class AbstractGotoLineQuickAccessProvider extends AbstractEditor
 	constructor() {
 		super({ canAcceptInBackground: true });
 	}
+
 	protected provideWithoutTextEditor(
 		picker: IQuickPick<
 			IGotoLineQuickPickItem,
@@ -46,11 +47,14 @@ export abstract class AbstractGotoLineQuickAccessProvider extends AbstractEditor
 			"cannotRunGotoLine",
 			"Open a text editor first to go to a line.",
 		);
+
 		picker.items = [{ label }];
+
 		picker.ariaLabel = label;
 
 		return Disposable.None;
 	}
+
 	protected provideWithTextEditor(
 		context: IQuickAccessTextEditorContext,
 		picker: IQuickPick<
@@ -73,6 +77,7 @@ export abstract class AbstractGotoLineQuickAccessProvider extends AbstractEditor
 					if (!this.isValidLineNumber(editor, item.lineNumber)) {
 						return;
 					}
+
 					this.gotoLocation(context, {
 						range: this.toRange(item.lineNumber, item.column),
 						keyMods: picker.keyMods,
@@ -117,11 +122,14 @@ export abstract class AbstractGotoLineQuickAccessProvider extends AbstractEditor
 			}
 			// Reveal
 			const range = this.toRange(position.lineNumber, position.column);
+
 			editor.revealRangeInCenter(range, ScrollType.Smooth);
 			// Decorate
 			this.addDecorations(editor, range);
 		};
+
 		updatePickerAndEditor();
+
 		disposables.add(picker.onDidChangeValue(() => updatePickerAndEditor()));
 		// Adjust line number visibility as needed
 		const codeEditor = getCodeEditor(editor);
@@ -133,6 +141,7 @@ export abstract class AbstractGotoLineQuickAccessProvider extends AbstractEditor
 
 			if (lineNumbers.renderType === RenderLineNumbersType.Relative) {
 				codeEditor.updateOptions({ lineNumbers: "on" });
+
 				disposables.add(
 					toDisposable(() =>
 						codeEditor.updateOptions({ lineNumbers: "relative" }),
@@ -140,8 +149,10 @@ export abstract class AbstractGotoLineQuickAccessProvider extends AbstractEditor
 				);
 			}
 		}
+
 		return disposables;
 	}
+
 	private toRange(lineNumber = 1, column = 1): IRange {
 		return {
 			startLineNumber: lineNumber,
@@ -150,6 +161,7 @@ export abstract class AbstractGotoLineQuickAccessProvider extends AbstractEditor
 			endColumn: column,
 		};
 	}
+
 	private parsePosition(editor: IEditor, value: string): IPosition {
 		// Support line-col formats of `line,col`, `line:col`, `line#col`
 		const numbers = value
@@ -164,6 +176,7 @@ export abstract class AbstractGotoLineQuickAccessProvider extends AbstractEditor
 			column: numbers[1],
 		};
 	}
+
 	private getPickLabel(
 		editor: IEditor,
 		lineNumber: number,
@@ -179,6 +192,7 @@ export abstract class AbstractGotoLineQuickAccessProvider extends AbstractEditor
 					column,
 				);
 			}
+
 			return localize("gotoLineLabel", "Go to line {0}.", lineNumber);
 		}
 		// Location invalid: show generic label
@@ -195,6 +209,7 @@ export abstract class AbstractGotoLineQuickAccessProvider extends AbstractEditor
 				lineCount,
 			);
 		}
+
 		return localize(
 			"gotoLineLabelEmpty",
 			"Current Line: {0}, Character: {1}. Type a line number to navigate to.",
@@ -202,6 +217,7 @@ export abstract class AbstractGotoLineQuickAccessProvider extends AbstractEditor
 			position.column,
 		);
 	}
+
 	private isValidLineNumber(
 		editor: IEditor,
 		lineNumber: number | undefined,
@@ -209,8 +225,10 @@ export abstract class AbstractGotoLineQuickAccessProvider extends AbstractEditor
 		if (!lineNumber || typeof lineNumber !== "number") {
 			return false;
 		}
+
 		return lineNumber > 0 && lineNumber <= this.lineCount(editor);
 	}
+
 	private isValidColumn(
 		editor: IEditor,
 		lineNumber: number,
@@ -219,17 +237,20 @@ export abstract class AbstractGotoLineQuickAccessProvider extends AbstractEditor
 		if (!column || typeof column !== "number") {
 			return false;
 		}
+
 		const model = this.getModel(editor);
 
 		if (!model) {
 			return false;
 		}
+
 		const positionCandidate = { lineNumber, column };
 
 		return model
 			.validatePosition(positionCandidate)
 			.equals(positionCandidate);
 	}
+
 	private lineCount(editor: IEditor): number {
 		return this.getModel(editor)?.getLineCount() ?? 0;
 	}

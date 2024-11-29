@@ -41,17 +41,22 @@ export interface IWorkspacesService {
 	enterWorkspace(
 		workspaceUri: URI,
 	): Promise<IEnterWorkspaceResult | undefined>;
+
 	createUntitledWorkspace(
 		folders?: IWorkspaceFolderCreationData[],
 		remoteAuthority?: string,
 	): Promise<IWorkspaceIdentifier>;
+
 	deleteUntitledWorkspace(workspace: IWorkspaceIdentifier): Promise<void>;
 
 	getWorkspaceIdentifier(workspaceUri: URI): Promise<IWorkspaceIdentifier>;
 	// Workspaces History
 	readonly onDidChangeRecentlyOpened: Event<void>;
+
 	addRecentlyOpened(recents: IRecent[]): Promise<void>;
+
 	removeRecentlyOpened(workspaces: URI[]): Promise<void>;
+
 	clearRecentlyOpened(): Promise<void>;
 
 	getRecentlyOpened(): Promise<IRecentlyOpened>;
@@ -63,23 +68,30 @@ export interface IWorkspacesService {
 //#region Workspaces Recently Opened
 export interface IRecentlyOpened {
 	workspaces: Array<IRecentWorkspace | IRecentFolder>;
+
 	files: IRecentFile[];
 }
 export type IRecent = IRecentWorkspace | IRecentFolder | IRecentFile;
 
 export interface IRecentWorkspace {
 	readonly workspace: IWorkspaceIdentifier;
+
 	label?: string;
+
 	readonly remoteAuthority?: string;
 }
 export interface IRecentFolder {
 	readonly folderUri: URI;
+
 	label?: string;
+
 	readonly remoteAuthority?: string;
 }
 export interface IRecentFile {
 	readonly fileUri: URI;
+
 	label?: string;
+
 	readonly remoteAuthority?: string;
 }
 export function isRecentWorkspace(curr: IRecent): curr is IRecentWorkspace {
@@ -125,14 +137,17 @@ export interface IStoredWorkspace extends IBaseWorkspace {
 }
 export interface IWorkspaceFolderCreationData {
 	readonly uri: URI;
+
 	readonly name?: string;
 }
 export interface IUntitledWorkspaceInfo {
 	readonly workspace: IWorkspaceIdentifier;
+
 	readonly remoteAuthority?: string;
 }
 export interface IEnterWorkspaceResult {
 	readonly workspace: IWorkspaceIdentifier;
+
 	readonly backupPath?: string;
 }
 /**
@@ -197,6 +212,7 @@ export function getStoredWorkspaceFolder(
 			folderPath = folderURI.path;
 		}
 	}
+
 	return { name: folderName, path: folderPath };
 }
 function massagePathForWindows(folderPath: string) {
@@ -208,6 +224,7 @@ function massagePathForWindows(folderPath: string) {
 	if (!isUNC(folderPath)) {
 		folderPath = toSlashes(folderPath);
 	}
+
 	return folderPath;
 }
 export function toWorkspaceFolders(
@@ -239,6 +256,7 @@ export function toWorkspaceFolders(
 				console.warn(e); // ignore
 			}
 		}
+
 		if (uri) {
 			// remove duplicates
 			const comparisonKey = extUri.getComparisonKey(uri);
@@ -248,6 +266,7 @@ export function toWorkspaceFolders(
 
 				const name =
 					configuredFolder.name || extUri.basenameOrAuthority(uri);
+
 				result.push(
 					new WorkspaceFolder(
 						{ uri, name, index: result.length },
@@ -257,6 +276,7 @@ export function toWorkspaceFolders(
 			}
 		}
 	}
+
 	return result;
 }
 /**
@@ -294,6 +314,7 @@ export function rewriteWorkspaceFileForNewLocation(
 			absolute =
 				!isRawFileWorkspaceFolder(folder) || isAbsolute(folder.path); // for existing workspaces, preserve whether a path was absolute or relative
 		}
+
 		rewrittenFolders.push(
 			getStoredWorkspaceFolder(
 				folderURI,
@@ -337,6 +358,7 @@ export function rewriteWorkspaceFileForNewLocation(
 			),
 		);
 	}
+
 	return newContent;
 }
 function doParseStoredWorkspace(path: URI, contents: string): IStoredWorkspace {
@@ -350,6 +372,7 @@ function doParseStoredWorkspace(path: URI, contents: string): IStoredWorkspace {
 	} else {
 		throw new Error(`${path} looks like an invalid workspace file.`);
 	}
+
 	return storedWorkspace;
 }
 //#endregion
@@ -357,19 +380,26 @@ function doParseStoredWorkspace(path: URI, contents: string): IStoredWorkspace {
 interface ISerializedRecentWorkspace {
 	readonly workspace: {
 		id: string;
+
 		configPath: string;
 	};
+
 	readonly label?: string;
+
 	readonly remoteAuthority?: string;
 }
 interface ISerializedRecentFolder {
 	readonly folderUri: string;
+
 	readonly label?: string;
+
 	readonly remoteAuthority?: string;
 }
 interface ISerializedRecentFile {
 	readonly fileUri: string;
+
 	readonly label?: string;
+
 	readonly remoteAuthority?: string;
 }
 interface ISerializedRecentlyOpened {
@@ -451,6 +481,7 @@ export function restoreRecentlyOpened(
 			});
 		}
 	}
+
 	return result;
 }
 export function toStoreData(
@@ -476,6 +507,7 @@ export function toStoreData(
 			});
 		}
 	}
+
 	for (const recent of recents.files) {
 		serialized.entries.push({
 			fileUri: recent.fileUri.toString(),
@@ -483,6 +515,7 @@ export function toStoreData(
 			remoteAuthority: recent.remoteAuthority,
 		});
 	}
+
 	return serialized;
 }
 //#endregion

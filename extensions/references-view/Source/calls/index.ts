@@ -26,9 +26,11 @@ export function register(
 				),
 				direction.value,
 			);
+
 			tree.setInput(input);
 		}
 	}
+
 	function setCallsDirection(
 		value: CallsDirection,
 		anchor: CallItem | unknown,
@@ -50,10 +52,12 @@ export function register(
 		} else if (oldInput instanceof CallsTreeInput) {
 			newInput = new CallsTreeInput(oldInput.location, direction.value);
 		}
+
 		if (newInput) {
 			tree.setInput(newInput);
 		}
 	}
+
 	context.subscriptions.push(
 		vscode.commands.registerCommand(
 			"references-view.showCallHierarchy",
@@ -82,6 +86,7 @@ function removeCallItem(item: CallItem | unknown): void {
 }
 class RichCallsDirection {
 	private static _key = "references-view.callHierarchyMode";
+
 	private _ctxMode = new ContextKey<"showIncoming" | "showOutgoing">(
 		"references-view.callHierarchyMode",
 	);
@@ -98,16 +103,20 @@ class RichCallsDirection {
 			this.value = _value;
 		}
 	}
+
 	get value() {
 		return this._value;
 	}
+
 	set value(value: CallsDirection) {
 		this._value = value;
+
 		this._ctxMode.set(
 			this._value === CallsDirection.Incoming
 				? "showIncoming"
 				: "showOutgoing",
 		);
+
 		this._mem.update(RichCallsDirection._key, value);
 	}
 }

@@ -45,6 +45,7 @@ function guessLocalUserHome(
 	if (firstFolder) {
 		return firstFolder.uri;
 	}
+
 	if (workspace.configuration) {
 		return dirname(workspace.configuration);
 	}

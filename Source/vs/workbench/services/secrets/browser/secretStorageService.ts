@@ -19,6 +19,7 @@ import { IBrowserWorkbenchEnvironmentService } from "../../environment/browser/e
 
 export class BrowserSecretStorageService extends BaseSecretStorageService {
 	private readonly _secretStorageProvider: ISecretStorageProvider | undefined;
+
 	private readonly _embedderSequencer: SequencerByKey<string> | undefined;
 
 	constructor(
@@ -38,39 +39,50 @@ export class BrowserSecretStorageService extends BaseSecretStorageService {
 		if (environmentService.options?.secretStorageProvider) {
 			this._secretStorageProvider =
 				environmentService.options.secretStorageProvider;
+
 			this._embedderSequencer = new SequencerByKey<string>();
 		}
 	}
+
 	override get(key: string): Promise<string | undefined> {
 		if (this._secretStorageProvider) {
 			return this._embedderSequencer!.queue(key, () =>
 				this._secretStorageProvider!.get(key),
 			);
 		}
+
 		return super.get(key);
 	}
+
 	override set(key: string, value: string): Promise<void> {
 		if (this._secretStorageProvider) {
 			return this._embedderSequencer!.queue(key, async () => {
 				await this._secretStorageProvider!.set(key, value);
+
 				this.onDidChangeSecretEmitter.fire(key);
 			});
 		}
+
 		return super.set(key, value);
 	}
+
 	override delete(key: string): Promise<void> {
 		if (this._secretStorageProvider) {
 			return this._embedderSequencer!.queue(key, async () => {
 				await this._secretStorageProvider!.delete(key);
+
 				this.onDidChangeSecretEmitter.fire(key);
 			});
 		}
+
 		return super.delete(key);
 	}
+
 	override get type() {
 		if (this._secretStorageProvider) {
 			return this._secretStorageProvider.type;
 		}
+
 		return super.type;
 	}
 }

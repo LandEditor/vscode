@@ -42,13 +42,16 @@ export class SettingsSearchFilterDropdownMenuActionViewItem extends DropdownMenu
 				menuAsChild: true,
 			},
 		);
+
 		this.suggestController = SuggestController.get(
 			this.searchWidget.inputWidget,
 		);
 	}
+
 	override render(container: HTMLElement): void {
 		super.render(container);
 	}
+
 	private doSearchWidgetAction(
 		queryToAppend: string,
 		triggerSuggest: boolean,
@@ -56,6 +59,7 @@ export class SettingsSearchFilterDropdownMenuActionViewItem extends DropdownMenu
 		this.searchWidget.setValue(
 			this.searchWidget.getValue().trimEnd() + " " + queryToAppend,
 		);
+
 		this.searchWidget.focus();
 
 		if (triggerSuggest && this.suggestController) {
@@ -115,6 +119,7 @@ export class SettingsSearchFilterDropdownMenuActionViewItem extends DropdownMenu
 					const newQuery = trimmedCurrentQuery
 						? trimmedCurrentQuery + " " + queryToAppend
 						: queryToAppend;
+
 					this.searchWidget.setValue(newQuery);
 				} else {
 					const queryWithRemovedTags = this.searchWidget
@@ -122,12 +127,15 @@ export class SettingsSearchFilterDropdownMenuActionViewItem extends DropdownMenu
 						.split(" ")
 						.filter((word) => word !== queryToAppend)
 						.join(" ");
+
 					this.searchWidget.setValue(queryWithRemovedTags);
 				}
+
 				this.searchWidget.focus();
 			},
 		};
 	}
+
 	getActions(): IAction[] {
 		return [
 			this.createToggleAction(

@@ -8,6 +8,7 @@ import { Disposable, Event, EventEmitter, SecretStorage } from "vscode";
 
 interface IAccountAccess {
 	onDidAccountAccessChange: Event<void>;
+
 	isAllowedAccess(account: AccountInfo): boolean;
 
 	setAllowedAccess(account: AccountInfo, allowed: boolean): void;
@@ -16,6 +17,7 @@ interface IAccountAccess {
 export class ScopedAccountAccess implements IAccountAccess {
 	private readonly _onDidAccountAccessChangeEmitter =
 		new EventEmitter<void>();
+
 	readonly onDidAccountAccessChange =
 		this._onDidAccountAccessChangeEmitter.event;
 
@@ -35,6 +37,7 @@ export class ScopedAccountAccess implements IAccountAccess {
 			this._clientId,
 			this._authority,
 		);
+
 		this._accountAccessSecretStorage.onDidChange(() => this.update());
 	}
 
@@ -54,6 +57,7 @@ export class ScopedAccountAccess implements IAccountAccess {
 			if (this.value.includes(account.homeAccountId)) {
 				return;
 			}
+
 			await this._accountAccessSecretStorage.store([
 				...this.value,
 				account.homeAccountId,
@@ -61,6 +65,7 @@ export class ScopedAccountAccess implements IAccountAccess {
 
 			return;
 		}
+
 		await this._accountAccessSecretStorage.store(
 			this.value.filter((id) => id !== account.homeAccountId),
 		);
@@ -86,6 +91,7 @@ export class AccountAccessSecretStorage {
 	private _disposable: Disposable;
 
 	private readonly _onDidChangeEmitter = new EventEmitter<void>();
+
 	readonly onDidChange: Event<void> = this._onDidChangeEmitter.event;
 
 	private readonly _key = `accounts-${this._cloudName}-${this._clientId}-${this._authority}`;
@@ -112,6 +118,7 @@ export class AccountAccessSecretStorage {
 		if (!value) {
 			return undefined;
 		}
+
 		return JSON.parse(value);
 	}
 

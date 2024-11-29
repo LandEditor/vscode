@@ -199,6 +199,7 @@ export class NativeHostMainService
 			(window) => window.id,
 		),
 	);
+
 	readonly onDidUnmaximizeWindow = Event.any(
 		Event.map(
 			this.windowsMainService.onDidUnmaximizeWindow,
@@ -229,6 +230,7 @@ export class NativeHostMainService
 		),
 		(windowId) => !!this.windowsMainService.getWindowById(windowId),
 	);
+
 	readonly onDidFocusMainWindow = Event.any(
 		Event.map(
 			Event.filter(
@@ -266,6 +268,7 @@ export class NativeHostMainService
 			(window) => window!.id,
 		),
 	);
+
 	readonly onDidFocusMainOrAuxiliaryWindow = Event.any(
 		this.onDidFocusMainWindow,
 		Event.map(
@@ -292,6 +295,7 @@ export class NativeHostMainService
 	private readonly _onDidChangePassword = this._register(
 		new Emitter<{ account: string; service: string }>(),
 	);
+
 	readonly onDidChangePassword = this._onDidChangePassword.event;
 
 	readonly onDidChangeDisplay = Event.debounce(
@@ -332,10 +336,12 @@ export class NativeHostMainService
 		windowId: number | undefined,
 		options: { includeAuxiliaryWindows: true },
 	): Promise<Array<IOpenedMainWindow | IOpenedAuxiliaryWindow>>;
+
 	getWindows(
 		windowId: number | undefined,
 		options: { includeAuxiliaryWindows: false },
 	): Promise<Array<IOpenedMainWindow>>;
+
 	async getWindows(
 		windowId: number | undefined,
 		options: { includeAuxiliaryWindows: boolean },
@@ -356,6 +362,7 @@ export class NativeHostMainService
 			}));
 
 		const auxiliaryWindows = [];
+
 		if (options.includeAuxiliaryWindows) {
 			auxiliaryWindows.push(
 				...this.auxiliaryWindowsMainService
@@ -382,6 +389,7 @@ export class NativeHostMainService
 		const activeWindow =
 			this.windowsMainService.getFocusedWindow() ||
 			this.windowsMainService.getLastActiveWindow();
+
 		if (activeWindow) {
 			return activeWindow.id;
 		}
@@ -393,9 +401,11 @@ export class NativeHostMainService
 		const activeWindow =
 			this.windowsMainService.getFocusedWindow() ||
 			this.windowsMainService.getLastActiveWindow();
+
 		if (activeWindow) {
 			return activeWindow.getBounds();
 		}
+
 		return undefined;
 	}
 
@@ -404,9 +414,11 @@ export class NativeHostMainService
 		windowId: number,
 	): Promise<VSBuffer | undefined> {
 		const window = this.windowById(windowId, fallbackWindowId);
+
 		if (window?.win) {
 			return VSBuffer.wrap(window.win.getNativeWindowHandle());
 		}
+
 		return undefined;
 	}
 
@@ -414,11 +426,13 @@ export class NativeHostMainService
 		windowId: number | undefined,
 		options?: IOpenEmptyWindowOptions,
 	): Promise<void>;
+
 	openWindow(
 		windowId: number | undefined,
 		toOpen: IWindowOpenable[],
 		options?: IOpenWindowOptions,
 	): Promise<void>;
+
 	openWindow(
 		windowId: number | undefined,
 		arg1?: IOpenEmptyWindowOptions | IWindowOpenable[],
@@ -476,6 +490,7 @@ export class NativeHostMainService
 		options?: INativeHostOptions,
 	): Promise<boolean> {
 		const window = this.windowById(options?.targetWindowId, windowId);
+
 		return window?.isFullScreen ?? false;
 	}
 
@@ -484,6 +499,7 @@ export class NativeHostMainService
 		options?: INativeHostOptions,
 	): Promise<void> {
 		const window = this.windowById(options?.targetWindowId, windowId);
+
 		window?.toggleFullScreen();
 	}
 
@@ -492,6 +508,7 @@ export class NativeHostMainService
 		options?: INativeHostOptions,
 	): Promise<void> {
 		const window = this.windowById(options?.targetWindowId, windowId);
+
 		window?.handleTitleDoubleClick();
 	}
 
@@ -499,6 +516,7 @@ export class NativeHostMainService
 		windowId: number | undefined,
 	): Promise<{ readonly point: IPoint; readonly display: IRectangle }> {
 		const point = screen.getCursorScreenPoint();
+
 		const display = screen.getDisplayNearestPoint(point);
 
 		return { point, display: display.bounds };
@@ -509,6 +527,7 @@ export class NativeHostMainService
 		options?: INativeHostOptions,
 	): Promise<boolean> {
 		const window = this.windowById(options?.targetWindowId, windowId);
+
 		return window?.win?.isMaximized() ?? false;
 	}
 
@@ -517,6 +536,7 @@ export class NativeHostMainService
 		options?: INativeHostOptions,
 	): Promise<void> {
 		const window = this.windowById(options?.targetWindowId, windowId);
+
 		window?.win?.maximize();
 	}
 
@@ -525,6 +545,7 @@ export class NativeHostMainService
 		options?: INativeHostOptions,
 	): Promise<void> {
 		const window = this.windowById(options?.targetWindowId, windowId);
+
 		window?.win?.unmaximize();
 	}
 
@@ -533,6 +554,7 @@ export class NativeHostMainService
 		options?: INativeHostOptions,
 	): Promise<void> {
 		const window = this.windowById(options?.targetWindowId, windowId);
+
 		window?.win?.minimize();
 	}
 
@@ -541,6 +563,7 @@ export class NativeHostMainService
 		options?: INativeHostOptions,
 	): Promise<void> {
 		const window = this.windowById(options?.targetWindowId, windowId);
+
 		window?.win?.moveTop();
 	}
 
@@ -550,6 +573,7 @@ export class NativeHostMainService
 		options?: INativeHostOptions,
 	): Promise<void> {
 		const window = this.windowById(options?.targetWindowId, windowId);
+
 		if (window?.win) {
 			if (window.win.isFullScreen()) {
 				const fullscreenLeftFuture = Event.toPromise(
@@ -560,7 +584,9 @@ export class NativeHostMainService
 						),
 					),
 				);
+
 				window.win.setFullScreen(false);
+
 				await fullscreenLeftFuture;
 			}
 
@@ -572,11 +598,14 @@ export class NativeHostMainService
 		windowId: number | undefined,
 		options: INativeHostOptions & {
 			height?: number;
+
 			backgroundColor?: string;
+
 			foregroundColor?: string;
 		},
 	): Promise<void> {
 		const window = this.windowById(options?.targetWindowId, windowId);
+
 		window?.updateWindowControls(options);
 	}
 
@@ -585,6 +614,7 @@ export class NativeHostMainService
 		options?: INativeHostOptions & { force?: boolean },
 	): Promise<void> {
 		const window = this.windowById(options?.targetWindowId, windowId);
+
 		window?.focus({ force: options?.force ?? false });
 	}
 
@@ -594,14 +624,18 @@ export class NativeHostMainService
 		height: number | undefined,
 	): Promise<void> {
 		const window = this.codeWindowById(windowId);
+
 		if (window?.win) {
 			const [windowWidth, windowHeight] = window.win.getSize();
+
 			const [minWindowWidth, minWindowHeight] =
 				window.win.getMinimumSize();
+
 			const [newMinWindowWidth, newMinWindowHeight] = [
 				width ?? minWindowWidth,
 				height ?? minWindowHeight,
 			];
+
 			const [newWindowWidth, newWindowHeight] = [
 				Math.max(windowWidth, newMinWindowWidth),
 				Math.max(windowHeight, newMinWindowHeight),
@@ -616,6 +650,7 @@ export class NativeHostMainService
 					newMinWindowHeight,
 				);
 			}
+
 			if (
 				windowWidth !== newWindowWidth ||
 				windowHeight !== newWindowHeight
@@ -642,8 +677,10 @@ export class NativeHostMainService
 		// Only install unless already existing
 		try {
 			const { symbolicLink } = await SymlinkSupport.stat(source);
+
 			if (symbolicLink && !symbolicLink.dangling) {
 				const linkTargetRealPath = await realpath(source);
+
 				if (target === linkTargetRealPath) {
 					return;
 				}
@@ -686,6 +723,7 @@ export class NativeHostMainService
 
 			try {
 				const command = `osascript -e "do shell script \\"mkdir -p /usr/local/bin && ln -sf \'${target}\' \'${source}\'\\" with administrator privileges"`;
+
 				await promisify(exec)(command);
 			} catch (error) {
 				throw new Error(
@@ -732,6 +770,7 @@ export class NativeHostMainService
 
 					try {
 						const command = `osascript -e "do shell script \\"rm \'${source}\'\\" with administrator privileges"`;
+
 						await promisify(exec)(command);
 					} catch (error) {
 						throw new Error(
@@ -742,8 +781,10 @@ export class NativeHostMainService
 							),
 						);
 					}
+
 					break;
 				}
+
 				case "ENOENT":
 					break; // ignore file not found
 				default:
@@ -754,6 +795,7 @@ export class NativeHostMainService
 
 	private async getShellCommandLink(): Promise<{
 		readonly source: string;
+
 		readonly target: string;
 	}> {
 		const target = resolve(
@@ -761,10 +803,12 @@ export class NativeHostMainService
 			"bin",
 			"code",
 		);
+
 		const source = `/usr/local/bin/${this.productService.applicationName}`;
 
 		// Ensure source exists
 		const sourceExists = await Promises.exists(target);
+
 		if (!sourceExists) {
 			throw new Error(
 				localize(
@@ -787,6 +831,7 @@ export class NativeHostMainService
 		options: MessageBoxOptions & INativeHostOptions,
 	): Promise<MessageBoxReturnValue> {
 		const window = this.windowById(options?.targetWindowId, windowId);
+
 		return this.dialogMainService.showMessageBox(
 			options,
 			window?.win ?? undefined,
@@ -798,6 +843,7 @@ export class NativeHostMainService
 		options: SaveDialogOptions & INativeHostOptions,
 	): Promise<SaveDialogReturnValue> {
 		const window = this.windowById(options?.targetWindowId, windowId);
+
 		return this.dialogMainService.showSaveDialog(
 			options,
 			window?.win ?? undefined,
@@ -809,6 +855,7 @@ export class NativeHostMainService
 		options: OpenDialogOptions & INativeHostOptions,
 	): Promise<OpenDialogReturnValue> {
 		const window = this.windowById(options?.targetWindowId, windowId);
+
 		return this.dialogMainService.showOpenDialog(
 			options,
 			window?.win ?? undefined,
@@ -820,6 +867,7 @@ export class NativeHostMainService
 		options: INativeOpenDialogOptions,
 	): Promise<void> {
 		const paths = await this.dialogMainService.pickFileFolder(options);
+
 		if (paths) {
 			await this.doOpenPicked(
 				await Promise.all(
@@ -840,6 +888,7 @@ export class NativeHostMainService
 		options: INativeOpenDialogOptions,
 	): Promise<void> {
 		const paths = await this.dialogMainService.pickFolder(options);
+
 		if (paths) {
 			await this.doOpenPicked(
 				paths.map((path) => ({ folderUri: URI.file(path) })),
@@ -854,6 +903,7 @@ export class NativeHostMainService
 		options: INativeOpenDialogOptions,
 	): Promise<void> {
 		const paths = await this.dialogMainService.pickFile(options);
+
 		if (paths) {
 			await this.doOpenPicked(
 				paths.map((path) => ({ fileUri: URI.file(path) })),
@@ -868,6 +918,7 @@ export class NativeHostMainService
 		options: INativeOpenDialogOptions,
 	): Promise<void> {
 		const paths = await this.dialogMainService.pickWorkspace(options);
+
 		if (paths) {
 			await this.doOpenPicked(
 				paths.map((path) => ({ workspaceUri: URI.file(path) })),
@@ -909,6 +960,7 @@ export class NativeHostMainService
 		options?: INativeHostOptions,
 	): Promise<void> {
 		const window = this.windowById(options?.targetWindowId, windowId);
+
 		window?.setRepresentedFilename(path);
 	}
 
@@ -918,6 +970,7 @@ export class NativeHostMainService
 		options?: INativeHostOptions,
 	): Promise<void> {
 		const window = this.windowById(options?.targetWindowId, windowId);
+
 		window?.setDocumentEdited(edited);
 	}
 
@@ -927,6 +980,7 @@ export class NativeHostMainService
 		defaultApplication?: string,
 	): Promise<boolean> {
 		this.environmentMainService.unsetSnapExportedVariables();
+
 		try {
 			if (matchesSomeScheme(url, Schemas.http, Schemas.https)) {
 				this.openExternalBrowser(url, defaultApplication);
@@ -949,6 +1003,7 @@ export class NativeHostMainService
 			this.configurationService.getValue<string>(
 				"workbench.externalBrowser",
 			);
+
 		if (!configuredBrowser) {
 			return shell.openExternal(url);
 		}
@@ -958,16 +1013,19 @@ export class NativeHostMainService
 			configuredBrowser.includes(win32.sep)
 		) {
 			const browserPathExists = await Promises.exists(configuredBrowser);
+
 			if (!browserPathExists) {
 				this.logService.error(
 					`Configured external browser path does not exist: ${configuredBrowser}`,
 				);
+
 				return shell.openExternal(url);
 			}
 		}
 
 		try {
 			const { default: open } = await import("open");
+
 			const res = await open(url, {
 				app: {
 					// Use `open.apps` helper to allow cross-platform browser
@@ -991,6 +1049,7 @@ export class NativeHostMainService
 					this.logService.error(
 						`Error openening external URL '${url}' using browser '${configuredBrowser}': ${data.toString()}`,
 					);
+
 					return shell.openExternal(url);
 				});
 			}
@@ -998,6 +1057,7 @@ export class NativeHostMainService
 			this.logService.error(
 				`Unable to open external URL '${url}' using browser '${configuredBrowser}' due to ${error}.`,
 			);
+
 			return shell.openExternal(url);
 		}
 	}
@@ -1011,6 +1071,7 @@ export class NativeHostMainService
 
 	async isAdmin(): Promise<boolean> {
 		let isAdmin: boolean;
+
 		if (isWindows) {
 			isAdmin = (await import("native-is-elevated")).default();
 		} else {
@@ -1032,6 +1093,7 @@ export class NativeHostMainService
 			this.environmentMainService.userDataPath,
 			"code-elevated",
 		);
+
 		await Promises.writeFile(
 			argsFile,
 			JSON.stringify({ source: source.fsPath, target: target.fsPath }),
@@ -1040,6 +1102,7 @@ export class NativeHostMainService
 		try {
 			await new Promise<void>((resolve, reject) => {
 				const sudoCommand: string[] = [`"${this.cliPath}"`];
+
 				if (options?.unlock) {
 					sudoCommand.push("--file-chmod");
 				}
@@ -1188,7 +1251,9 @@ export class NativeHostMainService
 		options?: INativeHostOptions,
 	): Promise<ArrayBufferLike | undefined> {
 		const window = this.windowById(options?.targetWindowId, windowId);
+
 		const captured = await window?.win?.webContents.capturePage();
+
 		return captured?.toJPEG(95);
 	}
 
@@ -1200,6 +1265,7 @@ export class NativeHostMainService
 		windowId: number | undefined,
 	): Promise<number | undefined> {
 		const window = this.windowById(undefined, windowId);
+
 		return window?.win?.webContents.getOSProcessId();
 	}
 
@@ -1309,6 +1375,7 @@ export class NativeHostMainService
 		items: ISerializableCommandAction[][],
 	): Promise<void> {
 		const window = this.codeWindowById(windowId);
+
 		window?.updateTouchBar(items);
 	}
 
@@ -1318,6 +1385,7 @@ export class NativeHostMainService
 
 	async notifyReady(windowId: number | undefined): Promise<void> {
 		const window = this.codeWindowById(windowId);
+
 		window?.setReady();
 	}
 
@@ -1333,6 +1401,7 @@ export class NativeHostMainService
 		options?: { disableExtensions?: boolean },
 	): Promise<void> {
 		const window = this.codeWindowById(windowId);
+
 		if (window) {
 			// Special case: support `transient` workspaces by preventing
 			// the reload and rather go back to an empty window. Transient
@@ -1341,11 +1410,13 @@ export class NativeHostMainService
 			// For: https://github.com/microsoft/vscode/issues/119695
 			if (isWorkspaceIdentifier(window.openedWorkspace)) {
 				const configPath = window.openedWorkspace.configPath;
+
 				if (configPath.scheme === Schemas.file) {
 					const workspace =
 						await this.workspacesManagementMainService.resolveLocalWorkspace(
 							configPath,
 						);
+
 					if (workspace?.transient) {
 						return this.openWindow(window.id, {
 							forceReuseWindow: true,
@@ -1369,6 +1440,7 @@ export class NativeHostMainService
 		options?: INativeHostOptions,
 	): Promise<void> {
 		const window = this.windowById(options?.targetWindowId, windowId);
+
 		return window?.win?.close();
 	}
 
@@ -1376,6 +1448,7 @@ export class NativeHostMainService
 		// If the user selected to exit from an extension development host window, do not quit, but just
 		// close the window unless this is the last window that is opened.
 		const window = this.windowsMainService.getLastActiveWindow();
+
 		if (
 			window?.isExtensionDevelopmentHost &&
 			this.windowsMainService.getWindowCount() > 1 &&
@@ -1406,11 +1479,14 @@ export class NativeHostMainService
 			const testProxy = this.configurationService.getValue<string>(
 				"integration-test.http.proxy",
 			);
+
 			if (testProxy) {
 				return testProxy;
 			}
 		}
+
 		const window = this.codeWindowById(windowId);
+
 		const session = window?.win?.webContents?.session;
 
 		return session?.resolveProxy(url);
@@ -1455,6 +1531,7 @@ export class NativeHostMainService
 		options?: Partial<OpenDevToolsOptions> & INativeHostOptions,
 	): Promise<void> {
 		const window = this.windowById(options?.targetWindowId, windowId);
+
 		window?.win?.webContents.openDevTools(
 			options?.mode
 				? { mode: options.mode, activate: options.activate }
@@ -1467,11 +1544,13 @@ export class NativeHostMainService
 		options?: INativeHostOptions,
 	): Promise<void> {
 		const window = this.windowById(options?.targetWindowId, windowId);
+
 		window?.win?.webContents.toggleDevTools();
 	}
 
 	async openGPUInfoWindow(windowId: number | undefined): Promise<void> {
 		const parentWindow = this.codeWindowById(windowId);
+
 		if (!parentWindow) {
 			return;
 		}
@@ -1482,13 +1561,17 @@ export class NativeHostMainService
 				defaultWindowState(),
 				{ forceNativeTitlebar: true },
 			);
+
 			options.backgroundColor = undefined;
 
 			const gpuInfoWindow = new BrowserWindow(options);
+
 			gpuInfoWindow.setMenuBarVisibility(false);
+
 			gpuInfoWindow.loadURL("chrome://gpu");
 
 			gpuInfoWindow.once("ready-to-show", () => gpuInfoWindow.show());
+
 			gpuInfoWindow.once(
 				"close",
 				() => (this.gpuInfoWindowId = undefined),
@@ -1497,6 +1580,7 @@ export class NativeHostMainService
 			parentWindow.win?.on("close", () => {
 				if (this.gpuInfoWindowId) {
 					BrowserWindow.fromId(this.gpuInfoWindowId)?.close();
+
 					this.gpuInfoWindowId = undefined;
 				}
 			});
@@ -1506,9 +1590,11 @@ export class NativeHostMainService
 
 		if (typeof this.gpuInfoWindowId === "number") {
 			const window = BrowserWindow.fromId(this.gpuInfoWindowId);
+
 			if (window?.isMinimized()) {
 				window?.restore();
 			}
+
 			window?.focus();
 		}
 	}
@@ -1523,6 +1609,7 @@ export class NativeHostMainService
 		duration: number,
 	): Promise<IV8Profile> {
 		const window = this.codeWindowById(windowId);
+
 		if (!window || !window.win) {
 			throw new Error();
 		}
@@ -1532,7 +1619,9 @@ export class NativeHostMainService
 			session,
 			this.logService,
 		);
+
 		const result = await profiler.inspect(duration);
+
 		return result;
 	}
 
@@ -1556,6 +1645,7 @@ export class NativeHostMainService
 		}
 
 		const Registry = await import("@vscode/windows-registry");
+
 		try {
 			return Registry.GetStringRegKey(hive, path, name);
 		} catch {
@@ -1594,6 +1684,7 @@ export class NativeHostMainService
 		}
 
 		const contents = webContents.fromId(windowId);
+
 		if (!contents) {
 			return undefined;
 		}

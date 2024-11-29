@@ -13,8 +13,10 @@ export class AutoRepliesPtyServiceContribution
 	implements IPtyServiceContribution
 {
 	private readonly _autoReplies: Map<string, string> = new Map();
+
 	private readonly _terminalProcesses: Map<number, ITerminalChildProcess> =
 		new Map();
+
 	private readonly _autoResponders: Map<
 		number,
 		Map<string, TerminalAutoResponder>
@@ -24,6 +26,7 @@ export class AutoRepliesPtyServiceContribution
 		@ILogService
 		private readonly _logService: ILogService,
 	) {}
+
 	async installAutoReply(match: string, reply: string) {
 		this._autoReplies.set(match, reply);
 		// If the auto reply exists on any existing terminals it will be overridden
@@ -37,6 +40,7 @@ export class AutoRepliesPtyServiceContribution
 
 				continue;
 			}
+
 			this._processInstallAutoReply(
 				persistentProcessId,
 				process,
@@ -45,19 +49,23 @@ export class AutoRepliesPtyServiceContribution
 			);
 		}
 	}
+
 	async uninstallAllAutoReplies() {
 		for (const match of this._autoReplies.keys()) {
 			for (const processAutoResponders of this._autoResponders.values()) {
 				processAutoResponders.get(match)?.dispose();
+
 				processAutoResponders.delete(match);
 			}
 		}
 	}
+
 	handleProcessReady(
 		persistentProcessId: number,
 		process: ITerminalChildProcess,
 	): void {
 		this._terminalProcesses.set(persistentProcessId, process);
+
 		this._autoResponders.set(persistentProcessId, new Map());
 
 		for (const [match, reply] of this._autoReplies.entries()) {
@@ -69,6 +77,7 @@ export class AutoRepliesPtyServiceContribution
 			);
 		}
 	}
+
 	handleProcessDispose(persistentProcessId: number): void {
 		const processAutoResponders =
 			this._autoResponders.get(persistentProcessId);
@@ -77,9 +86,11 @@ export class AutoRepliesPtyServiceContribution
 			for (const e of processAutoResponders.values()) {
 				e.dispose();
 			}
+
 			processAutoResponders.clear();
 		}
 	}
+
 	handleProcessInput(persistentProcessId: number, data: string) {
 		const processAutoResponders =
 			this._autoResponders.get(persistentProcessId);
@@ -90,6 +101,7 @@ export class AutoRepliesPtyServiceContribution
 			}
 		}
 	}
+
 	handleProcessResize(
 		persistentProcessId: number,
 		cols: number,
@@ -104,6 +116,7 @@ export class AutoRepliesPtyServiceContribution
 			}
 		}
 	}
+
 	private _processInstallAutoReply(
 		persistentProcessId: number,
 		terminalProcess: ITerminalChildProcess,
@@ -115,6 +128,7 @@ export class AutoRepliesPtyServiceContribution
 
 		if (processAutoResponders) {
 			processAutoResponders.get(match)?.dispose();
+
 			processAutoResponders.set(
 				match,
 				new TerminalAutoResponder(

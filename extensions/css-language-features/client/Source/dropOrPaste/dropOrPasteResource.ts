@@ -159,6 +159,7 @@ class DropOrPasteResourceProvider
 				return false;
 			}
 		}
+
 		return true;
 	}
 }

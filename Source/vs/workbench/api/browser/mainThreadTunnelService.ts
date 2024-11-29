@@ -66,7 +66,9 @@ export class MainThreadTunnelService
 	implements MainThreadTunnelServiceShape, PortAttributesProvider
 {
 	private readonly _proxy: ExtHostTunnelServiceShape;
+
 	private elevateionRetry: boolean = false;
+
 	private portsAttributesProviders: Map<number, PortAttributesSelector> =
 		new Map();
 
@@ -88,20 +90,24 @@ export class MainThreadTunnelService
 		private readonly contextKeyService: IContextKeyService,
 	) {
 		super();
+
 		this._proxy = extHostContext.getProxy(
 			ExtHostContext.ExtHostTunnelService,
 		);
+
 		this._register(
 			tunnelService.onTunnelOpened(() =>
 				this._proxy.$onDidTunnelsChange(),
 			),
 		);
+
 		this._register(
 			tunnelService.onTunnelClosed(() =>
 				this._proxy.$onDidTunnelsChange(),
 			),
 		);
 	}
+
 	private processFindingEnabled(): boolean {
 		return (
 			(!!this.configurationService.getValue(PORT_AUTO_FORWARD_SETTING) ||
@@ -110,6 +116,7 @@ export class MainThreadTunnelService
 				PORT_AUTO_SOURCE_SETTING_OUTPUT
 		);
 	}
+
 	async $setRemoteTunnelService(processId: number): Promise<void> {
 		this.remoteExplorerService.namedProcesses.set(
 			processId,
@@ -130,6 +137,7 @@ export class MainThreadTunnelService
 				),
 			);
 		}
+
 		this._register(
 			this.configurationService.onDidChangeConfiguration(async (e) => {
 				if (
@@ -144,6 +152,7 @@ export class MainThreadTunnelService
 				}
 			}),
 		);
+
 		this._register(
 			this.tunnelService.onAddedTunnelProvider(async () => {
 				if (
@@ -157,6 +166,7 @@ export class MainThreadTunnelService
 			}),
 		);
 	}
+
 	private _alreadyRegistered: boolean = false;
 
 	async $registerPortsAttributesProvider(
@@ -167,14 +177,17 @@ export class MainThreadTunnelService
 
 		if (!this._alreadyRegistered) {
 			this.remoteExplorerService.tunnelModel.addAttributesProvider(this);
+
 			this._alreadyRegistered = true;
 		}
 	}
+
 	async $unregisterPortsAttributesProvider(
 		providerHandle: number,
 	): Promise<void> {
 		this.portsAttributesProviders.delete(providerHandle);
 	}
+
 	async providePortAttributes(
 		ports: number[],
 		pid: number | undefined,
@@ -214,6 +227,7 @@ export class MainThreadTunnelService
 		if (appropriateHandles.length === 0) {
 			return [];
 		}
+
 		return this._proxy.$providePortAttributes(
 			appropriateHandles,
 			ports,
@@ -222,6 +236,7 @@ export class MainThreadTunnelService
 			token,
 		);
 	}
+
 	async $openTunnel(
 		tunnelOptions: TunnelOptions,
 		source: string,
@@ -240,6 +255,7 @@ export class MainThreadTunnelService
 		if (!tunnel || typeof tunnel === "string") {
 			return undefined;
 		}
+
 		if (
 			!this.elevateionRetry &&
 			tunnelOptions.localAddressPort !== undefined &&
@@ -252,8 +268,10 @@ export class MainThreadTunnelService
 		) {
 			this.elevationPrompt(tunnelOptions, tunnel, source);
 		}
+
 		return TunnelDtoConverter.fromServiceTunnel(tunnel);
 	}
+
 	private async elevationPrompt(
 		tunnelOptions: TunnelOptions,
 		tunnel: RemoteTunnel,
@@ -277,6 +295,7 @@ export class MainThreadTunnelService
 					),
 					run: async () => {
 						this.elevateionRetry = true;
+
 						await this.remoteExplorerService.close(
 							{
 								host: tunnel.tunnelRemoteHost,
@@ -284,6 +303,7 @@ export class MainThreadTunnelService
 							},
 							TunnelCloseReason.Other,
 						);
+
 						await this.remoteExplorerService.forward({
 							remote: tunnelOptions.remoteAddress,
 							local: tunnelOptions.localAddressPort,
@@ -294,18 +314,21 @@ export class MainThreadTunnelService
 							},
 							elevateIfNeeded: true,
 						});
+
 						this.elevateionRetry = false;
 					},
 				},
 			],
 		);
 	}
+
 	async $closeTunnel(remote: { host: string; port: number }): Promise<void> {
 		return this.remoteExplorerService.close(
 			remote,
 			TunnelCloseReason.Other,
 		);
 	}
+
 	async $getTunnels(): Promise<TunnelDescription[]> {
 		return (await this.tunnelService.tunnels).map((tunnel) => {
 			return {
@@ -319,9 +342,11 @@ export class MainThreadTunnelService
 			};
 		});
 	}
+
 	async $onFoundNewCandidates(candidates: CandidatePort[]): Promise<void> {
 		this.remoteExplorerService.onFoundNewCandidates(candidates);
 	}
+
 	async $setTunnelProvider(
 		features: TunnelProviderFeatures | undefined,
 		isResolver: boolean,
@@ -342,7 +367,9 @@ export class MainThreadTunnelService
 					} else if (typeof tunnelOrError === "string") {
 						return tunnelOrError;
 					}
+
 					const tunnel = tunnelOrError;
+
 					this.logService.trace(
 						`ForwardedPorts: (MainThreadTunnelService) New tunnel established by tunnel provider: ${tunnel?.remoteAddress.host}:${tunnel?.remoteAddress.port}`,
 					);
@@ -385,6 +412,7 @@ export class MainThreadTunnelService
 		if (features) {
 			this.tunnelService.setTunnelFeatures(features);
 		}
+
 		this.tunnelService.setTunnelProvider(tunnelProvider);
 		// At this point we clearly want the ports view/features since we have a tunnel factory
 		if (isResolver) {
@@ -394,6 +422,7 @@ export class MainThreadTunnelService
 			);
 		}
 	}
+
 	async $setCandidateFilter(): Promise<void> {
 		this.remoteExplorerService.setCandidateFilter(
 			(candidates: CandidatePort[]): Promise<CandidatePort[]> => {
@@ -401,6 +430,7 @@ export class MainThreadTunnelService
 			},
 		);
 	}
+
 	async $setCandidatePortSource(source: CandidatePortSource): Promise<void> {
 		// Must wait for the remote environment before trying to set settings there.
 		this.remoteAgentService
@@ -416,6 +446,7 @@ export class MainThreadTunnelService
 
 						break;
 					}
+
 					case CandidatePortSource.Output: {
 						Registry.as<IConfigurationRegistry>(
 							ConfigurationExtensions.Configuration,
@@ -430,6 +461,7 @@ export class MainThreadTunnelService
 
 						break;
 					}
+
 					case CandidatePortSource.Hybrid: {
 						Registry.as<IConfigurationRegistry>(
 							ConfigurationExtensions.Configuration,
@@ -444,6 +476,7 @@ export class MainThreadTunnelService
 
 						break;
 					}
+
 					default: // Do nothing, the defaults for these settings should be used.
 				}
 			})

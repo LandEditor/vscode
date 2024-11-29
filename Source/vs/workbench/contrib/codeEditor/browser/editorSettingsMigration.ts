@@ -23,6 +23,7 @@ Registry.as<IConfigurationMigrationRegistry>(
 
 			const writer: ISettingsWriter = (key, value) =>
 				configurationKeyValuePairs.push([`editor.${key}`, { value }]);
+
 			item.migrate(value, (key) => accessor(`editor.${key}`), writer);
 
 			return configurationKeyValuePairs;

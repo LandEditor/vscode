@@ -83,14 +83,17 @@ export abstract class AbstractNativeEnvironmentService
 	get userDataSyncHome(): URI {
 		return joinPath(this.appSettingsHome, "sync");
 	}
+
 	get logsHome(): URI {
 		if (!this.args.logsPath) {
 			const key = toLocalISOString(new Date()).replace(
 				/-|:|\.\d+Z$/g,
 				"",
 			);
+
 			this.args.logsPath = join(this.userDataPath, "logs", key);
 		}
+
 		return URI.file(this.args.logsPath);
 	}
 	@memoize
@@ -123,6 +126,7 @@ export abstract class AbstractNativeEnvironmentService
 		if (vscodePortable) {
 			return URI.file(join(vscodePortable, "argv.json"));
 		}
+
 		return joinPath(
 			this.userHome,
 			this.productService.dataFolderName,
@@ -144,16 +148,19 @@ export abstract class AbstractNativeEnvironmentService
 		if (cliBuiltinExtensionsDir) {
 			return resolve(cliBuiltinExtensionsDir);
 		}
+
 		return normalize(
 			join(FileAccess.asFileUri("").fsPath, "..", "extensions"),
 		);
 	}
+
 	get extensionsDownloadLocation(): URI {
 		const cliExtensionsDownloadDir = this.args["extensions-download-dir"];
 
 		if (cliExtensionsDownloadDir) {
 			return URI.file(resolve(cliExtensionsDownloadDir));
 		}
+
 		return URI.file(join(this.userDataPath, "CachedExtensionVSIXs"));
 	}
 	@memoize
@@ -163,16 +170,19 @@ export abstract class AbstractNativeEnvironmentService
 		if (cliExtensionsDir) {
 			return resolve(cliExtensionsDir);
 		}
+
 		const vscodeExtensions = env["VSCODE_EXTENSIONS"];
 
 		if (vscodeExtensions) {
 			return vscodeExtensions;
 		}
+
 		const vscodePortable = env["VSCODE_PORTABLE"];
 
 		if (vscodePortable) {
 			return join(vscodePortable, "extensions");
 		}
+
 		return joinPath(
 			this.userHome,
 			this.productService.dataFolderName,
@@ -188,9 +198,11 @@ export abstract class AbstractNativeEnvironmentService
 				if (/^[^:/?#]+?:\/\//.test(extensionDevelopmentPath)) {
 					return URI.parse(extensionDevelopmentPath);
 				}
+
 				return URI.file(normalize(extensionDevelopmentPath));
 			});
 		}
+
 		return undefined;
 	}
 	@memoize
@@ -209,20 +221,25 @@ export abstract class AbstractNativeEnvironmentService
 			if (/^[^:/?#]+?:\/\//.test(extensionTestsPath)) {
 				return URI.parse(extensionTestsPath);
 			}
+
 			return URI.file(normalize(extensionTestsPath));
 		}
+
 		return undefined;
 	}
+
 	get disableExtensions(): boolean | string[] {
 		if (this.args["disable-extensions"]) {
 			return true;
 		}
+
 		const disableExtensions = this.args["disable-extension"];
 
 		if (disableExtensions) {
 			if (typeof disableExtensions === "string") {
 				return [disableExtensions];
 			}
+
 			if (
 				Array.isArray(disableExtensions) &&
 				disableExtensions.length > 0
@@ -230,18 +247,22 @@ export abstract class AbstractNativeEnvironmentService
 				return disableExtensions;
 			}
 		}
+
 		return false;
 	}
 	@memoize
 	get debugExtensionHost(): IExtensionHostDebugParams {
 		return parseExtensionHostDebugPort(this.args, this.isBuilt);
 	}
+
 	get debugRenderer(): boolean {
 		return !!this.args.debugRenderer;
 	}
+
 	get isBuilt(): boolean {
 		return !env["VSCODE_DEV"];
 	}
+
 	get verbose(): boolean {
 		return !!this.args.verbose;
 	}
@@ -262,15 +283,18 @@ export abstract class AbstractNativeEnvironmentService
 				result.push([matches[1], matches[2]]);
 			}
 		}
+
 		return result.length ? result : undefined;
 	}
 	@memoize
 	get serviceMachineIdResource(): URI {
 		return joinPath(URI.file(this.userDataPath), "machineid");
 	}
+
 	get crashReporterId(): string | undefined {
 		return this.args["crash-reporter-id"];
 	}
+
 	get crashReporterDirectory(): string | undefined {
 		return this.args["crash-reporter-directory"];
 	}
@@ -294,25 +318,31 @@ export abstract class AbstractNativeEnvironmentService
 			if (vscodePortable) {
 				return URI.file(join(vscodePortable, "policy.json"));
 			}
+
 			return joinPath(
 				this.userHome,
 				this.productService.dataFolderName,
 				"policy.json",
 			);
 		}
+
 		return undefined;
 	}
+
 	editSessionId: string | undefined = this.args["editSessionId"];
 
 	get continueOn(): string | undefined {
 		return this.args["continueOn"];
 	}
+
 	set continueOn(value: string | undefined) {
 		this.args["continueOn"] = value;
 	}
+
 	get args(): NativeParsedArgs {
 		return this._args;
 	}
+
 	constructor(
 		private readonly _args: NativeParsedArgs,
 		private readonly paths: INativeEnvironmentPaths,
@@ -355,5 +385,6 @@ export function parseDebugParams(
 			// ignore
 		}
 	}
+
 	return { port, break: brk, debugId, env };
 }

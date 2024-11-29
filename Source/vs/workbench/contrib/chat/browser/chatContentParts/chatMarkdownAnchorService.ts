@@ -24,6 +24,7 @@ export interface IChatMarkdownAnchorService {
 	 * Returns the currently focused anchor if any
 	 */
 	readonly lastFocusedAnchor: InlineAnchorWidget | undefined;
+
 	register(widget: InlineAnchorWidget): IDisposable;
 }
 export class ChatMarkdownAnchorService
@@ -31,15 +32,19 @@ export class ChatMarkdownAnchorService
 	implements IChatMarkdownAnchorService
 {
 	declare readonly _serviceBrand: undefined;
+
 	private _widgets: InlineAnchorWidget[] = [];
+
 	private _lastFocusedWidget: InlineAnchorWidget | undefined = undefined;
 
 	get lastFocusedAnchor(): InlineAnchorWidget | undefined {
 		return this._lastFocusedWidget;
 	}
+
 	private setLastFocusedList(widget: InlineAnchorWidget | undefined): void {
 		this._lastFocusedWidget = widget;
 	}
+
 	register(widget: InlineAnchorWidget): IDisposable {
 		if (this._widgets.some((other) => other === widget)) {
 			throw new Error("Cannot register the same widget multiple times");
@@ -52,6 +57,7 @@ export class ChatMarkdownAnchorService
 		if (isActiveElement(element)) {
 			this.setLastFocusedList(widget);
 		}
+
 		return combinedDisposable(
 			addDisposableListener(element, "focus", () =>
 				this.setLastFocusedList(widget),

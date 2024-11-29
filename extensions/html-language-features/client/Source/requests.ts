@@ -21,6 +21,7 @@ export function serveFileSystemRequests(
 	runtime: Runtime,
 ): Disposable {
 	const disposables = [];
+
 	disposables.push(
 		client.onRequest(FsReadDirRequest.type, (uriString: string) => {
 			const uri = Uri.parse(uriString);
@@ -28,9 +29,11 @@ export function serveFileSystemRequests(
 			if (uri.scheme === "file" && runtime.fileFs) {
 				return runtime.fileFs.readDirectory(uriString);
 			}
+
 			return workspace.fs.readDirectory(uri);
 		}),
 	);
+
 	disposables.push(
 		client.onRequest(FsStatRequest.type, (uriString: string) => {
 			const uri = Uri.parse(uriString);
@@ -38,6 +41,7 @@ export function serveFileSystemRequests(
 			if (uri.scheme === "file" && runtime.fileFs) {
 				return runtime.fileFs.stat(uriString);
 			}
+
 			return workspace.fs.stat(uri);
 		}),
 	);
@@ -83,5 +87,6 @@ export interface FileStat {
 }
 export interface FileSystemProvider {
 	stat(uri: string): Promise<FileStat>;
+
 	readDirectory(uri: string): Promise<[string, FileType][]>;
 }

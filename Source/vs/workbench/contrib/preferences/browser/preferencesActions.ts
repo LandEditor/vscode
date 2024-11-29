@@ -32,6 +32,7 @@ import { IPreferencesService } from "../../../services/preferences/common/prefer
 
 export class ConfigureLanguageBasedSettingsAction extends Action {
 	static readonly ID = "workbench.action.configureLanguageBasedSettings";
+
 	static readonly LABEL = nls.localize2(
 		"configureLanguageBasedSettings",
 		"Configure Language Specific Settings...",
@@ -77,6 +78,7 @@ export class ConfigureLanguageBasedSettingsAction extends Action {
 						fakeResource = URI.file(filenames[0]);
 					}
 				}
+
 				return {
 					label: languageName,
 					iconClasses: getIconClasses(
@@ -106,6 +108,7 @@ export class ConfigureLanguageBasedSettingsAction extends Action {
 						);
 					}
 				}
+
 				return undefined;
 			});
 	}
@@ -135,9 +138,13 @@ CommandsRegistry.registerCommand(
 
 		const actions: {
 			command: string;
+
 			label: string;
+
 			keybinding: string;
+
 			description?: string;
+
 			precondition?: string;
 		}[] = [];
 
@@ -154,6 +161,7 @@ CommandsRegistry.registerCommand(
 			) {
 				continue;
 			}
+
 			actions.push({
 				command: editorAction.id,
 				label: editorAction.label,
@@ -166,6 +174,7 @@ CommandsRegistry.registerCommand(
 				keybinding: keybinding?.getLabel() ?? "Not set",
 			});
 		}
+
 		for (const menuItem of MenuRegistry.getMenuItems(
 			MenuId.CommandPalette,
 		)) {
@@ -176,6 +185,7 @@ CommandsRegistry.registerCommand(
 				) {
 					continue;
 				}
+
 				const title =
 					typeof menuItem.command.title === "string"
 						? menuItem.command.title
@@ -198,6 +208,7 @@ CommandsRegistry.registerCommand(
 				const keybinding = keybindingService.lookupKeybinding(
 					menuItem.command.id,
 				);
+
 				actions.push({
 					command: menuItem.command.id,
 					label,
@@ -207,6 +218,7 @@ CommandsRegistry.registerCommand(
 				});
 			}
 		}
+
 		return actions;
 	},
 );

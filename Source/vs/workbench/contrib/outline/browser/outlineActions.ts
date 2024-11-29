@@ -40,6 +40,7 @@ registerAction2(
 				},
 			});
 		}
+
 		runInView(_accessor: ServicesAccessor, view: IOutlinePane) {
 			view.collapseAll();
 		}
@@ -64,6 +65,7 @@ registerAction2(
 				},
 			});
 		}
+
 		runInView(_accessor: ServicesAccessor, view: IOutlinePane) {
 			view.expandAll();
 		}
@@ -86,6 +88,7 @@ registerAction2(
 				},
 			});
 		}
+
 		runInView(_accessor: ServicesAccessor, view: IOutlinePane) {
 			view.outlineViewState.followCursor =
 				!view.outlineViewState.followCursor;
@@ -109,6 +112,7 @@ registerAction2(
 				},
 			});
 		}
+
 		runInView(_accessor: ServicesAccessor, view: IOutlinePane) {
 			view.outlineViewState.filterOnType =
 				!view.outlineViewState.filterOnType;
@@ -132,6 +136,7 @@ registerAction2(
 				},
 			});
 		}
+
 		runInView(_accessor: ServicesAccessor, view: IOutlinePane) {
 			view.outlineViewState.sortBy = OutlineSortOrder.ByPosition;
 		}
@@ -154,6 +159,7 @@ registerAction2(
 				},
 			});
 		}
+
 		runInView(_accessor: ServicesAccessor, view: IOutlinePane) {
 			view.outlineViewState.sortBy = OutlineSortOrder.ByName;
 		}
@@ -176,6 +182,7 @@ registerAction2(
 				},
 			});
 		}
+
 		runInView(_accessor: ServicesAccessor, view: IOutlinePane) {
 			view.outlineViewState.sortBy = OutlineSortOrder.ByKind;
 		}

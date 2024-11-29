@@ -23,6 +23,7 @@ class NotebookKernelDetection
 	implements IWorkbenchContribution
 {
 	private _detectionMap = new Map<string, IDisposable>();
+
 	private readonly _localDisposableStore = this._register(
 		new DisposableStore(),
 	);
@@ -36,10 +37,13 @@ class NotebookKernelDetection
 		private readonly _notebookLoggingService: INotebookLoggingService,
 	) {
 		super();
+
 		this._registerListeners();
 	}
+
 	private _registerListeners() {
 		this._localDisposableStore.clear();
+
 		this._localDisposableStore.add(
 			this._extensionService.onWillActivateByEvent((e) => {
 				if (e.event.startsWith("onNotebook:")) {
@@ -55,10 +59,12 @@ class NotebookKernelDetection
 						// ignore
 						return;
 					}
+
 					let shouldStartDetection = false;
 
 					const extensionStatus =
 						this._extensionService.getExtensionsStatus();
+
 					this._extensionService.extensions.forEach((extension) => {
 						if (
 							extensionStatus[extension.identifier.value]
@@ -67,6 +73,7 @@ class NotebookKernelDetection
 							// already activated
 							return;
 						}
+
 						if (extension.activationEvents?.includes(e.event)) {
 							shouldStartDetection = true;
 						}
@@ -87,6 +94,7 @@ class NotebookKernelDetection
 									notebookType: notebookType,
 								},
 							);
+
 						this._detectionMap.set(notebookType, task);
 					}
 				}
@@ -94,6 +102,7 @@ class NotebookKernelDetection
 		);
 
 		let timer: any = null;
+
 		this._localDisposableStore.add(
 			this._extensionService.onDidChangeExtensionsStatus(() => {
 				if (timer) {
@@ -113,16 +122,20 @@ class NotebookKernelDetection
 								"KernelDetection",
 								`finish extension activation for ${notebookType}`,
 							);
+
 							taskToDelete.push(notebookType);
+
 							task.dispose();
 						}
 					}
+
 					taskToDelete.forEach((notebookType) => {
 						this._detectionMap.delete(notebookType);
 					});
 				});
 			}),
 		);
+
 		this._localDisposableStore.add({
 			dispose: () => {
 				if (timer) {

@@ -52,10 +52,12 @@ export interface ISymbolQuickPickItem
 	extends IPickerQuickAccessItem,
 		IQuickPickItemWithResource {
 	score?: number;
+
 	symbol?: IWorkspaceSymbol;
 }
 export class SymbolsQuickAccessProvider extends PickerQuickAccessProvider<ISymbolQuickPickItem> {
 	static PREFIX = "#";
+
 	private static readonly TYPING_SEARCH_DELAY = 200; // this delay accommodates for the user typing a word and then stops typing to start searching
 	private static TREAT_AS_GLOBAL_SYMBOL_TYPES = new Set<SymbolKind>([
 		SymbolKind.Class,
@@ -66,6 +68,7 @@ export class SymbolsQuickAccessProvider extends PickerQuickAccessProvider<ISymbo
 		SymbolKind.Package,
 		SymbolKind.Module,
 	]);
+
 	private delayer = this._register(
 		new ThrottledDelayer<ISymbolQuickPickItem[]>(
 			SymbolsQuickAccessProvider.TYPING_SEARCH_DELAY,
@@ -79,8 +82,10 @@ export class SymbolsQuickAccessProvider extends PickerQuickAccessProvider<ISymbo
 		if (editor) {
 			return getSelectionSearchString(editor) ?? undefined;
 		}
+
 		return undefined;
 	}
+
 	constructor(
 		@ILabelService
 		private readonly labelService: ILabelService,
@@ -103,6 +108,7 @@ export class SymbolsQuickAccessProvider extends PickerQuickAccessProvider<ISymbo
 			},
 		});
 	}
+
 	private get configuration() {
 		const editorConfig =
 			this.configurationService.getValue<IWorkbenchEditorConfiguration>()
@@ -115,6 +121,7 @@ export class SymbolsQuickAccessProvider extends PickerQuickAccessProvider<ISymbo
 			openSideBySideDirection: editorConfig?.openSideBySideDirection,
 		};
 	}
+
 	protected _getPicks(
 		filter: string,
 		disposables: DisposableStore,
@@ -122,12 +129,15 @@ export class SymbolsQuickAccessProvider extends PickerQuickAccessProvider<ISymbo
 	): Promise<Array<ISymbolQuickPickItem>> {
 		return this.getSymbolPicks(filter, undefined, token);
 	}
+
 	async getSymbolPicks(
 		filter: string,
 		options:
 			| {
 					skipLocal?: boolean;
+
 					skipSorting?: boolean;
+
 					delay?: number;
 			  }
 			| undefined,
@@ -137,14 +147,17 @@ export class SymbolsQuickAccessProvider extends PickerQuickAccessProvider<ISymbo
 			if (token.isCancellationRequested) {
 				return [];
 			}
+
 			return this.doGetSymbolPicks(prepareQuery(filter), options, token);
 		}, options?.delay);
 	}
+
 	private async doGetSymbolPicks(
 		query: IPreparedQuery,
 		options:
 			| {
 					skipLocal?: boolean;
+
 					skipSorting?: boolean;
 			  }
 			| undefined,
@@ -170,6 +183,7 @@ export class SymbolsQuickAccessProvider extends PickerQuickAccessProvider<ISymbo
 		if (token.isCancellationRequested) {
 			return [];
 		}
+
 		const symbolPicks: Array<ISymbolQuickPickItem> = [];
 		// Convert to symbol picks and apply filtering
 		const openSideBySideDirection =
@@ -188,6 +202,7 @@ export class SymbolsQuickAccessProvider extends PickerQuickAccessProvider<ISymbo
 			) {
 				continue;
 			}
+
 			const symbolLabel = symbol.name;
 
 			const symbolLabelWithIcon = `$(${SymbolKinds.toIcon(symbol.kind).id}) ${symbolLabel}`;
@@ -235,6 +250,7 @@ export class SymbolsQuickAccessProvider extends PickerQuickAccessProvider<ISymbo
 					}
 				}
 			}
+
 			const symbolUri = symbol.location.uri;
 
 			let containerLabel: string | undefined = undefined;
@@ -266,16 +282,20 @@ export class SymbolsQuickAccessProvider extends PickerQuickAccessProvider<ISymbo
 						containerQuery,
 					);
 				}
+
 				if (typeof containerScore !== "number") {
 					continue;
 				}
+
 				if (typeof symbolScore === "number") {
 					symbolScore += containerScore; // boost symbolScore by containerScore
 				}
 			}
+
 			const deprecated = symbol.tags
 				? symbol.tags.indexOf(SymbolTag.Deprecated) >= 0
 				: false;
+
 			symbolPicks.push({
 				symbol,
 				resource: symbolUri,
@@ -327,8 +347,10 @@ export class SymbolsQuickAccessProvider extends PickerQuickAccessProvider<ISymbo
 				this.compareSymbols(symbolA, symbolB),
 			);
 		}
+
 		return symbolPicks;
 	}
+
 	private async openSymbol(
 		provider: IWorkspaceSymbolProvider,
 		symbol: IWorkspaceSymbol,
@@ -337,6 +359,7 @@ export class SymbolsQuickAccessProvider extends PickerQuickAccessProvider<ISymbo
 			keyMods: IKeyMods;
 
 			forceOpenSideBySide?: boolean;
+
 			preserveFocus?: boolean;
 
 			forcePinned?: boolean;
@@ -389,6 +412,7 @@ export class SymbolsQuickAccessProvider extends PickerQuickAccessProvider<ISymbo
 			);
 		}
 	}
+
 	private compareSymbols(
 		symbolA: ISymbolQuickPickItem,
 		symbolB: ISymbolQuickPickItem,
@@ -401,6 +425,7 @@ export class SymbolsQuickAccessProvider extends PickerQuickAccessProvider<ISymbo
 			if (symbolA.score > symbolB.score) {
 				return -1;
 			}
+
 			if (symbolA.score < symbolB.score) {
 				return 1;
 			}
@@ -425,6 +450,7 @@ export class SymbolsQuickAccessProvider extends PickerQuickAccessProvider<ISymbo
 
 			return symbolAKind.localeCompare(symbolBKind);
 		}
+
 		return 0;
 	}
 }

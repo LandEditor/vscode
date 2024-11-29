@@ -39,6 +39,7 @@ export class DomEmitter<K extends keyof DOMEventMap> implements IDisposable {
 	get event(): BaseEvent<DOMEventMap[K]> {
 		return this.emitter.event;
 	}
+
 	constructor(
 		element: Window & typeof globalThis,
 		type: WindowEventMap,
@@ -55,6 +56,7 @@ export class DomEmitter<K extends keyof DOMEventMap> implements IDisposable {
 
 	constructor(element: EventHandler, type: K, useCapture?: boolean) {
 		const fn = (e: Event) => this.emitter.fire(e as DOMEventMap[K]);
+
 		this.emitter = new Emitter({
 			onWillAddFirstListener: () =>
 				element.addEventListener(type, fn, useCapture),
@@ -62,6 +64,7 @@ export class DomEmitter<K extends keyof DOMEventMap> implements IDisposable {
 				element.removeEventListener(type, fn, useCapture),
 		});
 	}
+
 	dispose(): void {
 		this.emitter.dispose();
 	}

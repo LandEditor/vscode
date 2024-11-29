@@ -36,6 +36,7 @@ export function inferredProjectCompilerOptions(
 	if (version.gte(API.v500)) {
 		projectConfig.allowImportingTsExtensions = true;
 	}
+
 	if (serviceConfig.implicitProjectConfiguration.checkJs) {
 		projectConfig.checkJs = true;
 
@@ -43,26 +44,33 @@ export function inferredProjectCompilerOptions(
 			projectConfig.allowJs = true;
 		}
 	}
+
 	if (serviceConfig.implicitProjectConfiguration.experimentalDecorators) {
 		projectConfig.experimentalDecorators = true;
 	}
+
 	if (serviceConfig.implicitProjectConfiguration.strictNullChecks) {
 		projectConfig.strictNullChecks = true;
 	}
+
 	if (serviceConfig.implicitProjectConfiguration.strictFunctionTypes) {
 		projectConfig.strictFunctionTypes = true;
 	}
+
 	if (serviceConfig.implicitProjectConfiguration.module) {
 		projectConfig.module = serviceConfig.implicitProjectConfiguration
 			.module as Proto.ModuleKind;
 	}
+
 	if (serviceConfig.implicitProjectConfiguration.target) {
 		projectConfig.target = serviceConfig.implicitProjectConfiguration
 			.target as Proto.ScriptTarget;
 	}
+
 	if (projectType === ProjectType.TypeScript) {
 		projectConfig.sourceMap = true;
 	}
+
 	return projectConfig;
 }
 function inferredProjectConfigSnippet(
@@ -79,6 +87,7 @@ function inferredProjectConfigSnippet(
 	if (projectType === ProjectType.TypeScript) {
 		delete baseConfig.allowImportingTsExtensions;
 	}
+
 	const compilerOptions = Object.keys(baseConfig).map(
 		(key) => `"${key}": ${JSON.stringify(baseConfig[key])}`,
 	);
@@ -128,6 +137,7 @@ export async function openOrCreateConfig(
 				),
 			);
 		}
+
 		return editor;
 	}
 }
@@ -141,6 +151,7 @@ export async function openProjectConfigOrPromptToCreate(
 		const doc = await vscode.workspace.openTextDocument(
 			client.toResource(configFilePath),
 		);
+
 		vscode.window.showTextDocument(
 			doc,
 			vscode.window.activeTextEditor?.viewColumn,
@@ -148,6 +159,7 @@ export async function openProjectConfigOrPromptToCreate(
 
 		return;
 	}
+
 	const CreateConfigItem: vscode.MessageItem = {
 		title:
 			projectType === ProjectType.TypeScript
@@ -196,6 +208,7 @@ export async function openProjectConfigForFile(
 
 		return;
 	}
+
 	const file = client.toTsFilePath(resource);
 	// TSServer errors when 'projectInfo' is invoked on a non js/ts file
 	if (!file || !client.toTsFilePath(resource)) {
@@ -207,6 +220,7 @@ export async function openProjectConfigForFile(
 
 		return;
 	}
+
 	let res: ServerResponse.Response<Proto.ProjectInfoResponse> | undefined;
 
 	try {
@@ -218,6 +232,7 @@ export async function openProjectConfigForFile(
 	} catch {
 		// noop
 	}
+
 	if (res?.type !== "response" || !res.body) {
 		vscode.window.showWarningMessage(
 			vscode.l10n.t(
@@ -227,6 +242,7 @@ export async function openProjectConfigForFile(
 
 		return;
 	}
+
 	return openProjectConfigOrPromptToCreate(
 		projectType,
 		client,

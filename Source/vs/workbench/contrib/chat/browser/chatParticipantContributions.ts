@@ -286,6 +286,7 @@ export class ChatExtensionPointHandler implements IWorkbenchContribution {
 	static readonly ID = "workbench.contrib.chatExtensionPointHandler";
 
 	private _viewContainer: ViewContainer;
+
 	private _participantRegistrationDisposables = new DisposableMap<string>();
 
 	constructor(
@@ -294,8 +295,11 @@ export class ChatExtensionPointHandler implements IWorkbenchContribution {
 		@ILogService private readonly logService: ILogService,
 	) {
 		this._viewContainer = this.registerViewContainer();
+
 		this.registerDefaultParticipantView();
+
 		this.registerChatEditingView();
+
 		this.handleAndRegisterChatExtensions();
 	}
 
@@ -307,6 +311,7 @@ export class ChatExtensionPointHandler implements IWorkbenchContribution {
 						this.logService.error(
 							`Extension '${extension.description.identifier.value}' CANNOT register participant with invalid name: ${providerDescriptor.name}. Name must match /^[\\w-]+$/.`,
 						);
+
 						continue;
 					}
 
@@ -321,6 +326,7 @@ export class ChatExtensionPointHandler implements IWorkbenchContribution {
 						this.logService.error(
 							`Extension '${extension.description.identifier.value}' CANNOT register participant with fullName that contains ambiguous characters: ${providerDescriptor.fullName}.`,
 						);
+
 						continue;
 					}
 
@@ -334,6 +340,7 @@ export class ChatExtensionPointHandler implements IWorkbenchContribution {
 						this.logService.error(
 							`Extension '${extension.description.identifier.value}' CANNOT register participant with fullName that contains invisible characters: ${providerDescriptor.fullName}.`,
 						);
+
 						continue;
 					}
 
@@ -347,6 +354,7 @@ export class ChatExtensionPointHandler implements IWorkbenchContribution {
 						this.logService.error(
 							`Extension '${extension.description.identifier.value}' CANNOT use API proposal: defaultChatParticipant.`,
 						);
+
 						continue;
 					}
 
@@ -361,6 +369,7 @@ export class ChatExtensionPointHandler implements IWorkbenchContribution {
 						this.logService.error(
 							`Extension '${extension.description.identifier.value}' CANNOT use API proposal: chatParticipantAdditions.`,
 						);
+
 						continue;
 					}
 
@@ -368,12 +377,15 @@ export class ChatExtensionPointHandler implements IWorkbenchContribution {
 						this.logService.error(
 							`Extension '${extension.description.identifier.value}' CANNOT register participant without both id and name.`,
 						);
+
 						continue;
 					}
 
 					const participantsDisambiguation: {
 						category: string;
+
 						description: string;
+
 						examples: string[];
 					}[] = [];
 
@@ -388,6 +400,7 @@ export class ChatExtensionPointHandler implements IWorkbenchContribution {
 
 					try {
 						const store = new DisposableStore();
+
 						store.add(
 							this._chatAgentService.registerAgent(
 								providerDescriptor.id,
@@ -461,8 +474,11 @@ export class ChatExtensionPointHandler implements IWorkbenchContribution {
 	private registerViewContainer(): ViewContainer {
 		// Register View Container
 		const title = localize2("chat.viewContainer.label", "Chat");
+
 		const icon = Codicon.commentDiscussion;
+
 		const viewContainerId = CHAT_SIDEBAR_PANEL_ID;
+
 		const viewContainer: ViewContainer =
 			Registry.as<IViewContainersRegistry>(
 				ViewExtensions.ViewContainersRegistry,
@@ -489,6 +505,7 @@ export class ChatExtensionPointHandler implements IWorkbenchContribution {
 	private registerDefaultParticipantView(): IDisposable {
 		// Register View. Name must be hardcoded because we want to show it even when the extension fails to load due to an API version incompatibility.
 		const name = "GitHub Copilot";
+
 		const viewDescriptor: IViewDescriptor[] = [
 			{
 				id: ChatViewId,
@@ -528,6 +545,7 @@ export class ChatExtensionPointHandler implements IWorkbenchContribution {
 				),
 			},
 		];
+
 		Registry.as<IViewsRegistry>(ViewExtensions.ViewsRegistry).registerViews(
 			viewDescriptor,
 			this._viewContainer,
@@ -545,8 +563,11 @@ export class ChatExtensionPointHandler implements IWorkbenchContribution {
 			"chatEditing.viewContainer.label",
 			"Copilot Edits",
 		);
+
 		const icon = Codicon.editSession;
+
 		const viewContainerId = CHAT_EDITING_SIDEBAR_PANEL_ID;
+
 		const viewContainer: ViewContainer =
 			Registry.as<IViewContainersRegistry>(
 				ViewExtensions.ViewContainersRegistry,
@@ -568,6 +589,7 @@ export class ChatExtensionPointHandler implements IWorkbenchContribution {
 			);
 
 		const id = "workbench.panel.chat.view.edits";
+
 		const viewDescriptor: IViewDescriptor[] = [
 			{
 				id,
@@ -608,6 +630,7 @@ export class ChatExtensionPointHandler implements IWorkbenchContribution {
 				),
 			},
 		];
+
 		Registry.as<IViewsRegistry>(ViewExtensions.ViewsRegistry).registerViews(
 			viewDescriptor,
 			viewContainer,
@@ -617,6 +640,7 @@ export class ChatExtensionPointHandler implements IWorkbenchContribution {
 			Registry.as<IViewContainersRegistry>(
 				ViewExtensions.ViewContainersRegistry,
 			).deregisterViewContainer(viewContainer);
+
 			Registry.as<IViewsRegistry>(
 				ViewExtensions.ViewsRegistry,
 			).deregisterViews(viewDescriptor, viewContainer);
@@ -651,12 +675,14 @@ export class ChatCompatibilityNotifier
 		// but this is only enabled for Copilot Chat now and it needs to be obvious.
 		const isInvalid =
 			ChatContextKeys.extensionInvalid.bindTo(contextKeyService);
+
 		this._register(
 			Event.runAndSubscribe(
 				extensionsWorkbenchService.onDidChangeExtensionsNotification,
 				() => {
 					const notification =
 						extensionsWorkbenchService.getExtensionsNotification();
+
 					const chatExtension = notification?.extensions.find((ext) =>
 						ExtensionIdentifier.equals(
 							ext.identifier.id,
@@ -664,8 +690,10 @@ export class ChatCompatibilityNotifier
 								?.chatExtensionId,
 						),
 					);
+
 					if (chatExtension) {
 						isInvalid.set(true);
+
 						this.registerWelcomeView(chatExtension);
 					} else {
 						isInvalid.set(false);
@@ -681,7 +709,9 @@ export class ChatCompatibilityNotifier
 		}
 
 		this.registeredWelcomeView = true;
+
 		const showExtensionLabel = localize("showExtension", "Show Extension");
+
 		const mainMessage = localize(
 			"chatFailErrorMessage",
 			"Chat failed to load because the installed version of the {0} extension is not compatible with this version of {1}. Please ensure that the {2} extension is up to date.",
@@ -689,11 +719,15 @@ export class ChatCompatibilityNotifier
 			this.productService.nameLong,
 			this.productService.defaultChatAgent?.chatName,
 		);
+
 		const commandButton = `[${showExtensionLabel}](command:${showExtensionsWithIdsCommandId}?${encodeURIComponent(JSON.stringify([[this.productService.defaultChatAgent?.chatExtensionId]]))})`;
+
 		const versionMessage = `${this.productService.defaultChatAgent?.chatName} version: ${chatExtension.version}`;
+
 		const viewsRegistry = Registry.as<IViewsRegistry>(
 			ViewExtensions.ViewsRegistry,
 		);
+
 		this._register(
 			viewsRegistry.registerViewWelcomeContent(ChatViewId, {
 				content: [mainMessage, commandButton, versionMessage].join(

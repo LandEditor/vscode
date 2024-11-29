@@ -40,24 +40,32 @@ import { ConflictDetector } from "../conflicts.js";
 
 export class CheckedStates<T extends object> {
 	private readonly _states = new WeakMap<T, boolean>();
+
 	private _checkedCount: number = 0;
+
 	private readonly _onDidChange = new Emitter<T>();
+
 	readonly onDidChange: Event<T> = this._onDidChange.event;
+
 	dispose(): void {
 		this._onDidChange.dispose();
 	}
+
 	get checkedCount() {
 		return this._checkedCount;
 	}
+
 	isChecked(obj: T): boolean {
 		return this._states.get(obj) ?? false;
 	}
+
 	updateChecked(obj: T, value: boolean): void {
 		const valueNow = this._states.get(obj);
 
 		if (valueNow === value) {
 			return;
 		}
+
 		if (valueNow === undefined) {
 			if (value) {
 				this._checkedCount += 1;
@@ -69,7 +77,9 @@ export class CheckedStates<T extends object> {
 				this._checkedCount -= 1;
 			}
 		}
+
 		this._states.set(obj, value);
+
 		this._onDidChange.fire(obj);
 	}
 }
@@ -87,20 +97,25 @@ export const enum BulkFileOperationType {
 }
 export class BulkFileOperation {
 	type = 0;
+
 	textEdits: BulkTextEdit[] = [];
+
 	originalEdits = new Map<number, ResourceTextEdit | ResourceFileEdit>();
+
 	newUri?: URI;
 
 	constructor(
 		readonly uri: URI,
 		readonly parent: BulkFileOperations,
 	) {}
+
 	addEdit(
 		index: number,
 		type: BulkFileOperationType,
 		edit: ResourceTextEdit | ResourceFileEdit,
 	) {
 		this.type |= type;
+
 		this.originalEdits.set(index, edit);
 
 		if (edit instanceof ResourceTextEdit) {
@@ -109,12 +124,14 @@ export class BulkFileOperation {
 			this.newUri = edit.newResource;
 		}
 	}
+
 	needsConfirmation(): boolean {
 		for (const [, edit] of this.originalEdits) {
 			if (!this.parent.checked.isChecked(edit)) {
 				return true;
 			}
 		}
+
 		return false;
 	}
 }
@@ -124,14 +141,17 @@ export class BulkCategory {
 		icon: Codicon.symbolFile,
 		needsConfirmation: false,
 	});
+
 	static keyOf(metadata?: WorkspaceEditMetadata) {
 		return metadata?.label || "<default>";
 	}
+
 	readonly operationByResource = new Map<string, BulkFileOperation>();
 
 	constructor(
 		readonly metadata: WorkspaceEditMetadata = BulkCategory._defaultMetadata,
 	) {}
+
 	get fileOperations(): IterableIterator<BulkFileOperation> {
 		return this.operationByResource.values();
 	}
@@ -147,9 +167,13 @@ export class BulkFileOperations {
 
 		return await result._init();
 	}
+
 	readonly checked = new CheckedStates<ResourceEdit>();
+
 	readonly fileOperations: BulkFileOperation[] = [];
+
 	readonly categories: BulkCategory[] = [];
+
 	readonly conflicts: ConflictDetector;
 
 	constructor(
@@ -164,10 +188,13 @@ export class BulkFileOperations {
 			_bulkEdit,
 		);
 	}
+
 	dispose(): void {
 		this.checked.dispose();
+
 		this.conflicts.dispose();
 	}
+
 	async _init() {
 		const operationByResource = new Map<string, BulkFileOperation>();
 
@@ -186,10 +213,12 @@ export class BulkFileOperations {
 
 			if (edit instanceof ResourceTextEdit) {
 				type = BulkFileOperationType.TextEdit;
+
 				uri = edit.resource;
 			} else if (edit instanceof ResourceFileEdit) {
 				if (edit.newResource && edit.oldResource) {
 					type = BulkFileOperationType.Rename;
+
 					uri = edit.oldResource;
 
 					if (
@@ -205,6 +234,7 @@ export class BulkFileOperations {
 					newToOldUri.set(edit.newResource, uri);
 				} else if (edit.oldResource) {
 					type = BulkFileOperationType.Delete;
+
 					uri = edit.oldResource;
 
 					if (
@@ -216,6 +246,7 @@ export class BulkFileOperations {
 					}
 				} else if (edit.newResource) {
 					type = BulkFileOperationType.Create;
+
 					uri = edit.newResource;
 
 					if (
@@ -234,6 +265,7 @@ export class BulkFileOperations {
 				// unsupported edit
 				continue;
 			}
+
 			const insert = (uri: URI, map: Map<string, BulkFileOperation>) => {
 				let key = extUri.getComparisonKey(uri, true);
 
@@ -241,15 +273,21 @@ export class BulkFileOperations {
 				// rename
 				if (!operation && newToOldUri.has(uri)) {
 					uri = newToOldUri.get(uri)!;
+
 					key = extUri.getComparisonKey(uri, true);
+
 					operation = map.get(key);
 				}
+
 				if (!operation) {
 					operation = new BulkFileOperation(uri, this);
+
 					map.set(key, operation);
 				}
+
 				operation.addEdit(idx, type, edit);
 			};
+
 			insert(uri, operationByResource);
 			// insert into "this" category
 			const key = BulkCategory.keyOf(edit.metadata);
@@ -258,11 +296,15 @@ export class BulkFileOperations {
 
 			if (!category) {
 				category = new BulkCategory(edit.metadata);
+
 				operationByCategory.set(key, category);
 			}
+
 			insert(uri, category.operationByResource);
 		}
+
 		operationByResource.forEach((value) => this.fileOperations.push(value));
+
 		operationByCategory.forEach((value) => this.categories.push(value));
 		// "correct" invalid parent-check child states that is
 		// unchecked file edits (rename, create, delete) uncheck
@@ -276,6 +318,7 @@ export class BulkFileOperations {
 						checked = checked && this.checked.isChecked(edit);
 					}
 				}
+
 				if (!checked) {
 					for (const edit of file.originalEdits.values()) {
 						this.checked.updateChecked(edit, checked);
@@ -296,6 +339,7 @@ export class BulkFileOperations {
 
 		return this;
 	}
+
 	getWorkspaceEdit(): ResourceEdit[] {
 		const result: ResourceEdit[] = [];
 
@@ -309,8 +353,10 @@ export class BulkFileOperations {
 
 				continue;
 			}
+
 			allAccepted = false;
 		}
+
 		if (allAccepted) {
 			return this._bulkEdit;
 		}
@@ -319,6 +365,7 @@ export class BulkFileOperations {
 
 		return result;
 	}
+
 	private async getFileEditOperation(
 		edit: ResourceFileEdit,
 	): Promise<ISingleEditOperation | undefined> {
@@ -327,6 +374,7 @@ export class BulkFileOperations {
 		if (!content) {
 			return undefined;
 		}
+
 		return EditOperation.replaceMove(
 			Range.lift({
 				startLineNumber: 0,
@@ -337,6 +385,7 @@ export class BulkFileOperations {
 			content.toString(),
 		);
 	}
+
 	async getFileEdits(uri: URI): Promise<ISingleEditOperation[]> {
 		for (const file of this.fileOperations) {
 			if (file.uri.toString() === uri.toString()) {
@@ -367,9 +416,11 @@ export class BulkFileOperations {
 						ignoreAll = true;
 					}
 				}
+
 				if (ignoreAll) {
 					return [];
 				}
+
 				return (await Promise.all(result))
 					.filter((r) => r !== undefined)
 					.sort((a, b) =>
@@ -377,8 +428,10 @@ export class BulkFileOperations {
 					);
 			}
 		}
+
 		return [];
 	}
+
 	getUriOfEdit(edit: ResourceEdit): URI {
 		for (const file of this.fileOperations) {
 			for (const value of file.originalEdits.values()) {
@@ -387,21 +440,28 @@ export class BulkFileOperations {
 				}
 			}
 		}
+
 		throw new Error("invalid edit");
 	}
 }
 export class BulkEditPreviewProvider implements ITextModelContentProvider {
 	private static readonly Schema = "vscode-bulkeditpreview-editor";
+
 	static emptyPreview = URI.from({ scheme: this.Schema, fragment: "empty" });
+
 	static fromPreviewUri(uri: URI): URI {
 		return URI.parse(uri.query);
 	}
+
 	private readonly _disposables = new DisposableStore();
+
 	private readonly _ready: Promise<any>;
+
 	private readonly _modelPreviewEdits = new Map<
 		string,
 		ISingleEditOperation[]
 	>();
+
 	private readonly _instanceId = generateUuid();
 
 	constructor(
@@ -419,11 +479,14 @@ export class BulkEditPreviewProvider implements ITextModelContentProvider {
 				this,
 			),
 		);
+
 		this._ready = this._init();
 	}
+
 	dispose(): void {
 		this._disposables.dispose();
 	}
+
 	asPreviewUri(uri: URI): URI {
 		return URI.from({
 			scheme: BulkEditPreviewProvider.Schema,
@@ -432,10 +495,12 @@ export class BulkEditPreviewProvider implements ITextModelContentProvider {
 			query: uri.toString(),
 		});
 	}
+
 	private async _init() {
 		for (const operation of this._operations.fileOperations) {
 			await this._applyTextEditsToPreviewModel(operation.uri);
 		}
+
 		this._disposables.add(
 			Event.debounce(
 				this._operations.checked.onDidChange,
@@ -443,10 +508,12 @@ export class BulkEditPreviewProvider implements ITextModelContentProvider {
 				MicrotaskDelay,
 			)((e) => {
 				const uri = this._operations.getUriOfEdit(e);
+
 				this._applyTextEditsToPreviewModel(uri);
 			}),
 		);
 	}
+
 	private async _applyTextEditsToPreviewModel(uri: URI) {
 		const model = await this._getOrCreatePreviewModel(uri);
 		// undo edits that have been done before
@@ -459,8 +526,10 @@ export class BulkEditPreviewProvider implements ITextModelContentProvider {
 		const newEdits = await this._operations.getFileEdits(uri);
 
 		const newUndoEdits = model.applyEdits(newEdits, true);
+
 		this._modelPreviewEdits.set(model.id, newUndoEdits);
 	}
+
 	private async _getOrCreatePreviewModel(uri: URI) {
 		const previewUri = this.asPreviewUri(uri);
 
@@ -475,6 +544,7 @@ export class BulkEditPreviewProvider implements ITextModelContentProvider {
 					);
 
 				const sourceModel = ref.object.textEditorModel;
+
 				model = this._modelService.createModel(
 					createTextBufferFactoryFromSnapshot(
 						sourceModel.createSnapshot(),
@@ -484,6 +554,7 @@ export class BulkEditPreviewProvider implements ITextModelContentProvider {
 					),
 					previewUri,
 				);
+
 				ref.dispose();
 			} catch {
 				// create NEW model
@@ -506,8 +577,10 @@ export class BulkEditPreviewProvider implements ITextModelContentProvider {
 				);
 			});
 		}
+
 		return model;
 	}
+
 	async provideTextContent(previewUri: URI) {
 		if (
 			previewUri.toString() ===
@@ -515,6 +588,7 @@ export class BulkEditPreviewProvider implements ITextModelContentProvider {
 		) {
 			return this._modelService.createModel("", null, previewUri);
 		}
+
 		await this._ready;
 
 		return this._modelService.getModel(previewUri);

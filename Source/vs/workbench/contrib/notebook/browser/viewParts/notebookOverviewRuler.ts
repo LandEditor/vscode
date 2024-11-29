@@ -19,6 +19,7 @@ import {
 
 export class NotebookOverviewRuler extends Themable {
 	private readonly _domNode: FastDomNode<HTMLCanvasElement>;
+
 	private _lanes = 3;
 
 	constructor(
@@ -28,16 +29,23 @@ export class NotebookOverviewRuler extends Themable {
 		themeService: IThemeService,
 	) {
 		super(themeService);
+
 		this._domNode = createFastDomNode(document.createElement("canvas"));
+
 		this._domNode.setPosition("relative");
+
 		this._domNode.setLayerHinting(true);
+
 		this._domNode.setContain("strict");
+
 		container.appendChild(this._domNode.domNode);
+
 		this._register(
 			notebookEditor.onDidChangeDecorations(() => {
 				this.layout();
 			}),
 		);
+
 		this._register(
 			PixelRatio.getInstance(
 				getWindow(this._domNode.domNode),
@@ -46,6 +54,7 @@ export class NotebookOverviewRuler extends Themable {
 			}),
 		);
 	}
+
 	layout() {
 		const width = 10;
 
@@ -58,13 +67,19 @@ export class NotebookOverviewRuler extends Themable {
 		const ratio = PixelRatio.getInstance(
 			getWindow(this._domNode.domNode),
 		).value;
+
 		this._domNode.setWidth(width);
+
 		this._domNode.setHeight(height);
+
 		this._domNode.domNode.width = width * ratio;
+
 		this._domNode.domNode.height = height * ratio;
 
 		const ctx = this._domNode.domNode.getContext("2d")!;
+
 		ctx.clearRect(0, 0, width * ratio, height * ratio);
+
 		this._render(
 			ctx,
 			width * ratio,
@@ -73,6 +88,7 @@ export class NotebookOverviewRuler extends Themable {
 			ratio,
 		);
 	}
+
 	private _render(
 		ctx: CanvasRenderingContext2D,
 		width: number,
@@ -100,6 +116,7 @@ export class NotebookOverviewRuler extends Themable {
 					(viewCell.layoutInfo.totalHeight / scrollHeight) *
 					ratio *
 					height;
+
 				decorations
 					.filter((decoration) => decoration.overviewRuler)
 					.forEach((decoration) => {
@@ -129,6 +146,7 @@ export class NotebookOverviewRuler extends Themable {
 										previous.push(current);
 									}
 								}
+
 								return previous;
 							}, [] as number[]);
 
@@ -153,6 +171,7 @@ export class NotebookOverviewRuler extends Themable {
 							default:
 								break;
 						}
+
 						const width =
 							overviewRuler.position ===
 							NotebookOverviewRulerLane.Full
@@ -165,6 +184,7 @@ export class NotebookOverviewRuler extends Themable {
 							const lineNumber = lineNumbers[i];
 
 							const offset = (lineNumber - 1) * lineHeight;
+
 							ctx.fillRect(
 								x,
 								currentFrom + offset,
@@ -172,6 +192,7 @@ export class NotebookOverviewRuler extends Themable {
 								lineHeight,
 							);
 						}
+
 						if (overviewRuler.includeOutput) {
 							ctx.fillStyle = fillStyle;
 
@@ -185,6 +206,7 @@ export class NotebookOverviewRuler extends Themable {
 								(fontInfo.lineHeight / scrollHeight) *
 								ratio *
 								height;
+
 							ctx.fillRect(
 								laneWidth,
 								currentFrom + outputOffset,
@@ -193,6 +215,7 @@ export class NotebookOverviewRuler extends Themable {
 							);
 						}
 					});
+
 				currentFrom += cellHeight;
 			}
 		}

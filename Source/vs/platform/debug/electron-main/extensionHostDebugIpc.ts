@@ -18,6 +18,7 @@ export class ElectronExtensionHostDebugBroadcastChannel<
 	constructor(private windowsMainService: IWindowsMainService) {
 		super();
 	}
+
 	override call(ctx: TContext, command: string, arg?: any): Promise<any> {
 		if (command === "openExtensionDevelopmentHostWindow") {
 			return this.openExtensionDevelopmentHostWindow(arg[0], arg[1]);
@@ -25,11 +26,13 @@ export class ElectronExtensionHostDebugBroadcastChannel<
 			return super.call(ctx, command, arg);
 		}
 	}
+
 	private async openExtensionDevelopmentHostWindow(
 		args: string[],
 		debugRenderer: boolean,
 	): Promise<IOpenExtensionWindowResult> {
 		const pargs = parseArgs(args, OPTIONS);
+
 		pargs.debugRenderer = debugRenderer;
 
 		const extDevPaths = pargs.extensionDevelopmentPath;
@@ -37,6 +40,7 @@ export class ElectronExtensionHostDebugBroadcastChannel<
 		if (!extDevPaths) {
 			return { success: false };
 		}
+
 		const [codeWindow] =
 			await this.windowsMainService.openExtensionDevelopmentHostWindow(
 				extDevPaths,
@@ -51,11 +55,13 @@ export class ElectronExtensionHostDebugBroadcastChannel<
 		if (!debugRenderer) {
 			return { success: true };
 		}
+
 		const win = codeWindow.win;
 
 		if (!win) {
 			return { success: true };
 		}
+
 		const debug = win.webContents.debugger;
 
 		let listeners = debug.isAttached() ? Infinity : 0;
@@ -64,6 +70,7 @@ export class ElectronExtensionHostDebugBroadcastChannel<
 			if (listeners++ === 0) {
 				debug.attach();
 			}
+
 			let closed = false;
 
 			const writeMessage = (message: object) => {
@@ -79,25 +86,34 @@ export class ElectronExtensionHostDebugBroadcastChannel<
 				params: unknown,
 				sessionId?: string,
 			) => writeMessage({ method, params, sessionId });
+
 			win.on("close", () => {
 				debug.removeListener("message", onMessage);
+
 				listener.end();
+
 				closed = true;
 			});
+
 			debug.addListener("message", onMessage);
 
 			let buf = Buffer.alloc(0);
+
 			listener.on("data", (data) => {
 				buf = Buffer.concat([buf, data]);
 
 				for (
 					let delimiter = buf.indexOf(0);
+
 					delimiter !== -1;
+
 					delimiter = buf.indexOf(0)
 				) {
 					let data: {
 						id: number;
+
 						sessionId: string;
+
 						params: {};
 					};
 
@@ -105,7 +121,9 @@ export class ElectronExtensionHostDebugBroadcastChannel<
 						const contents = buf
 							.slice(0, delimiter)
 							.toString("utf8");
+
 						buf = buf.slice(delimiter + 1);
+
 						data = JSON.parse(contents);
 					} catch (e) {
 						console.error("error reading cdp line", e);
@@ -130,9 +148,11 @@ export class ElectronExtensionHostDebugBroadcastChannel<
 						);
 				}
 			});
+
 			listener.on("error", (err) => {
 				console.error("error on cdp pipe:", err);
 			});
+
 			listener.on("close", () => {
 				closed = true;
 
@@ -141,7 +161,9 @@ export class ElectronExtensionHostDebugBroadcastChannel<
 				}
 			});
 		});
+
 		await new Promise<void>((r) => server.listen(0, r));
+
 		win.on("close", () => server.close());
 
 		return {

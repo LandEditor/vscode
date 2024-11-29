@@ -16,31 +16,43 @@ export class Position {
 	isBefore(other: Position): boolean {
 		return false;
 	}
+
 	isBeforeOrEqual(other: Position): boolean {
 		return false;
 	}
+
 	isAfter(other: Position): boolean {
 		return false;
 	}
+
 	isAfterOrEqual(other: Position): boolean {
 		return false;
 	}
+
 	isEqual(other: Position): boolean {
 		return false;
 	}
+
 	compareTo(other: Position): number {
 		return 0;
 	}
+
 	translate(lineDelta?: number, characterDelta?: number): Position;
+
 	translate(change: {
 		lineDelta?: number;
+
 		characterDelta?: number;
 	}): Position;
+
 	translate(_?: any, _2?: any): Position {
 		return new Position(0, 0);
 	}
+
 	with(line?: number, character?: number): Position;
+
 	with(change: { line?: number; character?: number }): Position;
+
 	with(_: any): Position {
 		return new Position(0, 0);
 	}
@@ -48,6 +60,7 @@ export class Position {
 
 export class Range {
 	readonly start: Position;
+
 	readonly end: Position;
 
 	constructor(
@@ -57,26 +70,34 @@ export class Range {
 		endCol: number,
 	) {
 		this.start = new Position(startLine, startCol);
+
 		this.end = new Position(endLine, endCol);
 	}
 
 	isEmpty = false;
+
 	isSingleLine = false;
+
 	contains(positionOrRange: Position | Range): boolean {
 		return false;
 	}
+
 	isEqual(other: Range): boolean {
 		return false;
 	}
+
 	intersection(range: Range): Range | undefined {
 		return undefined;
 	}
+
 	union(other: Range): Range {
 		return new Range(0, 0, 0, 0);
 	}
 
 	with(start?: Position, end?: Position): Range;
+
 	with(change: { start?: Position; end?: Position }): Range;
+
 	with(_: any): Range {
 		return new Range(0, 0, 0, 0);
 	}

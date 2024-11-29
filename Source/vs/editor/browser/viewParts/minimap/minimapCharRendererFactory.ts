@@ -16,6 +16,7 @@ import { prebakedMiniMaps } from "./minimapPreBaked.js";
  */
 export class MinimapCharRendererFactory {
 	private static lastCreated?: MinimapCharRenderer;
+
 	private static lastFontFamily?: string;
 	/**
 	 * Creates a new character renderer factory with the given scale.
@@ -30,6 +31,7 @@ export class MinimapCharRendererFactory {
 		) {
 			return this.lastCreated;
 		}
+
 		let factory: MinimapCharRenderer;
 
 		if (prebakedMiniMaps[scale]) {
@@ -40,7 +42,9 @@ export class MinimapCharRendererFactory {
 				scale,
 			);
 		}
+
 		this.lastFontFamily = fontFamily;
+
 		this.lastCreated = factory;
 
 		return factory;
@@ -52,13 +56,20 @@ export class MinimapCharRendererFactory {
 		const canvas = document.createElement("canvas");
 
 		const ctx = canvas.getContext("2d")!;
+
 		canvas.style.height = `${Constants.SAMPLED_CHAR_HEIGHT}px`;
+
 		canvas.height = Constants.SAMPLED_CHAR_HEIGHT;
+
 		canvas.width = Constants.CHAR_COUNT * Constants.SAMPLED_CHAR_WIDTH;
+
 		canvas.style.width =
 			Constants.CHAR_COUNT * Constants.SAMPLED_CHAR_WIDTH + "px";
+
 		ctx.fillStyle = "#ffffff";
+
 		ctx.font = `bold ${Constants.SAMPLED_CHAR_HEIGHT}px ${fontFamily}`;
+
 		ctx.textBaseline = "middle";
 
 		let x = 0;
@@ -69,8 +80,10 @@ export class MinimapCharRendererFactory {
 				x,
 				Constants.SAMPLED_CHAR_HEIGHT / 2,
 			);
+
 			x += Constants.SAMPLED_CHAR_WIDTH;
 		}
+
 		return ctx.getImageData(
 			0,
 			0,
@@ -94,10 +107,12 @@ export class MinimapCharRendererFactory {
 		if (source.length !== expectedLength) {
 			throw new Error("Unexpected source in MinimapCharRenderer");
 		}
+
 		const charData = MinimapCharRendererFactory._downsample(source, scale);
 
 		return new MinimapCharRenderer(charData, scale);
 	}
+
 	private static _downsampleChar(
 		source: Uint8ClampedArray,
 		sourceOffset: number,
@@ -155,20 +170,27 @@ export class MinimapCharRendererFactory {
 							Math.floor(sx) * Constants.RGBA_CHANNELS_CNT;
 
 						const weight = xBalance * yBalance;
+
 						samples += weight;
+
 						value +=
 							((source[sourceIndex] * source[sourceIndex + 3]) /
 								255) *
 							weight;
 					}
 				}
+
 				const final = value / samples;
+
 				brightest = Math.max(brightest, final);
+
 				dest[targetIndex++] = toUint8(final);
 			}
 		}
+
 		return brightest;
 	}
+
 	private static _downsample(
 		data: Uint8ClampedArray,
 		scale: number,
@@ -200,10 +222,13 @@ export class MinimapCharRendererFactory {
 					scale,
 				),
 			);
+
 			resultOffset += pixelsPerCharacter;
+
 			sourceOffset +=
 				Constants.SAMPLED_CHAR_WIDTH * Constants.RGBA_CHANNELS_CNT;
 		}
+
 		if (brightest > 0) {
 			const adjust = 255 / brightest;
 
@@ -211,6 +236,7 @@ export class MinimapCharRendererFactory {
 				result[i] *= adjust;
 			}
 		}
+
 		return result;
 	}
 }

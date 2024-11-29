@@ -39,6 +39,7 @@ export interface TextMateModelTokenizerHost {
 		tokens: Uint8Array,
 		stateDeltas: StateDeltas[],
 	): void;
+
 	reportTokenizationTime(
 		timeMs: number,
 		languageId: string,
@@ -50,9 +51,13 @@ export interface TextMateModelTokenizerHost {
 export class TextMateWorkerTokenizer extends MirrorTextModel {
 	private _tokenizerWithStateStore: TokenizerWithStateStore<StateStack> | null =
 		null;
+
 	private _isDisposed: boolean = false;
+
 	private readonly _maxTokenizationLineLength = observableValue(this, -1);
+
 	private _diffStateStacksRefEqFn?: typeof diffStateStacksRefEq;
+
 	private readonly _tokenizeDebouncer = new RunOnceScheduler(
 		() => this._tokenize(),
 		10,
@@ -69,30 +74,40 @@ export class TextMateWorkerTokenizer extends MirrorTextModel {
 		maxTokenizationLineLength: number,
 	) {
 		super(uri, lines, eol, versionId);
+
 		this._maxTokenizationLineLength.set(
 			maxTokenizationLineLength,
 			undefined,
 		);
+
 		this._resetTokenization();
 	}
+
 	public override dispose(): void {
 		this._isDisposed = true;
 
 		super.dispose();
 	}
+
 	public onLanguageId(
 		languageId: string,
 		encodedLanguageId: LanguageId,
 	): void {
 		this._languageId = languageId;
+
 		this._encodedLanguageId = encodedLanguageId;
+
 		this._resetTokenization();
 	}
+
 	override onEvents(e: IModelChangedEvent): void {
 		super.onEvents(e);
+
 		this._tokenizerWithStateStore?.store.acceptChanges(e.changes);
+
 		this._tokenizeDebouncer.schedule();
 	}
+
 	public acceptMaxTokenizationLineLength(
 		maxTokenizationLineLength: number,
 	): void {
@@ -101,14 +116,17 @@ export class TextMateWorkerTokenizer extends MirrorTextModel {
 			undefined,
 		);
 	}
+
 	public retokenize(startLineNumber: number, endLineNumberExclusive: number) {
 		if (this._tokenizerWithStateStore) {
 			this._tokenizerWithStateStore.store.invalidateEndStateRange(
 				new LineRange(startLineNumber, endLineNumberExclusive),
 			);
+
 			this._tokenizeDebouncer.schedule();
 		}
 	}
+
 	private async _resetTokenization() {
 		this._tokenizerWithStateStore = null;
 
@@ -129,6 +147,7 @@ export class TextMateWorkerTokenizer extends MirrorTextModel {
 		) {
 			return;
 		}
+
 		if (r.grammar) {
 			const tokenizationSupport = new TokenizationSupportWithLineLimit(
 				this._encodedLanguageId,
@@ -152,6 +171,7 @@ export class TextMateWorkerTokenizer extends MirrorTextModel {
 				Disposable.None,
 				this._maxTokenizationLineLength,
 			);
+
 			this._tokenizerWithStateStore = new TokenizerWithStateStore(
 				this._lines.length,
 				tokenizationSupport,
@@ -159,18 +179,23 @@ export class TextMateWorkerTokenizer extends MirrorTextModel {
 		} else {
 			this._tokenizerWithStateStore = null;
 		}
+
 		this._tokenize();
 	}
+
 	private async _tokenize(): Promise<void> {
 		if (this._isDisposed || !this._tokenizerWithStateStore) {
 			return;
 		}
+
 		if (!this._diffStateStacksRefEqFn) {
 			const { diffStateStacksRefEq } = await importAMDNodeModule<
 				typeof import("vscode-textmate")
 			>("vscode-textmate", "release/main.js");
+
 			this._diffStateStacksRefEqFn = diffStateStacksRefEq;
 		}
+
 		const startTime = new Date().getTime();
 
 		while (true) {
@@ -187,6 +212,7 @@ export class TextMateWorkerTokenizer extends MirrorTextModel {
 				if (lineToTokenize === null || tokenizedLines > 200) {
 					break;
 				}
+
 				tokenizedLines++;
 
 				const text = this._lines[lineToTokenize.lineNumber - 1];
@@ -208,6 +234,7 @@ export class TextMateWorkerTokenizer extends MirrorTextModel {
 						lineToTokenize.startState,
 						r.endState as StateStack,
 					);
+
 					stateDeltaBuilder.setState(
 						lineToTokenize.lineNumber,
 						delta,
@@ -215,7 +242,9 @@ export class TextMateWorkerTokenizer extends MirrorTextModel {
 				} else {
 					stateDeltaBuilder.setState(lineToTokenize.lineNumber, null);
 				}
+
 				LineTokens.convertToEndOffset(r.tokens, text.length);
+
 				tokenBuilder.add(lineToTokenize.lineNumber, r.tokens);
 
 				const deltaMs = new Date().getTime() - startTime;
@@ -225,10 +254,13 @@ export class TextMateWorkerTokenizer extends MirrorTextModel {
 					break;
 				}
 			}
+
 			if (tokenizedLines === 0) {
 				break;
 			}
+
 			const stateDeltas = stateDeltaBuilder.getStateDeltas();
+
 			this._host.setTokensAndStates(
 				this._versionId,
 				tokenBuilder.serialize(),
@@ -248,7 +280,9 @@ export class TextMateWorkerTokenizer extends MirrorTextModel {
 }
 class StateDeltaBuilder {
 	private _lastStartLineNumber: number = -1;
+
 	private _stateDeltas: StateDeltas[] = [];
+
 	public setState(lineNumber: number, stackDiff: StackDiff | null): void {
 		if (lineNumber === this._lastStartLineNumber + 1) {
 			this._stateDeltas[this._stateDeltas.length - 1].stateDeltas.push(
@@ -260,8 +294,10 @@ class StateDeltaBuilder {
 				stateDeltas: [stackDiff],
 			});
 		}
+
 		this._lastStartLineNumber = lineNumber;
 	}
+
 	public getStateDeltas(): StateDeltas[] {
 		return this._stateDeltas;
 	}

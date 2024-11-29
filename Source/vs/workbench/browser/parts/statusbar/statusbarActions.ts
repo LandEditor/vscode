@@ -32,8 +32,10 @@ export class ToggleStatusbarEntryVisibilityAction extends Action {
 		private model: StatusbarViewModel,
 	) {
 		super(id, label, undefined, true);
+
 		this.checked = !model.isHidden(id);
 	}
+
 	override async run(): Promise<void> {
 		if (this.model.isHidden(this.id)) {
 			this.model.show(this.id);
@@ -50,6 +52,7 @@ export class HideStatusbarEntryAction extends Action {
 	) {
 		super(id, localize("hide", "Hide '{0}'", name), undefined, true);
 	}
+
 	override async run(): Promise<void> {
 		this.model.hide(this.id);
 	}
@@ -62,6 +65,7 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
 	when: StatusBarFocused,
 	handler: (accessor: ServicesAccessor) => {
 		const statusBarService = accessor.get(IStatusbarService);
+
 		statusBarService.focusPreviousEntry();
 	},
 });
@@ -73,6 +77,7 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
 	when: StatusBarFocused,
 	handler: (accessor: ServicesAccessor) => {
 		const statusBarService = accessor.get(IStatusbarService);
+
 		statusBarService.focusNextEntry();
 	},
 });
@@ -83,7 +88,9 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
 	when: StatusBarFocused,
 	handler: (accessor: ServicesAccessor) => {
 		const statusBarService = accessor.get(IStatusbarService);
+
 		statusBarService.focus(false);
+
 		statusBarService.focusNextEntry();
 	},
 });
@@ -94,7 +101,9 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
 	when: StatusBarFocused,
 	handler: (accessor: ServicesAccessor) => {
 		const statusBarService = accessor.get(IStatusbarService);
+
 		statusBarService.focus(false);
+
 		statusBarService.focusPreviousEntry();
 	},
 });
@@ -124,8 +133,10 @@ class FocusStatusBarAction extends Action2 {
 			f1: true,
 		});
 	}
+
 	async run(accessor: ServicesAccessor): Promise<void> {
 		const layoutService = accessor.get(IWorkbenchLayoutService);
+
 		layoutService.focusPart(Parts.STATUSBAR_PART, getActiveWindow());
 	}
 }

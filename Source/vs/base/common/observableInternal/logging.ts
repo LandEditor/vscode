@@ -17,9 +17,13 @@ export function getLogger(): IObservableLogger | undefined {
 }
 interface IChangeInformation {
 	oldValue: unknown;
+
 	newValue: unknown;
+
 	change: unknown;
+
 	didChange: boolean;
+
 	hadValue: boolean;
 }
 export interface IObservableLogger {
@@ -27,29 +31,39 @@ export interface IObservableLogger {
 		observable: ObservableValue<any, any>,
 		info: IChangeInformation,
 	): void;
+
 	handleFromEventObservableTriggered(
 		observable: FromEventObservable<any, any>,
 		info: IChangeInformation,
 	): void;
+
 	handleAutorunCreated(autorun: AutorunObserver): void;
+
 	handleAutorunTriggered(autorun: AutorunObserver): void;
+
 	handleAutorunFinished(autorun: AutorunObserver): void;
+
 	handleDerivedCreated(observable: Derived<any>): void;
+
 	handleDerivedRecomputed(
 		observable: Derived<any>,
 		info: IChangeInformation,
 	): void;
+
 	handleBeginTransaction(transaction: TransactionImpl): void;
+
 	handleEndTransaction(): void;
 }
 export class ConsoleObservableLogger implements IObservableLogger {
 	private indentation = 0;
+
 	private textToConsoleArgs(text: ConsoleText): unknown[] {
 		return consoleTextToArgs([
 			normalText(repeat("|  ", this.indentation)),
 			text,
 		]);
 	}
+
 	private formatInfo(info: IChangeInformation): ConsoleText[] {
 		if (!info.hadValue) {
 			return [
@@ -60,6 +74,7 @@ export class ConsoleObservableLogger implements IObservableLogger {
 				normalText(` (initial)`),
 			];
 		}
+
 		return info.didChange
 			? [
 					normalText(` `),
@@ -74,6 +89,7 @@ export class ConsoleObservableLogger implements IObservableLogger {
 				]
 			: [normalText(` (unchanged)`)];
 	}
+
 	handleObservableChanged(
 		observable: IObservable<unknown, unknown>,
 		info: IChangeInformation,
@@ -86,6 +102,7 @@ export class ConsoleObservableLogger implements IObservableLogger {
 			]),
 		);
 	}
+
 	private readonly changedObservablesSets = new WeakMap<
 		object,
 		Set<IObservable<any, any>>
@@ -97,6 +114,7 @@ export class ConsoleObservableLogger implements IObservableLogger {
 		if (changes.size === 0) {
 			return undefined;
 		}
+
 		return styled(
 			" (changed deps: " +
 				[...changes].map((o) => o.debugName).join(", ") +
@@ -104,20 +122,25 @@ export class ConsoleObservableLogger implements IObservableLogger {
 			{ color: "gray" },
 		);
 	}
+
 	handleDerivedCreated(derived: Derived<unknown>): void {
 		const existingHandleChange = derived.handleChange;
+
 		this.changedObservablesSets.set(derived, new Set());
+
 		derived.handleChange = (observable, change) => {
 			this.changedObservablesSets.get(derived)!.add(observable);
 
 			return existingHandleChange.apply(derived, [observable, change]);
 		};
 	}
+
 	handleDerivedRecomputed(
 		derived: Derived<unknown>,
 		info: IChangeInformation,
 	): void {
 		const changedObservables = this.changedObservablesSets.get(derived)!;
+
 		console.log(
 			...this.textToConsoleArgs([
 				formatKind("derived recomputed"),
@@ -135,8 +158,10 @@ export class ConsoleObservableLogger implements IObservableLogger {
 				},
 			]),
 		);
+
 		changedObservables.clear();
 	}
+
 	handleFromEventObservableTriggered(
 		observable: FromEventObservable<any, any>,
 		info: IChangeInformation,
@@ -150,17 +175,22 @@ export class ConsoleObservableLogger implements IObservableLogger {
 			]),
 		);
 	}
+
 	handleAutorunCreated(autorun: AutorunObserver): void {
 		const existingHandleChange = autorun.handleChange;
+
 		this.changedObservablesSets.set(autorun, new Set());
+
 		autorun.handleChange = (observable, change) => {
 			this.changedObservablesSets.get(autorun)!.add(observable);
 
 			return existingHandleChange.apply(autorun, [observable, change]);
 		};
 	}
+
 	handleAutorunTriggered(autorun: AutorunObserver): void {
 		const changedObservables = this.changedObservablesSets.get(autorun)!;
+
 		console.log(
 			...this.textToConsoleArgs([
 				formatKind("autorun"),
@@ -177,18 +207,23 @@ export class ConsoleObservableLogger implements IObservableLogger {
 				},
 			]),
 		);
+
 		changedObservables.clear();
+
 		this.indentation++;
 	}
+
 	handleAutorunFinished(autorun: AutorunObserver): void {
 		this.indentation--;
 	}
+
 	handleBeginTransaction(transaction: TransactionImpl): void {
 		let transactionName = transaction.getDebugName();
 
 		if (transactionName === undefined) {
 			transactionName = "";
 		}
+
 		console.log(
 			...this.textToConsoleArgs([
 				formatKind("transaction"),
@@ -196,8 +231,10 @@ export class ConsoleObservableLogger implements IObservableLogger {
 				{ data: [{ fn: transaction._fn }] },
 			]),
 		);
+
 		this.indentation++;
 	}
+
 	handleEndTransaction(): void {
 		this.indentation--;
 	}
@@ -206,7 +243,9 @@ type ConsoleText =
 	| (ConsoleText | undefined)[]
 	| {
 			text: string;
+
 			style: string;
+
 			data?: unknown[];
 	  }
 	| {
@@ -228,6 +267,7 @@ function consoleTextToArgs(text: ConsoleText): unknown[] {
 			}
 		} else if ("text" in t) {
 			firstArg += `%c${t.text}`;
+
 			styles.push(t.style);
 
 			if (t.data) {
@@ -237,9 +277,11 @@ function consoleTextToArgs(text: ConsoleText): unknown[] {
 			data.push(...t.data);
 		}
 	}
+
 	process(text);
 
 	const result = [firstArg, ...styles];
+
 	result.push(...data);
 
 	return result;
@@ -254,7 +296,9 @@ function styled(
 	text: string,
 	options: {
 		color: string;
+
 		strikeThrough?: boolean;
+
 		bold?: boolean;
 	} = {
 		color: "black",
@@ -268,6 +312,7 @@ function styled(
 			"",
 		);
 	}
+
 	const style: Record<string, string> = {
 		color: options.color,
 	};
@@ -275,9 +320,11 @@ function styled(
 	if (options.strikeThrough) {
 		style["text-decoration"] = "line-through";
 	}
+
 	if (options.bold) {
 		style["font-weight"] = "bold";
 	}
+
 	return {
 		text,
 		style: objToCss(style),
@@ -292,6 +339,7 @@ function formatValue(value: unknown, availableLen: number): string {
 			if (value.length + 2 <= availableLen) {
 				return `"${value}"`;
 			}
+
 			return `"${value.substr(0, availableLen - 7)}"+...`;
 
 		case "boolean":
@@ -304,9 +352,11 @@ function formatValue(value: unknown, availableLen: number): string {
 			if (value === null) {
 				return "null";
 			}
+
 			if (Array.isArray(value)) {
 				return formatArray(value, availableLen);
 			}
+
 			return formatObject(value, availableLen);
 
 		case "symbol":
@@ -328,14 +378,18 @@ function formatArray(value: unknown[], availableLen: number): string {
 		if (!first) {
 			result += ", ";
 		}
+
 		if (result.length - 5 > availableLen) {
 			result += "...";
 
 			break;
 		}
+
 		first = false;
+
 		result += `${formatValue(val, availableLen - result.length)}`;
 	}
+
 	result += " ]";
 
 	return result;
@@ -349,14 +403,18 @@ function formatObject(value: object, availableLen: number): string {
 		if (!first) {
 			result += ", ";
 		}
+
 		if (result.length - 5 > availableLen) {
 			result += "...";
 
 			break;
 		}
+
 		first = false;
+
 		result += `${key}: ${formatValue(val, availableLen - result.length)}`;
 	}
+
 	result += " }";
 
 	return result;
@@ -367,11 +425,13 @@ function repeat(str: string, count: number): string {
 	for (let i = 1; i <= count; i++) {
 		result += str;
 	}
+
 	return result;
 }
 function padStr(str: string, length: number): string {
 	while (str.length < length) {
 		str += " ";
 	}
+
 	return str;
 }

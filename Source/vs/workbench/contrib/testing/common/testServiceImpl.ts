@@ -69,19 +69,28 @@ import {
 
 export class TestService extends Disposable implements ITestService {
 	declare readonly _serviceBrand: undefined;
+
 	private testControllers = observableValue<
 		ReadonlyMap<string, IMainThreadTestController>
 	>("testControllers", new Map<string, IMainThreadTestController>());
+
 	private testExtHosts = new Set<IMainThreadTestHostProxy>();
+
 	private readonly cancelExtensionTestRunEmitter = new Emitter<{
 		runId: string | undefined;
+
 		taskId: string | undefined;
 	}>();
+
 	private readonly willProcessDiffEmitter = new Emitter<TestsDiff>();
+
 	private readonly didProcessDiffEmitter = new Emitter<TestsDiff>();
+
 	private readonly testRefreshCancellations =
 		new Set<CancellationTokenSource>();
+
 	private readonly isRefreshingTests: IContextKey<boolean>;
+
 	private readonly activeEditorHasTests: IContextKey<boolean>;
 	/**
 	 * Cancellation for runs requested by the user being managed by the UI.
@@ -155,11 +164,15 @@ export class TestService extends Disposable implements ITestService {
 		private readonly workspaceTrustRequestService: IWorkspaceTrustRequestService,
 	) {
 		super();
+
 		this.excluded = instantiationService.createInstance(TestExclusions);
+
 		this.isRefreshingTests =
 			TestingContextKeys.isRefreshingTests.bindTo(contextKeyService);
+
 		this.activeEditorHasTests =
 			TestingContextKeys.activeEditorHasTests.bindTo(contextKeyService);
+
 		this._register(
 			bindContextKey(
 				TestingContextKeys.providerCount,
@@ -181,18 +194,22 @@ export class TestService extends Disposable implements ITestService {
 					),
 				),
 			);
+
 		bindCapability(
 			TestingContextKeys.canRefreshTests,
 			TestControllerCapability.Refresh,
 		);
+
 		bindCapability(
 			TestingContextKeys.canGoToRelatedCode,
 			TestControllerCapability.CodeRelatedToTest,
 		);
+
 		bindCapability(
 			TestingContextKeys.canGoToRelatedTest,
 			TestControllerCapability.TestRelatedToCode,
 		);
+
 		this._register(
 			editorService.onDidActiveEditorChange(() =>
 				this.updateEditorContextKeys(),
@@ -233,6 +250,7 @@ export class TestService extends Disposable implements ITestService {
 		// to use default profiles for each controller when possible.
 		const byProfile: {
 			profile: ITestRunProfile;
+
 			tests: InternalTestItem[];
 		}[] = [];
 
@@ -246,6 +264,7 @@ export class TestService extends Disposable implements ITestService {
 
 				continue;
 			}
+
 			const bestProfile = this.testProfiles.getDefaultProfileForTest(
 				req.group,
 				test,
@@ -254,8 +273,10 @@ export class TestService extends Disposable implements ITestService {
 			if (!bestProfile) {
 				continue;
 			}
+
 			byProfile.push({ profile: bestProfile, tests: [test] });
 		}
+
 		const resolved: ResolvedTestRunRequest = {
 			targets: byProfile.map(({ profile, tests }) => ({
 				profileId: profile.profileId,
@@ -302,6 +323,7 @@ export class TestService extends Disposable implements ITestService {
 				}
 			}
 		}
+
 		return this.runResolvedTests(resolved, token);
 	}
 	/** @inheritdoc */
@@ -312,6 +334,7 @@ export class TestService extends Disposable implements ITestService {
 		if (!req.exclude) {
 			req.exclude = [...this.excluded.all];
 		}
+
 		const trust =
 			await this.workspaceTrustRequestService.requestWorkspaceTrust({
 				message: localize(
@@ -323,6 +346,7 @@ export class TestService extends Disposable implements ITestService {
 		if (!trust) {
 			return;
 		}
+
 		const byController = groupBy(req.targets, (a, b) =>
 			a.controllerId.localeCompare(b.controllerId),
 		);
@@ -354,6 +378,7 @@ export class TestService extends Disposable implements ITestService {
 					}
 				}),
 		);
+
 		await Promise.all(requests);
 	}
 	/**
@@ -366,6 +391,7 @@ export class TestService extends Disposable implements ITestService {
 		if (!req.exclude) {
 			req.exclude = [...this.excluded.all];
 		}
+
 		const result = this.testResults.createLiveResult(req);
 
 		const trust =
@@ -381,8 +407,10 @@ export class TestService extends Disposable implements ITestService {
 
 			return result;
 		}
+
 		try {
 			const cancelSource = new CancellationTokenSource(token);
+
 			this.uiRunningTests.set(result.id, cancelSource);
 
 			const byController = groupBy(req.targets, (a, b) =>
@@ -419,12 +447,15 @@ export class TestService extends Disposable implements ITestService {
 						}
 					}),
 			);
+
 			await this.saveAllBeforeTest(req);
+
 			await Promise.all(requests);
 
 			return result;
 		} finally {
 			this.uiRunningTests.delete(result.id);
+
 			result.markComplete();
 		}
 	}
@@ -459,6 +490,7 @@ export class TestService extends Disposable implements ITestService {
 		if (token.isCancellationRequested) {
 			followups.dispose();
 		}
+
 		return followups;
 	}
 	/**
@@ -466,8 +498,11 @@ export class TestService extends Disposable implements ITestService {
 	 */
 	public publishDiff(_controllerId: string, diff: TestsDiff) {
 		this.willProcessDiffEmitter.fire(diff);
+
 		this.collection.apply(diff);
+
 		this.updateEditorContextKeys();
+
 		this.didProcessDiffEmitter.fire(diff);
 	}
 	/**
@@ -497,7 +532,9 @@ export class TestService extends Disposable implements ITestService {
 	 */
 	public async refreshTests(controllerId?: string): Promise<void> {
 		const cts = new CancellationTokenSource();
+
 		this.testRefreshCancellations.add(cts);
+
 		this.isRefreshingTests.set(true);
 
 		try {
@@ -514,7 +551,9 @@ export class TestService extends Disposable implements ITestService {
 			}
 		} finally {
 			this.testRefreshCancellations.delete(cts);
+
 			this.isRefreshingTests.set(this.testRefreshCancellations.size > 0);
+
 			cts.dispose(true);
 		}
 	}
@@ -525,7 +564,9 @@ export class TestService extends Disposable implements ITestService {
 		for (const cts of this.testRefreshCancellations) {
 			cts.cancel();
 		}
+
 		this.testRefreshCancellations.clear();
+
 		this.isRefreshingTests.set(false);
 	}
 	/**
@@ -577,10 +618,13 @@ export class TestService extends Disposable implements ITestService {
 					});
 				}
 			}
+
 			this.publishDiff(id, diff);
 
 			const next = new Map(this.testControllers.get());
+
 			next.delete(id);
+
 			this.testControllers.set(next, undefined);
 		});
 	}
@@ -598,6 +642,7 @@ export class TestService extends Disposable implements ITestService {
 				?.getRelatedCode(test.item.extId, token)) || []
 		);
 	}
+
 	private updateEditorContextKeys() {
 		const uri = this.editorService.activeEditor?.resource;
 
@@ -609,6 +654,7 @@ export class TestService extends Disposable implements ITestService {
 			this.activeEditorHasTests.set(false);
 		}
 	}
+
 	private async saveAllBeforeTest(
 		req: ResolvedTestRunRequest,
 		configurationService: IConfigurationService = this.configurationService,
@@ -617,6 +663,7 @@ export class TestService extends Disposable implements ITestService {
 		if (req.preserveFocus === true) {
 			return;
 		}
+
 		const saveBeforeTest = getTestingConfiguration(
 			this.configurationService,
 			TestingConfigKeys.SaveBeforeTest,
@@ -625,6 +672,7 @@ export class TestService extends Disposable implements ITestService {
 		if (saveBeforeTest) {
 			await editorService.saveAll();
 		}
+
 		return;
 	}
 }

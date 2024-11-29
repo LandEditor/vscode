@@ -107,10 +107,15 @@ export abstract class CustomStackFrame {
 		"CustomStackFrame.showHeader",
 		true,
 	);
+
 	public abstract readonly height: IObservable<number>;
+
 	public abstract readonly label: string;
+
 	public icon?: ThemeIcon;
+
 	public abstract render(container: HTMLElement): IDisposable;
+
 	public renderActions?(container: HTMLElement): IDisposable;
 }
 export type AnyStackFrame =
@@ -119,6 +124,7 @@ export type AnyStackFrame =
 	| CustomStackFrame;
 interface IFrameLikeItem {
 	readonly collapsed: ISettableObservable<boolean>;
+
 	readonly height: IObservable<number>;
 }
 class WrappedCallStackFrame extends CallStackFrame implements IFrameLikeItem {
@@ -126,10 +132,12 @@ class WrappedCallStackFrame extends CallStackFrame implements IFrameLikeItem {
 		"WrappedCallStackFrame.height",
 		this.source ? 100 : 0,
 	);
+
 	public readonly collapsed = observableValue(
 		"WrappedCallStackFrame.collapsed",
 		false,
 	);
+
 	public readonly height = derived((reader) => {
 		return this.collapsed.read(reader)
 			? CALL_STACK_WIDGET_HEADER_HEIGHT
@@ -145,6 +153,7 @@ class WrappedCustomStackFrame implements IFrameLikeItem {
 		"WrappedCallStackFrame.collapsed",
 		false,
 	);
+
 	public readonly height = derived((reader) => {
 		const headerHeight = this.original.showHeader.read(reader)
 			? CALL_STACK_WIDGET_HEADER_HEIGHT
@@ -174,12 +183,17 @@ const WIDGET_CLASS_NAME = "multiCallStackWidget";
  */
 export class CallStackWidget extends Disposable {
 	private readonly list: WorkbenchList<ListItem>;
+
 	private readonly layoutEmitter = this._register(new Emitter<void>());
+
 	private readonly currentFramesDs = this._register(new DisposableStore());
+
 	private cts?: CancellationTokenSource;
+
 	public get onDidScroll() {
 		return this.list.onDidScroll;
 	}
+
 	constructor(
 		container: HTMLElement,
 		containingEditor: ICodeEditor | undefined,
@@ -187,10 +201,13 @@ export class CallStackWidget extends Disposable {
 		instantiationService: IInstantiationService,
 	) {
 		super();
+
 		container.classList.add(WIDGET_CLASS_NAME);
+
 		this._register(
 			toDisposable(() => container.classList.remove(WIDGET_CLASS_NAME)),
 		);
+
 		this.list = this._register(
 			instantiationService.createInstance(
 				WorkbenchList,
@@ -226,14 +243,20 @@ export class CallStackWidget extends Disposable {
 	public setFrames(frames: AnyStackFrame[]): void {
 		// cancel any existing load
 		this.currentFramesDs.clear();
+
 		this.cts = new CancellationTokenSource();
+
 		this._register(toDisposable(() => this.cts!.dispose(true)));
+
 		this.list.splice(0, this.list.length, this.mapFrames(frames));
 	}
+
 	public layout(height?: number, width?: number): void {
 		this.list.layout(height, width);
+
 		this.layoutEmitter.fire();
 	}
+
 	public collapseAll() {
 		transaction((tx) => {
 			for (let i = 0; i < this.list.length; i++) {
@@ -245,18 +268,23 @@ export class CallStackWidget extends Disposable {
 			}
 		});
 	}
+
 	private async loadFrame(replacing: SkippedCallFrames): Promise<void> {
 		if (!this.cts) {
 			return;
 		}
+
 		const frames = await replacing.load(this.cts.token);
 
 		if (this.cts.token.isCancellationRequested) {
 			return;
 		}
+
 		const index = this.list.indexOf(replacing);
+
 		this.list.splice(index, 1, this.mapFrames(frames));
 	}
+
 	private mapFrames(frames: AnyStackFrame[]): ListItem[] {
 		const result: ListItem[] = [];
 
@@ -266,11 +294,14 @@ export class CallStackWidget extends Disposable {
 
 				continue;
 			}
+
 			const wrapped =
 				frame instanceof CustomStackFrame
 					? new WrappedCustomStackFrame(frame)
 					: new WrappedCallStackFrame(frame);
+
 			result.push(wrapped);
+
 			this.currentFramesDs.add(
 				autorun((reader) => {
 					const height = wrapped.height.read(reader);
@@ -283,6 +314,7 @@ export class CallStackWidget extends Disposable {
 				}),
 			);
 		}
+
 		return result;
 	}
 }
@@ -293,13 +325,16 @@ class StackAccessibilityProvider
 		@ILabelService
 		private readonly labelService: ILabelService,
 	) {}
+
 	getAriaLabel(e: ListItem): string | IObservable<string> | null {
 		if (e instanceof SkippedCallFrames) {
 			return e.label;
 		}
+
 		if (e instanceof WrappedCustomStackFrame) {
 			return e.original.label;
 		}
+
 		if (e instanceof CallStackFrame) {
 			if (e.source && e.line) {
 				return localize(
@@ -315,10 +350,13 @@ class StackAccessibilityProvider
 					this.labelService.getUriLabel(e.source, { relative: true }),
 				);
 			}
+
 			return e.name;
 		}
+
 		assertNever(e);
 	}
+
 	getWidgetAriaLabel(): string {
 		return localize("stackTrace", "Stack Trace");
 	}
@@ -331,28 +369,35 @@ class StackDelegate implements IListVirtualDelegate<ListItem> {
 		) {
 			return element.height.get();
 		}
+
 		if (element instanceof SkippedCallFrames) {
 			return CALL_STACK_WIDGET_HEADER_HEIGHT;
 		}
+
 		assertNever(element);
 	}
+
 	getTemplateId(element: ListItem): string {
 		if (element instanceof CallStackFrame) {
 			return element.source
 				? FrameCodeRenderer.templateId
 				: MissingCodeRenderer.templateId;
 		}
+
 		if (element instanceof SkippedCallFrames) {
 			return SkippedRenderer.templateId;
 		}
+
 		if (element instanceof WrappedCustomStackFrame) {
 			return CustomRenderer.templateId;
 		}
+
 		assertNever(element);
 	}
 }
 interface IStackTemplateData extends IAbstractFrameRendererTemplateData {
 	editor: CodeEditorWidget;
+
 	toolbar: MenuWorkbenchToolBar;
 }
 
@@ -386,11 +431,17 @@ const makeFrameElements = () =>
 export const CALL_STACK_WIDGET_HEADER_HEIGHT = 24;
 interface IAbstractFrameRendererTemplateData {
 	container: HTMLElement;
+
 	label: ResourceLabel;
+
 	elements: ReturnType<typeof makeFrameElements>;
+
 	decorations: string[];
+
 	collapse: Button;
+
 	elementStore: DisposableStore;
+
 	templateStore: DisposableStore;
 }
 abstract class AbstractFrameRenderer<
@@ -403,15 +454,20 @@ abstract class AbstractFrameRenderer<
 		@IInstantiationService
 		protected readonly instantiationService: IInstantiationService,
 	) {}
+
 	renderTemplate(container: HTMLElement): T {
 		const elements = makeFrameElements();
+
 		container.appendChild(elements.root);
 
 		const templateStore = new DisposableStore();
+
 		container.classList.add("multiCallStackFrameContainer");
+
 		templateStore.add(
 			toDisposable(() => {
 				container.classList.remove("multiCallStackFrameContainer");
+
 				elements.root.remove();
 			}),
 		);
@@ -429,8 +485,11 @@ abstract class AbstractFrameRenderer<
 		);
 
 		const contentId = generateUuid();
+
 		elements.editor.id = contentId;
+
 		elements.editor.role = "region";
+
 		elements.collapseButton.setAttribute("aria-controls", contentId);
 
 		return this.finishRenderTemplate({
@@ -443,9 +502,11 @@ abstract class AbstractFrameRenderer<
 			templateStore,
 		});
 	}
+
 	protected abstract finishRenderTemplate(
 		data: IAbstractFrameRendererTemplateData,
 	): T;
+
 	renderElement(
 		element: ListItem,
 		index: number,
@@ -453,11 +514,14 @@ abstract class AbstractFrameRenderer<
 		height: number | undefined,
 	): void {
 		const { elementStore } = template;
+
 		elementStore.clear();
 
 		const item = element as IFrameLikeItem;
+
 		this.setupCollapseButton(item, template);
 	}
+
 	private setupCollapseButton(
 		item: IFrameLikeItem,
 		{ elementStore, elements, collapse }: T,
@@ -467,21 +531,27 @@ abstract class AbstractFrameRenderer<
 				collapse.element.className = "";
 
 				const collapsed = item.collapsed.read(reader);
+
 				collapse.icon = collapsed
 					? Codicon.chevronRight
 					: Codicon.chevronDown;
+
 				collapse.element.ariaExpanded = String(!collapsed);
+
 				elements.root.classList.toggle("collapsed", collapsed);
 			}),
 		);
 
 		const toggleCollapse = () =>
 			item.collapsed.set(!item.collapsed.get(), undefined);
+
 		elementStore.add(collapse.onDidClick(toggleCollapse));
+
 		elementStore.add(
 			dom.addDisposableListener(elements.title, "click", toggleCollapse),
 		);
 	}
+
 	disposeElement(
 		element: ListItem,
 		index: number,
@@ -490,6 +560,7 @@ abstract class AbstractFrameRenderer<
 	): void {
 		templateData.elementStore.clear();
 	}
+
 	disposeTemplate(templateData: T): void {
 		templateData.templateStore.dispose();
 	}
@@ -499,6 +570,7 @@ const CONTEXT_LINES = 2;
 /** Renderer for a normal stack frame where code is available. */
 class FrameCodeRenderer extends AbstractFrameRenderer<IStackTemplateData> {
 	public static readonly templateId = "f";
+
 	public readonly templateId = FrameCodeRenderer.templateId;
 
 	constructor(
@@ -511,6 +583,7 @@ class FrameCodeRenderer extends AbstractFrameRenderer<IStackTemplateData> {
 	) {
 		super(instantiationService);
 	}
+
 	protected override finishRenderTemplate(
 		data: IAbstractFrameRendererTemplateData,
 	): IStackTemplateData {
@@ -539,6 +612,7 @@ class FrameCodeRenderer extends AbstractFrameRenderer<IStackTemplateData> {
 					editorOptions,
 					{ isSimpleWidget: true, contributions },
 				);
+
 		data.templateStore.add(editor);
 
 		const toolbar = data.templateStore.add(
@@ -560,6 +634,7 @@ class FrameCodeRenderer extends AbstractFrameRenderer<IStackTemplateData> {
 
 		return { ...data, editor, toolbar };
 	}
+
 	override renderElement(
 		element: ListItem,
 		index: number,
@@ -573,26 +648,35 @@ class FrameCodeRenderer extends AbstractFrameRenderer<IStackTemplateData> {
 		const item = element as WrappedCallStackFrame;
 
 		const uri = item.source!;
+
 		template.label.element.setFile(uri);
 
 		const cts = new CancellationTokenSource();
+
 		elementStore.add(toDisposable(() => cts.dispose(true)));
+
 		this.modelService.createModelReference(uri).then((reference) => {
 			if (cts.token.isCancellationRequested) {
 				return reference.dispose();
 			}
+
 			elementStore.add(reference);
+
 			editor.setModel(reference.object.textEditorModel);
+
 			this.setupEditorAfterModel(item, template);
+
 			this.setupEditorLayout(item, template);
 		});
 	}
+
 	private setupEditorLayout(
 		item: WrappedCallStackFrame,
 		{ elementStore, container, editor }: IStackTemplateData,
 	) {
 		const layout = () => {
 			const prev = editor.getContentHeight();
+
 			editor.layout({ width: container.clientWidth, height: prev });
 
 			const next = editor.getContentHeight();
@@ -600,14 +684,21 @@ class FrameCodeRenderer extends AbstractFrameRenderer<IStackTemplateData> {
 			if (next !== prev) {
 				editor.layout({ width: container.clientWidth, height: next });
 			}
+
 			item.editorHeight.set(next, undefined);
 		};
+
 		elementStore.add(editor.onDidChangeModelDecorations(layout));
+
 		elementStore.add(editor.onDidChangeModelContent(layout));
+
 		elementStore.add(editor.onDidChangeModelOptions(layout));
+
 		elementStore.add(this.onLayout(layout));
+
 		layout();
 	}
+
 	private setupEditorAfterModel(
 		item: WrappedCallStackFrame,
 		template: IStackTemplateData,
@@ -616,7 +707,9 @@ class FrameCodeRenderer extends AbstractFrameRenderer<IStackTemplateData> {
 			column: item.column ?? 1,
 			lineNumber: item.line ?? 1,
 		});
+
 		template.toolbar.context = { uri: item.source, range };
+
 		template.editor.setHiddenAreas([
 			Range.fromPositions(
 				{ column: 1, lineNumber: 1 },
@@ -630,10 +723,12 @@ class FrameCodeRenderer extends AbstractFrameRenderer<IStackTemplateData> {
 				{ column: 1, lineNumber: Constants.MAX_SAFE_SMALL_INTEGER },
 			),
 		]);
+
 		template.editor.changeDecorations((accessor) => {
 			for (const d of template.decorations) {
 				accessor.removeDecoration(d);
 			}
+
 			template.decorations.length = 0;
 
 			const beforeRange = range.setStartPosition(
@@ -650,21 +745,25 @@ class FrameCodeRenderer extends AbstractFrameRenderer<IStackTemplateData> {
 				range.startLineNumber,
 				Constants.MAX_SAFE_SMALL_INTEGER,
 			);
+
 			template.decorations.push(
 				accessor.addDecoration(
 					decoRange,
 					makeStackFrameColumnDecoration(!hasCharactersBefore),
 				),
 			);
+
 			template.decorations.push(
 				accessor.addDecoration(decoRange, TOP_STACK_FRAME_DECORATION),
 			);
 		});
+
 		item.editorHeight.set(template.editor.getContentHeight(), undefined);
 	}
 }
 interface IMissingTemplateData {
 	elements: ReturnType<typeof makeFrameElements>;
+
 	label: ResourceLabel;
 }
 /** Renderer for a call frame that's missing a URI */
@@ -672,15 +771,19 @@ class MissingCodeRenderer
 	implements IListRenderer<ListItem, IMissingTemplateData>
 {
 	public static readonly templateId = "m";
+
 	public readonly templateId = MissingCodeRenderer.templateId;
 
 	constructor(
 		@IInstantiationService
 		private readonly instantiationService: IInstantiationService,
 	) {}
+
 	renderTemplate(container: HTMLElement): IMissingTemplateData {
 		const elements = makeFrameElements();
+
 		elements.root.classList.add("missing");
+
 		container.appendChild(elements.root);
 
 		const label = this.instantiationService.createInstance(
@@ -691,12 +794,14 @@ class MissingCodeRenderer
 
 		return { elements, label };
 	}
+
 	renderElement(
 		element: ListItem,
 		_index: number,
 		templateData: IMissingTemplateData,
 	): void {
 		const cast = element as CallStackFrame;
+
 		templateData.label.element.setResource(
 			{
 				name: cast.name,
@@ -718,20 +823,25 @@ class MissingCodeRenderer
 			},
 		);
 	}
+
 	disposeTemplate(templateData: IMissingTemplateData): void {
 		templateData.label.dispose();
+
 		templateData.elements.root.remove();
 	}
 }
 /** Renderer for a call frame that's missing a URI */
 class CustomRenderer extends AbstractFrameRenderer<IAbstractFrameRendererTemplateData> {
 	public static readonly templateId = "c";
+
 	public readonly templateId = CustomRenderer.templateId;
+
 	protected override finishRenderTemplate(
 		data: IAbstractFrameRendererTemplateData,
 	): IAbstractFrameRendererTemplateData {
 		return data;
 	}
+
 	override renderElement(
 		element: ListItem,
 		index: number,
@@ -743,16 +853,19 @@ class CustomRenderer extends AbstractFrameRenderer<IAbstractFrameRendererTemplat
 		const item = element as WrappedCustomStackFrame;
 
 		const { elementStore, container, label } = template;
+
 		label.element.setResource(
 			{ name: item.original.label },
 			{ icon: item.original.icon },
 		);
+
 		elementStore.add(
 			autorun((reader) => {
 				template.elements.header.style.display =
 					item.original.showHeader.read(reader) ? "" : "none";
 			}),
 		);
+
 		elementStore.add(
 			autorunWithStore((reader, store) => {
 				if (!item.collapsed.read(reader)) {
@@ -772,12 +885,15 @@ class CustomRenderer extends AbstractFrameRenderer<IAbstractFrameRendererTemplat
 }
 interface ISkippedTemplateData {
 	button: Button;
+
 	current?: SkippedCallFrames;
+
 	store: DisposableStore;
 }
 /** Renderer for a button to load more call frames */
 class SkippedRenderer implements IListRenderer<ListItem, ISkippedTemplateData> {
 	public static readonly templateId = "s";
+
 	public readonly templateId = SkippedRenderer.templateId;
 
 	constructor(
@@ -787,6 +903,7 @@ class SkippedRenderer implements IListRenderer<ListItem, ISkippedTemplateData> {
 		@INotificationService
 		private readonly notificationService: INotificationService,
 	) {}
+
 	renderTemplate(container: HTMLElement): ISkippedTemplateData {
 		const store = new DisposableStore();
 
@@ -796,13 +913,17 @@ class SkippedRenderer implements IListRenderer<ListItem, ISkippedTemplateData> {
 		});
 
 		const data: ISkippedTemplateData = { button, store };
+
 		store.add(button);
+
 		store.add(
 			button.onDidClick(() => {
 				if (!data.current || !button.enabled) {
 					return;
 				}
+
 				button.enabled = false;
+
 				this.loadFrames(data.current).catch((e) => {
 					this.notificationService.error(
 						localize(
@@ -817,6 +938,7 @@ class SkippedRenderer implements IListRenderer<ListItem, ISkippedTemplateData> {
 
 		return data;
 	}
+
 	renderElement(
 		element: ListItem,
 		index: number,
@@ -824,10 +946,14 @@ class SkippedRenderer implements IListRenderer<ListItem, ISkippedTemplateData> {
 		height: number | undefined,
 	): void {
 		const cast = element as SkippedCallFrames;
+
 		templateData.button.enabled = true;
+
 		templateData.button.label = cast.label;
+
 		templateData.current = cast;
 	}
+
 	disposeTemplate(templateData: ISkippedTemplateData): void {
 		templateData.store.dispose();
 	}
@@ -838,10 +964,13 @@ class ClickToLocationContribution
 	implements IEditorContribution
 {
 	public static readonly ID = "clickToLocation";
+
 	private readonly linkDecorations: IEditorDecorationsCollection;
+
 	private current:
 		| {
 				line: number;
+
 				word: IWordAtPosition;
 		  }
 		| undefined;
@@ -852,10 +981,13 @@ class ClickToLocationContribution
 		editorService: IEditorService,
 	) {
 		super();
+
 		this.linkDecorations = editor.createDecorationsCollection();
+
 		this._register(toDisposable(() => this.linkDecorations.clear()));
 
 		const clickLinkGesture = this._register(new ClickLinkGesture(editor));
+
 		this._register(
 			clickLinkGesture.onMouseMoveOrRelevantKeyDown(
 				([mouseEvent, keyboardEvent]) => {
@@ -863,6 +995,7 @@ class ClickToLocationContribution
 				},
 			),
 		);
+
 		this._register(
 			clickLinkGesture.onExecute((e) => {
 				const model = this.editor.getModel();
@@ -870,6 +1003,7 @@ class ClickToLocationContribution
 				if (!this.current || !model) {
 					return;
 				}
+
 				editorService.openEditor(
 					{
 						resource: model.uri,
@@ -889,10 +1023,12 @@ class ClickToLocationContribution
 			}),
 		);
 	}
+
 	private onMove(mouseEvent: ClickLinkMouseEvent) {
 		if (!mouseEvent.hasTriggerModifier) {
 			return this.clear();
 		}
+
 		const position = mouseEvent.target.position;
 
 		const word =
@@ -901,6 +1037,7 @@ class ClickToLocationContribution
 		if (!word) {
 			return this.clear();
 		}
+
 		const prev = this.current?.word;
 
 		if (
@@ -911,7 +1048,9 @@ class ClickToLocationContribution
 		) {
 			return;
 		}
+
 		this.current = { word, line: position.lineNumber };
+
 		this.linkDecorations.set([
 			{
 				range: new Range(
@@ -927,8 +1066,10 @@ class ClickToLocationContribution
 			},
 		]);
 	}
+
 	private clear() {
 		this.linkDecorations.clear();
+
 		this.current = undefined;
 	}
 }
@@ -946,11 +1087,13 @@ registerAction2(
 				},
 			});
 		}
+
 		async run(
 			accessor: ServicesAccessor,
 			{ uri, range }: Location,
 		): Promise<void> {
 			const editorService = accessor.get(IEditorService);
+
 			await editorService.openEditor({
 				resource: uri,
 				options: {

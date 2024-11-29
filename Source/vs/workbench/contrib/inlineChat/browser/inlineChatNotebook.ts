@@ -36,6 +36,7 @@ export class InlineChatNotebookContribution {
 						if (!data) {
 							throw illegalState("Expected notebook cell uri");
 						}
+
 						let fallback: string | undefined;
 
 						for (const notebookEditor of notebookEditorService.listNotebookEditors()) {
@@ -69,9 +70,11 @@ export class InlineChatNotebookContribution {
 								// 	}
 							}
 						}
+
 						if (fallback) {
 							return fallback;
 						}
+
 						const activeEditor = editorService.activeEditorPane;
 
 						if (
@@ -83,11 +86,13 @@ export class InlineChatNotebookContribution {
 						) {
 							return `<notebook>${editor.getId()}#${uri}`;
 						}
+
 						throw illegalState("Expected notebook editor");
 					},
 				},
 			),
 		);
+
 		this._store.add(
 			sessionService.onWillStartSession((newSessionEditor) => {
 				const candidate = CellUri.parse(
@@ -97,6 +102,7 @@ export class InlineChatNotebookContribution {
 				if (!candidate) {
 					return;
 				}
+
 				for (const notebookEditor of notebookEditorService.listNotebookEditors()) {
 					if (
 						isEqual(
@@ -113,8 +119,10 @@ export class InlineChatNotebookContribution {
 							codeEditor,
 						] of notebookEditor.codeEditors) {
 							editors.push(codeEditor);
+
 							found = codeEditor === newSessionEditor || found;
 						}
+
 						if (found) {
 							// found the this editor in the outer notebook editor -> make sure to
 							// cancel all sibling sessions
@@ -125,6 +133,7 @@ export class InlineChatNotebookContribution {
 									)?.finishExistingSession();
 								}
 							}
+
 							break;
 						}
 					}
@@ -132,6 +141,7 @@ export class InlineChatNotebookContribution {
 			}),
 		);
 	}
+
 	dispose(): void {
 		this._store.dispose();
 	}

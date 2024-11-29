@@ -31,16 +31,21 @@ async function getQuickPickResult<T extends QuickPickItem>(
 			quickpick.onDidAccept(() => c(quickpick.selectedItems[0])),
 			quickpick.onDidHide(() => c(undefined)),
 		);
+
 		quickpick.show();
 	});
+
 	quickpick.hide();
+
 	listeners.forEach((l) => l.dispose());
 
 	return result;
 }
 class RemoteSourceProviderQuickPick implements Disposable {
 	private disposables: Disposable[] = [];
+
 	private isDisposed: boolean = false;
+
 	private quickpick:
 		| QuickPick<
 				QuickPickItem & {
@@ -50,17 +55,25 @@ class RemoteSourceProviderQuickPick implements Disposable {
 		| undefined;
 
 	constructor(private provider: RemoteSourceProvider) {}
+
 	dispose() {
 		this.disposables.forEach((d) => d.dispose());
+
 		this.disposables = [];
+
 		this.quickpick = undefined;
+
 		this.isDisposed = true;
 	}
+
 	private ensureQuickPick() {
 		if (!this.quickpick) {
 			this.quickpick = window.createQuickPick();
+
 			this.disposables.push(this.quickpick);
+
 			this.quickpick.ignoreFocusOut = true;
+
 			this.disposables.push(
 				this.quickpick.onDidHide(() => this.dispose()),
 			);
@@ -69,6 +82,7 @@ class RemoteSourceProviderQuickPick implements Disposable {
 				this.quickpick.placeholder =
 					this.provider.placeholder ??
 					l10n.t("Repository name (type to search)");
+
 				this.disposables.push(
 					this.quickpick.onDidChangeValue(
 						this.onDidChangeValue,
@@ -91,8 +105,11 @@ class RemoteSourceProviderQuickPick implements Disposable {
 			if (this.isDisposed) {
 				return;
 			}
+
 			this.ensureQuickPick();
+
 			this.quickpick!.busy = true;
+
 			this.quickpick!.show();
 
 			const remoteSources =
@@ -102,6 +119,7 @@ class RemoteSourceProviderQuickPick implements Disposable {
 			if (this.isDisposed) {
 				return;
 			}
+
 			if (remoteSources.length === 0) {
 				this.quickpick!.items = [
 					{
@@ -131,6 +149,7 @@ class RemoteSourceProviderQuickPick implements Disposable {
 					alwaysShow: true,
 				},
 			];
+
 			console.error(err);
 		} finally {
 			if (!this.isDisposed) {
@@ -138,12 +157,14 @@ class RemoteSourceProviderQuickPick implements Disposable {
 			}
 		}
 	}
+
 	async pick(): Promise<RemoteSource | undefined> {
 		await this.query();
 
 		if (this.isDisposed) {
 			return;
 		}
+
 		const result = await getQuickPickResult(this.quickpick!);
 
 		return result?.remoteSource;
@@ -164,6 +185,7 @@ export async function getRemoteSourceActions(
 			remoteSourceActions.push(...providerActions);
 		}
 	}
+
 	return remoteSourceActions;
 }
 export async function pickRemoteSource(
@@ -187,9 +209,11 @@ export async function pickRemoteSource(
 	const quickpick = window.createQuickPick<
 		QuickPickItem & {
 			provider?: RemoteSourceProvider;
+
 			url?: string;
 		}
 	>();
+
 	quickpick.title = options.title;
 
 	if (options.providerName) {
@@ -201,6 +225,7 @@ export async function pickRemoteSource(
 			return await pickProviderSource(provider, options);
 		}
 	}
+
 	const remoteProviders = model.getRemoteProviders().map((provider) => ({
 		label:
 			(provider.icon ? `$(${provider.icon}) ` : "") +
@@ -213,6 +238,7 @@ export async function pickRemoteSource(
 
 	const recentSources: (QuickPickItem & {
 		url?: string;
+
 		timestamp: number;
 	})[] = [];
 
@@ -227,15 +253,18 @@ export async function pickRemoteSource(
 					url: typeof item.url === "string" ? item.url : item.url[0],
 				};
 			});
+
 			recentSources.push(...sources);
 		}
 	}
+
 	const items = [
 		{ kind: QuickPickItemKind.Separator, label: l10n.t("remote sources") },
 		...remoteProviders,
 		{ kind: QuickPickItemKind.Separator, label: l10n.t("recently opened") },
 		...recentSources.sort((a, b) => b.timestamp - a.timestamp),
 	];
+
 	quickpick.placeholder =
 		options.placeholder ??
 		(remoteProviders.length === 0
@@ -248,6 +277,7 @@ export async function pickRemoteSource(
 				(typeof options.urlLabel === "string"
 					? options.urlLabel
 					: options.urlLabel?.(value)) ?? l10n.t("URL");
+
 			quickpick.items = [
 				{
 					label: label,
@@ -261,7 +291,9 @@ export async function pickRemoteSource(
 			quickpick.items = items;
 		}
 	};
+
 	quickpick.onDidChangeValue(updatePicks);
+
 	updatePicks();
 
 	const result = await getQuickPickResult(quickpick);
@@ -273,6 +305,7 @@ export async function pickRemoteSource(
 			return await pickProviderSource(result.provider, options);
 		}
 	}
+
 	return undefined;
 }
 async function pickProviderSource(
@@ -282,6 +315,7 @@ async function pickProviderSource(
 	const quickpick = new RemoteSourceProviderQuickPick(provider);
 
 	const remote = await quickpick.pick();
+
 	quickpick.dispose();
 
 	let url: string | undefined;
@@ -296,17 +330,21 @@ async function pickProviderSource(
 			});
 		}
 	}
+
 	if (!url || !options.branch) {
 		return url;
 	}
+
 	if (!provider.getBranches) {
 		return { url };
 	}
+
 	const branches = await provider.getBranches(url);
 
 	if (!branches) {
 		return { url };
 	}
+
 	const branch = await window.showQuickPick(branches, {
 		placeHolder: l10n.t("Branch name"),
 	});
@@ -314,5 +352,6 @@ async function pickProviderSource(
 	if (!branch) {
 		return { url };
 	}
+
 	return { url, branch };
 }

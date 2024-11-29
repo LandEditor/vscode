@@ -34,9 +34,13 @@ import { areSameExtensions } from "./extensionManagementUtil.js";
 
 interface IStoredProfileExtension {
 	identifier: IExtensionIdentifier;
+
 	location: UriComponents | string;
+
 	relativeLocation: string | undefined;
+
 	version: string;
+
 	metadata?: Metadata;
 }
 export const enum ExtensionsProfileScanningErrorCode {
@@ -59,12 +63,16 @@ export class ExtensionsProfileScanningError extends Error {
 }
 export interface IScannedProfileExtension {
 	readonly identifier: IExtensionIdentifier;
+
 	readonly version: string;
+
 	readonly location: URI;
+
 	readonly metadata?: Metadata;
 }
 export interface ProfileExtensionsEvent {
 	readonly extensions: readonly IScannedProfileExtension[];
+
 	readonly profileLocation: URI;
 }
 export interface DidAddProfileExtensionsEvent extends ProfileExtensionsEvent {
@@ -84,23 +92,31 @@ export const IExtensionsProfileScannerService =
 
 export interface IExtensionsProfileScannerService {
 	readonly _serviceBrand: undefined;
+
 	readonly onAddExtensions: Event<ProfileExtensionsEvent>;
+
 	readonly onDidAddExtensions: Event<DidAddProfileExtensionsEvent>;
+
 	readonly onRemoveExtensions: Event<ProfileExtensionsEvent>;
+
 	readonly onDidRemoveExtensions: Event<DidRemoveProfileExtensionsEvent>;
+
 	scanProfileExtensions(
 		profileLocation: URI,
 		options?: IProfileExtensionsScanOptions,
 	): Promise<IScannedProfileExtension[]>;
+
 	addExtensionsToProfile(
 		extensions: [IExtension, Metadata | undefined][],
 		profileLocation: URI,
 		keepExistingVersions?: boolean,
 	): Promise<IScannedProfileExtension[]>;
+
 	updateMetadata(
 		extensions: [IExtension, Metadata | undefined][],
 		profileLocation: URI,
 	): Promise<IScannedProfileExtension[]>;
+
 	removeExtensionFromProfile(
 		extension: IExtension,
 		profileLocation: URI,
@@ -111,22 +127,31 @@ export abstract class AbstractExtensionsProfileScannerService
 	implements IExtensionsProfileScannerService
 {
 	readonly _serviceBrand: undefined;
+
 	private readonly _onAddExtensions = this._register(
 		new Emitter<ProfileExtensionsEvent>(),
 	);
+
 	readonly onAddExtensions = this._onAddExtensions.event;
+
 	private readonly _onDidAddExtensions = this._register(
 		new Emitter<DidAddProfileExtensionsEvent>(),
 	);
+
 	readonly onDidAddExtensions = this._onDidAddExtensions.event;
+
 	private readonly _onRemoveExtensions = this._register(
 		new Emitter<ProfileExtensionsEvent>(),
 	);
+
 	readonly onRemoveExtensions = this._onRemoveExtensions.event;
+
 	private readonly _onDidRemoveExtensions = this._register(
 		new Emitter<DidRemoveProfileExtensionsEvent>(),
 	);
+
 	readonly onDidRemoveExtensions = this._onDidRemoveExtensions.event;
+
 	private readonly resourcesAccessQueueMap = new ResourceMap<
 		Queue<IScannedProfileExtension[]>
 	>();
@@ -146,12 +171,14 @@ export abstract class AbstractExtensionsProfileScannerService
 	) {
 		super();
 	}
+
 	scanProfileExtensions(
 		profileLocation: URI,
 		options?: IProfileExtensionsScanOptions,
 	): Promise<IScannedProfileExtension[]> {
 		return this.withProfileExtensions(profileLocation, undefined, options);
 	}
+
 	async addExtensionsToProfile(
 		extensions: [IExtension, Metadata | undefined][],
 		profileLocation: URI,
@@ -188,6 +215,7 @@ export abstract class AbstractExtensionsProfileScannerService
 							}
 						}
 					}
+
 					for (const [extension, metadata] of extensions) {
 						const index = result.findIndex(
 							(e) =>
@@ -206,23 +234,27 @@ export abstract class AbstractExtensionsProfileScannerService
 
 						if (index === -1) {
 							extensionsToAdd.push(extensionToAdd);
+
 							result.push(extensionToAdd);
 						} else {
 							result.splice(index, 1, extensionToAdd);
 						}
 					}
+
 					if (extensionsToAdd.length) {
 						this._onAddExtensions.fire({
 							extensions: extensionsToAdd,
 							profileLocation,
 						});
 					}
+
 					if (extensionsToRemove.length) {
 						this._onRemoveExtensions.fire({
 							extensions: extensionsToRemove,
 							profileLocation,
 						});
 					}
+
 					return result;
 				},
 			);
@@ -233,12 +265,14 @@ export abstract class AbstractExtensionsProfileScannerService
 					profileLocation,
 				});
 			}
+
 			if (extensionsToRemove.length) {
 				this._onDidRemoveExtensions.fire({
 					extensions: extensionsToRemove,
 					profileLocation,
 				});
 			}
+
 			return extensionsToAdd;
 		} catch (error) {
 			if (extensionsToAdd.length) {
@@ -248,6 +282,7 @@ export abstract class AbstractExtensionsProfileScannerService
 					profileLocation,
 				});
 			}
+
 			if (extensionsToRemove.length) {
 				this._onDidRemoveExtensions.fire({
 					extensions: extensionsToRemove,
@@ -255,14 +290,17 @@ export abstract class AbstractExtensionsProfileScannerService
 					profileLocation,
 				});
 			}
+
 			throw error;
 		}
 	}
+
 	async updateMetadata(
 		extensions: [IExtension, Metadata][],
 		profileLocation: URI,
 	): Promise<IScannedProfileExtension[]> {
 		const updatedExtensions: IScannedProfileExtension[] = [];
+
 		await this.withProfileExtensions(
 			profileLocation,
 			(profileExtensions) => {
@@ -283,18 +321,22 @@ export abstract class AbstractExtensionsProfileScannerService
 							...profileExtension.metadata,
 							...extension[1],
 						};
+
 						updatedExtensions.push(profileExtension);
+
 						result.push(profileExtension);
 					} else {
 						result.push(profileExtension);
 					}
 				}
+
 				return result;
 			},
 		);
 
 		return updatedExtensions;
 	}
+
 	async removeExtensionFromProfile(
 		extension: IExtension,
 		profileLocation: URI,
@@ -319,12 +361,14 @@ export abstract class AbstractExtensionsProfileScannerService
 							result.push(e);
 						}
 					}
+
 					if (extensionsToRemove.length) {
 						this._onRemoveExtensions.fire({
 							extensions: extensionsToRemove,
 							profileLocation,
 						});
 					}
+
 					return result;
 				},
 			);
@@ -343,9 +387,11 @@ export abstract class AbstractExtensionsProfileScannerService
 					profileLocation,
 				});
 			}
+
 			throw error;
 		}
 	}
+
 	private async withProfileExtensions(
 		file: URI,
 		updateFn?: (
@@ -360,6 +406,7 @@ export abstract class AbstractExtensionsProfileScannerService
 
 			try {
 				const content = await this.fileService.readFile(file);
+
 				storedProfileExtensions = JSON.parse(
 					content.value.toString().trim() || "[]",
 				);
@@ -381,6 +428,7 @@ export abstract class AbstractExtensionsProfileScannerService
 					storedProfileExtensions =
 						await this.migrateFromOldDefaultProfileExtensionsLocation();
 				}
+
 				if (
 					!storedProfileExtensions &&
 					options?.bailOutWhenFileNotFound
@@ -391,6 +439,7 @@ export abstract class AbstractExtensionsProfileScannerService
 					);
 				}
 			}
+
 			if (storedProfileExtensions) {
 				if (!Array.isArray(storedProfileExtensions)) {
 					this.reportAndThrowInvalidConentError(file);
@@ -402,6 +451,7 @@ export abstract class AbstractExtensionsProfileScannerService
 					if (!isStoredProfileExtension(e)) {
 						this.reportAndThrowInvalidConentError(file);
 					}
+
 					let location: URI;
 
 					if (isString(e.relativeLocation) && e.relativeLocation) {
@@ -423,16 +473,20 @@ export abstract class AbstractExtensionsProfileScannerService
 						if (relativePath) {
 							// Extension in old format. Migrate to new format.
 							migrate = true;
+
 							e.relativeLocation = relativePath;
 						}
 					}
+
 					if (
 						isUndefined(e.metadata?.hasPreReleaseVersion) &&
 						e.metadata?.preRelease
 					) {
 						migrate = true;
+
 						e.metadata.hasPreReleaseVersion = true;
 					}
+
 					extensions.push({
 						identifier: e.identifier,
 						location,
@@ -440,6 +494,7 @@ export abstract class AbstractExtensionsProfileScannerService
 						metadata: e.metadata,
 					});
 				}
+
 				if (migrate) {
 					await this.fileService.writeFile(
 						file,
@@ -462,6 +517,7 @@ export abstract class AbstractExtensionsProfileScannerService
 						relativeLocation: this.toRelativePath(e.location),
 						metadata: e.metadata,
 					}));
+
 				await this.fileService.writeFile(
 					file,
 					VSBuffer.fromString(
@@ -469,16 +525,22 @@ export abstract class AbstractExtensionsProfileScannerService
 					),
 				);
 			}
+
 			return extensions;
 		});
 	}
+
 	private reportAndThrowInvalidConentError(file: URI): void {
 		type ErrorClassification = {
 			owner: "sandy081";
+
 			comment: "Information about the error that occurred while scanning";
+
 			code: {
 				classification: "SystemMetaData";
+
 				purpose: "FeatureInsight";
+
 				comment: "error code";
 			};
 		};
@@ -487,6 +549,7 @@ export abstract class AbstractExtensionsProfileScannerService
 			`Invalid extensions content in ${file.toString()}`,
 			ExtensionsProfileScanningErrorCode.ERROR_INVALID_CONTENT,
 		);
+
 		this.telemetryService.publicLogError2<
 			{
 				code: string;
@@ -496,6 +559,7 @@ export abstract class AbstractExtensionsProfileScannerService
 
 		throw error;
 	}
+
 	private toRelativePath(extensionLocation: URI): string | undefined {
 		return this.uriIdentityService.extUri.isEqual(
 			this.uriIdentityService.extUri.dirname(extensionLocation),
@@ -504,15 +568,18 @@ export abstract class AbstractExtensionsProfileScannerService
 			? this.uriIdentityService.extUri.basename(extensionLocation)
 			: undefined;
 	}
+
 	private resolveExtensionLocation(path: string): URI {
 		return this.uriIdentityService.extUri.joinPath(
 			this.extensionsLocation,
 			path,
 		);
 	}
+
 	private _migrationPromise:
 		| Promise<IStoredProfileExtension[] | undefined>
 		| undefined;
+
 	private async migrateFromOldDefaultProfileExtensionsLocation(): Promise<
 		IStoredProfileExtension[] | undefined
 	> {
@@ -545,8 +612,10 @@ export abstract class AbstractExtensionsProfileScannerService
 					) {
 						return undefined;
 					}
+
 					throw error;
 				}
+
 				this.logService.info(
 					"Migrating extensions from old default profile location",
 					oldDefaultProfileExtensionsLocation.toString(),
@@ -576,6 +645,7 @@ export abstract class AbstractExtensionsProfileScannerService
 					/* Ignore */
 					this.logService.error(error);
 				}
+
 				if (storedProfileExtensions) {
 					try {
 						await this.fileService.createFile(
@@ -586,6 +656,7 @@ export abstract class AbstractExtensionsProfileScannerService
 							),
 							{ overwrite: false },
 						);
+
 						this.logService.info(
 							"Migrated extensions from old default profile location to new location",
 							oldDefaultProfileExtensionsLocation.toString(),
@@ -606,6 +677,7 @@ export abstract class AbstractExtensionsProfileScannerService
 						}
 					}
 				}
+
 				try {
 					await this.fileService.del(
 						oldDefaultProfileExtensionsLocation,
@@ -618,6 +690,7 @@ export abstract class AbstractExtensionsProfileScannerService
 						this.logService.error(error);
 					}
 				}
+
 				try {
 					await this.fileService.del(
 						oldDefaultProfileExtensionsInitLocation,
@@ -630,11 +703,14 @@ export abstract class AbstractExtensionsProfileScannerService
 						this.logService.error(error);
 					}
 				}
+
 				return storedProfileExtensions;
 			})();
 		}
+
 		return this._migrationPromise;
 	}
+
 	private getResourceAccessQueue(
 		file: URI,
 	): Queue<IScannedProfileExtension[]> {
@@ -642,8 +718,10 @@ export abstract class AbstractExtensionsProfileScannerService
 
 		if (!resourceQueue) {
 			resourceQueue = new Queue<IScannedProfileExtension[]>();
+
 			this.resourcesAccessQueueMap.set(file, resourceQueue);
 		}
+
 		return resourceQueue;
 	}
 }
@@ -665,5 +743,6 @@ function isUriComponents(thing: unknown): thing is UriComponents {
 	if (!thing) {
 		return false;
 	}
+
 	return isString((<any>thing).path) && isString((<any>thing).scheme);
 }

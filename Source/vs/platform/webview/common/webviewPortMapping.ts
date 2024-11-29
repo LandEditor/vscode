@@ -14,6 +14,7 @@ import {
 
 export interface IWebviewPortMapping {
 	readonly webviewPort: number;
+
 	readonly extensionHostPort: number;
 }
 /**
@@ -27,6 +28,7 @@ export class WebviewPortMappingManager implements IDisposable {
 		private readonly _getMappings: () => readonly IWebviewPortMapping[],
 		private readonly tunnelService: ITunnelService,
 	) {}
+
 	public async getRedirect(
 		resolveAuthority: IAddress | null | undefined,
 		url: string,
@@ -39,6 +41,7 @@ export class WebviewPortMappingManager implements IDisposable {
 		if (!requestLocalHostInfo) {
 			return undefined;
 		}
+
 		for (const mapping of this._getMappings()) {
 			if (mapping.webviewPort === requestLocalHostInfo.port) {
 				const extensionLocation = this._getExtensionLocation();
@@ -58,6 +61,7 @@ export class WebviewPortMappingManager implements IDisposable {
 						if (tunnel.tunnelLocalPort === mapping.webviewPort) {
 							return undefined;
 						}
+
 						return encodeURI(
 							uri
 								.with({
@@ -67,6 +71,7 @@ export class WebviewPortMappingManager implements IDisposable {
 						);
 					}
 				}
+
 				if (mapping.webviewPort !== mapping.extensionHostPort) {
 					return encodeURI(
 						uri
@@ -78,14 +83,18 @@ export class WebviewPortMappingManager implements IDisposable {
 				}
 			}
 		}
+
 		return undefined;
 	}
+
 	async dispose() {
 		for (const tunnel of this._tunnels.values()) {
 			await tunnel.dispose();
 		}
+
 		this._tunnels.clear();
 	}
+
 	private async getOrCreateTunnel(
 		remoteAuthority: IAddress,
 		remotePort: number,
@@ -95,6 +104,7 @@ export class WebviewPortMappingManager implements IDisposable {
 		if (existing) {
 			return existing;
 		}
+
 		const tunnelOrError = await this.tunnelService.openTunnel(
 			{ getAddress: async () => remoteAuthority },
 			undefined,
@@ -106,9 +116,11 @@ export class WebviewPortMappingManager implements IDisposable {
 		if (typeof tunnelOrError === "string") {
 			tunnel = undefined;
 		}
+
 		if (tunnel) {
 			this._tunnels.set(remotePort, tunnel);
 		}
+
 		return tunnel;
 	}
 }

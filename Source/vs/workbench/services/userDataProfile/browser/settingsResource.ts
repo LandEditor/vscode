@@ -51,6 +51,7 @@ export class SettingsResourceInitializer
 		@ILogService
 		private readonly logService: ILogService,
 	) {}
+
 	async initialize(content: string): Promise<void> {
 		const settingsContent: ISettingsContent = JSON.parse(content);
 
@@ -61,6 +62,7 @@ export class SettingsResourceInitializer
 
 			return;
 		}
+
 		await this.fileService.writeFile(
 			this.userDataProfileService.currentProfile.settingsResource,
 			VSBuffer.fromString(settingsContent.settings),
@@ -76,11 +78,13 @@ export class SettingsResource implements IProfileResource {
 		@ILogService
 		private readonly logService: ILogService,
 	) {}
+
 	async getContent(profile: IUserDataProfile): Promise<string> {
 		const settingsContent = await this.getSettingsContent(profile);
 
 		return JSON.stringify(settingsContent);
 	}
+
 	async getSettingsContent(
 		profile: IUserDataProfile,
 	): Promise<ISettingsContent> {
@@ -106,6 +110,7 @@ export class SettingsResource implements IProfileResource {
 			return { settings };
 		}
 	}
+
 	async apply(content: string, profile: IUserDataProfile): Promise<void> {
 		const settingsContent: ISettingsContent = JSON.parse(content);
 
@@ -116,6 +121,7 @@ export class SettingsResource implements IProfileResource {
 
 			return;
 		}
+
 		const localSettingsContent = await this.getLocalFileContent(profile);
 
 		const formattingOptions =
@@ -129,11 +135,13 @@ export class SettingsResource implements IProfileResource {
 			this.getIgnoredSettings(),
 			formattingOptions,
 		);
+
 		await this.fileService.writeFile(
 			profile.settingsResource,
 			VSBuffer.fromString(contentToUpdate),
 		);
 	}
+
 	private getIgnoredSettings(): string[] {
 		const allSettings = Registry.as<IConfigurationRegistry>(
 			Extensions.Configuration,
@@ -148,6 +156,7 @@ export class SettingsResource implements IProfileResource {
 
 		return ignoredSettings;
 	}
+
 	private async getLocalFileContent(
 		profile: IUserDataProfile,
 	): Promise<string | null> {
@@ -172,9 +181,13 @@ export class SettingsResource implements IProfileResource {
 }
 export class SettingsResourceTreeItem implements IProfileResourceTreeItem {
 	readonly type = ProfileResourceType.Settings;
+
 	readonly handle = ProfileResourceType.Settings;
+
 	readonly label = { label: localize("settings", "Settings") };
+
 	readonly collapsibleState = TreeItemCollapsibleState.Expanded;
+
 	checkbox: ITreeItemCheckboxState | undefined;
 
 	constructor(
@@ -184,6 +197,7 @@ export class SettingsResourceTreeItem implements IProfileResourceTreeItem {
 		@IInstantiationService
 		private readonly instantiationService: IInstantiationService,
 	) {}
+
 	async getChildren(): Promise<IProfileResourceChildTreeItem[]> {
 		return [
 			{
@@ -208,6 +222,7 @@ export class SettingsResourceTreeItem implements IProfileResourceTreeItem {
 			},
 		];
 	}
+
 	async hasContent(): Promise<boolean> {
 		const settingsContent = await this.instantiationService
 			.createInstance(SettingsResource)
@@ -215,11 +230,13 @@ export class SettingsResourceTreeItem implements IProfileResourceTreeItem {
 
 		return settingsContent.settings !== null;
 	}
+
 	async getContent(): Promise<string> {
 		return this.instantiationService
 			.createInstance(SettingsResource)
 			.getContent(this.profile);
 	}
+
 	isFromDefaultProfile(): boolean {
 		return (
 			!this.profile.isDefault && !!this.profile.useDefaultFlags?.settings

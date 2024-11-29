@@ -11,12 +11,15 @@ export class LineSequence implements ISequence {
 		private readonly trimmedHash: number[],
 		private readonly lines: string[],
 	) {}
+
 	getElement(offset: number): number {
 		return this.trimmedHash[offset];
 	}
+
 	get length(): number {
 		return this.trimmedHash.length;
 	}
+
 	getBoundaryScore(length: number): number {
 		const indentationBefore =
 			length === 0 ? 0 : getIndentation(this.lines[length - 1]);
@@ -28,9 +31,11 @@ export class LineSequence implements ISequence {
 
 		return 1000 - (indentationBefore + indentationAfter);
 	}
+
 	getText(range: OffsetRange): string {
 		return this.lines.slice(range.start, range.endExclusive).join("\n");
 	}
+
 	isStronglyEqual(offset1: number, offset2: number): boolean {
 		return this.lines[offset1] === this.lines[offset2];
 	}
@@ -45,5 +50,6 @@ function getIndentation(str: string): number {
 	) {
 		i++;
 	}
+
 	return i;
 }

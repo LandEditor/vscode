@@ -10,6 +10,7 @@
 // #######################################################################
 type Event<Params extends object = {}> = {
 	preventDefault: () => void;
+
 	readonly defaultPrevented: boolean;
 } & Params;
 
@@ -163,9 +164,13 @@ export interface ProcessMemoryInfo {
  */
 export interface AuthInfo {
 	isProxy: boolean;
+
 	scheme: string;
+
 	host: string;
+
 	port: number;
+
 	realm: string;
 }
 export interface WebUtils {

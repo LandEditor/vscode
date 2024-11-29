@@ -14,7 +14,9 @@ import { ICellOutputViewModel, ICellViewModel } from "../notebookBrowser.js";
 
 interface Error {
 	name: string;
+
 	message: string;
+
 	stack?: string;
 }
 
@@ -56,6 +58,7 @@ export function getAllOutputsText(
 		if (isTextStreamMime(mimeType)) {
 			const { text: stream, count } =
 				getOutputStreamText(outputViewModel);
+
 			text = stream;
 
 			if (count > 1) {
@@ -85,6 +88,7 @@ export function getAllOutputsText(
 
 export function getOutputStreamText(output: ICellOutputViewModel): {
 	text: string;
+
 	count: number;
 } {
 	let text = "";
@@ -107,7 +111,9 @@ export function getOutputStreamText(output: ICellOutputViewModel): {
 		}
 
 		text = text + decoder.decode(nextOutput.data.buffer);
+
 		index = index + 1;
+
 		count++;
 	}
 
@@ -124,6 +130,7 @@ export function getOutputText(
 	let text = `${mimeType}`; // default in case we can't get the text value for some reason.
 
 	const charLimit = 100000;
+
 	text = decoder.decode(buffer.data.slice(0, charLimit).buffer);
 
 	if (buffer.data.byteLength > charLimit) {

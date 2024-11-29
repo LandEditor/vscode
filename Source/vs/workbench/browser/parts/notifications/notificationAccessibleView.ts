@@ -29,8 +29,11 @@ import { getNotificationFromContext } from "./notificationsCommands.js";
 
 export class NotificationAccessibleView implements IAccessibleViewImplentation {
 	readonly priority = 90;
+
 	readonly name = "notifications";
+
 	readonly when = NotificationFocusedContext;
+
 	readonly type = AccessibleViewType.View;
 
 	getProvider(accessor: ServicesAccessor) {
@@ -50,6 +53,7 @@ export class NotificationAccessibleView implements IAccessibleViewImplentation {
 			if (!notification) {
 				return;
 			}
+
 			commandService.executeCommand("notifications.showList");
 
 			let notificationIndex: number | undefined;
@@ -59,9 +63,11 @@ export class NotificationAccessibleView implements IAccessibleViewImplentation {
 			if (list instanceof WorkbenchList) {
 				notificationIndex = list.indexOf(notification);
 			}
+
 			if (notificationIndex === undefined) {
 				return;
 			}
+
 			function focusList(): void {
 				commandService.executeCommand("notifications.showList");
 
@@ -73,6 +79,7 @@ export class NotificationAccessibleView implements IAccessibleViewImplentation {
 					} catch {}
 				}
 			}
+
 			function getContentForNotification(): string | undefined {
 				const notification = getNotificationFromContext(listService);
 
@@ -81,6 +88,7 @@ export class NotificationAccessibleView implements IAccessibleViewImplentation {
 				if (!notification) {
 					return;
 				}
+
 				return notification.source
 					? localize(
 							"notification.accessibleViewSrc",
@@ -90,11 +98,13 @@ export class NotificationAccessibleView implements IAccessibleViewImplentation {
 						)
 					: localize("notification.accessibleView", "{0}", message);
 			}
+
 			const content = getContentForNotification();
 
 			if (!content) {
 				return;
 			}
+
 			notification.onDidClose(() => accessibleViewService.next());
 
 			return new AccessibleContentProvider(
@@ -112,7 +122,9 @@ export class NotificationAccessibleView implements IAccessibleViewImplentation {
 					if (!list) {
 						return;
 					}
+
 					focusList();
+
 					list.focusNext();
 
 					return getContentForNotification();
@@ -121,13 +133,16 @@ export class NotificationAccessibleView implements IAccessibleViewImplentation {
 					if (!list) {
 						return;
 					}
+
 					focusList();
+
 					list.focusPrevious();
 
 					return getContentForNotification();
 				},
 			);
 		}
+
 		return getProvider();
 	}
 }
@@ -143,21 +158,26 @@ function getActionsFromNotification(
 		if (notification.actions.primary) {
 			actions.push(...notification.actions.primary);
 		}
+
 		if (notification.actions.secondary) {
 			actions.push(...notification.actions.secondary);
 		}
 	}
+
 	if (actions) {
 		for (const action of actions) {
 			action.class = ThemeIcon.asClassName(Codicon.bell);
 
 			const initialAction = action.run;
+
 			action.run = () => {
 				initialAction();
+
 				notification.close();
 			};
 		}
 	}
+
 	const manageExtension = actions?.find((a) =>
 		a.label.includes("Manage Extension"),
 	);
@@ -165,6 +185,7 @@ function getActionsFromNotification(
 	if (manageExtension) {
 		manageExtension.class = ThemeIcon.asClassName(Codicon.gear);
 	}
+
 	if (actions) {
 		actions.push({
 			id: "clearNotification",
@@ -172,6 +193,7 @@ function getActionsFromNotification(
 			tooltip: localize("clearNotification", "Clear Notification"),
 			run: () => {
 				notification.close();
+
 				accessibilitySignalService.playSignal(
 					AccessibilitySignal.clear,
 				);
@@ -180,5 +202,6 @@ function getActionsFromNotification(
 			class: ThemeIcon.asClassName(Codicon.clearAll),
 		});
 	}
+
 	return actions;
 }

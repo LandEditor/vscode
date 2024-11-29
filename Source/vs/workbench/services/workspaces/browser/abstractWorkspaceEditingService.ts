@@ -110,12 +110,14 @@ export abstract class AbstractWorkspaceEditingService
 	) {
 		super();
 	}
+
 	async pickNewWorkspacePath(): Promise<URI | undefined> {
 		const availableFileSystems = [Schemas.file];
 
 		if (this.environmentService.remoteAuthority) {
 			availableFileSystems.unshift(Schemas.vscodeRemote);
 		}
+
 		let workspacePath = await this.fileDialogService.showSaveDialog({
 			saveLabel: mnemonicButtonLabel(localize("save", "Save")),
 			title: localize("saveWorkspace", "Save Workspace"),
@@ -130,6 +132,7 @@ export abstract class AbstractWorkspaceEditingService
 		if (!workspacePath) {
 			return; // canceled
 		}
+
 		if (!hasWorkspaceFileExtension(workspacePath)) {
 			// Always ensure we have workspace file extension
 			// (see https://github.com/microsoft/vscode/issues/84818)
@@ -137,8 +140,10 @@ export abstract class AbstractWorkspaceEditingService
 				path: `${workspacePath.path}.${WORKSPACE_EXTENSION}`,
 			});
 		}
+
 		return workspacePath;
 	}
+
 	private getNewWorkspaceName(): string {
 		// First try with existing workspace name
 		const configPathURI = this.getCurrentWorkspaceIdentifier()?.configPath;
@@ -158,6 +163,7 @@ export abstract class AbstractWorkspaceEditingService
 		// Finally pick a good default
 		return `workspace.${WORKSPACE_EXTENSION}`;
 	}
+
 	async updateFolders(
 		index: number,
 		deleteCount?: number,
@@ -173,6 +179,7 @@ export abstract class AbstractWorkspaceEditingService
 				.slice(index, index + deleteCount)
 				.map((folder) => folder.uri);
 		}
+
 		let foldersToAdd: IWorkspaceFolderCreationData[] = [];
 
 		if (Array.isArray(foldersToAddCandidates)) {
@@ -181,6 +188,7 @@ export abstract class AbstractWorkspaceEditingService
 				name: folderToAdd.name,
 			})); // Normalize
 		}
+
 		const wantsToDelete = foldersToDelete.length > 0;
 
 		const wantsToAdd = foldersToAdd.length > 0;
@@ -220,6 +228,7 @@ export abstract class AbstractWorkspaceEditingService
 			);
 		}
 	}
+
 	private async doUpdateFolders(
 		foldersToAdd: IWorkspaceFolderCreationData[],
 		foldersToDelete: URI[],
@@ -236,9 +245,11 @@ export abstract class AbstractWorkspaceEditingService
 			if (donotNotifyError) {
 				throw error;
 			}
+
 			this.handleWorkspaceConfigurationEditingError(error);
 		}
 	}
+
 	addFolders(
 		foldersToAddCandidates: IWorkspaceFolderCreationData[],
 		donotNotifyError: boolean = false,
@@ -251,6 +262,7 @@ export abstract class AbstractWorkspaceEditingService
 
 		return this.doAddFolders(foldersToAdd, undefined, donotNotifyError);
 	}
+
 	private async doAddFolders(
 		foldersToAdd: IWorkspaceFolderCreationData[],
 		index?: number,
@@ -278,11 +290,13 @@ export abstract class AbstractWorkspaceEditingService
 			let newWorkspaceFolders = this.contextService
 				.getWorkspace()
 				.folders.map((folder) => ({ uri: folder.uri }));
+
 			newWorkspaceFolders.splice(
 				typeof index === "number" ? index : newWorkspaceFolders.length,
 				0,
 				...foldersToAdd,
 			);
+
 			newWorkspaceFolders = distinct(newWorkspaceFolders, (folder) =>
 				this.uriIdentityService.extUri.getComparisonKey(folder.uri),
 			);
@@ -295,6 +309,7 @@ export abstract class AbstractWorkspaceEditingService
 			) {
 				return; // return if the operation is a no-op for the current state
 			}
+
 			return this.createAndEnterWorkspace(newWorkspaceFolders);
 		}
 		// Delegate addition of folders to workspace service otherwise
@@ -304,9 +319,11 @@ export abstract class AbstractWorkspaceEditingService
 			if (donotNotifyError) {
 				throw error;
 			}
+
 			this.handleWorkspaceConfigurationEditingError(error);
 		}
 	}
+
 	async removeFolders(
 		foldersToRemove: URI[],
 		donotNotifyError: boolean = false,
@@ -323,9 +340,11 @@ export abstract class AbstractWorkspaceEditingService
 			if (donotNotifyError) {
 				throw error;
 			}
+
 			this.handleWorkspaceConfigurationEditingError(error);
 		}
 	}
+
 	private includesSingleFolderWorkspace(folders: URI[]): boolean {
 		if (this.contextService.getWorkbenchState() === WorkbenchState.FOLDER) {
 			const workspaceFolder =
@@ -338,8 +357,10 @@ export abstract class AbstractWorkspaceEditingService
 				),
 			);
 		}
+
 		return false;
 	}
+
 	async createAndEnterWorkspace(
 		folders: IWorkspaceFolderCreationData[],
 		path?: URI,
@@ -347,6 +368,7 @@ export abstract class AbstractWorkspaceEditingService
 		if (path && !(await this.isValidTargetWorkspacePath(path))) {
 			return;
 		}
+
 		const remoteAuthority = this.environmentService.remoteAuthority;
 
 		const untitledWorkspace =
@@ -373,8 +395,10 @@ export abstract class AbstractWorkspaceEditingService
 				);
 			}
 		}
+
 		return this.enterWorkspace(path);
 	}
+
 	async saveAndEnterWorkspace(workspaceUri: URI): Promise<void> {
 		const workspaceIdentifier = this.getCurrentWorkspaceIdentifier();
 
@@ -390,13 +414,16 @@ export abstract class AbstractWorkspaceEditingService
 		if (!(await this.isValidTargetWorkspacePath(workspaceUri))) {
 			return;
 		}
+
 		await this.saveWorkspaceAs(workspaceIdentifier, workspaceUri);
 
 		return this.enterWorkspace(workspaceUri);
 	}
+
 	async isValidTargetWorkspacePath(workspaceUri: URI): Promise<boolean> {
 		return true; // OK
 	}
+
 	protected async saveWorkspaceAs(
 		workspace: IWorkspaceIdentifier,
 		targetConfigPathURI: URI,
@@ -416,6 +443,7 @@ export abstract class AbstractWorkspaceEditingService
 				await this.workspacesService.getWorkspaceIdentifier(
 					targetConfigPathURI,
 				);
+
 			await this.userDataProfilesService.setProfileForWorkspace(
 				newWorkspace,
 				this.userDataProfileService.currentProfile,
@@ -430,6 +458,7 @@ export abstract class AbstractWorkspaceEditingService
 		) {
 			return;
 		}
+
 		const isFromUntitledWorkspace = isUntitledWorkspace(
 			configPathURI,
 			this.environmentService,
@@ -444,6 +473,7 @@ export abstract class AbstractWorkspaceEditingService
 			targetConfigPathURI,
 			this.uriIdentityService.extUri,
 		);
+
 		await this.textFileService.create([
 			{
 				resource: targetConfigPathURI,
@@ -454,6 +484,7 @@ export abstract class AbstractWorkspaceEditingService
 		// Set trust for the workspace file
 		await this.trustWorkspaceConfiguration(targetConfigPathURI);
 	}
+
 	protected async saveWorkspace(
 		workspace: IWorkspaceIdentifier,
 	): Promise<void> {
@@ -486,10 +517,12 @@ export abstract class AbstractWorkspaceEditingService
 			configPathURI,
 			this.uriIdentityService.extUri,
 		);
+
 		await this.textFileService.create([
 			{ resource: configPathURI, value: newRawWorkspaceContents },
 		]);
 	}
+
 	private handleWorkspaceConfigurationEditingError(
 		error: JSONEditingError,
 	): void {
@@ -503,13 +536,16 @@ export abstract class AbstractWorkspaceEditingService
 				this.notificationService.error(error.message);
 		}
 	}
+
 	private onInvalidWorkspaceConfigurationFileError(): void {
 		const message = localize(
 			"errorInvalidTaskConfiguration",
 			"Unable to write into workspace configuration file. Please open the file to correct errors/warnings in it and try again.",
 		);
+
 		this.askToOpenWorkspaceConfigurationFile(message);
 	}
+
 	private askToOpenWorkspaceConfigurationFile(message: string): void {
 		this.notificationService.prompt(Severity.Error, message, [
 			{
@@ -524,7 +560,9 @@ export abstract class AbstractWorkspaceEditingService
 			},
 		]);
 	}
+
 	abstract enterWorkspace(workspaceUri: URI): Promise<void>;
+
 	protected async doEnterWorkspace(
 		workspaceUri: URI,
 	): Promise<IEnterWorkspaceResult | undefined> {
@@ -533,16 +571,19 @@ export abstract class AbstractWorkspaceEditingService
 				"Entering a new workspace is not possible in tests.",
 			);
 		}
+
 		const workspace =
 			await this.workspacesService.getWorkspaceIdentifier(workspaceUri);
 		// Settings migration (only if we come from a folder workspace)
 		if (this.contextService.getWorkbenchState() === WorkbenchState.FOLDER) {
 			await this.migrateWorkspaceSettings(workspace);
 		}
+
 		await this.configurationService.initialize(workspace);
 
 		return this.workspacesService.enterWorkspace(workspaceUri);
 	}
+
 	private migrateWorkspaceSettings(
 		toWorkspace: IWorkspaceIdentifier,
 	): Promise<void> {
@@ -551,9 +592,11 @@ export abstract class AbstractWorkspaceEditingService
 			(setting) => setting.scope === ConfigurationScope.WINDOW,
 		);
 	}
+
 	copyWorkspaceSettings(toWorkspace: IWorkspaceIdentifier): Promise<void> {
 		return this.doCopyWorkspaceSettings(toWorkspace);
 	}
+
 	private doCopyWorkspaceSettings(
 		toWorkspace: IWorkspaceIdentifier,
 		filter?: (config: IConfigurationPropertySchema) => boolean,
@@ -569,16 +612,19 @@ export abstract class AbstractWorkspaceEditingService
 				if (filter && !filter(configurationProperties[key])) {
 					continue;
 				}
+
 				targetWorkspaceConfiguration[key] =
 					this.configurationService.inspect(key).workspaceValue;
 			}
 		}
+
 		return this.jsonEditingService.write(
 			toWorkspace.configPath,
 			[{ path: ["settings"], value: targetWorkspaceConfiguration }],
 			true,
 		);
 	}
+
 	private async trustWorkspaceConfiguration(
 		configPathURI: URI,
 	): Promise<void> {
@@ -592,6 +638,7 @@ export abstract class AbstractWorkspaceEditingService
 			);
 		}
 	}
+
 	protected getCurrentWorkspaceIdentifier():
 		| IWorkspaceIdentifier
 		| undefined {
@@ -602,6 +649,7 @@ export abstract class AbstractWorkspaceEditingService
 		if (isWorkspaceIdentifier(identifier)) {
 			return identifier;
 		}
+
 		return undefined;
 	}
 }

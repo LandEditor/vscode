@@ -43,9 +43,13 @@ import { getBaseLayerHoverDelegate } from "../hover/hoverDelegate2.js";
 
 export interface IBaseActionViewItemOptions {
 	draggable?: boolean;
+
 	isMenu?: boolean;
+
 	isTabList?: boolean;
+
 	useEventAsContext?: boolean;
+
 	hoverDelegate?: IHoverDelegate;
 }
 
@@ -53,6 +57,7 @@ export class BaseActionViewItem extends Disposable implements IActionViewItem {
 	element: HTMLElement | undefined;
 
 	_context: unknown;
+
 	readonly _action: IAction;
 
 	private customHover?: IManagedHover;
@@ -71,6 +76,7 @@ export class BaseActionViewItem extends Disposable implements IActionViewItem {
 		super();
 
 		this._context = context || this;
+
 		this._action = action;
 
 		if (action instanceof Action) {
@@ -103,6 +109,7 @@ export class BaseActionViewItem extends Disposable implements IActionViewItem {
 
 		if (event.label !== undefined) {
 			this.updateLabel();
+
 			this.updateTooltip();
 		}
 
@@ -133,6 +140,7 @@ export class BaseActionViewItem extends Disposable implements IActionViewItem {
 
 	render(container: HTMLElement): void {
 		const element = (this.element = container);
+
 		this._register(Gesture.addTarget(container));
 
 		const enableDragging = this.options && this.options.draggable;
@@ -209,6 +217,7 @@ export class BaseActionViewItem extends Disposable implements IActionViewItem {
 			this._register(
 				addDisposableListener(element, event, (e) => {
 					EventHelper.stop(e);
+
 					element.classList.remove("active");
 				}),
 			);
@@ -223,6 +232,7 @@ export class BaseActionViewItem extends Disposable implements IActionViewItem {
 				? event
 				: { preserveFocus }
 			: this._context;
+
 		this.actionRunner.run(this._action, context);
 	}
 
@@ -231,7 +241,9 @@ export class BaseActionViewItem extends Disposable implements IActionViewItem {
 	focus(): void {
 		if (this.element) {
 			this.element.tabIndex = 0;
+
 			this.element.focus();
+
 			this.element.classList.add("focused");
 		}
 	}
@@ -243,7 +255,9 @@ export class BaseActionViewItem extends Disposable implements IActionViewItem {
 	blur(): void {
 		if (this.element) {
 			this.element.blur();
+
 			this.element.tabIndex = -1;
+
 			this.element.classList.remove("focused");
 		}
 	}
@@ -278,7 +292,9 @@ export class BaseActionViewItem extends Disposable implements IActionViewItem {
 		if (!this.element) {
 			return;
 		}
+
 		const title = this.getTooltip() ?? "";
+
 		this.updateAriaLabel();
 
 		if (this.options.hoverDelegate?.showNativeHover) {
@@ -289,6 +305,7 @@ export class BaseActionViewItem extends Disposable implements IActionViewItem {
 				const hoverDelegate =
 					this.options.hoverDelegate ??
 					getDefaultHoverDelegate("element");
+
 				this.customHover = this._store.add(
 					getBaseLayerHoverDelegate().setupManagedHover(
 						hoverDelegate,
@@ -305,6 +322,7 @@ export class BaseActionViewItem extends Disposable implements IActionViewItem {
 	protected updateAriaLabel(): void {
 		if (this.element) {
 			const title = this.getTooltip() ?? "";
+
 			this.element.setAttribute("aria-label", title);
 		}
 	}
@@ -320,8 +338,10 @@ export class BaseActionViewItem extends Disposable implements IActionViewItem {
 	override dispose(): void {
 		if (this.element) {
 			this.element.remove();
+
 			this.element = undefined;
 		}
+
 		this._context = undefined;
 
 		super.dispose();
@@ -330,14 +350,19 @@ export class BaseActionViewItem extends Disposable implements IActionViewItem {
 
 export interface IActionViewItemOptions extends IBaseActionViewItemOptions {
 	icon?: boolean;
+
 	label?: boolean;
+
 	keybinding?: string | null;
+
 	keybindingNotRenderedWithLabel?: boolean;
+
 	toggleStyles?: IToggleStyles;
 }
 
 export class ActionViewItem extends BaseActionViewItem {
 	protected label: HTMLElement | undefined;
+
 	protected override options: IActionViewItemOptions;
 
 	private cssClass?: string;
@@ -350,20 +375,27 @@ export class ActionViewItem extends BaseActionViewItem {
 		super(context, action, options);
 
 		this.options = options;
+
 		this.options.icon = options.icon !== undefined ? options.icon : false;
+
 		this.options.label = options.label !== undefined ? options.label : true;
+
 		this.cssClass = "";
 	}
 
 	override render(container: HTMLElement): void {
 		super.render(container);
+
 		types.assertType(this.element);
 
 		const label = document.createElement("a");
+
 		label.classList.add("action-label");
+
 		label.setAttribute("role", this.getDefaultAriaRole());
 
 		this.label = label;
+
 		this.element.appendChild(label);
 
 		if (
@@ -372,15 +404,22 @@ export class ActionViewItem extends BaseActionViewItem {
 			!this.options.keybindingNotRenderedWithLabel
 		) {
 			const kbLabel = document.createElement("span");
+
 			kbLabel.classList.add("keybinding");
+
 			kbLabel.textContent = this.options.keybinding;
+
 			this.element.appendChild(kbLabel);
 		}
 
 		this.updateClass();
+
 		this.updateLabel();
+
 		this.updateTooltip();
+
 		this.updateEnabled();
+
 		this.updateChecked();
 	}
 
@@ -407,6 +446,7 @@ export class ActionViewItem extends BaseActionViewItem {
 	override focus(): void {
 		if (this.label) {
 			this.label.tabIndex = 0;
+
 			this.label.focus();
 		}
 	}
@@ -453,6 +493,7 @@ export class ActionViewItem extends BaseActionViewItem {
 				);
 			}
 		}
+
 		return title ?? undefined;
 	}
 
@@ -460,6 +501,7 @@ export class ActionViewItem extends BaseActionViewItem {
 		if (this.cssClass && this.label) {
 			this.label.classList.remove(...this.cssClass.split(" "));
 		}
+
 		if (this.options.icon) {
 			this.cssClass = this.getClass();
 
@@ -481,6 +523,7 @@ export class ActionViewItem extends BaseActionViewItem {
 		if (this.action.enabled) {
 			if (this.label) {
 				this.label.removeAttribute("aria-disabled");
+
 				this.label.classList.remove("disabled");
 			}
 
@@ -488,6 +531,7 @@ export class ActionViewItem extends BaseActionViewItem {
 		} else {
 			if (this.label) {
 				this.label.setAttribute("aria-disabled", "true");
+
 				this.label.classList.add("disabled");
 			}
 
@@ -498,6 +542,7 @@ export class ActionViewItem extends BaseActionViewItem {
 	protected override updateAriaLabel(): void {
 		if (this.label) {
 			const title = this.getTooltip() ?? "";
+
 			this.label.setAttribute("aria-label", title);
 		}
 	}
@@ -517,13 +562,16 @@ export class ActionViewItem extends BaseActionViewItem {
 						"aria-checked",
 						this.action.checked ? "true" : "false",
 					);
+
 					this.label.setAttribute("role", "checkbox");
 				}
 			} else {
 				this.label.classList.remove("checked");
+
 				this.label.removeAttribute(
 					this.options.isTabList ? "aria-selected" : "aria-checked",
 				);
+
 				this.label.setAttribute("role", this.getDefaultAriaRole());
 			}
 		}
@@ -551,9 +599,11 @@ export class SelectActionViewItem<T = string> extends BaseActionViewItem {
 			styles,
 			selectBoxOptions,
 		);
+
 		this.selectBox.setFocusable(false);
 
 		this._register(this.selectBox);
+
 		this.registerListeners();
 	}
 

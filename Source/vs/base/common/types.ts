@@ -95,6 +95,7 @@ export function assertIsDefined<T>(arg: T | null | undefined): T {
 	if (isUndefinedOrNull(arg)) {
 		throw new Error("Assertion Failed: argument is undefined or null");
 	}
+
 	return arg;
 }
 /**
@@ -131,8 +132,10 @@ export function assertAllDefined(
 				`Assertion Failed: argument at index ${i} is undefined or null`,
 			);
 		}
+
 		result.push(arg);
 	}
+
 	return result;
 }
 
@@ -144,11 +147,13 @@ export function isEmptyObject(obj: unknown): obj is object {
 	if (!isObject(obj)) {
 		return false;
 	}
+
 	for (const key in obj) {
 		if (hasOwnProperty.call(obj, key)) {
 			return false;
 		}
 	}
+
 	return true;
 }
 /**
@@ -193,18 +198,21 @@ export function validateConstraint(
 		} catch {
 			// ignore
 		}
+
 		if (
 			!isUndefinedOrNull(arg) &&
 			(arg as any).constructor === constraint
 		) {
 			return;
 		}
+
 		if (
 			constraint.length === 1 &&
 			constraint.call(undefined, arg) === true
 		) {
 			return;
 		}
+
 		throw new Error(
 			`argument does not match one of these constraints: arg instanceof constraint, arg.constructor === constraint, nor constraint(arg) === true`,
 		);

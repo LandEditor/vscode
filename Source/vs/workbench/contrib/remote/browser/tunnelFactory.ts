@@ -75,6 +75,7 @@ export class TunnelFactoryContribution
 					},
 				];
 			}
+
 			this._register(
 				tunnelService.setTunnelProvider({
 					forwardPort: async (
@@ -93,9 +94,11 @@ export class TunnelFactoryContribution
 								"tunnelFactory: tunnel provider error",
 							);
 						}
+
 						if (!tunnelPromise) {
 							return undefined;
 						}
+
 						let tunnel: ITunnel;
 
 						try {
@@ -108,8 +111,10 @@ export class TunnelFactoryContribution
 							if (e instanceof Error) {
 								return e.message;
 							}
+
 							return undefined;
 						}
+
 						const localAddress = tunnel.localAddress.startsWith(
 							"http",
 						)
@@ -159,9 +164,11 @@ export class TunnelFactoryContribution
 						},
 					}
 				: undefined;
+
 			remoteExplorerService.setTunnelInformation(tunnelInformation);
 		}
 	}
+
 	private async resolveExternalUri(uri: string): Promise<string> {
 		try {
 			return (

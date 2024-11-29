@@ -35,12 +35,14 @@ export class TerminalAutoRepliesContribution
 		for (const backend of terminalInstanceService.getRegisteredBackends()) {
 			this._installListenersOnBackend(backend);
 		}
+
 		this._register(
 			terminalInstanceService.onDidRegisterBackend(async (e) =>
 				this._installListenersOnBackend(e),
 			),
 		);
 	}
+
 	private _installListenersOnBackend(backend: ITerminalBackend): void {
 		// Listen for config changes
 		const initialConfig =
@@ -56,6 +58,7 @@ export class TerminalAutoRepliesContribution
 				backend.installAutoReply(match, reply);
 			}
 		}
+
 		this._register(
 			this._configurationService.onDidChangeConfiguration(async (e) => {
 				if (

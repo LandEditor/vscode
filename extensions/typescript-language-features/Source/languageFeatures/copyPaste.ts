@@ -53,6 +53,7 @@ class CopyMetadata {
 		} catch {
 			// ignore
 		}
+
 		return undefined;
 	}
 }
@@ -64,6 +65,7 @@ class DocumentPasteProvider implements vscode.DocumentPasteEditProvider {
 		"updateImports",
 		"jsts",
 	);
+
 	static readonly metadataMimeType = "application/vnd.code.jsts.metadata";
 
 	constructor(
@@ -145,6 +147,7 @@ class DocumentPasteProvider implements vscode.DocumentPasteEditProvider {
 		let copiedFrom:
 			| {
 					file: string;
+
 					spans: protocol.TextSpan[];
 			  }
 			| undefined;
@@ -190,6 +193,7 @@ class DocumentPasteProvider implements vscode.DocumentPasteEditProvider {
 			vscode.l10n.t("Paste with imports"),
 			DocumentPasteProvider.kind,
 		);
+
 		edit.yieldTo = [
 			vscode.DocumentDropOrPasteEditKind.Text.append("plain"),
 		];
@@ -202,6 +206,7 @@ class DocumentPasteProvider implements vscode.DocumentPasteEditProvider {
 				edit.textChanges.map(typeConverters.TextEdit.fromCodeEdit),
 			);
 		}
+
 		edit.additionalEdit = additionalEdit;
 
 		return [edit];

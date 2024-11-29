@@ -32,11 +32,15 @@ export const WorkbenchIconSelectBoxInputEmptyContextKey =
 
 export class WorkbenchIconSelectBox extends IconSelectBox {
 	private static focusedWidget: WorkbenchIconSelectBox | undefined;
+
 	static getFocusedWidget(): WorkbenchIconSelectBox | undefined {
 		return WorkbenchIconSelectBox.focusedWidget;
 	}
+
 	private readonly contextKeyService: IContextKeyService;
+
 	private readonly inputFocusContextKey: IContextKey<boolean>;
+
 	private readonly inputEmptyContextKey: IContextKey<boolean>;
 
 	constructor(
@@ -45,14 +49,18 @@ export class WorkbenchIconSelectBox extends IconSelectBox {
 		contextKeyService: IContextKeyService,
 	) {
 		super(options);
+
 		this.contextKeyService = this._register(
 			contextKeyService.createScoped(this.domNode),
 		);
+
 		WorkbenchIconSelectBoxFocusContextKey.bindTo(this.contextKeyService);
+
 		this.inputFocusContextKey =
 			WorkbenchIconSelectBoxInputFocusContextKey.bindTo(
 				this.contextKeyService,
 			);
+
 		this.inputEmptyContextKey =
 			WorkbenchIconSelectBoxInputEmptyContextKey.bindTo(
 				this.contextKeyService,
@@ -62,16 +70,19 @@ export class WorkbenchIconSelectBox extends IconSelectBox {
 			const focusTracker = this._register(
 				dom.trackFocus(this.inputBox.inputElement),
 			);
+
 			this._register(
 				focusTracker.onDidFocus(() =>
 					this.inputFocusContextKey.set(true),
 				),
 			);
+
 			this._register(
 				focusTracker.onDidBlur(() =>
 					this.inputFocusContextKey.set(false),
 				),
 			);
+
 			this._register(
 				this.inputBox.onDidChange(() =>
 					this.inputEmptyContextKey.set(
@@ -81,8 +92,10 @@ export class WorkbenchIconSelectBox extends IconSelectBox {
 			);
 		}
 	}
+
 	override focus(): void {
 		super.focus();
+
 		WorkbenchIconSelectBox.focusedWidget = this;
 	}
 }

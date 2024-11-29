@@ -103,9 +103,12 @@ export class NativeTextFileService extends AbstractTextFileService {
 			elevatedFileService,
 			decorationsService,
 		);
+
 		this.environmentService = environmentService;
+
 		this.registerListeners();
 	}
+
 	private registerListeners(): void {
 		// Lifecycle
 		this._register(
@@ -117,6 +120,7 @@ export class NativeTextFileService extends AbstractTextFileService {
 			),
 		);
 	}
+
 	private async onWillShutdown(): Promise<void> {
 		let modelsPendingToSave: ITextFileEditorModel[];
 		// As long as models are pending to be saved, we prolong the shutdown
@@ -135,6 +139,7 @@ export class NativeTextFileService extends AbstractTextFileService {
 			);
 		}
 	}
+
 	override async read(
 		resource: URI,
 		options?: IReadTextFileOptions,
@@ -144,6 +149,7 @@ export class NativeTextFileService extends AbstractTextFileService {
 
 		return super.read(resource, options);
 	}
+
 	override async readStream(
 		resource: URI,
 		options?: IReadTextFileOptions,
@@ -153,6 +159,7 @@ export class NativeTextFileService extends AbstractTextFileService {
 
 		return super.readStream(resource, options);
 	}
+
 	private ensureLimits(options?: IReadTextFileOptions): IReadTextFileOptions {
 		let ensuredOptions: IReadTextFileOptions;
 
@@ -161,10 +168,12 @@ export class NativeTextFileService extends AbstractTextFileService {
 		} else {
 			ensuredOptions = options;
 		}
+
 		let ensuredLimits: IFileReadLimits;
 
 		if (!ensuredOptions.limits) {
 			ensuredLimits = Object.create(null);
+
 			ensuredOptions = {
 				...ensuredOptions,
 				limits: ensuredLimits,
@@ -172,6 +181,7 @@ export class NativeTextFileService extends AbstractTextFileService {
 		} else {
 			ensuredLimits = ensuredOptions.limits;
 		}
+
 		return ensuredOptions;
 	}
 }

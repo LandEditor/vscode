@@ -21,6 +21,7 @@ export class TextSearchEngineAdapter {
 		private query: ITextQuery,
 		private numThreads?: number,
 	) {}
+
 	search(
 		token: CancellationToken,
 		onResult: (matches: ISerializedFileMatch[]) => void,
@@ -40,6 +41,7 @@ export class TextSearchEngineAdapter {
 				messages: [],
 			});
 		}
+
 		const pretendOutputChannel = {
 			appendLine(msg: string) {
 				onMessage({ message: msg });

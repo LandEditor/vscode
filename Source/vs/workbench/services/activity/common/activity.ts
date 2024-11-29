@@ -20,6 +20,7 @@ import { ViewContainer } from "../../../common/views.js";
 
 export interface IActivity {
 	readonly badge: IBadge;
+
 	readonly priority?: number;
 }
 
@@ -76,7 +77,9 @@ export interface IBadge {
 
 export interface IBadgeStyles {
 	readonly badgeBackground: Color | undefined;
+
 	readonly badgeForeground: Color | undefined;
+
 	readonly badgeBorder: Color | undefined;
 }
 

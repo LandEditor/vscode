@@ -60,9 +60,11 @@ class DiffEditorBreadcrumbsSource
 				100,
 			),
 		);
+
 		this._register(
 			autorunWithStore(async (reader, store) => {
 				documentSymbolProviderChanged.read(reader);
+
 				textModelChanged.read(reader);
 
 				const src = store.add(new DisposableCancellationTokenSource());
@@ -75,16 +77,20 @@ class DiffEditorBreadcrumbsSource
 				if (store.isDisposed) {
 					return;
 				}
+
 				this._currentModel.set(model, undefined);
 			}),
 		);
 	}
+
 	public getBreadcrumbItems(
 		startRange: LineRange,
 		reader: IReader,
 	): {
 		name: string;
+
 		kind: SymbolKind;
+
 		startLineNumber: number;
 	}[] {
 		const m = this._currentModel.read(reader);
@@ -92,6 +98,7 @@ class DiffEditorBreadcrumbsSource
 		if (!m) {
 			return [];
 		}
+
 		const symbols = m
 			.asListOfDocumentSymbols()
 			.filter(
@@ -99,6 +106,7 @@ class DiffEditorBreadcrumbsSource
 					startRange.contains(s.range.startLineNumber) &&
 					!startRange.contains(s.range.endLineNumber),
 			);
+
 		symbols.sort(
 			reverseOrder(
 				compareBy(

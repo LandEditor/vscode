@@ -9,10 +9,12 @@ import { IV8InspectProfilingService, IV8Profile } from "../common/profiling.js";
 
 export class InspectProfilingService implements IV8InspectProfilingService {
 	_serviceBrand: undefined;
+
 	private readonly _sessions = new Map<string, ProfilingSession>();
 
 	async startProfiling(options: {
 		host: string;
+
 		port: number;
 	}): Promise<string> {
 		const prof = await import("v8-inspect-profiler");
@@ -24,17 +26,21 @@ export class InspectProfilingService implements IV8InspectProfilingService {
 		});
 
 		const id = generateUuid();
+
 		this._sessions.set(id, session);
 
 		return id;
 	}
+
 	async stopProfiling(sessionId: string): Promise<IV8Profile> {
 		const session = this._sessions.get(sessionId);
 
 		if (!session) {
 			throw new Error(`UNKNOWN session '${sessionId}'`);
 		}
+
 		const result = await session.stop();
+
 		this._sessions.delete(sessionId);
 
 		return result.profile;

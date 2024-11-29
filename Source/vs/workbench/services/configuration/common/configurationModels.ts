@@ -26,58 +26,78 @@ import { IStoredWorkspaceFolder } from "../../../../platform/workspaces/common/w
 
 export class WorkspaceConfigurationModelParser extends ConfigurationModelParser {
 	private _folders: IStoredWorkspaceFolder[] = [];
+
 	private _transient: boolean = false;
+
 	private _settingsModelParser: ConfigurationModelParser;
+
 	private _launchModel: ConfigurationModel;
+
 	private _tasksModel: ConfigurationModel;
 
 	constructor(name: string, logService: ILogService) {
 		super(name, logService);
+
 		this._settingsModelParser = new ConfigurationModelParser(
 			name,
 			logService,
 		);
+
 		this._launchModel = ConfigurationModel.createEmptyModel(logService);
+
 		this._tasksModel = ConfigurationModel.createEmptyModel(logService);
 	}
+
 	get folders(): IStoredWorkspaceFolder[] {
 		return this._folders;
 	}
+
 	get transient(): boolean {
 		return this._transient;
 	}
+
 	get settingsModel(): ConfigurationModel {
 		return this._settingsModelParser.configurationModel;
 	}
+
 	get launchModel(): ConfigurationModel {
 		return this._launchModel;
 	}
+
 	get tasksModel(): ConfigurationModel {
 		return this._tasksModel;
 	}
+
 	reparseWorkspaceSettings(
 		configurationParseOptions: ConfigurationParseOptions,
 	): void {
 		this._settingsModelParser.reparse(configurationParseOptions);
 	}
+
 	getRestrictedWorkspaceSettings(): string[] {
 		return this._settingsModelParser.restrictedConfigurations;
 	}
+
 	protected override doParseRaw(
 		raw: any,
 		configurationParseOptions?: ConfigurationParseOptions,
 	): IConfigurationModel {
 		this._folders = (raw["folders"] || []) as IStoredWorkspaceFolder[];
+
 		this._transient = isBoolean(raw["transient"]) && raw["transient"];
+
 		this._settingsModelParser.parseRaw(
 			raw["settings"],
 			configurationParseOptions,
 		);
+
 		this._launchModel = this.createConfigurationModelFrom(raw, "launch");
+
 		this._tasksModel = this.createConfigurationModelFrom(raw, "tasks");
 
 		return super.doParseRaw(raw, configurationParseOptions);
 	}
+
 	private createConfigurationModelFrom(
 		raw: any,
 		key: string,
@@ -92,6 +112,7 @@ export class WorkspaceConfigurationModelParser extends ConfigurationModelParser 
 			);
 
 			const scopedContents = Object.create(null);
+
 			scopedContents[key] = contents;
 
 			const keys = Object.keys(data).map((k) => `${key}.${k}`);
@@ -104,6 +125,7 @@ export class WorkspaceConfigurationModelParser extends ConfigurationModelParser 
 				this.logService,
 			);
 		}
+
 		return ConfigurationModel.createEmptyModel(this.logService);
 	}
 }
@@ -115,6 +137,7 @@ export class StandaloneConfigurationModelParser extends ConfigurationModelParser
 	) {
 		super(name, logService);
 	}
+
 	protected override doParseRaw(
 		raw: any,
 		configurationParseOptions?: ConfigurationParseOptions,
@@ -126,6 +149,7 @@ export class StandaloneConfigurationModelParser extends ConfigurationModelParser
 		);
 
 		const scopedContents = Object.create(null);
+
 		scopedContents[this.scope] = contents;
 
 		const keys = Object.keys(raw).map((key) => `${this.scope}.${key}`);
@@ -160,26 +184,33 @@ export class Configuration extends BaseConfiguration {
 			logService,
 		);
 	}
+
 	override getValue(
 		key: string | undefined,
 		overrides: IConfigurationOverrides = {},
 	): any {
 		return super.getValue(key, overrides, this._workspace);
 	}
+
 	override inspect<C>(
 		key: string,
 		overrides: IConfigurationOverrides = {},
 	): IConfigurationValue<C> {
 		return super.inspect(key, overrides, this._workspace);
 	}
+
 	override keys(): {
 		default: string[];
+
 		user: string[];
+
 		workspace: string[];
+
 		workspaceFolder: string[];
 	} {
 		return super.keys(this._workspace);
 	}
+
 	override compareAndDeleteFolderConfiguration(
 		folder: URI,
 	): IConfigurationChange {
@@ -191,8 +222,10 @@ export class Configuration extends BaseConfiguration {
 			// Do not remove workspace configuration
 			return { keys: [], overrides: [] };
 		}
+
 		return super.compareAndDeleteFolderConfiguration(folder);
 	}
+
 	compare(other: Configuration): IConfigurationChange {
 		const compare = (
 			fromKeys: string[],
@@ -200,8 +233,11 @@ export class Configuration extends BaseConfiguration {
 			overrideIdentifier?: string,
 		): string[] => {
 			const keys: string[] = [];
+
 			keys.push(...toKeys.filter((key) => fromKeys.indexOf(key) === -1));
+
 			keys.push(...fromKeys.filter((key) => toKeys.indexOf(key) === -1));
+
 			keys.push(
 				...fromKeys.filter((key) => {
 					// Ignore if the key does not exist in both models
@@ -260,6 +296,7 @@ export class Configuration extends BaseConfiguration {
 				overrides.push([overrideIdentifier, keys]);
 			}
 		}
+
 		return { keys, overrides };
 	}
 }

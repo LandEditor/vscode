@@ -125,8 +125,10 @@ interface IAnythingQuickPickItem
 		IQuickPickItemWithResource {}
 interface IEditorSymbolAnythingQuickPickItem extends IAnythingQuickPickItem {
 	resource: URI;
+
 	range: {
 		decoration: IRange;
+
 		selection: IRange;
 	};
 }
@@ -139,10 +141,13 @@ function isEditorSymbolQuickPickItem(
 }
 export class AnythingQuickAccessProvider extends PickerQuickAccessProvider<IAnythingQuickPickItem> {
 	static PREFIX = "";
+
 	private static readonly NO_RESULTS_PICK: IAnythingQuickPickItem = {
 		label: localize("noAnythingResults", "No matching results"),
 	};
+
 	private static readonly MAX_RESULTS = 512;
+
 	private static readonly TYPING_SEARCH_DELAY = 200; // this delay accommodates for the user typing a word and then stops typing to start searching
 	private static SYMBOL_PICKS_MERGE_DELAY = 200; // allow some time to merge fast and slow picks to reduce flickering
 	private readonly pickState = this._register(
@@ -155,17 +160,25 @@ export class AnythingQuickAccessProvider extends PickerQuickAccessProvider<IAnyt
 						}
 				  >
 				| undefined = undefined;
+
 			editorViewState = this._register(
 				this.instantiationService.createInstance(PickerEditorState),
 			);
+
 			scorerCache: FuzzyScorerCache = Object.create(null);
+
 			fileQueryCache: FileQueryCacheState | undefined = undefined;
+
 			lastOriginalFilter: string | undefined = undefined;
+
 			lastFilter: string | undefined = undefined;
+
 			lastRange: IRange | undefined = undefined;
+
 			lastGlobalPicks:
 				| PicksWithActive<IAnythingQuickPickItem>
 				| undefined = undefined;
+
 			isQuickNavigating: boolean | undefined = undefined;
 
 			constructor(
@@ -174,6 +187,7 @@ export class AnythingQuickAccessProvider extends PickerQuickAccessProvider<IAnyt
 			) {
 				super();
 			}
+
 			set(
 				picker: IQuickPick<
 					IAnythingQuickPickItem,
@@ -184,6 +198,7 @@ export class AnythingQuickAccessProvider extends PickerQuickAccessProvider<IAnyt
 			): void {
 				// Picker for this run
 				this.picker = picker;
+
 				Event.once(picker.onDispose)(() => {
 					if (picker === this.picker) {
 						this.picker = undefined; // clear the picker when disposed to not keep it in memory for too long
@@ -194,14 +209,20 @@ export class AnythingQuickAccessProvider extends PickerQuickAccessProvider<IAnyt
 
 				if (!isQuickNavigating) {
 					this.fileQueryCache = this.provider.createFileQueryCache();
+
 					this.scorerCache = Object.create(null);
 				}
 				// Other
 				this.isQuickNavigating = isQuickNavigating;
+
 				this.lastOriginalFilter = undefined;
+
 				this.lastFilter = undefined;
+
 				this.lastRange = undefined;
+
 				this.lastGlobalPicks = undefined;
+
 				this.editorViewState.reset();
 			}
 		})(this, this.instantiationService),
@@ -211,8 +232,10 @@ export class AnythingQuickAccessProvider extends PickerQuickAccessProvider<IAnyt
 		if (this.configuration.preserveInput) {
 			return DefaultQuickAccessFilterValue.LAST;
 		}
+
 		return undefined;
 	}
+
 	constructor(
 		@IInstantiationService
 		private readonly instantiationService: IInstantiationService,
@@ -262,6 +285,7 @@ export class AnythingQuickAccessProvider extends PickerQuickAccessProvider<IAnyt
 			noResultsPick: AnythingQuickAccessProvider.NO_RESULTS_PICK,
 		});
 	}
+
 	private get configuration() {
 		const editorConfig =
 			this.configurationService.getValue<IWorkbenchEditorConfiguration>()
@@ -287,6 +311,7 @@ export class AnythingQuickAccessProvider extends PickerQuickAccessProvider<IAnyt
 			preserveInput: quickAccessConfig.preserveInput,
 		};
 	}
+
 	override provide(
 		picker: IQuickPick<
 			IAnythingQuickPickItem,
@@ -304,6 +329,7 @@ export class AnythingQuickAccessProvider extends PickerQuickAccessProvider<IAnyt
 		const editorDecorationsDisposable = disposables.add(
 			new MutableDisposable(),
 		);
+
 		disposables.add(
 			picker.onDidChangeActive(() => {
 				// Clear old decorations
@@ -333,6 +359,7 @@ export class AnythingQuickAccessProvider extends PickerQuickAccessProvider<IAnyt
 
 		return disposables;
 	}
+
 	private decorateAndRevealSymbolRange(
 		pick: IEditorSymbolAnythingQuickPickItem,
 	): IDisposable {
@@ -346,6 +373,7 @@ export class AnythingQuickAccessProvider extends PickerQuickAccessProvider<IAnyt
 		) {
 			return Disposable.None; // active editor needs to be for resource
 		}
+
 		const activeEditorControl = this.editorService.activeTextEditorControl;
 
 		if (!activeEditorControl) {
@@ -363,6 +391,7 @@ export class AnythingQuickAccessProvider extends PickerQuickAccessProvider<IAnyt
 
 		return toDisposable(() => this.clearDecorations(activeEditorControl));
 	}
+
 	protected _getPicks(
 		originalFilter: string,
 		disposables: DisposableStore,
@@ -400,7 +429,9 @@ export class AnythingQuickAccessProvider extends PickerQuickAccessProvider<IAnyt
 		}
 		// Remember as last filter
 		const lastWasFiltering = !!this.pickState.lastOriginalFilter;
+
 		this.pickState.lastOriginalFilter = originalFilter;
+
 		this.pickState.lastFilter = filter;
 		// Remember our pick state before returning new picks
 		// unless we are inside an editor symbol filter or result.
@@ -446,6 +477,7 @@ export class AnythingQuickAccessProvider extends PickerQuickAccessProvider<IAnyt
 			token,
 		);
 	}
+
 	private doGetPicks(
 		filter: string,
 		options: AnythingQuickAccessProviderRunOptions & {
@@ -495,12 +527,15 @@ export class AnythingQuickAccessProvider extends PickerQuickAccessProvider<IAnyt
 
 					continue;
 				}
+
 				if (!query.original) {
 					pick.highlights = undefined;
+
 					picks.push(pick);
 
 					continue;
 				}
+
 				const { score, labelMatch, descriptionMatch } = scoreItemFuzzy(
 					pick,
 					query,
@@ -512,13 +547,16 @@ export class AnythingQuickAccessProvider extends PickerQuickAccessProvider<IAnyt
 				if (!score) {
 					continue;
 				}
+
 				pick.highlights = {
 					label: labelMatch,
 					description: descriptionMatch,
 				};
+
 				picks.push(pick);
 			}
 		}
+
 		if (this.pickState.isQuickNavigating) {
 			if (picks.length > 0) {
 				picks.push({
@@ -529,11 +567,13 @@ export class AnythingQuickAccessProvider extends PickerQuickAccessProvider<IAnyt
 					),
 				} satisfies IQuickPickSeparator);
 			}
+
 			picks = historyEditorPicks;
 		} else {
 			if (options.includeHelp) {
 				picks.push(...this.getHelpPicks(query, token, options));
 			}
+
 			if (historyEditorPicks.length !== 0) {
 				picks.push({
 					type: "separator",
@@ -542,9 +582,11 @@ export class AnythingQuickAccessProvider extends PickerQuickAccessProvider<IAnyt
 						"recently opened",
 					),
 				} satisfies IQuickPickSeparator);
+
 				picks.push(...historyEditorPicks);
 			}
 		}
+
 		return {
 			// Fast picks: help (if included) & editor history
 			picks: options.filter
@@ -565,6 +607,7 @@ export class AnythingQuickAccessProvider extends PickerQuickAccessProvider<IAnyt
 						);
 					}
 				}
+
 				let additionalPicks = await this.getAdditionalPicks(
 					query,
 					additionalPicksExcludes,
@@ -577,9 +620,11 @@ export class AnythingQuickAccessProvider extends PickerQuickAccessProvider<IAnyt
 						options.filter?.(p),
 					);
 				}
+
 				if (token.isCancellationRequested) {
 					return [];
 				}
+
 				return additionalPicks.length > 0
 					? [
 							{
@@ -602,6 +647,7 @@ export class AnythingQuickAccessProvider extends PickerQuickAccessProvider<IAnyt
 			mergeDelay: AnythingQuickAccessProvider.SYMBOL_PICKS_MERGE_DELAY,
 		};
 	}
+
 	private async getAdditionalPicks(
 		query: IPreparedQuery,
 		excludes: ResourceMap<boolean>,
@@ -652,18 +698,22 @@ export class AnythingQuickAccessProvider extends PickerQuickAccessProvider<IAnyt
 				if (!score) {
 					continue;
 				}
+
 				anythingPick.highlights = {
 					label: labelMatch,
 					description: descriptionMatch,
 				};
+
 				filteredAnythingPicks.push(anythingPick);
 			}
 		}
+
 		return filteredAnythingPicks;
 	}
 	//#region Editor History
 	private readonly labelOnlyEditorHistoryPickAccessor =
 		new QuickPickItemScorerAccessor({ skipDescription: true });
+
 	private getEditorHistoryPicks(
 		query: IPreparedQuery,
 	): Array<IAnythingQuickPickItem> {
@@ -676,6 +726,7 @@ export class AnythingQuickAccessProvider extends PickerQuickAccessProvider<IAnyt
 					this.createAnythingPick(editor, configuration),
 				);
 		}
+
 		if (!this.configuration.includeHistory) {
 			return []; // disabled when searching
 		}
@@ -696,6 +747,7 @@ export class AnythingQuickAccessProvider extends PickerQuickAccessProvider<IAnyt
 			) {
 				continue; // exclude editors without file resource if we are searching by pattern
 			}
+
 			const editorHistoryPick = this.createAnythingPick(
 				editor,
 				configuration,
@@ -712,10 +764,12 @@ export class AnythingQuickAccessProvider extends PickerQuickAccessProvider<IAnyt
 			if (!score) {
 				continue; // exclude editors not matching query
 			}
+
 			editorHistoryPick.highlights = {
 				label: labelMatch,
 				description: descriptionMatch,
 			};
+
 			editorHistoryPicks.push(editorHistoryPick);
 		}
 		// Return without sorting if settings tell to sort by recency
@@ -741,8 +795,10 @@ export class AnythingQuickAccessProvider extends PickerQuickAccessProvider<IAnyt
 			AnythingQuickAccessProvider.TYPING_SEARCH_DELAY,
 		),
 	);
+
 	private readonly fileQueryBuilder =
 		this.instantiationService.createInstance(QueryBuilder);
+
 	private createFileQueryCache(): FileQueryCacheState {
 		return new FileQueryCacheState(
 			(cacheKey) =>
@@ -755,6 +811,7 @@ export class AnythingQuickAccessProvider extends PickerQuickAccessProvider<IAnyt
 			this.pickState.fileQueryCache,
 		).load();
 	}
+
 	private async getFilePicks(
 		query: IPreparedQuery,
 		excludes: ResourceMap<boolean>,
@@ -787,6 +844,7 @@ export class AnythingQuickAccessProvider extends PickerQuickAccessProvider<IAnyt
 				absolutePathResult,
 				this.configuration,
 			);
+
 			absolutePathPick.highlights = {
 				label: [{ start: 0, end: absolutePathPick.label.length }],
 				description: absolutePathPick.description
@@ -804,9 +862,11 @@ export class AnythingQuickAccessProvider extends PickerQuickAccessProvider<IAnyt
 				if (token.isCancellationRequested) {
 					return [];
 				}
+
 				return this.doFileSearch(query, token);
 			});
 		}
+
 		if (token.isCancellationRequested) {
 			return [];
 		}
@@ -819,6 +879,7 @@ export class AnythingQuickAccessProvider extends PickerQuickAccessProvider<IAnyt
 				this.createAnythingPick(resource, configuration),
 			);
 	}
+
 	private async doFileSearch(
 		query: IPreparedQuery,
 		token: CancellationToken,
@@ -847,6 +908,7 @@ export class AnythingQuickAccessProvider extends PickerQuickAccessProvider<IAnyt
 		for (const relativePathFileResult of relativePathFileResults) {
 			relativePathFileResultsMap.set(relativePathFileResult, true);
 		}
+
 		return [
 			...fileSearchResults.filter(
 				(result) => !relativePathFileResultsMap.has(result),
@@ -854,6 +916,7 @@ export class AnythingQuickAccessProvider extends PickerQuickAccessProvider<IAnyt
 			...relativePathFileResults,
 		];
 	}
+
 	private async getFileSearchResults(
 		query: IPreparedQuery,
 		token: CancellationToken,
@@ -872,6 +935,7 @@ export class AnythingQuickAccessProvider extends PickerQuickAccessProvider<IAnyt
 		} else {
 			filePattern = query.original;
 		}
+
 		const fileSearchResults = await this.doGetFileSearchResults(
 			filePattern,
 			token,
@@ -915,8 +979,10 @@ export class AnythingQuickAccessProvider extends PickerQuickAccessProvider<IAnyt
 				}
 			}
 		}
+
 		return fileSearchResults.results.map((result) => result.resource);
 	}
+
 	private doGetFileSearchResults(
 		filePattern: string,
 		token: CancellationToken,
@@ -941,9 +1007,12 @@ export class AnythingQuickAccessProvider extends PickerQuickAccessProvider<IAnyt
 				);
 			});
 	}
+
 	private getFileQueryOptions(input: {
 		filePattern?: string;
+
 		cacheKey?: string;
+
 		maxResults?: number;
 	}): IFileQueryBuilderOptions {
 		return {
@@ -957,6 +1026,7 @@ export class AnythingQuickAccessProvider extends PickerQuickAccessProvider<IAnyt
 			sortByScore: true,
 		};
 	}
+
 	private async getAbsolutePathFileResult(
 		query: IPreparedQuery,
 		token: CancellationToken,
@@ -964,6 +1034,7 @@ export class AnythingQuickAccessProvider extends PickerQuickAccessProvider<IAnyt
 		if (!query.containsPathSeparator) {
 			return;
 		}
+
 		const userHome = await this.pathService.userHome();
 
 		const detildifiedQuery = untildify(
@@ -974,6 +1045,7 @@ export class AnythingQuickAccessProvider extends PickerQuickAccessProvider<IAnyt
 		if (token.isCancellationRequested) {
 			return;
 		}
+
 		const isAbsolutePathQuery = (await this.pathService.path).isAbsolute(
 			detildifiedQuery,
 		);
@@ -981,6 +1053,7 @@ export class AnythingQuickAccessProvider extends PickerQuickAccessProvider<IAnyt
 		if (token.isCancellationRequested) {
 			return;
 		}
+
 		if (isAbsolutePathQuery) {
 			const resource = toLocalResource(
 				await this.pathService.fileURI(detildifiedQuery),
@@ -991,6 +1064,7 @@ export class AnythingQuickAccessProvider extends PickerQuickAccessProvider<IAnyt
 			if (token.isCancellationRequested) {
 				return;
 			}
+
 			try {
 				if ((await this.fileService.stat(resource)).isFile) {
 					return resource;
@@ -999,8 +1073,10 @@ export class AnythingQuickAccessProvider extends PickerQuickAccessProvider<IAnyt
 				// ignore if file does not exist
 			}
 		}
+
 		return;
 	}
+
 	private async getRelativePathFileResults(
 		query: IPreparedQuery,
 		token: CancellationToken,
@@ -1021,6 +1097,7 @@ export class AnythingQuickAccessProvider extends PickerQuickAccessProvider<IAnyt
 				if (token.isCancellationRequested) {
 					break;
 				}
+
 				const resource = toLocalResource(
 					folder.toResource(query.original),
 					this.environmentService.remoteAuthority,
@@ -1035,8 +1112,10 @@ export class AnythingQuickAccessProvider extends PickerQuickAccessProvider<IAnyt
 					// ignore if file does not exist
 				}
 			}
+
 			return resources;
 		}
+
 		return;
 	}
 	//#endregion
@@ -1044,6 +1123,7 @@ export class AnythingQuickAccessProvider extends PickerQuickAccessProvider<IAnyt
 	private readonly lazyRegistry = new Lazy(() =>
 		Registry.as<IQuickAccessRegistry>(Extensions.Quickaccess),
 	);
+
 	private getHelpPicks(
 		query: IPreparedQuery,
 		token: CancellationToken,
@@ -1052,6 +1132,7 @@ export class AnythingQuickAccessProvider extends PickerQuickAccessProvider<IAnyt
 		if (query.normalized) {
 			return []; // If there's a filter, we don't show the help
 		}
+
 		type IHelpAnythingQuickPickItem = IAnythingQuickPickItem & {
 			commandCenterOrder: number;
 		};
@@ -1120,6 +1201,7 @@ export class AnythingQuickAccessProvider extends PickerQuickAccessProvider<IAnyt
 				accept: () => this.quickChatService.toggle(),
 			});
 		}
+
 		return providers.sort(
 			(a, b) => a.commandCenterOrder - b.commandCenterOrder,
 		);
@@ -1129,6 +1211,7 @@ export class AnythingQuickAccessProvider extends PickerQuickAccessProvider<IAnyt
 	private workspaceSymbolsQuickAccess = this._register(
 		this.instantiationService.createInstance(SymbolsQuickAccessProvider),
 	);
+
 	private async getWorkspaceSymbolPicks(
 		query: IPreparedQuery,
 		includeSymbols: boolean,
@@ -1157,6 +1240,7 @@ export class AnythingQuickAccessProvider extends PickerQuickAccessProvider<IAnyt
 	//#region Editor Symbols (if narrowing down into a global pick via `@`)
 	private readonly editorSymbolsQuickAccess =
 		this.instantiationService.createInstance(GotoSymbolQuickAccessProvider);
+
 	private getEditorSymbolPicks(
 		query: IPreparedQuery,
 		disposables: DisposableStore,
@@ -1174,11 +1258,13 @@ export class AnythingQuickAccessProvider extends PickerQuickAccessProvider<IAnyt
 		if (typeof filter !== "string") {
 			return null; // we need to be searched for editor symbols via `@`
 		}
+
 		const activeGlobalPick = this.pickState.lastGlobalPicks?.active;
 
 		if (!activeGlobalPick) {
 			return null; // we need an active global pick to find symbols for
 		}
+
 		const activeGlobalResource = activeGlobalPick.resource;
 
 		if (
@@ -1188,6 +1274,7 @@ export class AnythingQuickAccessProvider extends PickerQuickAccessProvider<IAnyt
 		) {
 			return null; // we need a resource that we can resolve
 		}
+
 		if (
 			activeGlobalPick.label.includes(
 				GotoSymbolQuickAccessProvider.PREFIX,
@@ -1200,6 +1287,7 @@ export class AnythingQuickAccessProvider extends PickerQuickAccessProvider<IAnyt
 				return null; // require at least 2 `@` if our active pick contains `@` in label or description
 			}
 		}
+
 		return this.doGetEditorSymbolPicks(
 			activeGlobalPick,
 			activeGlobalResource,
@@ -1208,6 +1296,7 @@ export class AnythingQuickAccessProvider extends PickerQuickAccessProvider<IAnyt
 			token,
 		);
 	}
+
 	private async doGetEditorSymbolPicks(
 		activeGlobalPick: IAnythingQuickPickItem,
 		activeGlobalResource: URI,
@@ -1231,6 +1320,7 @@ export class AnythingQuickAccessProvider extends PickerQuickAccessProvider<IAnyt
 		} catch (error) {
 			return []; // return if resource cannot be opened
 		}
+
 		if (token.isCancellationRequested) {
 			return [];
 		}
@@ -1248,6 +1338,7 @@ export class AnythingQuickAccessProvider extends PickerQuickAccessProvider<IAnyt
 				if (token.isCancellationRequested) {
 					return [];
 				}
+
 				model = modelReference.object.textEditorModel;
 			} catch (error) {
 				return []; // return if model cannot be resolved
@@ -1266,6 +1357,7 @@ export class AnythingQuickAccessProvider extends PickerQuickAccessProvider<IAnyt
 		if (token.isCancellationRequested) {
 			return [];
 		}
+
 		return editorSymbolPicks.map((editorSymbolPick) => {
 			// Preserve separators
 			if (editorSymbolPick.type === "separator") {
@@ -1295,9 +1387,11 @@ export class AnythingQuickAccessProvider extends PickerQuickAccessProvider<IAnyt
 			};
 		});
 	}
+
 	addDecorations(editor: IEditor, range: IRange): void {
 		this.editorSymbolsQuickAccess.addDecorations(editor, range);
 	}
+
 	clearDecorations(editor: IEditor): void {
 		this.editorSymbolsQuickAccess.clearDecorations(editor);
 	}
@@ -1325,11 +1419,16 @@ export class AnythingQuickAccessProvider extends PickerQuickAccessProvider<IAnyt
 
 		if (isEditorInput(resourceOrEditor)) {
 			resource = EditorResourceAccessor.getOriginalUri(resourceOrEditor);
+
 			label = resourceOrEditor.getName();
+
 			description = resourceOrEditor.getDescription();
+
 			isDirty =
 				resourceOrEditor.isDirty() && !resourceOrEditor.isSaving();
+
 			extraClasses = resourceOrEditor.getLabelExtraClasses();
+
 			icon = resourceOrEditor.getIcon();
 		} else {
 			resource = URI.isUri(resourceOrEditor)
@@ -1337,16 +1436,21 @@ export class AnythingQuickAccessProvider extends PickerQuickAccessProvider<IAnyt
 				: resourceOrEditor.resource;
 
 			const customLabel = this.customEditorLabelService.getName(resource);
+
 			label = customLabel || basenameOrAuthority(resource);
+
 			description = this.labelService.getUriLabel(
 				!!customLabel ? resource : dirname(resource),
 				{ relative: true },
 			);
+
 			isDirty =
 				this.workingCopyService.isDirty(resource) &&
 				!this.filesConfigurationService.hasShortAutoSaveDelay(resource);
+
 			extraClasses = [];
 		}
+
 		const labelAndDescription = description
 			? `${label} ${description}`
 			: label;
@@ -1407,6 +1511,7 @@ export class AnythingQuickAccessProvider extends PickerQuickAccessProvider<IAnyt
 					alwaysVisible: isDirty,
 				});
 			}
+
 			return buttons;
 		});
 
@@ -1448,6 +1553,7 @@ export class AnythingQuickAccessProvider extends PickerQuickAccessProvider<IAnyt
 							return TriggerAction.REMOVE_ITEM;
 						}
 				}
+
 				return TriggerAction.NO_ACTION;
 			},
 			accept: (keyMods, event) =>
@@ -1459,11 +1565,14 @@ export class AnythingQuickAccessProvider extends PickerQuickAccessProvider<IAnyt
 				}),
 		};
 	}
+
 	private async openAnything(
 		resourceOrEditor: URI | EditorInput | IResourceEditorInput,
 		options: {
 			keyMods?: IKeyMods;
+
 			preserveFocus?: boolean;
+
 			range?: IRange;
 
 			forceOpenSideBySide?: boolean;
@@ -1519,6 +1628,7 @@ export class AnythingQuickAccessProvider extends PickerQuickAccessProvider<IAnyt
 					},
 				};
 			}
+
 			await this.editorService.openEditor(
 				resourceEditorInput,
 				targetGroup,

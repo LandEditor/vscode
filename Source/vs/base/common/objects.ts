@@ -8,10 +8,13 @@ export function deepClone<T>(obj: T): T {
 	if (!obj || typeof obj !== "object") {
 		return obj;
 	}
+
 	if (obj instanceof RegExp) {
 		return obj;
 	}
+
 	const result: any = Array.isArray(obj) ? [] : {};
+
 	Object.entries(obj).forEach(([key, value]) => {
 		result[key] =
 			value && typeof value === "object" ? deepClone(value) : value;
@@ -23,10 +26,12 @@ export function deepFreeze<T>(obj: T): T {
 	if (!obj || typeof obj !== "object") {
 		return obj;
 	}
+
 	const stack: any[] = [obj];
 
 	while (stack.length > 0) {
 		const obj = stack.shift();
+
 		Object.freeze(obj);
 
 		for (const key in obj) {
@@ -43,6 +48,7 @@ export function deepFreeze<T>(obj: T): T {
 			}
 		}
 	}
+
 	return obj;
 }
 
@@ -59,23 +65,28 @@ function _cloneAndChange(
 	if (isUndefinedOrNull(obj)) {
 		return obj;
 	}
+
 	const changed = changer(obj);
 
 	if (typeof changed !== "undefined") {
 		return changed;
 	}
+
 	if (Array.isArray(obj)) {
 		const r1: any[] = [];
 
 		for (const e of obj) {
 			r1.push(_cloneAndChange(e, changer, seen));
 		}
+
 		return r1;
 	}
+
 	if (isObject(obj)) {
 		if (seen.has(obj)) {
 			throw new Error("Cannot clone recursive data-structure");
 		}
+
 		seen.add(obj);
 
 		const r2 = {};
@@ -85,10 +96,12 @@ function _cloneAndChange(
 				(r2 as any)[i2] = _cloneAndChange(obj[i2], changer, seen);
 			}
 		}
+
 		seen.delete(obj);
 
 		return r2;
 	}
+
 	return obj;
 }
 /**
@@ -103,6 +116,7 @@ export function mixin(
 	if (!isObject(destination)) {
 		return source;
 	}
+
 	if (isObject(source)) {
 		Object.keys(source).forEach((key) => {
 			if (key in destination) {
@@ -118,12 +132,14 @@ export function mixin(
 			}
 		});
 	}
+
 	return destination;
 }
 export function equals(one: any, other: any): boolean {
 	if (one === other) {
 		return true;
 	}
+
 	if (
 		one === null ||
 		one === undefined ||
@@ -132,15 +148,19 @@ export function equals(one: any, other: any): boolean {
 	) {
 		return false;
 	}
+
 	if (typeof one !== typeof other) {
 		return false;
 	}
+
 	if (typeof one !== "object") {
 		return false;
 	}
+
 	if (Array.isArray(one) !== Array.isArray(other)) {
 		return false;
 	}
+
 	let i: number;
 
 	let key: string;
@@ -149,6 +169,7 @@ export function equals(one: any, other: any): boolean {
 		if (one.length !== other.length) {
 			return false;
 		}
+
 		for (i = 0; i < one.length; i++) {
 			if (!equals(one[i], other[i])) {
 				return false;
@@ -160,6 +181,7 @@ export function equals(one: any, other: any): boolean {
 		for (key in one) {
 			oneKeys.push(key);
 		}
+
 		oneKeys.sort();
 
 		const otherKeys: string[] = [];
@@ -167,17 +189,20 @@ export function equals(one: any, other: any): boolean {
 		for (key in other) {
 			otherKeys.push(key);
 		}
+
 		otherKeys.sort();
 
 		if (!equals(oneKeys, otherKeys)) {
 			return false;
 		}
+
 		for (i = 0; i < oneKeys.length; i++) {
 			if (!equals(one[oneKeys[i]], other[oneKeys[i]])) {
 				return false;
 			}
 		}
 	}
+
 	return true;
 }
 /**
@@ -196,9 +221,11 @@ export function safeStringify(obj: any): string {
 				seen.add(value);
 			}
 		}
+
 		if (typeof value === "bigint") {
 			return `[BigInt ${value.toString()}]`;
 		}
+
 		return value;
 	});
 }
@@ -221,7 +248,9 @@ export function distinct(base: obj, target: obj): obj {
 	if (!base || !target) {
 		return result;
 	}
+
 	const targetKeys = Object.keys(target);
+
 	targetKeys.forEach((k) => {
 		const baseValue = base[k];
 
@@ -254,6 +283,7 @@ export function filter(
 			result[key] = value;
 		}
 	}
+
 	return result;
 }
 export function getAllPropertyNames(obj: object): string[] {
@@ -261,8 +291,10 @@ export function getAllPropertyNames(obj: object): string[] {
 
 	while (Object.prototype !== obj) {
 		res = res.concat(Object.getOwnPropertyNames(obj));
+
 		obj = Object.getPrototypeOf(obj);
 	}
+
 	return res;
 }
 export function getAllMethodNames(obj: object): string[] {
@@ -273,6 +305,7 @@ export function getAllMethodNames(obj: object): string[] {
 			methods.push(prop);
 		}
 	}
+
 	return methods;
 }
 export function createProxyObject<T extends object>(
@@ -292,6 +325,7 @@ export function createProxyObject<T extends object>(
 	for (const methodName of methodNames) {
 		(<any>result)[methodName] = createProxyMethod(methodName);
 	}
+
 	return result;
 }
 export function mapValues<T extends {}, R>(
@@ -307,6 +341,7 @@ export function mapValues<T extends {}, R>(
 	for (const [key, value] of Object.entries(obj)) {
 		result[key] = fn(<T[keyof T]>value, key);
 	}
+
 	return result as {
 		[K in keyof T]: R;
 	};

@@ -49,18 +49,23 @@ class ConstObservable<T> extends ConvenientObservable<T, void> {
 	constructor(private readonly value: T) {
 		super();
 	}
+
 	public override get debugName(): string {
 		return this.toString();
 	}
+
 	public get(): T {
 		return this.value;
 	}
+
 	public addObserver(observer: IObserver): void {
 		// NO OP
 	}
+
 	public removeObserver(observer: IObserver): void {
 		// NO OP
 	}
+
 	override toString(): string {
 		return `Const: ${this.value}`;
 	}
@@ -71,6 +76,7 @@ export function observableFromPromise<T>(promise: Promise<T>): IObservable<{
 	const observable = observableValue<{
 		value?: T;
 	}>("promiseValue", {});
+
 	promise.then((value) => {
 		observable.set({ value }, undefined);
 	});
@@ -108,6 +114,7 @@ export function observableFromEvent(
 	} else {
 		[event, getValue] = args;
 	}
+
 	return new FromEventObservable(
 		new DebugNameData(owner, undefined, getValue),
 		event,
@@ -137,8 +144,11 @@ export function observableFromEventOpts<T, TArgs = unknown>(
 }
 export class FromEventObservable<TArgs, T> extends BaseObservable<T> {
 	public static globalTransaction: ITransaction | undefined;
+
 	private value: T | undefined;
+
 	private hasValue = false;
+
 	private subscription: IDisposable | undefined;
 
 	constructor(
@@ -150,17 +160,21 @@ export class FromEventObservable<TArgs, T> extends BaseObservable<T> {
 	) {
 		super();
 	}
+
 	private getDebugName(): string | undefined {
 		return this._debugNameData.getDebugName(this);
 	}
+
 	public get debugName(): string {
 		const name = this.getDebugName();
 
 		return "From Event" + (name ? `: ${name}` : "");
 	}
+
 	protected override onFirstObserverAdded(): void {
 		this.subscription = this.event(this.handleEvent);
 	}
+
 	private readonly handleEvent = (args: TArgs | undefined) => {
 		const newValue = this._getValue(args);
 
@@ -176,6 +190,7 @@ export class FromEventObservable<TArgs, T> extends BaseObservable<T> {
 
 			if (this.hasValue) {
 				didRunTransaction = true;
+
 				subtransaction(
 					this._getTransaction(),
 					(tx) => {
@@ -189,6 +204,7 @@ export class FromEventObservable<TArgs, T> extends BaseObservable<T> {
 
 						for (const o of this.observers) {
 							tx.updateObserver(o, this);
+
 							o.handleChange(this, undefined);
 						}
 					},
@@ -199,8 +215,10 @@ export class FromEventObservable<TArgs, T> extends BaseObservable<T> {
 					},
 				);
 			}
+
 			this.hasValue = true;
 		}
+
 		if (!didRunTransaction) {
 			getLogger()?.handleFromEventObservableTriggered(this, {
 				oldValue,
@@ -211,17 +229,23 @@ export class FromEventObservable<TArgs, T> extends BaseObservable<T> {
 			});
 		}
 	};
+
 	protected override onLastObserverRemoved(): void {
 		this.subscription!.dispose();
+
 		this.subscription = undefined;
+
 		this.hasValue = false;
+
 		this.value = undefined;
 	}
+
 	public get(): T {
 		if (this.subscription) {
 			if (!this.hasValue) {
 				this.handleEvent(undefined);
 			}
+
 			return this.value!;
 		} else {
 			// no cache, as there are no subscribers to keep it updated
@@ -242,8 +266,10 @@ export namespace observableFromEvent {
 
 		if (FromEventObservable.globalTransaction === undefined) {
 			FromEventObservable.globalTransaction = tx;
+
 			didSet = true;
 		}
+
 		try {
 			fn();
 		} finally {
@@ -268,24 +294,30 @@ class FromEventObservableSignal extends BaseObservable<void> {
 	) {
 		super();
 	}
+
 	protected override onFirstObserverAdded(): void {
 		this.subscription = this.event(this.handleEvent);
 	}
+
 	private readonly handleEvent = () => {
 		transaction(
 			(tx) => {
 				for (const o of this.observers) {
 					tx.updateObserver(o, this);
+
 					o.handleChange(this, undefined);
 				}
 			},
 			() => this.debugName,
 		);
 	};
+
 	protected override onLastObserverRemoved(): void {
 		this.subscription!.dispose();
+
 		this.subscription = undefined;
 	}
+
 	public override get(): void {
 		// NO OP
 	}
@@ -328,15 +360,18 @@ class ObservableSignal<TChange>
 			).getDebugName(this) ?? "Observable Signal"
 		);
 	}
+
 	public override toString(): string {
 		return this.debugName;
 	}
+
 	constructor(
 		private readonly _debugName: string | undefined,
 		private readonly _owner?: object,
 	) {
 		super();
 	}
+
 	public trigger(tx: ITransaction | undefined, change: TChange): void {
 		if (!tx) {
 			transaction(
@@ -348,11 +383,14 @@ class ObservableSignal<TChange>
 
 			return;
 		}
+
 		for (const o of this.observers) {
 			tx.updateObserver(o, this);
+
 			o.handleChange(this, change);
 		}
 	}
+
 	public override get(): void {
 		// NO OP
 	}
@@ -385,6 +423,7 @@ export function debouncedObservable<T>(
 	);
 
 	let timeout: any = undefined;
+
 	disposableStore.add(
 		autorun((reader) => {
 			/** @description debounce */
@@ -393,6 +432,7 @@ export function debouncedObservable<T>(
 			if (timeout) {
 				clearTimeout(timeout);
 			}
+
 			timeout = setTimeout(() => {
 				transaction((tx) => {
 					debouncedObservable.set(value, tx);
@@ -423,13 +463,16 @@ export function debouncedObservable2<T>(
 
 				if (!hasValue) {
 					hasValue = true;
+
 					lastValue = value;
 				} else {
 					if (timeout) {
 						clearTimeout(timeout);
 					}
+
 					timeout = setTimeout(() => {
 						lastValue = value;
+
 						cb();
 					}, debounceMs);
 				}
@@ -438,7 +481,9 @@ export function debouncedObservable2<T>(
 			return {
 				dispose() {
 					d.dispose();
+
 					hasValue = false;
+
 					lastValue = undefined;
 				},
 			};
@@ -460,6 +505,7 @@ export function wasEventTriggeredRecently(
 	const observable = observableValue("triggeredRecently", false);
 
 	let timeout: any = undefined;
+
 	disposableStore.add(
 		event(() => {
 			observable.set(true, undefined);
@@ -467,6 +513,7 @@ export function wasEventTriggeredRecently(
 			if (timeout) {
 				clearTimeout(timeout);
 			}
+
 			timeout = setTimeout(() => {
 				observable.set(false, undefined);
 			}, timeoutMs);
@@ -480,6 +527,7 @@ export function wasEventTriggeredRecently(
  */
 export function keepObserved<T>(observable: IObservable<T>): IDisposable {
 	const o = new KeepAliveObserver(false, undefined);
+
 	observable.addObserver(o);
 
 	return toDisposable(() => {
@@ -495,6 +543,7 @@ export function recomputeInitiallyAndOnChange<T>(
 	handleValue?: (value: T) => void,
 ): IDisposable {
 	const o = new KeepAliveObserver(true, handleValue);
+
 	observable.addObserver(o);
 
 	if (handleValue) {
@@ -502,6 +551,7 @@ export function recomputeInitiallyAndOnChange<T>(
 	} else {
 		observable.reportChanges();
 	}
+
 	return toDisposable(() => {
 		observable.removeObserver(o);
 	});
@@ -515,9 +565,11 @@ export class KeepAliveObserver implements IObserver {
 		private readonly _forceRecompute: boolean,
 		private readonly _handleValue: ((value: any) => void) | undefined,
 	) {}
+
 	beginUpdate<T>(observable: IObservable<T, void>): void {
 		this._counter++;
 	}
+
 	endUpdate<T>(observable: IObservable<T, void>): void {
 		this._counter--;
 
@@ -529,9 +581,11 @@ export class KeepAliveObserver implements IObserver {
 			}
 		}
 	}
+
 	handlePossibleChange<T>(observable: IObservable<T, unknown>): void {
 		// NO OP
 	}
+
 	handleChange<T, TChange>(
 		observable: IObservable<T, TChange>,
 		change: TChange,
@@ -570,6 +624,7 @@ export function derivedObservableWithWritableCache<T>(
 
 	const observable = derived(owner, (reader) => {
 		onChange.read(reader);
+
 		lastValue = computeFn(reader, lastValue);
 
 		return lastValue;
@@ -578,10 +633,12 @@ export function derivedObservableWithWritableCache<T>(
 	return Object.assign(observable, {
 		clearCache: (tx: ITransaction) => {
 			lastValue = undefined;
+
 			onChange.trigger(tx);
 		},
 		setCache: (newValue: T | undefined, tx: ITransaction | undefined) => {
 			lastValue = newValue;
+
 			onChange.trigger(tx);
 		},
 	});
@@ -603,6 +660,7 @@ export function mapObservableArrayCached<TIn, TOut, TKey = TIn>(
 			owner,
 			onLastObserverRemoved: () => {
 				m.dispose();
+
 				m = new ArrayMap(map);
 			},
 		},
@@ -620,19 +678,24 @@ class ArrayMap<TIn, TOut, TKey> implements IDisposable {
 		TKey,
 		{
 			out: TOut;
+
 			store: DisposableStore;
 		}
 	>();
+
 	private _items: TOut[] = [];
 
 	constructor(
 		private readonly _map: (input: TIn, store: DisposableStore) => TOut,
 		private readonly _keySelector?: (input: TIn) => TKey,
 	) {}
+
 	public dispose(): void {
 		this._cache.forEach((entry) => entry.store.dispose());
+
 		this._cache.clear();
 	}
+
 	public setItems(items: readonly TIn[]): void {
 		const newItems: TOut[] = [];
 
@@ -649,20 +712,28 @@ class ArrayMap<TIn, TOut, TKey> implements IDisposable {
 				const store = new DisposableStore();
 
 				const out = this._map(item, store);
+
 				entry = { out, store };
+
 				this._cache.set(key, entry);
 			} else {
 				itemsToRemove.delete(key);
 			}
+
 			newItems.push(entry.out);
 		}
+
 		for (const item of itemsToRemove) {
 			const entry = this._cache.get(item)!;
+
 			entry.store.dispose();
+
 			this._cache.delete(item);
 		}
+
 		this._items = newItems;
 	}
+
 	public getItems(): TOut[] {
 		return this._items;
 	}
@@ -671,9 +742,11 @@ export class ValueWithChangeEventFromObservable<T>
 	implements IValueWithChangeEvent<T>
 {
 	constructor(public readonly observable: IObservable<T>) {}
+
 	get onDidChange(): Event<void> {
 		return Event.fromObservableLight(this.observable);
 	}
+
 	get value(): T {
 		return this.observable.get();
 	}
@@ -685,6 +758,7 @@ export function observableFromValueWithChangeEvent<T>(
 	if (value instanceof ValueWithChangeEventFromObservable) {
 		return value.observable;
 	}
+
 	return observableFromEvent(owner, value.onDidChange, () => value.value);
 }
 /**
@@ -700,6 +774,7 @@ export function latestChangedValue<T extends IObservable<any>[]>(
 	if (observables.length === 0) {
 		throw new BugIndicatingError();
 	}
+
 	let hasLastChangedValue = false;
 
 	let lastChangedValue: any = undefined;
@@ -725,15 +800,19 @@ export function latestChangedValue<T extends IObservable<any>[]>(
 						},
 						(reader) => {
 							hasLastChangedValue = true;
+
 							lastChangedValue = o.read(reader);
+
 							cb();
 						},
 					),
 				);
 			}
+
 			store.add({
 				dispose() {
 					hasLastChangedValue = false;
+
 					lastChangedValue = undefined;
 				},
 			});
@@ -792,8 +871,10 @@ export function runOnChange<T, TChange>(
 							e as RemoveUndefined<TChange>,
 						);
 					}
+
 					changeSummary.didChange = true;
 				}
+
 				return true;
 			},
 		},
@@ -804,6 +885,7 @@ export function runOnChange<T, TChange>(
 
 			if (changeSummary.didChange) {
 				_previousValue = value;
+
 				cb(value, previousValue, changeSummary.deltas);
 			}
 		},
@@ -824,6 +906,7 @@ export function runOnChangeWithStore<T, TChange>(
 		observable,
 		(value, previousValue: undefined | T, deltas) => {
 			store.clear();
+
 			cb(value, previousValue, deltas, store);
 		},
 	);
@@ -831,6 +914,7 @@ export function runOnChangeWithStore<T, TChange>(
 	return {
 		dispose() {
 			disposable.dispose();
+
 			store.dispose();
 		},
 	};

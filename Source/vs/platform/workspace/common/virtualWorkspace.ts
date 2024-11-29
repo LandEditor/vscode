@@ -15,6 +15,7 @@ export function isVirtualResource(resource: URI) {
 export function getVirtualWorkspaceLocation(workspace: IWorkspace):
 	| {
 			scheme: string;
+
 			authority: string;
 	  }
 	| undefined {
@@ -28,6 +29,7 @@ export function getVirtualWorkspaceLocation(workspace: IWorkspace):
 	) {
 		return workspace.configuration;
 	}
+
 	return undefined;
 }
 export function getVirtualWorkspaceScheme(

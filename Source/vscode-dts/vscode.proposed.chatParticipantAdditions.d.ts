@@ -13,6 +13,7 @@ declare module "vscode" {
 	 */
 	export interface ChatCommand {
 		readonly name: string;
+
 		readonly description: string;
 	}
 
@@ -26,12 +27,14 @@ declare module "vscode" {
 
 	export interface ChatVulnerability {
 		title: string;
+
 		description: string;
 		// id: string; // Later we will need to be able to link these across multiple content chunks.
 	}
 
 	export class ChatResponseMarkdownWithVulnerabilitiesPart {
 		value: MarkdownString;
+
 		vulnerabilities: ChatVulnerability[];
 
 		constructor(
@@ -55,13 +58,17 @@ declare module "vscode" {
 
 	export interface ChatDocumentContext {
 		uri: Uri;
+
 		version: number;
+
 		ranges: Range[];
 	}
 
 	export class ChatResponseTextEditPart {
 		uri: Uri;
+
 		edits: TextEdit[];
+
 		isDone?: boolean;
 
 		constructor(uri: Uri, done: true);
@@ -71,8 +78,11 @@ declare module "vscode" {
 
 	export class ChatResponseConfirmationPart {
 		title: string;
+
 		message: string;
+
 		data: any;
+
 		buttons?: string[];
 
 		constructor(
@@ -85,7 +95,9 @@ declare module "vscode" {
 
 	export class ChatResponseCodeCitationPart {
 		value: Uri;
+
 		license: string;
+
 		snippet: string;
 
 		constructor(value: Uri, license: string, snippet: string);
@@ -108,6 +120,7 @@ declare module "vscode" {
 
 	export class ChatResponseProgressPart2 extends ChatResponseProgressPart {
 		value: string;
+
 		task?: (
 			progress: Progress<
 				ChatResponseWarningPart | ChatResponseReferencePart
@@ -150,9 +163,11 @@ declare module "vscode" {
 					 */
 					dark: Uri;
 			  };
+
 		options?: {
 			status?: {
 				description: string;
+
 				kind: ChatResponseReferencePartStatusKind;
 			};
 		};
@@ -184,6 +199,7 @@ declare module "vscode" {
 			options?: {
 				status?: {
 					description: string;
+
 					kind: ChatResponseReferencePartStatusKind;
 				};
 			},
@@ -192,6 +208,7 @@ declare module "vscode" {
 
 	export class ChatResponseMovePart {
 		readonly uri: Uri;
+
 		readonly range: Range;
 
 		constructor(uri: Uri, range: Range);
@@ -244,8 +261,11 @@ declare module "vscode" {
 			value: string | MarkdownString,
 			vulnerabilities: ChatVulnerability[],
 		): void;
+
 		codeblockUri(uri: Uri): void;
+
 		detectedParticipant(participant: string, command?: ChatCommand): void;
+
 		push(
 			part:
 				| ChatResponsePart
@@ -299,6 +319,7 @@ declare module "vscode" {
 			options?: {
 				status?: {
 					description: string;
+
 					kind: ChatResponseReferencePartStatusKind;
 				};
 			},
@@ -342,6 +363,7 @@ declare module "vscode" {
 		 */
 		participantVariableProvider?: {
 			provider: ChatParticipantCompletionItemProvider;
+
 			triggerCharacters: string[];
 		};
 	}
@@ -355,14 +377,21 @@ declare module "vscode" {
 
 	export class ChatCompletionItem {
 		id: string;
+
 		label: string | CompletionItemLabel;
+
 		values: ChatVariableValue[];
+
 		fullName?: string;
+
 		icon?: ThemeIcon;
+
 		insertText?: string;
+
 		detail?: string;
 
 		documentation?: string | MarkdownString;
+
 		command?: Command;
 
 		constructor(
@@ -382,7 +411,9 @@ declare module "vscode" {
 	export interface ChatResult {
 		nextQuestion?: {
 			prompt: string;
+
 			participant?: string;
+
 			command?: string;
 		};
 	}
@@ -403,16 +434,21 @@ declare module "vscode" {
 
 	export interface ChatParticipantMetadata {
 		participant: string;
+
 		command?: string;
+
 		disambiguation: {
 			category: string;
+
 			description: string;
+
 			examples: string[];
 		}[];
 	}
 
 	export interface ChatParticipantDetectionResult {
 		participant: string;
+
 		command?: string;
 	}
 
@@ -422,6 +458,7 @@ declare module "vscode" {
 			context: ChatContext,
 			options: {
 				participants?: ChatParticipantMetadata[];
+
 				location: ChatLocation;
 			},
 			token: CancellationToken,
@@ -441,46 +478,62 @@ declare module "vscode" {
 	export interface ChatCopyAction {
 		// eslint-disable-next-line local/vscode-dts-string-type-literals
 		kind: "copy";
+
 		codeBlockIndex: number;
+
 		copyKind: ChatCopyKind;
+
 		copiedCharacters: number;
+
 		totalCharacters: number;
+
 		copiedText: string;
 	}
 
 	export interface ChatInsertAction {
 		// eslint-disable-next-line local/vscode-dts-string-type-literals
 		kind: "insert";
+
 		codeBlockIndex: number;
+
 		totalCharacters: number;
+
 		newFile?: boolean;
 	}
 
 	export interface ChatApplyAction {
 		// eslint-disable-next-line local/vscode-dts-string-type-literals
 		kind: "apply";
+
 		codeBlockIndex: number;
+
 		totalCharacters: number;
+
 		newFile?: boolean;
+
 		codeMapper?: string;
 	}
 
 	export interface ChatTerminalAction {
 		// eslint-disable-next-line local/vscode-dts-string-type-literals
 		kind: "runInTerminal";
+
 		codeBlockIndex: number;
+
 		languageId?: string;
 	}
 
 	export interface ChatCommandAction {
 		// eslint-disable-next-line local/vscode-dts-string-type-literals
 		kind: "command";
+
 		commandButton: ChatCommandButton;
 	}
 
 	export interface ChatFollowupAction {
 		// eslint-disable-next-line local/vscode-dts-string-type-literals
 		kind: "followUp";
+
 		followup: ChatFollowup;
 	}
 
@@ -492,14 +545,18 @@ declare module "vscode" {
 	export interface ChatEditorAction {
 		// eslint-disable-next-line local/vscode-dts-string-type-literals
 		kind: "editor";
+
 		accepted: boolean;
 	}
 
 	export interface ChatEditingSessionAction {
 		// eslint-disable-next-line local/vscode-dts-string-type-literals
 		kind: "chatEditingSessionAction";
+
 		uri: Uri;
+
 		hasRemainingEdits: boolean;
+
 		outcome: ChatEditingSessionActionOutcome;
 	}
 
@@ -511,6 +568,7 @@ declare module "vscode" {
 
 	export interface ChatUserActionEvent {
 		readonly result: ChatResult;
+
 		readonly action:
 			| ChatCopyAction
 			| ChatInsertAction

@@ -51,6 +51,7 @@ export interface IPathService {
 	 * `preferLocal` is set to `true`.
 	 */
 	userHome(options: { preferLocal: true }): URI;
+
 	userHome(options?: { preferLocal: boolean }): Promise<URI>;
 	/**
 	 * Figures out if the provided resource has a valid file name
@@ -62,6 +63,7 @@ export interface IPathService {
 	 * will always return `true` for them.
 	 */
 	hasValidBasename(resource: URI, basename?: string): Promise<boolean>;
+
 	hasValidBasename(
 		resource: URI,
 		os: OperatingSystem,
@@ -74,8 +76,11 @@ export interface IPathService {
 }
 export abstract class AbstractPathService implements IPathService {
 	declare readonly _serviceBrand: undefined;
+
 	private resolveOS: Promise<OperatingSystem>;
+
 	private resolveUserHome: Promise<URI>;
+
 	private maybeUnresolvedUserHome: URI | undefined;
 
 	constructor(
@@ -103,12 +108,15 @@ export abstract class AbstractPathService implements IPathService {
 			return userHome;
 		})();
 	}
+
 	hasValidBasename(resource: URI, basename?: string): Promise<boolean>;
+
 	hasValidBasename(
 		resource: URI,
 		os: OperatingSystem,
 		basename?: string,
 	): boolean;
+
 	hasValidBasename(
 		resource: URI,
 		arg2?: string | OperatingSystem,
@@ -123,6 +131,7 @@ export abstract class AbstractPathService implements IPathService {
 		// sync version
 		return this.doHasValidBasename(resource, arg2, basename);
 	}
+
 	private doHasValidBasename(
 		resource: URI,
 		os: OperatingSystem,
@@ -140,14 +149,17 @@ export abstract class AbstractPathService implements IPathService {
 				os === OperatingSystem.Windows,
 			);
 		}
+
 		return true;
 	}
+
 	get defaultUriScheme(): string {
 		return AbstractPathService.findDefaultUriScheme(
 			this.environmentService,
 			this.contextService,
 		);
 	}
+
 	static findDefaultUriScheme(
 		environmentService: IWorkbenchEnvironmentService,
 		contextService: IWorkspaceContextService,
@@ -155,6 +167,7 @@ export abstract class AbstractPathService implements IPathService {
 		if (environmentService.remoteAuthority) {
 			return Schemas.vscodeRemote;
 		}
+
 		const virtualWorkspace = getVirtualWorkspaceScheme(
 			contextService.getWorkspace(),
 		);
@@ -162,31 +175,40 @@ export abstract class AbstractPathService implements IPathService {
 		if (virtualWorkspace) {
 			return virtualWorkspace;
 		}
+
 		const firstFolder = contextService.getWorkspace().folders[0];
 
 		if (firstFolder) {
 			return firstFolder.uri.scheme;
 		}
+
 		const configuration = contextService.getWorkspace().configuration;
 
 		if (configuration) {
 			return configuration.scheme;
 		}
+
 		return Schemas.file;
 	}
+
 	userHome(options?: { preferLocal: boolean }): Promise<URI>;
+
 	userHome(options: { preferLocal: true }): URI;
+
 	userHome(options?: { preferLocal: boolean }): Promise<URI> | URI {
 		return options?.preferLocal ? this.localUserHome : this.resolveUserHome;
 	}
+
 	get resolvedUserHome(): URI | undefined {
 		return this.maybeUnresolvedUserHome;
 	}
+
 	get path(): Promise<IPath> {
 		return this.resolveOS.then((os) => {
 			return os === OperatingSystem.Windows ? win32 : posix;
 		});
 	}
+
 	async fileURI(_path: string): Promise<URI> {
 		let authority = "";
 		// normalize to fwd-slashes on windows,
@@ -204,12 +226,15 @@ export abstract class AbstractPathService implements IPathService {
 
 			if (idx === -1) {
 				authority = _path.substring(2);
+
 				_path = "/";
 			} else {
 				authority = _path.substring(2, idx);
+
 				_path = _path.substring(idx) || "/";
 			}
 		}
+
 		return URI.from({
 			scheme: Schemas.file,
 			authority,

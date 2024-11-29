@@ -22,12 +22,15 @@ import { ICommentInfo, ICommentService } from "./commentService.js";
 
 class CommentThreadRangeDecoration implements IModelDeltaDecoration {
 	private _decorationId: string | undefined;
+
 	public get id(): string | undefined {
 		return this._decorationId;
 	}
+
 	public set id(id: string | undefined) {
 		this._decorationId = id;
 	}
+
 	constructor(
 		public readonly range: IRange,
 		public readonly options: ModelDecorationOptions,
@@ -35,12 +38,19 @@ class CommentThreadRangeDecoration implements IModelDeltaDecoration {
 }
 export class CommentThreadRangeDecorator extends Disposable {
 	private static description = "comment-thread-range-decorator";
+
 	private decorationOptions: ModelDecorationOptions;
+
 	private activeDecorationOptions: ModelDecorationOptions;
+
 	private decorationIds: string[] = [];
+
 	private activeDecorationIds: string[] = [];
+
 	private editor: ICodeEditor | undefined;
+
 	private threadCollapseStateListeners: IDisposable[] = [];
+
 	private currentThreadCollapseStateListener: IDisposable | undefined;
 
 	constructor(commentService: ICommentService) {
@@ -53,6 +63,7 @@ export class CommentThreadRangeDecorator extends Disposable {
 			className: "comment-thread-range",
 			shouldFillLineOnLineBreak: true,
 		};
+
 		this.decorationOptions =
 			ModelDecorationOptions.createDynamic(decorationOptions);
 
@@ -63,20 +74,24 @@ export class CommentThreadRangeDecorator extends Disposable {
 			className: "comment-thread-range-current",
 			shouldFillLineOnLineBreak: true,
 		};
+
 		this.activeDecorationOptions = ModelDecorationOptions.createDynamic(
 			activeDecorationOptions,
 		);
+
 		this._register(
 			commentService.onDidChangeCurrentCommentThread((thread) => {
 				this.updateCurrent(thread);
 			}),
 		);
+
 		this._register(
 			commentService.onDidUpdateCommentThreads(() => {
 				this.updateCurrent(undefined);
 			}),
 		);
 	}
+
 	private updateCurrent(thread: CommentThread<IRange> | undefined) {
 		if (
 			!this.editor ||
@@ -86,6 +101,7 @@ export class CommentThreadRangeDecorator extends Disposable {
 		) {
 			return;
 		}
+
 		this.currentThreadCollapseStateListener?.dispose();
 
 		const newDecoration: CommentThreadRangeDecoration[] = [];
@@ -113,6 +129,7 @@ export class CommentThreadRangeDecorator extends Disposable {
 								this.updateCurrent(undefined);
 							}
 						});
+
 					newDecoration.push(
 						new CommentThreadRangeDecoration(
 							range,
@@ -122,17 +139,20 @@ export class CommentThreadRangeDecorator extends Disposable {
 				}
 			}
 		}
+
 		this.editor.changeDecorations((changeAccessor) => {
 			this.activeDecorationIds = changeAccessor.deltaDecorations(
 				this.activeDecorationIds,
 				newDecoration,
 			);
+
 			newDecoration.forEach(
 				(decoration, index) =>
 					(decoration.id = this.decorationIds[index]),
 			);
 		});
 	}
+
 	public update(
 		editor: ICodeEditor | undefined,
 		commentInfos: ICommentInfo[],
@@ -142,7 +162,9 @@ export class CommentThreadRangeDecorator extends Disposable {
 		if (!editor || !model) {
 			return;
 		}
+
 		dispose(this.threadCollapseStateListeners);
+
 		this.editor = editor;
 
 		const commentThreadRangeDecorations: CommentThreadRangeDecoration[] =
@@ -153,6 +175,7 @@ export class CommentThreadRangeDecorator extends Disposable {
 				if (thread.isDisposed) {
 					return;
 				}
+
 				const range = thread.range;
 				// We only want to show a range decoration when there's the range spans either multiple lines
 				// or, when is spans multiple characters on the sample line
@@ -163,6 +186,7 @@ export class CommentThreadRangeDecorator extends Disposable {
 				) {
 					return;
 				}
+
 				this.threadCollapseStateListeners.push(
 					thread.onDidChangeCollapsibleState(() => {
 						this.update(editor, commentInfos);
@@ -175,6 +199,7 @@ export class CommentThreadRangeDecorator extends Disposable {
 				) {
 					return;
 				}
+
 				commentThreadRangeDecorations.push(
 					new CommentThreadRangeDecoration(
 						range,
@@ -183,19 +208,23 @@ export class CommentThreadRangeDecorator extends Disposable {
 				);
 			});
 		}
+
 		editor.changeDecorations((changeAccessor) => {
 			this.decorationIds = changeAccessor.deltaDecorations(
 				this.decorationIds,
 				commentThreadRangeDecorations,
 			);
+
 			commentThreadRangeDecorations.forEach(
 				(decoration, index) =>
 					(decoration.id = this.decorationIds[index]),
 			);
 		});
 	}
+
 	override dispose() {
 		dispose(this.threadCollapseStateListeners);
+
 		this.currentThreadCollapseStateListener?.dispose();
 
 		super.dispose();

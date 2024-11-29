@@ -15,6 +15,7 @@ export interface OngoingRequestCancellerFactory {
 
 const noopRequestCanceller = new (class implements OngoingRequestCanceller {
 	public readonly cancellationPipeName = undefined;
+
 	public tryCancelOngoingRequest(_seq: number): boolean {
 		return false;
 	}

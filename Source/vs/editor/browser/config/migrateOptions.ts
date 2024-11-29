@@ -21,6 +21,7 @@ export class EditorSettingMigration {
 			write: ISettingsWriter,
 		) => void,
 	) {}
+
 	apply(options: any): void {
 		const value = EditorSettingMigration._read(options, this.key);
 
@@ -29,12 +30,15 @@ export class EditorSettingMigration {
 
 		const write = (key: string, value: any) =>
 			EditorSettingMigration._write(options, key, value);
+
 		this.migrate(value, read, write);
 	}
+
 	private static _read(source: any, key: string): any {
 		if (typeof source === "undefined") {
 			return undefined;
 		}
+
 		const firstDotIndex = key.indexOf(".");
 
 		if (firstDotIndex >= 0) {
@@ -45,14 +49,18 @@ export class EditorSettingMigration {
 				key.substring(firstDotIndex + 1),
 			);
 		}
+
 		return source[key];
 	}
+
 	private static _write(target: any, key: string, value: any): void {
 		const firstDotIndex = key.indexOf(".");
 
 		if (firstDotIndex >= 0) {
 			const firstSegment = key.substring(0, firstDotIndex);
+
 			target[firstSegment] = target[firstSegment] || {};
+
 			this._write(
 				target[firstSegment],
 				key.substring(firstDotIndex + 1),
@@ -61,6 +69,7 @@ export class EditorSettingMigration {
 
 			return;
 		}
+
 		target[key] = value;
 	}
 }
@@ -162,6 +171,7 @@ registerEditorSettingMigration("autoClosingBrackets", (value, read, write) => {
 		if (typeof read("autoClosingQuotes") === "undefined") {
 			write("autoClosingQuotes", "never");
 		}
+
 		if (typeof read("autoSurround") === "undefined") {
 			write("autoSurround", "never");
 		}
@@ -232,6 +242,7 @@ registerEditorSettingMigration(
 					}
 				}
 			}
+
 			write("suggest.filteredTypes", undefined);
 		}
 	},
@@ -241,6 +252,7 @@ registerEditorSettingMigration("quickSuggestions", (input, read, write) => {
 		const value = input ? "on" : "off";
 
 		const newValue = { comments: value, strings: value, other: value };
+
 		write("quickSuggestions", newValue);
 	}
 });
@@ -279,11 +291,13 @@ registerEditorSettingMigration("codeActionsOnSave", (value, read, write) => {
 		for (const entry of Object.entries(value)) {
 			if (typeof entry[1] === "boolean") {
 				toBeModified = true;
+
 				newValue[entry[0]] = entry[1] ? "explicit" : "never";
 			} else {
 				newValue[entry[0]] = entry[1];
 			}
 		}
+
 		if (toBeModified) {
 			write(`codeActionsOnSave`, newValue);
 		}

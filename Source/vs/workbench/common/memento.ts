@@ -22,12 +22,16 @@ export class Memento {
 		string,
 		ScopedMemento
 	>();
+
 	private static readonly profileMementos = new Map<string, ScopedMemento>();
+
 	private static readonly workspaceMementos = new Map<
 		string,
 		ScopedMemento
 	>();
+
 	private static readonly COMMON_PREFIX = "memento/";
+
 	private readonly id: string;
 
 	constructor(
@@ -36,6 +40,7 @@ export class Memento {
 	) {
 		this.id = Memento.COMMON_PREFIX + id;
 	}
+
 	getMemento(scope: StorageScope, target: StorageTarget): MementoObject {
 		switch (scope) {
 			case StorageScope.WORKSPACE: {
@@ -48,10 +53,13 @@ export class Memento {
 						target,
 						this.storageService,
 					);
+
 					Memento.workspaceMementos.set(this.id, workspaceMemento);
 				}
+
 				return workspaceMemento.getMemento();
 			}
+
 			case StorageScope.PROFILE: {
 				let profileMemento = Memento.profileMementos.get(this.id);
 
@@ -62,10 +70,13 @@ export class Memento {
 						target,
 						this.storageService,
 					);
+
 					Memento.profileMementos.set(this.id, profileMemento);
 				}
+
 				return profileMemento.getMemento();
 			}
+
 			case StorageScope.APPLICATION: {
 				let applicationMemento = Memento.applicationMementos.get(
 					this.id,
@@ -78,15 +89,18 @@ export class Memento {
 						target,
 						this.storageService,
 					);
+
 					Memento.applicationMementos.set(
 						this.id,
 						applicationMemento,
 					);
 				}
+
 				return applicationMemento.getMemento();
 			}
 		}
 	}
+
 	onDidChangeValue(
 		scope: StorageScope,
 		disposables: DisposableStore,
@@ -97,11 +111,15 @@ export class Memento {
 			disposables,
 		);
 	}
+
 	saveMemento(): void {
 		Memento.workspaceMementos.get(this.id)?.save();
+
 		Memento.profileMementos.get(this.id)?.save();
+
 		Memento.applicationMementos.get(this.id)?.save();
 	}
+
 	reloadMemento(scope: StorageScope): void {
 		let memento: ScopedMemento | undefined;
 
@@ -121,8 +139,10 @@ export class Memento {
 
 				break;
 		}
+
 		memento?.reload();
 	}
+
 	static clear(scope: StorageScope): void {
 		switch (scope) {
 			case StorageScope.WORKSPACE:
@@ -153,6 +173,7 @@ class ScopedMemento {
 	) {
 		this.mementoObj = this.doLoad();
 	}
+
 	private doLoad(): MementoObject {
 		try {
 			return this.storageService.getObject<MementoObject>(
@@ -169,11 +190,14 @@ class ScopedMemento {
 				`[memento]: failed to parse contents: ${error} (id: ${this.id}, scope: ${this.scope}, contents: ${this.storageService.get(this.id, this.scope)})`,
 			);
 		}
+
 		return {};
 	}
+
 	getMemento(): MementoObject {
 		return this.mementoObj;
 	}
+
 	reload(): void {
 		// Clear old
 		for (const name of Object.getOwnPropertyNames(this.mementoObj)) {
@@ -182,6 +206,7 @@ class ScopedMemento {
 		// Assign new
 		Object.assign(this.mementoObj, this.doLoad());
 	}
+
 	save(): void {
 		if (!isEmptyObject(this.mementoObj)) {
 			this.storageService.store(

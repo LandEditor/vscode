@@ -45,7 +45,9 @@ export class MainThreadStatusBar implements MainThreadStatusBarShape {
 		for (const [entryId, item] of statusbarService.getEntries()) {
 			entries.push(asDto(entryId, item));
 		}
+
 		proxy.$acceptStaticEntries(entries);
+
 		this._store.add(
 			statusbarService.onDidChange((e) => {
 				if (e.added) {
@@ -58,7 +60,9 @@ export class MainThreadStatusBar implements MainThreadStatusBarShape {
 			entryId: string,
 			item: {
 				entry: IStatusbarEntry;
+
 				alignment: StatusbarAlignment;
+
 				priority: number;
 			},
 		): StatusBarItemDto {
@@ -81,6 +85,7 @@ export class MainThreadStatusBar implements MainThreadStatusBarShape {
 			};
 		}
 	}
+
 	dispose(): void {
 		this._store.dispose();
 	}

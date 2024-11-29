@@ -97,17 +97,20 @@ export class ExplorerViewletViewsContribution
 		progressService: IProgressService,
 	) {
 		super();
+
 		progressService
 			.withProgress({ location: ProgressLocation.Explorer }, () =>
 				workspaceContextService.getCompleteWorkspace(),
 			)
 			.finally(() => {
 				this.registerViews();
+
 				this._register(
 					workspaceContextService.onDidChangeWorkbenchState(() =>
 						this.registerViews(),
 					),
 				);
+
 				this._register(
 					workspaceContextService.onDidChangeWorkspaceFolders(() =>
 						this.registerViews(),
@@ -115,6 +118,7 @@ export class ExplorerViewletViewsContribution
 				);
 			});
 	}
+
 	private registerViews(): void {
 		mark("code/willRegisterExplorerViews");
 
@@ -132,6 +136,7 @@ export class ExplorerViewletViewsContribution
 		) {
 			viewDescriptorsToRegister.push(openEditorsViewDescriptor);
 		}
+
 		const explorerViewDescriptor = this.createExplorerViewDescriptor();
 
 		const registeredExplorerViewDescriptor = viewDescriptors.find(
@@ -154,6 +159,7 @@ export class ExplorerViewletViewsContribution
 					registeredExplorerViewDescriptor,
 				);
 			}
+
 			if (!registeredEmptyViewDescriptor) {
 				viewDescriptorsToRegister.push(emptyViewDescriptor);
 			}
@@ -161,24 +167,29 @@ export class ExplorerViewletViewsContribution
 			if (registeredEmptyViewDescriptor) {
 				viewDescriptorsToDeregister.push(registeredEmptyViewDescriptor);
 			}
+
 			if (!registeredExplorerViewDescriptor) {
 				viewDescriptorsToRegister.push(explorerViewDescriptor);
 			}
 		}
+
 		if (viewDescriptorsToDeregister.length) {
 			viewsRegistry.deregisterViews(
 				viewDescriptorsToDeregister,
 				VIEW_CONTAINER,
 			);
 		}
+
 		if (viewDescriptorsToRegister.length) {
 			viewsRegistry.registerViews(
 				viewDescriptorsToRegister,
 				VIEW_CONTAINER,
 			);
 		}
+
 		mark("code/didRegisterExplorerViews");
 	}
+
 	private createOpenEditorsViewDescriptor(): IViewDescriptor {
 		return {
 			id: OpenEditorsView.ID,
@@ -201,6 +212,7 @@ export class ExplorerViewletViewsContribution
 			},
 		};
 	}
+
 	private createEmptyViewDescriptor(): IViewDescriptor {
 		return {
 			id: EmptyView.ID,
@@ -214,6 +226,7 @@ export class ExplorerViewletViewsContribution
 			},
 		};
 	}
+
 	private createExplorerViewDescriptor(): IViewDescriptor {
 		return {
 			id: VIEW_ID,
@@ -270,18 +283,23 @@ export class ExplorerViewPaneContainer extends ViewPaneContainer {
 			contextService,
 			viewDescriptorService,
 		);
+
 		this.viewletVisibleContextKey =
 			ExplorerViewletVisibleContext.bindTo(contextKeyService);
+
 		this._register(
 			this.contextService.onDidChangeWorkspaceName((e) =>
 				this.updateTitleArea(),
 			),
 		);
 	}
+
 	override create(parent: HTMLElement): void {
 		super.create(parent);
+
 		parent.classList.add("explorer-viewlet");
 	}
+
 	protected override createView(
 		viewDescriptor: IViewDescriptor,
 		options: IViewletViewOptions,
@@ -294,6 +312,7 @@ export class ExplorerViewPaneContainer extends ViewPaneContainer {
 						if (!isMouseEvent(e)) {
 							return; // only delay when user clicks
 						}
+
 						const openEditorsView = this.getOpenEditorsView();
 
 						if (openEditorsView) {
@@ -311,6 +330,7 @@ export class ExplorerViewPaneContainer extends ViewPaneContainer {
 								// under the mouse after the first click.
 								delay = 250;
 							}
+
 							openEditorsView.setStructuralRefreshDelay(delay);
 						}
 					},
@@ -318,31 +338,39 @@ export class ExplorerViewPaneContainer extends ViewPaneContainer {
 						if (!isMouseEvent(e)) {
 							return; // only delay when user clicks
 						}
+
 						const openEditorsView = this.getOpenEditorsView();
+
 						openEditorsView?.setStructuralRefreshDelay(0);
 					},
 				},
 			});
 		}
+
 		return super.createView(viewDescriptor, options);
 	}
+
 	getExplorerView(): ExplorerView {
 		return <ExplorerView>this.getView(VIEW_ID);
 	}
+
 	getOpenEditorsView(): OpenEditorsView {
 		return <OpenEditorsView>this.getView(OpenEditorsView.ID);
 	}
+
 	override setVisible(visible: boolean): void {
 		this.viewletVisibleContextKey.set(visible);
 
 		super.setVisible(visible);
 	}
+
 	override focus(): void {
 		const explorerView = this.getView(VIEW_ID);
 
 		if (explorerView && this.panes.every((p) => !p.isExpanded())) {
 			explorerView.setExpanded(true);
 		}
+
 		if (explorerView?.isExpanded()) {
 			explorerView.focus();
 		} else {

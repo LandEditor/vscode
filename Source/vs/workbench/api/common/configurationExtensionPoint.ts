@@ -261,6 +261,7 @@ defaultConfigurationExtPoint.setHandler((extensions, { added, removed }) => {
 	queueMicrotask(() => {
 		if (_configDelta === configNow) {
 			configurationRegistry.deltaConfiguration(_configDelta);
+
 			_configDelta = undefined;
 		}
 	});
@@ -274,8 +275,10 @@ defaultConfigurationExtPoint.setHandler((extensions, { added, removed }) => {
 					displayName: extension.description.displayName,
 				},
 			}));
+
 		_configDelta.removedDefaults = removedDefaultConfigurations;
 	}
+
 	if (added.length) {
 		const registeredProperties =
 			configurationRegistry.getConfigurationProperties();
@@ -306,10 +309,12 @@ defaultConfigurationExtPoint.setHandler((extensions, { added, removed }) => {
 								key,
 							),
 						);
+
 						delete overrides[key];
 
 						continue;
 					}
+
 					if (!OVERRIDE_PROPERTY_REGEX.test(key)) {
 						if (
 							registeredPropertyScheme?.scope &&
@@ -324,12 +329,14 @@ defaultConfigurationExtPoint.setHandler((extensions, { added, removed }) => {
 									key,
 								),
 							);
+
 							delete overrides[key];
 
 							continue;
 						}
 					}
 				}
+
 				return {
 					overrides,
 					source: {
@@ -339,6 +346,7 @@ defaultConfigurationExtPoint.setHandler((extensions, { added, removed }) => {
 				};
 			},
 		);
+
 		_configDelta.addedDefaults = addedDefaultConfigurations;
 	}
 });
@@ -381,8 +389,10 @@ configurationExtPoint.setHandler((extensions, { added, removed }) => {
 					extension.description.identifier,
 				) || []),
 			);
+
 			extensionConfigurations.delete(extension.description.identifier);
 		}
+
 		_configDelta.removedConfigurations = removedConfigurations;
 	}
 
@@ -406,16 +416,19 @@ configurationExtPoint.setHandler((extensions, { added, removed }) => {
 		validateProperties(configuration, extension);
 
 		configuration.id = node.id || extension.description.identifier.value;
+
 		configuration.extensionInfo = {
 			id: extension.description.identifier.value,
 			displayName: extension.description.displayName,
 		};
+
 		configuration.restrictedProperties =
 			extension.description.capabilities?.untrustedWorkspaces
 				?.supported === "limited"
 				? extension.description.capabilities?.untrustedWorkspaces
 						.restrictedConfigurations
 				: undefined;
+
 		configuration.title =
 			configuration.title ||
 			extension.description.displayName ||
@@ -438,8 +451,10 @@ configurationExtPoint.setHandler((extensions, { added, removed }) => {
 						"'configuration.properties' must be an object",
 					),
 				);
+
 				configuration.properties = {};
 			}
+
 			for (const key in properties) {
 				const propertyConfiguration = properties[key];
 
@@ -447,12 +462,15 @@ configurationExtPoint.setHandler((extensions, { added, removed }) => {
 
 				if (message) {
 					delete properties[key];
+
 					extension.collector.warn(message);
 
 					continue;
 				}
+
 				if (seenProperties.has(key)) {
 					delete properties[key];
+
 					extension.collector.warn(
 						nls.localize(
 							"config.property.duplicate",
@@ -463,8 +481,10 @@ configurationExtPoint.setHandler((extensions, { added, removed }) => {
 
 					continue;
 				}
+
 				if (!isObject(propertyConfiguration)) {
 					delete properties[key];
+
 					extension.collector.error(
 						nls.localize(
 							"invalid.property",
@@ -475,12 +495,15 @@ configurationExtPoint.setHandler((extensions, { added, removed }) => {
 
 					continue;
 				}
+
 				seenProperties.add(key);
+
 				propertyConfiguration.scope = propertyConfiguration.scope
 					? parseScope(propertyConfiguration.scope.toString())
 					: ConfigurationScope.WINDOW;
 			}
 		}
+
 		const subNodes = configuration.allOf;
 
 		if (subNodes) {
@@ -514,10 +537,12 @@ configurationExtPoint.setHandler((extensions, { added, removed }) => {
 			} else {
 				configurations.push(handleConfiguration(value, extension));
 			}
+
 			extensionConfigurations.set(
 				extension.description.identifier,
 				configurations,
 			);
+
 			addedConfigurations.push(...configurations);
 		}
 
@@ -525,6 +550,7 @@ configurationExtPoint.setHandler((extensions, { added, removed }) => {
 	}
 
 	configurationRegistry.deltaConfiguration(_configDelta);
+
 	_configDelta = undefined;
 });
 // END VSCode extension point `configuration`

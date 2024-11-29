@@ -108,33 +108,51 @@ function createResourceCommentsIterator(
 				children.push({ element: r });
 			}
 		}
+
 		if (children.length > 0) {
 			result.push({ element: m, children });
 		}
 	}
+
 	return result;
 }
 export class CommentsPanel extends FilterViewPane implements ICommentsView {
 	private treeLabels!: ResourceLabels;
+
 	private tree: CommentsList | undefined;
+
 	private treeContainer!: HTMLElement;
+
 	private messageBoxContainer!: HTMLElement;
+
 	private totalComments: number = 0;
+
 	private readonly hasCommentsContextKey: IContextKey<boolean>;
+
 	private readonly someCommentsExpandedContextKey: IContextKey<boolean>;
+
 	private readonly commentsFocusedContextKey: IContextKey<boolean>;
+
 	private readonly filter: Filter;
+
 	readonly filters: CommentsFilters;
+
 	private currentHeight = 0;
+
 	private currentWidth = 0;
+
 	private readonly viewState: MementoObject;
+
 	private readonly stateMemento: Memento;
+
 	private cachedFilterStats:
 		| {
 				total: number;
+
 				filtered: number;
 		  }
 		| undefined = undefined;
+
 	readonly onDidChangeVisibility = this.onDidChangeBodyVisibility;
 
 	get focusedCommentNode(): CommentNode | undefined {
@@ -143,52 +161,66 @@ export class CommentsPanel extends FilterViewPane implements ICommentsView {
 		if (focused?.length === 1 && focused[0] instanceof CommentNode) {
 			return focused[0];
 		}
+
 		return undefined;
 	}
+
 	get focusedCommentInfo(): string | undefined {
 		if (!this.focusedCommentNode) {
 			return;
 		}
+
 		return this.getScreenReaderInfoForNode(this.focusedCommentNode);
 	}
+
 	focusNextNode(): void {
 		if (!this.tree) {
 			return;
 		}
+
 		const focused = this.tree.getFocus()?.[0];
 
 		if (!focused) {
 			return;
 		}
+
 		let next = this.tree.navigate(focused).next();
 
 		while (next && !(next instanceof CommentNode)) {
 			next = this.tree.navigate(next).next();
 		}
+
 		if (!next) {
 			return;
 		}
+
 		this.tree.setFocus([next]);
 	}
+
 	focusPreviousNode(): void {
 		if (!this.tree) {
 			return;
 		}
+
 		const focused = this.tree.getFocus()?.[0];
 
 		if (!focused) {
 			return;
 		}
+
 		let previous = this.tree.navigate(focused).previous();
 
 		while (previous && !(previous instanceof CommentNode)) {
 			previous = this.tree.navigate(previous).previous();
 		}
+
 		if (!previous) {
 			return;
 		}
+
 		this.tree.setFocus([previous]);
 	}
+
 	constructor(
 		options: IViewPaneOptions,
 		@IInstantiationService
@@ -257,14 +289,20 @@ export class CommentsPanel extends FilterViewPane implements ICommentsView {
 			telemetryService,
 			hoverService,
 		);
+
 		this.hasCommentsContextKey =
 			CONTEXT_KEY_HAS_COMMENTS.bindTo(contextKeyService);
+
 		this.someCommentsExpandedContextKey =
 			CONTEXT_KEY_SOME_COMMENTS_EXPANDED.bindTo(contextKeyService);
+
 		this.commentsFocusedContextKey =
 			CONTEXT_KEY_COMMENT_FOCUSED.bindTo(contextKeyService);
+
 		this.stateMemento = stateMemento;
+
 		this.viewState = viewState;
+
 		this.filters = this._register(
 			new CommentsFilters(
 				{
@@ -277,6 +315,7 @@ export class CommentsPanel extends FilterViewPane implements ICommentsView {
 				this.contextKeyService,
 			),
 		);
+
 		this.filter = new Filter(
 			new FilterOptions(
 				this.filterWidget.getFilterText(),
@@ -284,32 +323,43 @@ export class CommentsPanel extends FilterViewPane implements ICommentsView {
 				this.filters.showUnresolved,
 			),
 		);
+
 		this._register(
 			this.filters.onDidChange((event: CommentsFiltersChangeEvent) => {
 				if (event.showResolved || event.showUnresolved) {
 					this.updateFilter();
 				}
+
 				if (event.sortBy) {
 					this.refresh();
 				}
 			}),
 		);
+
 		this._register(
 			this.filterWidget.onDidChangeFilterText(() => this.updateFilter()),
 		);
 	}
+
 	override saveState(): void {
 		this.viewState["filter"] = this.filterWidget.getFilterText();
+
 		this.viewState["filterHistory"] = this.filterWidget.getHistory();
+
 		this.viewState["showResolved"] = this.filters.showResolved;
+
 		this.viewState["showUnresolved"] = this.filters.showUnresolved;
+
 		this.viewState["sortBy"] = this.filters.sortBy;
+
 		this.stateMemento.saveMemento();
 
 		super.saveState();
 	}
+
 	override render(): void {
 		super.render();
+
 		this._register(
 			registerNavigableContainer({
 				name: "commentsView",
@@ -327,14 +377,18 @@ export class CommentsPanel extends FilterViewPane implements ICommentsView {
 			}),
 		);
 	}
+
 	public focusFilter(): void {
 		this.filterWidget.focus();
 	}
+
 	public clearFilterText(): void {
 		this.filterWidget.setFilterText("");
 	}
+
 	public getFilterStats(): {
 		total: number;
+
 		filtered: number;
 	} {
 		if (!this.cachedFilterStats) {
@@ -343,18 +397,23 @@ export class CommentsPanel extends FilterViewPane implements ICommentsView {
 				filtered: this.tree?.getVisibleItemCount() ?? 0,
 			};
 		}
+
 		return this.cachedFilterStats;
 	}
+
 	private updateFilter() {
 		this.filter.options = new FilterOptions(
 			this.filterWidget.getFilterText(),
 			this.filters.showResolved,
 			this.filters.showUnresolved,
 		);
+
 		this.tree?.filterComments();
+
 		this.cachedFilterStats = undefined;
 
 		const { total, filtered } = this.getFilterStats();
+
 		this.filterWidget.updateBadge(
 			total === filtered || total === 0
 				? undefined
@@ -365,44 +424,56 @@ export class CommentsPanel extends FilterViewPane implements ICommentsView {
 						total,
 					),
 		);
+
 		this.filterWidget.checkMoreFilters(
 			!this.filters.showResolved || !this.filters.showUnresolved,
 		);
 	}
+
 	protected override renderBody(container: HTMLElement): void {
 		super.renderBody(container);
+
 		container.classList.add("comments-panel");
 
 		const domContainer = dom.append(
 			container,
 			dom.$(".comments-panel-container"),
 		);
+
 		this.treeContainer = dom.append(domContainer, dom.$(".tree-container"));
+
 		this.treeContainer.classList.add(
 			"file-icon-themable-tree",
 			"show-file-icons",
 		);
+
 		this.cachedFilterStats = undefined;
+
 		this.createTree();
+
 		this.createMessageBox(domContainer);
+
 		this._register(
 			this.commentService.onDidSetAllCommentThreads(
 				this.onAllCommentsChanged,
 				this,
 			),
 		);
+
 		this._register(
 			this.commentService.onDidUpdateCommentThreads(
 				this.onCommentsUpdated,
 				this,
 			),
 		);
+
 		this._register(
 			this.commentService.onDidDeleteDataProvider(
 				this.onDataProviderDeleted,
 				this,
 			),
 		);
+
 		this._register(
 			this.onDidChangeBodyVisibility((visible) => {
 				if (visible) {
@@ -410,8 +481,10 @@ export class CommentsPanel extends FilterViewPane implements ICommentsView {
 				}
 			}),
 		);
+
 		this.renderComments();
 	}
+
 	public override focus(): void {
 		super.focus();
 
@@ -420,6 +493,7 @@ export class CommentsPanel extends FilterViewPane implements ICommentsView {
 		if (element && dom.isActiveElement(element)) {
 			return;
 		}
+
 		if (
 			!this.commentService.commentsModel.hasCommentThreads() &&
 			this.messageBoxContainer
@@ -429,38 +503,53 @@ export class CommentsPanel extends FilterViewPane implements ICommentsView {
 			this.tree.domFocus();
 		}
 	}
+
 	private renderComments(): void {
 		this.treeContainer.classList.toggle(
 			"hidden",
 			!this.commentService.commentsModel.hasCommentThreads(),
 		);
+
 		this.renderMessage();
+
 		this.tree?.setChildren(
 			null,
 			createResourceCommentsIterator(this.commentService.commentsModel),
 		);
 	}
+
 	public collapseAll() {
 		if (this.tree) {
 			this.tree.collapseAll();
+
 			this.tree.setSelection([]);
+
 			this.tree.setFocus([]);
+
 			this.tree.domFocus();
+
 			this.tree.focusFirst();
 		}
 	}
+
 	public expandAll() {
 		if (this.tree) {
 			this.tree.expandAll();
+
 			this.tree.setSelection([]);
+
 			this.tree.setFocus([]);
+
 			this.tree.domFocus();
+
 			this.tree.focusFirst();
 		}
 	}
+
 	public get hasRendered(): boolean {
 		return !!this.tree;
 	}
+
 	protected layoutBodyContent(
 		height: number = this.currentHeight,
 		width: number = this.currentWidth,
@@ -468,25 +557,33 @@ export class CommentsPanel extends FilterViewPane implements ICommentsView {
 		if (this.messageBoxContainer) {
 			this.messageBoxContainer.style.height = `${height}px`;
 		}
+
 		this.tree?.layout(height, width);
+
 		this.currentHeight = height;
+
 		this.currentWidth = width;
 	}
+
 	private createMessageBox(parent: HTMLElement): void {
 		this.messageBoxContainer = dom.append(
 			parent,
 			dom.$(".message-box-container"),
 		);
+
 		this.messageBoxContainer.setAttribute("tabIndex", "0");
 	}
+
 	private renderMessage(): void {
 		this.messageBoxContainer.textContent =
 			this.commentService.commentsModel.getMessage();
+
 		this.messageBoxContainer.classList.toggle(
 			"hidden",
 			this.commentService.commentsModel.hasCommentThreads(),
 		);
 	}
+
 	private getScreenReaderInfoForNode(
 		element: CommentNode,
 		forAriaLabel?: boolean,
@@ -502,6 +599,7 @@ export class CommentsPanel extends FilterViewPane implements ICommentsView {
 			const kbLabel = this.keybindingService
 				.lookupKeybinding(AccessibleViewAction.id)
 				?.getAriaLabel();
+
 			accessibleViewHint = kbLabel
 				? nls.localize(
 						"acessibleViewHint",
@@ -513,6 +611,7 @@ export class CommentsPanel extends FilterViewPane implements ICommentsView {
 						"Inspect this in the accessible view via the command Open Accessible View which is currently not triggerable via keybinding.\n",
 					);
 		}
+
 		const replyCount = this.getReplyCountAsString(element, forAriaLabel);
 
 		const replies = this.getRepliesAsString(element, forAriaLabel);
@@ -530,9 +629,11 @@ export class CommentsPanel extends FilterViewPane implements ICommentsView {
 				content = "\nCorresponding code: \n" + content;
 			}
 		}
+
 		if (!content) {
 			content = "";
 		}
+
 		if (element.range) {
 			if (
 				element.threadRelevance === CommentThreadApplicability.Outdated
@@ -610,6 +711,7 @@ export class CommentsPanel extends FilterViewPane implements ICommentsView {
 			}
 		}
 	}
+
 	private getRepliesAsString(
 		node: CommentNode,
 		forAriaLabel?: boolean,
@@ -617,6 +719,7 @@ export class CommentsPanel extends FilterViewPane implements ICommentsView {
 		if (!node.replies.length || forAriaLabel) {
 			return "";
 		}
+
 		return (
 			"\n" +
 			node.replies
@@ -633,6 +736,7 @@ export class CommentsPanel extends FilterViewPane implements ICommentsView {
 				.join("\n")
 		);
 	}
+
 	private getReplyCountAsString(
 		node: CommentNode,
 		forAriaLabel?: boolean,
@@ -641,10 +745,12 @@ export class CommentsPanel extends FilterViewPane implements ICommentsView {
 			? nls.localize("replyCount", " {0} replies,", node.replies.length)
 			: "";
 	}
+
 	private createTree(): void {
 		this.treeLabels = this._register(
 			this.instantiationService.createInstance(ResourceLabels, this),
 		);
+
 		this.tree = this._register(
 			this.instantiationService.createInstance(
 				CommentsList,
@@ -663,6 +769,7 @@ export class CommentsPanel extends FilterViewPane implements ICommentsView {
 							) {
 								return 0;
 							}
+
 							if (
 								this.filters.sortBy ===
 								CommentsSortOrder.UpdatedAtDescending
@@ -695,6 +802,7 @@ export class CommentsPanel extends FilterViewPane implements ICommentsView {
 											? 1
 											: -1;
 									}
+
 									return a.resource.toString() >
 										b.resource.toString()
 										? 1
@@ -711,6 +819,7 @@ export class CommentsPanel extends FilterViewPane implements ICommentsView {
 										: -1;
 								}
 							}
+
 							return 0;
 						},
 					},
@@ -729,6 +838,7 @@ export class CommentsPanel extends FilterViewPane implements ICommentsView {
 									"Comments for current workspace",
 								);
 							}
+
 							if (element instanceof ResourceWithCommentThreads) {
 								return nls.localize(
 									"resourceWithCommentThreadsLabel",
@@ -737,12 +847,14 @@ export class CommentsPanel extends FilterViewPane implements ICommentsView {
 									element.resource.fsPath,
 								);
 							}
+
 							if (element instanceof CommentNode) {
 								return this.getScreenReaderInfoForNode(
 									element,
 									true,
 								);
 							}
+
 							return "";
 						},
 						getWidgetAriaLabel(): string {
@@ -752,6 +864,7 @@ export class CommentsPanel extends FilterViewPane implements ICommentsView {
 				},
 			),
 		);
+
 		this._register(
 			this.tree.onDidOpen((e) => {
 				this.openFile(
@@ -762,27 +875,32 @@ export class CommentsPanel extends FilterViewPane implements ICommentsView {
 				);
 			}),
 		);
+
 		this._register(
 			this.tree.onDidChangeModel(() => {
 				this.updateSomeCommentsExpanded();
 			}),
 		);
+
 		this._register(
 			this.tree.onDidChangeCollapseState(() => {
 				this.updateSomeCommentsExpanded();
 			}),
 		);
+
 		this._register(
 			this.tree.onDidFocus(() =>
 				this.commentsFocusedContextKey.set(true),
 			),
 		);
+
 		this._register(
 			this.tree.onDidBlur(() =>
 				this.commentsFocusedContextKey.set(false),
 			),
 		);
 	}
+
 	private openFile(
 		element: any,
 		pinned?: boolean,
@@ -792,6 +910,7 @@ export class CommentsPanel extends FilterViewPane implements ICommentsView {
 		if (!element) {
 			return;
 		}
+
 		if (
 			!(
 				element instanceof ResourceWithCommentThreads ||
@@ -800,6 +919,7 @@ export class CommentsPanel extends FilterViewPane implements ICommentsView {
 		) {
 			return;
 		}
+
 		const threadToReveal =
 			element instanceof ResourceWithCommentThreads
 				? element.commentThreads[0].thread
@@ -822,15 +942,19 @@ export class CommentsPanel extends FilterViewPane implements ICommentsView {
 			sideBySide,
 		);
 	}
+
 	private async refresh(): Promise<void> {
 		if (!this.tree) {
 			return;
 		}
+
 		if (this.isVisible()) {
 			this.hasCommentsContextKey.set(
 				this.commentService.commentsModel.hasCommentThreads(),
 			);
+
 			this.cachedFilterStats = undefined;
+
 			this.renderComments();
 
 			if (
@@ -843,13 +967,16 @@ export class CommentsPanel extends FilterViewPane implements ICommentsView {
 
 				if (firstComment) {
 					this.tree.setFocus([firstComment]);
+
 					this.tree.setSelection([firstComment]);
 				}
 			}
 		}
 	}
+
 	private onAllCommentsChanged(e: IWorkspaceCommentThreadsEvent): void {
 		this.cachedFilterStats = undefined;
+
 		this.totalComments += e.commentThreads.length;
 
 		let unresolved = 0;
@@ -859,11 +986,15 @@ export class CommentsPanel extends FilterViewPane implements ICommentsView {
 				unresolved++;
 			}
 		}
+
 		this.refresh();
 	}
+
 	private onCommentsUpdated(e: ICommentThreadChangedEvent): void {
 		this.cachedFilterStats = undefined;
+
 		this.totalComments += e.added.length;
+
 		this.totalComments -= e.removed.length;
 
 		let unresolved = 0;
@@ -876,20 +1007,27 @@ export class CommentsPanel extends FilterViewPane implements ICommentsView {
 				}
 			}
 		}
+
 		this.refresh();
 	}
+
 	private onDataProviderDeleted(owner: string | undefined): void {
 		this.cachedFilterStats = undefined;
+
 		this.totalComments = 0;
+
 		this.refresh();
 	}
+
 	private updateSomeCommentsExpanded() {
 		this.someCommentsExpandedContextKey.set(this.isSomeCommentsExpanded());
 	}
+
 	public areAllCommentsExpanded(): boolean {
 		if (!this.tree) {
 			return false;
 		}
+
 		const navigator = this.tree.navigate();
 
 		while (navigator.next()) {
@@ -897,12 +1035,15 @@ export class CommentsPanel extends FilterViewPane implements ICommentsView {
 				return false;
 			}
 		}
+
 		return true;
 	}
+
 	public isSomeCommentsExpanded(): boolean {
 		if (!this.tree) {
 			return false;
 		}
+
 		const navigator = this.tree.navigate();
 
 		while (navigator.next()) {
@@ -910,6 +1051,7 @@ export class CommentsPanel extends FilterViewPane implements ICommentsView {
 				return true;
 			}
 		}
+
 		return false;
 	}
 }

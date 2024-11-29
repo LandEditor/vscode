@@ -24,6 +24,7 @@ export class ExecutionEditorProgressController
 	implements INotebookEditorContribution
 {
 	static id: string = "workbench.notebook.executionEditorProgress";
+
 	private readonly _activityMutex = this._register(new MutableDisposable());
 
 	constructor(
@@ -34,7 +35,9 @@ export class ExecutionEditorProgressController
 		private readonly _userActivity: IUserActivityService,
 	) {
 		super();
+
 		this._register(_notebookEditor.onDidScroll(() => this._update()));
+
 		this._register(
 			_notebookExecutionStateService.onDidChangeExecution((e) => {
 				if (
@@ -43,9 +46,11 @@ export class ExecutionEditorProgressController
 				) {
 					return;
 				}
+
 				this._update();
 			}),
 		);
+
 		this._register(_notebookEditor.onDidChangeModel(() => this._update()));
 	}
 	@throttle(100)
@@ -53,6 +58,7 @@ export class ExecutionEditorProgressController
 		if (!this._notebookEditor.hasModel()) {
 			return;
 		}
+
 		const cellExecutions = this._notebookExecutionStateService
 			.getCellExecutionsForNotebook(this._notebookEditor.textModel?.uri)
 			.filter(
@@ -79,6 +85,7 @@ export class ExecutionEditorProgressController
 					}
 				}
 			}
+
 			return false;
 		};
 
@@ -89,6 +96,7 @@ export class ExecutionEditorProgressController
 		} else if (!hasAnyExecution && this._activityMutex.value) {
 			this._activityMutex.clear();
 		}
+
 		const shouldShowEditorProgressbarForCellExecutions =
 			cellExecutions.length &&
 			!cellExecutions.some(executionIsVisible) &&

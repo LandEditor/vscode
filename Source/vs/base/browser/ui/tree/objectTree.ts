@@ -58,11 +58,13 @@ export class ObjectTree<
 	TFilterData = void,
 > extends AbstractTree<T | null, TFilterData, T | null> {
 	protected declare model: IObjectTreeModel<T, TFilterData>;
+
 	override get onDidChangeCollapseState(): Event<
 		ICollapseStateChangeEvent<T | null, TFilterData>
 	> {
 		return this.model.onDidChangeCollapseState;
 	}
+
 	constructor(
 		protected readonly user: string,
 		container: HTMLElement,
@@ -78,6 +80,7 @@ export class ObjectTree<
 			options as IObjectTreeOptions<T | null, TFilterData>,
 		);
 	}
+
 	setChildren(
 		element: T | null,
 		children: Iterable<IObjectTreeElement<T>> = Iterable.empty(),
@@ -85,28 +88,35 @@ export class ObjectTree<
 	): void {
 		this.model.setChildren(element, children, options);
 	}
+
 	rerender(element?: T): void {
 		if (element === undefined) {
 			this.view.rerender();
 
 			return;
 		}
+
 		this.model.rerender(element);
 	}
+
 	updateElementHeight(element: T, height: number | undefined): void {
 		const elementIndex = this.model.getListIndex(element);
 
 		if (elementIndex === -1) {
 			return;
 		}
+
 		this.view.updateElementHeight(elementIndex, height);
 	}
+
 	resort(element: T | null, recursive = true): void {
 		this.model.resort(element, recursive);
 	}
+
 	hasElement(element: T): boolean {
 		return this.model.has(element);
 	}
+
 	protected createModel(
 		user: string,
 		options: IObjectTreeOptions<T, TFilterData>,
@@ -130,6 +140,7 @@ export interface ICompressibleTreeRenderer<
 		templateData: TTemplateData,
 		height: number | undefined,
 	): void;
+
 	disposeCompressedElements?(
 		node: ITreeNode<ICompressedTreeNode<T>, TFilterData>,
 		index: number,
@@ -141,6 +152,7 @@ interface CompressibleTemplateData<T, TFilterData, TTemplateData> {
 	compressedTreeNode:
 		| ITreeNode<ICompressedTreeNode<T>, TFilterData>
 		| undefined;
+
 	readonly data: TTemplateData;
 }
 class CompressibleRenderer<
@@ -155,6 +167,7 @@ class CompressibleRenderer<
 		>
 {
 	readonly templateId: string;
+
 	readonly onDidChangeTwistieState: Event<T> | undefined;
 	@memoize
 	private get compressedTreeNodeProvider(): ICompressedTreeNodeProvider<
@@ -163,6 +176,7 @@ class CompressibleRenderer<
 	> {
 		return this._compressedTreeNodeProvider();
 	}
+
 	constructor(
 		private _compressedTreeNodeProvider: () => ICompressedTreeNodeProvider<
 			T,
@@ -184,6 +198,7 @@ class CompressibleRenderer<
 			this.onDidChangeTwistieState = renderer.onDidChangeTwistieState;
 		}
 	}
+
 	renderTemplate(
 		container: HTMLElement,
 	): CompressibleTemplateData<T, TFilterData, TTemplateData> {
@@ -191,6 +206,7 @@ class CompressibleRenderer<
 
 		return { compressedTreeNode: undefined, data };
 	}
+
 	renderElement(
 		node: ITreeNode<T, TFilterData>,
 		index: number,
@@ -206,11 +222,14 @@ class CompressibleRenderer<
 					node.element,
 				) as ITreeNode<ICompressedTreeNode<T>, TFilterData>;
 		}
+
 		if (compressedTreeNode.element.elements.length === 1) {
 			templateData.compressedTreeNode = undefined;
+
 			this.renderer.renderElement(node, index, templateData.data, height);
 		} else {
 			templateData.compressedTreeNode = compressedTreeNode;
+
 			this.renderer.renderCompressedElements(
 				compressedTreeNode,
 				index,
@@ -219,6 +238,7 @@ class CompressibleRenderer<
 			);
 		}
 	}
+
 	disposeElement(
 		node: ITreeNode<T, TFilterData>,
 		index: number,
@@ -241,15 +261,18 @@ class CompressibleRenderer<
 			);
 		}
 	}
+
 	disposeTemplate(
 		templateData: CompressibleTemplateData<T, TFilterData, TTemplateData>,
 	): void {
 		this.renderer.disposeTemplate(templateData.data);
 	}
+
 	renderTwistie?(element: T, twistieElement: HTMLElement): boolean {
 		if (this.renderer.renderTwistie) {
 			return this.renderer.renderTwistie(element, twistieElement);
 		}
+
 		return false;
 	}
 }
@@ -267,11 +290,13 @@ class CompressibleStickyScrollDelegate<T, TFilterData>
 			TFilterData
 		>,
 	) {}
+
 	getCompressedNode(
 		node: ITreeNode<T, TFilterData>,
 	): ITreeNode<ICompressedTreeNode<T>, TFilterData> | undefined {
 		return this.compressedStickyNodes.get(node);
 	}
+
 	constrainStickyScrollNodes(
 		stickyNodes: StickyScrollNode<T, TFilterData>[],
 		stickyScrollMaxItemCount: number,
@@ -282,6 +307,7 @@ class CompressibleStickyScrollDelegate<T, TFilterData>
 		if (stickyNodes.length === 0) {
 			return [];
 		}
+
 		for (let i = 0; i < stickyNodes.length; i++) {
 			const stickyNode = stickyNodes[i];
 
@@ -307,14 +333,17 @@ class CompressibleStickyScrollDelegate<T, TFilterData>
 				return [...uncompressedStickyNodes, compressedStickyNode];
 			}
 		}
+
 		return stickyNodes;
 	}
+
 	private compressStickyNodes(
 		stickyNodes: StickyScrollNode<T, TFilterData>[],
 	): StickyScrollNode<T, TFilterData> {
 		if (stickyNodes.length === 0) {
 			throw new Error("Can't compress empty sticky nodes");
 		}
+
 		const compressionModel = this.modelProvider();
 
 		if (!compressionModel.isCompressionEnabled()) {
@@ -335,9 +364,11 @@ class CompressibleStickyScrollDelegate<T, TFilterData>
 				if (i !== 0 && compressedNode.element.incompressible) {
 					break;
 				}
+
 				elements.push(...compressedNode.element.elements);
 			}
 		}
+
 		if (elements.length < 2) {
 			return stickyNodes[0];
 		}
@@ -364,6 +395,7 @@ class CompressibleStickyScrollDelegate<T, TFilterData>
 			position: stickyNodes[0].position,
 			height: stickyNodes[0].height,
 		};
+
 		this.compressedStickyNodes.set(stickyTreeNode, compressedNode);
 
 		return compressedStickyNode;
@@ -380,7 +412,9 @@ export interface ICompressibleKeyboardNavigationLabelProvider<T>
 export interface ICompressibleObjectTreeOptions<T, TFilterData = void>
 	extends IObjectTreeOptions<T, TFilterData> {
 	readonly compressionEnabled?: boolean;
+
 	readonly elementMapper?: ElementMapper<T>;
+
 	readonly keyboardNavigationLabelProvider?: ICompressibleKeyboardNavigationLabelProvider<T>;
 }
 function asObjectTreeOptions<T, TFilterData>(
@@ -414,6 +448,7 @@ function asObjectTreeOptions<T, TFilterData>(
 								e,
 							);
 						}
+
 						if (compressedTreeNode.element.elements.length === 1) {
 							return options.keyboardNavigationLabelProvider!.getKeyboardNavigationLabel(
 								e,
@@ -472,6 +507,7 @@ export class CompressibleObjectTree<
 			stickyScrollDelegate,
 		});
 	}
+
 	override setChildren(
 		element: T | null,
 		children: Iterable<ICompressedTreeElement<T>> = Iterable.empty(),
@@ -479,12 +515,14 @@ export class CompressibleObjectTree<
 	): void {
 		this.model.setChildren(element, children, options);
 	}
+
 	protected override createModel(
 		user: string,
 		options: ICompressibleObjectTreeOptions<T, TFilterData>,
 	): ITreeModel<T | null, TFilterData, T | null> {
 		return new CompressibleObjectTreeModel(user, options);
 	}
+
 	override updateOptions(
 		optionsUpdate: ICompressibleObjectTreeOptionsUpdate = {},
 	): void {
@@ -494,6 +532,7 @@ export class CompressibleObjectTree<
 			this.model.setCompressionEnabled(optionsUpdate.compressionEnabled);
 		}
 	}
+
 	getCompressedTreeNode(
 		element: T | null = null,
 	): ITreeNode<ICompressedTreeNode<T> | null, TFilterData> {

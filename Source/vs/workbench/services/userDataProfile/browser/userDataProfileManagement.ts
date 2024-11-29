@@ -46,10 +46,14 @@ import {
 
 export type ProfileManagementActionExecutedClassification = {
 	owner: "sandy081";
+
 	comment: "Logged when profile management action is excuted";
+
 	id: {
 		classification: "SystemMetaData";
+
 		purpose: "FeatureInsight";
+
 		comment: "The identifier of the action that was run.";
 	};
 };
@@ -93,11 +97,13 @@ export class UserDataProfileManagementService
 		private readonly logService: ILogService,
 	) {
 		super();
+
 		this._register(
 			userDataProfileService.onDidChangeCurrentProfile((e) =>
 				this.onDidChangeCurrentProfile(e),
 			),
 		);
+
 		this._register(
 			userDataProfilesService.onDidChangeProfiles((e) => {
 				if (
@@ -109,7 +115,9 @@ export class UserDataProfileManagementService
 				) {
 					const profileToUse =
 						this.getProfileToUseForCurrentWorkspace();
+
 					this.switchProfile(profileToUse);
+
 					this.changeCurrentProfile(
 						profileToUse,
 						localize(
@@ -120,6 +128,7 @@ export class UserDataProfileManagementService
 
 					return;
 				}
+
 				const updatedCurrentProfile = e.updated.find(
 					(p) =>
 						this.userDataProfileService.currentProfile.id === p.id,
@@ -131,6 +140,7 @@ export class UserDataProfileManagementService
 
 					if (profileToUse?.id !== updatedCurrentProfile.id) {
 						this.switchProfile(profileToUse);
+
 						this.changeCurrentProfile(
 							profileToUse,
 							localize(
@@ -151,6 +161,7 @@ export class UserDataProfileManagementService
 			}),
 		);
 	}
+
 	private async onDidChangeCurrentProfile(
 		e: DidChangeUserDataProfileEvent,
 	): Promise<void> {
@@ -158,11 +169,13 @@ export class UserDataProfileManagementService
 			await this.userDataProfilesService.cleanUpTransientProfiles();
 		}
 	}
+
 	private getWorkspaceUri(): URI | undefined {
 		const workspace = this.workspaceContextService.getWorkspace();
 
 		return workspace.configuration ?? workspace.folders[0]?.uri;
 	}
+
 	private getProfileToUseForCurrentWorkspace(): IUserDataProfile {
 		const workspaceUri = this.getWorkspaceUri();
 
@@ -192,8 +205,10 @@ export class UserDataProfileManagementService
 				return currentProfile;
 			}
 		}
+
 		return this.getDefaultProfileToUse();
 	}
+
 	public getDefaultProfileToUse(): IUserDataProfile {
 		const newWindowProfileConfigValue = this.configurationService.getValue(
 			CONFIG_NEW_WINDOW_PROFILE,
@@ -208,14 +223,17 @@ export class UserDataProfileManagementService
 				return newWindowProfile;
 			}
 		}
+
 		return this.userDataProfilesService.defaultProfile;
 	}
+
 	async createProfile(
 		name: string,
 		options?: IUserDataProfileOptions,
 	): Promise<IUserDataProfile> {
 		return this.userDataProfilesService.createNamedProfile(name, options);
 	}
+
 	async createAndEnterProfile(
 		name: string,
 		options?: IUserDataProfileOptions,
@@ -225,7 +243,9 @@ export class UserDataProfileManagementService
 			options,
 			toWorkspaceIdentifier(this.workspaceContextService.getWorkspace()),
 		);
+
 		await this.changeCurrentProfile(profile);
+
 		this.telemetryService.publicLog2<
 			ProfileManagementActionExecutedEvent,
 			ProfileManagementActionExecutedClassification
@@ -233,6 +253,7 @@ export class UserDataProfileManagementService
 
 		return profile;
 	}
+
 	async createAndEnterTransientProfile(): Promise<IUserDataProfile> {
 		const profile =
 			await this.userDataProfilesService.createTransientProfile(
@@ -240,7 +261,9 @@ export class UserDataProfileManagementService
 					this.workspaceContextService.getWorkspace(),
 				),
 			);
+
 		await this.changeCurrentProfile(profile);
+
 		this.telemetryService.publicLog2<
 			ProfileManagementActionExecutedEvent,
 			ProfileManagementActionExecutedClassification
@@ -250,6 +273,7 @@ export class UserDataProfileManagementService
 
 		return profile;
 	}
+
 	async updateProfile(
 		profile: IUserDataProfile,
 		updateOptions: IUserDataProfileUpdateOptions,
@@ -261,6 +285,7 @@ export class UserDataProfileManagementService
 		) {
 			throw new Error(`Profile ${profile.name} does not exist`);
 		}
+
 		if (profile.isDefault) {
 			throw new Error(
 				localize(
@@ -269,10 +294,12 @@ export class UserDataProfileManagementService
 				),
 			);
 		}
+
 		const updatedProfile = await this.userDataProfilesService.updateProfile(
 			profile,
 			updateOptions,
 		);
+
 		this.telemetryService.publicLog2<
 			ProfileManagementActionExecutedEvent,
 			ProfileManagementActionExecutedClassification
@@ -280,6 +307,7 @@ export class UserDataProfileManagementService
 
 		return updatedProfile;
 	}
+
 	async removeProfile(profile: IUserDataProfile): Promise<void> {
 		if (
 			!this.userDataProfilesService.profiles.some(
@@ -288,6 +316,7 @@ export class UserDataProfileManagementService
 		) {
 			throw new Error(`Profile ${profile.name} does not exist`);
 		}
+
 		if (profile.isDefault) {
 			throw new Error(
 				localize(
@@ -296,12 +325,15 @@ export class UserDataProfileManagementService
 				),
 			);
 		}
+
 		await this.userDataProfilesService.removeProfile(profile);
+
 		this.telemetryService.publicLog2<
 			ProfileManagementActionExecutedEvent,
 			ProfileManagementActionExecutedClassification
 		>("profileManagementActionExecuted", { id: "removeProfile" });
 	}
+
 	async switchProfile(profile: IUserDataProfile): Promise<void> {
 		if (
 			!this.userDataProfilesService.profiles.some(
@@ -310,9 +342,11 @@ export class UserDataProfileManagementService
 		) {
 			throw new Error(`Profile ${profile.name} does not exist`);
 		}
+
 		if (this.userDataProfileService.currentProfile.id === profile.id) {
 			return;
 		}
+
 		const workspaceUri = this.getWorkspaceUri();
 
 		if (
@@ -323,13 +357,16 @@ export class UserDataProfileManagementService
 		) {
 			return;
 		}
+
 		const workspaceIdentifier = toWorkspaceIdentifier(
 			this.workspaceContextService.getWorkspace(),
 		);
+
 		await this.userDataProfilesService.setProfileForWorkspace(
 			workspaceIdentifier,
 			profile,
 		);
+
 		this.telemetryService.publicLog2<
 			ProfileManagementActionExecutedEvent,
 			ProfileManagementActionExecutedClassification
@@ -339,6 +376,7 @@ export class UserDataProfileManagementService
 			await this.changeCurrentProfile(profile);
 		}
 	}
+
 	async getBuiltinProfileTemplates(): Promise<IProfileTemplateInfo[]> {
 		if (this.productService.profileTemplatesUrl) {
 			try {
@@ -364,8 +402,10 @@ export class UserDataProfileManagementService
 				this.logService.error(error);
 			}
 		}
+
 		return [];
 	}
+
 	private async changeCurrentProfile(
 		profile: IUserDataProfile,
 		reloadMessage?: string,
@@ -401,6 +441,7 @@ export class UserDataProfileManagementService
 							this.userDataProfileService.currentProfile,
 						);
 					}
+
 					throw new CancellationError();
 				}
 			}

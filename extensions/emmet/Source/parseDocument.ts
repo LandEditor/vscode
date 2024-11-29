@@ -11,6 +11,7 @@ import { isStyleSheet } from "./util";
 
 type Pair<K, V> = {
 	key: K;
+
 	value: V;
 };
 // Map(filename, Pair(fileVersion, rootNodeOfParsedContent))
@@ -31,6 +32,7 @@ export function getRootNode(
 			return result.value;
 		}
 	}
+
 	const parseContent = isStyleSheet(document.languageId)
 		? parseStylesheet
 		: parse;
@@ -40,14 +42,17 @@ export function getRootNode(
 	if (useCache) {
 		_parseCache.set(key, { key: documentVersion, value: rootNode });
 	}
+
 	return rootNode;
 }
 export function addFileToParseCache(document: TextDocument) {
 	const filename = document.uri.toString();
+
 	_parseCache.set(filename, undefined);
 }
 export function removeFileFromParseCache(document: TextDocument) {
 	const filename = document.uri.toString();
+
 	_parseCache.delete(filename);
 }
 export function clearParseCache() {

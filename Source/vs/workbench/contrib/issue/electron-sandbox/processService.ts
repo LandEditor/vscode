@@ -50,6 +50,7 @@ export class ProcessService implements IWorkbenchProcessService {
 		@IProductService
 		private readonly productService: IProductService,
 	) {}
+
 	openProcessExplorer(): Promise<void> {
 		const theme = this.themeService.getColorTheme();
 

@@ -40,28 +40,41 @@ export interface INativeWorkbenchEnvironmentService
 	// --- Window
 	readonly window: {
 		id: number;
+
 		handle?: VSBuffer;
+
 		colorScheme: IColorScheme;
+
 		maximized?: boolean;
+
 		accessibilitySupport?: boolean;
+
 		isInitialStartup?: boolean;
+
 		isCodeCaching?: boolean;
+
 		perfMarks: PerformanceMark[];
 	};
 
 	// --- Main
 	readonly mainPid: number;
+
 	readonly os: IOSConfiguration;
+
 	readonly machineId: string;
+
 	readonly sqmId: string;
+
 	readonly devDeviceId: string;
 
 	// --- Paths
 	readonly execPath: string;
+
 	readonly backupPath?: string;
 
 	// --- Development
 	readonly crashReporterDirectory?: string;
+
 	readonly crashReporterId?: string;
 
 	// --- Editors to --wait

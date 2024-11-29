@@ -9,6 +9,7 @@ type MessageEvent = {
 };
 declare const globalThis: {
 	postMessage: (message: any) => void;
+
 	onmessage: (event: MessageEvent) => void;
 };
 
@@ -17,12 +18,14 @@ function initialize(factory: IRequestHandlerFactory) {
 	if (initialized) {
 		return;
 	}
+
 	initialized = true;
 
 	const simpleWorker = new SimpleWorkerServer(
 		(msg) => globalThis.postMessage(msg),
 		(workerServer) => factory(workerServer),
 	);
+
 	globalThis.onmessage = (e: MessageEvent) => {
 		simpleWorker.onmessage(e.data);
 	};

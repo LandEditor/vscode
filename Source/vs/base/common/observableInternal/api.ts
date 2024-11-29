@@ -10,6 +10,7 @@ import { LazyObservableValue } from "./lazyObservableValue.js";
 export function observableValueOpts<T, TChange = void>(
 	options: IDebugNameData & {
 		equalsFn?: EqualityComparer<T>;
+
 		lazy?: boolean;
 	},
 	initialValue: T,
@@ -21,6 +22,7 @@ export function observableValueOpts<T, TChange = void>(
 			options.equalsFn ?? strictEquals,
 		);
 	}
+
 	return new ObservableValue(
 		new DebugNameData(options.owner, options.debugName, undefined),
 		initialValue,

@@ -37,7 +37,9 @@ import { IFilesConfiguration, SortOrder } from "./files.js";
 
 export class ExplorerModel implements IDisposable {
 	private _roots!: ExplorerItem[];
+
 	private _listener: IDisposable;
+
 	private readonly _onDidChangeRoots = new Emitter<void>();
 
 	constructor(
@@ -70,6 +72,7 @@ export class ExplorerModel implements IDisposable {
 
 		this._listener = this.contextService.onDidChangeWorkspaceFolders(() => {
 			setRoots();
+
 			this._onDidChangeRoots.fire();
 		});
 	}
@@ -120,9 +123,11 @@ export class ExplorerModel implements IDisposable {
 export class ExplorerItem {
 	_isDirectoryResolved: boolean; // used in tests
 	public error: Error | undefined = undefined;
+
 	private _isExcluded = false;
 
 	public nestedParent: ExplorerItem | undefined;
+
 	public nestedChildren: ExplorerItem[] | undefined;
 
 	constructor(
@@ -146,6 +151,7 @@ export class ExplorerItem {
 		if (this._isExcluded) {
 			return true;
 		}
+
 		if (!this._parent) {
 			return false;
 		}
@@ -221,7 +227,9 @@ export class ExplorerItem {
 	private updateName(value: string): void {
 		// Re-add to parent since the parent has a name map to children and the name might have changed
 		this._parent?.removeChild(this);
+
 		this._name = value;
+
 		this._parent?.addChild(this);
 	}
 
@@ -290,6 +298,7 @@ export class ExplorerItem {
 						stat,
 						resolveTo,
 					);
+
 					stat.addChild(child);
 				}
 			}
@@ -325,16 +334,22 @@ export class ExplorerItem {
 		if (!local.isRoot) {
 			local.updateName(disk.name);
 		}
+
 		local._isDirectory = disk.isDirectory;
+
 		local._mtime = disk.mtime;
+
 		local._isDirectoryResolved = disk._isDirectoryResolved;
+
 		local._isSymbolicLink = disk.isSymbolicLink;
+
 		local.error = disk.error;
 
 		// Merge Children if resolved
 		if (mergingDirectories && disk._isDirectoryResolved) {
 			// Map resource => stat
 			const oldLocalChildren = new ResourceMap<ExplorerItem>();
+
 			local.children.forEach((child) => {
 				oldLocalChildren.set(child.resource, child);
 			});
@@ -353,7 +368,9 @@ export class ExplorerItem {
 						diskChild,
 						formerLocalChild,
 					);
+
 					local.addChild(formerLocalChild);
+
 					oldLocalChildren.delete(diskChild.resource);
 				}
 
@@ -377,7 +394,9 @@ export class ExplorerItem {
 	addChild(child: ExplorerItem): void {
 		// Inherit some parent properties to child
 		child._parent = this;
+
 		child.updateResource(false);
+
 		this.children.set(this.getPlatformAwareName(child.name), child);
 	}
 
@@ -402,6 +421,7 @@ export class ExplorerItem {
 				// Resolve metadata only when the mtime is needed since this can be expensive
 				// Mtime is only used when the sort order is 'modified'
 				const resolveMetadata = sortOrder === SortOrder.Modified;
+
 				this.error = undefined;
 
 				try {
@@ -417,12 +437,14 @@ export class ExplorerItem {
 						stat,
 						this,
 					);
+
 					ExplorerItem.mergeLocalWithDisk(resolved, this);
 				} catch (e) {
 					this.error = e;
 
 					throw e;
 				}
+
 				this._isDirectoryResolved = true;
 			}
 
@@ -458,9 +480,12 @@ export class ExplorerItem {
 							const child = assertIsDefined(
 								this.children.get(name),
 							);
+
 							fileEntryItem.nestedChildren.push(child);
+
 							child.nestedParent = fileEntryItem;
 						}
+
 						items.push(fileEntryItem);
 					} else {
 						fileEntryItem.nestedChildren = undefined;
@@ -475,11 +500,13 @@ export class ExplorerItem {
 					items.push(child);
 				});
 			}
+
 			return items;
 		})();
 	}
 
 	private _fileNester: ExplorerFileNestingTrie | undefined;
+
 	private get fileNester(): ExplorerFileNestingTrie {
 		if (!this.root._fileNester) {
 			const nestingConfig =
@@ -515,6 +542,7 @@ export class ExplorerItem {
 
 			this.root._fileNester = new ExplorerFileNestingTrie(patterns);
 		}
+
 		return this.root._fileNester;
 	}
 
@@ -523,13 +551,17 @@ export class ExplorerItem {
 	 */
 	removeChild(child: ExplorerItem): void {
 		this.nestedChildren = undefined;
+
 		this.children.delete(this.getPlatformAwareName(child.name));
 	}
 
 	forgetChildren(): void {
 		this.children.clear();
+
 		this.nestedChildren = undefined;
+
 		this._isDirectoryResolved = false;
+
 		this._fileNester = undefined;
 	}
 
@@ -547,9 +579,12 @@ export class ExplorerItem {
 	 */
 	move(newParent: ExplorerItem): void {
 		this.nestedParent?.removeChild(this);
+
 		this._parent?.removeChild(this);
+
 		newParent.removeChild(this); // make sure to remove any previous version of the file if any
 		newParent.addChild(this);
+
 		this.updateResource(true);
 	}
 
@@ -574,6 +609,7 @@ export class ExplorerItem {
 	rename(renamedStat: { name: string; mtime?: number }): void {
 		// Merge a subset of Properties that can change on rename
 		this.updateName(renamedStat.name);
+
 		this._mtime = renamedStat.mtime;
 
 		// Update Paths including children
@@ -647,17 +683,20 @@ export class ExplorerItem {
 
 	// Find
 	private markedAsFindResult = false;
+
 	isMarkedAsFiltered(): boolean {
 		return this.markedAsFindResult;
 	}
 
 	markItemAndParentsAsFiltered(): void {
 		this.markedAsFindResult = true;
+
 		this.parent?.markItemAndParentsAsFiltered();
 	}
 
 	unmarkItemAndChildren(): void {
 		this.markedAsFindResult = false;
+
 		this.children.forEach((child) => child.unmarkItemAndChildren());
 	}
 }
@@ -678,6 +717,7 @@ export class NewExplorerItem extends ExplorerItem {
 			parent,
 			isDirectory,
 		);
+
 		this._isDirectoryResolved = true;
 	}
 }

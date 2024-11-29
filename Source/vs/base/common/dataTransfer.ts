@@ -9,13 +9,18 @@ import { generateUuid } from "./uuid.js";
 
 export interface IDataTransferFile {
 	readonly id: string;
+
 	readonly name: string;
+
 	readonly uri?: URI;
+
 	data(): Promise<Uint8Array>;
 }
 export interface IDataTransferItem {
 	asString(): Thenable<string>;
+
 	asFile(): IDataTransferFile | undefined;
+
 	value: any;
 }
 export function createStringDataTransferItem(
@@ -70,25 +75,31 @@ export interface IReadonlyVSDataTransfer
 }
 export class VSDataTransfer implements IReadonlyVSDataTransfer {
 	private readonly _entries = new Map<string, IDataTransferItem[]>();
+
 	public get size(): number {
 		let size = 0;
 
 		for (const _ of this._entries) {
 			size++;
 		}
+
 		return size;
 	}
+
 	public has(mimeType: string): boolean {
 		return this._entries.has(this.toKey(mimeType));
 	}
+
 	public matches(pattern: string): boolean {
 		const mimes = [...this._entries.keys()];
 
 		if (Iterable.some(this, ([_, item]) => item.asFile())) {
 			mimes.push("files");
 		}
+
 		return matchesMimeType_normalized(normalizeMimeType(pattern), mimes);
 	}
+
 	public get(mimeType: string): IDataTransferItem | undefined {
 		return this._entries.get(this.toKey(mimeType))?.[0];
 	}
@@ -134,6 +145,7 @@ export class VSDataTransfer implements IReadonlyVSDataTransfer {
 			}
 		}
 	}
+
 	private toKey(mimeType: string): string {
 		return normalizeMimeType(mimeType);
 	}
@@ -168,11 +180,13 @@ function matchesMimeType_normalized(
 	if (!wildcard) {
 		return false;
 	}
+
 	const [_, type, subtype] = wildcard;
 
 	if (subtype === "*") {
 		return normalizedMimeTypes.some((mime) => mime.startsWith(type + "/"));
 	}
+
 	return false;
 }
 export const UriList = Object.freeze({

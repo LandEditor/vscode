@@ -12,9 +12,13 @@ import { ResolvedKeybindingItem } from "../../../../platform/keybinding/common/r
 
 export interface IUserKeybindingItem {
 	keybinding: Keybinding | null;
+
 	command: string | null;
+
 	commandArgs?: any;
+
 	when: ContextKeyExpression | undefined;
+
 	_sourceKey:
 		| string
 		| undefined /** captures `key` field from `keybindings.json`; `this.keybinding !== null` implies `_sourceKey !== null` */;
@@ -27,9 +31,11 @@ export class KeybindingIO {
 		if (!item.resolvedKeybinding) {
 			return;
 		}
+
 		const quotedSerializedKeybinding = JSON.stringify(
 			item.resolvedKeybinding.getUserSettingsLabel(),
 		);
+
 		out.write(
 			`{ "key": ${rightPaddedString(quotedSerializedKeybinding + ",", 25)} "command": `,
 		);
@@ -42,22 +48,29 @@ export class KeybindingIO {
 
 		if (quotedSerializedWhen.length > 0) {
 			out.write(`${quotedSerializeCommand},`);
+
 			out.writeLine();
+
 			out.write(
 				`                                     "when": ${quotedSerializedWhen}`,
 			);
 		} else {
 			out.write(`${quotedSerializeCommand}`);
 		}
+
 		if (item.commandArgs) {
 			out.write(",");
+
 			out.writeLine();
+
 			out.write(
 				`                                     "args": ${JSON.stringify(item.commandArgs)}`,
 			);
 		}
+
 		out.write(" }");
 	}
+
 	public static readUserKeybindingItem(input: Object): IUserKeybindingItem {
 		const keybinding =
 			"key" in input && typeof input.key === "string"
@@ -95,18 +108,24 @@ function rightPaddedString(str: string, minChars: number): string {
 	if (str.length < minChars) {
 		return str + new Array(minChars - str.length).join(" ");
 	}
+
 	return str;
 }
 export class OutputBuilder {
 	private _lines: string[] = [];
+
 	private _currentLine: string = "";
+
 	write(str: string): void {
 		this._currentLine += str;
 	}
+
 	writeLine(str: string = ""): void {
 		this._lines.push(this._currentLine + str);
+
 		this._currentLine = "";
 	}
+
 	toString(): string {
 		this.writeLine();
 

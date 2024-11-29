@@ -49,9 +49,13 @@ export interface ILogger extends IDisposable {
 	setLevel(level: LogLevel): void;
 
 	trace(message: string, ...args: any[]): void;
+
 	debug(message: string, ...args: any[]): void;
+
 	info(message: string, ...args: any[]): void;
+
 	warn(message: string, ...args: any[]): void;
+
 	error(message: string | Error, ...args: any[]): void;
 
 	/**
@@ -64,22 +68,27 @@ export function log(logger: ILogger, level: LogLevel, message: string): void {
 	switch (level) {
 		case LogLevel.Trace:
 			logger.trace(message);
+
 			break;
 
 		case LogLevel.Debug:
 			logger.debug(message);
+
 			break;
 
 		case LogLevel.Info:
 			logger.info(message);
+
 			break;
 
 		case LogLevel.Warning:
 			logger.warn(message);
+
 			break;
 
 		case LogLevel.Error:
 			logger.error(message);
+
 			break;
 
 		case LogLevel.Off:
@@ -160,16 +169,23 @@ export interface ILoggerOptions {
 
 export interface ILoggerResource {
 	readonly resource: URI;
+
 	readonly id: string;
+
 	readonly name?: string;
+
 	readonly logLevel?: LogLevel;
+
 	readonly hidden?: boolean;
+
 	readonly when?: string;
+
 	readonly extensionId?: string;
 }
 
 export type DidChangeLoggersEvent = {
 	readonly added: Iterable<ILoggerResource>;
+
 	readonly removed: Iterable<ILoggerResource>;
 };
 
@@ -259,15 +275,18 @@ export interface ILoggerService {
 
 export abstract class AbstractLogger extends Disposable implements ILogger {
 	private level: LogLevel = DEFAULT_LOG_LEVEL;
+
 	private readonly _onDidChangeLogLevel: Emitter<LogLevel> = this._register(
 		new Emitter<LogLevel>(),
 	);
+
 	readonly onDidChangeLogLevel: Event<LogLevel> =
 		this._onDidChangeLogLevel.event;
 
 	setLevel(level: LogLevel): void {
 		if (this.level !== level) {
 			this.level = level;
+
 			this._onDidChangeLogLevel.fire(this.level);
 		}
 	}
@@ -284,14 +303,20 @@ export abstract class AbstractLogger extends Disposable implements ILogger {
 		if (this._store.isDisposed) {
 			return false;
 		}
+
 		return this.checkLogLevel(level);
 	}
 
 	abstract trace(message: string, ...args: any[]): void;
+
 	abstract debug(message: string, ...args: any[]): void;
+
 	abstract info(message: string, ...args: any[]): void;
+
 	abstract warn(message: string, ...args: any[]): void;
+
 	abstract error(message: string | Error, ...args: any[]): void;
+
 	abstract flush(): void;
 }
 
@@ -335,7 +360,9 @@ export abstract class AbstractMessageLogger
 		if (this.canLog(LogLevel.Error)) {
 			if (message instanceof Error) {
 				const array = Array.prototype.slice.call(arguments) as any[];
+
 				array[0] = message.stack;
+
 				this.log(LogLevel.Error, format(array));
 			} else {
 				this.log(LogLevel.Error, format([message, ...args]));
@@ -353,7 +380,9 @@ export class ConsoleMainLogger extends AbstractLogger implements ILogger {
 
 	constructor(logLevel: LogLevel = DEFAULT_LOG_LEVEL) {
 		super();
+
 		this.setLevel(logLevel);
+
 		this.useColors = !isWindows;
 	}
 
@@ -426,6 +455,7 @@ export class ConsoleLogger extends AbstractLogger implements ILogger {
 		private readonly useColors: boolean = true,
 	) {
 		super();
+
 		this.setLevel(logLevel);
 	}
 
@@ -497,6 +527,7 @@ export class AdapterLogger extends AbstractLogger implements ILogger {
 		logLevel: LogLevel = DEFAULT_LOG_LEVEL,
 	) {
 		super();
+
 		this.setLevel(logLevel);
 	}
 
@@ -571,6 +602,7 @@ export class MultiplexLogger extends AbstractLogger implements ILogger {
 		for (const logger of this.loggers) {
 			logger.setLevel(level);
 		}
+
 		super.setLevel(level);
 	}
 
@@ -614,12 +646,14 @@ export class MultiplexLogger extends AbstractLogger implements ILogger {
 		for (const logger of this.loggers) {
 			logger.dispose();
 		}
+
 		super.dispose();
 	}
 }
 
 type LoggerEntry = {
 	logger: ILogger | undefined;
+
 	info: Mutable<ILoggerResource>;
 };
 
@@ -634,16 +668,19 @@ export abstract class AbstractLoggerService
 	private _onDidChangeLoggers = this._register(
 		new Emitter<{ added: ILoggerResource[]; removed: ILoggerResource[] }>(),
 	);
+
 	readonly onDidChangeLoggers = this._onDidChangeLoggers.event;
 
 	private _onDidChangeLogLevel = this._register(
 		new Emitter<LogLevel | [URI, LogLevel]>(),
 	);
+
 	readonly onDidChangeLogLevel = this._onDidChangeLogLevel.event;
 
 	private _onDidChangeVisibility = this._register(
 		new Emitter<[URI, boolean]>(),
 	);
+
 	readonly onDidChangeVisibility = this._onDidChangeVisibility.event;
 
 	constructor(
@@ -671,6 +708,7 @@ export abstract class AbstractLoggerService
 				(logger) => logger.info.id === resourceOrId,
 			);
 		}
+
 		return this._loggers.get(resourceOrId);
 	}
 
@@ -700,6 +738,7 @@ export abstract class AbstractLoggerService
 				{ ...options, id },
 			);
 		}
+
 		const loggerEntry: LoggerEntry = {
 			logger,
 			info: {
@@ -712,6 +751,7 @@ export abstract class AbstractLoggerService
 				when: options?.when,
 			},
 		};
+
 		this.registerLogger(loggerEntry.info);
 		// TODO: @sandy081 Remove this once registerLogger can take ILogger
 		this._loggers.set(resource, loggerEntry);
@@ -740,8 +780,11 @@ export abstract class AbstractLoggerService
 			if (logger && logLevel !== logger.info.logLevel) {
 				logger.info.logLevel =
 					logLevel === this.logLevel ? undefined : logLevel;
+
 				logger.logger?.setLevel(logLevel);
+
 				this._loggers.set(logger.info.resource, logger);
+
 				this._onDidChangeLogLevel.fire([resource, logLevel]);
 			}
 		} else {
@@ -752,6 +795,7 @@ export abstract class AbstractLoggerService
 					logger.logger?.setLevel(this.logLevel);
 				}
 			}
+
 			this._onDidChangeLogLevel.fire(this.logLevel);
 		}
 	}
@@ -761,7 +805,9 @@ export abstract class AbstractLoggerService
 
 		if (logger && visibility !== !logger.info.hidden) {
 			logger.info.hidden = !visibility;
+
 			this._loggers.set(logger.info.resource, logger);
+
 			this._onDidChangeVisibility.fire([
 				logger.info.resource,
 				visibility,
@@ -775,6 +821,7 @@ export abstract class AbstractLoggerService
 		if (resource) {
 			logLevel = this._loggers.get(resource)?.info.logLevel;
 		}
+
 		return logLevel ?? this.logLevel;
 	}
 
@@ -790,6 +837,7 @@ export abstract class AbstractLoggerService
 				info: resource,
 				logger: undefined,
 			});
+
 			this._onDidChangeLoggers.fire({ added: [resource], removed: [] });
 		}
 	}
@@ -801,7 +849,9 @@ export abstract class AbstractLoggerService
 			if (existing.logger) {
 				existing.logger.dispose();
 			}
+
 			this._loggers.delete(resource);
+
 			this._onDidChangeLoggers.fire({
 				added: [],
 				removed: [existing.info],
@@ -821,6 +871,7 @@ export abstract class AbstractLoggerService
 
 	override dispose(): void {
 		this._loggers.forEach((logger) => logger.logger?.dispose());
+
 		this._loggers.clear();
 
 		super.dispose();
@@ -838,16 +889,25 @@ export class NullLogger implements ILogger {
 		.event;
 
 	setLevel(level: LogLevel): void {}
+
 	getLevel(): LogLevel {
 		return LogLevel.Info;
 	}
+
 	trace(message: string, ...args: any[]): void {}
+
 	debug(message: string, ...args: any[]): void {}
+
 	info(message: string, ...args: any[]): void {}
+
 	warn(message: string, ...args: any[]): void {}
+
 	error(message: string | Error, ...args: any[]): void {}
+
 	critical(message: string | Error, ...args: any[]): void {}
+
 	dispose(): void {}
+
 	flush(): void {}
 }
 
@@ -859,6 +919,7 @@ export function getLogLevel(environmentService: IEnvironmentService): LogLevel {
 	if (environmentService.verbose) {
 		return LogLevel.Trace;
 	}
+
 	if (typeof environmentService.logLevel === "string") {
 		const logLevel = parseLogLevel(
 			environmentService.logLevel.toLowerCase(),
@@ -868,6 +929,7 @@ export function getLogLevel(environmentService: IEnvironmentService): LogLevel {
 			return logLevel;
 		}
 	}
+
 	return DEFAULT_LOG_LEVEL;
 }
 
@@ -943,6 +1005,7 @@ export function parseLogLevel(logLevel: string): LogLevel | undefined {
 		case "off":
 			return LogLevel.Off;
 	}
+
 	return undefined;
 }
 

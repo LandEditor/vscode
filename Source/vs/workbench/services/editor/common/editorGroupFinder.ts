@@ -103,6 +103,7 @@ export function findGroup(
 			),
 		);
 	}
+
 	return handleGroupActivation(
 		group,
 		editor,
@@ -138,6 +139,7 @@ function handleGroupActivation(
 		// into the same side group and not cause a group to be created each time.
 		activation = EditorActivation.ACTIVATE;
 	}
+
 	return [group, activation];
 }
 function doFindGroup(
@@ -174,6 +176,7 @@ function doFindGroup(
 				direction,
 			);
 		}
+
 		group = candidateGroup;
 	}
 	// Group: Aux Window
@@ -219,10 +222,12 @@ function doFindGroup(
 						if (!groupWithInputOpened) {
 							groupWithInputOpened = group;
 						}
+
 						if (!groupWithInputActive && group.isActive(editor)) {
 							groupWithInputActive = group;
 						}
 					}
+
 					if (groupWithInputOpened && groupWithInputActive) {
 						break; // we found all groups we wanted
 					}
@@ -246,10 +251,12 @@ function doFindGroup(
 				if (isGroupLockedForEditor(group, editor)) {
 					continue;
 				}
+
 				candidateGroup = group;
 
 				break;
 			}
+
 			if (isGroupLockedForEditor(candidateGroup, editor)) {
 				// Group is still locked, so we have to create a new
 				// group to the side of the candidate group
@@ -266,6 +273,7 @@ function doFindGroup(
 			group = candidateGroup;
 		}
 	}
+
 	return group;
 }
 function isGroupLockedForEditor(
@@ -276,6 +284,7 @@ function isGroupLockedForEditor(
 		// only relevant for locked editor groups
 		return false;
 	}
+
 	if (isOpened(group, editor)) {
 		// special case: the locked group contains
 		// the provided editor. in that case we do not want
@@ -292,6 +301,7 @@ function isActive(
 	if (!group.activeEditor) {
 		return false;
 	}
+
 	return group.activeEditor.matches(editor);
 }
 function isOpened(
@@ -303,5 +313,6 @@ function isOpened(
 			return true;
 		}
 	}
+
 	return false;
 }

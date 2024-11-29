@@ -19,6 +19,7 @@ Registry.as<IConfigurationMigrationRegistry>(
 			} else if (value === false) {
 				return { value: "off" };
 			}
+
 			return [];
 		},
 	},

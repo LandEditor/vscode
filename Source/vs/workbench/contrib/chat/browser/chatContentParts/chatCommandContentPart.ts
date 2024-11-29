@@ -31,6 +31,7 @@ export class ChatCommandButtonContentPart
 		private readonly commandService: ICommandService,
 	) {
 		super();
+
 		this.domNode = $(".chat-command-button");
 
 		const enabled =
@@ -50,7 +51,9 @@ export class ChatCommandButtonContentPart
 				title: tooltip,
 			}),
 		);
+
 		button.label = commandButton.command.title;
+
 		button.enabled = enabled;
 		// TODO still need telemetry for command buttons
 		this._register(
@@ -62,6 +65,7 @@ export class ChatCommandButtonContentPart
 			),
 		);
 	}
+
 	hasSameContent(other: IChatProgressRenderableResponseContent): boolean {
 		// No other change allowed for this content type
 		return other.kind === "command";

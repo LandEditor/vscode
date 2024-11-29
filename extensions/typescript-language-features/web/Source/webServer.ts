@@ -24,7 +24,9 @@ async function initializeSession(
 	extensionUri: URI,
 	ports: {
 		tsserver: MessagePort;
+
 		sync: MessagePort;
+
 		watcher: MessagePort;
 	},
 ): Promise<void> {
@@ -39,9 +41,13 @@ async function initializeSession(
 
 	const unknownServerMode =
 		typeof modeOrUnknown === "string" ? modeOrUnknown : undefined;
+
 	logger.tsLogger.info(`Starting TS Server`);
+
 	logger.tsLogger.info(`Version: 0.0.0`);
+
 	logger.tsLogger.info(`Arguments: ${args.join(" ")}`);
+
 	logger.tsLogger.info(
 		`ServerMode: ${serverMode} unknownServerMode: ${unknownServerMode}`,
 	);
@@ -75,6 +81,7 @@ async function initializeSession(
 	);
 
 	setSys(sys);
+
 	startWorkerSession(
 		ts,
 		sys,
@@ -131,6 +138,7 @@ const listener = async (e: any) => {
 			const extensionUri = URI.from(e.data.extensionUri);
 
 			const [sync, tsserver, watcher] = e.ports as MessagePort[];
+
 			await initializeSession(args, extensionUri, {
 				sync,
 				tsserver,
@@ -142,8 +150,10 @@ const listener = async (e: any) => {
 					JSON.stringify(e.data),
 			);
 		}
+
 		return;
 	}
+
 	console.error(`unexpected message on main channel: ${JSON.stringify(e)}`);
 };
 addEventListener("message", listener);

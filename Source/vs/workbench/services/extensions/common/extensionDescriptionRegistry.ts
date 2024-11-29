@@ -25,6 +25,7 @@ export class DeltaExtensionsResult {
 }
 export interface IReadOnlyExtensionDescriptionRegistry {
 	containsActivationEvent(activationEvent: string): boolean;
+
 	containsExtension(extensionId: ExtensionIdentifier): boolean;
 
 	getExtensionDescriptionsForActivationEvent(
@@ -58,6 +59,7 @@ export class ExtensionDescriptionRegistry
 			// I have this extension
 			return false;
 		}
+
 		const extensionDescription =
 			globalRegistry.getExtensionDescription(extensionId);
 
@@ -65,20 +67,29 @@ export class ExtensionDescriptionRegistry
 			// unknown extension
 			return false;
 		}
+
 		if (
 			(extensionDescription.main || extensionDescription.browser) &&
 			extensionDescription.api === "none"
 		) {
 			return true;
 		}
+
 		return false;
 	}
+
 	private readonly _onDidChange = new Emitter<void>();
+
 	public readonly onDidChange = this._onDidChange.event;
+
 	private _versionId: number = 0;
+
 	private _extensionDescriptions: IExtensionDescription[];
+
 	private _extensionsMap!: ExtensionIdentifierMap<IExtensionDescription>;
+
 	private _extensionsArr!: IExtensionDescription[];
+
 	private _activationMap!: Map<string, IExtensionDescription[]>;
 
 	constructor(
@@ -86,14 +97,19 @@ export class ExtensionDescriptionRegistry
 		extensionDescriptions: IExtensionDescription[],
 	) {
 		this._extensionDescriptions = extensionDescriptions;
+
 		this._initialize();
 	}
+
 	private _initialize(): void {
 		// Ensure extensions are stored in the order: builtin, user, under development
 		this._extensionDescriptions.sort(extensionCmp);
+
 		this._extensionsMap =
 			new ExtensionIdentifierMap<IExtensionDescription>();
+
 		this._extensionsArr = [];
+
 		this._activationMap = new Map<string, IExtensionDescription[]>();
 
 		for (const extensionDescription of this._extensionDescriptions) {
@@ -107,10 +123,12 @@ export class ExtensionDescriptionRegistry
 
 				continue;
 			}
+
 			this._extensionsMap.set(
 				extensionDescription.identifier,
 				extensionDescription,
 			);
+
 			this._extensionsArr.push(extensionDescription);
 
 			const activationEvents =
@@ -122,24 +140,30 @@ export class ExtensionDescriptionRegistry
 				if (!this._activationMap.has(activationEvent)) {
 					this._activationMap.set(activationEvent, []);
 				}
+
 				this._activationMap
 					.get(activationEvent)!
 					.push(extensionDescription);
 			}
 		}
 	}
+
 	public set(extensionDescriptions: IExtensionDescription[]): {
 		versionId: number;
 	} {
 		this._extensionDescriptions = extensionDescriptions;
+
 		this._initialize();
+
 		this._versionId++;
+
 		this._onDidChange.fire(undefined);
 
 		return {
 			versionId: this._versionId,
 		};
 	}
+
 	public deltaExtensions(
 		toAdd: IExtensionDescription[],
 		toRemove: ExtensionIdentifier[],
@@ -156,31 +180,42 @@ export class ExtensionDescriptionRegistry
 		const looping = ExtensionDescriptionRegistry._findLoopingExtensions(
 			this._extensionDescriptions,
 		);
+
 		this._extensionDescriptions = removeExtensions(
 			this._extensionDescriptions,
 			looping.map((ext) => ext.identifier),
 		);
+
 		this._initialize();
+
 		this._versionId++;
+
 		this._onDidChange.fire(undefined);
 
 		return new DeltaExtensionsResult(this._versionId, looping);
 	}
+
 	private static _findLoopingExtensions(
 		extensionDescriptions: IExtensionDescription[],
 	): IExtensionDescription[] {
 		const G = new (class {
 			private _arcs = new Map<string, string[]>();
+
 			private _nodesSet = new Set<string>();
+
 			private _nodesArr: string[] = [];
+
 			addNode(id: string): void {
 				if (!this._nodesSet.has(id)) {
 					this._nodesSet.add(id);
+
 					this._nodesArr.push(id);
 				}
 			}
+
 			addArc(from: string, to: string): void {
 				this.addNode(from);
+
 				this.addNode(to);
 
 				if (this._arcs.has(from)) {
@@ -189,12 +224,15 @@ export class ExtensionDescriptionRegistry
 					this._arcs.set(from, [to]);
 				}
 			}
+
 			getArcs(id: string): string[] {
 				if (this._arcs.has(id)) {
 					return this._arcs.get(id)!;
 				}
+
 				return [];
 			}
+
 			hasOnlyGoodArcs(id: string, good: Set<string>): boolean {
 				const dependencies = G.getArcs(id);
 
@@ -203,8 +241,10 @@ export class ExtensionDescriptionRegistry
 						return false;
 					}
 				}
+
 				return true;
 			}
+
 			getNodes(): string[] {
 				return this._nodesArr;
 			}
@@ -228,6 +268,7 @@ export class ExtensionDescriptionRegistry
 		}
 		// initialize with all extensions with no dependencies.
 		const good = new Set<string>();
+
 		G.getNodes()
 			.filter((id) => G.getArcs(id).length === 0)
 			.forEach((id) => good.add(id));
@@ -244,8 +285,11 @@ export class ExtensionDescriptionRegistry
 
 				if (G.hasOnlyGoodArcs(id, good)) {
 					nodes.splice(i, 1);
+
 					i--;
+
 					good.add(id);
+
 					madeProgress = true;
 				}
 			}
@@ -253,12 +297,15 @@ export class ExtensionDescriptionRegistry
 		// The remaining nodes are bad and have loops
 		return nodes.map((id) => descs.get(id)!);
 	}
+
 	public containsActivationEvent(activationEvent: string): boolean {
 		return this._activationMap.has(activationEvent);
 	}
+
 	public containsExtension(extensionId: ExtensionIdentifier): boolean {
 		return this._extensionsMap.has(extensionId);
 	}
+
 	public getExtensionDescriptionsForActivationEvent(
 		activationEvent: string,
 	): IExtensionDescription[] {
@@ -266,15 +313,18 @@ export class ExtensionDescriptionRegistry
 
 		return extensions ? extensions.slice(0) : [];
 	}
+
 	public getAllExtensionDescriptions(): IExtensionDescription[] {
 		return this._extensionsArr.slice(0);
 	}
+
 	public getSnapshot(): ExtensionDescriptionRegistrySnapshot {
 		return new ExtensionDescriptionRegistrySnapshot(
 			this._versionId,
 			this.getAllExtensionDescriptions(),
 		);
 	}
+
 	public getExtensionDescription(
 		extensionId: ExtensionIdentifier | string,
 	): IExtensionDescription | undefined {
@@ -282,6 +332,7 @@ export class ExtensionDescriptionRegistry
 
 		return extension ? extension : undefined;
 	}
+
 	public getExtensionDescriptionByUUID(
 		uuid: string,
 	): IExtensionDescription | undefined {
@@ -290,8 +341,10 @@ export class ExtensionDescriptionRegistry
 				return extensionDescription;
 			}
 		}
+
 		return undefined;
 	}
+
 	public getExtensionDescriptionByIdOrUUID(
 		extensionId: ExtensionIdentifier | string,
 		uuid: string | undefined,
@@ -315,6 +368,7 @@ export class LockableExtensionDescriptionRegistry
 	implements IReadOnlyExtensionDescriptionRegistry
 {
 	private readonly _actual: ExtensionDescriptionRegistry;
+
 	private readonly _lock = new Lock();
 
 	constructor(activationEventsReader: IActivationEventsReader) {
@@ -323,6 +377,7 @@ export class LockableExtensionDescriptionRegistry
 			[],
 		);
 	}
+
 	public async acquireLock(
 		customerName: string,
 	): Promise<ExtensionDescriptionRegistryLock> {
@@ -330,6 +385,7 @@ export class LockableExtensionDescriptionRegistry
 
 		return new ExtensionDescriptionRegistryLock(this, lock);
 	}
+
 	public deltaExtensions(
 		acquiredLock: ExtensionDescriptionRegistryLock,
 		toAdd: IExtensionDescription[],
@@ -338,14 +394,18 @@ export class LockableExtensionDescriptionRegistry
 		if (!acquiredLock.isAcquiredFor(this)) {
 			throw new Error("Lock is not held");
 		}
+
 		return this._actual.deltaExtensions(toAdd, toRemove);
 	}
+
 	public containsActivationEvent(activationEvent: string): boolean {
 		return this._actual.containsActivationEvent(activationEvent);
 	}
+
 	public containsExtension(extensionId: ExtensionIdentifier): boolean {
 		return this._actual.containsExtension(extensionId);
 	}
+
 	public getExtensionDescriptionsForActivationEvent(
 		activationEvent: string,
 	): IExtensionDescription[] {
@@ -353,22 +413,27 @@ export class LockableExtensionDescriptionRegistry
 			activationEvent,
 		);
 	}
+
 	public getAllExtensionDescriptions(): IExtensionDescription[] {
 		return this._actual.getAllExtensionDescriptions();
 	}
+
 	public getSnapshot(): ExtensionDescriptionRegistrySnapshot {
 		return this._actual.getSnapshot();
 	}
+
 	public getExtensionDescription(
 		extensionId: ExtensionIdentifier | string,
 	): IExtensionDescription | undefined {
 		return this._actual.getExtensionDescription(extensionId);
 	}
+
 	public getExtensionDescriptionByUUID(
 		uuid: string,
 	): IExtensionDescription | undefined {
 		return this._actual.getExtensionDescriptionByUUID(uuid);
 	}
+
 	public getExtensionDescriptionByIdOrUUID(
 		extensionId: ExtensionIdentifier | string,
 		uuid: string | undefined,
@@ -387,8 +452,10 @@ export class ExtensionDescriptionRegistryLock extends Disposable {
 		lock: IDisposable,
 	) {
 		super();
+
 		this._register(lock);
 	}
+
 	public isAcquiredFor(
 		registry: LockableExtensionDescriptionRegistry,
 	): boolean {
@@ -397,37 +464,49 @@ export class ExtensionDescriptionRegistryLock extends Disposable {
 }
 class LockCustomer {
 	public readonly promise: Promise<IDisposable>;
+
 	private readonly _resolve: (value: IDisposable) => void;
 
 	constructor(public readonly name: string) {
 		const withResolvers = promiseWithResolvers<IDisposable>();
+
 		this.promise = withResolvers.promise;
+
 		this._resolve = withResolvers.resolve;
 	}
+
 	resolve(value: IDisposable): void {
 		this._resolve(value);
 	}
 }
 class Lock {
 	private readonly _pendingCustomers: LockCustomer[] = [];
+
 	private _isLocked = false;
+
 	public async acquire(customerName: string): Promise<IDisposable> {
 		const customer = new LockCustomer(customerName);
+
 		this._pendingCustomers.push(customer);
+
 		this._advance();
 
 		return customer.promise;
 	}
+
 	private _advance(): void {
 		if (this._isLocked) {
 			// cannot advance yet
 			return;
 		}
+
 		if (this._pendingCustomers.length === 0) {
 			// no more waiting customers
 			return;
 		}
+
 		const customer = this._pendingCustomers.shift()!;
+
 		this._isLocked = true;
 
 		let customerHoldsLock = true;
@@ -444,11 +523,16 @@ class Lock {
 			if (!customerHoldsLock) {
 				return;
 			}
+
 			clearTimeout(logLongRunningCustomerTimeout);
+
 			customerHoldsLock = false;
+
 			this._isLocked = false;
+
 			this._advance();
 		};
+
 		customer.resolve(toDisposable(releaseLock));
 	}
 }
@@ -485,6 +569,7 @@ function extensionCmp(
 	if (aSortBucket !== bSortBucket) {
 		return aSortBucket - bSortBucket;
 	}
+
 	const aLastSegment = path.posix.basename(a.extensionLocation.path);
 
 	const bLastSegment = path.posix.basename(b.extensionLocation.path);
@@ -492,9 +577,11 @@ function extensionCmp(
 	if (aLastSegment < bLastSegment) {
 		return -1;
 	}
+
 	if (aLastSegment > bLastSegment) {
 		return 1;
 	}
+
 	return 0;
 }
 function removeExtensions(

@@ -18,15 +18,19 @@ import { githubSlugifier } from "./slugify";
 
 export async function activate(context: vscode.ExtensionContext) {
 	const contributions = getMarkdownExtensionContributions(context);
+
 	context.subscriptions.push(contributions);
 
 	const logger = new VsCodeOutputLogger();
+
 	context.subscriptions.push(logger);
 
 	const engine = new MarkdownItEngine(contributions, githubSlugifier, logger);
 
 	const client = await startServer(context, engine);
+
 	context.subscriptions.push(client);
+
 	activateShared(context, client, engine, logger, contributions);
 }
 function startServer(

@@ -97,16 +97,20 @@ export interface IOpenEditorResult {
 export class EditorPanes extends Disposable {
 	//#region Events
 	private readonly _onDidFocus = this._register(new Emitter<void>());
+
 	readonly onDidFocus = this._onDidFocus.event;
+
 	private _onDidChangeSizeConstraints = this._register(
 		new Emitter<
 			| {
 					width: number;
+
 					height: number;
 			  }
 			| undefined
 		>(),
 	);
+
 	readonly onDidChangeSizeConstraints =
 		this._onDidChangeSizeConstraints.event;
 	//#endregion
@@ -116,42 +120,53 @@ export class EditorPanes extends Disposable {
 			DEFAULT_EDITOR_MIN_DIMENSIONS.width
 		);
 	}
+
 	get minimumHeight() {
 		return (
 			this._activeEditorPane?.minimumHeight ??
 			DEFAULT_EDITOR_MIN_DIMENSIONS.height
 		);
 	}
+
 	get maximumWidth() {
 		return (
 			this._activeEditorPane?.maximumWidth ??
 			DEFAULT_EDITOR_MAX_DIMENSIONS.width
 		);
 	}
+
 	get maximumHeight() {
 		return (
 			this._activeEditorPane?.maximumHeight ??
 			DEFAULT_EDITOR_MAX_DIMENSIONS.height
 		);
 	}
+
 	private _activeEditorPane: EditorPane | null = null;
 
 	get activeEditorPane(): IVisibleEditorPane | null {
 		return this._activeEditorPane as IVisibleEditorPane | null;
 	}
+
 	private readonly editorPanes: EditorPane[] = [];
+
 	private readonly mapEditorPaneToPendingSetInput = new Map<
 		EditorPane,
 		Promise<void>
 	>();
+
 	private readonly activeEditorPaneDisposables = this._register(
 		new DisposableStore(),
 	);
+
 	private pagePosition: IDomNodePagePosition | undefined;
+
 	private boundarySashes: IBoundarySashes | undefined;
+
 	private readonly editorOperation = this._register(
 		new LongRunningOperation(this.editorProgressService),
 	);
+
 	private readonly editorPanesRegistry = Registry.as<IEditorPaneRegistry>(
 		EditorExtensions.EditorPane,
 	);
@@ -176,8 +191,10 @@ export class EditorPanes extends Disposable {
 		private readonly hostService: IHostService,
 	) {
 		super();
+
 		this.registerListeners();
 	}
+
 	private registerListeners(): void {
 		this._register(
 			this.workspaceTrustService.onDidChangeTrust(() =>
@@ -185,6 +202,7 @@ export class EditorPanes extends Disposable {
 			),
 		);
 	}
+
 	private onDidChangeWorkspaceTrust() {
 		// If the active editor pane requires workspace trust
 		// we need to re-open it anytime trust changes to
@@ -199,6 +217,7 @@ export class EditorPanes extends Disposable {
 			this.groupView.openEditor(editor, options);
 		}
 	}
+
 	async openEditor(
 		editor: EditorInput,
 		options: IEditorOptions | undefined,
@@ -233,6 +252,7 @@ export class EditorPanes extends Disposable {
 			);
 		}
 	}
+
 	private async doShowError(
 		error: Error,
 		editor: EditorInput,
@@ -263,6 +283,7 @@ export class EditorPanes extends Disposable {
 		if (!isCancellationError(error)) {
 			editorPlaceholderOptions.error = error;
 		}
+
 		return {
 			...(await this.doOpenEditor(
 				ErrorPlaceholderEditor.DESCRIPTOR,
@@ -274,6 +295,7 @@ export class EditorPanes extends Disposable {
 			error,
 		};
 	}
+
 	private async doShowErrorDialog(
 		error: Error,
 		editor: EditorInput,
@@ -288,13 +310,16 @@ export class EditorPanes extends Disposable {
 
 		if (isEditorOpenError(error)) {
 			errorActions = error.actions;
+
 			severity = error.forceSeverity ?? Severity.Error;
 
 			if (error.forceMessage) {
 				message = error.message;
+
 				detail = undefined;
 			}
 		}
+
 		if (!message) {
 			message = localize(
 				"editorOpenErrorDialog",
@@ -302,6 +327,7 @@ export class EditorPanes extends Disposable {
 				editor.getName(),
 			);
 		}
+
 		const buttons: IPromptButton<IAction | undefined>[] = [];
 
 		if (errorActions && errorActions.length > 0) {
@@ -320,6 +346,7 @@ export class EditorPanes extends Disposable {
 				run: () => undefined,
 			});
 		}
+
 		let cancelButton: IPromptCancelButton<undefined> | undefined =
 			undefined;
 
@@ -331,6 +358,7 @@ export class EditorPanes extends Disposable {
 				},
 			};
 		}
+
 		let errorHandled = false; // by default, show placeholder
 		const { result } = await this.dialogService.prompt({
 			type: severity,
@@ -348,10 +376,13 @@ export class EditorPanes extends Disposable {
 					this.dialogService.error(toErrorMessage(error)),
 				);
 			}
+
 			errorHandled = true; // treat custom error action as handled and do not show placeholder
 		}
+
 		return errorHandled;
 	}
+
 	private async doOpenEditor(
 		descriptor: IEditorPaneDescriptor,
 		editor: EditorInput,
@@ -384,15 +415,19 @@ export class EditorPanes extends Disposable {
 				);
 			}
 		}
+
 		return { pane, changed, cancelled };
 	}
+
 	private shouldRestoreFocus(expectedActiveElement: Element | null): boolean {
 		if (!this.layoutService.isRestored()) {
 			return true; // restore focus if we are not restored yet on startup
 		}
+
 		if (!expectedActiveElement) {
 			return true; // restore focus if nothing was focused
 		}
+
 		const activeElement = getActiveElement();
 
 		if (
@@ -401,22 +436,27 @@ export class EditorPanes extends Disposable {
 		) {
 			return true; // restore focus if nothing is focused currently
 		}
+
 		const same = expectedActiveElement === activeElement;
 
 		if (same) {
 			return true; // restore focus if same element is still active
 		}
+
 		if (!isEditableElement(activeElement)) {
 			// This is to avoid regressions from not restoring focus as we used to:
 			// Only allow a different input element (or textarea) to remain focused
 			// but not other elements that do not accept text input.
 			return true;
 		}
+
 		if (isAncestor(activeElement, this.editorGroupParent)) {
 			return true; // restore focus if active element is still inside our editor group
 		}
+
 		return false; // do not restore focus
 	}
+
 	private getEditorPaneDescriptor(
 		editor: EditorInput,
 	): IEditorPaneDescriptor {
@@ -430,8 +470,10 @@ export class EditorPanes extends Disposable {
 			// editor.
 			return WorkspaceTrustRequiredPlaceholderEditor.DESCRIPTOR;
 		}
+
 		return assertIsDefined(this.editorPanesRegistry.getEditorPane(editor));
 	}
+
 	private doShowEditorPane(descriptor: IEditorPaneDescriptor): EditorPane {
 		// Return early if the currently active editor pane can handle the input
 		if (
@@ -448,7 +490,9 @@ export class EditorPanes extends Disposable {
 		this.doSetActiveEditorPane(editorPane);
 		// Show editor
 		const container = assertIsDefined(editorPane.getContainer());
+
 		this.editorPanesParent.appendChild(container);
+
 		show(container);
 		// Indicate to editor that it is now visible
 		editorPane.setVisible(true);
@@ -466,23 +510,29 @@ export class EditorPanes extends Disposable {
 		if (this.boundarySashes) {
 			editorPane.setBoundarySashes(this.boundarySashes);
 		}
+
 		return editorPane;
 	}
+
 	private doCreateEditorPane(descriptor: IEditorPaneDescriptor): EditorPane {
 		// Instantiate editor
 		const editorPane = this.doInstantiateEditorPane(descriptor);
 		// Create editor container as needed
 		if (!editorPane.getContainer()) {
 			const editorPaneContainer = document.createElement("div");
+
 			editorPaneContainer.classList.add("editor-instance");
 			// It is cruicial to append the container to its parent before
 			// passing on to the create() method of the pane so that the
 			// right `window` can be determined in floating window cases.
 			this.editorPanesParent.appendChild(editorPaneContainer);
+
 			editorPane.create(editorPaneContainer);
 		}
+
 		return editorPane;
 	}
+
 	private doInstantiateEditorPane(
 		descriptor: IEditorPaneDescriptor,
 	): EditorPane {
@@ -498,10 +548,12 @@ export class EditorPanes extends Disposable {
 		const editorPane = this._register(
 			descriptor.instantiate(this.instantiationService, this.groupView),
 		);
+
 		this.editorPanes.push(editorPane);
 
 		return editorPane;
 	}
+
 	private doSetActiveEditorPane(editorPane: EditorPane | null) {
 		this._activeEditorPane = editorPane;
 		// Clear out previous active editor pane listeners
@@ -513,6 +565,7 @@ export class EditorPanes extends Disposable {
 					this._onDidChangeSizeConstraints.fire(e),
 				),
 			);
+
 			this.activeEditorPaneDisposables.add(
 				editorPane.onDidFocus(() => this._onDidFocus.fire()),
 			);
@@ -520,6 +573,7 @@ export class EditorPanes extends Disposable {
 		// Indicate that size constraints could have changed due to new editor
 		this._onDidChangeSizeConstraints.fire(undefined);
 	}
+
 	private async doSetInput(
 		editorPane: EditorPane,
 		editor: EditorInput,
@@ -527,6 +581,7 @@ export class EditorPanes extends Disposable {
 		context: IEditorOpenContext,
 	): Promise<{
 		changed: boolean;
+
 		cancelled: boolean;
 	}> {
 		// If the input did not change, return early and only
@@ -547,6 +602,7 @@ export class EditorPanes extends Disposable {
 			if (inputMatches) {
 				editorPane.setOptions(options);
 			}
+
 			return { changed: false, cancelled: !inputMatches };
 		}
 		// Start a new editor input operation to report progress
@@ -571,10 +627,12 @@ export class EditorPanes extends Disposable {
 				context,
 				operation.token,
 			);
+
 			this.mapEditorPaneToPendingSetInput.set(
 				editorPane,
 				pendingSetInput,
 			);
+
 			await pendingSetInput;
 
 			if (!operation.isCurrent()) {
@@ -590,10 +648,13 @@ export class EditorPanes extends Disposable {
 			if (operation.isCurrent()) {
 				this.mapEditorPaneToPendingSetInput.delete(editorPane);
 			}
+
 			operation.stop();
 		}
+
 		return { changed: !inputMatches, cancelled };
 	}
+
 	private doHideActiveEditorPane(): void {
 		if (!this._activeEditorPane) {
 			return;
@@ -604,6 +665,7 @@ export class EditorPanes extends Disposable {
 		// the DOM to give a chance to persist certain state that
 		// might depend on still being the active DOM element.
 		this.safeRun(() => this._activeEditorPane?.clearInput());
+
 		this.safeRun(() => this._activeEditorPane?.setVisible(false));
 		// Clear any pending setInput promise
 		this.mapEditorPaneToPendingSetInput.delete(this._activeEditorPane);
@@ -612,11 +674,13 @@ export class EditorPanes extends Disposable {
 
 		if (editorPaneContainer) {
 			editorPaneContainer.remove();
+
 			hide(editorPaneContainer);
 		}
 		// Clear active editor pane
 		this.doSetActiveEditorPane(null);
 	}
+
 	closeEditor(editor: EditorInput): void {
 		if (
 			this._activeEditorPane?.input &&
@@ -625,11 +689,14 @@ export class EditorPanes extends Disposable {
 			this.doHideActiveEditorPane();
 		}
 	}
+
 	setVisible(visible: boolean): void {
 		this.safeRun(() => this._activeEditorPane?.setVisible(visible));
 	}
+
 	layout(pagePosition: IDomNodePagePosition): void {
 		this.pagePosition = pagePosition;
+
 		this.safeRun(() =>
 			this._activeEditorPane?.layout(
 				new Dimension(pagePosition.width, pagePosition.height),
@@ -637,10 +704,13 @@ export class EditorPanes extends Disposable {
 			),
 		);
 	}
+
 	setBoundarySashes(sashes: IBoundarySashes): void {
 		this.boundarySashes = sashes;
+
 		this.safeRun(() => this._activeEditorPane?.setBoundarySashes(sashes));
 	}
+
 	private safeRun(fn: () => void): void {
 		// We delegate many calls to the active editor pane which
 		// can be any kind of editor. We must ensure that our calls

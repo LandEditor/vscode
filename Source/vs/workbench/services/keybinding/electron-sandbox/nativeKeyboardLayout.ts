@@ -39,10 +39,13 @@ export class KeyboardLayoutService
 	implements IKeyboardLayoutService
 {
 	declare readonly _serviceBrand: undefined;
+
 	private readonly _onDidChangeKeyboardLayout = this._register(
 		new Emitter<void>(),
 	);
+
 	readonly onDidChangeKeyboardLayout = this._onDidChangeKeyboardLayout.event;
+
 	private _keyboardMapper: IKeyboardMapper | null;
 
 	constructor(
@@ -52,33 +55,42 @@ export class KeyboardLayoutService
 		private readonly _configurationService: IConfigurationService,
 	) {
 		super();
+
 		this._keyboardMapper = null;
+
 		this._register(
 			this._nativeKeyboardLayoutService.onDidChangeKeyboardLayout(
 				async () => {
 					this._keyboardMapper = null;
+
 					this._onDidChangeKeyboardLayout.fire();
 				},
 			),
 		);
+
 		this._register(
 			_configurationService.onDidChangeConfiguration(async (e) => {
 				if (e.affectsConfiguration("keyboard")) {
 					this._keyboardMapper = null;
+
 					this._onDidChangeKeyboardLayout.fire();
 				}
 			}),
 		);
 	}
+
 	public getRawKeyboardMapping(): IKeyboardMapping | null {
 		return this._nativeKeyboardLayoutService.getRawKeyboardMapping();
 	}
+
 	public getCurrentKeyboardLayout(): IKeyboardLayoutInfo | null {
 		return this._nativeKeyboardLayoutService.getCurrentKeyboardLayout();
 	}
+
 	public getAllKeyboardLayouts(): IKeyboardLayoutInfo[] {
 		return [];
 	}
+
 	public getKeyboardMapper(): IKeyboardMapper {
 		const config = readKeyboardConfig(this._configurationService);
 
@@ -86,6 +98,7 @@ export class KeyboardLayoutService
 			// Forcefully set to use keyCode
 			return new FallbackKeyboardMapper(config.mapAltGrToCtrlAlt, OS);
 		}
+
 		if (!this._keyboardMapper) {
 			this._keyboardMapper = new CachedKeyboardMapper(
 				createKeyboardMapper(
@@ -95,8 +108,10 @@ export class KeyboardLayoutService
 				),
 			);
 		}
+
 		return this._keyboardMapper;
 	}
+
 	public validateCurrentKeyboardMapping(keyboardEvent: IKeyboardEvent): void {
 		return;
 	}
@@ -115,10 +130,12 @@ function createKeyboardMapper(
 			mapAltGrToCtrlAlt,
 		);
 	}
+
 	if (!rawMapping || Object.keys(rawMapping).length === 0) {
 		// Looks like reading the mappings failed (most likely Mac + Japanese/Chinese keyboard layouts)
 		return new FallbackKeyboardMapper(mapAltGrToCtrlAlt, OS);
 	}
+
 	if (OS === OperatingSystem.Macintosh) {
 		const kbInfo = <IMacKeyboardLayoutInfo>layoutInfo;
 
@@ -127,6 +144,7 @@ function createKeyboardMapper(
 			return new FallbackKeyboardMapper(mapAltGrToCtrlAlt, OS);
 		}
 	}
+
 	return new MacLinuxKeyboardMapper(
 		_isUSStandard,
 		<IMacLinuxKeyboardMapping>rawMapping,
@@ -138,6 +156,7 @@ function isUSStandard(_kbInfo: IKeyboardLayoutInfo | null): boolean {
 	if (!_kbInfo) {
 		return false;
 	}
+
 	if (OS === OperatingSystem.Linux) {
 		const kbInfo = <ILinuxKeyboardLayoutInfo>_kbInfo;
 
@@ -145,16 +164,19 @@ function isUSStandard(_kbInfo: IKeyboardLayoutInfo | null): boolean {
 
 		return layouts[kbInfo.group] === "us";
 	}
+
 	if (OS === OperatingSystem.Macintosh) {
 		const kbInfo = <IMacKeyboardLayoutInfo>_kbInfo;
 
 		return kbInfo.id === "com.apple.keylayout.US";
 	}
+
 	if (OS === OperatingSystem.Windows) {
 		const kbInfo = <IWindowsKeyboardLayoutInfo>_kbInfo;
 
 		return kbInfo.name === "00000409";
 	}
+
 	return false;
 }
 registerSingleton(

@@ -12,22 +12,28 @@ import type Token = require("markdown-it/lib/token");
 export type ResolvedDocumentLinkTarget =
 	| {
 			readonly kind: "file";
+
 			readonly uri: vscode.Uri;
+
 			position?: lsp.Position;
+
 			fragment?: string;
 	  }
 	| {
 			readonly kind: "folder";
+
 			readonly uri: vscode.Uri;
 	  }
 	| {
 			readonly kind: "external";
+
 			readonly uri: vscode.Uri;
 	  };
 //#region From server
 export const parse = new RequestType<
 	{
 		uri: string;
+
 		text?: string;
 	},
 	Token[],
@@ -69,8 +75,11 @@ export const fs_stat = new RequestType<
 export const fs_watcher_create = new RequestType<
 	{
 		id: number;
+
 		uri: string;
+
 		options: md.FileWatcherOptions;
+
 		watchParentDirs: boolean;
 	},
 	void,
@@ -102,6 +111,7 @@ export const getEditForFileRenames = new RequestType<
 	Array<FileRename>,
 	{
 		participatingRenames: readonly FileRename[];
+
 		edit: lsp.WorkspaceEdit;
 	},
 	any
@@ -110,6 +120,7 @@ export const getEditForFileRenames = new RequestType<
 export const prepareUpdatePastedLinks = new RequestType<
 	{
 		uri: string;
+
 		ranges: lsp.Range[];
 	},
 	string,
@@ -119,7 +130,9 @@ export const prepareUpdatePastedLinks = new RequestType<
 export const getUpdatePastedLinksEdit = new RequestType<
 	{
 		pasteIntoDoc: string;
+
 		metadata: string;
+
 		edits: lsp.TextEdit[];
 	},
 	lsp.TextEdit[] | undefined,
@@ -129,7 +142,9 @@ export const getUpdatePastedLinksEdit = new RequestType<
 export const fs_watcher_onChange = new RequestType<
 	{
 		id: number;
+
 		uri: string;
+
 		kind: "create" | "change" | "delete";
 	},
 	void,
@@ -139,6 +154,7 @@ export const fs_watcher_onChange = new RequestType<
 export const resolveLinkTarget = new RequestType<
 	{
 		linkText: string;
+
 		uri: string;
 	},
 	ResolvedDocumentLinkTarget,

@@ -69,11 +69,15 @@ const themingRegistry = Registry.as<IThemingRegistry>(
 
 class StandaloneTheme implements IStandaloneTheme {
 	public readonly id: string;
+
 	public readonly themeName: string;
 
 	private readonly themeData: IStandaloneThemeData;
+
 	private colors: Map<string, Color> | null;
+
 	private readonly defaultColors: { [colorId: string]: Color | undefined };
+
 	private _tokenTheme: TokenTheme | null;
 
 	constructor(name: string, standaloneThemeData: IStandaloneThemeData) {
@@ -87,13 +91,18 @@ class StandaloneTheme implements IStandaloneTheme {
 			} else {
 				this.id = base + " " + name;
 			}
+
 			this.themeName = name;
 		} else {
 			this.id = base;
+
 			this.themeName = base;
 		}
+
 		this.colors = null;
+
 		this.defaultColors = Object.create(null);
+
 		this._tokenTheme = null;
 	}
 
@@ -108,6 +117,7 @@ class StandaloneTheme implements IStandaloneTheme {
 	public notifyBaseUpdated() {
 		if (this.themeData.inherit) {
 			this.colors = null;
+
 			this._tokenTheme = null;
 		}
 	}
@@ -119,6 +129,7 @@ class StandaloneTheme implements IStandaloneTheme {
 			for (const id in this.themeData.colors) {
 				colors.set(id, Color.fromHex(this.themeData.colors[id]));
 			}
+
 			if (this.themeData.inherit) {
 				const baseData = getBuiltinRules(this.themeData.base);
 
@@ -128,8 +139,10 @@ class StandaloneTheme implements IStandaloneTheme {
 					}
 				}
 			}
+
 			this.colors = colors;
 		}
+
 		return this.colors;
 	}
 
@@ -142,9 +155,11 @@ class StandaloneTheme implements IStandaloneTheme {
 		if (color) {
 			return color;
 		}
+
 		if (useDefault !== false) {
 			return this.getDefault(colorId);
 		}
+
 		return undefined;
 	}
 
@@ -154,7 +169,9 @@ class StandaloneTheme implements IStandaloneTheme {
 		if (color) {
 			return color;
 		}
+
 		color = colorRegistry.resolveDefaultColor(colorId, this);
+
 		this.defaultColors[colorId] = color;
 
 		return color;
@@ -188,6 +205,7 @@ class StandaloneTheme implements IStandaloneTheme {
 
 			if (this.themeData.inherit) {
 				const baseData = getBuiltinRules(this.themeData.base);
+
 				rules = baseData.rules;
 
 				if (baseData.encodedTokensColors) {
@@ -205,21 +223,26 @@ class StandaloneTheme implements IStandaloneTheme {
 				if (editorForeground) {
 					rule.foreground = editorForeground;
 				}
+
 				if (editorBackground) {
 					rule.background = editorBackground;
 				}
+
 				rules.push(rule);
 			}
+
 			rules = rules.concat(this.themeData.rules);
 
 			if (this.themeData.encodedTokensColors) {
 				encodedTokensColors = this.themeData.encodedTokensColors;
 			}
+
 			this._tokenTheme = TokenTheme.createFromRawTokenTheme(
 				rules,
 				encodedTokensColors,
 			);
 		}
+
 		return this._tokenTheme;
 	}
 
@@ -295,29 +318,41 @@ export class StandaloneThemeService
 	private readonly _onColorThemeChange = this._register(
 		new Emitter<IStandaloneTheme>(),
 	);
+
 	public readonly onDidColorThemeChange = this._onColorThemeChange.event;
 
 	private readonly _onFileIconThemeChange = this._register(
 		new Emitter<IFileIconTheme>(),
 	);
+
 	public readonly onDidFileIconThemeChange =
 		this._onFileIconThemeChange.event;
 
 	private readonly _onProductIconThemeChange = this._register(
 		new Emitter<IProductIconTheme>(),
 	);
+
 	public readonly onDidProductIconThemeChange =
 		this._onProductIconThemeChange.event;
 
 	private readonly _environment: IEnvironmentService = Object.create(null);
+
 	private readonly _knownThemes: Map<string, StandaloneTheme>;
+
 	private _autoDetectHighContrast: boolean;
+
 	private _codiconCSS: string;
+
 	private _themeCSS: string;
+
 	private _allCSS: string;
+
 	private _globalStyleElement: HTMLStyleElement | null;
+
 	private _styleElements: HTMLStyleElement[];
+
 	private _colorMapOverride: Color[] | null;
+
 	private _theme!: IStandaloneTheme;
 
 	private _builtInProductIconTheme = new UnthemedProductIconTheme();
@@ -328,18 +363,22 @@ export class StandaloneThemeService
 		this._autoDetectHighContrast = true;
 
 		this._knownThemes = new Map<string, StandaloneTheme>();
+
 		this._knownThemes.set(
 			VS_LIGHT_THEME_NAME,
 			newBuiltInTheme(VS_LIGHT_THEME_NAME),
 		);
+
 		this._knownThemes.set(
 			VS_DARK_THEME_NAME,
 			newBuiltInTheme(VS_DARK_THEME_NAME),
 		);
+
 		this._knownThemes.set(
 			HC_BLACK_THEME_NAME,
 			newBuiltInTheme(HC_BLACK_THEME_NAME),
 		);
+
 		this._knownThemes.set(
 			HC_LIGHT_THEME_NAME,
 			newBuiltInTheme(HC_LIGHT_THEME_NAME),
@@ -348,17 +387,25 @@ export class StandaloneThemeService
 		const iconsStyleSheet = this._register(getIconsStyleSheet(this));
 
 		this._codiconCSS = iconsStyleSheet.getCSS();
+
 		this._themeCSS = "";
+
 		this._allCSS = `${this._codiconCSS}\n${this._themeCSS}`;
+
 		this._globalStyleElement = null;
+
 		this._styleElements = [];
+
 		this._colorMapOverride = null;
+
 		this.setTheme(VS_LIGHT_THEME_NAME);
+
 		this._onOSSchemeChanged();
 
 		this._register(
 			iconsStyleSheet.onDidChange(() => {
 				this._codiconCSS = iconsStyleSheet.getCSS();
+
 				this._updateCSS();
 			}),
 		);
@@ -376,6 +423,7 @@ export class StandaloneThemeService
 		if (dom.isInShadowDOM(domNode)) {
 			return this._registerShadowDomContainer(domNode);
 		}
+
 		return this._registerRegularEditorContainer();
 	}
 
@@ -385,11 +433,14 @@ export class StandaloneThemeService
 				undefined,
 				(style) => {
 					style.className = "monaco-colors";
+
 					style.textContent = this._allCSS;
 				},
 			);
+
 			this._styleElements.push(this._globalStyleElement);
 		}
+
 		return Disposable.None;
 	}
 
@@ -398,9 +449,11 @@ export class StandaloneThemeService
 			domNode,
 			(style) => {
 				style.className = "monaco-colors";
+
 				style.textContent = this._allCSS;
 			},
 		);
+
 		this._styleElements.push(styleElement);
 
 		return {
@@ -423,6 +476,7 @@ export class StandaloneThemeService
 		if (!/^[a-z0-9\-]+$/i.test(themeName)) {
 			throw new Error("Illegal theme name!");
 		}
+
 		if (!isBuiltinTheme(themeData.base) && !isBuiltinTheme(themeName)) {
 			throw new Error("Illegal theme base!");
 		}
@@ -439,6 +493,7 @@ export class StandaloneThemeService
 				}
 			});
 		}
+
 		if (this._theme.themeName === themeName) {
 			this.setTheme(themeName); // refresh theme
 		}
@@ -450,6 +505,7 @@ export class StandaloneThemeService
 
 	public setColorMapOverride(colorMapOverride: Color[] | null): void {
 		this._colorMapOverride = colorMapOverride;
+
 		this._updateThemeOrColorMap();
 	}
 
@@ -461,6 +517,7 @@ export class StandaloneThemeService
 		} else {
 			theme = this._knownThemes.get(VS_LIGHT_THEME_NAME);
 		}
+
 		this._updateActualTheme(theme);
 	}
 
@@ -471,7 +528,9 @@ export class StandaloneThemeService
 			// Nothing to do
 			return;
 		}
+
 		this._theme = desiredTheme;
+
 		this._updateThemeOrColorMap();
 	}
 
@@ -494,6 +553,7 @@ export class StandaloneThemeService
 						? HC_LIGHT_THEME_NAME
 						: VS_LIGHT_THEME_NAME;
 				}
+
 				this._updateActualTheme(this._knownThemes.get(newThemeName));
 			}
 		}
@@ -501,6 +561,7 @@ export class StandaloneThemeService
 
 	public setAutoDetectHighContrast(autoDetectHighContrast: boolean): void {
 		this._autoDetectHighContrast = autoDetectHighContrast;
+
 		this._onOSSchemeChanged();
 	}
 
@@ -513,10 +574,12 @@ export class StandaloneThemeService
 			addRule: (rule: string) => {
 				if (!hasRule[rule]) {
 					cssRules.push(rule);
+
 					hasRule[rule] = true;
 				}
 			},
 		};
+
 		themingRegistry
 			.getThemingParticipants()
 			.forEach((p) => p(this._theme, ruleCollector, this._environment));
@@ -532,23 +595,28 @@ export class StandaloneThemeService
 				);
 			}
 		}
+
 		ruleCollector.addRule(
 			`.monaco-editor, .monaco-diff-editor, .monaco-component { ${colorVariables.join("\n")} }`,
 		);
 
 		const colorMap =
 			this._colorMapOverride || this._theme.tokenTheme.getColorMap();
+
 		ruleCollector.addRule(generateTokensCSSForColorMap(colorMap));
 
 		this._themeCSS = cssRules.join("\n");
+
 		this._updateCSS();
 
 		TokenizationRegistry.setColorMap(colorMap);
+
 		this._onColorThemeChange.fire(this._theme);
 	}
 
 	private _updateCSS(): void {
 		this._allCSS = `${this._codiconCSS}\n${this._themeCSS}`;
+
 		this._styleElements.forEach(
 			(styleElement) => (styleElement.textContent = this._allCSS),
 		);

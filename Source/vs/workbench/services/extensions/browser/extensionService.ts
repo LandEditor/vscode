@@ -184,6 +184,7 @@ export class ExtensionService
 			await this._userDataInitializationService.initializeInstalledExtensions(
 				this._instantiationService,
 			);
+
 			this._initialize();
 		});
 
@@ -192,9 +193,11 @@ export class ExtensionService
 
 	private _initFetchFileSystem(): void {
 		const provider = new FetchFileSystemProvider();
+
 		this._register(
 			this._fileService.registerProvider(Schemas.http, provider),
 		);
+
 		this._register(
 			this._fileService.registerProvider(Schemas.https, provider),
 		);
@@ -203,6 +206,7 @@ export class ExtensionService
 	private _scanWebExtensionsPromise:
 		| Promise<IExtensionDescription[]>
 		| undefined;
+
 	private async _scanWebExtensions(): Promise<IExtensionDescription[]> {
 		if (!this._scanWebExtensionsPromise) {
 			this._scanWebExtensionsPromise = (async () => {
@@ -247,6 +251,7 @@ export class ExtensionService
 				} catch (error) {
 					this._logService.error(error);
 				}
+
 				return dedupExtensions(
 					system,
 					user,
@@ -256,6 +261,7 @@ export class ExtensionService
 				);
 			})();
 		}
+
 		return this._scanWebExtensionsPromise;
 	}
 
@@ -270,6 +276,7 @@ export class ExtensionService
 		if (remoteExtensions.length) {
 			emitter.emitOne(new RemoteExtensions(remoteExtensions));
 		}
+
 		emitter.emitOne(new LocalExtensions(localExtensions));
 	}
 
@@ -314,6 +321,7 @@ export class ExtensionService
 					`Error handled: Not showing a notification for the error`,
 				);
 			}
+
 			this._remoteAuthorityResolverService._setResolvedAuthorityError(
 				remoteAuthority,
 				err,
@@ -328,6 +336,7 @@ export class ExtensionService
 			resolverResult.authority,
 			resolverResult.options,
 		);
+
 		this._remoteExplorerService.setTunnelInformation(
 			resolverResult.tunnelInformation,
 		);
@@ -343,6 +352,7 @@ export class ExtensionService
 					);
 				}
 			});
+
 			connection.onReconnecting(() => this._resolveAuthorityAgain());
 		}
 
@@ -401,6 +411,7 @@ class BrowserExtensionHostFactory implements IExtensionHostFactory {
 			case ExtensionHostKind.LocalProcess: {
 				return null;
 			}
+
 			case ExtensionHostKind.LocalWebWorker: {
 				const startup = isInitialStart
 					? ExtensionHostStartup.EagerManualStart
@@ -417,6 +428,7 @@ class BrowserExtensionHostFactory implements IExtensionHostFactory {
 					),
 				);
 			}
+
 			case ExtensionHostKind.Remote: {
 				const remoteAgentConnection =
 					this._remoteAgentService.getConnection();
@@ -431,6 +443,7 @@ class BrowserExtensionHostFactory implements IExtensionHostFactory {
 						),
 					);
 				}
+
 				return null;
 			}
 		}
@@ -562,6 +575,7 @@ export class BrowserExtensionHostKindPicker
 			isInstalledRemotely,
 			preference,
 		);
+
 		this._logService.trace(
 			`pickRunningLocation for ${extensionId.value}, extension kinds: [${extensionKinds.join(", ")}], isInstalledLocally: ${isInstalledLocally}, isInstalledRemotely: ${isInstalledRemotely}, preference: ${extensionRunningPreferenceToString(preference)} => ${extensionHostKindToString(result)}`,
 		);
@@ -588,6 +602,7 @@ export class BrowserExtensionHostKindPicker
 					canRunRemotely = true;
 				}
 			}
+
 			if (extensionKind === "workspace" && isInstalledRemotely) {
 				// workspace extensions run remotely if possible
 				if (
@@ -599,6 +614,7 @@ export class BrowserExtensionHostKindPicker
 					result.push(ExtensionHostKind.Remote);
 				}
 			}
+
 			if (
 				extensionKind === "web" &&
 				(isInstalledLocally || isInstalledRemotely)
@@ -614,9 +630,11 @@ export class BrowserExtensionHostKindPicker
 				}
 			}
 		}
+
 		if (canRunRemotely) {
 			result.push(ExtensionHostKind.Remote);
 		}
+
 		return result.length > 0 ? result[0] : null;
 	}
 }

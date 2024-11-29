@@ -24,6 +24,7 @@ if (process.env.VSCODE_BROWSER) {
 }
 if (process.env.BUILD_ARTIFACTSTAGINGDIRECTORY) {
 	options.reporter = "mocha-multi-reporters";
+
 	options.reporterOptions = {
 		reporterEnabled: "spec, mocha-junit-reporter",
 		mochaJunitReporterReporterOptions: {

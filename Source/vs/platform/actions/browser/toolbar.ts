@@ -180,6 +180,7 @@ export class WorkbenchToolBar extends ToolBar {
 
 					continue;
 				}
+
 				if (!action.hideActions) {
 					continue;
 				}
@@ -194,6 +195,7 @@ export class WorkbenchToolBar extends ToolBar {
 				// hidden items move into overflow or ignore
 				if (action.hideActions.isHidden) {
 					someAreHidden = true;
+
 					primary[i] = undefined;
 
 					if (
@@ -224,13 +226,16 @@ export class WorkbenchToolBar extends ToolBar {
 				if (!action) {
 					continue;
 				}
+
 				count++;
 
 				if (exemptedIds.has(action.id)) {
 					continue;
 				}
+
 				if (count >= maxItems) {
 					primary[i] = undefined;
+
 					extraSecondary[i] = action;
 				}
 			}
@@ -238,6 +243,7 @@ export class WorkbenchToolBar extends ToolBar {
 
 		// coalesce turns Array<IAction|undefined> into IAction[]
 		coalesceInPlace(primary);
+
 		coalesceInPlace(extraSecondary);
 
 		super.setActions(primary, Separator.join(extraSecondary, secondary));
@@ -256,7 +262,9 @@ export class WorkbenchToolBar extends ToolBar {
 					if (!action) {
 						return;
 					}
+
 					event.preventDefault();
+
 					event.stopPropagation();
 
 					const primaryActions = [];
@@ -278,6 +286,7 @@ export class WorkbenchToolBar extends ToolBar {
 							!!this._keybindingService.lookupKeybinding(
 								action.id,
 							);
+
 						primaryActions.push(
 							createConfigureKeybindingAction(
 								this._commandService,
@@ -327,6 +336,7 @@ export class WorkbenchToolBar extends ToolBar {
 								// those are fake actions and need to be cleaned up
 								return;
 							}
+
 							primaryActions.push(action.hideActions.hide);
 						} else {
 							primaryActions.push(
@@ -349,8 +359,10 @@ export class WorkbenchToolBar extends ToolBar {
 					if (this._options?.resetMenu && !menuIds) {
 						menuIds = [this._options.resetMenu];
 					}
+
 					if (someAreHidden && menuIds) {
 						actions.push(new Separator());
+
 						actions.push(
 							toAction({
 								id: "resetThisMenu",
@@ -437,6 +449,7 @@ export class MenuWorkbenchToolBar extends WorkbenchToolBar {
 	private readonly _onDidChangeMenuItems = this._store.add(
 		new Emitter<this>(),
 	);
+
 	readonly onDidChangeMenuItems: Event<this> =
 		this._onDidChangeMenuItems.event;
 
@@ -469,11 +482,13 @@ export class MenuWorkbenchToolBar extends WorkbenchToolBar {
 					if (!provider) {
 						provider = options?.actionViewItemProvider;
 					}
+
 					const viewItem = provider?.(action, opts);
 
 					if (viewItem) {
 						return viewItem;
 					}
+
 					return createActionViewItem(instaService, action, opts);
 				},
 			},
@@ -500,6 +515,7 @@ export class MenuWorkbenchToolBar extends WorkbenchToolBar {
 				options?.toolbarOptions?.shouldInlineSubmenu,
 				options?.toolbarOptions?.useSeparatorsInPrimaryActions,
 			);
+
 			container.classList.toggle(
 				"has-no-actions",
 				primary.length === 0 && secondary.length === 0,
@@ -511,6 +527,7 @@ export class MenuWorkbenchToolBar extends WorkbenchToolBar {
 		this._store.add(
 			menu.onDidChange(() => {
 				updateToolbar();
+
 				this._onDidChangeMenuItems.fire(this);
 			}),
 		);
@@ -522,6 +539,7 @@ export class MenuWorkbenchToolBar extends WorkbenchToolBar {
 				}
 			}),
 		);
+
 		updateToolbar();
 	}
 

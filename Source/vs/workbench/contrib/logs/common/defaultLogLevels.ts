@@ -30,6 +30,7 @@ import { IWorkbenchEnvironmentService } from "../../../services/environment/comm
 
 interface ParsedArgvLogLevels {
 	default?: LogLevel;
+
 	extensions?: [string, LogLevel][];
 }
 export type DefaultLogLevels = Required<Readonly<ParsedArgvLogLevels>>;
@@ -49,6 +50,7 @@ export interface IDefaultLogLevelsService {
 	getDefaultLogLevel(extensionId?: string): Promise<LogLevel>;
 
 	setDefaultLogLevel(logLevel: LogLevel, extensionId?: string): Promise<void>;
+
 	migrateLogLevels(): void;
 }
 class DefaultLogLevelsService
@@ -56,7 +58,9 @@ class DefaultLogLevelsService
 	implements IDefaultLogLevelsService
 {
 	_serviceBrand: undefined;
+
 	private _onDidChangeDefaultLogLevels = this._register(new Emitter<void>());
+
 	readonly onDidChangeDefaultLogLevels =
 		this._onDidChangeDefaultLogLevels.event;
 
@@ -74,6 +78,7 @@ class DefaultLogLevelsService
 	) {
 		super();
 	}
+
 	async getDefaultLogLevels(): Promise<DefaultLogLevels> {
 		const argvLogLevel = await this._parseLogLevelsFromArgv();
 
@@ -84,6 +89,7 @@ class DefaultLogLevelsService
 				this._getExtensionsDefaultLogLevelsFromEnv(),
 		};
 	}
+
 	async getDefaultLogLevel(extensionId?: string): Promise<LogLevel> {
 		const argvLogLevel = (await this._parseLogLevelsFromArgv()) ?? {};
 
@@ -95,6 +101,7 @@ class DefaultLogLevelsService
 			return this._getDefaultLogLevel(argvLogLevel);
 		}
 	}
+
 	async setDefaultLogLevel(
 		defaultLogLevel: LogLevel,
 		extensionId?: string,
@@ -108,6 +115,7 @@ class DefaultLogLevelsService
 				argvLogLevel,
 				extensionId,
 			);
+
 			argvLogLevel.extensions = argvLogLevel.extensions ?? [];
 
 			const extension = argvLogLevel.extensions.find(
@@ -119,6 +127,7 @@ class DefaultLogLevelsService
 			} else {
 				argvLogLevel.extensions.push([extensionId, defaultLogLevel]);
 			}
+
 			await this._writeLogLevelsToArgv(argvLogLevel);
 
 			const extensionLoggers = [
@@ -139,15 +148,19 @@ class DefaultLogLevelsService
 			}
 		} else {
 			const currentLogLevel = this._getDefaultLogLevel(argvLogLevel);
+
 			argvLogLevel.default = defaultLogLevel;
+
 			await this._writeLogLevelsToArgv(argvLogLevel);
 
 			if (this.loggerService.getLogLevel() === currentLogLevel) {
 				this.loggerService.setLogLevel(defaultLogLevel);
 			}
 		}
+
 		this._onDidChangeDefaultLogLevels.fire();
 	}
+
 	private _getDefaultLogLevel(
 		argvLogLevels: ParsedArgvLogLevels,
 		extension?: string,
@@ -161,8 +174,10 @@ class DefaultLogLevelsService
 				return extensionLogLevel[1];
 			}
 		}
+
 		return argvLogLevels.default ?? getLogLevel(this.environmentService);
 	}
+
 	private async _writeLogLevelsToArgv(
 		logLevels: ParsedArgvLogLevels,
 	): Promise<void> {
@@ -171,9 +186,11 @@ class DefaultLogLevelsService
 		if (!isUndefined(logLevels.default)) {
 			logLevelsValue.push(LogLevelToString(logLevels.default));
 		}
+
 		for (const [extension, logLevel] of logLevels.extensions ?? []) {
 			logLevelsValue.push(`${extension}=${LogLevelToString(logLevel)}`);
 		}
+
 		await this.jsonEditingService.write(
 			this.environmentService.argvResource,
 			[
@@ -185,6 +202,7 @@ class DefaultLogLevelsService
 			true,
 		);
 	}
+
 	private async _parseLogLevelsFromArgv(): Promise<
 		ParsedArgvLogLevels | undefined
 	> {
@@ -213,10 +231,12 @@ class DefaultLogLevelsService
 				}
 			}
 		}
+
 		return !isUndefined(result.default) || result.extensions?.length
 			? result
 			: undefined;
 	}
+
 	async migrateLogLevels(): Promise<void> {
 		const logLevels = await this._readLogLevelsFromArgv();
 
@@ -232,6 +252,7 @@ class DefaultLogLevelsService
 			}
 		}
 	}
+
 	private async _readLogLevelsFromArgv(): Promise<string[]> {
 		try {
 			const content = await this.fileService.readFile(
@@ -255,11 +276,14 @@ class DefaultLogLevelsService
 				this.logService.error(error);
 			}
 		}
+
 		return [];
 	}
+
 	private _getDefaultLogLevelFromEnv(): LogLevel {
 		return getLogLevel(this.environmentService);
 	}
+
 	private _getExtensionsDefaultLogLevelsFromEnv(): [string, LogLevel][] {
 		const result: [string, LogLevel][] = [];
 
@@ -271,6 +295,7 @@ class DefaultLogLevelsService
 				result.push([extension, logLevel]);
 			}
 		}
+
 		return result;
 	}
 }

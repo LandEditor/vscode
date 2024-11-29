@@ -20,9 +20,11 @@ export class FallbackKeyboardMapper implements IKeyboardMapper {
 		private readonly _mapAltGrToCtrlAlt: boolean,
 		private readonly _OS: OperatingSystem,
 	) {}
+
 	public dumpDebugInfo(): string {
 		return "FallbackKeyboardMapper dispatching on keyCode";
 	}
+
 	public resolveKeyboardEvent(
 		keyboardEvent: IKeyboardEvent,
 	): ResolvedKeybinding {
@@ -46,6 +48,7 @@ export class FallbackKeyboardMapper implements IKeyboardMapper {
 
 		return result[0];
 	}
+
 	public resolveKeybinding(keybinding: Keybinding): ResolvedKeybinding[] {
 		return USLayoutResolvedKeybinding.resolveKeybinding(
 			keybinding,

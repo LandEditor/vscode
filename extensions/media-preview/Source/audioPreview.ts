@@ -15,9 +15,11 @@ class AudioPreviewProvider implements vscode.CustomReadonlyEditorProvider {
 		private readonly extensionRoot: vscode.Uri,
 		private readonly binarySizeStatusBarEntry: BinarySizeStatusBarEntry,
 	) {}
+
 	public async openCustomDocument(uri: vscode.Uri) {
 		return { uri, dispose: () => {} };
 	}
+
 	public async resolveCustomEditor(
 		document: vscode.CustomDocument,
 		webviewEditor: vscode.WebviewPanel,
@@ -38,6 +40,7 @@ class AudioPreview extends MediaPreview {
 		binarySizeStatusBarEntry: BinarySizeStatusBarEntry,
 	) {
 		super(extensionRoot, resource, webviewEditor, binarySizeStatusBarEntry);
+
 		this._register(
 			webviewEditor.webview.onDidReceiveMessage((message) => {
 				switch (message.type) {
@@ -49,10 +52,14 @@ class AudioPreview extends MediaPreview {
 				}
 			}),
 		);
+
 		this.updateBinarySize();
+
 		this.render();
+
 		this.updateState();
 	}
+
 	protected async getWebviewContents(): Promise<string> {
 		const version = Date.now().toString();
 
@@ -94,6 +101,7 @@ class AudioPreview extends MediaPreview {
 </body>
 </html>`;
 	}
+
 	private async getResourcePath(
 		webviewEditor: vscode.WebviewPanel,
 		resource: vscode.Uri,
@@ -111,11 +119,13 @@ class AudioPreview extends MediaPreview {
 		if (resource.query) {
 			return webviewEditor.webview.asWebviewUri(resource).toString();
 		}
+
 		return webviewEditor.webview
 			.asWebviewUri(resource)
 			.with({ query: `version=${version}` })
 			.toString();
 	}
+
 	private extensionResource(...parts: string[]) {
 		return this.webviewEditor.webview.asWebviewUri(
 			vscode.Uri.joinPath(this.extensionRoot, ...parts),

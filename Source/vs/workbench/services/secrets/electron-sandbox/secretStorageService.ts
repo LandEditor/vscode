@@ -58,6 +58,7 @@ export class NativeSecretStorageService extends BaseSecretStorageService {
 			logService,
 		);
 	}
+
 	override set(key: string, value: string): Promise<void> {
 		this._sequencer.queue(key, async () => {
 			await this.resolvedStorageService;
@@ -69,15 +70,18 @@ export class NativeSecretStorageService extends BaseSecretStorageService {
 				this._logService.trace(
 					"[NativeSecretStorageService] Notifying user that secrets are not being stored on disk.",
 				);
+
 				await this.notifyOfNoEncryptionOnce();
 			}
 		});
 
 		return super.set(key, value);
 	}
+
 	private notifyOfNoEncryptionOnce = createSingleCallFunction(() =>
 		this.notifyOfNoEncryption(),
 	);
+
 	private async notifyOfNoEncryption(): Promise<void> {
 		const buttons: IPromptChoice[] = [];
 
@@ -93,6 +97,7 @@ export class NativeSecretStorageService extends BaseSecretStorageService {
 			// doesn't close dialogs
 			keepOpen: true,
 		};
+
 		buttons.push(troubleshootingButton);
 
 		let errorMessage = localize(
@@ -109,6 +114,7 @@ export class NativeSecretStorageService extends BaseSecretStorageService {
 
 			return;
 		}
+
 		const provider = await this._encryptionService.getKeyStorageProvider();
 
 		if (provider === KnownStorageProvider.basicText) {
@@ -121,6 +127,7 @@ export class NativeSecretStorageService extends BaseSecretStorageService {
 				label: localize("usePlainText", "Use weaker encryption"),
 				run: async () => {
 					await this._encryptionService.setUsePlainTextEncryption();
+
 					await this._jsonEditingService.write(
 						this._environmentService.argvResource,
 						[
@@ -131,10 +138,13 @@ export class NativeSecretStorageService extends BaseSecretStorageService {
 						],
 						true,
 					);
+
 					this.reinitialize();
 				},
 			};
+
 			buttons.unshift(usePlainTextButton);
+
 			await this._dialogService.prompt({
 				type: "error",
 				buttons,
@@ -144,6 +154,7 @@ export class NativeSecretStorageService extends BaseSecretStorageService {
 
 			return;
 		}
+
 		if (isGnome(provider)) {
 			errorMessage = localize(
 				"isGnome",
@@ -155,6 +166,7 @@ export class NativeSecretStorageService extends BaseSecretStorageService {
 				"You're running in a KDE environment but the OS keyring is not available for encryption. Ensure you have kwallet running.",
 			);
 		}
+
 		this._notificationService.prompt(Severity.Error, errorMessage, buttons);
 	}
 }

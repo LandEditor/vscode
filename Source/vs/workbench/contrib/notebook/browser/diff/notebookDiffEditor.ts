@@ -167,37 +167,60 @@ export class NotebookTextDiffEditor
 		IEditorPaneWithScrolling
 {
 	public static readonly ENTIRE_DIFF_OVERVIEW_WIDTH = 30;
+
 	creationOptions: INotebookEditorCreationOptions =
 		getDefaultNotebookCreationOptions();
+
 	static readonly ID: string = NOTEBOOK_DIFF_EDITOR_ID;
 
 	private _rootElement!: HTMLElement;
+
 	private _listViewContainer!: HTMLElement;
+
 	private _overflowContainer!: HTMLElement;
+
 	private _overviewRulerContainer!: HTMLElement;
+
 	private _overviewRuler!: NotebookDiffOverviewRuler;
+
 	private _dimension: DOM.Dimension | null = null;
+
 	private notebookDiffViewModel?: INotebookDiffViewModel;
+
 	private _list!: NotebookTextDiffList;
+
 	private _modifiedWebview: BackLayerWebView<IDiffCellInfo> | null = null;
+
 	private _originalWebview: BackLayerWebView<IDiffCellInfo> | null = null;
+
 	private _webviewTransparentCover: HTMLElement | null = null;
+
 	private _fontInfo: FontInfo | undefined;
 
 	private readonly _onMouseUp = this._register(
 		new Emitter<{
 			readonly event: MouseEvent;
+
 			readonly target: IDiffElementViewModelBase;
 		}>(),
 	);
+
 	public readonly onMouseUp = this._onMouseUp.event;
+
 	private readonly _onDidScroll = this._register(new Emitter<void>());
+
 	readonly onDidScroll: Event<void> = this._onDidScroll.event;
+
 	readonly onDidChangeScroll: Event<void> = this._onDidScroll.event;
+
 	private _eventDispatcher: NotebookDiffEditorEventDispatcher | undefined;
+
 	protected _scopeContextKeyService!: IContextKeyService;
+
 	private _model: INotebookDiffEditorModel | null = null;
+
 	private readonly diffEditorCalcuator: IDiffEditorHeightCalculatorService;
+
 	private readonly _modifiedResourceDisposableStore = this._register(
 		new DisposableStore(),
 	);
@@ -207,14 +230,17 @@ export class NotebookTextDiffEditor
 	}
 
 	private _revealFirst: boolean;
+
 	private readonly _insetModifyQueueByOutputId = new SequencerByKey<string>();
 
 	protected _onDidDynamicOutputRendered = this._register(
 		new Emitter<{
 			cell: IGenericCellViewModel;
+
 			output: ICellOutputViewModel;
 		}>(),
 	);
+
 	onDidDynamicOutputRendered = this._onDidDynamicOutputRendered.event;
 
 	private _notebookOptions: NotebookOptions;
@@ -230,6 +256,7 @@ export class NotebookTextDiffEditor
 	private readonly _onDidChangeSelection = this._register(
 		new Emitter<IEditorPaneSelectionChangeEvent>(),
 	);
+
 	readonly onDidChangeSelection = this._onDidChangeSelection.event;
 
 	private _isDisposed: boolean = false;
@@ -261,17 +288,21 @@ export class NotebookTextDiffEditor
 			themeService,
 			storageService,
 		);
+
 		this.diffEditorCalcuator = this.instantiationService.createInstance(
 			DiffEditorHeightCalculatorService,
 			this.fontInfo.lineHeight,
 		);
+
 		this._notebookOptions = instantiationService.createInstance(
 			NotebookOptions,
 			this.window,
 			false,
 			undefined,
 		);
+
 		this._register(this._notebookOptions);
+
 		this._revealFirst = true;
 	}
 
@@ -417,21 +448,26 @@ export class NotebookTextDiffEditor
 	setMarkupCellEditState(cellId: string, editState: CellEditState): void {
 		// throw new Error('Method not implemented.');
 	}
+
 	didStartDragMarkupCell(
 		cellId: string,
 		event: { dragOffsetY: number },
 	): void {
 		// throw new Error('Method not implemented.');
 	}
+
 	didDragMarkupCell(cellId: string, event: { dragOffsetY: number }): void {
 		// throw new Error('Method not implemented.');
 	}
+
 	didEndDragMarkupCell(cellId: string): void {
 		// throw new Error('Method not implemented.');
 	}
+
 	didDropMarkupCell(cellId: string) {
 		// throw new Error('Method not implemented.');
 	}
+
 	didResizeOutput(cellId: string): void {
 		// throw new Error('Method not implemented.');
 	}
@@ -441,11 +477,14 @@ export class NotebookTextDiffEditor
 			parent,
 			DOM.$(".notebook-text-diff-editor"),
 		);
+
 		this._overflowContainer = document.createElement("div");
+
 		this._overflowContainer.classList.add(
 			"notebook-overflow-widget-container",
 			"monaco-editor",
 		);
+
 		DOM.append(parent, this._overflowContainer);
 
 		const renderers = [
@@ -532,12 +571,14 @@ export class NotebookTextDiffEditor
 		);
 
 		this._register(this._list);
+
 		this._register(
 			this._list.onMouseUp((e) => {
 				if (e.element) {
 					if (typeof e.index === "number") {
 						this._list.setFocus([e.index]);
 					}
+
 					this._onMouseUp.fire({
 						event: e.browserEvent,
 						target: e.element,
@@ -561,10 +602,13 @@ export class NotebookTextDiffEditor
 		);
 
 		this._overviewRulerContainer = document.createElement("div");
+
 		this._overviewRulerContainer.classList.add(
 			"notebook-overview-ruler-container",
 		);
+
 		this._rootElement.appendChild(this._overviewRulerContainer);
+
 		this._registerOverviewRuler();
 
 		// transparent cover
@@ -572,6 +616,7 @@ export class NotebookTextDiffEditor
 			this._list.rowsContainer,
 			$(".webview-cover"),
 		);
+
 		this._webviewTransparentCover.style.display = "none";
 
 		this._register(
@@ -633,6 +678,7 @@ export class NotebookTextDiffEditor
 			const updateItems: IDisplayOutputLayoutUpdateRequest[] = [];
 
 			const removedItems: ICellOutputViewModel[] = [];
+
 			activeWebview.insetMapping.forEach((value, key) => {
 				const cell = getActiveNestedCell(value.cellInfo.diffElement);
 
@@ -663,6 +709,7 @@ export class NotebookTextDiffEditor
 							diffSide,
 							outputIndex,
 						);
+
 					updateItems.push({
 						cell,
 						output: key,
@@ -693,6 +740,7 @@ export class NotebookTextDiffEditor
 
 		if (this._model !== model) {
 			this._detachModel();
+
 			this._attachModel(model);
 		}
 
@@ -721,8 +769,10 @@ export class NotebookTextDiffEditor
 					this.editorService.activeEditor !== input
 				) {
 					this._layoutCancellationTokenSource?.dispose();
+
 					this._layoutCancellationTokenSource =
 						new CancellationTokenSource();
+
 					this.updateLayout(
 						this._layoutCancellationTokenSource.token,
 					);
@@ -739,6 +789,7 @@ export class NotebookTextDiffEditor
 		if (this._originalWebview) {
 			this._modifiedResourceDisposableStore.add(this._originalWebview);
 		}
+
 		await this._createModifiedWebview(
 			generateUuid(),
 			this._model.modified.viewType,
@@ -759,21 +810,31 @@ export class NotebookTextDiffEditor
 
 	private _detachModel() {
 		this._localStore.clear();
+
 		this._originalWebview?.dispose();
+
 		this._originalWebview?.element.remove();
+
 		this._originalWebview = null;
+
 		this._modifiedWebview?.dispose();
+
 		this._modifiedWebview?.element.remove();
+
 		this._modifiedWebview = null;
 
 		this.notebookDiffViewModel?.dispose();
+
 		this.notebookDiffViewModel = undefined;
 
 		this._modifiedResourceDisposableStore.clear();
+
 		this._list.clear();
 	}
+
 	private _attachModel(model: INotebookDiffEditorModel) {
 		this._model = model;
+
 		this._eventDispatcher = new NotebookDiffEditorEventDispatcher();
 
 		const updateInsets = () => {
@@ -832,11 +893,13 @@ export class NotebookTextDiffEditor
 				undefined,
 			),
 		));
+
 		this._localStore.add(
 			this.notebookDiffViewModel.onDidChangeItems((e) => {
 				this._originalWebview?.removeInsets([
 					...this._originalWebview?.insetMapping.keys(),
 				]);
+
 				this._modifiedWebview?.removeInsets([
 					...this._modifiedWebview?.insetMapping.keys(),
 				]);
@@ -848,7 +911,9 @@ export class NotebookTextDiffEditor
 					e.firstChangeIndex < this._list.length
 				) {
 					this._revealFirst = false;
+
 					this._list.setFocus([e.firstChangeIndex]);
+
 					this._list.reveal(e.firstChangeIndex, 0.3);
 				}
 
@@ -888,10 +953,14 @@ export class NotebookTextDiffEditor
 			"afterbegin",
 			this._modifiedWebview.element,
 		);
+
 		this._modifiedWebview.createWebview(this.window);
+
 		this._modifiedWebview.element.style.width = `calc(50% - 16px)`;
+
 		this._modifiedWebview.element.style.left = `calc(50%)`;
 	}
+
 	_generateFontFamily(): string {
 		return (
 			this.fontInfo.fontFamily ??
@@ -923,8 +992,11 @@ export class NotebookTextDiffEditor
 			"afterbegin",
 			this._originalWebview.element,
 		);
+
 		this._originalWebview.createWebview(this.window);
+
 		this._originalWebview.element.style.width = `calc(50% - 16px)`;
+
 		this._originalWebview.element.style.left = `16px`;
 	}
 
@@ -1022,6 +1094,7 @@ export class NotebookTextDiffEditor
 				this.pendingLayouts.delete(cell);
 
 				relayout(cell, height);
+
 				r();
 			},
 		);
@@ -1030,6 +1103,7 @@ export class NotebookTextDiffEditor
 			cell,
 			toDisposable(() => {
 				layoutDisposable.dispose();
+
 				r();
 			}),
 		);
@@ -1051,6 +1125,7 @@ export class NotebookTextDiffEditor
 		if (!this.notebookDiffViewModel) {
 			return;
 		}
+
 		let currFocus = this._list.getFocus()[0];
 
 		if (isNaN(currFocus) || currFocus < 0) {
@@ -1074,6 +1149,7 @@ export class NotebookTextDiffEditor
 
 		if (prevChangeIndex >= 0) {
 			this._list.setFocus([prevChangeIndex]);
+
 			this._list.reveal(prevChangeIndex);
 		} else {
 			// go to the last one
@@ -1084,6 +1160,7 @@ export class NotebookTextDiffEditor
 
 			if (index >= 0) {
 				this._list.setFocus([index]);
+
 				this._list.reveal(index);
 			}
 		}
@@ -1093,6 +1170,7 @@ export class NotebookTextDiffEditor
 		if (!this.notebookDiffViewModel) {
 			return;
 		}
+
 		let currFocus = this._list.getFocus()[0];
 
 		if (isNaN(currFocus) || currFocus < 0) {
@@ -1116,6 +1194,7 @@ export class NotebookTextDiffEditor
 
 		if (nextChangeIndex < currentViewModels.length) {
 			this._list.setFocus([nextChangeIndex]);
+
 			this._list.reveal(nextChangeIndex);
 		} else {
 			// go to the first one
@@ -1125,6 +1204,7 @@ export class NotebookTextDiffEditor
 
 			if (index >= 0) {
 				this._list.setFocus([index]);
+
 				this._list.reveal(index);
 			}
 		}
@@ -1153,6 +1233,7 @@ export class NotebookTextDiffEditor
 				if (!activeWebview.insetMapping.has(output.source)) {
 					const cellTop =
 						this._list.getCellViewScrollTop(cellDiffViewModel);
+
 					await activeWebview.createOutput(
 						{
 							diffElement: cellDiffViewModel,
@@ -1177,6 +1258,7 @@ export class NotebookTextDiffEditor
 							diffSide,
 							outputIndex,
 						);
+
 					activeWebview.updateScrollTops(
 						[
 							{
@@ -1267,6 +1349,7 @@ export class NotebookTextDiffEditor
 					diffSide,
 					outputIndex,
 				);
+
 				activeWebview.updateScrollTops(
 					[
 						{
@@ -1289,6 +1372,7 @@ export class NotebookTextDiffEditor
 		output: ICellOutputViewModel,
 	) {
 		this._modifiedWebview?.hideInset(output);
+
 		this._originalWebview?.hideInset(output);
 	}
 
@@ -1314,9 +1398,13 @@ export class NotebookTextDiffEditor
 		super.clearInput();
 
 		this._modifiedResourceDisposableStore.clear();
+
 		this._list?.splice(0, this._list?.length || 0);
+
 		this._model = null;
+
 		this.notebookDiffViewModel?.dispose();
+
 		this.notebookDiffViewModel = undefined;
 	}
 
@@ -1360,12 +1448,14 @@ export class NotebookTextDiffEditor
 			"mid-width",
 			dimension.width < 1000 && dimension.width >= 600,
 		);
+
 		this._rootElement.classList.toggle(
 			"narrow-width",
 			dimension.width < 600,
 		);
 
 		const overviewRulerEnabled = this.isOverviewRulerEnabled();
+
 		this._dimension = dimension.with(
 			dimension.width -
 				(overviewRulerEnabled
@@ -1374,22 +1464,26 @@ export class NotebookTextDiffEditor
 		);
 
 		this._listViewContainer.style.height = `${dimension.height}px`;
+
 		this._listViewContainer.style.width = `${this._dimension.width}px`;
 
 		this._list?.layout(this._dimension.height, this._dimension.width);
 
 		if (this._modifiedWebview) {
 			this._modifiedWebview.element.style.width = `calc(50% - 16px)`;
+
 			this._modifiedWebview.element.style.left = `calc(50%)`;
 		}
 
 		if (this._originalWebview) {
 			this._originalWebview.element.style.width = `calc(50% - 16px)`;
+
 			this._originalWebview.element.style.left = `16px`;
 		}
 
 		if (this._webviewTransparentCover) {
 			this._webviewTransparentCover.style.height = `${this._dimension.height}px`;
+
 			this._webviewTransparentCover.style.width = `${this._dimension.width}px`;
 		}
 
@@ -1407,7 +1501,9 @@ export class NotebookTextDiffEditor
 
 	override dispose() {
 		this._isDisposed = true;
+
 		this._layoutCancellationTokenSource?.dispose();
+
 		this._detachModel();
 
 		super.dispose();
@@ -1418,6 +1514,7 @@ registerZIndex(ZIndex.Base, 10, "notebook-diff-view-viewport-slider");
 
 registerThemingParticipant((theme, collector) => {
 	const diffDiagonalFillColor = theme.getColor(diffDiagonalFill);
+
 	collector.addRule(`
 	.notebook-text-diff-editor .diagonal-fill {
 		background-image: linear-gradient(
@@ -1427,6 +1524,7 @@ registerThemingParticipant((theme, collector) => {
 			${diffDiagonalFillColor} 50%, ${diffDiagonalFillColor} 62.5%,
 			#0000 62.5%, #0000 100%
 		);
+
 		background-size: 8px 8px;
 	}
 	`);

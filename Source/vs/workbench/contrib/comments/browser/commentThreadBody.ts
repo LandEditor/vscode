@@ -32,15 +32,22 @@ export class CommentThreadBody<
 	T extends IRange | ICellRange = IRange,
 > extends Disposable {
 	private _commentsElement!: HTMLElement;
+
 	private _commentElements: CommentNode<T>[] = [];
+
 	private _resizeObserver: any;
+
 	private _focusedComment: number | undefined = undefined;
+
 	private _onDidResize = new Emitter<dom.Dimension>();
+
 	onDidResize = this._onDidResize.event;
+
 	private _commentDisposable = new DisposableMap<
 		CommentNode<T>,
 		DisposableStore
 	>();
+
 	private _markdownRenderer: MarkdownRenderer;
 
 	get length() {
@@ -48,9 +55,11 @@ export class CommentThreadBody<
 			? this._commentThread.comments.length
 			: 0;
 	}
+
 	get activeComment() {
 		return this._commentElements.filter((node) => node.isEditing)[0];
 	}
+
 	constructor(
 		private readonly _parentEditor: LayoutableEditor,
 		readonly owner: string,
@@ -73,6 +82,7 @@ export class CommentThreadBody<
 		private languageService: ILanguageService,
 	) {
 		super();
+
 		this._register(
 			dom.addDisposableListener(
 				container,
@@ -85,6 +95,7 @@ export class CommentThreadBody<
 				},
 			),
 		);
+
 		this._markdownRenderer = this._register(
 			new MarkdownRenderer(
 				this._options,
@@ -93,6 +104,7 @@ export class CommentThreadBody<
 			),
 		);
 	}
+
 	focus(commentUniqueId?: number) {
 		if (commentUniqueId !== undefined) {
 			const comment = this._commentElements.find(
@@ -106,8 +118,10 @@ export class CommentThreadBody<
 				return;
 			}
 		}
+
 		this._commentsElement.focus();
 	}
+
 	ensureFocusIntoNewEditingComment() {
 		if (
 			this._commentElements.length === 1 &&
@@ -116,14 +130,19 @@ export class CommentThreadBody<
 			this._commentElements[0].setFocus(true);
 		}
 	}
+
 	async display() {
 		this._commentsElement = dom.append(
 			this.container,
 			dom.$("div.comments-container"),
 		);
+
 		this._commentsElement.setAttribute("role", "presentation");
+
 		this._commentsElement.tabIndex = 0;
+
 		this._updateAriaLabel();
+
 		this._register(
 			dom.addDisposableListener(
 				this._commentsElement,
@@ -147,12 +166,14 @@ export class CommentThreadBody<
 							) {
 								return 0;
 							}
+
 							if (
 								this._focusedComment === undefined &&
 								change < 0
 							) {
 								return this._commentElements.length - 1;
 							}
+
 							const newIndex = this._focusedComment! + change;
 
 							return Math.min(
@@ -160,6 +181,7 @@ export class CommentThreadBody<
 								this._commentElements.length - 1,
 							);
 						};
+
 						this._setFocusedComment(
 							event.equals(KeyCode.UpArrow)
 								? moveFocusWithinBounds(-1)
@@ -169,13 +191,17 @@ export class CommentThreadBody<
 				},
 			),
 		);
+
 		this._commentDisposable.clearAndDisposeAll();
+
 		this._commentElements = [];
 
 		if (this._commentThread.comments) {
 			for (const comment of this._commentThread.comments) {
 				const newCommentNode = this.createNewCommentNode(comment);
+
 				this._commentElements.push(newCommentNode);
+
 				this._commentsElement.appendChild(newCommentNode.domNode);
 
 				if (comment.mode === languages.CommentMode.Editing) {
@@ -183,7 +209,9 @@ export class CommentThreadBody<
 				}
 			}
 		}
+
 		this._resizeObserver = new MutationObserver(this._refresh.bind(this));
+
 		this._resizeObserver.observe(this.container, {
 			attributes: true,
 			childList: true,
@@ -191,24 +219,30 @@ export class CommentThreadBody<
 			subtree: true,
 		});
 	}
+
 	private _refresh() {
 		const dimensions = dom.getClientArea(this.container);
+
 		this._onDidResize.fire(dimensions);
 	}
+
 	getDimensions() {
 		return dom.getClientArea(this.container);
 	}
+
 	layout(widthInPixel?: number) {
 		this._commentElements.forEach((element) => {
 			element.layout(widthInPixel);
 		});
 	}
+
 	getPendingEdits(): {
 		[key: number]: languages.PendingComment;
 	} {
 		const pendingEdits: {
 			[key: number]: languages.PendingComment;
 		} = {};
+
 		this._commentElements.forEach((element) => {
 			if (element.isEditing) {
 				const pendingEdit = element.getPendingEdit();
@@ -222,9 +256,11 @@ export class CommentThreadBody<
 
 		return pendingEdits;
 	}
+
 	getCommentCoords(commentUniqueId: number):
 		| {
 				thread: dom.IDomNodePagePosition;
+
 				comment: dom.IDomNodePagePosition;
 		  }
 		| undefined {
@@ -247,8 +283,10 @@ export class CommentThreadBody<
 				comment: commentCoords,
 			};
 		}
+
 		return;
 	}
+
 	async updateCommentThread(
 		commentThread: languages.CommentThread<T>,
 		preserveFocus: boolean,
@@ -276,16 +314,21 @@ export class CommentThreadBody<
 				this._commentElements[i].update(newComment[0]);
 			} else {
 				commentElementsToDelIndex.push(i);
+
 				commentElementsToDel.push(this._commentElements[i]);
 			}
 		}
 		// del removed elements
 		for (let i = commentElementsToDel.length - 1; i >= 0; i--) {
 			const commentToDelete = commentElementsToDel[i];
+
 			this._commentDisposable.deleteAndDispose(commentToDelete);
+
 			this._commentElements.splice(commentElementsToDelIndex[i], 1);
+
 			commentToDelete.domNode.remove();
 		}
+
 		let lastCommentElement: HTMLElement | null = null;
 
 		const newCommentNodeList: CommentNode<T>[] = [];
@@ -303,9 +346,11 @@ export class CommentThreadBody<
 
 			if (oldCommentNode.length) {
 				lastCommentElement = oldCommentNode[0].domNode;
+
 				newCommentNodeList.unshift(oldCommentNode[0]);
 			} else {
 				const newElement = this.createNewCommentNode(currentComment);
+
 				newCommentNodeList.unshift(newElement);
 
 				if (lastCommentElement) {
@@ -313,32 +358,41 @@ export class CommentThreadBody<
 						newElement.domNode,
 						lastCommentElement,
 					);
+
 					lastCommentElement = newElement.domNode;
 				} else {
 					this._commentsElement.appendChild(newElement.domNode);
+
 					lastCommentElement = newElement.domNode;
 				}
+
 				if (currentComment.mode === languages.CommentMode.Editing) {
 					await newElement.switchToEditMode();
+
 					newCommentsInEditMode.push(newElement);
 				}
 			}
 		}
+
 		this._commentThread = commentThread;
+
 		this._commentElements = newCommentNodeList;
 
 		if (newCommentsInEditMode.length) {
 			const lastIndex = this._commentElements.indexOf(
 				newCommentsInEditMode[newCommentsInEditMode.length - 1],
 			);
+
 			this._focusedComment = lastIndex;
 		}
+
 		this._updateAriaLabel();
 
 		if (!preserveFocus) {
 			this._setFocusedComment(this._focusedComment);
 		}
 	}
+
 	private _updateAriaLabel() {
 		if (this._commentThread.isDocumentCommentThread()) {
 			if (this._commentThread.range) {
@@ -367,10 +421,12 @@ export class CommentThreadBody<
 			);
 		}
 	}
+
 	private _setFocusedComment(value: number | undefined) {
 		if (this._focusedComment !== undefined) {
 			this._commentElements[this._focusedComment]?.setFocus(false);
 		}
+
 		if (this._commentElements.length === 0 || value === undefined) {
 			this._focusedComment = undefined;
 		} else {
@@ -378,9 +434,11 @@ export class CommentThreadBody<
 				value,
 				this._commentElements.length - 1,
 			);
+
 			this._commentElements[this._focusedComment].setFocus(true);
 		}
 	}
+
 	private createNewCommentNode(comment: languages.Comment): CommentNode<T> {
 		const newCommentNode = this._scopedInstatiationService.createInstance(
 			CommentNode,
@@ -397,6 +455,7 @@ export class CommentThreadBody<
 		) as unknown as CommentNode<T>;
 
 		const disposables: DisposableStore = new DisposableStore();
+
 		disposables.add(
 			newCommentNode.onDidClick((clickedNode) =>
 				this._setFocusedComment(
@@ -408,18 +467,23 @@ export class CommentThreadBody<
 				),
 			),
 		);
+
 		disposables.add(newCommentNode);
+
 		this._commentDisposable.set(newCommentNode, disposables);
 
 		return newCommentNode;
 	}
+
 	public override dispose(): void {
 		super.dispose();
 
 		if (this._resizeObserver) {
 			this._resizeObserver.disconnect();
+
 			this._resizeObserver = null;
 		}
+
 		this._commentDisposable.dispose();
 	}
 }

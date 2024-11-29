@@ -11,15 +11,20 @@ export const IBackupMainService =
 
 export interface IBackupMainService {
 	readonly _serviceBrand: undefined;
+
 	isHotExitEnabled(): boolean;
 
 	getEmptyWindowBackups(): IEmptyWindowBackupInfo[];
+
 	registerWorkspaceBackup(workspaceInfo: IWorkspaceBackupInfo): string;
+
 	registerWorkspaceBackup(
 		workspaceInfo: IWorkspaceBackupInfo,
 		migrateFrom: string,
 	): Promise<string>;
+
 	registerFolderBackup(folderInfo: IFolderBackupInfo): string;
+
 	registerEmptyWindowBackup(emptyWindowInfo: IEmptyWindowBackupInfo): string;
 	/**
 	 * All folders or workspaces that are known to have

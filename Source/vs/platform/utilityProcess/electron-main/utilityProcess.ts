@@ -84,7 +84,9 @@ export interface IWindowUtilityProcessConfiguration
 	extends IUtilityProcessConfiguration {
 	// --- message port response related
 	readonly responseWindowId: number;
+
 	readonly responseChannel: string;
+
 	readonly responseNonce: string;
 	// --- utility process options
 	/**
@@ -133,36 +135,56 @@ export interface IUtilityProcessCrashEvent
 }
 export interface IUtilityProcessInfo {
 	readonly pid: number;
+
 	readonly name: string;
 }
 export class UtilityProcess extends Disposable {
 	private static ID_COUNTER = 0;
+
 	private static readonly all = new Map<number, IUtilityProcessInfo>();
+
 	static getAll(): IUtilityProcessInfo[] {
 		return Array.from(UtilityProcess.all.values());
 	}
+
 	private readonly id = String(++UtilityProcess.ID_COUNTER);
+
 	private readonly _onStdout = this._register(new Emitter<string>());
+
 	readonly onStdout = this._onStdout.event;
+
 	private readonly _onStderr = this._register(new Emitter<string>());
+
 	readonly onStderr = this._onStderr.event;
+
 	private readonly _onMessage = this._register(new Emitter<unknown>());
+
 	readonly onMessage = this._onMessage.event;
+
 	private readonly _onSpawn = this._register(
 		new Emitter<number | undefined>(),
 	);
+
 	readonly onSpawn = this._onSpawn.event;
+
 	private readonly _onExit = this._register(
 		new Emitter<IUtilityProcessExitEvent>(),
 	);
+
 	readonly onExit = this._onExit.event;
+
 	private readonly _onCrash = this._register(
 		new Emitter<IUtilityProcessCrashEvent>(),
 	);
+
 	readonly onCrash = this._onCrash.event;
+
 	private process: ElectronUtilityProcess | undefined = undefined;
+
 	private processPid: number | undefined = undefined;
+
 	private configuration: IUtilityProcessConfiguration | undefined = undefined;
+
 	private killed = false;
 
 	constructor(
@@ -175,6 +197,7 @@ export class UtilityProcess extends Disposable {
 	) {
 		super();
 	}
+
 	protected log(msg: string, severity: Severity): void {
 		let logMsg: string;
 
@@ -183,6 +206,7 @@ export class UtilityProcess extends Disposable {
 		} else {
 			logMsg = `[UtilityProcess type: ${this.configuration?.type}, pid: ${this.processPid ?? "<none>"}]: ${msg}`;
 		}
+
 		switch (severity) {
 			case Severity.Error:
 				this.logService.error(logMsg);
@@ -200,6 +224,7 @@ export class UtilityProcess extends Disposable {
 				break;
 		}
 	}
+
 	private validateCanStart(): boolean {
 		if (this.process) {
 			this.log(
@@ -209,8 +234,10 @@ export class UtilityProcess extends Disposable {
 
 			return false;
 		}
+
 		return true;
 	}
+
 	start(configuration: IUtilityProcessConfiguration): boolean {
 		const started = this.doStart(configuration);
 
@@ -221,12 +248,15 @@ export class UtilityProcess extends Disposable {
 				this.log("payload sent via postMessage()", Severity.Info);
 			}
 		}
+
 		return started;
 	}
+
 	protected doStart(configuration: IUtilityProcessConfiguration): boolean {
 		if (!this.validateCanStart()) {
 			return false;
 		}
+
 		this.configuration = configuration;
 
 		const serviceName = `${this.configuration.type}-${this.id}`;
@@ -246,6 +276,7 @@ export class UtilityProcess extends Disposable {
 		const stdio = "pipe";
 
 		const env = this.createEnv(configuration);
+
 		this.log("creating new...", Severity.Info);
 		// Fork utility process
 		this.process = utilityProcess.fork(modulePath, args, {
@@ -261,6 +292,7 @@ export class UtilityProcess extends Disposable {
 
 		return true;
 	}
+
 	private createEnv(configuration: IUtilityProcessConfiguration): {
 		[key: string]: any;
 	} {
@@ -277,6 +309,7 @@ export class UtilityProcess extends Disposable {
 				configuration.parentLifecycleBound,
 			);
 		}
+
 		env["VSCODE_CRASH_REPORTER_PROCESS_TYPE"] = configuration.type;
 
 		if (isWindows) {
@@ -293,8 +326,10 @@ export class UtilityProcess extends Disposable {
 		for (const key of Object.keys(env)) {
 			env[key] = String(env[key]);
 		}
+
 		return env;
 	}
+
 	private registerListeners(
 		process: ElectronUtilityProcess,
 		configuration: IUtilityProcessConfiguration,
@@ -303,6 +338,7 @@ export class UtilityProcess extends Disposable {
 		// Stdout
 		if (process.stdout) {
 			const stdoutDecoder = new StringDecoder("utf-8");
+
 			this._register(
 				Event.fromNodeEventEmitter<string | Buffer>(
 					process.stdout,
@@ -319,6 +355,7 @@ export class UtilityProcess extends Disposable {
 		// Stderr
 		if (process.stderr) {
 			const stderrDecoder = new StringDecoder("utf-8");
+
 			this._register(
 				Event.fromNodeEventEmitter<string | Buffer>(
 					process.stderr,
@@ -355,7 +392,9 @@ export class UtilityProcess extends Disposable {
 							: configuration.type,
 					});
 				}
+
 				this.log("successfully created", Severity.Info);
+
 				this._onSpawn.fire(process.pid);
 			}),
 		);
@@ -366,6 +405,7 @@ export class UtilityProcess extends Disposable {
 				"exit",
 			)((code) => {
 				const normalizedCode = this.isNormalExit(code) ? 0 : code;
+
 				this.log(
 					`received exit event with code ${normalizedCode}`,
 					Severity.Info,
@@ -396,6 +436,7 @@ export class UtilityProcess extends Disposable {
 
 				try {
 					const reportJSON = JSON.parse(report);
+
 					addons = reportJSON.sharedObjects
 						.filter((sharedObject: string) =>
 							sharedObject.endsWith(".node"),
@@ -415,33 +456,51 @@ export class UtilityProcess extends Disposable {
 				type UtilityProcessV8ErrorClassification = {
 					processtype: {
 						classification: "SystemMetaData";
+
 						purpose: "PerformanceAndHealth";
+
 						comment: "The type of utility process to understand the origin of the crash better.";
 					};
+
 					error: {
 						classification: "SystemMetaData";
+
 						purpose: "PerformanceAndHealth";
+
 						comment: "The type of error from the utility process to understand the nature of the crash better.";
 					};
+
 					location: {
 						classification: "SystemMetaData";
+
 						purpose: "PerformanceAndHealth";
+
 						comment: "The source location that triggered the crash to understand the nature of the crash better.";
 					};
+
 					addons: {
 						classification: "SystemMetaData";
+
 						purpose: "PerformanceAndHealth";
+
 						comment: "The list of addons loaded in the utility process to understand the nature of the crash better";
 					};
+
 					owner: "deepak1556";
+
 					comment: "Provides insight into V8 sandbox FATAL error caused by native addons.";
 				};
+
 				type UtilityProcessV8ErrorEvent = {
 					processtype: string;
+
 					error: string;
+
 					location: string;
+
 					addons: string[];
 				};
+
 				this.telemetryService.publicLog2<
 					UtilityProcessV8ErrorEvent,
 					UtilityProcessV8ErrorClassification
@@ -474,27 +533,41 @@ export class UtilityProcess extends Disposable {
 					type UtilityProcessCrashClassification = {
 						type: {
 							classification: "SystemMetaData";
+
 							purpose: "PerformanceAndHealth";
+
 							comment: "The type of utility process to understand the origin of the crash better.";
 						};
+
 						reason: {
 							classification: "SystemMetaData";
+
 							purpose: "PerformanceAndHealth";
+
 							comment: "The reason of the utility process crash to understand the nature of the crash better.";
 						};
+
 						code: {
 							classification: "SystemMetaData";
+
 							purpose: "PerformanceAndHealth";
+
 							comment: "The exit code of the utility process to understand the nature of the crash better";
 						};
+
 						owner: "bpasero";
+
 						comment: "Provides insight into reasons the utility process crashed.";
 					};
+
 					type UtilityProcessCrashEvent = {
 						type: string;
+
 						reason: string;
+
 						code: number;
 					};
+
 					this.telemetryService.publicLog2<
 						UtilityProcessCrashEvent,
 						UtilityProcessCrashClassification
@@ -515,16 +588,19 @@ export class UtilityProcess extends Disposable {
 			}),
 		);
 	}
+
 	once(message: unknown, callback: () => void): void {
 		const disposable = this._register(
 			this._onMessage.event((msg) => {
 				if (msg === message) {
 					disposable.dispose();
+
 					callback();
 				}
 			}),
 		);
 	}
+
 	postMessage(
 		message: unknown,
 		transfer?: Electron.MessagePortMain[],
@@ -532,22 +608,28 @@ export class UtilityProcess extends Disposable {
 		if (!this.process) {
 			return false; // already killed, crashed or never started
 		}
+
 		this.process.postMessage(message, transfer);
 
 		return true;
 	}
+
 	connect(payload?: unknown): Electron.MessagePortMain {
 		const { port1: outPort, port2: utilityProcessPort } =
 			new MessageChannelMain();
+
 		this.postMessage(payload, [utilityProcessPort]);
 
 		return outPort;
 	}
+
 	enableInspectPort(): boolean {
 		if (!this.process || typeof this.processPid !== "number") {
 			return false;
 		}
+
 		this.log("enabling inspect port", Severity.Info);
+
 		interface ProcessExt {
 			_debugProcess?(pid: number): unknown;
 		}
@@ -562,22 +644,27 @@ export class UtilityProcess extends Disposable {
 		// not supported...
 		return false;
 	}
+
 	kill(): void {
 		if (!this.process) {
 			return; // already killed, crashed or never started
 		}
+
 		this.log("attempting to kill the process...", Severity.Info);
 
 		const killed = this.process.kill();
 
 		if (killed) {
 			this.log("successfully killed the process", Severity.Info);
+
 			this.killed = true;
+
 			this.onDidExitOrCrashOrKill();
 		} else {
 			this.log("unable to kill the process", Severity.Warning);
 		}
 	}
+
 	private isNormalExit(exitCode: number): boolean {
 		if (exitCode === 0) {
 			return true;
@@ -586,17 +673,22 @@ export class UtilityProcess extends Disposable {
 		// if we triggered the termination from process.kill()
 		return this.killed && exitCode === 15 /* SIGTERM */;
 	}
+
 	private onDidExitOrCrashOrKill(): void {
 		if (typeof this.processPid === "number") {
 			UtilityProcess.all.delete(this.processPid);
 		}
+
 		this.process = undefined;
 	}
+
 	async waitForExit(maxWaitTimeMs: number): Promise<void> {
 		if (!this.process) {
 			return; // already killed, crashed or never started
 		}
+
 		this.log("waiting to exit...", Severity.Info);
+
 		await Promise.race([
 			Event.toPromise(this.onExit),
 			timeout(maxWaitTimeMs),
@@ -607,6 +699,7 @@ export class UtilityProcess extends Disposable {
 				`did not exit within ${maxWaitTimeMs}ms, will kill it now...`,
 				Severity.Info,
 			);
+
 			this.kill();
 		}
 	}
@@ -624,6 +717,7 @@ export class WindowUtilityProcess extends UtilityProcess {
 	) {
 		super(logService, telemetryService, lifecycleMainService);
 	}
+
 	override start(configuration: IWindowUtilityProcessConfiguration): boolean {
 		const responseWindow = this.windowsMainService.getWindowById(
 			configuration.responseWindowId,
@@ -651,6 +745,7 @@ export class WindowUtilityProcess extends UtilityProcess {
 		this.registerWindowListeners(responseWindow.win, configuration);
 		// Establish & exchange message ports
 		const windowPort = this.connect(configuration.payload);
+
 		responseWindow.win.webContents.postMessage(
 			configuration.responseChannel,
 			configuration.responseNonce,
@@ -659,6 +754,7 @@ export class WindowUtilityProcess extends UtilityProcess {
 
 		return true;
 	}
+
 	private registerWindowListeners(
 		window: BrowserWindow,
 		configuration: IWindowUtilityProcessConfiguration,
@@ -672,6 +768,7 @@ export class WindowUtilityProcess extends UtilityProcess {
 					(e) => e.window.win === window,
 				)(() => this.kill()),
 			);
+
 			this._register(
 				Event.fromNodeEventEmitter(window, "closed")(() => this.kill()),
 			);

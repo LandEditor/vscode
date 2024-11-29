@@ -108,6 +108,7 @@ function getVisibleCells(cells: CellViewModel[], hiddenRanges: ICellRange[]) {
 		}
 
 		start = hiddenRanges[hiddenRangeIndex].end + 1;
+
 		hiddenRangeIndex++;
 	}
 
@@ -131,6 +132,7 @@ export class NotebookCellList
 	implements IDisposable, IStyleController, INotebookCellList
 {
 	protected override readonly view!: NotebookCellListView<CellViewModel>;
+
 	private viewZones!: NotebookViewZones;
 
 	get onWillScroll(): Event<ScrollEvent> {
@@ -144,25 +146,33 @@ export class NotebookCellList
 	get scrollableElement(): HTMLElement {
 		return this.view.scrollableElementDomNode;
 	}
+
 	private _previousFocusedElements: readonly CellViewModel[] = [];
+
 	private readonly _localDisposableStore = new DisposableStore();
+
 	private readonly _viewModelStore = new DisposableStore();
+
 	private styleElement?: HTMLStyleElement;
+
 	private _notebookCellAnchor: NotebookCellAnchor;
 
 	private readonly _onDidRemoveOutputs = this._localDisposableStore.add(
 		new Emitter<readonly ICellOutputViewModel[]>(),
 	);
+
 	readonly onDidRemoveOutputs = this._onDidRemoveOutputs.event;
 
 	private readonly _onDidHideOutputs = this._localDisposableStore.add(
 		new Emitter<readonly ICellOutputViewModel[]>(),
 	);
+
 	readonly onDidHideOutputs = this._onDidHideOutputs.event;
 
 	private readonly _onDidRemoveCellsFromView = this._localDisposableStore.add(
 		new Emitter<readonly ICellViewModel[]>(),
 	);
+
 	readonly onDidRemoveCellsFromView = this._onDidRemoveCellsFromView.event;
 
 	private _viewModel: NotebookViewModel | null = null;
@@ -170,7 +180,9 @@ export class NotebookCellList
 	get viewModel(): NotebookViewModel | null {
 		return this._viewModel;
 	}
+
 	private _hiddenRangeIds: string[] = [];
+
 	private hiddenRangesPrefixSum: PrefixSumComputer | null = null;
 
 	private readonly _onDidChangeVisibleRanges = this._localDisposableStore.add(
@@ -179,6 +191,7 @@ export class NotebookCellList
 
 	onDidChangeVisibleRanges: Event<void> =
 		this._onDidChangeVisibleRanges.event;
+
 	private _visibleRanges: ICellRange[] = [];
 
 	get visibleRanges() {
@@ -191,6 +204,7 @@ export class NotebookCellList
 		}
 
 		this._visibleRanges = ranges;
+
 		this._onDidChangeVisibleRanges.fire();
 	}
 
@@ -237,8 +251,11 @@ export class NotebookCellList
 			configurationService,
 			instantiationService,
 		);
+
 		NOTEBOOK_CELL_LIST_FOCUSED.bindTo(this.contextKeyService).set(true);
+
 		this._previousFocusedElements = this.getFocusedElements();
+
 		this._localDisposableStore.add(
 			this.onDidChangeFocus((e) => {
 				this._previousFocusedElements.forEach((element) => {
@@ -246,16 +263,19 @@ export class NotebookCellList
 						element.onDeselect();
 					}
 				});
+
 				this._previousFocusedElements = e.elements;
 			}),
 		);
 
 		const notebookEditorCursorAtBoundaryContext =
 			NOTEBOOK_EDITOR_CURSOR_BOUNDARY.bindTo(contextKeyService);
+
 		notebookEditorCursorAtBoundaryContext.set("none");
 
 		const notebookEditorCursorAtLineBoundaryContext =
 			NOTEBOOK_EDITOR_CURSOR_LINE_BOUNDARY.bindTo(contextKeyService);
+
 		notebookEditorCursorAtLineBoundaryContext.set("none");
 
 		const cursorSelectionListener = this._localDisposableStore.add(
@@ -413,9 +433,11 @@ export class NotebookCellList
 						},
 					);
 				}
+
 				updateVisibleRanges();
 			}),
 		);
+
 		this._localDisposableStore.add(
 			this.view.onDidScroll(() => {
 				if (this._isInLayout) {
@@ -426,6 +448,7 @@ export class NotebookCellList
 						},
 					);
 				}
+
 				updateVisibleRanges();
 			}),
 		);
@@ -443,6 +466,7 @@ export class NotebookCellList
 			renderers,
 			viewOptions,
 		);
+
 		this.viewZones = new NotebookViewZones(listView, this);
 
 		return listView;
@@ -457,7 +481,9 @@ export class NotebookCellList
 
 	attachWebview(element: HTMLElement) {
 		element.style.top = `-${NOTEBOOK_WEBVIEW_BOUNDARY}px`;
+
 		this.rowsContainer.insertAdjacentElement("afterbegin", element);
+
 		this._webviewElement = new FastDomNode<HTMLElement>(element);
 	}
 
@@ -487,12 +513,15 @@ export class NotebookCellList
 
 	detachViewModel() {
 		this._viewModelStore.clear();
+
 		this._viewModel = null;
+
 		this.hiddenRangesPrefixSum = null;
 	}
 
 	attachViewModel(model: NotebookViewModel) {
 		this._viewModel = model;
+
 		this._viewModelStore.add(
 			model.onDidChangeViewCells((e) => {
 				if (this._isDisposed) {
@@ -517,6 +546,7 @@ export class NotebookCellList
 
 				for (let i = 0; i < this.length; i++) {
 					oldVisibleViewCells.push(this.element(i));
+
 					oldViewCellMapping.add(this.element(i).uri.toString());
 				}
 
@@ -560,6 +590,7 @@ export class NotebookCellList
 					.map((index) => model.cellAt(index))
 					.filter((cell) => !!cell)
 					.map((cell) => this._getViewIndexUpperBound(cell!));
+
 				this.setSelection(viewSelections, undefined, true);
 
 				const primary = cellRangesToIndexes([model.getFocus()])
@@ -574,16 +605,19 @@ export class NotebookCellList
 		);
 
 		const hiddenRanges = model.getHiddenRanges();
+
 		this.setHiddenAreas(hiddenRanges, false);
 
 		const newRanges = reduceCellRanges(hiddenRanges);
 
 		const viewCells = model.viewCells.slice(0) as CellViewModel[];
+
 		newRanges.reverse().forEach((range) => {
 			const removedCells = viewCells.splice(
 				range.start,
 				range.end - range.start + 1,
 			);
+
 			this._onDidRemoveCellsFromView.fire(removedCells);
 		});
 
@@ -615,7 +649,9 @@ export class NotebookCellList
 			this.splice2(diff.start, diff.deleteCount, diff.toInsert);
 
 			this._onDidHideOutputs.fire(hiddenOutputs);
+
 			this._onDidRemoveOutputs.fire(deletedOutputs);
+
 			this._onDidRemoveCellsFromView.fire(removedMarkdownCells);
 		});
 	}
@@ -654,7 +690,9 @@ export class NotebookCellList
 			if (!hasDifference) {
 				// they call 'setHiddenAreas' for a reason, even if the ranges are still the same, it's possible that the hiddenRangeSum is not update to date
 				this._updateHiddenRangePrefixSum(newRanges);
+
 				this.viewZones.onHiddenRangesChange();
+
 				this.viewZones.layout();
 
 				return false;
@@ -708,7 +746,9 @@ export class NotebookCellList
 			}
 
 			ret.push(newRanges[index].end - newRanges[index].start + 1 + 1);
+
 			start = newRanges[index].end + 1;
+
 			index++;
 		}
 
@@ -735,6 +775,7 @@ export class NotebookCellList
 		);
 
 		const oldViewCellMapping = new Set<string>();
+
 		oldViewCellEntries.forEach((cell) => {
 			oldViewCellMapping.add(cell.uri.toString());
 		});
@@ -774,6 +815,7 @@ export class NotebookCellList
 		}
 
 		const selectionsLeft = [];
+
 		this.getSelectedElements().forEach((el) => {
 			if (this._viewModel!.hasCell(el)) {
 				selectionsLeft.push(el.handle);
@@ -832,6 +874,7 @@ export class NotebookCellList
 						this.hiddenRangesPrefixSum.getCount())
 				);
 			}
+
 			return undefined;
 		} else {
 			return viewIndexInfo.index;
@@ -866,6 +909,7 @@ export class NotebookCellList
 				// it's already after the last hidden range
 				return true;
 			}
+
 			return false;
 		} else {
 			return true;
@@ -906,7 +950,9 @@ export class NotebookCellList
 				}
 
 				stack.push(modelIndex);
+
 				index++;
+
 				modelIndex++;
 			} else {
 				// there are hidden ranges after it
@@ -925,7 +971,9 @@ export class NotebookCellList
 				}
 
 				stack.push(modelIndex);
+
 				index++;
+
 				modelIndex = accu;
 			}
 		}
@@ -1040,6 +1088,7 @@ export class NotebookCellList
 		if (index >= 0 && this._viewModel) {
 			// update view model first, which will update both `focus` and `selection` in a single transaction
 			const focusedElementHandle = this.element(index).handle;
+
 			this._viewModel.updateSelectionsState(
 				{
 					kind: SelectionStateType.Handle,
@@ -1058,6 +1107,7 @@ export class NotebookCellList
 		const indices = elements
 			.map((cell) => this._getViewIndexUpperBound(cell))
 			.filter((index) => index >= 0);
+
 		this.setSelection(indices);
 	}
 
@@ -1115,6 +1165,7 @@ export class NotebookCellList
 		} else {
 			if (this._viewModel) {
 				const focusedElementHandle = this.element(indexes[0]).handle;
+
 				this._viewModel.updateSelectionsState(
 					{
 						kind: SelectionStateType.Handle,
@@ -1359,6 +1410,7 @@ export class NotebookCellList
 		switch (revealPosition) {
 			case CellRevealPosition.Top:
 				this.view.setScrollTop(elementTop);
+
 				this.view.setScrollTop(this.view.elementTop(viewIndex));
 
 				break;
@@ -1393,6 +1445,7 @@ export class NotebookCellList
 						);
 					}
 				}
+
 				break;
 
 			case CellRevealPosition.Bottom:
@@ -1419,9 +1472,11 @@ export class NotebookCellList
 
 					break;
 				}
+
 				this.view.setScrollTop(
 					this.scrollTop + (elementBottom - wrapperBottom),
 				);
+
 				this.view.setScrollTop(
 					this.scrollTop +
 						(this.view.elementTop(viewIndex) +
@@ -1488,10 +1543,12 @@ export class NotebookCellList
 			if (elementTop + elementHeight <= scrollTop) {
 				// scroll up
 				this.view.setScrollTop(elementTop);
+
 				alignHint = "top";
 			} else if (elementTop >= wrapperBottom) {
 				// scroll down
 				this.view.setScrollTop(elementTop - this.view.renderHeight / 2);
+
 				alignHint = "bottom";
 			}
 
@@ -1520,15 +1577,18 @@ export class NotebookCellList
 
 			const positionOffsetInView =
 				this.view.elementTop(viewIndex) + positionOffset;
+
 			this.view.setScrollTop(
 				positionOffsetInView - this.view.renderHeight / 2,
 			);
+
 			element.revealRangeInCenter(range);
 		};
 
 		const elementTop = this.view.elementTop(viewIndex);
 
 		const viewItemOffset = elementTop;
+
 		this.view.setScrollTop(viewItemOffset - this.view.renderHeight / 2);
 
 		const element = this.view.element(viewIndex);
@@ -1553,6 +1613,7 @@ export class NotebookCellList
 
 			const positionOffsetInView =
 				this.view.elementTop(viewIndex) + positionOffset;
+
 			this.view.setScrollTop(
 				positionOffsetInView - this.view.renderHeight / 2,
 			);
@@ -1581,6 +1642,7 @@ export class NotebookCellList
 			const newPositionOffset =
 				this.view.elementTop(viewIndex) +
 				element.getPositionScrollTopOffset(range);
+
 			this.view.setScrollTop(
 				newPositionOffset - this.view.renderHeight / 2,
 			);
@@ -1626,8 +1688,10 @@ export class NotebookCellList
 			// the element might be scrolled out of view
 			// next frame, when we update the element height, the element will never be scrolled back into view
 			const newTotalHeight = element.layoutInfo.totalHeight;
+
 			this.updateElementHeight(viewIndex, newTotalHeight);
 		}
+
 		const elementTop = this.view.elementTop(viewIndex);
 
 		const positionTop = elementTop + positionOffset;
@@ -1669,7 +1733,9 @@ export class NotebookCellList
 				const rangeOffset =
 					element.layoutInfo.outputContainerOffset +
 					Math.min(offset, element.layoutInfo.outputTotalHeight);
+
 				this.view.setScrollTop(elementTop - this.view.renderHeight / 2);
+
 				this.view.setScrollTop(
 					elementTop + rangeOffset - this.view.renderHeight / 2,
 				);
@@ -1761,7 +1827,9 @@ export class NotebookCellList
 					}
 				});
 			}
+
 			this.view.updateElementHeight(index, size, anchorElementIndex);
+
 			this.viewZones.layout();
 
 			return;
@@ -1769,6 +1837,7 @@ export class NotebookCellList
 
 		if (anchorElementIndex !== null) {
 			this.view.updateElementHeight(index, size, anchorElementIndex);
+
 			this.viewZones.layout();
 
 			return;
@@ -1791,6 +1860,7 @@ export class NotebookCellList
 				)
 			) {
 				this.view.updateElementHeight(index, size, focus);
+
 				this.viewZones.layout();
 
 				return;
@@ -1798,6 +1868,7 @@ export class NotebookCellList
 		}
 
 		this.view.updateElementHeight(index, size, null);
+
 		this.viewZones.layout();
 
 		return;
@@ -1853,7 +1924,9 @@ export class NotebookCellList
 				},
 				"view",
 			);
+
 			this.setFocus([], undefined, true);
+
 			this.setSelection([], undefined, true);
 		}
 
@@ -1888,6 +1961,7 @@ export class NotebookCellList
 				this.view.domNode,
 			);
 		}
+
 		const suffix = selectorSuffix && `.${selectorSuffix}`;
 
 		const content: string[] = [];
@@ -1902,6 +1976,7 @@ export class NotebookCellList
 			content.push(
 				`.monaco-list${suffix}:focus > div.monaco-scrollable-element > .monaco-list-rows > .monaco-list-row.focused { background-color: ${styles.listFocusBackground}; }`,
 			);
+
 			content.push(
 				`.monaco-list${suffix}:focus > div.monaco-scrollable-element > .monaco-list-rows > .monaco-list-row.focused:hover { background-color: ${styles.listFocusBackground}; }`,
 			); // overwrite :hover style in this case!
@@ -1917,6 +1992,7 @@ export class NotebookCellList
 			content.push(
 				`.monaco-list${suffix}:focus > div.monaco-scrollable-element > .monaco-list-rows > .monaco-list-row.selected { background-color: ${styles.listActiveSelectionBackground}; }`,
 			);
+
 			content.push(
 				`.monaco-list${suffix}:focus > div.monaco-scrollable-element > .monaco-list-rows > .monaco-list-row.selected:hover { background-color: ${styles.listActiveSelectionBackground}; }`,
 			); // overwrite :hover style in this case!
@@ -1946,6 +2022,7 @@ export class NotebookCellList
 			content.push(
 				`.monaco-list${suffix} > div.monaco-scrollable-element > .monaco-list-rows > .monaco-list-row.focused { background-color:  ${styles.listInactiveFocusBackground}; }`,
 			);
+
 			content.push(
 				`.monaco-list${suffix} > div.monaco-scrollable-element > .monaco-list-rows > .monaco-list-row.focused:hover { background-color:  ${styles.listInactiveFocusBackground}; }`,
 			); // overwrite :hover style in this case!
@@ -1955,6 +2032,7 @@ export class NotebookCellList
 			content.push(
 				`.monaco-list${suffix} > div.monaco-scrollable-element > .monaco-list-rows > .monaco-list-row.selected { background-color:  ${styles.listInactiveSelectionBackground}; }`,
 			);
+
 			content.push(
 				`.monaco-list${suffix} > div.monaco-scrollable-element > .monaco-list-rows > .monaco-list-row.selected:hover { background-color:  ${styles.listInactiveSelectionBackground}; }`,
 			); // overwrite :hover style in this case!
@@ -2036,23 +2114,32 @@ export class NotebookCellList
 		} else {
 			this.view.domNode.style.visibility = "initial";
 		}
+
 		this._isInLayout = false;
 	}
 
 	override dispose() {
 		this._isDisposed = true;
+
 		this._viewModelStore.dispose();
+
 		this._localDisposableStore.dispose();
+
 		this._notebookCellAnchor.dispose();
+
 		this.viewZones.dispose();
 
 		super.dispose();
 
 		// un-ref
 		this._previousFocusedElements = [];
+
 		this._viewModel = null;
+
 		this._hiddenRangeIds = [];
+
 		this.hiddenRangesPrefixSum = null;
+
 		this._visibleRanges = [];
 	}
 }
@@ -2099,6 +2186,7 @@ export class ListViewInfoAccessor extends Disposable {
 			if (endModelIndex === undefined) {
 				throw new Error(`endIndex ${endIndex} out of boundary`);
 			}
+
 			return { start: modelIndex, end: endModelIndex };
 		}
 	}

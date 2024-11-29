@@ -30,6 +30,7 @@ import { ILifecycleService } from "../../lifecycle/common/lifecycle.js";
 
 class SharedProcessTunnel extends Disposable implements RemoteTunnel {
 	public readonly privacy = TunnelPrivacyId.Private;
+
 	public readonly protocol: string | undefined = undefined;
 
 	constructor(
@@ -46,27 +47,33 @@ class SharedProcessTunnel extends Disposable implements RemoteTunnel {
 		private readonly _remoteAuthorityResolverService: IRemoteAuthorityResolverService,
 	) {
 		super();
+
 		this._updateAddress();
+
 		this._register(
 			this._remoteAuthorityResolverService.onDidChangeConnectionData(() =>
 				this._updateAddress(),
 			),
 		);
 	}
+
 	private _updateAddress(): void {
 		this._addressProvider.getAddress().then((address) => {
 			this._sharedProcessTunnelService.setAddress(this._id, address);
 		});
 	}
+
 	public override async dispose(): Promise<void> {
 		this._onBeforeDispose();
 
 		super.dispose();
+
 		await this._sharedProcessTunnelService.destroyTunnel(this._id);
 	}
 }
 export class TunnelService extends AbstractTunnelService {
 	private readonly _activeSharedProcessTunnels = new Set<string>();
+
 	public constructor(
 		@ILogService
 		logService: ILogService,
@@ -93,6 +100,7 @@ export class TunnelService extends AbstractTunnelService {
 			}),
 		);
 	}
+
 	public isPortPrivileged(port: number): boolean {
 		return isPortPrivileged(
 			port,
@@ -101,6 +109,7 @@ export class TunnelService extends AbstractTunnelService {
 			this._nativeWorkbenchEnvironmentService.os.release,
 		);
 	}
+
 	protected retainOrCreateTunnel(
 		addressOrTunnelProvider: IAddressProvider | ITunnelProvider,
 		remoteHost: string,
@@ -118,6 +127,7 @@ export class TunnelService extends AbstractTunnelService {
 
 			return existing.value;
 		}
+
 		if (isTunnelProvider(addressOrTunnelProvider)) {
 			return this.createWithProvider(
 				addressOrTunnelProvider,
@@ -141,14 +151,17 @@ export class TunnelService extends AbstractTunnelService {
 				localPort,
 				elevateIfNeeded,
 			);
+
 			this.logService.trace(
 				"ForwardedPorts: (TunnelService) Tunnel created without provider.",
 			);
+
 			this.addTunnelToMap(remoteHost, remotePort, tunnel);
 
 			return tunnel;
 		}
 	}
+
 	private async _createSharedProcessTunnel(
 		addressProvider: IAddressProvider,
 		tunnelRemoteHost: string,
@@ -158,6 +171,7 @@ export class TunnelService extends AbstractTunnelService {
 		elevateIfNeeded: boolean | undefined,
 	): Promise<RemoteTunnel> {
 		const { id } = await this._sharedProcessTunnelService.createTunnel();
+
 		this._activeSharedProcessTunnels.add(id);
 
 		const authority = this._environmentService.remoteAuthority!;
@@ -187,6 +201,7 @@ export class TunnelService extends AbstractTunnelService {
 
 		return tunnel;
 	}
+
 	override canTunnel(uri: URI): boolean {
 		return (
 			super.canTunnel(uri) && !!this._environmentService.remoteAuthority

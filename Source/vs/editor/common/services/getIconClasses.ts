@@ -43,6 +43,7 @@ export function getIconClasses(
 
 		if (resource.scheme === Schemas.data) {
 			const metadata = DataUri.parseMetaData(resource);
+
 			name = metadata.get(DataUri.META_DATA_LABEL);
 		} else {
 			const match = resource.path.match(fileIconDirectoryRegex);
@@ -89,6 +90,7 @@ export function getIconClasses(
 						); // add each combination of all found extensions if more than one
 					}
 				}
+
 				classes.push(`ext-file-icon`); // extra segment to increase file-ext score
 			}
 
@@ -106,6 +108,7 @@ export function getIconClasses(
 			}
 		}
 	}
+
 	return classes;
 }
 

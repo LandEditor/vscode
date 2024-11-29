@@ -70,28 +70,35 @@ export class NodeJSFileWatcherLibrary extends Disposable {
 			NodeJSFileWatcherLibrary.FILE_CHANGES_HANDLER_DELAY,
 		),
 	);
+
 	private readonly excludes = parseWatcherPatterns(
 		this.request.path,
 		this.request.excludes,
 	);
+
 	private readonly includes = this.request.includes
 		? parseWatcherPatterns(this.request.path, this.request.includes)
 		: undefined;
+
 	private readonly filter = isWatchRequestWithCorrelation(this.request)
 		? this.request.filter
 		: undefined; // filtering is only enabled when correlating because watchers are otherwise potentially reused
 	private readonly cts = new CancellationTokenSource();
+
 	readonly ready = this.watch();
+
 	private _isReusingRecursiveWatcher = false;
 
 	get isReusingRecursiveWatcher(): boolean {
 		return this._isReusingRecursiveWatcher;
 	}
+
 	private didFail = false;
 
 	get failed(): boolean {
 		return this.didFail;
 	}
+
 	constructor(
 		private readonly request: INonRecursiveWatchRequest,
 		private readonly recursiveWatcher:
@@ -104,6 +111,7 @@ export class NodeJSFileWatcherLibrary extends Disposable {
 	) {
 		super();
 	}
+
 	private async watch(): Promise<void> {
 		try {
 			const realPath = await this.normalizePath(this.request);
@@ -111,11 +119,13 @@ export class NodeJSFileWatcherLibrary extends Disposable {
 			if (this.cts.token.isCancellationRequested) {
 				return;
 			}
+
 			const stat = await promises.stat(realPath);
 
 			if (this.cts.token.isCancellationRequested) {
 				return;
 			}
+
 			this._register(await this.doWatch(realPath, stat.isDirectory()));
 		} catch (error) {
 			if (error.code !== "ENOENT") {
@@ -125,13 +135,17 @@ export class NodeJSFileWatcherLibrary extends Disposable {
 					`ignoring a path for watching who's stat info failed to resolve: ${this.request.path} (error: ${error})`,
 				);
 			}
+
 			this.notifyWatchFailed();
 		}
 	}
+
 	private notifyWatchFailed(): void {
 		this.didFail = true;
+
 		this.onDidWatchFail?.();
 	}
+
 	private async normalizePath(
 		request: INonRecursiveWatchRequest,
 	): Promise<string> {
@@ -156,8 +170,10 @@ export class NodeJSFileWatcherLibrary extends Disposable {
 		} catch (error) {
 			// ignore
 		}
+
 		return realPath;
 	}
+
 	private async doWatch(
 		realPath: string,
 		isDirectory: boolean,
@@ -170,13 +186,17 @@ export class NodeJSFileWatcherLibrary extends Disposable {
 			this.trace(
 				`reusing an existing recursive watcher for ${this.request.path}`,
 			);
+
 			this._isReusingRecursiveWatcher = true;
 		} else {
 			this._isReusingRecursiveWatcher = false;
+
 			await this.doWatchWithNodeJS(realPath, isDirectory, disposables);
 		}
+
 		return disposables;
 	}
+
 	private doWatchWithExistingWatcher(
 		realPath: string,
 		isDirectory: boolean,
@@ -190,6 +210,7 @@ export class NodeJSFileWatcherLibrary extends Disposable {
 			// and not child paths.
 			return false;
 		}
+
 		const resource = URI.file(this.request.path);
 
 		const subscription = this.recursiveWatcher?.subscribe(
@@ -198,6 +219,7 @@ export class NodeJSFileWatcherLibrary extends Disposable {
 				if (disposables.isDisposed) {
 					return; // return early if already disposed
 				}
+
 				if (error) {
 					const watchDisposable = await this.doWatch(
 						realPath,
@@ -236,8 +258,10 @@ export class NodeJSFileWatcherLibrary extends Disposable {
 
 			return true;
 		}
+
 		return false;
 	}
+
 	private async doWatchWithNodeJS(
 		realPath: string,
 		isDirectory: boolean,
@@ -255,7 +279,9 @@ export class NodeJSFileWatcherLibrary extends Disposable {
 
 			return;
 		}
+
 		const cts = new CancellationTokenSource(this.cts.token);
+
 		disposables.add(toDisposable(() => cts.dispose(true)));
 
 		const watcherDisposables = new DisposableStore(); // we need a separate disposable store because we re-create the watcher from within in some cases
@@ -267,12 +293,15 @@ export class NodeJSFileWatcherLibrary extends Disposable {
 			const pathBasename = basename(realPath);
 			// Creating watcher can fail with an exception
 			const watcher = watch(realPath);
+
 			watcherDisposables.add(
 				toDisposable(() => {
 					watcher.removeAllListeners();
+
 					watcher.close();
 				}),
 			);
+
 			this.trace(`Started watching: '${realPath}'`);
 			// Folder: resolve children to emit proper events
 			const folderChildren = new Set<string>();
@@ -286,31 +315,40 @@ export class NodeJSFileWatcherLibrary extends Disposable {
 					this.error(error);
 				}
 			}
+
 			if (cts.token.isCancellationRequested) {
 				return;
 			}
+
 			const mapPathToStatDisposable = new Map<string, IDisposable>();
+
 			watcherDisposables.add(
 				toDisposable(() => {
 					for (const [, disposable] of mapPathToStatDisposable) {
 						disposable.dispose();
 					}
+
 					mapPathToStatDisposable.clear();
 				}),
 			);
+
 			watcher.on("error", (code: number, signal: string) => {
 				if (cts.token.isCancellationRequested) {
 					return;
 				}
+
 				this.error(
 					`Failed to watch ${realPath} for changes using fs.watch() (${code}, ${signal})`,
 				);
+
 				this.notifyWatchFailed();
 			});
+
 			watcher.on("change", (type, raw) => {
 				if (cts.token.isCancellationRequested) {
 					return; // ignore if already disposed
 				}
+
 				if (this.verboseLogging) {
 					this.traceWithCorrelation(`[raw] ["${type}"] ${raw}`);
 				}
@@ -327,6 +365,7 @@ export class NodeJSFileWatcherLibrary extends Disposable {
 						changedFileName = normalizeNFC(changedFileName);
 					}
 				}
+
 				if (
 					!changedFileName ||
 					(type !== "change" && type !== "rename")
@@ -370,6 +409,7 @@ export class NodeJSFileWatcherLibrary extends Disposable {
 
 								return;
 							}
+
 							if (cts.token.isCancellationRequested) {
 								return;
 							}
@@ -394,12 +434,15 @@ export class NodeJSFileWatcherLibrary extends Disposable {
 									type = FileChangeType.UPDATED;
 								} else {
 									type = FileChangeType.ADDED;
+
 									folderChildren.add(changedFileName);
 								}
 							} else {
 								folderChildren.delete(changedFileName);
+
 								type = FileChangeType.DELETED;
 							}
+
 							this.onFileChange({
 								resource: joinPath(
 									requestResource,
@@ -409,6 +452,7 @@ export class NodeJSFileWatcherLibrary extends Disposable {
 								cId: this.request.correlationId,
 							});
 						}, NodeJSFileWatcherLibrary.FILE_DELETE_HANDLER_DELAY);
+
 						mapPathToStatDisposable.set(
 							changedFileName,
 							toDisposable(() => clearTimeout(timeoutHandle)),
@@ -424,8 +468,10 @@ export class NodeJSFileWatcherLibrary extends Disposable {
 							type = FileChangeType.UPDATED;
 						} else {
 							type = FileChangeType.ADDED;
+
 							folderChildren.add(changedFileName);
 						}
+
 						this.onFileChange({
 							resource: joinPath(
 								requestResource,
@@ -475,6 +521,7 @@ export class NodeJSFileWatcherLibrary extends Disposable {
 									},
 									true /* skip excludes/includes (file is explicitly watched) */,
 								);
+
 								watcherDisposables.add(
 									await this.doWatch(realPath, false),
 								);
@@ -487,6 +534,7 @@ export class NodeJSFileWatcherLibrary extends Disposable {
 						// Very important to dispose the watcher which now points to a stale inode
 						// and wire in a new disposable that tracks our timeout that is installed
 						watcherDisposables.clear();
+
 						watcherDisposables.add(
 							toDisposable(() => clearTimeout(timeoutHandle)),
 						);
@@ -510,9 +558,11 @@ export class NodeJSFileWatcherLibrary extends Disposable {
 					`Failed to watch ${realPath} for changes using fs.watch() (${error.toString()})`,
 				);
 			}
+
 			this.notifyWatchFailed();
 		}
 	}
+
 	private onWatchedPathDeleted(resource: URI): void {
 		this.warn("Watcher shutdown because watched path got deleted");
 		// Emit events and flush in case the watcher gets disposed
@@ -524,9 +574,12 @@ export class NodeJSFileWatcherLibrary extends Disposable {
 			},
 			true /* skip excludes/includes (file is explicitly watched) */,
 		);
+
 		this.fileChangesAggregator.flush();
+
 		this.notifyWatchFailed();
 	}
+
 	private onFileChange(
 		event: IFileChange,
 		skipIncludeExcludeChecks = false,
@@ -565,6 +618,7 @@ export class NodeJSFileWatcherLibrary extends Disposable {
 			this.fileChangesAggregator.work(event);
 		}
 	}
+
 	private handleFileChanges(fileChanges: IFileChange[]): void {
 		// Coalesce events: merge events of same kind
 		const coalescedFileChanges = coalesceEvents(fileChanges);
@@ -578,10 +632,13 @@ export class NodeJSFileWatcherLibrary extends Disposable {
 						` >> ignored (filtered) ${event.resource.fsPath}`,
 					);
 				}
+
 				continue;
 			}
+
 			filteredEvents.push(event);
 		}
+
 		if (filteredEvents.length === 0) {
 			return;
 		}
@@ -608,10 +665,12 @@ export class NodeJSFileWatcherLibrary extends Disposable {
 			}
 		}
 	}
+
 	private async existsChildStrictCase(path: string): Promise<boolean> {
 		if (isLinux) {
 			return Promises.exists(path);
 		}
+
 		try {
 			const pathBasename = basename(path);
 
@@ -624,9 +683,11 @@ export class NodeJSFileWatcherLibrary extends Disposable {
 			return false;
 		}
 	}
+
 	setVerboseLogging(verboseLogging: boolean): void {
 		this.verboseLogging = verboseLogging;
 	}
+
 	private error(error: string): void {
 		if (!this.cts.token.isCancellationRequested) {
 			this.onLogMessage?.({
@@ -635,6 +696,7 @@ export class NodeJSFileWatcherLibrary extends Disposable {
 			});
 		}
 	}
+
 	private warn(message: string): void {
 		if (!this.cts.token.isCancellationRequested) {
 			this.onLogMessage?.({
@@ -643,6 +705,7 @@ export class NodeJSFileWatcherLibrary extends Disposable {
 			});
 		}
 	}
+
 	private trace(message: string): void {
 		if (!this.cts.token.isCancellationRequested && this.verboseLogging) {
 			this.onLogMessage?.({
@@ -651,6 +714,7 @@ export class NodeJSFileWatcherLibrary extends Disposable {
 			});
 		}
 	}
+
 	private traceWithCorrelation(message: string): void {
 		if (!this.cts.token.isCancellationRequested && this.verboseLogging) {
 			this.trace(
@@ -658,6 +722,7 @@ export class NodeJSFileWatcherLibrary extends Disposable {
 			);
 		}
 	}
+
 	override dispose(): void {
 		this.cts.dispose(true);
 
@@ -701,6 +766,7 @@ export async function watchFileContents(
 						if (isReading) {
 							return; // return early if we are already reading the output
 						}
+
 						isReading = true;
 
 						try {
@@ -721,10 +787,12 @@ export async function watchFileContents(
 								) {
 									break;
 								}
+
 								onData(buffer.slice(0, bytesRead));
 							}
 						} catch (err) {
 							error = new Error(err);
+
 							cts.dispose(true);
 						} finally {
 							isReading = false;
@@ -734,7 +802,9 @@ export async function watchFileContents(
 			})();
 		},
 	);
+
 	await watcher.ready;
+
 	onReady();
 
 	return new Promise<void>((resolve, reject) => {
@@ -746,6 +816,7 @@ export async function watchFileContents(
 			} catch (err) {
 				error = new Error(err);
 			}
+
 			if (error) {
 				reject(error);
 			} else {

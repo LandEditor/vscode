@@ -49,10 +49,12 @@ import {
 @extHostNamedCustomer(MainContext.MainThreadFileSystem)
 export class MainThreadFileSystem implements MainThreadFileSystemShape {
 	private readonly _proxy: ExtHostFileSystemShape;
+
 	private readonly _fileProvider = new DisposableMap<
 		number,
 		RemoteFileSystemProvider
 	>();
+
 	private readonly _disposables = new DisposableStore();
 
 	constructor(
@@ -72,6 +74,7 @@ export class MainThreadFileSystem implements MainThreadFileSystemShape {
 				entry.capabilities,
 			);
 		}
+
 		this._disposables.add(
 			_fileService.onDidChangeFileSystemProviderRegistrations((e) =>
 				infoProxy.$acceptProviderInfos(
@@ -80,6 +83,7 @@ export class MainThreadFileSystem implements MainThreadFileSystemShape {
 				),
 			),
 		);
+
 		this._disposables.add(
 			_fileService.onDidChangeFileSystemProviderCapabilities((e) =>
 				infoProxy.$acceptProviderInfos(
@@ -89,10 +93,13 @@ export class MainThreadFileSystem implements MainThreadFileSystemShape {
 			),
 		);
 	}
+
 	dispose(): void {
 		this._disposables.dispose();
+
 		this._fileProvider.dispose();
 	}
+
 	async $registerFileSystemProvider(
 		handle: number,
 		scheme: string,
@@ -120,6 +127,7 @@ export class MainThreadFileSystem implements MainThreadFileSystemShape {
 		if (!fileProvider) {
 			throw new Error("Unknown file provider");
 		}
+
 		fileProvider.$onFileSystemChange(changes);
 	}
 	// --- consumer fs, vscode.workspace.fs
@@ -145,10 +153,12 @@ export class MainThreadFileSystem implements MainThreadFileSystemShape {
 			.then((stat) => {
 				if (!stat.isDirectory) {
 					const err = new Error(stat.name);
+
 					err.name = FileSystemProviderErrorCode.FileNotADirectory;
 
 					throw err;
 				}
+
 				return !stat.children
 					? []
 					: stat.children.map(
@@ -161,6 +171,7 @@ export class MainThreadFileSystem implements MainThreadFileSystemShape {
 			})
 			.catch(MainThreadFileSystem._handleError);
 	}
+
 	private static _asFileType(
 		stat: IFileStat | IFileStatWithPartialMetadata,
 	): FileType {
@@ -171,9 +182,11 @@ export class MainThreadFileSystem implements MainThreadFileSystemShape {
 		} else if (stat.isDirectory) {
 			res += FileType.Directory;
 		}
+
 		if (stat.isSymbolicLink) {
 			res += FileType.SymbolicLink;
 		}
+
 		return res;
 	}
 	$readFile(uri: UriComponents): Promise<VSBuffer> {
@@ -219,6 +232,7 @@ export class MainThreadFileSystem implements MainThreadFileSystemShape {
 			.del(URI.revive(uri), opts)
 			.catch(MainThreadFileSystem._handleError);
 	}
+
 	private static _handleError(err: any): never {
 		if (err instanceof FileOperationError) {
 			switch (err.fileOperationResult) {
@@ -249,6 +263,7 @@ export class MainThreadFileSystem implements MainThreadFileSystemShape {
 				err.name = code;
 			}
 		}
+
 		throw err;
 	}
 	$ensureActivation(scheme: string): Promise<void> {
@@ -262,10 +277,14 @@ class RemoteFileSystemProvider
 		IFileSystemProviderWithFileFolderCopyCapability
 {
 	private readonly _onDidChange = new Emitter<readonly IFileChange[]>();
+
 	private readonly _registration: IDisposable;
+
 	readonly onDidChangeFile: Event<readonly IFileChange[]> =
 		this._onDidChange.event;
+
 	readonly capabilities: FileSystemProviderCapabilities;
+
 	readonly onDidChangeCapabilities: Event<void> = Event.None;
 
 	constructor(
@@ -277,14 +296,19 @@ class RemoteFileSystemProvider
 		private readonly _proxy: ExtHostFileSystemShape,
 	) {
 		this.capabilities = capabilities;
+
 		this._registration = fileService.registerProvider(scheme, this);
 	}
+
 	dispose(): void {
 		this._registration.dispose();
+
 		this._onDidChange.dispose();
 	}
+
 	watch(resource: URI, opts: IWatchOptions) {
 		const session = Math.random();
+
 		this._proxy.$watch(this._handle, session, resource, opts);
 
 		return toDisposable(() => {
@@ -296,6 +320,7 @@ class RemoteFileSystemProvider
 			changes.map(RemoteFileSystemProvider._createFileChange),
 		);
 	}
+
 	private static _createFileChange(dto: IFileChangeDto): IFileChange {
 		return { resource: URI.revive(dto.resource), type: dto.type };
 	}
@@ -307,11 +332,13 @@ class RemoteFileSystemProvider
 				throw err;
 			});
 	}
+
 	readFile(resource: URI): Promise<Uint8Array> {
 		return this._proxy
 			.$readFile(this._handle, resource)
 			.then((buffer) => buffer.buffer);
 	}
+
 	writeFile(
 		resource: URI,
 		content: Uint8Array,
@@ -324,15 +351,19 @@ class RemoteFileSystemProvider
 			opts,
 		);
 	}
+
 	delete(resource: URI, opts: IFileDeleteOptions): Promise<void> {
 		return this._proxy.$delete(this._handle, resource, opts);
 	}
+
 	mkdir(resource: URI): Promise<void> {
 		return this._proxy.$mkdir(this._handle, resource);
 	}
+
 	readdir(resource: URI): Promise<[string, FileType][]> {
 		return this._proxy.$readdir(this._handle, resource);
 	}
+
 	rename(
 		resource: URI,
 		target: URI,
@@ -340,6 +371,7 @@ class RemoteFileSystemProvider
 	): Promise<void> {
 		return this._proxy.$rename(this._handle, resource, target, opts);
 	}
+
 	copy(
 		resource: URI,
 		target: URI,
@@ -347,12 +379,15 @@ class RemoteFileSystemProvider
 	): Promise<void> {
 		return this._proxy.$copy(this._handle, resource, target, opts);
 	}
+
 	open(resource: URI, opts: IFileOpenOptions): Promise<number> {
 		return this._proxy.$open(this._handle, resource, opts);
 	}
+
 	close(fd: number): Promise<void> {
 		return this._proxy.$close(this._handle, fd);
 	}
+
 	read(
 		fd: number,
 		pos: number,
@@ -368,6 +403,7 @@ class RemoteFileSystemProvider
 				return readData.byteLength;
 			});
 	}
+
 	write(
 		fd: number,
 		pos: number,

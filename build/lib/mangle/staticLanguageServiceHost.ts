@@ -7,6 +7,7 @@ import * as ts from "typescript";
 
 export class StaticLanguageServiceHost implements ts.LanguageServiceHost {
 	private readonly _cmdLine: ts.ParsedCommandLine;
+
 	private readonly _scriptSnapshots: Map<string, ts.IScriptSnapshot> =
 		new Map();
 
@@ -18,6 +19,7 @@ export class StaticLanguageServiceHost implements ts.LanguageServiceHost {
 		if (parsed.error) {
 			throw parsed.error;
 		}
+
 		this._cmdLine = ts.parseJsonConfigFileContent(
 			parsed.config,
 			ts.sys,
@@ -29,18 +31,23 @@ export class StaticLanguageServiceHost implements ts.LanguageServiceHost {
 			throw parsed.error;
 		}
 	}
+
 	getCompilationSettings(): ts.CompilerOptions {
 		return this._cmdLine.options;
 	}
+
 	getScriptFileNames(): string[] {
 		return this._cmdLine.fileNames;
 	}
+
 	getScriptVersion(_fileName: string): string {
 		return "1";
 	}
+
 	getProjectVersion(): string {
 		return "1";
 	}
+
 	getScriptSnapshot(fileName: string): ts.IScriptSnapshot | undefined {
 		let result: ts.IScriptSnapshot | undefined =
 			this._scriptSnapshots.get(fileName);
@@ -51,22 +58,31 @@ export class StaticLanguageServiceHost implements ts.LanguageServiceHost {
 			if (content === undefined) {
 				return undefined;
 			}
+
 			result = ts.ScriptSnapshot.fromString(content);
+
 			this._scriptSnapshots.set(fileName, result);
 		}
+
 		return result;
 	}
+
 	getCurrentDirectory(): string {
 		return path.dirname(this.projectPath);
 	}
+
 	getDefaultLibFileName(options: ts.CompilerOptions): string {
 		return ts.getDefaultLibFilePath(options);
 	}
+
 	directoryExists = ts.sys.directoryExists;
 
 	getDirectories = ts.sys.getDirectories;
+
 	fileExists = ts.sys.fileExists;
+
 	readFile = ts.sys.readFile;
+
 	readDirectory = ts.sys.readDirectory;
 	// this is necessary to make source references work.
 	realpath = ts.sys.realpath;

@@ -64,12 +64,15 @@ export function parseMouseDownInfoFromEvent(e: IEditorMouseEvent) {
 	if (!range) {
 		return null;
 	}
+
 	if (!e.event.leftButton) {
 		return null;
 	}
+
 	if (e.target.type !== MouseTargetType.GUTTER_LINE_DECORATIONS) {
 		return null;
 	}
+
 	const data = e.target.detail;
 
 	const gutterOffsetX =
@@ -81,6 +84,7 @@ export function parseMouseDownInfoFromEvent(e: IEditorMouseEvent) {
 	if (gutterOffsetX > 20) {
 		return null;
 	}
+
 	return { lineNumber: range.startLineNumber };
 }
 export function isMouseUpEventDragFromMouseDown(
@@ -92,6 +96,7 @@ export function isMouseUpEventDragFromMouseDown(
 	if (!mouseDownInfo) {
 		return null;
 	}
+
 	const { lineNumber } = mouseDownInfo;
 
 	const range = e.target.range;
@@ -99,6 +104,7 @@ export function isMouseUpEventDragFromMouseDown(
 	if (!range) {
 		return null;
 	}
+
 	return lineNumber;
 }
 export function isMouseUpEventMatchMouseDown(
@@ -110,6 +116,7 @@ export function isMouseUpEventMatchMouseDown(
 	if (!mouseDownInfo) {
 		return null;
 	}
+
 	const { lineNumber } = mouseDownInfo;
 
 	const range = e.target.range;
@@ -117,9 +124,11 @@ export function isMouseUpEventMatchMouseDown(
 	if (!range || range.startLineNumber !== lineNumber) {
 		return null;
 	}
+
 	if (e.target.type !== MouseTargetType.GUTTER_LINE_DECORATIONS) {
 		return null;
 	}
+
 	return lineNumber;
 }
 export class ReviewZoneWidget
@@ -127,24 +136,37 @@ export class ReviewZoneWidget
 	implements ICommentThreadWidget
 {
 	private _commentThreadWidget!: CommentThreadWidget;
+
 	private readonly _onDidClose = new Emitter<ReviewZoneWidget | undefined>();
+
 	private readonly _onDidCreateThread = new Emitter<ReviewZoneWidget>();
+
 	private _isExpanded?: boolean;
+
 	private _initialCollapsibleState?: languages.CommentThreadCollapsibleState;
+
 	private _commentGlyph?: CommentGlyphWidget;
+
 	private readonly _globalToDispose = new DisposableStore();
+
 	private _commentThreadDisposables: IDisposable[] = [];
+
 	private _contextKeyService: IContextKeyService;
+
 	private _scopedInstantiationService: IInstantiationService;
+
 	public get uniqueOwner(): string {
 		return this._uniqueOwner;
 	}
+
 	public get commentThread(): languages.CommentThread {
 		return this._commentThread;
 	}
+
 	public get expanded(): boolean | undefined {
 		return this._isExpanded;
 	}
+
 	private _commentOptions: languages.CommentOptions | undefined;
 
 	constructor(
@@ -169,7 +191,9 @@ export class ReviewZoneWidget
 		private readonly configurationService: IConfigurationService,
 	) {
 		super(editor, { keepEditorSelection: true, isAccessible: true });
+
 		this._contextKeyService = contextKeyService.createScoped(this.domNode);
+
 		this._scopedInstantiationService = this._globalToDispose.add(
 			instantiationService.createChild(
 				new ServiceCollection([
@@ -186,15 +210,21 @@ export class ReviewZoneWidget
 		if (controller) {
 			this._commentOptions = controller.options;
 		}
+
 		this._initialCollapsibleState = _pendingComment
 			? languages.CommentThreadCollapsibleState.Expanded
 			: _commentThread.initialCollapsibleState;
+
 		_commentThread.initialCollapsibleState = this._initialCollapsibleState;
+
 		this._commentThreadDisposables = [];
+
 		this.create();
+
 		this._globalToDispose.add(
 			this.themeService.onDidColorThemeChange(this._applyTheme, this),
 		);
+
 		this._globalToDispose.add(
 			this.editor.onDidChangeConfiguration((e) => {
 				if (e.hasChanged(EditorOption.fontInfo)) {
@@ -202,26 +232,34 @@ export class ReviewZoneWidget
 				}
 			}),
 		);
+
 		this._applyTheme(this.themeService.getColorTheme());
 	}
+
 	public get onDidClose(): Event<ReviewZoneWidget | undefined> {
 		return this._onDidClose.event;
 	}
+
 	public get onDidCreateThread(): Event<ReviewZoneWidget> {
 		return this._onDidCreateThread.event;
 	}
+
 	public getPosition(): IPosition | undefined {
 		if (this.position) {
 			return this.position;
 		}
+
 		if (this._commentGlyph) {
 			return this._commentGlyph.getPosition().position ?? undefined;
 		}
+
 		return undefined;
 	}
+
 	protected override revealRange() {
 		// we don't do anything here as we always do the reveal ourselves.
 	}
+
 	public reveal(
 		commentUniqueId?: number,
 		focus: CommentWidgetFocus = CommentWidgetFocus.None,
@@ -231,16 +269,19 @@ export class ReviewZoneWidget
 		const comment = this._commentThread.comments?.find(
 			(comment) => comment.uniqueIdInThread === commentUniqueId,
 		);
+
 		this.commentService.setActiveCommentAndThread(this.uniqueOwner, {
 			thread: this._commentThread,
 			comment,
 		});
 	}
+
 	private _expandAndShowZoneWidget() {
 		if (!this._isExpanded) {
 			this.show(this.arrowPosition(this._commentThread.range), 2);
 		}
 	}
+
 	private _setFocus(
 		commentUniqueId: number | undefined,
 		focus: CommentWidgetFocus,
@@ -251,6 +292,7 @@ export class ReviewZoneWidget
 			this._commentThreadWidget.focusCommentEditor();
 		}
 	}
+
 	private _goToComment(commentUniqueId: number, focus: CommentWidgetFocus) {
 		const height = this.editor.getLayoutInfo().height;
 
@@ -264,6 +306,7 @@ export class ReviewZoneWidget
 				const commentThreadCoords = coords.thread;
 
 				const commentCoords = coords.comment;
+
 				scrollTop =
 					this.editor.getTopForLineNumber(
 						this._commentThread.range.startLineNumber,
@@ -272,12 +315,15 @@ export class ReviewZoneWidget
 					commentCoords.top -
 					commentThreadCoords.top;
 			}
+
 			this.editor.setScrollTop(scrollTop);
+
 			this._setFocus(commentUniqueId, focus);
 		} else {
 			this._goToThread(focus);
 		}
 	}
+
 	private _goToThread(focus: CommentWidgetFocus) {
 		const rangeToReveal = this._commentThread.range
 			? new Range(
@@ -287,9 +333,12 @@ export class ReviewZoneWidget
 					1,
 				)
 			: new Range(1, 1, 1, 1);
+
 		this.editor.revealRangeInCenter(rangeToReveal);
+
 		this._setFocus(undefined, focus);
 	}
+
 	public makeVisible(
 		commentUniqueId?: number,
 		focus: CommentWidgetFocus = CommentWidgetFocus.None,
@@ -302,8 +351,10 @@ export class ReviewZoneWidget
 			this._goToThread(focus);
 		}
 	}
+
 	public getPendingComments(): {
 		newComment: languages.PendingComment | undefined;
+
 		edits: {
 			[key: number]: languages.PendingComment;
 		};
@@ -313,13 +364,18 @@ export class ReviewZoneWidget
 			edits: this._commentThreadWidget.getPendingEdits(),
 		};
 	}
+
 	public setPendingComment(pending: languages.PendingComment) {
 		this._pendingComment = pending;
+
 		this.expand();
+
 		this._commentThreadWidget.setPendingComment(pending);
 	}
+
 	protected _fillContainer(container: HTMLElement): void {
 		this.setCssClass("review-widget");
+
 		this._commentThreadWidget =
 			this._scopedInstantiationService.createInstance(
 				CommentThreadWidget,
@@ -357,6 +413,7 @@ export class ReviewZoneWidget
 								if (!originalRange) {
 									return;
 								}
+
 								let range: Range;
 
 								if (
@@ -368,6 +425,7 @@ export class ReviewZoneWidget
 									const distance =
 										newPosition.lineNumber -
 										originalRange.endLineNumber;
+
 									range = new Range(
 										originalRange.startLineNumber +
 											distance,
@@ -383,6 +441,7 @@ export class ReviewZoneWidget
 										originalRange.endColumn,
 									);
 								}
+
 								await this.commentService.updateCommentThreadTemplate(
 									this.uniqueOwner,
 									this._commentThread.commentThreadHandle,
@@ -396,8 +455,10 @@ export class ReviewZoneWidget
 					},
 				},
 			) as unknown as CommentThreadWidget<IRange>;
+
 		this._disposables.add(this._commentThreadWidget);
 	}
+
 	private arrowPosition(range: IRange | undefined): IPosition | undefined {
 		if (!range) {
 			return undefined;
@@ -411,17 +472,21 @@ export class ReviewZoneWidget
 					: 1,
 		};
 	}
+
 	private deleteCommentThread(): void {
 		this.dispose();
+
 		this.commentService.disposeCommentThread(
 			this.uniqueOwner,
 			this._commentThread.threadId,
 		);
 	}
+
 	public collapse() {
 		this._commentThread.collapsibleState =
 			languages.CommentThreadCollapsibleState.Collapsed;
 	}
+
 	public expand(setActive?: boolean) {
 		this._commentThread.collapsibleState =
 			languages.CommentThreadCollapsibleState.Expanded;
@@ -432,21 +497,28 @@ export class ReviewZoneWidget
 			});
 		}
 	}
+
 	public getGlyphPosition(): number {
 		if (this._commentGlyph) {
 			return this._commentGlyph.getPosition().position!.lineNumber;
 		}
+
 		return 0;
 	}
+
 	async update(commentThread: languages.CommentThread<IRange>) {
 		if (this._commentThread !== commentThread) {
 			this._commentThreadDisposables.forEach((disposable) =>
 				disposable.dispose(),
 			);
+
 			this._commentThread = commentThread;
+
 			this._commentThreadDisposables = [];
+
 			this.bindCommentThreadListeners();
 		}
+
 		await this._commentThreadWidget.updateCommentThread(commentThread);
 		// Move comment glyph widget and show position if the line has changed.
 		const lineNumber = this._commentThread.range?.endLineNumber ?? 1;
@@ -461,9 +533,11 @@ export class ReviewZoneWidget
 				lineNumber
 			) {
 				shouldMoveWidget = true;
+
 				this._commentGlyph.setLineNumber(lineNumber);
 			}
 		}
+
 		if (
 			(shouldMoveWidget && this._isExpanded) ||
 			(this._commentThread.collapsibleState ===
@@ -478,27 +552,33 @@ export class ReviewZoneWidget
 			this.hide();
 		}
 	}
+
 	protected override _onWidth(widthInPixel: number): void {
 		this._commentThreadWidget.layout(widthInPixel);
 	}
+
 	protected override _doLayout(
 		heightInPixel: number,
 		widthInPixel: number,
 	): void {
 		this._commentThreadWidget.layout(widthInPixel);
 	}
+
 	async display(range: IRange | undefined, shouldReveal: boolean) {
 		if (range) {
 			this._commentGlyph = new CommentGlyphWidget(
 				this.editor,
 				range?.endLineNumber ?? -1,
 			);
+
 			this._commentGlyph.setThreadState(this._commentThread.state);
+
 			this._globalToDispose.add(
 				this._commentGlyph.onDidChangeLineNumber(async (e) => {
 					if (!this._commentThread.range) {
 						return;
 					}
+
 					const shift = e - this._commentThread.range.endLineNumber;
 
 					const newRange = new Range(
@@ -507,14 +587,17 @@ export class ReviewZoneWidget
 						this._commentThread.range.endLineNumber + shift,
 						this._commentThread.range.endColumn,
 					);
+
 					this._commentThread.range = newRange;
 				}),
 			);
 		}
+
 		await this._commentThreadWidget.display(
 			this.editor.getOption(EditorOption.lineHeight),
 			shouldReveal,
 		);
+
 		this._disposables.add(
 			this._commentThreadWidget.onDidResize((dimension) => {
 				this._refresh(dimension);
@@ -532,14 +615,17 @@ export class ReviewZoneWidget
 		if (shouldReveal) {
 			this.makeVisible();
 		}
+
 		this.bindCommentThreadListeners();
 	}
+
 	private bindCommentThreadListeners() {
 		this._commentThreadDisposables.push(
 			this._commentThread.onDidChangeComments(async (_) => {
 				await this.update(this._commentThread);
 			}),
 		);
+
 		this._commentThreadDisposables.push(
 			this._commentThread.onDidChangeCollapsibleState((state) => {
 				if (
@@ -548,10 +634,12 @@ export class ReviewZoneWidget
 					!this._isExpanded
 				) {
 					this.show(this.arrowPosition(this._commentThread.range), 2);
+
 					this._commentThreadWidget.ensureFocusIntoNewEditingComment();
 
 					return;
 				}
+
 				if (
 					state ===
 						languages.CommentThreadCollapsibleState.Collapsed &&
@@ -570,15 +658,19 @@ export class ReviewZoneWidget
 					(state) => {
 						// File comments always start expanded
 						this._initialCollapsibleState = state;
+
 						this._commentThread.collapsibleState =
 							this._initialCollapsibleState;
+
 						onDidChangeInitialCollapsibleState.dispose();
 					},
 				);
+
 			this._commentThreadDisposables.push(
 				onDidChangeInitialCollapsibleState,
 			);
 		}
+
 		this._commentThreadDisposables.push(
 			this._commentThread.onDidChangeState(() => {
 				const borderColor =
@@ -586,14 +678,17 @@ export class ReviewZoneWidget
 						this._commentThread.state,
 						this.themeService.getColorTheme(),
 					) || Color.transparent;
+
 				this.style({
 					frameColor: borderColor,
 					arrowColor: borderColor,
 				});
+
 				this.container?.style.setProperty(
 					commentThreadStateColorVar,
 					`${borderColor}`,
 				);
+
 				this.container?.style.setProperty(
 					commentThreadStateBackgroundColorVar,
 					`${borderColor.transparent(0.1)}`,
@@ -601,9 +696,11 @@ export class ReviewZoneWidget
 			}),
 		);
 	}
+
 	async submitComment(): Promise<void> {
 		return this._commentThreadWidget.submitComment();
 	}
+
 	_refresh(dimensions: dom.Dimension) {
 		if (
 			this._isExpanded === undefined &&
@@ -615,6 +712,7 @@ export class ReviewZoneWidget
 
 			return;
 		}
+
 		if (this._isExpanded) {
 			this._commentThreadWidget.layout();
 
@@ -640,6 +738,7 @@ export class ReviewZoneWidget
 			if (this._viewZone?.heightInLines === computedLinesNumber) {
 				return;
 			}
+
 			const currentPosition = this.getPosition();
 
 			if (
@@ -650,17 +749,22 @@ export class ReviewZoneWidget
 			) {
 				this._viewZone.afterLineNumber = currentPosition.lineNumber;
 			}
+
 			const capture = StableEditorScrollState.capture(this.editor);
+
 			this._relayout(computedLinesNumber);
+
 			capture.restore(this.editor);
 		}
 	}
+
 	private _applyTheme(theme: IColorTheme) {
 		const borderColor =
 			getCommentThreadWidgetStateColor(
 				this._commentThread.state,
 				this.themeService.getColorTheme(),
 			) || Color.transparent;
+
 		this.style({
 			arrowColor: borderColor,
 			frameColor: borderColor,
@@ -670,6 +774,7 @@ export class ReviewZoneWidget
 		// Editor decorations should also be responsive to theme changes
 		this._commentThreadWidget.applyTheme(theme, fontInfo);
 	}
+
 	override show(
 		rangeOrPos: IRange | IPosition | undefined,
 		heightInLines: number,
@@ -691,6 +796,7 @@ export class ReviewZoneWidget
 			// We need to try to calculate the new, more correct, range for the comment.
 			const distance =
 				glyphPosition.position.lineNumber - range.endLineNumber;
+
 			range = new Range(
 				range.startLineNumber + distance,
 				range.startColumn,
@@ -698,16 +804,21 @@ export class ReviewZoneWidget
 				range.endColumn,
 			);
 		}
+
 		this._isExpanded = true;
 
 		super.show(range ?? new Range(0, 0, 0, 0), heightInLines);
+
 		this._commentThread.collapsibleState =
 			languages.CommentThreadCollapsibleState.Expanded;
+
 		this._refresh(this._commentThreadWidget.getDimensions());
 	}
+
 	collapseAndFocusRange() {
 		this._commentThreadWidget.collapse();
 	}
+
 	override hide() {
 		if (this._isExpanded) {
 			this._isExpanded = false;
@@ -715,6 +826,7 @@ export class ReviewZoneWidget
 			if (this.editor.hasWidgetFocus()) {
 				this.editor.focus();
 			}
+
 			if (
 				!this._commentThread.comments ||
 				!this._commentThread.comments.length
@@ -722,17 +834,23 @@ export class ReviewZoneWidget
 				this.deleteCommentThread();
 			}
 		}
+
 		super.hide();
 	}
+
 	override dispose() {
 		super.dispose();
 
 		if (this._commentGlyph) {
 			this._commentGlyph.dispose();
+
 			this._commentGlyph = undefined;
 		}
+
 		this._globalToDispose.dispose();
+
 		this._commentThreadDisposables.forEach((global) => global.dispose());
+
 		this._onDidClose.fire(undefined);
 	}
 }

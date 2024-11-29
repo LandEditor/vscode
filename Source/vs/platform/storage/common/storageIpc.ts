@@ -49,10 +49,12 @@ export interface IBaseSerializableStorageRequest {
 export interface ISerializableUpdateRequest
 	extends IBaseSerializableStorageRequest {
 	insert?: Item[];
+
 	delete?: Key[];
 }
 export interface ISerializableItemsChangeEvent {
 	readonly changed?: Item[];
+
 	readonly deleted?: Key[];
 }
 abstract class BaseStorageDatabaseClient
@@ -68,6 +70,7 @@ abstract class BaseStorageDatabaseClient
 	) {
 		super();
 	}
+
 	async getItems(): Promise<Map<string, string>> {
 		const serializableRequest: IBaseSerializableStorageRequest = {
 			profile: this.profile,
@@ -81,6 +84,7 @@ abstract class BaseStorageDatabaseClient
 
 		return new Map(items);
 	}
+
 	updateItems(request: IUpdateRequest): Promise<void> {
 		const serializableRequest: ISerializableUpdateRequest = {
 			profile: this.profile,
@@ -90,11 +94,14 @@ abstract class BaseStorageDatabaseClient
 		if (request.insert) {
 			serializableRequest.insert = Array.from(request.insert.entries());
 		}
+
 		if (request.delete) {
 			serializableRequest.delete = Array.from(request.delete.values());
 		}
+
 		return this.channel.call("updateItems", serializableRequest);
 	}
+
 	optimize(): Promise<void> {
 		const serializableRequest: IBaseSerializableStorageRequest = {
 			profile: this.profile,
@@ -103,12 +110,14 @@ abstract class BaseStorageDatabaseClient
 
 		return this.channel.call("optimize", serializableRequest);
 	}
+
 	abstract close(): Promise<void>;
 }
 abstract class BaseProfileAwareStorageDatabaseClient extends BaseStorageDatabaseClient {
 	private readonly _onDidChangeItemsExternal = this._register(
 		new Emitter<IStorageItemsChangeEvent>(),
 	);
+
 	readonly onDidChangeItemsExternal = this._onDidChangeItemsExternal.event;
 
 	constructor(
@@ -116,8 +125,10 @@ abstract class BaseProfileAwareStorageDatabaseClient extends BaseStorageDatabase
 		profile: UriDto<IUserDataProfile> | undefined,
 	) {
 		super(channel, profile, undefined);
+
 		this.registerListeners();
 	}
+
 	private registerListeners(): void {
 		this._register(
 			this.channel.listen<ISerializableItemsChangeEvent>(
@@ -126,6 +137,7 @@ abstract class BaseProfileAwareStorageDatabaseClient extends BaseStorageDatabase
 			)((e: ISerializableItemsChangeEvent) => this.onDidChangeStorage(e)),
 		);
 	}
+
 	private onDidChangeStorage(e: ISerializableItemsChangeEvent): void {
 		if (Array.isArray(e.changed) || Array.isArray(e.deleted)) {
 			this._onDidChangeItemsExternal.fire({
@@ -139,6 +151,7 @@ export class ApplicationStorageDatabaseClient extends BaseProfileAwareStorageDat
 	constructor(channel: IChannel) {
 		super(channel, undefined);
 	}
+
 	async close(): Promise<void> {
 		// The application storage database is shared across all instances so
 		// we do not close it from the window. However we dispose the
@@ -150,6 +163,7 @@ export class ProfileStorageDatabaseClient extends BaseProfileAwareStorageDatabas
 	constructor(channel: IChannel, profile: UriDto<IUserDataProfile>) {
 		super(channel, profile);
 	}
+
 	async close(): Promise<void> {
 		// The profile storage database is shared across all instances of
 		// the same profile so we do not close it from the window.
@@ -166,6 +180,7 @@ export class WorkspaceStorageDatabaseClient
 	constructor(channel: IChannel, workspace: IAnyWorkspaceIdentifier) {
 		super(channel, undefined, workspace);
 	}
+
 	async close(): Promise<void> {
 		// The workspace storage database is only used in this instance
 		// but we do not need to close it from here, the main process
@@ -175,6 +190,7 @@ export class WorkspaceStorageDatabaseClient
 }
 export class StorageClient {
 	constructor(private readonly channel: IChannel) {}
+
 	isUsed(path: string): Promise<boolean> {
 		const serializableRequest: ISerializableUpdateRequest = {
 			payload: path,

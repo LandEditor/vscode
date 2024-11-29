@@ -529,48 +529,79 @@ interface JQueryDeferred<T> extends JQueryGenericPromise<T> {
  */
 interface BaseJQueryEventObject extends Event {
 	currentTarget: Element;
+
 	data: any;
+
 	delegateTarget: Element;
+
 	isDefaultPrevented(): boolean;
+
 	isImmediatePropagationStopped(): boolean;
+
 	isPropagationStopped(): boolean;
+
 	namespace: string;
+
 	originalEvent: Event;
+
 	preventDefault(): any;
+
 	relatedTarget: Element;
+
 	result: any;
+
 	stopImmediatePropagation(): void;
+
 	stopPropagation(): void;
+
 	target: Element;
+
 	pageX: number;
+
 	pageY: number;
+
 	which: number;
+
 	metaKey: boolean;
 }
 
 interface JQueryInputEventObject extends BaseJQueryEventObject {
 	altKey: boolean;
+
 	ctrlKey: boolean;
+
 	metaKey: boolean;
+
 	shiftKey: boolean;
 }
 
 interface JQueryMouseEventObject extends JQueryInputEventObject {
 	button: number;
+
 	clientX: number;
+
 	clientY: number;
+
 	offsetX: number;
+
 	offsetY: number;
+
 	pageX: number;
+
 	pageY: number;
+
 	screenX: number;
+
 	screenY: number;
 }
 
 interface JQueryKeyEventObject extends JQueryInputEventObject {
 	char: any;
+
 	charCode: number;
+
 	key: any;
+
 	keyCode: number;
 }
 
@@ -586,23 +617,41 @@ interface JQueryEventObject
 
 interface JQuerySupport {
 	ajax?: boolean;
+
 	boxModel?: boolean;
+
 	changeBubbles?: boolean;
+
 	checkClone?: boolean;
+
 	checkOn?: boolean;
+
 	cors?: boolean;
+
 	cssFloat?: boolean;
+
 	hrefNormalized?: boolean;
+
 	htmlSerialize?: boolean;
+
 	leadingWhitespace?: boolean;
+
 	noCloneChecked?: boolean;
+
 	noCloneEvent?: boolean;
+
 	opacity?: boolean;
+
 	optDisabled?: boolean;
+
 	optSelected?: boolean;
+
 	scriptEval?(): boolean;
+
 	style?: boolean;
+
 	submitBubbles?: boolean;
+
 	tbody?: boolean;
 }
 
@@ -631,6 +680,7 @@ interface JQueryParam {
  */
 interface JQueryEventConstructor {
 	(name: string, eventProperties?: any): JQueryEventObject;
+
 	new (name: string, eventProperties?: any): JQueryEventObject;
 }
 
@@ -639,6 +689,7 @@ interface JQueryEventConstructor {
  */
 interface JQueryCoordinates {
 	left: number;
+
 	top: number;
 }
 
@@ -647,6 +698,7 @@ interface JQueryCoordinates {
  */
 interface JQuerySerializeArrayElement {
 	name: string;
+
 	value: string;
 }
 
@@ -707,7 +759,9 @@ interface JQueryEasingFunction {
 
 interface JQueryEasingFunctions {
 	[name: string]: JQueryEasingFunction;
+
 	linear: JQueryEasingFunction;
+
 	swing: JQueryEasingFunction;
 }
 
@@ -965,6 +1019,7 @@ interface JQueryStatic {
 	 * Hook directly into jQuery to override how particular CSS properties are retrieved or set, normalize CSS property naming, or create custom properties.
 	 */
 	cssHooks: { [key: string]: any };
+
 	cssNumber: any;
 
 	/**
@@ -1057,12 +1112,15 @@ interface JQueryStatic {
 		 * The rate (in milliseconds) at which animations fire.
 		 */
 		interval: number;
+
 		stop: () => void;
+
 		speeds: { slow: number; fast: number };
 		/**
 		 * Globally disable all animations.
 		 */
 		off: boolean;
+
 		step: any;
 	};
 
@@ -1097,6 +1155,7 @@ interface JQueryStatic {
 	error(message: any): JQuery;
 
 	expr: any;
+
 	fn: any; //TODO: Decide how we want to type this
 
 	isReady: boolean;
@@ -2306,6 +2365,7 @@ interface JQuery {
 		eventType: string,
 		handler: (eventObject: JQueryEventObject) => any,
 	): JQuery;
+
 	delegate(
 		selector: any,
 		eventType: string,
@@ -3225,6 +3285,7 @@ interface JQuery {
 	 * @param wrappingElement A selector, element, HTML string, or jQuery object specifying the structure to wrap around the matched elements.
 	 */
 	wrapAll(wrappingElement: JQuery | Element | string): JQuery;
+
 	wrapAll(func: (index: number) => string): JQuery;
 
 	/**

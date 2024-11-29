@@ -16,39 +16,58 @@ import { IViewDescriptorService } from "../../../common/views.js";
 export interface IChatConfiguration {
 	editor: {
 		readonly fontSize: number;
+
 		readonly fontFamily: string;
+
 		readonly lineHeight: number;
+
 		readonly fontWeight: string;
+
 		readonly wordWrap: "off" | "on";
 	};
 }
 export interface IChatEditorConfiguration {
 	readonly foreground: Color | undefined;
+
 	readonly inputEditor: IChatInputEditorOptions;
+
 	readonly resultEditor: IChatResultEditorOptions;
 }
 export interface IChatInputEditorOptions {
 	readonly backgroundColor: Color | undefined;
+
 	readonly accessibilitySupport: string;
 }
 export interface IChatResultEditorOptions {
 	readonly fontSize: number;
+
 	readonly fontFamily: string | undefined;
+
 	readonly lineHeight: number;
+
 	readonly fontWeight: string;
+
 	readonly backgroundColor: Color | undefined;
+
 	readonly bracketPairColorization: IBracketPairColorizationOptions;
+
 	readonly fontLigatures: boolean | string | undefined;
+
 	readonly wordWrap: "off" | "on";
 }
 export class ChatEditorOptions extends Disposable {
 	private static readonly lineHeightEm = 1.4;
+
 	private readonly _onDidChange = this._register(new Emitter<void>());
+
 	readonly onDidChange = this._onDidChange.event;
+
 	private _config!: IChatEditorConfiguration;
+
 	public get configuration(): IChatEditorConfiguration {
 		return this._config;
 	}
+
 	private static readonly relevantSettingIds = [
 		"chat.editor.lineHeight",
 		"chat.editor.fontSize",
@@ -75,9 +94,11 @@ export class ChatEditorOptions extends Disposable {
 		private readonly viewDescriptorService: IViewDescriptorService,
 	) {
 		super();
+
 		this._register(
 			this.themeService.onDidColorThemeChange((e) => this.update()),
 		);
+
 		this._register(
 			this.viewDescriptorService.onDidChangeLocation((e) => {
 				if (e.views.some((v) => v.id === viewId)) {
@@ -85,6 +106,7 @@ export class ChatEditorOptions extends Disposable {
 				}
 			}),
 		);
+
 		this._register(
 			this.configurationService.onDidChangeConfiguration((e) => {
 				if (
@@ -96,8 +118,10 @@ export class ChatEditorOptions extends Disposable {
 				}
 			}),
 		);
+
 		this.update();
 	}
+
 	private update() {
 		const editorConfig =
 			this.configurationService.getValue<IEditorOptions>("editor");
@@ -110,6 +134,7 @@ export class ChatEditorOptions extends Disposable {
 		const accessibilitySupport = this.configurationService.getValue<
 			"auto" | "off" | "on"
 		>("editor.accessibilitySupport");
+
 		this._config = {
 			foreground: this.themeService
 				.getColorTheme()
@@ -147,6 +172,7 @@ export class ChatEditorOptions extends Disposable {
 				fontLigatures: editorConfig.fontLigatures,
 			},
 		};
+
 		this._onDidChange.fire();
 	}
 }

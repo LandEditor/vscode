@@ -19,8 +19,11 @@ import * as Previewer from "./util/textRendering";
 
 class TypeScriptSignatureHelpProvider implements vscode.SignatureHelpProvider {
 	public static readonly triggerCharacters = ["(", ",", "<"];
+
 	public static readonly retriggerCharacters = [")"];
+
 	public constructor(private readonly client: ITypeScriptServiceClient) {}
+
 	public async provideSignatureHelp(
 		document: vscode.TextDocument,
 		position: vscode.Position,
@@ -32,6 +35,7 @@ class TypeScriptSignatureHelpProvider implements vscode.SignatureHelpProvider {
 		if (!filepath) {
 			return undefined;
 		}
+
 		const args: Proto.SignatureHelpRequestArgs = {
 			...typeConverters.Position.toFileLocationRequestArgs(
 				filepath,
@@ -47,21 +51,26 @@ class TypeScriptSignatureHelpProvider implements vscode.SignatureHelpProvider {
 		if (response.type !== "response" || !response.body) {
 			return undefined;
 		}
+
 		const info = response.body;
 
 		const result = new vscode.SignatureHelp();
+
 		result.signatures = info.items.map((signature) =>
 			this.convertSignature(signature, document.uri),
 		);
+
 		result.activeSignature = this.getActiveSignature(
 			context,
 			info,
 			result.signatures,
 		);
+
 		result.activeParameter = this.getActiveParameter(info);
 
 		return result;
 	}
+
 	private getActiveSignature(
 		context: vscode.SignatureHelpContext,
 		info: Proto.SignatureHelpItems,
@@ -82,8 +91,10 @@ class TypeScriptSignatureHelpProvider implements vscode.SignatureHelpProvider {
 				return existingIndex;
 			}
 		}
+
 		return info.selectedItemIndex;
 	}
+
 	private getActiveParameter(info: Proto.SignatureHelpItems): number {
 		const activeSignature = info.items[info.selectedItemIndex];
 
@@ -93,8 +104,10 @@ class TypeScriptSignatureHelpProvider implements vscode.SignatureHelpProvider {
 				activeSignature.parameters.length - 1,
 			);
 		}
+
 		return info.argumentIndex;
 	}
+
 	private convertSignature(
 		item: Proto.SignatureHelpItem,
 		baseUri: vscode.Uri,
@@ -126,6 +139,7 @@ class TypeScriptSignatureHelpProvider implements vscode.SignatureHelpProvider {
 				parameter.displayParts,
 				this.client,
 			);
+
 			signature.parameters.push(
 				new vscode.ParameterInformation(
 					[textIndex, textIndex + label.length],
@@ -137,14 +151,18 @@ class TypeScriptSignatureHelpProvider implements vscode.SignatureHelpProvider {
 					),
 				),
 			);
+
 			textIndex += label.length;
+
 			signature.label += label;
 
 			if (i !== item.parameters.length - 1) {
 				signature.label += separatorLabel;
+
 				textIndex += separatorLabel.length;
 			}
 		}
+
 		signature.label += Previewer.asPlainTextWithLinks(
 			item.suffixDisplayParts,
 			this.client,
@@ -173,6 +191,7 @@ function toTsTriggerReason(
 			} else {
 				return { kind: "invoked" };
 			}
+
 		case vscode.SignatureHelpTriggerKind.ContentChange:
 			return context.isRetrigger
 				? { kind: "retrigger" }

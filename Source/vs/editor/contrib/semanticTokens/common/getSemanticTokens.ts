@@ -79,14 +79,17 @@ export async function getDocumentSemanticTokens(
 				);
 			} catch (err) {
 				error = err;
+
 				result = null;
 			}
+
 			if (
 				!result ||
 				(!isSemanticTokens(result) && !isSemanticTokensEdits(result))
 			) {
 				result = null;
 			}
+
 			return new DocumentSemanticTokensResult(provider, result, error);
 		}),
 	);
@@ -96,6 +99,7 @@ export async function getDocumentSemanticTokens(
 		if (result.error) {
 			throw result.error;
 		}
+
 		if (result.tokens) {
 			return result;
 		}
@@ -104,6 +108,7 @@ export async function getDocumentSemanticTokens(
 	if (results.length > 0) {
 		return results[0];
 	}
+
 	return null;
 }
 function _getDocumentSemanticTokensProviderHighestGroup(
@@ -154,11 +159,14 @@ export async function getDocumentRangeSemanticTokens(
 				);
 			} catch (err) {
 				onUnexpectedExternalError(err);
+
 				result = null;
 			}
+
 			if (!result || !isSemanticTokens(result)) {
 				result = null;
 			}
+
 			return new DocumentRangeSemanticTokensResult(provider, result);
 		}),
 	);
@@ -172,12 +180,14 @@ export async function getDocumentRangeSemanticTokens(
 	if (results.length > 0) {
 		return results[0];
 	}
+
 	return null;
 }
 CommandsRegistry.registerCommand(
 	"_provideDocumentSemanticTokensLegend",
 	async (accessor, ...args): Promise<SemanticTokensLegend | undefined> => {
 		const [uri] = args;
+
 		assertType(uri instanceof URI);
 
 		const model = accessor.get(IModelService).getModel(uri);
@@ -185,6 +195,7 @@ CommandsRegistry.registerCommand(
 		if (!model) {
 			return undefined;
 		}
+
 		const { documentSemanticTokensProvider } = accessor.get(
 			ILanguageFeaturesService,
 		);
@@ -203,6 +214,7 @@ CommandsRegistry.registerCommand(
 					uri,
 				);
 		}
+
 		return providers[0].getLegend();
 	},
 );
@@ -210,6 +222,7 @@ CommandsRegistry.registerCommand(
 	"_provideDocumentSemanticTokens",
 	async (accessor, ...args): Promise<VSBuffer | undefined> => {
 		const [uri] = args;
+
 		assertType(uri instanceof URI);
 
 		const model = accessor.get(IModelService).getModel(uri);
@@ -217,6 +230,7 @@ CommandsRegistry.registerCommand(
 		if (!model) {
 			return undefined;
 		}
+
 		const { documentSemanticTokensProvider } = accessor.get(
 			ILanguageFeaturesService,
 		);
@@ -236,6 +250,7 @@ CommandsRegistry.registerCommand(
 					model.getFullModelRange(),
 				);
 		}
+
 		const r = await getDocumentSemanticTokens(
 			documentSemanticTokensProvider,
 			model,
@@ -247,11 +262,13 @@ CommandsRegistry.registerCommand(
 		if (!r) {
 			return undefined;
 		}
+
 		const { provider, tokens } = r;
 
 		if (!tokens || !isSemanticTokens(tokens)) {
 			return undefined;
 		}
+
 		const buff = encodeSemanticTokensDto({
 			id: 0,
 			type: "full",
@@ -261,6 +278,7 @@ CommandsRegistry.registerCommand(
 		if (tokens.resultId) {
 			provider.releaseDocumentSemanticTokens(tokens.resultId);
 		}
+
 		return buff;
 	},
 );
@@ -268,6 +286,7 @@ CommandsRegistry.registerCommand(
 	"_provideDocumentRangeSemanticTokensLegend",
 	async (accessor, ...args): Promise<SemanticTokensLegend | undefined> => {
 		const [uri, range] = args;
+
 		assertType(uri instanceof URI);
 
 		const model = accessor.get(IModelService).getModel(uri);
@@ -275,6 +294,7 @@ CommandsRegistry.registerCommand(
 		if (!model) {
 			return undefined;
 		}
+
 		const { documentRangeSemanticTokensProvider } = accessor.get(
 			ILanguageFeaturesService,
 		);
@@ -288,10 +308,12 @@ CommandsRegistry.registerCommand(
 			// no providers
 			return undefined;
 		}
+
 		if (providers.length === 1) {
 			// straight forward case, just a single provider
 			return providers[0].getLegend();
 		}
+
 		if (!range || !Range.isIRange(range)) {
 			// if no range is provided, we cannot support multiple providers
 			// as we cannot fall back to the one which would give results
@@ -302,6 +324,7 @@ CommandsRegistry.registerCommand(
 
 			return providers[0].getLegend();
 		}
+
 		const result = await getDocumentRangeSemanticTokens(
 			documentRangeSemanticTokensProvider,
 			model,
@@ -312,6 +335,7 @@ CommandsRegistry.registerCommand(
 		if (!result) {
 			return undefined;
 		}
+
 		return result.provider.getLegend();
 	},
 );
@@ -319,7 +343,9 @@ CommandsRegistry.registerCommand(
 	"_provideDocumentRangeSemanticTokens",
 	async (accessor, ...args): Promise<VSBuffer | undefined> => {
 		const [uri, range] = args;
+
 		assertType(uri instanceof URI);
+
 		assertType(Range.isIRange(range));
 
 		const model = accessor.get(IModelService).getModel(uri);
@@ -327,6 +353,7 @@ CommandsRegistry.registerCommand(
 		if (!model) {
 			return undefined;
 		}
+
 		const { documentRangeSemanticTokensProvider } = accessor.get(
 			ILanguageFeaturesService,
 		);
@@ -342,6 +369,7 @@ CommandsRegistry.registerCommand(
 			// there is no provider or it didn't return tokens
 			return undefined;
 		}
+
 		return encodeSemanticTokensDto({
 			id: 0,
 			type: "full",

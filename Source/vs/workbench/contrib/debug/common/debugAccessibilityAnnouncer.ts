@@ -19,6 +19,7 @@ export class DebugWatchAccessibilityAnnouncer
 	implements IWorkbenchContribution
 {
 	static ID = "workbench.contrib.debugWatchAccessibilityAnnouncer";
+
 	private readonly _listener: MutableDisposable<IDisposable> = this._register(
 		new MutableDisposable(),
 	);
@@ -34,7 +35,9 @@ export class DebugWatchAccessibilityAnnouncer
 		private readonly _configurationService: IConfigurationService,
 	) {
 		super();
+
 		this._setListener();
+
 		this._register(
 			_configurationService.onDidChangeConfiguration((e) => {
 				if (
@@ -47,6 +50,7 @@ export class DebugWatchAccessibilityAnnouncer
 			}),
 		);
 	}
+
 	private _setListener(): void {
 		const value = this._configurationService.getValue(
 			"accessibility.debugWatchVariableAnnouncements",
@@ -61,6 +65,7 @@ export class DebugWatchAccessibilityAnnouncer
 					}
 					// TODO: get user feedback, perhaps setting to configure verbosity + whether value, name, neither, or both are announced
 					this._accessibilityService.alert(`${e.name} = ${e.value}`);
+
 					this._logService.trace(
 						`debugAccessibilityAnnouncerValueChanged ${e.name} ${e.value}`,
 					);

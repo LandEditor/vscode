@@ -52,9 +52,11 @@ export function getColorClass(
 	) {
 		color = terminalOrColorKey.icon.color.id.replace(/\./g, "_");
 	}
+
 	if (color) {
 		return `terminal-icon-${color.replace(/\./g, "_")}`;
 	}
+
 	return undefined;
 }
 
@@ -68,6 +70,7 @@ export function getStandardColors(colorTheme: IColorTheme): string[] {
 			standardColors.push(colorKey);
 		}
 	}
+
 	return standardColors;
 }
 
@@ -91,6 +94,7 @@ export function createColorStyleElement(colorTheme: IColorTheme): IDisposable {
 				`{ color: ${color} !important; }`;
 		}
 	}
+
 	styleElement.textContent = css;
 
 	return disposable;
@@ -122,6 +126,7 @@ export function getColorStyleContent(
 			}
 		}
 	}
+
 	return css;
 }
 
@@ -135,6 +140,7 @@ export function getUriClasses(
 	if (!icon) {
 		return undefined;
 	}
+
 	const iconClasses: string[] = [];
 
 	let uri = undefined;
@@ -155,13 +161,17 @@ export function getUriClasses(
 	} else if (icon instanceof Object && "light" in icon && "dark" in icon) {
 		uri = colorScheme === ColorScheme.LIGHT ? icon.light : icon.dark;
 	}
+
 	if (uri instanceof URI) {
 		const uriIconKey = hash(uri.path).toString(36);
 
 		const className = `terminal-uri-icon-${uriIconKey}`;
+
 		iconClasses.push(className);
+
 		iconClasses.push(`terminal-uri-icon`);
 	}
+
 	return iconClasses;
 }
 
@@ -176,5 +186,6 @@ export function getIconId(
 		return accessor.get(ITerminalProfileResolverService).getDefaultIcon()
 			.id;
 	}
+
 	return typeof terminal.icon === "string" ? terminal.icon : terminal.icon.id;
 }

@@ -42,6 +42,7 @@ export class VSBuffer {
 				actual.byteLength,
 			);
 		}
+
 		return new VSBuffer(actual);
 	}
 	/**
@@ -62,6 +63,7 @@ export class VSBuffer {
 			if (!textEncoder) {
 				textEncoder = new TextEncoder();
 			}
+
 			return new VSBuffer(textEncoder.encode(source));
 		}
 	}
@@ -75,6 +77,7 @@ export class VSBuffer {
 		for (let i = 0, len = source.length; i < len; i++) {
 			result.buffer[i] = source[i];
 		}
+
 		return result;
 	}
 	/**
@@ -89,21 +92,29 @@ export class VSBuffer {
 				totalLength += buffers[i].byteLength;
 			}
 		}
+
 		const ret = VSBuffer.alloc(totalLength);
 
 		let offset = 0;
 
 		for (let i = 0, len = buffers.length; i < len; i++) {
 			const element = buffers[i];
+
 			ret.set(element, offset);
+
 			offset += element.byteLength;
 		}
+
 		return ret;
 	}
+
 	readonly buffer: Uint8Array;
+
 	readonly byteLength: number;
+
 	private constructor(buffer: Uint8Array) {
 		this.buffer = buffer;
+
 		this.byteLength = this.buffer.byteLength;
 	}
 	/**
@@ -112,10 +123,12 @@ export class VSBuffer {
 	 */
 	clone(): VSBuffer {
 		const result = VSBuffer.alloc(this.byteLength);
+
 		result.set(this);
 
 		return result;
 	}
+
 	toString(): string {
 		if (hasBuffer) {
 			return this.buffer.toString();
@@ -123,15 +136,18 @@ export class VSBuffer {
 			if (!textDecoder) {
 				textDecoder = new TextDecoder();
 			}
+
 			return textDecoder.decode(this.buffer);
 		}
 	}
+
 	slice(start?: number, end?: number): VSBuffer {
 		// IMPORTANT: use subarray instead of slice because TypedArray#slice
 		// creates shallow copy and NodeBuffer#slice doesn't. The use of subarray
 		// ensures the same, performance, behaviour.
 		return new VSBuffer(this.buffer.subarray(start, end));
 	}
+
 	set(array: VSBuffer, offset?: number): void;
 
 	set(array: Uint8Array, offset?: number): void;
@@ -168,24 +184,31 @@ export class VSBuffer {
 			throw new Error(`Unknown argument 'array'`);
 		}
 	}
+
 	readUInt32BE(offset: number): number {
 		return readUInt32BE(this.buffer, offset);
 	}
+
 	writeUInt32BE(value: number, offset: number): void {
 		writeUInt32BE(this.buffer, value, offset);
 	}
+
 	readUInt32LE(offset: number): number {
 		return readUInt32LE(this.buffer, offset);
 	}
+
 	writeUInt32LE(value: number, offset: number): void {
 		writeUInt32LE(this.buffer, value, offset);
 	}
+
 	readUInt8(offset: number): number {
 		return readUInt8(this.buffer, offset);
 	}
+
 	writeUInt8(value: number, offset: number): void {
 		writeUInt8(this.buffer, value, offset);
 	}
+
 	indexOf(subarray: VSBuffer | Uint8Array, offset = 0) {
 		return binaryIndexOf(
 			this.buffer,
@@ -210,19 +233,23 @@ export function binaryIndexOf(
 	if (needleLen === 0) {
 		return 0;
 	}
+
 	if (needleLen === 1) {
 		return haystack.indexOf(needle[0]);
 	}
+
 	if (needleLen > haystackLen - offset) {
 		return -1;
 	}
 	// find index of the subarray using boyer-moore-horspool algorithm
 	const table = indexOfTable.value;
+
 	table.fill(needle.length);
 
 	for (let i = 0; i < needle.length; i++) {
 		table[needle[i]] = needle.length - i - 1;
 	}
+
 	let i = offset + needle.length - 1;
 
 	let j = i;
@@ -236,13 +263,17 @@ export function binaryIndexOf(
 
 				break;
 			}
+
 			i--;
+
 			j--;
 		} else {
 			i += Math.max(needle.length - j, table[haystack[i]]);
+
 			j = needle.length - 1;
 		}
 	}
+
 	return result;
 }
 export function readUInt16LE(source: Uint8Array, offset: number): number {
@@ -256,7 +287,9 @@ export function writeUInt16LE(
 	offset: number,
 ): void {
 	destination[offset + 0] = value & 0b11111111;
+
 	value = value >>> 8;
+
 	destination[offset + 1] = value & 0b11111111;
 }
 export function readUInt32BE(source: Uint8Array, offset: number): number {
@@ -273,11 +306,17 @@ export function writeUInt32BE(
 	offset: number,
 ): void {
 	destination[offset + 3] = value;
+
 	value = value >>> 8;
+
 	destination[offset + 2] = value;
+
 	value = value >>> 8;
+
 	destination[offset + 1] = value;
+
 	value = value >>> 8;
+
 	destination[offset] = value;
 }
 export function readUInt32LE(source: Uint8Array, offset: number): number {
@@ -294,11 +333,17 @@ export function writeUInt32LE(
 	offset: number,
 ): void {
 	destination[offset + 0] = value & 0b11111111;
+
 	value = value >>> 8;
+
 	destination[offset + 1] = value & 0b11111111;
+
 	value = value >>> 8;
+
 	destination[offset + 2] = value & 0b11111111;
+
 	value = value >>> 8;
+
 	destination[offset + 3] = value & 0b11111111;
 }
 export function readUInt8(source: Uint8Array, offset: number): number {
@@ -339,6 +384,7 @@ export async function bufferedStreamToBuffer(
 	if (bufferedStream.ended) {
 		return VSBuffer.concat(bufferedStream.buffer);
 	}
+
 	return VSBuffer.concat([
 		// Include already read chunks...
 		...bufferedStream.buffer,
@@ -406,26 +452,32 @@ export function decodeBase64(encoded: string) {
 		switch (remainder) {
 			case 3:
 				buffer[bufi++] = building | value;
+
 				remainder = 0;
 
 				break;
 
 			case 2:
 				buffer[bufi++] = building | (value >>> 2);
+
 				building = value << 6;
+
 				remainder = 3;
 
 				break;
 
 			case 1:
 				buffer[bufi++] = building | (value >>> 4);
+
 				building = value << 4;
+
 				remainder = 2;
 
 				break;
 
 			default:
 				building = value << 2;
+
 				remainder = 1;
 		}
 	};
@@ -450,6 +502,7 @@ export function decodeBase64(encoded: string) {
 			throw new SyntaxError(`Unexpected base64 character ${encoded[i]}`);
 		}
 	}
+
 	const unpadded = bufi;
 
 	while (remainder > 0) {
@@ -484,14 +537,21 @@ export function encodeBase64(
 		const b = buffer[i + 1];
 
 		const c = buffer[i + 2];
+
 		output += dictionary[a >>> 2];
+
 		output += dictionary[((a << 4) | (b >>> 4)) & 0b111111];
+
 		output += dictionary[((b << 2) | (c >>> 6)) & 0b111111];
+
 		output += dictionary[c & 0b111111];
 	}
+
 	if (remainder === 1) {
 		const a = buffer[i + 0];
+
 		output += dictionary[a >>> 2];
+
 		output += dictionary[(a << 4) & 0b111111];
 
 		if (padded) {
@@ -501,13 +561,17 @@ export function encodeBase64(
 		const a = buffer[i + 0];
 
 		const b = buffer[i + 1];
+
 		output += dictionary[a >>> 2];
+
 		output += dictionary[((a << 4) | (b >>> 4)) & 0b111111];
+
 		output += dictionary[(b << 2) & 0b111111];
 
 		if (padded) {
 			output += "=";
 		}
 	}
+
 	return output;
 }

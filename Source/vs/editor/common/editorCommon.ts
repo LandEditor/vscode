@@ -119,6 +119,7 @@ export interface IDiffEditorModel {
 }
 export interface IDiffEditorViewModel extends IDisposable {
 	readonly model: IDiffEditorModel;
+
 	waitForDiff(): Promise<void>;
 }
 /**
@@ -137,18 +138,28 @@ export interface IModelChangedEvent {
 // --- view
 export interface IScrollEvent {
 	readonly scrollTop: number;
+
 	readonly scrollLeft: number;
+
 	readonly scrollWidth: number;
+
 	readonly scrollHeight: number;
+
 	readonly scrollTopChanged: boolean;
+
 	readonly scrollLeftChanged: boolean;
+
 	readonly scrollWidthChanged: boolean;
+
 	readonly scrollHeightChanged: boolean;
 }
 export interface IContentSizeChangedEvent {
 	readonly contentWidth: number;
+
 	readonly contentHeight: number;
+
 	readonly contentWidthChanged: boolean;
+
 	readonly contentHeightChanged: boolean;
 }
 /**
@@ -156,19 +167,27 @@ export interface IContentSizeChangedEvent {
  */
 export interface ITriggerEditorOperationEvent {
 	source: string | null | undefined;
+
 	handlerId: string;
+
 	payload: any;
 }
 export interface INewScrollPosition {
 	scrollLeft?: number;
+
 	scrollTop?: number;
 }
 export interface IEditorAction {
 	readonly id: string;
+
 	readonly label: string;
+
 	readonly alias: string;
+
 	readonly metadata: ICommandMetadata | undefined;
+
 	isSupported(): boolean;
+
 	run(args?: unknown): Promise<void>;
 }
 export type IEditorModel = ITextModel | IDiffEditorModel | IDiffEditorViewModel;
@@ -177,7 +196,9 @@ export type IEditorModel = ITextModel | IDiffEditorModel | IDiffEditorViewModel;
  */
 export interface ICursorState {
 	inSelectionMode: boolean;
+
 	selectionStart: IPosition;
+
 	position: IPosition;
 }
 /**
@@ -188,8 +209,11 @@ export interface IViewState {
 	scrollTop?: number;
 	/** written by previous versions */
 	scrollTopWithoutViewZones?: number;
+
 	scrollLeft: number;
+
 	firstPosition: IPosition;
+
 	firstPositionDeltaTop: number;
 }
 /**
@@ -197,7 +221,9 @@ export interface IViewState {
  */
 export interface ICodeEditorViewState {
 	cursorState: ICursorState[];
+
 	viewState: IViewState;
+
 	contributionsState: {
 		[id: string]: any;
 	};
@@ -207,7 +233,9 @@ export interface ICodeEditorViewState {
  */
 export interface IDiffEditorViewState {
 	original: ICodeEditorViewState | null;
+
 	modified: ICodeEditorViewState | null;
+
 	modelState?: unknown;
 }
 /**
@@ -599,27 +627,47 @@ export function isThemeColor(o: any): o is ThemeColor {
  */
 export interface IThemeDecorationRenderOptions {
 	backgroundColor?: string | ThemeColor;
+
 	outline?: string;
+
 	outlineColor?: string | ThemeColor;
+
 	outlineStyle?: string;
+
 	outlineWidth?: string;
+
 	border?: string;
+
 	borderColor?: string | ThemeColor;
+
 	borderRadius?: string;
+
 	borderSpacing?: string;
+
 	borderStyle?: string;
+
 	borderWidth?: string;
+
 	fontStyle?: string;
+
 	fontWeight?: string;
+
 	fontSize?: string;
+
 	textDecoration?: string;
+
 	cursor?: string;
+
 	color?: string | ThemeColor;
+
 	opacity?: string;
 
 	letterSpacing?: string;
+
 	gutterIconPath?: UriComponents;
+
 	gutterIconSize?: string;
+
 	overviewRulerColor?: string | ThemeColor;
 	/**
 	 * @deprecated
@@ -647,22 +695,39 @@ export interface IThemeDecorationRenderOptions {
  */
 export interface IContentDecorationRenderOptions {
 	contentText?: string;
+
 	contentIconPath?: UriComponents;
+
 	border?: string;
+
 	borderColor?: string | ThemeColor;
+
 	borderRadius?: string;
+
 	fontStyle?: string;
+
 	fontWeight?: string;
+
 	fontSize?: string;
+
 	fontFamily?: string;
+
 	textDecoration?: string;
+
 	color?: string | ThemeColor;
+
 	backgroundColor?: string | ThemeColor;
+
 	opacity?: string;
+
 	verticalAlign?: string;
+
 	margin?: string;
+
 	padding?: string;
+
 	width?: string;
+
 	height?: string;
 }
 /**
@@ -671,9 +736,13 @@ export interface IContentDecorationRenderOptions {
 export interface IDecorationRenderOptions
 	extends IThemeDecorationRenderOptions {
 	isWholeLine?: boolean;
+
 	rangeBehavior?: TrackedRangeStickiness;
+
 	overviewRulerLane?: OverviewRulerLane;
+
 	light?: IThemeDecorationRenderOptions;
+
 	dark?: IThemeDecorationRenderOptions;
 }
 /**
@@ -695,6 +764,7 @@ export interface IThemeDecorationInstanceRenderOptions {
 export interface IDecorationInstanceRenderOptions
 	extends IThemeDecorationInstanceRenderOptions {
 	light?: IThemeDecorationInstanceRenderOptions;
+
 	dark?: IThemeDecorationInstanceRenderOptions;
 }
 /**
@@ -702,7 +772,9 @@ export interface IDecorationInstanceRenderOptions
  */
 export interface IDecorationOptions {
 	range: IRange;
+
 	hoverMessage?: IMarkdownString | IMarkdownString[];
+
 	renderOptions?: IDecorationInstanceRenderOptions;
 }
 /**
@@ -736,6 +808,7 @@ export interface TypePayload {
  */
 export interface ReplacePreviousCharPayload {
 	text: string;
+
 	replaceCharCnt: number;
 }
 /**
@@ -743,7 +816,10 @@ export interface ReplacePreviousCharPayload {
  */
 export interface CompositionTypePayload {
 	text: string;
+
 	replacePrevCharCnt: number;
+
 	replaceNextCharCnt: number;
+
 	positionDelta: number;
 }

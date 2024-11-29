@@ -23,17 +23,23 @@ import { BlockCommentCommand } from "./blockCommentCommand.js";
 
 export interface IInsertionPoint {
 	ignore: boolean;
+
 	commentStrOffset: number;
 }
 export interface ILinePreflightData {
 	ignore: boolean;
+
 	commentStr: string;
+
 	commentStrOffset: number;
+
 	commentStrLength: number;
 }
 export interface IPreflightDataSupported {
 	supported: true;
+
 	shouldRemoveComments: boolean;
+
 	lines: ILinePreflightData[];
 }
 export interface IPreflightDataUnsupported {
@@ -53,13 +59,21 @@ export const enum Type {
 }
 export class LineCommentCommand implements ICommand {
 	private readonly _selection: Selection;
+
 	private readonly _indentSize: number;
+
 	private readonly _type: Type;
+
 	private readonly _insertSpace: boolean;
+
 	private readonly _ignoreEmptyLines: boolean;
+
 	private _selectionId: string | null;
+
 	private _deltaColumn: number;
+
 	private _moveEndPositionDown: boolean;
+
 	private _ignoreFirstLine: boolean;
 
 	constructor(
@@ -72,13 +86,21 @@ export class LineCommentCommand implements ICommand {
 		ignoreFirstLine?: boolean,
 	) {
 		this._selection = selection;
+
 		this._indentSize = indentSize;
+
 		this._type = type;
+
 		this._insertSpace = insertSpace;
+
 		this._selectionId = null;
+
 		this._deltaColumn = 0;
+
 		this._moveEndPositionDown = false;
+
 		this._ignoreEmptyLines = ignoreEmptyLines;
+
 		this._ignoreFirstLine = ignoreFirstLine || false;
 	}
 	/**
@@ -106,11 +128,14 @@ export class LineCommentCommand implements ICommand {
 			// Mode does not support line comments
 			return null;
 		}
+
 		const lines: ILinePreflightData[] = [];
 
 		for (
 			let i = 0, lineCount = endLineNumber - startLineNumber + 1;
+
 			i < lineCount;
+
 			i++
 		) {
 			lines[i] = {
@@ -120,6 +145,7 @@ export class LineCommentCommand implements ICommand {
 				commentStrLength: commentStr.length,
 			};
 		}
+
 		return lines;
 	}
 	/**
@@ -147,6 +173,7 @@ export class LineCommentCommand implements ICommand {
 		} else {
 			shouldRemoveComments = true;
 		}
+
 		for (let i = 0, lineCount = lines.length; i < lineCount; i++) {
 			const lineData = lines[i];
 
@@ -158,6 +185,7 @@ export class LineCommentCommand implements ICommand {
 
 				continue;
 			}
+
 			const lineContent = model.getLineContent(lineNumber);
 
 			const lineContentStartOffset =
@@ -166,12 +194,16 @@ export class LineCommentCommand implements ICommand {
 			if (lineContentStartOffset === -1) {
 				// Empty or whitespace only line
 				lineData.ignore = ignoreEmptyLines;
+
 				lineData.commentStrOffset = lineContent.length;
 
 				continue;
 			}
+
 			onlyWhitespaceLines = false;
+
 			lineData.ignore = false;
+
 			lineData.commentStrOffset = lineContentStartOffset;
 
 			if (
@@ -191,6 +223,7 @@ export class LineCommentCommand implements ICommand {
 					lineData.ignore = true;
 				}
 			}
+
 			if (shouldRemoveComments && insertSpace) {
 				// Remove a following space if present
 				const commentStrEndOffset =
@@ -205,6 +238,7 @@ export class LineCommentCommand implements ICommand {
 				}
 			}
 		}
+
 		if (type === Type.Toggle && onlyWhitespaceLines) {
 			// For only whitespace lines, we insert comments
 			shouldRemoveComments = false;
@@ -213,6 +247,7 @@ export class LineCommentCommand implements ICommand {
 				lines[i].ignore = false;
 			}
 		}
+
 		return {
 			supported: true,
 			shouldRemoveComments: shouldRemoveComments,
@@ -244,6 +279,7 @@ export class LineCommentCommand implements ICommand {
 				supported: false,
 			};
 		}
+
 		return LineCommentCommand._analyzeLines(
 			type,
 			insertSpace,
@@ -278,11 +314,13 @@ export class LineCommentCommand implements ICommand {
 				s.startLineNumber,
 				this._indentSize,
 			);
+
 			ops = this._createAddLineCommentsOperations(
 				data.lines,
 				s.startLineNumber,
 			);
 		}
+
 		const cursorPosition = new Position(
 			s.positionLineNumber,
 			s.positionColumn,
@@ -304,8 +342,10 @@ export class LineCommentCommand implements ICommand {
 				}
 			}
 		}
+
 		this._selectionId = builder.trackSelection(s);
 	}
+
 	private _attemptRemoveBlockComment(
 		model: ITextModel,
 		s: Selection,
@@ -335,14 +375,18 @@ export class LineCommentCommand implements ICommand {
 			endTokenIndex = model
 				.getLineContent(startLineNumber)
 				.indexOf(endToken, startTokenIndex + startToken.length);
+
 			endLineNumber = startLineNumber;
 		}
+
 		if (startTokenIndex === -1 && endTokenIndex !== -1) {
 			startTokenIndex = model
 				.getLineContent(endLineNumber)
 				.lastIndexOf(startToken, endTokenIndex);
+
 			startLineNumber = endLineNumber;
 		}
+
 		if (s.isEmpty() && (startTokenIndex === -1 || endTokenIndex === -1)) {
 			startTokenIndex = model
 				.getLineContent(startLineNumber)
@@ -373,8 +417,10 @@ export class LineCommentCommand implements ICommand {
 				.charCodeAt(endTokenIndex - 1) === CharCode.Space
 		) {
 			endToken = " " + endToken;
+
 			endTokenIndex -= 1;
 		}
+
 		if (startTokenIndex !== -1 && endTokenIndex !== -1) {
 			return BlockCommentCommand._createRemoveBlockCommentOperations(
 				new Range(
@@ -387,6 +433,7 @@ export class LineCommentCommand implements ICommand {
 				endToken,
 			);
 		}
+
 		return null;
 	}
 	/**
@@ -414,6 +461,7 @@ export class LineCommentCommand implements ICommand {
 			// Mode does not support block comments
 			return;
 		}
+
 		const startToken = config.blockCommentStartToken;
 
 		const endToken = config.blockCommentEndToken;
@@ -436,6 +484,7 @@ export class LineCommentCommand implements ICommand {
 					// Line is empty or contains only whitespace
 					firstNonWhitespaceIndex = lineContent.length;
 				}
+
 				ops = BlockCommentCommand._createAddBlockCommentOperations(
 					new Range(
 						s.startLineNumber,
@@ -462,22 +511,26 @@ export class LineCommentCommand implements ICommand {
 					this._insertSpace,
 				);
 			}
+
 			if (ops.length === 1) {
 				// Leave cursor after token and Space
 				this._deltaColumn = startToken.length + 1;
 			}
 		}
+
 		this._selectionId = builder.trackSelection(s);
 
 		for (const op of ops) {
 			builder.addEditOperation(op.range, op.text);
 		}
 	}
+
 	public getEditOperations(
 		model: ITextModel,
 		builder: IEditOperationBuilder,
 	): void {
 		let s = this._selection;
+
 		this._moveEndPositionDown = false;
 
 		if (s.startLineNumber === s.endLineNumber && this._ignoreFirstLine) {
@@ -490,17 +543,21 @@ export class LineCommentCommand implements ICommand {
 				),
 				s.startLineNumber === model.getLineCount() ? "" : "\n",
 			);
+
 			this._selectionId = builder.trackSelection(s);
 
 			return;
 		}
+
 		if (s.startLineNumber < s.endLineNumber && s.endColumn === 1) {
 			this._moveEndPositionDown = true;
+
 			s = s.setEndPosition(
 				s.endLineNumber - 1,
 				model.getLineMaxColumn(s.endLineNumber - 1),
 			);
 		}
+
 		const data = LineCommentCommand._gatherPreflightData(
 			this._type,
 			this._insertSpace,
@@ -515,8 +572,10 @@ export class LineCommentCommand implements ICommand {
 		if (data.supported) {
 			return this._executeLineComments(model, builder, data, s);
 		}
+
 		return this._executeBlockComment(model, builder, s);
 	}
+
 	public computeCursorState(
 		model: ITextModel,
 		helper: ICursorStateComputerData,
@@ -526,6 +585,7 @@ export class LineCommentCommand implements ICommand {
 		if (this._moveEndPositionDown) {
 			result = result.setEndPosition(result.endLineNumber + 1, 1);
 		}
+
 		return new Selection(
 			result.selectionStartLineNumber,
 			result.selectionStartColumn + this._deltaColumn,
@@ -548,6 +608,7 @@ export class LineCommentCommand implements ICommand {
 			if (lineData.ignore) {
 				continue;
 			}
+
 			res.push(
 				EditOperation.delete(
 					new Range(
@@ -561,6 +622,7 @@ export class LineCommentCommand implements ICommand {
 				),
 			);
 		}
+
 		return res;
 	}
 	/**
@@ -580,6 +642,7 @@ export class LineCommentCommand implements ICommand {
 			if (lineData.ignore) {
 				continue;
 			}
+
 			res.push(
 				EditOperation.insert(
 					new Position(
@@ -590,8 +653,10 @@ export class LineCommentCommand implements ICommand {
 				),
 			);
 		}
+
 		return res;
 	}
+
 	private static nextVisibleColumn(
 		currentVisibleColumn: number,
 		indentSize: number,
@@ -604,6 +669,7 @@ export class LineCommentCommand implements ICommand {
 				(indentSize - (currentVisibleColumn % indentSize))
 			);
 		}
+
 		return currentVisibleColumn + columnSize;
 	}
 	/**
@@ -625,13 +691,16 @@ export class LineCommentCommand implements ICommand {
 			if (lines[i].ignore) {
 				continue;
 			}
+
 			const lineContent = model.getLineContent(startLineNumber + i);
 
 			let currentVisibleColumn = 0;
 
 			for (
 				let j = 0, lenJ = lines[i].commentStrOffset;
+
 				currentVisibleColumn < minVisibleColumn && j < lenJ;
+
 				j++
 			) {
 				currentVisibleColumn = LineCommentCommand.nextVisibleColumn(
@@ -641,10 +710,12 @@ export class LineCommentCommand implements ICommand {
 					1,
 				);
 			}
+
 			if (currentVisibleColumn < minVisibleColumn) {
 				minVisibleColumn = currentVisibleColumn;
 			}
 		}
+
 		minVisibleColumn =
 			Math.floor(minVisibleColumn / indentSize) * indentSize;
 
@@ -652,13 +723,16 @@ export class LineCommentCommand implements ICommand {
 			if (lines[i].ignore) {
 				continue;
 			}
+
 			const lineContent = model.getLineContent(startLineNumber + i);
 
 			let currentVisibleColumn = 0;
 
 			for (
 				j = 0, lenJ = lines[i].commentStrOffset;
+
 				currentVisibleColumn < minVisibleColumn && j < lenJ;
+
 				j++
 			) {
 				currentVisibleColumn = LineCommentCommand.nextVisibleColumn(
@@ -668,6 +742,7 @@ export class LineCommentCommand implements ICommand {
 					1,
 				);
 			}
+
 			if (currentVisibleColumn > minVisibleColumn) {
 				lines[i].commentStrOffset = j - 1;
 			} else {

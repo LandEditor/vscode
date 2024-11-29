@@ -15,6 +15,7 @@ export default class Tracer extends Disposable {
 	constructor(private readonly logger: Logger) {
 		super();
 	}
+
 	public traceRequest(
 		serverId: string,
 		request: Proto.Request,
@@ -29,6 +30,7 @@ export default class Tracer extends Disposable {
 			);
 		}
 	}
+
 	public traceResponse(
 		serverId: string,
 		response: Proto.Response,
@@ -42,6 +44,7 @@ export default class Tracer extends Disposable {
 			);
 		}
 	}
+
 	public traceRequestCompleted(
 		serverId: string,
 		command: string,
@@ -55,6 +58,7 @@ export default class Tracer extends Disposable {
 			);
 		}
 	}
+
 	public traceEvent(serverId: string, event: Proto.Event): void {
 		if (this.logger.logLevel === vscode.LogLevel.Trace) {
 			this.trace(
@@ -64,6 +68,7 @@ export default class Tracer extends Disposable {
 			);
 		}
 	}
+
 	public trace(serverId: string, message: string, data?: unknown): void {
 		this.logger.trace(
 			`<${serverId}> ${message}`,

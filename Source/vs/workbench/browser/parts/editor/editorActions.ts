@@ -397,6 +397,7 @@ export class NavigateBetweenGroupsAction extends Action2 {
 			editorGroupService.activeGroup,
 			true,
 		);
+
 		nextGroup?.focus();
 	}
 }
@@ -437,6 +438,7 @@ abstract class AbstractFocusGroupAction extends Action2 {
 			editorGroupService.activeGroup,
 			true,
 		);
+
 		group?.focus();
 	}
 }
@@ -596,6 +598,7 @@ export class FocusBelowGroup extends AbstractFocusGroupAction {
 
 export class CloseEditorAction extends Action {
 	static readonly ID = "workbench.action.closeActiveEditor";
+
 	static readonly LABEL = localize("closeEditor", "Close Editor");
 
 	constructor(
@@ -617,6 +620,7 @@ export class CloseEditorAction extends Action {
 
 export class UnpinEditorAction extends Action {
 	static readonly ID = "workbench.action.unpinActiveEditor";
+
 	static readonly LABEL = localize("unpinEditor", "Unpin Editor");
 
 	constructor(
@@ -638,6 +642,7 @@ export class UnpinEditorAction extends Action {
 
 export class CloseEditorTabAction extends Action {
 	static readonly ID = "workbench.action.closeActiveEditor";
+
 	static readonly LABEL = localize("closeOneEditor", "Close");
 
 	constructor(
@@ -855,6 +860,7 @@ abstract class AbstractCloseAllAction extends Action2 {
 
 				if (!customEditorsToConfirm) {
 					customEditorsToConfirm = new Set();
+
 					editorsWithCustomConfirm.set(
 						editor.typeId,
 						customEditorsToConfirm,
@@ -1050,6 +1056,7 @@ abstract class AbstractCloseAllAction extends Action2 {
 				handledGroups.add(groupId);
 
 				const group = editorGroupService.getGroup(groupId);
+
 				await group?.openEditor(editor);
 			}
 		} catch (error) {
@@ -1072,6 +1079,7 @@ abstract class AbstractCloseAllAction extends Action2 {
 
 export class CloseAllEditorsAction extends AbstractCloseAllAction {
 	static readonly ID = "workbench.action.closeAllEditors";
+
 	static readonly LABEL = localize2("closeAllEditors", "Close All Editors");
 
 	constructor() {
@@ -1150,6 +1158,7 @@ export class CloseEditorsInOtherGroupsAction extends Action2 {
 		const groupToSkip = context
 			? editorGroupService.getGroup(context.groupId)
 			: editorGroupService.activeGroup;
+
 		await Promise.all(
 			editorGroupService
 				.getGroups(GroupsOrder.MOST_RECENTLY_ACTIVE)
@@ -1506,7 +1515,9 @@ export class MinimizeOtherGroupsHideSidebarAction extends Action2 {
 		const layoutService = accessor.get(IWorkbenchLayoutService);
 
 		layoutService.setPartHidden(true, Parts.SIDEBAR_PART);
+
 		layoutService.setPartHidden(true, Parts.AUXILIARYBAR_PART);
+
 		editorGroupService.arrangeGroups(GroupsArrangement.EXPAND);
 	}
 }
@@ -1575,7 +1586,9 @@ export class MaximizeGroupHideSidebarAction extends Action2 {
 
 		if (editorService.activeEditor) {
 			layoutService.setPartHidden(true, Parts.SIDEBAR_PART);
+
 			layoutService.setPartHidden(true, Parts.AUXILIARYBAR_PART);
+
 			editorGroupService.arrangeGroups(GroupsArrangement.MAXIMIZE);
 		}
 	}
@@ -1961,6 +1974,7 @@ export class OpenLastEditorInGroup extends AbstractNavigateEditorAction {
 
 export class NavigateForwardAction extends Action2 {
 	static readonly ID = "workbench.action.navigateForward";
+
 	static readonly LABEL = localize("navigateForward", "Go Forward");
 
 	constructor() {
@@ -2006,6 +2020,7 @@ export class NavigateForwardAction extends Action2 {
 
 export class NavigateBackwardsAction extends Action2 {
 	static readonly ID = "workbench.action.navigateBack";
+
 	static readonly LABEL = localize("navigateBack", "Go Back");
 
 	constructor() {
@@ -2969,6 +2984,7 @@ export class SplitEditorToBelowGroupAction extends ExecuteCommandAction {
 
 export class SplitEditorToLeftGroupAction extends ExecuteCommandAction {
 	static readonly ID = "workbench.action.splitEditorToLeftGroup";
+
 	static readonly LABEL = localize(
 		"splitEditorToLeftGroup",
 		"Split Editor into Left Group",
@@ -3269,6 +3285,7 @@ abstract class AbstractCreateEditorGroupAction extends Action2 {
 			editorGroupService.activeGroup,
 			this.direction,
 		);
+
 		editorGroupService.activateGroup(group);
 
 		if (focusNewGroup) {
@@ -3690,6 +3707,7 @@ export class NewEmptyEditorWindowAction extends Action2 {
 
 		const auxiliaryEditorPart =
 			await editorGroupService.createAuxiliaryEditorPart();
+
 		auxiliaryEditorPart.activeGroup.focus();
 	}
 }

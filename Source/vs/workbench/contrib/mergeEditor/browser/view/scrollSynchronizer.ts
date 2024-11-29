@@ -21,17 +21,22 @@ export class ScrollSynchronizer extends Disposable {
 	private get model() {
 		return this.viewModel.get()?.model;
 	}
+
 	private readonly reentrancyBarrier = new ReentrancyBarrier();
+
 	public readonly updateScrolling: () => void;
+
 	private get shouldAlignResult() {
 		return this.layout.get().kind === "columns";
 	}
+
 	private get shouldAlignBase() {
 		return (
 			this.layout.get().kind === "mixed" &&
 			!this.layout.get().showBaseAtTop
 		);
 	}
+
 	constructor(
 		private readonly viewModel: IObservable<
 			MergeEditorViewModel | undefined
@@ -48,6 +53,7 @@ export class ScrollSynchronizer extends Disposable {
 			if (!this.model) {
 				return;
 			}
+
 			this.input2View.editor.setScrollTop(
 				this.input1View.editor.getScrollTop(),
 				ScrollType.Immediate,
@@ -61,12 +67,14 @@ export class ScrollSynchronizer extends Disposable {
 			} else {
 				const mappingInput1Result =
 					this.model.input1ResultMapping.get();
+
 				this.synchronizeScrolling(
 					this.input1View.editor,
 					this.inputResultView.editor,
 					mappingInput1Result,
 				);
 			}
+
 			const baseView = this.baseView.get();
 
 			if (baseView) {
@@ -82,6 +90,7 @@ export class ScrollSynchronizer extends Disposable {
 						this.model.baseInput1Diffs.get(),
 						-1,
 					).reverse();
+
 					this.synchronizeScrolling(
 						this.input1View.editor,
 						baseView.editor,
@@ -90,12 +99,14 @@ export class ScrollSynchronizer extends Disposable {
 				}
 			}
 		});
+
 		this._store.add(
 			this.input1View.editor.onDidScrollChange(
 				this.reentrancyBarrier.makeExclusiveOrSkip((c) => {
 					if (c.scrollTopChanged) {
 						handleInput1OnScroll();
 					}
+
 					if (c.scrollLeftChanged) {
 						this.baseView
 							.get()
@@ -103,10 +114,12 @@ export class ScrollSynchronizer extends Disposable {
 								c.scrollLeft,
 								ScrollType.Immediate,
 							);
+
 						this.input2View.editor.setScrollLeft(
 							c.scrollLeft,
 							ScrollType.Immediate,
 						);
+
 						this.inputResultView.editor.setScrollLeft(
 							c.scrollLeft,
 							ScrollType.Immediate,
@@ -115,12 +128,14 @@ export class ScrollSynchronizer extends Disposable {
 				}),
 			),
 		);
+
 		this._store.add(
 			this.input2View.editor.onDidScrollChange(
 				this.reentrancyBarrier.makeExclusiveOrSkip((c) => {
 					if (!this.model) {
 						return;
 					}
+
 					if (c.scrollTopChanged) {
 						this.input1View.editor.setScrollTop(
 							c.scrollTop,
@@ -135,12 +150,14 @@ export class ScrollSynchronizer extends Disposable {
 						} else {
 							const mappingInput2Result =
 								this.model.input2ResultMapping.get();
+
 							this.synchronizeScrolling(
 								this.input2View.editor,
 								this.inputResultView.editor,
 								mappingInput2Result,
 							);
 						}
+
 						const baseView = this.baseView.get();
 
 						if (baseView && this.model) {
@@ -156,6 +173,7 @@ export class ScrollSynchronizer extends Disposable {
 									this.model.baseInput2Diffs.get(),
 									-1,
 								).reverse();
+
 								this.synchronizeScrolling(
 									this.input2View.editor,
 									baseView.editor,
@@ -164,6 +182,7 @@ export class ScrollSynchronizer extends Disposable {
 							}
 						}
 					}
+
 					if (c.scrollLeftChanged) {
 						this.baseView
 							.get()
@@ -171,10 +190,12 @@ export class ScrollSynchronizer extends Disposable {
 								c.scrollLeft,
 								ScrollType.Immediate,
 							);
+
 						this.input1View.editor.setScrollLeft(
 							c.scrollLeft,
 							ScrollType.Immediate,
 						);
+
 						this.inputResultView.editor.setScrollLeft(
 							c.scrollLeft,
 							ScrollType.Immediate,
@@ -183,6 +204,7 @@ export class ScrollSynchronizer extends Disposable {
 				}),
 			),
 		);
+
 		this._store.add(
 			this.inputResultView.editor.onDidScrollChange(
 				this.reentrancyBarrier.makeExclusiveOrSkip((c) => {
@@ -192,6 +214,7 @@ export class ScrollSynchronizer extends Disposable {
 								c.scrollTop,
 								ScrollType.Immediate,
 							);
+
 							this.input2View.editor.setScrollTop(
 								c.scrollTop,
 								ScrollType.Immediate,
@@ -199,6 +222,7 @@ export class ScrollSynchronizer extends Disposable {
 						} else {
 							const mapping1 =
 								this.model?.resultInput1Mapping.get();
+
 							this.synchronizeScrolling(
 								this.inputResultView.editor,
 								this.input1View.editor,
@@ -207,12 +231,14 @@ export class ScrollSynchronizer extends Disposable {
 
 							const mapping2 =
 								this.model?.resultInput2Mapping.get();
+
 							this.synchronizeScrolling(
 								this.inputResultView.editor,
 								this.input2View.editor,
 								mapping2,
 							);
 						}
+
 						const baseMapping = this.model?.resultBaseMapping.get();
 
 						const baseView = this.baseView.get();
@@ -225,6 +251,7 @@ export class ScrollSynchronizer extends Disposable {
 							);
 						}
 					}
+
 					if (c.scrollLeftChanged) {
 						this.baseView
 							.get()
@@ -232,10 +259,12 @@ export class ScrollSynchronizer extends Disposable {
 								c.scrollLeft,
 								ScrollType.Immediate,
 							);
+
 						this.input1View.editor.setScrollLeft(
 							c.scrollLeft,
 							ScrollType.Immediate,
 						);
+
 						this.input2View.editor.setScrollLeft(
 							c.scrollLeft,
 							ScrollType.Immediate,
@@ -244,6 +273,7 @@ export class ScrollSynchronizer extends Disposable {
 				}),
 			),
 		);
+
 		this._store.add(
 			autorunWithStore((reader, store) => {
 				/** @description set baseViewEditor.onDidScrollChange */
@@ -257,11 +287,13 @@ export class ScrollSynchronizer extends Disposable {
 									if (!this.model) {
 										return;
 									}
+
 									if (this.shouldAlignBase) {
 										this.input1View.editor.setScrollTop(
 											c.scrollTop,
 											ScrollType.Immediate,
 										);
+
 										this.input2View.editor.setScrollTop(
 											c.scrollTop,
 											ScrollType.Immediate,
@@ -272,6 +304,7 @@ export class ScrollSynchronizer extends Disposable {
 												this.model.baseInput1Diffs.get(),
 												-1,
 											);
+
 										this.synchronizeScrolling(
 											baseView.editor,
 											this.input1View.editor,
@@ -283,29 +316,35 @@ export class ScrollSynchronizer extends Disposable {
 												this.model.baseInput2Diffs.get(),
 												-1,
 											);
+
 										this.synchronizeScrolling(
 											baseView.editor,
 											this.input2View.editor,
 											baseInput2Mapping,
 										);
 									}
+
 									const baseMapping =
 										this.model?.baseResultMapping.get();
+
 									this.synchronizeScrolling(
 										baseView.editor,
 										this.inputResultView.editor,
 										baseMapping,
 									);
 								}
+
 								if (c.scrollLeftChanged) {
 									this.inputResultView.editor.setScrollLeft(
 										c.scrollLeft,
 										ScrollType.Immediate,
 									);
+
 									this.input1View.editor.setScrollLeft(
 										c.scrollLeft,
 										ScrollType.Immediate,
 									);
+
 									this.input2View.editor.setScrollLeft(
 										c.scrollLeft,
 										ScrollType.Immediate,
@@ -318,6 +357,7 @@ export class ScrollSynchronizer extends Disposable {
 			}),
 		);
 	}
+
 	private synchronizeScrolling(
 		scrollingEditor: CodeEditorWidget,
 		targetEditor: CodeEditorWidget,
@@ -326,11 +366,13 @@ export class ScrollSynchronizer extends Disposable {
 		if (!mapping) {
 			return;
 		}
+
 		const visibleRanges = scrollingEditor.getVisibleRanges();
 
 		if (visibleRanges.length === 0) {
 			return;
 		}
+
 		const topLineNumber = visibleRanges[0].startLineNumber - 1;
 
 		const result = mapping.project(topLineNumber);
@@ -363,6 +405,7 @@ export class ScrollSynchronizer extends Disposable {
 
 		const resultScrollPosition =
 			resultStartTopPx + (resultEndPx - resultStartTopPx) * factor;
+
 		targetEditor.setScrollTop(resultScrollPosition, ScrollType.Immediate);
 	}
 }

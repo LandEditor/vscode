@@ -30,30 +30,39 @@ export class BannerController extends Disposable {
 		private readonly instantiationService: IInstantiationService,
 	) {
 		super();
+
 		this.banner = this._register(
 			this.instantiationService.createInstance(Banner),
 		);
 	}
+
 	public hide() {
 		this._editor.setBanner(null, 0);
+
 		this.banner.clear();
 	}
+
 	public show(item: IBannerItem) {
 		this.banner.show({
 			...item,
 			onClose: () => {
 				this.hide();
+
 				item.onClose?.();
 			},
 		});
+
 		this._editor.setBanner(this.banner.element, BANNER_ELEMENT_HEIGHT);
 	}
 }
 // TODO@hediet: Investigate if this can be reused by the workspace banner (bannerPart.ts).
 class Banner extends Disposable {
 	public element: HTMLElement;
+
 	private readonly markdownRenderer: MarkdownRenderer;
+
 	private messageActionsContainer: HTMLElement | undefined;
+
 	private actionBar: ActionBar | undefined;
 
 	constructor(
@@ -61,34 +70,45 @@ class Banner extends Disposable {
 		private readonly instantiationService: IInstantiationService,
 	) {
 		super();
+
 		this.markdownRenderer = this.instantiationService.createInstance(
 			MarkdownRenderer,
 			{},
 		);
+
 		this.element = $("div.editor-banner");
+
 		this.element.tabIndex = 0;
 	}
+
 	private getAriaLabel(item: IBannerItem): string | undefined {
 		if (item.ariaLabel) {
 			return item.ariaLabel;
 		}
+
 		if (typeof item.message === "string") {
 			return item.message;
 		}
+
 		return undefined;
 	}
+
 	private getBannerMessage(message: MarkdownString | string): HTMLElement {
 		if (typeof message === "string") {
 			const element = $("span");
+
 			element.innerText = message;
 
 			return element;
 		}
+
 		return this.markdownRenderer.render(message).element;
 	}
+
 	public clear() {
 		clearNode(this.element);
 	}
+
 	public show(item: IBannerItem) {
 		// Clear previous item
 		clearNode(this.element);
@@ -100,6 +120,7 @@ class Banner extends Disposable {
 		}
 		// Icon
 		const iconContainer = append(this.element, $("div.icon-container"));
+
 		iconContainer.setAttribute("aria-hidden", "true");
 
 		if (item.icon) {
@@ -112,7 +133,9 @@ class Banner extends Disposable {
 			this.element,
 			$("div.message-container"),
 		);
+
 		messageContainer.setAttribute("aria-hidden", "true");
+
 		messageContainer.appendChild(this.getBannerMessage(item.message));
 		// Message Actions
 		this.messageActionsContainer = append(
@@ -137,7 +160,9 @@ class Banner extends Disposable {
 			this.element,
 			$("div.action-container"),
 		);
+
 		this.actionBar = this._register(new ActionBar(actionBarContainer));
+
 		this.actionBar.push(
 			this._register(
 				new Action(
@@ -154,14 +179,20 @@ class Banner extends Disposable {
 			),
 			{ icon: true, label: false },
 		);
+
 		this.actionBar.setFocusable(false);
 	}
 }
 export interface IBannerItem {
 	readonly id: string;
+
 	readonly icon: ThemeIcon | undefined;
+
 	readonly message: string | MarkdownString;
+
 	readonly actions?: ILinkDescriptor[];
+
 	readonly ariaLabel?: string;
+
 	readonly onClose?: () => void;
 }

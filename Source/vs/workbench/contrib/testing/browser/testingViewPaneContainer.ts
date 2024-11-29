@@ -54,13 +54,17 @@ export class TestingViewPaneContainer extends ViewPaneContainer {
 			viewDescriptorService,
 		);
 	}
+
 	override create(parent: HTMLElement): void {
 		super.create(parent);
+
 		parent.classList.add("testing-view-pane");
 	}
+
 	override getOptimalWidth(): number {
 		return 400;
 	}
+
 	override getTitle(): string {
 		return localize("testing", "Testing");
 	}

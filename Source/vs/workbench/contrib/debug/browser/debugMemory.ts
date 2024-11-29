@@ -40,13 +40,16 @@ const rangeRe = /range=([0-9]+):([0-9]+)/;
 
 export class DebugMemoryFileSystemProvider implements IFileSystemProvider {
 	private memoryFdCounter = 0;
+
 	private readonly fdMemory = new Map<
 		number,
 		{
 			session: IDebugSession;
+
 			region: IMemoryRegion;
 		}
 	>();
+
 	private readonly changeEmitter = new Emitter<readonly IFileChange[]>();
 	/** @inheritdoc */
 	public readonly onDidChangeCapabilities = Event.None;
@@ -67,13 +70,16 @@ export class DebugMemoryFileSystemProvider implements IFileSystemProvider {
 			}
 		});
 	}
+
 	public watch(resource: URI, opts: IWatchOptions) {
 		if (opts.recursive) {
 			return toDisposable(() => {});
 		}
+
 		const { session, memoryReference, offset } = this.parseUri(resource);
 
 		const disposable = new DisposableStore();
+
 		disposable.add(
 			session.onDidChangeState(() => {
 				if (
@@ -86,11 +92,13 @@ export class DebugMemoryFileSystemProvider implements IFileSystemProvider {
 				}
 			}),
 		);
+
 		disposable.add(
 			session.onDidInvalidateMemory((e) => {
 				if (e.body.memoryReference !== memoryReference) {
 					return;
 				}
+
 				if (
 					offset &&
 					(e.body.offset >= offset.toOffset ||
@@ -98,6 +106,7 @@ export class DebugMemoryFileSystemProvider implements IFileSystemProvider {
 				) {
 					return;
 				}
+
 				this.changeEmitter.fire([
 					{ resource, type: FileChangeType.UPDATED },
 				]);
@@ -157,6 +166,7 @@ export class DebugMemoryFileSystemProvider implements IFileSystemProvider {
 		if (offset) {
 			region = new MemoryRegionView(region, offset);
 		}
+
 		this.fdMemory.set(fd, { session, region });
 
 		return Promise.resolve(fd);
@@ -164,6 +174,7 @@ export class DebugMemoryFileSystemProvider implements IFileSystemProvider {
 	/** @inheritdoc */
 	public close(fd: number) {
 		this.fdMemory.get(fd)?.region.dispose();
+
 		this.fdMemory.delete(fd);
 
 		return Promise.resolve();
@@ -178,6 +189,7 @@ export class DebugMemoryFileSystemProvider implements IFileSystemProvider {
 				FileSystemProviderErrorCode.FileNotFound,
 			);
 		}
+
 		const fd = await this.open(resource, { create: false });
 
 		try {
@@ -196,6 +208,7 @@ export class DebugMemoryFileSystemProvider implements IFileSystemProvider {
 				FileSystemProviderErrorCode.FileNotFound,
 			);
 		}
+
 		const data = new Uint8Array(offset.toOffset - offset.fromOffset);
 
 		const fd = await this.open(resource, { create: false });
@@ -224,6 +237,7 @@ export class DebugMemoryFileSystemProvider implements IFileSystemProvider {
 				FileSystemProviderErrorCode.Unavailable,
 			);
 		}
+
 		const ranges = await memory.region.read(pos, length);
 
 		let readSoFar = 0;
@@ -242,6 +256,7 @@ export class DebugMemoryFileSystemProvider implements IFileSystemProvider {
 							FileSystemProviderErrorCode.Unknown,
 						);
 					}
+
 				case MemoryRangeType.Valid: {
 					const start = Math.max(0, pos - range.offset);
 
@@ -252,15 +267,19 @@ export class DebugMemoryFileSystemProvider implements IFileSystemProvider {
 							start + (length - readSoFar),
 						),
 					);
+
 					data.set(toWrite.buffer, offset + readSoFar);
+
 					readSoFar += toWrite.byteLength;
 
 					break;
 				}
+
 				default:
 					assertNever(range);
 			}
 		}
+
 		return readSoFar;
 	}
 	/** @inheritdoc */
@@ -279,11 +298,13 @@ export class DebugMemoryFileSystemProvider implements IFileSystemProvider {
 				FileSystemProviderErrorCode.Unavailable,
 			);
 		}
+
 		return memory.region.write(
 			pos,
 			VSBuffer.wrap(data).slice(offset, offset + length),
 		);
 	}
+
 	protected parseUri(uri: URI) {
 		if (uri.scheme !== DEBUG_MEMORY_SCHEME) {
 			throw createFileSystemProviderError(
@@ -291,6 +312,7 @@ export class DebugMemoryFileSystemProvider implements IFileSystemProvider {
 				FileSystemProviderErrorCode.FileNotFound,
 			);
 		}
+
 		const session = this.debugService.getModel().getSession(uri.authority);
 
 		if (!session) {
@@ -299,9 +321,11 @@ export class DebugMemoryFileSystemProvider implements IFileSystemProvider {
 				FileSystemProviderErrorCode.FileNotFound,
 			);
 		}
+
 		let offset:
 			| {
 					fromOffset: number;
+
 					toOffset: number;
 			  }
 			| undefined;
@@ -314,6 +338,7 @@ export class DebugMemoryFileSystemProvider implements IFileSystemProvider {
 				toOffset: Number(rangeMatch[2]),
 			};
 		}
+
 		const [, memoryReference] = uri.path.split("/");
 
 		return {
@@ -329,20 +354,27 @@ export class DebugMemoryFileSystemProvider implements IFileSystemProvider {
 class MemoryRegionView extends Disposable implements IMemoryRegion {
 	private readonly invalidateEmitter =
 		new Emitter<IMemoryInvalidationEvent>();
+
 	public readonly onDidInvalidate = this.invalidateEmitter.event;
+
 	public readonly writable: boolean;
+
 	private readonly width = this.range.toOffset - this.range.fromOffset;
 
 	constructor(
 		private readonly parent: IMemoryRegion,
 		public readonly range: {
 			fromOffset: number;
+
 			toOffset: number;
 		},
 	) {
 		super();
+
 		this.writable = parent.writable;
+
 		this._register(parent);
+
 		this._register(
 			parent.onDidInvalidate((e) => {
 				const fromOffset = clamp(
@@ -363,15 +395,18 @@ class MemoryRegionView extends Disposable implements IMemoryRegion {
 			}),
 		);
 	}
+
 	public read(fromOffset: number, toOffset: number): Promise<MemoryRange[]> {
 		if (fromOffset < 0) {
 			throw new RangeError(`Invalid fromOffset: ${fromOffset}`);
 		}
+
 		return this.parent.read(
 			this.range.fromOffset + fromOffset,
 			this.range.fromOffset + Math.min(toOffset, this.width),
 		);
 	}
+
 	public write(offset: number, data: VSBuffer): Promise<number> {
 		return this.parent.write(this.range.fromOffset + offset, data);
 	}

@@ -35,10 +35,12 @@ export class TerminalLocalFileLinkOpener implements ITerminalLinkOpener {
 		@IEditorService
 		private readonly _editorService: IEditorService,
 	) {}
+
 	async open(link: ITerminalSimpleLink): Promise<void> {
 		if (!link.uri) {
 			throw new Error("Tried to open file link without a resolved URI");
 		}
+
 		const linkSuffix = link.parsedLink
 			? link.parsedLink.suffix
 			: getLinkSuffix(link.text);
@@ -56,6 +58,7 @@ export class TerminalLocalFileLinkOpener implements ITerminalLinkOpener {
 							endColumn: linkSuffix.colEnd,
 						};
 		}
+
 		await this._editorService.openEditor({
 			resource: link.uri,
 			options: { pinned: true, selection, revealIfOpened: true },
@@ -69,12 +72,14 @@ export class TerminalLocalFolderInWorkspaceLinkOpener
 		@ICommandService
 		private readonly _commandService: ICommandService,
 	) {}
+
 	async open(link: ITerminalSimpleLink): Promise<void> {
 		if (!link.uri) {
 			throw new Error(
 				"Tried to open folder in workspace link without a resolved URI",
 			);
 		}
+
 		await this._commandService.executeCommand("revealInExplorer", link.uri);
 	}
 }
@@ -85,12 +90,14 @@ export class TerminalLocalFolderOutsideWorkspaceLinkOpener
 		@IHostService
 		private readonly _hostService: IHostService,
 	) {}
+
 	async open(link: ITerminalSimpleLink): Promise<void> {
 		if (!link.uri) {
 			throw new Error(
 				"Tried to open folder in workspace link without a resolved URI",
 			);
 		}
+
 		this._hostService.openWindow([{ folderUri: link.uri }], {
 			forceNewWindow: true,
 		});
@@ -123,12 +130,14 @@ export class TerminalSearchLinkOpener implements ITerminalLinkOpener {
 		this._fileQueryBuilder =
 			instantiationService.createInstance(QueryBuilder);
 	}
+
 	async open(link: ITerminalSimpleLink): Promise<void> {
 		const osPath = osPathModule(this._getOS());
 
 		const pathSeparator = osPath.sep;
 		// Remove file:/// and any leading ./ or ../ since quick access doesn't understand that format
 		let text = link.text.replace(/^file:\/\/\/?/, "");
+
 		text = osPath.normalize(text).replace(/^(\.+[\\/])+/, "");
 		// Try extract any trailing line and column numbers by matching the text against parsed
 		// links. This will give a search link `foo` on a line like `"foo", line 10` to open the
@@ -149,6 +158,7 @@ export class TerminalSearchLinkOpener implements ITerminalLinkOpener {
 				if (matchingParsedLink.suffix?.row !== undefined) {
 					// Normalize the path based on the parsed link
 					text = matchingParsedLink.path.text;
+
 					text += `:${matchingParsedLink.suffix.row}`;
 
 					if (matchingParsedLink.suffix?.col !== undefined) {
@@ -210,6 +220,7 @@ export class TerminalSearchLinkOpener implements ITerminalLinkOpener {
 		// Fallback to searching quick access
 		return this._quickInputService.quickAccess.show(text);
 	}
+
 	private async _getExactMatch(
 		sanitizedLink: string,
 	): Promise<IResourceMatch | undefined> {
@@ -240,6 +251,7 @@ export class TerminalSearchLinkOpener implements ITerminalLinkOpener {
 					normalizedAbsolutePath = `/${normalizedAbsolutePath}`;
 				}
 			}
+
 			let uri: URI;
 
 			if (this._workbenchEnvironmentService.remoteAuthority) {
@@ -252,8 +264,10 @@ export class TerminalSearchLinkOpener implements ITerminalLinkOpener {
 			} else {
 				uri = URI.file(normalizedAbsolutePath);
 			}
+
 			try {
 				const fileStat = await this._fileService.stat(uri);
+
 				resourceMatch = { uri, isDirectory: fileStat.isDirectory };
 			} catch {
 				// File or dir doesn't exist, continue on
@@ -302,8 +316,10 @@ export class TerminalSearchLinkOpener implements ITerminalLinkOpener {
 				}
 			}
 		}
+
 		return resourceMatch;
 	}
+
 	private async _tryOpenExactLink(
 		text: string,
 		link: ITerminalSimpleLink,
@@ -337,11 +353,13 @@ export class TerminalSearchLinkOpener implements ITerminalLinkOpener {
 		} catch {
 			return false;
 		}
+
 		return false;
 	}
 }
 interface IResourceMatch {
 	uri: URI;
+
 	isDirectory?: boolean;
 }
 export class TerminalUrlLinkOpener implements ITerminalLinkOpener {
@@ -352,6 +370,7 @@ export class TerminalUrlLinkOpener implements ITerminalLinkOpener {
 		@IConfigurationService
 		private readonly _configurationService: IConfigurationService,
 	) {}
+
 	async open(link: ITerminalSimpleLink): Promise<void> {
 		if (!link.uri) {
 			throw new Error("Tried to open a url without a resolved URI");

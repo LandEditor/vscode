@@ -73,13 +73,21 @@ export class RepositoryActionRunner extends ActionRunner {
 
 interface RepositoryTemplate {
 	readonly label: HTMLElement;
+
 	readonly labelCustomHover: IManagedHover;
+
 	readonly name: HTMLElement;
+
 	readonly description: HTMLElement;
+
 	readonly countContainer: HTMLElement;
+
 	readonly count: CountBadge;
+
 	readonly toolBar: WorkbenchToolBar;
+
 	readonly elementDisposables: DisposableStore;
+
 	readonly templateDisposable: IDisposable;
 }
 
@@ -197,9 +205,11 @@ export class RepositoryRenderer
 			templateData.labelCustomHover.update(
 				`${repository.provider.label}: ${repository.provider.rootUri.fsPath}`,
 			);
+
 			templateData.description.textContent = repository.provider.label;
 		} else {
 			templateData.labelCustomHover.update(repository.provider.label);
+
 			templateData.description.textContent = "";
 		}
 
@@ -220,9 +230,11 @@ export class RepositoryRenderer
 			autorun((reader) => {
 				const commands =
 					repository.provider.statusBarCommands.read(reader) ?? [];
+
 				statusPrimaryActions = commands.map(
 					(c) => new StatusBarAction(c, this.commandService),
 				);
+
 				updateToolbar();
 			}),
 		);
@@ -232,10 +244,12 @@ export class RepositoryRenderer
 				const count =
 					repository.provider.count.read(reader) ??
 					getRepositoryResourceCount(repository.provider);
+
 				templateData.countContainer.setAttribute(
 					"data-count",
 					String(count),
 				);
+
 				templateData.count.setCount(count);
 			}),
 		);
@@ -248,10 +262,13 @@ export class RepositoryRenderer
 			this.toolbarMenuId === MenuId.SCMTitle
 				? repositoryMenus.titleMenu.menu
 				: repositoryMenus.repositoryMenu;
+
 		templateData.elementDisposables.add(
 			connectPrimaryMenu(menu, (primary, secondary) => {
 				menuPrimaryActions = primary;
+
 				menuSecondaryActions = secondary;
+
 				updateToolbar();
 			}),
 		);
@@ -273,7 +290,9 @@ export class RepositoryRenderer
 
 	disposeTemplate(templateData: RepositoryTemplate): void {
 		templateData.elementDisposables.dispose();
+
 		templateData.templateDisposable.dispose();
+
 		templateData.count.dispose();
 	}
 }

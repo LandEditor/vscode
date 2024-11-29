@@ -19,6 +19,7 @@ export class Protocol implements IMessagePassingProtocol {
 		private sender: Sender,
 		readonly onMessage: Event<VSBuffer>,
 	) {}
+
 	send(message: VSBuffer): void {
 		try {
 			this.sender.send("vscode:message", message.buffer);
@@ -26,6 +27,7 @@ export class Protocol implements IMessagePassingProtocol {
 			// systems are going down
 		}
 	}
+
 	disconnect(): void {
 		this.sender.send("vscode:disconnect", null);
 	}

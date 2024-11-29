@@ -13,9 +13,13 @@ import { EditorOption } from "../../../common/config/editorOptions.js";
 
 export class WordContextKey {
 	static readonly AtEnd = new RawContextKey<boolean>("atEndOfWord", false);
+
 	private readonly _ckAtEnd: IContextKey<boolean>;
+
 	private readonly _configListener: IDisposable;
+
 	private _enabled: boolean = false;
+
 	private _selectionListener?: IDisposable;
 
 	constructor(
@@ -24,16 +28,22 @@ export class WordContextKey {
 		contextKeyService: IContextKeyService,
 	) {
 		this._ckAtEnd = WordContextKey.AtEnd.bindTo(contextKeyService);
+
 		this._configListener = this._editor.onDidChangeConfiguration(
 			(e) => e.hasChanged(EditorOption.tabCompletion) && this._update(),
 		);
+
 		this._update();
 	}
+
 	dispose(): void {
 		this._configListener.dispose();
+
 		this._selectionListener?.dispose();
+
 		this._ckAtEnd.reset();
 	}
+
 	private _update(): void {
 		// only update this when tab completions are enabled
 		const enabled =
@@ -42,6 +52,7 @@ export class WordContextKey {
 		if (this._enabled === enabled) {
 			return;
 		}
+
 		this._enabled = enabled;
 
 		if (this._enabled) {
@@ -51,6 +62,7 @@ export class WordContextKey {
 
 					return;
 				}
+
 				const model = this._editor.getModel();
 
 				const selection = this._editor.getSelection();
@@ -64,16 +76,21 @@ export class WordContextKey {
 
 					return;
 				}
+
 				this._ckAtEnd.set(
 					word.endColumn === selection.getStartPosition().column,
 				);
 			};
+
 			this._selectionListener =
 				this._editor.onDidChangeCursorSelection(checkForWordEnd);
+
 			checkForWordEnd();
 		} else if (this._selectionListener) {
 			this._ckAtEnd.reset();
+
 			this._selectionListener.dispose();
+
 			this._selectionListener = undefined;
 		}
 	}

@@ -33,6 +33,7 @@ export class StandaloneCommandsQuickAccessProvider extends AbstractEditorCommand
 	protected get activeTextEditorControl(): IEditor | undefined {
 		return this.codeEditorService.getFocusedCodeEditor() ?? undefined;
 	}
+
 	constructor(
 		@IInstantiationService
 		instantiationService: IInstantiationService,
@@ -56,12 +57,15 @@ export class StandaloneCommandsQuickAccessProvider extends AbstractEditorCommand
 			dialogService,
 		);
 	}
+
 	protected async getCommandPicks(): Promise<Array<ICommandQuickPick>> {
 		return this.getCodeEditorCommandPicks();
 	}
+
 	protected hasAdditionalCommandPicks(): boolean {
 		return false;
 	}
+
 	protected async getAdditionalCommandPicks(): Promise<ICommandQuickPick[]> {
 		return [];
 	}
@@ -86,6 +90,7 @@ export class GotoLineAction extends EditorAction {
 			},
 		});
 	}
+
 	run(accessor: ServicesAccessor): void {
 		accessor
 			.get(IQuickInputService)

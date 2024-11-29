@@ -19,6 +19,7 @@ export const MavenArtifactIdRegex = /<artifactId>([\s\S]*?)<\/artifactId>/;
 
 export const JavaLibrariesToLookFor: {
 	predicate: (groupId: string, artifactId: string) => boolean;
+
 	tag: string;
 }[] = [
 	// azure mgmt sdk

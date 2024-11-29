@@ -11,42 +11,62 @@ export interface IResizeEvent {
 	dimension: Dimension;
 
 	done: boolean;
+
 	north?: boolean;
+
 	east?: boolean;
+
 	south?: boolean;
+
 	west?: boolean;
 }
 export class ResizableHTMLElement {
 	readonly domNode: HTMLElement;
+
 	private readonly _onDidWillResize = new Emitter<void>();
+
 	readonly onDidWillResize: Event<void> = this._onDidWillResize.event;
+
 	private readonly _onDidResize = new Emitter<IResizeEvent>();
+
 	readonly onDidResize: Event<IResizeEvent> = this._onDidResize.event;
+
 	private readonly _northSash: Sash;
+
 	private readonly _eastSash: Sash;
+
 	private readonly _southSash: Sash;
+
 	private readonly _westSash: Sash;
+
 	private readonly _sashListener = new DisposableStore();
+
 	private _size = new Dimension(0, 0);
+
 	private _minSize = new Dimension(0, 0);
+
 	private _maxSize = new Dimension(
 		Number.MAX_SAFE_INTEGER,
 		Number.MAX_SAFE_INTEGER,
 	);
+
 	private _preferredSize?: Dimension;
 
 	constructor() {
 		this.domNode = document.createElement("div");
+
 		this._eastSash = new Sash(
 			this.domNode,
 			{ getVerticalSashLeft: () => this._size.width },
 			{ orientation: Orientation.VERTICAL },
 		);
+
 		this._westSash = new Sash(
 			this.domNode,
 			{ getVerticalSashLeft: () => 0 },
 			{ orientation: Orientation.VERTICAL },
 		);
+
 		this._northSash = new Sash(
 			this.domNode,
 			{ getHorizontalSashTop: () => 0 },
@@ -55,6 +75,7 @@ export class ResizableHTMLElement {
 				orthogonalEdge: OrthogonalEdge.North,
 			},
 		);
+
 		this._southSash = new Sash(
 			this.domNode,
 			{ getHorizontalSashTop: () => this._size.height },
@@ -63,9 +84,13 @@ export class ResizableHTMLElement {
 				orthogonalEdge: OrthogonalEdge.South,
 			},
 		);
+
 		this._northSash.orthogonalStartSash = this._westSash;
+
 		this._northSash.orthogonalEndSash = this._eastSash;
+
 		this._southSash.orthogonalStartSash = this._westSash;
+
 		this._southSash.orthogonalEndSash = this._eastSash;
 
 		let currentSize: Dimension | undefined;
@@ -73,6 +98,7 @@ export class ResizableHTMLElement {
 		let deltaY = 0;
 
 		let deltaX = 0;
+
 		this._sashListener.add(
 			Event.any(
 				this._northSash.onDidStart,
@@ -82,12 +108,16 @@ export class ResizableHTMLElement {
 			)(() => {
 				if (currentSize === undefined) {
 					this._onDidWillResize.fire();
+
 					currentSize = this._size;
+
 					deltaY = 0;
+
 					deltaX = 0;
 				}
 			}),
 		);
+
 		this._sashListener.add(
 			Event.any(
 				this._northSash.onDidEnd,
@@ -97,8 +127,11 @@ export class ResizableHTMLElement {
 			)(() => {
 				if (currentSize !== undefined) {
 					currentSize = undefined;
+
 					deltaY = 0;
+
 					deltaX = 0;
+
 					this._onDidResize.fire({
 						dimension: this._size,
 						done: true,
@@ -106,14 +139,17 @@ export class ResizableHTMLElement {
 				}
 			}),
 		);
+
 		this._sashListener.add(
 			this._eastSash.onDidChange((e) => {
 				if (currentSize) {
 					deltaX = e.currentX - e.startX;
+
 					this.layout(
 						currentSize.height + deltaY,
 						currentSize.width + deltaX,
 					);
+
 					this._onDidResize.fire({
 						dimension: this._size,
 						done: false,
@@ -122,14 +158,17 @@ export class ResizableHTMLElement {
 				}
 			}),
 		);
+
 		this._sashListener.add(
 			this._westSash.onDidChange((e) => {
 				if (currentSize) {
 					deltaX = -(e.currentX - e.startX);
+
 					this.layout(
 						currentSize.height + deltaY,
 						currentSize.width + deltaX,
 					);
+
 					this._onDidResize.fire({
 						dimension: this._size,
 						done: false,
@@ -138,14 +177,17 @@ export class ResizableHTMLElement {
 				}
 			}),
 		);
+
 		this._sashListener.add(
 			this._northSash.onDidChange((e) => {
 				if (currentSize) {
 					deltaY = -(e.currentY - e.startY);
+
 					this.layout(
 						currentSize.height + deltaY,
 						currentSize.width + deltaX,
 					);
+
 					this._onDidResize.fire({
 						dimension: this._size,
 						done: false,
@@ -154,14 +196,17 @@ export class ResizableHTMLElement {
 				}
 			}),
 		);
+
 		this._sashListener.add(
 			this._southSash.onDidChange((e) => {
 				if (currentSize) {
 					deltaY = e.currentY - e.startY;
+
 					this.layout(
 						currentSize.height + deltaY,
 						currentSize.width + deltaX,
 					);
+
 					this._onDidResize.fire({
 						dimension: this._size,
 						done: false,
@@ -170,6 +215,7 @@ export class ResizableHTMLElement {
 				}
 			}),
 		);
+
 		this._sashListener.add(
 			Event.any(
 				this._eastSash.onDidReset,
@@ -177,6 +223,7 @@ export class ResizableHTMLElement {
 			)((e) => {
 				if (this._preferredSize) {
 					this.layout(this._size.height, this._preferredSize.width);
+
 					this._onDidResize.fire({
 						dimension: this._size,
 						done: true,
@@ -184,6 +231,7 @@ export class ResizableHTMLElement {
 				}
 			}),
 		);
+
 		this._sashListener.add(
 			Event.any(
 				this._northSash.onDidReset,
@@ -191,6 +239,7 @@ export class ResizableHTMLElement {
 			)((e) => {
 				if (this._preferredSize) {
 					this.layout(this._preferredSize.height, this._size.width);
+
 					this._onDidResize.fire({
 						dimension: this._size,
 						done: true,
@@ -199,16 +248,25 @@ export class ResizableHTMLElement {
 			}),
 		);
 	}
+
 	dispose(): void {
 		this._northSash.dispose();
+
 		this._southSash.dispose();
+
 		this._eastSash.dispose();
+
 		this._westSash.dispose();
+
 		this._sashListener.dispose();
+
 		this._onDidResize.dispose();
+
 		this._onDidWillResize.dispose();
+
 		this.domNode.remove();
 	}
+
 	enableSashes(
 		north: boolean,
 		east: boolean,
@@ -216,10 +274,14 @@ export class ResizableHTMLElement {
 		west: boolean,
 	): void {
 		this._northSash.state = north ? SashState.Enabled : SashState.Disabled;
+
 		this._eastSash.state = east ? SashState.Enabled : SashState.Disabled;
+
 		this._southSash.state = south ? SashState.Enabled : SashState.Disabled;
+
 		this._westSash.state = west ? SashState.Enabled : SashState.Disabled;
 	}
+
 	layout(
 		height: number = this.size.height,
 		width: number = this.size.width,
@@ -227,45 +289,64 @@ export class ResizableHTMLElement {
 		const { height: minHeight, width: minWidth } = this._minSize;
 
 		const { height: maxHeight, width: maxWidth } = this._maxSize;
+
 		height = Math.max(minHeight, Math.min(maxHeight, height));
+
 		width = Math.max(minWidth, Math.min(maxWidth, width));
 
 		const newSize = new Dimension(width, height);
 
 		if (!Dimension.equals(newSize, this._size)) {
 			this.domNode.style.height = height + "px";
+
 			this.domNode.style.width = width + "px";
+
 			this._size = newSize;
+
 			this._northSash.layout();
+
 			this._eastSash.layout();
+
 			this._southSash.layout();
+
 			this._westSash.layout();
 		}
 	}
+
 	clearSashHoverState(): void {
 		this._eastSash.clearSashHoverState();
+
 		this._westSash.clearSashHoverState();
+
 		this._northSash.clearSashHoverState();
+
 		this._southSash.clearSashHoverState();
 	}
+
 	get size() {
 		return this._size;
 	}
+
 	set maxSize(value: Dimension) {
 		this._maxSize = value;
 	}
+
 	get maxSize() {
 		return this._maxSize;
 	}
+
 	set minSize(value: Dimension) {
 		this._minSize = value;
 	}
+
 	get minSize() {
 		return this._minSize;
 	}
+
 	set preferredSize(value: Dimension | undefined) {
 		this._preferredSize = value;
 	}
+
 	get preferredSize() {
 		return this._preferredSize;
 	}

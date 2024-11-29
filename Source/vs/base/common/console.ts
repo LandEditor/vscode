@@ -6,7 +6,9 @@ import { URI } from "./uri.js";
 
 export interface IRemoteConsoleLog {
 	type: string;
+
 	severity: string;
+
 	arguments: string;
 }
 export interface IStackArgument {
@@ -14,7 +16,9 @@ export interface IStackArgument {
 }
 export interface IStackFrame {
 	uri: URI;
+
 	line: number;
+
 	column: number;
 }
 export function isRemoteConsoleLog(obj: any): obj is IRemoteConsoleLog {
@@ -28,6 +32,7 @@ export function isRemoteConsoleLog(obj: any): obj is IRemoteConsoleLog {
 }
 export function parse(entry: IRemoteConsoleLog): {
 	args: any[];
+
 	stack?: string;
 } {
 	const args: any[] = [];
@@ -45,10 +50,12 @@ export function parse(entry: IRemoteConsoleLog): {
 			parsedArguments.pop(); // stack is handled specially
 			stack = stackArgument.__$stack;
 		}
+
 		args.push(...parsedArguments);
 	} catch (error) {
 		args.push("Unable to log remote console arguments", entry.arguments);
 	}
+
 	return { args, stack };
 }
 export function getFirstFrame(
@@ -94,17 +101,20 @@ export function getFirstFrame(
 			};
 		}
 	}
+
 	return undefined;
 }
 function findFirstFrame(stack: string | undefined): string | undefined {
 	if (!stack) {
 		return stack;
 	}
+
 	const newlineIndex = stack.indexOf("\n");
 
 	if (newlineIndex === -1) {
 		return stack;
 	}
+
 	return stack.substring(0, newlineIndex);
 }
 export function log(entry: IRemoteConsoleLog, label: string): void {
@@ -117,6 +127,7 @@ export function log(entry: IRemoteConsoleLog, label: string): void {
 	if (topFrame) {
 		topFrame = `(${topFrame.trim()})`;
 	}
+
 	let consoleArgs: string[] = [];
 	// First arg is a string
 	if (typeof args[0] === "string") {

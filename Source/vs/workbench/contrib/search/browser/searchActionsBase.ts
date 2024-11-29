@@ -61,6 +61,7 @@ export function getElementsToOperateOn(
 	) {
 		elements = [currElement];
 	}
+
 	return elements;
 }
 /**
@@ -75,6 +76,7 @@ export function shouldRefocus(
 	if (!focusElement) {
 		return false;
 	}
+
 	return (
 		!focusElement ||
 		elements.includes(focusElement) ||
@@ -101,6 +103,7 @@ function hasDownstreamMatch(
 			return true;
 		}
 	}
+
 	return false;
 }
 export function openSearchView(

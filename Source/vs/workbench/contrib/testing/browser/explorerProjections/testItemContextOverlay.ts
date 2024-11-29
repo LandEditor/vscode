@@ -14,6 +14,7 @@ export const getTestItemContextOverlay = (
 	if (!test) {
 		return [];
 	}
+
 	const testId = TestId.fromString(test.item.extId);
 
 	return [

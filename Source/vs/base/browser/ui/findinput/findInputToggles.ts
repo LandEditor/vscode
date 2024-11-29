@@ -10,10 +10,15 @@ import { Toggle } from "../toggle/toggle.js";
 
 export interface IFindInputToggleOpts {
 	readonly appendTitle: string;
+
 	readonly isChecked: boolean;
+
 	readonly inputActiveOptionBorder: string | undefined;
+
 	readonly inputActiveOptionForeground: string | undefined;
+
 	readonly inputActiveOptionBackground: string | undefined;
+
 	readonly hoverDelegate?: IHoverDelegate;
 }
 

@@ -84,12 +84,17 @@ export type XtermLinkMatcherHandler = (
  */
 export class TerminalLinkManager extends DisposableStore {
 	private _widgetManager: TerminalWidgetManager | undefined;
+
 	private readonly _standardLinkProviders: Map<string, ILinkProvider> =
 		new Map();
+
 	private readonly _linkProvidersDisposables: IDisposable[] = [];
+
 	private readonly _externalLinkProviders: IDisposable[] = [];
+
 	private readonly _openers: Map<TerminalLinkType, ITerminalLinkOpener> =
 		new Map();
+
 	externalProvideLinksCb?: OmitFirstArg<
 		ITerminalExternalLinkProvider["provideLinks"]
 	>;
@@ -146,6 +151,7 @@ export class TerminalLinkManager extends DisposableStore {
 					this._linkResolver,
 				),
 			);
+
 			this._setupLinkDetector(
 				TerminalLocalLinkDetector.id,
 				this._instantiationService.createInstance(
@@ -157,6 +163,7 @@ export class TerminalLinkManager extends DisposableStore {
 				),
 			);
 		}
+
 		this._setupLinkDetector(
 			TerminalUriLinkDetector.id,
 			this._instantiationService.createInstance(
@@ -166,6 +173,7 @@ export class TerminalLinkManager extends DisposableStore {
 				this._linkResolver,
 			),
 		);
+
 		this._setupLinkDetector(
 			TerminalWordLinkDetector.id,
 			this.add(
@@ -184,17 +192,21 @@ export class TerminalLinkManager extends DisposableStore {
 			this._instantiationService.createInstance(
 				TerminalLocalFolderInWorkspaceLinkOpener,
 			);
+
 		this._openers.set(TerminalBuiltinLinkType.LocalFile, localFileOpener);
+
 		this._openers.set(
 			TerminalBuiltinLinkType.LocalFolderInWorkspace,
 			localFolderInWorkspaceOpener,
 		);
+
 		this._openers.set(
 			TerminalBuiltinLinkType.LocalFolderOutsideWorkspace,
 			this._instantiationService.createInstance(
 				TerminalLocalFolderOutsideWorkspaceLinkOpener,
 			),
 		);
+
 		this._openers.set(
 			TerminalBuiltinLinkType.Search,
 			this._instantiationService.createInstance(
@@ -206,6 +218,7 @@ export class TerminalLinkManager extends DisposableStore {
 				() => this._processInfo.os || OS,
 			),
 		);
+
 		this._openers.set(
 			TerminalBuiltinLinkType.Url,
 			this._instantiationService.createInstance(
@@ -213,30 +226,38 @@ export class TerminalLinkManager extends DisposableStore {
 				!!this._processInfo.remoteAuthority,
 			),
 		);
+
 		this._registerStandardLinkProviders();
 
 		let activeHoverDisposable: IDisposable | undefined;
 
 		let activeTooltipScheduler: RunOnceScheduler | undefined;
+
 		this.add(
 			toDisposable(() => {
 				this._clearLinkProviders();
+
 				dispose(this._externalLinkProviders);
+
 				activeHoverDisposable?.dispose();
+
 				activeTooltipScheduler?.dispose();
 			}),
 		);
+
 		this._xterm.options.linkHandler = {
 			allowNonHttpProtocols: true,
 			activate: (event, text) => {
 				if (!this._isLinkActivationModifierDown(event)) {
 					return;
 				}
+
 				const colonIndex = text.indexOf(":");
 
 				if (colonIndex === -1) {
 					throw new Error(`Could not find scheme in link "${text}"`);
 				}
+
 				const scheme = text.substring(0, colonIndex);
 
 				if (
@@ -264,6 +285,7 @@ export class TerminalLinkManager extends DisposableStore {
 											.allowedLinkSchemes,
 										scheme,
 									];
+
 									this._configurationService.updateValue(
 										`terminal.integrated.allowedLinkSchemes`,
 										allowedLinkSchemes,
@@ -273,6 +295,7 @@ export class TerminalLinkManager extends DisposableStore {
 						],
 					);
 				}
+
 				this._openers.get(TerminalBuiltinLinkType.Url)?.open({
 					type: TerminalBuiltinLinkType.Url,
 					text,
@@ -282,8 +305,11 @@ export class TerminalLinkManager extends DisposableStore {
 			},
 			hover: (e, text, range) => {
 				activeHoverDisposable?.dispose();
+
 				activeHoverDisposable = undefined;
+
 				activeTooltipScheduler?.dispose();
+
 				activeTooltipScheduler = new RunOnceScheduler(() => {
 					const core = (this._xterm as any)._core as IXtermCore;
 
@@ -296,6 +322,7 @@ export class TerminalLinkManager extends DisposableStore {
 						width: this._xterm.cols,
 						height: this._xterm.rows,
 					};
+
 					activeHoverDisposable = this._showHover(
 						{
 							viewportRange: convertBufferRangeToViewport(
@@ -316,12 +343,15 @@ export class TerminalLinkManager extends DisposableStore {
 					);
 					// Clear out scheduler until next hover event
 					activeTooltipScheduler?.dispose();
+
 					activeTooltipScheduler = undefined;
 				}, this._configurationService.getValue("workbench.hover.delay"));
+
 				activeTooltipScheduler.schedule();
 			},
 		};
 	}
+
 	private _setupLinkDetector(
 		id: string,
 		detector: ITerminalLinkDetector,
@@ -333,6 +363,7 @@ export class TerminalLinkManager extends DisposableStore {
 				detector,
 			),
 		);
+
 		this.add(
 			detectorAdapter.onDidActivateLink((e) => {
 				// Prevent default electron link handling so Alt+Click mode works normally
@@ -354,6 +385,7 @@ export class TerminalLinkManager extends DisposableStore {
 				}
 			}),
 		);
+
 		this.add(
 			detectorAdapter.onDidShowHover((e) =>
 				this._tooltipCallback(
@@ -368,8 +400,10 @@ export class TerminalLinkManager extends DisposableStore {
 		if (!isExternal) {
 			this._standardLinkProviders.set(id, detectorAdapter);
 		}
+
 		return detectorAdapter;
 	}
+
 	private async _openLink(link: ITerminalSimpleLink): Promise<void> {
 		this._logService.debug("Opening link", link);
 
@@ -378,8 +412,10 @@ export class TerminalLinkManager extends DisposableStore {
 		if (!opener) {
 			throw new Error(`No matching opener for link type "${link.type}"`);
 		}
+
 		await opener.open(link);
 	}
+
 	async openRecentLink(
 		type: "localFile" | "url",
 	): Promise<ILink | undefined> {
@@ -392,18 +428,24 @@ export class TerminalLinkManager extends DisposableStore {
 			i >= this._xterm.buffer.active.viewportY
 		) {
 			links = await this._getLinksForType(i, type);
+
 			i--;
 		}
+
 		if (!links || links.length < 1) {
 			return undefined;
 		}
+
 		const event = new TerminalLinkQuickPickEvent(EventType.CLICK);
+
 		links[0].activate(event, links[0].text);
 
 		return links[0];
 	}
+
 	async getLinks(): Promise<{
 		viewport: IDetectedLinks;
+
 		all: Promise<IDetectedLinks>;
 	}> {
 		// Fetch and await the viewport results
@@ -413,11 +455,14 @@ export class TerminalLinkManager extends DisposableStore {
 
 		for (
 			let i = this._xterm.buffer.active.viewportY + this._xterm.rows - 1;
+
 			i >= this._xterm.buffer.active.viewportY;
+
 			i--
 		) {
 			viewportLinksByLinePromises.push(this._getLinksForLine(i));
 		}
+
 		const viewportLinksByLine = await Promise.all(
 			viewportLinksByLinePromises,
 		);
@@ -441,12 +486,15 @@ export class TerminalLinkManager extends DisposableStore {
 				if (wordLinks?.length) {
 					viewportLinks.wordLinks.push(...wordLinks.reverse());
 				}
+
 				if (webLinks?.length) {
 					viewportLinks.webLinks.push(...webLinks.reverse());
 				}
+
 				if (fileLinks?.length) {
 					viewportLinks.fileLinks.push(...fileLinks.reverse());
 				}
+
 				if (folderLinks?.length) {
 					viewportLinks.folderLinks.push(...folderLinks.reverse());
 				}
@@ -460,13 +508,16 @@ export class TerminalLinkManager extends DisposableStore {
 		for (let i = this._xterm.buffer.active.viewportY - 1; i >= 0; i--) {
 			aboveViewportLinksPromises.push(this._getLinksForLine(i));
 		}
+
 		const belowViewportLinksPromises: Promise<
 			IDetectedLinks | undefined
 		>[] = [];
 
 		for (
 			let i = this._xterm.buffer.active.length - 1;
+
 			i >= this._xterm.buffer.active.viewportY + this._xterm.rows;
+
 			i--
 		) {
 			belowViewportLinksPromises.push(this._getLinksForLine(i));
@@ -508,12 +559,15 @@ export class TerminalLinkManager extends DisposableStore {
 						if (wordLinks?.length) {
 							allResults.wordLinks.push(...wordLinks.reverse());
 						}
+
 						if (webLinks?.length) {
 							allResults.webLinks.push(...webLinks.reverse());
 						}
+
 						if (fileLinks?.length) {
 							allResults.fileLinks.push(...fileLinks.reverse());
 						}
+
 						if (folderLinks?.length) {
 							allResults.folderLinks.push(
 								...folderLinks.reverse(),
@@ -521,6 +575,7 @@ export class TerminalLinkManager extends DisposableStore {
 						}
 					}
 				}
+
 				return allResults;
 			},
 		);
@@ -530,6 +585,7 @@ export class TerminalLinkManager extends DisposableStore {
 			all: allLinks,
 		};
 	}
+
 	private async _getLinksForLine(
 		y: number,
 	): Promise<IDetectedLinks | undefined> {
@@ -551,12 +607,15 @@ export class TerminalLinkManager extends DisposableStore {
 			for (const link of unfilteredWordLinks) {
 				if (!words.has(link.text) && link.text.length > 1) {
 					wordLinks.push(link);
+
 					words.add(link.text);
 				}
 			}
 		}
+
 		return { wordLinks, webLinks, fileLinks, folderLinks };
 	}
+
 	protected async _getLinksForType(
 		y: number,
 		type: "word" | "url" | "localFile" | "localFolder",
@@ -589,6 +648,7 @@ export class TerminalLinkManager extends DisposableStore {
 						TerminalBuiltinLinkType.LocalFile,
 				);
 			}
+
 			case "localFolder": {
 				const links = await new Promise<ILink[] | undefined>((r) =>
 					this._standardLinkProviders
@@ -604,6 +664,7 @@ export class TerminalLinkManager extends DisposableStore {
 			}
 		}
 	}
+
 	private _tooltipCallback(
 		link: TerminalLink,
 		viewportRange: IViewportRange,
@@ -613,6 +674,7 @@ export class TerminalLinkManager extends DisposableStore {
 		if (!this._widgetManager) {
 			return;
 		}
+
 		const core = (this._xterm as any)._core as IXtermCore;
 
 		const cellDimensions = {
@@ -639,6 +701,7 @@ export class TerminalLinkManager extends DisposableStore {
 			link,
 		);
 	}
+
 	private _showHover(
 		targetOptions: ILinkHoverTargetOptions,
 		text: IMarkdownString,
@@ -660,17 +723,23 @@ export class TerminalLinkManager extends DisposableStore {
 			if (attached) {
 				link?.onInvalidated(() => attached.dispose());
 			}
+
 			return attached;
 		}
+
 		return undefined;
 	}
+
 	setWidgetManager(widgetManager: TerminalWidgetManager): void {
 		this._widgetManager = widgetManager;
 	}
+
 	private _clearLinkProviders(): void {
 		dispose(this._linkProvidersDisposables);
+
 		this._linkProvidersDisposables.length = 0;
 	}
+
 	private _registerStandardLinkProviders(): void {
 		// Forward any external link provider requests to the registered provider if it exists. This
 		// helps maintain the relative priority of the link providers as it's defined by the order
@@ -701,6 +770,7 @@ export class TerminalLinkManager extends DisposableStore {
 			),
 			true,
 		);
+
 		this._linkProvidersDisposables.push(
 			this._xterm.registerLinkProvider(wrappedLinkProvider),
 		);
@@ -711,6 +781,7 @@ export class TerminalLinkManager extends DisposableStore {
 			);
 		}
 	}
+
 	protected _isLinkActivationModifierDown(event: MouseEvent): boolean {
 		const editorConf = this._configurationService.getValue<{
 			multiCursorModifier: "ctrlCmd" | "alt";
@@ -719,8 +790,10 @@ export class TerminalLinkManager extends DisposableStore {
 		if (editorConf.multiCursorModifier === "ctrlCmd") {
 			return !!event.altKey;
 		}
+
 		return isMacintosh ? event.metaKey : event.ctrlKey;
 	}
+
 	private _getLinkHoverString(
 		uri: string,
 		label: string | undefined,
@@ -756,6 +829,7 @@ export class TerminalLinkManager extends DisposableStore {
 				);
 			}
 		}
+
 		let fallbackLabel = nls.localize("followLink", "Follow link");
 
 		try {
@@ -768,16 +842,21 @@ export class TerminalLinkManager extends DisposableStore {
 		} catch {
 			// No-op, already set to fallback
 		}
+
 		const markdown = new MarkdownString("", true);
 		// Escapes markdown in label & uri
 		if (label) {
 			label = markdown.appendText(label).value;
+
 			markdown.value = "";
 		}
+
 		if (uri) {
 			uri = markdown.appendText(uri).value;
+
 			markdown.value = "";
 		}
+
 		label = label || fallbackLabel;
 		// Use the label when uri is '' so the link displays correctly
 		uri = uri || label;
@@ -785,6 +864,7 @@ export class TerminalLinkManager extends DisposableStore {
 		if (/(\s|&nbsp;)/.test(uri)) {
 			uri = nls.localize("followLinkUrl", "Link");
 		}
+
 		return markdown
 			.appendLink(uri, label)
 			.appendMarkdown(` (${clickLabel})`);
@@ -792,11 +872,15 @@ export class TerminalLinkManager extends DisposableStore {
 }
 export interface ILineColumnInfo {
 	lineNumber: number;
+
 	columnNumber: number;
 }
 export interface IDetectedLinks {
 	wordLinks?: ILink[];
+
 	webLinks?: ILink[];
+
 	fileLinks?: (ILink | TerminalLink)[];
+
 	folderLinks?: ILink[];
 }

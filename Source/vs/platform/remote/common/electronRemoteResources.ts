@@ -15,7 +15,9 @@ export const NODE_REMOTE_RESOURCE_CHANNEL_NAME = "remoteResourceHandler";
 
 export type NodeRemoteResourceResponse = {
 	body: string;
+
 	mimeType?: string;
+
 	statusCode: number;
 };
 
@@ -28,6 +30,7 @@ export class NodeRemoteResourceRouter implements IClientRouter<string> {
 		if (command !== NODE_REMOTE_RESOURCE_IPC_METHOD_NAME) {
 			throw new Error(`Call not found: ${command}`);
 		}
+
 		const uri = arg[0] as UriComponents | undefined;
 
 		if (uri?.authority) {
@@ -39,8 +42,10 @@ export class NodeRemoteResourceRouter implements IClientRouter<string> {
 				return connection;
 			}
 		}
+
 		throw new Error(`Caller not found`);
 	}
+
 	routeEvent(
 		_: IConnectionHub<string>,
 		event: string,

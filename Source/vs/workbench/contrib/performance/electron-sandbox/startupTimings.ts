@@ -24,17 +24,23 @@ import { StartupTimings } from "../browser/startupTimings.js";
 interface ITracingData {
 	readonly args?: {
 		readonly usedHeapSizeAfter?: number;
+
 		readonly usedHeapSizeBefore?: number;
 	};
+
 	readonly dur: number; // in microseconds
 	readonly name: string; // e.g. MinorGC or MajorGC
 	readonly pid: number;
 }
 interface IHeapStatistics {
 	readonly used: number;
+
 	readonly garbage: number;
+
 	readonly majorGCs: number;
+
 	readonly minorGCs: number;
+
 	readonly duration: number;
 }
 export class NativeStartupTimings
@@ -72,12 +78,16 @@ export class NativeStartupTimings
 			updateService,
 			workspaceTrustService,
 		);
+
 		this._report().catch(onUnexpectedError);
 	}
+
 	private async _report() {
 		const standardStartupError = await this._isStandardStartup();
+
 		this._appendStartupTimes(standardStartupError).catch(onUnexpectedError);
 	}
+
 	private async _appendStartupTimes(
 		standardStartupError: string | undefined,
 	) {
@@ -93,6 +103,7 @@ export class NativeStartupTimings
 			// nothing to do
 			return;
 		}
+
 		try {
 			await Promise.all([
 				this._timerService.whenReady(),
@@ -106,6 +117,7 @@ export class NativeStartupTimings
 			if (heapStatistics) {
 				this._telemetryLogHeapStatistics(heapStatistics);
 			}
+
 			if (appendTo) {
 				const content =
 					coalesce([
@@ -122,8 +134,10 @@ export class NativeStartupTimings
 							? this._printStartupHeapStatistics(heapStatistics)
 							: undefined,
 					]).join("\t") + "\n";
+
 				await this._appendContent(URI.file(appendTo), content);
 			}
+
 			if (durationMarkers?.length) {
 				const durations: string[] = [];
 
@@ -142,11 +156,14 @@ export class NativeStartupTimings
 							);
 						}
 					}
+
 					if (duration) {
 						durations.push(durationMarker);
+
 						durations.push(`${duration}`);
 					}
 				}
+
 				const durationsContent = `${durations.join("\t")}\n`;
 
 				if (durationMarkersFile) {
@@ -164,23 +181,29 @@ export class NativeStartupTimings
 			this._nativeHostService.exit(0);
 		}
 	}
+
 	protected override async _isStandardStartup(): Promise<string | undefined> {
 		const windowCount = await this._nativeHostService.getWindowCount();
 
 		if (windowCount !== 1) {
 			return `Expected window count : 1, Actual : ${windowCount}`;
 		}
+
 		return super._isStandardStartup();
 	}
+
 	private async _appendContent(file: URI, content: string): Promise<void> {
 		const chunks: VSBuffer[] = [];
 
 		if (await this._fileService.exists(file)) {
 			chunks.push((await this._fileService.readFile(file)).value);
 		}
+
 		chunks.push(VSBuffer.fromString(content));
+
 		await this._fileService.writeFile(file, VSBuffer.concat(chunks));
 	}
+
 	private async _resolveStartupHeapStatistics(): Promise<
 		IHeapStatistics | undefined
 	> {
@@ -192,6 +215,7 @@ export class NativeStartupTimings
 		) {
 			return undefined; // unexpected arguments for startup heap statistics
 		}
+
 		const windowProcessId = await this._nativeHostService.getProcessId();
 
 		const used =
@@ -227,6 +251,7 @@ export class NativeStartupTimings
 				if (event.pid !== windowProcessId) {
 					continue;
 				}
+
 				switch (event.name) {
 					// Major/Minor GC Events
 					case "MinorGC":
@@ -246,6 +271,7 @@ export class NativeStartupTimings
 
 						break;
 				}
+
 				if (event.name === "MajorGC" || event.name === "MinorGC") {
 					if (
 						typeof event.args?.usedHeapSizeAfter === "number" &&
@@ -257,6 +283,7 @@ export class NativeStartupTimings
 					}
 				}
 			}
+
 			return {
 				minorGCs,
 				majorGCs,
@@ -267,8 +294,10 @@ export class NativeStartupTimings
 		} catch (error) {
 			console.error(error);
 		}
+
 		return undefined;
 	}
+
 	private _telemetryLogHeapStatistics({
 		used,
 		garbage,
@@ -278,40 +307,62 @@ export class NativeStartupTimings
 	}: IHeapStatistics): void {
 		type StartupHeapStatisticsClassification = {
 			owner: "bpasero";
+
 			comment: "An event that reports startup heap statistics for performance analysis.";
+
 			heapUsed: {
 				classification: "SystemMetaData";
+
 				purpose: "PerformanceAndHealth";
+
 				comment: "Used heap";
 			};
+
 			heapGarbage: {
 				classification: "SystemMetaData";
+
 				purpose: "PerformanceAndHealth";
+
 				comment: "Garbage heap";
 			};
+
 			majorGCs: {
 				classification: "SystemMetaData";
+
 				purpose: "PerformanceAndHealth";
+
 				comment: "Major GCs count";
 			};
+
 			minorGCs: {
 				classification: "SystemMetaData";
+
 				purpose: "PerformanceAndHealth";
+
 				comment: "Minor GCs count";
 			};
+
 			gcsDuration: {
 				classification: "SystemMetaData";
+
 				purpose: "PerformanceAndHealth";
+
 				comment: "GCs duration";
 			};
 		};
+
 		type StartupHeapStatisticsEvent = {
 			heapUsed: number;
+
 			heapGarbage: number;
+
 			majorGCs: number;
+
 			minorGCs: number;
+
 			gcsDuration: number;
 		};
+
 		this._telemetryService.publicLog2<
 			StartupHeapStatisticsEvent,
 			StartupHeapStatisticsClassification
@@ -323,6 +374,7 @@ export class NativeStartupTimings
 			gcsDuration: duration,
 		});
 	}
+
 	private _printStartupHeapStatistics({
 		used,
 		garbage,

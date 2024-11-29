@@ -39,7 +39,9 @@ export class MainThreadManagedSockets
 	implements MainThreadManagedSocketsShape
 {
 	private readonly _proxy: ExtHostManagedSocketsShape;
+
 	private readonly _registrations = new Map<number, IDisposable>();
+
 	private readonly _remoteSockets = new Map<number, RemoteSocketHalf>();
 
 	constructor(
@@ -48,10 +50,12 @@ export class MainThreadManagedSockets
 		private readonly _remoteSocketFactoryService: IRemoteSocketFactoryService,
 	) {
 		super();
+
 		this._proxy = extHostContext.getProxy(
 			ExtHostContext.ExtHostManagedSockets,
 		);
 	}
+
 	async $registerSocketFactory(socketFactoryId: number): Promise<void> {
 		const that = this;
 
@@ -61,6 +65,7 @@ export class MainThreadManagedSockets
 			supports(connectTo: ManagedRemoteConnection): boolean {
 				return connectTo.id === socketFactoryId;
 			}
+
 			connect(
 				connectTo: ManagedRemoteConnection,
 				path: string,
@@ -71,7 +76,9 @@ export class MainThreadManagedSockets
 					if (connectTo.id !== socketFactoryId) {
 						return reject(new Error("Invalid connectTo"));
 					}
+
 					const factoryId = connectTo.id;
+
 					that._proxy
 						.$openRemoteSocket(factoryId)
 						.then((socketId) => {
@@ -80,7 +87,9 @@ export class MainThreadManagedSockets
 								onData: new Emitter(),
 								onEnd: new Emitter(),
 							};
+
 							that._remoteSockets.set(socketId, half);
+
 							MainThreadManagedSocket.connect(
 								socketId,
 								that._proxy,
@@ -93,10 +102,12 @@ export class MainThreadManagedSockets
 									socket.onDidDispose(() =>
 										that._remoteSockets.delete(socketId),
 									);
+
 									resolve(socket);
 								},
 								(err) => {
 									that._remoteSockets.delete(socketId);
+
 									reject(err);
 								},
 							);
@@ -105,6 +116,7 @@ export class MainThreadManagedSockets
 				});
 			}
 		})();
+
 		this._registrations.set(
 			socketFactoryId,
 			this._remoteSocketFactoryService.register(
@@ -113,6 +125,7 @@ export class MainThreadManagedSockets
 			),
 		);
 	}
+
 	async $unregisterSocketFactory(socketFactoryId: number): Promise<void> {
 		this._registrations.get(socketFactoryId)?.dispose();
 	}
@@ -128,6 +141,7 @@ export class MainThreadManagedSockets
 			error: error ? new Error(error) : undefined,
 			hadError: !!error,
 		});
+
 		this._remoteSockets.delete(socketId);
 	}
 	$onDidManagedSocketEnd(socketId: number): void {
@@ -152,6 +166,7 @@ export class MainThreadManagedSocket extends ManagedSocket {
 
 		return connectManagedSocket(socket, path, query, debugLabel, half);
 	}
+
 	private constructor(
 		private readonly socketId: number,
 		private readonly proxy: ExtHostManagedSocketsShape,
@@ -160,12 +175,15 @@ export class MainThreadManagedSocket extends ManagedSocket {
 	) {
 		super(debugLabel, half);
 	}
+
 	public override write(buffer: VSBuffer): void {
 		this.proxy.$remoteSocketWrite(this.socketId, buffer);
 	}
+
 	protected override closeRemote(): void {
 		this.proxy.$remoteSocketEnd(this.socketId);
 	}
+
 	public override drain(): Promise<void> {
 		return this.proxy.$remoteSocketDrain(this.socketId);
 	}

@@ -16,7 +16,9 @@ import { IDebugConfiguration, IDebugService, State } from "../common/debug.js";
 
 export class DebugStatusContribution implements IWorkbenchContribution {
 	private showInStatusBar!: "never" | "always" | "onFirstSessionStart";
+
 	private toDispose: IDisposable[] = [];
+
 	private entryAccessor: IStatusbarEntryAccessor | undefined;
 
 	constructor(
@@ -48,6 +50,7 @@ export class DebugStatusContribution implements IWorkbenchContribution {
 		};
 
 		setShowInStatusBar();
+
 		this.toDispose.push(
 			this.debugService.onDidChangeState((state) => {
 				if (
@@ -59,6 +62,7 @@ export class DebugStatusContribution implements IWorkbenchContribution {
 				}
 			}),
 		);
+
 		this.toDispose.push(
 			configurationService.onDidChangeConfiguration((e) => {
 				if (e.affectsConfiguration("debug.showInStatusBar")) {
@@ -69,11 +73,13 @@ export class DebugStatusContribution implements IWorkbenchContribution {
 						this.showInStatusBar === "never"
 					) {
 						this.entryAccessor.dispose();
+
 						this.entryAccessor = undefined;
 					}
 				}
 			}),
 		);
+
 		this.toDispose.push(
 			this.debugService
 				.getConfigurationManager()
@@ -82,6 +88,7 @@ export class DebugStatusContribution implements IWorkbenchContribution {
 				}),
 		);
 	}
+
 	private get entry(): IStatusbarEntry {
 		let text = "";
 
@@ -98,6 +105,7 @@ export class DebugStatusContribution implements IWorkbenchContribution {
 					? `${name} (${manager.selectedConfiguration.launch!.name})`
 					: name;
 		}
+
 		return {
 			name: nls.localize("status.debug", "Debug"),
 			text: "$(debug-alt-small) " + text,
@@ -109,8 +117,10 @@ export class DebugStatusContribution implements IWorkbenchContribution {
 			command: "workbench.action.debug.selectandstart",
 		};
 	}
+
 	dispose(): void {
 		this.entryAccessor?.dispose();
+
 		dispose(this.toDispose);
 	}
 }

@@ -17,22 +17,30 @@ import {
 
 export class DecorationsOverlay extends DynamicViewOverlay {
 	private readonly _context: ViewContext;
+
 	private _typicalHalfwidthCharacterWidth: number;
+
 	private _renderResult: string[] | null;
 
 	constructor(context: ViewContext) {
 		super();
+
 		this._context = context;
 
 		const options = this._context.configuration.options;
+
 		this._typicalHalfwidthCharacterWidth = options.get(
 			EditorOption.fontInfo,
 		).typicalHalfwidthCharacterWidth;
+
 		this._renderResult = null;
+
 		this._context.addEventHandler(this);
 	}
+
 	public override dispose(): void {
 		this._context.removeEventHandler(this);
+
 		this._renderResult = null;
 
 		super.dispose();
@@ -42,40 +50,48 @@ export class DecorationsOverlay extends DynamicViewOverlay {
 		e: viewEvents.ViewConfigurationChangedEvent,
 	): boolean {
 		const options = this._context.configuration.options;
+
 		this._typicalHalfwidthCharacterWidth = options.get(
 			EditorOption.fontInfo,
 		).typicalHalfwidthCharacterWidth;
 
 		return true;
 	}
+
 	public override onDecorationsChanged(
 		e: viewEvents.ViewDecorationsChangedEvent,
 	): boolean {
 		return true;
 	}
+
 	public override onFlushed(e: viewEvents.ViewFlushedEvent): boolean {
 		return true;
 	}
+
 	public override onLinesChanged(
 		e: viewEvents.ViewLinesChangedEvent,
 	): boolean {
 		return true;
 	}
+
 	public override onLinesDeleted(
 		e: viewEvents.ViewLinesDeletedEvent,
 	): boolean {
 		return true;
 	}
+
 	public override onLinesInserted(
 		e: viewEvents.ViewLinesInsertedEvent,
 	): boolean {
 		return true;
 	}
+
 	public override onScrollChanged(
 		e: viewEvents.ViewScrollChangedEvent,
 	): boolean {
 		return e.scrollTopChanged || e.scrollWidthChanged;
 	}
+
 	public override onZonesChanged(
 		e: viewEvents.ViewZonesChangedEvent,
 	): boolean {
@@ -101,9 +117,11 @@ export class DecorationsOverlay extends DynamicViewOverlay {
 			if (a.options.zIndex! < b.options.zIndex!) {
 				return -1;
 			}
+
 			if (a.options.zIndex! > b.options.zIndex!) {
 				return 1;
 			}
+
 			const aClassName = a.options.className!;
 
 			const bClassName = b.options.className!;
@@ -111,9 +129,11 @@ export class DecorationsOverlay extends DynamicViewOverlay {
 			if (aClassName < bClassName) {
 				return -1;
 			}
+
 			if (aClassName > bClassName) {
 				return 1;
 			}
+
 			return Range.compareRangesUsingStarts(a.range, b.range);
 		});
 
@@ -125,17 +145,23 @@ export class DecorationsOverlay extends DynamicViewOverlay {
 
 		for (
 			let lineNumber = visibleStartLineNumber;
+
 			lineNumber <= visibleEndLineNumber;
+
 			lineNumber++
 		) {
 			const lineIndex = lineNumber - visibleStartLineNumber;
+
 			output[lineIndex] = "";
 		}
 		// Render first whole line decorations and then regular decorations
 		this._renderWholeLineDecorations(ctx, decorations, output);
+
 		this._renderNormalDecorations(ctx, decorations, output);
+
 		this._renderResult = output;
 	}
+
 	private _renderWholeLineDecorations(
 		ctx: RenderingContext,
 		decorations: ViewModelDecoration[],
@@ -151,6 +177,7 @@ export class DecorationsOverlay extends DynamicViewOverlay {
 			if (!d.options.isWholeLine) {
 				continue;
 			}
+
 			const decorationOutput =
 				'<div class="cdr ' +
 				d.options.className +
@@ -168,10 +195,12 @@ export class DecorationsOverlay extends DynamicViewOverlay {
 
 			for (let j = startLineNumber; j <= endLineNumber; j++) {
 				const lineIndex = j - visibleStartLineNumber;
+
 				output[lineIndex] += decorationOutput;
 			}
 		}
 	}
+
 	private _renderNormalDecorations(
 		ctx: RenderingContext,
 		decorations: ViewModelDecoration[],
@@ -193,6 +222,7 @@ export class DecorationsOverlay extends DynamicViewOverlay {
 			if (d.options.isWholeLine) {
 				continue;
 			}
+
 			const className = d.options.className!;
 
 			const showIfCollapsed = Boolean(d.options.showIfCollapsed);
@@ -213,6 +243,7 @@ export class DecorationsOverlay extends DynamicViewOverlay {
 					),
 				);
 			}
+
 			if (
 				prevClassName === className &&
 				prevShowIfCollapsed === showIfCollapsed &&
@@ -235,12 +266,17 @@ export class DecorationsOverlay extends DynamicViewOverlay {
 					output,
 				);
 			}
+
 			prevClassName = className;
+
 			prevShowIfCollapsed = showIfCollapsed;
+
 			prevRange = range;
+
 			prevShouldFillLineOnLineBreak =
 				d.options.shouldFillLineOnLineBreak ?? false;
 		}
+
 		if (prevClassName !== null) {
 			this._renderNormalDecoration(
 				ctx,
@@ -253,6 +289,7 @@ export class DecorationsOverlay extends DynamicViewOverlay {
 			);
 		}
 	}
+
 	private _renderNormalDecoration(
 		ctx: RenderingContext,
 		range: Range,
@@ -270,12 +307,14 @@ export class DecorationsOverlay extends DynamicViewOverlay {
 		if (!linesVisibleRanges) {
 			return;
 		}
+
 		for (let j = 0, lenJ = linesVisibleRanges.length; j < lenJ; j++) {
 			const lineVisibleRanges = linesVisibleRanges[j];
 
 			if (lineVisibleRanges.outsideRenderedLine) {
 				continue;
 			}
+
 			const lineIndex =
 				lineVisibleRanges.lineNumber - visibleStartLineNumber;
 
@@ -298,15 +337,19 @@ export class DecorationsOverlay extends DynamicViewOverlay {
 							center - this._typicalHalfwidthCharacterWidth / 2,
 						),
 					);
+
 					lineVisibleRanges.ranges[0] = new HorizontalRange(
 						left,
 						this._typicalHalfwidthCharacterWidth,
 					);
 				}
 			}
+
 			for (
 				let k = 0, lenK = lineVisibleRanges.ranges.length;
+
 				k < lenK;
+
 				k++
 			) {
 				const expandToLeft =
@@ -326,19 +369,23 @@ export class DecorationsOverlay extends DynamicViewOverlay {
 						? "100%;"
 						: String(visibleRange.width) + "px;") +
 					'"></div>';
+
 				output[lineIndex] += decorationOutput;
 			}
 		}
 	}
+
 	public render(startLineNumber: number, lineNumber: number): string {
 		if (!this._renderResult) {
 			return "";
 		}
+
 		const lineIndex = lineNumber - startLineNumber;
 
 		if (lineIndex < 0 || lineIndex >= this._renderResult.length) {
 			return "";
 		}
+
 		return this._renderResult[lineIndex];
 	}
 }

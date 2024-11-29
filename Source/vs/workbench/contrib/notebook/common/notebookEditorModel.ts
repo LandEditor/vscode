@@ -73,26 +73,36 @@ export class SimpleNotebookEditorModel
 	implements INotebookEditorModel
 {
 	private readonly _onDidChangeDirty = this._register(new Emitter<void>());
+
 	private readonly _onDidSave = this._register(
 		new Emitter<IStoredFileWorkingCopySaveEvent>(),
 	);
+
 	private readonly _onDidChangeOrphaned = this._register(new Emitter<void>());
+
 	private readonly _onDidChangeReadonly = this._register(new Emitter<void>());
+
 	private readonly _onDidRevertUntitled = this._register(new Emitter<void>());
 
 	readonly onDidChangeDirty: Event<void> = this._onDidChangeDirty.event;
+
 	readonly onDidSave: Event<IStoredFileWorkingCopySaveEvent> =
 		this._onDidSave.event;
+
 	readonly onDidChangeOrphaned: Event<void> = this._onDidChangeOrphaned.event;
+
 	readonly onDidChangeReadonly: Event<void> = this._onDidChangeReadonly.event;
+
 	readonly onDidRevertUntitled: Event<void> = this._onDidRevertUntitled.event;
 
 	private _workingCopy?:
 		| IStoredFileWorkingCopy<NotebookFileWorkingCopyModel>
 		| IUntitledFileWorkingCopy<NotebookFileWorkingCopyModel>;
+
 	private readonly _workingCopyListeners = this._register(
 		new DisposableStore(),
 	);
+
 	private readonly scratchPad: boolean;
 
 	constructor(
@@ -114,6 +124,7 @@ export class SimpleNotebookEditorModel
 
 	override dispose(): void {
 		this._workingCopy?.dispose();
+
 		super.dispose();
 	}
 
@@ -189,11 +200,13 @@ export class SimpleNotebookEditorModel
 
 	revert(options?: IRevertOptions): Promise<void> {
 		assertType(this.isResolved());
+
 		return this._workingCopy!.revert(options);
 	}
 
 	save(options?: ISaveOptions): Promise<boolean> {
 		assertType(this.isResolved());
+
 		return this._workingCopy!.save(options);
 	}
 
@@ -212,6 +225,7 @@ export class SimpleNotebookEditorModel
 						isScratchpad: this.scratchPad,
 					});
 				}
+
 				this._workingCopy.onDidRevert(() =>
 					this._onDidRevertUntitled.fire(),
 				);
@@ -225,20 +239,24 @@ export class SimpleNotebookEditorModel
 							: undefined,
 					},
 				);
+
 				this._workingCopyListeners.add(
 					this._workingCopy.onDidSave((e) => this._onDidSave.fire(e)),
 				);
+
 				this._workingCopyListeners.add(
 					this._workingCopy.onDidChangeOrphaned(() =>
 						this._onDidChangeOrphaned.fire(),
 					),
 				);
+
 				this._workingCopyListeners.add(
 					this._workingCopy.onDidChangeReadonly(() =>
 						this._onDidChangeReadonly.fire(),
 					),
 				);
 			}
+
 			this._workingCopyListeners.add(
 				this._workingCopy.onDidChangeDirty(
 					() => this._onDidChangeDirty.fire(),
@@ -249,6 +267,7 @@ export class SimpleNotebookEditorModel
 			this._workingCopyListeners.add(
 				this._workingCopy.onWillDispose(() => {
 					this._workingCopyListeners.clear();
+
 					this._workingCopy?.model?.dispose();
 				}),
 			);
@@ -263,6 +282,7 @@ export class SimpleNotebookEditorModel
 		}
 
 		assertType(this.isResolved());
+
 		return this;
 	}
 
@@ -271,6 +291,7 @@ export class SimpleNotebookEditorModel
 			this.resource,
 			target,
 		);
+
 		if (!newWorkingCopy) {
 			return undefined;
 		}
@@ -302,12 +323,14 @@ export class NotebookFileWorkingCopyModel
 				IUntitledFileWorkingCopyModelContentChangedEvent
 		>(),
 	);
+
 	readonly onDidChangeContent = this._onDidChangeContent.event;
 
 	readonly onWillDispose: Event<void>;
 
 	readonly configuration: IFileWorkingCopyModelConfiguration | undefined =
 		undefined;
+
 	save:
 		| ((
 				options: IWriteFileOptions,
@@ -332,14 +355,17 @@ export class NotebookFileWorkingCopyModel
 					if (rawEvent.kind === NotebookCellsChangeType.Initialize) {
 						continue;
 					}
+
 					if (rawEvent.transient) {
 						continue;
 					}
+
 					this._onDidChangeContent.fire({
 						isRedoing: false, //todo@rebornix forward this information from notebook model
 						isUndoing: false,
 						isInitial: false, //_notebookModel.cells.length === 0 // todo@jrieken non transient metadata?
 					});
+
 					break;
 				}
 			}),
@@ -383,6 +409,7 @@ export class NotebookFileWorkingCopyModel
 						"WorkingCopyModel",
 						"No serializer found for notebook model, checking if provider still needs to be resolved",
 					);
+
 					serializer = await this.getNotebookSerializer();
 				}
 
@@ -396,36 +423,52 @@ export class NotebookFileWorkingCopyModel
 					options,
 					token,
 				);
+
 				return stat;
 			} catch (error) {
 				if (!token.isCancellationRequested) {
 					type notebookSaveErrorData = {
 						isRemote: boolean;
+
 						isIPyNbWorkerSerializer: boolean;
+
 						error: Error;
 					};
+
 					type notebookSaveErrorClassification = {
 						owner: "amunger";
+
 						comment: "Detect if we are having issues saving a notebook on the Extension Host";
+
 						isRemote: {
 							classification: "SystemMetaData";
+
 							purpose: "PerformanceAndHealth";
+
 							comment: "Whether the save is happening on a remote file system";
 						};
+
 						isIPyNbWorkerSerializer: {
 							classification: "SystemMetaData";
+
 							purpose: "PerformanceAndHealth";
+
 							comment: "Whether the IPynb files are serialized in workers";
 						};
+
 						error: {
 							classification: "SystemMetaData";
+
 							purpose: "PerformanceAndHealth";
+
 							comment: "Info about the error that occurred";
 						};
 					};
+
 					const isIPynb =
 						this._notebookModel.viewType === "jupyter-notebook" ||
 						this._notebookModel.viewType === "interactive";
+
 					this._telemetryService.publicLogError2<
 						notebookSaveErrorData,
 						notebookSaveErrorClassification
@@ -449,6 +492,7 @@ export class NotebookFileWorkingCopyModel
 
 	override dispose(): void {
 		this._notebookModel.dispose();
+
 		super.dispose();
 	}
 
@@ -474,6 +518,7 @@ export class NotebookFileWorkingCopyModel
 		const serializer = await this.getNotebookSerializer();
 
 		const bytes = await streamToBuffer(stream);
+
 		const data = await serializer.dataToNotebook(bytes);
 
 		if (token.isCancellationRequested) {
@@ -485,6 +530,7 @@ export class NotebookFileWorkingCopyModel
 			"Notebook content updated from file system - " +
 				this._notebookModel.uri.toString(),
 		);
+
 		this._notebookModel.reset(
 			data.cells,
 			data.metadata,
@@ -496,6 +542,7 @@ export class NotebookFileWorkingCopyModel
 		const info = await this._notebookService.withNotebookDataProvider(
 			this.notebookModel.viewType,
 		);
+
 		if (!(info instanceof SimpleNotebookProviderInfo)) {
 			throw new Error("CANNOT open file notebook with this provider");
 		}

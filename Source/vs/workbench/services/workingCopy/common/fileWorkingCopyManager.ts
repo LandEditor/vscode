@@ -162,6 +162,7 @@ export interface IFileWorkingCopyManager<
 		target: URI,
 		options?: ISaveOptions,
 	): Promise<IStoredFileWorkingCopy<S> | undefined>;
+
 	saveAs(
 		source: URI,
 		target: undefined,
@@ -183,17 +184,21 @@ export class FileWorkingCopyManager<
 	implements IFileWorkingCopyManager<S, U>
 {
 	readonly onDidCreate: Event<IFileWorkingCopy<S | U>>;
+
 	private static readonly FILE_WORKING_COPY_SAVE_CREATE_SOURCE =
 		SaveSourceRegistry.registerSource(
 			"fileWorkingCopyCreate.source",
 			localize("fileWorkingCopyCreate.source", "File Created"),
 		);
+
 	private static readonly FILE_WORKING_COPY_SAVE_REPLACE_SOURCE =
 		SaveSourceRegistry.registerSource(
 			"fileWorkingCopyReplace.source",
 			localize("fileWorkingCopyReplace.source", "File Replaced"),
 		);
+
 	readonly stored: IStoredFileWorkingCopyManager<S>;
+
 	readonly untitled: IUntitledFileWorkingCopyManager<U>;
 
 	constructor(
@@ -299,17 +304,21 @@ export class FileWorkingCopyManager<
 					"fileWorkingCopyDecorations",
 					"File Working Copy Decorations",
 				);
+
 				private readonly _onDidChange = this._register(
 					new Emitter<URI[]>(),
 				);
+
 				readonly onDidChange = this._onDidChange.event;
 
 				constructor(
 					private readonly stored: IStoredFileWorkingCopyManager<S>,
 				) {
 					super();
+
 					this.registerListeners();
 				}
+
 				private registerListeners(): void {
 					// Creates
 					this._register(
@@ -339,18 +348,21 @@ export class FileWorkingCopyManager<
 							this._onDidChange.fire([workingCopy.resource]),
 						),
 					);
+
 					this._register(
 						this.stored.onDidChangeOrphaned((workingCopy) =>
 							this._onDidChange.fire([workingCopy.resource]),
 						),
 					);
 				}
+
 				provideDecorations(uri: URI): IDecorationData | undefined {
 					const workingCopy = this.stored.get(uri);
 
 					if (!workingCopy || workingCopy.isDisposed()) {
 						return undefined;
 					}
+
 					const isReadonly = workingCopy.isReadonly();
 
 					const isOrphaned = workingCopy.hasState(
@@ -383,10 +395,12 @@ export class FileWorkingCopyManager<
 							tooltip: localize("deleted", "Deleted"),
 						};
 					}
+
 					return undefined;
 				}
 			})(this.stored),
 		);
+
 		this._register(
 			this.decorationsService.registerDecorationsProvider(provider),
 		);
@@ -399,6 +413,7 @@ export class FileWorkingCopyManager<
 	)[] {
 		return [...this.stored.workingCopies, ...this.untitled.workingCopies];
 	}
+
 	get(
 		resource: URI,
 	): IUntitledFileWorkingCopy<U> | IStoredFileWorkingCopy<S> | undefined {
@@ -409,16 +424,20 @@ export class FileWorkingCopyManager<
 	resolve(
 		options?: INewUntitledFileWorkingCopyOptions,
 	): Promise<IUntitledFileWorkingCopy<U>>;
+
 	resolve(
 		options?: INewUntitledFileWorkingCopyWithAssociatedResourceOptions,
 	): Promise<IUntitledFileWorkingCopy<U>>;
+
 	resolve(
 		options?: INewOrExistingUntitledFileWorkingCopyOptions,
 	): Promise<IUntitledFileWorkingCopy<U>>;
+
 	resolve(
 		resource: URI,
 		options?: IStoredFileWorkingCopyResolveOptions,
 	): Promise<IStoredFileWorkingCopy<S>>;
+
 	resolve(
 		arg1?:
 			| URI
@@ -437,6 +456,7 @@ export class FileWorkingCopyManager<
 				return this.stored.resolve(arg1, arg2);
 			}
 		}
+
 		return this.untitled.resolve(arg1);
 	}
 	//#endregion
@@ -464,6 +484,7 @@ export class FileWorkingCopyManager<
 				);
 			}
 		}
+
 		if (!target) {
 			return; // user canceled
 		}
@@ -511,6 +532,7 @@ export class FileWorkingCopyManager<
 		// Perform normal "Save As"
 		return this.doSaveAs(source, target, options);
 	}
+
 	private async doSave(
 		resource: URI,
 		options?: ISaveOptions,
@@ -526,8 +548,10 @@ export class FileWorkingCopyManager<
 				return storedFileWorkingCopy;
 			}
 		}
+
 		return undefined;
 	}
+
 	private async doSaveAs(
 		source: URI,
 		target: URI,
@@ -609,13 +633,16 @@ export class FileWorkingCopyManager<
 			// we gracefully catch the error and just log it.
 			this.logService.error(error);
 		}
+
 		return targetStoredFileWorkingCopy;
 	}
+
 	private async doResolveSaveTarget(
 		source: URI,
 		target: URI,
 	): Promise<{
 		targetFileExists: boolean;
+
 		targetStoredFileWorkingCopy: IStoredFileWorkingCopy<S>;
 	}> {
 		// Prefer an existing stored file working copy if it is already resolved
@@ -653,8 +680,10 @@ export class FileWorkingCopyManager<
 				targetStoredFileWorkingCopy = await this.stored.resolve(target);
 			}
 		}
+
 		return { targetFileExists, targetStoredFileWorkingCopy };
 	}
+
 	private async confirmOverwrite(resource: URI): Promise<boolean> {
 		const { confirmed } = await this.dialogService.confirm({
 			type: "warning",
@@ -680,6 +709,7 @@ export class FileWorkingCopyManager<
 
 		return confirmed;
 	}
+
 	private async confirmMakeWriteable(resource: URI): Promise<boolean> {
 		const { confirmed } = await this.dialogService.confirm({
 			type: "warning",
@@ -703,6 +733,7 @@ export class FileWorkingCopyManager<
 
 		return confirmed;
 	}
+
 	private async suggestSavePath(resource: URI): Promise<URI> {
 		// 1.) Just take the resource as is if the file service can handle it
 		if (this.fileService.hasProvider(resource)) {
@@ -721,6 +752,7 @@ export class FileWorkingCopyManager<
 				this.pathService.defaultUriScheme,
 			);
 		}
+
 		const defaultFilePath = await this.fileDialogService.defaultFilePath();
 		// 3.) Pick the working copy name if valid joined with default path
 		if (workingCopy) {

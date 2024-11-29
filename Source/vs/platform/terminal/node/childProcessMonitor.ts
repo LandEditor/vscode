@@ -27,13 +27,16 @@ export const ignoreProcessNames: string[] = [];
  */
 export class ChildProcessMonitor extends Disposable {
 	private _hasChildProcesses: boolean = false;
+
 	private set hasChildProcesses(value: boolean) {
 		if (this._hasChildProcesses !== value) {
 			this._hasChildProcesses = value;
+
 			this._logService.debug(
 				"ChildProcessMonitor: Has child processes changed",
 				value,
 			);
+
 			this._onDidChangeHasChildProcesses.fire(value);
 		}
 	}
@@ -43,6 +46,7 @@ export class ChildProcessMonitor extends Disposable {
 	get hasChildProcesses(): boolean {
 		return this._hasChildProcesses;
 	}
+
 	private readonly _onDidChangeHasChildProcesses = this._register(
 		new Emitter<boolean>(),
 	);
@@ -76,8 +80,10 @@ export class ChildProcessMonitor extends Disposable {
 		if (this._store.isDisposed) {
 			return;
 		}
+
 		try {
 			const processItem = await listProcesses(this._pid);
+
 			this.hasChildProcesses = this._processContainsChildren(processItem);
 		} catch (e) {
 			this._logService.debug(
@@ -90,6 +96,7 @@ export class ChildProcessMonitor extends Disposable {
 	private _refreshInactive(): void {
 		this._refreshActive();
 	}
+
 	private _processContainsChildren(processItem: ProcessItem): boolean {
 		// No child processes
 		if (!processItem.children) {
@@ -112,6 +119,7 @@ export class ChildProcessMonitor extends Disposable {
 					cmd = item.cmd.substring(0, spaceIndex);
 				}
 			}
+
 			return ignoreProcessNames.indexOf(parse(cmd).name) === -1;
 		}
 		// Fallback, count child processes

@@ -66,9 +66,11 @@ function canSyncModel(modelService: IModelService, resource: URI): boolean {
 	if (!model) {
 		return false;
 	}
+
 	if (model.isTooLargeForSyncing()) {
 		return false;
 	}
+
 	return true;
 }
 export abstract class EditorWorkerService
@@ -76,8 +78,11 @@ export abstract class EditorWorkerService
 	implements IEditorWorkerService
 {
 	declare readonly _serviceBrand: undefined;
+
 	private readonly _modelService: IModelService;
+
 	private readonly _workerManager: WorkerManager;
+
 	private readonly _logService: ILogService;
 
 	constructor(
@@ -94,10 +99,13 @@ export abstract class EditorWorkerService
 		languageFeaturesService: ILanguageFeaturesService,
 	) {
 		super();
+
 		this._modelService = modelService;
+
 		this._workerManager = this._register(
 			new WorkerManager(workerDescriptor, this._modelService),
 		);
+
 		this._logService = logService;
 		// register default link-provider and default completions-provider
 		this._register(
@@ -108,6 +116,7 @@ export abstract class EditorWorkerService
 						if (!canSyncModel(this._modelService, model.uri)) {
 							return Promise.resolve({ links: [] }); // File too large
 						}
+
 						const worker = await this._workerWithResources([
 							model.uri,
 						]);
@@ -121,6 +130,7 @@ export abstract class EditorWorkerService
 				},
 			),
 		);
+
 		this._register(
 			languageFeaturesService.completionProvider.register(
 				"*",
@@ -133,12 +143,15 @@ export abstract class EditorWorkerService
 			),
 		);
 	}
+
 	public override dispose(): void {
 		super.dispose();
 	}
+
 	public canComputeUnicodeHighlights(uri: URI): boolean {
 		return canSyncModel(this._modelService, uri);
 	}
+
 	public async computedUnicodeHighlights(
 		uri: URI,
 		options: UnicodeHighlighterOptions,
@@ -148,6 +161,7 @@ export abstract class EditorWorkerService
 
 		return worker.$computeUnicodeHighlights(uri.toString(), options, range);
 	}
+
 	public async computeDiff(
 		original: URI,
 		modified: URI,
@@ -207,12 +221,14 @@ export abstract class EditorWorkerService
 			);
 		}
 	}
+
 	public canComputeDirtyDiff(original: URI, modified: URI): boolean {
 		return (
 			canSyncModel(this._modelService, original) &&
 			canSyncModel(this._modelService, modified)
 		);
 	}
+
 	public async computeDirtyDiff(
 		original: URI,
 		modified: URI,
@@ -226,6 +242,7 @@ export abstract class EditorWorkerService
 			ignoreTrimWhitespace,
 		);
 	}
+
 	public async computeMoreMinimalEdits(
 		resource: URI,
 		edits: languages.TextEdit[] | null | undefined,
@@ -235,6 +252,7 @@ export abstract class EditorWorkerService
 			if (!canSyncModel(this._modelService, resource)) {
 				return Promise.resolve(edits); // File too large
 			}
+
 			const sw = StopWatch.create();
 
 			const result = this._workerWithResources([resource]).then(
@@ -245,6 +263,7 @@ export abstract class EditorWorkerService
 						pretty,
 					),
 			);
+
 			result.finally(() =>
 				this._logService.trace(
 					"FORMAT#computeMoreMinimalEdits",
@@ -258,6 +277,7 @@ export abstract class EditorWorkerService
 			return Promise.resolve(undefined);
 		}
 	}
+
 	public computeHumanReadableDiff(
 		resource: URI,
 		edits: languages.TextEdit[] | null | undefined,
@@ -266,6 +286,7 @@ export abstract class EditorWorkerService
 			if (!canSyncModel(this._modelService, resource)) {
 				return Promise.resolve(edits); // File too large
 			}
+
 			const sw = StopWatch.create();
 
 			const opts: ILinesDiffComputerOptions = {
@@ -287,6 +308,7 @@ export abstract class EditorWorkerService
 					// In case of an exception, fall back to computeMoreMinimalEdits
 					return this.computeMoreMinimalEdits(resource, edits, true);
 				});
+
 			result.finally(() =>
 				this._logService.trace(
 					"FORMAT#computeHumanReadableDiff",
@@ -300,9 +322,11 @@ export abstract class EditorWorkerService
 			return Promise.resolve(undefined);
 		}
 	}
+
 	public canNavigateValueSet(resource: URI): boolean {
 		return canSyncModel(this._modelService, resource);
 	}
+
 	public async navigateValueSet(
 		resource: URI,
 		range: IRange,
@@ -313,6 +337,7 @@ export abstract class EditorWorkerService
 		if (!model) {
 			return null;
 		}
+
 		const wordDefRegExp = this._languageConfigurationService
 			.getLanguageConfiguration(model.getLanguageId())
 			.getWordDefinition();
@@ -331,9 +356,11 @@ export abstract class EditorWorkerService
 			wordDefFlags,
 		);
 	}
+
 	public canComputeWordRanges(resource: URI): boolean {
 		return canSyncModel(this._modelService, resource);
 	}
+
 	public async computeWordRanges(
 		resource: URI,
 		range: IRange,
@@ -345,6 +372,7 @@ export abstract class EditorWorkerService
 		if (!model) {
 			return Promise.resolve(null);
 		}
+
 		const wordDefRegExp = this._languageConfigurationService
 			.getLanguageConfiguration(model.getLanguageId())
 			.getWordDefinition();
@@ -362,6 +390,7 @@ export abstract class EditorWorkerService
 			wordDefFlags,
 		);
 	}
+
 	public async findSectionHeaders(
 		uri: URI,
 		options: FindSectionHeaderOptions,
@@ -370,6 +399,7 @@ export abstract class EditorWorkerService
 
 		return worker.$findSectionHeaders(uri.toString(), options);
 	}
+
 	public async computeDefaultDocumentColors(
 		uri: URI,
 	): Promise<languages.IColorInformation[] | null> {
@@ -377,6 +407,7 @@ export abstract class EditorWorkerService
 
 		return worker.$computeDefaultDocumentColors(uri.toString());
 	}
+
 	private async _workerWithResources(
 		resources: URI[],
 		forceLargeModels: boolean = false,
@@ -393,8 +424,11 @@ class WordBasedCompletionItemProvider
 	implements languages.CompletionItemProvider
 {
 	private readonly _workerManager: WorkerManager;
+
 	private readonly _configurationService: ITextResourceConfigurationService;
+
 	private readonly _modelService: IModelService;
+
 	readonly _debugDisplayName = "wordbasedCompletions";
 
 	constructor(
@@ -404,9 +438,12 @@ class WordBasedCompletionItemProvider
 		private readonly languageConfigurationService: ILanguageConfigurationService,
 	) {
 		this._workerManager = workerManager;
+
 		this._configurationService = configurationService;
+
 		this._modelService = modelService;
 	}
+
 	async provideCompletionItems(
 		model: ITextModel,
 		position: Position,
@@ -429,6 +466,7 @@ class WordBasedCompletionItemProvider
 		if (config.wordBasedSuggestions === "off") {
 			return undefined;
 		}
+
 		const models: URI[] = [];
 
 		if (config.wordBasedSuggestions === "currentDocument") {
@@ -442,6 +480,7 @@ class WordBasedCompletionItemProvider
 				if (!canSyncModel(this._modelService, candidate.uri)) {
 					continue;
 				}
+
 				if (candidate === model) {
 					models.unshift(candidate.uri);
 				} else if (
@@ -452,9 +491,11 @@ class WordBasedCompletionItemProvider
 				}
 			}
 		}
+
 		if (models.length === 0) {
 			return undefined; // File too large, no other files
 		}
+
 		const wordDefRegExp = this.languageConfigurationService
 			.getLanguageConfiguration(model.getLanguageId())
 			.getWordDefinition();
@@ -486,6 +527,7 @@ class WordBasedCompletionItemProvider
 		if (!data) {
 			return undefined;
 		}
+
 		return {
 			duration: data.duration,
 			suggestions: data.words.map((word): languages.CompletionItem => {
@@ -501,7 +543,9 @@ class WordBasedCompletionItemProvider
 }
 class WorkerManager extends Disposable {
 	private readonly _modelService: IModelService;
+
 	private _editorWorkerClient: EditorWorkerClient | null;
+
 	private _lastWorkerUsedTime: number;
 
 	constructor(
@@ -510,27 +554,35 @@ class WorkerManager extends Disposable {
 		modelService: IModelService,
 	) {
 		super();
+
 		this._modelService = modelService;
+
 		this._editorWorkerClient = null;
+
 		this._lastWorkerUsedTime = new Date().getTime();
 
 		const stopWorkerInterval = this._register(new WindowIntervalTimer());
+
 		stopWorkerInterval.cancelAndSet(
 			() => this._checkStopIdleWorker(),
 			Math.round(STOP_WORKER_DELTA_TIME_MS / 2),
 			mainWindow,
 		);
+
 		this._register(
 			this._modelService.onModelRemoved((_) =>
 				this._checkStopEmptyWorker(),
 			),
 		);
 	}
+
 	public override dispose(): void {
 		if (this._editorWorkerClient) {
 			this._editorWorkerClient.dispose();
+
 			this._editorWorkerClient = null;
 		}
+
 		super.dispose();
 	}
 	/**
@@ -540,11 +592,13 @@ class WorkerManager extends Disposable {
 		if (!this._editorWorkerClient) {
 			return;
 		}
+
 		const models = this._modelService.getModels();
 
 		if (models.length === 0) {
 			// There are no more models => nothing possible for me to do
 			this._editorWorkerClient.dispose();
+
 			this._editorWorkerClient = null;
 		}
 	}
@@ -555,14 +609,17 @@ class WorkerManager extends Disposable {
 		if (!this._editorWorkerClient) {
 			return;
 		}
+
 		const timeSinceLastWorkerUsedTime =
 			new Date().getTime() - this._lastWorkerUsedTime;
 
 		if (timeSinceLastWorkerUsedTime > STOP_WORKER_DELTA_TIME_MS) {
 			this._editorWorkerClient.dispose();
+
 			this._editorWorkerClient = null;
 		}
 	}
+
 	public withWorker(): Promise<EditorWorkerClient> {
 		this._lastWorkerUsedTime = new Date().getTime();
 
@@ -573,6 +630,7 @@ class WorkerManager extends Disposable {
 				this._modelService,
 			);
 		}
+
 		return Promise.resolve(this._editorWorkerClient);
 	}
 }
@@ -580,18 +638,23 @@ class SynchronousWorkerClient<T extends IDisposable>
 	implements IWorkerClient<T>
 {
 	private readonly _instance: T;
+
 	public readonly proxy: Proxied<T>;
 
 	constructor(instance: T) {
 		this._instance = instance;
+
 		this.proxy = this._instance as Proxied<T>;
 	}
+
 	public dispose(): void {
 		this._instance.dispose();
 	}
+
 	public setChannel<T extends object>(channel: string, handler: T): void {
 		throw new Error(`Not supported`);
 	}
+
 	public getChannel<T extends object>(channel: string): Proxied<T> {
 		throw new Error(`Not supported`);
 	}
@@ -604,9 +667,13 @@ export class EditorWorkerClient
 	implements IEditorWorkerClient
 {
 	private readonly _modelService: IModelService;
+
 	private readonly _keepIdleModels: boolean;
+
 	private _worker: IWorkerClient<EditorSimpleWorker> | null;
+
 	private _modelManager: WorkerTextModelSyncClient | null;
+
 	private _disposed = false;
 
 	constructor(
@@ -616,55 +683,69 @@ export class EditorWorkerClient
 		modelService: IModelService,
 	) {
 		super();
+
 		this._modelService = modelService;
+
 		this._keepIdleModels = keepIdleModels;
+
 		this._worker = null;
+
 		this._modelManager = null;
 	}
 	// foreign host request
 	public fhr(method: string, args: any[]): Promise<any> {
 		throw new Error(`Not implemented!`);
 	}
+
 	private _getOrCreateWorker(): IWorkerClient<EditorSimpleWorker> {
 		if (!this._worker) {
 			try {
 				this._worker = this._register(
 					createWebWorker<EditorSimpleWorker>(this._workerDescriptor),
 				);
+
 				EditorWorkerHost.setChannel(
 					this._worker,
 					this._createEditorWorkerHost(),
 				);
 			} catch (err) {
 				logOnceWebWorkerWarning(err);
+
 				this._worker = this._createFallbackLocalWorker();
 			}
 		}
+
 		return this._worker;
 	}
+
 	protected async _getProxy(): Promise<Proxied<EditorSimpleWorker>> {
 		try {
 			const proxy = this._getOrCreateWorker().proxy;
+
 			await proxy.$ping();
 
 			return proxy;
 		} catch (err) {
 			logOnceWebWorkerWarning(err);
+
 			this._worker = this._createFallbackLocalWorker();
 
 			return this._worker.proxy;
 		}
 	}
+
 	private _createFallbackLocalWorker(): SynchronousWorkerClient<EditorSimpleWorker> {
 		return new SynchronousWorkerClient(
 			new EditorSimpleWorker(this._createEditorWorkerHost(), null),
 		);
 	}
+
 	private _createEditorWorkerHost(): EditorWorkerHost {
 		return {
 			$fhr: (method, args) => this.fhr(method, args),
 		};
 	}
+
 	private _getOrCreateModelManager(
 		proxy: Proxied<EditorSimpleWorker>,
 	): WorkerTextModelSyncClient {
@@ -677,8 +758,10 @@ export class EditorWorkerClient
 				),
 			);
 		}
+
 		return this._modelManager;
 	}
+
 	public async workerWithSyncedResources(
 		resources: URI[],
 		forceLargeModels: boolean = false,
@@ -686,7 +769,9 @@ export class EditorWorkerClient
 		if (this._disposed) {
 			return Promise.reject(canceled());
 		}
+
 		const proxy = await this._getProxy();
+
 		this._getOrCreateModelManager(proxy).ensureSyncedResources(
 			resources,
 			forceLargeModels,
@@ -694,12 +779,14 @@ export class EditorWorkerClient
 
 		return proxy;
 	}
+
 	public async textualSuggest(
 		resources: URI[],
 		leadingWord: string | undefined,
 		wordDefRegExp: RegExp,
 	): Promise<{
 		words: string[];
+
 		duration: number;
 	} | null> {
 		const proxy = await this.workerWithSyncedResources(resources);
@@ -715,8 +802,10 @@ export class EditorWorkerClient
 			wordDefFlags,
 		);
 	}
+
 	override dispose(): void {
 		super.dispose();
+
 		this._disposed = true;
 	}
 }

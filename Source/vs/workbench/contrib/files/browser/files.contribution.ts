@@ -1147,6 +1147,7 @@ UndoCommand.addImplementation(110, "explorer", (accessor: ServicesAccessor) => {
 
 		return true;
 	}
+
 	return false;
 });
 RedoCommand.addImplementation(110, "explorer", (accessor: ServicesAccessor) => {
@@ -1169,6 +1170,7 @@ RedoCommand.addImplementation(110, "explorer", (accessor: ServicesAccessor) => {
 
 		return true;
 	}
+
 	return false;
 });
 ModesRegistry.registerLanguage({

@@ -21,6 +21,7 @@ import {
 
 export interface ISingleTerminalConfiguration<T> {
 	userValue: T | undefined;
+
 	value: T | undefined;
 
 	defaultValue: T | undefined;
@@ -39,11 +40,14 @@ export type ITerminalEnvironmentVariableCollections = [
 
 export interface IWorkspaceFolderData {
 	uri: UriComponents;
+
 	name: string;
+
 	index: number;
 }
 export interface ISetTerminalLayoutInfoArgs {
 	workspaceId: string;
+
 	tabs: ITerminalTabLayoutInfoById[];
 }
 export interface IGetTerminalLayoutInfoArgs {
@@ -51,25 +55,43 @@ export interface IGetTerminalLayoutInfoArgs {
 }
 export interface IProcessDetails {
 	id: number;
+
 	pid: number;
+
 	title: string;
+
 	titleSource: TitleEventSource;
+
 	cwd: string;
+
 	workspaceId: string;
+
 	workspaceName: string;
+
 	isOrphan: boolean;
+
 	icon: TerminalIcon | undefined;
+
 	color: string | undefined;
+
 	fixedDimensions: IFixedTerminalDimensions | undefined;
+
 	environmentVariableCollections:
 		| ISerializableEnvironmentVariableCollections
 		| undefined;
+
 	reconnectionProperties?: IReconnectionProperties;
+
 	waitOnExit?: WaitOnExitValue;
+
 	hideFromUser?: boolean;
+
 	isFeatureTerminal?: boolean;
+
 	type?: TerminalType;
+
 	hasChildProcesses: boolean;
+
 	shellIntegrationNonce: string;
 }
 export type ITerminalTabLayoutInfoDto =
@@ -77,7 +99,9 @@ export type ITerminalTabLayoutInfoDto =
 
 export interface ReplayEntry {
 	cols: number;
+
 	rows: number;
+
 	data: string;
 }
 
@@ -108,6 +132,7 @@ export function chunkInput(data: string): string[] {
 			data[i + 1] === "\x1b"
 		) {
 			chunks.push(data.substring(nextChunkStartIndex, i + 1));
+
 			nextChunkStartIndex = i + 1;
 			// Skip the next character as the chunk would be a single character
 			i++;
@@ -117,5 +142,6 @@ export function chunkInput(data: string): string[] {
 	if (nextChunkStartIndex !== data.length) {
 		chunks.push(data.substring(nextChunkStartIndex));
 	}
+
 	return chunks;
 }

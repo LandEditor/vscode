@@ -49,6 +49,7 @@ async function pollUntil(fn: () => boolean, millis = 1000): Promise<void> {
 }
 interface IAvailableUpdate {
 	packagePath: string;
+
 	updateFilePath?: string;
 }
 let _updateType: UpdateType | undefined = undefined;
@@ -60,6 +61,7 @@ function getUpdateType(): UpdateType {
 			? UpdateType.Setup
 			: UpdateType.Archive;
 	}
+
 	return _updateType;
 }
 export class Win32UpdateService
@@ -78,6 +80,7 @@ export class Win32UpdateService
 			.mkdir(result, { recursive: true })
 			.then(() => result);
 	}
+
 	constructor(
 		@ILifecycleMainService
 		lifecycleMainService: ILifecycleMainService,
@@ -106,36 +109,45 @@ export class Win32UpdateService
 			logService,
 			productService,
 		);
+
 		lifecycleMainService.setRelaunchHandler(this);
 	}
+
 	handleRelaunch(options?: IRelaunchOptions): boolean {
 		if (options?.addArgs || options?.removeArgs) {
 			return false; // we cannot apply an update and restart with different args
 		}
+
 		if (this.state.type !== StateType.Ready || !this.availableUpdate) {
 			return false; // we only handle the relaunch when we have a pending update
 		}
+
 		this.logService.trace(
 			"update#handleRelaunch(): running raw#quitAndInstall()",
 		);
+
 		this.doQuitAndInstall();
 
 		return true;
 	}
+
 	protected override async initialize(): Promise<void> {
 		if (
 			this.productService.target === "user" &&
 			(await this.nativeHostMainService.isAdmin(undefined))
 		) {
 			this.setState(State.Disabled(DisablementReason.RunningAsAdmin));
+
 			this.logService.info(
 				"update#ctor - updates are disabled due to running as Admin in user setup",
 			);
 
 			return;
 		}
+
 		await super.initialize();
 	}
+
 	protected buildUpdateFeedUrl(quality: string): string | undefined {
 		let platform = `win32-${process.arch}`;
 
@@ -144,13 +156,17 @@ export class Win32UpdateService
 		} else if (this.productService.target === "user") {
 			platform += "-user";
 		}
+
 		return createUpdateURL(platform, quality, this.productService);
 	}
+
 	protected doCheckForUpdates(context: any): void {
 		if (!this.url) {
 			return;
 		}
+
 		this.setState(State.CheckingForUpdates(context));
+
 		this.requestService
 			.request({ url: this.url }, CancellationToken.None)
 			.then<IUpdate | null>(asJson)
@@ -169,15 +185,18 @@ export class Win32UpdateService
 						},
 						UpdateNotAvailableClassification
 					>("update:notAvailable", { explicit: !!context });
+
 					this.setState(State.Idle(updateType));
 
 					return Promise.resolve(null);
 				}
+
 				if (updateType === UpdateType.Archive) {
 					this.setState(State.AvailableForDownload(update));
 
 					return Promise.resolve(null);
 				}
+
 				this.setState(State.Downloading);
 
 				return this.cleanup(update.version).then(() => {
@@ -190,6 +209,7 @@ export class Win32UpdateService
 											updatePackagePath,
 										);
 									}
+
 									const downloadPath = `${updatePackagePath}.tmp`;
 
 									return this.requestService
@@ -225,6 +245,7 @@ export class Win32UpdateService
 						})
 						.then((packagePath) => {
 							this.availableUpdate = { packagePath };
+
 							this.setState(State.Downloaded(update));
 
 							const fastUpdatesEnabled =
@@ -249,14 +270,17 @@ export class Win32UpdateService
 					},
 					UpdateErrorClassification
 				>("update:error", { messageHash: String(hash(String(err))) });
+
 				this.logService.error(err);
 				// only show message when explicitly checking for updates
 				const message: string | undefined = !!context
 					? err.message || err
 					: undefined;
+
 				this.setState(State.Idle(getUpdateType(), message));
 			});
 	}
+
 	protected override async doDownloadUpdate(
 		state: AvailableForDownload,
 	): Promise<void> {
@@ -266,8 +290,10 @@ export class Win32UpdateService
 				state.update.url,
 			);
 		}
+
 		this.setState(State.Idle(getUpdateType()));
 	}
+
 	private async getUpdatePackagePath(version: string): Promise<string> {
 		const cachePath = await this.cachePath;
 
@@ -276,6 +302,7 @@ export class Win32UpdateService
 			`CodeSetup-${this.productService.quality}-${version}.exe`,
 		);
 	}
+
 	private async cleanup(exceptVersion: string | null = null): Promise<void> {
 		const filter = exceptVersion
 			? (one: string) =>
@@ -295,23 +322,30 @@ export class Win32UpdateService
 				// ignore
 			}
 		});
+
 		await Promise.all(promises);
 	}
+
 	protected override async doApplyUpdate(): Promise<void> {
 		if (this.state.type !== StateType.Downloaded) {
 			return Promise.resolve(undefined);
 		}
+
 		if (!this.availableUpdate) {
 			return Promise.resolve(undefined);
 		}
+
 		const update = this.state.update;
+
 		this.setState(State.Updating(update));
 
 		const cachePath = await this.cachePath;
+
 		this.availableUpdate.updateFilePath = path.join(
 			cachePath,
 			`CodeSetup-${this.productService.quality}-${update.version}.flag`,
 		);
+
 		await pfs.Promises.writeFile(
 			this.availableUpdate.updateFilePath,
 			"flag",
@@ -332,8 +366,10 @@ export class Win32UpdateService
 				windowsVerbatimArguments: true,
 			},
 		);
+
 		child.once("exit", () => {
 			this.availableUpdate = undefined;
+
 			this.setState(State.Idle(getUpdateType()));
 		});
 
@@ -345,10 +381,12 @@ export class Win32UpdateService
 			this.setState(State.Ready(update)),
 		);
 	}
+
 	protected override doQuitAndInstall(): void {
 		if (this.state.type !== StateType.Ready || !this.availableUpdate) {
 			return;
 		}
+
 		this.logService.trace(
 			"update#quitAndInstall(): running raw#quitAndInstall()",
 		);
@@ -370,13 +408,16 @@ export class Win32UpdateService
 			);
 		}
 	}
+
 	protected override getUpdateType(): UpdateType {
 		return getUpdateType();
 	}
+
 	override async _applySpecificUpdate(packagePath: string): Promise<void> {
 		if (this.state.type !== StateType.Idle) {
 			return;
 		}
+
 		const fastUpdatesEnabled = this.configurationService.getValue(
 			"update.enableWindowsBackgroundUpdates",
 		);
@@ -385,8 +426,11 @@ export class Win32UpdateService
 			version: "unknown",
 			productVersion: "unknown",
 		};
+
 		this.setState(State.Downloading);
+
 		this.availableUpdate = { packagePath };
+
 		this.setState(State.Downloaded(update));
 
 		if (fastUpdatesEnabled) {

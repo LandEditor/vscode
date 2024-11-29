@@ -18,13 +18,17 @@ import { getBaseLayerHoverDelegate } from "../hover/hoverDelegate2.js";
 
 export interface ICountBadgeOptions {
 	readonly count?: number;
+
 	readonly countFormat?: string;
+
 	readonly titleFormat?: string;
 }
 
 export interface ICountBadgeStyles {
 	readonly badgeBackground: string | undefined;
+
 	readonly badgeForeground: string | undefined;
+
 	readonly badgeBorder: string | undefined;
 }
 
@@ -36,9 +40,13 @@ export const unthemedCountStyles: ICountBadgeStyles = {
 
 export class CountBadge extends Disposable {
 	private element: HTMLElement;
+
 	private count: number = 0;
+
 	private countFormat: string;
+
 	private titleFormat: string;
+
 	private readonly hover = this._register(
 		new MutableDisposable<IDisposable>(),
 	);
@@ -49,27 +57,37 @@ export class CountBadge extends Disposable {
 		private readonly styles: ICountBadgeStyles,
 	) {
 		super();
+
 		this.element = append(container, $(".monaco-count-badge"));
+
 		this._register(toDisposable(() => container.removeChild(this.element)));
+
 		this.countFormat = this.options.countFormat || "{0}";
+
 		this.titleFormat = this.options.titleFormat || "";
+
 		this.setCount(this.options.count || 0);
+
 		this.updateHover();
 	}
 
 	setCount(count: number) {
 		this.count = count;
+
 		this.render();
 	}
 
 	setCountFormat(countFormat: string) {
 		this.countFormat = countFormat;
+
 		this.render();
 	}
 
 	setTitleFormat(titleFormat: string) {
 		this.titleFormat = titleFormat;
+
 		this.updateHover();
+
 		this.render();
 	}
 
@@ -92,6 +110,7 @@ export class CountBadge extends Disposable {
 		this.element.textContent = format(this.countFormat, this.count);
 
 		this.element.style.backgroundColor = this.styles.badgeBackground ?? "";
+
 		this.element.style.color = this.styles.badgeForeground ?? "";
 
 		if (this.styles.badgeBorder) {

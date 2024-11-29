@@ -138,7 +138,9 @@ export enum NotebookExecutionState {
 
 export interface INotebookCellPreviousExecutionResult {
 	executionOrder?: number;
+
 	success?: boolean;
+
 	duration?: number;
 }
 
@@ -151,22 +153,31 @@ export interface NotebookCellMetadata {
 
 export interface NotebookCellInternalMetadata {
 	executionId?: string;
+
 	executionOrder?: number;
+
 	lastRunSuccess?: boolean;
+
 	runStartTime?: number;
+
 	runStartTimeAdjustment?: number;
+
 	runEndTime?: number;
+
 	renderDuration?: { [key: string]: number };
+
 	error?: ICellExecutionError;
 }
 
 export interface NotebookCellCollapseState {
 	inputCollapsed?: boolean;
+
 	outputCollapsed?: boolean;
 }
 
 export interface NotebookCellDefaultCollapseConfig {
 	codeCell?: NotebookCellCollapseState;
+
 	markupCell?: NotebookCellCollapseState;
 }
 
@@ -189,8 +200,11 @@ export type TransientDocumentMetadata = {
 
 export interface TransientOptions {
 	readonly transientOutputs: boolean;
+
 	readonly transientCellMetadata: TransientCellMetadata;
+
 	readonly transientDocumentMetadata: TransientDocumentMetadata;
+
 	readonly cellContentMetadata: CellContentMetadata;
 }
 
@@ -220,15 +234,21 @@ export const enum RendererMessagingSpec {
 
 export type NotebookRendererEntrypoint = {
 	readonly extends: string | undefined;
+
 	readonly path: URI;
 };
 
 export interface INotebookRendererInfo {
 	readonly id: string;
+
 	readonly displayName: string;
+
 	readonly entrypoint: NotebookRendererEntrypoint;
+
 	readonly extensionLocation: URI;
+
 	readonly extensionId: ExtensionIdentifier;
+
 	readonly messaging: RendererMessagingSpec;
 
 	readonly mimeTypes: readonly string[];
@@ -236,6 +256,7 @@ export interface INotebookRendererInfo {
 	readonly isBuiltin: boolean;
 
 	matchesWithoutKernel(mimeType: string): NotebookRendererMatch;
+
 	matches(
 		mimeType: string,
 		kernelProvides: ReadonlyArray<string>,
@@ -244,43 +265,61 @@ export interface INotebookRendererInfo {
 
 export interface INotebookStaticPreloadInfo {
 	readonly type: string;
+
 	readonly entrypoint: URI;
+
 	readonly extensionLocation: URI;
+
 	readonly localResourceRoots: readonly URI[];
 }
 
 export interface IOrderedMimeType {
 	mimeType: string;
+
 	rendererId: string;
+
 	isTrusted: boolean;
 }
 
 export interface IOutputItemDto {
 	readonly mime: string;
+
 	readonly data: VSBuffer;
 }
 
 export interface IOutputDto {
 	outputs: IOutputItemDto[];
+
 	outputId: string;
+
 	metadata?: Record<string, any>;
 }
 
 export interface ICellOutput {
 	readonly versionId: number;
+
 	outputs: IOutputItemDto[];
+
 	metadata?: Record<string, any>;
+
 	outputId: string;
 	/**
 	 * Alternative output id that's reused when the output is updated.
 	 */
 	alternativeOutputId: string;
+
 	onDidChangeData: Event<void>;
+
 	replaceData(items: IOutputDto): void;
+
 	appendData(items: IOutputItemDto[]): void;
+
 	appendedSinceVersion(versionId: number, mime: string): VSBuffer | undefined;
+
 	asDto(): IOutputDto;
+
 	bumpVersion(): void;
+
 	dispose(): void;
 }
 
@@ -297,7 +336,9 @@ export interface INotebookDocumentMetadataTextModel {
 	 * Triggered when the Notebook Metadata changes.
 	 */
 	readonly onDidChange: Event<void>;
+
 	readonly metadata: Readonly<NotebookDocumentMetadata>;
+
 	readonly textBuffer: IReadonlyTextBuffer;
 	/**
 	 * Text representation of the Notebook Metadata
@@ -309,47 +350,72 @@ export interface INotebookDocumentMetadataTextModel {
 
 export interface ICell {
 	readonly uri: URI;
+
 	handle: number;
+
 	language: string;
+
 	cellKind: CellKind;
+
 	outputs: ICellOutput[];
+
 	metadata: NotebookCellMetadata;
+
 	internalMetadata: NotebookCellInternalMetadata;
 
 	getHashValue(): number;
+
 	textBuffer: IReadonlyTextBuffer;
+
 	onDidChangeOutputs?: Event<NotebookCellOutputsSplice>;
+
 	onDidChangeOutputItems?: Event<void>;
+
 	onDidChangeLanguage: Event<string>;
+
 	onDidChangeMetadata: Event<void>;
+
 	onDidChangeInternalMetadata: Event<CellInternalMetadataChangedEvent>;
 }
 
 export interface INotebookSnapshotOptions {
 	context: SnapshotContext;
+
 	outputSizeLimit: number;
+
 	transientOptions?: TransientOptions;
 }
 
 export interface INotebookTextModel extends INotebookTextModelLike {
 	readonly notebookType: string;
+
 	readonly viewType: string;
+
 	metadata: NotebookDocumentMetadata;
+
 	readonly transientOptions: TransientOptions;
+
 	readonly uri: URI;
+
 	readonly versionId: number;
+
 	readonly length: number;
+
 	readonly cells: readonly ICell[];
+
 	reset(
 		cells: ICellDto2[],
 		metadata: NotebookDocumentMetadata,
 		transientOptions: TransientOptions,
 	): void;
+
 	createSnapshot(options: INotebookSnapshotOptions): NotebookData;
+
 	restoreSnapshot(
 		snapshot: NotebookData,
 		transientOptions?: TransientOptions,
 	): void;
+
 	applyEdits(
 		rawEdits: ICellEditOperation[],
 		synchronous: boolean,
@@ -358,7 +424,9 @@ export interface INotebookTextModel extends INotebookTextModelLike {
 		undoRedoGroup: UndoRedoGroup | undefined,
 		computeUndoRedo?: boolean,
 	): boolean;
+
 	onDidChangeContent: Event<NotebookTextModelChangedEvent>;
+
 	onWillDispose: Event<void>;
 }
 
@@ -370,20 +438,31 @@ export type NotebookCellTextModelSplice<T> = [
 
 export type NotebookCellOutputsSplice = {
 	start: number /* start */;
+
 	deleteCount: number /* delete count */;
+
 	newOutputs: ICellOutput[];
 };
 
 export interface IMainCellDto {
 	handle: number;
+
 	url: string;
+
 	source: string[];
+
 	eol: string;
+
 	versionId: number;
+
 	language: string;
+
 	cellKind: CellKind;
+
 	outputs: IOutputDto[];
+
 	metadata?: NotebookCellMetadata;
+
 	internalMetadata?: NotebookCellInternalMetadata;
 }
 
@@ -404,68 +483,91 @@ export enum NotebookCellsChangeType {
 
 export interface NotebookCellsInitializeEvent<T> {
 	readonly kind: NotebookCellsChangeType.Initialize;
+
 	readonly changes: NotebookCellTextModelSplice<T>[];
 }
 
 export interface NotebookCellContentChangeEvent {
 	readonly kind: NotebookCellsChangeType.ChangeCellContent;
+
 	readonly index: number;
 }
 
 export interface NotebookCellsModelChangedEvent<T> {
 	readonly kind: NotebookCellsChangeType.ModelChange;
+
 	readonly changes: NotebookCellTextModelSplice<T>[];
 }
 
 export interface NotebookCellsModelMoveEvent<T> {
 	readonly kind: NotebookCellsChangeType.Move;
+
 	readonly index: number;
+
 	readonly length: number;
+
 	readonly newIdx: number;
+
 	readonly cells: T[];
 }
 
 export interface NotebookOutputChangedEvent {
 	readonly kind: NotebookCellsChangeType.Output;
+
 	readonly index: number;
+
 	readonly outputs: IOutputDto[];
+
 	readonly append: boolean;
 }
 
 export interface NotebookOutputItemChangedEvent {
 	readonly kind: NotebookCellsChangeType.OutputItem;
+
 	readonly index: number;
+
 	readonly outputId: string;
+
 	readonly outputItems: IOutputItemDto[];
+
 	readonly append: boolean;
 }
 
 export interface NotebookCellsChangeLanguageEvent {
 	readonly kind: NotebookCellsChangeType.ChangeCellLanguage;
+
 	readonly index: number;
+
 	readonly language: string;
 }
 
 export interface NotebookCellsChangeMimeEvent {
 	readonly kind: NotebookCellsChangeType.ChangeCellMime;
+
 	readonly index: number;
+
 	readonly mime: string | undefined;
 }
 
 export interface NotebookCellsChangeMetadataEvent {
 	readonly kind: NotebookCellsChangeType.ChangeCellMetadata;
+
 	readonly index: number;
+
 	readonly metadata: NotebookCellMetadata;
 }
 
 export interface NotebookCellsChangeInternalMetadataEvent {
 	readonly kind: NotebookCellsChangeType.ChangeCellInternalMetadata;
+
 	readonly index: number;
+
 	readonly internalMetadata: NotebookCellInternalMetadata;
 }
 
 export interface NotebookDocumentChangeMetadataEvent {
 	readonly kind: NotebookCellsChangeType.ChangeDocumentMetadata;
+
 	readonly metadata: NotebookDocumentMetadata;
 }
 
@@ -489,6 +591,7 @@ export type NotebookRawContentEventDto =
 
 export type NotebookCellsChangedEventDto = {
 	readonly rawEvents: NotebookRawContentEventDto[];
+
 	readonly versionId: number;
 };
 
@@ -514,13 +617,17 @@ export enum SelectionStateType {
 
 export interface ISelectionHandleState {
 	kind: SelectionStateType.Handle;
+
 	primary: number | null;
+
 	selections: number[];
 }
 
 export interface ISelectionIndexState {
 	kind: SelectionStateType.Index;
+
 	focus: ICellRange;
+
 	selections: ICellRange[];
 }
 
@@ -528,8 +635,11 @@ export type ISelectionState = ISelectionHandleState | ISelectionIndexState;
 
 export type NotebookTextModelChangedEvent = {
 	readonly rawEvents: NotebookRawContentEvent[];
+
 	readonly versionId: number;
+
 	readonly synchronous: boolean | undefined;
+
 	readonly endSelectionState: ISelectionState | undefined;
 };
 
@@ -551,46 +661,67 @@ export const enum CellEditType {
 
 export interface ICellDto2 {
 	source: string;
+
 	language: string;
+
 	mime: string | undefined;
+
 	cellKind: CellKind;
+
 	outputs: IOutputDto[];
+
 	metadata?: NotebookCellMetadata;
+
 	internalMetadata?: NotebookCellInternalMetadata;
+
 	collapseState?: NotebookCellCollapseState;
 }
 
 export interface ICellReplaceEdit {
 	editType: CellEditType.Replace;
+
 	index: number;
+
 	count: number;
+
 	cells: ICellDto2[];
 }
 
 export interface ICellOutputEdit {
 	editType: CellEditType.Output;
+
 	index: number;
+
 	outputs: IOutputDto[];
+
 	append?: boolean;
 }
 
 export interface ICellOutputEditByHandle {
 	editType: CellEditType.Output;
+
 	handle: number;
+
 	outputs: IOutputDto[];
+
 	append?: boolean;
 }
 
 export interface ICellOutputItemEdit {
 	editType: CellEditType.OutputItems;
+
 	outputId: string;
+
 	items: IOutputItemDto[];
+
 	append?: boolean;
 }
 
 export interface ICellMetadataEdit {
 	editType: CellEditType.Metadata;
+
 	index: number;
+
 	metadata: NotebookCellMetadata;
 }
 
@@ -603,13 +734,17 @@ export type NullablePartialNotebookCellMetadata = {
 
 export interface ICellPartialMetadataEdit {
 	editType: CellEditType.PartialMetadata;
+
 	index: number;
+
 	metadata: NullablePartialNotebookCellMetadata;
 }
 
 export interface ICellPartialMetadataEditByHandle {
 	editType: CellEditType.PartialMetadata;
+
 	handle: number;
+
 	metadata: NullablePartialNotebookCellMetadata;
 }
 
@@ -621,31 +756,41 @@ export type NullablePartialNotebookCellInternalMetadata = {
 
 export interface ICellPartialInternalMetadataEdit {
 	editType: CellEditType.PartialInternalMetadata;
+
 	index: number;
+
 	internalMetadata: NullablePartialNotebookCellInternalMetadata;
 }
 
 export interface ICellPartialInternalMetadataEditByHandle {
 	editType: CellEditType.PartialInternalMetadata;
+
 	handle: number;
+
 	internalMetadata: NullablePartialNotebookCellInternalMetadata;
 }
 
 export interface ICellLanguageEdit {
 	editType: CellEditType.CellLanguage;
+
 	index: number;
+
 	language: string;
 }
 
 export interface IDocumentMetadataEdit {
 	editType: CellEditType.DocumentMetadata;
+
 	metadata: NotebookDocumentMetadata;
 }
 
 export interface ICellMoveEdit {
 	editType: CellEditType.Move;
+
 	index: number;
+
 	length: number;
+
 	newIdx: number;
 }
 
@@ -671,8 +816,11 @@ export type ICellEditOperation =
 
 export interface IWorkspaceNotebookCellEdit {
 	metadata?: WorkspaceEditMetadata;
+
 	resource: URI;
+
 	notebookVersionId: number | undefined;
+
 	cellEdit:
 		| ICellPartialMetadataEdit
 		| IDocumentMetadataEdit
@@ -681,8 +829,11 @@ export interface IWorkspaceNotebookCellEdit {
 
 export interface IWorkspaceNotebookCellEditDto {
 	metadata?: WorkspaceEditMetadata;
+
 	resource: URI;
+
 	notebookVersionId: number | undefined;
+
 	cellEdit:
 		| ICellPartialMetadataEdit
 		| IDocumentMetadataEdit
@@ -691,18 +842,23 @@ export interface IWorkspaceNotebookCellEditDto {
 
 export interface NotebookData {
 	readonly cells: ICellDto2[];
+
 	readonly metadata: NotebookDocumentMetadata;
 }
 
 export interface INotebookContributionData {
 	extension?: ExtensionIdentifier;
+
 	providerDisplayName: string;
+
 	displayName: string;
+
 	filenamePattern: (
 		| string
 		| glob.IRelativePattern
 		| INotebookExclusiveDocumentFilter
 	)[];
+
 	priority?: RegisteredEditorPriority;
 }
 
@@ -712,6 +868,7 @@ export namespace NotebookMetadataUri {
 	export function generate(notebook: URI): URI {
 		return generateMetadataUri(notebook);
 	}
+
 	export function parse(metadata: URI): URI | undefined {
 		return parseMetadataUri(metadata);
 	}
@@ -788,6 +945,7 @@ const normalizeSlashes = (str: string) =>
 
 interface IMimeTypeWithMatcher {
 	pattern: string;
+
 	matches: glob.ParsedPattern;
 }
 
@@ -818,6 +976,7 @@ export class MimeTypeDisplayOrder {
 			for (const [original, normalized] of remaining) {
 				if (matches(normalized)) {
 					sorted.push(original);
+
 					remaining.delete(original);
 
 					break;
@@ -863,9 +1022,11 @@ export class MimeTypeDisplayOrder {
 		const uniqueIndicies = new Set(
 			otherMimetypes.map((m) => this.findIndex(m, chosenIndex)),
 		);
+
 		uniqueIndicies.delete(-1);
 
 		const otherIndices = Array.from(uniqueIndicies).sort();
+
 		this.order.splice(
 			chosenIndex + 1,
 			0,
@@ -899,6 +1060,7 @@ export class MimeTypeDisplayOrder {
 
 interface IMutableSplice<T> extends ISplice<T> {
 	readonly toInsert: T[];
+
 	deleteCount: number;
 }
 
@@ -923,6 +1085,7 @@ export function diff<T>(
 
 		if (latest && latest.start + latest.deleteCount === start) {
 			latest.deleteCount += deleteCount;
+
 			latest.toInsert.push(...toInsert);
 		} else {
 			result.push({ start, deleteCount, toInsert });
@@ -953,6 +1116,7 @@ export function diff<T>(
 		if (equal(beforeElement, afterElement)) {
 			// equal
 			beforeIdx += 1;
+
 			afterIdx += 1;
 
 			continue;
@@ -961,10 +1125,12 @@ export function diff<T>(
 		if (contains(afterElement)) {
 			// `afterElement` exists before, which means some elements before `afterElement` are deleted
 			pushSplice(beforeIdx, 1, []);
+
 			beforeIdx += 1;
 		} else {
 			// `afterElement` added
 			pushSplice(beforeIdx, 0, [afterElement]);
+
 			afterIdx += 1;
 		}
 	}
@@ -998,7 +1164,9 @@ export interface INotebookLoadOptions {
 
 export type NotebookEditorModelCreationOptions = {
 	limits?: IFileReadLimits;
+
 	scratchpad?: boolean;
+
 	viewType?: string;
 };
 
@@ -1008,34 +1176,55 @@ export interface IResolvedNotebookEditorModel extends INotebookEditorModel {
 
 export interface INotebookEditorModel extends IDisposable {
 	readonly onDidChangeDirty: Event<void>;
+
 	readonly onDidSave: Event<IWorkingCopySaveEvent>;
+
 	readonly onDidChangeOrphaned: Event<void>;
+
 	readonly onDidChangeReadonly: Event<void>;
+
 	readonly onDidRevertUntitled: Event<void>;
+
 	readonly resource: URI;
+
 	readonly viewType: string;
+
 	readonly notebook: INotebookTextModel | undefined;
+
 	readonly hasErrorState: boolean;
+
 	isResolved(): boolean;
+
 	isDirty(): boolean;
+
 	isModified(): boolean;
+
 	isReadonly(): boolean | IMarkdownString;
+
 	isOrphaned(): boolean;
+
 	hasAssociatedFilePath(): boolean;
+
 	load(options?: INotebookLoadOptions): Promise<IResolvedNotebookEditorModel>;
+
 	save(options?: ISaveOptions): Promise<boolean>;
+
 	saveAs(target: URI): Promise<IUntypedEditorInput | undefined>;
+
 	revert(options?: IRevertOptions): Promise<void>;
 }
 
 export interface INotebookDiffEditorModel extends IDisposable {
 	original: { notebook: NotebookTextModel; resource: URI; viewType: string };
+
 	modified: { notebook: NotebookTextModel; resource: URI; viewType: string };
 }
 
 export interface NotebookDocumentBackupData extends IWorkingCopyBackupMeta {
 	readonly viewType: string;
+
 	readonly backupId?: string;
+
 	readonly mtime?: number;
 }
 
@@ -1046,20 +1235,29 @@ export enum NotebookEditorPriority {
 
 export interface INotebookFindOptions {
 	regex?: boolean;
+
 	wholeWord?: boolean;
 
 	caseSensitive?: boolean;
+
 	wordSeparators?: string;
+
 	includeMarkupInput?: boolean;
+
 	includeMarkupPreview?: boolean;
+
 	includeCodeInput?: boolean;
+
 	includeOutput?: boolean;
+
 	findScope?: INotebookFindScope;
 }
 
 export interface INotebookFindScope {
 	findScopeType: NotebookFindScopeType;
+
 	selectedCellRanges?: ICellRange[];
+
 	selectedTextRanges?: Range[];
 }
 
@@ -1071,11 +1269,13 @@ export enum NotebookFindScopeType {
 
 export interface INotebookExclusiveDocumentFilter {
 	include?: string | glob.IRelativePattern;
+
 	exclude?: string | glob.IRelativePattern;
 }
 
 export interface INotebookDocumentFilter {
 	viewType?: string | string[];
+
 	filenamePattern?:
 		| string
 		| glob.IRelativePattern
@@ -1091,6 +1291,7 @@ export function isDocumentExcludePattern(
 		| INotebookExclusiveDocumentFilter,
 ): filenamePattern is {
 	include: string | glob.IRelativePattern;
+
 	exclude: string | glob.IRelativePattern;
 } {
 	const arg = filenamePattern as INotebookExclusiveDocumentFilter;
@@ -1147,15 +1348,19 @@ export function notebookDocumentFilterMatch(
 					return false;
 				}
 			}
+
 			return true;
 		}
 	}
+
 	return false;
 }
 
 export interface INotebookCellStatusBarItemProvider {
 	viewType: string;
+
 	onDidChangeStatusBarItems?: Event<void>;
+
 	provideCellStatusBarItems(
 		uri: URI,
 		index: number,
@@ -1165,29 +1370,43 @@ export interface INotebookCellStatusBarItemProvider {
 
 export interface INotebookDiffResult {
 	cellsDiff: IDiffResult;
+
 	metadataChanged: boolean;
+
 	linesDiff?: {
 		originalCellhandle: number;
+
 		modifiedCellhandle: number;
+
 		lineChanges: ILineChange[];
 	}[];
 }
 
 export interface INotebookCellStatusBarItem {
 	readonly alignment: CellStatusbarAlignment;
+
 	readonly priority?: number;
+
 	readonly text: string;
+
 	readonly color?: string | ThemeColor;
+
 	readonly backgroundColor?: string | ThemeColor;
+
 	readonly tooltip?: string | IMarkdownString;
+
 	readonly command?: string | Command;
+
 	readonly accessibilityInformation?: IAccessibilityInformation;
+
 	readonly opacity?: string;
+
 	readonly onlyShowWhenActive?: boolean;
 }
 
 export interface INotebookCellStatusBarItemList {
 	items: INotebookCellStatusBarItem[];
+
 	dispose?(): void;
 }
 
@@ -1283,12 +1502,14 @@ export class NotebookWorkingCopyTypeIdentifier {
 				return { notebookType: split[0], viewType: split[1] };
 			}
 		}
+
 		return undefined;
 	}
 }
 
 export interface NotebookExtensionDescription {
 	readonly id: ExtensionIdentifier;
+
 	readonly location: UriComponents | undefined;
 }
 
@@ -1319,6 +1540,7 @@ export function compressOutputItemStreams(outputs: Uint8Array[]) {
 	for (const output of outputs) {
 		if (buffers.length === 0 || startAppending) {
 			buffers.push(output);
+
 			startAppending = true;
 		}
 	}
@@ -1330,6 +1552,7 @@ export function compressOutputItemStreams(outputs: Uint8Array[]) {
 	);
 
 	const data = formatStreamText(concatenated);
+
 	didCompression =
 		didCompression || data.byteLength !== concatenated.byteLength;
 
@@ -1345,6 +1568,7 @@ const MOVE_CURSOR_1_LINE_COMMAND_BYTES = MOVE_CURSOR_1_LINE_COMMAND.split(
 const LINE_FEED = 10;
 function compressStreamBuffer(streams: Uint8Array[]) {
 	let didCompress = false;
+
 	streams.forEach((stream, index) => {
 		if (index === 0 || stream.length < MOVE_CURSOR_1_LINE_COMMAND.length) {
 			return;
@@ -1367,10 +1591,12 @@ function compressStreamBuffer(streams: Uint8Array[]) {
 			}
 
 			didCompress = true;
+
 			streams[index - 1] = previousStream.subarray(
 				0,
 				lastIndexOfLineFeed,
 			);
+
 			streams[index] = stream.subarray(MOVE_CURSOR_1_LINE_COMMAND.length);
 		}
 	});
@@ -1405,9 +1631,12 @@ function fixCarriageReturn(txt: string) {
 		const base = txt.match(/^(.*)\r+/m)![1];
 
 		let insert = txt.match(/\r+(.*)$/m)![1];
+
 		insert = insert + base.slice(insert.length, base.length);
+
 		txt = txt.replace(/\r+.*$/m, "\r").replace(/^.*\r/m, insert);
 	}
+
 	return txt;
 }
 
@@ -1431,8 +1660,12 @@ function formatStreamText(buffer: VSBuffer): VSBuffer {
 
 export interface INotebookKernelSourceAction {
 	readonly label: string;
+
 	readonly description?: string;
+
 	readonly detail?: string;
+
 	readonly command?: string | Command;
+
 	readonly documentation?: UriComponents | string;
 }

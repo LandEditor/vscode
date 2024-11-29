@@ -34,9 +34,11 @@ export class CodeCacheCleaner extends Disposable {
 					this.cleanUpCodeCaches(currentCodeCachePath);
 				}, 30 * 1000 /* after 30s */),
 			);
+
 			scheduler.schedule();
 		}
 	}
+
 	private async cleanUpCodeCaches(
 		currentCodeCachePath: string,
 	): Promise<void> {
@@ -53,6 +55,7 @@ export class CodeCacheCleaner extends Disposable {
 			const currentCodeCache = basename(currentCodeCachePath);
 
 			const codeCaches = await Promises.readdir(codeCacheRootPath);
+
 			await Promise.all(
 				codeCaches.map(async (codeCache) => {
 					if (codeCache === currentCodeCache) {

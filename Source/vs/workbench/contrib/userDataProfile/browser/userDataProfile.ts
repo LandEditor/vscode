@@ -83,8 +83,11 @@ export class UserDataProfilesWorkbenchContribution
 	implements IWorkbenchContribution
 {
 	static readonly ID = "workbench.contrib.userDataProfiles";
+
 	private readonly currentProfileContext: IContextKey<string>;
+
 	private readonly isCurrentProfileTransientContext: IContextKey<boolean>;
+
 	private readonly hasProfilesContext: IContextKey<boolean>;
 
 	constructor(
@@ -114,31 +117,40 @@ export class UserDataProfilesWorkbenchContribution
 		environmentService: IBrowserWorkbenchEnvironmentService,
 	) {
 		super();
+
 		this.currentProfileContext =
 			CURRENT_PROFILE_CONTEXT.bindTo(contextKeyService);
+
 		this.isCurrentProfileTransientContext =
 			IS_CURRENT_PROFILE_TRANSIENT_CONTEXT.bindTo(contextKeyService);
+
 		this.currentProfileContext.set(
 			this.userDataProfileService.currentProfile.id,
 		);
+
 		this.isCurrentProfileTransientContext.set(
 			!!this.userDataProfileService.currentProfile.isTransient,
 		);
+
 		this._register(
 			this.userDataProfileService.onDidChangeCurrentProfile((e) => {
 				this.currentProfileContext.set(
 					this.userDataProfileService.currentProfile.id,
 				);
+
 				this.isCurrentProfileTransientContext.set(
 					!!this.userDataProfileService.currentProfile.isTransient,
 				);
 			}),
 		);
+
 		this.hasProfilesContext =
 			HAS_PROFILES_CONTEXT.bindTo(contextKeyService);
+
 		this.hasProfilesContext.set(
 			this.userDataProfilesService.profiles.length > 1,
 		);
+
 		this._register(
 			this.userDataProfilesService.onDidChangeProfiles((e) =>
 				this.hasProfilesContext.set(
@@ -146,8 +158,11 @@ export class UserDataProfilesWorkbenchContribution
 				),
 			),
 		);
+
 		this.registerEditor();
+
 		this.registerActions();
+
 		this._register(this.urlService.registerHandler(this));
 
 		if (isWeb) {
@@ -155,6 +170,7 @@ export class UserDataProfilesWorkbenchContribution
 				.when(LifecyclePhase.Eventually)
 				.then(() => userDataProfilesService.cleanUp());
 		}
+
 		this.reportWorkspaceProfileInfo();
 
 		if (environmentService.options?.profileToPreview) {
@@ -169,6 +185,7 @@ export class UserDataProfilesWorkbenchContribution
 				);
 		}
 	}
+
 	async handleURL(uri: URI): Promise<boolean> {
 		if (isProfileURL(uri)) {
 			const editor = await this.openProfilesEditor();
@@ -179,8 +196,10 @@ export class UserDataProfilesWorkbenchContribution
 				return true;
 			}
 		}
+
 		return false;
 	}
+
 	private async openProfilesEditor(): Promise<
 		IUserDataProfilesEditor | undefined
 	> {
@@ -190,6 +209,7 @@ export class UserDataProfilesWorkbenchContribution
 
 		return editor as IUserDataProfilesEditor;
 	}
+
 	private registerEditor(): void {
 		Registry.as<IEditorPaneRegistry>(
 			EditorExtensions.EditorPane,
@@ -201,6 +221,7 @@ export class UserDataProfilesWorkbenchContribution
 			),
 			[new SyncDescriptor(UserDataProfilesEditorInput)],
 		);
+
 		Registry.as<IEditorFactoryRegistry>(
 			EditorExtensions.EditorFactory,
 		).registerEditorSerializer(
@@ -208,24 +229,37 @@ export class UserDataProfilesWorkbenchContribution
 			UserDataProfilesEditorInputSerializer,
 		);
 	}
+
 	private registerActions(): void {
 		this.registerProfileSubMenu();
+
 		this._register(this.registerManageProfilesAction());
+
 		this._register(this.registerSwitchProfileAction());
+
 		this.registerOpenProfileSubMenu();
+
 		this.registerNewWindowWithProfileAction();
+
 		this.registerProfilesActions();
+
 		this._register(
 			this.userDataProfilesService.onDidChangeProfiles(() =>
 				this.registerProfilesActions(),
 			),
 		);
+
 		this._register(this.registerExportCurrentProfileAction());
+
 		this.registerCreateFromCurrentProfileAction();
+
 		this.registerNewProfileAction();
+
 		this.registerDeleteProfileAction();
+
 		this.registerHelpAction();
 	}
+
 	private registerProfileSubMenu(): void {
 		const getProfilesTitle = () => {
 			return localize(
@@ -234,6 +268,7 @@ export class UserDataProfilesWorkbenchContribution
 				this.userDataProfileService.currentProfile.name,
 			);
 		};
+
 		MenuRegistry.appendMenuItem(MenuId.GlobalActivity, {
 			get title() {
 				return getProfilesTitle();
@@ -243,6 +278,7 @@ export class UserDataProfilesWorkbenchContribution
 			order: 1,
 			when: HAS_PROFILES_CONTEXT,
 		});
+
 		MenuRegistry.appendMenuItem(MenuId.MenubarPreferencesMenu, {
 			get title() {
 				return getProfilesTitle();
@@ -253,6 +289,7 @@ export class UserDataProfilesWorkbenchContribution
 			when: HAS_PROFILES_CONTEXT,
 		});
 	}
+
 	private registerOpenProfileSubMenu(): void {
 		MenuRegistry.appendMenuItem(MenuId.MenubarFileMenu, {
 			title: localize("New Profile Window", "New Window with Profile"),
@@ -261,9 +298,11 @@ export class UserDataProfilesWorkbenchContribution
 			order: 4,
 		});
 	}
+
 	private readonly profilesDisposable = this._register(
 		new MutableDisposable<DisposableStore>(),
 	);
+
 	private registerProfilesActions(): void {
 		this.profilesDisposable.value = new DisposableStore();
 
@@ -272,12 +311,14 @@ export class UserDataProfilesWorkbenchContribution
 				this.profilesDisposable.value.add(
 					this.registerProfileEntryAction(profile),
 				);
+
 				this.profilesDisposable.value.add(
 					this.registerNewWindowAction(profile),
 				);
 			}
 		}
 	}
+
 	private registerProfileEntryAction(profile: IUserDataProfile): IDisposable {
 		const that = this;
 
@@ -306,6 +347,7 @@ export class UserDataProfilesWorkbenchContribution
 						],
 					});
 				}
+
 				async run(accessor: ServicesAccessor) {
 					if (
 						that.userDataProfileService.currentProfile.id !==
@@ -319,6 +361,7 @@ export class UserDataProfilesWorkbenchContribution
 			},
 		);
 	}
+
 	private registerNewWindowWithProfileAction(): IDisposable {
 		return registerAction2(
 			class NewWindowWithProfileAction extends Action2 {
@@ -334,6 +377,7 @@ export class UserDataProfilesWorkbenchContribution
 						f1: true,
 					});
 				}
+
 				async run(accessor: ServicesAccessor) {
 					const quickInputService = accessor.get(IQuickInputService);
 
@@ -371,10 +415,12 @@ export class UserDataProfilesWorkbenchContribution
 			},
 		);
 	}
+
 	private registerNewWindowAction(profile: IUserDataProfile): IDisposable {
 		const disposables = new DisposableStore();
 
 		const id = `workbench.action.openProfile.${profile.name.replace("/s+/", "_")}`;
+
 		disposables.add(
 			registerAction2(
 				class NewWindowAction extends Action2 {
@@ -396,6 +442,7 @@ export class UserDataProfilesWorkbenchContribution
 							},
 						});
 					}
+
 					override run(accessor: ServicesAccessor): Promise<void> {
 						const hostService = accessor.get(IHostService);
 
@@ -407,6 +454,7 @@ export class UserDataProfilesWorkbenchContribution
 				},
 			),
 		);
+
 		disposables.add(
 			MenuRegistry.appendMenuItem(MenuId.CommandPalette, {
 				command: {
@@ -420,6 +468,7 @@ export class UserDataProfilesWorkbenchContribution
 
 		return disposables;
 	}
+
 	private registerSwitchProfileAction(): IDisposable {
 		const that = this;
 
@@ -433,6 +482,7 @@ export class UserDataProfilesWorkbenchContribution
 						f1: true,
 					});
 				}
+
 				async run(accessor: ServicesAccessor) {
 					const quickInputService = accessor.get(IQuickInputService);
 
@@ -454,6 +504,7 @@ export class UserDataProfilesWorkbenchContribution
 							profile,
 						});
 					}
+
 					const result = await quickInputService.pick(
 						items.sort((a, b) =>
 							a.profile.name.localeCompare(b.profile.name),
@@ -475,8 +526,10 @@ export class UserDataProfilesWorkbenchContribution
 			},
 		);
 	}
+
 	private registerManageProfilesAction(): IDisposable {
 		const disposables = new DisposableStore();
+
 		disposables.add(
 			registerAction2(
 				class ManageProfilesAction extends Action2 {
@@ -514,6 +567,7 @@ export class UserDataProfilesWorkbenchContribution
 							],
 						});
 					}
+
 					run(accessor: ServicesAccessor) {
 						const editorGroupsService =
 							accessor.get(IEditorGroupsService);
@@ -531,6 +585,7 @@ export class UserDataProfilesWorkbenchContribution
 				},
 			),
 		);
+
 		disposables.add(
 			MenuRegistry.appendMenuItem(MenuId.CommandPalette, {
 				command: {
@@ -543,12 +598,14 @@ export class UserDataProfilesWorkbenchContribution
 
 		return disposables;
 	}
+
 	private registerExportCurrentProfileAction(): IDisposable {
 		const that = this;
 
 		const disposables = new DisposableStore();
 
 		const id = "workbench.profiles.actions.exportProfile";
+
 		disposables.add(
 			registerAction2(
 				class ExportProfileAction extends Action2 {
@@ -563,8 +620,10 @@ export class UserDataProfilesWorkbenchContribution
 							f1: true,
 						});
 					}
+
 					async run() {
 						const editor = await that.openProfilesEditor();
+
 						editor?.selectProfile(
 							that.userDataProfileService.currentProfile,
 						);
@@ -572,6 +631,7 @@ export class UserDataProfilesWorkbenchContribution
 				},
 			),
 		);
+
 		disposables.add(
 			MenuRegistry.appendMenuItem(MenuId.MenubarShare, {
 				command: {
@@ -587,8 +647,10 @@ export class UserDataProfilesWorkbenchContribution
 
 		return disposables;
 	}
+
 	private registerCreateFromCurrentProfileAction(): void {
 		const that = this;
+
 		this._register(
 			registerAction2(
 				class CreateFromCurrentProfileAction extends Action2 {
@@ -603,8 +665,10 @@ export class UserDataProfilesWorkbenchContribution
 							f1: true,
 						});
 					}
+
 					async run() {
 						const editor = await that.openProfilesEditor();
+
 						editor?.createNewProfile(
 							that.userDataProfileService.currentProfile,
 						);
@@ -613,8 +677,10 @@ export class UserDataProfilesWorkbenchContribution
 			),
 		);
 	}
+
 	private registerNewProfileAction(): void {
 		const that = this;
+
 		this._register(
 			registerAction2(
 				class CreateProfileAction extends Action2 {
@@ -636,6 +702,7 @@ export class UserDataProfilesWorkbenchContribution
 							],
 						});
 					}
+
 					async run(accessor: ServicesAccessor) {
 						const editor = await that.openProfilesEditor();
 
@@ -645,6 +712,7 @@ export class UserDataProfilesWorkbenchContribution
 			),
 		);
 	}
+
 	private registerDeleteProfileAction(): void {
 		this._register(
 			registerAction2(
@@ -661,6 +729,7 @@ export class UserDataProfilesWorkbenchContribution
 							precondition: HAS_PROFILES_CONTEXT,
 						});
 					}
+
 					async run(accessor: ServicesAccessor) {
 						const quickInputService =
 							accessor.get(IQuickInputService);
@@ -728,6 +797,7 @@ export class UserDataProfilesWorkbenchContribution
 			),
 		);
 	}
+
 	private registerHelpAction(): void {
 		this._register(
 			registerAction2(
@@ -744,6 +814,7 @@ export class UserDataProfilesWorkbenchContribution
 							],
 						});
 					}
+
 					run(accessor: ServicesAccessor): unknown {
 						return accessor
 							.get(IOpenerService)
@@ -757,17 +828,24 @@ export class UserDataProfilesWorkbenchContribution
 			),
 		);
 	}
+
 	private async reportWorkspaceProfileInfo(): Promise<void> {
 		await this.lifecycleService.when(LifecyclePhase.Eventually);
+
 		type UserProfilesCountClassification = {
 			owner: "sandy081";
+
 			comment: "Report the number of user profiles excluding the default profile";
+
 			count: {
 				classification: "SystemMetaData";
+
 				purpose: "FeatureInsight";
+
 				comment: "The number of user profiles excluding the default profile";
 			};
 		};
+
 		type UserProfilesCountEvent = {
 			count: number;
 		};
@@ -780,31 +858,41 @@ export class UserDataProfilesWorkbenchContribution
 				count: this.userDataProfilesService.profiles.length - 1,
 			});
 		}
+
 		const workspaceId =
 			await this.workspaceTagsService.getTelemetryWorkspaceId(
 				this.workspaceContextService.getWorkspace(),
 				this.workspaceContextService.getWorkbenchState(),
 			);
+
 		type WorkspaceProfileInfoClassification = {
 			owner: "sandy081";
+
 			comment: "Report profile information of the current workspace";
+
 			workspaceId: {
 				classification: "SystemMetaData";
+
 				purpose: "FeatureInsight";
+
 				comment: "A UUID given to a workspace to identify it.";
 			};
 
 			defaultProfile: {
 				classification: "SystemMetaData";
+
 				purpose: "FeatureInsight";
+
 				comment: "Whether the profile of the workspace is default or not.";
 			};
 		};
+
 		type WorkspaceProfileInfoEvent = {
 			workspaceId: string | undefined;
 
 			defaultProfile: boolean;
 		};
+
 		this.telemetryService.publicLog2<
 			WorkspaceProfileInfoEvent,
 			WorkspaceProfileInfoClassification

@@ -37,7 +37,9 @@ import { VIEWLET_ID } from "./remoteExplorer.js";
 
 interface IRemoteSelectItem extends ISelectOptionItem {
 	authority: string[];
+
 	virtualWorkspace?: string;
+
 	dispose(): void;
 }
 export const SELECTED_REMOTE_IN_EXPLORER = new RawContextKey<string>(
@@ -47,8 +49,10 @@ export const SELECTED_REMOTE_IN_EXPLORER = new RawContextKey<string>(
 
 export class SwitchRemoteViewItem extends Disposable {
 	private switchRemoteMenu: MenuId;
+
 	private completedRemotes: DisposableMap<string, IRemoteSelectItem> =
 		this._register(new DisposableMap());
+
 	private readonly selectedRemoteContext: IContextKey<string>;
 
 	constructor(
@@ -64,11 +68,14 @@ export class SwitchRemoteViewItem extends Disposable {
 		private readonly workspaceContextService: IWorkspaceContextService,
 	) {
 		super();
+
 		this.selectedRemoteContext =
 			SELECTED_REMOTE_IN_EXPLORER.bindTo(contextKeyService);
+
 		this.switchRemoteMenu = MenuId.for(
 			"workbench.remote.menu.switchRemoteMenu",
 		);
+
 		this._register(
 			MenuRegistry.appendMenuItem(MenuId.ViewContainerTitle, {
 				submenu: this.switchRemoteMenu,
@@ -79,12 +86,14 @@ export class SwitchRemoteViewItem extends Disposable {
 				isSelection: true,
 			}),
 		);
+
 		this._register(
 			remoteExplorerService.onDidChangeTargetType((e) => {
 				this.select(e);
 			}),
 		);
 	}
+
 	public setSelectionForConnection(): boolean {
 		let isSetForConnection = false;
 
@@ -100,6 +109,7 @@ export class SwitchRemoteViewItem extends Disposable {
 					this.workspaceContextService.getWorkspace(),
 				)?.scheme;
 			}
+
 			isSetForConnection = true;
 
 			const explorerType: string[] | undefined = remoteAuthority
@@ -119,16 +129,21 @@ export class SwitchRemoteViewItem extends Disposable {
 			if (explorerType !== undefined) {
 				authority = this.getAuthorityForExplorerType(explorerType);
 			}
+
 			if (authority) {
 				this.select(authority);
 			}
 		}
+
 		return isSetForConnection;
 	}
+
 	private select(authority: string[]) {
 		this.selectedRemoteContext.set(authority[0]);
+
 		this.remoteExplorerService.targetType = authority;
 	}
+
 	private getAuthorityForExplorerType(
 		explorerType: string[],
 	): string[] | undefined {
@@ -149,8 +164,10 @@ export class SwitchRemoteViewItem extends Disposable {
 				}
 			}
 		}
+
 		return authority;
 	}
+
 	public removeOptionItems(views: IViewDescriptor[]) {
 		for (const view of views) {
 			if (
@@ -163,10 +180,12 @@ export class SwitchRemoteViewItem extends Disposable {
 				const authority = isStringArray(view.remoteAuthority)
 					? view.remoteAuthority
 					: [view.remoteAuthority];
+
 				this.completedRemotes.deleteAndDispose(authority[0]);
 			}
 		}
 	}
+
 	public createOptionItems(views: IViewDescriptor[]) {
 		const startingCount = this.completedRemotes.size;
 
@@ -187,6 +206,7 @@ export class SwitchRemoteViewItem extends Disposable {
 				if (this.completedRemotes.has(authority[0])) {
 					continue;
 				}
+
 				const thisCapture = this;
 
 				const action = registerAction2(
@@ -203,11 +223,13 @@ export class SwitchRemoteViewItem extends Disposable {
 								},
 							});
 						}
+
 						async run(): Promise<void> {
 							thisCapture.select(authority);
 						}
 					},
 				);
+
 				this.completedRemotes.set(authority[0], {
 					text: text.value,
 					authority,
@@ -216,6 +238,7 @@ export class SwitchRemoteViewItem extends Disposable {
 				});
 			}
 		}
+
 		if (this.completedRemotes.size > startingCount) {
 			this.setSelectionForConnection();
 		}

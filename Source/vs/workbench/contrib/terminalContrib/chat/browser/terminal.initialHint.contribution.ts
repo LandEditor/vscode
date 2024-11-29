@@ -84,6 +84,7 @@ export class InitialHintAddon extends Disposable implements ITerminalAddon {
 	get onDidRequestCreateHint(): Event<void> {
 		return this._onDidRequestCreateHint.event;
 	}
+
 	private readonly _disposables = this._register(
 		new MutableDisposable<DisposableStore>(),
 	);
@@ -94,8 +95,10 @@ export class InitialHintAddon extends Disposable implements ITerminalAddon {
 	) {
 		super();
 	}
+
 	activate(terminal: RawXtermTerminal): void {
 		const store = this._register(new DisposableStore());
+
 		this._disposables.value = store;
 
 		const capability = this._capabilities.get(
@@ -113,6 +116,7 @@ export class InitialHintAddon extends Disposable implements ITerminalAddon {
 				this._capabilities.onDidAddCapability((e) => {
 					if (e.id === TerminalCapability.CommandDetection) {
 						const capability = e.capability;
+
 						store.add(
 							Event.once(
 								capability.promptInputModel.onDidStartInput,
@@ -126,12 +130,15 @@ export class InitialHintAddon extends Disposable implements ITerminalAddon {
 				}),
 			);
 		}
+
 		const agentListener = this._onDidChangeAgents((e) => {
 			if (e?.locations.includes(ChatAgentLocation.Terminal)) {
 				this._onDidRequestCreateHint.fire();
+
 				agentListener.dispose();
 			}
 		});
+
 		this._disposables.value?.add(agentListener);
 	}
 }
@@ -140,8 +147,11 @@ export class TerminalInitialHintContribution
 	implements ITerminalContribution
 {
 	static readonly ID = "terminal.initialHint";
+
 	private _addon: InitialHintAddon | undefined;
+
 	private _hintWidget: HTMLElement | undefined;
+
 	static get(
 		instance: ITerminalInstance | IDetachedTerminalInstance,
 	): TerminalInitialHintContribution | null {
@@ -149,7 +159,9 @@ export class TerminalInitialHintContribution
 			TerminalInitialHintContribution.ID,
 		);
 	}
+
 	private _decoration: IDecoration | undefined;
+
 	private _xterm:
 		| (IXtermTerminal & {
 				raw: RawXtermTerminal;
@@ -188,6 +200,7 @@ export class TerminalInitialHintContribution
 			}),
 		);
 	}
+
 	xtermOpen(
 		xterm: IXtermTerminal & {
 			raw: RawXtermTerminal;
@@ -219,7 +232,9 @@ export class TerminalInitialHintContribution
 		) {
 			return;
 		}
+
 		this._xterm = xterm;
+
 		this._addon = this._register(
 			this._instantiationService.createInstance(
 				InitialHintAddon,
@@ -227,11 +242,14 @@ export class TerminalInitialHintContribution
 				this._chatAgentService.onDidChangeAgents,
 			),
 		);
+
 		this._xterm.raw.loadAddon(this._addon);
+
 		this._register(
 			this._addon.onDidRequestCreateHint(() => this._createHint()),
 		);
 	}
+
 	private _createHint(): void {
 		const instance =
 			this._ctx.instance instanceof TerminalInstance
@@ -252,6 +270,7 @@ export class TerminalInitialHintContribution
 		) {
 			return;
 		}
+
 		if (
 			!this._configurationService.getValue(
 				TerminalInitialHintSettingId.Enabled,
@@ -259,16 +278,20 @@ export class TerminalInitialHintContribution
 		) {
 			return;
 		}
+
 		if (!this._decoration) {
 			const marker = this._xterm.raw.registerMarker();
 
 			if (!marker) {
 				return;
 			}
+
 			if (this._xterm.raw.buffer.active.cursorX === 0) {
 				return;
 			}
+
 			this._register(marker);
+
 			this._decoration = this._xterm.raw.registerDecoration({
 				marker,
 				x: this._xterm.raw.buffer.active.cursorX + 1,
@@ -278,7 +301,9 @@ export class TerminalInitialHintContribution
 				this._register(this._decoration);
 			}
 		}
+
 		this._register(this._xterm.raw.onKey(() => this.dispose()));
+
 		this._register(
 			this._configurationService.onDidChangeConfiguration((e) => {
 				if (
@@ -305,10 +330,13 @@ export class TerminalInitialHintContribution
 				}),
 			);
 		}
+
 		if (!this._decoration) {
 			return;
 		}
+
 		this._register(this._decoration);
+
 		this._register(
 			this._decoration.onRender((e) => {
 				if (
@@ -333,23 +361,29 @@ export class TerminalInitialHintContribution
 								instance,
 							),
 						);
+
 						this._addon?.dispose();
+
 						this._hintWidget = widget.getDomNode(terminalAgents);
 
 						if (!this._hintWidget) {
 							return;
 						}
+
 						e.appendChild(this._hintWidget);
+
 						e.classList.add("terminal-initial-hint");
 
 						const font = this._xterm.getFont();
 
 						if (font) {
 							e.style.fontFamily = font.fontFamily;
+
 							e.style.fontSize = font.fontSize + "px";
 						}
 					}
 				}
+
 				if (this._hintWidget && this._xterm) {
 					const decoration = this._hintWidget.parentElement;
 
@@ -373,10 +407,13 @@ registerTerminalContribution(
 );
 class TerminalInitialHintWidget extends Disposable {
 	private _domNode: HTMLElement | undefined;
+
 	private readonly _toDispose: DisposableStore = this._register(
 		new DisposableStore(),
 	);
+
 	private _isVisible = false;
+
 	private _ariaLabel: string = "";
 
 	constructor(
@@ -401,6 +438,7 @@ class TerminalInitialHintWidget extends Disposable {
 		private readonly _terminalService: ITerminalService,
 	) {
 		super();
+
 		this._toDispose.add(
 			_instance.onDidFocus(() => {
 				if (
@@ -415,6 +453,7 @@ class TerminalInitialHintWidget extends Disposable {
 				}
 			}),
 		);
+
 		this._toDispose.add(
 			_terminalService.onDidChangeInstances(() => {
 				if (this._terminalService.instances.length !== 1) {
@@ -422,6 +461,7 @@ class TerminalInitialHintWidget extends Disposable {
 				}
 			}),
 		);
+
 		this._toDispose.add(
 			this._configurationService.onDidChangeConfiguration((e) => {
 				if (
@@ -437,6 +477,7 @@ class TerminalInitialHintWidget extends Disposable {
 			}),
 		);
 	}
+
 	private _getHintInlineChat(agents: IChatAgent[]) {
 		let providerName =
 			(agents.length === 1 ? agents[0].fullName : undefined) ??
@@ -449,6 +490,7 @@ class TerminalInitialHintWidget extends Disposable {
 		if (defaultAgent?.extensionId.value === agents[0].extensionId.value) {
 			providerName = defaultAgent.fullName ?? providerName;
 		}
+
 		let ariaLabel = `Ask ${providerName} something or start typing to dismiss.`;
 
 		const handleClick = () => {
@@ -458,6 +500,7 @@ class TerminalInitialHintWidget extends Disposable {
 				StorageScope.APPLICATION,
 				StorageTarget.USER,
 			);
+
 			this._telemetryService.publicLog2<
 				WorkbenchActionExecutedEvent,
 				WorkbenchActionExecutedClassification
@@ -465,10 +508,12 @@ class TerminalInitialHintWidget extends Disposable {
 				id: "terminalInlineChat.hintAction",
 				from: "hint",
 			});
+
 			this._commandService.executeCommand(TerminalChatCommandId.Start, {
 				from: "hint",
 			});
 		};
+
 		this._toDispose.add(
 			this._commandService.onDidExecuteCommand((e) => {
 				if (e.commandId === TerminalChatCommandId.Start) {
@@ -478,6 +523,7 @@ class TerminalInitialHintWidget extends Disposable {
 						StorageScope.APPLICATION,
 						StorageTarget.USER,
 					);
+
 					this.dispose();
 				}
 			}),
@@ -496,6 +542,7 @@ class TerminalInitialHintWidget extends Disposable {
 		};
 
 		const hintElement = $("div.terminal-initial-hint");
+
 		hintElement.style.display = "block";
 
 		const keybindingHint = this._keybindingService.lookupKeybinding(
@@ -516,6 +563,7 @@ class TerminalInitialHintWidget extends Disposable {
 				.split(keybindingHintLabel)
 				.map((fragment) => {
 					const hintPart = $("a", undefined, fragment);
+
 					this._toDispose.add(
 						dom.addDisposableListener(
 							hintPart,
@@ -526,15 +574,21 @@ class TerminalInitialHintWidget extends Disposable {
 
 					return hintPart;
 				});
+
 			hintElement.appendChild(before);
 
 			const label = hintHandler.disposables.add(
 				new KeybindingLabel(hintElement, OS),
 			);
+
 			label.set(keybindingHint);
+
 			label.element.style.width = "min-content";
+
 			label.element.style.display = "inline";
+
 			label.element.style.cursor = "pointer";
+
 			this._toDispose.add(
 				dom.addDisposableListener(
 					label.element,
@@ -542,6 +596,7 @@ class TerminalInitialHintWidget extends Disposable {
 					handleClick,
 				),
 			);
+
 			hintElement.appendChild(after);
 
 			const typeToDismiss = localize(
@@ -550,7 +605,9 @@ class TerminalInitialHintWidget extends Disposable {
 			);
 
 			const textHint2 = $("span.detail", undefined, typeToDismiss);
+
 			hintElement.appendChild(textHint2);
+
 			ariaLabel = actionPart.concat(typeToDismiss);
 		} else {
 			const hintMsg = localize(
@@ -567,17 +624,23 @@ class TerminalInitialHintWidget extends Disposable {
 			const rendered = renderFormattedText(hintMsg, {
 				actionHandler: hintHandler,
 			});
+
 			hintElement.appendChild(rendered);
 		}
+
 		return { ariaLabel, hintHandler, hintElement };
 	}
+
 	getDomNode(agents: IChatAgent[]): HTMLElement {
 		if (!this._domNode) {
 			this._domNode = $(".terminal-initial-hint");
+
 			this._domNode!.style.paddingLeft = "4px";
 
 			const { hintElement, ariaLabel } = this._getHintInlineChat(agents);
+
 			this._domNode.append(hintElement);
+
 			this._ariaLabel = ariaLabel.concat(
 				localize(
 					"disableHint",
@@ -585,12 +648,15 @@ class TerminalInitialHintWidget extends Disposable {
 					AccessibilityVerbositySettingId.TerminalChat,
 				),
 			);
+
 			this._toDispose.add(
 				dom.addDisposableListener(this._domNode, "click", () => {
 					this._domNode?.remove();
+
 					this._domNode = undefined;
 				}),
 			);
+
 			this._toDispose.add(
 				dom.addDisposableListener(
 					this._domNode,
@@ -630,8 +696,10 @@ class TerminalInitialHintWidget extends Disposable {
 				),
 			);
 		}
+
 		return this._domNode;
 	}
+
 	override dispose(): void {
 		this._domNode?.remove();
 

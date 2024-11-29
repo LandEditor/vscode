@@ -11,10 +11,12 @@ export interface ErrorListenerUnbind {
 // Avoid circular dependency on EventEmitter by implementing a subset of the interface.
 export class ErrorHandler {
 	private unexpectedErrorHandler: (e: any) => void;
+
 	private listeners: ErrorListenerCallback[];
 
 	constructor() {
 		this.listeners = [];
+
 		this.unexpectedErrorHandler = function (e: any) {
 			setTimeout(() => {
 				if (e.stack) {
@@ -23,12 +25,15 @@ export class ErrorHandler {
 							e.message + "\n\n" + e.stack,
 						);
 					}
+
 					throw new Error(e.message + "\n\n" + e.stack);
 				}
+
 				throw e;
 			}, 0);
 		};
 	}
+
 	addListener(listener: ErrorListenerCallback): ErrorListenerUnbind {
 		this.listeners.push(listener);
 
@@ -36,24 +41,30 @@ export class ErrorHandler {
 			this._removeListener(listener);
 		};
 	}
+
 	private emit(e: any): void {
 		this.listeners.forEach((listener) => {
 			listener(e);
 		});
 	}
+
 	private _removeListener(listener: ErrorListenerCallback): void {
 		this.listeners.splice(this.listeners.indexOf(listener), 1);
 	}
+
 	setUnexpectedErrorHandler(
 		newUnexpectedErrorHandler: (e: any) => void,
 	): void {
 		this.unexpectedErrorHandler = newUnexpectedErrorHandler;
 	}
+
 	getUnexpectedErrorHandler(): (e: any) => void {
 		return this.unexpectedErrorHandler;
 	}
+
 	onUnexpectedError(e: any): void {
 		this.unexpectedErrorHandler(e);
+
 		this.emit(e);
 	}
 	// For external errors, we don't want the listeners to be called
@@ -78,6 +89,7 @@ export function isSigPipeError(e: unknown): e is Error {
 	if (!e || typeof e !== "object") {
 		return false;
 	}
+
 	const cast = e as Record<string, string | undefined>;
 
 	return cast.code === "EPIPE" && cast.syscall?.toUpperCase() === "WRITE";
@@ -97,6 +109,7 @@ export function onUnexpectedError(e: any): undefined {
 	if (!isCancellationError(e)) {
 		errorHandler.onUnexpectedError(e);
 	}
+
 	return undefined;
 }
 export function onUnexpectedExternalError(e: any): undefined {
@@ -104,13 +117,18 @@ export function onUnexpectedExternalError(e: any): undefined {
 	if (!isCancellationError(e)) {
 		errorHandler.onUnexpectedExternalError(e);
 	}
+
 	return undefined;
 }
 export interface SerializedError {
 	readonly $isError: true;
+
 	readonly name: string;
+
 	readonly message: string;
+
 	readonly stack: string;
+
 	readonly noTelemetry: boolean;
 }
 export function transformErrorForSerialization(error: Error): SerializedError;
@@ -141,9 +159,12 @@ export function transformErrorFromSerialization(data: SerializedError): Error {
 		error = new ErrorNoTelemetry();
 	} else {
 		error = new Error();
+
 		error.name = data.name;
 	}
+
 	error.message = data.message;
+
 	error.stack = data.stack;
 
 	return error;
@@ -167,10 +188,15 @@ export interface V8CallSite {
 	getColumnNumber(): number | null;
 
 	getEvalOrigin(): string | undefined;
+
 	isToplevel(): boolean;
+
 	isEval(): boolean;
+
 	isNative(): boolean;
+
 	isConstructor(): boolean;
+
 	toString(): string;
 }
 
@@ -182,6 +208,7 @@ export function isCancellationError(error: any): boolean {
 	if (error instanceof CancellationError) {
 		return true;
 	}
+
 	return (
 		error instanceof Error &&
 		error.name === canceledName &&
@@ -193,6 +220,7 @@ export function isCancellationError(error: any): boolean {
 export class CancellationError extends Error {
 	constructor() {
 		super(canceledName);
+
 		this.name = this.message;
 	}
 }
@@ -201,6 +229,7 @@ export class CancellationError extends Error {
  */
 export function canceled(): Error {
 	const error = new Error(canceledName);
+
 	error.name = error.message;
 
 	return error;
@@ -232,12 +261,15 @@ export function getErrorMessage(err: any): string {
 	if (!err) {
 		return "Error";
 	}
+
 	if (err.message) {
 		return err.message;
 	}
+
 	if (err.stack) {
 		return err.stack.split("\n")[0];
 	}
+
 	return String(err);
 }
 export class NotImplementedError extends Error {
@@ -269,18 +301,24 @@ export class ErrorNoTelemetry extends Error {
 
 	constructor(msg?: string) {
 		super(msg);
+
 		this.name = "CodeExpectedError";
 	}
+
 	public static fromError(err: Error): ErrorNoTelemetry {
 		if (err instanceof ErrorNoTelemetry) {
 			return err;
 		}
+
 		const result = new ErrorNoTelemetry();
+
 		result.message = err.message;
+
 		result.stack = err.stack;
 
 		return result;
 	}
+
 	public static isErrorNoTelemetry(err: Error): err is ErrorNoTelemetry {
 		return err.name === "CodeExpectedError";
 	}
@@ -293,6 +331,7 @@ export class ErrorNoTelemetry extends Error {
 export class BugIndicatingError extends Error {
 	constructor(message?: string) {
 		super(message || "An unexpected bug occurred.");
+
 		Object.setPrototypeOf(this, BugIndicatingError.prototype);
 		// Because we know for sure only buggy code throws this,
 		// we definitely want to break here and fix the bug.

@@ -81,6 +81,7 @@ function onExtensionChanged(
 					result.push(identifier);
 				}
 			}
+
 			return result;
 		},
 	);
@@ -93,7 +94,9 @@ export class NotebookKeymapService
 	implements INotebookKeymapService
 {
 	_serviceBrand: undefined;
+
 	private notebookKeymapMemento: Memento;
+
 	private notebookKeymap: MementoObject;
 
 	constructor(
@@ -109,15 +112,19 @@ export class NotebookKeymapService
 		lifecycleService: ILifecycleService,
 	) {
 		super();
+
 		this.notebookKeymapMemento = new Memento(
 			"notebookKeymap",
 			storageService,
 		);
+
 		this.notebookKeymap = this.notebookKeymapMemento.getMemento(
 			StorageScope.PROFILE,
 			StorageTarget.USER,
 		);
+
 		this._register(lifecycleService.onDidShutdown(() => this.dispose()));
+
 		this._register(
 			this.instantiationService.invokeFunction(onExtensionChanged)(
 				(identifiers) => {
@@ -130,6 +137,7 @@ export class NotebookKeymapService
 			),
 		);
 	}
+
 	private checkForOtherKeymaps(
 		extensionIdentifier: IExtensionIdentifier,
 	): Promise<void> {
@@ -150,6 +158,7 @@ export class NotebookKeymapService
 				if (extension && extension.globallyEnabled) {
 					// there is already a keymap extension
 					this.notebookKeymap[hasRecommendedKeymapKey] = true;
+
 					this.notebookKeymapMemento.saveMemento();
 
 					const otherKeymaps = keymaps.filter(
@@ -167,9 +176,11 @@ export class NotebookKeymapService
 						);
 					}
 				}
+
 				return undefined;
 			});
 	}
+
 	private promptForDisablingOtherKeymaps(
 		newKeymap: IExtensionStatus,
 		oldKeymaps: IExtensionStatus[],
@@ -182,6 +193,7 @@ export class NotebookKeymapService
 				);
 			}
 		};
+
 		this.notificationService.prompt(
 			Severity.Info,
 			localize(
@@ -210,10 +222,12 @@ export function isNotebookKeymapExtension(
 	if (extension.local.manifest.extensionPack) {
 		return false;
 	}
+
 	const keywords = extension.local.manifest.keywords;
 
 	if (!keywords) {
 		return false;
 	}
+
 	return keywords.indexOf("notebook-keymap") !== -1;
 }

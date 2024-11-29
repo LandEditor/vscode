@@ -26,12 +26,15 @@ const icons = new Lazy<IconContribution[]>(() => {
 		if (e.id === codiconsLibrary.blank.id) {
 			return false;
 		}
+
 		if (!("fontCharacter" in e.defaults)) {
 			return false;
 		}
+
 		if (includedChars.has(e.defaults.fontCharacter)) {
 			return false;
 		}
+
 		includedChars.add(e.defaults.fontCharacter);
 
 		return true;
@@ -50,6 +53,7 @@ export class TerminalIconPicker extends Disposable {
 		private readonly _hoverService: IHoverService,
 	) {
 		super();
+
 		this._iconSelectBox = instantiationService.createInstance(
 			WorkbenchIconSelectBox,
 			{
@@ -59,6 +63,7 @@ export class TerminalIconPicker extends Disposable {
 			},
 		);
 	}
+
 	async pickIcons(): Promise<ThemeIcon | undefined> {
 		const dimension = new Dimension(486, 260);
 
@@ -66,9 +71,11 @@ export class TerminalIconPicker extends Disposable {
 			this._register(
 				this._iconSelectBox.onDidSelect((e) => {
 					resolve(e);
+
 					this._iconSelectBox.dispose();
 				}),
 			);
+
 			this._iconSelectBox.clearInput();
 
 			const hoverWidget = this._hoverService.showHover(
@@ -91,7 +98,9 @@ export class TerminalIconPicker extends Disposable {
 			if (hoverWidget) {
 				this._register(hoverWidget);
 			}
+
 			this._iconSelectBox.layout(dimension);
+
 			this._iconSelectBox.focus();
 		});
 	}

@@ -116,6 +116,7 @@ class DocumentSymbolAdapter {
 			if (res === 0) {
 				res = b.location.range.end.compareTo(a.location.range.end);
 			}
+
 			return res;
 		});
 
@@ -138,10 +139,12 @@ class DocumentSymbolAdapter {
 			while (true) {
 				if (parentStack.length === 0) {
 					parentStack.push(element);
+
 					res.push(element);
 
 					break;
 				}
+
 				const parent = parentStack[parentStack.length - 1];
 
 				if (
@@ -149,19 +152,23 @@ class DocumentSymbolAdapter {
 					!EditorRange.equalsRange(parent.range, element.range)
 				) {
 					parent.children?.push(element);
+
 					parentStack.push(element);
 
 					break;
 				}
+
 				parentStack.pop();
 			}
 		}
+
 		return res;
 	}
 }
 
 class CodeLensAdapter {
 	private readonly _cache = new Cache<vscode.CodeLens>("CodeLens");
+
 	private readonly _disposables = new Map<number, DisposableStore>();
 
 	constructor(
@@ -184,9 +191,11 @@ class CodeLensAdapter {
 		if (!lenses || token.isCancellationRequested) {
 			return undefined;
 		}
+
 		const cacheId = this._cache.add(lenses);
 
 		const disposables = new DisposableStore();
+
 		this._disposables.set(cacheId, disposables);
 
 		const result: extHostProtocol.ICodeLensListDto = {
@@ -204,6 +213,7 @@ class CodeLensAdapter {
 				),
 			});
 		}
+
 		return result;
 	}
 
@@ -227,6 +237,7 @@ class CodeLensAdapter {
 		} else {
 			resolvedLens = await this._provider.resolveCodeLens(lens, token);
 		}
+
 		if (!resolvedLens) {
 			resolvedLens = lens;
 		}
@@ -234,6 +245,7 @@ class CodeLensAdapter {
 		if (token.isCancellationRequested) {
 			return undefined;
 		}
+
 		const disposables =
 			symbol.cacheId && this._disposables.get(symbol.cacheId[0]);
 
@@ -247,10 +259,12 @@ class CodeLensAdapter {
 				"INVALID code lens resolved, lacks command: " +
 					this._extension.identifier.value,
 			);
+
 			this._extTelemetry.onExtensionError(
 				this._extension.identifier,
 				error,
 			);
+
 			this._logService.error(error);
 
 			return undefined;
@@ -266,7 +280,9 @@ class CodeLensAdapter {
 
 	releaseCodeLenses(cachedId: number): void {
 		this._disposables.get(cachedId)?.dispose();
+
 		this._disposables.delete(cachedId);
+
 		this._cache.delete(cachedId);
 	}
 }
@@ -284,6 +300,7 @@ function convertToLocationLinks(
 	} else if (value) {
 		return [typeConvert.DefinitionLink.from(value)];
 	}
+
 	return [];
 }
 
@@ -381,6 +398,7 @@ class TypeDefinitionAdapter {
 
 class HoverAdapter {
 	private _hoverCounter: number = 0;
+
 	private _hoverMap: Map<number, vscode.Hover> = new Map<
 		number,
 		vscode.Hover
@@ -413,10 +431,12 @@ class HoverAdapter {
 			if (!previousHover) {
 				throw new Error(`Hover with id ${previousHoverId} not found`);
 			}
+
 			const hoverContext: vscode.HoverContext = {
 				verbosityDelta: context.verbosityRequest.verbosityDelta,
 				previousHover,
 			};
+
 			value = await this._provider.provideHover(
 				doc,
 				pos,
@@ -426,24 +446,31 @@ class HoverAdapter {
 		} else {
 			value = await this._provider.provideHover(doc, pos, token);
 		}
+
 		if (!value || isFalsyOrEmpty(value.contents)) {
 			return undefined;
 		}
+
 		if (!value.range) {
 			value.range = doc.getWordRangeAtPosition(pos);
 		}
+
 		if (!value.range) {
 			value.range = new Range(pos, pos);
 		}
+
 		const convertedHover: languages.Hover = typeConvert.Hover.from(value);
 
 		const id = this._hoverCounter;
 		// Check if hover map has more than 10 elements and if yes, remove oldest from the map
 		if (this._hoverMap.size === HoverAdapter.HOVER_MAP_MAX_SIZE) {
 			const minimumId = Math.min(...this._hoverMap.keys());
+
 			this._hoverMap.delete(minimumId);
 		}
+
 		this._hoverMap.set(id, value);
+
 		this._hoverCounter += 1;
 
 		const hover: extHostProtocol.HoverWithId = {
@@ -483,6 +510,7 @@ class EvaluatableExpressionAdapter {
 		if (value) {
 			return typeConvert.EvaluatableExpression.from(value);
 		}
+
 		return undefined;
 	}
 }
@@ -511,6 +539,7 @@ class InlineValuesAdapter {
 		if (Array.isArray(value)) {
 			return value.map((iv) => typeConvert.InlineValue.from(iv));
 		}
+
 		return undefined;
 	}
 }
@@ -539,6 +568,7 @@ class DocumentHighlightAdapter {
 		if (Array.isArray(value)) {
 			return value.map(typeConvert.DocumentHighlight.from);
 		}
+
 		return undefined;
 	}
 }
@@ -587,6 +617,7 @@ class MultiDocumentHighlightAdapter {
 		if (Array.isArray(value)) {
 			return value.map(typeConvert.MultiDocumentHighlight.from);
 		}
+
 		return undefined;
 	}
 }
@@ -618,6 +649,7 @@ class LinkedEditingRangeAdapter {
 				wordPattern: value.wordPattern,
 			};
 		}
+
 		return undefined;
 	}
 }
@@ -648,6 +680,7 @@ class ReferenceAdapter {
 		if (Array.isArray(value)) {
 			return value.map(typeConvert.location.from);
 		}
+
 		return undefined;
 	}
 }
@@ -662,6 +695,7 @@ class CodeActionAdapter {
 	private readonly _cache = new Cache<vscode.CodeAction | vscode.Command>(
 		"CodeAction",
 	);
+
 	private readonly _disposables = new Map<number, DisposableStore>();
 
 	constructor(
@@ -721,6 +755,7 @@ class CodeActionAdapter {
 		const cacheId = this._cache.add(commandsOrActions);
 
 		const disposables = new DisposableStore();
+
 		this._disposables.set(cacheId, disposables);
 
 		const actions: CustomCodeAction[] = [];
@@ -731,6 +766,7 @@ class CodeActionAdapter {
 			if (!candidate) {
 				continue;
 			}
+
 			if (CodeActionAdapter._isCommand(candidate)) {
 				// old school: synthetic code action
 				this._apiDeprecation.report(
@@ -796,6 +832,7 @@ class CodeActionAdapter {
 				});
 			}
 		}
+
 		return { cacheId, actions };
 	}
 
@@ -804,6 +841,7 @@ class CodeActionAdapter {
 		token: CancellationToken,
 	): Promise<{
 		edit?: extHostProtocol.IWorkspaceEditDto;
+
 		command?: extHostProtocol.ICommandDto;
 	}> {
 		const [sessionId, itemId] = id;
@@ -813,6 +851,7 @@ class CodeActionAdapter {
 		if (!item || CodeActionAdapter._isCommand(item)) {
 			return {}; // code actions only!
 		}
+
 		if (!this._provider.resolveCodeAction) {
 			return {}; // this should not happen...
 		}
@@ -847,7 +886,9 @@ class CodeActionAdapter {
 
 	releaseCodeActions(cachedId: number): void {
 		this._disposables.get(cachedId)?.dispose();
+
 		this._disposables.delete(cachedId);
+
 		this._cache.delete(cachedId);
 	}
 
@@ -892,6 +933,7 @@ class DocumentPasteEditProvider {
 				throw new NotImplementedError();
 			},
 		);
+
 		await this._provider.prepareDocumentPaste(
 			doc,
 			vscodeRanges,
@@ -1038,6 +1080,7 @@ class DocumentFormattingAdapter {
 		if (Array.isArray(value)) {
 			return value.map(typeConvert.TextEdit.from);
 		}
+
 		return undefined;
 	}
 }
@@ -1068,6 +1111,7 @@ class RangeFormattingAdapter {
 		if (Array.isArray(value)) {
 			return value.map(typeConvert.TextEdit.from);
 		}
+
 		return undefined;
 	}
 
@@ -1097,6 +1141,7 @@ class RangeFormattingAdapter {
 		if (Array.isArray(value)) {
 			return value.map(typeConvert.TextEdit.from);
 		}
+
 		return undefined;
 	}
 }
@@ -1131,6 +1176,7 @@ class OnTypeFormattingAdapter {
 		if (Array.isArray(value)) {
 			return value.map(typeConvert.TextEdit.from);
 		}
+
 		return undefined;
 	}
 }
@@ -1173,6 +1219,7 @@ class NavigateTypeAdapter {
 
 				continue;
 			}
+
 			result.symbols.push({
 				...typeConvert.WorkspaceSymbol.from(item),
 				cacheId: [sid, i],
@@ -1189,9 +1236,11 @@ class NavigateTypeAdapter {
 		if (typeof this._provider.resolveWorkspaceSymbol !== "function") {
 			return symbol;
 		}
+
 		if (!symbol.cacheId) {
 			return symbol;
 		}
+
 		const item = this._cache.get(...symbol.cacheId);
 
 		if (item) {
@@ -1205,6 +1254,7 @@ class NavigateTypeAdapter {
 				mixin(symbol, typeConvert.WorkspaceSymbol.from(value), true)
 			);
 		}
+
 		return undefined;
 	}
 
@@ -1247,6 +1297,7 @@ class RenameAdapter {
 			if (!value) {
 				return undefined;
 			}
+
 			return typeConvert.WorkspaceEdit.from(value);
 		} catch (err) {
 			const rejectReason = RenameAdapter._asMessage(err);
@@ -1286,15 +1337,18 @@ class RenameAdapter {
 
 			if (Range.isRange(rangeOrLocation)) {
 				range = rangeOrLocation;
+
 				text = doc.getText(rangeOrLocation);
 			} else if (isObject(rangeOrLocation)) {
 				range = rangeOrLocation.range;
+
 				text = rangeOrLocation.placeholder;
 			}
 
 			if (!range || !text) {
 				return undefined;
 			}
+
 			if (range.start.line > pos.line || range.end.line < pos.line) {
 				this._logService.warn(
 					"INVALID rename location: position line must be within range start/end lines",
@@ -1302,6 +1356,7 @@ class RenameAdapter {
 
 				return undefined;
 			}
+
 			return { range: typeConvert.Range.from(range), text };
 		} catch (err) {
 			const rejectReason = RenameAdapter._asMessage(err);
@@ -1372,6 +1427,7 @@ class NewSymbolNamesAdapter {
 			if (!value) {
 				return undefined;
 			}
+
 			return value.map((v) =>
 				typeof v ===
 				"string" /* @ulugbekna: for backward compatibility because `value` used to be just `string[]` */
@@ -1413,15 +1469,19 @@ class SemanticTokensPreviousResult {
 
 type RelaxedSemanticTokens = {
 	readonly resultId?: string;
+
 	readonly data: number[];
 };
 type RelaxedSemanticTokensEdit = {
 	readonly start: number;
+
 	readonly deleteCount: number;
+
 	readonly data?: number[];
 };
 type RelaxedSemanticTokensEdits = {
 	readonly resultId?: string;
+
 	readonly edits: RelaxedSemanticTokensEdit[];
 };
 
@@ -1435,6 +1495,7 @@ class DocumentSemanticTokensAdapter {
 		number,
 		SemanticTokensPreviousResult
 	>;
+
 	private _nextResultId = 1;
 
 	constructor(
@@ -1473,9 +1534,11 @@ class DocumentSemanticTokensAdapter {
 		if (previousResult) {
 			this._previousResults.delete(previousResultId);
 		}
+
 		if (!value) {
 			return null;
 		}
+
 		value = DocumentSemanticTokensAdapter._fixProvidedSemanticTokens(value);
 
 		return this._send(
@@ -1500,6 +1563,7 @@ class DocumentSemanticTokensAdapter {
 			if (DocumentSemanticTokensAdapter._isCorrectSemanticTokens(v)) {
 				return v;
 			}
+
 			return new SemanticTokens(new Uint32Array(v.data), v.resultId);
 		} else if (DocumentSemanticTokensAdapter._isSemanticTokensEdits(v)) {
 			if (
@@ -1507,6 +1571,7 @@ class DocumentSemanticTokensAdapter {
 			) {
 				return v;
 			}
+
 			return new SemanticTokensEdits(
 				v.edits.map(
 					(edit) =>
@@ -1519,6 +1584,7 @@ class DocumentSemanticTokensAdapter {
 				v.resultId,
 			);
 		}
+
 		return v;
 	}
 
@@ -1548,6 +1614,7 @@ class DocumentSemanticTokensAdapter {
 				return false;
 			}
 		}
+
 		return true;
 	}
 
@@ -1558,9 +1625,11 @@ class DocumentSemanticTokensAdapter {
 		if (!DocumentSemanticTokensAdapter._isSemanticTokens(newResult)) {
 			return newResult;
 		}
+
 		if (!previousResult || !previousResult.tokens) {
 			return newResult;
 		}
+
 		const oldData = previousResult.tokens;
 
 		const oldLength = oldData.length;
@@ -1623,6 +1692,7 @@ class DocumentSemanticTokensAdapter {
 	): VSBuffer | null {
 		if (DocumentSemanticTokensAdapter._isSemanticTokens(value)) {
 			const myId = this._nextResultId++;
+
 			this._previousResults.set(
 				myId,
 				new SemanticTokensPreviousResult(value.resultId, value.data),
@@ -1653,6 +1723,7 @@ class DocumentSemanticTokensAdapter {
 					new SemanticTokensPreviousResult(value.resultId),
 				);
 			}
+
 			return encodeSemanticTokensDto({
 				id: myId,
 				type: "delta",
@@ -1690,6 +1761,7 @@ class DocumentRangeSemanticTokensAdapter {
 		if (!value) {
 			return null;
 		}
+
 		return this._send(value);
 	}
 
@@ -1708,6 +1780,7 @@ class CompletionsAdapter {
 	}
 
 	private _cache = new Cache<vscode.CompletionItem>("CompletionItem");
+
 	private _disposables = new Map<number, DisposableStore>();
 
 	constructor(
@@ -1766,6 +1839,7 @@ class CompletionsAdapter {
 			: this._cache.add([]);
 
 		const disposables = new DisposableStore();
+
 		this._disposables.set(pid, disposables);
 
 		const completions: extHostProtocol.ISuggestDataDto[] = [];
@@ -1791,6 +1865,7 @@ class CompletionsAdapter {
 				insertRange,
 				replaceRange,
 			);
+
 			completions.push(dto);
 		}
 
@@ -1881,7 +1956,9 @@ class CompletionsAdapter {
 
 	releaseCompletionItems(id: number): any {
 		this._disposables.get(id)?.dispose();
+
 		this._disposables.delete(id);
+
 		this._cache.delete(id);
 	}
 
@@ -1944,6 +2021,7 @@ class CompletionsAdapter {
 				this._extension,
 				`Use 'CompletionItem.insertText' and 'CompletionItem.range' instead.`,
 			);
+
 			result[extHostProtocol.ISuggestDataDtoField.insertText] =
 				item.textEdit.newText;
 		} else if (typeof item.insertText === "string") {
@@ -1952,6 +2030,7 @@ class CompletionsAdapter {
 		} else if (item.insertText instanceof SnippetString) {
 			result[extHostProtocol.ISuggestDataDtoField.insertText] =
 				item.insertText.value;
+
 			result[extHostProtocol.ISuggestDataDtoField.insertTextRules]! |=
 				languages.CompletionItemInsertTextRule.InsertAsSnippet;
 		}
@@ -2026,6 +2105,7 @@ class InlineCompletionAdapterBase {
 class InlineCompletionAdapter extends InlineCompletionAdapterBase {
 	private readonly _references = new ReferenceMap<{
 		dispose(): void;
+
 		items: readonly vscode.InlineCompletionItem[];
 	}>();
 
@@ -2138,6 +2218,7 @@ class InlineCompletionAdapter extends InlineCompletionAdapterBase {
 						if (!disposableStore) {
 							disposableStore = new DisposableStore();
 						}
+
 						command = this._commands.toInternal(
 							item.command,
 							disposableStore,
@@ -2168,6 +2249,7 @@ class InlineCompletionAdapter extends InlineCompletionAdapterBase {
 				if (!disposableStore) {
 					disposableStore = new DisposableStore();
 				}
+
 				return this._commands.toInternal(c, disposableStore);
 			}),
 			suppressSuggestions: false,
@@ -2184,6 +2266,7 @@ class InlineCompletionAdapter extends InlineCompletionAdapterBase {
 		if (!this._provider.provideInlineEditsForRange) {
 			return undefined;
 		}
+
 		checkProposedApiEnabled(this._extension, "inlineCompletionsAdditions");
 
 		const doc = this._documents.getDocument(resource);
@@ -2254,6 +2337,7 @@ class InlineCompletionAdapter extends InlineCompletionAdapterBase {
 						if (!disposableStore) {
 							disposableStore = new DisposableStore();
 						}
+
 						command = this._commands.toInternal(
 							item.command,
 							disposableStore,
@@ -2284,6 +2368,7 @@ class InlineCompletionAdapter extends InlineCompletionAdapterBase {
 				if (!disposableStore) {
 					disposableStore = new DisposableStore();
 				}
+
 				return this._commands.toInternal(c, disposableStore);
 			}),
 			suppressSuggestions: false,
@@ -2293,6 +2378,7 @@ class InlineCompletionAdapter extends InlineCompletionAdapterBase {
 
 	override disposeCompletions(pid: number) {
 		const data = this._references.disposeReferenceId(pid);
+
 		data?.dispose();
 	}
 
@@ -2333,6 +2419,7 @@ class InlineCompletionAdapter extends InlineCompletionAdapterBase {
 					completionItem,
 					acceptedCharacters,
 				);
+
 				this._provider.handleDidPartiallyAcceptCompletionItem(
 					completionItem,
 					typeConvert.PartialAcceptInfo.to(info),
@@ -2345,6 +2432,7 @@ class InlineCompletionAdapter extends InlineCompletionAdapterBase {
 class InlineEditAdapter {
 	private readonly _references = new ReferenceMap<{
 		dispose(): void;
+
 		item: vscode.InlineEdit;
 	}>();
 
@@ -2385,6 +2473,7 @@ class InlineEditAdapter {
 			// of results as they will leak
 			return undefined;
 		}
+
 		let disposableStore: DisposableStore | undefined = undefined;
 
 		const pid = this._references.createReferenceId({
@@ -2400,17 +2489,20 @@ class InlineEditAdapter {
 			if (!disposableStore) {
 				disposableStore = new DisposableStore();
 			}
+
 			acceptCommand = this._commands.toInternal(
 				result.accepted,
 				disposableStore,
 			);
 		}
+
 		let rejectCommand: languages.Command | undefined = undefined;
 
 		if (result.rejected) {
 			if (!disposableStore) {
 				disposableStore = new DisposableStore();
 			}
+
 			rejectCommand = this._commands.toInternal(
 				result.rejected,
 				disposableStore,
@@ -2423,6 +2515,7 @@ class InlineEditAdapter {
 			if (!disposableStore) {
 				disposableStore = new DisposableStore();
 			}
+
 			shownCommand = this._commands.toInternal(
 				result.shown,
 				disposableStore,
@@ -2432,6 +2525,7 @@ class InlineEditAdapter {
 		if (!disposableStore) {
 			disposableStore = new DisposableStore();
 		}
+
 		const langResult: extHostProtocol.IdentifiableInlineEdit = {
 			pid,
 			text: result.text,
@@ -2449,6 +2543,7 @@ class InlineEditAdapter {
 
 	disposeEdit(pid: number) {
 		const data = this._references.disposeReferenceId(pid);
+
 		data?.dispose();
 	}
 
@@ -2462,10 +2557,12 @@ class InlineEditAdapter {
 
 class ReferenceMap<T> {
 	private readonly _references = new Map<number, T>();
+
 	private _idPool = 1;
 
 	createReferenceId(value: T): number {
 		const id = this._idPool++;
+
 		this._references.set(id, value);
 
 		return id;
@@ -2473,6 +2570,7 @@ class ReferenceMap<T> {
 
 	disposeReferenceId(referenceId: number): T | undefined {
 		const value = this._references.get(referenceId);
+
 		this._references.delete(referenceId);
 
 		return value;
@@ -2515,6 +2613,7 @@ class SignatureHelpAdapter {
 
 			return { ...typeConvert.SignatureHelp.from(value), id };
 		}
+
 		return undefined;
 	}
 
@@ -2532,14 +2631,17 @@ class SignatureHelpAdapter {
 
 			if (saved) {
 				activeSignatureHelp = saved;
+
 				activeSignatureHelp.activeSignature =
 					revivedSignatureHelp.activeSignature;
+
 				activeSignatureHelp.activeParameter =
 					revivedSignatureHelp.activeParameter;
 			} else {
 				activeSignatureHelp = revivedSignatureHelp;
 			}
 		}
+
 		return { ...context, activeSignatureHelp };
 	}
 
@@ -2550,6 +2652,7 @@ class SignatureHelpAdapter {
 
 class InlayHintsAdapter {
 	private _cache = new Cache<vscode.InlayHint>("InlayHints");
+
 	private readonly _disposables = new Map<number, DisposableStore>();
 
 	constructor(
@@ -2579,12 +2682,15 @@ class InlayHintsAdapter {
 
 			return undefined;
 		}
+
 		if (token.isCancellationRequested) {
 			// cancelled -> return without further ado, esp no caching
 			// of results as they will leak
 			return undefined;
 		}
+
 		const pid = this._cache.add(hints);
+
 		this._disposables.set(pid, new DisposableStore());
 
 		const result: extHostProtocol.IInlayHintsDto = {
@@ -2597,6 +2703,7 @@ class InlayHintsAdapter {
 				result.hints.push(this._convertInlayHint(hints[i], [pid, i]));
 			}
 		}
+
 		this._logService.trace(
 			`[InlayHints] ${result.hints.length} inlay hints from '${this._extension.identifier.value}' for range ${JSON.stringify(ran)}`,
 		);
@@ -2611,25 +2718,31 @@ class InlayHintsAdapter {
 		if (typeof this._provider.resolveInlayHint !== "function") {
 			return undefined;
 		}
+
 		const item = this._cache.get(...id);
 
 		if (!item) {
 			return undefined;
 		}
+
 		const hint = await this._provider.resolveInlayHint(item, token);
 
 		if (!hint) {
 			return undefined;
 		}
+
 		if (!this._isValidInlayHint(hint)) {
 			return undefined;
 		}
+
 		return this._convertInlayHint(hint, id);
 	}
 
 	releaseHints(id: number): any {
 		this._disposables.get(id)?.dispose();
+
 		this._disposables.delete(id);
+
 		this._cache.delete(id);
 	}
 
@@ -2646,11 +2759,13 @@ class InlayHintsAdapter {
 
 			return false;
 		}
+
 		if (range && !range.contains(hint.position)) {
 			// console.log('INVALID inlay hint, position outside range', range, hint);
 
 			return false;
 		}
+
 		return true;
 	}
 
@@ -2680,6 +2795,7 @@ class InlayHintsAdapter {
 			result.label = hint.label;
 		} else {
 			const parts: languages.InlayHintLabelPart[] = [];
+
 			result.label = parts;
 
 			for (const part of hint.label) {
@@ -2691,6 +2807,7 @@ class InlayHintsAdapter {
 
 					continue;
 				}
+
 				const part2: languages.InlayHintLabelPart = {
 					label: part.value,
 					tooltip: typeConvert.MarkdownString.fromStrict(
@@ -2701,15 +2818,18 @@ class InlayHintsAdapter {
 				if (Location.isLocation(part.location)) {
 					part2.location = typeConvert.location.from(part.location);
 				}
+
 				if (part.command) {
 					part2.command = this._commands.toInternal(
 						part.command,
 						disposables,
 					);
 				}
+
 				parts.push(part2);
 			}
 		}
+
 		return result;
 	}
 }
@@ -2734,11 +2854,13 @@ class LinkProviderAdapter {
 			// bad result
 			return undefined;
 		}
+
 		if (token.isCancellationRequested) {
 			// cancelled -> return without further ado, esp no caching
 			// of results as they will leak
 			return undefined;
 		}
+
 		if (typeof this._provider.resolveDocumentLink !== "function") {
 			// no resolve -> no caching
 			return {
@@ -2762,9 +2884,12 @@ class LinkProviderAdapter {
 
 				const dto: extHostProtocol.ILinkDto =
 					typeConvert.DocumentLink.from(links[i]);
+
 				dto.cacheId = [pid, i];
+
 				result.links.push(dto);
 			}
+
 			return result;
 		}
 	}
@@ -2775,6 +2900,7 @@ class LinkProviderAdapter {
 
 			return false;
 		}
+
 		return true;
 	}
 
@@ -2785,16 +2911,19 @@ class LinkProviderAdapter {
 		if (typeof this._provider.resolveDocumentLink !== "function") {
 			return undefined;
 		}
+
 		const item = this._cache.get(...id);
 
 		if (!item) {
 			return undefined;
 		}
+
 		const link = await this._provider.resolveDocumentLink(item, token);
 
 		if (!link || !LinkProviderAdapter._validateLink(link)) {
 			return undefined;
 		}
+
 		return typeConvert.DocumentLink.from(link);
 	}
 
@@ -2820,6 +2949,7 @@ class ColorProviderAdapter {
 		if (!Array.isArray(colors)) {
 			return [];
 		}
+
 		const colorInfos: extHostProtocol.IRawColorInfo[] = colors.map((ci) => {
 			return {
 				color: typeConvert.Color.from(ci.color),
@@ -2850,6 +2980,7 @@ class ColorProviderAdapter {
 		if (!Array.isArray(value)) {
 			return undefined;
 		}
+
 		return value.map(typeConvert.ColorPresentation.from);
 	}
 }
@@ -2876,6 +3007,7 @@ class FoldingProviderAdapter {
 		if (!Array.isArray(ranges)) {
 			return undefined;
 		}
+
 		return ranges.map(typeConvert.FoldingRange.from);
 	}
 }
@@ -2905,6 +3037,7 @@ class SelectionRangeAdapter {
 		if (!isNonEmptyArray(allProviderRanges)) {
 			return [];
 		}
+
 		if (allProviderRanges.length !== positions.length) {
 			this._logService.warn(
 				"BAD selection ranges, provider must return ranges for each position",
@@ -2912,10 +3045,12 @@ class SelectionRangeAdapter {
 
 			return [];
 		}
+
 		const allResults: languages.SelectionRange[][] = [];
 
 		for (let i = 0; i < positions.length; i++) {
 			const oneResult: languages.SelectionRange[] = [];
+
 			allResults.push(oneResult);
 
 			let last: vscode.Position | vscode.Range = positions[i];
@@ -2928,21 +3063,26 @@ class SelectionRangeAdapter {
 						"INVALID selection range, must contain the previous range",
 					);
 				}
+
 				oneResult.push(typeConvert.SelectionRange.from(selectionRange));
 
 				if (!selectionRange.parent) {
 					break;
 				}
+
 				last = selectionRange.range;
+
 				selectionRange = selectionRange.parent;
 			}
 		}
+
 		return allResults;
 	}
 }
 
 class CallHierarchyAdapter {
 	private readonly _idPool = new IdGenerator("");
+
 	private readonly _cache = new Map<
 		string,
 		Map<string, vscode.CallHierarchyItem>
@@ -2973,6 +3113,7 @@ class CallHierarchyAdapter {
 		}
 
 		const sessionId = this._idPool.nextId();
+
 		this._cache.set(sessionId, new Map());
 
 		if (Array.isArray(items)) {
@@ -2994,6 +3135,7 @@ class CallHierarchyAdapter {
 		if (!item) {
 			throw new Error("missing call hierarchy item");
 		}
+
 		const calls = await this._provider.provideCallHierarchyIncomingCalls(
 			item,
 			token,
@@ -3002,6 +3144,7 @@ class CallHierarchyAdapter {
 		if (!calls) {
 			return undefined;
 		}
+
 		return calls.map((call) => {
 			return {
 				from: this._cacheAndConvertItem(sessionId, call.from),
@@ -3022,6 +3165,7 @@ class CallHierarchyAdapter {
 		if (!item) {
 			throw new Error("missing call hierarchy item");
 		}
+
 		const calls = await this._provider.provideCallHierarchyOutgoingCalls(
 			item,
 			token,
@@ -3030,6 +3174,7 @@ class CallHierarchyAdapter {
 		if (!calls) {
 			return undefined;
 		}
+
 		return calls.map((call) => {
 			return {
 				to: this._cacheAndConvertItem(sessionId, call.to),
@@ -3055,6 +3200,7 @@ class CallHierarchyAdapter {
 			sessionId,
 			map.size.toString(36),
 		);
+
 		map.set(dto._itemId, item);
 
 		return dto;
@@ -3072,6 +3218,7 @@ class CallHierarchyAdapter {
 
 class TypeHierarchyAdapter {
 	private readonly _idPool = new IdGenerator("");
+
 	private readonly _cache = new Map<
 		string,
 		Map<string, vscode.TypeHierarchyItem>
@@ -3102,6 +3249,7 @@ class TypeHierarchyAdapter {
 		}
 
 		const sessionId = this._idPool.nextId();
+
 		this._cache.set(sessionId, new Map());
 
 		if (Array.isArray(items)) {
@@ -3123,6 +3271,7 @@ class TypeHierarchyAdapter {
 		if (!item) {
 			throw new Error("missing type hierarchy item");
 		}
+
 		const supertypes = await this._provider.provideTypeHierarchySupertypes(
 			item,
 			token,
@@ -3131,6 +3280,7 @@ class TypeHierarchyAdapter {
 		if (!supertypes) {
 			return undefined;
 		}
+
 		return supertypes.map((supertype) => {
 			return this._cacheAndConvertItem(sessionId, supertype);
 		});
@@ -3146,6 +3296,7 @@ class TypeHierarchyAdapter {
 		if (!item) {
 			throw new Error("missing type hierarchy item");
 		}
+
 		const subtypes = await this._provider.provideTypeHierarchySubtypes(
 			item,
 			token,
@@ -3154,6 +3305,7 @@ class TypeHierarchyAdapter {
 		if (!subtypes) {
 			return undefined;
 		}
+
 		return subtypes.map((subtype) => {
 			return this._cacheAndConvertItem(sessionId, subtype);
 		});
@@ -3174,6 +3326,7 @@ class TypeHierarchyAdapter {
 			sessionId,
 			map.size.toString(36),
 		);
+
 		map.set(dto._itemId, item);
 
 		return dto;
@@ -3407,6 +3560,7 @@ export class ExtHostLanguageFeatures
 	private static _handlePool: number = 0;
 
 	private readonly _proxy: extHostProtocol.MainThreadLanguageFeaturesShape;
+
 	private readonly _adapter = new Map<number, AdapterData>();
 
 	constructor(
@@ -3438,6 +3592,7 @@ export class ExtHostLanguageFeatures
 	private _createDisposable(handle: number): Disposable {
 		return new Disposable(() => {
 			this._adapter.delete(handle);
+
 			this._proxy.$unregister(handle);
 		});
 	}
@@ -3477,6 +3632,7 @@ export class ExtHostLanguageFeatures
 					this._logService.error(
 						`[${data.extension.identifier.value}] provider FAILED`,
 					);
+
 					this._logService.error(err);
 
 					this._extensionTelemetry.onExtensionError(
@@ -3496,6 +3652,7 @@ export class ExtHostLanguageFeatures
 		if (CancellationToken.isCancellationToken(tokenToRaceAgainst)) {
 			return raceCancellationError(result, tokenToRaceAgainst);
 		}
+
 		return result;
 	}
 
@@ -3504,6 +3661,7 @@ export class ExtHostLanguageFeatures
 		extension: IExtensionDescription,
 	): number {
 		const handle = this._nextHandle();
+
 		this._adapter.set(handle, new AdapterData(adapter, extension));
 
 		return handle;
@@ -3533,6 +3691,7 @@ export class ExtHostLanguageFeatures
 		const displayName =
 			(metadata && metadata.label) ||
 			ExtHostLanguageFeatures._extLabel(extension);
+
 		this._proxy.$registerDocumentSymbolProvider(
 			handle,
 			this._transformDocumentSelector(selector, extension),
@@ -3585,6 +3744,7 @@ export class ExtHostLanguageFeatures
 				extension,
 			),
 		);
+
 		this._proxy.$registerCodeLensSupport(
 			handle,
 			this._transformDocumentSelector(selector, extension),
@@ -3597,6 +3757,7 @@ export class ExtHostLanguageFeatures
 			const subscription = provider.onDidChangeCodeLenses!((_) =>
 				this._proxy.$emitCodeLensEvent(eventHandle),
 			);
+
 			result = Disposable.from(result, subscription);
 		}
 
@@ -3655,6 +3816,7 @@ export class ExtHostLanguageFeatures
 			new DefinitionAdapter(this._documents, provider),
 			extension,
 		);
+
 		this._proxy.$registerDefinitionSupport(
 			handle,
 			this._transformDocumentSelector(selector, extension),
@@ -3692,6 +3854,7 @@ export class ExtHostLanguageFeatures
 			new DeclarationAdapter(this._documents, provider),
 			extension,
 		);
+
 		this._proxy.$registerDeclarationSupport(
 			handle,
 			this._transformDocumentSelector(selector, extension),
@@ -3729,6 +3892,7 @@ export class ExtHostLanguageFeatures
 			new ImplementationAdapter(this._documents, provider),
 			extension,
 		);
+
 		this._proxy.$registerImplementationSupport(
 			handle,
 			this._transformDocumentSelector(selector, extension),
@@ -3766,6 +3930,7 @@ export class ExtHostLanguageFeatures
 			new TypeDefinitionAdapter(this._documents, provider),
 			extension,
 		);
+
 		this._proxy.$registerTypeDefinitionSupport(
 			handle,
 			this._transformDocumentSelector(selector, extension),
@@ -3806,6 +3971,7 @@ export class ExtHostLanguageFeatures
 			new HoverAdapter(this._documents, provider),
 			extension,
 		);
+
 		this._proxy.$registerHoverProvider(
 			handle,
 			this._transformDocumentSelector(selector, extension),
@@ -3858,6 +4024,7 @@ export class ExtHostLanguageFeatures
 			new EvaluatableExpressionAdapter(this._documents, provider),
 			extension,
 		);
+
 		this._proxy.$registerEvaluatableExpressionProvider(
 			handle,
 			this._transformDocumentSelector(selector, extension),
@@ -3916,8 +4083,10 @@ export class ExtHostLanguageFeatures
 			const subscription = provider.onDidChangeInlineValues!((_) =>
 				this._proxy.$emitInlineValuesEvent(eventHandle),
 			);
+
 			result = Disposable.from(result, subscription);
 		}
+
 		return result;
 	}
 
@@ -3954,6 +4123,7 @@ export class ExtHostLanguageFeatures
 			new DocumentHighlightAdapter(this._documents, provider),
 			extension,
 		);
+
 		this._proxy.$registerDocumentHighlightProvider(
 			handle,
 			this._transformDocumentSelector(selector, extension),
@@ -3975,6 +4145,7 @@ export class ExtHostLanguageFeatures
 			),
 			extension,
 		);
+
 		this._proxy.$registerMultiDocumentHighlightProvider(
 			handle,
 			this._transformDocumentSelector(selector, extension),
@@ -4036,6 +4207,7 @@ export class ExtHostLanguageFeatures
 			new LinkedEditingRangeAdapter(this._documents, provider),
 			extension,
 		);
+
 		this._proxy.$registerLinkedEditingRangeProvider(
 			handle,
 			this._transformDocumentSelector(selector, extension),
@@ -4070,6 +4242,7 @@ export class ExtHostLanguageFeatures
 							: undefined,
 					};
 				}
+
 				return undefined;
 			},
 			undefined,
@@ -4088,6 +4261,7 @@ export class ExtHostLanguageFeatures
 			new ReferenceAdapter(this._documents, provider),
 			extension,
 		);
+
 		this._proxy.$registerReferenceSupport(
 			handle,
 			this._transformDocumentSelector(selector, extension),
@@ -4140,6 +4314,7 @@ export class ExtHostLanguageFeatures
 			),
 			extension,
 		);
+
 		this._proxy.$registerCodeActionSupport(
 			handle,
 			this._transformDocumentSelector(selector, extension),
@@ -4159,6 +4334,7 @@ export class ExtHostLanguageFeatures
 			ExtHostLanguageFeatures._extId(extension),
 			Boolean(provider.resolveCodeAction),
 		);
+
 		store.add(this._createDisposable(handle));
 
 		return store;
@@ -4192,6 +4368,7 @@ export class ExtHostLanguageFeatures
 		token: CancellationToken,
 	): Promise<{
 		edit?: extHostProtocol.IWorkspaceEditDto;
+
 		command?: extHostProtocol.ICommandDto;
 	}> {
 		return this._withAdapter(
@@ -4224,6 +4401,7 @@ export class ExtHostLanguageFeatures
 			new DocumentFormattingAdapter(this._documents, provider),
 			extension,
 		);
+
 		this._proxy.$registerDocumentFormattingSupport(
 			handle,
 			this._transformDocumentSelector(selector, extension),
@@ -4266,6 +4444,7 @@ export class ExtHostLanguageFeatures
 			new RangeFormattingAdapter(this._documents, provider),
 			extension,
 		);
+
 		this._proxy.$registerRangeFormattingSupport(
 			handle,
 			this._transformDocumentSelector(selector, extension),
@@ -4331,6 +4510,7 @@ export class ExtHostLanguageFeatures
 			new OnTypeFormattingAdapter(this._documents, provider),
 			extension,
 		);
+
 		this._proxy.$registerOnTypeFormattingSupport(
 			handle,
 			this._transformDocumentSelector(selector, extension),
@@ -4375,6 +4555,7 @@ export class ExtHostLanguageFeatures
 			new NavigateTypeAdapter(provider, this._logService),
 			extension,
 		);
+
 		this._proxy.$registerNavigateTypeSupport(
 			handle,
 			typeof provider.resolveWorkspaceSymbol === "function",
@@ -4432,6 +4613,7 @@ export class ExtHostLanguageFeatures
 			new RenameAdapter(this._documents, provider, this._logService),
 			extension,
 		);
+
 		this._proxy.$registerRenameSupport(
 			handle,
 			this._transformDocumentSelector(selector, extension),
@@ -4496,6 +4678,7 @@ export class ExtHostLanguageFeatures
 			),
 			extension,
 		);
+
 		this._proxy.$registerNewSymbolNamesProvider(
 			handle,
 			this._transformDocumentSelector(selector, extension),
@@ -4555,6 +4738,7 @@ export class ExtHostLanguageFeatures
 			typeof provider.onDidChangeSemanticTokens === "function"
 				? this._nextHandle()
 				: undefined;
+
 		this._proxy.$registerDocumentSemanticTokensProvider(
 			handle,
 			this._transformDocumentSelector(selector, extension),
@@ -4568,6 +4752,7 @@ export class ExtHostLanguageFeatures
 			const subscription = provider.onDidChangeSemanticTokens!((_) =>
 				this._proxy.$emitDocumentSemanticTokensEvent(eventHandle),
 			);
+
 			result = Disposable.from(result, subscription);
 		}
 
@@ -4620,6 +4805,7 @@ export class ExtHostLanguageFeatures
 			new DocumentRangeSemanticTokensAdapter(this._documents, provider),
 			extension,
 		);
+
 		this._proxy.$registerDocumentRangeSemanticTokensProvider(
 			handle,
 			this._transformDocumentSelector(selector, extension),
@@ -4669,6 +4855,7 @@ export class ExtHostLanguageFeatures
 			),
 			extension,
 		);
+
 		this._proxy.$registerCompletionsProvider(
 			handle,
 			this._transformDocumentSelector(selector, extension),
@@ -4742,6 +4929,7 @@ export class ExtHostLanguageFeatures
 		);
 
 		const handle = this._addNewAdapter(adapter, extension);
+
 		this._proxy.$registerInlineCompletionsSupport(
 			handle,
 			this._transformDocumentSelector(selector, extension),
@@ -4865,6 +5053,7 @@ export class ExtHostLanguageFeatures
 		);
 
 		const handle = this._addNewAdapter(adapter, extension);
+
 		this._proxy.$registerInlineEditProvider(
 			handle,
 			this._transformDocumentSelector(selector, extension),
@@ -4927,6 +5116,7 @@ export class ExtHostLanguageFeatures
 			new SignatureHelpAdapter(this._documents, provider),
 			extension,
 		);
+
 		this._proxy.$registerSignatureHelpProvider(
 			handle,
 			this._transformDocumentSelector(selector, extension),
@@ -5005,8 +5195,10 @@ export class ExtHostLanguageFeatures
 			const subscription = provider.onDidChangeInlayHints!((uri) =>
 				this._proxy.$emitInlayHintsEvent(eventHandle),
 			);
+
 			result = Disposable.from(result, subscription);
 		}
+
 		return result;
 	}
 
@@ -5061,6 +5253,7 @@ export class ExtHostLanguageFeatures
 			new LinkProviderAdapter(this._documents, provider),
 			extension,
 		);
+
 		this._proxy.$registerDocumentLinkProvider(
 			handle,
 			this._transformDocumentSelector(selector, extension),
@@ -5120,6 +5313,7 @@ export class ExtHostLanguageFeatures
 			new ColorProviderAdapter(this._documents, provider),
 			extension,
 		);
+
 		this._proxy.$registerDocumentColorProvider(
 			handle,
 			this._transformDocumentSelector(selector, extension),
@@ -5181,6 +5375,7 @@ export class ExtHostLanguageFeatures
 				extension,
 			),
 		);
+
 		this._proxy.$registerFoldingRangeProvider(
 			handle,
 			this._transformDocumentSelector(selector, extension),
@@ -5194,6 +5389,7 @@ export class ExtHostLanguageFeatures
 			const subscription = provider.onDidChangeFoldingRanges!(() =>
 				this._proxy.$emitFoldingRangeEvent(eventHandle),
 			);
+
 			result = Disposable.from(result, subscription);
 		}
 
@@ -5235,6 +5431,7 @@ export class ExtHostLanguageFeatures
 			),
 			extension,
 		);
+
 		this._proxy.$registerSelectionRangeProvider(
 			handle,
 			this._transformDocumentSelector(selector, extension),
@@ -5274,6 +5471,7 @@ export class ExtHostLanguageFeatures
 			new CallHierarchyAdapter(this._documents, provider),
 			extension,
 		);
+
 		this._proxy.$registerCallHierarchyProvider(
 			handle,
 			this._transformDocumentSelector(selector, extension),
@@ -5354,6 +5552,7 @@ export class ExtHostLanguageFeatures
 			new TypeHierarchyAdapter(this._documents, provider),
 			extension,
 		);
+
 		this._proxy.$registerTypeHierarchyProvider(
 			handle,
 			this._transformDocumentSelector(selector, extension),
@@ -5433,6 +5632,7 @@ export class ExtHostLanguageFeatures
 		metadata?: vscode.DocumentDropEditProviderMetadata,
 	) {
 		const handle = this._nextHandle();
+
 		this._adapter.set(
 			handle,
 			new AdapterData(
@@ -5525,6 +5725,7 @@ export class ExtHostLanguageFeatures
 			new MappedEditsAdapter(this._documents, provider),
 			extension,
 		);
+
 		this._proxy.$registerMappedEditsProvider(
 			handle,
 			this._transformDocumentSelector(selector, extension),
@@ -5567,6 +5768,7 @@ export class ExtHostLanguageFeatures
 		metadata: vscode.DocumentPasteProviderMetadata,
 	): vscode.Disposable {
 		const handle = this._nextHandle();
+
 		this._adapter.set(
 			handle,
 			new AdapterData(
@@ -5580,6 +5782,7 @@ export class ExtHostLanguageFeatures
 				extension,
 			),
 		);
+
 		this._proxy.$registerPasteEditProvider(
 			handle,
 			this._transformDocumentSelector(selector, extension),

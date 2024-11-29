@@ -16,12 +16,14 @@ import { Schemes } from '../util/schemes';
 
 export class InsertLinkFromWorkspace implements Command {
 	public readonly id = "markdown.editor.insertLinkFromWorkspace";
+
 	public async execute(resources?: vscode.Uri[]) {
 		const activeEditor = vscode.window.activeTextEditor;
 
 		if (!activeEditor) {
 			return;
 		}
+
 		resources ??= await vscode.window.showOpenDialog({
 			canSelectFiles: true,
 			canSelectFolders: false,
@@ -34,17 +36,20 @@ export class InsertLinkFromWorkspace implements Command {
 		if (!resources) {
 			return;
 		}
+
 		return insertLink(activeEditor, resources, false);
 	}
 }
 export class InsertImageFromWorkspace implements Command {
 	public readonly id = "markdown.editor.insertImageFromWorkspace";
+
 	public async execute(resources?: vscode.Uri[]) {
 		const activeEditor = vscode.window.activeTextEditor;
 
 		if (!activeEditor) {
 			return;
 		}
+
 		resources ??= await vscode.window.showOpenDialog({
 			canSelectFiles: true,
 			canSelectFolders: false,
@@ -62,6 +67,7 @@ export class InsertImageFromWorkspace implements Command {
 		if (!resources) {
 			return;
 		}
+
 		return insertLink(activeEditor, resources, true);
 	}
 }
@@ -71,6 +77,7 @@ function getDefaultUri(document: vscode.TextDocument) {
 	if (docUri.scheme === Schemes.untitled) {
 		return vscode.workspace.workspaceFolders?.[0]?.uri;
 	}
+
 	return Utils.dirname(docUri);
 }
 async function insertLink(
@@ -101,6 +108,7 @@ function createInsertLinkEdit(
 function createInsertLinkEdit(activeEditor: vscode.TextEditor, selectedFiles: readonly vscode.Uri[], insertAsMedia: boolean) {
 	const snippetEdits = coalesce(activeEditor.selections.map((selection, i): vscode.SnippetTextEdit | undefined => {
 		const selectionText = activeEditor.document.getText(selection);
+
 		const snippet = createUriListSnippet(activeEditor.document.uri, selectedFiles.map(uri => ({ uri })), {
 			linkKindHint: insertAsMedia ? 'media' : linkEditKind,
 			placeholderText: selectionText,
@@ -111,7 +119,9 @@ function createInsertLinkEdit(activeEditor: vscode.TextEditor, selectedFiles: re
 	if (!snippetEdits.length) {
 		return;
 	}
+
 	const edit = new vscode.WorkspaceEdit();
+
 	edit.set(activeEditor.document.uri, snippetEdits);
 
 	return edit;

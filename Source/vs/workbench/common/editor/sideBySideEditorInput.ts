@@ -41,9 +41,11 @@ export class SideBySideEditorInput
 	implements ISideBySideEditorInput
 {
 	static readonly ID: string = "workbench.editorinputs.sidebysideEditorInput";
+
 	override get typeId(): string {
 		return SideBySideEditorInput.ID;
 	}
+
 	override get capabilities(): EditorInputCapabilities {
 		// Use primary capabilities as main capabilities...
 		let capabilities = this.primary.capabilities;
@@ -65,6 +67,7 @@ export class SideBySideEditorInput
 
 		return capabilities;
 	}
+
 	get resource(): URI | undefined {
 		if (this.hasIdenticalSides) {
 			// pretend to be just primary side when being asked for a resource
@@ -72,8 +75,10 @@ export class SideBySideEditorInput
 			// want to identify this input among others (e.g. in history).
 			return this.primary.resource;
 		}
+
 		return undefined;
 	}
+
 	private hasIdenticalSides = this.primary.matches(this.secondary);
 
 	constructor(
@@ -85,8 +90,10 @@ export class SideBySideEditorInput
 		private readonly editorService: IEditorService,
 	) {
 		super();
+
 		this.registerListeners();
 	}
+
 	private registerListeners(): void {
 		// When the primary or secondary input gets disposed, dispose this diff editor input
 		this._register(
@@ -111,29 +118,35 @@ export class SideBySideEditorInput
 				this._onDidChangeCapabilities.fire(),
 			),
 		);
+
 		this._register(
 			this.secondary.onDidChangeCapabilities(() =>
 				this._onDidChangeCapabilities.fire(),
 			),
 		);
+
 		this._register(
 			this.primary.onDidChangeLabel(() => this._onDidChangeLabel.fire()),
 		);
+
 		this._register(
 			this.secondary.onDidChangeLabel(() =>
 				this._onDidChangeLabel.fire(),
 			),
 		);
 	}
+
 	override getName(): string {
 		const preferredName = this.getPreferredName();
 
 		if (preferredName) {
 			return preferredName;
 		}
+
 		if (this.hasIdenticalSides) {
 			return this.primary.getName(); // keep name concise when same editor is opened side by side
 		}
+
 		return localize(
 			"sideBySideLabels",
 			"{0} - {1}",
@@ -141,23 +154,29 @@ export class SideBySideEditorInput
 			this.primary.getName(),
 		);
 	}
+
 	getPreferredName(): string | undefined {
 		return this.preferredName;
 	}
+
 	override getDescription(verbosity?: Verbosity): string | undefined {
 		const preferredDescription = this.getPreferredDescription();
 
 		if (preferredDescription) {
 			return preferredDescription;
 		}
+
 		if (this.hasIdenticalSides) {
 			return this.primary.getDescription(verbosity);
 		}
+
 		return super.getDescription(verbosity);
 	}
+
 	getPreferredDescription(): string | undefined {
 		return this.preferredDescription;
 	}
+
 	override getTitle(verbosity?: Verbosity): string {
 		let title: string;
 
@@ -166,34 +185,44 @@ export class SideBySideEditorInput
 		} else {
 			title = super.getTitle(verbosity);
 		}
+
 		const preferredTitle = this.getPreferredTitle();
 
 		if (preferredTitle) {
 			title = `${preferredTitle} (${title})`;
 		}
+
 		return title;
 	}
+
 	protected getPreferredTitle(): string | undefined {
 		if (this.preferredName && this.preferredDescription) {
 			return `${this.preferredName} ${this.preferredDescription}`;
 		}
+
 		if (this.preferredName || this.preferredDescription) {
 			return this.preferredName ?? this.preferredDescription;
 		}
+
 		return undefined;
 	}
+
 	override getLabelExtraClasses(): string[] {
 		if (this.hasIdenticalSides) {
 			return this.primary.getLabelExtraClasses();
 		}
+
 		return super.getLabelExtraClasses();
 	}
+
 	override getAriaLabel(): string {
 		if (this.hasIdenticalSides) {
 			return this.primary.getAriaLabel();
 		}
+
 		return super.getAriaLabel();
 	}
+
 	override getTelemetryDescriptor(): {
 		[key: string]: unknown;
 	} {
@@ -201,12 +230,15 @@ export class SideBySideEditorInput
 
 		return { ...descriptor, ...super.getTelemetryDescriptor() };
 	}
+
 	override isDirty(): boolean {
 		return this.primary.isDirty();
 	}
+
 	override isSaving(): boolean {
 		return this.primary.isSaving();
 	}
+
 	override async save(
 		group: GroupIdentifier,
 		options?: ISaveOptions,
@@ -215,6 +247,7 @@ export class SideBySideEditorInput
 
 		return this.saveResultToEditor(primarySaveResult);
 	}
+
 	override async saveAs(
 		group: GroupIdentifier,
 		options?: ISaveOptions,
@@ -223,15 +256,18 @@ export class SideBySideEditorInput
 
 		return this.saveResultToEditor(primarySaveResult);
 	}
+
 	private saveResultToEditor(
 		primarySaveResult: EditorInput | IUntypedEditorInput | undefined,
 	): EditorInput | IUntypedEditorInput | undefined {
 		if (!primarySaveResult || !this.hasIdenticalSides) {
 			return primarySaveResult;
 		}
+
 		if (this.primary.matches(primarySaveResult)) {
 			return this;
 		}
+
 		if (primarySaveResult instanceof EditorInput) {
 			return new SideBySideEditorInput(
 				this.preferredName,
@@ -241,6 +277,7 @@ export class SideBySideEditorInput
 				this.editorService,
 			);
 		}
+
 		if (
 			!isResourceDiffEditorInput(primarySaveResult) &&
 			!isResourceMultiDiffEditorInput(primarySaveResult) &&
@@ -254,14 +291,17 @@ export class SideBySideEditorInput
 				description: this.preferredDescription,
 			};
 		}
+
 		return undefined;
 	}
+
 	override revert(
 		group: GroupIdentifier,
 		options?: IRevertOptions,
 	): Promise<void> {
 		return this.primary.revert(group, options);
 	}
+
 	override async rename(
 		group: GroupIdentifier,
 		target: URI,
@@ -295,6 +335,7 @@ export class SideBySideEditorInput
 				},
 			};
 		}
+
 		if (isResourceEditorInput(renameResult.editor)) {
 			return {
 				editor: {
@@ -313,11 +354,14 @@ export class SideBySideEditorInput
 				},
 			};
 		}
+
 		return undefined;
 	}
+
 	override isReadonly(): boolean | IMarkdownString {
 		return this.primary.isReadonly();
 	}
+
 	override toUntyped(
 		options?: IUntypedEditorOptions,
 	): IResourceSideBySideEditorInput | undefined {
@@ -353,42 +397,54 @@ export class SideBySideEditorInput
 					),
 				};
 			}
+
 			return untypedInput;
 		}
+
 		return undefined;
 	}
+
 	override matches(otherInput: EditorInput | IUntypedEditorInput): boolean {
 		if (this === otherInput) {
 			return true;
 		}
+
 		if (
 			isDiffEditorInput(otherInput) ||
 			isResourceDiffEditorInput(otherInput)
 		) {
 			return false; // prevent subclass from matching
 		}
+
 		if (otherInput instanceof SideBySideEditorInput) {
 			return (
 				this.primary.matches(otherInput.primary) &&
 				this.secondary.matches(otherInput.secondary)
 			);
 		}
+
 		if (isResourceSideBySideEditorInput(otherInput)) {
 			return (
 				this.primary.matches(otherInput.primary) &&
 				this.secondary.matches(otherInput.secondary)
 			);
 		}
+
 		return false;
 	}
 }
 // Register SideBySide/DiffEditor Input Serializer
 interface ISerializedSideBySideEditorInput {
 	name: string | undefined;
+
 	description: string | undefined;
+
 	primarySerialized: string;
+
 	secondarySerialized: string;
+
 	primaryTypeId: string;
+
 	secondaryTypeId: string;
 }
 export abstract class AbstractSideBySideEditorInputSerializer
@@ -409,8 +465,10 @@ export abstract class AbstractSideBySideEditorInputSerializer
 				primaryInputSerializer?.canSerialize(input.primary)
 			);
 		}
+
 		return false;
 	}
+
 	serialize(editorInput: EditorInput): string | undefined {
 		const input = editorInput as SideBySideEditorInput;
 
@@ -445,8 +503,10 @@ export abstract class AbstractSideBySideEditorInputSerializer
 				}
 			}
 		}
+
 		return undefined;
 	}
+
 	deserialize(
 		instantiationService: IInstantiationService,
 		serializedEditorInput: string,
@@ -485,8 +545,10 @@ export abstract class AbstractSideBySideEditorInputSerializer
 				);
 			}
 		}
+
 		return undefined;
 	}
+
 	private getSerializers(
 		secondaryEditorInputTypeId: string,
 		primaryEditorInputTypeId: string,
@@ -500,6 +562,7 @@ export abstract class AbstractSideBySideEditorInputSerializer
 			registry.getEditorSerializer(primaryEditorInputTypeId),
 		];
 	}
+
 	protected abstract createEditorInput(
 		instantiationService: IInstantiationService,
 		name: string | undefined,

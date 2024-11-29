@@ -88,10 +88,15 @@ class DocumentAndEditorStateDelta {
 
 	toString(): string {
 		let ret = "DocumentAndEditorStateDelta\n";
+
 		ret += `\tRemoved Documents: [${this.removedDocuments.map((d) => d.uri.toString(true)).join(", ")}]\n`;
+
 		ret += `\tAdded Documents: [${this.addedDocuments.map((d) => d.uri.toString(true)).join(", ")}]\n`;
+
 		ret += `\tRemoved Editors: [${this.removedEditors.map((e) => e.id).join(", ")}]\n`;
+
 		ret += `\tAdded Editors: [${this.addedEditors.map((e) => e.id).join(", ")}]\n`;
+
 		ret += `\tNew Active Editor: ${this.newActiveEditor}\n`;
 
 		return ret;
@@ -113,6 +118,7 @@ class DocumentAndEditorState {
 				after.activeEditor,
 			);
 		}
+
 		const documentDelta = diffSets(before.documents, after.documents);
 
 		const editorDelta = diffMaps(before.textEditors, after.textEditors);
@@ -153,8 +159,11 @@ const enum ActiveEditorOrder {
 
 class MainThreadDocumentAndEditorStateComputer {
 	private readonly _toDispose = new DisposableStore();
+
 	private readonly _toDisposeOnEditorRemove = new DisposableMap<string>();
+
 	private _currentState?: DocumentAndEditorState;
+
 	private _activeEditorOrder: ActiveEditorOrder = ActiveEditorOrder.Editor;
 
 	constructor(
@@ -173,11 +182,13 @@ class MainThreadDocumentAndEditorStateComputer {
 			this,
 			this._toDispose,
 		);
+
 		this._modelService.onModelRemoved(
 			(_) => this._updateState(),
 			this,
 			this._toDispose,
 		);
+
 		this._editorService.onDidActiveEditorChange(
 			(_) => this._updateState(),
 			this,
@@ -189,11 +200,13 @@ class MainThreadDocumentAndEditorStateComputer {
 			this,
 			this._toDispose,
 		);
+
 		this._codeEditorService.onCodeEditorRemove(
 			this._onDidRemoveEditor,
 			this,
 			this._toDispose,
 		);
+
 		this._codeEditorService
 			.listCodeEditors()
 			.forEach(this._onDidAddEditor, this);
@@ -207,6 +220,7 @@ class MainThreadDocumentAndEditorStateComputer {
 			undefined,
 			this._toDispose,
 		);
+
 		Event.filter(
 			this._paneCompositeService.onDidPaneCompositeClose,
 			(event) =>
@@ -216,6 +230,7 @@ class MainThreadDocumentAndEditorStateComputer {
 			undefined,
 			this._toDispose,
 		);
+
 		this._editorService.onDidVisibleEditorsChange(
 			(_) => (this._activeEditorOrder = ActiveEditorOrder.Editor),
 			undefined,
@@ -227,6 +242,7 @@ class MainThreadDocumentAndEditorStateComputer {
 
 	dispose(): void {
 		this._toDispose.dispose();
+
 		this._toDisposeOnEditorRemove.dispose();
 	}
 
@@ -239,6 +255,7 @@ class MainThreadDocumentAndEditorStateComputer {
 				e.onDidFocusEditorWidget(() => this._updateState(e)),
 			),
 		);
+
 		this._updateState();
 	}
 
@@ -247,6 +264,7 @@ class MainThreadDocumentAndEditorStateComputer {
 
 		if (this._toDisposeOnEditorRemove.has(id)) {
 			this._toDisposeOnEditorRemove.deleteAndDispose(id);
+
 			this._updateState();
 		}
 	}
@@ -302,6 +320,7 @@ class MainThreadDocumentAndEditorStateComputer {
 			if (editor.isSimpleWidget) {
 				continue;
 			}
+
 			const model = editor.getModel();
 
 			if (
@@ -312,6 +331,7 @@ class MainThreadDocumentAndEditorStateComputer {
 				Boolean(this._modelService.getModel(model.uri)) // model disposing, the flag didn't flip yet but the model service already removed it
 			) {
 				const apiEditor = new TextEditorSnapshot(editor);
+
 				editors.set(apiEditor.id, apiEditor);
 
 				if (
@@ -366,6 +386,7 @@ class MainThreadDocumentAndEditorStateComputer {
 
 		if (!delta.isEmpty) {
 			this._currentState = newState;
+
 			this._onDidChangeState(delta);
 		}
 	}
@@ -394,6 +415,7 @@ class MainThreadDocumentAndEditorStateComputer {
 			activeTextEditorControl =
 				activeTextEditorControl.getModifiedEditor();
 		}
+
 		return activeTextEditorControl;
 	}
 }
@@ -401,9 +423,13 @@ class MainThreadDocumentAndEditorStateComputer {
 @extHostCustomer
 export class MainThreadDocumentsAndEditors {
 	private readonly _toDispose = new DisposableStore();
+
 	private readonly _proxy: ExtHostDocumentsAndEditorsShape;
+
 	private readonly _mainThreadDocuments: MainThreadDocuments;
+
 	private readonly _mainThreadEditors: MainThreadTextEditors;
+
 	private readonly _textEditors = new Map<string, MainThreadTextEditor>();
 
 	constructor(
@@ -446,6 +472,7 @@ export class MainThreadDocumentsAndEditors {
 				pathService,
 			),
 		);
+
 		extHostContext.set(
 			MainContext.MainThreadDocuments,
 			this._mainThreadDocuments,
@@ -463,6 +490,7 @@ export class MainThreadDocumentsAndEditors {
 				uriIdentityService,
 			),
 		);
+
 		extHostContext.set(
 			MainContext.MainThreadTextEditors,
 			this._mainThreadEditors,
@@ -505,6 +533,7 @@ export class MainThreadDocumentsAndEditors {
 			);
 
 			this._textEditors.set(apiEditor.id, mainThreadEditor);
+
 			addedEditors.push(mainThreadEditor);
 		}
 
@@ -514,7 +543,9 @@ export class MainThreadDocumentsAndEditors {
 
 			if (mainThreadEditor) {
 				mainThreadEditor.dispose();
+
 				this._textEditors.delete(id);
+
 				removedEditors.push(id);
 			}
 		}
@@ -525,24 +556,33 @@ export class MainThreadDocumentsAndEditors {
 
 		if (delta.newActiveEditor !== undefined) {
 			empty = false;
+
 			extHostDelta.newActiveEditor = delta.newActiveEditor;
 		}
+
 		if (removedDocuments.length > 0) {
 			empty = false;
+
 			extHostDelta.removedDocuments = removedDocuments;
 		}
+
 		if (removedEditors.length > 0) {
 			empty = false;
+
 			extHostDelta.removedEditors = removedEditors;
 		}
+
 		if (delta.addedDocuments.length > 0) {
 			empty = false;
+
 			extHostDelta.addedDocuments = delta.addedDocuments.map((m) =>
 				this._toModelAddData(m),
 			);
 		}
+
 		if (delta.addedEditors.length > 0) {
 			empty = false;
+
 			extHostDelta.addedEditors = addedEditors.map((e) =>
 				this._toTextEditorAddData(e),
 			);
@@ -557,6 +597,7 @@ export class MainThreadDocumentsAndEditors {
 				this._mainThreadDocuments.handleModelRemoved,
 				this._mainThreadDocuments,
 			);
+
 			delta.addedDocuments.forEach(
 				this._mainThreadDocuments.handleModelAdded,
 				this._mainThreadDocuments,
@@ -566,6 +607,7 @@ export class MainThreadDocumentsAndEditors {
 				this._mainThreadEditors.handleTextEditorRemoved,
 				this._mainThreadEditors,
 			);
+
 			addedEditors.forEach(
 				this._mainThreadEditors.handleTextEditorAdded,
 				this._mainThreadEditors,
@@ -610,6 +652,7 @@ export class MainThreadDocumentsAndEditors {
 				);
 			}
 		}
+
 		return undefined;
 	}
 
@@ -619,6 +662,7 @@ export class MainThreadDocumentsAndEditors {
 				return id;
 			}
 		}
+
 		return undefined;
 	}
 
@@ -628,6 +672,7 @@ export class MainThreadDocumentsAndEditors {
 				return id;
 			}
 		}
+
 		return undefined;
 	}
 

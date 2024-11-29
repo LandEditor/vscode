@@ -13,17 +13,21 @@ export class RangeUtil {
 	 * of ranges and calling .detach on them
 	 */
 	private static _handyReadyRange: Range;
+
 	private static _createRange(): Range {
 		if (!this._handyReadyRange) {
 			this._handyReadyRange = document.createRange();
 		}
+
 		return this._handyReadyRange;
 	}
+
 	private static _detachRange(range: Range, endNode: HTMLElement): void {
 		// Move range out of the span node, IE doesn't like having many ranges in
 		// the same spot and will act badly for lines containing dashes ('-')
 		range.selectNodeContents(endNode);
 	}
+
 	private static _readClientRects(
 		startElement: Node,
 		startOffset: number,
@@ -35,6 +39,7 @@ export class RangeUtil {
 
 		try {
 			range.setStart(startElement, startOffset);
+
 			range.setEnd(endElement, endOffset);
 
 			return range.getClientRects();
@@ -45,6 +50,7 @@ export class RangeUtil {
 			this._detachRange(range, endNode);
 		}
 	}
+
 	private static _mergeAdjacentRanges(
 		ranges: FloatHorizontalRange[],
 	): FloatHorizontalRange[] {
@@ -52,6 +58,7 @@ export class RangeUtil {
 			// There is nothing to merge
 			return ranges;
 		}
+
 		ranges.sort(FloatHorizontalRange.compare);
 
 		const result: FloatHorizontalRange[] = [];
@@ -75,13 +82,16 @@ export class RangeUtil {
 				);
 			} else {
 				result[resultLen++] = prev;
+
 				prev = range;
 			}
 		}
+
 		result[resultLen++] = prev;
 
 		return result;
 	}
+
 	private static _createHorizontalRangesFromClientRects(
 		clientRects: DOMRectList | null,
 		clientRectDeltaLeft: number,
@@ -96,6 +106,7 @@ export class RangeUtil {
 
 		for (let i = 0, len = clientRects.length; i < len; i++) {
 			const clientRect = clientRects[i];
+
 			result[i] = new FloatHorizontalRange(
 				Math.max(
 					0,
@@ -104,8 +115,10 @@ export class RangeUtil {
 				clientRect.width / clientRectScale,
 			);
 		}
+
 		return this._mergeAdjacentRanges(result);
 	}
+
 	public static readHorizontalRanges(
 		domNode: HTMLElement,
 		startChildIndex: number,
@@ -122,7 +135,9 @@ export class RangeUtil {
 		if (min > max) {
 			return null;
 		}
+
 		startChildIndex = Math.min(max, Math.max(min, startChildIndex));
+
 		endChildIndex = Math.min(max, Math.max(min, endChildIndex));
 
 		if (
@@ -135,6 +150,7 @@ export class RangeUtil {
 			// To cover cases of empty <span>s, avoid using a range and use the <span>'s bounding box
 			const clientRects =
 				domNode.children[startChildIndex].getClientRects();
+
 			context.markDidDomLayout();
 
 			return this._createHorizontalRangesFromClientRects(
@@ -148,9 +164,11 @@ export class RangeUtil {
 		if (startChildIndex !== endChildIndex) {
 			if (endChildIndex > 0 && endOffset === 0) {
 				endChildIndex--;
+
 				endOffset = Constants.MAX_SAFE_SMALL_INTEGER;
 			}
 		}
+
 		let startElement = domNode.children[startChildIndex].firstChild;
 
 		let endElement = domNode.children[endChildIndex].firstChild;
@@ -159,20 +177,26 @@ export class RangeUtil {
 			// When having an empty <span> (without any text content), try to move to the previous <span>
 			if (!startElement && startOffset === 0 && startChildIndex > 0) {
 				startElement = domNode.children[startChildIndex - 1].firstChild;
+
 				startOffset = Constants.MAX_SAFE_SMALL_INTEGER;
 			}
+
 			if (!endElement && endOffset === 0 && endChildIndex > 0) {
 				endElement = domNode.children[endChildIndex - 1].firstChild;
+
 				endOffset = Constants.MAX_SAFE_SMALL_INTEGER;
 			}
 		}
+
 		if (!startElement || !endElement) {
 			return null;
 		}
+
 		startOffset = Math.min(
 			startElement.textContent!.length,
 			Math.max(0, startOffset),
 		);
+
 		endOffset = Math.min(
 			endElement.textContent!.length,
 			Math.max(0, endOffset),
@@ -185,6 +209,7 @@ export class RangeUtil {
 			endOffset,
 			context.endNode,
 		);
+
 		context.markDidDomLayout();
 
 		return this._createHorizontalRangesFromClientRects(

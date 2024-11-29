@@ -38,10 +38,13 @@ export class AtomicTabMoveOperations {
 					visibleColumn,
 				];
 			}
+
 			if (visibleColumn % tabSize === 0) {
 				prevTabStopPosition = i;
+
 				prevTabStopVisibleColumn = visibleColumn;
 			}
+
 			const chCode = lineContent.charCodeAt(i);
 
 			switch (chCode) {
@@ -63,6 +66,7 @@ export class AtomicTabMoveOperations {
 					return [-1, -1, -1];
 			}
 		}
+
 		if (position === lineLength) {
 			return [
 				prevTabStopPosition,
@@ -70,6 +74,7 @@ export class AtomicTabMoveOperations {
 				visibleColumn,
 			];
 		}
+
 		return [-1, -1, -1];
 	}
 	/**
@@ -147,6 +152,7 @@ export class AtomicTabMoveOperations {
 					// It is a full indentation.
 					return prevTabStopPosition;
 				}
+
 				const chCode = lineContent.charCodeAt(i);
 
 				switch (chCode) {
@@ -167,6 +173,7 @@ export class AtomicTabMoveOperations {
 						return -1;
 				}
 			}
+
 			if (currentVisibleColumn === prevTabStopVisibleColumn + tabSize) {
 				return prevTabStopPosition;
 			}
@@ -185,6 +192,7 @@ export class AtomicTabMoveOperations {
 			if (currentVisibleColumn === targetVisibleColumn) {
 				return i;
 			}
+
 			const chCode = lineContent.charCodeAt(i);
 
 			switch (chCode) {
@@ -209,6 +217,7 @@ export class AtomicTabMoveOperations {
 		if (currentVisibleColumn === targetVisibleColumn) {
 			return lineLength;
 		}
+
 		return -1;
 	}
 }

@@ -27,13 +27,17 @@ export class GpuMarkOverlay extends DynamicViewOverlay {
 		private readonly _viewGpuContext: ViewGpuContext,
 	) {
 		super();
+
 		this._context = context;
+
 		this._renderResult = null;
+
 		this._context.addEventHandler(this);
 	}
 
 	public override dispose(): void {
 		this._context.removeEventHandler(this);
+
 		this._renderResult = null;
 
 		super.dispose();
@@ -46,39 +50,47 @@ export class GpuMarkOverlay extends DynamicViewOverlay {
 	): boolean {
 		return true;
 	}
+
 	public override onCursorStateChanged(
 		e: viewEvents.ViewCursorStateChangedEvent,
 	): boolean {
 		return true;
 	}
+
 	public override onFlushed(e: viewEvents.ViewFlushedEvent): boolean {
 		return true;
 	}
+
 	public override onLinesChanged(
 		e: viewEvents.ViewLinesChangedEvent,
 	): boolean {
 		return true;
 	}
+
 	public override onLinesDeleted(
 		e: viewEvents.ViewLinesDeletedEvent,
 	): boolean {
 		return true;
 	}
+
 	public override onLinesInserted(
 		e: viewEvents.ViewLinesInsertedEvent,
 	): boolean {
 		return true;
 	}
+
 	public override onScrollChanged(
 		e: viewEvents.ViewScrollChangedEvent,
 	): boolean {
 		return e.scrollTopChanged;
 	}
+
 	public override onZonesChanged(
 		e: viewEvents.ViewZonesChangedEvent,
 	): boolean {
 		return true;
 	}
+
 	public override onDecorationsChanged(
 		e: viewEvents.ViewDecorationsChangedEvent,
 	): boolean {
@@ -103,15 +115,19 @@ export class GpuMarkOverlay extends DynamicViewOverlay {
 
 		for (
 			let lineNumber = visibleStartLineNumber;
+
 			lineNumber <= visibleEndLineNumber;
+
 			lineNumber++
 		) {
 			const lineIndex = lineNumber - visibleStartLineNumber;
+
 			const cannotRenderReasons = this._viewGpuContext.canRenderDetailed(
 				options,
 				viewportData,
 				lineNumber,
 			);
+
 			output[lineIndex] = cannotRenderReasons.length
 				? `<div class="${GpuMarkOverlay.CLASS_NAME}" title="Cannot render on GPU: ${cannotRenderReasons.join(", ")}"></div>`
 				: "";
@@ -124,11 +140,13 @@ export class GpuMarkOverlay extends DynamicViewOverlay {
 		if (!this._renderResult) {
 			return "";
 		}
+
 		const lineIndex = lineNumber - startLineNumber;
 
 		if (lineIndex < 0 || lineIndex >= this._renderResult.length) {
 			return "";
 		}
+
 		return this._renderResult[lineIndex];
 	}
 }

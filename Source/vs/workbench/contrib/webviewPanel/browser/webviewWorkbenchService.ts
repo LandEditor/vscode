@@ -53,6 +53,7 @@ export interface IWebViewShowOptions {
 		| GroupIdentifier
 		| ACTIVE_GROUP_TYPE
 		| SIDE_GROUP_TYPE;
+
 	readonly preserveFocus?: boolean;
 }
 export const IWebviewWorkbenchService =
@@ -86,10 +87,15 @@ export interface IWebviewWorkbenchService {
 	 */
 	openRevivedWebview(options: {
 		webviewInitInfo: WebviewInitInfo;
+
 		viewType: string;
+
 		title: string;
+
 		iconPath: WebviewIcons | undefined;
+
 		state: any;
+
 		group: number | undefined;
 	}): WebviewInput;
 	/**
@@ -143,6 +149,7 @@ function canRevive(reviver: WebviewResolver, webview: WebviewInput): boolean {
 }
 export class LazilyResolvedWebviewEditorInput extends WebviewInput {
 	private _resolved = false;
+
 	private _resolvePromise?: CancelablePromise<void>;
 
 	constructor(
@@ -153,15 +160,19 @@ export class LazilyResolvedWebviewEditorInput extends WebviewInput {
 	) {
 		super(init, webview, _webviewWorkbenchService.iconManager);
 	}
+
 	override dispose() {
 		super.dispose();
+
 		this._resolvePromise?.cancel();
+
 		this._resolvePromise = undefined;
 	}
 	@memoize
 	public override async resolve() {
 		if (!this._resolved) {
 			this._resolved = true;
+
 			this._resolvePromise = createCancelablePromise((token) =>
 				this._webviewWorkbenchService.resolveWebview(this, token),
 			);
@@ -174,14 +185,17 @@ export class LazilyResolvedWebviewEditorInput extends WebviewInput {
 				}
 			}
 		}
+
 		return super.resolve();
 	}
+
 	protected override transfer(
 		other: LazilyResolvedWebviewEditorInput,
 	): WebviewInput | undefined {
 		if (!super.transfer(other)) {
 			return;
 		}
+
 		other._resolved = this._resolved;
 
 		return other;
@@ -190,9 +204,12 @@ export class LazilyResolvedWebviewEditorInput extends WebviewInput {
 class RevivalPool {
 	private _awaitingRevival: Array<{
 		readonly input: WebviewInput;
+
 		readonly promise: DeferredPromise<void>;
+
 		readonly disposable: IDisposable;
 	}> = [];
+
 	public enqueueForRestoration(
 		input: WebviewInput,
 		token: CancellationToken,
@@ -213,17 +230,21 @@ class RevivalPool {
 			input.webview.onDidDispose(remove),
 			token.onCancellationRequested(() => {
 				remove();
+
 				promise.cancel();
 			}),
 		);
+
 		this._awaitingRevival.push({ input, promise, disposable });
 
 		return promise.p;
 	}
+
 	public reviveFor(reviver: WebviewResolver, token: CancellationToken) {
 		const toRevive = this._awaitingRevival.filter(({ input }) =>
 			canRevive(reviver, input),
 		);
+
 		this._awaitingRevival = this._awaitingRevival.filter(
 			({ input }) => !canRevive(reviver, input),
 		);
@@ -246,8 +267,11 @@ export class WebviewEditorService
 	implements IWebviewWorkbenchService
 {
 	declare readonly _serviceBrand: undefined;
+
 	private readonly _revivers = new Set<WebviewResolver>();
+
 	private readonly _revivalPool = new RevivalPool();
+
 	private readonly _iconManager: WebviewIconManager;
 
 	constructor(
@@ -261,9 +285,11 @@ export class WebviewEditorService
 		private readonly _webviewService: IWebviewService,
 	) {
 		super();
+
 		this._iconManager = this._register(
 			this._instantiationService.createInstance(WebviewIconManager),
 		);
+
 		this._register(
 			editorGroupsService.registerContextKeyProvider({
 				contextKey: CONTEXT_ACTIVE_WEBVIEW_PANEL_ID,
@@ -271,6 +297,7 @@ export class WebviewEditorService
 					this.getWebviewId(group.activeEditor),
 			}),
 		);
+
 		this._register(
 			_editorService.onDidActiveEditorChange(() => {
 				this.updateActiveWebview();
@@ -282,17 +309,23 @@ export class WebviewEditorService
 				this.updateActiveWebview();
 			}),
 		);
+
 		this.updateActiveWebview();
 	}
+
 	get iconManager() {
 		return this._iconManager;
 	}
+
 	private _activeWebview: WebviewInput | undefined;
+
 	private readonly _onDidChangeActiveWebviewEditor = this._register(
 		new Emitter<WebviewInput | undefined>(),
 	);
+
 	public readonly onDidChangeActiveWebviewEditor =
 		this._onDidChangeActiveWebviewEditor.event;
+
 	private getWebviewId(input: EditorInput | null): string {
 		let webviewInput: WebviewInput | undefined;
 
@@ -305,8 +338,10 @@ export class WebviewEditorService
 				webviewInput = input.secondary;
 			}
 		}
+
 		return webviewInput?.webview.providedViewType ?? "";
 	}
+
 	private updateActiveWebview() {
 		const activeInput = this._editorService.activeEditor;
 
@@ -329,11 +364,14 @@ export class WebviewEditorService
 				newActiveWebview = activeInput.secondary;
 			}
 		}
+
 		if (newActiveWebview !== this._activeWebview) {
 			this._activeWebview = newActiveWebview;
+
 			this._onDidChangeActiveWebviewEditor.fire(newActiveWebview);
 		}
 	}
+
 	public openWebview(
 		webviewInitInfo: WebviewInitInfo,
 		viewType: string,
@@ -353,6 +391,7 @@ export class WebviewEditorService
 			webview,
 			this.iconManager,
 		);
+
 		this._editorService.openEditor(
 			webviewInput,
 			{
@@ -369,6 +408,7 @@ export class WebviewEditorService
 
 		return webviewInput;
 	}
+
 	public revealWebview(
 		webview: WebviewInput,
 		group:
@@ -379,6 +419,7 @@ export class WebviewEditorService
 		preserveFocus: boolean,
 	): void {
 		const topLevelEditor = this.findTopLevelEditorForWebview(webview);
+
 		this._editorService.openEditor(
 			topLevelEditor,
 			{
@@ -392,11 +433,13 @@ export class WebviewEditorService
 			group,
 		);
 	}
+
 	private findTopLevelEditorForWebview(webview: WebviewInput): EditorInput {
 		for (const editor of this._editorService.editors) {
 			if (editor === webview) {
 				return editor;
 			}
+
 			if (editor instanceof DiffEditorInput) {
 				if (
 					webview === editor.primary ||
@@ -406,19 +449,27 @@ export class WebviewEditorService
 				}
 			}
 		}
+
 		return webview;
 	}
+
 	public openRevivedWebview(options: {
 		webviewInitInfo: WebviewInitInfo;
+
 		viewType: string;
+
 		title: string;
+
 		iconPath: WebviewIcons | undefined;
+
 		state: any;
+
 		group: number | undefined;
 	}): WebviewInput {
 		const webview = this._webviewService.createWebviewOverlay(
 			options.webviewInitInfo,
 		);
+
 		webview.state = options.state;
 
 		const webviewInput = this._instantiationService.createInstance(
@@ -430,34 +481,42 @@ export class WebviewEditorService
 			},
 			webview,
 		);
+
 		webviewInput.iconPath = options.iconPath;
 
 		if (typeof options.group === "number") {
 			webviewInput.updateGroup(options.group);
 		}
+
 		return webviewInput;
 	}
+
 	public registerResolver(reviver: WebviewResolver): IDisposable {
 		this._revivers.add(reviver);
 
 		const cts = new CancellationTokenSource();
+
 		this._revivalPool.reviveFor(reviver, cts.token);
 
 		return toDisposable(() => {
 			this._revivers.delete(reviver);
+
 			cts.dispose(true);
 		});
 	}
+
 	public shouldPersist(webview: WebviewInput): boolean {
 		// Revived webviews may not have an actively registered reviver but we still want to persist them
 		// since a reviver should exist when it is actually needed.
 		if (webview instanceof LazilyResolvedWebviewEditorInput) {
 			return true;
 		}
+
 		return Iterable.some(this._revivers.values(), (reviver) =>
 			canRevive(reviver, webview),
 		);
 	}
+
 	private async tryRevive(
 		webview: WebviewInput,
 		token: CancellationToken,
@@ -469,8 +528,10 @@ export class WebviewEditorService
 				return true;
 			}
 		}
+
 		return false;
 	}
+
 	public async resolveWebview(
 		webview: WebviewInput,
 		token: CancellationToken,
@@ -482,6 +543,7 @@ export class WebviewEditorService
 			return this._revivalPool.enqueueForRestoration(webview, token);
 		}
 	}
+
 	public setIcons(id: string, iconPath: WebviewIcons | undefined): void {
 		this._iconManager.setIcons(id, iconPath);
 	}

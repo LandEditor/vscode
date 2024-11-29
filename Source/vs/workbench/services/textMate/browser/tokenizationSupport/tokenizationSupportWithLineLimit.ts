@@ -29,6 +29,7 @@ export class TokenizationSupportWithLineLimit
 	get backgroundTokenizerShouldOnlyVerifyTokens(): boolean | undefined {
 		return this._actual.backgroundTokenizerShouldOnlyVerifyTokens;
 	}
+
 	constructor(
 		private readonly _encodedLanguageId: LanguageId,
 		private readonly _actual: ITokenizationSupport,
@@ -36,15 +37,20 @@ export class TokenizationSupportWithLineLimit
 		private readonly _maxTokenizationLineLength: IObservable<number>,
 	) {
 		super();
+
 		this._register(keepObserved(this._maxTokenizationLineLength));
+
 		this._register(disposable);
 	}
+
 	getInitialState(): IState {
 		return this._actual.getInitialState();
 	}
+
 	tokenize(line: string, hasEOL: boolean, state: IState): TokenizationResult {
 		throw new Error("Not supported!");
 	}
+
 	tokenizeEncoded(
 		line: string,
 		hasEOL: boolean,
@@ -54,8 +60,10 @@ export class TokenizationSupportWithLineLimit
 		if (line.length >= this._maxTokenizationLineLength.get()) {
 			return nullTokenizeEncoded(this._encodedLanguageId, state);
 		}
+
 		return this._actual.tokenizeEncoded(line, hasEOL, state);
 	}
+
 	createBackgroundTokenizer(
 		textModel: ITextModel,
 		store: IBackgroundTokenizationStore,

@@ -324,7 +324,9 @@ Registry.as<IConfigurationMigrationRegistry>(
 
 export interface ITestingCoverageBarThresholds {
 	red: number;
+
 	green: number;
+
 	yellow: number;
 }
 

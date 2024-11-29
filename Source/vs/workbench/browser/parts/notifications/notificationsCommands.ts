@@ -98,16 +98,24 @@ export const TOGGLE_DO_NOT_DISTURB_MODE_BY_SOURCE =
 
 export interface INotificationsCenterController {
 	readonly isVisible: boolean;
+
 	show(): void;
+
 	hide(): void;
+
 	clearAll(): void;
 }
 export interface INotificationsToastController {
 	focus(): void;
+
 	focusNext(): void;
+
 	focusPrevious(): void;
+
 	focusFirst(): void;
+
 	focusLast(): void;
+
 	hide(): void;
 }
 export function getNotificationFromContext(
@@ -117,6 +125,7 @@ export function getNotificationFromContext(
 	if (isNotificationViewItem(context)) {
 		return context;
 	}
+
 	const list = listService.lastFocusedList;
 
 	if (list instanceof WorkbenchList) {
@@ -131,10 +140,12 @@ export function getNotificationFromContext(
 				element = list.element(0);
 			}
 		}
+
 		if (isNotificationViewItem(element)) {
 			return element;
 		}
 	}
+
 	return undefined;
 }
 export function registerNotificationCommands(
@@ -152,6 +163,7 @@ export function registerNotificationCommands(
 		),
 		handler: () => {
 			toasts.hide();
+
 			center.show();
 		},
 	});
@@ -180,6 +192,7 @@ export function registerNotificationCommands(
 					);
 				}
 			}
+
 			center.hide();
 		},
 	});
@@ -189,6 +202,7 @@ export function registerNotificationCommands(
 			center.hide();
 		} else {
 			toasts.hide();
+
 			center.show();
 		}
 	});
@@ -213,6 +227,7 @@ export function registerNotificationCommands(
 
 			if (notification && !notification.hasProgress) {
 				notification.close();
+
 				accessibilitySignalService.playSignal(
 					AccessibilitySignal.clear,
 				);
@@ -230,6 +245,7 @@ export function registerNotificationCommands(
 				accessor.get(IListService),
 				args,
 			);
+
 			notification?.expand();
 		},
 	});
@@ -254,6 +270,7 @@ export function registerNotificationCommands(
 			if (!notification) {
 				return;
 			}
+
 			const primaryAction = notification.actions?.primary
 				? notification.actions.primary.at(0)
 				: undefined;
@@ -261,7 +278,9 @@ export function registerNotificationCommands(
 			if (!primaryAction) {
 				return;
 			}
+
 			actionRunner.run(primaryAction, notification);
+
 			notification.close();
 		},
 	});
@@ -276,6 +295,7 @@ export function registerNotificationCommands(
 				accessor.get(IListService),
 				args,
 			);
+
 			notification?.collapse();
 		},
 	});
@@ -290,6 +310,7 @@ export function registerNotificationCommands(
 			const notification = getNotificationFromContext(
 				accessor.get(IListService),
 			);
+
 			notification?.toggle();
 		},
 	});
@@ -312,14 +333,17 @@ export function registerNotificationCommands(
 				);
 			}
 		}
+
 		toasts.hide();
 	});
+
 	KeybindingsRegistry.registerKeybindingRule({
 		id: HIDE_NOTIFICATION_TOAST,
 		weight: KeybindingWeight.WorkbenchContrib - 50, // lower when not focused (e.g. let editor suggest win over this command)
 		when: NotificationsToastsVisibleContext,
 		primary: KeyCode.Escape,
 	});
+
 	KeybindingsRegistry.registerKeybindingRule({
 		id: HIDE_NOTIFICATION_TOAST,
 		weight: KeybindingWeight.WorkbenchContrib + 100, // higher when focused
@@ -394,6 +418,7 @@ export function registerNotificationCommands(
 	// Toggle Do Not Disturb Mode
 	CommandsRegistry.registerCommand(TOGGLE_DO_NOT_DISTURB_MODE, (accessor) => {
 		const notificationService = accessor.get(INotificationService);
+
 		notificationService.setFilter(
 			notificationService.getFilter() === NotificationsFilter.ERROR
 				? NotificationsFilter.OFF
@@ -419,21 +444,27 @@ export function registerNotificationCommands(
 					IQuickPickItem & INotificationSourceFilter
 				>(),
 			);
+
 			picker.items = sortedFilters.map((source) => ({
 				id: source.id,
 				label: source.label,
 				tooltip: `${source.label} (${source.id})`,
 				filter: source.filter,
 			}));
+
 			picker.canSelectMany = true;
+
 			picker.placeholder = localize(
 				"selectSources",
 				"Select sources to enable all notifications from",
 			);
+
 			picker.selectedItems = picker.items.filter(
 				(item) => item.filter === NotificationsFilter.OFF,
 			);
+
 			picker.show();
+
 			disposables.add(
 				picker.onDidAccept(async () => {
 					for (const item of picker.items) {
@@ -445,14 +476,17 @@ export function registerNotificationCommands(
 								: NotificationsFilter.ERROR,
 						});
 					}
+
 					picker.hide();
 				}),
 			);
+
 			disposables.add(picker.onDidHide(() => disposables.dispose()));
 		},
 	);
 	// Commands for Command Palette
 	const category = localize2("notifications", "Notifications");
+
 	MenuRegistry.appendMenuItem(MenuId.CommandPalette, {
 		command: {
 			id: SHOW_NOTIFICATIONS_CENTER,
@@ -460,6 +494,7 @@ export function registerNotificationCommands(
 			category,
 		},
 	});
+
 	MenuRegistry.appendMenuItem(MenuId.CommandPalette, {
 		command: {
 			id: HIDE_NOTIFICATIONS_CENTER,
@@ -468,6 +503,7 @@ export function registerNotificationCommands(
 		},
 		when: NotificationsCenterVisibleContext,
 	});
+
 	MenuRegistry.appendMenuItem(MenuId.CommandPalette, {
 		command: {
 			id: CLEAR_ALL_NOTIFICATIONS,
@@ -478,6 +514,7 @@ export function registerNotificationCommands(
 			category,
 		},
 	});
+
 	MenuRegistry.appendMenuItem(MenuId.CommandPalette, {
 		command: {
 			id: ACCEPT_PRIMARY_ACTION_NOTIFICATION,
@@ -488,6 +525,7 @@ export function registerNotificationCommands(
 			category,
 		},
 	});
+
 	MenuRegistry.appendMenuItem(MenuId.CommandPalette, {
 		command: {
 			id: TOGGLE_DO_NOT_DISTURB_MODE,
@@ -498,6 +536,7 @@ export function registerNotificationCommands(
 			category,
 		},
 	});
+
 	MenuRegistry.appendMenuItem(MenuId.CommandPalette, {
 		command: {
 			id: TOGGLE_DO_NOT_DISTURB_MODE_BY_SOURCE,
@@ -508,6 +547,7 @@ export function registerNotificationCommands(
 			category,
 		},
 	});
+
 	MenuRegistry.appendMenuItem(MenuId.CommandPalette, {
 		command: {
 			id: FOCUS_NOTIFICATION_TOAST,
@@ -522,32 +562,48 @@ export function registerNotificationCommands(
 }
 interface NotificationActionMetrics {
 	readonly id: string;
+
 	readonly actionLabel: string;
+
 	readonly source: string;
+
 	readonly silent: boolean;
 }
 type NotificationActionMetricsClassification = {
 	id: {
 		classification: "SystemMetaData";
+
 		purpose: "FeatureInsight";
+
 		comment: "The identifier of the action that was run from a notification.";
 	};
+
 	actionLabel: {
 		classification: "SystemMetaData";
+
 		purpose: "FeatureInsight";
+
 		comment: "The label of the action that was run from a notification.";
 	};
+
 	source: {
 		classification: "SystemMetaData";
+
 		purpose: "FeatureInsight";
+
 		comment: "The source of the notification where an action was run.";
 	};
+
 	silent: {
 		classification: "SystemMetaData";
+
 		purpose: "FeatureInsight";
+
 		comment: "Whether the notification where an action was run is silent or not.";
 	};
+
 	owner: "bpasero";
+
 	comment: "Tracks when actions are fired from notifcations and how they were fired.";
 };
 
@@ -560,6 +616,7 @@ export class NotificationActionRunner extends ActionRunner {
 	) {
 		super();
 	}
+
 	protected override async runAction(
 		action: IAction,
 		context: unknown,

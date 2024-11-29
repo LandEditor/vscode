@@ -27,9 +27,11 @@ export class StorageDatabaseChannel
 	implements IServerChannel
 {
 	private static readonly STORAGE_CHANGE_DEBOUNCE_TIME = 100;
+
 	private readonly onDidChangeApplicationStorageEmitter = this._register(
 		new Emitter<ISerializableItemsChangeEvent>(),
 	);
+
 	private readonly mapProfileToOnDidChangeProfileStorageEmitter = new Map<
 		string /* profile ID */,
 		Emitter<ISerializableItemsChangeEvent>
@@ -40,6 +42,7 @@ export class StorageDatabaseChannel
 		private readonly storageMainService: IStorageMainService,
 	) {
 		super();
+
 		this.registerStorageChangeListeners(
 			storageMainService.applicationStorage,
 			this.onDidChangeApplicationStorageEmitter,
@@ -64,6 +67,7 @@ export class StorageDatabaseChannel
 					} else {
 						prev.push(cur);
 					}
+
 					return prev;
 				},
 				StorageDatabaseChannel.STORAGE_CHANGE_DEBOUNCE_TIME,
@@ -76,6 +80,7 @@ export class StorageDatabaseChannel
 			}),
 		);
 	}
+
 	private serializeStorageChangeEvents(
 		events: IStorageChangeEvent[],
 		storage: IStorageMain,
@@ -83,6 +88,7 @@ export class StorageDatabaseChannel
 		const changed = new Map<Key, Value>();
 
 		const deleted = new Set<Key>();
+
 		events.forEach((event) => {
 			const existing = storage.get(event.key);
 
@@ -98,6 +104,7 @@ export class StorageDatabaseChannel
 			deleted: Array.from(deleted.values()),
 		};
 	}
+
 	listen(
 		_: unknown,
 		event: string,
@@ -122,18 +129,22 @@ export class StorageDatabaseChannel
 					profileStorageChangeEmitter = this._register(
 						new Emitter<ISerializableItemsChangeEvent>(),
 					);
+
 					this.registerStorageChangeListeners(
 						this.storageMainService.profileStorage(profile),
 						profileStorageChangeEmitter,
 					);
+
 					this.mapProfileToOnDidChangeProfileStorageEmitter.set(
 						profile.id,
 						profileStorageChangeEmitter,
 					);
 				}
+
 				return profileStorageChangeEmitter.event;
 			}
 		}
+
 		throw new Error(`Event not found: ${event}`);
 	}
 	//#endregion
@@ -154,6 +165,7 @@ export class StorageDatabaseChannel
 			case "getItems": {
 				return Array.from(storage.items.entries());
 			}
+
 			case "updateItems": {
 				const items: ISerializableUpdateRequest = arg;
 
@@ -162,13 +174,16 @@ export class StorageDatabaseChannel
 						storage.set(key, value);
 					}
 				}
+
 				items.delete?.forEach((key) => storage.delete(key));
 
 				break;
 			}
+
 			case "optimize": {
 				return storage.optimize();
 			}
+
 			case "isUsed": {
 				const path = arg.payload as string | undefined;
 
@@ -176,10 +191,12 @@ export class StorageDatabaseChannel
 					return this.storageMainService.isUsed(path);
 				}
 			}
+
 			default:
 				throw new Error(`Call not found: ${command}`);
 		}
 	}
+
 	private async withStorageInitialized(
 		profile: IUserDataProfile | undefined,
 		workspace: IAnyWorkspaceIdentifier | undefined,
@@ -193,6 +210,7 @@ export class StorageDatabaseChannel
 		} else {
 			storage = this.storageMainService.applicationStorage;
 		}
+
 		try {
 			await storage.init();
 		} catch (error) {
@@ -200,6 +218,7 @@ export class StorageDatabaseChannel
 				`StorageIPC#init: Unable to init ${workspace ? "workspace" : profile ? "profile" : "application"} storage due to ${error}`,
 			);
 		}
+
 		return storage;
 	}
 }

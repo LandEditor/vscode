@@ -6,6 +6,7 @@ import { MarshalledId } from "../../../../base/common/marshallingIds.js";
 
 export interface IChatViewTitleActionContext {
 	$mid: MarshalledId.ChatViewContext;
+
 	sessionId: string;
 }
 export function isChatViewTitleActionContext(

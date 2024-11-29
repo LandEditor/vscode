@@ -60,13 +60,17 @@ export interface IEditorPaneRegistry {
  */
 export class EditorPaneDescriptor implements IEditorPaneDescriptor {
 	private static readonly instantiatedEditorPanes = new Set<string>();
+
 	static didInstantiateEditorPane(typeId: string): boolean {
 		return EditorPaneDescriptor.instantiatedEditorPanes.has(typeId);
 	}
+
 	private static readonly _onWillInstantiateEditorPane =
 		new Emitter<IWillInstantiateEditorPaneEvent>();
+
 	static readonly onWillInstantiateEditorPane =
 		EditorPaneDescriptor._onWillInstantiateEditorPane.event;
+
 	static create<Services extends BrandedService[]>(
 		ctor: {
 			new (group: IEditorGroup, ...services: Services): EditorPane;
@@ -80,6 +84,7 @@ export class EditorPaneDescriptor implements IEditorPaneDescriptor {
 			name,
 		);
 	}
+
 	private constructor(
 		private readonly ctor: IConstructorSignature<
 			EditorPane,
@@ -88,6 +93,7 @@ export class EditorPaneDescriptor implements IEditorPaneDescriptor {
 		readonly typeId: string,
 		readonly name: string,
 	) {}
+
 	instantiate(
 		instantiationService: IInstantiationService,
 		group: IEditorGroup,
@@ -97,10 +103,12 @@ export class EditorPaneDescriptor implements IEditorPaneDescriptor {
 		});
 
 		const pane = instantiationService.createInstance(this.ctor, group);
+
 		EditorPaneDescriptor.instantiatedEditorPanes.add(this.typeId);
 
 		return pane;
 	}
+
 	describes(editorPane: EditorPane): boolean {
 		return editorPane.getId() === this.typeId;
 	}
@@ -110,6 +118,7 @@ export class EditorPaneRegistry implements IEditorPaneRegistry {
 		EditorPaneDescriptor,
 		readonly SyncDescriptor<EditorInput>[]
 	>();
+
 	registerEditorPane(
 		editorPaneDescriptor: EditorPaneDescriptor,
 		editorDescriptors: readonly SyncDescriptor<EditorInput>[],
@@ -123,17 +132,21 @@ export class EditorPaneRegistry implements IEditorPaneRegistry {
 			this.mapEditorPanesToEditors.delete(editorPaneDescriptor);
 		});
 	}
+
 	getEditorPane(editor: EditorInput): EditorPaneDescriptor | undefined {
 		const descriptors = this.findEditorPaneDescriptors(editor);
 
 		if (descriptors.length === 0) {
 			return undefined;
 		}
+
 		if (descriptors.length === 1) {
 			return descriptors[0];
 		}
+
 		return editor.prefersEditorPane(descriptors);
 	}
+
 	private findEditorPaneDescriptors(
 		editor: EditorInput,
 		byInstanceOf?: boolean,
@@ -164,6 +177,7 @@ export class EditorPaneRegistry implements IEditorPaneRegistry {
 		if (!byInstanceOf && matchingEditorPaneDescriptors.length === 0) {
 			return this.findEditorPaneDescriptors(editor, true);
 		}
+
 		return matchingEditorPaneDescriptors;
 	}
 	//#region Used for tests only
@@ -173,9 +187,11 @@ export class EditorPaneRegistry implements IEditorPaneRegistry {
 			(editor) => editor.typeId === typeId,
 		);
 	}
+
 	getEditorPanes(): readonly EditorPaneDescriptor[] {
 		return Array.from(this.mapEditorPanesToEditors.keys());
 	}
+
 	getEditors(): SyncDescriptor<EditorInput>[] {
 		const editorClasses: SyncDescriptor<EditorInput>[] = [];
 
@@ -191,6 +207,7 @@ export class EditorPaneRegistry implements IEditorPaneRegistry {
 				);
 			}
 		}
+
 		return editorClasses;
 	}
 }
@@ -214,6 +231,7 @@ export function whenEditorClosed(
 			if (event.context === EditorCloseContext.MOVE) {
 				return; // ignore move events where the editor will open in another group
 			}
+
 			let primaryResource = EditorResourceAccessor.getOriginalUri(
 				event.editor,
 				{ supportSideBySide: SideBySideEditor.PRIMARY },
@@ -248,6 +266,7 @@ export function whenEditorClosed(
 				) {
 					primaryResource = undefined;
 				}
+
 				if (
 					uriIdentityService.extUri.isEqual(
 						secondaryResource,
@@ -341,6 +360,7 @@ export function whenEditorClosed(
 						),
 					);
 				}
+
 				listener.dispose();
 
 				return resolve();
@@ -361,6 +381,7 @@ export function computeEditorAriaLabel(
 	if (group && !group.isPinned(input)) {
 		ariaLabel = localize("preview", "{0}, preview", ariaLabel);
 	}
+
 	if (group?.isSticky(index ?? input)) {
 		ariaLabel = localize("pinned", "{0}, pinned", ariaLabel);
 	}
@@ -370,6 +391,7 @@ export function computeEditorAriaLabel(
 	if (group && typeof groupCount === "number" && groupCount > 1) {
 		ariaLabel = `${ariaLabel}, ${group.ariaLabel}`;
 	}
+
 	return ariaLabel;
 }
 //#endregion

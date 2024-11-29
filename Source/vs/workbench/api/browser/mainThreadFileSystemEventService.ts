@@ -61,8 +61,11 @@ export class MainThreadFileSystemEventService
 	implements MainThreadFileSystemEventServiceShape
 {
 	static readonly MementoKeyAdditionalEdits = `file.particpants.additionalEdits`;
+
 	private readonly _proxy: ExtHostFileSystemEventServiceShape;
+
 	private readonly _listener = new DisposableStore();
+
 	private readonly _watches = new DisposableMap<number>();
 
 	constructor(
@@ -91,6 +94,7 @@ export class MainThreadFileSystemEventService
 		this._proxy = extHostContext.getProxy(
 			ExtHostContext.ExtHostFileSystemEventService,
 		);
+
 		this._listener.add(
 			_fileService.onDidFilesChange((event) => {
 				this._proxy.$onFileEvent({
@@ -116,6 +120,7 @@ export class MainThreadFileSystemEventService
 				if (undoInfo?.isUndoing) {
 					return;
 				}
+
 				const cts = new CancellationTokenSource(token);
 
 				const timer = setTimeout(() => cts.cancel(), timeout);
@@ -147,6 +152,7 @@ export class MainThreadFileSystemEventService
 					)
 					.finally(() => {
 						cts.dispose();
+
 						clearTimeout(timer);
 					});
 
@@ -154,6 +160,7 @@ export class MainThreadFileSystemEventService
 					// cancelled, no reply, or no edits
 					return;
 				}
+
 				const needsConfirmation = data.edit.edits.some(
 					(edit) => edit.metadata?.needsConfirmation,
 				);
@@ -167,6 +174,7 @@ export class MainThreadFileSystemEventService
 					// don't show dialog in tests
 					showPreview = false;
 				}
+
 				if (showPreview === undefined) {
 					// show a user facing message
 					let message: string;
@@ -244,6 +252,7 @@ export class MainThreadFileSystemEventService
 							);
 						}
 					}
+
 					if (needsConfirmation) {
 						// edit which needs confirmation -> always show dialog
 						const { confirmed } = await dialogService.confirm({
@@ -255,6 +264,7 @@ export class MainThreadFileSystemEventService
 							),
 							cancelButton: localize("cancel", "Skip Changes"),
 						});
+
 						showPreview = true;
 
 						if (!confirmed) {
@@ -268,6 +278,7 @@ export class MainThreadFileSystemEventService
 							Preview = 1,
 							Cancel = 2,
 						}
+
 						const { result, checkboxChecked } =
 							await dialogService.prompt<Choice>({
 								type: Severity.Info,
@@ -314,6 +325,7 @@ export class MainThreadFileSystemEventService
 							// no changes wanted, don't persist cancel option
 							return;
 						}
+
 						showPreview = result === Choice.Preview;
 
 						if (checkboxChecked) {
@@ -326,15 +338,18 @@ export class MainThreadFileSystemEventService
 						}
 					}
 				}
+
 				logService.info(
 					"[onWill-handler] applying additional workspace edit from extensions",
 					data.extensionNames,
 				);
+
 				await bulkEditService.apply(
 					reviveWorkspaceEditDto(data.edit, uriIdentService),
 					{ undoRedoGroupId: undoInfo?.undoRedoGroupId, showPreview },
 				);
 			}
+
 			private _progressLabel(operation: FileOperation): string {
 				switch (operation) {
 					case FileOperation.CREATE:
@@ -382,6 +397,7 @@ export class MainThreadFileSystemEventService
 			),
 		);
 	}
+
 	async $watch(
 		extensionId: string,
 		session: number,
@@ -420,6 +436,7 @@ export class MainThreadFileSystemEventService
 			const subscription = watcherDisposables.add(
 				this._fileService.createWatcher(uri, opts),
 			);
+
 			watcherDisposables.add(
 				subscription.onDidChange((event) => {
 					this._proxy.$onFileEvent({
@@ -430,6 +447,7 @@ export class MainThreadFileSystemEventService
 					});
 				}),
 			);
+
 			this._watches.set(session, watcherDisposables);
 		}
 		// Uncorrelated file watching: via shared `watch()`
@@ -439,6 +457,7 @@ export class MainThreadFileSystemEventService
 			);
 
 			const subscription = this._fileService.watch(uri, opts);
+
 			this._watches.set(session, subscription);
 		}
 	}
@@ -447,11 +466,14 @@ export class MainThreadFileSystemEventService
 			this._logService.trace(
 				`MainThreadFileSystemEventService#$unwatch(): request to stop watching (session: ${session})`,
 			);
+
 			this._watches.deleteAndDispose(session);
 		}
 	}
+
 	dispose(): void {
 		this._listener.dispose();
+
 		this._watches.dispose();
 	}
 }
@@ -470,6 +492,7 @@ registerAction2(
 				f1: true,
 			});
 		}
+
 		run(accessor: ServicesAccessor) {
 			accessor
 				.get(IStorageService)

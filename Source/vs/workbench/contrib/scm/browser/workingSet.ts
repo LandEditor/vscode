@@ -33,11 +33,14 @@ import { getProviderKey } from "./util.js";
 
 type ISCMSerializedWorkingSet = {
 	readonly providerKey: string;
+
 	readonly currentHistoryItemGroupId: string;
+
 	readonly editorWorkingSets: [string, IEditorWorkingSet][];
 };
 interface ISCMRepositoryWorkingSet {
 	readonly currentHistoryItemGroupId: string;
+
 	readonly editorWorkingSets: Map<string, IEditorWorkingSet>;
 }
 export class SCMWorkingSetController
@@ -45,12 +48,15 @@ export class SCMWorkingSetController
 	implements IWorkbenchContribution
 {
 	static readonly ID = "workbench.contrib.scmWorkingSets";
+
 	private _workingSets!: Map<string, ISCMRepositoryWorkingSet>;
+
 	private _enabledConfig = observableConfigValue<boolean>(
 		"scm.workingSets.enabled",
 		false,
 		this.configurationService,
 	);
+
 	private readonly _repositoryDisposables =
 		new DisposableMap<ISCMRepository>();
 
@@ -67,6 +73,7 @@ export class SCMWorkingSetController
 		private readonly layoutService: IWorkbenchLayoutService,
 	) {
 		super();
+
 		this._store.add(
 			autorunWithStore((reader, store) => {
 				if (!this._enabledConfig.read(reader)) {
@@ -74,16 +81,20 @@ export class SCMWorkingSetController
 						"scm.workingSets",
 						StorageScope.WORKSPACE,
 					);
+
 					this._repositoryDisposables.clearAndDisposeAll();
 
 					return;
 				}
+
 				this._workingSets = this._loadWorkingSets();
+
 				this.scmService.onDidAddRepository(
 					this._onDidAddRepository,
 					this,
 					store,
 				);
+
 				this.scmService.onDidRemoveRepository(
 					this._onDidRemoveRepository,
 					this,
@@ -96,6 +107,7 @@ export class SCMWorkingSetController
 			}),
 		);
 	}
+
 	private _onDidAddRepository(repository: ISCMRepository): void {
 		const disposables = new DisposableStore();
 
@@ -107,6 +119,7 @@ export class SCMWorkingSetController
 
 			return historyItemRef?.id;
 		});
+
 		disposables.add(
 			autorun(async (reader) => {
 				const historyItemRefIdValue = historyItemRefId.read(reader);
@@ -114,6 +127,7 @@ export class SCMWorkingSetController
 				if (!historyItemRefIdValue) {
 					return;
 				}
+
 				const providerKey = getProviderKey(repository.provider);
 
 				const repositoryWorkingSets =
@@ -147,11 +161,14 @@ export class SCMWorkingSetController
 				);
 			}),
 		);
+
 		this._repositoryDisposables.set(repository, disposables);
 	}
+
 	private _onDidRemoveRepository(repository: ISCMRepository): void {
 		this._repositoryDisposables.deleteAndDispose(repository);
 	}
+
 	private _loadWorkingSets(): Map<string, ISCMRepositoryWorkingSet> {
 		const workingSets = new Map<string, ISCMRepositoryWorkingSet>();
 
@@ -163,6 +180,7 @@ export class SCMWorkingSetController
 		if (!workingSetsRaw) {
 			return workingSets;
 		}
+
 		for (const serializedWorkingSet of JSON.parse(
 			workingSetsRaw,
 		) as ISCMSerializedWorkingSet[]) {
@@ -174,8 +192,10 @@ export class SCMWorkingSetController
 				),
 			});
 		}
+
 		return workingSets;
 	}
+
 	private _saveWorkingSet(
 		providerKey: string,
 		currentHistoryItemGroupId: string,
@@ -189,6 +209,7 @@ export class SCMWorkingSetController
 		const editorWorkingSet = this.editorGroupsService.saveWorkingSet(
 			previousHistoryItemGroupId,
 		);
+
 		this._workingSets.set(providerKey, {
 			currentHistoryItemGroupId,
 			editorWorkingSets: editorWorkingSets.set(
@@ -209,6 +230,7 @@ export class SCMWorkingSetController
 				editorWorkingSets: [...editorWorkingSets],
 			});
 		}
+
 		this.storageService.store(
 			"scm.workingSets",
 			JSON.stringify(workingSets),
@@ -216,6 +238,7 @@ export class SCMWorkingSetController
 			StorageTarget.MACHINE,
 		);
 	}
+
 	private async _restoreWorkingSet(
 		providerKey: string,
 		currentHistoryItemGroupId: string,
@@ -225,6 +248,7 @@ export class SCMWorkingSetController
 		if (!workingSets) {
 			return;
 		}
+
 		let editorWorkingSetId: IEditorWorkingSet | "empty" | undefined =
 			workingSets.editorWorkingSets.get(currentHistoryItemGroupId);
 
@@ -236,17 +260,20 @@ export class SCMWorkingSetController
 		) {
 			editorWorkingSetId = "empty";
 		}
+
 		if (editorWorkingSetId) {
 			// Applying a working set can be the result of a user action that has been
 			// initiated from the terminal (ex: switching branches). As such, we want
 			// to preserve the focus in the terminal. This does not cover the scenario
 			// in which the terminal is in the editor part.
 			const preserveFocus = this.layoutService.hasFocus(Parts.PANEL_PART);
+
 			await this.editorGroupsService.applyWorkingSet(editorWorkingSetId, {
 				preserveFocus,
 			});
 		}
 	}
+
 	override dispose(): void {
 		this._repositoryDisposables.dispose();
 

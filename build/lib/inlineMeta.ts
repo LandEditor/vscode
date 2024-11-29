@@ -8,7 +8,9 @@ import * as File from "vinyl";
 
 export interface IInlineMetaContext {
 	readonly targetPaths: string[];
+
 	readonly packageJsonFn: () => string;
+
 	readonly productJsonFn: () => string;
 }
 
@@ -41,6 +43,7 @@ export function inlineMeta(
 							-1,
 						) /* trim braces */,
 					);
+
 					markerFound = true;
 				}
 				// const productMarker = `${productJsonMarkerId}:"${productJsonMarkerId}"`; // this needs to be the format after esbuild has processed the file (e.g. double quotes)
@@ -48,10 +51,12 @@ export function inlineMeta(
 				// 	content = content.replace(productMarker, JSON.stringify(JSON.parse(ctx.productJsonFn())).slice(1, -1) /* trim braces */);
 				// 	markerFound = true;
 				// }
+
 				if (markerFound) {
 					file.contents = Buffer.from(content);
 				}
 			}
+
 			this.emit("data", file);
 		}),
 	);
@@ -63,5 +68,6 @@ function matchesFile(file: File, ctx: IInlineMetaContext): boolean {
 			return true;
 		}
 	}
+
 	return false;
 }

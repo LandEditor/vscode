@@ -43,6 +43,7 @@ abstract class MergeEditorAction extends Action2 {
 	constructor(desc: Readonly<IAction2Options>) {
 		super(desc);
 	}
+
 	run(accessor: ServicesAccessor): void {
 		const { activeEditorPane } = accessor.get(IEditorService);
 
@@ -52,9 +53,11 @@ abstract class MergeEditorAction extends Action2 {
 			if (!vm) {
 				return;
 			}
+
 			this.runWithViewModel(vm, accessor);
 		}
 	}
+
 	abstract runWithViewModel(
 		viewModel: MergeEditorViewModel,
 		accessor: ServicesAccessor,
@@ -62,14 +65,18 @@ abstract class MergeEditorAction extends Action2 {
 }
 interface MergeEditorAction2Args {
 	inputModel: IMergeEditorInputModel;
+
 	viewModel: MergeEditorViewModel;
+
 	input: MergeEditorInput;
+
 	editorIdentifier: IEditorIdentifier;
 }
 abstract class MergeEditorAction2 extends Action2 {
 	constructor(desc: Readonly<IAction2Options>) {
 		super(desc);
 	}
+
 	override run(accessor: ServicesAccessor, ...args: any[]): void {
 		const { activeEditorPane } = accessor.get(IEditorService);
 
@@ -79,6 +86,7 @@ abstract class MergeEditorAction2 extends Action2 {
 			if (!vm) {
 				return;
 			}
+
 			return this.runWithMergeEditor(
 				{
 					viewModel: vm,
@@ -94,6 +102,7 @@ abstract class MergeEditorAction2 extends Action2 {
 			) as any;
 		}
 	}
+
 	abstract runWithMergeEditor(
 		context: MergeEditorAction2Args,
 		accessor: ServicesAccessor,
@@ -107,6 +116,7 @@ export class OpenMergeEditor extends Action2 {
 			title: localize2("title", "Open Merge Editor"),
 		});
 	}
+
 	run(accessor: ServicesAccessor, ...args: unknown[]): void {
 		const validatedArgs = IRelaxedOpenArgs.validate(args[0]);
 
@@ -127,19 +137,24 @@ export class OpenMergeEditor extends Action2 {
 			result: { resource: validatedArgs.output },
 			options: { preserveFocus: true },
 		};
+
 		accessor.get(IEditorService).openEditor(input);
 	}
 }
 namespace IRelaxedOpenArgs {
 	export function validate(obj: unknown): {
 		base: URI;
+
 		input1: MergeEditorInputData;
+
 		input2: MergeEditorInputData;
+
 		output: URI;
 	} {
 		if (!obj || typeof obj !== "object") {
 			throw new TypeError("invalid argument");
 		}
+
 		const o = obj as IRelaxedOpenArgs;
 
 		const base = toUri(o.base);
@@ -152,6 +167,7 @@ namespace IRelaxedOpenArgs {
 
 		return { base, input1, input2, output };
 	}
+
 	function toInputData(obj: unknown): MergeEditorInputData {
 		if (typeof obj === "string") {
 			return new MergeEditorInputData(
@@ -161,9 +177,11 @@ namespace IRelaxedOpenArgs {
 				undefined,
 			);
 		}
+
 		if (!obj || typeof obj !== "object") {
 			throw new TypeError("invalid argument");
 		}
+
 		if (isUriComponents(obj)) {
 			return new MergeEditorInputData(
 				URI.revive(obj),
@@ -172,6 +190,7 @@ namespace IRelaxedOpenArgs {
 				undefined,
 			);
 		}
+
 		const o = obj as IRelaxedInputData;
 
 		const title = o.title;
@@ -184,18 +203,22 @@ namespace IRelaxedOpenArgs {
 
 		return new MergeEditorInputData(uri, title, detail, description);
 	}
+
 	function toUri(obj: unknown): URI {
 		if (typeof obj === "string") {
 			return URI.parse(obj, true);
 		} else if (obj && typeof obj === "object") {
 			return URI.revive(<UriComponents>obj);
 		}
+
 		throw new TypeError("invalid argument");
 	}
+
 	function isUriComponents(obj: unknown): obj is UriComponents {
 		if (!obj || typeof obj !== "object") {
 			return false;
 		}
+
 		const o = obj as UriComponents;
 
 		return (
@@ -209,14 +232,20 @@ namespace IRelaxedOpenArgs {
 }
 type IRelaxedInputData = {
 	uri: UriComponents;
+
 	title?: string;
+
 	detail?: string;
+
 	description?: string;
 };
 type IRelaxedOpenArgs = {
 	base: UriComponents | string;
+
 	input1: IRelaxedInputData | string;
+
 	input2: IRelaxedInputData | string;
+
 	output: UriComponents | string;
 };
 
@@ -237,6 +266,7 @@ export class SetMixedLayout extends Action2 {
 			precondition: ctxIsMergeEditor,
 		});
 	}
+
 	run(accessor: ServicesAccessor): void {
 		const { activeEditorPane } = accessor.get(IEditorService);
 
@@ -262,6 +292,7 @@ export class SetColumnLayout extends Action2 {
 			precondition: ctxIsMergeEditor,
 		});
 	}
+
 	run(accessor: ServicesAccessor): void {
 		const { activeEditorPane } = accessor.get(IEditorService);
 
@@ -290,6 +321,7 @@ export class ShowNonConflictingChanges extends Action2 {
 			precondition: ctxIsMergeEditor,
 		});
 	}
+
 	run(accessor: ServicesAccessor): void {
 		const { activeEditorPane } = accessor.get(IEditorService);
 
@@ -317,6 +349,7 @@ export class ShowHideBase extends Action2 {
 			],
 		});
 	}
+
 	run(accessor: ServicesAccessor): void {
 		const { activeEditorPane } = accessor.get(IEditorService);
 
@@ -347,6 +380,7 @@ export class ShowHideTopBase extends Action2 {
 			],
 		});
 	}
+
 	run(accessor: ServicesAccessor): void {
 		const { activeEditorPane } = accessor.get(IEditorService);
 
@@ -377,6 +411,7 @@ export class ShowHideCenterBase extends Action2 {
 			],
 		});
 	}
+
 	run(accessor: ServicesAccessor): void {
 		const { activeEditorPane } = accessor.get(IEditorService);
 
@@ -409,11 +444,13 @@ export class OpenResultResource extends MergeEditorAction {
 			precondition: ctxIsMergeEditor,
 		});
 	}
+
 	override runWithViewModel(
 		viewModel: MergeEditorViewModel,
 		accessor: ServicesAccessor,
 	): void {
 		const editorService = accessor.get(IEditorService);
+
 		editorService.openEditor({
 			resource: viewModel.model.resultTextModel.uri,
 		});
@@ -441,8 +478,10 @@ export class GoToNextUnhandledConflict extends MergeEditorAction {
 			precondition: ctxIsMergeEditor,
 		});
 	}
+
 	override runWithViewModel(viewModel: MergeEditorViewModel): void {
 		viewModel.model.telemetry.reportNavigationToNextConflict();
+
 		viewModel.goToNextModifiedBaseRange(
 			(r) => !viewModel.model.isHandled(r).get(),
 		);
@@ -470,8 +509,10 @@ export class GoToPreviousUnhandledConflict extends MergeEditorAction {
 			precondition: ctxIsMergeEditor,
 		});
 	}
+
 	override runWithViewModel(viewModel: MergeEditorViewModel): void {
 		viewModel.model.telemetry.reportNavigationToPreviousConflict();
+
 		viewModel.goToPreviousModifiedBaseRange(
 			(r) => !viewModel.model.isHandled(r).get(),
 		);
@@ -490,6 +531,7 @@ export class ToggleActiveConflictInput1 extends MergeEditorAction {
 			precondition: ctxIsMergeEditor,
 		});
 	}
+
 	override runWithViewModel(viewModel: MergeEditorViewModel): void {
 		viewModel.toggleActiveConflict(1);
 	}
@@ -507,6 +549,7 @@ export class ToggleActiveConflictInput2 extends MergeEditorAction {
 			precondition: ctxIsMergeEditor,
 		});
 	}
+
 	override runWithViewModel(viewModel: MergeEditorViewModel): void {
 		viewModel.toggleActiveConflict(2);
 	}
@@ -530,11 +573,13 @@ export class CompareInput1WithBaseCommand extends MergeEditorAction {
 			icon: Codicon.compareChanges,
 		});
 	}
+
 	override runWithViewModel(
 		viewModel: MergeEditorViewModel,
 		accessor: ServicesAccessor,
 	): void {
 		const editorService = accessor.get(IEditorService);
+
 		mergeEditorCompare(viewModel, editorService, 1);
 	}
 }
@@ -557,11 +602,13 @@ export class CompareInput2WithBaseCommand extends MergeEditorAction {
 			icon: Codicon.compareChanges,
 		});
 	}
+
 	override runWithViewModel(
 		viewModel: MergeEditorViewModel,
 		accessor: ServicesAccessor,
 	): void {
 		const editorService = accessor.get(IEditorService);
+
 		mergeEditorCompare(viewModel, editorService, 2);
 	}
 }
@@ -582,6 +629,7 @@ async function mergeEditorCompare(
 			: viewModel.inputCodeEditorView2.editor;
 
 	const lineNumber = input.getPosition()!.lineNumber;
+
 	await editorService.openEditor({
 		original: { resource: base.uri },
 		modified: { resource: input.getModel()!.uri },
@@ -605,11 +653,13 @@ export class OpenBaseFile extends MergeEditorAction {
 			precondition: ctxIsMergeEditor,
 		});
 	}
+
 	override runWithViewModel(
 		viewModel: MergeEditorViewModel,
 		accessor: ServicesAccessor,
 	): void {
 		const openerService = accessor.get(IOpenerService);
+
 		openerService.open(viewModel.model.base.uri);
 	}
 }
@@ -628,6 +678,7 @@ export class AcceptAllInput1 extends MergeEditorAction {
 			icon: Codicon.checkAll,
 		});
 	}
+
 	override runWithViewModel(viewModel: MergeEditorViewModel): void {
 		viewModel.acceptAll(1);
 	}
@@ -647,6 +698,7 @@ export class AcceptAllInput2 extends MergeEditorAction {
 			icon: Codicon.checkAll,
 		});
 	}
+
 	override runWithViewModel(viewModel: MergeEditorViewModel): void {
 		viewModel.acceptAll(2);
 	}
@@ -670,6 +722,7 @@ export class ResetToBaseAndAutoMergeCommand extends MergeEditorAction {
 			icon: Codicon.discard,
 		});
 	}
+
 	override runWithViewModel(
 		viewModel: MergeEditorViewModel,
 		accessor: ServicesAccessor,
@@ -689,6 +742,7 @@ export class ResetCloseWithConflictsChoice extends Action2 {
 			f1: true,
 		});
 	}
+
 	run(accessor: ServicesAccessor): void {
 		accessor
 			.get(IStorageService)
@@ -706,6 +760,7 @@ export class AcceptMerge extends MergeEditorAction2 {
 			precondition: ctxIsMergeEditor,
 		});
 	}
+
 	override async runWithMergeEditor(
 		{ inputModel, editorIdentifier, viewModel }: MergeEditorAction2Args,
 		accessor: ServicesAccessor,
@@ -740,7 +795,9 @@ export class AcceptMerge extends MergeEditorAction2 {
 				};
 			}
 		}
+
 		await inputModel.accept();
+
 		await editorService.closeEditor(editorIdentifier);
 
 		return {

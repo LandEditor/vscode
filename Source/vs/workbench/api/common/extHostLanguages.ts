@@ -31,6 +31,7 @@ import {
 
 export class ExtHostLanguages implements ExtHostLanguagesShape {
 	private readonly _proxy: MainThreadLanguagesShape;
+
 	private _languageIds: string[] = [];
 
 	constructor(
@@ -44,9 +45,11 @@ export class ExtHostLanguages implements ExtHostLanguagesShape {
 	$acceptLanguageIds(ids: string[]): void {
 		this._languageIds = ids;
 	}
+
 	async getLanguages(): Promise<string[]> {
 		return this._languageIds.slice(0);
 	}
+
 	async changeLanguage(
 		uri: vscode.Uri,
 		languageId: string,
@@ -58,8 +61,10 @@ export class ExtHostLanguages implements ExtHostLanguagesShape {
 		if (!data) {
 			throw new Error(`document '${uri.toString()}' NOT found`);
 		}
+
 		return data.document;
 	}
+
 	async tokenAtPosition(
 		document: vscode.TextDocument,
 		position: vscode.Position,
@@ -86,6 +91,7 @@ export class ExtHostLanguages implements ExtHostLanguagesShape {
 			// no result
 			return defaultRange;
 		}
+
 		const result = {
 			range: typeConvert.Range.to(info.range),
 			type: typeConvert.TokenType.to(info.type),
@@ -95,14 +101,19 @@ export class ExtHostLanguages implements ExtHostLanguagesShape {
 			// bogous result
 			return defaultRange;
 		}
+
 		if (versionNow !== document.version) {
 			// concurrent change
 			return defaultRange;
 		}
+
 		return result;
 	}
+
 	private _handlePool: number = 0;
+
 	private _ids = new Set<string>();
+
 	createLanguageStatusItem(
 		extension: IExtensionDescription,
 		id: string,
@@ -121,6 +132,7 @@ export class ExtHostLanguages implements ExtHostLanguagesShape {
 				`LanguageStatusItem with id '${id}' ALREADY exists`,
 			);
 		}
+
 		ids.add(fullyQualifiedId);
 
 		const data: Omit<vscode.LanguageStatusItem, "dispose" | "text2"> = {
@@ -148,8 +160,10 @@ export class ExtHostLanguages implements ExtHostLanguagesShape {
 
 				return; // disposed in the meantime
 			}
+
 			soonHandle = disposableTimeout(() => {
 				commandDisposables.clear();
+
 				this._proxy.$setLanguageStatus(handle, {
 					id: fullyQualifiedId,
 					name: data.name ?? extension.displayName ?? extension.name,
@@ -181,8 +195,11 @@ export class ExtHostLanguages implements ExtHostLanguagesShape {
 		const result: vscode.LanguageStatusItem = {
 			dispose() {
 				commandDisposables.dispose();
+
 				soonHandle?.dispose();
+
 				proxy.$removeLanguageStatus(handle);
+
 				ids.delete(fullyQualifiedId);
 			},
 			get id() {
@@ -193,6 +210,7 @@ export class ExtHostLanguages implements ExtHostLanguagesShape {
 			},
 			set name(value) {
 				data.name = value;
+
 				updateAsync();
 			},
 			get selector() {
@@ -200,6 +218,7 @@ export class ExtHostLanguages implements ExtHostLanguagesShape {
 			},
 			set selector(value) {
 				data.selector = value;
+
 				updateAsync();
 			},
 			get text() {
@@ -207,11 +226,14 @@ export class ExtHostLanguages implements ExtHostLanguagesShape {
 			},
 			set text(value) {
 				data.text = value;
+
 				updateAsync();
 			},
 			set text2(value) {
 				checkProposedApiEnabled(extension, "languageStatusText");
+
 				data.text = value;
+
 				updateAsync();
 			},
 			get text2() {
@@ -224,6 +246,7 @@ export class ExtHostLanguages implements ExtHostLanguagesShape {
 			},
 			set detail(value) {
 				data.detail = value;
+
 				updateAsync();
 			},
 			get severity() {
@@ -231,6 +254,7 @@ export class ExtHostLanguages implements ExtHostLanguagesShape {
 			},
 			set severity(value) {
 				data.severity = value;
+
 				updateAsync();
 			},
 			get accessibilityInformation() {
@@ -238,6 +262,7 @@ export class ExtHostLanguages implements ExtHostLanguagesShape {
 			},
 			set accessibilityInformation(value) {
 				data.accessibilityInformation = value;
+
 				updateAsync();
 			},
 			get command() {
@@ -245,6 +270,7 @@ export class ExtHostLanguages implements ExtHostLanguagesShape {
 			},
 			set command(value) {
 				data.command = value;
+
 				updateAsync();
 			},
 			get busy() {
@@ -252,9 +278,11 @@ export class ExtHostLanguages implements ExtHostLanguagesShape {
 			},
 			set busy(value: boolean) {
 				data.busy = value;
+
 				updateAsync();
 			},
 		};
+
 		updateAsync();
 
 		return result;

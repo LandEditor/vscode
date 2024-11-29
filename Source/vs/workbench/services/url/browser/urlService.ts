@@ -48,6 +48,7 @@ class BrowserURLOpener implements IOpener {
 		private urlService: IURLService,
 		private productService: IProductService,
 	) {}
+
 	async open(
 		resource: string | URI,
 		options?: OpenInternalOptions | OpenExternalOptions,
@@ -55,12 +56,15 @@ class BrowserURLOpener implements IOpener {
 		if ((options as OpenExternalOptions | undefined)?.openExternal) {
 			return false;
 		}
+
 		if (!matchesScheme(resource, this.productService.urlProtocol)) {
 			return false;
 		}
+
 		if (typeof resource === "string") {
 			resource = URI.parse(resource);
 		}
+
 		return this.urlService.open(resource, { trusted: true });
 	}
 }
@@ -76,6 +80,7 @@ export class BrowserURLService extends AbstractURLService {
 		productService: IProductService,
 	) {
 		super();
+
 		this.provider = environmentService.options?.urlCallbackProvider;
 
 		if (this.provider) {
@@ -85,16 +90,19 @@ export class BrowserURLService extends AbstractURLService {
 				),
 			);
 		}
+
 		this._register(
 			openerService.registerOpener(
 				new BrowserURLOpener(this, productService),
 			),
 		);
 	}
+
 	create(options?: Partial<UriComponents>): URI {
 		if (this.provider) {
 			return this.provider.create(options);
 		}
+
 		return URI.parse("unsupported://");
 	}
 }

@@ -24,6 +24,7 @@ class TypeScriptFormattingProvider
 		private readonly client: ITypeScriptServiceClient,
 		private readonly formattingOptionsManager: FileConfigurationManager,
 	) {}
+
 	public async provideDocumentRangeFormattingEdits(
 		document: vscode.TextDocument,
 		range: vscode.Range,
@@ -35,6 +36,7 @@ class TypeScriptFormattingProvider
 		if (!file) {
 			return undefined;
 		}
+
 		await this.formattingOptionsManager.ensureConfigurationOptions(
 			document,
 			options,
@@ -48,8 +50,10 @@ class TypeScriptFormattingProvider
 		if (response.type !== "response" || !response.body) {
 			return undefined;
 		}
+
 		return response.body.map(typeConverters.TextEdit.fromCodeEdit);
 	}
+
 	public async provideOnTypeFormattingEdits(
 		document: vscode.TextDocument,
 		position: vscode.Position,
@@ -62,6 +66,7 @@ class TypeScriptFormattingProvider
 		if (!file) {
 			return [];
 		}
+
 		await this.formattingOptionsManager.ensureConfigurationOptions(
 			document,
 			options,
@@ -81,6 +86,7 @@ class TypeScriptFormattingProvider
 		if (response.type !== "response" || !response.body) {
 			return [];
 		}
+
 		const result: vscode.TextEdit[] = [];
 
 		for (const edit of response.body) {
@@ -108,6 +114,7 @@ class TypeScriptFormattingProvider
 				result.push(textEdit);
 			}
 		}
+
 		return result;
 	}
 }

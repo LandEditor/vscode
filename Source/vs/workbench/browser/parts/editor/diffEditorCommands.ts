@@ -58,12 +58,14 @@ export function registerDiffEditorCommands(): void {
 		handler: (accessor, ...args) =>
 			navigateInDiffEditor(accessor, args, true),
 	});
+
 	MenuRegistry.appendMenuItem(MenuId.CommandPalette, {
 		command: {
 			id: GOTO_NEXT_CHANGE,
 			title: localize2("compare.nextChange", "Go to Next Change"),
 		},
 	});
+
 	KeybindingsRegistry.registerCommandAndKeybindingRule({
 		id: GOTO_PREVIOUS_CHANGE,
 		weight: KeybindingWeight.WorkbenchContrib,
@@ -72,6 +74,7 @@ export function registerDiffEditorCommands(): void {
 		handler: (accessor, ...args) =>
 			navigateInDiffEditor(accessor, args, false),
 	});
+
 	MenuRegistry.appendMenuItem(MenuId.CommandPalette, {
 		command: {
 			id: GOTO_PREVIOUS_CHANGE,
@@ -101,8 +104,10 @@ export function registerDiffEditorCommands(): void {
 				return editor;
 			}
 		}
+
 		return undefined;
 	}
+
 	function navigateInDiffEditor(
 		accessor: ServicesAccessor,
 		args: any[],
@@ -116,11 +121,13 @@ export function registerDiffEditorCommands(): void {
 				?.goToDiff(next ? "next" : "previous");
 		}
 	}
+
 	enum FocusTextDiffEditorMode {
 		Original,
 		Modified,
 		Toggle,
 	}
+
 	function focusInDiffEditor(
 		accessor: ServicesAccessor,
 		args: any[],
@@ -168,6 +175,7 @@ export function registerDiffEditorCommands(): void {
 			}
 		}
 	}
+
 	function toggleDiffSideBySide(
 		accessor: ServicesAccessor,
 		args: any[],
@@ -184,11 +192,14 @@ export function registerDiffEditorCommands(): void {
 		if (!m) {
 			return;
 		}
+
 		const key = "diffEditor.renderSideBySide";
 
 		const val = configService.getValue(m.uri, key);
+
 		configService.updateValue(m.uri, key, !val);
 	}
+
 	function toggleDiffIgnoreTrimWhitespace(
 		accessor: ServicesAccessor,
 		args: any[],
@@ -205,11 +216,14 @@ export function registerDiffEditorCommands(): void {
 		if (!m) {
 			return;
 		}
+
 		const key = "diffEditor.ignoreTrimWhitespace";
 
 		const val = configService.getValue(m.uri, key);
+
 		configService.updateValue(m.uri, key, !val);
 	}
+
 	async function swapDiffSides(
 		accessor: ServicesAccessor,
 		args: any[],
@@ -230,6 +244,7 @@ export function registerDiffEditorCommands(): void {
 		) {
 			return;
 		}
+
 		const untypedDiffInput = diffInput.toUntyped({
 			preserveViewState: activeGroup.id,
 			preserveResource: true,
@@ -281,6 +296,7 @@ export function registerDiffEditorCommands(): void {
 			activeGroup,
 		);
 	}
+
 	KeybindingsRegistry.registerCommandAndKeybindingRule({
 		id: TOGGLE_DIFF_SIDE_BY_SIDE,
 		weight: KeybindingWeight.WorkbenchContrib,
@@ -288,6 +304,7 @@ export function registerDiffEditorCommands(): void {
 		primary: undefined,
 		handler: (accessor, ...args) => toggleDiffSideBySide(accessor, args),
 	});
+
 	KeybindingsRegistry.registerCommandAndKeybindingRule({
 		id: DIFF_FOCUS_PRIMARY_SIDE,
 		weight: KeybindingWeight.WorkbenchContrib,
@@ -296,6 +313,7 @@ export function registerDiffEditorCommands(): void {
 		handler: (accessor, ...args) =>
 			focusInDiffEditor(accessor, args, FocusTextDiffEditorMode.Modified),
 	});
+
 	KeybindingsRegistry.registerCommandAndKeybindingRule({
 		id: DIFF_FOCUS_SECONDARY_SIDE,
 		weight: KeybindingWeight.WorkbenchContrib,
@@ -304,6 +322,7 @@ export function registerDiffEditorCommands(): void {
 		handler: (accessor, ...args) =>
 			focusInDiffEditor(accessor, args, FocusTextDiffEditorMode.Original),
 	});
+
 	KeybindingsRegistry.registerCommandAndKeybindingRule({
 		id: DIFF_FOCUS_OTHER_SIDE,
 		weight: KeybindingWeight.WorkbenchContrib,
@@ -312,6 +331,7 @@ export function registerDiffEditorCommands(): void {
 		handler: (accessor, ...args) =>
 			focusInDiffEditor(accessor, args, FocusTextDiffEditorMode.Toggle),
 	});
+
 	KeybindingsRegistry.registerCommandAndKeybindingRule({
 		id: TOGGLE_DIFF_IGNORE_TRIM_WHITESPACE,
 		weight: KeybindingWeight.WorkbenchContrib,
@@ -320,6 +340,7 @@ export function registerDiffEditorCommands(): void {
 		handler: (accessor, ...args) =>
 			toggleDiffIgnoreTrimWhitespace(accessor, args),
 	});
+
 	KeybindingsRegistry.registerCommandAndKeybindingRule({
 		id: DIFF_SWAP_SIDES,
 		weight: KeybindingWeight.WorkbenchContrib,
@@ -327,6 +348,7 @@ export function registerDiffEditorCommands(): void {
 		primary: undefined,
 		handler: (accessor, ...args) => swapDiffSides(accessor, args),
 	});
+
 	MenuRegistry.appendMenuItem(MenuId.CommandPalette, {
 		command: {
 			id: TOGGLE_DIFF_SIDE_BY_SIDE,
@@ -335,6 +357,7 @@ export function registerDiffEditorCommands(): void {
 		},
 		when: TextCompareEditorActiveContext,
 	});
+
 	MenuRegistry.appendMenuItem(MenuId.CommandPalette, {
 		command: {
 			id: DIFF_SWAP_SIDES,

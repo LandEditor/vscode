@@ -10,13 +10,19 @@ import { IStorageValue, SYNC_SERVICE_URL_TYPE } from "./userDataSync.js";
 export interface IMergeResult {
 	local: {
 		added: IStringDictionary<IStorageValue>;
+
 		removed: string[];
+
 		updated: IStringDictionary<IStorageValue>;
 	};
+
 	remote: {
 		added: string[];
+
 		removed: string[];
+
 		updated: string[];
+
 		all: IStringDictionary<IStorageValue> | null;
 	};
 }
@@ -26,6 +32,7 @@ export function merge(
 	baseStorage: IStringDictionary<IStorageValue> | null,
 	storageKeys: {
 		machine: ReadonlyArray<string>;
+
 		unregistered: ReadonlyArray<string>;
 	},
 	logService: ILogService,
@@ -41,6 +48,7 @@ export function merge(
 			local: { added: {}, removed: [], updated: {} },
 		};
 	}
+
 	const localToRemote = compare(localStorage, remoteStorage);
 
 	if (
@@ -54,11 +62,13 @@ export function merge(
 			local: { added: {}, removed: [], updated: {} },
 		};
 	}
+
 	const baseToRemote = baseStorage
 		? compare(baseStorage, remoteStorage)
 		: {
 				added: Object.keys(remoteStorage).reduce((r, k) => {
 					r.add(k);
+
 					return r;
 				}, new Set<string>()),
 				removed: new Set<string>(),
@@ -70,6 +80,7 @@ export function merge(
 		: {
 				added: Object.keys(localStorage).reduce((r, k) => {
 					r.add(k);
+
 					return r;
 				}, new Set<string>()),
 				removed: new Set<string>(),
@@ -78,7 +89,9 @@ export function merge(
 
 	const local: {
 		added: IStringDictionary<IStorageValue>;
+
 		removed: string[];
+
 		updated: IStringDictionary<IStorageValue>;
 	} = { added: {}, removed: [], updated: {} };
 
@@ -97,6 +110,7 @@ export function merge(
 		) {
 			continue;
 		}
+
 		remote[key] = localStorage[key];
 	}
 	// Updated in local
@@ -109,6 +123,7 @@ export function merge(
 		if (storageKeys.unregistered.includes(key)) {
 			continue;
 		}
+
 		delete remote[key];
 	}
 	// Added in remote
@@ -126,6 +141,7 @@ export function merge(
 		if (baseStorage && baseToLocal.added.has(key)) {
 			continue;
 		}
+
 		const localValue = localStorage[key];
 
 		if (localValue && localValue.value === remoteValue.value) {
@@ -139,6 +155,7 @@ export function merge(
 		) {
 			continue;
 		}
+
 		if (localValue) {
 			local.updated[key] = remoteValue;
 		} else {
@@ -160,11 +177,13 @@ export function merge(
 		if (baseToLocal.updated.has(key) || baseToLocal.removed.has(key)) {
 			continue;
 		}
+
 		const localValue = localStorage[key];
 
 		if (localValue && localValue.value === remoteValue.value) {
 			continue;
 		}
+
 		local.updated[key] = remoteValue;
 	}
 	// Removed in remote
@@ -180,8 +199,10 @@ export function merge(
 		if (baseToLocal.updated.has(key) || baseToLocal.removed.has(key)) {
 			continue;
 		}
+
 		local.removed.push(key);
 	}
+
 	const result = compare(remoteStorage, remote);
 
 	return {
@@ -204,7 +225,9 @@ function compare(
 	to: IStringDictionary<any>,
 ): {
 	added: Set<string>;
+
 	removed: Set<string>;
+
 	updated: Set<string>;
 } {
 	const fromKeys = Object.keys(from);
@@ -215,6 +238,7 @@ function compare(
 		.filter((key) => !fromKeys.includes(key))
 		.reduce((r, key) => {
 			r.add(key);
+
 			return r;
 		}, new Set<string>());
 
@@ -222,6 +246,7 @@ function compare(
 		.filter((key) => !toKeys.includes(key))
 		.reduce((r, key) => {
 			r.add(key);
+
 			return r;
 		}, new Set<string>());
 
@@ -231,6 +256,7 @@ function compare(
 		if (removed.has(key)) {
 			continue;
 		}
+
 		const value1 = from[key];
 
 		const value2 = to[key];
@@ -239,5 +265,6 @@ function compare(
 			updated.add(key);
 		}
 	}
+
 	return { added, removed, updated };
 }

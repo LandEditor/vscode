@@ -26,6 +26,7 @@ export interface IRemoteSocketFactoryService {
 		type: T,
 		factory: ISocketFactory<T>,
 	): IDisposable;
+
 	connect(
 		connectTo: RemoteConnection,
 		path: string,
@@ -35,6 +36,7 @@ export interface IRemoteSocketFactoryService {
 }
 export interface ISocketFactory<T extends RemoteConnectionType> {
 	supports(connectTo: RemoteConnectionOfType<T>): boolean;
+
 	connect(
 		connectTo: RemoteConnectionOfType<T>,
 		path: string,
@@ -44,14 +46,17 @@ export interface ISocketFactory<T extends RemoteConnectionType> {
 }
 export class RemoteSocketFactoryService implements IRemoteSocketFactoryService {
 	declare readonly _serviceBrand: undefined;
+
 	private readonly factories: {
 		[T in RemoteConnectionType]?: ISocketFactory<T>[];
 	} = {};
+
 	public register<T extends RemoteConnectionType>(
 		type: T,
 		factory: ISocketFactory<T>,
 	): IDisposable {
 		this.factories[type] ??= [];
+
 		this.factories[type]!.push(factory);
 
 		return toDisposable(() => {
@@ -62,6 +67,7 @@ export class RemoteSocketFactoryService implements IRemoteSocketFactoryService {
 			}
 		});
 	}
+
 	private getSocketFactory<T extends RemoteConnectionType>(
 		messagePassing: RemoteConnectionOfType<T>,
 	): ISocketFactory<T> | undefined {
@@ -70,6 +76,7 @@ export class RemoteSocketFactoryService implements IRemoteSocketFactoryService {
 
 		return factories.find((factory) => factory.supports(messagePassing));
 	}
+
 	public connect(
 		connectTo: RemoteConnection,
 		path: string,
@@ -81,6 +88,7 @@ export class RemoteSocketFactoryService implements IRemoteSocketFactoryService {
 		if (!socketFactory) {
 			throw new Error(`No socket factory found for ${connectTo}`);
 		}
+
 		return socketFactory.connect(connectTo, path, query, debugLabel);
 	}
 }

@@ -97,11 +97,13 @@ if (shouldSpawnCli) {
 				nlsConfiguration,
 			).then(async (mod) => {
 				const server = await mod.createServer(address);
+
 				_remoteExtensionHostAgentServer = server;
 
 				return server;
 			});
 		}
+
 		return _remoteExtensionHostAgentServerPromise;
 	};
 
@@ -116,8 +118,10 @@ if (shouldSpawnCli) {
 				console.log(
 					"To accept the license terms, start the server with --accept-server-license-terms",
 				);
+
 				process.exit(1);
 			}
+
 			try {
 				const accept = await prompt(product.serverLicensePrompt);
 
@@ -126,10 +130,12 @@ if (shouldSpawnCli) {
 				}
 			} catch (e) {
 				console.log(e);
+
 				process.exit(1);
 			}
 		}
 	}
+
 	let firstRequest = true;
 
 	let firstWebSocket = true;
@@ -139,23 +145,29 @@ if (shouldSpawnCli) {
 	const server = http.createServer(async (req, res) => {
 		if (firstRequest) {
 			firstRequest = false;
+
 			perf.mark("code/server/firstRequest");
 		}
+
 		const remoteExtensionHostAgentServer =
 			await getRemoteExtensionHostAgentServer();
 
 		return remoteExtensionHostAgentServer.handleRequest(req, res);
 	});
+
 	server.on("upgrade", async (req, socket) => {
 		if (firstWebSocket) {
 			firstWebSocket = false;
+
 			perf.mark("code/server/firstWebSocket");
 		}
+
 		const remoteExtensionHostAgentServer =
 			await getRemoteExtensionHostAgentServer();
 		// @ts-ignore
 		return remoteExtensionHostAgentServer.handleUpgrade(req, socket);
 	});
+
 	server.on("error", async (err) => {
 		const remoteExtensionHostAgentServer =
 			await getRemoteExtensionHostAgentServer();
@@ -176,6 +188,7 @@ if (shouldSpawnCli) {
 					sanitizeStringArg(parsedArgs["port"]),
 				),
 			};
+
 	server.listen(nodeListenOptions, async () => {
 		let output =
 			Array.isArray(product.serverGreeting) &&
@@ -188,6 +201,7 @@ if (shouldSpawnCli) {
 			parsedArgs["print-ip-address"]
 		) {
 			const ifaces = os.networkInterfaces();
+
 			Object.keys(ifaces).forEach(function (ifname) {
 				ifaces[ifname]?.forEach(function (iface) {
 					if (!iface.internal && iface.family === "IPv4") {
@@ -196,19 +210,25 @@ if (shouldSpawnCli) {
 				});
 			});
 		}
+
 		address = server.address();
 
 		if (address === null) {
 			throw new Error("Unexpected server address");
 		}
+
 		output += `Server bound to ${typeof address === "string" ? address : `${address.address}:${address.port} (${address.family})`}\n`;
 		// Do not change this line. VS Code looks for this in the output.
 		output += `Extension host agent listening on ${typeof address === "string" ? address : address.port}\n`;
+
 		console.log(output);
+
 		perf.mark("code/server/started");
 		(globalThis as any).vscodeServerListenTime = performance.now();
+
 		await getRemoteExtensionHostAgentServer();
 	});
+
 	process.on("exit", () => {
 		server.close();
 
@@ -222,6 +242,7 @@ function sanitizeStringArg(val: any): string | undefined {
 		// if an argument is passed multiple times, minimist creates an array
 		val = val.pop(); // take the last item
 	}
+
 	return typeof val === "string" ? val : undefined;
 }
 /**
@@ -241,6 +262,7 @@ async function parsePort(
 		let range:
 			| {
 					start: number;
+
 					end: number;
 			  }
 			| undefined;
@@ -257,19 +279,23 @@ async function parsePort(
 			console.warn(
 				`--port: Could not find free port in range: ${range.start} - ${range.end} (inclusive).`,
 			);
+
 			process.exit(1);
 		} else {
 			console.warn(
 				`--port "${strPort}" is not a valid number or range. Ranges must be in the form 'from-to' with 'from' an integer larger than 0 and not larger than 'end'.`,
 			);
+
 			process.exit(1);
 		}
 	}
+
 	return 8000;
 }
 function parseRange(strRange: string):
 	| {
 			start: number;
+
 			end: number;
 	  }
 	| undefined {
@@ -283,6 +309,7 @@ function parseRange(strRange: string):
 			return { start, end };
 		}
 	}
+
 	return undefined;
 }
 /**
@@ -297,9 +324,11 @@ async function findFreePort(
 	const testPort = (port: number) => {
 		return new Promise((resolve) => {
 			const server = http.createServer();
+
 			server
 				.listen(port, host, () => {
 					server.close();
+
 					resolve(true);
 				})
 				.on("error", () => {
@@ -313,6 +342,7 @@ async function findFreePort(
 			return port;
 		}
 	}
+
 	return undefined;
 }
 async function loadCode(nlsConfiguration: INLSConfiguration) {
@@ -330,6 +360,7 @@ async function loadCode(nlsConfiguration: INLSConfiguration) {
 		process.env["VSCODE_DEV_INJECT_NODE_MODULE_LOOKUP_PATH"] =
 			process.env["VSCODE_DEV_INJECT_NODE_MODULE_LOOKUP_PATH"] ||
 			path.join(__dirname, "..", "remote", "node_modules");
+
 		devInjectNodeModuleLookupPath(
 			process.env["VSCODE_DEV_INJECT_NODE_MODULE_LOOKUP_PATH"],
 		);
@@ -347,6 +378,7 @@ function hasStdinWithoutTty(): boolean {
 	} catch (error) {
 		// Windows workaround for https://github.com/nodejs/node/issues/11656
 	}
+
 	return false;
 }
 function prompt(question: string): Promise<boolean> {
@@ -369,6 +401,7 @@ function prompt(question: string): Promise<boolean> {
 				process.stdout.write(
 					"\nInvalid Response. Answer either yes (y, yes) or no (n, no)\n",
 				);
+
 				resolve(await prompt(question));
 			}
 		});

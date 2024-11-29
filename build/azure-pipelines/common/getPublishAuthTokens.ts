@@ -59,6 +59,7 @@ async function main() {
 		process.env["AZURE_CLIENT_ID"]!,
 		process.env["AZURE_ID_TOKEN"]!,
 	);
+
 	console.log(
 		JSON.stringify({ cosmosDBAccessToken, blobServiceAccessToken }),
 	);
@@ -71,6 +72,7 @@ if (require.main === module) {
 		},
 		(err) => {
 			console.error(err);
+
 			process.exit(1);
 		},
 	);

@@ -52,6 +52,7 @@ class NPSContribution implements IWorkbenchContribution {
 		if (!productService.npsSurveyUrl) {
 			return;
 		}
+
 		const skipVersion = storageService.get(
 			SKIP_VERSION_KEY,
 			StorageScope.APPLICATION,
@@ -61,6 +62,7 @@ class NPSContribution implements IWorkbenchContribution {
 		if (skipVersion) {
 			return;
 		}
+
 		const date = new Date().toDateString();
 
 		const lastSessionDate = storageService.get(
@@ -72,18 +74,21 @@ class NPSContribution implements IWorkbenchContribution {
 		if (date === lastSessionDate) {
 			return;
 		}
+
 		const sessionCount =
 			(storageService.getNumber(
 				SESSION_COUNT_KEY,
 				StorageScope.APPLICATION,
 				0,
 			) || 0) + 1;
+
 		storageService.store(
 			LAST_SESSION_DATE_KEY,
 			date,
 			StorageScope.APPLICATION,
 			StorageTarget.USER,
 		);
+
 		storageService.store(
 			SESSION_COUNT_KEY,
 			sessionCount,
@@ -94,12 +99,14 @@ class NPSContribution implements IWorkbenchContribution {
 		if (sessionCount < 9) {
 			return;
 		}
+
 		const isCandidate =
 			storageService.getBoolean(
 				IS_CANDIDATE_KEY,
 				StorageScope.APPLICATION,
 				false,
 			) || Math.random() < PROBABILITY;
+
 		storageService.store(
 			IS_CANDIDATE_KEY,
 			isCandidate,
@@ -117,6 +124,7 @@ class NPSContribution implements IWorkbenchContribution {
 
 			return;
 		}
+
 		notificationService.prompt(
 			Severity.Info,
 			nls.localize(
@@ -132,12 +140,14 @@ class NPSContribution implements IWorkbenchContribution {
 								`${productService.npsSurveyUrl}?o=${encodeURIComponent(platform)}&v=${encodeURIComponent(productService.version)}&m=${encodeURIComponent(telemetryService.machineId)}`,
 							),
 						);
+
 						storageService.store(
 							IS_CANDIDATE_KEY,
 							false,
 							StorageScope.APPLICATION,
 							StorageTarget.USER,
 						);
+
 						storageService.store(
 							SKIP_VERSION_KEY,
 							productService.version,
@@ -165,6 +175,7 @@ class NPSContribution implements IWorkbenchContribution {
 							StorageScope.APPLICATION,
 							StorageTarget.USER,
 						);
+
 						storageService.store(
 							SKIP_VERSION_KEY,
 							productService.version,
@@ -182,6 +193,7 @@ if (language === "en") {
 	const workbenchRegistry = Registry.as<IWorkbenchContributionsRegistry>(
 		WorkbenchExtensions.Workbench,
 	);
+
 	workbenchRegistry.registerWorkbenchContribution(
 		NPSContribution,
 		LifecyclePhase.Restored,

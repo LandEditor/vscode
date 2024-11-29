@@ -81,11 +81,13 @@ export class RemoteSearchService extends SearchService {
 		const searchProvider = this.instantiationService.createInstance(
 			LocalFileSearchWorkerClient,
 		);
+
 		this.registerSearchResultProvider(
 			Schemas.file,
 			SearchProviderType.file,
 			searchProvider,
 		);
+
 		this.registerSearchResultProvider(
 			Schemas.file,
 			SearchProviderType.text,
@@ -98,20 +100,27 @@ export class LocalFileSearchWorkerClient
 	implements ISearchResultProvider
 {
 	protected _worker: IWorkerClient<ILocalFileSearchSimpleWorker> | null;
+
 	private readonly _onDidReceiveTextSearchMatch = new Emitter<{
 		match: IFileMatch<UriComponents>;
+
 		queryId: number;
 	}>();
+
 	readonly onDidReceiveTextSearchMatch: Event<{
 		match: IFileMatch<UriComponents>;
+
 		queryId: number;
 	}> = this._onDidReceiveTextSearchMatch.event;
+
 	private cache:
 		| {
 				key: string;
+
 				cache: ISearchComplete;
 		  }
 		| undefined;
+
 	private queryId: number = 0;
 
 	constructor(
@@ -121,11 +130,14 @@ export class LocalFileSearchWorkerClient
 		private uriIdentityService: IUriIdentityService,
 	) {
 		super();
+
 		this._worker = null;
 	}
+
 	async getAIName(): Promise<string | undefined> {
 		return undefined;
 	}
+
 	sendTextSearchMatch(
 		match: IFileMatch<UriComponents>,
 		queryId: number,
@@ -138,10 +150,13 @@ export class LocalFileSearchWorkerClient
 			Schemas.file,
 		) as HTMLFileSystemProvider;
 	}
+
 	private async cancelQuery(queryId: number) {
 		const proxy = this._getOrCreateWorker().proxy;
+
 		proxy.$cancelQuery(queryId);
 	}
+
 	async textSearch(
 		query: ITextQuery,
 		onProgress?: (p: ISearchProgressItem) => void,
@@ -155,9 +170,11 @@ export class LocalFileSearchWorkerClient
 			const results: IFileMatch[] = [];
 
 			let limitHit = false;
+
 			await Promise.all(
 				query.folderQueries.map(async (fq) => {
 					const queryId = this.queryId++;
+
 					queryDisposables.add(
 						token?.onCancellationRequested((e) =>
 							this.cancelQuery(queryId),
@@ -186,6 +203,7 @@ export class LocalFileSearchWorkerClient
 						resource: URI.revive(result.resource),
 						results: revive(result.results),
 					});
+
 					queryDisposables.add(
 						this.onDidReceiveTextSearchMatch((e) => {
 							if (e.queryId === queryId) {
@@ -210,11 +228,13 @@ export class LocalFileSearchWorkerClient
 					for (const folderResult of folderResults.results) {
 						results.push(revive(folderResult));
 					}
+
 					if (folderResults.limitHit) {
 						limitHit = true;
 					}
 				}),
 			);
+
 			queryDisposables.dispose();
 
 			const result = { messages: [], results, limitHit };
@@ -237,6 +257,7 @@ export class LocalFileSearchWorkerClient
 			};
 		}
 	}
+
 	async fileSearch(
 		query: IFileQuery,
 		token?: CancellationToken,
@@ -249,9 +270,11 @@ export class LocalFileSearchWorkerClient
 			const proxy = this._getOrCreateWorker().proxy;
 
 			const results: IFileMatch[] = [];
+
 			await Promise.all(
 				query.folderQueries.map(async (fq) => {
 					const queryId = this.queryId++;
+
 					queryDisposables.add(
 						token?.onCancellationRequested((e) =>
 							this.cancelQuery(queryId),
@@ -272,6 +295,7 @@ export class LocalFileSearchWorkerClient
 
 						return;
 					}
+
 					const caseSensitive =
 						this.uriIdentityService.extUri.ignorePathCasing(
 							fq.folder,
@@ -290,11 +314,13 @@ export class LocalFileSearchWorkerClient
 							resource: URI.joinPath(fq.folder, folderResult),
 						});
 					}
+
 					if (folderResults.limitHit) {
 						limitHit = true;
 					}
 				}),
 			);
+
 			queryDisposables.dispose();
 
 			const result = { messages: [], results, limitHit };
@@ -317,11 +343,13 @@ export class LocalFileSearchWorkerClient
 			};
 		}
 	}
+
 	async clearCache(cacheKey: string): Promise<void> {
 		if (this.cache?.key === cacheKey) {
 			this.cache = undefined;
 		}
 	}
+
 	private _getOrCreateWorker(): IWorkerClient<ILocalFileSearchSimpleWorker> {
 		if (!this._worker) {
 			try {
@@ -331,6 +359,7 @@ export class LocalFileSearchWorkerClient
 						"LocalFileSearchWorker",
 					),
 				);
+
 				LocalFileSearchSimpleWorkerHost.setChannel(this._worker, {
 					$sendTextSearchMatch: (match, queryId) => {
 						return this.sendTextSearchMatch(match, queryId);
@@ -342,6 +371,7 @@ export class LocalFileSearchWorkerClient
 				throw err;
 			}
 		}
+
 		return this._worker;
 	}
 }

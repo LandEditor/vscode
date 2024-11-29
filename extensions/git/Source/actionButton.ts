@@ -44,11 +44,17 @@ function isActionButtonStateEqual(
 }
 interface ActionButtonState {
 	readonly HEAD: Branch | undefined;
+
 	readonly isCheckoutInProgress: boolean;
+
 	readonly isCommitInProgress: boolean;
+
 	readonly isMergeInProgress: boolean;
+
 	readonly isRebaseInProgress: boolean;
+
 	readonly isSyncInProgress: boolean;
+
 	readonly repositoryHasChangesToCommit: boolean;
 }
 export class ActionButton {
@@ -57,17 +63,23 @@ export class ActionButton {
 	get onDidChange(): Event<void> {
 		return this._onDidChange.event;
 	}
+
 	private _state: ActionButtonState;
+
 	private get state() {
 		return this._state;
 	}
+
 	private set state(state: ActionButtonState) {
 		if (isActionButtonStateEqual(this._state, state)) {
 			return;
 		}
+
 		this._state = state;
+
 		this._onDidChange.fire();
 	}
+
 	private disposables: Disposable[] = [];
 
 	constructor(
@@ -83,26 +95,31 @@ export class ActionButton {
 			isSyncInProgress: false,
 			repositoryHasChangesToCommit: false,
 		};
+
 		repository.onDidRunGitStatus(
 			this.onDidRunGitStatus,
 			this,
 			this.disposables,
 		);
+
 		repository.onDidChangeOperations(
 			this.onDidChangeOperations,
 			this,
 			this.disposables,
 		);
+
 		this.disposables.push(
 			repository.onDidChangeBranchProtection(() =>
 				this._onDidChange.fire(),
 			),
 		);
+
 		this.disposables.push(
 			postCommitCommandCenter.onDidChange(() => this._onDidChange.fire()),
 		);
 
 		const root = Uri.file(repository.root);
+
 		this.disposables.push(
 			workspace.onDidChangeConfiguration((e) => {
 				if (
@@ -112,6 +129,7 @@ export class ActionButton {
 				) {
 					this.onDidChangeSmartCommitSettings();
 				}
+
 				if (
 					e.affectsConfiguration(
 						"git.branchProtectionPrompt",
@@ -129,10 +147,12 @@ export class ActionButton {
 			}),
 		);
 	}
+
 	get button(): SourceControlActionButton | undefined {
 		if (!this.state.HEAD) {
 			return undefined;
 		}
+
 		let actionButton: SourceControlActionButton | undefined;
 
 		if (this.state.repositoryHasChangesToCommit) {
@@ -147,6 +167,7 @@ export class ActionButton {
 			this.getCommitActionButton()
 		);
 	}
+
 	private getCommitActionButton(): SourceControlActionButton | undefined {
 		const config = workspace.getConfiguration(
 			"git",
@@ -160,6 +181,7 @@ export class ActionButton {
 		if (!showActionButton.commit) {
 			return undefined;
 		}
+
 		const primaryCommand = this.getCommitActionButtonPrimaryCommand();
 
 		return {
@@ -172,6 +194,7 @@ export class ActionButton {
 				!this.state.isMergeInProgress,
 		};
 	}
+
 	private getCommitActionButtonPrimaryCommand(): Command {
 		// Rebase Continue
 		if (this.state.isRebaseInProgress) {
@@ -198,6 +221,7 @@ export class ActionButton {
 		// Commit
 		return this.postCommitCommandCenter.getPrimaryCommand();
 	}
+
 	private getCommitActionButtonSecondaryCommands(): Command[][] {
 		// Rebase Continue
 		if (this.state.isRebaseInProgress) {
@@ -222,8 +246,10 @@ export class ActionButton {
 				}),
 			);
 		}
+
 		return commandGroups;
 	}
+
 	private getPublishBranchActionButton():
 		| SourceControlActionButton
 		| undefined {
@@ -303,6 +329,7 @@ export class ActionButton {
 				!this.state.isSyncInProgress,
 		};
 	}
+
 	private getSyncChangesActionButton():
 		| SourceControlActionButton
 		| undefined {
@@ -329,6 +356,7 @@ export class ActionButton {
 		) {
 			return undefined;
 		}
+
 		const ahead = this.state.HEAD.ahead
 			? ` ${this.state.HEAD.ahead}$(arrow-up)`
 			: "";
@@ -354,6 +382,7 @@ export class ActionButton {
 				!this.state.isSyncInProgress,
 		};
 	}
+
 	private onDidChangeOperations(): void {
 		const isCheckoutInProgress =
 			this.repository.operations.isRunning(OperationKind.Checkout) ||
@@ -372,6 +401,7 @@ export class ActionButton {
 			this.repository.operations.isRunning(OperationKind.Sync) ||
 			this.repository.operations.isRunning(OperationKind.Push) ||
 			this.repository.operations.isRunning(OperationKind.Pull);
+
 		this.state = {
 			...this.state,
 			isCheckoutInProgress,
@@ -379,12 +409,14 @@ export class ActionButton {
 			isSyncInProgress,
 		};
 	}
+
 	private onDidChangeSmartCommitSettings(): void {
 		this.state = {
 			...this.state,
 			repositoryHasChangesToCommit: this.repositoryHasChangesToCommit(),
 		};
 	}
+
 	private onDidRunGitStatus(): void {
 		this.state = {
 			...this.state,
@@ -395,6 +427,7 @@ export class ActionButton {
 			repositoryHasChangesToCommit: this.repositoryHasChangesToCommit(),
 		};
 	}
+
 	private repositoryHasChangesToCommit(): boolean {
 		const config = workspace.getConfiguration(
 			"git",
@@ -430,8 +463,10 @@ export class ActionButton {
 				),
 			);
 		}
+
 		return resources.length !== 0;
 	}
+
 	dispose(): void {
 		this.disposables = dispose(this.disposables);
 	}

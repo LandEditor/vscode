@@ -35,6 +35,7 @@ class WelcomeBannerContribution {
 		if (!welcomeBanner) {
 			return; // welcome banner is not enabled
 		}
+
 		if (
 			storageService.getBoolean(
 				WelcomeBannerContribution.WELCOME_BANNER_DISMISSED_KEY,
@@ -44,6 +45,7 @@ class WelcomeBannerContribution {
 		) {
 			return; // welcome banner dismissed
 		}
+
 		let icon: ThemeIcon | URI | undefined = undefined;
 
 		if (typeof welcomeBanner.icon === "string") {
@@ -51,6 +53,7 @@ class WelcomeBannerContribution {
 		} else if (welcomeBanner.icon) {
 			icon = URI.revive(welcomeBanner.icon);
 		}
+
 		bannerService.show({
 			id: "welcome.banner",
 			message: welcomeBanner.message,

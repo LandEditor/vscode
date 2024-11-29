@@ -93,6 +93,7 @@ export type ConfigurationMigrationFn = (
 
 export type ConfigurationMigration = {
 	key: string;
+
 	migrateFn: ConfigurationMigrationFn;
 };
 
@@ -105,11 +106,14 @@ class ConfigurationMigrationRegistry
 	implements IConfigurationMigrationRegistry
 {
 	readonly migrations: ConfigurationMigration[] = [];
+
 	private readonly _onDidRegisterConfigurationMigrations = new Emitter<
 		ConfigurationMigration[]
 	>();
+
 	readonly onDidRegisterConfigurationMigration =
 		this._onDidRegisterConfigurationMigrations.event;
+
 	registerConfigurationMigrations(
 		configurationMigrations: ConfigurationMigration[],
 	): void {
@@ -133,6 +137,7 @@ export class ConfigurationMigrationWorkbenchContribution
 		private readonly workspaceService: IWorkspaceContextService,
 	) {
 		super();
+
 		this._register(
 			this.workspaceService.onDidChangeWorkspaceFolders(async (e) => {
 				for (const folder of e.added) {
@@ -143,13 +148,16 @@ export class ConfigurationMigrationWorkbenchContribution
 				}
 			}),
 		);
+
 		this.migrateConfigurations(configurationMigrationRegistry.migrations);
+
 		this._register(
 			configurationMigrationRegistry.onDidRegisterConfigurationMigration(
 				(migration) => this.migrateConfigurations(migration),
 			),
 		);
 	}
+
 	private async migrateConfigurations(
 		migrations: ConfigurationMigration[],
 	): Promise<void> {
@@ -159,6 +167,7 @@ export class ConfigurationMigrationWorkbenchContribution
 			await this.migrateConfigurationsForFolder(folder, migrations);
 		}
 	}
+
 	private async migrateConfigurationsForFolder(
 		folder: IWorkspaceFolder | undefined,
 		migrations: ConfigurationMigration[],
@@ -172,6 +181,7 @@ export class ConfigurationMigrationWorkbenchContribution
 			),
 		]);
 	}
+
 	private async migrateConfigurationsForFolderAndOverride(
 		migration: ConfigurationMigration,
 		resource?: URI,
@@ -211,6 +221,7 @@ export class ConfigurationMigrationWorkbenchContribution
 			if (!inspectValue) {
 				continue;
 			}
+
 			const migrationValues: [[string, ConfigurationValue], string[]][] =
 				[];
 
@@ -227,6 +238,7 @@ export class ConfigurationMigrationWorkbenchContribution
 					migrationValues.push([keyValuePair, []]);
 				}
 			}
+
 			for (const { identifiers, value } of inspectValue.overrides ?? []) {
 				if (value !== undefined) {
 					const keyValuePairs = await this.runMigration(
@@ -242,6 +254,7 @@ export class ConfigurationMigrationWorkbenchContribution
 					}
 				}
 			}
+
 			if (migrationValues.length) {
 				// apply migrations
 				await Promise.allSettled(
@@ -258,6 +271,7 @@ export class ConfigurationMigrationWorkbenchContribution
 			}
 		}
 	}
+
 	private async runMigration(
 		migration: ConfigurationMigration,
 		dataKey: keyof IConfigurationValue<any>,
@@ -277,9 +291,11 @@ export class ConfigurationMigrationWorkbenchContribution
 			if (!inspectValue) {
 				return undefined;
 			}
+
 			if (!overrideIdentifiers) {
 				return inspectValue.value;
 			}
+
 			return inspectValue.overrides?.find(({ identifiers }) =>
 				equals(identifiers, overrideIdentifiers),
 			)?.value;
@@ -296,7 +312,9 @@ export class DynamicWorkbenchSecurityConfiguration
 {
 	static readonly ID =
 		"workbench.contrib.dynamicWorkbenchSecurityConfiguration";
+
 	private readonly _ready = new DeferredPromise<void>();
+
 	readonly ready = this._ready.p;
 
 	constructor(
@@ -304,8 +322,10 @@ export class DynamicWorkbenchSecurityConfiguration
 		private readonly remoteAgentService: IRemoteAgentService,
 	) {
 		super();
+
 		this.create();
 	}
+
 	private async create(): Promise<void> {
 		try {
 			await this.doCreate();
@@ -313,6 +333,7 @@ export class DynamicWorkbenchSecurityConfiguration
 			this._ready.complete();
 		}
 	}
+
 	private async doCreate(): Promise<void> {
 		if (!isWindows) {
 			const remoteEnvironment =
@@ -326,6 +347,7 @@ export class DynamicWorkbenchSecurityConfiguration
 		const registry = Registry.as<IConfigurationRegistry>(
 			ConfigurationExtensions.Configuration,
 		);
+
 		registry.registerConfiguration({
 			...securityConfigurationNodeBase,
 			"properties": {
@@ -366,7 +388,9 @@ export class DynamicWindowConfiguration
 	implements IWorkbenchContribution
 {
 	static readonly ID = "workbench.contrib.dynamicWindowConfiguration";
+
 	private configurationNode: IConfigurationNode | undefined;
+
 	private newWindowProfile: IUserDataProfile | undefined;
 
 	constructor(
@@ -376,14 +400,19 @@ export class DynamicWindowConfiguration
 		private readonly configurationService: IConfigurationService,
 	) {
 		super();
+
 		this.registerNewWindowProfileConfiguration();
+
 		this._register(
 			this.userDataProfilesService.onDidChangeProfiles((e) =>
 				this.registerNewWindowProfileConfiguration(),
 			),
 		);
+
 		this.setNewWindowProfile();
+
 		this.checkAndResetNewWindowProfileConfig();
+
 		this._register(
 			configurationService.onDidChangeConfiguration((e) => {
 				if (
@@ -394,12 +423,14 @@ export class DynamicWindowConfiguration
 				}
 			}),
 		);
+
 		this._register(
 			this.userDataProfilesService.onDidChangeProfiles(() =>
 				this.checkAndResetNewWindowProfileConfig(),
 			),
 		);
 	}
+
 	private registerNewWindowProfileConfiguration(): void {
 		const registry = Registry.as<IConfigurationRegistry>(
 			ConfigurationExtensions.Configuration,
@@ -438,18 +469,22 @@ export class DynamicWindowConfiguration
 		} else {
 			registry.registerConfiguration(configurationNode);
 		}
+
 		this.configurationNode = configurationNode;
 	}
+
 	private setNewWindowProfile(): void {
 		const newWindowProfileName = this.configurationService.getValue(
 			CONFIG_NEW_WINDOW_PROFILE,
 		);
+
 		this.newWindowProfile = newWindowProfileName
 			? this.userDataProfilesService.profiles.find(
 					(profile) => profile.name === newWindowProfileName,
 				)
 			: undefined;
 	}
+
 	private checkAndResetNewWindowProfileConfig(): void {
 		const newWindowProfileName = this.configurationService.getValue(
 			CONFIG_NEW_WINDOW_PROFILE,
@@ -458,6 +493,7 @@ export class DynamicWindowConfiguration
 		if (!newWindowProfileName) {
 			return;
 		}
+
 		const profile = this.newWindowProfile
 			? this.userDataProfilesService.profiles.find(
 					(profile) => profile.id === this.newWindowProfile!.id,
@@ -467,6 +503,7 @@ export class DynamicWindowConfiguration
 		if (newWindowProfileName === profile?.name) {
 			return;
 		}
+
 		this.configurationService.updateValue(
 			CONFIG_NEW_WINDOW_PROFILE,
 			profile?.name,

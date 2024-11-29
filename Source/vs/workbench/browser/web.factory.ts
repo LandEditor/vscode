@@ -78,8 +78,10 @@ export function create(
 	}
 	// Startup workbench and resolve waiters
 	let instantiatedWorkbench: IWorkbench | undefined = undefined;
+
 	new BrowserMain(domElement, options).open().then((workbench) => {
 		instantiatedWorkbench = workbench;
+
 		workbenchPromise.complete(workbench);
 	});
 
@@ -170,12 +172,15 @@ export namespace window {
 
 		return workbench.window.withProgress(options, task);
 	}
+
 	export async function createTerminal(
 		options: IEmbedderTerminalOptions,
 	): Promise<void> {
 		const workbench = await workbenchPromise.p;
+
 		workbench.window.createTerminal(options);
 	}
+
 	export async function showInformationMessage<T extends string>(
 		message: string,
 		...items: T[]
@@ -191,6 +196,7 @@ export namespace workspace {
 	 */
 	export async function didResolveRemoteAuthority() {
 		const workbench = await workbenchPromise.p;
+
 		await workbench.workspace.didResolveRemoteAuthority();
 	}
 	/**

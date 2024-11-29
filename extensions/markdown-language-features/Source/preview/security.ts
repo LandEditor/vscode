@@ -21,7 +21,9 @@ export interface ContentSecurityPolicyArbiter {
 		resource: vscode.Uri,
 		level: MarkdownPreviewSecurityLevel,
 	): Thenable<void>;
+
 	shouldAllowSvgsForResource(resource: vscode.Uri): void;
+
 	shouldDisableSecurityWarnings(): boolean;
 
 	setShouldDisableSecurityWarning(shouldShow: boolean): Thenable<void>;
@@ -30,7 +32,9 @@ export class ExtensionContentSecurityPolicyArbiter
 	implements ContentSecurityPolicyArbiter
 {
 	private readonly _old_trusted_workspace_key = "trusted_preview_workspace:";
+
 	private readonly _security_level_key = "preview_security_level:";
+
 	private readonly _should_disable_security_warning_key =
 		"preview_should_show_security_warning:";
 
@@ -38,6 +42,7 @@ export class ExtensionContentSecurityPolicyArbiter
 		private readonly _globalState: vscode.Memento,
 		private readonly _workspaceState: vscode.Memento,
 	) {}
+
 	public getSecurityLevelForResource(
 		resource: vscode.Uri,
 	): MarkdownPreviewSecurityLevel {
@@ -58,8 +63,10 @@ export class ExtensionContentSecurityPolicyArbiter
 		) {
 			return MarkdownPreviewSecurityLevel.AllowScriptsAndAllContent;
 		}
+
 		return MarkdownPreviewSecurityLevel.Strict;
 	}
+
 	public setSecurityLevelForResource(
 		resource: vscode.Uri,
 		level: MarkdownPreviewSecurityLevel,
@@ -69,6 +76,7 @@ export class ExtensionContentSecurityPolicyArbiter
 			level,
 		);
 	}
+
 	public shouldAllowSvgsForResource(resource: vscode.Uri) {
 		const securityLevel = this.getSecurityLevelForResource(resource);
 
@@ -79,18 +87,21 @@ export class ExtensionContentSecurityPolicyArbiter
 				MarkdownPreviewSecurityLevel.AllowScriptsAndAllContent
 		);
 	}
+
 	public shouldDisableSecurityWarnings(): boolean {
 		return this._workspaceState.get<boolean>(
 			this._should_disable_security_warning_key,
 			false,
 		);
 	}
+
 	public setShouldDisableSecurityWarning(disabled: boolean): Thenable<void> {
 		return this._workspaceState.update(
 			this._should_disable_security_warning_key,
 			disabled,
 		);
 	}
+
 	private _getRoot(resource: vscode.Uri): vscode.Uri {
 		if (vscode.workspace.workspaceFolders) {
 			const folderForResource =
@@ -99,10 +110,12 @@ export class ExtensionContentSecurityPolicyArbiter
 			if (folderForResource) {
 				return folderForResource.uri;
 			}
+
 			if (vscode.workspace.workspaceFolders.length) {
 				return vscode.workspace.workspaceFolders[0].uri;
 			}
 		}
+
 		return resource;
 	}
 }
@@ -111,15 +124,18 @@ export class PreviewSecuritySelector {
 		private readonly _cspArbiter: ContentSecurityPolicyArbiter,
 		private readonly _webviewManager: MarkdownPreviewManager,
 	) {}
+
 	public async showSecuritySelectorForResource(
 		resource: vscode.Uri,
 	): Promise<void> {
 		interface PreviewSecurityPickItem extends vscode.QuickPickItem {
 			readonly type: "moreinfo" | "toggle" | MarkdownPreviewSecurityLevel;
 		}
+
 		function markActiveWhen(when: boolean): string {
 			return when ? "• " : "";
 		}
+
 		const currentSecurityLevel =
 			this._cspArbiter.getSecurityLevelForResource(resource);
 
@@ -197,6 +213,7 @@ export class PreviewSecuritySelector {
 		if (!selection) {
 			return;
 		}
+
 		if (selection.type === "moreinfo") {
 			vscode.commands.executeCommand(
 				"vscode.open",
@@ -207,10 +224,12 @@ export class PreviewSecuritySelector {
 
 			return;
 		}
+
 		if (selection.type === "toggle") {
 			this._cspArbiter.setShouldDisableSecurityWarning(
 				!this._cspArbiter.shouldDisableSecurityWarnings(),
 			);
+
 			this._webviewManager.refresh();
 
 			return;
@@ -220,6 +239,7 @@ export class PreviewSecuritySelector {
 				selection.type,
 			);
 		}
+
 		this._webviewManager.refresh();
 	}
 }

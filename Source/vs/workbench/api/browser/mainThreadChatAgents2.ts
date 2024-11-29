@@ -77,8 +77,11 @@ import {
 
 interface AgentData {
 	dispose: () => void;
+
 	id: string;
+
 	extensionId: ExtensionIdentifier;
+
 	hasFollowups?: boolean;
 }
 
@@ -90,6 +93,7 @@ export class MainThreadChatTask implements IChatTask {
 	private readonly _onDidAddProgress = new Emitter<
 		IChatWarningMessage | IChatContentReference
 	>();
+
 	public get onDidAddProgress(): Event<
 		IChatWarningMessage | IChatContentReference
 	> {
@@ -115,6 +119,7 @@ export class MainThreadChatTask implements IChatTask {
 
 	add(progress: IChatWarningMessage | IChatContentReference): void {
 		this.progress.push(progress);
+
 		this._onDidAddProgress.fire(progress);
 	}
 }
@@ -127,9 +132,11 @@ export class MainThreadChatAgents2
 	private readonly _agents = this._register(
 		new DisposableMap<number, AgentData>(),
 	);
+
 	private readonly _agentCompletionProviders = this._register(
 		new DisposableMap<number, IDisposable>(),
 	);
+
 	private readonly _agentIdsToCompletionProviders = this._register(
 		new DisposableMap<string, IDisposable>(),
 	);
@@ -146,9 +153,11 @@ export class MainThreadChatAgents2
 		string,
 		(part: IChatProgress) => void
 	>();
+
 	private readonly _proxy: ExtHostChatAgentsShape2;
 
 	private _responsePartHandlePool = 0;
+
 	private readonly _activeTasks = new Map<string, IChatTask>();
 
 	private readonly _unresolvedAnchors = new Map<
@@ -174,6 +183,7 @@ export class MainThreadChatAgents2
 		private readonly _extensionService: IExtensionService,
 	) {
 		super();
+
 		this._proxy = extHostContext.getProxy(
 			ExtHostContext.ExtHostChatAgents2,
 		);
@@ -183,6 +193,7 @@ export class MainThreadChatAgents2
 				this._proxy.$releaseSession(e.sessionId);
 			}),
 		);
+
 		this._register(
 			this._chatService.onDidPerformUserAction((e) => {
 				if (typeof e.agentId === "string") {
@@ -201,6 +212,7 @@ export class MainThreadChatAgents2
 									e,
 								);
 							}
+
 							break;
 						}
 					}
@@ -227,6 +239,7 @@ export class MainThreadChatAgents2
 		}
 
 		const inputValue = widget?.inputEditor.getValue() ?? "";
+
 		this._chatService.transferChatSession(
 			{ sessionId, inputValue },
 			URI.revive(toWorkspace),
@@ -320,6 +333,7 @@ export class MainThreadChatAgents2
 			const extensionDescription = this._extensionService.extensions.find(
 				(e) => ExtensionIdentifier.equals(e.identifier, extension),
 			);
+
 			disposable = this._chatAgentService.registerDynamicAgent(
 				{
 					id,
@@ -368,7 +382,9 @@ export class MainThreadChatAgents2
 
 			return;
 		}
+
 		data.hasFollowups = metadataUpdate.hasFollowups;
+
 		this._chatAgentService.updateAgent(data.id, revive(metadataUpdate));
 	}
 
@@ -385,7 +401,9 @@ export class MainThreadChatAgents2
 			const responsePartId = `${requestId}_${handle}`;
 
 			const task = new MainThreadChatTask(revivedProgress.content);
+
 			this._activeTasks.set(responsePartId, task);
+
 			this._pendingProgress.get(requestId)?.(task);
 
 			return handle;
@@ -398,10 +416,12 @@ export class MainThreadChatAgents2
 				case "progressTaskResult":
 					if (task && revivedProgress.content) {
 						task.complete(revivedProgress.content.value);
+
 						this._activeTasks.delete(responsePartId);
 					} else {
 						task?.complete(undefined);
 					}
+
 					return responsePartHandle;
 
 				case "warning":
@@ -419,6 +439,7 @@ export class MainThreadChatAgents2
 			if (!this._unresolvedAnchors.has(requestId)) {
 				this._unresolvedAnchors.set(requestId, new Map());
 			}
+
 			this._unresolvedAnchors
 				.get(requestId)
 				?.set(revivedProgress.resolveId, revivedProgress);
@@ -444,6 +465,7 @@ export class MainThreadChatAgents2
 			const revivedAnchor = revive(
 				resolveAnchor,
 			) as IChatContentInlineReference;
+
 			anchor.inlineReference = revivedAnchor.inlineReference;
 		}
 	}
@@ -465,6 +487,7 @@ export class MainThreadChatAgents2
 				icon: c.icon ? ThemeIcon.fromId(c.icon) : undefined,
 			}));
 		};
+
 		this._agentIdsToCompletionProviders.set(
 			id,
 			this._chatAgentService.registerAgentCompletionProvider(id, provide),
@@ -599,6 +622,7 @@ export class MainThreadChatAgents2
 
 	$unregisterAgentCompletionsProvider(handle: number, id: string): void {
 		this._agentCompletionProviders.deleteAndDispose(handle);
+
 		this._agentIdsToCompletionProviders.deleteAndDispose(id);
 	}
 
@@ -613,6 +637,7 @@ export class MainThreadChatAgents2
 						history: IChatAgentHistoryEntry[],
 						options: {
 							location: ChatAgentLocation;
+
 							participants: IChatParticipantMetadata[];
 						},
 						token: CancellationToken,
@@ -695,6 +720,7 @@ function computeCompletionRanges(
 			position.lineNumber,
 			position.column,
 		);
+
 		replace = new Range(
 			position.lineNumber,
 			varWord.startColumn,

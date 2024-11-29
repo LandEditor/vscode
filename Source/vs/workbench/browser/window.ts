@@ -84,8 +84,11 @@ export abstract class BaseWindow extends Disposable {
 		protected readonly environmentService: IWorkbenchEnvironmentService,
 	) {
 		super();
+
 		this.enableWindowFocusOnElementFocus(targetWindow);
+
 		this.enableMultiWindowAwareTimeout(targetWindow, dom);
+
 		this.registerFullScreenListeners(targetWindow.vscodeWindowId);
 	}
 	//#region focus handling in multi-window applications
@@ -93,6 +96,7 @@ export abstract class BaseWindow extends Disposable {
 		const originalFocus = targetWindow.HTMLElement.prototype.focus;
 
 		const that = this;
+
 		targetWindow.HTMLElement.prototype.focus = function (
 			this: HTMLElement,
 			options?: FocusOptions | undefined,
@@ -104,6 +108,7 @@ export abstract class BaseWindow extends Disposable {
 			originalFocus.apply(this, [options]);
 		};
 	}
+
 	private onElementFocus(targetWindow: CodeWindow): void {
 		const activeWindow = getActiveWindow();
 
@@ -141,14 +146,17 @@ export abstract class BaseWindow extends Disposable {
 		// to throttle timeouts in minimized windows, so with this we can ensure the
 		// timeout is scheduled without being throttled (unless all windows are minimized).
 		const originalSetTimeout = targetWindow.setTimeout;
+
 		Object.defineProperty(targetWindow, "vscodeOriginalSetTimeout", {
 			get: () => originalSetTimeout,
 		});
 
 		const originalClearTimeout = targetWindow.clearTimeout;
+
 		Object.defineProperty(targetWindow, "vscodeOriginalClearTimeout", {
 			get: () => originalClearTimeout,
 		});
+
 		targetWindow.setTimeout = function (
 			this: unknown,
 			handler: TimerHandler,
@@ -166,9 +174,11 @@ export abstract class BaseWindow extends Disposable {
 					...args,
 				]);
 			}
+
 			const timeoutDisposables = new Set<IDisposable>();
 
 			const timeoutHandle = BaseWindow.TIMEOUT_HANDLES++;
+
 			BaseWindow.TIMEOUT_DISPOSABLES.set(
 				timeoutHandle,
 				timeoutDisposables,
@@ -176,6 +186,7 @@ export abstract class BaseWindow extends Disposable {
 
 			const handlerFn = createSingleCallFunction(handler, () => {
 				dispose(timeoutDisposables);
+
 				BaseWindow.TIMEOUT_DISPOSABLES.delete(timeoutHandle);
 			});
 
@@ -197,6 +208,7 @@ export abstract class BaseWindow extends Disposable {
 							if (didClear) {
 								return;
 							}
+
 							handlerFn(...args);
 						},
 						timeout,
@@ -207,13 +219,18 @@ export abstract class BaseWindow extends Disposable {
 				const timeoutDisposable = toDisposable(() => {
 					didClear = true;
 					(window as any).vscodeOriginalClearTimeout(handle);
+
 					timeoutDisposables.delete(timeoutDisposable);
 				});
+
 				disposables.add(timeoutDisposable);
+
 				timeoutDisposables.add(timeoutDisposable);
 			}
+
 			return timeoutHandle;
 		};
+
 		targetWindow.clearTimeout = function (
 			this: unknown,
 			timeoutHandle: number | undefined,
@@ -225,6 +242,7 @@ export abstract class BaseWindow extends Disposable {
 
 			if (timeoutDisposables) {
 				dispose(timeoutDisposables);
+
 				BaseWindow.TIMEOUT_DISPOSABLES.delete(timeoutHandle!);
 			} else {
 				originalClearTimeout.apply(this, [timeoutHandle]);
@@ -308,6 +326,7 @@ export abstract class BaseWindow extends Disposable {
 				"never",
 			);
 		}
+
 		return res.confirmed;
 	}
 }
@@ -333,9 +352,12 @@ export class BrowserWindow extends BaseWindow {
 		hostService: IHostService,
 	) {
 		super(mainWindow, undefined, hostService, browserEnvironmentService);
+
 		this.registerListeners();
+
 		this.create();
 	}
+
 	private registerListeners(): void {
 		// Lifecycle
 		this._register(
@@ -381,6 +403,7 @@ export class BrowserWindow extends BaseWindow {
 			),
 		);
 	}
+
 	private onWillShutdown(): void {
 		// Try to detect some user interaction with the workbench
 		// when shutdown has happened to not show the dialog e.g.
@@ -435,6 +458,7 @@ export class BrowserWindow extends BaseWindow {
 			});
 		});
 	}
+
 	private create(): void {
 		// Handle open calls
 		this.setupOpenHandlers();
@@ -445,11 +469,13 @@ export class BrowserWindow extends BaseWindow {
 		// Smoke Test Driver
 		this.setupDriver();
 	}
+
 	private setupDriver(): void {
 		if (this.environmentService.enableSmokeTestDriver) {
 			registerWindowDriver(this.instantiationService);
 		}
 	}
+
 	private setupOpenHandlers(): void {
 		// We need to ignore the `beforeunload` event while
 		// we handle external links to open specifically for
@@ -548,6 +574,7 @@ export class BrowserWindow extends BaseWindow {
 							() => (mainWindow.location.href = href),
 						);
 					};
+
 					invokeProtocolHandler();
 
 					const showProtocolUrlOpenedDialog = async () => {
@@ -575,6 +602,7 @@ export class BrowserWindow extends BaseWindow {
 								this.productService.nameLong,
 								this.productService.nameLong,
 							);
+
 							buttons.push({
 								label: localize(
 									{
@@ -620,10 +648,12 @@ export class BrowserWindow extends BaseWindow {
 						await showProtocolUrlOpenedDialog();
 					}
 				}
+
 				return true;
 			},
 		});
 	}
+
 	private registerLabelFormatters(): void {
 		this._register(
 			this.labelService.registerFormatter({
@@ -636,6 +666,7 @@ export class BrowserWindow extends BaseWindow {
 			}),
 		);
 	}
+
 	private registerCommands(): void {
 		// Allow extensions to request USB devices in Web
 		CommandsRegistry.registerCommand(

@@ -43,15 +43,22 @@ import { WorkspaceRecommendations } from "./workspaceRecommendations.js";
 
 type IgnoreRecommendationClassification = {
 	owner: "sandy081";
+
 	comment: "Report when a recommendation is ignored";
+
 	recommendationReason: {
 		classification: "SystemMetaData";
+
 		purpose: "FeatureInsight";
+
 		comment: "Reason why extension is recommended";
 	};
+
 	extensionId: {
 		classification: "PublicNonPersonalData";
+
 		purpose: "FeatureInsight";
+
 		comment: "Id of the extension recommendation that is being ignored";
 	};
 };
@@ -63,16 +70,27 @@ export class ExtensionRecommendationsService
 	declare readonly _serviceBrand: undefined;
 	// Recommendations
 	private readonly fileBasedRecommendations: FileBasedRecommendations;
+
 	private readonly workspaceRecommendations: WorkspaceRecommendations;
+
 	private readonly configBasedRecommendations: ConfigBasedRecommendations;
+
 	private readonly exeBasedRecommendations: ExeBasedRecommendations;
+
 	private readonly keymapRecommendations: KeymapRecommendations;
+
 	private readonly webRecommendations: WebRecommendations;
+
 	private readonly languageRecommendations: LanguageRecommendations;
+
 	private readonly remoteRecommendations: RemoteRecommendations;
+
 	public readonly activationPromise: Promise<void>;
+
 	private sessionSeed: number;
+
 	private _onDidChangeRecommendations = this._register(new Emitter<void>());
+
 	readonly onDidChangeRecommendations =
 		this._onDidChangeRecommendations.event;
 
@@ -101,46 +119,58 @@ export class ExtensionRecommendationsService
 		private readonly userDataInitializationService: IUserDataInitializationService,
 	) {
 		super();
+
 		this.workspaceRecommendations = this._register(
 			instantiationService.createInstance(WorkspaceRecommendations),
 		);
+
 		this.fileBasedRecommendations = this._register(
 			instantiationService.createInstance(FileBasedRecommendations),
 		);
+
 		this.configBasedRecommendations = this._register(
 			instantiationService.createInstance(ConfigBasedRecommendations),
 		);
+
 		this.exeBasedRecommendations = this._register(
 			instantiationService.createInstance(ExeBasedRecommendations),
 		);
+
 		this.keymapRecommendations = this._register(
 			instantiationService.createInstance(KeymapRecommendations),
 		);
+
 		this.webRecommendations = this._register(
 			instantiationService.createInstance(WebRecommendations),
 		);
+
 		this.languageRecommendations = this._register(
 			instantiationService.createInstance(LanguageRecommendations),
 		);
+
 		this.remoteRecommendations = this._register(
 			instantiationService.createInstance(RemoteRecommendations),
 		);
 
 		if (!this.isEnabled()) {
 			this.sessionSeed = 0;
+
 			this.activationPromise = Promise.resolve();
 
 			return;
 		}
+
 		this.sessionSeed = +new Date();
 		// Activation
 		this.activationPromise = this.activate();
+
 		this._register(
 			this.extensionManagementService.onDidInstallExtensions((e) =>
 				this.onDidInstallExtensions(e),
 			),
 		);
 	}
+
 	private async activate(): Promise<void> {
 		try {
 			await Promise.allSettled([
@@ -161,6 +191,7 @@ export class ExtensionRecommendationsService
 			this.webRecommendations.activate(),
 			this.remoteRecommendations.activate(),
 		]);
+
 		this._register(
 			Event.any(
 				this.workspaceRecommendations.onDidChangeRecommendations,
@@ -169,6 +200,7 @@ export class ExtensionRecommendationsService
 					.onDidChangeIgnoredRecommendations,
 			)(() => this._onDidChangeRecommendations.fire()),
 		);
+
 		this._register(
 			this.extensionRecommendationsManagementService.onDidChangeGlobalIgnoredRecommendation(
 				({ extensionId, isRecommended }) => {
@@ -180,6 +212,7 @@ export class ExtensionRecommendationsService
 							this.telemetryService.publicLog2<
 								{
 									extensionId: string;
+
 									recommendationReason: ExtensionRecommendationReason;
 								},
 								IgnoreRecommendationClassification
@@ -195,23 +228,28 @@ export class ExtensionRecommendationsService
 				},
 			),
 		);
+
 		this.promptWorkspaceRecommendations();
 	}
+
 	private isEnabled(): boolean {
 		return (
 			this.galleryService.isEnabled() &&
 			!this.environmentService.isExtensionDevelopment
 		);
 	}
+
 	private async activateProactiveRecommendations(): Promise<void> {
 		await Promise.all([
 			this.exeBasedRecommendations.activate(),
 			this.configBasedRecommendations.activate(),
 		]);
 	}
+
 	getAllRecommendationsWithReason(): {
 		[id: string]: {
 			reasonId: ExtensionRecommendationReason;
+
 			reasonText: string;
 		};
 	} {
@@ -221,6 +259,7 @@ export class ExtensionRecommendationsService
 		const output: {
 			[id: string]: {
 				reasonId: ExtensionRecommendationReason;
+
 				reasonText: string;
 			};
 		} = Object.create(null);
@@ -243,10 +282,13 @@ export class ExtensionRecommendationsService
 				output[extension.toLowerCase()] = reason;
 			}
 		}
+
 		return output;
 	}
+
 	async getConfigBasedRecommendations(): Promise<{
 		important: string[];
+
 		others: string[];
 	}> {
 		await this.configBasedRecommendations.activate();
@@ -260,8 +302,10 @@ export class ExtensionRecommendationsService
 			),
 		};
 	}
+
 	async getOtherRecommendations(): Promise<string[]> {
 		await this.activationPromise;
+
 		await this.activateProactiveRecommendations();
 
 		const recommendations = [
@@ -271,10 +315,12 @@ export class ExtensionRecommendationsService
 		];
 
 		const extensionIds = this.toExtensionIds(recommendations);
+
 		shuffle(extensionIds, this.sessionSeed);
 
 		return extensionIds;
 	}
+
 	async getImportantRecommendations(): Promise<string[]> {
 		await this.activateProactiveRecommendations();
 
@@ -285,25 +331,31 @@ export class ExtensionRecommendationsService
 		];
 
 		const extensionIds = this.toExtensionIds(recommendations);
+
 		shuffle(extensionIds, this.sessionSeed);
 
 		return extensionIds;
 	}
+
 	getKeymapRecommendations(): string[] {
 		return this.toExtensionIds(this.keymapRecommendations.recommendations);
 	}
+
 	getLanguageRecommendations(): string[] {
 		return this.toExtensionIds(
 			this.languageRecommendations.recommendations,
 		);
 	}
+
 	getRemoteRecommendations(): string[] {
 		return this.toExtensionIds(this.remoteRecommendations.recommendations);
 	}
+
 	async getWorkspaceRecommendations(): Promise<Array<string | URI>> {
 		if (!this.isEnabled()) {
 			return [];
 		}
+
 		await this.workspaceRecommendations.activate();
 
 		const result: Array<string | URI> = [];
@@ -321,10 +373,13 @@ export class ExtensionRecommendationsService
 				result.push(extension);
 			}
 		}
+
 		return result;
 	}
+
 	async getExeBasedRecommendations(exe?: string): Promise<{
 		important: string[];
+
 		others: string[];
 	}> {
 		await this.exeBasedRecommendations.activate();
@@ -342,11 +397,13 @@ export class ExtensionRecommendationsService
 			others: this.toExtensionIds(others),
 		};
 	}
+
 	getFileBasedRecommendations(): string[] {
 		return this.toExtensionIds(
 			this.fileBasedRecommendations.recommendations,
 		);
 	}
+
 	private onDidInstallExtensions(
 		results: readonly InstallExtensionResult[],
 	): void {
@@ -383,6 +440,7 @@ export class ExtensionRecommendationsService
 			}
 		}
 	}
+
 	private toExtensionIds(
 		recommendations: ReadonlyArray<ExtensionRecommendation>,
 	): string[] {
@@ -397,13 +455,16 @@ export class ExtensionRecommendationsService
 				extensionIds.push(extension.toLowerCase());
 			}
 		}
+
 		return extensionIds;
 	}
+
 	private isExtensionAllowedToBeRecommended(extensionId: string): boolean {
 		return !this.extensionRecommendationsManagementService.ignoredRecommendations.includes(
 			extensionId.toLowerCase(),
 		);
 	}
+
 	private async promptWorkspaceRecommendations(): Promise<void> {
 		const installed = await this.extensionsWorkbenchService.queryLocal();
 
@@ -429,11 +490,13 @@ export class ExtensionRecommendationsService
 
 		if (allowedRecommendations.length) {
 			await this._registerP(timeout(5000));
+
 			await this.extensionRecommendationNotificationService.promptWorkspaceRecommendations(
 				allowedRecommendations,
 			);
 		}
 	}
+
 	private _registerP<T>(o: CancelablePromise<T>): CancelablePromise<T> {
 		this._register(toDisposable(() => o.cancel()));
 

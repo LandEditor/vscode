@@ -28,17 +28,22 @@ import type { IParsedLink } from "./terminalLinkParsing.js";
 
 export class TerminalLink extends Disposable implements ILink {
 	decorations: ILinkDecorations;
+
 	private readonly _tooltipScheduler: MutableDisposable<RunOnceScheduler> =
 		this._register(new MutableDisposable());
+
 	private readonly _hoverListeners = this._register(new MutableDisposable());
+
 	private readonly _onInvalidated = new Emitter<void>();
 
 	get onInvalidated(): Event<void> {
 		return this._onInvalidated.event;
 	}
+
 	get type(): TerminalLinkType {
 		return this._type;
 	}
+
 	constructor(
 		private readonly _xterm: Terminal,
 		readonly range: IBufferRange,
@@ -64,14 +69,17 @@ export class TerminalLink extends Disposable implements ILink {
 		private readonly _configurationService: IConfigurationService,
 	) {
 		super();
+
 		this.decorations = {
 			pointerCursor: false,
 			underline: this._isHighConfidenceLink,
 		};
 	}
+
 	activate(event: MouseEvent | undefined, text: string): void {
 		this._activateCallback(event, text);
 	}
+
 	hover(event: MouseEvent, text: string): void {
 		const w = dom.getWindow(event);
 
@@ -79,6 +87,7 @@ export class TerminalLink extends Disposable implements ILink {
 		// Listen for modifier before handing it off to the hover to handle so it gets disposed correctly
 		const hoverListeners = (this._hoverListeners.value =
 			new DisposableStore());
+
 		hoverListeners.add(
 			dom.addDisposableListener(d, "keydown", (e) => {
 				if (!e.repeat && this._isModifierDown(e)) {
@@ -86,6 +95,7 @@ export class TerminalLink extends Disposable implements ILink {
 				}
 			}),
 		);
+
 		hoverListeners.add(
 			dom.addDisposableListener(d, "keyup", (e) => {
 				if (!e.repeat && !this._isModifierDown(e)) {
@@ -120,9 +130,12 @@ export class TerminalLink extends Disposable implements ILink {
 				// Clear out scheduler until next hover event
 				this._tooltipScheduler.clear();
 			}, this._configurationService.getValue("workbench.hover.delay"));
+
 			this._tooltipScheduler.value.schedule();
 		}
+
 		const origin = { x: event.pageX, y: event.pageY };
+
 		hoverListeners.add(
 			dom.addDisposableListener(d, dom.EventType.MOUSE_MOVE, (e) => {
 				// Update decorations
@@ -137,32 +150,41 @@ export class TerminalLink extends Disposable implements ILink {
 					Math.abs(e.pageY - origin.y) > w.devicePixelRatio * 2
 				) {
 					origin.x = e.pageX;
+
 					origin.y = e.pageY;
+
 					this._tooltipScheduler.value?.schedule();
 				}
 			}),
 		);
 	}
+
 	leave(): void {
 		this._hoverListeners.clear();
+
 		this._tooltipScheduler.clear();
 	}
+
 	private _enableDecorations(): void {
 		if (!this.decorations.pointerCursor) {
 			this.decorations.pointerCursor = true;
 		}
+
 		if (!this.decorations.underline) {
 			this.decorations.underline = true;
 		}
 	}
+
 	private _disableDecorations(): void {
 		if (this.decorations.pointerCursor) {
 			this.decorations.pointerCursor = false;
 		}
+
 		if (this.decorations.underline !== this._isHighConfidenceLink) {
 			this.decorations.underline = this._isHighConfidenceLink;
 		}
 	}
+
 	private _isModifierDown(event: MouseEvent | KeyboardEvent): boolean {
 		const multiCursorModifier = this._configurationService.getValue<
 			"ctrlCmd" | "alt"
@@ -171,6 +193,7 @@ export class TerminalLink extends Disposable implements ILink {
 		if (multiCursorModifier === "ctrlCmd") {
 			return !!event.altKey;
 		}
+
 		return isMacintosh ? event.metaKey : event.ctrlKey;
 	}
 }

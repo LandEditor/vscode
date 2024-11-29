@@ -15,7 +15,9 @@ type Resolve<T extends Proto.Response> = () => Promise<
  */
 export class CachedResponse<T extends Proto.Response> {
 	private response?: Promise<ServerResponse.Response<T>>;
+
 	private version: number = -1;
+
 	private document: string = "";
 	/**
 	 * Execute a request. May return cached value or resolve the new value
@@ -32,19 +34,23 @@ export class CachedResponse<T extends Proto.Response> {
 				result.type === "cancelled" ? resolve() : result,
 			));
 		}
+
 		return this.reset(document, resolve);
 	}
+
 	private matches(document: vscode.TextDocument): boolean {
 		return (
 			this.version === document.version &&
 			this.document === document.uri.toString()
 		);
 	}
+
 	private async reset(
 		document: vscode.TextDocument,
 		resolve: Resolve<T>,
 	): Promise<ServerResponse.Response<T>> {
 		this.version = document.version;
+
 		this.document = document.uri.toString();
 
 		return (this.response = resolve());

@@ -39,6 +39,7 @@ export class DebugContentProvider
 	implements IWorkbenchContribution, ITextModelContentProvider
 {
 	private static INSTANCE: DebugContentProvider;
+
 	private readonly pendingUpdates = new Map<
 		string,
 		CancellationTokenSource
@@ -60,13 +61,16 @@ export class DebugContentProvider
 			DEBUG_SCHEME,
 			this,
 		);
+
 		DebugContentProvider.INSTANCE = this;
 	}
+
 	dispose(): void {
 		this.pendingUpdates.forEach((cancellationSource) =>
 			cancellationSource.dispose(),
 		);
 	}
+
 	provideTextContent(resource: uri): Promise<ITextModel> | null {
 		return this.createOrUpdateContentModel(resource, true);
 	}
@@ -93,16 +97,20 @@ export class DebugContentProvider
 			// nothing to do
 			return null;
 		}
+
 		let session: IDebugSession | undefined;
 
 		if (resource.query) {
 			const data = Source.getEncodedDebugData(resource);
+
 			session = this.debugService.getModel().getSession(data.sessionId);
 		}
+
 		if (!session) {
 			// fallback: use focused session
 			session = this.debugService.getViewModel().focusedSession;
 		}
+
 		if (!session) {
 			return Promise.reject(
 				new ErrorNoTelemetry(
@@ -113,6 +121,7 @@ export class DebugContentProvider
 				),
 			);
 		}
+
 		const createErrModel = (errMsg?: string) => {
 			this.debugService.sourceIsNotAvailable(resource);
 
@@ -149,9 +158,11 @@ export class DebugContentProvider
 						const cancellationSource = this.pendingUpdates.get(
 							model.id,
 						);
+
 						cancellationSource?.cancel();
 						// create and keep update token
 						const myToken = new CancellationTokenSource();
+
 						this.pendingUpdates.set(model.id, myToken);
 						// update text model
 						return this.editorWorkerService
@@ -180,6 +191,7 @@ export class DebugContentProvider
 										),
 									);
 								}
+
 								return model;
 							});
 					} else {
@@ -197,6 +209,7 @@ export class DebugContentProvider
 						);
 					}
 				}
+
 				return createErrModel();
 			},
 			(err: DebugProtocol.ErrorResponse) => createErrModel(err.message),

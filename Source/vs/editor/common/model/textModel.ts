@@ -81,14 +81,18 @@ export function createTextBufferFactory(
 	text: string,
 ): model.ITextBufferFactory {
 	const builder = new PieceTreeTextBufferBuilder();
+
 	builder.acceptChunk(text);
 
 	return builder.finish();
 }
 interface ITextStream {
 	on(event: "data", callback: (data: string) => void): void;
+
 	on(event: "error", callback: (err: Error) => void): void;
+
 	on(event: "end", callback: () => void): void;
+
 	on(event: string, callback: any): void;
 }
 export function createTextBufferFactoryFromStream(
@@ -106,6 +110,7 @@ export function createTextBufferFactoryFromStream(
 		const builder = new PieceTreeTextBufferBuilder();
 
 		let done = false;
+
 		listenStream<string | VSBuffer>(stream, {
 			onData: (chunk) => {
 				builder.acceptChunk(
@@ -115,12 +120,14 @@ export function createTextBufferFactoryFromStream(
 			onError: (error) => {
 				if (!done) {
 					done = true;
+
 					reject(error);
 				}
 			},
 			onEnd: () => {
 				if (!done) {
 					done = true;
+
 					resolve(builder.finish());
 				}
 			},
@@ -137,6 +144,7 @@ export function createTextBufferFactoryFromSnapshot(
 	while (typeof (chunk = snapshot.read()) === "string") {
 		builder.acceptChunk(chunk);
 	}
+
 	return builder.finish();
 }
 export function createTextBuffer(
@@ -144,6 +152,7 @@ export function createTextBuffer(
 	defaultEOL: model.DefaultEndOfLine,
 ): {
 	textBuffer: model.ITextBuffer;
+
 	disposable: IDisposable;
 } {
 	let factory: model.ITextBufferFactory;
@@ -155,6 +164,7 @@ export function createTextBuffer(
 	} else {
 		factory = value;
 	}
+
 	return factory.create(defaultEOL);
 }
 let MODEL_ID = 0;
@@ -164,16 +174,20 @@ const LIMIT_FIND_COUNT = 999;
 const LONG_LINE_BOUNDARY = 10000;
 class TextModelSnapshot implements model.ITextSnapshot {
 	private readonly _source: model.ITextSnapshot;
+
 	private _eos: boolean;
 
 	constructor(source: model.ITextSnapshot) {
 		this._source = source;
+
 		this._eos = false;
 	}
+
 	public read(): string | null {
 		if (this._eos) {
 			return null;
 		}
+
 		const result: string[] = [];
 
 		let resultCnt = 0;
@@ -193,10 +207,13 @@ class TextModelSnapshot implements model.ITextSnapshot {
 					return result.join("");
 				}
 			}
+
 			if (tmp.length > 0) {
 				result[resultCnt++] = tmp;
+
 				resultLength += tmp.length;
 			}
+
 			if (resultLength >= 64 * 1024) {
 				return result.join("");
 			}
@@ -224,6 +241,7 @@ export class TextModel
 {
 	static _MODEL_SYNC_LIMIT = 50 * 1024 * 1024; // 50 MB,  // used in tests
 	private static readonly LARGE_FILE_SIZE_THRESHOLD = 20 * 1024 * 1024; // 20 MB;
+
 	private static readonly LARGE_FILE_LINE_COUNT_THRESHOLD = 300 * 1000; // 300K lines
 	private static readonly LARGE_FILE_HEAP_OPERATION_THRESHOLD =
 		256 * 1024 * 1024; // 256M characters, usually ~> 512MB memory usage
@@ -239,6 +257,7 @@ export class TextModel
 		bracketPairColorizationOptions:
 			EDITOR_MODEL_DEFAULTS.bracketPairColorizationOptions,
 	};
+
 	public static resolveOptions(
 		textBuffer: model.ITextBuffer,
 		options: model.ITextModelCreationOptions,
@@ -260,13 +279,16 @@ export class TextModel
 					options.bracketPairColorizationOptions,
 			});
 		}
+
 		return new model.TextModelResolvedOptions(options);
 	}
 	//#region Events
 	private readonly _onWillDispose: Emitter<void> = this._register(
 		new Emitter<void>(),
 	);
+
 	public readonly onWillDispose: Event<void> = this._onWillDispose.event;
+
 	private readonly _onDidChangeDecorations: DidChangeDecorationsEmitter =
 		this._register(
 			new DidChangeDecorationsEmitter((affectedInjectedTextLines) =>
@@ -275,31 +297,42 @@ export class TextModel
 				),
 			),
 		);
+
 	public readonly onDidChangeDecorations: Event<IModelDecorationsChangedEvent> =
 		this._onDidChangeDecorations.event;
+
 	public get onDidChangeLanguage() {
 		return this._tokenizationTextModelPart.onDidChangeLanguage;
 	}
+
 	public get onDidChangeLanguageConfiguration() {
 		return this._tokenizationTextModelPart.onDidChangeLanguageConfiguration;
 	}
+
 	public get onDidChangeTokens() {
 		return this._tokenizationTextModelPart.onDidChangeTokens;
 	}
+
 	private readonly _onDidChangeOptions: Emitter<IModelOptionsChangedEvent> =
 		this._register(new Emitter<IModelOptionsChangedEvent>());
+
 	public readonly onDidChangeOptions: Event<IModelOptionsChangedEvent> =
 		this._onDidChangeOptions.event;
+
 	private readonly _onDidChangeAttached: Emitter<void> = this._register(
 		new Emitter<void>(),
 	);
+
 	public readonly onDidChangeAttached: Event<void> =
 		this._onDidChangeAttached.event;
+
 	private readonly _onDidChangeInjectedText: Emitter<ModelInjectedTextChangedEvent> =
 		this._register(new Emitter<ModelInjectedTextChangedEvent>());
+
 	private readonly _eventEmitter: DidChangeContentEmitter = this._register(
 		new DidChangeContentEmitter(),
 	);
+
 	public onDidChangeContent(
 		listener: (e: IModelContentChangedEvent) => void,
 	): IDisposable {
@@ -308,6 +341,7 @@ export class TextModel
 				listener(e.contentChangedEvent),
 		);
 	}
+
 	public onDidChangeContentOrInjectedText(
 		listener: (
 			e: InternalModelContentChangeEvent | ModelInjectedTextChangedEvent,
@@ -320,33 +354,51 @@ export class TextModel
 	}
 	//#endregion
 	public readonly id: string;
+
 	public readonly isForSimpleWidget: boolean;
+
 	private readonly _associatedResource: URI;
+
 	private _attachedEditorCount: number;
+
 	private _buffer: model.ITextBuffer;
+
 	private _bufferDisposable: IDisposable;
+
 	private _options: model.TextModelResolvedOptions;
+
 	private readonly _languageSelectionListener = this._register(
 		new MutableDisposable<IDisposable>(),
 	);
+
 	private _isDisposed: boolean;
+
 	private __isDisposing: boolean;
+
 	public _isDisposing(): boolean {
 		return this.__isDisposing;
 	}
+
 	private _versionId: number;
 	/**
 	 * Unlike, versionId, this can go down (via undo) or go to previous values (via redo)
 	 */
 	private _alternativeVersionId: number;
+
 	private _initialUndoRedoSnapshot: ResourceEditStackSnapshot | null;
+
 	private readonly _isTooLargeForSyncing: boolean;
+
 	private readonly _isTooLargeForTokenization: boolean;
+
 	private readonly _isTooLargeForHeapOperation: boolean;
 	//#region Editing
 	private readonly _commandManager: EditStack;
+
 	private _isUndoing: boolean;
+
 	private _isRedoing: boolean;
+
 	private _trimAutoWhitespaceLines: number[] | null;
 	//#endregion
 	//#region Decorations
@@ -355,26 +407,37 @@ export class TextModel
 	 * It is not globally unique in order to limit it to one character.
 	 */
 	private readonly _instanceId: string;
+
 	private _deltaDecorationCallCnt: number = 0;
+
 	private _lastDecorationId: number;
+
 	private _decorations: {
 		[decorationId: string]: IntervalNode;
 	};
+
 	private _decorationsTree: DecorationsTrees;
+
 	private readonly _decorationProvider: ColorizedBracketPairsDecorationProvider;
 	//#endregion
 	private readonly _tokenizationTextModelPart: TokenizationTextModelPart;
+
 	public get tokenization(): ITokenizationTextModelPart {
 		return this._tokenizationTextModelPart;
 	}
+
 	private readonly _bracketPairs: BracketPairsTextModelPart;
+
 	public get bracketPairs(): IBracketPairsTextModelPart {
 		return this._bracketPairs;
 	}
+
 	private readonly _guidesTextModelPart: GuidesTextModelPart;
+
 	public get guides(): IGuidesTextModelPart {
 		return this._guidesTextModelPart;
 	}
+
 	private readonly _attachedViews = new AttachedViews();
 
 	constructor(
@@ -394,7 +457,9 @@ export class TextModel
 		super();
 		// Generate a new unique model id
 		MODEL_ID++;
+
 		this.id = "$model" + MODEL_ID;
+
 		this.isForSimpleWidget = creationOptions.isForSimpleWidget;
 
 		if (
@@ -407,14 +472,18 @@ export class TextModel
 		} else {
 			this._associatedResource = associatedResource;
 		}
+
 		this._attachedEditorCount = 0;
 
 		const { textBuffer, disposable } = createTextBuffer(
 			source,
 			creationOptions.defaultEOL,
 		);
+
 		this._buffer = textBuffer;
+
 		this._bufferDisposable = disposable;
+
 		this._options = TextModel.resolveOptions(this._buffer, creationOptions);
 
 		const languageId =
@@ -428,18 +497,22 @@ export class TextModel
 					this._setLanguage(languageIdOrSelection.languageId),
 				);
 		}
+
 		this._bracketPairs = this._register(
 			new BracketPairsTextModelPart(
 				this,
 				this._languageConfigurationService,
 			),
 		);
+
 		this._guidesTextModelPart = this._register(
 			new GuidesTextModelPart(this, this._languageConfigurationService),
 		);
+
 		this._decorationProvider = this._register(
 			new ColorizedBracketPairsDecorationProvider(this),
 		);
+
 		this._tokenizationTextModelPart =
 			this.instantiationService.createInstance(
 				TokenizationTextModelPart,
@@ -467,53 +540,81 @@ export class TextModel
 			this._isTooLargeForTokenization =
 				bufferTextLength > TextModel.LARGE_FILE_SIZE_THRESHOLD ||
 				bufferLineCount > TextModel.LARGE_FILE_LINE_COUNT_THRESHOLD;
+
 			this._isTooLargeForHeapOperation =
 				bufferTextLength >
 				TextModel.LARGE_FILE_HEAP_OPERATION_THRESHOLD;
 		} else {
 			this._isTooLargeForTokenization = false;
+
 			this._isTooLargeForHeapOperation = false;
 		}
+
 		this._isTooLargeForSyncing =
 			bufferTextLength > TextModel._MODEL_SYNC_LIMIT;
+
 		this._versionId = 1;
+
 		this._alternativeVersionId = 1;
+
 		this._initialUndoRedoSnapshot = null;
+
 		this._isDisposed = false;
+
 		this.__isDisposing = false;
+
 		this._instanceId = strings.singleLetterHash(MODEL_ID);
+
 		this._lastDecorationId = 0;
+
 		this._decorations = Object.create(null);
+
 		this._decorationsTree = new DecorationsTrees();
+
 		this._commandManager = new EditStack(this, this._undoRedoService);
+
 		this._isUndoing = false;
+
 		this._isRedoing = false;
+
 		this._trimAutoWhitespaceLines = null;
+
 		this._register(
 			this._decorationProvider.onDidChange(() => {
 				this._onDidChangeDecorations.beginDeferredEmit();
+
 				this._onDidChangeDecorations.fire();
+
 				this._onDidChangeDecorations.endDeferredEmit();
 			}),
 		);
+
 		this._languageService.requestRichLanguageFeatures(languageId);
+
 		this._register(
 			this._languageConfigurationService.onDidChange((e) => {
 				this._bracketPairs.handleLanguageConfigurationServiceChange(e);
+
 				this._tokenizationTextModelPart.handleLanguageConfigurationServiceChange(
 					e,
 				);
 			}),
 		);
 	}
+
 	public override dispose(): void {
 		this.__isDisposing = true;
+
 		this._onWillDispose.fire();
+
 		this._tokenizationTextModelPart.dispose();
+
 		this._isDisposed = true;
 
 		super.dispose();
+
 		this._bufferDisposable.dispose();
+
 		this.__isDisposing = false;
 		// Manually release reference to previous text buffer to avoid large leaks
 		// in case someone leaks a TextModel reference
@@ -526,10 +627,14 @@ export class TextModel
 			true,
 			true,
 		);
+
 		emptyDisposedTextBuffer.dispose();
+
 		this._buffer = emptyDisposedTextBuffer;
+
 		this._bufferDisposable = Disposable.None;
 	}
+
 	_hasListeners(): boolean {
 		return (
 			this._onWillDispose.hasListeners() ||
@@ -541,21 +646,25 @@ export class TextModel
 			this._eventEmitter.hasListeners()
 		);
 	}
+
 	private _assertNotDisposed(): void {
 		if (this._isDisposed) {
 			throw new BugIndicatingError("Model is disposed!");
 		}
 	}
+
 	public equalsTextBuffer(other: model.ITextBuffer): boolean {
 		this._assertNotDisposed();
 
 		return this._buffer.equals(other);
 	}
+
 	public getTextBuffer(): model.ITextBuffer {
 		this._assertNotDisposed();
 
 		return this._buffer;
 	}
+
 	private _emitContentChangedEvent(
 		rawChange: ModelRawContentChangedEvent,
 		change: IModelContentChangedEvent,
@@ -564,24 +673,31 @@ export class TextModel
 			// Do not confuse listeners by emitting any event after disposing
 			return;
 		}
+
 		this._tokenizationTextModelPart.handleDidChangeContent(change);
+
 		this._bracketPairs.handleDidChangeContent(change);
+
 		this._eventEmitter.fire(
 			new InternalModelContentChangeEvent(rawChange, change),
 		);
 	}
+
 	public setValue(value: string | model.ITextSnapshot): void {
 		this._assertNotDisposed();
 
 		if (value === null || value === undefined) {
 			throw illegalArgument();
 		}
+
 		const { textBuffer, disposable } = createTextBuffer(
 			value,
 			this._options.defaultEOL,
 		);
+
 		this._setValueFromTextBuffer(textBuffer, disposable);
 	}
+
 	private _createContentChanged2(
 		range: Range,
 		rangeOffset: number,
@@ -609,6 +725,7 @@ export class TextModel
 			isFlush: isFlush,
 		};
 	}
+
 	private _setValueFromTextBuffer(
 		textBuffer: model.ITextBuffer,
 		textBufferDisposable: IDisposable,
@@ -623,16 +740,23 @@ export class TextModel
 		const endLineNumber = this.getLineCount();
 
 		const endColumn = this.getLineMaxColumn(endLineNumber);
+
 		this._buffer = textBuffer;
+
 		this._bufferDisposable.dispose();
+
 		this._bufferDisposable = textBufferDisposable;
+
 		this._increaseVersionId();
 		// Destroy all my decorations
 		this._decorations = Object.create(null);
+
 		this._decorationsTree = new DecorationsTrees();
 		// Destroy my edit history and settings
 		this._commandManager.clear();
+
 		this._trimAutoWhitespaceLines = null;
+
 		this._emitContentChangedEvent(
 			new ModelRawContentChangedEvent(
 				[new ModelRawFlush()],
@@ -652,6 +776,7 @@ export class TextModel
 			),
 		);
 	}
+
 	public setEOL(eol: model.EndOfLineSequence): void {
 		this._assertNotDisposed();
 
@@ -661,6 +786,7 @@ export class TextModel
 			// Nothing to do
 			return;
 		}
+
 		const oldFullModelRange = this.getFullModelRange();
 
 		const oldModelValueLength =
@@ -669,10 +795,15 @@ export class TextModel
 		const endLineNumber = this.getLineCount();
 
 		const endColumn = this.getLineMaxColumn(endLineNumber);
+
 		this._onBeforeEOLChange();
+
 		this._buffer.setEOL(newEOL);
+
 		this._increaseVersionId();
+
 		this._onAfterEOLChange();
+
 		this._emitContentChangedEvent(
 			new ModelRawContentChangedEvent(
 				[new ModelRawEOLChanged()],
@@ -692,10 +823,12 @@ export class TextModel
 			),
 		);
 	}
+
 	private _onBeforeEOLChange(): void {
 		// Ensure all decorations get their `range` set.
 		this._decorationsTree.ensureAllNodesHaveRanges(this);
 	}
+
 	private _onAfterEOLChange(): void {
 		// Transform back `range` to offsets
 		const versionId = this.getVersionId();
@@ -717,50 +850,69 @@ export class TextModel
 				range.endLineNumber,
 				range.endColumn,
 			);
+
 			node.cachedAbsoluteStart = startOffset;
+
 			node.cachedAbsoluteEnd = endOffset;
+
 			node.cachedVersionId = versionId;
+
 			node.start = startOffset - delta;
+
 			node.end = endOffset - delta;
+
 			recomputeMaxEnd(node);
 		}
 	}
+
 	public onBeforeAttached(): model.IAttachedView {
 		this._attachedEditorCount++;
 
 		if (this._attachedEditorCount === 1) {
 			this._tokenizationTextModelPart.handleDidChangeAttached();
+
 			this._onDidChangeAttached.fire(undefined);
 		}
+
 		return this._attachedViews.attachView();
 	}
+
 	public onBeforeDetached(view: model.IAttachedView): void {
 		this._attachedEditorCount--;
 
 		if (this._attachedEditorCount === 0) {
 			this._tokenizationTextModelPart.handleDidChangeAttached();
+
 			this._onDidChangeAttached.fire(undefined);
 		}
+
 		this._attachedViews.detachView(view);
 	}
+
 	public isAttachedToEditor(): boolean {
 		return this._attachedEditorCount > 0;
 	}
+
 	public getAttachedEditorCount(): number {
 		return this._attachedEditorCount;
 	}
+
 	public isTooLargeForSyncing(): boolean {
 		return this._isTooLargeForSyncing;
 	}
+
 	public isTooLargeForTokenization(): boolean {
 		return this._isTooLargeForTokenization;
 	}
+
 	public isTooLargeForHeapOperation(): boolean {
 		return this._isTooLargeForHeapOperation;
 	}
+
 	public isDisposed(): boolean {
 		return this._isDisposed;
 	}
+
 	public isDominatedByLongLines(): boolean {
 		this._assertNotDisposed();
 
@@ -768,6 +920,7 @@ export class TextModel
 			// Cannot word wrap huge files anyways, so it doesn't really matter
 			return false;
 		}
+
 		let smallLineCharCount = 0;
 
 		let longLineCharCount = 0;
@@ -783,8 +936,10 @@ export class TextModel
 				smallLineCharCount += lineLength;
 			}
 		}
+
 		return longLineCharCount > smallLineCharCount;
 	}
+
 	public get uri(): URI {
 		return this._associatedResource;
 	}
@@ -794,12 +949,14 @@ export class TextModel
 
 		return this._options;
 	}
+
 	public getFormattingOptions(): FormattingOptions {
 		return {
 			tabSize: this._options.indentSize,
 			insertSpaces: this._options.insertSpaces,
 		};
 	}
+
 	public updateOptions(_newOpts: model.ITextModelUpdateOptions): void {
 		this._assertNotDisposed();
 
@@ -840,12 +997,18 @@ export class TextModel
 		if (this._options.equals(newOpts)) {
 			return;
 		}
+
 		const e = this._options.createChangeEvent(newOpts);
+
 		this._options = newOpts;
+
 		this._bracketPairs.handleDidChangeOptions(e);
+
 		this._decorationProvider.handleDidChangeOptions(e);
+
 		this._onDidChangeOptions.fire(e);
 	}
+
 	public detectIndentation(
 		defaultInsertSpaces: boolean,
 		defaultTabSize: number,
@@ -857,12 +1020,14 @@ export class TextModel
 			defaultTabSize,
 			defaultInsertSpaces,
 		);
+
 		this.updateOptions({
 			insertSpaces: guessedIndentation.insertSpaces,
 			tabSize: guessedIndentation.tabSize,
 			indentSize: guessedIndentation.tabSize, // TODO@Alex: guess indentSize independent of tabSize
 		});
 	}
+
 	public normalizeIndentation(str: string): string {
 		this._assertNotDisposed();
 
@@ -879,12 +1044,15 @@ export class TextModel
 
 		return this._versionId;
 	}
+
 	public mightContainRTL(): boolean {
 		return this._buffer.mightContainRTL();
 	}
+
 	public mightContainUnusualLineTerminators(): boolean {
 		return this._buffer.mightContainUnusualLineTerminators();
 	}
+
 	public removeUnusualLineTerminators(
 		selections: Selection[] | null = null,
 	): void {
@@ -897,26 +1065,32 @@ export class TextModel
 			false,
 			Constants.MAX_SAFE_SMALL_INTEGER,
 		);
+
 		this._buffer.resetMightContainUnusualLineTerminators();
+
 		this.pushEditOperations(
 			selections,
 			matches.map((m) => ({ range: m.range, text: null })),
 			() => null,
 		);
 	}
+
 	public mightContainNonBasicASCII(): boolean {
 		return this._buffer.mightContainNonBasicASCII();
 	}
+
 	public getAlternativeVersionId(): number {
 		this._assertNotDisposed();
 
 		return this._alternativeVersionId;
 	}
+
 	public getInitialUndoRedoSnapshot(): ResourceEditStackSnapshot | null {
 		this._assertNotDisposed();
 
 		return this._initialUndoRedoSnapshot;
 	}
+
 	public getOffsetAt(rawPosition: IPosition): number {
 		this._assertNotDisposed();
 
@@ -928,6 +1102,7 @@ export class TextModel
 
 		return this._buffer.getOffsetAt(position.lineNumber, position.column);
 	}
+
 	public getPositionAt(rawOffset: number): Position {
 		this._assertNotDisposed();
 
@@ -938,23 +1113,29 @@ export class TextModel
 
 		return this._buffer.getPositionAt(offset);
 	}
+
 	private _increaseVersionId(): void {
 		this._versionId = this._versionId + 1;
+
 		this._alternativeVersionId = this._versionId;
 	}
+
 	public _overwriteVersionId(versionId: number): void {
 		this._versionId = versionId;
 	}
+
 	public _overwriteAlternativeVersionId(
 		newAlternativeVersionId: number,
 	): void {
 		this._alternativeVersionId = newAlternativeVersionId;
 	}
+
 	public _overwriteInitialUndoRedoSnapshot(
 		newInitialUndoRedoSnapshot: ResourceEditStackSnapshot | null,
 	): void {
 		this._initialUndoRedoSnapshot = newInitialUndoRedoSnapshot;
 	}
+
 	public getValue(
 		eol?: model.EndOfLinePreference,
 		preserveBOM: boolean = false,
@@ -966,6 +1147,7 @@ export class TextModel
 				"Operation would exceed heap memory limits",
 			);
 		}
+
 		const fullModelRange = this.getFullModelRange();
 
 		const fullModelValue = this.getValueInRange(fullModelRange, eol);
@@ -973,11 +1155,14 @@ export class TextModel
 		if (preserveBOM) {
 			return this._buffer.getBOM() + fullModelValue;
 		}
+
 		return fullModelValue;
 	}
+
 	public createSnapshot(preserveBOM: boolean = false): model.ITextSnapshot {
 		return new TextModelSnapshot(this._buffer.createSnapshot(preserveBOM));
 	}
+
 	public getValueLength(
 		eol?: model.EndOfLinePreference,
 		preserveBOM: boolean = false,
@@ -991,8 +1176,10 @@ export class TextModel
 		if (preserveBOM) {
 			return this._buffer.getBOM().length + fullModelValue;
 		}
+
 		return fullModelValue;
 	}
+
 	public getValueInRange(
 		rawRange: IRange,
 		eol: model.EndOfLinePreference = model.EndOfLinePreference.TextDefined,
@@ -1001,6 +1188,7 @@ export class TextModel
 
 		return this._buffer.getValueInRange(this.validateRange(rawRange), eol);
 	}
+
 	public getValueLengthInRange(
 		rawRange: IRange,
 		eol: model.EndOfLinePreference = model.EndOfLinePreference.TextDefined,
@@ -1012,6 +1200,7 @@ export class TextModel
 			eol,
 		);
 	}
+
 	public getCharacterCountInRange(
 		rawRange: IRange,
 		eol: model.EndOfLinePreference = model.EndOfLinePreference.TextDefined,
@@ -1023,27 +1212,33 @@ export class TextModel
 			eol,
 		);
 	}
+
 	public getLineCount(): number {
 		this._assertNotDisposed();
 
 		return this._buffer.getLineCount();
 	}
+
 	public getLineContent(lineNumber: number): string {
 		this._assertNotDisposed();
 
 		if (lineNumber < 1 || lineNumber > this.getLineCount()) {
 			throw new BugIndicatingError("Illegal value for lineNumber");
 		}
+
 		return this._buffer.getLineContent(lineNumber);
 	}
+
 	public getLineLength(lineNumber: number): number {
 		this._assertNotDisposed();
 
 		if (lineNumber < 1 || lineNumber > this.getLineCount()) {
 			throw new BugIndicatingError("Illegal value for lineNumber");
 		}
+
 		return this._buffer.getLineLength(lineNumber);
 	}
+
 	public getLinesContent(): string[] {
 		this._assertNotDisposed();
 
@@ -1052,13 +1247,16 @@ export class TextModel
 				"Operation would exceed heap memory limits",
 			);
 		}
+
 		return this._buffer.getLinesContent();
 	}
+
 	public getEOL(): string {
 		this._assertNotDisposed();
 
 		return this._buffer.getEOL();
 	}
+
 	public getEndOfLineSequence(): model.EndOfLineSequence {
 		this._assertNotDisposed();
 
@@ -1066,33 +1264,40 @@ export class TextModel
 			? model.EndOfLineSequence.LF
 			: model.EndOfLineSequence.CRLF;
 	}
+
 	public getLineMinColumn(lineNumber: number): number {
 		this._assertNotDisposed();
 
 		return 1;
 	}
+
 	public getLineMaxColumn(lineNumber: number): number {
 		this._assertNotDisposed();
 
 		if (lineNumber < 1 || lineNumber > this.getLineCount()) {
 			throw new BugIndicatingError("Illegal value for lineNumber");
 		}
+
 		return this._buffer.getLineLength(lineNumber) + 1;
 	}
+
 	public getLineFirstNonWhitespaceColumn(lineNumber: number): number {
 		this._assertNotDisposed();
 
 		if (lineNumber < 1 || lineNumber > this.getLineCount()) {
 			throw new BugIndicatingError("Illegal value for lineNumber");
 		}
+
 		return this._buffer.getLineFirstNonWhitespaceColumn(lineNumber);
 	}
+
 	public getLineLastNonWhitespaceColumn(lineNumber: number): number {
 		this._assertNotDisposed();
 
 		if (lineNumber < 1 || lineNumber > this.getLineCount()) {
 			throw new BugIndicatingError("Illegal value for lineNumber");
 		}
+
 		return this._buffer.getLineLastNonWhitespaceColumn(lineNumber);
 	}
 	/**
@@ -1121,9 +1326,11 @@ export class TextModel
 
 		if (startLineNumber < 1) {
 			startLineNumber = 1;
+
 			startColumn = 1;
 		} else if (startLineNumber > linesCount) {
 			startLineNumber = linesCount;
+
 			startColumn = this.getLineMaxColumn(startLineNumber);
 		} else {
 			if (startColumn <= 1) {
@@ -1136,6 +1343,7 @@ export class TextModel
 				}
 			}
 		}
+
 		const initialEndLineNumber = range.endLineNumber;
 
 		const initialEndColumn = range.endColumn;
@@ -1155,9 +1363,11 @@ export class TextModel
 
 		if (endLineNumber < 1) {
 			endLineNumber = 1;
+
 			endColumn = 1;
 		} else if (endLineNumber > linesCount) {
 			endLineNumber = linesCount;
+
 			endColumn = this.getLineMaxColumn(endLineNumber);
 		} else {
 			if (endColumn <= 1) {
@@ -1170,6 +1380,7 @@ export class TextModel
 				}
 			}
 		}
+
 		if (
 			initialStartLineNumber === startLineNumber &&
 			initialStartColumn === startColumn &&
@@ -1180,6 +1391,7 @@ export class TextModel
 		) {
 			return range;
 		}
+
 		return new Range(
 			startLineNumber,
 			startColumn,
@@ -1187,6 +1399,7 @@ export class TextModel
 			endColumn,
 		);
 	}
+
 	private _isValidPosition(
 		lineNumber: number,
 		column: number,
@@ -1195,28 +1408,35 @@ export class TextModel
 		if (typeof lineNumber !== "number" || typeof column !== "number") {
 			return false;
 		}
+
 		if (isNaN(lineNumber) || isNaN(column)) {
 			return false;
 		}
+
 		if (lineNumber < 1 || column < 1) {
 			return false;
 		}
+
 		if ((lineNumber | 0) !== lineNumber || (column | 0) !== column) {
 			return false;
 		}
+
 		const lineCount = this._buffer.getLineCount();
 
 		if (lineNumber > lineCount) {
 			return false;
 		}
+
 		if (column === 1) {
 			return true;
 		}
+
 		const maxColumn = this.getLineMaxColumn(lineNumber);
 
 		if (column > maxColumn) {
 			return false;
 		}
+
 		if (validationType === StringOffsetValidationType.SurrogatePairs) {
 			// !!At this point, column > 1
 			const charCodeBefore = this._buffer.getLineCharCode(
@@ -1228,8 +1448,10 @@ export class TextModel
 				return false;
 			}
 		}
+
 		return true;
 	}
+
 	private _validatePosition(
 		_lineNumber: number,
 		_column: number,
@@ -1250,17 +1472,21 @@ export class TextModel
 		if (lineNumber < 1) {
 			return new Position(1, 1);
 		}
+
 		if (lineNumber > lineCount) {
 			return new Position(lineCount, this.getLineMaxColumn(lineCount));
 		}
+
 		if (column <= 1) {
 			return new Position(lineNumber, 1);
 		}
+
 		const maxColumn = this.getLineMaxColumn(lineNumber);
 
 		if (column >= maxColumn) {
 			return new Position(lineNumber, maxColumn);
 		}
+
 		if (validationType === StringOffsetValidationType.SurrogatePairs) {
 			// If the position would end up in the middle of a high-low surrogate pair,
 			// we move it to before the pair
@@ -1274,10 +1500,13 @@ export class TextModel
 				return new Position(lineNumber, column - 1);
 			}
 		}
+
 		return new Position(lineNumber, column);
 	}
+
 	public validatePosition(position: IPosition): Position {
 		const validationType = StringOffsetValidationType.SurrogatePairs;
+
 		this._assertNotDisposed();
 		// Avoid object allocation and cover most likely case
 		if (position instanceof Position) {
@@ -1291,12 +1520,14 @@ export class TextModel
 				return position;
 			}
 		}
+
 		return this._validatePosition(
 			position.lineNumber,
 			position.column,
 			validationType,
 		);
 	}
+
 	private _isValidRange(
 		range: Range,
 		validationType: StringOffsetValidationType,
@@ -1318,6 +1549,7 @@ export class TextModel
 		) {
 			return false;
 		}
+
 		if (
 			!this._isValidPosition(
 				endLineNumber,
@@ -1327,6 +1559,7 @@ export class TextModel
 		) {
 			return false;
 		}
+
 		if (validationType === StringOffsetValidationType.SurrogatePairs) {
 			const charCodeBeforeStart =
 				startColumn > 1
@@ -1351,12 +1584,16 @@ export class TextModel
 			if (!startInsideSurrogatePair && !endInsideSurrogatePair) {
 				return true;
 			}
+
 			return false;
 		}
+
 		return true;
 	}
+
 	public validateRange(_range: IRange): Range {
 		const validationType = StringOffsetValidationType.SurrogatePairs;
+
 		this._assertNotDisposed();
 		// Avoid object allocation and cover most likely case
 		if (_range instanceof Range && !(_range instanceof Selection)) {
@@ -1364,6 +1601,7 @@ export class TextModel
 				return _range;
 			}
 		}
+
 		const start = this._validatePosition(
 			_range.startLineNumber,
 			_range.startColumn,
@@ -1413,6 +1651,7 @@ export class TextModel
 					endColumn,
 				);
 			}
+
 			if (
 				startLineNumber === endLineNumber &&
 				startColumn === endColumn
@@ -1425,6 +1664,7 @@ export class TextModel
 					endColumn - 1,
 				);
 			}
+
 			if (startInsideSurrogatePair && endInsideSurrogatePair) {
 				// expand range at both ends
 				return new Range(
@@ -1434,6 +1674,7 @@ export class TextModel
 					endColumn + 1,
 				);
 			}
+
 			if (startInsideSurrogatePair) {
 				// only expand range at the start
 				return new Range(
@@ -1451,6 +1692,7 @@ export class TextModel
 				endColumn + 1,
 			);
 		}
+
 		return new Range(
 			startLineNumber,
 			startColumn,
@@ -1458,6 +1700,7 @@ export class TextModel
 			endColumn,
 		);
 	}
+
 	public modifyPosition(rawPosition: IPosition, offset: number): Position {
 		this._assertNotDisposed();
 
@@ -1467,6 +1710,7 @@ export class TextModel
 			Math.min(this._buffer.getLength(), Math.max(0, candidate)),
 		);
 	}
+
 	public getFullModelRange(): Range {
 		this._assertNotDisposed();
 
@@ -1474,6 +1718,7 @@ export class TextModel
 
 		return new Range(1, 1, lineCount, this.getLineMaxColumn(lineCount));
 	}
+
 	private findMatchesLineByLine(
 		searchRange: Range,
 		searchData: model.SearchData,
@@ -1487,6 +1732,7 @@ export class TextModel
 			limitResultCount,
 		);
 	}
+
 	public findMatches(
 		searchString: string,
 		rawSearchScope: any,
@@ -1504,6 +1750,7 @@ export class TextModel
 			if (!Array.isArray(rawSearchScope)) {
 				rawSearchScope = [rawSearchScope];
 			}
+
 			if (
 				rawSearchScope.every((searchScope: Range) =>
 					Range.isIRange(searchScope),
@@ -1514,9 +1761,11 @@ export class TextModel
 				);
 			}
 		}
+
 		if (searchRanges === null) {
 			searchRanges = [this.getFullModelRange()];
 		}
+
 		searchRanges = searchRanges.sort(
 			(d1, d2) =>
 				d1.startLineNumber - d2.startLineNumber ||
@@ -1524,11 +1773,13 @@ export class TextModel
 		);
 
 		const uniqueSearchRanges: Range[] = [];
+
 		uniqueSearchRanges.push(
 			searchRanges.reduce((prev, curr) => {
 				if (Range.areIntersecting(prev, curr)) {
 					return prev.plusRange(curr);
 				}
+
 				uniqueSearchRanges.push(prev);
 
 				return curr;
@@ -1555,6 +1806,7 @@ export class TextModel
 			if (!searchData) {
 				return [];
 			}
+
 			matchMapper = (searchRange: Range) =>
 				this.findMatchesLineByLine(
 					searchRange,
@@ -1577,6 +1829,7 @@ export class TextModel
 					limitResultCount,
 				);
 		}
+
 		return uniqueSearchRanges
 			.map(matchMapper)
 			.reduce(
@@ -1584,6 +1837,7 @@ export class TextModel
 				[],
 			);
 	}
+
 	public findNextMatch(
 		searchString: string,
 		rawSearchStart: IPosition,
@@ -1609,6 +1863,7 @@ export class TextModel
 			if (!searchData) {
 				return null;
 			}
+
 			const lineCount = this.getLineCount();
 
 			let searchRange = new Range(
@@ -1624,6 +1879,7 @@ export class TextModel
 				captureMatches,
 				1,
 			);
+
 			TextModelSearch.findNextMatch(
 				this,
 				new SearchParams(
@@ -1639,12 +1895,14 @@ export class TextModel
 			if (ret.length > 0) {
 				return ret[0];
 			}
+
 			searchRange = new Range(
 				1,
 				1,
 				searchStart.lineNumber,
 				this.getLineMaxColumn(searchStart.lineNumber),
 			);
+
 			ret = this.findMatchesLineByLine(
 				searchRange,
 				searchData,
@@ -1655,8 +1913,10 @@ export class TextModel
 			if (ret.length > 0) {
 				return ret[0];
 			}
+
 			return null;
 		}
+
 		return TextModelSearch.findNextMatch(
 			this,
 			new SearchParams(searchString, isRegex, matchCase, wordSeparators),
@@ -1664,6 +1924,7 @@ export class TextModel
 			captureMatches,
 		);
 	}
+
 	public findPreviousMatch(
 		searchString: string,
 		rawSearchStart: IPosition,
@@ -1688,9 +1949,11 @@ export class TextModel
 	public pushStackElement(): void {
 		this._commandManager.pushStackElement();
 	}
+
 	public popStackElement(): void {
 		this._commandManager.popStackElement();
 	}
+
 	public pushEOL(eol: model.EndOfLineSequence): void {
 		const currentEOL =
 			this.getEOL() === "\n"
@@ -1700,26 +1963,32 @@ export class TextModel
 		if (currentEOL === eol) {
 			return;
 		}
+
 		try {
 			this._onDidChangeDecorations.beginDeferredEmit();
+
 			this._eventEmitter.beginDeferredEmit();
 
 			if (this._initialUndoRedoSnapshot === null) {
 				this._initialUndoRedoSnapshot =
 					this._undoRedoService.createSnapshot(this.uri);
 			}
+
 			this._commandManager.pushEOL(eol);
 		} finally {
 			this._eventEmitter.endDeferredEmit();
+
 			this._onDidChangeDecorations.endDeferredEmit();
 		}
 	}
+
 	private _validateEditOperation(
 		rawOperation: model.IIdentifiedSingleEditOperation,
 	): model.ValidAnnotatedEditOperation {
 		if (rawOperation instanceof model.ValidAnnotatedEditOperation) {
 			return rawOperation;
 		}
+
 		return new model.ValidAnnotatedEditOperation(
 			rawOperation.identifier || null,
 			this.validateRange(rawOperation.range),
@@ -1729,6 +1998,7 @@ export class TextModel
 			rawOperation._isTracked || false,
 		);
 	}
+
 	private _validateEditOperations(
 		rawOperations: readonly model.IIdentifiedSingleEditOperation[],
 	): model.ValidAnnotatedEditOperation[] {
@@ -1737,8 +2007,10 @@ export class TextModel
 		for (let i = 0, len = rawOperations.length; i < len; i++) {
 			result[i] = this._validateEditOperation(rawOperations[i]);
 		}
+
 		return result;
 	}
+
 	public pushEditOperations(
 		beforeCursorState: Selection[] | null,
 		editOperations: model.IIdentifiedSingleEditOperation[],
@@ -1747,6 +2019,7 @@ export class TextModel
 	): Selection[] | null {
 		try {
 			this._onDidChangeDecorations.beginDeferredEmit();
+
 			this._eventEmitter.beginDeferredEmit();
 
 			return this._pushEditOperations(
@@ -1757,9 +2030,11 @@ export class TextModel
 			);
 		} finally {
 			this._eventEmitter.endDeferredEmit();
+
 			this._onDidChangeDecorations.endDeferredEmit();
 		}
 	}
+
 	private _pushEditOperations(
 		beforeCursorState: Selection[] | null,
 		editOperations: model.ValidAnnotatedEditOperation[],
@@ -1787,7 +2062,9 @@ export class TextModel
 
 					for (
 						let j = 0, lenJ = incomingEdits.length;
+
 						j < lenJ;
+
 						j++
 					) {
 						const editRange = incomingEdits[j].range;
@@ -1804,6 +2081,7 @@ export class TextModel
 							break;
 						}
 					}
+
 					if (!foundEditNearSel) {
 						editsAreNearCursors = false;
 
@@ -1811,10 +2089,13 @@ export class TextModel
 					}
 				}
 			}
+
 			if (editsAreNearCursors) {
 				for (
 					let i = 0, len = this._trimAutoWhitespaceLines.length;
+
 					i < len;
+
 					i++
 				) {
 					const trimLineNumber = this._trimAutoWhitespaceLines[i];
@@ -1825,7 +2106,9 @@ export class TextModel
 
 					for (
 						let j = 0, lenJ = incomingEdits.length;
+
 						j < lenJ;
+
 						j++
 					) {
 						const editRange = incomingEdits[j].range;
@@ -1852,6 +2135,7 @@ export class TextModel
 							// This edit inserts a new line (and maybe other text) after `trimLine`
 							continue;
 						}
+
 						if (
 							trimLineNumber === editRange.startLineNumber &&
 							editRange.startColumn === 1 &&
@@ -1868,6 +2152,7 @@ export class TextModel
 
 						break;
 					}
+
 					if (allowTrimLine) {
 						const trimRange = new Range(
 							trimLineNumber,
@@ -1875,6 +2160,7 @@ export class TextModel
 							trimLineNumber,
 							maxLineColumn,
 						);
+
 						editOperations.push(
 							new model.ValidAnnotatedEditOperation(
 								null,
@@ -1888,12 +2174,15 @@ export class TextModel
 					}
 				}
 			}
+
 			this._trimAutoWhitespaceLines = null;
 		}
+
 		if (this._initialUndoRedoSnapshot === null) {
 			this._initialUndoRedoSnapshot =
 				this._undoRedoService.createSnapshot(this.uri);
 		}
+
 		return this._commandManager.pushEditOperation(
 			beforeCursorState,
 			editOperations,
@@ -1901,6 +2190,7 @@ export class TextModel
 			group,
 		);
 	}
+
 	_applyUndo(
 		changes: TextChange[],
 		eol: model.EndOfLineSequence,
@@ -1922,6 +2212,7 @@ export class TextModel
 				text: change.oldText,
 			};
 		});
+
 		this._applyUndoRedoEdits(
 			edits,
 			eol,
@@ -1931,6 +2222,7 @@ export class TextModel
 			resultingSelection,
 		);
 	}
+
 	_applyRedo(
 		changes: TextChange[],
 		eol: model.EndOfLineSequence,
@@ -1952,6 +2244,7 @@ export class TextModel
 				text: change.newText,
 			};
 		});
+
 		this._applyUndoRedoEdits(
 			edits,
 			eol,
@@ -1961,6 +2254,7 @@ export class TextModel
 			resultingSelection,
 		);
 	}
+
 	private _applyUndoRedoEdits(
 		edits: ISingleEditOperation[],
 		eol: model.EndOfLineSequence,
@@ -1971,36 +2265,50 @@ export class TextModel
 	): void {
 		try {
 			this._onDidChangeDecorations.beginDeferredEmit();
+
 			this._eventEmitter.beginDeferredEmit();
+
 			this._isUndoing = isUndoing;
+
 			this._isRedoing = isRedoing;
+
 			this.applyEdits(edits, false);
+
 			this.setEOL(eol);
+
 			this._overwriteAlternativeVersionId(resultingAlternativeVersionId);
 		} finally {
 			this._isUndoing = false;
+
 			this._isRedoing = false;
+
 			this._eventEmitter.endDeferredEmit(resultingSelection);
+
 			this._onDidChangeDecorations.endDeferredEmit();
 		}
 	}
+
 	public applyEdits(
 		operations: readonly model.IIdentifiedSingleEditOperation[],
 	): void;
+
 	public applyEdits(
 		operations: readonly model.IIdentifiedSingleEditOperation[],
 		computeUndoEdits: false,
 	): void;
+
 	public applyEdits(
 		operations: readonly model.IIdentifiedSingleEditOperation[],
 		computeUndoEdits: true,
 	): model.IValidEditOperation[];
+
 	public applyEdits(
 		rawOperations: readonly model.IIdentifiedSingleEditOperation[],
 		computeUndoEdits: boolean = false,
 	): void | model.IValidEditOperation[] {
 		try {
 			this._onDidChangeDecorations.beginDeferredEmit();
+
 			this._eventEmitter.beginDeferredEmit();
 
 			const operations = this._validateEditOperations(rawOperations);
@@ -2008,9 +2316,11 @@ export class TextModel
 			return this._doApplyEdits(operations, computeUndoEdits);
 		} finally {
 			this._eventEmitter.endDeferredEmit();
+
 			this._onDidChangeDecorations.endDeferredEmit();
 		}
 	}
+
 	private _doApplyEdits(
 		rawOperations: model.ValidAnnotatedEditOperation[],
 		computeUndoEdits: boolean,
@@ -2026,6 +2336,7 @@ export class TextModel
 		const newLineCount = this._buffer.getLineCount();
 
 		const contentChanges = result.changes;
+
 		this._trimAutoWhitespaceLines = result.trimAutoWhitespaceLineNumbers;
 
 		if (contentChanges.length !== 0) {
@@ -2035,6 +2346,7 @@ export class TextModel
 			// and we want to read the final decorations
 			for (let i = 0, len = contentChanges.length; i < len; i++) {
 				const change = contentChanges[i];
+
 				this._decorationsTree.acceptReplace(
 					change.rangeOffset,
 					change.rangeLength,
@@ -2042,7 +2354,9 @@ export class TextModel
 					change.forceMoveMarkers,
 				);
 			}
+
 			const rawContentChanges: ModelRawChange[] = [];
+
 			this._increaseVersionId();
 
 			let lineCount = oldLineCount;
@@ -2051,6 +2365,7 @@ export class TextModel
 				const change = contentChanges[i];
 
 				const [eolCount] = countEOL(change.text);
+
 				this._onDidChangeDecorations.fire();
 
 				const startLineNumber = change.range.startLineNumber;
@@ -2107,6 +2422,7 @@ export class TextModel
 
 					const currentEditLineNumber =
 						currentEditStartLineNumber + j;
+
 					injectedTextInEditedRangeQueue.takeFromEndWhile(
 						(r) => r.lineNumber > currentEditLineNumber,
 					);
@@ -2115,6 +2431,7 @@ export class TextModel
 						injectedTextInEditedRangeQueue.takeFromEndWhile(
 							(r) => r.lineNumber === currentEditLineNumber,
 						);
+
 					rawContentChanges.push(
 						new ModelRawLineChanged(
 							editLineNumber,
@@ -2123,10 +2440,12 @@ export class TextModel
 						),
 					);
 				}
+
 				if (editingLinesCnt < deletingLinesCnt) {
 					// Must delete some lines
 					const spliceStartLineNumber =
 						startLineNumber + editingLinesCnt;
+
 					rawContentChanges.push(
 						new ModelRawLinesDeleted(
 							spliceStartLineNumber + 1,
@@ -2134,6 +2453,7 @@ export class TextModel
 						),
 					);
 				}
+
 				if (editingLinesCnt < insertingLinesCnt) {
 					const injectedTextInEditedRangeQueue = new ArrayQueue(
 						injectedTextInEditedRange,
@@ -2152,15 +2472,19 @@ export class TextModel
 
 					for (let i = 0; i < cnt; i++) {
 						const lineNumber = fromLineNumber + i;
+
 						newLines[i] = this.getLineContent(lineNumber);
+
 						injectedTextInEditedRangeQueue.takeWhile(
 							(r) => r.lineNumber < lineNumber,
 						);
+
 						injectedTexts[i] =
 							injectedTextInEditedRangeQueue.takeWhile(
 								(r) => r.lineNumber === lineNumber,
 							);
 					}
+
 					rawContentChanges.push(
 						new ModelRawLinesInserted(
 							spliceLineNumber + 1,
@@ -2170,8 +2494,10 @@ export class TextModel
 						),
 					);
 				}
+
 				lineCount += changeLineCountDelta;
 			}
+
 			this._emitContentChangedEvent(
 				new ModelRawContentChangedEvent(
 					rawContentChanges,
@@ -2190,17 +2516,22 @@ export class TextModel
 				},
 			);
 		}
+
 		return result.reverseEdits === null ? undefined : result.reverseEdits;
 	}
+
 	public undo(): void | Promise<void> {
 		return this._undoRedoService.undo(this.uri);
 	}
+
 	public canUndo(): boolean {
 		return this._undoRedoService.canUndo(this.uri);
 	}
+
 	public redo(): void | Promise<void> {
 		return this._undoRedoService.redo(this.uri);
 	}
+
 	public canRedo(): boolean {
 		return this._undoRedoService.canRedo(this.uri);
 	}
@@ -2216,6 +2547,7 @@ export class TextModel
 		) {
 			return;
 		}
+
 		const affectedLines = Array.from(affectedInjectedTextLines);
 
 		const lineChangeEvents = affectedLines.map(
@@ -2226,10 +2558,12 @@ export class TextModel
 					this._getInjectedTextInLine(lineNumber),
 				),
 		);
+
 		this._onDidChangeInjectedText.fire(
 			new ModelInjectedTextChangedEvent(lineChangeEvents),
 		);
 	}
+
 	public changeDecorations<T>(
 		callback: (changeAccessor: model.IModelDecorationsChangeAccessor) => T,
 		ownerId: number = 0,
@@ -2244,6 +2578,7 @@ export class TextModel
 			this._onDidChangeDecorations.endDeferredEmit();
 		}
 	}
+
 	private _changeDecorations<T>(
 		ownerId: number,
 		callback: (changeAccessor: model.IModelDecorationsChangeAccessor) => T,
@@ -2285,6 +2620,7 @@ export class TextModel
 					// nothing to do
 					return [];
 				}
+
 				return this._deltaDecorationsImpl(
 					ownerId,
 					oldDecorations,
@@ -2302,13 +2638,18 @@ export class TextModel
 		}
 		// Invalidate change accessor
 		changeAccessor.addDecoration = invalidFunc;
+
 		changeAccessor.changeDecoration = invalidFunc;
+
 		changeAccessor.changeDecorationOptions = invalidFunc;
+
 		changeAccessor.removeDecoration = invalidFunc;
+
 		changeAccessor.deltaDecorations = invalidFunc;
 
 		return result;
 	}
+
 	public deltaDecorations(
 		oldDecorations: string[],
 		newDecorations: model.IModelDeltaDecoration[],
@@ -2319,10 +2660,12 @@ export class TextModel
 		if (!oldDecorations) {
 			oldDecorations = [];
 		}
+
 		if (oldDecorations.length === 0 && newDecorations.length === 0) {
 			// nothing to do
 			return [];
 		}
+
 		try {
 			this._deltaDecorationCallCnt++;
 
@@ -2330,12 +2673,14 @@ export class TextModel
 				console.warn(
 					`Invoking deltaDecorations recursively could lead to leaking decorations.`,
 				);
+
 				onUnexpectedError(
 					new Error(
 						`Invoking deltaDecorations recursively could lead to leaking decorations.`,
 					),
 				);
 			}
+
 			this._onDidChangeDecorations.beginDeferredEmit();
 
 			return this._deltaDecorationsImpl(
@@ -2345,22 +2690,27 @@ export class TextModel
 			);
 		} finally {
 			this._onDidChangeDecorations.endDeferredEmit();
+
 			this._deltaDecorationCallCnt--;
 		}
 	}
+
 	_getTrackedRange(id: string): Range | null {
 		return this.getDecorationRange(id);
 	}
+
 	_setTrackedRange(
 		id: string | null,
 		newRange: null,
 		newStickiness: model.TrackedRangeStickiness,
 	): null;
+
 	_setTrackedRange(
 		id: string | null,
 		newRange: Range,
 		newStickiness: model.TrackedRangeStickiness,
 	): string;
+
 	_setTrackedRange(
 		id: string | null,
 		newRange: Range | null,
@@ -2386,9 +2736,11 @@ export class TextModel
 				true,
 			)[0];
 		}
+
 		if (!newRange) {
 			// node exists, the request is to delete => delete node
 			this._decorationsTree.delete(node);
+
 			delete this._decorations[node.id];
 
 			return null;
@@ -2405,25 +2757,34 @@ export class TextModel
 			range.endLineNumber,
 			range.endColumn,
 		);
+
 		this._decorationsTree.delete(node);
+
 		node.reset(this.getVersionId(), startOffset, endOffset, range);
+
 		node.setOptions(TRACKED_RANGE_OPTIONS[newStickiness]);
+
 		this._decorationsTree.insert(node);
 
 		return node.id;
 	}
+
 	public removeAllDecorationsWithOwnerId(ownerId: number): void {
 		if (this._isDisposed) {
 			return;
 		}
+
 		const nodes = this._decorationsTree.collectNodesFromOwner(ownerId);
 
 		for (let i = 0, len = nodes.length; i < len; i++) {
 			const node = nodes[i];
+
 			this._decorationsTree.delete(node);
+
 			delete this._decorations[node.id];
 		}
 	}
+
 	public getDecorationOptions(
 		decorationId: string,
 	): model.IModelDecorationOptions | null {
@@ -2432,16 +2793,20 @@ export class TextModel
 		if (!node) {
 			return null;
 		}
+
 		return node.options;
 	}
+
 	public getDecorationRange(decorationId: string): Range | null {
 		const node = this._decorations[decorationId];
 
 		if (!node) {
 			return null;
 		}
+
 		return this._decorationsTree.getNodeRange(this, node);
 	}
+
 	public getLineDecorations(
 		lineNumber: number,
 		ownerId: number = 0,
@@ -2450,6 +2815,7 @@ export class TextModel
 		if (lineNumber < 1 || lineNumber > this.getLineCount()) {
 			return [];
 		}
+
 		return this.getLinesDecorations(
 			lineNumber,
 			lineNumber,
@@ -2457,6 +2823,7 @@ export class TextModel
 			filterOutValidation,
 		);
 	}
+
 	public getLinesDecorations(
 		_startLineNumber: number,
 		_endLineNumber: number,
@@ -2483,6 +2850,7 @@ export class TextModel
 			filterOutValidation,
 			onlyMarginDecorations,
 		);
+
 		pushMany(
 			decorations,
 			this._decorationProvider.getDecorationsInRange(
@@ -2494,6 +2862,7 @@ export class TextModel
 
 		return decorations;
 	}
+
 	public getDecorationsInRange(
 		range: IRange,
 		ownerId: number = 0,
@@ -2509,6 +2878,7 @@ export class TextModel
 			filterOutValidation,
 			onlyMarginDecorations,
 		);
+
 		pushMany(
 			decorations,
 			this._decorationProvider.getDecorationsInRange(
@@ -2521,6 +2891,7 @@ export class TextModel
 
 		return decorations;
 	}
+
 	public getOverviewRulerDecorations(
 		ownerId: number = 0,
 		filterOutValidation: boolean = false,
@@ -2533,11 +2904,13 @@ export class TextModel
 			false,
 		);
 	}
+
 	public getInjectedTextDecorations(
 		ownerId: number = 0,
 	): model.IModelDecoration[] {
 		return this._decorationsTree.getAllInjectedText(this, ownerId);
 	}
+
 	private _getInjectedTextInLine(lineNumber: number): LineInjectedText[] {
 		const startOffset = this._buffer.getOffsetAt(lineNumber, 1);
 
@@ -2554,6 +2927,7 @@ export class TextModel
 			(t) => t.lineNumber === lineNumber,
 		);
 	}
+
 	public getAllDecorations(
 		ownerId: number = 0,
 		filterOutValidation: boolean = false,
@@ -2565,6 +2939,7 @@ export class TextModel
 			false,
 			false,
 		);
+
 		result = result.concat(
 			this._decorationProvider.getAllDecorations(
 				ownerId,
@@ -2574,11 +2949,13 @@ export class TextModel
 
 		return result;
 	}
+
 	public getAllMarginDecorations(
 		ownerId: number = 0,
 	): model.IModelDecoration[] {
 		return this._decorationsTree.getAll(this, ownerId, false, false, true);
 	}
+
 	private _getDecorationsInRange(
 		filterRange: Range,
 		filterOwnerId: number,
@@ -2604,27 +2981,34 @@ export class TextModel
 			onlyMarginDecorations,
 		);
 	}
+
 	public getRangeAt(start: number, end: number): Range {
 		return this._buffer.getRangeAt(start, end - start);
 	}
+
 	private _changeDecorationImpl(decorationId: string, _range: IRange): void {
 		const node = this._decorations[decorationId];
 
 		if (!node) {
 			return;
 		}
+
 		if (node.options.after) {
 			const oldRange = this.getDecorationRange(decorationId);
+
 			this._onDidChangeDecorations.recordLineAffectedByInjectedText(
 				oldRange!.endLineNumber,
 			);
 		}
+
 		if (node.options.before) {
 			const oldRange = this.getDecorationRange(decorationId);
+
 			this._onDidChangeDecorations.recordLineAffectedByInjectedText(
 				oldRange!.startLineNumber,
 			);
 		}
+
 		const range = this._validateRangeRelaxedNoAllocations(_range);
 
 		const startOffset = this._buffer.getOffsetAt(
@@ -2636,9 +3020,13 @@ export class TextModel
 			range.endLineNumber,
 			range.endColumn,
 		);
+
 		this._decorationsTree.delete(node);
+
 		node.reset(this.getVersionId(), startOffset, endOffset, range);
+
 		this._decorationsTree.insert(node);
+
 		this._onDidChangeDecorations.checkAffectedAndFire(node.options);
 
 		if (node.options.after) {
@@ -2646,12 +3034,14 @@ export class TextModel
 				range.endLineNumber,
 			);
 		}
+
 		if (node.options.before) {
 			this._onDidChangeDecorations.recordLineAffectedByInjectedText(
 				range.startLineNumber,
 			);
 		}
 	}
+
 	private _changeDecorationOptionsImpl(
 		decorationId: string,
 		options: ModelDecorationOptions,
@@ -2661,6 +3051,7 @@ export class TextModel
 		if (!node) {
 			return;
 		}
+
 		const nodeWasInOverviewRuler =
 			node.options.overviewRuler && node.options.overviewRuler.color
 				? true
@@ -2668,21 +3059,27 @@ export class TextModel
 
 		const nodeIsInOverviewRuler =
 			options.overviewRuler && options.overviewRuler.color ? true : false;
+
 		this._onDidChangeDecorations.checkAffectedAndFire(node.options);
+
 		this._onDidChangeDecorations.checkAffectedAndFire(options);
 
 		if (node.options.after || options.after) {
 			const nodeRange = this._decorationsTree.getNodeRange(this, node);
+
 			this._onDidChangeDecorations.recordLineAffectedByInjectedText(
 				nodeRange.endLineNumber,
 			);
 		}
+
 		if (node.options.before || options.before) {
 			const nodeRange = this._decorationsTree.getNodeRange(this, node);
+
 			this._onDidChangeDecorations.recordLineAffectedByInjectedText(
 				nodeRange.startLineNumber,
 			);
 		}
+
 		const movedInOverviewRuler =
 			nodeWasInOverviewRuler !== nodeIsInOverviewRuler;
 
@@ -2691,12 +3088,15 @@ export class TextModel
 
 		if (movedInOverviewRuler || changedWhetherInjectedText) {
 			this._decorationsTree.delete(node);
+
 			node.setOptions(options);
+
 			this._decorationsTree.insert(node);
 		} else {
 			node.setOptions(options);
 		}
 	}
+
 	private _deltaDecorationsImpl(
 		ownerId: number,
 		oldDecorationsIds: string[],
@@ -2712,6 +3112,7 @@ export class TextModel
 		const newDecorationsLen = newDecorations.length;
 
 		let newDecorationIndex = 0;
+
 		this._onDidChangeDecorations.beginDeferredEmit();
 
 		try {
@@ -2736,17 +3137,21 @@ export class TextModel
 						if (node.options.after) {
 							const nodeRange =
 								this._decorationsTree.getNodeRange(this, node);
+
 							this._onDidChangeDecorations.recordLineAffectedByInjectedText(
 								nodeRange.endLineNumber,
 							);
 						}
+
 						if (node.options.before) {
 							const nodeRange =
 								this._decorationsTree.getNodeRange(this, node);
+
 							this._onDidChangeDecorations.recordLineAffectedByInjectedText(
 								nodeRange.startLineNumber,
 							);
 						}
+
 						this._decorationsTree.delete(node);
 
 						if (!suppressEvents) {
@@ -2756,13 +3161,16 @@ export class TextModel
 						}
 					}
 				}
+
 				if (newDecorationIndex < newDecorationsLen) {
 					// (3) create a new node if necessary
 					if (!node) {
 						const internalDecorationId = ++this._lastDecorationId;
 
 						const decorationId = `${this._instanceId};${internalDecorationId}`;
+
 						node = new IntervalNode(decorationId, 0, 0);
+
 						this._decorations[decorationId] = node;
 					}
 					// (4) initialize node
@@ -2783,8 +3191,11 @@ export class TextModel
 						range.endLineNumber,
 						range.endColumn,
 					);
+
 					node.ownerId = ownerId;
+
 					node.reset(versionId, startOffset, endOffset, range);
+
 					node.setOptions(options);
 
 					if (node.options.after) {
@@ -2792,18 +3203,23 @@ export class TextModel
 							range.endLineNumber,
 						);
 					}
+
 					if (node.options.before) {
 						this._onDidChangeDecorations.recordLineAffectedByInjectedText(
 							range.startLineNumber,
 						);
 					}
+
 					if (!suppressEvents) {
 						this._onDidChangeDecorations.checkAffectedAndFire(
 							options,
 						);
 					}
+
 					this._decorationsTree.insert(node);
+
 					result[newDecorationIndex] = node.id;
+
 					newDecorationIndex++;
 				} else {
 					if (node) {
@@ -2811,6 +3227,7 @@ export class TextModel
 					}
 				}
 			}
+
 			return result;
 		} finally {
 			this._onDidChangeDecorations.endDeferredEmit();
@@ -2822,31 +3239,39 @@ export class TextModel
 	public getLanguageId(): string {
 		return this.tokenization.getLanguageId();
 	}
+
 	public setLanguage(
 		languageIdOrSelection: string | ILanguageSelection,
 		source?: string,
 	): void {
 		if (typeof languageIdOrSelection === "string") {
 			this._languageSelectionListener.clear();
+
 			this._setLanguage(languageIdOrSelection, source);
 		} else {
 			this._languageSelectionListener.value =
 				languageIdOrSelection.onDidChange(() =>
 					this._setLanguage(languageIdOrSelection.languageId, source),
 				);
+
 			this._setLanguage(languageIdOrSelection.languageId, source);
 		}
 	}
+
 	private _setLanguage(languageId: string, source?: string): void {
 		this.tokenization.setLanguageId(languageId, source);
+
 		this._languageService.requestRichLanguageFeatures(languageId);
 	}
+
 	public getLanguageIdAtPosition(lineNumber: number, column: number): string {
 		return this.tokenization.getLanguageIdAtPosition(lineNumber, column);
 	}
+
 	public getWordAtPosition(position: IPosition): IWordAtPosition | null {
 		return this._tokenizationTextModelPart.getWordAtPosition(position);
 	}
+
 	public getWordUntilPosition(position: IPosition): IWordAtPosition {
 		return this._tokenizationTextModelPart.getWordUntilPosition(position);
 	}
@@ -2876,6 +3301,7 @@ export function indentOfLine(line: string): number {
 			break;
 		}
 	}
+
 	return indent;
 }
 //#region Decorations
@@ -2911,12 +3337,16 @@ class DecorationsTrees {
 
 	constructor() {
 		this._decorationsTree0 = new IntervalTree();
+
 		this._decorationsTree1 = new IntervalTree();
+
 		this._injectedTextDecorationsTree = new IntervalTree();
 	}
+
 	public ensureAllNodesHaveRanges(host: IDecorationsTreesHost): void {
 		this.getAll(host, 0, false, false, false);
 	}
+
 	private _ensureNodesHaveRanges(
 		host: IDecorationsTreesHost,
 		nodes: IntervalNode[],
@@ -2929,8 +3359,10 @@ class DecorationsTrees {
 				);
 			}
 		}
+
 		return <model.IModelDecoration[]>nodes;
 	}
+
 	public getAllInInterval(
 		host: IDecorationsTreesHost,
 		start: number,
@@ -2952,6 +3384,7 @@ class DecorationsTrees {
 
 		return this._ensureNodesHaveRanges(host, result);
 	}
+
 	private _intervalSearch(
 		start: number,
 		end: number,
@@ -2989,6 +3422,7 @@ class DecorationsTrees {
 
 		return r0.concat(r1).concat(r2);
 	}
+
 	public getInjectedTextInInterval(
 		host: IDecorationsTreesHost,
 		start: number,
@@ -3010,6 +3444,7 @@ class DecorationsTrees {
 			(i) => i.options.showIfCollapsed || !i.range.isEmpty(),
 		);
 	}
+
 	public getAllInjectedText(
 		host: IDecorationsTreesHost,
 		filterOwnerId: number,
@@ -3027,6 +3462,7 @@ class DecorationsTrees {
 			(i) => i.options.showIfCollapsed || !i.range.isEmpty(),
 		);
 	}
+
 	public getAll(
 		host: IDecorationsTreesHost,
 		filterOwnerId: number,
@@ -3046,6 +3482,7 @@ class DecorationsTrees {
 
 		return this._ensureNodesHaveRanges(host, result);
 	}
+
 	private _search(
 		filterOwnerId: number,
 		filterOutValidation: boolean,
@@ -3085,6 +3522,7 @@ class DecorationsTrees {
 			return r0.concat(r1).concat(r2);
 		}
 	}
+
 	public collectNodesFromOwner(ownerId: number): IntervalNode[] {
 		const r0 = this._decorationsTree0.collectNodesFromOwner(ownerId);
 
@@ -3095,6 +3533,7 @@ class DecorationsTrees {
 
 		return r0.concat(r1).concat(r2);
 	}
+
 	public collectNodesPostOrder(): IntervalNode[] {
 		const r0 = this._decorationsTree0.collectNodesPostOrder();
 
@@ -3104,6 +3543,7 @@ class DecorationsTrees {
 
 		return r0.concat(r1).concat(r2);
 	}
+
 	public insert(node: IntervalNode): void {
 		if (isNodeInjectedText(node)) {
 			this._injectedTextDecorationsTree.insert(node);
@@ -3113,6 +3553,7 @@ class DecorationsTrees {
 			this._decorationsTree0.insert(node);
 		}
 	}
+
 	public delete(node: IntervalNode): void {
 		if (isNodeInjectedText(node)) {
 			this._injectedTextDecorationsTree.delete(node);
@@ -3122,6 +3563,7 @@ class DecorationsTrees {
 			this._decorationsTree0.delete(node);
 		}
 	}
+
 	public getNodeRange(
 		host: IDecorationsTreesHost,
 		node: IntervalNode,
@@ -3131,14 +3573,17 @@ class DecorationsTrees {
 		if (node.cachedVersionId !== versionId) {
 			this._resolveNode(node, versionId);
 		}
+
 		if (node.range === null) {
 			node.range = host.getRangeAt(
 				node.cachedAbsoluteStart,
 				node.cachedAbsoluteEnd,
 			);
 		}
+
 		return node.range;
 	}
+
 	private _resolveNode(node: IntervalNode, cachedVersionId: number): void {
 		if (isNodeInjectedText(node)) {
 			this._injectedTextDecorationsTree.resolveNode(
@@ -3151,6 +3596,7 @@ class DecorationsTrees {
 			this._decorationsTree0.resolveNode(node, cachedVersionId);
 		}
 	}
+
 	public acceptReplace(
 		offset: number,
 		length: number,
@@ -3163,12 +3609,14 @@ class DecorationsTrees {
 			textLength,
 			forceMoveMarkers,
 		);
+
 		this._decorationsTree1.acceptReplace(
 			offset,
 			length,
 			textLength,
 			forceMoveMarkers,
 		);
+
 		this._injectedTextDecorationsTree.acceptReplace(
 			offset,
 			length,
@@ -3182,25 +3630,31 @@ function cleanClassName(className: string): string {
 }
 class DecorationOptions implements model.IDecorationOptions {
 	readonly color: string | ThemeColor;
+
 	readonly darkColor: string | ThemeColor;
 
 	constructor(options: model.IDecorationOptions) {
 		this.color = options.color || "";
+
 		this.darkColor = options.darkColor || "";
 	}
 }
 export class ModelDecorationOverviewRulerOptions extends DecorationOptions {
 	readonly position: model.OverviewRulerLane;
+
 	private _resolvedColor: string | null;
 
 	constructor(options: model.IModelDecorationOverviewRulerOptions) {
 		super(options);
+
 		this._resolvedColor = null;
+
 		this.position =
 			typeof options.position === "number"
 				? options.position
 				: model.OverviewRulerLane.Center;
 	}
+
 	public getColor(theme: IColorTheme): string {
 		if (!this._resolvedColor) {
 			if (theme.type !== "light" && this.darkColor) {
@@ -3209,11 +3663,14 @@ export class ModelDecorationOverviewRulerOptions extends DecorationOptions {
 				this._resolvedColor = this._resolveColor(this.color, theme);
 			}
 		}
+
 		return this._resolvedColor;
 	}
+
 	public invalidateCachedColor(): void {
 		this._resolvedColor = null;
 	}
+
 	private _resolveColor(
 		color: string | ThemeColor,
 		theme: IColorTheme,
@@ -3221,37 +3678,48 @@ export class ModelDecorationOverviewRulerOptions extends DecorationOptions {
 		if (typeof color === "string") {
 			return color;
 		}
+
 		const c = color ? theme.getColor(color.id) : null;
 
 		if (!c) {
 			return "";
 		}
+
 		return c.toString();
 	}
 }
 export class ModelDecorationGlyphMarginOptions {
 	readonly position: model.GlyphMarginLane;
+
 	readonly persistLane: boolean | undefined;
 
 	constructor(
 		options: model.IModelDecorationGlyphMarginOptions | null | undefined,
 	) {
 		this.position = options?.position ?? model.GlyphMarginLane.Center;
+
 		this.persistLane = options?.persistLane;
 	}
 }
 export class ModelDecorationMinimapOptions extends DecorationOptions {
 	readonly position: model.MinimapPosition;
+
 	readonly sectionHeaderStyle: model.MinimapSectionHeaderStyle | null;
+
 	readonly sectionHeaderText: string | null;
+
 	private _resolvedColor: Color | undefined;
 
 	constructor(options: model.IModelDecorationMinimapOptions) {
 		super(options);
+
 		this.position = options.position;
+
 		this.sectionHeaderStyle = options.sectionHeaderStyle ?? null;
+
 		this.sectionHeaderText = options.sectionHeaderText ?? null;
 	}
+
 	public getColor(theme: IColorTheme): Color | undefined {
 		if (!this._resolvedColor) {
 			if (theme.type !== "light" && this.darkColor) {
@@ -3260,11 +3728,14 @@ export class ModelDecorationMinimapOptions extends DecorationOptions {
 				this._resolvedColor = this._resolveColor(this.color, theme);
 			}
 		}
+
 		return this._resolvedColor;
 	}
+
 	public invalidateCachedColor(): void {
 		this._resolvedColor = undefined;
 	}
+
 	private _resolveColor(
 		color: string | ThemeColor,
 		theme: IColorTheme,
@@ -3272,6 +3743,7 @@ export class ModelDecorationMinimapOptions extends DecorationOptions {
 		if (typeof color === "string") {
 			return Color.fromHex(color);
 		}
+
 		return theme.getColor(color.id);
 	}
 }
@@ -3284,144 +3756,223 @@ export class ModelDecorationInjectedTextOptions
 		if (options instanceof ModelDecorationInjectedTextOptions) {
 			return options;
 		}
+
 		return new ModelDecorationInjectedTextOptions(options);
 	}
+
 	public readonly content: string;
+
 	public readonly tokens: TokenArray | null;
+
 	readonly inlineClassName: string | null;
+
 	readonly inlineClassNameAffectsLetterSpacing: boolean;
+
 	readonly attachedData: unknown | null;
+
 	readonly cursorStops: model.InjectedTextCursorStops | null;
+
 	private constructor(options: model.InjectedTextOptions) {
 		this.content = options.content || "";
+
 		this.tokens = options.tokens ?? null;
+
 		this.inlineClassName = options.inlineClassName || null;
+
 		this.inlineClassNameAffectsLetterSpacing =
 			options.inlineClassNameAffectsLetterSpacing || false;
+
 		this.attachedData = options.attachedData || null;
+
 		this.cursorStops = options.cursorStops || null;
 	}
 }
 export class ModelDecorationOptions implements model.IModelDecorationOptions {
 	public static EMPTY: ModelDecorationOptions;
+
 	public static register(
 		options: model.IModelDecorationOptions,
 	): ModelDecorationOptions {
 		return new ModelDecorationOptions(options);
 	}
+
 	public static createDynamic(
 		options: model.IModelDecorationOptions,
 	): ModelDecorationOptions {
 		return new ModelDecorationOptions(options);
 	}
+
 	readonly description: string;
+
 	readonly blockClassName: string | null;
+
 	readonly blockIsAfterEnd: boolean | null;
+
 	readonly blockDoesNotCollapse?: boolean | null;
+
 	readonly blockPadding:
 		| [top: number, right: number, bottom: number, left: number]
 		| null;
+
 	readonly stickiness: model.TrackedRangeStickiness;
+
 	readonly zIndex: number;
+
 	readonly className: string | null;
+
 	readonly shouldFillLineOnLineBreak: boolean | null;
+
 	readonly hoverMessage: IMarkdownString | IMarkdownString[] | null;
+
 	readonly glyphMarginHoverMessage:
 		| IMarkdownString
 		| IMarkdownString[]
 		| null;
+
 	readonly isWholeLine: boolean;
+
 	readonly showIfCollapsed: boolean;
+
 	readonly collapseOnReplaceEdit: boolean;
+
 	readonly overviewRuler: ModelDecorationOverviewRulerOptions | null;
+
 	readonly minimap: ModelDecorationMinimapOptions | null;
+
 	readonly glyphMargin?:
 		| model.IModelDecorationGlyphMarginOptions
 		| null
 		| undefined;
+
 	readonly glyphMarginClassName: string | null;
+
 	readonly linesDecorationsClassName: string | null;
+
 	readonly lineNumberClassName: string | null;
+
 	readonly lineNumberHoverMessage: IMarkdownString | IMarkdownString[] | null;
+
 	readonly linesDecorationsTooltip: string | null;
+
 	readonly firstLineDecorationClassName: string | null;
+
 	readonly marginClassName: string | null;
+
 	readonly inlineClassName: string | null;
+
 	readonly inlineClassNameAffectsLetterSpacing: boolean;
+
 	readonly beforeContentClassName: string | null;
+
 	readonly afterContentClassName: string | null;
+
 	readonly after: ModelDecorationInjectedTextOptions | null;
+
 	readonly before: ModelDecorationInjectedTextOptions | null;
+
 	readonly hideInCommentTokens: boolean | null;
+
 	readonly hideInStringTokens: boolean | null;
+
 	private constructor(options: model.IModelDecorationOptions) {
 		this.description = options.description;
+
 		this.blockClassName = options.blockClassName
 			? cleanClassName(options.blockClassName)
 			: null;
+
 		this.blockDoesNotCollapse = options.blockDoesNotCollapse ?? null;
+
 		this.blockIsAfterEnd = options.blockIsAfterEnd ?? null;
+
 		this.blockPadding = options.blockPadding ?? null;
+
 		this.stickiness =
 			options.stickiness ||
 			model.TrackedRangeStickiness.AlwaysGrowsWhenTypingAtEdges;
+
 		this.zIndex = options.zIndex || 0;
+
 		this.className = options.className
 			? cleanClassName(options.className)
 			: null;
+
 		this.shouldFillLineOnLineBreak =
 			options.shouldFillLineOnLineBreak ?? null;
+
 		this.hoverMessage = options.hoverMessage || null;
+
 		this.glyphMarginHoverMessage = options.glyphMarginHoverMessage || null;
+
 		this.lineNumberHoverMessage = options.lineNumberHoverMessage || null;
+
 		this.isWholeLine = options.isWholeLine || false;
+
 		this.showIfCollapsed = options.showIfCollapsed || false;
+
 		this.collapseOnReplaceEdit = options.collapseOnReplaceEdit || false;
+
 		this.overviewRuler = options.overviewRuler
 			? new ModelDecorationOverviewRulerOptions(options.overviewRuler)
 			: null;
+
 		this.minimap = options.minimap
 			? new ModelDecorationMinimapOptions(options.minimap)
 			: null;
+
 		this.glyphMargin = options.glyphMarginClassName
 			? new ModelDecorationGlyphMarginOptions(options.glyphMargin)
 			: null;
+
 		this.glyphMarginClassName = options.glyphMarginClassName
 			? cleanClassName(options.glyphMarginClassName)
 			: null;
+
 		this.linesDecorationsClassName = options.linesDecorationsClassName
 			? cleanClassName(options.linesDecorationsClassName)
 			: null;
+
 		this.lineNumberClassName = options.lineNumberClassName
 			? cleanClassName(options.lineNumberClassName)
 			: null;
+
 		this.linesDecorationsTooltip = options.linesDecorationsTooltip
 			? strings.htmlAttributeEncodeValue(options.linesDecorationsTooltip)
 			: null;
+
 		this.firstLineDecorationClassName = options.firstLineDecorationClassName
 			? cleanClassName(options.firstLineDecorationClassName)
 			: null;
+
 		this.marginClassName = options.marginClassName
 			? cleanClassName(options.marginClassName)
 			: null;
+
 		this.inlineClassName = options.inlineClassName
 			? cleanClassName(options.inlineClassName)
 			: null;
+
 		this.inlineClassNameAffectsLetterSpacing =
 			options.inlineClassNameAffectsLetterSpacing || false;
+
 		this.beforeContentClassName = options.beforeContentClassName
 			? cleanClassName(options.beforeContentClassName)
 			: null;
+
 		this.afterContentClassName = options.afterContentClassName
 			? cleanClassName(options.afterContentClassName)
 			: null;
+
 		this.after = options.after
 			? ModelDecorationInjectedTextOptions.from(options.after)
 			: null;
+
 		this.before = options.before
 			? ModelDecorationInjectedTextOptions.from(options.before)
 			: null;
+
 		this.hideInCommentTokens = options.hideInCommentTokens ?? false;
+
 		this.hideInStringTokens = options.hideInStringTokens ?? false;
 	}
 }
@@ -3455,19 +4006,28 @@ function _normalizeOptions(
 	if (options instanceof ModelDecorationOptions) {
 		return options;
 	}
+
 	return ModelDecorationOptions.createDynamic(options);
 }
 class DidChangeDecorationsEmitter extends Disposable {
 	private readonly _actual: Emitter<IModelDecorationsChangedEvent> =
 		this._register(new Emitter<IModelDecorationsChangedEvent>());
+
 	public readonly event: Event<IModelDecorationsChangedEvent> =
 		this._actual.event;
+
 	private _deferredCnt: number;
+
 	private _shouldFireDeferred: boolean;
+
 	private _affectsMinimap: boolean;
+
 	private _affectsOverviewRuler: boolean;
+
 	private _affectedInjectedTextLines: Set<number> | null = null;
+
 	private _affectsGlyphMargin: boolean;
+
 	private _affectsLineNumber: boolean;
 
 	constructor(
@@ -3476,19 +4036,28 @@ class DidChangeDecorationsEmitter extends Disposable {
 		) => void,
 	) {
 		super();
+
 		this._deferredCnt = 0;
+
 		this._shouldFireDeferred = false;
+
 		this._affectsMinimap = false;
+
 		this._affectsOverviewRuler = false;
+
 		this._affectsGlyphMargin = false;
+
 		this._affectsLineNumber = false;
 	}
+
 	hasListeners(): boolean {
 		return this._actual.hasListeners();
 	}
+
 	public beginDeferredEmit(): void {
 		this._deferredCnt++;
 	}
+
 	public endDeferredEmit(): void {
 		this._deferredCnt--;
 
@@ -3496,29 +4065,43 @@ class DidChangeDecorationsEmitter extends Disposable {
 			if (this._shouldFireDeferred) {
 				this.doFire();
 			}
+
 			this._affectedInjectedTextLines?.clear();
+
 			this._affectedInjectedTextLines = null;
 		}
 	}
+
 	public recordLineAffectedByInjectedText(lineNumber: number): void {
 		if (!this._affectedInjectedTextLines) {
 			this._affectedInjectedTextLines = new Set();
 		}
+
 		this._affectedInjectedTextLines.add(lineNumber);
 	}
+
 	public checkAffectedAndFire(options: ModelDecorationOptions): void {
 		this._affectsMinimap ||= !!options.minimap?.position;
+
 		this._affectsOverviewRuler ||= !!options.overviewRuler?.color;
+
 		this._affectsGlyphMargin ||= !!options.glyphMarginClassName;
+
 		this._affectsLineNumber ||= !!options.lineNumberClassName;
+
 		this.tryFire();
 	}
+
 	public fire(): void {
 		this._affectsMinimap = true;
+
 		this._affectsOverviewRuler = true;
+
 		this._affectsGlyphMargin = true;
+
 		this.tryFire();
 	}
+
 	private tryFire() {
 		if (this._deferredCnt === 0) {
 			this.doFire();
@@ -3526,6 +4109,7 @@ class DidChangeDecorationsEmitter extends Disposable {
 			this._shouldFireDeferred = true;
 		}
 	}
+
 	private doFire() {
 		this.handleBeforeFire(this._affectedInjectedTextLines);
 
@@ -3535,10 +4119,15 @@ class DidChangeDecorationsEmitter extends Disposable {
 			affectsGlyphMargin: this._affectsGlyphMargin,
 			affectsLineNumber: this._affectsLineNumber,
 		};
+
 		this._shouldFireDeferred = false;
+
 		this._affectsMinimap = false;
+
 		this._affectsOverviewRuler = false;
+
 		this._affectsGlyphMargin = false;
+
 		this._actual.fire(event);
 	}
 }
@@ -3549,28 +4138,38 @@ class DidChangeContentEmitter extends Disposable {
 	 */
 	private readonly _fastEmitter: Emitter<InternalModelContentChangeEvent> =
 		this._register(new Emitter<InternalModelContentChangeEvent>());
+
 	public readonly fastEvent: Event<InternalModelContentChangeEvent> =
 		this._fastEmitter.event;
+
 	private readonly _slowEmitter: Emitter<InternalModelContentChangeEvent> =
 		this._register(new Emitter<InternalModelContentChangeEvent>());
+
 	public readonly slowEvent: Event<InternalModelContentChangeEvent> =
 		this._slowEmitter.event;
+
 	private _deferredCnt: number;
+
 	private _deferredEvent: InternalModelContentChangeEvent | null;
 
 	constructor() {
 		super();
+
 		this._deferredCnt = 0;
+
 		this._deferredEvent = null;
 	}
+
 	public hasListeners(): boolean {
 		return (
 			this._fastEmitter.hasListeners() || this._slowEmitter.hasListeners()
 		);
 	}
+
 	public beginDeferredEmit(): void {
 		this._deferredCnt++;
 	}
+
 	public endDeferredEmit(
 		resultingSelection: Selection[] | null = null,
 	): void {
@@ -3582,12 +4181,16 @@ class DidChangeContentEmitter extends Disposable {
 					resultingSelection;
 
 				const e = this._deferredEvent;
+
 				this._deferredEvent = null;
+
 				this._fastEmitter.fire(e);
+
 				this._slowEmitter.fire(e);
 			}
 		}
 	}
+
 	public fire(e: InternalModelContentChangeEvent): void {
 		if (this._deferredCnt > 0) {
 			if (this._deferredEvent) {
@@ -3595,9 +4198,12 @@ class DidChangeContentEmitter extends Disposable {
 			} else {
 				this._deferredEvent = e;
 			}
+
 			return;
 		}
+
 		this._fastEmitter.fire(e);
+
 		this._slowEmitter.fire(e);
 	}
 }

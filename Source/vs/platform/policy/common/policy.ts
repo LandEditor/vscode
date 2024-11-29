@@ -20,15 +20,19 @@ export const IPolicyService = createDecorator<IPolicyService>("policy");
 
 export interface IPolicyService {
 	readonly _serviceBrand: undefined;
+
 	readonly onDidChange: Event<readonly PolicyName[]>;
+
 	updatePolicyDefinitions(
 		policyDefinitions: IStringDictionary<PolicyDefinition>,
 	): Promise<IStringDictionary<PolicyValue>>;
 
 	getPolicyValue(name: PolicyName): PolicyValue | undefined;
+
 	serialize():
 		| IStringDictionary<{
 				definition: PolicyDefinition;
+
 				value: PolicyValue;
 		  }>
 		| undefined;
@@ -38,17 +42,22 @@ export abstract class AbstractPolicyService
 	implements IPolicyService
 {
 	readonly _serviceBrand: undefined;
+
 	protected policyDefinitions: IStringDictionary<PolicyDefinition> = {};
+
 	protected policies = new Map<PolicyName, PolicyValue>();
+
 	protected readonly _onDidChange = this._register(
 		new Emitter<readonly PolicyName[]>(),
 	);
+
 	readonly onDidChange = this._onDidChange.event;
 
 	async updatePolicyDefinitions(
 		policyDefinitions: IStringDictionary<PolicyDefinition>,
 	): Promise<IStringDictionary<PolicyValue>> {
 		const size = Object.keys(this.policyDefinitions).length;
+
 		this.policyDefinitions = {
 			...policyDefinitions,
 			...this.policyDefinitions,
@@ -57,23 +66,28 @@ export abstract class AbstractPolicyService
 		if (size !== Object.keys(this.policyDefinitions).length) {
 			await this._updatePolicyDefinitions(policyDefinitions);
 		}
+
 		return Iterable.reduce(
 			this.policies.entries(),
 			(r, [name, value]) => ({ ...r, [name]: value }),
 			{},
 		);
 	}
+
 	getPolicyValue(name: PolicyName): PolicyValue | undefined {
 		return this.policies.get(name);
 	}
+
 	serialize(): IStringDictionary<{
 		definition: PolicyDefinition;
+
 		value: PolicyValue;
 	}> {
 		return Iterable.reduce<
 			[PolicyName, PolicyDefinition],
 			IStringDictionary<{
 				definition: PolicyDefinition;
+
 				value: PolicyValue;
 			}>
 		>(
@@ -85,20 +99,24 @@ export abstract class AbstractPolicyService
 			{},
 		);
 	}
+
 	protected abstract _updatePolicyDefinitions(
 		policyDefinitions: IStringDictionary<PolicyDefinition>,
 	): Promise<void>;
 }
 export class NullPolicyService implements IPolicyService {
 	readonly _serviceBrand: undefined;
+
 	readonly onDidChange = Event.None;
 
 	async updatePolicyDefinitions() {
 		return {};
 	}
+
 	getPolicyValue() {
 		return undefined;
 	}
+
 	serialize() {
 		return undefined;
 	}

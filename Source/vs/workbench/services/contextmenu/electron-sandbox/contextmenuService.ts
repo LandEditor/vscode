@@ -54,14 +54,17 @@ import { hasNativeTitlebar } from "../../../../platform/window/common/window.js"
 
 export class ContextMenuService implements IContextMenuService {
 	declare readonly _serviceBrand: undefined;
+
 	private impl: HTMLContextMenuService | NativeContextMenuService;
 
 	get onDidShowContextMenu(): Event<void> {
 		return this.impl.onDidShowContextMenu;
 	}
+
 	get onDidHideContextMenu(): Event<void> {
 		return this.impl.onDidHideContextMenu;
 	}
+
 	constructor(
 		@INotificationService
 		notificationService: INotificationService,
@@ -100,9 +103,11 @@ export class ContextMenuService implements IContextMenuService {
 			);
 		}
 	}
+
 	dispose(): void {
 		this.impl.dispose();
 	}
+
 	showContextMenu(
 		delegate: IContextMenuDelegate | IContextMenuMenuDelegate,
 	): void {
@@ -114,13 +119,17 @@ class NativeContextMenuService
 	implements IContextMenuService
 {
 	declare readonly _serviceBrand: undefined;
+
 	private readonly _onDidShowContextMenu = this._store.add(
 		new Emitter<void>(),
 	);
+
 	readonly onDidShowContextMenu = this._onDidShowContextMenu.event;
+
 	private readonly _onDidHideContextMenu = this._store.add(
 		new Emitter<void>(),
 	);
+
 	readonly onDidHideContextMenu = this._onDidHideContextMenu.event;
 
 	constructor(
@@ -137,6 +146,7 @@ class NativeContextMenuService
 	) {
 		super();
 	}
+
 	showContextMenu(
 		delegate: IContextMenuDelegate | IContextMenuMenuDelegate,
 	): void {
@@ -153,6 +163,7 @@ class NativeContextMenuService
 				delegate.onHide?.(false);
 
 				dom.ModifierKeyEmitter.getInstance().resetKeyStatus();
+
 				this._onDidHideContextMenu.fire();
 			});
 
@@ -186,11 +197,14 @@ class NativeContextMenuService
 				) {
 					if (delegate.anchorAlignment === AnchorAlignment.LEFT) {
 						x = elementPosition.left;
+
 						y = elementPosition.top;
 					} else {
 						x = elementPosition.left + elementPosition.width;
+
 						y = elementPosition.top;
 					}
+
 					if (!isMacintosh) {
 						const window = dom.getWindow(anchor);
 
@@ -214,9 +228,11 @@ class NativeContextMenuService
 				} else {
 					if (delegate.anchorAlignment === AnchorAlignment.LEFT) {
 						x = elementPosition.left;
+
 						y = elementPosition.top + elementPosition.height;
 					} else {
 						x = elementPosition.left + elementPosition.width;
+
 						y = elementPosition.top + elementPosition.height;
 					}
 				}
@@ -228,17 +244,21 @@ class NativeContextMenuService
 				}
 			} else if (isAnchor(anchor)) {
 				x = anchor.x;
+
 				y = anchor.y;
 			} else {
 				// We leave x/y undefined in this case which will result in
 				// Electron taking care of opening the menu at the cursor position.
 			}
+
 			if (typeof x === "number") {
 				x = Math.floor(x * zoom);
 			}
+
 			if (typeof y === "number") {
 				y = Math.floor(y * zoom);
 			}
+
 			popup(
 				menu,
 				{
@@ -250,9 +270,11 @@ class NativeContextMenuService
 				},
 				() => onHide(),
 			);
+
 			this._onDidShowContextMenu.fire();
 		}
 	}
+
 	private createMenu(
 		delegate: IContextMenuDelegate,
 		entries: readonly IAction[],
@@ -273,6 +295,7 @@ class NativeContextMenuService
 			),
 		);
 	}
+
 	private createMenuItem(
 		delegate: IContextMenuDelegate,
 		entry: IAction,
@@ -291,6 +314,7 @@ class NativeContextMenuService
 
 				return undefined;
 			}
+
 			return {
 				label: unmnemonicLabel(stripIcons(entry.label)).trim(),
 				submenu: this.createMenu(
@@ -315,6 +339,7 @@ class NativeContextMenuService
 					type = "checkbox";
 				}
 			}
+
 			const item: IContextMenuItem = {
 				label: unmnemonicLabel(stripIcons(entry.label)).trim(),
 				checked: !!entry.checked,
@@ -347,9 +372,11 @@ class NativeContextMenuService
 					}
 				}
 			}
+
 			return item;
 		}
 	}
+
 	private async runAction(
 		actionRunner: IActionRunner,
 		actionToRun: IAction,
@@ -365,6 +392,7 @@ class NativeContextMenuService
 				from: "contextMenu",
 			});
 		}
+
 		const context = delegate.getActionsContext
 			? delegate.getActionsContext(event)
 			: undefined;

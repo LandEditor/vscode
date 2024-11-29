@@ -22,24 +22,31 @@ export class ChatAccessibilityProvider
 		@IAccessibleViewService
 		private readonly _accessibleViewService: IAccessibleViewService,
 	) {}
+
 	getWidgetRole(): AriaRole {
 		return "list";
 	}
+
 	getRole(element: ChatTreeItem): AriaRole | undefined {
 		return "listitem";
 	}
+
 	getWidgetAriaLabel(): string {
 		return localize("chat", "Chat");
 	}
+
 	getAriaLabel(element: ChatTreeItem): string {
 		if (isRequestVM(element)) {
 			return element.messageText;
 		}
+
 		if (isResponseVM(element)) {
 			return this._getLabelWithCodeBlockCount(element);
 		}
+
 		return "";
 	}
+
 	private _getLabelWithCodeBlockCount(
 		element: IChatResponseViewModel,
 	): string {
@@ -75,6 +82,7 @@ export class ChatAccessibilityProvider
 
 				break;
 		}
+
 		const codeBlockCount =
 			marked
 				.lexer(element.response.toString())
@@ -137,6 +145,7 @@ export class ChatAccessibilityProvider
 
 				break;
 		}
+
 		return label;
 	}
 }

@@ -18,7 +18,9 @@ function runProcess(command: string, args: ReadonlyArray<string> = []) {
 			env: process.env,
 			shell: process.platform === "win32",
 		});
+
 		child.on("exit", (err) => (!err ? resolve() : process.exit(err ?? 1)));
+
 		child.on("error", reject);
 	});
 }
@@ -46,15 +48,19 @@ async function ensureCompiled() {
 }
 async function main() {
 	await ensureNodeModules();
+
 	await getElectron();
+
 	await ensureCompiled();
 	// Can't require this until after dependencies are installed
 	const { getBuiltInExtensions } = require("./builtInExtensions");
+
 	await getBuiltInExtensions();
 }
 if (require.main === module) {
 	main().catch((err) => {
 		console.error(err);
+
 		process.exit(1);
 	});
 }

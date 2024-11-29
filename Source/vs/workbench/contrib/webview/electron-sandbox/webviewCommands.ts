@@ -27,6 +27,7 @@ export class OpenWebviewDeveloperToolsAction extends Action2 {
 			f1: true,
 		});
 	}
+
 	async run(accessor: ServicesAccessor): Promise<void> {
 		const nativeHostService = accessor.get(INativeHostService);
 
@@ -40,6 +41,7 @@ export class OpenWebviewDeveloperToolsAction extends Action2 {
 					"Using standard dev tools to debug iframe based webview",
 				),
 			);
+
 			nativeHostService.openDevTools();
 		}
 	}

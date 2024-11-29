@@ -30,15 +30,20 @@ export class TerminalAccessibleBufferProvider
 	implements IAccessibleViewContentProvider
 {
 	readonly id = AccessibleViewProviderId.Terminal;
+
 	readonly options: IAccessibleViewOptions = {
 		type: AccessibleViewType.View,
 		language: "terminal",
 		id: AccessibleViewProviderId.Terminal,
 	};
+
 	readonly verbositySettingKey = AccessibilityVerbositySettingId.Terminal;
+
 	private _focusedInstance: ITerminalInstance | undefined;
+
 	private readonly _onDidRequestClearProvider =
 		new Emitter<AccessibleViewProviderId>();
+
 	readonly onDidRequestClearLastProvider =
 		this._onDidRequestClearProvider.event;
 
@@ -61,12 +66,15 @@ export class TerminalAccessibleBufferProvider
 		terminalService: ITerminalService,
 	) {
 		super();
+
 		this.options.customHelp = customHelp;
+
 		this.options.position = configurationService.getValue(
 			TerminalAccessibilitySettingId.AccessibleViewPreserveCursorPosition,
 		)
 			? "initial-bottom"
 			: "bottom";
+
 		this._register(
 			this._instance.onDisposed(() =>
 				this._onDidRequestClearProvider.fire(
@@ -74,6 +82,7 @@ export class TerminalAccessibleBufferProvider
 				),
 			),
 		);
+
 		this._register(
 			configurationService.onDidChangeConfiguration((e) => {
 				if (
@@ -89,7 +98,9 @@ export class TerminalAccessibleBufferProvider
 				}
 			}),
 		);
+
 		this._focusedInstance = terminalService.activeInstance;
+
 		this._register(
 			terminalService.onDidChangeActiveInstance(() => {
 				if (
@@ -100,19 +111,23 @@ export class TerminalAccessibleBufferProvider
 					this._onDidRequestClearProvider.fire(
 						AccessibleViewProviderId.Terminal,
 					);
+
 					this._focusedInstance = terminalService.activeInstance;
 				}
 			}),
 		);
 	}
+
 	onClose() {
 		this._instance.focus();
 	}
+
 	provideContent(): string {
 		this._bufferTracker.update();
 
 		return this._bufferTracker.lines.join("\n");
 	}
+
 	getSymbols(): IAccessibleViewSymbol[] {
 		const commands = this._getCommandsWithEditorLine() ?? [];
 
@@ -128,8 +143,10 @@ export class TerminalAccessibleBufferProvider
 				});
 			}
 		}
+
 		return symbols;
 	}
+
 	private _getCommandsWithEditorLine(): ICommandWithEditorLine[] | undefined {
 		const capability = this._instance.capabilities.get(
 			TerminalCapability.CommandDetection,
@@ -142,6 +159,7 @@ export class TerminalAccessibleBufferProvider
 		if (!commands?.length) {
 			return;
 		}
+
 		const result: ICommandWithEditorLine[] = [];
 
 		for (const command of commands) {
@@ -150,8 +168,10 @@ export class TerminalAccessibleBufferProvider
 			if (lineNumber === undefined) {
 				continue;
 			}
+
 			result.push({ command, lineNumber, exitCode: command.exitCode });
 		}
+
 		if (currentCommand) {
 			const lineNumber = this._getEditorLineForCommand(currentCommand);
 
@@ -159,8 +179,10 @@ export class TerminalAccessibleBufferProvider
 				result.push({ command: currentCommand, lineNumber });
 			}
 		}
+
 		return result;
 	}
+
 	private _getEditorLineForCommand(
 		command: ITerminalCommand | ICurrentPartialCommand,
 	): number | undefined {
@@ -171,19 +193,24 @@ export class TerminalAccessibleBufferProvider
 		} else if ("commandStartMarker" in command) {
 			line = command.commandStartMarker?.line;
 		}
+
 		if (line === undefined || line < 0) {
 			return;
 		}
+
 		line = this._bufferTracker.bufferToEditorLineMapping.get(line);
 
 		if (line === undefined) {
 			return;
 		}
+
 		return line + 1;
 	}
 }
 export interface ICommandWithEditorLine {
 	command: ITerminalCommand | ICurrentPartialCommand;
+
 	lineNumber: number;
+
 	exitCode?: number;
 }

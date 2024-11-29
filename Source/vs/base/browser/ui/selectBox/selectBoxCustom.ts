@@ -47,8 +47,11 @@ const SELECT_OPTION_ENTRY_TEMPLATE_ID = "selectOption.entry.template";
 
 interface ISelectListTemplateData {
 	root: HTMLElement;
+
 	text: HTMLElement;
+
 	detail: HTMLElement;
+
 	decoratorRight: HTMLElement;
 }
 
@@ -61,9 +64,13 @@ class SelectListRenderer
 
 	renderTemplate(container: HTMLElement): ISelectListTemplateData {
 		const data: ISelectListTemplateData = Object.create(null);
+
 		data.root = container;
+
 		data.text = dom.append(container, $(".option-text"));
+
 		data.detail = dom.append(container, $(".option-detail"));
+
 		data.decoratorRight = dom.append(
 			container,
 			$(".option-decorator-right"),
@@ -88,7 +95,9 @@ class SelectListRenderer
 		const isDisabled = element.isDisabled;
 
 		data.text.textContent = text;
+
 		data.detail.textContent = !!detail ? detail : "";
+
 		data.decoratorRight.innerText = !!decoratorRight ? decoratorRight : "";
 
 		// pseudo-select disabled option
@@ -110,30 +119,53 @@ export class SelectBoxList
 	implements ISelectBoxDelegate, IListVirtualDelegate<ISelectOptionItem>
 {
 	private static readonly DEFAULT_DROPDOWN_MINIMUM_BOTTOM_MARGIN = 32;
+
 	private static readonly DEFAULT_DROPDOWN_MINIMUM_TOP_MARGIN = 2;
+
 	private static readonly DEFAULT_MINIMUM_VISIBLE_OPTIONS = 3;
 
 	private _isVisible: boolean;
+
 	private selectBoxOptions: ISelectBoxOptions;
+
 	private selectElement: HTMLSelectElement;
+
 	private container?: HTMLElement;
+
 	private options: ISelectOptionItem[] = [];
+
 	private selected: number;
+
 	private readonly _onDidSelect: Emitter<ISelectData>;
+
 	private readonly styles: ISelectBoxStyles;
+
 	private listRenderer!: SelectListRenderer;
+
 	private contextViewProvider!: IContextViewProvider;
+
 	private selectDropDownContainer!: HTMLElement;
+
 	private styleElement!: HTMLStyleElement;
+
 	private selectList!: List<ISelectOptionItem>;
+
 	private selectDropDownListContainer!: HTMLElement;
+
 	private widthControlElement!: HTMLElement;
+
 	private _currentSelection = 0;
+
 	private _dropDownPosition!: AnchorPosition;
+
 	private _hasDetails: boolean = false;
+
 	private selectionDetailsPane!: HTMLElement;
+
 	private _skipLayout: boolean = false;
+
 	private _cachedMaxDetailsHeight?: number;
+
 	private _hover?: IManagedHover;
 
 	private _sticky: boolean = false; // for dev purposes only
@@ -146,7 +178,9 @@ export class SelectBoxList
 		selectBoxOptions?: ISelectBoxOptions,
 	) {
 		super();
+
 		this._isVisible = false;
+
 		this.styles = styles;
 
 		this.selectBoxOptions = selectBoxOptions || Object.create(null);
@@ -179,9 +213,11 @@ export class SelectBoxList
 		}
 
 		this._onDidSelect = new Emitter<ISelectData>();
+
 		this._register(this._onDidSelect);
 
 		this.registerListeners();
+
 		this.constructSelectDropDown(contextViewProvider);
 
 		this.selected = selected || 0;
@@ -220,6 +256,7 @@ export class SelectBoxList
 	private constructSelectDropDown(contextViewProvider: IContextViewProvider) {
 		// SetUp ContextView container to hold select Dropdown
 		this.contextViewProvider = contextViewProvider;
+
 		this.selectDropDownContainer = dom.$(
 			".monaco-select-box-dropdown-container",
 		);
@@ -244,7 +281,9 @@ export class SelectBoxList
 			widthControlOuterDiv,
 			$(".width-control-div"),
 		);
+
 		this.widthControlElement = document.createElement("span");
+
 		this.widthControlElement.className = "option-text-width-control";
 
 		dom.append(widthControlInnerDiv, this.widthControlElement);
@@ -259,6 +298,7 @@ export class SelectBoxList
 
 		// Prevent dragging of dropdown #114329
 		this.selectDropDownContainer.setAttribute("draggable", "true");
+
 		this._register(
 			dom.addDisposableListener(
 				this.selectDropDownContainer,
@@ -279,6 +319,7 @@ export class SelectBoxList
 				"change",
 				(e) => {
 					this.selected = e.target.selectedIndex;
+
 					this._onDidSelect.fire({
 						index: e.target.selectedIndex,
 						selected: e.target.value,
@@ -327,11 +368,13 @@ export class SelectBoxList
 		// The following implementation is slightly different from the mouse event handlers above.
 		// Use the following helper variable, otherwise the list flickers.
 		let listIsVisibleOnTouchStart: boolean;
+
 		this._register(
 			dom.addDisposableListener(this.selectElement, "touchstart", (e) => {
 				listIsVisibleOnTouchStart = this._isVisible;
 			}),
 		);
+
 		this._register(
 			dom.addDisposableListener(this.selectElement, "touchend", (e) => {
 				dom.EventHelper.stop(e);
@@ -395,8 +438,11 @@ export class SelectBoxList
 	public setOptions(options: ISelectOptionItem[], selected?: number): void {
 		if (!arrays.equals(this.options, options)) {
 			this.options = options;
+
 			this.selectElement.options.length = 0;
+
 			this._hasDetails = false;
+
 			this._cachedMaxDetailsHeight = undefined;
 
 			this.options.forEach((option, index) => {
@@ -450,6 +496,7 @@ export class SelectBoxList
 
 	public setAriaLabel(label: string): void {
 		this.selectBoxOptions.ariaLabel = label;
+
 		this.selectElement.setAttribute(
 			"aria-label",
 			this.selectBoxOptions.ariaLabel,
@@ -459,6 +506,7 @@ export class SelectBoxList
 	public focus(): void {
 		if (this.selectElement) {
 			this.selectElement.tabIndex = 0;
+
 			this.selectElement.focus();
 		}
 	}
@@ -466,6 +514,7 @@ export class SelectBoxList
 	public blur(): void {
 		if (this.selectElement) {
 			this.selectElement.tabIndex = -1;
+
 			this.selectElement.blur();
 		}
 	}
@@ -476,8 +525,11 @@ export class SelectBoxList
 
 	public render(container: HTMLElement): void {
 		this.container = container;
+
 		container.classList.add("select-container");
+
 		container.appendChild(this.selectElement);
+
 		this.styleSelectElement();
 	}
 
@@ -512,9 +564,11 @@ export class SelectBoxList
 			content.push(
 				`.monaco-select-box-dropdown-container { border: 1px solid ${this.styles.selectBorder} } `,
 			);
+
 			content.push(
 				`.monaco-select-box-dropdown-container > .select-box-details-pane.border-top { border-top: 1px solid ${this.styles.selectBorder} } `,
 			);
+
 			content.push(
 				`.monaco-select-box-dropdown-container > .select-box-details-pane.border-bottom { border-bottom: 1px solid ${this.styles.selectBorder} } `,
 			);
@@ -522,6 +576,7 @@ export class SelectBoxList
 			content.push(
 				`.monaco-select-box-dropdown-container > .select-box-details-pane.border-top { border-top: 1px solid ${this.styles.selectListBorder} } `,
 			);
+
 			content.push(
 				`.monaco-select-box-dropdown-container > .select-box-details-pane.border-bottom { border-bottom: 1px solid ${this.styles.selectListBorder} } `,
 			);
@@ -558,6 +613,7 @@ export class SelectBoxList
 		content.push(
 			`.monaco-select-box-dropdown-container > .select-box-dropdown-list-container .monaco-list .monaco-list-row.option-disabled.focused { background-color: transparent !important; color: inherit !important; outline: none !important; }`,
 		);
+
 		content.push(
 			`.monaco-select-box-dropdown-container > .select-box-dropdown-list-container .monaco-list .monaco-list-row.option-disabled:hover { background-color: transparent !important; color: inherit !important; outline: none !important; }`,
 		);
@@ -573,7 +629,9 @@ export class SelectBoxList
 		const border = this.styles.selectBorder ?? "";
 
 		this.selectElement.style.backgroundColor = background;
+
 		this.selectElement.style.color = foreground;
+
 		this.selectElement.style.borderColor = border;
 	}
 
@@ -584,11 +642,15 @@ export class SelectBoxList
 			this.styles.selectListBackground,
 			background,
 		);
+
 		this.selectDropDownListContainer.style.backgroundColor = listBackground;
+
 		this.selectionDetailsPane.style.backgroundColor = listBackground;
 
 		const optionsBorder = this.styles.focusBorder ?? "";
+
 		this.selectDropDownContainer.style.outlineColor = optionsBorder;
+
 		this.selectDropDownContainer.style.outlineOffset = "-1px";
 
 		this.selectList.style(this.styles);
@@ -600,8 +662,11 @@ export class SelectBoxList
 		disabled?: boolean,
 	): HTMLOptionElement {
 		const option = document.createElement("option");
+
 		option.value = value;
+
 		option.text = value;
+
 		option.disabled = !!disabled;
 
 		return option;
@@ -618,6 +683,7 @@ export class SelectBoxList
 
 		// Lazily create and populate list only at open, moved from constructor
 		this.createSelectList(this.selectDropDownContainer);
+
 		this.setOptionsList();
 
 		// This allows us to flip the position based on measurement
@@ -634,6 +700,7 @@ export class SelectBoxList
 				},
 				onHide: () => {
 					this.selectDropDownContainer.classList.remove("visible");
+
 					this.selectElement.classList.remove("synthetic-focus");
 				},
 				anchorPosition: this._dropDownPosition,
@@ -645,6 +712,7 @@ export class SelectBoxList
 
 		// Hide so we can relay out
 		this._isVisible = true;
+
 		this.hideSelectDropDown(false);
 
 		this.contextViewProvider.showContextView(
@@ -655,6 +723,7 @@ export class SelectBoxList
 				layout: () => this.layoutSelectDropDown(),
 				onHide: () => {
 					this.selectDropDownContainer.classList.remove("visible");
+
 					this.selectElement.classList.remove("synthetic-focus");
 				},
 				anchorPosition: this._dropDownPosition,
@@ -666,7 +735,9 @@ export class SelectBoxList
 
 		// Track initial selection the case user escape, blur
 		this._currentSelection = this.selected;
+
 		this._isVisible = true;
+
 		this.selectElement.setAttribute("aria-expanded", "true");
 	}
 
@@ -676,6 +747,7 @@ export class SelectBoxList
 		}
 
 		this._isVisible = false;
+
 		this.selectElement.setAttribute("aria-expanded", "false");
 
 		if (focusSelect) {
@@ -705,6 +777,7 @@ export class SelectBoxList
 	// Iterate over detailed descriptions, find max height
 	private measureMaxDetailsHeight(): number {
 		let maxDetailsPaneHeight = 0;
+
 		this.options.forEach((_option, index) => {
 			this.updateDetail(index);
 
@@ -771,6 +844,7 @@ export class SelectBoxList
 
 			// Get initial list height and determine space above and below
 			this.selectList.getHTMLElement().style.height = "";
+
 			this.selectList.layout();
 
 			let listHeight = this.selectList.contentHeight;
@@ -781,6 +855,7 @@ export class SelectBoxList
 			) {
 				this._cachedMaxDetailsHeight = this.measureMaxDetailsHeight();
 			}
+
 			const maxDetailsPaneHeight = this._hasDetails
 				? this._cachedMaxDetailsHeight!
 				: 0;
@@ -831,29 +906,39 @@ export class SelectBoxList
 					this.options.length > maxVisibleOptionsBelow
 				) {
 					this._dropDownPosition = AnchorPosition.ABOVE;
+
 					this.selectDropDownListContainer.remove();
+
 					this.selectionDetailsPane.remove();
+
 					this.selectDropDownContainer.appendChild(
 						this.selectionDetailsPane,
 					);
+
 					this.selectDropDownContainer.appendChild(
 						this.selectDropDownListContainer,
 					);
 
 					this.selectionDetailsPane.classList.remove("border-top");
+
 					this.selectionDetailsPane.classList.add("border-bottom");
 				} else {
 					this._dropDownPosition = AnchorPosition.BELOW;
+
 					this.selectDropDownListContainer.remove();
+
 					this.selectionDetailsPane.remove();
+
 					this.selectDropDownContainer.appendChild(
 						this.selectDropDownListContainer,
 					);
+
 					this.selectDropDownContainer.appendChild(
 						this.selectionDetailsPane,
 					);
 
 					this.selectionDetailsPane.classList.remove("border-bottom");
+
 					this.selectionDetailsPane.classList.add("border-top");
 				}
 				// Do full layout on showSelectDropDown only
@@ -903,11 +988,13 @@ export class SelectBoxList
 
 			// Set adjusted list height and relayout
 			this.selectList.layout(listHeight);
+
 			this.selectList.domFocus();
 
 			// Finally set focus on selected item
 			if (this.selectList.length > 0) {
 				this.selectList.setFocus([this.selected || 0]);
+
 				this.selectList.reveal(this.selectList.getFocus()[0] || 0);
 			}
 
@@ -915,6 +1002,7 @@ export class SelectBoxList
 				// Leave the selectDropDownContainer to size itself according to children (list + details) - #57447
 				this.selectList.getHTMLElement().style.height =
 					listHeight + verticalPadding + "px";
+
 				this.selectDropDownContainer.style.height = "";
 			} else {
 				this.selectDropDownContainer.style.height =
@@ -927,7 +1015,9 @@ export class SelectBoxList
 
 			// Maintain focus outline on parent select as well as list container - tabindex for focus
 			this.selectDropDownListContainer.setAttribute("tabindex", "0");
+
 			this.selectElement.classList.add("synthetic-focus");
+
 			this.selectDropDownContainer.classList.add("synthetic-focus");
 
 			return true;
@@ -956,6 +1046,7 @@ export class SelectBoxList
 
 				if (len > longestLength) {
 					longest = index;
+
 					longestLength = len;
 				}
 			});
@@ -965,6 +1056,7 @@ export class SelectBoxList
 				(!!this.options[longest].decoratorRight
 					? this.options[longest].decoratorRight + " "
 					: "");
+
 			elementWidth = dom.getTotalWidth(container);
 		}
 
@@ -1051,6 +1143,7 @@ export class SelectBoxList
 				$.filter((e) => e.keyCode === KeyCode.Enter),
 			)(this.onEnter, this),
 		);
+
 		this._register(
 			Event.chain(onSelectDropDownKeyDown, ($) =>
 				$.filter((e) => e.keyCode === KeyCode.Tab),
@@ -1061,36 +1154,43 @@ export class SelectBoxList
 				$.filter((e) => e.keyCode === KeyCode.Escape),
 			)(this.onEscape, this),
 		);
+
 		this._register(
 			Event.chain(onSelectDropDownKeyDown, ($) =>
 				$.filter((e) => e.keyCode === KeyCode.UpArrow),
 			)(this.onUpArrow, this),
 		);
+
 		this._register(
 			Event.chain(onSelectDropDownKeyDown, ($) =>
 				$.filter((e) => e.keyCode === KeyCode.DownArrow),
 			)(this.onDownArrow, this),
 		);
+
 		this._register(
 			Event.chain(onSelectDropDownKeyDown, ($) =>
 				$.filter((e) => e.keyCode === KeyCode.PageDown),
 			)(this.onPageDown, this),
 		);
+
 		this._register(
 			Event.chain(onSelectDropDownKeyDown, ($) =>
 				$.filter((e) => e.keyCode === KeyCode.PageUp),
 			)(this.onPageUp, this),
 		);
+
 		this._register(
 			Event.chain(onSelectDropDownKeyDown, ($) =>
 				$.filter((e) => e.keyCode === KeyCode.Home),
 			)(this.onHome, this),
 		);
+
 		this._register(
 			Event.chain(onSelectDropDownKeyDown, ($) =>
 				$.filter((e) => e.keyCode === KeyCode.End),
 			)(this.onEnd, this),
 		);
+
 		this._register(
 			Event.chain(onSelectDropDownKeyDown, ($) =>
 				$.filter(
@@ -1119,6 +1219,7 @@ export class SelectBoxList
 					this.selectList.setFocus([e.index]),
 			),
 		);
+
 		this._register(
 			this.selectList.onDidChangeFocus((e) => this.onListFocus(e)),
 		);
@@ -1137,6 +1238,7 @@ export class SelectBoxList
 					) {
 						return;
 					}
+
 					this.onListBlur();
 				},
 			),
@@ -1145,6 +1247,7 @@ export class SelectBoxList
 		this.selectList
 			.getHTMLElement()
 			.setAttribute("aria-label", this.selectBoxOptions.ariaLabel || "");
+
 		this.selectList.getHTMLElement().setAttribute("aria-expanded", "true");
 
 		this.styleList();
@@ -1177,6 +1280,7 @@ export class SelectBoxList
 		if (!listRowElement) {
 			return;
 		}
+
 		const index = Number(listRowElement.getAttribute("data-index"));
 
 		const disabled = listRowElement.classList.contains("option-disabled");
@@ -1184,9 +1288,11 @@ export class SelectBoxList
 		// Ignore mouse selection of disabled options
 		if (index >= 0 && index < this.options.length && !disabled) {
 			this.selected = index;
+
 			this.select(this.selected);
 
 			this.selectList.setFocus([this.selected]);
+
 			this.selectList.reveal(this.selectList.getFocus()[0]);
 
 			// Only fire if selection change
@@ -1216,6 +1322,7 @@ export class SelectBoxList
 		if (this._sticky) {
 			return;
 		}
+
 		if (this.selected !== this._currentSelection) {
 			// Reset selected to current if no change
 			this.select(this._currentSelection);
@@ -1248,6 +1355,7 @@ export class SelectBoxList
 		);
 
 		rendered.element.classList.add("select-box-description-markdown");
+
 		cleanRenderedMarkdown(rendered.element);
 
 		return rendered.element;
@@ -1275,12 +1383,14 @@ export class SelectBoxList
 		if (description) {
 			if (descriptionIsMarkdown) {
 				const actionHandler = option.descriptionMarkdownActionHandler;
+
 				this.selectionDetailsPane.appendChild(
 					this.renderDescriptionMarkdown(description, actionHandler),
 				);
 			} else {
 				this.selectionDetailsPane.innerText = description;
 			}
+
 			this.selectionDetailsPane.style.display = "block";
 		} else {
 			this.selectionDetailsPane.style.display = "none";
@@ -1288,7 +1398,9 @@ export class SelectBoxList
 
 		// Avoid recursion
 		this._skipLayout = true;
+
 		this.contextViewProvider.layout();
+
 		this._skipLayout = false;
 	}
 
@@ -1300,6 +1412,7 @@ export class SelectBoxList
 
 		// Reset selection to value when opened
 		this.select(this._currentSelection);
+
 		this.hideSelectDropDown(true);
 	}
 
@@ -1310,6 +1423,7 @@ export class SelectBoxList
 		// Only fire if selection change
 		if (this.selected !== this._currentSelection) {
 			this._currentSelection = this.selected;
+
 			this._onDidSelect.fire({
 				index: this.selectElement.selectedIndex,
 				selected: this.options[this.selected].text,
@@ -1345,7 +1459,9 @@ export class SelectBoxList
 
 			// Set focus/selection - only fire event when closing drop-down or on blur
 			this.select(this.selected);
+
 			this.selectList.setFocus([this.selected]);
+
 			this.selectList.reveal(this.selectList.getFocus()[0]);
 		}
 	}
@@ -1364,7 +1480,9 @@ export class SelectBoxList
 			}
 			// Set focus/selection - only fire event when closing drop-down or on blur
 			this.select(this.selected);
+
 			this.selectList.setFocus([this.selected]);
+
 			this.selectList.reveal(this.selectList.getFocus()[0]);
 		}
 	}
@@ -1384,9 +1502,12 @@ export class SelectBoxList
 				this.selected < this.options.length - 1
 			) {
 				this.selected++;
+
 				this.selectList.setFocus([this.selected]);
 			}
+
 			this.selectList.reveal(this.selected);
+
 			this.select(this.selected);
 		}, 1);
 	}
@@ -1403,9 +1524,12 @@ export class SelectBoxList
 			// Shift selection up if we land on a disabled option
 			if (this.options[this.selected].isDisabled && this.selected > 0) {
 				this.selected--;
+
 				this.selectList.setFocus([this.selected]);
 			}
+
 			this.selectList.reveal(this.selected);
+
 			this.select(this.selected);
 		}, 1);
 	}
@@ -1416,13 +1540,17 @@ export class SelectBoxList
 		if (this.options.length < 2) {
 			return;
 		}
+
 		this.selected = 0;
 
 		if (this.options[this.selected].isDisabled && this.selected > 1) {
 			this.selected++;
 		}
+
 		this.selectList.setFocus([this.selected]);
+
 		this.selectList.reveal(this.selected);
+
 		this.select(this.selected);
 	}
 
@@ -1432,13 +1560,17 @@ export class SelectBoxList
 		if (this.options.length < 2) {
 			return;
 		}
+
 		this.selected = this.options.length - 1;
 
 		if (this.options[this.selected].isDisabled && this.selected > 1) {
 			this.selected--;
 		}
+
 		this.selectList.setFocus([this.selected]);
+
 		this.selectList.reveal(this.selected);
+
 		this.select(this.selected);
 	}
 
@@ -1456,7 +1588,9 @@ export class SelectBoxList
 				!this.options[optionIndex].isDisabled
 			) {
 				this.select(optionIndex);
+
 				this.selectList.setFocus([optionIndex]);
+
 				this.selectList.reveal(this.selectList.getFocus()[0]);
 
 				dom.EventHelper.stop(e);

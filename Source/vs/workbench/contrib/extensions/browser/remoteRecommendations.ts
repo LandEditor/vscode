@@ -19,12 +19,14 @@ export class RemoteRecommendations extends ExtensionRecommendations {
 	get recommendations(): ReadonlyArray<GalleryExtensionRecommendation> {
 		return this._recommendations;
 	}
+
 	constructor(
 		@IProductService
 		private readonly productService: IProductService,
 	) {
 		super();
 	}
+
 	protected async doActivate(): Promise<void> {
 		const extensionTips = {
 			...this.productService.remoteExtensionTips,
@@ -32,6 +34,7 @@ export class RemoteRecommendations extends ExtensionRecommendations {
 		};
 
 		const currentPlatform = PlatformToString(platform);
+
 		this._recommendations = Object.values(extensionTips)
 			.filter(
 				({ supportedPlatforms }) =>

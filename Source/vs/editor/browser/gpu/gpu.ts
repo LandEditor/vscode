@@ -25,22 +25,30 @@ export const enum BindingId {
 }
 export interface IGpuRenderStrategy {
 	readonly wgsl: string;
+
 	readonly bindGroupEntries: GPUBindGroupEntry[];
 
 	onLinesDeleted(e: ViewLinesDeletedEvent): boolean;
+
 	onConfigurationChanged(e: ViewConfigurationChangedEvent): boolean;
+
 	onTokensChanged(e: ViewTokensChangedEvent): boolean;
+
 	onLinesInserted(e: ViewLinesInsertedEvent): boolean;
+
 	onLinesChanged(e: ViewLinesChangedEvent): boolean;
+
 	onScrollChanged(e?: ViewScrollChangedEvent): boolean;
 
 	/**
 	 * Resets the render strategy, clearing all data and setting up for a new frame.
 	 */
 	reset(): void;
+
 	update(
 		viewportData: ViewportData,
 		viewLineOptions: ViewLineOptions,
 	): number;
+
 	draw?(pass: GPURenderPassEncoder, viewportData: ViewportData): void;
 }

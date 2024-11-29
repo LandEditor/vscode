@@ -54,12 +54,18 @@ import {
 
 export interface IGotoSymbolQuickPickItem extends IQuickPickItem {
 	kind: SymbolKind;
+
 	index: number;
+
 	score?: number;
+
 	uri?: URI;
+
 	symbolName?: string;
+
 	range?: {
 		decoration: IRange;
+
 		selection: IRange;
 	};
 }
@@ -75,8 +81,11 @@ export interface IGotoSymbolQuickAccessProviderOptions
 }
 export abstract class AbstractGotoSymbolQuickAccessProvider extends AbstractEditorNavigationQuickAccessProvider {
 	static PREFIX = "@";
+
 	static SCOPE_PREFIX = ":";
+
 	static PREFIX_BY_CATEGORY = `${this.PREFIX}${this.SCOPE_PREFIX}`;
+
 	protected override readonly options: IGotoSymbolQuickAccessProviderOptions;
 
 	constructor(
@@ -87,9 +96,12 @@ export abstract class AbstractGotoSymbolQuickAccessProvider extends AbstractEdit
 		options: IGotoSymbolQuickAccessProviderOptions = Object.create(null),
 	) {
 		super(options);
+
 		this.options = options;
+
 		this.options.canAcceptInBackground = true;
 	}
+
 	protected provideWithoutTextEditor(
 		picker: IQuickPick<
 			IGotoSymbolQuickPickItem,
@@ -108,6 +120,7 @@ export abstract class AbstractGotoSymbolQuickAccessProvider extends AbstractEdit
 
 		return Disposable.None;
 	}
+
 	protected provideWithTextEditor(
 		context: IQuickAccessTextEditorContext,
 		picker: IQuickPick<
@@ -146,6 +159,7 @@ export abstract class AbstractGotoSymbolQuickAccessProvider extends AbstractEdit
 			token,
 		);
 	}
+
 	private doProvideWithoutEditorSymbols(
 		context: IQuickAccessTextEditorContext,
 		model: ITextModel,
@@ -180,6 +194,7 @@ export abstract class AbstractGotoSymbolQuickAccessProvider extends AbstractEdit
 			if (!result || token.isCancellationRequested) {
 				return;
 			}
+
 			disposables.add(
 				this.doProvideWithEditorSymbols(context, model, picker, token),
 			);
@@ -187,6 +202,7 @@ export abstract class AbstractGotoSymbolQuickAccessProvider extends AbstractEdit
 
 		return disposables;
 	}
+
 	private provideLabelPick(
 		picker: IQuickPick<
 			IGotoSymbolQuickPickItem,
@@ -197,8 +213,10 @@ export abstract class AbstractGotoSymbolQuickAccessProvider extends AbstractEdit
 		label: string,
 	): void {
 		picker.items = [{ label, index: 0, kind: SymbolKind.String }];
+
 		picker.ariaLabel = label;
 	}
+
 	protected async waitForLanguageSymbolRegistry(
 		model: ITextModel,
 		disposables: DisposableStore,
@@ -206,6 +224,7 @@ export abstract class AbstractGotoSymbolQuickAccessProvider extends AbstractEdit
 		if (this._languageFeaturesService.documentSymbolProvider.has(model)) {
 			return true;
 		}
+
 		const symbolProviderRegistryPromise = new DeferredPromise<boolean>();
 		// Resolve promise when registry knows model
 		const symbolProviderListener = disposables.add(
@@ -217,6 +236,7 @@ export abstract class AbstractGotoSymbolQuickAccessProvider extends AbstractEdit
 						)
 					) {
 						symbolProviderListener.dispose();
+
 						symbolProviderRegistryPromise.complete(true);
 					}
 				},
@@ -229,6 +249,7 @@ export abstract class AbstractGotoSymbolQuickAccessProvider extends AbstractEdit
 
 		return symbolProviderRegistryPromise.p;
 	}
+
 	private doProvideWithEditorSymbols(
 		context: IQuickAccessTextEditorContext,
 		model: ITextModel,
@@ -255,6 +276,7 @@ export abstract class AbstractGotoSymbolQuickAccessProvider extends AbstractEdit
 						keyMods: picker.keyMods,
 						preserveFocus: event.inBackground,
 					});
+
 					runOptions?.handleAccept?.(item, event.inBackground);
 
 					if (!event.inBackground) {
@@ -272,6 +294,7 @@ export abstract class AbstractGotoSymbolQuickAccessProvider extends AbstractEdit
 						keyMods: picker.keyMods,
 						forceSideBySide: true,
 					});
+
 					picker.hide();
 				}
 			}),
@@ -287,6 +310,7 @@ export abstract class AbstractGotoSymbolQuickAccessProvider extends AbstractEdit
 		) => {
 			// Cancel any previous ask for picks and busy
 			picksCts?.dispose(true);
+
 			picker.busy = false;
 			// Create new cancellation source for this run
 			picksCts = new CancellationTokenSource(token);
@@ -313,6 +337,7 @@ export abstract class AbstractGotoSymbolQuickAccessProvider extends AbstractEdit
 				if (token.isCancellationRequested) {
 					return;
 				}
+
 				if (items.length > 0) {
 					picker.items = items;
 
@@ -356,9 +381,11 @@ export abstract class AbstractGotoSymbolQuickAccessProvider extends AbstractEdit
 				}
 			}
 		};
+
 		disposables.add(
 			picker.onDidChangeValue(() => updatePickerItems(undefined)),
 		);
+
 		updatePickerItems(editor.getSelection()?.getPosition());
 		// Reveal and decorate when active item changes
 		disposables.add(
@@ -379,6 +406,7 @@ export abstract class AbstractGotoSymbolQuickAccessProvider extends AbstractEdit
 
 		return disposables;
 	}
+
 	protected async doGetSymbolPicks(
 		symbolsPromise: Promise<DocumentSymbol[]>,
 		query: IPreparedQuery,
@@ -395,6 +423,7 @@ export abstract class AbstractGotoSymbolQuickAccessProvider extends AbstractEdit
 		if (token.isCancellationRequested) {
 			return [];
 		}
+
 		const filterBySymbolKind =
 			query.original.indexOf(
 				AbstractGotoSymbolQuickAccessProvider.SCOPE_PREFIX,
@@ -432,6 +461,7 @@ export abstract class AbstractGotoSymbolQuickAccessProvider extends AbstractEdit
 				},
 			];
 		}
+
 		const filteredSymbolPicks: IGotoSymbolQuickPickItem[] = [];
 
 		for (let index = 0; index < symbols.length; index++) {
@@ -453,6 +483,7 @@ export abstract class AbstractGotoSymbolQuickAccessProvider extends AbstractEdit
 					containerLabel = options.extraContainerLabel;
 				}
 			}
+
 			let symbolScore: number | undefined = undefined;
 
 			let symbolMatches: IMatch[] | undefined = undefined;
@@ -504,16 +535,20 @@ export abstract class AbstractGotoSymbolQuickAccessProvider extends AbstractEdit
 							containerQuery,
 						);
 					}
+
 					if (typeof containerScore !== "number") {
 						continue;
 					}
+
 					if (typeof symbolScore === "number") {
 						symbolScore += containerScore; // boost symbolScore by containerScore
 					}
 				}
 			}
+
 			const deprecated =
 				symbol.tags && symbol.tags.indexOf(SymbolTag.Deprecated) >= 0;
+
 			filteredSymbolPicks.push({
 				index,
 				kind: symbol.kind,
@@ -570,15 +605,19 @@ export abstract class AbstractGotoSymbolQuickAccessProvider extends AbstractEdit
 					);
 				}
 			}
+
 			for (const symbolPick of sortedFilteredSymbolPicks) {
 				// Found new kind
 				if (lastSymbolKind !== symbolPick.kind) {
 					// Update last separator with number of symbols we found for kind
 					updateLastSeparatorLabel();
+
 					lastSymbolKind = symbolPick.kind;
+
 					lastSymbolKindCounter = 1;
 					// Add new separator for new kind
 					lastSeparator = { type: "separator" };
+
 					symbolPicks.push(lastSeparator);
 				}
 				// Existing kind, keep counting
@@ -603,8 +642,10 @@ export abstract class AbstractGotoSymbolQuickAccessProvider extends AbstractEdit
 				...sortedFilteredSymbolPicks,
 			];
 		}
+
 		return symbolPicks;
 	}
+
 	private compareByScore(
 		symbolA: IGotoSymbolQuickPickItem,
 		symbolB: IGotoSymbolQuickPickItem,
@@ -620,6 +661,7 @@ export abstract class AbstractGotoSymbolQuickAccessProvider extends AbstractEdit
 		) {
 			return -1;
 		}
+
 		if (
 			typeof symbolA.score === "number" &&
 			typeof symbolB.score === "number"
@@ -630,13 +672,16 @@ export abstract class AbstractGotoSymbolQuickAccessProvider extends AbstractEdit
 				return 1;
 			}
 		}
+
 		if (symbolA.index < symbolB.index) {
 			return -1;
 		} else if (symbolA.index > symbolB.index) {
 			return 1;
 		}
+
 		return 0;
 	}
+
 	private compareByKindAndScore(
 		symbolA: IGotoSymbolQuickPickItem,
 		symbolB: IGotoSymbolQuickPickItem,
@@ -652,8 +697,10 @@ export abstract class AbstractGotoSymbolQuickAccessProvider extends AbstractEdit
 		if (result === 0) {
 			return this.compareByScore(symbolA, symbolB);
 		}
+
 		return result;
 	}
+
 	protected async getDocumentSymbols(
 		document: ITextModel,
 		token: CancellationToken,
